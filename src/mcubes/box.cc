@@ -169,18 +169,33 @@ void Box::getIntersections(ColorVertex corners[],
 float Box::calcIntersection(float x1, float x2,
 					   float d1, float d2, bool interpolate){
 
-  if(fabs(d1 - d2) < voxelsize)
-    setColor(200, 200, 200);
-  else{
-    setColor(200, 0, 0);
-  }
+  float f_diff = fabs(d1 - d2);
 
-  if(!interpolate){
-    return x1 + 0.5 * (x2 - x1);
-  } else {
-    return x1 + (0.0 - d1) * (x2 - x1) / (d2-d1);
+ //  if(f_diff < voxelsize){
+//     setColor(0, 200, 0);
+//   } else {
+//     setColor(200, 0, 0);
+//   }
+
+ //  float intersection;
+//   if(f_diff < voxelsize){
+//     intersection = x1 - d1 * voxelsize / (d2 - d1);;
+//   } else {
+//     intersection = x1 - d1 * voxelsize / (d2 - d1);
+//   }
+
+  float intersection = x1 - d1 * voxelsize / (d2 - d1);
+
+  setColor(0, 200, 0);
+  if(intersection < x1) setColor(0, 0, 200);
+  if(intersection > x2) setColor(200, 0, 0);
+
+  if(intersection < 0){
+    intersection = x2 - d1 * voxelsize / (d2 - d1); 
+    setColor(200, 200, 0);
   }
   
+  return intersection;
 }
 
 int Box::getApproximation(int globalIndex, StaticMesh &mesh,
