@@ -1,6 +1,6 @@
 #include "hashGrid.h"
 
-HashGrid::HashGrid(string filename, float v){
+HashGrid::HashGrid(string filename, float v, float scale){
 
   //Initalize global variables
   voxelsize = v;
@@ -15,7 +15,7 @@ HashGrid::HashGrid(string filename, float v){
 
   //Read Data
   cout << "##### Reading data..." << endl;
-  number_of_points = readPoints(filename);
+  number_of_points = readPoints(filename, scale);
 
   //Create Distance Function
   distance_function = new DistanceFunction(points, number_of_points, 10, false);
@@ -132,7 +132,7 @@ void HashGrid::createMesh(){
 
 }
 
-int HashGrid::readPoints(string filename){
+int HashGrid::readPoints(string filename, float scale){
 
   ifstream in(filename.c_str());
 
@@ -156,6 +156,10 @@ int HashGrid::readPoints(string filename){
 	 in >> dummy;
     }
 
+    x *= scale;
+    y *= scale;
+    z *= scale;
+    
     xmin = min(xmin, x);
     ymin = min(ymin, y);
     zmin = min(zmin, z);

@@ -23,7 +23,7 @@ using namespace std;
 class HashGrid{
 
 public:
-  HashGrid(string filename, float voxelsize);
+  HashGrid(string filename, float voxelsize, float scale = 1.0);
   ~HashGrid();
   
   void writeMesh();
@@ -35,7 +35,7 @@ private:
   void createMesh();
   
   
-  int readPoints(string filename);
+  int readPoints(string filename, float scale);
   int getFieldsPerLine(string filename);
   
   inline int hashValue(int j, int j, int k);

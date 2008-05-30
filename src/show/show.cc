@@ -83,7 +83,7 @@ void MCShow::initOpenGL(){
   glEnable(GL_DEPTH_TEST);
   glDepthFunc(GL_LESS);
   glShadeModel (GL_SMOOTH);
-  // glEnable(GL_COLOR_MATERIAL);
+  glEnable(GL_COLOR_MATERIAL);
 
 
 }
@@ -330,7 +330,31 @@ void MCShow::render(){
   glClearColor(1.0, 1.0, 1.0, 0.0);
   glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);   
 
+  glLineWidth(2.0);
+  glBegin(GL_LINES);
+  glColor3f(1.0, 0.0, 0.0);
+  glVertex3f(-1000, 0, 0);
+  glVertex3f(+1000, 0, 0);
+  glEnd();
+
+  glBegin(GL_LINES);
+  glColor3f(0.0, 1.0, 0.0);
+  glVertex3f(0, +1000, 0);
+  glVertex3f(0, -1000, 0);
+  glEnd();
+
+  glBegin(GL_LINES);
+  glColor3f(0.0, 0.0, 1.0);
+  glVertex3f(0, 0, +1000);
+  glVertex3f(0, 0, -1000);
+  glEnd();  
+  
+  glLineWidth(1.0);
+
+  glDisable(GL_COLOR_MATERIAL);
   if(renderMesh) glCallList(mesh_display_list);
+  glEnable(GL_COLOR_MATERIAL);
+  
   if(renderPoints) glCallList(point_display_list);
   if(renderNormals) glCallList(normal_display_list);
   
