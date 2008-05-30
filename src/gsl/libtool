@@ -44,7 +44,7 @@ available_tags=
 
 # ### BEGIN LIBTOOL CONFIG
 
-# Libtool was configured on host bruce-2:
+# Libtool was configured on host ash:
 
 # Shell to use when invoking shell scripts.
 SHELL="/bin/sh"
@@ -328,7 +328,7 @@ link_all_deplibs=unknown
 sys_lib_search_path_spec=" /usr/lib/gcc/i586-suse-linux/4.2.1/ /usr/lib/gcc/i586-suse-linux/4.2.1/ /usr/lib/gcc/i586-suse-linux/4.2.1/../../../../i586-suse-linux/lib/i586-suse-linux/4.2.1/ /usr/lib/gcc/i586-suse-linux/4.2.1/../../../../i586-suse-linux/lib/ /usr/lib/gcc/i586-suse-linux/4.2.1/../../../i586-suse-linux/4.2.1/ /usr/lib/gcc/i586-suse-linux/4.2.1/../../../ /lib/i586-suse-linux/4.2.1/ /lib/ /usr/lib/i586-suse-linux/4.2.1/ /usr/lib/"
 
 # Run-time system search path for libraries
-sys_lib_dlsearch_path_spec="/lib /usr/lib /usr/X11R6/lib/Xaw3d /usr/X11R6/lib /usr/lib/Xaw3d /usr/i386-suse-linux/lib /usr/local/lib /opt/kde3/lib   "
+sys_lib_dlsearch_path_spec="/lib /usr/lib /usr/X11R6/lib/Xaw3d /usr/X11R6/lib /usr/lib/Xaw3d /usr/i386-suse-linux/lib /usr/local/lib /opt/kde3/lib "
 
 # Fix the shell variable $srcfile for the compiler.
 fix_srcfile_path=""

@@ -1,5 +1,5 @@
 CPP = g++
-CFLAGS =  -O2 -Wall -Wno-write-strings -Wno-strict-aliasing
+CFLAGS = -O2 -Wall -Wno-write-strings
 AR = ar
 
 BIN = bin/
@@ -11,6 +11,8 @@ MESHSRC    = src/mesh/
 ANNSRC     = src/ann/
 IOSRC      = src/io/
 GSLSRC     = src/gsl/
+NMSRC      = src/newmat/
+TESTSRC    = src/test/
 
 GLLIBS     = -lGL -lGLU -lglut -lgltt -lttf -lgle
 
@@ -31,16 +33,22 @@ SHOWTARGETS = $(OBJ)show.o $(OBJ)camera.o
 IOTARGETS   = $(OBJ)fileWriter.o $(OBJ)plyWriter.o $(OBJ)fileReader.o \
               $(OBJ)plyReader.o
 
-all: mcubes show
+all: mcubes show normal_test
 
-mcubes: $(OBJ)libANN.a $(OBJ)libgsl.a $(IOTARGETS) $(MCTARGETS)
+mcubes: $(OBJ)libnewmat.a $(OBJ)libANN.a $(OBJ)libgsl.a $(IOTARGETS) $(MCTARGETS)
 	@echo -e "\nCompiling and Linking Marching Cubes Main Programm... \n"
-	@$(CPP) $(CFLAGS) -o $(BIN)mcubes $(MCSRC)main.cc $(OBJ)libgsl.a $(OBJ)libgslcblas.a $(GLLIBS) $(ANNTARGETS) $(MCTARGETS) $(IOTARGETS) -lgsl
+	@$(CPP) $(CFLAGS) -o $(BIN)mcubes $(OBJ)libgsl.a $(OBJ)libgslcblas.a \
+                          $(GLLIBS) $(ANNTARGETS) $(MCTARGETS) $(IOTARGETS) \
+                          $(NMSRC)libnewmat.a $(MCSRC)main.cc -lgsl
 
 show: $(SHOWTARGETS)
 	@echo -e "\nCompiling and Linking Mesh Viewer... \n"
 	@$(CPP) $(CFLAGS) -o $(BIN)show $(SHOWSRC)main.cc $(SHOWTARGETS) \
-                                     $(MCTARGETS) $(IOTARGETS) $(GLLIBS) $(ANNTARGETS) -lgsl
+                                     $(MCTARGETS) $(IOTARGETS) $(GLLIBS) $(ANNTARGETS) $(NMSRC)libnewmat.a -lgsl
+
+normal_test: $(TESTSRC)normals.cc
+	@echo -e "\nCompiling and Linking Normal Estimation Programm\n"
+	@$(CPP) $(CFLAGS) -o $(BIN)normals $(TESTSRC)normals.cc $(MCTARGETS) $(IOTARGETS) $(GLLIBS) $(ANNTARGETS) $(NMSRC)libnewmat.a -lgsl
 
 
 ######################################################################
@@ -205,6 +213,14 @@ $(OBJ)libgsl.a:
 	cp $(GSLSRC).libs/libgsl.a $(OBJ)
 	cp $(GSLSRC)/cblas/.libs/libgslcblas.a $(OBJ)
 
+#############################################################
+# NEWMAT LIBRARY
+#############################################################
+$(OBJ)libnewmat.a:
+	@echo "Compiling NEWMAT library..."
+	@cd $(NMSRC); make;
+	@mv $(NMSRC)libnewmat.a $(OBJ)
+	@ranlib $(OBJ)libnewmat.a
 clean:
 	@echo "Cleaning up..."
 	@rm -f *.*~

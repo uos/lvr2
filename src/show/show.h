@@ -97,14 +97,18 @@ private:
   GLCamera cam;
 
   vector<vector<double*> > polygons;
-  vector<double*> points;
+  vector<float*> points;
+  vector<float*> normals;
+  
   int renderMode;
 
   bool renderMesh;
   bool renderPoints;
+  bool renderNormals;
 
   int mesh_display_list;
   int point_display_list;
+  int normal_display_list;
   
 };
 

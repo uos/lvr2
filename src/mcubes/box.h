@@ -23,6 +23,7 @@ public:
   ColorVertex getBaseCorner() const{ return baseVertex;};
 
   Box* nb[27];
+
   
 private:
 

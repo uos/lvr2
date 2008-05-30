@@ -9,9 +9,11 @@ MCShow::MCShow(char* _fileName){
 
   renderMesh = false;
   renderPoints = false;
+  renderNormals = false;
 
   mesh_display_list = -1;
   point_display_list = -1;
+  normal_display_list = -1;
   
   init();
   initGlut();
@@ -66,7 +68,6 @@ void MCShow::initOpenGL(){
 //   glEnable(GL_LIGHT1);
 
   GLfloat light_position[] = { 0.0, 0.0, -1.0, 0.0 }; //Licht
-  GLfloat spot_direction[] = {0.0, 0.0, -1.0, 0.0};
   GLfloat light_ambient[] = { 0.4, 0.4, 0.4, 1.0 };
   GLfloat light_diffuse[] = { 0.7, 0.7, 0.7, 1.0 };
   GLfloat light_specular[] = { 0.2, 0.2, 0.2, 1.0 };
@@ -81,7 +82,8 @@ void MCShow::initOpenGL(){
   
   glEnable(GL_DEPTH_TEST);
   glDepthFunc(GL_LESS);
-  glShadeModel (GL_SMOOTH); 
+  glShadeModel (GL_SMOOTH);
+  // glEnable(GL_COLOR_MATERIAL);
 
 
 }
@@ -130,9 +132,9 @@ void MCShow::initGlui(){
 void MCShow::initDisplayLists(){
 
   //Delete already created display lists
-  if(mesh_display_list != -1) glDeleteLists(mesh_display_list, 1);
-  if(point_display_list != -1) glDeleteLists(point_display_list, 1);
-
+  if(mesh_display_list != -1)   glDeleteLists(mesh_display_list, 1);
+  if(point_display_list != -1)  glDeleteLists(point_display_list, 1);
+  if(normal_display_list != -1) glDeleteLists(normal_display_list, 1);
  
   //Compile mesh list
   if(renderMesh){
@@ -141,7 +143,45 @@ void MCShow::initDisplayLists(){
     plyReader.mesh.render();
     glEndList();
   }
- 
+
+  //Compile point list
+  if(renderPoints){
+    point_display_list = glGenLists(1);
+    glDisable(GL_LIGHTING);
+    glNewList(point_display_list, GL_COMPILE);
+    glBegin(GL_POINTS);
+    glColor3f(0.0, 1.0, 0.0);
+    for(size_t i = 0; i < points.size(); i++){
+	 glVertex3f(points[i][0],
+			  points[i][1],
+			  points[i][2]);
+    }
+    glEnd();
+    glEnable(GL_LIGHTING);
+    glEndList();
+  }
+
+  //Compili normal list
+  if(renderNormals){
+    normal_display_list = glGenLists(1);
+    glNewList(normal_display_list, GL_COMPILE);
+    for(size_t i = 0; i < normals.size(); i++){
+	 glBegin(GL_LINES);
+	 glColor3f(1.0, 0.0, 0.0);
+	 glVertex3f(points[i][0],
+			  points[i][1],
+			  points[i][2]);
+	 glVertex3f(points[i][0] + 3 * normals[i][0],
+			  points[i][1] + 3 * normals[i][1],
+			  points[i][2] + 3 * normals[i][2]);
+			  
+	 glEnd();
+    }
+    glEndList();
+  
+  }
+
+  
  
 }
 
@@ -291,6 +331,8 @@ void MCShow::render(){
   glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);   
 
   if(renderMesh) glCallList(mesh_display_list);
+  if(renderPoints) glCallList(point_display_list);
+  if(renderNormals) glCallList(normal_display_list);
   
   glFinish();
   glutSwapBuffers();
@@ -317,20 +359,38 @@ void MCShow::readFile(char* filename){
     cout << "##### Finished reading. Current mesh has "
 	    << plyReader.mesh.indices.size() / 3 << " faces with " 
 	    << plyReader.mesh.vertices.size() << " vertices. " << endl;
-    initDisplayLists();
+    
   }
 
   if(strcmp(ext, ".bor") == 0){
- 
+
     
   }
 
   if(strcmp(ext, ".pts") == 0){
 
-    
   }  
 
+  if(strcmp(ext, ".nor") == 0){
+ 
+    ifstream in(filename);
+    cout << "##### Reading Points and Normals: " << filename << endl;
+    while(in.good()){
+	 float* n = new float[3];
+	 float* v = new float[3];
+	 in >> v[0] >> v[1] >> v[2] >> n[0] >> n[1] >> n[2];
+	 points.push_back(v);
+	 normals.push_back(n);
+    }
+    cout << "##### Finished Reading. " << points.size() << " " 
+	    << "Normals and " << normals.size() << " vertices loaded." << endl;
 
+    renderPoints = true;
+    renderNormals = true;
+  }
+
+  initDisplayLists();
+  
 }
 
 MCShow::~MCShow(){
@@ -347,6 +407,11 @@ MCShow::~MCShow(){
     polygons[i].clear();
   }
   polygons.clear();
+
+  for(size_t i = 0; i < normals.size(); i++){
+    delete[] normals[i];
+  }
+  normals.clear();
   
 }
 
