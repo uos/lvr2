@@ -1,9 +1,9 @@
 #include "camera.h"
 
 GLCamera::GLCamera(){
-  px = 462.806;
-  py = 385;
-  pz = -527.42;
+  px = 0;
+  py = 0;
+  pz = 0;
 
   //px = py = pz = 0.0;
   ix = 0.0;
@@ -132,6 +132,8 @@ void GLCamera::apply(){
   lz = iz - pz - cos(rotY);
   ly = iy + py + sin(rotX);
 
+  //cout << ix + px << " " << iz + pz << " " << iy + py << endl;
+  
   glLoadIdentity();
    
   gluLookAt(ix + px, iy + py, iz - pz,

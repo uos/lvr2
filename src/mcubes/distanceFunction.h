@@ -7,6 +7,7 @@
 #include <ANN/ANN.h>
 
 #include "../mesh/baseVertex.h"
+#include "../newmat/newmat.h"
 
 #include "tangentPlane.h"
 
@@ -20,6 +21,7 @@ public:
   ~DistanceFunction();
   
   float distance(const BaseVertex v) const;
+  int getSign(BaseVertex v, int n); 
 
 private:
 
