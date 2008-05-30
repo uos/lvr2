@@ -69,13 +69,6 @@ float DistanceFunction::distance(const BaseVertex v, int k, float epsilon, bool 
   float sign = 0.0, z1 = 0.0, z2 = 0.0;
   BaseVertex diff1, diff2;
   Normal normal;
-
-  //Filter points
-  int c = 0;
-  for(int i = 0; i < k; i++){
-    if(sqrt(di[i]) > 20) ok = false;
-    
-  }
   
   try{
   
@@ -96,6 +89,9 @@ float DistanceFunction::distance(const BaseVertex v, int k, float epsilon, bool 
     Matrix M = BtBinv * Bt;
   
     C = M * F;
+
+    //cout << "C: " << C(1) << " " << C(2) << " " << C(3) << endl;
+    if(fabs(C(1)) > 0.0001 || fabs(C(2)) > 0.0001 ) ok = false;
 
     //Estimate surface normal
     z1 = C(1) + C(2) * (nearest.x + epsilon) + C(3) * nearest.y;
