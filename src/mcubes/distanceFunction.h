@@ -20,7 +20,7 @@ public:
   DistanceFunction(ANNpointArray points, int n, int k, bool use_tp = true);
   ~DistanceFunction();
   
-  float distance(const BaseVertex v) const;
+  float distance(const BaseVertex v, int k, float epsilon, bool& ok) const;
   int getSign(BaseVertex v, int n); 
 
 private:

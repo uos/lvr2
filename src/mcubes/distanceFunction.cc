@@ -37,9 +37,7 @@ DistanceFunction::DistanceFunction(ANNpointArray p, int n, int k, bool tp){
   }
 }
 
-float DistanceFunction::distance(const BaseVertex v) const{
-
-  int k = 10;
+float DistanceFunction::distance(const BaseVertex v, int k, float epsilon, bool &ok) const{
 
   //Get id of nearest tangent plane
   ANNidxArray id = new ANNidx[k];
@@ -68,44 +66,59 @@ float DistanceFunction::distance(const BaseVertex v) const{
 
 
   //Approximate plane
-  ColumnVector C(3);
-  ColumnVector F(k);
-  Matrix B(k, 3);
+  float sign = 0.0, z1 = 0.0, z2 = 0.0;
+  BaseVertex diff1, diff2;
+  Normal normal;
 
-  for(int i = 1; i <= k; i++){
-    F(i) = points[id[i-1]][2];
-    B(i, 1) = 1;
-    B(i, 2) = points[id[i-1]][0];
-    B(i, 3) = points[id[i-1]][1];
+  //Filter points
+  int c = 0;
+  for(int i = 0; i < k; i++){
+    if(sqrt(di[i]) > 20) ok = false;
+    
+  }
+  
+  try{
+  
+    ColumnVector C(3);
+    ColumnVector F(k);
+    Matrix B(k, 3);
+
+    for(int i = 1; i <= k; i++){
+	 F(i) = points[id[i-1]][2];
+	 B(i, 1) = 1;
+	 B(i, 2) = points[id[i-1]][0];
+	 B(i, 3) = points[id[i-1]][1];
+    }
+    
+    Matrix Bt = B.t();
+    Matrix BtB = Bt * B;
+    Matrix BtBinv = BtB.i();
+    Matrix M = BtBinv * Bt;
+  
+    C = M * F;
+
+    //Estimate surface normal
+    z1 = C(1) + C(2) * (nearest.x + epsilon) + C(3) * nearest.y;
+    z2 = C(1) + C(2) * nearest.x + C(3) * (nearest.y + epsilon);
+
+    diff1 = BaseVertex(nearest.x + epsilon, nearest.y, z1) - nearest;
+    diff2 = BaseVertex(nearest.x, nearest.y + epsilon, z2) - nearest;
+
+    normal  = diff1.cross(diff2);
+
+    //Calculate sign of distance function
+    sign = normal * diff;
+
+  } catch (Exception& e){
+    cout << e.what();
   }
 
-  Matrix Bt = B.t();
-  Matrix BtB = Bt * B;
-  Matrix BtBinv = BtB.i();
-  Matrix M = BtBinv * Bt;
-  
-  C = M * F;
-
-  
-  //Estimate surface normal
-  //f(x) = c1 + c2 * x + c3 * y -> z
-
-  float z1 = C(1) + C(2) * (nearest.x + 0.3) + C(3) * nearest.y;
-  float z2 = C(1) + C(2) * nearest.x + C(3) * (nearest.y + 0.3);
-
-  BaseVertex diff1 = BaseVertex(nearest.x + 0.3, nearest.y, z1) - nearest;
-  BaseVertex diff2 = BaseVertex(nearest.x, nearest.y + 0.3, z2) - nearest;
-
-  Normal normal = diff1.cross(diff2);
-
-  float sign = normal * diff;
-
-  //cout << "SIGN: " << sign << endl;
   
   //Release memory
   delete[] id;
   delete[] di;
 
+  //Return distance value
   if(sign > 0) 
     return diff.length();
   else
