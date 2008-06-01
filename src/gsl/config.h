@@ -19,7 +19,7 @@
 
 /* Define to 1 if you have the declaration of `feenableexcept', and to 0 if
    you don't. */
-#define HAVE_DECL_FEENABLEEXCEPT 1
+#define HAVE_DECL_FEENABLEEXCEPT 0
 
 /* Define to 1 if you have the declaration of `fesettrapenable', and to 0 if
    you don't. */
@@ -39,7 +39,7 @@
 
 /* Define to 1 if you have the declaration of `isfinite', and to 0 if you
    don't. */
-#define HAVE_DECL_ISFINITE 0
+#define HAVE_DECL_ISFINITE 1
 
 /* Define to 1 if you have the declaration of `isinf', and to 0 if you don't.
    */
@@ -176,7 +176,7 @@
 /* #undef HAVE_GNUSPARC_IEEE_INTERFACE */
 /* #undef HAVE_GNUM68K_IEEE_INTERFACE */
 /* #undef HAVE_GNUPPC_IEEE_INTERFACE */
-#define HAVE_GNUX86_IEEE_INTERFACE 1
+/* #undef HAVE_GNUX86_IEEE_INTERFACE */
 /* #undef HAVE_SUNOS4_IEEE_INTERFACE */
 /* #undef HAVE_SOLARIS_IEEE_INTERFACE */
 /* #undef HAVE_HPUX11_IEEE_INTERFACE */
@@ -189,7 +189,7 @@
 /* #undef HAVE_NETBSD_IEEE_INTERFACE */
 /* #undef HAVE_OPENBSD_IEEE_INTERFACE */
 /* #undef HAVE_DARWIN_IEEE_INTERFACE */
-/* #undef HAVE_DARWIN86_IEEE_INTERFACE */
+#define HAVE_DARWIN86_IEEE_INTERFACE 1
 
 /* Define this if IEEE comparisons work correctly (e.g. NaN != NaN) */
 #define HAVE_IEEE_COMPARISONS 1

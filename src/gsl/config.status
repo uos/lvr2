@@ -517,8 +517,8 @@ s,@build_alias@,,;t t
 s,@host_alias@,,;t t
 s,@target_alias@,,;t t
 s,@DEFS@,-DHAVE_CONFIG_H,;t t
-s,@ECHO_C@,,;t t
-s,@ECHO_N@,-n,;t t
+s,@ECHO_C@,\c,;t t
+s,@ECHO_N@,,;t t
 s,@ECHO_T@,,;t t
 s,@LIBS@,-lm ,;t t
 s,@INSTALL_PROGRAM@,${INSTALL},;t t
@@ -527,20 +527,20 @@ s,@INSTALL_DATA@,${INSTALL} -m 644,;t t
 s,@CYGPATH_W@,echo,;t t
 s,@PACKAGE@,gsl,;t t
 s,@VERSION@,1.9,;t t
-s,@ACLOCAL@,${SHELL} /home/twiemann/software/meshing/src/gsl/missing --run aclocal-1.9,;t t
-s,@AUTOCONF@,${SHELL} /home/twiemann/software/meshing/src/gsl/missing --run autoconf,;t t
-s,@AUTOMAKE@,${SHELL} /home/twiemann/software/meshing/src/gsl/missing --run automake-1.9,;t t
-s,@AUTOHEADER@,${SHELL} /home/twiemann/software/meshing/src/gsl/missing --run autoheader,;t t
-s,@MAKEINFO@,${SHELL} /home/twiemann/software/meshing/src/gsl/missing --run makeinfo,;t t
-s,@install_sh@,/home/twiemann/software/meshing/src/gsl/install-sh,;t t
+s,@ACLOCAL@,${SHELL} /Users/twiemann/software/meshing/src/gsl/missing --run aclocal-1.9,;t t
+s,@AUTOCONF@,${SHELL} /Users/twiemann/software/meshing/src/gsl/missing --run autoconf,;t t
+s,@AUTOMAKE@,${SHELL} /Users/twiemann/software/meshing/src/gsl/missing --run automake-1.9,;t t
+s,@AUTOHEADER@,${SHELL} /Users/twiemann/software/meshing/src/gsl/missing --run autoheader,;t t
+s,@MAKEINFO@,${SHELL} /Users/twiemann/software/meshing/src/gsl/missing --run makeinfo,;t t
+s,@install_sh@,/Users/twiemann/software/meshing/src/gsl/install-sh,;t t
 s,@STRIP@,strip,;t t
 s,@ac_ct_STRIP@,strip,;t t
 s,@INSTALL_STRIP_PROGRAM@,${SHELL} $(install_sh) -c -s,;t t
-s,@mkdir_p@,mkdir -p --,;t t
-s,@AWK@,gawk,;t t
+s,@mkdir_p@,$(mkinstalldirs),;t t
+s,@AWK@,awk,;t t
 s,@SET_MAKE@,,;t t
 s,@am__leading_dot@,.,;t t
-s,@AMTAR@,${SHELL} /home/twiemann/software/meshing/src/gsl/missing --run tar,;t t
+s,@AMTAR@,${SHELL} /Users/twiemann/software/meshing/src/gsl/missing --run tar,;t t
 s,@am__tar@,${AMTAR} chof - "$$tardir",;t t
 s,@am__untar@,${AMTAR} xf -,;t t
 s,@MAINTAINER_MODE_TRUE@,#,;t t
@@ -549,14 +549,14 @@ s,@MAINT@,#,;t t
 s,@GSL_LT_VERSION@,10:0:10,;t t
 s,@GSL_LT_CBLAS_VERSION@,0:0:0,;t t
 s,@RELEASED@,,;t t
-s,@build@,i686-pc-linux-gnu,;t t
-s,@build_cpu@,i686,;t t
-s,@build_vendor@,pc,;t t
-s,@build_os@,linux-gnu,;t t
-s,@host@,i686-pc-linux-gnu,;t t
-s,@host_cpu@,i686,;t t
-s,@host_vendor@,pc,;t t
-s,@host_os@,linux-gnu,;t t
+s,@build@,i386-apple-darwin9.3.0,;t t
+s,@build_cpu@,i386,;t t
+s,@build_vendor@,apple,;t t
+s,@build_os@,darwin9.3.0,;t t
+s,@host@,i386-apple-darwin9.3.0,;t t
+s,@host_cpu@,i386,;t t
+s,@host_vendor@,apple,;t t
+s,@host_os@,darwin9.3.0,;t t
 s,@CC@,gcc,;t t
 s,@CFLAGS@,-g -O2,;t t
 s,@LDFLAGS@,,;t t
@@ -567,7 +567,7 @@ s,@OBJEXT@,o,;t t
 s,@CPP@,gcc -E,;t t
 s,@LN_S@,ln -s,;t t
 s,@EGREP@,grep -E,;t t
-s,@ECHO@,echo,;t t
+s,@ECHO@,/bin/echo,;t t
 s,@AR@,ar,;t t
 s,@ac_ct_AR@,ar,;t t
 s,@RANLIB@,ranlib,;t t
@@ -935,7 +935,7 @@ ${ac_dA}HAVE_STRTOL${ac_dB}HAVE_STRTOL${ac_dC}1${ac_dD}
 ${ac_dA}HAVE_STRTOUL${ac_dB}HAVE_STRTOUL${ac_dC}1${ac_dD}
 ${ac_dA}HAVE_EXIT_SUCCESS_AND_FAILURE${ac_dB}HAVE_EXIT_SUCCESS_AND_FAILURE${ac_dC}1${ac_dD}
 ${ac_dA}HAVE_LIBM${ac_dB}HAVE_LIBM${ac_dC}1${ac_dD}
-${ac_dA}HAVE_DECL_FEENABLEEXCEPT${ac_dB}HAVE_DECL_FEENABLEEXCEPT${ac_dC}1${ac_dD}
+${ac_dA}HAVE_DECL_FEENABLEEXCEPT${ac_dB}HAVE_DECL_FEENABLEEXCEPT${ac_dC}0${ac_dD}
 ${ac_dA}HAVE_DECL_FESETTRAPENABLE${ac_dB}HAVE_DECL_FESETTRAPENABLE${ac_dC}0${ac_dD}
 ${ac_dA}HAVE_DECL_HYPOT${ac_dB}HAVE_DECL_HYPOT${ac_dC}1${ac_dD}
 ${ac_dA}HAVE_DECL_EXPM1${ac_dB}HAVE_DECL_EXPM1${ac_dC}1${ac_dD}
@@ -955,12 +955,12 @@ CEOF
 t clr
 : clr
 ${ac_dA}HAVE_DECL_FINITE${ac_dB}HAVE_DECL_FINITE${ac_dC}1${ac_dD}
-${ac_dA}HAVE_DECL_ISFINITE${ac_dB}HAVE_DECL_ISFINITE${ac_dC}0${ac_dD}
+${ac_dA}HAVE_DECL_ISFINITE${ac_dB}HAVE_DECL_ISFINITE${ac_dC}1${ac_dD}
 ${ac_dA}HAVE_DECL_ISNAN${ac_dB}HAVE_DECL_ISNAN${ac_dC}1${ac_dD}
 ${ac_dA}HAVE_DECL_LOG1P${ac_dB}HAVE_DECL_LOG1P${ac_dC}1${ac_dD}
 ${ac_dA}HAVE_PRINTF_LONGDOUBLE${ac_dB}HAVE_PRINTF_LONGDOUBLE${ac_dC}1${ac_dD}
 ${ac_dA}HAVE_EXTENDED_PRECISION_REGISTERS${ac_dB}HAVE_EXTENDED_PRECISION_REGISTERS${ac_dC}1${ac_dD}
-${ac_dA}HAVE_GNUX86_IEEE_INTERFACE${ac_dB}HAVE_GNUX86_IEEE_INTERFACE${ac_dC}1${ac_dD}
+${ac_dA}HAVE_DARWIN86_IEEE_INTERFACE${ac_dB}HAVE_DARWIN86_IEEE_INTERFACE${ac_dC}1${ac_dD}
 ${ac_dA}HAVE_IEEE_COMPARISONS${ac_dB}HAVE_IEEE_COMPARISONS${ac_dC}1${ac_dD}
 ${ac_dA}HAVE_IEEE_DENORMALS${ac_dB}HAVE_IEEE_DENORMALS${ac_dC}1${ac_dD}
 CEOF
@@ -1003,7 +1003,7 @@ ${ac_uA}HAVE_STRTOL${ac_uB}HAVE_STRTOL${ac_uC}1${ac_uD}
 ${ac_uA}HAVE_STRTOUL${ac_uB}HAVE_STRTOUL${ac_uC}1${ac_uD}
 ${ac_uA}HAVE_EXIT_SUCCESS_AND_FAILURE${ac_uB}HAVE_EXIT_SUCCESS_AND_FAILURE${ac_uC}1${ac_uD}
 ${ac_uA}HAVE_LIBM${ac_uB}HAVE_LIBM${ac_uC}1${ac_uD}
-${ac_uA}HAVE_DECL_FEENABLEEXCEPT${ac_uB}HAVE_DECL_FEENABLEEXCEPT${ac_uC}1${ac_uD}
+${ac_uA}HAVE_DECL_FEENABLEEXCEPT${ac_uB}HAVE_DECL_FEENABLEEXCEPT${ac_uC}0${ac_uD}
 ${ac_uA}HAVE_DECL_FESETTRAPENABLE${ac_uB}HAVE_DECL_FESETTRAPENABLE${ac_uC}0${ac_uD}
 ${ac_uA}HAVE_DECL_HYPOT${ac_uB}HAVE_DECL_HYPOT${ac_uC}1${ac_uD}
 ${ac_uA}HAVE_DECL_EXPM1${ac_uB}HAVE_DECL_EXPM1${ac_uC}1${ac_uD}
@@ -1023,12 +1023,12 @@ CEOF
 t clr
 : clr
 ${ac_uA}HAVE_DECL_FINITE${ac_uB}HAVE_DECL_FINITE${ac_uC}1${ac_uD}
-${ac_uA}HAVE_DECL_ISFINITE${ac_uB}HAVE_DECL_ISFINITE${ac_uC}0${ac_uD}
+${ac_uA}HAVE_DECL_ISFINITE${ac_uB}HAVE_DECL_ISFINITE${ac_uC}1${ac_uD}
 ${ac_uA}HAVE_DECL_ISNAN${ac_uB}HAVE_DECL_ISNAN${ac_uC}1${ac_uD}
 ${ac_uA}HAVE_DECL_LOG1P${ac_uB}HAVE_DECL_LOG1P${ac_uC}1${ac_uD}
 ${ac_uA}HAVE_PRINTF_LONGDOUBLE${ac_uB}HAVE_PRINTF_LONGDOUBLE${ac_uC}1${ac_uD}
 ${ac_uA}HAVE_EXTENDED_PRECISION_REGISTERS${ac_uB}HAVE_EXTENDED_PRECISION_REGISTERS${ac_uC}1${ac_uD}
-${ac_uA}HAVE_GNUX86_IEEE_INTERFACE${ac_uB}HAVE_GNUX86_IEEE_INTERFACE${ac_uC}1${ac_uD}
+${ac_uA}HAVE_DARWIN86_IEEE_INTERFACE${ac_uB}HAVE_DARWIN86_IEEE_INTERFACE${ac_uC}1${ac_uD}
 ${ac_uA}HAVE_IEEE_COMPARISONS${ac_uB}HAVE_IEEE_COMPARISONS${ac_uC}1${ac_uD}
 ${ac_uA}HAVE_IEEE_DENORMALS${ac_uB}HAVE_IEEE_DENORMALS${ac_uC}1${ac_uD}
 s,^[	 ]*#[	 ]*undef[	 ][	 ]*[a-zA-Z_][a-zA-Z_0-9]*,/* & */,

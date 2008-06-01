@@ -11,6 +11,8 @@ public:
   Normal(const BaseVertex &other);
   Normal(const Normal &other);
 
+  virtual ~Normal(){};
+
   virtual inline void render();
   
   void normalize();

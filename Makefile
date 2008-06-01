@@ -5,6 +5,8 @@ AR = ar
 BIN = bin/
 OBJ = obj/
 
+OSFLAGS    = -DMAC_OSX # TO DO: AUTO SELECTION
+
 SHOWSRC    = src/show/
 MCSRC      = src/mcubes/
 MESHSRC    = src/mesh/
@@ -14,9 +16,14 @@ GSLSRC     = src/gsl/
 NMSRC      = src/newmat/
 TESTSRC    = src/test/
 
+#ifndef MAC_OSX
 GLLIBS     = -lGL -lGLU -lglut -lgltt -lttf -lgle
+#else
+GLLIBS     = -framework OpenGL -framework GLUT
+#endif
 
 CFLAGS     += -I$(ANNSRC) -I$(GSLSRC)
+CFLAGS     += $(OSFLAGS)
 
 ANNTARGETS  = $(OBJ)ANN.o $(OBJ)brute.o $(OBJ)kd_tree.o $(OBJ)kd_util.o \
               $(OBJ)kd_split.o $(OBJ)kd_search.o $(OBJ)kd_pr_search.o \
@@ -33,22 +40,20 @@ SHOWTARGETS = $(OBJ)show.o $(OBJ)camera.o
 IOTARGETS   = $(OBJ)fileWriter.o $(OBJ)plyWriter.o $(OBJ)fileReader.o \
               $(OBJ)plyReader.o
 
-all: mcubes show normal_test
+all: mcubes show
 
 mcubes: $(OBJ)libnewmat.a $(OBJ)libANN.a $(OBJ)libgsl.a $(IOTARGETS) $(MCTARGETS)
-	@echo -e "\nCompiling and Linking Marching Cubes Main Programm... \n"
+	@echo -e "\nCompiling and Linking Marching Cubes Main Programm..."
 	@$(CPP) $(CFLAGS) -o $(BIN)mcubes $(OBJ)libgsl.a $(OBJ)libgslcblas.a \
                           $(GLLIBS) $(ANNTARGETS) $(MCTARGETS) $(IOTARGETS) \
-                          $(NMSRC)libnewmat.a $(MCSRC)main.cc -lgsl
+                          $(OBJ)libnewmat.a $(MCSRC)main.cc 
+	@echo "DONE."
 
 show: $(SHOWTARGETS)
-	@echo -e "\nCompiling and Linking Mesh Viewer... \n"
+	@echo -e "\nCompiling and Linking Mesh Viewer..."
 	@$(CPP) $(CFLAGS) -o $(BIN)show $(SHOWSRC)main.cc $(SHOWTARGETS) \
-                                     $(MCTARGETS) $(IOTARGETS) $(GLLIBS) $(ANNTARGETS) $(NMSRC)libnewmat.a -lgsl
-
-normal_test: $(TESTSRC)normals.cc
-	@echo -e "\nCompiling and Linking Normal Estimation Programm\n"
-	@$(CPP) $(CFLAGS) -o $(BIN)normals $(TESTSRC)normals.cc $(MCTARGETS) $(IOTARGETS) $(GLLIBS) $(ANNTARGETS) $(NMSRC)libnewmat.a -lgsl
+                             $(MCTARGETS) $(IOTARGETS) $(GLLIBS) $(ANNTARGETS) $(OBJ)libnewmat.a $(OBJ)libgsl.a $(OBJ)libgslcblas.a
+	@echo "DONE."
 
 
 ######################################################################
@@ -212,6 +217,8 @@ $(OBJ)libgsl.a:
 	cd $(GSLSRC); make
 	cp $(GSLSRC).libs/libgsl.a $(OBJ)
 	cp $(GSLSRC)/cblas/.libs/libgslcblas.a $(OBJ)
+	@ranlib $(OBJ)libgsl.a
+	@ranlib $(OBJ)libgslcblas.a
 
 #############################################################
 # NEWMAT LIBRARY
