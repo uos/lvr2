@@ -15,6 +15,7 @@ using std::ifstream;
 #include <vector>
 using std::vector;
 
+#ifndef MAC_OSX
 #include <GL/gl.h>	    /* Header File For The OpenGL32 Library */
 #include <GL/glu.h>	    /* Header File For The GLu32 Library */
 #include <GL/glext.h>   /* Header File For The OpenGL32 Library */
@@ -22,6 +23,10 @@ using std::vector;
 #include <GL/glxext.h>  /* Header File For The OpenGL32 Library */
 #include <GL/glut.h>    /* Header File For The glu toolkit */
 #include <GL/gle.h>     /* Header File For The gle toolkit */
+#else
+#include <OpenGL/gl.h>
+#include <GLUT/glut.h>
+#endif
 
 #include "camera.h"
 #include "../io/plyReader.h"

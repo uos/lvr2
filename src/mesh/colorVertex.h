@@ -18,6 +18,8 @@ public:
   ColorVertex(BaseVertex v, float r, float g, float b);
   ColorVertex(BaseVertex v, uchar r, uchar g, uchar b);
 
+  virtual ~ColorVertex(){};
+
   virtual inline void render();
   
   uchar r;

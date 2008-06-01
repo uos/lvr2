@@ -13,7 +13,12 @@
 #ifndef __BASE_VERTEX_H__
 #define __BASE_VERTEX_H__
 
+#ifndef MAC_OSX
 #include <GL/gl.h>
+#else
+#include <OpenGL/GL.h>
+#endif
+
 #include <iostream>
 #include <math.h>
 
@@ -26,6 +31,8 @@ public:
   BaseVertex();
   BaseVertex(float x, float y, float z);
   BaseVertex(const BaseVertex &o); 
+
+  virtual ~BaseVertex(){};
   
   float length();
 
