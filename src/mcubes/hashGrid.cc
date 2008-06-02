@@ -71,34 +71,39 @@ void HashGrid::createGrid(){
 		
 		it = cells.find(hash_value);
 		if(it == cells.end()){
+
+
+		  
 		  //Create new cell
-		  Box* new_box = new Box(Vertex((index_x + dx) * voxelsize + xmin,
-								  (index_y + dy) * voxelsize + ymin,
-								  (index_z + dz) * voxelsize + zmin), voxelsize);
+		  if(index == 7){
+		    Box* new_box = new Box(Vertex((index_x + dx) * voxelsize + xmin,
+								    (index_y + dy) * voxelsize + ymin,
+								    (index_z + dz) * voxelsize + zmin), voxelsize);
 
-		  //Set correct corner of cell
-		  new_box->setConfigurationCorner(HGVertexTable[index]);
+		    //Set correct corner of cell
+		    new_box->setConfigurationCorner(HGVertexTable[index]);
+		    
+		    //Save Cell
+		    cells[hash_value] = new_box;
 
-		  //Save Cell
-		  cells[hash_value] = new_box;
+		    //Set cell corners of affected neighbours
+		    tmp_index = 0;
+		    for(int k = -1; k < 2; k++)
+			 for(int l = -1; l < 2; l++)
+			   for(int m = -1; m < 2; m++){
 
-		  //Set cell corners of affected neighbours
-		  tmp_index = 0;
-		  for(int k = -1; k < 2; k++)
-		    for(int l = -1; l < 2; l++)
-			 for(int m = -1; m < 2; m++){
+				tmp_hash_value = hashValue(index_x + dx + k,
+									  index_y + dy + l,
+									  index_z + dz + m);
 
-			   tmp_hash_value = hashValue(index_x + dx + k,
-									index_y + dy + l,
-									index_z + dz + m);
-
-			   neighbour_it = cells.find(tmp_hash_value);
-
-			   if(neighbour_it != cells.end()){
-				new_box->nb[tmp_index] = (*neighbour_it).second;
+				neighbour_it = cells.find(tmp_hash_value);
+				
+				if(neighbour_it != cells.end()){
+				  new_box->nb[tmp_index] = (*neighbour_it).second;
+				}
+				tmp_index ++;
 			   }
-			   tmp_index ++;
-			 }	  
+		  }
 		} else {
 		  cells[hash_value]->setConfigurationCorner(HGVertexTable[index]);
 		}
@@ -186,12 +191,12 @@ int HashGrid::readPoints(string filename, float scale){
   float max_size = max(max(x_size, y_size), z_size);
 
   //Save needed grid parameters 
-  max_index = (int)ceil( max_size / voxelsize) + 2;
+  max_index = (int)ceil( max_size / voxelsize) + 4;
   max_index_square = max_index * max_index;
 
-  max_index_x = (int)ceil(x_size / voxelsize) + 2;
-  max_index_y = (int)ceil(y_size / voxelsize) + 2;
-  max_index_z = (int)ceil(z_size / voxelsize) + 2;
+  max_index_x = (int)ceil(x_size / voxelsize) + 4;
+  max_index_y = (int)ceil(y_size / voxelsize) + 4;
+  max_index_z = (int)ceil(z_size / voxelsize) + 4;
 
   //Create ANNPointArray
   cout << "##### Creating ANN Points " << endl; 

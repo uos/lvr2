@@ -9,6 +9,8 @@ int main(int argc, char** argv){
   float voxelsize;
   sscanf(argv[2], "%f", &voxelsize);
 
+  system("clear");
+  
   if(argc == 3){
     HashGrid hashGrid(filename, voxelsize);
     hashGrid.writeMesh();

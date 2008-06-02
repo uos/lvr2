@@ -27,6 +27,8 @@ public:
   
 private:
 
+  bool sign(float v){ return v > 0;};
+  
   void getCorners(ColorVertex corners[]);
   void getIntersections(ColorVertex corners[],
 				    DistanceFunction* df,
@@ -40,7 +42,8 @@ private:
     current_color[1] = g;
     current_color[2] = b;
   };
-  
+
+  float distance[8];
   bool configuration[8];
   int indices[12];
 
