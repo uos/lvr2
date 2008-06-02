@@ -1,7 +1,10 @@
 #include "box.h"
 
 Box::Box(){
-  for(int i = 0; i < 8; i++) configuration[i] = false;
+  for(int i = 0; i < 8; i++){
+    configuration[i] = false;
+    distance[i] = 0;
+  }
   for(int i = 0; i < 12; i++) indices[i] = -1;
   for(int i = 0; i < 27; i++) nb[i] = 0;
   voxelsize = 0.0;
@@ -10,7 +13,10 @@ Box::Box(){
 }
 
 Box::Box(const Box &o){
-  for(int i = 0; i < 8; i++) configuration[i] = o.configuration[i];
+  for(int i = 0; i < 8; i++){
+    configuration[i] = o.configuration[i];
+    distance[i] = o.distance[i];
+  }
   for(int i = 0; i < 12; i++) indices[i] = o.indices[i];
   for(int i = 0; i < 27; i++) nb[i] = 0;
   baseVertex = o.baseVertex;
@@ -20,7 +26,10 @@ Box::Box(const Box &o){
 }
 
 Box::Box(Vertex v, float vs){
-  for(int i = 0; i < 8; i++) configuration[i] = false;
+  for(int i = 0; i < 8; i++){
+    configuration[i] = false;
+    distance[i] = 0;
+  }
   for(int i = 0; i < 12; i++) indices[i] = -1;
   for(int i = 0; i < 27; i++) nb[i] = 0;
   uchar r, g, b;
@@ -98,20 +107,18 @@ void Box::getIntersections(ColorVertex corners[],
   d1 = d2 = 0.0;
 
   float intersection;
-  bool ok = true;
-
-  setColor(0, 200, 0);
   
-  //Calc distances
-  float distance[8];
+  setColor(0, 200, 0);
+
+  //Calc distances;
   for(int i = 0; i < 8; i++){
     configuration[i] = false;
-    distance[i] = df->distance(corners[i], 100, 10.0, ok);
-    if(distance[i] > 1.414 * voxelsize) setColor(200, 0, 0);
+    bool ok = true;
+    distance[i] = df->distance(corners[i], 100, 10.0, Z, ok);
     if(distance[i] > 0) configuration[i] = true;
+    if(!ok) setColor(200, 0, 0);
   }
 
-  
   //Front Quad
   intersection = calcIntersection(corners[0].x, corners[1].x, distance[0], distance[1], interpolate);
   intersections[0] = ColorVertex(intersection, corners[0].y, corners[0].z,

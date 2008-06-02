@@ -13,6 +13,7 @@
 
 using namespace std;
 
+typedef enum direction{X, Y, Z};
 
 class DistanceFunction{
 
@@ -20,7 +21,7 @@ public:
   DistanceFunction(ANNpointArray points, int n, int k, bool use_tp = true);
   ~DistanceFunction();
   
-  float distance(const BaseVertex v, int k, float epsilon, bool& ok) const;
+  float distance(const BaseVertex v, int k, float epsilon, direction dir, bool& ok) const;
   int getSign(BaseVertex v, int n); 
 
 private:

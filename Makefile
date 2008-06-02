@@ -1,11 +1,11 @@
 CPP = g++
-CFLAGS = -O2 -Wall -Wno-write-strings
+CFLAGS = -Wall -Wno-write-strings
 AR = ar
 
 BIN = bin/
 OBJ = obj/
 
-OSFLAGS    = -DMAC_OSX # TO DO: AUTO SELECTION
+OSFLAGS    = #-DMAC_OSX # TO DO: AUTO SELECTION
 
 SHOWSRC    = src/show/
 MCSRC      = src/mcubes/
@@ -16,11 +16,11 @@ GSLSRC     = src/gsl/
 NMSRC      = src/newmat/
 TESTSRC    = src/test/
 
-#ifndef MAC_OSX
-GLLIBS     = -lGL -lGLU -lglut -lgltt -lttf -lgle
-#else
+ifeq ($(OSFLAGS), -DMAC_OSX)
 GLLIBS     = -framework OpenGL -framework GLUT
-#endif
+else
+GLLIBS     = -lGL -lGLU -lglut -lgltt -lttf -lgle
+endif
 
 CFLAGS     += -I$(ANNSRC) -I$(GSLSRC)
 CFLAGS     += $(OSFLAGS)
@@ -33,20 +33,18 @@ ANNTARGETS  = $(OBJ)ANN.o $(OBJ)brute.o $(OBJ)kd_tree.o $(OBJ)kd_util.o \
 
 MCTARGETS   = $(OBJ)baseVertex.o $(OBJ)normal.o $(OBJ)colorVertex.o \
               $(OBJ)staticMesh.o $(OBJ)box.o $(OBJ)distanceFunction.o \
-		    $(OBJ)hashGrid.o $(OBJ)tangentPlane.o
+		    $(OBJ)hashGrid.o $(OBJ)tangentPlane.o $(OBJ)simpleGrid.o
 
 SHOWTARGETS = $(OBJ)show.o $(OBJ)camera.o
 
 IOTARGETS   = $(OBJ)fileWriter.o $(OBJ)plyWriter.o $(OBJ)fileReader.o \
-              $(OBJ)plyReader.o
+              $(OBJ)plyReader.o $(OBJ)gotoxy.o
 
 all: mcubes show
 
 mcubes: $(OBJ)libnewmat.a $(OBJ)libANN.a $(OBJ)libgsl.a $(IOTARGETS) $(MCTARGETS)
 	@echo -e "\nCompiling and Linking Marching Cubes Main Programm..."
-	@$(CPP) $(CFLAGS) -o $(BIN)mcubes $(OBJ)libgsl.a $(OBJ)libgslcblas.a \
-                          $(GLLIBS) $(ANNTARGETS) $(MCTARGETS) $(IOTARGETS) \
-                          $(OBJ)libnewmat.a $(MCSRC)main.cc 
+	@$(CPP) $(CFLAGS) -o $(BIN)mcubes $(MCSRC)main.cc $(OBJ)libgsl.a $(OBJ)libgslcblas.a $(GLLIBS) $(ANNTARGETS) $(MCTARGETS) $(IOTARGETS) $(OBJ)libnewmat.a -lgsl 
 	@echo "DONE."
 
 show: $(SHOWTARGETS)
@@ -57,7 +55,7 @@ show: $(SHOWTARGETS)
 
 
 ######################################################################
-# --------------------------- FILE I/O -------------------------------
+# ----------------------------- I/O ----------------------------------
 ######################################################################
 
 $(OBJ)fileWriter.o: $(IOSRC)fileWriter.*
@@ -75,6 +73,10 @@ $(OBJ)fileReader.o: $(IOSRC)fileReader.*
 $(OBJ)plyReader.o: $(IOSRC)plyReader.*
 	@echo "Compiling PLY Reader..."
 	@$(CPP) $(CFLAGS) -c -o $(OBJ)plyReader.o $(IOSRC)plyReader.cc
+
+$(OBJ)gotoxy.o: $(IOSRC)gotoxy.cc
+	@echo "Compiling GotoXY..."
+	@$(CPP) $(CFLAGS) -c -o $(OBJ)gotoxy.o $(IOSRC)gotoxy.cc
 
 ######################################################################
 # -------------------------- PRIMITIVES ------------------------------
@@ -129,6 +131,10 @@ $(OBJ)hashGrid.o: $(MCSRC)hashGrid.*
 	@echo "Compiling Hash Grid..."
 	@$(CPP) $(CFLAGS) -c -o $(OBJ)hashGrid.o $(MCSRC)hashGrid.cc
 
+$(OBJ)simpleGrid.o: $(MCSRC)simpleGrid.cc
+	@echo "Compiling Simple Grid..."
+	@$(CPP) $(CFLAGS) -c -o $(OBJ)simpleGrid.o $(MCSRC)simpleGrid.cc
+
 ######################################################################
 # -------------------------- ANN LIBRARY -----------------------------
 ######################################################################
@@ -141,13 +147,13 @@ $(OBJ)libANN.a: $(OBJ)ANN.o $(OBJ)brute.o $(OBJ)kd_tree.o \
                 $(OBJ)bd_pr_search.o $(OBJ)bd_fix_rad_search.o \
                 $(OBJ)perf.o
 	@echo -e "\nLinking ANN Library... \n"
-	@$(AR) -c -r $(OBJ)libANN.a $(OBJ)ANN.o $(OBJ)brute.o \
-                  $(OBJ)kd_tree.o $(OBJ)kd_util.o \
-                  $(OBJ)kd_split.o $(OBJ)kd_search.o \
-                  $(OBJ)kd_pr_search.o $(OBJ)kd_fix_rad_search.o \
-                  $(OBJ)kd_dump.o $(OBJ)bd_tree.o \
-                  $(OBJ)bd_search.o $(OBJ)bd_pr_search.o \
-                  $(OBJ)bd_fix_rad_search.o $(OBJ)perf.o
+	@$(AR) -c -r -s  $(OBJ)libANN.a $(OBJ)ANN.o $(OBJ)brute.o \
+                  	  $(OBJ)kd_tree.o $(OBJ)kd_util.o \
+                      $(OBJ)kd_split.o $(OBJ)kd_search.o \
+                      $(OBJ)kd_pr_search.o $(OBJ)kd_fix_rad_search.o \
+                      $(OBJ)kd_dump.o $(OBJ)bd_tree.o \
+                      $(OBJ)bd_search.o $(OBJ)bd_pr_search.o \
+                      $(OBJ)bd_fix_rad_search.o $(OBJ)perf.o
 	@ranlib $(OBJ)libANN.a
 
 
@@ -215,10 +221,11 @@ $(OBJ)perf.o: $(ANNSRC)perf.cpp
 $(OBJ)libgsl.a:
 	cd $(GSLSRC); ./configure --disable-shared
 	cd $(GSLSRC); make
+	@ranlib $(GSLSRC).libs/libgsl.a
+	@ranlib $(GSLSRC)cblas/.libs/libgslcblas.a 
 	cp $(GSLSRC).libs/libgsl.a $(OBJ)
-	cp $(GSLSRC)/cblas/.libs/libgslcblas.a $(OBJ)
-	@ranlib $(OBJ)libgsl.a
-	@ranlib $(OBJ)libgslcblas.a
+	cp $(GSLSRC)cblas/.libs/libgslcblas.a $(OBJ)
+
 
 #############################################################
 # NEWMAT LIBRARY
@@ -228,6 +235,8 @@ $(OBJ)libnewmat.a:
 	@cd $(NMSRC); make;
 	@mv $(NMSRC)libnewmat.a $(OBJ)
 	@ranlib $(OBJ)libnewmat.a
+
+
 clean:
 	@echo "Cleaning up..."
 	@rm -f *.*~

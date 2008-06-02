@@ -22,7 +22,7 @@ DistanceFunction::DistanceFunction(ANNpointArray p, int n, int k, bool tp){
 	 TangentPlane p(v, points, point_tree, k);
 	 tangentPlanes.push_back(p);
     }
-    cout << "##### Created Tangent Planes. Number Planes: " << tangentPlanes.size() << endl;
+    cout << "##### Created Tangent Planes. Number of Planes: " << tangentPlanes.size() << endl;
 
     //Create kd-tree with tangent plane centers
     cout << "##### Creating kd-Tree containing tangent plane centers..." << endl;
@@ -37,7 +37,7 @@ DistanceFunction::DistanceFunction(ANNpointArray p, int n, int k, bool tp){
   }
 }
 
-float DistanceFunction::distance(const BaseVertex v, int k, float epsilon, bool &ok) const{
+float DistanceFunction::distance(const BaseVertex v, int k, float epsilon, direction dir, bool &ok) const{
 
   //Get id of nearest tangent plane
   ANNidxArray id = new ANNidx[k];
@@ -65,9 +65,16 @@ float DistanceFunction::distance(const BaseVertex v, int k, float epsilon, bool 
   BaseVertex diff = v - nearest;
 
 
-  //Approximate plane
-  float sign = 0.0, z1 = 0.0, z2 = 0.0;
-  BaseVertex diff1, diff2;
+  //Approximate plane in z-Direction
+  float sign = 0.0;
+  float z1 = 0.0, z2 = 0.0;
+  float y1 = 0.0, y2 = 0.0;
+  float x1 = 0.0, x2 = 0.0;
+  
+  BaseVertex diff1_z, diff2_z;
+  BaseVertex diff1_y, diff2_y;
+  BaseVertex diff1_x, diff2_x;
+  
   Normal normal;
   
   try{
@@ -90,25 +97,92 @@ float DistanceFunction::distance(const BaseVertex v, int k, float epsilon, bool 
   
     C = M * F;
 
-    //cout << "C: " << C(1) << " " << C(2) << " " << C(3) << endl;
-    if(fabs(C(1)) > 0.0001 || fabs(C(2)) > 0.0001 ) ok = false;
-
     //Estimate surface normal
     z1 = C(1) + C(2) * (nearest.x + epsilon) + C(3) * nearest.y;
     z2 = C(1) + C(2) * nearest.x + C(3) * (nearest.y + epsilon);
-
-    diff1 = BaseVertex(nearest.x + epsilon, nearest.y, z1) - nearest;
-    diff2 = BaseVertex(nearest.x, nearest.y + epsilon, z2) - nearest;
-
-    normal  = diff1.cross(diff2);
-
-    //Calculate sign of distance function
-    sign = normal * diff;
+    
+    diff1_z = BaseVertex(nearest.x + epsilon, nearest.y, z1) - nearest;
+    diff2_z = BaseVertex(nearest.x, nearest.y + epsilon, z2) - nearest;
 
   } catch (Exception& e){
     cout << e.what();
   }
 
+
+  try{
+  
+    ColumnVector C(3);
+    ColumnVector F(k);
+    Matrix B(k, 3);
+
+    for(int i = 1; i <= k; i++){
+	 F(i) = points[id[i-1]][1];
+	 B(i, 1) = 1;
+	 B(i, 2) = points[id[i-1]][0];
+	 B(i, 3) = points[id[i-1]][2];
+    }
+    
+    Matrix Bt = B.t();
+    Matrix BtB = Bt * B;
+    Matrix BtBinv = BtB.i();
+    Matrix M = BtBinv * Bt;
+  
+    C = M * F;
+
+    //Estimate surface normal
+    y1 = C(1) + C(2) * (nearest.x + epsilon) + C(3) * nearest.z;
+    y2 = C(1) + C(2) * nearest.x + C(3) * (nearest.z + epsilon);
+    
+    diff1_y = BaseVertex(nearest.x + epsilon, y1, nearest.z) - nearest;
+    diff2_y = BaseVertex(nearest.x, y2, nearest.z + epsilon) - nearest;
+
+  } catch (Exception& e){
+    cout << e.what();
+  }
+
+  try{
+    
+    ColumnVector C(3);
+    ColumnVector F(k);
+    Matrix B(k, 3);
+
+    for(int i = 1; i <= k; i++){
+	 F(i) = points[id[i-1]][0];
+	 B(i, 1) = 1;
+	 B(i, 2) = points[id[i-1]][1];
+	 B(i, 3) = points[id[i-1]][2];
+    }
+    
+    Matrix Bt = B.t();
+    Matrix BtB = Bt * B;
+    Matrix BtBinv = BtB.i();
+    Matrix M = BtBinv * Bt;
+  
+    C = M * F;
+
+    //Estimate surface normal
+    x1 = C(1) + C(2) * (nearest.y + epsilon) + C(3) * nearest.z;
+    x2 = C(1) + C(2) * nearest.y + C(3) * (nearest.z + epsilon);
+    
+    diff1_x = BaseVertex(x1, nearest.y + epsilon, nearest.z) - nearest;
+    diff2_x = BaseVertex(x2, nearest.y, nearest.z + epsilon) - nearest;
+
+  } catch (Exception& e){
+    cout << e.what();
+  }
+
+  if(x1 <= y1 && x1 <= z1){
+    normal = diff1_x.cross(diff2_x);
+  } else if(y1 <= x1 && y1 <= z1){
+    normal = diff1_y.cross(diff2_y);
+  } else if(z1 <= x1 && z1 <= y1){
+    normal = diff1_z.cross(diff2_z);
+  } else {
+    cout << "OHOHOHO" << endl;
+    normal = Normal(0.0, 1.0, 0.0);
+  }
+
+  sign = normal * diff;
   
   //Release memory
   delete[] id;
