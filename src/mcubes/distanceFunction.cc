@@ -134,17 +134,27 @@ float DistanceFunction::distance(const BaseVertex v,
 	 //Estimate surface normal
 	 z1 = C(1) + C(2) * (nearest.x + epsilon) + C(3) * nearest.y;
 	 z2 = C(1) + C(2) * nearest.x + C(3) * (nearest.y + epsilon);
-    
-	 diff1 = BaseVertex(nearest.x + epsilon, nearest.y, z1) - nearest;
-	 diff2 = BaseVertex(nearest.x, nearest.y + epsilon, z2) - nearest;
 
+		 
+	 diff2 = BaseVertex(nearest.x, nearest.y + epsilon, z2) - nearest;
+	 diff1 = BaseVertex(nearest.x + epsilon, nearest.y, z1) - nearest;
+
+	 normal = diff1.cross(diff2);
+
+	 if(v.z <= 0){
+	   normal.x = -normal.x;
+	   normal.y = -normal.y;
+	   normal.z = -normal.z;
+	 }
+	 
     } catch (Exception& e){
 	 //cout << e.what();
 	 cout << "Singular Exception in z-Direction" << endl;
 	 ok = false;
     }
-
-    normal = diff1.cross(diff2);
+    
+    
+    
 
   } else if (dir == Y){
 
@@ -214,7 +224,7 @@ float DistanceFunction::distance(const BaseVertex v,
     
   }
 
-  normal = diff1.cross(diff2);
+  //normal = diff1.cross(diff2);
   sign = normal * diff;
   
   //Release memory
