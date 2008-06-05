@@ -92,6 +92,48 @@ void Box::getCorners(ColorVertex corners[]){
 					  baseVertex.y + voxelsize,
 					  baseVertex.z + voxelsize,
 					  r, g, b);
+
+ //  float vsh = 0.5 * voxelsize;
+
+//   corners[0] = ColorVertex(baseVertex.x - vsh,
+// 					  baseVertex.y - vsh,
+// 					  baseVertex.z - vsh,
+// 					  r, g, b);
+
+//   corners[1] = ColorVertex(baseVertex.x + vsh,
+// 					  baseVertex.y - vsh,
+// 					  baseVertex.z - vsh,
+// 					  r, g, b);
+
+//   corners[2] = ColorVertex(baseVertex.x + vsh,
+// 					  baseVertex.y + vsh,
+// 					  baseVertex.z - vsh,
+// 					  r, g, b);
+
+//   corners[3] = ColorVertex(baseVertex.x - vsh,
+// 					  baseVertex.y + vsh,
+// 					  baseVertex.z - vsh,
+// 					  r, g, b);
+
+//   corners[4] = ColorVertex(baseVertex.x - vsh,
+// 					  baseVertex.y - vsh,
+// 					  baseVertex.z + vsh,
+// 					  r, g, b);
+
+//   corners[5] = ColorVertex(baseVertex.x + vsh,
+// 					  baseVertex.y - vsh,
+// 					  baseVertex.z + vsh,
+// 					  r, g, b);
+
+//   corners[6] = ColorVertex(baseVertex.x + vsh,
+// 					  baseVertex.y + vsh,
+// 					  baseVertex.z + vsh,
+// 					  r, g, b);
+
+//   corners[7] = ColorVertex(baseVertex.x - vsh,
+// 					  baseVertex.y + vsh,
+// 					  baseVertex.z + vsh,
+// 					  r, g, b);
   
 }
 
@@ -110,84 +152,141 @@ void Box::getIntersections(ColorVertex corners[],
   
   setColor(0, 200, 0);
 
+  Normal normal;
+  
   //Calc distances;
   for(int i = 0; i < 8; i++){
     configuration[i] = false;
     bool ok = true;
-    distance[i] = df->distance(corners[i], 100, 10.0, Z, ok);
+    distance[i] = df->distance(corners[i], normal, 500, 1000.0, Z, ok);
     if(distance[i] > 0) configuration[i] = true;
-    if(!ok) setColor(200, 0, 0);
   }
 
+  bool ok;
+
+  float k = 500;
+  
   //Front Quad
+  //distance[0] = df->distance(corners[0], normal, 10, 1000.0, X, ok);
+  //distance[1] = df->distance(corners[1], normal, k, 1000.0, X, ok);
   intersection = calcIntersection(corners[0].x, corners[1].x, distance[0], distance[1], interpolate);
   intersections[0] = ColorVertex(intersection, corners[0].y, corners[0].z,
 						   current_color[0], current_color[1], current_color[2]);
  
+  setColor(0, 200, 0);
 
-
+  //distance[1] = df->distance(corners[1], normal, k, 1000.0, Y, ok);
+  //distance[2] = df->distance(corners[2], normal, k, 1000.0, Y, ok);
   intersection = calcIntersection(corners[1].y, corners[2].y, distance[1], distance[2], interpolate);
   intersections[1] = ColorVertex(corners[1].x, intersection, corners[1].z,
 						   current_color[0], current_color[1], current_color[2]);
 
+  setColor(0, 200, 0);
   
-  
+  //distance[3] = df->distance(corners[3], normal, k, 1000.0, X, ok);
+  //distance[2] = df->distance(corners[2], normal, k, 1000.0, X, ok);
   intersection = calcIntersection(corners[3].x, corners[2].x, distance[3], distance[2], interpolate);
   intersections[2] = ColorVertex(intersection, corners[2].y, corners[2].z,
 						   current_color[0], current_color[1], current_color[2]);
 
-    
+  setColor(0, 200, 0);
+
+  //distance[0] = df->distance(corners[0], normal, k, 1000.0, Y, ok);
+  //distance[3] = df->distance(corners[3], normal, k, 1000.0, Y, ok);
   intersection = calcIntersection(corners[0].y, corners[3].y, distance[0], distance[3], interpolate);
   intersections[3] = ColorVertex(corners[3].x, intersection, corners[3].z,
 						   current_color[0], current_color[1], current_color[2]);
+
+
+  setColor(0, 200, 0);
  
   //Back Quad
+  //distance[4] = df->distance(corners[4], normal, k, 1000.0, X, ok);
+  //distance[5] = df->distance(corners[5], normal, k, 1000.0, X, ok);
   intersection = calcIntersection(corners[4].x, corners[5].x, distance[4], distance[5], interpolate);
   intersections[4] = ColorVertex(intersection, corners[4].y, corners[4].z,
 						   current_color[0], current_color[1], current_color[2]);
-  
+
+  setColor(0, 200, 0);
+
+  //distance[5] = df->distance(corners[5], normal, k, 1000.0, Y, ok);
+  //distance[6] = df->distance(corners[6], normal, k, 1000.0, Y, ok);
   intersection = calcIntersection(corners[5].y, corners[6].y, distance[5], distance[6], interpolate);
   intersections[5] = ColorVertex(corners[5].x, intersection, corners[5].z,
 						   current_color[0], current_color[1], current_color[2]);
 
-    
+  setColor(0, 200, 0);
+
+  //distance[6] = df->distance(corners[6], normal, k, 1000.0, X, ok);
+  //distance[7] = df->distance(corners[7], normal, k, 1000.0, X, ok);
   intersection = calcIntersection(corners[7].x, corners[6].x, distance[7], distance[6], interpolate);
   intersections[6] = ColorVertex(intersection, corners[6].y, corners[6].z,
 						   current_color[0], current_color[1], current_color[2]);
-  
- 
+
+  setColor(0, 200, 0);
+
+  // distance[4] = df->distance(corners[4], normal, k, 1000.0, Y, ok);
+  //distance[7] = df->distance(corners[7], normal, k, 1000.0, Y, ok);
   intersection = calcIntersection(corners[4].y, corners[7].y, distance[4], distance[7], interpolate);
   intersections[7] = ColorVertex(corners[7].x, intersection, corners[7].z,
 						   current_color[0], current_color[1], current_color[2]);
  
   
   //Sides
+  //distance[0] = df->distance(corners[0], normal, k, 1000.0, Z, ok);
+  //distance[4] = df->distance(corners[4], normal, k, 1000.0, Z, ok);
   intersection = calcIntersection(corners[0].z, corners[4].z, distance[0], distance[4], interpolate);
   intersections[8] = ColorVertex(corners[0].x, corners[0].y, intersection,
 						   current_color[0], current_color[1], current_color[2]); 
 
+  setColor(0, 200, 0);
+  
+  //distance[1] = df->distance(corners[1], normal, k, 1000.0, Z, ok);
+  //distance[5] = df->distance(corners[5], normal, k, 1000.0, Z, ok);
   intersection = calcIntersection(corners[1].z, corners[5].z, distance[1], distance[5], interpolate);
   intersections[9] = ColorVertex(corners[1].x, corners[1].y, intersection,
-						   current_color[0], current_color[1], current_color[2]); 
+						   current_color[0], current_color[1], current_color[2]);
 
+  setColor(0, 200, 0);
+
+  //distance[3] = df->distance(corners[3], normal, k, 1000.0, Z, ok);
+  //distance[7] = df->distance(corners[7], normal, k, 1000.0, Z, ok);
   intersection = calcIntersection(corners[3].z, corners[7].z, distance[3], distance[7], interpolate);
   intersections[10] = ColorVertex(corners[3].x, corners[3].y, intersection,
-						    current_color[0], current_color[1], current_color[2]); 
+						    current_color[0], current_color[1], current_color[2]);
 
+  setColor(0, 200, 0);
+
+  //distance[2] = df->distance(corners[2], normal, k, 1000.0, Z, ok);
+  //distance[6] = df->distance(corners[6], normal, k, 1000.0, Z, ok);
   intersection = calcIntersection(corners[2].z, corners[6].z, distance[2], distance[6], interpolate);
   intersections[11] = ColorVertex(corners[2].x, corners[2].y, intersection,
 						    current_color[0], current_color[1], current_color[2]);
 
+  setColor(0, 200, 0);
 
-
-
+  //for(int i = 0; i < 8; i++) if(distance[i] >= 0) configuration[i] = true; else configuration[i] = false;
   
 }
 
 float Box::calcIntersection(float x1, float x2,
 					   float d1, float d2, bool interpolate){
 
-  return x2 - d2 * (x1 - x2) / (d1 - d2);
+  //float intersection = x2 - d2 * (x1 - x2) / (d1 - d2);
+  
+  float intersection = x1 - d1 * (x2 - x1) / (d2 - d1);
+  
+//   if(intersection < x1) setColor(200, 0, 0);
+//   if(intersection > x2) setColor(0, 0, 200)
+
+  //cout << x1 << " " << x2 << " " << d1 << " " << d2 << " " << intersection << endl;
+
+  if( (d1 > 0 && d2 > 0) || (d1 < 0 && d2 < 0) ){
+	 //setColor(200, 0, 0);
+	 return x1 + 0.5 * voxelsize;
+    }
+  
+  return intersection;
   
 }
 

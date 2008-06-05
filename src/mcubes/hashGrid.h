@@ -39,6 +39,7 @@ private:
   int getFieldsPerLine(string filename);
   
   inline int hashValue(int j, int j, int k);
+  inline int calcIndex(float f);
 
   hash_map<int, Box*> cells;
   
@@ -77,6 +78,10 @@ private:
 
 inline int HashGrid::hashValue(int i, int j, int k){
   return i * max_index_square + j * max_index + k;
+}
+
+inline int HashGrid::calcIndex(float f){
+  return f < 0 ? f-.5:f+.5;
 }
 
 #endif

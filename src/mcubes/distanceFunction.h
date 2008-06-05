@@ -2,11 +2,13 @@
 #define __DISTANCE_FUNCTION_H__
 
 #include <iostream>
+#include <fstream>
 #include <vector>
 
 #include <ANN/ANN.h>
 
 #include "../mesh/baseVertex.h"
+#include "../mesh/colorVertex.h"
 #include "../newmat/newmat.h"
 
 #include "tangentPlane.h"
@@ -21,11 +23,13 @@ public:
   DistanceFunction(ANNpointArray points, int n, int k, bool use_tp = true);
   ~DistanceFunction();
   
-  float distance(const BaseVertex v, int k, float epsilon, direction dir, bool& ok) const;
+  float distance(const BaseVertex v, Normal &n, int k, float epsilon, direction dir, bool& ok) const;
+  void  distance(ColorVertex vertices[], float distances[], int k, float epsilon);
+  
   int getSign(BaseVertex v, int n); 
 
 private:
-
+  
   void createTangentPlanes();
 
   ANNkd_tree* point_tree;
@@ -39,6 +43,8 @@ private:
   bool create_tangent_planes;
 
   vector<TangentPlane> tangentPlanes;
+  vector<Normal> normals;
+  
 };
 
 #endif

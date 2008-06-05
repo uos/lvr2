@@ -40,9 +40,8 @@ void HashGrid::createGrid(){
 
   //Current indices
   int index_x, index_y, index_z;
-  int index, tmp_index;
   int dx, dy, dz;
-  int hash_value, tmp_hash_value;
+  int hash_value;
   
 
   //Iterators
@@ -51,67 +50,38 @@ void HashGrid::createGrid(){
   
   for(int i = 0; i < number_of_points; i++){
 
-    index_x = (int)((points[i][0] - xmin) / voxelsize);
-    index_y = (int)((points[i][1] - ymin) / voxelsize);
-    index_z = (int)((points[i][2] - zmin) / voxelsize);
 
-    index = -1;
+    index_x = calcIndex((points[i][0] - xmin) / voxelsize);
+    index_y = calcIndex((points[i][1] - ymin) / voxelsize);
+    index_z = calcIndex((points[i][2] - zmin) / voxelsize);
+    
+    
+    //for(int j = 0; j < 8; j++){
 
-    //Check if current cell is already part of the
-    //grid. If it is not, insert it and update all
-    //available neighbours
-    for(dx = -1; dx < 1; dx++){
-	 for(dy = -1; dy < 1; dy++){
-	   for(dz = -1; dz < 1; dz++){
+    //dx = HGCreateTable[j][0];
+    //dy = HGCreateTable[j][1];
+    //dz = HGCreateTable[j][2];
 
-		index++;
+    for(dx = -1; dx < 1; dx++)
+	 for(dy = -1; dy < 1; dy++)
+	   for(dz = -1; dz < 1; dz++){ 
+    
 		hash_value = hashValue(index_x + dx,
 						   index_y + dy,
 						   index_z + dz);
 		
 		it = cells.find(hash_value);
 		if(it == cells.end()){
-
-
-		  
-		  //Create new cell
-		  if(index == 7){
-		    Box* new_box = new Box(Vertex((index_x + dx) * voxelsize + xmin,
-								    (index_y + dy) * voxelsize + ymin,
-								    (index_z + dz) * voxelsize + zmin), voxelsize);
-
-		    //Set correct corner of cell
-		    new_box->setConfigurationCorner(HGVertexTable[index]);
-		    
-		    //Save Cell
-		    cells[hash_value] = new_box;
-
-		    //Set cell corners of affected neighbours
-		    tmp_index = 0;
-		    for(int k = -1; k < 2; k++)
-			 for(int l = -1; l < 2; l++)
-			   for(int m = -1; m < 2; m++){
-
-				tmp_hash_value = hashValue(index_x + dx + k,
-									  index_y + dy + l,
-									  index_z + dz + m);
-
-				neighbour_it = cells.find(tmp_hash_value);
-				
-				if(neighbour_it != cells.end()){
-				  new_box->nb[tmp_index] = (*neighbour_it).second;
-				}
-				tmp_index ++;
-			   }
-		  }
-		} else {
-		  cells[hash_value]->setConfigurationCorner(HGVertexTable[index]);
+		  Box* new_box = new Box(Vertex((index_x + dx) * voxelsize + xmin,
+								  (index_y + dy) * voxelsize + ymin,
+								  (index_z + dz) * voxelsize + zmin), voxelsize);
+		  cells[hash_value] = new_box;
 		}
-	   } //dz
-	 } //dy
-    } //dx
+	   }
+	   
+}
     
-  }
+  
   
   cout << "##### Finished Grid Creation. Number of generated cells: " << cells.size() << endl;
 }
@@ -123,12 +93,15 @@ void HashGrid::createMesh(){
   hash_map<int, Box*>::iterator it;
   Box* b;
   int global_index = 0;
+  int c = 0;
   
   for(it = cells.begin(); it != cells.end(); it++){
+    if(c % 1000 == 0) cout << "##### Iterating Cells... " << c << " / " << cells.size() << endl;;
     b = it->second;
     global_index = b->getApproximation(global_index,
 							    mesh,
 							    distance_function);
+    c++;
   }
 
   cout << "##### Finished Mesh Generation..." << endl;
@@ -194,9 +167,9 @@ int HashGrid::readPoints(string filename, float scale){
   max_index = (int)ceil( max_size / voxelsize) + 4;
   max_index_square = max_index * max_index;
 
-  max_index_x = (int)ceil(x_size / voxelsize) + 4;
-  max_index_y = (int)ceil(y_size / voxelsize) + 4;
-  max_index_z = (int)ceil(z_size / voxelsize) + 4;
+  max_index_x = (int)ceil(x_size / voxelsize) + 1;
+  max_index_y = (int)ceil(y_size / voxelsize) + 2;
+  max_index_z = (int)ceil(z_size / voxelsize) + 3;
 
   //Create ANNPointArray
   cout << "##### Creating ANN Points " << endl; 

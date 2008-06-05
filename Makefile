@@ -40,7 +40,7 @@ SHOWTARGETS = $(OBJ)show.o $(OBJ)camera.o
 IOTARGETS   = $(OBJ)fileWriter.o $(OBJ)plyWriter.o $(OBJ)fileReader.o \
               $(OBJ)plyReader.o $(OBJ)gotoxy.o
 
-all: mcubes show
+all: mcubes show test
 
 mcubes: $(OBJ)libnewmat.a $(OBJ)libANN.a $(OBJ)libgsl.a $(IOTARGETS) $(MCTARGETS)
 	@echo -e "\nCompiling and Linking Marching Cubes Main Programm..."
@@ -53,6 +53,9 @@ show: $(SHOWTARGETS)
                              $(MCTARGETS) $(IOTARGETS) $(GLLIBS) $(ANNTARGETS) $(OBJ)libnewmat.a $(OBJ)libgsl.a $(OBJ)libgslcblas.a
 	@echo "DONE."
 
+test: $(TESTSRC)normals.cc
+	@echo "Complining and linking normal test program..."
+	@$(CPP) $(CFLAGS) -o $(BIN)normals  $(TESTSRC)normals.cc $(MCTARGETS) $(IOTARGETS) $(GLLIBS) $(ANNTARGETS) $(OBJ)libnewmat.a $(OBJ)libgsl.a $(OBJ)libgslcblas.a
 
 ######################################################################
 # ----------------------------- I/O ----------------------------------

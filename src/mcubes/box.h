@@ -3,6 +3,7 @@
 
 #include "tables.h"
 #include "distanceFunction.h"
+
 #include "../mesh/colorVertex.h"
 #include "../mesh/staticMesh.h"
 

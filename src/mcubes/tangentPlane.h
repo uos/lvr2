@@ -2,7 +2,6 @@
 #define __TANGENT_PLANE_H__
 
 #include <ANN/ANN.h>
-
 #include <iostream>
 #include <vector>
 using namespace std;
@@ -11,6 +10,7 @@ using namespace std;
 #include <gsl/gsl_eigen.h>
 #include <gsl/gsl_matrix.h>
 
+#include "../newmat/newmat.h"
 #include "../mesh/baseVertex.h"
 #include "../mesh/normal.h"
 
