@@ -33,7 +33,8 @@ ANNTARGETS  = $(OBJ)ANN.o $(OBJ)brute.o $(OBJ)kd_tree.o $(OBJ)kd_util.o \
 
 MCTARGETS   = $(OBJ)baseVertex.o $(OBJ)normal.o $(OBJ)colorVertex.o \
               $(OBJ)staticMesh.o $(OBJ)box.o $(OBJ)distanceFunction.o \
-		    $(OBJ)hashGrid.o $(OBJ)tangentPlane.o $(OBJ)simpleGrid.o
+		    $(OBJ)hashGrid.o $(OBJ)tangentPlane.o $(OBJ)simpleGrid.o \
+		    $(OBJ)interpolator.o
 
 SHOWTARGETS = $(OBJ)show.o $(OBJ)camera.o
 
@@ -137,6 +138,10 @@ $(OBJ)hashGrid.o: $(MCSRC)hashGrid.*
 $(OBJ)simpleGrid.o: $(MCSRC)simpleGrid.cc
 	@echo "Compiling Simple Grid..."
 	@$(CPP) $(CFLAGS) -c -o $(OBJ)simpleGrid.o $(MCSRC)simpleGrid.cc
+
+$(OBJ)interpolator.o: $(MCSRC)interpolator.cc
+	@echo "Compiling Interpolator..."
+	@$(CPP) $(CFLAGS) -c -o $(OBJ)interpolator.o $(MCSRC)interpolator.cc
 
 ######################################################################
 # -------------------------- ANN LIBRARY -----------------------------

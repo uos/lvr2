@@ -18,7 +18,7 @@ SimpleGrid::SimpleGrid(string filename, float v, float scale){
   number_of_points = readPoints(filename, scale);
 
   //Create Distance Function
-  distance_function = new DistanceFunction(points, number_of_points, 10, true);
+  distance_function = new DistanceFunction(points, number_of_points, 10, false);
 
   //Create Mesh
   createMesh();
@@ -127,7 +127,7 @@ void SimpleGrid::createMesh(){
 	   z = k * voxelsize + zmin;
 
 	   //cout << x << " " << y << " " << z << endl;
-	   
+
 	   createCorners(corners, BaseVertex(x, y, z));
 	   createIntersections(corners, distance_function, intersections);
 
@@ -234,9 +234,15 @@ void SimpleGrid::createIntersections(ColorVertex corners[],
   uchar current_color[] = {0, 200, 0};
 
   float intersection;
+
+  Normal normal;
   
-  //Calc distances;
-  df->distance(corners, distance, 1, 1);
+ //Calc distances;
+  for(int i = 0; i < 8; i++){
+    configuration[i] = false;
+    bool ok = true;
+    distance[i] = df->distance(corners[i], normal, 500, 1000.0, Z, ok);
+  }
   
   //Front Quad
   intersection = calcIntersection(corners[0].x, corners[1].x, distance[0], distance[1], interpolate);
