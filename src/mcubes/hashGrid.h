@@ -5,6 +5,7 @@
 #include "../mesh/staticMesh.h"
 #include "tables.h"
 #include "distanceFunction.h"
+#include "interpolator.h"
 #include "box.h"
 
 
@@ -72,7 +73,8 @@ private:
   int max_index_z;
 
   //Distance function
-  DistanceFunction* distance_function;
+  //DistanceFunction distance_function
+  Interpolator* interpolator;
   
 };
 

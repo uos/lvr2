@@ -138,7 +138,7 @@ void Box::getCorners(ColorVertex corners[]){
 }
 
 void Box::getIntersections(ColorVertex corners[],
-					  DistanceFunction* df,
+					  Interpolator* df,
 					  ColorVertex intersections[]){
 
   approx_ok = true;
@@ -158,7 +158,7 @@ void Box::getIntersections(ColorVertex corners[],
   for(int i = 0; i < 8; i++){
     configuration[i] = false;
     bool ok = true;
-    distance[i] = df->distance(corners[i], normal, 500, 1000.0, Z, ok);
+    distance[i] = df->distance(corners[i]);
     if(distance[i] > 0) configuration[i] = true;
   }
 
@@ -291,7 +291,7 @@ float Box::calcIntersection(float x1, float x2,
 }
 
 int Box::getApproximation(int globalIndex, StaticMesh &mesh,
-					 DistanceFunction* dst_func){
+					 Interpolator* dst_func){
 
   ColorVertex corners[8];
   ColorVertex intersections[12];

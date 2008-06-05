@@ -3,6 +3,7 @@
 
 #include "tables.h"
 #include "distanceFunction.h"
+#include "interpolator.h"
 
 #include "../mesh/colorVertex.h"
 #include "../mesh/staticMesh.h"
@@ -17,7 +18,7 @@ public:
   
   int getApproximation(int globalIndex,
 				   StaticMesh &mesh,
-				   DistanceFunction* df);
+				   Interpolator* df);
 			    
   void setConfigurationCorner(int i) {configuration[i] = true;};
   int getIndex() const;
@@ -32,7 +33,7 @@ private:
   
   void getCorners(ColorVertex corners[]);
   void getIntersections(ColorVertex corners[],
-				    DistanceFunction* df,
+				    Interpolator* df,
 				    ColorVertex intersections[]);
 
   float calcIntersection(float x1, float x2,

@@ -18,7 +18,8 @@ HashGrid::HashGrid(string filename, float v, float scale){
   number_of_points = readPoints(filename, scale);
 
   //Create Distance Function
-  distance_function = new DistanceFunction(points, number_of_points, 10, false);
+  //distance_function = new DistanceFunction(points, number_of_points, 10, false);
+  interpolator = new Interpolator(points, number_of_points, 10, 10, 100.0);
 
   //Create Grid
   createGrid();
@@ -56,15 +57,15 @@ void HashGrid::createGrid(){
     index_z = calcIndex((points[i][2] - zmin) / voxelsize);
     
     
-    //for(int j = 0; j < 8; j++){
+    for(int j = 0; j < 8; j++){
 
-    //dx = HGCreateTable[j][0];
-    //dy = HGCreateTable[j][1];
-    //dz = HGCreateTable[j][2];
+    dx = HGCreateTable[j][0];
+    dy = HGCreateTable[j][1];
+    dz = HGCreateTable[j][2];
 
-    for(dx = -1; dx < 1; dx++)
-	 for(dy = -1; dy < 1; dy++)
-	   for(dz = -1; dz < 1; dz++){ 
+ //    for(dx = -1; dx < 1; dx++)
+// 	 for(dy = -1; dy < 1; dy++)
+// 	   for(dz = -1; dz < 1; dz++){ 
     
 		hash_value = hashValue(index_x + dx,
 						   index_y + dy,
@@ -100,7 +101,7 @@ void HashGrid::createMesh(){
     b = it->second;
     global_index = b->getApproximation(global_index,
 							    mesh,
-							    distance_function);
+							    interpolator);
     c++;
   }
 
@@ -164,7 +165,7 @@ int HashGrid::readPoints(string filename, float scale){
   float max_size = max(max(x_size, y_size), z_size);
 
   //Save needed grid parameters 
-  max_index = (int)ceil( max_size / voxelsize) + 4;
+  max_index = (int)ceil( (max_size + 5 * voxelsize) / voxelsize);
   max_index_square = max_index * max_index;
 
   max_index_x = (int)ceil(x_size / voxelsize) + 1;

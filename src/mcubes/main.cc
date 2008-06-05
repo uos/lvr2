@@ -15,8 +15,8 @@ int main(int argc, char** argv){
   if(argc == 3){
     HashGrid hashGrid(filename, voxelsize);
     hashGrid.writeMesh();
-    // SimpleGrid simpleGrid(filename, voxelsize);
-//     simpleGrid.writeMesh();
+    //SimpleGrid simpleGrid(filename, voxelsize);
+    //simpleGrid.writeMesh();
     
   } else if(argc == 4){
 

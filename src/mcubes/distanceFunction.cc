@@ -152,7 +152,7 @@ float DistanceFunction::distance(const BaseVertex v,
 	 cout << "Singular Exception in z-Direction" << endl;
 	 ok = false;
     }
-    
+      
     
     
 
@@ -184,6 +184,14 @@ float DistanceFunction::distance(const BaseVertex v,
 	 diff1 = BaseVertex(nearest.x + epsilon, z1, nearest.z) - nearest;
 	 diff2 = BaseVertex(nearest.x, z2, nearest.z + epsilon) - nearest;
 
+	 normal = diff1.cross(diff2);
+	 
+	 if(v.y <= 0){
+	   normal.x = -normal.x;
+	   normal.y = -normal.y;
+	   normal.z = -normal.z;
+	 }
+	 
     } catch (Exception& e){
 	 cout << "Singular Exception in y-Direction" << endl;
 	 ok = false;
@@ -217,6 +225,14 @@ float DistanceFunction::distance(const BaseVertex v,
 	 diff1 = BaseVertex(z1, nearest.y + epsilon, nearest.z) - nearest;
 	 diff2 = BaseVertex(z2, nearest.y, nearest.z + epsilon) - nearest;
 
+	 normal = diff1.cross(diff2);
+	 
+	 if(v.z <= 0){
+	   normal.x = -normal.x;
+	   normal.y = -normal.y;
+	   normal.z = -normal.z;
+	 }
+	 
     } catch (Exception& e){
 	  cout << "Singular Exception in x-Direction" << endl;
 	  ok = false;
