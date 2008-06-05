@@ -149,6 +149,7 @@ void MCShow::initDisplayLists(){
     point_display_list = glGenLists(1);
     glDisable(GL_LIGHTING);
     glNewList(point_display_list, GL_COMPILE);
+    glPointSize(4.0);
     glBegin(GL_POINTS);
     glColor3f(0.0, 1.0, 0.0);
     for(size_t i = 0; i < points.size(); i++){
@@ -157,14 +158,16 @@ void MCShow::initDisplayLists(){
 			  points[i][2]);
     }
     glEnd();
+    glPointSize(1.0);
     glEnable(GL_LIGHTING);
     glEndList();
   }
 
-  //Compili normal list
+  //Compile normal list
   if(renderNormals){
     normal_display_list = glGenLists(1);
     glNewList(normal_display_list, GL_COMPILE);
+    glLineWidth(1.5);
     for(size_t i = 0; i < normals.size(); i++){
 	 glBegin(GL_LINES);
 	 glColor3f(1.0, 0.0, 0.0);
@@ -177,6 +180,7 @@ void MCShow::initDisplayLists(){
 			  
 	 glEnd();
     }
+    glLineWidth(1.0);
     glEndList();
   
   }
@@ -332,20 +336,23 @@ void MCShow::render(){
 
   glLineWidth(2.0);
   glBegin(GL_LINES);
-  glColor3f(1.0, 0.0, 0.0);
+  glColor3f(0.0, 0.0, 0.0);
   glVertex3f(-1000, 0, 0);
+  glColor3f(1.0, 0.0, 0.0);
   glVertex3f(+1000, 0, 0);
   glEnd();
 
   glBegin(GL_LINES);
   glColor3f(0.0, 1.0, 0.0);
   glVertex3f(0, +1000, 0);
+  glColor3f(0.0, 0.0, 0.0);
   glVertex3f(0, -1000, 0);
   glEnd();
 
   glBegin(GL_LINES);
   glColor3f(0.0, 0.0, 1.0);
   glVertex3f(0, 0, +1000);
+  glColor3f(0.0, 0.0, 0.0);
   glVertex3f(0, 0, -1000);
   glEnd();  
   

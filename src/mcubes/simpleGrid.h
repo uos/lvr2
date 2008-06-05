@@ -24,6 +24,15 @@ public:
 private:
 
   void createMesh();
+  void createCorners(ColorVertex*, BaseVertex);
+  void createIntersections(ColorVertex corners[],
+					  DistanceFunction* df,
+					  ColorVertex intersections[]);
+
+  int calcIndex() const;
+
+  float calcIntersection(float x1, float x2,
+					float d1, float d2, bool interpolate);
   
   StaticMesh mesh;
   
@@ -46,6 +55,12 @@ private:
   int max_index_z;
 
   int number_of_points;
+
+
+  ColorVertex corners[8];
+  ColorVertex intersections[12];
+  float distance[8];
+  bool configuration[8];
   
   ANNpointArray points;
   
