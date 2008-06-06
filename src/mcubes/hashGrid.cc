@@ -19,7 +19,7 @@ HashGrid::HashGrid(string filename, float v, float scale){
 
   //Create Distance Function
   //distance_function = new DistanceFunction(points, number_of_points, 10, false);
-  interpolator = new Interpolator(points, number_of_points, 10, 10, 100.0);
+  interpolator = new Interpolator(points, number_of_points, 200, 200, 100.0);
 
   //Create Grid
   createGrid();
@@ -57,15 +57,15 @@ void HashGrid::createGrid(){
     index_z = calcIndex((points[i][2] - zmin) / voxelsize);
     
     
-    for(int j = 0; j < 8; j++){
+  //   for(int j = 0; j < 8; j++){
 
-    dx = HGCreateTable[j][0];
-    dy = HGCreateTable[j][1];
-    dz = HGCreateTable[j][2];
+//     dx = HGCreateTable[j][0];
+//     dy = HGCreateTable[j][1];
+//     dz = HGCreateTable[j][2];
 
- //    for(dx = -1; dx < 1; dx++)
-// 	 for(dy = -1; dy < 1; dy++)
-// 	   for(dz = -1; dz < 1; dz++){ 
+    for(dx = -1; dx < 2; dx++)
+	 for(dy = -1; dy < 2; dy++)
+	   for(dz = -1; dz < 2; dz++){ 
     
 		hash_value = hashValue(index_x + dx,
 						   index_y + dy,
@@ -79,6 +79,21 @@ void HashGrid::createGrid(){
 		  cells[hash_value] = new_box;
 		}
 	   }
+
+  
+    
+    // hash_value = hashValue(index_x,
+// 					  index_y,
+// 					  index_z);
+    
+//     it = cells.find(hash_value);
+//     if(it == cells.end()){
+// 	 Box* new_box = new Box(Vertex(index_x * voxelsize + xmin,
+// 							 index_y * voxelsize + ymin,
+// 							 index_z * voxelsize + zmin), voxelsize);
+// 	 cells[hash_value] = new_box;
+//     }
+  
 	   
 }
     
@@ -217,6 +232,35 @@ void HashGrid::writeBorders(){
   }
 
   out.close();
+}
+
+void HashGrid::writeGrid(){
+
+  cout << "##### Writing 'grid.hg'" << endl;
+
+  ofstream out("grid.hg");
+
+  out << number_of_points << endl;
+
+  for(int i = 0; i < number_of_points; i++){
+    out << points[i][0] << " " <<  points[i][1] << " " << points[i][2] << endl;
+  }
+
+  ColorVertex corners[8];
+  hash_map<int, Box*>::iterator it;
+  Box* box;
+  uchar r, g, b;
+  
+  for(it = cells.begin(); it != cells.end(); it++){
+    box = it->second;
+    box->getCorners(corners);
+    for(int i = 0; i < 8; i++){
+	 r = g = b = 0.0;
+	 if(box->configuration[i]) r = 255; else b = 255;
+	 out << corners[i].x << " " << corners[i].y << " " << corners[i].z << " "
+		<< r << " " << g << " " << b << endl;
+    }
+  }
   
 }
 
@@ -241,3 +285,4 @@ int HashGrid::getFieldsPerLine(string filename){
 
   return c;
 }
+

@@ -21,17 +21,18 @@ public:
 				   Interpolator* df);
 			    
   void setConfigurationCorner(int i) {configuration[i] = true;};
+  void getCorners(ColorVertex corners[]);
   int getIndex() const;
   ColorVertex getBaseCorner() const{ return baseVertex;};
 
   Box* nb[27];
 
   
-private:
+  //private:
 
   bool sign(float v){ return v > 0;};
   
-  void getCorners(ColorVertex corners[]);
+
   void getIntersections(ColorVertex corners[],
 				    Interpolator* df,
 				    ColorVertex intersections[]);

@@ -26,7 +26,9 @@ Interpolator::Interpolator(ANNpointArray pts, int n,
 
   ANNidxArray id = new ANNidx[k_initial];
   ANNdistArray di = new ANNdist[k_initial];
-   
+
+  normals = new Normal[number_of_points];
+
   for(int i = 0; i < number_of_points; i++){
 
     //Create vertex representation of current point
@@ -43,6 +45,7 @@ Interpolator::Interpolator(ANNpointArray pts, int n,
 	 B(j, 3) = points[id[j-1]][1];
     }
 
+    try{
     //Solve it
     Matrix Bt = B.t();
     Matrix BtB = Bt * B;
@@ -66,12 +69,17 @@ Interpolator::Interpolator(ANNpointArray pts, int n,
 	 normal.z = -normal.z;
     }
     
-    normals.push_back(normal);
-
+    //normals.push_back(normal);
+    normals[i] = normal;
+    } catch (Exception& e){
+	 
+    }
+    
     if(i % 10000 == 0) cout << "##### Estimating normals..." << i << " / " << number_of_points << endl;
   
   }
-
+ 
+  
   cout << "##### Interpolating normals..." << endl;
 
   float x, y, z;

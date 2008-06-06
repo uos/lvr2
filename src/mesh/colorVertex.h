@@ -29,13 +29,19 @@ public:
 };
 
 inline ostream& operator<<(ostream& os, const ColorVertex v){
-  os << "Color Vertex: " << v.x << " " << v.y << " " << v.z << endl;
+  int r, g, b;
+  r = (int)v.r;
+  g = (int)v.g;
+  b = (int)v.b;
+  
+  os << "Color Vertex: " << v.x << " " << v.y << " " << v.z << " " 
+	<< r << " " << g << " " << b << endl;
   return os;
 }
 
 inline void ColorVertex::render(){
-  //glColor3f(r, g, b);
-  glVertex3f(x, y, -z);
+  //glColor3f(r / 255.0, g / 255.0, b / 255.0);
+  glVertex3f(x, y, z);
 }
 
 #endif

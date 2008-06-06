@@ -28,6 +28,7 @@ public:
   ~HashGrid();
   
   void writeMesh();
+  void writeGrid();
   void writeBorders();
   
 private:
