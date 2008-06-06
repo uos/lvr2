@@ -56,84 +56,84 @@ void Box::getCorners(ColorVertex corners[]){
   //BaseVertex shift(200, 200, 200);
   // baseVertex += shift;
   
-  corners[0] = ColorVertex(baseVertex);
+  // corners[0] = ColorVertex(baseVertex);
 
-  corners[1] = ColorVertex(baseVertex.x + voxelsize,
-					  baseVertex.y,
-					  baseVertex.z,
+//   corners[1] = ColorVertex(baseVertex.x + voxelsize,
+// 					  baseVertex.y,
+// 					  baseVertex.z,
+// 					  r, g, b);
+
+//   corners[2] = ColorVertex(baseVertex.x + voxelsize,
+// 					  baseVertex.y + voxelsize,
+// 					  baseVertex.z,
+// 					  r, g, b);
+
+//   corners[3] = ColorVertex(baseVertex.x,
+// 					  baseVertex.y + voxelsize,
+// 					  baseVertex.z,
+// 					  r, g, b);
+
+//   corners[4] = ColorVertex(baseVertex.x,
+// 					  baseVertex.y,
+// 					  baseVertex.z + voxelsize,
+// 					  r, g, b);
+
+//   corners[5] = ColorVertex(baseVertex.x + voxelsize,
+// 					  baseVertex.y,
+// 					  baseVertex.z + voxelsize,
+// 					  r, g, b);
+
+//   corners[6] = ColorVertex(baseVertex.x + voxelsize,
+// 					  baseVertex.y + voxelsize,
+// 					  baseVertex.z + voxelsize,
+// 					  r, g, b);
+
+//   corners[7] = ColorVertex(baseVertex.x,
+// 					  baseVertex.y + voxelsize,
+// 					  baseVertex.z + voxelsize,
+// 					  r, g, b);
+
+  float vsh = 0.5 * voxelsize;
+
+  corners[0] = ColorVertex(baseVertex.x - vsh,
+					  baseVertex.y - vsh,
+					  baseVertex.z - vsh,
 					  r, g, b);
 
-  corners[2] = ColorVertex(baseVertex.x + voxelsize,
-					  baseVertex.y + voxelsize,
-					  baseVertex.z,
+  corners[1] = ColorVertex(baseVertex.x + vsh,
+					  baseVertex.y - vsh,
+					  baseVertex.z - vsh,
 					  r, g, b);
 
-  corners[3] = ColorVertex(baseVertex.x,
-					  baseVertex.y + voxelsize,
-					  baseVertex.z,
+  corners[2] = ColorVertex(baseVertex.x + vsh,
+					  baseVertex.y + vsh,
+					  baseVertex.z - vsh,
 					  r, g, b);
 
-  corners[4] = ColorVertex(baseVertex.x,
-					  baseVertex.y,
-					  baseVertex.z + voxelsize,
+  corners[3] = ColorVertex(baseVertex.x - vsh,
+					  baseVertex.y + vsh,
+					  baseVertex.z - vsh,
 					  r, g, b);
 
-  corners[5] = ColorVertex(baseVertex.x + voxelsize,
-					  baseVertex.y,
-					  baseVertex.z + voxelsize,
+  corners[4] = ColorVertex(baseVertex.x - vsh,
+					  baseVertex.y - vsh,
+					  baseVertex.z + vsh,
 					  r, g, b);
 
-  corners[6] = ColorVertex(baseVertex.x + voxelsize,
-					  baseVertex.y + voxelsize,
-					  baseVertex.z + voxelsize,
+  corners[5] = ColorVertex(baseVertex.x + vsh,
+					  baseVertex.y - vsh,
+					  baseVertex.z + vsh,
 					  r, g, b);
 
-  corners[7] = ColorVertex(baseVertex.x,
-					  baseVertex.y + voxelsize,
-					  baseVertex.z + voxelsize,
+  corners[6] = ColorVertex(baseVertex.x + vsh,
+					  baseVertex.y + vsh,
+					  baseVertex.z + vsh,
 					  r, g, b);
 
- //  float vsh = 0.5 * voxelsize;
-
-//   corners[0] = ColorVertex(baseVertex.x - vsh,
-// 					  baseVertex.y - vsh,
-// 					  baseVertex.z - vsh,
-// 					  r, g, b);
-
-//   corners[1] = ColorVertex(baseVertex.x + vsh,
-// 					  baseVertex.y - vsh,
-// 					  baseVertex.z - vsh,
-// 					  r, g, b);
-
-//   corners[2] = ColorVertex(baseVertex.x + vsh,
-// 					  baseVertex.y + vsh,
-// 					  baseVertex.z - vsh,
-// 					  r, g, b);
-
-//   corners[3] = ColorVertex(baseVertex.x - vsh,
-// 					  baseVertex.y + vsh,
-// 					  baseVertex.z - vsh,
-// 					  r, g, b);
-
-//   corners[4] = ColorVertex(baseVertex.x - vsh,
-// 					  baseVertex.y - vsh,
-// 					  baseVertex.z + vsh,
-// 					  r, g, b);
-
-//   corners[5] = ColorVertex(baseVertex.x + vsh,
-// 					  baseVertex.y - vsh,
-// 					  baseVertex.z + vsh,
-// 					  r, g, b);
-
-//   corners[6] = ColorVertex(baseVertex.x + vsh,
-// 					  baseVertex.y + vsh,
-// 					  baseVertex.z + vsh,
-// 					  r, g, b);
-
-//   corners[7] = ColorVertex(baseVertex.x - vsh,
-// 					  baseVertex.y + vsh,
-// 					  baseVertex.z + vsh,
-// 					  r, g, b);
+  corners[7] = ColorVertex(baseVertex.x - vsh,
+					  baseVertex.y + vsh,
+					  baseVertex.z + vsh,
+					  r, g, b);
   
 }
 
@@ -159,7 +159,9 @@ void Box::getIntersections(ColorVertex corners[],
     configuration[i] = false;
     bool ok = true;
     distance[i] = df->distance(corners[i]);
-    if(distance[i] > 0) configuration[i] = true;
+    if(distance[i] > 0) {
+	 configuration[i] = true;
+    }
   }
 
   bool ok;

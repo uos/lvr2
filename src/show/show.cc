@@ -10,10 +10,12 @@ MCShow::MCShow(char* _fileName){
   renderMesh = false;
   renderPoints = false;
   renderNormals = false;
+  renderCells = false;
 
   mesh_display_list = -1;
   point_display_list = -1;
   normal_display_list = -1;
+  cell_display_list = -1;
   
   init();
   initGlut();
@@ -135,6 +137,7 @@ void MCShow::initDisplayLists(){
   if(mesh_display_list != -1)   glDeleteLists(mesh_display_list, 1);
   if(point_display_list != -1)  glDeleteLists(point_display_list, 1);
   if(normal_display_list != -1) glDeleteLists(normal_display_list, 1);
+  if(cell_display_list != -1)   glDeleteLists(cell_display_list, 1);
  
   //Compile mesh list
   if(renderMesh){
@@ -183,6 +186,67 @@ void MCShow::initDisplayLists(){
     glLineWidth(1.0);
     glEndList();
   
+  }
+
+  //Compile cell list
+  if(renderCells){
+
+    cell_display_list = glGenLists(1);
+    glNewList(cell_display_list, GL_COMPILE);
+    glLineWidth(1.0);
+    glColor3f(0.0, 0.0, 1.0);
+    for(int i = 0; i < cells.size() - 7; i+= 8){
+	 glBegin(GL_LINE_LOOP);
+	 cells[i].render();
+	 cells[i+1].render();
+	 cells[i+2].render();
+	 cells[i+3].render();
+	 glEnd();
+
+	
+	 glBegin(GL_LINE_LOOP);
+	 cells[i+4].render();
+	 cells[i+5].render();
+	 cells[i+6].render();
+	 cells[i+7].render();
+	 glEnd();
+
+	 glBegin(GL_LINES);
+	 cells[i].render();
+	 cells[i+4].render();
+	 glEnd();
+
+	 glBegin(GL_LINES);
+	 cells[i+1].render();
+	 cells[i+5].render();
+	 glEnd();
+
+	 glBegin(GL_LINES);
+	 cells[i+2].render();
+	 cells[i+6].render();
+	 glEnd();
+
+	 glBegin(GL_LINES);
+	 cells[i+3].render();
+	 cells[i+7].render();
+	 glEnd();
+
+	 glPointSize(6.0);
+	 glBegin(GL_POINTS); 
+	 for(int j = 0; j < 8; j++){
+	   glColor3f(cells[i+j].r / 255.0, cells[i+j].g / 255.0, cells[i+j].b / 255.0);
+	   cells[i+j].render();
+	 }
+	 glEnd();
+	 glPointSize(1.0);
+	 
+    }
+    glLineWidth(1.0);
+
+    
+    
+    glEndList();
+    
   }
 
   
@@ -364,6 +428,7 @@ void MCShow::render(){
   
   if(renderPoints) glCallList(point_display_list);
   if(renderNormals) glCallList(normal_display_list);
+  if(renderCells) glCallList(cell_display_list);
   
   glFinish();
   glutSwapBuffers();
@@ -420,6 +485,36 @@ void MCShow::readFile(char* filename){
     renderNormals = true;
   }
 
+  if(strcmp(ext, ".hg") == 0){
+
+    cout << "##### Reading Points and Cells: " << filename << endl;
+
+    ifstream in(filename);
+    int n_points;
+
+    in >> n_points;
+    for(int i = 0; i < n_points; i++){
+	 float* v = new float[3];
+	 in >> v[0] >> v[1] >> v[2];
+	 points.push_back(v);
+    }
+
+    renderPoints = true;
+    
+    float x, y, z;
+    uchar r, g, b;
+
+    while(in.good()){
+	 in >> x >> y >> z >> r >> g >> b;
+	 ColorVertex v(x, y, z, r, g, b);
+	 cells.push_back(v);
+    }
+
+    renderCells = true;
+  }
+
+  cout << "##### Finished Reading. " << points.size() << " / " << cells.size() / 8<< endl; 
+  
   initDisplayLists();
   
 }
@@ -443,6 +538,8 @@ MCShow::~MCShow(){
     delete[] normals[i];
   }
   normals.clear();
+
+  cells.clear();
   
 }
 

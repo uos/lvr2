@@ -104,16 +104,19 @@ private:
   vector<vector<double*> > polygons;
   vector<float*> points;
   vector<float*> normals;
+  vector<ColorVertex> cells;
   
   int renderMode;
 
   bool renderMesh;
   bool renderPoints;
   bool renderNormals;
+  bool renderCells;
 
   int mesh_display_list;
   int point_display_list;
   int normal_display_list;
+  int cell_display_list;
   
 };
 

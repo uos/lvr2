@@ -3,6 +3,7 @@
 
 #include <iostream>
 #include <fstream>
+#include <omp.h>
 
 #include <ANN/ANN.h>
 
@@ -27,7 +28,7 @@ private:
   ANNkd_tree* point_tree;
   ANNpointArray points;
 
-  vector<Normal> normals;
+  Normal* normals;
 
   int number_of_points;
   

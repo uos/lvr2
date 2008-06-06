@@ -1,5 +1,5 @@
 CPP = g++
-CFLAGS = -Wall -Wno-write-strings
+CFLAGS = -Wall -Wno-write-strings -fopenmp
 AR = ar
 
 BIN = bin/
