@@ -1,11 +1,11 @@
-#ifndef __INTERPOLATOR_H__
-#define __INTERPOLATOR_H__
+#ifndef __ANN_INTERPOLATOR_H__
+#define __ANN_INTERPOLATOR_H__
 
 #include <iostream>
 #include <fstream>
 #include <omp.h>
-
 #include <ANN/ANN.h>
+
 #include <kdtree++/kdtree.hpp>
 
 #include <vector>
@@ -15,29 +15,15 @@ using namespace std;
 #include "../mesh/colorVertex.h"
 #include "../mesh/normal.h"
 
-struct IdPoint{
+#include "interpolator.h"
 
-  IdPoint(){};
-  IdPoint(ANNpoint _p, int i){p = _p; id = i;};
-  IdPoint(const IdPoint &o){ p = o.p; id = o.id;};
-
-  float operator[](const int i){return p[i];};
-  
-  ANNpoint p;
-  int id;
-};
-
-inline float tac(IdPoint p, int k){ return p.p[k];};
-
-typedef KDTree::KDTree<3, IdPoint, std::pointer_to_binary_function<IdPoint, int, float> > tree_type;
-
-class Interpolator{
+class ANNInterpolator: public Interpolator{
 
 public:
-  Interpolator(ANNpointArray points, int n, int k1, int k2, int epsilon);
+  ANNInterpolator(ANNpointArray points, int n, float voxelsize, int k_max, float epsilon);
   
   
-  ~Interpolator(){};
+  ~ANNInterpolator(){};
 
   void write(string filename);
   float distance(ColorVertex v);
@@ -46,13 +32,14 @@ public:
 
   ANNkd_tree* point_tree;
   ANNpointArray points;
-
+  float voxelsize;
+  float vs_sq;
+  
   Normal* normals;
 
   int number_of_points;
+  int k_max;
 
-  tree_type* t;
-  
 };
 
 

@@ -1,172 +1,175 @@
-#include "interpolator.h"
+#include "annInterpolator.h"
 
-Interpolator::Interpolator(ANNpointArray pts, int n,
-					  int k_initial, int k_interpolate, int epsilon){
+ANNInterpolator::ANNInterpolator(ANNpointArray pts, int n, float vs, int km, float epsilon){
 
+  k_max = km;
   points = pts;
   number_of_points = n;
-
-  t = new tree_type(std::ptr_fun(tac));
-
-  cout << "##### Building kd-Tree using libkd+++" << endl;
-  for(int i = 0; i < n; i++){
-    IdPoint p;
-    p.p = points[i];
-    p.id = i;
-    t->insert(p);
-  }
+  voxelsize = vs;
+  vs_sq = vs * vs;
   
-  cout << "##### Optimizing kd-Tree" << endl;
-  t->optimize();
-
-  vector<IdPoint> points_in_range;
-
-  float z1 = 0.0, z2 = 0.0;
-
-  Vertex diff1, diff2, point;
-  Normal normal;
-
   normals = new Normal[number_of_points];
+
+  float z1, z2;
+
+  BaseVertex query_point, diff1, diff2;
+  Normal normal;
   
-  for(int i = 0; i < n; i++){
+  ColumnVector C(3);
+  
+  cout << "##### Creating ANN Kd-Tree..." << endl;
+  ANNsplitRule split = ANN_KD_SUGGEST;
+  point_tree = new ANNkd_tree(points, number_of_points, 3, 10, split);
 
-    if(i % 10000 == 0) cout << "Estimating Normals... " << i << " / " << n << endl;
+  ANNidxArray id = new ANNidx[k_max];
+  ANNdistArray di = new ANNdist[k_max];
 
-    IdPoint p;
-    p.p = points[i];
-    p.id = i;
+  cout << "##### Estimating normals..." << endl;
+  
+  for(int i = 0; i < number_of_points; i++){
+
+    query_point = BaseVertex(points[i][0],
+					    points[i][1],
+					    points[i][2]);
     
-    t->find_within_range(p, 10.0, back_inserter(points_in_range));
+    point_tree->annkFRSearch(points[i], vs_sq, k_max, id, di, 0.01 * voxelsize);
 
-    int n_in_range = (int)points_in_range.size();
-
-    ColumnVector C(3);
-    ColumnVector F(n_in_range);
-    Matrix B(n_in_range, 3);
-
-    for(size_t j = 1; j <= points_in_range.size(); j++){
-	 F(j) = points_in_range[j-1][2];
-	 B(j, 1) = 1;
-	 B(j, 2) = points_in_range[j-1][0];
-	 B(j, 3) = points_in_range[j-1][1];
+    int n_nb = 0;
+    for(int j = 0; j < k_max; j++){
+	 if(id[j] != ANN_NULL_IDX) n_nb++; else break;
     }
 
     try{
-	 //Solve it
+	 ColumnVector F(n_nb);
+	 Matrix B(n_nb, 3);
+    
+	 for(int j = 1; j <= n_nb; j++){
+
+	   F(j) = points[id[j-1]][1];
+	   B(j, 1) = 1;
+	   B(j, 2) = points[id[j-1]][0];
+	   B(j, 3) = points[id[j-1]][2];
+		 
+	 }
+    
 	 Matrix Bt = B.t();
 	 Matrix BtB = Bt * B;
 	 Matrix BtBinv = BtB.i();
 	 Matrix M = BtBinv * Bt;
-	 
+  
 	 C = M * F;
 
-	 //Estimate surface normal
-	 z1 = C(1) + C(2) * (point.x + epsilon) + C(3) * point.y;
-	 z2 = C(1) + C(2) * point.x + C(3) * (point.y + epsilon);
-		 
-	 diff2 = BaseVertex(point.x, point.y + epsilon, z2) - point;
-	 diff1 = BaseVertex(point.x + epsilon, point.y, z1) - point;
+	 z1 = C(1) + C(2) * (query_point.x + epsilon) + C(3) * query_point.z;
+	 z2 = C(1) + C(2) * query_point.x + C(3) * (query_point.z + epsilon);
+    
+	 diff1 = BaseVertex(query_point.x + epsilon, z1, query_point.z) - query_point;
+	 diff2 = BaseVertex(query_point.x, z2, query_point.z + epsilon) - query_point;
 
 	 normal = diff1.cross(diff2);
-
-	 //cout << normal;
-	 
-	 if(points[i][2] <= 0){
-	   normal.x = -normal.x;
-	   normal.y = -normal.y;
-	   normal.z = -normal.z;
-	 }
-    
-	 //normals.push_back(normal);
 	 normals[i] = normal;
-    } catch (Exception& e){
-	 
+
+    } catch(Exception e){
+	 //Ignore 
     }
     
-    points_in_range.clear(); 
+    if(i % 10000 == 0) cout << "##### Estimating normals... " << i << " / " << n << endl;
   }
-  
-  cout << "##### Interpolating normals..." << endl;
 
-  float x, y, z;
-  
+  cout << "##### Interpolating Normals... " << endl;
+
   for(int i = 0; i < number_of_points; i++){
-    
-    x = y = z = 0.0;
-    
-    IdPoint p;
-    p.p = points[i];
-    p.id = i;
-    
-    t->find_within_range(p, 10.0, back_inserter(points_in_range));
-    
-    for(int j = 0; j < points_in_range.size() ; j++){
-	 int id = points_in_range[j].id;
-	 x += normals[id].x;
-	 y += normals[id].y;
-	 z += normals[id].z;
+
+    point_tree->annkFRSearch(points[i], vs_sq, k_max, id, di, 0.01 * voxelsize);
+    int n_nb = 0;
+    for(int j = 0; j < k_max; j++){
+	 if(id[j] != ANN_NULL_IDX) n_nb++; else break;
     }
 
-    normals[i] = Normal(x, y, z);
+    float x = 0, y = 0, z = 0;
+    
+    for(int j = 0; j < n_nb; j++){
+	 x += normals[id[j]].x;
+	 y += normals[id[j]].y;
+	 z += normals[id[j]].z;
+    }
 
-    points_in_range.clear();
-    
-    if(i % 10000 == 0) cout << "##### Interpolating normals..." << i << " / " << number_of_points << endl;
-    
+    normal = Normal(x, y, z);
+    normals[i] = normal;
+
+    if(i % 10000 == 0) cout << "##### Interpolating normals... " << i << " / " << n << endl;
   }
 
-//   cout << "DONE" << endl;
-
+  delete[] di;
+  delete[] id;
+  
 }
 
-float Interpolator::distance(ColorVertex v){
+float ANNInterpolator::distance(ColorVertex v){
 
-  ANNpoint s;
-  s = annAllocPt(3);
-  s[0] = v.x;
-  s[1] = v.y;
-  s[2] = v.z;
+  // ANNpoint s;
+//   s = annAllocPt(3);
+//   s[0] = v.x;
+//   s[1] = v.y;
+//   s[2] = v.z;
 
-  IdPoint idp;
-  idp.p = s;
-  idp.id = 0; 
+//   IdPoint idp;
+//   idp.p = s;
+//   idp.id = 0; 
   
-  //IdPoint nb = *t->find_nearest(idp,std::numeric_limits<double>::max()).first;
+//   //IdPoint nb = *t->find_nearest(idp,std::numeric_limits<double>::max()).first;
 
-  //cout << "ID: " << nb.id << endl;
+//   //cout << "ID: " << nb.id << endl;
 
+  ANNpoint p;
+  p = annAllocPt(3);
+  p[0] = v.x;
+  p[1] = v.y;
+  p[2] = v.z;
 
-  vector<IdPoint> nb;
-  t->find_within_range(idp, 10.0, back_inserter(nb));
+  ANNidxArray id = new ANNidx[k_max];
+  ANNdistArray di = new ANNdist[k_max];
 
-  if(nb.size() == 0) cout << "No NBs found!" << endl;
+  float radius = vs_sq;
+  int n_nb = 0;
+  int c = 0;
+  
+  do{
+    n_nb = 0;
+    radius = radius * 2;
+    point_tree->annkFRSearch(p, radius, k_max, id, di, 0.01 * voxelsize);
 
+    for(int j = 0; j < k_max; j++){
+	 if(id[j] != ANN_NULL_IDX) n_nb++; else break;
+    }
+    c++;
+  } while(n_nb < 3);
+  
   float  x = 0.0,  y = 0.0,  z = 0.0;
   float nx = 0.0, ny = 0.0, nz = 0.0;
-  
-  for(size_t i = 0; i < nb.size(); i++){
-    ANNpoint annp = nb[i].p;
-    int id = nb[i].id;
-    x += annp[0];
-    y += annp[1];
-    z += annp[2];
 
-    Normal n = normals[id];
+  for(int i = 0; i < n_nb; i++){
+    Normal n = normals[id[i]];
     nx += n.x;
     ny += n.y;
     nz += n.z;
+
+    x += points[id[i]][0];
+    y += points[id[i]][1];
+    z += points[id[i]][2];
   }
 
-  if(nb.size() > 0){
-    x /= nb.size();
-    y /= nb.size();
-    z /= nb.size();
+  if(n_nb > 0){
+    x /= n_nb;
+    y /= n_nb;
+    z /= n_nb;
   }
+
+  delete[] id;
+  delete[] di;
   
   Normal normal(nx, ny, nz);
   Vertex nearest(x, y, z);
   
- 
   Vertex diff = v - nearest;
 
   float length = diff.length();
@@ -177,16 +180,17 @@ float Interpolator::distance(ColorVertex v){
   else
     return -length;
 
+
   return 0.0;
   
 }
 
-void Interpolator::write(string filename){
+void ANNInterpolator::write(string filename){
 
   ofstream out(filename.c_str());
 
   if(!out.good()){
-    cout << "Warning: Interpolator: could not open file " << filename << "." << endl;
+    cout << "Warning: ANNInterpolator: could not open file " << filename << "." << endl;
     return;
   }
 

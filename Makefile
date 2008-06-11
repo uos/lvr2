@@ -34,7 +34,7 @@ ANNTARGETS  = $(OBJ)ANN.o $(OBJ)brute.o $(OBJ)kd_tree.o $(OBJ)kd_util.o \
 MCTARGETS   = $(OBJ)baseVertex.o $(OBJ)normal.o $(OBJ)colorVertex.o \
               $(OBJ)staticMesh.o $(OBJ)box.o $(OBJ)distanceFunction.o \
 		    $(OBJ)hashGrid.o $(OBJ)tangentPlane.o $(OBJ)simpleGrid.o \
-		    $(OBJ)interpolator.o
+		    $(OBJ)annInterpolator.o $(OBJ)kdppInterpolator.o 
 
 SHOWTARGETS = $(OBJ)show.o $(OBJ)camera.o
 
@@ -139,9 +139,13 @@ $(OBJ)simpleGrid.o: $(MCSRC)simpleGrid.cc
 	@echo "Compiling Simple Grid..."
 	@$(CPP) $(CFLAGS) -c -o $(OBJ)simpleGrid.o $(MCSRC)simpleGrid.cc
 
-$(OBJ)interpolator.o: $(MCSRC)interpolator.cc
-	@echo "Compiling Interpolator..."
-	@$(CPP) $(CFLAGS) -c -o $(OBJ)interpolator.o $(MCSRC)interpolator.cc
+$(OBJ)kdppInterpolator.o: $(MCSRC)kdppInterpolator.cc
+	@echo "Compiling KDPP Interpolator..."
+	@$(CPP) $(CFLAGS) -c -o $(OBJ)kdppInterpolator.o $(MCSRC)kdppInterpolator.cc
+
+$(OBJ)annInterpolator.o: $(MCSRC)annInterpolator.cc
+	@echo "Compiling ANN Interpolator..."
+	@$(CPP) $(CFLAGS) -c -o $(OBJ)annInterpolator.o $(MCSRC)annInterpolator.cc
 
 ######################################################################
 # -------------------------- ANN LIBRARY -----------------------------

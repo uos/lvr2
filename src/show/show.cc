@@ -195,7 +195,7 @@ void MCShow::initDisplayLists(){
     glNewList(cell_display_list, GL_COMPILE);
     glLineWidth(1.0);
     glColor3f(0.0, 0.0, 1.0);
-    for(int i = 0; i < cells.size() - 7; i+= 8){
+    for(size_t i = 0; i < cells.size() - 7; i+= 8){
 	 glBegin(GL_LINE_LOOP);
 	 cells[i].render();
 	 cells[i+1].render();
@@ -460,11 +460,20 @@ void MCShow::readFile(char* filename){
 
   if(strcmp(ext, ".bor") == 0){
 
-    
   }
 
   if(strcmp(ext, ".pts") == 0){
 
+    float dummy;
+    
+    ifstream in(filename);
+    cout << "##### Reading Points and Normals: " << filename << endl;
+    while(in.good()){
+	 float* v = new float[3];
+	 in >> v[0] >> v[1] >> v[2] >> dummy;
+	 points.push_back(v);
+    }
+    renderPoints = true;
   }  
 
   if(strcmp(ext, ".nor") == 0){
