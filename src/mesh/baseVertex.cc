@@ -54,7 +54,8 @@ float BaseVertex::operator[](const int i){
 
   case 2:
     ret = z;
-
+    break;
+    
   default:
     cout << "BaseVertex: Warning: Access index out of range." << endl;
     

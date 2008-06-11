@@ -5,6 +5,8 @@
 #include "../mesh/staticMesh.h"
 #include "tables.h"
 #include "distanceFunction.h"
+#include "kdppInterpolator.h"
+#include "annInterpolator.h"
 #include "interpolator.h"
 #include "box.h"
 

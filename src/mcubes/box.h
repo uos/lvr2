@@ -4,6 +4,7 @@
 #include "tables.h"
 #include "distanceFunction.h"
 #include "interpolator.h"
+#include "kdppInterpolator.h"
 
 #include "../mesh/colorVertex.h"
 #include "../mesh/staticMesh.h"

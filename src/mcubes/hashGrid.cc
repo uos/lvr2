@@ -19,7 +19,7 @@ HashGrid::HashGrid(string filename, float v, float scale){
 
   //Create Distance Function
   //distance_function = new DistanceFunction(points, number_of_points, 10, false);
-  interpolator = new Interpolator(points, number_of_points, 10, 10, 100.0);
+  interpolator = new ANNInterpolator(points, number_of_points, 10.0, 200, 100.0);
 
   //Create Grid
   createGrid();

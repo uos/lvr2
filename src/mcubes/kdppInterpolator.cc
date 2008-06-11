@@ -1,8 +1,8 @@
-#include "interpolator.h"
+#include "kdppInterpolator.h"
 
-Interpolator::Interpolator(ANNpointArray pts, int n,
-					  int k_initial, int k_interpolate, int epsilon){
+KDPPInterpolator::KDPPInterpolator(ANNpointArray pts, int n, float vs, int k_max, float epsilon){
 
+  voxelsize = vs;
   points = pts;
   number_of_points = n;
 
@@ -36,7 +36,7 @@ Interpolator::Interpolator(ANNpointArray pts, int n,
     p.p = points[i];
     p.id = i;
     
-    t->find_within_range(p, 10.0, back_inserter(points_in_range));
+    t->find_within_range(p, voxelsize, back_inserter(points_in_range));
 
     int n_in_range = (int)points_in_range.size();
 
@@ -98,9 +98,9 @@ Interpolator::Interpolator(ANNpointArray pts, int n,
     p.p = points[i];
     p.id = i;
     
-    t->find_within_range(p, 10.0, back_inserter(points_in_range));
+    t->find_within_range(p, voxelsize, back_inserter(points_in_range));
     
-    for(int j = 0; j < points_in_range.size() ; j++){
+    for(size_t j = 0; j < points_in_range.size() ; j++){
 	 int id = points_in_range[j].id;
 	 x += normals[id].x;
 	 y += normals[id].y;
@@ -119,7 +119,7 @@ Interpolator::Interpolator(ANNpointArray pts, int n,
 
 }
 
-float Interpolator::distance(ColorVertex v){
+float KDPPInterpolator::distance(ColorVertex v){
 
   ANNpoint s;
   s = annAllocPt(3);
@@ -137,7 +137,7 @@ float Interpolator::distance(ColorVertex v){
 
 
   vector<IdPoint> nb;
-  t->find_within_range(idp, 10.0, back_inserter(nb));
+  t->find_within_range(idp, voxelsize, back_inserter(nb));
 
   if(nb.size() == 0) cout << "No NBs found!" << endl;
 
@@ -181,12 +181,12 @@ float Interpolator::distance(ColorVertex v){
   
 }
 
-void Interpolator::write(string filename){
+void KDPPInterpolator::write(string filename){
 
   ofstream out(filename.c_str());
 
   if(!out.good()){
-    cout << "Warning: Interpolator: could not open file " << filename << "." << endl;
+    cout << "Warning: KDPPInterpolator: could not open file " << filename << "." << endl;
     return;
   }
 
