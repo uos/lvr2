@@ -19,7 +19,7 @@ HashGrid::HashGrid(string filename, float v, float scale){
 
   //Create Distance Function
   //distance_function = new DistanceFunction(points, number_of_points, 10, false);
-  interpolator = new Interpolator(points, number_of_points, 200, 200, 100.0);
+  interpolator = new Interpolator(points, number_of_points, 10, 10, 100.0);
 
   //Create Grid
   createGrid();
@@ -57,15 +57,17 @@ void HashGrid::createGrid(){
     index_z = calcIndex((points[i][2] - zmin) / voxelsize);
     
     
-  //   for(int j = 0; j < 8; j++){
+    for(int j = 0; j < 8; j++){
 
-//     dx = HGCreateTable[j][0];
-//     dy = HGCreateTable[j][1];
-//     dz = HGCreateTable[j][2];
+    dx = HGCreateTable[j][0];
+    dy = HGCreateTable[j][1];
+    dz = HGCreateTable[j][2];
 
-    for(dx = -1; dx < 2; dx++)
-	 for(dy = -1; dy < 2; dy++)
-	   for(dz = -1; dz < 2; dz++){ 
+//     for(dx = -1; dx < 1; dx++)
+// 	 for(dy = -1; dy < 1; dy++)
+// 	   for(dz = -1; dz < 1; dz++){
+		
+		//dx = dy = dz = 0;
     
 		hash_value = hashValue(index_x + dx,
 						   index_y + dy,

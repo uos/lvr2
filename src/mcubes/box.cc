@@ -153,21 +153,21 @@ void Box::getIntersections(ColorVertex corners[],
   setColor(0, 200, 0);
 
   Normal normal;
+
+  float minimum = 1e15;
   
   //Calc distances;
   for(int i = 0; i < 8; i++){
     configuration[i] = false;
     bool ok = true;
     distance[i] = df->distance(corners[i]);
+    minimum = min(distance[i], minimum);
     if(distance[i] > 0) {
 	 configuration[i] = true;
     }
   }
 
-  bool ok;
-
-  float k = 500;
-  
+ 
   //Front Quad
   //distance[0] = df->distance(corners[0], normal, 10, 1000.0, X, ok);
   //distance[1] = df->distance(corners[1], normal, k, 1000.0, X, ok);
@@ -274,19 +274,9 @@ void Box::getIntersections(ColorVertex corners[],
 float Box::calcIntersection(float x1, float x2,
 					   float d1, float d2, bool interpolate){
 
-  //float intersection = x2 - d2 * (x1 - x2) / (d1 - d2);
+  float intersection = x2 - d2 * (x1 - x2) / (d1 - d2);
   
-  float intersection = x1 - d1 * (x2 - x1) / (d2 - d1);
-  
-//   if(intersection < x1) setColor(200, 0, 0);
-//   if(intersection > x2) setColor(0, 0, 200)
-
-  //cout << x1 << " " << x2 << " " << d1 << " " << d2 << " " << intersection << endl;
-
-  if( (d1 > 0 && d2 > 0) || (d1 < 0 && d2 < 0) ){
-	 //setColor(200, 0, 0);
-	 return x1 + 0.5 * voxelsize;
-    }
+  //if(d1 == d2) cout << "OK" << endl;
   
   return intersection;
   

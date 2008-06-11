@@ -38,6 +38,31 @@ void BaseVertex::crossTo(const BaseVertex o){
   
 }
 
+float BaseVertex::operator[](const int i){
+
+  float ret = 0.0;
+  
+  switch(i){
+
+  case 0:
+    ret = x;
+    break;
+
+  case 1:
+    ret = y;
+    break;
+
+  case 2:
+    ret = z;
+
+  default:
+    cout << "BaseVertex: Warning: Access index out of range." << endl;
+    
+  }
+
+  return ret;
+  
+}
 
 float BaseVertex::operator*(const BaseVertex v) const{
   return x * v.z + y * v.y + z * v.z;

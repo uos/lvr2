@@ -52,6 +52,8 @@ public:
   virtual void operator*=(const float scale);
   virtual void operator/=(const float scale);
 
+  virtual float operator[](const int index);
+
   float x;
   float y;
   float z;
