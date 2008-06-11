@@ -86,34 +86,34 @@ Interpolator::Interpolator(ANNpointArray pts, int n,
     points_in_range.clear(); 
   }
   
-  // cout << "##### Interpolating normals..." << endl;
+  cout << "##### Interpolating normals..." << endl;
 
-//   float x, y, z;
+  float x, y, z;
   
-//   for(int i = 0; i < number_of_points; i++){
+  for(int i = 0; i < number_of_points; i++){
     
-//     x = y = z = 0.0;
+    x = y = z = 0.0;
     
-//     IdPoint p;
-//     p.p = points[i];
-//     p.id = i;
+    IdPoint p;
+    p.p = points[i];
+    p.id = i;
     
-//     t->find_within_range(p, 10.0, back_inserter(points_in_range));
+    t->find_within_range(p, 10.0, back_inserter(points_in_range));
     
-//     for(int j = 0; j < points_in_range.size() ; j++){
-// 	 ANNpoint annp = points_in_range[j].p;
-// 	 int id = points_in_range[j].id;
-// 	 x += annp[0];
-// 	 y += annp[1];
-// 	 z += annp[2];
-// 	 normals[id] = Normal(x, y, z);
-//     }
+    for(int j = 0; j < points_in_range.size() ; j++){
+	 int id = points_in_range[j].id;
+	 x += normals[id].x;
+	 y += normals[id].y;
+	 z += normals[id].z;
+    }
 
-//     points_in_range.clear();
+    normals[i] = Normal(x, y, z);
+
+    points_in_range.clear();
     
-//     if(i % 10000 == 0) cout << "##### Interpolating normals..." << i << " / " << number_of_points << endl;
+    if(i % 10000 == 0) cout << "##### Interpolating normals..." << i << " / " << number_of_points << endl;
     
-//   }
+  }
 
 //   cout << "DONE" << endl;
 
