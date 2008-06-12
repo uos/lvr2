@@ -39,6 +39,8 @@ ANNInterpolator::ANNInterpolator(ANNpointArray pts, int n, float vs, int km, flo
 	 if(id[j] != ANN_NULL_IDX) n_nb++; else break;
     }
 
+    if (n_nb == 0) cout << "OKOKOKOK" << endl;
+
     try{
 	 ColumnVector F(n_nb);
 	 Matrix B(n_nb, 3);
@@ -72,7 +74,7 @@ ANNInterpolator::ANNInterpolator(ANNpointArray pts, int n, float vs, int km, flo
 	 //Ignore 
     }
     
-    if(i % 10000 == 0) cout << "##### Estimating normals... " << i << " / " << n << endl;
+    if(i % 1000 == 0) cout << "##### Estimating normals... " << i << " / " << n << endl;
   }
 
   cout << "##### Interpolating Normals... " << endl;
