@@ -1,8 +1,7 @@
-Dies ist gsl-ref.info, hergestellt von Makeinfo Version 4.9 aus
-gsl-ref.texi.
-
 INFO-DIR-SECTION Scientific software
 START-INFO-DIR-ENTRY
+This is gsl-ref.info, produced by makeinfo version 4.11 from gsl-ref.texi.
+
 * gsl-ref: (gsl-ref).                   GNU Scientific Library - Reference
 END-INFO-DIR-ENTRY
 
@@ -33,7 +32,7 @@ will be returned, since the maximum or minimum value is undefined.  For
 functions which return an index, the location of the first `NaN' in the
 array is returned.
 
- -- Funktion: double gsl_stats_max (const double DATA[], size_t STRIDE,
+ -- Function: double gsl_stats_max (const double DATA[], size_t STRIDE,
           size_t N)
      This function returns the maximum value in DATA, a dataset of
      length N with stride STRIDE.  The maximum value is defined as the
@@ -43,7 +42,7 @@ array is returned.
      magnitude you will need to apply `fabs' or `abs' to your data
      before calling this function.
 
- -- Funktion: double gsl_stats_min (const double DATA[], size_t STRIDE,
+ -- Function: double gsl_stats_min (const double DATA[], size_t STRIDE,
           size_t N)
      This function returns the minimum value in DATA, a dataset of
      length N with stride STRIDE.  The minimum value is defined as the
@@ -53,12 +52,12 @@ array is returned.
      magnitude you will need to apply `fabs' or `abs' to your data
      before calling this function.
 
- -- Funktion: void gsl_stats_minmax (double * MIN, double * MAX, const
+ -- Function: void gsl_stats_minmax (double * MIN, double * MAX, const
           double DATA[], size_t STRIDE, size_t N)
      This function finds both the minimum and maximum values MIN, MAX
      in DATA in a single pass.
 
- -- Funktion: size_t gsl_stats_max_index (const double DATA[], size_t
+ -- Function: size_t gsl_stats_max_index (const double DATA[], size_t
           STRIDE, size_t N)
      This function returns the index of the maximum value in DATA, a
      dataset of length N with stride STRIDE.  The maximum value is
@@ -66,7 +65,7 @@ array is returned.
      for all j.  When there are several equal maximum elements then the
      first one is chosen.
 
- -- Funktion: size_t gsl_stats_min_index (const double DATA[], size_t
+ -- Function: size_t gsl_stats_min_index (const double DATA[], size_t
           STRIDE, size_t N)
      This function returns the index of the minimum value in DATA, a
      dataset of length N with stride STRIDE.  The minimum value is
@@ -74,7 +73,7 @@ array is returned.
      for all j.  When there are several equal minimum elements then the
      first one is chosen.
 
- -- Funktion: void gsl_stats_minmax_index (size_t * MIN_INDEX, size_t *
+ -- Function: void gsl_stats_minmax_index (size_t * MIN_INDEX, size_t *
           MAX_INDEX, const double DATA[], size_t STRIDE, size_t N)
      This function returns the indexes MIN_INDEX, MAX_INDEX of the
      minimum and maximum values in DATA in a single pass.
@@ -89,7 +88,7 @@ The median and percentile functions described in this section operate on
 sorted data.  For convenience we use "quantiles", measured on a scale
 of 0 to 1, instead of percentiles (which use a scale of 0 to 100).
 
- -- Funktion: double gsl_stats_median_from_sorted_data (const double
+ -- Function: double gsl_stats_median_from_sorted_data (const double
           SORTED_DATA[], size_t STRIDE, size_t N)
      This function returns the median value of SORTED_DATA, a dataset
      of length N with stride STRIDE.  The elements of the array must be
@@ -104,7 +103,7 @@ of 0 to 1, instead of percentiles (which use a scale of 0 to 100).
      median involves interpolation this function always returns a
      floating-point number, even for integer data types.
 
- -- Funktion: double gsl_stats_quantile_from_sorted_data (const double
+ -- Function: double gsl_stats_quantile_from_sorted_data (const double
           SORTED_DATA[], size_t STRIDE, size_t N, double F)
      This function returns a quantile value of SORTED_DATA, a
      double-precision array of length N with stride STRIDE.  The
@@ -125,9 +124,9 @@ of 0 to 1, instead of percentiles (which use a scale of 0 to 100).
      Thus the minimum value of the array (`data[0*stride]') is given by
      F equal to zero, the maximum value (`data[(n-1)*stride]') is given
      by F equal to one and the median value is given by F equal to 0.5.
-     Since the algorithm for computing quantiles involves
-     interpolation this function always returns a floating-point
-     number, even for integer data types.
+     Since the algorithm for computing quantiles involves interpolation
+     this function always returns a floating-point number, even for
+     integer data types.
 
 
 File: gsl-ref.info,  Node: Example statistical programs,  Next: Statistics References and Further Reading,  Prev: Median and Percentiles,  Up: Statistics
@@ -354,7 +353,7 @@ number of `GSL_ENOMEM') in addition to returning a null pointer.  Thus
 if you use the library error handler to abort your program then it
 isn't necessary to check every histogram `alloc'.
 
- -- Funktion: gsl_histogram * gsl_histogram_alloc (size_t N)
+ -- Function: gsl_histogram * gsl_histogram_alloc (size_t N)
      This function allocates memory for a histogram with N bins, and
      returns a pointer to a newly created `gsl_histogram' struct.  If
      insufficient memory is available a null pointer is returned and the
@@ -363,7 +362,7 @@ isn't necessary to check every histogram `alloc'.
      one of the range-setting functions below in order to make the
      histogram ready for use.
 
- -- Funktion: int gsl_histogram_set_ranges (gsl_histogram * H, const
+ -- Function: int gsl_histogram_set_ranges (gsl_histogram * H, const
           double RANGE[], size_t SIZE)
      This function sets the ranges of the existing histogram H using
      the array RANGE of size SIZE.  The values of the histogram bins
@@ -388,7 +387,7 @@ isn't necessary to check every histogram `alloc'.
      element bigger than the number of bins.  The additional element is
      required for the upper value of the final bin.
 
- -- Funktion: int gsl_histogram_set_ranges_uniform (gsl_histogram * H,
+ -- Function: int gsl_histogram_set_ranges_uniform (gsl_histogram * H,
           double XMIN, double XMAX)
      This function sets the ranges of the existing histogram H to cover
      the range XMIN to XMAX uniformly.  The values of the histogram
@@ -401,7 +400,7 @@ isn't necessary to check every histogram `alloc'.
 
      where d is the bin spacing, d = (xmax-xmin)/n.
 
- -- Funktion: void gsl_histogram_free (gsl_histogram * H)
+ -- Function: void gsl_histogram_free (gsl_histogram * H)
      This function frees the histogram H and all of the memory
      associated with it.
 
@@ -411,13 +410,13 @@ File: gsl-ref.info,  Node: Copying Histograms,  Next: Updating and accessing his
 21.3 Copying Histograms
 =======================
 
- -- Funktion: int gsl_histogram_memcpy (gsl_histogram * DEST, const
+ -- Function: int gsl_histogram_memcpy (gsl_histogram * DEST, const
           gsl_histogram * SRC)
      This function copies the histogram SRC into the pre-existing
      histogram DEST, making DEST into an exact copy of SRC.  The two
      histograms must be of the same size.
 
- -- Funktion: gsl_histogram * gsl_histogram_clone (const gsl_histogram
+ -- Function: gsl_histogram * gsl_histogram_clone (const gsl_histogram
           * SRC)
      This function returns a pointer to a newly created histogram which
      is an exact copy of the histogram SRC.
@@ -433,7 +432,7 @@ coordinate or by using the bin-index directly.  The functions for
 accessing the histogram through x coordinates use a binary search to
 identify the bin which covers the appropriate range.
 
- -- Funktion: int gsl_histogram_increment (gsl_histogram * H, double X)
+ -- Function: int gsl_histogram_increment (gsl_histogram * H, double X)
      This function updates the histogram H by adding one (1.0) to the
      bin whose range contains the coordinate X.
 
@@ -447,20 +446,20 @@ identify the bin which covers the appropriate range.
      compute histograms for a small range of a larger dataset, ignoring
      the values outside the range of interest.
 
- -- Funktion: int gsl_histogram_accumulate (gsl_histogram * H, double
+ -- Function: int gsl_histogram_accumulate (gsl_histogram * H, double
           X, double WEIGHT)
      This function is similar to `gsl_histogram_increment' but increases
      the value of the appropriate bin in the histogram H by the
      floating-point number WEIGHT.
 
- -- Funktion: double gsl_histogram_get (const gsl_histogram * H, size_t
+ -- Function: double gsl_histogram_get (const gsl_histogram * H, size_t
           I)
      This function returns the contents of the I-th bin of the histogram
      H.  If I lies outside the valid range of indices for the histogram
      then the error handler is called with an error code of `GSL_EDOM'
      and the function returns 0.
 
- -- Funktion: int gsl_histogram_get_range (const gsl_histogram * H,
+ -- Function: int gsl_histogram_get_range (const gsl_histogram * H,
           size_t I, double * LOWER, double * UPPER)
      This function finds the upper and lower range limits of the I-th
      bin of the histogram H.  If the index I is valid then the
@@ -473,15 +472,15 @@ identify the bin which covers the appropriate range.
      the histogram then the error handler is called and the function
      returns an error code of `GSL_EDOM'.
 
- -- Funktion: double gsl_histogram_max (const gsl_histogram * H)
- -- Funktion: double gsl_histogram_min (const gsl_histogram * H)
- -- Funktion: size_t gsl_histogram_bins (const gsl_histogram * H)
+ -- Function: double gsl_histogram_max (const gsl_histogram * H)
+ -- Function: double gsl_histogram_min (const gsl_histogram * H)
+ -- Function: size_t gsl_histogram_bins (const gsl_histogram * H)
      These functions return the maximum upper and minimum lower range
      limits and the number of bins of the histogram H.  They provide a
      way of determining these values without accessing the
      `gsl_histogram' struct directly.
 
- -- Funktion: void gsl_histogram_reset (gsl_histogram * H)
+ -- Function: void gsl_histogram_reset (gsl_histogram * H)
      This function resets all the bins in the histogram H to zero.
 
 
@@ -493,7 +492,7 @@ File: gsl-ref.info,  Node: Searching histogram ranges,  Next: Histogram Statisti
 The following functions are used by the access and update routines to
 locate the bin which corresponds to a given x coordinate.
 
- -- Funktion: int gsl_histogram_find (const gsl_histogram * H, double
+ -- Function: int gsl_histogram_find (const gsl_histogram * H, double
           X, size_t * I)
      This function finds and sets the index I to the bin number which
      covers the coordinate X in the histogram H.  The bin is located
@@ -511,38 +510,38 @@ File: gsl-ref.info,  Node: Histogram Statistics,  Next: Histogram Operations,  P
 21.6 Histogram Statistics
 =========================
 
- -- Funktion: double gsl_histogram_max_val (const gsl_histogram * H)
+ -- Function: double gsl_histogram_max_val (const gsl_histogram * H)
      This function returns the maximum value contained in the histogram
      bins.
 
- -- Funktion: size_t gsl_histogram_max_bin (const gsl_histogram * H)
+ -- Function: size_t gsl_histogram_max_bin (const gsl_histogram * H)
      This function returns the index of the bin containing the maximum
      value. In the case where several bins contain the same maximum
      value the smallest index is returned.
 
- -- Funktion: double gsl_histogram_min_val (const gsl_histogram * H)
+ -- Function: double gsl_histogram_min_val (const gsl_histogram * H)
      This function returns the minimum value contained in the histogram
      bins.
 
- -- Funktion: size_t gsl_histogram_min_bin (const gsl_histogram * H)
+ -- Function: size_t gsl_histogram_min_bin (const gsl_histogram * H)
      This function returns the index of the bin containing the minimum
      value. In the case where several bins contain the same maximum
      value the smallest index is returned.
 
- -- Funktion: double gsl_histogram_mean (const gsl_histogram * H)
+ -- Function: double gsl_histogram_mean (const gsl_histogram * H)
      This function returns the mean of the histogrammed variable, where
      the histogram is regarded as a probability distribution. Negative
      bin values are ignored for the purposes of this calculation.  The
      accuracy of the result is limited by the bin width.
 
- -- Funktion: double gsl_histogram_sigma (const gsl_histogram * H)
+ -- Function: double gsl_histogram_sigma (const gsl_histogram * H)
      This function returns the standard deviation of the histogrammed
      variable, where the histogram is regarded as a probability
      distribution. Negative bin values are ignored for the purposes of
      this calculation. The accuracy of the result is limited by the bin
      width.
 
- -- Funktion: double gsl_histogram_sum (const gsl_histogram * H)
+ -- Function: double gsl_histogram_sum (const gsl_histogram * H)
      This function returns the sum of all bin values. Negative bin
      values are included in the sum.
 
@@ -552,42 +551,42 @@ File: gsl-ref.info,  Node: Histogram Operations,  Next: Reading and writing hist
 21.7 Histogram Operations
 =========================
 
- -- Funktion: int gsl_histogram_equal_bins_p (const gsl_histogram * H1,
+ -- Function: int gsl_histogram_equal_bins_p (const gsl_histogram * H1,
           const gsl_histogram * H2)
      This function returns 1 if the all of the individual bin ranges of
      the two histograms are identical, and 0 otherwise.
 
- -- Funktion: int gsl_histogram_add (gsl_histogram * H1, const
+ -- Function: int gsl_histogram_add (gsl_histogram * H1, const
           gsl_histogram * H2)
      This function adds the contents of the bins in histogram H2 to the
      corresponding bins of histogram H1,  i.e. h'_1(i) = h_1(i) +
      h_2(i).  The two histograms must have identical bin ranges.
 
- -- Funktion: int gsl_histogram_sub (gsl_histogram * H1, const
+ -- Function: int gsl_histogram_sub (gsl_histogram * H1, const
           gsl_histogram * H2)
      This function subtracts the contents of the bins in histogram H2
      from the corresponding bins of histogram H1, i.e. h'_1(i) = h_1(i)
      - h_2(i).  The two histograms must have identical bin ranges.
 
- -- Funktion: int gsl_histogram_mul (gsl_histogram * H1, const
+ -- Function: int gsl_histogram_mul (gsl_histogram * H1, const
           gsl_histogram * H2)
      This function multiplies the contents of the bins of histogram H1
      by the contents of the corresponding bins in histogram H2, i.e.
      h'_1(i) = h_1(i) * h_2(i).  The two histograms must have identical
      bin ranges.
 
- -- Funktion: int gsl_histogram_div (gsl_histogram * H1, const
+ -- Function: int gsl_histogram_div (gsl_histogram * H1, const
           gsl_histogram * H2)
      This function divides the contents of the bins of histogram H1 by
      the contents of the corresponding bins in histogram H2, i.e.
      h'_1(i) = h_1(i) / h_2(i).  The two histograms must have identical
      bin ranges.
 
- -- Funktion: int gsl_histogram_scale (gsl_histogram * H, double SCALE)
+ -- Function: int gsl_histogram_scale (gsl_histogram * H, double SCALE)
      This function multiplies the contents of the bins of histogram H
      by the constant SCALE, i.e. h'_1(i) = h_1(i) * scale.
 
- -- Funktion: int gsl_histogram_shift (gsl_histogram * H, double OFFSET)
+ -- Function: int gsl_histogram_shift (gsl_histogram * H, double OFFSET)
      This function shifts the contents of the bins of histogram H by
      the constant OFFSET, i.e. h'_1(i) = h_1(i) + offset.
 
@@ -600,7 +599,7 @@ File: gsl-ref.info,  Node: Reading and writing histograms,  Next: Resampling fro
 The library provides functions for reading and writing histograms to a
 file as binary data or formatted text.
 
- -- Funktion: int gsl_histogram_fwrite (FILE * STREAM, const
+ -- Function: int gsl_histogram_fwrite (FILE * STREAM, const
           gsl_histogram * H)
      This function writes the ranges and bins of the histogram H to the
      stream STREAM in binary format.  The return value is 0 for success
@@ -608,7 +607,7 @@ file as binary data or formatted text.
      Since the data is written in the native binary format it may not
      be portable between different architectures.
 
- -- Funktion: int gsl_histogram_fread (FILE * STREAM, gsl_histogram * H)
+ -- Function: int gsl_histogram_fread (FILE * STREAM, gsl_histogram * H)
      This function reads into the histogram H from the open stream
      STREAM in binary format.  The histogram H must be preallocated
      with the correct size since the function uses the number of bins
@@ -617,7 +616,7 @@ file as binary data or formatted text.
      the file.  The data is assumed to have been written in the native
      binary format on the same architecture.
 
- -- Funktion: int gsl_histogram_fprintf (FILE * STREAM, const
+ -- Function: int gsl_histogram_fprintf (FILE * STREAM, const
           gsl_histogram * H, const char * RANGE_FORMAT, const char *
           BIN_FORMAT)
      This function writes the ranges and bins of the histogram H
@@ -642,7 +641,7 @@ file as binary data or formatted text.
      between lines but this allows the histogram to be manipulated with
      line-oriented tools.
 
- -- Funktion: int gsl_histogram_fscanf (FILE * STREAM, gsl_histogram *
+ -- Function: int gsl_histogram_fscanf (FILE * STREAM, gsl_histogram *
           H)
      This function reads formatted data from the stream STREAM into the
      histogram H.  The data is assumed to be in the three-column format
@@ -705,25 +704,25 @@ The following functions allow you to create a `gsl_histogram_pdf'
 struct which represents this probability distribution and generate
 random samples from it.
 
- -- Funktion: gsl_histogram_pdf * gsl_histogram_pdf_alloc (size_t N)
+ -- Function: gsl_histogram_pdf * gsl_histogram_pdf_alloc (size_t N)
      This function allocates memory for a probability distribution with
      N bins and returns a pointer to a newly initialized
      `gsl_histogram_pdf' struct. If insufficient memory is available a
      null pointer is returned and the error handler is invoked with an
      error code of `GSL_ENOMEM'.
 
- -- Funktion: int gsl_histogram_pdf_init (gsl_histogram_pdf * P, const
+ -- Function: int gsl_histogram_pdf_init (gsl_histogram_pdf * P, const
           gsl_histogram * H)
      This function initializes the probability distribution P with the
      contents of the histogram H. If any of the bins of H are negative
      then the error handler is invoked with an error code of `GSL_EDOM'
      because a probability distribution cannot contain negative values.
 
- -- Funktion: void gsl_histogram_pdf_free (gsl_histogram_pdf * P)
+ -- Function: void gsl_histogram_pdf_free (gsl_histogram_pdf * P)
      This function frees the probability distribution function P and
      all of the memory associated with it.
 
- -- Funktion: double gsl_histogram_pdf_sample (const gsl_histogram_pdf
+ -- Function: double gsl_histogram_pdf_sample (const gsl_histogram_pdf
           * P, double R)
      This function uses R, a uniform random number between zero and
      one, to compute a single random sample from the probability
@@ -874,7 +873,7 @@ number of `GSL_ENOMEM') in addition to returning a null pointer.  Thus
 if you use the library error handler to abort your program then it
 isn't necessary to check every 2D histogram `alloc'.
 
- -- Funktion: gsl_histogram2d * gsl_histogram2d_alloc (size_t NX,
+ -- Function: gsl_histogram2d * gsl_histogram2d_alloc (size_t NX,
           size_t NY)
      This function allocates memory for a two-dimensional histogram with
      NX bins in the x direction and NY bins in the y direction.  The
@@ -884,20 +883,20 @@ isn't necessary to check every 2D histogram `alloc'.
      `GSL_ENOMEM'. The bins and ranges must be initialized with one of
      the functions below before the histogram is ready for use.
 
- -- Funktion: int gsl_histogram2d_set_ranges (gsl_histogram2d * H,
+ -- Function: int gsl_histogram2d_set_ranges (gsl_histogram2d * H,
           const double XRANGE[], size_t XSIZE, const double YRANGE[],
           size_t YSIZE)
      This function sets the ranges of the existing histogram H using
      the arrays XRANGE and YRANGE of size XSIZE and YSIZE respectively.
      The values of the histogram bins are reset to zero.
 
- -- Funktion: int gsl_histogram2d_set_ranges_uniform (gsl_histogram2d *
+ -- Function: int gsl_histogram2d_set_ranges_uniform (gsl_histogram2d *
           H, double XMIN, double XMAX, double YMIN, double YMAX)
      This function sets the ranges of the existing histogram H to cover
      the ranges XMIN to XMAX and YMIN to YMAX uniformly.  The values of
      the histogram bins are reset to zero.
 
- -- Funktion: void gsl_histogram2d_free (gsl_histogram2d * H)
+ -- Function: void gsl_histogram2d_free (gsl_histogram2d * H)
      This function frees the 2D histogram H and all of the memory
      associated with it.
 
@@ -907,13 +906,13 @@ File: gsl-ref.info,  Node: Copying 2D Histograms,  Next: Updating and accessing 
 21.15 Copying 2D Histograms
 ===========================
 
- -- Funktion: int gsl_histogram2d_memcpy (gsl_histogram2d * DEST, const
+ -- Function: int gsl_histogram2d_memcpy (gsl_histogram2d * DEST, const
           gsl_histogram2d * SRC)
      This function copies the histogram SRC into the pre-existing
      histogram DEST, making DEST into an exact copy of SRC.  The two
      histograms must be of the same size.
 
- -- Funktion: gsl_histogram2d * gsl_histogram2d_clone (const
+ -- Function: gsl_histogram2d * gsl_histogram2d_clone (const
           gsl_histogram2d * SRC)
      This function returns a pointer to a newly created histogram which
      is an exact copy of the histogram SRC.
@@ -930,7 +929,7 @@ specifying a pair of (x,y) coordinates or by using the bin indices
 (x,y) coordinates use binary searches in the x and y directions to
 identify the bin which covers the appropriate range.
 
- -- Funktion: int gsl_histogram2d_increment (gsl_histogram2d * H,
+ -- Function: int gsl_histogram2d_increment (gsl_histogram2d * H,
           double X, double Y)
      This function updates the histogram H by adding one (1.0) to the
      bin whose x and y ranges contain the coordinates (X,Y).
@@ -943,46 +942,46 @@ identify the bin which covers the appropriate range.
      for a small range of a larger dataset, ignoring any coordinates
      outside the range of interest.
 
- -- Funktion: int gsl_histogram2d_accumulate (gsl_histogram2d * H,
+ -- Function: int gsl_histogram2d_accumulate (gsl_histogram2d * H,
           double X, double Y, double WEIGHT)
      This function is similar to `gsl_histogram2d_increment' but
      increases the value of the appropriate bin in the histogram H by
      the floating-point number WEIGHT.
 
- -- Funktion: double gsl_histogram2d_get (const gsl_histogram2d * H,
+ -- Function: double gsl_histogram2d_get (const gsl_histogram2d * H,
           size_t I, size_t J)
      This function returns the contents of the (I,J)-th bin of the
      histogram H.  If (I,J) lies outside the valid range of indices for
      the histogram then the error handler is called with an error code
      of `GSL_EDOM' and the function returns 0.
 
- -- Funktion: int gsl_histogram2d_get_xrange (const gsl_histogram2d *
+ -- Function: int gsl_histogram2d_get_xrange (const gsl_histogram2d *
           H, size_t I, double * XLOWER, double * XUPPER)
- -- Funktion: int gsl_histogram2d_get_yrange (const gsl_histogram2d *
+ -- Function: int gsl_histogram2d_get_yrange (const gsl_histogram2d *
           H, size_t J, double * YLOWER, double * YUPPER)
      These functions find the upper and lower range limits of the I-th
      and J-th bins in the x and y directions of the histogram H.  The
      range limits are stored in XLOWER and XUPPER or YLOWER and YUPPER.
-     The lower limits are inclusive (i.e. events with these
-     coordinates are included in the bin) and the upper limits are
-     exclusive (i.e. events with the value of the upper limit are not
-     included and fall in the neighboring higher bin, if it exists).
-     The functions return 0 to indicate success.  If I or J lies
-     outside the valid range of indices for the histogram then the
-     error handler is called with an error code of `GSL_EDOM'.
+     The lower limits are inclusive (i.e. events with these coordinates
+     are included in the bin) and the upper limits are exclusive (i.e.
+     events with the value of the upper limit are not included and fall
+     in the neighboring higher bin, if it exists).  The functions
+     return 0 to indicate success.  If I or J lies outside the valid
+     range of indices for the histogram then the error handler is
+     called with an error code of `GSL_EDOM'.
 
- -- Funktion: double gsl_histogram2d_xmax (const gsl_histogram2d * H)
- -- Funktion: double gsl_histogram2d_xmin (const gsl_histogram2d * H)
- -- Funktion: size_t gsl_histogram2d_nx (const gsl_histogram2d * H)
- -- Funktion: double gsl_histogram2d_ymax (const gsl_histogram2d * H)
- -- Funktion: double gsl_histogram2d_ymin (const gsl_histogram2d * H)
- -- Funktion: size_t gsl_histogram2d_ny (const gsl_histogram2d * H)
+ -- Function: double gsl_histogram2d_xmax (const gsl_histogram2d * H)
+ -- Function: double gsl_histogram2d_xmin (const gsl_histogram2d * H)
+ -- Function: size_t gsl_histogram2d_nx (const gsl_histogram2d * H)
+ -- Function: double gsl_histogram2d_ymax (const gsl_histogram2d * H)
+ -- Function: double gsl_histogram2d_ymin (const gsl_histogram2d * H)
+ -- Function: size_t gsl_histogram2d_ny (const gsl_histogram2d * H)
      These functions return the maximum upper and minimum lower range
      limits and the number of bins for the x and y directions of the
      histogram H.  They provide a way of determining these values
      without accessing the `gsl_histogram2d' struct directly.
 
- -- Funktion: void gsl_histogram2d_reset (gsl_histogram2d * H)
+ -- Function: void gsl_histogram2d_reset (gsl_histogram2d * H)
      This function resets all the bins of the histogram H to zero.
 
 
@@ -994,7 +993,7 @@ File: gsl-ref.info,  Node: Searching 2D histogram ranges,  Next: 2D Histogram St
 The following functions are used by the access and update routines to
 locate the bin which corresponds to a given (x,y) coordinate.
 
- -- Funktion: int gsl_histogram2d_find (const gsl_histogram2d * H,
+ -- Function: int gsl_histogram2d_find (const gsl_histogram2d * H,
           double X, double Y, size_t * I, size_t * J)
      This function finds and sets the indices I and J to the to the bin
      which covers the coordinates (X,Y). The bin is located using a
@@ -1011,59 +1010,59 @@ File: gsl-ref.info,  Node: 2D Histogram Statistics,  Next: 2D Histogram Operatio
 21.18 2D Histogram Statistics
 =============================
 
- -- Funktion: double gsl_histogram2d_max_val (const gsl_histogram2d * H)
+ -- Function: double gsl_histogram2d_max_val (const gsl_histogram2d * H)
      This function returns the maximum value contained in the histogram
      bins.
 
- -- Funktion: void gsl_histogram2d_max_bin (const gsl_histogram2d * H,
+ -- Function: void gsl_histogram2d_max_bin (const gsl_histogram2d * H,
           size_t * I, size_t * J)
      This function finds the indices of the bin containing the maximum
      value in the histogram H and stores the result in (I,J). In the
      case where several bins contain the same maximum value the first
      bin found is returned.
 
- -- Funktion: double gsl_histogram2d_min_val (const gsl_histogram2d * H)
+ -- Function: double gsl_histogram2d_min_val (const gsl_histogram2d * H)
      This function returns the minimum value contained in the histogram
      bins.
 
- -- Funktion: void gsl_histogram2d_min_bin (const gsl_histogram2d * H,
+ -- Function: void gsl_histogram2d_min_bin (const gsl_histogram2d * H,
           size_t * I, size_t * J)
      This function finds the indices of the bin containing the minimum
      value in the histogram H and stores the result in (I,J). In the
      case where several bins contain the same maximum value the first
      bin found is returned.
 
- -- Funktion: double gsl_histogram2d_xmean (const gsl_histogram2d * H)
+ -- Function: double gsl_histogram2d_xmean (const gsl_histogram2d * H)
      This function returns the mean of the histogrammed x variable,
      where the histogram is regarded as a probability distribution.
      Negative bin values are ignored for the purposes of this
      calculation.
 
- -- Funktion: double gsl_histogram2d_ymean (const gsl_histogram2d * H)
+ -- Function: double gsl_histogram2d_ymean (const gsl_histogram2d * H)
      This function returns the mean of the histogrammed y variable,
      where the histogram is regarded as a probability distribution.
      Negative bin values are ignored for the purposes of this
      calculation.
 
- -- Funktion: double gsl_histogram2d_xsigma (const gsl_histogram2d * H)
+ -- Function: double gsl_histogram2d_xsigma (const gsl_histogram2d * H)
      This function returns the standard deviation of the histogrammed x
      variable, where the histogram is regarded as a probability
      distribution. Negative bin values are ignored for the purposes of
      this calculation.
 
- -- Funktion: double gsl_histogram2d_ysigma (const gsl_histogram2d * H)
+ -- Function: double gsl_histogram2d_ysigma (const gsl_histogram2d * H)
      This function returns the standard deviation of the histogrammed y
      variable, where the histogram is regarded as a probability
      distribution. Negative bin values are ignored for the purposes of
      this calculation.
 
- -- Funktion: double gsl_histogram2d_cov (const gsl_histogram2d * H)
+ -- Function: double gsl_histogram2d_cov (const gsl_histogram2d * H)
      This function returns the covariance of the histogrammed x and y
      variables, where the histogram is regarded as a probability
      distribution. Negative bin values are ignored for the purposes of
      this calculation.
 
- -- Funktion: double gsl_histogram2d_sum (const gsl_histogram2d * H)
+ -- Function: double gsl_histogram2d_sum (const gsl_histogram2d * H)
      This function returns the sum of all bin values. Negative bin
      values are included in the sum.
 
@@ -1073,44 +1072,44 @@ File: gsl-ref.info,  Node: 2D Histogram Operations,  Next: Reading and writing 2
 21.19 2D Histogram Operations
 =============================
 
- -- Funktion: int gsl_histogram2d_equal_bins_p (const gsl_histogram2d *
+ -- Function: int gsl_histogram2d_equal_bins_p (const gsl_histogram2d *
           H1, const gsl_histogram2d * H2)
      This function returns 1 if all the individual bin ranges of the two
      histograms are identical, and 0 otherwise.
 
- -- Funktion: int gsl_histogram2d_add (gsl_histogram2d * H1, const
+ -- Function: int gsl_histogram2d_add (gsl_histogram2d * H1, const
           gsl_histogram2d * H2)
      This function adds the contents of the bins in histogram H2 to the
      corresponding bins of histogram H1, i.e. h'_1(i,j) = h_1(i,j) +
      h_2(i,j).  The two histograms must have identical bin ranges.
 
- -- Funktion: int gsl_histogram2d_sub (gsl_histogram2d * H1, const
+ -- Function: int gsl_histogram2d_sub (gsl_histogram2d * H1, const
           gsl_histogram2d * H2)
      This function subtracts the contents of the bins in histogram H2
      from the corresponding bins of histogram H1, i.e. h'_1(i,j) =
      h_1(i,j) - h_2(i,j).  The two histograms must have identical bin
      ranges.
 
- -- Funktion: int gsl_histogram2d_mul (gsl_histogram2d * H1, const
+ -- Function: int gsl_histogram2d_mul (gsl_histogram2d * H1, const
           gsl_histogram2d * H2)
      This function multiplies the contents of the bins of histogram H1
      by the contents of the corresponding bins in histogram H2, i.e.
      h'_1(i,j) = h_1(i,j) * h_2(i,j).  The two histograms must have
      identical bin ranges.
 
- -- Funktion: int gsl_histogram2d_div (gsl_histogram2d * H1, const
+ -- Function: int gsl_histogram2d_div (gsl_histogram2d * H1, const
           gsl_histogram2d * H2)
      This function divides the contents of the bins of histogram H1 by
      the contents of the corresponding bins in histogram H2, i.e.
      h'_1(i,j) = h_1(i,j) / h_2(i,j).  The two histograms must have
      identical bin ranges.
 
- -- Funktion: int gsl_histogram2d_scale (gsl_histogram2d * H, double
+ -- Function: int gsl_histogram2d_scale (gsl_histogram2d * H, double
           SCALE)
      This function multiplies the contents of the bins of histogram H
      by the constant SCALE, i.e. h'_1(i,j) = h_1(i,j) scale.
 
- -- Funktion: int gsl_histogram2d_shift (gsl_histogram2d * H, double
+ -- Function: int gsl_histogram2d_shift (gsl_histogram2d * H, double
           OFFSET)
      This function shifts the contents of the bins of histogram H by
      the constant OFFSET, i.e. h'_1(i,j) = h_1(i,j) + offset.
@@ -1124,7 +1123,7 @@ File: gsl-ref.info,  Node: Reading and writing 2D histograms,  Next: Resampling 
 The library provides functions for reading and writing two dimensional
 histograms to a file as binary data or formatted text.
 
- -- Funktion: int gsl_histogram2d_fwrite (FILE * STREAM, const
+ -- Function: int gsl_histogram2d_fwrite (FILE * STREAM, const
           gsl_histogram2d * H)
      This function writes the ranges and bins of the histogram H to the
      stream STREAM in binary format.  The return value is 0 for success
@@ -1132,7 +1131,7 @@ histograms to a file as binary data or formatted text.
      Since the data is written in the native binary format it may not
      be portable between different architectures.
 
- -- Funktion: int gsl_histogram2d_fread (FILE * STREAM, gsl_histogram2d
+ -- Function: int gsl_histogram2d_fread (FILE * STREAM, gsl_histogram2d
           * H)
      This function reads into the histogram H from the stream STREAM in
      binary format.  The histogram H must be preallocated with the
@@ -1142,7 +1141,7 @@ histograms to a file as binary data or formatted text.
      file.  The data is assumed to have been written in the native
      binary format on the same architecture.
 
- -- Funktion: int gsl_histogram2d_fprintf (FILE * STREAM, const
+ -- Function: int gsl_histogram2d_fprintf (FILE * STREAM, const
           gsl_histogram2d * H, const char * RANGE_FORMAT, const char *
           BIN_FORMAT)
      This function writes the ranges and bins of the histogram H
@@ -1179,7 +1178,7 @@ histograms to a file as binary data or formatted text.
      these values but this allows the histogram to be manipulated with
      line-oriented tools.
 
- -- Funktion: int gsl_histogram2d_fscanf (FILE * STREAM,
+ -- Function: int gsl_histogram2d_fscanf (FILE * STREAM,
           gsl_histogram2d * H)
      This function reads formatted data from the stream STREAM into the
      histogram H.  The data is assumed to be in the five-column format
@@ -1230,7 +1229,7 @@ The following functions allow you to create a `gsl_histogram2d_pdf'
 struct which represents a two dimensional probability distribution and
 generate random samples from it.
 
- -- Funktion: gsl_histogram2d_pdf * gsl_histogram2d_pdf_alloc (size_t
+ -- Function: gsl_histogram2d_pdf * gsl_histogram2d_pdf_alloc (size_t
           NX, size_t NY)
      This function allocates memory for a two-dimensional probability
      distribution of size NX-by-NY and returns a pointer to a newly
@@ -1238,7 +1237,7 @@ generate random samples from it.
      is available a null pointer is returned and the error handler is
      invoked with an error code of `GSL_ENOMEM'.
 
- -- Funktion: int gsl_histogram2d_pdf_init (gsl_histogram2d_pdf * P,
+ -- Function: int gsl_histogram2d_pdf_init (gsl_histogram2d_pdf * P,
           const gsl_histogram2d * H)
      This function initializes the two-dimensional probability
      distribution calculated P from the histogram H.  If any of the
@@ -1246,11 +1245,11 @@ generate random samples from it.
      error code of `GSL_EDOM' because a probability distribution cannot
      contain negative values.
 
- -- Funktion: void gsl_histogram2d_pdf_free (gsl_histogram2d_pdf * P)
+ -- Function: void gsl_histogram2d_pdf_free (gsl_histogram2d_pdf * P)
      This function frees the two-dimensional probability distribution
      function P and all of the memory associated with it.
 
- -- Funktion: int gsl_histogram2d_pdf_sample (const gsl_histogram2d_pdf
+ -- Function: int gsl_histogram2d_pdf_sample (const gsl_histogram2d_pdf
           * P, double R1, double R2, double * X, double * Y)
      This function uses two uniform random numbers between zero and one,
      R1 and R2, to compute a single random sample from the
@@ -1382,7 +1381,7 @@ File: gsl-ref.info,  Node: Creating ntuples,  Next: Opening an existing ntuple f
 22.2 Creating ntuples
 =====================
 
- -- Funktion: gsl_ntuple * gsl_ntuple_create (char * FILENAME, void *
+ -- Function: gsl_ntuple * gsl_ntuple_create (char * FILENAME, void *
           NTUPLE_DATA, size_t SIZE)
      This function creates a new write-only ntuple file FILENAME for
      ntuples of size SIZE and returns a pointer to the newly created
@@ -1397,7 +1396,7 @@ File: gsl-ref.info,  Node: Opening an existing ntuple file,  Next: Writing ntupl
 22.3 Opening an existing ntuple file
 ====================================
 
- -- Funktion: gsl_ntuple * gsl_ntuple_open (char * FILENAME, void *
+ -- Function: gsl_ntuple * gsl_ntuple_open (char * FILENAME, void *
           NTUPLE_DATA, size_t SIZE)
      This function opens an existing ntuple file FILENAME for reading
      and returns a pointer to a corresponding ntuple struct. The
@@ -1411,11 +1410,11 @@ File: gsl-ref.info,  Node: Writing ntuples,  Next: Reading ntuples,  Prev: Openi
 22.4 Writing ntuples
 ====================
 
- -- Funktion: int gsl_ntuple_write (gsl_ntuple * NTUPLE)
+ -- Function: int gsl_ntuple_write (gsl_ntuple * NTUPLE)
      This function writes the current ntuple NTUPLE->NTUPLE_DATA of
      size NTUPLE->SIZE to the corresponding file.
 
- -- Funktion: int gsl_ntuple_bookdata (gsl_ntuple * NTUPLE)
+ -- Function: int gsl_ntuple_bookdata (gsl_ntuple * NTUPLE)
      This function is a synonym for `gsl_ntuple_write'.
 
 
@@ -1424,7 +1423,7 @@ File: gsl-ref.info,  Node: Reading ntuples,  Next: Closing an ntuple file,  Prev
 22.5 Reading ntuples
 ====================
 
- -- Funktion: int gsl_ntuple_read (gsl_ntuple * NTUPLE)
+ -- Function: int gsl_ntuple_read (gsl_ntuple * NTUPLE)
      This function reads the current row of the ntuple file for NTUPLE
      and stores the values in NTUPLE->DATA.
 
@@ -1434,7 +1433,7 @@ File: gsl-ref.info,  Node: Closing an ntuple file,  Next: Histogramming ntuple v
 22.6 Closing an ntuple file
 ===========================
 
- -- Funktion: int gsl_ntuple_close (gsl_ntuple * NTUPLE)
+ -- Function: int gsl_ntuple_close (gsl_ntuple * NTUPLE)
      This function closes the ntuple file NTUPLE and frees its
      associated allocated memory.
 
@@ -1471,7 +1470,7 @@ selected by the selection function,
 In this case the struct component FUNCTION should return the value to
 be added to the histogram for the ntuple row.
 
- -- Funktion: int gsl_ntuple_project (gsl_histogram * H, gsl_ntuple *
+ -- Function: int gsl_ntuple_project (gsl_histogram * H, gsl_ntuple *
           NTUPLE, gsl_ntuple_value_fn * VALUE_FUNC,
           gsl_ntuple_select_fn * SELECT_FUNC)
      This function updates the histogram H from the ntuple NTUPLE using
@@ -1770,16 +1769,16 @@ region.  The error estimate itself should decrease as
    The functions described in this section are declared in the header
 file `gsl_monte_plain.h'.
 
- -- Funktion: gsl_monte_plain_state * gsl_monte_plain_alloc (size_t DIM)
+ -- Function: gsl_monte_plain_state * gsl_monte_plain_alloc (size_t DIM)
      This function allocates and initializes a workspace for Monte Carlo
      integration in DIM dimensions.
 
- -- Funktion: int gsl_monte_plain_init (gsl_monte_plain_state* S)
+ -- Function: int gsl_monte_plain_init (gsl_monte_plain_state* S)
      This function initializes a previously allocated integration state.
      This allows an existing workspace to be reused for different
      integrations.
 
- -- Funktion: int gsl_monte_plain_integrate (gsl_monte_function * F,
+ -- Function: int gsl_monte_plain_integrate (gsl_monte_function * F,
           double * XL, double * XU, size_t DIM, size_t CALLS, gsl_rng *
           R, gsl_monte_plain_state * S, double * RESULT, double *
           ABSERR)
@@ -1792,7 +1791,7 @@ file `gsl_monte_plain.h'.
      The result of the integration is returned in RESULT, with an
      estimated absolute error ABSERR.
 
- -- Funktion: void gsl_monte_plain_free (gsl_monte_plain_state * S)
+ -- Function: void gsl_monte_plain_free (gsl_monte_plain_state * S)
      This function frees the memory associated with the integrator state
      S.
 
@@ -1842,17 +1841,17 @@ estimate of its error.
    The functions described in this section are declared in the header
 file `gsl_monte_miser.h'.
 
- -- Funktion: gsl_monte_miser_state * gsl_monte_miser_alloc (size_t DIM)
+ -- Function: gsl_monte_miser_state * gsl_monte_miser_alloc (size_t DIM)
      This function allocates and initializes a workspace for Monte Carlo
      integration in DIM dimensions.  The workspace is used to maintain
      the state of the integration.
 
- -- Funktion: int gsl_monte_miser_init (gsl_monte_miser_state* S)
+ -- Function: int gsl_monte_miser_init (gsl_monte_miser_state* S)
      This function initializes a previously allocated integration state.
      This allows an existing workspace to be reused for different
      integrations.
 
- -- Funktion: int gsl_monte_miser_integrate (gsl_monte_function * F,
+ -- Function: int gsl_monte_miser_integrate (gsl_monte_function * F,
           double * XL, double * XU, size_t DIM, size_t CALLS, gsl_rng *
           R, gsl_monte_miser_state * S, double * RESULT, double *
           ABSERR)
@@ -1865,7 +1864,7 @@ file `gsl_monte_miser.h'.
      The result of the integration is returned in RESULT, with an
      estimated absolute error ABSERR.
 
- -- Funktion: void gsl_monte_miser_free (gsl_monte_miser_state * S)
+ -- Function: void gsl_monte_miser_free (gsl_monte_miser_state * S)
      This function frees the memory associated with the integrator state
      S.
 
@@ -1968,17 +1967,17 @@ of points (the goal is 2).  Each box can then have a fractional number
 of bins, but if the ratio of bins-per-box is less than two, Vegas
 switches to a kind variance reduction (rather than importance sampling).
 
- -- Funktion: gsl_monte_vegas_state * gsl_monte_vegas_alloc (size_t DIM)
+ -- Function: gsl_monte_vegas_state * gsl_monte_vegas_alloc (size_t DIM)
      This function allocates and initializes a workspace for Monte Carlo
      integration in DIM dimensions.  The workspace is used to maintain
      the state of the integration.
 
- -- Funktion: int gsl_monte_vegas_init (gsl_monte_vegas_state* S)
+ -- Function: int gsl_monte_vegas_init (gsl_monte_vegas_state* S)
      This function initializes a previously allocated integration state.
      This allows an existing workspace to be reused for different
      integrations.
 
- -- Funktion: int gsl_monte_vegas_integrate (gsl_monte_function * F,
+ -- Function: int gsl_monte_vegas_integrate (gsl_monte_function * F,
           double * XL, double * XU, size_t DIM, size_t CALLS, gsl_rng *
           R, gsl_monte_vegas_state * S, double * RESULT, double *
           ABSERR)
@@ -1995,7 +1994,7 @@ switches to a kind variance reduction (rather than importance sampling).
      returned via the state struct component, S->CHISQ, and must be
      consistent with 1 for the weighted average to be reliable.
 
- -- Funktion: void gsl_monte_vegas_free (gsl_monte_vegas_state * S)
+ -- Function: void gsl_monte_vegas_free (gsl_monte_vegas_state * S)
      This function frees the memory associated with the integrator state
      S.
 
@@ -2350,7 +2349,7 @@ File: gsl-ref.info,  Node: Simulated Annealing functions,  Next: Examples with S
 24.2 Simulated Annealing functions
 ==================================
 
- -- Funktion: void gsl_siman_solve (const gsl_rng * R, void * X0_P,
+ -- Function: void gsl_siman_solve (const gsl_rng * R, void * X0_P,
           gsl_siman_Efunc_t EF, gsl_siman_step_t TAKE_STEP,
           gsl_siman_metric_t DISTANCE, gsl_siman_print_t
           PRINT_POSITION, gsl_siman_copy_t COPYFUNC,
@@ -2746,21 +2745,21 @@ The lowest level components are the "stepping functions" which advance
 a solution from time t to t+h for a fixed step-size h and estimate the
 resulting local error.
 
- -- Funktion: gsl_odeiv_step * gsl_odeiv_step_alloc (const
+ -- Function: gsl_odeiv_step * gsl_odeiv_step_alloc (const
           gsl_odeiv_step_type * T, size_t DIM)
      This function returns a pointer to a newly allocated instance of a
      stepping function of type T for a system of DIM dimensions.
 
- -- Funktion: int gsl_odeiv_step_reset (gsl_odeiv_step * S)
+ -- Function: int gsl_odeiv_step_reset (gsl_odeiv_step * S)
      This function resets the stepping function S.  It should be used
      whenever the next use of S will not be a continuation of a
      previous step.
 
- -- Funktion: void gsl_odeiv_step_free (gsl_odeiv_step * S)
+ -- Function: void gsl_odeiv_step_free (gsl_odeiv_step * S)
      This function frees all the memory associated with the stepping
      function S.
 
- -- Funktion: const char * gsl_odeiv_step_name (const gsl_odeiv_step *
+ -- Function: const char * gsl_odeiv_step_name (const gsl_odeiv_step *
           S)
      This function returns a pointer to the name of the stepping
      function.  For example,
@@ -2770,13 +2769,13 @@ resulting local error.
 
      would print something like `step method is 'rk4''.
 
- -- Funktion: unsigned int gsl_odeiv_step_order (const gsl_odeiv_step *
+ -- Function: unsigned int gsl_odeiv_step_order (const gsl_odeiv_step *
           S)
      This function returns the order of the stepping function on the
      previous step.  This order can vary if the stepping function
      itself is adaptive.
 
- -- Funktion: int gsl_odeiv_step_apply (gsl_odeiv_step * S, double T,
+ -- Function: int gsl_odeiv_step_apply (gsl_odeiv_step * S, double T,
           double H, double Y[], double YERR[], const double DYDT_IN[],
           double DYDT_OUT[], const gsl_odeiv_system * DYDT)
      This function applies the stepping function S to the system of
@@ -2847,7 +2846,7 @@ The control function examines the proposed change to the solution
 produced by a stepping function and attempts to determine the optimal
 step-size for a user-specified level of error.
 
- -- Funktion: gsl_odeiv_control * gsl_odeiv_control_standard_new
+ -- Function: gsl_odeiv_control * gsl_odeiv_control_standard_new
           (double EPS_ABS, double EPS_REL, double A_Y, double A_DYDT)
      The standard control object is a four parameter heuristic based on
      absolute and relative errors EPS_ABS and EPS_REL, and scaling
@@ -2881,7 +2880,7 @@ step-size for a user-specified level of error.
      uncontrolled changes in the stepsize, the overall scaling factor is
      limited to the range 1/5 to 5.
 
- -- Funktion: gsl_odeiv_control * gsl_odeiv_control_y_new (double
+ -- Function: gsl_odeiv_control * gsl_odeiv_control_y_new (double
           EPS_ABS, double EPS_REL)
      This function creates a new control object which will keep the
      local error on each step within an absolute error of EPS_ABS and
@@ -2889,7 +2888,7 @@ step-size for a user-specified level of error.
      This is equivalent to the standard control object with A_Y=1 and
      A_DYDT=0.
 
- -- Funktion: gsl_odeiv_control * gsl_odeiv_control_yp_new (double
+ -- Function: gsl_odeiv_control * gsl_odeiv_control_yp_new (double
           EPS_ABS, double EPS_REL)
      This function creates a new control object which will keep the
      local error on each step within an absolute error of EPS_ABS and
@@ -2897,7 +2896,7 @@ step-size for a user-specified level of error.
      solution y'_i(t).  This is equivalent to the standard control
      object with A_Y=0 and A_DYDT=1.
 
- -- Funktion: gsl_odeiv_control * gsl_odeiv_control_scaled_new (double
+ -- Function: gsl_odeiv_control * gsl_odeiv_control_scaled_new (double
           EPS_ABS, double EPS_REL, double A_Y, double A_DYDT, const
           double SCALE_ABS[], size_t DIM)
      This function creates a new control object which uses the same
@@ -2910,24 +2909,24 @@ step-size for a user-specified level of error.
      where s_i is the i-th component of the array SCALE_ABS.  The same
      error control heuristic is used by the Matlab ODE suite.
 
- -- Funktion: gsl_odeiv_control * gsl_odeiv_control_alloc (const
+ -- Function: gsl_odeiv_control * gsl_odeiv_control_alloc (const
           gsl_odeiv_control_type * T)
      This function returns a pointer to a newly allocated instance of a
      control function of type T.  This function is only needed for
      defining new types of control functions.  For most purposes the
      standard control functions described above should be sufficient.
 
- -- Funktion: int gsl_odeiv_control_init (gsl_odeiv_control * C, double
+ -- Function: int gsl_odeiv_control_init (gsl_odeiv_control * C, double
           EPS_ABS, double EPS_REL, double A_Y, double A_DYDT)
      This function initializes the control function C with the
      parameters EPS_ABS (absolute error), EPS_REL (relative error), A_Y
      (scaling factor for y) and A_DYDT (scaling factor for derivatives).
 
- -- Funktion: void gsl_odeiv_control_free (gsl_odeiv_control * C)
+ -- Function: void gsl_odeiv_control_free (gsl_odeiv_control * C)
      This function frees all the memory associated with the control
      function C.
 
- -- Funktion: int gsl_odeiv_control_hadjust (gsl_odeiv_control * C,
+ -- Function: int gsl_odeiv_control_hadjust (gsl_odeiv_control * C,
           gsl_odeiv_step * S, const double Y[], const double YERR[],
           const double DYDT[], double * H)
      This function adjusts the step-size H using the control function
@@ -2942,7 +2941,7 @@ step-size for a user-specified level of error.
      step-size which satisfies the user-specified accuracy requirements
      for the current point.
 
- -- Funktion: const char * gsl_odeiv_control_name (const
+ -- Function: const char * gsl_odeiv_control_name (const
           gsl_odeiv_control * C)
      This function returns a pointer to the name of the control
      function.  For example,
@@ -2966,11 +2965,11 @@ evolution function backs out of the current step and tries the proposed
 smaller step-size.  This process is continued until an acceptable
 step-size is found.
 
- -- Funktion: gsl_odeiv_evolve * gsl_odeiv_evolve_alloc (size_t DIM)
+ -- Function: gsl_odeiv_evolve * gsl_odeiv_evolve_alloc (size_t DIM)
      This function returns a pointer to a newly allocated instance of an
      evolution function for a system of DIM dimensions.
 
- -- Funktion: int gsl_odeiv_evolve_apply (gsl_odeiv_evolve * E,
+ -- Function: int gsl_odeiv_evolve_apply (gsl_odeiv_evolve * E,
           gsl_odeiv_control * CON, gsl_odeiv_step * STEP, const
           gsl_odeiv_system * DYDT, double * T, double T1, double * H,
           double Y[])
@@ -2995,12 +2994,12 @@ step-size is found.
      and those from `gsl_odeiv_evolve_apply' itself, any user-defined
      return values should be distinct from the standard GSL error codes.
 
- -- Funktion: int gsl_odeiv_evolve_reset (gsl_odeiv_evolve * E)
+ -- Function: int gsl_odeiv_evolve_reset (gsl_odeiv_evolve * E)
      This function resets the evolution function E.  It should be used
      whenever the next use of E will not be a continuation of a
      previous step.
 
- -- Funktion: void gsl_odeiv_evolve_free (gsl_odeiv_evolve * E)
+ -- Function: void gsl_odeiv_evolve_free (gsl_odeiv_evolve * E)
      This function frees all the memory associated with the evolution
      function E.
 
@@ -3246,12 +3245,12 @@ File: gsl-ref.info,  Node: Interpolation Functions,  Next: Interpolation Types, 
 The interpolation function for a given dataset is stored in a
 `gsl_interp' object.  These are created by the following functions.
 
- -- Funktion: gsl_interp * gsl_interp_alloc (const gsl_interp_type * T,
+ -- Function: gsl_interp * gsl_interp_alloc (const gsl_interp_type * T,
           size_t SIZE)
      This function returns a pointer to a newly allocated interpolation
      object of type T for SIZE data-points.
 
- -- Funktion: int gsl_interp_init (gsl_interp * INTERP, const double
+ -- Function: int gsl_interp_init (gsl_interp * INTERP, const double
           XA[], const double YA[], size_t SIZE)
      This function initializes the interpolation object INTERP for the
      data (XA,YA) where XA and YA are arrays of size SIZE.  The
@@ -3260,7 +3259,7 @@ The interpolation function for a given dataset is stored in a
      The XA data array is always assumed to be strictly ordered; the
      behavior for other arrangements is not defined.
 
- -- Funktion: void gsl_interp_free (gsl_interp * INTERP)
+ -- Function: void gsl_interp_free (gsl_interp * INTERP)
      This function frees the interpolation object INTERP.
 
 
@@ -3308,7 +3307,7 @@ The interpolation library provides five interpolation types:
 
    The following related functions are available:
 
- -- Funktion: const char * gsl_interp_name (const gsl_interp * INTERP)
+ -- Function: const char * gsl_interp_name (const gsl_interp * INTERP)
      This function returns the name of the interpolation type used by
      INTERP.  For example,
 
@@ -3319,7 +3318,7 @@ The interpolation library provides five interpolation types:
 
           interp uses 'cspline' interpolation.
 
- -- Funktion: unsigned int gsl_interp_min_size (const gsl_interp *
+ -- Function: unsigned int gsl_interp_min_size (const gsl_interp *
           INTERP)
      This function returns the minimum number of points required by the
      interpolation type of INTERP.  For example, Akima spline
@@ -3337,26 +3336,26 @@ previous value of an index lookup.  When the subsequent interpolation
 point falls in the same interval its index value can be returned
 immediately.
 
- -- Funktion: size_t gsl_interp_bsearch (const double X_ARRAY[], double
+ -- Function: size_t gsl_interp_bsearch (const double X_ARRAY[], double
           X, size_t INDEX_LO, size_t INDEX_HI)
      This function returns the index i of the array X_ARRAY such that
      `x_array[i] <= x < x_array[i+1]'.  The index is searched for in
      the range [INDEX_LO,INDEX_HI].
 
- -- Funktion: gsl_interp_accel * gsl_interp_accel_alloc (void)
+ -- Function: gsl_interp_accel * gsl_interp_accel_alloc (void)
      This function returns a pointer to an accelerator object, which is
      a kind of iterator for interpolation lookups.  It tracks the state
      of lookups, thus allowing for application of various acceleration
      strategies.
 
- -- Funktion: size_t gsl_interp_accel_find (gsl_interp_accel * A, const
+ -- Function: size_t gsl_interp_accel_find (gsl_interp_accel * A, const
           double X_ARRAY[], size_t SIZE, double X)
      This function performs a lookup action on the data array X_ARRAY
      of size SIZE, using the given accelerator A.  This is how lookups
      are performed during evaluation of an interpolation.  The function
      returns an index i such that `x_array[i] <= x < x_array[i+1]'.
 
- -- Funktion: void gsl_interp_accel_free (gsl_interp_accel* ACC)
+ -- Function: void gsl_interp_accel_free (gsl_interp_accel* ACC)
      This function frees the accelerator object ACC.
 
 
@@ -3365,40 +3364,40 @@ File: gsl-ref.info,  Node: Evaluation of Interpolating Functions,  Next: Higher-
 26.5 Evaluation of Interpolating Functions
 ==========================================
 
- -- Funktion: double gsl_interp_eval (const gsl_interp * INTERP, const
+ -- Function: double gsl_interp_eval (const gsl_interp * INTERP, const
           double XA[], const double YA[], double X, gsl_interp_accel *
           ACC)
- -- Funktion: int gsl_interp_eval_e (const gsl_interp * INTERP, const
+ -- Function: int gsl_interp_eval_e (const gsl_interp * INTERP, const
           double XA[], const double YA[], double X, gsl_interp_accel *
           ACC, double * Y)
      These functions return the interpolated value of Y for a given
      point X, using the interpolation object INTERP, data arrays XA and
      YA and the accelerator ACC.
 
- -- Funktion: double gsl_interp_eval_deriv (const gsl_interp * INTERP,
+ -- Function: double gsl_interp_eval_deriv (const gsl_interp * INTERP,
           const double XA[], const double YA[], double X,
           gsl_interp_accel * ACC)
- -- Funktion: int gsl_interp_eval_deriv_e (const gsl_interp * INTERP,
+ -- Function: int gsl_interp_eval_deriv_e (const gsl_interp * INTERP,
           const double XA[], const double YA[], double X,
           gsl_interp_accel * ACC, double * D)
      These functions return the derivative D of an interpolated
      function for a given point X, using the interpolation object
      INTERP, data arrays XA and YA and the accelerator ACC.
 
- -- Funktion: double gsl_interp_eval_deriv2 (const gsl_interp * INTERP,
+ -- Function: double gsl_interp_eval_deriv2 (const gsl_interp * INTERP,
           const double XA[], const double YA[], double X,
           gsl_interp_accel * ACC)
- -- Funktion: int gsl_interp_eval_deriv2_e (const gsl_interp * INTERP,
+ -- Function: int gsl_interp_eval_deriv2_e (const gsl_interp * INTERP,
           const double XA[], const double YA[], double X,
           gsl_interp_accel * ACC, double * D2)
      These functions return the second derivative D2 of an interpolated
      function for a given point X, using the interpolation object
      INTERP, data arrays XA and YA and the accelerator ACC.
 
- -- Funktion: double gsl_interp_eval_integ (const gsl_interp * INTERP,
+ -- Function: double gsl_interp_eval_integ (const gsl_interp * INTERP,
           const double XA[], const double YA[], double A, double B,
           gsl_interp_accel * ACC)
- -- Funktion: int gsl_interp_eval_integ_e (const gsl_interp * INTERP,
+ -- Function: int gsl_interp_eval_integ_e (const gsl_interp * INTERP,
           const double XA[], const double YA[], double A, double B,
           gsl_interp_accel * ACC, double * RESULT)
      These functions return the numerical integral RESULT of an
@@ -3420,37 +3419,37 @@ removes the need to pass both XA and YA as arguments on each
 evaluation. These functions are defined in the header file
 `gsl_spline.h'.
 
- -- Funktion: gsl_spline * gsl_spline_alloc (const gsl_interp_type * T,
+ -- Function: gsl_spline * gsl_spline_alloc (const gsl_interp_type * T,
           size_t SIZE)
 
- -- Funktion: int gsl_spline_init (gsl_spline * SPLINE, const double
+ -- Function: int gsl_spline_init (gsl_spline * SPLINE, const double
           XA[], const double YA[], size_t SIZE)
 
- -- Funktion: void gsl_spline_free (gsl_spline * SPLINE)
+ -- Function: void gsl_spline_free (gsl_spline * SPLINE)
 
- -- Funktion: const char * gsl_spline_name (const gsl_spline * SPLINE)
+ -- Function: const char * gsl_spline_name (const gsl_spline * SPLINE)
 
- -- Funktion: unsigned int gsl_spline_min_size (const gsl_spline *
+ -- Function: unsigned int gsl_spline_min_size (const gsl_spline *
           SPLINE)
 
- -- Funktion: double gsl_spline_eval (const gsl_spline * SPLINE, double
+ -- Function: double gsl_spline_eval (const gsl_spline * SPLINE, double
           X, gsl_interp_accel * ACC)
- -- Funktion: int gsl_spline_eval_e (const gsl_spline * SPLINE, double
+ -- Function: int gsl_spline_eval_e (const gsl_spline * SPLINE, double
           X, gsl_interp_accel * ACC, double * Y)
 
- -- Funktion: double gsl_spline_eval_deriv (const gsl_spline * SPLINE,
+ -- Function: double gsl_spline_eval_deriv (const gsl_spline * SPLINE,
           double X, gsl_interp_accel * ACC)
- -- Funktion: int gsl_spline_eval_deriv_e (const gsl_spline * SPLINE,
+ -- Function: int gsl_spline_eval_deriv_e (const gsl_spline * SPLINE,
           double X, gsl_interp_accel * ACC, double * D)
 
- -- Funktion: double gsl_spline_eval_deriv2 (const gsl_spline * SPLINE,
+ -- Function: double gsl_spline_eval_deriv2 (const gsl_spline * SPLINE,
           double X, gsl_interp_accel * ACC)
- -- Funktion: int gsl_spline_eval_deriv2_e (const gsl_spline * SPLINE,
+ -- Function: int gsl_spline_eval_deriv2_e (const gsl_spline * SPLINE,
           double X, gsl_interp_accel * ACC, double * D2)
 
- -- Funktion: double gsl_spline_eval_integ (const gsl_spline * SPLINE,
+ -- Function: double gsl_spline_eval_integ (const gsl_spline * SPLINE,
           double A, double B, gsl_interp_accel * ACC)
- -- Funktion: int gsl_spline_eval_integ_e (const gsl_spline * SPLINE,
+ -- Function: int gsl_spline_eval_integ_e (const gsl_spline * SPLINE,
           double A, double B, gsl_interp_accel * ACC, double * RESULT)
 
 
@@ -3609,7 +3608,7 @@ File: gsl-ref.info,  Node: Numerical Differentiation functions,  Next: Numerical
 27.1 Functions
 ==============
 
- -- Funktion: int gsl_deriv_central (const gsl_function * F, double X,
+ -- Function: int gsl_deriv_central (const gsl_function * F, double X,
           double H, double * RESULT, double * ABSERR)
      This function computes the numerical derivative of the function F
      at the point X using an adaptive central difference algorithm with
@@ -3625,7 +3624,7 @@ File: gsl-ref.info,  Node: Numerical Differentiation functions,  Next: Numerical
      that the value of the function at x does not contribute to the
      derivative calculation, so only 4-points are actually used.
 
- -- Funktion: int gsl_deriv_forward (const gsl_function * F, double X,
+ -- Function: int gsl_deriv_forward (const gsl_function * F, double X,
           double H, double * RESULT, double * ABSERR)
      This function computes the numerical derivative of the function F
      at the point X using an adaptive forward difference algorithm with
@@ -3643,7 +3642,7 @@ File: gsl-ref.info,  Node: Numerical Differentiation functions,  Next: Numerical
      difference between the 4-point rule and the corresponding 2-point
      rule x+h/2, x+h.
 
- -- Funktion: int gsl_deriv_backward (const gsl_function * F, double X,
+ -- Function: int gsl_deriv_backward (const gsl_function * F, double X,
           double H, double * RESULT, double * ABSERR)
      This function computes the numerical derivative of the function F
      at the point X using an adaptive backward difference algorithm
@@ -3783,14 +3782,14 @@ File: gsl-ref.info,  Node: Creation and Calculation of Chebyshev Series,  Next: 
 28.2 Creation and Calculation of Chebyshev Series
 =================================================
 
- -- Funktion: gsl_cheb_series * gsl_cheb_alloc (const size_t N)
+ -- Function: gsl_cheb_series * gsl_cheb_alloc (const size_t N)
      This function allocates space for a Chebyshev series of order N
      and returns a pointer to a new `gsl_cheb_series' struct.
 
- -- Funktion: void gsl_cheb_free (gsl_cheb_series * CS)
+ -- Function: void gsl_cheb_free (gsl_cheb_series * CS)
      This function frees a previously allocated Chebyshev series CS.
 
- -- Funktion: int gsl_cheb_init (gsl_cheb_series * CS, const
+ -- Function: int gsl_cheb_init (gsl_cheb_series * CS, const
           gsl_function * F, const double A, const double B)
      This function computes the Chebyshev approximation CS for the
      function F over the range (a,b) to the previously specified order.
@@ -3803,23 +3802,23 @@ File: gsl-ref.info,  Node: Chebyshev Series Evaluation,  Next: Derivatives and I
 28.3 Chebyshev Series Evaluation
 ================================
 
- -- Funktion: double gsl_cheb_eval (const gsl_cheb_series * CS, double
+ -- Function: double gsl_cheb_eval (const gsl_cheb_series * CS, double
           X)
      This function evaluates the Chebyshev series CS at a given point X.
 
- -- Funktion: int gsl_cheb_eval_err (const gsl_cheb_series * CS, const
+ -- Function: int gsl_cheb_eval_err (const gsl_cheb_series * CS, const
           double X, double * RESULT, double * ABSERR)
      This function computes the Chebyshev series CS at a given point X,
      estimating both the series RESULT and its absolute error ABSERR.
      The error estimate is made from the first neglected term in the
      series.
 
- -- Funktion: double gsl_cheb_eval_n (const gsl_cheb_series * CS,
+ -- Function: double gsl_cheb_eval_n (const gsl_cheb_series * CS,
           size_t ORDER, double X)
      This function evaluates the Chebyshev series CS at a given point
      N, to (at most) the given order ORDER.
 
- -- Funktion: int gsl_cheb_eval_n_err (const gsl_cheb_series * CS,
+ -- Function: int gsl_cheb_eval_n_err (const gsl_cheb_series * CS,
           const size_t ORDER, const double X, double * RESULT, double *
           ABSERR)
      This function evaluates a Chebyshev series CS at a given point X,
@@ -3839,14 +3838,14 @@ estimate produced by evaluating the derivative series will be
 underestimated due to the contribution of higher order terms being
 neglected.
 
- -- Funktion: int gsl_cheb_calc_deriv (gsl_cheb_series * DERIV, const
+ -- Function: int gsl_cheb_calc_deriv (gsl_cheb_series * DERIV, const
           gsl_cheb_series * CS)
      This function computes the derivative of the series CS, storing
      the derivative coefficients in the previously allocated DERIV.
      The two series CS and DERIV must have been allocated with the same
      order.
 
- -- Funktion: int gsl_cheb_calc_integ (gsl_cheb_series * INTEG, const
+ -- Function: int gsl_cheb_calc_integ (gsl_cheb_series * INTEG, const
           gsl_cheb_series * CS)
      This function computes the integral of the series CS, storing the
      integral coefficients in the previously allocated INTEG.  The two
@@ -3969,15 +3968,15 @@ described here a full table of intermediate values and derivatives
 through to O(N) must be computed and stored, but this does give a
 reliable error estimate.
 
- -- Funktion: gsl_sum_levin_u_workspace * gsl_sum_levin_u_alloc (size_t
+ -- Function: gsl_sum_levin_u_workspace * gsl_sum_levin_u_alloc (size_t
           N)
      This function allocates a workspace for a Levin u-transform of N
      terms.  The size of the workspace is O(2n^2 + 3n).
 
- -- Funktion: void gsl_sum_levin_u_free (gsl_sum_levin_u_workspace * W)
+ -- Function: void gsl_sum_levin_u_free (gsl_sum_levin_u_workspace * W)
      This function frees the memory associated with the workspace W.
 
- -- Funktion: int gsl_sum_levin_u_accel (const double * ARRAY, size_t
+ -- Function: int gsl_sum_levin_u_accel (const double * ARRAY, size_t
           ARRAY_SIZE, gsl_sum_levin_u_workspace * W, double *
           SUM_ACCEL, double * ABSERR)
      This function takes the terms of a series in ARRAY of size
@@ -4014,17 +4013,17 @@ slightly. A reliable error estimate should be computed first using the
 full algorithm described above in order to verify the consistency of the
 results.
 
- -- Funktion: gsl_sum_levin_utrunc_workspace *
+ -- Function: gsl_sum_levin_utrunc_workspace *
 gsl_sum_levin_utrunc_alloc (size_t N)
      This function allocates a workspace for a Levin u-transform of N
      terms, without error estimation.  The size of the workspace is
      O(3n).
 
- -- Funktion: void gsl_sum_levin_utrunc_free
+ -- Function: void gsl_sum_levin_utrunc_free
           (gsl_sum_levin_utrunc_workspace * W)
      This function frees the memory associated with the workspace W.
 
- -- Funktion: int gsl_sum_levin_utrunc_accel (const double * ARRAY,
+ -- Function: int gsl_sum_levin_utrunc_accel (const double * ARRAY,
           size_t ARRAY_SIZE, gsl_sum_levin_utrunc_workspace * W, double
           * SUM_ACCEL, double * ABSERR_TRUNC)
      This function takes the terms of a series in ARRAY of size
@@ -4198,7 +4197,7 @@ File: gsl-ref.info,  Node: DWT Initialization,  Next: DWT Transform Functions,  
 The `gsl_wavelet' structure contains the filter coefficients defining
 the wavelet and any associated offset parameters.
 
- -- Funktion: gsl_wavelet * gsl_wavelet_alloc (const gsl_wavelet_type *
+ -- Function: gsl_wavelet * gsl_wavelet_alloc (const gsl_wavelet_type *
           T, size_t K)
      This function allocates and initializes a wavelet object of type
      T.  The parameter K selects the specific member of the wavelet
@@ -4229,18 +4228,18 @@ sub-bands on edges.  Thus the resulting visualization of the
 coefficients of the wavelet transform in the phase plane is easier to
 understand.
 
- -- Funktion: const char * gsl_wavelet_name (const gsl_wavelet * W)
+ -- Function: const char * gsl_wavelet_name (const gsl_wavelet * W)
      This function returns a pointer to the name of the wavelet family
      for W.
 
- -- Funktion: void gsl_wavelet_free (gsl_wavelet * W)
+ -- Function: void gsl_wavelet_free (gsl_wavelet * W)
      This function frees the wavelet object W.
 
    The `gsl_wavelet_workspace' structure contains scratch space of the
 same size as the input data and is used to hold intermediate results
 during the transform.
 
- -- Funktion: gsl_wavelet_workspace * gsl_wavelet_workspace_alloc
+ -- Function: gsl_wavelet_workspace * gsl_wavelet_workspace_alloc
           (size_t N)
      This function allocates a workspace for the discrete wavelet
      transform.  To perform a one-dimensional transform on N elements,
@@ -4249,7 +4248,7 @@ during the transform.
      workspace of size N, since the transform operates on individual
      rows and columns.
 
- -- Funktion: void gsl_wavelet_workspace_free (gsl_wavelet_workspace *
+ -- Function: void gsl_wavelet_workspace_free (gsl_wavelet_workspace *
           WORK)
      This function frees the allocated workspace WORK.
 
@@ -4276,13 +4275,13 @@ File: gsl-ref.info,  Node: DWT in one dimension,  Next: DWT in two dimension,  U
 30.3.1 Wavelet transforms in one dimension
 ------------------------------------------
 
- -- Funktion: int gsl_wavelet_transform (const gsl_wavelet * W, double
+ -- Function: int gsl_wavelet_transform (const gsl_wavelet * W, double
           * DATA, size_t STRIDE, size_t N, gsl_wavelet_direction DIR,
           gsl_wavelet_workspace * WORK)
- -- Funktion: int gsl_wavelet_transform_forward (const gsl_wavelet * W,
+ -- Function: int gsl_wavelet_transform_forward (const gsl_wavelet * W,
           double * DATA, size_t STRIDE, size_t N, gsl_wavelet_workspace
           * WORK)
- -- Funktion: int gsl_wavelet_transform_inverse (const gsl_wavelet * W,
+ -- Function: int gsl_wavelet_transform_inverse (const gsl_wavelet * W,
           double * DATA, size_t STRIDE, size_t N, gsl_wavelet_workspace
           * WORK)
      These functions compute in-place forward and inverse discrete
@@ -4340,13 +4339,13 @@ of the discrete wavelet transform is typically used in image analysis.
    The functions described in this section are declared in the header
 file `gsl_wavelet2d.h'.
 
- -- Funktion: int gsl_wavelet2d_transform (const gsl_wavelet * W,
+ -- Function: int gsl_wavelet2d_transform (const gsl_wavelet * W,
           double * DATA, size_t TDA, size_t SIZE1, size_t SIZE2,
           gsl_wavelet_direction DIR, gsl_wavelet_workspace * WORK)
- -- Funktion: int gsl_wavelet2d_transform_forward (const gsl_wavelet *
+ -- Function: int gsl_wavelet2d_transform_forward (const gsl_wavelet *
           W, double * DATA, size_t TDA, size_t SIZE1, size_t SIZE2,
           gsl_wavelet_workspace * WORK)
- -- Funktion: int gsl_wavelet2d_transform_inverse (const gsl_wavelet *
+ -- Function: int gsl_wavelet2d_transform_inverse (const gsl_wavelet *
           W, double * DATA, size_t TDA, size_t SIZE1, size_t SIZE2,
           gsl_wavelet_workspace * WORK)
      These functions compute two-dimensional in-place forward and
@@ -4365,34 +4364,34 @@ file `gsl_wavelet2d.h'.
      equal and integer powers of 2, or if insufficient workspace is
      provided.
 
- -- Funktion: int gsl_wavelet2d_transform_matrix (const gsl_wavelet *
+ -- Function: int gsl_wavelet2d_transform_matrix (const gsl_wavelet *
           W, gsl_matrix * M, gsl_wavelet_direction DIR,
           gsl_wavelet_workspace * WORK)
- -- Funktion: int gsl_wavelet2d_transform_matrix_forward (const
+ -- Function: int gsl_wavelet2d_transform_matrix_forward (const
           gsl_wavelet * W, gsl_matrix * M, gsl_wavelet_workspace * WORK)
- -- Funktion: int gsl_wavelet2d_transform_matrix_inverse (const
+ -- Function: int gsl_wavelet2d_transform_matrix_inverse (const
           gsl_wavelet * W, gsl_matrix * M, gsl_wavelet_workspace * WORK)
      These functions compute the two-dimensional in-place wavelet
      transform on a matrix A.
 
- -- Funktion: int gsl_wavelet2d_nstransform (const gsl_wavelet * W,
+ -- Function: int gsl_wavelet2d_nstransform (const gsl_wavelet * W,
           double * DATA, size_t TDA, size_t SIZE1, size_t SIZE2,
           gsl_wavelet_direction DIR, gsl_wavelet_workspace * WORK)
- -- Funktion: int gsl_wavelet2d_nstransform_forward (const gsl_wavelet
+ -- Function: int gsl_wavelet2d_nstransform_forward (const gsl_wavelet
           * W, double * DATA, size_t TDA, size_t SIZE1, size_t SIZE2,
           gsl_wavelet_workspace * WORK)
- -- Funktion: int gsl_wavelet2d_nstransform_inverse (const gsl_wavelet
+ -- Function: int gsl_wavelet2d_nstransform_inverse (const gsl_wavelet
           * W, double * DATA, size_t TDA, size_t SIZE1, size_t SIZE2,
           gsl_wavelet_workspace * WORK)
      These functions compute the two-dimensional wavelet transform in
      non-standard form.
 
- -- Funktion: int gsl_wavelet2d_nstransform_matrix (const gsl_wavelet *
+ -- Function: int gsl_wavelet2d_nstransform_matrix (const gsl_wavelet *
           W, gsl_matrix * M, gsl_wavelet_direction DIR,
           gsl_wavelet_workspace * WORK)
- -- Funktion: int gsl_wavelet2d_nstransform_matrix_forward (const
+ -- Function: int gsl_wavelet2d_nstransform_matrix_forward (const
           gsl_wavelet * W, gsl_matrix * M, gsl_wavelet_workspace * WORK)
- -- Funktion: int gsl_wavelet2d_nstransform_matrix_inverse (const
+ -- Function: int gsl_wavelet2d_nstransform_matrix_inverse (const
           gsl_wavelet * W, gsl_matrix * M, gsl_wavelet_workspace * WORK)
      These functions compute the non-standard form of the
      two-dimensional in-place wavelet transform on a matrix A.
@@ -4589,34 +4588,34 @@ File: gsl-ref.info,  Node: Discrete Hankel Transform Functions,  Next: Discrete 
 31.2 Functions
 ==============
 
- -- Funktion: gsl_dht * gsl_dht_alloc (size_t SIZE)
+ -- Function: gsl_dht * gsl_dht_alloc (size_t SIZE)
      This function allocates a Discrete Hankel transform object of size
      SIZE.
 
- -- Funktion: int gsl_dht_init (gsl_dht * T, double NU, double XMAX)
+ -- Function: int gsl_dht_init (gsl_dht * T, double NU, double XMAX)
      This function initializes the transform T for the given values of
      NU and X.
 
- -- Funktion: gsl_dht * gsl_dht_new (size_t SIZE, double NU, double
+ -- Function: gsl_dht * gsl_dht_new (size_t SIZE, double NU, double
           XMAX)
      This function allocates a Discrete Hankel transform object of size
      SIZE and initializes it for the given values of NU and X.
 
- -- Funktion: void gsl_dht_free (gsl_dht * T)
+ -- Function: void gsl_dht_free (gsl_dht * T)
      This function frees the transform T.
 
- -- Funktion: int gsl_dht_apply (const gsl_dht * T, double * F_IN,
+ -- Function: int gsl_dht_apply (const gsl_dht * T, double * F_IN,
           double * F_OUT)
      This function applies the transform T to the array F_IN whose size
      is equal to the size of the transform.  The result is stored in
      the array F_OUT which must be of the same length.
 
- -- Funktion: double gsl_dht_x_sample (const gsl_dht * T, int N)
+ -- Function: double gsl_dht_x_sample (const gsl_dht * T, int N)
      This function returns the value of the N-th sample point in the
      unit interval, (j_{\nu,n+1}/j_{\nu,M}) X. These are the points
      where the function f(t) is assumed to be sampled.
 
- -- Funktion: double gsl_dht_k_sample (const gsl_dht * T, int N)
+ -- Function: double gsl_dht_k_sample (const gsl_dht * T, int N)
      This function returns the value of the N-th sample point in
      "k-space", j_{\nu,n+1}/X.
 
@@ -4745,7 +4744,7 @@ File: gsl-ref.info,  Node: Initializing the Solver,  Next: Providing the functio
 32.3 Initializing the Solver
 ============================
 
- -- Funktion: gsl_root_fsolver * gsl_root_fsolver_alloc (const
+ -- Function: gsl_root_fsolver * gsl_root_fsolver_alloc (const
           gsl_root_fsolver_type * T)
      This function returns a pointer to a newly allocated instance of a
      solver of type T.  For example, the following code creates an
@@ -4760,7 +4759,7 @@ File: gsl-ref.info,  Node: Initializing the Solver,  Next: Providing the functio
      function returns a null pointer and the error handler is invoked
      with an error code of `GSL_ENOMEM'.
 
- -- Funktion: gsl_root_fdfsolver * gsl_root_fdfsolver_alloc (const
+ -- Function: gsl_root_fdfsolver * gsl_root_fdfsolver_alloc (const
           gsl_root_fdfsolver_type * T)
      This function returns a pointer to a newly allocated instance of a
      derivative-based solver of type T.  For example, the following
@@ -4775,24 +4774,24 @@ File: gsl-ref.info,  Node: Initializing the Solver,  Next: Providing the functio
      function returns a null pointer and the error handler is invoked
      with an error code of `GSL_ENOMEM'.
 
- -- Funktion: int gsl_root_fsolver_set (gsl_root_fsolver * S,
+ -- Function: int gsl_root_fsolver_set (gsl_root_fsolver * S,
           gsl_function * F, double X_LOWER, double X_UPPER)
      This function initializes, or reinitializes, an existing solver S
      to use the function F and the initial search interval [X_LOWER,
      X_UPPER].
 
- -- Funktion: int gsl_root_fdfsolver_set (gsl_root_fdfsolver * S,
+ -- Function: int gsl_root_fdfsolver_set (gsl_root_fdfsolver * S,
           gsl_function_fdf * FDF, double ROOT)
      This function initializes, or reinitializes, an existing solver S
      to use the function and derivative FDF and the initial guess ROOT.
 
- -- Funktion: void gsl_root_fsolver_free (gsl_root_fsolver * S)
- -- Funktion: void gsl_root_fdfsolver_free (gsl_root_fdfsolver * S)
+ -- Function: void gsl_root_fsolver_free (gsl_root_fsolver * S)
+ -- Function: void gsl_root_fdfsolver_free (gsl_root_fdfsolver * S)
      These functions free all the memory associated with the solver S.
 
- -- Funktion: const char * gsl_root_fsolver_name (const
+ -- Function: const char * gsl_root_fsolver_name (const
           gsl_root_fsolver * S)
- -- Funktion: const char * gsl_root_fdfsolver_name (const
+ -- Function: const char * gsl_root_fdfsolver_name (const
           gsl_root_fdfsolver * S)
      These functions return a pointer to the name of the solver.  For
      example,
@@ -4959,8 +4958,8 @@ corresponding type.  The same functions work for all solvers so that
 different methods can be substituted at runtime without modifications to
 the code.
 
- -- Funktion: int gsl_root_fsolver_iterate (gsl_root_fsolver * S)
- -- Funktion: int gsl_root_fdfsolver_iterate (gsl_root_fdfsolver * S)
+ -- Function: int gsl_root_fsolver_iterate (gsl_root_fsolver * S)
+ -- Function: int gsl_root_fdfsolver_iterate (gsl_root_fdfsolver * S)
      These functions perform a single iteration of the solver S.  If the
      iteration encounters an unexpected problem then an error code will
      be returned,
@@ -4979,15 +4978,15 @@ times.  The bracketing solvers also keep track of the current best
 interval bounding the root.  This information can be accessed with the
 following auxiliary functions,
 
- -- Funktion: double gsl_root_fsolver_root (const gsl_root_fsolver * S)
- -- Funktion: double gsl_root_fdfsolver_root (const gsl_root_fdfsolver
+ -- Function: double gsl_root_fsolver_root (const gsl_root_fsolver * S)
+ -- Function: double gsl_root_fdfsolver_root (const gsl_root_fdfsolver
           * S)
      These functions return the current estimate of the root for the
      solver S.
 
- -- Funktion: double gsl_root_fsolver_x_lower (const gsl_root_fsolver *
+ -- Function: double gsl_root_fsolver_x_lower (const gsl_root_fsolver *
           S)
- -- Funktion: double gsl_root_fsolver_x_upper (const gsl_root_fsolver *
+ -- Function: double gsl_root_fsolver_x_upper (const gsl_root_fsolver *
           S)
      These functions return the current bracketing interval for the
      solver S.
@@ -5011,7 +5010,7 @@ The handling of these conditions is under user control.  The functions
 below allow the user to test the precision of the current result in
 several standard ways.
 
- -- Funktion: int gsl_root_test_interval (double X_LOWER, double
+ -- Function: int gsl_root_test_interval (double X_LOWER, double
           X_UPPER, double EPSABS, double EPSREL)
      This function tests for the convergence of the interval [X_LOWER,
      X_UPPER] with absolute error EPSABS and relative error EPSREL.
@@ -5034,7 +5033,7 @@ several standard ways.
 
      assuming that the true root r^* is contained within the interval.
 
- -- Funktion: int gsl_root_test_delta (double X1, double X0, double
+ -- Function: int gsl_root_test_delta (double X1, double X0, double
           EPSABS, double EPSREL)
      This function tests for the convergence of the sequence ..., X0,
      X1 with absolute error EPSABS and relative error EPSREL.  The test
@@ -5044,7 +5043,7 @@ several standard ways.
 
      and returns `GSL_CONTINUE' otherwise.
 
- -- Funktion: int gsl_root_test_residual (double F, double EPSABS)
+ -- Function: int gsl_root_test_residual (double F, double EPSABS)
      This function tests the residual value F against the absolute
      error bound EPSABS.  The test returns `GSL_SUCCESS' if the
      following condition is achieved,
@@ -5566,7 +5565,7 @@ File: gsl-ref.info,  Node: Initializing the Minimizer,  Next: Providing the func
 33.3 Initializing the Minimizer
 ===============================
 
- -- Funktion: gsl_min_fminimizer * gsl_min_fminimizer_alloc (const
+ -- Function: gsl_min_fminimizer * gsl_min_fminimizer_alloc (const
           gsl_min_fminimizer_type * T)
      This function returns a pointer to a newly allocated instance of a
      minimizer of type T.  For example, the following code creates an
@@ -5581,7 +5580,7 @@ File: gsl-ref.info,  Node: Initializing the Minimizer,  Next: Providing the func
      function returns a null pointer and the error handler is invoked
      with an error code of `GSL_ENOMEM'.
 
- -- Funktion: int gsl_min_fminimizer_set (gsl_min_fminimizer * S,
+ -- Function: int gsl_min_fminimizer_set (gsl_min_fminimizer * S,
           gsl_function * F, double X_MINIMUM, double X_LOWER, double
           X_UPPER)
      This function sets, or resets, an existing minimizer S to use the
@@ -5591,7 +5590,7 @@ File: gsl-ref.info,  Node: Initializing the Minimizer,  Next: Providing the func
      If the interval given does not contain a minimum, then the function
      returns an error code of `GSL_EINVAL'.
 
- -- Funktion: int gsl_min_fminimizer_set_with_values
+ -- Function: int gsl_min_fminimizer_set_with_values
           (gsl_min_fminimizer * S, gsl_function * F, double X_MINIMUM,
           double F_MINIMUM, double X_LOWER, double F_LOWER, double
           X_UPPER, double F_UPPER)
@@ -5599,10 +5598,10 @@ File: gsl-ref.info,  Node: Initializing the Minimizer,  Next: Providing the func
      the values F_MINIMUM, F_LOWER and F_UPPER instead of computing
      `f(x_minimum)', `f(x_lower)' and `f(x_upper)'.
 
- -- Funktion: void gsl_min_fminimizer_free (gsl_min_fminimizer * S)
+ -- Function: void gsl_min_fminimizer_free (gsl_min_fminimizer * S)
      This function frees all the memory associated with the minimizer S.
 
- -- Funktion: const char * gsl_min_fminimizer_name (const
+ -- Function: const char * gsl_min_fminimizer_name (const
           gsl_min_fminimizer * S)
      This function returns a pointer to the name of the minimizer.  For
      example,
@@ -5635,7 +5634,7 @@ the corresponding type.  The same functions work for all minimizers so
 that different methods can be substituted at runtime without
 modifications to the code.
 
- -- Funktion: int gsl_min_fminimizer_iterate (gsl_min_fminimizer * S)
+ -- Function: int gsl_min_fminimizer_iterate (gsl_min_fminimizer * S)
      This function performs a single iteration of the minimizer S.  If
      the iteration encounters an unexpected problem then an error code
      will be returned,
@@ -5652,23 +5651,23 @@ modifications to the code.
 the minimum at all times, and the current interval bounding the minimum.
 This information can be accessed with the following auxiliary functions,
 
- -- Funktion: double gsl_min_fminimizer_x_minimum (const
+ -- Function: double gsl_min_fminimizer_x_minimum (const
           gsl_min_fminimizer * S)
      This function returns the current estimate of the position of the
      minimum for the minimizer S.
 
- -- Funktion: double gsl_min_fminimizer_x_upper (const
+ -- Function: double gsl_min_fminimizer_x_upper (const
           gsl_min_fminimizer * S)
- -- Funktion: double gsl_min_fminimizer_x_lower (const
+ -- Function: double gsl_min_fminimizer_x_lower (const
           gsl_min_fminimizer * S)
      These functions return the current upper and lower bound of the
      interval for the minimizer S.
 
- -- Funktion: double gsl_min_fminimizer_f_minimum (const
+ -- Function: double gsl_min_fminimizer_f_minimum (const
           gsl_min_fminimizer * S)
- -- Funktion: double gsl_min_fminimizer_f_upper (const
+ -- Function: double gsl_min_fminimizer_f_upper (const
           gsl_min_fminimizer * S)
- -- Funktion: double gsl_min_fminimizer_f_lower (const
+ -- Function: double gsl_min_fminimizer_f_lower (const
           gsl_min_fminimizer * S)
      These functions return the value of the function at the current
      estimate of the minimum and at the upper and lower bounds of the
@@ -5692,7 +5691,7 @@ conditions is true:
 The handling of these conditions is under user control.  The function
 below allows the user to test the precision of the current result.
 
- -- Funktion: int gsl_min_test_interval (double X_LOWER, double
+ -- Function: int gsl_min_test_interval (double X_LOWER, double
           X_UPPER, double EPSABS, double EPSREL)
      This function tests for the convergence of the interval [X_LOWER,
      X_UPPER] with absolute error EPSABS and relative error EPSREL.
@@ -5963,7 +5962,7 @@ with or without derivatives.  The solver itself depends only on the
 dimension of the problem and the algorithm and can be reused for
 different problems.
 
- -- Funktion: gsl_multiroot_fsolver * gsl_multiroot_fsolver_alloc
+ -- Function: gsl_multiroot_fsolver * gsl_multiroot_fsolver_alloc
           (const gsl_multiroot_fsolver_type * T, size_t N)
      This function returns a pointer to a newly allocated instance of a
      solver of type T for a system of N dimensions.  For example, the
@@ -5979,7 +5978,7 @@ different problems.
      function returns a null pointer and the error handler is invoked
      with an error code of `GSL_ENOMEM'.
 
- -- Funktion: gsl_multiroot_fdfsolver * gsl_multiroot_fdfsolver_alloc
+ -- Function: gsl_multiroot_fdfsolver * gsl_multiroot_fdfsolver_alloc
           (const gsl_multiroot_fdfsolver_type * T, size_t N)
      This function returns a pointer to a newly allocated instance of a
      derivative solver of type T for a system of N dimensions.  For
@@ -5995,25 +5994,25 @@ different problems.
      function returns a null pointer and the error handler is invoked
      with an error code of `GSL_ENOMEM'.
 
- -- Funktion: int gsl_multiroot_fsolver_set (gsl_multiroot_fsolver * S,
+ -- Function: int gsl_multiroot_fsolver_set (gsl_multiroot_fsolver * S,
           gsl_multiroot_function * F, gsl_vector * X)
      This function sets, or resets, an existing solver S to use the
      function F and the initial guess X.
 
- -- Funktion: int gsl_multiroot_fdfsolver_set (gsl_multiroot_fdfsolver
+ -- Function: int gsl_multiroot_fdfsolver_set (gsl_multiroot_fdfsolver
           * S, gsl_multiroot_function_fdf * FDF, gsl_vector * X)
      This function sets, or resets, an existing solver S to use the
      function and derivative FDF and the initial guess X.
 
- -- Funktion: void gsl_multiroot_fsolver_free (gsl_multiroot_fsolver *
+ -- Function: void gsl_multiroot_fsolver_free (gsl_multiroot_fsolver *
           S)
- -- Funktion: void gsl_multiroot_fdfsolver_free
+ -- Function: void gsl_multiroot_fdfsolver_free
           (gsl_multiroot_fdfsolver * S)
      These functions free all the memory associated with the solver S.
 
- -- Funktion: const char * gsl_multiroot_fsolver_name (const
+ -- Function: const char * gsl_multiroot_fsolver_name (const
           gsl_multiroot_fsolver * S)
- -- Funktion: const char * gsl_multiroot_fdfsolver_name (const
+ -- Function: const char * gsl_multiroot_fdfsolver_name (const
           gsl_multiroot_fdfsolver * S)
      These functions return a pointer to the name of the solver.  For
      example,
@@ -6172,9 +6171,9 @@ corresponding type.  The same functions work for all solvers so that
 different methods can be substituted at runtime without modifications to
 the code.
 
- -- Funktion: int gsl_multiroot_fsolver_iterate (gsl_multiroot_fsolver
+ -- Function: int gsl_multiroot_fsolver_iterate (gsl_multiroot_fsolver
           * S)
- -- Funktion: int gsl_multiroot_fdfsolver_iterate
+ -- Function: int gsl_multiroot_fdfsolver_iterate
           (gsl_multiroot_fdfsolver * S)
      These functions perform a single iteration of the solver S.  If the
      iteration encounters an unexpected problem then an error code will
@@ -6192,23 +6191,23 @@ the code.
 times.  This information can be accessed with the following auxiliary
 functions,
 
- -- Funktion: gsl_vector * gsl_multiroot_fsolver_root (const
+ -- Function: gsl_vector * gsl_multiroot_fsolver_root (const
           gsl_multiroot_fsolver * S)
- -- Funktion: gsl_vector * gsl_multiroot_fdfsolver_root (const
+ -- Function: gsl_vector * gsl_multiroot_fdfsolver_root (const
           gsl_multiroot_fdfsolver * S)
      These functions return the current estimate of the root for the
      solver S.
 
- -- Funktion: gsl_vector * gsl_multiroot_fsolver_f (const
+ -- Function: gsl_vector * gsl_multiroot_fsolver_f (const
           gsl_multiroot_fsolver * S)
- -- Funktion: gsl_vector * gsl_multiroot_fdfsolver_f (const
+ -- Function: gsl_vector * gsl_multiroot_fdfsolver_f (const
           gsl_multiroot_fdfsolver * S)
      These functions return the function value f(x) at the current
      estimate of the root for the solver S.
 
- -- Funktion: gsl_vector * gsl_multiroot_fsolver_dx (const
+ -- Function: gsl_vector * gsl_multiroot_fsolver_dx (const
           gsl_multiroot_fsolver * S)
- -- Funktion: gsl_vector * gsl_multiroot_fdfsolver_dx (const
+ -- Function: gsl_vector * gsl_multiroot_fdfsolver_dx (const
           gsl_multiroot_fdfsolver * S)
      These functions return the last step dx taken by the solver S.
 
@@ -6232,7 +6231,7 @@ The handling of these conditions is under user control.  The functions
 below allow the user to test the precision of the current result in
 several standard ways.
 
- -- Funktion: int gsl_multiroot_test_delta (const gsl_vector * DX,
+ -- Function: int gsl_multiroot_test_delta (const gsl_vector * DX,
           const gsl_vector * X, double EPSABS, double EPSREL)
      This function tests for the convergence of the sequence by
      comparing the last step DX with the absolute error EPSABS and
@@ -6243,7 +6242,7 @@ several standard ways.
 
      for each component of X and returns `GSL_CONTINUE' otherwise.
 
- -- Funktion: int gsl_multiroot_test_residual (const gsl_vector * F,
+ -- Function: int gsl_multiroot_test_residual (const gsl_vector * F,
           double EPSABS)
      This function tests the residual value F against the absolute
      error bound EPSABS.  The test returns `GSL_SUCCESS' if the
@@ -6820,10 +6819,10 @@ The following function initializes a multidimensional minimizer.  The
 minimizer itself depends only on the dimension of the problem and the
 algorithm and can be reused for different problems.
 
- -- Funktion: gsl_multimin_fdfminimizer *
+ -- Function: gsl_multimin_fdfminimizer *
 gsl_multimin_fdfminimizer_alloc (const gsl_multimin_fdfminimizer_type *
           T, size_t N)
- -- Funktion: gsl_multimin_fminimizer * gsl_multimin_fminimizer_alloc
+ -- Function: gsl_multimin_fminimizer * gsl_multimin_fminimizer_alloc
           (const gsl_multimin_fminimizer_type * T, size_t N)
      This function returns a pointer to a newly allocated instance of a
      minimizer of type T for an N-dimension function.  If there is
@@ -6831,7 +6830,7 @@ gsl_multimin_fdfminimizer_alloc (const gsl_multimin_fdfminimizer_type *
      returns a null pointer and the error handler is invoked with an
      error code of `GSL_ENOMEM'.
 
- -- Funktion: int gsl_multimin_fdfminimizer_set
+ -- Function: int gsl_multimin_fdfminimizer_set
           (gsl_multimin_fdfminimizer * S, gsl_multimin_function_fdf *
           FDF, const gsl_vector * X, double STEP_SIZE, double TOL)
      This function initializes the minimizer S to minimize the function
@@ -6847,7 +6846,7 @@ gsl_multimin_fdfminimizer_alloc (const gsl_multimin_fdfminimizer_type *
      that setting TOL to zero will force the use of "exact"
      line-searches, which are extremely expensive.
 
- -- Funktion: int gsl_multimin_fminimizer_set (gsl_multimin_fminimizer
+ -- Function: int gsl_multimin_fminimizer_set (gsl_multimin_fminimizer
           * S, gsl_multimin_function * F, const gsl_vector * X, const
           gsl_vector * STEP_SIZE)
      This function initializes the minimizer S to minimize the function
@@ -6855,15 +6854,15 @@ gsl_multimin_fdfminimizer_alloc (const gsl_multimin_fdfminimizer_type *
      trial steps is given in vector STEP_SIZE. The precise meaning of
      this parameter depends on the method used.
 
- -- Funktion: void gsl_multimin_fdfminimizer_free
+ -- Function: void gsl_multimin_fdfminimizer_free
           (gsl_multimin_fdfminimizer * S)
- -- Funktion: void gsl_multimin_fminimizer_free
+ -- Function: void gsl_multimin_fminimizer_free
           (gsl_multimin_fminimizer * S)
      This function frees all the memory associated with the minimizer S.
 
- -- Funktion: const char * gsl_multimin_fdfminimizer_name (const
+ -- Function: const char * gsl_multimin_fdfminimizer_name (const
           gsl_multimin_fdfminimizer * S)
- -- Funktion: const char * gsl_multimin_fminimizer_name (const
+ -- Function: const char * gsl_multimin_fminimizer_name (const
           gsl_multimin_fminimizer * S)
      This function returns a pointer to the name of the minimizer.  For
      example,
@@ -6994,9 +6993,9 @@ function performs one iteration to update the state of the minimizer.
 The same function works for all minimizers so that different methods can
 be substituted at runtime without modifications to the code.
 
- -- Funktion: int gsl_multimin_fdfminimizer_iterate
+ -- Function: int gsl_multimin_fdfminimizer_iterate
           (gsl_multimin_fdfminimizer * S)
- -- Funktion: int gsl_multimin_fminimizer_iterate
+ -- Function: int gsl_multimin_fminimizer_iterate
           (gsl_multimin_fminimizer * S)
      These functions perform a single iteration of the minimizer S.  If
      the iteration encounters an unexpected problem then an error code
@@ -7006,24 +7005,24 @@ The minimizer maintains a current best estimate of the minimum at all
 times.  This information can be accessed with the following auxiliary
 functions,
 
- -- Funktion: gsl_vector * gsl_multimin_fdfminimizer_x (const
+ -- Function: gsl_vector * gsl_multimin_fdfminimizer_x (const
           gsl_multimin_fdfminimizer * S)
- -- Funktion: gsl_vector * gsl_multimin_fminimizer_x (const
+ -- Function: gsl_vector * gsl_multimin_fminimizer_x (const
           gsl_multimin_fminimizer * S)
- -- Funktion: double gsl_multimin_fdfminimizer_minimum (const
+ -- Function: double gsl_multimin_fdfminimizer_minimum (const
           gsl_multimin_fdfminimizer * S)
- -- Funktion: double gsl_multimin_fminimizer_minimum (const
+ -- Function: double gsl_multimin_fminimizer_minimum (const
           gsl_multimin_fminimizer * S)
- -- Funktion: gsl_vector * gsl_multimin_fdfminimizer_gradient (const
+ -- Function: gsl_vector * gsl_multimin_fdfminimizer_gradient (const
           gsl_multimin_fdfminimizer * S)
- -- Funktion: double gsl_multimin_fminimizer_size (const
+ -- Function: double gsl_multimin_fminimizer_size (const
           gsl_multimin_fminimizer * S)
      These functions return the current best estimate of the location
      of the minimum, the value of the function at that point, its
      gradient, and minimizer specific characteristic size for the
      minimizer S.
 
- -- Funktion: int gsl_multimin_fdfminimizer_restart
+ -- Function: int gsl_multimin_fdfminimizer_restart
           (gsl_multimin_fdfminimizer * S)
      This function resets the minimizer S to use the current point as a
      new starting point.
@@ -7046,7 +7045,7 @@ conditions is true:
 The handling of these conditions is under user control.  The functions
 below allow the user to test the precision of the current result.
 
- -- Funktion: int gsl_multimin_test_gradient (const gsl_vector * G,
+ -- Function: int gsl_multimin_test_gradient (const gsl_vector * G,
           double EPSABS)
      This function tests the norm of the gradient G against the
      absolute tolerance EPSABS. The gradient of a multidimensional
@@ -7060,7 +7059,7 @@ below allow the user to test the precision of the current result.
      variations in x.  The relationship between these quantities is
      given by \delta f = g \delta x.
 
- -- Funktion: int gsl_multimin_test_size (const double SIZE, double
+ -- Function: int gsl_multimin_test_size (const double SIZE, double
           EPSABS)
      This function tests the minimizer specific characteristic size (if
      applicable to the used minimizer) against absolute tolerance
@@ -7480,7 +7479,7 @@ File: gsl-ref.info,  Node: Linear regression,  Next: Linear fitting without a co
 The functions described in this section can be used to perform
 least-squares fits to a straight line model, Y(c,x) = c_0 + c_1 x.
 
- -- Funktion: int gsl_fit_linear (const double * X, const size_t
+ -- Function: int gsl_fit_linear (const double * X, const size_t
           XSTRIDE, const double * Y, const size_t YSTRIDE, size_t N,
           double * C0, double * C1, double * COV00, double * COV01,
           double * COV11, double * SUMSQ)
@@ -7493,7 +7492,7 @@ least-squares fits to a straight line model, Y(c,x) = c_0 + c_1 x.
      COV01, COV11).  The sum of squares of the residuals from the
      best-fit line is returned in SUMSQ.
 
- -- Funktion: int gsl_fit_wlinear (const double * X, const size_t
+ -- Function: int gsl_fit_wlinear (const double * X, const size_t
           XSTRIDE, const double * W, const size_t WSTRIDE, const double
           * Y, const size_t YSTRIDE, size_t N, double * C0, double *
           C1, double * COV00, double * COV01, double * COV11, double *
@@ -7510,7 +7509,7 @@ least-squares fits to a straight line model, Y(c,x) = c_0 + c_1 x.
      COV11).  The weighted sum of squares of the residuals from the
      best-fit line, \chi^2, is returned in CHISQ.
 
- -- Funktion: int gsl_fit_linear_est (double X, double C0, double C1,
+ -- Function: int gsl_fit_linear_est (double X, double C0, double C1,
           double C00, double C01, double C11, double * Y, double *
           Y_ERR)
      This function uses the best-fit linear regression coefficients

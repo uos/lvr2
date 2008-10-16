@@ -44,7 +44,7 @@ available_tags=
 
 # ### BEGIN LIBTOOL CONFIG
 
-# Libtool was configured on host ash:
+# Libtool was configured on host Bubba:
 
 # Shell to use when invoking shell scripts.
 SHELL="/bin/sh"
@@ -66,12 +66,12 @@ fast_install=needless
 
 # The host system.
 host_alias=
-host=i686-pc-linux-gnu
+host=x86_64-unknown-linux-gnu
 host_os=linux-gnu
 
 # The build system.
 build_alias=
-build=i686-pc-linux-gnu
+build=x86_64-unknown-linux-gnu
 build_os=linux-gnu
 
 # An echo program that does not interpret backslashes.
@@ -97,7 +97,7 @@ with_gcc=yes
 EGREP="grep -E"
 
 # The linker used to build libraries.
-LD="/usr/i586-suse-linux/bin/ld"
+LD="/usr/x86_64-suse-linux/bin/ld -m elf_x86_64"
 
 # Whether we need hard or soft links.
 LN_S="ln -s"
@@ -325,10 +325,10 @@ variables_saved_for_relink="PATH LD_LIBRARY_PATH LD_RUN_PATH GCC_EXEC_PREFIX COM
 link_all_deplibs=unknown
 
 # Compile-time system search path for libraries
-sys_lib_search_path_spec=" /usr/lib/gcc/i586-suse-linux/4.2.1/ /usr/lib/gcc/i586-suse-linux/4.2.1/ /usr/lib/gcc/i586-suse-linux/4.2.1/../../../../i586-suse-linux/lib/i586-suse-linux/4.2.1/ /usr/lib/gcc/i586-suse-linux/4.2.1/../../../../i586-suse-linux/lib/ /usr/lib/gcc/i586-suse-linux/4.2.1/../../../i586-suse-linux/4.2.1/ /usr/lib/gcc/i586-suse-linux/4.2.1/../../../ /lib/i586-suse-linux/4.2.1/ /lib/ /usr/lib/i586-suse-linux/4.2.1/ /usr/lib/"
+sys_lib_search_path_spec=" /usr/lib64/gcc/x86_64-suse-linux/4.3/ /usr/lib/gcc/x86_64-suse-linux/4.3/ /usr/lib64/gcc/x86_64-suse-linux/4.3/../../../../x86_64-suse-linux/lib/x86_64-suse-linux/4.3/ /usr/lib64/gcc/x86_64-suse-linux/4.3/../../../../x86_64-suse-linux/lib/../lib64/ /usr/lib64/gcc/x86_64-suse-linux/4.3/../../../x86_64-suse-linux/4.3/ /usr/lib64/gcc/x86_64-suse-linux/4.3/../../../../lib64/ /lib/x86_64-suse-linux/4.3/ /lib/../lib64/ /usr/lib/x86_64-suse-linux/4.3/ /usr/lib/../lib64/ /usr/lib64/gcc/x86_64-suse-linux/4.3/../../../../x86_64-suse-linux/lib/ /usr/lib64/gcc/x86_64-suse-linux/4.3/../../../ /lib/ /usr/lib/"
 
 # Run-time system search path for libraries
-sys_lib_dlsearch_path_spec="/lib /usr/lib /usr/X11R6/lib/Xaw3d /usr/X11R6/lib /usr/lib/Xaw3d /usr/i386-suse-linux/lib /usr/local/lib /opt/kde3/lib "
+sys_lib_dlsearch_path_spec="/lib /usr/lib /usr/X11R6/lib64/Xaw3d /usr/X11R6/lib64 /usr/lib64/Xaw3d /usr/X11R6/lib/Xaw3d /usr/X11R6/lib /usr/lib/Xaw3d /usr/x86_64-suse-linux/lib /usr/local/lib /opt/kde3/lib /lib64 /lib /usr/lib64 /usr/lib /usr/local/lib64 /opt/kde3/lib64 /usr/lib64/graphviz /usr/lib64/graphviz/sharp /usr/lib64/graphviz/java /usr/lib64/graphviz/perl /usr/lib64/graphviz/php /usr/lib64/graphviz/ocaml /usr/lib64/graphviz/python /usr/lib64/graphviz/lua /usr/lib64/graphviz/tcl /usr/lib64/graphviz/guile /usr/lib64/graphviz/ruby "
 
 # Fix the shell variable $srcfile for the compiler.
 fix_srcfile_path=""

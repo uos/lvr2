@@ -66,7 +66,7 @@ float BaseVertex::operator[](const int i){
 }
 
 float BaseVertex::operator*(const BaseVertex v) const{
-  return x * v.z + y * v.y + z * v.z;
+  return x * v.x + y * v.y + z * v.z;
 }
 
 BaseVertex BaseVertex::operator*(const float s) const{

@@ -549,13 +549,13 @@ s,@MAINT@,#,;t t
 s,@GSL_LT_VERSION@,10:0:10,;t t
 s,@GSL_LT_CBLAS_VERSION@,0:0:0,;t t
 s,@RELEASED@,,;t t
-s,@build@,i686-pc-linux-gnu,;t t
-s,@build_cpu@,i686,;t t
-s,@build_vendor@,pc,;t t
+s,@build@,x86_64-unknown-linux-gnu,;t t
+s,@build_cpu@,x86_64,;t t
+s,@build_vendor@,unknown,;t t
 s,@build_os@,linux-gnu,;t t
-s,@host@,i686-pc-linux-gnu,;t t
-s,@host_cpu@,i686,;t t
-s,@host_vendor@,pc,;t t
+s,@host@,x86_64-unknown-linux-gnu,;t t
+s,@host_cpu@,x86_64,;t t
+s,@host_vendor@,unknown,;t t
 s,@host_os@,linux-gnu,;t t
 s,@CC@,gcc,;t t
 s,@CFLAGS@,-g -O2,;t t

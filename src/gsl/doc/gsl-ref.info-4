@@ -1,8 +1,7 @@
-Dies ist gsl-ref.info, hergestellt von Makeinfo Version 4.9 aus
-gsl-ref.texi.
-
 INFO-DIR-SECTION Scientific software
 START-INFO-DIR-ENTRY
+This is gsl-ref.info, produced by makeinfo version 4.11 from gsl-ref.texi.
+
 * gsl-ref: (gsl-ref).                   GNU Scientific Library - Reference
 END-INFO-DIR-ENTRY
 
@@ -31,7 +30,7 @@ The functions described in this section can be used to perform
 least-squares fits to a straight line model without a constant term, Y
 = c_1 X.
 
- -- Funktion: int gsl_fit_mul (const double * X, const size_t XSTRIDE,
+ -- Function: int gsl_fit_mul (const double * X, const size_t XSTRIDE,
           const double * Y, const size_t YSTRIDE, size_t N, double *
           C1, double * COV11, double * SUMSQ)
      This function computes the best-fit linear regression coefficient
@@ -42,7 +41,7 @@ least-squares fits to a straight line model without a constant term, Y
      returned via the parameter COV11.  The sum of squares of the
      residuals from the best-fit line is returned in SUMSQ.
 
- -- Funktion: int gsl_fit_wmul (const double * X, const size_t XSTRIDE,
+ -- Function: int gsl_fit_wmul (const double * X, const size_t XSTRIDE,
           const double * W, const size_t WSTRIDE, const double * Y,
           const size_t YSTRIDE, size_t N, double * C1, double * COV11,
           double * SUMSQ)
@@ -57,7 +56,7 @@ least-squares fits to a straight line model without a constant term, Y
      returned via the parameter COV11.  The weighted sum of squares of
      the residuals from the best-fit line, \chi^2, is returned in CHISQ.
 
- -- Funktion: int gsl_fit_mul_est (double X, double C1, double C11,
+ -- Function: int gsl_fit_mul_est (double X, double C1, double C11,
           double * Y, double * Y_ERR)
      This function uses the best-fit linear regression coefficient C1
      and its covariance COV11 to compute the fitted function Y and its
@@ -104,19 +103,19 @@ file `gsl_multifit.h'.
 additional working space for intermediate results, such as the singular
 value decomposition of the matrix X.
 
- -- Funktion: gsl_multifit_linear_workspace * gsl_multifit_linear_alloc
+ -- Function: gsl_multifit_linear_workspace * gsl_multifit_linear_alloc
           (size_t N, size_t P)
      This function allocates a workspace for fitting a model to N
      observations using P parameters.
 
- -- Funktion: void gsl_multifit_linear_free
+ -- Function: void gsl_multifit_linear_free
           (gsl_multifit_linear_workspace * WORK)
      This function frees the memory associated with the workspace W.
 
- -- Funktion: int gsl_multifit_linear (const gsl_matrix * X, const
+ -- Function: int gsl_multifit_linear (const gsl_matrix * X, const
           gsl_vector * Y, gsl_vector * C, gsl_matrix * COV, double *
           CHISQ, gsl_multifit_linear_workspace * WORK)
- -- Funktion: int gsl_multifit_linear_svd (const gsl_matrix * X, const
+ -- Function: int gsl_multifit_linear_svd (const gsl_matrix * X, const
           gsl_vector * Y, double TOL, size_t * RANK, gsl_vector * C,
           gsl_matrix * COV, double * CHISQ,
           gsl_multifit_linear_workspace * WORK)
@@ -137,11 +136,11 @@ value decomposition of the matrix X.
      user-specified tolerance TOL, and the effective rank is returned
      in RANK.
 
- -- Funktion: int gsl_multifit_wlinear (const gsl_matrix * X, const
+ -- Function: int gsl_multifit_wlinear (const gsl_matrix * X, const
           gsl_vector * W, const gsl_vector * Y, gsl_vector * C,
           gsl_matrix * COV, double * CHISQ,
           gsl_multifit_linear_workspace * WORK)
- -- Funktion: int gsl_multifit_wlinear_svd (const gsl_matrix * X, const
+ -- Function: int gsl_multifit_wlinear_svd (const gsl_matrix * X, const
           gsl_vector * W, const gsl_vector * Y, double TOL, size_t *
           RANK, gsl_vector * C, gsl_matrix * COV, double * CHISQ,
           gsl_multifit_linear_workspace * WORK)
@@ -160,7 +159,7 @@ value decomposition of the matrix X.
      falls below the user-specified tolerance TOL, and the effective
      rank is returned in RANK.
 
- -- Funktion: int gsl_multifit_linear_est (const gsl_vector * X, const
+ -- Function: int gsl_multifit_linear_est (const gsl_vector * X, const
           gsl_vector * C, const gsl_matrix * COV, double * Y, double *
           Y_ERR)
      This function uses the best-fit multilinear regression coefficients
@@ -504,7 +503,7 @@ File: gsl-ref.info,  Node: Initializing the Nonlinear Least-Squares Solver,  Nex
 37.2 Initializing the Solver
 ============================
 
- -- Funktion: gsl_multifit_fsolver * gsl_multifit_fsolver_alloc (const
+ -- Function: gsl_multifit_fsolver * gsl_multifit_fsolver_alloc (const
           gsl_multifit_fsolver_type * T, size_t N, size_t P)
      This function returns a pointer to a newly allocated instance of a
      solver of type T for N observations and P parameters.  The number
@@ -514,7 +513,7 @@ File: gsl-ref.info,  Node: Initializing the Nonlinear Least-Squares Solver,  Nex
      function returns a null pointer and the error handler is invoked
      with an error code of `GSL_ENOMEM'.
 
- -- Funktion: gsl_multifit_fdfsolver * gsl_multifit_fdfsolver_alloc
+ -- Function: gsl_multifit_fdfsolver * gsl_multifit_fdfsolver_alloc
           (const gsl_multifit_fdfsolver_type * T, size_t N, size_t P)
      This function returns a pointer to a newly allocated instance of a
      derivative solver of type T for N observations and P parameters.
@@ -533,24 +532,24 @@ File: gsl-ref.info,  Node: Initializing the Nonlinear Least-Squares Solver,  Nex
      function returns a null pointer and the error handler is invoked
      with an error code of `GSL_ENOMEM'.
 
- -- Funktion: int gsl_multifit_fsolver_set (gsl_multifit_fsolver * S,
+ -- Function: int gsl_multifit_fsolver_set (gsl_multifit_fsolver * S,
           gsl_multifit_function * F, gsl_vector * X)
      This function initializes, or reinitializes, an existing solver S
      to use the function F and the initial guess X.
 
- -- Funktion: int gsl_multifit_fdfsolver_set (gsl_multifit_fdfsolver *
+ -- Function: int gsl_multifit_fdfsolver_set (gsl_multifit_fdfsolver *
           S, gsl_multifit_function_fdf * FDF, gsl_vector * X)
      This function initializes, or reinitializes, an existing solver S
      to use the function and derivative FDF and the initial guess X.
 
- -- Funktion: void gsl_multifit_fsolver_free (gsl_multifit_fsolver * S)
- -- Funktion: void gsl_multifit_fdfsolver_free (gsl_multifit_fdfsolver
+ -- Function: void gsl_multifit_fsolver_free (gsl_multifit_fsolver * S)
+ -- Function: void gsl_multifit_fdfsolver_free (gsl_multifit_fdfsolver
           * S)
      These functions free all the memory associated with the solver S.
 
- -- Funktion: const char * gsl_multifit_fsolver_name (const
+ -- Function: const char * gsl_multifit_fsolver_name (const
           gsl_multifit_fsolver * S)
- -- Funktion: const char * gsl_multifit_fdfsolver_name (const
+ -- Function: const char * gsl_multifit_fdfsolver_name (const
           gsl_multifit_fdfsolver * S)
      These functions return a pointer to the name of the solver.  For
      example,
@@ -640,9 +639,9 @@ corresponding type.  The same functions work for all solvers so that
 different methods can be substituted at runtime without modifications to
 the code.
 
- -- Funktion: int gsl_multifit_fsolver_iterate (gsl_multifit_fsolver *
+ -- Function: int gsl_multifit_fsolver_iterate (gsl_multifit_fsolver *
           S)
- -- Funktion: int gsl_multifit_fdfsolver_iterate
+ -- Function: int gsl_multifit_fdfsolver_iterate
           (gsl_multifit_fdfsolver * S)
      These functions perform a single iteration of the solver S.  If
      the iteration encounters an unexpected problem then an error code
@@ -669,9 +668,9 @@ used to track the progress of the solution:
    The best-fit information also can be accessed with the following
 auxiliary functions,
 
- -- Funktion: gsl_vector * gsl_multifit_fsolver_position (const
+ -- Function: gsl_vector * gsl_multifit_fsolver_position (const
           gsl_multifit_fsolver * S)
- -- Funktion: gsl_vector * gsl_multifit_fdfsolver_position (const
+ -- Function: gsl_vector * gsl_multifit_fdfsolver_position (const
           gsl_multifit_fdfsolver * S)
      These functions return the current position (i.e. best-fit
      parameters) `s->x' of the solver S.
@@ -695,7 +694,7 @@ The handling of these conditions is under user control.  The functions
 below allow the user to test the current estimate of the best-fit
 parameters in several standard ways.
 
- -- Funktion: int gsl_multifit_test_delta (const gsl_vector * DX, const
+ -- Function: int gsl_multifit_test_delta (const gsl_vector * DX, const
           gsl_vector * X, double EPSABS, double EPSREL)
      This function tests for the convergence of the sequence by
      comparing the last step DX with the absolute error EPSABS and
@@ -706,7 +705,7 @@ parameters in several standard ways.
 
      for each component of X and returns `GSL_CONTINUE' otherwise.
 
- -- Funktion: int gsl_multifit_test_gradient (const gsl_vector * G,
+ -- Function: int gsl_multifit_test_gradient (const gsl_vector * G,
           double EPSABS)
      This function tests the residual gradient G against the absolute
      error bound EPSABS.  Mathematically, the gradient should be
@@ -720,7 +719,7 @@ parameters in several standard ways.
      unimportant provided a value can be found where the gradient is
      small enough.
 
- -- Funktion: int gsl_multifit_gradient (const gsl_matrix * J, const
+ -- Function: int gsl_multifit_gradient (const gsl_matrix * J, const
           gsl_vector * F, gsl_vector * G)
      This function computes the gradient G of \Phi(x) = (1/2)
      ||F(x)||^2 from the Jacobian matrix J and the function values F,
@@ -807,7 +806,7 @@ File: gsl-ref.info,  Node: Computing the covariance matrix of best fit parameter
 37.8 Computing the covariance matrix of best fit parameters
 ===========================================================
 
- -- Funktion: int gsl_multifit_covar (const gsl_matrix * J, double
+ -- Function: int gsl_multifit_covar (const gsl_matrix * J, double
           EPSREL, gsl_matrix * COVAR)
      This function uses the Jacobian matrix J to compute the covariance
      matrix of the best-fit parameters, COVAR.  The parameter EPSREL is
@@ -841,7 +840,7 @@ File: gsl-ref.info,  Node: Computing the covariance matrix of best fit parameter
      \sigma^2 C.  This estimates the statistical error on the best-fit
      parameters from the scatter of the underlying data.
 
-     For more information about covariance matrices see *Note Fitting
+     For more information about covariance matrices see *note Fitting
      Overview::.
 
 
@@ -1170,14 +1169,14 @@ File: gsl-ref.info,  Node: Initializing the B-splines solver,  Next: Constructin
 38.2 Initializing the B-splines solver
 ======================================
 
- -- Funktion: gsl_bspline_workspace * gsl_bspline_alloc (const size_t
+ -- Function: gsl_bspline_workspace * gsl_bspline_alloc (const size_t
           K, const size_t NBREAK)
      This function allocates a workspace for computing B-splines of
      order K. The number of breakpoints is given by NBREAK. This leads
      to n = nbreak + k - 2 basis functions. Cubic B-splines are
      specified by k = 4. The size of the workspace is O(5k + nbreak).
 
- -- Funktion: void gsl_bspline_free (gsl_bspline_workspace * W)
+ -- Function: void gsl_bspline_free (gsl_bspline_workspace * W)
      This function frees the memory associated with the workspace W.
 
 
@@ -1186,12 +1185,12 @@ File: gsl-ref.info,  Node: Constructing the knots vector,  Next: Evaluation of B
 38.3 Constructing the knots vector
 ==================================
 
- -- Funktion: int gsl_bspline_knots (const gsl_vector * BREAKPTS,
+ -- Function: int gsl_bspline_knots (const gsl_vector * BREAKPTS,
           gsl_bspline_workspace * W)
      This function computes the knots associated with the given
      breakpoints and stores them internally in `w->knots'.
 
- -- Funktion: int gsl_bspline_knots_uniform (const double a, const
+ -- Function: int gsl_bspline_knots_uniform (const double a, const
           double b, gsl_bspline_workspace * W)
      This function assumes uniformly spaced breakpoints on [a,b] and
      constructs the corresponding knot vector using the previously
@@ -1203,7 +1202,7 @@ File: gsl-ref.info,  Node: Evaluation of B-spline basis functions,  Next: Exampl
 38.4 Evaluation of B-splines
 ============================
 
- -- Funktion: int gsl_bspline_eval (const double X, gsl_vector * B,
+ -- Function: int gsl_bspline_eval (const double X, gsl_vector * B,
           gsl_bspline_workspace * W)
      This function evaluates all B-spline basis functions at the
      position X and stores them in B, so that the ith element of B is
@@ -1993,9 +1992,9 @@ It is often useful to be able to investigate the behavior of a
 calculation at the bit-level and the library provides functions for
 printing the IEEE representations in a human-readable form.
 
- -- Funktion: void gsl_ieee_fprintf_float (FILE * STREAM, const float *
+ -- Function: void gsl_ieee_fprintf_float (FILE * STREAM, const float *
           X)
- -- Funktion: void gsl_ieee_fprintf_double (FILE * STREAM, const double
+ -- Function: void gsl_ieee_fprintf_double (FILE * STREAM, const double
           * X)
      These functions output a formatted version of the IEEE
      floating-point number pointed to by X to the stream STREAM. A
@@ -2022,8 +2021,8 @@ printing the IEEE representations in a human-readable form.
      The output can be used directly in GNU Emacs Calc mode by
      preceding it with `2#' to indicate binary.
 
- -- Funktion: void gsl_ieee_printf_float (const float * X)
- -- Funktion: void gsl_ieee_printf_double (const double * X)
+ -- Function: void gsl_ieee_printf_float (const float * X)
+ -- Function: void gsl_ieee_printf_double (const double * X)
      These functions output a formatted version of the IEEE
      floating-point number pointed to by X to the stream `stdout'.
 
@@ -2089,7 +2088,7 @@ variable `GSL_IEEE_MODE'.  The library then takes care of all the
 necessary machine-specific initializations for you when you call the
 function `gsl_ieee_env_setup'.
 
- -- Funktion: void gsl_ieee_env_setup ()
+ -- Function: void gsl_ieee_env_setup ()
      This function reads the environment variable `GSL_IEEE_MODE' and
      attempts to set up the corresponding specified IEEE modes.  The
      environment variable should be a list of keywords, separated by
@@ -2820,142 +2819,142 @@ File: gsl-ref.info,  Node: Level 1 CBLAS Functions,  Next: Level 2 CBLAS Functio
 D.1 Level 1
 ===========
 
- -- Funktion: float cblas_sdsdot (const int N, const float ALPHA, const
+ -- Function: float cblas_sdsdot (const int N, const float ALPHA, const
           float * X, const int INCX, const float * Y, const int INCY)
 
- -- Funktion: double cblas_dsdot (const int N, const float * X, const
+ -- Function: double cblas_dsdot (const int N, const float * X, const
           int INCX, const float * Y, const int INCY)
 
- -- Funktion: float cblas_sdot (const int N, const float * X, const int
+ -- Function: float cblas_sdot (const int N, const float * X, const int
           INCX, const float * Y, const int INCY)
 
- -- Funktion: double cblas_ddot (const int N, const double * X, const
+ -- Function: double cblas_ddot (const int N, const double * X, const
           int INCX, const double * Y, const int INCY)
 
- -- Funktion: void cblas_cdotu_sub (const int N, const void * X, const
+ -- Function: void cblas_cdotu_sub (const int N, const void * X, const
           int INCX, const void * Y, const int INCY, void * DOTU)
 
- -- Funktion: void cblas_cdotc_sub (const int N, const void * X, const
+ -- Function: void cblas_cdotc_sub (const int N, const void * X, const
           int INCX, const void * Y, const int INCY, void * DOTC)
 
- -- Funktion: void cblas_zdotu_sub (const int N, const void * X, const
+ -- Function: void cblas_zdotu_sub (const int N, const void * X, const
           int INCX, const void * Y, const int INCY, void * DOTU)
 
- -- Funktion: void cblas_zdotc_sub (const int N, const void * X, const
+ -- Function: void cblas_zdotc_sub (const int N, const void * X, const
           int INCX, const void * Y, const int INCY, void * DOTC)
 
- -- Funktion: float cblas_snrm2 (const int N, const float * X, const
+ -- Function: float cblas_snrm2 (const int N, const float * X, const
           int INCX)
 
- -- Funktion: float cblas_sasum (const int N, const float * X, const
+ -- Function: float cblas_sasum (const int N, const float * X, const
           int INCX)
 
- -- Funktion: double cblas_dnrm2 (const int N, const double * X, const
+ -- Function: double cblas_dnrm2 (const int N, const double * X, const
           int INCX)
 
- -- Funktion: double cblas_dasum (const int N, const double * X, const
+ -- Function: double cblas_dasum (const int N, const double * X, const
           int INCX)
 
- -- Funktion: float cblas_scnrm2 (const int N, const void * X, const
+ -- Function: float cblas_scnrm2 (const int N, const void * X, const
           int INCX)
 
- -- Funktion: float cblas_scasum (const int N, const void * X, const
+ -- Function: float cblas_scasum (const int N, const void * X, const
           int INCX)
 
- -- Funktion: double cblas_dznrm2 (const int N, const void * X, const
+ -- Function: double cblas_dznrm2 (const int N, const void * X, const
           int INCX)
 
- -- Funktion: double cblas_dzasum (const int N, const void * X, const
+ -- Function: double cblas_dzasum (const int N, const void * X, const
           int INCX)
 
- -- Funktion: CBLAS_INDEX cblas_isamax (const int N, const float * X,
+ -- Function: CBLAS_INDEX cblas_isamax (const int N, const float * X,
           const int INCX)
 
- -- Funktion: CBLAS_INDEX cblas_idamax (const int N, const double * X,
+ -- Function: CBLAS_INDEX cblas_idamax (const int N, const double * X,
           const int INCX)
 
- -- Funktion: CBLAS_INDEX cblas_icamax (const int N, const void * X,
+ -- Function: CBLAS_INDEX cblas_icamax (const int N, const void * X,
           const int INCX)
 
- -- Funktion: CBLAS_INDEX cblas_izamax (const int N, const void * X,
+ -- Function: CBLAS_INDEX cblas_izamax (const int N, const void * X,
           const int INCX)
 
- -- Funktion: void cblas_sswap (const int N, float * X, const int INCX,
+ -- Function: void cblas_sswap (const int N, float * X, const int INCX,
           float * Y, const int INCY)
 
- -- Funktion: void cblas_scopy (const int N, const float * X, const int
+ -- Function: void cblas_scopy (const int N, const float * X, const int
           INCX, float * Y, const int INCY)
 
- -- Funktion: void cblas_saxpy (const int N, const float ALPHA, const
+ -- Function: void cblas_saxpy (const int N, const float ALPHA, const
           float * X, const int INCX, float * Y, const int INCY)
 
- -- Funktion: void cblas_dswap (const int N, double * X, const int
+ -- Function: void cblas_dswap (const int N, double * X, const int
           INCX, double * Y, const int INCY)
 
- -- Funktion: void cblas_dcopy (const int N, const double * X, const
+ -- Function: void cblas_dcopy (const int N, const double * X, const
           int INCX, double * Y, const int INCY)
 
- -- Funktion: void cblas_daxpy (const int N, const double ALPHA, const
+ -- Function: void cblas_daxpy (const int N, const double ALPHA, const
           double * X, const int INCX, double * Y, const int INCY)
 
- -- Funktion: void cblas_cswap (const int N, void * X, const int INCX,
+ -- Function: void cblas_cswap (const int N, void * X, const int INCX,
           void * Y, const int INCY)
 
- -- Funktion: void cblas_ccopy (const int N, const void * X, const int
+ -- Function: void cblas_ccopy (const int N, const void * X, const int
           INCX, void * Y, const int INCY)
 
- -- Funktion: void cblas_caxpy (const int N, const void * ALPHA, const
+ -- Function: void cblas_caxpy (const int N, const void * ALPHA, const
           void * X, const int INCX, void * Y, const int INCY)
 
- -- Funktion: void cblas_zswap (const int N, void * X, const int INCX,
+ -- Function: void cblas_zswap (const int N, void * X, const int INCX,
           void * Y, const int INCY)
 
- -- Funktion: void cblas_zcopy (const int N, const void * X, const int
+ -- Function: void cblas_zcopy (const int N, const void * X, const int
           INCX, void * Y, const int INCY)
 
- -- Funktion: void cblas_zaxpy (const int N, const void * ALPHA, const
+ -- Function: void cblas_zaxpy (const int N, const void * ALPHA, const
           void * X, const int INCX, void * Y, const int INCY)
 
- -- Funktion: void cblas_srotg (float * A, float * B, float * C, float
+ -- Function: void cblas_srotg (float * A, float * B, float * C, float
           * S)
 
- -- Funktion: void cblas_srotmg (float * D1, float * D2, float * B1,
+ -- Function: void cblas_srotmg (float * D1, float * D2, float * B1,
           const float B2, float * P)
 
- -- Funktion: void cblas_srot (const int N, float * X, const int INCX,
+ -- Function: void cblas_srot (const int N, float * X, const int INCX,
           float * Y, const int INCY, const float C, const float S)
 
- -- Funktion: void cblas_srotm (const int N, float * X, const int INCX,
+ -- Function: void cblas_srotm (const int N, float * X, const int INCX,
           float * Y, const int INCY, const float * P)
 
- -- Funktion: void cblas_drotg (double * A, double * B, double * C,
+ -- Function: void cblas_drotg (double * A, double * B, double * C,
           double * S)
 
- -- Funktion: void cblas_drotmg (double * D1, double * D2, double * B1,
+ -- Function: void cblas_drotmg (double * D1, double * D2, double * B1,
           const double B2, double * P)
 
- -- Funktion: void cblas_drot (const int N, double * X, const int INCX,
+ -- Function: void cblas_drot (const int N, double * X, const int INCX,
           double * Y, const int INCY, const double C, const double S)
 
- -- Funktion: void cblas_drotm (const int N, double * X, const int
+ -- Function: void cblas_drotm (const int N, double * X, const int
           INCX, double * Y, const int INCY, const double * P)
 
- -- Funktion: void cblas_sscal (const int N, const float ALPHA, float *
+ -- Function: void cblas_sscal (const int N, const float ALPHA, float *
           X, const int INCX)
 
- -- Funktion: void cblas_dscal (const int N, const double ALPHA, double
+ -- Function: void cblas_dscal (const int N, const double ALPHA, double
           * X, const int INCX)
 
- -- Funktion: void cblas_cscal (const int N, const void * ALPHA, void *
+ -- Function: void cblas_cscal (const int N, const void * ALPHA, void *
           X, const int INCX)
 
- -- Funktion: void cblas_zscal (const int N, const void * ALPHA, void *
+ -- Function: void cblas_zscal (const int N, const void * ALPHA, void *
           X, const int INCX)
 
- -- Funktion: void cblas_csscal (const int N, const float ALPHA, void *
+ -- Function: void cblas_csscal (const int N, const float ALPHA, void *
           X, const int INCX)
 
- -- Funktion: void cblas_zdscal (const int N, const double ALPHA, void
+ -- Function: void cblas_zdscal (const int N, const double ALPHA, void
           * X, const int INCX)
 
 
@@ -2964,325 +2963,325 @@ File: gsl-ref.info,  Node: Level 2 CBLAS Functions,  Next: Level 3 CBLAS Functio
 D.2 Level 2
 ===========
 
- -- Funktion: void cblas_sgemv (const enum CBLAS_ORDER ORDER, const
+ -- Function: void cblas_sgemv (const enum CBLAS_ORDER ORDER, const
           enum CBLAS_TRANSPOSE TRANSA, const int M, const int N, const
           float ALPHA, const float * A, const int LDA, const float * X,
           const int INCX, const float BETA, float * Y, const int INCY)
 
- -- Funktion: void cblas_sgbmv (const enum CBLAS_ORDER ORDER, const
+ -- Function: void cblas_sgbmv (const enum CBLAS_ORDER ORDER, const
           enum CBLAS_TRANSPOSE TRANSA, const int M, const int N, const
           int KL, const int KU, const float ALPHA, const float * A,
           const int LDA, const float * X, const int INCX, const float
           BETA, float * Y, const int INCY)
 
- -- Funktion: void cblas_strmv (const enum CBLAS_ORDER ORDER, const
+ -- Function: void cblas_strmv (const enum CBLAS_ORDER ORDER, const
           enum CBLAS_UPLO UPLO, const enum CBLAS_TRANSPOSE TRANSA,
           const enum CBLAS_DIAG DIAG, const int N, const float * A,
           const int LDA, float * X, const int INCX)
 
- -- Funktion: void cblas_stbmv (const enum CBLAS_ORDER ORDER, const
+ -- Function: void cblas_stbmv (const enum CBLAS_ORDER ORDER, const
           enum CBLAS_UPLO UPLO, const enum CBLAS_TRANSPOSE TRANSA,
           const enum CBLAS_DIAG DIAG, const int N, const int K, const
           float * A, const int LDA, float * X, const int INCX)
 
- -- Funktion: void cblas_stpmv (const enum CBLAS_ORDER ORDER, const
+ -- Function: void cblas_stpmv (const enum CBLAS_ORDER ORDER, const
           enum CBLAS_UPLO UPLO, const enum CBLAS_TRANSPOSE TRANSA,
           const enum CBLAS_DIAG DIAG, const int N, const float * AP,
           float * X, const int INCX)
 
- -- Funktion: void cblas_strsv (const enum CBLAS_ORDER ORDER, const
+ -- Function: void cblas_strsv (const enum CBLAS_ORDER ORDER, const
           enum CBLAS_UPLO UPLO, const enum CBLAS_TRANSPOSE TRANSA,
           const enum CBLAS_DIAG DIAG, const int N, const float * A,
           const int LDA, float * X, const int INCX)
 
- -- Funktion: void cblas_stbsv (const enum CBLAS_ORDER ORDER, const
+ -- Function: void cblas_stbsv (const enum CBLAS_ORDER ORDER, const
           enum CBLAS_UPLO UPLO, const enum CBLAS_TRANSPOSE TRANSA,
           const enum CBLAS_DIAG DIAG, const int N, const int K, const
           float * A, const int LDA, float * X, const int INCX)
 
- -- Funktion: void cblas_stpsv (const enum CBLAS_ORDER ORDER, const
+ -- Function: void cblas_stpsv (const enum CBLAS_ORDER ORDER, const
           enum CBLAS_UPLO UPLO, const enum CBLAS_TRANSPOSE TRANSA,
           const enum CBLAS_DIAG DIAG, const int N, const float * AP,
           float * X, const int INCX)
 
- -- Funktion: void cblas_dgemv (const enum CBLAS_ORDER ORDER, const
+ -- Function: void cblas_dgemv (const enum CBLAS_ORDER ORDER, const
           enum CBLAS_TRANSPOSE TRANSA, const int M, const int N, const
           double ALPHA, const double * A, const int LDA, const double *
           X, const int INCX, const double BETA, double * Y, const int
           INCY)
 
- -- Funktion: void cblas_dgbmv (const enum CBLAS_ORDER ORDER, const
+ -- Function: void cblas_dgbmv (const enum CBLAS_ORDER ORDER, const
           enum CBLAS_TRANSPOSE TRANSA, const int M, const int N, const
           int KL, const int KU, const double ALPHA, const double * A,
           const int LDA, const double * X, const int INCX, const double
           BETA, double * Y, const int INCY)
 
- -- Funktion: void cblas_dtrmv (const enum CBLAS_ORDER ORDER, const
+ -- Function: void cblas_dtrmv (const enum CBLAS_ORDER ORDER, const
           enum CBLAS_UPLO UPLO, const enum CBLAS_TRANSPOSE TRANSA,
           const enum CBLAS_DIAG DIAG, const int N, const double * A,
           const int LDA, double * X, const int INCX)
 
- -- Funktion: void cblas_dtbmv (const enum CBLAS_ORDER ORDER, const
+ -- Function: void cblas_dtbmv (const enum CBLAS_ORDER ORDER, const
           enum CBLAS_UPLO UPLO, const enum CBLAS_TRANSPOSE TRANSA,
           const enum CBLAS_DIAG DIAG, const int N, const int K, const
           double * A, const int LDA, double * X, const int INCX)
 
- -- Funktion: void cblas_dtpmv (const enum CBLAS_ORDER ORDER, const
+ -- Function: void cblas_dtpmv (const enum CBLAS_ORDER ORDER, const
           enum CBLAS_UPLO UPLO, const enum CBLAS_TRANSPOSE TRANSA,
           const enum CBLAS_DIAG DIAG, const int N, const double * AP,
           double * X, const int INCX)
 
- -- Funktion: void cblas_dtrsv (const enum CBLAS_ORDER ORDER, const
+ -- Function: void cblas_dtrsv (const enum CBLAS_ORDER ORDER, const
           enum CBLAS_UPLO UPLO, const enum CBLAS_TRANSPOSE TRANSA,
           const enum CBLAS_DIAG DIAG, const int N, const double * A,
           const int LDA, double * X, const int INCX)
 
- -- Funktion: void cblas_dtbsv (const enum CBLAS_ORDER ORDER, const
+ -- Function: void cblas_dtbsv (const enum CBLAS_ORDER ORDER, const
           enum CBLAS_UPLO UPLO, const enum CBLAS_TRANSPOSE TRANSA,
           const enum CBLAS_DIAG DIAG, const int N, const int K, const
           double * A, const int LDA, double * X, const int INCX)
 
- -- Funktion: void cblas_dtpsv (const enum CBLAS_ORDER ORDER, const
+ -- Function: void cblas_dtpsv (const enum CBLAS_ORDER ORDER, const
           enum CBLAS_UPLO UPLO, const enum CBLAS_TRANSPOSE TRANSA,
           const enum CBLAS_DIAG DIAG, const int N, const double * AP,
           double * X, const int INCX)
 
- -- Funktion: void cblas_cgemv (const enum CBLAS_ORDER ORDER, const
+ -- Function: void cblas_cgemv (const enum CBLAS_ORDER ORDER, const
           enum CBLAS_TRANSPOSE TRANSA, const int M, const int N, const
           void * ALPHA, const void * A, const int LDA, const void * X,
           const int INCX, const void * BETA, void * Y, const int INCY)
 
- -- Funktion: void cblas_cgbmv (const enum CBLAS_ORDER ORDER, const
+ -- Function: void cblas_cgbmv (const enum CBLAS_ORDER ORDER, const
           enum CBLAS_TRANSPOSE TRANSA, const int M, const int N, const
           int KL, const int KU, const void * ALPHA, const void * A,
           const int LDA, const void * X, const int INCX, const void *
           BETA, void * Y, const int INCY)
 
- -- Funktion: void cblas_ctrmv (const enum CBLAS_ORDER ORDER, const
+ -- Function: void cblas_ctrmv (const enum CBLAS_ORDER ORDER, const
           enum CBLAS_UPLO UPLO, const enum CBLAS_TRANSPOSE TRANSA,
           const enum CBLAS_DIAG DIAG, const int N, const void * A,
           const int LDA, void * X, const int INCX)
 
- -- Funktion: void cblas_ctbmv (const enum CBLAS_ORDER ORDER, const
+ -- Function: void cblas_ctbmv (const enum CBLAS_ORDER ORDER, const
           enum CBLAS_UPLO UPLO, const enum CBLAS_TRANSPOSE TRANSA,
           const enum CBLAS_DIAG DIAG, const int N, const int K, const
           void * A, const int LDA, void * X, const int INCX)
 
- -- Funktion: void cblas_ctpmv (const enum CBLAS_ORDER ORDER, const
+ -- Function: void cblas_ctpmv (const enum CBLAS_ORDER ORDER, const
           enum CBLAS_UPLO UPLO, const enum CBLAS_TRANSPOSE TRANSA,
           const enum CBLAS_DIAG DIAG, const int N, const void * AP,
           void * X, const int INCX)
 
- -- Funktion: void cblas_ctrsv (const enum CBLAS_ORDER ORDER, const
+ -- Function: void cblas_ctrsv (const enum CBLAS_ORDER ORDER, const
           enum CBLAS_UPLO UPLO, const enum CBLAS_TRANSPOSE TRANSA,
           const enum CBLAS_DIAG DIAG, const int N, const void * A,
           const int LDA, void * X, const int INCX)
 
- -- Funktion: void cblas_ctbsv (const enum CBLAS_ORDER ORDER, const
+ -- Function: void cblas_ctbsv (const enum CBLAS_ORDER ORDER, const
           enum CBLAS_UPLO UPLO, const enum CBLAS_TRANSPOSE TRANSA,
           const enum CBLAS_DIAG DIAG, const int N, const int K, const
           void * A, const int LDA, void * X, const int INCX)
 
- -- Funktion: void cblas_ctpsv (const enum CBLAS_ORDER ORDER, const
+ -- Function: void cblas_ctpsv (const enum CBLAS_ORDER ORDER, const
           enum CBLAS_UPLO UPLO, const enum CBLAS_TRANSPOSE TRANSA,
           const enum CBLAS_DIAG DIAG, const int N, const void * AP,
           void * X, const int INCX)
 
- -- Funktion: void cblas_zgemv (const enum CBLAS_ORDER ORDER, const
+ -- Function: void cblas_zgemv (const enum CBLAS_ORDER ORDER, const
           enum CBLAS_TRANSPOSE TRANSA, const int M, const int N, const
           void * ALPHA, const void * A, const int LDA, const void * X,
           const int INCX, const void * BETA, void * Y, const int INCY)
 
- -- Funktion: void cblas_zgbmv (const enum CBLAS_ORDER ORDER, const
+ -- Function: void cblas_zgbmv (const enum CBLAS_ORDER ORDER, const
           enum CBLAS_TRANSPOSE TRANSA, const int M, const int N, const
           int KL, const int KU, const void * ALPHA, const void * A,
           const int LDA, const void * X, const int INCX, const void *
           BETA, void * Y, const int INCY)
 
- -- Funktion: void cblas_ztrmv (const enum CBLAS_ORDER ORDER, const
+ -- Function: void cblas_ztrmv (const enum CBLAS_ORDER ORDER, const
           enum CBLAS_UPLO UPLO, const enum CBLAS_TRANSPOSE TRANSA,
           const enum CBLAS_DIAG DIAG, const int N, const void * A,
           const int LDA, void * X, const int INCX)
 
- -- Funktion: void cblas_ztbmv (const enum CBLAS_ORDER ORDER, const
+ -- Function: void cblas_ztbmv (const enum CBLAS_ORDER ORDER, const
           enum CBLAS_UPLO UPLO, const enum CBLAS_TRANSPOSE TRANSA,
           const enum CBLAS_DIAG DIAG, const int N, const int K, const
           void * A, const int LDA, void * X, const int INCX)
 
- -- Funktion: void cblas_ztpmv (const enum CBLAS_ORDER ORDER, const
+ -- Function: void cblas_ztpmv (const enum CBLAS_ORDER ORDER, const
           enum CBLAS_UPLO UPLO, const enum CBLAS_TRANSPOSE TRANSA,
           const enum CBLAS_DIAG DIAG, const int N, const void * AP,
           void * X, const int INCX)
 
- -- Funktion: void cblas_ztrsv (const enum CBLAS_ORDER ORDER, const
+ -- Function: void cblas_ztrsv (const enum CBLAS_ORDER ORDER, const
           enum CBLAS_UPLO UPLO, const enum CBLAS_TRANSPOSE TRANSA,
           const enum CBLAS_DIAG DIAG, const int N, const void * A,
           const int LDA, void * X, const int INCX)
 
- -- Funktion: void cblas_ztbsv (const enum CBLAS_ORDER ORDER, const
+ -- Function: void cblas_ztbsv (const enum CBLAS_ORDER ORDER, const
           enum CBLAS_UPLO UPLO, const enum CBLAS_TRANSPOSE TRANSA,
           const enum CBLAS_DIAG DIAG, const int N, const int K, const
           void * A, const int LDA, void * X, const int INCX)
 
- -- Funktion: void cblas_ztpsv (const enum CBLAS_ORDER ORDER, const
+ -- Function: void cblas_ztpsv (const enum CBLAS_ORDER ORDER, const
           enum CBLAS_UPLO UPLO, const enum CBLAS_TRANSPOSE TRANSA,
           const enum CBLAS_DIAG DIAG, const int N, const void * AP,
           void * X, const int INCX)
 
- -- Funktion: void cblas_ssymv (const enum CBLAS_ORDER ORDER, const
+ -- Function: void cblas_ssymv (const enum CBLAS_ORDER ORDER, const
           enum CBLAS_UPLO UPLO, const int N, const float ALPHA, const
           float * A, const int LDA, const float * X, const int INCX,
           const float BETA, float * Y, const int INCY)
 
- -- Funktion: void cblas_ssbmv (const enum CBLAS_ORDER ORDER, const
+ -- Function: void cblas_ssbmv (const enum CBLAS_ORDER ORDER, const
           enum CBLAS_UPLO UPLO, const int N, const int K, const float
           ALPHA, const float * A, const int LDA, const float * X, const
           int INCX, const float BETA, float * Y, const int INCY)
 
- -- Funktion: void cblas_sspmv (const enum CBLAS_ORDER ORDER, const
+ -- Function: void cblas_sspmv (const enum CBLAS_ORDER ORDER, const
           enum CBLAS_UPLO UPLO, const int N, const float ALPHA, const
           float * AP, const float * X, const int INCX, const float
           BETA, float * Y, const int INCY)
 
- -- Funktion: void cblas_sger (const enum CBLAS_ORDER ORDER, const int
+ -- Function: void cblas_sger (const enum CBLAS_ORDER ORDER, const int
           M, const int N, const float ALPHA, const float * X, const int
           INCX, const float * Y, const int INCY, float * A, const int
           LDA)
 
- -- Funktion: void cblas_ssyr (const enum CBLAS_ORDER ORDER, const enum
+ -- Function: void cblas_ssyr (const enum CBLAS_ORDER ORDER, const enum
           CBLAS_UPLO UPLO, const int N, const float ALPHA, const float
           * X, const int INCX, float * A, const int LDA)
 
- -- Funktion: void cblas_sspr (const enum CBLAS_ORDER ORDER, const enum
+ -- Function: void cblas_sspr (const enum CBLAS_ORDER ORDER, const enum
           CBLAS_UPLO UPLO, const int N, const float ALPHA, const float
           * X, const int INCX, float * AP)
 
- -- Funktion: void cblas_ssyr2 (const enum CBLAS_ORDER ORDER, const
+ -- Function: void cblas_ssyr2 (const enum CBLAS_ORDER ORDER, const
           enum CBLAS_UPLO UPLO, const int N, const float ALPHA, const
           float * X, const int INCX, const float * Y, const int INCY,
           float * A, const int LDA)
 
- -- Funktion: void cblas_sspr2 (const enum CBLAS_ORDER ORDER, const
+ -- Function: void cblas_sspr2 (const enum CBLAS_ORDER ORDER, const
           enum CBLAS_UPLO UPLO, const int N, const float ALPHA, const
           float * X, const int INCX, const float * Y, const int INCY,
           float * A)
 
- -- Funktion: void cblas_dsymv (const enum CBLAS_ORDER ORDER, const
+ -- Function: void cblas_dsymv (const enum CBLAS_ORDER ORDER, const
           enum CBLAS_UPLO UPLO, const int N, const double ALPHA, const
           double * A, const int LDA, const double * X, const int INCX,
           const double BETA, double * Y, const int INCY)
 
- -- Funktion: void cblas_dsbmv (const enum CBLAS_ORDER ORDER, const
+ -- Function: void cblas_dsbmv (const enum CBLAS_ORDER ORDER, const
           enum CBLAS_UPLO UPLO, const int N, const int K, const double
           ALPHA, const double * A, const int LDA, const double * X,
           const int INCX, const double BETA, double * Y, const int INCY)
 
- -- Funktion: void cblas_dspmv (const enum CBLAS_ORDER ORDER, const
+ -- Function: void cblas_dspmv (const enum CBLAS_ORDER ORDER, const
           enum CBLAS_UPLO UPLO, const int N, const double ALPHA, const
           double * AP, const double * X, const int INCX, const double
           BETA, double * Y, const int INCY)
 
- -- Funktion: void cblas_dger (const enum CBLAS_ORDER ORDER, const int
+ -- Function: void cblas_dger (const enum CBLAS_ORDER ORDER, const int
           M, const int N, const double ALPHA, const double * X, const
           int INCX, const double * Y, const int INCY, double * A, const
           int LDA)
 
- -- Funktion: void cblas_dsyr (const enum CBLAS_ORDER ORDER, const enum
+ -- Function: void cblas_dsyr (const enum CBLAS_ORDER ORDER, const enum
           CBLAS_UPLO UPLO, const int N, const double ALPHA, const
           double * X, const int INCX, double * A, const int LDA)
 
- -- Funktion: void cblas_dspr (const enum CBLAS_ORDER ORDER, const enum
+ -- Function: void cblas_dspr (const enum CBLAS_ORDER ORDER, const enum
           CBLAS_UPLO UPLO, const int N, const double ALPHA, const
           double * X, const int INCX, double * AP)
 
- -- Funktion: void cblas_dsyr2 (const enum CBLAS_ORDER ORDER, const
+ -- Function: void cblas_dsyr2 (const enum CBLAS_ORDER ORDER, const
           enum CBLAS_UPLO UPLO, const int N, const double ALPHA, const
           double * X, const int INCX, const double * Y, const int INCY,
           double * A, const int LDA)
 
- -- Funktion: void cblas_dspr2 (const enum CBLAS_ORDER ORDER, const
+ -- Function: void cblas_dspr2 (const enum CBLAS_ORDER ORDER, const
           enum CBLAS_UPLO UPLO, const int N, const double ALPHA, const
           double * X, const int INCX, const double * Y, const int INCY,
           double * A)
 
- -- Funktion: void cblas_chemv (const enum CBLAS_ORDER ORDER, const
+ -- Function: void cblas_chemv (const enum CBLAS_ORDER ORDER, const
           enum CBLAS_UPLO UPLO, const int N, const void * ALPHA, const
           void * A, const int LDA, const void * X, const int INCX,
           const void * BETA, void * Y, const int INCY)
 
- -- Funktion: void cblas_chbmv (const enum CBLAS_ORDER ORDER, const
+ -- Function: void cblas_chbmv (const enum CBLAS_ORDER ORDER, const
           enum CBLAS_UPLO UPLO, const int N, const int K, const void *
           ALPHA, const void * A, const int LDA, const void * X, const
           int INCX, const void * BETA, void * Y, const int INCY)
 
- -- Funktion: void cblas_chpmv (const enum CBLAS_ORDER ORDER, const
+ -- Function: void cblas_chpmv (const enum CBLAS_ORDER ORDER, const
           enum CBLAS_UPLO UPLO, const int N, const void * ALPHA, const
           void * AP, const void * X, const int INCX, const void * BETA,
           void * Y, const int INCY)
 
- -- Funktion: void cblas_cgeru (const enum CBLAS_ORDER ORDER, const int
+ -- Function: void cblas_cgeru (const enum CBLAS_ORDER ORDER, const int
           M, const int N, const void * ALPHA, const void * X, const int
           INCX, const void * Y, const int INCY, void * A, const int LDA)
 
- -- Funktion: void cblas_cgerc (const enum CBLAS_ORDER ORDER, const int
+ -- Function: void cblas_cgerc (const enum CBLAS_ORDER ORDER, const int
           M, const int N, const void * ALPHA, const void * X, const int
           INCX, const void * Y, const int INCY, void * A, const int LDA)
 
- -- Funktion: void cblas_cher (const enum CBLAS_ORDER ORDER, const enum
+ -- Function: void cblas_cher (const enum CBLAS_ORDER ORDER, const enum
           CBLAS_UPLO UPLO, const int N, const float ALPHA, const void *
           X, const int INCX, void * A, const int LDA)
 
- -- Funktion: void cblas_chpr (const enum CBLAS_ORDER ORDER, const enum
+ -- Function: void cblas_chpr (const enum CBLAS_ORDER ORDER, const enum
           CBLAS_UPLO UPLO, const int N, const float ALPHA, const void *
           X, const int INCX, void * A)
 
- -- Funktion: void cblas_cher2 (const enum CBLAS_ORDER ORDER, const
+ -- Function: void cblas_cher2 (const enum CBLAS_ORDER ORDER, const
           enum CBLAS_UPLO UPLO, const int N, const void * ALPHA, const
           void * X, const int INCX, const void * Y, const int INCY,
           void * A, const int LDA)
 
- -- Funktion: void cblas_chpr2 (const enum CBLAS_ORDER ORDER, const
+ -- Function: void cblas_chpr2 (const enum CBLAS_ORDER ORDER, const
           enum CBLAS_UPLO UPLO, const int N, const void * ALPHA, const
           void * X, const int INCX, const void * Y, const int INCY,
           void * AP)
 
- -- Funktion: void cblas_zhemv (const enum CBLAS_ORDER ORDER, const
+ -- Function: void cblas_zhemv (const enum CBLAS_ORDER ORDER, const
           enum CBLAS_UPLO UPLO, const int N, const void * ALPHA, const
           void * A, const int LDA, const void * X, const int INCX,
           const void * BETA, void * Y, const int INCY)
 
- -- Funktion: void cblas_zhbmv (const enum CBLAS_ORDER ORDER, const
+ -- Function: void cblas_zhbmv (const enum CBLAS_ORDER ORDER, const
           enum CBLAS_UPLO UPLO, const int N, const int K, const void *
           ALPHA, const void * A, const int LDA, const void * X, const
           int INCX, const void * BETA, void * Y, const int INCY)
 
- -- Funktion: void cblas_zhpmv (const enum CBLAS_ORDER ORDER, const
+ -- Function: void cblas_zhpmv (const enum CBLAS_ORDER ORDER, const
           enum CBLAS_UPLO UPLO, const int N, const void * ALPHA, const
           void * AP, const void * X, const int INCX, const void * BETA,
           void * Y, const int INCY)
 
- -- Funktion: void cblas_zgeru (const enum CBLAS_ORDER ORDER, const int
+ -- Function: void cblas_zgeru (const enum CBLAS_ORDER ORDER, const int
           M, const int N, const void * ALPHA, const void * X, const int
           INCX, const void * Y, const int INCY, void * A, const int LDA)
 
- -- Funktion: void cblas_zgerc (const enum CBLAS_ORDER ORDER, const int
+ -- Function: void cblas_zgerc (const enum CBLAS_ORDER ORDER, const int
           M, const int N, const void * ALPHA, const void * X, const int
           INCX, const void * Y, const int INCY, void * A, const int LDA)
 
- -- Funktion: void cblas_zher (const enum CBLAS_ORDER ORDER, const enum
+ -- Function: void cblas_zher (const enum CBLAS_ORDER ORDER, const enum
           CBLAS_UPLO UPLO, const int N, const double ALPHA, const void
           * X, const int INCX, void * A, const int LDA)
 
- -- Funktion: void cblas_zhpr (const enum CBLAS_ORDER ORDER, const enum
+ -- Function: void cblas_zhpr (const enum CBLAS_ORDER ORDER, const enum
           CBLAS_UPLO UPLO, const int N, const double ALPHA, const void
           * X, const int INCX, void * A)
 
- -- Funktion: void cblas_zher2 (const enum CBLAS_ORDER ORDER, const
+ -- Function: void cblas_zher2 (const enum CBLAS_ORDER ORDER, const
           enum CBLAS_UPLO UPLO, const int N, const void * ALPHA, const
           void * X, const int INCX, const void * Y, const int INCY,
           void * A, const int LDA)
 
- -- Funktion: void cblas_zhpr2 (const enum CBLAS_ORDER ORDER, const
+ -- Function: void cblas_zhpr2 (const enum CBLAS_ORDER ORDER, const
           enum CBLAS_UPLO UPLO, const int N, const void * ALPHA, const
           void * X, const int INCX, const void * Y, const int INCY,
           void * AP)
@@ -3293,181 +3292,181 @@ File: gsl-ref.info,  Node: Level 3 CBLAS Functions,  Next: GSL CBLAS Examples,  
 D.3 Level 3
 ===========
 
- -- Funktion: void cblas_sgemm (const enum CBLAS_ORDER ORDER, const
+ -- Function: void cblas_sgemm (const enum CBLAS_ORDER ORDER, const
           enum CBLAS_TRANSPOSE TRANSA, const enum CBLAS_TRANSPOSE
           TRANSB, const int M, const int N, const int K, const float
           ALPHA, const float * A, const int LDA, const float * B, const
           int LDB, const float BETA, float * C, const int LDC)
 
- -- Funktion: void cblas_ssymm (const enum CBLAS_ORDER ORDER, const
+ -- Function: void cblas_ssymm (const enum CBLAS_ORDER ORDER, const
           enum CBLAS_SIDE SIDE, const enum CBLAS_UPLO UPLO, const int
           M, const int N, const float ALPHA, const float * A, const int
           LDA, const float * B, const int LDB, const float BETA, float
           * C, const int LDC)
 
- -- Funktion: void cblas_ssyrk (const enum CBLAS_ORDER ORDER, const
+ -- Function: void cblas_ssyrk (const enum CBLAS_ORDER ORDER, const
           enum CBLAS_UPLO UPLO, const enum CBLAS_TRANSPOSE TRANS, const
           int N, const int K, const float ALPHA, const float * A, const
           int LDA, const float BETA, float * C, const int LDC)
 
- -- Funktion: void cblas_ssyr2k (const enum CBLAS_ORDER ORDER, const
+ -- Function: void cblas_ssyr2k (const enum CBLAS_ORDER ORDER, const
           enum CBLAS_UPLO UPLO, const enum CBLAS_TRANSPOSE TRANS, const
           int N, const int K, const float ALPHA, const float * A, const
           int LDA, const float * B, const int LDB, const float BETA,
           float * C, const int LDC)
 
- -- Funktion: void cblas_strmm (const enum CBLAS_ORDER ORDER, const
+ -- Function: void cblas_strmm (const enum CBLAS_ORDER ORDER, const
           enum CBLAS_SIDE SIDE, const enum CBLAS_UPLO UPLO, const enum
           CBLAS_TRANSPOSE TRANSA, const enum CBLAS_DIAG DIAG, const int
           M, const int N, const float ALPHA, const float * A, const int
           LDA, float * B, const int LDB)
 
- -- Funktion: void cblas_strsm (const enum CBLAS_ORDER ORDER, const
+ -- Function: void cblas_strsm (const enum CBLAS_ORDER ORDER, const
           enum CBLAS_SIDE SIDE, const enum CBLAS_UPLO UPLO, const enum
           CBLAS_TRANSPOSE TRANSA, const enum CBLAS_DIAG DIAG, const int
           M, const int N, const float ALPHA, const float * A, const int
           LDA, float * B, const int LDB)
 
- -- Funktion: void cblas_dgemm (const enum CBLAS_ORDER ORDER, const
+ -- Function: void cblas_dgemm (const enum CBLAS_ORDER ORDER, const
           enum CBLAS_TRANSPOSE TRANSA, const enum CBLAS_TRANSPOSE
           TRANSB, const int M, const int N, const int K, const double
           ALPHA, const double * A, const int LDA, const double * B,
           const int LDB, const double BETA, double * C, const int LDC)
 
- -- Funktion: void cblas_dsymm (const enum CBLAS_ORDER ORDER, const
+ -- Function: void cblas_dsymm (const enum CBLAS_ORDER ORDER, const
           enum CBLAS_SIDE SIDE, const enum CBLAS_UPLO UPLO, const int
           M, const int N, const double ALPHA, const double * A, const
           int LDA, const double * B, const int LDB, const double BETA,
           double * C, const int LDC)
 
- -- Funktion: void cblas_dsyrk (const enum CBLAS_ORDER ORDER, const
+ -- Function: void cblas_dsyrk (const enum CBLAS_ORDER ORDER, const
           enum CBLAS_UPLO UPLO, const enum CBLAS_TRANSPOSE TRANS, const
           int N, const int K, const double ALPHA, const double * A,
           const int LDA, const double BETA, double * C, const int LDC)
 
- -- Funktion: void cblas_dsyr2k (const enum CBLAS_ORDER ORDER, const
+ -- Function: void cblas_dsyr2k (const enum CBLAS_ORDER ORDER, const
           enum CBLAS_UPLO UPLO, const enum CBLAS_TRANSPOSE TRANS, const
           int N, const int K, const double ALPHA, const double * A,
           const int LDA, const double * B, const int LDB, const double
           BETA, double * C, const int LDC)
 
- -- Funktion: void cblas_dtrmm (const enum CBLAS_ORDER ORDER, const
+ -- Function: void cblas_dtrmm (const enum CBLAS_ORDER ORDER, const
           enum CBLAS_SIDE SIDE, const enum CBLAS_UPLO UPLO, const enum
           CBLAS_TRANSPOSE TRANSA, const enum CBLAS_DIAG DIAG, const int
           M, const int N, const double ALPHA, const double * A, const
           int LDA, double * B, const int LDB)
 
- -- Funktion: void cblas_dtrsm (const enum CBLAS_ORDER ORDER, const
+ -- Function: void cblas_dtrsm (const enum CBLAS_ORDER ORDER, const
           enum CBLAS_SIDE SIDE, const enum CBLAS_UPLO UPLO, const enum
           CBLAS_TRANSPOSE TRANSA, const enum CBLAS_DIAG DIAG, const int
           M, const int N, const double ALPHA, const double * A, const
           int LDA, double * B, const int LDB)
 
- -- Funktion: void cblas_cgemm (const enum CBLAS_ORDER ORDER, const
+ -- Function: void cblas_cgemm (const enum CBLAS_ORDER ORDER, const
           enum CBLAS_TRANSPOSE TRANSA, const enum CBLAS_TRANSPOSE
           TRANSB, const int M, const int N, const int K, const void *
           ALPHA, const void * A, const int LDA, const void * B, const
           int LDB, const void * BETA, void * C, const int LDC)
 
- -- Funktion: void cblas_csymm (const enum CBLAS_ORDER ORDER, const
+ -- Function: void cblas_csymm (const enum CBLAS_ORDER ORDER, const
           enum CBLAS_SIDE SIDE, const enum CBLAS_UPLO UPLO, const int
           M, const int N, const void * ALPHA, const void * A, const int
           LDA, const void * B, const int LDB, const void * BETA, void *
           C, const int LDC)
 
- -- Funktion: void cblas_csyrk (const enum CBLAS_ORDER ORDER, const
+ -- Function: void cblas_csyrk (const enum CBLAS_ORDER ORDER, const
           enum CBLAS_UPLO UPLO, const enum CBLAS_TRANSPOSE TRANS, const
           int N, const int K, const void * ALPHA, const void * A, const
           int LDA, const void * BETA, void * C, const int LDC)
 
- -- Funktion: void cblas_csyr2k (const enum CBLAS_ORDER ORDER, const
+ -- Function: void cblas_csyr2k (const enum CBLAS_ORDER ORDER, const
           enum CBLAS_UPLO UPLO, const enum CBLAS_TRANSPOSE TRANS, const
           int N, const int K, const void * ALPHA, const void * A, const
           int LDA, const void * B, const int LDB, const void * BETA,
           void * C, const int LDC)
 
- -- Funktion: void cblas_ctrmm (const enum CBLAS_ORDER ORDER, const
+ -- Function: void cblas_ctrmm (const enum CBLAS_ORDER ORDER, const
           enum CBLAS_SIDE SIDE, const enum CBLAS_UPLO UPLO, const enum
           CBLAS_TRANSPOSE TRANSA, const enum CBLAS_DIAG DIAG, const int
           M, const int N, const void * ALPHA, const void * A, const int
           LDA, void * B, const int LDB)
 
- -- Funktion: void cblas_ctrsm (const enum CBLAS_ORDER ORDER, const
+ -- Function: void cblas_ctrsm (const enum CBLAS_ORDER ORDER, const
           enum CBLAS_SIDE SIDE, const enum CBLAS_UPLO UPLO, const enum
           CBLAS_TRANSPOSE TRANSA, const enum CBLAS_DIAG DIAG, const int
           M, const int N, const void * ALPHA, const void * A, const int
           LDA, void * B, const int LDB)
 
- -- Funktion: void cblas_zgemm (const enum CBLAS_ORDER ORDER, const
+ -- Function: void cblas_zgemm (const enum CBLAS_ORDER ORDER, const
           enum CBLAS_TRANSPOSE TRANSA, const enum CBLAS_TRANSPOSE
           TRANSB, const int M, const int N, const int K, const void *
           ALPHA, const void * A, const int LDA, const void * B, const
           int LDB, const void * BETA, void * C, const int LDC)
 
- -- Funktion: void cblas_zsymm (const enum CBLAS_ORDER ORDER, const
+ -- Function: void cblas_zsymm (const enum CBLAS_ORDER ORDER, const
           enum CBLAS_SIDE SIDE, const enum CBLAS_UPLO UPLO, const int
           M, const int N, const void * ALPHA, const void * A, const int
           LDA, const void * B, const int LDB, const void * BETA, void *
           C, const int LDC)
 
- -- Funktion: void cblas_zsyrk (const enum CBLAS_ORDER ORDER, const
+ -- Function: void cblas_zsyrk (const enum CBLAS_ORDER ORDER, const
           enum CBLAS_UPLO UPLO, const enum CBLAS_TRANSPOSE TRANS, const
           int N, const int K, const void * ALPHA, const void * A, const
           int LDA, const void * BETA, void * C, const int LDC)
 
- -- Funktion: void cblas_zsyr2k (const enum CBLAS_ORDER ORDER, const
+ -- Function: void cblas_zsyr2k (const enum CBLAS_ORDER ORDER, const
           enum CBLAS_UPLO UPLO, const enum CBLAS_TRANSPOSE TRANS, const
           int N, const int K, const void * ALPHA, const void * A, const
           int LDA, const void * B, const int LDB, const void * BETA,
           void * C, const int LDC)
 
- -- Funktion: void cblas_ztrmm (const enum CBLAS_ORDER ORDER, const
+ -- Function: void cblas_ztrmm (const enum CBLAS_ORDER ORDER, const
           enum CBLAS_SIDE SIDE, const enum CBLAS_UPLO UPLO, const enum
           CBLAS_TRANSPOSE TRANSA, const enum CBLAS_DIAG DIAG, const int
           M, const int N, const void * ALPHA, const void * A, const int
           LDA, void * B, const int LDB)
 
- -- Funktion: void cblas_ztrsm (const enum CBLAS_ORDER ORDER, const
+ -- Function: void cblas_ztrsm (const enum CBLAS_ORDER ORDER, const
           enum CBLAS_SIDE SIDE, const enum CBLAS_UPLO UPLO, const enum
           CBLAS_TRANSPOSE TRANSA, const enum CBLAS_DIAG DIAG, const int
           M, const int N, const void * ALPHA, const void * A, const int
           LDA, void * B, const int LDB)
 
- -- Funktion: void cblas_chemm (const enum CBLAS_ORDER ORDER, const
+ -- Function: void cblas_chemm (const enum CBLAS_ORDER ORDER, const
           enum CBLAS_SIDE SIDE, const enum CBLAS_UPLO UPLO, const int
           M, const int N, const void * ALPHA, const void * A, const int
           LDA, const void * B, const int LDB, const void * BETA, void *
           C, const int LDC)
 
- -- Funktion: void cblas_cherk (const enum CBLAS_ORDER ORDER, const
+ -- Function: void cblas_cherk (const enum CBLAS_ORDER ORDER, const
           enum CBLAS_UPLO UPLO, const enum CBLAS_TRANSPOSE TRANS, const
           int N, const int K, const float ALPHA, const void * A, const
           int LDA, const float BETA, void * C, const int LDC)
 
- -- Funktion: void cblas_cher2k (const enum CBLAS_ORDER ORDER, const
+ -- Function: void cblas_cher2k (const enum CBLAS_ORDER ORDER, const
           enum CBLAS_UPLO UPLO, const enum CBLAS_TRANSPOSE TRANS, const
           int N, const int K, const void * ALPHA, const void * A, const
           int LDA, const void * B, const int LDB, const float BETA,
           void * C, const int LDC)
 
- -- Funktion: void cblas_zhemm (const enum CBLAS_ORDER ORDER, const
+ -- Function: void cblas_zhemm (const enum CBLAS_ORDER ORDER, const
           enum CBLAS_SIDE SIDE, const enum CBLAS_UPLO UPLO, const int
           M, const int N, const void * ALPHA, const void * A, const int
           LDA, const void * B, const int LDB, const void * BETA, void *
           C, const int LDC)
 
- -- Funktion: void cblas_zherk (const enum CBLAS_ORDER ORDER, const
+ -- Function: void cblas_zherk (const enum CBLAS_ORDER ORDER, const
           enum CBLAS_UPLO UPLO, const enum CBLAS_TRANSPOSE TRANS, const
           int N, const int K, const double ALPHA, const void * A, const
           int LDA, const double BETA, void * C, const int LDC)
 
- -- Funktion: void cblas_zher2k (const enum CBLAS_ORDER ORDER, const
+ -- Function: void cblas_zher2k (const enum CBLAS_ORDER ORDER, const
           enum CBLAS_UPLO UPLO, const enum CBLAS_TRANSPOSE TRANS, const
           int N, const int K, const void * ALPHA, const void * A, const
           int LDA, const void * B, const int LDB, const double BETA,
           void * C, const int LDC)
 
- -- Funktion: void cblas_xerbla (int P, const char * ROUT, const char *
+ -- Function: void cblas_xerbla (int P, const char * ROUT, const char *
           FORM, ...)
 
 

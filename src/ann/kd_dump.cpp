@@ -1,3 +1,6 @@
+#include <string.h>
+#include <stdlib.h>
+
 //----------------------------------------------------------------------
 // File:			kd_dump.cc
 // Programmer:		David Mount
