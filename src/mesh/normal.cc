@@ -58,3 +58,4 @@ void Normal::operator-=(const Normal n){
   z = z + n.z;
   normalize();
 }
+

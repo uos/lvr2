@@ -1,62 +1,100 @@
+###############################################################################
+#
+# SURFACE RECONSTRUCTION TOOLKIT
+# -----------------------------------
+#
+# created on: 01.03.2008
+# author:     Thomas Wiemann
+#
+###############################################################################
+
+
 CPP = g++
-CFLAGS = -Wall -Wno-write-strings -fopenmp
+CFLAGS = -Wall -Wno-deprecated -Wno-write-strings -fopenmp 
 AR = ar
+MOC = moc
 
 BIN = bin/
 OBJ = obj/
 
-OSFLAGS    = #-DMAC_OSX # TO DO: AUTO SELECTION
+OSXFLAGS    = #-DMAC_OSX # TO DO: AUTO SELECTION
 
-SHOWSRC    = src/show/
-MCSRC      = src/mcubes/
+ifndef $(MACVERSION)
+GLLIBS     = -lGL -lGLU
+QTLIBS     = -lQtGui -lQtOpenGL
+QTINCLUDES = -I/usr/include/QtNetwork -I/usr/include/QtGui -I/usr/include/QtXml \
+             -I/usr/include/QtSql -I/usr/include/QtUiTools \
+             -I/usr/include/QtOpenGL
+else
+GLLIBS     = -framework OpenGL
+QTLIBS     = -framework QTKit
+QTINCLUDES = -I/usr/local/Trolltech/Qt-4.4.3/include/ \
+             -I/usr/local/Trolltech/Qt-4.4.3/include/QtGui/ \
+             -I/usr/local/Trolltech/Qt-4.4.3/include/QtOpenGL/ \
+             -F/usr/local/Trolltech/Qt-4.4.3/lib/
+QTLIBS     = -framework QtGui -framework QtOpenGL -framework QtCore
+endif
+
+MCSRC      = src/libmc/
 MESHSRC    = src/mesh/
 ANNSRC     = src/ann/
 IOSRC      = src/io/
 GSLSRC     = src/gsl/
 NMSRC      = src/newmat/
 TESTSRC    = src/test/
+LIB3DSRC   = src/lib3d/
+VIEWSRC    = src/viewer/
 
-ifeq ($(OSFLAGS), -DMAC_OSX)
+ifeq ($(OSXFLAGS), -DMAC_OSX)
 GLLIBS     = -framework OpenGL -framework GLUT
 else
 GLLIBS     = -lGL -lGLU -lglut -lgltt -lttf -lgle
 endif
 
 CFLAGS     += -I$(ANNSRC) -I$(GSLSRC)
-CFLAGS     += $(OSFLAGS)
+CFLAGS     += $(OSXFLAGS) $(QTINCLUDES) 
 
-ANNTARGETS  = $(OBJ)ANN.o $(OBJ)brute.o $(OBJ)kd_tree.o $(OBJ)kd_util.o \
-              $(OBJ)kd_split.o $(OBJ)kd_search.o $(OBJ)kd_pr_search.o \
-              $(OBJ)kd_fix_rad_search.o $(OBJ)kd_dump.o $(OBJ)bd_tree.o \
-              $(OBJ)bd_search.o $(OBJ)bd_pr_search.o \
-              $(OBJ)bd_fix_rad_search.o $(OBJ)perf.o
+LIB3DTARGETS = $(OBJ)BaseVertex.o $(OBJ)ColorVertex.o \
+               $(OBJ)CoordinateAxes.o $(OBJ)GroundPlane.o $(OBJ)Matrix4.o \
+               $(OBJ)Normal.o $(OBJ)NormalCloud.o $(OBJ)PointCloud.o \
+               $(OBJ)Quaternion.o $(OBJ)Renderable.o $(OBJ)TriangleMesh.o \
+               $(OBJ)Tube.o 
 
-MCTARGETS   = $(OBJ)baseVertex.o $(OBJ)normal.o $(OBJ)colorVertex.o \
-              $(OBJ)staticMesh.o $(OBJ)box.o $(OBJ)distanceFunction.o \
-		    $(OBJ)hashGrid.o $(OBJ)tangentPlane.o $(OBJ)simpleGrid.o \
-		    $(OBJ)annInterpolator.o $(OBJ)kdppInterpolator.o 
+ANNTARGETS   = $(OBJ)ANN.o $(OBJ)brute.o $(OBJ)kd_tree.o $(OBJ)kd_util.o \
+               $(OBJ)kd_split.o $(OBJ)kd_search.o $(OBJ)kd_pr_search.o \
+               $(OBJ)kd_fix_rad_search.o $(OBJ)kd_dump.o $(OBJ)bd_tree.o \
+               $(OBJ)bd_search.o $(OBJ)bd_pr_search.o \
+               $(OBJ)bd_fix_rad_search.o $(OBJ)perf.o
 
-SHOWTARGETS = $(OBJ)show.o $(OBJ)camera.o
+MCTARGETS    = $(OBJ)baseVertex.o $(OBJ)normal.o $(OBJ)colorVertex.o \
+               $(OBJ)staticMesh.o $(OBJ)box.o $(OBJ)distanceFunction.o \
+		       $(OBJ)hashGrid.o $(OBJ)tangentPlane.o $(OBJ)simpleGrid.o \
+		       $(OBJ)annInterpolator.o $(OBJ)fastInterpolator.o \
+		       $(OBJ)tetraBox.o $(OBJ)tetraeder.o \
+		       $(OBJ)planeInterpolator.o $(OBJ)lspInterpolator.o
 
-IOTARGETS   = $(OBJ)fileWriter.o $(OBJ)plyWriter.o $(OBJ)fileReader.o \
-              $(OBJ)plyReader.o $(OBJ)gotoxy.o
+SHOWTARGETS  = $(OBJ)show.o $(OBJ)camera.o
 
-all: mcubes show test
+VIEWTARGETS  = $(OBJ)MoveDock.o $(OBJ)ObjectDialog.o $(OBJ)MatrixDialog.o $(OBJ)MainWindow.o \
+               $(OBJ)Viewport.o \
+               $(OBJ)EventHandler.o $(OBJ)ObjectHandler.o $(OBJ)RenderFrame.o \
+               $(OBJ)ViewerWindow.o $(OBJ)TouchPad.o \
+               
+IOTARGETS   =  $(OBJ)fileWriter.o $(OBJ)plyWriter.o $(OBJ)fileReader.o \
+               $(OBJ)plyReader.o $(OBJ)gotoxy.o
+
+all: mcubes viewer 
 
 mcubes: $(OBJ)libnewmat.a $(OBJ)libANN.a $(OBJ)libgsl.a $(IOTARGETS) $(MCTARGETS)
-	@echo -e "\nCompiling and Linking Marching Cubes Main Programm..."
+	@echo -e "\nCompiling and Linking Marching Cubes Main Programm...\n"
 	@$(CPP) $(CFLAGS) -o $(BIN)mcubes $(MCSRC)main.cc $(OBJ)libgsl.a $(OBJ)libgslcblas.a $(GLLIBS) $(ANNTARGETS) $(MCTARGETS) $(IOTARGETS) $(OBJ)libnewmat.a -lgsl 
-	@echo "DONE."
 
-show: $(SHOWTARGETS)
-	@echo -e "\nCompiling and Linking Mesh Viewer..."
-	@$(CPP) $(CFLAGS) -o $(BIN)show $(SHOWSRC)main.cc $(SHOWTARGETS) \
-                             $(MCTARGETS) $(IOTARGETS) $(GLLIBS) $(ANNTARGETS) $(OBJ)libnewmat.a $(OBJ)libgsl.a $(OBJ)libgslcblas.a
-	@echo "DONE."
 
-test: $(TESTSRC)normals.cc
-	@echo "Complining and linking normal test program..."
-	@$(CPP) $(CFLAGS) -o $(BIN)normals  $(TESTSRC)normals.cc $(MCTARGETS) $(IOTARGETS) $(GLLIBS) $(ANNTARGETS) $(OBJ)libnewmat.a $(OBJ)libgsl.a $(OBJ)libgslcblas.a
+	
+viewer: $(VIEWTARGETS) $(LIB3DTARGETS) $(VIEWSRC)Viewer.cpp
+	@echo -e "\nCompiling and Linking Viewer...\n"
+	@$(CPP) $(CFLAGS) -o $(BIN)viewer $(VIEWSRC)Viewer.cpp $(LIB3DTARGETS)\
+	        $(VIEWTARGETS) $(GLLIBS) $(QTLIBS)
 
 ######################################################################
 # ----------------------------- I/O ----------------------------------
@@ -102,17 +140,6 @@ $(OBJ)staticMesh.o: $(MESHSRC)staticMesh.*
 	@echo "Compiling Static Mesh..."
 	@$(CPP) $(CFLAGS) -c -o $(OBJ)staticMesh.o $(MESHSRC)staticMesh.cc
 
-######################################################################
-# ------------------------------ SHOW --------------------------------
-######################################################################
-
-$(OBJ)show.o: $(SHOWSRC)show.*
-	@echo "Compiling Show..."
-	@$(CPP) $(CFLAGS) -c -o $(OBJ)show.o $(SHOWSRC)show.cc
-
-$(OBJ)camera.o: $(SHOWSRC)camera.cc
-	@echo "Compiling Camera..."
-	@$(CPP) $(CFLAGS) -c -o $(OBJ)camera.o $(SHOWSRC)camera.cc
 
 ######################################################################
 # --------------------- MARCHING CUBES CLASSES -----------------------
@@ -121,6 +148,14 @@ $(OBJ)camera.o: $(SHOWSRC)camera.cc
 $(OBJ)box.o: $(MCSRC)box.*
 	@echo "Compiling Marching Cubes Box..."
 	@$(CPP) $(CFLAGS) -c -o $(OBJ)box.o $(MCSRC)box.cc
+
+$(OBJ)tetraBox.o: $(MCSRC)TetraederBox.*
+	@echo "Compiling Marching Tetraeder Box..."
+	@$(CPP) $(CFLAGS) -c -o $(OBJ)tetraBox.o $(MCSRC)TetraederBox.cpp
+
+$(OBJ)tetraeder.o: $(MCSRC)Tetraeder.*
+	@echo "Compiling Tetraeder..."
+	@$(CPP) $(CFLAGS) -c -o $(OBJ)tetraeder.o $(MCSRC)Tetraeder.cpp
 
 $(OBJ)distanceFunction.o: $(MCSRC)distanceFunction.*
 	@echo "Compiling Distance Function..."
@@ -135,17 +170,29 @@ $(OBJ)hashGrid.o: $(MCSRC)hashGrid.*
 	@echo "Compiling Hash Grid..."
 	@$(CPP) $(CFLAGS) -c -o $(OBJ)hashGrid.o $(MCSRC)hashGrid.cc
 
-$(OBJ)simpleGrid.o: $(MCSRC)simpleGrid.cc
+$(OBJ)simpleGrid.o: $(MCSRC)simpleGrid.*
 	@echo "Compiling Simple Grid..."
 	@$(CPP) $(CFLAGS) -c -o $(OBJ)simpleGrid.o $(MCSRC)simpleGrid.cc
 
-$(OBJ)kdppInterpolator.o: $(MCSRC)kdppInterpolator.cc
+$(OBJ)kdppInterpolator.o: $(MCSRC)kdppInterpolator.*
 	@echo "Compiling KDPP Interpolator..."
 	@$(CPP) $(CFLAGS) -c -o $(OBJ)kdppInterpolator.o $(MCSRC)kdppInterpolator.cc
 
-$(OBJ)annInterpolator.o: $(MCSRC)annInterpolator.cc
+$(OBJ)annInterpolator.o: $(MCSRC)annInterpolator.*
 	@echo "Compiling ANN Interpolator..."
 	@$(CPP) $(CFLAGS) -c -o $(OBJ)annInterpolator.o $(MCSRC)annInterpolator.cc
+
+$(OBJ)fastInterpolator.o: $(MCSRC)FastInterpolator.*
+	@echo "Compiling Fast Interpolator..."
+	@$(CPP) $(CFLAGS) -c -o $(OBJ)fastInterpolator.o $(MCSRC)FastInterpolator.cpp
+	
+$(OBJ)planeInterpolator.o: $(MCSRC)PlaneInterpolator.*
+	@echo "Compiling Plane Interpolator..."
+	@$(CPP) $(CFLAGS) -c -o $(OBJ)planeInterpolator.o $(MCSRC)PlaneInterpolator.cpp 
+	
+$(OBJ)lspInterpolator.o: $(MCSRC)LSPInterpolator.*
+	@echo "Compiling LSP Interpolator..."
+	@$(CPP) $(CFLAGS) -c -o  $(OBJ)lspInterpolator.o $(MCSRC)LSPInterpolator.cpp
 
 ######################################################################
 # -------------------------- ANN LIBRARY -----------------------------
@@ -247,10 +294,113 @@ $(OBJ)libnewmat.a:
 	@cd $(NMSRC); make;
 	@mv $(NMSRC)libnewmat.a $(OBJ)
 	@ranlib $(OBJ)libnewmat.a
+	
+#############################################################
+# VIEWER
+#############################################################
 
+$(OBJ)MainWindow.o: $(VIEWSRC)viewer.ui
+	@echo "Compiling Main Window..."
+	@uic $(VIEWSRC)viewer.ui > $(VIEWSRC)MainWindow.cpp
+	@$(CPP) $(CFLAGS) -c -o $(OBJ)MainWindow.o $(VIEWSRC)MainWindow.cpp
+	
+$(OBJ)MatrixDialog.o: $(VIEWSRC)matrixdialog.ui
+	@echo "Compiling Matrix Dialog..."
+	@uic $(VIEWSRC)matrixdialog.ui > $(VIEWSRC)MatrixDialog.cpp
+	@$(CPP) $(CFLAGS) -c -o $(OBJ)MatrixDialog.o $(VIEWSRC)MatrixDialog.cpp
+	
+$(OBJ)ObjectDialog.o: $(VIEWSRC)objectdialog.ui
+	@echo "Compiling Object Selection Dialog"
+	@uic $(VIEWSRC)objectdialog.ui > $(VIEWSRC)ObjectDialog.cpp
+	@$(CPP) $(CFLAGS) -c -o $(OBJ)ObjectDialog.o $(VIEWSRC)ObjectDialog.cpp
+	
+$(OBJ)MoveDock.o: $(VIEWSRC)movedock.ui
+	@echo "Compiling Move Dock"
+	@uic $(VIEWSRC)movedock.ui > $(VIEWSRC)MoveDock.cpp
+	@$(CPP) $(CFLAGS) -c -o $(OBJ)MoveDock.o $(VIEWSRC)MoveDock.cpp
+	
+$(OBJ)TouchPad.o: $(VIEWSRC)TouchPad.*
+	@echo "Compiling Touch Pad..."
+	@$(MOC) -i $(VIEWSRC)TouchPad.h > $(VIEWSRC)TouchPadMoc.cpp
+	@$(CPP) $(CFLAGS) -c -o $(OBJ)TouchPad.o $(VIEWSRC)TouchPad.cpp
+	
+$(OBJ)ViewerWindow.o: $(VIEWSRC)ViewerWindow.*
+	@echo "Compiling Viewer Window"
+	@$(CPP) $(CFLAGS) -c -o $(OBJ)ViewerWindow.o $(VIEWSRC)ViewerWindow.cpp
 
+$(OBJ)Viewport.o: $(VIEWSRC)Viewport.*
+	@echo "Compiling Viewport..."
+	@$(CPP) $(CFLAGS) -c -o $(OBJ)Viewport.o $(VIEWSRC)Viewport.cpp	
+	
+$(OBJ)EventHandler.o: $(VIEWSRC)EventHandler.*
+	@echo "Compiling Event Handler..."	
+	@$(MOC) -i $(VIEWSRC)EventHandler.h > $(VIEWSRC)EventHandlerMoc.cpp
+	@$(CPP) $(CFLAGS) -c -o $(OBJ)EventHandler.o $(VIEWSRC)EventHandler.cpp
+	
+$(OBJ)ObjectHandler.o: $(VIEWSRC)ObjectHandler.*
+	@echo "Compiling Object Handler..."
+	@$(MOC) -i $(VIEWSRC)ObjectHandler.h > $(VIEWSRC)ObjectHandlerMoc.cpp
+	@$(CPP) $(CFLAGS) -c -o $(OBJ)ObjectHandler.o $(VIEWSRC)ObjectHandler.cpp
+	
+$(OBJ)RenderFrame.o: $(VIEWSRC)RenderFrame.*
+	@echo "Compiling Render Frame..."
+	@$(MOC) -i $(VIEWSRC)RenderFrame.h > $(VIEWSRC)RenderFrameMoc.cpp
+	@$(CPP) $(CFLAGS) -c -o $(OBJ)RenderFrame.o $(VIEWSRC)RenderFrame.cpp
+
+#############################################################
+# LIB3D
+#############################################################
+
+$(OBJ)BaseVertex.o: $(LIB3DSRC)BaseVertex.*
+	@echo "Compiling Base Vertex..."
+	@$(CPP) $(CFLAGS) -c -o $(OBJ)BaseVertex.o $(LIB3DSRC)BaseVertex.cpp
+	
+$(OBJ)ColorVertex.o: $(LIB3DSRC)ColorVertex.*
+	@echo "Compiling Color Vertex..."
+	@$(CPP) $(CFLAGS) -c -o $(OBJ)ColorVertex.o $(LIB3DSRC)ColorVertex.cpp
+
+$(OBJ)Normal.o: $(LIB3DSRC)Normal.*
+	@echo "Compiling Normal..."
+	@$(CPP) $(CFLAGS) -c -o $(OBJ)Normal.o $(LIB3DSRC)Normal.cpp
+	
+$(OBJ)Matrix4.o: $(LIB3DSRC)Matrix4.*
+	@echo "Compiling 4x4 Matrix..."
+	@$(CPP) $(CFLAGS) -c -o $(OBJ)Matrix4.o $(LIB3DSRC)Matrix4.cpp
+
+$(OBJ)Renderable.o: $(LIB3DSRC)Renderable.*
+	@echo "Compiling Renderable..."
+	@$(CPP) $(CFLAGS) -c -o $(OBJ)Renderable.o $(LIB3DSRC)Renderable.cpp
+	
+$(OBJ)Tube.o: $(LIB3DSRC)Tube.*
+	@echo "Compiling Tube..."
+	@$(CPP) $(CFLAGS) -c -o $(OBJ)Tube.o $(LIB3DSRC)Tube.cpp	
+	
+$(OBJ)GroundPlane.o: $(LIB3DSRC)GroundPlane.*
+	@echo "Compiling Ground Plane..."
+	@$(CPP) $(CFLAGS) -c -o $(OBJ)GroundPlane.o $(LIB3DSRC)GroundPlane.cpp
+
+$(OBJ)CoordinateAxes.o: $(LIB3DSRC)CoordinateAxes.*
+	@echo "Compiling Coordinate Axes..."
+	@$(CPP) $(CFLAGS) -c -o $(OBJ)CoordinateAxes.o $(LIB3DSRC)CoordinateAxes.cpp
+	
+$(OBJ)Quaternion.o: $(LIB3DSRC)Quaternion.*
+	@echo "Compiling Quaternion..."
+	@$(CPP) $(CFLAGS) -c -o $(OBJ)Quaternion.o $(LIB3DSRC)Quaternion.cpp
+	
+$(OBJ)PointCloud.o: $(LIB3DSRC)PointCloud.*
+	@echo "Compiling Point Cloud..."
+	@$(CPP) $(CFLAGS) -c -o $(OBJ)PointCloud.o $(LIB3DSRC)PointCloud.cpp
+	
+$(OBJ)NormalCloud.o: $(LIB3DSRC)NormalCloud.*
+	@echo "Compiling Normal Point Cloud..."
+	@$(CPP) $(CFLAGS) -c -o $(OBJ)NormalCloud.o $(LIB3DSRC)NormalCloud.cpp
+	
+$(OBJ)TriangleMesh.o: $(LIB3DSRC)TriangleMesh.*
+	@echo "Compiling Triangle Mesh..."
+	@$(CPP) $(CFLAGS) -c -o $(OBJ)TriangleMesh.o $(LIB3DSRC)TriangleMesh.cpp
+	
 clean:
-	@echo "Cleaning up..."
+	@echo -e "\nCleaning up...\n"
 	@rm -f *.*~
 	@rm -f $(OBJ)*.o
 	@rm -f $(MCSRC)*.*~
