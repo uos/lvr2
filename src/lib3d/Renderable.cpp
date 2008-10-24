@@ -24,6 +24,8 @@ Renderable::Renderable() {
 	y_axis = Vertex(0.0, 1.0, 0.0);
 	z_axis = Vertex(0.0, 0.0, 1.0);
 
+	scale_factor = 1.0;
+
 	computeMatrix();
 	compileAxesList();
 
@@ -43,6 +45,7 @@ Renderable::Renderable(Matrix4 m, string n){
 	show_axes = false;
 	active = false;
 
+	scale_factor = 1.0;
 
 	setTransformationMatrix(m);
 	computeMatrix();
@@ -64,6 +67,8 @@ Renderable::Renderable(const Renderable& other){
 	x_axis = other.x_axis;
 	y_axis = other.y_axis;
 	z_axis = other.z_axis;
+
+	scale_factor = other.scale_factor;
 
 	computeMatrix();
 	compileAxesList();
@@ -87,9 +92,24 @@ Renderable::Renderable(string n){
 	y_axis = Vertex(0.0, 1.0, 0.0);
 	z_axis = Vertex(0.0, 0.0, 1.0);
 
+	scale_factor = 1.0;
+
 	computeMatrix();
 	compileAxesList();
 
+}
+
+void Renderable::scale(double d){
+
+	scale_factor = d;
+
+	double m0  = transformation[0 ] * d;
+	double m5  = transformation[5 ] * d;
+	double m10 = transformation[10] * d;
+
+	transformation.set(0 , m0 );
+	transformation.set(5 , m5 );
+	transformation.set(10, m10);
 }
 
 void Renderable::yaw(bool invert){
@@ -209,21 +229,29 @@ Renderable::~Renderable() {
 void Renderable::computeMatrix(){
 
 	Matrix4 m;
-	m.set(0 , x_axis.x);
+
 	m.set(1 , x_axis.y);
 	m.set(2 , x_axis.z);
 
 	m.set(4 , y_axis.x);
-	m.set(5 , y_axis.y);
 	m.set(6 , y_axis.z);
 
 	m.set(8 , z_axis.x);
 	m.set(9 , z_axis.y);
-	m.set(10, z_axis.z);
 
 	m.set(12, position.x);
 	m.set(13, position.y);
 	m.set(14, position.z);
+
+	if(scale_factor == 1.0){
+		m.set(0 , x_axis.x);
+		m.set(5 , y_axis.y);
+		m.set(10, z_axis.z);
+	} else {
+		m.set(0 , scale_factor * x_axis.x);
+		m.set(5 , scale_factor * y_axis.y);
+		m.set(10, scale_factor * z_axis.z);
+	}
 
 	transformation = m;
 }

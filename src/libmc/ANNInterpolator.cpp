@@ -1,4 +1,4 @@
-#include "annInterpolator.h"
+#include "ANNInterpolator.h"
 
 ANNInterpolator::ANNInterpolator(ANNpointArray pts, int n, float vs, int km, float epsilon){
 
@@ -7,18 +7,18 @@ ANNInterpolator::ANNInterpolator(ANNpointArray pts, int n, float vs, int km, flo
   number_of_points = n;
   voxelsize = vs;
   vs_sq = 0.5 * vs * vs;
-  
+
   normals = new Normal[number_of_points];
 
   float z1, z2;
 
   BaseVertex query_point, diff1, diff2, center;
   Normal normal;
-  
+
   ColumnVector C(3);
 
   center = BaseVertex(0.0, 0.0, 0.0);
-  
+
   cout << "##### Creating ANN Kd-Tree..." << endl;
   ANNsplitRule split = ANN_KD_SUGGEST;
   point_tree = new ANNkd_tree(points, number_of_points, 3, 10, split);
@@ -27,7 +27,7 @@ ANNInterpolator::ANNInterpolator(ANNpointArray pts, int n, float vs, int km, flo
   ANNdistArray di = new ANNdist[k_max];
 
   cout << "##### Estimating normals..." << endl;
-  
+
   for(int i = 0; i < number_of_points; i++){
 
     query_point = BaseVertex(points[i][0],
@@ -35,7 +35,7 @@ ANNInterpolator::ANNInterpolator(ANNpointArray pts, int n, float vs, int km, flo
 					    points[i][2]);
 
     center += query_point;
-    
+
     point_tree->annkFRSearch(points[i], vs_sq, k_max, id, di, 0.01 * voxelsize);
 
     int n_nb = 0;
@@ -48,26 +48,26 @@ ANNInterpolator::ANNInterpolator(ANNpointArray pts, int n, float vs, int km, flo
     try{
 	 ColumnVector F(n_nb);
 	 Matrix B(n_nb, 3);
-    
+
 	 for(int j = 1; j <= n_nb; j++){
 
 	   F(j) = points[id[j-1]][1];
 	   B(j, 1) = 1;
 	   B(j, 2) = points[id[j-1]][0];
 	   B(j, 3) = points[id[j-1]][2];
-		 
+
 	 }
-    
+
 	 Matrix Bt = B.t();
 	 Matrix BtB = Bt * B;
 	 Matrix BtBinv = BtB.i();
 	 Matrix M = BtBinv * Bt;
-  
+
 	 C = M * F;
 
 	 z1 = C(1) + C(2) * (query_point.x + epsilon) + C(3) * query_point.z;
 	 z2 = C(1) + C(2) * query_point.x + C(3) * (query_point.z + epsilon);
-    
+
 	 diff1 = BaseVertex(query_point.x + epsilon, z1, query_point.z) - query_point;
 	 diff2 = BaseVertex(query_point.x, z2, query_point.z + epsilon) - query_point;
 
@@ -79,13 +79,13 @@ ANNInterpolator::ANNInterpolator(ANNpointArray pts, int n, float vs, int km, flo
 // 	   normal.z = -1 * normal.z;
 // 	 }
 
-	 
+
 	 normals[i] = normal;
 
     } catch(Exception e){
-	 //Ignore 
+	 //Ignore
     }
-    
+
     if(i % 1000 == 0) cout << "##### Estimating normals... " << i << " / " << n << endl;
   }
 
@@ -104,7 +104,7 @@ ANNInterpolator::ANNInterpolator(ANNpointArray pts, int n, float vs, int km, flo
     }
 
     float x = 0, y = 0, z = 0;
-    
+
     for(int j = 0; j < n_nb; j++){
 	 x += normals[id[j]].x;
 	 y += normals[id[j]].y;
@@ -112,7 +112,7 @@ ANNInterpolator::ANNInterpolator(ANNpointArray pts, int n, float vs, int km, flo
     }
 
     normal = Normal(x, y, z);
-    
+
     if(normal * center < 0){
 	 normal.x = -1 * normal.x;
 	 normal.y = -1 * normal.y;
@@ -120,8 +120,8 @@ ANNInterpolator::ANNInterpolator(ANNpointArray pts, int n, float vs, int km, flo
     }
 
     normals[i] = normal;
-    
-    
+
+
 
     if(i % 10000 == 0) cout << "##### Interpolating normals... " << i << " / " << n << endl;
   }
@@ -143,8 +143,8 @@ float ANNInterpolator::distance(ColorVertex v){
 
 //   IdPoint idp;
 //   idp.p = s;
-//   idp.id = 0; 
-  
+//   idp.id = 0;
+
 //   //IdPoint nb = *t->find_nearest(idp,std::numeric_limits<double>::max()).first;
 
 //   //cout << "ID: " << nb.id << endl;
@@ -161,7 +161,7 @@ float ANNInterpolator::distance(ColorVertex v){
   float radius = vs_sq;
   int n_nb = 0;
   int c = 0;
-  
+
   do{
     n_nb = 0;
     radius = radius * 2;
@@ -172,7 +172,7 @@ float ANNInterpolator::distance(ColorVertex v){
     }
     c++;
   } while(n_nb < 3);
-  
+
   float  x = 0.0,  y = 0.0,  z = 0.0;
   float nx = 0.0, ny = 0.0, nz = 0.0;
 
@@ -195,10 +195,10 @@ float ANNInterpolator::distance(ColorVertex v){
 
   delete[] id;
   delete[] di;
-  
+
   Normal normal(nx, ny, nz);
   Vertex nearest(x, y, z);
-  
+
   Vertex diff = v - nearest;
 
   float length = diff.length();
@@ -211,7 +211,7 @@ float ANNInterpolator::distance(ColorVertex v){
 
 
   return 0.0;
-  
+
 }
 
 void ANNInterpolator::write(string filename){
@@ -228,9 +228,9 @@ void ANNInterpolator::write(string filename){
 
     out << points[i][0] << " " << points[i][1] << " " << points[i][2] << " "
 	   << normals[i].x << " " << normals[i].y << " " << normals[i].z << endl;
-    
+
   }
-  
+
 }
 
 

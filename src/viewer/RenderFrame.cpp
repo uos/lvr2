@@ -26,6 +26,9 @@ void RenderFrame::initializeGL(){
 	glPolygonMode (GL_FRONT_AND_BACK, GL_FILL);
 
 	glEnable(GL_LIGHTING);
+	float on[1] = {1.0f};
+	glLightModelfv(GL_LIGHT_MODEL_TWO_SIDE, on);
+
 	GLfloat lightOnePosition[] = {1.0, 1.0, 1.0, 1.0};
 	GLfloat lightOneColor[] = {0.10, 0.10, 0.10, 1.0};
 
@@ -35,6 +38,8 @@ void RenderFrame::initializeGL(){
 	glLightfv (GL_LIGHT0, GL_POSITION, lightOnePosition);
 	glLightfv (GL_LIGHT0, GL_AMBIENT, lightOneColor);
 	glEnable (GL_LIGHT0);
+
+
 
 	float r = 0.0;
 	float g = 1.0;
@@ -128,6 +133,10 @@ void RenderFrame::keyPressEvent(QKeyEvent* event){
 
 	case Qt::Key_F1:
 		eventHandler->printCurrentTransformation();
+		break;
+
+	case Qt::Key_S:
+		eventHandler->keyScale();
 		break;
 
 	default:

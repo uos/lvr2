@@ -8,7 +8,7 @@
 #ifndef FASTINTERPOLATOR_H_
 #define FASTINTERPOLATOR_H_
 
-#include "interpolator.h"
+#include "Interpolator.h"
 
 #include <ANN/ANN.h>
 
@@ -17,8 +17,9 @@
 using namespace std;
 
 #include "../newmat/newmat.h"
-#include "../mesh/colorVertex.h"
-#include "../mesh/normal.h"
+
+#include "../lib3d/ColorVertex.h"
+#include "../lib3d/Normal.h"
 
 #include <gsl/gsl_math.h>
 #include <gsl/gsl_eigen.h>

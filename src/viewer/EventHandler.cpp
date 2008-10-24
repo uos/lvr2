@@ -58,6 +58,13 @@ void EventHandler::keyUp(){
 
 }
 
+void EventHandler::keyScale(){
+	double d = QInputDialog::getDouble(mainWindow,
+			                           "Enter Scaling Factor:",
+			                           "", 1.0, -100000, 100000, 4);
+	objectHandler->transformSelectedObject(12, d);
+}
+
 void EventHandler::action_topView(){
 	viewport->topView();
 	viewport->applyTransformations();
@@ -131,8 +138,7 @@ void EventHandler::transform_from_file(){
 	delete[] matrix_data;
 }
 
-void EventHandler::touchpad_transform(int mode, int d){
-
+void EventHandler::touchpad_transform(int mode, double d){
 	objectHandler->transformSelectedObject(mode, d);
 	emit(updateGLWidget());
 
@@ -205,7 +211,7 @@ void EventHandler::loadObject(string file_name){
 	} else if(extension == "bor"){
 
 	} else if(extension == "ply"){
-		TriangleMesh* mesh = new TriangleMesh(file_name);
+		StaticMesh* mesh = new StaticMesh(file_name);
 		mesh->setName(file_name);
 		objectHandler->addObject(mesh);
 	}

@@ -1,7 +1,7 @@
 /****************************************************************************
 ** Meta object code from reading C++ file 'EventHandler.h'
 **
-** Created: Thu Oct 16 12:16:54 2008
+** Created: Wed Oct 22 14:14:51 2008
 **      by: The Qt Meta Object Compiler version 59 (Qt 4.4.0)
 **
 ** WARNING! All changes made in this file will be lost!
@@ -49,7 +49,7 @@ static const char qt_meta_stringdata_EventHandler[] = {
     "item\0action_editObjects(QListWidgetItem*)\0"
     "action_objectSelected(QListWidgetItem*)\0"
     "transform_from_file()\0,\0"
-    "touchpad_transform(int,int)\0"
+    "touchpad_transform(int,double)\0"
 };
 
 const QMetaObject EventHandler::staticMetaObject = {
@@ -85,7 +85,7 @@ int EventHandler::qt_metacall(QMetaObject::Call _c, int _id, void **_a)
         case 5: action_editObjects((*reinterpret_cast< QListWidgetItem*(*)>(_a[1]))); break;
         case 6: action_objectSelected((*reinterpret_cast< QListWidgetItem*(*)>(_a[1]))); break;
         case 7: transform_from_file(); break;
-        case 8: touchpad_transform((*reinterpret_cast< int(*)>(_a[1])),(*reinterpret_cast< int(*)>(_a[2]))); break;
+        case 8: touchpad_transform((*reinterpret_cast< int(*)>(_a[1])),(*reinterpret_cast< double(*)>(_a[2]))); break;
         }
         _id -= 9;
     }

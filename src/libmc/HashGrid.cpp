@@ -1,4 +1,4 @@
-#include "hashGrid.h"
+#include "HashGrid.h"
 
 HashGrid::HashGrid(string filename, float v, float scale){
 
@@ -27,6 +27,10 @@ HashGrid::HashGrid(string filename, float v, float scale){
   //Create Mesh
   createMesh();
   //createMeshMT();
+
+  cout << "SAVE" << endl;
+  mesh.save("mesh.ply");
+  cout << "-----" << endl;
 }
 
 HashGrid::~HashGrid(){
@@ -84,23 +88,7 @@ void HashGrid::createGrid(){
 		}
 
 
-
-		// hash_value = hashValue(index_x,
-		// 					  index_y,
-		// 					  index_z);
-
-		//     it = cells.find(hash_value);
-		//     if(it == cells.end()){
-		// 	 Box* new_box = new Box(Vertex(index_x * voxelsize + xmin,
-		// 							 index_y * voxelsize + ymin,
-		// 							 index_z * voxelsize + zmin), voxelsize);
-		// 	 cells[hash_value] = new_box;
-		//     }
-
-
 	}
-
-
 
   cout << "##### Finished Grid Creation. Number of generated cells: " << cells.size() << endl;
 }
@@ -174,9 +162,8 @@ void HashGrid::createMesh(){
     c++;
   }
 
-  cout << "##### Finished Mesh Generation..." << endl;
-  cout << "##### Current Mesh has " << mesh.indices.size() / 3
-	  << " faces using " << mesh.vertices.size() << " vertices." << endl;
+  mesh.printStats();
+  mesh.finalize();
 
 }
 
@@ -198,9 +185,9 @@ void HashGrid::createMeshMT(){
     c++;
   }
 
-  cout << "##### Finished MT-Mesh Generation..." << endl;
-  cout << "##### Current Mesh has " << mesh.indices.size() / 3
-	  << " faces using " << mesh.vertices.size() << " vertices." << endl;
+//  cout << "##### Finished MT-Mesh Generation..." << endl;
+//  cout << "##### Current Mesh has " << mesh.indices.size() / 3
+//	  << " faces using " << mesh.vertices.size() << " vertices." << endl;
 
 }
 
@@ -283,34 +270,34 @@ int HashGrid::readPoints(string filename, float scale){
 
 void HashGrid::writeMesh(){
 
-  cout << "##### Writing 'mesh.ply'" << endl;
-
-  PLYWriter w("mesh.ply");
-
-  w.writeHeader();
-  w.addMesh(mesh);
-  w.writeFooter();
+//  cout << "##### Writing 'mesh.ply'" << endl;
+//
+//  PLYWriter w("mesh.ply");
+//
+//  w.writeHeader();
+//  w.addMesh(mesh);
+//  w.writeFooter();
 
 }
 
 void HashGrid::writeBorders(){
 
-  cout << "##### Writing 'mesh.bor'" << endl;
-
-  ofstream out("mesh.bor");
-
-  for(size_t i = 0; i < mesh.indices.size() - 3; i+= 3){
-    BaseVertex v1 = mesh.vertices[i];
-    BaseVertex v2 = mesh.vertices[i+1];
-    BaseVertex v3 = mesh.vertices[i+2];
-    out << "BEGIN" << endl;
-    out << v1.x << " " << v1.y << " " << v1.z << endl;
-    out << v2.x << " " << v2.y << " " << v2.z << endl;
-    out << v3.x << " " << v3.y << " " << v3.z << endl;
-    out << "END" << endl;
-  }
-
-  out.close();
+//  cout << "##### Writing 'mesh.bor'" << endl;
+//
+//  ofstream out("mesh.bor");
+//
+//  for(size_t i = 0; i < mesh.indices.size() - 3; i+= 3){
+//    BaseVertex v1 = mesh.vertices[i];
+//    BaseVertex v2 = mesh.vertices[i+1];
+//    BaseVertex v3 = mesh.vertices[i+2];
+//    out << "BEGIN" << endl;
+//    out << v1.x << " " << v1.y << " " << v1.z << endl;
+//    out << v2.x << " " << v2.y << " " << v2.z << endl;
+//    out << v3.x << " " << v3.y << " " << v3.z << endl;
+//    out << "END" << endl;
+//  }
+//
+//  out.close();
 }
 
 void HashGrid::writeGrid(){

@@ -53,6 +53,7 @@ public:
 	void camIncTransSpeed();
 	void camDecTransSpeed();
 
+	void keyScale();
 	void keyUp();
 
 	void createDefaultObjects();
@@ -71,7 +72,7 @@ public slots:
 	void action_objectSelected(QListWidgetItem* item);
 
 	void transform_from_file();
-	void touchpad_transform(int, int);
+	void touchpad_transform(int, double);
 
 signals:
 	void updateGLWidget();

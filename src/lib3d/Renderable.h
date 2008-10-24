@@ -62,6 +62,7 @@ public:
 	void lift(bool invert = 0);
 	void strafe(bool invert = 0);
 
+	void scale(double s);
 
 	void showAxes(bool on){ show_axes = on;};
 
@@ -93,6 +94,8 @@ protected:
 
 	bool show_axes;
 	bool active;
+
+	float scale_factor;
 
 
 };

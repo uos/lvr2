@@ -35,7 +35,7 @@ public:
 	void objectSelected();
 
 	void transformSelectedObject(Matrix4 m);
-	void transformSelectedObject(int mode, int d);
+	void transformSelectedObject(int mode, double d);
 
 	void printTransformation(){cout << objects[selectedObject]->getTransformation();};
 

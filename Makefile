@@ -57,8 +57,8 @@ CFLAGS     += $(OSXFLAGS) $(QTINCLUDES)
 LIB3DTARGETS = $(OBJ)BaseVertex.o $(OBJ)ColorVertex.o \
                $(OBJ)CoordinateAxes.o $(OBJ)GroundPlane.o $(OBJ)Matrix4.o \
                $(OBJ)Normal.o $(OBJ)NormalCloud.o $(OBJ)PointCloud.o \
-               $(OBJ)Quaternion.o $(OBJ)Renderable.o $(OBJ)TriangleMesh.o \
-               $(OBJ)Tube.o 
+               $(OBJ)Quaternion.o $(OBJ)Renderable.o $(OBJ)StaticMesh.o \
+               $(OBJ)TriangleMesh.o $(OBJ)Tube.o $(OBJ)BoundingBox.o
 
 ANNTARGETS   = $(OBJ)ANN.o $(OBJ)brute.o $(OBJ)kd_tree.o $(OBJ)kd_util.o \
                $(OBJ)kd_split.o $(OBJ)kd_search.o $(OBJ)kd_pr_search.o \
@@ -66,12 +66,10 @@ ANNTARGETS   = $(OBJ)ANN.o $(OBJ)brute.o $(OBJ)kd_tree.o $(OBJ)kd_util.o \
                $(OBJ)bd_search.o $(OBJ)bd_pr_search.o \
                $(OBJ)bd_fix_rad_search.o $(OBJ)perf.o
 
-MCTARGETS    = $(OBJ)baseVertex.o $(OBJ)normal.o $(OBJ)colorVertex.o \
-               $(OBJ)staticMesh.o $(OBJ)box.o $(OBJ)distanceFunction.o \
-		       $(OBJ)hashGrid.o $(OBJ)tangentPlane.o $(OBJ)simpleGrid.o \
-		       $(OBJ)annInterpolator.o $(OBJ)fastInterpolator.o \
-		       $(OBJ)tetraBox.o $(OBJ)tetraeder.o \
-		       $(OBJ)planeInterpolator.o $(OBJ)lspInterpolator.o
+MCTARGETS    = $(OBJ)Box.o $(OBJ)HashGrid.o $(OBJ)FastGrid.o $(OBJ)QueryPoint.o \
+               $(OBJ)FastBox.o \
+               $(OBJ)ANNInterpolator.o $(OBJ)FastInterpolator.o $(OBJ)TetraBox.o \
+               $(OBJ)Tetraeder.o $(OBJ)PlaneInterpolator.o $(OBJ)LSPInterpolator.o 
 
 SHOWTARGETS  = $(OBJ)show.o $(OBJ)camera.o
 
@@ -80,14 +78,14 @@ VIEWTARGETS  = $(OBJ)MoveDock.o $(OBJ)ObjectDialog.o $(OBJ)MatrixDialog.o $(OBJ)
                $(OBJ)EventHandler.o $(OBJ)ObjectHandler.o $(OBJ)RenderFrame.o \
                $(OBJ)ViewerWindow.o $(OBJ)TouchPad.o \
                
-IOTARGETS   =  $(OBJ)fileWriter.o $(OBJ)plyWriter.o $(OBJ)fileReader.o \
-               $(OBJ)plyReader.o $(OBJ)gotoxy.o
+IOTARGETS   =  #$(OBJ)fileWriter.o $(OBJ)plyWriter.o $(OBJ)fileReader.o \
+               #$(OBJ)plyReader.o $(OBJ)gotoxy.o
 
 all: mcubes viewer 
 
-mcubes: $(OBJ)libnewmat.a $(OBJ)libANN.a $(OBJ)libgsl.a $(IOTARGETS) $(MCTARGETS)
+mcubes: $(OBJ)libnewmat.a $(OBJ)libANN.a $(OBJ)libgsl.a $(LIB3DTARGETS) $(IOTARGETS) $(MCTARGETS)
 	@echo -e "\nCompiling and Linking Marching Cubes Main Programm...\n"
-	@$(CPP) $(CFLAGS) -o $(BIN)mcubes $(MCSRC)main.cc $(OBJ)libgsl.a $(OBJ)libgslcblas.a $(GLLIBS) $(ANNTARGETS) $(MCTARGETS) $(IOTARGETS) $(OBJ)libnewmat.a -lgsl 
+	@$(CPP) $(CFLAGS) -o $(BIN)mcubes $(MCSRC)main.cc $(OBJ)libgsl.a $(OBJ)libgslcblas.a $(GLLIBS) $(ANNTARGETS) $(MCTARGETS) $(IOTARGETS) $(LIB3DTARGETS) $(OBJ)libnewmat.a -lgsl 
 
 
 	
@@ -145,54 +143,49 @@ $(OBJ)staticMesh.o: $(MESHSRC)staticMesh.*
 # --------------------- MARCHING CUBES CLASSES -----------------------
 ######################################################################
 
-$(OBJ)box.o: $(MCSRC)box.*
+$(OBJ)Box.o: $(MCSRC)Box.*
 	@echo "Compiling Marching Cubes Box..."
-	@$(CPP) $(CFLAGS) -c -o $(OBJ)box.o $(MCSRC)box.cc
+	@$(CPP) $(CFLAGS) -c -o $(OBJ)Box.o $(MCSRC)Box.cpp
 
-$(OBJ)tetraBox.o: $(MCSRC)TetraederBox.*
+$(OBJ)TetraBox.o: $(MCSRC)TetraederBox.*
 	@echo "Compiling Marching Tetraeder Box..."
-	@$(CPP) $(CFLAGS) -c -o $(OBJ)tetraBox.o $(MCSRC)TetraederBox.cpp
+	@$(CPP) $(CFLAGS) -c -o $(OBJ)TetraBox.o $(MCSRC)TetraederBox.cpp
 
-$(OBJ)tetraeder.o: $(MCSRC)Tetraeder.*
+$(OBJ)Tetraeder.o: $(MCSRC)Tetraeder.*
 	@echo "Compiling Tetraeder..."
-	@$(CPP) $(CFLAGS) -c -o $(OBJ)tetraeder.o $(MCSRC)Tetraeder.cpp
+	@$(CPP) $(CFLAGS) -c -o $(OBJ)Tetraeder.o $(MCSRC)Tetraeder.cpp
 
-$(OBJ)distanceFunction.o: $(MCSRC)distanceFunction.*
-	@echo "Compiling Distance Function..."
-	@$(CPP) $(CFLAGS) -c -o $(OBJ)distanceFunction.o \
-                             $(MCSRC)distanceFunction.cc
-
-$(OBJ)tangentPlane.o: $(MCSRC)tangentPlane.*
-	@echo "Compiling Tangent Plane..."
-	@$(CPP) $(CFLAGS) -c -o $(OBJ)tangentPlane.o $(MCSRC)tangentPlane.cc
-
-$(OBJ)hashGrid.o: $(MCSRC)hashGrid.*
+$(OBJ)HashGrid.o: $(MCSRC)HashGrid.*
 	@echo "Compiling Hash Grid..."
-	@$(CPP) $(CFLAGS) -c -o $(OBJ)hashGrid.o $(MCSRC)hashGrid.cc
+	@$(CPP) $(CFLAGS) -c -o $(OBJ)HashGrid.o $(MCSRC)HashGrid.cpp
+	
+$(OBJ)FastGrid.o: $(MCSRC)FastGrid.*
+	@echo "Compiling Fast Grid..."
+	@$(CPP) $(CFLAGS) -c -o $(OBJ)FastGrid.o $(MCSRC)FastGrid.cpp
+	
+$(OBJ)FastBox.o: $(MCSRC)FastBox.cpp
+	@echo "Compiling Fast Box..."
+	@$(CPP) $(CFLAGS) -c -o $(OBJ)FastBox.o $(MCSRC)FastBox.cpp
+	
+$(OBJ)QueryPoint.o: $(MCSRC)QueryPoint.*
+	@echo "Compiling Query Point..."
+	@$(CPP) $(CFLAGS) -c -o $(OBJ)QueryPoint.o $(MCSRC)QueryPoint.cpp
 
-$(OBJ)simpleGrid.o: $(MCSRC)simpleGrid.*
-	@echo "Compiling Simple Grid..."
-	@$(CPP) $(CFLAGS) -c -o $(OBJ)simpleGrid.o $(MCSRC)simpleGrid.cc
-
-$(OBJ)kdppInterpolator.o: $(MCSRC)kdppInterpolator.*
-	@echo "Compiling KDPP Interpolator..."
-	@$(CPP) $(CFLAGS) -c -o $(OBJ)kdppInterpolator.o $(MCSRC)kdppInterpolator.cc
-
-$(OBJ)annInterpolator.o: $(MCSRC)annInterpolator.*
+$(OBJ)ANNInterpolator.o: $(MCSRC)ANNInterpolator.*
 	@echo "Compiling ANN Interpolator..."
-	@$(CPP) $(CFLAGS) -c -o $(OBJ)annInterpolator.o $(MCSRC)annInterpolator.cc
+	@$(CPP) $(CFLAGS) -c -o $(OBJ)ANNInterpolator.o $(MCSRC)ANNInterpolator.cpp
 
-$(OBJ)fastInterpolator.o: $(MCSRC)FastInterpolator.*
+$(OBJ)FastInterpolator.o: $(MCSRC)FastInterpolator.*
 	@echo "Compiling Fast Interpolator..."
-	@$(CPP) $(CFLAGS) -c -o $(OBJ)fastInterpolator.o $(MCSRC)FastInterpolator.cpp
+	@$(CPP) $(CFLAGS) -c -o $(OBJ)FastInterpolator.o $(MCSRC)FastInterpolator.cpp
 	
-$(OBJ)planeInterpolator.o: $(MCSRC)PlaneInterpolator.*
+$(OBJ)PlaneInterpolator.o: $(MCSRC)PlaneInterpolator.*
 	@echo "Compiling Plane Interpolator..."
-	@$(CPP) $(CFLAGS) -c -o $(OBJ)planeInterpolator.o $(MCSRC)PlaneInterpolator.cpp 
+	@$(CPP) $(CFLAGS) -c -o $(OBJ)PlaneInterpolator.o $(MCSRC)PlaneInterpolator.cpp 
 	
-$(OBJ)lspInterpolator.o: $(MCSRC)LSPInterpolator.*
+$(OBJ)LSPInterpolator.o: $(MCSRC)LSPInterpolator.*
 	@echo "Compiling LSP Interpolator..."
-	@$(CPP) $(CFLAGS) -c -o  $(OBJ)lspInterpolator.o $(MCSRC)LSPInterpolator.cpp
+	@$(CPP) $(CFLAGS) -c -o  $(OBJ)LSPInterpolator.o $(MCSRC)LSPInterpolator.cpp
 
 ######################################################################
 # -------------------------- ANN LIBRARY -----------------------------
@@ -355,6 +348,10 @@ $(OBJ)BaseVertex.o: $(LIB3DSRC)BaseVertex.*
 	@echo "Compiling Base Vertex..."
 	@$(CPP) $(CFLAGS) -c -o $(OBJ)BaseVertex.o $(LIB3DSRC)BaseVertex.cpp
 	
+$(OBJ)BoundingBox.o: $(LIB3DSRC)BoundingBox.*
+	@echo "Compiling Bounding Box..."
+	@$(CPP) $(CFLAGS) -c -o $(OBJ)BoundingBox.o $(LIB3DSRC)BoundingBox.cpp
+	
 $(OBJ)ColorVertex.o: $(LIB3DSRC)ColorVertex.*
 	@echo "Compiling Color Vertex..."
 	@$(CPP) $(CFLAGS) -c -o $(OBJ)ColorVertex.o $(LIB3DSRC)ColorVertex.cpp
@@ -394,6 +391,10 @@ $(OBJ)PointCloud.o: $(LIB3DSRC)PointCloud.*
 $(OBJ)NormalCloud.o: $(LIB3DSRC)NormalCloud.*
 	@echo "Compiling Normal Point Cloud..."
 	@$(CPP) $(CFLAGS) -c -o $(OBJ)NormalCloud.o $(LIB3DSRC)NormalCloud.cpp
+	
+$(OBJ)StaticMesh.o: $(LIB3DSRC)StaticMesh.*
+	@echo "Compiling Static Mesh..."
+	@$(CPP) $(CFLAGS) -c -o $(OBJ)StaticMesh.o $(LIB3DSRC)StaticMesh.cpp
 	
 $(OBJ)TriangleMesh.o: $(LIB3DSRC)TriangleMesh.*
 	@echo "Compiling Triangle Mesh..."

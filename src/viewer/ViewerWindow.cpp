@@ -121,8 +121,8 @@ void ViewerWindow::setupConnections(){
 	object_dialog->connect(object_dialog_ui->listWidget, SIGNAL(itemClicked(QListWidgetItem *)),
 			         eventHandler, SLOT(action_objectSelected(QListWidgetItem *)));
 
-	touch_pad->connect(touch_pad, SIGNAL(transform(int, int)),
-			         eventHandler, SLOT(touchpad_transform(int, int)));
+	touch_pad->connect(touch_pad, SIGNAL(transform(int, double)),
+			         eventHandler, SLOT(touchpad_transform(int, double)));
 
 }
 

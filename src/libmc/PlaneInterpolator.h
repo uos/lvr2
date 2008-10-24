@@ -18,14 +18,14 @@ using namespace std;
 #include "../newmat/newmat.h"
 #include "../newmat/newmatap.h"
 
-#include "../mesh/colorVertex.h"
-#include "../mesh/normal.h"
+#include "../lib3d/ColorVertex.h"
+#include "../lib3d/Normal.h"
 
 #include <gsl/gsl_math.h>
 #include <gsl/gsl_eigen.h>
 #include <gsl/gsl_matrix.h>
 
-#include "interpolator.h"
+#include "Interpolator.h"
 
 struct Plane{
 	float a, b, c;

@@ -502,9 +502,9 @@ configure:9917: $? = 0
 configure:9929: result: yes
 configure:9936: checking for _doprnt
 configure:9993: gcc -o conftest -g -O2   conftest.c  >&5
-/tmp/ccKv38TJ.o: In function `main':
-/home/twiemann/software1/meshing/src/gsl/conftest.c:64: undefined reference to `_doprnt'
-/tmp/ccKv38TJ.o:(.data+0x0): undefined reference to `_doprnt'
+/tmp/ccs0mf3d.o: In function `main':
+/home/twiemann/software/meshing/src/gsl/conftest.c:64: undefined reference to `_doprnt'
+/tmp/ccs0mf3d.o:(.data+0x0): undefined reference to `_doprnt'
 collect2: ld returned 1 exit status
 configure:9999: $? = 1
 configure: failed program was:
@@ -1080,12 +1080,12 @@ lt_lt_cv_sys_global_symbol_to_cdecl='"sed -n -e '\''s/^. .* \\(.*\\)\$/extern in
 ## Output variables. ##
 ## ----------------- ##
 
-ACLOCAL='${SHELL} /home/twiemann/software1/meshing/src/gsl/missing --run aclocal-1.9'
-AMTAR='${SHELL} /home/twiemann/software1/meshing/src/gsl/missing --run tar'
+ACLOCAL='${SHELL} /home/twiemann/software/meshing/src/gsl/missing --run aclocal-1.9'
+AMTAR='${SHELL} /home/twiemann/software/meshing/src/gsl/missing --run tar'
 AR='ar'
-AUTOCONF='${SHELL} /home/twiemann/software1/meshing/src/gsl/missing --run autoconf'
-AUTOHEADER='${SHELL} /home/twiemann/software1/meshing/src/gsl/missing --run autoheader'
-AUTOMAKE='${SHELL} /home/twiemann/software1/meshing/src/gsl/missing --run automake-1.9'
+AUTOCONF='${SHELL} /home/twiemann/software/meshing/src/gsl/missing --run autoconf'
+AUTOHEADER='${SHELL} /home/twiemann/software/meshing/src/gsl/missing --run autoheader'
+AUTOMAKE='${SHELL} /home/twiemann/software/meshing/src/gsl/missing --run automake-1.9'
 AWK='gawk'
 CC='gcc'
 CFLAGS='-g -O2'
@@ -1138,7 +1138,7 @@ LTLIBOBJS=''
 MAINT='#'
 MAINTAINER_MODE_FALSE=''
 MAINTAINER_MODE_TRUE='#'
-MAKEINFO='${SHELL} /home/twiemann/software1/meshing/src/gsl/missing --run makeinfo'
+MAKEINFO='${SHELL} /home/twiemann/software/meshing/src/gsl/missing --run makeinfo'
 OBJEXT='o'
 PACKAGE='gsl'
 PACKAGE_BUGREPORT=''
@@ -1175,7 +1175,7 @@ host_os='linux-gnu'
 host_vendor='unknown'
 includedir='${prefix}/include'
 infodir='${prefix}/info'
-install_sh='/home/twiemann/software1/meshing/src/gsl/install-sh'
+install_sh='/home/twiemann/software/meshing/src/gsl/install-sh'
 libdir='${exec_prefix}/lib'
 libexecdir='${exec_prefix}/libexec'
 localstatedir='${prefix}/var'
