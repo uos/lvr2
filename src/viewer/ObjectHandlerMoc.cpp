@@ -1,7 +1,7 @@
 /****************************************************************************
 ** Meta object code from reading C++ file 'ObjectHandler.h'
 **
-** Created: Wed Oct 22 14:14:52 2008
+** Created: Fri Oct 24 14:48:22 2008
 **      by: The Qt Meta Object Compiler version 59 (Qt 4.4.0)
 **
 ** WARNING! All changes made in this file will be lost!
