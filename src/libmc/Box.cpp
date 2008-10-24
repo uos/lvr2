@@ -1,4 +1,4 @@
-#include "box.h"
+#include "Box.h"
 
 Box::Box(){
   for(int i = 0; i < 8; i++){
@@ -52,47 +52,6 @@ void Box::getCorners(ColorVertex corners[]){
 
   uchar r, g, b;
   r = b = 0; g = 200;
-
-  //BaseVertex shift(200, 200, 200);
-  // baseVertex += shift;
-
-  // corners[0] = ColorVertex(baseVertex);
-
-//   corners[1] = ColorVertex(baseVertex.x + voxelsize,
-// 					  baseVertex.y,
-// 					  baseVertex.z,
-// 					  r, g, b);
-
-//   corners[2] = ColorVertex(baseVertex.x + voxelsize,
-// 					  baseVertex.y + voxelsize,
-// 					  baseVertex.z,
-// 					  r, g, b);
-
-//   corners[3] = ColorVertex(baseVertex.x,
-// 					  baseVertex.y + voxelsize,
-// 					  baseVertex.z,
-// 					  r, g, b);
-
-//   corners[4] = ColorVertex(baseVertex.x,
-// 					  baseVertex.y,
-// 					  baseVertex.z + voxelsize,
-// 					  r, g, b);
-
-//   corners[5] = ColorVertex(baseVertex.x + voxelsize,
-// 					  baseVertex.y,
-// 					  baseVertex.z + voxelsize,
-// 					  r, g, b);
-
-//   corners[6] = ColorVertex(baseVertex.x + voxelsize,
-// 					  baseVertex.y + voxelsize,
-// 					  baseVertex.z + voxelsize,
-// 					  r, g, b);
-
-//   corners[7] = ColorVertex(baseVertex.x,
-// 					  baseVertex.y + voxelsize,
-// 					  baseVertex.z + voxelsize,
-// 					  r, g, b);
-
   float vsh = 0.5 * voxelsize;
 
   corners[0] = ColorVertex(baseVertex.x - vsh,
@@ -281,7 +240,7 @@ float Box::calcIntersection(float x1, float x2,
 
 }
 
-int Box::getApproximation(int globalIndex, StaticMesh &mesh,
+int Box::getApproximation(int globalIndex, TriangleMesh &mesh,
 					 Interpolator* dst_func){
 
   ColorVertex corners[8];
@@ -317,6 +276,8 @@ int Box::getApproximation(int globalIndex, StaticMesh &mesh,
 		  if(current_neighbour->indices[NBVertTable[edge_index][i]] != -1){
 		    current_index = current_neighbour->indices[NBVertTable[edge_index][i]];
 		  }
+		} else {
+			//
 		}
 	   }
 	 }
@@ -361,7 +322,7 @@ int Box::getApproximation(int globalIndex, StaticMesh &mesh,
 
 	 //Interpolate with normals in mesh
 	 for(int j = 0; j < 3; j++){
-	   mesh.interpolateNormal(tmp_indices[i+j], normal);
+	   mesh.interpolateNormal( normal, tmp_indices[i+j]);
 	 }
     }
 

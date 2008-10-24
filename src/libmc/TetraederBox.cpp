@@ -18,7 +18,7 @@ TetraederBox::~TetraederBox() {
 
 }
 
-int TetraederBox::getApproximation(int globalIndex, StaticMesh &mesh, Interpolator* df){
+int TetraederBox::getApproximation(int globalIndex, TriangleMesh &mesh, Interpolator* df){
 
 	calcCorners();
 	calcTetraeders();

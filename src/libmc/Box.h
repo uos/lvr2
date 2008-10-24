@@ -1,13 +1,12 @@
 #ifndef __BOX_H__
 #define __BOX_H__
 
-#include "tables.h"
-#include "distanceFunction.h"
-#include "interpolator.h"
+#include "Tables.h"
+#include "Interpolator.h"
 //#include "kdppInterpolator.h"
 
-#include "../mesh/colorVertex.h"
-#include "../mesh/staticMesh.h"
+#include "../lib3d/ColorVertex.h"
+#include "../lib3d/TriangleMesh.h"
 
 class Box{
 
@@ -16,11 +15,11 @@ public:
   Box(const Box &o);
   Box(Vertex v, float voxelsize);
 
-  
+
   int getApproximation(int globalIndex,
-				   StaticMesh &mesh,
+				   TriangleMesh &mesh,
 				   Interpolator* df);
-			    
+
   void setConfigurationCorner(int i) {configuration[i] = true;};
   void getCorners(ColorVertex corners[]);
   int getIndex() const;
@@ -28,11 +27,11 @@ public:
 
   Box* nb[27];
 
-  
+
   //private:
 
   bool sign(float v){ return v > 0;};
-  
+
 
   void getIntersections(ColorVertex corners[],
 				    Interpolator* df,
@@ -54,16 +53,16 @@ public:
   uchar current_color[3];
 
   bool approx_ok;
-  
+
   float voxelsize;
   ColorVertex baseVertex;
-  
+
 };
 
 inline ostream& operator<<(ostream& os, const Box b){
   os << "## Box: ## " << endl
 	<< b.getBaseCorner()
-	<< "Index: " << b.getIndex() << endl << endl; 
+	<< "Index: " << b.getIndex() << endl << endl;
   return os;
 }
 

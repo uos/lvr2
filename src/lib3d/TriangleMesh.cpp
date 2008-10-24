@@ -1,122 +1,85 @@
 /*
  * TriangleMesh.cpp
  *
- *  Created on: 13.10.2008
- *      Author: twiemann
+ *  Created on: 17.10.2008
+ *      Author: Thomas Wiemann
  */
 
 #include "TriangleMesh.h"
 
-TriangleMesh::TriangleMesh(string filename) {
+TriangleMesh::TriangleMesh(): StaticMesh() {
 
-	listIndex = -1;
-
-	vertices  = 0;
-	normals   = 0;
-	colors    = 0;
-	indices   = 0;
-
-	number_of_vertices = 0;
-	number_of_faces    = 0;
-
-	readPLY(filename);
-
-	initDisplayList();
 }
 
-void TriangleMesh::initDisplayList(){
+TriangleMesh::~TriangleMesh(){
 
-	glEnableClientState(GL_VERTEX_ARRAY);
-	glEnableClientState(GL_NORMAL_ARRAY);
-	glEnableClientState(GL_COLOR_ARRAY);
-
-	listIndex = glGenLists(1);
-
-	glNewList(listIndex, GL_COMPILE);
-	glColorPointer(3, GL_FLOAT, 0, colors);
-	glNormalPointer(GL_FLOAT, 0, normals);
-	glVertexPointer(3, GL_FLOAT, 0, vertices);
-
-	//glDrawElements(GL_TRIANGLES, 3 * number_of_faces, GL_UNSIGNED_INT, indices);
-	glDrawArrays(GL_TRIANGLES, 0, number_of_vertices);
-	glEndList();
-}
-
-TriangleMesh::~TriangleMesh() {
-
-	if(vertices != 0) delete[] vertices;
-	if(normals  != 0) delete[] normals;
 	if(colors   != 0) delete[] colors;
+	if(vertices != 0) delete[] vertices;
 	if(indices  != 0) delete[] indices;
+	if(normals  != 0) delete[] normals;
+
+	index_buffer.clear();
+	vertex_buffer.clear();
+	normal_buffer.clear();
 
 }
 
-void TriangleMesh::readPLY(string filename){
+void TriangleMesh::finalize(){
 
-	ifstream in;
+	number_of_vertices = (int)vertex_buffer.size();
+	number_of_faces    = (int)index_buffer.size() / 3;
 
-	PlyHeaderDescription head;
-	PlyVertexDescription vertex_dcr;
-	PlyFaceDescription face_dcr;
+	normals =  new float[3 * number_of_vertices];
+	vertices = new float[3 * number_of_vertices];
+	indices =  new unsigned int[number_of_faces * 3];
+	colors = new float [3 * number_of_vertices];
 
-	PlyFace ply_face;
-	PlyVertex ply_vertex;
-
-	in.open(filename.c_str(), fstream::in | fstream::binary);
-
-	if(!in.good()){
-		cout << "!!!!! Warning: PLY-Reader: Cannot open file' " << filename << "'." << endl;
-		return;
+	for(int i = 0; i < number_of_vertices; i++){
+		for(int j = 0; j < 3; j++){
+			normals [3 * i + j] = -normal_buffer[i][j];
+			vertices[3 * i + j] = vertex_buffer[i][j];
+		}
+		colors[3 * i    ] = 0.0f;
+		colors[3 * i + 1] = 1.0f;
+		colors[3 * i + 2] = 0.0f;
 	}
 
-	cout << "##### PLY-Reader: Reading " << filename << "..." << endl;
-
-	in.read( (char*)&head, sizeof(head));
-	in.read( (char*)&vertex_dcr, sizeof(vertex_dcr));
-	in.read( (char*)&face_dcr, sizeof(face_dcr));
-
-	const char* buffer = "end_header\n";
-	char dummy[20];
-	in.read( dummy, strlen(buffer));
-
-	vertices = new float[3 * vertex_dcr.count];
-	normals  = new float[3 * vertex_dcr.count];
-	colors   = new float[3 * vertex_dcr.count];
-
-	int index;
-
-	number_of_vertices = vertex_dcr.count;
-
-	for(unsigned int i = 0; i < vertex_dcr.count; i++){
-
-		index = 3 * i;
-
-		in.read( (char*)&ply_vertex, sizeof(PlyVertex));
-
-		vertices[index    ] = ply_vertex.x;
-		vertices[index + 1] = ply_vertex.y;
-		vertices[index + 2] = ply_vertex.z;
-
-		colors  [index    ] = ply_vertex.r;
-		colors  [index + 1] = ply_vertex.g;
-		colors  [index + 2] = ply_vertex.b;
-
-		normals [index    ] = ply_vertex.nx;
-		normals [index + 1] = ply_vertex.ny;
-		normals [index + 2] = ply_vertex.nz;
-
+	for(size_t i = 0; i < index_buffer.size(); i++){
+		indices[i] = index_buffer[i];
 	}
 
-	number_of_faces = face_dcr.count;
+	vertex_buffer.clear();
+	normal_buffer.clear();
+	index_buffer.clear();
 
-	indices = new unsigned int[3 * number_of_faces];
+	finalized = true;
 
-	for(unsigned int i = 0; i < face_dcr.count; i++){
+}
 
-		index = 3 * i;
+void TriangleMesh::printStats(){
 
-		in.read( (char*)&ply_face, sizeof(ply_face));
-		for(int j = 0; j < 3; j++) indices[index + j] = ply_face.indices[j];
+	if(finalized){
+		cout << "##### Triangle Mesh (S): " << number_of_vertices << " Vertices / "
+		                                    << number_of_faces    << " Faces.   " << endl;
+	} else {
+		cout << "##### Triangle Mesh (D): " << vertex_buffer.size() << " Vertices / "
+		                                    << index_buffer.size() / 3 << " Faces." << endl;
+	}
+
+}
+
+void TriangleMesh::interpolateNormal(Normal n, size_t index){
+
+	if(index < normal_buffer.size()){
+
+		Normal normal = normal_buffer[index];
+		normal += n;
+		normal.normalize();
+
+		normal_buffer[index] = normal;
+
+	} else {
+		cout << "WARNING: TriangleMesh: Normal index out of range: " << index << endl;
 	}
 
 }

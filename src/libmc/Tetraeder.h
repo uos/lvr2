@@ -8,11 +8,11 @@
 #ifndef TETRAEDER_H_
 #define TETRAEDER_H_
 
-#include "interpolator.h"
-#include "tables.h"
+#include "Interpolator.h"
+#include "Tables.h"
 
-#include "../mesh/colorVertex.h"
-#include "../mesh/staticMesh.h"
+#include "../lib3d/ColorVertex.h"
+#include "../lib3d/TriangleMesh.h"
 
 class Tetraeder {
 public:
@@ -21,7 +21,7 @@ public:
 	Tetraeder(Vertex v[]);
 	virtual ~Tetraeder();
 
-	int getApproximation(int globalIndex, StaticMesh &mesh, Interpolator* df);
+	int getApproximation(int globalIndex, TriangleMesh &mesh, Interpolator* df);
 
 private:
 	void initIntersections();

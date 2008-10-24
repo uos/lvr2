@@ -13,18 +13,18 @@
 
 using namespace std;
 
-#include "interpolator.h"
+#include "Interpolator.h"
 #include "Tetraeder.h"
 
-#include "../mesh/colorVertex.h"
-#include "../mesh/staticMesh.h"
+#include "../lib3d/ColorVertex.h"
+#include "../lib3d/TriangleMesh.h"
 
 class TetraederBox {
 public:
 	TetraederBox(Vertex v, float voxelsize);
 	virtual ~TetraederBox();
 
-	int getApproximation(int globalIndex, StaticMesh &mesh, Interpolator* df);
+	int getApproximation(int globalIndex, TriangleMesh &mesh, Interpolator* df);
 
 private:
 

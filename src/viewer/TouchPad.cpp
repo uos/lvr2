@@ -43,8 +43,8 @@ bool TouchPad::checkInput(int d){
 
 void TouchPad::mouseMoveEvent(QMouseEvent* e){
 
-	int dx = old_x - e->x();
-	int dy = old_y - e->y();
+	double dx = (double)old_x - e->x();
+	double dy = (double)old_y - e->y();
 
 	switch(transformation_mode){
 	case YAW_ROLL:

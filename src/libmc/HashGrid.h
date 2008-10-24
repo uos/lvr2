@@ -1,19 +1,17 @@
 #ifndef __HASH_GRID_H__
 #define __HASH_GRID_H__
 
-#include "../io/plyWriter.h"
-#include "../mesh/staticMesh.h"
-#include "tables.h"
-#include "distanceFunction.h"
-//#include "kdppInterpolator.h"
-#include "annInterpolator.h"
-#include "interpolator.h"
+#include "Tables.h"
+#include "ANNInterpolator.h"
+#include "Interpolator.h"
 #include "FastInterpolator.h"
 #include "PlaneInterpolator.h"
 #include "LSPInterpolator.h"
 #include "TetraederBox.h"
-#include "box.h"
+#include "Box.h"
 
+#include "../lib3d/TriangleMesh.h"
+#include "../lib3d/ColorVertex.h"
 
 #include <math.h>
 #include <vector>
@@ -58,7 +56,7 @@ private:
   float voxelsize;
 
   //The Mesh
-  StaticMesh mesh;
+  TriangleMesh mesh;
 
   //Point array
   ANNpointArray points;

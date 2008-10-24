@@ -1,7 +1,7 @@
 /****************************************************************************
 ** Meta object code from reading C++ file 'TouchPad.h'
 **
-** Created: Thu Oct 16 12:17:00 2008
+** Created: Wed Oct 22 14:14:56 2008
 **      by: The Qt Meta Object Compiler version 59 (Qt 4.4.0)
 **
 ** WARNING! All changes made in this file will be lost!
@@ -30,13 +30,13 @@ static const uint qt_meta_data_TouchPad[] = {
       12,   10,    9,    9, 0x05,
 
  // slots: signature, parameters, type, tag, flags
-      31,    9,    9,    9, 0x0a,
+      34,    9,    9,    9, 0x0a,
 
        0        // eod
 };
 
 static const char qt_meta_stringdata_TouchPad[] = {
-    "TouchPad\0\0,\0transform(int,int)\0"
+    "TouchPad\0\0,\0transform(int,double)\0"
     "indexChanged(int)\0"
 };
 
@@ -65,7 +65,7 @@ int TouchPad::qt_metacall(QMetaObject::Call _c, int _id, void **_a)
         return _id;
     if (_c == QMetaObject::InvokeMetaMethod) {
         switch (_id) {
-        case 0: transform((*reinterpret_cast< int(*)>(_a[1])),(*reinterpret_cast< int(*)>(_a[2]))); break;
+        case 0: transform((*reinterpret_cast< int(*)>(_a[1])),(*reinterpret_cast< double(*)>(_a[2]))); break;
         case 1: indexChanged((*reinterpret_cast< int(*)>(_a[1]))); break;
         }
         _id -= 2;
@@ -74,7 +74,7 @@ int TouchPad::qt_metacall(QMetaObject::Call _c, int _id, void **_a)
 }
 
 // SIGNAL 0
-void TouchPad::transform(int _t1, int _t2)
+void TouchPad::transform(int _t1, double _t2)
 {
     void *_a[] = { 0, const_cast<void*>(reinterpret_cast<const void*>(&_t1)), const_cast<void*>(reinterpret_cast<const void*>(&_t2)) };
     QMetaObject::activate(this, &staticMetaObject, 0, _a);

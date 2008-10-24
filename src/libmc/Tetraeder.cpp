@@ -39,7 +39,7 @@ float Tetraeder::calcIntersection(float x1, float x2, float d1, float d2, bool i
 	return intersection;
 }
 
-int Tetraeder::getApproximation(int globalIndex, StaticMesh &mesh, Interpolator* df){
+int Tetraeder::getApproximation(int globalIndex, TriangleMesh &mesh, Interpolator* df){
 
 	for(int i = 0; i < 4; i++) values[i] = df->distance(vertices[i]);
 
@@ -72,7 +72,7 @@ int Tetraeder::getApproximation(int globalIndex, StaticMesh &mesh, Interpolator*
 		normal = diff1.cross(diff2);
 		//Interpolate with normals in mesh
 		for(int j = 0; j < 3; j++){
-			mesh.interpolateNormal(tmp_indices[i+j], normal);
+			mesh.interpolateNormal(normal, tmp_indices[i+j]);
 		}
 	}
 

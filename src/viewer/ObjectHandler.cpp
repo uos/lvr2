@@ -31,11 +31,10 @@ void ObjectHandler::objectSelected(){
 }
 
 void ObjectHandler::transformSelectedObject(Matrix4 m){
-	cout << "TRANSFORM: " << m;
 	objects[selectedObject]->setTransformationMatrix(m);
 }
 
-void ObjectHandler::transformSelectedObject(int mode, int d){
+void ObjectHandler::transformSelectedObject(int mode, double d){
 
 	Renderable* obj = objects[selectedObject];
 
@@ -52,7 +51,8 @@ void ObjectHandler::transformSelectedObject(int mode, int d){
 	case 9 : d > 0 ? obj->moveX() : obj->moveX(true); break;
 	case 10: d > 0 ? obj->moveY() : obj->moveY(true); break;
 	case 11: d > 0 ? obj->moveZ() : obj->moveZ(true); break;
-	default: cout << "Warning: Transformation undefined: " << mode << endl;
+	case 12: obj->scale(d); break;
+	default: cout << "Object Handler: Warning: Transformation undefined: " << mode << endl;
 	}
 
 }

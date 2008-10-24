@@ -33,7 +33,7 @@ public slots:
 	void indexChanged(int);
 
 signals:
-	void transform(int, int);
+	void transform(int, double);
 
 
 

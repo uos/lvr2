@@ -382,29 +382,42 @@ Normal PlaneInterpolator::pca(ANNidxArray id, int k, Vertex centroid){
 }
 
 float PlaneInterpolator::distance(ColorVertex v){
+
+	int k = 40;
+
 	//Allocate ANN point
 	ANNpoint p = annAllocPt(3);
 	p[0] = v.x; p[1] = v.y; p[2] = v.z;
 
 	//Arrays for indices
-	ANNidxArray id = new ANNidx[10];
-	ANNdistArray di = new ANNdist[10];
+	ANNidxArray id = new ANNidx[k];
+	ANNdistArray di = new ANNdist[k];
 
 	//Find nearest tangent plane
-	point_tree->annkSearch(p, 1, id, di);
+	point_tree->annkSearch(p, k, id, di);
 
-	//cout << id[0] << endl;
+	Vertex nearest(0.0, 0.0, 0.0);
+	Normal normal(0.0, 0.0, 0.0);
 
-	//Get nearest tangent plane
-	Vertex nearest(points[id[0]][0],
-				   points[id[0]][1],
-			       points[id[0]][2]);
+	for(int i = 0; i < k; i++){
+		//Get nearest tangent plane
+		Vertex vq (points[id[i]][0], points[id[i]][1], points[id[i]][2]);
 
-	//Get normal
-	Normal normal(normals[id[0]][0],
-			normals[id[0]][1],
-			normals[id[0]][2]);
+		//Get normal
+		Normal n(normals[id[i]][0], normals[id[i]][1], normals[id[i]][2]);
 
+		nearest += vq;
+		normal += n;
+
+	}
+
+	normal.x = normal.x / k;
+	normal.y = normal.y / k;
+	normal.z = normal.z / k;
+
+	nearest.x = nearest.x / k;
+	nearest.y = nearest.y / k;
+	nearest.z = nearest.z / k;
 
 	//Calculate distance
 	float distance = (v - nearest) * normal;
