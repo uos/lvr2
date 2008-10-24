@@ -9,15 +9,34 @@
 #define FASTBOX_H_
 
 #include "QueryPoint.h"
+#include "Interpolator.h"
+#include "Tables.h"
+
+#include "../lib3d/TriangleMesh.h"
 
 class FastBox {
 public:
 	FastBox();
+	FastBox(const FastBox &other);
+
+	int calcApproximation(vector<QueryPoint> &qp, TriangleMesh &mesh, int global_index);
+
 	virtual ~FastBox();
 
-private:
-	int vertices     [8];
-	int intersections[12];
+	int vertices      [8];
+	int intersections [12];
+
+	bool configuration[8];
+
+	int getIndex() const;
+
+	void getCorners(ColorVertex corners[], vector<QueryPoint> &qp);
+	void getDistances(float distances[], vector<QueryPoint> &qp);
+	void getIntersections(ColorVertex corners[], float distances[], ColorVertex positions[]);
+
+	float calcIntersection(float x1, float x2, float v1, float v2, bool interpolate);
+
+
 
 };
 

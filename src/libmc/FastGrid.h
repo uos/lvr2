@@ -21,12 +21,17 @@ using __gnu_cxx::hash_map;
 #include "../lib3d/TriangleMesh.h"
 
 #include "Interpolator.h"
+#include "PlaneInterpolator.h"
 #include "QueryPoint.h"
 #include "FastBox.h"
+#include "Tables.h"
 
 class FastGrid {
 public:
 	FastGrid(string filename, float voxelsize);
+
+	void writeGrid();
+
 	virtual ~FastGrid();
 
 private:
@@ -34,8 +39,11 @@ private:
 	inline int hashValue(int i, int j, int k);
 	inline int calcIndex(float f);
 
+	int  findQueryPoint(int Position, int index_x, int index_y, int index_z);
+
 	void readPoints(string filename);
 	void calcIndices();
+	void calcQueryPointValues();
 	void createGrid();
 	void createMesh();
 
@@ -53,8 +61,10 @@ private:
 	vector<QueryPoint>      query_points;
 	ANNpointArray           points;
 	Interpolator*           interpolator;
+	TriangleMesh            mesh;
 
 	hash_map<int, FastBox*> cells;
+
 };
 
 inline int FastGrid::hashValue(int i, int j, int k){
