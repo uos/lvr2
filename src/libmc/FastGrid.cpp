@@ -63,7 +63,7 @@ FastGrid::FastGrid(string filename, float vs) {
 
 	readPoints(filename);
 
-	interpolator = new PlaneInterpolator(points, number_of_points, 10.0, 100, 100.0);
+	interpolator = new StannInterpolator(points, number_of_points, 10.0, 100, 100.0);
 
 	calcIndices();
 	createGrid();
@@ -221,7 +221,6 @@ void FastGrid::createMesh(){
 	mesh.printStats();
 	mesh.finalize();
 	mesh.save("mesh.ply");
-	cout << "OK" << endl << flush;
 }
 
 

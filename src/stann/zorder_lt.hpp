@@ -17,13 +17,15 @@
 #ifndef __SFCNN_ZORDER_LT__
 #define __SFCNN_ZORDER_LT__
 
-#include <dpoint.hpp>
+#include "dpoint.hpp"
+
 #include <cmath>
 #include <climits>
 #include <iostream>
-#include <zorder_type_traits.hpp>
-#include <sep_float.hpp>
-#include <pair_iter.hpp>
+
+#include "zorder_type_traits.hpp"
+#include "sep_float.hpp"
+#include "pair_iter.hpp"
 
 using namespace std;
 
