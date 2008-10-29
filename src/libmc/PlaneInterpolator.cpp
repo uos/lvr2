@@ -229,42 +229,6 @@ Plane PlaneInterpolator::calcPlane(Vertex query_point, int k, ANNidxArray id){
 
 
 void PlaneInterpolator::interpolateNormals(int k){
-//
-//	ANNidxArray id = new ANNidx[k];
-//	ANNdistArray di = new ANNdist[k];
-//
-//	vector<Normal> tmp;
-//
-//	for(int i = 0; i < number_of_points; i++){
-//		point_tree->annkSearch(points[i], k, id, di);
-//
-//		if(i % 10000 == 0) cout << "##### Interpolating normals: "
-//				                << i << " / " << number_of_points << endl;
-//
-//		Vertex mean;
-//		Normal mean_normal;
-//
-//		for(int j = 0; j < k; j++){
-//			mean += Vertex(normals[id[j]][0],
-//					       normals[id[j]][1],
-//					       normals[id[j]][2]);
-//		}
-//		mean_normal = Normal(mean);
-//
-//
-//		for(int j = 0; j < k; j++){
-//			Normal n = Normal(normals[id[j]][0], normals[id[j]][1], normals[id[j]][2]);
-//			if(fabs(n * mean_normal) > 0.2 ){
-//				normals[id[j]][0] = mean_normal.x;
-//				normals[id[j]][1] = mean_normal.y;
-//				normals[id[j]][2] = mean_normal.z;
-//			}
-//		}
-//
-//	}
-//
-//	delete[] id;
-//	delete[] di;
 
 	ANNidxArray id = new ANNidx[k];
 	ANNdistArray di = new ANNdist[k];
