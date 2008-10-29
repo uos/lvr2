@@ -16,7 +16,8 @@
 #define __SFCNN_BSEARCH__
 
 #include <vector>
-#include <zorder_lt.hpp>
+
+#include "zorder_lt.hpp"
 
 /*! \file
   \brief Binary search functions

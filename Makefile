@@ -8,9 +8,10 @@
 #
 ###############################################################################
 
-
+#CPP = /opt/intel/cce/10.1.018/bin/icc
 CPP = g++
-CFLAGS = -Wall -Wno-deprecated -Wno-write-strings -fopenmp 
+CFLAGS = -Wall -Wno-deprecated -Wno-write-strings -fopenmp -O3
+#CFLAGS     = -O3 -xT -ipo -gcc ##FLAGS FOR ICC
 AR = ar
 MOC = moc
 
@@ -69,7 +70,8 @@ ANNTARGETS   = $(OBJ)ANN.o $(OBJ)brute.o $(OBJ)kd_tree.o $(OBJ)kd_util.o \
 MCTARGETS    = $(OBJ)Box.o $(OBJ)HashGrid.o $(OBJ)FastGrid.o $(OBJ)QueryPoint.o \
                $(OBJ)FastBox.o \
                $(OBJ)ANNInterpolator.o $(OBJ)FastInterpolator.o $(OBJ)TetraBox.o \
-               $(OBJ)Tetraeder.o $(OBJ)PlaneInterpolator.o $(OBJ)LSPInterpolator.o 
+               $(OBJ)Tetraeder.o $(OBJ)PlaneInterpolator.o $(OBJ)LSPInterpolator.o \
+               $(OBJ)RansacInterpolator.o $(OBJ)StannInterpolator.o
 
 SHOWTARGETS  = $(OBJ)show.o $(OBJ)camera.o
 
@@ -186,6 +188,14 @@ $(OBJ)PlaneInterpolator.o: $(MCSRC)PlaneInterpolator.*
 $(OBJ)LSPInterpolator.o: $(MCSRC)LSPInterpolator.*
 	@echo "Compiling LSP Interpolator..."
 	@$(CPP) $(CFLAGS) -c -o  $(OBJ)LSPInterpolator.o $(MCSRC)LSPInterpolator.cpp
+	
+$(OBJ)RansacInterpolator.o: $(MCSRC)RansacInterpolator.*
+	@echo "Compiling RANSAC Interpolator..."
+	@$(CPP) $(CFLAGS) -c -o $(OBJ)RansacInterpolator.o $(MCSRC)RansacInterpolator.cpp
+	
+$(OBJ)StannInterpolator.o: $(MCSRC)StannInterpolator.*
+	@echo "Compiling STANN Interpolator..."
+	@$(CPP) $(CFLAGS) -c -o $(OBJ)StannInterpolator.o $(MCSRC)StannInterpolator.cpp
 
 ######################################################################
 # -------------------------- ANN LIBRARY -----------------------------

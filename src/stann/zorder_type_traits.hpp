@@ -20,7 +20,8 @@
 #define __ZORDER_TYPE_TRAITS__
 
 #include <iostream>
-#include <sep_float.hpp>
+
+#include "sep_float.hpp"
 using namespace std;
 
 struct zorder_t {};
