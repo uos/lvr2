@@ -33,19 +33,11 @@ public:
 
 private:
 
-	void calcTangentPlanes(int k);
-	void interpolateNormals(int k);
-	void writeNormals();
-
-	Normal pca(ANNidxArray id, int k, Vertex centroid);
+	Normal calcNormal(Vertex v, int k);
+	ColumnVector fitPlane(ANNidxArray id, int k);
 
 	ANNkd_tree* point_tree;
-	ANNkd_tree* centroid_tree;
-	ANNkd_tree* normal_tree;
-
 	ANNpointArray points;
-	ANNpointArray centroids;
-	ANNpointArray normals;
 
 	float voxelsize;
 	float vs_sq;
