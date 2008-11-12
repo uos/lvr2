@@ -45,7 +45,7 @@ protected:
 };
 
 void StaticMesh::render(){
-
+	if(finalized && listIndex != -1) glCallList(listIndex);
 }
 
 

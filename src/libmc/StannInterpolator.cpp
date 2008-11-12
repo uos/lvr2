@@ -195,6 +195,9 @@ void StannInterpolator::interpolateNormals(int k){
 
 	vector<Normal> tmp;
 
+	for(int i = 0; i < number_of_points; i++) tmp.push_back(Normal());
+
+    #pragma omp parallel for
 	for(int i = 0; i < number_of_points; i++){
 
 		vector<unsigned long> id;
@@ -215,7 +218,7 @@ void StannInterpolator::interpolateNormals(int k){
 		}
 		mean_normal = Normal(mean);
 
-		tmp.push_back(mean);
+		tmp[i] = mean;
 
 		for(int j = 0; j < k; j++){
 			Normal n = Normal(normals[id[j]][0], normals[id[j]][1], normals[id[j]][2]);
