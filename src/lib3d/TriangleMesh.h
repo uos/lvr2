@@ -10,6 +10,9 @@
 
 #include "StaticMesh.h"
 
+#include <vector>
+using namespace std;
+
 class TriangleMesh : public StaticMesh{
 public:
 

@@ -502,9 +502,9 @@ configure:9917: $? = 0
 configure:9929: result: yes
 configure:9936: checking for _doprnt
 configure:9993: gcc -o conftest -g -O2   conftest.c  >&5
-/tmp/ccs0mf3d.o: In function `main':
+/tmp/ccyEsXqR.o: In function `main':
 /home/twiemann/software/meshing/src/gsl/conftest.c:64: undefined reference to `_doprnt'
-/tmp/ccs0mf3d.o:(.data+0x0): undefined reference to `_doprnt'
+/tmp/ccyEsXqR.o:(.data+0x0): undefined reference to `_doprnt'
 collect2: ld returned 1 exit status
 configure:9999: $? = 1
 configure: failed program was:
