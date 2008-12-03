@@ -59,7 +59,9 @@ LIB3DTARGETS = $(OBJ)BaseVertex.o $(OBJ)ColorVertex.o \
                $(OBJ)CoordinateAxes.o $(OBJ)GroundPlane.o $(OBJ)Matrix4.o \
                $(OBJ)Normal.o $(OBJ)NormalCloud.o $(OBJ)PointCloud.o \
                $(OBJ)Quaternion.o $(OBJ)Renderable.o $(OBJ)StaticMesh.o \
-               $(OBJ)TriangleMesh.o $(OBJ)Tube.o $(OBJ)BoundingBox.o
+               $(OBJ)TriangleMesh.o $(OBJ)Tube.o $(OBJ)BoundingBox.o \
+               $(OBJ)HalfEdgeMesh.o $(OBJ)HalfEdgePolygon.o $(OBJ)HalfEdge.o \
+               $(OBJ)HalfEdgeVertex.o $(OBJ)HalfEdgeFace.o
 
 ANNTARGETS   = $(OBJ)ANN.o $(OBJ)brute.o $(OBJ)kd_tree.o $(OBJ)kd_util.o \
                $(OBJ)kd_split.o $(OBJ)kd_search.o $(OBJ)kd_pr_search.o \
@@ -409,6 +411,27 @@ $(OBJ)StaticMesh.o: $(LIB3DSRC)StaticMesh.*
 $(OBJ)TriangleMesh.o: $(LIB3DSRC)TriangleMesh.*
 	@echo "Compiling Triangle Mesh..."
 	@$(CPP) $(CFLAGS) -c -o $(OBJ)TriangleMesh.o $(LIB3DSRC)TriangleMesh.cpp
+	
+$(OBJ)HalfEdgeMesh.o: $(LIB3DSRC)HalfEdgeMesh.*
+	@echo "Compiling Half Edge Mesh..."
+	@$(CPP) $(CFLAGS) -c -o $(OBJ)HalfEdgeMesh.o $(LIB3DSRC)HalfEdgeMesh.cpp
+	
+$(OBJ)HalfEdgePolygon.o: $(LIB3DSRC)HalfEdgePolygon.*
+	@echo "Compiling Half Edge Polygon..."
+	@$(CPP) $(CFLAGS) -c -o $(OBJ)HalfEdgePolygon.o $(LIB3DSRC)HalfEdgePolygon.cpp
+	
+$(OBJ)HalfEdge.o: $(LIB3DSRC)HalfEdge.*
+	@echo "Compiling Half Edge..."
+	@$(CPP) $(CFLAGS) -c -o $(OBJ)HalfEdge.o $(LIB3DSRC)HalfEdge.cpp
+	
+$(OBJ)HalfEdgeVertex.o: $(LIB3DSRC)HalfEdgeVertex.*
+	@echo "Compiling Half Edge Vertex..."
+	@$(CPP) $(CFLAGS) -c -o $(OBJ)HalfEdgeVertex.o $(LIB3DSRC)HalfEdgeVertex.cpp
+	
+$(OBJ)HalfEdgeFace.o: $(LIB3DSRC)HalfEdgeFace.*
+	@echo "Compiling Half Edge Face..."
+	@$(CPP) $(CFLAGS) -c -o $(OBJ)HalfEdgeFace.o $(LIB3DSRC)HalfEdgeFace.cpp
+	
 	
 clean:
 	@echo -e "\nCleaning up...\n"

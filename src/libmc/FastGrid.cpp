@@ -115,7 +115,7 @@ void FastGrid::createGrid(){
 
 	//Iterators
 	hash_map<int, FastBox*>::iterator it;
-	hash_map<int, FastBox*>::iterator neighbour_it;
+	hash_map<int, FastBox*>::iterator neighbor_it;
 
 	int global_index = 0;
 	int current_index = 0;
@@ -138,22 +138,26 @@ void FastGrid::createGrid(){
 			it = cells.find(hash_value);
 			if(it == cells.end()){
 				//Calculate box center
-				Vertex box_center = Vertex(
-						(index_x + dx) * voxelsize + bounding_box.v_min.x,
-						(index_y + dy) * voxelsize + bounding_box.v_min.y,
-						(index_z + dz) * voxelsize + bounding_box.v_min.z);
+				Vertex box_center = Vertex((index_x + dx) * voxelsize + bounding_box.v_min.x,
+						                   (index_y + dy) * voxelsize + bounding_box.v_min.y,
+						                   (index_z + dz) * voxelsize + bounding_box.v_min.z);
 
 				//Create new box
 				FastBox* box = new FastBox;
 
-				//Setup box
+				//Setup the box itself
 				for(int k = 0; k < 8; k++){
+
+					//Find point in Grid
 					current_index = findQueryPoint(k, index_x + dx, index_y + dy, index_z + dz);
+
+					//If point exist, save index in box
 					if(current_index != -1) box->vertices[k] = current_index;
+					//Otherwise create new grid point and associate it with the current box
 					else{
 						Vertex position(box_center.x + box_creation_table[k][0] * vsh,
-								box_center.y + box_creation_table[k][1] * vsh,
-								box_center.z + box_creation_table[k][2] * vsh);
+								        box_center.y + box_creation_table[k][1] * vsh,
+								        box_center.z + box_creation_table[k][2] * vsh);
 
 						query_points.push_back(QueryPoint(position));
 
@@ -162,6 +166,33 @@ void FastGrid::createGrid(){
 
 					}
 				}
+
+				//Set pointers to the neighbors of the current box
+				int neighbor_index = 0;
+				int neighbor_hash = 0;
+
+				for(int a = -1; a < 2; a++){
+					for(int b = -1; b < 2; b++){
+						for(int c = -1; c < 2; c++){
+
+							//Calculate hash value for current neighbor cell
+							neighbor_hash = hashValue(index_x + dx + a,
+									                  index_y + dy + b,
+									                  index_z + dz + c);
+
+							//Try to find this cell in the grid
+							neighbor_it = cells.find(neighbor_hash);
+
+							//If it exists, save pointer in box
+							if(neighbor_it != cells.end()){
+								box->neighbors[neighbor_index] = (*neighbor_it).second;
+							}
+
+							neighbor_index++;
+						}
+					}
+				}
+
 				cells[hash_value] = box;
 			}
 		}
@@ -172,6 +203,7 @@ void FastGrid::createGrid(){
 
 void FastGrid::calcQueryPointValues(){
 
+    #pragma omp parallel for
 	for(size_t i = 0; i < query_points.size(); i++){
 		if(i % 10000 == 0) cout << "##### Calculating distance values: " << i << " / " << query_points.size() << endl;
 		QueryPoint p = query_points[i];
@@ -214,13 +246,16 @@ void FastGrid::createMesh(){
 	for(it = cells.begin(); it != cells.end(); it++){
 		if(c % 1000 == 0) cout << "##### Iterating Cells... " << c << " / " << cells.size() << endl;;
 		b = it->second;
-		global_index = b->calcApproximation(query_points, mesh, global_index);
+		global_index = b->calcApproximation(query_points, he_mesh, global_index);
 		c++;
 	}
 
-	mesh.printStats();
-	mesh.finalize();
-	mesh.save("mesh.ply");
+	he_mesh.printStats();
+	he_mesh.finalize();
+	he_mesh.save("mesh.ply");
+	//he_mesh.analize();
+	he_mesh.extract_borders();
+	he_mesh.write_polygons("borders.bor");
 }
 
 

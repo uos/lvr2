@@ -502,9 +502,9 @@ configure:9917: $? = 0
 configure:9929: result: yes
 configure:9936: checking for _doprnt
 configure:9993: gcc -o conftest -g -O2   conftest.c  >&5
-/tmp/ccyEsXqR.o: In function `main':
+/tmp/ccgiW1Ec.o: In function `main':
 /home/twiemann/software/meshing/src/gsl/conftest.c:64: undefined reference to `_doprnt'
-/tmp/ccyEsXqR.o:(.data+0x0): undefined reference to `_doprnt'
+/tmp/ccgiW1Ec.o:(.data+0x0): undefined reference to `_doprnt'
 collect2: ld returned 1 exit status
 configure:9999: $? = 1
 configure: failed program was:
@@ -610,367 +610,6 @@ configure:10135: result: yes
 configure:10047: checking for strtol
 configure:10104: gcc -o conftest -g -O2   conftest.c  >&5
 configure:10110: $? = 0
-configure:10114: test -z 
-			 || test ! -s conftest.err
-configure:10117: $? = 0
-configure:10120: test -s conftest
-configure:10123: $? = 0
-configure:10135: result: yes
-configure:10047: checking for strtoul
-configure:10104: gcc -o conftest -g -O2   conftest.c  >&5
-configure:10110: $? = 0
-configure:10114: test -z 
-			 || test ! -s conftest.err
-configure:10117: $? = 0
-configure:10120: test -s conftest
-configure:10123: $? = 0
-configure:10135: result: yes
-configure:10156: checking for EXIT_SUCCESS and EXIT_FAILURE
-configure:10184: result: yes
-configure:10197: checking for cos in -lm
-configure:10227: gcc -o conftest -g -O2   conftest.c -lm   >&5
-conftest.c:38: warning: conflicting types for built-in function 'cos'
-configure:10233: $? = 0
-configure:10237: test -z 
-			 || test ! -s conftest.err
-configure:10240: $? = 0
-configure:10243: test -s conftest
-configure:10246: $? = 0
-configure:10259: result: yes
-configure:10272: checking whether feenableexcept is declared
-configure:10298: gcc -c -g -O2  conftest.c >&5
-configure:10304: $? = 0
-configure:10308: test -z 
-			 || test ! -s conftest.err
-configure:10311: $? = 0
-configure:10314: test -s conftest.o
-configure:10317: $? = 0
-configure:10328: result: yes
-configure:10346: checking whether fesettrapenable is declared
-configure:10372: gcc -c -g -O2  conftest.c >&5
-conftest.c: In function 'main':
-conftest.c:40: error: 'fesettrapenable' undeclared (first use in this function)
-conftest.c:40: error: (Each undeclared identifier is reported only once
-conftest.c:40: error: for each function it appears in.)
-configure:10378: $? = 1
-configure: failed program was:
-| /* confdefs.h.  */
-| 
-| #define PACKAGE_NAME "gsl"
-| #define PACKAGE_TARNAME "gsl"
-| #define PACKAGE_VERSION "1.9"
-| #define PACKAGE_STRING "gsl 1.9"
-| #define PACKAGE_BUGREPORT ""
-| #define PACKAGE "gsl"
-| #define VERSION "1.9"
-| #define RELEASED 1
-| #define STDC_HEADERS 1
-| #define HAVE_SYS_TYPES_H 1
-| #define HAVE_SYS_STAT_H 1
-| #define HAVE_STDLIB_H 1
-| #define HAVE_STRING_H 1
-| #define HAVE_MEMORY_H 1
-| #define HAVE_STRINGS_H 1
-| #define HAVE_INTTYPES_H 1
-| #define HAVE_STDINT_H 1
-| #define HAVE_UNISTD_H 1
-| #define HAVE_DLFCN_H 1
-| #define HAVE_INLINE 1
-| #define HAVE_VPRINTF 1
-| #define HAVE_MEMCPY 1
-| #define HAVE_MEMMOVE 1
-| #define HAVE_STRDUP 1
-| #define HAVE_STRTOL 1
-| #define HAVE_STRTOUL 1
-| #define HAVE_EXIT_SUCCESS_AND_FAILURE 1
-| #define HAVE_LIBM 1
-| #define HAVE_DECL_FEENABLEEXCEPT 1
-| /* end confdefs.h.  */
-| #define _GNU_SOURCE 1
-| #include <fenv.h>
-| 
-| int
-| main ()
-| {
-| #ifndef fesettrapenable
-|   char *p = (char *) fesettrapenable;
-| #endif
-| 
-|   ;
-|   return 0;
-| }
-configure:10402: result: no
-configure:10420: checking whether hypot is declared
-configure:10445: gcc -c -g -O2  conftest.c >&5
-configure:10451: $? = 0
-configure:10455: test -z 
-			 || test ! -s conftest.err
-configure:10458: $? = 0
-configure:10461: test -s conftest.o
-configure:10464: $? = 0
-configure:10475: result: yes
-configure:10493: checking whether expm1 is declared
-configure:10518: gcc -c -g -O2  conftest.c >&5
-configure:10524: $? = 0
-configure:10528: test -z 
-			 || test ! -s conftest.err
-configure:10531: $? = 0
-configure:10534: test -s conftest.o
-configure:10537: $? = 0
-configure:10548: result: yes
-configure:10566: checking whether acosh is declared
-configure:10591: gcc -c -g -O2  conftest.c >&5
-configure:10597: $? = 0
-configure:10601: test -z 
-			 || test ! -s conftest.err
-configure:10604: $? = 0
-configure:10607: test -s conftest.o
-configure:10610: $? = 0
-configure:10621: result: yes
-configure:10639: checking whether asinh is declared
-configure:10664: gcc -c -g -O2  conftest.c >&5
-configure:10670: $? = 0
-configure:10674: test -z 
-			 || test ! -s conftest.err
-configure:10677: $? = 0
-configure:10680: test -s conftest.o
-configure:10683: $? = 0
-configure:10694: result: yes
-configure:10712: checking whether atanh is declared
-configure:10737: gcc -c -g -O2  conftest.c >&5
-configure:10743: $? = 0
-configure:10747: test -z 
-			 || test ! -s conftest.err
-configure:10750: $? = 0
-configure:10753: test -s conftest.o
-configure:10756: $? = 0
-configure:10767: result: yes
-configure:10785: checking whether ldexp is declared
-configure:10810: gcc -c -g -O2  conftest.c >&5
-configure:10816: $? = 0
-configure:10820: test -z 
-			 || test ! -s conftest.err
-configure:10823: $? = 0
-configure:10826: test -s conftest.o
-configure:10829: $? = 0
-configure:10840: result: yes
-configure:10858: checking whether frexp is declared
-configure:10883: gcc -c -g -O2  conftest.c >&5
-configure:10889: $? = 0
-configure:10893: test -z 
-			 || test ! -s conftest.err
-configure:10896: $? = 0
-configure:10899: test -s conftest.o
-configure:10902: $? = 0
-configure:10913: result: yes
-configure:10931: checking whether isinf is declared
-configure:10956: gcc -c -g -O2  conftest.c >&5
-configure:10962: $? = 0
-configure:10966: test -z 
-			 || test ! -s conftest.err
-configure:10969: $? = 0
-configure:10972: test -s conftest.o
-configure:10975: $? = 0
-configure:10986: result: yes
-configure:11004: checking whether finite is declared
-configure:11029: gcc -c -g -O2  conftest.c >&5
-configure:11035: $? = 0
-configure:11039: test -z 
-			 || test ! -s conftest.err
-configure:11042: $? = 0
-configure:11045: test -s conftest.o
-configure:11048: $? = 0
-configure:11059: result: yes
-configure:11077: checking whether isfinite is declared
-configure:11102: gcc -c -g -O2  conftest.c >&5
-conftest.c: In function 'main':
-conftest.c:49: error: 'isfinite' undeclared (first use in this function)
-conftest.c:49: error: (Each undeclared identifier is reported only once
-conftest.c:49: error: for each function it appears in.)
-configure:11108: $? = 1
-configure: failed program was:
-| /* confdefs.h.  */
-| 
-| #define PACKAGE_NAME "gsl"
-| #define PACKAGE_TARNAME "gsl"
-| #define PACKAGE_VERSION "1.9"
-| #define PACKAGE_STRING "gsl 1.9"
-| #define PACKAGE_BUGREPORT ""
-| #define PACKAGE "gsl"
-| #define VERSION "1.9"
-| #define RELEASED 1
-| #define STDC_HEADERS 1
-| #define HAVE_SYS_TYPES_H 1
-| #define HAVE_SYS_STAT_H 1
-| #define HAVE_STDLIB_H 1
-| #define HAVE_STRING_H 1
-| #define HAVE_MEMORY_H 1
-| #define HAVE_STRINGS_H 1
-| #define HAVE_INTTYPES_H 1
-| #define HAVE_STDINT_H 1
-| #define HAVE_UNISTD_H 1
-| #define HAVE_DLFCN_H 1
-| #define HAVE_INLINE 1
-| #define HAVE_VPRINTF 1
-| #define HAVE_MEMCPY 1
-| #define HAVE_MEMMOVE 1
-| #define HAVE_STRDUP 1
-| #define HAVE_STRTOL 1
-| #define HAVE_STRTOUL 1
-| #define HAVE_EXIT_SUCCESS_AND_FAILURE 1
-| #define HAVE_LIBM 1
-| #define HAVE_DECL_FEENABLEEXCEPT 1
-| #define HAVE_DECL_FESETTRAPENABLE 0
-| #define HAVE_DECL_HYPOT 1
-| #define HAVE_DECL_EXPM1 1
-| #define HAVE_DECL_ACOSH 1
-| #define HAVE_DECL_ASINH 1
-| #define HAVE_DECL_ATANH 1
-| #define HAVE_DECL_LDEXP 1
-| #define HAVE_DECL_FREXP 1
-| #define HAVE_DECL_ISINF 1
-| #define HAVE_DECL_FINITE 1
-| /* end confdefs.h.  */
-| #include <math.h>
-| 
-| int
-| main ()
-| {
-| #ifndef isfinite
-|   char *p = (char *) isfinite;
-| #endif
-| 
-|   ;
-|   return 0;
-| }
-configure:11132: result: no
-configure:11150: checking whether isnan is declared
-configure:11175: gcc -c -g -O2  conftest.c >&5
-configure:11181: $? = 0
-configure:11185: test -z 
-			 || test ! -s conftest.err
-configure:11188: $? = 0
-configure:11191: test -s conftest.o
-configure:11194: $? = 0
-configure:11205: result: yes
-configure:11230: checking whether log1p is declared
-configure:11255: gcc -c -g -O2  conftest.c >&5
-configure:11261: $? = 0
-configure:11265: test -z 
-			 || test ! -s conftest.err
-configure:11268: $? = 0
-configure:11271: test -s conftest.o
-configure:11274: $? = 0
-configure:11285: result: yes
-configure:11306: checking for long double stdio
-configure:11332: gcc -o conftest -g -O2   conftest.c -lm  >&5
-configure:11335: $? = 0
-configure:11337: ./conftest
-1.234
-configure:11340: $? = 0
-configure:11354: result: yes
-configure:11365: checking for extended floating point registers
-configure:11398: result: yes
-configure:11409: checking for IEEE arithmetic interface type
-configure:11472: result: gnux86
-configure:11476: checking for FPU_SETCW
-configure:11503: gcc -c -g -O2  conftest.c >&5
-configure:11509: $? = 0
-configure:11513: test -z 
-			 || test ! -s conftest.err
-configure:11516: $? = 0
-configure:11519: test -s conftest.o
-configure:11522: $? = 0
-configure:11534: result: yes
-configure:11565: checking for IEEE compiler flags
-configure:11632: result: none
-configure:11641: checking for IEEE comparisons
-configure:11667: gcc -o conftest -g -O2   conftest.c -lm  >&5
-conftest.c: In function 'main':
-conftest.c:57: warning: incompatible implicit declaration of built-in function 'exit'
-configure:11670: $? = 0
-configure:11672: ./conftest
-configure:11675: $? = 0
-configure:11690: result: yes
-configure:11701: checking for IEEE denormalized values
-configure:11728: gcc -o conftest -g -O2   conftest.c -lm  >&5
-conftest.c: In function 'main':
-conftest.c:59: warning: incompatible implicit declaration of built-in function 'exit'
-configure:11731: $? = 0
-configure:11733: ./conftest
-configure:11736: $? = 0
-configure:11751: result: yes
-configure:11866: creating ./config.status
-
-## ---------------------- ##
-## Running config.status. ##
-## ---------------------- ##
-
-This file was extended by gsl config.status 1.9, which was
-generated by GNU Autoconf 2.59.  Invocation command line was
-
-  CONFIG_FILES    = 
-  CONFIG_HEADERS  = 
-  CONFIG_LINKS    = 
-  CONFIG_COMMANDS = 
-  $ ./config.status 
-
-on Bubba
-
-config.status:764: creating gsl-config
-config.status:764: creating gsl.pc
-config.status:764: creating gsl_version.h
-config.status:764: creating gsl.spec
-config.status:764: creating gsl/Makefile
-config.status:764: creating test/Makefile
-config.status:764: creating err/Makefile
-config.status:764: creating sys/Makefile
-config.status:764: creating utils/Makefile
-config.status:764: creating const/Makefile
-config.status:764: creating min/Makefile
-config.status:764: creating multimin/Makefile
-config.status:764: creating ieee-utils/Makefile
-config.status:764: creating fft/Makefile
-config.status:764: creating specfunc/Makefile
-config.status:764: creating dht/Makefile
-config.status:764: creating fit/Makefile
-config.status:764: creating multifit/Makefile
-config.status:764: creating bspline/Makefile
-config.status:764: creating statistics/Makefile
-config.status:764: creating sum/Makefile
-config.status:764: creating roots/Makefile
-config.status:764: creating multiroots/Makefile
-config.status:764: creating ntuple/Makefile
-config.status:764: creating poly/Makefile
-config.status:764: creating qrng/Makefile
-config.status:764: creating rng/Makefile
-config.status:764: creating randist/Makefile
-config.status:764: creating siman/Makefile
-config.status:764: creating integration/Makefile
-config.status:764: creating interpolation/Makefile
-config.status:764: creating doc/Makefile
-config.status:764: creating block/Makefile
-config.status:764: creating vector/Makefile
-config.status:764: creating matrix/Makefile
-config.status:764: creating histogram/Makefile
-config.status:764: creating monte/Makefile
-config.status:764: creating ode-initval/Makefile
-config.status:764: creating cblas/Makefile
-config.status:764: creating blas/Makefile
-config.status:764: creating linalg/Makefile
-config.status:764: creating eigen/Makefile
-config.status:764: creating permutation/Makefile
-config.status:764: creating combination/Makefile
-config.status:764: creating sort/Makefile
-config.status:764: creating complex/Makefile
-config.status:764: creating diff/Makefile
-config.status:764: creating deriv/Makefile
-config.status:764: creating cheb/Makefile
-config.status:764: creating cdf/Makefile
-config.status:764: creating wavelet/Makefile
-config.status:764: creating Makefile
-config.status:868: creating config.h
-config.status:1052: config.h is unchanged
 
 ## ---------------- ##
 ## Cache variables. ##
@@ -979,16 +618,9 @@ config.status:1052: config.h is unchanged
 ac_cv_build=x86_64-unknown-linux-gnu
 ac_cv_build_alias=x86_64-unknown-linux-gnu
 ac_cv_c_compiler_gnu=yes
-ac_cv_c_extended_fp=yes
 ac_cv_c_extern_inline=yes
-ac_cv_c_fpu_setcw=yes
-ac_cv_c_ieee_comparisons=yes
-ac_cv_c_ieee_denormals=yes
-ac_cv_c_ieee_flags=none
-ac_cv_c_ieee_interface=gnux86
 ac_cv_c_inline=inline
 ac_cv_c_volatile=yes
-ac_cv_decl_exit_success_and_failure=yes
 ac_cv_env_CC_set=
 ac_cv_env_CC_value=
 ac_cv_env_CFLAGS_set=
@@ -1009,25 +641,8 @@ ac_cv_exeext=
 ac_cv_func__doprnt=no
 ac_cv_func_memcpy=yes
 ac_cv_func_memmove=yes
-ac_cv_func_printf_longdouble=yes
 ac_cv_func_strdup=yes
-ac_cv_func_strtol=yes
-ac_cv_func_strtoul=yes
 ac_cv_func_vprintf=yes
-ac_cv_have_decl_acosh=yes
-ac_cv_have_decl_asinh=yes
-ac_cv_have_decl_atanh=yes
-ac_cv_have_decl_expm1=yes
-ac_cv_have_decl_feenableexcept=yes
-ac_cv_have_decl_fesettrapenable=no
-ac_cv_have_decl_finite=yes
-ac_cv_have_decl_frexp=yes
-ac_cv_have_decl_hypot=yes
-ac_cv_have_decl_isfinite=no
-ac_cv_have_decl_isinf=yes
-ac_cv_have_decl_isnan=yes
-ac_cv_have_decl_ldexp=yes
-ac_cv_have_decl_log1p=yes
 ac_cv_header_dlfcn_h=yes
 ac_cv_header_ieeefp_h=no
 ac_cv_header_inttypes_h=yes
@@ -1042,7 +657,6 @@ ac_cv_header_sys_types_h=yes
 ac_cv_header_unistd_h=yes
 ac_cv_host=x86_64-unknown-linux-gnu
 ac_cv_host_alias=x86_64-unknown-linux-gnu
-ac_cv_lib_m_cos=yes
 ac_cv_objext=o
 ac_cv_path_install='/usr/bin/install -c'
 ac_cv_prog_AWK=gawk
@@ -1092,7 +706,7 @@ CFLAGS='-g -O2'
 CPP='gcc -E'
 CPPFLAGS=''
 CYGPATH_W='echo'
-DEFS='-DHAVE_CONFIG_H'
+DEFS=''
 ECHO='echo'
 ECHO_C=''
 ECHO_N='-n'
@@ -1131,7 +745,7 @@ INSTALL_SCRIPT='${INSTALL}'
 INSTALL_STRIP_PROGRAM='${SHELL} $(install_sh) -c -s'
 LDFLAGS=''
 LIBOBJS=''
-LIBS='-lm '
+LIBS=''
 LIBTOOL='$(SHELL) $(top_builddir)/libtool'
 LN_S='ln -s'
 LTLIBOBJS=''
@@ -1167,7 +781,7 @@ build_cpu='x86_64'
 build_os='linux-gnu'
 build_vendor='unknown'
 datadir='${prefix}/share'
-exec_prefix='${prefix}'
+exec_prefix='NONE'
 host='x86_64-unknown-linux-gnu'
 host_alias=''
 host_cpu='x86_64'
@@ -1182,7 +796,7 @@ localstatedir='${prefix}/var'
 mandir='${prefix}/man'
 mkdir_p='mkdir -p --'
 oldincludedir='/usr/include'
-prefix='/usr/local'
+prefix='NONE'
 program_transform_name='s,x,x,'
 sbindir='${exec_prefix}/sbin'
 sharedstatedir='${prefix}/com'
@@ -1193,40 +807,17 @@ target_alias=''
 ## confdefs.h. ##
 ## ----------- ##
 
-#define HAVE_DECL_ACOSH 1
-#define HAVE_DECL_ASINH 1
-#define HAVE_DECL_ATANH 1
-#define HAVE_DECL_EXPM1 1
-#define HAVE_DECL_FEENABLEEXCEPT 1
-#define HAVE_DECL_FESETTRAPENABLE 0
-#define HAVE_DECL_FINITE 1
-#define HAVE_DECL_FREXP 1
-#define HAVE_DECL_HYPOT 1
-#define HAVE_DECL_ISFINITE 0
-#define HAVE_DECL_ISINF 1
-#define HAVE_DECL_ISNAN 1
-#define HAVE_DECL_LDEXP 1
-#define HAVE_DECL_LOG1P 1
 #define HAVE_DLFCN_H 1
-#define HAVE_EXIT_SUCCESS_AND_FAILURE 1
-#define HAVE_EXTENDED_PRECISION_REGISTERS 1
-#define HAVE_GNUX86_IEEE_INTERFACE 1
-#define HAVE_IEEE_COMPARISONS 1
-#define HAVE_IEEE_DENORMALS 1
 #define HAVE_INLINE 1
 #define HAVE_INTTYPES_H 1
-#define HAVE_LIBM 1
 #define HAVE_MEMCPY 1
 #define HAVE_MEMMOVE 1
 #define HAVE_MEMORY_H 1
-#define HAVE_PRINTF_LONGDOUBLE 1
 #define HAVE_STDINT_H 1
 #define HAVE_STDLIB_H 1
 #define HAVE_STRDUP 1
 #define HAVE_STRINGS_H 1
 #define HAVE_STRING_H 1
-#define HAVE_STRTOL 1
-#define HAVE_STRTOUL 1
 #define HAVE_SYS_STAT_H 1
 #define HAVE_SYS_TYPES_H 1
 #define HAVE_UNISTD_H 1
@@ -1241,4 +832,4 @@ target_alias=''
 #define STDC_HEADERS 1
 #define VERSION "1.9"
 
-configure: exit 0
+configure: exit 1
