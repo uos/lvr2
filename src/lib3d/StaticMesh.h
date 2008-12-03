@@ -22,10 +22,13 @@ public:
 	StaticMesh();
 	StaticMesh(string name);
 	StaticMesh(const StaticMesh &o);
+	~StaticMesh();
 	inline void render();
 
 	void save(string filename);
 	void load(string filename);
+
+	virtual void finalize();
 
 protected:
 

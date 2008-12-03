@@ -19,6 +19,7 @@ using __gnu_cxx::hash_map;
 #include "../lib3d/BaseVertex.h"
 #include "../lib3d/BoundingBox.h"
 #include "../lib3d/TriangleMesh.h"
+#include "../lib3d/HalfEdgeMesh.h"
 
 #include "Interpolator.h"
 #include "PlaneInterpolator.h"
@@ -65,6 +66,7 @@ private:
 	ANNpointArray           points;
 	Interpolator*           interpolator;
 	TriangleMesh            mesh;
+	HalfEdgeMesh            he_mesh;
 
 	hash_map<int, FastBox*> cells;
 

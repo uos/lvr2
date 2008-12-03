@@ -62,6 +62,14 @@ StaticMesh::StaticMesh(const StaticMesh &o){
 
 }
 
+StaticMesh::~StaticMesh(){
+
+}
+
+void StaticMesh::finalize(){
+
+}
+
 void StaticMesh::compileDisplayList(){
 
 	if(finalized){
@@ -198,8 +206,6 @@ void StaticMesh::save(string filename){
 
 		char* buffer = "end_header\n";
 		out.write(buffer, strlen(buffer));
-
-		cout << "VERTICES" << endl << flush;
 
 		//Write vertices and normals
 		for(unsigned int i = 0; i < vertex_dcr.count; i++){
