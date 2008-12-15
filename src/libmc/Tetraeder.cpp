@@ -58,7 +58,8 @@ int Tetraeder::getApproximation(int globalIndex, TriangleMesh &mesh, Interpolato
 		tmp_indices[vertex_count] = globalIndex;
 		mesh.addVertex(intersections[TetraTable[index][i]]);
 		mesh.addNormal(Normal(0.0, 0.0, 0.0));
-		mesh.addIndex(globalIndex);
+		//mesh.addIndex(globalIndex);
+		cout << "WARNING: TETRAEDER DOES NOT WORK" << endl;
 		globalIndex++;
 		vertex_count++;
 	}

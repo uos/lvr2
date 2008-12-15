@@ -30,6 +30,10 @@ public:
 	int mcIndex;
 	int texture_index;
 
+	//unsigned int face_index;
+
+	unsigned int face_index;
+
 	Normal normal;
 };
 

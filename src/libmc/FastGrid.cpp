@@ -204,7 +204,7 @@ void FastGrid::createGrid(){
 void FastGrid::calcQueryPointValues(){
 
     #pragma omp parallel for
-	for(size_t i = 0; i < query_points.size(); i++){
+	for(int i = 0; i < (int)query_points.size(); i++){
 		if(i % 10000 == 0) cout << "##### Calculating distance values: " << i << " / " << query_points.size() << endl;
 		QueryPoint p = query_points[i];
 		ColorVertex v = ColorVertex(p.position, 0.0f, 1.0f, 0.0f);
@@ -246,16 +246,16 @@ void FastGrid::createMesh(){
 	for(it = cells.begin(); it != cells.end(); it++){
 		if(c % 1000 == 0) cout << "##### Iterating Cells... " << c << " / " << cells.size() << endl;;
 		b = it->second;
-		global_index = b->calcApproximation(query_points, he_mesh, global_index);
+		global_index = b->calcApproximation(query_points, mesh, global_index);
 		c++;
 	}
 
-	he_mesh.printStats();
-	he_mesh.finalize();
-	he_mesh.save("mesh.ply");
+	mesh.printStats();
+	mesh.finalize();
+	mesh.save("mesh.ply");
 	//he_mesh.analize();
-	he_mesh.extract_borders();
-	he_mesh.write_polygons("borders.bor");
+	//he_mesh.extract_borders();
+	//he_mesh.write_polygons("borders.bor");
 }
 
 

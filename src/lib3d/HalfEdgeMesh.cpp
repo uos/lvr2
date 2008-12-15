@@ -8,35 +8,6 @@
 #include "HalfEdgeMesh.h"
 
 
-HePlane::HePlane(Normal n0, Vertex v0){
-	n = n0;
-	d = n * v0;
-}
-
-HePlane::HePlane(const HePlane &o){
-	n = o.n;
-	d = o.d;
-}
-
-void HePlane::interpolate(HePlane p){
-	n += p.n;
-
-	n.x = n.x / 2.0;
-	n.y = n.y / 2.0;
-	n.z = n.z / 2.0;
-
-	n.normalize();
-
-	d = 0.5 * (d + p.d);
-}
-
-float HePlane::distance(Vertex v){
-	return n * v - d;
-}
-
-
-
-
 
 HalfEdgeMesh::HalfEdgeMesh() {
 	global_index = 0;
@@ -80,122 +51,13 @@ void HalfEdgeMesh::finalize(){
 	finalized = true;
 }
 
-void HalfEdgeMesh::check_next_neighbor(HalfEdgeFace* f0, HePlane &p, HalfEdgeFace* face, hash_map<unsigned int, HalfEdge*>* edges){
-
-	face->used = true;
-
-	HalfEdge* edge = face->edge;
-	HalfEdge* pair = face->edge->pair;
-
-	HalfEdgeFace* nb = 0;
-
-	hash_map<int, HalfEdge*>::iterator it;
-
-	if(pair != 0) nb = pair->face;
-
-	do{
-
-		edge = edge->next;
-		pair = edge->pair;
-		if(pair != 0) nb = pair->face;
-
-		if(nb != 0){
-
-			if(!nb->used){
-
-				if(classifyFace(f0, nb, p) >= 0)
-					check_next_neighbor(f0, p, nb, edges);
-				else
-					(*edges)[edge->start->index] = edge;
-			}
-
-		} else {
-			//If no neighbor exists, current edge is a border
-			(*edges)[edge->start->index] = edge;
-		}
-
-
-//		if(nb != 0 &&
-//				!nb->used &&
-//				classifyFace(nb, n_0) >= 0) check_next_neighbor(n_0, nb, edges);
-//		else {
-//
-//			//If neighbor doesn't exist, current edges is a border
-//			if(nb == 0){
-//				(*edges)[edge->start->index] = edge;
-//			//Current edge is also a border if normal criterium isn't fullfilled
-//			} else if(classifyFace(nb, n_0) < 0){
-//				(*edges)[edge->start->index] = edge;
-//			}
-//
-//		}
-
-	} while(edge != face->edge);
+void HalfEdgeMesh::check_next_neighbor(HalfEdgeFace* f0, HalfEdgeFace* face, HalfEdgePolygon* polygon){
 
 
 }
 
 
 void HalfEdgeMesh::extract_borders(){
-
-
-	hash_map<unsigned int, HalfEdge*> border_edges;
-	hash_map<unsigned int, HalfEdge*>::iterator pit;
-
-	vector<HalfEdgeVertex*> vertices;
-	vector<HalfEdgeVertex*>::iterator vit;
-
-	vector<HalfEdgeFace*>::iterator it;
-
-	for(it = he_faces.begin(); it !=  he_faces.end(); it++){
-		HalfEdgeFace* f = *it;
-		f->interpolate_normal();
-	}
-
-
-	it = he_faces.begin();
-
-	//if(edge->used) cout << "Used edge found!" << endl;
-
-	HalfEdgeFace* face;
-
-	vector<int> polygon;
-
-	//Alles Faces durchlaufen
-	while(it != he_faces.end()){
-		face = *it;
-
-		HalfEdgeVertex* v1 = he_vertices[face->index[0]];
-		HalfEdgeVertex* v2 = he_vertices[face->index[1]];
-		HalfEdgeVertex* v3 = he_vertices[face->index[2]];
-
-		Vertex center;
-		center += v1->position;
-		center += v2->position;
-		center += v3->position;
-
-		center.x /= 3.0;
-		center.y /= 3.0;
-		center.z /= 3.0;
-
-		HePlane plane(face->normal, center);
-
-		if(!face->used) check_next_neighbor(face, plane, face, &border_edges);
-
-		it++;
-		if(!border_edges.empty()){
-			//create_polygon(polygon, &border_edges);
-			for(pit = border_edges.begin(); pit != border_edges.end(); pit++){
-				HalfEdgePolygon* poly = new HalfEdgePolygon;
-				HalfEdge* e = (*pit).second;
-				poly->indices.push_back(e->start->index);
-				poly->indices.push_back(e->end->index);
-				hem_polygons.push_back(poly);
-			}
-		}
-
-		border_edges.clear();
-	}
 
 
 }
