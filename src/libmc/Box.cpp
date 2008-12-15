@@ -260,6 +260,8 @@ int Box::getApproximation(int globalIndex, TriangleMesh &mesh,
   BaseVertex diff1, diff2;
   Normal normal;
 
+  int triangle_indices[3];
+
   for(int a = 0; MCTable[index][a] != -1; a+= 3){
     for(int b = 0; b < 3; b++){
 
@@ -306,13 +308,16 @@ int Box::getApproximation(int globalIndex, TriangleMesh &mesh,
 	   indices[edge_index] = current_index;
 	 }
 
-	 mesh.addIndex(indices[edge_index]);
+	 //mesh.addIndex(indices[edge_index]);
+	 triangle_indices[b] = edge_index;
 
 	 //Count and tmp-save generated vertices
 	 tmp_vertices[vertex_count] = intersections[edge_index];
 	 tmp_indices[vertex_count] = indices[edge_index];
 	 vertex_count++;
     }
+
+    mesh.addTriangle(triangle_indices[0], triangle_indices[1], triangle_indices[2]);
 
     //Calculate surface normal
     for(int i = 0; i < vertex_count - 2; i+= 3){

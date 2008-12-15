@@ -10,7 +10,7 @@
 
 #CPP = /opt/intel/cce/10.1.018/bin/icc
 CPP = g++
-CFLAGS = -Wall -Wno-deprecated -Wno-write-strings -fopenmp -O3
+CFLAGS = -Wall -Wno-deprecated -Wno-write-strings -Wno-strict-aliasing -fopenmp -O3
 #CFLAGS     = -O3 -xT -ipo -gcc ##FLAGS FOR ICC
 AR = ar
 MOC = moc
@@ -61,7 +61,9 @@ LIB3DTARGETS = $(OBJ)BaseVertex.o $(OBJ)ColorVertex.o \
                $(OBJ)Quaternion.o $(OBJ)Renderable.o $(OBJ)StaticMesh.o \
                $(OBJ)TriangleMesh.o $(OBJ)Tube.o $(OBJ)BoundingBox.o \
                $(OBJ)HalfEdgeMesh.o $(OBJ)HalfEdgePolygon.o $(OBJ)HalfEdge.o \
-               $(OBJ)HalfEdgeVertex.o $(OBJ)HalfEdgeFace.o
+               $(OBJ)HalfEdgeVertex.o $(OBJ)HalfEdgeFace.o $(OBJ)Triangle.o \
+               $(OBJ)TriangleVertex.o $(OBJ)LinkedTriangle.o \
+               $(OBJ)LinkedTriangleMesh.o
 
 ANNTARGETS   = $(OBJ)ANN.o $(OBJ)brute.o $(OBJ)kd_tree.o $(OBJ)kd_util.o \
                $(OBJ)kd_split.o $(OBJ)kd_search.o $(OBJ)kd_pr_search.o \
@@ -384,6 +386,10 @@ $(OBJ)Tube.o: $(LIB3DSRC)Tube.*
 	@echo "Compiling Tube..."
 	@$(CPP) $(CFLAGS) -c -o $(OBJ)Tube.o $(LIB3DSRC)Tube.cpp	
 	
+$(OBJ)Triangle.o: $(LIB3DSRC)Triangle.*
+	@echo "Compiling Triangle..."
+	@$(CPP) $(CFLAGS) -c -o $(OBJ)Triangle.o $(LIB3DSRC)Triangle.cpp
+	
 $(OBJ)GroundPlane.o: $(LIB3DSRC)GroundPlane.*
 	@echo "Compiling Ground Plane..."
 	@$(CPP) $(CFLAGS) -c -o $(OBJ)GroundPlane.o $(LIB3DSRC)GroundPlane.cpp
@@ -432,6 +438,17 @@ $(OBJ)HalfEdgeFace.o: $(LIB3DSRC)HalfEdgeFace.*
 	@echo "Compiling Half Edge Face..."
 	@$(CPP) $(CFLAGS) -c -o $(OBJ)HalfEdgeFace.o $(LIB3DSRC)HalfEdgeFace.cpp
 	
+$(OBJ)TriangleVertex.o: $(LIB3DSRC)TriangleVertex.*
+	@echo "Compiling Triangle Vertex..."
+	@$(CPP) $(CFLAGS) -c -o $(OBJ)TriangleVertex.o $(LIB3DSRC)TriangleVertex.cpp
+	
+$(OBJ)LinkedTriangleMesh.o: $(LIB3DSRC)LinkedTriangleMesh.*
+	@echo "Compiling Linked Triangle Mesh..."
+	@$(CPP) $(CFLAGS) -c -o $(OBJ)LinkedTriangleMesh.o $(LIB3DSRC)LinkedTriangleMesh.cpp
+	
+$(OBJ)LinkedTriangle.o: $(LIB3DSRC)LinkedTriangle.*
+	@echo "Compiling Linked Triangle..."
+	@$(CPP) $(CFLAGS) -c -o $(OBJ)LinkedTriangle.o $(LIB3DSRC)LinkedTriangle.cpp
 	
 clean:
 	@echo -e "\nCleaning up...\n"

@@ -91,6 +91,7 @@ int FastBox::calcApproximation(vector<QueryPoint> &qp, TriangleMesh &mesh, int g
 	Normal normal;
 
 	int current_index = 0;
+	int triangle_indices[3];
 
 	for(int a = 0; MCTable[index][a] != -1; a+= 3){
 		for(int b = 0; b < 3; b++){
@@ -135,11 +136,12 @@ int FastBox::calcApproximation(vector<QueryPoint> &qp, TriangleMesh &mesh, int g
 			tmp_indices[vertex_count]  = intersections[edge_index];
 
 			//Save vertex index in mesh
-			mesh.addIndex(intersections[edge_index]);
-
+			//mesh.addIndex(intersections[edge_index]);
+			triangle_indices[b] = intersections[edge_index];
 			//Count generated vertices
 			vertex_count++;
 		}
+		mesh.addTriangle(triangle_indices[0], triangle_indices[1], triangle_indices[2]);
 	}
 
 	//Calculate normals
@@ -279,6 +281,7 @@ int FastBox::calcApproximation(vector<QueryPoint> &qp, HalfEdgeMesh &mesh, int g
 		face->calc_normal();
 		face->mcIndex = index;
 		mesh.he_faces.push_back(face);
+		face->face_index = mesh.he_faces.size();
 
 	}
 
