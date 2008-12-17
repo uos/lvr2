@@ -57,12 +57,17 @@ public:
   virtual void operator*=(const float scale);
   virtual void operator/=(const float scale);
 
+  virtual bool operator==(const BaseVertex &other) const;
+  virtual bool operator!=(const BaseVertex &other) const;
+
   virtual float operator[](const int index);
 
   float x;
   float y;
   float z;
 
+private:
+	static const float epsilon = 0.0001;
 };
 
 
