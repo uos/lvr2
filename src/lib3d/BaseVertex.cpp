@@ -116,3 +116,13 @@ void BaseVertex::operator/=(const float s){
   if(s != 0) z /= z; else z = 0.0;
 }
 
+bool BaseVertex::operator==(const BaseVertex &other) const{
+	return fabs(x - other.x) < BaseVertex::epsilon &&
+		   fabs(y - other.y) < BaseVertex::epsilon &&
+		   fabs(z - other.z) < BaseVertex::epsilon;
+}
+
+bool BaseVertex::operator!=(const BaseVertex &other) const{
+	return !(*this == other);
+}
+

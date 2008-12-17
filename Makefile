@@ -62,7 +62,7 @@ LIB3DTARGETS = $(OBJ)BaseVertex.o $(OBJ)ColorVertex.o \
                $(OBJ)TriangleMesh.o $(OBJ)Tube.o $(OBJ)BoundingBox.o \
                $(OBJ)HalfEdgeMesh.o $(OBJ)HalfEdgePolygon.o $(OBJ)HalfEdge.o \
                $(OBJ)HalfEdgeVertex.o $(OBJ)HalfEdgeFace.o $(OBJ)Triangle.o \
-               $(OBJ)TriangleVertex.o $(OBJ)LinkedTriangle.o \
+               $(OBJ)LinkedVertex.o $(OBJ)LinkedTriangle.o \
                $(OBJ)LinkedTriangleMesh.o
 
 ANNTARGETS   = $(OBJ)ANN.o $(OBJ)brute.o $(OBJ)kd_tree.o $(OBJ)kd_util.o \
@@ -438,11 +438,11 @@ $(OBJ)HalfEdgeFace.o: $(LIB3DSRC)HalfEdgeFace.*
 	@echo "Compiling Half Edge Face..."
 	@$(CPP) $(CFLAGS) -c -o $(OBJ)HalfEdgeFace.o $(LIB3DSRC)HalfEdgeFace.cpp
 	
-$(OBJ)TriangleVertex.o: $(LIB3DSRC)TriangleVertex.*
-	@echo "Compiling Triangle Vertex..."
-	@$(CPP) $(CFLAGS) -c -o $(OBJ)TriangleVertex.o $(LIB3DSRC)TriangleVertex.cpp
+$(OBJ)LinkedVertex.o: $(LIB3DSRC)LinkedVertex.*
+	@echo "Compiling Linked Vertex..."
+	@$(CPP) $(CFLAGS) -c -o $(OBJ)LinkedVertex.o $(LIB3DSRC)LinkedVertex.cpp
 	
-$(OBJ)LinkedTriangleMesh.o: $(LIB3DSRC)LinkedTriangleMesh.*
+$(OBJ)LinkedTriangleMesh.o: $(LIB3DSRC)LinkedTriangleMesh.* $(LIB3DSRC)LinkedTriangle.* $(LIB3DSRC)LinkedVertex.*
 	@echo "Compiling Linked Triangle Mesh..."
 	@$(CPP) $(CFLAGS) -c -o $(OBJ)LinkedTriangleMesh.o $(LIB3DSRC)LinkedTriangleMesh.cpp
 	

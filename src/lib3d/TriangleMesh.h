@@ -24,11 +24,11 @@ public:
 	TriangleMesh(const TriangleMesh &other);
 
 	virtual void addTriangle(int v0, int v1, int v2);
+	virtual void addVertex(Vertex v){ vertex_buffer.push_back(v);};
+	virtual void addNormal(Normal n){ normal_buffer.push_back(n);};
 	virtual void finalize();
-	virtual ~TriangleMesh();
 
-	void addVertex(Vertex v){ vertex_buffer.push_back(v);};
-	void addNormal(Normal n){ normal_buffer.push_back(n);};
+	virtual ~TriangleMesh();
 
 	void interpolateNormal(Normal n, size_t);
 	void normalize();
@@ -44,7 +44,6 @@ protected:
 
 	vector<Normal> normal_buffer;
 	vector<Vertex> vertex_buffer;
-
 	vector<Triangle> triangle_buffer;
 
 };
