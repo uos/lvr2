@@ -21,6 +21,7 @@ using __gnu_cxx::hash_map;
 #include "../lib3d/TriangleMesh.h"
 #include "../lib3d/HalfEdgeMesh.h"
 #include "../lib3d/LinkedTriangleMesh.h"
+#include "../lib3d/ProgressiveMesh.h"
 
 #include "Interpolator.h"
 #include "PlaneInterpolator.h"
@@ -66,7 +67,7 @@ private:
 	vector<QueryPoint>      query_points;
 	ANNpointArray           points;
 	Interpolator*           interpolator;
-	LinkedTriangleMesh      mesh;
+	LinkedTriangleMesh*     mesh;
 	HalfEdgeMesh            he_mesh;
 
 	hash_map<int, FastBox*> cells;

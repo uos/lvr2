@@ -47,8 +47,7 @@ void LinkedTriangleMesh::addTriangle(int v1, int v2, int v3){
 
 	LinkedTriangle t(this, v1, v2 , v3);
 	t.setFaceIndex(i);
-
-	cout << i << endl;
+	t.calculateNormal();
 
 	triangle_buffer.push_back(t);
 
@@ -69,6 +68,7 @@ void LinkedTriangleMesh::addTriangle(int v1, int v2, int v3){
 }
 
 void LinkedTriangleMesh::calcOneNormal(int v){
+
 	TriangleVertex vert = getVertex(v);
 	const set<int>& triset = vert.getTriangleNeighbors();
 	set<int>::iterator it;
@@ -77,7 +77,8 @@ void LinkedTriangleMesh::calcOneNormal(int v){
 	for (it = triset.begin(); it != triset.end(); ++it)
 	{
 	  // get the triangles for each vertex & add up the normals.
-		normal += getTriangle(*it).getNormal();
+		LinkedTriangle t = getTriangle(*it);
+		normal += t.getNormal();
 	}
 	normal.normalize();
 	vert.setNormal(normal);
@@ -146,7 +147,6 @@ void LinkedTriangleMesh::finalize(){
 		indices[iii    ] = triangle_buffer[i].getIndex(0);
 		indices[iii + 1] = triangle_buffer[i].getIndex(1);
 		indices[iii + 2] = triangle_buffer[i].getIndex(2);
-
 	}
 
 	vertex_buffer.clear();
@@ -156,57 +156,4 @@ void LinkedTriangleMesh::finalize(){
 	finalized = true;
 
 }
-
-void LinkedTriangle::calculateNormal(){
-	assert(mesh);
-
-	Vertex diff1 = mesh->getVertex(v0).position - mesh->getVertex(v1).position;
-	Vertex diff2 = mesh->getVertex(v0).position - mesh->getVertex(v2).position;
-	normal = Normal(diff1.cross(diff2));
-}
-
-void LinkedTriangle::interpolateNormal(){
-	assert(mesh);
-
-	Normal n1 = mesh->getNormal(v0);
-	Normal n2 = mesh->getNormal(v1);
-	Normal n3 = mesh->getNormal(v2);
-
-	normal = n1 + n2 + n3;
-	normal.normalize();
-}
-
-float LinkedTriangle::calculateArea(){
-	assert(mesh);
-
-	Vertex diff1 = mesh->getVertex(v0).position - mesh->getVertex(v1).position;
-	Vertex diff2 = mesh->getVertex(v2).position - mesh->getVertex(v1).position;
-	return 0.5 * diff1.cross(diff2).length();
-}
-
-Vertex LinkedTriangle::getVertex(int index){
-	assert(mesh);
-	assert(index >= 0 && index < 3);
-
-	switch(index){
-		case 0: return mesh->getVertex(v0).position; break;
-		case 1: return mesh->getVertex(v1).position; break;
-		case 2: return mesh->getVertex(v2).position; break;
-		default: return Vertex();
-	}
-}
-
-int LinkedTriangle::getIndex(int index){
-	assert(mesh);
-	assert(index >= 0 && index < 3);
-
-	switch(index){
-	case 0: return v0; break;
-	case 1: return v1; break;
-	case 2: return v2; break;
-	default: return -1;
-	}
-}
-
-
 

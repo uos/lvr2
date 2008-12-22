@@ -73,6 +73,7 @@ void Triangle::calculateNormal(){
 	Vertex diff1 = mesh->getVertex(v0) - mesh->getVertex(v1);
 	Vertex diff2 = mesh->getVertex(v0) - mesh->getVertex(v2);
 	normal = Normal(diff1.cross(diff2));
+	cout << normal;
 }
 
 void Triangle::interpolateNormal(){

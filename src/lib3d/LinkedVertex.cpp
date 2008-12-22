@@ -46,6 +46,9 @@ TriangleVertex::TriangleVertex(const TriangleVertex &other){
 	index = other.index;
 	summed_triangle_area = other.summed_triangle_area;
 
+	vertex_neighbors = other.vertex_neighbors;
+	triangle_neighbors = other.triangle_neighbors;
+
 	for(int i = 0; i < 4; i++){
 		for(int j = 0; j < 4; j++){
 			quadric_cost[i][j] = other.quadric_cost[i][j];
@@ -65,7 +68,7 @@ void TriangleVertex::init(){
 			quadric_cost[i][j] = -1;
 		}
 	}
-	active = false;
+	active = true;
 	cost = 0.0;
 	min_cost_neighbor = -1;
 	index = -1;
@@ -127,6 +130,15 @@ void TriangleVertex::calcQuadric(LinkedTriangleMesh& m, bool use_area){
 			quadric_cost[3][3] += triArea * d * d;
 		}
 	}
+
+//	cout << endl;
+//	for(int i = 0; i < 4; i++){
+//		for(int j = 0; j < 4; j++){
+//			cout << quadric_cost[i][j] << " ";
+//		}
+//		cout << endl;
+//	}
+
 }
 
 bool TriangleVertex::isBorder(LinkedTriangleMesh& m) {

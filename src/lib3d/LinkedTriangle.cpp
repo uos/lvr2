@@ -32,4 +32,60 @@ LinkedTriangle::LinkedTriangle(const LinkedTriangle &o){
 	normal     = o.normal;
 	d          = o.d;
 }
+void LinkedTriangle::calculateNormal(){
+	assert(mesh);
+	Vertex diff1 = mesh->getVertex(v0).position - mesh->getVertex(v1).position;
+	Vertex diff2 = mesh->getVertex(v0).position - mesh->getVertex(v2).position;
+	normal = Normal(diff1.cross(diff2));
+
+	d = -(normal * mesh->getVertex(v0).position);
+}
+
+void LinkedTriangle::interpolateNormal(){
+	assert(mesh);
+
+	Normal n1 = mesh->getNormal(v0);
+	Normal n2 = mesh->getNormal(v1);
+	Normal n3 = mesh->getNormal(v2);
+
+	normal = n1 + n2 + n3;
+	normal.normalize();
+}
+
+float LinkedTriangle::calculateArea(){
+	assert(mesh);
+
+	Vertex diff1 = mesh->getVertex(v0).position - mesh->getVertex(v1).position;
+	Vertex diff2 = mesh->getVertex(v2).position - mesh->getVertex(v1).position;
+	return 0.5 * diff1.cross(diff2).length();
+}
+
+Vertex LinkedTriangle::getVertex(int index){
+	assert(mesh);
+	assert(index >= 0 && index < 3);
+
+	switch(index){
+		case 0: return mesh->getVertex(v0).position; break;
+		case 1: return mesh->getVertex(v1).position; break;
+		case 2: return mesh->getVertex(v2).position; break;
+		default: return Vertex();
+	}
+}
+
+int LinkedTriangle::getIndex(int index){
+	assert(mesh);
+	assert(index >= 0 && index < 3);
+
+	switch(index){
+	case 0: return v0; break;
+	case 1: return v1; break;
+	case 2: return v2; break;
+	default: return -1;
+	}
+}
+
+
+
+
+
 
