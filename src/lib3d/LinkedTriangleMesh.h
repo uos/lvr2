@@ -28,7 +28,11 @@ public:
 	LinkedTriangleMesh();
 	LinkedTriangleMesh(const LinkedTriangleMesh& other);
 
-	TriangleVertex& getVertex(int index) {return vertex_buffer[index];};
+	TriangleVertex& getVertex(int index) {
+		if(index >= (int)vertex_buffer.size()) cout << "Index out of range!" << endl << flush;
+		return vertex_buffer[index];
+	};
+
 	LinkedTriangle& getTriangle(int index){return triangle_buffer[index];};
 
 	virtual void addVertex(Vertex v);

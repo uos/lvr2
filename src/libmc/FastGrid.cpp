@@ -243,16 +243,30 @@ void FastGrid::createMesh(){
 	int global_index = 0;
 	int c = 0;
 
+	mesh = new LinkedTriangleMesh();
+
 	for(it = cells.begin(); it != cells.end(); it++){
 		if(c % 1000 == 0) cout << "##### Iterating Cells... " << c << " / " << cells.size() << endl;;
 		b = it->second;
-		global_index = b->calcApproximation(query_points, mesh, global_index);
+		global_index = b->calcApproximation(query_points, *mesh, global_index);
 		c++;
 	}
 
-	mesh.printStats();
-	mesh.finalize();
-	mesh.save("mesh.ply");
+	mesh->printStats();
+
+	cout << "##### Creating Progressive Mesh..." << endl;
+	ProgressiveMesh p_mesh(mesh, ProgressiveMesh::QUADRICTRI);
+
+	cout << "##### Reducing Progressive Mesh..." << endl;
+	p_mesh.simplify(0.01);
+	p_mesh.save("reduced.ply");
+
+	mesh->finalize();
+	mesh->save("mesh.ply");
+
+//	mesh.printStats();
+//	mesh.finalize();
+//	mesh.save("mesh.ply");
 	//he_mesh.analize();
 	//he_mesh.extract_borders();
 	//he_mesh.write_polygons("borders.bor");

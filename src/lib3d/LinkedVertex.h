@@ -66,7 +66,7 @@ public:
 
 	virtual ~TriangleVertex();
 
-	void addVertexNeighbor(int v){ vertex_neighbors.insert(v);};
+	void addVertexNeighbor(int v){vertex_neighbors.insert(v);};
 	void addTriangleNeighbor(int t){ triangle_neighbors.insert(t);};
 
 	void removeVertexNeighbor(int v){ vertex_neighbors.erase(v);};
@@ -90,8 +90,8 @@ public:
 	bool isBorder(LinkedTriangleMesh& m);
 	bool isClosed(){return closed;};
 
-	const set<int>& getVertexNeighbors() const {return vertex_neighbors;};
-	const set<int>& getTriangleNeighbors() const {return triangle_neighbors;};
+	set<int>& getVertexNeighbors() {return vertex_neighbors;};
+	set<int>& getTriangleNeighbors() {return triangle_neighbors;};
 
 	float getEdgeCost(){ return cost;};
 	float getSummedTriangleArea(){ return summed_triangle_area;};
@@ -116,19 +116,7 @@ public:
 	bool operator<(const TriangleVertex&) const;
 	bool operator>(const TriangleVertex&) const;
 
-//	void operator+=(const TriangleVertex&);
-//	void operator-=(const TriangleVertex&);
-//	void operator*=(const double&);
-//	void operator/=(const double&);
-//
-//	TriangleVertex operator+(const TriangleVertex t) const;
-//	TriangleVertex operator-(const TriangleVertex t) const;
-//	TriangleVertex operator*(const double& d) const;
-//	TriangleVertex operator/(const double& d) const;
-
 	float operator[](const int index);
-
-//	Vertex cross(TriangleVertex other);
 
 	friend std::ostream& operator<<(std::ostream&, const TriangleVertex&);
 
