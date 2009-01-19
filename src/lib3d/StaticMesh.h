@@ -25,8 +25,8 @@ public:
 	~StaticMesh();
 	inline void render();
 
-	void save(string filename);
-	void load(string filename);
+	virtual void save(string filename);
+	virtual void load(string filename);
 
 	virtual void finalize();
 

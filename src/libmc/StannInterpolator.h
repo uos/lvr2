@@ -26,14 +26,19 @@
 
 class StannInterpolator: public Interpolator {
 public:
-	StannInterpolator(ANNpointArray points, int n, float voxelsize, int k_max, float epsilon);
+	StannInterpolator(
+			ANNpointArray points, int n, float voxelsize, int k_max,
+			float epsilon, Vertex c = Vertex(0.0, 0.0, 0.0));
 
 	virtual float distance(ColorVertex v);
 
 	virtual ~StannInterpolator();
 
+	Vertex center;
+
 private:
 
+	void write_normals();
 	void estimate_normals();
 	void interpolateNormals(int k);
 	bool boundingBoxOK(double dx, double dy, double dz);

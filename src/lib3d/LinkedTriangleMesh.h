@@ -19,6 +19,7 @@ using std::endl;
 #include "LinkedTriangle.h"
 #include "BoundingBox.h"
 
+#include "pmesh.h"
 
 class LinkedTriangle;
 class TriangleVertex;
@@ -52,6 +53,9 @@ public:
 
 	void calcOneNormal(int vertex);
 	void calcVertexNormals();
+
+	void pmesh();
+	int getIndex(vertex vert);
 
 	virtual void finalize();
 

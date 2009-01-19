@@ -31,6 +31,8 @@ public:
 	float distance(ColorVertex v);
 	virtual ~FastInterpolator();
 
+	Vertex center;
+
 private:
 
 	Normal calcNormal(Vertex v, int k);

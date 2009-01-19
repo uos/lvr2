@@ -63,7 +63,8 @@ LIB3DTARGETS = $(OBJ)BaseVertex.o $(OBJ)ColorVertex.o \
                $(OBJ)HalfEdgeMesh.o $(OBJ)HalfEdgePolygon.o $(OBJ)HalfEdge.o \
                $(OBJ)HalfEdgeVertex.o $(OBJ)HalfEdgeFace.o $(OBJ)Triangle.o \
                $(OBJ)LinkedVertex.o $(OBJ)LinkedTriangle.o \
-               $(OBJ)LinkedTriangleMesh.o $(OBJ)ProgressiveMesh.o
+               $(OBJ)LinkedTriangleMesh.o \
+               $(OBJ)OldTriangle.o $(OBJ)OldVertex.o $(OBJ)CubeMesh.o $(OBJ)PMesh.o $(OBJ)Vec3.o
 
 ANNTARGETS   = $(OBJ)ANN.o $(OBJ)brute.o $(OBJ)kd_tree.o $(OBJ)kd_util.o \
                $(OBJ)kd_split.o $(OBJ)kd_search.o $(OBJ)kd_pr_search.o \
@@ -453,6 +454,29 @@ $(OBJ)LinkedTriangle.o: $(LIB3DSRC)LinkedTriangle.*
 $(OBJ)ProgressiveMesh.o: $(LIB3DSRC)ProgressiveMesh.*
 	@echo "Compiling Progressive Mesh..."
 	@$(CPP) $(CFLAGS) -c -o $(OBJ)ProgressiveMesh.o $(LIB3DSRC)ProgressiveMesh.cpp
+	
+	
+	
+	
+$(OBJ)OldTriangle.o: $(LIB3DSRC)triangle.*
+	@echo "Compiling OldTriangle..."
+	@$(CPP) $(CFLAGS) -c -o $(OBJ)OldTriangle.o $(LIB3DSRC)triangle.cc
+	
+$(OBJ)OldVertex.o: $(LIB3DSRC)vertex.*
+	@echo "Compiling Old Vertex..."
+	@$(CPP) $(CFLAGS) -c -o $(OBJ)OldVertex.o $(LIB3DSRC)vertex.cc
+	
+$(OBJ)CubeMesh.o: $(LIB3DSRC)cubemesh.*
+	@echo "Compiling cubemesh..."
+	@$(CPP) $(CFLAGS) -c -o $(OBJ)CubeMesh.o $(LIB3DSRC)cubemesh.cc
+	
+$(OBJ)PMesh.o: $(LIB3DSRC)pmesh.*
+	@echo "Compiling pmesh..."
+	@$(CPP) $(CFLAGS) -c -o $(OBJ)PMesh.o $(LIB3DSRC)pmesh.cc
+	
+$(OBJ)Vec3.o: $(LIB3DSRC)vec3.*
+	@echo "Compiling vec3..."
+	@$(CPP) $(CFLAGS) -c -o $(OBJ)Vec3.o $(LIB3DSRC)vec3.cc
 	
 clean:
 	@echo -e "\nCleaning up...\n"

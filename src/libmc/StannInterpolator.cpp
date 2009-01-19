@@ -7,7 +7,11 @@
 
 #include "StannInterpolator.h"
 
-StannInterpolator::StannInterpolator(ANNpointArray pts, int n, float vs, int km, float epsilon) {
+StannInterpolator::StannInterpolator(ANNpointArray pts, int n, float vs, int km, float epsilon, Vertex c) {
+
+	center = c;
+
+	cout << center;
 
 	k_max = km;
 	points = pts;
@@ -22,6 +26,7 @@ StannInterpolator::StannInterpolator(ANNpointArray pts, int n, float vs, int km,
 
 	estimate_normals();
 	interpolateNormals(20);
+	write_normals();
 
 }
 
@@ -66,7 +71,7 @@ Plane StannInterpolator::calcPlane(Vertex query_point, int k, vector<unsigned lo
 	ColumnVector C(3);
 	float z1, z2;
 
-	epsilon = 20.0;
+	epsilon = 50000.0;
 
 	try{
 		ColumnVector F(k);
@@ -114,12 +119,25 @@ Plane StannInterpolator::calcPlane(Vertex query_point, int k, vector<unsigned lo
 }
 
 
+void StannInterpolator::write_normals(){
+
+	ofstream out("normals.nor");
+	for(int i = 0; i < number_of_points; i++){
+		if(i % 10000 == 0) cout << "##### Writing points and normals: " << i
+		                       << " / " << number_of_points << endl;
+		out << points[i][0] << " " << points[i][1] << " " << points[i][2] << " "
+		    << normals[i][0] << " " << normals[i][1] << " " << normals[i][2] << endl;
+	}
+
+}
+
 void StannInterpolator::estimate_normals(){
 
 	Vertex query_point, diff1, diff2;
 	Normal normal;
 
-	int k_0 = 50;
+	//int k_0 = 50;
+	int k_0 = 5000;
 
 	cout << "##### Initializing normal array..." << endl;
 	//Initialize normals
@@ -181,7 +199,10 @@ void StannInterpolator::estimate_normals(){
 		mean_distance = meanDistance(p, id, k);
 
 		Normal normal =  p.n;
-		if(normal * query_point < 0) normal = normal * -1;
+		if(normal * (query_point - center) < 0) normal = normal * -1;
+
+		normal = normal * -1;
+
 		normals[i] = normal;
 
 	}

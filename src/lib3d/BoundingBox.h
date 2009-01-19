@@ -25,12 +25,18 @@ public:
 	inline void expand(float x, float y, float z);
 	inline void render();
 
+	Vertex getCentroid(){return centroid;};
+
 	Vertex v_min;
 	Vertex v_max;
 
 	float  x_size;
 	float  y_size;
 	float  z_size;
+
+private:
+	int n;
+	Vertex centroid;
 
 };
 
@@ -47,6 +53,11 @@ inline void BoundingBox::expand(Vertex v){
 	x_size = fabs(v_max.x - v_min.x);
 	y_size = fabs(v_max.y - v_min.y);
 	z_size = fabs(v_max.z - v_min.z);
+
+	centroid = Vertex(v_max.x - v_min.x,
+			          v_max.y - v_min.y,
+			          v_max.z - v_min.z);
+
 }
 
 inline void BoundingBox::expand(float x, float y, float z){
@@ -61,6 +72,11 @@ inline void BoundingBox::expand(float x, float y, float z){
 	x_size = fabs(v_max.x - v_min.x);
 	y_size = fabs(v_max.y - v_min.y);
 	z_size = fabs(v_max.z - v_min.z);
+
+	centroid = Vertex(v_max.x - v_min.x,
+			          v_max.y - v_min.y,
+			          v_max.z - v_min.z);
+
 }
 
 inline void BoundingBox::render(){

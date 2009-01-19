@@ -148,8 +148,17 @@ void StaticMesh::load(string filename){
 
 	for(unsigned int i = 0; i < face_dcr.count; i++){
 		in.read( (char*)&ply_face, sizeof(ply_face));
-		for(int j = 0; j < 3; j++) indices[3 * i + j] = ply_face.indices[j];
+		for(int j = 0; j < 3; j++){
+			indices[3 * i + j] = ply_face.indices[j];
+			if(indices[3 * i + j] >= number_of_vertices ||indices[3 * i + j] < 0){
+				cout << indices[3 * i + j] << " " << number_of_vertices << endl;
+				cout << "ERROR!" << endl << flush;
+			}
+		}
+
 	}
+
+	cout << "LOAD COMPLETE" << endl << flush;
 
 	finalized = true;
 	compileDisplayList();
@@ -158,9 +167,18 @@ void StaticMesh::load(string filename){
 
 void StaticMesh::save(string filename){
 
+	cout << "STATIC MESH::SAVE" << endl;
+
 	if(finalized){
+
+		cout << 1 << endl << flush;
 		ofstream out;
 		out.open(filename.c_str(), fstream::out | fstream::binary);
+
+		if(!out.good()){
+			cout << "Static Mesh::Save: Unable to open file: " << filename << endl;
+			return;
+		}
 
 		char* comment = "comment c\n";
 
@@ -194,10 +212,14 @@ void StaticMesh::save(string filename){
 		PlyVertex ply_vertex;
 		PlyFace ply_face;
 
+		cout << "NUMBER OF FACES: " << number_of_faces << endl << flush;
+
 		//Set vertex and face count
 		vertex_dcr.count = number_of_vertices;
 		face_dcr.count = number_of_faces;
 		ply_face.vertexCount = 0;
+
+
 
 		//Write header
 		out.write( (char*)&header_dcr, sizeof(header_dcr));
