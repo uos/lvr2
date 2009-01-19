@@ -31,7 +31,7 @@ Triangle::Triangle() {
 	v2         = -1;
 	face_index = -1;
 	mesh       = 0;
-	active     = false;
+	active     = true;
 	d          = 1e10;
 }
 

@@ -20,7 +20,7 @@ PointCloud::PointCloud(string filename) : Renderable(filename){
 	float x, y, z, dummy;
 	while(in.good()){
 		if(i > 0 && i % 100000 == 0) cout << "##### READING POINTS: " << i << endl;
-		in >> x >> y >> z >> dummy >> dummy >> dummy;
+		in >> x >> y >> z >> dummy;
 		points.push_back(Vertex(x,y,z));
 		i++;
 	}

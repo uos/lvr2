@@ -63,6 +63,7 @@ FastGrid::FastGrid(string filename, float vs) {
 
 	readPoints(filename);
 
+	//interpolator = new StannInterpolator(points, number_of_points, 10.0, 100, 100.0, bounding_box.getCentroid());
 	interpolator = new StannInterpolator(points, number_of_points, 10.0, 100, 100.0);
 
 	calcIndices();
@@ -243,7 +244,7 @@ void FastGrid::createMesh(){
 	int global_index = 0;
 	int c = 0;
 
-	mesh = new LinkedTriangleMesh();
+	mesh = new HalfEdgeMesh();
 
 	for(it = cells.begin(); it != cells.end(); it++){
 		if(c % 1000 == 0) cout << "##### Iterating Cells... " << c << " / " << cells.size() << endl;;
@@ -253,16 +254,17 @@ void FastGrid::createMesh(){
 	}
 
 	mesh->printStats();
-
-	cout << "##### Creating Progressive Mesh..." << endl;
-	ProgressiveMesh p_mesh(mesh, ProgressiveMesh::QUADRICTRI);
-
-	cout << "##### Reducing Progressive Mesh..." << endl;
-	p_mesh.simplify(0.01);
-	p_mesh.save("reduced.ply");
-
 	mesh->finalize();
 	mesh->save("mesh.ply");
+
+//	cout << "##### Creating Progressive Mesh..." << endl;
+//
+//	mesh->pmesh();
+//	mesh->finalize();
+//	mesh->save("reduced.ply");
+
+//	mesh->finalize();
+//	mesh->save("mesh.ply");
 
 //	mesh.printStats();
 //	mesh.finalize();
@@ -290,6 +292,8 @@ void FastGrid::calcIndices(){
 
 void FastGrid::readPoints(string filename){
 
+	int max_pts = 31000000;
+
 	ifstream in(filename.c_str());
 
 	//Vector to tmp-store points in file
@@ -306,11 +310,13 @@ void FastGrid::readPoints(string filename){
 	float x, y, z, dummy;
 
 	//Read file
-	while(in.good()){
+	cout << "##### **** WARNING: READING ONLY " << max_pts << " Points! **** " << endl;
+	while(in.good() && pts.size() < max_pts){
 		in >> x >> y >> z;
 		for(int i = 0; i < number_of_dummys; i++){
 			in >> dummy;
 		}
+
 
 		bounding_box.expand(x, y, z);
 		pts.push_back(BaseVertex(x,y,z));

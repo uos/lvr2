@@ -5,6 +5,8 @@
  *      Author: twiemann
  */
 
+
+
 #include "LinkedTriangleMesh.h"
 
 LinkedTriangleMesh::LinkedTriangleMesh() : TriangleMesh(){
@@ -121,8 +123,20 @@ void LinkedTriangleMesh::normalize(){
 
 void LinkedTriangleMesh::finalize(){
 
+	int number_of_active_triangles = 0;
+
+	if(finalized){
+		cout << "Warning: StaticMesh::finalize(): Mesh is already finalized." << endl;
+	}
+
+	for(int i = 0; i < (int)triangle_buffer.size(); i++){
+		if(triangle_buffer[i].isActive()) number_of_active_triangles++;
+	}
+
+	cout << "NUMBER OF ACTIVE TRIANGLES: " << number_of_active_triangles << endl << flush;
+
 	number_of_vertices = (int)vertex_buffer.size();
-	number_of_faces    = (int)triangle_buffer.size();
+	number_of_faces    = number_of_active_triangles;
 
 	normals  = new float[3 * number_of_vertices];
 	vertices = new float[3 * number_of_vertices];
@@ -143,17 +157,132 @@ void LinkedTriangleMesh::finalize(){
 	int iii;
 
 	for(size_t i = 0; i < triangle_buffer.size(); i++){
-		iii = 3 * i;
-		indices[iii    ] = triangle_buffer[i].getIndex(0);
-		indices[iii + 1] = triangle_buffer[i].getIndex(1);
-		indices[iii + 2] = triangle_buffer[i].getIndex(2);
+		if(triangle_buffer[i].isActive()){
+			iii = 3 * i;
+			indices[iii    ] = triangle_buffer[i].getIndex(0);
+			indices[iii + 1] = triangle_buffer[i].getIndex(1);
+			indices[iii + 2] = triangle_buffer[i].getIndex(2);
+		}
 	}
 
-	vertex_buffer.clear();
-	normal_buffer.clear();
-	triangle_buffer.clear();
+//	vertex_buffer.clear();
+//	normal_buffer.clear();
+//	triangle_buffer.clear();
 
 	finalized = true;
 
 }
 
+void LinkedTriangleMesh::pmesh(){
+
+	float meshReduction = 0.8;
+
+	if(finalized){
+		PMesh::EdgeCost cost = PMesh::SHORTEST;
+		CubeMesh* triangleMesh = new CubeMesh();
+
+		for(size_t i = 0; i < number_of_vertices; i++){
+			triangleMesh->addVertex(vertices[3 * i], vertices[3 * i + 1], vertices[3 * i + 2]);
+		}
+
+		for(size_t i = 0; i < number_of_faces; i++){
+			triangleMesh->addTriangle(indices[ 3 * i    ],
+					                  indices[ 3 * i + 1],
+					                  indices[ 3 * i + 2]);
+		}
+
+		triangleMesh->calcVertNormals();
+
+		PMesh* simplyfier = new PMesh(triangleMesh, cost);
+
+		//************************************************************
+		int j = 0;
+		int index;
+		bool ret = true;
+		triangle t;
+		vertex vert;
+		Vec3 vec;
+		Vec3 normal;
+
+		int size = (int)(simplyfier->numCollapses()-simplyfier->numCollapses()*meshReduction);
+		if (size == 0) {
+			size = 1;
+		}
+
+		for (int i = 0; ret && i <size; ++i) {
+			ret = simplyfier->collapseEdge();
+		}
+
+		if (!ret) {
+			cout<<"error in mesh simplification perhaps "<<endl;
+			return;
+		}
+
+
+		//****************************************************************
+		triangle_buffer.clear();
+		vertex_buffer.clear();
+		normal_buffer.clear();
+
+		int indices[3];
+		float vec_store[3];
+		float normal_store[3];
+
+		for(int i = 0;i < simplyfier->numTris();i++){
+			simplyfier->getTri(i,t);
+			if(t.isActive()){
+				for(int k=0;k<3;k++){
+					switch(k) {
+					case 0: vert = t.getVert1vertex();
+					break;
+					case 1: vert = t.getVert2vertex();
+					break;
+					case 2: vert = t.getVert3vertex();
+					break;
+					}
+					index = getIndex(vert);
+					//index = 0;
+					if(index >= 0){
+						indices[k] = index;
+					}
+					else {
+						indices[k] = j;
+						vec = vert._myVertex;
+						vec_store[0] = vec.x;
+						vec_store[1] = vec.y;
+						vec_store[2] = vec.z;
+						vertex_buffer.push_back(Vertex(vec_store[0], vec_store[1], vec_store[2]));
+						normal = vert._vertexNormal;
+						normal_store[0] = normal.x;
+						normal_store[1] = normal.y;
+						normal_store[2] = normal.z;
+						normal_buffer.push_back(Normal(normal_store[0], normal_store[1], normal_store[2]));
+						j++;
+					}
+				}
+				triangle_buffer.push_back(LinkedTriangle(indices[0], indices[1], indices[2]));
+
+			}
+		}
+
+		finalized = false;
+
+	}
+}
+
+int LinkedTriangleMesh::getIndex(vertex vert){
+
+	Vertex reference = Vertex(vert.getXYZ().x,
+							  vert.getXYZ().y,
+							  vert.getXYZ().z);
+
+	Vertex current;
+
+	for(size_t i = 0; i < vertex_buffer.size(); i++){
+		current = vertex_buffer[i].position;
+		if(current == reference) return i;
+	}
+
+	return -1;
+
+}

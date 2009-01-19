@@ -459,7 +459,6 @@ void ProgressiveMesh::buildEdgeCollapseList(
 		ec.dumpEdgeCollapse();
 		dumpset(vertSet);
 #endif
-		cout << "PUSH BACK" << endl << flush;
 		edgeCollList.push_back(ec); // inserts a copy
 
 	}
@@ -1016,6 +1015,19 @@ void ProgressiveMesh::simplify(float reduction){
 		collapseEdge();
 	}
 
+}
+
+void ProgressiveMesh::save(string filename){
+
+	cout << "SAVING ORIGINAL MESH..." << endl;
+	original_mesh->finalize();
+	original_mesh->save("mesh.ply");
+
+	cout << "SAVING REDUCED MESH..." << endl;
+	reduced_mesh.finalize();
+	reduced_mesh.save("reduced.ply");
+
+	cout << "DONE SAVING!!!" << endl << flush;
 }
 
 
