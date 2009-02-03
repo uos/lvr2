@@ -14,7 +14,9 @@
 using __gnu_cxx::hash_map;
 
 #include <vector>
+#include <map>
 using std::vector;
+using std::map;
 
 class HalfEdgeFace;
 class HalfEdge;
@@ -36,14 +38,17 @@ public:
 	HalfEdgePolygon(HalfEdgeFace* first);
 	virtual ~HalfEdgePolygon();
 
-	void add_face(HalfEdgeFace* face, HalfEdge* edge);
-	void generate_list(vector<int> &list);
+	void add_face(HalfEdgeFace* face);
+	void generate_list();
 	void add_vertex(HalfEdgeVertex* v);
 
 	int texture_index;
 
 	vector<int> indices;
 	vector<HalfEdgeVertex*> vertices;
+
+	map<unsigned int, HalfEdgeFace* > faces;
+	vector<HalfEdge*> edge_list;
 
 };
 

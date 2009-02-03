@@ -26,7 +26,7 @@ StannInterpolator::StannInterpolator(ANNpointArray pts, int n, float vs, int km,
 
 	estimate_normals();
 	interpolateNormals(20);
-	write_normals();
+	//write_normals();
 
 }
 
@@ -136,8 +136,7 @@ void StannInterpolator::estimate_normals(){
 	Vertex query_point, diff1, diff2;
 	Normal normal;
 
-	//int k_0 = 50;
-	int k_0 = 5000;
+	int k_0 = 10;
 
 	cout << "##### Initializing normal array..." << endl;
 	//Initialize normals
@@ -191,7 +190,7 @@ void StannInterpolator::estimate_normals(){
 			}
 
 			if(boundingBoxOK(dx, dy, dz)) break;
-
+			//break;
  		}
 
 		query_point = Vertex(points[i][0], points[i][1], points[i][2]);
@@ -201,7 +200,7 @@ void StannInterpolator::estimate_normals(){
 		Normal normal =  p.n;
 		if(normal * (query_point - center) < 0) normal = normal * -1;
 
-		normal = normal * -1;
+		//normal = normal * -1;
 
 		normals[i] = normal;
 

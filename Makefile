@@ -63,7 +63,7 @@ LIB3DTARGETS = $(OBJ)BaseVertex.o $(OBJ)ColorVertex.o \
                $(OBJ)HalfEdgeMesh.o $(OBJ)HalfEdgePolygon.o $(OBJ)HalfEdge.o \
                $(OBJ)HalfEdgeVertex.o $(OBJ)HalfEdgeFace.o $(OBJ)Triangle.o \
                $(OBJ)LinkedVertex.o $(OBJ)LinkedTriangle.o \
-               $(OBJ)LinkedTriangleMesh.o \
+               $(OBJ)LinkedTriangleMesh.o $(OBJ)PolygonMesh.o $(OBJ)Polygon.o \
                $(OBJ)OldTriangle.o $(OBJ)OldVertex.o $(OBJ)CubeMesh.o $(OBJ)PMesh.o $(OBJ)Vec3.o
 
 ANNTARGETS   = $(OBJ)ANN.o $(OBJ)brute.o $(OBJ)kd_tree.o $(OBJ)kd_util.o \
@@ -455,7 +455,13 @@ $(OBJ)ProgressiveMesh.o: $(LIB3DSRC)ProgressiveMesh.*
 	@echo "Compiling Progressive Mesh..."
 	@$(CPP) $(CFLAGS) -c -o $(OBJ)ProgressiveMesh.o $(LIB3DSRC)ProgressiveMesh.cpp
 	
+$(OBJ)PolygonMesh.o: $(LIB3DSRC)PolygonMesh.*
+	@echo "Compiling Polygon Mesh..."
+	@$(CPP) $(CFLAGS) -c -o $(OBJ)PolygonMesh.o $(LIB3DSRC)PolygonMesh.cpp
 	
+$(OBJ)Polygon.o: $(LIB3DSRC)Polygon.*
+	@echo "Compiling Polygon..."
+	@$(CPP) $(CFLAGS) -c -o $(OBJ)Polygon.o $(LIB3DSRC)Polygon.cpp
 	
 	
 $(OBJ)OldTriangle.o: $(LIB3DSRC)triangle.*

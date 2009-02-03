@@ -23,6 +23,7 @@ using namespace std;
 #include "../lib3d/PointCloud.h"
 #include "../lib3d/NormalCloud.h"
 #include "../lib3d/TriangleMesh.h"
+#include "../lib3d/PolygonMesh.h"
 
 #include "ViewerWindow.h"
 #include "ObjectHandler.h"

@@ -193,6 +193,8 @@ void EventHandler::action_file_open(){
 
 void EventHandler::loadObject(string file_name){
 
+	cout << "LOAD OBJECT: " << file_name << endl;
+
 	//Get extension
 	string extension;
 	size_t pos = file_name.find_last_of(".");
@@ -208,10 +210,13 @@ void EventHandler::loadObject(string file_name){
 		NormalCloud* nc = new NormalCloud(file_name);
 		nc->setName(file_name);
 		objectHandler->addObject(nc);
-	} else if(extension == "bor"){
-
 	} else if(extension == "ply"){
 		StaticMesh* mesh = new StaticMesh(file_name);
+		mesh->setName(file_name);
+		objectHandler->addObject(mesh);
+	} else if(extension == "bor"){
+		cout << "EXTENSION: BOR" << endl;
+		PolygonMesh* mesh = new PolygonMesh(file_name);
 		mesh->setName(file_name);
 		objectHandler->addObject(mesh);
 	}

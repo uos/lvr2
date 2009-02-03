@@ -46,9 +46,15 @@ public:
 	void check_next_neighbor(HalfEdgeFace* f0, HalfEdgeFace* face, HalfEdgePolygon*);
 	void extract_borders();
 
+	bool check_face(HalfEdgeFace* f0, HalfEdgeFace* current);
+	bool isFlatFace(HalfEdgeFace* face);
 
 	void create_polygon(vector<int> &polygon, hash_map<unsigned int, HalfEdge*>* edges);
 
+private:
+
+	float  current_d;
+	Normal current_n;
 
 };
 

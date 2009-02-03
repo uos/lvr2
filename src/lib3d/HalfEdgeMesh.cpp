@@ -51,104 +51,147 @@ void HalfEdgeMesh::finalize(){
 	finalized = true;
 }
 
+bool HalfEdgeMesh::isFlatFace(HalfEdgeFace* face){
+
+	int index = face->mcIndex;
+
+	//WALL
+	if(index == 240 || index == 15 || index == 153 || index == 102){
+
+		return true;
+
+	}
+	//FLOOR
+	else if(index == 204){
+
+		return true;
+
+	}
+	//CEIL
+	else if (index == 51){
+
+		return true;
+
+	}
+	//DOORS
+	else if (index == 9 || index == 144 || index == 96 || index == 6){
+
+		return true;
+
+	}
+	//OTHER FLAT POLYGONS
+	else if(index ==  68 || index == 136 || index ==  17 || index ==  34 || //Variants of MC-Case 2
+			index == 192 || index ==  48 || index ==  12 || index ==   3 ){
+
+		return true;
+
+	} else if (index ==  63 || index == 159 || index == 207 || index == 111 || //Variants of MC-Case 2 (compl)
+			index == 243 || index == 249 || index == 252 || index == 246 ||
+			index == 119 || index == 187 || index == 221 || index == 238){
+		return true;
+
+	}
+
+	return false;
+}
+
+
+bool HalfEdgeMesh::check_face(HalfEdgeFace* f0, HalfEdgeFace* current){
+
+	float distance_to_plane = fabs(current->edge->start->position * current_n - current_d);
+
+	if(distance_to_plane < 0.1) return true;
+
+
+	return false;
+
+}
+
 void HalfEdgeMesh::check_next_neighbor(HalfEdgeFace* f0, HalfEdgeFace* face, HalfEdgePolygon* polygon){
 
+	face->used = true;
+	polygon->add_face(face);
+
+    //Iterate through all surrounding faces
+	HalfEdge* start_edge   = face->edge;
+	HalfEdge* current_edge = face->edge;
+	HalfEdge* pair         = current_edge->pair;
+	HalfEdgeFace* current_neighbor;
+	do{
+		pair = current_edge->pair;
+		if(pair != 0){
+			current_neighbor = pair->face;
+			if(current_neighbor != 0){
+				if(check_face(f0, current_neighbor) && !current_neighbor->used){
+					check_next_neighbor(f0, current_neighbor, polygon);
+				}
+			}
+		}
+		current_edge = current_edge->next;
+	} while(start_edge != current_edge);
 
 }
 
 
 void HalfEdgeMesh::extract_borders(){
 
+	HalfEdgeFace*       current_face;
+	HalfEdgePolygon*    current_polygon;
+	vector<HalfEdgeFace*>::iterator face_iterator;
 
+	for(face_iterator = he_faces.begin(); face_iterator != he_faces.end(); face_iterator++){
+		current_face = *face_iterator;
+		if(!current_face->used){
+
+			current_n = current_face->getFaceNormal();
+			current_d = current_face->edge->start->position * current_n;
+
+			current_polygon = new HalfEdgePolygon();
+			check_next_neighbor(current_face, current_face, current_polygon);
+			current_polygon->generate_list();
+			hem_polygons.push_back(current_polygon);
+
+		}
+	}
 }
 
 void HalfEdgeMesh::create_polygon(vector<int> &polygon, hash_map<unsigned int, HalfEdge*>* edges){
 
-	stack<int> polygon_vertex_indices;
 
-	hash_map<unsigned int, HalfEdge*>::iterator it;
-
-	HalfEdge* start_edge = (*edges->begin()).second;
-	HalfEdge* current_edge = start_edge;
-
-
-	cout << "BEGIN LOOP: " << edges->size() << endl;
-	do{
-		it = edges->find(current_edge->end->index);
-		if(it == edges->end()){
-			cout << "Edge not found" << endl;
-		} else {
-			current_edge = (*it).second;
-			cout << current_edge->start->index << " "
-			     << current_edge->end->index   << " "
-			     << start_edge->start->index   << endl;
-		}
-	} while(current_edge != start_edge);
-	cout <<  "END LOOP" << endl;
 }
 
 void HalfEdgeMesh::write_polygons(string filename){
 
-//	ofstream out;
-//
-//	out.open(filename.c_str(), ios::out);
-//	if (!out) {
-//		cerr << "*** error: can't create file "  << " ***\n";
-//		exit(2);
-//	}
-//
-//	vector<HalfEdgePolygon*>::iterator it = hem_polygons.begin();
-//	vector<int> vertex_list;
-//	while(it != hem_polygons.end()){
-//		vertex_list.clear();
-//		HalfEdgePolygon* p = *it;
-//		p->generate_list(vertex_list);
-//		if(vertex_list.size() > 0){
-//			out << "BEGIN" << endl;
-//			for(size_t i = 0; i < vertex_list.size(); i++){
-//				HalfEdgeVertex* v = he_vertices[vertex_list[i]];
-//				Vertex pos = v->position;
-//				out << pos.x << " " << pos.y << " " << pos.z << "0.0 1.0 0.0" << endl;
-//			}
-//			out << "END" << endl;
-//		}
-//		it++;
-//	}
+	ofstream out(filename.c_str());
 
-	ofstream out;
+	HalfEdgePolygon* polygon;
+	HalfEdge*        edge;
 
-	out.open(filename.c_str());
+	vector<HalfEdgePolygon*>::iterator polygon_it;
 
-	if(!out.good()){
+	for(polygon_it  = hem_polygons.begin();
+	    polygon_it != hem_polygons.end();
+	    polygon_it++)
+	{
+		polygon = *polygon_it;
+		vector<HalfEdge*>::iterator edge_it;
+		for(edge_it  = polygon->edge_list.begin();
+		    edge_it != polygon->edge_list.end();
+		    edge_it++)
+		{
+			edge = *edge_it;
+			out << "BEGIN" << endl;
 
-		cerr << "ERROR: Could not open file '" << filename << "'." << endl;
-		exit(-1);
+			out << edge->start->position.x << " ";
+			out << edge->start->position.y << " ";
+			out << edge->start->position.z << endl;
 
-	}
+			out << edge->end->position.x << " ";
+			out << edge->end->position.y << " ";
+			out << edge->end->position.z << endl;
 
-	vector<HalfEdgePolygon*>::iterator it;
-	vector<int>::iterator vit;
-
-	HalfEdgePolygon* p;
-	HalfEdgeVertex* v;
-
-	int index;
-
-	for(it = hem_polygons.begin(); it != hem_polygons.end(); it++){
-
-		p = (*it);
-
-		out << "BEGIN" << endl;
-
-		for(vit = p->indices.begin(); vit != p->indices.end(); vit++){
-			index = (*vit);
-			v = he_vertices[index];
-			out << v->position.x << " " << v->position.y << " " << v->position.z << " ";
-			out << 0.0 << " " << 1.0 << " " << 0.0 << endl;
+			out << "END" << endl;
 		}
-
-		out << "END" << endl;
-
 	}
 
 }
