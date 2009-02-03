@@ -23,6 +23,15 @@ public:
 	void calc_normal();
 	void interpolate_normal();
 
+	void getVertexNormals(vector<Normal> &n);
+	void getVertices(vector<Vertex> &v);
+	void getAdjacentFaces(vector<HalfEdgeFace*> &adj);
+
+	Normal getFaceNormal();
+	Normal getInterpolatedNormal();
+
+	Vertex getCentroid();
+
 	HalfEdge* edge;
 	bool used;
 	vector<int> indices;

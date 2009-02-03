@@ -1,4 +1,4 @@
-/*
+ /*
  * HalfEdgeFace.cpp
  *
  *  Created on: 03.12.2008
@@ -57,7 +57,112 @@ void HalfEdgeFace::interpolate_normal(){
 	normal.z = normal.z / 3.0;
 
 	normal.normalize();
+}
 
+void HalfEdgeFace::getVertexNormals(vector<Normal> &n){
 
+	HalfEdgeVertex* start = edge->start;
+	HalfEdge* current_edge = edge;
+	while(current_edge->end != start){
+		n.push_back(current_edge->end->normal);
+		normal += current_edge->start->normal;
+		current_edge = current_edge->next;
+	}
+
+}
+
+void HalfEdgeFace::getVertices(vector<Vertex> &v){
+
+	HalfEdgeVertex* start = edge->start;
+	HalfEdge* current_edge = edge;
+	while(current_edge->end != start){
+		v.push_back(current_edge->end->position);
+		current_edge = current_edge->next;
+	}
+
+}
+
+void HalfEdgeFace::getAdjacentFaces(vector<HalfEdgeFace*> &adj){
+
+	HalfEdge* current = edge;
+	HalfEdge* pair;
+	HalfEdgeFace* neighbor;
+
+	do{
+		pair = current->pair;
+		if(pair != 0){
+			neighbor = pair->face;
+			if(neighbor != 0){
+				adj.push_back(neighbor);
+			}
+		}
+		current = current->next;
+	} while(edge != current);
+
+}
+
+Normal HalfEdgeFace::getFaceNormal(){
+
+	Vertex vertices[3];
+	HalfEdgeVertex* start = edge->start;
+	HalfEdge* current_edge = edge;
+
+	int c = 0;
+	while(current_edge->end != start){
+		vertices[c] = current_edge->start->position;
+		current_edge = current_edge->next;
+		c++;
+	}
+	Vertex diff1 = vertices[0] - vertices[1];
+	Vertex diff2 = vertices[0] - vertices[2];
+
+	return Normal(diff1.cross(diff2));
+
+}
+
+Normal HalfEdgeFace::getInterpolatedNormal(){
+
+	Normal return_normal;
+
+	HalfEdgeVertex* start = edge->start;
+	HalfEdge* current_edge = edge;
+
+	int c = 0;
+	while(current_edge->end != start){
+		return_normal += current_edge->start->normal;
+		current_edge = current_edge->next;
+		c++;
+	}
+
+	return_normal.x = normal.x / 3.0;
+	return_normal.y = normal.y / 3.0;
+	return_normal.z = normal.z / 3.0;
+
+	return_normal.normalize();
+	cout << return_normal;
+	return return_normal;
+
+}
+
+Vertex HalfEdgeFace::getCentroid(){
+	vector<Vertex> vert;
+	getVertices(vert);
+
+	Vertex centroid;
+
+	for(size_t i = 0; i < vert.size(); i++){
+		centroid += vert[i];
+	}
+
+	if(vert.size() > 0){
+		centroid.x = centroid.x / vert.size();
+		centroid.y = centroid.y / vert.size();
+		centroid.z = centroid.z / vert.size();
+	} else {
+		cout << "Warning: HalfEdgeFace::getCentroid: No vertices found." << endl;
+		return Vertex();
+	}
+
+	return centroid;
 }
 

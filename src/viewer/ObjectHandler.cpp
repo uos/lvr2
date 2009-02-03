@@ -67,6 +67,9 @@ void ObjectHandler::addObject(Renderable* o){
 	item->setCheckState(Qt::Checked);
 	item->setText(QString(o->Name().c_str()));
 	listWidget->insertItem(objects.size() - 1, item);
+	listWidget->setCurrentRow(objects.size() - 1);
+	objectSelected();
+
 }
 
 ObjectHandler::~ObjectHandler() {

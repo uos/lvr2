@@ -48,7 +48,13 @@ protected:
 };
 
 void StaticMesh::render(){
-	if(finalized && listIndex != -1) glCallList(listIndex);
+	if(finalized && listIndex != -1){
+		glPushMatrix();
+		glMultMatrixd(transformation.getData());
+		glCallList(listIndex);
+		if(show_axes) glCallList(axesListIndex);
+		glPopMatrix();
+	}
 }
 
 

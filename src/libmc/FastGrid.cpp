@@ -253,6 +253,8 @@ void FastGrid::createMesh(){
 		c++;
 	}
 
+	mesh->extract_borders();
+	mesh->write_polygons("border.bor");
 	mesh->printStats();
 	mesh->finalize();
 	mesh->save("mesh.ply");
