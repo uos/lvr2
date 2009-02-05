@@ -96,15 +96,49 @@ bool HalfEdgeMesh::isFlatFace(HalfEdgeFace* face){
 }
 
 
+void HalfEdgeMesh::getArea(set<HalfEdgeFace*> &faces, HalfEdgeFace* face, int depth, int max){
+
+	vector<HalfEdgeFace*> adj;
+	face->getAdjacentFaces(adj);
+
+	vector<HalfEdgeFace*>::iterator it;
+	for(it = adj.begin(); it != adj.end(); it++){
+		faces.insert(*it);
+		if(depth < max){
+			getArea(faces, *it, depth + 1, max);
+		}
+	}
+
+}
+
+void HalfEdgeMesh::shiftIntoPlane(HalfEdgeFace* f){
+
+	HalfEdge* edge  = f->edge;
+	HalfEdge* start = edge;
+
+	do{
+		float d = (current_v - edge->end->position) * current_n;
+		edge->end->position = edge->end->position + (current_n * d);
+		edge = edge -> next;
+	} while(edge != start);
+
+}
+
 bool HalfEdgeMesh::check_face(HalfEdgeFace* f0, HalfEdgeFace* current){
 
-	float distance_to_plane = fabs(current->edge->start->position * current_n - current_d);
+	//if(f0->getInterpolatedNormal() * current->getInterpolatedNormal() > 0.9) return true;
 
-	if(distance_to_plane < 0.1) return true;
+	//Calculate Plane representation
+	Normal n_0 = f0->getInterpolatedNormal();
+	Vertex p_0 = f0->getCentroid();
 
+	float  d = p_0 * n_0;
+	float  distance = fabs(current->getCentroid() * n_0 - d);
+	float  cos_angle = n_0 * current->getInterpolatedNormal();
+
+	if(distance < 5.0 && cos_angle > 0.99) return true;
 
 	return false;
-
 }
 
 void HalfEdgeMesh::check_next_neighbor(HalfEdgeFace* f0, HalfEdgeFace* face, HalfEdgePolygon* polygon){
@@ -139,12 +173,15 @@ void HalfEdgeMesh::extract_borders(){
 	HalfEdgePolygon*    current_polygon;
 	vector<HalfEdgeFace*>::iterator face_iterator;
 
+	int c = 0;
 	for(face_iterator = he_faces.begin(); face_iterator != he_faces.end(); face_iterator++){
+		if(c % 10000 == 0) cout << "Extracting Borders: " << c << " / " << he_faces.size() << endl;
 		current_face = *face_iterator;
 		if(!current_face->used){
 
-			current_n = current_face->getFaceNormal();
+			current_n = current_face->normal;
 			current_d = current_face->edge->start->position * current_n;
+			current_v = current_face->edge->start->position;
 
 			current_polygon = new HalfEdgePolygon();
 			check_next_neighbor(current_face, current_face, current_polygon);
@@ -152,6 +189,7 @@ void HalfEdgeMesh::extract_borders(){
 			hem_polygons.push_back(current_polygon);
 
 		}
+		c++;
 	}
 }
 
@@ -169,10 +207,12 @@ void HalfEdgeMesh::write_polygons(string filename){
 
 	vector<HalfEdgePolygon*>::iterator polygon_it;
 
+	int c = 0;
 	for(polygon_it  = hem_polygons.begin();
 	    polygon_it != hem_polygons.end();
 	    polygon_it++)
 	{
+		if(c % 10000 == 0) cout << "Writing Polygons: " << c << " / " << hem_polygons.size() << endl;
 		polygon = *polygon_it;
 		vector<HalfEdge*>::iterator edge_it;
 		for(edge_it  = polygon->edge_list.begin();
@@ -192,6 +232,39 @@ void HalfEdgeMesh::write_polygons(string filename){
 
 			out << "END" << endl;
 		}
+		c++;
+	}
+
+}
+
+void HalfEdgeMesh::write_face_normals(string filename){
+
+	ofstream out(filename.c_str());
+
+	HalfEdgeFace* face;
+
+	Normal n;
+	Vertex v;
+
+	int c = 0;
+
+	vector<HalfEdgeFace*>::iterator face_iterator;
+	for(face_iterator = he_faces.begin();
+		face_iterator != he_faces.end();
+		face_iterator++)
+	{
+		if(c % 10000 == 0){
+			cout << "Write Face Normals: " << c << " / " << he_faces.size() << endl;
+		}
+		face = *face_iterator;
+		//n = face->getFaceNormal();
+		n = face->getInterpolatedNormal();
+		v = face->getCentroid();
+
+		out << v.x << " " << v.y << " " << v.z << " "
+		    << n.x << " " << n.y << " " << n.z << endl;
+
+		c++;
 	}
 
 }

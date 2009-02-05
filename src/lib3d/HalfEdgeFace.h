@@ -9,6 +9,8 @@
 #define HALFEDGEFACE_H_
 
 #include <vector>
+#include <set>
+
 using namespace std;
 
 #include "Normal.h"

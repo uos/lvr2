@@ -75,11 +75,11 @@ void HalfEdgeFace::getVertices(vector<Vertex> &v){
 
 	HalfEdgeVertex* start = edge->start;
 	HalfEdge* current_edge = edge;
-	while(current_edge->end != start){
+	do{
 		v.push_back(current_edge->end->position);
 		current_edge = current_edge->next;
-	}
-
+	} while(current_edge->end != start);
+	v.push_back(current_edge->end->position);
 }
 
 void HalfEdgeFace::getAdjacentFaces(vector<HalfEdgeFace*> &adj){
@@ -124,22 +124,17 @@ Normal HalfEdgeFace::getInterpolatedNormal(){
 
 	Normal return_normal;
 
-	HalfEdgeVertex* start = edge->start;
+	HalfEdge* start = edge;
 	HalfEdge* current_edge = edge;
 
 	int c = 0;
-	while(current_edge->end != start){
+	do{
 		return_normal += current_edge->start->normal;
 		current_edge = current_edge->next;
 		c++;
-	}
-
-	return_normal.x = normal.x / 3.0;
-	return_normal.y = normal.y / 3.0;
-	return_normal.z = normal.z / 3.0;
+	} while(current_edge != start);
 
 	return_normal.normalize();
-	cout << return_normal;
 	return return_normal;
 
 }
