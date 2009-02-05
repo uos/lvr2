@@ -185,7 +185,10 @@ int FastBox::calcApproximation(vector<QueryPoint> &qp, HalfEdgeMesh &mesh, int g
 	HalfEdgeFace* face     = 0;
 	HalfEdge* edges[3];
 
+	Normal last_normal;
+
 	for(int a = 0; MCTable[index][a] != -1; a+= 3){
+
 		face = new HalfEdgeFace;
 		face->used = false;
 		edges[0] = edges[1] = edges[2];
@@ -282,6 +285,14 @@ int FastBox::calcApproximation(vector<QueryPoint> &qp, HalfEdgeMesh &mesh, int g
 		face->mcIndex = index;
 		mesh.he_faces.push_back(face);
 		face->face_index = mesh.he_faces.size();
+
+		if(a == 0) {
+			last_normal = face->normal;
+		} else {
+			if(last_normal * face->normal < 0){
+				face->normal = face->normal * -1;
+			}
+		}
 
 	}
 

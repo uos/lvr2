@@ -10,6 +10,8 @@
 
 #include <vector>
 #include <stack>
+#include <set>
+
 using namespace std;
 
 #include <ext/hash_map>
@@ -41,10 +43,16 @@ public:
 	int global_index;
 
 	virtual void finalize();
+
 	void write_polygons(string filename);
+	void write_face_normals(string filename);
+
 	void printStats();
 	void check_next_neighbor(HalfEdgeFace* f0, HalfEdgeFace* face, HalfEdgePolygon*);
 	void extract_borders();
+
+	void getArea(set<HalfEdgeFace*> &faces, HalfEdgeFace* face, int depth, int max);
+	void shiftIntoPlane(HalfEdgeFace* f);
 
 	bool check_face(HalfEdgeFace* f0, HalfEdgeFace* current);
 	bool isFlatFace(HalfEdgeFace* face);
@@ -55,6 +63,7 @@ private:
 
 	float  current_d;
 	Normal current_n;
+	Vertex current_v;
 
 };
 

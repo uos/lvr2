@@ -58,7 +58,7 @@ void NormalCloud::initDisplayList(){
 				   points[i].z);
 	}
 	glEnd();
-	glPointSize(1.0);
+	glPointSize(2.0);
 
 	glLineWidth(1.5);
 	for(size_t i = 0; i < normals.size(); i++){
