@@ -49,7 +49,9 @@ public:
 
 	void printStats();
 	void check_next_neighbor(HalfEdgeFace* f0, HalfEdgeFace* face, HalfEdgePolygon*);
+
 	void extract_borders();
+	void generate_polygons();
 
 	void getArea(set<HalfEdgeFace*> &faces, HalfEdgeFace* face, int depth, int max);
 	void shiftIntoPlane(HalfEdgeFace* f);
@@ -60,6 +62,9 @@ public:
 	void create_polygon(vector<int> &polygon, hash_map<unsigned int, HalfEdge*>* edges);
 
 private:
+
+	int biggest_size;
+	HalfEdgePolygon* biggest_polygon;
 
 	float  current_d;
 	Normal current_n;
