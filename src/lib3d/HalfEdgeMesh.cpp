@@ -11,6 +11,8 @@
 
 HalfEdgeMesh::HalfEdgeMesh() {
 	global_index = 0;
+	biggest_polygon = 0;
+	biggest_size = -1;
 }
 
 HalfEdgeMesh::~HalfEdgeMesh() {
@@ -126,18 +128,19 @@ void HalfEdgeMesh::shiftIntoPlane(HalfEdgeFace* f){
 
 bool HalfEdgeMesh::check_face(HalfEdgeFace* f0, HalfEdgeFace* current){
 
-	//if(f0->getInterpolatedNormal() * current->getInterpolatedNormal() > 0.9) return true;
-
 	//Calculate Plane representation
 	Normal n_0 = f0->getInterpolatedNormal();
 	Vertex p_0 = f0->getCentroid();
 
+	//Calculate needed parameters
 	float  d = p_0 * n_0;
 	float  distance = fabs(current->getCentroid() * n_0 - d);
 	float  cos_angle = n_0 * current->getInterpolatedNormal();
 
+	//Decide using given thresholds
 	if(distance < 5.0 && cos_angle > 0.99) return true;
 
+	//Return false if face is not in plane
 	return false;
 }
 
@@ -167,6 +170,21 @@ void HalfEdgeMesh::check_next_neighbor(HalfEdgeFace* f0, HalfEdgeFace* face, Hal
 }
 
 
+void HalfEdgeMesh::generate_polygons(){
+//
+//	vector<HalfEdgePolygon*>::iterator it;
+//	HalfEdgePolygon* polygon;
+//
+//	for(it =  hem_polygons.begin();
+//		it != hem_polygons.end();
+//		it++)
+//	{
+//		polygon = *it;
+//		polygon->fuse_edges();
+//	}
+
+}
+
 void HalfEdgeMesh::extract_borders(){
 
 	HalfEdgeFace*       current_face;
@@ -186,11 +204,18 @@ void HalfEdgeMesh::extract_borders(){
 			current_polygon = new HalfEdgePolygon();
 			check_next_neighbor(current_face, current_face, current_polygon);
 			current_polygon->generate_list();
+			//current_polygon->fuse_edges();
+			if((int)current_polygon->edge_list.size() > biggest_size){
+				biggest_size = (int)current_polygon->edge_list.size();
+				biggest_polygon = current_polygon;
+			}
 			hem_polygons.push_back(current_polygon);
 
 		}
 		c++;
 	}
+
+	cout << "BIGGEST POLYGON: " << biggest_polygon << endl;
 }
 
 void HalfEdgeMesh::create_polygon(vector<int> &polygon, hash_map<unsigned int, HalfEdge*>* edges){
@@ -207,33 +232,57 @@ void HalfEdgeMesh::write_polygons(string filename){
 
 	vector<HalfEdgePolygon*>::iterator polygon_it;
 
+//	int c = 0;
+//	for(polygon_it  = hem_polygons.begin();
+//	    polygon_it != hem_polygons.end();
+//	    polygon_it++)
+//	{
+//		if(c % 10000 == 0) cout << "Writing Polygons: " << c << " / " << hem_polygons.size() << endl;
+//		polygon = *polygon_it;
+//		map<HalfEdgeVertex* , HalfEdge*>::iterator edge_it;
+//		for(edge_it  = polygon->edge_list.begin();
+//		    edge_it != polygon->edge_list.end();
+//		    edge_it++)
+//		{
+//			edge = edge_it->second;
+//			out << "BEGIN" << endl;
+//
+//			out << edge->start->position.x << " ";
+//			out << edge->start->position.y << " ";
+//			out << edge->start->position.z << endl;
+//
+//			out << edge->end->position.x << " ";
+//			out << edge->end->position.y << " ";
+//			out << edge->end->position.z << endl;
+//
+//			out << "END" << endl;
+//		}
+//		c++;
+//	}
+
 	int c = 0;
-	for(polygon_it  = hem_polygons.begin();
-	    polygon_it != hem_polygons.end();
-	    polygon_it++)
+
+	polygon = biggest_polygon;
+	map<HalfEdgeVertex* , HalfEdge*>::iterator edge_it;
+	for(edge_it  = polygon->edge_list.begin();
+	edge_it != polygon->edge_list.end();
+	edge_it++)
 	{
-		if(c % 10000 == 0) cout << "Writing Polygons: " << c << " / " << hem_polygons.size() << endl;
-		polygon = *polygon_it;
-		vector<HalfEdge*>::iterator edge_it;
-		for(edge_it  = polygon->edge_list.begin();
-		    edge_it != polygon->edge_list.end();
-		    edge_it++)
-		{
-			edge = *edge_it;
-			out << "BEGIN" << endl;
+		edge = edge_it->second;
+		out << "BEGIN" << endl;
 
-			out << edge->start->position.x << " ";
-			out << edge->start->position.y << " ";
-			out << edge->start->position.z << endl;
+		out << edge->start->position.x << " ";
+		out << edge->start->position.y << " ";
+		out << edge->start->position.z << endl;
 
-			out << edge->end->position.x << " ";
-			out << edge->end->position.y << " ";
-			out << edge->end->position.z << endl;
+		out << edge->end->position.x << " ";
+		out << edge->end->position.y << " ";
+		out << edge->end->position.z << endl;
 
-			out << "END" << endl;
-		}
-		c++;
+		out << "END" << endl;
 	}
+	c++;
+
 
 }
 

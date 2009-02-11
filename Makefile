@@ -9,9 +9,12 @@
 ###############################################################################
 
 #CPP = /opt/intel/cce/10.1.018/bin/icc
-CPP = g++
-CFLAGS = -Wall -Wno-deprecated -Wno-write-strings -Wno-strict-aliasing -fopenmp -O3
-#CFLAGS     = -O3 -xT -ipo -gcc ##FLAGS FOR ICC
+#CPP = g++
+CPP  = nvcc
+
+#CFLAGS = -Wall -Wno-deprecated -Wno-write-strings -Wno-strict-aliasing -fopenmp -O3 ##FLAGS FOR GCC
+#CFLAGS = -O3 -xT -ipo -gcc ##FLAGS FOR ICC
+CFLAGS = --host-compilation=C++ -Xcompiler -fopenmp -lgomp -O3
 AR = ar
 MOC = moc
 
@@ -83,8 +86,8 @@ SHOWTARGETS  = $(OBJ)show.o $(OBJ)camera.o
 VIEWTARGETS  = $(OBJ)MoveDock.o $(OBJ)ObjectDialog.o $(OBJ)MatrixDialog.o $(OBJ)MainWindow.o \
                $(OBJ)Viewport.o \
                $(OBJ)EventHandler.o $(OBJ)ObjectHandler.o $(OBJ)RenderFrame.o \
-               $(OBJ)ViewerWindow.o $(OBJ)TouchPad.o \
-               
+               $(OBJ)ViewerWindow.o $(OBJ)TouchPad.o
+
 IOTARGETS   =  #$(OBJ)fileWriter.o $(OBJ)plyWriter.o $(OBJ)fileReader.o \
                #$(OBJ)plyReader.o $(OBJ)gotoxy.o
 
@@ -95,7 +98,7 @@ mcubes: $(OBJ)libnewmat.a $(OBJ)libANN.a $(OBJ)libgsl.a $(LIB3DTARGETS) $(IOTARG
 	@$(CPP) $(CFLAGS) -o $(BIN)mcubes $(MCSRC)main.cc $(OBJ)libgsl.a $(OBJ)libgslcblas.a $(GLLIBS) $(ANNTARGETS) $(MCTARGETS) $(IOTARGETS) $(LIB3DTARGETS) $(OBJ)libnewmat.a -lgsl 
 
 
-	
+
 viewer: $(VIEWTARGETS) $(LIB3DTARGETS) $(VIEWSRC)Viewer.cpp
 	@echo -e "\nCompiling and Linking Viewer...\n"
 	@$(CPP) $(CFLAGS) -o $(BIN)viewer $(VIEWSRC)Viewer.cpp $(LIB3DTARGETS)\
@@ -165,15 +168,15 @@ $(OBJ)Tetraeder.o: $(MCSRC)Tetraeder.*
 $(OBJ)HashGrid.o: $(MCSRC)HashGrid.*
 	@echo "Compiling Hash Grid..."
 	@$(CPP) $(CFLAGS) -c -o $(OBJ)HashGrid.o $(MCSRC)HashGrid.cpp
-	
+
 $(OBJ)FastGrid.o: $(MCSRC)FastGrid.*
 	@echo "Compiling Fast Grid..."
 	@$(CPP) $(CFLAGS) -c -o $(OBJ)FastGrid.o $(MCSRC)FastGrid.cpp
-	
+
 $(OBJ)FastBox.o: $(MCSRC)FastBox.cpp
 	@echo "Compiling Fast Box..."
 	@$(CPP) $(CFLAGS) -c -o $(OBJ)FastBox.o $(MCSRC)FastBox.cpp
-	
+
 $(OBJ)QueryPoint.o: $(MCSRC)QueryPoint.*
 	@echo "Compiling Query Point..."
 	@$(CPP) $(CFLAGS) -c -o $(OBJ)QueryPoint.o $(MCSRC)QueryPoint.cpp
@@ -185,19 +188,19 @@ $(OBJ)ANNInterpolator.o: $(MCSRC)ANNInterpolator.*
 $(OBJ)FastInterpolator.o: $(MCSRC)FastInterpolator.*
 	@echo "Compiling Fast Interpolator..."
 	@$(CPP) $(CFLAGS) -c -o $(OBJ)FastInterpolator.o $(MCSRC)FastInterpolator.cpp
-	
+
 $(OBJ)PlaneInterpolator.o: $(MCSRC)PlaneInterpolator.*
 	@echo "Compiling Plane Interpolator..."
 	@$(CPP) $(CFLAGS) -c -o $(OBJ)PlaneInterpolator.o $(MCSRC)PlaneInterpolator.cpp 
-	
+
 $(OBJ)LSPInterpolator.o: $(MCSRC)LSPInterpolator.*
 	@echo "Compiling LSP Interpolator..."
 	@$(CPP) $(CFLAGS) -c -o  $(OBJ)LSPInterpolator.o $(MCSRC)LSPInterpolator.cpp
-	
+
 $(OBJ)RansacInterpolator.o: $(MCSRC)RansacInterpolator.*
 	@echo "Compiling RANSAC Interpolator..."
 	@$(CPP) $(CFLAGS) -c -o $(OBJ)RansacInterpolator.o $(MCSRC)RansacInterpolator.cpp
-	
+
 $(OBJ)StannInterpolator.o: $(MCSRC)StannInterpolator.*
 	@echo "Compiling STANN Interpolator..."
 	@$(CPP) $(CFLAGS) -c -o $(OBJ)StannInterpolator.o $(MCSRC)StannInterpolator.cpp
@@ -302,7 +305,7 @@ $(OBJ)libnewmat.a:
 	@cd $(NMSRC); make;
 	@mv $(NMSRC)libnewmat.a $(OBJ)
 	@ranlib $(OBJ)libnewmat.a
-	
+
 #############################################################
 # VIEWER
 #############################################################
@@ -311,17 +314,17 @@ $(OBJ)MainWindow.o: $(VIEWSRC)viewer.ui
 	@echo "Compiling Main Window..."
 	@uic $(VIEWSRC)viewer.ui > $(VIEWSRC)MainWindow.cpp
 	@$(CPP) $(CFLAGS) -c -o $(OBJ)MainWindow.o $(VIEWSRC)MainWindow.cpp
-	
+
 $(OBJ)MatrixDialog.o: $(VIEWSRC)matrixdialog.ui
 	@echo "Compiling Matrix Dialog..."
 	@uic $(VIEWSRC)matrixdialog.ui > $(VIEWSRC)MatrixDialog.cpp
 	@$(CPP) $(CFLAGS) -c -o $(OBJ)MatrixDialog.o $(VIEWSRC)MatrixDialog.cpp
-	
+
 $(OBJ)ObjectDialog.o: $(VIEWSRC)objectdialog.ui
 	@echo "Compiling Object Selection Dialog"
 	@uic $(VIEWSRC)objectdialog.ui > $(VIEWSRC)ObjectDialog.cpp
 	@$(CPP) $(CFLAGS) -c -o $(OBJ)ObjectDialog.o $(VIEWSRC)ObjectDialog.cpp
-	
+
 $(OBJ)MoveDock.o: $(VIEWSRC)movedock.ui
 	@echo "Compiling Move Dock"
 	@uic $(VIEWSRC)movedock.ui > $(VIEWSRC)MoveDock.cpp
@@ -339,17 +342,17 @@ $(OBJ)ViewerWindow.o: $(VIEWSRC)ViewerWindow.*
 $(OBJ)Viewport.o: $(VIEWSRC)Viewport.*
 	@echo "Compiling Viewport..."
 	@$(CPP) $(CFLAGS) -c -o $(OBJ)Viewport.o $(VIEWSRC)Viewport.cpp	
-	
+
 $(OBJ)EventHandler.o: $(VIEWSRC)EventHandler.*
 	@echo "Compiling Event Handler..."	
 	@$(MOC) -i $(VIEWSRC)EventHandler.h > $(VIEWSRC)EventHandlerMoc.cpp
 	@$(CPP) $(CFLAGS) -c -o $(OBJ)EventHandler.o $(VIEWSRC)EventHandler.cpp
-	
+
 $(OBJ)ObjectHandler.o: $(VIEWSRC)ObjectHandler.*
 	@echo "Compiling Object Handler..."
 	@$(MOC) -i $(VIEWSRC)ObjectHandler.h > $(VIEWSRC)ObjectHandlerMoc.cpp
 	@$(CPP) $(CFLAGS) -c -o $(OBJ)ObjectHandler.o $(VIEWSRC)ObjectHandler.cpp
-	
+
 $(OBJ)RenderFrame.o: $(VIEWSRC)RenderFrame.*
 	@echo "Compiling Render Frame..."
 	@$(MOC) -i $(VIEWSRC)RenderFrame.h > $(VIEWSRC)RenderFrameMoc.cpp
@@ -362,11 +365,11 @@ $(OBJ)RenderFrame.o: $(VIEWSRC)RenderFrame.*
 $(OBJ)BaseVertex.o: $(LIB3DSRC)BaseVertex.*
 	@echo "Compiling Base Vertex..."
 	@$(CPP) $(CFLAGS) -c -o $(OBJ)BaseVertex.o $(LIB3DSRC)BaseVertex.cpp
-	
+
 $(OBJ)BoundingBox.o: $(LIB3DSRC)BoundingBox.*
 	@echo "Compiling Bounding Box..."
 	@$(CPP) $(CFLAGS) -c -o $(OBJ)BoundingBox.o $(LIB3DSRC)BoundingBox.cpp
-	
+
 $(OBJ)ColorVertex.o: $(LIB3DSRC)ColorVertex.*
 	@echo "Compiling Color Vertex..."
 	@$(CPP) $(CFLAGS) -c -o $(OBJ)ColorVertex.o $(LIB3DSRC)ColorVertex.cpp
@@ -374,7 +377,7 @@ $(OBJ)ColorVertex.o: $(LIB3DSRC)ColorVertex.*
 $(OBJ)Normal.o: $(LIB3DSRC)Normal.*
 	@echo "Compiling Normal..."
 	@$(CPP) $(CFLAGS) -c -o $(OBJ)Normal.o $(LIB3DSRC)Normal.cpp
-	
+
 $(OBJ)Matrix4.o: $(LIB3DSRC)Matrix4.*
 	@echo "Compiling 4x4 Matrix..."
 	@$(CPP) $(CFLAGS) -c -o $(OBJ)Matrix4.o $(LIB3DSRC)Matrix4.cpp
@@ -382,15 +385,15 @@ $(OBJ)Matrix4.o: $(LIB3DSRC)Matrix4.*
 $(OBJ)Renderable.o: $(LIB3DSRC)Renderable.*
 	@echo "Compiling Renderable..."
 	@$(CPP) $(CFLAGS) -c -o $(OBJ)Renderable.o $(LIB3DSRC)Renderable.cpp
-	
+
 $(OBJ)Tube.o: $(LIB3DSRC)Tube.*
 	@echo "Compiling Tube..."
 	@$(CPP) $(CFLAGS) -c -o $(OBJ)Tube.o $(LIB3DSRC)Tube.cpp	
-	
+
 $(OBJ)Triangle.o: $(LIB3DSRC)Triangle.*
 	@echo "Compiling Triangle..."
 	@$(CPP) $(CFLAGS) -c -o $(OBJ)Triangle.o $(LIB3DSRC)Triangle.cpp
-	
+
 $(OBJ)GroundPlane.o: $(LIB3DSRC)GroundPlane.*
 	@echo "Compiling Ground Plane..."
 	@$(CPP) $(CFLAGS) -c -o $(OBJ)GroundPlane.o $(LIB3DSRC)GroundPlane.cpp
@@ -398,92 +401,92 @@ $(OBJ)GroundPlane.o: $(LIB3DSRC)GroundPlane.*
 $(OBJ)CoordinateAxes.o: $(LIB3DSRC)CoordinateAxes.*
 	@echo "Compiling Coordinate Axes..."
 	@$(CPP) $(CFLAGS) -c -o $(OBJ)CoordinateAxes.o $(LIB3DSRC)CoordinateAxes.cpp
-	
+
 $(OBJ)Quaternion.o: $(LIB3DSRC)Quaternion.*
 	@echo "Compiling Quaternion..."
 	@$(CPP) $(CFLAGS) -c -o $(OBJ)Quaternion.o $(LIB3DSRC)Quaternion.cpp
-	
+
 $(OBJ)PointCloud.o: $(LIB3DSRC)PointCloud.*
 	@echo "Compiling Point Cloud..."
 	@$(CPP) $(CFLAGS) -c -o $(OBJ)PointCloud.o $(LIB3DSRC)PointCloud.cpp
-	
+
 $(OBJ)NormalCloud.o: $(LIB3DSRC)NormalCloud.*
 	@echo "Compiling Normal Point Cloud..."
 	@$(CPP) $(CFLAGS) -c -o $(OBJ)NormalCloud.o $(LIB3DSRC)NormalCloud.cpp
-	
+
 $(OBJ)StaticMesh.o: $(LIB3DSRC)StaticMesh.*
 	@echo "Compiling Static Mesh..."
 	@$(CPP) $(CFLAGS) -c -o $(OBJ)StaticMesh.o $(LIB3DSRC)StaticMesh.cpp
-	
+
 $(OBJ)TriangleMesh.o: $(LIB3DSRC)TriangleMesh.*
 	@echo "Compiling Triangle Mesh..."
 	@$(CPP) $(CFLAGS) -c -o $(OBJ)TriangleMesh.o $(LIB3DSRC)TriangleMesh.cpp
-	
+
 $(OBJ)HalfEdgeMesh.o: $(LIB3DSRC)HalfEdgeMesh.*
 	@echo "Compiling Half Edge Mesh..."
 	@$(CPP) $(CFLAGS) -c -o $(OBJ)HalfEdgeMesh.o $(LIB3DSRC)HalfEdgeMesh.cpp
-	
+
 $(OBJ)HalfEdgePolygon.o: $(LIB3DSRC)HalfEdgePolygon.*
 	@echo "Compiling Half Edge Polygon..."
 	@$(CPP) $(CFLAGS) -c -o $(OBJ)HalfEdgePolygon.o $(LIB3DSRC)HalfEdgePolygon.cpp
-	
+
 $(OBJ)HalfEdge.o: $(LIB3DSRC)HalfEdge.*
 	@echo "Compiling Half Edge..."
 	@$(CPP) $(CFLAGS) -c -o $(OBJ)HalfEdge.o $(LIB3DSRC)HalfEdge.cpp
-	
+
 $(OBJ)HalfEdgeVertex.o: $(LIB3DSRC)HalfEdgeVertex.*
 	@echo "Compiling Half Edge Vertex..."
 	@$(CPP) $(CFLAGS) -c -o $(OBJ)HalfEdgeVertex.o $(LIB3DSRC)HalfEdgeVertex.cpp
-	
+
 $(OBJ)HalfEdgeFace.o: $(LIB3DSRC)HalfEdgeFace.*
 	@echo "Compiling Half Edge Face..."
 	@$(CPP) $(CFLAGS) -c -o $(OBJ)HalfEdgeFace.o $(LIB3DSRC)HalfEdgeFace.cpp
-	
+
 $(OBJ)LinkedVertex.o: $(LIB3DSRC)LinkedVertex.*
 	@echo "Compiling Linked Vertex..."
 	@$(CPP) $(CFLAGS) -c -o $(OBJ)LinkedVertex.o $(LIB3DSRC)LinkedVertex.cpp
-	
+
 $(OBJ)LinkedTriangleMesh.o: $(LIB3DSRC)LinkedTriangleMesh.* $(LIB3DSRC)LinkedTriangle.* $(LIB3DSRC)LinkedVertex.*
 	@echo "Compiling Linked Triangle Mesh..."
 	@$(CPP) $(CFLAGS) -c -o $(OBJ)LinkedTriangleMesh.o $(LIB3DSRC)LinkedTriangleMesh.cpp
-	
+
 $(OBJ)LinkedTriangle.o: $(LIB3DSRC)LinkedTriangle.*
 	@echo "Compiling Linked Triangle..."
 	@$(CPP) $(CFLAGS) -c -o $(OBJ)LinkedTriangle.o $(LIB3DSRC)LinkedTriangle.cpp
-	
+
 $(OBJ)ProgressiveMesh.o: $(LIB3DSRC)ProgressiveMesh.*
 	@echo "Compiling Progressive Mesh..."
 	@$(CPP) $(CFLAGS) -c -o $(OBJ)ProgressiveMesh.o $(LIB3DSRC)ProgressiveMesh.cpp
-	
+
 $(OBJ)PolygonMesh.o: $(LIB3DSRC)PolygonMesh.*
 	@echo "Compiling Polygon Mesh..."
 	@$(CPP) $(CFLAGS) -c -o $(OBJ)PolygonMesh.o $(LIB3DSRC)PolygonMesh.cpp
-	
+
 $(OBJ)Polygon.o: $(LIB3DSRC)Polygon.*
 	@echo "Compiling Polygon..."
 	@$(CPP) $(CFLAGS) -c -o $(OBJ)Polygon.o $(LIB3DSRC)Polygon.cpp
-	
-	
+
+
 $(OBJ)OldTriangle.o: $(LIB3DSRC)triangle.*
 	@echo "Compiling OldTriangle..."
 	@$(CPP) $(CFLAGS) -c -o $(OBJ)OldTriangle.o $(LIB3DSRC)triangle.cc
-	
+
 $(OBJ)OldVertex.o: $(LIB3DSRC)vertex.*
 	@echo "Compiling Old Vertex..."
 	@$(CPP) $(CFLAGS) -c -o $(OBJ)OldVertex.o $(LIB3DSRC)vertex.cc
-	
+
 $(OBJ)CubeMesh.o: $(LIB3DSRC)cubemesh.*
 	@echo "Compiling cubemesh..."
 	@$(CPP) $(CFLAGS) -c -o $(OBJ)CubeMesh.o $(LIB3DSRC)cubemesh.cc
-	
+
 $(OBJ)PMesh.o: $(LIB3DSRC)pmesh.*
 	@echo "Compiling pmesh..."
 	@$(CPP) $(CFLAGS) -c -o $(OBJ)PMesh.o $(LIB3DSRC)pmesh.cc
-	
+
 $(OBJ)Vec3.o: $(LIB3DSRC)vec3.*
 	@echo "Compiling vec3..."
 	@$(CPP) $(CFLAGS) -c -o $(OBJ)Vec3.o $(LIB3DSRC)vec3.cc
-	
+
 clean:
 	@echo -e "\nCleaning up...\n"
 	@rm -f *.*~

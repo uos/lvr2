@@ -34,21 +34,30 @@ public:
 
 class HalfEdgePolygon {
 public:
-	HalfEdgePolygon(){};
+	HalfEdgePolygon() : number_of_used_edges(0){};
 	HalfEdgePolygon(HalfEdgeFace* first);
 	virtual ~HalfEdgePolygon();
 
 	void add_face(HalfEdgeFace* face);
 	void generate_list();
+	void fuse_edges();
+
 	void add_vertex(HalfEdgeVertex* v);
+
 
 	int texture_index;
 
-	vector<int> indices;
-	vector<HalfEdgeVertex*> vertices;
+	//vector<int> indices;
+	//vector<HalfEdgeVertex*> vertices;
 
 	map<unsigned int, HalfEdgeFace* > faces;
-	vector<HalfEdge*> edge_list;
+	map<HalfEdgeVertex*, HalfEdge*> edge_list;
+
+	vector<vector<Vertex> > contours;
+
+	int number_of_used_edges;
+
+
 
 };
 
