@@ -33,13 +33,13 @@ private:
 inline void PointCloud::render(){
 	if(visible){
 		glPushMatrix();
-		glMultMatrixd(transformation.getData());
+		glMultMatrixf(transformation.getData());
 		if(show_axes) glCallList(axesListIndex);
 		glDisable(GL_LIGHTING);
 		if(active){
-			glColor3f(1.0, 0.0, 0.0);
+			glColor3f(1.0f, 0.0f, 0.0f);
 		} else {
-			glColor3f(0.0, 0.9, 0.0);
+			glColor3f(0.0f, 0.9f, 0.0f);
 		}
 		glCallList(listIndex);
 		glPopMatrix();

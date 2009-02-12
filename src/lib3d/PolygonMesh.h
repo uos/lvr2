@@ -39,7 +39,7 @@ private:
 inline void PolygonMesh::render(){
 	if(listIndex != -1 && active){
 		glPushMatrix();
-		glMultMatrixd(transformation.getData());
+		glMultMatrixf(transformation.getData());
 		glCallList(listIndex);
 		if(show_axes) glCallList(axesListIndex);
 		glPopMatrix();

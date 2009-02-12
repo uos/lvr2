@@ -23,12 +23,12 @@ void CoordinateAxes::drawAxes(float length){
 	listIndex = glGenLists(1);
 	glNewList(listIndex, GL_COMPILE);
 	glPushAttrib ( GL_ALL_ATTRIB_BITS ); // save colors and polygon offsets state to later restore.
-	const float charWidth = length / 40.0;
-	const float charHeight = length / 30.0;
-	const float charShift = 1.04 * length;
+	const float charWidth = length / 40.0f;
+	const float charHeight = length / 30.0f;
+	const float charShift = 1.04f * length;
 
 	glDisable ( GL_LIGHTING );
-	glLineWidth ( 2.0 );
+	glLineWidth ( 2.0f );
 
 	glBegin ( GL_LINES );
 	// The X
@@ -61,7 +61,7 @@ void CoordinateAxes::drawAxes(float length){
 	color[2] = 1.0f;
 	color[3] = 1.0f;
 	glMaterialfv ( GL_FRONT_AND_BACK, GL_AMBIENT_AND_DIFFUSE, color );
-	drawArrow ( length, 0.01*length );
+	drawArrow ( length, 0.01f *length );
 
 	color[0] = 1.0f;
 	color[1] = 0.7f;
@@ -69,8 +69,8 @@ void CoordinateAxes::drawAxes(float length){
 	color[3] = 1.0f;
 	glMaterialfv ( GL_FRONT_AND_BACK, GL_AMBIENT_AND_DIFFUSE, color );
 	glPushMatrix();
-	glRotatef ( 90.0, 0.0, 1.0, 0.0 );
-	drawArrow ( length, 0.01*length );
+	glRotatef ( 90.0f, 0.0f, 1.0f, 0.0f );
+	drawArrow ( length, 0.01f * length );
 	glPopMatrix();
 
 	color[0] = 0.7f;
@@ -79,8 +79,8 @@ void CoordinateAxes::drawAxes(float length){
 	color[3] = 1.0f;
 	glMaterialfv ( GL_FRONT_AND_BACK, GL_AMBIENT_AND_DIFFUSE, color );
 	glPushMatrix();
-	glRotatef ( -90.0, 1.0, 0.0, 0.0 );
-	drawArrow ( length, 0.01*length );
+	glRotatef ( -90.0f, 1.0f, 0.0f, 0.0f );
+	drawArrow ( length, 0.01f * length );
 	glPopMatrix();
 
 	glPopAttrib();
@@ -91,16 +91,16 @@ void CoordinateAxes::drawArrow ( float length, float radius, int nbSubdivisions 
 {
 	GLUquadric* quadric = gluNewQuadric();
 
-	if ( radius < 0.0 )
-		radius = 0.05 * length;
+	if ( radius < 0.0f )
+		radius = 0.05f * length;
 
-	const float head = 2.5* ( radius / length ) + 0.1;
-	const float coneRadiusCoef = 4.0 - 5.0 * head;
+	const float head = 2.5f * ( radius / length ) + 0.1f;
+	const float coneRadiusCoef = 4.0f - 5.0f * head;
 
-	gluCylinder ( quadric, radius, radius, length * ( 1.0 - head/coneRadiusCoef ), nbSubdivisions, 1 );
-	glTranslatef ( 0.0, 0.0, length * ( 1.0 - head ) );
+	gluCylinder ( quadric, radius, radius, length * ( 1.0f - head/coneRadiusCoef ), nbSubdivisions, 1 );
+	glTranslatef ( 0.0f , 0.0f, length * ( 1.0f - head ) );
 	gluCylinder ( quadric, coneRadiusCoef * radius, 0.0, head * length, nbSubdivisions, 1 );
-	glTranslatef ( 0.0, 0.0, -length * ( 1.0 - head ) );
+	glTranslatef ( 0.0f, 0.0f, -length * ( 1.0f - head ) );
 	gluDeleteQuadric ( quadric );
 }
 

@@ -11,7 +11,7 @@ BoundingBox::BoundingBox() {
 
 	n = 0;
 
-	float max_val = 1e15;
+	float max_val = 1e15f;
 	float min_val = -max_val;
 
 	v_min = Vertex(max_val, max_val, max_val);

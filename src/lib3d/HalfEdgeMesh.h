@@ -8,14 +8,19 @@
 #ifndef HALFEDGEMESH_H_
 #define HALFEDGEMESH_H_
 
+#ifdef _MSC_VER
+#include <hash_map>
+using stdext::hash_map;
+#else
+#include <ext/hash_map>
+using __gnu_cxx::hash_map;
+#endif
+
 #include <vector>
 #include <stack>
 #include <set>
 
 using namespace std;
-
-#include <ext/hash_map>
-using __gnu_cxx::hash_map;
 
 #include "BaseVertex.h"
 #include "Normal.h"
@@ -25,8 +30,6 @@ using __gnu_cxx::hash_map;
 #include "HalfEdge.h"
 #include "HalfEdgeFace.h"
 #include "HalfEdgePolygon.h"
-
-
 
 class HalfEdgeVertex;
 class HalfEdgeFace;
@@ -59,7 +62,8 @@ public:
 	bool check_face(HalfEdgeFace* f0, HalfEdgeFace* current);
 	bool isFlatFace(HalfEdgeFace* face);
 
-	void create_polygon(vector<int> &polygon, hash_map<unsigned int, HalfEdge*>* edges);
+	void create_polygon(vector<int> &polygon, 
+						hash_map< unsigned int, HalfEdge* >* edges);
 
 private:
 

@@ -21,7 +21,6 @@ using namespace std;
 class Matrix4 {
 public:
 	Matrix4();
-	Matrix4(double* matrix);
 	Matrix4(float* matrix);
 	Matrix4(const Matrix4& other);
 	Matrix4(Vertex axis, float angle);
@@ -30,27 +29,27 @@ public:
 
 	virtual ~Matrix4();
 
-	virtual inline Matrix4 operator*(const double scale) const;
+	virtual inline Matrix4 operator*(const float scale) const;
 	virtual inline Matrix4 operator*(const Matrix4& other) const;
-	virtual inline Matrix4 operator*(const double* other) const;
+	virtual inline Matrix4 operator*(const float* other) const;
 
 	virtual inline BaseVertex operator*(const BaseVertex v) const;
 
 	void set(int i, float f){m[i] = f;};
 	void transpose();
-	void toPostionAngle(double* pose);
+	void toPostionAngle(float* pose);
 	void loadFromFile(string filename);
 
-	virtual void operator*=(const double scale);
+	virtual void operator*=(const float scale);
 	virtual void operator*=(const Matrix4& other);
-	virtual void operator*=(const double* other);
+	virtual void operator*=(const float* other);
 
-	double* getData(){ return m;};
+	float* getData(){ return m;};
 	float at(const int i) const;
 
 	float operator[](const int index) const;
 		private:
-	double m[16];
+	float m[16];
 };
 
 inline BaseVertex Matrix4::operator*(const BaseVertex v) const{
@@ -67,7 +66,7 @@ inline BaseVertex Matrix4::operator*(const BaseVertex v) const{
 
 
 Matrix4 Matrix4::operator*(const Matrix4& other) const{
-	double new_matrix[16];
+	float new_matrix[16];
 	new_matrix[ 0] = m[ 0] * other[ 0] + m[ 4] * other[ 1] + m[ 8] * other[ 2] + m[12] * other[ 3];
 	new_matrix[ 1] = m[ 1] * other[ 0] + m[ 5] * other[ 1] + m[ 9] * other[ 2] + m[13] * other[ 3];
 	new_matrix[ 2] = m[ 2] * other[ 0] + m[ 6] * other[ 1] + m[10] * other[ 2] + m[14] * other[ 3];
@@ -87,8 +86,8 @@ Matrix4 Matrix4::operator*(const Matrix4& other) const{
 	return Matrix4(new_matrix);
 }
 
-Matrix4 Matrix4::operator*(const double* other) const{
-	double new_matrix[16];
+Matrix4 Matrix4::operator*(const float* other) const{
+	float new_matrix[16];
 	new_matrix[ 0] = m[ 0] * other[ 0] + m[ 4] * other[ 1] + m[ 8] * other[ 2] + m[12] * other[ 3];
 	new_matrix[ 1] = m[ 1] * other[ 0] + m[ 5] * other[ 1] + m[ 9] * other[ 2] + m[13] * other[ 3];
 	new_matrix[ 2] = m[ 2] * other[ 0] + m[ 6] * other[ 1] + m[10] * other[ 2] + m[14] * other[ 3];
@@ -108,8 +107,8 @@ Matrix4 Matrix4::operator*(const double* other) const{
 	return Matrix4(new_matrix);
 }
 
-Matrix4 Matrix4::operator*(const double scale) const{
-	double new_matrix[16];
+Matrix4 Matrix4::operator*(const float scale) const{
+	float new_matrix[16];
 	for(int i = 0; i < 16; i++){
 		new_matrix[i] = m[i] * scale;
 	}
@@ -137,7 +136,7 @@ inline void Matrix4::operator*=(const Matrix4& other){
 	m[15] = m[ 3] * other[12] + m[ 7] * other[13] + m[11] * other[14] + m[15] * other[15];
 }
 
-inline void Matrix4::operator*=(const double* other){
+inline void Matrix4::operator*=(const float* other){
 	m[ 0] = m[ 0] * other[ 0] + m[ 4] * other[ 1] + m[ 8] * other[ 2] + m[12] * other[ 3];
 	m[ 1] = m[ 1] * other[ 0] + m[ 5] * other[ 1] + m[ 9] * other[ 2] + m[13] * other[ 3];
 	m[ 2] = m[ 2] * other[ 0] + m[ 6] * other[ 1] + m[10] * other[ 2] + m[14] * other[ 3];
@@ -156,7 +155,7 @@ inline void Matrix4::operator*=(const double* other){
 	m[15] = m[ 3] * other[12] + m[ 7] * other[13] + m[11] * other[14] + m[15] * other[15];
 }
 
-inline void Matrix4::operator*=(const double scale){
+inline void Matrix4::operator*=(const float scale){
 	for(int i = 0; i < 16; i++) m[i] = m[i] * scale;
 }
 

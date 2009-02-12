@@ -9,12 +9,20 @@
 #ifndef RENDERABLE_H_
 #define RENDERABLE_H_
 
-#ifndef MAC_OSX
+#ifdef 	WIN32				    // Includes for Windows
+#include <windows.h>
+#include <gl/gl.h>
+#include <gl/glu.h>
+#else
+
+#ifdef MAC_OSX					// Includes for OSX
+#include <OpenGL/GL.h>
+
+#else							// Includes for Linux
 #include <GL/gl.h>
 #include <GL/glu.h>
-#else
-#include <OpenGL/GL.h>
-#include <OpenGL/GLU.h>
+#endif
+
 #endif
 
 #include <string>

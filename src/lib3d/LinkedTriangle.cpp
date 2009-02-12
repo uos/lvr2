@@ -57,7 +57,7 @@ float LinkedTriangle::calculateArea(){
 
 	Vertex diff1 = mesh->getVertex(v0).position - mesh->getVertex(v1).position;
 	Vertex diff2 = mesh->getVertex(v2).position - mesh->getVertex(v1).position;
-	return 0.5 * diff1.cross(diff2).length();
+	return 0.5f * diff1.cross(diff2).length();
 }
 
 Vertex LinkedTriangle::getVertex(int index){

@@ -52,9 +52,9 @@ void HalfEdgeFace::interpolate_normal(){
 		c++;
 	}
 
-	normal.x = normal.x / 3.0;
-	normal.y = normal.y / 3.0;
-	normal.z = normal.z / 3.0;
+	normal.x = normal.x / 3.0f;
+	normal.y = normal.y / 3.0f;
+	normal.z = normal.z / 3.0f;
 
 	normal.normalize();
 }

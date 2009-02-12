@@ -36,7 +36,7 @@ private:
 inline void NormalCloud::render(){
 	if(visible){
 		glPushMatrix();
-		glMultMatrixd(transformation.getData());
+		glMultMatrixf(transformation.getData());
 		glCallList(listIndex);
 		glPopMatrix();
 	}

@@ -9,23 +9,23 @@
 #define CONSTANTS_H_
 
 #ifndef PI
-#define PI 3.141592654
+#define PI 3.141592654f
 #endif
 
 #ifndef PH
-#define PH 1.570796326
+#define PH 1.570796326f
 #endif
 
 #ifndef PIOVER180
-#define PIOVER180 0.017453292
+#define PIOVER180 0.017453292f
 #endif
 
 #ifndef RADTODEG
-#define RADTODEG 57.29577951
+#define RADTODEG 57.29577951f
 #endif
 
 #ifndef TOLERANCE
-#define TOLERANCE 0.0000001
+#define TOLERANCE 0.0000001f
 #endif
 
 
