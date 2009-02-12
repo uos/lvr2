@@ -47,7 +47,7 @@ Vertex Tube::calcClosestPoint(Vertex query_point){
 void Tube::render(){
 	if(visible){
 		glPushMatrix();
-		glMultMatrixd(transformation.getData());
+		glMultMatrixf(transformation.getData());
 		gluCylinder(quadric, radius, radius, 10000, 100, 1);
 		if(active) glCallList(axesListIndex);
 		glPopMatrix();

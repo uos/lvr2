@@ -99,7 +99,7 @@ inline void EventHandler::render(){
 	//Update status bar
 	showStatusMessage();
 	//Transform SLAM-coordinates to OpenGL-Coordinates
-	glMultMatrixd(transform_to_gl.getData());
+	glMultMatrixf(transform_to_gl.getData());
 	//Render objects
 	objectHandler->renderObjects();
 	//Create viewport

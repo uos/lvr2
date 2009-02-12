@@ -122,7 +122,7 @@ void EventHandler::transform_from_file(){
 	//Load matrix
 	ifstream in(filename.toStdString().c_str());
 
-	double* matrix_data = new double[16];
+	float* matrix_data = new float[16];
 
 	for(int i = 0; i < 16; i++){
 		if(!in.good()){

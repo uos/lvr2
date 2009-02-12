@@ -17,6 +17,8 @@ using namespace std;
 #include "Renderable.h"
 #include "Polygon.h"
 
+using namespace Lib3D;
+
 class PolygonMesh : public Renderable{
 public:
 	PolygonMesh() : Renderable(){};
