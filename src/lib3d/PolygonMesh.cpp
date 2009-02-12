@@ -15,7 +15,7 @@ PolygonMesh::PolygonMesh(string filename) : Renderable(filename){
 void PolygonMesh::load(string filename){
 
 	char line[1024];
-	Polygon p;
+	Lib3D::Polygon p;
 
 	ifstream in(filename.c_str());
 
@@ -35,7 +35,7 @@ void PolygonMesh::load(string filename){
 			if(c % 1000 == 0){
 				cout << "PolygonMesh: Read " << c << " polygons." << endl;
 			}
-			p = Polygon();
+			p = Lib3D::Polygon();
 			c++;
 
 		} else if(strstr(line, "END") != NULL) {
@@ -59,7 +59,7 @@ void PolygonMesh::save(string filename){
 
 void PolygonMesh::compileDisplayList(){
 
-	Polygon p;
+	Lib3D::Polygon p;
 
 	listIndex = glGenLists(1);
 	glNewList(axesListIndex, GL_COMPILE);

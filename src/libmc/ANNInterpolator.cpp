@@ -6,7 +6,7 @@ ANNInterpolator::ANNInterpolator(ANNpointArray pts, int n, float vs, int km, flo
   points = pts;
   number_of_points = n;
   voxelsize = vs;
-  vs_sq = 0.5 * vs * vs;
+  vs_sq = 0.5f * vs * vs;
 
   normals = new Normal[number_of_points];
 
@@ -30,9 +30,9 @@ ANNInterpolator::ANNInterpolator(ANNpointArray pts, int n, float vs, int km, flo
 
   for(int i = 0; i < number_of_points; i++){
 
-    query_point = BaseVertex(points[i][0],
-					    points[i][1],
-					    points[i][2]);
+    query_point = BaseVertex((float)points[i][0],
+							 (float)points[i][1],
+							 (float)points[i][2]);
 
     center += query_point;
 
@@ -65,8 +65,8 @@ ANNInterpolator::ANNInterpolator(ANNpointArray pts, int n, float vs, int km, flo
 
 	 C = M * F;
 
-	 z1 = C(1) + C(2) * (query_point.x + epsilon) + C(3) * query_point.z;
-	 z2 = C(1) + C(2) * query_point.x + C(3) * (query_point.z + epsilon);
+	 z1 = (float)(C(1) + C(2) * (query_point.x + epsilon) + C(3) * query_point.z);
+	 z2 = (float)(C(1) + C(2) * query_point.x + C(3) * (query_point.z + epsilon));
 
 	 diff1 = BaseVertex(query_point.x + epsilon, z1, query_point.z) - query_point;
 	 diff2 = BaseVertex(query_point.x, z2, query_point.z + epsilon) - query_point;
@@ -84,6 +84,7 @@ ANNInterpolator::ANNInterpolator(ANNpointArray pts, int n, float vs, int km, flo
 
     } catch(Exception e){
 	 //Ignore
+		cout << e.what();
     }
 
     if(i % 1000 == 0) cout << "##### Estimating normals... " << i << " / " << n << endl;
@@ -182,9 +183,9 @@ float ANNInterpolator::distance(ColorVertex v){
     ny += n.y;
     nz += n.z;
 
-    x += points[id[i]][0];
-    y += points[id[i]][1];
-    z += points[id[i]][2];
+    x += (float)points[id[i]][0];
+    y += (float)points[id[i]][1];
+    z += (float)points[id[i]][2];
   }
 
   if(n_nb > 0){
@@ -219,11 +220,11 @@ void ANNInterpolator::write(string filename){
   ofstream out(filename.c_str());
 
   if(!out.good()){
-    cout << "Warning: ANNInterpolator: could not open file " << filename << "." << endl;
+    cout << "Warning: ANNInterpolator: could not open file " << filename.c_str() << "." << endl;
     return;
   }
 
-  cout << "##### Writing '" << filename << "'..." << endl;
+  cout << "##### Writing '" << filename.c_str() << "'..." << endl;
   for(int i = 0; i < number_of_points; i++){
 
     out << points[i][0] << " " << points[i][1] << " " << points[i][2] << " "

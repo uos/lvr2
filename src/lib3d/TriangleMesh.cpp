@@ -48,7 +48,7 @@ void TriangleMesh::finalize(){
 		colors[3 * i + 2] = 0.0f;
 	}
 
-	int iii;
+	size_t iii;
 
 	for(size_t i = 0; i < triangle_buffer.size(); i++){
 		iii = 3 * i;

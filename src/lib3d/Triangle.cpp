@@ -92,7 +92,7 @@ float Triangle::calculateArea(){
 
 	Vertex diff1 = mesh->getVertex(v0) - mesh->getVertex(v1);
 	Vertex diff2 = mesh->getVertex(v2) - mesh->getVertex(v1);
-	return 0.5 * diff1.cross(diff2).length();
+	return 0.5f * diff1.cross(diff2).length();
 }
 
 Vertex Triangle::getVertex(int index){

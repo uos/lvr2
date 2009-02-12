@@ -8,6 +8,10 @@
 #ifndef STATICMESH_H_
 #define STATICMESH_H_
 
+#ifdef WIN32
+#pragma warning(disable: 4996)
+#endif
+
 #include <stdlib.h>
 #include <string>
 #include <string.h>
