@@ -7,6 +7,8 @@
 
 #include "Polygon.h"
 
+using Lib3D::Polygon;
+
 Polygon::Polygon() {
 	// TODO Auto-generated constructor stub
 

@@ -9,12 +9,12 @@
 ###############################################################################
 
 #CPP = /opt/intel/cce/10.1.018/bin/icc
-#CPP = g++
-CPP  = nvcc
+CPP = g++
+#CPP  = nvcc
 
-#CFLAGS = -Wall -Wno-deprecated -Wno-write-strings -Wno-strict-aliasing -fopenmp -O3 ##FLAGS FOR GCC
+CFLAGS = -Wall -Wno-deprecated -Wno-write-strings -Wno-strict-aliasing -fopenmp -O3 ##FLAGS FOR GCC
 #CFLAGS = -O3 -xT -ipo -gcc ##FLAGS FOR ICC
-CFLAGS = --host-compilation=C++ -Xcompiler -fopenmp -lgomp -O3
+#CFLAGS = --host-compilation=C++ -Xcompiler -fopenmp -lgomp -O3
 AR = ar
 MOC = moc
 
@@ -43,7 +43,7 @@ MCSRC      = src/libmc/
 MESHSRC    = src/mesh/
 ANNSRC     = src/ann/
 IOSRC      = src/io/
-GSLSRC     = src/gsl/
+#GSLSRC     = src/gsl/
 NMSRC      = src/newmat/
 TESTSRC    = src/test/
 LIB3DSRC   = src/lib3d/
@@ -66,8 +66,7 @@ LIB3DTARGETS = $(OBJ)BaseVertex.o $(OBJ)ColorVertex.o \
                $(OBJ)HalfEdgeMesh.o $(OBJ)HalfEdgePolygon.o $(OBJ)HalfEdge.o \
                $(OBJ)HalfEdgeVertex.o $(OBJ)HalfEdgeFace.o $(OBJ)Triangle.o \
                $(OBJ)LinkedVertex.o $(OBJ)LinkedTriangle.o \
-               $(OBJ)LinkedTriangleMesh.o $(OBJ)PolygonMesh.o $(OBJ)Polygon.o \
-               $(OBJ)OldTriangle.o $(OBJ)OldVertex.o $(OBJ)CubeMesh.o $(OBJ)PMesh.o $(OBJ)Vec3.o
+               $(OBJ)LinkedTriangleMesh.o $(OBJ)PolygonMesh.o $(OBJ)Polygon.o
 
 ANNTARGETS   = $(OBJ)ANN.o $(OBJ)brute.o $(OBJ)kd_tree.o $(OBJ)kd_util.o \
                $(OBJ)kd_split.o $(OBJ)kd_search.o $(OBJ)kd_pr_search.o \
@@ -93,9 +92,9 @@ IOTARGETS   =  #$(OBJ)fileWriter.o $(OBJ)plyWriter.o $(OBJ)fileReader.o \
 
 all: mcubes viewer 
 
-mcubes: $(OBJ)libnewmat.a $(OBJ)libANN.a $(OBJ)libgsl.a $(LIB3DTARGETS) $(IOTARGETS) $(MCTARGETS)
+mcubes: $(OBJ)libnewmat.a $(OBJ)libANN.a $(LIB3DTARGETS) $(IOTARGETS) $(MCTARGETS)
 	@echo -e "\nCompiling and Linking Marching Cubes Main Programm...\n"
-	@$(CPP) $(CFLAGS) -o $(BIN)mcubes $(MCSRC)main.cc $(OBJ)libgsl.a $(OBJ)libgslcblas.a $(GLLIBS) $(ANNTARGETS) $(MCTARGETS) $(IOTARGETS) $(LIB3DTARGETS) $(OBJ)libnewmat.a -lgsl 
+	@$(CPP) $(CFLAGS) -o $(BIN)mcubes $(MCSRC)main.cc $(GLLIBS) $(ANNTARGETS) $(MCTARGETS) $(IOTARGETS) $(LIB3DTARGETS) $(OBJ)libnewmat.a -lgsl 
 
 
 
@@ -288,13 +287,13 @@ $(OBJ)perf.o: $(ANNSRC)perf.cpp
 # GSL LIBRARY
 #############################################################	
 
-$(OBJ)libgsl.a:
-	cd $(GSLSRC); ./configure --disable-shared
-	cd $(GSLSRC); make
-	@ranlib $(GSLSRC).libs/libgsl.a
-	@ranlib $(GSLSRC)cblas/.libs/libgslcblas.a 
-	cp $(GSLSRC).libs/libgsl.a $(OBJ)
-	cp $(GSLSRC)cblas/.libs/libgslcblas.a $(OBJ)
+#$(OBJ)libgsl.a:
+#	cd $(GSLSRC); ./configure --disable-shared
+#	cd $(GSLSRC); make
+#	@ranlib $(GSLSRC).libs/libgsl.a
+#	@ranlib $(GSLSRC)cblas/.libs/libgslcblas.a 
+#	cp $(GSLSRC).libs/libgsl.a $(OBJ)
+#	cp $(GSLSRC)cblas/.libs/libgslcblas.a $(OBJ)
 
 
 #############################################################
@@ -329,12 +328,12 @@ $(OBJ)MoveDock.o: $(VIEWSRC)movedock.ui
 	@echo "Compiling Move Dock"
 	@uic $(VIEWSRC)movedock.ui > $(VIEWSRC)MoveDock.cpp
 	@$(CPP) $(CFLAGS) -c -o $(OBJ)MoveDock.o $(VIEWSRC)MoveDock.cpp
-	
+
 $(OBJ)TouchPad.o: $(VIEWSRC)TouchPad.*
 	@echo "Compiling Touch Pad..."
 	@$(MOC) -i $(VIEWSRC)TouchPad.h > $(VIEWSRC)TouchPadMoc.cpp
 	@$(CPP) $(CFLAGS) -c -o $(OBJ)TouchPad.o $(VIEWSRC)TouchPad.cpp
-	
+
 $(OBJ)ViewerWindow.o: $(VIEWSRC)ViewerWindow.*
 	@echo "Compiling Viewer Window"
 	@$(CPP) $(CFLAGS) -c -o $(OBJ)ViewerWindow.o $(VIEWSRC)ViewerWindow.cpp
@@ -466,26 +465,6 @@ $(OBJ)Polygon.o: $(LIB3DSRC)Polygon.*
 	@echo "Compiling Polygon..."
 	@$(CPP) $(CFLAGS) -c -o $(OBJ)Polygon.o $(LIB3DSRC)Polygon.cpp
 
-
-$(OBJ)OldTriangle.o: $(LIB3DSRC)triangle.*
-	@echo "Compiling OldTriangle..."
-	@$(CPP) $(CFLAGS) -c -o $(OBJ)OldTriangle.o $(LIB3DSRC)triangle.cc
-
-$(OBJ)OldVertex.o: $(LIB3DSRC)vertex.*
-	@echo "Compiling Old Vertex..."
-	@$(CPP) $(CFLAGS) -c -o $(OBJ)OldVertex.o $(LIB3DSRC)vertex.cc
-
-$(OBJ)CubeMesh.o: $(LIB3DSRC)cubemesh.*
-	@echo "Compiling cubemesh..."
-	@$(CPP) $(CFLAGS) -c -o $(OBJ)CubeMesh.o $(LIB3DSRC)cubemesh.cc
-
-$(OBJ)PMesh.o: $(LIB3DSRC)pmesh.*
-	@echo "Compiling pmesh..."
-	@$(CPP) $(CFLAGS) -c -o $(OBJ)PMesh.o $(LIB3DSRC)pmesh.cc
-
-$(OBJ)Vec3.o: $(LIB3DSRC)vec3.*
-	@echo "Compiling vec3..."
-	@$(CPP) $(CFLAGS) -c -o $(OBJ)Vec3.o $(LIB3DSRC)vec3.cc
 
 clean:
 	@echo -e "\nCleaning up...\n"
