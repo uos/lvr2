@@ -14,14 +14,18 @@
 
 using namespace std;
 
-class Polygon {
-public:
-	Polygon();
-	Polygon(const Polygon& other);
-	virtual ~Polygon();
 
-	void addVertex(Vertex v){vertices.push_back(v);};
-	vector<Vertex> vertices;
-};
+namespace Lib3D{
+
+	class Polygon {
+	public:
+		Polygon();
+		Polygon(const Polygon& other);
+		virtual ~Polygon();
+
+		void addVertex(Vertex v){vertices.push_back(v);};
+		vector<Vertex> vertices;
+	};
+}
 
 #endif /* POLYGON_H_ */

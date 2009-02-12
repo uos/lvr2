@@ -69,27 +69,7 @@ void LinkedTriangleMesh::addTriangle(int v1, int v2, int v3){
 	i++;
 }
 
-void LinkedTriangleMesh::calcOneNormal(int v){
 
-	TriangleVertex vert = getVertex(v);
-	const set<int>& triset = vert.getTriangleNeighbors();
-	set<int>::iterator it;
-
-	Normal normal;
-	for (it = triset.begin(); it != triset.end(); ++it)
-	{
-	  // get the triangles for each vertex & add up the normals.
-		LinkedTriangle t = getTriangle(*it);
-		normal += t.getNormal();
-	}
-	normal.normalize();
-	vert.setNormal(normal);
-}
-
-void LinkedTriangleMesh::calcVertexNormals(){
-	for(size_t i = 0; i < vertex_buffer.size(); i++)
-		calcOneNormal(i);
-}
 
 void LinkedTriangleMesh::calcBoundingBox(BoundingBox& b){
 	for(size_t i = 0; i < vertex_buffer.size(); i++){
@@ -108,11 +88,11 @@ void LinkedTriangleMesh::normalize(){
 	Vertex vmax = b.v_max;
 	Vertex diff = vmax - vmin;
 
-	if      (diff.x >= diff.y && diff.x >= diff.z) scale = 2.0 / diff.x;
-	else if (diff.y >= diff.x && diff.y >= diff.z) scale = 2.0 / diff.y;
-	else    scale = 2.0 / diff.z;
+	if      (diff.x >= diff.y && diff.x >= diff.z) scale = 2.0f / diff.x;
+	else if (diff.y >= diff.x && diff.y >= diff.z) scale = 2.0f / diff.y;
+	else    scale = 2.0f / diff.z;
 
-	Vertex translation = (vmin + vmax) * 0.5;
+	Vertex translation = (vmin + vmax) * 0.5f;
 
 	for(size_t i = 0; i < vertex_buffer.size(); i++){
 		vertex_buffer[i].position -= translation;
@@ -154,7 +134,7 @@ void LinkedTriangleMesh::finalize(){
 		colors[3 * i + 2] = 0.0f;
 	}
 
-	int iii;
+	size_t iii;
 
 	for(size_t i = 0; i < triangle_buffer.size(); i++){
 		if(triangle_buffer[i].isActive()){
@@ -173,116 +153,5 @@ void LinkedTriangleMesh::finalize(){
 
 }
 
-void LinkedTriangleMesh::pmesh(){
-
-	float meshReduction = 0.8;
-
-	if(finalized){
-		PMesh::EdgeCost cost = PMesh::SHORTEST;
-		CubeMesh* triangleMesh = new CubeMesh();
-
-		for(size_t i = 0; i < number_of_vertices; i++){
-			triangleMesh->addVertex(vertices[3 * i], vertices[3 * i + 1], vertices[3 * i + 2]);
-		}
-
-		for(size_t i = 0; i < number_of_faces; i++){
-			triangleMesh->addTriangle(indices[ 3 * i    ],
-					                  indices[ 3 * i + 1],
-					                  indices[ 3 * i + 2]);
-		}
-
-		triangleMesh->calcVertNormals();
-
-		PMesh* simplyfier = new PMesh(triangleMesh, cost);
-
-		//************************************************************
-		int j = 0;
-		int index;
-		bool ret = true;
-		triangle t;
-		vertex vert;
-		Vec3 vec;
-		Vec3 normal;
-
-		int size = (int)(simplyfier->numCollapses()-simplyfier->numCollapses()*meshReduction);
-		if (size == 0) {
-			size = 1;
-		}
-
-		for (int i = 0; ret && i <size; ++i) {
-			ret = simplyfier->collapseEdge();
-		}
-
-		if (!ret) {
-			cout<<"error in mesh simplification perhaps "<<endl;
-			return;
-		}
 
 
-		//****************************************************************
-		triangle_buffer.clear();
-		vertex_buffer.clear();
-		normal_buffer.clear();
-
-		int indices[3];
-		float vec_store[3];
-		float normal_store[3];
-
-		for(int i = 0;i < simplyfier->numTris();i++){
-			simplyfier->getTri(i,t);
-			if(t.isActive()){
-				for(int k=0;k<3;k++){
-					switch(k) {
-					case 0: vert = t.getVert1vertex();
-					break;
-					case 1: vert = t.getVert2vertex();
-					break;
-					case 2: vert = t.getVert3vertex();
-					break;
-					}
-					index = getIndex(vert);
-					//index = 0;
-					if(index >= 0){
-						indices[k] = index;
-					}
-					else {
-						indices[k] = j;
-						vec = vert._myVertex;
-						vec_store[0] = vec.x;
-						vec_store[1] = vec.y;
-						vec_store[2] = vec.z;
-						vertex_buffer.push_back(Vertex(vec_store[0], vec_store[1], vec_store[2]));
-						normal = vert._vertexNormal;
-						normal_store[0] = normal.x;
-						normal_store[1] = normal.y;
-						normal_store[2] = normal.z;
-						normal_buffer.push_back(Normal(normal_store[0], normal_store[1], normal_store[2]));
-						j++;
-					}
-				}
-				triangle_buffer.push_back(LinkedTriangle(indices[0], indices[1], indices[2]));
-
-			}
-		}
-
-		finalized = false;
-
-	}
-}
-
-int LinkedTriangleMesh::getIndex(vertex vert){
-
-	Vertex reference = Vertex(vert.getXYZ().x,
-							  vert.getXYZ().y,
-							  vert.getXYZ().z);
-
-	Vertex current;
-
-	for(size_t i = 0; i < vertex_buffer.size(); i++){
-		current = vertex_buffer[i].position;
-		if(current == reference) return i;
-	}
-
-	return -1;
-
-}

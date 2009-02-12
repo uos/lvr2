@@ -1,8 +1,7 @@
-
-
-
 #include "BaseVertex.h"
 #include "Matrix4.h"
+
+const float BaseVertex::epsilon = 0.0001f;
 
 BaseVertex::BaseVertex(){
   x = y = z = 0.0;

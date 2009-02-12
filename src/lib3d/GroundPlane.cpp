@@ -33,23 +33,23 @@ void GroundPlane::drawGrid(int increment, int count){
 	glEnable ( GL_POLYGON_OFFSET_LINE );
 	glEnable ( GL_LINE_SMOOTH );
 	glPolygonOffset ( .5,.5 );
-	glColor3f ( 0.8, 0.8, 1.0 );
+	glColor3f ( 0.8f, 0.8f, 1.0f );
 	glLineWidth ( 1 );
 	for ( int temp = -count; temp <= count; temp +=1 )
 	{
-		glVertex3f ( temp*increment, -increment*count, 0 );
-		glVertex3f ( temp*increment, increment*count, 0 );
-		glVertex3f ( -increment*count, temp*increment, 0 );
-		glVertex3f ( increment*count, temp*increment, 0 );
+		glVertex3i ( temp * increment, -increment * count, 0 );
+		glVertex3i ( temp * increment,  increment * count, 0 );
+		glVertex3i ( -increment * count, temp * increment, 0 );
+		glVertex3i (  increment * count, temp * increment, 0 );
 	}
 	glLineWidth ( 1.5 );
-	glColor3f ( 0.8,0.8,0.8 );
+	glColor3f ( 0.8f, 0.8f, 0.8f);
 	for ( int temp = -count; temp <= count; temp +=5 )
 	{
-		glVertex3f ( temp*increment, -increment*count, 0 );
-		glVertex3f ( temp*increment, increment*count, 0 );
-		glVertex3f ( -increment*count, temp*increment, 0 );
-		glVertex3f ( increment*count, temp*increment, 0 );
+		glVertex3i ( temp * increment, -increment * count, 0 );
+		glVertex3i ( temp * increment,  increment * count, 0 );
+		glVertex3i ( -increment*count, temp * increment, 0 );
+		glVertex3i (  increment*count, temp * increment, 0 );
 	}
 	glDisable ( GL_POLYGON_OFFSET_LINE );
 	glEnd();

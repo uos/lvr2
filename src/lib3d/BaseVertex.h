@@ -13,11 +13,20 @@
 #ifndef __BASE_VERTEX_H__
 #define __BASE_VERTEX_H__
 
-#ifndef MAC_OSX
+#ifdef 	WIN32 					// Includes for MS C++-Compilier
+#include <windows.h>
+#include <gl/gl.h>
+#include <gl/glu.h>
+#else
+
+#ifdef MAC_OSX					// Includes for OSX
+#include <OpenGL/GL.h>
+
+#else							// Includes for Linux
 #include <GL/gl.h>
 #include <GL/glu.h>
-#else
-#include <OpenGL/GL.h>
+#endif
+
 #endif
 
 #include <iostream>
@@ -67,7 +76,7 @@ public:
   float z;
 
 private:
-	static const float epsilon = 0.0001;
+	static const float epsilon;
 };
 
 

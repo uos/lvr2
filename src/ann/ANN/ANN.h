@@ -58,6 +58,9 @@
 #define ANN_H
 
 #ifdef WIN32
+
+#pragma warning(disable: 4273)
+
   //----------------------------------------------------------------------
   // For Microsoft Visual C++, externally accessible symbols must be
   // explicitly indicated with DLL_API, which is somewhat like "extern."

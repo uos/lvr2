@@ -13,13 +13,10 @@ Matrix4::Matrix4() {
 	m[0] = m[5] = m[10] = m[15] = 1.0;
 }
 
-Matrix4::Matrix4(double* other){
-	for(int i = 0; i < 16; i++) m[i] = other[i];
-}
-
 Matrix4::Matrix4(float* other){
 	for(int i = 0; i < 16; i++) m[i] = other[i];
 }
+
 
 Matrix4::Matrix4(const Matrix4& other){
 	for(int i = 0; i < 16; i++) m[i] = other[i];
@@ -36,17 +33,17 @@ Matrix4::Matrix4(Vertex axis, float angle){
 		bool invert_z = axis.z < 0;
 
 		//Angle to yz-plane
-		double pitch = atan2(axis.z, axis.x) - PH;
-		if(pitch < 0) pitch += 2 * PI;
+		float pitch = atan2(axis.z, axis.x) - PH;
+		if(pitch < 0.0f) pitch += 2.0f * PI;
 
-		if(axis.x == 0 && axis.z == 0) pitch = 0.0;
+		if(axis.x == 0.0f && axis.z == 0.0) pitch = 0.0f;
 
 		//Transform axis into yz-plane
-		axis.x = axis.x * cos(pitch) + axis.z * sin(pitch);
+		axis.x =  axis.x * cos(pitch) + axis.z * sin(pitch);
 		axis.z = -axis.x * sin(pitch) + axis.z * cos(pitch);
 
 		//Angle to y-Axis
-		double yaw = atan2(axis.y, axis.z);
+		float yaw = atan2(axis.y, axis.z);
 		if(yaw < 0) yaw += 2 * PI;
 
 		Matrix4 m1, m2, m3;
@@ -56,22 +53,22 @@ Matrix4::Matrix4(Vertex axis, float angle){
 		cout << "YAW: " << yaw << " PITCH: " << pitch << endl;
 
 		if(fabs(yaw)   > 0.0001){
-			m2 = Matrix4(Vertex(1.0, 0.0, 0.0), yaw);
+			m2 = Matrix4(Vertex(1.0f, 0.0f, 0.0f), yaw);
 			m3 = m3 * m2;
 		}
 
 		if(fabs(pitch) > 0.0001){
-			m1 = Matrix4(Vertex(0.0, 1.0, 0.0), pitch);
+			m1 = Matrix4(Vertex(0.0f, 1.0f, 0.0f), pitch);
 			m3 = m3 * m1;
 		}
 
 		for(int i = 0; i < 16; i++) m[i] = m3[i];
 
 	} else {
-		double c = cos(angle);
-		double s = sin(angle);
-		double t = 1.0 - c;
-		double tmp1, tmp2;
+		float c = cos(angle);
+		float s = sin(angle);
+		float t = 1.0f - c;
+		float tmp1, tmp2;
 
 		Normal a(axis); //Normalize axis
 
@@ -102,12 +99,12 @@ Matrix4::Matrix4(Vertex axis, float angle){
 }
 
 Matrix4::Matrix4(Vertex position, Vertex angles){
-	double sx = sin(angles.x);
-	double cx = cos(angles.x);
-	double sy = sin(angles.y);
-	double cy = cos(angles.y);
-	double sz = sin(angles.z);
-	double cz = cos(angles.z);
+	float sx = sin(angles.x);
+	float cx = cos(angles.x);
+	float sy = sin(angles.y);
+	float cy = cos(angles.y);
+	float sz = sin(angles.z);
+	float cz = cos(angles.z);
 
 	m[0]  = cy*cz;
 	m[1]  = sx*sy*cz + cx*sz;
@@ -144,7 +141,7 @@ void Matrix4::loadFromFile(string filename){
 }
 
 void Matrix4::transpose(){
-	double m_tmp[16];
+	float m_tmp[16];
 	m_tmp[0]  = m[0];
 	m_tmp[4]  = m[1];
 	m_tmp[8]  = m[2];
@@ -169,18 +166,18 @@ Matrix4::~Matrix4() {
 }
 
 
-void Matrix4::toPostionAngle(double* pose){
+void Matrix4::toPostionAngle(float* pose){
 
 	if(pose != 0){
-		double _trX, _trY;
+		float _trX, _trY;
 		if(m[0] > 0.0) {
 			pose[4] = asin(m[8]);
 		} else {
-			pose[4] = M_PI - asin(m[8]);
+			pose[4] = PI - asin(m[8]);
 		}
 		// rPosTheta[1] =  asin( m[8]);           // Calculate Y-axis angle
 
-		double  C    =  cos( pose[4] );
+		float  C    =  cos( pose[4] );
 		if ( fabs( C ) > 0.005 )  {                 // Gimball lock?
 			_trX      =  m[10] / C;             // No, so get X-axis angle
 			_trY      =  -m[9] / C;

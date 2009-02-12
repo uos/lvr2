@@ -8,10 +8,14 @@
 #ifndef HALFEDGEPOLYGON_H_
 #define HALFEDGEPOLYGON_H_
 
-#include "HalfEdgeMesh.h"
-
+#ifdef _MSC_VER
+#include <hash_map>
+#else
 #include <ext/hash_map>
 using __gnu_cxx::hash_map;
+#endif
+
+#include "HalfEdgeMesh.h"
 
 #include <vector>
 #include <map>
@@ -55,7 +59,7 @@ public:
 
 	vector<vector<Vertex> > contours;
 
-	int number_of_used_edges;
+	unsigned int number_of_used_edges;
 
 
 
