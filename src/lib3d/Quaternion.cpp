@@ -128,9 +128,9 @@ Vertex Quaternion::operator* (Vertex vec){
 void Quaternion::fromEuler(float pitch, float yaw, float roll){
 
 
-  float p = pitch * PIOVER180 / 2.0;
-  float y = yaw * PIOVER180 / 2.0;
-  float r = roll * PIOVER180 / 2.0;
+  float p = pitch * PIOVER180 / 2.0f;
+  float y = yaw * PIOVER180 / 2.0f;
+  float r = roll * PIOVER180 / 2.0f;
 
   float sinp = sin(p);
   float siny = sin(y);
@@ -227,18 +227,18 @@ Vertex Quaternion::toEuler(){
 //	attitude = asin(2*test/unit);
 //	bank = atan2(2*q1.x*q1.w-2*q1.y*q1.z , -sqx + sqy - sqz + sqw)
 
-	double yaw, pitch, roll;
+	float yaw, pitch, roll;
 
-	double sqw = w * w;
-	double sqx = x * x;
-	double sqy = y * y;
-	double sqz = z * z;
+	float sqw = w * w;
+	float sqx = x * x;
+	float sqy = y * y;
+	float sqz = z * z;
 
-	double unit = sqx + sqy + sqz + sqw;
-	double test = x * y + z * w;
+	float unit = sqx + sqy + sqz + sqw;
+	float test = x * y + z * w;
 	if(test > 0.49999 * unit){    //singularity at nort pole
 		yaw = 0;
-		pitch = 2 * atan2(x, w);
+		pitch = 2.0f * atan2(x, w);
 		roll = PH;
 		return Vertex(yaw, pitch, roll);
 	}

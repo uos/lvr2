@@ -13,18 +13,18 @@ Renderable::Renderable() {
 	axesListIndex = -1;
 	visible = true;
 	//rotation_speed = 0.0;
-	rotation_speed = 0.02;
+	rotation_speed = 0.02f;
 	//translation_speed = 0.0;
-	translation_speed = 10;
+	translation_speed = 10.0f;
 
 	show_axes = false;
 	active = false;
 
-	x_axis = Vertex(1.0, 0.0, 0.0);
-	y_axis = Vertex(0.0, 1.0, 0.0);
-	z_axis = Vertex(0.0, 0.0, 1.0);
+	x_axis = Vertex(1.0f, 0.0f, 0.0f);
+	y_axis = Vertex(0.0f, 1.0f, 0.0f);
+	z_axis = Vertex(0.0f, 0.0f, 1.0f);
 
-	scale_factor = 1.0;
+	scale_factor = 1.0f;
 
 	computeMatrix();
 	compileAxesList();
@@ -38,14 +38,14 @@ Renderable::Renderable(Matrix4 m, string n){
 	axesListIndex = -1;
 	visible = true;
 	//rotation_speed = 0.0;
-	rotation_speed = 0.02;
+	rotation_speed = 0.02f;
 	//translation_speed = 0.0;
-	translation_speed = 10;
+	translation_speed = 10.0f;
 
 	show_axes = false;
 	active = false;
 
-	scale_factor = 1.0;
+	scale_factor = 1.0f;
 
 	setTransformationMatrix(m);
 	computeMatrix();
@@ -81,31 +81,31 @@ Renderable::Renderable(string n){
 	axesListIndex = -1;
 	visible = true;
 	//rotation_speed = 0.0;
-	rotation_speed = 0.02;
+	rotation_speed = 0.02f;
 	//translation_speed = 0.0;
-	translation_speed = 10;
+	translation_speed = 10.0f;
 
 	show_axes = false;
 	active = false;
 
-	x_axis = Vertex(1.0, 0.0, 0.0);
-	y_axis = Vertex(0.0, 1.0, 0.0);
-	z_axis = Vertex(0.0, 0.0, 1.0);
+	x_axis = Vertex(1.0f, 0.0f, 0.0f);
+	y_axis = Vertex(0.0f, 1.0f, 0.0f);
+	z_axis = Vertex(0.0f, 0.0f, 1.0f);
 
-	scale_factor = 1.0;
+	scale_factor = 1.0f;
 
 	computeMatrix();
 	compileAxesList();
 
 }
 
-void Renderable::scale(double d){
+void Renderable::scale(float d){
 
 	scale_factor = d;
 
-	double m0  = transformation[0 ] * d;
-	double m5  = transformation[5 ] * d;
-	double m10 = transformation[10] * d;
+	float m0  = transformation[0 ] * d;
+	float m5  = transformation[5 ] * d;
+	float m10 = transformation[10] * d;
 
 	transformation.set(0 , m0 );
 	transformation.set(5 , m5 );

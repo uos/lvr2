@@ -34,7 +34,7 @@ protected:
 	void compileDisplayList();
 
 private:
-	vector<Polygon> polygons;
+	vector<Lib3D::Polygon> polygons;
 
 };
 

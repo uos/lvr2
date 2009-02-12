@@ -70,7 +70,7 @@ public:
 	void lift(bool invert = 0);
 	void strafe(bool invert = 0);
 
-	void scale(double s);
+	void scale(float s);
 
 	void showAxes(bool on){ show_axes = on;};
 

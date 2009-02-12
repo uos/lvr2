@@ -40,18 +40,18 @@ struct PlyFaceDescription{
 };
 
 struct PlyVertex{
-  double x;
-  double y;
-  double z;
-  double nx;
-  double ny;
-  double nz;
+  float x;
+  float y;
+  float z;
+  float nx;
+  float ny;
+  float nz;
   float r;
   float g;
   float b;
 
-  double u;
-  double v;
+  float u;
+  float v;
 
   int texture;
 };

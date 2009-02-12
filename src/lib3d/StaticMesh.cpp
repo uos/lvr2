@@ -110,7 +110,7 @@ void StaticMesh::load(string filename){
 
 	char* buffer = "end_header\n";
 	char dummy[20];
-	in.read( dummy, strlen(buffer));
+	in.read( dummy, (streamsize)strlen(buffer));
 
 	//Save no. of vertices and faces
 	number_of_vertices = vertex_dcr.count;
@@ -150,7 +150,7 @@ void StaticMesh::load(string filename){
 		in.read( (char*)&ply_face, sizeof(ply_face));
 		for(int j = 0; j < 3; j++){
 			indices[3 * i + j] = ply_face.indices[j];
-			if(indices[3 * i + j] >= number_of_vertices ||indices[3 * i + j] < 0){
+			if(indices[3 * i + j] >= (unsigned int)number_of_vertices ||indices[3 * i + j] < 0){
 				cout << indices[3 * i + j] << " " << number_of_vertices << endl;
 				cout << "ERROR!" << endl << flush;
 			}
@@ -227,7 +227,7 @@ void StaticMesh::save(string filename){
 		out.write( (char*)&face_dcr, sizeof(face_dcr));
 
 		char* buffer = "end_header\n";
-		out.write(buffer, strlen(buffer));
+		out.write(buffer, (streamsize)strlen(buffer));
 
 		//Write vertices and normals
 		for(unsigned int i = 0; i < vertex_dcr.count; i++){
