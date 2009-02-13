@@ -1,8 +1,8 @@
 /********************************************************************************
 ** Form generated from reading ui file 'objectdialog.ui'
 **
-** Created: Thu Feb 12 13:13:27 2009
-**      by: Qt User Interface Compiler version 4.4.3
+** Created: Fr Feb 13 10:01:02 2009
+**      by: Qt User Interface Compiler version 4.3.1
 **
 ** WARNING! All changes made in this file will be lost when recompiling ui file!
 ********************************************************************************/
@@ -17,8 +17,6 @@
 #include <QtGui/QDockWidget>
 #include <QtGui/QListWidget>
 #include <QtGui/QWidget>
-
-QT_BEGIN_NAMESPACE
 
 class Ui_ObjectDialog
 {
@@ -37,7 +35,7 @@ public:
     ObjectDialog->setFloating(false);
     ObjectDialog->setFeatures(QDockWidget::DockWidgetClosable|QDockWidget::DockWidgetVerticalTitleBar);
     ObjectDialog->setAllowedAreas(Qt::LeftDockWidgetArea);
-    dockWidgetContents = new QWidget();
+    dockWidgetContents = new QWidget(ObjectDialog);
     dockWidgetContents->setObjectName(QString::fromUtf8("dockWidgetContents"));
     dockWidgetContents->setGeometry(QRect(20, 0, 180, 137));
     listWidget = new QListWidget(dockWidgetContents);
@@ -63,7 +61,5 @@ public:
 namespace Ui {
     class ObjectDialog: public Ui_ObjectDialog {};
 } // namespace Ui
-
-QT_END_NAMESPACE
 
 #endif // OBJECTDIALOG_H

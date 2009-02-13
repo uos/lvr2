@@ -12,6 +12,7 @@
 using namespace std;
 
 #include <QtGui>
+#include <cmath>
 
 #include "MoveDock.cpp"
 using namespace Ui;
