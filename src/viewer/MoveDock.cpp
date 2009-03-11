@@ -1,8 +1,8 @@
 /********************************************************************************
 ** Form generated from reading ui file 'movedock.ui'
 **
-** Created: Fr Feb 13 10:01:02 2009
-**      by: Qt User Interface Compiler version 4.3.1
+** Created: Wed Mar 4 11:30:34 2009
+**      by: Qt User Interface Compiler version 4.4.3
 **
 ** WARNING! All changes made in this file will be lost when recompiling ui file!
 ********************************************************************************/
@@ -20,6 +20,8 @@
 #include <QtGui/QGroupBox>
 #include <QtGui/QWidget>
 
+QT_BEGIN_NAMESPACE
+
 class Ui_MoveDock
 {
 public:
@@ -36,7 +38,7 @@ public:
     MoveDock->setMinimumSize(QSize(200, 0));
     MoveDock->setFeatures(QDockWidget::DockWidgetFeatureMask);
     MoveDock->setAllowedAreas(Qt::LeftDockWidgetArea);
-    dockWidgetContents = new QWidget(MoveDock);
+    dockWidgetContents = new QWidget();
     dockWidgetContents->setObjectName(QString::fromUtf8("dockWidgetContents"));
     dockWidgetContents->setGeometry(QRect(20, 0, 180, 232));
     touchFrame = new QFrame(dockWidgetContents);
@@ -70,5 +72,7 @@ public:
 namespace Ui {
     class MoveDock: public Ui_MoveDock {};
 } // namespace Ui
+
+QT_END_NAMESPACE
 
 #endif // MOVEDOCK_H

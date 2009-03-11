@@ -78,7 +78,8 @@ MCTARGETS    = $(OBJ)Box.o $(OBJ)HashGrid.o $(OBJ)FastGrid.o $(OBJ)QueryPoint.o 
                $(OBJ)FastBox.o \
                $(OBJ)ANNInterpolator.o $(OBJ)FastInterpolator.o $(OBJ)TetraBox.o \
                $(OBJ)Tetraeder.o $(OBJ)PlaneInterpolator.o $(OBJ)LSPInterpolator.o \
-               $(OBJ)RansacInterpolator.o $(OBJ)StannInterpolator.o
+               $(OBJ)RansacInterpolator.o $(OBJ)StannInterpolator.o \
+               $(OBJ)NormalVoting.o $(OBJ)NormalBucket.o
 
 SHOWTARGETS  = $(OBJ)show.o $(OBJ)camera.o
 
@@ -90,7 +91,7 @@ VIEWTARGETS  = $(OBJ)MoveDock.o $(OBJ)ObjectDialog.o $(OBJ)MatrixDialog.o $(OBJ)
 IOTARGETS   =  #$(OBJ)fileWriter.o $(OBJ)plyWriter.o $(OBJ)fileReader.o \
                #$(OBJ)plyReader.o $(OBJ)gotoxy.o
 
-all: mcubes viewer 
+all: mcubes viewer nv
 
 mcubes: $(OBJ)libnewmat.a $(OBJ)libANN.a $(LIB3DTARGETS) $(IOTARGETS) $(MCTARGETS)
 	@echo -e "\nCompiling and Linking Marching Cubes Main Programm...\n"
@@ -102,7 +103,12 @@ viewer: $(VIEWTARGETS) $(LIB3DTARGETS) $(VIEWSRC)Viewer.cpp
 	@echo -e "\nCompiling and Linking Viewer...\n"
 	@$(CPP) $(CFLAGS) -o $(BIN)viewer $(VIEWSRC)Viewer.cpp $(LIB3DTARGETS)\
 	        $(VIEWTARGETS) $(GLLIBS) $(QTLIBS)
-
+	        
+nv: $(LIB3DTARGETS) $(MCTARGETS)
+	@echo -e "\nCompiling and Linking Normal Voting Main Programm...\n"
+	@$(CPP) $(CFLAGS) -o $(BIN)nv $(MCSRC)nv.cpp $(GLLIBS) $(ANNTARGETS) $(MCTARGETS) $(LIB3DTARGETS) $(OBJ)libnewmat.a -lgsl 
+	
+	
 ######################################################################
 # ----------------------------- I/O ----------------------------------
 ######################################################################
@@ -203,6 +209,14 @@ $(OBJ)RansacInterpolator.o: $(MCSRC)RansacInterpolator.*
 $(OBJ)StannInterpolator.o: $(MCSRC)StannInterpolator.*
 	@echo "Compiling STANN Interpolator..."
 	@$(CPP) $(CFLAGS) -c -o $(OBJ)StannInterpolator.o $(MCSRC)StannInterpolator.cpp
+	
+$(OBJ)NormalVoting.o: $(MCSRC)NormalVoting.*
+	@echo "Compiling Normal Voting..."
+	@$(CPP) $(CFLAGS) -c -o $(OBJ)NormalVoting.o $(MCSRC)NormalVoting.cpp
+	
+$(OBJ)NormalBucket.o: $(MCSRC)NormalBucket.*
+	@echo "Compiling Normal Bucket..."
+	@$(CPP) $(CFLAGS) -c -o $(OBJ)NormalBucket.o $(MCSRC)NormalBucket.cpp
 
 ######################################################################
 # -------------------------- ANN LIBRARY -----------------------------

@@ -1,8 +1,8 @@
 /********************************************************************************
 ** Form generated from reading ui file 'viewer.ui'
 **
-** Created: Fr Feb 13 10:01:05 2009
-**      by: Qt User Interface Compiler version 4.3.1
+** Created: Wed Mar 4 11:30:35 2009
+**      by: Qt User Interface Compiler version 4.4.3
 **
 ** WARNING! All changes made in this file will be lost when recompiling ui file!
 ********************************************************************************/
@@ -20,6 +20,8 @@
 #include <QtGui/QMenuBar>
 #include <QtGui/QStatusBar>
 #include <QtGui/QWidget>
+
+QT_BEGIN_NAMESPACE
 
 class Ui_MainWindow
 {
@@ -122,5 +124,7 @@ public:
 namespace Ui {
     class MainWindow: public Ui_MainWindow {};
 } // namespace Ui
+
+QT_END_NAMESPACE
 
 #endif // VIEWER_H

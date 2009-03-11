@@ -106,9 +106,12 @@ void HalfEdgePolygon::generate_list(){
 					edge_list.insert(make_pair(current_edge->start, current_edge));
 				}
 			}
-
 			current_edge = current_edge->next;
 		} while(current_edge != first_edge);
+
+
+
+
 
 	}
 
