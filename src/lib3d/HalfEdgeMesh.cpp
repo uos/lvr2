@@ -138,10 +138,11 @@ bool HalfEdgeMesh::check_face(HalfEdgeFace* f0, HalfEdgeFace* current){
 	float  cos_angle = n_0 * current->getInterpolatedNormal();
 
 	//Decide using given thresholds
-	if(distance < 5.0 && cos_angle > 0.99) return true;
+	if(distance < 9.0 && cos_angle > 0.99) return true;
 
 	//Return false if face is not in plane
 	return false;
+
 }
 
 void HalfEdgeMesh::check_next_neighbor(HalfEdgeFace* f0, HalfEdgeFace* face, HalfEdgePolygon* polygon){
@@ -166,6 +167,7 @@ void HalfEdgeMesh::check_next_neighbor(HalfEdgeFace* f0, HalfEdgeFace* face, Hal
 		}
 		current_edge = current_edge->next;
 	} while(start_edge != current_edge);
+
 
 }
 

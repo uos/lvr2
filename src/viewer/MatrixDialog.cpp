@@ -1,8 +1,8 @@
 /********************************************************************************
 ** Form generated from reading ui file 'matrixdialog.ui'
 **
-** Created: Fr Feb 13 10:01:02 2009
-**      by: Qt User Interface Compiler version 4.3.1
+** Created: Wed Mar 4 11:30:35 2009
+**      by: Qt User Interface Compiler version 4.4.3
 **
 ** WARNING! All changes made in this file will be lost when recompiling ui file!
 ********************************************************************************/
@@ -18,6 +18,8 @@
 #include <QtGui/QDoubleSpinBox>
 #include <QtGui/QGroupBox>
 #include <QtGui/QPushButton>
+
+QT_BEGIN_NAMESPACE
 
 class Ui_MatrixDialog
 {
@@ -179,5 +181,7 @@ public:
 namespace Ui {
     class MatrixDialog: public Ui_MatrixDialog {};
 } // namespace Ui
+
+QT_END_NAMESPACE
 
 #endif // MATRIXDIALOG_H

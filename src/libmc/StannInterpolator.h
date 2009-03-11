@@ -36,7 +36,7 @@ public:
 
 	Vertex center;
 
-private:
+//private:
 
 	void write_normals();
 	void estimate_normals();
