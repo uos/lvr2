@@ -138,30 +138,34 @@ bool HalfEdgeMesh::check_face(HalfEdgeFace* f0, HalfEdgeFace* current){
 	float  cos_angle = n_0 * current->getInterpolatedNormal();
 
 	//Decide using given thresholds
-	if(distance < 9.0 && cos_angle > 0.99) return true;
+	if(distance < 8.0 && cos_angle > 0.98) return true;
 
 	//Return false if face is not in plane
 	return false;
 
 }
 
-void HalfEdgeMesh::check_next_neighbor(HalfEdgeFace* f0, HalfEdgeFace* face, HalfEdgePolygon* polygon){
+void HalfEdgeMesh::check_next_neighbor(HalfEdgeFace* f0,
+		                               HalfEdgeFace* face,
+		                               HalfEdge* edge,
+		                               HalfEdgePolygon* polygon){
 
 	face->used = true;
-	polygon->add_face(face);
+	polygon->add_face(face, edge);
 
     //Iterate through all surrounding faces
 	HalfEdge* start_edge   = face->edge;
 	HalfEdge* current_edge = face->edge;
 	HalfEdge* pair         = current_edge->pair;
 	HalfEdgeFace* current_neighbor;
+
 	do{
 		pair = current_edge->pair;
 		if(pair != 0){
 			current_neighbor = pair->face;
 			if(current_neighbor != 0){
 				if(check_face(f0, current_neighbor) && !current_neighbor->used){
-					check_next_neighbor(f0, current_neighbor, polygon);
+					check_next_neighbor(f0, current_neighbor, current_edge, polygon);
 				}
 			}
 		}
@@ -193,6 +197,8 @@ void HalfEdgeMesh::extract_borders(){
 	HalfEdgePolygon*    current_polygon;
 	vector<HalfEdgeFace*>::iterator face_iterator;
 
+	unsigned int biggest_size = 0;
+
 	int c = 0;
 	for(face_iterator = he_faces.begin(); face_iterator != he_faces.end(); face_iterator++){
 		if(c % 10000 == 0) cout << "Extracting Borders: " << c << " / " << he_faces.size() << endl;
@@ -204,20 +210,22 @@ void HalfEdgeMesh::extract_borders(){
 			current_v = current_face->edge->start->position;
 
 			current_polygon = new HalfEdgePolygon();
-			check_next_neighbor(current_face, current_face, current_polygon);
-			current_polygon->generate_list();
-			//current_polygon->fuse_edges();
-			if((int)current_polygon->edge_list.size() > biggest_size){
-				biggest_size = (int)current_polygon->edge_list.size();
+			check_next_neighbor(current_face, current_face, 0, current_polygon);
+			current_polygon->fuse_edges();
+
+			hem_polygons.push_back(current_polygon);
+			if(current_polygon->faces.size() > biggest_size){
+				biggest_size = current_polygon->faces.size();
 				biggest_polygon = current_polygon;
 			}
-			hem_polygons.push_back(current_polygon);
 
 		}
 		c++;
 	}
 
 	cout << "BIGGEST POLYGON: " << biggest_polygon << endl;
+
+	biggest_polygon->test();
 }
 
 void HalfEdgeMesh::create_polygon(vector<int> &polygon, hash_map<unsigned int, HalfEdge*>* edges){
@@ -227,63 +235,42 @@ void HalfEdgeMesh::create_polygon(vector<int> &polygon, hash_map<unsigned int, H
 
 void HalfEdgeMesh::write_polygons(string filename){
 
+	cout << "WRITE" << endl;
+
 	ofstream out(filename.c_str());
 
-	HalfEdgePolygon* polygon;
-	HalfEdge*        edge;
+	vector<HalfEdgePolygon*>::iterator p_it;
+	multiset<HalfEdge*>::iterator it;
 
-	vector<HalfEdgePolygon*>::iterator polygon_it;
 
-//	int c = 0;
-//	for(polygon_it  = hem_polygons.begin();
-//	    polygon_it != hem_polygons.end();
-//	    polygon_it++)
+//	for(it  = biggest_polygon->edges.begin();
+//		it != biggest_polygon->edges.end();
+//		it++)
 //	{
-//		if(c % 10000 == 0) cout << "Writing Polygons: " << c << " / " << hem_polygons.size() << endl;
-//		polygon = *polygon_it;
-//		map<HalfEdgeVertex* , HalfEdge*>::iterator edge_it;
-//		for(edge_it  = polygon->edge_list.begin();
-//		    edge_it != polygon->edge_list.end();
-//		    edge_it++)
-//		{
-//			edge = edge_it->second;
-//			out << "BEGIN" << endl;
-//
-//			out << edge->start->position.x << " ";
-//			out << edge->start->position.y << " ";
-//			out << edge->start->position.z << endl;
-//
-//			out << edge->end->position.x << " ";
-//			out << edge->end->position.y << " ";
-//			out << edge->end->position.z << endl;
-//
-//			out << "END" << endl;
-//		}
-//		c++;
+//		HalfEdge* e = *it;
+//		out << "BEGIN" << endl;
+//		out << e->start->position.x << " " << e->start->position.y << " " << e->start->position.z << endl;
+//		out << e->end->position.x   << " " << e->end->position.y   << " " << e->end->position.z   << endl;
+//		out << "END" << endl;
 //	}
 
-	int c = 0;
-
-	polygon = biggest_polygon;
-	map<HalfEdgeVertex* , HalfEdge*>::iterator edge_it;
-	for(edge_it  = polygon->edge_list.begin();
-	edge_it != polygon->edge_list.end();
-	edge_it++)
+	for(p_it =  hem_polygons.begin();
+		p_it != hem_polygons.end();
+		p_it++)
 	{
-		edge = edge_it->second;
-		out << "BEGIN" << endl;
-
-		out << edge->start->position.x << " ";
-		out << edge->start->position.y << " ";
-		out << edge->start->position.z << endl;
-
-		out << edge->end->position.x << " ";
-		out << edge->end->position.y << " ";
-		out << edge->end->position.z << endl;
-
-		out << "END" << endl;
+		HalfEdgePolygon* polygon = *p_it;
+		for(it  = polygon->edges.begin();
+			it != polygon->edges.end();
+			it++)
+		{
+			HalfEdge* e = *it;
+			out << "BEGIN" << endl;
+			out << e->start->position.x << " " << e->start->position.y << " " << e->start->position.z << endl;
+			out << e->end->position.x   << " " << e->end->position.y   << " " << e->end->position.z   << endl;
+			out << "END" << endl;
+		}
 	}
-	c++;
+
 
 
 }

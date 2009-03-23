@@ -51,7 +51,10 @@ public:
 	void write_face_normals(string filename);
 
 	void printStats();
-	void check_next_neighbor(HalfEdgeFace* f0, HalfEdgeFace* face, HalfEdgePolygon*);
+	void check_next_neighbor(HalfEdgeFace* f0,
+							 HalfEdgeFace* face,
+							 HalfEdge* edge,
+							 HalfEdgePolygon*);
 
 	void extract_borders();
 	void generate_polygons();
@@ -62,7 +65,7 @@ public:
 	bool check_face(HalfEdgeFace* f0, HalfEdgeFace* current);
 	bool isFlatFace(HalfEdgeFace* face);
 
-	void create_polygon(vector<int> &polygon, 
+	void create_polygon(vector<int> &polygon,
 						hash_map< unsigned int, HalfEdge* >* edges);
 
 private:

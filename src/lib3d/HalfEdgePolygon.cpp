@@ -23,6 +23,33 @@ PolygonVertex::PolygonVertex(const PolygonVertex &o){
 }
 
 
+
+PolygonEdge::PolygonEdge(HalfEdge* edge)
+{
+	v1 = edge->start->position;
+	v2 = edge->end->position;
+
+	index1 = edge->start->index;
+	index2 = edge->end->index;
+
+	active = true;
+
+}
+PolygonEdge::PolygonEdge(const PolygonEdge &o)
+{
+
+	v1 = o.v1;
+	v2 = o.v2;
+
+	index1 = o.index1;
+	index2 = o.index2;
+
+	active = o.active;
+
+}
+
+
+
 void HalfEdgePolygon::add_vertex(HalfEdgeVertex* v){
 
 	//indices.push_back(v->index);
@@ -30,90 +57,65 @@ void HalfEdgePolygon::add_vertex(HalfEdgeVertex* v){
 
 }
 
-void HalfEdgePolygon::add_face(HalfEdgeFace* face){
-
-	faces.insert(make_pair(face->face_index, face));
+PolygonEdge* HalfEdgePolygon::find_edge(HalfEdge* edge)
+{
+	return 0;
 
 }
 
+void HalfEdgePolygon::add_face(HalfEdgeFace* face, HalfEdge* edge){
+
+	faces.insert(face);
+
+}
+
+HalfEdgeFace* HalfEdgePolygon::find_adj_face(HalfEdge* edge)
+{
+	if(edge->pair != 0){
+		return edge->pair->face;
+	} else {
+		return 0;
+	}
+}
+
+
 void HalfEdgePolygon::fuse_edges(){
 
-	vector<Vertex> current_contour;
+	multiset<HalfEdgeFace*>::iterator it;
 
-	HalfEdge* start_edge;
-	HalfEdge* current_edge;
-	cout << "BEGIN" << endl;
+	HalfEdge* start;
+	HalfEdge* current;
 
-	map<HalfEdgeVertex*, HalfEdge*>::iterator it;
+	HalfEdgeFace* nb;
 
-	//Create contours
-	do{
-		current_contour.clear();
-		current_edge = edge_list.begin()->second;
-		start_edge = current_edge;
+	for(it = faces.begin(); it != faces.end(); it++){
 
-		cout << "START INNER LOOP" << endl;
+		start = (*it)->edge;
+		current = start;
+
 		do{
-
-			current_contour.push_back(current_edge->start->position);
-			it = edge_list.find(current_edge->end);
-
-			if(it == edge_list.end()){
-				cout << "NO MATCHING EDGE" << endl;
+			nb = find_adj_face(current);
+			if(nb == 0)
+			{
+				edges.insert(current);
+			} else {
+				if(faces.find(nb) == faces.end() ) edges.insert(current);
 			}
-			else{
-				current_edge = it->second;
-				edge_list.erase(it);
-			}
+			current = current->next;
+		} while(current != start);
 
-			number_of_used_edges++;
+	}
 
-		} while(current_edge != start_edge);
-		cout << "END INNER LOOP" << endl;
 
-		cout << "NEW CONTOUR: " << number_of_used_edges << " / " << edge_list.size() << endl;
-		contours.push_back(current_contour);
-	} while(number_of_used_edges < edge_list.size());
-
-	cout << "END" << endl;
 }
 
 void HalfEdgePolygon::generate_list(){
 
-	map<unsigned int, HalfEdgeFace* >::iterator it;
 
-	HalfEdgeFace* current_face;
-	HalfEdgeFace* current_neighbor;
+}
 
-	HalfEdge*     current_edge;
-	HalfEdge*     first_edge;
-
-	for(it = faces.begin(); it != faces.end(); it++){
-
-		current_face = it->second;
-		current_edge = current_face->edge;
-		first_edge = current_edge;
-
-		do{
-
-			if(current_edge->pair != 0){
-				if(current_edge->pair->face != 0){
-					current_neighbor = current_edge->pair->face;
-					if(faces.find(current_neighbor->face_index) == faces.end()){
-						edge_list.insert(make_pair(current_edge->start, current_edge));
-					}
-				} else {
-					edge_list.insert(make_pair(current_edge->start, current_edge));
-				}
-			}
-			current_edge = current_edge->next;
-		} while(current_edge != first_edge);
-
-
-
-
-
-	}
+void HalfEdgePolygon::test()
+{
 
 }
 

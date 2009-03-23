@@ -260,6 +260,7 @@ void FastGrid::createMesh(){
 	mesh->finalize();
 	mesh->save("mesh.ply");
 
+
 //	cout << "##### Creating Progressive Mesh..." << endl;
 //
 //	mesh->pmesh();

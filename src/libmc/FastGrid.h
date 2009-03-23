@@ -68,7 +68,7 @@ private:
 	vector<QueryPoint>      query_points;
 	ANNpointArray           points;
 	Interpolator*           interpolator;
-	HalfEdgeMesh*     mesh;
+	HalfEdgeMesh*     		mesh;
 	HalfEdgeMesh            he_mesh;
 
 	hash_map<int, FastBox*> cells;
