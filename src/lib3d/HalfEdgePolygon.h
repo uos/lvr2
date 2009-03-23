@@ -19,12 +19,30 @@ using __gnu_cxx::hash_map;
 
 #include <vector>
 #include <map>
+#include <set>
+
 using std::vector;
 using std::map;
+using std::set;
 
 class HalfEdgeFace;
 class HalfEdge;
 class HalfEdgeVertex;
+
+class PolygonEdge{
+public:
+	PolygonEdge() : index1(0), index2(2), active(true) {};
+	PolygonEdge(HalfEdge*);
+	PolygonEdge(const PolygonEdge &o);
+
+	Vertex v1;
+	Vertex v2;
+
+	int index1;
+	int index2;
+
+	bool active;
+};
 
 class PolygonVertex{
 public:
@@ -42,24 +60,21 @@ public:
 	HalfEdgePolygon(HalfEdgeFace* first);
 	virtual ~HalfEdgePolygon();
 
-	void add_face(HalfEdgeFace* face);
+	void add_face(HalfEdgeFace* face, HalfEdge* edge);
 	void generate_list();
 	void fuse_edges();
 
+	PolygonEdge*   find_edge(HalfEdge* edge);
+	HalfEdgeFace*  find_adj_face(HalfEdge* edge);
+
 	void add_vertex(HalfEdgeVertex* v);
 
+	void test();
 
-	int texture_index;
+	int number_of_used_edges;
 
-	//vector<int> indices;
-	//vector<HalfEdgeVertex*> vertices;
-
-	map<unsigned int, HalfEdgeFace* > faces;
-	map<HalfEdgeVertex*, HalfEdge*> edge_list;
-
-	vector<vector<Vertex> > contours;
-
-	unsigned int number_of_used_edges;
+	multiset<HalfEdgeFace*> faces;
+	multiset<HalfEdge*>     edges;
 
 
 
