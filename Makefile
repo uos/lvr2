@@ -49,9 +49,10 @@ bin/viewer: $(VIEWERLIBS)
 	@$(CPP) $(CFLAGS) -o bin/viewer $(VIEWERSRC)Viewer.cpp $(VIEWERLIBS)
 	
 clean:
+	@echo -e "\nCleaning up...\n"
 	@rm -f lib/*
-	@rm -f src/newmat/*.o
 	@rm -f bin/*
+	@cd src/newmat; make -s clean;
 	@cd src/ann; make -s clean;
 	@cd src/lib3d; make -s clean;
 	@cd src/libmc; make -s clean;
