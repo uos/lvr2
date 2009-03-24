@@ -1,0 +1,39 @@
+#CPP = /opt/intel/cce/10.1.018/bin/icc
+CPP = g++
+#CPP  = nvcc
+
+CFLAGS = -Wall -Wno-deprecated -Wno-write-strings -Wno-strict-aliasing -fopenmp -O3 ##FLAGS FOR GCC
+#CFLAGS = -O3 -xT -ipo -gcc ##FLAGS FOR ICC
+#CFLAGS = --host-compilation=C++ -Xcompiler -fopenmp -lgomp -O3
+AR = ar
+MOC = moc
+
+BIN = bin/
+OBJ = obj/
+
+OSXFLAGS    = #-DMAC_OSX # TO DO: AUTO SELECTION
+
+ifndef $(MACVERSION)
+GLLIBS     = -lGL -lGLU
+QTLIBS     = -lQtGui -lQtOpenGL
+QTINCLUDES = -I/usr/include/QtNetwork -I/usr/include/QtGui -I/usr/include/QtXml \
+             -I/usr/include/QtSql -I/usr/include/QtUiTools \
+             -I/usr/include/QtOpenGL
+else
+GLLIBS     = -framework OpenGL
+QTLIBS     = -framework QTKit
+QTINCLUDES = -I/usr/local/Trolltech/Qt-4.4.3/include/ \
+             -I/usr/local/Trolltech/Qt-4.4.3/include/QtGui/ \
+             -I/usr/local/Trolltech/Qt-4.4.3/include/QtOpenGL/ \
+             -F/usr/local/Trolltech/Qt-4.4.3/lib/
+QTLIBS     = -framework QtGui -framework QtOpenGL -framework QtCore
+endif
+
+ifeq ($(OSXFLAGS), -DMAC_OSX)
+GLLIBS     = -framework OpenGL -framework GLUT
+else
+GLLIBS     = -lGL -lGLU -lglut -lgltt -lttf -lgle
+endif
+
+CFLAGS     += -I../ann -Isrc/ann
+CFLAGS     += $(OSXFLAGS) $(QTINCLUDES) 
