@@ -1,14 +1,14 @@
 /********************************************************************************
 ** Form generated from reading ui file 'matrixdialog.ui'
 **
-** Created: Mon Mar 23 10:23:24 2009
+** Created: Tue Mar 24 12:40:36 2009
 **      by: Qt User Interface Compiler version 4.4.3
 **
 ** WARNING! All changes made in this file will be lost when recompiling ui file!
 ********************************************************************************/
 
-#ifndef MATRIXDIALOG_H
-#define MATRIXDIALOG_H
+#ifndef UI_MATRIXDIALOG_H
+#define UI_MATRIXDIALOG_H
 
 #include <QtCore/QVariant>
 #include <QtGui/QAction>
@@ -184,4 +184,4 @@ namespace Ui {
 
 QT_END_NAMESPACE
 
-#endif // MATRIXDIALOG_H
+#endif // UI_MATRIXDIALOG_H

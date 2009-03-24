@@ -296,8 +296,6 @@ void FastGrid::calcIndices(){
 
 void FastGrid::readPoints(string filename){
 
-	int max_pts = 31000000;
-
 	ifstream in(filename.c_str());
 
 	//Vector to tmp-store points in file
@@ -314,8 +312,7 @@ void FastGrid::readPoints(string filename){
 	float x, y, z, dummy;
 
 	//Read file
-	cout << "##### **** WARNING: READING ONLY " << max_pts << " Points! **** " << endl;
-	while(in.good() && pts.size() < max_pts){
+	while(in.good() ){
 		in >> x >> y >> z;
 		for(int i = 0; i < number_of_dummys; i++){
 			in >> dummy;
