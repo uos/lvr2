@@ -25,9 +25,6 @@ using __gnu_cxx::hash_map;
 
 #include "ANNInterpolator.h"
 #include "Interpolator.h"
-#include "PlaneInterpolator.h"
-#include "RansacInterpolator.h"
-#include "FastInterpolator.h"
 #include "StannInterpolator.h"
 #include "QueryPoint.h"
 #include "FastBox.h"

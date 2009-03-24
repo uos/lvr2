@@ -9,6 +9,10 @@
 #define STANNINTERPOLATOR_H_
 
 #include <omp.h>
+#include <iostream>
+#include <fstream>
+
+using namespace std;
 
 #include "Interpolator.h"
 
@@ -22,7 +26,11 @@
 
 #include "../stann/sfcnn.hpp"
 
-#include "PlaneInterpolator.h"
+struct Plane{
+	float a, b, c;
+	Normal n;
+	Vertex p;
+};
 
 class StannInterpolator: public Interpolator {
 public:

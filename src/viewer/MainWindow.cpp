@@ -1,14 +1,14 @@
 /********************************************************************************
 ** Form generated from reading ui file 'viewer.ui'
 **
-** Created: Mon Mar 23 10:23:24 2009
+** Created: Tue Mar 24 12:40:36 2009
 **      by: Qt User Interface Compiler version 4.4.3
 **
 ** WARNING! All changes made in this file will be lost when recompiling ui file!
 ********************************************************************************/
 
-#ifndef VIEWER_H
-#define VIEWER_H
+#ifndef UI_VIEWER_H
+#define UI_VIEWER_H
 
 #include <QtCore/QVariant>
 #include <QtGui/QAction>
@@ -127,4 +127,4 @@ namespace Ui {
 
 QT_END_NAMESPACE
 
-#endif // VIEWER_H
+#endif // UI_VIEWER_H

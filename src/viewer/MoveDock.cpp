@@ -1,14 +1,14 @@
 /********************************************************************************
 ** Form generated from reading ui file 'movedock.ui'
 **
-** Created: Mon Mar 23 10:23:22 2009
+** Created: Tue Mar 24 12:40:35 2009
 **      by: Qt User Interface Compiler version 4.4.3
 **
 ** WARNING! All changes made in this file will be lost when recompiling ui file!
 ********************************************************************************/
 
-#ifndef MOVEDOCK_H
-#define MOVEDOCK_H
+#ifndef UI_MOVEDOCK_H
+#define UI_MOVEDOCK_H
 
 #include <QtCore/QVariant>
 #include <QtGui/QAction>
@@ -75,4 +75,4 @@ namespace Ui {
 
 QT_END_NAMESPACE
 
-#endif // MOVEDOCK_H
+#endif // UI_MOVEDOCK_H
