@@ -44,6 +44,21 @@ public:
 	bool active;
 };
 
+class Contour{
+public:
+	Contour();
+	Contour(HalfEdgeVertex* v);
+	Contour(const Contour &other);
+
+	Contour split(HalfEdgeVertex* v);
+
+	bool contains(HalfEdge* e);
+
+	void add(HalfEdge* v) {edges.insert(v);};
+
+	multiset<HalfEdge* > edges;
+};
+
 class PolygonVertex{
 public:
 	PolygonVertex();
@@ -56,6 +71,7 @@ public:
 
 class HalfEdgePolygon {
 public:
+
 	HalfEdgePolygon() : number_of_used_edges(0){};
 	HalfEdgePolygon(HalfEdgeFace* first);
 	virtual ~HalfEdgePolygon();
@@ -64,19 +80,30 @@ public:
 	void generate_list();
 	void fuse_edges();
 
-	PolygonEdge*   find_edge(HalfEdge* edge);
+	bool trace(HalfEdge* start, Contour &c);
+
+
+	void split(HalfEdge* new_start,
+			   HalfEdge* first_start,
+			   Contour &contour, bool &fuse);
+
+	void fuse_contours(Contour &c1, Contour c2);
+	void remove_contour(Contour &c);
+
+	HalfEdge*      find_edge(HalfEdge* edge);
 	HalfEdgeFace*  find_adj_face(HalfEdge* edge);
 
 	void add_vertex(HalfEdgeVertex* v);
-
 	void test();
+
+	int gee(set<HalfEdge*> &v, HalfEdge*); //Number of emitting edges
 
 	int number_of_used_edges;
 
 	multiset<HalfEdgeFace*> faces;
 	multiset<HalfEdge*>     edges;
 
-
+	vector<Contour>         contours;
 
 };
 

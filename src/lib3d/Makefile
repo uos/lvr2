@@ -13,7 +13,6 @@ include ../../Makefile.options
 OBJ = ../../obj/
 BIN = ../../bin/
 LIB = ../../lib/
-               
 
 LIB3DTARGETS = $(OBJ)BaseVertex.o $(OBJ)ColorVertex.o \
                $(OBJ)CoordinateAxes.o $(OBJ)GroundPlane.o $(OBJ)Matrix4.o \
@@ -27,24 +26,24 @@ LIB3DTARGETS = $(OBJ)BaseVertex.o $(OBJ)ColorVertex.o \
 
 all: libmodel.a 
 
+
 clean:
 	@echo "Cleaning Modelling Toolkit's object files and library..."
-	@rm -rf $(LIB3DTARGETS)
+	rm -rf $(LIB3DTARGETS)
 
 ############################ 3D MODELLING LIBRARY #############################
-           
+
 libmodel.a: $(LIB3DTARGETS)
 	@echo -e "\nLinking 3D Modelling Toolkit Library...\n"
-	$(AR) -cr $(LIB)libmodel.a $(LIB3DTARGETS)
+	@$(AR) -cr $(LIB)libmodel.a $(LIB3DTARGETS)
 	@ranlib  $(LIB)libmodel.a
-	
 
 ############################### OBJECT FILES ##################################
 
 $(OBJ)BaseVertex.o: BaseVertex.*
 	@echo "Compiling Base Vertex..."
 	@$(CPP) $(CFLAGS) -c -o $(OBJ)BaseVertex.o BaseVertex.cpp
-
+	
 $(OBJ)BoundingBox.o: BoundingBox.*
 	@echo "Compiling Bounding Box..."
 	@$(CPP) $(CFLAGS) -c -o $(OBJ)BoundingBox.o BoundingBox.cpp
