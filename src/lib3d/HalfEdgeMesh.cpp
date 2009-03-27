@@ -211,7 +211,9 @@ void HalfEdgeMesh::extract_borders(){
 
 			current_polygon = new HalfEdgePolygon();
 			check_next_neighbor(current_face, current_face, 0, current_polygon);
-			current_polygon->fuse_edges();
+			current_polygon->generate_list();
+			//current_polygon->fuse_edges();
+			//current_polygon->test();
 
 			hem_polygons.push_back(current_polygon);
 			if(current_polygon->faces.size() > biggest_size){
@@ -225,7 +227,6 @@ void HalfEdgeMesh::extract_borders(){
 
 	cout << "BIGGEST POLYGON: " << biggest_polygon << endl;
 
-	biggest_polygon->test();
 }
 
 void HalfEdgeMesh::create_polygon(vector<int> &polygon, hash_map<unsigned int, HalfEdge*>* edges){
@@ -243,33 +244,35 @@ void HalfEdgeMesh::write_polygons(string filename){
 	multiset<HalfEdge*>::iterator it;
 
 
-//	for(it  = biggest_polygon->edges.begin();
-//		it != biggest_polygon->edges.end();
-//		it++)
-//	{
-//		HalfEdge* e = *it;
-//		out << "BEGIN" << endl;
-//		out << e->start->position.x << " " << e->start->position.y << " " << e->start->position.z << endl;
-//		out << e->end->position.x   << " " << e->end->position.y   << " " << e->end->position.z   << endl;
-//		out << "END" << endl;
-//	}
-
-	for(p_it =  hem_polygons.begin();
-		p_it != hem_polygons.end();
-		p_it++)
+	for(it  = biggest_polygon->edges.begin();
+		it != biggest_polygon->edges.end();
+		it++)
 	{
-		HalfEdgePolygon* polygon = *p_it;
-		for(it  = polygon->edges.begin();
-			it != polygon->edges.end();
-			it++)
-		{
-			HalfEdge* e = *it;
-			out << "BEGIN" << endl;
-			out << e->start->position.x << " " << e->start->position.y << " " << e->start->position.z << endl;
-			out << e->end->position.x   << " " << e->end->position.y   << " " << e->end->position.z   << endl;
-			out << "END" << endl;
-		}
+		HalfEdge* e = *it;
+		out << "BEGIN" << endl;
+		out << e->start->position.x << " " << e->start->position.y << " " << e->start->position.z << endl;
+		out << e->end->position.x   << " " << e->end->position.y   << " " << e->end->position.z   << endl;
+		out << "END" << endl;
 	}
+
+	biggest_polygon->fuse_edges();
+
+//	for(p_it =  hem_polygons.begin();
+//		p_it != hem_polygons.end();
+//		p_it++)
+//	{
+//		HalfEdgePolygon* polygon = *p_it;
+//		for(it  = polygon->edges.begin();
+//			it != polygon->edges.end();
+//			it++)
+//		{
+//			HalfEdge* e = *it;
+//			out << "BEGIN" << endl;
+//			out << e->start->position.x << " " << e->start->position.y << " " << e->start->position.z << endl;
+//			out << e->end->position.x   << " " << e->end->position.y   << " " << e->end->position.z   << endl;
+//			out << "END" << endl;
+//		}
+//	}
 
 
 

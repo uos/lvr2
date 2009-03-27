@@ -29,7 +29,7 @@ clean:
 
 libmc.a: $(MCTARGETS)
 	@echo -e "\nLinking Marching Cubes Library...\n"
-	$(AR) -cr  $(LIB)libmc.a $(MCTARGETS)
+	@$(AR) -cr  $(LIB)libmc.a $(MCTARGETS)
 	@ranlib  $(LIB)libmc.a
 
 ############################### OBJECT FILES ##################################
