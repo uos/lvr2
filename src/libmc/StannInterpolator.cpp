@@ -7,6 +7,19 @@
 
 #include "StannInterpolator.h"
 
+#include <sys/time.h>
+#include <time.h>
+#include <unistd.h>
+
+unsigned long GetCurrentTimeInMilliSec(void)
+{
+  static struct timeval tv;
+  static unsigned long milliseconds;
+  gettimeofday(&tv, NULL);
+  milliseconds = tv.tv_sec * 1000 + tv.tv_usec / 1000;
+  return milliseconds;
+}
+
 StannInterpolator::StannInterpolator(ANNpointArray pts, int n, float vs, int km, float epsilon, Vertex c) {
 
 	center = c;
@@ -19,14 +32,20 @@ StannInterpolator::StannInterpolator(ANNpointArray pts, int n, float vs, int km,
 	voxelsize = vs;
 	vs_sq = vs * vs;
 
-	omp_set_num_threads(4);
+	omp_set_num_threads(8);
 
 	cout << "##### Creating STANN Kd-Tree..." << endl;
 	point_tree = sfcnn< ANNpoint, 3, double>(points, number_of_points, 4);
 
+	unsigned long start_time = GetCurrentTimeInMilliSec();
+
 	estimate_normals();
 	interpolateNormals(20);
 	//write_normals();
+
+	unsigned long end_time = GetCurrentTimeInMilliSec();
+
+	cout << "Elapsed time: " << (double)(end_time - start_time) * 0.001 << endl;
 
 }
 

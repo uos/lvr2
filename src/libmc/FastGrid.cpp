@@ -31,6 +31,7 @@
 //
 //Simple isn't it?
 
+
 const static int shared_vertex_table[8][28] = {
 	{-1, 0, 0, 1, -1, -1, 0, 2,  0, -1, 0, 3, -1,  0, -1, 5, -1, -1, -1, 6,  0, -1, -1, 7,  0,  0, -1, 4},
 	{ 1, 0, 0, 0,  1, -1, 0, 3,  0, -1, 0, 2,  0,  0, -1, 5,  1,  0, -1, 4,  1, -1, -1, 7,  0, -1, -1, 6},
@@ -203,7 +204,8 @@ void FastGrid::createGrid(){
 }
 
 void FastGrid::calcQueryPointValues(){
-
+    unsigned long start_time = GetCurrentTimeInMilliSec();
+    omp_set_num_threads(4);
     #pragma omp parallel for
 	for(int i = 0; i < (int)query_points.size(); i++){
 		if(i % 10000 == 0) cout << "##### Calculating distance values: " << i << " / " << query_points.size() << endl;
@@ -212,7 +214,9 @@ void FastGrid::calcQueryPointValues(){
 		p.distance = interpolator->distance(v);
 		query_points[i] = p;
 	}
+	unsigned long end_time = GetCurrentTimeInMilliSec();
 
+	cout << "Elapsed time: " << (double)(end_time - start_time) * 0.001 << endl;
 }
 
 void FastGrid::createMesh(){
@@ -253,12 +257,12 @@ void FastGrid::createMesh(){
 		c++;
 	}
 
-	mesh->extract_borders();
-	mesh->write_polygons("border.bor");
-	mesh->write_face_normals("face_normal.nor");
-	mesh->printStats();
-	mesh->finalize();
-	mesh->save("mesh.ply");
+//	mesh->extract_borders();
+//	mesh->write_polygons("border.bor");
+//	mesh->write_face_normals("face_normal.nor");
+//	mesh->printStats();
+//	mesh->finalize();
+//	mesh->save("mesh.ply");
 
 
 //	cout << "##### Creating Progressive Mesh..." << endl;

@@ -96,15 +96,19 @@ public:
 	void add_vertex(HalfEdgeVertex* v);
 	void test();
 
-	int gee(set<HalfEdge*> &v, HalfEdge*); //Number of emitting edges
+	int gee(set<HalfEdge*> &v, HalfEdgeVertex*); //Number of emitting edges
 
 	int number_of_used_edges;
 
-	multiset<HalfEdgeFace*> faces;
-	multiset<HalfEdge*>     edges;
+	multiset<HalfEdgeFace*> 				faces;
+	multimap<HalfEdgeVertex*, HalfEdge*>    edges;
 
 	vector<Contour>         contours;
 
 };
+
+typedef multimap<HalfEdgeVertex*, HalfEdge*> EdgeMap;
+typedef multimap<HalfEdgeVertex*, HalfEdge*>::iterator EdgeMapIterator;
+
 
 #endif /* HALFEDGEPOLYGON_H_ */
