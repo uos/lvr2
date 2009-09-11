@@ -1,7 +1,7 @@
 /********************************************************************************
 ** Form generated from reading ui file 'viewer.ui'
 **
-** Created: Thu Mar 26 10:45:55 2009
+** Created: Tue Jun 9 09:28:21 2009
 **      by: Qt User Interface Compiler version 4.4.3
 **
 ** WARNING! All changes made in this file will be lost when recompiling ui file!

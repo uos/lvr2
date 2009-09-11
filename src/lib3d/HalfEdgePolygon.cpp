@@ -102,50 +102,86 @@ HalfEdgeFace* HalfEdgePolygon::find_adj_face(HalfEdge* edge)
 }
 
 
-bool HalfEdgePolygon::trace(HalfEdge* start, Contour &contour)
+bool HalfEdgePolygon::trace(HalfEdge* s, Contour &contour)
 {
+
+	set<HalfEdge*>::iterator it;
+	set<HalfEdge*> out_edges;
+
+	HalfEdge* start   = s;
+	HalfEdge* current = s;
+
+	int n;
+
+	cout << "TRACE: " << s << endl;
+
+	do{
+		out_edges.clear();
+
+		n = gee(out_edges, current->end);
+
+		if(n == 1){
+			contour.add(current);
+			current = *out_edges.begin();
+		} else if ( n > 1){
+
+			for(it = out_edges.begin(); it != out_edges.end(); it++)
+			{
+				if( (*it)->end->position == start->start->position)
+				{
+					current = *it;
+				} else {
+					Contour c;
+					//trace(*it, c);
+					return false;
+				}
+			}
+
+		} else {
+			cout << "NULL" << endl;
+			return false;
+		}
+
+	} while(current->end->position != start->start->position);
+
+	cout << "DELETE: " << endl;
+
+	remove_contour(contour);
+
+	cout << "FINISHED TRACE: " << contour.edges.size() << " " << edges.size() << endl;
+
+	return true;
 
 }
 
 void HalfEdgePolygon::fuse_edges(){
-	cout << "FUSE" << endl;
-	cout << edges.size() << endl;
-	size_t init = edges.size();
-	while(edges.size() > 0)
-	{
-//		HalfEdge* e_start = *edges.begin();
-//		cout << "STARTING NEW TRACE FROM POLYGON" << endl;
-//		Contour c;
-//		trace(e_start, c);
-//
-//		cout << "Contour size: " << c.edges.size() << endl;
 
+	cout << "FUSE: " << endl;
+
+	EdgeMapIterator it;
+
+	do{
 		Contour c;
-
-		multiset<HalfEdge*>::iterator it = edges.begin();
-		while(!trace(*it, c)){
-			c.edges.clear();
+		it = edges.begin();
+		while(!trace(it->second, c) && it != edges.end()){
 			it++;
-			if(it == edges.end()){
-				cout << "*** FAIL ***" << endl;
-				break;
-			}
 		}
-		cout << "Contour size   : " << c.edges.size() << endl;
-		cout << "Number of edges: " << edges.size() << endl;
-		cout << "Intial         : " << init << endl;
-	}
+	} while(edges.size() > 0);
 
 }
 
 
 void HalfEdgePolygon::remove_contour(Contour &c)
 {
-	set<HalfEdge*>::iterator it;
+
+	multiset<HalfEdge*>::iterator it;
 	for(it = c.edges.begin(); it != c.edges.end(); it++)
 	{
-		edges.erase(*it);
+		edges.erase( (*it)->start);
 	}
+
+	//cout << "WARNING: REMOVE CONTOUR NOT IMPLEMENTED!" << endl;
+
 }
 
 void HalfEdgePolygon::fuse_contours(Contour &c1, Contour c2)
@@ -177,9 +213,9 @@ void HalfEdgePolygon::generate_list(){
 			nb = find_adj_face(current);
 			if(nb == 0)
 			{
-				edges.insert(current);
+				edges.insert(make_pair(current->start, current));
 			} else {
-				if(faces.find(nb) == faces.end() ) edges.insert(current);
+				if(faces.find(nb) == faces.end() ) edges.insert(make_pair(current->start, current));
 			}
 			current = current->next;
 		} while(current != start);
@@ -188,51 +224,31 @@ void HalfEdgePolygon::generate_list(){
 
 }
 
-int HalfEdgePolygon::gee(set<HalfEdge*> &v, HalfEdge* e)
+int HalfEdgePolygon::gee(set<HalfEdge*> &edge_set, HalfEdgeVertex* v)
 {
-	int c = 0;
+	pair<EdgeMapIterator, EdgeMapIterator> range;
+	EdgeMapIterator it;
 
-	vector<HalfEdge*>::iterator e_it;
+	cout << edges.count(v) << endl;
 
-	for(e_it  = e->end->out.begin();
-		e_it != e->end->out.end();
-		e_it++)
-	{
-		HalfEdge* edge = *e_it;
-		multiset<HalfEdge*>::iterator f_edge = edges.find(edge);
+	range = edges.equal_range(v);
 
-		if(f_edge != edges.end() && edge != e){
-			c++;
-			v.insert(*f_edge);
-		}
+	if(range.first == edges.end()){
+		//cout << "NOT FOUND! " << endl;
+		return 0;
 	}
 
-	return c;
+	for(it = range.first; it != range.second; ++it)
+	{
+		edge_set.insert(it->second);
+	}
 
+	return (int) edge_set.size();
 }
 
 void HalfEdgePolygon::test()
 {
-	multiset<HalfEdge*>::iterator it;
 
-	cout << "NEW POLYGON" << endl;
-	for(it = edges.begin(); it != edges.end(); it++)
-	{
-//		HalfEdge* current_edge = *it;
-//		vector<HalfEdge*>::iterator e_it;
-//		int c = 0;
-//		for(e_it  = current_edge->end->out.begin();
-//			e_it != current_edge->end->out.end();
-//			e_it++)
-//		{
-//			HalfEdge* e = *e_it;
-//			if(edges.find(e) != edges.end()) c++;
-//		}
-//		cout << c << endl;
-		set<HalfEdge*> v;
-		cout << gee(v, *it) << endl;
-	}
-	cout << "END POLYGON" << endl << endl;
 }
 
 HalfEdgePolygon::~HalfEdgePolygon() {

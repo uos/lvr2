@@ -24,7 +24,7 @@ GLLIBS     = -framework OpenGL
 QTLIBS     = -framework QTKit
 QTINCLUDES = -I/usr/local/Trolltech/Qt-4.4.3/include/ \
              -I/usr/local/Trolltech/Qt-4.4.3/include/QtGui/ \
-             -I/usr/local/Trolltech/Qt-4.4.3/include/QtOpenGL/ \
+              -I/usr/local/Trolltech/Qt-4.4.3/include/QtOpenGL/ \
              -F/usr/local/Trolltech/Qt-4.4.3/lib/
 QTLIBS     = -framework QtGui -framework QtOpenGL -framework QtCore
 endif

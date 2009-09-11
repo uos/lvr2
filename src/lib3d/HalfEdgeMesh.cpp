@@ -241,14 +241,14 @@ void HalfEdgeMesh::write_polygons(string filename){
 	ofstream out(filename.c_str());
 
 	vector<HalfEdgePolygon*>::iterator p_it;
-	multiset<HalfEdge*>::iterator it;
-
+	//multiset<HalfEdge*>::iterator it;
+	EdgeMapIterator it;
 
 	for(it  = biggest_polygon->edges.begin();
 		it != biggest_polygon->edges.end();
 		it++)
 	{
-		HalfEdge* e = *it;
+		HalfEdge* e = it->second;
 		out << "BEGIN" << endl;
 		out << e->start->position.x << " " << e->start->position.y << " " << e->start->position.z << endl;
 		out << e->end->position.x   << " " << e->end->position.y   << " " << e->end->position.z   << endl;

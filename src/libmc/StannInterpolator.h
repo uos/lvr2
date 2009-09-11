@@ -26,6 +26,13 @@ using namespace std;
 
 #include "../stann/sfcnn.hpp"
 
+#include <sys/time.h>
+#include <time.h>
+#include <unistd.h>
+
+unsigned long GetCurrentTimeInMilliSec(void);
+
+
 struct Plane{
 	float a, b, c;
 	Normal n;
