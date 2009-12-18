@@ -28,5 +28,5 @@ QueryPoint::QueryPoint(const QueryPoint &o){
 }
 
 QueryPoint::~QueryPoint() {
-	// TODO Auto-generated destructor stub
+
 }

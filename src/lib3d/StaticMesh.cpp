@@ -6,6 +6,7 @@
  */
 
 #include "StaticMesh.h"
+#include "PLYWriter.h"
 
 StaticMesh::StaticMesh(){
 
@@ -167,8 +168,6 @@ void StaticMesh::load(string filename){
 
 void StaticMesh::save(string filename){
 
-	cout << "STATIC MESH::SAVE" << endl;
-
 	if(finalized){
 
 		cout << 1 << endl << flush;
@@ -176,11 +175,14 @@ void StaticMesh::save(string filename){
 		out.open(filename.c_str(), fstream::out | fstream::binary);
 
 		if(!out.good()){
+
+
 			cout << "Static Mesh::Save: Unable to open file: " << filename << endl;
 			return;
 		}
 
 		char* comment = "comment c\n";
+
 
 		//*********** WRITE PLY HEADER ***************
 
@@ -193,17 +195,20 @@ void StaticMesh::save(string filename){
 		strcpy(header_dcr.format, PLY_LITTLE_ENDIAN);
 		strcpy(header_dcr.comment, comment);
 
-		//Setting up vertex descripten
+		//Setting up vertex description
 		strcpy(vertex_dcr.element, "element vertex ");
+
 		strcpy(vertex_dcr.property_x, "property float x\n");
 		strcpy(vertex_dcr.property_y, "property float y\n");
 		strcpy(vertex_dcr.property_z, "property float z\n");
+
 		strcpy(vertex_dcr.property_nx, "property float nx\n");
 		strcpy(vertex_dcr.property_ny, "property float ny\n");
 		strcpy(vertex_dcr.property_nz, "property float nz\n");
 		vertex_dcr.count = 0;
 
-		//Setting up face desription
+
+		//Setting up face description
 		strcpy(face_dcr.face, "face ");
 		strcpy(face_dcr.property, "property list uchar int vertex_index\n");
 		face_dcr.count = 3;
@@ -263,5 +268,33 @@ void StaticMesh::save(string filename){
 	} else {
 		cout << "##### Warning: Static Mesh: Buffers empty." << endl;
 	}
+
+}
+
+void StaticMesh::savePLY(string filename)
+{
+//	// Test if mesh is finalized
+//	if(finalized)
+//	{
+//		PLYWriter writer(filename);
+//
+//		// Generate vertex element description in .ply header section
+//
+//		// Add properties depending on the available buffers
+//		if(vertices != 0)
+//		{
+//
+//		}
+//
+//		if(normals != 0)
+//		{
+//
+//		}
+//
+//	}
+//	else
+//	{
+//		cout << "#### Warning: Static Mesh: Buffers empty." << endl;
+// 	}
 
 }

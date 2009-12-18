@@ -397,5 +397,5 @@ float PlaneInterpolator::distance(ColorVertex v){
 }
 
 PlaneInterpolator::~PlaneInterpolator() {
-	// TODO Auto-generated destructor stub
+
 }

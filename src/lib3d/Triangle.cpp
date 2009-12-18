@@ -120,5 +120,5 @@ int Triangle::getIndex(int index){
 }
 
 Triangle::~Triangle() {
-	// TODO Auto-generated destructor stub
+
 }

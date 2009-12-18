@@ -22,7 +22,9 @@ LIB3DTARGETS = $(OBJ)BaseVertex.o $(OBJ)ColorVertex.o \
                $(OBJ)HalfEdgeMesh.o $(OBJ)HalfEdgePolygon.o $(OBJ)HalfEdge.o \
                $(OBJ)HalfEdgeVertex.o $(OBJ)HalfEdgeFace.o $(OBJ)Triangle.o \
                $(OBJ)LinkedVertex.o $(OBJ)LinkedTriangle.o \
-               $(OBJ)LinkedTriangleMesh.o $(OBJ)PolygonMesh.o $(OBJ)Polygon.o
+               $(OBJ)LinkedTriangleMesh.o $(OBJ)PolygonMesh.o $(OBJ)Polygon.o \
+               $(OBJ)PLYElements.o $(OBJ)PLYWriter.o $(OBJ)PLYProperty.o \
+               $(OBJ)PLYElement.o
 
 all: libmodel.a 
 
@@ -143,3 +145,19 @@ $(OBJ)PolygonMesh.o: PolygonMesh.*
 $(OBJ)Polygon.o: Polygon.*
 	@echo "Compiling Polygon..."
 	@$(CPP) $(CFLAGS) -c -o $(OBJ)Polygon.o Polygon.cpp
+	
+$(OBJ)PLYWriter.o: PLYWriter.*
+	@echo "Compiling PLYWriter..."
+	@$(CPP) $(CFLAGS) -c -o $(OBJ)PLYWriter.o $(SRC)PLYWriter.cpp
+
+$(OBJ)PLYElements.o: PLYElements.*
+	@echo "Compiling PLYElements..."
+	@$(CPP) $(CFLAGS) -c -o $(OBJ)PLYElements.o $(SRC)PLYElements.cpp
+	
+$(OBJ)PLYProperty.o: $(SRC)PLYProperty.*
+	@echo "Compiling PLY Property..."
+	@$(CPP) $(CFLAGS) -c -o $(OBJ)PLYProperty.o $(SRC)PLYProperty.cpp
+	
+$(OBJ)PLYElement.o: $(SRC)PLYElement.*
+	@echo "Compiling PLY Element..."
+	@$(CPP) $(CFLAGS) -c -o $(OBJ)PLYElement.o $(SRC)PLYElement.cpp

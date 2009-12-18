@@ -1,8 +1,8 @@
 /********************************************************************************
 ** Form generated from reading ui file 'objectdialog.ui'
 **
-** Created: Tue Jun 9 09:28:21 2009
-**      by: Qt User Interface Compiler version 4.4.3
+** Created: Tue Dec 1 12:46:37 2009
+**      by: Qt User Interface Compiler version 4.5.2
 **
 ** WARNING! All changes made in this file will be lost when recompiling ui file!
 ********************************************************************************/
@@ -15,6 +15,7 @@
 #include <QtGui/QApplication>
 #include <QtGui/QButtonGroup>
 #include <QtGui/QDockWidget>
+#include <QtGui/QHeaderView>
 #include <QtGui/QListWidget>
 #include <QtGui/QWidget>
 
@@ -28,34 +29,34 @@ public:
 
     void setupUi(QDockWidget *ObjectDialog)
     {
-    if (ObjectDialog->objectName().isEmpty())
-        ObjectDialog->setObjectName(QString::fromUtf8("ObjectDialog"));
-    ObjectDialog->resize(200, 137);
-    ObjectDialog->setMinimumSize(QSize(200, 130));
-    ObjectDialog->setMaximumSize(QSize(16777215, 150));
-    ObjectDialog->setLayoutDirection(Qt::LeftToRight);
-    ObjectDialog->setFloating(false);
-    ObjectDialog->setFeatures(QDockWidget::DockWidgetClosable|QDockWidget::DockWidgetVerticalTitleBar);
-    ObjectDialog->setAllowedAreas(Qt::LeftDockWidgetArea);
-    dockWidgetContents = new QWidget();
-    dockWidgetContents->setObjectName(QString::fromUtf8("dockWidgetContents"));
-    dockWidgetContents->setGeometry(QRect(20, 0, 180, 137));
-    listWidget = new QListWidget(dockWidgetContents);
-    listWidget->setObjectName(QString::fromUtf8("listWidget"));
-    listWidget->setGeometry(QRect(0, 10, 171, 121));
-    listWidget->setMinimumSize(QSize(0, 0));
-    listWidget->setMaximumSize(QSize(16777215, 16777215));
-    ObjectDialog->setWidget(dockWidgetContents);
+        if (ObjectDialog->objectName().isEmpty())
+            ObjectDialog->setObjectName(QString::fromUtf8("ObjectDialog"));
+        ObjectDialog->resize(200, 137);
+        ObjectDialog->setMinimumSize(QSize(200, 130));
+        ObjectDialog->setMaximumSize(QSize(16777215, 150));
+        ObjectDialog->setLayoutDirection(Qt::LeftToRight);
+        ObjectDialog->setFloating(false);
+        ObjectDialog->setFeatures(QDockWidget::DockWidgetClosable|QDockWidget::DockWidgetVerticalTitleBar);
+        ObjectDialog->setAllowedAreas(Qt::LeftDockWidgetArea);
+        dockWidgetContents = new QWidget();
+        dockWidgetContents->setObjectName(QString::fromUtf8("dockWidgetContents"));
+        dockWidgetContents->setGeometry(QRect(20, 0, 180, 137));
+        listWidget = new QListWidget(dockWidgetContents);
+        listWidget->setObjectName(QString::fromUtf8("listWidget"));
+        listWidget->setGeometry(QRect(0, 10, 171, 121));
+        listWidget->setMinimumSize(QSize(0, 0));
+        listWidget->setMaximumSize(QSize(16777215, 16777215));
+        ObjectDialog->setWidget(dockWidgetContents);
 
-    retranslateUi(ObjectDialog);
+        retranslateUi(ObjectDialog);
 
-    QMetaObject::connectSlotsByName(ObjectDialog);
+        QMetaObject::connectSlotsByName(ObjectDialog);
     } // setupUi
 
     void retranslateUi(QDockWidget *ObjectDialog)
     {
-    ObjectDialog->setWindowTitle(QApplication::translate("ObjectDialog", "Loaded Objects", 0, QApplication::UnicodeUTF8));
-    Q_UNUSED(ObjectDialog);
+        ObjectDialog->setWindowTitle(QApplication::translate("ObjectDialog", "Loaded Objects", 0, QApplication::UnicodeUTF8));
+        Q_UNUSED(ObjectDialog);
     } // retranslateUi
 
 };

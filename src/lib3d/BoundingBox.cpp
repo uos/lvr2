@@ -33,5 +33,5 @@ BoundingBox::BoundingBox(float x_min, float y_min, float z_min,
 
 
 BoundingBox::~BoundingBox() {
-	// TODO Auto-generated destructor stub
+
 }

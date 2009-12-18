@@ -10,7 +10,7 @@
 using Lib3D::Polygon;
 
 Polygon::Polygon() {
-	// TODO Auto-generated constructor stub
+
 
 }
 
@@ -23,5 +23,5 @@ Polygon::Polygon(const Polygon &other){
 }
 
 Polygon::~Polygon() {
-	// TODO Auto-generated destructor stub
+
 }

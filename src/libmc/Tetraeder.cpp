@@ -81,5 +81,5 @@ int Tetraeder::getApproximation(int globalIndex, TriangleMesh &mesh, Interpolato
 }
 
 Tetraeder::~Tetraeder() {
-	// TODO Auto-generated destructor stub
+
 }

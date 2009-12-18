@@ -15,6 +15,7 @@
 #include <stdlib.h>
 #include <string>
 #include <string.h>
+#include <sstream>
 
 using namespace std;
 
@@ -33,6 +34,8 @@ public:
 	virtual void load(string filename);
 
 	virtual void finalize();
+
+	virtual void savePLY(string filename);
 
 protected:
 

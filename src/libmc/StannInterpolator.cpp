@@ -50,7 +50,6 @@ StannInterpolator::StannInterpolator(ANNpointArray pts, int n, float vs, int km,
 }
 
 StannInterpolator::~StannInterpolator() {
-	// TODO Auto-generated destructor stub
 }
 
 float StannInterpolator::distance(Vertex v, Plane p){

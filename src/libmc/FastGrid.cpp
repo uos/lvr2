@@ -259,10 +259,10 @@ void FastGrid::createMesh(){
 
 //	mesh->extract_borders();
 //	mesh->write_polygons("border.bor");
-//	mesh->write_face_normals("face_normal.nor");
-//	mesh->printStats();
-//	mesh->finalize();
-//	mesh->save("mesh.ply");
+	mesh->write_face_normals("face_normal.nor");
+	mesh->printStats();
+	mesh->finalize();
+	mesh->save("mesh.ply");
 
 
 //	cout << "##### Creating Progressive Mesh..." << endl;
