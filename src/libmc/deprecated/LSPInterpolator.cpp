@@ -25,7 +25,7 @@ LSPInterpolator::LSPInterpolator(ANNpointArray pts, int n, float vs, int km, flo
 }
 
 LSPInterpolator::~LSPInterpolator() {
-	// TODO Auto-generated destructor stub
+
 }
 
 void LSPInterpolator::interpolateNormals(){

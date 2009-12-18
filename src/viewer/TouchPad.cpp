@@ -88,5 +88,5 @@ void TouchPad::mouseMoveEvent(QMouseEvent* e){
 }
 
 TouchPad::~TouchPad() {
-	// TODO Auto-generated destructor stub
+
 }

@@ -25,7 +25,7 @@ RansacInterpolator::RansacInterpolator(ANNpointArray pts, int n, float vs, int k
 
 
 RansacInterpolator::~RansacInterpolator() {
-	// TODO Auto-generated destructor stub
+
 }
 
 int RansacInterpolator::random(int k_max){

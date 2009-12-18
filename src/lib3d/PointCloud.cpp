@@ -43,5 +43,5 @@ void PointCloud::initDisplayList(){
 
 
 PointCloud::~PointCloud() {
-	// TODO Auto-generated destructor stub
+
 }

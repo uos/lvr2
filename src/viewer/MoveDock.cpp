@@ -1,8 +1,8 @@
 /********************************************************************************
 ** Form generated from reading ui file 'movedock.ui'
 **
-** Created: Tue Jun 9 09:28:21 2009
-**      by: Qt User Interface Compiler version 4.4.3
+** Created: Tue Dec 1 12:46:37 2009
+**      by: Qt User Interface Compiler version 4.5.2
 **
 ** WARNING! All changes made in this file will be lost when recompiling ui file!
 ********************************************************************************/
@@ -18,6 +18,7 @@
 #include <QtGui/QDockWidget>
 #include <QtGui/QFrame>
 #include <QtGui/QGroupBox>
+#include <QtGui/QHeaderView>
 #include <QtGui/QWidget>
 
 QT_BEGIN_NAMESPACE
@@ -32,39 +33,39 @@ public:
 
     void setupUi(QDockWidget *MoveDock)
     {
-    if (MoveDock->objectName().isEmpty())
-        MoveDock->setObjectName(QString::fromUtf8("MoveDock"));
-    MoveDock->resize(200, 232);
-    MoveDock->setMinimumSize(QSize(200, 0));
-    MoveDock->setFeatures(QDockWidget::DockWidgetFeatureMask);
-    MoveDock->setAllowedAreas(Qt::LeftDockWidgetArea);
-    dockWidgetContents = new QWidget();
-    dockWidgetContents->setObjectName(QString::fromUtf8("dockWidgetContents"));
-    dockWidgetContents->setGeometry(QRect(20, 0, 180, 232));
-    touchFrame = new QFrame(dockWidgetContents);
-    touchFrame->setObjectName(QString::fromUtf8("touchFrame"));
-    touchFrame->setGeometry(QRect(0, 10, 171, 151));
-    touchFrame->setAutoFillBackground(false);
-    touchFrame->setFrameShape(QFrame::StyledPanel);
-    touchFrame->setFrameShadow(QFrame::Sunken);
-    groupBoxAction = new QGroupBox(dockWidgetContents);
-    groupBoxAction->setObjectName(QString::fromUtf8("groupBoxAction"));
-    groupBoxAction->setGeometry(QRect(0, 170, 171, 51));
-    comboBoxAction = new QComboBox(groupBoxAction);
-    comboBoxAction->setObjectName(QString::fromUtf8("comboBoxAction"));
-    comboBoxAction->setGeometry(QRect(10, 20, 151, 22));
-    MoveDock->setWidget(dockWidgetContents);
+        if (MoveDock->objectName().isEmpty())
+            MoveDock->setObjectName(QString::fromUtf8("MoveDock"));
+        MoveDock->resize(200, 232);
+        MoveDock->setMinimumSize(QSize(200, 0));
+        MoveDock->setFeatures(QDockWidget::DockWidgetFeatureMask);
+        MoveDock->setAllowedAreas(Qt::LeftDockWidgetArea);
+        dockWidgetContents = new QWidget();
+        dockWidgetContents->setObjectName(QString::fromUtf8("dockWidgetContents"));
+        dockWidgetContents->setGeometry(QRect(20, 0, 180, 232));
+        touchFrame = new QFrame(dockWidgetContents);
+        touchFrame->setObjectName(QString::fromUtf8("touchFrame"));
+        touchFrame->setGeometry(QRect(0, 10, 171, 151));
+        touchFrame->setAutoFillBackground(false);
+        touchFrame->setFrameShape(QFrame::StyledPanel);
+        touchFrame->setFrameShadow(QFrame::Sunken);
+        groupBoxAction = new QGroupBox(dockWidgetContents);
+        groupBoxAction->setObjectName(QString::fromUtf8("groupBoxAction"));
+        groupBoxAction->setGeometry(QRect(0, 170, 171, 51));
+        comboBoxAction = new QComboBox(groupBoxAction);
+        comboBoxAction->setObjectName(QString::fromUtf8("comboBoxAction"));
+        comboBoxAction->setGeometry(QRect(10, 20, 151, 22));
+        MoveDock->setWidget(dockWidgetContents);
 
-    retranslateUi(MoveDock);
+        retranslateUi(MoveDock);
 
-    QMetaObject::connectSlotsByName(MoveDock);
+        QMetaObject::connectSlotsByName(MoveDock);
     } // setupUi
 
     void retranslateUi(QDockWidget *MoveDock)
     {
-    MoveDock->setWindowTitle(QApplication::translate("MoveDock", "Rotate Object", 0, QApplication::UnicodeUTF8));
-    groupBoxAction->setTitle(QApplication::translate("MoveDock", "Action", 0, QApplication::UnicodeUTF8));
-    Q_UNUSED(MoveDock);
+        MoveDock->setWindowTitle(QApplication::translate("MoveDock", "Rotate Object", 0, QApplication::UnicodeUTF8));
+        groupBoxAction->setTitle(QApplication::translate("MoveDock", "Action", 0, QApplication::UnicodeUTF8));
+        Q_UNUSED(MoveDock);
     } // retranslateUi
 
 };

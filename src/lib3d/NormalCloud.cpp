@@ -41,7 +41,7 @@ NormalCloud::NormalCloud(const NormalCloud &o){
 }
 
 NormalCloud::~NormalCloud() {
-	// TODO Auto-generated destructor stub
+
 }
 
 void NormalCloud::initDisplayList(){

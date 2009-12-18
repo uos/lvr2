@@ -252,5 +252,5 @@ void HalfEdgePolygon::test()
 }
 
 HalfEdgePolygon::~HalfEdgePolygon() {
-	// TODO Auto-generated destructor stub
+
 }

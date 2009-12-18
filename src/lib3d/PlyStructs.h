@@ -21,19 +21,19 @@ struct PlyHeaderDescription{
 
 struct PlyVertexDescription{
 
-  char element[15];
+  char element[25];
   unsigned int count;
-  char property_x[20];
-  char property_y[20];
-  char property_z[20];
-  char property_nx[20];
-  char property_ny[20];
-  char property_nz[20];
+  char property_x[25];
+  char property_y[25];
+  char property_z[25];
+  char property_nx[25];
+  char property_ny[25];
+  char property_nz[25];
 };
 
 struct PlyFaceDescription{
 
-  char face[5];
+  char face[10];
   unsigned int count;
   char property[40];
 

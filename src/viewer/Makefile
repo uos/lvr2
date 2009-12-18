@@ -25,14 +25,14 @@ clean:
 	@echo -e "Cleaning Viewer Library..."
 	@rm -rf $(VIEWTARGETS)
 	@rm -rf $(LIB)libviewer.a
-	
+
 ################################ VIEWER LIBRARY  ##############################
 
 libviewer.a: $(VIEWTARGETS)
 	@echo -e "\nLinking Viewer Library...\n"
 	@$(AR) -c -r -s $(LIB)libviewer.a $(VIEWTARGETS)
-	
-	
+
+
 ############################### OBJECT FILES ##################################
 
 $(OBJ)MainWindow.o: viewer.ui
@@ -82,7 +82,3 @@ $(OBJ)RenderFrame.o: RenderFrame.*
 	@echo "Compiling Render Frame..."
 	@$(MOC) -i RenderFrame.h > RenderFrameMoc.cpp
 	@$(CPP) $(CFLAGS) -c -o $(OBJ)RenderFrame.o RenderFrame.cpp
-
-
-               
-              

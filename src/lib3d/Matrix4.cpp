@@ -162,7 +162,7 @@ void Matrix4::transpose(){
 }
 
 Matrix4::~Matrix4() {
-	// TODO Auto-generated destructor stub
+
 }
 
 

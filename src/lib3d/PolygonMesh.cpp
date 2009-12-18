@@ -80,5 +80,5 @@ void PolygonMesh::compileDisplayList(){
 }
 
 PolygonMesh::~PolygonMesh() {
-	// TODO Auto-generated destructor stub
+
 }

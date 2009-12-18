@@ -433,7 +433,7 @@ float FastBox::calcIntersection(float x1, float x2, float d1, float d2, bool int
 
 
 FastBox::~FastBox() {
-	// TODO Auto-generated destructor stub
+
 }
 
 
