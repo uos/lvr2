@@ -170,101 +170,31 @@ void StaticMesh::save(string filename){
 
 	if(finalized){
 
-		cout << 1 << endl << flush;
-		ofstream out;
-		out.open(filename.c_str(), fstream::out | fstream::binary);
+		cout << "Static mesh:: save" << endl;
 
-		if(!out.good()){
+		PLYIO ply_writer;
 
+		// Create element descriptions
+		PLYElement* vertex_element = new PLYElement("vertex", number_of_vertices);
+		vertex_element->addProperty("x", "float");
+		vertex_element->addProperty("y", "float");
+		vertex_element->addProperty("z", "float");
 
-			cout << "Static Mesh::Save: Unable to open file: " << filename << endl;
-			return;
-		}
-
-		char* comment = "comment c\n";
-
-
-		//*********** WRITE PLY HEADER ***************
-
-		PlyHeaderDescription header_dcr;
-		PlyVertexDescription vertex_dcr;
-		PlyFaceDescription face_dcr;
-
-		//Setting up header
-		strcpy(header_dcr.ply, "ply");
-		strcpy(header_dcr.format, PLY_LITTLE_ENDIAN);
-		strcpy(header_dcr.comment, comment);
-
-		//Setting up vertex description
-		strcpy(vertex_dcr.element, "element vertex ");
-
-		strcpy(vertex_dcr.property_x, "property float x\n");
-		strcpy(vertex_dcr.property_y, "property float y\n");
-		strcpy(vertex_dcr.property_z, "property float z\n");
-
-		strcpy(vertex_dcr.property_nx, "property float nx\n");
-		strcpy(vertex_dcr.property_ny, "property float ny\n");
-		strcpy(vertex_dcr.property_nz, "property float nz\n");
-		vertex_dcr.count = 0;
+		PLYElement* face_element = new PLYElement("face", number_of_faces);
+		face_element->addProperty("vertex_index", "int", "int");
 
 
-		//Setting up face description
-		strcpy(face_dcr.face, "face ");
-		strcpy(face_dcr.property, "property list uchar int vertex_index\n");
-		face_dcr.count = 3;
+		// Add elements descriptions to header
+		ply_writer.addElement(vertex_element);
+		ply_writer.addElement(face_element);
 
-		//Local variables
-		PlyVertex ply_vertex;
-		PlyFace ply_face;
+		// Set data arrays
+		ply_writer.setVertexArray(vertices, number_of_vertices);
+		ply_writer.setIndexArray(indices, number_of_faces);
 
-		cout << "NUMBER OF FACES: " << number_of_faces << endl << flush;
+		// Save
+		ply_writer.save(filename, true);
 
-		//Set vertex and face count
-		vertex_dcr.count = number_of_vertices;
-		face_dcr.count = number_of_faces;
-		ply_face.vertexCount = 0;
-
-
-
-		//Write header
-		out.write( (char*)&header_dcr, sizeof(header_dcr));
-		out.write( (char*)&vertex_dcr, sizeof(vertex_dcr));
-		out.write( (char*)&face_dcr, sizeof(face_dcr));
-
-		char* buffer = "end_header\n";
-		out.write(buffer, (streamsize)strlen(buffer));
-
-		//Write vertices and normals
-		for(unsigned int i = 0; i < vertex_dcr.count; i++){
-
-			ply_vertex.x = vertices[3 * i];
-			ply_vertex.y = vertices[3 * i + 1];
-			ply_vertex.z = vertices[3 * i + 2];
-
-			ply_vertex.nx = normals[3 * i];
-			ply_vertex.ny = normals[3 * i + 1];
-			ply_vertex.nz = normals[3 * 1 + 2];
-
-			ply_vertex.r = colors[3 * i];
-			ply_vertex.g = colors[3 * i + 1];
-			ply_vertex.b = colors[3 * i + 2];
-
-			ply_vertex.u = 0.0;
-			ply_vertex.v = 0.0;
-
-			ply_vertex.texture = 1;
-
-			out.write( (char*)&ply_vertex, sizeof(ply_vertex));
-		}
-
-		for(int i = 0; i < number_of_faces; i ++){
-
-			ply_face.indices[0] = indices[3 * i];
-			ply_face.indices[1] = indices[3 * i + 1];
-			ply_face.indices[2] = indices[3 * i + 2];
-
-			out.write( (char*)&ply_face, sizeof(ply_face));
-		}
 	} else {
 		cout << "##### Warning: Static Mesh: Buffers empty." << endl;
 	}

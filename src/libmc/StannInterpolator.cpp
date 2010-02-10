@@ -32,7 +32,7 @@ StannInterpolator::StannInterpolator(ANNpointArray pts, int n, float vs, int km,
 	voxelsize = vs;
 	vs_sq = vs * vs;
 
-	omp_set_num_threads(8);
+	omp_set_num_threads(4);
 
 	cout << "##### Creating STANN Kd-Tree..." << endl;
 	point_tree = sfcnn< ANNpoint, 3, double>(points, number_of_points, 4);
