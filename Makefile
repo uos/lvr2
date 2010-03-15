@@ -17,7 +17,12 @@ MCSRC       = src/libmc/
 VIEWERSRC   = src/viewer/
 
 
-all: lib/libnewmat.a lib/libann.a lib/libmodel.a lib/libmc.a lib/libviewer.a bin/mcubes bin/viewer
+all: dirs lib/libnewmat.a lib/libann.a lib/libmodel.a lib/libmc.a lib/libviewer.a bin/mcubes bin/viewer
+
+dirs: 
+	mkdir -p bin
+	mkdir -p lib
+	mkdir -p obj
 
 lib/libnewmat.a: src/newmat/*.*
 	@echo -e "Building Newmat Library..."
