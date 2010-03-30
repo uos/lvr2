@@ -204,17 +204,25 @@ void EventHandler::loadObject(string file_name){
 		PointCloud* pc = new PointCloud(file_name);
 		pc->setName(file_name);
 		objectHandler->addObject(pc);
-	} else if(extension == "3d"){
+	}
+	else if(extension == "3d")
+	{
 
-	} else if(extension == "nor"){
+	}
+	else if(extension == "nor")
+	{
 		NormalCloud* nc = new NormalCloud(file_name);
 		nc->setName(file_name);
 		objectHandler->addObject(nc);
-	} else if(extension == "ply"){
+	}
+	else if(extension == "ply")
+	{
 		StaticMesh* mesh = new StaticMesh(file_name);
 		mesh->setName(file_name);
 		objectHandler->addObject(mesh);
-	} else if(extension == "bor"){
+	}
+	else if(extension == "bor")
+	{
 		cout << "EXTENSION: BOR" << endl;
 		PolygonMesh* mesh = new PolygonMesh(file_name);
 		mesh->setName(file_name);

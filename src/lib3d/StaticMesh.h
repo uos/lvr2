@@ -37,6 +37,9 @@ public:
 
 	virtual void savePLY(string filename);
 
+private:
+	void interpolateNormals();
+
 protected:
 
 	void compileDisplayList();
@@ -46,12 +49,12 @@ protected:
 	float* vertices;
 	float* colors;
 
-	unsigned int* indices;
+	unsigned int* m_indices;
 
 	bool finalized;
 
-	int number_of_vertices;
-	int number_of_faces;
+	size_t number_of_vertices;
+	size_t number_of_faces;
 };
 
 void StaticMesh::render(){

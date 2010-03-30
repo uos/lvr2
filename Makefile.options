@@ -1,5 +1,5 @@
 #CPP = /opt/intel/cce/10.1.018/bin/icc
-CPP = g++-4.3
+CPP = g++
 #CPP  = nvcc
 CFLAGS = -Wall -Wno-deprecated -Wno-write-strings -Wno-strict-aliasing -fopenmp -O3 -march=core2
 #CFLAGS = -Wall -Wno-deprecated -Wno-write-strings -Wno-strict-aliasing -fopenmp -O3 ##FLAGS FOR GCC
