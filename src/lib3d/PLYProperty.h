@@ -36,6 +36,8 @@ protected:
 	string 	m_name;
 	string 	m_elementTypeName;
 	string 	m_countTypeName;
+
+	size_t  m_size;
 };
 
 template<typename V>
@@ -102,7 +104,7 @@ size_t ScalarProperty<V>::getCountSize()
 template<typename V>
 size_t ScalarProperty<V>::getValueSize()
 {
-	return sizeof(V);
+	return m_size;
 }
 
 template<typename V>

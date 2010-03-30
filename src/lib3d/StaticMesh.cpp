@@ -2,18 +2,20 @@
  * StaticMesh.cpp
  *
  *  Created on: 12.11.2008
- *      Author: twiemann
+ *      Author: Thomas Wiemann
  */
 
 #include "StaticMesh.h"
 #include "PLYWriter.h"
+
+#include <cassert>
 
 StaticMesh::StaticMesh(){
 
 	normals = 0;
 	vertices = 0;
 	colors = 0;
-	indices = 0;
+	m_indices = 0;
 
 	number_of_faces = 0;
 	number_of_vertices = 0;
@@ -27,7 +29,7 @@ StaticMesh::StaticMesh(string name) : Renderable(name){
 	normals = 0;
 	vertices = 0;
 	colors = 0;
-	indices = 0;
+	m_indices = 0;
 
 	number_of_faces = 0;
 	number_of_vertices = 0;
@@ -43,22 +45,24 @@ StaticMesh::StaticMesh(const StaticMesh &o){
 	if(normals != 0) delete[] normals;
 	if(vertices != 0) delete[] vertices;
 	if(colors != 0) delete[] colors;
-	if(indices != 0) delete[] indices;
+	if(m_indices != 0) delete[] m_indices;
 
 	normals = new float[3 * o.number_of_vertices];
 	vertices = new float[3 * o.number_of_vertices];
 	colors = new float[3 * o.number_of_vertices];
 
-	indices = new unsigned int[3 * o.number_of_faces];
+	m_indices = new unsigned int[3 * o.number_of_faces];
 
-	for(int i = 0; i < 3 * o.number_of_vertices; i++){
+
+
+	for(size_t i = 0; i < 3 * o.number_of_vertices; i++){
 		normals[i] = o.normals[i];
 		vertices[i] = o.vertices[i];
 		colors[i] = o.colors[i];
 	}
 
-	for(int i = 0; i < 3 * o.number_of_faces; i++){
-		indices[i] = o.indices[i];
+	for(size_t i = 0; i < 3 * o.number_of_faces; i++){
+		m_indices[i] = o.m_indices[i];
 	}
 
 }
@@ -77,15 +81,22 @@ void StaticMesh::compileDisplayList(){
 
 		listIndex = glGenLists(1);
 
+		// Enable vertex / normal / color arrays
 		glEnableClientState(GL_VERTEX_ARRAY);
 		glEnableClientState(GL_NORMAL_ARRAY);
 		glEnableClientState(GL_COLOR_ARRAY);
 
+		// Start new display list
 		glNewList(listIndex, GL_COMPILE);
+
+		// Assign element pointers
 		glVertexPointer(3, GL_FLOAT, 0, vertices);
 		glNormalPointer(GL_FLOAT, 0, normals);
 		glColorPointer(3, GL_FLOAT, 0, colors);
-		glDrawElements(GL_TRIANGLES, 3 * number_of_faces, GL_UNSIGNED_INT, indices);
+
+		// Draw elements
+		glDrawElements(GL_TRIANGLES, 3 * number_of_faces, GL_UNSIGNED_INT, m_indices);
+
 		glEndList();
 
 	}
@@ -94,75 +105,105 @@ void StaticMesh::compileDisplayList(){
 
 void StaticMesh::load(string filename){
 
-	ifstream in;
+	PLYIO w;
+	w.read(filename);
 
-	PlyHeaderDescription head;
-	PlyVertexDescription vertex_dcr;
-	PlyFaceDescription face_dcr;
+	size_t n_normals = 0;
+	size_t n_colors = 0;
 
-	PlyFace ply_face;
-	PlyVertex ply_vertex;
+	unsigned int* tmp_ind;
 
-	in.open(filename.c_str(), fstream::in | fstream::binary);
+	vertices  = w.getVertexArray(number_of_vertices);
+	normals = w.getNormalArray(n_normals);
+	colors = w.getColorArray(n_colors);
+	m_indices = w.getIndexArray(number_of_faces);
 
-	in.read( (char*)&head, sizeof(head));
-	in.read( (char*)&vertex_dcr, sizeof(vertex_dcr));
-	in.read( (char*)&face_dcr, sizeof(face_dcr));
 
-	char* buffer = "end_header\n";
-	char dummy[20];
-	in.read( dummy, (streamsize)strlen(buffer));
-
-	//Save no. of vertices and faces
-	number_of_vertices = vertex_dcr.count;
-	number_of_faces = face_dcr.count;
-
-	//Create Arrays
-	if(normals != 0) delete[] normals;
-	if(vertices != 0) delete[] vertices;
-	if(colors != 0) delete[] colors;
-	if(indices != 0) delete[] indices;
-
-	normals = new float[3 * number_of_vertices];
-	vertices = new float[3 * number_of_vertices];
-	colors = new float[3 * number_of_vertices];
-
-	indices = new unsigned int[3 * number_of_faces];
-
-	for(unsigned int i = 0; i < vertex_dcr.count; i++){
-
-		in.read( (char*)&ply_vertex, sizeof(PlyVertex));
-
-		vertices[3 * i    ] = ply_vertex.x;
-		vertices[3 * i + 1] = ply_vertex.y;
-		vertices[3 * i + 2] = ply_vertex.z;
-
-		normals [3 * i    ] = ply_vertex.nx;
-		normals [3 * i + 1] = ply_vertex.ny;
-		normals [3 * 1 + 2] = ply_vertex.nz;
-
-		colors  [3 * i    ] = ply_vertex.r;
-		colors  [3 * i + 1] = ply_vertex.g;
-		colors  [3 * i + 2] = ply_vertex.b;
-
-	}
-
-	for(unsigned int i = 0; i < face_dcr.count; i++){
-		in.read( (char*)&ply_face, sizeof(ply_face));
-		for(int j = 0; j < 3; j++){
-			indices[3 * i + j] = ply_face.indices[j];
-			if(indices[3 * i + j] >= (unsigned int)number_of_vertices ||indices[3 * i + j] < 0){
-				cout << indices[3 * i + j] << " " << number_of_vertices << endl;
-				cout << "ERROR!" << endl << flush;
-			}
+	if(n_colors == 0)
+	{
+		colors = new float[number_of_vertices * 3];
+		for(size_t i = 0; i < number_of_vertices; i++)
+		{
+			colors[i * 3] = 0.0;
+			colors[i * 3 + 1] = 1.0;
+			colors[i * 3 + 2] = 0.0;
 		}
 
 	}
 
-	cout << "LOAD COMPLETE" << endl << flush;
+	if(n_normals == 0)
+	{
+		interpolateNormals();
+	}
 
 	finalized = true;
 	compileDisplayList();
+
+}
+
+void StaticMesh::interpolateNormals()
+{
+	// Be sure that vertex and indexbuffer exist
+	assert(vertices);
+	assert(m_indices);
+
+	// Alloc new normal array
+	normals = new float[3 * number_of_vertices];
+	memset(normals, 0, 3 * number_of_vertices * sizeof(float));
+
+	// Interpolate surface normals for each face
+	// and interpolate sum up the normal coordinates
+	// at each vertex position
+	unsigned int a, b, c, buffer_pos;
+	for(size_t i = 0; i < number_of_faces; i++)
+	{
+		buffer_pos = i * 3;
+
+		// Interpolate a perpendicular vector to the
+		// current triangle (p)
+		//
+		// CAUTION:
+		// --------
+		// buffer_pos is the face number
+		// to get real position of the vertex in the buffer
+		// we have to remember, that each vertex has three
+		// coordinates!
+		a = m_indices[buffer_pos]     * 3;
+		b = m_indices[buffer_pos + 1] * 3;
+		c = m_indices[buffer_pos + 2] * 3;
+
+		Vertex v0(vertices[a], vertices[a + 1], vertices[a + 2]);
+		Vertex v1(vertices[b], vertices[b + 1], vertices[b + 2]);
+		Vertex v2(vertices[c], vertices[c + 1], vertices[c + 2]);
+
+		Vertex d1 = v0 - v1;
+		Vertex d2 = v2 - v1;
+
+		Normal p(d1.cross(d2));
+
+		// Sum up coordinate values in normal array
+		normals[a    ] = p.x;
+		normals[a + 1] = p.y;
+		normals[a + 2] = p.z;
+
+		normals[b    ] = p.x;
+		normals[b + 1] = p.y;
+		normals[b + 2] = p.z;
+
+		normals[c    ] = p.x;
+		normals[c + 1] = p.y;
+		normals[c + 2] = p.z;
+
+	}
+
+	// Normalize
+	for(size_t i = 0; i < number_of_vertices; i++)
+	{
+		Normal n(normals[i * 3], normals[i * 3 + 1], normals[i * 3 + 2]);
+		normals[i * 3]     = n.x;
+		normals[i * 3 + 1] = n.y;
+		normals[i * 3 + 2] = n.z;
+	}
 
 }
 
@@ -181,7 +222,7 @@ void StaticMesh::save(string filename){
 		vertex_element->addProperty("z", "float");
 
 		PLYElement* face_element = new PLYElement("face", number_of_faces);
-		face_element->addProperty("vertex_index", "int", "int");
+		face_element->addProperty("vertex_indices", "uint", "uchar");
 
 
 		// Add elements descriptions to header
@@ -190,7 +231,7 @@ void StaticMesh::save(string filename){
 
 		// Set data arrays
 		ply_writer.setVertexArray(vertices, number_of_vertices);
-		ply_writer.setIndexArray(indices, number_of_faces);
+		ply_writer.setIndexArray(m_indices, number_of_faces);
 
 		// Save
 		ply_writer.save(filename, true);

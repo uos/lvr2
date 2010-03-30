@@ -20,6 +20,7 @@
 #include <cassert>
 
 using std::ofstream;
+using std::ifstream;
 using std::vector;
 using std::cout;
 using std::endl;
@@ -40,7 +41,19 @@ public:
 
 	virtual ~PLYIO();
 
+	float* getVertexArray(size_t &n);
+	float* getNormalArray(size_t &n);
+	float* getColorArray(size_t &);
+
+	unsigned int* getIndexArray(size_t &n);
+
+	bool containsElement(PLYElement& e);
+	bool hasProperty(PLYElement& e, Property& p);
+
+	void printElementsInHeader();
+
 private:
+
 	void writeHeader(ofstream& str);
 	void writeElements(ofstream &str);
 	void writeFacesBinary(ofstream &str, PLYElement* e);
@@ -48,9 +61,24 @@ private:
 	void writeVerticesBinary(ofstream &str, PLYElement* e);
 	void writeVerticesASCII(ofstream &str, PLYElement* e);
 
+	void readVerticesBinary(ifstream &in, PLYElement* descr);
+	void readFacesBinary(ifstream &in, PLYElement* descr);
+	void readVerticesASCII(ifstream &in, PLYElement* descr);
+	void readFacesASCII(ifstream &in, PLYElement* descr);
+
+	void readHeader(ifstream& str);
+
 	char* putElementInBuffer(char* buffer, string s,  float value);
 
 	bool isSupported(string element_name);
+	bool parseHeaderLine(const char* line);
+
+	void loadElements(ifstream& in);
+
+	void deleteBuffers();
+	void allocVertexBuffers(PLYElement* dscr);
+
+	void copyElementToVertexBuffer(ifstream &str, Property*, float* buffer, size_t position);
 
 	float*					m_vertices;
 	float*					m_normals;

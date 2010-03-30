@@ -21,6 +21,8 @@ HalfEdgeMesh::~HalfEdgeMesh() {
 
 void HalfEdgeMesh::finalize(){
 
+	cout << "HEM::finalize()" << endl;
+
 	number_of_vertices = (int)he_vertices.size();
 	number_of_faces = (int)he_faces.size();
 
@@ -28,7 +30,7 @@ void HalfEdgeMesh::finalize(){
 	normals = new float[3 * number_of_vertices];
 	colors = new float[3 * number_of_vertices];
 
-	indices = new unsigned int[3 * number_of_faces];
+	m_indices = new unsigned int[3 * number_of_faces];
 
 	for(size_t i = 0; i < he_vertices.size(); i++){
 		vertices[3 * i] =     he_vertices[i]->position.x;
@@ -45,9 +47,9 @@ void HalfEdgeMesh::finalize(){
 	}
 
 	for(size_t i = 0; i < he_faces.size(); i++){
-		indices[3 * i]      = he_faces[i]->index[0];
-		indices[3 * i + 1]  = he_faces[i]->index[1];
-		indices[3 * i + 2]  = he_faces[i]->index[2];
+		m_indices[3 * i]      = he_faces[i]->index[0];
+		m_indices[3 * i + 1]  = he_faces[i]->index[1];
+		m_indices[3 * i + 2]  = he_faces[i]->index[2];
 	}
 
 	finalized = true;

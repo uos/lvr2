@@ -14,7 +14,7 @@ TriangleMesh::TriangleMesh(): StaticMesh() {
 TriangleMesh::~TriangleMesh(){
 	if(colors   != 0) delete[] colors;
 	if(vertices != 0) delete[] vertices;
-	if(indices  != 0) delete[] indices;
+	if(m_indices  != 0) delete[] m_indices;
 	if(normals  != 0) delete[] normals;
 
 	triangle_buffer.clear();
@@ -36,7 +36,8 @@ void TriangleMesh::finalize(){
 	vertices = new float[3 * number_of_vertices];
 	colors   = new float[3 * number_of_vertices];
 
-	indices  = new unsigned int[3 * number_of_faces];
+	cout << "FINALIZE" <<endl;
+	m_indices  = new unsigned int[3 * number_of_faces];
 
 	for(int i = 0; i < number_of_vertices; i++){
 		for(int j = 0; j < 3; j++){
@@ -52,9 +53,9 @@ void TriangleMesh::finalize(){
 
 	for(size_t i = 0; i < triangle_buffer.size(); i++){
 		iii = 3 * i;
-		indices[iii    ] = triangle_buffer[i].getIndex(0);
-		indices[iii + 1] = triangle_buffer[i].getIndex(1);
-		indices[iii + 2] = triangle_buffer[i].getIndex(2);
+		m_indices[iii    ] = triangle_buffer[i].getIndex(0);
+		m_indices[iii + 1] = triangle_buffer[i].getIndex(1);
+		m_indices[iii + 2] = triangle_buffer[i].getIndex(2);
 
 	}
 
@@ -120,7 +121,7 @@ TriangleMesh& TriangleMesh::operator=(const TriangleMesh& m){
 	normals            = m.normals;
 	vertices           = m.vertices;
 	colors             = m.colors;
-	indices            = m.indices;
+	m_indices            = m.m_indices;
 	finalized          = m.finalized;
 
 	//Assign Renderable stuff

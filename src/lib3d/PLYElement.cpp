@@ -99,7 +99,7 @@ void PLYElement::addProperty(string name, string value_type, string count_type)
 		}
 		else
 		{
-			cout << "PLYElement: Unsupported list property data type: " << count_type << endl;
+			cout << "PLYElement: Unsupported list property data type: " << value_type << endl;
 		}
 		m_properties.push_back(l);
 	}

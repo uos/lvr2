@@ -103,6 +103,8 @@ void LinkedTriangleMesh::normalize(){
 
 void LinkedTriangleMesh::finalize(){
 
+	cout << "LINKED TRI MESH::finalize() " << endl;
+
 	int number_of_active_triangles = 0;
 
 	if(finalized){
@@ -122,7 +124,7 @@ void LinkedTriangleMesh::finalize(){
 	vertices = new float[3 * number_of_vertices];
 	colors   = new float[3 * number_of_vertices];
 
-	indices  = new unsigned int[3 * number_of_faces];
+	m_indices  = new unsigned int[3 * number_of_faces];
 
 	for(int i = 0; i < number_of_vertices; i++){
 		for(int j = 0; j < 3; j++){
@@ -139,9 +141,9 @@ void LinkedTriangleMesh::finalize(){
 	for(size_t i = 0; i < triangle_buffer.size(); i++){
 		if(triangle_buffer[i].isActive()){
 			iii = 3 * i;
-			indices[iii    ] = triangle_buffer[i].getIndex(0);
-			indices[iii + 1] = triangle_buffer[i].getIndex(1);
-			indices[iii + 2] = triangle_buffer[i].getIndex(2);
+			m_indices[iii    ] = triangle_buffer[i].getIndex(0);
+			m_indices[iii + 1] = triangle_buffer[i].getIndex(1);
+			m_indices[iii + 2] = triangle_buffer[i].getIndex(2);
 		}
 	}
 
