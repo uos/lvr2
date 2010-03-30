@@ -30,77 +30,12 @@ void PLYElement::addProperty(string name, string value_type, string count_type)
 	bool list_property = (count_type != "");
 
 	// First Create a scalar property
-	Property* s;
+	Property* s = new ScalarProperty(name, value_type);
 
-	// In every case we have to generate a scalar property
-	if(value_type == "uchar")
-	{
-		s = new ScalarProperty<unsigned char>(name, value_type);
-	}
-	else if(value_type == "char")
-	{
-		s = new ScalarProperty<char>(name, value_type);
-	}
-	else if(value_type == "short")
-	{
-		s = new ScalarProperty<short>(name, value_type);
-	}
-	else if(value_type == "ushort")
-	{
-		s = new ScalarProperty<unsigned short>(name, value_type);
-	}
-	else if(value_type == "int")
-	{
-		s = new ScalarProperty<int>(name, value_type);
-	}
-	else if(value_type == "uint")
-	{
-		s = new ScalarProperty<unsigned int>(name, value_type);
-	}
-	else if(value_type == "float")
-	{
-		s = new ScalarProperty<float>(name, value_type);
-	}
-	else if(value_type == "double")
-	{
-		s = new ScalarProperty<double>(name, value_type);
-	}
-	else
-	{
-		cout << "PLYElement: Unsupported property data type: " << value_type << endl;
-	}
 
 	if(list_property)
 	{
-		Property* l;
-		if(value_type == "uchar")
-		{
-			l = new ListProperty<unsigned char>(s, count_type);
-		}
-		else if(value_type == "char")
-		{
-			l = new ListProperty<char>(s, count_type);
-		}
-		else if(value_type == "short")
-		{
-			l = new ListProperty<short>(s, count_type);
-		}
-		else if(value_type == "ushort")
-		{
-			l = new ListProperty<unsigned short>(s, count_type);
-		}
-		else if(value_type == "int")
-		{
-			l = new ListProperty<int>(s, count_type);
-		}
-		else if(value_type == "uint")
-		{
-			l = new ListProperty<unsigned int>(s, count_type);
-		}
-		else
-		{
-			cout << "PLYElement: Unsupported list property data type: " << value_type << endl;
-		}
+		Property* l = new ListProperty(s, count_type);
 		m_properties.push_back(l);
 	}
 	else

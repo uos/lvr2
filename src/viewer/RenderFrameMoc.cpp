@@ -1,7 +1,7 @@
 /****************************************************************************
 ** Meta object code from reading C++ file 'RenderFrame.h'
 **
-** Created: Mon Mar 29 14:26:20 2010
+** Created: Tue Mar 30 15:41:55 2010
 **      by: The Qt Meta Object Compiler version 61 (Qt 4.5.2)
 **
 ** WARNING! All changes made in this file will be lost!

@@ -624,8 +624,6 @@ void PLYIO::readVerticesASCII(ifstream &in, PLYElement* descr)
 	// Allocate memory for needed buffers
 	allocVertexBuffers(descr);
 
-	cout << m_numberOfVertices << endl;
-
 	// Read all vertices
 	vector<Property*>::iterator it;
 	for(size_t i = 0; i < m_numberOfVertices; i++)
@@ -671,7 +669,7 @@ void PLYIO::readVerticesASCII(ifstream &in, PLYElement* descr)
 
 void PLYIO::readVerticesBinary(ifstream &in, PLYElement* descr)
 {
-	cout << "READ VERTICES" << endl;
+
 	// Get number of vertices
 	m_numberOfVertices = descr->getCount();
 
@@ -861,7 +859,6 @@ void PLYIO::readFacesBinary(ifstream &in, PLYElement* descr)
 			memcpy( (char*)&tmp, chunk_buffer, sizeof(unsigned char));
 			chunk_position += sizeof(unsigned char);
 			vertex_count = (unsigned int)tmp;
-			cout << vertex_count << endl;
 		}
 		else if(count_name == "short")
 		{
@@ -905,8 +902,6 @@ void PLYIO::readFacesBinary(ifstream &in, PLYElement* descr)
 			chunk_position += sizeof(double);
 			vertex_count = tmp;
 		}
-
-		cout << count_name << " " << vertex_count << endl;
 
 		// Check if the face defintion is a triangle
 		if(vertex_count != 3)
@@ -969,7 +964,6 @@ void PLYIO::readFacesBinary(ifstream &in, PLYElement* descr)
 			{
 				memcpy( (char*) &indices[j], chunk_position + j * sizeof(unsigned int), sizeof(unsigned int));
 				m_indices[i * 3 + j] = indices[j];
-				cout << m_indices[i * 3 + j] << endl;
 			}
 		}
 		if(value_name == "float")
@@ -1015,27 +1009,21 @@ void PLYIO::writeFacesBinary(ofstream &out, PLYElement* e)
 	{
 
 		size_t count_size = (*it)->getCountSize();
-		cout << "Count SIze: " << (*it)->getCountSize() << endl;
 		buffer_size += count_size;
 
 		// Check for list properties.
 		if(count_size != 0)
 		{
 			buffer_size += N_VERTICES_PER_FACE * (*it)->getValueSize();
-			cout << "VALUE_SIZE: " << (*it)->getValueSize() << endl;
 		}
 		else
 		{
-			cout << "ELSE" << endl;
 			buffer_size += (*it)->getValueSize();
 		}
 	}
 
 	// Create buffer
-	buffer_size = 13;
 	char buffer[buffer_size];
-
-	cout << buffer_size << endl;
 
 	char* pos;
 
@@ -1063,7 +1051,6 @@ void PLYIO::writeFacesBinary(ofstream &out, PLYElement* e)
 			}
 
 		}
-
 
 		// Write to output stream
 		out.write(buffer, buffer_size);

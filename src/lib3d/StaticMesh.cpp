@@ -136,6 +136,13 @@ void StaticMesh::load(string filename){
 		interpolateNormals();
 	}
 
+//	for(int i = 0; i < number_of_vertices; i++)
+//	{
+//		vertices[3 * i] = vertices[3 * i] * 100;
+//		vertices[3 * i + 1] = vertices[3 * i + 1] * 100;
+//		vertices[3 * i + 2] = vertices[3 * i + 2] * 100;
+//	}
+
 	finalized = true;
 	compileDisplayList();
 
