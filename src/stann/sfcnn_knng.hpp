@@ -2,8 +2,8 @@
 /*                                                                           */
 /*  Header: sfcnn_knng.hpp                                                   */
 /*                                                                           */
-/*  Accompanies STANN Version 0.5 Beta                                       */
-/*  Aug 05, 2008                                                             */
+/*  Accompanies STANN Version 0.71 B                                         */
+/*  Dec 07, 2009                                                             */
 /*                                                                           */
 /*  Copyright 2007, 2008                                                     */
 /*  Michael Connor and Piyush Kumar                                          */
@@ -12,21 +12,23 @@
 /*                                                                           */
 /*****************************************************************************/
 
-#ifndef __KNNGRAPH__
-#define __KNNGRAPH__
+
+#ifndef __STANN_KNNGRAPH__
+#define __STANN_KNNGRAPH__
 
 #include <cstdlib>
 #include <cmath>
-#include <climits>
+#include <limits>
 #include <vector>
 #include <queue>
 #include <algorithm>
+#include <timer.hpp>
 
-#include <pthread.h>
 #ifdef _OPENMP
 #include <omp.h>
 #endif
 
+#include <compute_bounding_box.hpp>
 #include <pair_iter.hpp>
 #include <qknn.hpp>
 #include <zorder_lt.hpp>
@@ -38,9 +40,7 @@
   \brief Implements K-Nearest Neighbor Graph construction using SFC nearest neighbor algorithm.  Construction is done in parallel using OpenMP.
 */
 
-using namespace std;
-
-template <typename Point>
+template <typename Point, typename Ptype=typename Point::__NumType>
 class sfcnn_knng_work
 {
 public:
@@ -50,28 +50,28 @@ public:
   
   void sfcnn_knng_work_init(long int N, unsigned int k, int num_threads);
   
-  vector<vector<long unsigned int> > answer;
-  vector<Point> points;
-  vector<long unsigned int> pointers;
+  std::vector<std::vector<long unsigned int> > answer;
+  std::vector<Point> points;
+  std::vector<long unsigned int> pointers;
   
 private:
   void compute_bounding_box(Point q, Point &q1, Point &q2, double r);
-  void recurse(int s,   // Starting index
-	       int n,   // Number of points
+  void recurse(long unsigned int s,   // Starting index
+	       long unsigned int n,   // Number of points
 	       long int q,         // Query point
 	       qknn &ans, // Answer que
 	       Point &bound_box_lower_corner,
 	       Point &bound_box_upper_corner,
-	       int initial_scan_lower_range,
-	       int initial_scan_upper_range,
+	       long unsigned int initial_scan_lower_range,
+	       long unsigned int initial_scan_upper_range,
 	       zorder_lt<Point> &lt);
   
   typename Point::__NumType max, min;
 };
 
 
-template<typename Point>
-void sfcnn_knng_work<Point>::sfcnn_knng_work_init(long int N, unsigned int k, int num_threads)
+template<typename Point, typename Ptype>
+void sfcnn_knng_work<Point, Ptype>::sfcnn_knng_work_init(long int N, unsigned int k, int num_threads)
 {
   zorder_lt<Point> lt;
   Point bound_box_lower_corner,
@@ -79,22 +79,29 @@ void sfcnn_knng_work<Point>::sfcnn_knng_work_init(long int N, unsigned int k, in
   double distance;
   long int range_b;
   long int range_e;
-  
-  max = numeric_limits<typename Point::__NumType>::max();
-  min = numeric_limits<typename Point::__NumType>::min();
+
+  if(N==0)
+    {
+      std::cerr << "Error:  Input Point List has size 0"<< std::endl;
+      exit(1);
+    }
+  max = (std::numeric_limits<Ptype>::max)();
+  min = (std::numeric_limits<Ptype>::min)();
   answer.resize(N);
-  
+
+  int SR = 2*k;
+
+
 #ifdef _OPENMP
   long int chunk = N/num_threads;
   omp_set_num_threads(num_threads);
 #endif
 
-  pair_iter<typename vector<Point>::iterator,
-    typename vector<long unsigned int>::iterator> a(points.begin(), pointers.begin()),
+  pair_iter<typename std::vector<Point>::iterator,
+    typename std::vector<long unsigned int>::iterator> a(points.begin(), pointers.begin()),
     b(points.end(), pointers.end());
   sort(a,b,lt);
-
-  vector<qknn> que;
+  std::vector<qknn> que;
   que.resize(N);
 
 #ifdef _OPENMP  
@@ -106,9 +113,9 @@ void sfcnn_knng_work<Point>::sfcnn_knng_work_init(long int N, unsigned int k, in
 #endif
     for(long int i=0;i < N;++i)
       {
-	range_b = i-k;
+	range_b = i-SR;
 	if(range_b < 0) range_b = 0;
-	range_e = i+k+1;
+	range_e = i+SR+1;
 	if(range_e > N) range_e = N;
 	que[i].set_size(k);
 	for(long int j=range_b;j < i;++j)
@@ -122,7 +129,8 @@ void sfcnn_knng_work<Point>::sfcnn_knng_work_init(long int N, unsigned int k, in
 	    que[i].update(distance, pointers[j]);
 	  }
       }
-    }
+  }
+
 #ifdef _OPENMP  
 #pragma omp parallel private(distance, range_b, range_e, bound_box_lower_corner, bound_box_upper_corner) 
 #endif
@@ -132,55 +140,46 @@ void sfcnn_knng_work<Point>::sfcnn_knng_work_init(long int N, unsigned int k, in
 #endif
       for(long int i=0;i < N;++i)
 	{
-	  range_b = i-k;
+	  range_b = i-SR;
 	  if(range_b < 0) range_b = 0;
-	  range_e = i+k+1;
+	  range_e = i+SR+1;
 	  if(range_e > N) range_e = N;
 	  compute_bounding_box(points[i], bound_box_lower_corner, bound_box_upper_corner, sqrt(que[i].topdist()));
-	  
-	  if(!lt(bound_box_upper_corner, points[range_e]) || !lt(points[range_b], bound_box_lower_corner))
+	  if(!lt(bound_box_upper_corner, points[range_e-1]) || !lt(points[range_b], bound_box_lower_corner))
 	    {
-	      recurse(0, points.size(), i, que[i], 
-		      bound_box_lower_corner, 
+	      recurse(0, N, i, que[i],  
+		      bound_box_lower_corner,
 		      bound_box_upper_corner,
-		      range_b,
-		      range_e,
+		      (long unsigned int) range_b,
+		      (long unsigned int) range_e,
 		      lt);
 	      
 	    }
 	  que[i].answer(answer[pointers[i]]);
+	  
 	}
   }
-  points.clear();
-  pointers.clear();
+      points.clear();
+      pointers.clear();
 }
 
-template<typename Point>
-void sfcnn_knng_work<Point>::compute_bounding_box(Point q, Point &q1, Point &q2, double R)
+
+template<typename Point, typename Ptype>
+void sfcnn_knng_work<Point, Ptype>::compute_bounding_box(Point q, Point &q1, Point &q2, double R)
 {
-  typename Point::__NumType radius;
-  radius = (typename Point::__NumType) ceil(R);
-  for(unsigned int i=0;i<Point::__DIM;++i)
-    {
-      
-      if(q[i] < (min+radius)) q1[i] = min;
-      else q1[i] = q[i]-radius;
-
-      if(q[i] > (max-radius)) q2[i] = max;
-      else q2[i] = q[i]+radius;
-    }
+  cbb_work<Point, Ptype>::eval(q, q1, q2, R, max, min);
 }
 
-template<typename Point>
-void sfcnn_knng_work<Point>::recurse(int s,   // Starting index
-				     int n,   // Number of points
-				     long int q,
-				     qknn &ans, // Answer que
-				     Point &bound_box_lower_corner,
-				     Point &bound_box_upper_corner,
-				     int initial_scan_lower_range,
-				     int initial_scan_upper_range,
-				     zorder_lt<Point> &lt)
+template<typename Point, typename Ptype>
+void sfcnn_knng_work<Point, Ptype>::recurse(long unsigned int s,   // Starting index
+					    long unsigned int n,   // Number of points
+					    long int q,
+					    qknn &ans, // Answer que
+					    Point &bound_box_lower_corner,
+					    Point &bound_box_upper_corner,
+					    long unsigned int initial_scan_lower_range,
+					    long unsigned int initial_scan_upper_range,
+					    zorder_lt<Point> &lt)
 {	
   double distance;
   if(n < 4)
@@ -188,7 +187,7 @@ void sfcnn_knng_work<Point>::recurse(int s,   // Starting index
       if(n == 0) return;
 		
       bool update=false;
-      for(int i=0;i < n;++i)
+      for(long unsigned int i=0;i < n;++i)
 	{
 	  if((s+i >= initial_scan_lower_range) 
 	     && (s+i < initial_scan_upper_range))
@@ -247,7 +246,7 @@ void sfcnn_knng_work<Point>::recurse(int s,   // Starting index
 		initial_scan_upper_range,
 		lt);
     }
-};
+}
 
 template <typename Point, unsigned int Dim, typename NumType>
 class sfcnn_knng
@@ -259,7 +258,7 @@ public:
     sfcnn_knng_init(points,N,k,num_threads);
   };
   ~sfcnn_knng(){};
-  vector<long unsigned int>& operator[](long unsigned int i)
+  std::vector<long unsigned int>& operator[](long unsigned int i)
   {
     return NN.answer[i];
   };
@@ -294,7 +293,7 @@ public:
     sfcnn_knng_init(points,N,k,num_threads);
   };
   ~sfcnn_knng(){};
-  vector<long unsigned int>& operator[](long unsigned int i)
+  std::vector<long unsigned int>& operator[](long unsigned int i)
   {
     return NN.answer[i];
   };
@@ -332,7 +331,7 @@ public:
     sfcnn_knng_init(points,N,k,num_threads);
   };
   ~sfcnn_knng(){};
-  vector<long unsigned int>& operator[](long unsigned int i)
+  std::vector<long unsigned int>& operator[](long unsigned int i)
   {
     return NN.answer[i];
   };
@@ -368,7 +367,7 @@ public:
     sfcnn_knng_init(points,N,k,num_threads);
   };
   ~sfcnn_knng(){};
-  vector<long unsigned int>& operator[](long unsigned int i)
+  std::vector<long unsigned int>& operator[](long unsigned int i)
   {
     return NN.answer[i];
   };

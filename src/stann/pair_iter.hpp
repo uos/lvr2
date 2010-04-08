@@ -2,8 +2,8 @@
 /*                                                                           */
 /*  Header: pair_iter.hpp                                                    */
 /*                                                                           */
-/*  Accompanies STANN Version 0.5 Beta                                       */
-/*  Aug 05, 2008                                                             */
+/*  Accompanies STANN Version 0.71 B                                         */
+/*  Dec 07, 2009                                                             */
 /*                                                                           */
 /*  Copyright 2007, 2008                                                     */
 /*  Michael Connor and Piyush Kumar                                          */
@@ -14,11 +14,10 @@
 
 
 
-#ifndef __PAIR_ITER__
-#define __PAIR_ITER__
+#ifndef __STANN_PAIR_ITER__
+#define __STANN_PAIR_ITER__
 
 #include <utility>
-using namespace std;
 
 /*! \file pair_iter.hpp
 \brief Implementation of an iterator class designed to traverse 
@@ -29,10 +28,10 @@ two identical vectors simultaneously */
 template <typename Iter1, typename Iter2>
 class Mypair
 {
-  typedef typename iterator_traits<Iter1>::value_type value_type1;
-  typedef typename iterator_traits<Iter2>::value_type value_type2;
+  typedef typename std::iterator_traits<Iter1>::value_type value_type1;
+  typedef typename std::iterator_traits<Iter2>::value_type value_type2;
 public:
-  Mypair(Iter1 a, Iter2 b)
+  Mypair(const Iter1 a, const Iter2 b)
   {
     iter1=a;
     iter2=b;
@@ -67,7 +66,7 @@ public:
   {
     return val1==a.val1;
   }
-  Mypair& operator=(Mypair<Iter1, Iter2> a)
+  Mypair& operator=(const Mypair<Iter1, Iter2> a)
   {
     //cout << (first()) << "=" << (a.first()) << endl;
     //cout << (second()) << "=" << (a.second()) << endl;
@@ -100,10 +99,10 @@ class pair_iter
 {
 public:
   typedef Mypair<Iter1, Iter2> value_type;
-  typedef typename iterator_traits<Iter1>::difference_type difference_type;
+  typedef typename std::iterator_traits<Iter1>::difference_type difference_type;
   typedef value_type* pointer;
   typedef value_type& reference;
-  typedef random_access_iterator_tag iterator_category;
+  typedef std::random_access_iterator_tag iterator_category;
 
   friend pair_iter<Iter1, Iter2> operator+(int n, pair_iter<Iter1, Iter2> a)
   {
@@ -122,13 +121,13 @@ public:
     iter2 = a.iter2;
   };
 
-  pair_iter(Iter1 i1, Iter2 i2)
+  pair_iter(const Iter1 i1, const Iter2 i2)
   {
     //cout << "Constructor1" << endl;
     iter1=i1;
     iter2=i2;
   };
-  pair_iter(Iter1 i1, Iter2 i2, Iter1 i1begin, Iter2 i2begin)
+  pair_iter(const Iter1 i1, const Iter2 i2, const Iter1 i1begin, const Iter2 i2begin)
   {
     iter1=i1;
     iter2=i2;
@@ -138,7 +137,7 @@ public:
   //-------------------------------------
   //Assignment Operator
   //-------------------------------------
-  pair_iter<Iter1, Iter2>& operator=(pair_iter<Iter1, Iter2> a)
+  pair_iter<Iter1, Iter2>& operator=(const pair_iter<Iter1, Iter2> a)
   {
     //cout << "operator=" << endl;
     iter1 = a.iter1;
@@ -150,13 +149,13 @@ public:
   //--------------------------------------
   //Equality Operators
   //--------------------------------------
-  bool operator==(pair_iter<Iter1, Iter2> a)
+  bool operator==(pair_iter<Iter1, Iter2> a) const
   {
     //cout << "operator==" << endl;
     return iter1==a.iter1;
   };
   
-  bool operator!=(pair_iter<Iter1, Iter2> a)
+  bool operator!=(pair_iter<Iter1, Iter2> a) const
   {
     //cout << "operator!=" << endl;
     return iter1 != a.iter1;
@@ -164,22 +163,22 @@ public:
   //--------------------------------------
   //Comparrison Operators
   //--------------------------------------
-  bool operator<(pair_iter<Iter1, Iter2> a)
+  bool operator<(pair_iter<Iter1, Iter2> a) const
   {
     //cout << "operator<" << endl;
     return iter1 < a.iter1;
   }
-  bool operator<=(pair_iter<Iter1, Iter2> a)
+  bool operator<=(pair_iter<Iter1, Iter2> a) const
   {
     //cout << "operator<=" << endl;
     return iter1 <= a.iter1;
   }
-  bool operator>(pair_iter<Iter1, Iter2> a)
+  bool operator>(pair_iter<Iter1, Iter2> a) const
   {
     //cout << "operator>" << endl;
     return iter1 > a.iter1;
   }
-  bool operator>=(pair_iter<Iter1, Iter2> a)
+  bool operator>=(pair_iter<Iter1, Iter2> a) const
   {
     //cout << "operator>=" << endl;
     return iter1 >= a.iter1;

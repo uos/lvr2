@@ -2,8 +2,8 @@
 /*                                                                           */
 /*  Header: dpoint.hpp                                                       */
 /*                                                                           */
-/*  Accompanies STANN Version 0.5 Beta                                       */
-/*  Aug 05, 2008                                                             */
+/*  Accompanies STANN Version 0.71 B                                         */
+/*  Dec 07, 2009                                                             */
 /*                                                                           */
 /*  Copyright 2007, 2008                                                     */
 /*  Michael Connor and Piyush Kumar                                          */
@@ -13,8 +13,8 @@
 /*****************************************************************************/
 
 
-#ifndef REVIVER_POINT_HPP
-#define REVIVER_POINT_HPP
+#ifndef __STANN_DPOINT__
+#define __STANN_DPOINT__
 
 /*! \file dpoint.hpp
      \brief Optimized point class file for fixed small dimensional points. 
@@ -130,7 +130,7 @@ template <typename NumType, unsigned D> struct IsEqual<NumType, D, 0>
    static inline NumType eval( const dpoint<NumType,D>& p, 
                                const dpoint<NumType,D>& q )
    {
-	   return (p[0] == q[0])?1:0;
+     return (p[0] == q[0])?(NumType)1:(NumType)0;
    }
 };
 
@@ -258,6 +258,14 @@ class dpoint {
 		NumType  x[D];
 
 public:
+  NumType* point_begin()
+  {
+    return x;
+  }
+  NumType* point_end()
+  {
+    return x+(sizeof(x)/sizeof(NumType));
+  }
 	// For access from outside
 	/*! Storage type for point coordinates */
 	typedef NumType   __NumType;

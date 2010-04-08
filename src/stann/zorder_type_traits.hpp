@@ -2,8 +2,8 @@
 /*                                                                           */
 /*  Header: zorder_type_traits.hpp                                           */
 /*                                                                           */
-/*  Accompanies STANN Version 0.5 Beta                                       */
-/*  Aug 05, 2008                                                             */
+/*  Accompanies STANN Version 0.71 B                                         */
+/*  Dec 07, 2009                                                             */
 /*                                                                           */
 /*  Copyright 2007, 2008                                                     */
 /*  Michael Connor and Piyush Kumar                                          */
@@ -16,21 +16,39 @@
 
 
 
-#ifndef __ZORDER_TYPE_TRAITS__
-#define __ZORDER_TYPE_TRAITS__
+#ifndef __STANN_ZORDER_TYPE_TRAITS__
+#define __STANN_ZORDER_TYPE_TRAITS__
 
-#include <iostream>
+#include <sep_float.hpp>
 
-#include "sep_float.hpp"
-using namespace std;
+/*! \file
+  \brief Contains type traits used by the zorder_lt class
+*/
 
 struct zorder_t {};
 struct zorder_f {};
 
+/*! zorder traits class
+  \brief Contains traits used by the zorder_lt class
+
+  This is the unspecialzied version of this class,
+  it must be specialized for each type that will be used
+  for coordinates.
+  Note: some of these are deprecated and will be removed
+
+*/
 template<typename TYPE>
 class zorder_traits
 {
 public:
+  /*! Check Type
+    \brief Checks if type is valid
+    
+    This function checks if the type traits specialization exists.
+    Prints an error and exits if this
+    type does not have defined traits.  Checked at
+    creation of a zorder_lt object
+  */
   static void check_type()
   {
     //cerr << "Error: Type traits not defined." << endl;
@@ -38,9 +56,25 @@ public:
     //cerr << "and contact author for update." << endl;
     //exit(1);
   }
+  /*! is_signed trait
+    \brief set to zorder_t if the type is signed.
+  */
   typedef zorder_t     is_signed;
+  /*! is_integral trait
+    \brief set to zorder_t if the type is integral
+  */
   typedef zorder_t     is_integral;
+  /*! is_seperated trait
+    \brief set to zorder_t if type is an instance of sep_float<>
+  */
+  typedef zorder_t     is_seperated;
+  /*! unsigned_type trait
+    \brief Deprecated, should be removed
+  */
   typedef int          unsigned_type;
+  /*! signed_type trait
+    \brief Deprecated, should be removed
+  */
   typedef unsigned int signed_type;
 };
 
