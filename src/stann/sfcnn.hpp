@@ -22,12 +22,12 @@
 #include <queue>
 #include <algorithm>
 
-#include <compute_bounding_box.hpp>
-#include <nnBase.hpp>
-#include <pair_iter.hpp>
-#include <qknn.hpp>
-#include <zorder_lt.hpp>
-#include <bsearch.hpp>
+#include "compute_bounding_box.hpp"
+#include "nnBase.hpp"
+#include "pair_iter.hpp"
+#include "qknn.hpp"
+#include "zorder_lt.hpp"
+#include "bsearch.hpp"
 /*!
 	\mainpage STANN Doxygen Index Page
 	
