@@ -2,8 +2,8 @@
 /*                                                                           */
 /*  Header: sep_float.hpp                                                    */
 /*                                                                           */
-/*  Accompanies STANN Version 0.5 Beta                                       */
-/*  Aug 05, 2008                                                             */
+/*  Accompanies STANN Version 0.71 B                                         */
+/*  Dec 07, 2009                                                             */
 /*                                                                           */
 /*  Copyright 2007, 2008                                                     */
 /*  Michael Connor and Piyush Kumar                                          */
@@ -13,12 +13,12 @@
 /*****************************************************************************/
 
 
-
-#ifndef __SEP_FLOAT__
-#define __SEP_FLOAT__
+#ifndef __STANN_SEP_FLOAT__
+#define __STANN_SEP_FLOAT__
 
 #include <cmath>
 #include <iostream>
+#include <limits>
 
 /*! 
   \file sep_float.hpp
@@ -27,7 +27,6 @@
   well as computing the most significant differing bit (used for z-order 
   calculations)
 */
-using namespace std;
 
 template<typename T>
 class sep_float;
@@ -40,7 +39,7 @@ class sep_float;
   First: It does not implement overloads for all numeric_limits functions,
   mainly because they are not all needed for STANN
   
-  Second: numeric_limits<T>::min() returns the largest negative value, 
+  Second: (numeric_limits<T>::min)() returns the largest negative value, 
   not the smallest represtentable positive value.
 */
 
@@ -51,8 +50,8 @@ class numeric_limits <sep_float<float> >
 {
 public:
   static const bool is_specialized = true;
-  static float max() throw() {return numeric_limits<float>::max();}
-  static float min() throw() {return -numeric_limits<float>::max();}
+  static float max() throw() {return (std::numeric_limits<float>::max)();}
+  static float min() throw() {return -(std::numeric_limits<float>::max)();}
 };
 
 template<>
@@ -60,8 +59,8 @@ class numeric_limits <sep_float<double> >
 {
 public:
   static const bool is_specialized = true;
-  static double max() throw() {return numeric_limits<double>::max();}
-  static double min() throw() {return -numeric_limits<double>::max();}
+  static double max() throw() {return (std::numeric_limits<double>::max)();}
+  static double min() throw() {return -(std::numeric_limits<double>::max)();}
 
 };
 
@@ -70,8 +69,8 @@ class numeric_limits <sep_float<long double> >
 {
 public:
   static const bool is_specialized = true;
-  static long double max() throw() {return numeric_limits<long double>::max();}
-  static long double min() throw() {return -numeric_limits<long double>::max();}
+  static long double max() throw() {return (std::numeric_limits<long double>::max)();}
+  static long double min() throw() {return -(std::numeric_limits<long double>::max)();}
 
 };
 }
@@ -88,7 +87,7 @@ union sep_float_sig
   /*! Union accessor of floating point type */
   T d;
   /*! Union accessor as an array of integer types */
-  unsigned long int i[0];
+  unsigned long int i[1];
 };
 
 //! XOR function
@@ -124,7 +123,7 @@ class sep_float
     \param x seperated float to be added to output stream
     \return output stream with floating point number appended
    */
-  friend ostream& operator<<(ostream& os, const sep_float<FLT> &x)
+  friend std::ostream& operator<<(std::ostream& os, const sep_float<FLT> &x)
   {
     os << ldexp(x.sig.d, x.exp);
     return os;
@@ -145,7 +144,7 @@ class sep_float
     const sep_float_sig<FLT> lzero = {0.5};
 
     if(x.val == y.val)
-      return numeric_limits<int>::min();
+      return (std::numeric_limits<int>::min)();
     else if(x.exp == y.exp)
       {
 	xor_sep_float_sig(x.sig, y.sig, x.sig, lzero);
@@ -157,13 +156,14 @@ class sep_float
     else
       return y.exp;
   }
-  
+
   template <typename T>
   friend sep_float<FLT>& operator+=(sep_float<FLT> &y, T &x)
   {
     y = (y.val+x);
     return y;
   }
+
   template <typename T>
   friend sep_float<FLT>& operator-=(sep_float<FLT> &y, T &x)
   {
@@ -186,6 +186,11 @@ public:
   sep_float<FLT>& operator=(const sep_float<FLT> &x)
   {
     sep_float_copy(x);
+    return *this;
+  }
+  sep_float<FLT>& operator=(const double &x)
+  {
+    sep_set_val((FLT) x);
     return *this;
   }
   template <typename T>
@@ -232,7 +237,7 @@ private:
   void sep_set_val(const FLT &x)
   {
     val = x;
-    sig.d = frexp(x, &exp);
+    sig.d = (FLT) frexp(x, &exp);
   }
   void sep_float_copy(const sep_float<FLT> &x)
   {

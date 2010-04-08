@@ -2,8 +2,8 @@
 /*                                                                           */
 /*  Header: bruteNN.hpp                                                      */
 /*                                                                           */
-/*  Accompanies STANN Version 0.5 Beta                                       */
-/*  Aug 05, 2008                                                             */
+/*  Accompanies STANN Version 0.71 B                                         */
+/*  Dec 07, 2009                                                             */
 /*                                                                           */
 /*  Copyright 2007, 2008                                                     */
 /*  Michael Connor and Piyush Kumar                                          */
@@ -13,6 +13,8 @@
 /*****************************************************************************/
 
 
+#ifndef __STANN_BRUTENN__
+#define __STANN_BRUTENN__
 /*! 
   \file
   \brief Brute force nearest neighbor search implementation
@@ -23,7 +25,6 @@
 
 #include <qknn.hpp>
 
-using namespace std;
 
 /*!
   \brief A Brute force NN search class
@@ -58,7 +59,7 @@ public:
     \param nn_idx Vector in which answer is written
   */
   void ksearch(Point q, int k, 
-	       vector<long unsigned int> &nn_idx);
+	       std::vector<long unsigned int> &nn_idx);
   /*!
     \brief Nearest neighbor search function
     
@@ -73,22 +74,19 @@ public:
     \param d_index Vector in which square distances are written
   */
   void ksearch(Point q, int k, 
-	       vector<long unsigned int> &nn_idx,
-	       vector<double> &d_index);
+	       std::vector<long unsigned int> &nn_idx,
+	       std::vector<double> &d_index);
   
 private:
   
-  vector<Point> points;
+  std::vector<Point> points;
 };
 
 template<typename Point>
 bruteNN<Point>::bruteNN(Point *p, long int N)
 {
   points.resize(N);
-  for(int i=0;i < N;++i)
-    {
-      points[i] = p[i];
-    }
+  points.assign(p, p+N);
 }
 
 template<typename Point>
@@ -98,7 +96,7 @@ bruteNN<Point>::~bruteNN()
 
 template<typename Point>
 void bruteNN<Point>::ksearch(Point q, int k, 
-			     vector<long unsigned int> &nn_idx)
+			     std::vector<long unsigned int> &nn_idx)
 {
   qknn que;
   double distance;
@@ -113,7 +111,7 @@ void bruteNN<Point>::ksearch(Point q, int k,
 
 template<typename Point>
 void bruteNN<Point>::ksearch(Point q, int k, 
-			     vector<long unsigned int> &nn_idx, vector<double> &d_indx)
+			     std::vector<long unsigned int> &nn_idx, std::vector<double> &d_indx)
 {
   qknn que;
   double distance;
@@ -124,3 +122,4 @@ void bruteNN<Point>::ksearch(Point q, int k,
     }
   que.answer(nn_idx, d_indx);
 }
+#endif

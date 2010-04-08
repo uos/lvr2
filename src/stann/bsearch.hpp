@@ -2,8 +2,8 @@
 /*                                                                           */
 /*  Header: bsearch.hpp                                                      */
 /*                                                                           */
-/*  Accompanies STANN Version 0.5 Beta                                       */
-/*  Aug 05, 2008                                                             */
+/*  Accompanies STANN Version 0.71 B                                         */
+/*  Dec 07, 2009                                                             */
 /*                                                                           */
 /*  Copyright 2007, 2008                                                     */
 /*  Michael Connor and Piyush Kumar                                          */
@@ -12,12 +12,12 @@
 /*                                                                           */
 /*****************************************************************************/
 
-#ifndef __SFCNN_BSEARCH__
-#define __SFCNN_BSEARCH__
+#ifndef __STANN_BSEARCH__
+#define __STANN_BSEARCH__
 
 #include <vector>
-
-#include "zorder_lt.hpp"
+#include <algorithm>
+#include <zorder_lt.hpp>
 
 /*! \file
   \brief Binary search functions
@@ -33,7 +33,7 @@
   \return If found: index of point. Otherwise: index of first smaller point
 */
 template<typename Point>
-long int BinarySearch(vector<Point *> &A, Point *q, zorder_lt<Point> lt) 
+long int BinarySearch(std::vector<Point *> &A, Point *q, zorder_lt<Point> lt) 
 {
 	long int low = 0;
 	long int high = A.size()-1;
@@ -50,8 +50,18 @@ long int BinarySearch(vector<Point *> &A, Point *q, zorder_lt<Point> lt)
 	    low = middle+1;
 	}
 	return middle;
-}  
+}
 
+template<typename Point>
+unsigned long int BinSearch(std::vector<Point> &A, Point &q, zorder_lt<Point> &lt)
+{
+  typedef typename std::vector<Point>::iterator MyIt;
+  typedef typename std::vector<Point>::size_type size_type;
+
+  MyIt I = upper_bound(A.begin(), A.end(), q, lt);
+
+  return I - A.begin();
+}
 //! A Binary Search function
 /*!
   This function conducts a binary search for two points at the same time.
@@ -64,7 +74,7 @@ long int BinarySearch(vector<Point *> &A, Point *q, zorder_lt<Point> lt)
 */
 
 template<typename Point>
-void PairBinarySearch(vector<Point> &A, Point q1, 
+void PairBinarySearch(std::vector<Point> &A, Point q1, 
 		      Point q2, zorder_lt<Point> lt, int &p1, int &p2) 
 {
   int low_q1=0;
@@ -128,7 +138,7 @@ void PairBinarySearch(vector<Point> &A, Point q1,
   \return If found: index of point. Otherwise: index of first smaller point
 */
 template<typename Point>
-long int BinarySearch(vector<Point> &A, Point q, zorder_lt<Point> lt) 
+long int BinarySearch(std::vector<Point> &A, Point q, zorder_lt<Point> lt) 
 {
 	long int low = 0;
 	long int high = A.size()-1;
@@ -147,4 +157,74 @@ long int BinarySearch(vector<Point> &A, Point q, zorder_lt<Point> lt)
 	return middle;
 }
 
+//! A binary search Function.
+/*
+  This function executes a binary search on an array of points
+  \param A pointer to head of array
+  \param size size of array
+  \param q Query point
+  \param lt A less_than comparetor
+  \return If found: index of point. Otherwise: index of first smaller point
+*/
+template<typename Point>
+long int BinarySearch(Point *A, long int size, Point q, zorder_lt<Point> lt) 
+{
+	long int low = 0;
+	long int high = size-1;
+	long int middle = 0;
+
+	while(low <= high)
+	{
+		middle = (low+high)/2;
+		if(q == A[middle])
+			return middle;
+		else if(lt(q, A[middle]))
+			high = middle-1;
+		else
+			low = middle+1;
+	}
+	return middle;
+}
+
+template<typename Point>
+class BinaryShortSearch
+{
+  typedef typename std::vector<Point>::size_type size_type;
+  typedef typename std::vector<Point>::iterator MyIt;
+  typedef typename std::vector<MyIt>::iterator MyPIt;
+public:
+  std::vector<MyIt> samples;
+  zorder_lt<Point> lt;
+  
+  BinaryShortSearch()
+  {
+  }
+
+  void init(std::vector<Point> &points, int sample_size=128)
+  {
+    samples.resize(sample_size);
+    srand48(time(0));
+    
+    for(int i=0;i < sample_size;++i)
+      {
+	size_type s = drand48() * (double) points.size();
+	samples[i] = points.begin() + s;
+      }
+    sort(samples.begin(), samples.end(), lt);
+  }
+
+  unsigned long int BinSearch(std::vector<Point> &A, Point &q, zorder_lt<Point> LT)
+  {
+    MyPIt U = upper_bound(samples.begin(), samples.end(), q, LT);
+
+    MyIt LI, UI;
+    if(U == samples.begin()) LI = A.begin();
+    else LI = *(U-1); 
+    if(U == samples.end()) UI = A.end();
+    else UI = *U;
+
+    MyIt I = upper_bound(LI, UI, q, LT);
+    return  I-A.begin();
+  }
+};
 #endif

@@ -2,8 +2,8 @@
 /*                                                                           */
 /*  Header: qknn.hpp                                                         */
 /*                                                                           */
-/*  Accompanies STANN Version 0.5 Beta                                       */
-/*  Aug 05, 2008                                                             */
+/*  Accompanies STANN Version 0.71 B                                         */
+/*  Dec 07, 2009                                                             */
 /*                                                                           */
 /*  Copyright 2007, 2008                                                     */
 /*  Michael Connor and Piyush Kumar                                          */
@@ -14,12 +14,11 @@
 
 
 
-#ifndef __QKNN_INT__
-#define __QKNN_INT__
+#ifndef __STANN_QKNN__
+#define __STANN_QKNN__
 #include <vector>
 #include <queue>
 #include <algorithm>
-using namespace std;
 
 /*! \file qknn.hpp
 \brief Implements priority queue functions for dpoints and point pairs */
@@ -39,8 +38,8 @@ public:
     \param p2 Second element to be compared
     \return Returns true if p1 distance is less than p2 distance
   */
-  bool operator()( const pair<double, long int> p1,  
-                   const pair<double, long int> p2 ){
+  bool operator()( const std::pair<double, long int> p1,  
+                   const std::pair<double, long int> p2 ){
     return p1.first < p2.first;
   }
 };
@@ -56,10 +55,10 @@ public:
 class qknn 
 {
 private:
-  int K;
-  typedef pair<double, long int> q_intelement;
-  typedef priority_queue<q_intelement, vector<q_intelement>, q_intelementCompare>  
-          PQ;
+  long unsigned int K;
+  typedef std::pair<double, long int> q_intelement;
+  typedef std::priority_queue<q_intelement, std::vector<q_intelement>, q_intelementCompare>  
+  PQ;
   PQ pq;
   
 public:
@@ -86,11 +85,14 @@ public:
     queue is used
     \param k The maximum number of elements to be stored in the queue.
   */
-  void set_size(int k)
+  void set_size(long unsigned int k)
   {
     K = k;
   }
   
+  bool is_element(double dist, long int p)
+  {
+  }
   //! Point with largest distance
   /*!
     Returns the index associated with the largest element in the queue.
@@ -131,14 +133,18 @@ public:
     Transforms the queue into a vector of indeces to points and returns it
     \param pl Vector which will hold the answer after function completes 
   */
-  void answer(vector<long unsigned int>& pl)
+  void answer(std::vector<long unsigned int>& pl)
   {
+    std::vector<long unsigned int>::size_type i;
     pl.resize(K);
-    for(int i=pl.size()-1;i >= 0;--i)
+    i=pl.size();
+    do
       {
+	--i;
 	pl[i] = pq.top().second;
 	pq.pop();
       }
+    while(i != 0);
   };
   //! Create answer
   /*! 
@@ -147,23 +153,27 @@ public:
     \param pl Vector which holds the point indeces after function completes
     \param pd Vector which holds the squared distances from query point
   */
-  void answer(vector<long unsigned int>& pl, vector<double> &pd)
+  void answer(std::vector<long unsigned int>& pl, std::vector<double> &pd)
   {
     pl.resize(K);
     pd.resize(K);
-    for(int i=pl.size()-1;i >= 0; --i)
+    std::vector<long unsigned int>::size_type i;
+    i = pl.size();
+    do
       {
+	--i;
 	pl[i] = pq.top().second;
 	pd[i] = pq.top().first;
 	pq.pop();
       }
+    while(i != 0);
   }
   //! Size function
   /*! 
     Returns the current size of the queue 
     \return Size
   */  
-  int size(){ return pq.size(); }
+   long unsigned int size(){ return pq.size(); }
 };
 
 #endif
