@@ -17,15 +17,15 @@
 #ifndef __STANN_ZORDER_LT__
 #define __STANN_ZORDER_LT__
 
-#include <dpoint.hpp>
+#include "dpoint.hpp"
 #include <cmath>
 #include <climits>
 #include <limits>
 #include <iostream>
 #include <vector>
-#include <zorder_type_traits.hpp>
-#include <sep_float.hpp>
-#include <pair_iter.hpp>
+#include "zorder_type_traits.hpp"
+#include "sep_float.hpp"
+#include "pair_iter.hpp"
 /*! \file
   \brief Contains implementation of various z-order functions for defined types
 */

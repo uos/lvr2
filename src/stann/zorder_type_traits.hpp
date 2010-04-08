@@ -19,7 +19,7 @@
 #ifndef __STANN_ZORDER_TYPE_TRAITS__
 #define __STANN_ZORDER_TYPE_TRAITS__
 
-#include <sep_float.hpp>
+#include "sep_float.hpp"
 
 /*! \file
   \brief Contains type traits used by the zorder_lt class
