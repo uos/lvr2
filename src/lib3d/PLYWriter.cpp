@@ -90,6 +90,12 @@ void PLYIO::setIndexArray(unsigned int* array, size_t n)
 	m_numberOfFaces = n;
 }
 
+void PLYIO::setColorArray(float* array, size_t n)
+{
+	m_colors = array;
+	assert(n == m_numberOfVertices);
+}
+
 void PLYIO::save(string filename, bool binary)
 {
 	// Save file mode
@@ -431,8 +437,24 @@ void PLYIO::writeVerticesASCII(ofstream &out, PLYElement *e)
 			{
 				out << m_vertices[vertex_pointer + 2] << " ";
 			}
+			else if (property_name == "r")
+			{
+				assert(m_colors);
+				out << m_colors[vertex_pointer] << " ";
+			}
+			else if (property_name == "g")
+			{
+				assert(m_colors);
+				out << m_colors[vertex_pointer + 1] << " ";
+			}
+			else if (property_name == "b")
+			{
+				assert(m_colors);
+				out << m_colors[vertex_pointer + 2] << " ";
+			}
 			current++;
 		}
+
 		out << endl;
 	}
 }

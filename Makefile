@@ -49,7 +49,7 @@ bin/mcubes: $(MCLIBS)
 	@echo -e "\nCompiling and Linking Marching Cubes Programm...\n"
 	@$(CPP) $(CFLAGS) -o bin/mcubes $(MCSRC)main.cc $(MCLIBS) 
 
-bin/viewer: $(VIEWERLIBS)
+bin/viewer: $(VIEWERLIBS) lib/libmodel.a
 	@echo -e "\nCompiling and Linking Viewer...\n"
 	@$(CPP) $(CFLAGS) -o bin/viewer $(VIEWERSRC)Viewer.cpp $(VIEWERLIBS)
 

@@ -9,10 +9,11 @@
 #define BOUNDINGBOX_H_
 
 #include <math.h>
+#include <GL/glut.h>
 
-#include "Renderable.h"
+#include "BaseVertex.h"
 
-class BoundingBox: public Renderable {
+class BoundingBox {
 public:
 	BoundingBox();
 	BoundingBox(Vertex v1, Vertex v2);
@@ -25,18 +26,24 @@ public:
 	inline void expand(float x, float y, float z);
 	inline void render();
 
+	int pick();
+
 	Vertex getCentroid(){return centroid;};
 
 	Vertex v_min;
 	Vertex v_max;
+	Vertex centroid;
 
 	float  x_size;
 	float  y_size;
 	float  z_size;
 
+	void createDisplayLists();
 private:
 	int n;
-	Vertex centroid;
+
+	GLuint pick_objects_list;
+	GLuint bounding_box_list;
 
 };
 
@@ -58,6 +65,9 @@ inline void BoundingBox::expand(Vertex v){
 			          v_max.y - v_min.y,
 			          v_max.z - v_min.z);
 
+	// Update display lists according to the
+	// geometry
+	//createDisplayLists();
 }
 
 inline void BoundingBox::expand(float x, float y, float z){
@@ -73,14 +83,20 @@ inline void BoundingBox::expand(float x, float y, float z){
 	y_size = fabs(v_max.y - v_min.y);
 	z_size = fabs(v_max.z - v_min.z);
 
-	centroid = Vertex(v_max.x - v_min.x,
-			          v_max.y - v_min.y,
-			          v_max.z - v_min.z);
+	centroid = Vertex(v_min.x + 0.5 * x_size,
+					  v_min.y + 0.5 * y_size,
+					  v_min.z + 0.5 * z_size);
+
+	// Update display lists according to the
+	// geometry
+	//createDisplayLists();
 
 }
 
-inline void BoundingBox::render(){
-
+inline void BoundingBox::render()
+{
+	glCallList(bounding_box_list);
+	glCallList(pick_objects_list);
 }
 
 

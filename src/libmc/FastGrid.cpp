@@ -7,6 +7,8 @@
 
 #include "FastGrid.h"
 
+#include <boost/progress.hpp>
+
 //Each box corner in the grid is shared with 7 other boxes.
 //To find an already existing corner, these boxes have to
 //be checked. The following table holds the information where
@@ -30,7 +32,6 @@
 //(11, 7, 6) of the grid.
 //
 //Simple isn't it?
-
 
 const static int shared_vertex_table[8][28] = {
 	{-1, 0, 0, 1, -1, -1, 0, 2,  0, -1, 0, 3, -1,  0, -1, 5, -1, -1, -1, 6,  0, -1, -1, 7,  0,  0, -1, 4},
@@ -206,13 +207,17 @@ void FastGrid::createGrid(){
 void FastGrid::calcQueryPointValues(){
     unsigned long start_time = GetCurrentTimeInMilliSec();
     omp_set_num_threads(4);
+
+    boost::progress_display progress(query_points.size());
+
     #pragma omp parallel for
 	for(int i = 0; i < (int)query_points.size(); i++){
-		if(i % 10000 == 0) cout << "##### Calculating distance values: " << i << " / " << query_points.size() << endl;
+		//if(i % 10000 == 0) cout << "##### Calculating distance values: " << i << " / " << query_points.size() << endl;
 		QueryPoint p = query_points[i];
 		ColorVertex v = ColorVertex(p.position, 0.0f, 1.0f, 0.0f);
 		p.distance = interpolator->distance(v);
 		query_points[i] = p;
+		++progress;
 	}
 	unsigned long end_time = GetCurrentTimeInMilliSec();
 
@@ -246,24 +251,30 @@ void FastGrid::createMesh(){
 	hash_map<int, FastBox*>::iterator it;
 	FastBox* b;
 	int global_index = 0;
-	int c = 0;
 
 	mesh = new HalfEdgeMesh();
 
+	boost::progress_display progress(cells.size());
 	for(it = cells.begin(); it != cells.end(); it++){
-		if(c % 1000 == 0) cout << "##### Iterating Cells... " << c << " / " << cells.size() << endl;;
+		//if(c % 1000 == 0) cout << "##### Iterating Cells... " << c << " / " << cells.size() << endl;;
 		b = it->second;
 		global_index = b->calcApproximation(query_points, *mesh, global_index);
-		c++;
+		++progress;
 	}
 
 //	mesh->extract_borders();
 //	mesh->write_polygons("border.bor");
-	mesh->write_face_normals("face_normal.nor");
-	mesh->printStats();
+//	mesh->write_face_normals("face_normal.nor");
+//	mesh->printStats();
+	vector<planarCluster> planes;
+	mesh->cluster(planes);
+	cout << "Extracted Planes: " << planes.size() << endl;
 	mesh->finalize();
+	mesh->write_face_normals("face_normal.nor");
 	mesh->save("mesh.ply");
 
+	mesh->finalize(planes);
+	mesh->save("planes.ply");
 
 //	cout << "##### Creating Progressive Mesh..." << endl;
 //
@@ -315,13 +326,14 @@ void FastGrid::readPoints(string filename){
 	//Point coordinates
 	float x, y, z, dummy;
 
+	//if(in.good()) in >> dummy;
+
 	//Read file
 	while(in.good() ){
 		in >> x >> y >> z;
 		for(int i = 0; i < number_of_dummys; i++){
 			in >> dummy;
 		}
-
 
 		bounding_box.expand(x, y, z);
 		pts.push_back(BaseVertex(x,y,z));
@@ -341,6 +353,7 @@ void FastGrid::readPoints(string filename){
 		points[i][0] = pts[i].x;
 		points[i][1] = pts[i].y;
 		points[i][2] = pts[i].z;
+		//cout << points[i][0] << " " << points[i][1] << " " << points[i][2] << endl;
 	}
 
 	pts.clear();

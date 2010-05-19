@@ -31,6 +31,8 @@ using namespace std;
 #include "Matrix4.h"
 #include "Quaternion.h"
 
+#include "BoundingBox.h"
+
 class Renderable {
 public:
 	Renderable();
@@ -105,7 +107,7 @@ protected:
 
 	float scale_factor;
 
-
+	BoundingBox* m_boundingBox;
 };
 
 #endif /* RENDERABLE_H_ */

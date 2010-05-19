@@ -53,8 +53,6 @@ StaticMesh::StaticMesh(const StaticMesh &o){
 
 	m_indices = new unsigned int[3 * o.number_of_faces];
 
-
-
 	for(size_t i = 0; i < 3 * o.number_of_vertices; i++){
 		normals[i] = o.normals[i];
 		vertices[i] = o.vertices[i];
@@ -64,6 +62,8 @@ StaticMesh::StaticMesh(const StaticMesh &o){
 	for(size_t i = 0; i < 3 * o.number_of_faces; i++){
 		m_indices[i] = o.m_indices[i];
 	}
+
+	m_boundingBox = o.m_boundingBox;
 
 }
 
@@ -78,6 +78,8 @@ void StaticMesh::finalize(){
 void StaticMesh::compileDisplayList(){
 
 	if(finalized){
+
+		m_boundingBox->createDisplayLists();
 
 		listIndex = glGenLists(1);
 
@@ -118,6 +120,18 @@ void StaticMesh::load(string filename){
 	colors = w.getColorArray(n_colors);
 	m_indices = w.getIndexArray(number_of_faces);
 
+	// Calculate bounding box
+	if(m_boundingBox) delete m_boundingBox;
+	m_boundingBox = new BoundingBox;
+
+	for(size_t i = 0; i < number_of_vertices; i++)
+	{
+		m_boundingBox->expand(vertices[3 * i], vertices[3 * i + 1], vertices[3 * i + 2]);
+	}
+
+	cout << m_boundingBox->v_max;
+	cout << m_boundingBox->v_min;
+	cout << m_boundingBox->centroid;
 
 	if(n_colors == 0)
 	{
@@ -227,6 +241,10 @@ void StaticMesh::save(string filename){
 		vertex_element->addProperty("x", "float");
 		vertex_element->addProperty("y", "float");
 		vertex_element->addProperty("z", "float");
+		vertex_element->addProperty("r", "float");
+		vertex_element->addProperty("g", "float");
+		vertex_element->addProperty("b", "float");
+
 
 		PLYElement* face_element = new PLYElement("face", number_of_faces);
 		face_element->addProperty("vertex_indices", "uint", "uchar");
@@ -239,9 +257,10 @@ void StaticMesh::save(string filename){
 		// Set data arrays
 		ply_writer.setVertexArray(vertices, number_of_vertices);
 		ply_writer.setIndexArray(m_indices, number_of_faces);
+		ply_writer.setColorArray(colors, number_of_vertices);
 
 		// Save
-		ply_writer.save(filename, true);
+		ply_writer.save(filename, false);
 
 	} else {
 		cout << "##### Warning: Static Mesh: Buffers empty." << endl;

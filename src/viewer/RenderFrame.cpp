@@ -17,6 +17,39 @@ RenderFrame::~RenderFrame() {
 
 }
 
+void RenderFrame::createBGList()
+{
+	m_bgListIndex = glGenLists(1);
+	glNewList(m_bgListIndex, GL_COMPILE);
+	glMatrixMode(GL_PROJECTION);
+	glPushMatrix();
+	glLoadIdentity();
+
+	glMatrixMode(GL_MODELVIEW);
+	glPushMatrix();
+	glLoadIdentity();
+	glDisable(GL_LIGHTING);
+
+	glBegin(GL_QUADS);
+
+	//light blue
+	glColor3f(1.0,1.0,1.0);
+	glVertex2f(-1.0,0.0);
+	glVertex2f(1.0, 0.0);
+
+	//blue color
+	glColor3f(0.2,0.2,0.2);
+	glVertex2f(1.0, -1.0);
+	glVertex2f(-1.0, -1.0);
+	glEnd();
+
+	glMatrixMode(GL_PROJECTION);
+	glPopMatrix();
+	glMatrixMode(GL_MODELVIEW);
+	glPopMatrix();
+	glEndList();
+}
+
 void RenderFrame::initializeGL(){
 
 	glClearColor(1.0, 1.0, 1.0, 1.0);
@@ -27,7 +60,7 @@ void RenderFrame::initializeGL(){
 
 	glEnable(GL_LIGHTING);
 	float on[1] = {1.0f};
-	glLightModelfv(GL_LIGHT_MODEL_TWO_SIDE, on);
+	//glLightModelfv(GL_LIGHT_MODEL_TWO_SIDE, on);
 
 	GLfloat lightOnePosition[] = {1.0, 1.0, 1.0, 1.0};
 	GLfloat lightOneColor[] = {0.10, 0.10, 0.10, 1.0};
@@ -63,6 +96,7 @@ void RenderFrame::initializeGL(){
 	glMaterialfv(GL_FRONT, GL_AMBIENT,   mat_ambient);
 	glMaterialfv(GL_FRONT, GL_DIFFUSE,   mat_diffuse);
 
+	createBGList();
 
 	//eventHandler->createDefaultObjects();
 
@@ -70,6 +104,13 @@ void RenderFrame::initializeGL(){
 
 void RenderFrame::paintGL(){
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+
+	// Render background
+	glDisable(GL_DEPTH_TEST);
+	glCallList(m_bgListIndex);
+	glEnable(GL_DEPTH_TEST);
+
+	// Render objects
 	eventHandler->render();
 }
 
@@ -86,6 +127,7 @@ void RenderFrame::mouseMoveEvent(QMouseEvent* e){
 
 	int dx = old_x - e->x();
 	int dy = old_y - e->y();
+
 
 	if(pressed_button == Qt::LeftButton){
 		if(fabs(dx) > 2*MOUSE_SENSITY){

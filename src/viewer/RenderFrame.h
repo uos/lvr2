@@ -38,9 +38,13 @@ public:
 
 private:
 
+	void createBGList();
+
 	int old_x;
 	int old_y;
 	int pressed_button;
+
+	int m_bgListIndex;
 
 	EventHandler* eventHandler;
 };

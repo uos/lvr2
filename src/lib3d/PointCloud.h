@@ -39,7 +39,7 @@ inline void PointCloud::render(){
 		if(active){
 			glColor3f(1.0f, 0.0f, 0.0f);
 		} else {
-			glColor3f(0.0f, 0.9f, 0.0f);
+			glColor3f(0.0f, 0.0f, 0.0f);
 		}
 		glCallList(listIndex);
 		glPopMatrix();

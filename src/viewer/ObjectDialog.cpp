@@ -1,10 +1,10 @@
 /********************************************************************************
-** Form generated from reading ui file 'objectdialog.ui'
+** Form generated from reading UI file 'objectdialog.ui'
 **
-** Created: Thu Apr 8 09:34:57 2010
-**      by: Qt User Interface Compiler version 4.5.2
+** Created: Fri Apr 30 11:09:25 2010
+**      by: Qt User Interface Compiler version 4.6.2
 **
-** WARNING! All changes made in this file will be lost when recompiling ui file!
+** WARNING! All changes made in this file will be lost when recompiling UI file!
 ********************************************************************************/
 
 #ifndef UI_OBJECTDIALOG_H
@@ -56,7 +56,6 @@ public:
     void retranslateUi(QDockWidget *ObjectDialog)
     {
         ObjectDialog->setWindowTitle(QApplication::translate("ObjectDialog", "Loaded Objects", 0, QApplication::UnicodeUTF8));
-        Q_UNUSED(ObjectDialog);
     } // retranslateUi
 
 };

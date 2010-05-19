@@ -1,10 +1,10 @@
 /********************************************************************************
-** Form generated from reading ui file 'matrixdialog.ui'
+** Form generated from reading UI file 'matrixdialog.ui'
 **
-** Created: Thu Apr 8 09:34:58 2010
-**      by: Qt User Interface Compiler version 4.5.2
+** Created: Fri Apr 30 11:09:26 2010
+**      by: Qt User Interface Compiler version 4.6.2
 **
-** WARNING! All changes made in this file will be lost when recompiling ui file!
+** WARNING! All changes made in this file will be lost when recompiling UI file!
 ********************************************************************************/
 
 #ifndef UI_MATRIXDIALOG_H
@@ -174,7 +174,6 @@ public:
         groupBox->setTitle(QApplication::translate("MatrixDialog", "Enter Transformation Matrix:", 0, QApplication::UnicodeUTF8));
         pushButtonCancel->setText(QApplication::translate("MatrixDialog", "Cancel", 0, QApplication::UnicodeUTF8));
         pushButtonOK->setText(QApplication::translate("MatrixDialog", "OK", 0, QApplication::UnicodeUTF8));
-        Q_UNUSED(MatrixDialog);
     } // retranslateUi
 
 };

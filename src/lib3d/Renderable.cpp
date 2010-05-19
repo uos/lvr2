@@ -26,6 +26,8 @@ Renderable::Renderable() {
 
 	scale_factor = 1.0f;
 
+	m_boundingBox = 0;
+
 	computeMatrix();
 	compileAxesList();
 
@@ -46,6 +48,8 @@ Renderable::Renderable(Matrix4 m, string n){
 	active = false;
 
 	scale_factor = 1.0f;
+
+	m_boundingBox = 0;
 
 	setTransformationMatrix(m);
 	computeMatrix();
@@ -70,6 +74,8 @@ Renderable::Renderable(const Renderable& other){
 
 	scale_factor = other.scale_factor;
 
+	m_boundingBox = other.m_boundingBox;
+
 	computeMatrix();
 	compileAxesList();
 }
@@ -93,6 +99,8 @@ Renderable::Renderable(string n){
 	z_axis = Vertex(0.0f, 0.0f, 1.0f);
 
 	scale_factor = 1.0f;
+
+	m_boundingBox = 0;
 
 	computeMatrix();
 	compileAxesList();
@@ -280,7 +288,7 @@ void Renderable::compileAxesList(){
 
 	glEnd();
 	glEnable(GL_LIGHTING);
-	glEnd();
+	//glEnd();
 
 	glEndList();
 
