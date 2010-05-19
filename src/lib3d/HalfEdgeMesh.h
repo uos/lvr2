@@ -31,9 +31,17 @@ using namespace std;
 #include "HalfEdgeFace.h"
 #include "HalfEdgePolygon.h"
 
+
 class HalfEdgeVertex;
 class HalfEdgeFace;
 class HalfEdgePolygon;
+
+struct planarCluster
+{
+	size_t face_count;
+	HalfEdgeFace** faces;
+};
+
 
 class HalfEdgeMesh : public StaticMesh{
 public:
@@ -56,6 +64,11 @@ public:
 							 HalfEdge* edge,
 							 HalfEdgePolygon*);
 
+	void check_next_neighbor(HalfEdgeFace* f0,
+			                 HalfEdgeFace* face,
+			                 HalfEdge* edge,
+			                 vector<HalfEdgeFace*>& faces);
+
 	void extract_borders();
 	void generate_polygons();
 
@@ -65,8 +78,14 @@ public:
 	bool check_face(HalfEdgeFace* f0, HalfEdgeFace* current);
 	bool isFlatFace(HalfEdgeFace* face);
 
+	int classifyFace(HalfEdgeFace* f);
+
 	void create_polygon(vector<int> &polygon,
 						hash_map< unsigned int, HalfEdge* >* edges);
+
+	void cluster(vector<planarCluster> &planes);
+
+	virtual void finalize(vector<planarCluster> &planes);
 
 private:
 

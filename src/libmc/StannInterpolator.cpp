@@ -7,9 +7,13 @@
 
 #include "StannInterpolator.h"
 
+#include "../newmat/newmatio.h"
+
 #include <sys/time.h>
 #include <time.h>
 #include <unistd.h>
+
+#include <boost/progress.hpp>
 
 unsigned long GetCurrentTimeInMilliSec(void)
 {
@@ -95,7 +99,9 @@ Plane StannInterpolator::calcPlane(Vertex query_point, int k, vector<unsigned lo
 		ColumnVector F(k);
 		Matrix B(k, 3);
 
-        #pragma omp parallel for
+		//cout << "Build matrix: " << k << endl;
+
+        //#pragma omp parallel for
 		for(int j = 1; j <= k; j++){
 
 			F(j) = points[id[j-1]][1];
@@ -105,12 +111,24 @@ Plane StannInterpolator::calcPlane(Vertex query_point, int k, vector<unsigned lo
 
 		}
 
+		//cout << "Transpose" << endl;
+
 		Matrix Bt = B.t();
+
+		//cout << "Mult1" << endl;
+
 		Matrix BtB = Bt * B;
+
+		//cout << "Invert" << endl;
+
 		Matrix BtBinv = BtB.i();
+
+		//cout << "Mult2" << endl;
 		Matrix M = BtBinv * Bt;
 
 		C = M * F;
+
+		//cout << " Coeff" << endl;
 
 		z1 = C(1) + C(2) * (query_point.x + epsilon) + C(3) * query_point.z;
 		z2 = C(1) + C(2) * query_point.x + C(3) * (query_point.z + epsilon);
@@ -125,6 +143,8 @@ Plane StannInterpolator::calcPlane(Vertex query_point, int k, vector<unsigned lo
 	} catch (Exception e){
 		normal = Normal(0.0, 0.0, 0.0);
 	}
+
+	//cout << "Plane" << endl;
 
 	Plane p;
 	p.a = C(1);
@@ -151,8 +171,6 @@ void StannInterpolator::write_normals(){
 
 void StannInterpolator::estimate_normals(){
 
-	Vertex query_point, diff1, diff2;
-	Normal normal;
 
 	int k_0 = 10;
 
@@ -160,8 +178,16 @@ void StannInterpolator::estimate_normals(){
 	//Initialize normals
 	for(int i = 0; i < number_of_points; i++) normals.push_back(Normal(0.0, 0.0, 0.0));
 
+	int progress_limit = number_of_points / 100;
+	int counter = 0;
+
+	boost::progress_display progress(number_of_points);
+
     #pragma omp parallel for
 	for(int i = 0; i < number_of_points; i++){
+
+		Vertex query_point; //, diff1, diff2;
+		Normal normal;
 
 		vector<unsigned long> id;
 		vector<double> di;
@@ -170,8 +196,12 @@ void StannInterpolator::estimate_normals(){
 		int n = 0;
 		int k = k_0;
 
-		//counter++;
-		if(i % 10000 == 0) cout << "##### Estimating Normals... " << i << " / " << number_of_points << endl;
+//		if(i % progress_limit == 0)
+//		{
+//
+//			cout << "##### Estimating normals: " <<  counter << "% " << endl;
+//			counter ++;
+//		}
 
 		while(n < 5){
 
@@ -209,13 +239,19 @@ void StannInterpolator::estimate_normals(){
 
 			if(boundingBoxOK(dx, dy, dz)) break;
 			//break;
+
+			++progress;
  		}
 
 		query_point = Vertex(points[i][0], points[i][1], points[i][2]);
 		Plane p = calcPlane(query_point, k, id);
+
 		mean_distance = meanDistance(p, id, k);
 
-		Normal normal =  p.n;
+
+
+
+		normal =  p.n;
 		if(normal * (query_point - center) < 0) normal = normal * -1;
 
 		//normal = normal * -1;
@@ -223,6 +259,7 @@ void StannInterpolator::estimate_normals(){
 		normals[i] = normal;
 
 	}
+
 
 	cout << endl;
 
@@ -235,6 +272,11 @@ void StannInterpolator::interpolateNormals(int k){
 
 	for(int i = 0; i < number_of_points; i++) tmp.push_back(Normal());
 
+	int counter = 0;
+	int progress_limit = number_of_points / 100;
+
+	boost::progress_display progress(number_of_points);
+
     #pragma omp parallel for
 	for(int i = 0; i < number_of_points; i++){
 
@@ -243,8 +285,14 @@ void StannInterpolator::interpolateNormals(int k){
 
 		point_tree.ksearch(points[i], k, id, di, 0);
 
-		if(i % 10000 == 0) cout << "##### Interpolating normals: "
-		<< i << " / " << number_of_points << endl;
+		//if(i % 10000 == 0) cout << "##### Interpolating normals: "
+		//<< i << " / " << number_of_points << endl;
+
+//		if(i % progress_limit == 0)
+//		{
+//			cout << "##### Interpolating normals: " << counter << "% " << endl;
+//			counter++;
+//		}
 
 		Vertex mean;
 		Normal mean_normal;
@@ -264,7 +312,7 @@ void StannInterpolator::interpolateNormals(int k){
 				normals[id[j]] = mean_normal;
 			}
 		}
-
+		++progress;
 	}
 
 	cout << "##### Copying normals..." << endl;

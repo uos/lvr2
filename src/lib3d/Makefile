@@ -45,7 +45,7 @@ libmodel.a: $(LIB3DTARGETS)
 $(OBJ)BaseVertex.o: BaseVertex.*
 	@echo "Compiling Base Vertex..."
 	@$(CPP) $(CFLAGS) -c -o $(OBJ)BaseVertex.o BaseVertex.cpp
-	
+
 $(OBJ)BoundingBox.o: BoundingBox.*
 	@echo "Compiling Bounding Box..."
 	@$(CPP) $(CFLAGS) -c -o $(OBJ)BoundingBox.o BoundingBox.cpp

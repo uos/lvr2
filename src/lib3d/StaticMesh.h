@@ -55,15 +55,23 @@ protected:
 
 	size_t number_of_vertices;
 	size_t number_of_faces;
+
 };
 
 void StaticMesh::render(){
-	if(finalized && listIndex != -1){
-		glPushMatrix();
-		glMultMatrixf(transformation.getData());
-		glCallList(listIndex);
-		if(show_axes) glCallList(axesListIndex);
-		glPopMatrix();
+	if(visible) {
+		if(finalized && listIndex != -1){
+			glEnable(GL_LIGHTING);
+			glPushMatrix();
+			glMultMatrixf(transformation.getData());
+			glCallList(listIndex);
+			if(show_axes)
+			{
+				if(m_boundingBox) m_boundingBox->render();
+				glCallList(axesListIndex);
+			}
+			glPopMatrix();
+		}
 	}
 }
 

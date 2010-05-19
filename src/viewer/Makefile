@@ -14,6 +14,9 @@ OBJ = ../../obj/
 BIN = ../../bin/
 LIB = ../../lib/
 
+UIC = uic-qt4
+MOC = moc-qt4
+
 VIEWTARGETS  = $(OBJ)MoveDock.o $(OBJ)ObjectDialog.o $(OBJ)MatrixDialog.o $(OBJ)MainWindow.o \
                $(OBJ)Viewport.o \
                $(OBJ)EventHandler.o $(OBJ)ObjectHandler.o $(OBJ)RenderFrame.o \
@@ -37,22 +40,22 @@ libviewer.a: $(VIEWTARGETS)
 
 $(OBJ)MainWindow.o: viewer.ui
 	@echo "Compiling Main Window..."
-	@uic viewer.ui > MainWindow.cpp
+	@$(UIC) viewer.ui > MainWindow.cpp
 	@$(CPP) $(CFLAGS) -c -o $(OBJ)MainWindow.o MainWindow.cpp
 
 $(OBJ)MatrixDialog.o: matrixdialog.ui
 	@echo "Compiling Matrix Dialog..."
-	@uic matrixdialog.ui > MatrixDialog.cpp
+	@$(UIC) matrixdialog.ui > MatrixDialog.cpp
 	@$(CPP) $(CFLAGS) -c -o $(OBJ)MatrixDialog.o MatrixDialog.cpp
 
 $(OBJ)ObjectDialog.o: objectdialog.ui
 	@echo "Compiling Object Selection Dialog"
-	@uic objectdialog.ui > ObjectDialog.cpp
+	@$(UIC) objectdialog.ui > ObjectDialog.cpp
 	@$(CPP) $(CFLAGS) -c -o $(OBJ)ObjectDialog.o ObjectDialog.cpp
 
 $(OBJ)MoveDock.o: movedock.ui
 	@echo "Compiling Move Dock"
-	@uic movedock.ui > MoveDock.cpp
+	@$(UIC) movedock.ui > MoveDock.cpp
 	@$(CPP) $(CFLAGS) -c -o $(OBJ)MoveDock.o MoveDock.cpp
 
 $(OBJ)TouchPad.o: TouchPad.*

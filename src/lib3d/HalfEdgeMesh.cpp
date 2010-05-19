@@ -19,6 +19,22 @@ HalfEdgeMesh::~HalfEdgeMesh() {
 
 }
 
+int HalfEdgeMesh::classifyFace(HalfEdgeFace* f)
+{
+	Normal n = f->getInterpolatedNormal();
+	Normal n_ceil(0.0, 1.0, 0.0);
+	Normal n_floor(0.0, -1.0, 0.0);
+
+	if(n_ceil * n > 0.98) return 1;
+	if(n_floor * n > 0.98) return 2;
+
+	float radius = sqrt(n.x * n.x + n.z * n.z);
+
+	if(radius > 0.95) return 3;
+
+	return 0;
+}
+
 void HalfEdgeMesh::finalize(){
 
 	cout << "HEM::finalize()" << endl;
@@ -41,18 +57,118 @@ void HalfEdgeMesh::finalize(){
 		normals [3 * i + 1] = -he_vertices[i]->normal.y;
 		normals [3 * i + 2] = -he_vertices[i]->normal.z;
 
-		colors  [3 * i] = 0.0;
-		colors  [3 * i + 1] = 1.0;
-		colors  [3 * i + 2] = 0.0;
+		colors  [3 * i] = 0.8;
+		colors  [3 * i + 1] = 0.8;
+		colors  [3 * i + 2] = 0.8;
 	}
 
 	for(size_t i = 0; i < he_faces.size(); i++){
 		m_indices[3 * i]      = he_faces[i]->index[0];
 		m_indices[3 * i + 1]  = he_faces[i]->index[1];
 		m_indices[3 * i + 2]  = he_faces[i]->index[2];
+
+		int surface_class = classifyFace(he_faces[i]);
+
+		switch(surface_class)
+		{
+		case 1:
+			colors[m_indices[3 * i]  * 3 + 0] = 0.0;
+			colors[m_indices[3 * i]  * 3 + 1] = 0.0;
+			colors[m_indices[3 * i]  * 3 + 2] = 1.0;
+
+			colors[m_indices[3 * i + 1] * 3 + 0] = 0.0;
+			colors[m_indices[3 * i + 1] * 3 + 1] = 0.0;
+			colors[m_indices[3 * i + 1] * 3 + 2] = 1.0;
+
+			colors[m_indices[3 * i + 2] * 3 + 0] = 0.0;
+			colors[m_indices[3 * i + 2] * 3 + 1] = 0.0;
+			colors[m_indices[3 * i + 2] * 3 + 2] = 1.0;
+
+			break;
+		case 2:
+			colors[m_indices[3 * i] * 3 + 0] = 1.0;
+			colors[m_indices[3 * i] * 3 + 1] = 0.0;
+			colors[m_indices[3 * i] * 3 + 2] = 0.0;
+
+			colors[m_indices[3 * i + 1] * 3 + 0] = 1.0;
+			colors[m_indices[3 * i + 1] * 3 + 1] = 0.0;
+			colors[m_indices[3 * i + 1] * 3 + 2] = 0.0;
+
+			colors[m_indices[3 * i + 2] * 3 + 0] = 1.0;
+			colors[m_indices[3 * i + 2] * 3 + 1] = 0.0;
+			colors[m_indices[3 * i + 2] * 3 + 2] = 0.0;
+
+			break;
+		case 3:
+			colors[m_indices[3 * i] * 3 + 0] = 0.0;
+			colors[m_indices[3 * i] * 3 + 1] = 1.0;
+			colors[m_indices[3 * i] * 3 + 2] = 0.0;
+
+			colors[m_indices[3 * i + 1] * 3 + 0] = 0.0;
+			colors[m_indices[3 * i + 1] * 3 + 1] = 1.0;
+			colors[m_indices[3 * i + 1] * 3 + 2] = 0.0;
+
+			colors[m_indices[3 * i + 2] * 3 + 0] = 0.0;
+			colors[m_indices[3 * i + 2] * 3 + 1] = 1.0;
+			colors[m_indices[3 * i + 2] * 3 + 2] = 0.0;
+
+			break;
+		}
+
 	}
 
 	finalized = true;
+}
+
+void HalfEdgeMesh::finalize(vector<planarCluster> &planes)
+{
+	if(!finalized) finalize();
+
+	// Create a color gradient
+	float r[255];
+	float g[255];
+	float b[255];
+
+	for(int i = 0; i < 255; i++)
+	{
+		 r[i] = (252 - i % 64 * 4) / 255.0;
+		 g[i] =  (32 + i % 32 * 6) / 255.0;
+		 b[i] =  (64 + i % 64 * 3) / 255.0;
+	}
+
+	// Change colors according to clustering
+	int count = 0;
+	for(size_t i = 0; i < planes.size(); i++)
+	{
+		planarCluster cluster = planes[i];
+		for(size_t j = 0; j < cluster.face_count; j++)
+		{
+			HalfEdgeFace* f = cluster.faces[j];
+
+			// Get vertex indices
+			int _a = f->index[0];
+			int _b = f->index[1];
+			int _c = f->index[2];
+
+			cout << r[count % 255] << " "
+			     << g[count % 255] << " "
+			     << b[count % 255] << endl;
+
+			colors[3 * _a    ] = r[count % 255];
+			colors[3 * _a + 1] = g[count % 255];
+			colors[3 * _a + 2] = b[count % 255];
+
+			colors[3 * _b    ] = r[count % 255];
+			colors[3 * _b + 1] = g[count % 255];
+			colors[3 * _b + 2] = b[count % 255];
+
+			colors[3 * _c    ] = r[count % 255];
+			colors[3 * _c + 1] = g[count % 255];
+			colors[3 * _c + 2] = b[count % 255];
+
+		}
+		count++;
+	}
 }
 
 bool HalfEdgeMesh::isFlatFace(HalfEdgeFace* face){
@@ -140,11 +256,43 @@ bool HalfEdgeMesh::check_face(HalfEdgeFace* f0, HalfEdgeFace* current){
 	float  cos_angle = n_0 * current->getInterpolatedNormal();
 
 	//Decide using given thresholds
-	if(distance < 8.0 && cos_angle > 0.98) return true;
+	//if(distance < 8.0 && cos_angle > 0.98) return true;
+	if(cos_angle > 0.98) return true;
 
 	//Return false if face is not in plane
 	return false;
+}
 
+void HalfEdgeMesh::cluster(vector<planarCluster> &planes)
+{
+	for(size_t i = 0; i < he_faces.size(); i++)
+	{
+		HalfEdgeFace* current_face = he_faces[i];
+
+		if(!current_face->used)
+		{
+
+			planarCluster cluster;
+			cluster.face_count = 0;
+			cluster.faces = 0;
+
+			vector<HalfEdgeFace*> faces;
+
+			check_next_neighbor(current_face, current_face, 0, faces);
+
+			// Copy faces into cluster struct
+			cluster.face_count = faces.size();
+			cluster.faces = new HalfEdgeFace*[faces.size()];
+
+			for(size_t i = 0; i < faces.size(); i++)
+			{
+				cluster.faces[i] = faces[i];
+			}
+
+			planes.push_back(cluster);
+		}
+
+	}
 }
 
 void HalfEdgeMesh::check_next_neighbor(HalfEdgeFace* f0,
@@ -168,6 +316,36 @@ void HalfEdgeMesh::check_next_neighbor(HalfEdgeFace* f0,
 			if(current_neighbor != 0){
 				if(check_face(f0, current_neighbor) && !current_neighbor->used){
 					check_next_neighbor(f0, current_neighbor, current_edge, polygon);
+				}
+			}
+		}
+		current_edge = current_edge->next;
+	} while(start_edge != current_edge);
+
+
+}
+
+void HalfEdgeMesh::check_next_neighbor(HalfEdgeFace* f0,
+		                               HalfEdgeFace* face,
+		                               HalfEdge* edge,
+		                               vector<HalfEdgeFace*> &faces){
+
+	face->used = true;
+	faces.push_back(face);
+
+    //Iterate through all surrounding faces
+	HalfEdge* start_edge   = face->edge;
+	HalfEdge* current_edge = face->edge;
+	HalfEdge* pair         = current_edge->pair;
+	HalfEdgeFace* current_neighbor;
+
+	do{
+		pair = current_edge->pair;
+		if(pair != 0){
+			current_neighbor = pair->face;
+			if(current_neighbor != 0){
+				if(check_face(f0, current_neighbor) && !current_neighbor->used){
+					check_next_neighbor(f0, current_neighbor, current_edge, faces);
 				}
 			}
 		}

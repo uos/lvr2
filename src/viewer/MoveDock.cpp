@@ -1,10 +1,10 @@
 /********************************************************************************
-** Form generated from reading ui file 'movedock.ui'
+** Form generated from reading UI file 'movedock.ui'
 **
-** Created: Thu Apr 8 09:34:56 2010
-**      by: Qt User Interface Compiler version 4.5.2
+** Created: Fri Apr 30 11:09:24 2010
+**      by: Qt User Interface Compiler version 4.6.2
 **
-** WARNING! All changes made in this file will be lost when recompiling ui file!
+** WARNING! All changes made in this file will be lost when recompiling UI file!
 ********************************************************************************/
 
 #ifndef UI_MOVEDOCK_H
@@ -65,7 +65,6 @@ public:
     {
         MoveDock->setWindowTitle(QApplication::translate("MoveDock", "Rotate Object", 0, QApplication::UnicodeUTF8));
         groupBoxAction->setTitle(QApplication::translate("MoveDock", "Action", 0, QApplication::UnicodeUTF8));
-        Q_UNUSED(MoveDock);
     } // retranslateUi
 
 };

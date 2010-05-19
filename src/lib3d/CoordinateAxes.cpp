@@ -105,7 +105,12 @@ void CoordinateAxes::drawArrow ( float length, float radius, int nbSubdivisions 
 }
 
 void CoordinateAxes::render(){
-	if (visible) glCallList(listIndex);
+	if (visible){
+		glPushMatrix();
+		glScalef(10.0, 10.0, 10.0);
+		glCallList(listIndex);
+		glPopMatrix();
+	}
 }
 
 void CoordinateAxes::transform(Matrix4 m){
