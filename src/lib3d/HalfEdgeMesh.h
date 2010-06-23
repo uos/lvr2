@@ -84,6 +84,8 @@ public:
 						hash_map< unsigned int, HalfEdge* >* edges);
 
 	void cluster(vector<planarCluster> &planes);
+	void optimizeClusters(vector<planarCluster> &clusters);
+
 
 	virtual void finalize(vector<planarCluster> &planes);
 
