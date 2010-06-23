@@ -37,8 +37,6 @@ int HalfEdgeMesh::classifyFace(HalfEdgeFace* f)
 
 void HalfEdgeMesh::finalize(){
 
-	cout << "HEM::finalize()" << endl;
-
 	number_of_vertices = (int)he_vertices.size();
 	number_of_faces = (int)he_faces.size();
 
@@ -150,9 +148,9 @@ void HalfEdgeMesh::finalize(vector<planarCluster> &planes)
 			int _b = f->index[1];
 			int _c = f->index[2];
 
-			cout << r[count % 255] << " "
-			     << g[count % 255] << " "
-			     << b[count % 255] << endl;
+//			cout << r[count % 255] << " "
+//			     << g[count % 255] << " "
+//			     << b[count % 255] << endl;
 
 			colors[3 * _a    ] = r[count % 255];
 			colors[3 * _a + 1] = g[count % 255];
@@ -292,6 +290,74 @@ void HalfEdgeMesh::cluster(vector<planarCluster> &planes)
 			planes.push_back(cluster);
 		}
 
+	}
+}
+
+void HalfEdgeMesh::optimizeClusters(vector<planarCluster> &clusters)
+{
+	vector<planarCluster>::iterator start, end, it;
+	start = clusters.begin();
+	end = clusters.end();
+
+	Normal mean_normal;
+	Vertex centroid;
+
+	for(it = start; it != end; it++)
+	{
+		// Calculated centroid and mean normal of
+		// current cluster
+
+		mean_normal = Normal(0, 0, 0);
+		centroid = Vertex(0, 0, 0);
+
+		size_t count = (*it).face_count;
+		HalfEdgeFace** faces = (*it).faces;
+
+		for(size_t i = 0; i < count; i++)
+		{
+			HalfEdgeFace* face = faces[i];
+			HalfEdge* start_edge, *current_edge;
+			start_edge = face->edge;
+			current_edge = start_edge;
+
+			mean_normal += face->getInterpolatedNormal();
+
+
+			do
+			{
+				centroid += current_edge->end->position;
+				current_edge = current_edge->next;
+			} while(start_edge != current_edge);
+		}
+
+		//mean_normal /= count;
+		mean_normal.normalize();
+		//centroid /= 3 * count;
+
+		centroid.x = centroid.x / (3 * count);
+		centroid.y = centroid.y / (3 * count);
+		centroid.z = centroid.z / (3 * count);
+
+		cout << mean_normal << " " << centroid << endl;
+
+		// Shift all effected verticed into the calculated
+		// plane
+		for(size_t i = 0; i < count; i++)
+		{
+			HalfEdgeFace* face = faces[i];
+			HalfEdge* start_edge, *current_edge;
+			start_edge = face->edge;
+			current_edge = start_edge;
+
+			do
+			{
+
+				float distance = (current_edge->end->position - centroid) * mean_normal;
+				current_edge->end->position = current_edge->end->position - (mean_normal * distance);
+
+				current_edge = current_edge->next;
+			} while(start_edge != current_edge);
+		}
 	}
 }
 

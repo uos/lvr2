@@ -101,7 +101,7 @@ Plane StannInterpolator::calcPlane(Vertex query_point, int k, vector<unsigned lo
 
 		//cout << "Build matrix: " << k << endl;
 
-        //#pragma omp parallel for
+        #pragma omp parallel for
 		for(int j = 1; j <= k; j++){
 
 			F(j) = points[id[j-1]][1];
@@ -277,7 +277,7 @@ void StannInterpolator::interpolateNormals(int k){
 
 	boost::progress_display progress(number_of_points);
 
-    #pragma omp parallel for
+	#pragma omp parallel for
 	for(int i = 0; i < number_of_points; i++){
 
 		vector<unsigned long> id;

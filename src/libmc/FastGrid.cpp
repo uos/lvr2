@@ -268,7 +268,9 @@ void FastGrid::createMesh(){
 //	mesh->printStats();
 	vector<planarCluster> planes;
 	mesh->cluster(planes);
-	cout << "Extracted Planes: " << planes.size() << endl;
+	cout << "Optimizing clusters..." << endl;
+	mesh->optimizeClusters(planes);
+
 	mesh->finalize();
 	mesh->write_face_normals("face_normal.nor");
 	mesh->save("mesh.ply");
@@ -331,6 +333,7 @@ void FastGrid::readPoints(string filename){
 	//Read file
 	while(in.good() ){
 		in >> x >> y >> z;
+
 		for(int i = 0; i < number_of_dummys; i++){
 			in >> dummy;
 		}
