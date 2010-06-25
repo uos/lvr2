@@ -14,14 +14,14 @@
 using namespace std;
 using __gnu_cxx::hash_map;
 
-#include "../ann/ANN/ANN.h"
+#include <ANN/ANN.h>
 
-#include "../lib3d/BaseVertex.h"
-#include "../lib3d/BoundingBox.h"
-#include "../lib3d/TriangleMesh.h"
-#include "../lib3d/HalfEdgeMesh.h"
-#include "../lib3d/LinkedTriangleMesh.h"
-#include "../lib3d/ProgressiveMesh.h"
+#include <lib3d/BaseVertex.h>
+#include <lib3d/BoundingBox.h>
+#include <lib3d/TriangleMesh.h>
+#include <lib3d/HalfEdgeMesh.h>
+#include <lib3d/LinkedTriangleMesh.h>
+#include <lib3d/ProgressiveMesh.h>
 
 #include "ANNInterpolator.h"
 #include "Interpolator.h"

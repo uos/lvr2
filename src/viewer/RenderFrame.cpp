@@ -59,7 +59,7 @@ void RenderFrame::initializeGL(){
 	glPolygonMode (GL_FRONT_AND_BACK, GL_FILL);
 
 	glEnable(GL_LIGHTING);
-	float on[1] = {1.0f};
+	//float on[1] = {1.0f};
 	//glLightModelfv(GL_LIGHT_MODEL_TWO_SIDE, on);
 
 	GLfloat lightOnePosition[] = {1.0, 1.0, 1.0, 1.0};

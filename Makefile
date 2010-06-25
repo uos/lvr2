@@ -10,56 +10,56 @@
 
 include Makefile.options
 
-MCLIBS      = lib/libmc.a lib/libnewmat.a lib/libmodel.a lib/libann.a $(GLLIBS)
-VIEWERLIBS  = $(GLLIBS) $(QTLIBS) lib/libviewer.a lib/libmodel.a
 
-MCSRC       = src/libmc/
-VIEWERSRC   = src/viewer/
+EXTLIBS	    = $(NEWMAT) $(LIBANN)
+MCLIBS      = lib/libmc.a $(EXTLIBS) $(GLLIBS)
+VIEWERLIBS  = $(GLLIBS) $(QTLIBS) $(LIB)libviewer.a 
 
+all: dirs $(EXTLIBS) $(BIN)mcubes $(BIN)viewer
 
-all: dirs lib/libnewmat.a lib/libann.a lib/libmodel.a lib/libmc.a lib/libviewer.a bin/mcubes bin/viewer
+dirs:
+	@mkdir -p bin
+	@mkdir -p lib
+	@mkdir -p obj
 
-dirs: 
-	mkdir -p bin
-	mkdir -p lib
-	mkdir -p obj
+$(NEWMAT): 
+	@echo "[LIB] Newmat"
+	@cd $(EXT)newmat; make -s;
+	@mv -f $(EXT)newmat/libnewmat.a ./lib/libnewmat.a
 
-lib/libnewmat.a: src/newmat/*.*
-	@echo -e "Building Newmat Library..."
-	@cd src/newmat; make -s;
-	@mv -f src/newmat/libnewmat.a ./lib/libnewmat.a
+$(LIBANN):
+	@cd $(EXT)ann; make -s;
 
-lib/libann.a: src/ann/*.*
-	@echo -e "\nBuilding ANN Library...\n"
-	@cd src/ann; make -s;
+$(LIB)libmc.a: 
+	@cd $(MCSRC); make -s
 
-lib/libmodel.a: src/lib3d/*.*
-	@echo -e "\nBuilding 3D Modelling Library...\n"
-	@cd src/lib3d; make -s;
+$(LIB)libviewer.a: src/viewer/*.*
+	@cd $(VIEWERSRC); make -s
 
-lib/libmc.a: src/libmc/*.*
-	@echo -e "\nBuilding Marching Cubes Library...\n"
-	@cd src/libmc; make -s
+$(BIN)mcubes: $(MCLIBS) 
+	@echo "[BIN] Marching Cubes Program"
+	@$(CPP) $(CFLAGS) $(MCSRC)main.cc -o $(BIN)mcubes $(MCLIBS) $(LIB3D)
 
-lib/libviewer.a: src/viewer/*.*
-	@echo -e "\nBuilding Viewer Library...\n"
-	@cd src/viewer; make -s
+$(BIN)viewer: $(VIEWERLIBS) 
+	@echo "[BIN] Viewer"
+	@$(CPP) $(CFLAGS) -o $(BIN)viewer $(VIEWERSRC)Viewer.cpp $(VIEWERLIBS) $(LIB3D)
 
-bin/mcubes: $(MCLIBS) 
-	@echo -e "\nCompiling and Linking Marching Cubes Programm...\n"
-	@$(CPP) $(CFLAGS) -o bin/mcubes $(MCSRC)main.cc $(MCLIBS) 
+clean: clean_mcubes clean_viewer
 
-bin/viewer: $(VIEWERLIBS) lib/libmodel.a
-	@echo -e "\nCompiling and Linking Viewer...\n"
-	@$(CPP) $(CFLAGS) -o bin/viewer $(VIEWERSRC)Viewer.cpp $(VIEWERLIBS)
+clean_mcubes:
+	@rm -f $(LIB)libmc.a
+	@rm -f $(BIN)mcubes
+	@cd $(MCSRC); make -s clean;
 
-clean:
-	@echo -e "\nCleaning up...\n"
-	@rm -f lib/*
-	@rm -f bin/*
-	@cd src/newmat; make -s clean;
-	@cd src/ann; make -s clean;
-	@cd src/lib3d; make -s clean;
-	@cd src/libmc; make -s clean;
-	@cd src/viewer; make -s clean;
+clean_viewer:
+	@rm -f $(BIN)libviewer.a
+	@rm -f $(BIN)viewer
+	@cd $(VIEWERSRC); make -s clean;
+
+clean_ext:
+	@cd $(EXT)newmat; make -s clean;
+	@cd $(EXT)ann; make -s clean;
+	@rm -f $(LIB)libann.a
+	@rm -f $(LIB)libnewmat.a
+
 

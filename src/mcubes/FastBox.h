@@ -12,8 +12,8 @@
 #include "Interpolator.h"
 #include "Tables.h"
 
-#include "../lib3d/TriangleMesh.h"
-#include "../lib3d/HalfEdgeMesh.h"
+#include <lib3d/TriangleMesh.h>
+#include <lib3d/HalfEdgeMesh.h>
 
 class FastBox {
 public:

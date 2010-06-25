@@ -11,8 +11,8 @@
 #include "Interpolator.h"
 #include "Tables.h"
 
-#include "../lib3d/ColorVertex.h"
-#include "../lib3d/TriangleMesh.h"
+#include <lib3d/ColorVertex.h>
+#include <lib3d/TriangleMesh.h>
 
 class Tetraeder {
 public:

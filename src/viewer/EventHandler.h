@@ -16,14 +16,14 @@ using namespace std;
 
 #include "MatrixDialog.cpp"
 
-#include "../lib3d/Matrix4.h"
-#include "../lib3d/GroundPlane.h"
-#include "../lib3d/CoordinateAxes.h"
-#include "../lib3d/Tube.h"
-#include "../lib3d/PointCloud.h"
-#include "../lib3d/NormalCloud.h"
-#include "../lib3d/TriangleMesh.h"
-#include "../lib3d/PolygonMesh.h"
+#include <lib3d/Matrix4.h>
+#include <lib3d/GroundPlane.h>
+#include <lib3d/CoordinateAxes.h>
+#include <lib3d/Tube.h>
+#include <lib3d/PointCloud.h>
+#include <lib3d/NormalCloud.h>
+#include <lib3d/TriangleMesh.h>
+#include <lib3d/PolygonMesh.h>
 
 #include "ViewerWindow.h"
 #include "ObjectHandler.h"
