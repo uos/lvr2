@@ -18,7 +18,7 @@
 #include <OpenGL/GLU.h>
 #endif
 
-#include "../lib3d/BaseVertex.h"
+#include <lib3d/BaseVertex.h>
 
 
 enum {PERSPECTIVE, TOPVIEW};

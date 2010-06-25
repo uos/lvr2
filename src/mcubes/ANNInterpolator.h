@@ -13,8 +13,8 @@ using namespace std;
 
 #include "../newmat/newmat.h"
 
-#include "../lib3d/ColorVertex.h"
-#include "../lib3d/Normal.h"
+#include <lib3d/ColorVertex.h>
+#include <lib3d/Normal.h>
 
 #include "Interpolator.h"
 

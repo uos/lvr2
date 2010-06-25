@@ -1,7 +1,7 @@
 #ifndef __INTERPOLATOR_H__
 #define __INTERPOLATOR_H__
 
-#include "../lib3d/ColorVertex.h"
+#include <lib3d/ColorVertex.h>
 
 class Interpolator{
 
