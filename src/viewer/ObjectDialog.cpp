@@ -1,7 +1,7 @@
 /********************************************************************************
 ** Form generated from reading UI file 'objectdialog.ui'
 **
-** Created: Fri Jun 25 13:32:32 2010
+** Created: Tue Jun 29 10:44:50 2010
 **      by: Qt User Interface Compiler version 4.6.2
 **
 ** WARNING! All changes made in this file will be lost when recompiling UI file!

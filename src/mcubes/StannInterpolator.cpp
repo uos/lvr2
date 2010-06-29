@@ -178,9 +178,6 @@ void StannInterpolator::estimate_normals(){
 	//Initialize normals
 	for(int i = 0; i < number_of_points; i++) normals.push_back(Normal(0.0, 0.0, 0.0));
 
-	int progress_limit = number_of_points / 100;
-	int counter = 0;
-
 	boost::progress_display progress(number_of_points);
 
     #pragma omp parallel for
@@ -272,8 +269,6 @@ void StannInterpolator::interpolateNormals(int k){
 
 	for(int i = 0; i < number_of_points; i++) tmp.push_back(Normal());
 
-	int counter = 0;
-	int progress_limit = number_of_points / 100;
 
 	boost::progress_display progress(number_of_points);
 
