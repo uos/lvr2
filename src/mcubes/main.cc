@@ -10,7 +10,9 @@ int main(int argc, char** argv){
   float voxelsize;
   sscanf(argv[2], "%f", &voxelsize);
 
-   system("clear");
+  int result = system("clear");
+
+  if(result != 0) {} // do nothing, just prevent compiler warning!
 
 
 //  if(argc == 3){
