@@ -3,7 +3,7 @@
 /*  Header: gmst.hpp                                                         */
 /*                                                                           */
 /*  Accompanies STANN Version 0.71 B                                         */
-/*  Dec 07, 2009                                                             */
+/*  Oct 13, 2010                                                             */
 /*                                                                           */
 /*  Copyright 2007, 2008                                                     */
 /*  Michael Connor and Piyush Kumar                                          */
@@ -34,7 +34,7 @@
  \param mst set of stl::pair<,> which stores the output mst
 */
 template<typename Point>
-void gmst(std::vector<Point> &points, std::vector<std::pair<typename std::vector<Point>::size_type,  typename std::vector<Point>::size_type> > &mst)
+void gmst(std::vector<Point> &points, std::vector<std::pair<typename std::vector<Point>::size_type,  typename std::vector<Point>::size_type> > &mst, int THold=1, int KruskalTHold=500)
 {
   zorder_lt<Point> lt;
   std::vector<WSP<Point> > wsp;
@@ -47,9 +47,10 @@ void gmst(std::vector<Point> &points, std::vector<std::pair<typename std::vector
   sort(points.begin(), points.end(), lt);
   pwspd<Point> A(points, 1.0);
   A.run(wsp, num_threads);
+  cout << wsp.size() << endl;
   UF.initialize(points.size());
   FilterKruskal<Point> B(A, UF, mst);
-  B.run(wsp.begin(), wsp.end(), 0);
+  B.run(wsp.begin(), wsp.end(), THold, KruskalTHold);
 }
 
 template<typename Point>

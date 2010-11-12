@@ -8,6 +8,9 @@
 #include "FastGrid.h"
 
 #include <boost/progress.hpp>
+#include <boost/filesystem.hpp>
+
+#include <lib3d/PLYWriter.h>
 
 //Each box corner in the grid is shared with 7 other boxes.
 //To find an already existing corner, these boxes have to
@@ -38,7 +41,7 @@ const static int shared_vertex_table[8][28] = {
 	{ 1, 0, 0, 0,  1, -1, 0, 3,  0, -1, 0, 2,  0,  0, -1, 5,  1,  0, -1, 4,  1, -1, -1, 7,  0, -1, -1, 6},
 	{ 1, 1, 0, 0,  0,  1, 0, 1,  1,  0, 0, 3,  1,  1, -1, 4,  0,  1, -1, 5,  0,  0, -1, 6,  1,  0, -1, 7},
 	{ 0, 1, 0, 0, -1,  1, 0, 1, -1,  0, 0, 2,  0,  1, -1, 4, -1,  1, -1, 5, -1,  0, -1, 6,  0,  0, -1, 7},
-	{ 0, 0, 1, 0, -1,  0, 1, 1, -1, -1, 1, 2,  0, -1,  1, 3, -1,  0,  0, 5, -1, -1,  0, 6,  0, -1,  0, 7},
+{ 0, 0, 1, 0, -1,  0, 1, 1, -1, -1, 1, 2,  0, -1,  1, 3, -1,  0,  0, 5, -1, -1,  0, 6,  0, -1,  0, 7},
 	{ 1, 0, 1, 0,  0,  0, 1, 1,  0, -1, 1, 2,  1, -1,  1, 3,  1,  0,  0, 4,  0, -1,  0, 6,  1, -1,  0, 7},
 	{ 1, 1, 1, 0,  0,  1, 1, 1,  0,  0, 1, 2,  1,  0,  1, 3,  1,  1,  0, 4,  0,  1,  0, 5,  1,  0,  0, 7},
 	{ 0, 1, 1, 0, -1,  1, 1, 1, -1,  0, 1, 2,  0,  0,  1, 3,  0,  1,  0, 4, -1,  1,  0, 5, -1,  0,  0, 6}
@@ -65,8 +68,7 @@ FastGrid::FastGrid(string filename, float vs) {
 
 	readPoints(filename);
 
-	//interpolator = new StannInterpolator(points, number_of_points, 10.0, 100, 100.0, bounding_box.getCentroid());
-	interpolator = new StannInterpolator(points, number_of_points, 10.0, 100, 100.0);
+	cout << "##### Finished Reading. Number of used points: " << number_of_points << endl;
 
 	calcIndices();
 	createGrid();
@@ -212,7 +214,7 @@ void FastGrid::calcQueryPointValues(){
 
     #pragma omp parallel for
 	for(int i = 0; i < (int)query_points.size(); i++){
-		//if(i % 10000 == 0) cout << "##### Calculating distance values: " << i << " / " << query_points.size() << endl;
+		//if(i % 1000 == 0) cout << "##### Calculating distance values: " << i << " / " << query_points.size() << endl;
 		QueryPoint p = query_points[i];
 		ColorVertex v = ColorVertex(p.position, 0.0f, 1.0f, 0.0f);
 		p.distance = interpolator->distance(v);
@@ -268,11 +270,11 @@ void FastGrid::createMesh(){
 //	mesh->printStats();
 	vector<planarCluster> planes;
 	mesh->cluster(planes);
-	cout << "Optimizing clusters..." << endl;
+//	cout << "Optimizing clusters..." << endl;
 	mesh->optimizeClusters(planes);
 
 	mesh->finalize();
-	mesh->write_face_normals("face_normal.nor");
+//	mesh->write_face_normals("face_normal.nor");
 	mesh->save("mesh.ply");
 
 	mesh->finalize(planes);
@@ -311,8 +313,51 @@ void FastGrid::calcIndices(){
 }
 
 
-void FastGrid::readPoints(string filename){
+void FastGrid::readPoints(string filename)
+{
 
+	// Get file extension
+	boost::filesystem::path selectedFile(filename);
+	string extension = selectedFile.extension();
+
+	if(extension == ".pts" || extension == ".3d" || extension == ".xyz")
+	{
+		readPlainASCII(filename);
+	}
+	else if(extension == ".ply")
+	{
+		readPLY(filename);
+	}
+
+}
+
+void FastGrid::readPLY(string filename)
+{
+	cout << "##### Reading " << filename << endl;
+	PLYIO io;
+	io.read(filename);
+	size_t n;
+	float* pts = io.getVertexArray(n);
+
+	cout << "Number of points " << n << endl;
+
+	int index;
+	points = annAllocPts(n, 3);
+	for(size_t i = 0; i < n; i++)
+	{
+			index = i * 3;
+			points[i][0] = pts[index];
+			points[i][1] = pts[index + 1];
+			points[i][2] = pts[index + 2];
+	}
+	delete[] pts;
+	number_of_points = (int)n;
+
+	interpolator = new StannInterpolator(points, n, 10.0, 100, 100.0);
+}
+
+void FastGrid::readPlainASCII(string filename)
+{
 	ifstream in(filename.c_str());
 
 	//Vector to tmp-store points in file
@@ -338,11 +383,12 @@ void FastGrid::readPoints(string filename){
 			in >> dummy;
 		}
 
+
 		bounding_box.expand(x, y, z);
-		pts.push_back(BaseVertex(x,y,z));
+		if(c % 1 == 0) pts.push_back(BaseVertex(x,y,z));
 		c++;
 
-		if(c % 10000 == 0) cout << "##### Reading Points... " << c << endl;
+		if(c % 100000 == 0) cout << "##### Reading Points... " << c << endl;
 	}
 
 	cout << "##### Finished Reading. Number of Data Points: " << pts.size() << endl;
@@ -350,18 +396,20 @@ void FastGrid::readPoints(string filename){
 
 	//Create ANNPointArray
 	cout << "##### Creating ANN Points " << endl;
-	points = annAllocPts(c, 3);
+	points = annAllocPts(pts.size(), 3);
 
 	for(size_t i = 0; i < pts.size(); i++){
 		points[i][0] = pts[i].x;
 		points[i][1] = pts[i].y;
 		points[i][2] = pts[i].z;
-		//cout << points[i][0] << " " << points[i][1] << " " << points[i][2] << endl;
 	}
+
+
+	number_of_points = pts.size();
 
 	pts.clear();
 
-	number_of_points = c;
+	interpolator = new StannInterpolator(points, number_of_points, 10.0, 100, 100.0);
 }
 
 int FastGrid::getFieldsPerLine(string filename){

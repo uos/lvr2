@@ -99,9 +99,7 @@ Plane StannInterpolator::calcPlane(Vertex query_point, int k, vector<unsigned lo
 		ColumnVector F(k);
 		Matrix B(k, 3);
 
-		//cout << "Build matrix: " << k << endl;
-
-        #pragma omp parallel for
+        //#pragma omp parallel for
 		for(int j = 1; j <= k; j++){
 
 			F(j) = points[id[j-1]][1];
@@ -142,6 +140,7 @@ Plane StannInterpolator::calcPlane(Vertex query_point, int k, vector<unsigned lo
 
 	} catch (Exception e){
 		normal = Normal(0.0, 0.0, 0.0);
+		//cout << "Exception: " << e.what() << endl;
 	}
 
 	//cout << "Plane" << endl;
@@ -173,6 +172,7 @@ void StannInterpolator::estimate_normals(){
 
 
 	int k_0 = 10;
+	//int k_0 = 50;
 
 	cout << "##### Initializing normal array..." << endl;
 	//Initialize normals
@@ -192,13 +192,6 @@ void StannInterpolator::estimate_normals(){
 
 		int n = 0;
 		int k = k_0;
-
-//		if(i % progress_limit == 0)
-//		{
-//
-//			cout << "##### Estimating normals: " <<  counter << "% " << endl;
-//			counter ++;
-//		}
 
 		while(n < 5){
 
@@ -237,7 +230,6 @@ void StannInterpolator::estimate_normals(){
 			if(boundingBoxOK(dx, dy, dz)) break;
 			//break;
 
-			++progress;
  		}
 
 		query_point = Vertex(points[i][0], points[i][1], points[i][2]);
@@ -255,6 +247,7 @@ void StannInterpolator::estimate_normals(){
 
 		normals[i] = normal;
 
+		++progress;
 	}
 
 
