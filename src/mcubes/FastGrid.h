@@ -46,6 +46,9 @@ private:
 	int  findQueryPoint(int Position, int index_x, int index_y, int index_z);
 
 	void readPoints(string filename);
+	void readPlainASCII(string filename);
+	void readPLY(string filename);
+
 	void calcIndices();
 	void calcQueryPointValues();
 	void createGrid();

@@ -3,7 +3,7 @@
 /*  Header: filter_kruskal.hpp                                               */
 /*                                                                           */
 /*  Accompanies STANN Version 0.71 B                                         */
-/*  Dec 07, 2009                                                             */
+/*  Oct 13, 2010                                                             */
 /*                                                                           */
 /*  Copyright 2007, 2008                                                     */
 /*  Michael Connor and Piyush Kumar                                          */
@@ -52,12 +52,12 @@ public:
     \param begin Random access iterator indicating the first well-seperated pair
     \param end Random access iterator indicating the end of the well-seperated pairs
   */
-  void run(WspIter begin, WspIter end, int THold=1)
+  void run(WspIter begin, WspIter end, int THold=0, int KruskalTHold=500)
   {
     pivot_index = (1000*wspd.Points.size())/(end-begin);
     double thold = floor(log((double)wspd.Points.size()));
     if(THold != 0) thold = THold;
-    recurse_filter_kruskal3(begin, end, (int) thold);
+    recurse_filter_kruskal3(begin, end, (int) thold, KruskalTHold);
   };
 
   /*! Constructor
@@ -106,8 +106,12 @@ private:
     sort(samples.begin(), samples.end(), bccp);
     return samples[pivot_index];
   };
-  
-  void recurse_filter_kruskal3(WspIter begin, WspIter end, int Thold)
+  int updateTHold(int THold, int param)
+  {
+    return THold*param*floor(log((double)wspd.Points.size()));;
+  }
+
+  void recurse_filter_kruskal3(WspIter begin, WspIter end, int Thold, int KruskalTHold)
   {
     if(end-begin == 0) return;
 
@@ -134,7 +138,7 @@ private:
     //Partition and process every computed
     //BCCP smaller than the smallest non_computed
     //BCCP
-    part_and_process(begin, cpart);
+    part_and_process(begin, cpart, KruskalTHold);
     if(Mst.size() >= wspd.Points.size())
       return;
     
@@ -142,16 +146,16 @@ private:
     //Filter everything that's left
     WspIter fpart = partition(cpart, end, ufpred);
     //Repeat with double the threshold
-    recurse_filter_kruskal3(cpart, fpart, Thold*2);
+    recurse_filter_kruskal3(cpart, fpart, Thold*2, KruskalTHold);
     
   };
   
-  void part_and_process(WspIter begin, WspIter end)
+  void part_and_process(WspIter begin, WspIter end, int KruskalTHold)
   {
-    if((unsigned int) (end-begin) < (wspd.Points.size()*10))
-      {
-	Kruskal(begin, end);
-      }
+    if((unsigned int) (end-begin) < KruskalTHold)
+    {
+    	Kruskal(begin, end);
+    }
     else
       {
 	WspIter I = findPivot(begin, end);
@@ -161,7 +165,7 @@ private:
 	if(Mst.size() >= wspd.Points.size())
 	  return;
 	WspIter fpart = partition(I, end, ufpred);
-	part_and_process(I, fpart);
+	part_and_process(I, fpart, KruskalTHold);
       }
   }
 

@@ -3,7 +3,7 @@
 /*  Header: compute_bounding_box.hpp                                         */
 /*                                                                           */
 /*  Accompanies STANN Version 0.71 B                                         */
-/*  Dec 07, 2009                                                             */
+/*  Oct 13, 2010                                                             */
 /*                                                                           */
 /*  Copyright 2007, 2008                                                     */
 /*  Michael Connor and Piyush Kumar                                          */
@@ -15,7 +15,7 @@
 #ifndef __STANN_COMPUTE_BOUNDING_BOX__
 #define __STANN_COMPUTE_BOUNDING_BOX__
 
-#include "sep_float.hpp"
+#include <sep_float.hpp>
 
 template<typename Point, typename Ptype>
 class cbb_work

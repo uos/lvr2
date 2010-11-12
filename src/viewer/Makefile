@@ -15,13 +15,14 @@ MOC = moc-qt4
 
 OBJ = $(BASEDIR)/obj/
 LIB = $(BASEDIR)/lib/
+BIN = $(BASEDIR)/bin/
 
 VIEWTARGETS  = $(OBJ)MoveDock.o $(OBJ)ObjectDialog.o $(OBJ)MatrixDialog.o $(OBJ)MainWindow.o \
                $(OBJ)Viewport.o \
                $(OBJ)EventHandler.o $(OBJ)ObjectHandler.o $(OBJ)RenderFrame.o \
                $(OBJ)ViewerWindow.o $(OBJ)TouchPad.o
 
-all: libviewer.a
+all: libviewer.a $(BIN)viewer
 
 clean:
 	@echo "[CLN] Viewer"
@@ -33,6 +34,10 @@ clean:
 libviewer.a: $(VIEWTARGETS)
 	@echo "[LIB] Viewer Library"
 	@$(AR) -c -r -s $(LIB)libviewer.a $(VIEWTARGETS)
+	
+$(BIN)viewer: Viewer.cpp
+	@echo "[BIN] Viewer"
+	@$(CPP) $(CFLAGS) -o $(BIN)viewer Viewer.cpp $(GLLIBS) $(QTLIBS) $(VIEWTARGETS) $(LIB3D)
 
 
 ############################### OBJECT FILES ##################################

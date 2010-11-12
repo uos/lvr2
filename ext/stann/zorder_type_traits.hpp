@@ -3,7 +3,7 @@
 /*  Header: zorder_type_traits.hpp                                           */
 /*                                                                           */
 /*  Accompanies STANN Version 0.71 B                                         */
-/*  Dec 07, 2009                                                             */
+/*  Oct 13, 2010                                                             */
 /*                                                                           */
 /*  Copyright 2007, 2008                                                     */
 /*  Michael Connor and Piyush Kumar                                          */
@@ -19,7 +19,7 @@
 #ifndef __STANN_ZORDER_TYPE_TRAITS__
 #define __STANN_ZORDER_TYPE_TRAITS__
 
-#include "sep_float.hpp"
+#include <sep_float.hpp>
 
 /*! \file
   \brief Contains type traits used by the zorder_lt class

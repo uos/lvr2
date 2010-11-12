@@ -3,7 +3,7 @@
 /*  Header: timer.hpp                                                        */
 /*                                                                           */
 /*  Accompanies STANN Version 0.71 B                                         */
-/*  Dec 07, 2009                                                             */
+/*  Oct 13, 2010                                                             */
 /*                                                                           */
 /*  Copyright 2007, 2008                                                     */
 /*  Michael Connor and Piyush Kumar                                          */
@@ -71,7 +71,7 @@ public:
  float GetTimeElapsed(){
    if(!frozen)
      gettimeofday(&t, NULL);
-   return (float)(t.tv_sec-mstart.tv_sec+1e-6*(t.tv_usec-mstart.tv_usec));
+   return (float)((float)t.tv_sec-(float)mstart.tv_sec+1e-6*((float)t.tv_usec-(float)mstart.tv_usec));
  };
 
  void  FreezeTimer() {
@@ -107,6 +107,7 @@ inline std::ostream& operator<<(std::ostream& o, MyTimer& mt){
 }
 
 
+/*
 // Modified from boost library
 class MyTimer_display {
 
@@ -163,5 +164,5 @@ class MyTimer_display {
   } // display_tic
 
 };
-
+*/
 #endif

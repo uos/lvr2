@@ -3,7 +3,7 @@
 /*  Header: test.hpp                                                         */
 /*                                                                           */
 /*  Accompanies STANN Version 0.71 B                                         */
-/*  Dec 07, 2009                                                             */
+/*  Oct 13, 2010                                                             */
 /*                                                                           */
 /*  Copyright 2007, 2008                                                     */
 /*  Michael Connor and Piyush Kumar                                          */
@@ -27,7 +27,7 @@
 #include <rand.hpp>
 #include <sfcnn.hpp>
 #include <sfcnn_knng.hpp>
-#include <gmst.hpp>
+//#include <gmst.hpp>
 #include <zorder_lt.hpp>
 
 /*! \file test.hpp
@@ -45,7 +45,7 @@ Point newRandomPoint(T Min, T Max)
   min = (double) Min;
   for(unsigned int i=0;i < Point::__DIM;++i)
     {
-      d = drand48();
+      d = __drand48__();
       if(min > 0)
 	{
 	  e = (d*max)-(d*min);
@@ -96,7 +96,7 @@ bool testNN(unsigned int Size, unsigned int k, T min, T max)
     }
   return true;
 }
-
+/*
 template<unsigned DIM>
 bool testGMST(unsigned int Size)
 {
@@ -125,6 +125,7 @@ bool testGMST(unsigned int Size)
   return dist1==dist2;
   
 }
+*/
 template<typename T, unsigned DIM>
 bool testKNNG(unsigned int Size, unsigned int k, T min, T max, int num_threads)
 {

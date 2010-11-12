@@ -3,7 +3,7 @@
 /*  Header: bsearch.hpp                                                      */
 /*                                                                           */
 /*  Accompanies STANN Version 0.71 B                                         */
-/*  Dec 07, 2009                                                             */
+/*  Oct 13, 2010                                                             */
 /*                                                                           */
 /*  Copyright 2007, 2008                                                     */
 /*  Michael Connor and Piyush Kumar                                          */
@@ -17,7 +17,7 @@
 
 #include <vector>
 #include <algorithm>
-#include "zorder_lt.hpp"
+#include <zorder_lt.hpp>
 
 /*! \file
   \brief Binary search functions
@@ -50,7 +50,33 @@ long int BinarySearch(std::vector<Point *> &A, Point *q, zorder_lt<Point> lt)
 	    low = middle+1;
 	}
 	return middle;
-}
+}  
+
+template<typename Point>
+long int BinarySearch(std::vector<Point *> &A, Point *q, zorder_lt<Point> lt, unsigned long int &lb, unsigned long int &ub, long int length) 
+{
+	long int low = 0;
+	long int high = A.size()-1;
+	long int middle;
+
+	while(low <= high)
+	{
+	  middle = (low+high)/2;
+	  if((high-low) <= length)
+	    {
+	      lb = low;
+	      ub = high;
+	      return middle;
+	    }
+	  if(q == A[middle])
+	    return middle;
+	  else if(lt(q, A[middle]))
+	    high = middle-1;
+	  else
+	    low = middle+1;
+	}
+	return middle;
+}  
 
 template<typename Point>
 unsigned long int BinSearch(std::vector<Point> &A, Point &q, zorder_lt<Point> &lt)
@@ -59,6 +85,20 @@ unsigned long int BinSearch(std::vector<Point> &A, Point &q, zorder_lt<Point> &l
   typedef typename std::vector<Point>::size_type size_type;
 
   MyIt I = upper_bound(A.begin(), A.end(), q, lt);
+		      
+  return I-A.begin();
+}
+
+template<typename Point>
+unsigned long int BinSearch(std::vector<Point> &A, 
+			    typename std::vector<Point>::size_type B,
+			    typename std::vector<Point>::size_type E,
+			    Point &q, zorder_lt<Point> &lt)
+{
+  typedef typename std::vector<Point>::iterator MyIt;
+  typedef typename std::vector<Point>::size_type size_type;
+
+  MyIt I = upper_bound(A.begin()+B, A.begin()+E, q, lt);
 
   return I - A.begin();
 }
@@ -157,6 +197,33 @@ long int BinarySearch(std::vector<Point> &A, Point q, zorder_lt<Point> lt)
 	return middle;
 }
 
+template<typename Point>
+unsigned long int BinarySearch(std::vector<Point> &A, Point q, 
+			       zorder_lt<Point> lt, unsigned long int &lb, 
+			       unsigned long int &ub, unsigned long int length) 
+{
+	unsigned long int low = 0;
+	unsigned long int high = A.size()-1;
+	unsigned long int middle = 0;
+
+	while(low <= high)
+	{
+		middle = (low+high)/2;
+		if((high-low) < length)
+		  {
+		    lb = low;
+		    ub = high;
+		    return middle;
+		  }
+		if(q == A[middle])
+			return middle;
+		else if(lt(q, A[middle]))
+			high = middle-1;
+		else
+			low = middle+1;
+	}
+	return middle;
+}
 //! A binary search Function.
 /*
   This function executes a binary search on an array of points
@@ -203,11 +270,11 @@ public:
   void init(std::vector<Point> &points, int sample_size=128)
   {
     samples.resize(sample_size);
-    srand48(time(0));
+    __srand48__(time(0));
     
     for(int i=0;i < sample_size;++i)
       {
-	size_type s = drand48() * (double) points.size();
+	size_type s = __drand48__() * (double) points.size();
 	samples[i] = points.begin() + s;
       }
     sort(samples.begin(), samples.end(), lt);

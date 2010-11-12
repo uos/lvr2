@@ -11,38 +11,28 @@
 include Makefile.options
 
 
-EXTLIBS	    = $(NEWMAT) $(LIBANN)
-MCLIBS      = lib/libmc.a $(EXTLIBS) $(GLLIBS)
-VIEWERLIBS  = $(GLLIBS) $(QTLIBS) $(LIB)libviewer.a 
+#EXTLIB      = $(NEWMAT) $(LIBANN)
+#MCLIBS      = $(LIB)libmc.a $(EXTLIBS) $(GLLIBS)
+#VIEWERLIBS  = $(GLLIBS) $(QTLIBS) $(LIB)libviewer.a 
 
-all: dirs $(EXTLIBS) $(BIN)mcubes $(BIN)viewer
+#all: dirs $(EXTLIBS) $(BIN)mcubes $(BIN)viewer
+
+all: dirs ann newmat
+	@make -s -C src/mcubes
+	@make -s -C src/viewer
 
 dirs:
 	@mkdir -p bin
 	@mkdir -p lib
 	@mkdir -p obj
 
-$(NEWMAT): 
+newmat: $(NEWMAT)
 	@echo "[LIB] Newmat"
 	@cd $(EXT)newmat; make -s;
 	@mv -f $(EXT)newmat/libnewmat.a ./lib/libnewmat.a
 
-$(LIBANN):
+ann: $(LIBANN)
 	@cd $(EXT)ann; make -s;
-
-$(LIB)libmc.a: 
-	@cd $(MCSRC); make -s
-
-$(LIB)libviewer.a: src/viewer/*.*
-	@cd $(VIEWERSRC); make -s
-
-$(BIN)mcubes: $(MCLIBS) 
-	@echo "[BIN] Marching Cubes Program"
-	@$(CPP) $(CFLAGS) $(MCSRC)main.cc -o $(BIN)mcubes $(MCLIBS) $(LIB3D)
-
-$(BIN)viewer: $(VIEWERLIBS) 
-	@echo "[BIN] Viewer"
-	@$(CPP) $(CFLAGS) -o $(BIN)viewer $(VIEWERSRC)Viewer.cpp $(VIEWERLIBS) $(LIB3D)
 
 clean: clean_mcubes clean_viewer
 
