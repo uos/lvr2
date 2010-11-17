@@ -42,7 +42,7 @@ struct Plane{
 class StannInterpolator: public Interpolator {
 public:
 	StannInterpolator(
-			ANNpointArray points, int n, float voxelsize, int k_max,
+			float**, int n, float voxelsize, int k_max,
 			float epsilon, Vertex c = Vertex(0.0, 0.0, 0.0));
 
 	virtual float distance(ColorVertex v);
@@ -64,8 +64,8 @@ public:
 	float distance(Vertex v, Plane p);
 	float meanDistance(Plane p, vector<unsigned long>, int k);
 
-	ANNpointArray points;
-	sfcnn< ANNpoint, 3, double> point_tree;
+	float** points;
+	sfcnn< float*, 3, float> point_tree;
 
 	float voxelsize;
 	float vs_sq;
@@ -73,7 +73,7 @@ public:
 
 	vector<Normal> normals;
 
-	int number_of_points;
+	long int number_of_points;
 	int k_max;
 };
 
