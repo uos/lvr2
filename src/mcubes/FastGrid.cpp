@@ -77,7 +77,9 @@ FastGrid::FastGrid(string filename, float vs) {
 }
 
 FastGrid::~FastGrid() {
-	annDeallocPts(points);
+
+	for(int i = 0; i < number_of_points; i++) delete[] points[i];
+	delete[] points;
 
 	hash_map<int, FastBox*>::iterator it;
 	for(it = cells.begin(); it != cells.end(); it++) delete it->second;
@@ -333,27 +335,27 @@ void FastGrid::readPoints(string filename)
 
 void FastGrid::readPLY(string filename)
 {
-	cout << "##### Reading " << filename << endl;
-	PLYIO io;
-	io.read(filename);
-	size_t n;
-	float* pts = io.getVertexArray(n);
-
-	cout << "Number of points " << n << endl;
-
-	int index;
-	points = annAllocPts(n, 3);
-	for(size_t i = 0; i < n; i++)
-	{
-			index = i * 3;
-			points[i][0] = pts[index];
-			points[i][1] = pts[index + 1];
-			points[i][2] = pts[index + 2];
-	}
-	delete[] pts;
-	number_of_points = (int)n;
-
-	interpolator = new StannInterpolator(points, n, 10.0, 100, 100.0);
+//	cout << "##### Reading " << filename << endl;
+//	PLYIO io;
+//	io.read(filename);
+//	size_t n;
+//	float* pts = io.getVertexArray(n);
+//
+//	cout << "Number of points " << n << endl;
+//
+//	int index;
+//	points = annAllocPts(n, 3);
+//	for(size_t i = 0; i < n; i++)
+//	{
+//			index = i * 3;
+//			points[i][0] = pts[index];
+//			points[i][1] = pts[index + 1];
+//			points[i][2] = pts[index + 2];
+//	}
+//	delete[] pts;
+//	number_of_points = (int)n;
+//
+//	interpolator = new StannInterpolator(points, n, 10.0, 100, 100.0);
 }
 
 void FastGrid::readPlainASCII(string filename)
@@ -371,43 +373,47 @@ void FastGrid::readPlainASCII(string filename)
 	int number_of_dummys = getFieldsPerLine(filename) - 3;
 
 	//Point coordinates
-	float x, y, z, dummy;
+	float dummy;
 
 	//if(in.good()) in >> dummy;
+	char line[1024];
+	// Count points in file
+	while(in.good())
+	{
+		in.getline(line, 1024);
+		c++;
+	}
 
+	cout << "##### Creating point array..." << endl;
+
+	// Alloc memory fpr point cloud data
+	points = new float*[c];
+	for(int i = 0; i < c; i++) points[i] = new float[3];
+
+	number_of_points = c;
+
+	// Reopen
+	in.close();
+	in.open(filename.c_str());
+
+	c = 0;
 	//Read file
 	while(in.good() ){
-		in >> x >> y >> z;
+		in >> points[c][0] >> points[c][1] >> points[c][2];
 
 		for(int i = 0; i < number_of_dummys; i++){
 			in >> dummy;
 		}
 
 
-		bounding_box.expand(x, y, z);
-		if(c % 1 == 0) pts.push_back(BaseVertex(x,y,z));
+		bounding_box.expand(points[c][0], points[c][1], points[c][2]);
+		if(c % 1 == 0) pts.push_back(BaseVertex(points[c][0],points[c][1],points[c][2]));
 		c++;
 
 		if(c % 100000 == 0) cout << "##### Reading Points... " << c << endl;
 	}
 
 	cout << "##### Finished Reading. Number of Data Points: " << pts.size() << endl;
-
-
-	//Create ANNPointArray
-	cout << "##### Creating ANN Points " << endl;
-	points = annAllocPts(pts.size(), 3);
-
-	for(size_t i = 0; i < pts.size(); i++){
-		points[i][0] = pts[i].x;
-		points[i][1] = pts[i].y;
-		points[i][2] = pts[i].z;
-	}
-
-
-	number_of_points = pts.size();
-
-	pts.clear();
 
 	interpolator = new StannInterpolator(points, number_of_points, 10.0, 100, 100.0);
 }

@@ -24,7 +24,7 @@ unsigned long GetCurrentTimeInMilliSec(void)
   return milliseconds;
 }
 
-StannInterpolator::StannInterpolator(ANNpointArray pts, int n, float vs, int km, float epsilon, Vertex c) {
+StannInterpolator::StannInterpolator(float** pts, int n, float vs, int km, float epsilon, Vertex c) {
 
 	center = c;
 
@@ -39,7 +39,7 @@ StannInterpolator::StannInterpolator(ANNpointArray pts, int n, float vs, int km,
 	omp_set_num_threads(4);
 
 	cout << "##### Creating STANN Kd-Tree..." << endl;
-	point_tree = sfcnn< ANNpoint, 3, double>(points, number_of_points, 4);
+	point_tree = sfcnn< float*, 3, float>(points, number_of_points, 4);
 
 	unsigned long start_time = GetCurrentTimeInMilliSec();
 
@@ -200,14 +200,14 @@ void StannInterpolator::estimate_normals(){
 
 			point_tree.ksearch(points[i], k, id, di, 0);
 
-			double min_x = 1e15;
-			double min_y = 1e15;
-			double min_z = 1e15;
-			double max_x = - min_x;
-			double max_y = - min_y;
-			double max_z = - min_z;
+			float min_x = 1e15;
+			float min_y = 1e15;
+			float min_z = 1e15;
+			float max_x = - min_x;
+			float max_y = - min_y;
+			float max_z = - min_z;
 
-			double dx, dy, dz;
+			float dx, dy, dz;
 			dx = dy = dz = 0;
 
 
@@ -321,7 +321,8 @@ float StannInterpolator::distance(ColorVertex v){
 	vector<double> di;
 
 	//Allocate ANN point
-	ANNpoint p = annAllocPt(3);
+	float * p;
+	p = new float[3];
 	p[0] = v.x; p[1] = v.y; p[2] = v.z;
 
 	//Find nearest tangent plane
@@ -353,8 +354,7 @@ float StannInterpolator::distance(ColorVertex v){
 	//Calculate distance
 	float distance = (v - nearest) * normal;
 
-	//De-alloc ANN point
-	annDeallocPt(p);
+	delete[] p;
 
 	return distance;
 }

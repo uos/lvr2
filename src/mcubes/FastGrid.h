@@ -66,7 +66,7 @@ private:
 
 	BoundingBox             bounding_box;
 	vector<QueryPoint>      query_points;
-	ANNpointArray           points;
+	float**          		points;
 	Interpolator*           interpolator;
 	HalfEdgeMesh*     		mesh;
 	HalfEdgeMesh            he_mesh;
