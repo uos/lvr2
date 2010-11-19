@@ -49,6 +49,8 @@ private:
 	void readPlainASCII(string filename);
 	void readPLY(string filename);
 
+	void savePointsAndNormals();
+
 	void calcIndices();
 	void calcQueryPointValues();
 	void createGrid();

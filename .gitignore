@@ -1,7 +1,9 @@
 *.o
 .project
 bin/*
+src/viewer/*Moc.cpp
 ext/stann1.6
 lib/
 *.pts
 *.ply
+Makefile.options

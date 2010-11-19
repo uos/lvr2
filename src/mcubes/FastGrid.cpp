@@ -78,8 +78,8 @@ FastGrid::FastGrid(string filename, float vs) {
 
 FastGrid::~FastGrid() {
 
-	for(size_t i = 0; i < number_of_points; i++) delete[] points[i];
-	delete[] points;
+//	for(size_t i = 0; i < number_of_points; i++) delete[] points[i];
+//	delete[] points;
 
 	hash_map<int, FastBox*>::iterator it;
 	for(it = cells.begin(); it != cells.end(); it++) delete it->second;
@@ -302,6 +302,9 @@ void FastGrid::createMesh(){
 	//he_mesh.analize();
 	//he_mesh.extract_borders();
 	//he_mesh.write_polygons("borders.bor");
+
+	cout << "##### Saving points and normals..." << endl;
+	savePointsAndNormals();
 }
 
 
@@ -463,3 +466,30 @@ void FastGrid::writeGrid(){
 	}
 }
 
+void FastGrid::savePointsAndNormals()
+{
+
+	PLYIO writer;
+
+	// Create vertex element description
+	PLYElement* vertex_element = new PLYElement("vertex", number_of_points);
+	vertex_element->addProperty("x", "float");
+	vertex_element->addProperty("y", "float");
+	vertex_element->addProperty("z", "float");
+
+	// Crate normal element description
+//	PLYElement* = type name = new type(arguments);normal_element("normal");
+//	normal_element->addProperty("x", "float");
+//	normal_element->addProperty("y", "float");
+//	normal_element->addProperty("z", "float");
+
+	// Add description
+	writer.addElement(vertex_element);
+	//writer.addElement(normal_element);
+
+	// Add data
+	writer.setIndexedVertexArray(points, number_of_points);
+	//writer.setIndexedNormalArray();
+
+	writer.save("points_and_normals.ply");
+}

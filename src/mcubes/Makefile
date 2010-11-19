@@ -23,7 +23,7 @@ MCTARGETS    = $(OBJ)ANNInterpolator.o $(OBJ)FastBox.o \
                $(OBJ)FastGrid.o $(OBJ)Tetraeder.o $(OBJ)TetraBox.o \
                $(OBJ)QueryPoint.o $(OBJ)StannInterpolator.o
 
-CFLAGS+=     -I../../ext/ann/ -I../../ext/stann -I$(HOME)/local/include -fpermissive
+CFLAGS+=     -I../../ext/ann/ -I../../ext/stann -I$(HOME)/local/include -fpermissive -g
 
 all: $(BIN)mcubes $(BIN)ascii2ply
 
