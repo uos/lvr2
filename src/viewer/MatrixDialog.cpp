@@ -1,7 +1,7 @@
 /********************************************************************************
 ** Form generated from reading UI file 'matrixdialog.ui'
 **
-** Created: Fri Nov 19 12:02:09 2010
+** Created: Fri Nov 19 14:04:40 2010
 **      by: Qt User Interface Compiler version 4.6.2
 **
 ** WARNING! All changes made in this file will be lost when recompiling UI file!
