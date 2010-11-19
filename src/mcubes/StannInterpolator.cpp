@@ -178,6 +178,7 @@ void StannInterpolator::estimate_normals(){
 	//Initialize normals
 	for(int i = 0; i < number_of_points; i++) normals.push_back(Normal(0.0, 0.0, 0.0));
 
+	cout << "##### Estimating normals for all points..." << endl << endl;
 	boost::progress_display progress(number_of_points);
 
     #pragma omp parallel for
@@ -251,7 +252,7 @@ void StannInterpolator::estimate_normals(){
 	}
 
 
-	cout << endl;
+	cout << endl << endl;
 
 	//interpolateNormals(20);
 }
@@ -262,6 +263,7 @@ void StannInterpolator::interpolateNormals(int k){
 
 	for(int i = 0; i < number_of_points; i++) tmp.push_back(Normal());
 
+	cout << "##### Interpolating normals..." << endl << endl;
 
 	boost::progress_display progress(number_of_points);
 
@@ -302,6 +304,7 @@ void StannInterpolator::interpolateNormals(int k){
 		}
 		++progress;
 	}
+	cout << endl << endl;
 
 	cout << "##### Copying normals..." << endl;
 

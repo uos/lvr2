@@ -79,13 +79,14 @@ int main(int argc, char** argv)
 		int index = c * 3;
 		in.getline(line, max_line_size);
 		sscanf(line, "%f %f %f %s", &x, &y, &z, junk);
-		points[c] = x;
-		points[c + 1] = y;
-		points[c + 2] = z;
+		points[index] = x;
+		points[index + 1] = y;
+		points[index + 2] = z;
+		//cout << x << " " << y << " " << z << endl;
 		if(c % 10000000 == 0) cout << "Reading points: " << c << endl;
 		c++;
 	}
-	cout << "Read " << c << " data points" << endl;
+	cout << "Read " << c << " data points (" << number_of_points << ") estimated." <<  endl;
 
 	// Create PLY file
 	PLYElement* vertex_element = new PLYElement("vertex", number_of_points);

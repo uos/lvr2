@@ -19,6 +19,9 @@
 #include <algorithm>
 #include <zorder_lt.hpp>
 
+void __srand48__(long int seedval);
+
+
 /*! \file
   \brief Binary search functions
   This file contains binary search functions for z-order operations.
@@ -252,6 +255,8 @@ long int BinarySearch(Point *A, long int size, Point q, zorder_lt<Point> lt)
 	}
 	return middle;
 }
+
+
 
 template<typename Point>
 class BinaryShortSearch

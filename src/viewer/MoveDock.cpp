@@ -1,7 +1,7 @@
 /********************************************************************************
 ** Form generated from reading UI file 'movedock.ui'
 **
-** Created: Fri Nov 12 11:19:13 2010
+** Created: Fri Nov 19 12:02:08 2010
 **      by: Qt User Interface Compiler version 4.6.2
 **
 ** WARNING! All changes made in this file will be lost when recompiling UI file!

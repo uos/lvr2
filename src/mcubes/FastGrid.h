@@ -57,7 +57,7 @@ private:
 	int  getFieldsPerLine(string filename);
 
 	float                   voxelsize;
-	int                     number_of_points;
+	size_t                  number_of_points;
 	int                     max_index;
     int                     max_index_square;
 	int                     max_index_x;
