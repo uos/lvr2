@@ -1,7 +1,7 @@
 /****************************************************************************
 ** Meta object code from reading C++ file 'TouchPad.h'
 **
-** Created: Fri Nov 12 11:19:25 2010
+** Created: Fri Nov 19 12:02:19 2010
 **      by: The Qt Meta Object Compiler version 62 (Qt 4.6.2)
 **
 ** WARNING! All changes made in this file will be lost!

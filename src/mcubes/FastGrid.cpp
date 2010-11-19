@@ -78,12 +78,13 @@ FastGrid::FastGrid(string filename, float vs) {
 
 FastGrid::~FastGrid() {
 
-	for(int i = 0; i < number_of_points; i++) delete[] points[i];
+	for(size_t i = 0; i < number_of_points; i++) delete[] points[i];
 	delete[] points;
 
 	hash_map<int, FastBox*>::iterator it;
 	for(it = cells.begin(); it != cells.end(); it++) delete it->second;
 }
+
 
 int  FastGrid::findQueryPoint(int position, int x, int y, int z){
 
@@ -129,7 +130,7 @@ void FastGrid::createGrid(){
 
 	int dx, dy, dz;
 
-	for(int i = 0; i < number_of_points; i++){
+	for(size_t i = 0; i < number_of_points; i++){
 		index_x = calcIndex((points[i][0] - bounding_box.v_min.x) / voxelsize);
 		index_y = calcIndex((points[i][1] - bounding_box.v_min.y) / voxelsize);
 		index_z = calcIndex((points[i][2] - bounding_box.v_min.z) / voxelsize);
@@ -212,6 +213,7 @@ void FastGrid::calcQueryPointValues(){
     unsigned long start_time = GetCurrentTimeInMilliSec();
     omp_set_num_threads(4);
 
+    cout << "##### Calculating distance values..." << endl << endl;
     boost::progress_display progress(query_points.size());
 
     #pragma omp parallel for
@@ -225,7 +227,8 @@ void FastGrid::calcQueryPointValues(){
 	}
 	unsigned long end_time = GetCurrentTimeInMilliSec();
 
-	cout << "Elapsed time: " << (double)(end_time - start_time) * 0.001 << endl;
+	cout << endl;
+	cout << "##### Elapsed time: " << (double)(end_time - start_time) * 0.001 << endl;
 }
 
 void FastGrid::createMesh(){
@@ -250,7 +253,7 @@ void FastGrid::createMesh(){
 //	mesh.finalize();
 
 
-	cout << "##### Creating Mesh..." << endl;
+	cout << "##### Creating Mesh..." << endl << endl;
 
 	hash_map<int, FastBox*>::iterator it;
 	FastBox* b;
@@ -265,6 +268,8 @@ void FastGrid::createMesh(){
 		global_index = b->calcApproximation(query_points, *mesh, global_index);
 		++progress;
 	}
+
+	cout << endl;
 
 //	mesh->extract_borders();
 //	mesh->write_polygons("border.bor");
@@ -335,27 +340,20 @@ void FastGrid::readPoints(string filename)
 
 void FastGrid::readPLY(string filename)
 {
-//	cout << "##### Reading " << filename << endl;
-//	PLYIO io;
-//	io.read(filename);
-//	size_t n;
-//	float* pts = io.getVertexArray(n);
-//
-//	cout << "Number of points " << n << endl;
-//
-//	int index;
-//	points = annAllocPts(n, 3);
-//	for(size_t i = 0; i < n; i++)
-//	{
-//			index = i * 3;
-//			points[i][0] = pts[index];
-//			points[i][1] = pts[index + 1];
-//			points[i][2] = pts[index + 2];
-//	}
-//	delete[] pts;
-//	number_of_points = (int)n;
-//
-//	interpolator = new StannInterpolator(points, n, 10.0, 100, 100.0);
+	cout << "##### Reading " << filename << endl;
+	PLYIO io;
+	io.read(filename);
+	size_t n;
+	points = io.getIndexedVertexArray(n);
+	number_of_points = n;
+
+	// Calc bounding box
+	for(size_t i = 0; i < number_of_points; i++)
+	{
+		bounding_box.expand(points[i][0], points[i][1], points[i][2]);
+	}
+
+	interpolator = new StannInterpolator(points, n, 10.0, 100, 100.0);
 }
 
 void FastGrid::readPlainASCII(string filename)
@@ -447,7 +445,7 @@ void FastGrid::writeGrid(){
 
 	out << number_of_points << endl;
 
-	for(int i = 0; i < number_of_points; i++){
+	for(size_t i = 0; i < number_of_points; i++){
 		out << points[i][0] << " " <<  points[i][1] << " " << points[i][2] << endl;
 	}
 

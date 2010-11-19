@@ -1,0 +1,7 @@
+*.o
+.project
+bin/*
+ext/stann1.6
+lib/
+*.pts
+*.ply

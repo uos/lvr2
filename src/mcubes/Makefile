@@ -23,7 +23,7 @@ MCTARGETS    = $(OBJ)ANNInterpolator.o $(OBJ)FastBox.o \
                $(OBJ)FastGrid.o $(OBJ)Tetraeder.o $(OBJ)TetraBox.o \
                $(OBJ)QueryPoint.o $(OBJ)StannInterpolator.o
 
-CFLAGS+=     -I../../ext/ann/ -I../../ext/stann -I$(HOME)/local/include -g -fpermissive
+CFLAGS+=     -I../../ext/ann/ -I../../ext/stann -I$(HOME)/local/include -fpermissive
 
 all: $(BIN)mcubes $(BIN)ascii2ply
 
@@ -42,7 +42,7 @@ $(LIB)libmc.a: $(MCTARGETS)
 $(BIN)mcubes: $(LIB)libmc.a
 	@echo "[BIN] Marching Cubes Program"
 	@$(CPP) $(CFLAGS) main.cc -o $(BIN)mcubes $(MCTARGETS) $(GLLIBS) $(LIB3D) $(NEWMAT) $(ANN) $(BOOST)
-	
+
 $(BIN)ascii2ply: ASCIIToPLY.cpp
 	@echo "[BIN] ASCII to PLY conversion tool"
 	@$(CPP) $(CFLAGS) ASCIIToPLY.cpp -o $(BIN)ascii2ply $(LIB3D) $(GLLIBS)
