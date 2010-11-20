@@ -348,6 +348,7 @@ void FastGrid::readPLY(string filename)
 	io.read(filename);
 	size_t n;
 	points = io.getIndexedVertexArray(n);
+	float** normals = io.getIndexedNormalArray(n);
 	number_of_points = n;
 
 	// Calc bounding box
@@ -356,7 +357,7 @@ void FastGrid::readPLY(string filename)
 		bounding_box.expand(points[i][0], points[i][1], points[i][2]);
 	}
 
-	interpolator = new StannInterpolator(points, n, 10.0, 100, 100.0);
+	interpolator = new StannInterpolator(points, normals, n, 10.0, 100, 100.0);
 }
 
 void FastGrid::readPlainASCII(string filename)
@@ -416,7 +417,7 @@ void FastGrid::readPlainASCII(string filename)
 
 	cout << "##### Finished Reading. Number of Data Points: " << pts.size() << endl;
 
-	interpolator = new StannInterpolator(points, number_of_points, 10.0, 100, 100.0);
+	interpolator = new StannInterpolator(points, 0, number_of_points, 10.0, 100, 100.0);
 }
 
 int FastGrid::getFieldsPerLine(string filename){
@@ -468,6 +469,8 @@ void FastGrid::writeGrid(){
 
 void FastGrid::savePointsAndNormals()
 {
+	size_t n = 0;
+	float** normals = interpolator->getNormals(n);
 
 	PLYIO writer;
 
@@ -478,18 +481,18 @@ void FastGrid::savePointsAndNormals()
 	vertex_element->addProperty("z", "float");
 
 	// Crate normal element description
-//	PLYElement* = type name = new type(arguments);normal_element("normal");
-//	normal_element->addProperty("x", "float");
-//	normal_element->addProperty("y", "float");
-//	normal_element->addProperty("z", "float");
+	PLYElement* normal_element = new PLYElement("normal", n);
+	normal_element->addProperty("x", "float");
+	normal_element->addProperty("y", "float");
+	normal_element->addProperty("z", "float");
 
 	// Add description
 	writer.addElement(vertex_element);
-	//writer.addElement(normal_element);
+	writer.addElement(normal_element);
 
 	// Add data
 	writer.setIndexedVertexArray(points, number_of_points);
-	//writer.setIndexedNormalArray();
+	writer.setIndexedNormalArray(normals, n);
 
 	writer.save("points_and_normals.ply");
 }

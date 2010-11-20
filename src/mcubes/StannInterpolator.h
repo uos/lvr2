@@ -42,11 +42,13 @@ struct Plane{
 class StannInterpolator: public Interpolator {
 public:
 	StannInterpolator(
-			float**, int n, float voxelsize, int k_max,
+			float** points, float** normals, int n, float voxelsize, int k_max,
 			float epsilon, Vertex c = Vertex(0.0, 0.0, 0.0));
 
-	virtual float distance(ColorVertex v);
 
+
+	virtual float distance(ColorVertex v);
+	virtual float** getNormals(size_t &n);
 	virtual ~StannInterpolator();
 
 	Vertex center;
