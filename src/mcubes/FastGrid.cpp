@@ -346,9 +346,17 @@ void FastGrid::readPLY(string filename)
 	cout << "##### Reading " << filename << endl;
 	PLYIO io;
 	io.read(filename);
-	size_t n;
+
+	// Get point cloud data
+	size_t n = 0;
 	points = io.getIndexedVertexArray(n);
-	float** normals = io.getIndexedNormalArray(n);
+
+	// Read normals if present
+	float** normals = 0;
+	if(io.containsElement("normal"))
+	{
+		normals = io.getIndexedNormalArray(n);
+	}
 	number_of_points = n;
 
 	// Calc bounding box
