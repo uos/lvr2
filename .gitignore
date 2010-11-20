@@ -7,3 +7,7 @@ lib/
 *.pts
 *.ply
 Makefile.options
+src/viewer/MainWindow.cpp
+src/viewer/MatrixDialog.cpp
+src/viewer/MoveDock.cpp
+src/viewer/ObjectDialog.cpp

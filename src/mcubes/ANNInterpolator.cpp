@@ -8,7 +8,8 @@ ANNInterpolator::ANNInterpolator(ANNpointArray pts, int n, float vs, int km, flo
   voxelsize = vs;
   vs_sq = 0.5f * vs * vs;
 
-  normals = new Normal[number_of_points];
+  normals = new float*[number_of_points];
+  for(size_t i = 0; i < number_of_points; i++) normals[i] = new float[3];
 
   float z1, z2;
 
@@ -28,7 +29,7 @@ ANNInterpolator::ANNInterpolator(ANNpointArray pts, int n, float vs, int km, flo
 
   cout << "##### Estimating normals..." << endl;
 
-  for(int i = 0; i < number_of_points; i++){
+  for(size_t i = 0; i < number_of_points; i++){
 
     query_point = BaseVertex((float)points[i][0],
 							 (float)points[i][1],
@@ -80,7 +81,9 @@ ANNInterpolator::ANNInterpolator(ANNpointArray pts, int n, float vs, int km, flo
 // 	 }
 
 
-	 normals[i] = normal;
+	 normals[i][0] = normal[0];
+	 normals[i][1] = normal[1];
+	 normals[i][2] = normal[2];
 
     } catch(Exception e){
 	 //Ignore
@@ -96,7 +99,7 @@ ANNInterpolator::ANNInterpolator(ANNpointArray pts, int n, float vs, int km, flo
 
   cout << "##### Interpolating Normals... " << endl;
 
-  for(int i = 0; i < number_of_points; i++){
+  for(size_t i = 0; i < number_of_points; i++){
 
     point_tree->annkFRSearch(points[i], vs_sq, k_max, id, di, 0.01 * voxelsize);
     int n_nb = 0;
@@ -107,9 +110,9 @@ ANNInterpolator::ANNInterpolator(ANNpointArray pts, int n, float vs, int km, flo
     float x = 0, y = 0, z = 0;
 
     for(int j = 0; j < n_nb; j++){
-	 x += normals[id[j]].x;
-	 y += normals[id[j]].y;
-	 z += normals[id[j]].z;
+	 x += normals[id[j]][0];
+	 y += normals[id[j]][1];
+	 z += normals[id[j]][2];
     }
 
     normal = Normal(x, y, z);
@@ -120,7 +123,9 @@ ANNInterpolator::ANNInterpolator(ANNpointArray pts, int n, float vs, int km, flo
 	 normal.z = -1 * normal.z;
     }
 
-    normals[i] = normal;
+    normals[i][0] = normal[0];
+    normals[i][1] = normal[1];
+    normals[i][2] = normal[2];
 
 
 
@@ -132,6 +137,12 @@ ANNInterpolator::ANNInterpolator(ANNpointArray pts, int n, float vs, int km, flo
 
   write("normals.nor");
 
+}
+
+float** ANNInterpolator::getNormals(size_t &n)
+{
+	n = number_of_points;
+	return normals;
 }
 
 float ANNInterpolator::distance(ColorVertex v){
@@ -178,7 +189,7 @@ float ANNInterpolator::distance(ColorVertex v){
   float nx = 0.0, ny = 0.0, nz = 0.0;
 
   for(int i = 0; i < n_nb; i++){
-    Normal n = normals[id[i]];
+    Normal n = Normal(normals[id[i]][0], normals[id[i]][1], normals[id[i]][2]);
     nx += n.x;
     ny += n.y;
     nz += n.z;
@@ -225,10 +236,10 @@ void ANNInterpolator::write(string filename){
   }
 
   cout << "##### Writing '" << filename.c_str() << "'..." << endl;
-  for(int i = 0; i < number_of_points; i++){
+  for(size_t i = 0; i < number_of_points; i++){
 
     out << points[i][0] << " " << points[i][1] << " " << points[i][2] << " "
-	   << normals[i].x << " " << normals[i].y << " " << normals[i].z << endl;
+	   << normals[i][0] << " " << normals[i][1] << " " << normals[i][2] << endl;
 
   }
 

@@ -24,7 +24,7 @@ unsigned long GetCurrentTimeInMilliSec(void)
   return milliseconds;
 }
 
-StannInterpolator::StannInterpolator(float** pts, int n, float vs, int km, float epsilon, Vertex c) {
+StannInterpolator::StannInterpolator(float** pts, float** nor, int n, float vs, int km, float epsilon, Vertex c) {
 
 	center = c;
 
@@ -36,7 +36,7 @@ StannInterpolator::StannInterpolator(float** pts, int n, float vs, int km, float
 	voxelsize = vs;
 	vs_sq = vs * vs;
 
-	normals = 0;
+	normals = nor;
 
 	omp_set_num_threads(4);
 
@@ -45,9 +45,11 @@ StannInterpolator::StannInterpolator(float** pts, int n, float vs, int km, float
 
 	unsigned long start_time = GetCurrentTimeInMilliSec();
 
-	estimate_normals();
-	interpolateNormals(20);
-	//write_normals();
+	if(!normals)
+	{
+		estimate_normals();
+		interpolateNormals(20);
+	}
 
 	unsigned long end_time = GetCurrentTimeInMilliSec();
 
@@ -60,6 +62,12 @@ StannInterpolator::~StannInterpolator() {
 
 float StannInterpolator::distance(Vertex v, Plane p){
 	return fabs((v - p.p) * p.n);
+}
+
+float** StannInterpolator::getNormals(size_t &n)
+{
+	n = number_of_points;
+	return normals;
 }
 
 float StannInterpolator::meanDistance(Plane p, vector<unsigned long> id, int k){
@@ -275,15 +283,6 @@ void StannInterpolator::interpolateNormals(int k){
 		vector<double> di;
 
 		point_tree.ksearch(points[i], k, id, di, 0);
-
-		//if(i % 10000 == 0) cout << "##### Interpolating normals: "
-		//<< i << " / " << number_of_points << endl;
-
-//		if(i % progress_limit == 0)
-//		{
-//			cout << "##### Interpolating normals: " << counter << "% " << endl;
-//			counter++;
-//		}
 
 		Vertex mean;
 		Normal mean_normal;

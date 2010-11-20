@@ -27,7 +27,8 @@ public:
   ~ANNInterpolator(){};
 
   void write(string filename);
-  float distance(ColorVertex v);
+  virtual float distance(ColorVertex v);
+  virtual float** getNormals(size_t &n);
 
   //private:
 
@@ -37,9 +38,9 @@ public:
   float vs_sq;
   float epsilon;
 
-  Normal* normals;
+  float** normals;
 
-  int number_of_points;
+  size_t number_of_points;
   int k_max;
 
 };
