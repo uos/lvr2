@@ -32,10 +32,18 @@ int getFieldsPerLine(string filename)
 
 int main(int argc, char** argv)
 {
-	if(argc != 3)
+	int mod = 1;
+	int reduction = 0;
+
+	if(argc < 3)
 	{
-		cout << "Usage: ascii2ply <infile> <outfile>" << endl;
+		cout << "Usage: ascii2ply <infile> <outfile> (reduction)" << endl;
 		return 0;
+	}
+	if(argc == 4)
+	{
+	    reduction = atoi(argv[3]);
+		cout << "Reducing data to " << reduction << " points." << endl;
 	}
 
 	PLYIO ply_writer;
@@ -52,23 +60,31 @@ int main(int argc, char** argv)
 	size_t number_of_points = 0;
 	ifstream in;
 	in.open(inFileName.c_str());
+	cout << "Counting points..." << endl;
 	while(in.good())
 	{
 		in.getline(line, max_line_size);
 		number_of_points++;
-		if(number_of_points % 10000000 == 0)
-		{
-			cout << "Counting points: " << number_of_points << endl;
-		}
 	}
 	cout << "Number of points in file: " << number_of_points << endl;
 	in.close();
+
+	// Calculate reduction factor
+	if(reduction != 0)
+	{
+		mod = number_of_points / reduction + 1;
+		cout << "Reducing data using every " << mod << "th point." << endl;
+	}
+
+	// Calculate number of points to read
+	number_of_points /= mod;
+	cout << "Reading a total of " << number_of_points << " points." << endl;
 
 	// Allocate memory for point data and read points
 	cout << "Allocating point array" << endl;
 	float* points = new float[3 * number_of_points];
 	in.open(inFileName.c_str());
-	int c = 0;
+	int c = 0, pos = 0;
 	char junk[1024];
 
 	float x, y, z;
@@ -76,14 +92,19 @@ int main(int argc, char** argv)
 
 	while(in.good())
 	{
-		int index = c * 3;
 		in.getline(line, max_line_size);
-		sscanf(line, "%f %f %f %s", &x, &y, &z, junk);
-		points[index] = x;
-		points[index + 1] = y;
-		points[index + 2] = z;
-		//cout << x << " " << y << " " << z << endl;
-		if(c % 10000000 == 0) cout << "Reading points: " << c << endl;
+		// Parse points
+		if(c % mod == 0 && pos < number_of_points && in.good())
+		{
+			int index = pos * 3;
+			sscanf(line, "%f %f %f %s", &x, &y, &z, junk);
+			points[index] = x;
+			points[index + 1] = y;
+			points[index + 2] = z;
+			//cout << x << " " << y << " " << z << endl;
+			pos++;
+		}
+		if(c % 10000000 == 0) cout << "Reading points: " << c << " / " << pos << endl;
 		c++;
 	}
 	cout << "Read " << c << " data points (" << number_of_points << ") estimated." <<  endl;
