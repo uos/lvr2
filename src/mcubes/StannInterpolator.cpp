@@ -36,6 +36,8 @@ StannInterpolator::StannInterpolator(float** pts, int n, float vs, int km, float
 	voxelsize = vs;
 	vs_sq = vs * vs;
 
+	normals = 0;
+
 	omp_set_num_threads(4);
 
 	cout << "##### Creating STANN Kd-Tree..." << endl;
@@ -175,8 +177,9 @@ void StannInterpolator::estimate_normals(){
 	//int k_0 = 50;
 
 	cout << "##### Initializing normal array..." << endl;
-	//Initialize normals
-	for(int i = 0; i < number_of_points; i++) normals.push_back(Normal(0.0, 0.0, 0.0));
+
+	//Initialize normal array
+	normals = new float*[number_of_points];
 
 	cout << "##### Estimating normals for all points..." << endl << endl;
 	boost::progress_display progress(number_of_points);
@@ -238,15 +241,13 @@ void StannInterpolator::estimate_normals(){
 
 		mean_distance = meanDistance(p, id, k);
 
-
-
-
 		normal =  p.n;
 		if(normal * (query_point - center) < 0) normal = normal * -1;
 
-		//normal = normal * -1;
-
-		normals[i] = normal;
+		normals[i] = new float[3];
+		normals[i][0] = normal[0];
+		normals[i][1] = normal[1];
+		normals[i][2] = normal[2];
 
 		++progress;
 	}
@@ -299,7 +300,9 @@ void StannInterpolator::interpolateNormals(int k){
 		for(int j = 0; j < k; j++){
 			Normal n = Normal(normals[id[j]][0], normals[id[j]][1], normals[id[j]][2]);
 			if(fabs(n * mean_normal) > 0.2 ){
-				normals[id[j]] = mean_normal;
+				normals[id[j]][0] = mean_normal[0];
+				normals[id[j]][1] = mean_normal[1];
+				normals[id[j]][2] = mean_normal[2];
 			}
 		}
 		++progress;
@@ -309,7 +312,9 @@ void StannInterpolator::interpolateNormals(int k){
 	cout << "##### Copying normals..." << endl;
 
 	for(int i = 0; i < number_of_points; i++){
-		normals[i] = tmp[i];
+		normals[i][0] = tmp[i][0];
+		normals[i][1] = tmp[i][1];
+		normals[i][2] = tmp[i][2];
 	}
 
 }

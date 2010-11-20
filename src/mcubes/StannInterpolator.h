@@ -71,7 +71,7 @@ public:
 	float vs_sq;
 	float epsilon;
 
-	vector<Normal> normals;
+	float ** normals;
 
 	long int number_of_points;
 	int k_max;
