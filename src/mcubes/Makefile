@@ -21,7 +21,8 @@ AR  = ar
 
 MCTARGETS    = $(OBJ)ANNInterpolator.o $(OBJ)FastBox.o \
                $(OBJ)FastGrid.o $(OBJ)Tetraeder.o $(OBJ)TetraBox.o \
-               $(OBJ)QueryPoint.o $(OBJ)StannInterpolator.o
+               $(OBJ)QueryPoint.o $(OBJ)StannInterpolator.o \
+               $(OBJ)Options.o
 
 CFLAGS+=     -I../../ext/ann/ -I../../ext/stann -I$(HOME)/local/include -fpermissive -g
 
@@ -39,7 +40,7 @@ $(LIB)libmc.a: $(MCTARGETS)
 	@$(AR) -cr  $(LIB)libmc.a $(MCTARGETS)
 	@ranlib  $(LIB)libmc.a
 
-$(BIN)mcubes: $(LIB)libmc.a
+$(BIN)mcubes: $(LIB)libmc.a main.cc
 	@echo "[BIN] Marching Cubes Program"
 	@$(CPP) $(CFLAGS) main.cc -o $(BIN)mcubes $(MCTARGETS) $(GLLIBS) $(LIB3D) $(NEWMAT) $(ANN) $(BOOST)
 
@@ -77,4 +78,8 @@ $(OBJ)StannInterpolator.o: StannInterpolator.*
 $(OBJ)QueryPoint.o: QueryPoint.*
 	@echo "[CPP] Query Point"
 	@$(CPP) $(CFLAGS) -c -o $(OBJ)QueryPoint.o QueryPoint.cpp
+	
+$(OBJ)Options.o: Options.*
+	@echo "[CPP] Options"
+	@$(CPP) $(CFLAGS) -c -o $(OBJ)Options.o Options.cpp
 

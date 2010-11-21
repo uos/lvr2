@@ -6,6 +6,7 @@ ext/stann1.6
 lib/
 *.pts
 *.ply
+*.nor
 Makefile.options
 src/viewer/MainWindow.cpp
 src/viewer/MatrixDialog.cpp

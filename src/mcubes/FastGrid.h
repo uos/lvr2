@@ -29,10 +29,11 @@ using __gnu_cxx::hash_map;
 #include "QueryPoint.h"
 #include "FastBox.h"
 #include "Tables.h"
+#include "Options.h"
 
 class FastGrid {
 public:
-	FastGrid(string filename, float voxelsize);
+	FastGrid(Options* options);
 
 	void writeGrid();
 
@@ -74,6 +75,8 @@ private:
 	HalfEdgeMesh            he_mesh;
 
 	hash_map<int, FastBox*> cells;
+
+	Options* 				m_options;
 
 };
 

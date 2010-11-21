@@ -61,10 +61,14 @@ const static int box_creation_table[8][3] = {
 	{-1,  1,  1}
 };
 
-FastGrid::FastGrid(string filename, float vs) {
+FastGrid::FastGrid(Options *options) {
 
-	voxelsize = vs;
+	m_options = options;
+
+	// Parse options
+	voxelsize = options->getVoxelsize();
 	number_of_points = 0;
+	string filename = options->getOutputFileName();
 
 	readPoints(filename);
 
@@ -273,19 +277,26 @@ void FastGrid::createMesh(){
 
 //	mesh->extract_borders();
 //	mesh->write_polygons("border.bor");
-//	mesh->write_face_normals("face_normal.nor");
-//	mesh->printStats();
-	vector<planarCluster> planes;
-	mesh->cluster(planes);
-//	cout << "Optimizing clusters..." << endl;
-	mesh->optimizeClusters(planes);
+
+	if(m_options->writeFaceNormals())
+	{
+		mesh->write_face_normals("face_normal.nor");
+	}
+
+	if(m_options->createClusters())
+	{
+		vector<planarCluster> planes;
+		mesh->cluster(planes);
+		if(m_options->optimizeClusters()) mesh->optimizeClusters(planes);
+		mesh->finalize(planes);
+		mesh->save("planes.ply");
+	}
 
 	mesh->finalize();
-//	mesh->write_face_normals("face_normal.nor");
 	mesh->save("mesh.ply");
 
-	mesh->finalize(planes);
-	mesh->save("planes.ply");
+//	mesh->finalize(planes);
+//	mesh->save("planes.ply");
 
 //	cout << "##### Creating Progressive Mesh..." << endl;
 //
@@ -303,8 +314,11 @@ void FastGrid::createMesh(){
 	//he_mesh.extract_borders();
 	//he_mesh.write_polygons("borders.bor");
 
-	cout << "##### Saving points and normals..." << endl;
-	savePointsAndNormals();
+	if(m_options->saveNormals())
+	{
+		cout << "##### Saving points and normals..." << endl;
+		savePointsAndNormals();
+	}
 }
 
 
