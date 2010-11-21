@@ -43,7 +43,7 @@ CFLAGS     += -I$(HOME)/local/include
 LIBANN	   = $(LIB)libann.a
 NEWMAT     = $(LIB)libnewmat.a
 LIB3D	   = $(HOME)/local/lib/lib3d.a
-BOOST      = -lboost_filesystem
+BOOST      = -lboost_filesystem -lboost_program_options
 
 ##################################################################################
 # ------------------------- UNCOMMENT THIS FOR MACS ---------------------------- #
