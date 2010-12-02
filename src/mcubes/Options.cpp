@@ -21,6 +21,7 @@ Options::Options(int argc, char** argv) : m_descr("Supported options")
 		("optimizeCluster,o", "Shift all triangle vertices of a cluster onto their shared plane")
 		("saveNormals,s", "Exports original point cloud data together with normals into a single file called 'points_and_normals.ply'")
 		("recalcNormals,r", "Always estimate normals, even if given in .ply file.")
+		("threads,t", value<int>(&m_numThreads)->default_value(2), "Number of threads")
 		;
 
 	m_pdescr.add("inputFile", -1);
@@ -34,6 +35,11 @@ Options::Options(int argc, char** argv) : m_descr("Supported options")
 float Options::getVoxelsize() const
 {
 	return m_variables["voxelsize"].as<float>();
+}
+
+float Options::getNumThreads() const
+{
+	return m_variables["threads"].as<int>();
 }
 
 string Options::getOutputFileName() const
