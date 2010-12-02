@@ -31,12 +31,16 @@ if(OpenGL_FOUND)
   include_directories(${OpenGL_LIBRARY_DIRS})
 endif(OpenGL_FOUND)
 
+find_package(Qt4)
+if(QT4_FOUND) 
+  add_subdirectory(src/viewer)
+endif(QT4_FOUND)
+
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${ADDITIONAL_COMPILER_FLAGS}")
 
 add_subdirectory(ext/newmat)
 add_subdirectory(ext/ann)
 add_subdirectory(src/mcubes)
-
 
 
 
