@@ -18,9 +18,10 @@
 #include <vector>
 #include <algorithm>
 #include <zorder_lt.hpp>
+#include <stdlib.h>
 
 void __srand48__(long int seedval);
-
+double __drand48__();
 
 /*! \file
   \brief Binary search functions
