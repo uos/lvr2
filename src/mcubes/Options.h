@@ -27,6 +27,8 @@ public:
 	virtual ~Options();
 
 	float 	getVoxelsize()const;
+	float 	getNumThreads() const;
+
 	bool	printUsage() const;
 	bool	filenameSet() const;
 	bool	writeFaceNormals() const;
@@ -38,6 +40,7 @@ public:
 	string 	getOutputFileName() const;
 private:
 	float 							m_voxelsize;
+	int								m_numThreads;
 	variables_map					m_variables;
 	options_description 			m_descr;
 	positional_options_description 	m_pdescr;
@@ -49,6 +52,7 @@ inline ostream& operator<<(ostream& os, const Options &o)
 	cout << "##### Program options: " 	<< endl;
 	cout << "##### Voxelsize \t\t: " 		<< o.getVoxelsize() << endl;
 	cout << "##### Output file \t\t: " 	<< o.getOutputFileName() << endl;
+	cout << "##### Number of threads \t: " << o.getNumThreads() << endl;
 	if(o.writeFaceNormals())
 	{
 		cout << "##### Write Face Normals \t: YES" << endl;

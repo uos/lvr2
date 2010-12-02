@@ -107,7 +107,7 @@ void RenderFrame::paintGL(){
 
 	// Render background
 	glDisable(GL_DEPTH_TEST);
-	glCallList(m_bgListIndex);
+	//glCallList(m_bgListIndex);
 	glEnable(GL_DEPTH_TEST);
 
 	// Render objects

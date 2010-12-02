@@ -38,8 +38,6 @@ StannInterpolator::StannInterpolator(float** pts, float** nor, int n, float vs, 
 
 	normals = nor;
 
-	omp_set_num_threads(4);
-
 	cout << "##### Creating STANN Kd-Tree..." << endl;
 	point_tree = sfcnn< float*, 3, float>(points, number_of_points, 4);
 

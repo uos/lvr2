@@ -263,6 +263,8 @@ void FastGrid::createMesh(){
 	FastBox* b;
 	int global_index = 0;
 
+	omp_set_num_threads(m_options->getNumThreads());
+
 	mesh = new HalfEdgeMesh();
 
 	boost::progress_display progress(cells.size());
