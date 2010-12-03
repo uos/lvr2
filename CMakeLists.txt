@@ -6,6 +6,7 @@ set( CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_SOURCE_DIR}/bin )
 link_directories("$ENV{HOME}/local/lib")
 link_directories("${CMAKE_SOURCE_DIR}/lib")
 
+include_directories("$ENV{HOME}/local/include")
 include_directories(${LSSR_SOURCE_DIR}/ext/ann)
 include_directories(${LSSR_SOURCE_DIR}/ext/newmat)
 include_directories(${LSSR_SOURCE_DIR}/ext/stann)
@@ -31,8 +32,16 @@ if(OpenGL_FOUND)
   include_directories(${OpenGL_LIBRARY_DIRS})
 endif(OpenGL_FOUND)
 
+find_package(GLUT REQUIRED)
+
+
+set(QT_USE_QTOPENGL TRUE)
+
 find_package(Qt4)
 if(QT4_FOUND) 
+  include_directories(${QT_INCLUDE_DIR})
+  include_directories(${QT_QTGUI_INCLUDE_DIR})
+  include_directories(${QT_QTOPENGL_INCLUDE_DIR})
   add_subdirectory(src/viewer)
 endif(QT4_FOUND)
 
