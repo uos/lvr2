@@ -1,8 +1,8 @@
 set(VIEWER_MOCS 
-EventHandlerMoc.h  
-ObjectHandlerMoc.h  
-RenderFrameMoc.h  
-TouchPadMoc.h)
+EventHandler.h  
+ObjectHandler.h  
+RenderFrame.h  
+TouchPad.h)
 
 set(VIEWER_SOURCES
 EventHandler.cpp
@@ -15,11 +15,10 @@ TouchPad.cpp
 ViewerWindow.cpp
 Viewport.cpp)
 
-qt_wrap_cpp(VIEWER_MOC_SRC ${VIEWER_MOCS})
-message(STATUS "MOCS: ${VIEWER_MOC_SRC}")
+qt_wrap_cpp(viewer VIEWER_MOC_SRC ${VIEWER_MOCS})
+add_definitions(${QT_DEFINITIONS})
 
-add_executable(viewer Viewer.cpp ${VIEWER_SOURCES})
-
+add_executable(viewer Viewer.cpp ${VIEWER_SOURCES} ${VIEWER_MOC_SRC})
 target_link_libraries(viewer ${QT_QTCORE_LIBRARIES})
 target_link_libraries(viewer ${QT_QTGUI_LIBRARIES})
 target_link_libraries(viewer ${QT_QTOPENGL_LIBRARIES})

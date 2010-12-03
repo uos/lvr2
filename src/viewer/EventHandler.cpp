@@ -6,7 +6,7 @@
  */
 
 #include "EventHandler.h"
-#include "EventHandlerMoc.cpp"
+//#include "EventHandlerMoc.cpp"
 
 void EventHandler::camTurnLeft() {viewport->camTurnLeft();};
 void EventHandler::camTurnRight() {viewport->camTurnRight();};

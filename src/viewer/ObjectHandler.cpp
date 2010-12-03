@@ -6,7 +6,7 @@
  */
 
 #include "ObjectHandler.h"
-#include "ObjectHandlerMoc.cpp"
+//#include "ObjectHandlerMoc.cpp"
 
 ObjectHandler::ObjectHandler(QListWidget* l) {
 	listWidget = l;
