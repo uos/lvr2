@@ -39,12 +39,13 @@ public:
 
 	string 	getOutputFileName() const;
 private:
-	float 							m_voxelsize;
-	int								m_numThreads;
-	variables_map					m_variables;
-	options_description 			m_descr;
+	float 				m_voxelsize;
+	int				m_numThreads;
+	variables_map			m_variables;
+	options_description 		m_descr;
 	positional_options_description 	m_pdescr;
-	string 							m_faceNormalFile;
+	string 				m_faceNormalFile;
+	int                             m_numberOfDefaults;
 };
 
 inline ostream& operator<<(ostream& os, const Options &o)
