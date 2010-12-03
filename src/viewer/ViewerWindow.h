@@ -10,8 +10,8 @@
 
 #include <QtGui>
 
-#include "MainWindow.cpp"
-#include "MoveDock.cpp"
+#include "viewer.h"
+#include "movedock.h"
 
 #include "TouchPad.h"
 #include "RenderFrame.h"
