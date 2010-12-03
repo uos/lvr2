@@ -6,7 +6,7 @@
  */
 
 #include "TouchPad.h"
-#include "TouchPadMoc.cpp"
+//#include "TouchPadMoc.cpp"
 
 TouchPad::TouchPad(QWidget* w, MoveDock* md) : QFrame(w){
 

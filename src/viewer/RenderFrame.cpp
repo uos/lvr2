@@ -6,7 +6,7 @@
  */
 
 #include "RenderFrame.h"
-#include "RenderFrameMoc.cpp"
+//#include "RenderFrameMoc.cpp"
 
 RenderFrame::RenderFrame(QWidget* parent, EventHandler* e) : QGLWidget(parent) {
 	eventHandler = e;
