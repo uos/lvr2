@@ -19,7 +19,7 @@ using namespace std;
 #include <lib3d/Renderable.h>
 #include <lib3d/GroundPlane.h>
 
-#include "ObjectDialog.cpp"
+#include "objectdialog.h"
 
 class ObjectHandler: public QObject{
 

@@ -14,7 +14,7 @@ using namespace std;
 #include <QtGui>
 #include <cmath>
 
-#include "MoveDock.cpp"
+#include "movedock.h"
 using namespace Ui;
 
 enum TransformMode{YAW_ROLL, PITCH_ROLL, ACCEL, LIFT, STRAFE,

@@ -14,7 +14,7 @@ using namespace std;
 
 #include <QtGui>
 
-#include "MatrixDialog.cpp"
+#include "matrixdialog.h"
 
 #include <lib3d/Matrix4.h>
 #include <lib3d/GroundPlane.h>
