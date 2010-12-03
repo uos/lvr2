@@ -10,13 +10,8 @@
 
 #include <math.h>
 
-#ifndef MAC_OSX
-#include <GL/gl.h>
-#include <GL/glu.h>
-#else
-#include <OpenGL/GL.h>
-#include <OpenGL/GLU.h>
-#endif
+#include "gl.h"
+#include "glu.h"
 
 #include <lib3d/BaseVertex.h>
 
