@@ -13,7 +13,7 @@ include_directories(${LSSR_SOURCE_DIR}/ext/stann)
 
 set(ADDITIONAL_COMPILER_FLAGS "-O3 -fpermissive -Wno-deprecated -Wno-write-strings")
 
-find_package( Boost COMPONENTS program_options filesystem  REQUIRED)
+find_package( Boost COMPONENTS program_options filesystem system REQUIRED)
 if(Boost_FOUND)
   link_directories(${BOOST_LIBRARY_DIRS})
   include_directories(${Boost_INCLUDE_DIRS})
@@ -31,6 +31,16 @@ if(OpenGL_FOUND)
   link_directories(${OpenGL_INCLUDE_DIRS})
   include_directories(${OpenGL_LIBRARY_DIRS})
 endif(OpenGL_FOUND)
+
+IF(APPLE)
+  include_directories(/System/Library/Frameworks/GLUT.framework/Headers)
+  include_directories(/System/Library/Frameworks/OpenGL.framework/Headers)
+ENDIF(APPLE)
+
+if(UNIX)
+  FIND_PATH(OPENGL_INC gl.h /usr/include/GL)
+  include_directories(${OPENGL_INC})
+endif(UNIX)
 
 find_package(GLUT REQUIRED)
 
