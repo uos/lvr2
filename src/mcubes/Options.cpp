@@ -30,6 +30,7 @@ Options::Options(int argc, char** argv) : m_descr("Supported options")
 	store(command_line_parser(argc, argv).options(m_descr).positional(m_pdescr).run(), m_variables);
 	notify(m_variables);
 
+
 }
 
 float Options::getVoxelsize() const
@@ -49,13 +50,21 @@ string Options::getOutputFileName() const
 
 bool Options::printUsage() const
 {
-	if(m_variables.count("help"))
-	{
-		cout << endl;
-		cout << m_descr << endl;
-		return true;
-	}
-	return false;
+  if(!m_variables.count("inputFile"))
+    {
+      cout << "Error: You must specify an input file." << endl;
+      cout << endl;
+      cout << m_descr << endl;
+      return true;
+    }
+  
+  if(m_variables.count("help"))
+    {
+      cout << endl;
+      cout << m_descr << endl;
+      return true;
+    }
+  return false;
 }
 
 bool Options::writeFaceNormals() const
