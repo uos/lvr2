@@ -69,7 +69,6 @@ public:
 			                 HalfEdge* edge,
 			                 vector<HalfEdgeFace*>& faces);
 
-	void getArea(set<HalfEdgeFace*> &faces, HalfEdgeFace* face, int depth, int max);
 	void shiftIntoPlane(HalfEdgeFace* f);
 
 	bool check_face(HalfEdgeFace* f0, HalfEdgeFace* current);

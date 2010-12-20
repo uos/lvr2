@@ -181,23 +181,6 @@ void HalfEdgeMesh::finalize(vector<planarCluster> &planes)
 	}
 }
 
-
-
-void HalfEdgeMesh::getArea(set<HalfEdgeFace*> &faces, HalfEdgeFace* face, int depth, int max){
-
-	vector<HalfEdgeFace*> adj;
-	face->getAdjacentFaces(adj);
-
-	vector<HalfEdgeFace*>::iterator it;
-	for(it = adj.begin(); it != adj.end(); it++){
-		faces.insert(*it);
-		if(depth < max){
-			getArea(faces, *it, depth + 1, max);
-		}
-	}
-
-}
-
 void HalfEdgeMesh::shiftIntoPlane(HalfEdgeFace* f){
 
 	HalfEdge* edge  = f->edge;
