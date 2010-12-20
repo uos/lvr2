@@ -69,19 +69,12 @@ public:
 			                 HalfEdge* edge,
 			                 vector<HalfEdgeFace*>& faces);
 
-	void extract_borders();
-	void generate_polygons();
-
 	void getArea(set<HalfEdgeFace*> &faces, HalfEdgeFace* face, int depth, int max);
 	void shiftIntoPlane(HalfEdgeFace* f);
 
 	bool check_face(HalfEdgeFace* f0, HalfEdgeFace* current);
-	bool isFlatFace(HalfEdgeFace* face);
 
 	int classifyFace(HalfEdgeFace* f);
-
-	void create_polygon(vector<int> &polygon,
-						hash_map< unsigned int, HalfEdge* >* edges);
 
 	void cluster(vector<planarCluster> &planes);
 	void optimizeClusters(vector<planarCluster> &clusters);

@@ -145,9 +145,6 @@ void HalfEdgeMesh::finalize(vector<planarCluster> &planes)
 		{
 			if(cluster.face_count > 50)
 			{
-//				c_r = r[count % 255];
-//				c_g = g[count % 255];
-//				c_b = b[count % 255];
 				c_r = 0.6;
 				c_g = 0.0;
 				c_b = 0.0;
@@ -165,10 +162,6 @@ void HalfEdgeMesh::finalize(vector<planarCluster> &planes)
 			int _a = f->index[0];
 			int _b = f->index[1];
 			int _c = f->index[2];
-
-//			cout << r[count % 255] << " "
-//			     << g[count % 255] << " "
-//			     << b[count % 255] << endl;
 
 			colors[3 * _a    ] = c_r;
 			colors[3 * _a + 1] = c_g;
@@ -188,49 +181,6 @@ void HalfEdgeMesh::finalize(vector<planarCluster> &planes)
 	}
 }
 
-bool HalfEdgeMesh::isFlatFace(HalfEdgeFace* face){
-
-	int index = face->mcIndex;
-
-	//WALL
-	if(index == 240 || index == 15 || index == 153 || index == 102){
-
-		return true;
-
-	}
-	//FLOOR
-	else if(index == 204){
-
-		return true;
-
-	}
-	//CEIL
-	else if (index == 51){
-
-		return true;
-
-	}
-	//DOORS
-	else if (index == 9 || index == 144 || index == 96 || index == 6){
-
-		return true;
-
-	}
-	//OTHER FLAT POLYGONS
-	else if(index ==  68 || index == 136 || index ==  17 || index ==  34 || //Variants of MC-Case 2
-			index == 192 || index ==  48 || index ==  12 || index ==   3 ){
-
-		return true;
-
-	} else if (index ==  63 || index == 159 || index == 207 || index == 111 || //Variants of MC-Case 2 (compl)
-			index == 243 || index == 249 || index == 252 || index == 246 ||
-			index == 119 || index == 187 || index == 221 || index == 238){
-		return true;
-
-	}
-
-	return false;
-}
 
 
 void HalfEdgeMesh::getArea(set<HalfEdgeFace*> &faces, HalfEdgeFace* face, int depth, int max){
@@ -438,109 +388,6 @@ void HalfEdgeMesh::check_next_neighbor(HalfEdgeFace* f0,
 		}
 		current_edge = current_edge->next;
 	} while(start_edge != current_edge);
-
-
-}
-
-
-void HalfEdgeMesh::generate_polygons(){
-//
-//	vector<HalfEdgePolygon*>::iterator it;
-//	HalfEdgePolygon* polygon;
-//
-//	for(it =  hem_polygons.begin();
-//		it != hem_polygons.end();
-//		it++)
-//	{
-//		polygon = *it;
-//		polygon->fuse_edges();
-//	}
-
-}
-
-void HalfEdgeMesh::extract_borders(){
-
-	HalfEdgeFace*       current_face;
-	HalfEdgePolygon*    current_polygon;
-	vector<HalfEdgeFace*>::iterator face_iterator;
-
-	unsigned int biggest_size = 0;
-
-	int c = 0;
-	for(face_iterator = he_faces.begin(); face_iterator != he_faces.end(); face_iterator++){
-		if(c % 10000 == 0) cout << "Extracting Borders: " << c << " / " << he_faces.size() << endl;
-		current_face = *face_iterator;
-		if(!current_face->used){
-
-			current_n = current_face->normal;
-			current_d = current_face->edge->start->position * current_n;
-			current_v = current_face->edge->start->position;
-
-			current_polygon = new HalfEdgePolygon();
-			check_next_neighbor(current_face, current_face, 0, current_polygon);
-			current_polygon->generate_list();
-			//current_polygon->fuse_edges();
-			//current_polygon->test();
-
-			hem_polygons.push_back(current_polygon);
-			if(current_polygon->faces.size() > biggest_size){
-				biggest_size = current_polygon->faces.size();
-				biggest_polygon = current_polygon;
-			}
-
-		}
-		c++;
-	}
-
-	cout << "BIGGEST POLYGON: " << biggest_polygon << endl;
-
-}
-
-void HalfEdgeMesh::create_polygon(vector<int> &polygon, hash_map<unsigned int, HalfEdge*>* edges){
-
-
-}
-
-void HalfEdgeMesh::write_polygons(string filename){
-
-	cout << "WRITE" << endl;
-
-	ofstream out(filename.c_str());
-
-	vector<HalfEdgePolygon*>::iterator p_it;
-	//multiset<HalfEdge*>::iterator it;
-	EdgeMapIterator it;
-
-	for(it  = biggest_polygon->edges.begin();
-		it != biggest_polygon->edges.end();
-		it++)
-	{
-		HalfEdge* e = it->second;
-		out << "BEGIN" << endl;
-		out << e->start->position.x << " " << e->start->position.y << " " << e->start->position.z << endl;
-		out << e->end->position.x   << " " << e->end->position.y   << " " << e->end->position.z   << endl;
-		out << "END" << endl;
-	}
-
-	biggest_polygon->fuse_edges();
-
-//	for(p_it =  hem_polygons.begin();
-//		p_it != hem_polygons.end();
-//		p_it++)
-//	{
-//		HalfEdgePolygon* polygon = *p_it;
-//		for(it  = polygon->edges.begin();
-//			it != polygon->edges.end();
-//			it++)
-//		{
-//			HalfEdge* e = *it;
-//			out << "BEGIN" << endl;
-//			out << e->start->position.x << " " << e->start->position.y << " " << e->start->position.z << endl;
-//			out << e->end->position.x   << " " << e->end->position.y   << " " << e->end->position.z   << endl;
-//			out << "END" << endl;
-//		}
-//	}
-
 
 
 }
