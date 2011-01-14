@@ -12,3 +12,4 @@ src/viewer/MainWindow.cpp
 src/viewer/MatrixDialog.cpp
 src/viewer/MoveDock.cpp
 src/viewer/ObjectDialog.cpp
+build/

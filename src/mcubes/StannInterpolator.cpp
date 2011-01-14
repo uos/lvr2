@@ -7,13 +7,14 @@
 
 #include "StannInterpolator.h"
 
-#include "../newmat/newmatio.h"
-
 #include <sys/time.h>
 #include <time.h>
 #include <unistd.h>
 
 #include <boost/progress.hpp>
+
+#include "../Eigen/Dense"
+using namespace Eigen;
 
 unsigned long GetCurrentTimeInMilliSec(void)
 {
@@ -94,69 +95,110 @@ bool StannInterpolator::boundingBoxOK(double dx, double dy, double dz){
 }
 
 Plane StannInterpolator::calcPlane(Vertex query_point, int k, vector<unsigned long> id){
+//
+//	Vertex diff1, diff2;
+//	Normal normal;
+//
+//	ColumnVector C(3);
+//	float z1, z2;
+//
+//	epsilon = 50000.0;
+//
+//	try{
+//		ColumnVector F(k);
+//		Matrix B(k, 3);
+//
+//        //#pragma omp parallel for
+//		for(int j = 1; j <= k; j++){
+//
+//			F(j) = points[id[j-1]][1];
+//			B(j, 1) = 1;
+//			B(j, 2) = points[id[j-1]][0];
+//			B(j, 3) = points[id[j-1]][2];
+//
+//		}
+//
+//		//cout << "Transpose" << endl;
+//
+//		Matrix Bt = B.t();
+//
+//		//cout << "Mult1" << endl;
+//
+//		Matrix BtB = Bt * B;
+//
+//		//cout << "Invert" << endl;
+//
+//		Matrix BtBinv = BtB.i();
+//
+//		//cout << "Mult2" << endl;
+//		Matrix M = BtBinv * Bt;
+//
+//		C = M * F;
+//
+//		//cout << " Coeff" << endl;
+//
+//		z1 = C(1) + C(2) * (query_point.x + epsilon) + C(3) * query_point.z;
+//		z2 = C(1) + C(2) * query_point.x + C(3) * (query_point.z + epsilon);
+//
+//		//cout << z1 << " " << z2 << " " << epsilon << endl;
+//
+//		diff1 = BaseVertex(query_point.x + epsilon, z1, query_point.z) - query_point;
+//		diff2 = BaseVertex(query_point.x, z2, query_point.z + epsilon) - query_point;
+//
+//		normal = diff1.cross(diff2);
+//
+//	} catch (Exception e){
+//		normal = Normal(0.0, 0.0, 0.0);
+//		//cout << "Exception: " << e.what() << endl;
+//	}
+//
+//	//cout << "Plane" << endl;
+//
+//	Plane p;
+//	p.a = C(1);
+//	p.b = C(2);
+//	p.c = C(3);
+//	p.n = normal;
+//	p.p = query_point;
+//
+//	return p;
 
 	Vertex diff1, diff2;
 	Normal normal;
 
-	ColumnVector C(3);
-	float z1, z2;
+	float z1 = 0;
+	float z2 = 0;
 
-	epsilon = 50000.0;
+	Vector3f C;
+	VectorXf F(k);
+	MatrixXf B(k,3);
 
-	try{
-		ColumnVector F(k);
-		Matrix B(k, 3);
-
-        //#pragma omp parallel for
-		for(int j = 1; j <= k; j++){
-
-			F(j) = points[id[j-1]][1];
-			B(j, 1) = 1;
-			B(j, 2) = points[id[j-1]][0];
-			B(j, 3) = points[id[j-1]][2];
-
-		}
-
-		//cout << "Transpose" << endl;
-
-		Matrix Bt = B.t();
-
-		//cout << "Mult1" << endl;
-
-		Matrix BtB = Bt * B;
-
-		//cout << "Invert" << endl;
-
-		Matrix BtBinv = BtB.i();
-
-		//cout << "Mult2" << endl;
-		Matrix M = BtBinv * Bt;
-
-		C = M * F;
-
-		//cout << " Coeff" << endl;
-
-		z1 = C(1) + C(2) * (query_point.x + epsilon) + C(3) * query_point.z;
-		z2 = C(1) + C(2) * query_point.x + C(3) * (query_point.z + epsilon);
-
-		//cout << z1 << " " << z2 << " " << epsilon << endl;
-
-		diff1 = BaseVertex(query_point.x + epsilon, z1, query_point.z) - query_point;
-		diff2 = BaseVertex(query_point.x, z2, query_point.z + epsilon) - query_point;
-
-		normal = diff1.cross(diff2);
-
-	} catch (Exception e){
-		normal = Normal(0.0, 0.0, 0.0);
-		//cout << "Exception: " << e.what() << endl;
+	for(int j = 0; j < k; j++){
+		F(j) =  points[id[j]][1];
+		B(j, 0) = 1.0f;
+		B(j, 1) = points[id[j]][0];
+		B(j, 2) = points[id[j]][2];
 	}
 
-	//cout << "Plane" << endl;
+	MatrixXf Bt = B.transpose();
+	MatrixXf BtB = Bt * B;
+	MatrixXf BtBinv = BtB.inverse();
+
+	MatrixXf M = BtBinv * Bt;
+	C = M * F;
+
+	z1 = C(0) + C(1) * (query_point.x + epsilon) + C(2) * query_point.z;
+	z2 = C(0) + C(1) * query_point.x + C(2) * (query_point.z + epsilon);
+
+	diff1 = BaseVertex(query_point.x + epsilon, z1, query_point.z) - query_point;
+	diff2 = BaseVertex(query_point.x, z2, query_point.z + epsilon) - query_point;
+
+	normal = diff1.cross(diff2);
 
 	Plane p;
-	p.a = C(1);
-	p.b = C(2);
-	p.c = C(3);
+	p.a = C(0);
+	p.b = C(1);
+	p.c = C(2);
 	p.n = normal;
 	p.p = query_point;
 
