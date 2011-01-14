@@ -16,12 +16,12 @@ using __gnu_cxx::hash_map;
 
 #include <ANN/ANN.h>
 
-#include <lib3d/BaseVertex.h>
-#include <lib3d/BoundingBox.h>
-#include <lib3d/TriangleMesh.h>
-#include <lib3d/HalfEdgeMesh.h>
-#include <lib3d/LinkedTriangleMesh.h>
-#include <lib3d/ProgressiveMesh.h>
+#include "../model3d/BaseVertex.h"
+#include "../model3d/BoundingBox.h"
+#include "../model3d/TriangleMesh.h"
+#include "../model3d/HalfEdgeMesh.h"
+#include "../model3d/LinkedTriangleMesh.h"
+#include "../model3d/ProgressiveMesh.h"
 
 #include "ANNInterpolator.h"
 #include "Interpolator.h"

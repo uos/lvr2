@@ -11,8 +11,8 @@
 #include <vector>
 using namespace std;
 
-#include <lib3d/ColorVertex.h>
-#include <lib3d/Normal.h>
+#include "../model3d/ColorVertex.h"
+#include "../model3d/Normal.h"
 
 #include "Interpolator.h"
 

@@ -3,13 +3,12 @@ project(LSSR)
 
 set( CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_SOURCE_DIR}/bin )
 
-link_directories("$ENV{HOME}/local/lib")
 link_directories("${CMAKE_SOURCE_DIR}/lib")
 
-include_directories("$ENV{HOME}/local/include")
 include_directories(${LSSR_SOURCE_DIR}/ext/ann)
 include_directories(${LSSR_SOURCE_DIR}/ext/newmat)
 include_directories(${LSSR_SOURCE_DIR}/ext/stann)
+include_directories(${LSSR_SOURCE_DIR})
 
 set(ADDITIONAL_COMPILER_FLAGS "-O3 -msse2 -fpermissive -Wno-deprecated -Wno-write-strings")
 
@@ -44,9 +43,13 @@ endif(UNIX)
 
 find_package(GLUT REQUIRED)
 
+set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${ADDITIONAL_COMPILER_FLAGS} ${OpenMP_CXX_FLAGS}")
+
+add_subdirectory(ext/ann)
+add_subdirectory(src/model3d)
+add_subdirectory(src/mcubes)
 
 set(QT_USE_QTOPENGL TRUE)
-
 find_package(Qt4)
 if(QT4_FOUND) 
   include_directories(${QT_INCLUDE_DIR})
@@ -54,11 +57,6 @@ if(QT4_FOUND)
   include_directories(${QT_QTOPENGL_INCLUDE_DIR})
   add_subdirectory(src/viewer)
 endif(QT4_FOUND)
-
-set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${ADDITIONAL_COMPILER_FLAGS} ${OpenMP_CXX_FLAGS}")
-
-add_subdirectory(ext/ann)
-add_subdirectory(src/mcubes)
 
 
 

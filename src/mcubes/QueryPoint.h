@@ -8,7 +8,7 @@
 #ifndef QUERYPOINT_H_
 #define QUERYPOINT_H_
 
-#include <lib3d/BaseVertex.h>
+#include "../model3d/BaseVertex.h"
 
 class QueryPoint {
 public:

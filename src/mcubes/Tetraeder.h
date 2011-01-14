@@ -2,7 +2,7 @@
  * Tetraeder.h
  *
  *  Created on: 07.10.2008
- *      Author: twiemann
+ *      Author: Thomas Wiemann
  */
 
 #ifndef TETRAEDER_H_
@@ -11,8 +11,8 @@
 #include "Interpolator.h"
 #include "Tables.h"
 
-#include <lib3d/ColorVertex.h>
-#include <lib3d/TriangleMesh.h>
+#include "../model3d/ColorVertex.h"
+#include "../model3d/TriangleMesh.h"
 
 class Tetraeder {
 public:
