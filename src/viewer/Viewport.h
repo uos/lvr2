@@ -13,7 +13,7 @@
 #include "gl.h"
 #include "glu.h"
 
-#include <lib3d/BaseVertex.h>
+#include "../model3d/BaseVertex.h"
 
 
 enum {PERSPECTIVE, TOPVIEW};

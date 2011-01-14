@@ -10,7 +10,7 @@
 #include <boost/progress.hpp>
 #include <boost/filesystem.hpp>
 
-#include <lib3d/PLYWriter.h>
+#include "../model3d/PLYWriter.h"
 
 //Each box corner in the grid is shared with 7 other boxes.
 //To find an already existing corner, these boxes have to

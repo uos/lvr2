@@ -41,6 +41,6 @@ add_executable(viewer Viewer.cpp ${VIEWER_SOURCES} ${VIEWER_MOC_SRC} ${VIEWER_UI
 target_link_libraries(viewer ${QT_QTCORE_LIBRARIES})
 target_link_libraries(viewer ${QT_QTGUI_LIBRARIES})
 target_link_libraries(viewer ${QT_QTOPENGL_LIBRARIES})
-target_link_libraries(viewer lib3d.a)
+target_link_libraries(viewer model3d)
 target_link_libraries(viewer ${OPENGL_LIBRARY})
 target_link_libraries(viewer ${GLUT_LIBRARIES})

@@ -16,8 +16,8 @@ using namespace std;
 #include "Interpolator.h"
 #include "Tetraeder.h"
 
-#include <lib3d/ColorVertex.h>
-#include <lib3d/TriangleMesh.h>
+#include "../model3d/ColorVertex.h"
+#include "../model3d/TriangleMesh.h"
 
 class TetraederBox {
 public:
