@@ -3,10 +3,14 @@
 #include "Options.h"
 
 #include <iostream>
+#include <iostream>
+#include <fstream>
+
+#include "Timestamp.h"
 
 int main(int argc, char** argv){
 
-  
+	cout << timestamp << " Program start" << endl;
 
 	Options options(argc, argv);
 	if(options.printUsage()) exit(0);
@@ -25,7 +29,7 @@ int main(int argc, char** argv){
 
 	FastGrid fastGrid(&options);
 
-
+	cout << timestamp << "Program end." << endl;
 	return 0;
 
 }

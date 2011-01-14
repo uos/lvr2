@@ -6,6 +6,8 @@
  */
 
 #include "FastGrid.h"
+#include "Timestamp.h"
+#include "ProgressBar.h"
 
 #include <boost/progress.hpp>
 #include <boost/filesystem.hpp>
@@ -72,7 +74,7 @@ FastGrid::FastGrid(Options *options) {
 
 	readPoints(filename);
 
-	cout << "##### Finished Reading. Number of used points: " << number_of_points << endl;
+	cout << timestamp << "Finished Reading. Number of used points: " << number_of_points << endl;
 
 	calcIndices();
 	createGrid();
@@ -117,7 +119,7 @@ int  FastGrid::findQueryPoint(int position, int x, int y, int z){
 void FastGrid::createGrid(){
 
 	//Create Grid
-	cout << "##### Creating Grid..." << endl;
+	cout << timestamp << "Creating Grid..." << endl;
 
 	//Current indices
 	int index_x, index_y, index_z;
@@ -209,17 +211,18 @@ void FastGrid::createGrid(){
 			}
 		}
 	}
-	cout << "##### Finished Grid Creation. Number of generated cells:        " << cells.size() << endl;
-	cout << "##### Finished Grid Creation. Number of generated query points: " << query_points.size() << endl;
+	cout << timestamp << "Finished Grid Creation. Number of generated cells:        " << cells.size() << endl;
+	cout << timestamp << "Finished Grid Creation. Number of generated query points: " << query_points.size() << endl;
 }
 
 void FastGrid::calcQueryPointValues(){
-    unsigned long start_time = GetCurrentTimeInMilliSec();
+
     omp_set_num_threads(4);
 
-    cout << "##### Calculating distance values..." << endl << endl;
-    boost::progress_display progress(query_points.size());
+    string comment = timestamp.getElapsedTime() + "Calculating distance values ";
+    ProgressBar progress((int)query_points.size(), comment);
 
+    Timestamp ts;
     #pragma omp parallel for
 	for(int i = 0; i < (int)query_points.size(); i++){
 		//if(i % 1000 == 0) cout << "##### Calculating distance values: " << i << " / " << query_points.size() << endl;
@@ -232,12 +235,12 @@ void FastGrid::calcQueryPointValues(){
 	unsigned long end_time = GetCurrentTimeInMilliSec();
 
 	cout << endl;
-	cout << "##### Elapsed time: " << (double)(end_time - start_time) * 0.001 << endl;
+	cout << timestamp << "Elapsed time: " << ts << endl;
 }
 
 void FastGrid::createMesh(){
 
-	cout << "##### Creating Mesh..." << endl << endl;
+	string comment = timestamp.getElapsedTime() + "Creating Mesh ";
 
 	hash_map<int, FastBox*>::iterator it;
 	FastBox* b;
@@ -247,7 +250,7 @@ void FastGrid::createMesh(){
 
 	mesh = new HalfEdgeMesh();
 
-	boost::progress_display progress(cells.size());
+	ProgressBar progress(cells.size(), comment);
 	for(it = cells.begin(); it != cells.end(); it++){
 		//if(c % 1000 == 0) cout << "##### Iterating Cells... " << c << " / " << cells.size() << endl;;
 		b = it->second;
@@ -298,7 +301,7 @@ void FastGrid::createMesh(){
 
 	if(m_options->saveNormals())
 	{
-		cout << "##### Saving points and normals..." << endl;
+		cout << timestamp << "Saving points and normals..." << endl;
 		savePointsAndNormals();
 	}
 }
@@ -339,7 +342,7 @@ void FastGrid::readPoints(string filename)
 
 void FastGrid::readPLY(string filename)
 {
-	cout << "##### Reading " << filename << endl;
+	cout << timestamp << "Reading " << filename << endl;
 	PLYIO io;
 	io.read(filename);
 
@@ -390,7 +393,7 @@ void FastGrid::readPlainASCII(string filename)
 		c++;
 	}
 
-	cout << "##### Creating point array..." << endl;
+	cout << timestamp << "Creating point array..." << endl;
 
 	// Alloc memory fpr point cloud data
 	points = new float*[c];
@@ -416,10 +419,10 @@ void FastGrid::readPlainASCII(string filename)
 		if(c % 1 == 0) pts.push_back(BaseVertex(points[c][0],points[c][1],points[c][2]));
 		c++;
 
-		if(c % 100000 == 0) cout << "##### Reading Points... " << c << endl;
+		if(c % 100000 == 0) cout << timestamp << "Reading Points... " << c << endl;
 	}
 
-	cout << "##### Finished Reading. Number of Data Points: " << pts.size() << endl;
+	cout << timestamp << "Finished Reading. Number of Data Points: " << pts.size() << endl;
 
 	interpolator = new StannInterpolator(points, 0, number_of_points, 10.0, 100, 100.0);
 }
@@ -447,7 +450,7 @@ int FastGrid::getFieldsPerLine(string filename){
 }
 
 void FastGrid::writeGrid(){
-	cout << "##### Writing 'grid.hg'" << endl;
+	cout << timestamp << "Writing 'grid.hg'" << endl;
 
 	ofstream out("grid.hg");
 

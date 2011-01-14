@@ -10,9 +10,9 @@ include_directories(${LSSR_SOURCE_DIR}/ext/newmat)
 include_directories(${LSSR_SOURCE_DIR}/ext/stann)
 include_directories(${LSSR_SOURCE_DIR})
 
-set(ADDITIONAL_COMPILER_FLAGS "-O3 -msse2 -fpermissive -Wno-deprecated -Wno-write-strings")
+set(ADDITIONAL_COMPILER_FLAGS "-O3 -msse2 -fpermissive -Wno-deprecated -Wno-write-strings -g")
 
-find_package( Boost COMPONENTS program_options filesystem system REQUIRED)
+find_package( Boost COMPONENTS program_options filesystem system thread REQUIRED)
 if(Boost_FOUND)
   link_directories(${BOOST_LIBRARY_DIRS})
   include_directories(${Boost_INCLUDE_DIRS})

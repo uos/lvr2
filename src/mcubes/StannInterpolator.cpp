@@ -6,6 +6,7 @@
  */
 
 #include "StannInterpolator.h"
+#include "ProgressBar.h"
 
 #include <sys/time.h>
 #include <time.h>
@@ -28,9 +29,6 @@ unsigned long GetCurrentTimeInMilliSec(void)
 StannInterpolator::StannInterpolator(float** pts, float** nor, int n, float vs, int km, float epsilon, Vertex c) {
 
 	center = c;
-
-	cout << center;
-
 	k_max = km;
 	points = pts;
 	number_of_points = n;
@@ -39,20 +37,17 @@ StannInterpolator::StannInterpolator(float** pts, float** nor, int n, float vs, 
 
 	normals = nor;
 
-	cout << "##### Creating STANN Kd-Tree..." << endl;
+	cout << timestamp << "Creating STANN Kd-Tree..." << endl;
 	point_tree = sfcnn< float*, 3, float>(points, number_of_points, 4);
-
 	unsigned long start_time = GetCurrentTimeInMilliSec();
 
+	Timestamp ts;
 	if(!normals)
 	{
 		estimate_normals();
 		interpolateNormals(20);
 	}
-
-	unsigned long end_time = GetCurrentTimeInMilliSec();
-
-	cout << "Elapsed time: " << (double)(end_time - start_time) * 0.001 << endl;
+	cout << timestamp << "Time for normal calculation " << ts << endl;
 
 }
 
@@ -95,73 +90,7 @@ bool StannInterpolator::boundingBoxOK(double dx, double dy, double dz){
 }
 
 Plane StannInterpolator::calcPlane(Vertex query_point, int k, vector<unsigned long> id){
-//
-//	Vertex diff1, diff2;
-//	Normal normal;
-//
-//	ColumnVector C(3);
-//	float z1, z2;
-//
-//	epsilon = 50000.0;
-//
-//	try{
-//		ColumnVector F(k);
-//		Matrix B(k, 3);
-//
-//        //#pragma omp parallel for
-//		for(int j = 1; j <= k; j++){
-//
-//			F(j) = points[id[j-1]][1];
-//			B(j, 1) = 1;
-//			B(j, 2) = points[id[j-1]][0];
-//			B(j, 3) = points[id[j-1]][2];
-//
-//		}
-//
-//		//cout << "Transpose" << endl;
-//
-//		Matrix Bt = B.t();
-//
-//		//cout << "Mult1" << endl;
-//
-//		Matrix BtB = Bt * B;
-//
-//		//cout << "Invert" << endl;
-//
-//		Matrix BtBinv = BtB.i();
-//
-//		//cout << "Mult2" << endl;
-//		Matrix M = BtBinv * Bt;
-//
-//		C = M * F;
-//
-//		//cout << " Coeff" << endl;
-//
-//		z1 = C(1) + C(2) * (query_point.x + epsilon) + C(3) * query_point.z;
-//		z2 = C(1) + C(2) * query_point.x + C(3) * (query_point.z + epsilon);
-//
-//		//cout << z1 << " " << z2 << " " << epsilon << endl;
-//
-//		diff1 = BaseVertex(query_point.x + epsilon, z1, query_point.z) - query_point;
-//		diff2 = BaseVertex(query_point.x, z2, query_point.z + epsilon) - query_point;
-//
-//		normal = diff1.cross(diff2);
-//
-//	} catch (Exception e){
-//		normal = Normal(0.0, 0.0, 0.0);
-//		//cout << "Exception: " << e.what() << endl;
-//	}
-//
-//	//cout << "Plane" << endl;
-//
-//	Plane p;
-//	p.a = C(1);
-//	p.b = C(2);
-//	p.c = C(3);
-//	p.n = normal;
-//	p.p = query_point;
-//
-//	return p;
+
 
 	Vertex diff1, diff2;
 	Normal normal;
@@ -210,7 +139,7 @@ void StannInterpolator::write_normals(){
 
 	ofstream out("normals.nor");
 	for(int i = 0; i < number_of_points; i++){
-		if(i % 10000 == 0) cout << "##### Writing points and normals: " << i
+		if(i % 10000 == 0) cout << timestamp << "Writing points and normals: " << i
 		                       << " / " << number_of_points << endl;
 		out << points[i][0] << " " << points[i][1] << " " << points[i][2] << " "
 		    << normals[i][0] << " " << normals[i][1] << " " << normals[i][2] << endl;
@@ -224,13 +153,16 @@ void StannInterpolator::estimate_normals(){
 	int k_0 = 10;
 	//int k_0 = 50;
 
-	cout << "##### Initializing normal array..." << endl;
+	cout << timestamp << "Initializing normal array..." << endl;
 
 	//Initialize normal array
 	normals = new float*[number_of_points];
 
-	cout << "##### Estimating normals for all points..." << endl << endl;
-	boost::progress_display progress(number_of_points);
+
+	string comment = timestamp.getElapsedTime() + "Estimating normals ";
+
+	//boost::progress_display progress(number_of_points);
+	ProgressBar progress(number_of_points, comment);
 
     #pragma omp parallel for
 	for(int i = 0; i < number_of_points; i++){
@@ -301,7 +233,7 @@ void StannInterpolator::estimate_normals(){
 	}
 
 
-	cout << endl << endl;
+	cout << endl;;
 
 	//interpolateNormals(20);
 }
@@ -312,9 +244,9 @@ void StannInterpolator::interpolateNormals(int k){
 
 	for(int i = 0; i < number_of_points; i++) tmp.push_back(Normal());
 
-	cout << "##### Interpolating normals..." << endl << endl;
+	string comment = timestamp.getElapsedTime() + "Interpolating normals ";
 
-	boost::progress_display progress(number_of_points);
+	ProgressBar progress(number_of_points, comment);
 
 	#pragma omp parallel for
 	for(int i = 0; i < number_of_points; i++){
@@ -346,9 +278,8 @@ void StannInterpolator::interpolateNormals(int k){
 		}
 		++progress;
 	}
-	cout << endl << endl;
-
-	cout << "##### Copying normals..." << endl;
+	cout << endl;
+	cout << timestamp << "Copying normals..." << endl;
 
 	for(int i = 0; i < number_of_points; i++){
 		normals[i][0] = tmp[i][0];
