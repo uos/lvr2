@@ -16,11 +16,6 @@ using namespace std;
 
 #include "Interpolator.h"
 
-#include "../ann/ANN/ANN.h"
-
-#include "../newmat/newmat.h"
-#include "../newmat/newmatap.h"
-
 #include <lib3d/ColorVertex.h>
 #include <lib3d/Normal.h>
 

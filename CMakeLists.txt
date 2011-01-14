@@ -11,7 +11,7 @@ include_directories(${LSSR_SOURCE_DIR}/ext/ann)
 include_directories(${LSSR_SOURCE_DIR}/ext/newmat)
 include_directories(${LSSR_SOURCE_DIR}/ext/stann)
 
-set(ADDITIONAL_COMPILER_FLAGS "-O3 -fpermissive -Wno-deprecated -Wno-write-strings")
+set(ADDITIONAL_COMPILER_FLAGS "-O3 -msse2 -fpermissive -Wno-deprecated -Wno-write-strings")
 
 find_package( Boost COMPONENTS program_options filesystem system REQUIRED)
 if(Boost_FOUND)
@@ -55,7 +55,7 @@ if(QT4_FOUND)
   add_subdirectory(src/viewer)
 endif(QT4_FOUND)
 
-set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${ADDITIONAL_COMPILER_FLAGS}")
+set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${ADDITIONAL_COMPILER_FLAGS} ${OpenMP_CXX_FLAGS}")
 
 add_subdirectory(ext/newmat)
 add_subdirectory(ext/ann)

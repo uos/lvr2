@@ -237,26 +237,6 @@ void FastGrid::calcQueryPointValues(){
 
 void FastGrid::createMesh(){
 
-//	cout << "##### Creating Mesh..." << endl;
-//
-//	hash_map<int, Box*>::iterator it;
-//	Box* b;
-//	int global_index = 0;
-//	int c = 0;
-//
-//	for(it = cells.begin(); it != cells.end(); it++){
-//		if(c % 1000 == 0) cout << "##### Iterating Cells... " << c << " / " << cells.size() << endl;;
-//		b = it->second;
-//		global_index = b->getApproximation(global_index,
-//				mesh,
-//				interpolator);
-//		c++;
-//	}
-//
-//	mesh.printStats();
-//	mesh.finalize();
-
-
 	cout << "##### Creating Mesh..." << endl << endl;
 
 	hash_map<int, FastBox*>::iterator it;
