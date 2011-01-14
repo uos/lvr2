@@ -228,8 +228,6 @@ void StaticMesh::save(string filename){
 
 	if(finalized){
 
-		cout << "Static mesh:: save" << endl;
-
 		PLYIO ply_writer;
 
 		// Create element descriptions

@@ -15,6 +15,7 @@
 using namespace std;
 
 #include "Interpolator.h"
+#include "Timestamp.h"
 
 #include "../model3d/ColorVertex.h"
 #include "../model3d/Normal.h"
