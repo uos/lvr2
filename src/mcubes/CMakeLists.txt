@@ -5,7 +5,7 @@ ANNInterpolator.cpp
 FastBox.cpp 
 FastGrid.cpp 
 Options.cpp 
-ProgressBar.cpp
+Progress.cpp
 QueryPoint.cpp 
 StannInterpolator.cpp
 Tetraeder.cpp 

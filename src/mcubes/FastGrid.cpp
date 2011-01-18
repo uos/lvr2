@@ -7,7 +7,7 @@
 
 #include "FastGrid.h"
 #include "Timestamp.h"
-#include "ProgressBar.h"
+#include "Progress.h"
 
 #include <boost/progress.hpp>
 #include <boost/filesystem.hpp>
@@ -407,6 +407,9 @@ void FastGrid::readPlainASCII(string filename)
 
 	c = 0;
 	//Read file
+	string prefix = timestamp.getElapsedTime() + "Reading points...";
+	ProgressCounter p_count(10000, prefix);
+
 	while(in.good() ){
 		in >> points[c][0] >> points[c][1] >> points[c][2];
 
@@ -419,10 +422,12 @@ void FastGrid::readPlainASCII(string filename)
 		if(c % 1 == 0) pts.push_back(BaseVertex(points[c][0],points[c][1],points[c][2]));
 		c++;
 
-		if(c % 100000 == 0) cout << timestamp << "Reading Points... " << c << endl;
+		++p_count;
+		//if(c % 100000 == 0) cout << timestamp << "Reading Points... " << c << endl;
 	}
-
-	cout << timestamp << "Finished Reading. Number of Data Points: " << pts.size() << endl;
+	cout << endl;
+	cout << timestamp << "Finished Reading. " << endl;
+	cout << timestamp << "Number of Data Points: " << pts.size() << endl;
 
 	interpolator = new StannInterpolator(points, 0, number_of_points, 10.0, 100, 100.0);
 }

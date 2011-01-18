@@ -24,10 +24,9 @@ class ProgressBar
 {
 public:
 	ProgressBar(int max_val, string prefix = "");
-	virtual ~ProgressBar();
-
 	void operator++();
-private:
+
+protected:
 
 	void print_bar();
 
@@ -37,6 +36,23 @@ private:
 	size_t			m_stepSize;
 	boost::mutex 	m_mutex;
 	int				m_percent;
+	stringstream	m_stream;
+	string 			m_fillstring;
+};
+
+class ProgressCounter
+{
+public:
+	ProgressCounter(int stepVal, string prefix = "");
+	void operator++();
+
+protected:
+	void print_progress();
+
+	string 			m_prefix;
+	size_t			m_stepVal;
+	size_t			m_currentVal;
+	boost::mutex 	m_mutex;
 	stringstream	m_stream;
 	string 			m_fillstring;
 };
