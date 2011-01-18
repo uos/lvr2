@@ -6,7 +6,7 @@
  */
 
 #include "StannInterpolator.h"
-#include "ProgressBar.h"
+#include "Progress.h"
 
 #include <sys/time.h>
 #include <time.h>
