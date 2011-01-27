@@ -292,7 +292,7 @@ void StannInterpolator::interpolateNormals(int k){
 
 float StannInterpolator::distance(ColorVertex v){
 
-	int k = 40;
+	int k = 1;
 
 
 	vector<unsigned long> id;

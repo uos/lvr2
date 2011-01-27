@@ -217,7 +217,7 @@ void FastGrid::createGrid(){
 
 void FastGrid::calcQueryPointValues(){
 
-    omp_set_num_threads(4);
+    omp_set_num_threads(m_options->getNumThreads());
 
     string comment = timestamp.getElapsedTime() + "Calculating distance values ";
     ProgressBar progress((int)query_points.size(), comment);
@@ -364,7 +364,7 @@ void FastGrid::readPLY(string filename)
 		bounding_box.expand(points[i][0], points[i][1], points[i][2]);
 	}
 
-	interpolator = new StannInterpolator(points, normals, n, 10.0, 100, 100.0);
+	interpolator = new StannInterpolator(points, normals, n, voxelsize, 100, 100.0);
 }
 
 void FastGrid::readPlainASCII(string filename)

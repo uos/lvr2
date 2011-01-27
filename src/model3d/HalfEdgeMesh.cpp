@@ -148,8 +148,8 @@ void HalfEdgeMesh::finalize(vector<planarCluster> &planes)
 //				c_r = r[count % 255];
 //				c_g = g[count % 255];
 //				c_b = b[count % 255];
-				c_r = 0.6;
-				c_g = 0.0;
+				c_r = 0.0;
+				c_g = 0.6;
 				c_b = 0.0;
 			}
 			else
