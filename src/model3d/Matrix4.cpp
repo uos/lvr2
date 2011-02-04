@@ -8,6 +8,9 @@
 
 #include "Matrix4.h"
 
+#define _USE_MATH_DEFINES
+#include <cmath>
+
 Matrix4::Matrix4() {
 	for(int i = 0; i < 16; i++) m[i] = 0.0;
 	m[0] = m[5] = m[10] = m[15] = 1.0;
@@ -33,8 +36,8 @@ Matrix4::Matrix4(Vertex axis, float angle){
 		bool invert_z = axis.z < 0;
 
 		//Angle to yz-plane
-		float pitch = atan2(axis.z, axis.x) - PH;
-		if(pitch < 0.0f) pitch += 2.0f * PI;
+		float pitch = atan2(axis.z, axis.x) - M_PI_2;
+		if(pitch < 0.0f) pitch += 2.0f *  M_PI;
 
 		if(axis.x == 0.0f && axis.z == 0.0) pitch = 0.0f;
 
@@ -44,7 +47,7 @@ Matrix4::Matrix4(Vertex axis, float angle){
 
 		//Angle to y-Axis
 		float yaw = atan2(axis.y, axis.z);
-		if(yaw < 0) yaw += 2 * PI;
+		if(yaw < 0) yaw += 2 * M_PI;
 
 		Matrix4 m1, m2, m3;
 

@@ -14,8 +14,6 @@
 using namespace std;
 using __gnu_cxx::hash_map;
 
-#include <ANN/ANN.h>
-
 #include "../model3d/BaseVertex.h"
 #include "../model3d/BoundingBox.h"
 #include "../model3d/TriangleMesh.h"
@@ -23,7 +21,6 @@ using __gnu_cxx::hash_map;
 #include "../model3d/LinkedTriangleMesh.h"
 #include "../model3d/ProgressiveMesh.h"
 
-#include "ANNInterpolator.h"
 #include "Interpolator.h"
 #include "StannInterpolator.h"
 #include "QueryPoint.h"
