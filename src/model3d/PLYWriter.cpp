@@ -1276,7 +1276,7 @@ void PLYIO::writeFacesBinary(ofstream &out, PLYElement* e)
 
 	char* pos;
 
-	// Write facee
+	// Write face
 	for(size_t i = 0; i < m_numberOfFaces; i++)
 	{
 		// Reset buffer

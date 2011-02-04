@@ -1,5 +1,6 @@
 *.o
 .project
+.cproject
 bin/*
 src/viewer/*Moc.cpp
 ext/stann1.6

@@ -1,7 +1,6 @@
 # External dependencies to ANN, NEWMAT and STANN
 
 set(MCUBES_SOURCES 
-ANNInterpolator.cpp 
 FastBox.cpp 
 FastGrid.cpp 
 Options.cpp 
