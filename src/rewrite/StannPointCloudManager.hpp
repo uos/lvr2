@@ -12,6 +12,7 @@
 #include "PointCloudManager.hpp"
 #include "Progress.hpp"
 #include "Timestamp.hpp"
+#include "PLYIO.hpp"
 
 // External libraries in lssr source tree
 #include "../stann/sfcnn.hpp"
@@ -27,6 +28,7 @@ using std::cout;
 using std::endl;
 using std::string;
 using std::ifstream;
+using std::ofstream;
 
 // boost libraries
 #include <boost/filesystem.hpp>
@@ -106,7 +108,36 @@ public:
 
 	}
 
+	/**
+	 * @brief Saves currently present data to a file
+	 *
+	 * Which data is saved depends on the file extension. Extensions
+	 * .xyz, .pts and .3d will produce ASCII files that contain point
+	 * cloud data only. Files with extension .nor will additionally
+	 * contain normal defintions. Extension .ply will produce a
+	 * binary .ply file with point and normal information.
+	 *
+	 * @param filename  The target file.
+	 */
+	void save(string filename);
+
 private:
+
+	/**
+	 * @brief Save points and normals to a binary PLY file.
+	 * @param filename The target file
+	 */
+	void savePLY(string filename);
+
+	/**
+	 * @brief Save points and normals to an ASCII file
+	 */
+	void savePointsAndNormals(string filename);
+
+	/**
+	 * @brief Save points to a ascii file
+	 */
+	void savePoints(string filename);
 
 	/**
 	 * @brief Calculates initial point normals using a least squares fit to
