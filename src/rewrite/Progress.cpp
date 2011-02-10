@@ -2,10 +2,10 @@
  * ProgressBar.cpp
  *
  *  Created on: 14.01.2011
- *      Author: twiemann
+ *      Author: Thomas Wiemann
  */
 
-#include "Progress.h"
+#include "Progress.hpp"
 
 #include <sstream>
 #include <iostream>
@@ -15,6 +15,8 @@ using std::cout;
 using std::endl;
 using std::flush;
 
+namespace lssr
+{
 
 ProgressBar::ProgressBar(int max_val, string prefix)
 {
@@ -66,4 +68,5 @@ void ProgressCounter::print_progress()
 	cout << "\r" << m_prefix << " " << m_currentVal << flush;
 }
 
+} // namespace lssr
 

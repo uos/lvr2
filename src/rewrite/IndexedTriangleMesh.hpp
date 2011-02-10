@@ -5,11 +5,11 @@
  *      Author: Thomas Wiemann
  */
 
-#ifndef TRIANGLEMESH_H_
-#define TRIANGLEMESH_H_
+#ifndef INDEXED_TRIANGLEMESH_H_
+#define INDEXED_TRIANGLEMESH_H_
 
 #include "BaseMesh.hpp"
-#include "BaseVertex.hpp"
+#include "Vertex.hpp"
 
 #include <list>
 
@@ -22,14 +22,14 @@ namespace lssr
  * @brief 	An implementation of an indexed triangle mesh.
  */
 template <typename VertexType, typename IndexType>
-class BasicTriangleMesh : public BaseMesh<VertexType, IndexType>
+class IndexedTriangleMesh : public BaseMesh<VertexType, IndexType>
 {
 public:
 
 	/**
 	 * @brief	Default constructor. Initializes an empty mesh.
 	 */
-	BasicTriangleMesh() {};
+	IndexedTriangleMesh() {};
 
 	/**
 	 * @brief	Inserts a new vertex into the mesh
@@ -53,7 +53,7 @@ public:
 	/**
 	 * @brief	Destructor.
 	 */
-	virtual ~BasicTriangleMesh() {};
+	virtual ~IndexedTriangleMesh() {};
 
 protected:
 
@@ -68,8 +68,8 @@ protected:
 	list<IndexType>			m_indexList;
 };
 
-typedef BasicTriangleMesh<Vertexf, size_t> TriangleMesh;
+typedef IndexedTriangleMesh<Vertexf, size_t> TriangleMesh;
 
 }
 
-#endif /* TRIANGLEMESH_H_ */
+#endif

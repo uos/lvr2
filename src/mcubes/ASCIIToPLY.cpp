@@ -3,8 +3,8 @@
 
 #include <cstring>
 
-#include <lib3d/PointCloud.h>
-#include <lib3d/PLYWriter.h>
+#include "../model3d/PointCloud.h"
+#include "../model3d/PLYWriter.h"
 
 using namespace std;
 

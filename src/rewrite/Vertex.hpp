@@ -19,7 +19,7 @@ template<typename T> class Matrix4;
  * 				with the Matrix4 class
  */
 template<typename CoordType>
-class BaseVertex{
+class Vertex{
 
 public:
 
@@ -27,7 +27,7 @@ public:
 	 * @brief	Default constructor. All coordinates are initialized
 	 * 			with zeros.
 	 */
-	BaseVertex()
+	Vertex()
 	{
 		m_x = m_y = m_z = 0;
 	}
@@ -35,7 +35,7 @@ public:
 	/**
 	 * @brief	Builds a Vertex with the given coordinates.
 	 */
-	BaseVertex(CoordType x, CoordType y, CoordType z)
+	Vertex(const CoordType &x, const CoordType &y, const CoordType &z)
 	{
 		m_x = x;
 		m_y = y;
@@ -45,17 +45,17 @@ public:
 	/**
 	 * @brief	Copy Ctor.
 	 */
-	BaseVertex(const BaseVertex &o)
+	Vertex(const Vertex &o)
 	{
-		m_x = o.x;
-		m_y = o.y;
-		m_z = o.z;
+		m_x = o.m_x;
+		m_y = o.m_y;
+		m_z = o.m_z;
 	}
 
 	/**
 	 * @brief	Destructor
 	 */
-	virtual ~BaseVertex(){};
+	virtual ~Vertex(){};
 
 	/**
 	 * @brief 	Return the current length of the vector
@@ -67,18 +67,18 @@ public:
 
 	/**
 	 * @brief	Calculates the cross product between this and
-	 * 			the given vector. Returns a new BaseVertex instance.
+	 * 			the given vector. Returns a new Vertex instance.
 	 *
 	 * @param	other		The second cross product vector
 	 */
 	template<typename T>
-	BaseVertex<CoordType> cross(const BaseVertex<T> &other) const
+	Vertex<CoordType> cross(const Vertex<T> &other) const
 	{
 		CoordType tx = m_y * other.m_z - m_z * other.m_y;
 		CoordType ty = m_z * other.m_x - m_x * other.m_z;
 		CoordType tz = m_x * other.m_y - m_y * other.m_x;
 
-		return BaseVertex<CoordType>(tx, ty, tz);
+		return Vertex<CoordType>(tx, ty, tz);
     }
 
 
@@ -89,7 +89,7 @@ public:
 	 * @param	A 4x4 rotation matrix.
 	 */
 	template<typename T>
-	void rotate(Matrix4<T> m)
+	void rotate(const Matrix4<T> &m)
 	{
 		m_x = m_x * m[0 ] + m_y * m[1 ] + m_z * m[2 ];
 		m_y = m_x * m[4 ] + m_y * m[5 ] + m_z * m[6 ];
@@ -99,21 +99,21 @@ public:
 
 	/**
 	 * @brief	Calculates the cross product with the other given
-	 * 			BaseVertex and assigns the result to the current
+	 * 			Vertex and assigns the result to the current
 	 * 			instance.
 	 */
-	virtual void crossTo(const BaseVertex &other)
+	virtual void crossTo(const Vertex &other)
 	{
-		m_x = m_y * other.z - m_z * other.y;
-		m_y = m_z * other.x - m_x * other.z;
-		m_z = m_x * other.y - m_y * other.x;
+		m_x = m_y * other.m_z - m_z * other.m_y;
+		m_y = m_z * other.m_x - m_x * other.m_z;
+		m_z = m_x * other.m_y - m_y * other.m_x;
 	}
 
 
 	/**
 	 * @brief	Multiplication operator (dot product)
 	 */
-	virtual CoordType operator*(const BaseVertex &other) const
+	virtual CoordType operator*(const Vertex &other) const
 	{
 		return m_x * other.m_x + m_y * other.m_y + m_z * other.m_z;
 	}
@@ -121,29 +121,29 @@ public:
 	/**
 	 * @brief 	Multiplication operator (scaling)
 	 */
-	virtual BaseVertex operator*(const CoordType &scale) const
+	virtual Vertex operator*(const CoordType &scale) const
 	{
-		return BaseVertex<CoordType>(m_x * scale, m_y * scale, m_z * scale);
+		return Vertex<CoordType>(m_x * scale, m_y * scale, m_z * scale);
 	}
 
 
-	virtual BaseVertex operator+(const BaseVertex &other) const
+	virtual Vertex operator+(const Vertex &other) const
 	{
-		return BaseVertex(m_x + other.m_x, m_y + other.m_y, m_z + other.m_z);
+		return Vertex(m_x + other.m_x, m_y + other.m_y, m_z + other.m_z);
 	}
 
 	/**
 	 * @brief	Coordinate subtraction
 	 */
-	virtual BaseVertex operator-(const BaseVertex &other) const
+	virtual Vertex operator-(const Vertex &other) const
 	{
-		return BaseVertex(m_x - other.m_x, m_y - other.m_y, m_z - other.m_z);
+		return Vertex(m_x - other.m_x, m_y - other.m_y, m_z - other.m_z);
 	}
 
 	/**
 	 * @brief	Coordinate substraction
 	 */
-	virtual void operator-=(const BaseVertex &other)
+	virtual void operator-=(const Vertex &other)
 	{
 		m_x -= other.m_x;
 		m_y -= other.m_y;
@@ -153,7 +153,7 @@ public:
 	/**
 	 * @brief	Coordinate addition
 	 */
-	virtual void operator+=(const BaseVertex &other)
+	virtual void operator+=(const Vertex &other)
 	{
 		m_x += other.m_x;
 		m_y += other.m_y;
@@ -191,17 +191,17 @@ public:
 	/**
 	 * @brief	Compares two vertices
 	 */
-	virtual bool operator==(const BaseVertex &other) const
+	virtual bool operator==(const Vertex &other) const
 	{
-		return fabs(m_x - other.x) <= BaseVertex::epsilon &&
-				fabs(m_y - other.y) <= BaseVertex::epsilon &&
-				fabs(m_z - other.z) <= BaseVertex::epsilon;
+		return fabs(m_x - other.m_x) <= Vertex::epsilon &&
+				fabs(m_y - other.m_y) <= Vertex::epsilon &&
+				fabs(m_z - other.m_z) <= Vertex::epsilon;
 	}
 
 	/**
 	 * @brief	Compares two vertices
 	 */
-	virtual bool operator!=(const BaseVertex &other) const
+	virtual bool operator!=(const Vertex &other) const
 	{
 		return !(*this == other);
 	}
@@ -209,7 +209,7 @@ public:
 	/**
 	 * @brief	Indexed coordinate access
 	 */
-	virtual CoordType operator[](const int &index)
+	virtual CoordType operator[](const int &index) const
 	{
 		CoordType ret = 0.0;
 
@@ -224,7 +224,7 @@ public:
 			ret = m_z;
 			break;
 		default:
-			cout << "BaseVertex: Warning: Access index out of range." << endl;
+			cout << "Vertex: Warning: Access index out of range." << endl;
 		}
 		return ret;
 	}
@@ -241,7 +241,7 @@ public:
 private:
 
 	/// Epsilon value for vertex comparism
-	static const float epsilon;
+	static const float epsilon = 0.001;
 };
 
 
@@ -249,16 +249,19 @@ private:
  * @brief	Output operator for vertex types
  */
 template<typename CoordType>
-inline ostream& operator<<(ostream& os, const BaseVertex<CoordType> v){
-	os << "BaseVertex: " << v.m_x << " " << v.m_y << " " << v.m_z << endl;
+inline ostream& operator<<(ostream& os, const Vertex<CoordType> v){
+	os << "Vertex: " << v.m_x << " " << v.m_y << " " << v.m_z << endl;
 	return os;
 }
 
+
 /// Convenience typedef for float vertices
-typedef BaseVertex<float> 	Vertexf;
+typedef Vertex<float> 	Vertexf;
 
 /// Convenience typedef for double vertices
-typedef BaseVertex<double>	Vertexd;
+typedef Vertex<double>	Vertexd;
+
+#include "Vertex.tcc"
 
 } // namespace lssr
 

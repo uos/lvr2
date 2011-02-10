@@ -1,0 +1,352 @@
+/*
+ * StannPointCloudManager.cpp
+ *
+ *  Created on: 07.02.2011
+ *      Author: Thomas Wiemann
+ */
+
+#include "StannPointCloudManager.hpp"
+
+namespace lssr{
+
+template<typename T>
+StannPointCloudManager<T>::StannPointCloudManager(T **points,
+        T** normals,
+        size_t n,
+        const Vertex<T> &center,
+        const size_t &kn,
+        const size_t &ki)
+        : m_kn(kn), m_ki(ki), m_numPoints(n), m_points(points), m_normals(normals)
+{
+    // Be sure that point information was given
+    assert(m_points);
+
+    // Create kd tree
+    cout << timestamp << " Creating STANN Kd-Tree..." << endl;
+    m_pointTree = sfcnn< T*, 3, T>(points, n, 4);
+
+    // Estimate surface normals if necessary
+    if(!m_normals)
+    {
+        estimateSurfaceNormals();
+        interpolateSurfaceNormals();
+    }
+    else
+    {
+        cout << timestamp << " Using the given normals." << endl;
+    }
+
+}
+
+template<typename T>
+void StannPointCloudManager<T>::estimateSurfaceNormals()
+{
+    int k_0 = m_kn;
+
+    cout << timestamp << "Initializing normal array..." << endl;
+
+    //Initialize normal array
+    m_normals = new float*[m_numPoints];
+
+    float mean_distance;
+    // Create a progress counter
+    string comment = timestamp.getElapsedTime() + "Estimating normals ";
+    ProgressBar progress(m_numPoints, comment);
+
+    #pragma omp parallel for
+    for(int i = 0; i < m_numPoints; i++){
+
+        Vertexf query_point;
+        Normalf normal;
+
+        // We have to fit these vector to have the
+        // correct return values when performing the
+        // search on the stann kd tree. So we don't use
+        // the template parameter T for di
+        vector<unsigned long> id;
+        vector<double> di;
+
+        int n = 0;
+        size_t k = k_0;
+
+        while(n < 5){
+
+            n++;
+            /**
+             *  @todo Maybe this should be done at the end of the loop
+             *        after the bounding box check
+             */
+            k = k * 2;
+
+            //T* point = m_points[i];
+            m_pointTree.ksearch(m_points[i], k, id, di, 0);
+
+            float min_x = 1e15;
+            float min_y = 1e15;
+            float min_z = 1e15;
+            float max_x = - min_x;
+            float max_y = - min_y;
+            float max_z = - min_z;
+
+            float dx, dy, dz;
+            dx = dy = dz = 0;
+
+            // Calculate the bounding box of found point set
+            /**
+             * @todo Use the bounding box object from the old model3d
+             *       library for bounding box calculation...
+             */
+            for(int j = 0; j < k; j++){
+                min_x = min(min_x, m_points[id[j]][0]);
+                min_y = min(min_y, m_points[id[j]][1]);
+                min_z = min(min_z, m_points[id[j]][2]);
+
+                max_x = max(max_x, m_points[id[j]][0]);
+                max_y = max(max_y, m_points[id[j]][1]);
+                max_z = max(max_z, m_points[id[j]][2]);
+
+                dx = max_x - min_x;
+                dy = max_y - min_y;
+                dz = max_z - min_z;
+            }
+
+            if(boundingBoxOK(dx, dy, dz)) break;
+            //break;
+
+        }
+
+        // Create a query point for the current point
+        query_point = Vertex<T>(m_points[i][0],
+                m_points[i][1],
+                m_points[i][2]);
+
+        // Interpolate a plane based on the k-neighborhood
+        Plane<T> p = calcPlane(query_point, k, id);
+
+        // Get the mean distance to the tangent plane
+        mean_distance = meanDistance(p, id, k);
+
+        // Flip normals towards the center of the scene
+        normal =  p.n;
+        if(normal * (query_point - m_centroid) < 0) normal = normal * -1;
+
+        // Save result in normal array
+        m_normals[i] = new T[3];
+        m_normals[i][0] = normal[0];
+        m_normals[i][1] = normal[1];
+        m_normals[i][2] = normal[2];
+
+        ++progress;
+    }
+    cout << endl;;
+}
+
+
+template<typename T>
+void StannPointCloudManager<T>::interpolateSurfaceNormals()
+{
+    // Create a temporal normal array for the
+    vector<Normal<T> > tmp(m_numPoints, Normal<T>());
+
+    // Create progress output
+    string comment = timestamp.getElapsedTime() + "Interpolating normals ";
+    ProgressBar progress(m_numPoints, comment);
+
+    // Interpolate normals
+    #pragma omp parallel for
+    for(int i = 0; i < m_numPoints; i++){
+
+        vector<unsigned long> id;
+        vector<double> di;
+
+        m_pointTree.ksearch(m_points[i], m_ki, id, di, 0);
+
+        Vertex<T> mean;
+        Normal<T> mean_normal;
+
+        for(int j = 0; j < m_ki; j++){
+            mean += Vertex<T>(m_normals[id[j]][0],
+                    m_normals[id[j]][1],
+                    m_normals[id[j]][2]);
+        }
+        mean_normal = Normal<T>(mean);
+
+        tmp[i] = mean;
+
+        /**
+         * @todo Try to remove this code. Should improve the results at all.
+         */
+        for(int j = 0; j < m_ki; j++){
+            Normal<T> n(m_normals[id[j]][0],
+                    m_normals[id[j]][1],
+                    m_normals[id[j]][2]);
+
+
+            // Only override existing normals if the interpolated
+            // normals is significantly different from the initial
+            // estimation. This helps to avoid a to smooth normal
+            // field
+            if(fabs(n * mean_normal) > 0.2 ){
+                m_normals[id[j]][0] = mean_normal[0];
+                m_normals[id[j]][1] = mean_normal[1];
+                m_normals[id[j]][2] = mean_normal[2];
+            }
+        }
+        ++progress;
+    }
+    cout << endl;
+    cout << timestamp << "Copying normals..." << endl;
+
+    for(int i = 0; i < m_numPoints; i++){
+        m_normals[i][0] = tmp[i][0];
+        m_normals[i][1] = tmp[i][1];
+        m_normals[i][2] = tmp[i][2];
+    }
+
+}
+
+template<typename T>
+bool StannPointCloudManager<T>::boundingBoxOK(const T &dx, const T &dy, const T &dz)
+{
+    /**
+     * @todo Replace magic number here.
+     */
+    float e = 0.05;
+    if(dx < e * dy) return false;
+    else if(dx < e * dz) return false;
+    else if(dy < e * dx) return false;
+    else if(dy < e * dz) return false;
+    else if(dz < e * dx) return false;
+    else if(dy < e * dy) return false;
+    return true;
+}
+
+template<typename T>
+T StannPointCloudManager<T>::meanDistance(const Plane<T> &p,
+        const vector<unsigned long> &id, const int &k)
+{
+    T sum = 0;
+    for(int i = 0; i < k; i++){
+        sum += distance(fromID(id[i]), p);
+    }
+    sum = sum / k;
+    return sum;
+}
+
+template<typename T>
+T StannPointCloudManager<T>::distance(Vertex<T> v, Plane<T> p)
+{
+    return fabs((v - p.p) * p.n);
+}
+
+template<typename T>
+T StannPointCloudManager<T>::distance(Vertex<T> v)
+{
+    int k = 1;
+
+    vector<unsigned long> id;
+    vector<double> di;
+
+    //Allocate ANN point
+    float * p;
+    p = new float[3];
+    p[0] = v[0]; p[1] = v[1]; p[2] = v[2];
+
+    //Find nearest tangent plane
+    m_pointTree.ksearch(p, k, id, di, 0);
+
+    Vertex<T> nearest;
+    Normal<T> normal;
+
+    for(int i = 0; i < k; i++){
+        //Get nearest tangent plane
+        Vertex<T> vq (m_points[id[i]][0], m_points[id[i]][1], m_points[id[i]][2]);
+
+        //Get normal
+        Normal<T> n(m_normals[id[i]][0], m_normals[id[i]][1], m_normals[id[i]][2]);
+
+        nearest += vq;
+        normal += n;
+
+    }
+
+    normal /= k;
+    nearest /= k;
+
+
+    //Calculate distance
+    float distance = (v - nearest) * normal;
+
+    delete[] p;
+
+    return distance;
+}
+
+template<typename T>
+Vertex<T> StannPointCloudManager<T>::fromID(int i){
+    return Vertex<T>(
+            m_points[i][0],
+            m_points[i][1],
+            m_points[i][2]);
+}
+
+template<typename T>
+Plane<T> StannPointCloudManager<T>::calcPlane(const Vertex<T> &queryPoint,
+        const int &k,
+        const vector<unsigned long> &id)
+{
+    /**
+     * @todo Think of a better way to code this magic number.
+     */
+    float epsilon = 100.0;
+
+    Vertex<T> diff1, diff2;
+    Normal<T> normal;
+
+    T z1 = 0;
+    T z2 = 0;
+
+    // Calculate a least sqaures fit to the given points
+    Vector3f C;
+    VectorXf F(k);
+    MatrixXf B(k,3);
+
+    for(int j = 0; j < k; j++){
+        F(j)    =  m_points[id[j]][1];
+        B(j, 0) = 1.0f;
+        B(j, 1) = m_points[id[j]][0];
+        B(j, 2) = m_points[id[j]][2];
+    }
+
+    MatrixXf Bt = B.transpose();
+    MatrixXf BtB = Bt * B;
+    MatrixXf BtBinv = BtB.inverse();
+
+    MatrixXf M = BtBinv * Bt;
+    C = M * F;
+
+    // Calculate to vectors in the fitted plane
+    z1 = C(0) + C(1) * (queryPoint[0] + epsilon) + C(2) * queryPoint[2];
+    z2 = C(0) + C(1) * queryPoint[0] + C(2) * (queryPoint[2] + epsilon);
+
+    // Calculcate the plane's normal via the cross product
+    diff1 = Vertex<T>(queryPoint[0] + epsilon, z1, queryPoint[2]) - queryPoint;
+    diff2 = Vertex<T>(queryPoint[0], z2, queryPoint[2] + epsilon) - queryPoint;
+
+    normal = diff1.cross(diff2);
+
+    // Create a plane representation and return the result
+    Plane<T> p;
+    p.a = C(0);
+    p.b = C(1);
+    p.c = C(2);
+    p.n = normal;
+    p.p = queryPoint;
+
+    return p;
+}
+
+
+} // namespace lssr
+
+
