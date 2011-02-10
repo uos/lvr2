@@ -5,7 +5,7 @@
  *      Author: Thomas Wiemann
  */
 
-#include "StannPointCloudManager.hpp"
+#include <boost/filesystem.hpp>
 
 namespace lssr{
 
@@ -166,8 +166,8 @@ void StannPointCloudManager<T>::interpolateSurfaceNormals()
 
         for(int j = 0; j < m_ki; j++){
             mean += Vertex<T>(m_normals[id[j]][0],
-                    m_normals[id[j]][1],
-                    m_normals[id[j]][2]);
+                              m_normals[id[j]][1],
+                              m_normals[id[j]][2]);
         }
         mean_normal = Normal<T>(mean);
 
@@ -178,8 +178,8 @@ void StannPointCloudManager<T>::interpolateSurfaceNormals()
          */
         for(int j = 0; j < m_ki; j++){
             Normal<T> n(m_normals[id[j]][0],
-                    m_normals[id[j]][1],
-                    m_normals[id[j]][2]);
+                        m_normals[id[j]][1],
+                        m_normals[id[j]][2]);
 
 
             // Only override existing normals if the interpolated
@@ -346,6 +346,110 @@ Plane<T> StannPointCloudManager<T>::calcPlane(const Vertex<T> &queryPoint,
     return p;
 }
 
+template<typename T>
+void StannPointCloudManager<T>::save(string filename)
+{
+    // Get file extension
+    boost::filesystem::path selectedFile(filename);
+    string extension = selectedFile.extension();
+
+    // Try to load file by extension
+    if(extension == ".ply")
+    {
+        savePLY(filename);
+    }
+    else if (extension == ".nor")
+    {
+        savePointsAndNormals(filename);
+    }
+    else if (extension == ".pts" || extension == ".3d" || extension == ".xyz")
+    {
+        savePoints(filename);
+    }
+
+}
+
+template<typename T>
+void StannPointCloudManager<T>::savePointsAndNormals(string filename)
+{
+    ofstream out(filename.c_str());
+
+    if(!out.good())
+    {
+        cout << timestamp
+             << " StannPointCloudManager::SavePointsAndNormals(): Could not open file "
+             << filename << "." << endl;
+
+        return;
+    }
+
+    string prefix = timestamp.getElapsedTime() + "Saving points and normals to '" + filename + "'.";
+    ProgressCounter p(m_numPoints, prefix);
+
+    for(size_t i = 0; i < m_numPoints; i++)
+    {
+        out << m_points[i][0]  << " " << m_points[i][1]  << " " << m_points[i][2] << " "
+            << m_normals[i][0] << " " << m_normals[i][1] << " " << m_normals[i][2] << endl;
+        ++p;
+    }
+    cout << endl;
+}
+
+template<typename T>
+void StannPointCloudManager<T>::savePoints(string filename)
+{
+    ofstream out(filename.c_str());
+
+    if(!out.good())
+    {
+        cout << timestamp
+                << " StannPointCloudManager::SavePointsAndNormals(): Could not open file "
+                << filename << "." << endl;
+
+        return;
+    }
+
+    string prefix = timestamp.getElapsedTime() + "Saving points to '" + filename + "'.";
+    ProgressCounter p(m_numPoints, prefix);
+
+    for(size_t i = 0; i < m_numPoints; i++)
+    {
+        out << m_points[i][0] << " " << m_points[i][1] << " " << m_points[i][2] << endl;
+        ++p;
+    }
+
+    cout << endl;
+}
+
+template<typename T>
+void StannPointCloudManager<T>::savePLY(string filename)
+{
+    PLYIO ply_writer;
+
+    // Create vertex element
+    if(m_points)
+    {
+        PLYElement* vertex_element = new PLYElement("vertex", m_numPoints);
+        vertex_element->addProperty("x", "float");
+        vertex_element->addProperty("y", "float");
+        vertex_element->addProperty("z", "float");
+        ply_writer.addElement(vertex_element);
+        ply_writer.setIndexedVertexArray(m_points, m_numPoints);
+    }
+
+    // Create normal element
+    if(m_normals)
+      {
+          PLYElement* normal_element = new PLYElement("normal", m_numPoints);
+          normal_element->addProperty("x", "float");
+          normal_element->addProperty("y", "float");
+          normal_element->addProperty("z", "float");
+          ply_writer.addElement(normal_element);
+          ply_writer.setIndexedVertexArray(m_normals, m_numPoints);
+      }
+
+    ply_writer.save(filename);
+}
 
 } // namespace lssr
 

@@ -41,6 +41,10 @@ int main(int argc, char** argv)
     // Create a point cloud manager
     StannPointCloudManager<float> manager(points, 0, numPoints, Vertexf());
 
+    // Save points and normals
+    manager.save("normals.nor");
+    manager.save("points.pts");
+
 	return 0;
 }
 
