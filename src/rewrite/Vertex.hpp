@@ -8,7 +8,8 @@
 using namespace std;
 
 
-namespace lssr {
+namespace lssr
+{
 
 // Forward deklaration for matrix class
 template<typename T> class Matrix4;
@@ -60,10 +61,7 @@ public:
 	/**
 	 * @brief 	Return the current length of the vector
 	 */
-	CoordType length()
-	{
-		return sqrt(m_x * m_x + m_y * m_y + m_z * m_z);
-	}
+	CoordType length();
 
 	/**
 	 * @brief	Calculates the cross product between this and
@@ -71,15 +69,7 @@ public:
 	 *
 	 * @param	other		The second cross product vector
 	 */
-	template<typename T>
-	Vertex<CoordType> cross(const Vertex<T> &other) const
-	{
-		CoordType tx = m_y * other.m_z - m_z * other.m_y;
-		CoordType ty = m_z * other.m_x - m_x * other.m_z;
-		CoordType tz = m_x * other.m_y - m_y * other.m_x;
-
-		return Vertex<CoordType>(tx, ty, tz);
-    }
+	Vertex<CoordType> cross(const Vertex &other) const;
 
 
 	/**
@@ -88,115 +78,60 @@ public:
 	 *
 	 * @param	A 4x4 rotation matrix.
 	 */
-	template<typename T>
-	void rotate(const Matrix4<T> &m)
-	{
-		m_x = m_x * m[0 ] + m_y * m[1 ] + m_z * m[2 ];
-		m_y = m_x * m[4 ] + m_y * m[5 ] + m_z * m[6 ];
-		m_z = m_x * m[8 ] + m_y * m[9 ] + m_z * m[10];
-
-	}
+	void rotate(const Matrix4<CoordType> &m);
 
 	/**
 	 * @brief	Calculates the cross product with the other given
 	 * 			Vertex and assigns the result to the current
 	 * 			instance.
 	 */
-	virtual void crossTo(const Vertex &other)
-	{
-		m_x = m_y * other.m_z - m_z * other.m_y;
-		m_y = m_z * other.m_x - m_x * other.m_z;
-		m_z = m_x * other.m_y - m_y * other.m_x;
-	}
-
+	virtual void crossTo(const Vertex &other);
 
 	/**
 	 * @brief	Multiplication operator (dot product)
 	 */
-	virtual CoordType operator*(const Vertex &other) const
-	{
-		return m_x * other.m_x + m_y * other.m_y + m_z * other.m_z;
-	}
+	virtual CoordType operator*(const Vertex &other) const;
+
 
 	/**
 	 * @brief 	Multiplication operator (scaling)
 	 */
-	virtual Vertex operator*(const CoordType &scale) const
-	{
-		return Vertex<CoordType>(m_x * scale, m_y * scale, m_z * scale);
-	}
+	virtual Vertex<CoordType> operator*(const CoordType &scale) const;
 
+	virtual Vertex<CoordType> operator+(const Vertex &other) const;
 
-	virtual Vertex operator+(const Vertex &other) const
-	{
-		return Vertex(m_x + other.m_x, m_y + other.m_y, m_z + other.m_z);
-	}
 
 	/**
 	 * @brief	Coordinate subtraction
 	 */
-	virtual Vertex operator-(const Vertex &other) const
-	{
-		return Vertex(m_x - other.m_x, m_y - other.m_y, m_z - other.m_z);
-	}
+	virtual Vertex<CoordType> operator-(const Vertex &other) const;
 
 	/**
 	 * @brief	Coordinate substraction
 	 */
-	virtual void operator-=(const Vertex &other)
-	{
-		m_x -= other.m_x;
-		m_y -= other.m_y;
-		m_z -= other.m_z;
-	}
+	virtual void operator-=(const Vertex &other);
 
 	/**
 	 * @brief	Coordinate addition
 	 */
-	virtual void operator+=(const Vertex &other)
-	{
-		m_x += other.m_x;
-		m_y += other.m_y;
-		m_z += other.m_z;
-	}
+	virtual void operator+=(const Vertex &other);
 
 
 	/**
 	 * @brief	Scaling
 	 */
-	virtual void operator*=(const CoordType &scale)
-		  {
-		m_x *= scale;
-		m_y *= scale;
-		m_z *= scale;
-	}
+	virtual void operator*=(const CoordType &scale);
+
 
 	/**
 	 * @brief	Scaling
 	 */
-	virtual void operator/=(const CoordType &scale)
-	{
-		if(scale != 0)
-		{
-			m_x /= scale;
-			m_y /= scale;
-			m_z /= scale;
-		}
-		else
-		{
-			m_x = m_y = m_z = 0;
-		}
-	}
+	virtual void operator/=(const CoordType &scale);
 
 	/**
 	 * @brief	Compares two vertices
 	 */
-	virtual bool operator==(const Vertex &other) const
-	{
-		return fabs(m_x - other.m_x) <= Vertex::epsilon &&
-				fabs(m_y - other.m_y) <= Vertex::epsilon &&
-				fabs(m_z - other.m_z) <= Vertex::epsilon;
-	}
+	virtual bool operator==(const Vertex &other) const;
 
 	/**
 	 * @brief	Compares two vertices
@@ -209,25 +144,8 @@ public:
 	/**
 	 * @brief	Indexed coordinate access
 	 */
-	virtual CoordType operator[](const int &index) const
-	{
-		CoordType ret = 0.0;
+	virtual CoordType operator[](const int &index) const;
 
-		switch(index){
-		case 0:
-			ret = m_x;
-			break;
-		case 1:
-			ret = m_y;
-			break;
-		case 2:
-			ret = m_z;
-			break;
-		default:
-			cout << "Vertex: Warning: Access index out of range." << endl;
-		}
-		return ret;
-	}
 
 	/// The x-coordinate of the vertex
 	CoordType m_x;
@@ -261,8 +179,8 @@ typedef Vertex<float> 	Vertexf;
 /// Convenience typedef for double vertices
 typedef Vertex<double>	Vertexd;
 
-#include "Vertex.tcc"
-
 } // namespace lssr
+
+#include "Vertex.tcc"
 
 #endif
