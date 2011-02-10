@@ -8,7 +8,7 @@
 #ifndef NORMAL_HPP_
 #define NORMAL_HPP_
 
-#include "BaseVertex.hpp"
+#include "Vertex.hpp"
 
 namespace lssr {
 
@@ -17,7 +17,7 @@ namespace lssr {
  * 			with normalization functionality.
  */
 template<typename CoordType>
-class Normal : public BaseVertex<CoordType>
+class Normal : public Vertex<CoordType>
 {
 
 public:
@@ -26,14 +26,14 @@ public:
 	 * @brief	Default constructor. All elements are set
 	 * 			to zero.
 	 */
-	Normal() : BaseVertex<CoordType>() {};
+	Normal() : Vertex<CoordType>() {};
 
 	/**
 	 * @brief	Constructs a new normal from the given
 	 * 			components. Applies normalization.
 	 */
 	Normal(CoordType x, CoordType y, CoordType z)
-	: BaseVertex<CoordType>(x, y, z)
+	: Vertex<CoordType>(x, y, z)
 	  {
 		normalize();
 	  }
@@ -43,7 +43,7 @@ public:
 	 * 			normalization.
 	 */
 	template<typename T>
-	Normal(const BaseVertex<T> &other) : BaseVertex<T>(other)
+	Normal(const Vertex<T> &other) : Vertex<T>(other)
 	{
 		normalize();
 	}
@@ -69,31 +69,29 @@ public:
 	{
 		//Don't normalize if we don't have to
 		float l_square =
-				  this.m_x * this.x
-				+ this.y * this.y
-				+ this.z * this.z;
+				  this->m_x * this->m_x
+				+ this->m_y * this->m_y
+				+ this->m_z * this->m_z;
 
 		if( fabs(1 - l_square) > 0.001){
 
 			float length = sqrt(l_square);
 			if(length != 0){
-				this.m_x /= length;
-				this.m_y /= length;
-				this.m_z /= length;
+				this->m_x /= length;
+				this->m_y /= length;
+				this->m_z /= length;
 			}
 		}
 	}
 
-	Normal operator+(const Normal &n) const
+	Normal<CoordType> operator+(const Normal &n) const
 	{
-		Normal res = ::operator+(n);
-		return res.normalize();
+	    return Normal<CoordType>(this->m_x + n.m_x, this->m_y + n.m_y, this->m_z + n.m_z);
 	}
 
-	virtual Normal operator-(const Normal &n) const
+	virtual Normal<CoordType> operator-(const Normal &n) const
 	{
-		Normal res = ::operator+(n);
-		return res.normalize();
+		return Normal<CoordType>(this->m_x - n.m_x, this->m_y - n.m_y, this->m_z - n.m_z);
 	}
 
 	void operator+=(const Normal &n)
@@ -107,6 +105,10 @@ public:
 
 	}
 };
+
+typedef Normal<float> Normalf;
+
+typedef Normal<double> Normald;
 
 template<typename T>
 inline ostream& operator<<(ostream& os, const Normal<T> &n)

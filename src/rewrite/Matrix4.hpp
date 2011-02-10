@@ -12,7 +12,7 @@
 #include <fstream>
 #include <iomanip>
 
-#include "BaseVertex.hpp"
+#include "Vertex.hpp"
 #include "Normal.hpp"
 
 #define _USE_MATH_DEFINES
@@ -63,7 +63,7 @@ public:
 	 * 			avoid a gimbal lock.
 	 */
 	template<typename T>
-	Matrix4(BaseVertex<T> axis, ValueType angle)
+	Matrix4(Vertex<T> axis, ValueType angle)
 	{
 		// Check for gimbal lock
 		if(fabs(angle) < 0.0001){
@@ -91,12 +91,12 @@ public:
 			cout << "YAW: " << yaw << " PITCH: " << pitch << endl;
 
 			if(fabs(yaw)   > 0.0001){
-				m2 = Matrix4(BaseVertex<T>(1.0, 0.0, 0.0), yaw);
+				m2 = Matrix4(Vertex<T>(1.0, 0.0, 0.0), yaw);
 				m3 = m3 * m2;
 			}
 
 			if(fabs(pitch) > 0.0001){
-				m1 = Matrix4(BaseVertex<T>(0.0, 1.0, 0.0), pitch);
+				m1 = Matrix4(Vertex<T>(0.0, 1.0, 0.0), pitch);
 				m3 = m3 * m1;
 			}
 
@@ -137,7 +137,7 @@ public:
 	}
 
 	template<typename T>
-	Matrix4(const BaseVertex<T> &position, const BaseVertex<T> &angles)
+	Matrix4(const Vertex<T> &position, const Vertex<T> &angles)
 	{
 		float sx = sin(angles[0]);
 		float cx = cos(angles[0]);
@@ -243,7 +243,7 @@ public:
 	 * @brief	Multiplication of Matrix and Vertex types
 	 */
 	template<typename T>
-	BaseVertex<T> operator*(const BaseVertex<T> &v) const
+	Vertex<T> operator*(const Vertex<T> &v) const
 	{
 		T x = m[ 0] * v.x + m[ 4] * v.y + m[8 ] * v.z;
 		T y = m[ 1] * v.x + m[ 5] * v.y + m[9 ] * v.z;
@@ -253,7 +253,7 @@ public:
 		y = y + m[13];
 		z = z + m[14];
 
-		return BaseVertex<T>(x, y, z);
+		return Vertex<T>(x, y, z);
 	}
 
 	/**

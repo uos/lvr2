@@ -1,7 +1,14 @@
 #External dependencies to ANN, NEWMAT and STANN
 
 set(LSSR_SOURCES
- 
+    Options.cpp     
+    Timestamp.cpp   
+    StannPointCloudManager.hpp
+    Progress.cpp
+    PLYProperty.cpp
+    PLYElements.cpp
+    PLYElement.cpp
+    PLYIO.cpp
 )
 
 add_executable(lssr Main.cpp ${LSSR_SOURCES})
