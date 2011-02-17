@@ -275,6 +275,12 @@ void FastGrid::createMesh(){
 		if(m_options->optimizeClusters()) mesh->optimizeClusters(planes);
 		mesh->finalize(planes);
 		mesh->save("planes.ply");
+
+		list<list<planarCluster> > objects;
+		mesh->classifyCluster(planes, objects);
+		cout << "FOUND OBJECTS: " << objects.size() << endl;
+		mesh->finalize(objects);
+	    mesh->save("clusters.ply");
 	}
 
 	mesh->finalize();
