@@ -45,7 +45,7 @@ StannInterpolator::StannInterpolator(float** pts, float** nor, int n, float vs, 
 	if(!normals)
 	{
 		estimate_normals();
-		interpolateNormals(20);
+		interpolateNormals(100);
 	}
 	cout << timestamp << "Time for normal calculation " << ts << endl;
 
@@ -150,8 +150,8 @@ void StannInterpolator::write_normals(){
 void StannInterpolator::estimate_normals(){
 
 
-	int k_0 = 10;
-	//int k_0 = 50;
+	//int k_0 = 10;
+	int k_0 = 50;
 
 	cout << timestamp << "Initializing normal array..." << endl;
 
@@ -292,7 +292,7 @@ void StannInterpolator::interpolateNormals(int k){
 
 float StannInterpolator::distance(ColorVertex v){
 
-	int k = 1;
+	int k = 100;
 
 
 	vector<unsigned long> id;

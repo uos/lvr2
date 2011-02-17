@@ -34,6 +34,8 @@ public:
 
 	Vertex getCentroid();
 
+	float getArea();
+
 	HalfEdge* edge;
 	bool used;
 	vector<int> indices;

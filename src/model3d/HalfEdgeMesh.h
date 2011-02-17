@@ -19,6 +19,7 @@ using __gnu_cxx::hash_map;
 #include <vector>
 #include <stack>
 #include <set>
+#include <list>
 
 using namespace std;
 
@@ -36,10 +37,13 @@ class HalfEdgeVertex;
 class HalfEdgeFace;
 class HalfEdgePolygon;
 
-struct planarCluster
+class planarCluster
 {
+public:
 	size_t face_count;
 	HalfEdgeFace** faces;
+
+	void calcParameters(float &area, Vertex &centroid, Normal &normal);
 };
 
 
@@ -86,8 +90,14 @@ public:
 	void cluster(vector<planarCluster> &planes);
 	void optimizeClusters(vector<planarCluster> &clusters);
 
+	void classifyCluster(vector<planarCluster> &panes, list<list<planarCluster> > &objectCandidates);
+	void findNextClusterInRange(int s, vector<planarCluster> &clusters,
+	        planarCluster &start,
+	        list<planarCluster> &clustercluster,
+	        vector<bool> &markers);
 
 	virtual void finalize(vector<planarCluster> &planes);
+	virtual void finalize(list<list<planarCluster> > &objects);
 
 private:
 
