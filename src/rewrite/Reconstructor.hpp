@@ -2,7 +2,7 @@
  * Reconstructor.h
  *
  *  Created on: 16.02.2011
- *      Author: twiemann
+ *      Author: Thomas Wiemann
  */
 
 #ifndef RECONSTRUCTOR_H_
@@ -11,10 +11,14 @@
 #include "BaseMesh.hpp"
 #include "PointCloudManager.hpp"
 
+namespace lssr
+{
+
 /**
  * @brief Interface class for surface reconstruction algorithms
  *        that generate triangle meshes.
  */
+template<typename PointType, typename VertexType, typename IndexType>
 class Reconstructor
 {
 public:
@@ -23,7 +27,7 @@ public:
      * @brief Constructs a Reconstructor object using the given point
      *        cloud handler
      */
-    Reconstructor(PointCloudManger &manager) : m_manager(manager) {}
+    Reconstructor(PointCloudManager<PointType> &manager) : m_manager(manager) {}
 
     /**
      * @brief Generated a triangle mesh representation of the current
@@ -32,12 +36,14 @@ public:
      * @param mesh      A surface representation of the current point
      *                  set.
      */
-    virtual void getMesh(BaseMesh& mesh) = 0;
+    virtual void getMesh(BaseMesh<VertexType, IndexType>& mesh) = 0;
 
 protected:
 
     /// The point cloud manager that handles the loaded point cloud data.
-    PointCloudManager&      m_manager;
+    PointCloudManager<PointType>&      m_manager;
 };
+
+} //namespace lssr
 
 #endif /* RECONSTRUCTOR_H_ */

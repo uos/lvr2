@@ -17,6 +17,7 @@
 
 #include "IndexedTriangleMesh.hpp"
 #include "StannPointCloudManager.hpp"
+#include "MCReconstruction.hpp"
 #include "PLYIO.hpp"
 #include "Options.hpp"
 #include "Matrix4.hpp"
@@ -44,6 +45,9 @@ int main(int argc, char** argv)
     // Save points and normals
     manager.save("normals.nor");
     manager.save("points.pts");
+
+    // Create a new reconstruction object
+    MCReconstruction<float, Vertexf, size_t> reconstruction(manager);
 
 	return 0;
 }
