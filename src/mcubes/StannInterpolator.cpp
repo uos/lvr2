@@ -91,6 +91,8 @@ bool StannInterpolator::boundingBoxOK(double dx, double dy, double dz){
 
 Plane StannInterpolator::calcPlane(Vertex query_point, int k, vector<unsigned long> id){
 
+    // TODO: Try Eigen's Cholesky decomposition
+
 
 	Vertex diff1, diff2;
 	Normal normal;
@@ -98,7 +100,6 @@ Plane StannInterpolator::calcPlane(Vertex query_point, int k, vector<unsigned lo
 	float z1 = 0;
 	float z2 = 0;
 
-	Vector3f C;
 	VectorXf F(k);
 	MatrixXf B(k,3);
 
@@ -109,12 +110,29 @@ Plane StannInterpolator::calcPlane(Vertex query_point, int k, vector<unsigned lo
 		B(j, 2) = points[id[j]][2];
 	}
 
-	MatrixXf Bt = B.transpose();
-	MatrixXf BtB = Bt * B;
-	MatrixXf BtBinv = BtB.inverse();
 
-	MatrixXf M = BtBinv * Bt;
-	C = M * F;
+
+	MatrixXf A = B.transpose() * B;
+
+	cout << "DIM: " << A.cols() << " " << F.transpose().rows() << endl;
+
+
+	VectorXf C = A * F;
+	//VectorXf C;
+//
+//	MatrixXf Bt = B.transpose();
+//	MatrixXf BtB = Bt * B;
+//	MatrixXf BtBinv = BtB.inverse();
+//
+//	MatrixXf M = BtBinv * Bt;
+//	C = M * F;
+
+	//A.llt().solveInPlace(C);
+
+	//cout << "C: " <<  C(0) << " " << C(1) << " " << C(2) << endl;
+
+//	z1 = C(0) + C(1) * (query_point.x + epsilon) + C(2) * query_point.z;
+//	z2 = C(0) + C(1) * query_point.x + C(2) * (query_point.z + epsilon);
 
 	z1 = C(0) + C(1) * (query_point.x + epsilon) + C(2) * query_point.z;
 	z2 = C(0) + C(1) * query_point.x + C(2) * (query_point.z + epsilon);
@@ -138,10 +156,9 @@ Plane StannInterpolator::calcPlane(Vertex query_point, int k, vector<unsigned lo
 void StannInterpolator::write_normals(){
 
 	ofstream out("normals.nor");
-	for(int i = 0; i < number_of_points; i++){
-		if(i % 10000 == 0) cout << timestamp << "Writing points and normals: " << i
-		                       << " / " << number_of_points << endl;
-		out << points[i][0] << " " << points[i][1] << " " << points[i][2] << " "
+	for(int i = 0; i < number_of_points; i++)
+	{
+		out << points[i][0]  << " " << points[i][1]  << " " << points[i][2]  << " "
 		    << normals[i][0] << " " << normals[i][1] << " " << normals[i][2] << endl;
 	}
 
@@ -150,8 +167,8 @@ void StannInterpolator::write_normals(){
 void StannInterpolator::estimate_normals(){
 
 
-	//int k_0 = 10;
-	int k_0 = 50;
+	int k_0 = 20;
+	//int k_0 = 100;
 
 	cout << timestamp << "Initializing normal array..." << endl;
 
@@ -164,7 +181,7 @@ void StannInterpolator::estimate_normals(){
 	//boost::progress_display progress(number_of_points);
 	ProgressBar progress(number_of_points, comment);
 
-    #pragma omp parallel for
+    //#pragma omp parallel for
 	for(int i = 0; i < number_of_points; i++){
 
 		Vertex query_point; //, diff1, diff2;
@@ -292,7 +309,7 @@ void StannInterpolator::interpolateNormals(int k){
 
 float StannInterpolator::distance(ColorVertex v){
 
-	int k = 100;
+	int k = 20;
 
 
 	vector<unsigned long> id;

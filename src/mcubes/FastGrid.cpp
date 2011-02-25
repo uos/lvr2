@@ -263,9 +263,9 @@ void FastGrid::createMesh(){
 //	mesh->extract_borders();
 //	mesh->write_polygons("border.bor");
 
-	if(m_options->writeFaceNormals())
+	if(m_options->saveFaceNormals())
 	{
-		mesh->write_face_normals("face_normal.nor");
+		mesh->write_face_normals("face_normals.nor");
 	}
 
 	if(m_options->createClusters())
@@ -305,11 +305,17 @@ void FastGrid::createMesh(){
 	//he_mesh.extract_borders();
 	//he_mesh.write_polygons("borders.bor");
 
-	if(m_options->saveNormals())
+	if(m_options->savePointsAndNormals())
 	{
 		cout << timestamp << "Saving points and normals..." << endl;
 		savePointsAndNormals();
 	}
+
+	if(m_options->saveNormals())
+	{
+	    cout << timestamp << "Saving interpolated normals..." << endl;
+	    static_cast<StannInterpolator*>(interpolator)->write_normals();
+ 	}
 }
 
 
