@@ -31,10 +31,11 @@ public:
 
 	bool	printUsage() const;
 	bool	filenameSet() const;
-	bool	writeFaceNormals() const;
+	bool	saveFaceNormals() const;
+	bool    saveNormals() const;
 	bool	createClusters() const;
 	bool 	optimizeClusters() const;
-	bool 	saveNormals() const;
+	bool 	savePointsAndNormals() const;
 	bool	recalcNormals() const;
 
 	string 	getOutputFileName() const;
@@ -54,7 +55,7 @@ inline ostream& operator<<(ostream& os, const Options &o)
 	cout << "##### Voxelsize \t\t: " 		<< o.getVoxelsize() << endl;
 	cout << "##### Output file \t\t: " 	<< o.getOutputFileName() << endl;
 	cout << "##### Number of threads \t: " << o.getNumThreads() << endl;
-	if(o.writeFaceNormals())
+	if(o.saveFaceNormals())
 	{
 		cout << "##### Write Face Normals \t: YES" << endl;
 	}
@@ -73,6 +74,10 @@ inline ostream& operator<<(ostream& os, const Options &o)
 	if(o.recalcNormals())
 	{
 		cout << "##### Recalc normals \t\t: YES" << endl;
+	}
+	if(o.savePointsAndNormals())
+	{
+	    cout << "##### Save points and normals \t: YES" << endl;
 	}
 	return os;
 }
