@@ -5,7 +5,6 @@ set( CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_SOURCE_DIR}/bin )
 
 link_directories("${CMAKE_SOURCE_DIR}/lib")
 
-include_directories(${LSSR_SOURCE_DIR}/ext/ann)
 include_directories(${LSSR_SOURCE_DIR}/ext/newmat)
 include_directories(${LSSR_SOURCE_DIR}/ext/stann)
 include_directories(${LSSR_SOURCE_DIR})
@@ -45,7 +44,6 @@ find_package(GLUT REQUIRED)
 
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${ADDITIONAL_COMPILER_FLAGS} ${OpenMP_CXX_FLAGS}")
 
-add_subdirectory(ext/ann)
 add_subdirectory(src/model3d)
 add_subdirectory(src/mcubes)
 
