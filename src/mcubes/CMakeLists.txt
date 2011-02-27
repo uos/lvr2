@@ -1,7 +1,6 @@
 # External dependencies to ANN, NEWMAT and STANN
 
 set(MCUBES_SOURCES 
-ANNInterpolator.cpp 
 FastBox.cpp 
 FastGrid.cpp 
 Options.cpp 
@@ -18,6 +17,5 @@ set_target_properties(mcubes PROPERTIES BINARY_OUTPUT_DIRECTORY ${CMAKE_SOURCE_D
 
 target_link_libraries(mcubes boost_system boost_program_options boost_filesystem boost_thread)
 target_link_libraries(mcubes model3d)
-target_link_libraries(mcubes ann)
 target_link_libraries(mcubes ${OPENGL_LIBRARY})
 target_link_libraries(mcubes ${OpenMP_CXX_FLAGS})
