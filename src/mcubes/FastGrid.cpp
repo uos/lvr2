@@ -377,6 +377,10 @@ void FastGrid::readPLY(string filename)
 	}
 
 	interpolator = new StannInterpolator(points, normals, n, voxelsize, 100, 100.0);
+	interpolator->setKd(m_options->getKd());
+	interpolator->setKi(m_options->getKi());
+	interpolator->setKn(m_options->getKn());
+	interpolator->init();
 }
 
 void FastGrid::readPlainASCII(string filename)
@@ -442,6 +446,10 @@ void FastGrid::readPlainASCII(string filename)
 	cout << timestamp << "Number of Data Points: " << pts.size() << endl;
 
 	interpolator = new StannInterpolator(points, 0, number_of_points, 10.0, 100, 100.0);
+    interpolator->setKd(m_options->getKd());
+    interpolator->setKi(m_options->getKi());
+    interpolator->setKn(m_options->getKn());
+    interpolator->init();
 }
 
 int FastGrid::getFieldsPerLine(string filename){
