@@ -64,7 +64,7 @@ inline ostream& operator<<(ostream& os, const Options &o)
 	cout << "##### Number of threads \t: " << o.getNumThreads() << endl;
 	cout << "##### k_n \t\t\t: " << o.getKn() << endl;
 	cout << "##### k_i \t\t\t: " << o.getKi() << endl;
-	cout << "##### d_d \t\t\t: " << o.getKd() << endl;
+	cout << "##### k_d \t\t\t: " << o.getKd() << endl;
 	if(o.saveFaceNormals())
 	{
 		cout << "##### Write Face Normals \t: YES" << endl;

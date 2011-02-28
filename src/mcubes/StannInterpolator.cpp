@@ -35,20 +35,27 @@ StannInterpolator::StannInterpolator(float** pts, float** nor, int n, float vs, 
 	voxelsize = vs;
 	vs_sq = vs * vs;
 
+	k_i = 10;
+	k_n = 20;
+	k_d = 10;
+
 	normals = nor;
 
-	cout << timestamp << "Creating STANN Kd-Tree..." << endl;
-	point_tree = sfcnn< float*, 3, float>(points, number_of_points, 4);
-	unsigned long start_time = GetCurrentTimeInMilliSec();
+}
 
-	Timestamp ts;
-	if(!normals)
-	{
-		estimate_normals();
-		interpolateNormals(10);
-	}
-	cout << timestamp << "Time for normal calculation " << ts << endl;
+void StannInterpolator::init()
+{
+    cout << timestamp << "Creating STANN Kd-Tree..." << endl;
+    point_tree = sfcnn< float*, 3, float>(points, number_of_points, 4);
+    unsigned long start_time = GetCurrentTimeInMilliSec();
 
+    Timestamp ts;
+    if(!normals)
+    {
+        estimate_normals();
+        interpolateNormals(k_i);
+    }
+    cout << timestamp << "Time for normal calculation " << ts << endl;
 }
 
 StannInterpolator::~StannInterpolator() {
@@ -164,10 +171,7 @@ void StannInterpolator::write_normals(){
 
 void StannInterpolator::estimate_normals(){
 
-
-	//int k_0 = 20;
-	//int k_0 = 100;
-	int k_0 = 10;
+	int k_0 = k_n;
 
 	cout << timestamp << "Initializing normal array..." << endl;
 
@@ -308,7 +312,7 @@ void StannInterpolator::interpolateNormals(int k){
 
 float StannInterpolator::distance(ColorVertex v){
 
-	int k = 20;
+	int k = k_d;
 
 
 	vector<unsigned long> id;
