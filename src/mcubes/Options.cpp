@@ -23,6 +23,9 @@ Options::Options(int argc, char** argv) : m_descr("Supported options")
 		("recalcNormals,r", "Always estimate normals, even if given in .ply file.")
 		("threads,t", value<int>(&m_numThreads)->default_value(4), "Number of threads")
 		("saveNormals", "Writes all points and interpolated normals to a file called 'normals.nor'")
+		("kd", value<int>(&m_kd)->default_value(5), "Number of normals used for distance function evaluation")
+	    ("ki", value<int>(&m_ki)->default_value(10), "Number of normals used in the normal interpolation process")
+	    ("kn", value<int>(&m_kn)->default_value(10), "Size of k-neighborhood used for normal estimation")
 		;
 
 	m_pdescr.add("inputFile", -1);
@@ -39,9 +42,24 @@ float Options::getVoxelsize() const
 	return m_variables["voxelsize"].as<float>();
 }
 
-float Options::getNumThreads() const
+int Options::getNumThreads() const
 {
 	return m_variables["threads"].as<int>();
+}
+
+int Options::getKi() const
+{
+    return m_variables["ki"].as<int>();
+}
+
+int Options::getKd() const
+{
+    return m_variables["kd"].as<int>();
+}
+
+int Options::getKn() const
+{
+    return m_variables["kn"].as<int>();
 }
 
 string Options::getOutputFileName() const
@@ -97,7 +115,6 @@ bool Options::saveNormals() const
 {
     return (m_variables.count("saveNormals"));
 }
-
 
 bool Options::optimizeClusters() const
 {
