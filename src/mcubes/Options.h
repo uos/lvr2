@@ -27,7 +27,7 @@ public:
 	virtual ~Options();
 
 	float 	getVoxelsize()const;
-	float 	getNumThreads() const;
+	int 	getNumThreads() const;
 
 	bool	printUsage() const;
 	bool	filenameSet() const;
@@ -38,15 +38,22 @@ public:
 	bool 	savePointsAndNormals() const;
 	bool	recalcNormals() const;
 
+	int     getKi() const;
+	int     getKn() const;
+	int     getKd() const;
+
 	string 	getOutputFileName() const;
 private:
-	float 				m_voxelsize;
-	int				m_numThreads;
-	variables_map			m_variables;
-	options_description 		m_descr;
+	float 				            m_voxelsize;
+	int				                m_numThreads;
+	variables_map			        m_variables;
+	options_description 		    m_descr;
 	positional_options_description 	m_pdescr;
-	string 				m_faceNormalFile;
+	string 				            m_faceNormalFile;
 	int                             m_numberOfDefaults;
+	int                             m_kd;
+	int                             m_kn;
+	int                             m_ki;
 };
 
 inline ostream& operator<<(ostream& os, const Options &o)
@@ -55,6 +62,9 @@ inline ostream& operator<<(ostream& os, const Options &o)
 	cout << "##### Voxelsize \t\t: " 		<< o.getVoxelsize() << endl;
 	cout << "##### Output file \t\t: " 	<< o.getOutputFileName() << endl;
 	cout << "##### Number of threads \t: " << o.getNumThreads() << endl;
+	cout << "##### k_n \t\t\t: " << o.getKn() << endl;
+	cout << "##### k_i \t\t\t: " << o.getKi() << endl;
+	cout << "##### d_d \t\t\t: " << o.getKd() << endl;
 	if(o.saveFaceNormals())
 	{
 		cout << "##### Write Face Normals \t: YES" << endl;
