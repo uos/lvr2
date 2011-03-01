@@ -25,8 +25,9 @@ namespace lssr
 template<typename T>
 class PointCloudManager
 {
+public:
 	/**
-	 * Returns the k closest neighbor vertices to a given queryy point
+	 * Returns the k closest neighbor vertices to a given query point
 	 *
 	 * @param v			A query vertex
 	 * @param k			The (max) number of returned closest points to v
@@ -43,7 +44,15 @@ class PointCloudManager
 	 * @param nb		A vector containing the determined closest normals
 	 */
 	virtual void getkClosestNormals(const Vertex<T> &n,
-		const size_t &k, vector<Vertex<T> > &nb) = 0;
+		const size_t &k, vector<Normal<T> > &nb) = 0;
+
+protected:
+
+    /// The currently stored points
+    T**                         m_points;
+
+    /// The point normals
+    T**                         m_normals;
 
 };
 

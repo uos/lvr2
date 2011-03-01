@@ -71,7 +71,7 @@ public:
 	 * @param ki        The number of neighbor points used for normal interpolation
 	 */
 	StannPointCloudManager(T **points,
-	                       T** normals,
+	                       T **normals,
 	                       size_t n,
 	                       const Vertex<T> &center,
 	                       const size_t &kn = 10,
@@ -92,7 +92,7 @@ public:
 	virtual void getkClosestVertices(const Vertex<T> &v,
 	        const size_t &k, vector<Vertex<T> > &nb)
 	{
-
+	    /// TODO: Implement method
 	}
 
 	/**
@@ -103,9 +103,9 @@ public:
 	 * @param nb        A vector containing the determined closest normals
 	 */
 	virtual void getkClosestNormals(const Vertex<T> &n,
-	        const size_t &k, vector<Vertex<T> > &nb)
+	        const size_t &k, vector<Normal<T> > &nb)
 	{
-
+	    /// TODO: Implement method
 	}
 
 	/**
@@ -203,12 +203,6 @@ private:
 	Plane<T> calcPlane(const Vertex<T> &queryPoint,
 	        const int &k,
 	        const vector<unsigned long> &id);
-
-	/// The currently stored points
-	T**                         m_points;
-
-	/// The point normals
-	T**                         m_normals;
 
 	/// STANN tree to manage the data points
 	sfcnn< T*, 3, T>            m_pointTree;
