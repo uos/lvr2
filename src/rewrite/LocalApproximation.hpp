@@ -14,14 +14,14 @@
 namespace lssr
 {
 
-template<typename VertexType, typename IndexType, typename DimType, typename PointType>
+template<typename CoordType, typename IndexType>
 class LocalApproximation
 {
 public:
-    virtual void getSurface(BaseMesh<VertexType, IndexType> &mesh,
-            PointCloudManager<PointType> &manager,
-            VertexType center,
-            DimType voxelsize) = 0;
+    virtual void getSurface(BaseMesh<Vertex<CoordType>, IndexType> &mesh,
+            PointCloudManager<CoordType> &manager,
+            Vertex<CoordType> center,
+            CoordType voxelsize) = 0;
 };
 
 

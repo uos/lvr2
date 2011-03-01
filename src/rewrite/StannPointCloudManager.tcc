@@ -11,22 +11,26 @@ namespace lssr{
 
 template<typename T>
 StannPointCloudManager<T>::StannPointCloudManager(T **points,
-        T** normals,
+        T **normals,
         size_t n,
         const Vertex<T> &center,
         const size_t &kn,
         const size_t &ki)
-        : m_kn(kn), m_ki(ki), m_numPoints(n), m_points(points), m_normals(normals)
+        : m_kn(kn), m_ki(ki), m_numPoints(n)
 {
+
+    this->m_points = points;
+    this->m_normals = normals;
+
     // Be sure that point information was given
-    assert(m_points);
+    assert(this->m_points);
 
     // Create kd tree
     cout << timestamp << " Creating STANN Kd-Tree..." << endl;
-    m_pointTree = sfcnn< T*, 3, T>(points, n, 4);
+    m_pointTree = sfcnn< T*, 3, T>(this->m_points, n, 4);
 
     // Estimate surface normals if necessary
-    if(!m_normals)
+    if(!this->m_normals)
     {
         estimateSurfaceNormals();
         interpolateSurfaceNormals();
@@ -46,7 +50,7 @@ void StannPointCloudManager<T>::estimateSurfaceNormals()
     cout << timestamp << "Initializing normal array..." << endl;
 
     //Initialize normal array
-    m_normals = new float*[m_numPoints];
+    this->m_normals = new float*[m_numPoints];
 
     float mean_distance;
     // Create a progress counter
@@ -78,8 +82,8 @@ void StannPointCloudManager<T>::estimateSurfaceNormals()
              */
             k = k * 2;
 
-            //T* point = m_points[i];
-            m_pointTree.ksearch(m_points[i], k, id, di, 0);
+            //T* point = this->m_points[i];
+            m_pointTree.ksearch(this->m_points[i], k, id, di, 0);
 
             float min_x = 1e15;
             float min_y = 1e15;
@@ -97,13 +101,13 @@ void StannPointCloudManager<T>::estimateSurfaceNormals()
              *       library for bounding box calculation...
              */
             for(int j = 0; j < k; j++){
-                min_x = min(min_x, m_points[id[j]][0]);
-                min_y = min(min_y, m_points[id[j]][1]);
-                min_z = min(min_z, m_points[id[j]][2]);
+                min_x = min(min_x, this->m_points[id[j]][0]);
+                min_y = min(min_y, this->m_points[id[j]][1]);
+                min_z = min(min_z, this->m_points[id[j]][2]);
 
-                max_x = max(max_x, m_points[id[j]][0]);
-                max_y = max(max_y, m_points[id[j]][1]);
-                max_z = max(max_z, m_points[id[j]][2]);
+                max_x = max(max_x, this->m_points[id[j]][0]);
+                max_y = max(max_y, this->m_points[id[j]][1]);
+                max_z = max(max_z, this->m_points[id[j]][2]);
 
                 dx = max_x - min_x;
                 dy = max_y - min_y;
@@ -116,9 +120,9 @@ void StannPointCloudManager<T>::estimateSurfaceNormals()
         }
 
         // Create a query point for the current point
-        query_point = Vertex<T>(m_points[i][0],
-                m_points[i][1],
-                m_points[i][2]);
+        query_point = Vertex<T>(this->m_points[i][0],
+                this->m_points[i][1],
+                this->m_points[i][2]);
 
         // Interpolate a plane based on the k-neighborhood
         Plane<T> p = calcPlane(query_point, k, id);
@@ -131,10 +135,10 @@ void StannPointCloudManager<T>::estimateSurfaceNormals()
         if(normal * (query_point - m_centroid) < 0) normal = normal * -1;
 
         // Save result in normal array
-        m_normals[i] = new T[3];
-        m_normals[i][0] = normal[0];
-        m_normals[i][1] = normal[1];
-        m_normals[i][2] = normal[2];
+        this->m_normals[i] = new T[3];
+        this->m_normals[i][0] = normal[0];
+        this->m_normals[i][1] = normal[1];
+        this->m_normals[i][2] = normal[2];
 
         ++progress;
     }
@@ -159,15 +163,15 @@ void StannPointCloudManager<T>::interpolateSurfaceNormals()
         vector<unsigned long> id;
         vector<double> di;
 
-        m_pointTree.ksearch(m_points[i], m_ki, id, di, 0);
+        m_pointTree.ksearch(this->m_points[i], m_ki, id, di, 0);
 
         Vertex<T> mean;
         Normal<T> mean_normal;
 
         for(int j = 0; j < m_ki; j++){
-            mean += Vertex<T>(m_normals[id[j]][0],
-                              m_normals[id[j]][1],
-                              m_normals[id[j]][2]);
+            mean += Vertex<T>(this->m_normals[id[j]][0],
+                              this->m_normals[id[j]][1],
+                              this->m_normals[id[j]][2]);
         }
         mean_normal = Normal<T>(mean);
 
@@ -177,9 +181,9 @@ void StannPointCloudManager<T>::interpolateSurfaceNormals()
          * @todo Try to remove this code. Should improve the results at all.
          */
         for(int j = 0; j < m_ki; j++){
-            Normal<T> n(m_normals[id[j]][0],
-                        m_normals[id[j]][1],
-                        m_normals[id[j]][2]);
+            Normal<T> n(this->m_normals[id[j]][0],
+                        this->m_normals[id[j]][1],
+                        this->m_normals[id[j]][2]);
 
 
             // Only override existing normals if the interpolated
@@ -187,9 +191,9 @@ void StannPointCloudManager<T>::interpolateSurfaceNormals()
             // estimation. This helps to avoid a to smooth normal
             // field
             if(fabs(n * mean_normal) > 0.2 ){
-                m_normals[id[j]][0] = mean_normal[0];
-                m_normals[id[j]][1] = mean_normal[1];
-                m_normals[id[j]][2] = mean_normal[2];
+                this->m_normals[id[j]][0] = mean_normal[0];
+                this->m_normals[id[j]][1] = mean_normal[1];
+                this->m_normals[id[j]][2] = mean_normal[2];
             }
         }
         ++progress;
@@ -198,9 +202,9 @@ void StannPointCloudManager<T>::interpolateSurfaceNormals()
     cout << timestamp << "Copying normals..." << endl;
 
     for(int i = 0; i < m_numPoints; i++){
-        m_normals[i][0] = tmp[i][0];
-        m_normals[i][1] = tmp[i][1];
-        m_normals[i][2] = tmp[i][2];
+        this->m_normals[i][0] = tmp[i][0];
+        this->m_normals[i][1] = tmp[i][1];
+        this->m_normals[i][2] = tmp[i][2];
     }
 
 }
@@ -260,10 +264,10 @@ T StannPointCloudManager<T>::distance(Vertex<T> v)
 
     for(int i = 0; i < k; i++){
         //Get nearest tangent plane
-        Vertex<T> vq (m_points[id[i]][0], m_points[id[i]][1], m_points[id[i]][2]);
+        Vertex<T> vq (this->m_points[id[i]][0], this->m_points[id[i]][1], this->m_points[id[i]][2]);
 
         //Get normal
-        Normal<T> n(m_normals[id[i]][0], m_normals[id[i]][1], m_normals[id[i]][2]);
+        Normal<T> n(this->m_normals[id[i]][0], this->m_normals[id[i]][1], this->m_normals[id[i]][2]);
 
         nearest += vq;
         normal += n;
@@ -285,9 +289,9 @@ T StannPointCloudManager<T>::distance(Vertex<T> v)
 template<typename T>
 Vertex<T> StannPointCloudManager<T>::fromID(int i){
     return Vertex<T>(
-            m_points[i][0],
-            m_points[i][1],
-            m_points[i][2]);
+            this->m_points[i][0],
+            this->m_points[i][1],
+            this->m_points[i][2]);
 }
 
 template<typename T>
@@ -312,10 +316,10 @@ Plane<T> StannPointCloudManager<T>::calcPlane(const Vertex<T> &queryPoint,
     MatrixXf B(k,3);
 
     for(int j = 0; j < k; j++){
-        F(j)    =  m_points[id[j]][1];
+        F(j)    =  this->m_points[id[j]][1];
         B(j, 0) = 1.0f;
-        B(j, 1) = m_points[id[j]][0];
-        B(j, 2) = m_points[id[j]][2];
+        B(j, 1) = this->m_points[id[j]][0];
+        B(j, 2) = this->m_points[id[j]][2];
     }
 
     MatrixXf Bt = B.transpose();
@@ -388,8 +392,8 @@ void StannPointCloudManager<T>::savePointsAndNormals(string filename)
 
     for(size_t i = 0; i < m_numPoints; i++)
     {
-        out << m_points[i][0]  << " " << m_points[i][1]  << " " << m_points[i][2] << " "
-            << m_normals[i][0] << " " << m_normals[i][1] << " " << m_normals[i][2] << endl;
+        out << this->m_points[i][0]  << " " << this->m_points[i][1]  << " " << this->m_points[i][2] << " "
+            << this->m_normals[i][0] << " " << this->m_normals[i][1] << " " << this->m_normals[i][2] << endl;
         ++p;
     }
     cout << endl;
@@ -414,7 +418,7 @@ void StannPointCloudManager<T>::savePoints(string filename)
 
     for(size_t i = 0; i < m_numPoints; i++)
     {
-        out << m_points[i][0] << " " << m_points[i][1] << " " << m_points[i][2] << endl;
+        out << this->m_points[i][0] << " " << this->m_points[i][1] << " " << this->m_points[i][2] << endl;
         ++p;
     }
 
@@ -427,25 +431,25 @@ void StannPointCloudManager<T>::savePLY(string filename)
     PLYIO ply_writer;
 
     // Create vertex element
-    if(m_points)
+    if(this->m_points)
     {
         PLYElement* vertex_element = new PLYElement("vertex", m_numPoints);
         vertex_element->addProperty("x", "float");
         vertex_element->addProperty("y", "float");
         vertex_element->addProperty("z", "float");
         ply_writer.addElement(vertex_element);
-        ply_writer.setIndexedVertexArray(m_points, m_numPoints);
+        ply_writer.setIndexedVertexArray(this->m_points, m_numPoints);
     }
 
     // Create normal element
-    if(m_normals)
+    if(this->m_normals)
       {
           PLYElement* normal_element = new PLYElement("normal", m_numPoints);
           normal_element->addProperty("x", "float");
           normal_element->addProperty("y", "float");
           normal_element->addProperty("z", "float");
           ply_writer.addElement(normal_element);
-          ply_writer.setIndexedVertexArray(m_normals, m_numPoints);
+          ply_writer.setIndexedVertexArray(this->m_normals, m_numPoints);
       }
 
     ply_writer.save(filename);

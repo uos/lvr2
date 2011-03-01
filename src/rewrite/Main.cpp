@@ -40,14 +40,19 @@ int main(int argc, char** argv)
 
 
     // Create a point cloud manager
-    StannPointCloudManager<float> manager(points, 0, numPoints, Vertexf());
+    StannPointCloudManager<float> manager(points,
+                                          0,
+                                          numPoints,
+                                          Vertexf(),
+                                          options.getKn(),
+                                          options.getKi());
 
     // Save points and normals
     manager.save("normals.nor");
     manager.save("points.pts");
 
     // Create a new reconstruction object
-    MCReconstruction<float, Vertexf, size_t> reconstruction(manager);
+    MCReconstruction<float, size_t> reconstruction(manager, options.getVoxelsize());
 
 	return 0;
 }
