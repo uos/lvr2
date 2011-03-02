@@ -34,8 +34,8 @@ public:
      *                      of the volume tabe by the data points) used by
      *                      the reconstruction.
      */
-    MCReconstruction(PointCloudManager<CoordType> &manager,  int resolution)
-        : Reconstructor<CoordType, IndexType>(manager)  {};
+    MCReconstruction(PointCloudManager<CoordType> &manager,  int resolution);
+
 
     /**
      * @brief Destructor.
@@ -51,10 +51,19 @@ public:
 
 private:
 
-
+    /**
+     * @brief Calculates the maximal grid indices
+     */
+    void calcIndices();
 
     /// The used voxelsize fpr reconstruction
     CoordType              m_voxelsize;
+
+    size_t                 m_maxIndex;
+    size_t                 m_maxIndexSquare;
+    size_t                 m_maxIndexX;
+    size_t                 m_maxIndexY;
+    size_t                 m_maxIndexZ;
 
 };
 

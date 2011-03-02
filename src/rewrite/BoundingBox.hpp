@@ -105,6 +105,23 @@ public:
 	 */
 	T                   getLongestSide();
 
+	/**
+	 * @brief Returns the x-size of the bounding box
+	 */
+	T                   getXSize();
+
+    /**
+     * @brief Returns the y-size of the bounding box
+     */
+    T                   getYSize();
+
+    /**
+     * @brief Returns the z-size of the bounding box
+     */
+    T                   getZSize();
+
+
+
 private:
 
 	/// The lower right point of the bounding box

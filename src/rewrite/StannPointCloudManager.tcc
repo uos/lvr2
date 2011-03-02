@@ -19,6 +19,7 @@ StannPointCloudManager<T>::StannPointCloudManager(T **points,
         : m_kn(kn), m_ki(ki), m_numPoints(n)
 {
 
+    // Save data
     this->m_points = points;
     this->m_normals = normals;
 
@@ -26,6 +27,7 @@ StannPointCloudManager<T>::StannPointCloudManager(T **points,
     assert(this->m_points);
 
     // Calculate bounding box
+    cout << timestamp << " Calculating bounding box." << endl;
     for(size_t i = 0; i < n; i++)
     {
         this->m_boundingBox.expand(points[i][0], points[i][1], points[i][2]);
