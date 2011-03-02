@@ -36,8 +36,8 @@ BoundingBox<T>::BoundingBox(T x_min, T y_min, T z_min,
 template<typename T>
 bool BoundingBox<T>::isValid()
 {
-    T max_val = numeric_limits<T>::max;
-    T min_val = numeric_limits<T>::min;
+    T max_val = numeric_limits<T>::max();
+    T min_val = numeric_limits<T>::min();
 
 	Vertex<T> v_min(min_val, min_val, min_val);
 	Vertex<T> v_max(max_val, max_val, max_val);
@@ -113,5 +113,27 @@ T BoundingBox<T>::getLongestSide()
 {
     std::max(m_xSize, std::max(m_ySize, m_zSize));
 }
+
+template<typename T>
+T BoundingBox<T>::getXSize()
+{
+    return m_xSize;
+}
+
+template<typename T>
+T BoundingBox<T>::getYSize()
+{
+    return m_ySize;
+}
+
+
+template<typename T>
+T BoundingBox<T>::getZSize()
+{
+    return m_zSize;
+}
+
+
+
 
 } // namespace lssr
