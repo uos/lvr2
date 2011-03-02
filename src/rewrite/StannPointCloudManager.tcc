@@ -6,6 +6,7 @@
  */
 
 #include <boost/filesystem.hpp>
+#include "BoundingBox.hpp"
 
 namespace lssr{
 
@@ -13,7 +14,6 @@ template<typename T>
 StannPointCloudManager<T>::StannPointCloudManager(T **points,
         T **normals,
         size_t n,
-        const Vertex<T> &center,
         const size_t &kn,
         const size_t &ki)
         : m_kn(kn), m_ki(ki), m_numPoints(n)
@@ -24,6 +24,12 @@ StannPointCloudManager<T>::StannPointCloudManager(T **points,
 
     // Be sure that point information was given
     assert(this->m_points);
+
+    // Calculate bounding box
+    for(size_t i = 0; i < n; i++)
+    {
+        this->m_boundingBox.expand(points[i][0], points[i][1], points[i][2]);
+    }
 
     // Create kd tree
     cout << timestamp << " Creating STANN Kd-Tree..." << endl;

@@ -1,3 +1,4 @@
+
 /*
  * BoundingBox.h
  *
@@ -98,6 +99,11 @@ public:
 	 * @brief Returns the center point of the bounding box.
 	 */
 	Vertex<T>           getCentroid(){return m_centroid;};
+
+	/**
+	 * @brief Returns the longest side of the bounding box
+	 */
+	T                   getLongestSide();
 
 private:
 

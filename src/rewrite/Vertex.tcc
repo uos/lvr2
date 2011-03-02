@@ -5,12 +5,13 @@
  *      Author: Thomas Wiemann
  */
 
+#include <stdexcept>
+
 namespace lssr
 {
 
 template<typename CoordType>
 CoordType Vertex<CoordType>::operator[](const int &index) const
-
 {
     CoordType ret = 0.0;
 
@@ -25,9 +26,24 @@ CoordType Vertex<CoordType>::operator[](const int &index) const
         ret = m_z;
         break;
     default:
-        cout << "Vertex: Warning: Access index out of range." << endl;
+        throw std::overflow_error("Access index out of range.");
     }
     return ret;
+}
+
+template<typename CoordType>
+CoordType& Vertex<CoordType>::operator[](const int &index)
+{
+    switch(index){
+    case 0:
+        return m_x;
+    case 1:
+        return m_y;
+    case 2:
+        return m_z;
+    default:
+        throw std::overflow_error("Access index out of range.");
+    }
 }
 
 template<typename CoordType>

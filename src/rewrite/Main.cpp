@@ -43,7 +43,6 @@ int main(int argc, char** argv)
     StannPointCloudManager<float> manager(points,
                                           0,
                                           numPoints,
-                                          Vertexf(),
                                           options.getKn(),
                                           options.getKi());
 

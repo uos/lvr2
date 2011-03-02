@@ -67,13 +67,13 @@ public:
 	 * @param normals   A normal array. If a null pointer is passed, normals
 	 *                  are automatically calculated.
 	 * @param n         The number of points in the data set
+	 * @param bBox      The bounding box of the loaded data set
 	 * @param kn        The number of neighbor points used for normal estimation
 	 * @param ki        The number of neighbor points used for normal interpolation
 	 */
 	StannPointCloudManager(T **points,
 	                       T **normals,
 	                       size_t n,
-	                       const Vertex<T> &center,
 	                       const size_t &kn = 10,
 	                       const size_t &ki = 10);
 

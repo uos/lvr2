@@ -25,17 +25,43 @@ template<typename CoordType, typename IndexType>
 class MCReconstruction : public Reconstructor<CoordType, IndexType>
 {
 public:
-    MCReconstruction(PointCloudManager<CoordType> &manager, CoordType voxelsize) : Reconstructor<CoordType, IndexType>(manager)  {};
+
+    /**
+     * @brief Constructor.
+     *
+     * @param manager       A point cloud manager instance
+     * @param resolution    The number of intersections (on the longest side
+     *                      of the volume tabe by the data points) used by
+     *                      the reconstruction.
+     */
+    MCReconstruction(PointCloudManager<CoordType> &manager,  int resolution)
+        : Reconstructor<CoordType, IndexType>(manager)  {};
+
+    /**
+     * @brief Destructor.
+     */
     virtual ~MCReconstruction() {};
-    virtual void getMesh(BaseMesh<Vertex<CoordType>, IndexType> &mesh) {};
+
+    /**
+     * @brief Returns the surface reconstruction of the given point set.
+     *
+     * @param mesh
+     */
+    virtual void getMesh(BaseMesh<Vertex<CoordType>, IndexType> &mesh);
 
 private:
 
+
+
+    /// The used voxelsize fpr reconstruction
     CoordType              m_voxelsize;
 
 };
 
 
 } // namespace lssr
+
+
+#include "MCReconstruction.tcc"
 
 #endif /* MCRECONSTRUCTION_H_ */
