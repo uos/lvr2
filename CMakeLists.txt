@@ -8,6 +8,7 @@ link_directories("${CMAKE_SOURCE_DIR}/lib")
 include_directories(${LSSR_SOURCE_DIR}/ext/Eigen)
 include_directories(${LSSR_SOURCE_DIR}/ext/stann)
 include_directories(${LSSR_SOURCE_DIR})
+include_directories(${LSSR_SOURCE_DIR}/src/rewrite)
 
 set(ADDITIONAL_COMPILER_FLAGS "-O3 -msse3 -fpermissive -Wno-deprecated -Wno-write-strings -g")
 
