@@ -13,6 +13,7 @@ using std::vector;
 
 #include "Vertex.hpp"
 #include "Normal.hpp"
+#include "BoundingBox.hpp"
 
 namespace lssr
 {
@@ -27,7 +28,7 @@ class PointCloudManager
 {
 public:
 	/**
-	 * Returns the k closest neighbor vertices to a given query point
+	 * @brief Returns the k closest neighbor vertices to a given query point
 	 *
 	 * @param v			A query vertex
 	 * @param k			The (max) number of returned closest points to v
@@ -37,7 +38,7 @@ public:
 		const size_t &k, vector<Vertex<T> > &nb) = 0;
 
 	/**
-	 * Return the k closest neighbor normals to a given query point
+	 * @brief Returns the k closest neighbor normals to a given query point
 	 *
 	 * @param n			A query vertex
 	 * @param k			The (max) number of returned closest points to v
@@ -45,6 +46,11 @@ public:
 	 */
 	virtual void getkClosestNormals(const Vertex<T> &n,
 		const size_t &k, vector<Normal<T> > &nb) = 0;
+
+	/**
+	 * @brief Returns the bounding box of the loaded point set
+	 */
+	virtual BoundingBox<T>& getBoundingBox();
 
 protected:
 
@@ -54,8 +60,12 @@ protected:
     /// The point normals
     T**                         m_normals;
 
+    /// The bounding box of the point set
+    BoundingBox<T>              m_boundingBox;
 };
 
 } // namespace lssr
+
+#include "PointCloudManager.tcc"
 
 #endif /* POINTCLOUDMANAGER_H_ */

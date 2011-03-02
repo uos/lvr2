@@ -142,9 +142,14 @@ public:
 	}
 
 	/**
-	 * @brief	Indexed coordinate access
+	 * @brief	Indexed coordinate access (reading)
 	 */
 	virtual CoordType operator[](const int &index) const;
+
+    /**
+     * @brief   Indexed coordinate access (writing)
+     */
+    virtual CoordType& operator[](const int &index);
 
 
 	/// The x-coordinate of the vertex

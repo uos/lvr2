@@ -11,8 +11,8 @@ namespace lssr
 template<typename T>
 BoundingBox<T>::BoundingBox()
 {
-	T max_val = numeric_limits<T>::max;
-	T min_val = numeric_limits<T>::min;
+	T max_val = numeric_limits<T>::max();
+	T min_val = numeric_limits<T>::min();
 
 	m_min = Vertex<T>(max_val, max_val, max_val);
 	m_max = Vertex<T>(min_val, min_val, min_val);
@@ -61,42 +61,42 @@ T BoundingBox<T>::getRadius()
 template<typename T>
 inline void BoundingBox<T>::expand(Vertex<T> v)
 {
-    m_min.x = std::min(v.x, m_min.x);
-    m_min.y = std::min(v.y, m_min.y);
-    m_min.z = std::min(v.z, m_min.z);
+    m_min[0] = std::min(v[0], m_min[0]);
+    m_min[1] = std::min(v[1], m_min[1]);
+    m_min[2] = std::min(v[2], m_min[2]);
 
-    m_max.x = std::max(v.x, m_max.x);
-    m_max.y = std::max(v.y, m_max.y);
-    m_max.z = std::max(v.z, m_max.z);
+    m_max[0] = std::max(v[0], m_max[0]);
+    m_max[1] = std::max(v[1], m_max[1]);
+    m_max[2] = std::max(v[2], m_max[2]);
 
-    m_xSize = fabs(m_max.x - m_min.x);
-    m_ySize = fabs(m_max.y - m_min.y);
-    m_zSize = fabs(m_max.z - m_min.z);
+    m_xSize = fabs(m_max[0] - m_min[0]);
+    m_ySize = fabs(m_max[1] - m_min[1]);
+    m_zSize = fabs(m_max[2] - m_min[2]);
 
-    m_centroid = Vertex<T>(m_max.x - m_min.x,
-                      m_max.y - m_min.y,
-                      m_max.z - m_min.z);
+    m_centroid = Vertex<T>(m_max[0] - m_min[0],
+                           m_max[1] - m_min[1],
+                           m_max[2] - m_min[2]);
 
 }
 
 template<typename T>
 inline void BoundingBox<T>::expand(T x, T y, T z)
 {
-    m_min.x = std::min(x, m_min.x);
-    m_min.y = std::min(y, m_min.y);
-    m_min.z = std::min(z, m_min.z);
+    m_min[0] = std::min(x, m_min[0]);
+    m_min[1] = std::min(y, m_min[1]);
+    m_min[2] = std::min(z, m_min[2]);
 
-    m_max.x = std::max(x, m_max.x);
-    m_max.y = std::max(y, m_max.y);
-    m_max.z = std::max(z, m_max.z);
+    m_max[0] = std::max(x, m_max[0]);
+    m_max[1] = std::max(y, m_max[1]);
+    m_max[2] = std::max(z, m_max[2]);
 
-    m_xSize = fabs(m_max.x - m_min.x);
-    m_ySize = fabs(m_max.y - m_min.y);
-    m_zSize = fabs(m_max.z - m_min.z);
+    m_xSize = fabs(m_max[0] - m_min[0]);
+    m_ySize = fabs(m_max[1] - m_min[1]);
+    m_zSize = fabs(m_max[2] - m_min[2]);
 
-    m_centroid = Vertex<T>(m_min.x + 0.5 * m_xSize,
-                      m_min.y + 0.5 * m_ySize,
-                      m_min.z + 0.5 * m_zSize);
+    m_centroid = Vertex<T>(m_min[0] + 0.5 * m_xSize,
+                           m_min[1] + 0.5 * m_ySize,
+                           m_min[2] + 0.5 * m_zSize);
 
 }
 
@@ -106,6 +106,12 @@ inline void BoundingBox<T>::expand(BoundingBox<T>& bb)
     //expand(bb.m_centroid);
     expand(bb.m_min);
     expand(bb.m_max);
+}
+
+template<typename T>
+T BoundingBox<T>::getLongestSide()
+{
+    std::max(m_xSize, std::max(m_ySize, m_zSize));
 }
 
 } // namespace lssr
