@@ -5,6 +5,7 @@ set(LSSR_SOURCES
     Timestamp.cpp   
     StannPointCloudManager.hpp
     MCReconstruction.hpp
+    BoundingBox.hpp
     Progress.cpp
     PLYProperty.cpp
     PLYElements.cpp
