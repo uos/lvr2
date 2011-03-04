@@ -207,9 +207,6 @@ private:
 	/// STANN tree to manage the data points
 	sfcnn< T*, 3, T>            m_pointTree;
 
-	/// The currently stored number of points
-	size_t                      m_numPoints;
-
 	/// The number of neighbors used for initial normal estimation
 	int                         m_kn;
 
