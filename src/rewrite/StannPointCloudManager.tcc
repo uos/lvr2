@@ -16,12 +16,13 @@ StannPointCloudManager<T>::StannPointCloudManager(T **points,
         size_t n,
         const size_t &kn,
         const size_t &ki)
-        : m_kn(kn), m_ki(ki), m_numPoints(n)
+        : m_kn(kn), m_ki(ki)
 {
 
     // Save data
     this->m_points = points;
     this->m_normals = normals;
+    this->m_numPoints = n;
 
     // Be sure that point information was given
     assert(this->m_points);
@@ -58,7 +59,7 @@ void StannPointCloudManager<T>::estimateSurfaceNormals()
     cout << timestamp << "Initializing normal array..." << endl;
 
     //Initialize normal array
-    this->m_normals = new float*[m_numPoints];
+    this->m_normals = new float*[this->m_numPoints];
 
     float mean_distance;
     // Create a progress counter
@@ -66,7 +67,7 @@ void StannPointCloudManager<T>::estimateSurfaceNormals()
     ProgressBar progress(m_numPoints, comment);
 
     #pragma omp parallel for
-    for(int i = 0; i < m_numPoints; i++){
+    for(int i = 0; i < this->m_numPoints; i++){
 
         Vertexf query_point;
         Normalf normal;
@@ -158,7 +159,7 @@ template<typename T>
 void StannPointCloudManager<T>::interpolateSurfaceNormals()
 {
     // Create a temporal normal array for the
-    vector<Normal<T> > tmp(m_numPoints, Normal<T>());
+    vector<Normal<T> > tmp(this->m_numPoints, Normal<T>());
 
     // Create progress output
     string comment = timestamp.getElapsedTime() + "Interpolating normals ";
@@ -166,7 +167,7 @@ void StannPointCloudManager<T>::interpolateSurfaceNormals()
 
     // Interpolate normals
     #pragma omp parallel for
-    for(int i = 0; i < m_numPoints; i++){
+    for(int i = 0; i < this->m_numPoints; i++){
 
         vector<unsigned long> id;
         vector<double> di;
@@ -396,7 +397,7 @@ void StannPointCloudManager<T>::savePointsAndNormals(string filename)
     }
 
     string prefix = timestamp.getElapsedTime() + "Saving points and normals to '" + filename + "'.";
-    ProgressCounter p(m_numPoints, prefix);
+    ProgressCounter p(this->m_numPoints, prefix);
 
     for(size_t i = 0; i < m_numPoints; i++)
     {

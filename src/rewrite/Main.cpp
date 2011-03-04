@@ -17,7 +17,7 @@
 
 #include "IndexedTriangleMesh.hpp"
 #include "StannPointCloudManager.hpp"
-#include "MCReconstruction.hpp"
+#include "FastReconstruction.hpp"
 #include "PLYIO.hpp"
 #include "Options.hpp"
 #include "Matrix4.hpp"

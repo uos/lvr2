@@ -52,6 +52,14 @@ public:
 	 */
 	virtual BoundingBox<T>& getBoundingBox();
 
+	/**
+	 * @brief Returns the points at index \ref{index} in the point array
+	 *
+	 * @param index
+	 * @return
+	 */
+	virtual T* getPoint(size_t index);
+
 protected:
 
     /// The currently stored points
@@ -62,6 +70,8 @@ protected:
 
     /// The bounding box of the point set
     BoundingBox<T>              m_boundingBox;
+
+    size_t                      m_numPoints;
 };
 
 } // namespace lssr
