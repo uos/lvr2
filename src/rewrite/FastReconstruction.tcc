@@ -74,124 +74,124 @@ IndexType FastReconstruction<CoordType, IndexType>::findQueryPoint(
 template<typename CoordType, typename IndexType>
 void FastReconstruction<CoordType, IndexType>::getMesh(BaseMesh<Vertex<CoordType>, IndexType> &mesh)
 {
-    cout << timestamp << "Creating Grid..." << endl;
-
-    //  Needed local variables
-    int index_x, index_y, index_z;
-    size_t hash_value;
-
-    float vsh = 0.5 * m_voxelsize;
-
-    // Some iterators for hash map accesses
-    typename hash_map<size_t, FastBox<CoordType, IndexType>* >::iterator it;
-    typename hash_map<size_t, FastBox<CoordType, IndexType>* >::iterator neighbor_it;
-
-    // Values for current and global indices. Current refers to a
-    // already present query point, global index is id that the next
-    // created query point will get
-    int global_index = 0;
-    int current_index = 0;
-
-    int dx, dy, dz;
-
-    // Get min and max vertex of the point clouds bounding box
-    BoundingBox<CoordType> bounding_box = this->m_manager.getBoundingBox();
-    Vertex<CoordType> v_min = bounding_box.getMin();
-    Vertex<CoordType> v_max = bounding_box.getMax();
-
-    for(size_t i = 0; i < this->m_manager.getNumPoints(); i++)
-    {
-        /// TODO: Replace with Vertex<> ???
-        index_x = calcIndex((this->m_manager[i][0] - v_min[0]) / m_voxelsize);
-        index_y = calcIndex((this->m_manager[i][1] - v_min[1]) / m_voxelsize);
-        index_z = calcIndex((this->m_manager[i][2] - v_min[2]) / m_voxelsize);
-
-
-        for(int j = 0; j < 8; j++){
-
-            // Get the grid offsets for the neighboring grid position
-            // for the given box corner
-            dx = HGCreateTable[j][0];
-            dy = HGCreateTable[j][1];
-            dz = HGCreateTable[j][2];
-
-            hash_value = hashValue(index_x + dx, index_y + dy, index_z +dz);
-
-
-            it = m_cells.find(hash_value);
-            if(it == m_cells.end()){
-                //Calculate box center
-                Vertex<CoordType> box_center((index_x + dx) * m_voxelsize + v_min[0],
-                                             (index_y + dy) * m_voxelsize + v_min[1],
-                                             (index_z + dz) * m_voxelsize + v_min[2]);
-
-                //Create new box
-                FastBox<CoordType, IndexType>* box = new FastBox<CoordType, IndexType>(box_center);
-
-                //Setup the box itself
-                for(int k = 0; k < 8; k++){
-
-                    //Find point in Grid
-                    current_index = findQueryPoint(k, index_x + dx, index_y + dy, index_z + dz);
-
-                    //If point exist, save index in box
-                    if(current_index != -1) box->setVertex(k, current_index);
-
-                    //Otherwise create new grid point and associate it with the current box
-                    else{
-                        Vertex<CoordType> position(box_center[0] + box_creation_table[k][0] * vsh,
-                                                   box_center[1] + box_creation_table[k][1] * vsh,
-                                                   box_center[2] + box_creation_table[k][2] * vsh);
-
-                        m_queryPoints.push_back(QueryPoint<CoordType>(position));
-
-                        box->setVertex(k, global_index);
-                        global_index++;
-
-                    }
-                }
-
-                //Set pointers to the neighbors of the current box
-                int neighbor_index = 0;
-                int neighbor_hash = 0;
-
-                for(int a = -1; a < 2; a++)
-                {
-                    for(int b = -1; b < 2; b++)
-                    {
-                        for(int c = -1; c < 2; c++)
-                        {
-
-                            //Calculate hash value for current neighbor cell
-                            neighbor_hash = hashValue(index_x + dx + a,
-                                                      index_y + dy + b,
-                                                      index_z + dz + c);
-
-                            //Try to find this cell in the grid
-                            neighbor_it = m_cells.find(neighbor_hash);
-
-                            //If it exists, save pointer in box
-                            if(neighbor_it != m_cells.end())
-                            {
-                                box->setNeighbor(neighbor_index, (*neighbor_it).second);
-                            }
-
-                            neighbor_index++;
-                        }
-                    }
-                }
-
-                m_cells[hash_value] = box;
-            }
-        }
-    }
-    cout << timestamp << "Finished Grid Creation. Number of generated cells:        " << m_cells.size() << endl;
-    cout << timestamp << "Finished Grid Creation. Number of generated query points: " << m_queryPoints.size() << endl;
 }
 
 template<typename CoordType, typename IndexType>
 void FastReconstruction<CoordType, IndexType>::createGrid()
 {
+    cout << timestamp << "Creating Grid..." << endl;
+
+       //  Needed local variables
+       int index_x, index_y, index_z;
+       size_t hash_value;
+
+       float vsh = 0.5 * m_voxelsize;
+
+       // Some iterators for hash map accesses
+       typename hash_map<size_t, FastBox<CoordType, IndexType>* >::iterator it;
+       typename hash_map<size_t, FastBox<CoordType, IndexType>* >::iterator neighbor_it;
+
+       // Values for current and global indices. Current refers to a
+       // already present query point, global index is id that the next
+       // created query point will get
+       int global_index = 0;
+       int current_index = 0;
+
+       int dx, dy, dz;
+
+       // Get min and max vertex of the point clouds bounding box
+       BoundingBox<CoordType> bounding_box = this->m_manager.getBoundingBox();
+       Vertex<CoordType> v_min = bounding_box.getMin();
+       Vertex<CoordType> v_max = bounding_box.getMax();
+
+       for(size_t i = 0; i < this->m_manager.getNumPoints(); i++)
+       {
+           /// TODO: Replace with Vertex<> ???
+           index_x = calcIndex((this->m_manager[i][0] - v_min[0]) / m_voxelsize);
+           index_y = calcIndex((this->m_manager[i][1] - v_min[1]) / m_voxelsize);
+           index_z = calcIndex((this->m_manager[i][2] - v_min[2]) / m_voxelsize);
+
+
+           for(int j = 0; j < 8; j++){
+
+               // Get the grid offsets for the neighboring grid position
+               // for the given box corner
+               dx = HGCreateTable[j][0];
+               dy = HGCreateTable[j][1];
+               dz = HGCreateTable[j][2];
+
+               hash_value = hashValue(index_x + dx, index_y + dy, index_z +dz);
+
+
+               it = m_cells.find(hash_value);
+               if(it == m_cells.end()){
+                   //Calculate box center
+                   Vertex<CoordType> box_center((index_x + dx) * m_voxelsize + v_min[0],
+                                                (index_y + dy) * m_voxelsize + v_min[1],
+                                                (index_z + dz) * m_voxelsize + v_min[2]);
+
+                   //Create new box
+                   FastBox<CoordType, IndexType>* box = new FastBox<CoordType, IndexType>(box_center);
+
+                   //Setup the box itself
+                   for(int k = 0; k < 8; k++){
+
+                       //Find point in Grid
+                       current_index = findQueryPoint(k, index_x + dx, index_y + dy, index_z + dz);
+
+                       //If point exist, save index in box
+                       if(current_index != -1) box->setVertex(k, current_index);
+
+                       //Otherwise create new grid point and associate it with the current box
+                       else{
+                           Vertex<CoordType> position(box_center[0] + box_creation_table[k][0] * vsh,
+                                                      box_center[1] + box_creation_table[k][1] * vsh,
+                                                      box_center[2] + box_creation_table[k][2] * vsh);
+
+                           m_queryPoints.push_back(QueryPoint<CoordType>(position));
+
+                           box->setVertex(k, global_index);
+                           global_index++;
+
+                       }
+                   }
+
+                   //Set pointers to the neighbors of the current box
+                   int neighbor_index = 0;
+                   int neighbor_hash = 0;
+
+                   for(int a = -1; a < 2; a++)
+                   {
+                       for(int b = -1; b < 2; b++)
+                       {
+                           for(int c = -1; c < 2; c++)
+                           {
+
+                               //Calculate hash value for current neighbor cell
+                               neighbor_hash = hashValue(index_x + dx + a,
+                                                         index_y + dy + b,
+                                                         index_z + dz + c);
+
+                               //Try to find this cell in the grid
+                               neighbor_it = m_cells.find(neighbor_hash);
+
+                               //If it exists, save pointer in box
+                               if(neighbor_it != m_cells.end())
+                               {
+                                   box->setNeighbor(neighbor_index, (*neighbor_it).second);
+                               }
+
+                               neighbor_index++;
+                           }
+                       }
+                   }
+
+                   m_cells[hash_value] = box;
+               }
+           }
+       }
+       cout << timestamp << "Finished Grid Creation. Number of generated cells:        " << m_cells.size() << endl;
+       cout << timestamp << "Finished Grid Creation. Number of generated query points: " << m_queryPoints.size() << endl;
 
 }
 
