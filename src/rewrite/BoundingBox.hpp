@@ -121,6 +121,15 @@ public:
     T                   getZSize();
 
 
+    /**
+     * @brief Returns the upper right coordinates
+     */
+    Vertex<T>           getMax() const;
+
+    /**
+     * @brief Returns the lower left coordinates
+     */
+    Vertex<T>           getMin() const;
 
 private:
 

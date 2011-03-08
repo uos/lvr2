@@ -60,6 +60,16 @@ public:
 	 */
 	virtual T* getPoint(size_t index);
 
+	/**
+	 * @brief Returns the number of managed points
+	 */
+	virtual size_t getNumPoints();
+
+	/**
+	 * @brief Returns the point at the given \ref{index}
+	 */
+	virtual const T* operator[](const size_t &index) const;
+
 protected:
 
     /// The currently stored points

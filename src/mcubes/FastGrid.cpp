@@ -167,8 +167,8 @@ void FastGrid::createGrid(){
 
 					//If point exist, save index in box
 					if(current_index != -1) box->vertices[k] = current_index;
-					//Otherwise create new grid point and associate it with the current box
 					else{
+					    //Otherwise create new grid point and associate it with the current box
 						Vertex position(box_center.x + box_creation_table[k][0] * vsh,
 								        box_center.y + box_creation_table[k][1] * vsh,
 								        box_center.z + box_creation_table[k][2] * vsh);

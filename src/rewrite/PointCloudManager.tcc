@@ -23,5 +23,17 @@ T* PointCloudManager<T>::getPoint(size_t index)
     return m_points[index];
 }
 
+template<typename T>
+size_t PointCloudManager<T>::getNumPoints()
+{
+    return m_numPoints;
+}
+
+template<typename T>
+const T* PointCloudManager<T>::operator[](const size_t& index) const
+{
+    return m_points[index];
+}
+
 }
 

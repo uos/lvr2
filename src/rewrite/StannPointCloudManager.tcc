@@ -64,7 +64,7 @@ void StannPointCloudManager<T>::estimateSurfaceNormals()
     float mean_distance;
     // Create a progress counter
     string comment = timestamp.getElapsedTime() + "Estimating normals ";
-    ProgressBar progress(m_numPoints, comment);
+    ProgressBar progress(this->m_numPoints, comment);
 
     #pragma omp parallel for
     for(int i = 0; i < this->m_numPoints; i++){
@@ -163,7 +163,7 @@ void StannPointCloudManager<T>::interpolateSurfaceNormals()
 
     // Create progress output
     string comment = timestamp.getElapsedTime() + "Interpolating normals ";
-    ProgressBar progress(m_numPoints, comment);
+    ProgressBar progress(this->m_numPoints, comment);
 
     // Interpolate normals
     #pragma omp parallel for
@@ -210,7 +210,7 @@ void StannPointCloudManager<T>::interpolateSurfaceNormals()
     cout << endl;
     cout << timestamp << "Copying normals..." << endl;
 
-    for(int i = 0; i < m_numPoints; i++){
+    for(int i = 0; i < this->m_numPoints; i++){
         this->m_normals[i][0] = tmp[i][0];
         this->m_normals[i][1] = tmp[i][1];
         this->m_normals[i][2] = tmp[i][2];
@@ -399,7 +399,7 @@ void StannPointCloudManager<T>::savePointsAndNormals(string filename)
     string prefix = timestamp.getElapsedTime() + "Saving points and normals to '" + filename + "'.";
     ProgressCounter p(this->m_numPoints, prefix);
 
-    for(size_t i = 0; i < m_numPoints; i++)
+    for(size_t i = 0; i < this->m_numPoints; i++)
     {
         out << this->m_points[i][0]  << " " << this->m_points[i][1]  << " " << this->m_points[i][2] << " "
             << this->m_normals[i][0] << " " << this->m_normals[i][1] << " " << this->m_normals[i][2] << endl;
@@ -423,9 +423,9 @@ void StannPointCloudManager<T>::savePoints(string filename)
     }
 
     string prefix = timestamp.getElapsedTime() + "Saving points to '" + filename + "'.";
-    ProgressCounter p(m_numPoints, prefix);
+    ProgressCounter p(this->m_numPoints, prefix);
 
-    for(size_t i = 0; i < m_numPoints; i++)
+    for(size_t i = 0; i < this->m_numPoints; i++)
     {
         out << this->m_points[i][0] << " " << this->m_points[i][1] << " " << this->m_points[i][2] << endl;
         ++p;
@@ -442,23 +442,23 @@ void StannPointCloudManager<T>::savePLY(string filename)
     // Create vertex element
     if(this->m_points)
     {
-        PLYElement* vertex_element = new PLYElement("vertex", m_numPoints);
+        PLYElement* vertex_element = new PLYElement("vertex", this->m_numPoints);
         vertex_element->addProperty("x", "float");
         vertex_element->addProperty("y", "float");
         vertex_element->addProperty("z", "float");
         ply_writer.addElement(vertex_element);
-        ply_writer.setIndexedVertexArray(this->m_points, m_numPoints);
+        ply_writer.setIndexedVertexArray(this->m_points, this->m_numPoints);
     }
 
     // Create normal element
     if(this->m_normals)
       {
-          PLYElement* normal_element = new PLYElement("normal", m_numPoints);
+          PLYElement* normal_element = new PLYElement("normal", this->m_numPoints);
           normal_element->addProperty("x", "float");
           normal_element->addProperty("y", "float");
           normal_element->addProperty("z", "float");
           ply_writer.addElement(normal_element);
-          ply_writer.setIndexedVertexArray(this->m_normals, m_numPoints);
+          ply_writer.setIndexedVertexArray(this->m_normals, this->m_numPoints);
       }
 
     ply_writer.save(filename);

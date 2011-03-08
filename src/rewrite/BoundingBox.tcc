@@ -133,6 +133,18 @@ T BoundingBox<T>::getZSize()
     return m_zSize;
 }
 
+template<typename T>
+Vertex<T> BoundingBox<T>::getMin() const
+{
+    return m_min;
+}
+
+
+template<typename T>
+Vertex<T> BoundingBox<T>::getMax() const
+{
+    return m_max;
+}
 
 
 
