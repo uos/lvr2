@@ -51,7 +51,7 @@ int main(int argc, char** argv)
     manager.save("points.pts");
 
     // Create a new reconstruction object
-    MCReconstruction<float, size_t> reconstruction(manager, options.getVoxelsize());
+    FastReconstruction<float, size_t> reconstruction(manager, options.getVoxelsize());
 
 	return 0;
 }

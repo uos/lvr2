@@ -3,9 +3,6 @@
 set(LSSR_SOURCES
     Options.cpp     
     Timestamp.cpp   
-    StannPointCloudManager.hpp
-    MCReconstruction.hpp
-    BoundingBox.hpp
     Progress.cpp
     PLYProperty.cpp
     PLYElements.cpp

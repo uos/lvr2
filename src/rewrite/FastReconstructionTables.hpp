@@ -63,4 +63,13 @@ const static int box_creation_table[8][3] = {
     {-1,  1,  1}
 };
 
+/**
+ * @brief This tables stors adjacency information for the
+ *        grid creation algorithm.
+ */
+const static int HGCreateTable[8][3] = {
+  { 0,  0,  0}, {-1,  0,  0}, {-1,  0, -1}, { 0,  0, -1},
+  { 0, -1,  0}, {-1, -1,  0}, { 1, -1, -1}, { 0, -1, -1}
+};
+
 #endif /* MCRECONSTRUCTIONTABLES_HPP_ */
