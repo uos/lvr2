@@ -15,12 +15,12 @@
  *
  */
 
-#include "IndexedTriangleMesh.hpp"
 #include "StannPointCloudManager.hpp"
 #include "FastReconstruction.hpp"
 #include "PLYIO.hpp"
 #include "Options.hpp"
 #include "Matrix4.hpp"
+#include "TriangleMesh.hpp"
 
 using namespace lssr;
 
@@ -38,7 +38,6 @@ int main(int argc, char** argv)
     size_t numPoints;
     float** points = plyio.getIndexedVertexArray(numPoints);
 
-
     // Create a point cloud manager
     StannPointCloudManager<float> manager(points,
                                           0,
@@ -46,12 +45,12 @@ int main(int argc, char** argv)
                                           options.getKn(),
                                           options.getKi());
 
-    // Save points and normals
-    manager.save("normals.nor");
-    manager.save("points.pts");
+    // Create an empty mesh
+    TriangleMesh<Vertex<float>, size_t > mesh;
 
     // Create a new reconstruction object
     FastReconstruction<float, size_t> reconstruction(manager, options.getVoxelsize());
+    reconstruction.getMesh(mesh);
 
 	return 0;
 }

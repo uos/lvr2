@@ -20,8 +20,8 @@ class LocalApproximation
 public:
     virtual void getSurface(BaseMesh<Vertex<CoordType>, IndexType> &mesh,
             PointCloudManager<CoordType> &manager,
-            Vertex<CoordType> center,
-            CoordType voxelsize) = 0;
+            IndexType globalIndex);
+
 };
 
 

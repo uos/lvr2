@@ -111,7 +111,7 @@ inline void BoundingBox<T>::expand(BoundingBox<T>& bb)
 template<typename T>
 T BoundingBox<T>::getLongestSide()
 {
-    std::max(m_xSize, std::max(m_ySize, m_zSize));
+    return std::max(m_xSize, std::max(m_ySize, m_zSize));
 }
 
 template<typename T>
