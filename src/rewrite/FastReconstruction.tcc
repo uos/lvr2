@@ -17,11 +17,15 @@ FastReconstruction<CoordType, IndexType>::FastReconstruction(PointCloudManager<C
     // Determine m_voxelsize
     assert(resolution > 0);
     BoundingBox<CoordType> bb = this->m_manager.getBoundingBox();
+
     assert(bb.isValid());
     m_voxelsize = (CoordType) bb.getLongestSide() / resolution;
 
+    FastBox<CoordType, IndexType>::m_voxelsize = m_voxelsize;
+
     // Calculate max grid indices
     calcIndices();
+    createGrid();
 
 
 }
@@ -69,11 +73,6 @@ IndexType FastReconstruction<CoordType, IndexType>::findQueryPoint(
     return -1;
 
 
-}
-
-template<typename CoordType, typename IndexType>
-void FastReconstruction<CoordType, IndexType>::getMesh(BaseMesh<Vertex<CoordType>, IndexType> &mesh)
-{
 }
 
 template<typename CoordType, typename IndexType>
@@ -192,6 +191,28 @@ void FastReconstruction<CoordType, IndexType>::createGrid()
        }
        cout << timestamp << "Finished Grid Creation. Number of generated cells:        " << m_cells.size() << endl;
        cout << timestamp << "Finished Grid Creation. Number of generated query points: " << m_queryPoints.size() << endl;
+
+}
+
+
+template<typename CoordType, typename IndexType>
+void FastReconstruction<CoordType, IndexType>::getMesh(BaseMesh<Vertex<CoordType>, IndexType> &mesh)
+{
+    // Status message for mesh generation
+    string comment = timestamp.getElapsedTime() + "Creating Mesh ";
+    ProgressBar progress(m_cells.size(), comment);
+
+    // Some pointers
+    FastBox<CoordType, IndexType>* b;
+    IndexType global_index = 0;
+
+    // Iterate through cells and calculate local approximations
+    typename hash_map<size_t, FastBox<CoordType, IndexType>* >::iterator it;
+    for(it = m_cells.begin(); it != m_cells.end(); it++){
+        b = it->second;
+        b->getSurface(mesh, m_queryPoints, global_index);
+        ++progress;
+    }
 
 }
 
