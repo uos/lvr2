@@ -26,10 +26,10 @@ public:
      *        information in the given parameters
      *
      * @param filename      The file to read
-     * @param points        The read point cloud data
      * @param count         The number of elements read
+     * @return The read point cloud data or a zero pointer of reading failed.
      */
-    AsciiIO(string filename, T** &points, size_t &count);
+    static T** read(string filename, size_t &count);
 
     /// TODO: Coordinate mapping for ascii files
 
@@ -39,7 +39,7 @@ private:
      * @brief Helper method. Returns the number of columns in the
      *        given file.
      */
-    int getEntriesInLine(string filename);
+    static int getEntriesInLine(string filename);
 };
 
 

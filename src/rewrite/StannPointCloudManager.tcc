@@ -36,6 +36,9 @@ StannPointCloudManager<T>::StannPointCloudManager(string filename,
                        const int &kd)
     : m_kn(kn), m_ki(ki), m_kd(kd)
 {
+    this->m_points = 0;
+    this->m_normals = 0;
+    this->m_numPoints = 0;
     this->readFromFile(filename);
     init();
 }
@@ -79,7 +82,7 @@ void StannPointCloudManager<T>::estimateSurfaceNormals()
     cout << timestamp << "Initializing normal array..." << endl;
 
     //Initialize normal array
-    this->m_normals = new float*[this->m_numPoints];
+    this->m_normals = new T*[this->m_numPoints];
 
     float mean_distance;
     // Create a progress counter
