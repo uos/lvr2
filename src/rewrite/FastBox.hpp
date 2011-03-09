@@ -9,7 +9,10 @@
 #define FastBox_H_
 
 #include "Vertex.hpp"
+#include "Normal.hpp"
 #include "QueryPoint.hpp"
+#include "MCTable.hpp"
+#include "FastBoxTables.hpp"
 #include <vector>
 
 using std::vector;
@@ -24,8 +27,6 @@ public:
     FastBox(Vertex<CoordType> &center);
     virtual ~FastBox() {};
 
-    static CoordType                m_voxelsize;
-
     void setVertex(int index,  IndexType value);
     void setNeighbor(int index, FastBox<CoordType, IndexType>* value);
 
@@ -33,11 +34,15 @@ public:
     FastBox<CoordType, IndexType>*     getNeighbor(int index);
 
     void getSurface(BaseMesh<Vertex<CoordType>, IndexType> &mesh, vector<QueryPoint<CoordType> > &query_points, IndexType &globalIndex);
+    static CoordType                m_voxelsize;
 
 private:
 
+    CoordType calcIntersection(CoordType x1, CoordType x2, CoordType d1, CoordType d2);
+    int  getIndex(vector<QueryPoint<CoordType> > &query_points);
     void getCorners(Vertex<CoordType> corners[], vector<QueryPoint<CoordType> > &query_points);
     void getDistances(CoordType distances[], vector<QueryPoint<CoordType> > &query_points);
+    void getIntersections(Vertex<CoordType> corners[], CoordType distance[], Vertex<CoordType> positions[]);
 
     Vertex<CoordType>               m_center;
     IndexType                       m_vertices[8];
