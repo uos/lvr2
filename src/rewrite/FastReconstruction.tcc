@@ -26,6 +26,7 @@ FastReconstruction<CoordType, IndexType>::FastReconstruction(PointCloudManager<C
     // Calculate max grid indices
     calcIndices();
     createGrid();
+    calcQueryPointValues();
 
 
 }
@@ -215,5 +216,28 @@ void FastReconstruction<CoordType, IndexType>::getMesh(BaseMesh<Vertex<CoordType
     }
 
 }
+
+template<typename CoordType, typename IndexType>
+void FastReconstruction<CoordType, IndexType>::calcQueryPointValues(){
+
+    // Status message output
+    string comment = timestamp.getElapsedTime() + "Calculating distance values ";
+    ProgressBar progress((int)m_queryPoints.size(), comment);
+
+    Timestamp ts;
+
+    // Calculate a distance value for each query point
+    #pragma omp parallel for
+    for(size_t i = 0; i < m_queryPoints.size(); i++){
+        QueryPoint<CoordType> p = m_queryPoints[i];
+        p.m_distance = this->m_manager.distance(p.m_position);
+        m_queryPoints[i] = p;
+        ++progress;
+    }
+
+    cout << endl;
+    cout << timestamp << "Elapsed time: " << ts << endl;
+}
+
 
 } //namespace lssr

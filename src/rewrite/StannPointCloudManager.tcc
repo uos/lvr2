@@ -14,9 +14,10 @@ template<typename T>
 StannPointCloudManager<T>::StannPointCloudManager(T **points,
         T **normals,
         size_t n,
-        const size_t &kn,
-        const size_t &ki)
-        : m_kn(kn), m_ki(ki)
+        const int &kn,
+        const int &ki,
+        const int &kd)
+        : m_kn(kn), m_ki(ki), m_kd(kd)
 {
 
     // Save data
@@ -24,19 +25,39 @@ StannPointCloudManager<T>::StannPointCloudManager(T **points,
     this->m_normals = normals;
     this->m_numPoints = n;
 
+    init();
+
+}
+
+template<typename T>
+StannPointCloudManager<T>::StannPointCloudManager(string filename,
+                       const int &kn,
+                       const int &ki,
+                       const int &kd)
+    : m_kn(kn), m_ki(ki), m_kd(kd)
+{
+    this->readFromFile(filename);
+    init();
+}
+
+template<typename T>
+void StannPointCloudManager<T>::init()
+{
     // Be sure that point information was given
     assert(this->m_points);
 
     // Calculate bounding box
-    cout << timestamp << " Calculating bounding box." << endl;
-    for(size_t i = 0; i < n; i++)
+    cout << timestamp << "Calculating bounding box." << endl;
+    for(size_t i = 0; i < this->m_numPoints; i++)
     {
-        this->m_boundingBox.expand(points[i][0], points[i][1], points[i][2]);
+        this->m_boundingBox.expand(this->m_points[i][0],
+                                   this->m_points[i][1],
+                                   this->m_points[i][2]);
     }
 
     // Create kd tree
-    cout << timestamp << " Creating STANN Kd-Tree..." << endl;
-    m_pointTree = sfcnn< T*, 3, T>(this->m_points, n, 4);
+    cout << timestamp << "Creating STANN Kd-Tree..." << endl;
+    m_pointTree = sfcnn< T*, 3, T>(this->m_points, this->m_numPoints, 4);
 
     // Estimate surface normals if necessary
     if(!this->m_normals)
@@ -48,7 +69,6 @@ StannPointCloudManager<T>::StannPointCloudManager(T **points,
     {
         cout << timestamp << " Using the given normals." << endl;
     }
-
 }
 
 template<typename T>
@@ -255,7 +275,7 @@ T StannPointCloudManager<T>::distance(Vertex<T> v, Plane<T> p)
 template<typename T>
 T StannPointCloudManager<T>::distance(Vertex<T> v)
 {
-    int k = 1;
+    int k = m_kd;
 
     vector<unsigned long> id;
     vector<double> di;

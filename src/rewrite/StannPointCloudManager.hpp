@@ -13,6 +13,7 @@
 #include "Progress.hpp"
 #include "Timestamp.hpp"
 #include "PLYIO.hpp"
+#include "AsciiIO.hpp"
 
 // External libraries in lssr source tree
 #include "../stann/sfcnn.hpp"
@@ -67,15 +68,30 @@ public:
 	 * @param normals   A normal array. If a null pointer is passed, normals
 	 *                  are automatically calculated.
 	 * @param n         The number of points in the data set
-	 * @param bBox      The bounding box of the loaded data set
 	 * @param kn        The number of neighbor points used for normal estimation
 	 * @param ki        The number of neighbor points used for normal interpolation
+	 * @param kd        The number of neighbor points used for distance value calculation
 	 */
 	StannPointCloudManager(T **points,
 	                       T **normals,
 	                       size_t n,
-	                       const size_t &kn = 10,
-	                       const size_t &ki = 10);
+	                       const int &kn = 10,
+	                       const int &ki = 10,
+	                       const int &kd = 10);
+
+	/**
+	 * @brief Trys to read the given file to create a new StannPointCloudManager
+	 *        instance.
+	 *
+	 * @param           The file to read from
+	 * @param kn        The number of neighbor points used for normal estimation
+     * @param ki        The number of neighbor points used for normal interpolation
+     * @param kd        The number of neighbor points used for distance value calculation
+	 */
+	StannPointCloudManager(string filename,
+	                       const int &kn = 10,
+	                       const int &ki = 10,
+	                       const int &kd = 10);
 
 	/**
 	 * @brief   Destructor
@@ -121,7 +137,19 @@ public:
 	 */
 	void save(string filename);
 
+
+    /**
+     * @brief Returns the distance of vertex v from the nearest tangent plane
+     */
+    virtual T distance(Vertex<T> v);
+
+
 private:
+
+    /**
+     * @brief Helper function for constructors
+     */
+    void init();
 
 	/**
 	 * @brief Save points and normals to a binary PLY file.
@@ -188,11 +216,6 @@ private:
 	T distance(Vertex<T> v, Plane<T> p);
 
 	/**
-	 * @brief Returns the distance of vertex v from the nearest tangent plane
-	 */
-	T distance(Vertex<T> v);
-
-	/**
 	 * @brief Calculates a tangent plane for the query point using the provided
 	 *        k-neighborhood
 	 *
@@ -212,6 +235,9 @@ private:
 
 	/// The number of neighbors used for normal interpolation
 	int                         m_ki;
+
+	/// The number of tangent planes used for distance determination
+	int                         m_kd;
 
 	/// The centroid of the point set
 	Vertex<T>               m_centroid;
