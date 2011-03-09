@@ -14,6 +14,7 @@ using std::vector;
 #include "Vertex.hpp"
 #include "Normal.hpp"
 #include "BoundingBox.hpp"
+#include "AsciiIO.hpp"
 
 namespace lssr
 {
@@ -70,7 +71,17 @@ public:
 	 */
 	virtual const T* operator[](const size_t &index) const;
 
+	virtual T distance(Vertex<T> v) = 0;
+
 protected:
+
+	/**
+	 * @brief Tries to read point and normal information from
+	 *        the given file
+	 *
+	 * @param filename      A file containing point cloud data.
+	 */
+	virtual void readFromFile(string filename);
 
     /// The currently stored points
     T**                         m_points;

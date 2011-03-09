@@ -69,6 +69,11 @@ private:
     void createGrid();
 
     /**
+     * @brief Calculates the distance for all generated query points
+     */
+    void calcQueryPointValues();
+
+    /**
      * @brief Tries to find an existing query point in the grid for
      *        the virtual box corner (1..8) for the  cell at (i, j, k)
      *        in the grid.

@@ -32,18 +32,14 @@ int main(int argc, char** argv)
     // Parse command line arguments
     Options options(argc, argv);
 
-    // Read given input file
-    PLYIO plyio;
-    plyio.read(options.getOutputFileName());
-    size_t numPoints;
-    float** points = plyio.getIndexedVertexArray(numPoints);
+    // Print set parameters
+    cout << options << endl;
 
     // Create a point cloud manager
-    StannPointCloudManager<float> manager(points,
-                                          0,
-                                          numPoints,
+    StannPointCloudManager<float> manager(options.getOutputFileName(),
                                           options.getKn(),
-                                          options.getKi());
+                                          options.getKi(),
+                                          options.getKd());
 
     // Create an empty mesh
     TriangleMesh<Vertex<float>, size_t > mesh;
