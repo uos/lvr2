@@ -50,15 +50,15 @@ void PointCloudManager<T>::readFromFile(string filename)
 
     if(extension == ".pts" || extension == ".3d" || extension == ".xyz" || extension == ".txt")
     {
-        AsciiIO<T>(filename, m_points, m_numPoints);
+        this->m_points = AsciiIO<T>::read(filename, this->m_numPoints);
     }
     else if(extension == ".ply")
     {
         // Read given input file
         PLYIO plyio;
         plyio.read(filename);
-        m_points = plyio.getIndexedVertexArray(m_numPoints);
-        m_normals = plyio.getIndexedNormalArray(m_numPoints);
+        this->m_points = plyio.getIndexedVertexArray(this->m_numPoints);
+        this->m_normals = plyio.getIndexedNormalArray(this->m_numPoints);
     }
 }
 

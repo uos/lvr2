@@ -18,9 +18,9 @@ namespace lssr
 {
 
 template<typename T>
-AsciiIO<T>::AsciiIO(string filename, T** &points, size_t &count)
+T** AsciiIO<T>::read(string filename, size_t &count)
 {
-    points = 0;
+    T** points = 0;
 
     // Check extension
     boost::filesystem::path selectedFile(filename);
@@ -32,13 +32,13 @@ AsciiIO<T>::AsciiIO(string filename, T** &points, size_t &count)
         // The fist three entries are considered to contain
         // the point definitions. The remaining columns are
         // skipped when reading the file.
-        int skip = getEntriesInLine(filename) - 3;
+        int skip = AsciiIO::getEntriesInLine(filename) - 3;
 
         if(skip < 0)
         {
             cout << timestamp << " Error: ASCII IO: File '"<<
                     filename  << "' contains less than three entries per line." << endl;
-            return;
+            return 0;
         }
 
         // Open file
@@ -53,10 +53,11 @@ AsciiIO<T>::AsciiIO(string filename, T** &points, size_t &count)
             c++;
         }
 
+        count = c;
 
         // Alloc memory for points
         points = new T*[c];
-        for(size_t i = 0; i < c; i++) points[c] = new T[3];
+        for(size_t i = 0; i < c; i++) points[i] = new T[3];
 
         // Setup info output
         string comment = timestamp.getElapsedTime() + "Reading file " + filename;
@@ -71,6 +72,10 @@ AsciiIO<T>::AsciiIO(string filename, T** &points, size_t &count)
         while(in.good() ){
             //in >> points[c][0] >> points[c][1] >> points[c][2];
             in >> x >> y >> z;
+            points[c][0] = x;
+            points[c][1] = y;
+            points[c][2] = z;
+
             for(int i = 0; i < skip; i++){
                 in >> dummy;
             }
@@ -78,8 +83,9 @@ AsciiIO<T>::AsciiIO(string filename, T** &points, size_t &count)
             ++progress;
         }
         cout << endl;
+        cout << timestamp << "Read " << c << " data points" << endl;
     }
-
+    return points;
 }
 
 template<typename T>
