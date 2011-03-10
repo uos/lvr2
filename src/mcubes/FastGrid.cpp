@@ -9,7 +9,7 @@
 #include "Timestamp.h"
 #include "Progress.h"
 
-#include "../rewrite/StlIO.hpp"
+#include "../rewrite/ObjIO.hpp"
 
 #include <boost/progress.hpp>
 #include <boost/filesystem.hpp>
@@ -320,16 +320,15 @@ void FastGrid::createMesh(){
 	    static_cast<StannInterpolator*>(interpolator)->write_normals();
  	}
 
-	// Test hack for stl support
-	cout << timestamp << "Saving mesh.stl..." << endl;
-	lssr::StlIO<float, unsigned int> io;
+	// Test hack for obj support
+	cout << timestamp << "Saving mesh.obj..." << endl;
+	lssr::ObjIO<float, unsigned int> io;
 	io.setVertexArray(mesh->getVertices(), mesh->getNumberOfVertices());
 	io.setNormalArray(mesh->getNormals(),  mesh->getNumberOfVertices());
 	io.setIndexArray(mesh->getIndices(), mesh->getNumberOfFaces());
-	io.write("mesh.stl");
+	io.write("mesh.obj");
 
 }
-
 
 void FastGrid::calcIndices(){
 
