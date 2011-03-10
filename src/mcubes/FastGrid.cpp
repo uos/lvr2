@@ -9,10 +9,13 @@
 #include "Timestamp.h"
 #include "Progress.h"
 
+#include "../rewrite/StlIO.hpp"
+
 #include <boost/progress.hpp>
 #include <boost/filesystem.hpp>
 
 #include "../model3d/PLYWriter.h"
+
 
 //Each box corner in the grid is shared with 7 other boxes.
 //To find an already existing corner, these boxes have to
@@ -316,6 +319,15 @@ void FastGrid::createMesh(){
 	    cout << timestamp << "Saving interpolated normals..." << endl;
 	    static_cast<StannInterpolator*>(interpolator)->write_normals();
  	}
+
+	// Test hack for stl support
+	cout << timestamp << "Saving mesh.stl..." << endl;
+	lssr::StlIO<float, unsigned int> io;
+	io.setVertexArray(mesh->getVertices(), mesh->getNumberOfVertices());
+	io.setNormalArray(mesh->getNormals(),  mesh->getNumberOfVertices());
+	io.setIndexArray(mesh->getIndices(), mesh->getNumberOfFaces());
+	io.write("mesh.stl");
+
 }
 
 

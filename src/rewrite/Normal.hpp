@@ -8,7 +8,8 @@
 #ifndef NORMAL_HPP_
 #define NORMAL_HPP_
 
-#include "Vertex.hpp"
+
+#include "./Vertex.hpp"
 
 namespace lssr {
 
@@ -17,7 +18,7 @@ namespace lssr {
  * 			with normalization functionality.
  */
 template<typename CoordType>
-class Normal : public Vertex<CoordType>
+class Normal : public lssr::Vertex<CoordType>
 {
 
 public:

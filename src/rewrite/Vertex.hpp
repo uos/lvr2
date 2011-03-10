@@ -1,12 +1,11 @@
-#ifndef __BASE_VERTEX_H__
-#define __BASE_VERTEX_H__
+#ifndef __BASE_VERTEX_HPP__
+#define __BASE_VERTEX_HPP__
 
 
 #include <iostream>
 #include <math.h>
 
 using namespace std;
-
 
 namespace lssr
 {
@@ -114,7 +113,7 @@ public:
 	/**
 	 * @brief	Coordinate addition
 	 */
-	virtual void operator+=(const Vertex &other);
+	virtual void operator+=(const Vertex<CoordType> &other);
 
 
 	/**

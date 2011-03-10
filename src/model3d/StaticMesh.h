@@ -38,6 +38,8 @@ public:
 
 	float* 			getVertices();
 	unsigned int* 	getIndices();
+	float*          getNormals();
+
 	size_t			getNumberOfVertices();
 	size_t			getNumberOfFaces();
 
