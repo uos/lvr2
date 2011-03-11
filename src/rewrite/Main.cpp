@@ -32,9 +32,6 @@ int main(int argc, char** argv)
     // Parse command line arguments
     Options options(argc, argv);
 
-    // Print set parameters
-    cout << options << endl;
-
     // Create a point cloud manager
     StannPointCloudManager<float> manager(options.getOutputFileName(),
                                           options.getKn(),
@@ -42,11 +39,13 @@ int main(int argc, char** argv)
                                           options.getKd());
 
     // Create an empty mesh
-    TriangleMesh<Vertex<float>, size_t > mesh;
+    TriangleMesh<Vertex<float>, unsigned int > mesh;
 
     // Create a new reconstruction object
-    FastReconstruction<float, size_t> reconstruction(manager, options.getVoxelsize());
+    FastReconstruction<float, unsigned int> reconstruction(manager, options.getVoxelsize());
     reconstruction.getMesh(mesh);
+
+    cout << timestamp << "Program end." << endl;
 
 	return 0;
 }

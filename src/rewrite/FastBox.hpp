@@ -14,8 +14,10 @@
 #include "MCTable.hpp"
 #include "FastBoxTables.hpp"
 #include <vector>
+#include <limits>
 
 using std::vector;
+using std::numeric_limits;
 
 namespace lssr
 {
@@ -36,6 +38,7 @@ public:
     void getSurface(BaseMesh<Vertex<CoordType>, IndexType> &mesh, vector<QueryPoint<CoordType> > &query_points, IndexType &globalIndex);
     static CoordType                m_voxelsize;
 
+    static IndexType		   		INVALID_INDEX;
 private:
 
     CoordType calcIntersection(CoordType x1, CoordType x2, CoordType d1, CoordType d2);
