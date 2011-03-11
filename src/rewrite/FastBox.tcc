@@ -185,9 +185,16 @@ void FastBox<CoordType, IndexType>::getSurface(BaseMesh<Vertex<CoordType>, Index
     IndexType current_index = 0;
     int triangle_indices[3];
 
+    // Generate the local approximation sirface according to the marching
+    // cubes table for Paul Burke.
     for(int a = 0; MCTable[index][a] != -1; a+= 3){
         for(int b = 0; b < 3; b++){
             edge_index = MCTable[index][a + b];
+
+            // If current_index has a valid value it referns to
+            // an already existing vertex in the mesh. In the beginning
+            // we don't know if the mesh contains a suitable vertex for
+            // the current face, so we initialize with INVALID_INDEX
             current_index = INVALID_INDEX;
 
             //If current vertex index doesn't exist
@@ -201,6 +208,8 @@ void FastBox<CoordType, IndexType>::getSurface(BaseMesh<Vertex<CoordType>, Index
                     if(current_neighbor != 0){
                         if(current_neighbor->m_intersections[neighbor_vertex_table[edge_index][i]] != INVALID_INDEX)
                         {
+                        	// If an existing vertex index was found, use this
+                        	// for face definition, i.e. save as current index
                             current_index = current_neighbor->m_intersections[neighbor_vertex_table[edge_index][i]];
                         }
                     }
@@ -213,8 +222,13 @@ void FastBox<CoordType, IndexType>::getSurface(BaseMesh<Vertex<CoordType>, Index
             {
                 m_intersections[edge_index] = globalIndex;
                 Vertex<CoordType> v = vertex_positions[edge_index];
+
+                // Insert vertex and a new temp normal into mesh.
+                // The normal is inserted to assure that vertex
+                // and normal array always have the same size.
+                // The actual normal is interpolated later.
                 mesh.addVertex(v);
-                //mesh.addNormal(Normal<CoordType>());
+                mesh.addNormal(Normal<CoordType>());
                 for(int i = 0; i < 3; i++)
                 {
                     FastBox* current_neighbor = m_neighbors[neighbor_table[edge_index][i]];
@@ -223,6 +237,8 @@ void FastBox<CoordType, IndexType>::getSurface(BaseMesh<Vertex<CoordType>, Index
                         current_neighbor->m_intersections[neighbor_vertex_table[edge_index][i]] = globalIndex;
                     }
                 }
+                // Increase the global vertex counter to save the buffer
+                // position were the next new vertex has to be inserted
                 globalIndex++;
             }
             else
@@ -240,25 +256,13 @@ void FastBox<CoordType, IndexType>::getSurface(BaseMesh<Vertex<CoordType>, Index
             //Count generated vertices
             vertex_count++;
         }
+
+        // Add triangle actually does the normal interpolation for us.
         mesh.addTriangle(triangle_indices[0], triangle_indices[1], triangle_indices[2]);
     }
 
-    //Calculate normals, check if vertices were created
-    if(vertex_count > 0 )
-    {
-    	for(IndexType i = 0; i < vertex_count - 2; i+= 3)
-    	{
-    		diff1 = tmp_vertices[i] - tmp_vertices[i+1];
-    		diff2 = tmp_vertices[i+1] - tmp_vertices[i+2];
-    		normal = diff1.cross(diff2);
 
-    		//Interpolate with normals in mesh
-    		for(int j = 0; j < 3; j++)
-    		{
-    			//mesh.interpolateNormal( normal, tmp_indices[i+j]);
-    		}
-    	}
-    }
+
 
     //return globalIndex;
 }
