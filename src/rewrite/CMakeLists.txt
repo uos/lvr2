@@ -16,7 +16,6 @@ set_target_properties(lssr PROPERTIES BINARY_OUTPUT_DIRECTORY ${CMAKE_SOURCE_DIR
 
 target_link_libraries(lssr boost_system boost_program_options boost_filesystem boost_thread)
 target_link_libraries(lssr model3d)
-target_link_libraries(lssr ann)
 target_link_libraries(lssr ${OPENGL_LIBRARY})
 target_link_libraries(lssr ${OpenMP_CXX_FLAGS})
 
