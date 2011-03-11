@@ -27,12 +27,15 @@ public:
 
 	virtual void addTriangle(IndexType v0, IndexType v1, IndexType v2);
 	virtual void addVertex(VertexType v){ m_vertices.push_back(v);};
-	virtual void addNormal(VertexType n){ m_normals.push_back(n);};
+	virtual void addNormal(VertexType n) {m_normals.push_back(n);};
+
 
 	virtual ~TriangleMesh();
 
 	VertexType   getVertex(IndexType index);
 	VertexType   getNormal(IndexType index);
+
+	void save(string filename);
 
 protected:
 

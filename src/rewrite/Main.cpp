@@ -45,6 +45,7 @@ int main(int argc, char** argv)
     FastReconstruction<float, unsigned int> reconstruction(manager, options.getVoxelsize());
     reconstruction.getMesh(mesh);
 
+
     cout << timestamp << "Program end." << endl;
 
 	return 0;

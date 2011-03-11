@@ -31,6 +31,16 @@ public:
 	virtual void addVertex(VertexType v) = 0;
 
 	/**
+	 * @brief 	This method should be called every time
+	 * 			a new vertex is created to ensure that vertex
+	 * 			and normal buffer always have the same size
+	 *
+	 * @param	n 		A supported vertex type. All used vertex types
+	 * 					must support []-access.
+	 */
+	virtual void addNormal(VertexType n) = 0;
+
+	/**
 	 * @brief 	Insert a new triangle into the mesh
 	 *
 	 * @param	a 		The first vertex of the triangle
