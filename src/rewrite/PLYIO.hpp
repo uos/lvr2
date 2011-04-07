@@ -60,9 +60,6 @@ public:
 	void setIndexedVertexArray(float** arr, size_t size);
 	void setIndexedNormalArray(float** arr, size_t size);
 
-	template<typename Mesh>
-	void addMesh(Mesh& mesh);
-
 	unsigned int* getIndexArray(size_t &n);
 
 	bool containsElement(PLYElement& e);
