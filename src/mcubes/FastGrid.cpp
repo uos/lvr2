@@ -304,8 +304,9 @@ void FastGrid::createMesh(){
 //	mesh.printStats();
 //	mesh.finalize();
 //	mesh.save("mesh.ply");
+
 	//he_mesh.analize();
-	//he_mesh.extract_borders();
+	he_mesh.extract_borders();
 	//he_mesh.write_polygons("borders.bor");
 
 	if(m_options->savePointsAndNormals())

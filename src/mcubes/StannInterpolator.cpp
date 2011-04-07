@@ -98,7 +98,6 @@ bool StannInterpolator::boundingBoxOK(double dx, double dy, double dz){
 
 Plane StannInterpolator::calcPlane(Vertex query_point, int k, vector<unsigned long> id){
 
-
 	Vertex diff1, diff2;
 	Normal normal;
 
@@ -171,6 +170,7 @@ void StannInterpolator::write_normals(){
 
 void StannInterpolator::estimate_normals(){
 
+
 	int k_0 = k_n;
 
 	cout << timestamp << "Initializing normal array..." << endl;
@@ -238,6 +238,7 @@ void StannInterpolator::estimate_normals(){
 
 		query_point = Vertex(points[i][0], points[i][1], points[i][2]);
 		Plane p = calcPlane(query_point, k, id);
+
 
 		mean_distance = meanDistance(p, id, k);
 

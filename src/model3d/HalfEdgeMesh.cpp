@@ -352,7 +352,8 @@ bool HalfEdgeMesh::check_face(HalfEdgeFace* f0, HalfEdgeFace* current){
 
 	//Decide using given thresholds
 	//if(distance < 8.0 && cos_angle > 0.98) return true;
-	if(cos_angle > 0.98) return true;
+	//if(cos_angle > 0.98) return true; <--- Standard lssr value
+	if(cos_angle > 0.88) return true;
 
 	//Return false if face is not in plane
 	return false;
@@ -682,24 +683,24 @@ void HalfEdgeMesh::write_polygons(string filename){
 		out << "END" << endl;
 	}
 
-	biggest_polygon->fuse_edges();
+	//biggest_polygon->fuse_edges();
 
-//	for(p_it =  hem_polygons.begin();
-//		p_it != hem_polygons.end();
-//		p_it++)
-//	{
-//		HalfEdgePolygon* polygon = *p_it;
-//		for(it  = polygon->edges.begin();
-//			it != polygon->edges.end();
-//			it++)
-//		{
-//			HalfEdge* e = *it;
-//			out << "BEGIN" << endl;
-//			out << e->start->position.x << " " << e->start->position.y << " " << e->start->position.z << endl;
-//			out << e->end->position.x   << " " << e->end->position.y   << " " << e->end->position.z   << endl;
-//			out << "END" << endl;
-//		}
-//	}
+	for(p_it =  hem_polygons.begin();
+		p_it != hem_polygons.end();
+		p_it++)
+	{
+		HalfEdgePolygon* polygon = *p_it;
+		for(it  = polygon->edges.begin();
+			it != polygon->edges.end();
+			it++)
+		{
+			HalfEdge* e = it->second;
+			out << "BEGIN" << endl;
+			out << e->start->position.x << " " << e->start->position.y << " " << e->start->position.z << endl;
+			out << e->end->position.x   << " " << e->end->position.y   << " " << e->end->position.z   << endl;
+			out << "END" << endl;
+		}
+	}
 
 
 
