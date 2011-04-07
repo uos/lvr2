@@ -1,4 +1,5 @@
 #include "PLYIO.hpp"
+#include "PlyTraits.hpp"
 #include "BaseMesh.hpp"
 
 #include <cstring>
