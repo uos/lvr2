@@ -90,6 +90,12 @@ void PLYIO::setVertexArray(float* array, size_t n)
 	m_numberOfVertices = n;
 }
 
+void PLYIO::setNormalArray(float* array, size_t n)
+{
+	m_vertices = array;
+	m_numberOfVertices = n;
+}
+
 void PLYIO::setIndexArray(unsigned int* array, size_t n)
 {
 	m_indices = array;

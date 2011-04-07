@@ -144,6 +144,7 @@ Normal HalfEdgeFace::getInterpolatedNormal(){
 	int c = 0;
 	do{
 		return_normal += current_edge->start->normal;
+
 		current_edge = current_edge->next;
 		c++;
 	} while(current_edge != start);

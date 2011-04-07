@@ -14,6 +14,8 @@
 #include "PLYElements.hpp"
 #include "PLYElement.hpp"
 
+#include "BaseMesh.hpp"
+
 #include <iostream>
 #include <fstream>
 #include <vector>
@@ -57,6 +59,9 @@ public:
 
 	void setIndexedVertexArray(float** arr, size_t size);
 	void setIndexedNormalArray(float** arr, size_t size);
+
+	template<typename Mesh>
+	void addMesh(Mesh& mesh);
 
 	unsigned int* getIndexArray(size_t &n);
 
