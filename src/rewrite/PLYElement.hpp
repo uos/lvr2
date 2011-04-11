@@ -22,34 +22,34 @@ using std::ofstream;
 namespace lssr
 {
 
-class PLYProperty;
+//class PLYProperty;
 
-class PLYElement {
-public:
-
-	PLYElement();
-	PLYElement(string name, size_t count);
-
-	void addProperty(string name, string value_type, string count_type = "");
-
-	vector<PLYProperty*>::iterator getFirstProperty();
-	vector<PLYProperty*>::iterator getLastProperty();
-
-	string getName();
-	size_t getCount();
-
-	virtual ~PLYElement();
-
-	void printProperties(ofstream &str);
-
-private:
-
-	vector<PLYProperty*> m_properties;
-	string 	m_name;
-	size_t	m_count;
-
-
-};
+//class PLYElement {
+//public:
+//
+//	PLYElement();
+//	PLYElement(string name, size_t count);
+//
+//	void addProperty(string name, string value_type, string count_type = "");
+//
+//	vector<PLYProperty*>::iterator getFirstProperty();
+//	vector<PLYProperty*>::iterator getLastProperty();
+//
+//	string getName();
+//	size_t getCount();
+//
+//	virtual ~PLYElement();
+//
+//	void printProperties(ofstream &str);
+//
+//private:
+//
+//	vector<PLYProperty*> m_properties;
+//	string 	m_name;
+//	size_t	m_count;
+//
+//
+//};
 
 } // namespace lssr
 
