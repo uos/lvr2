@@ -113,7 +113,7 @@ struct PlyTraits<double>
 	PlyTraits()
     {
 		SIZE = 8;
-		NAME = "float";
+		NAME = "double";
     }
 	static size_t SIZE;
 	static string NAME;
