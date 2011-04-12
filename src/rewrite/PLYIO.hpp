@@ -11,10 +11,7 @@
 #define __PLY_IO_H__
 
 #include "PLYProperty.hpp"
-#include "PLYElements.hpp"
 #include "PLYElement.hpp"
-
-#include "BaseMesh.hpp"
 
 #include <iostream>
 #include <fstream>
@@ -65,7 +62,7 @@ public:
 	bool containsElement(PLYElement& e);
 	bool containsElement(string elementName);
 
-	bool hasProperty(PLYElement& e, PLYProperty& p);
+	bool hasProperty(PLYElement& e, Property& p);
 
 	void printElementsInHeader();
 
@@ -103,7 +100,7 @@ private:
 	void deleteBuffers();
 	void allocVertexBuffers(PLYElement* dscr);
 
-	void copyElementToVertexBuffer(ifstream &str, PLYProperty*, float* buffer, size_t position);
+	void copyElementToVertexBuffer(ifstream &str, Property*, float* buffer, size_t position);
 
 	template<typename T>
 	void copyElementToVertexBuffer(char* src, float* buffer, size_t positon);
@@ -122,6 +119,8 @@ private:
 	vector<PLYElement*> 	m_elements;
 
 };
+
+
 
 }
 

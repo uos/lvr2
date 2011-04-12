@@ -1,6 +1,4 @@
 #include "PLYIO.hpp"
-#include "PlyTraits.hpp"
-#include "BaseMesh.hpp"
 
 #include <cstring>
 #include <sstream>
@@ -362,24 +360,24 @@ void PLYIO::loadElements(ifstream &in)
 
 void PLYIO::printElementsInHeader()
 {
-	cout << "------ Elements in PLY Header ------" << endl << endl;
-	for(size_t i = 0; i < m_elements.size(); i++)
-	{
-		PLYElement* e = m_elements[i];
-		cout << e->getName() << " " << e->getCount() << endl;
-		vector<PLYProperty*>::iterator start, end;
-		start = e->getFirstProperty();
-		end = e->getLastProperty();
-		while(start != end)
-		{
-			cout << (*start)->getElementTypeStr() << " "
-				 << (*start)->getName() << " "
-			     << (*start)->getCountTypeStr() << endl;
-			start++;
-		}
-		cout << endl;
-	}
-	cout << "------------------------------------" << endl;
+//	cout << "------ Elements in PLY Header ------" << endl << endl;
+//	for(size_t i = 0; i < m_elements.size(); i++)
+//	{
+//		PLYElement* e = m_elements[i];
+//		cout << e->getName() << " " << e->getCount() << endl;
+//		vector<Property*>::iterator start, end;
+//		start = e->getFirstProperty();
+//		end = e->getLastProperty();
+//		while(start != end)
+//		{
+//			cout << (*start)->getElementTypeStr() << " "
+//				 << (*start)->getName() << " "
+//			     << (*start)->getCountTypeStr() << endl;
+//			start++;
+//		}
+//		cout << endl;
+//	}
+//	cout << "------------------------------------" << endl;
 }
 
 void PLYIO::writeHeader(ofstream& out)
@@ -440,7 +438,7 @@ void PLYIO::writeVerticesASCII(ofstream &out, PLYElement *e)
 {
 	assert(m_vertices);
 
-	vector<PLYProperty*>::iterator current, last;
+	vector<Property*>::iterator current, last;
 	string property_name;
 
 	for(size_t i = 0; i < m_numberOfVertices; i++)
@@ -512,7 +510,7 @@ void PLYIO::writeVerticesBinary(ofstream &out, PLYElement* e)
 	assert(m_vertices);
 
 	// Iterators for property traversal
-	vector<PLYProperty*>::iterator current, first, last;
+	vector<Property*>::iterator current, first, last;
 	first = e->getFirstProperty();
 	last = e->getLastProperty();
 
@@ -543,7 +541,7 @@ void PLYIO::writeVerticesBinary(ofstream &out, PLYElement* e)
 		// Parse properties and write into buffer
 		for(current = first; current != last; current++)
 		{
-			PLYProperty* p = (*current);
+			Property* p = (*current);
 			string property_name = p->getName();
 			string property_type = p->getElementTypeStr();
 			if(property_name == "x")
@@ -586,7 +584,7 @@ void PLYIO::writeNormalsASCII(ofstream &out, PLYElement* e)
 
 	assert(m_normals);
 
-	vector<PLYProperty*>::iterator current, last;
+	vector<Property*>::iterator current, last;
 	string property_name;
 
 	for(size_t i = 0; i < m_numberOfNormals; i++)
@@ -630,7 +628,7 @@ void PLYIO::writeNormalsBinary(ofstream &out, PLYElement* e)
 	assert(m_vertices);
 
 	// Iterators for property traversal
-	vector<PLYProperty*>::iterator current, first, last;
+	vector<Property*>::iterator current, first, last;
 	first = e->getFirstProperty();
 	last = e->getLastProperty();
 
@@ -661,7 +659,7 @@ void PLYIO::writeNormalsBinary(ofstream &out, PLYElement* e)
 		// Parse properties and write into buffer
 		for(current = first; current != last; current++)
 		{
-			PLYProperty* p = (*current);
+			Property* p = (*current);
 			string property_name = p->getName();
 			string property_type = p->getElementTypeStr();
 			if( (property_name == "x") || (property_name == "nx") )
@@ -752,7 +750,7 @@ void PLYIO::allocVertexBuffers(PLYElement* descr)
 	// Check if we have to allocate memory for colors: Iterate
 	// through all properties and check if we find a color
 	// attribute and allocate buffer if found
-	vector<PLYProperty*>::iterator it;
+	vector<Property*>::iterator it;
 	for(it = descr->getFirstProperty(); it != descr->getLastProperty(); it++)
 	{
 		string property_name = (*it)->getName();
@@ -804,7 +802,7 @@ void PLYIO::readVerticesASCII(ifstream &in, PLYElement* descr)
 	allocVertexBuffers(descr);
 
 	// Read all vertices
-	vector<PLYProperty*>::iterator it;
+	vector<Property*>::iterator it;
 	for(size_t i = 0; i < m_numberOfVertices; i++)
 	{
 		// Parse through all properties and load the
@@ -812,7 +810,7 @@ void PLYIO::readVerticesASCII(ifstream &in, PLYElement* descr)
 		it = descr->getFirstProperty();
 		while(it != descr->getLastProperty())
 		{
-			PLYProperty* p = *it;
+			Property* p = *it;
 			string property_name = p->getName();
 			if(property_name == "x")
 			{
@@ -857,14 +855,14 @@ void PLYIO::readVerticesBinary(ifstream &in, PLYElement* descr)
 	allocVertexBuffers(descr);
 
 	// Read all vertices
-	vector<PLYProperty*>::iterator it;
+	vector<Property*>::iterator it;
 	for(size_t i = 0; i < m_numberOfVertices; i++)
 	{
 		if(i % 100000 == 0) cout << "Reading points: " << i << endl;
 		for(it = descr->getFirstProperty(); it != descr->getLastProperty(); it++)
 		{
 			// TODO: Calculate buffer position only once.
-			PLYProperty* p = *it;
+			Property* p = *it;
 			if(p->getName() == "x")
 			{
 				copyElementToVertexBuffer(in, p, m_vertices,  i * 3);
@@ -921,13 +919,13 @@ void PLYIO::readNormalsBinary(ifstream &in, PLYElement* descr)
 	m_normals = new float[3 * m_numberOfNormals];
 
 	// Read all normals
-	vector<PLYProperty*>::iterator it;
+	vector<Property*>::iterator it;
 	for(size_t i = 0; i < m_numberOfNormals; i++)
 	{
 		for(it = descr->getFirstProperty(); it != descr->getLastProperty(); it++)
 		{
 			// TODO: Calculate buffer position only once.
-			PLYProperty* p = *it;
+			Property* p = *it;
 			if( (p->getName() == "x") || (p->getName() == "nx") )
 			{
 				copyElementToVertexBuffer(in, p, m_normals,  i * 3);
@@ -954,12 +952,12 @@ void PLYIO::readNormalsASCII(ifstream &in, PLYElement* descr)
 	memset(m_normals, 0, 3 * m_numberOfNormals * sizeof(float));
 
 	// Read all normals
-	vector<PLYProperty*>::iterator it;
+	vector<Property*>::iterator it;
 	for(size_t i = 0; i < m_numberOfNormals; i++)
 	{
 		for(it = descr->getFirstProperty(); it != descr->getLastProperty(); it++)
 		{
-			PLYProperty* p = *it;
+			Property* p = *it;
 			if( (p->getName() == "x") || (p->getName() == "nx") )
 			{
 				in >> m_normals[i * 3];
@@ -977,7 +975,7 @@ void PLYIO::readNormalsASCII(ifstream &in, PLYElement* descr)
 }
 
 // TODO: Maybe we can write some kind of template implementation???
-void PLYIO::copyElementToVertexBuffer(ifstream &in, PLYProperty* p, float* buffer, size_t position)
+void PLYIO::copyElementToVertexBuffer(ifstream &in, Property* p, float* buffer, size_t position)
 {
 	if(p->getElementTypeStr() == "char")
 	{
@@ -1065,11 +1063,11 @@ void PLYIO::readFacesBinary(ifstream &in, PLYElement* descr)
 	// save number of bytes for counter and vertex indices
 	size_t count_size, value_size;
 
-	PLYProperty* list_property = 0;
-	vector<PLYProperty*>::iterator it;
+	Property* list_property = 0;
+	vector<Property*>::iterator it;
 	for(it = descr->getFirstProperty(); it != descr->getLastProperty(); it++)
 	{
-		PLYProperty* p = *it;
+		Property* p = *it;
 		if(p->getName() == "vertex_indices" || p->getName() == "vertex_index")
 		{
 			count_size = p->getCountSize();
@@ -1260,7 +1258,7 @@ void PLYIO::writeFacesBinary(ofstream &out, PLYElement* e)
 	// list properties.
 	int N_VERTICES_PER_FACE = 3;
 
-	vector<PLYProperty*>::iterator it, end, start;
+	vector<Property*>::iterator it, end, start;
 	start = e->getFirstProperty();
 	end = e->getLastProperty();
 
@@ -1298,7 +1296,7 @@ void PLYIO::writeFacesBinary(ofstream &out, PLYElement* e)
 		size_t index_pointer = i * 3;
 		for(it = start; it != end; it++)
 		{
-			PLYProperty* p = (*it);
+			Property* p = (*it);
 			string property_name = p->getName();
 			string property_type = p->getElementTypeStr();
 
@@ -1421,5 +1419,7 @@ bool PLYIO::containsElement(string name)
 	}
 	return false;
 }
+
+
 
 } // namespace lssr

@@ -36,8 +36,11 @@ public:
 	VertexType   getNormal(IndexType index);
 
 	void save(string filename);
+	virtual void finalize();
 
 protected:
+
+	float*						  m_normalBuffer;
 
 	vector<VertexType>            m_normals;
 	vector<VertexType>            m_vertices;

@@ -45,6 +45,9 @@ int main(int argc, char** argv)
     FastReconstruction<float, unsigned int> reconstruction(manager, options.getVoxelsize());
     reconstruction.getMesh(mesh);
 
+    // Save triangle mesh
+    mesh.finalize();
+    mesh.save("triangle_mesh.ply");
 
     cout << timestamp << "Program end." << endl;
 

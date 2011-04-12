@@ -48,6 +48,23 @@ public:
 	 * @param	c		The third vertex of the triangle
 	 */
 	virtual void addTriangle(IndexType a, IndexType b, IndexType c) = 0;
+
+	/**
+	 * @brief 	Finalizes a mesh, i.e. converts the template based buffers
+	 * 			to OpenGL compatible buffers
+	 */
+	virtual void finalize() = 0;
+
+protected:
+
+	/// True if mesh is finalized
+	bool			m_finalized;
+
+	/// The mesh's vertex buffer
+	float*			m_vertexBuffer;
+
+	/// The mesh's index buffer
+	unsigned int*	m_indexBuffer;
 };
 }
 
