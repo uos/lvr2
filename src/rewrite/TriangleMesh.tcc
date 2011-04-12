@@ -48,11 +48,11 @@ void TriangleMesh<VertexType, IndexType>::addTriangle(IndexType v0, IndexType v1
 		VertexType normal = diff1.cross(diff2);
 
 		// Interpolate the vertex normals (i.e. sum them up).
-		// Normalization is don after the complete mesh
+		// Normalization is done after the complete mesh
 		// was has been created
-		m_vertices[v0] += normal;
-		m_vertices[v1] += normal;
-		m_vertices[v2] += normal;
+		m_normals[v0] += normal;
+		m_normals[v1] += normal;
+		m_normals[v2] += normal;
 	}
 }
 
@@ -71,30 +71,63 @@ VertexType TriangleMesh<VertexType, IndexType>::getNormal(IndexType index)
 }
 
 template<typename VertexType, typename IndexType>
+void TriangleMesh<VertexType, IndexType>::finalize()
+{
+	// Alloc buffers
+	this->m_vertexBuffer = new float[3 * m_vertices.size()];
+	this->m_normalBuffer = new float[3 * m_vertices.size()];
+	this->m_indexBuffer = new uint[m_triangles.size()];
+
+	// Fill buffers
+	int index = 0;
+	for(size_t i = 0; i < m_vertices.size(); i++)
+	{
+		index = 3 * i;
+		this->m_vertexBuffer[index    ] = (float)m_vertices[i][0];
+		this->m_vertexBuffer[index + 1] = (float)m_vertices[i][1];
+		this->m_vertexBuffer[index + 2] = (float)m_vertices[i][2];
+
+		this->m_normalBuffer[index    ] = (float)m_normals[i][0];
+		this->m_normalBuffer[index + 1] = (float)m_normals[i][1];
+		this->m_normalBuffer[index + 2] = (float)m_normals[i][2];
+	}
+
+	int c = 0;
+	for(typename list<IndexType>::iterator it = m_triangles.begin();
+		it != m_triangles.end(); it++)
+	{
+		this->m_indexBuffer[c] = (unsigned int)*it;
+		c++;
+	}
+
+	this->m_finalized = true;
+}
+
+template<typename VertexType, typename IndexType>
 void TriangleMesh<VertexType, IndexType>::save(string filename)
 {
-//	PLYIO ply_writer;
-//
-//	// Create element descriptions
-//	PLYElement* vertex_element = new PLYElement("vertex", m_vertices.size());
-//	vertex_element->addProperty("x", "float");
-//	vertex_element->addProperty("y", "float");
-//	vertex_element->addProperty("z", "float");
-//
-//	PLYElement* face_element = new PLYElement("face", m_triangles.size());
-//	face_element->addProperty("vertex_indices", "uint", "uchar");
-//
-//
-//	// Add elements descriptions to header
-//	ply_writer.addElement(vertex_element);
-//	ply_writer.addElement(face_element);
-//
-//	// Set data arrays
-//	ply_writer.setVertexArray(m_vertices, m_vertices.size());
-//	ply_writer.setIndexArray(m_triangles, m_triangles.size());
-//
-//	// Save
-//	ply_writer.save(filename, true);
+	PLYIO ply_writer;
+
+	// Create element descriptions
+	PLYElement* vertex_element = new PLYElement("vertex", m_vertices.size());
+	vertex_element->addProperty("x", "float");
+	vertex_element->addProperty("y", "float");
+	vertex_element->addProperty("z", "float");
+
+	PLYElement* face_element = new PLYElement("face", m_triangles.size());
+	face_element->addProperty("vertex_indices", "uint", "uchar");
+
+
+	// Add elements descriptions to header
+	ply_writer.addElement(vertex_element);
+	ply_writer.addElement(face_element);
+
+	// Set data arrays
+	ply_writer.setVertexArray(this->m_vertexBuffer, this->m_vertices.size());
+	ply_writer.setIndexArray(this->m_indexBuffer, m_triangles.size() / 3);
+
+	// Save
+	ply_writer.save(filename, true);
 }
 
 /// TODO: Re-Integrate normal interpolation
