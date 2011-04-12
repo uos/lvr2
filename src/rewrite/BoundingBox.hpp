@@ -19,15 +19,15 @@ using std::numeric_limits;
 namespace lssr
 {
 
-/***
- * @brief A dynamic bounding box class for point sets.
+/**
+ * @brief A dynamic bounding box class.
  */
 template<typename T>
 class BoundingBox {
 public:
 
     /**
-     * @brief Defaulkt constructor
+     * @brief Default constructor
      */
 	BoundingBox();
 
@@ -41,7 +41,7 @@ public:
 	BoundingBox(Vertex<T> v1, Vertex<T> v2);
 
 	/**
-	 * @brief Constrcuts a bounding box from the given coordinates
+	 * @brief Constructs a bounding box from the given coordinates
 	 *
 	 * @param x_min     x value of the lower left corner
 	 * @param y_min     y value of the lower left corner
