@@ -4,10 +4,8 @@ set(LSSR_SOURCES
     Options.cpp     
     Timestamp.cpp   
     Progress.cpp
-    PLYProperty.cpp
-    PLYElements.cpp
-    PLYElement.cpp
     PLYIO.cpp
+    PLYTraits.cpp
 )
 
 add_library(lssr SHARED ${LSSR_SOURCES})

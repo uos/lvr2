@@ -37,7 +37,7 @@ public:
      *
      * @param manager       A point cloud manager instance
      * @param resolution    The number of intersections (on the longest side
-     *                      of the volume tabe by the data points) used by
+     *                      of the volume taken by the data points) used by
      *                      the reconstruction.
      */
     FastReconstruction(PointCloudManager<CoordType> &manager,  int resolution);
