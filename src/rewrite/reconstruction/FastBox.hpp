@@ -8,11 +8,11 @@
 #ifndef FastBox_H_
 #define FastBox_H_
 
-#include "Vertex.hpp"
-#include "Normal.hpp"
-#include "QueryPoint.hpp"
-#include "MCTable.hpp"
-#include "FastBoxTables.hpp"
+#include "../geometry/Vertex.hpp"
+#include "../geometry/Normal.hpp"
+#include "../reconstruction/QueryPoint.hpp"
+#include "../reconstruction/MCTable.hpp"
+#include "../reconstruction/FastBoxTables.hpp"
 #include <vector>
 #include <limits>
 

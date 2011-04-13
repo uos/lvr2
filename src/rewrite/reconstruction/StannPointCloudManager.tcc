@@ -6,7 +6,7 @@
  */
 
 #include <boost/filesystem.hpp>
-#include "BoundingBox.hpp"
+#include "../geometry/BoundingBox.hpp"
 
 namespace lssr{
 

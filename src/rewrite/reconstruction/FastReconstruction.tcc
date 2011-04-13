@@ -4,8 +4,8 @@
  *  Created on: 16.02.2011
  *      Author: Thomas Wiemann
  */
-#include "BaseMesh.hpp"
-#include "FastReconstructionTables.hpp"
+#include "../geometry/BaseMesh.hpp"
+#include "../reconstruction/FastReconstructionTables.hpp"
 
 namespace lssr
 {

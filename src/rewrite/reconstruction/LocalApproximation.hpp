@@ -8,8 +8,8 @@
 #ifndef LOCALAPPROXIMATION_HPP_
 #define LOCALAPPROXIMATION_HPP_
 
-#include "BaseMesh.hpp"
-#include "PointCloudManager.hpp"
+#include "../geometry/BaseMesh.hpp"
+#include "../reconstruction/PointCloudManager.hpp"
 
 namespace lssr
 {

@@ -15,12 +15,12 @@
  *
  */
 
-#include "StannPointCloudManager.hpp"
-#include "FastReconstruction.hpp"
-#include "PLYIO.hpp"
-#include "Options.hpp"
-#include "Matrix4.hpp"
-#include "TriangleMesh.hpp"
+#include "../reconstruction/StannPointCloudManager.hpp"
+#include "../reconstruction/FastReconstruction.hpp"
+#include "../io/PLYIO.hpp"
+#include "../lssr/Options.hpp"
+#include "../geometry/Matrix4.hpp"
+#include "../geometry/TriangleMesh.hpp"
 
 using namespace lssr;
 

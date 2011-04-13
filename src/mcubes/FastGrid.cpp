@@ -9,7 +9,7 @@
 #include "Timestamp.h"
 #include "Progress.h"
 
-#include "../rewrite/ObjIO.hpp"
+#include "../rewrite/io/ObjIO.hpp"
 
 #include <boost/progress.hpp>
 #include <boost/filesystem.hpp>

@@ -10,10 +10,10 @@
 
 // Internal includes from lssr
 #include "PointCloudManager.hpp"
-#include "Progress.hpp"
-#include "Timestamp.hpp"
-#include "PLYIO.hpp"
-#include "AsciiIO.hpp"
+#include "../lssr/Progress.hpp"
+#include "../lssr/Timestamp.hpp"
+#include "../io/PLYIO.hpp"
+#include "../io/AsciiIO.hpp"
 
 // External libraries in lssr source tree
 #include "../stann/sfcnn.hpp"

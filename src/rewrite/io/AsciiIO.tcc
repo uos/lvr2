@@ -11,8 +11,8 @@ using std::ifstream;
 
 #include <boost/filesystem.hpp>
 
-#include "Progress.hpp"
-#include "Timestamp.hpp"
+#include "../lssr/Progress.hpp"
+#include "../lssr/Timestamp.hpp"
 
 namespace lssr
 {

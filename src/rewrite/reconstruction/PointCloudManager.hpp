@@ -11,10 +11,10 @@
 #include <vector>
 using std::vector;
 
-#include "Vertex.hpp"
-#include "Normal.hpp"
-#include "BoundingBox.hpp"
-#include "AsciiIO.hpp"
+#include "../geometry/Vertex.hpp"
+#include "../geometry/Normal.hpp"
+#include "../geometry/BoundingBox.hpp"
+#include "../io/AsciiIO.hpp"
 
 namespace lssr
 {
