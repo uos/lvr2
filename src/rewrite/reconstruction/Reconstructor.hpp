@@ -8,8 +8,8 @@
 #ifndef RECONSTRUCTOR_H_
 #define RECONSTRUCTOR_H_
 
-#include "BaseMesh.hpp"
-#include "PointCloudManager.hpp"
+#include "../geometry/BaseMesh.hpp"
+#include "../reconstruction/PointCloudManager.hpp"
 
 namespace lssr
 {

@@ -8,13 +8,13 @@
 #ifndef FastReconstruction_H_
 #define FastReconstruction_H_
 
-#include "Vertex.hpp"
-#include "BoundingBox.hpp"
-#include "Options.hpp"
-#include "Reconstructor.hpp"
-#include "LocalApproximation.hpp"
-#include "FastBox.hpp"
-#include "QueryPoint.hpp"
+#include "../geometry/Vertex.hpp"
+#include "../geometry/BoundingBox.hpp"
+#include "../lssr/Options.hpp"
+#include "../reconstruction/Reconstructor.hpp"
+#include "../reconstruction/LocalApproximation.hpp"
+#include "../reconstruction/FastBox.hpp"
+#include "../reconstruction/QueryPoint.hpp"
 
 #include <ext/hash_map>
 using namespace __gnu_cxx;

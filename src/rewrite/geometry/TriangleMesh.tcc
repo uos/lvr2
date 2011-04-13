@@ -5,7 +5,7 @@
  *      Author: Thomas Wiemann
  */
 
-#include "PLYIO.hpp"
+#include "../io/PLYIO.hpp"
 
 namespace lssr
 {

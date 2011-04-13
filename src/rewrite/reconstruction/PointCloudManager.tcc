@@ -9,7 +9,7 @@
 #include <string>
 using std::string;
 
-#include "PLYIO.hpp"
+#include "../io/PLYIO.hpp"
 #include <boost/filesystem.hpp>
 
 namespace lssr

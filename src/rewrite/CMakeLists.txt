@@ -1,11 +1,11 @@
 #External dependencies to ANN, NEWMAT and STANN
 
 set(LSSR_SOURCES
-    Options.cpp     
-    Timestamp.cpp   
-    Progress.cpp
-    PLYIO.cpp
-    PLYTraits.cpp
+    lssr/Options.cpp     
+    lssr/Timestamp.cpp   
+    lssr/Progress.cpp
+    io/PLYIO.cpp
+    io/PLYTraits.cpp
 )
 
 add_library(lssr SHARED ${LSSR_SOURCES})
@@ -16,7 +16,7 @@ target_link_libraries(lssr ${OPENGL_LIBRARY})
 target_link_libraries(lssr ${OpenMP_CXX_FLAGS})
 
 
-add_executable(reconstruct Main.cpp)
+add_executable(reconstruct lssr/Main.cpp)
 set_target_properties(reconstruct PROPERTIES BINARY_OUTPUT_DIRECTORY ${CMAKE_SOURCE_DIR}/bin)
 target_link_libraries(reconstruct lssr)
 target_link_libraries(reconstruct boost_system boost_program_options boost_filesystem boost_thread)
