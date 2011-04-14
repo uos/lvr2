@@ -2,7 +2,6 @@
 .project
 .cproject
 bin/*
-lib/
 src/viewer/*Moc.cpp
 ext/stann1.6
 doc/

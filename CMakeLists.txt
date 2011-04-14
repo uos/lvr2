@@ -4,6 +4,7 @@ project(LSSR)
 set( CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_SOURCE_DIR}/bin )
 
 link_directories("${CMAKE_SOURCE_DIR}/lib")
+link_directories("$ENV{HOME}/local/lib")
 
 include_directories(${LSSR_SOURCE_DIR}/ext/Eigen)
 include_directories(${LSSR_SOURCE_DIR}/ext/stann)
@@ -55,7 +56,10 @@ if(QT4_FOUND)
   include_directories(${QT_INCLUDE_DIR})
   include_directories(${QT_QTGUI_INCLUDE_DIR})
   include_directories(${QT_QTOPENGL_INCLUDE_DIR})
+  include_directories(${QT_QTCORE_INCLUDE_DIR})
+  include_directories(${QT_QTXML_INCLUDE_DIR})
   add_subdirectory(src/viewer)
+  add_subdirectory(src/qglviewer)
 endif(QT4_FOUND)
 
 
