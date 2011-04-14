@@ -20,6 +20,20 @@ HalfEdgeFace::HalfEdgeFace(){
 	index[0] = index[1] = index[2] = 0;
 }
 
+float HalfEdgeFace::getArea()
+{
+    vector<Vertex> vertices;
+    getVertices(vertices);
+
+    float a = (vertices[0] - vertices[1]).length();
+    float b = (vertices[0] - vertices[2]).length();
+    float c = (vertices[1] - vertices[2]).length();
+
+    float s = (a + b + c) / 2.0f;
+
+    return sqrt(s * (s - a) * (s - b) * (s -c));
+}
+
 void HalfEdgeFace::calc_normal(){
 
 	Vertex vertices[3];
@@ -130,6 +144,7 @@ Normal HalfEdgeFace::getInterpolatedNormal(){
 	int c = 0;
 	do{
 		return_normal += current_edge->start->normal;
+
 		current_edge = current_edge->next;
 		c++;
 	} while(current_edge != start);

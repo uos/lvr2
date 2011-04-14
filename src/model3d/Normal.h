@@ -6,7 +6,10 @@ using namespace std;
 
 #include "BaseVertex.h"
 
-class Normal : public BaseVertex{
+
+
+class Normal : public BaseVertex
+{
 
 public:
   Normal();
@@ -36,6 +39,5 @@ inline ostream& operator<<(ostream& os, const Normal n){
 inline void Normal::render(){
   glNormal3f(x, y, z);
 }
-
 
 #endif

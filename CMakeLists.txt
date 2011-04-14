@@ -5,11 +5,13 @@ set( CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_SOURCE_DIR}/bin )
 
 link_directories("${CMAKE_SOURCE_DIR}/lib")
 
-include_directories(${LSSR_SOURCE_DIR}/ext/newmat)
+
+include_directories(${LSSR_SOURCE_DIR}/ext/Eigen)
 include_directories(${LSSR_SOURCE_DIR}/ext/stann)
 include_directories(${LSSR_SOURCE_DIR})
+include_directories(${LSSR_SOURCE_DIR}/src/rewrite)
 
-set(ADDITIONAL_COMPILER_FLAGS "-O3 -msse2 -fpermissive -Wno-deprecated -Wno-write-strings -g")
+set(ADDITIONAL_COMPILER_FLAGS "-O3 -msse3 -fpermissive -Wno-deprecated -Wno-write-strings -g")
 
 find_package( Boost COMPONENTS program_options filesystem system thread REQUIRED)
 if(Boost_FOUND)
@@ -46,6 +48,7 @@ set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${ADDITIONAL_COMPILER_FLAGS} ${OpenMP_CX
 
 add_subdirectory(src/model3d)
 add_subdirectory(src/mcubes)
+add_subdirectory(src/rewrite)
 
 set(QT_USE_QTOPENGL TRUE)
 find_package(Qt4)
@@ -55,6 +58,18 @@ if(QT4_FOUND)
   include_directories(${QT_QTOPENGL_INCLUDE_DIR})
   add_subdirectory(src/viewer)
 endif(QT4_FOUND)
+
+
+
+find_package(Doxygen)
+if(DOXYGEN_FOUND)
+configure_file(${CMAKE_CURRENT_SOURCE_DIR}/Doxyfile.in ${CMAKE_CURRENT_BINARY_DIR}/Doxyfile @ONLY)
+add_custom_target(doc
+${DOXYGEN_EXECUTABLE} ${CMAKE_CURRENT_BINARY_DIR}/Doxyfile
+WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}
+COMMENT "Generating API documentation with Doxygen" VERBATIM
+)
+endif(DOXYGEN_FOUND)
 
 
 

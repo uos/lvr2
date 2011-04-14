@@ -16,12 +16,16 @@ Options::Options(int argc, char** argv) : m_descr("Supported options")
 		("help", "Produce help message")
 		("inputFile,i", value< vector<string> >(), "Input file name. Supported formats are ASCII (.pts, .xyz) and .ply")
 		("voxelsize,v", value<float>(&m_voxelsize)->default_value(10), "Voxelsize of grid used for reconstruction.")
-		("writeFaceNormals", "Writes all interpolated triangle normals together with triangle centroid to a file called 'face_normals.nor'")
+		("saveFaceNormals", "Writes all interpolated triangle normals together with triangle centroid to a file called 'face_normals.nor'")
 		("cluster,c", "Extract planes and write result to 'planes.ply'")
 		("optimizeCluster,o", "Shift all triangle vertices of a cluster onto their shared plane")
-		("saveNormals,s", "Exports original point cloud data together with normals into a single file called 'points_and_normals.ply'")
+		("savePointsAndNormals,s", "Exports original point cloud data together with normals into a single file called 'points_and_normals.ply'")
 		("recalcNormals,r", "Always estimate normals, even if given in .ply file.")
-		("threads,t", value<int>(&m_numThreads)->default_value(2), "Number of threads")
+		("threads,t", value<int>(&m_numThreads)->default_value(4), "Number of threads")
+		("saveNormals", "Writes all points and interpolated normals to a file called 'normals.nor'")
+		("kd", value<int>(&m_kd)->default_value(5), "Number of normals used for distance function evaluation")
+	    ("ki", value<int>(&m_ki)->default_value(10), "Number of normals used in the normal interpolation process")
+	    ("kn", value<int>(&m_kn)->default_value(10), "Size of k-neighborhood used for normal estimation")
 		;
 
 	m_pdescr.add("inputFile", -1);
@@ -38,9 +42,24 @@ float Options::getVoxelsize() const
 	return m_variables["voxelsize"].as<float>();
 }
 
-float Options::getNumThreads() const
+int Options::getNumThreads() const
 {
 	return m_variables["threads"].as<int>();
+}
+
+int Options::getKi() const
+{
+    return m_variables["ki"].as<int>();
+}
+
+int Options::getKd() const
+{
+    return m_variables["kd"].as<int>();
+}
+
+int Options::getKn() const
+{
+    return m_variables["kn"].as<int>();
 }
 
 string Options::getOutputFileName() const
@@ -67,9 +86,9 @@ bool Options::printUsage() const
   return false;
 }
 
-bool Options::writeFaceNormals() const
+bool Options::saveFaceNormals() const
 {
-	return m_variables.count("writeFaceNormals");
+	return m_variables.count("saveFaceNormals");
 }
 
 bool Options::filenameSet() const
@@ -87,11 +106,15 @@ bool Options::recalcNormals() const
 	return (m_variables.count("recalcNormals"));
 }
 
-bool Options::saveNormals() const
+bool Options::savePointsAndNormals() const
 {
-	return (m_variables.count("saveNormals"));
+	return (m_variables.count("savePointsAndNormals"));
 }
 
+bool Options::saveNormals() const
+{
+    return (m_variables.count("saveNormals"));
+}
 
 bool Options::optimizeClusters() const
 {

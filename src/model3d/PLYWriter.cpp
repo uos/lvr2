@@ -90,6 +90,12 @@ void PLYIO::setVertexArray(float* array, size_t n)
 	m_numberOfVertices = n;
 }
 
+void PLYIO::setNormalArray(float* array, size_t n)
+{
+	m_vertices = array;
+	m_numberOfVertices = n;
+}
+
 void PLYIO::setIndexArray(unsigned int* array, size_t n)
 {
 	m_indices = array;
@@ -1276,7 +1282,7 @@ void PLYIO::writeFacesBinary(ofstream &out, PLYElement* e)
 
 	char* pos;
 
-	// Write facee
+	// Write face
 	for(size_t i = 0; i < m_numberOfFaces; i++)
 	{
 		// Reset buffer

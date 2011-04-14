@@ -35,20 +35,27 @@ StannInterpolator::StannInterpolator(float** pts, float** nor, int n, float vs, 
 	voxelsize = vs;
 	vs_sq = vs * vs;
 
+	k_i = 10;
+	k_n = 20;
+	k_d = 10;
+
 	normals = nor;
 
-	cout << timestamp << "Creating STANN Kd-Tree..." << endl;
-	point_tree = sfcnn< float*, 3, float>(points, number_of_points, 4);
-	unsigned long start_time = GetCurrentTimeInMilliSec();
+}
 
-	Timestamp ts;
-	if(!normals)
-	{
-		estimate_normals();
-		interpolateNormals(20);
-	}
-	cout << timestamp << "Time for normal calculation " << ts << endl;
+void StannInterpolator::init()
+{
+    cout << timestamp << "Creating STANN Kd-Tree..." << endl;
+    point_tree = sfcnn< float*, 3, float>(points, number_of_points, 4);
+    unsigned long start_time = GetCurrentTimeInMilliSec();
 
+    Timestamp ts;
+    if(!normals)
+    {
+        estimate_normals();
+        interpolateNormals(k_i);
+    }
+    cout << timestamp << "Time for normal calculation " << ts << endl;
 }
 
 StannInterpolator::~StannInterpolator() {
@@ -91,30 +98,45 @@ bool StannInterpolator::boundingBoxOK(double dx, double dy, double dz){
 
 Plane StannInterpolator::calcPlane(Vertex query_point, int k, vector<unsigned long> id){
 
-
 	Vertex diff1, diff2;
 	Normal normal;
 
 	float z1 = 0;
 	float z2 = 0;
 
-	Vector3f C;
-	VectorXf F(k);
-	MatrixXf B(k,3);
+	VectorXf B(k);
+	MatrixXf A(k,3);
 
 	for(int j = 0; j < k; j++){
-		F(j) =  points[id[j]][1];
-		B(j, 0) = 1.0f;
-		B(j, 1) = points[id[j]][0];
-		B(j, 2) = points[id[j]][2];
+		B(j) =  points[id[j]][1];
+		A(j, 0) = 1.0f;
+		A(j, 1) = points[id[j]][0];
+		A(j, 2) = points[id[j]][2];
 	}
 
-	MatrixXf Bt = B.transpose();
-	MatrixXf BtB = Bt * B;
-	MatrixXf BtBinv = BtB.inverse();
+	//VectorXf C = A.colPivHouseholderQr().solve(B); // works fine but slow
 
-	MatrixXf M = BtBinv * Bt;
-	C = M * F;
+	VectorXf C = A.jacobiSvd(ComputeThinU | ComputeThinV).solve(B);
+
+	//---------------------- OLD VERSION STARTS HERE -----------------------------
+
+	//VectorXf C;
+//
+//	MatrixXf Bt = B.transpose();
+//	MatrixXf BtB = Bt * B;
+//	MatrixXf BtBinv = BtB.inverse();
+//
+//	MatrixXf M = BtBinv * Bt;
+//	C = M * F;
+
+	//A.llt().solveInPlace(C);
+
+	//cout << "C: " <<  C(0) << " " << C(1) << " " << C(2) << endl;
+
+//	z1 = C(0) + C(1) * (query_point.x + epsilon) + C(2) * query_point.z;
+//	z2 = C(0) + C(1) * query_point.x + C(2) * (query_point.z + epsilon);
+
+	// -----------------------------------------------------------------------------
 
 	z1 = C(0) + C(1) * (query_point.x + epsilon) + C(2) * query_point.z;
 	z2 = C(0) + C(1) * query_point.x + C(2) * (query_point.z + epsilon);
@@ -138,10 +160,9 @@ Plane StannInterpolator::calcPlane(Vertex query_point, int k, vector<unsigned lo
 void StannInterpolator::write_normals(){
 
 	ofstream out("normals.nor");
-	for(int i = 0; i < number_of_points; i++){
-		if(i % 10000 == 0) cout << timestamp << "Writing points and normals: " << i
-		                       << " / " << number_of_points << endl;
-		out << points[i][0] << " " << points[i][1] << " " << points[i][2] << " "
+	for(int i = 0; i < number_of_points; i++)
+	{
+		out << points[i][0]  << " " << points[i][1]  << " " << points[i][2]  << " "
 		    << normals[i][0] << " " << normals[i][1] << " " << normals[i][2] << endl;
 	}
 
@@ -150,8 +171,7 @@ void StannInterpolator::write_normals(){
 void StannInterpolator::estimate_normals(){
 
 
-	int k_0 = 10;
-	//int k_0 = 50;
+	int k_0 = k_n;
 
 	cout << timestamp << "Initializing normal array..." << endl;
 
@@ -218,6 +238,7 @@ void StannInterpolator::estimate_normals(){
 
 		query_point = Vertex(points[i][0], points[i][1], points[i][2]);
 		Plane p = calcPlane(query_point, k, id);
+
 
 		mean_distance = meanDistance(p, id, k);
 
@@ -292,7 +313,7 @@ void StannInterpolator::interpolateNormals(int k){
 
 float StannInterpolator::distance(ColorVertex v){
 
-	int k = 1;
+	int k = k_d;
 
 
 	vector<unsigned long> id;
