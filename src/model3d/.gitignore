@@ -1,7 +1,0 @@
-lib/
-obj/
-.cproject
-.project
-Debug/
-*.*~
-build/

@@ -5,11 +5,10 @@ set( CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_SOURCE_DIR}/bin )
 
 link_directories("${CMAKE_SOURCE_DIR}/lib")
 
-
 include_directories(${LSSR_SOURCE_DIR}/ext/Eigen)
 include_directories(${LSSR_SOURCE_DIR}/ext/stann)
 include_directories(${LSSR_SOURCE_DIR})
-include_directories(${LSSR_SOURCE_DIR}/src/rewrite)
+include_directories(${LSSR_SOURCE_DIR}/src/lib)
 
 set(ADDITIONAL_COMPILER_FLAGS "-O3 -msse3 -fpermissive -Wno-deprecated -Wno-write-strings -g")
 
@@ -46,9 +45,9 @@ find_package(GLUT REQUIRED)
 
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${ADDITIONAL_COMPILER_FLAGS} ${OpenMP_CXX_FLAGS}")
 
-add_subdirectory(src/model3d)
-add_subdirectory(src/mcubes)
-add_subdirectory(src/rewrite)
+add_subdirectory(src/lib/model3d)
+add_subdirectory(src/lib)
+add_subdirectory(src/reconstruct)
 
 set(QT_USE_QTOPENGL TRUE)
 find_package(Qt4)

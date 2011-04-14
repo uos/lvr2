@@ -16,8 +16,8 @@
 
 using namespace std;
 
-#include "../model3d/Renderable.h"
-#include "../model3d/GroundPlane.h"
+#include "model3d/Renderable.h"
+#include "model3d/GroundPlane.h"
 
 #include "objectdialog.h"
 
