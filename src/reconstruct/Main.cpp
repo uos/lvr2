@@ -14,13 +14,12 @@
  * Some tutorials
  *
  */
-
-#include "../reconstruction/StannPointCloudManager.hpp"
-#include "../reconstruction/FastReconstruction.hpp"
-#include "../io/PLYIO.hpp"
-#include "../lssr/Options.hpp"
-#include "../geometry/Matrix4.hpp"
-#include "../geometry/TriangleMesh.hpp"
+#include "Options.hpp"
+#include "reconstruction/StannPointCloudManager.hpp"
+#include "reconstruction/FastReconstruction.hpp"
+#include "io/PLYIO.hpp"
+#include "geometry/Matrix4.hpp"
+#include "geometry/TriangleMesh.hpp"
 
 using namespace lssr;
 
