@@ -15,6 +15,7 @@ using std::cout;
 using std::endl;
 using std::flush;
 
+
 ProgressBar::ProgressBar(int max_val, string prefix)
 {
 	m_prefix = prefix;

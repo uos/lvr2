@@ -49,6 +49,12 @@ public:
 
 	Vertex center;
 
+	void setKd(int k) { k_d = k;}
+	void setKn(int k) { k_n = k;}
+	void setKi(int k) { k_i = k;};
+
+	void init();
+
 //private:
 
 	void write_normals();
@@ -73,6 +79,10 @@ public:
 
 	long int number_of_points;
 	int k_max;
+
+	int k_d;
+	int k_i;
+	int k_n;
 };
 
 #endif /* STANNINTERPOLATOR_H_ */

@@ -7,6 +7,20 @@
 
 #include "HalfEdgeMesh.h"
 
+void planarCluster::calcParameters(float &area, Vertex &centroid, Normal &normal)
+{
+    centroid = Vertex(0.0, 0.0, 0.0);
+    normal = Normal(0.0, 0.0, 0.0);
+    area = 0;
+    for(size_t i = 0; i < face_count; i++)
+    {
+        centroid += faces[i]->getCentroid();
+        normal += faces[i]->getInterpolatedNormal();
+        area += faces[i]->getArea();
+    }
+    centroid /= face_count;
+    normal.normalize();
+}
 
 
 HalfEdgeMesh::HalfEdgeMesh() {
@@ -118,6 +132,72 @@ void HalfEdgeMesh::finalize(){
 	finalized = true;
 }
 
+void HalfEdgeMesh::finalize(list<list<planarCluster> > &objects)
+{
+    // Create a color gradient
+    float r[255];
+    float g[255];
+    float b[255];
+
+    float c_r, c_g, c_b;
+
+    for(int i = 0; i < 255; i++)
+    {
+         r[i] = (252 - i % 64 * 4) / 255.0;
+         g[i] =  (32 + i % 32 * 6) / 255.0;
+         b[i] =  (64 + i % 64 * 3) / 255.0;
+    }
+
+    if(!finalized) finalize();
+
+    // "Paint all faces green"
+    for(size_t i = 0; i < number_of_vertices; i++)
+    {
+        colors[3 * i    ] = 0.0;
+        colors[3 * i + 1] = 1.0;
+        colors[3 * i + 2] = 0.0;
+    }
+
+    typedef list<list<planarCluster> >::iterator obj_it;
+    typedef list<planarCluster>::iterator c_it;
+
+    int cnt = 0;
+    for(obj_it i1 = objects.begin(); i1 != objects.end(); i1++)
+    {
+        cnt++;
+        cout << "C: " << cnt << endl;
+        list<planarCluster> l = *i1;
+        for(c_it i2 = l.begin(); i2 != l.end(); i2++ )
+        {
+            planarCluster c = *i2;
+            for(size_t i = 0; i < c.face_count; i++)
+            {
+                HalfEdgeFace* f = c.faces[i];
+
+                // Get vertex indices
+                int _a = f->index[0];
+                int _b = f->index[1];
+                int _c = f->index[2];
+
+                int c_index = cnt * 5 % 255;
+
+                colors[3 * _a    ] = r[c_index];
+                colors[3 * _a + 1] = g[c_index];
+                colors[3 * _a + 2] = b[c_index];
+
+                colors[3 * _b    ] = r[c_index];
+                colors[3 * _b + 1] = g[c_index];
+                colors[3 * _b + 2] = b[c_index];
+
+                colors[3 * _c    ] = r[c_index];
+                colors[3 * _c + 1] = g[c_index];
+                colors[3 * _c + 2] = b[c_index];
+            }
+        }
+    }
+
+}
+
 void HalfEdgeMesh::finalize(vector<planarCluster> &planes)
 {
 	if(!finalized) finalize();
@@ -145,12 +225,12 @@ void HalfEdgeMesh::finalize(vector<planarCluster> &planes)
 		{
 			if(cluster.face_count > 50)
 			{
-//				c_r = r[count % 255];
-//				c_g = g[count % 255];
-//				c_b = b[count % 255];
-				c_r = 0.0;
-				c_g = 0.6;
-				c_b = 0.0;
+				c_r = r[count % 255];
+				c_g = g[count % 255];
+				c_b = b[count % 255];
+//				c_r = 0.0;
+//				c_g = 0.6;
+//				c_b = 0.0;
 			}
 			else
 			{
@@ -272,7 +352,8 @@ bool HalfEdgeMesh::check_face(HalfEdgeFace* f0, HalfEdgeFace* current){
 
 	//Decide using given thresholds
 	//if(distance < 8.0 && cos_angle > 0.98) return true;
-	if(cos_angle > 0.98) return true;
+	//if(cos_angle > 0.98) return true; <--- Standard lssr value
+	if(cos_angle > 0.88) return true;
 
 	//Return false if face is not in plane
 	return false;
@@ -308,6 +389,86 @@ void HalfEdgeMesh::cluster(vector<planarCluster> &planes)
 		}
 
 	}
+}
+
+void HalfEdgeMesh::classifyCluster(vector<planarCluster> &planes, list<list<planarCluster> > &objectCandidates)
+{
+
+    // Tmp marker vector for checked cluster
+    vector<bool> markers(planes.size(), false);
+
+    // Iterate through all clusters and check the following
+    // constaints:
+    //
+    // (1) Cluster size is bigger than s_min (to filter outliers)
+    // (2) Cluster size is smaller than s_max (to filter floor and ceiling)
+    //
+    // Than for all clusters recursively check if there are
+    // other clusters with a maximum distance of d_max between their
+    // COGs.
+
+    list<planarCluster> clustercluster;
+    int c = 0;
+    for(size_t i = 0; i < planes.size(); i++)
+    {
+        //cout << i << " / " << planes.size() << endl;
+        planarCluster c = planes[i];
+        markers[i] = true;
+        clustercluster.clear();
+        findNextClusterInRange(i, planes, c, clustercluster, markers);
+
+        if(clustercluster.size())
+        {
+            cout << clustercluster.size() << endl;
+            objectCandidates.push_back(clustercluster);
+        }
+    }
+
+
+}
+
+void HalfEdgeMesh::findNextClusterInRange(int s, vector<planarCluster> &clusters, planarCluster &start, list<planarCluster> &clustercluster, vector<bool> &markers)
+{
+    float d_max = 30000000;    // Max distance between clusters
+    float a_min = 10000;   // Min cluster size
+    float a_max = 20000;   // Max cluster size
+
+    Normal start_normal;
+    Vertex start_centroid;
+    float start_area;
+
+    // Calc paramters of current cluster
+    start.calcParameters(start_area, start_centroid, start_normal);
+
+    //cout << start_area << endl;
+
+    // Ok, this check is redundant, but it is more comfartable for
+    // testing to have the magic numbers in just one method...
+    if(start_area > a_max && start_area > a_min ) return;
+
+    // Find next unused cluster that is in ranges
+    // and has a suitable size.
+    for(size_t i = s; i < clusters.size(); i++)
+    {
+        if(!markers[i])
+        {
+            Normal next_normal;
+            Vertex next_centroid;
+            float next_area;
+            clusters[i].calcParameters(next_area, next_centroid, next_normal);
+
+            if((next_centroid - start_centroid).length() < d_max) return;
+            // Check area criterion
+            if((next_area < a_max) && (next_area > a_min))
+            {
+
+                  markers[i] = true;
+                  clustercluster.push_back(clusters[i]);
+                  findNextClusterInRange(i, clusters, clusters[i], clustercluster, markers);
+            }
+            markers[i] = true;
+        }
+    }
 }
 
 void HalfEdgeMesh::optimizeClusters(vector<planarCluster> &clusters)
@@ -522,24 +683,24 @@ void HalfEdgeMesh::write_polygons(string filename){
 		out << "END" << endl;
 	}
 
-	biggest_polygon->fuse_edges();
+	//biggest_polygon->fuse_edges();
 
-//	for(p_it =  hem_polygons.begin();
-//		p_it != hem_polygons.end();
-//		p_it++)
-//	{
-//		HalfEdgePolygon* polygon = *p_it;
-//		for(it  = polygon->edges.begin();
-//			it != polygon->edges.end();
-//			it++)
-//		{
-//			HalfEdge* e = *it;
-//			out << "BEGIN" << endl;
-//			out << e->start->position.x << " " << e->start->position.y << " " << e->start->position.z << endl;
-//			out << e->end->position.x   << " " << e->end->position.y   << " " << e->end->position.z   << endl;
-//			out << "END" << endl;
-//		}
-//	}
+	for(p_it =  hem_polygons.begin();
+		p_it != hem_polygons.end();
+		p_it++)
+	{
+		HalfEdgePolygon* polygon = *p_it;
+		for(it  = polygon->edges.begin();
+			it != polygon->edges.end();
+			it++)
+		{
+			HalfEdge* e = it->second;
+			out << "BEGIN" << endl;
+			out << e->start->position.x << " " << e->start->position.y << " " << e->start->position.z << endl;
+			out << e->end->position.x   << " " << e->end->position.y   << " " << e->end->position.z   << endl;
+			out << "END" << endl;
+		}
+	}
 
 
 

@@ -1,9 +1,11 @@
 *.o
 .project
+.cproject
 bin/*
 src/viewer/*Moc.cpp
 ext/stann1.6
 lib/
+doc/
 *.pts
 *.ply
 *.nor

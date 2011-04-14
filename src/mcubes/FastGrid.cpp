@@ -9,10 +9,13 @@
 #include "Timestamp.h"
 #include "Progress.h"
 
+#include "../rewrite/io/ObjIO.hpp"
+
 #include <boost/progress.hpp>
 #include <boost/filesystem.hpp>
 
 #include "../model3d/PLYWriter.h"
+
 
 //Each box corner in the grid is shared with 7 other boxes.
 //To find an already existing corner, these boxes have to
@@ -167,8 +170,8 @@ void FastGrid::createGrid(){
 
 					//If point exist, save index in box
 					if(current_index != -1) box->vertices[k] = current_index;
-					//Otherwise create new grid point and associate it with the current box
 					else{
+					    //Otherwise create new grid point and associate it with the current box
 						Vertex position(box_center.x + box_creation_table[k][0] * vsh,
 								        box_center.y + box_creation_table[k][1] * vsh,
 								        box_center.z + box_creation_table[k][2] * vsh);
@@ -263,9 +266,9 @@ void FastGrid::createMesh(){
 //	mesh->extract_borders();
 //	mesh->write_polygons("border.bor");
 
-	if(m_options->writeFaceNormals())
+	if(m_options->saveFaceNormals())
 	{
-		mesh->write_face_normals("face_normal.nor");
+		mesh->write_face_normals("face_normals.nor");
 	}
 
 	if(m_options->createClusters())
@@ -275,6 +278,12 @@ void FastGrid::createMesh(){
 		if(m_options->optimizeClusters()) mesh->optimizeClusters(planes);
 		mesh->finalize(planes);
 		mesh->save("planes.ply");
+
+		list<list<planarCluster> > objects;
+		mesh->classifyCluster(planes, objects);
+		cout << "FOUND OBJECTS: " << objects.size() << endl;
+		mesh->finalize(objects);
+	    mesh->save("clusters.ply");
 	}
 
 	mesh->finalize();
@@ -295,17 +304,32 @@ void FastGrid::createMesh(){
 //	mesh.printStats();
 //	mesh.finalize();
 //	mesh.save("mesh.ply");
+
 	//he_mesh.analize();
-	//he_mesh.extract_borders();
+	he_mesh.extract_borders();
 	//he_mesh.write_polygons("borders.bor");
 
-	if(m_options->saveNormals())
+	if(m_options->savePointsAndNormals())
 	{
 		cout << timestamp << "Saving points and normals..." << endl;
 		savePointsAndNormals();
 	}
-}
 
+	if(m_options->saveNormals())
+	{
+	    cout << timestamp << "Saving interpolated normals..." << endl;
+	    static_cast<StannInterpolator*>(interpolator)->write_normals();
+ 	}
+
+	// Test hack for obj support
+	cout << timestamp << "Saving mesh.obj..." << endl;
+	lssr::ObjIO<float, unsigned int> io;
+	io.setVertexArray(mesh->getVertices(), mesh->getNumberOfVertices());
+	io.setNormalArray(mesh->getNormals(),  mesh->getNumberOfVertices());
+	io.setIndexArray(mesh->getIndices(), mesh->getNumberOfFaces());
+	io.write("mesh.obj");
+
+}
 
 void FastGrid::calcIndices(){
 
@@ -365,6 +389,10 @@ void FastGrid::readPLY(string filename)
 	}
 
 	interpolator = new StannInterpolator(points, normals, n, voxelsize, 100, 100.0);
+	interpolator->setKd(m_options->getKd());
+	interpolator->setKi(m_options->getKi());
+	interpolator->setKn(m_options->getKn());
+	interpolator->init();
 }
 
 void FastGrid::readPlainASCII(string filename)
@@ -430,6 +458,10 @@ void FastGrid::readPlainASCII(string filename)
 	cout << timestamp << "Number of Data Points: " << pts.size() << endl;
 
 	interpolator = new StannInterpolator(points, 0, number_of_points, 10.0, 100, 100.0);
+    interpolator->setKd(m_options->getKd());
+    interpolator->setKi(m_options->getKi());
+    interpolator->setKn(m_options->getKn());
+    interpolator->init();
 }
 
 int FastGrid::getFieldsPerLine(string filename){

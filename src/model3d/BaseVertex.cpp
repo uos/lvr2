@@ -113,9 +113,9 @@ void BaseVertex::operator*=(const float s){
 }
 
 void BaseVertex::operator/=(const float s){
-  if(s != 0) x /= x; else x = 0.0;
-  if(s != 0) y /= y; else y = 0.0;
-  if(s != 0) z /= z; else z = 0.0;
+  if(s != 0) x /= s; else x = 0.0;
+  if(s != 0) y /= s; else y = 0.0;
+  if(s != 0) z /= s; else z = 0.0;
 }
 
 bool BaseVertex::operator==(const BaseVertex &other) const{

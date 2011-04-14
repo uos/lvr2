@@ -286,6 +286,18 @@ float* StaticMesh::getVertices()
 	}
 }
 
+float* StaticMesh::getNormals()
+{
+    if(finalized)
+    {
+        return normals;
+    }
+    else
+    {
+        return 0;
+    }
+}
+
 size_t StaticMesh::getNumberOfVertices()
 {
 	return number_of_vertices;
