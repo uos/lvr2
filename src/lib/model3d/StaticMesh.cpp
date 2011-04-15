@@ -138,7 +138,6 @@ void StaticMesh::load(string filename){
 			colors[i * 3 + 1] = 1.0;
 			colors[i * 3 + 2] = 0.0;
 		}
-
 	}
 
 	if(n_normals == 0)

@@ -48,8 +48,8 @@ void Viewer::addDataObject(DataCollector* obj)
 	BoundingBox* bb = (obj->renderable()->boundingBox());
 	if(bb->isValid())
 	{
-		m_boundingBox.expand(*bb);
-		resetCamera();
+	  m_boundingBox.expand(*bb);
+	  resetCamera();
 	}
 	m_dataObjects.push_back(obj);
 }
