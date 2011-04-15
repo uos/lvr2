@@ -114,8 +114,8 @@ inline void BoundingBox::expand(BoundingBox& bb)
 
 inline void BoundingBox::render()
 {
-	glCallList(bounding_box_list);
-	glCallList(pick_objects_list);
+  //glCallList(bounding_box_list);
+  //	glCallList(pick_objects_list);
 }
 
 
