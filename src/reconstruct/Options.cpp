@@ -7,7 +7,7 @@
 
 #include "Options.hpp"
 
-namespace lssr{
+namespace reconstruct{
 
 Options::Options(int argc, char** argv) : m_descr("Supported options")
 {
@@ -127,4 +127,4 @@ Options::~Options() {
 	// TODO Auto-generated destructor stub
 }
 
-} // namespace lssr
+} // namespace reconstruct
