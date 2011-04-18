@@ -42,10 +42,15 @@ set(QVIEWER_SOURCES
     
 )
 
+set(QVIEWER_RESOURCES
+    res/viewer.qrc
+)
+
 # Generate mocs and header files for qt objects
 # and forms
 qt_wrap_cpp(qviewer QVIEWER_MOC_SRC ${QVIEWER_MOCS})
 qt_wrap_ui(qviewer QVIEWER_UI_HDRS QVIEWER_UI_SRC ${QVIEWER_UIS})
+qt4_add_resources(QVIEWER_RES_SRC ${QVIEWER_RESOURCES})
 
 add_definitions(${QT_DEFINITIONS})
 
@@ -54,7 +59,7 @@ add_definitions(${QT_DEFINITIONS})
 include_directories(${CMAKE_CURRENT_BINARY_DIR})
 
 # Create a new targer
-add_executable(qviewer ${QVIEWER_SOURCES} ${QVIEWER_MOC_SRC} ${QVIEWER_UI_HDRS})
+add_executable(qviewer ${QVIEWER_SOURCES} ${QVIEWER_MOC_SRC} ${QVIEWER_UI_HDRS} ${QVIEWER_RES_SRC})
 
 # Add needed libraries
 target_link_libraries(qviewer ${QT_QTCORE_LIBRARIES})
