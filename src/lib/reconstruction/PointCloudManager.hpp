@@ -59,7 +59,7 @@ public:
 	 * @param index
 	 * @return
 	 */
-	virtual VertexT* getPoint(size_t index);
+	virtual VertexT getPoint(size_t index);
 
 	/**
 	 * @brief Returns the number of managed points

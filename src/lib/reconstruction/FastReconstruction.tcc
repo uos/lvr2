@@ -52,7 +52,7 @@ uint FastReconstruction<VertexT, NormalT>::findQueryPoint(
         const int &position, const int &x, const int &y, const int &z)
 {
     int n_x, n_y, n_z, q_v, offset;
-    typename hash_map<size_t, FastBox<float, uint>* >::iterator it;
+    typename hash_map<size_t, FastBox<VertexT, NormalT>* >::iterator it;
 
     for(int i = 0; i < 7; i++){
         offset = i * 4;
@@ -66,8 +66,8 @@ uint FastReconstruction<VertexT, NormalT>::findQueryPoint(
         it = m_cells.find(0);
         if(it != m_cells.end())
         {
-            FastBox<float, uint>* b = it->second;
-            if(b->getVertex(q_v) != FastBox<float, uint>::INVALID_INDEX) return b->getVertex(q_v);
+            FastBox<VertexT, NormalT>* b = it->second;
+            if(b->getVertex(q_v) != FastBox<VertexT, NormalT>::INVALID_INDEX) return b->getVertex(q_v);
         }
     }
 
@@ -90,8 +90,8 @@ void FastReconstruction<VertexT, NormalT>::createGrid()
 	float vsh = 0.5 * m_voxelsize;
 
 	// Some iterators for hash map accesses
-	typename hash_map<size_t, FastBox<float, uint>* >::iterator it;
-	typename hash_map<size_t, FastBox<float, uint>* >::iterator neighbor_it;
+	typename hash_map<size_t, FastBox<VertexT, NormalT>* >::iterator it;
+	typename hash_map<size_t, FastBox<VertexT, NormalT>* >::iterator neighbor_it;
 
 	// Values for current and global indices. Current refers to a
 	// already present query point, global index is id that the next
@@ -109,7 +109,7 @@ void FastReconstruction<VertexT, NormalT>::createGrid()
 	for(size_t i = 0; i < this->m_manager.getNumPoints(); i++)
 	{
 		/// TODO: Replace with Vertex<> ???
-		index_x = calcIndex((this->m_manager[i][0] - (float)v_min[0]) / m_voxelsize);
+		index_x = calcIndex((this->m_manager[i][0] - v_min[0]) / m_voxelsize);
 		index_y = calcIndex((this->m_manager[i][1] - v_min[1]) / m_voxelsize);
 		index_z = calcIndex((this->m_manager[i][2] - v_min[2]) / m_voxelsize);
 
@@ -133,7 +133,7 @@ void FastReconstruction<VertexT, NormalT>::createGrid()
 						(index_z + dz) * m_voxelsize + v_min[2]);
 
 				//Create new box
-				FastBox<float, uint>* box = new FastBox<float, uint>(box_center);
+				FastBox<VertexT, NormalT>* box = new FastBox<VertexT, NormalT>(box_center);
 
 				//Setup the box itself
 				for(int k = 0; k < 8; k++){
@@ -150,7 +150,7 @@ void FastReconstruction<VertexT, NormalT>::createGrid()
 								box_center[1] + box_creation_table[k][1] * vsh,
 								box_center[2] + box_creation_table[k][2] * vsh);
 
-						m_queryPoints.push_back(QueryPoint<float>(position));
+						m_queryPoints.push_back(QueryPoint<VertexT>(position));
 
 						box->setVertex(k, global_index);
 						global_index++;
@@ -231,7 +231,7 @@ void FastReconstruction<VertexT, NormalT>::calcQueryPointValues(){
     // Calculate a distance value for each query point
     #pragma omp parallel for
     for(size_t i = 0; i < m_queryPoints.size(); i++){
-        QueryPoint<float> p = m_queryPoints[i];
+        QueryPoint<VertexT> p = m_queryPoints[i];
         p.m_distance = this->m_manager.distance(p.m_position);
         m_queryPoints[i] = p;
         ++progress;

@@ -82,7 +82,7 @@ void StannPointCloudManager<VertexT, NormalT>::estimateSurfaceNormals()
     cout << timestamp << "Initializing normal array..." << endl;
 
     //Initialize normal array
-    this->m_normals = new NormalT*[this->m_numPoints];
+    this->m_normals = new float*[this->m_numPoints];
 
     float mean_distance;
     // Create a progress counter
@@ -167,7 +167,7 @@ void StannPointCloudManager<VertexT, NormalT>::estimateSurfaceNormals()
         if(normal * (query_point - m_centroid) < 0) normal = normal * -1;
 
         // Save result in normal array
-        this->m_normals[i] = new NormalT[3];
+        this->m_normals[i] = new float[3];
         this->m_normals[i][0] = normal[0];
         this->m_normals[i][1] = normal[1];
         this->m_normals[i][2] = normal[2];
