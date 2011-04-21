@@ -33,10 +33,11 @@ int main(int argc, char** argv)
     reconstruct::Options options(argc, argv);
 
     // Create a point cloud manager
-    StannPointCloudManager<Vertex<float>, Normal<float> > manager(options.getOutputFileName(),
-                                          	  	   options.getKn(),
-                                          	  	   options.getKi(),
-                                          	  	   options.getKd());
+    StannPointCloudManager<Vertex<float>, Normal<float> >
+    	manager(options.getOutputFileName(),
+                options.getKn(),
+                options.getKi(),
+                options.getKd());
 
     // Create an empty mesh
     //TriangleMesh<Vertex<float>, unsigned int > mesh;

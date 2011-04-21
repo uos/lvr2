@@ -102,14 +102,14 @@ void FastReconstruction<VertexT, NormalT>::createGrid()
 	int dx, dy, dz;
 
 	// Get min and max vertex of the point clouds bounding box
-	BoundingBox<float> bounding_box = this->m_manager.getBoundingBox();
+	BoundingBox<VertexT> bounding_box = this->m_manager.getBoundingBox();
 	VertexT v_min = bounding_box.getMin();
 	VertexT v_max = bounding_box.getMax();
 
 	for(size_t i = 0; i < this->m_manager.getNumPoints(); i++)
 	{
 		/// TODO: Replace with Vertex<> ???
-		index_x = calcIndex((this->m_manager[i][0] - v_min[0]) / m_voxelsize);
+		index_x = calcIndex((this->m_manager[i][0] - (float)v_min[0]) / m_voxelsize);
 		index_y = calcIndex((this->m_manager[i][1] - v_min[1]) / m_voxelsize);
 		index_z = calcIndex((this->m_manager[i][2] - v_min[2]) / m_voxelsize);
 

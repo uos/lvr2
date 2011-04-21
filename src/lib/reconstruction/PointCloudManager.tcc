@@ -35,9 +35,9 @@ size_t PointCloudManager<VertexT, NormalT>::getNumPoints()
 }
 
 template<typename VertexT, typename NormalT>
-const VertexT* PointCloudManager<VertexT, NormalT>::operator[](const size_t& index) const
+const VertexT PointCloudManager<VertexT, NormalT>::operator[](const size_t& index) const
 {
-    return m_points[index];
+    return VertexT(m_points[index][0], m_points[index][1], m_points[index][2]);
 }
 
 
