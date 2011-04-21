@@ -41,11 +41,11 @@ namespace lssr
  * @brief A helper struct to represent a tangent plane
  *        of a query point. Used for normal estimation.
  */
-template<typename T>
+template<typename VertexT, typename NormalT>
 struct Plane{
     float a, b, c;
-    Normal<T> n;
-    Vertex<T> p;
+    NormalT n;
+    VertexT p;
 };
 
 /**
@@ -54,8 +54,8 @@ struct Plane{
  *        This class calculates robust surface normals for the
  *        given point set as described in the SSRR2010 paper.
  */
-template<typename T>
-class StannPointCloudManager : public PointCloudManager<T>
+template<typename VertexT, typename NormalT>
+class StannPointCloudManager : public PointCloudManager<VertexT, NormalT>
 {
 public:
 
@@ -72,8 +72,8 @@ public:
 	 * @param ki        The number of neighbor points used for normal interpolation
 	 * @param kd        The number of neighbor points used for distance value calculation
 	 */
-	StannPointCloudManager(T **points,
-	                       T **normals,
+	StannPointCloudManager(VertexT *points,
+	                       NormalT *normals,
 	                       size_t n,
 	                       const int &kn = 10,
 	                       const int &ki = 10,
@@ -105,8 +105,8 @@ public:
 	 * @param k         The (max) number of returned closest points to v
 	 * @param nb        A vector containing the determined closest points
 	 */
-	virtual void getkClosestVertices(const Vertex<T> &v,
-	        const size_t &k, vector<Vertex<T> > &nb)
+	virtual void getkClosestVertices(const VertexT &v,
+	        const size_t &k, vector<VertexT> &nb)
 	{
 	    /// TODO: Implement method
 	}
@@ -118,8 +118,8 @@ public:
 	 * @param k         The (max) number of returned closest points to v
 	 * @param nb        A vector containing the determined closest normals
 	 */
-	virtual void getkClosestNormals(const Vertex<T> &n,
-	        const size_t &k, vector<Normal<T> > &nb)
+	virtual void getkClosestNormals(const VertexT &n,
+	        const size_t &k, vector<NormalT> &nb)
 	{
 	    /// TODO: Implement method
 	}
@@ -141,7 +141,7 @@ public:
     /**
      * @brief Returns the distance of vertex v from the nearest tangent plane
      */
-    virtual T distance(Vertex<T> v);
+    virtual float distance(VertexT v);
 
 
 private:
@@ -189,7 +189,7 @@ private:
 	 *
 	 * @return true if the given box has valid dimensions.
 	 */
-	bool boundingBoxOK(const T &dx, const T &dy, const T &dz);
+	bool boundingBoxOK(const float &dx, const float &dy, const float &dz);
 
 	/**
 	 * @brief Returns the mean distance of the given point set from
@@ -199,7 +199,7 @@ private:
 	 * @param id            A list of point id's
 	 * @param k             The number of points in the list
 	 */
-	T meanDistance(const Plane<T> &p, const vector<unsigned long> &id, const int &k);
+	float meanDistance(const Plane<VertexT, NormalT> &p, const vector<unsigned long> &id, const int &k);
 
 	/**
 	 * @brief Returns a vertex representation of the given point in the
@@ -208,12 +208,12 @@ private:
 	 * @param i             A id of a point in the current point set
 	 * @return              A vertex representation of the given point
 	 */
-	Vertex<T> fromID(int i);
+	VertexT fromID(int i);
 
 	/**
 	 * @brief Returns the distance between vertex v and plane p
 	 */
-	T distance(Vertex<T> v, Plane<T> p);
+	float distance(VertexT v, Plane<VertexT, NormalT> p);
 
 	/**
 	 * @brief Calculates a tangent plane for the query point using the provided
@@ -223,12 +223,12 @@ private:
 	 * @param k             The size of the used k-neighborhood
 	 * @param id            The positions of the neighborhood points in \ref m_points
 	 */
-	Plane<T> calcPlane(const Vertex<T> &queryPoint,
+	Plane<VertexT, NormalT> calcPlane(const VertexT &queryPoint,
 	        const int &k,
 	        const vector<unsigned long> &id);
 
 	/// STANN tree to manage the data points
-	sfcnn< T*, 3, T>            m_pointTree;
+	sfcnn< VertexT*, 3, float>            m_pointTree;
 
 	/// The number of neighbors used for initial normal estimation
 	int                         m_kn;
@@ -240,7 +240,7 @@ private:
 	int                         m_kd;
 
 	/// The centroid of the point set
-	Vertex<T>               m_centroid;
+	VertexT               		m_centroid;
 };
 
 }

@@ -18,9 +18,9 @@ namespace lssr
 {
 
 template<typename T>
-T** AsciiIO<T>::read(string filename, size_t &count)
+T* AsciiIO<T>::read(string filename, size_t &count)
 {
-    T** points = 0;
+    T* points = 0;
 
     // Check extension
     boost::filesystem::path selectedFile(filename);
@@ -56,7 +56,7 @@ T** AsciiIO<T>::read(string filename, size_t &count)
         count = c;
 
         // Alloc memory for points
-        points = new T*[c];
+        points = new T[c];
         for(size_t i = 0; i < c; i++) points[i] = new T[3];
 
         // Setup info output

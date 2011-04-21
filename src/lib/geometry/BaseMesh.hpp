@@ -16,7 +16,7 @@ namespace lssr {
  *			all data structures that allow sequential insertion
  *			all of indexed triangles.
  */
-template<typename VertexType, typename IndexType>
+template<typename VertexType, typename NormalT>
 class BaseMesh
 {
 public:
@@ -38,7 +38,7 @@ public:
 	 * @param	n 		A supported vertex type. All used vertex types
 	 * 					must support []-access.
 	 */
-	virtual void addNormal(VertexType n) = 0;
+	virtual void addNormal(NormalT n) = 0;
 
 	/**
 	 * @brief 	Insert a new triangle into the mesh
@@ -47,7 +47,7 @@ public:
 	 * @param 	b		The second vertex of the triangle
 	 * @param	c		The third vertex of the triangle
 	 */
-	virtual void addTriangle(IndexType a, IndexType b, IndexType c) = 0;
+	virtual void addTriangle(uint a, uint b, uint c) = 0;
 
 	/**
 	 * @brief 	Finalizes a mesh, i.e. converts the template based buffers
@@ -63,8 +63,20 @@ protected:
 	/// The mesh's vertex buffer
 	float*			m_vertexBuffer;
 
+	/// The vertex normals
+	float*			m_normalBuffer;
+
+	/// The vertex colors
+	float*			m_colorBuffer;
+
 	/// The mesh's index buffer
-	unsigned int*	m_indexBuffer;
+	uint*			m_indexBuffer;
+
+	/// The number of vertices in the mesh
+	uint			m_nVertices;
+
+	/// The number of face in the mesh
+	uint 			m_nFaces;
 };
 }
 

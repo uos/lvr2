@@ -15,34 +15,34 @@ using std::string;
 namespace lssr
 {
 
-template<typename T>
-BoundingBox<T>& PointCloudManager<T>::getBoundingBox()
+template<typename VertexT, typename NormalT>
+BoundingBox<VertexT>& PointCloudManager<VertexT, NormalT>::getBoundingBox()
 {
     return m_boundingBox;
 }
 
-template<typename T>
-T* PointCloudManager<T>::getPoint(size_t index)
+template<typename VertexT, typename NormalT>
+VertexT* PointCloudManager<VertexT, NormalT>::getPoint(size_t index)
 {
     assert(index < m_numPoints);
     return m_points[index];
 }
 
-template<typename T>
-size_t PointCloudManager<T>::getNumPoints()
+template<typename VertexT, typename NormalT>
+size_t PointCloudManager<VertexT, NormalT>::getNumPoints()
 {
     return m_numPoints;
 }
 
-template<typename T>
-const T* PointCloudManager<T>::operator[](const size_t& index) const
+template<typename VertexT, typename NormalT>
+const VertexT* PointCloudManager<VertexT, NormalT>::operator[](const size_t& index) const
 {
     return m_points[index];
 }
 
 
-template<typename T>
-void PointCloudManager<T>::readFromFile(string filename)
+template<typename VertexT, typename NormalT>
+void PointCloudManager<VertexT, NormalT>::readFromFile(string filename)
 {
     // Check extension
     boost::filesystem::path selectedFile(filename);
@@ -50,14 +50,14 @@ void PointCloudManager<T>::readFromFile(string filename)
 
     if(extension == ".pts" || extension == ".3d" || extension == ".xyz" || extension == ".txt")
     {
-        this->m_points = AsciiIO<T>::read(filename, this->m_numPoints);
+        this->m_points = AsciiIO<VertexT>::read(filename, this->m_numPoints);
     }
     else if(extension == ".ply")
     {
         // Read given input file
         PLYIO plyio;
         plyio.read(filename);
-        this->m_points = plyio.getIndexedVertexArray(this->m_numPoints);
+        this->m_points =  plyio.getIndexedVertexArray(this->m_numPoints);
         this->m_normals = plyio.getIndexedNormalArray(this->m_numPoints);
     }
 }

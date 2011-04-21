@@ -24,7 +24,7 @@ namespace lssr
  * 			able to handle point cloud data with normals. It
  * 			defines queries for nearest neighbor search.
  */
-template<typename T>
+template<typename VertexT, typename NormalT>
 class PointCloudManager
 {
 public:
@@ -35,8 +35,8 @@ public:
 	 * @param k			The (max) number of returned closest points to v
 	 * @param nb		A vector containing the determined closest points
 	 */
-	virtual void getkClosestVertices(const Vertex<T> &v,
-		const size_t &k, vector<Vertex<T> > &nb) = 0;
+	virtual void getkClosestVertices(const VertexT &v,
+		const size_t &k, vector<VertexT> &nb) = 0;
 
 	/**
 	 * @brief Returns the k closest neighbor normals to a given query point
@@ -45,13 +45,13 @@ public:
 	 * @param k			The (max) number of returned closest points to v
 	 * @param nb		A vector containing the determined closest normals
 	 */
-	virtual void getkClosestNormals(const Vertex<T> &n,
-		const size_t &k, vector<Normal<T> > &nb) = 0;
+	virtual void getkClosestNormals(const VertexT &n,
+		const size_t &k, vector<NormalT> &nb) = 0;
 
 	/**
 	 * @brief Returns the bounding box of the loaded point set
 	 */
-	virtual BoundingBox<T>& getBoundingBox();
+	virtual BoundingBox<VertexT>& getBoundingBox();
 
 	/**
 	 * @brief Returns the points at index \ref{index} in the point array
@@ -59,7 +59,7 @@ public:
 	 * @param index
 	 * @return
 	 */
-	virtual T* getPoint(size_t index);
+	virtual VertexT* getPoint(size_t index);
 
 	/**
 	 * @brief Returns the number of managed points
@@ -69,9 +69,9 @@ public:
 	/**
 	 * @brief Returns the point at the given \ref{index}
 	 */
-	virtual const T* operator[](const size_t &index) const;
+	virtual const VertexT* operator[](const size_t &index) const;
 
-	virtual T distance(Vertex<T> v) = 0;
+	virtual float distance(VertexT v) = 0;
 
 protected:
 
@@ -84,13 +84,13 @@ protected:
 	virtual void readFromFile(string filename);
 
     /// The currently stored points
-    T**                         m_points;
+    VertexT*                   	m_points;
 
     /// The point normals
-    T**                         m_normals;
+    NormalT*                  	m_normals;
 
     /// The bounding box of the point set
-    BoundingBox<T>              m_boundingBox;
+    BoundingBox<VertexT>        m_boundingBox;
 
     size_t                      m_numPoints;
 };
