@@ -30,7 +30,7 @@ using namespace lssr;
 int main(int argc, char** argv)
 {
     // Parse command line arguments
-    Options options(argc, argv);
+    reconstruct::Options options(argc, argv);
 
     // Create a point cloud manager
     StannPointCloudManager<Vertex<float>, Normal<float> > manager(options.getOutputFileName(),

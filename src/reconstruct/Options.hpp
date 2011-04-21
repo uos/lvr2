@@ -20,7 +20,7 @@ using std::string;
 using std::vector;
 
 
-namespace reconstrcut{
+namespace reconstruct{
 
 using namespace boost::program_options;
 
