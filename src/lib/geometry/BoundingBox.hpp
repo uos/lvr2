@@ -22,7 +22,7 @@ namespace lssr
 /**
  * @brief A dynamic bounding box class.
  */
-template<typename T>
+template<typename VertexT>
 class BoundingBox {
 public:
 
@@ -38,7 +38,7 @@ public:
 	 * @param v2        Upper right corner of the BoundingBox
 	 * @return
 	 */
-	BoundingBox(Vertex<T> v1, Vertex<T> v2);
+	BoundingBox(VertexT v1, VertexT v2);
 
 	/**
 	 * @brief Constructs a bounding box from the given coordinates
@@ -51,8 +51,8 @@ public:
 	 * @param z_max     z value of the upper right corner
 	 * @return
 	 */
-	BoundingBox(T x_min, T y_min, T z_min,
-			    T x_max, T y_max, T z_max);
+	BoundingBox(float x_min, float y_min, float z_min,
+			    float x_max, float y_max, float z_max);
 
 	virtual ~BoundingBox() {};
 
@@ -62,7 +62,7 @@ public:
 	 *
 	 * @param v         A 3d point
 	 */
-	inline void         expand(Vertex<T> v);
+	inline void         expand(VertexT v);
 
 	/**
 	 * @brief Expands the bounding box if the given point is outside
@@ -72,7 +72,7 @@ public:
 	 * @param y         The y coordinate of the check point
 	 * @param z         The z coordinate of the check point
 	 */
-	inline void         expand(T x, T y, T z);
+	inline void         expand(float x, float y, float z);
 
 	/**
 	 * @brief  Calculates the surrounding bounding box of the current
@@ -80,14 +80,14 @@ public:
 	 *
 	 * @param bb        Another bounding box
 	 */
-	inline void         expand(BoundingBox<T>& bb);
+	inline void         expand(BoundingBox<VertexT>& bb);
 
 	/**
 	 * @brief Returns the radius of the current volume, i.e. the distance
 	 *        between the centroid and the most distance corner from this
 	 *        point.
 	 */
-	T 		            getRadius();
+	float 		        getRadius();
 
 	/**
 	 * @brief Returns true if the bounding box has been expanded before or
@@ -98,58 +98,58 @@ public:
 	/**
 	 * @brief Returns the center point of the bounding box.
 	 */
-	Vertex<T>           getCentroid(){return m_centroid;};
+	VertexT           	getCentroid(){return m_centroid;};
 
 	/**
 	 * @brief Returns the longest side of the bounding box
 	 */
-	T                   getLongestSide();
+	float               getLongestSide();
 
 	/**
 	 * @brief Returns the x-size of the bounding box
 	 */
-	T                   getXSize();
+	float               getXSize();
 
     /**
      * @brief Returns the y-size of the bounding box
      */
-    T                   getYSize();
+    float               getYSize();
 
     /**
      * @brief Returns the z-size of the bounding box
      */
-    T                   getZSize();
+    float               getZSize();
 
 
     /**
      * @brief Returns the upper right coordinates
      */
-    Vertex<T>           getMax() const;
+    VertexT           	getMax() const;
 
     /**
      * @brief Returns the lower left coordinates
      */
-    Vertex<T>           getMin() const;
+    VertexT             getMin() const;
 
 private:
 
 	/// The lower right point of the bounding box
-	Vertex<T>           m_min;
+	VertexT           	m_min;
 
 	/// The upper right point of the bounding box
-	Vertex<T>           m_max;
+	VertexT           	m_max;
 
 	/// The center point of the bounding box
-	Vertex<T>           m_centroid;
+	VertexT           	m_centroid;
 
 	/// The 'width' of the bounding box
-	T                   m_xSize;
+	float               m_xSize;
 
 	/// The 'height' of the bounding box
-	T                   m_ySize;
+	float               m_ySize;
 
 	/// The 'depth' of the bounding box
-	T                   m_zSize;
+	float               m_zSize;
 };
 
 } // namespace lssr

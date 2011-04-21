@@ -18,7 +18,7 @@ namespace lssr
  * @brief Interface class for surface reconstruction algorithms
  *        that generate triangle meshes.
  */
-template<typename CoordType, typename IndexType>
+template<typename VertexT, typename NormalT>
 class Reconstructor
 {
 public:
@@ -27,7 +27,7 @@ public:
      * @brief Constructs a Reconstructor object using the given point
      *        cloud handler
      */
-    Reconstructor(PointCloudManager<CoordType> &manager) : m_manager(manager) {}
+    Reconstructor(PointCloudManager<VertexT, NormalT> &manager) : m_manager(manager) {}
 
     /**
      * @brief Generated a triangle mesh representation of the current
@@ -36,12 +36,12 @@ public:
      * @param mesh      A surface representation of the current point
      *                  set.
      */
-    virtual void getMesh(BaseMesh<Vertex<CoordType>, IndexType>& mesh) = 0;
+    virtual void getMesh(BaseMesh<VertexT, NormalT>& mesh) = 0;
 
 protected:
 
     /// The point cloud manager that handles the loaded point cloud data.
-    PointCloudManager<CoordType>&      m_manager;
+    PointCloudManager<VertexT, NormalT>&      m_manager;
 };
 
 } //namespace lssr

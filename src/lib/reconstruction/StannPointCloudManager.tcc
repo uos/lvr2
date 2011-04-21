@@ -10,9 +10,9 @@
 
 namespace lssr{
 
-template<typename T>
-StannPointCloudManager<T>::StannPointCloudManager(T **points,
-        T **normals,
+template<typename VertexT, typename NormalT>
+StannPointCloudManager<VertexT, NormalT>::StannPointCloudManager(VertexT *points,
+        NormalT *normals,
         size_t n,
         const int &kn,
         const int &ki,
@@ -29,8 +29,8 @@ StannPointCloudManager<T>::StannPointCloudManager(T **points,
 
 }
 
-template<typename T>
-StannPointCloudManager<T>::StannPointCloudManager(string filename,
+template<typename VertexT, typename NormalT>
+StannPointCloudManager<VertexT, NormalT>::StannPointCloudManager(string filename,
                        const int &kn,
                        const int &ki,
                        const int &kd)
@@ -43,8 +43,8 @@ StannPointCloudManager<T>::StannPointCloudManager(string filename,
     init();
 }
 
-template<typename T>
-void StannPointCloudManager<T>::init()
+template<typename VertexT, typename NormalT>
+void StannPointCloudManager<VertexT, NormalT>::init()
 {
     // Be sure that point information was given
     assert(this->m_points);
@@ -60,7 +60,7 @@ void StannPointCloudManager<T>::init()
 
     // Create kd tree
     cout << timestamp << "Creating STANN Kd-Tree..." << endl;
-    m_pointTree = sfcnn< T*, 3, T>(this->m_points, this->m_numPoints, 4);
+    m_pointTree = sfcnn< VertexT*, 3, VertexT>(this->m_points, this->m_numPoints, 4);
 
     // Estimate surface normals if necessary
     if(!this->m_normals)
@@ -74,15 +74,15 @@ void StannPointCloudManager<T>::init()
     }
 }
 
-template<typename T>
-void StannPointCloudManager<T>::estimateSurfaceNormals()
+template<typename VertexT, typename NormalT>
+void StannPointCloudManager<VertexT, NormalT>::estimateSurfaceNormals()
 {
     int k_0 = m_kn;
 
     cout << timestamp << "Initializing normal array..." << endl;
 
     //Initialize normal array
-    this->m_normals = new T*[this->m_numPoints];
+    this->m_normals = new NormalT*[this->m_numPoints];
 
     float mean_distance;
     // Create a progress counter
@@ -152,12 +152,12 @@ void StannPointCloudManager<T>::estimateSurfaceNormals()
         }
 
         // Create a query point for the current point
-        query_point = Vertex<T>(this->m_points[i][0],
-                this->m_points[i][1],
-                this->m_points[i][2]);
+        query_point = VertexT(this->m_points[i][0],
+                			  this->m_points[i][1],
+                			  this->m_points[i][2]);
 
         // Interpolate a plane based on the k-neighborhood
-        Plane<T> p = calcPlane(query_point, k, id);
+        Plane<VertexT, NormalT> p = calcPlane(query_point, k, id);
 
         // Get the mean distance to the tangent plane
         mean_distance = meanDistance(p, id, k);
@@ -167,7 +167,7 @@ void StannPointCloudManager<T>::estimateSurfaceNormals()
         if(normal * (query_point - m_centroid) < 0) normal = normal * -1;
 
         // Save result in normal array
-        this->m_normals[i] = new T[3];
+        this->m_normals[i] = new NormalT[3];
         this->m_normals[i][0] = normal[0];
         this->m_normals[i][1] = normal[1];
         this->m_normals[i][2] = normal[2];
@@ -178,11 +178,11 @@ void StannPointCloudManager<T>::estimateSurfaceNormals()
 }
 
 
-template<typename T>
-void StannPointCloudManager<T>::interpolateSurfaceNormals()
+template<typename VertexT, typename NormalT>
+void StannPointCloudManager<VertexT, NormalT>::interpolateSurfaceNormals()
 {
     // Create a temporal normal array for the
-    vector<Normal<T> > tmp(this->m_numPoints, Normal<T>());
+    vector<NormalT> tmp(this->m_numPoints, NormalT());
 
     // Create progress output
     string comment = timestamp.getElapsedTime() + "Interpolating normals ";
@@ -197,15 +197,15 @@ void StannPointCloudManager<T>::interpolateSurfaceNormals()
 
         m_pointTree.ksearch(this->m_points[i], m_ki, id, di, 0);
 
-        Vertex<T> mean;
-        Normal<T> mean_normal;
+        VertexT mean;
+        NormalT mean_normal;
 
         for(int j = 0; j < m_ki; j++){
-            mean += Vertex<T>(this->m_normals[id[j]][0],
-                              this->m_normals[id[j]][1],
-                              this->m_normals[id[j]][2]);
+            mean += VertexT(this->m_normals[id[j]][0],
+                            this->m_normals[id[j]][1],
+                            this->m_normals[id[j]][2]);
         }
-        mean_normal = Normal<T>(mean);
+        mean_normal = NormalT(mean);
 
         tmp[i] = mean;
 
@@ -213,9 +213,9 @@ void StannPointCloudManager<T>::interpolateSurfaceNormals()
          * @todo Try to remove this code. Should improve the results at all.
          */
         for(int j = 0; j < m_ki; j++){
-            Normal<T> n(this->m_normals[id[j]][0],
-                        this->m_normals[id[j]][1],
-                        this->m_normals[id[j]][2]);
+            NormalT n(this->m_normals[id[j]][0],
+                      this->m_normals[id[j]][1],
+                      this->m_normals[id[j]][2]);
 
 
             // Only override existing normals if the interpolated
@@ -241,8 +241,8 @@ void StannPointCloudManager<T>::interpolateSurfaceNormals()
 
 }
 
-template<typename T>
-bool StannPointCloudManager<T>::boundingBoxOK(const T &dx, const T &dy, const T &dz)
+template<typename VertexT, typename NormalT>
+bool StannPointCloudManager<VertexT, NormalT>::boundingBoxOK(const float &dx, const float &dy, const float &dz)
 {
     /**
      * @todo Replace magic number here.
@@ -257,11 +257,11 @@ bool StannPointCloudManager<T>::boundingBoxOK(const T &dx, const T &dy, const T 
     return true;
 }
 
-template<typename T>
-T StannPointCloudManager<T>::meanDistance(const Plane<T> &p,
+template<typename VertexT, typename NormalT>
+float StannPointCloudManager<VertexT, NormalT>::meanDistance(const Plane<VertexT, NormalT> &p,
         const vector<unsigned long> &id, const int &k)
 {
-    T sum = 0;
+    float sum = 0;
     for(int i = 0; i < k; i++){
         sum += distance(fromID(id[i]), p);
     }
@@ -269,14 +269,14 @@ T StannPointCloudManager<T>::meanDistance(const Plane<T> &p,
     return sum;
 }
 
-template<typename T>
-T StannPointCloudManager<T>::distance(Vertex<T> v, Plane<T> p)
+template<typename VertexT, typename NormalT>
+float StannPointCloudManager<VertexT, NormalT>::distance(VertexT v, Plane<VertexT, NormalT> p)
 {
     return fabs((v - p.p) * p.n);
 }
 
-template<typename T>
-T StannPointCloudManager<T>::distance(Vertex<T> v)
+template<typename VertexT, typename NormalT>
+float StannPointCloudManager<VertexT, NormalT>::distance(VertexT v)
 {
     int k = m_kd;
 
@@ -291,15 +291,15 @@ T StannPointCloudManager<T>::distance(Vertex<T> v)
     //Find nearest tangent plane
     m_pointTree.ksearch(p, k, id, di, 0);
 
-    Vertex<T> nearest;
-    Normal<T> normal;
+    VertexT nearest;
+    NormalT normal;
 
     for(int i = 0; i < k; i++){
         //Get nearest tangent plane
-        Vertex<T> vq (this->m_points[id[i]][0], this->m_points[id[i]][1], this->m_points[id[i]][2]);
+        VertexT vq (this->m_points[id[i]][0], this->m_points[id[i]][1], this->m_points[id[i]][2]);
 
         //Get normal
-        Normal<T> n(this->m_normals[id[i]][0], this->m_normals[id[i]][1], this->m_normals[id[i]][2]);
+        NormalT n(this->m_normals[id[i]][0], this->m_normals[id[i]][1], this->m_normals[id[i]][2]);
 
         nearest += vq;
         normal += n;
@@ -318,16 +318,16 @@ T StannPointCloudManager<T>::distance(Vertex<T> v)
     return distance;
 }
 
-template<typename T>
-Vertex<T> StannPointCloudManager<T>::fromID(int i){
-    return Vertex<T>(
+template<typename VertexT, typename NormalT>
+VertexT StannPointCloudManager<VertexT, NormalT>::fromID(int i){
+    return VertexT(
             this->m_points[i][0],
             this->m_points[i][1],
             this->m_points[i][2]);
 }
 
-template<typename T>
-Plane<T> StannPointCloudManager<T>::calcPlane(const Vertex<T> &queryPoint,
+template<typename VertexT, typename NormalT>
+Plane<VertexT, NormalT> StannPointCloudManager<VertexT, NormalT>::calcPlane(const VertexT &queryPoint,
         const int &k,
         const vector<unsigned long> &id)
 {
@@ -336,11 +336,11 @@ Plane<T> StannPointCloudManager<T>::calcPlane(const Vertex<T> &queryPoint,
      */
     float epsilon = 100.0;
 
-    Vertex<T> diff1, diff2;
-    Normal<T> normal;
+    VertexT diff1, diff2;
+    NormalT normal;
 
-    T z1 = 0;
-    T z2 = 0;
+    float z1 = 0;
+    float z2 = 0;
 
     // Calculate a least sqaures fit to the given points
     Vector3f C;
@@ -366,13 +366,13 @@ Plane<T> StannPointCloudManager<T>::calcPlane(const Vertex<T> &queryPoint,
     z2 = C(0) + C(1) * queryPoint[0] + C(2) * (queryPoint[2] + epsilon);
 
     // Calculcate the plane's normal via the cross product
-    diff1 = Vertex<T>(queryPoint[0] + epsilon, z1, queryPoint[2]) - queryPoint;
-    diff2 = Vertex<T>(queryPoint[0], z2, queryPoint[2] + epsilon) - queryPoint;
+    diff1 = VertexT(queryPoint[0] + epsilon, z1, queryPoint[2]) - queryPoint;
+    diff2 = VertexT(queryPoint[0], z2, queryPoint[2] + epsilon) - queryPoint;
 
     normal = diff1.cross(diff2);
 
     // Create a plane representation and return the result
-    Plane<T> p;
+    Plane<VertexT, NormalT> p;
     p.a = C(0);
     p.b = C(1);
     p.c = C(2);
@@ -382,8 +382,8 @@ Plane<T> StannPointCloudManager<T>::calcPlane(const Vertex<T> &queryPoint,
     return p;
 }
 
-template<typename T>
-void StannPointCloudManager<T>::save(string filename)
+template<typename VertexT, typename NormalT>
+void StannPointCloudManager<VertexT, NormalT>::save(string filename)
 {
     // Get file extension
     boost::filesystem::path selectedFile(filename);
@@ -405,8 +405,8 @@ void StannPointCloudManager<T>::save(string filename)
 
 }
 
-template<typename T>
-void StannPointCloudManager<T>::savePointsAndNormals(string filename)
+template<typename VertexT, typename NormalT>
+void StannPointCloudManager<VertexT, NormalT>::savePointsAndNormals(string filename)
 {
     ofstream out(filename.c_str());
 
@@ -431,8 +431,8 @@ void StannPointCloudManager<T>::savePointsAndNormals(string filename)
     cout << endl;
 }
 
-template<typename T>
-void StannPointCloudManager<T>::savePoints(string filename)
+template<typename VertexT, typename NormalT>
+void StannPointCloudManager<VertexT, NormalT>::savePoints(string filename)
 {
     ofstream out(filename.c_str());
 
@@ -457,8 +457,8 @@ void StannPointCloudManager<T>::savePoints(string filename)
     cout << endl;
 }
 
-template<typename T>
-void StannPointCloudManager<T>::savePLY(string filename)
+template<typename VertexT, typename NormalT>
+void StannPointCloudManager<VertexT, NormalT>::savePLY(string filename)
 {
     PLYIO ply_writer;
 
