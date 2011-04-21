@@ -69,7 +69,7 @@ public:
 	/**
 	 * @brief Returns the point at the given \ref{index}
 	 */
-	virtual const VertexT* operator[](const size_t &index) const;
+	virtual const VertexT operator[](const size_t &index) const;
 
 	virtual float distance(VertexT v) = 0;
 
