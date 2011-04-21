@@ -72,7 +72,7 @@ public:
 	 * @param ki        The number of neighbor points used for normal interpolation
 	 * @param kd        The number of neighbor points used for distance value calculation
 	 */
-	StannPointCloudManager(VertexT *points,
+	StannPointCloudManager(float** points,
 	                       NormalT *normals,
 	                       size_t n,
 	                       const int &kn = 10,
@@ -228,7 +228,7 @@ private:
 	        const vector<unsigned long> &id);
 
 	/// STANN tree to manage the data points
-	sfcnn< VertexT*, 3, float>            m_pointTree;
+	sfcnn< float*, 3, float>    m_pointTree;
 
 	/// The number of neighbors used for initial normal estimation
 	int                         m_kn;
