@@ -29,7 +29,7 @@ public:
      * @param count         The number of elements read
      * @return The read point cloud data or a zero pointer of reading failed.
      */
-    static T* read(string filename, size_t &count);
+    static T** read(string filename, size_t &count);
 
     /// TODO: Coordinate mapping for ascii files
 

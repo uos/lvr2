@@ -84,10 +84,10 @@ protected:
 	virtual void readFromFile(string filename);
 
     /// The currently stored points
-    VertexT*                   	m_points;
+    float**                   	m_points;
 
     /// The point normals
-    NormalT*                  	m_normals;
+    float**                  	m_normals;
 
     /// The bounding box of the point set
     BoundingBox<VertexT>        m_boundingBox;
