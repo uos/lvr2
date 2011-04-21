@@ -84,7 +84,7 @@ public:
      * 						a newly generated vertex shout have the index
      * 						globalIndex + 1.
      */
-    void getSurface(BaseMesh<VertexT, NormalT> &mesh, vector<QueryPoint<float> > &query_points, uint &globalIndex);
+    void getSurface(BaseMesh<VertexT, NormalT> &mesh, vector<QueryPoint<VertexT> > &query_points, uint &globalIndex);
 
     /// The voxelsize of the reconstruction grid
     static float             m_voxelsize;
@@ -107,7 +107,7 @@ private:
     /**
      * @brief Calculated the index for the MC table
      */
-    int  getIndex(vector<QueryPoint<float> > &query_points);
+    int  getIndex(vector<QueryPoint<VertexT> > &query_points);
 
     /**
      * @brief Calculates the position of the eight cell corners
@@ -115,7 +115,7 @@ private:
      * @param corners		The cell corners
      * @param query_points	The query points of the grid
      */
-    void getCorners(VertexT corners[], vector<QueryPoint<float> > &query_points);
+    void getCorners(VertexT corners[], vector<QueryPoint<VertexT> > &query_points);
 
     /**
      * @brief Calculates the distance value for the eight cell corners.
@@ -123,7 +123,7 @@ private:
      * @param distances		The distance values
      * @param query_points  The query points of the grid
      */
-    void getDistances(float distances[], vector<QueryPoint<float> > &query_points);
+    void getDistances(float distances[], vector<QueryPoint<VertexT> > &query_points);
 
     /**
      * @brief Calculated the 12 possible intersections between

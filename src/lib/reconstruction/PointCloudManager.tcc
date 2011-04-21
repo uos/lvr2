@@ -22,10 +22,10 @@ BoundingBox<VertexT>& PointCloudManager<VertexT, NormalT>::getBoundingBox()
 }
 
 template<typename VertexT, typename NormalT>
-VertexT* PointCloudManager<VertexT, NormalT>::getPoint(size_t index)
+VertexT PointCloudManager<VertexT, NormalT>::getPoint(size_t index)
 {
     assert(index < m_numPoints);
-    return m_points[index];
+    return VertexT(m_points[index][0], m_points[index][1], m_points[index][2]);
 }
 
 template<typename VertexT, typename NormalT>

@@ -66,7 +66,7 @@ uint FastBox<VertexT, NormalT>::getVertex(int index)
 
 template<typename VertexT, typename NormalT>
 void FastBox<VertexT, NormalT>::getCorners(VertexT corners[],
-                                           vector<QueryPoint<float> > &qp)
+                                           vector<QueryPoint<VertexT> > &qp)
 {
     // Get the box corner positions from the query point array
     for(int i = 0; i < 8; i++)
@@ -77,7 +77,7 @@ void FastBox<VertexT, NormalT>::getCorners(VertexT corners[],
 
 template<typename VertexT, typename NormalT>
 void FastBox<VertexT, NormalT>::getDistances(float distances[],
-                                             vector<QueryPoint<float> > &qp)
+                                             vector<QueryPoint<VertexT> > &qp)
 {
     // Get the distance values from the query point array
     // for the corners of the current box
@@ -88,7 +88,7 @@ void FastBox<VertexT, NormalT>::getDistances(float distances[],
 }
 
 template<typename VertexT, typename NormalT>
-int  FastBox<VertexT, NormalT>::getIndex(vector<QueryPoint<float> > &qp)
+int  FastBox<VertexT, NormalT>::getIndex(vector<QueryPoint<VertexT> > &qp)
 {
     // Determine the MC-Table index for the current corner configuration
     int index = 0;
@@ -160,7 +160,7 @@ void FastBox<VertexT, NormalT>::getIntersections(VertexT corners[],
 
 template<typename VertexT, typename NormalT>
 void FastBox<VertexT, NormalT>::getSurface(BaseMesh<VertexT, NormalT> &mesh,
-                                               vector<QueryPoint<float> > &qp,
+                                               vector<QueryPoint<VertexT> > &qp,
                                                uint &globalIndex)
 {
     VertexT corners[8];
@@ -231,7 +231,7 @@ void FastBox<VertexT, NormalT>::getSurface(BaseMesh<VertexT, NormalT> &mesh,
                 mesh.addNormal(NormalT());
                 for(int i = 0; i < 3; i++)
                 {
-                    FastBox* current_neighbor = m_neighbors[neighbor_table[edge_index][i]];
+                    FastBox<VertexT, NormalT>* current_neighbor = m_neighbors[neighbor_table[edge_index][i]];
                     if(current_neighbor != 0)
                     {
                         current_neighbor->m_intersections[neighbor_vertex_table[edge_index][i]] = globalIndex;

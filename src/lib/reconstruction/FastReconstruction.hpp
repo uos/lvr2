@@ -124,7 +124,7 @@ private:
     hash_map<size_t, FastBox<VertexT, NormalT>* >  m_cells;
 
     /// A vector containing the query points for the reconstruction
-    vector<QueryPoint<float> > m_queryPoints;
+    vector<QueryPoint<VertexT> > m_queryPoints;
 };
 
 
