@@ -10,22 +10,22 @@
 namespace lssr
 {
 
-template<typename VertexType, typename IndexType>
-TriangleMesh<VertexType, IndexType>::TriangleMesh()
+template<typename VertexType, typename NormalType>
+TriangleMesh<VertexType, NormalType>::TriangleMesh()
 {
 
 }
 
-template<typename VertexType, typename IndexType>
-TriangleMesh<VertexType, IndexType>::~TriangleMesh<VertexType, IndexType>()
+template<typename VertexType, typename NormalType>
+TriangleMesh<VertexType, NormalType>::~TriangleMesh<VertexType, NormalType>()
 {
     m_normals.clear();
     m_vertices.clear();
     m_triangles.clear();
 }
 
-template<typename VertexType, typename IndexType>
-void TriangleMesh<VertexType, IndexType>::addTriangle(IndexType v0, IndexType v1, IndexType v2)
+template<typename VertexType, typename NormalType>
+void TriangleMesh<VertexType, NormalType>::addTriangle(uint v0, uint v1, uint v2)
 {
 	// Check indices
 	assert(v0 < m_vertices.size());
@@ -56,22 +56,22 @@ void TriangleMesh<VertexType, IndexType>::addTriangle(IndexType v0, IndexType v1
 	}
 }
 
-template<typename VertexType, typename IndexType>
-VertexType TriangleMesh<VertexType, IndexType>::getVertex(IndexType index)
+template<typename VertexType, typename NormalType>
+VertexType TriangleMesh<VertexType, NormalType>::getVertex(uint index)
 {
 	assert(index < (int) m_vertices.size());
 	return m_vertices[index];
 }
 
-template<typename VertexType, typename IndexType>
-VertexType TriangleMesh<VertexType, IndexType>::getNormal(IndexType index)
+template<typename VertexType, typename NormalType>
+VertexType TriangleMesh<VertexType, NormalType>::getNormal(uint index)
 {
 	assert(index < (int)m_normals.size());
 	return m_normals[index];
 }
 
-template<typename VertexType, typename IndexType>
-void TriangleMesh<VertexType, IndexType>::finalize()
+template<typename VertexType, typename NormalType>
+void TriangleMesh<VertexType, NormalType>::finalize()
 {
 	// Alloc buffers
 	this->m_vertexBuffer = new float[3 * m_vertices.size()];
@@ -97,7 +97,7 @@ void TriangleMesh<VertexType, IndexType>::finalize()
 	}
 
 	int c = 0;
-	for(typename list<IndexType>::iterator it = m_triangles.begin();
+	for(typename list<uint>::iterator it = m_triangles.begin();
 		it != m_triangles.end(); it++)
 	{
 		this->m_indexBuffer[c] = (unsigned int)*it;
@@ -108,8 +108,8 @@ void TriangleMesh<VertexType, IndexType>::finalize()
 }
 
 /// TODO: Re-Integrate normal interpolation
-//template<typename VertexType, typename IndexType>
-//void TriangleMesh<VertexType, IndexType>::interpolateNormal(Normal n, size_t index){
+//template<typename VertexType, typename NormalType>
+//void TriangleMesh<VertexType, uint>::interpolateNormal(Normal n, size_t index){
 //
 //	if(index < normal_buffer.size()){
 //
@@ -120,7 +120,7 @@ void TriangleMesh<VertexType, IndexType>::finalize()
 //		normal_buffer[index] = normal;
 //
 //	} else {
-//		cout << "WARNING: TriangleMesh<VertexType, IndexType>: Normal index out of range: " << index << endl;
+//		cout << "WARNING: TriangleMesh<VertexType, uint>: Normal index out of range: " << index << endl;
 //	}
 //
 //}
