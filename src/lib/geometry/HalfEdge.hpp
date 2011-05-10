@@ -4,7 +4,7 @@
 namespace lssr
 {
 
-template<typename VertexT, typename FaceT>
+template<typename HVertexT, typename FaceT>
 class HalfEdge{
 public:
 	HalfEdge() : start(0), end(0), pair(0), next(0), face(0), used(false) {};
@@ -15,11 +15,11 @@ public:
 		delete pair;
 	}
 
-	HalfEdge<VertexT, FaceT> next;
-	HalfEdge<VertexT, FaceT>* pair;
+	HalfEdge<HVertexT, FaceT>* next;
+	HalfEdge<HVertexT, FaceT>* pair;
 
-	VertexT* start;
-	VertexT* end;
+	HVertexT* start;
+	HVertexT* end;
 
 	FaceT* face;
 

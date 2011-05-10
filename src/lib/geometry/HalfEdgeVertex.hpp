@@ -57,10 +57,10 @@ public:
 	size_t 				m_index;
 
 	/// The list incoming edges
-	vector<HalfEdge< VertexT, HalfEdgeFace<VertexT, NormalT> > *> in;
+	vector<HalfEdge< HalfEdgeVertex<VertexT, NormalT>, HalfEdgeFace<VertexT, NormalT> > *> in;
 
 	/// The list of outgoing edges
-	vector<HalfEdge< VertexT, HalfEdgeFace<VertexT, NormalT> > *> out;
+	vector<HalfEdge< HalfEdgeVertex<VertexT, NormalT>, HalfEdgeFace<VertexT, NormalT> > *> out;
 };
 
 } // namespace lssr

@@ -13,6 +13,7 @@
 
 using namespace std;
 
+#include "HalfEdgeVertex.hpp"
 #include "Normal.hpp"
 #include "HalfEdge.hpp"
 
@@ -20,10 +21,13 @@ namespace lssr
 {
 
 template<typename VertexT, typename NormalT>
+class HalfEdgeVertex;
+
+template<typename VertexT, typename NormalT>
 class HalfEdgeFace
 {
 public:
-	HalfEdgeFace();
+	HalfEdgeFace() {};
 	HalfEdgeFace(const HalfEdgeFace<VertexT, NormalT> &o);
 
 	void calc_normal();
@@ -40,7 +44,7 @@ public:
 
 	float getArea();
 
-	HalfEdge<VertexT, HalfEdgeFace<VertexT, NormalT> >* 	m_edge;
+	HalfEdge<HalfEdgeVertex<VertexT, NormalT>, HalfEdgeFace<VertexT, NormalT> >* m_edge;
 
 	bool 							m_used;
 	vector<int> 					m_indices;
@@ -50,7 +54,7 @@ public:
 
 	//unsigned int face_index;
 
-	unsigned int 	m_face_index;
+	size_t							m_face_index;
 
 	NormalT							m_normal;
 };

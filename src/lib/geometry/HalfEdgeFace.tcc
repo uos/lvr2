@@ -43,11 +43,11 @@ void HalfEdgeFace<VertexT, NormalT>::calc_normal(){
 
 	VertexT vertices[3];
 	HalfEdgeVertex<VertexT, NormalT>* start = m_edge->start;
-	HalfEdge<VertexT, HalfEdgeFace<VertexT, NormalT> >* current_edge = m_edge;
+	HalfEdge<HalfEdgeVertex<VertexT, NormalT>, HalfEdgeFace<VertexT, NormalT> >* current_edge = m_edge;
 
 	int c = 0;
 	while(current_edge->end != start){
-		vertices[c] = current_edge->start->position;
+		vertices[c] = current_edge->start->m_position;
 		current_edge = current_edge->next;
 		c++;
 	}
