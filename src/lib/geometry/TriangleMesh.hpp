@@ -77,11 +77,6 @@ public:
 	VertexType   getNormal(IndexType index);
 
 	/**
-	 * @brief Save the mesh to the given file
-	 */
-	void save(string filename);
-
-	/**
 	 * @brief Finalizes the mesh.
 	 */
 	virtual void finalize();

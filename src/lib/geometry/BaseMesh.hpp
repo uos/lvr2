@@ -55,6 +55,11 @@ public:
 	 */
 	virtual void finalize() = 0;
 
+	/**
+	 * @brief Save the mesh to the given file
+	 */
+	virtual void save(string filename);
+
 protected:
 
 	/// True if mesh is finalized
@@ -79,5 +84,7 @@ protected:
 	uint 			m_nFaces;
 };
 }
+
+#include "BaseMesh.tcc"
 
 #endif /* BASEMESH_H_ */

@@ -40,8 +40,8 @@ int main(int argc, char** argv)
                 options.getKd());
 
     // Create an empty mesh
-    //TriangleMesh<Vertex<float>, unsigned int > mesh;
-    HalfEdgeMesh<Vertex<float>, Normal<float> > mesh;
+    TriangleMesh<Vertex<float>, unsigned int > mesh;
+    //HalfEdgeMesh<Vertex<float>, Normal<float> > mesh;
 
     // Create a new reconstruction object
     FastReconstruction<Vertex<float>, Normal<float> > reconstruction(manager, options.getVoxelsize());
@@ -49,7 +49,7 @@ int main(int argc, char** argv)
 
     // Save triangle mesh
     mesh.finalize();
-    //mesh.save("triangle_mesh.ply");
+    mesh.save("triangle_mesh.ply");
 
     cout << timestamp << "Program end." << endl;
 
