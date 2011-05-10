@@ -47,7 +47,22 @@ void HalfEdgeMesh<VertexT, NormalT>::addNormal(NormalT n)
 template<typename VertexT, typename NormalT>
 HalfEdge<HalfEdgeVertex<VertexT, NormalT>, HalfEdgeFace<VertexT, NormalT> >* HalfEdgeMesh<VertexT, NormalT>::halfEdgeToVertex(HVertex *v, HVertex* next)
 {
-	return 0;
+	HEdge* edge = 0;
+	HEdge* cur = 0;
+
+	typename vector<HEdge*>::iterator it;
+
+	for(it = v->in.begin(); it != v->in.end(); it++){
+		// Check all incoming edges, if start and end vertex
+		// are the same. If they are, save this edge.
+		cur = *it;
+		if(cur->end == v && cur->start == next){
+			edge = cur;
+		}
+
+	}
+
+	return edge;
 }
 
 template<typename VertexT, typename NormalT>
