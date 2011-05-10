@@ -26,8 +26,8 @@ namespace lssr
  *        marching cubes algorithm using a hashed grid structure for
  *        parallel computation.
  */
-template<typename CoordType, typename IndexType>
-class FastReconstruction : public Reconstructor<CoordType, IndexType>
+template<typename VertexT, typename NormalT>
+class FastReconstruction : public Reconstructor<VertexT, NormalT>
 {
 public:
 
@@ -39,7 +39,7 @@ public:
      *                      of the volume taken by the data points) used by
      *                      the reconstruction.
      */
-    FastReconstruction(PointCloudManager<CoordType> &manager,  int resolution);
+    FastReconstruction(PointCloudManager<VertexT, NormalT> &manager,  int resolution);
 
 
     /**
@@ -52,7 +52,7 @@ public:
      *
      * @param mesh
      */
-    virtual void getMesh(BaseMesh<Vertex<CoordType>, IndexType> &mesh);
+    virtual void getMesh(BaseMesh<VertexT, NormalT> &mesh);
 
 private:
 
@@ -83,7 +83,7 @@ private:
      * @return The index of an existing query point or -1 if no point
      *         corresponding to the given position exists.
      */
-    IndexType findQueryPoint(const int &position,
+    uint findQueryPoint(const int &position,
             const int &i, const int &j, const int &k);
 
     /**
@@ -103,7 +103,7 @@ private:
     }
 
     /// The voxelsize used for reconstruction
-    CoordType                   m_voxelsize;
+    float                  		m_voxelsize;
 
     /// The absolute maximal index of the reconstruction grid
     size_t                      m_maxIndex;
@@ -121,10 +121,10 @@ private:
     size_t                      m_maxIndexZ;
 
     /// A hahs map to store the created grid cells
-    hash_map<size_t, FastBox<CoordType, IndexType>* >  m_cells;
+    hash_map<size_t, FastBox<VertexT, NormalT>* >  m_cells;
 
     /// A vector containing the query points for the reconstruction
-    vector<QueryPoint<CoordType> > m_queryPoints;
+    vector<QueryPoint<VertexT> > m_queryPoints;
 };
 
 

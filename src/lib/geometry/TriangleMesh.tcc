@@ -10,22 +10,22 @@
 namespace lssr
 {
 
-template<typename VertexType, typename IndexType>
-TriangleMesh<VertexType, IndexType>::TriangleMesh()
+template<typename VertexType, typename NormalType>
+TriangleMesh<VertexType, NormalType>::TriangleMesh()
 {
 
 }
 
-template<typename VertexType, typename IndexType>
-TriangleMesh<VertexType, IndexType>::~TriangleMesh<VertexType, IndexType>()
+template<typename VertexType, typename NormalType>
+TriangleMesh<VertexType, NormalType>::~TriangleMesh<VertexType, NormalType>()
 {
     m_normals.clear();
     m_vertices.clear();
     m_triangles.clear();
 }
 
-template<typename VertexType, typename IndexType>
-void TriangleMesh<VertexType, IndexType>::addTriangle(IndexType v0, IndexType v1, IndexType v2)
+template<typename VertexType, typename NormalType>
+void TriangleMesh<VertexType, NormalType>::addTriangle(uint v0, uint v1, uint v2)
 {
 	// Check indices
 	assert(v0 < m_vertices.size());
@@ -56,27 +56,31 @@ void TriangleMesh<VertexType, IndexType>::addTriangle(IndexType v0, IndexType v1
 	}
 }
 
-template<typename VertexType, typename IndexType>
-VertexType TriangleMesh<VertexType, IndexType>::getVertex(IndexType index)
+template<typename VertexType, typename NormalType>
+VertexType TriangleMesh<VertexType, NormalType>::getVertex(uint index)
 {
 	assert(index < (int) m_vertices.size());
 	return m_vertices[index];
 }
 
-template<typename VertexType, typename IndexType>
-VertexType TriangleMesh<VertexType, IndexType>::getNormal(IndexType index)
+template<typename VertexType, typename NormalType>
+VertexType TriangleMesh<VertexType, NormalType>::getNormal(uint index)
 {
 	assert(index < (int)m_normals.size());
 	return m_normals[index];
 }
 
-template<typename VertexType, typename IndexType>
-void TriangleMesh<VertexType, IndexType>::finalize()
+template<typename VertexType, typename NormalType>
+void TriangleMesh<VertexType, NormalType>::finalize()
 {
 	// Alloc buffers
 	this->m_vertexBuffer = new float[3 * m_vertices.size()];
 	this->m_normalBuffer = new float[3 * m_vertices.size()];
 	this->m_indexBuffer = new uint[m_triangles.size()];
+
+	// Save primitive counts
+	this->m_nFaces = m_triangles.size() / 3;
+	this->m_nVertices = m_vertices.size();
 
 	// Fill buffers
 	int index = 0;
@@ -93,7 +97,7 @@ void TriangleMesh<VertexType, IndexType>::finalize()
 	}
 
 	int c = 0;
-	for(typename list<IndexType>::iterator it = m_triangles.begin();
+	for(typename list<uint>::iterator it = m_triangles.begin();
 		it != m_triangles.end(); it++)
 	{
 		this->m_indexBuffer[c] = (unsigned int)*it;
@@ -103,36 +107,9 @@ void TriangleMesh<VertexType, IndexType>::finalize()
 	this->m_finalized = true;
 }
 
-template<typename VertexType, typename IndexType>
-void TriangleMesh<VertexType, IndexType>::save(string filename)
-{
-	PLYIO ply_writer;
-
-	// Create element descriptions
-	PLYElement* vertex_element = new PLYElement("vertex", m_vertices.size());
-	vertex_element->addProperty("x", "float");
-	vertex_element->addProperty("y", "float");
-	vertex_element->addProperty("z", "float");
-
-	PLYElement* face_element = new PLYElement("face", m_triangles.size());
-	face_element->addProperty("vertex_indices", "uint", "uchar");
-
-
-	// Add elements descriptions to header
-	ply_writer.addElement(vertex_element);
-	ply_writer.addElement(face_element);
-
-	// Set data arrays
-	ply_writer.setVertexArray(this->m_vertexBuffer, this->m_vertices.size());
-	ply_writer.setIndexArray(this->m_indexBuffer, m_triangles.size() / 3);
-
-	// Save
-	ply_writer.save(filename, true);
-}
-
 /// TODO: Re-Integrate normal interpolation
-//template<typename VertexType, typename IndexType>
-//void TriangleMesh<VertexType, IndexType>::interpolateNormal(Normal n, size_t index){
+//template<typename VertexType, typename NormalType>
+//void TriangleMesh<VertexType, uint>::interpolateNormal(Normal n, size_t index){
 //
 //	if(index < normal_buffer.size()){
 //
@@ -143,7 +120,7 @@ void TriangleMesh<VertexType, IndexType>::save(string filename)
 //		normal_buffer[index] = normal;
 //
 //	} else {
-//		cout << "WARNING: TriangleMesh<VertexType, IndexType>: Normal index out of range: " << index << endl;
+//		cout << "WARNING: TriangleMesh<VertexType, uint>: Normal index out of range: " << index << endl;
 //	}
 //
 //}

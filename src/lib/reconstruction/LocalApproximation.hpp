@@ -18,7 +18,7 @@ namespace lssr
  * @brief	An interface class for local approximation operations
  * 			(e.g. in a Marching Cubes box)
  */
-template<typename CoordType, typename IndexType>
+template<typename VertexT, typename NormalT>
 class LocalApproximation
 {
 public:
@@ -30,9 +30,9 @@ public:
 	 * @param	manager		 A point cloud manager object
 	 * @param	globalIndex	 The index of the latest vertex in the mesh
 	 */
-    virtual void getSurface(BaseMesh<Vertex<CoordType>, IndexType> &mesh,
-            PointCloudManager<CoordType> &manager,
-            IndexType globalIndex);
+    virtual void getSurface(BaseMesh<VertexT, NormalT> &mesh,
+            PointCloudManager<VertexT, NormalT> &manager,
+            uint &globalIndex);
 
 };
 

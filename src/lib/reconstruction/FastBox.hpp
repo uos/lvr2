@@ -26,7 +26,7 @@ namespace lssr
  * @brief A volume representation used by the standard Marching Cubes
  * 		  implementation.
  */
-template<typename CoordType, typename IndexType>
+template<typename VertexT, typename NormalT>
 class FastBox
 {
 public:
@@ -35,7 +35,7 @@ public:
 	 * @brief Constructs a new box at the given center point defined
 	 * 		  by the used \ref{m_voxelsize}.
 	 */
-    FastBox(Vertex<CoordType> &center);
+    FastBox(VertexT &center);
 
     /**
      * @brief Destructor.
@@ -50,7 +50,7 @@ public:
      * @param index			One of the eight cell corners.
      * @param value			An index in the reconstruction grid.
      */
-    void setVertex(int index,  IndexType value);
+    void setVertex(int index,  uint value);
 
     /**
      * @brief Adjacent cells in the grid should use common vertices.
@@ -60,7 +60,7 @@ public:
      * @param index			One of the eight cell corners.
      * @param cell			A neighbor cell.
      */
-    void setNeighbor(int index, FastBox<CoordType, IndexType>* cell);
+    void setNeighbor(int index, FastBox<VertexT, NormalT>* cell);
 
     /**
      * @brief Gets the vertex index of the queried cell corner.
@@ -68,8 +68,10 @@ public:
      * @param index			One of the eight cell corners
      * @return				A vertex index.
      */
-    IndexType getVertex(int index);
-    FastBox<CoordType, IndexType>*     getNeighbor(int index);
+    uint getVertex(int index);
+
+
+    FastBox<VertexT, NormalT>*     getNeighbor(int index);
 
     /**
      * @brief Performs a local reconstruction according to the standard
@@ -82,13 +84,13 @@ public:
      * 						a newly generated vertex shout have the index
      * 						globalIndex + 1.
      */
-    void getSurface(BaseMesh<Vertex<CoordType>, IndexType> &mesh, vector<QueryPoint<CoordType> > &query_points, IndexType &globalIndex);
+    void getSurface(BaseMesh<VertexT, NormalT> &mesh, vector<QueryPoint<VertexT> > &query_points, uint &globalIndex);
 
     /// The voxelsize of the reconstruction grid
-    static CoordType                m_voxelsize;
+    static float             m_voxelsize;
 
     /// An index value that is used to reference vertices that are not in the grid
-    static IndexType		   		INVALID_INDEX;
+    static uint		   		INVALID_INDEX;
 private:
 
     /***
@@ -100,12 +102,12 @@ private:
      * @param d2			The distance value for the second coordinate
      * @return The interpolated distance.
      */
-    CoordType calcIntersection(CoordType x1, CoordType x2, CoordType d1, CoordType d2);
+    float calcIntersection(float x1, float x2, float d1, float d2);
 
     /**
      * @brief Calculated the index for the MC table
      */
-    int  getIndex(vector<QueryPoint<CoordType> > &query_points);
+    int  getIndex(vector<QueryPoint<VertexT> > &query_points);
 
     /**
      * @brief Calculates the position of the eight cell corners
@@ -113,7 +115,7 @@ private:
      * @param corners		The cell corners
      * @param query_points	The query points of the grid
      */
-    void getCorners(Vertex<CoordType> corners[], vector<QueryPoint<CoordType> > &query_points);
+    void getCorners(VertexT corners[], vector<QueryPoint<VertexT> > &query_points);
 
     /**
      * @brief Calculates the distance value for the eight cell corners.
@@ -121,7 +123,7 @@ private:
      * @param distances		The distance values
      * @param query_points  The query points of the grid
      */
-    void getDistances(CoordType distances[], vector<QueryPoint<CoordType> > &query_points);
+    void getDistances(float distances[], vector<QueryPoint<VertexT> > &query_points);
 
     /**
      * @brief Calculated the 12 possible intersections between
@@ -131,19 +133,19 @@ private:
      * @param distance		The corresponding distance value
      * @param positions		The interpolated intersections.
      */
-    void getIntersections(Vertex<CoordType> corners[], CoordType distance[], Vertex<CoordType> positions[]);
+    void getIntersections(VertexT corners[], float distance[], VertexT positions[]);
 
     /// The box center
-    Vertex<CoordType>               m_center;
+    VertexT               		m_center;
 
     /// The eight box corners
-    IndexType                       m_vertices[8];
+    uint                  		m_vertices[8];
 
     /// The twelve intersection between box and surface
-    IndexType                       m_intersections[12];
+    uint                   		m_intersections[12];
 
     /// Pointer to all adjacent cells
-    FastBox<CoordType, IndexType>*  m_neighbors[27];
+    FastBox<VertexT, NormalT>*  m_neighbors[27];
 
 };
 

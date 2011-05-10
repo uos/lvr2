@@ -20,6 +20,7 @@
 #include "io/PLYIO.hpp"
 #include "geometry/Matrix4.hpp"
 #include "geometry/TriangleMesh.hpp"
+#include "geometry/HalfEdgeMesh.hpp"
 
 using namespace lssr;
 
@@ -32,16 +33,18 @@ int main(int argc, char** argv)
     reconstruct::Options options(argc, argv);
 
     // Create a point cloud manager
-    StannPointCloudManager<float> manager(options.getOutputFileName(),
-                                          options.getKn(),
-                                          options.getKi(),
-                                          options.getKd());
+    StannPointCloudManager<Vertex<float>, Normal<float> >
+    	manager(options.getOutputFileName(),
+                options.getKn(),
+                options.getKi(),
+                options.getKd());
 
     // Create an empty mesh
-    TriangleMesh<Vertex<float>, unsigned int > mesh;
+    TriangleMesh<Vertex<float>, Normal<float> > mesh;
+    //HalfEdgeMesh<Vertex<float>, Normal<float> > mesh;
 
     // Create a new reconstruction object
-    FastReconstruction<float, unsigned int> reconstruction(manager, options.getVoxelsize());
+    FastReconstruction<Vertex<float>, Normal<float> > reconstruction(manager, options.getVoxelsize());
     reconstruction.getMesh(mesh);
 
     // Save triangle mesh
