@@ -40,7 +40,7 @@ int main(int argc, char** argv)
                 options.getKd());
 
     // Create an empty mesh
-    TriangleMesh<Vertex<float>, unsigned int > mesh;
+    TriangleMesh<Vertex<float>, Normal<float> > mesh;
     //HalfEdgeMesh<Vertex<float>, Normal<float> > mesh;
 
     // Create a new reconstruction object
