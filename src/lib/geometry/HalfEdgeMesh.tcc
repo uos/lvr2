@@ -35,13 +35,17 @@ HalfEdgeMesh<VertexT, NormalT>::HalfEdgeMesh()
 template<typename VertexT, typename NormalT>
 void HalfEdgeMesh<VertexT, NormalT>::addVertex(VertexT v)
 {
-
+	// Create new HalfEdgeVertex and increase vertex counter
+	m_vertices.push_back(new HalfEdgeVertex<VertexT, NormalT>(v));
+	m_globalIndex++;
 }
 
 template<typename VertexT, typename NormalT>
 void HalfEdgeMesh<VertexT, NormalT>::addNormal(NormalT n)
 {
-
+	// Is a vertex exists at globalIndex, save normal
+	assert(m_globalIndex == m_vertices.size());
+	m_vertices[m_globalIndex - 1]->m_normal = n;
 }
 
 template<typename VertexT, typename NormalT>

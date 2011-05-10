@@ -38,6 +38,11 @@ public:
 	HalfEdgeVertex(VertexT v, NormalT n) : m_position(v), m_normal(n) {}
 
 	/**
+	 * @brief	Constructs a vertex at given position
+	 */
+	HalfEdgeVertex(VertexT v) : m_position(v) {}
+
+	/**
 	 * @brief	Copy Ctor.
 	 */
 	HalfEdgeVertex(const HalfEdgeVertex& o)
