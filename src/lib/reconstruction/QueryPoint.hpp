@@ -17,7 +17,7 @@ namespace lssr
  *        'distance' value that is used by the marching
  *        cubes algorithm
  */
-template<typename T>
+template<typename VertexT>
 class QueryPoint {
 public:
 
@@ -32,7 +32,7 @@ public:
 	 * @param v          The position of the query point. The distance
 	 *                   value is set to 0
 	 */
-	QueryPoint(Vertex<T> v);
+	QueryPoint(VertexT v);
 
 	/**
 	 * @brief Constructor.
@@ -40,7 +40,7 @@ public:
 	 * @param v         The position of the query point.
 	 * @param f         The distance value for the query point.
 	 */
-	QueryPoint(Vertex<T> v, T f);
+	QueryPoint(VertexT v, float f);
 
 	/**
 	 * @brief Copy constructor.
@@ -55,10 +55,10 @@ public:
 	virtual ~QueryPoint() {};
 
 	/// The position of the query point
-	Vertex<T>       m_position;
+	VertexT      	m_position;
 
 	/// The associated distance value
-	T               m_distance;
+	float           m_distance;
 };
 
 } // namespace lssr

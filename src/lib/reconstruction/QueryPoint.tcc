@@ -8,26 +8,26 @@
 namespace lssr
 {
 
-template<typename T>
-QueryPoint<T>::QueryPoint() {
-	m_position = Vertex<T>(0.0, 0.0, 0.0);
+template<typename VertexT>
+QueryPoint<VertexT>::QueryPoint() {
+	m_position = VertexT(0.0, 0.0, 0.0);
 	m_distance = 0.0;
 }
 
-template<typename T>
-QueryPoint<T>::QueryPoint(Vertex<T> v){
+template<typename VertexT>
+QueryPoint<VertexT>::QueryPoint(VertexT v){
 	m_position = v;
 	m_distance = 0.0;
 }
 
-template<typename T>
-QueryPoint<T>::QueryPoint(Vertex<T> v, T d){
+template<typename VertexT>
+QueryPoint<VertexT>::QueryPoint(VertexT v, float d){
 	m_position = v;
 	m_distance = d;
 }
 
-template<typename T>
-QueryPoint<T>::QueryPoint(const QueryPoint<T> &o){
+template<typename VertexT>
+QueryPoint<VertexT>::QueryPoint(const QueryPoint<VertexT> &o){
 	m_position = o.m_position;
 	m_distance = o.m_distance;
 }

@@ -10,18 +10,18 @@
 namespace lssr
 {
 
-template<typename CoordType, typename IndexType>
-FastReconstruction<CoordType, IndexType>::FastReconstruction(PointCloudManager<CoordType> &manager,  int resolution)
-    : Reconstructor<CoordType, IndexType>(manager)
+template<typename VertexT, typename NormalT>
+FastReconstruction<VertexT, NormalT>::FastReconstruction(PointCloudManager<VertexT, NormalT> &manager,  int resolution)
+    : Reconstructor<VertexT, NormalT>(manager)
 {
     // Determine m_voxelsize
     assert(resolution > 0);
-    BoundingBox<CoordType> bb = this->m_manager.getBoundingBox();
+    BoundingBox<VertexT> bb = this->m_manager.getBoundingBox();
 
     assert(bb.isValid());
-    m_voxelsize = (CoordType) bb.getLongestSide() / resolution;
+    m_voxelsize = (float) bb.getLongestSide() / resolution;
 
-    FastBox<CoordType, IndexType>::m_voxelsize = m_voxelsize;
+    FastBox<VertexT, NormalT>::m_voxelsize = m_voxelsize;
 
     // Calculate max grid indices
     calcIndices();
@@ -31,12 +31,12 @@ FastReconstruction<CoordType, IndexType>::FastReconstruction(PointCloudManager<C
 
 }
 
-template<typename CoordType, typename IndexType>
-void FastReconstruction<CoordType, IndexType>::calcIndices()
+template<typename VertexT, typename NormalT>
+void FastReconstruction<VertexT, NormalT>::calcIndices()
 {
-    BoundingBox<CoordType> bb = this->m_manager.getBoundingBox();
+    BoundingBox<VertexT> bb = this->m_manager.getBoundingBox();
 
-    CoordType max_size = bb.getLongestSide();
+    float max_size = bb.getLongestSide();
 
     //Save needed grid parameters
     m_maxIndex = (int)ceil( (max_size + 5 * m_voxelsize) / m_voxelsize);
@@ -47,12 +47,12 @@ void FastReconstruction<CoordType, IndexType>::calcIndices()
     m_maxIndexZ = (int)ceil(bb.getZSize() / m_voxelsize) + 3;
 }
 
-template<typename CoordType, typename IndexType>
-IndexType FastReconstruction<CoordType, IndexType>::findQueryPoint(
+template<typename VertexT, typename NormalT>
+uint FastReconstruction<VertexT, NormalT>::findQueryPoint(
         const int &position, const int &x, const int &y, const int &z)
 {
     int n_x, n_y, n_z, q_v, offset;
-    typename hash_map<size_t, FastBox<CoordType, IndexType>* >::iterator it;
+    typename hash_map<size_t, FastBox<VertexT, NormalT>* >::iterator it;
 
     for(int i = 0; i < 7; i++){
         offset = i * 4;
@@ -66,18 +66,18 @@ IndexType FastReconstruction<CoordType, IndexType>::findQueryPoint(
         it = m_cells.find(0);
         if(it != m_cells.end())
         {
-            FastBox<CoordType, IndexType>* b = it->second;
-            if(b->getVertex(q_v) != FastBox<CoordType, IndexType>::INVALID_INDEX) return b->getVertex(q_v);
+            FastBox<VertexT, NormalT>* b = it->second;
+            if(b->getVertex(q_v) != FastBox<VertexT, NormalT>::INVALID_INDEX) return b->getVertex(q_v);
         }
     }
 
-    return FastBox<CoordType, IndexType>::INVALID_INDEX;
+    return FastBox<float, uint>::INVALID_INDEX;
 
 
 }
 
-template<typename CoordType, typename IndexType>
-void FastReconstruction<CoordType, IndexType>::createGrid()
+template<typename VertexT, typename NormalT>
+void FastReconstruction<VertexT, NormalT>::createGrid()
 {
 	cout << timestamp << "Creating Grid..." << endl;
 
@@ -85,13 +85,13 @@ void FastReconstruction<CoordType, IndexType>::createGrid()
 	int index_x, index_y, index_z;
 	size_t hash_value;
 
-	IndexType INVALID = FastBox<CoordType, IndexType>::INVALID_INDEX;
+	uint INVALID = FastBox<float, uint>::INVALID_INDEX;
 
 	float vsh = 0.5 * m_voxelsize;
 
 	// Some iterators for hash map accesses
-	typename hash_map<size_t, FastBox<CoordType, IndexType>* >::iterator it;
-	typename hash_map<size_t, FastBox<CoordType, IndexType>* >::iterator neighbor_it;
+	typename hash_map<size_t, FastBox<VertexT, NormalT>* >::iterator it;
+	typename hash_map<size_t, FastBox<VertexT, NormalT>* >::iterator neighbor_it;
 
 	// Values for current and global indices. Current refers to a
 	// already present query point, global index is id that the next
@@ -102,9 +102,9 @@ void FastReconstruction<CoordType, IndexType>::createGrid()
 	int dx, dy, dz;
 
 	// Get min and max vertex of the point clouds bounding box
-	BoundingBox<CoordType> bounding_box = this->m_manager.getBoundingBox();
-	Vertex<CoordType> v_min = bounding_box.getMin();
-	Vertex<CoordType> v_max = bounding_box.getMax();
+	BoundingBox<VertexT> bounding_box = this->m_manager.getBoundingBox();
+	VertexT v_min = bounding_box.getMin();
+	VertexT v_max = bounding_box.getMax();
 
 	for(size_t i = 0; i < this->m_manager.getNumPoints(); i++)
 	{
@@ -128,12 +128,12 @@ void FastReconstruction<CoordType, IndexType>::createGrid()
 			it = m_cells.find(hash_value);
 			if(it == m_cells.end()){
 				//Calculate box center
-				Vertex<CoordType> box_center((index_x + dx) * m_voxelsize + v_min[0],
+				VertexT box_center((index_x + dx) * m_voxelsize + v_min[0],
 						(index_y + dy) * m_voxelsize + v_min[1],
 						(index_z + dz) * m_voxelsize + v_min[2]);
 
 				//Create new box
-				FastBox<CoordType, IndexType>* box = new FastBox<CoordType, IndexType>(box_center);
+				FastBox<VertexT, NormalT>* box = new FastBox<VertexT, NormalT>(box_center);
 
 				//Setup the box itself
 				for(int k = 0; k < 8; k++){
@@ -146,11 +146,11 @@ void FastReconstruction<CoordType, IndexType>::createGrid()
 
 					//Otherwise create new grid point and associate it with the current box
 					else{
-						Vertex<CoordType> position(box_center[0] + box_creation_table[k][0] * vsh,
+						VertexT position(box_center[0] + box_creation_table[k][0] * vsh,
 								box_center[1] + box_creation_table[k][1] * vsh,
 								box_center[2] + box_creation_table[k][2] * vsh);
 
-						m_queryPoints.push_back(QueryPoint<CoordType>(position));
+						m_queryPoints.push_back(QueryPoint<VertexT>(position));
 
 						box->setVertex(k, global_index);
 						global_index++;
@@ -198,19 +198,19 @@ void FastReconstruction<CoordType, IndexType>::createGrid()
 }
 
 
-template<typename CoordType, typename IndexType>
-void FastReconstruction<CoordType, IndexType>::getMesh(BaseMesh<Vertex<CoordType>, IndexType> &mesh)
+template<typename VertexT, typename NormalT>
+void FastReconstruction<VertexT, NormalT>::getMesh(BaseMesh<VertexT, NormalT> &mesh)
 {
 	// Status message for mesh generation
 	string comment = timestamp.getElapsedTime() + "Creating Mesh ";
 	ProgressBar progress(m_cells.size(), comment);
 
 	// Some pointers
-	FastBox<CoordType, IndexType>* b;
-	IndexType global_index = 0;
+	FastBox<VertexT, NormalT>* b;
+	uint global_index = 0;
 
 	// Iterate through cells and calculate local approximations
-	typename hash_map<size_t, FastBox<CoordType, IndexType>* >::iterator it;
+	typename hash_map<size_t, FastBox<VertexT, NormalT>* >::iterator it;
 	for(it = m_cells.begin(); it != m_cells.end(); it++){
 		b = it->second;
 		b->getSurface(mesh, m_queryPoints, global_index);
@@ -219,8 +219,8 @@ void FastReconstruction<CoordType, IndexType>::getMesh(BaseMesh<Vertex<CoordType
 	cout << endl;
 }
 
-template<typename CoordType, typename IndexType>
-void FastReconstruction<CoordType, IndexType>::calcQueryPointValues(){
+template<typename VertexT, typename NormalT>
+void FastReconstruction<VertexT, NormalT>::calcQueryPointValues(){
 
     // Status message output
     string comment = timestamp.getElapsedTime() + "Calculating distance values ";
@@ -231,7 +231,7 @@ void FastReconstruction<CoordType, IndexType>::calcQueryPointValues(){
     // Calculate a distance value for each query point
     #pragma omp parallel for
     for(size_t i = 0; i < m_queryPoints.size(); i++){
-        QueryPoint<CoordType> p = m_queryPoints[i];
+        QueryPoint<VertexT> p = m_queryPoints[i];
         p.m_distance = this->m_manager.distance(p.m_position);
         m_queryPoints[i] = p;
         ++progress;
