@@ -45,8 +45,111 @@ void HalfEdgeMesh<VertexT, NormalT>::addNormal(NormalT n)
 }
 
 template<typename VertexT, typename NormalT>
+HalfEdge<HalfEdgeVertex<VertexT, NormalT>, HalfEdgeFace<VertexT, NormalT> >* HalfEdgeMesh<VertexT, NormalT>::halfEdgeToVertex(HVertex *v, HVertex* next)
+{
+	return 0;
+}
+
+template<typename VertexT, typename NormalT>
 void HalfEdgeMesh<VertexT, NormalT>::addTriangle(uint a, uint b, uint c)
 {
+	// Create a new face
+	HFace* face = new HFace;
+	face->m_used = false;
+
+	// Create a list of HalfEdges that will be connected
+	// with this here. Here we need only to alloc space for
+	// three pointers, allocation and linking will be done
+	// later.
+	HEdge* edges[3];
+	edges[0] = edges[1] = edges[2] = 0;
+
+	// Traverse face triangles
+	for(int k = 0; k < 3; k++)
+	{
+		// Pointer to start and end vertex of an edge
+		HVertex* current;
+		HVertex* next;
+
+		// Map k values to parameters
+		switch(k)
+		{
+		case 0:
+			current = m_vertices[a];
+			next 	= m_vertices[b];
+			break;
+		case 1:
+			current = m_vertices[b];
+			next 	= m_vertices[c];
+			break;
+		case 2:
+			current = m_vertices[b];
+			next 	= m_vertices[a];
+			break;
+		}
+
+		// Try to find an pair edges of an existing face,
+		// that points to the current vertex. If such an
+		// edge exists, the pair-edge of this edge is the
+		// one we need. Update link. If no edge is found,
+		// create a new one.
+		HEdge* edgeToVertex = halfEdgeToVertex(current, next);
+
+		// If a fitting edge was found, save the pair edge
+		// and let it point the the new face
+		if(edgeToVertex != 0){
+			edges[k] = edgeToVertex->pair;
+			edges[k]->face = face;
+		}
+		else
+		{
+			// Create new edge and pair
+			HEdge* edge = new HEdge;
+			edge->face = face;
+			edge->start = current;
+			edge->end = next;
+
+			HEdge* pair = new HEdge;
+			pair->start = next;
+			pair->end = current;
+			pair->face = 0;
+
+			// Link Half edges
+			edge->pair = pair;
+			pair->pair = edge;
+
+			// Save outgoing edge
+			current->out.push_back(edge);
+			next->in.push_back(edge);
+
+			// Save incoming edges
+			current->in.push_back(pair);
+			next->out.push_back(pair);
+
+			// Save pointer to new edge
+			edges[k] = edge;
+		}
+	}
+
+
+	for(int k = 0; k < 3; k++){
+		edges[k]->next = edges[(k+1) % 3];
+	}
+
+	//cout << ":: " << face->index[0] << " " << face->index[1] << " " << face->index[2] << endl;
+
+	face->m_edge = edges[0];
+	face->calc_normal();
+	m_faces.push_back(face);
+	face->m_face_index = m_faces.size();
+
+//	if(a == 0) {
+//		last_normal = face->normal;
+//	} else {
+//		if(last_normal * face->normal < 0){
+//			face->normal = face->normal * -1;
+//		}
+//	}
 
 }
 

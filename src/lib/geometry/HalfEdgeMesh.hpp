@@ -45,6 +45,9 @@ class HalfEdgeFace;
 template<typename VertexT, typename NormalT>
 class HalfEdgeMesh : public BaseMesh<VertexT, NormalT>{
 public:
+	typedef HalfEdgeFace<VertexT, NormalT> HFace;
+	typedef HalfEdgeVertex<VertexT, NormalT> HVertex;
+	typedef HalfEdge<HVertex, HFace> HEdge;
 
 	HalfEdgeMesh();
 	virtual ~HalfEdgeMesh() {};
@@ -129,6 +132,8 @@ private:
 //	virtual void finalize(list<list<planarCluster> > &objects);
 
 private:
+
+	HEdge* halfEdgeToVertex(HVertex* v, HVertex* next);
 
 //	int biggest_size;
 //	HalfEdgePolygon* biggest_polygon;
