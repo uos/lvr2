@@ -80,6 +80,13 @@ public:
 	void rotate(const Matrix4<CoordType> &m);
 
 	/**
+	 * @brief	Transforms the vertex according to the given matrix
+	 *
+	 * @param	A 4x4 tranformation matrix.
+	 */
+	void transform(const Matrix4<CoordType> &m);
+
+	/**
 	 * @brief	Calculates the cross product with the other given
 	 * 			Vertex and assigns the result to the current
 	 * 			instance.
