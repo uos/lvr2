@@ -46,7 +46,7 @@ void PointCloudManager<VertexT, NormalT>::readFromFile(string filename)
 {
     // Check extension
     boost::filesystem::path selectedFile(filename);
-    string extension = selectedFile.extension();
+    string extension = selectedFile.extension().c_str();
 
     if(extension == ".pts" || extension == ".3d" || extension == ".xyz" || extension == ".txt")
     {
