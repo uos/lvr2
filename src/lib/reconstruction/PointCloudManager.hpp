@@ -14,7 +14,6 @@ using std::vector;
 #include "../geometry/Vertex.hpp"
 #include "../geometry/Normal.hpp"
 #include "../geometry/BoundingBox.hpp"
-#include "../io/AsciiIO.hpp"
 
 namespace lssr
 {

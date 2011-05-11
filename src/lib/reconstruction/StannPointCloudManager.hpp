@@ -14,6 +14,7 @@
 #include "../io/Timestamp.hpp"
 #include "../io/PLYIO.hpp"
 #include "../io/AsciiIO.hpp"
+#include "../io/UosIO.hpp"
 
 // External libraries in lssr source tree
 #include "../stann/sfcnn.hpp"
