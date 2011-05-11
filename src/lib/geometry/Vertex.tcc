@@ -134,6 +134,15 @@ void Vertex<CoordType>::rotate(const Matrix4<CoordType> &m)
 }
 
 template<typename CoordType>
+void Vertex<CoordType>::transform(const Matrix4<CoordType> &m)
+{
+	rotate(m);
+	m_x += m[12];
+	m_y += m[13];
+	m_z += m[14];
+}
+
+template<typename CoordType>
 Vertex<CoordType> Vertex<CoordType>::cross(const Vertex<CoordType> &other) const
 {
     CoordType tx = m_y * other.m_z - m_z * other.m_y;
