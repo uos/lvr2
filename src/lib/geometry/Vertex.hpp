@@ -73,18 +73,54 @@ public:
 
 	/**
 	 * @brief	Applies the given matrix. Translational components
-	 * 			are ignored.
+	 * 			are ignored (matrix must be row major).
 	 *
 	 * @param	A 4x4 rotation matrix.
 	 */
 	void rotate(const Matrix4<CoordType> &m);
 
+    /**
+     * @brief   Applies the given matrix. Translational components
+     *          are ignored
+     *
+     * @param   A 4x4 rotation matrix (column major).
+     */
+    void rotateCM(const Matrix4<CoordType> &m);
+
+    /**
+     * @brief   Applies the given matrix. Translational components
+     *          are ignored
+     *
+     * @param   A 4x4 rotation matrix (row major).
+     */
+    void rotateRM(const Matrix4<CoordType> &m);
+
 	/**
 	 * @brief	Transforms the vertex according to the given matrix
+	 *          (Default: matrix is row major)
 	 *
 	 * @param	A 4x4 tranformation matrix.
 	 */
 	void transform(const Matrix4<CoordType> &m);
+
+	/**
+	 * @brief   Transforms the vertex according to the given matrix
+	 *          (Row major format)
+	 *
+	 * @param   A 4x4 tranformation matrix.
+	 */
+	void transformRM(const Matrix4<CoordType> &m);
+
+    /**
+     * @brief   Transforms the vertex according to the given matrix
+     *          (Column major format)
+     *
+     * @param   A 4x4 tranformation matrix.
+     */
+    void transformCM(const Matrix4<CoordType> &m);
+
+
+
 
 	/**
 	 * @brief	Calculates the cross product with the other given

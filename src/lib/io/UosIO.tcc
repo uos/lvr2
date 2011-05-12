@@ -253,12 +253,10 @@ T** UosIO<T>::readOldFormat(string dir, int first, int last, size_t &n)
         if(frame_in.good())
         {
             // Transform scan data according to frame file
-            cout << timestamp << "Parsing " << frameFileName << endl;
             m_tf = parseFrameFile(frame_in);
         }
         else
         {
-            cout << timestamp << "Parsing " << poseFileName << endl;
             // Transform scan data using information from 'position.dat'
             Vertex<float> position(euler[0], euler[1], euler[2]);
             Vertex<float> angle(euler[3], euler[4], euler[5]);
@@ -270,7 +268,7 @@ T** UosIO<T>::readOldFormat(string dir, int first, int last, size_t &n)
         for(it = ptss.begin(); it != ptss.end(); it++)
         {
             Vertex<float> v = *it;
-            v.transform(m_tf);
+            v.transformCM(m_tf);
             allPoints.push_back(v);
         }
 
@@ -278,7 +276,7 @@ T** UosIO<T>::readOldFormat(string dir, int first, int last, size_t &n)
         ptss.clear();
     }
 
-    // Transform to indexed array
+    // Convert into indexed array
     if(allPoints.size() > 0)
     {
         cout << timestamp << "Read " << allPoints.size() << " points." << endl;
@@ -299,7 +297,7 @@ T** UosIO<T>::readOldFormat(string dir, int first, int last, size_t &n)
     }
     else
     {
-        // If everythind else failed return a null pointer
+        // If everything else failed return a null pointer
         return 0;
     }
 
@@ -315,6 +313,7 @@ Matrix4<float> UosIO<T>::parseFrameFile(ifstream& frameFile)
         for(int i = 0; i < 16; i++ && frameFile.good()) frameFile >> m[i];
         frameFile >> color;
     }
+
     return Matrix4<float>(m);
 }
 
