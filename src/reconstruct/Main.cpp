@@ -39,8 +39,6 @@ int main(int argc, char** argv)
                 options.getKi(),
                 options.getKd());
 
-    manager.save("points.pts");
-
     // Create an empty mesh
     TriangleMesh<Vertex<float>, Normal<float> > mesh;
     //HalfEdgeMesh<Vertex<float>, Normal<float> > mesh;
