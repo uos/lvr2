@@ -8,12 +8,10 @@
 #ifndef DATACOLLECTORFACTORY_H_
 #define DATACOLLECTORFACTORY_H_
 
-#include <playerclient/PlayerServerManager.h>
 #include <string>
 using std::string;
 
 #include "DataCollector.h"
-#include "Model3dDataCollector.h"
 
 class DataManager;
 
@@ -24,7 +22,6 @@ public:
 
 	static DataCollectorFactory* instance();
     DataCollector* create(string filename, DataManager* manager = 0);
-    DataCollector* create(ClientProxy* proxy, DataManager* manager);
 
 private:
 	DataCollectorFactory() {};
