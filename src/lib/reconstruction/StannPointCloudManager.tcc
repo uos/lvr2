@@ -387,7 +387,7 @@ void StannPointCloudManager<VertexT, NormalT>::save(string filename)
 {
     // Get file extension
     boost::filesystem::path selectedFile(filename);
-    string extension = selectedFile.extension();
+    string extension = selectedFile.extension().c_str();
 
     // Try to load file by extension
     if(extension == ".ply")
