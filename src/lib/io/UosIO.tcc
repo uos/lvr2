@@ -77,6 +77,7 @@ T** UosIO<T>::read(string dir, size_t &n)
             {
                 path p = it->path();
                 int num = 0;
+
                 // Only count numbered dirs
                 if(sscanf(p.filename().c_str(), "%d", &num))
                 {
@@ -114,7 +115,131 @@ T** UosIO<T>::read(string dir, size_t &n)
 template<typename T>
 T** UosIO<T>::readNewFormat(string dir, int first, int last, size_t &n)
 {
-    return 0;
+    list<Vertex<float> > allPoints;
+
+    for(int fileCounter = first; fileCounter <= last; fileCounter++)
+    {
+        // New (unit) transformation matrix
+        Matrix4<float> tf;
+
+        // Input file streams for scan data, poses and frames
+        ifstream scan_in, pose_in, frame_in;
+
+        // Create scan file name
+        path scan_path(path(dir)/path("scan" + to_string(fileCounter,3) + ".3d"));
+        string scanFileName = "/" + scan_path.relative_path().string();
+
+        // Read scan data
+        scan_in.open(scanFileName.c_str());
+        if(!scan_in.good())
+        {
+            // Continue with next file if the expected file couldn't be read
+            cout << timestamp << "UOS Reader: Unable to read scan " << scanFileName << endl;
+            scan_in.close();
+            scan_in.clear();
+            continue;
+        }
+        else
+        {
+            // Tmp list of read points
+            list<Vertex<float> > tmp_points;
+
+
+            // Try to get fransformation from .frames file
+            path frame_path(path(dir)/path("scan" + to_string(fileCounter,3) + ".frames"));
+            string frameFileName = "/" + frame_path.relative_path().string();
+
+            frame_in.open(frameFileName.c_str());
+            if(!frame_in.good())
+            {
+                // Try to parse .pose file
+                path pose_path(path(dir)/path("scan" + to_string(fileCounter,3) + ".pose"));
+                string poseFileName = "/" + pose_path.relative_path().string();
+
+                pose_in.open(poseFileName.c_str());
+                if(pose_in.good())
+                {
+                    float euler[6];
+                    for(int i = 0; i < 6; i++) pose_in >> euler[i];
+                    Vertex<float> position(euler[0], euler[1], euler[2]);
+                    Vertex<float> angle(euler[3], euler[4], euler[5]);
+                    tf = Matrix4<float>(position, angle);
+                }
+                else
+                {
+                    cout << timestamp << "UOS Reader: Warning: No position information found." << endl;
+                    tf = Matrix4<float>();
+                }
+
+            }
+            else
+            {
+                // Use transformation from .frame files
+                tf = parseFrameFile(frame_in);
+
+            }
+
+            // Print pose information
+            float euler[6];
+            tf.toPostionAngle(euler);
+
+            cout << timestamp << "Processing " << scanFileName << " @ "
+                    << euler[0] << " " << euler[1] << " " << euler[2] << " "
+                    << euler[3] << " " << euler[4] << " " << euler[5] << endl;
+
+            // Skip first line in scan file (maybe metadata)
+            char dummy[1024];
+            scan_in.getline(dummy, 1024);
+
+            // Read all points
+            while(scan_in.good())
+            {
+                /// TODO: Check for intensity and/or color values in file
+                float x, y, z;
+                scan_in >> x >> y >> z;
+
+                Vertex<float> point(x, y, z);
+                tmp_points.push_back(point);
+            }
+
+            // Transform scan point with current matrix
+            list<Vertex<float> >::iterator it;
+            for(it = tmp_points.begin(); it != tmp_points.end(); it++)
+            {
+                Vertex<float> v = *it;
+                v.transform(tf);
+                allPoints.push_back(v);
+            }
+        }
+
+    }
+
+    // Convert into indexed array
+    if(allPoints.size() > 0)
+    {
+        cout << timestamp << "UOS Reader: Read " << allPoints.size() << " points." << endl;
+        n = allPoints.size();
+        T** out_pts = new T*[allPoints.size()];
+        list<Vertex<float> >::iterator p_it;
+        int i = 0;
+        for(p_it = allPoints.begin(); p_it != allPoints.end(); p_it++)
+        {
+            out_pts[i] = new T[3];
+            Vertex<float> v = *p_it;
+            out_pts[i][0] = v[0];
+            out_pts[i][1] = v[1];
+            out_pts[i][2] = v[2];
+            i++;
+        }
+        return out_pts;
+    }
+    else
+    {
+        // If everything else failed return a null pointer
+        n = 0;
+        return 0;
+    }
+
 }
 
 template<typename T>
@@ -279,7 +404,7 @@ T** UosIO<T>::readOldFormat(string dir, int first, int last, size_t &n)
     // Convert into indexed array
     if(allPoints.size() > 0)
     {
-        cout << timestamp << "Read " << allPoints.size() << " points." << endl;
+        cout << timestamp << "UOS Reader: Read " << allPoints.size() << " points." << endl;
         n = allPoints.size();
         T** out_pts = new T*[allPoints.size()];
         list<Vertex<float> >::iterator p_it;
@@ -298,6 +423,7 @@ T** UosIO<T>::readOldFormat(string dir, int first, int last, size_t &n)
     else
     {
         // If everything else failed return a null pointer
+        n = 0;
         return 0;
     }
 
