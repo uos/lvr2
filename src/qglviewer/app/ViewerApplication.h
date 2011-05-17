@@ -13,10 +13,8 @@
 #include "MainWindow.h"
 #include "FogDensityDialog.h"
 #include "SceneDockWidget.h"
-#include "PlayerConnectionDialog.h"
 
 #include "../data/DataManager.h"
-#include "../data/PlayerConnectionManager.h"
 
 #include "../viewers/Viewer.h"
 #include "../viewers/PerspectiveViewer.h"
@@ -28,7 +26,6 @@
 using Ui::MainWindow;
 using Ui::Fogsettings;
 using Ui::SceneDockWidget;
-using Ui::PlayerConnectionDialog;
 
 class EventManager;
 
@@ -52,15 +49,9 @@ public Q_SLOTS:
 	void fogExp2();
 	void fogExp();
 
-	void addPlayerServer();
-	void treeItemClicked(QTreeWidgetItem* item, int column);
-
-
 private:
 
 	void connectEvents();
-	void serverTreeItemToggled(QTreeWidgetItem* item);
-	void interfaceTreeItemToggled(QTreeWidgetItem* item);
 
 	MainWindow*					m_mainWindowUi;
 	QMainWindow*				m_qMainWindow;

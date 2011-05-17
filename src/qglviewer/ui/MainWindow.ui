@@ -67,15 +67,6 @@
     <addaction name="separator"/>
     <addaction name="action_Quit"/>
    </widget>
-   <widget class="QMenu" name="menu_Player">
-    <property name="title">
-     <string>&amp;Player</string>
-    </property>
-    <addaction name="actionConnect_to_server"/>
-    <addaction name="separator"/>
-    <addaction name="actionSubscribe_to_device"/>
-    <addaction name="actionSend_Commands"/>
-   </widget>
    <widget class="QMenu" name="menu_View">
     <property name="title">
      <string>&amp;Camera</string>
@@ -104,7 +95,6 @@
     <property name="title">
      <string>&amp;Docks</string>
     </property>
-    <addaction name="actionLoaded_Objects"/>
     <addaction name="action_Robot_control"/>
    </widget>
    <widget class="QMenu" name="menu_Scene">
@@ -115,7 +105,6 @@
     <addaction name="actionFog_settings"/>
    </widget>
    <addaction name="menu_File"/>
-   <addaction name="menu_Player"/>
    <addaction name="menuView"/>
    <addaction name="menu_View"/>
    <addaction name="menu_Scene"/>

@@ -27,7 +27,6 @@ public:
 	DataManager();
 	virtual ~DataManager();
 
-	void createDataCollector(ClientProxy* proxy);
 	void update(DataCollector*);
 
 public Q_SLOTS:
