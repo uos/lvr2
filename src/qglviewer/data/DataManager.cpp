@@ -65,9 +65,3 @@ void DataManager::openFile()
 	Q_EMIT dataCollectorCreated(c);
 }
 
-void DataManager::createDataCollector(ClientProxy* proxy)
-{
-	cout << "createDataCollector(ClientProxy* proxy)" << endl;
-	DataCollector* c = DataCollectorFactory::instance()->create(proxy, this);
-	Q_EMIT dataCollectorCreated(c);
-}
