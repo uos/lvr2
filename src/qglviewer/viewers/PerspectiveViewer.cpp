@@ -12,7 +12,7 @@
 using std::cout;
 using std::endl;
 
-#include <lib3d/BaseVertex.h>
+#include "model3d/BaseVertex.h"
 
 ViewerType PerspectiveViewer::type()
 {

@@ -7,15 +7,6 @@
 
 #include "DataCollector.h"
 
-DataCollector::DataCollector(ClientProxy* proxy, DataManager* manager)
-{
-	cout << "DataCollector()" << proxy << endl;
-	m_proxy = proxy;
-	m_manager = manager;
-	m_renderable = 0;
-	m_name = "";
-}
-
 DataCollector::DataCollector(Renderable* renderable, string name, DataManager* manager)
 {
 	m_manager = manager;

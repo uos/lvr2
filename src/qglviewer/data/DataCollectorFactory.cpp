@@ -8,8 +8,8 @@
 #include "DataCollectorFactory.h"
 #include "Static3DDataCollector.h"
 
-#include <lib3d/StaticMesh.h>
-#include <lib3d/PointCloud.h>
+#include "model3d/StaticMesh.h"
+#include "model3d/PointCloud.h"
 
 #include <boost/filesystem.hpp>
 
