@@ -10,6 +10,9 @@
 using std::string;
 
 #include "../io/PLYIO.hpp"
+#include "../io/AsciiIO.hpp"
+#include "../io/UosIO.hpp"
+
 #include <boost/filesystem.hpp>
 
 namespace lssr
@@ -59,6 +62,11 @@ void PointCloudManager<VertexT, NormalT>::readFromFile(string filename)
         plyio.read(filename);
         this->m_points =  plyio.getIndexedVertexArray(this->m_numPoints);
         this->m_normals = plyio.getIndexedNormalArray(this->m_numPoints);
+    }
+    else if(extension == "")
+    {
+        UosIO<float> uosio;
+        this->m_points = uosio.read(filename, this->m_numPoints);
     }
 }
 
