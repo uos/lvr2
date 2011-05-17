@@ -15,8 +15,6 @@ set(QVIEWER_UIS
     ui/FogDensityDialog.ui
     ui/InputCoordinateSystemDialog.ui
     ui/MainWindow.ui
-    ui/PlayerConnectionDialog.ui
-    ui/RobotControlDock.ui
     ui/SceneDockWidget.ui
 )
 
@@ -27,9 +25,6 @@ set(QVIEWER_SOURCES
     data/DataCollector.cpp
     data/DataCollectorFactory.cpp
     data/DataManager.cpp
-    data/Model3dDataCollector.cpp
-    data/PlayerConnectionManager.cpp
-    data/PointCloud3dDataCollector.cpp
     data/Static3DDataCollector.cpp
     data/ThreadedDataCollector.cpp
     viewers/OrthoCamera.cpp
@@ -37,9 +32,6 @@ set(QVIEWER_SOURCES
     viewers/Viewer.cpp
     viewers/ViewerManager.cpp
     widgets/CustomTreeWidgetItem.cpp
-    widgets/InterfaceTreeWidgetItem.cpp
-    widgets/ServerTreeWidgetItem.cpp
-    
 )
 
 set(QVIEWER_RESOURCES
