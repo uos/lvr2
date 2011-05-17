@@ -7,9 +7,6 @@
 
 #include "ViewerApplication.h"
 
-#include "../widgets/ServerTreeWidgetItem.h"
-#include "../widgets/InterfaceTreeWidgetItem.h"
-
 ViewerApplication::ViewerApplication(int argc, char** argv)
 {
 	// Setup main window
@@ -51,10 +48,6 @@ void ViewerApplication::connectEvents()
 	// File operations
 	QObject::connect(m_mainWindowUi->action_Open , SIGNAL(activated()),
 			m_dataManager, SLOT(openFile()));
-
-	// Player actions
-	QObject::connect(m_mainWindowUi->actionConnect_to_server, SIGNAL(activated()),
-			this, SLOT(addPlayerServer()));
 
 	// Projection settings
 	QObject::connect(m_mainWindowUi->actionShow_entire_scene, SIGNAL(activated()),
@@ -123,135 +116,8 @@ void ViewerApplication::displayFogSettingsDialog()
 
 }
 
-void ViewerApplication::addPlayerServer()
-{
-	// Show dialog
-	QDialog dialog;
-	PlayerConnectionDialog* dialog_ui = new PlayerConnectionDialog;
-	dialog_ui->setupUi(&dialog);
-	int answer = dialog.exec();
 
-	if(answer == QDialog::Accepted)
-	{
-		// Parse dialog data
-		string ip = dialog_ui->lineEditHost->text().toStdString();
-		int port = dialog_ui->spinBoxPort->value();
 
-		// Try to get a server connection
-		PlayerConnectionManager* manager = PlayerConnectionManager::instance();
-
-		PlayerServer* server = manager->addServer(ip, port);
-		if(server != 0)
-		{
-			ServerTreeWidgetItem* item = new ServerTreeWidgetItem(server);
-			m_sceneDockWidgetUi->treeWidget->addTopLevelItem(item);
-			item->setInitialState(Qt::Checked);
-		}
-		else
-		{
-			cout << "(1) Could not connect" << endl;
-		}
-  	}
-
-}
-
-void ViewerApplication::treeItemClicked(QTreeWidgetItem* qitem, int col)
-{
-	// Don't use col, just get rid of compiler warnings ;-)
-	col = 0;
-	CustomTreeWidgetItem* item = static_cast<CustomTreeWidgetItem*>(qitem);
-
-	// Don't send any duplicate notifications
-	if(item->toggled())
-	{
-		if(item->type() == ServerItem)
-		{
-			serverTreeItemToggled(qitem);
-		}
-		else if(item->type() == InterfaceItem)
-		{
-			interfaceTreeItemToggled(qitem);
-		}
-	}
-}
-
-void ViewerApplication::serverTreeItemToggled(QTreeWidgetItem* qitem)
-{
-	// Get check state
-	Qt::CheckState state = qitem->checkState(0);
-	ServerTreeWidgetItem* server_item = static_cast<ServerTreeWidgetItem*>(qitem);
-
-	if(state == Qt::Unchecked)
-	{
-		int res = QMessageBox::warning(m_qMainWindow, tr("Viewer"),
-				tr("Do you really want to close the selected connection?"),
-				QMessageBox::No | QMessageBox::Yes);
-
-		if(res == QMessageBox::Yes)
-		{
-			// Close connection
-			ServerTreeWidgetItem* server_item = static_cast<ServerTreeWidgetItem*>(qitem);
-			PlayerConnectionManager::instance()->removeServer(server_item->server());
-
-			// Don't know why there is no removeTopLevelItem method
-			// in QTreeWidget...
-			QTreeWidget* w = m_sceneDockWidgetUi->treeWidget;
-			int index = w->indexOfTopLevelItem(qitem);
-			w->takeTopLevelItem(index);
-		}
-		else
-		{
-			// Restore check state
-			server_item->setInitialState(Qt::Checked);
-		}
-	}
-}
-
-void ViewerApplication::interfaceTreeItemToggled(QTreeWidgetItem* qitem)
-{
-	// Get check state
-	Qt::CheckState state = qitem->checkState(0);
-
-	InterfaceTreeWidgetItem* item = static_cast<InterfaceTreeWidgetItem*>(qitem);
-
-	if(state == Qt::Checked)
-	{
-		// Get server and interface description
-		PlayerServer* server = item->server();
-		if(server != 0)
-		{
-			InterfaceDcr dcr = item->description();
-
-			// Create a new proyxy
-			ClientProxy* proxy;
-			PlayerConnectionManager::instance()->subscribe(proxy,
-					server->getHost(), server->getPort(), dcr.id, dcr.index);
-			if(proxy != 0)
-			{
-				m_dataManager->createDataCollector(proxy);
-			}
-		}
-		else
-		{
-			item->setInitialState(Qt::Unchecked);
-		}
-	}
-	else
-	{
-		// Get server and interface description
-		PlayerServer* server = item->server();
-		if(server != 0)
-		{
-			InterfaceDcr dcr = item->description();
-			PlayerConnectionManager::instance()->unsubscribe(server->getHost(),
-					server->getPort(), dcr.id, dcr.index);
-		}
-		else
-		{
-			item->setInitialState(Qt::Checked);
-		}
-	}
-}
 
 void ViewerApplication::fogDensityChanged(int i)
 {
