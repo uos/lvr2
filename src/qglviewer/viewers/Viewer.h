@@ -10,7 +10,7 @@
 
 #include "../app/Types.h"
 
-#include <lib3d/BoundingBox.h>
+#include "../../lib/model3d/BoundingBox.h"
 
 #include <QGLViewer/qglviewer.h>
 #include <list>

@@ -11,7 +11,7 @@
 
 #include <iostream>
 
-#include <lib3d/PointCloud.h>
+#include "model3d/PointCloud.h"
 
 Viewer::Viewer(QWidget* parent, const QGLWidget* shared)
 	: QGLViewer(parent, shared),  m_parent(parent) {}

@@ -26,7 +26,6 @@ set(QVIEWER_SOURCES
     data/DataCollectorFactory.cpp
     data/DataManager.cpp
     data/Static3DDataCollector.cpp
-    data/ThreadedDataCollector.cpp
     viewers/OrthoCamera.cpp
     viewers/PerspectiveViewer.cpp
     viewers/Viewer.cpp
@@ -61,7 +60,4 @@ target_link_libraries(qviewer model3d)
 target_link_libraries(qviewer ${OPENGL_LIBRARY})
 target_link_libraries(qviewer ${GLUT_LIBRARIES})
 target_link_libraries(qviewer qglviewer-qt4)
-target_link_libraries(qviewer model3d)
-target_link_libraries(qviewer Control)
-target_link_libraries(qviewer model3dclient)
 target_link_libraries(qviewer boost_system boost_program_options boost_filesystem boost_thread)
