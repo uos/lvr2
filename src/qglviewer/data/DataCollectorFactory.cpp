@@ -7,7 +7,6 @@
 
 #include "DataCollectorFactory.h"
 #include "Static3DDataCollector.h"
-#include "PointCloud3dDataCollector.h"
 
 #include <lib3d/StaticMesh.h>
 #include <lib3d/PointCloud.h>
@@ -51,19 +50,5 @@ DataCollector* DataCollectorFactory::create(string filename, DataManager* manage
 	return dataCollector;
 }
 
-DataCollector* DataCollectorFactory::create(ClientProxy* proxy, DataManager* manager)
-{
-
-	int interface = proxy->GetInterface();
-
-	switch(interface)
-	{
-	case  61: return new PointCloud3dDataCollector(proxy, manager);
-	case 128: return new Model3dDataCollector(proxy, manager);
-	default:
-		cout << "DataCollectorFactory::create(): warning: Unknown interface." << endl;
-		return 0;
-	}
-}
 
 
