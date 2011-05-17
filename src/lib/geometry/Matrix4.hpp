@@ -160,15 +160,18 @@ public:
 
 		m[11] = 0.0;
 
-		m[12] = position.x;
-		m[13] = position.y;
-		m[14] = position.z;
+		m[12] = position[0];
+		m[13] = position[1];
+		m[14] = position[2];
 		m[15] = 1;
 	}
 
 	Matrix4(string filename);
 
-	virtual ~Matrix4();
+	virtual ~Matrix4()
+	{
+
+	}
 
 	/**
 	 * @brief	Scales the matrix elemnts by the given factor
@@ -383,7 +386,11 @@ public:
 	/**
 	 * @brief	Indexed element access.
 	 */
-	ValueType operator[](const int index) const;
+	ValueType operator[](const int index) const
+	{
+	    /// TODO: Boundary check
+	    return m[index];
+	}
 
 private:
 	ValueType m[16];
@@ -397,7 +404,7 @@ inline ostream& operator<<(ostream& os, const Matrix4<T> matrix){
 	os << "Matrix:" << endl;
 	os << fixed;
 	for(int i = 0; i < 16; i++){
-		os << setprecision(4) << matrix.at(i) << " ";
+		os << setprecision(4) << matrix[i] << " ";
 		if(i % 4 == 3) os << " " <<  endl;
 	}
 	os << endl;

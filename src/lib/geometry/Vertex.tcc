@@ -126,11 +126,60 @@ void Vertex<CoordType>::crossTo(const Vertex<CoordType>  &other)
 }
 
 template<typename CoordType>
+void Vertex<CoordType>::rotateCM(const Matrix4<CoordType> &m)
+{
+    CoordType x, y, z;
+    x = m_x * m[0 ] + m_y * m[4 ] + m_z * m[8 ];
+    y = m_x * m[1 ] + m_y * m[5 ] + m_z * m[9 ];
+    z = m_x * m[2 ] + m_y * m[6 ] + m_z * m[10];
+
+    m_x = x;
+    m_y = y;
+    m_z = z;
+}
+
+template<typename CoordType>
+void Vertex<CoordType>::rotateRM(const Matrix4<CoordType> &m)
+{
+    CoordType x, y, z;
+    x = m_x * m[0 ] + m_y * m[1 ] + m_z * m[2 ];
+    y = m_x * m[4 ] + m_y * m[5 ] + m_z * m[6 ];
+    z = m_x * m[8 ] + m_y * m[9 ] + m_z * m[10];
+
+    m_x = x;
+    m_y = y;
+    m_z = z;
+}
+
+
+template<typename CoordType>
+void Vertex<CoordType>::transformCM(const Matrix4<CoordType> &m)
+{
+	rotateCM(m);
+	m_x += m[12];
+	m_y += m[13];
+	m_z += m[14];
+}
+
+template<typename CoordType>
+void Vertex<CoordType>::transformRM(const Matrix4<CoordType> &m)
+{
+    rotateRM(m);
+    m_x += m[12];
+    m_y += m[13];
+    m_z += m[14];
+}
+
+template<typename CoordType>
+void Vertex<CoordType>::transform(const Matrix4<CoordType> &m)
+{
+    transformRM(m);
+}
+
+template<typename CoordType>
 void Vertex<CoordType>::rotate(const Matrix4<CoordType> &m)
 {
-    m_x = m_x * m[0 ] + m_y * m[1 ] + m_z * m[2 ];
-    m_y = m_x * m[4 ] + m_y * m[5 ] + m_z * m[6 ];
-    m_z = m_x * m[8 ] + m_y * m[9 ] + m_z * m[10];
+    rotateRM(m);
 }
 
 template<typename CoordType>
