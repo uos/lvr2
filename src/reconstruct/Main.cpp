@@ -21,6 +21,7 @@
 #include "geometry/Matrix4.hpp"
 #include "geometry/TriangleMesh.hpp"
 #include "geometry/HalfEdgeMesh.hpp"
+#include <iostream>
 
 using namespace lssr;
 
@@ -32,12 +33,14 @@ int main(int argc, char** argv)
     // Parse command line arguments
     reconstruct::Options options(argc, argv);
 
+    ::std::cout<<options<<::std::endl;
+
     // Create a point cloud manager
-    StannPointCloudManager<Vertex<float>, Normal<float> >
-    	manager(options.getOutputFileName(),
-                options.getKn(),
-                options.getKi(),
-                options.getKd());
+    StannPointCloudManager<Vertex<float>, Normal<float> >   manager( options.getInputFileName(),
+                                                                     options.getKn(),
+                                                                     options.getKi(),
+                                                                     options.getKd()
+                                                                   );
 
     manager.save("points.pts");
 

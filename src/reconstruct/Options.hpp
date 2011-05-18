@@ -114,7 +114,7 @@ public:
 	/**
 	 * @brief	Returns the output file name
 	 */
-	string 	getOutputFileName() const;
+	string 	getInputFileName() const;
 private:
 
 	/// The set voxelsize
@@ -154,7 +154,7 @@ inline ostream& operator<<(ostream& os, const Options &o)
 {
 	cout << "##### Program options: " 	<< endl;
 	cout << "##### Voxelsize \t\t: " 		<< o.getVoxelsize() << endl;
-	cout << "##### Output file \t\t: " 	<< o.getOutputFileName() << endl;
+	cout << "##### Output file \t\t: " 	<< o.getInputFileName() << endl;
 	cout << "##### Number of threads \t: " << o.getNumThreads() << endl;
 	cout << "##### k_n \t\t\t: " << o.getKn() << endl;
 	cout << "##### k_i \t\t\t: " << o.getKi() << endl;
