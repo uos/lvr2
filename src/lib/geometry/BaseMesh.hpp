@@ -16,7 +16,7 @@ namespace lssr {
  *			all data structures that allow sequential insertion
  *			all of indexed triangles.
  */
-template<typename VertexType, typename NormalT>
+template<typename VertexT, typename NormalT>
 class BaseMesh
 {
 public:
@@ -28,7 +28,7 @@ public:
 	 * @param	v 		A supported vertex type. All used vertex types
 	 * 					must support []-access.
 	 */
-	virtual void addVertex(VertexType v) = 0;
+	virtual void addVertex(VertexT v) = 0;
 
 	/**
 	 * @brief 	This method should be called every time

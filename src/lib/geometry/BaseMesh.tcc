@@ -3,8 +3,8 @@
 namespace lssr
 {
 
-template<typename VertexType, typename IndexType>
-void BaseMesh<VertexType, IndexType>::save(string filename)
+template<typename VertexT, typename IndexType>
+void BaseMesh<VertexT, IndexType>::save(string filename)
 {
 	PLYIO ply_writer;
 

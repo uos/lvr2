@@ -21,8 +21,8 @@ namespace lssr
 /**
  * @brief An implementation of an indexed triangle mesh
  */
-template<typename VertexType, typename NormalType>
-class TriangleMesh : public BaseMesh<VertexType, NormalType>{
+template<typename VertexT, typename NormalT>
+class TriangleMesh : public BaseMesh<VertexT, NormalT>{
 public:
 
 	/**
@@ -50,7 +50,7 @@ public:
 	 *
 	 * @param v			The new vertex
 	 */
-	virtual void addVertex(VertexType v){ m_vertices.push_back(v);};
+	virtual void addVertex(VertexT v){ m_vertices.push_back(v);};
 
 	/**
 	 * @brief Adds a new normal into the mesh. Vertices and normals
@@ -58,7 +58,7 @@ public:
 	 *
 	 * @param n 		The new normal
 	 */
-	virtual void addNormal(NormalType n) {m_normals.push_back(n);};
+	virtual void addNormal(NormalT n) {m_normals.push_back(n);};
 
 
 	/**
@@ -69,12 +69,12 @@ public:
 	/**
 	 * @brief Returns the vertex at the given index
 	 */
-	VertexType   getVertex(uint index);
+	VertexT   getVertex(uint index);
 
 	/**
 	 * @brief Returns the normal at the given index
 	 */
-	VertexType   getNormal(uint index);
+	VertexT   getNormal(uint index);
 
 	/**
 	 * @brief Finalizes the mesh.
@@ -87,10 +87,10 @@ protected:
 	float*						  m_normalBuffer;
 
 	/// The vertex normals
-	vector<VertexType>            m_normals;
+	vector<VertexT>            m_normals;
 
 	/// The vertices
-	vector<VertexType>            m_vertices;
+	vector<VertexT>            m_vertices;
 
 	/// The index list
 	list<uint>               m_triangles;

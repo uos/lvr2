@@ -10,22 +10,22 @@
 namespace lssr
 {
 
-template<typename VertexType, typename NormalType>
-TriangleMesh<VertexType, NormalType>::TriangleMesh()
+template<typename VertexT, typename NormalT>
+TriangleMesh<VertexT, NormalT>::TriangleMesh()
 {
 
 }
 
-template<typename VertexType, typename NormalType>
-TriangleMesh<VertexType, NormalType>::~TriangleMesh<VertexType, NormalType>()
+template<typename VertexT, typename NormalT>
+TriangleMesh<VertexT, NormalT>::~TriangleMesh<VertexT, NormalT>()
 {
     m_normals.clear();
     m_vertices.clear();
     m_triangles.clear();
 }
 
-template<typename VertexType, typename NormalType>
-void TriangleMesh<VertexType, NormalType>::addTriangle(uint v0, uint v1, uint v2)
+template<typename VertexT, typename NormalT>
+void TriangleMesh<VertexT, NormalT>::addTriangle(uint v0, uint v1, uint v2)
 {
 	// Check indices
 	assert(v0 < m_vertices.size());
@@ -43,9 +43,9 @@ void TriangleMesh<VertexType, NormalType>::addTriangle(uint v0, uint v1, uint v2
 
 		// If we store normals, interpolate the current face
 		// normal with the appropriate vertex normals
-		VertexType diff1 = m_vertices[v0] - m_vertices[v1];
-		VertexType diff2 = m_vertices[v1] - m_vertices[v2];
-		VertexType normal = diff1.cross(diff2);
+		VertexT diff1 = m_vertices[v0] - m_vertices[v1];
+		VertexT diff2 = m_vertices[v1] - m_vertices[v2];
+		VertexT normal = diff1.cross(diff2);
 
 		// Interpolate the vertex normals (i.e. sum them up).
 		// Normalization is done after the complete mesh
@@ -56,22 +56,22 @@ void TriangleMesh<VertexType, NormalType>::addTriangle(uint v0, uint v1, uint v2
 	}
 }
 
-template<typename VertexType, typename NormalType>
-VertexType TriangleMesh<VertexType, NormalType>::getVertex(uint index)
+template<typename VertexT, typename NormalT>
+VertexT TriangleMesh<VertexT, NormalT>::getVertex(uint index)
 {
 	assert(index < (int) m_vertices.size());
 	return m_vertices[index];
 }
 
-template<typename VertexType, typename NormalType>
-VertexType TriangleMesh<VertexType, NormalType>::getNormal(uint index)
+template<typename VertexT, typename NormalT>
+VertexT TriangleMesh<VertexT, NormalT>::getNormal(uint index)
 {
 	assert(index < (int)m_normals.size());
 	return m_normals[index];
 }
 
-template<typename VertexType, typename NormalType>
-void TriangleMesh<VertexType, NormalType>::finalize()
+template<typename VertexT, typename NormalT>
+void TriangleMesh<VertexT, NormalT>::finalize()
 {
 	// Alloc buffers
 	this->m_vertexBuffer = new float[3 * m_vertices.size()];
@@ -108,8 +108,8 @@ void TriangleMesh<VertexType, NormalType>::finalize()
 }
 
 /// TODO: Re-Integrate normal interpolation
-//template<typename VertexType, typename NormalType>
-//void TriangleMesh<VertexType, uint>::interpolateNormal(Normal n, size_t index){
+//template<typename VertexT, typename NormalT>
+//void TriangleMesh<VertexT, uint>::interpolateNormal(Normal n, size_t index){
 //
 //	if(index < normal_buffer.size()){
 //
@@ -120,7 +120,7 @@ void TriangleMesh<VertexType, NormalType>::finalize()
 //		normal_buffer[index] = normal;
 //
 //	} else {
-//		cout << "WARNING: TriangleMesh<VertexType, uint>: Normal index out of range: " << index << endl;
+//		cout << "WARNING: TriangleMesh<VertexT, uint>: Normal index out of range: " << index << endl;
 //	}
 //
 //}
