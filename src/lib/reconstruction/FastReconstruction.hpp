@@ -38,8 +38,10 @@ public:
      * @param resolution    The number of intersections (on the longest side
      *                      of the volume taken by the data points) used by
      *                      the reconstruction.
+     * @param isVoxelsize   If set to true, interpret resolution as voxelsize
+     *                      instead of number of intersections
      */
-    FastReconstruction(PointCloudManager<VertexT, NormalT> &manager,  int resolution);
+    FastReconstruction(PointCloudManager<VertexT, NormalT> &manager,  float resolution, bool isVoxelsize = false);
 
 
     /**

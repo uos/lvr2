@@ -11,7 +11,7 @@ namespace lssr
 {
 
 template<typename VertexT, typename NormalT>
-FastReconstruction<VertexT, NormalT>::FastReconstruction(PointCloudManager<VertexT, NormalT> &manager,  int resolution)
+FastReconstruction<VertexT, NormalT>::FastReconstruction(PointCloudManager<VertexT, NormalT> &manager,  float resolution, bool isVoxelsize)
     : Reconstructor<VertexT, NormalT>(manager)
 {
     // Determine m_voxelsize
@@ -19,7 +19,14 @@ FastReconstruction<VertexT, NormalT>::FastReconstruction(PointCloudManager<Verte
     BoundingBox<VertexT> bb = this->m_manager.getBoundingBox();
 
     assert(bb.isValid());
-    m_voxelsize = (float) bb.getLongestSide() / resolution;
+    if(!isVoxelsize)
+    {
+        m_voxelsize = (float) bb.getLongestSide() / resolution;
+    }
+    else
+    {
+        m_voxelsize = resolution;
+    }
 
     FastBox<VertexT, NormalT>::m_voxelsize = m_voxelsize;
 

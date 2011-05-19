@@ -115,6 +115,13 @@ public:
 	 * @brief	Returns the output file name
 	 */
 	string 	getInputFileName() const;
+
+	/**
+	 * @brief   Returns the number of intersections. If the return value
+	 *          is positive it will be used for reconstruction instead of
+	 *          absolute voxelsize.
+	 */
+	int     getIntersections() const;
 private:
 
 	/// The set voxelsize
@@ -146,6 +153,9 @@ private:
 
 	/// The number of neighbors for normal interpolation
 	int                             m_ki;
+
+	/// The number of intersections used for reconstruction
+	int                             m_intersections;
 };
 
 
@@ -153,7 +163,14 @@ private:
 inline ostream& operator<<(ostream& os, const Options &o)
 {
 	cout << "##### Program options: " 	<< endl;
-	cout << "##### Voxelsize \t\t: " 		<< o.getVoxelsize() << endl;
+	if(o.getIntersections() > 0)
+	{
+	    cout << "##### Intersections \t\t: " << o.getIntersections() << endl;
+	}
+	else
+	{
+	    cout << "##### Voxelsize \t\t: " << o.getVoxelsize() << endl;
+	}
 	cout << "##### Output file \t\t: " 	<< o.getInputFileName() << endl;
 	cout << "##### Number of threads \t: " << o.getNumThreads() << endl;
 	cout << "##### k_n \t\t\t: " << o.getKn() << endl;

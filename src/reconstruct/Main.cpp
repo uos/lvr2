@@ -50,8 +50,22 @@ int main(int argc, char** argv)
     TriangleMesh<Vertex<float>, Normal<float> > mesh;
     //HalfEdgeMesh<Vertex<float>, Normal<float> > mesh;
 
+    // Determine weather to use intersections or voxelsize
+    float resolution;
+    bool useVoxelsize;
+    if(options.getIntersections() > 0)
+    {
+        resolution = options.getIntersections();
+        useVoxelsize = false;
+    }
+    else
+    {
+        resolution = options.getVoxelsize();
+        useVoxelsize = true;
+    }
+
     // Create a new reconstruction object
-    FastReconstruction<Vertex<float>, Normal<float> > reconstruction(manager, options.getVoxelsize());
+    FastReconstruction<Vertex<float>, Normal<float> > reconstruction(manager, resolution, useVoxelsize);
     reconstruction.getMesh(mesh);
 
     // Save triangle mesh

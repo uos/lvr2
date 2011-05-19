@@ -16,7 +16,7 @@ Options::Options(int argc, char** argv) : m_descr("Supported options")
 
 	m_descr.add_options()
 		("help", "Produce help message")
-		("inputFile,i", value< vector<string> >(), "Input file name. Supported formats are ASCII (.pts, .xyz) and .ply")
+		("inputFile", value< vector<string> >(), "Input file name. Supported formats are ASCII (.pts, .xyz) and .ply")
 		("voxelsize,v", value<float>(&m_voxelsize)->default_value(10), "Voxelsize of grid used for reconstruction.")
 		("saveFaceNormals", "Writes all interpolated triangle normals together with triangle centroid to a file called 'face_normals.nor'")
 		("cluster,c", "Extract planes and write result to 'planes.ply'")
@@ -28,6 +28,7 @@ Options::Options(int argc, char** argv) : m_descr("Supported options")
 		("kd", value<int>(&m_kd)->default_value(5), "Number of normals used for distance function evaluation")
 	    ("ki", value<int>(&m_ki)->default_value(10), "Number of normals used in the normal interpolation process")
 	    ("kn", value<int>(&m_kn)->default_value(10), "Size of k-neighborhood used for normal estimation")
+	    ("intersections,i", value<int>(&m_intersections)->default_value(-1), "Number of intersections used for reconstruction. If other than -1, voxelsize will calculated automatically.")
 		;
 
 	m_pdescr.add("inputFile", -1);
@@ -67,6 +68,11 @@ int Options::getKd() const
 int Options::getKn() const
 {
     return m_variables["kn"].as<int>();
+}
+
+int Options::getIntersections() const
+{
+    return m_variables["intersections"].as<int>();
 }
 
 string Options::getInputFileName() const
