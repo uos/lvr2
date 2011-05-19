@@ -42,14 +42,25 @@ class HalfEdgeVertex;
 template<typename VertexT, typename NormalT>
 class HalfEdgeFace;
 
+/**
+ * @brief A implementation of a half edge triangle mesh.
+ */
 template<typename VertexT, typename NormalT>
-class HalfEdgeMesh : public BaseMesh<VertexT, NormalT>{
+class HalfEdgeMesh : public BaseMesh<VertexT, NormalT>
+{
 public:
 	typedef HalfEdgeFace<VertexT, NormalT> HFace;
 	typedef HalfEdgeVertex<VertexT, NormalT> HVertex;
 	typedef HalfEdge<HVertex, HFace> HEdge;
 
+	/**
+	 * @brief   Ctor.
+	 */
 	HalfEdgeMesh();
+
+	/**
+	 * @brief   Dtor.
+	 */
 	virtual ~HalfEdgeMesh() {};
 
 	/**
@@ -88,9 +99,14 @@ public:
 
 
 private:
+
+	/// The faces in the half edge mesh
 	vector<HalfEdgeFace<VertexT, NormalT>*>    m_faces;
+
+	/// The vertices of the mesh
 	vector<HalfEdgeVertex<VertexT, NormalT>*>  m_vertices;
 
+	/// The indexed of the newest inserted vertex
 	int 					 m_globalIndex;
 
 	void printStats();
