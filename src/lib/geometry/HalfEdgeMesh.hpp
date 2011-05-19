@@ -149,6 +149,15 @@ private:
 
 private:
 
+	/**
+	 * @brief   Returns an edge that point to the edge defined
+	 *          by the given vertices.
+	 *
+	 * @param v     The start vertex of an edge
+	 * @param next  The end vertex of an edge
+	 * @return      A pointer to an existing edge, or null if no suitable
+	 *              edge was found.
+	 */
 	HEdge* halfEdgeToVertex(HVertex* v, HVertex* next);
 
 //	int biggest_size;
