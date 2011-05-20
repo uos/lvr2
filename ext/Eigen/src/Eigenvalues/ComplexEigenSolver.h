@@ -96,7 +96,7 @@ template<typename _MatrixType> class ComplexEigenSolver
       * This is a square matrix with entries of type #ComplexScalar.
       * The size is the same as the size of #MatrixType.
       */
-    typedef Matrix<ComplexScalar, RowsAtCompileTime, ColsAtCompileTime, Options, MaxRowsAtCompileTime, ColsAtCompileTime> EigenvectorType;
+    typedef Matrix<ComplexScalar, RowsAtCompileTime, ColsAtCompileTime, Options, MaxRowsAtCompileTime, MaxColsAtCompileTime> EigenvectorType;
 
     /** \brief Default constructor.
       *
@@ -186,7 +186,8 @@ template<typename _MatrixType> class ComplexEigenSolver
       * This function returns a column vector containing the
       * eigenvalues. Eigenvalues are repeated according to their
       * algebraic multiplicity, so there are as many eigenvalues as
-      * rows in the matrix.
+      * rows in the matrix. The eigenvalues are not sorted in any particular
+      * order.
       *
       * Example: \include ComplexEigenSolver_eigenvalues.cpp
       * Output: \verbinclude ComplexEigenSolver_eigenvalues.out

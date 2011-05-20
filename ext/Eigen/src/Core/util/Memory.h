@@ -167,14 +167,36 @@ inline void* generic_aligned_realloc(void* ptr, size_t size, size_t old_size)
 *** Implementation of portable aligned versions of malloc/free/realloc     ***
 *****************************************************************************/
 
+#ifdef EIGEN_NO_MALLOC
+inline void check_that_malloc_is_allowed()
+{
+  eigen_assert(false && "heap allocation is forbidden (EIGEN_NO_MALLOC is defined)");
+}
+#elif defined EIGEN_RUNTIME_NO_MALLOC
+inline bool is_malloc_allowed_impl(bool update, bool new_value = false)
+{
+  static bool value = true;
+  if (update == 1)
+    value = new_value;
+  return value;
+}
+inline bool is_malloc_allowed() { return is_malloc_allowed_impl(false); }
+inline bool set_is_malloc_allowed(bool new_value) { return is_malloc_allowed_impl(true, new_value); }
+inline void check_that_malloc_is_allowed()
+{
+  eigen_assert(is_malloc_allowed() && "heap allocation is forbidden (EIGEN_RUNTIME_NO_MALLOC is defined and g_is_malloc_allowed is false)");
+}
+#else 
+inline void check_that_malloc_is_allowed()
+{}
+#endif
+
 /** \internal Allocates \a size bytes. The returned pointer is guaranteed to have 16 bytes alignment.
   * On allocation error, the returned pointer is null, and if exceptions are enabled then a std::bad_alloc is thrown.
   */
 inline void* aligned_malloc(size_t size)
 {
-  #ifdef EIGEN_NO_MALLOC
-    eigen_assert(false && "heap allocation is forbidden (EIGEN_NO_MALLOC is defined)");
-  #endif
+  check_that_malloc_is_allowed();
 
   void *result;
   #if !EIGEN_ALIGN
@@ -268,9 +290,7 @@ template<bool Align> inline void* conditional_aligned_malloc(size_t size)
 
 template<> inline void* conditional_aligned_malloc<false>(size_t size)
 {
-  #ifdef EIGEN_NO_MALLOC
-    eigen_assert(false && "heap allocation is forbidden (EIGEN_NO_MALLOC is defined)");
-  #endif
+  check_that_malloc_is_allowed();
 
   void *result = std::malloc(size);
   #ifdef EIGEN_EXCEPTIONS
@@ -363,10 +383,38 @@ template<typename T, bool Align> inline void conditional_aligned_delete(T *ptr, 
 
 template<typename T, bool Align> inline T* conditional_aligned_realloc_new(T* pts, size_t new_size, size_t old_size)
 {
+  if(new_size < old_size)
+    destruct_elements_of_array(pts+new_size, old_size-new_size);
   T *result = reinterpret_cast<T*>(conditional_aligned_realloc<Align>(reinterpret_cast<void*>(pts), sizeof(T)*new_size, sizeof(T)*old_size));
-  if (new_size > old_size)
+  if(new_size > old_size)
     construct_elements_of_array(result+old_size, new_size-old_size);
   return result;
+}
+
+
+template<typename T, bool Align> inline T* conditional_aligned_new_auto(size_t size)
+{
+  T *result = reinterpret_cast<T*>(conditional_aligned_malloc<Align>(sizeof(T)*size));
+  if(NumTraits<T>::RequireInitialization)
+    construct_elements_of_array(result, size);
+  return result;
+}
+
+template<typename T, bool Align> inline T* conditional_aligned_realloc_new_auto(T* pts, size_t new_size, size_t old_size)
+{
+  if(NumTraits<T>::RequireInitialization && (new_size < old_size))
+    destruct_elements_of_array(pts+new_size, old_size-new_size);
+  T *result = reinterpret_cast<T*>(conditional_aligned_realloc<Align>(reinterpret_cast<void*>(pts), sizeof(T)*new_size, sizeof(T)*old_size));
+  if(NumTraits<T>::RequireInitialization && (new_size > old_size))
+    construct_elements_of_array(result+old_size, new_size-old_size);
+  return result;
+}
+
+template<typename T, bool Align> inline void conditional_aligned_delete_auto(T *ptr, size_t size)
+{
+  if(NumTraits<T>::RequireInitialization)
+    destruct_elements_of_array<T>(ptr, size);
+  conditional_aligned_free<Align>(ptr);
 }
 
 /****************************************************************************/
@@ -608,7 +656,7 @@ public:
        __asm__ __volatile__ ("cpuid": "=a" (abcd[0]), "=b" (abcd[1]), "=c" (abcd[2]), "=d" (abcd[3]) : "a" (func), "c" (id) );
 #  endif
 #elif defined(_MSC_VER)
-#  if (_MSC_VER > 1500) /* newer than MSVC++ 9.0 */ || (_MSC_VER == 1500 && _MSC_FULL_VER >= 150030729) /* MSVC++ 9.0 with SP1*/
+#  if (_MSC_VER > 1500)
 #    define EIGEN_CPUID(abcd,func,id) __cpuidex((int*)abcd,func,id)
 #  endif
 #endif

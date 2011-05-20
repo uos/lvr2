@@ -16,10 +16,8 @@
 #include "../io/AsciiIO.hpp"
 #include "../io/UosIO.hpp"
 
-// External libraries in lssr source tree
+// Stann
 #include "../stann/sfcnn.hpp"
-#include "../Eigen/Dense"
-using namespace Eigen;
 
 // Standard C++ includes
 #include <iostream>
@@ -31,9 +29,6 @@ using std::endl;
 using std::string;
 using std::ifstream;
 using std::ofstream;
-
-// boost libraries
-#include <boost/filesystem.hpp>
 
 namespace lssr
 {
