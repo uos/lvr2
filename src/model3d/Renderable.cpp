@@ -29,7 +29,7 @@ Renderable::Renderable() {
 	m_boundingBox =  new BoundingBox;
 
 	computeMatrix();
-	compileAxesList();
+	//compileAxesList();
 
 }
 
