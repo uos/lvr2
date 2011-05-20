@@ -15,6 +15,7 @@
 #include "../geometry/BoundingBox.hpp"
 
 using namespace boost::filesystem;
+using namespace Eigen;
 
 namespace lssr{
 

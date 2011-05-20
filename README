@@ -2,7 +2,7 @@ COMPILATION
 ===========
 
 The software is built using cmake. To compile create a build 
-subdirectory. Switch to this directory and call 'cmake ../'. 
+subdirectory. Switch to this directory and call 'cmake ../ && make'. 
 The binaries are compiles to the ./bin directory in the 
 base dir.
 
@@ -35,3 +35,5 @@ by calling
 
  bin/mcubes --help
 
+For more information, build the Doxygen documentation by calling 'make
+doc' in the build directory.
