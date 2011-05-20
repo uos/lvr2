@@ -5,8 +5,16 @@
  *      Author: Thomas Wiemann
  */
 
+
+// External libraries in lssr source tree
+#include "../Eigen/Dense"
+
+// boost libraries
 #include <boost/filesystem.hpp>
+
 #include "../geometry/BoundingBox.hpp"
+
+using namespace boost::filesystem;
 
 namespace lssr{
 

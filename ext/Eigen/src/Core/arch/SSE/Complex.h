@@ -97,23 +97,38 @@ template<> EIGEN_STRONG_INLINE Packet2cf pandnot<Packet2cf>(const Packet2cf& a, 
 template<> EIGEN_STRONG_INLINE Packet2cf pload <Packet2cf>(const std::complex<float>* from) { EIGEN_DEBUG_ALIGNED_LOAD return Packet2cf(pload<Packet4f>(&real_ref(*from))); }
 template<> EIGEN_STRONG_INLINE Packet2cf ploadu<Packet2cf>(const std::complex<float>* from) { EIGEN_DEBUG_UNALIGNED_LOAD return Packet2cf(ploadu<Packet4f>(&real_ref(*from))); }
 
+template<> EIGEN_STRONG_INLINE Packet2cf pset1<Packet2cf>(const std::complex<float>&  from)
+{
+  Packet2cf res;
+  #if EIGEN_GNUC_AT_MOST(4,2)
+  // workaround annoying "may be used uninitialized in this function" warning with gcc 4.2
+  res.v = _mm_loadl_pi(_mm_set1_ps(0.0f), (const __m64*)&from);
+  #else
+  res.v = _mm_loadl_pi(res.v, (const __m64*)&from);
+  #endif
+  return Packet2cf(_mm_movelh_ps(res.v,res.v));
+}
+
+template<> EIGEN_STRONG_INLINE Packet2cf ploaddup<Packet2cf>(const std::complex<float>* from) { return pset1<Packet2cf>(*from); }
+
 template<> EIGEN_STRONG_INLINE void pstore <std::complex<float> >(std::complex<float> *   to, const Packet2cf& from) { EIGEN_DEBUG_ALIGNED_STORE pstore(&real_ref(*to), from.v); }
 template<> EIGEN_STRONG_INLINE void pstoreu<std::complex<float> >(std::complex<float> *   to, const Packet2cf& from) { EIGEN_DEBUG_UNALIGNED_STORE pstoreu(&real_ref(*to), from.v); }
 
 template<> EIGEN_STRONG_INLINE void prefetch<std::complex<float> >(const std::complex<float> *   addr) { _mm_prefetch((const char*)(addr), _MM_HINT_T0); }
 
-template<> EIGEN_STRONG_INLINE Packet2cf pset1<Packet2cf>(const std::complex<float>&  from)
-{
-  Packet2cf res;
-  res.v = _mm_loadl_pi(res.v, (const __m64*)&from);
-  return Packet2cf(_mm_movelh_ps(res.v,res.v));
-}
-
 template<> EIGEN_STRONG_INLINE std::complex<float>  pfirst<Packet2cf>(const Packet2cf& a)
 {
+  #if EIGEN_GNUC_AT_MOST(4,3)
+  // Workaround gcc 4.2 ICE - this is not performance wise ideal, but who cares...
+  // This workaround also fix invalid code generation with gcc 4.3
+  EIGEN_ALIGN16 std::complex<float> res[2];
+  _mm_store_ps((float*)res, a.v);
+  return res[0];
+  #else
   std::complex<float> res;
   _mm_storel_pi((__m64*)&res, a.v);
   return res;
+  #endif
 }
 
 template<> EIGEN_STRONG_INLINE Packet2cf preverse(const Packet2cf& a) { return Packet2cf(_mm_castpd_ps(preverse(_mm_castps_pd(a.v)))); }
@@ -154,7 +169,7 @@ template<> struct conj_helper<Packet2cf, Packet2cf, false,true>
   EIGEN_STRONG_INLINE Packet2cf pmul(const Packet2cf& a, const Packet2cf& b) const
   {
     #ifdef EIGEN_VECTORIZE_SSE3
-    return pmul(a, pconj(b));
+    return internal::pmul(a, pconj(b));
     #else
     const __m128 mask = _mm_castsi128_ps(_mm_setr_epi32(0x00000000,0x80000000,0x00000000,0x80000000));
     return Packet2cf(_mm_add_ps(_mm_xor_ps(_mm_mul_ps(vec4f_swizzle1(a.v, 0, 0, 2, 2), b.v), mask),
@@ -172,7 +187,7 @@ template<> struct conj_helper<Packet2cf, Packet2cf, true,false>
   EIGEN_STRONG_INLINE Packet2cf pmul(const Packet2cf& a, const Packet2cf& b) const
   {
     #ifdef EIGEN_VECTORIZE_SSE3
-    return pmul(pconj(a), b);
+    return internal::pmul(pconj(a), b);
     #else
     const __m128 mask = _mm_castsi128_ps(_mm_setr_epi32(0x00000000,0x80000000,0x00000000,0x80000000));
     return Packet2cf(_mm_add_ps(_mm_mul_ps(vec4f_swizzle1(a.v, 0, 0, 2, 2), b.v),
@@ -190,7 +205,7 @@ template<> struct conj_helper<Packet2cf, Packet2cf, true,true>
   EIGEN_STRONG_INLINE Packet2cf pmul(const Packet2cf& a, const Packet2cf& b) const
   {
     #ifdef EIGEN_VECTORIZE_SSE3
-    return pconj(pmul(a, b));
+    return pconj(internal::pmul(a, b));
     #else
     const __m128 mask = _mm_castsi128_ps(_mm_setr_epi32(0x00000000,0x80000000,0x00000000,0x80000000));
     return Packet2cf(_mm_sub_ps(_mm_xor_ps(_mm_mul_ps(vec4f_swizzle1(a.v, 0, 0, 2, 2), b.v), mask),
@@ -299,6 +314,8 @@ template<> EIGEN_STRONG_INLINE Packet1cd ploadu<Packet1cd>(const std::complex<do
 { EIGEN_DEBUG_UNALIGNED_LOAD return Packet1cd(ploadu<Packet2d>((const double*)from)); }
 template<> EIGEN_STRONG_INLINE Packet1cd pset1<Packet1cd>(const std::complex<double>&  from)
 { /* here we really have to use unaligned loads :( */ return ploadu<Packet1cd>(&from); }
+
+template<> EIGEN_STRONG_INLINE Packet1cd ploaddup<Packet1cd>(const std::complex<double>* from) { return pset1<Packet1cd>(*from); }
 
 // FIXME force unaligned store, this is a temporary fix
 template<> EIGEN_STRONG_INLINE void pstore <std::complex<double> >(std::complex<double> *   to, const Packet1cd& from) { EIGEN_DEBUG_ALIGNED_STORE pstore((double*)to, from.v); }

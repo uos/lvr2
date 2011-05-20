@@ -37,6 +37,9 @@
   * API for the %Matrix class provides easy access to linear-algebra
   * operations.
   *
+  * This class can be extended with the help of the plugin mechanism described on the page
+  * \ref TopicCustomizingEigen by defining the preprocessor symbol \c EIGEN_ARRAY_PLUGIN.
+  *
   * \sa \ref TutorialArrayClass, \ref TopicClassHierarchy
   */
 namespace internal {
@@ -147,7 +150,7 @@ class Array
     {
       Base::_check_template_params();
       EIGEN_STATIC_ASSERT_VECTOR_ONLY(Array)
-      eigen_assert(dim > 0);
+      eigen_assert(dim >= 0);
       eigen_assert(SizeAtCompileTime == Dynamic || SizeAtCompileTime == dim);
       EIGEN_INITIALIZE_BY_ZERO_IF_THAT_OPTION_IS_ENABLED
     }

@@ -9,11 +9,13 @@
 #define POINTCLOUDMANAGER_H_
 
 #include <vector>
-using std::vector;
+
 
 #include "../geometry/Vertex.hpp"
 #include "../geometry/Normal.hpp"
 #include "../geometry/BoundingBox.hpp"
+
+using std::vector;
 
 namespace lssr
 {

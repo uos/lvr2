@@ -33,6 +33,7 @@ if(OpenGL_FOUND)
 endif(OpenGL_FOUND)
 
 IF(APPLE)
+  link_directories(/opt/local/lib)
   include_directories(/System/Library/Frameworks/GLUT.framework/Headers)
   include_directories(/System/Library/Frameworks/OpenGL.framework/Headers)
 ENDIF(APPLE)
