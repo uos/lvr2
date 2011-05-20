@@ -1,0 +1,324 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ui version="4.0">
+ <class>MainWindow</class>
+ <widget class="QMainWindow" name="MainWindow">
+  <property name="geometry">
+   <rect>
+    <x>0</x>
+    <y>0</y>
+    <width>1044</width>
+    <height>795</height>
+   </rect>
+  </property>
+  <property name="sizePolicy">
+   <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
+    <horstretch>0</horstretch>
+    <verstretch>0</verstretch>
+   </sizepolicy>
+  </property>
+  <property name="minimumSize">
+   <size>
+    <width>320</width>
+    <height>200</height>
+   </size>
+  </property>
+  <property name="maximumSize">
+   <size>
+    <width>100000</width>
+    <height>100000</height>
+   </size>
+  </property>
+  <property name="windowTitle">
+   <string>MainWindow</string>
+  </property>
+  <widget class="QWidget" name="centralwidget">
+   <widget class="QFrame" name="renderFrame">
+    <property name="geometry">
+     <rect>
+      <x>200</x>
+      <y>10</y>
+      <width>681</width>
+      <height>731</height>
+     </rect>
+    </property>
+    <property name="frameShape">
+     <enum>QFrame::StyledPanel</enum>
+    </property>
+    <property name="frameShadow">
+     <enum>QFrame::Raised</enum>
+    </property>
+   </widget>
+  </widget>
+  <widget class="QMenuBar" name="menubar">
+   <property name="geometry">
+    <rect>
+     <x>0</x>
+     <y>0</y>
+     <width>1044</width>
+     <height>25</height>
+    </rect>
+   </property>
+   <widget class="QMenu" name="menu_File">
+    <property name="title">
+     <string>&amp;File</string>
+    </property>
+    <addaction name="action_Open"/>
+    <addaction name="actionOpen_a_scan_in_slam6d_format"/>
+    <addaction name="separator"/>
+    <addaction name="action_Quit"/>
+   </widget>
+   <widget class="QMenu" name="menu_View">
+    <property name="title">
+     <string>&amp;Camera</string>
+    </property>
+    <addaction name="separator"/>
+    <addaction name="actionShow_entire_scene"/>
+    <addaction name="actionCenter_on_selected_object"/>
+    <addaction name="actionGo_to_last_postion"/>
+    <addaction name="separator"/>
+    <addaction name="actionAdd_current_view_to_path"/>
+    <addaction name="actionEdit_path"/>
+    <addaction name="actionAnimate_Path"/>
+    <addaction name="separator"/>
+    <addaction name="actionXZ_ortho_projection"/>
+    <addaction name="actionYZ_ortho_projection"/>
+    <addaction name="actionXY_ortho_projection"/>
+    <addaction name="actionPerspective_projection"/>
+   </widget>
+   <widget class="QMenu" name="menu_Tools">
+    <property name="title">
+     <string>&amp;Tools</string>
+    </property>
+    <addaction name="actionSave_Screenshot"/>
+   </widget>
+   <widget class="QMenu" name="menuView">
+    <property name="title">
+     <string>&amp;Docks</string>
+    </property>
+    <addaction name="action_Robot_control"/>
+   </widget>
+   <widget class="QMenu" name="menu_Scene">
+    <property name="title">
+     <string>&amp;Scene</string>
+    </property>
+    <addaction name="actionToggle_fog"/>
+    <addaction name="actionFog_settings"/>
+   </widget>
+   <addaction name="menu_File"/>
+   <addaction name="menuView"/>
+   <addaction name="menu_View"/>
+   <addaction name="menu_Scene"/>
+   <addaction name="menu_Tools"/>
+  </widget>
+  <widget class="QStatusBar" name="statusbar"/>
+  <widget class="QToolBar" name="toolBar">
+   <property name="windowTitle">
+    <string>toolBar</string>
+   </property>
+   <attribute name="toolBarArea">
+    <enum>TopToolBarArea</enum>
+   </attribute>
+   <attribute name="toolBarBreak">
+    <bool>false</bool>
+   </attribute>
+   <addaction name="action_Open"/>
+   <addaction name="separator"/>
+   <addaction name="actionShow_entire_scene"/>
+   <addaction name="actionToggle_fog"/>
+   <addaction name="actionFog_settings"/>
+   <addaction name="separator"/>
+   <addaction name="actionSave_Screenshot"/>
+  </widget>
+  <action name="action_Open">
+   <property name="icon">
+    <iconset resource="../res/viewer.qrc">
+     <normaloff>:/folder_add.png</normaloff>
+     <normalon>:/drive.png</normalon>:/folder_add.png</iconset>
+   </property>
+   <property name="text">
+    <string>&amp;Open...</string>
+   </property>
+  </action>
+  <action name="action_Quit">
+   <property name="text">
+    <string>&amp;Quit</string>
+   </property>
+  </action>
+  <action name="actionConnect_to_server">
+   <property name="enabled">
+    <bool>true</bool>
+   </property>
+   <property name="text">
+    <string>Connect to server...</string>
+   </property>
+  </action>
+  <action name="actionSubscribe_to_device">
+   <property name="enabled">
+    <bool>false</bool>
+   </property>
+   <property name="text">
+    <string>Visualize Sensor Data...</string>
+   </property>
+  </action>
+  <action name="actionShow_entire_scene">
+   <property name="icon">
+    <iconset resource="../res/viewer.qrc">
+     <normaloff>:/world.png</normaloff>:/world.png</iconset>
+   </property>
+   <property name="text">
+    <string>Show entire scene</string>
+   </property>
+  </action>
+  <action name="actionCenter_on_selected_object">
+   <property name="enabled">
+    <bool>false</bool>
+   </property>
+   <property name="text">
+    <string>Show selected object</string>
+   </property>
+  </action>
+  <action name="actionReset_Postion">
+   <property name="text">
+    <string>Reset Postion</string>
+   </property>
+  </action>
+  <action name="actionGo_to_last_postion">
+   <property name="enabled">
+    <bool>false</bool>
+   </property>
+   <property name="text">
+    <string>Go to last postion</string>
+   </property>
+  </action>
+  <action name="actionAdd_current_view_to_path">
+   <property name="enabled">
+    <bool>false</bool>
+   </property>
+   <property name="text">
+    <string>Add current view to path</string>
+   </property>
+  </action>
+  <action name="actionAnimate_Path">
+   <property name="enabled">
+    <bool>false</bool>
+   </property>
+   <property name="text">
+    <string>Animate path</string>
+   </property>
+  </action>
+  <action name="actionEdit_path">
+   <property name="enabled">
+    <bool>false</bool>
+   </property>
+   <property name="text">
+    <string>Edit path...</string>
+   </property>
+  </action>
+  <action name="actionSend_Commands">
+   <property name="enabled">
+    <bool>false</bool>
+   </property>
+   <property name="text">
+    <string>Send Commands...</string>
+   </property>
+  </action>
+  <action name="actionSave_Screenshot">
+   <property name="enabled">
+    <bool>false</bool>
+   </property>
+   <property name="icon">
+    <iconset resource="../res/viewer.qrc">
+     <normaloff>:/page_white_camera.png</normaloff>:/page_white_camera.png</iconset>
+   </property>
+   <property name="text">
+    <string>Save Screenshot...</string>
+   </property>
+  </action>
+  <action name="actionLoaded_Objects">
+   <property name="text">
+    <string>&amp;Loaded objects</string>
+   </property>
+  </action>
+  <action name="action_Robot_control">
+   <property name="text">
+    <string>&amp;Robot control</string>
+   </property>
+  </action>
+  <action name="actionXZ_ortho_projection">
+   <property name="enabled">
+    <bool>true</bool>
+   </property>
+   <property name="text">
+    <string>XZ ortho projection</string>
+   </property>
+  </action>
+  <action name="actionYZ_ortho_projection">
+   <property name="enabled">
+    <bool>true</bool>
+   </property>
+   <property name="text">
+    <string>YZ ortho projection</string>
+   </property>
+  </action>
+  <action name="actionXY_ortho_projection">
+   <property name="enabled">
+    <bool>true</bool>
+   </property>
+   <property name="text">
+    <string>XY ortho projection</string>
+   </property>
+  </action>
+  <action name="actionPerspective_projection">
+   <property name="text">
+    <string>Perspective projection</string>
+   </property>
+  </action>
+  <action name="actionOpen_a_scan_in_slam6d_format">
+   <property name="enabled">
+    <bool>false</bool>
+   </property>
+   <property name="text">
+    <string>Load a slam6d scan...</string>
+   </property>
+  </action>
+  <action name="actionToggle_fog">
+   <property name="icon">
+    <iconset resource="../res/viewer.qrc">
+     <normaloff>:/contrast.png</normaloff>:/contrast.png</iconset>
+   </property>
+   <property name="text">
+    <string>Toggle fog</string>
+   </property>
+  </action>
+  <action name="actionFog_settings">
+   <property name="icon">
+    <iconset resource="../res/viewer.qrc">
+     <normaloff>:/contrast_increase.png</normaloff>:/contrast_increase.png</iconset>
+   </property>
+   <property name="text">
+    <string>Fog settings...</string>
+   </property>
+  </action>
+ </widget>
+ <resources>
+  <include location="../res/viewer.qrc"/>
+ </resources>
+ <connections>
+  <connection>
+   <sender>action_Quit</sender>
+   <signal>activated()</signal>
+   <receiver>MainWindow</receiver>
+   <slot>close()</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>-1</x>
+     <y>-1</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>399</x>
+     <y>270</y>
+    </hint>
+   </hints>
+  </connection>
+ </connections>
+</ui>
