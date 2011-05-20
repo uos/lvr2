@@ -1,0 +1,37 @@
+COMPILATION
+===========
+
+The software is built using cmake. To compile create a build 
+subdirectory. Switch to this directory and call 'cmake ../'. 
+The binaries are compiles to the ./bin directory in the 
+base dir.
+
+REQUIRED LIBRARIES
+==================
+
+  + OpenGL
+  + glut
+  + BOOST Filesystem
+  + BOOST Program Option
+  + BOOST System
+  + Qt 4.6 or higher for viewer
+
+USAGE
+=====
+
+Your can experiment with the software using the provided 
+dataset. For a simple reconstruction call
+
+  bin/mcubes dat/scan.pts -v5
+
+in the root directory of the project. This will create a 
+file called 'mesh.ply' which can be displayed using the
+viewer application:
+
+  bin/viewer mesh.ply
+
+You can foind information about the additional parameters 
+by calling
+
+ bin/mcubes --help
+
