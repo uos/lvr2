@@ -96,12 +96,12 @@ template<typename VertexT, typename NormalT>
 void HalfEdgeFace<VertexT, NormalT>::getVertices(vector<VertexT> &v){
 
 	HalfEdgeVertex<VertexT, NormalT>* start = m_edge->start;
-	HalfEdge<VertexT, HalfEdgeFace<VertexT, NormalT> >* current_edge = m_edge;
+	HalfEdge<HalfEdgeVertex<VertexT, NormalT>, HalfEdgeFace<VertexT, NormalT> >* current_edge = m_edge;		//LASVEGAS: changed type
 	do{
-		v.push_back(current_edge->end->position);
+		v.push_back(current_edge->end->m_position);		//LASVEGAS: changed position to m_position
 		current_edge = current_edge->next;
 	} while(current_edge->end != start);
-	v.push_back(current_edge->end->position);
+	v.push_back(current_edge->end->m_position);			//LASVEGAS: changed position to m_position
 }
 
 template<typename VertexT, typename NormalT>
