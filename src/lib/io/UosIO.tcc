@@ -15,7 +15,7 @@ using std::vector;
 using std::ifstream;
 
 #include <boost/filesystem.hpp>
-using namespace boost::filesystem;
+//using namespace boost::filesystem;
 
 #include "../geometry/Vertex.hpp"
 #include "../geometry/Matrix4.hpp"
@@ -38,12 +38,12 @@ T** UosIO<T>::read(string dir, size_t &n)
         int firstScan = -1;
         int lastScan =  -1;
 
-        directory_iterator lastFile;
+		  boost::filesystem::directory_iterator lastFile;
 
         // First, look for .3d files
-        for(directory_iterator it(directory); it != lastFile; it++ )
+        for(boost::filesystem::directory_iterator it(directory); it != lastFile; it++ )
         {
-            path p = it->path();
+			  boost::filesystem::path p = it->path();
             if(string(p.extension().c_str()) == ".3d")
             {
                 // Check for naming convention "scanxxx.3d"
@@ -73,9 +73,9 @@ T** UosIO<T>::read(string dir, size_t &n)
         {
             // Count numbered sub directories, ignore others
             int nDirs = 0;
-            for(directory_iterator it(directory); it != lastFile; it++ )
+            for(boost::filesystem::directory_iterator it(directory); it != lastFile; it++ )
             {
-                path p = it->path();
+					boost::filesystem::path p = it->path();
                 int num = 0;
 
                 // Only count numbered dirs
@@ -126,7 +126,9 @@ T** UosIO<T>::readNewFormat(string dir, int first, int last, size_t &n)
         ifstream scan_in, pose_in, frame_in;
 
         // Create scan file name
-        path scan_path(path(dir)/path("scan" + to_string(fileCounter,3) + ".3d"));
+		  boost::filesystem::path scan_path(
+				  boost::filesystem::path(dir) / 
+				  boost::filesystem::path( "scan" + to_string( fileCounter, 3 ) + ".3d" ) );
         string scanFileName = "/" + scan_path.relative_path().string();
 
         // Read scan data
@@ -146,14 +148,18 @@ T** UosIO<T>::readNewFormat(string dir, int first, int last, size_t &n)
 
 
             // Try to get fransformation from .frames file
-            path frame_path(path(dir)/path("scan" + to_string(fileCounter,3) + ".frames"));
+				boost::filesystem::path frame_path(
+						boost::filesystem::path(dir) / 
+						boost::filesystem::path( "scan" + to_string( fileCounter, 3 ) + ".frames" ) );
             string frameFileName = "/" + frame_path.relative_path().string();
 
             frame_in.open(frameFileName.c_str());
             if(!frame_in.good())
             {
                 // Try to parse .pose file
-                path pose_path(path(dir)/path("scan" + to_string(fileCounter,3) + ".pose"));
+					boost::filesystem::path pose_path(
+							boost::filesystem::path(dir) / 
+							boost::filesystem::path( "scan" + to_string( fileCounter, 3 ) + ".pose" ) );
                 string poseFileName = "/" + pose_path.relative_path().string();
 
                 pose_in.open(poseFileName.c_str());
@@ -259,7 +265,10 @@ T** UosIO<T>::readOldFormat(string dir, int first, int last, size_t &n)
         string poseFileName;
 
         // Create correct path
-        path p(path(dir)/path(to_string(fileCounter,3))/path("position.dat"));
+		  boost::filesystem::path p(
+				  boost::filesystem::path(dir) / 
+				  boost::filesystem::path( to_string( fileCounter, 3 ) ) /
+				  boost::filesystem::path( "position.dat" ) );
 
         // Get file name (if some knows a more elegant way to
         // extract the pull path let me know
@@ -289,7 +298,10 @@ T** UosIO<T>::readOldFormat(string dir, int first, int last, size_t &n)
         for (int i = 1; ; i++) {
             //scanFileName = dir + to_string(fileCounter, 3) + "/scan" + to_string(i,3) + ".dat";
 
-            path sfile(path(dir)/path(to_string(fileCounter, 3))/path("scan" + to_string(i) + ".dat"));
+			  boost::filesystem::path sfile(
+					  boost::filesystem::path(dir) /
+					  boost::filesystem::path( to_string( fileCounter, 3 ) ) /
+					  boost::filesystem::path( "scan" + to_string(i) + ".dat" ) );
             scanFileName = "/" + sfile.relative_path().string();
 
             scan_in.open(scanFileName.c_str());
@@ -370,7 +382,9 @@ T** UosIO<T>::readOldFormat(string dir, int first, int last, size_t &n)
         pose_in.clear();
 
         // Create path to frame file
-        path framePath(path(dir)/path("scan" + to_string(fileCounter,3) + ".frames"));
+		  boost::filesystem::path framePath(
+				  boost::filesystem::path(dir) / 
+				  boost::filesystem::path("scan" + to_string( fileCounter, 3 ) + ".frames" ) );
         string frameFileName = "/" + framePath.relative_path().string();
 
         // Try to open frame file
