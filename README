@@ -1,10 +1,16 @@
 COMPILATION
 ===========
 
-The software is built using cmake. To compile create a build 
-subdirectory. Switch to this directory and call 'cmake ../'. 
-The binaries are compiles to the ./bin directory in the 
-base dir.
+The software is built using cmake. To compile create a build subdirectory.
+Switch to this directory and call 'cmake ../' and make. The binaries are
+compiled to the ./bin directory in the base dir.
+
+You may simply copy this:
+> mkdir build
+> cd build
+> cmake ..
+> make
+> cd ../bin
 
 REQUIRED LIBRARIES
 ==================
@@ -14,24 +20,29 @@ REQUIRED LIBRARIES
   + BOOST Filesystem
   + BOOST Program Option
   + BOOST System
+  + BOOST Thread
   + Qt 4.6 or higher for viewer
+  + libQGLViewer for qglviewer
+
+Installation on RedHat Fedora and other RedHat based systems using the
+Yellowdog Updater, Modified (You probably have a lot of these packages already
+installed):
+
+> yum install boost-build boost-devel boost-static boost-thread cmake doxygen \
+	freeglut-devel gcc gcc-c++ libQGLViewer libQGLViewer-devel \
+	libQGLViewer-doc libXdmcp libXdmcp-devel libXi libXi-devel libXmu \
+	libXmu-devel mesa-libGL-devel qt-devel 
+
 
 USAGE
 =====
 
-Your can experiment with the software using the provided 
-dataset. For a simple reconstruction call
+Your can experiment with the software using the provided dataset. For a simple
+reconstruction call
 
-  bin/mcubes dat/scan.pts -v5
+> ./bin/reconstruct -v 100 ../data/flur1.pts
 
-in the root directory of the project. This will create a 
-file called 'mesh.ply' which can be displayed using the
-viewer application:
+in the root directory of the project. This will create a file called 'mesh.ply'
+which can be displayed using the viewer application:
 
-  bin/viewer mesh.ply
-
-You can foind information about the additional parameters 
-by calling
-
- bin/mcubes --help
-
+> ./bin/viewer mesh.ply
