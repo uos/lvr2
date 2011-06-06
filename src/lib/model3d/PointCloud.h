@@ -65,7 +65,9 @@ inline void PointCloud::render(){
     glPointSize(5.0);
     glBegin(GL_POINTS);
     for(size_t i = 0; i < points.size(); i++){
-    	glColor3f(((int)points[i].r) / 255, ((int)points[i].g) / 255, ((int)points[i].b) / 255);
+    	glColor3f( ( (float) points[i].r ) / 255, 
+				( (float) points[i].g ) / 255, 
+				( (float) points[i].b ) / 255 );
         glVertex3f(points[i].x,
                    points[i].y,
                    points[i].z);
