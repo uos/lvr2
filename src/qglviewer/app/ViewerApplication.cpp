@@ -7,7 +7,7 @@
 
 #include "ViewerApplication.h"
 
-ViewerApplication::ViewerApplication(int argc, char** argv)
+ViewerApplication::ViewerApplication( int argc, char ** argv )
 {
 	// Setup main window
 	m_qMainWindow = new QMainWindow;
@@ -31,6 +31,13 @@ ViewerApplication::ViewerApplication(int argc, char** argv)
 	m_qMainWindow->show();
 
 	connectEvents();
+
+	/* Load files given as command line arguments. */
+	int i;
+	for ( i = 1; i < argc; i++ ) {
+		printf( "Loading »%s«…\n", argv[i] );
+		m_dataManager->loadFile( argv[i] );
+	}
 
 	// Call a resize to fit viewers to their parent widgets
 	m_viewer->setGeometry(m_qMainWindow->centralWidget()->geometry());
@@ -74,9 +81,10 @@ void ViewerApplication::connectEvents()
 	QObject::connect(m_dataManager, SIGNAL(dataCollectorUpdate(DataCollector*)),
 					m_viewerManager, SLOT(updateDataObject(DataCollector*)));
 
+/*
 	QObject::connect(m_sceneDockWidgetUi->treeWidget, SIGNAL(itemClicked(QTreeWidgetItem*, int)),
 					this, SLOT(treeItemClicked(QTreeWidgetItem*, int)));
-
+*/
 
 }
 
