@@ -13,6 +13,10 @@ include_directories(${LSSR_SOURCE_DIR}/src/lib)
 
 set(ADDITIONAL_COMPILER_FLAGS "-O3 -msse3 -fpermissive -Wno-deprecated -Wno-write-strings -g")
 
+###############################################################
+# EXTERNAL LIBRARIES
+###############################################################
+
 find_package( Boost COMPONENTS program_options filesystem system thread REQUIRED)
 if(Boost_FOUND)
   link_directories(${BOOST_LIBRARY_DIRS})
@@ -47,9 +51,22 @@ find_package(GLUT REQUIRED)
 
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${ADDITIONAL_COMPILER_FLAGS} ${OpenMP_CXX_FLAGS}")
 
+##############################################################
+# LIBRARIES
+##############################################################
+
 add_subdirectory(src/lib/model3d)
 add_subdirectory(src/lib)
+
+##############################################################
+# BINARIES
+##############################################################
+
 add_subdirectory(src/reconstruct)
+
+##############################################################
+# VIEWERS
+##############################################################
 
 set(QT_USE_QTOPENGL TRUE)
 find_package(Qt4)
@@ -60,11 +77,25 @@ if(QT4_FOUND)
   include_directories(${QT_QTCORE_INCLUDE_DIR})
   include_directories(${QT_QTXML_INCLUDE_DIR})
   add_subdirectory(src/viewer)
-  add_subdirectory(src/qglviewer)
+
+  # Try to find libQGLViewer
+  find_library(QGLVIEWER_LIBRARY_RELEASE 
+		NAMES qglviewer-qt4 qglviewer QGLViewer QGLViewer2 
+		PATHS /usr/lib /usr/local/lib ENV QGLVIEWERROOT 
+		ENV LD_LIBRARY_PATH ENV LIBRARY_PATH
+		PATH_SUFFIXES QGLViewer QGLViewer/release)
+  if(QGLVIEWER_LIBRARY_RELEASE)
+    message(STATUS "Found libqglviewer")
+    message(STATUS "Building qglviewer application")
+    add_subdirectory(src/qglviewer)
+  endif(QGLVIEWER_LIBRARY_RELEASE)
 endif(QT4_FOUND)
 
+################################################################
+# DOCUMENTATION
+################################################################
 
-
+#Try to find doxygen
 find_package(Doxygen)
 if(DOXYGEN_FOUND)
 configure_file(${CMAKE_CURRENT_SOURCE_DIR}/Doxyfile.in ${CMAKE_CURRENT_BINARY_DIR}/Doxyfile @ONLY)
