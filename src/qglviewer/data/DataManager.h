@@ -28,6 +28,7 @@ public:
 	virtual ~DataManager();
 
 	void update(DataCollector*);
+	void loadFile( string filename );
 
 public Q_SLOTS:
 	void openFile();
