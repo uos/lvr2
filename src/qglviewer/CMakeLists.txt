@@ -50,7 +50,8 @@ add_definitions(${QT_DEFINITIONS})
 include_directories(${CMAKE_CURRENT_BINARY_DIR})
 
 # Create a new targer
-add_executable(qviewer ${QVIEWER_SOURCES} ${QVIEWER_MOC_SRC} ${QVIEWER_UI_HDRS} ${QVIEWER_RES_SRC})
+add_executable(qviewer ${QVIEWER_SOURCES} ${QVIEWER_MOC_SRC} ${QVIEWER_UI_HDRS}
+	${QVIEWER_RES_SRC})
 
 # Add needed libraries
 target_link_libraries(qviewer ${QT_QTCORE_LIBRARIES})
@@ -59,5 +60,16 @@ target_link_libraries(qviewer ${QT_QTOPENGL_LIBRARIES})
 target_link_libraries(qviewer model3d)
 target_link_libraries(qviewer ${OPENGL_LIBRARY})
 target_link_libraries(qviewer ${GLUT_LIBRARIES})
-target_link_libraries(qviewer qglviewer)
-target_link_libraries(qviewer boost_system boost_program_options boost_filesystem boost_thread)
+
+# Try to find libQGLViewer
+find_library(QGLVIEWER_LIBRARY_RELEASE 
+		NAMES qglviewer-qt4 qglviewer QGLViewer QGLViewer2 
+		PATHS /usr/lib /usr/local/lib ENV QGLVIEWERROOT 
+		ENV LD_LIBRARY_PATH ENV LIBRARY_PATH
+		PATH_SUFFIXES QGLViewer QGLViewer/release
+	)
+
+target_link_libraries(qviewer ${QGLVIEWER_LIBRARY_RELEASE})
+target_link_libraries(qviewer ${Boost_FILESYSTEM_LIBRARY}
+	${Boost_SYSTEM_LIBRARY} ${Boost_THREAD_LIBRARY}
+	${Boost_PROGRAM_OPTIONS_LIBRARY})
