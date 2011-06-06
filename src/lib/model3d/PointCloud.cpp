@@ -19,11 +19,11 @@ PointCloud::PointCloud(string filename) : Renderable(filename){
 
     m_boundingBox = new BoundingBox;
 
-//    if(!in.good()){
-//        cout << "##### Error: Could not open file " << filename << "." << endl;
-//        return;
-//    }
-//
+    if(!in.good()){
+        cout << "##### Error: Could not open file " << filename << "." << endl;
+        return;
+    }
+
 //    int i = 0;
 //    float x, y, z, dummy;
 //    while(in.good()){
@@ -39,9 +39,15 @@ PointCloud::PointCloud(string filename) : Renderable(filename){
     //Get number of data fields to ignore
     int number_of_dummys = getFieldsPerLine(filename) - 3;
     int c = 0;
+	 int read_color = ( number_of_dummys == 4 );
+	 
+	 if ( read_color ) {
+		 number_of_dummys -= 3;
+	 }
 
     //Point coordinates
     float x, y, z, dummy;
+	 unsigned int r, g, b;
 
     //if(in.good()) in >> dummy;
 
@@ -49,17 +55,26 @@ PointCloud::PointCloud(string filename) : Renderable(filename){
     while(in.good() ){
     	in >> x >> y >> z;
 
+		/* Ignore reflection, … */
     	for(int i = 0; i < number_of_dummys; i++){
     		in >> dummy;
     	}
-
-
-    	m_boundingBox->expand(x, y, z);
-    	if(c % 1 == 0)
-    		points.push_back(ColorVertex(x,y,z));
+		
+		/* Read colors */
+		if ( read_color ) {
+			in >> r >> g >> b;
+			m_boundingBox->expand( ColorVertex( x, y, z, (uchar) r, (uchar) g, (uchar) b ) );
+			points.push_back( ColorVertex( x, y, z, (uchar) r, (uchar) g, (uchar) b ) );
+		} else {
+			m_boundingBox->expand(x, y, z);
+//    	if(c % 1 == 0) // <- This is true for all c \in Z 
+			points.push_back(ColorVertex(x,y,z));
+		}
     	c++;
 
-    	if(c % 100000 == 0) cout << "##### Reading Points... " << c << endl;
+    	if ( c % 100000 == 0 ) {
+			cout << "##### Reading Points... " << c << endl;
+		}
     }
 
     cout << "Loaded Points: " << points.size() << endl;

@@ -12,6 +12,7 @@
 #include "model3d/PointCloud.h"
 
 #include <boost/filesystem.hpp>
+#include <boost/version.hpp>
 
 DataCollectorFactory* DataCollectorFactory::m_instance = 0;
 
@@ -31,7 +32,11 @@ DataCollector* DataCollectorFactory::create(string filename, DataManager* manage
 {
 	// Get file extension
 	boost::filesystem::path selectedFile(filename);
+#if BOOST_VERSION < 104600
 	string extension = selectedFile.extension();
+#else
+	string extension = selectedFile.extension().string();
+#endif
 
 	Static3DDataCollector* dataCollector = 0;
 
