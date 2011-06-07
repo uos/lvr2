@@ -136,8 +136,8 @@ int main(int argc, char** argv)
                                                                    );
 
     // Create an empty mesh
-    TriangleMesh<Vertex<float>, Normal<float> > mesh;
-    //HalfEdgeMesh<Vertex<float>, Normal<float> > mesh;
+    //TriangleMesh<Vertex<float>, Normal<float> > mesh;
+    HalfEdgeMesh<Vertex<float>, Normal<float> > mesh;
 
     // Determine weather to use intersections or voxelsize
     float resolution;

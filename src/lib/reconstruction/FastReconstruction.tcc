@@ -68,9 +68,9 @@ uint FastReconstruction<VertexT, NormalT>::findQueryPoint(
         n_z = z + shared_vertex_table[position][offset + 2];
         q_v = shared_vertex_table[position][offset + 3];
 
-   //     size_t hash = hashValue(n_x, n_y, n_z);
+        size_t hash = hashValue(n_x, n_y, n_z);
 
-        it = m_cells.find(0);
+        it = m_cells.find(hash);
         if(it != m_cells.end())
         {
             FastBox<VertexT, NormalT>* b = it->second;
