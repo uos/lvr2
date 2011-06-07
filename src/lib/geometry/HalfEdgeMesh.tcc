@@ -102,7 +102,7 @@ void HalfEdgeMesh<VertexT, NormalT>::addTriangle(uint a, uint b, uint c)
 			next 	= m_vertices[c];
 			break;
 		case 2:
-			current = m_vertices[b];
+			current = m_vertices[c];
 			next 	= m_vertices[a];
 			break;
 		}
