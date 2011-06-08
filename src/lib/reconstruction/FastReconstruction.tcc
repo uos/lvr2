@@ -188,7 +188,7 @@ void FastReconstruction<VertexT, NormalT>::createGrid()
 							if(neighbor_it != m_cells.end())
 							{
 								box->setNeighbor(neighbor_index, (*neighbor_it).second);
-								(*neighbor_it).second->setNeigbor(26 - neighbor_index, box);
+								(*neighbor_it).second->setNeighbor(26 - neighbor_index, box);
 							}
 
 							neighbor_index++;
