@@ -165,7 +165,6 @@ void FastBox<VertexT, NormalT>::getSurface(BaseMesh<VertexT, NormalT> &mesh,
 {
     VertexT corners[8];
     VertexT vertex_positions[12];
-    VertexT tmp_vertices[12];
 
     float distances[8];
 
@@ -176,13 +175,7 @@ void FastBox<VertexT, NormalT>::getSurface(BaseMesh<VertexT, NormalT> &mesh,
     int index = getIndex(qp);
 
     uint edge_index = 0;
-    uint vertex_count = 0;
-    uint tmp_indices[12];
 
-    VertexT diff1, diff2;
-    NormalT normal;
-
-    uint current_index = 0;
     int triangle_indices[3];
 
     // Generate the local approximation sirface according to the marching
@@ -191,34 +184,9 @@ void FastBox<VertexT, NormalT>::getSurface(BaseMesh<VertexT, NormalT> &mesh,
         for(int b = 0; b < 3; b++){
             edge_index = MCTable[index][a + b];
 
-            // If current_index has a valid value it referns to
-            // an already existing vertex in the mesh. In the beginning
-            // we don't know if the mesh contains a suitable vertex for
-            // the current face, so we initialize with INVALID_INDEX
-            current_index = INVALID_INDEX;
-
-            //If current vertex index doesn't exist
-            //look for it in the suitable neighbor boxes
-            if(m_intersections[edge_index] == INVALID_INDEX)
-            {
-                for(int i = 0; i < 3; i++)
-                {
-                    FastBox* current_neighbor = m_neighbors[neighbor_table[edge_index][i]];
-                     //If neighbor exists search for suitable index
-                    if(current_neighbor != 0){
-                        if(current_neighbor->m_intersections[neighbor_vertex_table[edge_index][i]] != INVALID_INDEX)
-                        {
-                        	// If an existing vertex index was found, use this
-                        	// for face definition, i.e. save as current index
-                            current_index = current_neighbor->m_intersections[neighbor_vertex_table[edge_index][i]];
-                        }
-                    }
-                }
-            }
-
             //If no index was found generate new index and vertex
             //and update all neighbor boxes
-            if(current_index == INVALID_INDEX)
+            if(m_intersections[edge_index] == INVALID_INDEX)
             {
                 m_intersections[edge_index] = globalIndex;
                 VertexT v = vertex_positions[edge_index];
@@ -241,30 +209,14 @@ void FastBox<VertexT, NormalT>::getSurface(BaseMesh<VertexT, NormalT> &mesh,
                 // position were the next new vertex has to be inserted
                 globalIndex++;
             }
-            else
-            {
-                m_intersections[edge_index] = current_index;
-            }
-
-            //Save vertices and indices for normal calculation
-            tmp_vertices[vertex_count] = vertex_positions[edge_index];
-            tmp_indices[vertex_count]  = m_intersections[edge_index];
 
             //Save vertex index in mesh
-            //mesh.addIndex(intersections[edge_index]);
             triangle_indices[b] = m_intersections[edge_index];
-            //Count generated vertices
-            vertex_count++;
         }
 
         // Add triangle actually does the normal interpolation for us.
         mesh.addTriangle(triangle_indices[0], triangle_indices[1], triangle_indices[2]);
     }
-
-
-
-
-    //return globalIndex;
 }
 
 } // namespace lssr
