@@ -47,11 +47,6 @@ ViewerApplication::ViewerApplication( int argc, char ** argv )
 	// Initalize dialogs
 	m_fogSettingsUI = 0;
 	m_fogSettingsDialog = 0;
-
-	if(argc == 1)
-	{
-	    m_dataManager->loadFile(string(argv[1]));
-	}
 }
 
 void ViewerApplication::connectEvents()
