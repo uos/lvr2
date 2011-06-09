@@ -19,11 +19,11 @@ public:
 	/**
 	 * @brief   Dtor.
 	 */
-	~HalfEdge()
-	{
-		delete next;
-		delete pair;
-	}
+//	~HalfEdge()
+//	{
+//		delete next;
+//		delete pair;
+//	}
 
 	/// A pointer to the next edge in current contour
 	HalfEdge<HVertexT, FaceT>* next;
