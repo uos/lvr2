@@ -175,6 +175,83 @@ void HalfEdgeMesh<VertexT, NormalT>::addTriangle(uint a, uint b, uint c)
 
 }
 
+template<typename VertexT, typename NormalT>
+void HalfEdgeMesh<VertexT, NormalT>::flipEdge(HFace* f1, HFace* f2)
+{
+	HEdge* commonEdge = 0;
+	HEdge* current = f1->m_edge;
+
+	//search the common edge between the two faces
+	for(int k = 0; k < 3; k++){
+		if (current->pair->face == f2) commonEdge = current;
+		current = current->next;
+	}
+
+	//return if f1 and f2 are not adjacent in the grid
+	if(commonEdge == 0)
+		return;
+
+	//flip the common edge
+	this->flipEdge(commonEdge);
+}
+
+template<typename VertexT, typename NormalT>
+void HalfEdgeMesh<VertexT, NormalT>::flipEdge(HEdge* edge)
+{
+	HVertex* newEdgeStart = edge->next->end;
+	HVertex* newEdgeEnd = edge->pair->next->end;
+
+	//update next pointers
+	edge->next->next->next = edge->pair->next;
+	edge->pair->next->next->next = edge->next;
+
+	//create the new edge
+	HEdge* newEdge = new HEdge();
+	newEdge->start = newEdgeStart;
+	newEdge->end = newEdgeEnd;
+	newEdge->pair = 0;
+	newEdge->next = edge->pair->next->next;
+	newEdge->face = edge->pair->next->next->face;
+	newEdge->start->out.push_back(newEdge);
+	newEdge->end->in.push_back(newEdge);
+
+	HEdge* newPair = new HEdge();
+	newPair->start = newEdgeEnd;
+	newPair->end = newEdgeStart;
+	newPair->pair = newEdge;
+	newPair->next = edge->next->next;
+	newPair->face = edge->next->next->face;
+	newPair->start->out.push_back(newPair);
+	newPair->end->in.push_back(newPair);
+
+	newEdge->pair = newPair;
+
+	//update face->edge pointers
+	newEdge->face->m_edge = newEdge;
+	newPair->face->m_edge = newPair;
+
+	//delete the old edge
+	typename vector<HEdge*>::iterator it;
+
+	it = edge->start->out.begin();
+	while(*it != edge) it++;
+	edge->start->out.erase(it);
+
+	it = edge->end->in.begin();
+	while(*it != edge) it++;
+	edge->end->in.erase(it);
+
+	it = edge->pair->start->out.begin();
+	while(*it != edge) it++;
+	edge->pair->start->out.erase(it);
+
+	it = edge->pair->end->in.begin();
+	while(*it != edge) it++;
+	edge->pair->end->in.erase(it);
+
+	delete edge->pair;
+	delete edge;
+}
 
 template<typename VertexT, typename NormalT>
 void HalfEdgeMesh<VertexT, NormalT>::finalize()
