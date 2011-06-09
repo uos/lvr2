@@ -155,7 +155,8 @@ EventHandler::~EventHandler() {
 	delete objectHandler;
 }
 
-void EventHandler::resize_event(int w, int h){
+void EventHandler::resize_event(int w, int h)
+{
 	viewport->resize(w, h);
 	screen_width = w;
 	screen_height = h;
