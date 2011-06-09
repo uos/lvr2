@@ -91,6 +91,22 @@ public:
 	 */
 	virtual void addTriangle(uint a, uint b, uint c);
 
+
+	/**
+	 * @brief	Flip the edge between f1 and f2
+	 *
+	 * @param	f1		The first face
+	 * @param	f2		The second face
+	 */
+	virtual void flipEdge(HFace* f1, HFace* f2);
+
+	/**
+	 * @brief	Flip the given edge
+	 *
+	 * @param	edge	The edge to flip
+	 */
+	virtual void flipEdge(HEdge* edge);
+
 	/**
 	 * @brief 	Finalizes a mesh, i.e. converts the template based buffers
 	 * 			to OpenGL compatible buffers
