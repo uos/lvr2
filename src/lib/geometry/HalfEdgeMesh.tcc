@@ -226,9 +226,17 @@ void HalfEdgeMesh<VertexT, NormalT>::flipEdge(HEdge* edge)
 
 	newEdge->pair = newPair;
 
+	//update edge->face pointers
+	edge->next->face = newEdge->face;
+	edge->pair->next->face = newPair->face;
+
 	//update face->edge pointers
 	newEdge->face->m_edge = newEdge;
 	newPair->face->m_edge = newPair;
+
+	//update next pointers
+	edge->next->next = newEdge;
+	edge->pair->next->next = newPair;
 
 	//delete the old edge
 	typename vector<HEdge*>::iterator it;
