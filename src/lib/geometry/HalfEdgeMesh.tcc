@@ -198,67 +198,90 @@ void HalfEdgeMesh<VertexT, NormalT>::flipEdge(HFace* f1, HFace* f2)
 template<typename VertexT, typename NormalT>
 void HalfEdgeMesh<VertexT, NormalT>::flipEdge(HEdge* edge)
 {
-	HVertex* newEdgeStart = edge->next->end;
-	HVertex* newEdgeEnd = edge->pair->next->end;
+	if (edge->pair != 0)
+	{
+		HVertex* newEdgeStart = edge->next->end;
+		HVertex* newEdgeEnd = edge->pair->next->end;
 
-	//update next pointers
-	edge->next->next->next = edge->pair->next;
-	edge->pair->next->next->next = edge->next;
+		//update next pointers
+		edge->next->next->next = edge->pair->next;
+		edge->pair->next->next->next = edge->next;
 
-	//create the new edge
-	HEdge* newEdge = new HEdge();
-	newEdge->start = newEdgeStart;
-	newEdge->end = newEdgeEnd;
-	newEdge->pair = 0;
-	newEdge->next = edge->pair->next->next;
-	newEdge->face = edge->pair->next->next->face;
-	newEdge->start->out.push_back(newEdge);
-	newEdge->end->in.push_back(newEdge);
+		//create the new edge
+		HEdge* newEdge = new HEdge();
+		newEdge->start = newEdgeStart;
+		newEdge->end = newEdgeEnd;
+		newEdge->pair = 0;
+		newEdge->next = edge->pair->next->next;
+		newEdge->face = edge->pair->next->next->face;
+		newEdge->start->out.push_back(newEdge);
+		newEdge->end->in.push_back(newEdge);
 
-	HEdge* newPair = new HEdge();
-	newPair->start = newEdgeEnd;
-	newPair->end = newEdgeStart;
-	newPair->pair = newEdge;
-	newPair->next = edge->next->next;
-	newPair->face = edge->next->next->face;
-	newPair->start->out.push_back(newPair);
-	newPair->end->in.push_back(newPair);
+		HEdge* newPair = new HEdge();
+		newPair->start = newEdgeEnd;
+		newPair->end = newEdgeStart;
+		newPair->pair = newEdge;
+		newPair->next = edge->next->next;
+		newPair->face = edge->next->next->face;
+		newPair->start->out.push_back(newPair);
+		newPair->end->in.push_back(newPair);
 
-	newEdge->pair = newPair;
+		newEdge->pair = newPair;
 
-	//update edge->face pointers
-	edge->next->face = newEdge->face;
-	edge->pair->next->face = newPair->face;
+		//update edge->face pointers
+		edge->next->face = newEdge->face;
+		edge->pair->next->face = newPair->face;
 
-	//update face->edge pointers
-	newEdge->face->m_edge = newEdge;
-	newPair->face->m_edge = newPair;
+		//update face->edge pointers
+		newEdge->face->m_edge = newEdge;
+		newPair->face->m_edge = newPair;
 
-	//update next pointers
-	edge->next->next = newEdge;
-	edge->pair->next->next = newPair;
+		//update next pointers
+		edge->next->next = newEdge;
+		edge->pair->next->next = newPair;
 
-	//delete the old edge
-	typename vector<HEdge*>::iterator it;
+		//update face vertices
+		newEdge->face->m_indices.clear();
+		newEdge->face->m_indices.push_back(newEdge->end->m_index);
+		newEdge->face->m_indices.push_back(newEdge->next->end->m_index);
+		newEdge->face->m_indices.push_back(newEdge->next->next->end->m_index);
+		newPair->face->m_indices.clear();
+		newPair->face->m_indices.push_back(newPair->end->m_index);
+		newPair->face->m_indices.push_back(newPair->next->end->m_index);
+		newPair->face->m_indices.push_back(newPair->next->next->end->m_index);
+		newEdge->face->m_index[0] = newEdge->end->m_index;
+		newEdge->face->m_index[1] = newEdge->next->end->m_index;
+		newEdge->face->m_index[2] = newEdge->next->next->end->m_index;
+		newPair->face->m_index[0] = newPair->end->m_index;
+		newPair->face->m_index[1] = newPair->next->end->m_index;
+		newPair->face->m_index[2] = newPair->next->next->end->m_index;
 
-	it = edge->start->out.begin();
-	while(*it != edge) it++;
-	edge->start->out.erase(it);
+		//recalculate face normals
+		newEdge->face->calc_normal();
+		newPair->face->calc_normal();
 
-	it = edge->end->in.begin();
-	while(*it != edge) it++;
-	edge->end->in.erase(it);
+		//delete the old edge
+		typename vector<HEdge*>::iterator it;
 
-	it = edge->pair->start->out.begin();
-	while(*it != edge->pair) it++;
-	edge->pair->start->out.erase(it);
+		it = edge->start->out.begin();
+		while(*it != edge) it++;
+		edge->start->out.erase(it);
 
-	it = edge->pair->end->in.begin();
-	while(*it != edge->pair) it++;
-	edge->pair->end->in.erase(it);
+		it = edge->end->in.begin();
+		while(*it != edge) it++;
+		edge->end->in.erase(it);
 
-	delete edge->pair;
-	delete edge;
+		it = edge->pair->start->out.begin();
+		while(*it != edge->pair) it++;
+		edge->pair->start->out.erase(it);
+
+		it = edge->pair->end->in.begin();
+		while(*it != edge->pair) it++;
+		edge->pair->end->in.erase(it);
+
+		delete edge->pair;
+		delete edge;
+	}
 }
 
 template<typename VertexT, typename NormalT>
