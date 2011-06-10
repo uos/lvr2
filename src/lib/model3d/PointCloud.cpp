@@ -13,33 +13,23 @@ PointCloud::PointCloud()
 {
 }
 
-PointCloud::PointCloud(string filename) : Renderable(filename){
+PointCloud::PointCloud(string filename) : Renderable(filename) {
 
     ifstream in(filename.c_str());
 
     m_boundingBox = new BoundingBox;
 
-    if(!in.good()){
+    if ( !in.good() ) {
         cout << "##### Error: Could not open file " << filename << "." << endl;
         return;
     }
 
-//    int i = 0;
-//    float x, y, z, dummy;
-//    while(in.good()){
-//        if(i > 0 && i % 100000 == 0) cout << "##### READING POINTS: " << i << endl;
-//        in >> x >> y >> z >> dummy;
-//
-//        m_boundingBox->expand(Vertex(x,y,z));
-//        points.push_back(ColorVertex(x,y,z));
-//        i++;
-//    }
-
-
-    //Get number of data fields to ignore
+    /* Get number of data fields to ignore */
     int number_of_dummys = getFieldsPerLine(filename) - 3;
     int c = 0;
-	 int read_color = ( number_of_dummys == 4 );
+
+	 /* Use last three elements as color informations */
+	 int read_color = ( number_of_dummys >= 3 );
 	 
 	 if ( read_color ) {
 		 number_of_dummys -= 3;
@@ -49,30 +39,28 @@ PointCloud::PointCloud(string filename) : Renderable(filename){
     float x, y, z, dummy;
 	 unsigned int r, g, b;
 
-    //if(in.good()) in >> dummy;
-
-    //Read file
-    while(in.good() ){
+    // Read file
+    while ( in.good() ) {
+		 /* Read y, x, z from first three values. */
     	in >> x >> y >> z;
 
 		/* Ignore reflection, … */
-    	for(int i = 0; i < number_of_dummys; i++){
+    	for ( int i = 0; i < number_of_dummys; i++ ) {
     		in >> dummy;
     	}
 		
-		/* Read colors */
+		/* Read colors from last three values. */
 		if ( read_color ) {
 			in >> r >> g >> b;
-			m_boundingBox->expand( ColorVertex( x, y, z, (uchar) r, (uchar) g, (uchar) b ) );
-			points.push_back( ColorVertex( x, y, z, (uchar) r, (uchar) g, (uchar) b ) );
+			ColorVertex v( x, y, z, (uchar) r, (uchar) g, (uchar) b );
+			m_boundingBox->expand( v );
+			points.push_back( v );
 		} else {
-			m_boundingBox->expand(x, y, z);
-//    	if(c % 1 == 0) // <- This is true for all c \in Z 
-			points.push_back(ColorVertex(x,y,z));
+			m_boundingBox->expand( x, y, z );
+			points.push_back( ColorVertex( x, y, z ) );
 		}
-    	c++;
 
-    	if ( c % 100000 == 0 ) {
+    	if ( ++c % 100000 == 0 ) {
 			cout << "##### Reading Points... " << c << endl;
 		}
     }
