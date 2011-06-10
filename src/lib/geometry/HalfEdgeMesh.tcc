@@ -250,11 +250,11 @@ void HalfEdgeMesh<VertexT, NormalT>::flipEdge(HEdge* edge)
 	edge->end->in.erase(it);
 
 	it = edge->pair->start->out.begin();
-	while(*it != edge) it++;
+	while(*it != edge->pair) it++;
 	edge->pair->start->out.erase(it);
 
 	it = edge->pair->end->in.begin();
-	while(*it != edge) it++;
+	while(*it != edge->pair) it++;
 	edge->pair->end->in.erase(it);
 
 	delete edge->pair;
