@@ -8,22 +8,13 @@ namespace lssr
  * @brief An edge representation in a half edge mesh.
  */
 template<typename HVertexT, typename FaceT>
-class HalfEdge{
+struct HalfEdge{
 public:
 
     /**
      * @brief   Ctor.
      */
 	HalfEdge() : start(0), end(0), pair(0), next(0), face(0), used(false) {};
-
-	/**
-	 * @brief   Dtor.
-	 */
-//	~HalfEdge()
-//	{
-//		delete next;
-//		delete pair;
-//	}
 
 	/// A pointer to the next edge in current contour
 	HalfEdge<HVertexT, FaceT>* next;
