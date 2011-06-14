@@ -228,10 +228,6 @@ void HalfEdgeMesh<VertexT, NormalT>::flipEdge(HEdge* edge)
 
 		newEdge->pair = newPair;
 
-		//update edge->face pointers
-		edge->next->face = newEdge->face;
-		edge->pair->next->face = newPair->face;
-
 		//update face->edge pointers
 		newEdge->face->m_edge = newEdge;
 		newPair->face->m_edge = newPair;
@@ -240,21 +236,30 @@ void HalfEdgeMesh<VertexT, NormalT>::flipEdge(HEdge* edge)
 		edge->next->next = newEdge;
 		edge->pair->next->next = newPair;
 
+		//update edge->face pointers
+		newEdge->next->face = newEdge->face;
+		newEdge->next->next->face = newEdge->face;
+		newPair->next->face = newPair->face;
+		newPair->next->next->face = newPair->face;
+
 		//update face vertices
-		newEdge->face->m_indices.clear();
-		newEdge->face->m_indices.push_back(newEdge->end->m_index);
-		newEdge->face->m_indices.push_back(newEdge->next->end->m_index);
-		newEdge->face->m_indices.push_back(newEdge->next->next->end->m_index);
-		newPair->face->m_indices.clear();
-		newPair->face->m_indices.push_back(newPair->end->m_index);
-		newPair->face->m_indices.push_back(newPair->next->end->m_index);
-		newPair->face->m_indices.push_back(newPair->next->next->end->m_index);
-		newEdge->face->m_index[0] = newEdge->end->m_index;
-		newEdge->face->m_index[1] = newEdge->next->end->m_index;
-		newEdge->face->m_index[2] = newEdge->next->next->end->m_index;
-		newPair->face->m_index[0] = newPair->end->m_index;
-		newPair->face->m_index[1] = newPair->next->end->m_index;
-		newPair->face->m_index[2] = newPair->next->next->end->m_index;
+		int old_vertices[6];
+		for (int i = 0; i<3; i++){
+			old_vertices[i] = newEdge->face->m_index[i];
+			old_vertices[i+3] = newPair->face->m_index[i];
+		}
+		HEdge* currEdge = newEdge;
+		HEdge* currPair = newPair;
+		for(int i = 0; i<3; i++)
+		{
+			for(int k = 0; k<6; k++)
+			{
+				if(currEdge->end == m_vertices[old_vertices[k]]) newEdge->face->m_index[i] = old_vertices[k];
+				if(currPair->end == m_vertices[old_vertices[k]]) newPair->face->m_index[i] = old_vertices[k];
+			}
+			currEdge = currEdge->next;
+			currPair = currPair->next;
+		}
 
 		//recalculate face normals
 		newEdge->face->calc_normal();
