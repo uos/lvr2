@@ -12,6 +12,7 @@
 #include "model3d/PointCloud.h"
 
 #include "../widgets/PointCloudTreeWidgetItem.h"
+#include "../widgets/TriangleMeshTreeWidgetItem.h"
 
 #include <boost/filesystem.hpp>
 #include <boost/version.hpp>
@@ -48,7 +49,14 @@ DataCollector* DataCollectorFactory::create(string filename, DataManager* manage
 	if(extension == ".ply")
 	{
 		StaticMesh* mesh = new StaticMesh(name);
-		dataCollector = new Static3DDataCollector(mesh, name, manager);
+
+		TriangleMeshTreeWidgetItem* item = new TriangleMeshTreeWidgetItem(TriangleMeshItem);
+		item->setName(name);
+		item->setNumFaces(mesh->getNumberOfFaces());
+		item->setNumVertices(mesh->getNumberOfVertices());
+		item->setRenderable(mesh);
+
+		dataCollector = new Static3DDataCollector(mesh, name, manager, item);
 	}
 	else if(extension == ".pts" || extension == ".xyz" || ".3d")
 	{

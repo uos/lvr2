@@ -45,7 +45,6 @@ void Viewer::resetCamera()
 
 void Viewer::centerViewOnObject(Renderable* renderable)
 {
-    cout << "Center on object" << endl;
     BoundingBox* bb = renderable->boundingBox();
 
     // Center view on selected object
