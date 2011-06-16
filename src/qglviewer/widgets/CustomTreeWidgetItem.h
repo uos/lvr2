@@ -10,6 +10,8 @@
 
 #include <QtGui>
 
+#include "model3d/Renderable.h"
+
 enum {ServerItem = 1001, InterfaceItem, PointCloudItem};
 
 class CustomTreeWidgetItem : public QTreeWidgetItem
@@ -22,10 +24,12 @@ public:
 
 	bool toggled();
 	void setInitialState(Qt::CheckState state);
-
+	void setRenderable(Renderable* renderable) {m_renderable = renderable;};
+	Renderable* renderable() { return m_renderable;}
 
 protected:
-	Qt::CheckState m_oldCheckState;
+	Qt::CheckState      m_oldCheckState;
+	Renderable*         m_renderable;
 };
 
 #endif /* CUSTOMTREEWIDGETITEM_H_ */

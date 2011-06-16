@@ -102,7 +102,8 @@ void ViewerApplication::treeItemClicked(QTreeWidgetItem* item, int d)
     // Check if custom item was clicked
     if(item->type() >= PointCloudItem)
     {
-
+        CustomTreeWidgetItem* custom = static_cast<CustomTreeWidgetItem*>(item);
+        m_viewer->centerViewOnObject(custom->renderable());
     }
 }
 

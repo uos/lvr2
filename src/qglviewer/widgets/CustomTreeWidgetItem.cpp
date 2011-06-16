@@ -8,10 +8,10 @@
 #include "CustomTreeWidgetItem.h"
 
 CustomTreeWidgetItem::CustomTreeWidgetItem(int type)
-: QTreeWidgetItem(type), m_oldCheckState(Qt::PartiallyChecked) {}
+: QTreeWidgetItem(type), m_oldCheckState(Qt::PartiallyChecked) , m_renderable(0){}
 
 CustomTreeWidgetItem::CustomTreeWidgetItem(QTreeWidgetItem* parent, int type)
-: QTreeWidgetItem(parent, type), m_oldCheckState(Qt::PartiallyChecked) {}
+: QTreeWidgetItem(parent, type), m_oldCheckState(Qt::PartiallyChecked),  m_renderable(0) {}
 
 CustomTreeWidgetItem::~CustomTreeWidgetItem() {}
 
