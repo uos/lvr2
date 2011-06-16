@@ -1,9 +1,10 @@
 COMPILATION
 ===========
 
-The software is built using cmake. To compile create a build subdirectory.
-Switch to this directory and call 'cmake ../' and make. The binaries are
-compiled to the ./bin directory in the base dir.
+The software is built using cmake. To compile create a build
+subdirectory.  Switch to this directory and call 'cmake ../' and
+make. The binaries are compiled to the ./bin directory in the base
+dir.
 
 You may simply copy this:
 > mkdir build
@@ -22,20 +23,28 @@ REQUIRED LIBRARIES
   + BOOST System
   + BOOST Thread
   + Qt 4.6 or higher for viewer
-  + libQGLViewer 2.3.9 or newe for qglviewer
+  + libQGLViewer 2.3.9 or newer for qglviewer
 
 USAGE
 =====
 
-Your can experiment with the software using the provided dataset. For a simple
-reconstruction call
+Your can experiment with the software using the provided dataset. For
+a simple reconstruction call
 
-> ./bin/reconstruct -v 100 ../data/flur1.pts
+> ./bin/reconstruct -v 100 dat/scan.pts
 
-in the root directory of the project. This will create a file called 'mesh.ply'
-which can be displayed using the viewer application:
+in the root directory of the project. This will create a file called
+'traingle_mesh.ply' which can be displayed using the viewer
+application:
 
-> ./bin/viewer mesh.ply
+> ./bin/viewer triangle_mesh.ply
+
+Alternatively you can use the qviewer application to view the
+file. This program uses libqglviewer to visualize the generated
+triangle meshes. It will only be built, if libQGLViewer 2.3.9 or newer
+was detected on your system.
+
+> ./bin/qviewer 
 
 For more information, build the Doxygen documentation by calling 'make
 doc' in the build directory.
