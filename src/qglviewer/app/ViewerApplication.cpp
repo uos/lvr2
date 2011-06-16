@@ -78,14 +78,26 @@ void ViewerApplication::connectEvents()
 	QObject::connect(m_dataManager, SIGNAL(dataCollectorCreated(DataCollector*)),
 					m_viewerManager, SLOT(addDataCollector(DataCollector*)));
 
+    QObject::connect(m_dataManager, SIGNAL(dataCollectorCreated(DataCollector*)),
+                    this, SLOT(dataCollectorAdded(DataCollector*)));
+
 	QObject::connect(m_dataManager, SIGNAL(dataCollectorUpdate(DataCollector*)),
 					m_viewerManager, SLOT(updateDataObject(DataCollector*)));
+
 
 /*
 	QObject::connect(m_sceneDockWidgetUi->treeWidget, SIGNAL(itemClicked(QTreeWidgetItem*, int)),
 					this, SLOT(treeItemClicked(QTreeWidgetItem*, int)));
 */
 
+}
+
+void ViewerApplication::dataCollectorAdded(DataCollector* d)
+{
+    if(d->treeItem())
+    {
+        m_sceneDockWidgetUi->treeWidget->addTopLevelItem(d->treeItem());
+    }
 }
 
 void ViewerApplication::toggleFog()

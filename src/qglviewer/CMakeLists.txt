@@ -31,6 +31,7 @@ set(QVIEWER_SOURCES
     viewers/Viewer.cpp
     viewers/ViewerManager.cpp
     widgets/CustomTreeWidgetItem.cpp
+    widgets/PointCloudTreeWidgetItem.cpp
 )
 
 set(QVIEWER_RESOURCES

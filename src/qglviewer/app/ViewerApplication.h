@@ -49,6 +49,8 @@ public Q_SLOTS:
 	void fogExp2();
 	void fogExp();
 
+	void dataCollectorAdded(DataCollector* d);
+
 private:
 
 	void connectEvents();
