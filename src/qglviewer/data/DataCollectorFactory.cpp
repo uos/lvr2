@@ -53,7 +53,10 @@ DataCollector* DataCollectorFactory::create(string filename, DataManager* manage
 	else if(extension == ".pts" || extension == ".xyz" || ".3d")
 	{
 		PointCloud* cloud = new PointCloud(filename);
-		PointCloudTreeWidgetItem* item = new PointCloudTreeWidgetItem(PointCloudItem, name, cloud->points.size());
+		PointCloudTreeWidgetItem* item = new PointCloudTreeWidgetItem(PointCloudItem);
+		item->setName(name);
+		item->setNumPoints(cloud->points.size());
+
 		dataCollector = new Static3DDataCollector(cloud, name, manager, item);
 
 	}

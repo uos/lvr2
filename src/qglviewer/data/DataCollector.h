@@ -17,25 +17,25 @@ using std::string;
 
 #include "../app/Types.h"
 #include "../viewers/Viewer.h"
-
-#include <QtGui>
+#include "../widgets/CustomTreeWidgetItem.h"
 
 class DataManager;
 
 class DataCollector
 {
 public:
-	DataCollector(Renderable* renderable, string name, DataManager* manager, QTreeWidgetItem* item = 0);
+	DataCollector(Renderable* renderable, string name, DataManager* manager, CustomTreeWidgetItem* item = 0);
 	virtual ~DataCollector();
 	Renderable* renderable();
 	string	name();
+	BoundingBox* boundingBox() { return m_renderable->boundingBox();}
 
-	virtual QTreeWidgetItem* treeItem() { return m_treeItem;}
+	virtual CustomTreeWidgetItem* treeItem() { return m_treeItem;}
 	virtual ViewerType supportedViewerType() = 0;
 
 protected:
 
-	QTreeWidgetItem*        m_treeItem;
+	CustomTreeWidgetItem*        m_treeItem;
 	DataManager* 	        m_manager;
 	Renderable*	            m_renderable;
 	string		            m_name;

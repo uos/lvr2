@@ -7,7 +7,7 @@
 
 #include "DataCollector.h"
 
-DataCollector::DataCollector(Renderable* renderable, string name, DataManager* manager, QTreeWidgetItem* item)
+DataCollector::DataCollector(Renderable* renderable, string name, DataManager* manager, CustomTreeWidgetItem* item)
 {
 	m_manager = manager;
 	m_renderable = renderable;

@@ -50,7 +50,7 @@ public Q_SLOTS:
 	void fogExp();
 
 	void dataCollectorAdded(DataCollector* d);
-
+	void treeItemClicked(QTreeWidgetItem* item, int n);
 private:
 
 	void connectEvents();
