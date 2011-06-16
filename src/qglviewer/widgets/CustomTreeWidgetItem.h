@@ -10,7 +10,7 @@
 
 #include <QtGui>
 
-enum {ServerItem = 1001, InterfaceItem};
+enum {ServerItem = 1001, InterfaceItem, PointCloudItem};
 
 class CustomTreeWidgetItem : public QTreeWidgetItem
 {

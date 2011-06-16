@@ -11,6 +11,8 @@
 #include "model3d/StaticMesh.h"
 #include "model3d/PointCloud.h"
 
+#include "../widgets/PointCloudTreeWidgetItem.h"
+
 #include <boost/filesystem.hpp>
 #include <boost/version.hpp>
 
@@ -34,8 +36,10 @@ DataCollector* DataCollectorFactory::create(string filename, DataManager* manage
 	boost::filesystem::path selectedFile(filename);
 #if BOOST_VERSION < 104600
 	string extension = selectedFile.extension();
+	string name = selectedFile.filename();
 #else
 	string extension = selectedFile.extension().string();
+	string name = selectedFile.filename();
 #endif
 
 	Static3DDataCollector* dataCollector = 0;
@@ -43,13 +47,15 @@ DataCollector* DataCollectorFactory::create(string filename, DataManager* manage
 	// Try to load given file
 	if(extension == ".ply")
 	{
-		StaticMesh* mesh = new StaticMesh(filename);
-		dataCollector = new Static3DDataCollector(mesh, filename, manager);
+		StaticMesh* mesh = new StaticMesh(name);
+		dataCollector = new Static3DDataCollector(mesh, name, manager);
 	}
 	else if(extension == ".pts" || extension == ".xyz" || ".3d")
 	{
 		PointCloud* cloud = new PointCloud(filename);
-		dataCollector = new Static3DDataCollector(cloud, filename, manager);
+		PointCloudTreeWidgetItem* item = new PointCloudTreeWidgetItem(PointCloudItem, name, cloud->points.size());
+		dataCollector = new Static3DDataCollector(cloud, name, manager, item);
+
 	}
 
 	return dataCollector;

@@ -29,18 +29,18 @@ public:
     void setPoints(){};
 
     void addPoint(float x, float y, float z, uchar r, uchar g, uchar b){
-    	m_boundingBox->expand(ColorVertex(x, y, z, r, g, b));
-    	points.push_back(ColorVertex(x, y, z, r, g, b));
-    	};
+        m_boundingBox->expand(ColorVertex(x, y, z, r, g, b));
+        points.push_back(ColorVertex(x, y, z, r, g, b));
+    };
 
-		void addPoint(const ColorVertex v) {
-			m_boundingBox->expand(v);
-			points.push_back(v);
-			};
+    void addPoint(const ColorVertex v) {
+        m_boundingBox->expand(v);
+        points.push_back(v);
+    };
     void clear(){
-    	delete m_boundingBox;
-    	m_boundingBox = new BoundingBox;
-    	points.clear();
+        delete m_boundingBox;
+        m_boundingBox = new BoundingBox;
+        points.clear();
     };
     void initDisplayList();
 //private:

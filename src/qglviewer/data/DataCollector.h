@@ -18,23 +18,27 @@ using std::string;
 #include "../app/Types.h"
 #include "../viewers/Viewer.h"
 
+#include <QtGui>
+
 class DataManager;
 
 class DataCollector
 {
 public:
-	DataCollector(Renderable* renderable, string name, DataManager* manager);
+	DataCollector(Renderable* renderable, string name, DataManager* manager, QTreeWidgetItem* item = 0);
 	virtual ~DataCollector();
 	Renderable* renderable();
 	string	name();
 
+	virtual QTreeWidgetItem* treeItem() { return m_treeItem;}
 	virtual ViewerType supportedViewerType() = 0;
 
 protected:
 
-	DataManager* 	m_manager;
-	Renderable*	m_renderable;
-	string		m_name;
+	QTreeWidgetItem*        m_treeItem;
+	DataManager* 	        m_manager;
+	Renderable*	            m_renderable;
+	string		            m_name;
 
 
 };
