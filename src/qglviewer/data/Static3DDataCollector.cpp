@@ -7,7 +7,7 @@
 
 #include "Static3DDataCollector.h"
 
-Static3DDataCollector::Static3DDataCollector(Renderable* renderable, string name, DataManager* manager, QTreeWidgetItem* item)
+Static3DDataCollector::Static3DDataCollector(Renderable* renderable, string name, DataManager* manager, CustomTreeWidgetItem* item)
 	: DataCollector(renderable, name, manager, item) {}
 
 ViewerType Static3DDataCollector::supportedViewerType()
