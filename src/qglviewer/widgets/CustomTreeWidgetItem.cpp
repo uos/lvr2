@@ -30,3 +30,9 @@ void CustomTreeWidgetItem::setInitialState(Qt::CheckState state)
 	m_oldCheckState = state;
 	setCheckState(0, state);
 }
+
+void CustomTreeWidgetItem::setName(string name)
+{
+    m_name = name;
+    setText(0, QString(m_name.c_str()));
+}
