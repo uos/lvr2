@@ -52,31 +52,36 @@ private:
 
 };
 
-inline void PointCloud::render(){
-    glPushMatrix();
-    glMultMatrixf(transformation.getData());
-    if(show_axes) glCallList(axesListIndex);
-    glDisable(GL_LIGHTING);
-//    if(active){
-//        glColor3f(1.0f, 0.0f, 0.0f);
-//    } else {
-//        glColor3f(0.0f, 0.9f, 0.0f);
-//    }
-    glPointSize(5.0);
-    glBegin(GL_POINTS);
-    for(size_t i = 0; i < points.size(); i++){
-    	glColor3f( ( (float) points[i].r ) / 255, 
-				( (float) points[i].g ) / 255, 
-				( (float) points[i].b ) / 255 );
-        glVertex3f(points[i].x,
-                   points[i].y,
-                   points[i].z);
+inline void PointCloud::render()
+{
+    if(listIndex != -1)
+    {
+        glPushMatrix();
+        glMultMatrixf(transformation.getData());
+        //    if(show_axes) glCallList(axesListIndex);
+        //    glDisable(GL_LIGHTING);
+        //    //    if(active){
+        //    //        glColor3f(1.0f, 0.0f, 0.0f);
+        //    //    } else {
+        //    //        glColor3f(0.0f, 0.9f, 0.0f);
+        //    //    }
+        //
+        //    glBegin(GL_POINTS);
+        //    for(size_t i = 0; i < points.size(); i++)
+        //    {
+        //        glColor3f( ( (float) points[i].r ) / 255,
+        //                 ( (float) points[i].g ) / 255,
+        //                 ( (float) points[i].b ) / 255 );
+        //        glVertex3f(points[i].x,
+        //                   points[i].y,
+        //                   points[i].z);
+        //    }
+        //
+        //    glEnd();
+        glCallList(listIndex);
+        glEnable(GL_LIGHTING);
+        glPopMatrix();
     }
-    
-    glEnd();
-    glPointSize(1.0);
-    glEnable(GL_LIGHTING);
-    glPopMatrix();
 }
 
 #endif /* POINTCLOUD_H_ */

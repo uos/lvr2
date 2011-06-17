@@ -47,7 +47,7 @@ PointCloud::PointCloud(string filename) : Renderable(filename){
 
     //Point coordinates
     float x, y, z, dummy;
-	 unsigned int r, g, b;
+	unsigned int r, g, b;
 
     //if(in.good()) in >> dummy;
 
@@ -79,26 +79,34 @@ PointCloud::PointCloud(string filename) : Renderable(filename){
 
     cout << "Loaded Points: " << points.size() << endl;
 
-    //initDisplayList();
+    initDisplayList();
 }
 
 void PointCloud::initDisplayList(){
 
+    // Check for existing display list
     if(listIndex != -1) {
         cout<<"PointCloud::initDisplayList() delete display list"<<endl;
         glDeleteLists(listIndex,1);
     }
-//    cout<<"PointCloud::initDisplayList() init display list "<<points.size()<<endl;
-//    listIndex = glGenLists(1);
-//    glNewList(listIndex, GL_COMPILE);
+
+    // Create new display list and render points
+    listIndex = glGenLists(1);
+    glNewList(listIndex, GL_COMPILE);
     glBegin(GL_POINTS);
-    for(size_t i = 0; i < points.size(); i++){
+
+    for(size_t i = 0; i < points.size(); i++)
+    {
+        glColor3f( ( (float) points[i].r ) / 255,
+                   ( (float) points[i].g ) / 255,
+                   ( (float) points[i].b ) / 255 );
+
         glVertex3f(points[i].x,
                    points[i].y,
                    points[i].z);
     }
     glEnd();
-//    glEndList();
+    glEndList();
 }
 
 int PointCloud::getFieldsPerLine(string filename)
