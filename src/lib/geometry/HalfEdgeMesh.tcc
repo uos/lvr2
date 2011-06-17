@@ -183,7 +183,7 @@ void HalfEdgeMesh<VertexT, NormalT>::flipEdge(HFace* f1, HFace* f2)
 
 	//search the common edge between the two faces
 	for(int k = 0; k < 3; k++){
-		if (current->pair->face == f2) commonEdge = current;
+		if (current->pair != 0 && current->pair->face == f2) commonEdge = current;
 		current = current->next;
 	}
 
