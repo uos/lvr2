@@ -90,6 +90,9 @@ protected:
     /// The point normals
     float**                  	m_normals;
 
+    /// Color information for points
+    float**                     m_colors;
+
     /// The bounding box of the point set
     BoundingBox<VertexT>        m_boundingBox;
 
