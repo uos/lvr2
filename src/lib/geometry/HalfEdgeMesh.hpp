@@ -16,6 +16,8 @@ using stdext::hash_map;
 using __gnu_cxx::hash_map;
 #endif
 
+#include <boost/unordered_map.hpp>
+
 #include <vector>
 #include <stack>
 #include <set>
@@ -124,6 +126,9 @@ private:
 
 	/// The indexed of the newest inserted vertex
 	int 					 m_globalIndex;
+
+	/// A map containing information whenever a vertex changes its indize
+	boost::unordered_map<int, int> m_index_map;
 
 	void printStats();
 
