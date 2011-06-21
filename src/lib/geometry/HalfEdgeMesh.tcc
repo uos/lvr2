@@ -183,9 +183,9 @@ void HalfEdgeMesh<VertexT, NormalT>::deleteFace(HFace* f)
 	HEdge* startEdge = f->m_edge;
 	HEdge* nextEdge  = f->m_edge->next;
 	HEdge* lastEdge  = f->m_edge->next->next;
-	HVertex* p1 = startEdge->end;
-	HVertex* p2 = nextEdge->end;
-	HVertex* p3 = lastEdge->end;
+	size_t p1 = startEdge->end == m_vertices[f->m_index[0]]?f->m_index[0]:startEdge->end == m_vertices[f->m_index[1]]?f->m_index[1]:f->m_index[2];
+	size_t p2 = nextEdge->end == m_vertices[f->m_index[0]]?f->m_index[0]:nextEdge->end == m_vertices[f->m_index[1]]?f->m_index[1]:f->m_index[2];
+	size_t p3 = lastEdge->end == m_vertices[f->m_index[0]]?f->m_index[0]:lastEdge->end == m_vertices[f->m_index[1]]?f->m_index[1]:f->m_index[2];
 
 	startEdge->face = 0;
 	nextEdge->face = 0;
@@ -196,43 +196,37 @@ void HalfEdgeMesh<VertexT, NormalT>::deleteFace(HFace* f)
 	if(startEdge->pair->face == 0)
 	{
 		//delete references from vertices to edges
-		it = p1->in.begin();
+		it = m_vertices[p1]->in.begin();
 		while(*it != startEdge) it++;
-		p1->in.erase(it);
+		m_vertices[p1]->in.erase(it);
 
-		it = p1->out.begin();
+		it = m_vertices[p1]->out.begin();
 		while(*it != startEdge->pair) it++;
-		p1->out.erase(it);
+		m_vertices[p1]->out.erase(it);
 
-		it = p3->in.begin();
+		it = m_vertices[p3]->in.begin();
 		while(*it != startEdge->pair) it++;
-		p3->in.erase(it);
+		m_vertices[p3]->in.erase(it);
 
-		it = p3->out.begin();
+		it = m_vertices[p3]->out.begin();
 		while(*it != startEdge) it++;
-		p3->out.erase(it);
+		m_vertices[p3]->out.erase(it);
 
 		//delete edge and pair
 		delete startEdge->pair;
 		delete startEdge;
 
-		if(p1->out.size()==0)
+		if(m_vertices[p1]->out.size()==0)
 		{
-			typename	vector<HalfEdgeVertex<VertexT, NormalT>*>::iterator vertices_iter = m_vertices.begin();
-			while(*vertices_iter != p1)
-				vertices_iter++;
-			m_vertices.erase(vertices_iter);
-			delete p1;
+			delete m_vertices[p1];
+			m_vertices.erase(m_vertices.begin()+p1);
 			cout << "deleted P1" << endl;
 		}
 
-		if(p3->out.size()==0)
+		if(m_vertices[p3]->out.size()==0)
 		{
-			typename	vector<HalfEdgeVertex<VertexT, NormalT>*>::iterator vertices_iter = m_vertices.begin();
-			while(*vertices_iter != p3)
-				vertices_iter++;
-			m_vertices.erase(vertices_iter);
-			delete p3;
+			delete m_vertices[p3];
+			m_vertices.erase(m_vertices.begin()+p3);
 			cout << "deleted P3" << endl;
 		}
 	}
@@ -240,43 +234,37 @@ void HalfEdgeMesh<VertexT, NormalT>::deleteFace(HFace* f)
 	if(nextEdge->pair->face == 0)
 	{
 		//delete references from vertices to edges
-		it = p2->in.begin();
+		it = m_vertices[p2]->in.begin();
 		while(*it != nextEdge) it++;
-		p2->in.erase(it);
+		m_vertices[p2]->in.erase(it);
 
-		it = p2->out.begin();
+		it = m_vertices[p2]->out.begin();
 		while(*it != nextEdge->pair) it++;
-		p2->out.erase(it);
+		m_vertices[p2]->out.erase(it);
 
-		it = p1->in.begin();
+		it = m_vertices[p1]->in.begin();
 		while(*it != nextEdge->pair) it++;
-		p1->in.erase(it);
+		m_vertices[p1]->in.erase(it);
 
-		it = p1->out.begin();
+		it = m_vertices[p1]->out.begin();
 		while(*it != nextEdge) it++;
-		p1->out.erase(it);
+		m_vertices[p1]->out.erase(it);
 
 		//delete edge and pair
 		delete nextEdge->pair;
 		delete nextEdge;
 
-		if(p1->out.size()==0)
+		if(m_vertices[p1]->out.size()==0)
 		{
-			typename	vector<HalfEdgeVertex<VertexT, NormalT>*>::iterator vertices_iter = m_vertices.begin();
-			while(*vertices_iter != p1)
-				vertices_iter++;
-			m_vertices.erase(vertices_iter);
-			delete p1;
+			delete m_vertices[p1];
+			m_vertices.erase(m_vertices.begin()+p1);
 			cout << "deleted P1" << endl;
 		}
 
-		if(p2->out.size()==0)
+		if(m_vertices[p2]->out.size()==0)
 		{
-			typename	vector<HalfEdgeVertex<VertexT, NormalT>*>::iterator vertices_iter = m_vertices.begin();
-			while(*vertices_iter != p2)
-				vertices_iter++;
-			m_vertices.erase(vertices_iter);
-			delete p2;
+			delete m_vertices[p2];
+			m_vertices.erase(m_vertices.begin()+p2);
 			cout << "deleted P2" << endl;
 		}
 	}
@@ -284,43 +272,37 @@ void HalfEdgeMesh<VertexT, NormalT>::deleteFace(HFace* f)
 	if(lastEdge->pair->face == 0)
 	{
 		//delete references from vertices to edges
-		it = p3->in.begin();
+		it = m_vertices[p3]->in.begin();
 		while(*it != lastEdge) it++;
-		p3->in.erase(it);
+		m_vertices[p3]->in.erase(it);
 
-		it = p3->out.begin();
+		it = m_vertices[p3]->out.begin();
 		while(*it != lastEdge->pair) it++;
-		p3->out.erase(it);
+		m_vertices[p3]->out.erase(it);
 
-		it = p2->in.begin();
+		it = m_vertices[p2]->in.begin();
 		while(*it != lastEdge->pair) it++;
-		p2->in.erase(it);
+		m_vertices[p2]->in.erase(it);
 
-		it = p2->out.begin();
+		it = m_vertices[p2]->out.begin();
 		while(*it != lastEdge) it++;
-		p2->out.erase(it);
+		m_vertices[p2]->out.erase(it);
 
 		//delete edge and pair
 		delete lastEdge->pair;
 		delete lastEdge;
 
-		if(p3->out.size()==0)
+		if(m_vertices[p3]->out.size()==0)
 		{
-			typename	vector<HalfEdgeVertex<VertexT, NormalT>*>::iterator vertices_iter = m_vertices.begin();
-			while(*vertices_iter != p3)
-				vertices_iter++;
-			m_vertices.erase(vertices_iter);
-			delete p3;
+			delete m_vertices[p3];
+			m_vertices.erase(m_vertices.begin()+p3);
 			cout << "deleted P3" << endl;
 		}
 
-		if(p2->out.size()==0)
+		if(m_vertices[p2]->out.size()==0)
 		{
-			typename	vector<HalfEdgeVertex<VertexT, NormalT>*>::iterator vertices_iter = m_vertices.begin();
-			while(*vertices_iter != p2)
-				vertices_iter++;
-			m_vertices.erase(vertices_iter);
-			delete p2;
+			delete m_vertices[p2];
+			m_vertices.erase(m_vertices.begin()+p2);
 			cout << "deleted P2" << endl;
 		}
 	}
