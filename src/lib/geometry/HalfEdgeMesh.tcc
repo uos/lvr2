@@ -72,6 +72,9 @@ HalfEdge<HalfEdgeVertex<VertexT, NormalT>, HalfEdgeFace<VertexT, NormalT> >* Hal
 template<typename VertexT, typename NormalT>
 void HalfEdgeMesh<VertexT, NormalT>::addTriangle(uint a, uint b, uint c)
 {
+	assert(m_vertices.find(a) != m_vertices.end());
+	assert(m_vertices.find(b) != m_vertices.end());
+	assert(m_vertices.find(c) != m_vertices.end());
 	// Create a new face
 	HFace* face = new HFace;
 	face->m_used = false;
@@ -420,7 +423,6 @@ void HalfEdgeMesh<VertexT, NormalT>::finalize()
 
 	typename boost::unordered_map<int, HalfEdgeVertex<VertexT, NormalT>*>::iterator vertices_iter = m_vertices.begin();
 	typename boost::unordered_map<int, HalfEdgeVertex<VertexT, NormalT>*>::iterator vertices_end = m_vertices.end();
-	
 	for(size_t i = 0; vertices_iter != vertices_end; ++i, ++vertices_iter)
 	{
 		this->m_vertexBuffer[3 * i] =     vertices_iter->second->m_position[0];
@@ -457,7 +459,7 @@ void HalfEdgeMesh<VertexT, NormalT>::finalize()
 		this->m_indexBuffer[3 * i]      = index_map[(*(*face_iter))(0)];
 		this->m_indexBuffer[3 * i + 1]  = index_map[(*(*face_iter))(1)];
 		this->m_indexBuffer[3 * i + 2]  = index_map[(*(*face_iter))(2)];
-
+		
 		// TODO: Think of classification
 		//int surface_class = classifyFace(he_faces[i]);
 
@@ -507,9 +509,6 @@ void HalfEdgeMesh<VertexT, NormalT>::finalize()
 
 			break;
 		}
-
-		face_iter++;
-		++i;
 	}
 
 	this->m_finalized = true;
