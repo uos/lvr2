@@ -180,12 +180,12 @@ template<typename VertexT, typename NormalT>
 void HalfEdgeMesh<VertexT, NormalT>::deleteFace(HFace* f)
 {
 	//save references to edges and vertices
-	HEdge* startEdge = f->m_edge;
-	HEdge* nextEdge  = f->m_edge->next;
-	HEdge* lastEdge  = f->m_edge->next->next;
-	size_t p1 = startEdge->end == m_vertices[f->m_index[0]]?f->m_index[0]:startEdge->end == m_vertices[f->m_index[1]]?f->m_index[1]:f->m_index[2];
-	size_t p2 = nextEdge->end == m_vertices[f->m_index[0]]?f->m_index[0]:nextEdge->end == m_vertices[f->m_index[1]]?f->m_index[1]:f->m_index[2];
-	size_t p3 = lastEdge->end == m_vertices[f->m_index[0]]?f->m_index[0]:lastEdge->end == m_vertices[f->m_index[1]]?f->m_index[1]:f->m_index[2];
+	HEdge* startEdge = f[0];
+	HEdge* nextEdge  = f[1];
+	HEdge* lastEdge  = f[2];
+	HVertex* p1 = f(0);
+	HVertex* p2 = f(1);
+	HVertex* p3 = f(2);
 
 	startEdge->face = 0;
 	nextEdge->face = 0;
@@ -196,37 +196,35 @@ void HalfEdgeMesh<VertexT, NormalT>::deleteFace(HFace* f)
 	if(startEdge->pair->face == 0)
 	{
 		//delete references from vertices to edges
-		it = m_vertices[p1]->in.begin();
+		it = p1->in.begin();
 		while(*it != startEdge) it++;
-		m_vertices[p1]->in.erase(it);
+		p1->in.erase(it);
 
-		it = m_vertices[p1]->out.begin();
+		it = p1->out.begin();
 		while(*it != startEdge->pair) it++;
-		m_vertices[p1]->out.erase(it);
+		p1->out.erase(it);
 
-		it = m_vertices[p3]->in.begin();
+		it = p3->in.begin();
 		while(*it != startEdge->pair) it++;
-		m_vertices[p3]->in.erase(it);
+		p3->in.erase(it);
 
-		it = m_vertices[p3]->out.begin();
+		it = p3->out.begin();
 		while(*it != startEdge) it++;
-		m_vertices[p3]->out.erase(it);
+		p3->out.erase(it);
 
 		//delete edge and pair
 		delete startEdge->pair;
 		delete startEdge;
 
-		if(m_vertices[p1]->out.size()==0)
+		if(p1->out.size()==0)
 		{
-			delete m_vertices[p1];
-			m_vertices.erase(m_vertices.begin()+p1);
+			delete p1;
 			cout << "deleted P1" << endl;
 		}
 
-		if(m_vertices[p3]->out.size()==0)
+		if(p3->out.size()==0)
 		{
-			delete m_vertices[p3];
-			m_vertices.erase(m_vertices.begin()+p3);
+			delete p3;
 			cout << "deleted P3" << endl;
 		}
 	}
@@ -234,37 +232,35 @@ void HalfEdgeMesh<VertexT, NormalT>::deleteFace(HFace* f)
 	if(nextEdge->pair->face == 0)
 	{
 		//delete references from vertices to edges
-		it = m_vertices[p2]->in.begin();
+		it = p2->in.begin();
 		while(*it != nextEdge) it++;
-		m_vertices[p2]->in.erase(it);
+		p2->in.erase(it);
 
-		it = m_vertices[p2]->out.begin();
+		it = p2->out.begin();
 		while(*it != nextEdge->pair) it++;
-		m_vertices[p2]->out.erase(it);
+		p2->out.erase(it);
 
-		it = m_vertices[p1]->in.begin();
+		it = p1->in.begin();
 		while(*it != nextEdge->pair) it++;
-		m_vertices[p1]->in.erase(it);
+		p1->in.erase(it);
 
-		it = m_vertices[p1]->out.begin();
+		it = p1->out.begin();
 		while(*it != nextEdge) it++;
-		m_vertices[p1]->out.erase(it);
+		p1->out.erase(it);
 
 		//delete edge and pair
 		delete nextEdge->pair;
 		delete nextEdge;
 
-		if(m_vertices[p1]->out.size()==0)
+		if(p1->out.size()==0)
 		{
-			delete m_vertices[p1];
-			m_vertices.erase(m_vertices.begin()+p1);
+			delete p1;
 			cout << "deleted P1" << endl;
 		}
 
-		if(m_vertices[p2]->out.size()==0)
+		if(p2->out.size()==0)
 		{
-			delete m_vertices[p2];
-			m_vertices.erase(m_vertices.begin()+p2);
+			delete p2;
 			cout << "deleted P2" << endl;
 		}
 	}
@@ -272,37 +268,35 @@ void HalfEdgeMesh<VertexT, NormalT>::deleteFace(HFace* f)
 	if(lastEdge->pair->face == 0)
 	{
 		//delete references from vertices to edges
-		it = m_vertices[p3]->in.begin();
+		it = p3->in.begin();
 		while(*it != lastEdge) it++;
-		m_vertices[p3]->in.erase(it);
+		p3->in.erase(it);
 
-		it = m_vertices[p3]->out.begin();
+		it = p3->out.begin();
 		while(*it != lastEdge->pair) it++;
-		m_vertices[p3]->out.erase(it);
+		p3->out.erase(it);
 
-		it = m_vertices[p2]->in.begin();
+		it = p2->in.begin();
 		while(*it != lastEdge->pair) it++;
-		m_vertices[p2]->in.erase(it);
+		p2->in.erase(it);
 
-		it = m_vertices[p2]->out.begin();
+		it = p2->out.begin();
 		while(*it != lastEdge) it++;
-		m_vertices[p2]->out.erase(it);
+		p2->out.erase(it);
 
 		//delete edge and pair
 		delete lastEdge->pair;
 		delete lastEdge;
 
-		if(m_vertices[p3]->out.size()==0)
+		if(p3->out.size()==0)
 		{
-			delete m_vertices[p3];
-			m_vertices.erase(m_vertices.begin()+p3);
+			delete p3;
 			cout << "deleted P3" << endl;
 		}
 
-		if(m_vertices[p2]->out.size()==0)
+		if(p2->out.size()==0)
 		{
-			delete m_vertices[p2];
-			m_vertices.erase(m_vertices.begin()+p2);
+			delete p2;
 			cout << "deleted P2" << endl;
 		}
 	}
