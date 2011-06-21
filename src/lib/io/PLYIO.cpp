@@ -606,11 +606,11 @@ void PLYIO::writeNormalsASCII(ofstream &out, PLYElement* e)
 			{
 				out << m_normals[vertex_pointer] << " ";
 			}
-			else if ( (property_name == "ny") || (property_name == "ny") )
+			else if ( (property_name == "y") || (property_name == "ny") )
 			{
 				out << m_normals[vertex_pointer + 1] << " ";
 			}
-			else if ( (property_name == "nz") || (property_name == "nz") )
+			else if ( (property_name == "z") || (property_name == "nz") )
 			{
 				out << m_normals[vertex_pointer + 2] << " ";
 			}
