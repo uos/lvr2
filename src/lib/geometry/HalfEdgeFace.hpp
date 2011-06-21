@@ -93,6 +93,16 @@ public:
 	VertexT getCentroid();
 
 	/**
+	 * @brief	Indexed edge access (reading)
+	 */
+	virtual HalfEdge<HalfEdgeVertex<VertexT, NormalT>, HalfEdgeFace<VertexT, NormalT> >* operator[](const int &index) const;
+
+	/**
+	 * @brief	Indexed vertex access (reading)
+	 */
+	virtual HalfEdgeVertex<VertexT, NormalT>* operator()(const int &index) const;
+
+	/**
 	 * @brief Returns the size of the face
 	 */
 	float getArea();
