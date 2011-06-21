@@ -243,25 +243,6 @@ void HalfEdgeMesh<VertexT, NormalT>::flipEdge(HEdge* edge)
 		newPair->next->face = newPair->face;
 		newPair->next->next->face = newPair->face;
 
-		//update face vertices
-		int old_vertices[6];
-		for (int i = 0; i<3; i++){
-			old_vertices[i] = newEdge->face->m_index[i];
-			old_vertices[i+3] = newPair->face->m_index[i];
-		}
-		HEdge* currEdge = newEdge;
-		HEdge* currPair = newPair;
-		for(int i = 0; i<3; i++)
-		{
-			for(int k = 0; k<6; k++)
-			{
-				if(currEdge->end == m_vertices[old_vertices[k]]) newEdge->face->m_index[i] = old_vertices[k];
-				if(currPair->end == m_vertices[old_vertices[k]]) newPair->face->m_index[i] = old_vertices[k];
-			}
-			currEdge = currEdge->next;
-			currPair = currPair->next;
-		}
-
 		//recalculate face normals
 		newEdge->face->calc_normal();
 		newPair->face->calc_normal();
