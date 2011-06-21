@@ -189,7 +189,8 @@ VertexT HalfEdgeFace<VertexT, NormalT>::getCentroid(){
 }
 
 template<typename VertexT, typename NormalT>
-HalfEdge<HalfEdgeVertex<VertexT, NormalT>, HalfEdgeFace<VertexT, NormalT> >* HalfEdgeFace<VertexT, NormalT>::operator[](const int &index) const{
+HalfEdge<HalfEdgeVertex<VertexT, NormalT>, HalfEdgeFace<VertexT, NormalT> >* 
+HalfEdgeFace<VertexT, NormalT>::operator[](const int &index) const{
 	switch(index){
 	case 0:
 		return this->m_edge;
@@ -201,7 +202,8 @@ HalfEdge<HalfEdgeVertex<VertexT, NormalT>, HalfEdgeFace<VertexT, NormalT> >* Hal
 }
 
 template<typename VertexT, typename NormalT>
-HalfEdgeVertex<VertexT, NormalT>* HalfEdgeFace<VertexT, NormalT>::operator()(const int &index) const{
+HalfEdgeVertex<VertexT, NormalT>* 
+HalfEdgeFace<VertexT, NormalT>::operator()(const int &index) const{
 	switch(index){
 	case 0:
 		return this->m_edge->end;
