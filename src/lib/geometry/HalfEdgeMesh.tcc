@@ -179,12 +179,12 @@ template<typename VertexT, typename NormalT>
 void HalfEdgeMesh<VertexT, NormalT>::deleteFace(HFace* f)
 {
 	//save references to edges and vertices
-	HEdge* startEdge = f[0];
-	HEdge* nextEdge  = f[1];
-	HEdge* lastEdge  = f[2];
-	HVertex* p1 = f(0);
-	HVertex* p2 = f(1);
-	HVertex* p3 = f(2);
+	HEdge* startEdge = (*f)[0];
+	HEdge* nextEdge  = (*f)[1];
+	HEdge* lastEdge  = (*f)[2];
+	HVertex* p1 = (*f)(0);
+	HVertex* p2 = (*f)(1);
+	HVertex* p3 = (*f)(2);
 
 	startEdge->face = 0;
 	nextEdge->face = 0;
@@ -454,9 +454,9 @@ void HalfEdgeMesh<VertexT, NormalT>::finalize()
 	
 	for(size_t i = 0; face_iter != face_end; ++i, ++face_iter)
 	{
-		//this->m_indexBuffer[3 * i]      = index_map[face_iter->(0)];
-		//this->m_indexBuffer[3 * i + 1]  = index_map[(*face_iter).(1)];
-		//this->m_indexBuffer[3 * i + 2]  = index_map[(*face_iter).(2)];
+		this->m_indexBuffer[3 * i]      = index_map[(*(*face_iter))(0)];
+		this->m_indexBuffer[3 * i + 1]  = index_map[(*(*face_iter))(1)];
+		this->m_indexBuffer[3 * i + 2]  = index_map[(*(*face_iter))(2)];
 
 		// TODO: Think of classification
 		//int surface_class = classifyFace(he_faces[i]);
