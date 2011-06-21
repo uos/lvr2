@@ -188,5 +188,30 @@ VertexT HalfEdgeFace<VertexT, NormalT>::getCentroid(){
 	return centroid;
 }
 
+template<typename VertexT, typename NormalT>
+HalfEdge<HalfEdgeVertex<VertexT, NormalT>, HalfEdgeFace<VertexT, NormalT> >* HalfEdgeFace<VertexT, NormalT>::operator[](const int &index) const{
+	switch(index){
+	case 0:
+		return this->m_edge;
+	case 1:
+		return this->m_edge->next;
+	case 2:
+		return this->m_edge->next->next;
+	}
+}
+
+template<typename VertexT, typename NormalT>
+HalfEdgeVertex<VertexT, NormalT>* HalfEdgeFace<VertexT, NormalT>::operator()(const int &index) const{
+	switch(index){
+	case 0:
+		return this->m_edge->end;
+	case 1:
+		return this->m_edge->next->end;
+	case 2:
+		return this->m_edge->next->next->end;
+	}
+}
+
+
 } // namespace lssr
 

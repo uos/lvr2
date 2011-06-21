@@ -177,6 +177,140 @@ void HalfEdgeMesh<VertexT, NormalT>::addTriangle(uint a, uint b, uint c)
 }
 
 template<typename VertexT, typename NormalT>
+void HalfEdgeMesh<VertexT, NormalT>::deleteFace(HFace* f)
+{
+	//save references to edges and vertices
+	HEdge* startEdge = f[0];
+	HEdge* nextEdge  = f[1];
+	HEdge* lastEdge  = f[2];
+	HVertex* p1 = f(0);
+	HVertex* p2 = f(1);
+	HVertex* p3 = f(2);
+
+	startEdge->face = 0;
+	nextEdge->face = 0;
+	lastEdge->face = 0;
+
+	typename vector<HEdge*>::iterator it;
+
+	if(startEdge->pair->face == 0)
+	{
+		//delete references from vertices to edges
+		it = p1->in.begin();
+		while(*it != startEdge) it++;
+		p1->in.erase(it);
+
+		it = p1->out.begin();
+		while(*it != startEdge->pair) it++;
+		p1->out.erase(it);
+
+		it = p3->in.begin();
+		while(*it != startEdge->pair) it++;
+		p3->in.erase(it);
+
+		it = p3->out.begin();
+		while(*it != startEdge) it++;
+		p3->out.erase(it);
+
+		//delete edge and pair
+		delete startEdge->pair;
+		delete startEdge;
+
+		if(p1->out.size()==0)
+		{
+			delete p1;
+			cout << "deleted P1" << endl;
+		}
+
+		if(p3->out.size()==0)
+		{
+			delete p3;
+			cout << "deleted P3" << endl;
+		}
+	}
+
+	if(nextEdge->pair->face == 0)
+	{
+		//delete references from vertices to edges
+		it = p2->in.begin();
+		while(*it != nextEdge) it++;
+		p2->in.erase(it);
+
+		it = p2->out.begin();
+		while(*it != nextEdge->pair) it++;
+		p2->out.erase(it);
+
+		it = p1->in.begin();
+		while(*it != nextEdge->pair) it++;
+		p1->in.erase(it);
+
+		it = p1->out.begin();
+		while(*it != nextEdge) it++;
+		p1->out.erase(it);
+
+		//delete edge and pair
+		delete nextEdge->pair;
+		delete nextEdge;
+
+		if(p1->out.size()==0)
+		{
+			delete p1;
+			cout << "deleted P1" << endl;
+		}
+
+		if(p2->out.size()==0)
+		{
+			delete p2;
+			cout << "deleted P2" << endl;
+		}
+	}
+
+	if(lastEdge->pair->face == 0)
+	{
+		//delete references from vertices to edges
+		it = p3->in.begin();
+		while(*it != lastEdge) it++;
+		p3->in.erase(it);
+
+		it = p3->out.begin();
+		while(*it != lastEdge->pair) it++;
+		p3->out.erase(it);
+
+		it = p2->in.begin();
+		while(*it != lastEdge->pair) it++;
+		p2->in.erase(it);
+
+		it = p2->out.begin();
+		while(*it != lastEdge) it++;
+		p2->out.erase(it);
+
+		//delete edge and pair
+		delete lastEdge->pair;
+		delete lastEdge;
+
+		if(p3->out.size()==0)
+		{
+			delete p3;
+			cout << "deleted P3" << endl;
+		}
+
+		if(p2->out.size()==0)
+		{
+			delete p2;
+			cout << "deleted P2" << endl;
+		}
+	}
+
+	typename	vector<HalfEdgeFace<VertexT, NormalT>*>::iterator face_iter = m_faces.begin();
+	while(*face_iter != f)
+		face_iter++;
+
+	m_faces.erase(face_iter);
+	delete f;
+}
+
+
+template<typename VertexT, typename NormalT>
 void HalfEdgeMesh<VertexT, NormalT>::flipEdge(HFace* f1, HFace* f2)
 {
 	HEdge* commonEdge = 0;
