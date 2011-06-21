@@ -19,8 +19,8 @@ HalfEdgeFace<VertexT, NormalT>::HalfEdgeFace(const HalfEdgeFace<VertexT, NormalT
 	m_edge = o.m_edge;
 	m_used = o.m_used;
 
-	for(size_t i = 0; i < o.m_indices.size(); i++) m_indices.push_back(o.m_indices[i]);
-	for(int i = 0; i < 3; i++) m_index[i] = o.m_index[i];
+	//for(size_t i = 0; i < o.m_indices.size(); i++) m_indices.push_back(o.m_indices[i]);
+	//for(int i = 0; i < 3; i++) m_index[i] = o.m_index[i];
 }
 
 template<typename VertexT, typename NormalT>

@@ -164,9 +164,9 @@ void HalfEdgeMesh<VertexT, NormalT>::addTriangle(uint a, uint b, uint c)
 	face->calc_normal();
 	m_faces.push_back(face);
 	face->m_face_index = m_faces.size();
-	face->m_index[0] = a;
-	face->m_index[1] = b;
-	face->m_index[2] = c;
+	//face->m_index[0] = a;
+	//face->m_index[1] = b;
+	//face->m_index[2] = c;
 
 //	if(a == 0) {
 //		last_normal = face->normal;

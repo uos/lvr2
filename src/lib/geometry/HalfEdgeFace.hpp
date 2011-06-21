@@ -114,10 +114,10 @@ public:
 	bool 							m_used;
 
 	/// A vector containing the indices of face vertices (currently redundant)
-	vector<int> 					m_indices;
+	//vector<int> 					m_indices;
 
 	/// A three pointers to the face vertices
-	int 							m_index[3];
+	//int 							m_index[3];
 
 	/// The index of the face's texture
 	int 							m_texture_index;
