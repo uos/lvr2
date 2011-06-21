@@ -130,7 +130,8 @@ private:
 	vector<HalfEdgeFace<VertexT, NormalT>*>    m_faces;
 
 	/// The vertices of the mesh
-	vector<HalfEdgeVertex<VertexT, NormalT>*>  m_vertices;
+	//vector<HalfEdgeVertex<VertexT, NormalT>*>  m_vertices;
+	boost::unordered_map<int, HalfEdgeVertex<VertexT, NormalT>*> m_vertices;
 
 	/// The indexed of the newest inserted vertex
 	int 					 m_globalIndex;
