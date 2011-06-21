@@ -95,6 +95,14 @@ public:
 
 
 	/**
+	 * @brief	Delete a face from the mesh
+	 * 			Also deletes dangling vertices and Edges
+	 *
+	 * @param	f		The face to be deleted
+	 */
+	virtual void deleteFace(HFace* f);
+
+	/**
 	 * @brief	Flip the edge between f1 and f2
 	 *
 	 * @param	f1		The first face
