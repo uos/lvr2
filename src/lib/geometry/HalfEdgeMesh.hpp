@@ -101,6 +101,13 @@ public:
 	 */
 	virtual void addTriangle(uint a, uint b, uint c);
 
+	/**
+	 * @brief	Delete the given edge
+	 *
+	 * @param	edge		The edge to delete
+	 * @param	deletePair	Whether to delete edge->pair or not
+	 */
+	virtual void deleteEdge(HEdge* edge, bool deletePair = true);
 
 	/**
 	 * @brief	Delete a face from the mesh
