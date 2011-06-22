@@ -189,19 +189,11 @@ void HalfEdgeMesh<VertexT, NormalT>::addTriangle(uint a, uint b, uint c)
 template<typename VertexT, typename NormalT>
 void HalfEdgeMesh<VertexT, NormalT>::addFace(HVertex* v1, HVertex* v2, HVertex* v3)
 {
-
-	v1 = m_faces[30]->m_edge->end;
-	v2 = m_faces[30]->m_edge->next->end;
-	v3 = m_faces[31]->m_edge->end;
-
 	HFace* f = new HFace;
 
 	HEdge* v1v2 = 0;
-	HEdge* v2v1 = 0;	//pair
 	HEdge* v2v3 = 0;
-	HEdge* v3v2 = 0;	//pair
 	HEdge* v3v1 = 0;
-	HEdge* v1v3 = 0;	//pair
 
 	HEdge* current = 0;
 
@@ -209,7 +201,7 @@ void HalfEdgeMesh<VertexT, NormalT>::addFace(HVertex* v1, HVertex* v2, HVertex* 
 	if((current = halfEdgeToVertex(v1, v2)) == 0)
 	{
 		v1v2 = new HEdge;
-		v2v1 = new HEdge;
+		HEdge* v2v1 = new HEdge;
 
 		v1v2->start = v1;
 		v1v2->end = v2;
@@ -231,10 +223,11 @@ void HalfEdgeMesh<VertexT, NormalT>::addFace(HVertex* v1, HVertex* v2, HVertex* 
 		else v1v2 = current->pair;
 	}
 
+	//check if edge exists between v2, v3 if not add a new one
 	if((current = halfEdgeToVertex(v2, v3)) == 0)
 	{
 		v2v3 = new HEdge;
-		v3v2 = new HEdge;
+		HEdge* v3v2 = new HEdge;
 
 		v2v3->start = v2;
 		v2v3->end = v3;
@@ -256,10 +249,11 @@ void HalfEdgeMesh<VertexT, NormalT>::addFace(HVertex* v1, HVertex* v2, HVertex* 
 		else v2v3 = current->pair;
 	}
 
+	//check if edge exists between v3, v1 if not add a new one
 	if((current = halfEdgeToVertex(v3, v1)) == 0)
 	{
 		v3v1 = new HEdge;
-		v1v3 = new HEdge;
+		HEdge* v1v3 = new HEdge;
 
 		v3v1->start = v3;
 		v3v1->end = v1;
@@ -281,7 +275,7 @@ void HalfEdgeMesh<VertexT, NormalT>::addFace(HVertex* v1, HVertex* v2, HVertex* 
 		else v3v1 = current->pair;
 	}
 
-
+	// set next pointers
 	typename vector<HEdge*>::iterator it;
 	it = v1v2->end->out.begin();
 	while(it != v1v2->end->out.end() && *it != v2v3) it++;
@@ -299,7 +293,10 @@ void HalfEdgeMesh<VertexT, NormalT>::addFace(HVertex* v1, HVertex* v2, HVertex* 
 
 	v1v2->next->next->next = v1v2;
 
+	//set face->m_edge
 	f->m_edge = v1v2;
+
+	//set face pointers
 	current = v1v2;
 	for(int k = 0; k<3; k++,current = current->next)
 		current->face = f;
