@@ -136,9 +136,6 @@ private:
 	/// The indexed of the newest inserted vertex
 	int 					 m_globalIndex;
 
-	/// A map containing information whenever a vertex changes its indize
-	boost::unordered_map<int, int> m_index_map;
-
 	void printStats();
 
 //	void check_next_neighbor(HalfEdgeFace* f0,
