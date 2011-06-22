@@ -8,14 +8,6 @@
 #ifndef HALFEDGEMESH_H_
 #define HALFEDGEMESH_H_
 
-#ifdef _MSC_VER
-#include <hash_map>
-using stdext::hash_map;
-#else
-#include <ext/hash_map>
-using __gnu_cxx::hash_map;
-#endif
-
 #include <boost/unordered_map.hpp>
 
 #include <vector>
@@ -100,6 +92,15 @@ public:
 	 * @param	c		The third vertex of the triangle
 	 */
 	virtual void addTriangle(uint a, uint b, uint c);
+
+	/**
+	 *  @brief	Adds a new face
+	 *
+	 *  @param	v1	First vertex of the new face
+	 *  @param	v2	Second vertex of the new face
+	 *  @param	v3	Third vertex of the new face
+	 */
+	virtual void addFace(HVertex* v1, HVertex* v2, HVertex* v3);
 
 	/**
 	 * @brief	Delete the given edge
