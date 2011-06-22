@@ -75,6 +75,14 @@ public:
 	virtual void addVertex(VertexT v);
 
 	/**
+	 * @brief	This method should be called every time
+	 * 			a vertex is deleted
+	 *
+	 * @param	v	The vertex to delete.
+	 */
+	virtual void deleteVertex(HVertex* v);
+
+	/**
 	 * @brief 	This method should be called every time
 	 * 			a new vertex is created to ensure that vertex
 	 * 			and normal buffer always have the same size
@@ -131,7 +139,7 @@ private:
 
 	/// The vertices of the mesh
 	//vector<HalfEdgeVertex<VertexT, NormalT>*>  m_vertices;
-	boost::unordered_map<int, HalfEdgeVertex<VertexT, NormalT>*> m_vertices;
+	vector<HalfEdgeVertex<VertexT, NormalT>*> m_vertices;
 
 	/// The indexed of the newest inserted vertex
 	int 					 m_globalIndex;
