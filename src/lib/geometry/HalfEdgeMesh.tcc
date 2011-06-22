@@ -205,26 +205,8 @@ void HalfEdgeMesh<VertexT, NormalT>::deleteFace(HFace* f)
 
 	if(startEdge->pair->face == 0)
 	{
-		//delete references from vertices to edges
-		it = p1->in.begin();
-		while(*it != startEdge) it++;
-		p1->in.erase(it);
-
-		it = p1->out.begin();
-		while(*it != startEdge->pair) it++;
-		p1->out.erase(it);
-
-		it = p3->in.begin();
-		while(*it != startEdge->pair) it++;
-		p3->in.erase(it);
-
-		it = p3->out.begin();
-		while(*it != startEdge) it++;
-		p3->out.erase(it);
-
 		//delete edge and pair
-		delete startEdge->pair;
-		delete startEdge;
+		deleteEdge(startEdge);
 
 		if(p1->out.size()==0) deleteVertex(p1);
 		if(p3->out.size()==0) deleteVertex(p3);
@@ -232,26 +214,8 @@ void HalfEdgeMesh<VertexT, NormalT>::deleteFace(HFace* f)
 
 	if(nextEdge->pair->face == 0)
 	{
-		//delete references from vertices to edges
-		it = p2->in.begin();
-		while(*it != nextEdge) it++;
-		p2->in.erase(it);
-
-		it = p2->out.begin();
-		while(*it != nextEdge->pair) it++;
-		p2->out.erase(it);
-
-		it = p1->in.begin();
-		while(*it != nextEdge->pair) it++;
-		p1->in.erase(it);
-
-		it = p1->out.begin();
-		while(*it != nextEdge) it++;
-		p1->out.erase(it);
-
 		//delete edge and pair
-		delete nextEdge->pair;
-		delete nextEdge;
+		deleteEdge(nextEdge);
 
 		if(p1->out.size()==0) deleteVertex(p1);
 		if(p2->out.size()==0) deleteVertex(p2);
@@ -259,37 +223,50 @@ void HalfEdgeMesh<VertexT, NormalT>::deleteFace(HFace* f)
 
 	if(lastEdge->pair->face == 0)
 	{
-		//delete references from vertices to edges
-		it = p3->in.begin();
-		while(*it != lastEdge) it++;
-		p3->in.erase(it);
-
-		it = p3->out.begin();
-		while(*it != lastEdge->pair) it++;
-		p3->out.erase(it);
-
-		it = p2->in.begin();
-		while(*it != lastEdge->pair) it++;
-		p2->in.erase(it);
-
-		it = p2->out.begin();
-		while(*it != lastEdge) it++;
-		p2->out.erase(it);
-
 		//delete edge and pair
-		delete lastEdge->pair;
-		delete lastEdge;
+		deleteEdge(lastEdge);
 
 		if(p3->out.size()==0) deleteVertex(p3);
 		if(p2->out.size()==0) deleteVertex(p2);
 	}
 
+	//delete face
 	typename	vector<HalfEdgeFace<VertexT, NormalT>*>::iterator face_iter = m_faces.begin();
-	while(*face_iter != f)
-		face_iter++;
-
+	while(*face_iter != f) face_iter++;
 	m_faces.erase(face_iter);
 	delete f;
+}
+
+template<typename VertexT, typename NormalT>
+void HalfEdgeMesh<VertexT, NormalT>::deleteEdge(HEdge* edge, bool deletePair)
+{
+	typename vector<HEdge*>::iterator it;
+
+	//delete references from start point to outgoing edge
+	it = edge->start->out.begin();
+	while(*it != edge) it++;
+	edge->start->out.erase(it);
+
+	//delete references from end point to incoming edge
+	it = edge->end->in.begin();
+	while(*it != edge) it++;
+	edge->end->in.erase(it);
+
+	if(deletePair)
+	{
+		//delete references from start point to outgoing edge
+		it = edge->pair->start->out.begin();
+		while(*it != edge->pair) it++;
+		edge->pair->start->out.erase(it);
+
+		//delete references from end point to incoming edge
+		it = edge->pair->end->in.begin();
+		while(*it != edge->pair) it++;
+		edge->pair->end->in.erase(it);
+
+		delete edge->pair;
+	}
+	delete edge;
 }
 
 template<typename VertexT, typename NormalT>
@@ -307,60 +284,19 @@ void HalfEdgeMesh<VertexT, NormalT>::collapseEdge(HEdge* edge)
 
 	if (edge->face != 0)
 	{
-		it = edge->next->next->start->out.begin();
-		while(*it != edge->next->next) it++;
-		edge->next->next->start->out.erase(it);
-		it = edge->next->next->end->in.begin();
-		while(*it != edge->next->next) it++;
-		edge->next->next->end->in.erase(it);
 		edge->next->next->pair->pair = edge->next->pair;
-
-		it = edge->next->start->out.begin();
-		while(*it != edge->next) it++;
-		edge->next->start->out.erase(it);
-		it = edge->next->end->in.begin();
-		while(*it != edge->next) it++;
-		edge->next->end->in.erase(it);
 		edge->next->pair->pair = edge->next->next->pair;
-		delete (edge->next->next);
-		delete (edge->next);
+		deleteEdge(edge->next->next, false);
+		deleteEdge(edge->next, false);
 	}
 
 	if (edge->pair->face != 0)
 	{
-		it = edge->pair->next->next->start->out.begin();
-		while(*it != edge->pair->next->next) it++;
-		edge->pair->next->next->start->out.erase(it);
-		it = edge->pair->next->next->end->in.begin();
-		while(*it != edge->pair->next->next) it++;
-		edge->pair->next->next->end->in.erase(it);
 		edge->pair->next->next->pair->pair = edge->pair->next->pair;
-
-		it = edge->pair->next->start->out.begin();
-		while(*it != edge->pair->next) it++;
-		edge->pair->next->start->out.erase(it);
-		it = edge->pair->next->end->in.begin();
-		while(*it != edge->pair->next) it++;
-		edge->pair->next->end->in.erase(it);
 		edge->pair->next->pair->pair = edge->pair->next->next->pair;
-		delete (edge->pair->next->next);
-		delete (edge->pair->next);
+		deleteEdge(edge->pair->next->next, false);
+		deleteEdge(edge->pair->next, false);
 	}
-	it = edge->start->out.begin();
-	while(*it != edge) it++;
-	edge->start->out.erase(it);
-
-	it = edge->end->in.begin();
-	while(*it != edge) it++;
-	edge->end->in.erase(it);
-
-	it = edge->pair->start->out.begin();
-	while(*it != edge->pair) it++;
-	edge->pair->start->out.erase(it);
-
-	it = edge->pair->end->in.begin();
-	while(*it != edge->pair) it++;
-	edge->pair->end->in.erase(it);
 
 	// Delete faces
 	typename	vector<HalfEdgeFace<VertexT, NormalT>*>::iterator face_iter;
@@ -379,8 +315,8 @@ void HalfEdgeMesh<VertexT, NormalT>::collapseEdge(HEdge* edge)
 		delete edge->face;
 	}
 
-	delete edge->pair;
-	delete edge;
+	//Delete edge and its' pair
+	deleteEdge(edge);
 
 	//Update incoming and outgoing edges of p1
 	it = p2->out.begin();
@@ -475,26 +411,7 @@ void HalfEdgeMesh<VertexT, NormalT>::flipEdge(HEdge* edge)
 		newPair->face->calc_normal();
 
 		//delete the old edge
-		typename vector<HEdge*>::iterator it;
-
-		it = edge->start->out.begin();
-		while(*it != edge) it++;
-		edge->start->out.erase(it);
-
-		it = edge->end->in.begin();
-		while(*it != edge) it++;
-		edge->end->in.erase(it);
-
-		it = edge->pair->start->out.begin();
-		while(*it != edge->pair) it++;
-		edge->pair->start->out.erase(it);
-
-		it = edge->pair->end->in.begin();
-		while(*it != edge->pair) it++;
-		edge->pair->end->in.erase(it);
-
-		delete edge->pair;
-		delete edge;
+		deleteEdge(edge);
 	}
 }
 
