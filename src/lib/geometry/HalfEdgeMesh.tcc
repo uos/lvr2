@@ -194,6 +194,7 @@ void HalfEdgeMesh<VertexT, NormalT>::deleteFace(HFace* f)
 	lastEdge->face = 0;
 
 	typename vector<HEdge*>::iterator it;
+	typename boost::unordered_map<int, HalfEdgeVertex<VertexT, NormalT>*>::iterator vertices_iter;
 
 	if(startEdge->pair->face == 0)
 	{
@@ -220,14 +221,18 @@ void HalfEdgeMesh<VertexT, NormalT>::deleteFace(HFace* f)
 
 		if(p1->out.size()==0)
 		{
+			vertices_iter = m_vertices.begin();
+			while(vertices_iter->second != p1) vertices_iter++;
+			m_vertices.erase(vertices_iter);
 			delete p1;
-			cout << "deleted P1" << endl;
 		}
 
 		if(p3->out.size()==0)
 		{
+			vertices_iter = m_vertices.begin();
+			while(vertices_iter->second != p3) vertices_iter++;
+			m_vertices.erase(vertices_iter);
 			delete p3;
-			cout << "deleted P3" << endl;
 		}
 	}
 
@@ -256,14 +261,18 @@ void HalfEdgeMesh<VertexT, NormalT>::deleteFace(HFace* f)
 
 		if(p1->out.size()==0)
 		{
+			vertices_iter = m_vertices.begin();
+			while(vertices_iter->second != p1) vertices_iter++;
+			m_vertices.erase(vertices_iter);
 			delete p1;
-			cout << "deleted P1" << endl;
 		}
 
 		if(p2->out.size()==0)
 		{
+			vertices_iter = m_vertices.begin();
+			while(vertices_iter->second != p2) vertices_iter++;
+			m_vertices.erase(vertices_iter);
 			delete p2;
-			cout << "deleted P2" << endl;
 		}
 	}
 
@@ -292,14 +301,18 @@ void HalfEdgeMesh<VertexT, NormalT>::deleteFace(HFace* f)
 
 		if(p3->out.size()==0)
 		{
+			vertices_iter = m_vertices.begin();
+			while(vertices_iter->second != p3) vertices_iter++;
+			m_vertices.erase(vertices_iter);
 			delete p3;
-			cout << "deleted P3" << endl;
 		}
 
 		if(p2->out.size()==0)
 		{
+			vertices_iter = m_vertices.begin();
+			while(vertices_iter->second != p2) vertices_iter++;
+			m_vertices.erase(vertices_iter);
 			delete p2;
-			cout << "deleted P2" << endl;
 		}
 	}
 
@@ -410,6 +423,7 @@ void HalfEdgeMesh<VertexT, NormalT>::flipEdge(HEdge* edge)
 template<typename VertexT, typename NormalT>
 void HalfEdgeMesh<VertexT, NormalT>::finalize()
 {
+	cout<<"Number of vertices: "<<(uint32_t)m_vertices.size()<<" Number of faces: "<<(uint32_t)m_faces.size()<<endl;
 	boost::unordered_map<HalfEdgeVertex<VertexT, NormalT>*, int> index_map;
 
 	this->m_nVertices 		= (uint32_t)m_vertices.size();
