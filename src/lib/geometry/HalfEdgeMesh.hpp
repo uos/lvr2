@@ -16,6 +16,8 @@ using stdext::hash_map;
 using __gnu_cxx::hash_map;
 #endif
 
+#include <boost/unordered_map.hpp>
+
 #include <vector>
 #include <stack>
 #include <set>
@@ -73,6 +75,14 @@ public:
 	virtual void addVertex(VertexT v);
 
 	/**
+	 * @brief	This method should be called every time
+	 * 			a vertex is deleted
+	 *
+	 * @param	v	The vertex to delete.
+	 */
+	virtual void deleteVertex(HVertex* v);
+
+	/**
 	 * @brief 	This method should be called every time
 	 * 			a new vertex is created to ensure that vertex
 	 * 			and normal buffer always have the same size
@@ -91,6 +101,14 @@ public:
 	 */
 	virtual void addTriangle(uint a, uint b, uint c);
 
+
+	/**
+	 * @brief	Delete a face from the mesh
+	 * 			Also deletes dangling vertices and Edges
+	 *
+	 * @param	f		The face to be deleted
+	 */
+	virtual void deleteFace(HFace* f);
 
 	/**
 	 * @brief	Flip the edge between f1 and f2
@@ -120,7 +138,8 @@ private:
 	vector<HalfEdgeFace<VertexT, NormalT>*>    m_faces;
 
 	/// The vertices of the mesh
-	vector<HalfEdgeVertex<VertexT, NormalT>*>  m_vertices;
+	//vector<HalfEdgeVertex<VertexT, NormalT>*>  m_vertices;
+	vector<HalfEdgeVertex<VertexT, NormalT>*> m_vertices;
 
 	/// The indexed of the newest inserted vertex
 	int 					 m_globalIndex;

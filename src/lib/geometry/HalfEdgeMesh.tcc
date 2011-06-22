@@ -41,6 +41,17 @@ void HalfEdgeMesh<VertexT, NormalT>::addVertex(VertexT v)
 }
 
 template<typename VertexT, typename NormalT>
+void HalfEdgeMesh<VertexT, NormalT>::deleteVertex(HVertex* v)
+{
+	// Delete HalfEdgeVertex and decrease vertex counter
+	typename vector<HVertex*>::iterator it = m_vertices.begin();
+	while(*it != v) it++;
+	m_vertices.erase(it);
+	m_globalIndex--;
+	delete v;
+}
+
+template<typename VertexT, typename NormalT>
 void HalfEdgeMesh<VertexT, NormalT>::addNormal(NormalT n)
 {
 	// Is a vertex exists at globalIndex, save normal
@@ -161,9 +172,9 @@ void HalfEdgeMesh<VertexT, NormalT>::addTriangle(uint a, uint b, uint c)
 	face->calc_normal();
 	m_faces.push_back(face);
 	face->m_face_index = m_faces.size();
-	face->m_index[0] = a;
-	face->m_index[1] = b;
-	face->m_index[2] = c;
+	//face->m_index[0] = a;
+	//face->m_index[1] = b;
+	//face->m_index[2] = c;
 
 //	if(a == 0) {
 //		last_normal = face->normal;
@@ -174,6 +185,113 @@ void HalfEdgeMesh<VertexT, NormalT>::addTriangle(uint a, uint b, uint c)
 //	}
 
 }
+
+template<typename VertexT, typename NormalT>
+void HalfEdgeMesh<VertexT, NormalT>::deleteFace(HFace* f)
+{
+	//save references to edges and vertices
+	HEdge* startEdge = (*f)[0];
+	HEdge* nextEdge  = (*f)[1];
+	HEdge* lastEdge  = (*f)[2];
+	HVertex* p1 = (*f)(0);
+	HVertex* p2 = (*f)(1);
+	HVertex* p3 = (*f)(2);
+
+	startEdge->face = 0;
+	nextEdge->face = 0;
+	lastEdge->face = 0;
+
+	typename vector<HEdge*>::iterator it;
+
+	if(startEdge->pair->face == 0)
+	{
+		//delete references from vertices to edges
+		it = p1->in.begin();
+		while(*it != startEdge) it++;
+		p1->in.erase(it);
+
+		it = p1->out.begin();
+		while(*it != startEdge->pair) it++;
+		p1->out.erase(it);
+
+		it = p3->in.begin();
+		while(*it != startEdge->pair) it++;
+		p3->in.erase(it);
+
+		it = p3->out.begin();
+		while(*it != startEdge) it++;
+		p3->out.erase(it);
+
+		//delete edge and pair
+		delete startEdge->pair;
+		delete startEdge;
+
+		if(p1->out.size()==0) deleteVertex(p1);
+		if(p3->out.size()==0) deleteVertex(p3);
+	}
+
+	if(nextEdge->pair->face == 0)
+	{
+		//delete references from vertices to edges
+		it = p2->in.begin();
+		while(*it != nextEdge) it++;
+		p2->in.erase(it);
+
+		it = p2->out.begin();
+		while(*it != nextEdge->pair) it++;
+		p2->out.erase(it);
+
+		it = p1->in.begin();
+		while(*it != nextEdge->pair) it++;
+		p1->in.erase(it);
+
+		it = p1->out.begin();
+		while(*it != nextEdge) it++;
+		p1->out.erase(it);
+
+		//delete edge and pair
+		delete nextEdge->pair;
+		delete nextEdge;
+
+		if(p1->out.size()==0) deleteVertex(p1);
+		if(p2->out.size()==0) deleteVertex(p2);
+	}
+
+	if(lastEdge->pair->face == 0)
+	{
+		//delete references from vertices to edges
+		it = p3->in.begin();
+		while(*it != lastEdge) it++;
+		p3->in.erase(it);
+
+		it = p3->out.begin();
+		while(*it != lastEdge->pair) it++;
+		p3->out.erase(it);
+
+		it = p2->in.begin();
+		while(*it != lastEdge->pair) it++;
+		p2->in.erase(it);
+
+		it = p2->out.begin();
+		while(*it != lastEdge) it++;
+		p2->out.erase(it);
+
+		//delete edge and pair
+		delete lastEdge->pair;
+		delete lastEdge;
+
+		if(p3->out.size()==0) deleteVertex(p3);
+		if(p2->out.size()==0) deleteVertex(p2);
+	}
+
+	typename	vector<HalfEdgeFace<VertexT, NormalT>*>::iterator face_iter = m_faces.begin();
+	while(*face_iter != f)
+		face_iter++;
+
+	m_faces.erase(face_iter);
+	delete f;
+}
+
 
 template<typename VertexT, typename NormalT>
 void HalfEdgeMesh<VertexT, NormalT>::flipEdge(HFace* f1, HFace* f2)
@@ -198,7 +316,7 @@ void HalfEdgeMesh<VertexT, NormalT>::flipEdge(HFace* f1, HFace* f2)
 template<typename VertexT, typename NormalT>
 void HalfEdgeMesh<VertexT, NormalT>::flipEdge(HEdge* edge)
 {
-	if (edge->pair != 0)
+	if (edge->pair->face != 0 && edge->face != 0)
 	{
 		HVertex* newEdgeStart = edge->next->end;
 		HVertex* newEdgeEnd = edge->pair->next->end;
@@ -242,25 +360,6 @@ void HalfEdgeMesh<VertexT, NormalT>::flipEdge(HEdge* edge)
 		newPair->next->face = newPair->face;
 		newPair->next->next->face = newPair->face;
 
-		//update face vertices
-		int old_vertices[6];
-		for (int i = 0; i<3; i++){
-			old_vertices[i] = newEdge->face->m_index[i];
-			old_vertices[i+3] = newPair->face->m_index[i];
-		}
-		HEdge* currEdge = newEdge;
-		HEdge* currPair = newPair;
-		for(int i = 0; i<3; i++)
-		{
-			for(int k = 0; k<6; k++)
-			{
-				if(currEdge->end == m_vertices[old_vertices[k]]) newEdge->face->m_index[i] = old_vertices[k];
-				if(currPair->end == m_vertices[old_vertices[k]]) newPair->face->m_index[i] = old_vertices[k];
-			}
-			currEdge = currEdge->next;
-			currPair = currPair->next;
-		}
-
 		//recalculate face normals
 		newEdge->face->calc_normal();
 		newPair->face->calc_normal();
@@ -292,9 +391,11 @@ void HalfEdgeMesh<VertexT, NormalT>::flipEdge(HEdge* edge)
 template<typename VertexT, typename NormalT>
 void HalfEdgeMesh<VertexT, NormalT>::finalize()
 {
-	cout << "Faces: " << m_faces.size() << " " << m_vertices.size() << endl;
-	this->m_nVertices 		= (uint)m_vertices.size();
-	this->m_nFaces 			= (uint)m_faces.size();
+	cout<<"Number of vertices: "<<(uint32_t)m_vertices.size()<<" Number of faces: "<<(uint32_t)m_faces.size()<<endl;
+	boost::unordered_map<HalfEdgeVertex<VertexT, NormalT>*, int> index_map;
+
+	this->m_nVertices 		= (uint32_t)m_vertices.size();
+	this->m_nFaces 			= (uint32_t)m_faces.size();
 
 	this->m_vertexBuffer 	= new float[3 * this->m_nVertices];
 	this->m_normalBuffer 	= new float[3 * this->m_nVertices];
@@ -302,27 +403,45 @@ void HalfEdgeMesh<VertexT, NormalT>::finalize()
 
 	this->m_indexBuffer 	= new unsigned int[3 * this->m_nFaces];
 
-	for(size_t i = 0; i <  m_vertices.size(); i++)
+	typename vector<HVertex*>::iterator vertices_iter = m_vertices.begin();
+	typename vector<HVertex*>::iterator vertices_end = m_vertices.end();
+	for(size_t i = 0; vertices_iter != vertices_end; ++i, ++vertices_iter)
 	{
-		this->m_vertexBuffer[3 * i] =     m_vertices[i]->m_position[0];
-		this->m_vertexBuffer[3 * i + 1] = m_vertices[i]->m_position[1];
-		this->m_vertexBuffer[3 * i + 2] = m_vertices[i]->m_position[2];
+		this->m_vertexBuffer[3 * i] =     (*vertices_iter)->m_position[0];
+		this->m_vertexBuffer[3 * i + 1] = (*vertices_iter)->m_position[1];
+		this->m_vertexBuffer[3 * i + 2] = (*vertices_iter)->m_position[2];
 
-		this->m_normalBuffer [3 * i] =     -m_vertices[i]->m_normal[0];
-		this->m_normalBuffer [3 * i + 1] = -m_vertices[i]->m_normal[1];
-		this->m_normalBuffer [3 * i + 2] = -m_vertices[i]->m_normal[2];
+		this->m_normalBuffer [3 * i] =     -(*vertices_iter)->m_normal[0];
+		this->m_normalBuffer [3 * i + 1] = -(*vertices_iter)->m_normal[1];
+		this->m_normalBuffer [3 * i + 2] = -(*vertices_iter)->m_normal[2];
 
 		this->m_colorBuffer  [3 * i] = 0.8;
 		this->m_colorBuffer  [3 * i + 1] = 0.8;
 		this->m_colorBuffer  [3 * i + 2] = 0.8;
+		//cout << "VERTEX: -------------------------------" << endl;
+		//cout << vertices_iter->second->m_position[0] << endl;
+		//cout << vertices_iter->second->m_position[1] << endl;
+		//cout << vertices_iter->second->m_position[2] << endl;
+
+		//cout << vertices_iter->second->m_normal[0] << endl;
+		//cout << vertices_iter->second->m_normal[1] << endl;
+		//cout << vertices_iter->second->m_normal[2] << endl;
+
+		//cout << (vertices_iter->first) << endl;
+		//cout << "END: ----------------------------------" << endl;
+
+		// map the old index to the new index in the vertexBuffer
+		index_map[*vertices_iter] = i;
 	}
-
-	for(size_t i = 0; i < m_faces.size(); i++)
+	typename vector<HalfEdgeFace<VertexT, NormalT>*>::iterator face_iter = m_faces.begin();
+	typename vector<HalfEdgeFace<VertexT, NormalT>*>::iterator face_end  = m_faces.end();
+	
+	for(size_t i = 0; face_iter != face_end; ++i, ++face_iter)
 	{
-		this->m_indexBuffer[3 * i]      = m_faces[i]->m_index[0];
-		this->m_indexBuffer[3 * i + 1]  = m_faces[i]->m_index[1];
-		this->m_indexBuffer[3 * i + 2]  = m_faces[i]->m_index[2];
-
+		this->m_indexBuffer[3 * i]      = index_map[(*(*face_iter))(0)];
+		this->m_indexBuffer[3 * i + 1]  = index_map[(*(*face_iter))(1)];
+		this->m_indexBuffer[3 * i + 2]  = index_map[(*(*face_iter))(2)];
+		
 		// TODO: Think of classification
 		//int surface_class = classifyFace(he_faces[i]);
 
@@ -372,7 +491,6 @@ void HalfEdgeMesh<VertexT, NormalT>::finalize()
 
 			break;
 		}
-
 	}
 
 	this->m_finalized = true;
@@ -542,7 +660,7 @@ void HalfEdgeMesh<VertexT, NormalT>::finalize()
 //	return false;
 //}
 
-//void HalfEdgeMesh::cluster(vector<planarCluster> &planes)
+//void HalfEdgeMesh::cluster(vector<planarCluster> &planes))
 //{
 //	for(size_t i = 0; i < he_faces.size(); i++)
 //	{
@@ -790,7 +908,7 @@ void HalfEdgeMesh<VertexT, NormalT>::finalize()
 //void HalfEdgeMesh::generate_polygons(){
 //
 //	vector<HalfEdgePolygon*>::iterator it;
-//	HalfEdgePolygon* polygon;
+//	HalfEdgePolygon* polygon;)
 //
 //	for(it =  hem_polygons.begin();
 //		it != hem_polygons.end();

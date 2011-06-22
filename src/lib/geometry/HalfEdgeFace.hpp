@@ -93,6 +93,16 @@ public:
 	VertexT getCentroid();
 
 	/**
+	 * @brief	Indexed edge access (reading)
+	 */
+	virtual HalfEdge<HalfEdgeVertex<VertexT, NormalT>, HalfEdgeFace<VertexT, NormalT> >* operator[](const int &index) const;
+
+	/**
+	 * @brief	Indexed vertex access (reading)
+	 */
+	virtual HalfEdgeVertex<VertexT, NormalT>* operator()(const int &index) const;
+
+	/**
 	 * @brief Returns the size of the face
 	 */
 	float getArea();
@@ -104,10 +114,10 @@ public:
 	bool 							m_used;
 
 	/// A vector containing the indices of face vertices (currently redundant)
-	vector<int> 					m_indices;
+	//vector<int> 					m_indices;
 
 	/// A three pointers to the face vertices
-	int 							m_index[3];
+	//int 							m_index[3];
 
 	/// The index of the face's texture
 	int 							m_texture_index;
