@@ -292,6 +292,101 @@ void HalfEdgeMesh<VertexT, NormalT>::deleteFace(HFace* f)
 	delete f;
 }
 
+template<typename VertexT, typename NormalT>
+void HalfEdgeMesh<VertexT, NormalT>::collapseEdge(HEdge* edge)
+{
+	edge = m_faces[21]->m_edge;
+
+	// Save start and end vertex
+	HVertex* p1 = edge->start;
+	HVertex* p2 = edge->end;
+
+	// Move p1 to the center between p1 and p2 (recycle p1)
+	p1->m_position = (p1->m_position + p2->m_position)*0.5;
+
+	// Delete faces
+	if(edge->pair->face != 0) deleteFace(edge->pair->face);
+	if(edge->face != 0) deleteFace(edge->face);
+
+	//Delete redundant edges
+	typename vector<HEdge*>::iterator it;
+
+	it = edge->next->next->start->out.begin();
+	while(*it != edge->next->next) it++;
+	edge->next->next->start->out.erase(it);
+	it = edge->next->next->end->in.begin();
+	while(*it != edge->next->next) it++;
+	edge->next->next->end->in.erase(it);
+	edge->next->next->pair->pair = edge->next->pair;
+
+	it = edge->next->start->out.begin();
+	while(*it != edge->next) it++;
+	edge->next->start->out.erase(it);
+	it = edge->next->end->in.begin();
+	while(*it != edge->next) it++;
+	edge->next->end->in.erase(it);
+	edge->next->pair->pair = edge->next->next->pair;
+	delete (edge->next->next);
+	delete (edge->next);
+
+
+	it = edge->pair->next->next->start->out.begin();
+	while(*it != edge->pair->next->next) it++;
+	edge->pair->next->next->start->out.erase(it);
+	it = edge->pair->next->next->end->in.begin();
+	while(*it != edge->pair->next->next) it++;
+	edge->pair->next->next->end->in.erase(it);
+	edge->pair->next->next->pair->pair = edge->pair->next->pair;
+
+	it = edge->pair->next->start->out.begin();
+	while(*it != edge->pair->next) it++;
+	edge->pair->next->start->out.erase(it);
+	it = edge->pair->next->end->in.begin();
+	while(*it != edge->pair->next) it++;
+	edge->pair->next->end->in.erase(it);
+	edge->pair->next->pair->pair = edge->pair->next->next->pair;
+	delete (edge->pair->next->next);
+	delete (edge->pair->next);
+
+	it = edge->start->out.begin();
+	while(*it != edge) it++;
+	edge->start->out.erase(it);
+
+	it = edge->end->in.begin();
+	while(*it != edge) it++;
+	edge->end->in.erase(it);
+
+	it = edge->pair->start->out.begin();
+	while(*it != edge->pair) it++;
+	edge->pair->start->out.erase(it);
+
+	it = edge->pair->end->in.begin();
+	while(*it != edge->pair) it++;
+	edge->pair->end->in.erase(it);
+
+	delete edge->pair;
+	delete edge;
+
+	//Update incoming and outgoing edges of p1
+	it = p2->out.begin();
+	while(it != p2->out.end())
+	{
+		(*it)->start = p1;
+		p1->out.push_back(*it);
+		it++;
+	}
+	it = p2->in.begin();
+	while(it != p2->in.end())
+	{
+		(*it)->end = p1;
+		p1->in.push_back(*it);
+		it++;
+	}
+
+	//Delete p2
+	deleteVertex(p2);
+}
+
 
 template<typename VertexT, typename NormalT>
 void HalfEdgeMesh<VertexT, NormalT>::flipEdge(HFace* f1, HFace* f2)

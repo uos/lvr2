@@ -111,6 +111,13 @@ public:
 	virtual void deleteFace(HFace* f);
 
 	/**
+	 * @brief	Collapse the given edge
+	 *
+	 * @param	edge	The edge to collapse
+	 */
+	virtual void collapseEdge(HEdge* edge);
+
+	/**
 	 * @brief	Flip the edge between f1 and f2
 	 *
 	 * @param	f1		The first face
