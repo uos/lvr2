@@ -52,11 +52,11 @@ PointCloud::PointCloud(string filename) : Renderable(filename) {
 		/* Read colors from last three values. */
 		if ( read_color ) {
 			in >> r >> g >> b;
-			ColorVertex v( x, y, z, (uchar) r, (uchar) g, (uchar) b );
+			ColorVertex v( x, -y, -z, (uchar) r, (uchar) g, (uchar) b );
 			m_boundingBox->expand( v );
 			points.push_back( v );
 		} else {
-			m_boundingBox->expand( x, y, z );
+			m_boundingBox->expand( x, -y, -z );
 			points.push_back( ColorVertex( x, y, z ) );
 		}
 
