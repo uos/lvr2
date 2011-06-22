@@ -23,6 +23,8 @@ REQUIRED LIBRARIES
   + BOOST Thread
   + Qt 4.6 or higher for viewer
   + libQGLViewer 2.3.9 or newe for qglviewer
+  (+) libxi6 (debian, maybe +additional headers and dev files)
+  (+) libxmu6 (debian, maybe +additional headers and dev files)
 
 USAGE
 =====
