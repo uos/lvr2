@@ -36,8 +36,19 @@ template<typename VertexT, typename NormalT>
 void HalfEdgeMesh<VertexT, NormalT>::addVertex(VertexT v)
 {
 	// Create new HalfEdgeVertex and increase vertex counter
-	m_vertices[m_globalIndex] = new HalfEdgeVertex<VertexT, NormalT>(v);
+	m_vertices.push_back(new HalfEdgeVertex<VertexT, NormalT>(v));
 	m_globalIndex++;
+}
+
+template<typename VertexT, typename NormalT>
+void HalfEdgeMesh<VertexT, NormalT>::deleteVertex(HVertex* v)
+{
+	// Delete HalfEdgeVertex and decrease vertex counter
+	typename vector<HVertex*>::iterator it = m_vertices.begin();
+	while(*it != v) it++;
+	m_vertices.erase(it);
+	m_globalIndex--;
+	delete v;
 }
 
 template<typename VertexT, typename NormalT>
@@ -72,9 +83,6 @@ HalfEdge<HalfEdgeVertex<VertexT, NormalT>, HalfEdgeFace<VertexT, NormalT> >* Hal
 template<typename VertexT, typename NormalT>
 void HalfEdgeMesh<VertexT, NormalT>::addTriangle(uint a, uint b, uint c)
 {
-	assert(m_vertices.find(a) != m_vertices.end());
-	assert(m_vertices.find(b) != m_vertices.end());
-	assert(m_vertices.find(c) != m_vertices.end());
 	// Create a new face
 	HFace* face = new HFace;
 	face->m_used = false;
@@ -194,7 +202,6 @@ void HalfEdgeMesh<VertexT, NormalT>::deleteFace(HFace* f)
 	lastEdge->face = 0;
 
 	typename vector<HEdge*>::iterator it;
-	typename boost::unordered_map<int, HalfEdgeVertex<VertexT, NormalT>*>::iterator vertices_iter;
 
 	if(startEdge->pair->face == 0)
 	{
@@ -219,21 +226,8 @@ void HalfEdgeMesh<VertexT, NormalT>::deleteFace(HFace* f)
 		delete startEdge->pair;
 		delete startEdge;
 
-		if(p1->out.size()==0)
-		{
-			vertices_iter = m_vertices.begin();
-			while(vertices_iter->second != p1) vertices_iter++;
-			m_vertices.erase(vertices_iter);
-			delete p1;
-		}
-
-		if(p3->out.size()==0)
-		{
-			vertices_iter = m_vertices.begin();
-			while(vertices_iter->second != p3) vertices_iter++;
-			m_vertices.erase(vertices_iter);
-			delete p3;
-		}
+		if(p1->out.size()==0) deleteVertex(p1);
+		if(p3->out.size()==0) deleteVertex(p3);
 	}
 
 	if(nextEdge->pair->face == 0)
@@ -259,21 +253,8 @@ void HalfEdgeMesh<VertexT, NormalT>::deleteFace(HFace* f)
 		delete nextEdge->pair;
 		delete nextEdge;
 
-		if(p1->out.size()==0)
-		{
-			vertices_iter = m_vertices.begin();
-			while(vertices_iter->second != p1) vertices_iter++;
-			m_vertices.erase(vertices_iter);
-			delete p1;
-		}
-
-		if(p2->out.size()==0)
-		{
-			vertices_iter = m_vertices.begin();
-			while(vertices_iter->second != p2) vertices_iter++;
-			m_vertices.erase(vertices_iter);
-			delete p2;
-		}
+		if(p1->out.size()==0) deleteVertex(p1);
+		if(p2->out.size()==0) deleteVertex(p2);
 	}
 
 	if(lastEdge->pair->face == 0)
@@ -299,21 +280,8 @@ void HalfEdgeMesh<VertexT, NormalT>::deleteFace(HFace* f)
 		delete lastEdge->pair;
 		delete lastEdge;
 
-		if(p3->out.size()==0)
-		{
-			vertices_iter = m_vertices.begin();
-			while(vertices_iter->second != p3) vertices_iter++;
-			m_vertices.erase(vertices_iter);
-			delete p3;
-		}
-
-		if(p2->out.size()==0)
-		{
-			vertices_iter = m_vertices.begin();
-			while(vertices_iter->second != p2) vertices_iter++;
-			m_vertices.erase(vertices_iter);
-			delete p2;
-		}
+		if(p3->out.size()==0) deleteVertex(p3);
+		if(p2->out.size()==0) deleteVertex(p2);
 	}
 
 	typename	vector<HalfEdgeFace<VertexT, NormalT>*>::iterator face_iter = m_faces.begin();
@@ -435,17 +403,17 @@ void HalfEdgeMesh<VertexT, NormalT>::finalize()
 
 	this->m_indexBuffer 	= new unsigned int[3 * this->m_nFaces];
 
-	typename boost::unordered_map<int, HalfEdgeVertex<VertexT, NormalT>*>::iterator vertices_iter = m_vertices.begin();
-	typename boost::unordered_map<int, HalfEdgeVertex<VertexT, NormalT>*>::iterator vertices_end = m_vertices.end();
+	typename vector<HVertex*>::iterator vertices_iter = m_vertices.begin();
+	typename vector<HVertex*>::iterator vertices_end = m_vertices.end();
 	for(size_t i = 0; vertices_iter != vertices_end; ++i, ++vertices_iter)
 	{
-		this->m_vertexBuffer[3 * i] =     vertices_iter->second->m_position[0];
-		this->m_vertexBuffer[3 * i + 1] = vertices_iter->second->m_position[1];
-		this->m_vertexBuffer[3 * i + 2] = vertices_iter->second->m_position[2];
+		this->m_vertexBuffer[3 * i] =     (*vertices_iter)->m_position[0];
+		this->m_vertexBuffer[3 * i + 1] = (*vertices_iter)->m_position[1];
+		this->m_vertexBuffer[3 * i + 2] = (*vertices_iter)->m_position[2];
 
-		this->m_normalBuffer [3 * i] =     -vertices_iter->second->m_normal[0];
-		this->m_normalBuffer [3 * i + 1] = -vertices_iter->second->m_normal[1];
-		this->m_normalBuffer [3 * i + 2] = -vertices_iter->second->m_normal[2];
+		this->m_normalBuffer [3 * i] =     -(*vertices_iter)->m_normal[0];
+		this->m_normalBuffer [3 * i + 1] = -(*vertices_iter)->m_normal[1];
+		this->m_normalBuffer [3 * i + 2] = -(*vertices_iter)->m_normal[2];
 
 		this->m_colorBuffer  [3 * i] = 0.8;
 		this->m_colorBuffer  [3 * i + 1] = 0.8;
@@ -463,7 +431,7 @@ void HalfEdgeMesh<VertexT, NormalT>::finalize()
 		//cout << "END: ----------------------------------" << endl;
 
 		// map the old index to the new index in the vertexBuffer
-		index_map[vertices_iter->second] = i;
+		index_map[*vertices_iter] = i;
 	}
 	typename vector<HalfEdgeFace<VertexT, NormalT>*>::iterator face_iter = m_faces.begin();
 	typename vector<HalfEdgeFace<VertexT, NormalT>*>::iterator face_end  = m_faces.end();
