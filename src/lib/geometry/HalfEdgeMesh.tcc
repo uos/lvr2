@@ -187,6 +187,128 @@ void HalfEdgeMesh<VertexT, NormalT>::addTriangle(uint a, uint b, uint c)
 }
 
 template<typename VertexT, typename NormalT>
+void HalfEdgeMesh<VertexT, NormalT>::addFace(HVertex* v1, HVertex* v2, HVertex* v3)
+{
+
+	v1 = m_faces[30]->m_edge->end;
+	v2 = m_faces[30]->m_edge->next->end;
+	v3 = m_faces[31]->m_edge->end;
+
+	HFace* f = new HFace;
+
+	HEdge* v1v2 = 0;
+	HEdge* v2v1 = 0;	//pair
+	HEdge* v2v3 = 0;
+	HEdge* v3v2 = 0;	//pair
+	HEdge* v3v1 = 0;
+	HEdge* v1v3 = 0;	//pair
+
+	HEdge* current = 0;
+
+	//check if edge exists between v1, v2 if not add a new one
+	if((current = halfEdgeToVertex(v1, v2)) == 0)
+	{
+		v1v2 = new HEdge;
+		v2v1 = new HEdge;
+
+		v1v2->start = v1;
+		v1v2->end = v2;
+		v1->out.push_back(v1v2);
+		v2->in.push_back(v1v2);
+
+		v2v1->start = v2;
+		v2v1->end = v1;
+		v1->in.push_back(v2v1);
+		v2->out.push_back(v2v1);
+
+		v1v2->pair = v2v1;
+		v2v1->pair = v1v2;
+	}
+	else
+	{
+		if(current->face == 0)
+			v1v2 = current;
+		else v1v2 = current->pair;
+	}
+
+	if((current = halfEdgeToVertex(v2, v3)) == 0)
+	{
+		v2v3 = new HEdge;
+		v3v2 = new HEdge;
+
+		v2v3->start = v2;
+		v2v3->end = v3;
+		v2->out.push_back(v2v3);
+		v3->in.push_back(v2v3);
+
+		v3v2->start = v3;
+		v3v2->end = v2;
+		v2->in.push_back(v3v2);
+		v3->out.push_back(v3v2);
+
+		v2v3->pair = v3v2;
+		v3v2->pair = v2v3;
+	}
+	else
+	{
+		if(current->face == 0)
+			v2v3 = current;
+		else v2v3 = current->pair;
+	}
+
+	if((current = halfEdgeToVertex(v3, v1)) == 0)
+	{
+		v3v1 = new HEdge;
+		v1v3 = new HEdge;
+
+		v3v1->start = v3;
+		v3v1->end = v1;
+		v3->out.push_back(v3v1);
+		v1->in.push_back(v3v1);
+
+		v1v3->start = v1;
+		v1v3->end = v3;
+		v3->in.push_back(v1v3);
+		v1->out.push_back(v1v3);
+
+		v3v1->pair = v1v3;
+		v1v3->pair = v3v1;
+	}
+	else
+	{
+		if(current->face == 0)
+			v3v1 = current;
+		else v3v1 = current->pair;
+	}
+
+
+	typename vector<HEdge*>::iterator it;
+	it = v1v2->end->out.begin();
+	while(it != v1v2->end->out.end() && *it != v2v3) it++;
+	if(it != v1v2->end->out.end())
+		v1v2->next = v2v3;
+	else
+		v1v2->next = v2v3->pair;
+
+	it = v1v2->next->end->out.begin();
+	while(it != v1v2->next->end->out.end() && *it != v3v1) it++;
+	if(it != v1v2->next->end->out.end())
+		v1v2->next->next = v3v1;
+	else
+		v1v2->next->next = v3v1->pair;
+
+	v1v2->next->next->next = v1v2;
+
+	f->m_edge = v1v2;
+	current = v1v2;
+	for(int k = 0; k<3; k++,current = current->next)
+		current->face = f;
+
+	f->calc_normal();
+	m_faces.push_back(f);
+}
+
+template<typename VertexT, typename NormalT>
 void HalfEdgeMesh<VertexT, NormalT>::deleteFace(HFace* f)
 {
 	//save references to edges and vertices
