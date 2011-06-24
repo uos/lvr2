@@ -141,6 +141,32 @@ public:
 	virtual void flipEdge(HEdge* edge);
 
 	/**
+	 * @brief	Starts a region growing and returns the number of connected faces
+	 * 			Faces are connected means they share a common edge - a point is not
+	 *			a connection in this context
+	 *
+	 * @param	start_face	The face from which the region growing is started
+	 *
+	 * @return	Returns the size of the region - 1 (the start face is not included)
+	 */
+	virtual int regionGrowing(HFace* start_face);
+
+	/**
+	 * @brief	Deletes all faces which are connected
+	 * 			via an Edge to the start face recursively if
+	 * 			they are marked as used
+	 */
+	virtual void destroyRecursive(HFace* start_face);
+
+	/**
+	 * @brief	Removes artifacts in the mesh that are not connected to the main mesh
+	 *
+	 * @param	threshold	Specifies the maximum number of faces
+	 * 						which will be detected as an artifact
+	 */
+	virtual void removeDanglingArtifacts(int threshold);
+
+	/**
 	 * @brief 	Finalizes a mesh, i.e. converts the template based buffers
 	 * 			to OpenGL compatible buffers
 	 */
