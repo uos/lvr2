@@ -350,7 +350,7 @@ void HalfEdgeMesh<VertexT, NormalT>::deleteFace(HFace* f)
 	}
 
 	//delete face
-	typename	vector<HalfEdgeFace<VertexT, NormalT>*>::iterator face_iter = m_faces.begin();
+	typename vector<HalfEdgeFace<VertexT, NormalT>*>::iterator face_iter = m_faces.begin();
 	while(*face_iter != f) face_iter++;
 	m_faces.erase(face_iter);
 	delete f;
@@ -532,6 +532,68 @@ void HalfEdgeMesh<VertexT, NormalT>::flipEdge(HEdge* edge)
 		//delete the old edge
 		deleteEdge(edge);
 	}
+}
+
+template<typename VertexT, typename NormalT>
+int HalfEdgeMesh<VertexT, NormalT>::regionGrowing(HFace* start_face)
+{
+	//Mark face as used
+	start_face->m_used = true;
+
+	int neighbor_cnt = 0;
+
+	//Get the unmarked neighbor faces and start the recursion
+	if((*start_face)[0]->pair->face != 0 && (*start_face)[0]->pair->face->m_used == false)
+		++neighbor_cnt += regionGrowing((*start_face)[0]->pair->face);
+
+	if((*start_face)[1]->pair->face != 0 && (*start_face)[1]->pair->face->m_used == false)
+		++neighbor_cnt += regionGrowing((*start_face)[1]->pair->face);
+
+	if((*start_face)[2]->pair->face != 0 && (*start_face)[2]->pair->face->m_used == false)
+		++neighbor_cnt += regionGrowing((*start_face)[2]->pair->face);
+
+	return neighbor_cnt;
+}
+
+template<typename VertexT, typename NormalT>
+void HalfEdgeMesh<VertexT, NormalT>::destroyRecursive(HFace* start_face)
+{
+	start_face->m_used = false;
+
+	HFace* f1 = start_face->m_edge->pair->face;
+	HFace* f2 = start_face->m_edge->next->pair->face;
+	HFace* f3 = start_face->m_edge->next->next->pair->face;
+
+	//Get the marked neighbor faces and start the recursion
+	if(f1 != 0 && f1->m_used == true)
+		destroyRecursive(f1);
+
+	if(f2 != 0 && f2->m_used == true)
+		destroyRecursive(f2);
+
+	if(f3 != 0 && f3->m_used == true)
+		destroyRecursive(f3);
+
+	deleteFace(start_face);
+}
+
+template<typename VertexT, typename NormalT>
+void HalfEdgeMesh<VertexT, NormalT>::removeDanglingArtifacts(int threshold)
+{
+	vector<HalfEdgeFace<VertexT, NormalT>*>    todelete;
+
+	for(int i=0; i<m_faces.size(); i++)
+	{
+		if(m_faces[i]->m_used == false)
+		{
+			int region_size = regionGrowing(m_faces[i]) + 1;
+			if(region_size <= threshold)
+				todelete.push_back(m_faces[i]);
+		}
+	}
+
+	for(int i=0; i<todelete.size(); i++ )
+		destroyRecursive(todelete[i]);
 }
 
 template<typename VertexT, typename NormalT>
