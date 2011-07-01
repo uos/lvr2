@@ -1,0 +1,26 @@
+REQUIRED LIBRARIES
+================================================================================
+
+  + flann
+  + PointCloudLibrary
+
+
+COMPILATION
+================================================================================
+
+1. Create a build folder:
+   > mkdir build && cd build
+
+2. Start configuration by calling cmake:
+   > cmake ..
+
+3. Call make.
+
+
+USAGE
+================================================================================
+
+Call the program with noncolored laserscan as first and colored kinectscans as
+preceding arguments:
+
+> ./colorizeLaser laserscan kinectscan1 [ kinectscan2 ... ]
