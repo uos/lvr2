@@ -4,7 +4,7 @@
  *
  *    Description:  
  *
- *        Version:  1.0
+ *        Version:  0.1
  *        Created:  07/02/2011 12:18:03 AM
  *       Compiler:  g++
  *
@@ -25,7 +25,7 @@ using namespace pcl;
 using namespace pcl::octree;
 
 
-void readPts( char * filename, PointCloud<PointXYZ>::Ptr cloud ) {
+void readPts( char * filename, PointCloud<PointXYZRGB>::Ptr cloud ) {
 
 	/* Open input file. */
 	FILE * f = fopen( filename, "r" );
@@ -34,18 +34,53 @@ void readPts( char * filename, PointCloud<PointXYZ>::Ptr cloud ) {
 		exit( EXIT_FAILURE );
 	}
 
-	/* Resize cloud. */
-	cloud->width = 100000;
+	/* Determine amount of values per line */
+	char line[1024];
+	fgets( line, 1023, f );
+	int valcount = 0;
+	char * pch = strtok( line, "\t " );
+	while ( pch ) {
+		if ( strcmp( pch, "" ) ) {
+			valcount++;
+		}
+		pch = strtok( NULL, "\t " );
+	}
+
+	/* Do we have color information in the pts file? */
+	int read_color = valcount >= 6;
+	/* Are there additional columns we dont want to have? */
+	int dummy_count = valcount - ( read_color ? 6 : 3 );
+	float dummy;
+
+	/* Resize cloud. Keep old points. */
+	int i = cloud->width;
+	cloud->width += 100000;
 	cloud->height = 1;
 	cloud->points.resize( cloud->width * cloud->height );
 
+	/* Start from the beginning */
+	fseek( f, 0, SEEK_SET );
+
 	/* Read values */
-	int i = 0;
 	while ( !feof( f ) ) {
+		/* Read coordinates */
 		fscanf( f, "%f %f %f", &cloud->points[i].x, &cloud->points[i].y,
 				&cloud->points[i].z );
+
+		/* Igbore remission, ... */
+		for ( i = 0; i < dummy_count; i++ ) {
+			fscanf( f, "%f", &dummy );
+		}
+
+		/* Read color information, if available */
+		if ( read_color ) {
+			uint32_t r, g, b;
+			fscanf( f, "%u %u %u", &r, &g, &b );
+			uint32_t rgb = r << 16 | g << 8 | b;
+			cloud->points[i].rgb = *reinterpret_cast<float*>( &rgb );
+		}
 		i++;
-		/* We jave more points: enlarge cloud */
+		/* We have more points: enlarge cloud */
 		if ( i >= cloud->points.size() ) {
 			printf( "%u values read.\n", i );
 			cloud->width = cloud->width + 100000;
@@ -72,7 +107,8 @@ int main (int argc, char ** argv) {
 
 	srand (time (NULL));
 
-	PointCloud<PointXYZ>::Ptr cloud (new PointCloud<PointXYZ>);
+	PointCloud<PointXYZRGB>::Ptr cloud (new PointCloud<PointXYZRGB>);
+	printf( "Size of new cloud: %lu\n", cloud->points.size() );
 
 	// Generate pointcloud data
 	cloud->width = 1000;
@@ -87,12 +123,12 @@ int main (int argc, char ** argv) {
 
 	float resolution = 128.0f;
 
-	OctreePointCloud<PointXYZ> octree (resolution);
+	OctreePointCloud<PointXYZRGB> octree( resolution );
 
-	octree.setInputCloud (cloud);
+	octree.setInputCloud(cloud);
 	octree.addPointsFromInputCloud ();
 
-	PointXYZ searchPoint;
+	PointXYZRGB searchPoint;
 
 	searchPoint.x = 1024.0f * rand () / (RAND_MAX + 1.0);
 	searchPoint.y = 1024.0f * rand () / (RAND_MAX + 1.0);
