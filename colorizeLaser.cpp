@@ -68,8 +68,9 @@ void readPts( char * filename, PointCloud<PointXYZRGB>::Ptr cloud ) {
 				&cloud->points[i].z );
 
 		/* Igbore remission, ... */
-		for ( i = 0; i < dummy_count; i++ ) {
+		for ( int j = 0; j < dummy_count; j++ ) {
 			fscanf( f, "%f", &dummy );
+			printf( "read dummy...\n" );
 		}
 
 		/* Read color information, if available */
@@ -87,6 +88,7 @@ void readPts( char * filename, PointCloud<PointXYZRGB>::Ptr cloud ) {
 			cloud->points.resize( cloud->width * cloud->height );
 		}
 	}
+	i--;
 	
 	/* Resize cloud to amount of points. */
 	cloud->width = i;
@@ -103,53 +105,69 @@ void readPts( char * filename, PointCloud<PointXYZRGB>::Ptr cloud ) {
 }
 
 
-int main (int argc, char ** argv) {
+int main( int argc, char ** argv ) {
 
+	/* Check, if we got enough command line arguments */
+	if ( argc < 3 ) {
+		printf( "Usage: %s laserdata kinectdata1 [ kinectdata2 ... ]\n", *argv );
+		exit( EXIT_SUCCESS );
+	}
 	srand (time (NULL));
 
-	PointCloud<PointXYZRGB>::Ptr cloud (new PointCloud<PointXYZRGB>);
-	printf( "Size of new cloud: %lu\n", cloud->points.size() );
+	PointCloud<PointXYZRGB>::Ptr lasercloud(  new PointCloud<PointXYZRGB> );
+	PointCloud<PointXYZRGB>::Ptr kinectcloud( new PointCloud<PointXYZRGB> );
 
-	// Generate pointcloud data
-	cloud->width = 1000;
-	cloud->height = 1;
-	cloud->points.resize (cloud->width * cloud->height);
-
-	for (size_t i = 0; i < cloud->points.size (); ++i) {
-		cloud->points[i].x = 1024.0f * rand () / (RAND_MAX + 1.0);
-		cloud->points[i].y = 1024.0f * rand () / (RAND_MAX + 1.0);
-		cloud->points[i].z = 1024.0f * rand () / (RAND_MAX + 1.0);
+	/* Read clouds from file. */
+	printf( "Loading laserscan data...\n" );
+	readPts( argv[1], lasercloud );
+	printf( "Loading kinect data...\n" );
+	for ( int i = 2; i < argc; i++ ) {
+		readPts( argv[i], kinectcloud );
 	}
 
-	float resolution = 128.0f;
+	/* Generate octree for kinect pointcloud */
+	OctreePointCloud<PointXYZRGB> octree( 128.0f );
+	octree.setInputCloud( kinectcloud );
+	octree.addPointsFromInputCloud();
 
-	OctreePointCloud<PointXYZRGB> octree( resolution );
+	/* Run through laserscan cloud and find neighbours. */
 
-	octree.setInputCloud(cloud);
-	octree.addPointsFromInputCloud ();
+	for ( int i = 0; i < lasercloud->points.size(); i++ ) {
 
-	PointXYZRGB searchPoint;
+		// K nearest neighbor search
 
-	searchPoint.x = 1024.0f * rand () / (RAND_MAX + 1.0);
-	searchPoint.y = 1024.0f * rand () / (RAND_MAX + 1.0);
-	searchPoint.z = 1024.0f * rand () / (RAND_MAX + 1.0);
+		std::vector<int>   pointIdx;
+		std::vector<float> pointSqrDist;
 
-	// K nearest neighbor search
+		printf( "Searching neighbours of (%f, %f, %f)\n",
+				lasercloud->points[i].x, lasercloud->points[i].y,
+				lasercloud->points[i].z );
+		if ( octree.nearestKSearch( lasercloud->points[i], 3, pointIdx, pointSqrDist ) > 0 ) {
+			printf( "Found %u\n", (unsigned int) pointIdx.size() );
+			/* Use color values of all aquired points according to their suared
+			 * distance. */
+			float dist_sum = 0;
+			for ( int k = 0; k < pointIdx.size(); k++ ) {
+				dist_sum += pointSqrDist[k];
+			}
+			float r = 0, g = 0, b = 0;
+			for ( int k = 0; k < pointIdx.size(); k++ ) {
+				uint32_t rgb = *reinterpret_cast<int*>( &kinectcloud->points[ pointIdx[k] ].rgb );
+				printf( "r = %u * %f = %f\n", ( ( rgb >> 16 ) & 0x0000ff ), pointSqrDist[k] / dist_sum, 
+						( ( rgb >> 16 ) & 0x0000ff ) * pointSqrDist[k] / dist_sum );
+				r += ( ( rgb >> 16 ) & 0x0000ff ) * pointSqrDist[k] / dist_sum;
+				g += ( ( rgb >> 8 )  & 0x0000ff ) * pointSqrDist[k] / dist_sum;
+				b += ( ( rgb )       & 0x0000ff ) * pointSqrDist[k] / dist_sum;
+			}
+			/* Now set the color to the laserscan cloud. */
+			uint32_t rgb = ((uint32_t)r << 16 | (uint32_t)g << 8 | (uint32_t)b);
+			lasercloud->points[i].rgb = *reinterpret_cast<float*>( &rgb );
+			printf( "% 11f % 11f % 11f %3d %3d %3d\n",
+					lasercloud->points[i].x, lasercloud->points[i].y,
+					lasercloud->points[i].z, (uint8_t) r, (uint8_t) g, (uint8_t) b );
 
-	std::vector<int>   pointIdx;
-	std::vector<float> pointSqrDist;
-
-	std::cerr << "K nearest neighbor search at (" << searchPoint.x 
-		<< " " << searchPoint.y 
-		<< " " << searchPoint.z
-		<< ") with K=" << 3 << std::endl;
-
-	if ( octree.nearestKSearch( searchPoint, 3, pointIdx, pointSqrDist ) > 0 ) {
-		for (size_t i = 0; i < pointIdx.size(); ++i) {
-			printf( "% 9f % 9f % 9f (distance: % 9f)\n", 
-					cloud->points[ pointIdx[i] ].x, cloud->points[ pointIdx[i] ].y,
-					cloud->points[ pointIdx[i] ].z, pointSqrDist[i] );
 		}
 	}
+
 
 }
