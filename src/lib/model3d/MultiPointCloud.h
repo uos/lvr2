@@ -11,7 +11,12 @@
 #include "PointCloud.h"
 
 #include <map>
+#include <string>
+#include <sstream>
+
+using std::stringstream;
 using std::map;
+using std::string;
 
 struct PointCloudAttribute
 {
@@ -24,7 +29,7 @@ struct PointCloudAttribute
 class MultiPointCloud : public Renderable
 {
 public:
-    MultiPointCloud();
+    MultiPointCloud(string pathname);
     virtual ~MultiPointCloud();
     virtual inline void render();
 
@@ -32,6 +37,27 @@ public:
     void removeCloud(PointCloud* pc);
 
 private:
+
+    void readNewUOSFormat(string dir, int first, int last);
+    void readOldUOSFormat(string dir, int first, int last);
+
+    Matrix4 parseFrameFile(ifstream& frameFile);
+
+
+    inline std::string to_string(const int& t, int width)
+    {
+        stringstream ss;
+        ss << std::setfill('0') << std::setw(width) << t;
+        return ss.str();
+    }
+
+    inline std::string to_string(const int& t)
+    {
+        stringstream ss;
+        ss << t;
+        return ss.str();
+    }
+
     map<PointCloud*, PointCloudAttribute*>    m_clouds;
 };
 
