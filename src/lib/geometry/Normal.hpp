@@ -97,7 +97,7 @@ typedef Normal<double> Normald;
 template<typename T>
 inline ostream& operator<<(ostream& os, const Normal<T> &n)
 {
-	os << "Normal: " << n.x << " " << n.y << " " << n.z << endl;
+	os << "Normal: " << n.m_x << " " << n.m_y << " " << n.m_z << endl;
 	return os;
 }
 
