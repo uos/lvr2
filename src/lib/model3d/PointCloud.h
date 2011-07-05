@@ -37,12 +37,13 @@ public:
         m_boundingBox->expand(v);
         points.push_back(v);
     };
+
     void clear(){
         delete m_boundingBox;
         m_boundingBox = new BoundingBox;
         points.clear();
     };
-    void initDisplayList();
+    void initDisplayLists();
 //private:
     vector<ColorVertex> points;
 
@@ -78,7 +79,15 @@ inline void PointCloud::render()
         //    }
         //
         //    glEnd();
-        glCallList(listIndex);
+
+        if(active)
+        {
+            glCallList(activeListIndex);
+        }
+        else
+        {
+            glCallList(listIndex);
+        }
         glEnable(GL_LIGHTING);
         glPopMatrix();
     }

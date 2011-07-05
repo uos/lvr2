@@ -10,6 +10,7 @@
 Renderable::Renderable() {
 	name = "<NO NAME>";
 	listIndex = -1;
+	activeListIndex = -1;
 	axesListIndex = -1;
 	visible = true;
 	//rotation_speed = 0.0;
