@@ -79,12 +79,12 @@ PointCloud::PointCloud(string filename) : Renderable(filename){
 
     cout << "Loaded Points: " << points.size() << endl;
 
-    initDisplayList();
+    initDisplayLists();
 }
 
-void PointCloud::initDisplayList(){
+void PointCloud::initDisplayLists(){
 
-    // Check for existing display list
+    // Check for existing display list for normal rendering
     if(listIndex != -1) {
         cout<<"PointCloud::initDisplayList() delete display list"<<endl;
         glDeleteLists(listIndex,1);
@@ -107,6 +107,34 @@ void PointCloud::initDisplayList(){
     }
     glEnd();
     glEndList();
+
+    // Check for existing list index for rendering a selected point
+    // cloud
+
+    if(activeListIndex != -1)
+    {
+        cout<<"PointCloud::initDisplayList() delete  active display list"<<endl;
+        glDeleteLists(activeListIndex,1);
+    }
+
+    activeListIndex = glGenLists(1);
+    glNewList(activeListIndex, GL_COMPILE);
+    glBegin(GL_POINTS);
+
+    glColor3f(1.0, 1.0, 0.0);
+    for(size_t i = 0; i < points.size(); i++)
+    {
+
+        glVertex3f(points[i].x,
+                points[i].y,
+                points[i].z);
+    }
+    glEnd();
+    glEndList();
+
+
+
+
 }
 
 int PointCloud::getFieldsPerLine(string filename)

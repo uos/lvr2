@@ -38,6 +38,10 @@ public:
 	void setTranslationSpeed(float s){translation_speed = s;};
 	void setActive(bool a){active = a;};
 
+	bool activated(){return active;}
+
+	void toggle(){active = !active;}
+
 	void moveX(bool invert = 0)
 		{invert ? position.x -= translation_speed: position.x += translation_speed; computeMatrix();};
 
@@ -79,6 +83,8 @@ protected:
 	Matrix4 transformation;
 	string name;
 	int listIndex;
+	int activeListIndex;
+
 	int axesListIndex;
 
 	Normal x_axis;

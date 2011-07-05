@@ -16,6 +16,7 @@ LinkedVertex.cpp
 Matrix4.cpp
 NormalCloud.cpp
 Normal.cpp
+MultiPointCloud.cpp
 OBJReader.cpp
 PLYElement.cpp
 PLYElements.cpp
