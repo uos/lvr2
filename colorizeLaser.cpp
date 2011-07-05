@@ -108,8 +108,9 @@ void readPts( char * filename, PointCloud<PointXYZRGB>::Ptr cloud ) {
 int main( int argc, char ** argv ) {
 
 	/* Check, if we got enough command line arguments */
-	if ( argc < 3 ) {
-		printf( "Usage: %s laserdata kinectdata1 [ kinectdata2 ... ]\n", *argv );
+	if ( argc < 4 ) {
+		printf( "Usage: %s laserdata kinectdata1 [ kinectdata2 ... ] outfile\n",
+				*argv );
 		exit( EXIT_SUCCESS );
 	}
 	srand (time (NULL));
@@ -121,7 +122,7 @@ int main( int argc, char ** argv ) {
 	printf( "Loading laserscan data...\n" );
 	readPts( argv[1], lasercloud );
 	printf( "Loading kinect data...\n" );
-	for ( int i = 2; i < argc; i++ ) {
+	for ( int i = 2; i < argc - 1; i++ ) {
 		readPts( argv[i], kinectcloud );
 	}
 
@@ -132,42 +133,55 @@ int main( int argc, char ** argv ) {
 
 	/* Run through laserscan cloud and find neighbours. */
 
+	unsigned int pct_curr, pct_10;
+	pct_curr = 1;
+	pct_10 = lasercloud->points.size() / 10;
+
+	/* Open output file. */
+	FILE * out = fopen( argv[ argc - 1 ], "w" );
+	if ( !out ) {
+		fprintf( stderr, "error: Could not open »%s«.\n", argv[ argc - 1 ] );
+		exit( EXIT_FAILURE );
+	}
+
 	for ( int i = 0; i < lasercloud->points.size(); i++ ) {
 
-		// K nearest neighbor search
+		if ( i > pct_curr * pct_10 ) {
+			printf( "%u%% done...\n", pct_curr * 10 );
+			pct_curr += 1;
+		}
 
 		std::vector<int>   pointIdx;
 		std::vector<float> pointSqrDist;
 
-		printf( "Searching neighbours of (%f, %f, %f)\n",
-				lasercloud->points[i].x, lasercloud->points[i].y,
-				lasercloud->points[i].z );
+		/* K nearest neighbor search */
 		if ( octree.nearestKSearch( lasercloud->points[i], 3, pointIdx, pointSqrDist ) > 0 ) {
-			printf( "Found %u\n", (unsigned int) pointIdx.size() );
 			/* Use color values of all aquired points according to their suared
 			 * distance. */
 			float dist_sum = 0;
 			for ( int k = 0; k < pointIdx.size(); k++ ) {
-				dist_sum += pointSqrDist[k];
+				pointSqrDist[k] += 1.0e-15;
+				dist_sum += 1 / pointSqrDist[k];
 			}
 			float r = 0, g = 0, b = 0;
 			for ( int k = 0; k < pointIdx.size(); k++ ) {
 				uint32_t rgb = *reinterpret_cast<int*>( &kinectcloud->points[ pointIdx[k] ].rgb );
-				printf( "r = %u * %f = %f\n", ( ( rgb >> 16 ) & 0x0000ff ), pointSqrDist[k] / dist_sum, 
-						( ( rgb >> 16 ) & 0x0000ff ) * pointSqrDist[k] / dist_sum );
-				r += ( ( rgb >> 16 ) & 0x0000ff ) * pointSqrDist[k] / dist_sum;
-				g += ( ( rgb >> 8 )  & 0x0000ff ) * pointSqrDist[k] / dist_sum;
-				b += ( ( rgb )       & 0x0000ff ) * pointSqrDist[k] / dist_sum;
+				r += ( rgb >> 16 & 0x0000ff ) * 1 / ( pointSqrDist[k] * dist_sum );
+				g += ( rgb >> 8  & 0x0000ff ) * 1 / ( pointSqrDist[k] / dist_sum );
+				b += ( rgb       & 0x0000ff ) * 1 / ( pointSqrDist[k] / dist_sum );
 			}
 			/* Now set the color to the laserscan cloud. */
-			uint32_t rgb = ((uint32_t)r << 16 | (uint32_t)g << 8 | (uint32_t)b);
+			uint32_t rgb = (uint32_t) r << 16 | (uint32_t) g << 8 | (uint32_t) b;
 			lasercloud->points[i].rgb = *reinterpret_cast<float*>( &rgb );
-			printf( "% 11f % 11f % 11f %3d %3d %3d\n",
+			fprintf( out, "% 11f % 11f % 11f %3d %3d %3d\n",
 					lasercloud->points[i].x, lasercloud->points[i].y,
 					lasercloud->points[i].z, (uint8_t) r, (uint8_t) g, (uint8_t) b );
 
 		}
 	}
 
+	if ( out ) {
+		fclose( out );
+	}
 
 }
