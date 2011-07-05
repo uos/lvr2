@@ -36,4 +36,5 @@ Tube.cpp)
 
 add_library(model3d SHARED ${LIB_3D_SOURCES})
 target_link_libraries(model3d ${OPENGL_LIBRARY})
+target_link_libraries(model3d ${Boost_FILESYSTEM_LIBRARY})
 set_target_properties(model3d PROPERTIES LIBRARY_OUTPUT_DIRECTORY ${CMAKE_SOURCE_DIR}/lib)

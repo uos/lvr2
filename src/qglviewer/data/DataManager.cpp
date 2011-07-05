@@ -70,8 +70,12 @@ void DataManager::loadFile( string filename ) {
 
 	/* Create a new data collector object and save it in the collector map */
 	DataCollector * c = DataCollectorFactory::instance()->create( filename, this );
-	m_dataCollectorMap.insert( make_pair( c->name(), c ) );
 
-	/* Signal the creation of a new data collector */
-	Q_EMIT dataCollectorCreated( c );
+	if(c != 0)
+	{
+	    m_dataCollectorMap.insert( make_pair( c->name(), c ) );
+
+	    /* Signal the creation of a new data collector */
+	    Q_EMIT dataCollectorCreated( c );
+	}
 }

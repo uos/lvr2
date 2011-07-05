@@ -7,9 +7,11 @@
 
 #include "DataCollectorFactory.h"
 #include "Static3DDataCollector.h"
+#include "MultiPointCloudDataCollector.h"
 
 #include "model3d/StaticMesh.h"
 #include "model3d/PointCloud.h"
+#include "model3d/MultiPointCloud.h"
 
 #include "../widgets/PointCloudTreeWidgetItem.h"
 #include "../widgets/TriangleMeshTreeWidgetItem.h"
@@ -58,7 +60,7 @@ DataCollector* DataCollectorFactory::create(string filename, DataManager* manage
 
 		dataCollector = new Static3DDataCollector(mesh, name, manager, item);
 	}
-	else if(extension == ".pts" || extension == ".xyz" || ".3d")
+	else if(extension == ".pts" || extension == ".xyz" || extension == ".3d")
 	{
 	    // Create a point cloud object
 		PointCloud* cloud = new PointCloud(filename);
@@ -71,6 +73,17 @@ DataCollector* DataCollectorFactory::create(string filename, DataManager* manage
 
 		// Create a new data collector
 		dataCollector = new Static3DDataCollector(cloud, name, manager, item);
+	}
+	else
+	{
+	    MultiPointCloud* mpc = new MultiPointCloud(filename);
+	    PointCloudTreeWidgetItem* item = new PointCloudTreeWidgetItem(PointCloudItem);
+	    item->setName(name);
+	    item->setNumPoints(0);
+	    item->setRenderable(mpc);
+
+	    dataCollector = new MultiPointCloudDataCollector(mpc, name, manager, item);
+
 	}
 
 	return dataCollector;
