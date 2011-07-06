@@ -127,15 +127,9 @@ int main( int argc, char ** argv ) {
 	}
 
 	/* Generate octree for kinect pointcloud */
-	OctreePointCloud<PointXYZRGB> octree( 128.0f );
+	OctreePointCloud<PointXYZRGB> octree( 256.0f );
 	octree.setInputCloud( kinectcloud );
 	octree.addPointsFromInputCloud();
-
-	/* Run through laserscan cloud and find neighbours. */
-
-	unsigned int pct_curr, pct_10;
-	pct_curr = 1;
-	pct_10 = lasercloud->points.size() / 10;
 
 	/* Open output file. */
 	FILE * out = fopen( argv[ argc - 1 ], "w" );
@@ -144,38 +138,30 @@ int main( int argc, char ** argv ) {
 		exit( EXIT_FAILURE );
 	}
 
-	for ( int i = 0; i < lasercloud->points.size(); i++ ) {
+	/* set number of threads to the number of available processors/cores */
+	omp_set_num_threads( omp_get_num_procs() );
 
-		if ( i > pct_curr * pct_10 ) {
-			printf( "%u%% done...\n", pct_curr * 10 );
-			pct_curr += 1;
-		}
+	printf( "Adding color information..." );
+
+	/* Run through laserscan cloud and find neighbours. */
+	#pragma omp parallel for
+	for ( int i = 0; i < lasercloud->points.size(); i++ ) {
 
 		std::vector<int>   pointIdx;
 		std::vector<float> pointSqrDist;
 
-		/* K nearest neighbor search */
-		if ( octree.nearestKSearch( lasercloud->points[i], 3, pointIdx, pointSqrDist ) > 0 ) {
-			/* Use color values of all aquired points according to their suared
-			 * distance. */
-			float dist_sum = 0;
-			for ( int k = 0; k < pointIdx.size(); k++ ) {
-				pointSqrDist[k] += 1.0e-15;
-				dist_sum += 1 / pointSqrDist[k];
-			}
-			float r = 0, g = 0, b = 0;
-			for ( int k = 0; k < pointIdx.size(); k++ ) {
-				uint32_t rgb = *reinterpret_cast<int*>( &kinectcloud->points[ pointIdx[k] ].rgb );
-				r += ( rgb >> 16 & 0x0000ff ) * 1 / ( pointSqrDist[k] * dist_sum );
-				g += ( rgb >> 8  & 0x0000ff ) * 1 / ( pointSqrDist[k] / dist_sum );
-				b += ( rgb       & 0x0000ff ) * 1 / ( pointSqrDist[k] / dist_sum );
-			}
-			/* Now set the color to the laserscan cloud. */
-			uint32_t rgb = (uint32_t) r << 16 | (uint32_t) g << 8 | (uint32_t) b;
-			lasercloud->points[i].rgb = *reinterpret_cast<float*>( &rgb );
-			fprintf( out, "% 11f % 11f % 11f %3d %3d %3d\n",
+		/* nearest neighbor search */
+		if ( octree.nearestKSearch( lasercloud->points[i], 1, pointIdx, pointSqrDist ) ) {
+			uint8_t r, g, b;
+			uint32_t rgb = *reinterpret_cast<int*>( &kinectcloud->points[ pointIdx[0] ].rgb );
+			r = rgb >> 16 & 0x0000ff;
+			g = rgb >> 8  & 0x0000ff;
+			b = rgb       & 0x0000ff;
+			/* lasercloud->points[i].rgb = kinectcloud->points[ pointIdx[0] ].rgb; */
+			fprintf( out, "% 11f % 11f % 11f % 14f % 3d % 3d % 3d\n",
 					lasercloud->points[i].x, lasercloud->points[i].y,
-					lasercloud->points[i].z, (uint8_t) r, (uint8_t) g, (uint8_t) b );
+					lasercloud->points[i].z, pointSqrDist[0],
+					r, g, b );
 
 		}
 	}
