@@ -17,24 +17,28 @@ using std::string;
 
 #include "../app/Types.h"
 #include "../viewers/Viewer.h"
+#include "../widgets/CustomTreeWidgetItem.h"
 
 class DataManager;
 
 class DataCollector
 {
 public:
-	DataCollector(Renderable* renderable, string name, DataManager* manager);
+	DataCollector(Renderable* renderable, string name, DataManager* manager, CustomTreeWidgetItem* item = 0);
 	virtual ~DataCollector();
 	Renderable* renderable();
 	string	name();
+	BoundingBox* boundingBox() { return m_renderable->boundingBox();}
 
+	virtual CustomTreeWidgetItem* treeItem() { return m_treeItem;}
 	virtual ViewerType supportedViewerType() = 0;
 
 protected:
 
-	DataManager* 	m_manager;
-	Renderable*	m_renderable;
-	string		m_name;
+	CustomTreeWidgetItem*        m_treeItem;
+	DataManager* 	        m_manager;
+	Renderable*	            m_renderable;
+	string		            m_name;
 
 
 };

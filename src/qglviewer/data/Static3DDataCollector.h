@@ -14,7 +14,7 @@ class Static3DDataCollector : public DataCollector
 {
 public:
 
-	Static3DDataCollector(Renderable* renderable, string name, DataManager* manager);
+	Static3DDataCollector(Renderable* renderable, string name, DataManager* manager, CustomTreeWidgetItem* item = 0);
 	virtual ViewerType supportedViewerType();
 };
 

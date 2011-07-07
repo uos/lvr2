@@ -43,6 +43,22 @@ void Viewer::resetCamera()
 	showEntireScene();
 }
 
+void Viewer::centerViewOnObject(Renderable* renderable)
+{
+    BoundingBox* bb = renderable->boundingBox();
+
+    // Center view on selected object
+    Vertex centroid = bb->getCentroid();
+    qglviewer::Vec center(centroid[0], centroid[1], centroid[2]);
+    setSceneCenter(center);
+
+    // Set new scene boundaries
+    qglviewer::Vec v1(bb->v_min.x, bb->v_min.y, bb->v_min.z);
+    qglviewer::Vec v2(bb->v_max.x, bb->v_max.y, bb->v_max.z);
+    setSceneBoundingBox(v1, v2);
+    showEntireScene();
+}
+
 void Viewer::addDataObject(DataCollector* obj)
 {
 	BoundingBox* bb = (obj->renderable()->boundingBox());

@@ -58,6 +58,13 @@ public:
 
   virtual float operator[](const int index);
 
+  void transform(const Matrix4 &m);
+  void transformRM(const Matrix4 &m);
+  void transformCM(const Matrix4 &m);
+  void rotate(const Matrix4 &m);
+  void rotateCM(const Matrix4 &m);
+  void rotateRM(const Matrix4 &m);
+
   float x;
   float y;
   float z;

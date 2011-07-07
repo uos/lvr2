@@ -128,3 +128,56 @@ bool BaseVertex::operator!=(const BaseVertex &other) const{
 	return !(*this == other);
 }
 
+
+
+void BaseVertex::rotateCM(const Matrix4 &m)
+{
+    float _x, _y, _z;
+    _x = x * m[0 ] + y * m[4 ] + z * m[8 ];
+    _y = x * m[1 ] + y * m[5 ] + z * m[9 ];
+    _z = x * m[2 ] + y * m[6 ] + z * m[10];
+
+    x = x;
+    y = y;
+    z = z;
+}
+
+
+void BaseVertex::rotateRM(const Matrix4 &m)
+{
+    float _x, _y, _z;
+    _x = x * m[0 ] + y * m[1 ] + z * m[2 ];
+    _y = x * m[4 ] + y * m[5 ] + z * m[6 ];
+    _z = x * m[8 ] + y * m[9 ] + z * m[10];
+
+    x = _x;
+    y = _y;
+    z = _z;
+}
+
+
+void BaseVertex::transformCM(const Matrix4 &m)
+{
+    rotateCM(m);
+    x += m[12];
+    y += m[13];
+    z += m[14];
+}
+
+void BaseVertex::transformRM(const Matrix4 &m)
+{
+    rotateRM(m);
+    x += m[12];
+    y += m[13];
+    z += m[14];
+}
+
+void BaseVertex::transform(const Matrix4 &m)
+{
+    transformRM(m);
+}
+
+void BaseVertex::rotate(const Matrix4 &m)
+{
+    rotateRM(m);
+}
