@@ -87,6 +87,9 @@ void ViewerApplication::connectEvents()
 	QObject::connect(m_sceneDockWidgetUi->treeWidget, SIGNAL(itemClicked(QTreeWidgetItem*, int)),
 					this, SLOT(treeItemClicked(QTreeWidgetItem*, int)));
 
+	QObject::connect(m_sceneDockWidgetUi->treeWidget, SIGNAL(itemChanged(QTreeWidgetItem*, int)),
+	                    this, SLOT(treeItemChanged(QTreeWidgetItem*, int)));
+
 	QObject::connect(m_sceneDockWidgetUi->treeWidget, SIGNAL(itemSelectionChanged()),
 	                    this, SLOT(treeSelectionChanged()));
 
@@ -115,6 +118,16 @@ void ViewerApplication::treeItemClicked(QTreeWidgetItem* item, int d)
     // Parse special operations of diffrent items
 }
 
+void ViewerApplication::treeItemChanged(QTreeWidgetItem* item, int d)
+{
+    if(item->type() == PointCloudItem)
+    {
+        CustomTreeWidgetItem* custom_item = static_cast<CustomTreeWidgetItem*>(item);
+        custom_item->renderable()->setActive(custom_item->checkState(d) == Qt::Checked);
+        m_viewer->updateGL();
+    }
+}
+
 
 void ViewerApplication::treeSelectionChanged()
 {
@@ -123,8 +136,7 @@ void ViewerApplication::treeSelectionChanged()
         if( (*it)->type() >= ServerItem)
         {
            CustomTreeWidgetItem* item = static_cast<CustomTreeWidgetItem*>(*it);
-           item->renderable()->setActive(item->isSelected());
-
+           item->renderable()->setSelected(item->isSelected());
         }
         ++it;
     }

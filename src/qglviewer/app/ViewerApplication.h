@@ -52,6 +52,7 @@ public Q_SLOTS:
 
 	void dataCollectorAdded(DataCollector* d);
 	void treeItemClicked(QTreeWidgetItem* item, int n);
+	void treeItemChanged(QTreeWidgetItem*, int);
 	void treeSelectionChanged();
 
 private:

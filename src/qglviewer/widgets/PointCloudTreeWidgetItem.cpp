@@ -14,6 +14,7 @@ PointCloudTreeWidgetItem::PointCloudTreeWidgetItem(int type) : CustomTreeWidgetI
     m_name = "undefined";
     m_numPoints = 0;
     setText(0, QString(m_name.c_str()));
+    setInitialState(Qt::Checked);
 }
 
 PointCloudTreeWidgetItem::PointCloudTreeWidgetItem(QTreeWidgetItem* parent, int type)
@@ -23,6 +24,7 @@ PointCloudTreeWidgetItem::PointCloudTreeWidgetItem(QTreeWidgetItem* parent, int 
     m_numPoints = 0;
 
     setText(0, QString(m_name.c_str()));
+    setInitialState(Qt::Checked);
 }
 
 void PointCloudTreeWidgetItem::setNumPoints(size_t numPoints)
