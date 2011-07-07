@@ -26,6 +26,9 @@ struct PointCloudAttribute
     bool         active;
 };
 
+typedef map<PointCloud*, PointCloudAttribute*> pc_attr_map;
+typedef map<PointCloud*, PointCloudAttribute*>::iterator pc_attr_it;
+
 class MultiPointCloud : public Renderable
 {
 public:
@@ -35,6 +38,9 @@ public:
 
     void addCloud(PointCloud* pc);
     void removeCloud(PointCloud* pc);
+
+    pc_attr_it first() { return m_clouds.begin();}
+    pc_attr_it last()  { return m_clouds.end();}
 
 private:
 

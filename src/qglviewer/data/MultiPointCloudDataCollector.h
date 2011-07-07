@@ -16,7 +16,6 @@ class MultiPointCloudDataCollector : public Static3DDataCollector
 public:
     MultiPointCloudDataCollector(MultiPointCloud* renderable, string name, DataManager* manager, CustomTreeWidgetItem* item = 0);
     virtual ~MultiPointCloudDataCollector();
-
     virtual ViewerType supportedViewerType();
 };
 

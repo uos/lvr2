@@ -34,6 +34,7 @@ set(QVIEWER_SOURCES
     widgets/CustomTreeWidgetItem.cpp
     widgets/PointCloudTreeWidgetItem.cpp
     widgets/TriangleMeshTreeWidgetItem.cpp
+    widgets/MultiPointCloudTreeWidgetItem.cpp
 )
 
 set(QVIEWER_RESOURCES

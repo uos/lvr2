@@ -15,6 +15,7 @@
 
 #include "../widgets/PointCloudTreeWidgetItem.h"
 #include "../widgets/TriangleMeshTreeWidgetItem.h"
+#include "../widgets/MultiPointCloudTreeWidgetItem.h"
 
 #include <boost/filesystem.hpp>
 #include <boost/version.hpp>
@@ -77,10 +78,12 @@ DataCollector* DataCollectorFactory::create(string filename, DataManager* manage
 	else
 	{
 	    MultiPointCloud* mpc = new MultiPointCloud(filename);
-	    PointCloudTreeWidgetItem* item = new PointCloudTreeWidgetItem(PointCloudItem);
-	    item->setName(name);
-	    item->setNumPoints(0);
+	    MultiPointCloudTreeWidgetItem* item = new MultiPointCloudTreeWidgetItem(MultiPointCloudItem);
+
+	    // Set label etc.
+	    item->setName(filename);
 	    item->setRenderable(mpc);
+
 
 	    dataCollector = new MultiPointCloudDataCollector(mpc, name, manager, item);
 
