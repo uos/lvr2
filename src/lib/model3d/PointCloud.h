@@ -43,7 +43,8 @@ public:
         m_boundingBox = new BoundingBox;
         points.clear();
     };
-    void initDisplayLists();
+
+    void updateDisplayLists();
 //private:
     vector<ColorVertex> points;
 
@@ -59,26 +60,6 @@ inline void PointCloud::render()
     {
         glPushMatrix();
         glMultMatrixf(transformation.getData());
-        //    if(show_axes) glCallList(axesListIndex);
-        //    glDisable(GL_LIGHTING);
-        //    //    if(active){
-        //    //        glColor3f(1.0f, 0.0f, 0.0f);
-        //    //    } else {
-        //    //        glColor3f(0.0f, 0.9f, 0.0f);
-        //    //    }
-        //
-        //    glBegin(GL_POINTS);
-        //    for(size_t i = 0; i < points.size(); i++)
-        //    {
-        //        glColor3f( ( (float) points[i].r ) / 255,
-        //                 ( (float) points[i].g ) / 255,
-        //                 ( (float) points[i].b ) / 255 );
-        //        glVertex3f(points[i].x,
-        //                   points[i].y,
-        //                   points[i].z);
-        //    }
-        //
-        //    glEnd();
 
         if(active)
         {

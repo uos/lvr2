@@ -188,6 +188,10 @@ void MultiPointCloud::readNewUOSFormat(string dir, int first, int last)
                 point.transform(tf);
                 pc->addPoint(x, y, z, 255, 0, 0);
             }
+
+            // Update display list of point cloud to
+            // compile new points into a new OpenGL display list
+            pc->updateDisplayLists();
             addCloud(pc);
         }
 
@@ -222,6 +226,8 @@ void MultiPointCloud::addCloud(PointCloud* pc)
     PointCloudAttribute* a = new PointCloudAttribute;
     a->cloud = pc;
     m_clouds[pc] = a;
+    m_boundingBox->expand(*(pc->boundingBox()));
+    cout << m_boundingBox->getRadius() << endl;
 }
 
 void MultiPointCloud::removeCloud(PointCloud* pc)
