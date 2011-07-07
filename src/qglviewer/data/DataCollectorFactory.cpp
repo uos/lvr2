@@ -68,6 +68,7 @@ DataCollector* DataCollectorFactory::create(string filename, DataManager* manage
 
 		// Create and setup a tree widget item for the point cloud
 		PointCloudTreeWidgetItem* item = new PointCloudTreeWidgetItem(PointCloudItem);
+		item->setViewCentering(true);
 		item->setName(name);
 		item->setNumPoints(cloud->points.size());
 		item->setRenderable(cloud);
@@ -81,10 +82,9 @@ DataCollector* DataCollectorFactory::create(string filename, DataManager* manage
 	    MultiPointCloudTreeWidgetItem* item = new MultiPointCloudTreeWidgetItem(MultiPointCloudItem);
 
 	    // Set label etc.
+	    item->setViewCentering(true);
 	    item->setName(filename);
 	    item->setRenderable(mpc);
-
-
 	    dataCollector = new MultiPointCloudDataCollector(mpc, name, manager, item);
 
 	}

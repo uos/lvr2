@@ -21,6 +21,7 @@
 #include "../viewers/ViewerManager.h"
 
 #include "../widgets/CustomTreeWidgetItem.h"
+#include "../widgets/PointCloudTreeWidgetItem.h"
 
 
 using Ui::MainWindow;
@@ -51,6 +52,8 @@ public Q_SLOTS:
 
 	void dataCollectorAdded(DataCollector* d);
 	void treeItemClicked(QTreeWidgetItem* item, int n);
+	void treeSelectionChanged();
+
 private:
 
 	void connectEvents();
