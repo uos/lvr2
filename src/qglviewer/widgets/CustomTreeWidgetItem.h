@@ -29,10 +29,17 @@ public:
 	Renderable* renderable() { return m_renderable;}
 	void setName(string name);
 
+    bool centerOnClick() { return m_centerOnClick;}
+    void setViewCentering(bool center) { m_centerOnClick = true;}
+
+    string name() { return m_name;}
+
 protected:
+
 	Qt::CheckState      m_oldCheckState;
 	Renderable*         m_renderable;
 	string              m_name;
+	bool                m_centerOnClick;
 };
 
 #endif /* CUSTOMTREEWIDGETITEM_H_ */

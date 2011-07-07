@@ -21,6 +21,7 @@ PointCloudTreeWidgetItem::PointCloudTreeWidgetItem(QTreeWidgetItem* parent, int 
 {
     m_name = "undefined";
     m_numPoints = 0;
+
     setText(0, QString(m_name.c_str()));
 }
 

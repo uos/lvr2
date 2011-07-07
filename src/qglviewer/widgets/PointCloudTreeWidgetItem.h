@@ -23,6 +23,7 @@ public:
 
     void setNumPoints(size_t numPoints);
 
+
 private:
 
     void addChildren();
@@ -30,6 +31,7 @@ private:
     size_t      m_numPoints;
     string      m_name;
     bool        m_hasColor;
+    bool        m_centerOnClick;
 };
 
 #endif /* POINTCLOUDTREEWIDGETITEM_H_ */
