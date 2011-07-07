@@ -10,6 +10,7 @@
 Renderable::Renderable() {
 	name = "<NO NAME>";
 	listIndex = -1;
+	activeListIndex = -1;
 	axesListIndex = -1;
 	visible = true;
 	//rotation_speed = 0.0;
@@ -18,7 +19,8 @@ Renderable::Renderable() {
 	translation_speed = 10.0f;
 
 	show_axes = false;
-	active = false;
+	active = true;
+	selected = false;
 
 	x_axis = Vertex(1.0f, 0.0f, 0.0f);
 	y_axis = Vertex(0.0f, 1.0f, 0.0f);

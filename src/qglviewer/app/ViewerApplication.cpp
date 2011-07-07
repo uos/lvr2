@@ -78,14 +78,69 @@ void ViewerApplication::connectEvents()
 	QObject::connect(m_dataManager, SIGNAL(dataCollectorCreated(DataCollector*)),
 					m_viewerManager, SLOT(addDataCollector(DataCollector*)));
 
+    QObject::connect(m_dataManager, SIGNAL(dataCollectorCreated(DataCollector*)),
+                    this, SLOT(dataCollectorAdded(DataCollector*)));
+
 	QObject::connect(m_dataManager, SIGNAL(dataCollectorUpdate(DataCollector*)),
 					m_viewerManager, SLOT(updateDataObject(DataCollector*)));
 
-/*
 	QObject::connect(m_sceneDockWidgetUi->treeWidget, SIGNAL(itemClicked(QTreeWidgetItem*, int)),
 					this, SLOT(treeItemClicked(QTreeWidgetItem*, int)));
-*/
 
+	QObject::connect(m_sceneDockWidgetUi->treeWidget, SIGNAL(itemChanged(QTreeWidgetItem*, int)),
+	                    this, SLOT(treeItemChanged(QTreeWidgetItem*, int)));
+
+	QObject::connect(m_sceneDockWidgetUi->treeWidget, SIGNAL(itemSelectionChanged()),
+	                    this, SLOT(treeSelectionChanged()));
+
+}
+
+void ViewerApplication::dataCollectorAdded(DataCollector* d)
+{
+    if(d->treeItem())
+    {
+        m_sceneDockWidgetUi->treeWidget->addTopLevelItem(d->treeItem());
+    }
+}
+
+void ViewerApplication::treeItemClicked(QTreeWidgetItem* item, int d)
+{
+    // Center view on selected item if enabled
+    if(item->type() > 1000)
+    {
+        CustomTreeWidgetItem* custom_item = static_cast<CustomTreeWidgetItem*>(item);
+        if(custom_item->centerOnClick())
+        {
+            m_viewer->centerViewOnObject(custom_item->renderable());
+        }
+    }
+
+    // Parse special operations of diffrent items
+}
+
+void ViewerApplication::treeItemChanged(QTreeWidgetItem* item, int d)
+{
+    if(item->type() == PointCloudItem)
+    {
+        CustomTreeWidgetItem* custom_item = static_cast<CustomTreeWidgetItem*>(item);
+        custom_item->renderable()->setActive(custom_item->checkState(d) == Qt::Checked);
+        m_viewer->updateGL();
+    }
+}
+
+
+void ViewerApplication::treeSelectionChanged()
+{
+    QTreeWidgetItemIterator it(m_sceneDockWidgetUi->treeWidget);
+    while (*it) {
+        if( (*it)->type() >= ServerItem)
+        {
+           CustomTreeWidgetItem* item = static_cast<CustomTreeWidgetItem*>(*it);
+           item->renderable()->setSelected(item->isSelected());
+        }
+        ++it;
+    }
+    m_viewer->updateGL();
 }
 
 void ViewerApplication::toggleFog()

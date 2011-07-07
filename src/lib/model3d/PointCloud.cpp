@@ -37,7 +37,7 @@ PointCloud::PointCloud(string filename) : Renderable(filename) {
 
     //Point coordinates
     float x, y, z, dummy;
-	 unsigned int r, g, b;
+	unsigned int r, g, b;
 
     // Read file
     while ( in.good() ) {
@@ -67,26 +67,62 @@ PointCloud::PointCloud(string filename) : Renderable(filename) {
 
     cout << "Loaded Points: " << points.size() << endl;
 
-    //initDisplayList();
+    updateDisplayLists();
 }
 
-void PointCloud::initDisplayList(){
+void PointCloud::updateDisplayLists(){
 
+    // Check for existing display list for normal rendering
     if(listIndex != -1) {
         cout<<"PointCloud::initDisplayList() delete display list"<<endl;
         glDeleteLists(listIndex,1);
     }
-//    cout<<"PointCloud::initDisplayList() init display list "<<points.size()<<endl;
-//    listIndex = glGenLists(1);
-//    glNewList(listIndex, GL_COMPILE);
+
+    // Create new display list and render points
+    listIndex = glGenLists(1);
+    glNewList(listIndex, GL_COMPILE);
     glBegin(GL_POINTS);
-    for(size_t i = 0; i < points.size(); i++){
+
+    for(size_t i = 0; i < points.size(); i++)
+    {
+        glColor3f( ( (float) points[i].r ) / 255,
+                   ( (float) points[i].g ) / 255,
+                   ( (float) points[i].b ) / 255 );
+
         glVertex3f(points[i].x,
                    points[i].y,
                    points[i].z);
     }
     glEnd();
-//    glEndList();
+    glEndList();
+
+    // Check for existing list index for rendering a selected point
+    // cloud
+
+    if(activeListIndex != -1)
+    {
+        cout<<"PointCloud::initDisplayList() delete  active display list"<<endl;
+        glDeleteLists(activeListIndex,1);
+    }
+
+    activeListIndex = glGenLists(1);
+    glNewList(activeListIndex, GL_COMPILE);
+    glBegin(GL_POINTS);
+
+    glColor3f(1.0, 1.0, 0.0);
+    for(size_t i = 0; i < points.size(); i++)
+    {
+
+        glVertex3f(points[i].x,
+                   points[i].y,
+                   points[i].z);
+    }
+    glEnd();
+    glEndList();
+
+
+
+
 }
 
 int PointCloud::getFieldsPerLine(string filename)

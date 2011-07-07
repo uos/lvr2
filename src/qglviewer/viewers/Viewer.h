@@ -11,6 +11,7 @@
 #include "../app/Types.h"
 
 #include "../../lib/model3d/BoundingBox.h"
+#include "model3d/Renderable.h"
 
 #include <QGLViewer/qglviewer.h>
 #include <list>
@@ -30,7 +31,7 @@ public:
 	virtual void updateDataObject(DataCollector* obj);
 
 	virtual ViewerType type() = 0;
-
+	virtual void centerViewOnObject(Renderable* renderable);
 public Q_SLOTS:
 	virtual void resetCamera();
 

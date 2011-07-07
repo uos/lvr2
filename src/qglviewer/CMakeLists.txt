@@ -1,6 +1,6 @@
 # Objects that use Qt's signals and slots
 
-ADD_DEFINITIONS(-DQT_NO_KEYWORDS)
+ADD_DEFINITIONS(-DQT_NO_KEYWORDS )
 
 set(QVIEWER_MOCS 
     app/ViewerApplication.h
@@ -26,11 +26,15 @@ set(QVIEWER_SOURCES
     data/DataCollectorFactory.cpp
     data/DataManager.cpp
     data/Static3DDataCollector.cpp
+    data/MultiPointCloudDataCollector.cpp
     viewers/OrthoCamera.cpp
     viewers/PerspectiveViewer.cpp
     viewers/Viewer.cpp
     viewers/ViewerManager.cpp
     widgets/CustomTreeWidgetItem.cpp
+    widgets/PointCloudTreeWidgetItem.cpp
+    widgets/TriangleMeshTreeWidgetItem.cpp
+    widgets/MultiPointCloudTreeWidgetItem.cpp
 )
 
 set(QVIEWER_RESOURCES

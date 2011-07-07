@@ -29,20 +29,22 @@ public:
     void setPoints(){};
 
     void addPoint(float x, float y, float z, uchar r, uchar g, uchar b){
-    	m_boundingBox->expand(ColorVertex(x, y, z, r, g, b));
-    	points.push_back(ColorVertex(x, y, z, r, g, b));
-    	};
-
-		void addPoint(const ColorVertex v) {
-			m_boundingBox->expand(v);
-			points.push_back(v);
-			};
-    void clear(){
-    	delete m_boundingBox;
-    	m_boundingBox = new BoundingBox;
-    	points.clear();
+        m_boundingBox->expand(ColorVertex(x, y, z, r, g, b));
+        points.push_back(ColorVertex(x, y, z, r, g, b));
     };
-    void initDisplayList();
+
+    void addPoint(const ColorVertex v) {
+        m_boundingBox->expand(v);
+        points.push_back(v);
+    };
+
+    void clear(){
+        delete m_boundingBox;
+        m_boundingBox = new BoundingBox;
+        points.clear();
+    };
+
+    void updateDisplayLists();
 //private:
     vector<ColorVertex> points;
 
@@ -52,31 +54,25 @@ private:
 
 };
 
-inline void PointCloud::render(){
-    glPushMatrix();
-    glMultMatrixf(transformation.getData());
-    if(show_axes) glCallList(axesListIndex);
-    glDisable(GL_LIGHTING);
-//    if(active){
-//        glColor3f(1.0f, 0.0f, 0.0f);
-//    } else {
-//        glColor3f(0.0f, 0.9f, 0.0f);
-//    }
-    glPointSize(5.0);
-    glBegin(GL_POINTS);
-    for(size_t i = 0; i < points.size(); i++){
-    	glColor3f( ( (float) points[i].r ) / 255, 
-				( (float) points[i].g ) / 255, 
-				( (float) points[i].b ) / 255 );
-        glVertex3f(points[i].x,
-                   points[i].y,
-                   points[i].z);
+inline void PointCloud::render()
+{
+    //cout << name << " : Active: " << " " << active << " selected : " << selected << endl;
+    if(listIndex != -1 && active)
+    {
+        glPushMatrix();
+        glMultMatrixf(transformation.getData());
+
+        if(selected)
+        {
+            glCallList(activeListIndex);
+        }
+        else
+        {
+            glCallList(listIndex);
+        }
+        glEnable(GL_LIGHTING);
+        glPopMatrix();
     }
-    
-    glEnd();
-    glPointSize(1.0);
-    glEnable(GL_LIGHTING);
-    glPopMatrix();
 }
 
 #endif /* POINTCLOUD_H_ */
