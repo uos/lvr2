@@ -79,10 +79,10 @@ PointCloud::PointCloud(string filename) : Renderable(filename){
 
     cout << "Loaded Points: " << points.size() << endl;
 
-    initDisplayLists();
+    updateDisplayLists();
 }
 
-void PointCloud::initDisplayLists(){
+void PointCloud::updateDisplayLists(){
 
     // Check for existing display list for normal rendering
     if(listIndex != -1) {
@@ -126,8 +126,8 @@ void PointCloud::initDisplayLists(){
     {
 
         glVertex3f(points[i].x,
-                points[i].y,
-                points[i].z);
+                   points[i].y,
+                   points[i].z);
     }
     glEnd();
     glEndList();
