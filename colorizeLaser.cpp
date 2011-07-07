@@ -105,24 +105,68 @@ void readPts( char * filename, PointCloud<PointXYZRGB>::Ptr cloud ) {
 }
 
 
+void printHelp( char * name ) {
+
+	printf( "Usage: %s [options] laserdat kinectdat1 [kinectdat2 ...] outfile\n"
+			"Options:\n"
+			"   -d   Maximum squared distance for neighbourhood.\n"
+			"   -j   Number of jobs to be scheduled parallel.\n"
+			"        Positive integer or “auto” (default)\n"
+			"   -c   Set color of points with no neighbours \n"
+			"        as 24 bit hexadecimal integer.\n", name );
+
+}
+
+
 int main( int argc, char ** argv ) {
 
+	double maxdist = std::numeric_limits<double>::max();
+	int jobs = omp_get_num_procs();
+	uint8_t nc_r = 0, nc_g = 0, nc_b = 0;
+
+	/* Parse options */
+	char c;
+	while ( ( c = getopt( argc, argv, "hd:j:c:" ) ) != -1 ) {
+		switch (c) {
+			case 'h':
+				printHelp( *argv );
+				exit( EXIT_SUCCESS );
+			case 'd':
+				maxdist = atof( optarg );
+				break;
+			case 'm':
+				if ( !strcmp( optarg, "auto" ) ) {
+					jobs = omp_get_num_procs();
+				} else {
+					jobs = atoi( optarg ) > 1 
+						? atoi( optarg ) 
+						: omp_get_num_procs();
+				}
+				break;
+			case 'c':
+				uint32_t nc_rgb = 0;
+				sscanf( optarg, "%x", &nc_rgb );
+				nc_r = ((uint8_t *) &nc_rgb)[2];
+				nc_g = ((uint8_t *) &nc_rgb)[1];
+				nc_b = ((uint8_t *) &nc_rgb)[0];
+		}
+	}
+
 	/* Check, if we got enough command line arguments */
-	if ( argc < 4 ) {
-		printf( "Usage: %s laserdata kinectdata1 [ kinectdata2 ... ] outfile\n",
-				*argv );
+	if ( argc - optind < 3 ) {
+		printHelp( *argv );
 		exit( EXIT_SUCCESS );
 	}
-	srand (time (NULL));
+	srand( time( NULL ) );
 
 	PointCloud<PointXYZRGB>::Ptr lasercloud(  new PointCloud<PointXYZRGB> );
 	PointCloud<PointXYZRGB>::Ptr kinectcloud( new PointCloud<PointXYZRGB> );
 
 	/* Read clouds from file. */
 	printf( "Loading laserscan data...\n" );
-	readPts( argv[1], lasercloud );
+	readPts( argv[optind], lasercloud );
 	printf( "Loading kinect data...\n" );
-	for ( int i = 2; i < argc - 1; i++ ) {
+	for ( int i = optind + 1; i < argc - 1; i++ ) {
 		readPts( argv[i], kinectcloud );
 	}
 
@@ -139,9 +183,9 @@ int main( int argc, char ** argv ) {
 	}
 
 	/* set number of threads to the number of available processors/cores */
-	omp_set_num_threads( omp_get_num_procs() );
+	omp_set_num_threads( jobs );
 
-	printf( "Adding color information..." );
+	printf( "Adding color information. This might take some minutes...\n" );
 
 	/* Run through laserscan cloud and find neighbours. */
 	#pragma omp parallel for
@@ -152,16 +196,23 @@ int main( int argc, char ** argv ) {
 
 		/* nearest neighbor search */
 		if ( octree.nearestKSearch( lasercloud->points[i], 1, pointIdx, pointSqrDist ) ) {
-			uint8_t r, g, b;
-			uint32_t rgb = *reinterpret_cast<int*>( &kinectcloud->points[ pointIdx[0] ].rgb );
-			r = rgb >> 16 & 0x0000ff;
-			g = rgb >> 8  & 0x0000ff;
-			b = rgb       & 0x0000ff;
-			/* lasercloud->points[i].rgb = kinectcloud->points[ pointIdx[0] ].rgb; */
-			fprintf( out, "% 11f % 11f % 11f % 14f % 3d % 3d % 3d\n",
-					lasercloud->points[i].x, lasercloud->points[i].y,
-					lasercloud->points[i].z, pointSqrDist[0],
-					r, g, b );
+			if ( pointSqrDist[0] > maxdist ) {
+				fprintf( out, "% 11f % 11f % 11f % 14f % 3d % 3d % 3d\n",
+						lasercloud->points[i].x, lasercloud->points[i].y,
+						lasercloud->points[i].z, pointSqrDist[0],
+						nc_r, nc_g, nc_b );
+			} else {
+				uint8_t r, g, b;
+				uint32_t rgb = *( (int*) &kinectcloud->points[ pointIdx[0] ].rgb );
+				r = rgb >> 16 & 0x0000ff;
+				g = rgb >> 8  & 0x0000ff;
+				b = rgb       & 0x0000ff;
+				/* lasercloud->points[i].rgb = kinectcloud->points[ pointIdx[0] ].rgb; */
+				fprintf( out, "% 11f % 11f % 11f % 14f % 3d % 3d % 3d\n",
+						lasercloud->points[i].x, lasercloud->points[i].y,
+						lasercloud->points[i].z, pointSqrDist[0],
+						r, g, b );
+			}
 
 		}
 	}

@@ -21,6 +21,11 @@ USAGE
 ================================================================================
 
 Call the program with noncolored laserscan as first and colored kinectscans as
-preceding arguments:
+preceding arguments and the output file as last argument:
 
-> ./colorizeLaser laserscan kinectscan1 [ kinectscan2 ... ]
+> ./colorizeLaser [options] laserscan kinectscan1 [ kinectscan2 ... ] outfile
+
+If you want to use the example data, call:
+
+> ./colorizeLaser -d 10000 -c ff0000 example-data/scan000.3d \
+     example-data/1310041219.570255037.pts coloredLaserScan.pts
