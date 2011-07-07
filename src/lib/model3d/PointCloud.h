@@ -56,12 +56,13 @@ private:
 
 inline void PointCloud::render()
 {
-    if(listIndex != -1)
+    //cout << name << " : Active: " << " " << active << " selected : " << selected << endl;
+    if(listIndex != -1 && active)
     {
         glPushMatrix();
         glMultMatrixf(transformation.getData());
 
-        if(active)
+        if(selected)
         {
             glCallList(activeListIndex);
         }

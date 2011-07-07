@@ -37,8 +37,10 @@ public:
 	void setRotationSpeed(float s){rotation_speed = s;};
 	void setTranslationSpeed(float s){translation_speed = s;};
 	void setActive(bool a){active = a;};
+	void setSelected(bool s) {selected = s;};
 
-	bool activated(){return active;}
+	bool isActive(){return active;}
+	bool isSelected() { return selected;}
 
 	void toggle(){active = !active;}
 
@@ -98,6 +100,7 @@ protected:
 
 	bool show_axes;
 	bool active;
+	bool selected;
 
 	float scale_factor;
 

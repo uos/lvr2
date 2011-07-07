@@ -69,6 +69,7 @@ private:
 
 void MultiPointCloud::render()
 {
+    if(!active) return;
     map<PointCloud*, PointCloudAttribute*>::iterator it;
     for(it = m_clouds.begin(); it != m_clouds.end(); it++)
     {
