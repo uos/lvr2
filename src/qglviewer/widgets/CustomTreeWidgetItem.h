@@ -12,7 +12,7 @@
 
 #include "model3d/Renderable.h"
 
-enum {ServerItem = 1001, InterfaceItem, PointCloudItem, TriangleMeshItem};
+enum {ServerItem = 1001, InterfaceItem, PointCloudItem, TriangleMeshItem, MultiPointCloudItem};
 
 class CustomTreeWidgetItem : public QTreeWidgetItem
 {
@@ -21,10 +21,11 @@ public:
 	CustomTreeWidgetItem(QTreeWidgetItem* parent, int type);
 
 	virtual ~CustomTreeWidgetItem();
+	virtual void setRenderable(Renderable* renderable) {m_renderable = renderable;};
 
 	bool toggled();
 	void setInitialState(Qt::CheckState state);
-	void setRenderable(Renderable* renderable) {m_renderable = renderable;};
+
 	Renderable* renderable() { return m_renderable;}
 	void setName(string name);
 

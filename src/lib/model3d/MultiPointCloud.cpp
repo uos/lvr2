@@ -132,8 +132,10 @@ void MultiPointCloud::readNewUOSFormat(string dir, int first, int last)
                     boost::filesystem::path(dir) /
                     boost::filesystem::path( "scan" + to_string( fileCounter, 3 ) + ".frames" ) );
             string frameFileName = "/" + frame_path.relative_path().string();
+            cout << frameFileName << endl;
 
             frame_in.open(frameFileName.c_str());
+
             if(!frame_in.good())
             {
                 // Try to parse .pose file
@@ -192,6 +194,7 @@ void MultiPointCloud::readNewUOSFormat(string dir, int first, int last)
             // Update display list of point cloud to
             // compile new points into a new OpenGL display list
             pc->updateDisplayLists();
+            pc->setName(scan_path.filename());
             addCloud(pc);
         }
 
@@ -207,7 +210,6 @@ Matrix4 MultiPointCloud::parseFrameFile(ifstream& frameFile)
         for(int i = 0; i < 16; i++ && frameFile.good()) frameFile >> m[i];
         frameFile >> color;
     }
-
     return Matrix4(m);
 }
 
