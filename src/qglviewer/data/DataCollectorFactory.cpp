@@ -55,6 +55,7 @@ DataCollector* DataCollectorFactory::create(string filename, DataManager* manage
 
 		TriangleMeshTreeWidgetItem* item = new TriangleMeshTreeWidgetItem(TriangleMeshItem);
 		item->setName(name);
+		item->setViewCentering(true);
 		item->setNumFaces(mesh->getNumberOfFaces());
 		item->setNumVertices(mesh->getNumberOfVertices());
 		item->setRenderable(mesh);
