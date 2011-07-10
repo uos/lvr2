@@ -194,7 +194,7 @@ void MultiPointCloud::readNewUOSFormat(string dir, int first, int last)
             // Update display list of point cloud to
             // compile new points into a new OpenGL display list
             pc->updateDisplayLists();
-            pc->setName(scan_path.filename());
+            pc->setName(scan_path.filename().c_str());
             addCloud(pc);
         }
 
