@@ -96,6 +96,9 @@ void ViewerApplication::connectEvents()
 	QObject::connect(m_sceneDockWidgetUi->treeWidget, SIGNAL(customContextMenuRequested(const QPoint &)),
 	                        this, SLOT(treeContextMenuRequested(const QPoint &)));
 
+	// Context menu actions
+	connect(m_sceneDockWidgetUi->actionExport_selected_scans, SIGNAL(triggered()), this, SLOT(treeWidgetExport()));
+
 }
 
 void ViewerApplication::treeContextMenuRequested(const QPoint &position)
@@ -105,17 +108,28 @@ void ViewerApplication::treeContextMenuRequested(const QPoint &position)
     QTreeWidgetItem* item = m_sceneDockWidgetUi->treeWidget->itemAt(position);
 
     // Check if item is valid and parse supported actions
-    if(item->type() == MultiPointCloudItem)
+    if(item)
     {
-        actions.append(m_sceneDockWidgetUi->actionExport_selected_scans);
+        if(item->type() == MultiPointCloudItem)
+        {
+            QAction* action = m_sceneDockWidgetUi->actionExport_selected_scans;
+
+            actions.append(action);
+        }
     }
 
 
     // Display menu if actions are present
     if (actions.count() > 0)
     {
-        QMenu::exec(actions, m_sceneDockWidgetUi->treeWidget->mapToGlobal(position));
+       QMenu::exec(actions, m_sceneDockWidgetUi->treeWidget->mapToGlobal(position));
     }
+
+}
+
+void ViewerApplication::treeWidgetExport()
+{
+    cout << "Export" << endl;
 }
 
 void ViewerApplication::dataCollectorAdded(DataCollector* d)
