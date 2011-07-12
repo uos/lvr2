@@ -102,16 +102,14 @@ void ViewerApplication::treeContextMenuRequested(const QPoint &position)
 {
     // Create suitable actions for clicked widget
     QList<QAction *> actions;
-    QTreeWidgetItem* item = m_sceneDockWidgetUi->treeWidget->indexAt(position);
+    QTreeWidgetItem* item = m_sceneDockWidgetUi->treeWidget->itemAt(position);
 
     // Check if item is valid and parse supported actions
-    if(item->isValid())
+    if(item->type() == MultiPointCloudItem)
     {
-        if(item->type() == MultiPointCloudItem)
-        {
-            actions.append(m_sceneDockWidgetUi->actionExport_selected_scans);
-        }
+        actions.append(m_sceneDockWidgetUi->actionExport_selected_scans);
     }
+
 
     // Display menu if actions are present
     if (actions.count() > 0)
