@@ -130,8 +130,12 @@ void ViewerApplication::treeContextMenuRequested(const QPoint &position)
 
 void ViewerApplication::treeWidgetExport()
 {
-
-
+    QTreeWidgetItem* item = m_sceneDockWidgetUi->treeWidget->currentItem();
+    if(item->type() > 1000)
+    {
+        CustomTreeWidgetItem* c_item = static_cast<CustomTreeWidgetItem*>(item);
+        m_dataManager->exportData(c_item);
+    }
 }
 
 void ViewerApplication::dataCollectorAdded(DataCollector* d)
