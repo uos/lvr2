@@ -29,7 +29,7 @@ public:
 
 	void update(DataCollector*);
 	void loadFile( string filename );
-	void exportData(string DataCollector);
+	void exportData(CustomTreeWidgetItem* item);
 
 public Q_SLOTS:
 	void openFile();

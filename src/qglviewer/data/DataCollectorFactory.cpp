@@ -7,7 +7,6 @@
 
 #include "DataCollectorFactory.h"
 #include "Static3DDataCollector.h"
-#include "MultiPointCloudDataCollector.h"
 
 #include "model3d/StaticMesh.h"
 #include "model3d/PointCloud.h"
@@ -34,17 +33,13 @@ DataCollectorFactory* DataCollectorFactory::instance()
 	}
 }
 
-DataCollector* DataCollectorFactory::create(string filename, DataManager* manager)
+DataCollector* DataCollectorFactory::create(string filename)
 {
 	// Get file extension
 	boost::filesystem::path selectedFile(filename);
-#if BOOST_VERSION < 104600
-	string extension = selectedFile.extension();
-	string name = selectedFile.filename();
-#else
-	string extension = selectedFile.extension().string();
+
+	string extension = selectedFile.extension().c_str();
 	string name = selectedFile.filename().c_str();
-#endif
 
 	Static3DDataCollector* dataCollector = 0;
 
@@ -60,7 +55,7 @@ DataCollector* DataCollectorFactory::create(string filename, DataManager* manage
 		item->setNumVertices(mesh->getNumberOfVertices());
 		item->setRenderable(mesh);
 
-		dataCollector = new Static3DDataCollector(mesh, name, manager, item);
+		dataCollector = new Static3DDataCollector(mesh, name, item);
 	}
 	else if(extension == ".pts" || extension == ".xyz" || extension == ".3d")
 	{
@@ -75,7 +70,7 @@ DataCollector* DataCollectorFactory::create(string filename, DataManager* manage
 		item->setRenderable(cloud);
 
 		// Create a new data collector
-		dataCollector = new Static3DDataCollector(cloud, name, manager, item);
+		dataCollector = new Static3DDataCollector(cloud, name, item);
 	}
 	else
 	{
@@ -86,7 +81,7 @@ DataCollector* DataCollectorFactory::create(string filename, DataManager* manage
 	    item->setViewCentering(true);
 	    item->setName(filename);
 	    item->setRenderable(mpc);
-	    dataCollector = new Static3DDataCollector(mpc, name, manager, item);
+	    dataCollector = new Static3DDataCollector(mpc, name, item);
 
 	}
 

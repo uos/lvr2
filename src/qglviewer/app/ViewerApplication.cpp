@@ -130,7 +130,8 @@ void ViewerApplication::treeContextMenuRequested(const QPoint &position)
 
 void ViewerApplication::treeWidgetExport()
 {
-    cout << "Export" << endl;
+
+
 }
 
 void ViewerApplication::dataCollectorAdded(DataCollector* d)

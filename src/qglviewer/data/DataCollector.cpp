@@ -7,9 +7,8 @@
 
 #include "DataCollector.h"
 
-DataCollector::DataCollector(Renderable* renderable, string name, DataManager* manager, CustomTreeWidgetItem* item)
+DataCollector::DataCollector(Renderable* renderable, string name, CustomTreeWidgetItem* item)
 {
-	m_manager = manager;
 	m_renderable = renderable;
 	m_name = name;
 	m_treeItem = item;
