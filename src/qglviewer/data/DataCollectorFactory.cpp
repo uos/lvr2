@@ -86,7 +86,7 @@ DataCollector* DataCollectorFactory::create(string filename, DataManager* manage
 	    item->setViewCentering(true);
 	    item->setName(filename);
 	    item->setRenderable(mpc);
-	    dataCollector = new MultiPointCloudDataCollector(mpc, name, manager, item);
+	    dataCollector = new Static3DDataCollector(mpc, name, manager, item);
 
 	}
 
