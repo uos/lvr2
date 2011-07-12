@@ -58,7 +58,7 @@ void DataManager::openFile()
 
 	// Create a new data collector object and save it in the
 	// collector map
-	DataCollector* c = DataCollectorFactory::instance()->create(file_name, this);
+	DataCollector* c = DataCollectorFactory::instance()->create(file_name);
 	m_dataCollectorMap.insert(make_pair(c->name(), c));
 
 	// Signal the creation of a new data collector
@@ -69,7 +69,7 @@ void DataManager::openFile()
 void DataManager::loadFile( string filename ) {
 
 	/* Create a new data collector object and save it in the collector map */
-	DataCollector * c = DataCollectorFactory::instance()->create( filename, this );
+	DataCollector * c = DataCollectorFactory::instance()->create( filename);
 
 	if(c != 0)
 	{
@@ -78,4 +78,9 @@ void DataManager::loadFile( string filename ) {
 	    /* Signal the creation of a new data collector */
 	    Q_EMIT dataCollectorCreated( c );
 	}
+}
+
+void DataManager::exportData(CustomTreeWidgetItem* item)
+{
+
 }

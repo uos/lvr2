@@ -24,7 +24,7 @@ class DataManager;
 class DataCollector
 {
 public:
-	DataCollector(Renderable* renderable, string name, DataManager* manager, CustomTreeWidgetItem* item = 0);
+	DataCollector(Renderable* renderable, string name, CustomTreeWidgetItem* item = 0);
 	virtual ~DataCollector();
 	Renderable* renderable();
 	string	name();
@@ -35,8 +35,7 @@ public:
 
 protected:
 
-	CustomTreeWidgetItem*        m_treeItem;
-	DataManager* 	        m_manager;
+	CustomTreeWidgetItem*   m_treeItem;
 	Renderable*	            m_renderable;
 	string		            m_name;
 

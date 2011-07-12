@@ -21,7 +21,7 @@ public:
 	virtual ~DataCollectorFactory() {};
 
 	static DataCollectorFactory* instance();
-    DataCollector* create(string filename, DataManager* manager = 0);
+    DataCollector* create(string filename);
 
 private:
 	DataCollectorFactory() {};
