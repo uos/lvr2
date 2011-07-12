@@ -84,6 +84,7 @@ void ViewerApplication::connectEvents()
 	QObject::connect(m_dataManager, SIGNAL(dataCollectorUpdate(DataCollector*)),
 					m_viewerManager, SLOT(updateDataObject(DataCollector*)));
 
+	// Communication between tree widget items
 	QObject::connect(m_sceneDockWidgetUi->treeWidget, SIGNAL(itemClicked(QTreeWidgetItem*, int)),
 					this, SLOT(treeItemClicked(QTreeWidgetItem*, int)));
 
@@ -96,7 +97,7 @@ void ViewerApplication::connectEvents()
 	QObject::connect(m_sceneDockWidgetUi->treeWidget, SIGNAL(customContextMenuRequested(const QPoint &)),
 	                        this, SLOT(treeContextMenuRequested(const QPoint &)));
 
-	// Context menu actions
+	// Tree widget context menu actions
 	connect(m_sceneDockWidgetUi->actionExport_selected_scans, SIGNAL(triggered()), this, SLOT(treeWidgetExport()));
 
 }

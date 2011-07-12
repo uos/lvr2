@@ -29,6 +29,7 @@ public:
 
 	void update(DataCollector*);
 	void loadFile( string filename );
+	void exportData(string DataCollector);
 
 public Q_SLOTS:
 	void openFile();

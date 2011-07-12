@@ -26,7 +26,6 @@ set(QVIEWER_SOURCES
     data/DataCollectorFactory.cpp
     data/DataManager.cpp
     data/Static3DDataCollector.cpp
-    data/MultiPointCloudDataCollector.cpp
     viewers/OrthoCamera.cpp
     viewers/PerspectiveViewer.cpp
     viewers/Viewer.cpp
