@@ -14,9 +14,6 @@
 
 #include "../geometry/BoundingBox.hpp"
 
-using namespace boost::filesystem;
-using namespace Eigen;
-
 namespace lssr{
 
 template<typename VertexT, typename NormalT>
@@ -352,9 +349,9 @@ Plane<VertexT, NormalT> StannPointCloudManager<VertexT, NormalT>::calcPlane(cons
     float z2 = 0;
 
     // Calculate a least sqaures fit to the given points
-    Vector3f C;
-    VectorXf F(k);
-    MatrixXf B(k,3);
+    Eigen::Vector3f C;
+    Eigen::VectorXf F(k);
+    Eigen::MatrixXf B(k,3);
 
     for(int j = 0; j < k; j++){
         F(j)    =  this->m_points[id[j]][1];
@@ -363,11 +360,11 @@ Plane<VertexT, NormalT> StannPointCloudManager<VertexT, NormalT>::calcPlane(cons
         B(j, 2) = this->m_points[id[j]][2];
     }
 
-    MatrixXf Bt = B.transpose();
-    MatrixXf BtB = Bt * B;
-    MatrixXf BtBinv = BtB.inverse();
+    Eigen::MatrixXf Bt = B.transpose();
+    Eigen::MatrixXf BtB = Bt * B;
+    Eigen::MatrixXf BtBinv = BtB.inverse();
 
-    MatrixXf M = BtBinv * Bt;
+    Eigen::MatrixXf M = BtBinv * Bt;
     C = M * F;
 
     // Calculate to vectors in the fitted plane

@@ -43,7 +43,7 @@ DataCollector* DataCollectorFactory::create(string filename, DataManager* manage
 	string name = selectedFile.filename();
 #else
 	string extension = selectedFile.extension().string();
-	string name = selectedFile.filename();
+	string name = selectedFile.filename().c_str();
 #endif
 
 	Static3DDataCollector* dataCollector = 0;
