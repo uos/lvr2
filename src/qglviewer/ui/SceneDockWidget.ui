@@ -7,7 +7,7 @@
     <x>0</x>
     <y>0</y>
     <width>180</width>
-    <height>204</height>
+    <height>209</height>
    </rect>
   </property>
   <property name="minimumSize">
@@ -39,10 +39,13 @@
     <property name="geometry">
      <rect>
       <x>0</x>
-      <y>0</y>
+      <y>10</y>
       <width>151</width>
       <height>192</height>
      </rect>
+    </property>
+    <property name="contextMenuPolicy">
+     <enum>Qt::CustomContextMenu</enum>
     </property>
     <property name="layoutDirection">
      <enum>Qt::LeftToRight</enum>
@@ -62,9 +65,6 @@
     <attribute name="headerVisible">
      <bool>false</bool>
     </attribute>
-    <attribute name="headerVisible">
-     <bool>false</bool>
-    </attribute>
     <column>
      <property name="text">
       <string notr="true">1</string>
@@ -72,6 +72,11 @@
     </column>
    </widget>
   </widget>
+  <action name="actionExport_selected_scans">
+   <property name="text">
+    <string>Export selected scans...</string>
+   </property>
+  </action>
  </widget>
  <resources/>
  <connections/>

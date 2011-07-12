@@ -93,6 +93,31 @@ void ViewerApplication::connectEvents()
 	QObject::connect(m_sceneDockWidgetUi->treeWidget, SIGNAL(itemSelectionChanged()),
 	                    this, SLOT(treeSelectionChanged()));
 
+	QObject::connect(m_sceneDockWidgetUi->treeWidget, SIGNAL(customContextMenuRequested(const QPoint &)),
+	                        this, SLOT(treeContextMenuRequested(const QPoint &)));
+
+}
+
+void ViewerApplication::treeContextMenuRequested(const QPoint &position)
+{
+    // Create suitable actions for clicked widget
+    QList<QAction *> actions;
+    QTreeWidgetItem* item = m_sceneDockWidgetUi->treeWidget->indexAt(position);
+
+    // Check if item is valid and parse supported actions
+    if(item->isValid())
+    {
+        if(item->type() == MultiPointCloudItem)
+        {
+            actions.append(m_sceneDockWidgetUi->actionExport_selected_scans);
+        }
+    }
+
+    // Display menu if actions are present
+    if (actions.count() > 0)
+    {
+        QMenu::exec(actions, m_sceneDockWidgetUi->treeWidget->mapToGlobal(position));
+    }
 }
 
 void ViewerApplication::dataCollectorAdded(DataCollector* d)

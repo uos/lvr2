@@ -54,6 +54,7 @@ public Q_SLOTS:
 	void treeItemClicked(QTreeWidgetItem* item, int n);
 	void treeItemChanged(QTreeWidgetItem*, int);
 	void treeSelectionChanged();
+	void treeContextMenuRequested(const QPoint &);
 
 private:
 
