@@ -42,6 +42,8 @@ public:
     pc_attr_it first() { return m_clouds.begin();}
     pc_attr_it last()  { return m_clouds.end();}
 
+    void exportAllPoints(string filename);
+
 private:
 
     void readNewUOSFormat(string dir, int first, int last);
