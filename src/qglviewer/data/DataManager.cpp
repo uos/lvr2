@@ -87,5 +87,6 @@ void DataManager::exportData(CustomTreeWidgetItem* item)
     if(item->type() == MultiPointCloudItem)
     {
         MultiPointCloud* mpc = static_cast<MultiPointCloud*>(item->renderable());
+       mpc->exportAllPoints("exportedPoints.pts");
     }
 }
