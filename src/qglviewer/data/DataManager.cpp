@@ -86,7 +86,28 @@ void DataManager::exportData(CustomTreeWidgetItem* item)
 {
     if(item->type() == MultiPointCloudItem)
     {
-        MultiPointCloud* mpc = static_cast<MultiPointCloud*>(item->renderable());
-       mpc->exportAllPoints("exportedPoints.pts");
+       MultiPointCloud* mpc = static_cast<MultiPointCloud*>(item->renderable());
+
+       // Display save dialog
+       QFileDialog file_dialog;
+       QStringList file_names;
+       QStringList file_types;
+
+       file_types << "Point Clouds (*.pts)";
+
+
+       //Set Title
+       file_dialog.setWindowTitle("Export Selected Point Clouds");
+       file_dialog.setFileMode(QFileDialog::AnyFile);
+       file_dialog.setFilters(file_types);
+
+       if(file_dialog.exec()){
+           file_names = file_dialog.selectedFiles();
+       } else {
+           return;
+       }
+       //Get filename from list
+       string file_name = file_names.constBegin()->toStdString();
+       mpc->exportAllPoints(file_name);
     }
 }
