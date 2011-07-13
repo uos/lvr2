@@ -95,7 +95,6 @@ void DataManager::exportData(CustomTreeWidgetItem* item)
 
        file_types << "Point Clouds (*.pts)";
 
-
        //Set Title
        file_dialog.setWindowTitle("Export Selected Point Clouds");
        file_dialog.setFileMode(QFileDialog::AnyFile);
