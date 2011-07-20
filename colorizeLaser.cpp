@@ -14,7 +14,7 @@
  ******************************************************************************/
 
 #include <pcl/point_cloud.h>
-#include <pcl/octree/octree.h>
+#include <pcl/kdtree/kdtree_flann.h>
 
 #include <stdio.h>
 #include <iostream>
@@ -22,7 +22,6 @@
 #include <ctime>
 
 using namespace pcl;
-using namespace pcl::octree;
 
 
 void readPts( char * filename, PointCloud<PointXYZRGB>::Ptr cloud ) {
@@ -118,6 +117,8 @@ void printHelp( char * name ) {
 }
 
 
+
+
 int main( int argc, char ** argv ) {
 
 	double maxdist = std::numeric_limits<double>::max();
@@ -157,7 +158,6 @@ int main( int argc, char ** argv ) {
 		printHelp( *argv );
 		exit( EXIT_SUCCESS );
 	}
-	srand( time( NULL ) );
 
 	PointCloud<PointXYZRGB>::Ptr lasercloud(  new PointCloud<PointXYZRGB> );
 	PointCloud<PointXYZRGB>::Ptr kinectcloud( new PointCloud<PointXYZRGB> );
@@ -171,9 +171,8 @@ int main( int argc, char ** argv ) {
 	}
 
 	/* Generate octree for kinect pointcloud */
-	OctreePointCloud<PointXYZRGB> octree( 256.0f );
-	octree.setInputCloud( kinectcloud );
-	octree.addPointsFromInputCloud();
+	KdTreeFLANN<PointXYZRGB> kdtree; /* param: sorted */
+	kdtree.setInputCloud( kinectcloud );
 
 	/* Open output file. */
 	FILE * out = fopen( argv[ argc - 1 ], "w" );
@@ -185,17 +184,17 @@ int main( int argc, char ** argv ) {
 	/* set number of threads to the number of available processors/cores */
 	omp_set_num_threads( jobs );
 
-	printf( "Adding color information. This might take some minutes...\n" );
+	printf( "Adding color information...\n" );
 
 	/* Run through laserscan cloud and find neighbours. */
 	#pragma omp parallel for
 	for ( int i = 0; i < lasercloud->points.size(); i++ ) {
 
-		std::vector<int>   pointIdx;
-		std::vector<float> pointSqrDist;
+		std::vector<int>   pointIdx(1);
+		std::vector<float> pointSqrDist(1);
 
 		/* nearest neighbor search */
-		if ( octree.nearestKSearch( lasercloud->points[i], 1, pointIdx, pointSqrDist ) ) {
+		if ( kdtree.nearestKSearch( *lasercloud, i, 1, pointIdx, pointSqrDist ) ) {
 			if ( pointSqrDist[0] > maxdist ) {
 				fprintf( out, "% 11f % 11f % 11f % 14f % 3d % 3d % 3d\n",
 						lasercloud->points[i].x, lasercloud->points[i].y,
