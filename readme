@@ -12,7 +12,7 @@ COMPILATION
    > mkdir build && cd build
 
 2. Start configuration by calling cmake:
-   > cmake ..
+   > cmake -DCMAKE_BUILD_TYPE=Release ..
 
 3. Call make.
 
@@ -27,5 +27,17 @@ preceding arguments and the output file as last argument:
 
 If you want to use the example data, call:
 
-> ./colorizeLaser -d 10000 -c ff0000 example-data/scan000.3d \
+> ./colorizeLaser -d 100 -c ff0000 example-data/scan000.3d \
      example-data/1310041219.570255037.pts coloredLaserScan.pts
+Usage: ./colorizeLaser [options] laserdat kinectdat1 [kinectdat2 ...] outfile
+
+
+OPTIONS
+================================================================================
+
+   -h   Show this help and exit.
+   -d   Maximum distance for neighbourhood.
+   -j   Number of jobs to be scheduled parallel.
+        Positive integer or “auto” (default)
+   -c   Set color of points with no neighbours 
+        as 24 bit hexadecimal integer.

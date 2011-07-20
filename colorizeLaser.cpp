@@ -108,7 +108,8 @@ void printHelp( char * name ) {
 
 	printf( "Usage: %s [options] laserdat kinectdat1 [kinectdat2 ...] outfile\n"
 			"Options:\n"
-			"   -d   Maximum squared distance for neighbourhood.\n"
+			"   -h   Show this help and exit.\n"
+			"   -d   Maximum distance for neighbourhood.\n"
 			"   -j   Number of jobs to be scheduled parallel.\n"
 			"        Positive integer or “auto” (default)\n"
 			"   -c   Set color of points with no neighbours \n"
@@ -134,6 +135,7 @@ int main( int argc, char ** argv ) {
 				exit( EXIT_SUCCESS );
 			case 'd':
 				maxdist = atof( optarg );
+				maxdist *= maxdist;
 				break;
 			case 'm':
 				if ( !strcmp( optarg, "auto" ) ) {
@@ -201,16 +203,12 @@ int main( int argc, char ** argv ) {
 						lasercloud->points[i].z, pointSqrDist[0],
 						nc_r, nc_g, nc_b );
 			} else {
-				uint8_t r, g, b;
-				uint32_t rgb = *( (int*) &kinectcloud->points[ pointIdx[0] ].rgb );
-				r = rgb >> 16 & 0x0000ff;
-				g = rgb >> 8  & 0x0000ff;
-				b = rgb       & 0x0000ff;
+				uint8_t * rgb = (uint8_t *) &kinectcloud->points[ pointIdx[0] ].rgb;
 				/* lasercloud->points[i].rgb = kinectcloud->points[ pointIdx[0] ].rgb; */
 				fprintf( out, "% 11f % 11f % 11f % 14f % 3d % 3d % 3d\n",
 						lasercloud->points[i].x, lasercloud->points[i].y,
 						lasercloud->points[i].z, pointSqrDist[0],
-						r, g, b );
+						rgb[2], rgb[1], rgb[0] );
 			}
 
 		}
