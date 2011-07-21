@@ -41,3 +41,18 @@ OPTIONS
         Positive integer or “auto” (default)
    -c   Set color of points with no neighbours 
         as 24 bit hexadecimal integer.
+
+OUTPUT
+================================================================================
+The output is a pts pointcloud file with eight values per line. The first three
+values are cartesian coordinates (x, y, z). The fourth value is the suared
+distance to the nearest neighbour of the colored (kinect-)pointcloud. The fifth
+value indicates if the real color information were added to this point. The
+last three parameters are rgb color information as three 8-bit unsigned
+integers (r, g, b).
+
+Example:
+          x           y           z           dist  colorized    r   g   b
+ - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+ 224.942993  232.641998 -157.699005  174090.125000          0  255   0   0
+ -62.479401    5.189580   -3.466960    7753.508301          1   86  69  63

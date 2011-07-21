@@ -2,9 +2,11 @@
  *
  *       Filename:  colorizeLaser.cpp
  *
- *    Description:  
+ *    Description:  Takes the color information from one or more colored
+ *    (kinect-) pointclouds and transfers these color informations to near
+ *    points in an uncolored (laser-) cloud.
  *
- *        Version:  0.1
+ *        Version:  0.2
  *        Created:  07/02/2011 12:18:03 AM
  *       Compiler:  g++
  *
@@ -20,6 +22,9 @@
 #include <iostream>
 #include <vector>
 #include <ctime>
+
+double maxdist = std::numeric_limits<double>::max();
+char nc_rgb[12] = "  0   0   0";
 
 using namespace pcl;
 
@@ -130,8 +135,7 @@ void printHelp( char * name ) {
  *         Name:  printHelp
  *  Description:  Prints usage information.
  ******************************************************************************/
-void parseArgs( int argc, char ** argv, double * maxdist, int * jobs, 
-		uint8_t * nc_r, uint8_t * nc_g, uint8_t * nc_b ) {
+void parseArgs( int argc, char ** argv ) {
 
 	/* Parse options */
 	char c;
@@ -141,24 +145,25 @@ void parseArgs( int argc, char ** argv, double * maxdist, int * jobs,
 				printHelp( *argv );
 				exit( EXIT_SUCCESS );
 			case 'd':
-				*maxdist = atof( optarg );
-				*maxdist *= *maxdist;
+				maxdist = atof( optarg );
+				maxdist *= maxdist;
 				break;
 			case 'm':
 				if ( !strcmp( optarg, "auto" ) ) {
-					*jobs = omp_get_num_procs();
+					omp_set_num_threads( omp_get_num_procs() );
 				} else {
-					*jobs = atoi( optarg ) > 1 
-						? atoi( optarg ) 
-						: omp_get_num_procs();
+					omp_set_num_threads( 
+							atoi( optarg ) > 1 ? atoi( optarg ) 
+						: omp_get_num_procs() );
 				}
 				break;
 			case 'c':
-				uint32_t nc_rgb = 0;
-				sscanf( optarg, "%x", &nc_rgb );
-				*nc_r = ((uint8_t *) &nc_rgb)[2];
-				*nc_g = ((uint8_t *) &nc_rgb)[1];
-				*nc_b = ((uint8_t *) &nc_rgb)[0];
+				uint32_t rgb = 0;
+				sscanf( optarg, "%x", &rgb );
+				sprintf( nc_rgb, "% 3d % 3d % 3d", 
+						(int) ((uint8_t *) &rgb)[2], 
+						(int) ((uint8_t *) &rgb)[1], 
+						(int) ((uint8_t *) &rgb)[0] );
 		}
 	}
 
@@ -172,41 +177,22 @@ void parseArgs( int argc, char ** argv, double * maxdist, int * jobs,
 
 
 /*******************************************************************************
- *         Name:  main
- *  Description:  Main function.
+ *         Name:  colorizeCloud
+ *  Description:  
  ******************************************************************************/
-int main( int argc, char ** argv ) {
-
-	double maxdist = std::numeric_limits<double>::max();
-	int jobs = omp_get_num_procs();
-	uint8_t nc_r = 0, nc_g = 0, nc_b = 0;
-
-	parseArgs( argc, argv, &maxdist, &jobs, &nc_r, &nc_g, &nc_b );
-
-	PointCloud<PointXYZRGB>::Ptr lasercloud(  new PointCloud<PointXYZRGB> );
-	PointCloud<PointXYZRGB>::Ptr kinectcloud( new PointCloud<PointXYZRGB> );
-
-	/* Read clouds from file. */
-	printf( "Loading laserscan data...\n" );
-	readPts( argv[optind], lasercloud );
-	printf( "Loading kinect data...\n" );
-	for ( int i = optind + 1; i < argc - 1; i++ ) {
-		readPts( argv[i], kinectcloud );
-	}
+void colorizeCloud( PointCloud<PointXYZRGB>::Ptr lasercloud, 
+		PointCloud<PointXYZRGB>::Ptr kinectcloud, char * filename ) {
 
 	/* Generate octree for kinect pointcloud */
 	KdTreeFLANN<PointXYZRGB> kdtree; /* param: sorted */
 	kdtree.setInputCloud( kinectcloud );
 
 	/* Open output file. */
-	FILE * out = fopen( argv[ argc - 1 ], "w" );
+	FILE * out = fopen( filename, "w" );
 	if ( !out ) {
-		fprintf( stderr, "error: Could not open »%s«.\n", argv[ argc - 1 ] );
+		fprintf( stderr, "error: Could not open »%s«.\n", filename );
 		exit( EXIT_FAILURE );
 	}
-
-	/* set number of threads to the number of available processors/cores */
-	omp_set_num_threads( jobs );
 
 	printf( "Adding color information...\n" );
 
@@ -220,14 +206,14 @@ int main( int argc, char ** argv ) {
 		/* nearest neighbor search */
 		if ( kdtree.nearestKSearch( *lasercloud, i, 1, pointIdx, pointSqrDist ) ) {
 			if ( pointSqrDist[0] > maxdist ) {
-				fprintf( out, "% 11f % 11f % 11f % 14f % 3d % 3d % 3d\n",
+				fprintf( out, "% 11f % 11f % 11f % 14f 0 %s\n",
 						lasercloud->points[i].x, lasercloud->points[i].y,
 						lasercloud->points[i].z, pointSqrDist[0],
-						nc_r, nc_g, nc_b );
+						nc_rgb );
 			} else {
 				uint8_t * rgb = (uint8_t *) &kinectcloud->points[ pointIdx[0] ].rgb;
 				/* lasercloud->points[i].rgb = kinectcloud->points[ pointIdx[0] ].rgb; */
-				fprintf( out, "% 11f % 11f % 11f % 14f % 3d % 3d % 3d\n",
+				fprintf( out, "% 11f % 11f % 11f % 14f 1 % 3d % 3d % 3d\n",
 						lasercloud->points[i].x, lasercloud->points[i].y,
 						lasercloud->points[i].z, pointSqrDist[0],
 						rgb[2], rgb[1], rgb[0] );
@@ -239,5 +225,30 @@ int main( int argc, char ** argv ) {
 	if ( out ) {
 		fclose( out );
 	}
+
+}
+
+
+/*******************************************************************************
+ *         Name:  main
+ *  Description:  Main function.
+ ******************************************************************************/
+int main( int argc, char ** argv ) {
+
+	omp_set_num_threads( omp_get_num_procs() );
+	parseArgs( argc, argv );
+
+	PointCloud<PointXYZRGB>::Ptr lasercloud(  new PointCloud<PointXYZRGB> );
+	PointCloud<PointXYZRGB>::Ptr kinectcloud( new PointCloud<PointXYZRGB> );
+
+	/* Read clouds from file. */
+	printf( "Loading laserscan data...\n" );
+	readPts( argv[optind], lasercloud );
+	printf( "Loading kinect data...\n" );
+	for ( int i = optind + 1; i < argc - 1; i++ ) {
+		readPts( argv[i], kinectcloud );
+	}
+
+	colorizeCloud( lasercloud, kinectcloud, argv[ argc - 1 ] );
 
 }
