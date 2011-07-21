@@ -24,6 +24,10 @@
 using namespace pcl;
 
 
+/*******************************************************************************
+ *         Name:  readPts
+ *  Description:  Load a pts file into memory.
+ ******************************************************************************/
 void readPts( char * filename, PointCloud<PointXYZRGB>::Ptr cloud ) {
 
 	/* Open input file. */
@@ -104,6 +108,10 @@ void readPts( char * filename, PointCloud<PointXYZRGB>::Ptr cloud ) {
 }
 
 
+/*******************************************************************************
+ *         Name:  printHelp
+ *  Description:  Prints usage information.
+ ******************************************************************************/
 void printHelp( char * name ) {
 
 	printf( "Usage: %s [options] laserdat kinectdat1 [kinectdat2 ...] outfile\n"
@@ -118,13 +126,12 @@ void printHelp( char * name ) {
 }
 
 
-
-
-int main( int argc, char ** argv ) {
-
-	double maxdist = std::numeric_limits<double>::max();
-	int jobs = omp_get_num_procs();
-	uint8_t nc_r = 0, nc_g = 0, nc_b = 0;
+/*******************************************************************************
+ *         Name:  printHelp
+ *  Description:  Prints usage information.
+ ******************************************************************************/
+void parseArgs( int argc, char ** argv, double * maxdist, int * jobs, 
+		uint8_t * nc_r, uint8_t * nc_g, uint8_t * nc_b ) {
 
 	/* Parse options */
 	char c;
@@ -134,14 +141,14 @@ int main( int argc, char ** argv ) {
 				printHelp( *argv );
 				exit( EXIT_SUCCESS );
 			case 'd':
-				maxdist = atof( optarg );
-				maxdist *= maxdist;
+				*maxdist = atof( optarg );
+				*maxdist *= *maxdist;
 				break;
 			case 'm':
 				if ( !strcmp( optarg, "auto" ) ) {
-					jobs = omp_get_num_procs();
+					*jobs = omp_get_num_procs();
 				} else {
-					jobs = atoi( optarg ) > 1 
+					*jobs = atoi( optarg ) > 1 
 						? atoi( optarg ) 
 						: omp_get_num_procs();
 				}
@@ -149,9 +156,9 @@ int main( int argc, char ** argv ) {
 			case 'c':
 				uint32_t nc_rgb = 0;
 				sscanf( optarg, "%x", &nc_rgb );
-				nc_r = ((uint8_t *) &nc_rgb)[2];
-				nc_g = ((uint8_t *) &nc_rgb)[1];
-				nc_b = ((uint8_t *) &nc_rgb)[0];
+				*nc_r = ((uint8_t *) &nc_rgb)[2];
+				*nc_g = ((uint8_t *) &nc_rgb)[1];
+				*nc_b = ((uint8_t *) &nc_rgb)[0];
 		}
 	}
 
@@ -160,6 +167,21 @@ int main( int argc, char ** argv ) {
 		printHelp( *argv );
 		exit( EXIT_SUCCESS );
 	}
+	
+}
+
+
+/*******************************************************************************
+ *         Name:  main
+ *  Description:  Main function.
+ ******************************************************************************/
+int main( int argc, char ** argv ) {
+
+	double maxdist = std::numeric_limits<double>::max();
+	int jobs = omp_get_num_procs();
+	uint8_t nc_r = 0, nc_g = 0, nc_b = 0;
+
+	parseArgs( argc, argv, &maxdist, &jobs, &nc_r, &nc_g, &nc_b );
 
 	PointCloud<PointXYZRGB>::Ptr lasercloud(  new PointCloud<PointXYZRGB> );
 	PointCloud<PointXYZRGB>::Ptr kinectcloud( new PointCloud<PointXYZRGB> );
