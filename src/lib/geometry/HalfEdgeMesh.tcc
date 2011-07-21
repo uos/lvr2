@@ -85,7 +85,6 @@ void HalfEdgeMesh<VertexT, NormalT>::addTriangle(uint a, uint b, uint c)
 {
 	// Create a new face
 	HFace* face = new HFace;
-	face->m_used = false;
 
 	// Create a list of HalfEdges that will be connected
 	// with this here. Here we need only to alloc space for
@@ -535,65 +534,208 @@ void HalfEdgeMesh<VertexT, NormalT>::flipEdge(HEdge* edge)
 }
 
 template<typename VertexT, typename NormalT>
-int HalfEdgeMesh<VertexT, NormalT>::regionGrowing(HFace* start_face)
+int HalfEdgeMesh<VertexT, NormalT>::regionGrowing(HFace* start_face, int region)
 {
 	//Mark face as used
-	start_face->m_used = true;
+	start_face->m_region = region;
 
 	int neighbor_cnt = 0;
 
 	//Get the unmarked neighbor faces and start the recursion
-	if((*start_face)[0]->pair->face != 0 && (*start_face)[0]->pair->face->m_used == false)
-		++neighbor_cnt += regionGrowing((*start_face)[0]->pair->face);
+	if((*start_face)[0]->pair->face != 0 && (*start_face)[0]->pair->face->m_region == -1)
+		++neighbor_cnt += regionGrowing((*start_face)[0]->pair->face, region);
 
-	if((*start_face)[1]->pair->face != 0 && (*start_face)[1]->pair->face->m_used == false)
-		++neighbor_cnt += regionGrowing((*start_face)[1]->pair->face);
+	if((*start_face)[1]->pair->face != 0 && (*start_face)[1]->pair->face->m_region == -1)
+		++neighbor_cnt += regionGrowing((*start_face)[1]->pair->face, region);
 
-	if((*start_face)[2]->pair->face != 0 && (*start_face)[2]->pair->face->m_used == false)
-		++neighbor_cnt += regionGrowing((*start_face)[2]->pair->face);
+	if((*start_face)[2]->pair->face != 0 && (*start_face)[2]->pair->face->m_region == -1)
+		++neighbor_cnt += regionGrowing((*start_face)[2]->pair->face, region);
 
 	return neighbor_cnt;
 }
 
 template<typename VertexT, typename NormalT>
-void HalfEdgeMesh<VertexT, NormalT>::destroyRecursive(HFace* start_face)
+int HalfEdgeMesh<VertexT, NormalT>::regionGrowing(HFace* start_face, NormalT &normal, float &angle, int region)
 {
-	start_face->m_used = false;
+	//Mark face as used
+	start_face->m_region = region;
 
-	HFace* f1 = start_face->m_edge->pair->face;
-	HFace* f2 = start_face->m_edge->next->pair->face;
-	HFace* f3 = start_face->m_edge->next->next->pair->face;
+	int neighbor_cnt = 0;
 
-	//Get the marked neighbor faces and start the recursion
-	if(f1 != 0 && f1->m_used == true)
-		destroyRecursive(f1);
+	//Get the unmarked neighbor faces and start the recursion
+	if((*start_face)[0]->pair->face != 0 && (*start_face)[0]->pair->face->m_region == -1
+			&& fabs((*start_face)[0]->pair->face->getFaceNormal() * normal) > angle )
+		++neighbor_cnt += regionGrowing((*start_face)[0]->pair->face, normal, angle, region);
 
-	if(f2 != 0 && f2->m_used == true)
-		destroyRecursive(f2);
+	if((*start_face)[1]->pair->face != 0 && (*start_face)[1]->pair->face->m_region == -1
+			&& fabs((*start_face)[1]->pair->face->getFaceNormal() * normal) > angle)
+		++neighbor_cnt += regionGrowing((*start_face)[1]->pair->face, normal, angle, region);
 
-	if(f3 != 0 && f3->m_used == true)
-		destroyRecursive(f3);
+	if((*start_face)[2]->pair->face != 0 && (*start_face)[2]->pair->face->m_region == -1
+			&& fabs((*start_face)[2]->pair->face->getFaceNormal() * normal) > angle)
+		++neighbor_cnt += regionGrowing((*start_face)[2]->pair->face, normal, angle, region);
 
-	deleteFace(start_face);
+	return neighbor_cnt;
+}
+
+template<typename VertexT, typename NormalT>
+void HalfEdgeMesh<VertexT, NormalT>::optimizePlanes(int iterations)
+{
+	//regions that will be deleted due to size
+	vector<int> smallRegions;
+
+	int region = 0;
+	int region_size = 0;
+
+	for(int j=0; j<iterations; j++)
+	{
+		//reset all region variables
+		for(int i=0; i<m_faces.size(); i++)
+			m_faces[i]->m_region=-1;
+
+		//find all regions by regionGrowing with normal criteria
+		for(int i=0; i<m_faces.size(); i++)
+		{
+			if(m_faces[i]->m_region == -1)
+			{
+				NormalT n = m_faces[i]->getFaceNormal();
+				float angle = 0.85;	//about 32 degree
+				region_size = regionGrowing(m_faces[i], n, angle, region) + 1;
+
+				//fit big regions into the regression plane
+				if(region_size > max(50.0, log(m_faces.size())))
+					regressionPlane(region);
+
+				//save too small regions with size smaller than 5
+				if(region_size < 5 && j==iterations-1)
+					smallRegions.push_back(region);
+
+				region++;
+			}
+		}
+	}
+
+	//delete too small regions
+	for(int i=0; i<smallRegions.size(); i++)
+		deleteRegion(smallRegions[i]);
+}
+
+template<typename VertexT, typename NormalT>
+void HalfEdgeMesh<VertexT, NormalT>::regressionPlane(int region)
+{
+	//collect all faces from the same region
+	vector<HalfEdgeFace<VertexT, NormalT>*>    planeFaces;
+	for(int i=0; i<m_faces.size(); i++)
+		if(m_faces[i]->m_region == region) planeFaces.push_back(m_faces[i]);
+
+	srand ( time(NULL) );
+
+	VertexT point1;
+	VertexT point2;
+	VertexT point3;
+
+	//representation of best regression plane by point and normal
+	VertexT bestpoint;
+	NormalT bestNorm;
+
+	float bestdist = FLT_MAX;
+	float dist = 0;
+
+	int iterations = 0;
+	int nonimproving_iterations = 0;
+
+	while((nonimproving_iterations < 20) && (iterations < 200))
+	{
+		//randomly choose 3 disjoint points
+		do{
+			point1 = (*planeFaces[rand() % planeFaces.size()])(0)->m_position;
+			point2 = (*planeFaces[rand() % planeFaces.size()])(1)->m_position;
+			point3 = (*planeFaces[rand() % planeFaces.size()])(2)->m_position;
+		}while(point1 == point2 || point2 == point3 || point3 == point1);
+
+		//compute normal of the plane given by the 3 points
+		NormalT n0 = (point1 - point2).cross(point1 - point3);
+		n0.normalize();
+
+		//compute error to at most 50 other randomly chosen points
+		dist = 0;
+		for(int i=0; i < min(50, (int)planeFaces.size()); i++)
+		{
+			VertexT refpoint = (*planeFaces[rand() % planeFaces.size()])(0)->m_position;
+			dist += fabs(refpoint * n0 - point1 * n0) / min(50, (int)planeFaces.size());
+		}
+
+		//a new optimum is found
+		if(dist < bestdist)
+		{
+			bestdist = dist;
+
+			bestpoint = point1;
+			bestNorm = n0;
+
+			nonimproving_iterations = 0;
+		}
+		else
+			nonimproving_iterations++;
+
+		iterations++;
+	}
+
+	//drag points to the regression plane
+	for(int i=0; i<planeFaces.size(); i++)
+	{
+
+		float v = ((bestpoint - (*planeFaces[i])(0)->m_position) * bestNorm) / (bestNorm * bestNorm);
+		if(v != 0)
+			(*planeFaces[i])(0)->m_position = (*planeFaces[i])(0)->m_position + (VertexT)bestNorm * v;
+
+		v = ((bestpoint - (*planeFaces[i])(1)->m_position) * bestNorm) / (bestNorm * bestNorm);
+		if(v != 0)
+			(*planeFaces[i])(1)->m_position = (*planeFaces[i])(1)->m_position + (VertexT)bestNorm * v;
+
+		v = ((bestpoint - (*planeFaces[i])(2)->m_position) * bestNorm) / (bestNorm * bestNorm);
+		if(v != 0)
+			(*planeFaces[i])(2)->m_position = (*planeFaces[i])(2)->m_position + (VertexT)bestNorm * v;
+
+	}
+}
+
+template<typename VertexT, typename NormalT>
+void HalfEdgeMesh<VertexT, NormalT>::deleteRegion(int region)
+{
+	vector<HalfEdgeFace<VertexT, NormalT>*> todelete;
+
+	for(int i=0; i<m_faces.size(); i++)
+		if(m_faces[i]->m_region == region)
+			todelete.push_back(m_faces[i]);
+
+	for(int i=0; i<todelete.size(); i++)
+		deleteFace(todelete[i]);
 }
 
 template<typename VertexT, typename NormalT>
 void HalfEdgeMesh<VertexT, NormalT>::removeDanglingArtifacts(int threshold)
 {
-	vector<HalfEdgeFace<VertexT, NormalT>*>    todelete;
+	vector<int> todelete;
+	int region = 0;
 
 	for(int i=0; i<m_faces.size(); i++)
 	{
-		if(m_faces[i]->m_used == false)
+		if(m_faces[i]->m_region == -1)
 		{
-			int region_size = regionGrowing(m_faces[i]) + 1;
+			int region_size = regionGrowing(m_faces[i], region) + 1;
 			if(region_size <= threshold)
-				todelete.push_back(m_faces[i]);
+				todelete.push_back(region);
+			region++;
 		}
 	}
 
 	for(int i=0; i<todelete.size(); i++ )
-		destroyRecursive(todelete[i]);
+		deleteRegion(todelete[i]);
+
+	//reset all region variables
+	for(int i=0; i<m_faces.size(); i++)
+		m_faces[i]->m_region=-1;
 }
 
 template<typename VertexT, typename NormalT>
@@ -626,17 +768,6 @@ void HalfEdgeMesh<VertexT, NormalT>::finalize()
 		this->m_colorBuffer  [3 * i] = 0.8;
 		this->m_colorBuffer  [3 * i + 1] = 0.8;
 		this->m_colorBuffer  [3 * i + 2] = 0.8;
-		//cout << "VERTEX: -------------------------------" << endl;
-		//cout << vertices_iter->second->m_position[0] << endl;
-		//cout << vertices_iter->second->m_position[1] << endl;
-		//cout << vertices_iter->second->m_position[2] << endl;
-
-		//cout << vertices_iter->second->m_normal[0] << endl;
-		//cout << vertices_iter->second->m_normal[1] << endl;
-		//cout << vertices_iter->second->m_normal[2] << endl;
-
-		//cout << (vertices_iter->first) << endl;
-		//cout << "END: ----------------------------------" << endl;
 
 		// map the old index to the new index in the vertexBuffer
 		index_map[*vertices_iter] = i;
@@ -654,51 +785,65 @@ void HalfEdgeMesh<VertexT, NormalT>::finalize()
 		//int surface_class = classifyFace(he_faces[i]);
 
 		int surface_class = 1;
-		switch(surface_class)
-		{
-		case 1:
-			this->m_colorBuffer[this->m_indexBuffer[3 * i]  * 3 + 0] = 0.0;
-			this->m_colorBuffer[this->m_indexBuffer[3 * i]  * 3 + 1] = 0.0;
-			this->m_colorBuffer[this->m_indexBuffer[3 * i]  * 3 + 2] = 1.0;
+		surface_class = (*face_iter)->m_region;
 
-			this->m_colorBuffer[this->m_indexBuffer[3 * i + 1] * 3 + 0] = 0.0;
-			this->m_colorBuffer[this->m_indexBuffer[3 * i + 1] * 3 + 1] = 0.0;
-			this->m_colorBuffer[this->m_indexBuffer[3 * i + 1] * 3 + 2] = 1.0;
+		this->m_colorBuffer[this->m_indexBuffer[3 * i]  * 3 + 0] = fabs(sin(surface_class * 5));
+		this->m_colorBuffer[this->m_indexBuffer[3 * i]  * 3 + 1] = fabs(cos(surface_class % 3));
+		this->m_colorBuffer[this->m_indexBuffer[3 * i]  * 3 + 2] = fabs(cos(surface_class));
 
-			this->m_colorBuffer[this->m_indexBuffer[3 * i + 2] * 3 + 0] = 0.0;
-			this->m_colorBuffer[this->m_indexBuffer[3 * i + 2] * 3 + 1] = 0.0;
-			this->m_colorBuffer[this->m_indexBuffer[3 * i + 2] * 3 + 2] = 1.0;
+		this->m_colorBuffer[this->m_indexBuffer[3 * i + 1] * 3 + 0] = fabs(sin(surface_class * 5));
+		this->m_colorBuffer[this->m_indexBuffer[3 * i + 1] * 3 + 1] = fabs(cos(surface_class % 3));
+		this->m_colorBuffer[this->m_indexBuffer[3 * i + 1] * 3 + 2] = fabs(cos(surface_class));
 
-			break;
-		case 2:
-			this->m_colorBuffer[this->m_indexBuffer[3 * i] * 3 + 0] = 1.0;
-			this->m_colorBuffer[this->m_indexBuffer[3 * i] * 3 + 1] = 0.0;
-			this->m_colorBuffer[this->m_indexBuffer[3 * i] * 3 + 2] = 0.0;
+		this->m_colorBuffer[this->m_indexBuffer[3 * i + 2] * 3 + 0] = fabs(sin(surface_class * 5));
+		this->m_colorBuffer[this->m_indexBuffer[3 * i + 2] * 3 + 1] = fabs(cos(surface_class % 3));
+		this->m_colorBuffer[this->m_indexBuffer[3 * i + 2] * 3 + 2] = fabs(cos(surface_class));
 
-			this->m_colorBuffer[this->m_indexBuffer[3 * i + 1] * 3 + 0] = 1.0;
-			this->m_colorBuffer[this->m_indexBuffer[3 * i + 1] * 3 + 1] = 0.0;
-			this->m_colorBuffer[this->m_indexBuffer[3 * i + 1] * 3 + 2] = 0.0;
-
-			this->m_colorBuffer[this->m_indexBuffer[3 * i + 2] * 3 + 0] = 1.0;
-			this->m_colorBuffer[this->m_indexBuffer[3 * i + 2] * 3 + 1] = 0.0;
-			this->m_colorBuffer[this->m_indexBuffer[3 * i + 2] * 3 + 2] = 0.0;
-
-			break;
-		case 3:
-			this->m_colorBuffer[this->m_indexBuffer[3 * i] * 3 + 0] = 0.0;
-			this->m_colorBuffer[this->m_indexBuffer[3 * i] * 3 + 1] = 1.0;
-			this->m_colorBuffer[this->m_indexBuffer[3 * i] * 3 + 2] = 0.0;
-
-			this->m_colorBuffer[this->m_indexBuffer[3 * i + 1] * 3 + 0] = 0.0;
-			this->m_colorBuffer[this->m_indexBuffer[3 * i + 1] * 3 + 1] = 1.0;
-			this->m_colorBuffer[this->m_indexBuffer[3 * i + 1] * 3 + 2] = 0.0;
-
-			this->m_colorBuffer[this->m_indexBuffer[3 * i + 2] * 3 + 0] = 0.0;
-			this->m_colorBuffer[this->m_indexBuffer[3 * i + 2] * 3 + 1] = 1.0;
-			this->m_colorBuffer[this->m_indexBuffer[3 * i + 2] * 3 + 2] = 0.0;
-
-			break;
-		}
+//		switch(surface_class)
+//		{
+//		case 1:
+//			this->m_colorBuffer[this->m_indexBuffer[3 * i]  * 3 + 0] = 0.0;
+//			this->m_colorBuffer[this->m_indexBuffer[3 * i]  * 3 + 1] = 0.0;
+//			this->m_colorBuffer[this->m_indexBuffer[3 * i]  * 3 + 2] = 1.0;
+//
+//			this->m_colorBuffer[this->m_indexBuffer[3 * i + 1] * 3 + 0] = 0.0;
+//			this->m_colorBuffer[this->m_indexBuffer[3 * i + 1] * 3 + 1] = 0.0;
+//			this->m_colorBuffer[this->m_indexBuffer[3 * i + 1] * 3 + 2] = 1.0;
+//
+//			this->m_colorBuffer[this->m_indexBuffer[3 * i + 2] * 3 + 0] = 0.0;
+//			this->m_colorBuffer[this->m_indexBuffer[3 * i + 2] * 3 + 1] = 0.0;
+//			this->m_colorBuffer[this->m_indexBuffer[3 * i + 2] * 3 + 2] = 1.0;
+//
+//			break;
+//		case 2:
+//			this->m_colorBuffer[this->m_indexBuffer[3 * i] * 3 + 0] = 1.0;
+//			this->m_colorBuffer[this->m_indexBuffer[3 * i] * 3 + 1] = 0.0;
+//			this->m_colorBuffer[this->m_indexBuffer[3 * i] * 3 + 2] = 0.0;
+//
+//			this->m_colorBuffer[this->m_indexBuffer[3 * i + 1] * 3 + 0] = 1.0;
+//			this->m_colorBuffer[this->m_indexBuffer[3 * i + 1] * 3 + 1] = 0.0;
+//			this->m_colorBuffer[this->m_indexBuffer[3 * i + 1] * 3 + 2] = 0.0;
+//
+//			this->m_colorBuffer[this->m_indexBuffer[3 * i + 2] * 3 + 0] = 1.0;
+//			this->m_colorBuffer[this->m_indexBuffer[3 * i + 2] * 3 + 1] = 0.0;
+//			this->m_colorBuffer[this->m_indexBuffer[3 * i + 2] * 3 + 2] = 0.0;
+//
+//			break;
+//		case 3:
+//			this->m_colorBuffer[this->m_indexBuffer[3 * i] * 3 + 0] = 0.0;
+//			this->m_colorBuffer[this->m_indexBuffer[3 * i] * 3 + 1] = 1.0;
+//			this->m_colorBuffer[this->m_indexBuffer[3 * i] * 3 + 2] = 0.0;
+//
+//			this->m_colorBuffer[this->m_indexBuffer[3 * i + 1] * 3 + 0] = 0.0;
+//			this->m_colorBuffer[this->m_indexBuffer[3 * i + 1] * 3 + 1] = 1.0;
+//			this->m_colorBuffer[this->m_indexBuffer[3 * i + 1] * 3 + 2] = 0.0;
+//
+//			this->m_colorBuffer[this->m_indexBuffer[3 * i + 2] * 3 + 0] = 0.0;
+//			this->m_colorBuffer[this->m_indexBuffer[3 * i + 2] * 3 + 1] = 1.0;
+//			this->m_colorBuffer[this->m_indexBuffer[3 * i + 2] * 3 + 2] = 0.0;
+//
+//			break;
+//		}
 	}
 
 	this->m_finalized = true;

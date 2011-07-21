@@ -14,6 +14,9 @@
 #include <stack>
 #include <set>
 #include <list>
+#include <sstream>
+#include <float.h>
+#include <math.h>
 
 using namespace std;
 
@@ -147,16 +150,51 @@ public:
 	 *
 	 * @param	start_face	The face from which the region growing is started
 	 *
+	 * @param	region		The region number to apply to the faces of the found region
+	 *
 	 * @return	Returns the size of the region - 1 (the start face is not included)
 	 */
-	virtual int regionGrowing(HFace* start_face);
+	virtual int regionGrowing(HFace* start_face, int region);
 
 	/**
-	 * @brief	Deletes all faces which are connected
-	 * 			via an Edge to the start face recursively if
-	 * 			they are marked as used
+	 * @brief	Starts a region growing wrt the angle between the faces and returns the
+	 * 			number of connected faces. Faces are connected means they share a common
+	 * 			edge - a point is not a connection in this context
+	 *
+	 * @param	start_face	The face from which the region growing is started
+	 *
+	 * @param	normal		The normal to refer to
+	 *
+	 * @param	angle		the maximum angle allowed between two faces
+	 *
+	 * @param	region		The region number to apply to the faces of the found region
+	 *
+	 * @return	Returns the size of the region - 1 (the start face is not included)
 	 */
-	virtual void destroyRecursive(HFace* start_face);
+	virtual int regionGrowing(HFace* start_face, NormalT &normal, float &angle, int region);
+
+	/**
+	 * @brief	Applies region growing and regression plane algorithms and deletes small
+	 * 			regions
+	 *
+	 * @param iterations	The number of iterations to use
+	 */
+	virtual void optimizePlanes(int iterations);
+
+	/**
+	 * @brief	Calculates a regression plane for the given region and projects all
+	 * 			vertices of the region into this plane.
+	 *
+	 * @param	region	The region to improve
+	 */
+	virtual void regressionPlane(int region);
+
+	/**
+	 * @brief	Deletes all faces belonging to the given region
+	 *
+	 * @param	region	The region to delete
+	 */
+	virtual void deleteRegion(int region);
 
 	/**
 	 * @brief	Removes artifacts in the mesh that are not connected to the main mesh
