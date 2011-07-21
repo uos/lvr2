@@ -38,7 +38,7 @@ public:
     /**
      * @brief   Constructs an empty face
      */
-	HalfEdgeFace() {};
+	HalfEdgeFace() {m_region=-1;};
 
 	/**
 	 * @brief   Copy constructor
@@ -110,9 +110,6 @@ public:
 	/// A pointer to a surrounding half edge
 	HalfEdge<HalfEdgeVertex<VertexT, NormalT>, HalfEdgeFace<VertexT, NormalT> >* m_edge;
 
-	/// Used for clustering. True, if the face was already visited
-	bool 							m_used;
-
 	/// A vector containing the indices of face vertices (currently redundant)
 	//vector<int> 					m_indices;
 
@@ -121,6 +118,9 @@ public:
 
 	/// The index of the face's texture
 	int 							m_texture_index;
+
+	/// The region of the face
+	int 							m_region;
 
 	/// The number of the face in the half edge mesh (convenience only, will be removed soon)
 	size_t							m_face_index;
