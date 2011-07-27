@@ -200,7 +200,7 @@ void HalfEdgeMesh<VertexT, NormalT>::addFace(HVertex* v1, HVertex* v2, HVertex* 
 	if((current = halfEdgeToVertex(v1, v2)) == 0)
 	{
 		v1v2 = new HEdge;
-		HEdge* v2v1 = new HEdge;
+		HEdge* v2v1 = new HEdge;	typename vector<HEdge*>::iterator it;
 
 		v1v2->start = v1;
 		v1v2->end = v2;
@@ -542,13 +542,13 @@ int HalfEdgeMesh<VertexT, NormalT>::regionGrowing(HFace* start_face, int region)
 	int neighbor_cnt = 0;
 
 	//Get the unmarked neighbor faces and start the recursion
-	if((*start_face)[0]->pair->face != 0 && (*start_face)[0]->pair->face->m_region == -1)
+	if((*start_face)[0]->pair->face != 0 && (*start_face)[0]->pair->face->m_region == 0)
 		++neighbor_cnt += regionGrowing((*start_face)[0]->pair->face, region);
 
-	if((*start_face)[1]->pair->face != 0 && (*start_face)[1]->pair->face->m_region == -1)
+	if((*start_face)[1]->pair->face != 0 && (*start_face)[1]->pair->face->m_region == 0)
 		++neighbor_cnt += regionGrowing((*start_face)[1]->pair->face, region);
 
-	if((*start_face)[2]->pair->face != 0 && (*start_face)[2]->pair->face->m_region == -1)
+	if((*start_face)[2]->pair->face != 0 && (*start_face)[2]->pair->face->m_region == 0)
 		++neighbor_cnt += regionGrowing((*start_face)[2]->pair->face, region);
 
 	return neighbor_cnt;
@@ -563,15 +563,15 @@ int HalfEdgeMesh<VertexT, NormalT>::regionGrowing(HFace* start_face, NormalT &no
 	int neighbor_cnt = 0;
 
 	//Get the unmarked neighbor faces and start the recursion
-	if((*start_face)[0]->pair->face != 0 && (*start_face)[0]->pair->face->m_region == -1
+	if((*start_face)[0]->pair->face != 0 && (*start_face)[0]->pair->face->m_region == 0
 			&& fabs((*start_face)[0]->pair->face->getFaceNormal() * normal) > angle )
 		++neighbor_cnt += regionGrowing((*start_face)[0]->pair->face, normal, angle, region);
 
-	if((*start_face)[1]->pair->face != 0 && (*start_face)[1]->pair->face->m_region == -1
+	if((*start_face)[1]->pair->face != 0 && (*start_face)[1]->pair->face->m_region == 0
 			&& fabs((*start_face)[1]->pair->face->getFaceNormal() * normal) > angle)
 		++neighbor_cnt += regionGrowing((*start_face)[1]->pair->face, normal, angle, region);
 
-	if((*start_face)[2]->pair->face != 0 && (*start_face)[2]->pair->face->m_region == -1
+	if((*start_face)[2]->pair->face != 0 && (*start_face)[2]->pair->face->m_region == 0
 			&& fabs((*start_face)[2]->pair->face->getFaceNormal() * normal) > angle)
 		++neighbor_cnt += regionGrowing((*start_face)[2]->pair->face, normal, angle, region);
 
@@ -584,32 +584,32 @@ void HalfEdgeMesh<VertexT, NormalT>::optimizePlanes(int iterations)
 	//regions that will be deleted due to size
 	vector<int> smallRegions;
 
-	int region = 0;
 	int region_size = 0;
 
 	for(int j=0; j<iterations; j++)
 	{
+		int region = 1;
+
 		//reset all region variables
 		for(int i=0; i<m_faces.size(); i++)
-			m_faces[i]->m_region=-1;
+			m_faces[i]->m_region=0;
 
 		//find all regions by regionGrowing with normal criteria
 		for(int i=0; i<m_faces.size(); i++)
 		{
-			if(m_faces[i]->m_region == -1)
+			if(m_faces[i]->m_region == 0)
 			{
 				NormalT n = m_faces[i]->getFaceNormal();
 				float angle = 0.85;	//about 32 degree
 				region_size = regionGrowing(m_faces[i], n, angle, region) + 1;
 
 				//fit big regions into the regression plane
-				if(region_size > max(50.0, log(m_faces.size())))
+				if(region_size > max(50.0, 10*log(m_faces.size())))
 					regressionPlane(region);
 
 				//save too small regions with size smaller than 5
-				if(region_size < 5 && j==iterations-1)
+				if(region_size < 7 && j==iterations-1)
 					smallRegions.push_back(region);
-
 				region++;
 			}
 		}
@@ -697,6 +697,8 @@ void HalfEdgeMesh<VertexT, NormalT>::regressionPlane(int region)
 		if(v != 0)
 			(*planeFaces[i])(2)->m_position = (*planeFaces[i])(2)->m_position + (VertexT)bestNorm * v;
 
+		//change sign of all faces drawn into regression plane
+		planeFaces[i]->m_region = -abs(planeFaces[i]->m_region);
 	}
 }
 
@@ -717,11 +719,11 @@ template<typename VertexT, typename NormalT>
 void HalfEdgeMesh<VertexT, NormalT>::removeDanglingArtifacts(int threshold)
 {
 	vector<int> todelete;
-	int region = 0;
+	int region = 1;
 
 	for(int i=0; i<m_faces.size(); i++)
 	{
-		if(m_faces[i]->m_region == -1)
+		if(m_faces[i]->m_region == 0)
 		{
 			int region_size = regionGrowing(m_faces[i], region) + 1;
 			if(region_size <= threshold)
@@ -735,7 +737,63 @@ void HalfEdgeMesh<VertexT, NormalT>::removeDanglingArtifacts(int threshold)
 
 	//reset all region variables
 	for(int i=0; i<m_faces.size(); i++)
-		m_faces[i]->m_region=-1;
+		m_faces[i]->m_region=0;
+}
+
+template<typename VertexT, typename NormalT>
+vector<HalfEdgeVertex<VertexT, NormalT>* > HalfEdgeMesh<VertexT, NormalT>::simpleDetectHole(HEdge* start)
+{
+	int region = start->pair->face->m_region;
+
+	HVertex* end = start->start;
+	HEdge* current  = start;
+
+	HEdge* next;
+
+	vector<HalfEdgeVertex<VertexT, NormalT>* > contour;
+	contour.push_back(current->start);
+	while(current->end != end)
+	{
+		int i = 0;
+		typename vector<HEdge*>::iterator it;
+		it = current->end->out.begin();
+
+		/* Search for edges without faces and count them */
+		while(it != current->end->out.end())
+		{
+			if((*it)->face == 0)
+			{
+				next = *it;
+				++i;
+			}
+			++it;
+		}
+
+		/* If there are more than one outgoing edges without a face return empty contour */
+		if (i != 1 || next->pair->face->m_region != region)
+		{
+			return vector<HalfEdgeVertex<VertexT, NormalT>* >();
+		}
+		else
+		{
+			contour.push_back(current->end);
+			current = next;
+		}
+	}
+	return contour;
+}
+
+template<typename VertexT, typename NormalT>
+void HalfEdgeMesh<VertexT, NormalT>::fillHole(vector<HVertex*> contour)
+{
+	//Just for testing purposes
+	HalfEdgeVertex<VertexT, NormalT> newPoint;
+	for (int i = 0; i<contour.size(); i++)
+		newPoint.m_position += contour[i]->m_position;
+	newPoint.m_position /= contour.size();
+
+	for (int i = 0; i<contour.size(); i++)
+		contour[i]->m_position = newPoint.m_position;
 }
 
 template<typename VertexT, typename NormalT>
@@ -787,17 +845,17 @@ void HalfEdgeMesh<VertexT, NormalT>::finalize()
 		int surface_class = 1;
 		surface_class = (*face_iter)->m_region;
 
-		this->m_colorBuffer[this->m_indexBuffer[3 * i]  * 3 + 0] = fabs(sin(surface_class * 5));
-		this->m_colorBuffer[this->m_indexBuffer[3 * i]  * 3 + 1] = fabs(cos(surface_class % 3));
-		this->m_colorBuffer[this->m_indexBuffer[3 * i]  * 3 + 2] = fabs(cos(surface_class));
+		this->m_colorBuffer[this->m_indexBuffer[3 * i]  * 3 + 0] = fabs(cos(surface_class));
+		this->m_colorBuffer[this->m_indexBuffer[3 * i]  * 3 + 1] = fabs(sin(surface_class * 30));
+		this->m_colorBuffer[this->m_indexBuffer[3 * i]  * 3 + 2] = fabs(sin(surface_class * 2));
 
-		this->m_colorBuffer[this->m_indexBuffer[3 * i + 1] * 3 + 0] = fabs(sin(surface_class * 5));
-		this->m_colorBuffer[this->m_indexBuffer[3 * i + 1] * 3 + 1] = fabs(cos(surface_class % 3));
-		this->m_colorBuffer[this->m_indexBuffer[3 * i + 1] * 3 + 2] = fabs(cos(surface_class));
+		this->m_colorBuffer[this->m_indexBuffer[3 * i + 1] * 3 + 0] = fabs(cos(surface_class));
+		this->m_colorBuffer[this->m_indexBuffer[3 * i + 1] * 3 + 1] = fabs(sin(surface_class * 30));
+		this->m_colorBuffer[this->m_indexBuffer[3 * i + 1] * 3 + 2] = fabs(sin(surface_class * 2));
 
-		this->m_colorBuffer[this->m_indexBuffer[3 * i + 2] * 3 + 0] = fabs(sin(surface_class * 5));
-		this->m_colorBuffer[this->m_indexBuffer[3 * i + 2] * 3 + 1] = fabs(cos(surface_class % 3));
-		this->m_colorBuffer[this->m_indexBuffer[3 * i + 2] * 3 + 2] = fabs(cos(surface_class));
+		this->m_colorBuffer[this->m_indexBuffer[3 * i + 2] * 3 + 0] = fabs(cos(surface_class));
+		this->m_colorBuffer[this->m_indexBuffer[3 * i + 2] * 3 + 1] = fabs(sin(surface_class * 30));
+		this->m_colorBuffer[this->m_indexBuffer[3 * i + 2] * 3 + 2] = fabs(sin(surface_class * 2));
 
 //		switch(surface_class)
 //		{
