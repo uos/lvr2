@@ -223,6 +223,23 @@ public:
 	 */
 	virtual void fillHole(vector<HVertex*> contour);
 
+	/**
+	 *	@brief	drags the points of the given plane onto the given intersection if those points lay in
+	 *			a certain radius around the intersection line.
+	 *
+	 *	@param	planeFace		a face of the plane to take into account
+	 *	@param	neighbor_region	the region of the other plane belonging to the intersection line
+	 *	@param	x				a point on the intersection line
+	 *	@param	direction		the direction of the intersection line
+	 */
+	virtual void dragOntoIntersection(HFace* planeFace, int neighbor_region, VertexT* x, VertexT* direction);
+
+	/**
+	 * @brief 	optimizes the plane intersections
+	 */
+	virtual void optimizePlaneIntersections();
+
+	virtual void tester();
 
 	/**
 	 * @brief 	Finalizes a mesh, i.e. converts the template based buffers
@@ -232,9 +249,13 @@ public:
 
 
 private:
+	vector<HalfEdgeFace<VertexT, NormalT>*> pommesFaces;
 
 	/// The faces in the half edge mesh
 	vector<HalfEdgeFace<VertexT, NormalT>*>    m_faces;
+
+	/// The regions in the half edge mesh represented by a single face
+	vector<HalfEdgeFace<VertexT, NormalT>*>    m_regions;
 
 	/// The vertices of the mesh
 	//vector<HalfEdgeVertex<VertexT, NormalT>*>  m_vertices;
