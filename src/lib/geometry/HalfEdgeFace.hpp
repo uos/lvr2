@@ -38,7 +38,7 @@ public:
     /**
      * @brief   Constructs an empty face
      */
-	HalfEdgeFace() {m_region=0;};
+	HalfEdgeFace() {m_region=0; m_used=false;};
 
 	/**
 	 * @brief   Copy constructor
@@ -121,6 +121,9 @@ public:
 
 	/// The region of the face
 	int 							m_region;
+
+	//Bla
+	bool 							m_used;
 
 	/// The number of the face in the half edge mesh (convenience only, will be removed soon)
 	size_t							m_face_index;
