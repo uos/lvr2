@@ -224,6 +224,13 @@ public:
 	virtual void fillHole(vector<HVertex*> contour);
 
 
+    /**
+     * @brief   Takes a list of vertices as the border of a polygon
+     *          and returns a triangle tesselation
+     */
+    void tesselate(void);
+
+
 	/**
 	 * @brief 	Finalizes a mesh, i.e. converts the template based buffers
 	 * 			to OpenGL compatible buffers
