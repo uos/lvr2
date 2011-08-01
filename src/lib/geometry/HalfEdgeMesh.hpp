@@ -232,7 +232,7 @@ public:
 	 *	@param	x				a point on the intersection line
 	 *	@param	direction		the direction of the intersection line
 	 */
-	virtual void dragOntoIntersection(HFace* planeFace, int neighbor_region, VertexT* x, VertexT* direction);
+	virtual void dragOntoIntersection(HFace* planeFace, int neighbor_region, VertexT& x, VertexT& direction);
 
 	/**
 	 * @brief 	optimizes the plane intersections
@@ -249,8 +249,6 @@ public:
 
 
 private:
-	vector<HalfEdgeFace<VertexT, NormalT>*> pommesFaces;
-
 	/// The faces in the half edge mesh
 	vector<HalfEdgeFace<VertexT, NormalT>*>    m_faces;
 
