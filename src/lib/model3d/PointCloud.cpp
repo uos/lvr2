@@ -85,10 +85,11 @@ void PointCloud::updateDisplayLists(){
 
     for(size_t i = 0; i < points.size(); i++)
     {
-        glColor3f( ( (float) points[i].r ) / 255,
-                   ( (float) points[i].g ) / 255,
-                   ( (float) points[i].b ) / 255 );
+        float r = points[i].r / 255.0;
+        float g = points[i].g / 255.0;
+        float b = points[i].b / 255.0;
 
+        glColor3f(r, g, b);
         glVertex3f(points[i].x,
                    points[i].y,
                    points[i].z);

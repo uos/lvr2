@@ -97,9 +97,25 @@ void ViewerApplication::connectEvents()
 	QObject::connect(m_sceneDockWidgetUi->treeWidget, SIGNAL(customContextMenuRequested(const QPoint &)),
 	                        this, SLOT(treeContextMenuRequested(const QPoint &)));
 
+	QObject::connect(m_sceneDockWidgetUi->buttonTransform, SIGNAL(clicked()),
+	                    this, SLOT(transformObject()));
+
 	// Tree widget context menu actions
 	connect(m_sceneDockWidgetUi->actionExport_selected_scans, SIGNAL(triggered()), this, SLOT(treeWidgetExport()));
 
+}
+
+void ViewerApplication::transformObject()
+{
+    QTreeWidgetItem* item = m_sceneDockWidgetUi->treeWidget->currentItem();
+    if(item)
+    {
+        if(item->type() > 1000)
+        {
+            CustomTreeWidgetItem* c_item = static_cast<CustomTreeWidgetItem*>(item);
+            TransformationDialog* d = new TransformationDialog(m_qMainWindow, c_item->renderable());
+        }
+    }
 }
 
 void ViewerApplication::treeContextMenuRequested(const QPoint &position)
@@ -131,10 +147,13 @@ void ViewerApplication::treeContextMenuRequested(const QPoint &position)
 void ViewerApplication::treeWidgetExport()
 {
     QTreeWidgetItem* item = m_sceneDockWidgetUi->treeWidget->currentItem();
-    if(item->type() > 1000)
+    if(item)
     {
-        CustomTreeWidgetItem* c_item = static_cast<CustomTreeWidgetItem*>(item);
-        m_dataManager->exportData(c_item);
+        if(item->type() > 1000)
+        {
+            CustomTreeWidgetItem* c_item = static_cast<CustomTreeWidgetItem*>(item);
+            m_dataManager->exportData(c_item);
+        }
     }
 }
 
