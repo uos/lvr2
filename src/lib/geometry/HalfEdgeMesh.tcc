@@ -186,6 +186,19 @@ void HalfEdgeMesh<VertexT, NormalT>::addTriangle(uint a, uint b, uint c)
 }
 
 template<typename VertexT, typename NormalT>
+void HalfEdgeMesh<VertexT, NormalT>::tesselate(void)
+{
+    GLUtesselator* tesselator = gluNewTess(void);
+    if(tesselator == 0)
+    {
+        cerr<<"Could not allocate tesselation object. Aborting tesselation." << endl;
+        return;
+    }
+
+
+}
+
+template<typename VertexT, typename NormalT>
 void HalfEdgeMesh<VertexT, NormalT>::addFace(HVertex* v1, HVertex* v2, HVertex* v3)
 {
 	HFace* f = new HFace;
