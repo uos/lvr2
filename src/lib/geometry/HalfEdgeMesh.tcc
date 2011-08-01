@@ -634,7 +634,7 @@ void HalfEdgeMesh<VertexT, NormalT>::regressionPlane(int region)
 	for(int i=0; i<m_faces.size(); i++)
 		if(m_faces[i]->m_region == region) planeFaces.push_back(m_faces[i]);
 
-	srand ( time(NULL) );
+//	srand ( time(NULL) ); //TODO: uncomment
 
 	VertexT point1;
 	VertexT point2;
@@ -803,25 +803,22 @@ void HalfEdgeMesh<VertexT, NormalT>::fillHole(vector<HVertex*> contour)
 }
 
 template<typename VertexT, typename NormalT>
-void HalfEdgeMesh<VertexT, NormalT>::dragOntoIntersection(HFace* planeFace, int neighbor_region, VertexT* x, VertexT* direction)
+void HalfEdgeMesh<VertexT, NormalT>::dragOntoIntersection(HFace* planeFace, int neighbor_region, VertexT& x, VertexT& direction)
 {
 	planeFace->m_used = true;
-
-	if(direction->cross(*x-planeFace->getCentroid()).length()/direction->length() < 50000)//improve 5
+	if(fabs(direction.cross(x-planeFace->getCentroid()).length() / direction.length()) < 10)
 	{
-		cout << "." << endl;
-		for(int k=0; k<2; k++)
+		for(int k=0; k<=2; k++)
 		{
 			if((*planeFace)[k]->pair->face == 0 || (*planeFace)[k]->pair->face->m_region == neighbor_region)
 			{
-				pommesFaces.push_back(planeFace);
-//				(*planeFace)[k]->start->m_position =(*direction)* (((*x-(*planeFace)[k]->start->m_position) * (*direction)) / (direction->length() * direction->length()))  + *x;
-//				(*planeFace)[k]->end->m_position   =(*direction)* (((*x-(*planeFace)[k]->end->m_position) * (*direction)) / (direction->length() * direction->length())) + *x;
+				(*planeFace)[k]->start->m_position = x + direction * (((((*planeFace)[k]->start->m_position)-x) * direction) / (direction.length() * direction.length()));
+				(*planeFace)[k]->end->m_position   = x + direction * (((((*planeFace)[k]->end->m_position  )-x) * direction) / (direction.length() * direction.length()));
 			}
 		}
 	}
 
-	for(int k=0; k<2; k++)
+	for(int k=0; k<=2; k++)
 		if( (*planeFace)[k]->pair->face != 0 && planeFace->m_region == (*planeFace)[k]->pair->face->m_region && (*planeFace)[k]->pair->face->m_used == false)
 			dragOntoIntersection((*planeFace)[k]->pair->face, neighbor_region, x, direction);
 }
@@ -830,28 +827,38 @@ template<typename VertexT, typename NormalT>
 void HalfEdgeMesh<VertexT, NormalT>::optimizePlaneIntersections()
 {
 	for (int i = 0; i<m_regions.size(); i++)
-		if (m_regions[i]->m_region<0)
+		if (m_regions[i]->m_region < 0)
 			for(int j = i+1; j<m_regions.size(); j++)
-				if(m_regions[j]->m_region<0)
+				if(m_regions[j]->m_region < 0)
 				{
 					//calculate intersection between plane i and j
-					VertexT direction = m_regions[i]->getFaceNormal().cross(m_regions[j]->getFaceNormal());
+					NormalT n_i = m_regions[i]->getFaceNormal();
+					NormalT n_j = m_regions[j]->getFaceNormal();
+					n_i.normalize();
+					n_j.normalize();
 
-					float d_i = m_regions[i]->getFaceNormal() * (*m_regions[i])(0)->m_position;
-					float d_j = m_regions[j]->getFaceNormal() * (*m_regions[j])(0)->m_position;
-					float n_i1 = m_faces[i]->getFaceNormal().m_x;
-					float n_i2 = m_faces[i]->getFaceNormal().m_y;
-					float n_j1 = m_faces[j]->getFaceNormal().m_x;
-					float n_j2 = m_faces[j]->getFaceNormal().m_y;
+					float d_i = n_i * (*m_regions[i])(0)->m_position;
+					float d_j = n_j * (*m_regions[j])(0)->m_position;
+					float n_i1 = n_i.m_x;
+					float n_i2 = n_i.m_y;
+					float n_j1 = n_j.m_x;
+					float n_j2 = n_j.m_y;
 
-					float x1 = (d_i - (n_i1*d_j/n_j2))/(n_i1-(n_i2*n_j1/n_j2));
+					float x1 = (d_i/n_i1 - ((n_i2*d_j)/(n_j2*n_i1)))/(1-((n_i2*n_j1)/(n_j2*n_i1)));
 					float x2 = (d_j-n_j1*x1)/n_j2;
 					float x3 = 0;
 					VertexT x (x1, x2, x3);
 
+					VertexT direction = n_i.cross(n_j);
+
 					//drag all points of planes i and j in a certain radius onto the intersection
-					dragOntoIntersection(m_regions[i], m_regions[j]->m_region, &x, &direction);
-					dragOntoIntersection(m_regions[j], m_regions[i]->m_region, &x, &direction);
+					for(int k=0; k<m_faces.size(); k++)
+						m_faces[k]->m_used=false;
+					dragOntoIntersection(m_regions[i], m_regions[j]->m_region, x, direction);
+
+					for(int k=0; k<m_faces.size(); k++)
+						m_faces[k]->m_used=false;
+					dragOntoIntersection(m_regions[j], m_regions[i]->m_region, x, direction);
 				}
 }
 
@@ -860,44 +867,29 @@ void HalfEdgeMesh<VertexT, NormalT>::tester()
 {
 	removeDanglingArtifacts(500);
 	optimizePlanes(3);
-
-//	for(int i=0; i < m_faces.size(); ++i)
-//	{
-//		vector<HalfEdgeVertex<VertexT, NormalT>*> contour;
-//
-//		if((*m_faces[i])[0]->pair->face == 0)
-//		{
-//			contour = simpleDetectHole((*m_faces[i])[0]->pair);
-//			if(2 < contour.size() && contour.size() < 30) fillHole(contour);
-//		}
-//
-//		if((*m_faces[i])[1]->pair->face == 0)
-//		{
-//			contour = simpleDetectHole((*m_faces[i])[1]->pair);
-//			if(2 < contour.size() && contour.size() < 30) fillHole(contour);
-//		}
-//
-//		if((*m_faces[i])[2]->pair->face == 0)
-//		{
-//			contour = simpleDetectHole((*m_faces[i])[2]->pair);
-//			if(2 < contour.size() && contour.size() < 30) fillHole(contour);
-//		}
-//	}
-
 	optimizePlaneIntersections();
+	for(int i=0; i < m_faces.size(); ++i)
+	{
+		vector<HalfEdgeVertex<VertexT, NormalT>*> contour;
 
-	cout << pommesFaces.size() << endl;
+		if((*m_faces[i])[0]->pair->face == 0)
+		{
+			contour = simpleDetectHole((*m_faces[i])[0]->pair);
+			if(2 < contour.size() && contour.size() < 30) fillHole(contour);
+		}
 
-	for(int i=0; i<pommesFaces.size(); i++)
-		pommesFaces[i]->m_region = 0;
+		if((*m_faces[i])[1]->pair->face == 0)
+		{
+			contour = simpleDetectHole((*m_faces[i])[1]->pair);
+			if(2 < contour.size() && contour.size() < 30) fillHole(contour);
+		}
 
-	vector<HalfEdgeFace<VertexT, NormalT>*> todelete;
-	for(int i=0; i<m_faces.size(); i++)
-		if(m_faces[i]->m_region != 0)
-			todelete.push_back(m_faces[i]);
-
-	for(int i=0; i<todelete.size(); i++)
-		deleteFace(todelete[i]);
+		if((*m_faces[i])[2]->pair->face == 0)
+		{
+			contour = simpleDetectHole((*m_faces[i])[2]->pair);
+			if(2 < contour.size() && contour.size() < 30) fillHole(contour);
+		}
+	}
 
 	//Experiment-------------------------------
 
