@@ -190,7 +190,9 @@ void MultiPointCloud::readNewUOSFormat(string dir, int first, int last)
                 scan_in >> x >> y >> z;
 
                 Vertex point(x, y, z);
+                cout << "ORIG:  " << point;
                 point.transform(tf);
+                cout << "TRANS: " << point << endl;;
                 pc->addPoint(x, y, z, 255, 0, 0);
             }
 
@@ -232,7 +234,6 @@ void MultiPointCloud::addCloud(PointCloud* pc)
     a->cloud = pc;
     m_clouds[pc] = a;
     m_boundingBox->expand(*(pc->boundingBox()));
-    cout << m_boundingBox->getRadius() << endl;
 }
 
 void MultiPointCloud::removeCloud(PointCloud* pc)

@@ -150,9 +150,12 @@ void BaseVertex::rotateRM(const Matrix4 &m)
     _y = x * m[4 ] + y * m[5 ] + z * m[6 ];
     _z = x * m[8 ] + y * m[9 ] + z * m[10];
 
+    cout << "OLD: " << x << " " << y << " " << z << endl;
+
     x = _x;
     y = _y;
     z = _z;
+
 }
 
 

@@ -11,5 +11,7 @@
 	<file>contrast_decrease.png</file>
 	<file>contrast_increase.png</file>
 	<file>world.png</file>
+	<file>rotate.png</file>
+	<file>export.png</file>
 </qresource>
 </RCC>

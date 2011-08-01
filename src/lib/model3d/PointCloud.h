@@ -59,6 +59,7 @@ inline void PointCloud::render()
     //cout << name << " : Active: " << " " << active << " selected : " << selected << endl;
     if(listIndex != -1 && active)
     {
+        glDisable(GL_LIGHTING);
         glPushMatrix();
         glMultMatrixf(transformation.getData());
 
