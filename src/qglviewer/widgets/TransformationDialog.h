@@ -32,6 +32,10 @@ public Q_SLOTS:
     void rotationYEntered(double value);
     void rotationZEntered(double value);
 
+    void translationXEntered(double value);
+    void translationYEntered(double value);
+    void translationZEntered(double value);
+
     void reset();
 private:
 
