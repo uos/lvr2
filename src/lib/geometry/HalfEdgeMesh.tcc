@@ -185,17 +185,63 @@ void HalfEdgeMesh<VertexT, NormalT>::addTriangle(uint a, uint b, uint c)
 
 }
 
-template<typename VertexT, typename NormalT>
-void HalfEdgeMesh<VertexT, NormalT>::tesselate(void)
+void mglBegin(GLenum which)
 {
-    GLUtesselator* tesselator = gluNewTess(void);
-    if(tesselator == 0)
+    glBegin(which);
+    cout << "glBegin("<< /*getPrimitiveType(which) << */ ");" << endl;
+}
+
+void mglEnd()
+{
+    glEnd();
+    cout << "glEnd();" << endl;
+}
+
+void mglError(GLenum errorCode)
+{
+    cerr << "[Error:] " << gluErrorString(errorCode) << endl; 
+}
+
+void mglVertex(const GLvoid *data)
+{
+    const GLdouble *ptr = (const GLdouble*)data;
+    glVertex3dv(ptr);
+    cout <<" glVertex3d("<< *ptr << ", " << *(ptr+1) << ", " << *(ptr+2) << ");" << endl;
+}
+
+template<typename VertexT, typename NormalT>
+void HalfEdgeMesh<VertexT, NormalT>::tesselate(vector<HVertex*> borderPoints)
+{
+    // NOTE: Replace the 2 by the correct glueGetString.
+    if(2 /*gluGetString(GLU_VERSION)*/ < 1.1)
+    {
+        cerr<< "Unsupported Version of GLUT." 
+            << "Please use OpenGL Utility Library version 1.1 or higher." << endl;
+        return;
+    }
+
+    GLuint id = glGenLists(1);
+    if(!id)
+    {
+        cerr<< "Cannot generate Display List." << endl;
+        return;
+    }
+
+    GLUtesselator* tesselator = gluNewTess();
+    if(!tesselator)
     {
         cerr<<"Could not allocate tesselation object. Aborting tesselation." << endl;
         return;
     }
 
+    /* Callback function that define beginning of polygone etc. */
+    gluTessCallback(tesselator, GLU_TESS_BEGIN, &mglBegin);
+    gluTessCallback(tesselator, GLU_TESS_END, &mglEnd);
+    gluTessCallback(tesselator, GLU_TESS_ERROR, &mglError);
+    gluTessCallback(tesselator, GLU_TESS_VERTEX, &mglVertex);
 
+    /* set Properties for tesselation */
+    gluTessProperty(tesselator, GLU_TESS_WINDING_RULE, 0);
 }
 
 template<typename VertexT, typename NormalT>
