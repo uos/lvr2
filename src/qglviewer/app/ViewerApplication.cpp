@@ -113,7 +113,7 @@ void ViewerApplication::transformObject()
         if(item->type() > 1000)
         {
             CustomTreeWidgetItem* c_item = static_cast<CustomTreeWidgetItem*>(item);
-            TransformationDialog* d = new TransformationDialog(m_qMainWindow, c_item->renderable());
+            TransformationDialog* d = new TransformationDialog(m_viewer, c_item->renderable());
         }
     }
 }
