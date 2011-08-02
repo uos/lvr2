@@ -205,8 +205,11 @@ void mglError(GLenum errorCode)
 void mglVertex(const GLvoid *data)
 {
     const GLdouble *ptr = (const GLdouble*)data;
+	 ofstream tess("tess.txt", ios_base::app);
+	 tess << *ptr << ", " << *(ptr+1) << ", " << *(ptr+2) << endl;
+	 tess.close();
+	 cout << *ptr << ", " << *(ptr+1) << ", " << *(ptr+2) << endl;
     glVertex3dv(ptr);
-    cout <<" glVertex3d("<< *ptr << ", " << *(ptr+1) << ", " << *(ptr+2) << ");" << endl;
 }
 
 void mcombineCallback(GLdouble coords[3],
@@ -225,11 +228,11 @@ void mcombineCallback(GLdouble coords[3],
 	vertex[1] = coords[1];
 	vertex[2] = coords[2];
 
-	for(int i = 3; i < 7; ++i)
-		vertex[i] = weight[0]*vertex_data[0][i]
-					 + weight[1]*vertex_data[1][i]
-					 + weight[2]*vertex_data[2][i]
-					 + weight[3]*vertex_data[3][i];
+	//for(int i = 3; i < 7; ++i)
+	//	vertex[i] = weight[0]*vertex_data[0][i]
+//					 + weight[1]*vertex_data[1][i];
+/*					 + weight[2]*vertex_data[2][i]
+					 + weight[3]*vertex_data[3][i]; */
 	*dataOut = vertex;
 }
 
@@ -244,13 +247,6 @@ void HalfEdgeMesh<VertexT, NormalT>::tesselate(vector<HVertex*> borderPoints)
         return;
     }
 
-    GLuint id = glGenLists(1);
-    if(!id)
-    {
-        cerr<< "Cannot generate Display List." << endl;
-        return;
-    }
-
     GLUtesselator* tesselator = gluNewTess();
     if(!tesselator)
     {
@@ -259,11 +255,11 @@ void HalfEdgeMesh<VertexT, NormalT>::tesselate(vector<HVertex*> borderPoints)
     }
 
     /* Callback function that define beginning of polygone etc. */
-    gluTessCallback(tesselator, GLU_TESS_VERTEX, &mglVertex);
-    gluTessCallback(tesselator, GLU_TESS_BEGIN, &mglBegin);
-    gluTessCallback(tesselator, GLU_TESS_END, &mglEnd);
-    gluTessCallback(tesselator, GLU_TESS_COMBINE, &mcombineCallback);
-    gluTessCallback(tesselator, GLU_TESS_ERROR, &mglError);
+    gluTessCallback(tesselator, GLU_TESS_VERTEX,(GLvoid(*) ()) &mglVertex);
+    gluTessCallback(tesselator, GLU_TESS_BEGIN, (GLvoid(*) ()) &mglBegin);
+    gluTessCallback(tesselator, GLU_TESS_END, (GLvoid(*) ()) &mglEnd);
+    gluTessCallback(tesselator, GLU_TESS_COMBINE, (GLvoid(*) ()) &mcombineCallback);
+    gluTessCallback(tesselator, GLU_TESS_ERROR, (GLvoid(*) ()) &mglError);
 
     /* set Properties for tesselation */
     gluTessProperty(tesselator, GLU_TESS_WINDING_RULE, GLU_TESS_WINDING_ODD);
@@ -283,9 +279,9 @@ void HalfEdgeMesh<VertexT, NormalT>::tesselate(vector<HVertex*> borderPoints)
 			for(int i=0; i<borderPoints.size(); ++i)
 			{
 	 			GLdouble vertex[3];
-				vertex[0] = borderPoints[i].m_position.m_x;
-				vertex[1] = borderPoints[i].m_position.m_y;
-				vertex[2] = borderPoints[i].m_position.m_z;
+				vertex[0] = borderPoints[i]->m_position.m_x;
+				vertex[1] = borderPoints[i]->m_position.m_y;
+				vertex[2] = borderPoints[i]->m_position.m_z;
 				
 				// Add the vertex to the Contour
 				gluTessVertex(tesselator, vertex, 0);
@@ -982,57 +978,28 @@ void HalfEdgeMesh<VertexT, NormalT>::optimizePlaneIntersections()
 template<typename VertexT, typename NormalT>
 void HalfEdgeMesh<VertexT, NormalT>::tester()
 {
-	removeDanglingArtifacts(500);
-	optimizePlanes(3);
-	optimizePlaneIntersections();
-	for(int i=0; i < m_faces.size(); ++i)
-	{
-		vector<HalfEdgeVertex<VertexT, NormalT>*> contour;
-
-		if((*m_faces[i])[0]->pair->face == 0)
-		{
-			contour = simpleDetectHole((*m_faces[i])[0]->pair);
-			if(2 < contour.size() && contour.size() < 30) fillHole(contour);
-		}
-
-		if((*m_faces[i])[1]->pair->face == 0)
-		{
-			contour = simpleDetectHole((*m_faces[i])[1]->pair);
-			if(2 < contour.size() && contour.size() < 30) fillHole(contour);
-		}
-
-		if((*m_faces[i])[2]->pair->face == 0)
-		{
-			contour = simpleDetectHole((*m_faces[i])[2]->pair);
-			if(2 < contour.size() && contour.size() < 30) fillHole(contour);
-		}
-	}
-
-	//Experiment-------------------------------
-
-	for(int i=0; i<m_faces.size(); i++)
-	{
-		if(    (*m_faces[i])[0]->pair->face == 0
-			|| (*m_faces[i])[1]->pair->face == 0
-			|| (*m_faces[i])[2]->pair->face == 0
-			|| ((*m_faces[i])[0]->pair->face != 0 && m_faces[i]->m_region != (*m_faces[i])[0]->pair->face->m_region && (*m_faces[i])[0]->pair->face->m_region != 0)
-			|| ((*m_faces[i])[1]->pair->face != 0 && m_faces[i]->m_region != (*m_faces[i])[1]->pair->face->m_region && (*m_faces[i])[1]->pair->face->m_region != 0)
-			|| ((*m_faces[i])[2]->pair->face != 0 && m_faces[i]->m_region != (*m_faces[i])[2]->pair->face->m_region && (*m_faces[i])[2]->pair->face->m_region != 0)
-			|| m_faces[i]->m_region > 0 )
-		{
-			m_faces[i]->m_region = 0;
-		}
-
-	}
-
+	//removeDanglingArtifacts(500);
+	optimizePlanes(1);
+	
 	vector<HalfEdgeFace<VertexT, NormalT>*> todelete;
+	HFace* myFace;
 	for(int i=0; i<m_faces.size(); i++)
 		if(m_faces[i]->m_region != 0)
+		{
 			todelete.push_back(m_faces[i]);
-
-	for(int i=0; i<todelete.size(); i++)
-		deleteFace(todelete[i]);
-
+			if(m_faces[i]->m_edge->pair->face == 0)
+			{
+				myFace = m_faces[i];
+			}
+		}
+	
+	vector<HalfEdgeVertex<VertexT, NormalT>* > contour = simpleDetectHole(myFace->m_edge->pair);
+	this->tesselate(contour);
+	ofstream cont("contour.txt");
+	for(int i = 0; i < contour.size(); ++i)
+		cont << contour[i]->m_position << endl;
+	cout << contour.size() << endl;
+	cout << todelete.size() << endl;
 }
 
 
