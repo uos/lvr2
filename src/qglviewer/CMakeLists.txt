@@ -7,6 +7,7 @@ set(QVIEWER_MOCS
     data/DataManager.h 
     viewers/Viewer.h
     viewers/ViewerManager.h
+    widgets/TransformationDialog.h
 )
 
 # Dynamically generated GUI object's from
