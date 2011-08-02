@@ -18,6 +18,9 @@
 #include <float.h>
 #include <math.h>
 
+#include <glu.h>
+#include <glut.h>
+
 using namespace std;
 
 #include "Vertex.hpp"
@@ -228,7 +231,7 @@ public:
      * @brief   Takes a list of vertices as the border of a polygon
      *          and returns a triangle tesselation
      */
-    void tesselate(void);
+    void tesselate(vector<HVertex*> borderPoints);
 
 
 	/**
