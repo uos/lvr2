@@ -145,7 +145,7 @@ int main(int argc, char** argv)
     if(options.getIntersections() > 0)
     {
         resolution = options.getIntersections();
-        useVoxelsize = false;
+        useVoxelsize = true;
     }
     else
     {
