@@ -209,6 +209,30 @@ void mglVertex(const GLvoid *data)
     cout <<" glVertex3d("<< *ptr << ", " << *(ptr+1) << ", " << *(ptr+2) << ");" << endl;
 }
 
+void mcombineCallback(GLdouble coords[3],
+							 GLdouble *vertex_data[4],
+							 GLfloat weight[4],
+							 GLdouble **dataOut)
+{
+	GLdouble *vertex;
+	
+	vertex = (GLdouble*) malloc(6*sizeof(GLdouble));
+	if(!vertex)
+	{
+		cerr << "Could not allocate memory - undefined behaviour will/might arise from now on!" << endl;
+	}
+	vertex[0] = coords[0];
+	vertex[1] = coords[1];
+	vertex[2] = coords[2];
+
+	for(int i = 3; i < 7; ++i)
+		vertex[i] = weight[0]*vertex_data[0][i]
+					 + weight[1]*vertex_data[1][i]
+					 + weight[2]*vertex_data[2][i]
+					 + weight[3]*vertex_data[3][i];
+	*dataOut = vertex;
+}
+
 template<typename VertexT, typename NormalT>
 void HalfEdgeMesh<VertexT, NormalT>::tesselate(vector<HVertex*> borderPoints)
 {
@@ -235,13 +259,43 @@ void HalfEdgeMesh<VertexT, NormalT>::tesselate(vector<HVertex*> borderPoints)
     }
 
     /* Callback function that define beginning of polygone etc. */
+    gluTessCallback(tesselator, GLU_TESS_VERTEX, &mglVertex);
     gluTessCallback(tesselator, GLU_TESS_BEGIN, &mglBegin);
     gluTessCallback(tesselator, GLU_TESS_END, &mglEnd);
+    gluTessCallback(tesselator, GLU_TESS_COMBINE, &mcombineCallback);
     gluTessCallback(tesselator, GLU_TESS_ERROR, &mglError);
-    gluTessCallback(tesselator, GLU_TESS_VERTEX, &mglVertex);
 
     /* set Properties for tesselation */
-    gluTessProperty(tesselator, GLU_TESS_WINDING_RULE, 0);
+    gluTessProperty(tesselator, GLU_TESS_WINDING_RULE, GLU_TESS_WINDING_ODD);
+
+	 /* Use gluTessNormal: speeds up the tessellation if the
+	  	Polygon lies on a x-y plane. and it approximatly does!*/
+	 gluTessNormal(tesselator, 0, 0, 1);
+
+
+	 /* Begin definition of the polygon to be tesselated */
+	 gluTessBeginPolygon(tesselator, 0);
+
+		// Begin Contour
+	 	gluTessBeginContour(tesselator);
+
+			/* define the contour by vertices */
+			for(int i=0; i<borderPoints.size(); ++i)
+			{
+	 			GLdouble vertex[3];
+				vertex[0] = borderPoints[i].m_position.m_x;
+				vertex[1] = borderPoints[i].m_position.m_y;
+				vertex[2] = borderPoints[i].m_position.m_z;
+				
+				// Add the vertex to the Contour
+				gluTessVertex(tesselator, vertex, 0);
+			}
+
+		// End Contour
+		gluTessEndContour(tesselator);
+
+	 /* End Tesselation */
+	 gluTessEndPolygon(tesselator);
 }
 
 template<typename VertexT, typename NormalT>
