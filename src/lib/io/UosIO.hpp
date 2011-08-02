@@ -14,6 +14,9 @@
 #include <cmath>
 #include <fstream>
 
+#include "../geometry/Vertex.hpp"
+#include "../geometry/Matrix4.hpp"
+
 using std::string;
 using std::fstream;
 
@@ -38,7 +41,7 @@ public:
     /**
      * @brief Contructor.
      */
-    UosIO() : m_firstScan(-1), m_lastScan(-1) {}
+    UosIO() : m_firstScan(-1), m_lastScan(-1), m_reduction(1){}
 
     /**
      * @brief Reads all scans or an specified range of scans
@@ -60,6 +63,16 @@ public:
      * @param n         The last scan to read
      */
     void setLastScan(int n) {m_lastScan = n;}
+
+    /**
+     * Reduces the given point cloud and exports all points
+     * into on single file.
+     *
+     * @param dir        The directory containg the scan data
+     * @param reduction  Reduction factor (export only every n-th point)
+     * @param target     A target file name
+     */
+    void reduce(string dir, string target, int reduction = 1);
 
 private:
 
@@ -135,6 +148,15 @@ private:
 
     /// The last scan to read (or -1 if all scans should be processed)
     int     m_lastScan;
+
+    /// If true, the read point will not be stored in local memory
+    bool    m_saveToDisk;
+
+    /// Filestream to save reduced data
+    ofstream    m_outputFile;
+
+    /// Reduction factor
+    int     m_reduction;
 };
 
 } // namespace lssr

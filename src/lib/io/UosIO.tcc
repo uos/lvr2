@@ -17,8 +17,7 @@ using std::ifstream;
 #include <boost/filesystem.hpp>
 //using namespace boost::filesystem;
 
-#include "../geometry/Vertex.hpp"
-#include "../geometry/Matrix4.hpp"
+
 #include "Progress.hpp"
 #include "Timestamp.hpp"
 
@@ -113,9 +112,31 @@ T** UosIO<T>::read(string dir, size_t &n)
 }
 
 template<typename T>
+void UosIO<T>::reduce(string dir, string target, int reduction)
+{
+    // Open output stream
+    m_outputFile.open(target.c_str());
+    if(!m_outputFile.good())
+    {
+        cout << timestamp << "UOSReader: " << dir << " unable to open " << target << " for writing." << endl;
+        return;
+    }
+
+    // Set needed flags for inout code
+    m_reduction = reduction;
+    m_saveToDisk = true;
+    size_t n;
+
+    // Read data and write reduced points
+    T** unused = read(dir, n);
+}
+
+template<typename T>
 T** UosIO<T>::readNewFormat(string dir, int first, int last, size_t &n)
 {
     list<Vertex<float> > allPoints;
+
+    size_t point_counter = 0;
 
     for(int fileCounter = first; fileCounter <= last; fileCounter++)
     {
@@ -203,9 +224,25 @@ T** UosIO<T>::readNewFormat(string dir, int first, int last, size_t &n)
                 /// TODO: Check for intensity and/or color values in file
                 float x, y, z;
                 scan_in >> x >> y >> z;
+                point_counter ++;
 
                 Vertex<float> point(x, y, z);
-                tmp_points.push_back(point);
+
+                // Code branching for point converter!
+                if(!m_saveToDisk)
+                {
+                    tmp_points.push_back(point);
+                }
+                else
+                {
+                    if(m_outputFile.good())
+                    {
+                        if(point_counter % m_reduction == 0)
+                        {
+                            m_outputFile << x << " " << y << " " << z << endl;
+                        }
+                    }
+                }
             }
 
             // Transform scan point with current matrix
