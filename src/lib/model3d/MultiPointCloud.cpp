@@ -190,9 +190,7 @@ void MultiPointCloud::readNewUOSFormat(string dir, int first, int last)
                 scan_in >> x >> y >> z;
 
                 Vertex point(x, y, z);
-                cout << "ORIG:  " << point;
                 point.transform(tf);
-                cout << "TRANS: " << point << endl;;
                 pc->addPoint(x, y, z, 255, 0, 0);
             }
 
