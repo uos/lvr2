@@ -43,23 +43,39 @@ void TransformationDialog::connectSignalsAndSlots()
              this, SLOT(reset()));
 
 
+    // Slider and spin box for x rotation
     QObject::connect(m_dialog->sliderXRot, SIGNAL(sliderMoved(int)),
             this, SLOT(rotationXSlided(int)));
 
     QObject::connect(m_dialog->spinBoxXRot, SIGNAL(valueChanged(double)),
             this, SLOT(rotationXEntered(double)));
 
+    // Slider and spin box for y rotation
     QObject::connect(m_dialog->sliderYRot, SIGNAL(sliderMoved(int)),
             this, SLOT(rotationYSlided(int)));
 
     QObject::connect(m_dialog->spinBoxYRot, SIGNAL(valueChanged(double)),
             this, SLOT(rotationYEntered(double)));
 
+    // Slider and spin box for z rotation
     QObject::connect(m_dialog->sliderZRot, SIGNAL(sliderMoved(int)),
             this, SLOT(rotationZSlided(int)));
 
     QObject::connect(m_dialog->spinBoxZRot, SIGNAL(valueChanged(double)),
             this, SLOT(rotationZEntered(double)));
+
+    // Spin boxes for translation
+    QObject::connect(m_dialog->spinBoxXTrans, SIGNAL(valueChanged(double)),
+              this, SLOT(translationXEntered(double)));
+
+    QObject::connect(m_dialog->spinBoxYTrans, SIGNAL(valueChanged(double)),
+              this, SLOT(translationYEntered(double)));
+
+    QObject::connect(m_dialog->spinBoxZTrans, SIGNAL(valueChanged(double)),
+              this, SLOT(translationZEntered(double)));
+
+
+
 
 }
 
@@ -89,7 +105,7 @@ void TransformationDialog::transformGlobal()
 void TransformationDialog::transformLocal()
 {
     // Transform object
-    Vertex translation(0.0, 0.0, 0.0);
+    Vertex translation(m_posX, m_posY, m_posZ);
     Vertex rotation(m_rotX * 0.017453293, m_rotY * 0.017453293, m_rotZ * 0.017453293);
     m_renderable->setTransformationMatrix(Matrix4(translation, rotation));
 
@@ -128,6 +144,30 @@ void TransformationDialog::rotationZEntered(double value)
 
     // Update slider
     m_dialog->sliderZRot->setValue((int)m_rotZ * 100000.0);
+
+    // Transform selected object
+    transformLocal();
+}
+
+void TransformationDialog::translationXEntered(double value)
+{
+    m_posX = value;
+
+    // Transform selected object
+    transformLocal();
+}
+
+void TransformationDialog::translationYEntered(double value)
+{
+    m_posY = value;
+
+    // Transform selected object
+    transformLocal();
+}
+
+void TransformationDialog::translationZEntered(double value)
+{
+    m_posZ = value;
 
     // Transform selected object
     transformLocal();
