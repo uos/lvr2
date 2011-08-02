@@ -837,28 +837,32 @@ void HalfEdgeMesh<VertexT, NormalT>::optimizePlaneIntersections()
 					n_i.normalize();
 					n_j.normalize();
 
-					float d_i = n_i * (*m_regions[i])(0)->m_position;
-					float d_j = n_j * (*m_regions[j])(0)->m_position;
-					float n_i1 = n_i.m_x;
-					float n_i2 = n_i.m_y;
-					float n_j1 = n_j.m_x;
-					float n_j2 = n_j.m_y;
+					if (fabs(n_i*n_j) < 0.9)
+					{
 
-					float x1 = (d_i/n_i1 - ((n_i2*d_j)/(n_j2*n_i1)))/(1-((n_i2*n_j1)/(n_j2*n_i1)));
-					float x2 = (d_j-n_j1*x1)/n_j2;
-					float x3 = 0;
-					VertexT x (x1, x2, x3);
+						float d_i = n_i * (*m_regions[i])(0)->m_position;
+						float d_j = n_j * (*m_regions[j])(0)->m_position;
+						float n_i1 = n_i.m_x;
+						float n_i2 = n_i.m_y;
+						float n_j1 = n_j.m_x;
+						float n_j2 = n_j.m_y;
 
-					VertexT direction = n_i.cross(n_j);
+						float x1 = (d_i/n_i1 - ((n_i2*d_j)/(n_j2*n_i1)))/(1-((n_i2*n_j1)/(n_j2*n_i1)));
+						float x2 = (d_j-n_j1*x1)/n_j2;
+						float x3 = 0;
+						VertexT x (x1, x2, x3);
 
-					//drag all points of planes i and j in a certain radius onto the intersection
-					for(int k=0; k<m_faces.size(); k++)
-						m_faces[k]->m_used=false;
-					dragOntoIntersection(m_regions[i], m_regions[j]->m_region, x, direction);
+						VertexT direction = n_i.cross(n_j);
 
-					for(int k=0; k<m_faces.size(); k++)
-						m_faces[k]->m_used=false;
-					dragOntoIntersection(m_regions[j], m_regions[i]->m_region, x, direction);
+						//drag all points of planes i and j in a certain radius onto the intersection
+						for(int k=0; k<m_faces.size(); k++)
+							m_faces[k]->m_used=false;
+						dragOntoIntersection(m_regions[i], m_regions[j]->m_region, x, direction);
+
+						for(int k=0; k<m_faces.size(); k++)
+							m_faces[k]->m_used=false;
+						dragOntoIntersection(m_regions[j], m_regions[i]->m_region, x, direction);
+					}
 				}
 }
 
@@ -893,28 +897,28 @@ void HalfEdgeMesh<VertexT, NormalT>::tester()
 
 	//Experiment-------------------------------
 
-//	for(int i=0; i<m_faces.size(); i++)
-//	{
-//		if(    (*m_faces[i])[0]->pair->face == 0
-//			|| (*m_faces[i])[1]->pair->face == 0
-//			|| (*m_faces[i])[2]->pair->face == 0
-//			|| ((*m_faces[i])[0]->pair->face != 0 && m_faces[i]->m_region != (*m_faces[i])[0]->pair->face->m_region && (*m_faces[i])[0]->pair->face->m_region != 0)
-//			|| ((*m_faces[i])[1]->pair->face != 0 && m_faces[i]->m_region != (*m_faces[i])[1]->pair->face->m_region && (*m_faces[i])[1]->pair->face->m_region != 0)
-//			|| ((*m_faces[i])[2]->pair->face != 0 && m_faces[i]->m_region != (*m_faces[i])[2]->pair->face->m_region && (*m_faces[i])[2]->pair->face->m_region != 0)
-//			|| m_faces[i]->m_region > 0 )
-//		{
-//			m_faces[i]->m_region = 0;
-//		}
-//
-//	}
-//
-//	vector<HalfEdgeFace<VertexT, NormalT>*> todelete;
-//	for(int i=0; i<m_faces.size(); i++)
-//		if(m_faces[i]->m_region != 0)
-//			todelete.push_back(m_faces[i]);
-//
-//	for(int i=0; i<todelete.size(); i++)
-//		deleteFace(todelete[i]);
+	for(int i=0; i<m_faces.size(); i++)
+	{
+		if(    (*m_faces[i])[0]->pair->face == 0
+			|| (*m_faces[i])[1]->pair->face == 0
+			|| (*m_faces[i])[2]->pair->face == 0
+			|| ((*m_faces[i])[0]->pair->face != 0 && m_faces[i]->m_region != (*m_faces[i])[0]->pair->face->m_region && (*m_faces[i])[0]->pair->face->m_region != 0)
+			|| ((*m_faces[i])[1]->pair->face != 0 && m_faces[i]->m_region != (*m_faces[i])[1]->pair->face->m_region && (*m_faces[i])[1]->pair->face->m_region != 0)
+			|| ((*m_faces[i])[2]->pair->face != 0 && m_faces[i]->m_region != (*m_faces[i])[2]->pair->face->m_region && (*m_faces[i])[2]->pair->face->m_region != 0)
+			|| m_faces[i]->m_region > 0 )
+		{
+			m_faces[i]->m_region = 0;
+		}
+
+	}
+
+	vector<HalfEdgeFace<VertexT, NormalT>*> todelete;
+	for(int i=0; i<m_faces.size(); i++)
+		if(m_faces[i]->m_region != 0)
+			todelete.push_back(m_faces[i]);
+
+	for(int i=0; i<todelete.size(); i++)
+		deleteFace(todelete[i]);
 
 }
 
