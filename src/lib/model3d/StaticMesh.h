@@ -69,7 +69,9 @@ protected:
 void StaticMesh::render(){
 	if(visible) {
 		if(finalized && listIndex != -1){
-			glEnable(GL_LIGHTING);
+//			glEnable(GL_LIGHTING);
+			glShadeModel(GL_FLAT);  //disable color interpolation
+//			glPolygonMode( GL_FRONT_AND_BACK, GL_LINE); //wire frame
 			glPushMatrix();
 			glMultMatrixf(transformation.getData());
 			glCallList(listIndex);
