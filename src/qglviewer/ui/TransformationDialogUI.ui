@@ -39,7 +39,7 @@
     </rect>
    </property>
    <property name="title">
-    <string>Rotation :</string>
+    <string>Rotation:</string>
    </property>
    <property name="flat">
     <bool>false</bool>
@@ -324,6 +324,9 @@
     </property>
    </widget>
    <widget class="QCheckBox" name="checkBoxRotLocal">
+    <property name="enabled">
+     <bool>false</bool>
+    </property>
     <property name="geometry">
      <rect>
       <x>6</x>
@@ -381,7 +384,7 @@
      <double>1000000.000000000000000</double>
     </property>
     <property name="singleStep">
-     <double>0.100000000000000</double>
+     <double>0.010000000000000</double>
     </property>
    </widget>
    <widget class="QLabel" name="label_11">
@@ -394,7 +397,7 @@
      </rect>
     </property>
     <property name="text">
-     <string>X:</string>
+     <string>Y:</string>
     </property>
    </widget>
    <widget class="QLabel" name="label_12">
@@ -411,6 +414,9 @@
     </property>
    </widget>
    <widget class="QCheckBox" name="checkBoxTransLocal">
+    <property name="enabled">
+     <bool>false</bool>
+    </property>
     <property name="geometry">
      <rect>
       <x>5</x>
@@ -442,7 +448,7 @@
      <double>1000000.000000000000000</double>
     </property>
     <property name="singleStep">
-     <double>0.100000000000000</double>
+     <double>0.010000000000000</double>
     </property>
    </widget>
    <widget class="QDoubleSpinBox" name="spinBoxZTrans">
@@ -461,7 +467,7 @@
      <double>1000000.000000000000000</double>
     </property>
     <property name="singleStep">
-     <double>0.100000000000000</double>
+     <double>0.010000000000000</double>
     </property>
    </widget>
   </widget>
