@@ -187,14 +187,17 @@ void HalfEdgeMesh<VertexT, NormalT>::addTriangle(uint a, uint b, uint c)
 
 void mglBegin(GLenum which)
 {
-    glBegin(which);
     cout << "glBegin("<< /*getPrimitiveType(which) << */ ");" << endl;
+    //glBegin(which);
 }
 
 void mglEnd()
 {
-    glEnd();
+    //glEnd();
     cout << "glEnd();" << endl;
+	ofstream tess("tess.txt", ios_base::app);
+    tess << endl << endl;
+    tess.close();
 }
 
 void mglError(GLenum errorCode)
@@ -205,11 +208,11 @@ void mglError(GLenum errorCode)
 void mglVertex(const GLvoid *data)
 {
     const GLdouble *ptr = (const GLdouble*)data;
-	 ofstream tess("tess.txt", ios_base::app);
-	 tess << *ptr << ", " << *(ptr+1) << ", " << *(ptr+2) << endl;
-	 tess.close();
-	 cout << *ptr << ", " << *(ptr+1) << ", " << *(ptr+2) << endl;
-    glVertex3dv(ptr);
+	ofstream tess("tess.txt", ios_base::app);
+	tess << *ptr << ", " << *(ptr+1) << ", " << *(ptr+2) << endl;
+	tess.close();
+	cout << *ptr << ", " << *(ptr+1) << ", " << *(ptr+2) << endl;
+    //glVertex3dv(ptr);
 }
 
 void mcombineCallback(GLdouble coords[3],
@@ -217,7 +220,12 @@ void mcombineCallback(GLdouble coords[3],
 							 GLfloat weight[4],
 							 GLdouble **dataOut)
 {
+    cout << "CombineCallback" << endl;
 	GLdouble *vertex;
+    GLdouble *ptr = coords;
+	ofstream tess("tess.txt", ios_base::app);
+	tess << *ptr << ", " << *(ptr+1) << ", " << *(ptr+2) << endl;
+	tess.close();
 	
 	vertex = (GLdouble*) malloc(6*sizeof(GLdouble));
 	if(!vertex)
@@ -228,17 +236,23 @@ void mcombineCallback(GLdouble coords[3],
 	vertex[1] = coords[1];
 	vertex[2] = coords[2];
 
-	//for(int i = 3; i < 7; ++i)
-	//	vertex[i] = weight[0]*vertex_data[0][i]
-//					 + weight[1]*vertex_data[1][i];
-/*					 + weight[2]*vertex_data[2][i]
-					 + weight[3]*vertex_data[3][i]; */
+	for(int i = 3; i < 7; ++i)
+		vertex[i] = weight[0]*vertex_data[0][i]
+					 + weight[1]*vertex_data[1][i]
+					 + weight[2]*vertex_data[2][i]
+					 + weight[3]*vertex_data[3][i]; 
 	*dataOut = vertex;
 }
 
 template<typename VertexT, typename NormalT>
 void HalfEdgeMesh<VertexT, NormalT>::tesselate(vector<HVertex*> borderPoints)
 {
+    if(!borderPoints.size())
+    {
+        cerr<< "No points received. Aborting Tesselation." << endl;
+        return;
+    }
+
     // NOTE: Replace the 2 by the correct glueGetString.
     if(2 /*gluGetString(GLU_VERSION)*/ < 1.1)
     {
@@ -278,13 +292,13 @@ void HalfEdgeMesh<VertexT, NormalT>::tesselate(vector<HVertex*> borderPoints)
 			/* define the contour by vertices */
 			for(int i=0; i<borderPoints.size(); ++i)
 			{
-	 			GLdouble vertex[3];
+	 			GLdouble* vertex = new GLdouble[3];
 				vertex[0] = borderPoints[i]->m_position.m_x;
 				vertex[1] = borderPoints[i]->m_position.m_y;
 				vertex[2] = borderPoints[i]->m_position.m_z;
 				
 				// Add the vertex to the Contour
-				gluTessVertex(tesselator, vertex, 0);
+				gluTessVertex(tesselator, vertex, vertex);
 			}
 
 		// End Contour
@@ -982,24 +996,31 @@ void HalfEdgeMesh<VertexT, NormalT>::tester()
 	optimizePlanes(1);
 	
 	vector<HalfEdgeFace<VertexT, NormalT>*> todelete;
-	HFace* myFace;
+	vector<HFace*> borderFaces;
 	for(int i=0; i<m_faces.size(); i++)
 		if(m_faces[i]->m_region != 0)
 		{
 			todelete.push_back(m_faces[i]);
 			if(m_faces[i]->m_edge->pair->face == 0)
 			{
-				myFace = m_faces[i];
+				borderFaces.push_back(m_faces[i]);
 			}
 		}
 	
-	vector<HalfEdgeVertex<VertexT, NormalT>* > contour = simpleDetectHole(myFace->m_edge->pair);
-	this->tesselate(contour);
-	ofstream cont("contour.txt");
-	for(int i = 0; i < contour.size(); ++i)
-		cont << contour[i]->m_position << endl;
-	cout << contour.size() << endl;
-	cout << todelete.size() << endl;
+    for(int i=0; i<borderFaces.size(); ++i)
+    {
+	    vector<HalfEdgeVertex<VertexT, NormalT>* > contour = simpleDetectHole(borderFaces[i]->m_edge->pair);
+	    if(contour.size() > 3)
+        {
+	        ofstream cont("contour.txt");
+	        for(int i = 0; i < contour.size(); ++i)
+		        cont << contour[i]->m_position << endl;
+            cont.close();
+            cout << "Contour: " << contour.size() << endl;
+            this->tesselate(contour);
+            break;
+        }
+    }
 }
 
 
