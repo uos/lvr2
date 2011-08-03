@@ -10,7 +10,6 @@
 #ifndef __PLY_IO_H__
 #define __PLY_IO_H__
 
-#include "BaseIO.hpp"
 #include "PLYProperty.hpp"
 #include "PLYElement.hpp"
 
@@ -35,7 +34,7 @@ namespace lssr
 /**
  * @brief A class for input and output to ply files.
  */
-class PLYIO : public BaseIO {
+class PLYIO {
 
 public:
 
@@ -126,7 +125,7 @@ public:
 	 * @param n				Contains the number of Vertices in the array
 	 * @return				A pointer to normal data
 	 */
-	float* getVertexNormalArray(size_t &n);
+	float* getNormalArray(size_t &n);
 
 	/**
 	 * @brief Returns the interlaced color array (or a null pointer if
@@ -134,7 +133,7 @@ public:
 	 * @param n				Contains the number of Vertices in the array
 	 * @return				A pointer to color data
 	 */
-	float* getVertexColorArray(size_t &);
+	float* getColorArray(size_t &);
 
 	/**
 	 * @brief Returns an index accessible representation (2D array) of
@@ -161,7 +160,7 @@ public:
 	 * converted into a 2D array. Be careful with large data sets since
 	 * the information is duplicated.
 	 */
-	float** getIndexedVertexNormalArray(size_t &n);
+	float** getIndexedNormalArray(size_t &n);
 
 	/**
 	 * @brief Adds indexed vertex data.
@@ -181,7 +180,7 @@ public:
 	 *
 	 * The provided data is converted. Beware of memory overhead.
 	 */
-	void setIndexedVertexNormalArray(float** arr, size_t size);
+	void setIndexedNormalArray(float** arr, size_t size);
 
 	/**
 	 * @brief Returns the index array of a mesh
@@ -212,12 +211,6 @@ public:
 	 * @brief Prints all elements and properties to stdout.
 	 */
 	void printElementsInHeader();
-
-	float* getPointArray(size_t &n) { n = 0; return 0;}
-    float* getPointColorArray(size_t &n) { n = 0; return 0;}
-    float* getPointNormalArray(size_t &n) { n = 0; return 0;}
-	float* getPointIntensityArray(size_t &n) { n = 0; return 0;}
-
 
 private:
 
