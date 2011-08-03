@@ -252,8 +252,10 @@ private:
 	vector<HalfEdgeFace<VertexT, NormalT>*>    m_faces;
 
 	/// The vertices of the mesh
-	//vector<HalfEdgeVertex<VertexT, NormalT>*>  m_vertices;
 	vector<HalfEdgeVertex<VertexT, NormalT>*> m_vertices;
+
+	/// The regions in the half edge mesh represented by a single face
+	vector<HalfEdgeFace<VertexT, NormalT>*>    m_regions;
 
 	/// The indexed of the newest inserted vertex
 	int 					 m_globalIndex;

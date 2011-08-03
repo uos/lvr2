@@ -585,6 +585,7 @@ void HalfEdgeMesh<VertexT, NormalT>::optimizePlanes(int iterations)
 	vector<int> smallRegions;
 
 	int region_size = 0;
+	m_regions.clear();
 
 	for(int j=0; j<iterations; j++)
 	{
@@ -607,9 +608,14 @@ void HalfEdgeMesh<VertexT, NormalT>::optimizePlanes(int iterations)
 				if(region_size > max(50.0, 10*log(m_faces.size())))
 					regressionPlane(region);
 
-				//save too small regions with size smaller than 5
-				if(region_size < 7 && j==iterations-1)
-					smallRegions.push_back(region);
+				if(j==iterations-1){
+					//save too small regions with size smaller than 7
+					if (region_size < 7)
+						smallRegions.push_back(region);
+					else
+					//save pointer to the region for fast access
+						m_regions.push_back(m_faces[i]);
+				}
 				region++;
 			}
 		}
@@ -681,7 +687,7 @@ void HalfEdgeMesh<VertexT, NormalT>::regressionPlane(int region)
 		iterations++;
 	}
 
-	//drag points to the regression plane
+	//drag points into the regression plane
 	for(int i=0; i<planeFaces.size(); i++)
 	{
 

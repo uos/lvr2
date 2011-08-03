@@ -122,6 +122,8 @@ public:
 	/// The region of the face
 	int 							m_region;
 
+	bool							m_used;
+
 	/// The number of the face in the half edge mesh (convenience only, will be removed soon)
 	size_t							m_face_index;
 
