@@ -152,6 +152,23 @@ T** UosIO<T>::readNewFormat(string dir, int first, int last, size_t &n)
 				  boost::filesystem::path( "scan" + to_string( fileCounter, 3 ) + ".3d" ) );
         string scanFileName = "/" + scan_path.relative_path().string();
 
+        // Count lines in scan
+        size_t points_in_file = AsciiIO<T>::countLines(scanFileName);
+
+        int num_attributes = AsciiIO<T>::getEntriesInLine(scanFileName) - 3;
+        bool has_color = (num_attributes == 3) || (num_attributes == 4);
+        bool has_intensity = (num_attributes == 1) || (num_attributes == 4);
+
+        if(has_color)
+        {
+            cout << timestamp << "Reading color information." << endl;
+        }
+
+        if(has_intensity)
+        {
+            cout << timestamp << "Reading intensity information." << endl;
+        }
+
         // Read scan data
         scan_in.open(scanFileName.c_str());
         if(!scan_in.good())
@@ -218,13 +235,36 @@ T** UosIO<T>::readNewFormat(string dir, int first, int last, size_t &n)
             char dummy[1024];
             scan_in.getline(dummy, 1024);
 
+            // Setup info output
+            string comment = timestamp.getElapsedTime() + "Reading file " + scanFileName;
+            ProgressBar progress(points_in_file, comment);
+
             // Read all points
             while(scan_in.good())
             {
+
+
                 /// TODO: Check for intensity and/or color values in file
-                float x, y, z;
-                scan_in >> x >> y >> z;
+                float x, y, z, rem, dummy, r, g, b;
                 point_counter ++;
+
+                if(has_intensity && !has_color)
+                {
+                    scan_in >> x >> y >> z >> rem;
+                }
+                else if(has_intensity && has_color)
+                {
+                    scan_in >> x >> y >> z >> rem >> r >> g >> b;
+                }
+                else if(has_color && !has_intensity)
+                {
+                    scan_in >> x >> y >> z >> r >> g >> b;
+                }
+                else
+                {
+                    scan_in >> x >> y >> z;
+                    for(int n_dummys = 0; n_dummys < num_attributes; n_dummys++) scan_in >> dummy;
+                }
 
                 Vertex<float> point(x, y, z);
 
@@ -239,10 +279,24 @@ T** UosIO<T>::readNewFormat(string dir, int first, int last, size_t &n)
                     {
                         if(point_counter % m_reduction == 0)
                         {
-                            m_outputFile << x << " " << y << " " << z << endl;
+                            m_outputFile << x << " " << y << " " << z << " ";
+
+                            // Save remission values if present
+                            if(has_intensity)
+                            {
+                                m_outputFile << rem << " ";
+                            }
+
+                            // Save color values if present
+                            if(has_color)
+                            {
+                                m_outputFile << r << " " << g << " " << b;
+                            }
+                            m_outputFile << endl;
                         }
                     }
                 }
+                ++progress;
             }
 
             // Transform scan point with current matrix
