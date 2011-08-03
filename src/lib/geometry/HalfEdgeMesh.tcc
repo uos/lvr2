@@ -634,7 +634,7 @@ void HalfEdgeMesh<VertexT, NormalT>::regressionPlane(int region)
 	for(int i=0; i<m_faces.size(); i++)
 		if(m_faces[i]->m_region == region) planeFaces.push_back(m_faces[i]);
 
-	srand ( time(NULL) );
+//	srand ( time(NULL) );
 
 	VertexT point1;
 	VertexT point2;
@@ -792,6 +792,16 @@ vector<HalfEdgeVertex<VertexT, NormalT>* > HalfEdgeMesh<VertexT, NormalT>::simpl
 template<typename VertexT, typename NormalT>
 void HalfEdgeMesh<VertexT, NormalT>::fillHole(vector<HVertex*> contour)
 {
+	//Simulate a face by setting the face pointer of the edge next to the hole
+	for(int p=0; p<contour.size(); p++)
+	{
+		HEdge* edge = halfEdgeToVertex(contour[p], contour[(p+1) % contour.size()]);
+		if(edge->face == 0)
+			edge->face = edge->pair->face;
+		else
+			edge->pair->face = edge->face;
+	}
+
 	//Just for testing purposes
 	HalfEdgeVertex<VertexT, NormalT> newPoint;
 	for (int i = 0; i<contour.size(); i++)
@@ -864,6 +874,74 @@ void HalfEdgeMesh<VertexT, NormalT>::optimizePlaneIntersections()
 						dragOntoIntersection(m_regions[j], m_regions[i]->m_region, x, direction);
 					}
 				}
+}
+
+template<typename VertexT, typename NormalT>
+stack<HalfEdgeVertex<VertexT, NormalT>* > HalfEdgeMesh<VertexT, NormalT>::getContour(HEdge* start, float epsilon)
+{
+	stack<HalfEdgeVertex<VertexT, NormalT>* > contour;
+
+	//check for infeasible input
+	if(start->face == 0 || start->pair->face && start->pair->face->m_region == start->face->m_region)
+		return contour;
+
+	int region = start->face->m_region;
+
+	HEdge* current = start;
+	HEdge* next = 0;
+
+	while(current->used == false)
+	{
+		//mark edge as used
+		current->used = true;
+		next = 0;
+
+		//push the next vertex
+		contour.push(current->end);
+
+		//find next edge
+		for(int i = 0; i<current->end->out.size(); i++)
+		{
+			if(!current->end->out[i]->used
+					&& current->end->out[i]->face && current->end->out[i]->face->m_region == region
+					&& (current->end->out[i]->pair->face == 0
+							||current->end->out[i]->pair->face	&& current->end->out[i]->pair->face->m_region != region))
+
+				next = current->end->out[i];
+		}
+
+		if(next)
+		{
+			// calculate direction of the current edge
+			NormalT currentDirection(current->end->m_position - current->start->m_position);
+
+			//calculate direction of the next edge
+			NormalT nextDirection(next->end->m_position - next->start->m_position);
+
+			//Check if we have to remove the top vertex
+			if(fabs(nextDirection.m_x - currentDirection.m_x) <= epsilon
+					&& fabs(nextDirection.m_y - currentDirection.m_y) <= epsilon
+					&& fabs(nextDirection.m_z - currentDirection.m_z) <= epsilon)
+				contour.pop();
+
+			current = next;
+		}
+	}
+
+	return contour;
+}
+
+template<typename VertexT, typename NormalT>
+vector<stack<HalfEdgeVertex<VertexT, NormalT>* > > HalfEdgeMesh<VertexT, NormalT>::findAllContours(float epsilon)
+{
+	vector<stack<HalfEdgeVertex<VertexT, NormalT>* > > contours;
+	for(int i=0; i<m_faces.size(); i++){
+		if (m_faces[i]->m_region < 0)
+			for (int j = 0; j<3; j++)
+				if ((*m_faces[i])[j]->used == false && ((*m_faces[i])[j]->pair->face == 0 || (*m_faces[i])[j]->pair->face->m_region != m_faces[i]->m_region))
+					contours.push_back(getContour((*m_faces[i])[j], epsilon));
+	}
+	return  contours;
 }
 
 template<typename VertexT, typename NormalT>
