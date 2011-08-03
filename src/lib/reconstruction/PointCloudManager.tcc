@@ -63,7 +63,7 @@ void PointCloudManager<VertexT, NormalT>::readFromFile(string filename)
         PLYIO plyio;
         plyio.read(filename);
         this->m_points =  plyio.getIndexedVertexArray(this->m_numPoints);
-        this->m_normals = plyio.getIndexedNormalArray(this->m_numPoints);
+        this->m_normals = plyio.getIndexedVertexNormalArray(this->m_numPoints);
         this->m_colors = 0;
     }
     else if(extension == "")

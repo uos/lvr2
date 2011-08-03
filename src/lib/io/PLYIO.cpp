@@ -49,7 +49,7 @@ float* PLYIO::getVertexArray(size_t &n)
 	return m_vertices;
 }
 
-float* PLYIO::getNormalArray(size_t &n)
+float* PLYIO::getVertexNormalArray(size_t &n)
 {
 	if(m_normals)
 	{
@@ -62,7 +62,7 @@ float* PLYIO::getNormalArray(size_t &n)
 	return m_normals;
 }
 
-float* PLYIO::getColorArray(size_t &n)
+float* PLYIO::getVertexColorArray(size_t &n)
 {
 	if(m_colors)
 	{
@@ -902,7 +902,7 @@ float** PLYIO::getIndexedVertexArray(size_t& n)
 	return interlacedBufferToIndexedBuffer(m_vertices, m_numberOfVertices);
 }
 
-float** PLYIO::getIndexedNormalArray(size_t& n)
+float** PLYIO::getIndexedVertexNormalArray(size_t& n)
 {
 	assert(m_normals);
 	n = m_numberOfNormals;
@@ -1396,7 +1396,7 @@ void PLYIO::setIndexedVertexArray(float** arr, size_t vertex_count)
 	m_numberOfVertices = vertex_count;
 }
 
-void PLYIO::setIndexedNormalArray(float** arr, size_t count)
+void PLYIO::setIndexedVertexNormalArray(float** arr, size_t count)
 {
 	if(m_normals) delete[] m_normals;
 	m_normals = indexedBufferToInterlacedBuffer(arr, count);
