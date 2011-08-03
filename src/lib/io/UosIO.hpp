@@ -14,6 +14,8 @@
 #include <cmath>
 #include <fstream>
 
+#include "AsciiIO.hpp"
+
 #include "../geometry/Vertex.hpp"
 #include "../geometry/Matrix4.hpp"
 

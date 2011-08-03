@@ -41,19 +41,8 @@ T** AsciiIO<T>::read(string filename, size_t &count)
             return 0;
         }
 
-        // Open file
-        ifstream in(filename.c_str());
-
         // Count points in given file
-        size_t c = 0;
-        char line[2048];
-        while(in.good())
-        {
-            in.getline(line, 1024);
-            c++;
-        }
-
-        count = c;
+        size_t c = countLines(filename);
 
         // Alloc memory for points
         points = new T*[c];
@@ -64,8 +53,7 @@ T** AsciiIO<T>::read(string filename, size_t &count)
         ProgressBar progress(c, comment);
 
         // Read point data
-        in.close();
-        in.open(filename.c_str());
+        ifstream in(filename.c_str());
 
         c = 0;
         T x, y, z, dummy;
@@ -76,7 +64,8 @@ T** AsciiIO<T>::read(string filename, size_t &count)
             points[c][1] = y;
             points[c][2] = z;
 
-            for(int i = 0; i < skip; i++){
+            for(int i = 0; i < skip; i++)
+            {
                 in >> dummy;
             }
             c++;
@@ -84,8 +73,27 @@ T** AsciiIO<T>::read(string filename, size_t &count)
         }
         cout << endl;
         cout << timestamp << "Read " << c << " data points" << endl;
+        in.close();
     }
     return points;
+}
+
+template<typename T>
+size_t AsciiIO<T>::countLines(string filename)
+{
+    // Open file for reading
+    ifstream in(filename.c_str());
+
+    // Count lines in file
+    size_t c = 0;
+    char line[2048];
+    while(in.good())
+    {
+        in.getline(line, 1024);
+        c++;
+    }
+    in.close();
+    return c;
 }
 
 template<typename T>
@@ -94,14 +102,19 @@ int AsciiIO<T>::getEntriesInLine(string filename)
 
     ifstream in(filename.c_str());
 
-    //Get first line from file
+    // Get first line from file and skip it (possibly metadata)
     char first_line[1024];
     in.getline(first_line, 1024);
+
+    // Get second line -> hopefully point data
+    char second_line[1024];
+    in.getline(second_line, 1024);
+
     in.close();
 
-    //Get number of blanks
+    // Get number of blanks
     int c = 0;
-    char* pch = strtok(first_line, " ");
+    char* pch = strtok(second_line, " ");
     while(pch != NULL){
         c++;
         pch = strtok(NULL, " ");

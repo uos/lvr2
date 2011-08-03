@@ -32,8 +32,7 @@ public:
     static T** read(string filename, size_t &count);
 
     /// TODO: Coordinate mapping for ascii files
-
-private:
+    static size_t countLines(string filename);
 
     /**
      * @brief Helper method. Returns the number of columns in the
