@@ -12,7 +12,7 @@ class PointLoader
 {
 public:
     PointLoader()
-        : m_points(0), m_colors(0), m_intensities(0), m_numPoints(0) {}
+        : m_points(0), m_normals(0), m_colors(0), m_intensities(0), m_numPoints(0) {}
 
 
     /**
@@ -21,9 +21,8 @@ public:
      * @param n     The number of loaded points
      * @return      The point data or a null pointer
      */
-    virtual float**  getPointArray(size_t &n)
+    virtual float**  getPointArray()
     {
-        n = m_numPoints;
         return m_points;
     }
 
@@ -33,18 +32,9 @@ public:
      * @param n     The number of loaded color elements.
      * @return      The loaded color array or a null pointer of no vertices could be read
      */
-    virtual unsigned char**  getPointColorArray(size_t &n)
+    virtual unsigned char**  getPointColorArray()
     {
-        if(m_colors)
-        {
-            return m_colors;
-            n = 0;
-        }
-        else
-        {
-            n = 0;
-            return 0;
-        }
+       return m_colors;
     }
 
     /**
@@ -53,10 +43,9 @@ public:
      * @param n     The number of loaded normals.
      * @return      The loaded normal array or a null pointer of no vertices could be read
      */
-    virtual float**  getPointNormalArray(size_t &n)
+    virtual float**  getPointNormalArray()
     {
-        n = 0;
-        return 0;
+       return m_normals;
     }
 
     /**
@@ -65,25 +54,25 @@ public:
      * @param n     The number of loaded normals.
      * @return      The loaded normal array or a null pointer of no vertices could be read
      */
-    virtual float*  getPointIntensityArray(size_t &n)
+    virtual float*  getPointIntensityArray()
     {
-        if(m_intensities)
-        {
-            n = m_numPoints;
-            return m_intensities;
-        }
-        else
-        {
-            n = 0;
-            return 0;
-        }
-
+       return m_intensities;
     }
 
+    /**
+     * Returns the number of loaded points
+     */
+    virtual size_t  getNumPoints()
+    {
+        return m_numPoints;
+    }
 protected:
 
     /// Point cloud data
     float**          m_points;
+
+    /// Point normals
+    float**          m_normals;
 
     /// Color information
     unsigned char**  m_colors;

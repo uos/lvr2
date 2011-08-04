@@ -44,7 +44,7 @@ public:
     /**
      * @brief Contructor.
      */
-    UosIO() : m_firstScan(-1), m_lastScan(-1), m_reduction(1){}
+    UosIO() : m_firstScan(-1), m_lastScan(-1), m_reduction(1), m_saveToDisk(false){}
 
     /**
      * @brief Reads all scans or an specified range of scans
