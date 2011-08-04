@@ -18,14 +18,6 @@ using std::ifstream;
 namespace lssr
 {
 
-AsciiIO::AsciiIO()
-{
-    m_points = 0;
-    m_colors = 0;
-    m_intensities = 0;
-    m_numPoints = 0;
-}
-
 void AsciiIO::read(string filename)
 {
     // Check extension
