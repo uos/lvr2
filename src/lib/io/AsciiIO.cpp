@@ -21,67 +21,117 @@ namespace lssr
 AsciiIO::AsciiIO()
 {
     m_points = 0;
+    m_colors = 0;
+    m_intensities = 0;
     m_numPoints = 0;
 }
 
 void AsciiIO::read(string filename)
 {
-    float** points = 0;
-
     // Check extension
     boost::filesystem::path selectedFile(filename);
     string extension(selectedFile.extension().c_str());
 
     if(extension == ".pts" || extension == ".3d" || extension == ".xyz" || extension == ".txt")
     {
-        // Read the number of entries in the given file.
-        // The fist three entries are considered to contain
-        // the point definitions. The remaining columns are
-        // skipped when reading the file.
-        int skip = AsciiIO::getEntriesInLine(filename) - 3;
+        // Count lines in file to estimate the number of present points
+        int lines_in_file = countLines(filename);
 
-        if(skip < 0)
+        if(lines_in_file > 2)
         {
-            cout << timestamp << " Error: ASCII IO: File '"<<
-                    filename  << "' contains less than three entries per line." << endl;
-            return;
-        }
 
-        // Count points in given file
-        size_t c = countLines(filename);
+            // Open the given file. Skip the first line (as it may
+            // contain meta data in some formats). Then try to guess
+            // the additional data using some heuriscs that apply for
+            // most data formats: If 4 values per point are, given
+            // the 4th value usually is a reflectence information.
+            // Six entries suggest RGB information, seven entries
+            // intensity and RGB.
 
-        // Alloc memory for points
-        m_points = new float*[c];
-        for(size_t i = 0; i < c; i++)  m_points[i] = new float[3];
+            // Open file
+            ifstream in;
+            in.open(filename.c_str());
 
-        // Setup info output
-        string comment = timestamp.getElapsedTime() + "Reading file " + filename;
-        ProgressBar progress(c, comment);
+            // Read first to lines, ignore the first one
+            char buffer[2048];
+            in.getline(buffer, 2048);
+            in.getline(buffer, 2048);
 
-        // Read point data
-        ifstream in(filename.c_str());
+            // Get number of entries in test line and analiuze
+            int num_attributes = AsciiIO::getEntriesInLine(filename) - 3;
+            bool has_color = (num_attributes == 3) || (num_attributes == 4);
+            bool has_intensity = (num_attributes == 1) || (num_attributes == 4);
 
-        c = 0;
-        float x, y, z, dummy;
-        while(in.good() ){
-            //in >> points[c][0] >> points[c][1] >> points[c][2];
+            // Reopen file and read data
+            in.close();
+            in.open(filename.c_str());
 
-            in >> x >> y >> z;
-            m_points[c][0] = x;
-            m_points[c][1] = y;
-            m_points[c][2] = z;
+            // Again skip first line
+            in.getline(buffer, 2048);
 
-            for(int i = 0; i < skip; i++)
+            // Alloc memory for points
+            m_numPoints = lines_in_file -1;
+            m_points = new float*[m_numPoints];
+            for(int i = 0; i < m_numPoints; i++) m_points[i] = new float[3];
+
+            // Alloc buffer memory for additional attributes
+            if(has_color)
             {
-                in >> dummy;
+                m_colors = new unsigned char*[m_numPoints];
+                for(int i = 0; i < m_numPoints; i++) m_colors[i] = new unsigned char[3];
             }
-            c++;
-            ++progress;
+
+            if(has_intensity)
+            {
+                m_intensities = new float[m_numPoints];
+            }
+
+            // Read data form file
+            size_t c = 0;
+            while(in.good())
+            {
+                float x, y, z, i, dummy;
+                unsigned char r, g, b;
+
+                // Read according to determined format
+                if(has_intensity && !has_color)
+                {
+                    in >> x >> y >> z >> i;
+                    m_intensities[c] = i;
+                }
+                else if(has_intensity && has_color)
+                {
+                    in >> x >> y >> z >> i >> r >> g >> b;
+                    m_intensities[c] = i;
+                    m_colors[c][0] = r;
+                    m_colors[c][1] = g;
+                    m_colors[c][2] = b;
+                }
+                else if(has_color && !has_intensity)
+                {
+                    in >> x >> y >> z >> r >> g >> b;
+                    m_colors[c][0] = r;
+                    m_colors[c][1] = g;
+                    m_colors[c][2] = b;
+                }
+                else
+                {
+                    in >> x >> y >> z;
+                    for(int n_dummys = 0; n_dummys < num_attributes; n_dummys++) in >> dummy;
+                }
+                m_points[c][0] = x;
+                m_points[c][1] = y;
+                m_points[c][2] = z;
+                c++;
+            }
+
+
         }
-        m_numPoints = c;
-        cout << endl;
-        cout << timestamp << "Read " << c << " data points" << endl;
-        in.close();
+        else
+        {
+            cout << timestamp << "AsciiIO: Too few lines in file (has to be > 2)." << endl;
+        }
+
     }
 
 }

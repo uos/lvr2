@@ -229,7 +229,7 @@ public:
 	void printElementsInHeader();
 
 	float** getPointArray(size_t &n) { n = 0; return 0;}
-    float** getPointColorArray(size_t &n) { n = 0; return 0;}
+    unsigned char** getPointColorArray(size_t &n) { n = 0; return 0;}
     float** getPointNormalArray(size_t &n) { n = 0; return 0;}
 	float* getPointIntensityArray(size_t &n) { n = 0; return 0;}
 
@@ -275,7 +275,7 @@ private:
 
 	float*					m_vertices;
 	float*					m_normals;
-	float*					m_colors;
+	float*      		    m_colors;
 	unsigned int*			m_indices;
 
 	size_t					m_numberOfNormals;

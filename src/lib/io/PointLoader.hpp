@@ -24,7 +24,7 @@ class PointLoader
      * @param n     The number of loaded color elements.
      * @return      The loaded color array or a null pointer of no vertices could be read
      */
-    virtual float**  getPointColorArray(size_t &n) = 0;
+    virtual unsigned char**  getPointColorArray(size_t &n) = 0;
 
     /**
      * Returns the point normals for a point cloud
