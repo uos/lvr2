@@ -24,9 +24,10 @@ using std::ifstream;
 namespace lssr
 {
 
-template<typename T>
-T** UosIO<T>::read(string dir, size_t &n)
+
+void UosIO::read(string dir)
 {
+    size_t n = 0;
     boost::filesystem::path directory(dir);
     if(is_directory(directory))
     {
@@ -66,7 +67,7 @@ T** UosIO<T>::read(string dir, size_t &n)
         {
             cout << timestamp << "Reading " << n3dFiles << " scans in UOS format "
                  << "(From " << firstScan << " to " << lastScan << ")." << endl;
-            return readNewFormat(dir, firstScan, lastScan, n);
+            readNewFormat(dir, firstScan, lastScan, n);
         }
         else
         {
@@ -96,11 +97,11 @@ T** UosIO<T>::read(string dir, size_t &n)
             {
                 cout << timestamp << "Reading " << nDirs << " scans in old UOS format "
                      << "(From " << firstScan << " to " << lastScan << ")." << endl;
-                return readOldFormat(dir, firstScan, lastScan, n);
+                readOldFormat(dir, firstScan, lastScan, n);
             }
             else
             {
-                return 0;
+                return;
             }
         }
 
@@ -111,8 +112,8 @@ T** UosIO<T>::read(string dir, size_t &n)
     }
 }
 
-template<typename T>
-void UosIO<T>::reduce(string dir, string target, int reduction)
+
+void UosIO::reduce(string dir, string target, int reduction)
 {
     // Open output stream
     m_outputFile.open(target.c_str());
@@ -128,11 +129,11 @@ void UosIO<T>::reduce(string dir, string target, int reduction)
     size_t n;
 
     // Read data and write reduced points
-    T** unused = read(dir, n);
+    read(dir);
 }
 
-template<typename T>
-T** UosIO<T>::readNewFormat(string dir, int first, int last, size_t &n)
+
+void UosIO::readNewFormat(string dir, int first, int last, size_t &n)
 {
     list<Vertex<float> > allPoints;
 
@@ -316,31 +317,24 @@ T** UosIO<T>::readNewFormat(string dir, int first, int last, size_t &n)
     {
         cout << timestamp << "UOS Reader: Read " << allPoints.size() << " points." << endl;
         n = allPoints.size();
-        T** out_pts = new T*[allPoints.size()];
+        m_points = new float*[allPoints.size()];
         list<Vertex<float> >::iterator p_it;
         int i = 0;
         for(p_it = allPoints.begin(); p_it != allPoints.end(); p_it++)
         {
-            out_pts[i] = new T[3];
+            m_points[i] = new float[3];
             Vertex<float> v = *p_it;
-            out_pts[i][0] = v[0];
-            out_pts[i][1] = v[1];
-            out_pts[i][2] = v[2];
+            m_points[i][0] = v[0];
+            m_points[i][1] = v[1];
+            m_points[i][2] = v[2];
             i++;
         }
-        return out_pts;
-    }
-    else
-    {
-        // If everything else failed return a null pointer
-        n = 0;
-        return 0;
     }
 
 }
 
-template<typename T>
-T** UosIO<T>::readOldFormat(string dir, int first, int last, size_t &n)
+
+void UosIO::readOldFormat(string dir, int first, int last, size_t &n)
 {
     Matrix4<float> m_tf;
 
@@ -511,32 +505,22 @@ T** UosIO<T>::readOldFormat(string dir, int first, int last, size_t &n)
     {
         cout << timestamp << "UOS Reader: Read " << allPoints.size() << " points." << endl;
         n = allPoints.size();
-        T** out_pts = new T*[allPoints.size()];
+        m_points = new float*[allPoints.size()];
         list<Vertex<float> >::iterator p_it;
         int i = 0;
         for(p_it = allPoints.begin(); p_it != allPoints.end(); p_it++)
         {
-            out_pts[i] = new T[3];
+            m_points[i] = new float[3];
             Vertex<float> v = *p_it;
-            out_pts[i][0] = v[0];
-            out_pts[i][1] = v[1];
-            out_pts[i][2] = v[2];
+            m_points[i][0] = v[0];
+            m_points[i][1] = v[1];
+            m_points[i][2] = v[2];
             i++;
         }
-        return out_pts;
     }
-    else
-    {
-        // If everything else failed return a null pointer
-        n = 0;
-        return 0;
-    }
-
-
 }
 
-template<typename T>
-Matrix4<float> UosIO<T>::parseFrameFile(ifstream& frameFile)
+Matrix4<float> UosIO::parseFrameFile(ifstream& frameFile)
 {
     float m[16], color;
     while(frameFile.good())

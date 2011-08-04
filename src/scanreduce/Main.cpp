@@ -20,7 +20,7 @@ int main(int argc, char** argv)
 
     ::std::cout<<options<<::std::endl;
 
-    UosIO<float> io;
+    UosIO io;
     io.setFirstScan(options.firstScan());
     io.setLastScan(options.lastScan());
     io.reduce(options.directory(), options.outputFile(), options.reduction());

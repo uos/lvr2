@@ -37,7 +37,7 @@ namespace lssr
  * .pose files will be sued to transform the scans.
  */
 
-class UosIO : public PointReader
+class UosIO : public PointLoader
 {
 public:
 
@@ -88,7 +88,7 @@ private:
      * @param last      The last scan to read
      * @return          All read data points
      */
-    float** readNewFormat(string dir, int first, int last, size_t &n);
+    void readNewFormat(string dir, int first, int last, size_t &n);
 
     /**
      * @brief Reads scans from \ref{first} to \ref{last} in old UOS format.
@@ -97,7 +97,7 @@ private:
      * @param last      The last scan to read
      * @return          All read data points
      */
-    float** readOldFormat(string dir, int first, int last, size_t &n);
+    void readOldFormat(string dir, int first, int last, size_t &n);
 
     /**
      * @brief Creates a transformation matrix from given frame file
@@ -108,14 +108,14 @@ private:
      */
     Matrix4<float> parseFrameFile(ifstream& frameFile);
 
-    inline std::string to_string(const T& t, int width)
+    inline std::string to_string(const int& t, int width)
     {
       stringstream ss;
       ss << std::setfill('0') << std::setw(width) << t;
       return ss.str();
     }
 
-    inline std::string to_string(const T& t)
+    inline std::string to_string(const int& t)
     {
       stringstream ss;
       ss << t;
@@ -131,7 +131,7 @@ private:
      * @return the clustered image, with the clusters marked by colored figures
      *
      */
-    inline T rad(const T deg)
+    inline float rad(const float deg)
     {
       return ( (2 * M_PI * deg) / 360 );
     }
@@ -142,7 +142,7 @@ private:
      * @param rad  angle in rad
      * @return     angle in deg
      */
-    inline T deg(const T rad)
+    inline float deg(const float rad)
     {
       return ( (rad * 360) / (2 * M_PI) );
     }

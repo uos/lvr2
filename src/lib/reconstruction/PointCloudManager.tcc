@@ -71,8 +71,9 @@ void PointCloudManager<VertexT, NormalT>::readFromFile(string filename)
     }
     else if(extension == "")
     {
-        UosIO<float> uosio;
-        this->m_points = uosio.read(filename, this->m_numPoints);
+        UosIO uosio;
+        uosio.read(filename);
+        this->m_points = uosio.getPointArray(this->m_numPoints);
         this->m_normals = 0;
         this->m_colors = 0;
     }
