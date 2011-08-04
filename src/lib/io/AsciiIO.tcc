@@ -77,6 +77,7 @@ void AsciiIO::read(string filename)
             c++;
             ++progress;
         }
+        m_numPoints = c;
         cout << endl;
         cout << timestamp << "Read " << c << " data points" << endl;
         in.close();
