@@ -17,10 +17,15 @@ using std::ifstream;
 namespace lssr
 {
 
-template<typename T>
-T** AsciiIO<T>::read(string filename, size_t &count)
+AsciiIO::AsciiIO()
 {
-    T** points = 0;
+    m_points = 0;
+    m_numPoints = 0;
+}
+
+void AsciiIO::read(string filename)
+{
+    float** points = 0;
 
     // Check extension
     boost::filesystem::path selectedFile(filename);
@@ -38,15 +43,15 @@ T** AsciiIO<T>::read(string filename, size_t &count)
         {
             cout << timestamp << " Error: ASCII IO: File '"<<
                     filename  << "' contains less than three entries per line." << endl;
-            return 0;
+            return;
         }
 
         // Count points in given file
         size_t c = countLines(filename);
 
         // Alloc memory for points
-        points = new T*[c];
-        for(size_t i = 0; i < c; i++) points[i] = new T[3];
+        m_points = new float*[c];
+        for(size_t i = 0; i < c; i++)  m_points[i] = new float[3];
 
         // Setup info output
         string comment = timestamp.getElapsedTime() + "Reading file " + filename;
@@ -56,13 +61,14 @@ T** AsciiIO<T>::read(string filename, size_t &count)
         ifstream in(filename.c_str());
 
         c = 0;
-        T x, y, z, dummy;
+        float x, y, z, dummy;
         while(in.good() ){
             //in >> points[c][0] >> points[c][1] >> points[c][2];
+
             in >> x >> y >> z;
-            points[c][0] = x;
-            points[c][1] = y;
-            points[c][2] = z;
+            m_points[c][0] = x;
+            m_points[c][1] = y;
+            m_points[c][2] = z;
 
             for(int i = 0; i < skip; i++)
             {
@@ -75,11 +81,13 @@ T** AsciiIO<T>::read(string filename, size_t &count)
         cout << timestamp << "Read " << c << " data points" << endl;
         in.close();
     }
-    return points;
+
 }
 
-template<typename T>
-size_t AsciiIO<T>::countLines(string filename)
+
+
+
+size_t AsciiIO::countLines(string filename)
 {
     // Open file for reading
     ifstream in(filename.c_str());
@@ -96,8 +104,8 @@ size_t AsciiIO<T>::countLines(string filename)
     return c;
 }
 
-template<typename T>
-int AsciiIO<T>::getEntriesInLine(string filename)
+
+int AsciiIO::getEntriesInLine(string filename)
 {
 
     ifstream in(filename.c_str());

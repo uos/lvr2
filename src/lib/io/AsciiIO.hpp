@@ -8,6 +8,9 @@
 #ifndef ASCIIIO_H_
 #define ASCIIIO_H_
 
+#include "BaseIO.hpp"
+#include "PointLoader.hpp"
+
 namespace lssr
 {
 
@@ -16,20 +19,19 @@ namespace lssr
  *        text formats. Currently the file extensions .xyz, .txt,
  *        .3d and .pts are supported.
  */
-template<typename T>
-class AsciiIO
+class AsciiIO : public BaseIO, public PointLoader
 {
 public:
+
+    AsciiIO();
 
     /**
      * @brief Reads the given file and stores point and normal
      *        information in the given parameters
      *
      * @param filename      The file to read
-     * @param count         The number of elements read
-     * @return The read point cloud data or a zero pointer of reading failed.
      */
-    static T** read(string filename, size_t &count);
+    void read(string filename);
 
     /// TODO: Coordinate mapping for ascii files
     static size_t countLines(string filename);
@@ -39,6 +41,64 @@ public:
      *        given file.
      */
     static int getEntriesInLine(string filename);
+
+    /**
+     * Returns a point array
+     *
+     * @param n     The number of loaded points
+     * @return      The point data or a null pointer
+     */
+    virtual float**  getPointArray(size_t &n)
+    {
+        n = m_numPoints;
+        return m_points;
+    }
+
+    /**
+     * Returns the point colors (RGB) for a point cloud
+     *
+     * @param n     The number of loaded color elements.
+     * @return      The loaded color array or a null pointer of no vertices could be read
+     */
+    virtual float**  getPointColorArray(size_t &n)
+    {
+        n = 0;
+        return 0;
+    }
+
+    /**
+     * Returns the point normals for a point cloud
+     *
+     * @param n     The number of loaded normals.
+     * @return      The loaded normal array or a null pointer of no vertices could be read
+     */
+    virtual float**  getPointNormalArray(size_t &n)
+    {
+        n = 0;
+        return 0;
+    }
+
+    /**
+     * Returns the remission values for a point cloud (one float per point)
+     *
+     * @param n     The number of loaded normals.
+     * @return      The loaded normal array or a null pointer of no vertices could be read
+     */
+    virtual float*  getPointIntensityArray(size_t &n)
+    {
+        n = 0;
+        return 0;
+    }
+
+    virtual void save(string filename)
+    {
+
+    }
+
+private:
+
+    float**  m_points;
+    size_t  m_numPoints;
 };
 
 
