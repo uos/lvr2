@@ -53,7 +53,9 @@ void PointCloudManager<VertexT, NormalT>::readFromFile(string filename)
 
     if(extension == ".pts" || extension == ".3d" || extension == ".xyz" || extension == ".txt")
     {
-        this->m_points = AsciiIO<float>::read(filename, this->m_numPoints);
+        AsciiIO asciiIO;
+        asciiIO.read(filename);
+        this->m_points = asciiIO.getPointArray(this->m_numPoints);
         this->m_normals = 0;
         this->m_colors = 0;
     }

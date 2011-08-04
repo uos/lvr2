@@ -153,9 +153,9 @@ T** UosIO<T>::readNewFormat(string dir, int first, int last, size_t &n)
         string scanFileName = "/" + scan_path.relative_path().string();
 
         // Count lines in scan
-        size_t points_in_file = AsciiIO<T>::countLines(scanFileName);
+        size_t points_in_file = AsciiIO::countLines(scanFileName);
 
-        int num_attributes = AsciiIO<T>::getEntriesInLine(scanFileName) - 3;
+        int num_attributes = AsciiIO::getEntriesInLine(scanFileName) - 3;
         bool has_color = (num_attributes == 3) || (num_attributes == 4);
         bool has_intensity = (num_attributes == 1) || (num_attributes == 4);
 
