@@ -60,10 +60,18 @@ public:
      * @param n     The number of loaded color elements.
      * @return      The loaded color array or a null pointer of no vertices could be read
      */
-    virtual float**  getPointColorArray(size_t &n)
+    virtual unsigned char**  getPointColorArray(size_t &n)
     {
-        n = 0;
-        return 0;
+        if(m_colors)
+        {
+            return m_colors;
+            n = 0;
+        }
+        else
+        {
+            n = 0;
+            return 0;
+        }
     }
 
     /**
@@ -86,8 +94,17 @@ public:
      */
     virtual float*  getPointIntensityArray(size_t &n)
     {
-        n = 0;
-        return 0;
+        if(m_intensities)
+        {
+            n = m_numPoints;
+            return m_intensities;
+        }
+        else
+        {
+            n = 0;
+            return 0;
+        }
+
     }
 
     virtual void save(string filename)
@@ -98,6 +115,9 @@ public:
 private:
 
     float**  m_points;
+    unsigned char**  m_colors;
+    float*   m_intensities;
+
     size_t  m_numPoints;
 };
 
