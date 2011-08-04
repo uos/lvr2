@@ -10,6 +10,7 @@
 
 class PointLoader
 {
+public:
     PointLoader()
         : m_points(0), m_colors(0), m_intensities(0), m_numPoints(0) {}
 
@@ -45,7 +46,7 @@ class PointLoader
      */
     virtual float*  getPointIntensityArray(size_t &n) = 0;
 
-private:
+protected:
 
     /// Point cloud data
     float**          m_points;
