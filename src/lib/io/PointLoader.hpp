@@ -10,6 +10,9 @@
 
 class PointLoader
 {
+    PointLoader()
+        : m_points(0), m_colors(0), m_intensities(0), m_numPoints(0) {}
+
     /**
      * Returns a point array
      *
@@ -41,6 +44,20 @@ class PointLoader
      * @return      The loaded normal array or a null pointer of no vertices could be read
      */
     virtual float*  getPointIntensityArray(size_t &n) = 0;
+
+private:
+
+    /// Point cloud data
+    float**          m_points;
+
+    /// Color information
+    unsigned char**  m_colors;
+
+    /// Intensities
+    float*           m_intensities;
+
+    /// Number of loaded points
+    size_t           m_numPoints;
 };
 
 

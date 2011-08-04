@@ -23,7 +23,7 @@ class AsciiIO : public BaseIO, public PointLoader
 {
 public:
 
-    AsciiIO();
+    AsciiIO() {};
 
     /**
      * @brief Reads the given file and stores point and normal
@@ -112,13 +112,6 @@ public:
 
     }
 
-private:
-
-    float**  m_points;
-    unsigned char**  m_colors;
-    float*   m_intensities;
-
-    size_t  m_numPoints;
 };
 
 

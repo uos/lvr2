@@ -14,6 +14,7 @@
 #include <cmath>
 #include <fstream>
 
+#include "PointLoader.hpp"
 #include "AsciiIO.hpp"
 
 #include "../geometry/Vertex.hpp"
@@ -35,8 +36,8 @@ namespace lssr
  * transformation in the file. If no .frame file are present, the
  * .pose files will be sued to transform the scans.
  */
-template<typename T>
-class UosIO
+
+class UosIO : public PointReader
 {
 public:
 
@@ -52,7 +53,7 @@ public:
      * @param dir       A directory containing scans in UOS format.
      * @return          An indexed array of scan points
      */
-    T** read(string dir, size_t &n);
+    void read(string dir);
 
     /**
      * @brief Defines the first scan to read
@@ -76,6 +77,8 @@ public:
      */
     void reduce(string dir, string target, int reduction = 1);
 
+
+
 private:
 
     /**
@@ -85,7 +88,7 @@ private:
      * @param last      The last scan to read
      * @return          All read data points
      */
-    T** readNewFormat(string dir, int first, int last, size_t &n);
+    float** readNewFormat(string dir, int first, int last, size_t &n);
 
     /**
      * @brief Reads scans from \ref{first} to \ref{last} in old UOS format.
@@ -94,7 +97,7 @@ private:
      * @param last      The last scan to read
      * @return          All read data points
      */
-    T** readOldFormat(string dir, int first, int last, size_t &n);
+    float** readOldFormat(string dir, int first, int last, size_t &n);
 
     /**
      * @brief Creates a transformation matrix from given frame file
@@ -159,6 +162,7 @@ private:
 
     /// Reduction factor
     int     m_reduction;
+
 };
 
 } // namespace lssr
