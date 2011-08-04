@@ -56,6 +56,7 @@ void PointCloudManager<VertexT, NormalT>::readFromFile(string filename)
         AsciiIO asciiIO;
         asciiIO.read(filename);
         this->m_points = asciiIO.getPointArray(this->m_numPoints);
+        cout << m_numPoints << endl;
         this->m_normals = 0;
         this->m_colors = 0;
     }
