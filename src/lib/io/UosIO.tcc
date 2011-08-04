@@ -309,7 +309,7 @@ void UosIO::readNewFormat(string dir, int first, int last, size_t &n)
                 allPoints.push_back(v);
             }
         }
-
+        cout << endl;
     }
 
     // Convert into indexed array
@@ -329,6 +329,7 @@ void UosIO::readNewFormat(string dir, int first, int last, size_t &n)
             m_points[i][2] = v[2];
             i++;
         }
+        m_numPoints = allPoints.size();
     }
 
 }
@@ -517,6 +518,7 @@ void UosIO::readOldFormat(string dir, int first, int last, size_t &n)
             m_points[i][2] = v[2];
             i++;
         }
+        m_numPoints = allPoints.size();
     }
 }
 
