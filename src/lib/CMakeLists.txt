@@ -1,6 +1,7 @@
 set(LSSR_SOURCES
     io/PLYIO.cpp
     io/PLYTraits.cpp
+    io/AsciiIO.cpp
     io/Progress.cpp
     io/Timestamp.cpp
 )

@@ -11,6 +11,7 @@ using std::ifstream;
 
 #include <boost/filesystem.hpp>
 
+#include "AsciiIO.hpp"
 #include "Progress.hpp"
 #include "Timestamp.hpp"
 
@@ -84,8 +85,6 @@ void AsciiIO::read(string filename)
     }
 
 }
-
-
 
 
 size_t AsciiIO::countLines(string filename)

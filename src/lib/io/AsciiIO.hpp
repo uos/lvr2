@@ -105,6 +105,4 @@ private:
 } // namespace lssr
 
 
-#include "AsciiIO.tcc"
-
 #endif /* ASCIIIO_H_ */
