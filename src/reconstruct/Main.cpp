@@ -145,7 +145,7 @@ int main(int argc, char** argv)
     if(options.getIntersections() > 0)
     {
         resolution = options.getIntersections();
-        useVoxelsize = false;
+        useVoxelsize = true;
     }
     else
     {
@@ -157,8 +157,11 @@ int main(int argc, char** argv)
     FastReconstruction<Vertex<float>, Normal<float> > reconstruction(manager, resolution, useVoxelsize);
     reconstruction.getMesh(mesh);
 
+    //mesh.tester();
+
     // Save triangle mesh
-    mesh.finalize();
+    mesh.finalize_and_retesselate();
+    //mesh.finalize();
     mesh.save("triangle_mesh.ply");
 
 

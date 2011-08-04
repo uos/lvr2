@@ -185,6 +185,129 @@ void HalfEdgeMesh<VertexT, NormalT>::addTriangle(uint a, uint b, uint c)
 
 }
 
+void mglBegin(GLenum which)
+{
+    cout << "glBegin("<< /*getPrimitiveType(which) << */ ");" << endl;
+    //glBegin(which);
+}
+
+void mglEnd()
+{
+    //glEnd();
+    cout << "glEnd();" << endl;
+	ofstream tess("tess.txt", ios_base::app);
+    tess << endl << endl;
+    tess.close();
+}
+
+void mglError(GLenum errorCode)
+{
+    cerr << "[Error:] " << gluErrorString(errorCode) << endl; 
+}
+
+void mglVertex(const GLvoid *data)
+{
+    const GLdouble *ptr = (const GLdouble*)data;
+	ofstream tess("tess.txt", ios_base::app);
+	tess << *ptr << ", " << *(ptr+1) << ", " << *(ptr+2) << endl;
+	tess.close();
+	cout << *ptr << ", " << *(ptr+1) << ", " << *(ptr+2) << endl;
+    //glVertex3dv(ptr);
+}
+
+void mcombineCallback(GLdouble coords[3],
+							 GLdouble *vertex_data[4],
+							 GLfloat weight[4],
+							 GLdouble **dataOut)
+{
+    cout << "CombineCallback" << endl;
+	GLdouble *vertex;
+    GLdouble *ptr = coords;
+	ofstream tess("tess.txt", ios_base::app);
+	tess << *ptr << ", " << *(ptr+1) << ", " << *(ptr+2) << endl;
+	tess.close();
+	
+	vertex = (GLdouble*) malloc(6*sizeof(GLdouble));
+	if(!vertex)
+	{
+		cerr << "Could not allocate memory - undefined behaviour will/might arise from now on!" << endl;
+	}
+	vertex[0] = coords[0];
+	vertex[1] = coords[1];
+	vertex[2] = coords[2];
+
+	for(int i = 3; i < 7; ++i)
+		vertex[i] = weight[0]*vertex_data[0][i]
+					 + weight[1]*vertex_data[1][i]
+					 + weight[2]*vertex_data[2][i]
+					 + weight[3]*vertex_data[3][i]; 
+	*dataOut = vertex;
+}
+
+template<typename VertexT, typename NormalT>
+void HalfEdgeMesh<VertexT, NormalT>::tesselate(stack<HVertex*> borderPoints)
+{
+    if(!borderPoints.size())
+    {
+        cerr<< "No points received. Aborting Tesselation." << endl;
+        return;
+    }
+
+    // NOTE: Replace the 2 by the correct glueGetString.
+    if(2 /*gluGetString(GLU_VERSION)*/ < 1.1)
+    {
+        cerr<< "Unsupported Version of GLUT." 
+            << "Please use OpenGL Utility Library version 1.1 or higher." << endl;
+        return;
+    }
+
+    GLUtesselator* tesselator = gluNewTess();
+    if(!tesselator)
+    {
+        cerr<<"Could not allocate tesselation object. Aborting tesselation." << endl;
+        return;
+    }
+
+    /* Callback function that define beginning of polygone etc. */
+    gluTessCallback(tesselator, GLU_TESS_VERTEX,(GLvoid(*) ()) &mglVertex);
+    gluTessCallback(tesselator, GLU_TESS_BEGIN, (GLvoid(*) ()) &mglBegin);
+    gluTessCallback(tesselator, GLU_TESS_END, (GLvoid(*) ()) &mglEnd);
+    gluTessCallback(tesselator, GLU_TESS_COMBINE, (GLvoid(*) ()) &mcombineCallback);
+    gluTessCallback(tesselator, GLU_TESS_ERROR, (GLvoid(*) ()) &mglError);
+
+    /* set Properties for tesselation */
+    gluTessProperty(tesselator, GLU_TESS_WINDING_RULE, GLU_TESS_WINDING_ODD);
+
+	 /* Use gluTessNormal: speeds up the tessellation if the
+	  	Polygon lies on a x-y plane. and it approximatly does!*/
+	 gluTessNormal(tesselator, 0, 0, 1);
+
+
+	 /* Begin definition of the polygon to be tesselated */
+	 gluTessBeginPolygon(tesselator, 0);
+
+		// Begin Contour
+	 	gluTessBeginContour(tesselator);
+
+			/* define the contour by vertices */
+			for(int i=0; i<borderPoints.size(); ++i)
+			{
+	 			GLdouble* vertex = new GLdouble[3];
+				vertex[0] = (borderPoints.top())->m_position.m_x;
+				vertex[1] = (borderPoints.top())->m_position.m_y;
+				vertex[2] = (borderPoints.top())->m_position.m_z;
+				borderPoints.pop();
+				// Add the vertex to the Contour
+				gluTessVertex(tesselator, vertex, vertex);
+			}
+
+		// End Contour
+		gluTessEndContour(tesselator);
+
+	 /* End Tesselation */
+	 gluTessEndPolygon(tesselator);
+}
+
 template<typename VertexT, typename NormalT>
 void HalfEdgeMesh<VertexT, NormalT>::addFace(HVertex* v1, HVertex* v2, HVertex* v3)
 {
@@ -634,7 +757,7 @@ void HalfEdgeMesh<VertexT, NormalT>::regressionPlane(int region)
 	for(int i=0; i<m_faces.size(); i++)
 		if(m_faces[i]->m_region == region) planeFaces.push_back(m_faces[i]);
 
-//	srand ( time(NULL) );
+//	srand ( time(NULL) ); //TODO: uncomment
 
 	VertexT point1;
 	VertexT point2;
@@ -942,6 +1065,119 @@ vector<stack<HalfEdgeVertex<VertexT, NormalT>* > > HalfEdgeMesh<VertexT, NormalT
 					contours.push_back(getContour((*m_faces[i])[j], epsilon));
 	}
 	return  contours;
+}
+
+template<typename VertexT, typename NormalT>
+void HalfEdgeMesh<VertexT, NormalT>::tester()
+{
+	//removeDanglingArtifacts(500);
+	optimizePlanes(1);
+	
+	vector<HalfEdgeFace<VertexT, NormalT>*> todelete;
+	vector<HFace*> borderFaces;
+	for(int i=0; i<m_faces.size(); i++)
+		if(m_faces[i]->m_region != 0)
+		{
+			todelete.push_back(m_faces[i]);
+			if(m_faces[i]->m_edge->pair->face == 0)
+			{
+				borderFaces.push_back(m_faces[i]);
+			}
+		}
+	
+    for(int i=0; i<borderFaces.size(); ++i)
+    {
+	    vector<HalfEdgeVertex<VertexT, NormalT>* > contour = simpleDetectHole(borderFaces[i]->m_edge->pair);
+	    if(contour.size() > 3)
+        {
+	        ofstream cont("contour.txt");
+	        for(int i = 0; i < contour.size(); ++i)
+		        cont << contour[i]->m_position << endl;
+            cont.close();
+            cout << "Contour: " << contour.size() << endl;
+            //this->tesselate(contour);
+            break;
+        }
+    }
+}
+
+template<typename VertexT, typename NormalT>
+void HalfEdgeMesh<VertexT, NormalT>::finalize_and_retesselate()
+{
+	cout<<"Number of vertices: "<<(uint32_t)m_vertices.size()<<" Number of faces: "<<(uint32_t)m_faces.size()<<endl;
+	boost::unordered_map<HalfEdgeVertex<VertexT, NormalT>*, int> index_map;
+
+	this->m_nVertices 		= (uint32_t)m_vertices.size();
+	this->m_nFaces 			= (uint32_t)m_faces.size();
+
+	this->m_vertexBuffer 	= new float[3 * this->m_nVertices];
+	this->m_normalBuffer 	= new float[3 * this->m_nVertices];
+	this->m_colorBuffer 	= new float[3 * this->m_nVertices];
+
+	this->m_indexBuffer 	= new unsigned int[3 * this->m_nFaces];
+
+	typename vector<HVertex*>::iterator vertices_iter = m_vertices.begin();
+	typename vector<HVertex*>::iterator vertices_end = m_vertices.end();
+	for(size_t i = 0; vertices_iter != vertices_end; ++i, ++vertices_iter)
+	{
+		this->m_vertexBuffer[3 * i] =     (*vertices_iter)->m_position[0];
+		this->m_vertexBuffer[3 * i + 1] = (*vertices_iter)->m_position[1];
+		this->m_vertexBuffer[3 * i + 2] = (*vertices_iter)->m_position[2];
+
+		this->m_normalBuffer [3 * i] =     -(*vertices_iter)->m_normal[0];
+		this->m_normalBuffer [3 * i + 1] = -(*vertices_iter)->m_normal[1];
+		this->m_normalBuffer [3 * i + 2] = -(*vertices_iter)->m_normal[2];
+
+		this->m_colorBuffer  [3 * i] = 0.8;
+		this->m_colorBuffer  [3 * i + 1] = 0.8;
+		this->m_colorBuffer  [3 * i + 2] = 0.8;
+
+		// map the old index to the new index in the vertexBuffer
+		index_map[*vertices_iter] = i;
+	}
+	typename vector<HalfEdgeFace<VertexT, NormalT>*>::iterator face_iter = m_faces.begin();
+	typename vector<HalfEdgeFace<VertexT, NormalT>*>::iterator face_end  = m_faces.end();
+	vector<HalfEdgeFace<VertexT, NormalT>*> nonRegionFaces;
+    // store all the faces that do not belong to a region:
+	for(;face_iter != face_end; ++face_iter)
+	{
+        if((*face_iter)->m_region > 0)
+        {
+            nonRegionFaces.push_back(*face_iter);
+        }
+    }
+    face_iter = nonRegionFaces.begin();
+    face_end  = nonRegionFaces.end();
+	for(int i = 0; face_iter != face_end; ++i, ++face_iter)
+    {
+		this->m_indexBuffer[3 * i]      = index_map[(*(*face_iter))(0)];
+		this->m_indexBuffer[3 * i + 1]  = index_map[(*(*face_iter))(1)];
+		this->m_indexBuffer[3 * i + 2]  = index_map[(*(*face_iter))(2)];
+		
+		int surface_class = 1;
+		surface_class = (*face_iter)->m_region;
+
+		this->m_colorBuffer[this->m_indexBuffer[3 * i]  * 3 + 0] = fabs(cos(surface_class));
+		this->m_colorBuffer[this->m_indexBuffer[3 * i]  * 3 + 1] = fabs(sin(surface_class * 30));
+		this->m_colorBuffer[this->m_indexBuffer[3 * i]  * 3 + 2] = fabs(sin(surface_class * 2));
+
+		this->m_colorBuffer[this->m_indexBuffer[3 * i + 1] * 3 + 0] = fabs(cos(surface_class));
+		this->m_colorBuffer[this->m_indexBuffer[3 * i + 1] * 3 + 1] = fabs(sin(surface_class * 30));
+		this->m_colorBuffer[this->m_indexBuffer[3 * i + 1] * 3 + 2] = fabs(sin(surface_class * 2));
+
+		this->m_colorBuffer[this->m_indexBuffer[3 * i + 2] * 3 + 0] = fabs(cos(surface_class));
+		this->m_colorBuffer[this->m_indexBuffer[3 * i + 2] * 3 + 1] = fabs(sin(surface_class * 30));
+		this->m_colorBuffer[this->m_indexBuffer[3 * i + 2] * 3 + 2] = fabs(sin(surface_class * 2));
+	}
+
+    // retesseleta everything that belongs to a region:
+    optimizePlanes(1);
+    vector<stack<HalfEdgeVertex<VertexT, NormalT>* > > contours = findAllContours(0.05);
+    if(contours.size() > 1)
+    {
+        tesselate(contours[0]);
+    }
+	this->m_finalized = true;
 }
 
 template<typename VertexT, typename NormalT>
