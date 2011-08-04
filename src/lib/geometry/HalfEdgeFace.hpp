@@ -38,7 +38,7 @@ public:
     /**
      * @brief   Constructs an empty face
      */
-	HalfEdgeFace() {m_region=0;};
+	HalfEdgeFace() {m_region=0; m_used=false;};
 
 	/**
 	 * @brief   Copy constructor
