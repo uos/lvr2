@@ -13,6 +13,8 @@
 #include <iostream>
 #include <cmath>
 #include <fstream>
+#include <sstream>
+#include <vector>
 
 #include "PointLoader.hpp"
 #include "AsciiIO.hpp"
@@ -22,6 +24,12 @@
 
 using std::string;
 using std::fstream;
+using std::stringstream;
+using std::pair;
+using std::vector;
+
+typedef pair<size_t, size_t> indexPair;
+
 
 namespace lssr
 {
@@ -44,7 +52,7 @@ public:
     /**
      * @brief Contructor.
      */
-    UosIO() : m_firstScan(-1), m_lastScan(-1), m_reduction(1), m_saveToDisk(false){}
+    UosIO() : m_firstScan(-1), m_lastScan(-1), m_reduction(1), m_saveToDisk(false), m_numScans(0){}
 
     /**
      * @brief Reads all scans or an specified range of scans
@@ -77,7 +85,9 @@ public:
      */
     void reduce(string dir, string target, int reduction = 1);
 
+    indexPair getScanRange(int num);
 
+    int getNumScans() { return m_numScans;}
 
 private:
 
@@ -163,10 +173,15 @@ private:
     /// Reduction factor
     int     m_reduction;
 
+
+    /// Number of loaded scans
+    int     m_numScans;
+
+    /// Vector to save the indices of the first and last points of single scans
+    vector<indexPair> m_scanRanges;
 };
 
 } // namespace lssr
 
-#include "UosIO.tcc"
 
 #endif /* UOSIO_H_ */
