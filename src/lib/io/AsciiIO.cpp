@@ -31,9 +31,6 @@ void AsciiIO::read(string filename)
 
         if(lines_in_file > 2)
         {
-            cout << "****************************************" << endl;
-
-
             // Open the given file. Skip the first line (as it may
             // contain meta data in some formats). Then try to guess
             // the additional data using some heuriscs that apply for
