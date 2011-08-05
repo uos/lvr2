@@ -10,6 +10,10 @@
 #ifndef __PLY_IO_H__
 #define __PLY_IO_H__
 
+#include "BaseIO.hpp"
+#include "MeshLoader.hpp"
+#include "PointLoader.hpp"
+
 #include "PLYProperty.hpp"
 #include "PLYElement.hpp"
 
@@ -34,7 +38,9 @@ namespace lssr
 /**
  * @brief A class for input and output to ply files.
  */
-class PLYIO {
+class PLYIO : public BaseIO,  public PointLoader, public MeshLoader
+{
+
 
 public:
 
@@ -98,7 +104,18 @@ public:
 	 * @param binary		If, the data is writen in binary format (default). Set
 	 * 						this param to false to create an ASCII ply file
 	 */
-	void save(string filename, bool binary = true);
+	void save(string filename, bool binary);
+
+    /**
+     * @brief Save the currently present information to the given file
+     *
+     * @param filename      The output file. The data is writte in ASCII format.
+     */
+	void save(string filename)
+	{
+	    save(filename, false);
+	}
+
 
 	/**
 	 * @brief Reads all supported information from the given file
@@ -212,6 +229,12 @@ public:
 	 */
 	void printElementsInHeader();
 
+
+	float** getPointArray(size_t &n) { n = 0; return 0;}
+    unsigned char** getPointColorArray(size_t &n) { n = 0; return 0;}
+    float** getPointNormalArray(size_t &n) { n = 0; return 0;}
+	float* getPointIntensityArray(size_t &n) { n = 0; return 0;}
+
 private:
 
 	float** interlacedBufferToIndexedBuffer(float* src, size_t n);
@@ -253,7 +276,7 @@ private:
 
 	float*					m_vertices;
 	float*					m_normals;
-	float*					m_colors;
+	float*      		    m_colors;
 	unsigned int*			m_indices;
 
 	size_t					m_numberOfNormals;
