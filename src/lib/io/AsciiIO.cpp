@@ -31,6 +31,8 @@ void AsciiIO::read(string filename)
 
         if(lines_in_file > 2)
         {
+            cout << "****************************************" << endl;
+
 
             // Open the given file. Skip the first line (as it may
             // contain meta data in some formats). Then try to guess
@@ -54,6 +56,16 @@ void AsciiIO::read(string filename)
             bool has_color = (num_attributes == 3) || (num_attributes == 4);
             bool has_intensity = (num_attributes == 1) || (num_attributes == 4);
 
+            if(has_color)
+            {
+                cout << timestamp << "Reading color information." << endl;
+            }
+
+            if(has_intensity)
+            {
+                cout << timestamp << "Reading intensity information." << endl;
+            }
+
             // Reopen file and read data
             in.close();
             in.open(filename.c_str());
@@ -62,14 +74,14 @@ void AsciiIO::read(string filename)
             in.getline(buffer, 2048);
 
             // Alloc memory for points
-            m_numPoints = lines_in_file -1;
-            m_points = new float*[m_numPoints];
+            m_numPoints = lines_in_file - 1;
+            m_points = new float*[m_numPoints * 2];
             for(int i = 0; i < m_numPoints; i++) m_points[i] = new float[3];
 
             // Alloc buffer memory for additional attributes
             if(has_color)
             {
-                m_colors = new unsigned char*[m_numPoints];
+                m_colors = new unsigned char*[m_numPoints * 2];
                 for(int i = 0; i < m_numPoints; i++) m_colors[i] = new unsigned char[3];
             }
 
@@ -78,12 +90,16 @@ void AsciiIO::read(string filename)
                 m_intensities = new float[m_numPoints];
             }
 
+            //cout << has_intensity << " " << has_color << endl;
+
             // Read data form file
             size_t c = 0;
-            while(in.good())
+            while(in.good() && c < m_numPoints)
             {
+                //cout << has_intensity << " " << has_color << endl;
+                //cout << c << " " << m_colors << " " << m_numPoints << endl;
                 float x, y, z, i, dummy;
-                unsigned char r, g, b;
+                int r, g, b;
 
                 // Read according to determined format
                 if(has_intensity && !has_color)
@@ -102,9 +118,9 @@ void AsciiIO::read(string filename)
                 else if(has_color && !has_intensity)
                 {
                     in >> x >> y >> z >> r >> g >> b;
-                    m_colors[c][0] = r;
-                    m_colors[c][1] = g;
-                    m_colors[c][2] = b;
+                    m_colors[c][0] = (unsigned char)r;
+                    m_colors[c][1] = (unsigned char)g;
+                    m_colors[c][2] = (unsigned char)b;
                 }
                 else
                 {
