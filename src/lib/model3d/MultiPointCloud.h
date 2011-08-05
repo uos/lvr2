@@ -46,26 +46,6 @@ public:
 
 private:
 
-    void readNewUOSFormat(string dir, int first, int last);
-    void readOldUOSFormat(string dir, int first, int last);
-
-    Matrix4 parseFrameFile(ifstream& frameFile);
-
-
-    inline std::string to_string(const int& t, int width)
-    {
-        stringstream ss;
-        ss << std::setfill('0') << std::setw(width) << t;
-        return ss.str();
-    }
-
-    inline std::string to_string(const int& t)
-    {
-        stringstream ss;
-        ss << t;
-        return ss.str();
-    }
-
     map<PointCloud*, PointCloudAttribute*>    m_clouds;
 };
 
