@@ -83,6 +83,7 @@ inline void BoundingBox::expand(Vertex v){
 }
 
 inline void BoundingBox::expand(float x, float y, float z){
+
 	v_min.x = std::min(x, v_min.x);
 	v_min.y = std::min(y, v_min.y);
 	v_min.z = std::min(z, v_min.z);
