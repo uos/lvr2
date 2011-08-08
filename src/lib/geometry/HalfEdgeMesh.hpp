@@ -261,7 +261,6 @@ public:
 	 */
 	virtual vector<stack<HVertex*> > findAllContours(float epsilon);
 	
-    
     virtual void tester();
 
     /**
