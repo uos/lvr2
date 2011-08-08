@@ -230,10 +230,8 @@ public:
 	void printElementsInHeader();
 
 
-	float** getPointArray(size_t &n) { n = 0; return 0;}
-    unsigned char** getPointColorArray(size_t &n) { n = 0; return 0;}
-    float** getPointNormalArray(size_t &n) { n = 0; return 0;}
-	float* getPointIntensityArray(size_t &n) { n = 0; return 0;}
+	float* getVertexNormalArray(size_t &n) { return getNormalArray(n); };
+	float* getVertexColorArray(size_t &n) { n = 0; return 0;}
 
 private:
 
