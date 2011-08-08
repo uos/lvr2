@@ -185,19 +185,77 @@ void HalfEdgeMesh<VertexT, NormalT>::addTriangle(uint a, uint b, uint c)
 
 }
 
+GLenum primitive;
+typedef struct {
+    double x;
+    double y;
+    double z;
+    } mPoint;
+
+//vector<mPoint> tessVertices;
+vector<Vertex<double> > tessVertices;
+vector<Vertex<double> > tessTriangles;
+int tesselatedContours = 0;
+
 void mglBegin(GLenum which)
 {
-    cout << "glBegin("<< /*getPrimitiveType(which) << */ ");" << endl;
-    //glBegin(which);
+    primitive = which;
+    tessVertices.clear();
+/*    cout << "glBegin(): ";
+    if(primitive == GL_TRIANGLES)
+        cout << "GL_TRIANGLES" << endl;
+    if(primitive == GL_TRIANGLE_FAN)
+        cout << "GL_TRIANGLE_FAN" << endl;
+    if(primitive == GL_TRIANGLE_STRIP)
+        cout << "GL_TRIANGLE_STRIP" << endl; */
+
 }
 
 void mglEnd()
 {
-    //glEnd();
-    cout << "glEnd();" << endl;
-	ofstream tess("tess.txt", ios_base::app);
-    tess << endl << endl;
-    tess.close();
+    stringstream tFileName; tFileName << "tesselation_result" << tesselatedContours << ".txt";
+    ofstream tess(tFileName.str().c_str(), ios_base::app);
+    if(primitive == GL_TRIANGLES)
+        for(int i=0; i<tessVertices.size(); ++i)
+        {
+            tessTriangles.push_back(tessVertices[i]);
+            tess << tessVertices[i].m_x << " " << tessVertices[i].m_y << " " << tessVertices[i].m_z << endl;
+            if(i%3==0)
+            {
+                tess << endl;
+                tess << tessVertices[i-2].m_x << " " << tessVertices[i-2].m_y << " " << tessVertices[i-2].m_z << endl;
+            }
+        }
+    
+    if(primitive == GL_TRIANGLE_FAN)
+        for(int i=0; i<tessVertices.size()-2; ++i)
+        {
+            tessTriangles.push_back(tessVertices[0]);
+            tessTriangles.push_back(tessVertices[i+1]);
+            tessTriangles.push_back(tessVertices[i+2]);
+            
+            tess << tessVertices[0].m_x   << " " << tessVertices[0].m_y   << " " << tessVertices[0].m_z   << endl;
+            tess << tessVertices[i+1].m_x << " " << tessVertices[i+1].m_y << " " << tessVertices[i+1].m_z << endl;
+            tess << tessVertices[i+2].m_x << " " << tessVertices[i+2].m_y << " " << tessVertices[i+2].m_z << endl;
+            tess << tessVertices[0].m_x   << " " << tessVertices[0].m_y   << " " << tessVertices[0].m_z   << endl;
+            tess << endl;
+        }
+
+    if(primitive == GL_TRIANGLE_STRIP)
+        for(int i=0; i<tessVertices.size()-2; ++i)
+        {
+            tessTriangles.push_back(tessVertices[i]);
+            tessTriangles.push_back(tessVertices[i+1]);
+            tessTriangles.push_back(tessVertices[i+2]);
+            
+            tess << tessVertices[i].m_x   << " " << tessVertices[i].m_y   << " " << tessVertices[i].m_z   << endl;
+            tess << tessVertices[i+1].m_x << " " << tessVertices[i+1].m_y << " " << tessVertices[i+1].m_z << endl;
+            tess << tessVertices[i+2].m_x << " " << tessVertices[i+2].m_y << " " << tessVertices[i+2].m_z << endl;
+            tess << tessVertices[i].m_x   << " " << tessVertices[0].m_y   << " " << tessVertices[0].m_z   << endl;
+            tess << endl;
+        }
+    
+	tess.close();
 }
 
 void mglError(GLenum errorCode)
@@ -208,10 +266,7 @@ void mglError(GLenum errorCode)
 void mglVertex(const GLvoid *data)
 {
     const GLdouble *ptr = (const GLdouble*)data;
-	ofstream tess("tess.txt", ios_base::app);
-	tess << *ptr << ", " << *(ptr+1) << ", " << *(ptr+2) << endl;
-	tess.close();
-	cout << *ptr << ", " << *(ptr+1) << ", " << *(ptr+2) << endl;
+    tessVertices.push_back(Vertex<double>(*ptr, *(ptr+1), *(ptr+2)));
     //glVertex3dv(ptr);
 }
 
@@ -220,12 +275,10 @@ void mcombineCallback(GLdouble coords[3],
 							 GLfloat weight[4],
 							 GLdouble **dataOut)
 {
+    
     cout << "CombineCallback" << endl;
 	GLdouble *vertex;
     GLdouble *ptr = coords;
-	ofstream tess("tess.txt", ios_base::app);
-	tess << *ptr << ", " << *(ptr+1) << ", " << *(ptr+2) << endl;
-	tess.close();
 	
 	vertex = (GLdouble*) malloc(6*sizeof(GLdouble));
 	if(!vertex)
@@ -236,7 +289,7 @@ void mcombineCallback(GLdouble coords[3],
 	vertex[1] = coords[1];
 	vertex[2] = coords[2];
 
-	for(int i = 3; i < 7; ++i)
+	for(int i = 0; i < 3; ++i)
 		vertex[i] = weight[0]*vertex_data[0][i]
 					 + weight[1]*vertex_data[1][i]
 					 + weight[2]*vertex_data[2][i]
@@ -247,6 +300,7 @@ void mcombineCallback(GLdouble coords[3],
 template<typename VertexT, typename NormalT>
 void HalfEdgeMesh<VertexT, NormalT>::tesselate(stack<HVertex*> borderPoints)
 {
+    tessVertices.clear();
     if(!borderPoints.size())
     {
         cerr<< "No points received. Aborting Tesselation." << endl;
@@ -266,6 +320,7 @@ void HalfEdgeMesh<VertexT, NormalT>::tesselate(stack<HVertex*> borderPoints)
     {
         cerr<<"Could not allocate tesselation object. Aborting tesselation." << endl;
         return;
+int tesselatedContours = 0;
     }
 
     /* Callback function that define beginning of polygone etc. */
@@ -275,6 +330,8 @@ void HalfEdgeMesh<VertexT, NormalT>::tesselate(stack<HVertex*> borderPoints)
     gluTessCallback(tesselator, GLU_TESS_COMBINE, (GLvoid(*) ()) &mcombineCallback);
     gluTessCallback(tesselator, GLU_TESS_ERROR, (GLvoid(*) ()) &mglError);
 
+    stringstream tFileName; tFileName << "tesselation_contour_" << tesselatedContours << ".txt";
+    ofstream orgContour(tFileName.str().c_str());
     /* set Properties for tesselation */
     gluTessProperty(tesselator, GLU_TESS_WINDING_RULE, GLU_TESS_WINDING_ODD);
 
@@ -296,6 +353,9 @@ void HalfEdgeMesh<VertexT, NormalT>::tesselate(stack<HVertex*> borderPoints)
 				vertex[0] = (borderPoints.top())->m_position.m_x;
 				vertex[1] = (borderPoints.top())->m_position.m_y;
 				vertex[2] = (borderPoints.top())->m_position.m_z;
+				
+                orgContour << (borderPoints.top())->m_position.m_x << " " <<  (borderPoints.top())->m_position.m_y << " " << (borderPoints.top())->m_position.m_z << endl;
+                
 				borderPoints.pop();
 				// Add the vertex to the Contour
 				gluTessVertex(tesselator, vertex, vertex);
@@ -306,6 +366,8 @@ void HalfEdgeMesh<VertexT, NormalT>::tesselate(stack<HVertex*> borderPoints)
 
 	 /* End Tesselation */
 	 gluTessEndPolygon(tesselator);
+     orgContour.close();
+     tesselatedContours++;
 }
 
 template<typename VertexT, typename NormalT>
@@ -1067,6 +1129,7 @@ vector<stack<HalfEdgeVertex<VertexT, NormalT>* > > HalfEdgeMesh<VertexT, NormalT
 	return  contours;
 }
 
+
 template<typename VertexT, typename NormalT>
 void HalfEdgeMesh<VertexT, NormalT>::tester()
 {
@@ -1173,10 +1236,11 @@ void HalfEdgeMesh<VertexT, NormalT>::finalize_and_retesselate()
     // retesseleta everything that belongs to a region:
     optimizePlanes(1);
     vector<stack<HalfEdgeVertex<VertexT, NormalT>* > > contours = findAllContours(0.05);
-    if(contours.size() > 1)
-    {
-        tesselate(contours[0]);
-    }
+    for(int i=0; i<contours.size(); ++i)
+        if(contours[i].size() > 2)
+        {
+            tesselate(contours[i]);
+        }
 	this->m_finalized = true;
 }
 
