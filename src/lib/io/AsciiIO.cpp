@@ -78,8 +78,8 @@ void AsciiIO::read(string filename)
             // Alloc buffer memory for additional attributes
             if(has_color)
             {
-                m_colors = new unsigned char*[m_numPoints * 2];
-                for(int i = 0; i < m_numPoints; i++) m_colors[i] = new unsigned char[3];
+                m_pointColors = new unsigned char*[m_numPoints * 2];
+                for(int i = 0; i < m_numPoints; i++) m_pointColors[i] = new unsigned char[3];
             }
 
             if(has_intensity)
@@ -108,16 +108,16 @@ void AsciiIO::read(string filename)
                 {
                     in >> x >> y >> z >> i >> r >> g >> b;
                     m_intensities[c] = i;
-                    m_colors[c][0] = r;
-                    m_colors[c][1] = g;
-                    m_colors[c][2] = b;
+                    m_pointColors[c][0] = r;
+                    m_pointColors[c][1] = g;
+                    m_pointColors[c][2] = b;
                 }
                 else if(has_color && !has_intensity)
                 {
                     in >> x >> y >> z >> r >> g >> b;
-                    m_colors[c][0] = (unsigned char)r;
-                    m_colors[c][1] = (unsigned char)g;
-                    m_colors[c][2] = (unsigned char)b;
+                    m_pointColors[c][0] = (unsigned char)r;
+                    m_pointColors[c][1] = (unsigned char)g;
+                    m_pointColors[c][2] = (unsigned char)b;
                 }
                 else
                 {

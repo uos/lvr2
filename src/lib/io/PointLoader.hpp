@@ -12,7 +12,7 @@ class PointLoader
 {
 public:
     PointLoader()
-        : m_points(0), m_normals(0), m_colors(0), m_intensities(0), m_numPoints(0) {}
+        : m_points(0), m_pointNormals(0), m_pointColors(0), m_intensities(0), m_numPoints(0) {}
 
 
     /**
@@ -34,7 +34,7 @@ public:
      */
     virtual unsigned char**  getPointColorArray()
     {
-       return m_colors;
+       return m_pointColors;
     }
 
     /**
@@ -45,7 +45,7 @@ public:
      */
     virtual float**  getPointNormalArray()
     {
-       return m_normals;
+       return m_pointNormals;
     }
 
     /**
@@ -72,10 +72,10 @@ protected:
     float**          m_points;
 
     /// Point normals
-    float**          m_normals;
+    float**          m_pointNormals;
 
     /// Color information
-    unsigned char**  m_colors;
+    unsigned char**  m_pointColors;
 
     /// Intensities
     float*           m_intensities;
