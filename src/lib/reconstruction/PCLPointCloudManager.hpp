@@ -14,6 +14,7 @@
 #include <pcl/point_cloud.h>
 #include <pcl/io/pcd_io.h>
 #include <pcl/features/normal_3d.h>
+#include <pcl/features/normal_3d_omp.h>
 
 namespace lssr
 {
@@ -22,7 +23,7 @@ template<typename VertexT, typename NormalT>
 class PCLPointCloudManager : public PointCloudManager<VertexT, NormalT>
 {
 public:
-    PCLPointCloudManager(string filename);
+    PCLPointCloudManager(string filename, int kn = 10, int ki = 10, int kd = 10);
 
     virtual ~PCLPointCloudManager();
 
@@ -50,7 +51,9 @@ public:
     virtual float distance(VertexT v);
 
 private:
-    pcl::KdTreeFLANN<pcl::PointXYZ>::Ptr m_kdTree;
+    pcl::KdTreeFLANN<pcl::PointXYZ>::Ptr    m_kdTree;
+    pcl::PointCloud<pcl::PointXYZ>::Ptr     m_pointCloud;
+    pcl::PointCloud<pcl::Normal>::Ptr       m_pointNormals;
 };
 
 } // namespace lssr
