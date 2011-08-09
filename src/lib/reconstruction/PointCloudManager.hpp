@@ -99,6 +99,15 @@ protected:
     BoundingBox<VertexT>        m_boundingBox;
 
     size_t                      m_numPoints;
+
+    /// The number of neighbors used for initial normal estimation
+    int                         m_kn;
+
+    /// The number of neighbors used for normal interpolation
+    int                         m_ki;
+
+    /// The number of tangent planes used for distance determination
+    int                         m_kd;
 };
 
 } // namespace lssr

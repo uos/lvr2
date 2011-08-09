@@ -23,10 +23,12 @@ StannPointCloudManager<VertexT, NormalT>::StannPointCloudManager(float **points,
         const int &kn,
         const int &ki,
         const int &kd)
-        : m_kn(kn), m_ki(ki), m_kd(kd)
 {
-
     // Save data
+    this->m_ki = ki;
+    this->m_kn = kn;
+    this->m_kd = kd;
+
     this->m_points = points;
     this->m_normals = normals;
     this->m_numPoints = n;
@@ -40,8 +42,12 @@ StannPointCloudManager<VertexT, NormalT>::StannPointCloudManager(string filename
                        const int &kn,
                        const int &ki,
                        const int &kd)
-    : m_kn(kn), m_ki(ki), m_kd(kd)
 {
+    this->m_ki = ki;
+    this->m_kn = kn;
+    this->m_kd = kd;
+
+
     this->m_points = 0;
     this->m_normals = 0;
     this->m_numPoints = 0;
@@ -83,7 +89,7 @@ void StannPointCloudManager<VertexT, NormalT>::init()
 template<typename VertexT, typename NormalT>
 void StannPointCloudManager<VertexT, NormalT>::estimateSurfaceNormals()
 {
-    int k_0 = m_kn;
+    int k_0 = this->m_kn;
 
     cout << timestamp << "Initializing normal array..." << endl;
 
@@ -201,12 +207,12 @@ void StannPointCloudManager<VertexT, NormalT>::interpolateSurfaceNormals()
         vector<unsigned long> id;
         vector<double> di;
 
-        m_pointTree.ksearch(this->m_points[i], m_ki, id, di, 0);
+        m_pointTree.ksearch(this->m_points[i], this->m_ki, id, di, 0);
 
         VertexT mean;
         NormalT mean_normal;
 
-        for(int j = 0; j < m_ki; j++){
+        for(int j = 0; j < this->m_ki; j++){
             mean += VertexT(this->m_normals[id[j]][0],
                             this->m_normals[id[j]][1],
                             this->m_normals[id[j]][2]);
@@ -218,7 +224,7 @@ void StannPointCloudManager<VertexT, NormalT>::interpolateSurfaceNormals()
         /**
          * @todo Try to remove this code. Should improve the results at all.
          */
-        for(int j = 0; j < m_ki; j++){
+        for(int j = 0; j < this->m_ki; j++){
             NormalT n(this->m_normals[id[j]][0],
                       this->m_normals[id[j]][1],
                       this->m_normals[id[j]][2]);
@@ -284,7 +290,7 @@ float StannPointCloudManager<VertexT, NormalT>::distance(VertexT v, Plane<Vertex
 template<typename VertexT, typename NormalT>
 float StannPointCloudManager<VertexT, NormalT>::distance(VertexT v)
 {
-    int k = m_kd;
+    int k = this->m_kd;
 
     vector<unsigned long> id;
     vector<double> di;
