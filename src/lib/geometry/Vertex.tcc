@@ -17,13 +17,13 @@ CoordType Vertex<CoordType>::operator[](const int &index) const
 
     switch(index){
     case 0:
-        ret = m_x;
+        ret = x;
         break;
     case 1:
-        ret = m_y;
+        ret = y;
         break;
     case 2:
-        ret = m_z;
+        ret = z;
         break;
     default:
         throw std::overflow_error("Access index out of range.");
@@ -36,11 +36,11 @@ CoordType& Vertex<CoordType>::operator[](const int &index)
 {
     switch(index){
     case 0:
-        return m_x;
+        return x;
     case 1:
-        return m_y;
+        return y;
     case 2:
-        return m_z;
+        return z;
     default:
         throw std::overflow_error("Access index out of range.");
     }
@@ -49,9 +49,9 @@ CoordType& Vertex<CoordType>::operator[](const int &index)
 template<typename CoordType>
 bool Vertex<CoordType>::operator==(const Vertex &other) const
 {
-    return fabs(m_x - other.m_x) <= Vertex::epsilon &&
-           fabs(m_y - other.m_y) <= Vertex::epsilon &&
-           fabs(m_z - other.m_z) <= Vertex::epsilon;
+    return fabs(x - other.x) <= Vertex::epsilon &&
+           fabs(y - other.y) <= Vertex::epsilon &&
+           fabs(z - other.z) <= Vertex::epsilon;
 }
 
 template<typename CoordType>
@@ -59,96 +59,96 @@ void Vertex<CoordType>::operator/=(const CoordType &scale)
 {
     if(scale != 0)
     {
-        m_x /= scale;
-        m_y /= scale;
-        m_z /= scale;
+        x /= scale;
+        y /= scale;
+        z /= scale;
     }
     else
     {
-        m_x = m_y = m_z = 0;
+        x = y = z = 0;
     }
 }
 
 template<typename CoordType>
 void Vertex<CoordType>::operator*=(const CoordType &scale)
       {
-    m_x *= scale;
-    m_y *= scale;
-    m_z *= scale;
+    x *= scale;
+    y *= scale;
+    z *= scale;
 }
 
 template<typename CoordType>
 void Vertex<CoordType>::operator+=(const Vertex &other)
 {
-    m_x += other.m_x;
-    m_y += other.m_y;
-    m_z += other.m_z;
+    x += other.x;
+    y += other.y;
+    z += other.z;
 }
 
 template<typename CoordType>
 void Vertex<CoordType>::operator-=(const Vertex &other)
 {
-    m_x -= other.m_x;
-    m_y -= other.m_y;
-    m_z -= other.m_z;
+    x -= other.x;
+    y -= other.y;
+    z -= other.z;
 }
 
 template<typename CoordType>
 Vertex<CoordType> Vertex<CoordType>::operator-(const Vertex &other) const
 {
-    return Vertex<CoordType>(m_x - other.m_x, m_y - other.m_y, m_z - other.m_z);
+    return Vertex<CoordType>(x - other.x, y - other.y, z - other.z);
 }
 
 template<typename CoordType>
 Vertex<CoordType> Vertex<CoordType>::operator+(const Vertex &other) const
 {
-    return Vertex<CoordType>(m_x + other.m_x, m_y + other.m_y, m_z + other.m_z);
+    return Vertex<CoordType>(x + other.x, y + other.y, z + other.z);
 }
 
 template<typename CoordType>
 Vertex<CoordType> Vertex<CoordType>::operator*(const CoordType &scale) const
 {
-    return Vertex<CoordType>(m_x * scale, m_y * scale, m_z * scale);
+    return Vertex<CoordType>(x * scale, y * scale, z * scale);
 }
 
 template<typename CoordType>
 CoordType Vertex<CoordType>::operator*(const Vertex<CoordType> &other) const
 {
-    return m_x * other.m_x + m_y * other.m_y + m_z * other.m_z;
+    return x * other.x + y * other.y + z * other.z;
 }
 
 template<typename CoordType>
 void Vertex<CoordType>::crossTo(const Vertex<CoordType>  &other)
 {
-    m_x = m_y * other.m_z - m_z * other.m_y;
-    m_y = m_z * other.m_x - m_x * other.m_z;
-    m_z = m_x * other.m_y - m_y * other.m_x;
+    x = y * other.z - z * other.y;
+    y = z * other.x - x * other.z;
+    z = x * other.y - y * other.x;
 }
 
 template<typename CoordType>
 void Vertex<CoordType>::rotateCM(const Matrix4<CoordType> &m)
 {
     CoordType x, y, z;
-    x = m_x * m[0 ] + m_y * m[4 ] + m_z * m[8 ];
-    y = m_x * m[1 ] + m_y * m[5 ] + m_z * m[9 ];
-    z = m_x * m[2 ] + m_y * m[6 ] + m_z * m[10];
+    x = x * m[0 ] + y * m[4 ] + z * m[8 ];
+    y = x * m[1 ] + y * m[5 ] + z * m[9 ];
+    z = x * m[2 ] + y * m[6 ] + z * m[10];
 
-    m_x = x;
-    m_y = y;
-    m_z = z;
+    x = x;
+    y = y;
+    z = z;
 }
 
 template<typename CoordType>
 void Vertex<CoordType>::rotateRM(const Matrix4<CoordType> &m)
 {
     CoordType x, y, z;
-    x = m_x * m[0 ] + m_y * m[1 ] + m_z * m[2 ];
-    y = m_x * m[4 ] + m_y * m[5 ] + m_z * m[6 ];
-    z = m_x * m[8 ] + m_y * m[9 ] + m_z * m[10];
+    x = x * m[0 ] + y * m[1 ] + z * m[2 ];
+    y = x * m[4 ] + y * m[5 ] + z * m[6 ];
+    z = x * m[8 ] + y * m[9 ] + z * m[10];
 
-    m_x = x;
-    m_y = y;
-    m_z = z;
+    x = x;
+    y = y;
+    z = z;
 }
 
 
@@ -156,18 +156,18 @@ template<typename CoordType>
 void Vertex<CoordType>::transformCM(const Matrix4<CoordType> &m)
 {
 	rotateCM(m);
-	m_x += m[12];
-	m_y += m[13];
-	m_z += m[14];
+	x += m[12];
+	y += m[13];
+	z += m[14];
 }
 
 template<typename CoordType>
 void Vertex<CoordType>::transformRM(const Matrix4<CoordType> &m)
 {
     rotateRM(m);
-    m_x += m[12];
-    m_y += m[13];
-    m_z += m[14];
+    x += m[12];
+    y += m[13];
+    z += m[14];
 }
 
 template<typename CoordType>
@@ -185,9 +185,9 @@ void Vertex<CoordType>::rotate(const Matrix4<CoordType> &m)
 template<typename CoordType>
 Vertex<CoordType> Vertex<CoordType>::cross(const Vertex<CoordType> &other) const
 {
-    CoordType tx = m_y * other.m_z - m_z * other.m_y;
-    CoordType ty = m_z * other.m_x - m_x * other.m_z;
-    CoordType tz = m_x * other.m_y - m_y * other.m_x;
+    CoordType tx = y * other.z - z * other.y;
+    CoordType ty = z * other.x - x * other.z;
+    CoordType tz = x * other.y - y * other.x;
 
     return Vertex<CoordType>(tx, ty, tz);
 }
@@ -195,7 +195,7 @@ Vertex<CoordType> Vertex<CoordType>::cross(const Vertex<CoordType> &other) const
 template<typename CoordType>
 CoordType Vertex<CoordType>::length()
 {
-    return sqrt(m_x * m_x + m_y * m_y + m_z * m_z);
+    return sqrt(x * x + y * y + z * z);
 }
 
 

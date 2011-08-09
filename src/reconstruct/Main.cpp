@@ -104,6 +104,7 @@
  */
 
 #include "Options.hpp"
+#include "reconstruction/PCLPointCloudManager.hpp"
 #include "reconstruction/StannPointCloudManager.hpp"
 #include "reconstruction/FastReconstruction.hpp"
 #include "io/PLYIO.hpp"
@@ -129,11 +130,13 @@ int main(int argc, char** argv)
     ::std::cout<<options<<::std::endl;
 
     // Create a point cloud manager
-    StannPointCloudManager<Vertex<float>, Normal<float> >   manager( options.getInputFileName(),
-                                                                     options.getKn(),
-                                                                     options.getKi(),
-                                                                     options.getKd()
-                                                                   );
+//    StannPointCloudManager<Vertex<float>, Normal<float> >   manager( options.getInputFileName(),
+//                                                                     options.getKn(),
+//                                                                     options.getKi(),
+//                                                                     options.getKd()
+//                                                                   );
+
+    PCLPointCloudManager<Vertex<float>, Normal<float> > manager(options.getInputFileName());
 
     // Create an empty mesh
     //TriangleMesh<Vertex<float>, Normal<float> > mesh;
