@@ -400,16 +400,16 @@ void UosIO::readNewFormat(string dir, int first, int last, size_t &n)
         m_numPoints = allPoints.size();
 
         // Save color information
-        m_colors = new unsigned char*[m_numPoints];
+        m_pointColors = new unsigned char*[m_numPoints];
         i = 0;
         list<Vertex<int> >::iterator c_it;
         for(c_it = allColors.begin(); c_it != allColors.end(); c_it++)
         {
-            m_colors[i] = new unsigned char[3];
+            m_pointColors[i] = new unsigned char[3];
             Vertex<int> v = *c_it;
-            m_colors[i][0] = (unsigned char) v[0];
-            m_colors[i][1] = (unsigned char) v[1];
-            m_colors[i][2] = (unsigned char) v[2];
+            m_pointColors[i][0] = (unsigned char) v[0];
+            m_pointColors[i][1] = (unsigned char) v[1];
+            m_pointColors[i][2] = (unsigned char) v[2];
             i++;
         }
 
