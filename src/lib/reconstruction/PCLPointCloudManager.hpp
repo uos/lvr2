@@ -50,6 +50,8 @@ public:
 
     virtual float distance(VertexT v);
 
+    virtual void calcNormals();
+
 private:
     pcl::KdTreeFLANN<pcl::PointXYZ>::Ptr    m_kdTree;
     pcl::PointCloud<pcl::PointXYZ>::Ptr     m_pointCloud;

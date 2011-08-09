@@ -122,6 +122,12 @@ public:
 	 *          absolute voxelsize.
 	 */
 	int     getIntersections() const;
+
+	/**
+	 * @brieg   Returns the name of the used point cloud handler.
+	 */
+	string getPCM() const;
+
 private:
 
 	/// The set voxelsize
@@ -156,6 +162,9 @@ private:
 
 	/// The number of intersections used for reconstruction
 	int                             m_intersections;
+
+	/// The used point cloud manager
+	string                          m_pcm;
 };
 
 
@@ -173,6 +182,7 @@ inline ostream& operator<<(ostream& os, const Options &o)
 	}
 	cout << "##### Output file \t\t: " 	<< o.getInputFileName() << endl;
 	cout << "##### Number of threads \t: " << o.getNumThreads() << endl;
+	cout << "##### Point cloud manager: \t: " << o.getPCM() << endl;
 	cout << "##### k_n \t\t\t: " << o.getKn() << endl;
 	cout << "##### k_i \t\t\t: " << o.getKi() << endl;
 	cout << "##### k_d \t\t\t: " << o.getKd() << endl;
