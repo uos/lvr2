@@ -197,6 +197,14 @@ public:
 	virtual void deleteRegion(int region);
 
 	/**
+	 * @brief	Deletes all faces connected to the start_face and have the same region
+	 * 			Faster than deleteRegion because no iteration over the whole mesh is needed
+	 *
+	 * @param	start_face	The face to start the recursion from
+	 */
+	virtual void deleteRegionRecursive(HFace* start_face);
+
+	/**
 	 * @brief	Removes artifacts in the mesh that are not connected to the main mesh
 	 *
 	 * @param	threshold	Specifies the maximum number of faces

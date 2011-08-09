@@ -582,13 +582,14 @@ template<typename VertexT, typename NormalT>
 void HalfEdgeMesh<VertexT, NormalT>::optimizePlanes(int iterations)
 {
 	//regions that will be deleted due to size
-	vector<int> smallRegions;
+	vector<HalfEdgeFace<VertexT, NormalT>*> smallRegions;
 
 	int region_size = 0;
 	m_regions.clear();
 
 	for(int j=0; j<iterations; j++)
 	{
+		cout << "optimizing planes: " <<  j << "th iteration." << endl;
 		int region = 1;
 
 		//reset all region variables
@@ -611,7 +612,7 @@ void HalfEdgeMesh<VertexT, NormalT>::optimizePlanes(int iterations)
 				if(j==iterations-1){
 					//save too small regions with size smaller than 7
 					if (region_size < 7)
-						smallRegions.push_back(region);
+						smallRegions.push_back(m_faces[i]);
 					else
 					//save pointer to the region for fast access
 						m_regions.push_back(m_faces[i]);
@@ -623,7 +624,9 @@ void HalfEdgeMesh<VertexT, NormalT>::optimizePlanes(int iterations)
 
 	//delete too small regions
 	for(int i=0; i<smallRegions.size(); i++)
-		deleteRegion(smallRegions[i]);
+	{
+		deleteRegionRecursive(smallRegions[i]);
+	}
 }
 
 template<typename VertexT, typename NormalT>
@@ -719,6 +722,22 @@ void HalfEdgeMesh<VertexT, NormalT>::deleteRegion(int region)
 
 	for(int i=0; i<todelete.size(); i++)
 		deleteFace(todelete[i]);
+}
+
+template<typename VertexT, typename NormalT>
+void HalfEdgeMesh<VertexT, NormalT>::deleteRegionRecursive(HFace* start_face)
+{
+	int region = start_face->m_region;
+
+	//Mark face as used
+	start_face->m_region = 0;
+
+	//Get the unmarked neighbor faces and start the recursion
+	for(int k=0; k<3; k++)
+		if((*start_face)[k]->pair->face != 0 && (*start_face)[k]->pair->face->m_region == region)
+			deleteRegionRecursive((*start_face)[k]->pair->face);
+
+	deleteFace(start_face);
 }
 
 template<typename VertexT, typename NormalT>
