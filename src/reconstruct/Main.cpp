@@ -130,13 +130,23 @@ int main(int argc, char** argv)
     ::std::cout<<options<<::std::endl;
 
     // Create a point cloud manager
-//    StannPointCloudManager<Vertex<float>, Normal<float> >   manager( options.getInputFileName(),
-//                                                                     options.getKn(),
-//                                                                     options.getKi(),
-//                                                                     options.getKd()
-//                                                                   );
+    string pcm_name = options.getPCM();
+    PointCloudManager<Vertex<float>, Normal<float> >* pcm;
+    if(pcm_name == "PCL")
+    {
+        cout << timestamp << "Creating PCL point cloud manager." << endl;
+        pcm = new PCLPointCloudManager<Vertex<float>, Normal<float> > ( options.getInputFileName());
+    }
+    else
+    {
+        cout << timestamp << "Creating STANN point cloud manager." << endl;
+        pcm = new StannPointCloudManager<Vertex<float>, Normal<float> > ( options.getInputFileName());
+    }
 
-    PCLPointCloudManager<Vertex<float>, Normal<float> > manager(options.getInputFileName());
+    pcm->setKD(options.getKd());
+    pcm->setKI(options.getKi());
+    pcm->setKN(options.getKn());
+    pcm->calcNormals();
 
     // Create an empty mesh
     //TriangleMesh<Vertex<float>, Normal<float> > mesh;
@@ -157,7 +167,7 @@ int main(int argc, char** argv)
     }
 
     // Create a new reconstruction object
-    FastReconstruction<Vertex<float>, Normal<float> > reconstruction(manager, resolution, useVoxelsize);
+    FastReconstruction<Vertex<float>, Normal<float> > reconstruction(*pcm, resolution, useVoxelsize);
     reconstruction.getMesh(mesh);
 
     // Save triangle mesh

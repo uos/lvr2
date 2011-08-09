@@ -41,6 +41,14 @@ PCLPointCloudManager<VertexT, NormalT>::PCLPointCloudManager(string filename, in
         m_pointCloud->points[i].y = y;
         m_pointCloud->points[i].z = z;
     }
+
+    //cout << cloud_normals->points.size() << endl;
+
+}
+
+template<typename VertexT, typename NormalT>
+void PCLPointCloudManager<VertexT, NormalT>::calcNormals()
+{
     VertexT center = this->m_boundingBox.getCentroid();
 
     // Estimate normals
@@ -65,9 +73,6 @@ PCLPointCloudManager<VertexT, NormalT>::PCLPointCloudManager(string filename, in
     // Compute the features
     ne.compute (*m_pointNormals);
     cout << timestamp << "Normal estimation done" << endl;
-
-    //cout << cloud_normals->points.size() << endl;
-
 }
 
 template<typename VertexT, typename NormalT>

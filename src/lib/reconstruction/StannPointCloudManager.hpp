@@ -139,6 +139,12 @@ public:
      */
     virtual float distance(VertexT v);
 
+    /**
+     * @brief Calculates initial point normals using a least squares fit to
+     *        the \ref m_kn nearest points
+     */
+    void calcNormals();
+
 
 private:
 
@@ -162,12 +168,6 @@ private:
 	 * @brief Save points to a ascii file
 	 */
 	void savePoints(string filename);
-
-	/**
-	 * @brief Calculates initial point normals using a least squares fit to
-	 *        the \ref m_kn nearest points
-	 */
-	void estimateSurfaceNormals();
 
 	/**
 	 * @brief Interpolate the initial normals with the \ref m_ki neighbors

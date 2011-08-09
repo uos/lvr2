@@ -74,20 +74,19 @@ void StannPointCloudManager<VertexT, NormalT>::init()
     cout << timestamp << "Creating STANN Kd-Tree..." << endl;
     m_pointTree = sfcnn< float*, 3, float>(this->m_points, this->m_numPoints, 4);
 
-    // Estimate surface normals if necessary
-    if(!this->m_normals)
-    {
-        estimateSurfaceNormals();
-        interpolateSurfaceNormals();
-    }
-    else
-    {
-        cout << timestamp << " Using the given normals." << endl;
-    }
+//    // Estimate surface normals if necessary
+//    if(!this->m_normals)
+//    {
+//        estimateSurfaceNormals();
+//    }
+//    else
+//    {
+//        cout << timestamp << " Using the given normals." << endl;
+//    }
 }
 
 template<typename VertexT, typename NormalT>
-void StannPointCloudManager<VertexT, NormalT>::estimateSurfaceNormals()
+void StannPointCloudManager<VertexT, NormalT>::calcNormals()
 {
     int k_0 = this->m_kn;
 
@@ -186,7 +185,9 @@ void StannPointCloudManager<VertexT, NormalT>::estimateSurfaceNormals()
 
         ++progress;
     }
-    cout << endl;;
+    cout << endl;
+
+    if(this->m_ki) interpolateSurfaceNormals();
 }
 
 

@@ -29,6 +29,7 @@ Options::Options(int argc, char** argv) : m_descr("Supported options")
 	    ("ki", value<int>(&m_ki)->default_value(10), "Number of normals used in the normal interpolation process")
 	    ("kn", value<int>(&m_kn)->default_value(10), "Size of k-neighborhood used for normal estimation")
 	    ("intersections,i", value<int>(&m_intersections)->default_value(-1), "Number of intersections used for reconstruction. If other than -1, voxelsize will calculated automatically.")
+	    ("pcm,p", value<string>(&m_pcm)->default_value("STANN"), "Point cloud manager used for point handling and normal estimation. Choose from {STANN, PCL}.")
 		;
 
 	m_pdescr.add("inputFile", -1);
@@ -78,6 +79,11 @@ int Options::getIntersections() const
 string Options::getInputFileName() const
 {
 	return (m_variables["inputFile"].as< vector<string> >())[0];
+}
+
+string Options::getPCM() const
+{
+    return (m_variables["pcm"].as< string >());
 }
 
 bool Options::printUsage() const

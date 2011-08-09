@@ -76,6 +76,14 @@ public:
 
 	virtual float distance(VertexT v) = 0;
 
+	void setKD(int kd) {m_kd = kd;}
+
+	void setKI(int ki) {m_ki = ki;}
+
+	void setKN(int kn) {m_kn = kn;}
+
+	virtual void calcNormals() = 0;
+
 protected:
 
 	/**
