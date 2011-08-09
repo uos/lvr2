@@ -29,6 +29,8 @@ template<typename VertexT, typename NormalT>
 class PointCloudManager
 {
 public:
+
+
 	/**
 	 * @brief Returns the k closest neighbor vertices to a given query point
 	 *

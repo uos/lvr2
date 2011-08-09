@@ -17,6 +17,14 @@ set(ADDITIONAL_COMPILER_FLAGS "-O3 -msse3 -fpermissive -Wno-deprecated -Wno-writ
 # EXTERNAL LIBRARIES
 ###############################################################
 
+find_package(PCL 1.0 REQUIRED)
+if(PCL_FOUND)
+  message(STATUS "Found PCL")
+  include_directories(${PCL_INCLUDE_DIRS})
+  link_directories(${PCL_LIBRARY_DIRS})
+  add_definitions(${PCL_DEFINITIONS})
+endif(PCL_FOUND)
+
 find_package( Boost COMPONENTS program_options filesystem system thread REQUIRED)
 if(Boost_FOUND)
   link_directories(${BOOST_LIBRARY_DIRS})
