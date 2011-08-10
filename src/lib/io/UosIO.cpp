@@ -305,7 +305,7 @@ void UosIO::readNewFormat(string dir, int first, int last, size_t &n)
                     for(int n_dummys = 0; n_dummys < num_attributes; n_dummys++) scan_in >> dummy;
                 }
 
-                Vertex<float> point(z, -x, -y);
+                Vertex<float> point(x, y, z);
                 Vertex<unsigned char> color;
 
                 // Code branching for point converter!
@@ -352,7 +352,7 @@ void UosIO::readNewFormat(string dir, int first, int last, size_t &n)
             }
 
             // Transform scan point with current matrix
-            list<Vertex<float> >::iterator it;
+            list<Vertex<float> >::iterator it, it1;
             for(it = tmp_points.begin(); it != tmp_points.end(); it++)
             {
                 Vertex<float> v = *it;
@@ -400,17 +400,20 @@ void UosIO::readNewFormat(string dir, int first, int last, size_t &n)
         m_numPoints = allPoints.size();
 
         // Save color information
-        m_pointColors = new unsigned char*[m_numPoints];
-        i = 0;
-        list<Vertex<int> >::iterator c_it;
-        for(c_it = allColors.begin(); c_it != allColors.end(); c_it++)
+        if(allColors.size() > 0)
         {
-            m_pointColors[i] = new unsigned char[3];
-            Vertex<int> v = *c_it;
-            m_pointColors[i][0] = (unsigned char) v[0];
-            m_pointColors[i][1] = (unsigned char) v[1];
-            m_pointColors[i][2] = (unsigned char) v[2];
-            i++;
+            m_pointColors = new unsigned char*[m_numPoints];
+            i = 0;
+            list<Vertex<int> >::iterator c_it;
+            for(c_it = allColors.begin(); c_it != allColors.end(); c_it++)
+            {
+                m_pointColors[i] = new unsigned char[3];
+                Vertex<int> v = *c_it;
+                m_pointColors[i][0] = (unsigned char) v[0];
+                m_pointColors[i][1] = (unsigned char) v[1];
+                m_pointColors[i][2] = (unsigned char) v[2];
+                i++;
+            }
         }
 
     }

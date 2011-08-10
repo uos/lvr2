@@ -18,10 +18,6 @@ namespace lssr
 
 PLYIO::PLYIO()
 {
-	m_vertices 		= 0;
-	m_vertexNormals		= 0;
-	m_vertexColors		= 0;
-	m_indices		= 0;
 	m_binary		= false;;
 
 	m_numberOfVertices 	= 0;
@@ -331,10 +327,21 @@ void PLYIO::loadElements(ifstream &in)
 					readNormalsASCII(in, current_element);
 				}
 			}
+			else if (element_name == "point")
+			{
+			    if(m_binary)
+			    {
+			        readPointsBinary(in, current_element);
+			    }
+			    else
+			    {
+			        readPointsASCII(in, current_element);
+			    }
+			}
 			else
 			{
-				cout << "PLYIO::loadElements(): Warning: Unknown element '"
-					 << element_name << "'." << endl;
+			    cout << "PLYIO::loadElements(): Warning: Unknown element '"
+			            << element_name << "'." << endl;
 			}
 		}
 		else
@@ -791,6 +798,17 @@ void PLYIO::deleteBuffers()
 		m_vertexNormals = 0;
 	}
 }
+
+void PLYIO::readPointsASCII(ifstream &in, PLYElement* descr)
+{
+
+}
+
+void PLYIO::readPointsBinary(ifstream &in, PLYElement* descr)
+{
+
+}
+
 
 void PLYIO::readVerticesASCII(ifstream &in, PLYElement* descr)
 {

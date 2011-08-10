@@ -250,10 +250,12 @@ private:
 	void readVerticesBinary(ifstream &in, PLYElement* descr);
 	void readFacesBinary(ifstream &in, PLYElement* descr);
 	void readNormalsBinary(ifstream &in, PLYElement* descr);
+	void readPointsBinary(ifstream &in, PLYElement* descr);
 
 	void readVerticesASCII(ifstream &in, PLYElement* descr);
 	void readFacesASCII(ifstream &in, PLYElement* descr);
 	void readNormalsASCII(ifstream &in, PLYElement* descr);
+	void readPointsASCII(ifstream &in, PLYElement* descr);
 
 	void readHeader(ifstream& str);
 
@@ -272,17 +274,7 @@ private:
 	template<typename T>
 	void copyElementToVertexBuffer(char* src, float* buffer, size_t positon);
 
-	float*					m_vertices;
-	float*					m_vertexNormals;
-	float*      		    m_vertexColors;
-	unsigned int*			m_indices;
-
-	size_t					m_numberOfNormals;
-	size_t					m_numberOfVertices;
-	size_t					m_numberOfFaces;
-
 	bool 					m_binary;
-
 	vector<PLYElement*> 	m_elements;
 
 };
