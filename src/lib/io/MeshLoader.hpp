@@ -41,6 +41,18 @@ class MeshLoader
      * @return      The loaded index array or a null pointer
      */
     virtual unsigned int* getIndexArray(size_t &n) = 0;
+
+protected:
+
+    float*                    m_vertices;
+    float*                  m_vertexNormals;
+    float*                  m_vertexColors;
+    unsigned int*           m_indices;
+
+    size_t                  m_numberOfNormals;
+    size_t                  m_numberOfVertices;
+    size_t                  m_numberOfFaces;
+
 };
 
 #endif /* MESHIO_HPP_ */
