@@ -12,6 +12,8 @@ COMPILATION
    > mkdir build && cd build
 
 2. Start configuration by calling cmake:
+   > cmake ..
+	or
    > cmake -DCMAKE_BUILD_TYPE=Release ..
 
 3. Call make.
