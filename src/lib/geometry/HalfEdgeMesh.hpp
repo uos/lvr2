@@ -17,6 +17,7 @@
 #include <sstream>
 #include <float.h>
 #include <math.h>
+#include <omp.h>
 
 using namespace std;
 
@@ -272,7 +273,7 @@ public:
 	 */
 	virtual void finalize();
 
-
+	virtual void tester();
 private:
 
 	/// The faces in the half edge mesh
