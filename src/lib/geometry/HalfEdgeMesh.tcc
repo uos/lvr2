@@ -14,6 +14,7 @@ template<typename VertexT, typename NormalT>
 HalfEdgeMesh<VertexT, NormalT>::HalfEdgeMesh()
 {
 	m_globalIndex = 0;
+	m_colorRegions = false;
 }
 
 
@@ -589,8 +590,14 @@ int HalfEdgeMesh<VertexT, NormalT>::regionGrowing(HFace* start_face, NormalT &no
 }
 
 template<typename VertexT, typename NormalT>
-void HalfEdgeMesh<VertexT, NormalT>::optimizePlanes(int iterations, float angle, int min_region_size, int small_region_size)
+void HalfEdgeMesh<VertexT, NormalT>::optimizePlanes(
+        int iterations,
+        float angle,
+        int min_region_size,
+        int small_region_size
+        )
 {
+    cout << timestamp << "Starting plane optimization with threshold " << angle << endl;
     // Magic numbers
     int default_region_threshold = (int)10*log(m_faces.size());
 
@@ -644,9 +651,15 @@ void HalfEdgeMesh<VertexT, NormalT>::optimizePlanes(int iterations, float angle,
 	}
 
 	// Delete too small regions
-	for(int i=0; i< smallRegions.size(); i++)
+	if(small_region_size)
 	{
-		deleteRegionRecursive(smallRegions[i]);
+	    string msg = timestamp.getElapsedTime() + "Deleting small regions.";
+	    ProgressBar progress(smallRegions.size(), msg);
+	    for(int i=0; i< smallRegions.size(); i++)
+	    {
+	        deleteRegionRecursive(smallRegions[i]);
+	        ++progress;
+	    }
 	}
 }
 
@@ -761,9 +774,13 @@ void HalfEdgeMesh<VertexT, NormalT>::deleteRegionRecursive(HFace* start_face)
 	start_face->m_region = 0;
 
 	//Get the unmarked neighbor faces and start the recursion
-	for(int k=0; k<3; k++)
+	for(int k = 0; k < 3; k++)
+	{
 		if((*start_face)[k]->pair->face != 0 && (*start_face)[k]->pair->face->m_region == region)
+		{
 			deleteRegionRecursive((*start_face)[k]->pair->face);
+		}
+	}
 
 	deleteFace(start_face);
 }
@@ -1030,6 +1047,7 @@ void HalfEdgeMesh<VertexT, NormalT>::finalize()
 		// map the old index to the new index in the vertexBuffer
 		index_map[*vertices_iter] = i;
 	}
+
 	typename vector<HalfEdgeFace<VertexT, NormalT>*>::iterator face_iter = m_faces.begin();
 	typename vector<HalfEdgeFace<VertexT, NormalT>*>::iterator face_end  = m_faces.end();
 	
@@ -1045,35 +1063,35 @@ void HalfEdgeMesh<VertexT, NormalT>::finalize()
 		int surface_class = 1;
 		surface_class = (*face_iter)->m_region;
 
-		this->m_colorBuffer[this->m_indexBuffer[3 * i]  * 3 + 0] = fabs(cos(surface_class));
-		this->m_colorBuffer[this->m_indexBuffer[3 * i]  * 3 + 1] = fabs(sin(surface_class * 30));
-		this->m_colorBuffer[this->m_indexBuffer[3 * i]  * 3 + 2] = fabs(sin(surface_class * 2));
+		float r, g, b;
+		if(m_colorRegions)
+		{
+		   r = fabs(cos(surface_class));
+		   g = fabs(sin(surface_class * 30));
+		   b = fabs(sin(surface_class * 2));
+		}
+		else
+		{
+		    r = 0.0;
+		    g = 0.8;
+		    b = 0.0;
+		}
+		this->m_colorBuffer[this->m_indexBuffer[3 * i]  * 3 + 0] = r;
+		this->m_colorBuffer[this->m_indexBuffer[3 * i]  * 3 + 1] = g;
+		this->m_colorBuffer[this->m_indexBuffer[3 * i]  * 3 + 2] = b;
 
-		this->m_colorBuffer[this->m_indexBuffer[3 * i + 1] * 3 + 0] = fabs(cos(surface_class));
-		this->m_colorBuffer[this->m_indexBuffer[3 * i + 1] * 3 + 1] = fabs(sin(surface_class * 30));
-		this->m_colorBuffer[this->m_indexBuffer[3 * i + 1] * 3 + 2] = fabs(sin(surface_class * 2));
+		this->m_colorBuffer[this->m_indexBuffer[3 * i + 1] * 3 + 0] = r;
+		this->m_colorBuffer[this->m_indexBuffer[3 * i + 1] * 3 + 1] = g;
+		this->m_colorBuffer[this->m_indexBuffer[3 * i + 1] * 3 + 2] = b;
 
-		this->m_colorBuffer[this->m_indexBuffer[3 * i + 2] * 3 + 0] = fabs(cos(surface_class));
-		this->m_colorBuffer[this->m_indexBuffer[3 * i + 2] * 3 + 1] = fabs(sin(surface_class * 30));
-		this->m_colorBuffer[this->m_indexBuffer[3 * i + 2] * 3 + 2] = fabs(sin(surface_class * 2));
+		this->m_colorBuffer[this->m_indexBuffer[3 * i + 2] * 3 + 0] = r;
+		this->m_colorBuffer[this->m_indexBuffer[3 * i + 2] * 3 + 1] = g;
+		this->m_colorBuffer[this->m_indexBuffer[3 * i + 2] * 3 + 2] = b;
 
 
 	}
 
 	this->m_finalized = true;
-}
-
-template<typename VertexT, typename NormalT>
-void HalfEdgeMesh<VertexT, NormalT>::printStats()
-{
-	if(this->m_finalized)
-	{
-		cout << "##### HalfEdge Mesh (S): " << this->m_nVertices << " Vertices / "
-		                                    << this->m_nFaces    << " Faces.   " << endl;
-	} else {
-		cout << "##### HalfEdge Mesh (D): " << this->m_nVertices << " Vertices / "
-		                                    << this->m_nFaces / 3 << " Faces." << endl;
-	}
 }
 
 } // namespace lssr
