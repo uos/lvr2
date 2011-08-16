@@ -988,9 +988,9 @@ stack<HalfEdgeVertex<VertexT, NormalT>* > HalfEdgeMesh<VertexT, NormalT>::getCon
 			NormalT nextDirection(next->end->m_position - next->start->m_position);
 
 			//Check if we have to remove the top vertex
-			if(    (    fabs(nextDirection.m_x - currentDirection.m_x) <= epsilon
-					 && fabs(nextDirection.m_y - currentDirection.m_y) <= epsilon
-					 && fabs(nextDirection.m_z - currentDirection.m_z) <= epsilon
+			if(    (    fabs(fabs(nextDirection.m_x) - fabs(currentDirection.m_x)) <= epsilon
+					 && fabs(fabs(nextDirection.m_y) - fabs(currentDirection.m_y)) <= epsilon
+					 && fabs(fabs(nextDirection.m_z) - fabs(currentDirection.m_z)) <= epsilon
 					)
 					||
 					(
