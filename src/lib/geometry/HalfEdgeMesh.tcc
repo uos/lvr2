@@ -589,7 +589,7 @@ int HalfEdgeMesh<VertexT, NormalT>::regionGrowing(HFace* start_face, NormalT &no
 }
 
 template<typename VertexT, typename NormalT>
-void HalfEdgeMesh<VertexT, NormalT>::optimizePlanes(int iterations, float angle, int min_region_size)
+void HalfEdgeMesh<VertexT, NormalT>::optimizePlanes(int iterations, float angle, int min_region_size, int small_region_size)
 {
     // Magic numbers
     int default_region_threshold = (int)10*log(m_faces.size());
@@ -628,11 +628,15 @@ void HalfEdgeMesh<VertexT, NormalT>::optimizePlanes(int iterations, float angle,
 				if(j == iterations-1)
 				{
 					// Save too small regions with size smaller than 7
-					if (region_size < 7)
+					if (region_size < small_region_size)
+					{
 						smallRegions.push_back(m_faces[i]);
+					}
 					else
-					// Save pointer to the region for fast access
+					{
+					    // Save pointer to the region for fast access
 						m_regions.push_back(m_faces[i]);
+					}
 				}
 				region++;
 			}
@@ -640,7 +644,7 @@ void HalfEdgeMesh<VertexT, NormalT>::optimizePlanes(int iterations, float angle,
 	}
 
 	// Delete too small regions
-	for(int i=0; i<smallRegions.size(); i++)
+	for(int i=0; i< smallRegions.size(); i++)
 	{
 		deleteRegionRecursive(smallRegions[i]);
 	}
