@@ -170,8 +170,6 @@ int main(int argc, char** argv)
     FastReconstruction<Vertex<float>, Normal<float> > reconstruction(*pcm, resolution, useVoxelsize);
     reconstruction.getMesh(mesh);
 
-    mesh.tester();
-
     // Save triangle mesh
     mesh.finalize();
     mesh.save("triangle_mesh.ply");

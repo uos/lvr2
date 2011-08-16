@@ -871,10 +871,10 @@ void HalfEdgeMesh<VertexT, NormalT>::optimizePlaneIntersections()
 
 						float d_i = n_i * (*m_regions[i])(0)->m_position;
 						float d_j = n_j * (*m_regions[j])(0)->m_position;
-						float n_i1 = n_i.m_x;
-						float n_i2 = n_i.m_y;
-						float n_j1 = n_j.m_x;
-						float n_j2 = n_j.m_y;
+						float n_i1 = n_i.x;
+						float n_i2 = n_i.y;
+						float n_j1 = n_j.x;
+						float n_j2 = n_j.y;
 
 						float x1 = (d_i/n_i1 - ((n_i2*d_j)/(n_j2*n_i1)))/(1-((n_i2*n_j1)/(n_j2*n_i1)));
 						float x2 = (d_j-n_j1*x1)/n_j2;
@@ -938,11 +938,13 @@ stack<HalfEdgeVertex<VertexT, NormalT>* > HalfEdgeMesh<VertexT, NormalT>::getCon
 			NormalT nextDirection(next->end->m_position - next->start->m_position);
 
 			//Check if we have to remove the top vertex
-			if(fabs(nextDirection.m_x - currentDirection.m_x) <= epsilon
-					&& fabs(nextDirection.m_y - currentDirection.m_y) <= epsilon
-					&& fabs(nextDirection.m_z - currentDirection.m_z) <= epsilon)
+			if(   fabs(nextDirection.x - currentDirection.x) <= epsilon
+			   && fabs(nextDirection.y - currentDirection.y) <= epsilon
+			   && fabs(nextDirection.z - currentDirection.z) <= epsilon
+			   )
+			{
 				contour.pop();
-
+			}
 			current = next;
 		}
 	}
