@@ -164,7 +164,6 @@ void HalfEdgeMesh<VertexT, NormalT>::addTriangle(uint a, uint b, uint c)
 	for(int k = 0; k < 3; k++){
 		edges[k]->next = edges[(k+1) % 3];
 	}
-
 	//cout << ":: " << face->index[0] << " " << face->index[1] << " " << face->index[2] << endl;
 
 	face->m_edge = edges[0];
@@ -201,30 +200,19 @@ void mglBegin(GLenum which)
 {
     primitive = which;
     tessVertices.clear();
-/*    cout << "glBegin(): ";
-    if(primitive == GL_TRIANGLES)
-        cout << "GL_TRIANGLES" << endl;
-    if(primitive == GL_TRIANGLE_FAN)
-        cout << "GL_TRIANGLE_FAN" << endl;
-    if(primitive == GL_TRIANGLE_STRIP)
-        cout << "GL_TRIANGLE_STRIP" << endl; */
-
 }
 
 void mglEnd()
 {
-    stringstream tFileName; tFileName << "tesselation_result" << tesselatedContours << ".txt";
+    stringstream tFileName; tFileName << "tess_result_" << tesselatedContours << ".txt";
     ofstream tess(tFileName.str().c_str(), ios_base::app);
     if(primitive == GL_TRIANGLES)
         for(int i=0; i<tessVertices.size(); ++i)
         {
             tessTriangles.push_back(tessVertices[i]);
             tess << tessVertices[i].m_x << " " << tessVertices[i].m_y << " " << tessVertices[i].m_z << endl;
-            if(i%3==0)
-            {
-                tess << endl;
-                tess << tessVertices[i-2].m_x << " " << tessVertices[i-2].m_y << " " << tessVertices[i-2].m_z << endl;
-            }
+            if((i+1)%3==0 && i != 0)
+                tess << tessVertices[i-2].m_x << " " << tessVertices[i-2].m_y << " " << tessVertices[i-2].m_z << "\n#EndTriangle<<\n\n";
         }
     
     if(primitive == GL_TRIANGLE_FAN)
@@ -234,11 +222,10 @@ void mglEnd()
             tessTriangles.push_back(tessVertices[i+1]);
             tessTriangles.push_back(tessVertices[i+2]);
             
-            tess << tessVertices[0].m_x   << " " << tessVertices[0].m_y   << " " << tessVertices[0].m_z   << endl;
-            tess << tessVertices[i+1].m_x << " " << tessVertices[i+1].m_y << " " << tessVertices[i+1].m_z << endl;
-            tess << tessVertices[i+2].m_x << " " << tessVertices[i+2].m_y << " " << tessVertices[i+2].m_z << endl;
-            tess << tessVertices[0].m_x   << " " << tessVertices[0].m_y   << " " << tessVertices[0].m_z   << endl;
-            tess << endl;
+            tess << tessVertices[0].m_x   << " " << tessVertices[0].m_y   << " " << tessVertices[0].m_z   << endl
+                 << tessVertices[i+1].m_x << " " << tessVertices[i+1].m_y << " " << tessVertices[i+1].m_z << endl
+                 << tessVertices[i+2].m_x << " " << tessVertices[i+2].m_y << " " << tessVertices[i+2].m_z << endl
+                 << tessVertices[0].m_x   << " " << tessVertices[0].m_y   << " " << tessVertices[0].m_z   << endl << endl;
         }
 
     if(primitive == GL_TRIANGLE_STRIP)
@@ -248,13 +235,13 @@ void mglEnd()
             tessTriangles.push_back(tessVertices[i+1]);
             tessTriangles.push_back(tessVertices[i+2]);
             
-            tess << tessVertices[i].m_x   << " " << tessVertices[i].m_y   << " " << tessVertices[i].m_z   << endl;
-            tess << tessVertices[i+1].m_x << " " << tessVertices[i+1].m_y << " " << tessVertices[i+1].m_z << endl;
-            tess << tessVertices[i+2].m_x << " " << tessVertices[i+2].m_y << " " << tessVertices[i+2].m_z << endl;
-            tess << tessVertices[i].m_x   << " " << tessVertices[0].m_y   << " " << tessVertices[0].m_z   << endl;
-            tess << endl;
+            tess << tessVertices[i].m_x   << " " << tessVertices[i].m_y   << " " << tessVertices[i].m_z   << endl
+                 << tessVertices[i+1].m_x << " " << tessVertices[i+1].m_y << " " << tessVertices[i+1].m_z << endl
+                 << tessVertices[i+2].m_x << " " << tessVertices[i+2].m_y << " " << tessVertices[i+2].m_z << endl
+                 << tessVertices[i].m_x   << " " << tessVertices[i].m_y   << " " << tessVertices[i].m_z   << endl << endl;
         }
     
+    tess << "#EndPoly<<" << endl;
 	tess.close();
 }
 
@@ -267,7 +254,6 @@ void mglVertex(const GLvoid *data)
 {
     const GLdouble *ptr = (const GLdouble*)data;
     tessVertices.push_back(Vertex<double>(*ptr, *(ptr+1), *(ptr+2)));
-    //glVertex3dv(ptr);
 }
 
 void mcombineCallback(GLdouble coords[3],
@@ -276,11 +262,9 @@ void mcombineCallback(GLdouble coords[3],
 							 GLdouble **dataOut)
 {
     
-    cout << "CombineCallback" << endl;
-	GLdouble *vertex;
+	GLdouble *vertex = (GLdouble*) malloc(6*sizeof(GLdouble));
     GLdouble *ptr = coords;
 	
-	vertex = (GLdouble*) malloc(6*sizeof(GLdouble));
 	if(!vertex)
 	{
 		cerr << "Could not allocate memory - undefined behaviour will/might arise from now on!" << endl;
@@ -289,11 +273,7 @@ void mcombineCallback(GLdouble coords[3],
 	vertex[1] = coords[1];
 	vertex[2] = coords[2];
 
-	for(int i = 0; i < 3; ++i)
-		vertex[i] = weight[0]*vertex_data[0][i]
-					 + weight[1]*vertex_data[1][i]
-					 + weight[2]*vertex_data[2][i]
-					 + weight[3]*vertex_data[3][i]; 
+    tessVertices.push_back(Vertex<double>(vertex[0], vertex[1], vertex[2]));
 	*dataOut = vertex;
 }
 
@@ -320,7 +300,6 @@ void HalfEdgeMesh<VertexT, NormalT>::tesselate(stack<HVertex*> borderPoints)
     {
         cerr<<"Could not allocate tesselation object. Aborting tesselation." << endl;
         return;
-int tesselatedContours = 0;
     }
 
     /* Callback function that define beginning of polygone etc. */
@@ -330,10 +309,15 @@ int tesselatedContours = 0;
     gluTessCallback(tesselator, GLU_TESS_COMBINE, (GLvoid(*) ()) &mcombineCallback);
     gluTessCallback(tesselator, GLU_TESS_ERROR, (GLvoid(*) ()) &mglError);
 
-    stringstream tFileName; tFileName << "tesselation_contour_" << tesselatedContours << ".txt";
+    stringstream tFileName; tFileName << "tess__contour_" << tesselatedContours << "__"<< borderPoints.size() << ".txt";
     ofstream orgContour(tFileName.str().c_str());
+    HVertex* contourBegin = borderPoints.top();
+
     /* set Properties for tesselation */
+    //gluTessProperty(tesselator, GLU_TESS_WINDING_RULE, GLU_TESS_WINDING_NONZERO);
     gluTessProperty(tesselator, GLU_TESS_WINDING_RULE, GLU_TESS_WINDING_ODD);
+    //gluTessProperty(tesselator, GLU_TESS_WINDING_RULE, GLU_TESS_WINDING_POSITIVE);
+    //gluTessProperty(tesselator, GLU_TESS_WINDING_RULE, GLU_TESS_WINDING_NEGATIVE);
 
 	 /* Use gluTessNormal: speeds up the tessellation if the
 	  	Polygon lies on a x-y plane. and it approximatly does!*/
@@ -366,6 +350,7 @@ int tesselatedContours = 0;
 
 	 /* End Tesselation */
 	 gluTessEndPolygon(tesselator);
+     orgContour << contourBegin->m_position.m_x << " " << contourBegin->m_position.m_y << " " << contourBegin->m_position.m_z;
      orgContour.close();
      tesselatedContours++;
 }
@@ -1135,33 +1120,6 @@ void HalfEdgeMesh<VertexT, NormalT>::tester()
 {
 	//removeDanglingArtifacts(500);
 	optimizePlanes(1);
-	
-	vector<HalfEdgeFace<VertexT, NormalT>*> todelete;
-	vector<HFace*> borderFaces;
-	for(int i=0; i<m_faces.size(); i++)
-		if(m_faces[i]->m_region != 0)
-		{
-			todelete.push_back(m_faces[i]);
-			if(m_faces[i]->m_edge->pair->face == 0)
-			{
-				borderFaces.push_back(m_faces[i]);
-			}
-		}
-	
-    for(int i=0; i<borderFaces.size(); ++i)
-    {
-	    vector<HalfEdgeVertex<VertexT, NormalT>* > contour = simpleDetectHole(borderFaces[i]->m_edge->pair);
-	    if(contour.size() > 3)
-        {
-	        ofstream cont("contour.txt");
-	        for(int i = 0; i < contour.size(); ++i)
-		        cont << contour[i]->m_position << endl;
-            cont.close();
-            cout << "Contour: " << contour.size() << endl;
-            //this->tesselate(contour);
-            break;
-        }
-    }
 }
 
 template<typename VertexT, typename NormalT>
@@ -1173,11 +1131,13 @@ void HalfEdgeMesh<VertexT, NormalT>::finalize_and_retesselate()
 	this->m_nVertices 		= (uint32_t)m_vertices.size();
 	this->m_nFaces 			= (uint32_t)m_faces.size();
 
-	this->m_vertexBuffer 	= new float[3 * this->m_nVertices];
-	this->m_normalBuffer 	= new float[3 * this->m_nVertices];
-	this->m_colorBuffer 	= new float[3 * this->m_nVertices];
-
+	this->m_vertexBuffer 	= new float[3 * this->m_nVertices*20];
+	this->m_normalBuffer 	= new float[3 * this->m_nVertices*20];
+	this->m_colorBuffer 	= new float[3 * this->m_nVertices*20];
 	this->m_indexBuffer 	= new unsigned int[3 * this->m_nFaces];
+
+    int usedVertices = 0;
+    int usedFaces = 0;
 
 	typename vector<HVertex*>::iterator vertices_iter = m_vertices.begin();
 	typename vector<HVertex*>::iterator vertices_end = m_vertices.end();
@@ -1197,6 +1157,7 @@ void HalfEdgeMesh<VertexT, NormalT>::finalize_and_retesselate()
 
 		// map the old index to the new index in the vertexBuffer
 		index_map[*vertices_iter] = i;
+        usedVertices++;
 	}
 	typename vector<HalfEdgeFace<VertexT, NormalT>*>::iterator face_iter = m_faces.begin();
 	typename vector<HalfEdgeFace<VertexT, NormalT>*>::iterator face_end  = m_faces.end();
@@ -1231,16 +1192,79 @@ void HalfEdgeMesh<VertexT, NormalT>::finalize_and_retesselate()
 		this->m_colorBuffer[this->m_indexBuffer[3 * i + 2] * 3 + 0] = fabs(cos(surface_class));
 		this->m_colorBuffer[this->m_indexBuffer[3 * i + 2] * 3 + 1] = fabs(sin(surface_class * 30));
 		this->m_colorBuffer[this->m_indexBuffer[3 * i + 2] * 3 + 2] = fabs(sin(surface_class * 2));
+
+        usedFaces++;
 	}
 
     // retesseleta everything that belongs to a region:
     optimizePlanes(1);
     vector<stack<HalfEdgeVertex<VertexT, NormalT>* > > contours = findAllContours(0.05);
     for(int i=0; i<contours.size(); ++i)
-        if(contours[i].size() > 2)
+    {
+        if(contours[i].size() >= 3)
         {
             tesselate(contours[i]);
+       /* 
+            int reg;
+            if (contours[0].top()->out[0]->face != 0)
+              reg = contours[0].top()->out[0]->face->m_region;
+            if (contours[0].top()->out[0]->pair->face != 0)
+              reg = contours[0].top()->out[0]->pair->face->m_region;
+        
+            int j = 0;
+            if (tessTriangles.size()%3 != 0)
+                cerr << "Seriously messed up!" << endl;
+            while(j < tessTriangles.size())
+            {
+                this->m_vertexBuffer[3 * usedVertices] =     tessTriangles[j].m_x; 
+                this->m_vertexBuffer[3 * usedVertices + 1] = tessTriangles[j].m_y;
+                this->m_vertexBuffer[3 * usedVertices + 2] = tessTriangles[j].m_z;
+                
+                this->m_normalBuffer [3 * usedVertices] =     -0.0; //
+                this->m_normalBuffer [3 * usedVertices + 1] = -0.0; // DUMMY PARAM!!! TO BE REPLACED TODO:!!! 
+                this->m_normalBuffer [3 * usedVertices + 2] = -0.0; //
+
+                this->m_colorBuffer  [3 * usedVertices]     = 0.8; //TODO: Dummy aswell
+                this->m_colorBuffer  [3 * usedVertices + 1] = 0.8; //TODO: "" "" "" "" 
+                this->m_colorBuffer  [3 * usedVertices + 2] = 0.8; //TODO: "" "" "" ""
+                
+                usedVertices++;
+                j++;
+                if((j+1)%3 == 0) // we added a whole new triangle so push it to the faces buffer aswell
+                {
+                    this->m_indexBuffer[3 * usedFaces]      = j-2; //index_map[(*(*face_iter))(0)];
+                    this->m_indexBuffer[3 * usedFaces + 1]  = j-1; //index_map[(*(*face_iter))(1)];
+                    this->m_indexBuffer[3 * usedFaces + 2]  = j;   //index_map[(*(*face_iter))(2)];
+                    
+                    int surface_class = 1;
+                    surface_class = reg;
+
+                    this->m_colorBuffer[this->m_indexBuffer[3 * usedFaces]  * 3 + 0] = fabs(cos(surface_class));
+                    this->m_colorBuffer[this->m_indexBuffer[3 * usedFaces]  * 3 + 1] = fabs(sin(surface_class * 30));
+                    this->m_colorBuffer[this->m_indexBuffer[3 * usedFaces]  * 3 + 2] = fabs(sin(surface_class * 2));
+
+                    this->m_colorBuffer[this->m_indexBuffer[3 * usedFaces + 1] * 3 + 0] = fabs(cos(surface_class));
+                    this->m_colorBuffer[this->m_indexBuffer[3 * usedFaces + 1] * 3 + 1] = fabs(sin(surface_class * 30));
+                    this->m_colorBuffer[this->m_indexBuffer[3 * usedFaces + 1] * 3 + 2] = fabs(sin(surface_class * 2));
+
+                    this->m_colorBuffer[this->m_indexBuffer[3 * usedFaces + 2] * 3 + 0] = fabs(cos(surface_class));
+                    this->m_colorBuffer[this->m_indexBuffer[3 * usedFaces + 2] * 3 + 1] = fabs(sin(surface_class * 30));
+                    this->m_colorBuffer[this->m_indexBuffer[3 * usedFaces + 2] * 3 + 2] = fabs(sin(surface_class * 2));
+                    usedFaces++;
+                }
+            }
+        */
+        } 
+        else
+        {
+            cerr << "Something is definitly wrong! Region with contoursize < 3?! Noooo freaking way!" << endl;
+            while(contours[i].size() > 0)
+            {
+                cout << contours[i].top() << endl;
+                contours[i].pop();
+            }
         }
+    }
 	this->m_finalized = true;
 }
 
@@ -1680,7 +1704,7 @@ void HalfEdgeMesh<VertexT, NormalT>::finalize()
 //			centroid.z = centroid.z / (3 * count);
 //
 //			//cout << mean_normal << " " << centroid << endl;
-//
+//n
 //			// Shift all effected vertices into the calculated
 //			// plane
 //			for(size_t i = 0; i < count; i++)
