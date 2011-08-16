@@ -66,20 +66,20 @@ public:
 	bool	saveFaceNormals() const;
 
 	/**
+	 *@brief    Returns true of region coloring is enabled.
+	 */
+	bool    colorRegions() const;
+
+	/**
 	 * @brief	Returns true if the interpolated normals
 	 * 			should be saved in the putput file
 	 */
 	bool    saveNormals() const;
 
 	/**
-	 * @brief	Returns true if clustering is enabled
-	 */
-	bool	createClusters() const;
-
-	/**
 	 * @brief 	Returns true if cluster optimization is enabled
 	 */
-	bool 	optimizeClusters() const;
+	bool 	optimizePlanes() const;
 
 	/**
 	 * @brief 	Indicates whether to save the used points
@@ -123,10 +123,28 @@ public:
 	 */
 	int     getIntersections() const;
 
+
 	/**
-	 * @brieg   Returns the name of the used point cloud handler.
+	 * @brief   Returns to number plane optimization iterations
+	 */
+	int getPlaneIterations() const;
+
+	/**
+	 * @brief   Returns the name of the used point cloud handler.
 	 */
 	string getPCM() const;
+
+
+	/**
+	 * @brief   Returns the normal threshold for plane optimization.
+	 */
+	float getNormalThreshold() const;
+
+	/**
+	 * @brief   Returns the threshold for the size of small
+	 *          region deletion after plane optimization.
+	 */
+	int   getSmallRegionThreshold() const;
 
 private:
 
@@ -165,6 +183,17 @@ private:
 
 	/// The used point cloud manager
 	string                          m_pcm;
+
+
+	/// Number of iterations for plane optimzation
+	int                             m_planeIterations;
+
+	/// Threshold for plane optimization
+	float                           m_planeNormalThreshold;
+
+	/// Threshold for small ragions
+	int                             m_smallRegionThreshold;
+
 };
 
 
@@ -190,17 +219,21 @@ inline ostream& operator<<(ostream& os, const Options &o)
 	{
 		cout << "##### Write Face Normals \t: YES" << endl;
 	}
-	if(o.createClusters())
+
+	if(o.optimizePlanes())
 	{
-		cout << "##### Create cluster \t\t: YES" << endl;
-	}
-	if(o.optimizeClusters())
-	{
-		cout << "##### Optimize cluster \t\t: YES" << endl;
+		cout << "##### Optimize Planes \t\t: YES" << endl;
+		cout << "##### Plane iterations\t\t: " << o.getPlaneIterations() << endl;
+		cout << "##### Normal threshold \t\t: " << o.getNormalThreshold() << endl;
+		cout << "##### Region threshold\t\t: " << o.getSmallRegionThreshold() << endl;
 	}
 	if(o.saveNormals())
 	{
 		cout << "##### Save normals \t\t: YES" << endl;
+	}
+	if(o.colorRegions())
+	{
+	    cout << "##### Color regions \t\t: YES" << endl;
 	}
 	if(o.recalcNormals())
 	{
