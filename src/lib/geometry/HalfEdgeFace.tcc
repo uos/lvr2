@@ -165,9 +165,9 @@ VertexT HalfEdgeFace<VertexT, NormalT>::getCentroid(){
 	}
 
 	if(vert.size() > 0){
-		centroid.m_x = centroid.m_x / vert.size();
-		centroid.m_y = centroid.m_y / vert.size();
-		centroid.m_z = centroid.m_z / vert.size();
+		centroid.x = centroid.x / vert.size();
+		centroid.y = centroid.y / vert.size();
+		centroid.z = centroid.z / vert.size();
 	} else {
 		cout << "Warning: HalfEdgeFace::getCentroid: No vertices found." << endl;
 		return VertexT();
