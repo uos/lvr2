@@ -179,7 +179,7 @@ public:
 	 *
 	 * @param iterations	The number of iterations to use
 	 */
-	virtual void optimizePlanes(int iterations, float normalThreshold, int minRegionSize = 50);
+	virtual void optimizePlanes(int iterations, float normalThreshold, int minRegionSize = 50, int smallRegionSize = 7);
 
 	/**
 	 * @brief	Calculates a regression plane for the given region and projects all
