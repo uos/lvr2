@@ -214,23 +214,9 @@ public:
 	virtual void removeDanglingArtifacts(int threshold);
 
 	/**
-	 * @brief	Finds the contour of a hole starting from a given starting point
-	 *
-	 * @param start		The starting point
-	 * @param end		The end point
-	 * @param contour	A sequence of vertices defining the contour of the hole
-	 *
-	 * @return	The length of the contour (number of edges)
+	 * @brief 	Fills holes
 	 */
-	virtual vector<HVertex*>  simpleDetectHole(HEdge* start);
-
-	/**
-	 * @brief 	Fills a hole
-	 *
-	 * @param	contour	The contour of the hole to fill
-	 *
-	 */
-	virtual void fillHole(vector<HVertex*> contour);
+	virtual void fillHoles();
 
 	/**
 	 *	@brief	drags the points of the given plane onto the given intersection if those points lay in
