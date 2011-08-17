@@ -179,8 +179,11 @@ public:
 	 * 			regions
 	 *
 	 * @param iterations	The number of iterations to use
+	 *
+	 * @param angle			The maximum difference angle between the normals of neighboring faces
+	 * 						to accept as one region (usually 0.85 = cos(32°))
 	 */
-	virtual void optimizePlanes(int iterations);
+	virtual void optimizePlanes(int iterations, float angle);
 
 	/**
 	 * @brief	Calculates a regression plane for the given region and projects all
@@ -215,8 +218,10 @@ public:
 
 	/**
 	 * @brief 	Fills holes
+	 *
+	 * @param	max_size	Only holes smaller max_size will be closed
 	 */
-	virtual void fillHoles();
+	virtual void fillHoles(int max_size);
 
 	/**
 	 *	@brief	drags the points of the given plane onto the given intersection if those points lay in

@@ -571,7 +571,7 @@ int HalfEdgeMesh<VertexT, NormalT>::regionGrowing(HFace* start_face, NormalT &no
 }
 
 template<typename VertexT, typename NormalT>
-void HalfEdgeMesh<VertexT, NormalT>::optimizePlanes(int iterations)
+void HalfEdgeMesh<VertexT, NormalT>::optimizePlanes(int iterations, float angle)
 {
 	//regions that will be deleted due to size
 	vector<HalfEdgeFace<VertexT, NormalT>*> smallRegions;
@@ -594,13 +594,13 @@ void HalfEdgeMesh<VertexT, NormalT>::optimizePlanes(int iterations)
 			if(m_faces[i]->m_region == 0)
 			{
 				NormalT n = m_faces[i]->getFaceNormal();
-				float angle = 0.85;	//about 32 degree
 				region_size = regionGrowing(m_faces[i], n, angle, region) + 1;
 
 				//fit big regions into the regression plane
 				if(region_size > max(50.0, 10*log(m_faces.size())))
 					regressionPlane(region);
 
+				//only in the last iteration
 				if(j==iterations-1){
 					//save too small regions with size smaller than 7
 					if (region_size < 7)
@@ -750,7 +750,7 @@ void HalfEdgeMesh<VertexT, NormalT>::removeDanglingArtifacts(int threshold)
 }
 
 template<typename VertexT, typename NormalT>
-void HalfEdgeMesh<VertexT, NormalT>::fillHoles()
+void HalfEdgeMesh<VertexT, NormalT>::fillHoles(int max_size)
 {
 	//walk through all edges and start hole finding
 	//when pair has no face and a regression plane was applied
@@ -801,7 +801,7 @@ void HalfEdgeMesh<VertexT, NormalT>::fillHoles()
 				if(number_of_regions == 1)
 				{
 					//Is the contour of acceptable size and closed?
-					if(2 < contour.size() && contour.size() < 30 && halfEdgeToVertex(contour[contour.size()-1], contour[0]) != 0)
+					if(2 < contour.size() && contour.size() < max_size && halfEdgeToVertex(contour[contour.size()-1], contour[0]) != 0)
 					{
 						//Simulate a face by setting the face pointer of the edge next to the hole
 						for(int p=0; p<contour.size(); p++)
@@ -825,7 +825,7 @@ void HalfEdgeMesh<VertexT, NormalT>::fillHoles()
 				else if (number_of_regions == 2)
 				{
 					//Is the contour of acceptable size and closed?
-					if(2 < contour.size() && contour.size() < 30 && halfEdgeToVertex(contour[contour.size()-1], contour[0]) != 0)
+					if(2 < contour.size() && contour.size() < max_size && halfEdgeToVertex(contour[contour.size()-1], contour[0]) != 0)
 					{
 						//Simulate a face by setting the face pointer of the edge next to the hole
 						//Especially: Simulate that there exists a pair edge of the second region
@@ -916,6 +916,7 @@ void HalfEdgeMesh<VertexT, NormalT>::optimizePlaneIntersections()
 					n_i.normalize();
 					n_j.normalize();
 
+					//don't improve almost parallel regions - they won't cross in a reasonable distance
 					if (fabs(n_i*n_j) < 0.9)
 					{
 
@@ -1024,9 +1025,9 @@ template<typename VertexT, typename NormalT>
 void HalfEdgeMesh<VertexT, NormalT>::tester()
 {
 	removeDanglingArtifacts(500);
-	optimizePlanes(3);
+	optimizePlanes(3, 0.85);	//3 Iterations, max diff angle: arccos(0.85) = 32degree
 
-	fillHoles();
+	fillHoles(35);
 
 	optimizePlaneIntersections();
 
@@ -1058,8 +1059,8 @@ void HalfEdgeMesh<VertexT, NormalT>::tester()
 	}
 	filestr.close();
 
-	for(int i=0; i<m_faces.size(); i++)
-		m_faces[i]->m_region=0;
+//	for(int i=0; i<m_faces.size(); i++)
+//		m_faces[i]->m_region=0;
 }
 
 template<typename VertexT, typename NormalT>
