@@ -1057,9 +1057,6 @@ void HalfEdgeMesh<VertexT, NormalT>::finalize()
 		this->m_indexBuffer[3 * i + 1]  = index_map[(*(*face_iter))(1)];
 		this->m_indexBuffer[3 * i + 2]  = index_map[(*(*face_iter))(2)];
 		
-		// TODO: Think of classification
-		//int surface_class = classifyFace(he_faces[i]);
-
 		int surface_class = 1;
 		surface_class = (*face_iter)->m_region;
 
