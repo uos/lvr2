@@ -147,6 +147,11 @@ public:
 	int   getSmallRegionThreshold() const;
 
 	/**
+	 * @brief   Minimum value for plane optimzation
+	 */
+	int   getMinPlaneSize() const;
+
+	/**
 	 * @brief   Returns the number of dangling artifacts to remove from
 	 *          a created mesh.
 	 */
@@ -210,6 +215,9 @@ private:
 	/// Threshold for hole filling
 	int                             m_fillHoles;
 
+	/// Threshold for plane optimization
+	int                             m_minPlaneSize;
+
 };
 
 
@@ -247,11 +255,11 @@ inline ostream& operator<<(ostream& os, const Options &o)
 
 	if(o.getDanglingArtifacts())
 	{
-	    cout << "##### Remove DAs \t\t : " << o.getDanglingArtifacts() << endl;
+	    cout << "##### Remove DAs \t\t: " << o.getDanglingArtifacts() << endl;
 	}
 	else
 	{
-	    cout << "##### Remove DAs \t\t : NO" << endl;
+	    cout << "##### Remove DAs \t\t: NO" << endl;
 	}
 
 	if(o.optimizePlanes())

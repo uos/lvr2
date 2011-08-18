@@ -29,6 +29,7 @@ Options::Options(int argc, char** argv) : m_descr("Supported options")
 		("kd", value<int>(&m_kd)->default_value(5), "Number of normals used for distance function evaluation")
 	    ("ki", value<int>(&m_ki)->default_value(10), "Number of normals used in the normal interpolation process")
 	    ("kn", value<int>(&m_kn)->default_value(10), "Size of k-neighborhood used for normal estimation")
+	    ("mp", value<int>(&m_minPlaneSize)->default_value(7), "Minimum value for plane optimzation")
         ("planeIterations", value<int>(&m_planeIterations)->default_value(3), "Number of iterations for plane optimization")
         ("fillHoles,f", value<int>(&m_fillHoles)->default_value(30), "Maximum size for hole filling")
         ("rda", value<int>(&m_rda)->default_value(100), "Remove dangling artifacts, i.e. remove the n smallest not connected surfaces")
@@ -102,6 +103,11 @@ int    Options::getDanglingArtifacts() const
 int    Options::getFillHoles() const
 {
     return (m_variables["fillHoles"].as<int> ());
+}
+
+int   Options::getMinPlaneSize() const
+{
+    return (m_variables["mp"].as<int> ());
 }
 
 
