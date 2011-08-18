@@ -157,7 +157,7 @@ int main(int argc, char** argv)
     FastReconstruction<Vertex<float>, Normal<float> > reconstruction(manager, resolution, useVoxelsize);
     reconstruction.getMesh(mesh);
 
-    mesh.tester();
+    //mesh.tester();
 
     // Save triangle mesh
     mesh.finalize();

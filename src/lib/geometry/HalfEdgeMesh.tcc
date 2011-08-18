@@ -597,7 +597,7 @@ void HalfEdgeMesh<VertexT, NormalT>::optimizePlanes(int iterations)
 			m_faces[i]->m_region=0;
 
 		//find all regions by regionGrowing with normal criteria
-		for(int i=0; i<m_faces.size(); i++)
+		for(int i=0; i < m_faces.size(); i++)
 		{
 			if(m_faces[i]->m_region == 0)
 			{
@@ -609,13 +609,18 @@ void HalfEdgeMesh<VertexT, NormalT>::optimizePlanes(int iterations)
 				if(region_size > max(50.0, 10*log(m_faces.size())))
 					regressionPlane(region);
 
-				if(j==iterations-1){
+				if(j==iterations-1)
+				{
 					//save too small regions with size smaller than 7
 					if (region_size < 7)
+					{
 						smallRegions.push_back(m_faces[i]);
+					}
 					else
+					{
 					//save pointer to the region for fast access
 						m_regions.push_back(m_faces[i]);
+					}
 				}
 				region++;
 			}
