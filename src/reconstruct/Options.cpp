@@ -30,6 +30,8 @@ Options::Options(int argc, char** argv) : m_descr("Supported options")
 	    ("ki", value<int>(&m_ki)->default_value(10), "Number of normals used in the normal interpolation process")
 	    ("kn", value<int>(&m_kn)->default_value(10), "Size of k-neighborhood used for normal estimation")
         ("planeIterations", value<int>(&m_planeIterations)->default_value(3), "Number of iterations for plane optimization")
+        ("fillHoles,f", value<int>(&m_fillHoles)->default_value(30), "Maximum size for hole filling")
+        ("rda", value<int>(&m_rda)->default_value(100), "Remove dangling artifacts, i.e. remove the n smallest not connected surfaces")
         ("planeNormalThreshold", value<float>(&m_planeNormalThreshold)->default_value(0.85), "Normal threshold for plane optimization. Default 0.85 equals about 3 degrees.")
         ("smallRegionThreshold", value<int>(&m_smallRegionThreshold)->default_value(0), "Threshold for small region removal. If 0 nothing will be deleted.")
         ("colorRegions", "Color detected regions with color gradient.")
@@ -91,6 +93,17 @@ string Options::getPCM() const
 {
     return (m_variables["pcm"].as< string >());
 }
+
+int    Options::getDanglingArtifacts() const
+{
+    return (m_variables["rda"].as<int> ());
+}
+
+int    Options::getFillHoles() const
+{
+    return (m_variables["fillHoles"].as<int> ());
+}
+
 
 bool Options::printUsage() const
 {
