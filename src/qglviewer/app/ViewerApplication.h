@@ -22,6 +22,7 @@
 
 #include "../widgets/CustomTreeWidgetItem.h"
 #include "../widgets/PointCloudTreeWidgetItem.h"
+#include "../widgets/TransformationDialog.h"
 
 
 using Ui::MainWindow;
@@ -56,6 +57,7 @@ public Q_SLOTS:
 	void treeSelectionChanged();
 	void treeContextMenuRequested(const QPoint &);
 	void treeWidgetExport();
+	void transformObject();
 
 private:
 

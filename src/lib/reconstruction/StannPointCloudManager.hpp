@@ -139,6 +139,12 @@ public:
      */
     virtual float distance(VertexT v);
 
+    /**
+     * @brief Calculates initial point normals using a least squares fit to
+     *        the \ref m_kn nearest points
+     */
+    void calcNormals();
+
 
 private:
 
@@ -162,12 +168,6 @@ private:
 	 * @brief Save points to a ascii file
 	 */
 	void savePoints(string filename);
-
-	/**
-	 * @brief Calculates initial point normals using a least squares fit to
-	 *        the \ref m_kn nearest points
-	 */
-	void estimateSurfaceNormals();
 
 	/**
 	 * @brief Interpolate the initial normals with the \ref m_ki neighbors
@@ -225,15 +225,6 @@ private:
 
 	/// STANN tree to manage the data points
 	sfcnn< float*, 3, float>    m_pointTree;
-
-	/// The number of neighbors used for initial normal estimation
-	int                         m_kn;
-
-	/// The number of neighbors used for normal interpolation
-	int                         m_ki;
-
-	/// The number of tangent planes used for distance determination
-	int                         m_kd;
 
 	/// The centroid of the point set
 	VertexT               		m_centroid;

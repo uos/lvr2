@@ -18,9 +18,10 @@ Options::Options(int argc, char** argv) : m_descr("Supported options")
 		("help", "Produce help message")
 		("inputFile", value< vector<string> >(), "Input file name. Supported formats are ASCII (.pts, .xyz) and .ply")
 		("voxelsize,v", value<float>(&m_voxelsize)->default_value(10), "Voxelsize of grid used for reconstruction.")
+	    ("intersections,i", value<int>(&m_intersections)->default_value(-1), "Number of intersections used for reconstruction. If other than -1, voxelsize will calculated automatically.")
+	    ("pcm,p", value<string>(&m_pcm)->default_value("STANN"), "Point cloud manager used for point handling and normal estimation. Choose from {STANN, PCL}.")
 		("saveFaceNormals", "Writes all interpolated triangle normals together with triangle centroid to a file called 'face_normals.nor'")
-		("cluster,c", "Extract planes and write result to 'planes.ply'")
-		("optimizeCluster,o", "Shift all triangle vertices of a cluster onto their shared plane")
+		("optimizePlanes,o", "Shift all triangle vertices of a cluster onto their shared plane")
 		("savePointsAndNormals,s", "Exports original point cloud data together with normals into a single file called 'points_and_normals.ply'")
 		("recalcNormals,r", "Always estimate normals, even if given in .ply file.")
 		("threads,t", value<int>(&m_numThreads)->default_value(4), "Number of threads")
@@ -28,7 +29,10 @@ Options::Options(int argc, char** argv) : m_descr("Supported options")
 		("kd", value<int>(&m_kd)->default_value(5), "Number of normals used for distance function evaluation")
 	    ("ki", value<int>(&m_ki)->default_value(10), "Number of normals used in the normal interpolation process")
 	    ("kn", value<int>(&m_kn)->default_value(10), "Size of k-neighborhood used for normal estimation")
-	    ("intersections,i", value<int>(&m_intersections)->default_value(-1), "Number of intersections used for reconstruction. If other than -1, voxelsize will calculated automatically.")
+        ("planeIterations", value<int>(&m_planeIterations)->default_value(3), "Number of iterations for plane optimization")
+        ("planeNormalThreshold", value<float>(&m_planeNormalThreshold)->default_value(0.85), "Normal threshold for plane optimization. Default 0.85 equals about 3 degrees.")
+        ("smallRegionThreshold", value<int>(&m_smallRegionThreshold)->default_value(0), "Threshold for small region removal. If 0 nothing will be deleted.")
+        ("colorRegions", "Color detected regions with color gradient.")
 		;
 
 	m_pdescr.add("inputFile", -1);
@@ -39,9 +43,7 @@ Options::Options(int argc, char** argv) : m_descr("Supported options")
 
   if(m_variables.count("help")) {
     ::std::cout<< m_descr << ::std::endl;
-    exit(-1);
   }
-
 
 }
 
@@ -75,9 +77,19 @@ int Options::getIntersections() const
     return m_variables["intersections"].as<int>();
 }
 
+int Options::getPlaneIterations() const
+{
+    return m_variables["planeIterations"].as<int>();
+}
+
 string Options::getInputFileName() const
 {
 	return (m_variables["inputFile"].as< vector<string> >())[0];
+}
+
+string Options::getPCM() const
+{
+    return (m_variables["pcm"].as< string >());
 }
 
 bool Options::printUsage() const
@@ -109,11 +121,6 @@ bool Options::filenameSet() const
 	return (m_variables["inputFile"].as< vector<string> >()).size() > 0;
 }
 
-bool Options::createClusters() const
-{
-	return (m_variables.count("cluster"));
-}
-
 bool Options::recalcNormals() const
 {
 	return (m_variables.count("recalcNormals"));
@@ -129,9 +136,24 @@ bool Options::saveNormals() const
     return (m_variables.count("saveNormals"));
 }
 
-bool Options::optimizeClusters() const
+bool Options::optimizePlanes() const
 {
-	return createClusters() && m_variables.count("optimizeCluster");
+	return m_variables.count("optimizePlanes");
+}
+
+bool  Options::colorRegions() const
+{
+    return m_variables.count("colorRegions");
+}
+
+float Options::getNormalThreshold() const
+{
+    return m_variables["planeNormalThreshold"].as<float>();
+}
+
+int   Options::getSmallRegionThreshold() const
+{
+    return m_variables["smallRegionThreshold"].as<int>();
 }
 
 Options::~Options() {
