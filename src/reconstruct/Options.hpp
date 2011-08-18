@@ -146,6 +146,17 @@ public:
 	 */
 	int   getSmallRegionThreshold() const;
 
+	/**
+	 * @brief   Returns the number of dangling artifacts to remove from
+	 *          a created mesh.
+	 */
+	int   getDanglingArtifacts() const;
+
+	/**
+	 * @brief   Returns the region threshold for hole filling
+	 */
+	int   getFillHoles() const;
+
 private:
 
 	/// The set voxelsize
@@ -184,7 +195,6 @@ private:
 	/// The used point cloud manager
 	string                          m_pcm;
 
-
 	/// Number of iterations for plane optimzation
 	int                             m_planeIterations;
 
@@ -193,6 +203,12 @@ private:
 
 	/// Threshold for small ragions
 	int                             m_smallRegionThreshold;
+
+	/// Number of dangling artifacts to remove
+	int                             m_rda;
+
+	/// Threshold for hole filling
+	int                             m_fillHoles;
 
 };
 
@@ -218,6 +234,24 @@ inline ostream& operator<<(ostream& os, const Options &o)
 	if(o.saveFaceNormals())
 	{
 		cout << "##### Write Face Normals \t: YES" << endl;
+	}
+
+	if(o.getFillHoles())
+	{
+	    cout << "##### Fill holes \t\t: " << o.getFillHoles() << endl;
+	}
+	else
+	{
+	    cout << "##### Fill holes \t\t: NO" << endl;
+	}
+
+	if(o.getDanglingArtifacts())
+	{
+	    cout << "##### Remove DAs \t\t : " << o.getDanglingArtifacts() << endl;
+	}
+	else
+	{
+	    cout << "##### Remove DAs \t\t : NO" << endl;
 	}
 
 	if(o.optimizePlanes())

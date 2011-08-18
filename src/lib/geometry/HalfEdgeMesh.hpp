@@ -213,24 +213,6 @@ public:
 	 */
 	virtual void removeDanglingArtifacts(int threshold);
 
-	/**
-	 * @brief	Finds the contour of a hole starting from a given starting point
-	 *
-	 * @param start		The starting point
-	 * @param end		The end point
-	 * @param contour	A sequence of vertices defining the contour of the hole
-	 *
-	 * @return	The length of the contour (number of edges)
-	 */
-	virtual vector<HVertex*>  simpleDetectHole(HEdge* start);
-
-	/**
-	 * @brief 	Fills a hole
-	 *
-	 * @param	contour	The contour of the hole to fill
-	 *
-	 */
-	virtual void fillHole(vector<HVertex*> contour);
 
 	/**
 	 *	@brief	drags the points of the given plane onto the given intersection if those points lay in
@@ -274,7 +256,12 @@ public:
 	virtual void finalize();
 
 
+	void fillHoles(int max_size);
+
 	void enableRegionColoring() { m_colorRegions = true;}
+
+	void tester();
+
 private:
 
 	/// The faces in the half edge mesh
