@@ -164,7 +164,6 @@ void HalfEdgeMesh<VertexT, NormalT>::addTriangle(uint a, uint b, uint c)
 	for(int k = 0; k < 3; k++){
 		edges[k]->next = edges[(k+1) % 3];
 	}
-
 	//cout << ":: " << face->index[0] << " " << face->index[1] << " " << face->index[2] << endl;
 
 	face->m_edge = edges[0];
@@ -183,6 +182,184 @@ void HalfEdgeMesh<VertexT, NormalT>::addTriangle(uint a, uint b, uint c)
 //		}
 //	}
 
+}
+
+GLenum primitive;
+typedef struct {
+    double x;
+    double y;
+    double z;
+    } mPoint;
+
+//vector<mPoint> tessVertices;
+vector<Vertex<double> > tessVertices;
+vector<Vertex<double> > tessTriangles;
+int tesselatedContours = 0;
+
+void mglBegin(GLenum which)
+{
+    primitive = which;
+    tessVertices.clear();
+}
+
+void mglEnd()
+{
+    stringstream tFileName; tFileName << "tess_result_" << tesselatedContours << ".txt";
+    ofstream tess(tFileName.str().c_str(), ios_base::app);
+    if(primitive == GL_TRIANGLES)
+        for(int i=0; i<tessVertices.size(); ++i)
+        {
+            tessTriangles.push_back(tessVertices[i]);
+            tess << tessVertices[i].m_x << " " << tessVertices[i].m_y << " " << tessVertices[i].m_z << endl;
+            if((i+1)%3==0 && i != 0)
+                tess << tessVertices[i-2].m_x << " " << tessVertices[i-2].m_y << " " << tessVertices[i-2].m_z << "\n#EndTriangle<<\n\n";
+        }
+    
+    if(primitive == GL_TRIANGLE_FAN)
+        for(int i=0; i<tessVertices.size()-2; ++i)
+        {
+            tessTriangles.push_back(tessVertices[0]);
+            tessTriangles.push_back(tessVertices[i+1]);
+            tessTriangles.push_back(tessVertices[i+2]);
+            
+            tess << tessVertices[0].m_x   << " " << tessVertices[0].m_y   << " " << tessVertices[0].m_z   << endl
+                 << tessVertices[i+1].m_x << " " << tessVertices[i+1].m_y << " " << tessVertices[i+1].m_z << endl
+                 << tessVertices[i+2].m_x << " " << tessVertices[i+2].m_y << " " << tessVertices[i+2].m_z << endl
+                 << tessVertices[0].m_x   << " " << tessVertices[0].m_y   << " " << tessVertices[0].m_z   << endl << endl;
+        }
+
+    if(primitive == GL_TRIANGLE_STRIP)
+        for(int i=0; i<tessVertices.size()-2; ++i)
+        {
+            tessTriangles.push_back(tessVertices[i]);
+            tessTriangles.push_back(tessVertices[i+1]);
+            tessTriangles.push_back(tessVertices[i+2]);
+            
+            tess << tessVertices[i].m_x   << " " << tessVertices[i].m_y   << " " << tessVertices[i].m_z   << endl
+                 << tessVertices[i+1].m_x << " " << tessVertices[i+1].m_y << " " << tessVertices[i+1].m_z << endl
+                 << tessVertices[i+2].m_x << " " << tessVertices[i+2].m_y << " " << tessVertices[i+2].m_z << endl
+                 << tessVertices[i].m_x   << " " << tessVertices[i].m_y   << " " << tessVertices[i].m_z   << endl << endl;
+        }
+    
+    tess << "#EndPoly<<" << endl;
+	tess.close();
+}
+
+void mglError(GLenum errorCode)
+{
+    cerr << "[Error:] " << gluErrorString(errorCode) << endl; 
+}
+
+void mglVertex(const GLvoid *data)
+{
+    const GLdouble *ptr = (const GLdouble*)data;
+    tessVertices.push_back(Vertex<double>(*ptr, *(ptr+1), *(ptr+2)));
+}
+
+void mcombineCallback(GLdouble coords[3],
+							 GLdouble *vertex_data[4],
+							 GLfloat weight[4],
+							 GLdouble **dataOut)
+{
+    
+	GLdouble *vertex = (GLdouble*) malloc(6*sizeof(GLdouble));
+    GLdouble *ptr = coords;
+	
+	if(!vertex)
+	{
+		cerr << "Could not allocate memory - undefined behaviour will/might arise from now on!" << endl;
+	}
+	vertex[0] = coords[0];
+	vertex[1] = coords[1];
+	vertex[2] = coords[2];
+
+    tessVertices.push_back(Vertex<double>(vertex[0], vertex[1], vertex[2]));
+	*dataOut = vertex;
+}
+
+template<typename VertexT, typename NormalT>
+void HalfEdgeMesh<VertexT, NormalT>::tesselate(vector<stack<HVertex*> > vectorBorderPoints)
+{
+    tessVertices.clear();
+    if(!vectorBorderPoints.size())
+    {
+        cerr<< "No points received. Aborting Tesselation." << endl;
+        return;
+    }
+
+    // NOTE: Replace the 2 by the correct glueGetString.
+    if(2 /*gluGetString(GLU_VERSION)*/ < 1.1)
+    {
+        cerr<< "Unsupported Version of GLUT." 
+            << "Please use OpenGL Utility Library version 1.1 or higher." << endl;
+        return;
+    }
+
+    GLUtesselator* tesselator = gluNewTess();
+    if(!tesselator)
+    {
+        cerr<<"Could not allocate tesselation object. Aborting tesselation." << endl;
+        return;
+    }
+
+    /* Callback function that define beginning of polygone etc. */
+    gluTessCallback(tesselator, GLU_TESS_VERTEX,(GLvoid(*) ()) &mglVertex);
+    gluTessCallback(tesselator, GLU_TESS_BEGIN, (GLvoid(*) ()) &mglBegin);
+    gluTessCallback(tesselator, GLU_TESS_END, (GLvoid(*) ()) &mglEnd);
+    gluTessCallback(tesselator, GLU_TESS_COMBINE, (GLvoid(*) ()) &mcombineCallback);
+    gluTessCallback(tesselator, GLU_TESS_ERROR, (GLvoid(*) ()) &mglError);
+
+
+    /* set Properties for tesselation */
+    //gluTessProperty(tesselator, GLU_TESS_WINDING_RULE, GLU_TESS_WINDING_NONZERO);
+    gluTessProperty(tesselator, GLU_TESS_WINDING_RULE, GLU_TESS_WINDING_ODD);
+    //gluTessProperty(tesselator, GLU_TESS_WINDING_RULE, GLU_TESS_WINDING_POSITIVE);
+    //gluTessProperty(tesselator, GLU_TESS_WINDING_RULE, GLU_TESS_WINDING_NEGATIVE);
+
+	 /* Use gluTessNormal: speeds up the tessellation if the
+	  	Polygon lies on a x-y plane. and it approximatly does!*/
+	 //gluTessNormal(tesselator, 0, 0, 1);
+
+
+	 /* Begin definition of the polygon to be tesselated */
+	 gluTessBeginPolygon(tesselator, 0);
+    
+        for(int i=0; i<vectorBorderPoints.size(); ++i)
+        {
+        stack<HVertex*> borderPoints = vectorBorderPoints[i];
+        stringstream tFileName; tFileName << "tess__contour_" << i << "__"<< borderPoints.size() << ".txt";
+        ofstream orgContour(tFileName.str().c_str());
+        HVertex* contourBegin = borderPoints.top();
+
+		// Begin Contour
+	 	gluTessBeginContour(tesselator);
+            
+			/* define the contour by vertices */
+			//for(int i=0; i<borderPoints.size(); ++i)
+            while(borderPoints.size() > 0)
+			{
+	 			GLdouble* vertex = new GLdouble[3];
+				vertex[0] = (borderPoints.top())->m_position.m_x;
+				vertex[1] = (borderPoints.top())->m_position.m_y;
+				vertex[2] = (borderPoints.top())->m_position.m_z;
+				
+                orgContour << (borderPoints.top())->m_position.m_x << " " <<  (borderPoints.top())->m_position.m_y << " " << (borderPoints.top())->m_position.m_z << endl;
+                
+				borderPoints.pop();
+				// Add the vertex to the Contour
+				gluTessVertex(tesselator, vertex, vertex);
+			}
+
+		// End Contour
+		gluTessEndContour(tesselator);
+        orgContour << contourBegin->m_position.m_x << " " << contourBegin->m_position.m_y << " " << contourBegin->m_position.m_z;
+        orgContour.close();
+        
+        }
+
+	 /* End Tesselation */
+	 gluTessEndPolygon(tesselator);
+     tesselatedContours++;
 }
 
 template<typename VertexT, typename NormalT>
@@ -627,7 +804,7 @@ void HalfEdgeMesh<VertexT, NormalT>::regressionPlane(int region)
 	for(int i=0; i<m_faces.size(); i++)
 		if(m_faces[i]->m_region == region) planeFaces.push_back(m_faces[i]);
 
-//	srand ( time(NULL) );
+//	srand ( time(NULL) ); //TODO: uncomment
 
 	VertexT point1;
 	VertexT point2;
@@ -1012,12 +1189,197 @@ vector<stack<HalfEdgeVertex<VertexT, NormalT>* > > HalfEdgeMesh<VertexT, NormalT
 {
 	vector<stack<HalfEdgeVertex<VertexT, NormalT>* > > contours;
 	for(int i=0; i<m_faces.size(); i++){
-		if (m_faces[i]->m_region < 0)
+		if (m_faces[i]->m_region == -53)
 			for (int j = 0; j<3; j++)
 				if ((*m_faces[i])[j]->used == false && ((*m_faces[i])[j]->pair->face == 0 || (*m_faces[i])[j]->pair->face->m_region != m_faces[i]->m_region))
 					contours.push_back(getContour((*m_faces[i])[j], epsilon));
 	}
 	return  contours;
+}
+
+
+template<typename VertexT, typename NormalT>
+void HalfEdgeMesh<VertexT, NormalT>::finalize_and_retesselate()
+{
+
+    vector<float> vBuff;
+    vector<float> nBuff;
+    vector<float> cBuff;
+    vector<int>   iBuff;
+    
+    vector<stack<HalfEdgeVertex<VertexT, NormalT>* > > contours = findAllContours(0.1);
+    vector<vector<HalfEdgeVertex<VertexT, NormalT> > > tesselatedTriangles;
+    //for(int i=0; i<contours.size(); ++i)
+    //{
+        //if(contours[i].size() >= 3)
+        //{
+            tesselate(contours);
+            vector<HalfEdgeVertex<VertexT, NormalT> > tp;
+            for(int k=0; k<tessTriangles.size(); ++k)
+            {
+                HalfEdgeVertex<VertexT, NormalT> v;
+                v.m_position[0] = tessTriangles[k].m_x;
+                v.m_position[1] = tessTriangles[k].m_y;
+                v.m_position[2] = tessTriangles[k].m_z;
+                tp.push_back(v);
+            }
+            tesselatedTriangles.push_back(tp);
+            tessTriangles.clear();
+        //} 
+        //else
+        //    cerr << "Something is definitly wrong! Region with contoursize < 3?! Noooo freaking way!" << endl;
+    //}
+
+    tessTriangles.clear();
+    contours.clear();
+    
+    boost::unordered_map<HalfEdgeVertex<VertexT, NormalT>*, int> index_map;
+    int usedVertices=0; 
+    int usedFaces = 0;
+    typename vector<HalfEdgeFace<VertexT, NormalT>*>::iterator face_iter = m_faces.begin();
+	typename vector<HalfEdgeFace<VertexT, NormalT>*>::iterator face_end  = m_faces.end();
+
+   
+    // as long as we havent seen all faces or all retesselated contour we still need
+    // to add some objects to the vertices and face and normal buffer!
+    while(face_iter != face_end)
+    {
+        if((*face_iter)->m_region >= 0 )
+        {  
+        // get the vertices for this specific triangle
+        HVertex *v1 = (*(*face_iter))(0);
+        HVertex *v2 = (*(*face_iter))(1);
+        HVertex *v3 = (*(*face_iter))(2);
+
+        // see if we already used one of those vertices
+        int indexV1, indexV2, indexV3;
+        indexV1 = indexV2 = indexV3 = 0;
+        int surface_class;
+
+        surface_class = (*face_iter)->m_region; 
+
+        //vertex1
+        if(index_map.find(v1) != index_map.end())
+        {
+            indexV1 = index_map.at(v1);
+        } else {
+            index_map[v1] = usedVertices;
+            indexV1 = usedVertices;
+            usedVertices++;
+            vBuff.push_back(v1->m_position[0]);
+            vBuff.push_back(v1->m_position[1]);
+            vBuff.push_back(v1->m_position[2]);
+            nBuff.push_back(v1->m_normal[0]);
+            nBuff.push_back(v1->m_normal[1]);
+            nBuff.push_back(v1->m_normal[2]);
+
+            cBuff.push_back( fabs(cos(surface_class)));
+            cBuff.push_back( fabs(cos(surface_class*30)));
+            cBuff.push_back( fabs(cos(surface_class*2)));
+        }
+        iBuff.push_back(indexV1);
+        
+        //vertex2
+        if(index_map.find(v2) != index_map.end())
+        {
+            indexV2 = index_map.at(v2);
+        } else {
+            index_map[v2] = usedVertices;
+            indexV2 = usedVertices;
+            usedVertices++;
+            vBuff.push_back(v2->m_position[0]);
+            vBuff.push_back(v2->m_position[1]);
+            vBuff.push_back(v2->m_position[2]);
+            nBuff.push_back(v2->m_normal[0]);
+            nBuff.push_back(v2->m_normal[1]);
+            nBuff.push_back(v2->m_normal[2]);
+            cBuff.push_back( fabs(cos(surface_class)));
+            cBuff.push_back( fabs(cos(surface_class*30)));
+            cBuff.push_back( fabs(cos(surface_class*2)));
+        }
+        iBuff.push_back(indexV2);
+
+        //vertex3
+        if(index_map.find(v3) != index_map.end())
+        {
+            indexV3 = index_map.at(v3);
+        } else {
+            index_map[v3] = usedVertices;
+            indexV3 = usedVertices;
+            usedVertices++;
+            vBuff.push_back(v3->m_position[0]);
+            vBuff.push_back(v3->m_position[1]);
+            vBuff.push_back(v3->m_position[2]);
+            nBuff.push_back(v3->m_normal[0]);
+            nBuff.push_back(v3->m_normal[1]);
+            nBuff.push_back(v3->m_normal[2]);
+            cBuff.push_back( fabs(cos(surface_class)));
+            cBuff.push_back( fabs(cos(surface_class*30)));
+            cBuff.push_back( fabs(cos(surface_class*2)));
+        }
+        iBuff.push_back(indexV3);
+        usedFaces++;
+        }
+        face_iter++;
+    }
+
+    cout << "tessTri.size(): " << tesselatedTriangles.size() << endl;
+    typename vector<vector<HalfEdgeVertex<VertexT, NormalT> > >::iterator contour_iter = tesselatedTriangles.begin();
+    typename vector<vector<HalfEdgeVertex<VertexT, NormalT> > >::iterator contour_end  = tesselatedTriangles.end();
+    set<HalfEdgeVertex<VertexT, NormalT> > usedVert;
+    int uV=iBuff.size();
+    while(contour_iter != contour_end)
+    {
+        typename vector<HalfEdgeVertex<VertexT, NormalT> >::iterator triangle_iter =  contour_iter->begin();
+        typename vector<HalfEdgeVertex<VertexT, NormalT> >::iterator triangle_end  =  contour_iter->end();
+        int nm=0;
+        while(triangle_iter != triangle_end)
+        {
+            HVertex current = *triangle_iter;
+            int surface_class=4;
+            vBuff.push_back(current.m_position[0]);
+            vBuff.push_back(current.m_position[1]);
+            vBuff.push_back(current.m_position[2]);
+            nBuff.push_back(current.m_normal[0]);
+            nBuff.push_back(current.m_normal[1]);
+            nBuff.push_back(current.m_normal[2]);
+            cBuff.push_back(fabs(cos(surface_class)));
+            cBuff.push_back(fabs(cos(surface_class*30)));
+            cBuff.push_back(fabs(cos(surface_class*2)));
+            iBuff.push_back(usedVertices);
+            usedVertices++;
+            nm++;
+            triangle_iter++;
+            if(nm % 3 == 0)
+            {
+                usedFaces++;
+            }
+        }
+        contour_iter++;
+    }
+
+	this->m_nVertices 		= (uint32_t)vBuff.size()/3;
+	this->m_nFaces 			= (uint32_t)usedFaces;
+	this->m_vertexBuffer 	= new float[(uint32_t)vBuff.size()];
+	this->m_normalBuffer 	= new float[(uint32_t)vBuff.size()];
+	this->m_colorBuffer 	= new float[(uint32_t)vBuff.size()];
+	this->m_indexBuffer 	= new unsigned int[3 * (uint32_t)iBuff.size()];
+    for(int i=0; i<vBuff.size(); ++i)
+    {
+        this->m_vertexBuffer[i] = vBuff[i];
+        this->m_normalBuffer[i] = nBuff[i];
+        this->m_colorBuffer[i]=   cBuff[i];
+    }
+    
+    for(int i=0; i<iBuff.size(); ++i)
+    {
+        this->m_indexBuffer[i] = iBuff[i];
+    }
+    cout << "iBuffSize:" << iBuff.size() << endl;
+    cout << "vBuffSize:" << vBuff.size() << endl;
+    cout << "Used Faces: "<<usedFaces <<  endl;
+    cout << "mNVert: " << this->m_nVertices<<endl;
+	this->m_finalized = true;
 }
 
 template<typename VertexT, typename NormalT>
@@ -1035,7 +1397,7 @@ void HalfEdgeMesh<VertexT, NormalT>::tester()
 		for(int k=0; k<3; k++)
 			(*m_faces[i])[k]->used=false;
 
-	vector<stack<HalfEdgeVertex<VertexT, NormalT>* > > contours = findAllContours(0.1);
+/*	vector<stack<HalfEdgeVertex<VertexT, NormalT>* > > contours = findAllContours(0.1);
 	fstream filestr;
 	filestr.open ("contours.pts", fstream::out);
 	filestr<<"#X Y Z"<<endl;
@@ -1057,9 +1419,14 @@ void HalfEdgeMesh<VertexT, NormalT>::tester()
 
 	}
 	filestr.close();
-
+*/	
+    //Reset all used variables
 	for(int i=0; i<m_faces.size(); i++)
-		m_faces[i]->m_region=0;
+		for(int k=0; k<3; k++)
+			(*m_faces[i])[k]->used=false;
+
+//	for(int i=0; i<m_faces.size(); i++)
+//		m_faces[i]->m_region=0;
 }
 
 template<typename VertexT, typename NormalT>
@@ -1498,7 +1865,7 @@ void HalfEdgeMesh<VertexT, NormalT>::finalize()
 //			centroid.z = centroid.z / (3 * count);
 //
 //			//cout << mean_normal << " " << centroid << endl;
-//
+//n
 //			// Shift all effected vertices into the calculated
 //			// plane
 //			for(size_t i = 0; i < count; i++)
@@ -1554,7 +1921,7 @@ void HalfEdgeMesh<VertexT, NormalT>::finalize()
 //void HalfEdgeMesh::check_next_neighbor(HalfEdgeFace* f0,
 //		                               HalfEdgeFace* face,
 //		                               HalfEdge* edge,
-//		                               vector<HalfEdgeFace*> &faces){
+//		                               vector<HalfEdgeFace*> /&faces){
 //
 //	face->used = true;
 //	faces.push_back(face);

@@ -145,7 +145,7 @@ int main(int argc, char** argv)
     if(options.getIntersections() > 0)
     {
         resolution = options.getIntersections();
-        useVoxelsize = false;
+        useVoxelsize = true;
     }
     else
     {
@@ -160,7 +160,8 @@ int main(int argc, char** argv)
     mesh.tester();
 
     // Save triangle mesh
-    mesh.finalize();
+    mesh.finalize_and_retesselate();
+    //mesh.finalize();
     mesh.save("triangle_mesh.ply");
 
 
