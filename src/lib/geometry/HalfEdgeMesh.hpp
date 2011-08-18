@@ -9,6 +9,7 @@
 #define HALFEDGEMESH_H_
 
 #include <boost/unordered_map.hpp>
+#include <boost/unordered_set.hpp>
 
 #include <vector>
 #include <stack>
@@ -18,6 +19,9 @@
 #include <float.h>
 #include <math.h>
 #include <omp.h>
+
+#include <glu.h>
+#include <glut.h>
 
 using namespace std;
 
@@ -252,6 +256,15 @@ public:
 	 * @return 	a list of all contours
 	 */
 	virtual vector<stack<HVertex*> > findAllContours(float epsilon);
+	
+    virtual void tester();
+
+    /**
+     * @brief   Takes a list of vertices as the border of a polygon
+     *          and returns a triangle tesselation
+     */
+    void tesselate(vector<stack<HVertex*> > vectorBorderPoints);
+
 
 	/**
 	 * @brief 	Finalizes a mesh, i.e. converts the template based buffers
@@ -259,20 +272,27 @@ public:
 	 */
 	virtual void finalize();
 
-	virtual void tester();
-private:
+    /**
+	 * @brief 	Finalizes a mesh, i.e. converts the template based buffers
+	 * 			to OpenGL compatible buffers
+	 */
+	virtual void finalize_and_retesselate();
 
+private:
 	/// The faces in the half edge mesh
 	vector<HalfEdgeFace<VertexT, NormalT>*>    m_faces;
-
-	/// The vertices of the mesh
-	vector<HalfEdgeVertex<VertexT, NormalT>*> m_vertices;
 
 	/// The regions in the half edge mesh represented by a single face
 	vector<HalfEdgeFace<VertexT, NormalT>*>    m_regions;
 
+	/// The vertices of the mesh
+	vector<HalfEdgeVertex<VertexT, NormalT>*> m_vertices;
+
 	/// The indexed of the newest inserted vertex
 	int 					 m_globalIndex;
+
+    /// Give information about the function optimizePlane(int) if it ran before.
+    bool m_planesOptimized;
 
 	void printStats();
 
