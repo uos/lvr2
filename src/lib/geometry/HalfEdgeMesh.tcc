@@ -591,7 +591,8 @@ void HalfEdgeMesh<VertexT, NormalT>::optimizePlanes(
         )
 {
     cout << timestamp << "Starting plane optimization with threshold " << angle << endl;
-    // Magic numbers
+
+   // Magic numbers
     int default_region_threshold = (int)10*log(m_faces.size());
 
 	// Regions that will be deleted due to size
