@@ -6,6 +6,7 @@
  */
 
 #include "PointCloud.h"
+#include "../io/AsciiIO.hpp"
 
 #include <string.h>
 
@@ -15,57 +16,89 @@ PointCloud::PointCloud()
 
 PointCloud::PointCloud(string filename) : Renderable(filename) {
 
-    ifstream in(filename.c_str());
+//    ifstream in(filename.c_str());
+//
+     m_boundingBox = new BoundingBox;
+//
+//    if ( !in.good() ) {
+//        cout << "##### Error: Could not open file " << filename << "." << endl;
+//        return;
+//    }
+//
+//    /* Get number of data fields to ignore */
+//    int number_of_dummys = getFieldsPerLine(filename) - 3;
+//    int c = 0;
+//
+//	 /* Use last three elements as color informations */
+//	 int read_color = ( number_of_dummys >= 3 );
+//
+//	 if ( read_color ) {
+//		 number_of_dummys -= 3;
+//	 }
+//
+//    //Point coordinates
+//    float x, y, z, dummy;
+//	unsigned int r, g, b;
+//
+//    // Read file
+//    while ( in.good() ) {
+//		 /* Read y, x, z from first three values. */
+//    	in >> x >> y >> z;
+//
+//		/* Ignore reflection, … */
+//    	for ( int i = 0; i < number_of_dummys; i++ ) {
+//    		in >> dummy;
+//    	}
+//
+//		/* Read colors from last three values. */
+//		if ( read_color ) {
+//			in >> r >> g >> b;
+//			ColorVertex v( x, y, -z, (uchar) r, (uchar) g, (uchar) b );
+//			m_boundingBox->expand( v );
+//			points.push_back( v );
+//		} else {
+//			m_boundingBox->expand( x, y, -z );
+//			points.push_back( ColorVertex( x, y, -z ) );
+//		}
+//
+//    	if ( ++c % 100000 == 0 ) {
+//			cout << "##### Reading Points... " << c << endl;
+//		}
+//    }
+//
+//    cout << "Loaded Points: " << points.size() << endl;
 
-    m_boundingBox = new BoundingBox;
+    lssr::AsciiIO io;
+    io.read(filename);
 
-    if ( !in.good() ) {
-        cout << "##### Error: Could not open file " << filename << "." << endl;
-        return;
+    float** p = io.getPointArray();
+    size_t n = io.getNumPoints();
+    unsigned char** c = io.getPointColorArray();
+
+    for(size_t i = 0; i < n; i++)
+    {
+        float x = p[i][0];
+        float y = p[i][1];
+        float z = -p[i][2];
+
+        unsigned char r, g, b;
+
+        if(c)
+        {
+            r = c[i][0];
+            g = c[i][1];
+            b = c[i][2];
+        }
+        else
+        {
+            r = 0;
+            g = 200;
+            b = 0;
+        }
+
+        m_boundingBox->expand(x, y, z);
+        points.push_back(ColorVertex(x, y, z, r, g, b));
     }
-
-    /* Get number of data fields to ignore */
-    int number_of_dummys = getFieldsPerLine(filename) - 3;
-    int c = 0;
-
-	 /* Use last three elements as color informations */
-	 int read_color = ( number_of_dummys >= 3 );
-	 
-	 if ( read_color ) {
-		 number_of_dummys -= 3;
-	 }
-
-    //Point coordinates
-    float x, y, z, dummy;
-	unsigned int r, g, b;
-
-    // Read file
-    while ( in.good() ) {
-		 /* Read y, x, z from first three values. */
-    	in >> x >> y >> z;
-
-		/* Ignore reflection, … */
-    	for ( int i = 0; i < number_of_dummys; i++ ) {
-    		in >> dummy;
-    	}
-		
-		/* Read colors from last three values. */
-		if ( read_color ) {
-			in >> r >> g >> b;
-			ColorVertex v( x, y, -z, (uchar) r, (uchar) g, (uchar) b );
-			m_boundingBox->expand( v );
-			points.push_back( v );
-		} else {
-			m_boundingBox->expand( x, y, -z );
-			points.push_back( ColorVertex( x, y, -z ) );
-		}
-
-    	if ( ++c % 100000 == 0 ) {
-			cout << "##### Reading Points... " << c << endl;
-		}
-    }
-
-    cout << "Loaded Points: " << points.size() << endl;
 
     updateDisplayLists();
 }
@@ -85,10 +118,11 @@ void PointCloud::updateDisplayLists(){
 
     for(size_t i = 0; i < points.size(); i++)
     {
-        glColor3f( ( (float) points[i].r ) / 255,
-                   ( (float) points[i].g ) / 255,
-                   ( (float) points[i].b ) / 255 );
+        float r = points[i].r / 255.0;
+        float g = points[i].g / 255.0;
+        float b = points[i].b / 255.0;
 
+        glColor3f(r, g, b);
         glVertex3f(points[i].x,
                    points[i].y,
                    points[i].z);

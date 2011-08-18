@@ -10,24 +10,32 @@
 
 #include <list>
 #include <vector>
+#include <string>
+#include <iomanip>
+#include <iostream>
+#include <cmath>
+#include <fstream>
+#include <sstream>
+
 using std::list;
 using std::vector;
 using std::ifstream;
+using std::stringstream;
 
 #include <boost/filesystem.hpp>
 //using namespace boost::filesystem;
 
-#include "../geometry/Vertex.hpp"
-#include "../geometry/Matrix4.hpp"
+
 #include "Progress.hpp"
 #include "Timestamp.hpp"
 
 namespace lssr
 {
 
-template<typename T>
-T** UosIO<T>::read(string dir, size_t &n)
+
+void UosIO::read(string dir)
 {
+    size_t n = 0;
     boost::filesystem::path directory(dir);
     if(is_directory(directory))
     {
@@ -65,9 +73,23 @@ T** UosIO<T>::read(string dir, size_t &n)
         // read new format.
         if(n3dFiles > 0)
         {
+            // Check for user scan ranges
+            if(m_firstScan > -1 && m_firstScan <= lastScan)
+            {
+                firstScan = m_firstScan;
+            }
+
+            if(m_lastScan >= -1 && m_lastScan <= lastScan && m_lastScan >= firstScan)
+            {
+                lastScan = m_lastScan;
+            }
+
+            m_firstScan = firstScan;
+            m_lastScan = lastScan;
+
             cout << timestamp << "Reading " << n3dFiles << " scans in UOS format "
                  << "(From " << firstScan << " to " << lastScan << ")." << endl;
-            return readNewFormat(dir, firstScan, lastScan, n);
+            readNewFormat(dir, firstScan, lastScan, n);
         }
         else
         {
@@ -95,13 +117,27 @@ T** UosIO<T>::read(string dir, size_t &n)
             // Check is dirs were found and try to read old format
             if(nDirs)
             {
+                // Check for user scan ranges
+                if(m_firstScan > -1 && m_firstScan <= lastScan)
+                {
+                    firstScan = m_firstScan;
+                }
+
+                if(m_lastScan >= -1 && m_lastScan <= lastScan && m_lastScan >= firstScan)
+                {
+                    lastScan = m_lastScan;
+                }
+
+                m_firstScan = firstScan;
+                m_lastScan = lastScan;
+
                 cout << timestamp << "Reading " << nDirs << " scans in old UOS format "
                      << "(From " << firstScan << " to " << lastScan << ")." << endl;
-                return readOldFormat(dir, firstScan, lastScan, n);
+                readOldFormat(dir, firstScan, lastScan, n);
             }
             else
             {
-                return 0;
+                return;
             }
         }
 
@@ -112,10 +148,33 @@ T** UosIO<T>::read(string dir, size_t &n)
     }
 }
 
-template<typename T>
-T** UosIO<T>::readNewFormat(string dir, int first, int last, size_t &n)
+
+void UosIO::reduce(string dir, string target, int reduction)
+{
+    // Open output stream
+    m_outputFile.open(target.c_str());
+    if(!m_outputFile.good())
+    {
+        cout << timestamp << "UOSReader: " << dir << " unable to open " << target << " for writing." << endl;
+        return;
+    }
+
+    // Set needed flags for inout code
+    m_reduction = reduction;
+    m_saveToDisk = true;
+    size_t n;
+
+    // Read data and write reduced points
+    read(dir);
+}
+
+
+void UosIO::readNewFormat(string dir, int first, int last, size_t &n)
 {
     list<Vertex<float> > allPoints;
+    list<Vertex<int> > allColors;
+
+    size_t point_counter = 0;
 
     for(int fileCounter = first; fileCounter <= last; fileCounter++)
     {
@@ -130,6 +189,23 @@ T** UosIO<T>::readNewFormat(string dir, int first, int last, size_t &n)
 				  boost::filesystem::path(dir) / 
 				  boost::filesystem::path( "scan" + to_string( fileCounter, 3 ) + ".3d" ) );
         string scanFileName = "/" + scan_path.relative_path().string();
+
+        // Count lines in scan
+        size_t points_in_file = AsciiIO::countLines(scanFileName);
+
+        int num_attributes = AsciiIO::getEntriesInLine(scanFileName) - 3;
+        bool has_color = (num_attributes == 3) || (num_attributes == 4);
+        bool has_intensity = (num_attributes == 1) || (num_attributes == 4);
+
+        if(has_color)
+        {
+            cout << timestamp << "Reading color information." << endl;
+        }
+
+        if(has_intensity)
+        {
+            cout << timestamp << "Reading intensity information." << endl;
+        }
 
         // Read scan data
         scan_in.open(scanFileName.c_str());
@@ -197,59 +273,167 @@ T** UosIO<T>::readNewFormat(string dir, int first, int last, size_t &n)
             char dummy[1024];
             scan_in.getline(dummy, 1024);
 
+            // Setup info output
+            string comment = timestamp.getElapsedTime() + "Reading file " + scanFileName;
+            ProgressBar progress(points_in_file, comment);
+
             // Read all points
             while(scan_in.good())
             {
-                /// TODO: Check for intensity and/or color values in file
-                float x, y, z;
-                scan_in >> x >> y >> z;
+                float x, y, z, rem, dummy;
+                int r, g, b;
+
+                point_counter ++;
+
+                if(has_intensity && !has_color)
+                {
+                    scan_in >> x >> y >> z >> rem;
+                }
+                else if(has_intensity && has_color)
+                {
+                    scan_in >> x >> y >> z >> rem >> r >> g >> b;
+                    allColors.push_back(Vertex<int> (r, g, b));
+                }
+                else if(has_color && !has_intensity)
+                {
+                    scan_in >> x >> y >> z >> r >> g >> b;
+                    allColors.push_back(Vertex<int> (r, g, b));
+                }
+                else
+                {
+                    scan_in >> x >> y >> z;
+                    for(int n_dummys = 0; n_dummys < num_attributes; n_dummys++) scan_in >> dummy;
+                }
 
                 Vertex<float> point(x, y, z);
-                tmp_points.push_back(point);
+                Vertex<unsigned char> color;
+
+                // Code branching for point converter!
+                if(!m_saveToDisk)
+                {
+                    tmp_points.push_back(point);
+                }
+                else
+                {
+                    if(m_outputFile.good())
+                    {
+                        if(point_counter % m_reduction == 0)
+                        {
+                            point.transform(tf);
+                            m_outputFile << point[0] << " " << point[1] << " " << point[2] << " ";
+
+                            // Save remission values if present
+                            if(has_intensity)
+                            {
+                                m_outputFile << rem << " ";
+                            }
+
+                            // Save color values if present
+                            if(has_color)
+                            {
+                                m_outputFile << r << " " << g << " " << b;
+                            }
+                            m_outputFile << endl;
+                        }
+                    }
+                }
+                ++progress;
+            }
+
+            // Save index of first point of new scan
+            size_t firstIndex;
+            if(allPoints.size() > 0)
+            {
+                firstIndex = allPoints.size();
+            }
+            else
+            {
+                firstIndex = 0;
             }
 
             // Transform scan point with current matrix
-            list<Vertex<float> >::iterator it;
+            list<Vertex<float> >::iterator it, it1;
             for(it = tmp_points.begin(); it != tmp_points.end(); it++)
             {
                 Vertex<float> v = *it;
                 v.transform(tf);
                 allPoints.push_back(v);
             }
-        }
 
+            // Save last index
+            size_t lastIndex;
+            if(allPoints.size() > 0)
+            {
+                lastIndex = allPoints.size() - 1;
+            }
+            else
+            {
+                lastIndex = 0;
+            }
+
+            // Save index pair for current scan
+            m_scanRanges.push_back(make_pair(firstIndex, lastIndex));
+            m_numScans++;
+        }
+        cout << endl;
     }
 
     // Convert into indexed array
     if(allPoints.size() > 0)
     {
         cout << timestamp << "UOS Reader: Read " << allPoints.size() << " points." << endl;
+
+        // Save position information
         n = allPoints.size();
-        T** out_pts = new T*[allPoints.size()];
+        m_points = new float*[allPoints.size()];
         list<Vertex<float> >::iterator p_it;
         int i = 0;
         for(p_it = allPoints.begin(); p_it != allPoints.end(); p_it++)
         {
-            out_pts[i] = new T[3];
+            m_points[i] = new float[3];
             Vertex<float> v = *p_it;
-            out_pts[i][0] = v[0];
-            out_pts[i][1] = v[1];
-            out_pts[i][2] = v[2];
+            m_points[i][0] = v[0];
+            m_points[i][1] = v[1];
+            m_points[i][2] = v[2];
             i++;
         }
-        return out_pts;
-    }
-    else
-    {
-        // If everything else failed return a null pointer
-        n = 0;
-        return 0;
+        m_numPoints = allPoints.size();
+
+        // Save color information
+        if(allColors.size() > 0)
+        {
+            m_pointColors = new unsigned char*[m_numPoints];
+            i = 0;
+            list<Vertex<int> >::iterator c_it;
+            for(c_it = allColors.begin(); c_it != allColors.end(); c_it++)
+            {
+                m_pointColors[i] = new unsigned char[3];
+                Vertex<int> v = *c_it;
+                m_pointColors[i][0] = (unsigned char) v[0];
+                m_pointColors[i][1] = (unsigned char) v[1];
+                m_pointColors[i][2] = (unsigned char) v[2];
+                i++;
+            }
+        }
+
     }
 
 }
 
-template<typename T>
-T** UosIO<T>::readOldFormat(string dir, int first, int last, size_t &n)
+indexPair UosIO::getScanRange(int num)
+{
+    if(num < m_scanRanges.size())
+    {
+        return m_scanRanges[num];
+    }
+    else
+    {
+        return make_pair(0,0);
+    }
+}
+
+
+void UosIO::readOldFormat(string dir, int first, int last, size_t &n)
 {
     Matrix4<float> m_tf;
 
@@ -420,32 +604,23 @@ T** UosIO<T>::readOldFormat(string dir, int first, int last, size_t &n)
     {
         cout << timestamp << "UOS Reader: Read " << allPoints.size() << " points." << endl;
         n = allPoints.size();
-        T** out_pts = new T*[allPoints.size()];
+        m_points = new float*[allPoints.size()];
         list<Vertex<float> >::iterator p_it;
         int i = 0;
         for(p_it = allPoints.begin(); p_it != allPoints.end(); p_it++)
         {
-            out_pts[i] = new T[3];
+            m_points[i] = new float[3];
             Vertex<float> v = *p_it;
-            out_pts[i][0] = v[0];
-            out_pts[i][1] = v[1];
-            out_pts[i][2] = v[2];
+            m_points[i][0] = v[0];
+            m_points[i][1] = v[1];
+            m_points[i][2] = v[2];
             i++;
         }
-        return out_pts;
+        m_numPoints = allPoints.size();
     }
-    else
-    {
-        // If everything else failed return a null pointer
-        n = 0;
-        return 0;
-    }
-
-
 }
 
-template<typename T>
-Matrix4<float> UosIO<T>::parseFrameFile(ifstream& frameFile)
+Matrix4<float> UosIO::parseFrameFile(ifstream& frameFile)
 {
     float m[16], color;
     while(frameFile.good())

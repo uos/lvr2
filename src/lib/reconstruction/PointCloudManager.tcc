@@ -53,7 +53,10 @@ void PointCloudManager<VertexT, NormalT>::readFromFile(string filename)
 
     if(extension == ".pts" || extension == ".3d" || extension == ".xyz" || extension == ".txt")
     {
-        this->m_points = AsciiIO<float>::read(filename, this->m_numPoints);
+        AsciiIO asciiIO;
+        asciiIO.read(filename);
+        this->m_points = asciiIO.getPointArray();
+        this->m_numPoints = asciiIO.getNumPoints();
         this->m_normals = 0;
         this->m_colors = 0;
     }
@@ -62,16 +65,19 @@ void PointCloudManager<VertexT, NormalT>::readFromFile(string filename)
         // Read given input file
         PLYIO plyio;
         plyio.read(filename);
+
         this->m_points =  plyio.getIndexedVertexArray(this->m_numPoints);
         this->m_normals = plyio.getIndexedNormalArray(this->m_numPoints);
         this->m_colors = 0;
     }
     else if(extension == "")
     {
-        UosIO<float> uosio;
-        this->m_points = uosio.read(filename, this->m_numPoints);
-        this->m_normals = 0;
-        this->m_colors = 0;
+        UosIO uosio;
+        uosio.read(filename);
+        this->m_points = uosio.getPointArray();
+        this->m_numPoints = uosio.getNumPoints();
+        this->m_normals = uosio.getPointNormalArray();
+        this->m_colors = uosio.getPointColorArray();
     }
 }
 

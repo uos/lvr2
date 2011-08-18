@@ -14,4 +14,5 @@ target_link_libraries(reconstruct ${Boost_FILESYSTEM_LIBRARY}
 target_link_libraries(reconstruct model3d)
 target_link_libraries(reconstruct ${OPENGL_LIBRARY})
 target_link_libraries(reconstruct ${OpenMP_CXX_FLAGS})
+target_link_libraries(reconstruct ${PCL_LIBRARIES})
 

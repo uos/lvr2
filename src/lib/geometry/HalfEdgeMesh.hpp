@@ -29,6 +29,7 @@ using namespace std;
 #include "HalfEdgeFace.hpp"
 
 //#include "HalfEdgePolygon.h"
+#include "../io/Progress.hpp"
 
 namespace lssr
 {
@@ -179,7 +180,7 @@ public:
 	 *
 	 * @param iterations	The number of iterations to use
 	 */
-	virtual void optimizePlanes(int iterations);
+	virtual void optimizePlanes(int iterations, float normalThreshold, int minRegionSize = 50, int smallRegionSize = 0);
 
 	/**
 	 * @brief	Calculates a regression plane for the given region and projects all
@@ -273,60 +274,22 @@ public:
 	virtual void finalize();
 
 
+	void enableRegionColoring() { m_colorRegions = true;}
 private:
 
 	/// The faces in the half edge mesh
-	vector<HalfEdgeFace<VertexT, NormalT>*>    m_faces;
+	vector<HalfEdgeFace<VertexT, NormalT>*>     m_faces;
 
 	/// The vertices of the mesh
-	vector<HalfEdgeVertex<VertexT, NormalT>*> m_vertices;
+	vector<HalfEdgeVertex<VertexT, NormalT>*>   m_vertices;
 
 	/// The regions in the half edge mesh represented by a single face
-	vector<HalfEdgeFace<VertexT, NormalT>*>    m_regions;
+	vector<HalfEdgeFace<VertexT, NormalT>*>     m_regions;
 
 	/// The indexed of the newest inserted vertex
-	int 					 m_globalIndex;
+	int 	                                    m_globalIndex;
 
-	void printStats();
-
-//	void check_next_neighbor(HalfEdgeFace* f0,
-//							 HalfEdgeFace* face,
-//							 HalfEdge* edge,
-//							 HalfEdgePolygon*);
-//
-//	void check_next_neighbor(HalfEdgeFace* f0,
-//			                 HalfEdgeFace* face,
-//			                 HalfEdge* edge,
-//			                 vector<HalfEdgeFace*>& faces);
-
-//	void extract_borders();
-//	void generate_polygons();
-
-//	void getArea(set<HalfEdgeFace*> &faces, HalfEdgeFace* face, int depth, int max);
-//	void shiftIntoPlane(HalfEdgeFace* f);
-
-//	bool check_face(HalfEdgeFace* f0, HalfEdgeFace* current);
-//	bool isFlatFace(HalfEdgeFace* face);
-
-//	int classifyFace(HalfEdgeFace* f);
-//
-//	void create_polygon(vector<int> &polygon,
-//						hash_map< unsigned int, HalfEdge* >* edges);
-
-//	void cluster(vector<planarCluster> &planes);
-//	void optimizeClusters(vector<planarCluster> &clusters);
-//
-//	void classifyCluster(vector<planarCluster> &panes, list<list<planarCluster> > &objectCandidates);
-//	void findNextClusterInRange(int s, vector<planarCluster> &clusters,
-//	        planarCluster &start,
-//	        list<planarCluster> &clustercluster,
-//	        vector<bool> &markers);
-//
-//	virtual void finalize(vector<planarCluster> &planes);
-//	virtual void finalize(list<list<planarCluster> > &objects);
-
-private:
-
+	bool                                        m_colorRegions;
 	/**
 	 * @brief   Returns an edge that point to the edge defined
 	 *          by the given vertices.
@@ -338,12 +301,7 @@ private:
 	 */
 	HEdge* halfEdgeToVertex(HVertex* v, HVertex* next);
 
-//	int biggest_size;
-//	HalfEdgePolygon* biggest_polygon;
-//
-//	float  current_d;
-//	Normal current_n;
-//	Vertex current_v;
+
 
 };
 

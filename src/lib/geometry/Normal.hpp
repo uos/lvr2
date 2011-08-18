@@ -56,9 +56,9 @@ public:
 	template<typename T>
 	Normal(const Normal &other)
 	{
-		this.m_x = other.m_x;
-		this.m_y = other.m_y;
-		this.m_z = other.m_z;
+		this.x = other.x;
+		this.y = other.y;
+		this.z = other.z;
 	}
 
 	virtual ~Normal(){};
@@ -70,12 +70,12 @@ public:
 
 	Normal<CoordType> operator+(const Normal &n) const
 	{
-	    return Normal<CoordType>(this->m_x + n.m_x, this->m_y + n.m_y, this->m_z + n.m_z);
+	    return Normal<CoordType>(this->x + n.x, this->y + n.y, this->z + n.z);
 	}
 
 	virtual Normal<CoordType> operator-(const Normal &n) const
 	{
-		return Normal<CoordType>(this->m_x - n.m_x, this->m_y - n.m_y, this->m_z - n.m_z);
+		return Normal<CoordType>(this->x - n.x, this->y - n.y, this->z - n.z);
 	}
 
 	void operator+=(const Normal &n)
@@ -97,7 +97,7 @@ typedef Normal<double> Normald;
 template<typename T>
 inline ostream& operator<<(ostream& os, const Normal<T> &n)
 {
-	os << "Normal: " << n.m_x << " " << n.m_y << " " << n.m_z << endl;
+	os << "Normal: " << n.x << " " << n.y << " " << n.z << endl;
 	return os;
 }
 

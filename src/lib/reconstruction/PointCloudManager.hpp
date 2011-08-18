@@ -29,6 +29,8 @@ template<typename VertexT, typename NormalT>
 class PointCloudManager
 {
 public:
+
+
 	/**
 	 * @brief Returns the k closest neighbor vertices to a given query point
 	 *
@@ -74,6 +76,14 @@ public:
 
 	virtual float distance(VertexT v) = 0;
 
+	void setKD(int kd) {m_kd = kd;}
+
+	void setKI(int ki) {m_ki = ki;}
+
+	void setKN(int kn) {m_kn = kn;}
+
+	virtual void calcNormals() = 0;
+
 protected:
 
 	/**
@@ -91,12 +101,21 @@ protected:
     float**                  	m_normals;
 
     /// Color information for points
-    float**                     m_colors;
+    unsigned char**             m_colors;
 
     /// The bounding box of the point set
     BoundingBox<VertexT>        m_boundingBox;
 
     size_t                      m_numPoints;
+
+    /// The number of neighbors used for initial normal estimation
+    int                         m_kn;
+
+    /// The number of neighbors used for normal interpolation
+    int                         m_ki;
+
+    /// The number of tangent planes used for distance determination
+    int                         m_kd;
 };
 
 } // namespace lssr

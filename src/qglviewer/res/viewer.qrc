@@ -1,15 +1,13 @@
 <!DOCTYPE RCC><RCC version="1.0">
 <qresource>
-	<file>down.png</file>
-	<file>up.png</file>
-	<file>left.png</file>
-	<file>right.png</file>
-	<file>player.png</file>
-	<file>folder_add.png</file>
-	<file>page_white_camera.png</file>
-	<file>contrast.png</file>
-	<file>contrast_decrease.png</file>
-	<file>contrast_increase.png</file>
-	<file>world.png</file>
+	<file>qv_fog.png</file>
+	<file>qv_fogsettings.png</file>
+	<file>qv_import.png</file>
+	<file>qv_points.png</file>
+	<file>qv_screenshot.png</file>
+	<file>qv_showall.png</file>
+	<file>qv_surfaces.png</file>
+	<file>qv_vertices.png</file>
+	<file>qv_wireframe.png</file>
 </qresource>
 </RCC>
