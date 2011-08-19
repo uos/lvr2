@@ -32,6 +32,13 @@ public:
 	typedef HalfEdge<HVertex, HFace> HEdge;
 
 	/**
+	 * @brief constructor.
+	 *
+	 * @param 	region_number 	the number of the region
+	 */
+		Region(int region_number);
+
+	/**
 	 * @brief Adds a face to the region.
 	 *
 	 * @param	f	the face to add
@@ -68,10 +75,11 @@ public:
 	/// Indicates if the region was dragged into a regression plane
 	bool m_inPlane;
 
-//private:
 	/// The faces in the region
 	vector<HFace*>    m_faces;
 
+	/// The number of the region
+	int m_region_number;
 };
 }
 
