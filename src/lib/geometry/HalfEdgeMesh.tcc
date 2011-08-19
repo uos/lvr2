@@ -648,6 +648,10 @@ void HalfEdgeMesh<VertexT, NormalT>::optimizePlanes(
 						region_number++;
 					}
 				}
+				else
+				{
+					delete region;
+				}
 			}
 		}
 	}
@@ -670,6 +674,7 @@ void HalfEdgeMesh<VertexT, NormalT>::deleteRegion(Region<VertexT, NormalT>* regi
 {
     for(int i=0; i<region->m_faces.size(); i++)
         deleteFace(region->m_faces[i]);
+    delete region;
 }
 
 template<typename VertexT, typename NormalT>
@@ -942,7 +947,7 @@ void HalfEdgeMesh<VertexT, NormalT>::tester()
 	fillHoles(35);
 	optimizePlaneIntersections();
 	m_colorRegions = true;
-
+/*
     //Reset all used variables
     for(int i=0; i<m_faces.size(); i++)
         for(int k=0; k<3; k++)
@@ -970,7 +975,7 @@ void HalfEdgeMesh<VertexT, NormalT>::tester()
 
     }
     filestr.close();
-
+*/
 //  for(int i=0; i<m_faces.size(); i++)
 //      m_faces[i]->m_region=0;
 }
