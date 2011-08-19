@@ -38,7 +38,7 @@ public:
     /**
      * @brief   Constructs an empty face
      */
-	HalfEdgeFace() {m_region=0;};
+	HalfEdgeFace() {m_region=0;m_used=false;};
 
 	/**
 	 * @brief   Copy constructor
@@ -119,7 +119,6 @@ public:
 	/// The index of the face's texture
 	int 							m_texture_index;
 
-	/// The region of the face
 	int 							m_region;
 
 	bool							m_used;
