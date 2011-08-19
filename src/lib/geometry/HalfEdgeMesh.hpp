@@ -31,6 +31,8 @@ using namespace std;
 //#include "HalfEdgePolygon.h"
 #include "../io/Progress.hpp"
 
+#include "Region.hpp"
+
 namespace lssr
 {
 
@@ -155,7 +157,7 @@ public:
 	 *
 	 * @return	Returns the size of the region - 1 (the start face is not included)
 	 */
-	virtual int regionGrowing(HFace* start_face, int region);
+	virtual int regionGrowing(HFace* start_face, Region<VertexT, NormalT>* region);
 
 	/**
 	 * @brief	Starts a region growing wrt the angle between the faces and returns the
@@ -172,7 +174,7 @@ public:
 	 *
 	 * @return	Returns the size of the region - 1 (the start face is not included)
 	 */
-	virtual int regionGrowing(HFace* start_face, NormalT &normal, float &angle, int region);
+	virtual int regionGrowing(HFace* start_face, NormalT &normal, float &angle, Region<VertexT, NormalT>* region);
 
 	/**
 	 * @brief	Applies region growing and regression plane algorithms and deletes small
@@ -183,27 +185,12 @@ public:
 	virtual void optimizePlanes(int iterations, float normalThreshold, int minRegionSize = 50, int smallRegionSize = 0);
 
 	/**
-	 * @brief	Calculates a regression plane for the given region and projects all
-	 * 			vertices of the region into this plane.
-	 *
-	 * @param	region	The region to improve
-	 */
-	virtual void regressionPlane(int region);
-
-	/**
 	 * @brief	Deletes all faces belonging to the given region
 	 *
 	 * @param	region	The region to delete
 	 */
-	virtual void deleteRegion(int region);
+	virtual void deleteRegion(Region<VertexT, NormalT>* region);
 
-	/**
-	 * @brief	Deletes all faces connected to the start_face and have the same region
-	 * 			Faster than deleteRegion because no iteration over the whole mesh is needed
-	 *
-	 * @param	start_face	The face to start the recursion from
-	 */
-	virtual void deleteRegionRecursive(HFace* start_face);
 
 	/**
 	 * @brief	Removes artifacts in the mesh that are not connected to the main mesh
@@ -223,7 +210,7 @@ public:
 	 *	@param	x				a point on the intersection line
 	 *	@param	direction		the direction of the intersection line
 	 */
-	virtual void dragOntoIntersection(HFace* planeFace, int neighbor_region, VertexT& x, VertexT& direction);
+	virtual void dragOntoIntersection(Region<VertexT, NormalT>* plane, int neighbor_region, VertexT& x, VertexT& direction);
 
 	/**
 	 * @brief 	optimizes the plane intersections
@@ -270,8 +257,8 @@ private:
 	/// The vertices of the mesh
 	vector<HalfEdgeVertex<VertexT, NormalT>*>   m_vertices;
 
-	/// The regions in the half edge mesh represented by a single face
-	vector<HalfEdgeFace<VertexT, NormalT>*>     m_regions;
+	/// The regions in the half edge mesh
+	vector<Region<VertexT, NormalT>*>     m_regions;
 
 	/// The indexed of the newest inserted vertex
 	int 	                                    m_globalIndex;
