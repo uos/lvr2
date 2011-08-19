@@ -201,49 +201,49 @@ public:
 	virtual void removeDanglingArtifacts(int threshold);
 
 
-//	/**
-//	 *	@brief	drags the points of the given plane onto the given intersection if those points lay in
-//	 *			a certain radius around the intersection line.
-//	 *
-//	 *	@param	planeFace		a face of the plane to take into account
-//	 *	@param	neighbor_region	the region of the other plane belonging to the intersection line
-//	 *	@param	x				a point on the intersection line
-//	 *	@param	direction		the direction of the intersection line
-//	 */
-//	virtual void dragOntoIntersection(HFace* planeFace, int neighbor_region, VertexT& x, VertexT& direction);
-//
-//	/**
-//	 * @brief 	optimizes the plane intersections
-//	 */
-//	virtual void optimizePlaneIntersections();
-//
-//	/**
-//	 * @brief 	looks for a contour of the given region starting from the given edge
-//	 *
-//	 * @param	region	The region
-//	 * @param	start	The edge to start from
-//	 *
-//	 * @return	a stack containing the vertices of the contour
-//	 */
-//	virtual stack<HVertex*>  getContour(HEdge* start, float epsilon);
-//
-//	/**
-//	 * @brief	finds all contours in the mesh
-//	 *
-//	 * @param	epsilon	controls the number of points used for a contour
-//	 *
-//	 * @return 	a list of all contours
-//	 */
-//	virtual vector<stack<HVertex*> > findAllContours(float epsilon);
-//
-//	/**
-//	 * @brief 	Finalizes a mesh, i.e. converts the template based buffers
-//	 * 			to OpenGL compatible buffers
-//	 */
+	/**
+	 *	@brief	drags the points of the given plane onto the given intersection if those points lay in
+	 *			a certain radius around the intersection line.
+	 *
+	 *	@param	planeFace		a face of the plane to take into account
+	 *	@param	neighbor_region	the region of the other plane belonging to the intersection line
+	 *	@param	x				a point on the intersection line
+	 *	@param	direction		the direction of the intersection line
+	 */
+	virtual void dragOntoIntersection(Region<VertexT, NormalT>* plane, int neighbor_region, VertexT& x, VertexT& direction);
+
+	/**
+	 * @brief 	optimizes the plane intersections
+	 */
+	virtual void optimizePlaneIntersections();
+
+	/**
+	 * @brief 	looks for a contour of the given region starting from the given edge
+	 *
+	 * @param	region	The region
+	 * @param	start	The edge to start from
+	 *
+	 * @return	a stack containing the vertices of the contour
+	 */
+	virtual stack<HVertex*>  getContour(HEdge* start, float epsilon);
+
+	/**
+	 * @brief	finds all contours in the mesh
+	 *
+	 * @param	epsilon	controls the number of points used for a contour
+	 *
+	 * @return 	a list of all contours
+	 */
+	virtual vector<stack<HVertex*> > findAllContours(float epsilon);
+
+	/**
+	 * @brief 	Finalizes a mesh, i.e. converts the template based buffers
+	 * 			to OpenGL compatible buffers
+	 */
 	virtual void finalize();
-//
-//
-//	void fillHoles(int max_size);
+
+
+	void fillHoles(int max_size);
 
 	void enableRegionColoring() { m_colorRegions = true;}
 

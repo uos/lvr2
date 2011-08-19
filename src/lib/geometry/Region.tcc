@@ -3,9 +3,17 @@ namespace lssr
 {
 
 template<typename VertexT, typename NormalT>
+Region<VertexT, NormalT>::Region(int region_number)
+{
+	this->m_inPlane = false;
+	this->m_region_number = region_number;
+}
+
+template<typename VertexT, typename NormalT>
 void Region<VertexT, NormalT>::addFace(HFace* f)
 {
 	this->m_faces.push_back(f);
+	f->m_region = this->m_region_number;
 }
 
 template<typename VertexT, typename NormalT>
@@ -20,7 +28,15 @@ template<typename VertexT, typename NormalT>
 NormalT Region<VertexT, NormalT>::getNormal()
 {
 	NormalT result;
-	//TODO: implement
+    //search for a valid normal of region
+	int i = 0;
+	do
+	{
+		result = m_faces[i++]->getFaceNormal();
+	}
+	while ((result.length() == 0 || isnan(result.length())) && i<m_faces.size());
+
+	result.normalize();
 	return result;
 }
 
