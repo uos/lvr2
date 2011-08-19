@@ -31,6 +31,8 @@ using namespace std;
 //#include "HalfEdgePolygon.h"
 #include "../io/Progress.hpp"
 
+#include "Region.hpp"
+
 namespace lssr
 {
 
@@ -155,7 +157,7 @@ public:
 	 *
 	 * @return	Returns the size of the region - 1 (the start face is not included)
 	 */
-	virtual int regionGrowing(HFace* start_face, int region);
+	virtual int regionGrowing(HFace* start_face, Region<VertexT, NormalT>* region);
 
 	/**
 	 * @brief	Starts a region growing wrt the angle between the faces and returns the
@@ -172,7 +174,7 @@ public:
 	 *
 	 * @return	Returns the size of the region - 1 (the start face is not included)
 	 */
-	virtual int regionGrowing(HFace* start_face, NormalT &normal, float &angle, int region);
+	virtual int regionGrowing(HFace* start_face, NormalT &normal, float &angle, Region<VertexT, NormalT>* region);
 
 	/**
 	 * @brief	Applies region growing and regression plane algorithms and deletes small
@@ -183,27 +185,12 @@ public:
 	virtual void optimizePlanes(int iterations, float normalThreshold, int minRegionSize = 50, int smallRegionSize = 0);
 
 	/**
-	 * @brief	Calculates a regression plane for the given region and projects all
-	 * 			vertices of the region into this plane.
-	 *
-	 * @param	region	The region to improve
-	 */
-	virtual void regressionPlane(int region);
-
-	/**
 	 * @brief	Deletes all faces belonging to the given region
 	 *
 	 * @param	region	The region to delete
 	 */
-	virtual void deleteRegion(int region);
+	virtual void deleteRegion(Region<VertexT, NormalT>* region);
 
-	/**
-	 * @brief	Deletes all faces connected to the start_face and have the same region
-	 * 			Faster than deleteRegion because no iteration over the whole mesh is needed
-	 *
-	 * @param	start_face	The face to start the recursion from
-	 */
-	virtual void deleteRegionRecursive(HFace* start_face);
 
 	/**
 	 * @brief	Removes artifacts in the mesh that are not connected to the main mesh
@@ -214,49 +201,49 @@ public:
 	virtual void removeDanglingArtifacts(int threshold);
 
 
-	/**
-	 *	@brief	drags the points of the given plane onto the given intersection if those points lay in
-	 *			a certain radius around the intersection line.
-	 *
-	 *	@param	planeFace		a face of the plane to take into account
-	 *	@param	neighbor_region	the region of the other plane belonging to the intersection line
-	 *	@param	x				a point on the intersection line
-	 *	@param	direction		the direction of the intersection line
-	 */
-	virtual void dragOntoIntersection(HFace* planeFace, int neighbor_region, VertexT& x, VertexT& direction);
-
-	/**
-	 * @brief 	optimizes the plane intersections
-	 */
-	virtual void optimizePlaneIntersections();
-
-	/**
-	 * @brief 	looks for a contour of the given region starting from the given edge
-	 *
-	 * @param	region	The region
-	 * @param	start	The edge to start from
-	 *
-	 * @return	a stack containing the vertices of the contour
-	 */
-	virtual stack<HVertex*>  getContour(HEdge* start, float epsilon);
-
-	/**
-	 * @brief	finds all contours in the mesh
-	 *
-	 * @param	epsilon	controls the number of points used for a contour
-	 *
-	 * @return 	a list of all contours
-	 */
-	virtual vector<stack<HVertex*> > findAllContours(float epsilon);
-
-	/**
-	 * @brief 	Finalizes a mesh, i.e. converts the template based buffers
-	 * 			to OpenGL compatible buffers
-	 */
+//	/**
+//	 *	@brief	drags the points of the given plane onto the given intersection if those points lay in
+//	 *			a certain radius around the intersection line.
+//	 *
+//	 *	@param	planeFace		a face of the plane to take into account
+//	 *	@param	neighbor_region	the region of the other plane belonging to the intersection line
+//	 *	@param	x				a point on the intersection line
+//	 *	@param	direction		the direction of the intersection line
+//	 */
+//	virtual void dragOntoIntersection(HFace* planeFace, int neighbor_region, VertexT& x, VertexT& direction);
+//
+//	/**
+//	 * @brief 	optimizes the plane intersections
+//	 */
+//	virtual void optimizePlaneIntersections();
+//
+//	/**
+//	 * @brief 	looks for a contour of the given region starting from the given edge
+//	 *
+//	 * @param	region	The region
+//	 * @param	start	The edge to start from
+//	 *
+//	 * @return	a stack containing the vertices of the contour
+//	 */
+//	virtual stack<HVertex*>  getContour(HEdge* start, float epsilon);
+//
+//	/**
+//	 * @brief	finds all contours in the mesh
+//	 *
+//	 * @param	epsilon	controls the number of points used for a contour
+//	 *
+//	 * @return 	a list of all contours
+//	 */
+//	virtual vector<stack<HVertex*> > findAllContours(float epsilon);
+//
+//	/**
+//	 * @brief 	Finalizes a mesh, i.e. converts the template based buffers
+//	 * 			to OpenGL compatible buffers
+//	 */
 	virtual void finalize();
-
-
-	void fillHoles(int max_size);
+//
+//
+//	void fillHoles(int max_size);
 
 	void enableRegionColoring() { m_colorRegions = true;}
 
@@ -270,8 +257,8 @@ private:
 	/// The vertices of the mesh
 	vector<HalfEdgeVertex<VertexT, NormalT>*>   m_vertices;
 
-	/// The regions in the half edge mesh represented by a single face
-	vector<HalfEdgeFace<VertexT, NormalT>*>     m_regions;
+	/// The regions in the half edge mesh
+	vector<Region<VertexT, NormalT>*>     m_regions;
 
 	/// The indexed of the newest inserted vertex
 	int 	                                    m_globalIndex;

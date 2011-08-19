@@ -545,17 +545,20 @@ void HalfEdgeMesh<VertexT, NormalT>::flipEdge(HEdge* edge)
 }
 
 template<typename VertexT, typename NormalT>
-int HalfEdgeMesh<VertexT, NormalT>::regionGrowing(HFace* start_face, int region)
+int HalfEdgeMesh<VertexT, NormalT>::regionGrowing(HFace* start_face, Region<VertexT, NormalT>* region)
 {
     //Mark face as used
-    start_face->m_region = region;
+    start_face->m_used = true;
+
+    //Add face to region
+    region->addFace(start_face);
 
     int neighbor_cnt = 0;
 
     //Get the unmarked neighbor faces and start the recursion
     for(int k=0; k<3; k++)
     {
-        if((*start_face)[k]->pair->face != 0 && (*start_face)[k]->pair->face->m_region == 0)
+        if((*start_face)[k]->pair->face != 0 && (*start_face)[k]->pair->face->m_used == false)
             ++neighbor_cnt += regionGrowing((*start_face)[k]->pair->face, region);
     }
 
@@ -563,17 +566,20 @@ int HalfEdgeMesh<VertexT, NormalT>::regionGrowing(HFace* start_face, int region)
 }
 
 template<typename VertexT, typename NormalT>
-int HalfEdgeMesh<VertexT, NormalT>::regionGrowing(HFace* start_face, NormalT &normal, float &angle, int region)
+int HalfEdgeMesh<VertexT, NormalT>::regionGrowing(HFace* start_face, NormalT &normal, float &angle, Region<VertexT, NormalT>* region)
 {
     //Mark face as used
-    start_face->m_region = region;
+    start_face->m_used = true;
+
+    //Add face to region
+    region->addFace(start_face);
 
     int neighbor_cnt = 0;
 
     //Get the unmarked neighbor faces and start the recursion
     for(int k=0; k<3; k++)
     {
-        if((*start_face)[k]->pair->face != 0 && (*start_face)[k]->pair->face->m_region == 0
+        if((*start_face)[k]->pair->face != 0 && (*start_face)[k]->pair->face->m_used == false
                 && fabs((*start_face)[k]->pair->face->getFaceNormal() * normal) > angle )
             ++neighbor_cnt += regionGrowing((*start_face)[k]->pair->face, normal, angle, region);
     }
@@ -591,11 +597,12 @@ void HalfEdgeMesh<VertexT, NormalT>::optimizePlanes(
         )
 {
     cout << timestamp << "Starting plane optimization with threshold " << angle << endl;
-    // Magic numbers
+
+   // Magic numbers
     int default_region_threshold = (int)10*log(m_faces.size());
 
 	// Regions that will be deleted due to size
-	vector<HalfEdgeFace<VertexT, NormalT>*> smallRegions;
+	vector<Region<VertexT, NormalT>*> smallRegions;
 
 	int region_size = 0;
 	m_regions.clear();
@@ -603,26 +610,27 @@ void HalfEdgeMesh<VertexT, NormalT>::optimizePlanes(
 	for(int j = 0; j < iterations; j++)
 	{
 		cout << timestamp << "Optimizing planes. " <<  j << "th iteration." << endl;
-		int region = 1;
 
-		// Reset all region variables
+		// Reset all used variables
 		for(int i=0; i < m_faces.size(); i++)
 		{
-			m_faces[i]->m_region = 0;
+			m_faces[i]->m_used = false;
 		}
+
 		// Find all regions by regionGrowing with normal criteria
 		for(int i=0; i < m_faces.size(); i++)
 		{
-			if(m_faces[i]->m_region == 0)
+			if(m_faces[i]->m_used == false)
 			{
 				NormalT n = m_faces[i]->getFaceNormal();
 
+				Region<VertexT, NormalT>* region = new Region<VertexT, NormalT>();
 				region_size = regionGrowing(m_faces[i], n, angle, region) + 1;
 
 				// Fit big regions into the regression plane
 				if(region_size > max(min_region_size, default_region_threshold))
 				{
-					regressionPlane(region);
+					region->regressionPlane();
 				}
 
 				if(j == iterations-1)
@@ -630,15 +638,14 @@ void HalfEdgeMesh<VertexT, NormalT>::optimizePlanes(
 					// Save too small regions with size smaller than 7
 					if (region_size < small_region_size)
 					{
-						smallRegions.push_back(m_faces[i]);
+						smallRegions.push_back(region);
 					}
 					else
 					{
-					    // Save pointer to the region for fast access
-						m_regions.push_back(m_faces[i]);
+					    // Save pointer to the region
+						m_regions.push_back(region);
 					}
 				}
-				region++;
 			}
 		}
 	}
@@ -650,142 +657,46 @@ void HalfEdgeMesh<VertexT, NormalT>::optimizePlanes(
 	    ProgressBar progress(smallRegions.size(), msg);
 	    for(int i=0; i< smallRegions.size(); i++)
 	    {
-	        deleteRegionRecursive(smallRegions[i]);
+	        deleteRegion(smallRegions[i]);
 	        ++progress;
 	    }
 	}
 }
 
 template<typename VertexT, typename NormalT>
-void HalfEdgeMesh<VertexT, NormalT>::regressionPlane(int region)
+void HalfEdgeMesh<VertexT, NormalT>::deleteRegion(Region<VertexT, NormalT>* region)
 {
-    //collect all faces from the same region
-    vector<HalfEdgeFace<VertexT, NormalT>*>    planeFaces;
-    for(int i=0; i<m_faces.size(); i++)
-        if(m_faces[i]->m_region == region) planeFaces.push_back(m_faces[i]);
-
-//  srand ( time(NULL) );
-
-    VertexT point1;
-    VertexT point2;
-    VertexT point3;
-
-    //representation of best regression plane by point and normal
-    VertexT bestpoint;
-    NormalT bestNorm;
-
-    float bestdist = FLT_MAX;
-    float dist = 0;
-
-    int iterations = 0;
-    int nonimproving_iterations = 0;
-
-    while((nonimproving_iterations < 20) && (iterations < 200))
-    {
-        //randomly choose 3 disjoint points
-        do{
-            point1 = (*planeFaces[rand() % planeFaces.size()])(0)->m_position;
-            point2 = (*planeFaces[rand() % planeFaces.size()])(1)->m_position;
-            point3 = (*planeFaces[rand() % planeFaces.size()])(2)->m_position;
-        }while(point1 == point2 || point2 == point3 || point3 == point1);
-
-        //compute normal of the plane given by the 3 points
-        NormalT n0 = (point1 - point2).cross(point1 - point3);
-        n0.normalize();
-
-        //compute error to at most 50 other randomly chosen points
-        dist = 0;
-        for(int i=0; i < min(50, (int)planeFaces.size()); i++)
-        {
-            VertexT refpoint = (*planeFaces[rand() % planeFaces.size()])(0)->m_position;
-            dist += fabs(refpoint * n0 - point1 * n0) / min(50, (int)planeFaces.size());
-        }
-
-        //a new optimum is found
-        if(dist < bestdist)
-        {
-            bestdist = dist;
-
-            bestpoint = point1;
-            bestNorm = n0;
-
-            nonimproving_iterations = 0;
-        }
-        else
-            nonimproving_iterations++;
-
-        iterations++;
-    }
-
-    //drag points into the regression plane
-    for(int i=0; i<planeFaces.size(); i++)
-    {
-        for(int p=0; p<3; p++)
-        {
-            float v = ((bestpoint - (*planeFaces[i])(p)->m_position) * bestNorm) / (bestNorm * bestNorm);
-            if(v != 0)
-                (*planeFaces[i])(p)->m_position = (*planeFaces[i])(p)->m_position + (VertexT)bestNorm * v;
-        }
-
-        //change sign of all faces drawn into regression plane
-        planeFaces[i]->m_region = -abs(planeFaces[i]->m_region);
-    }
-}
-
-template<typename VertexT, typename NormalT>
-void HalfEdgeMesh<VertexT, NormalT>::deleteRegion(int region)
-{
-    vector<HalfEdgeFace<VertexT, NormalT>*> todelete;
-
-    for(int i=0; i<m_faces.size(); i++)
-        if(m_faces[i]->m_region == region)
-            todelete.push_back(m_faces[i]);
-
-    for(int i=0; i<todelete.size(); i++)
-        deleteFace(todelete[i]);
-}
-
-template<typename VertexT, typename NormalT>
-void HalfEdgeMesh<VertexT, NormalT>::deleteRegionRecursive(HFace* start_face)
-{
-    int region = start_face->m_region;
-
-    //Mark face as used
-    start_face->m_region = 0;
-
-    //Get the unmarked neighbor faces and start the recursion
-    for(int k=0; k<3; k++)
-        if((*start_face)[k]->pair->face != 0 && (*start_face)[k]->pair->face->m_region == region)
-            deleteRegionRecursive((*start_face)[k]->pair->face);
-
-    deleteFace(start_face);
+    for(int i=0; i<region->m_faces.size(); i++)
+        deleteFace(region->m_faces[i]);
 }
 
 template<typename VertexT, typename NormalT>
 void HalfEdgeMesh<VertexT, NormalT>::removeDanglingArtifacts(int threshold)
 {
-    vector<HalfEdgeFace<VertexT, NormalT>*> todelete;
-    int region = 1;
+    vector<Region<VertexT, NormalT>*> todelete;
 
     for(int i=0; i<m_faces.size(); i++)
     {
-        if(m_faces[i]->m_region == 0)
+        if(m_faces[i]->m_used == false)
         {
+        	Region<VertexT, NormalT>* region = new Region<VertexT, NormalT>();
             int region_size = regionGrowing(m_faces[i], region) + 1;
             if(region_size <= threshold)
-                todelete.push_back(m_faces[i]);
-            region++;
+                todelete.push_back(region);
+            else
+            	delete region;
         }
     }
 
     for(int i=0; i<todelete.size(); i++ )
-        deleteRegionRecursive(todelete[i]);
+        deleteRegion(todelete[i]);
 
-    //reset all region variables
+    //reset all used variables
     for(int i=0; i<m_faces.size(); i++)
-        m_faces[i]->m_region=0;
+        m_faces[i]->m_used = false;
 }
 
+/*
 template<typename VertexT, typename NormalT>
 void HalfEdgeMesh<VertexT, NormalT>::fillHoles(int max_size)
 {
@@ -1057,18 +968,15 @@ vector<stack<HalfEdgeVertex<VertexT, NormalT>* > > HalfEdgeMesh<VertexT, NormalT
     }
     return  contours;
 }
-
+*/
 template<typename VertexT, typename NormalT>
 void HalfEdgeMesh<VertexT, NormalT>::tester()
 {
-    removeDanglingArtifacts(500);
-    optimizePlanes(3, 0.85);    //3 Iterations, max diff angle: arccos(0.85) = 32degree
+	removeDanglingArtifacts(500);
+//	optimizePlanes(3,0.85,50,7);
+	m_colorRegions = true;
 
-    fillHoles(35);
-
-    optimizePlaneIntersections();
-
-    //Reset all used variables
+  /*  //Reset all used variables
     for(int i=0; i<m_faces.size(); i++)
         for(int k=0; k<3; k++)
             (*m_faces[i])[k]->used=false;
@@ -1097,7 +1005,7 @@ void HalfEdgeMesh<VertexT, NormalT>::tester()
     filestr.close();
 
 //  for(int i=0; i<m_faces.size(); i++)
-//      m_faces[i]->m_region=0;
+//      m_faces[i]->m_region=0; */
 }
 
 template<typename VertexT, typename NormalT>
