@@ -20,7 +20,65 @@ template<typename VertexT, typename NormalT>
 vector<stack<HalfEdgeVertex<VertexT, NormalT>* > > Region<VertexT, NormalT>::getContours(float epsilon)
 {
 	vector<stack<HVertex*> > result;
-	//TODO: implement
+
+	//don't try to find contours of a region which wasn't dragged into a plane
+	if (!this->m_inPlane) return result;
+
+	for (int i = 0; i<this->m_faces.size(); i++)
+	{
+		for (int k = 0; k < 3; k++)
+		{
+			HEdge* current = (*m_faces[i])[k];
+			if(!current->used && (current->pair->face == 0 || current->pair->face->m_region != current->face->m_region))
+			{
+				stack<HalfEdgeVertex<VertexT, NormalT>* > contour;
+				int region = current->face->m_region;
+
+				HEdge* next = 0;
+				while(current->used == false)
+				{
+					//mark edge as used
+					current->used = true;
+					next = 0;
+					//push the next vertex
+					contour.push(current->end);
+					//find next edge
+					for(int i = 0; i<current->end->out.size(); i++)
+					{
+						if(!current->end->out[i]->used
+								&& current->end->out[i]->face && current->end->out[i]->face->m_region == region
+								&& (current->end->out[i]->pair->face == 0
+										||current->end->out[i]->pair->face  && current->end->out[i]->pair->face->m_region != region))
+
+							next = current->end->out[i];
+					}
+
+					if(next)
+					{
+						//calculate direction of the current edge
+						NormalT currentDirection(current->end->m_position - current->start->m_position);
+
+						//calculate direction of the next edge
+						NormalT nextDirection(next->end->m_position - next->start->m_position);
+						//Check if we have to remove the top vertex
+						if(    (    fabs(fabs(nextDirection[0]) - fabs(currentDirection[0])) <= epsilon
+								&& fabs(fabs(nextDirection[1]) - fabs(currentDirection[1])) <= epsilon
+								&& fabs(fabs(nextDirection[2]) - fabs(currentDirection[2])) <= epsilon
+						)
+						||
+						(
+								fabs(next->end->m_position[0] - current->end->m_position[0]) <= epsilon
+								&& fabs(next->end->m_position[1] - current->end->m_position[1]) <= epsilon
+								&& fabs(next->end->m_position[2] - current->end->m_position[2]) <= epsilon
+						))
+							contour.pop();
+						current = next;
+					}
+				}
+				result.push_back(contour);
+			}
+		}
+	}
 	return result;
 }
 
