@@ -865,76 +865,15 @@ void HalfEdgeMesh<VertexT, NormalT>::optimizePlaneIntersections()
 }
 
 template<typename VertexT, typename NormalT>
-stack<HalfEdgeVertex<VertexT, NormalT>* > HalfEdgeMesh<VertexT, NormalT>::getContour(HEdge* start, float epsilon)
-{
-    stack<HalfEdgeVertex<VertexT, NormalT>* > contour;
-
-    //check for infeasible input
-    if(start->face == 0 || start->pair->face && start->pair->face->m_region == start->face->m_region)
-        return contour;
-
-    int region = start->face->m_region;
-
-    HEdge* current = start;
-    HEdge* next = 0;
-
-    while(current->used == false)
-    {
-        //mark edge as used
-        current->used = true;
-        next = 0;
-
-        //push the next vertex
-        contour.push(current->end);
-
-        //find next edge
-        for(int i = 0; i<current->end->out.size(); i++)
-        {
-            if(!current->end->out[i]->used
-                    && current->end->out[i]->face && current->end->out[i]->face->m_region == region
-                    && (current->end->out[i]->pair->face == 0
-                            ||current->end->out[i]->pair->face  && current->end->out[i]->pair->face->m_region != region))
-
-                next = current->end->out[i];
-        }
-
-        if(next)
-        {
-            //calculate direction of the current edge
-            NormalT currentDirection(current->end->m_position - current->start->m_position);
-
-            //calculate direction of the next edge
-            NormalT nextDirection(next->end->m_position - next->start->m_position);
-
-            //Check if we have to remove the top vertex
-            if(    (    fabs(fabs(nextDirection[0]) - fabs(currentDirection[0])) <= epsilon
-                     && fabs(fabs(nextDirection[1]) - fabs(currentDirection[1])) <= epsilon
-                     && fabs(fabs(nextDirection[2]) - fabs(currentDirection[2])) <= epsilon
-                    )
-                    ||
-                    (
-                        fabs(next->end->m_position[0] - current->end->m_position[0]) <= epsilon
-                     && fabs(next->end->m_position[1] - current->end->m_position[1]) <= epsilon
-                     && fabs(next->end->m_position[2] - current->end->m_position[2]) <= epsilon
-                    ))
-                contour.pop();
-
-            current = next;
-        }
-    }
-
-    return contour;
-}
-
-template<typename VertexT, typename NormalT>
 vector<stack<HalfEdgeVertex<VertexT, NormalT>* > > HalfEdgeMesh<VertexT, NormalT>::findAllContours(float epsilon)
 {
     vector<stack<HalfEdgeVertex<VertexT, NormalT>* > > contours;
-    for(int i=0; i<m_faces.size(); i++){
-        if (m_regions[m_faces[i]->m_region]->m_inPlane)
-            for (int j = 0; j<3; j++)
-                if ((*m_faces[i])[j]->used == false && ((*m_faces[i])[j]->pair->face == 0 || (*m_faces[i])[j]->pair->face->m_region != m_faces[i]->m_region))
-                    contours.push_back(getContour((*m_faces[i])[j], epsilon));
+    for (int i = 0; i< m_regions.size(); i++)
+    {
+    	if(m_regions[i]->m_inPlane){
+    		vector<stack<HalfEdgeVertex<VertexT, NormalT>* > > current_contours = m_regions[i]->getContours(epsilon);
+    		contours.insert(contours.end(), current_contours.begin(), current_contours.end());
+    	}
     }
     return  contours;
 }
@@ -942,12 +881,12 @@ vector<stack<HalfEdgeVertex<VertexT, NormalT>* > > HalfEdgeMesh<VertexT, NormalT
 template<typename VertexT, typename NormalT>
 void HalfEdgeMesh<VertexT, NormalT>::tester()
 {
-	removeDanglingArtifacts(500);
-	optimizePlanes(3,0.85,50,7);
-	fillHoles(35);
-	optimizePlaneIntersections();
-	m_colorRegions = true;
-/*
+//	removeDanglingArtifacts(500);
+//	optimizePlanes(3,0.85,50,7);
+//	fillHoles(35);
+//	optimizePlaneIntersections();
+//	m_colorRegions = true;
+
     //Reset all used variables
     for(int i=0; i<m_faces.size(); i++)
         for(int k=0; k<3; k++)
@@ -975,7 +914,7 @@ void HalfEdgeMesh<VertexT, NormalT>::tester()
 
     }
     filestr.close();
-*/
+
 //  for(int i=0; i<m_faces.size(); i++)
 //      m_faces[i]->m_region=0;
 }

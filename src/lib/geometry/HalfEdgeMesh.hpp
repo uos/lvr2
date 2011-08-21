@@ -218,16 +218,6 @@ public:
 	virtual void optimizePlaneIntersections();
 
 	/**
-	 * @brief 	looks for a contour of the given region starting from the given edge
-	 *
-	 * @param	region	The region
-	 * @param	start	The edge to start from
-	 *
-	 * @return	a stack containing the vertices of the contour
-	 */
-	virtual stack<HVertex*>  getContour(HEdge* start, float epsilon);
-
-	/**
 	 * @brief	finds all contours in the mesh
 	 *
 	 * @param	epsilon	controls the number of points used for a contour
