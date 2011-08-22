@@ -18,6 +18,13 @@
 
 namespace lssr {
 
+template<typename VertexT, typename NormalT>
+class HalfEdgeFace;
+
+template<typename VertexT, typename NormalT>
+class HalfEdgeVertex;
+
+
 /**
  * @brief 	This class represents a region.
  */
@@ -36,7 +43,7 @@ public:
 	 *
 	 * @param 	region_number 	the number of the region
 	 */
-		Region(int region_number);
+	Region(int region_number);
 
 	/**
 	 * @brief Adds a face to the region.
@@ -44,6 +51,13 @@ public:
 	 * @param	f	the face to add
 	 */
 	virtual void addFace(HFace* f);
+
+	/**
+	 * @brief Removes a face from the region.
+	 *
+	 * @param	f	the face to remove
+	 */
+	virtual void removeFace(HFace* f);
 
 	/**
 	 * @brief Finds all contours of the region (outer contour + holes)

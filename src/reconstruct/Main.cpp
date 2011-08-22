@@ -182,7 +182,7 @@ int main(int argc, char** argv)
                             options.getSmallRegionThreshold() );
     }
 
-    mesh.fillHoles(options.getFillHoles());
+//    mesh.fillHoles(options.getFillHoles());
     mesh.optimizePlaneIntersections();
 
     // Save triangle mesh
