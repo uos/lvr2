@@ -13,8 +13,19 @@ template<typename VertexT, typename NormalT>
 void Region<VertexT, NormalT>::addFace(HFace* f)
 {
 	this->m_faces.push_back(f);
-	f->m_region = this->m_region_number;
+	f->m_region = this;
 }
+
+template<typename VertexT, typename NormalT>
+void Region<VertexT, NormalT>::removeFace(HFace* f)
+{
+	typename	vector<HalfEdgeFace<VertexT, NormalT>*>::iterator face_iter;
+	face_iter = m_faces.begin();
+	while(*face_iter != f && face_iter != m_faces.end()) face_iter++;
+	if(face_iter != m_faces.end())
+		m_faces.erase(face_iter);
+}
+
 
 template<typename VertexT, typename NormalT>
 vector<stack<HalfEdgeVertex<VertexT, NormalT>* > > Region<VertexT, NormalT>::getContours(float epsilon)
@@ -32,7 +43,7 @@ vector<stack<HalfEdgeVertex<VertexT, NormalT>* > > Region<VertexT, NormalT>::get
 			if(!current->used && (current->pair->face == 0 || current->pair->face->m_region != current->face->m_region))
 			{
 				stack<HalfEdgeVertex<VertexT, NormalT>* > contour;
-				int region = current->face->m_region;
+				Region<VertexT, NormalT>* region = current->face->m_region;
 
 				HEdge* next = 0;
 				while(current->used == false)

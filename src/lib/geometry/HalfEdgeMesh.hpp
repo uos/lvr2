@@ -210,7 +210,7 @@ public:
 	 *	@param	x				a point on the intersection line
 	 *	@param	direction		the direction of the intersection line
 	 */
-	virtual void dragOntoIntersection(Region<VertexT, NormalT>* plane, int neighbor_region, VertexT& x, VertexT& direction);
+	virtual void dragOntoIntersection(Region<VertexT, NormalT>* plane, Region<VertexT, NormalT>* neighbor_region, VertexT& x, VertexT& direction);
 
 	/**
 	 * @brief 	optimizes the plane intersections
