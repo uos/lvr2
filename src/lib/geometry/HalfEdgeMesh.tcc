@@ -555,6 +555,7 @@ int HalfEdgeMesh<VertexT, NormalT>::regionGrowing(HFace* start_face, int region)
     //Get the unmarked neighbor faces and start the recursion
     for(int k=0; k<3; k++)
     {
+        //cout << (*start_face)[k]->pair << flush << " " << (*start_face)[k]->pair->face << " " << endl;
         if((*start_face)[k]->pair->face != 0 && (*start_face)[k]->pair->face->m_region == 0)
             ++neighbor_cnt += regionGrowing((*start_face)[k]->pair->face, region);
     }
@@ -628,7 +629,7 @@ void HalfEdgeMesh<VertexT, NormalT>::optimizePlanes(
 
 				if(j == iterations-1)
 				{
-					// Save too small regions with size smaller than 7
+					// Save too small regions with size smaller than something
 					if (region_size < small_region_size)
 					{
 						smallRegions.push_back(m_faces[i]);
@@ -654,6 +655,7 @@ void HalfEdgeMesh<VertexT, NormalT>::optimizePlanes(
 	        deleteRegionRecursive(smallRegions[i]);
 	        ++progress;
 	    }
+	    cout << endl;
 	}
 }
 
@@ -792,8 +794,13 @@ void HalfEdgeMesh<VertexT, NormalT>::fillHoles(int max_size)
 {
     //walk through all edges and start hole finding
     //when pair has no face and a regression plane was applied
+    string msg = timestamp.getElapsedTime() + "Filling holes.";
+    ProgressBar progress(m_faces.size(), msg);
+
     for(int i=0; i < m_faces.size(); i++)
+    {
         for(int k=0; k<3; k++)
+        {
             if((*m_faces[i])[k]->pair->face == 0 && m_faces[i]->m_region < 0)
             {
                 //needed for contour tracking
@@ -889,6 +896,10 @@ void HalfEdgeMesh<VertexT, NormalT>::fillHoles(int max_size)
                     }
                 }
             }
+        }
+        ++progress;
+    }
+    cout << endl;
 }
 
 template<typename VertexT, typename NormalT>
@@ -912,17 +923,24 @@ void HalfEdgeMesh<VertexT, NormalT>::dragOntoIntersection(HFace* planeFace, int 
 template<typename VertexT, typename NormalT>
 void HalfEdgeMesh<VertexT, NormalT>::optimizePlaneIntersections()
 {
+    string msg = timestamp.getElapsedTime() + "Improving intersections";
+    ProgressBar progress(m_regions.size(), msg);
+
     for (int i = 0; i<m_regions.size(); i++)
+    {
         if (m_regions[i]->m_region < 0)
+        {
             for(int j = i+1; j<m_regions.size(); j++)
+            {
                 if(m_regions[j]->m_region < 0)
                 {
                     //calculate intersection between plane i and j
 
 
                     for(int k=0; k<m_faces.size(); k++)
+                    {
                         m_faces[k]->m_used=false;
-
+                    }
                     //search for a valid normal of region i
                     NormalT n_i;
                     do
@@ -982,6 +1000,11 @@ void HalfEdgeMesh<VertexT, NormalT>::optimizePlaneIntersections()
                         dragOntoIntersection(m_regions[j], m_regions[i]->m_region, x, direction);
                     }
                 }
+            }
+        }
+        ++progress;
+    }
+    cout << endl;
 }
 
 template<typename VertexT, typename NormalT>
