@@ -31,10 +31,13 @@ void HalfEdgeMesh<VertexT, NormalT>::deleteVertex(HVertex* v)
 {
 	// Delete HalfEdgeVertex and decrease vertex counter
 	typename vector<HVertex*>::iterator it = m_vertices.begin();
-	while(*it != v) it++;
-	m_vertices.erase(it);
-	m_globalIndex--;
-	delete v;
+	while(*it != v && it != m_vertices.end()) it++;
+	if (it != m_vertices.end())
+	{
+		m_vertices.erase(it);
+		m_globalIndex--;
+		delete v;
+	}
 }
 
 template<typename VertexT, typename NormalT>
@@ -356,8 +359,9 @@ void HalfEdgeMesh<VertexT, NormalT>::deleteFace(HFace* f)
 
 	//delete face
 	typename vector<HalfEdgeFace<VertexT, NormalT>*>::iterator face_iter = m_faces.begin();
-	while(*face_iter != f) face_iter++;
-	m_faces.erase(face_iter);
+	while(*face_iter != f && face_iter != m_faces.end()) face_iter++;
+	if (face_iter != m_faces.end())
+		m_faces.erase(face_iter);
 	delete f;
 }
 
@@ -368,25 +372,29 @@ void HalfEdgeMesh<VertexT, NormalT>::deleteEdge(HEdge* edge, bool deletePair)
 
 	//delete references from start point to outgoing edge
 	it = edge->start->out.begin();
-	while(*it != edge) it++;
-	edge->start->out.erase(it);
+	while(*it != edge && it != edge->start->out.end()) it++;
+	if (it != edge->start->out.end())
+		edge->start->out.erase(it);
 
 	//delete references from end point to incoming edge
 	it = edge->end->in.begin();
-	while(*it != edge) it++;
-	edge->end->in.erase(it);
+	while(*it != edge && it != edge->end->in.end()) it++;
+	if(it != edge->end->in.end())
+		edge->end->in.erase(it);
 
 	if(deletePair)
 	{
 		//delete references from start point to outgoing edge
 		it = edge->pair->start->out.begin();
-		while(*it != edge->pair) it++;
-		edge->pair->start->out.erase(it);
+		while(*it != edge->pair && it != edge->pair->start->out.end()) it++;
+		if (it != edge->pair->start->out.end())
+			edge->pair->start->out.erase(it);
 
 		//delete references from end point to incoming edge
 		it = edge->pair->end->in.begin();
-		while(*it != edge->pair) it++;
-		edge->pair->end->in.erase(it);
+		while(*it != edge->pair && it != edge->pair->end->in.begin()) it++;
+		if (it != edge->pair->end->in.begin())
+			edge->pair->end->in.erase(it);
 
 		delete edge->pair;
 	}
@@ -396,6 +404,10 @@ void HalfEdgeMesh<VertexT, NormalT>::deleteEdge(HEdge* edge, bool deletePair)
 template<typename VertexT, typename NormalT>
 void HalfEdgeMesh<VertexT, NormalT>::collapseEdge(HEdge* edge)
 {
+	if(edge->face != 0 && edge->next->pair->face == 0 && edge->next->next->pair->face == 0 || edge->pair->face != 0 && edge->pair->next->pair->face == 0 && edge->pair->next->next->pair->face == 0){
+		cout<<"verweigert"<<endl;
+		return;
+	}
 	// Save start and end vertex
 	HVertex* p1 = edge->start;
 	HVertex* p2 = edge->end;
@@ -427,16 +439,18 @@ void HalfEdgeMesh<VertexT, NormalT>::collapseEdge(HEdge* edge)
 	if(edge->pair->face != 0)
 	{
 		face_iter = m_faces.begin();
-		while(*face_iter != edge->pair->face) face_iter++;
-		m_faces.erase(face_iter);
+		while(*face_iter != edge->pair->face && face_iter != m_faces.end()) face_iter++;
+		if (face_iter != m_faces.end())
+			m_faces.erase(face_iter);
 		delete edge->pair->face;
 	}
 
 	if(edge->face != 0)
 	{
 		face_iter = m_faces.begin();
-		while(*face_iter != edge->face) face_iter++;
-		m_faces.erase(face_iter);
+		while(*face_iter != edge->face && face_iter != m_faces.end()) face_iter++;
+		if (face_iter != m_faces.end())
+			m_faces.erase(face_iter);
 		delete edge->face;
 	}
 
@@ -459,6 +473,8 @@ void HalfEdgeMesh<VertexT, NormalT>::collapseEdge(HEdge* edge)
 		p1->in.push_back(*it);
 		it++;
 	}
+	p2->out.clear();
+	p2->in.clear();
 
 	//Delete p2
 	deleteVertex(p2);
@@ -716,7 +732,7 @@ void HalfEdgeMesh<VertexT, NormalT>::fillHoles(int max_size)
     {
         for(int k=0; k<3; k++)
         {
-            if((*m_faces[i])[k]->pair->face == 0 && m_faces[i]->m_region->m_inPlane)
+            if((*m_faces[i])[k]->pair->used == false && (*m_faces[i])[k]->pair->face == 0 && m_faces[i]->m_region->m_inPlane)
             {
                 //needed for contour tracking
                 stack<HEdge*> contour;
@@ -920,7 +936,8 @@ void HalfEdgeMesh<VertexT, NormalT>::finalize()
 		this->m_indexBuffer[3 * i + 2]  = index_map[(*(*face_iter))(2)];
 		
 		int surface_class = 1;
-		surface_class = (*face_iter)->m_region->m_region_number;
+		if ((*face_iter)->m_region != 0)
+			surface_class = (*face_iter)->m_region->m_region_number;
 
 		float r, g, b;
 		if(m_colorRegions)
