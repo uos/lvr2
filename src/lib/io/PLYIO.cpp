@@ -425,22 +425,34 @@ void PLYIO::writeElements(ofstream &out)
 	// the declared order
 	for(size_t i = 0; i < m_elements.size(); i++)
 	{
+
+	    // Vertices
 		if(m_elements[i]->getName() == "vertex")
 		{
 			m_binary ? writeVerticesBinary(out, m_elements[i])
 					 : writeVerticesASCII(out, m_elements[i]);
 		}
 
+		// Faces
 		if(m_elements[i]->getName() == "face")
 		{
 
 			m_binary ? writeFacesBinary(out, m_elements[i]) : writeFacesASCII(out, m_elements[i]);
 		}
 
+		// Point normals
 		if(m_elements[i]->getName() == "normal")
 		{
 			m_binary ? writeNormalsBinary(out, m_elements[i]) : writeNormalsASCII(out, m_elements[i]);
 		}
+
+		// Points
+		if(m_elements[i]->getName() == "point")
+		{
+		    m_binary ? writePointsBinary(out, m_elements[i]) : writePointsASCII(out, m_elements[i]);
+		}
+
+
 	}
 }
 
@@ -498,6 +510,60 @@ void PLYIO::writeVerticesASCII(ofstream &out, PLYElement *e)
 
 		out << endl;
 	}
+}
+
+void PLYIO::writePointsASCII(ofstream &out, PLYElement *e)
+{
+    assert(m_points);
+
+    vector<Property*>::iterator current, last;
+    string property_name;
+
+    for(size_t i = 0; i < m_numPoints; i++)
+    {
+        // Since we don't know the order in which the properties are
+        // written, we have to determine the order. Right know i don't
+        // know how to solve this nicely, so I just iterate over
+        // the property vector for each vertex and write the corresponding
+        // information
+        current = e->getFirstProperty();
+        last = e->getLastProperty();
+
+        while(current != last)
+        {
+            property_name = (*current)->getName();
+            if(property_name == "x")
+            {
+                out << m_points[i][0] << " ";
+            }
+            else if (property_name == "y")
+            {
+                out << m_points[i][1] << " ";
+            }
+            else if (property_name == "z")
+            {
+                out << m_points[i][2] << " ";
+            }
+            else if (property_name == "r")
+            {
+                assert(m_pointColors);
+                out << (int)m_pointColors[i][0] << " ";
+            }
+            else if (property_name == "g")
+            {
+                assert(m_pointColors);
+                out << (int)m_pointColors[i][1] << " ";
+            }
+            else if (property_name == "b")
+            {
+                assert(m_pointColors);
+                out << (int)m_pointColors[i][2] << " ";
+            }
+            current++;
+        }
+
+        out << endl;
+    }
 }
 
 void PLYIO::writeFacesASCII(ofstream &out, PLYElement *e)
@@ -631,6 +697,70 @@ void PLYIO::writeNormalsASCII(ofstream &out, PLYElement* e)
 	}
 }
 
+
+void PLYIO::writePointsBinary(ofstream &out, PLYElement* e)
+{
+    assert(m_points);
+
+    // Iterators for property traversal
+    vector<Property*>::iterator current, first, last;
+    first = e->getFirstProperty();
+    last = e->getLastProperty();
+
+    // Determine the number of bytes we need to write all
+    // properties. Assume that only supported properties
+    // are given.
+    size_t buffer_size = 0;
+    for(current = first; current != last; current++)
+    {
+        buffer_size += (*current)->getValueSize();
+    }
+
+    // Allocate buffer memory
+    char buffer[buffer_size];
+    char *pos;
+
+    // Iterate through all vertices and properties (same problem
+    // as with writing in ASCII) and copy the corresponding data
+    // into the buffer
+    for(size_t i = 0; i < m_numPoints; i++)
+    {
+
+        // Reset buffer
+        memset(buffer, 0, buffer_size);
+        pos = buffer;
+
+        // Parse properties and write into buffer
+        size_t i = 0;
+        for(current = first; current != last; current++)
+        {
+            Property* p = (*current);
+            string property_name = p->getName();
+            string property_type = p->getElementTypeStr();
+            if( property_name == "x"  )
+            {
+                pos = putElementInBuffer(pos, property_type, m_points[i][0]);
+            }
+            else if ( property_name == "y" )
+            {
+                pos = putElementInBuffer(pos, property_type, m_points[i][1]);
+            }
+            else if ( property_name == "z" )
+            {
+                pos = putElementInBuffer(pos, property_type, m_points[i][2]);
+            }
+            else
+            {
+                pos = putElementInBuffer(pos, property_type, 0);
+            }
+            i++;
+        }
+
+        // Write buffer to stream
+        out.write(buffer, buffer_size);
+    }
+
+}
 
 
 void PLYIO::writeNormalsBinary(ofstream &out, PLYElement* e)
