@@ -242,6 +242,8 @@ private:
 	void writeElements(ofstream &str);
 	void writeFacesBinary(ofstream &str, PLYElement* e);
 	void writeFacesASCII(ofstream &str, PLYElement* e);
+	void writePointsBinary(ofstream &str, PLYElement* e);
+	void writePointsASCII(ofstream &str, PLYElement* e);
 	void writeVerticesBinary(ofstream &str, PLYElement* e);
 	void writeVerticesASCII(ofstream &str, PLYElement* e);
 	void writeNormalsBinary(ofstream &out, PLYElement* e);
