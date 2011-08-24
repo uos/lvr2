@@ -268,11 +268,13 @@ private:
 
 	void deleteBuffers();
 	void allocVertexBuffers(PLYElement* dscr);
-
-	void copyElementToVertexBuffer(ifstream &str, Property*, float* buffer, size_t position);
+	void allocPointBuffers(PLYElement* descr);
 
 	template<typename T>
-	void copyElementToVertexBuffer(char* src, float* buffer, size_t positon);
+	void copyElementToBuffer(ifstream &str, Property*, T* buffer, size_t position);
+
+	template<typename T>
+	void copyElementToIndexedBuffer(ifstream &str, Property*, T** buffer, size_t position, size_t index);
 
 	bool 					m_binary;
 	vector<PLYElement*> 	m_elements;
