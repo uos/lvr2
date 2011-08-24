@@ -10,6 +10,9 @@ using std::stringstream;
 #include <boost/progress.hpp>
 
 
+#include "io/Progress.hpp"
+#include "io/Timestamp.hpp"
+
 using boost::algorithm::to_lower;
 using boost::algorithm::is_equal;
 
@@ -771,6 +774,64 @@ void PLYIO::allocVertexBuffers(PLYElement* descr)
 	}
 }
 
+void PLYIO::allocPointBuffers(PLYElement* descr)
+{
+    // Alloc memory for points
+    m_points = new float*[m_numPoints];
+    for(int i = 0; i < m_numPoints; i++)
+    {
+        m_points[i] = new float[3];
+        m_points[i][0] = m_points[i][1] = m_points[i][2] = 0.0f;
+    }
+
+    // Check for additional attributes
+    vector<Property*>::iterator it;
+    for(it = descr->getFirstProperty(); it != descr->getLastProperty(); it++)
+    {
+        string property_name = (*it)->getName();
+
+        // Colors
+        if(property_name == "r" || property_name == "g" || property_name == "b")
+        {
+            // Alloc buffer if nor already done
+            if(!m_pointColors)
+            {
+                m_pointColors = new unsigned char*[m_numPoints];
+                for(int i = 0; i < m_numPoints; i++)
+                {
+                    m_pointColors[i] = new unsigned char[3];
+                    m_pointColors[i][0] = m_pointColors[i][1] = m_pointColors[i][2] = 255;
+                }
+            }
+        }
+
+        // Intensities
+        if(property_name == "i")
+        {
+            if(!m_intensities)
+            {
+                m_intensities = new float[m_numPoints];
+                memset(m_intensities, 0, m_numPoints * sizeof(float));
+            }
+        }
+
+        // Normals
+        if(property_name == "nx" || property_name == "ny" || property_name == "nz")
+        {
+            // Alloc buffer if nor already done
+            if(!m_pointNormals)
+            {
+                m_pointNormals = new float*[m_numPoints];
+                for(int i = 0; i < m_numPoints; i++)
+                {
+                    m_pointNormals[i] = new float[3];
+                    m_pointNormals[i][0] = m_pointNormals[i][1] = m_pointNormals[i][2] = 255;
+                }
+            }
+        }
+    }
+}
+
 void PLYIO::deleteBuffers()
 {
 
@@ -799,16 +860,118 @@ void PLYIO::deleteBuffers()
 	}
 }
 
+void PLYIO::readPointsBinary(ifstream &in, PLYElement* descr)
+{
+    // Get number of points in file
+    m_numPoints = descr->getCount();
+
+    // Alloc buffers
+    allocPointBuffers(descr);
+
+    // Read stored points
+    string msg = timestamp.getElapsedTime() + " Reading points";
+    ProgressBar progress(m_numPoints, msg);
+    vector<Property*>::iterator it;
+    for(size_t i = 0; i < m_numPoints; i++)
+    {
+        for(it = descr->getFirstProperty(); it != descr->getLastProperty(); it++)
+        {
+            // TODO: Calculate buffer position only once.
+            Property* p = *it;
+            if(p->getName() == "x")
+            {
+                copyElementToIndexedBuffer<float>(in, p, m_points, i, 0);
+            }
+            else if(p->getName() == "y")
+            {
+                copyElementToIndexedBuffer<float>(in, p, m_points, i, 1);
+            }
+            else if(p->getName() == "z")
+            {
+                copyElementToIndexedBuffer<float>(in, p, m_points, i, 2);
+            }
+            else if(p->getName() == "r")
+            {
+                copyElementToIndexedBuffer<unsigned char>(in, p, m_pointColors, i, 0 );
+            }
+            else if(p->getName() == "g")
+            {
+                copyElementToIndexedBuffer<unsigned char>(in, p, m_pointColors, i, 1);
+            }
+            else if(p->getName() == "b")
+            {
+                copyElementToIndexedBuffer<unsigned char>(in, p, m_pointColors, i, 2);
+            }
+            else if(p->getName() == "nx")
+            {
+                copyElementToIndexedBuffer<float>(in, p, m_pointNormals, i, 0 );
+            }
+            else if(p->getName() == "ny")
+            {
+                copyElementToIndexedBuffer<float>(in, p, m_pointNormals, i, 1);
+            }
+            else if(p->getName() == "nz")
+            {
+                copyElementToIndexedBuffer<float>(in, p, m_pointNormals, i, 2);
+            }
+        }
+        ++progress;
+    }
+    cout << endl;
+}
+
+
 void PLYIO::readPointsASCII(ifstream &in, PLYElement* descr)
 {
 
+    // Get number of vertices
+    m_numPoints = descr->getCount();
+
+    // Allocate memory for needed buffers
+    allocVertexBuffers(descr);
+
+    // Read all vertices
+    vector<Property*>::iterator it;
+    for(size_t i = 0; i < m_numPoints; i++)
+    {
+        // Parse through all properties and load the
+        // supported ones
+        it = descr->getFirstProperty();
+        while(it != descr->getLastProperty())
+        {
+            Property* p = *it;
+            string property_name = p->getName();
+            if(property_name == "x")
+            {
+                in >> m_points[i][0];
+            }
+            else if(property_name == "y")
+            {
+                in >> m_points[i][1];
+            }
+            else if(property_name == "z")
+            {
+                in >> m_points[i][2];
+            }
+            else if(property_name == "r")
+            {
+                in >> m_pointColors[i][0];
+            }
+            else if(property_name == "g")
+            {
+                in >> m_pointColors[i][1];
+            }
+            else if(property_name == "b")
+            {
+                in >> m_pointColors[i][2];
+            }
+            it++;
+        }
+//      cout << m_vertices[3 * i    ] << " "
+//           << m_vertices[3 * i + 1] << " "
+//           << m_vertices[3 * 1 + 2] << endl;
+    }
 }
-
-void PLYIO::readPointsBinary(ifstream &in, PLYElement* descr)
-{
-
-}
-
 
 void PLYIO::readVerticesASCII(ifstream &in, PLYElement* descr)
 {
@@ -873,39 +1036,43 @@ void PLYIO::readVerticesBinary(ifstream &in, PLYElement* descr)
 	allocVertexBuffers(descr);
 
 	// Read all vertices
+	string msg = timestamp.getElapsedTime() + " Reading vertices";
+	ProgressBar progress(m_numberOfVertices, msg);
 	vector<Property*>::iterator it;
 	for(size_t i = 0; i < m_numberOfVertices; i++)
 	{
-		if(i % 100000 == 0) cout << "Reading points: " << i << endl;
+		if(i % 100000 == 0) cout << "Reading vertices: " << i << endl;
 		for(it = descr->getFirstProperty(); it != descr->getLastProperty(); it++)
 		{
 			// TODO: Calculate buffer position only once.
 			Property* p = *it;
 			if(p->getName() == "x")
 			{
-				copyElementToVertexBuffer(in, p, m_vertices,  i * 3);
+				copyElementToBuffer<float>(in, p, m_vertices,  i * 3);
 			}
 			else if(p->getName() == "y")
 			{
-				copyElementToVertexBuffer(in, p, m_vertices, i * 3 + 1);
+				copyElementToBuffer<float>(in, p, m_vertices, i * 3 + 1);
 			}
 			else if(p->getName() == "z")
 			{
-				copyElementToVertexBuffer(in, p, m_vertices, i * 3 + 2);
+				copyElementToBuffer<float>(in, p, m_vertices, i * 3 + 2);
 			}
 			else if(p->getName() == "r")
 			{
-				copyElementToVertexBuffer(in, p, m_vertexColors, i * 3);
+				copyElementToBuffer<float>(in, p, m_vertexColors, i * 3);
 			}
 			else if(p->getName() == "g")
 			{
-				copyElementToVertexBuffer(in, p, m_vertexColors, i * 3 + 1);
+				copyElementToBuffer<float>(in, p, m_vertexColors, i * 3 + 1);
 			}
 			else if(p->getName() == "b")
 			{
-				copyElementToVertexBuffer(in, p, m_vertexColors, i * 3 + 2);
+				copyElementToBuffer<float>(in, p, m_vertexColors, i * 3 + 2);
 			}
+			++progress;
 		}
+		cout << endl;
 //				cout << m_vertices[i    ] << " "
 //					 << m_vertices[i + 1] << " "
 //					 << m_vertices[i + 2] << endl;
@@ -946,15 +1113,15 @@ void PLYIO::readNormalsBinary(ifstream &in, PLYElement* descr)
 			Property* p = *it;
 			if( (p->getName() == "x") || (p->getName() == "nx") )
 			{
-				copyElementToVertexBuffer(in, p, m_vertexNormals,  i * 3);
+				copyElementToBuffer<float>(in, p, m_vertexNormals,  i * 3);
 			}
 			else if( (p->getName() == "y") || (p->getName() == "ny"))
 			{
-				copyElementToVertexBuffer(in, p, m_vertexNormals, i * 3 + 1);
+				copyElementToBuffer<float>(in, p, m_vertexNormals, i * 3 + 1);
 			}
 			else if( (p->getName() == "z") || (p->getName() == "nz"))
 			{
-				copyElementToVertexBuffer(in, p, m_vertexNormals, i * 3 + 2);
+				copyElementToBuffer<float>(in, p, m_vertexNormals, i * 3 + 2);
 			}
 		}
 	}
@@ -992,56 +1159,111 @@ void PLYIO::readNormalsASCII(ifstream &in, PLYElement* descr)
 	}
 }
 
-// TODO: Maybe we can write some kind of template implementation???
-void PLYIO::copyElementToVertexBuffer(ifstream &in, Property* p, float* buffer, size_t position)
+template<typename T>
+void PLYIO::copyElementToIndexedBuffer(ifstream &in,
+        Property* p, T** buffer, size_t position, size_t index)
+{
+    if(p->getElementTypeStr() == "char")
+        {
+            char tmp = 0;
+            in.read(&tmp, sizeof(char));
+            buffer[position][index] = (T)tmp;
+        }
+        else if(p->getElementTypeStr() == "uchar")
+        {
+            unsigned char tmp = 0;
+            in.read((char*)&tmp, sizeof(unsigned char));
+            buffer[position][index] = (T)tmp;
+        }
+        else if(p->getElementTypeStr() == "short")
+        {
+            short tmp = 0;
+            in.read((char*)&tmp, sizeof(short));
+            buffer[position][index] = (T)tmp;
+        }
+        else if(p->getElementTypeStr() == "ushort")
+        {
+            unsigned short tmp = 0;
+            in.read((char*)&tmp, sizeof(unsigned short));
+            buffer[position][index] = (T)tmp;
+        }
+        else if(p->getElementTypeStr() == "int")
+        {
+            int tmp = 0;
+            in.read((char*)&tmp, sizeof(int));
+            buffer[position][index] = (T)tmp;
+        }
+        else if(p->getElementTypeStr() == "uint")
+        {
+            unsigned int tmp = 0;
+            in.read((char*)&tmp, sizeof(unsigned int));
+            buffer[position][index] = (T)tmp;
+        }
+        else if(p->getElementTypeStr() == "float")
+        {
+            float tmp;
+            in.read((char*)&tmp, sizeof(T));
+            buffer[position][index] = tmp;
+        }
+        else if(p->getElementTypeStr() == "double")
+        {
+            double tmp = 0;
+            in.read((char*)&tmp, sizeof(double));
+            buffer[position][index] = (T)tmp;
+        }
+}
+
+
+template<typename T>
+void PLYIO::copyElementToBuffer(ifstream &in, Property* p, T* buffer, size_t position)
 {
 	if(p->getElementTypeStr() == "char")
 	{
 		char tmp = 0;
 		in.read(&tmp, sizeof(char));
-		buffer[position] = (float)tmp;
+		buffer[position] = (T)tmp;
 	}
 	else if(p->getElementTypeStr() == "uchar")
 	{
 		unsigned char tmp = 0;
 		in.read((char*)&tmp, sizeof(unsigned char));
-		buffer[position] = (float)tmp;
+		buffer[position] = (T)tmp;
 	}
 	else if(p->getElementTypeStr() == "short")
 	{
 		short tmp = 0;
 		in.read((char*)&tmp, sizeof(short));
-		buffer[position] = (float)tmp;
+		buffer[position] = (T)tmp;
 	}
 	else if(p->getElementTypeStr() == "ushort")
 	{
 		unsigned short tmp = 0;
 		in.read((char*)&tmp, sizeof(unsigned short));
-		buffer[position] = (float)tmp;
+		buffer[position] = (T)tmp;
 	}
 	else if(p->getElementTypeStr() == "int")
 	{
 		int tmp = 0;
 		in.read((char*)&tmp, sizeof(int));
-		buffer[position] = (float)tmp;
+		buffer[position] = (T)tmp;
 	}
 	else if(p->getElementTypeStr() == "uint")
 	{
 		unsigned int tmp = 0;
 		in.read((char*)&tmp, sizeof(unsigned int));
-		buffer[position] = (float)tmp;
+		buffer[position] = (T)tmp;
 	}
 	else if(p->getElementTypeStr() == "float")
 	{
 		float tmp;
 		in.read((char*)&tmp, sizeof(float));
-		buffer[position] = tmp;
+		buffer[position] = (T)tmp;
 	}
 	else if(p->getElementTypeStr() == "double")
 	{
 		double tmp = 0;
 		in.read((char*)&tmp, sizeof(double));
-		buffer[position] = (float)tmp;
+		buffer[position] = (T)tmp;
 	}
 }
 
@@ -1061,7 +1283,7 @@ void PLYIO::readFacesASCII(ifstream &in, PLYElement* descr)
 		position = i * 3;
 		in >> count >> a >> b >> c;
 		//cout << count << " " << a << " " << b << " " << c << endl;
-		if(count != 3) cout << "PLYIO::readFacesASCII(): Warning: Indexed face is not a triangle." << endl;
+		if(count != 3) cout << timestamp << "PLYIO::readFacesASCII(): Warning: Indexed face is not a triangle." << endl;
 		m_indices[position    ] = a;
 		m_indices[position + 1] = b;
 		m_indices[position + 2] = c;
@@ -1098,7 +1320,7 @@ void PLYIO::readFacesBinary(ifstream &in, PLYElement* descr)
 	// Be sure that we found a vertex_list property
 	if(list_property == 0)
 	{
-		cout << "PLYIO::readFacesBinary() : Warning 'vertex_indices' property not found." << endl;
+		cout << timestamp << "PLYIO::readFacesBinary() : Warning 'vertex_indices' property not found." << endl;
 		// TO DO: Fix possible leak here.
 		return;
 	}
@@ -1267,7 +1489,7 @@ void PLYIO::readFacesBinary(ifstream &in, PLYElement* descr)
 
 bool PLYIO::isSupported(string element_name)
 {
-	return element_name == "vertex" || element_name == "face" || element_name == "normal";
+	return element_name == "vertex" || element_name == "face" || element_name == "normal" || element_name == "point";
 }
 
 void PLYIO::writeFacesBinary(ofstream &out, PLYElement* e)
