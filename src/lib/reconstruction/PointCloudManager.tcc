@@ -46,7 +46,6 @@ const VertexT PointCloudManager<VertexT, NormalT>::operator[](const size_t& inde
 template<typename VertexT, typename NormalT>
 void PointCloudManager<VertexT, NormalT>::readFromFile(string filename)
 {
-    cout << 1 << filename << endl;
     // Try to parse file
     IOFactory io(filename);
 
@@ -56,11 +55,8 @@ void PointCloudManager<VertexT, NormalT>::readFromFile(string filename)
     // Save points and normals (if present)
     if(loader)
     {
-        cout << 1 << endl;
         m_points = loader->getPointArray();
-        cout << 2 << endl;
         m_normals = loader->getPointNormalArray();
-        cout << 3 << endl;
         m_numPoints = loader->getNumPoints();
     }
     else
