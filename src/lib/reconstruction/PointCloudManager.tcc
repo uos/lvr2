@@ -9,9 +9,8 @@
 #include <string>
 using std::string;
 
-#include "../io/PLYIO.hpp"
-#include "../io/AsciiIO.hpp"
-#include "../io/UosIO.hpp"
+#include "../io/Timestamp.hpp"
+#include "../io/IOFactory.hpp"
 
 #include <boost/filesystem.hpp>
 
@@ -47,38 +46,29 @@ const VertexT PointCloudManager<VertexT, NormalT>::operator[](const size_t& inde
 template<typename VertexT, typename NormalT>
 void PointCloudManager<VertexT, NormalT>::readFromFile(string filename)
 {
-    // Check extension
-    boost::filesystem::path selectedFile(filename);
-    string extension = selectedFile.extension().c_str();
+    cout << 1 << filename << endl;
+    // Try to parse file
+    IOFactory io(filename);
 
-    if(extension == ".pts" || extension == ".3d" || extension == ".xyz" || extension == ".txt")
-    {
-        AsciiIO asciiIO;
-        asciiIO.read(filename);
-        this->m_points = asciiIO.getPointArray();
-        this->m_numPoints = asciiIO.getNumPoints();
-        this->m_normals = 0;
-        this->m_colors = 0;
-    }
-    else if(extension == ".ply")
-    {
-        // Read given input file
-        PLYIO plyio;
-        plyio.read(filename);
+    // Get PoinLoader
+    PointLoader* loader = io.getPointLoader();
 
-        this->m_points =  plyio.getIndexedVertexArray(this->m_numPoints);
-        this->m_normals = plyio.getIndexedNormalArray(this->m_numPoints);
-        this->m_colors = 0;
-    }
-    else if(extension == "")
+    // Save points and normals (if present)
+    if(loader)
     {
-        UosIO uosio;
-        uosio.read(filename);
-        this->m_points = uosio.getPointArray();
-        this->m_numPoints = uosio.getNumPoints();
-        this->m_normals = uosio.getPointNormalArray();
-        this->m_colors = uosio.getPointColorArray();
+        cout << 1 << endl;
+        m_points = loader->getPointArray();
+        cout << 2 << endl;
+        m_normals = loader->getPointNormalArray();
+        cout << 3 << endl;
+        m_numPoints = loader->getNumPoints();
     }
+    else
+    {
+        cout << timestamp << "PointCloudManager::readFromFile: Unable to read point cloud data from "
+             << filename << endl;
+    }
+
 }
 
 }

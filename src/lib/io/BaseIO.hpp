@@ -13,6 +13,9 @@
 
 using std::string;
 
+namespace lssr
+{
+
 /**
  * @brief Interface specification for low-level io. All read
  *        elements are stored in linear arrays.
@@ -37,5 +40,7 @@ public:
     virtual void save(string filename) = 0;
 
 };
+
+} // namespace lssr
 
 #endif /* BASEIO_HPP_ */

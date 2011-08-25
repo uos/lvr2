@@ -20,6 +20,7 @@ namespace lssr
 
 void AsciiIO::read(string filename)
 {
+    cout << "READ" << endl;
     // Check extension
     boost::filesystem::path selectedFile(filename);
     string extension(selectedFile.extension().c_str());
