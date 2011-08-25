@@ -435,6 +435,7 @@ void HalfEdgeMesh<VertexT, NormalT>::collapseEdge(HEdge* edge)
 	// Delete faces
 	if(edge->pair->face != 0)
 	{
+
 		remove(m_faces.begin(), m_faces.end(),edge->pair->face);
 		if(edge->pair->face->m_region != 0)
 			edge->pair->face->m_region->removeFace(edge->pair->face);
@@ -444,6 +445,7 @@ void HalfEdgeMesh<VertexT, NormalT>::collapseEdge(HEdge* edge)
 
 	if(edge->face != 0)
 	{
+
 		remove(m_faces.begin(), m_faces.end(),edge->face);
 		if(edge->face->m_region != 0)
 			edge->face->m_region->removeFace(edge->face);
