@@ -75,11 +75,16 @@ public:
 	 */
 	virtual NormalT getNormal();
 
-	/*
+	/**
 	 * @brief caluclates a regression plane for the region and fits all faces into this plane
 	 *
 	 */
 	virtual void regressionPlane();
+
+	/**
+	 * @ brief sets the m_region of all faces to 0 and clears m_faces
+	 */
+	virtual void dropAllFaces();
 
 	/**
 	 * @brief destructor.
