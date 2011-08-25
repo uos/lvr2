@@ -170,20 +170,22 @@ int main(int argc, char** argv)
     FastReconstruction<Vertex<float>, Normal<float> > reconstruction(*pcm, resolution, useVoxelsize);
     reconstruction.getMesh(mesh);
 
-    mesh.removeDanglingArtifacts(options.getDanglingArtifacts());
+//    mesh.removeDanglingArtifacts(options.getDanglingArtifacts());
+//
+//    // Optimize mesh
+//    if(options.optimizePlanes())
+//    {
+//        if(options.colorRegions()) mesh.enableRegionColoring();
+//        mesh.optimizePlanes(options.getPlaneIterations(),
+//                            options.getNormalThreshold(),
+//                            options.getMinPlaneSize(),
+//                            options.getSmallRegionThreshold() );
+//    }
 
-    // Optimize mesh
-    if(options.optimizePlanes())
-    {
-        if(options.colorRegions()) mesh.enableRegionColoring();
-        mesh.optimizePlanes(options.getPlaneIterations(),
-                            options.getNormalThreshold(),
-                            options.getMinPlaneSize(),
-                            options.getSmallRegionThreshold() );
-    }
+//    mesh.fillHoles(options.getFillHoles());
+//    mesh.optimizePlaneIntersections();
 
-    mesh.fillHoles(options.getFillHoles());
-    mesh.optimizePlaneIntersections();
+    mesh.tester();
 
     // Save triangle mesh
     mesh.finalize();
