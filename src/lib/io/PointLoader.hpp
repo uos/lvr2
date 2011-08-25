@@ -29,7 +29,6 @@ public:
      */
     virtual float**  getPointArray()
     {
-        std::cout << "getPointArray()" << std::endl;
         return m_points;
     }
 
