@@ -16,6 +16,7 @@
 #include <sstream>
 #include <vector>
 
+#include "BaseIO.hpp"
 #include "PointLoader.hpp"
 #include "AsciiIO.hpp"
 
@@ -45,7 +46,7 @@ namespace lssr
  * .pose files will be sued to transform the scans.
  */
 
-class UosIO : public PointLoader
+class UosIO : public BaseIO, public PointLoader
 {
 public:
 
@@ -88,6 +89,8 @@ public:
     indexPair getScanRange(int num);
 
     int getNumScans() { return m_numScans;}
+
+    void save(string filename) {}
 
 private:
 

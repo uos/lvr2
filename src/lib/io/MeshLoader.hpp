@@ -8,6 +8,12 @@
 #ifndef MESHIO_HPP_
 #define MESHIO_HPP_
 
+
+#include <cstring>
+
+namespace lssr
+{
+
 class MeshLoader
 {
     /**
@@ -44,7 +50,7 @@ class MeshLoader
 
 protected:
 
-    float*                    m_vertices;
+    float*                  m_vertices;
     float*                  m_vertexNormals;
     float*                  m_vertexColors;
     unsigned int*           m_indices;
@@ -54,5 +60,7 @@ protected:
     size_t                  m_numberOfFaces;
 
 };
+
+} // namespace lssr
 
 #endif /* MESHIO_HPP_ */

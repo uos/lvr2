@@ -8,6 +8,12 @@
 #ifndef POINTIO_HPP_
 #define POINTIO_HPP_
 
+#include <cstring>
+#include <iostream>
+
+namespace lssr
+{
+
 class PointLoader
 {
 public:
@@ -23,6 +29,7 @@ public:
      */
     virtual float**  getPointArray()
     {
+        std::cout << "getPointArray()" << std::endl;
         return m_points;
     }
 
@@ -84,5 +91,6 @@ protected:
     size_t           m_numPoints;
 };
 
+} // namespace lssr
 
 #endif /* POINTIO_HPP_ */
