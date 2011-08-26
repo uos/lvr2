@@ -8,12 +8,12 @@
 #include "GroundPlane.h"
 
 GroundPlane::GroundPlane() : Renderable("Ground Plane"){
-	listIndex = -1;
+	m_listIndex = -1;
 	drawGrid(10, 100);
 }
 
 GroundPlane::GroundPlane(int increment, int count) : Renderable("Ground Plane"){
-	listIndex = -1;
+	m_listIndex = -1;
 	drawGrid(increment, count);
 }
 
@@ -23,9 +23,9 @@ GroundPlane::~GroundPlane(){
 
 void GroundPlane::drawGrid(int increment, int count){
 
-	listIndex = glGenLists(1);
+	m_listIndex = glGenLists(1);
 
-	glNewList(listIndex, GL_COMPILE);
+	glNewList(m_listIndex, GL_COMPILE);
 	glPushMatrix();
 	glPushAttrib ( GL_CURRENT_BIT | GL_ENABLE_BIT | GL_POLYGON_BIT | GL_LINE_BIT ); // save colors and polygon offsets state to later restore.
 	glRotatef(-90, 1.0, 0.0, 0.0);
@@ -62,7 +62,7 @@ void GroundPlane::drawGrid(int increment, int count){
 }
 
 void GroundPlane::render(){
-	if(visible){
+	if(m_visible){
 		glDisable(GL_LIGHTING);
 		glCallList(listIndex);
 		glEnable(GL_LIGHTING);

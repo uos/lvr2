@@ -7,12 +7,6 @@
 
 #include "Viewer.h"
 
-#include "../data/DataCollector.h"
-
-#include <iostream>
-
-#include "model3d/PointCloud.h"
-
 Viewer::Viewer(QWidget* parent, const QGLWidget* shared)
 	: QGLViewer(parent, shared),  m_parent(parent) {}
 
@@ -37,31 +31,40 @@ void Viewer::resetCamera()
 {
 	qglviewer::Vec center(0, 0, 0);
 	setSceneCenter(center);
-	qglviewer::Vec v1(m_boundingBox.v_min.x, m_boundingBox.v_min.y, m_boundingBox.v_min.z);
-	qglviewer::Vec v2(m_boundingBox.v_max.x, m_boundingBox.v_max.y, m_boundingBox.v_max.z);
+
+	Vertex<float> v_min = m_boundingBox.getMin();
+	Vertex<float> v_max = m_boundingBox.getMax();
+
+	qglviewer::Vec v1(v_min.x, v_min.y, v_min.z);
+	qglviewer::Vec v2(v_max.x, v_max.y, v_max.z);
+
 	setSceneBoundingBox(v1, v2);
 	showEntireScene();
 }
 
 void Viewer::centerViewOnObject(Renderable* renderable)
 {
-    BoundingBox* bb = renderable->boundingBox();
+    BoundingBox<Vertex<float> >* bb = renderable->boundingBox();
 
     // Center view on selected object
-    Vertex centroid = bb->getCentroid();
+    Vertex<float> centroid = bb->getCentroid();
     qglviewer::Vec center(centroid[0], centroid[1], centroid[2]);
     setSceneCenter(center);
 
     // Set new scene boundaries
-    qglviewer::Vec v1(bb->v_min.x, bb->v_min.y, bb->v_min.z);
-    qglviewer::Vec v2(bb->v_max.x, bb->v_max.y, bb->v_max.z);
+    Vertex<float> v_min = m_boundingBox.getMin();
+    Vertex<float> v_max = m_boundingBox.getMax();
+
+    qglviewer::Vec v1(v_min.x, v_min.y, v_min.z);
+    qglviewer::Vec v2(v_max.x, v_max.y, v_max.z);
+
     setSceneBoundingBox(v1, v2);
     showEntireScene();
 }
 
 void Viewer::addDataObject(DataCollector* obj)
 {
-	BoundingBox* bb = (obj->renderable()->boundingBox());
+	BoundingBox<Vertex<float> >* bb = (obj->renderable()->boundingBox());
 	if(bb->isValid())
 	{
 	  m_boundingBox.expand(*bb);

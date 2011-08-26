@@ -20,8 +20,8 @@ CoordinateAxes::~CoordinateAxes() {
 }
 
 void CoordinateAxes::drawAxes(float length){
-	listIndex = glGenLists(1);
-	glNewList(listIndex, GL_COMPILE);
+	m_listIndex = glGenLists(1);
+	glNewList(m_listIndex, GL_COMPILE);
 	glPushAttrib ( GL_ALL_ATTRIB_BITS ); // save colors and polygon offsets state to later restore.
 	const float charWidth = length / 40.0f;
 	const float charHeight = length / 30.0f;
@@ -105,7 +105,7 @@ void CoordinateAxes::drawArrow ( float length, float radius, int nbSubdivisions 
 }
 
 void CoordinateAxes::render(){
-	if (visible){
+	if (m_visible){
 		glPushMatrix();
 		glScalef(10.0, 10.0, 10.0);
 		glCallList(listIndex);

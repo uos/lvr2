@@ -63,7 +63,6 @@ set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${ADDITIONAL_COMPILER_FLAGS} ${OpenMP_CX
 # LIBRARIES
 ##############################################################
 
-add_subdirectory(src/lib/model3d)
 add_subdirectory(src/lib)
 
 ##############################################################
@@ -85,7 +84,6 @@ if(QT4_FOUND)
   include_directories(${QT_QTOPENGL_INCLUDE_DIR})
   include_directories(${QT_QTCORE_INCLUDE_DIR})
   include_directories(${QT_QTXML_INCLUDE_DIR})
-  add_subdirectory(src/viewer)
 
   # Try to find libQGLViewer
   find_library(QGLVIEWER_LIBRARY_RELEASE 

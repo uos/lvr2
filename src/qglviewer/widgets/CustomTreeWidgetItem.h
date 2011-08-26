@@ -10,9 +10,28 @@
 
 #include <QtGui>
 
-#include "model3d/Renderable.h"
+#include "display/Renderable.hpp"
 
-enum {ServerItem = 1001, InterfaceItem, PointCloudItem, TriangleMeshItem, MultiPointCloudItem};
+using lssr::Renderable;
+
+enum {
+    ServerItem = 1001,
+    InterfaceItem,
+    PointCloudItem,
+    TriangleMeshItem,
+    MultiPointCloudItem
+};
+
+enum
+{
+    Mesh              = 0x01,
+    Points            = 0x02,
+    PointNormals      = 0x04,
+    VertexNormals     = 0x08,
+    VertexColors      = 0x10,
+    FaceColors        = 0x20
+};
+
 
 class CustomTreeWidgetItem : public QTreeWidgetItem
 {
@@ -29,17 +48,20 @@ public:
 	Renderable* renderable() { return m_renderable;}
 	void setName(string name);
 
-    bool centerOnClick() { return m_centerOnClick;}
-    void setViewCentering(bool center) { m_centerOnClick = true;}
+    bool centerOnClick()                { return m_centerOnClick;}
+    void setViewCentering(bool center)  { m_centerOnClick = true;}
 
     string name() { return m_name;}
 
+    void setSupportedRednerModes(int mode) {m_renderMode = mode;}
 protected:
 
 	Qt::CheckState      m_oldCheckState;
 	Renderable*         m_renderable;
 	string              m_name;
 	bool                m_centerOnClick;
+	int                 m_renderMode;
+
 };
 
 #endif /* CUSTOMTREEWIDGETITEM_H_ */

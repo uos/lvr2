@@ -105,9 +105,9 @@ void TransformationDialog::transformGlobal()
 void TransformationDialog::transformLocal()
 {
     // Transform object
-    Vertex translation(m_posX, m_posY, m_posZ);
-    Vertex rotation(m_rotX * 0.017453293, m_rotY * 0.017453293, m_rotZ * 0.017453293);
-    m_renderable->setTransformationMatrix(Matrix4(translation, rotation));
+    Vertex<float> translation(m_posX, m_posY, m_posZ);
+    Vertex<float> rotation(m_rotX * 0.017453293, m_rotY * 0.017453293, m_rotZ * 0.017453293);
+    m_renderable->setTransformationMatrix(Matrix4<float>(translation, rotation));
 
     // Update rendering
     m_parent->repaint();

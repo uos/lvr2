@@ -10,9 +10,17 @@
 
 #include <cstring>
 #include <iostream>
+#include <vector>
+
+using std::pair;
+using std::vector;
+typedef pair<size_t, size_t> indexPair;
+
 
 namespace lssr
 {
+
+
 
 class PointLoader
 {
@@ -72,6 +80,9 @@ public:
     {
         return m_numPoints;
     }
+
+    virtual vector<indexPair>& getScanRanges() { return m_scanRanges;}
+
 protected:
 
     /// Point cloud data
@@ -88,6 +99,9 @@ protected:
 
     /// Number of loaded points
     size_t           m_numPoints;
+
+    /// Vector to save the indices of the first and last points of single scans
+    vector<indexPair> m_scanRanges;
 };
 
 } // namespace lssr

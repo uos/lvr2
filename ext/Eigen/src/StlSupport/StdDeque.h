@@ -117,10 +117,10 @@ namespace std {
   void push_front(const value_type& x)
   { deque_base::push_front(x); }
   using deque_base::insert;  
-  iterator insert(const_iterator position, const value_type& x)
-  { return deque_base::insert(position,x); }
-  void insert(const_iterator position, size_type new_size, const value_type& x)
-  { deque_base::insert(position, new_size, x); }
+  iterator insert(const_iterator m_position, const value_type& x)
+  { return deque_base::insert(m_position,x); }
+  void insert(const_iterator m_position, size_type new_size, const value_type& x)
+  { deque_base::insert(m_position, new_size, x); }
 #elif defined(_GLIBCXX_DEQUE) && EIGEN_GNUC_AT_LEAST(4,2)
   // workaround GCC std::deque implementation
   void resize(size_type new_size, const value_type& x)
