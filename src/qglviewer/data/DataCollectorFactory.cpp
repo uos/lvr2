@@ -103,6 +103,23 @@ DataCollector* DataCollectorFactory::create(string filename)
 
 	}
 
+	if(point_loader)
+	{
+	    // Check for multi point object
+	    PointCloud* pc = new PointCloud(*point_loader);
+	    PointCloudTreeWidgetItem* item = new PointCloudTreeWidgetItem(PointCloudItem);
+	    item->setViewCentering(true);
+	    item->setName(name);
+	    item->setNumPoints(pc->m_points.size());
+	    item->setRenderable(pc);
+	    dataCollector = new Static3DDataCollector(pc, name, item);
+	}
+
+	if(dataCollector == 0)
+	{
+	    cout << "DataCollectorFactory::create(): Warning: Unable to parse given file." << endl;
+	}
+
 	return dataCollector;
 }
 

@@ -9,7 +9,10 @@
 #define POINTCLOUD_H_
 
 #include "Renderable.hpp"
+
+#include "io/PointLoader.hpp"
 #include "geometry/ColorVertex.hpp"
+
 
 #include <vector>
 #include <string>
@@ -22,34 +25,35 @@ namespace lssr
 
 class PointCloud : public Renderable{
 public:
-    PointCloud(string filename);
+
     PointCloud();
+    PointCloud(PointLoader& loader, string name = "<unamed cloud>");
 
     virtual ~PointCloud();
     virtual inline void render();
 
-    vector<uColorVertex> getPoints(){return points;};
+    vector<uColorVertex> getPoints(){return m_points;};
     void setPoints(){};
 
     void addPoint(float x, float y, float z, uchar r, uchar g, uchar b){
         m_boundingBox->expand(uColorVertex(x, y, z, r, g, b));
-        points.push_back(uColorVertex(x, y, z, r, g, b));
+        m_points.push_back(uColorVertex(x, y, z, r, g, b));
     };
 
     void addPoint(const uColorVertex v) {
         m_boundingBox->expand(v);
-        points.push_back(v);
+        m_points.push_back(v);
     };
 
     void clear(){
         delete m_boundingBox;
         m_boundingBox = new BoundingBox<Vertex<float> >;
-        points.clear();
+        m_points.clear();
     };
 
     void updateDisplayLists();
 //private:
-    vector<uColorVertex> points;
+    vector<uColorVertex> m_points;
 
 
 private:
