@@ -86,7 +86,7 @@ void MultiPointCloud::exportAllPoints(string filename)
             {
                 cout << "Exporting points from " << pc->Name() << " to " << filename << endl;
                 vector<uColorVertex>::iterator p_it;
-                for(p_it = pc->points.begin(); p_it != pc->points.end(); p_it++)
+                for(p_it = pc->m_points.begin(); p_it != pc->m_points.end(); p_it++)
                 {
                     uColorVertex v = *p_it;
                     out << v.x << " " << v.y << " " << v.z <<  " "
