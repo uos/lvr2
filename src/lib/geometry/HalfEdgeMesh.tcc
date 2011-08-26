@@ -32,7 +32,7 @@ template<typename VertexT, typename NormalT>
 void HalfEdgeMesh<VertexT, NormalT>::deleteVertex(HVertex* v)
 {
 	// Delete HalfEdgeVertex and decrease vertex counter
-	remove(m_vertices.begin(), m_vertices.end(), v);
+	m_vertices.erase(find(m_vertices.begin(), m_vertices.end(), v));
 	m_globalIndex--;
 	delete v;
 }
@@ -353,7 +353,7 @@ void HalfEdgeMesh<VertexT, NormalT>::deleteFace(HFace* f)
 	}
 
 	//delete face
-	remove(m_faces.begin(), m_faces.end(), f);
+	m_faces.erase(find(m_faces.begin(), m_faces.end(), f));
 	delete f;
 }
 
@@ -361,50 +361,39 @@ template<typename VertexT, typename NormalT>
 void HalfEdgeMesh<VertexT, NormalT>::deleteEdge(HEdge* edge, bool deletePair)
 {
 	//delete references from start point to outgoing edge
-	remove(edge->start->out.begin(),edge->start->out.end(), edge);
+	edge->start->out.erase(find(edge->start->out.begin(),edge->start->out.end(), edge));
 
 	//delete references from end point to incoming edge
-	remove(edge->end->in.begin(),edge->end->in.end(), edge);
+	edge->end->in.erase(find(edge->end->in.begin(),edge->end->in.end(), edge));
 
 	if(deletePair)
 	{
 		//delete references from start point to outgoing edge
-		remove(edge->pair->start->out.begin(), edge->pair->start->out.end(), edge->pair);
+		edge->pair->start->out.erase(find(edge->pair->start->out.begin(),edge->pair->start->out.end(), edge->pair));
 
 		//delete references from end point to incoming edge
-		remove(edge->pair->end->in.begin(), edge->pair->end->in.end(), edge->pair);
+		edge->pair->end->in.erase(find(edge->pair->end->in.begin(),edge->pair->end->in.end(), edge->pair));
 
 		delete edge->pair;
 	}
+
 	delete edge;
 }
 
 template<typename VertexT, typename NormalT>
 void HalfEdgeMesh<VertexT, NormalT>::collapseEdge(HEdge* edge)
 {
-	if(!(edge->face==0 || edge->pair->face==0))
-	{
-//		cout << "reject due to not a hole edge" << endl;
-		return;
-	}
 	//Check for redundant edges
 	int edgeCnt = 0;
 	for (int i = 0; i<edge->start->out.size(); i++)
 		if (edge->start->out[i]->end == edge->end)
 			edgeCnt++;
 	if(edgeCnt != 1)
-	{
-//		cout<<"DETECTED REDUNDANT EDGES"<<endl;
 		return;
-	}
 
 	if(edge->face != 0 && edge->next->pair->face == 0 && edge->next->next->pair->face == 0
-			|| edge->pair->face != 0 && edge->pair->next->pair->face == 0 && edge->pair->next->next->pair->face == 0
-		)
-	{
-//		cout<<"rejected"<<endl;
+			|| edge->pair->face != 0 && edge->pair->next->pair->face == 0 && edge->pair->next->next->pair->face == 0)
 		return;
-	}
 
 	// Save start and end vertex
 	HVertex* p1 = edge->start;
@@ -414,8 +403,6 @@ void HalfEdgeMesh<VertexT, NormalT>::collapseEdge(HEdge* edge)
 	p1->m_position = (p1->m_position + p2->m_position)*0.5;
 
 	//Delete redundant edges
-	typename vector<HEdge*>::iterator it;
-
 	if (edge->face != 0)
 	{
 		edge->next->next->pair->pair = edge->next->pair;
@@ -436,7 +423,7 @@ void HalfEdgeMesh<VertexT, NormalT>::collapseEdge(HEdge* edge)
 	if(edge->pair->face != 0)
 	{
 
-		remove(m_faces.begin(), m_faces.end(),edge->pair->face);
+		m_faces.erase(find(m_faces.begin(), m_faces.end(), edge->pair->face));
 		if(edge->pair->face->m_region != 0)
 			edge->pair->face->m_region->removeFace(edge->pair->face);
 
@@ -446,7 +433,7 @@ void HalfEdgeMesh<VertexT, NormalT>::collapseEdge(HEdge* edge)
 	if(edge->face != 0)
 	{
 
-		remove(m_faces.begin(), m_faces.end(),edge->face);
+		m_faces.erase(find(m_faces.begin(), m_faces.end(), edge->face));
 		if(edge->face->m_region != 0)
 			edge->face->m_region->removeFace(edge->face);
 		delete edge->face;
@@ -456,6 +443,7 @@ void HalfEdgeMesh<VertexT, NormalT>::collapseEdge(HEdge* edge)
 	deleteEdge(edge);
 
 	//Update incoming and outgoing edges of p1
+	typename vector<HEdge*>::iterator it;
 	it = p2->out.begin();
 	while(it != p2->out.end())
 	{
@@ -777,8 +765,7 @@ void HalfEdgeMesh<VertexT, NormalT>::fillHoles(int max_size)
         }
     }
     //collapse all holes
-    cout << "Hole count: " << holes.size() << endl;
-    while(!holes.empty() &&  holes.size()>1443)
+    while(!holes.empty())
     {
     	while(holes.top().size() > 2)
     	{
@@ -789,24 +776,6 @@ void HalfEdgeMesh<VertexT, NormalT>::fillHoles(int max_size)
     	holes.pop();
     }
 
-//        	while(holes.top().size() > 2)
-//        	{
-//        		collapseEdge(holes.top().top());
-//        		holes.top().pop();
-//        	}
-    m_regions.clear();
-    for (int i = 0; i<m_faces.size(); i++)
-    	m_faces[i]->m_region = 0;
-
-    Region<VertexT, NormalT>* region = new Region<VertexT, NormalT>(0);
-    while(!holes.top().empty())
-    {
-    	cout<<"--"/*<<holes.top().top()*/<<"->"<<holes.top().top()->end;
-    	if(holes.top().top()->pair != 0 && holes.top().top()->pair->face != 0)
-    		region->addFace(holes.top().top()->pair->face);
-    	holes.top().pop();
-    }
-    cout<<endl;
 }
 
 template<typename VertexT, typename NormalT>
@@ -883,32 +852,32 @@ template<typename VertexT, typename NormalT>
 void HalfEdgeMesh<VertexT, NormalT>::tester()
 {
 //	srand(time(NULL));
-	for(int i=0; i< m_faces.size(); i++)
-	{
-		if(m_faces[i]->m_edge==0) cout << "You created a monster!" << endl;
-		if(m_faces[i]->m_edge->next==0) cout << "You created a monster!" << endl;
-		if(m_faces[i]->m_edge->next->next==0) cout << "You created a monster!" << endl;
-		if(m_faces[i]->m_edge->pair==0) cout << "You created a monster!" << endl;
-		if(m_faces[i]->m_edge->next->pair==0) cout << "You created a monster!" << endl;
-		if(m_faces[i]->m_edge->next->next->pair==0) cout << "You created a monster!" << endl;
-	}
+//	for(int i=0; i< m_faces.size(); i++)
+//	{
+//		if(m_faces[i]->m_edge==0) cout << "You created a monster!" << endl;
+//		if(m_faces[i]->m_edge->next==0) cout << "You created a monster!" << endl;
+//		if(m_faces[i]->m_edge->next->next==0) cout << "You created a monster!" << endl;
+//		if(m_faces[i]->m_edge->pair==0) cout << "You created a monster!" << endl;
+//		if(m_faces[i]->m_edge->next->pair==0) cout << "You created a monster!" << endl;
+//		if(m_faces[i]->m_edge->next->next->pair==0) cout << "You created a monster!" << endl;
+//	}
 
-	for(unsigned int i=0; i<17885; i++)
+	for(unsigned int i=0; i<500000; i++)
 	{
 //		cout << "Collapsing" << endl;
-		if(i%10000000 ==0) cout << (i/30000.0) * 100 << endl;
+		if(i%10000000 ==0) cout << (i/500000.0) * 100 << endl;
 		collapseEdge((*m_faces[rand() % m_faces.size()])[rand() % 3]);
 	}
-	cout << "EDGE COLLAPSE------------------------------------------------" << endl;
-	for(int i=0; i< m_faces.size(); i++)
-	{
-		if(m_faces[i]->m_edge==0) cout << "You created a monster!" << endl;
-		if(m_faces[i]->m_edge->next==0) cout << "You created a monster!" << endl;
-		if(m_faces[i]->m_edge->next->next==0) cout << "You created a monster!" << endl;
-		if(m_faces[i]->m_edge->pair==0) cout << "You created a monster!" << endl;
-		if(m_faces[i]->m_edge->next->pair==0) cout << "You created a monster!" << endl;
-		if(m_faces[i]->m_edge->next->next->pair==0) cout << "You created a monster!" << endl;
-	}
+//	cout << "EDGE COLLAPSE------------------------------------------------" << endl;
+//	for(int i=0; i< m_faces.size(); i++)
+//	{
+//		if(m_faces[i]->m_edge==0) cout << "You created a monster!" << endl;
+//		if(m_faces[i]->m_edge->next==0) cout << "You created a monster!" << endl;
+//		if(m_faces[i]->m_edge->next->next==0) cout << "You created a monster!" << endl;
+//		if(m_faces[i]->m_edge->pair==0) cout << "You created a monster!" << endl;
+//		if(m_faces[i]->m_edge->next->pair==0) cout << "You created a monster!" << endl;
+//		if(m_faces[i]->m_edge->next->next->pair==0) cout << "You created a monster!" << endl;
+//	}
 
 	cout << "DONE" << endl;
 

@@ -19,12 +19,7 @@ void Region<VertexT, NormalT>::addFace(HFace* f)
 template<typename VertexT, typename NormalT>
 void Region<VertexT, NormalT>::removeFace(HFace* f)
 {
-//	typename	vector<HalfEdgeFace<VertexT, NormalT>*>::iterator face_iter;
-//	face_iter = m_faces.begin();
-//	while(*face_iter != f && face_iter != m_faces.end()) face_iter++;
-//	if(face_iter != m_faces.end())
-//		m_faces.erase(face_iter);
-	remove(m_faces.begin(), m_faces.end(), f);
+	m_faces.erase(find(m_faces.begin(), m_faces.end(), f));
 }
 
 
