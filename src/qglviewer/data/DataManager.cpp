@@ -9,10 +9,12 @@
 #include "DataCollector.h"
 #include "DataCollectorFactory.h"
 
-#include "model3d/MultiPointCloud.h"
+#include "display/MultiPointCloud.hpp"
 
 #include <iostream>
 using std::string;
+
+using lssr::MultiPointCloud;
 
 DataManager::DataManager()
 {

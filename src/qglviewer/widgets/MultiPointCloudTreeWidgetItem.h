@@ -8,10 +8,13 @@
 #ifndef MULTIPOINTCLOUDTREEWIDGETITEM_H_
 #define MULTIPOINTCLOUDTREEWIDGETITEM_H_
 
-#include "model3d/PointCloud.h"
-#include "model3d/MultiPointCloud.h"
+#include "display/PointCloud.hpp"
+#include "display/MultiPointCloud.hpp"
 
 #include "CustomTreeWidgetItem.h"
+
+using lssr::MultiPointCloud;
+using lssr::PointCloud;
 
 class MultiPointCloudTreeWidgetItem: public CustomTreeWidgetItem
 {

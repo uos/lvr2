@@ -32,7 +32,7 @@ void MultiPointCloudTreeWidgetItem::setRenderable(MultiPointCloud* mpc)
     m_renderable = mpc;
 
     // Add stored point clouds as sub widgets
-    pc_attr_it it;
+    lssr::pc_attr_it it;
 
     for(it = mpc->first(); it != mpc->last(); it ++)
     {

@@ -46,8 +46,8 @@ NormalCloud::~NormalCloud() {
 
 void NormalCloud::initDisplayList(){
 
-	listIndex = glGenLists(1);
-	glNewList(listIndex, GL_COMPILE);
+	m_listIndex = glGenLists(1);
+	glNewList(m_listIndex, GL_COMPILE);
 	glDisable(GL_LIGHTING);
 	glPointSize(4.0);
 	glBegin(GL_POINTS);

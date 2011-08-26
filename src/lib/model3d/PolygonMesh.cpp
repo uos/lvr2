@@ -70,8 +70,8 @@ void PolygonMesh::compileDisplayList(){
 
     Polygon p;
 
-    listIndex = glGenLists(1);
-    glNewList(axesListIndex, GL_COMPILE);
+    m_listIndex = glGenLists(1);
+    glNewList(m_axesListIndex, GL_COMPILE);
 
     glDisable(GL_LIGHTING);
     glColor3f(0.0, 0.0, 0.0);
