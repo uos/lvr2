@@ -255,7 +255,7 @@ public:
 	 *
 	 * @return 	a list of all contours
 	 */
-	virtual vector<stack<HVertex*> > findAllContours(float epsilon);
+	virtual vector<stack<HVertex*> > findAllContours(float epsilon, int reg);
 	
     virtual void tester();
 
@@ -263,7 +263,17 @@ public:
      * @brief   Takes a list of vertices as the border of a polygon
      *          and returns a triangle tesselation
      */
-    void tesselate(vector<stack<HVertex*> > vectorBorderPoints);
+    static void tesselatorBegin(GLenum which);
+    static void tesselate(vector<stack<HVertex*> > vectorBorderPoints, double **vertices, int **indices, int &vLength, int &iLength);
+    static void tesselatorEnd();
+    static void tesselatorError(GLenum errorCode);
+    static void tesselatorAddVertex(const GLvoid *data, HVertex* userData);
+    static void tesselatorCombineVertices(GLdouble coords[3],
+							 GLdouble *vertex_data[4],
+							 GLfloat weight[4],
+							 GLdouble **dataOut,
+                             HVertex* userData);
+
 
 
 	/**

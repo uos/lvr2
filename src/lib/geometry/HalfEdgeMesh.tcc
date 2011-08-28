@@ -185,26 +185,22 @@ void HalfEdgeMesh<VertexT, NormalT>::addTriangle(uint a, uint b, uint c)
 }
 
 GLenum primitive;
-typedef struct {
-    double x;
-    double y;
-    double z;
-    } mPoint;
-
-//vector<mPoint> tessVertices;
 vector<Vertex<double> > tessVertices;
 vector<Vertex<double> > tessTriangles;
-int tesselatedContours = 0;
+static int tesselatedContours = 0;
+//vector<mPoint> tessVertices;
 
-void mglBegin(GLenum which)
+template<typename VertexT, typename NormalT>
+void HalfEdgeMesh<VertexT, NormalT>::tesselatorBegin(GLenum which)
 {
     primitive = which;
     tessVertices.clear();
 }
 
-void mglEnd()
+template<typename VertexT, typename NormalT>
+void HalfEdgeMesh<VertexT, NormalT>::tesselatorEnd()
 {
-    stringstream tFileName; tFileName << "tess_result_" << tesselatedContours << ".txt";
+    stringstream tFileName; tFileName << "tesselated_" << tesselatedContours << ".txt";
     ofstream tess(tFileName.str().c_str(), ios_base::app);
     if(primitive == GL_TRIANGLES)
         for(int i=0; i<tessVertices.size(); ++i)
@@ -245,21 +241,29 @@ void mglEnd()
 	tess.close();
 }
 
-void mglError(GLenum errorCode)
+
+template<typename VertexT, typename NormalT>
+void HalfEdgeMesh<VertexT, NormalT>::tesselatorError(GLenum errorCode)
 {
-    cerr << "[Error:] " << gluErrorString(errorCode) << endl; 
+    cerr << "[Tesselator-Error:] " << gluErrorString(errorCode) << endl; 
 }
 
-void mglVertex(const GLvoid *data)
+
+template<typename VertexT, typename NormalT>
+void HalfEdgeMesh<VertexT, NormalT>::tesselatorAddVertex(const GLvoid *data, HVertex* userData)
 {
     const GLdouble *ptr = (const GLdouble*)data;
     tessVertices.push_back(Vertex<double>(*ptr, *(ptr+1), *(ptr+2)));
 }
 
-void mcombineCallback(GLdouble coords[3],
+
+
+template<typename VertexT, typename NormalT>
+void HalfEdgeMesh<VertexT, NormalT>::tesselatorCombineVertices(GLdouble coords[3],
 							 GLdouble *vertex_data[4],
 							 GLfloat weight[4],
-							 GLdouble **dataOut)
+							 GLdouble **dataOut,
+                             HVertex* userData)
 {
     
 	GLdouble *vertex = (GLdouble*) malloc(6*sizeof(GLdouble));
@@ -278,7 +282,7 @@ void mcombineCallback(GLdouble coords[3],
 }
 
 template<typename VertexT, typename NormalT>
-void HalfEdgeMesh<VertexT, NormalT>::tesselate(vector<stack<HVertex*> > vectorBorderPoints)
+void HalfEdgeMesh<VertexT, NormalT>::tesselate(vector<stack<HVertex*> > vectorBorderPoints, double **vertices, int **indices, int &vLength, int &iLength)
 {
     tessVertices.clear();
     if(!vectorBorderPoints.size())
@@ -303,17 +307,17 @@ void HalfEdgeMesh<VertexT, NormalT>::tesselate(vector<stack<HVertex*> > vectorBo
     }
 
     /* Callback function that define beginning of polygone etc. */
-    gluTessCallback(tesselator, GLU_TESS_VERTEX,(GLvoid(*) ()) &mglVertex);
-    gluTessCallback(tesselator, GLU_TESS_BEGIN, (GLvoid(*) ()) &mglBegin);
-    gluTessCallback(tesselator, GLU_TESS_END, (GLvoid(*) ()) &mglEnd);
-    gluTessCallback(tesselator, GLU_TESS_COMBINE, (GLvoid(*) ()) &mcombineCallback);
-    gluTessCallback(tesselator, GLU_TESS_ERROR, (GLvoid(*) ()) &mglError);
+    gluTessCallback(tesselator, GLU_TESS_VERTEX_DATA,(GLvoid(*) ()) &tesselatorAddVertex);
+    gluTessCallback(tesselator, GLU_TESS_BEGIN, (GLvoid(*) ()) &tesselatorBegin);
+    gluTessCallback(tesselator, GLU_TESS_END, (GLvoid(*) ()) &tesselatorEnd);
+    gluTessCallback(tesselator, GLU_TESS_COMBINE_DATA, (GLvoid(*) ()) &tesselatorCombineVertices);
+    gluTessCallback(tesselator, GLU_TESS_ERROR, (GLvoid(*) ()) &tesselatorError);
 
 
     /* set Properties for tesselation */
     //gluTessProperty(tesselator, GLU_TESS_WINDING_RULE, GLU_TESS_WINDING_NONZERO);
-    gluTessProperty(tesselator, GLU_TESS_WINDING_RULE, GLU_TESS_WINDING_ODD);
-    //gluTessProperty(tesselator, GLU_TESS_WINDING_RULE, GLU_TESS_WINDING_POSITIVE);
+    //gluTessProperty(tesselator, GLU_TESS_WINDING_RULE, GLU_TESS_WINDING_ODD);
+    gluTessProperty(tesselator, GLU_TESS_WINDING_RULE, GLU_TESS_WINDING_POSITIVE);
     //gluTessProperty(tesselator, GLU_TESS_WINDING_RULE, GLU_TESS_WINDING_NEGATIVE);
 
 	 /* Use gluTessNormal: speeds up the tessellation if the
@@ -1185,11 +1189,11 @@ stack<HalfEdgeVertex<VertexT, NormalT>* > HalfEdgeMesh<VertexT, NormalT>::getCon
 }
 
 template<typename VertexT, typename NormalT>
-vector<stack<HalfEdgeVertex<VertexT, NormalT>* > > HalfEdgeMesh<VertexT, NormalT>::findAllContours(float epsilon)
+vector<stack<HalfEdgeVertex<VertexT, NormalT>* > > HalfEdgeMesh<VertexT, NormalT>::findAllContours(float epsilon, int reg)
 {
 	vector<stack<HalfEdgeVertex<VertexT, NormalT>* > > contours;
 	for(int i=0; i<m_faces.size(); i++){
-		if (m_faces[i]->m_region == -53)
+		if (m_faces[i]->m_region == reg)
 			for (int j = 0; j<3; j++)
 				if ((*m_faces[i])[j]->used == false && ((*m_faces[i])[j]->pair->face == 0 || (*m_faces[i])[j]->pair->face->m_region != m_faces[i]->m_region))
 					contours.push_back(getContour((*m_faces[i])[j], epsilon));
@@ -1207,13 +1211,19 @@ void HalfEdgeMesh<VertexT, NormalT>::finalize_and_retesselate()
     vector<float> cBuff;
     vector<int>   iBuff;
     
-    vector<stack<HalfEdgeVertex<VertexT, NormalT>* > > contours = findAllContours(0.1);
+    double **tesselatedVertices;
+    int    **tesselatedIndices;
+    int verticesLength;
+    int indicesLength;
+
+    vector<stack<HalfEdgeVertex<VertexT, NormalT>* > > contours;
     vector<vector<HalfEdgeVertex<VertexT, NormalT> > > tesselatedTriangles;
+    contours = findAllContours(0.1, -6);
     //for(int i=0; i<contours.size(); ++i)
     //{
         //if(contours[i].size() >= 3)
         //{
-            tesselate(contours);
+            tesselate(contours, tesselatedVertices, tesselatedIndices, verticesLength, indicesLength);
             vector<HalfEdgeVertex<VertexT, NormalT> > tp;
             for(int k=0; k<tessTriangles.size(); ++k)
             {
