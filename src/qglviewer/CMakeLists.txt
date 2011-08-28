@@ -7,6 +7,7 @@ set(QVIEWER_MOCS
     data/DataManager.h 
     viewers/Viewer.h
     viewers/ViewerManager.h
+    widgets/TransformationDialog.h
 )
 
 # Dynamically generated GUI object's from
@@ -16,6 +17,7 @@ set(QVIEWER_UIS
     ui/InputCoordinateSystemDialog.ui
     ui/MainWindow.ui
     ui/SceneDockWidget.ui
+    ui/TransformationDialogUI.ui
 )
 
 # Main Sources
@@ -34,6 +36,7 @@ set(QVIEWER_SOURCES
     widgets/PointCloudTreeWidgetItem.cpp
     widgets/TriangleMeshTreeWidgetItem.cpp
     widgets/MultiPointCloudTreeWidgetItem.cpp
+    widgets/TransformationDialog.cpp
 )
 
 set(QVIEWER_RESOURCES

@@ -153,6 +153,7 @@ void BaseVertex::rotateRM(const Matrix4 &m)
     x = _x;
     y = _y;
     z = _z;
+
 }
 
 
