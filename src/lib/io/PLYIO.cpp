@@ -18,10 +18,6 @@ namespace lssr
 
 PLYIO::PLYIO()
 {
-	m_vertices 		= 0;
-	m_normals		= 0;
-	m_colors		= 0;
-	m_indices		= 0;
 	m_binary		= false;;
 
 	m_numberOfVertices 	= 0;
@@ -51,7 +47,7 @@ float* PLYIO::getVertexArray(size_t &n)
 
 float* PLYIO::getNormalArray(size_t &n)
 {
-	if(m_normals)
+	if(m_vertexNormals)
 	{
 		n = m_numberOfVertices;
 	}
@@ -59,12 +55,12 @@ float* PLYIO::getNormalArray(size_t &n)
 	{
 		n = 0;
 	}
-	return m_normals;
+	return m_vertexNormals;
 }
 
 float* PLYIO::getColorArray(size_t &n)
 {
-	if(m_colors)
+	if(m_vertexColors)
 	{
 		n = m_numberOfVertices;
 	}
@@ -72,7 +68,7 @@ float* PLYIO::getColorArray(size_t &n)
 	{
 		n = 0;
 	}
-	return m_colors;
+	return m_vertexColors;
 }
 
 unsigned int* PLYIO::getIndexArray(size_t &n)
@@ -96,7 +92,7 @@ void PLYIO::setVertexArray(float* array, size_t n)
 
 void PLYIO::setNormalArray(float* array, size_t n)
 {
-	m_normals = array;
+	m_vertexNormals = array;
 	m_numberOfNormals = n;
 }
 
@@ -108,7 +104,7 @@ void PLYIO::setIndexArray(unsigned int* array, size_t n)
 
 void PLYIO::setColorArray(float* array, size_t n)
 {
-	m_colors = array;
+	m_vertexColors = array;
 	assert(n == m_numberOfVertices);
 }
 
@@ -331,10 +327,21 @@ void PLYIO::loadElements(ifstream &in)
 					readNormalsASCII(in, current_element);
 				}
 			}
+			else if (element_name == "point")
+			{
+			    if(m_binary)
+			    {
+			        readPointsBinary(in, current_element);
+			    }
+			    else
+			    {
+			        readPointsASCII(in, current_element);
+			    }
+			}
 			else
 			{
-				cout << "PLYIO::loadElements(): Warning: Unknown element '"
-					 << element_name << "'." << endl;
+			    cout << "PLYIO::loadElements(): Warning: Unknown element '"
+			            << element_name << "'." << endl;
 			}
 		}
 		else
@@ -470,18 +477,18 @@ void PLYIO::writeVerticesASCII(ofstream &out, PLYElement *e)
 			}
 			else if (property_name == "r")
 			{
-				assert(m_colors);
-				out << m_colors[vertex_pointer] << " ";
+				assert(m_vertexColors);
+				out << m_vertexColors[vertex_pointer] << " ";
 			}
 			else if (property_name == "g")
 			{
-				assert(m_colors);
-				out << m_colors[vertex_pointer + 1] << " ";
+				assert(m_vertexColors);
+				out << m_vertexColors[vertex_pointer + 1] << " ";
 			}
 			else if (property_name == "b")
 			{
-				assert(m_colors);
-				out << m_colors[vertex_pointer + 2] << " ";
+				assert(m_vertexColors);
+				out << m_vertexColors[vertex_pointer + 2] << " ";
 			}
 			current++;
 		}
@@ -558,15 +565,15 @@ void PLYIO::writeVerticesBinary(ofstream &out, PLYElement* e)
 			}
 			else if(property_name == "r")
 			{
-				pos = putElementInBuffer(pos, property_type, m_colors[vertex_pointer]);
+				pos = putElementInBuffer(pos, property_type, m_vertexColors[vertex_pointer]);
 			}
 			else if (property_name == "g")
 			{
-				pos = putElementInBuffer(pos, property_type, m_colors[vertex_pointer + 1]);
+				pos = putElementInBuffer(pos, property_type, m_vertexColors[vertex_pointer + 1]);
 			}
 			else if (property_name == "b")
 			{
-				pos = putElementInBuffer(pos, property_type, m_colors[vertex_pointer + 2]);
+				pos = putElementInBuffer(pos, property_type, m_vertexColors[vertex_pointer + 2]);
 			}
 			else
 			{
@@ -582,7 +589,7 @@ void PLYIO::writeVerticesBinary(ofstream &out, PLYElement* e)
 void PLYIO::writeNormalsASCII(ofstream &out, PLYElement* e)
 {
 
-	assert(m_normals);
+	assert(m_vertexNormals);
 
 	vector<Property*>::iterator current, last;
 	string property_name;
@@ -604,15 +611,15 @@ void PLYIO::writeNormalsASCII(ofstream &out, PLYElement* e)
 			property_name = (*current)->getName();
 			if( (property_name == "x") || (property_name == "nx") )
 			{
-				out << m_normals[vertex_pointer] << " ";
+				out << m_vertexNormals[vertex_pointer] << " ";
 			}
 			else if ( (property_name == "y") || (property_name == "ny") )
 			{
-				out << m_normals[vertex_pointer + 1] << " ";
+				out << m_vertexNormals[vertex_pointer + 1] << " ";
 			}
 			else if ( (property_name == "z") || (property_name == "nz") )
 			{
-				out << m_normals[vertex_pointer + 2] << " ";
+				out << m_vertexNormals[vertex_pointer + 2] << " ";
 			}
 			current++;
 		}
@@ -664,15 +671,15 @@ void PLYIO::writeNormalsBinary(ofstream &out, PLYElement* e)
 			string property_type = p->getElementTypeStr();
 			if( (property_name == "x") || (property_name == "nx") )
 			{
-				pos = putElementInBuffer(pos, property_type, m_normals[vertex_pointer]);
+				pos = putElementInBuffer(pos, property_type, m_vertexNormals[vertex_pointer]);
 			}
 			else if ( (property_name == "y") || (property_name == "ny") )
 			{
-				pos = putElementInBuffer(pos, property_type, m_normals[vertex_pointer + 1]);
+				pos = putElementInBuffer(pos, property_type, m_vertexNormals[vertex_pointer + 1]);
 			}
 			else if ( (property_name == "z") || (property_name == "nz"))
 			{
-				pos = putElementInBuffer(pos, property_type, m_normals[vertex_pointer + 2]);
+				pos = putElementInBuffer(pos, property_type, m_vertexNormals[vertex_pointer + 2]);
 			}
 			else
 			{
@@ -757,8 +764,8 @@ void PLYIO::allocVertexBuffers(PLYElement* descr)
 		if(property_name == "r" || property_name == "g" || property_name == "b")
 		{
 			// Leave loop if a color property was found
-			m_colors = new float[3 * m_numberOfVertices];
-			memset(m_colors, 0, 3 * sizeof(float));
+			m_vertexColors = new float[3 * m_numberOfVertices];
+			memset(m_vertexColors, 0, 3 * sizeof(float));
 			break;
 		}
 	}
@@ -773,10 +780,10 @@ void PLYIO::deleteBuffers()
 		m_vertices = 0;
 	}
 
-	if(m_colors)
+	if(m_vertexColors)
 	{
-		delete[] m_colors;
-		m_colors = 0;
+		delete[] m_vertexColors;
+		m_vertexColors = 0;
 	}
 
 	if(m_indices)
@@ -785,12 +792,23 @@ void PLYIO::deleteBuffers()
 		m_indices = 0;
 	}
 
-	if(m_normals)
+	if(m_vertexNormals)
 	{
-		delete[] m_normals;
-		m_normals = 0;
+		delete[] m_vertexNormals;
+		m_vertexNormals = 0;
 	}
 }
+
+void PLYIO::readPointsASCII(ifstream &in, PLYElement* descr)
+{
+
+}
+
+void PLYIO::readPointsBinary(ifstream &in, PLYElement* descr)
+{
+
+}
+
 
 void PLYIO::readVerticesASCII(ifstream &in, PLYElement* descr)
 {
@@ -826,15 +844,15 @@ void PLYIO::readVerticesASCII(ifstream &in, PLYElement* descr)
 			}
 			else if(property_name == "r")
 			{
-				in >> m_colors[i * 3];
+				in >> m_vertexColors[i * 3];
 			}
 			else if(property_name == "g")
 			{
-				in >> m_colors[i * 3 + 1];
+				in >> m_vertexColors[i * 3 + 1];
 			}
 			else if(property_name == "b")
 			{
-				in >> m_colors[i * 3 + 2];
+				in >> m_vertexColors[i * 3 + 2];
 			}
 			it++;
 		}
@@ -877,15 +895,15 @@ void PLYIO::readVerticesBinary(ifstream &in, PLYElement* descr)
 			}
 			else if(p->getName() == "r")
 			{
-				copyElementToVertexBuffer(in, p, m_colors, i * 3);
+				copyElementToVertexBuffer(in, p, m_vertexColors, i * 3);
 			}
 			else if(p->getName() == "g")
 			{
-				copyElementToVertexBuffer(in, p, m_colors, i * 3 + 1);
+				copyElementToVertexBuffer(in, p, m_vertexColors, i * 3 + 1);
 			}
 			else if(p->getName() == "b")
 			{
-				copyElementToVertexBuffer(in, p, m_colors, i * 3 + 2);
+				copyElementToVertexBuffer(in, p, m_vertexColors, i * 3 + 2);
 			}
 		}
 //				cout << m_vertices[i    ] << " "
@@ -904,9 +922,9 @@ float** PLYIO::getIndexedVertexArray(size_t& n)
 
 float** PLYIO::getIndexedNormalArray(size_t& n)
 {
-	assert(m_normals);
+	assert(m_vertexNormals);
 	n = m_numberOfNormals;
-	return interlacedBufferToIndexedBuffer(m_normals, m_numberOfNormals);
+	return interlacedBufferToIndexedBuffer(m_vertexNormals, m_numberOfNormals);
 }
 
 void PLYIO::readNormalsBinary(ifstream &in, PLYElement* descr)
@@ -915,8 +933,8 @@ void PLYIO::readNormalsBinary(ifstream &in, PLYElement* descr)
 	m_numberOfNormals= descr->getCount();
 
 	// Allocate memory for normals
-	if(m_normals) delete[] m_normals;
-	m_normals = new float[3 * m_numberOfNormals];
+	if(m_vertexNormals) delete[] m_vertexNormals;
+	m_vertexNormals = new float[3 * m_numberOfNormals];
 
 	// Read all normals
 	vector<Property*>::iterator it;
@@ -928,15 +946,15 @@ void PLYIO::readNormalsBinary(ifstream &in, PLYElement* descr)
 			Property* p = *it;
 			if( (p->getName() == "x") || (p->getName() == "nx") )
 			{
-				copyElementToVertexBuffer(in, p, m_normals,  i * 3);
+				copyElementToVertexBuffer(in, p, m_vertexNormals,  i * 3);
 			}
 			else if( (p->getName() == "y") || (p->getName() == "ny"))
 			{
-				copyElementToVertexBuffer(in, p, m_normals, i * 3 + 1);
+				copyElementToVertexBuffer(in, p, m_vertexNormals, i * 3 + 1);
 			}
 			else if( (p->getName() == "z") || (p->getName() == "nz"))
 			{
-				copyElementToVertexBuffer(in, p, m_normals, i * 3 + 2);
+				copyElementToVertexBuffer(in, p, m_vertexNormals, i * 3 + 2);
 			}
 		}
 	}
@@ -945,11 +963,11 @@ void PLYIO::readNormalsBinary(ifstream &in, PLYElement* descr)
 void PLYIO::readNormalsASCII(ifstream &in, PLYElement* descr)
 {
 	// Get count and alloc memory
-	if(m_normals) delete[] m_normals;
+	if(m_vertexNormals) delete[] m_vertexNormals;
 	m_numberOfNormals = descr->getCount();
 
-	m_normals = new float[3 * m_numberOfNormals];
-	memset(m_normals, 0, 3 * m_numberOfNormals * sizeof(float));
+	m_vertexNormals = new float[3 * m_numberOfNormals];
+	memset(m_vertexNormals, 0, 3 * m_numberOfNormals * sizeof(float));
 
 	// Read all normals
 	vector<Property*>::iterator it;
@@ -960,15 +978,15 @@ void PLYIO::readNormalsASCII(ifstream &in, PLYElement* descr)
 			Property* p = *it;
 			if( (p->getName() == "x") || (p->getName() == "nx") )
 			{
-				in >> m_normals[i * 3];
+				in >> m_vertexNormals[i * 3];
 			}
 			else if( (p->getName() == "y") || (p->getName() == "ny"))
 			{
-				in >> m_normals[i * 3 + 1];
+				in >> m_vertexNormals[i * 3 + 1];
 			}
 			else if( (p->getName() == "z") || (p->getName() == "nz"))
 			{
-				in >> m_normals[i * 3 + 2];
+				in >> m_vertexNormals[i * 3 + 2];
 			}
 		}
 	}
@@ -1398,8 +1416,8 @@ void PLYIO::setIndexedVertexArray(float** arr, size_t vertex_count)
 
 void PLYIO::setIndexedNormalArray(float** arr, size_t count)
 {
-	if(m_normals) delete[] m_normals;
-	m_normals = indexedBufferToInterlacedBuffer(arr, count);
+	if(m_vertexNormals) delete[] m_vertexNormals;
+	m_vertexNormals = indexedBufferToInterlacedBuffer(arr, count);
 	m_numberOfNormals = count;
 }
 

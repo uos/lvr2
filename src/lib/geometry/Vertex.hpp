@@ -29,17 +29,17 @@ public:
 	 */
 	Vertex()
 	{
-		m_x = m_y = m_z = 0;
+		x = y = z = 0;
 	}
 
 	/**
 	 * @brief	Builds a Vertex with the given coordinates.
 	 */
-	Vertex(const CoordType &x, const CoordType &y, const CoordType &z)
+	Vertex(const CoordType &_x, const CoordType &_y, const CoordType &_z)
 	{
-		m_x = x;
-		m_y = y;
-		m_z = z;
+		x = _x;
+		y = _y;
+		z = _z;
 	}
 
 	/**
@@ -47,9 +47,9 @@ public:
 	 */
 	Vertex(const Vertex &o)
 	{
-		m_x = o.m_x;
-		m_y = o.m_y;
-		m_z = o.m_z;
+		x = o.x;
+		y = o.y;
+		z = o.z;
 	}
 
 	/**
@@ -195,13 +195,13 @@ public:
 
 
 	/// The x-coordinate of the vertex
-	CoordType m_x;
+	CoordType x;
 
 	/// The y-coordinate of the vertex
-	CoordType m_y;
+	CoordType y;
 
 	/// The z-coordinate of the vertex
-	CoordType m_z;
+	CoordType z;
 
 private:
 
@@ -215,7 +215,7 @@ private:
  */
 template<typename CoordType>
 inline ostream& operator<<(ostream& os, const Vertex<CoordType> v){
-	os << "Vertex: " << v.m_x << " " << v.m_y << " " << v.m_z << endl;
+	os << "Vertex: " << v.x << " " << v.y << " " << v.z << endl;
 	return os;
 }
 

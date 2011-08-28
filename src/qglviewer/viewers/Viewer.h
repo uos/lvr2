@@ -24,6 +24,7 @@ enum ProjectionMode { PERSPECTIVE, ORTHOXY, ORTHOXZ, ORTHOYZ};
 class Viewer : public QGLViewer
 {
 	Q_OBJECT
+
 public:
 	Viewer(QWidget* parent, const QGLWidget* shared = 0);
 	virtual ~Viewer();
@@ -32,6 +33,7 @@ public:
 
 	virtual ViewerType type() = 0;
 	virtual void centerViewOnObject(Renderable* renderable);
+
 public Q_SLOTS:
 	virtual void resetCamera();
 

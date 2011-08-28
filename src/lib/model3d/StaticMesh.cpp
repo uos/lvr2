@@ -42,7 +42,8 @@ StaticMesh::StaticMesh(string name) : Renderable(name){
 
 }
 
-StaticMesh::StaticMesh(const StaticMesh &o){
+StaticMesh::StaticMesh(const StaticMesh &o)
+{
 
 	if(normals != 0) delete[] normals;
 	if(vertices != 0) delete[] vertices;
@@ -93,6 +94,8 @@ void StaticMesh::compileDisplayList(){
 		// Start new display list
 		glNewList(listIndex, GL_COMPILE);
 
+		glEnable(GL_LIGHTING);
+
 		// Assign element pointers
 		glVertexPointer(3, GL_FLOAT, 0, vertices);
 		glNormalPointer(GL_FLOAT, 0, normals);
@@ -119,6 +122,8 @@ void StaticMesh::load(string filename){
 	normals = w.getNormalArray(n_normals);
 	colors = w.getColorArray(n_colors);
 	m_indices = w.getIndexArray(number_of_faces);
+
+	cout << normals << endl;
 
 	// Calculate bounding box
 	if(m_boundingBox) delete m_boundingBox;

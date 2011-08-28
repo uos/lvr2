@@ -66,20 +66,20 @@ public:
 	bool	saveFaceNormals() const;
 
 	/**
+	 *@brief    Returns true of region coloring is enabled.
+	 */
+	bool    colorRegions() const;
+
+	/**
 	 * @brief	Returns true if the interpolated normals
 	 * 			should be saved in the putput file
 	 */
 	bool    saveNormals() const;
 
 	/**
-	 * @brief	Returns true if clustering is enabled
-	 */
-	bool	createClusters() const;
-
-	/**
 	 * @brief 	Returns true if cluster optimization is enabled
 	 */
-	bool 	optimizeClusters() const;
+	bool 	optimizePlanes() const;
 
 	/**
 	 * @brief 	Indicates whether to save the used points
@@ -122,6 +122,46 @@ public:
 	 *          absolute voxelsize.
 	 */
 	int     getIntersections() const;
+
+
+	/**
+	 * @brief   Returns to number plane optimization iterations
+	 */
+	int getPlaneIterations() const;
+
+	/**
+	 * @brief   Returns the name of the used point cloud handler.
+	 */
+	string getPCM() const;
+
+
+	/**
+	 * @brief   Returns the normal threshold for plane optimization.
+	 */
+	float getNormalThreshold() const;
+
+	/**
+	 * @brief   Returns the threshold for the size of small
+	 *          region deletion after plane optimization.
+	 */
+	int   getSmallRegionThreshold() const;
+
+	/**
+	 * @brief   Minimum value for plane optimzation
+	 */
+	int   getMinPlaneSize() const;
+
+	/**
+	 * @brief   Returns the number of dangling artifacts to remove from
+	 *          a created mesh.
+	 */
+	int   getDanglingArtifacts() const;
+
+	/**
+	 * @brief   Returns the region threshold for hole filling
+	 */
+	int   getFillHoles() const;
+
 private:
 
 	/// The set voxelsize
@@ -156,6 +196,28 @@ private:
 
 	/// The number of intersections used for reconstruction
 	int                             m_intersections;
+
+	/// The used point cloud manager
+	string                          m_pcm;
+
+	/// Number of iterations for plane optimzation
+	int                             m_planeIterations;
+
+	/// Threshold for plane optimization
+	float                           m_planeNormalThreshold;
+
+	/// Threshold for small ragions
+	int                             m_smallRegionThreshold;
+
+	/// Number of dangling artifacts to remove
+	int                             m_rda;
+
+	/// Threshold for hole filling
+	int                             m_fillHoles;
+
+	/// Threshold for plane optimization
+	int                             m_minPlaneSize;
+
 };
 
 
@@ -173,6 +235,7 @@ inline ostream& operator<<(ostream& os, const Options &o)
 	}
 	cout << "##### Output file \t\t: " 	<< o.getInputFileName() << endl;
 	cout << "##### Number of threads \t: " << o.getNumThreads() << endl;
+	cout << "##### Point cloud manager: \t: " << o.getPCM() << endl;
 	cout << "##### k_n \t\t\t: " << o.getKn() << endl;
 	cout << "##### k_i \t\t\t: " << o.getKi() << endl;
 	cout << "##### k_d \t\t\t: " << o.getKd() << endl;
@@ -180,17 +243,39 @@ inline ostream& operator<<(ostream& os, const Options &o)
 	{
 		cout << "##### Write Face Normals \t: YES" << endl;
 	}
-	if(o.createClusters())
+
+	if(o.getFillHoles())
 	{
-		cout << "##### Create cluster \t\t: YES" << endl;
+	    cout << "##### Fill holes \t\t: " << o.getFillHoles() << endl;
 	}
-	if(o.optimizeClusters())
+	else
 	{
-		cout << "##### Optimize cluster \t\t: YES" << endl;
+	    cout << "##### Fill holes \t\t: NO" << endl;
+	}
+
+	if(o.getDanglingArtifacts())
+	{
+	    cout << "##### Remove DAs \t\t: " << o.getDanglingArtifacts() << endl;
+	}
+	else
+	{
+	    cout << "##### Remove DAs \t\t: NO" << endl;
+	}
+
+	if(o.optimizePlanes())
+	{
+		cout << "##### Optimize Planes \t\t: YES" << endl;
+		cout << "##### Plane iterations\t\t: " << o.getPlaneIterations() << endl;
+		cout << "##### Normal threshold \t\t: " << o.getNormalThreshold() << endl;
+		cout << "##### Region threshold\t\t: " << o.getSmallRegionThreshold() << endl;
 	}
 	if(o.saveNormals())
 	{
 		cout << "##### Save normals \t\t: YES" << endl;
+	}
+	if(o.colorRegions())
+	{
+	    cout << "##### Color regions \t\t: YES" << endl;
 	}
 	if(o.recalcNormals())
 	{

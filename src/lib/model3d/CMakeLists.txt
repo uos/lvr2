@@ -34,10 +34,11 @@ Triangle.cpp
 TriangleMesh.cpp
 Tube.cpp)
 
-add_library(model3d SHARED ${LIB_3D_SOURCES})
+add_library(model3d STATIC ${LIB_3D_SOURCES})
 target_link_libraries(model3d ${OPENGL_LIBRARY})
 target_link_libraries(model3d ${Boost_FILESYSTEM_LIBRARY})
 target_link_libraries(model3d ${Boost_FILESYSTEM_LIBRARY}
 	${Boost_SYSTEM_LIBRARY} ${Boost_THREAD_LIBRARY}
 	${Boost_PROGRAM_OPTIONS_LIBRARY})
+target_link_libraries(model3d lssr)
 set_target_properties(model3d PROPERTIES LIBRARY_OUTPUT_DIRECTORY ${CMAKE_SOURCE_DIR}/lib)

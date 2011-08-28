@@ -13,17 +13,17 @@ void Normal<CoordType>::normalize()
 {
     //Don't normalize if we don't have to
     float l_square =
-            this->m_x * this->m_x
-            + this->m_y * this->m_y
-            + this->m_z * this->m_z;
+            this->x * this->x
+            + this->y * this->y
+            + this->z * this->z;
 
     if( fabs(1 - l_square) > 0.001){
 
         float length = sqrt(l_square);
         if(length != 0){
-            this->m_x /= length;
-            this->m_y /= length;
-            this->m_z /= length;
+            this->x /= length;
+            this->y /= length;
+            this->z /= length;
         }
     }
 }

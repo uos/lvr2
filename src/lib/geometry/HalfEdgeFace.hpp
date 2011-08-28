@@ -119,7 +119,6 @@ public:
 	/// The index of the face's texture
 	int 							m_texture_index;
 
-	/// The region of the face
 	int 							m_region;
 
 	bool							m_used;
