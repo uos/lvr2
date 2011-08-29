@@ -456,6 +456,21 @@ bool HalfEdgeMesh<VertexT, NormalT>::collapseEdge(HEdge* edge)
 	//Delete p2
 	deleteVertex(p2);
 
+	bool stop = false;
+	for(int i = 0; i<p1->out.size() && !stop; i++)
+	{
+		for(int j = 0; j<p1->in.size() && !stop; j++)
+		{
+			if (p1->out[i]->end == p1->in[j]->start && p1->out[i]->face == 0 && p1->in[j]->face == 0 && p1->out[i]->pair != p1->in[j])
+			{
+				p1->out[i]->pair->pair = p1->in[j]->pair;
+				p1->in[j]->pair->pair = p1->out[i]->pair;
+				deleteEdge(p1->out[i], false);
+				deleteEdge(p1->in[j], false);
+				stop = true;
+			}
+		}
+	}
 	return true;
 }
 
@@ -759,13 +774,29 @@ void HalfEdgeMesh<VertexT, NormalT>::fillHoles(int max_size)
     }
 
     //collapse all holes
+	vector<HEdge* > invalid_edges; //holds edges which are deleted automatically if the current edge is collapsed
     while(!holes.empty())
     {
-        int failedCollapses = 0;
-    	while(holes.top().size() > max(2-failedCollapses, 0) )
+    	while(!holes.top().empty())
     	{
-    		if (collapseEdge(holes.top().top()) == false)
-    			failedCollapses++;
+    		//Check if current edge is not invalid
+    		if(!(find(invalid_edges.begin(), invalid_edges.end(), holes.top().top()) != invalid_edges.end()))
+    		{
+    			//look for edges which will become invalidated
+    			for(int i = 0; i<holes.top().top()->end->out.size(); i++)
+    				for(int j = 0; j<holes.top().top()->start->in.size(); j++)
+    					if(holes.top().top()->end->out[i]->end == holes.top().top()->start->in[j]->start && holes.top().top()->end->out[i]->face == 0 && holes.top().top()->start->in[j]->face == 0)
+    					{
+    						invalid_edges.push_back(holes.top().top()->end->out[i]);
+    						invalid_edges.push_back(holes.top().top()->start->in[j]);
+    					}
+    			//Try to collapse the current edge
+    			if(collapseEdge(holes.top().top()) == false)
+    			{
+    				invalid_edges.pop_back();
+    				invalid_edges.pop_back();
+    			}
+    		}
     		holes.top().pop();
     	}
     	holes.pop();
@@ -877,7 +908,10 @@ void HalfEdgeMesh<VertexT, NormalT>::tester()
 //	cout << "DONE" << endl;
 //
 //	removeDanglingArtifacts(500);
-//	optimizePlanes(3,0.85,50,7);
+	for(int i=0; i<m_regions.size(); i++)
+		delete m_regions[i];
+
+	optimizePlanes(3,0.85,50,0);
 //	fillHoles(35);
 //	optimizePlaneIntersections();
 //	m_colorRegions = true;
@@ -910,8 +944,6 @@ void HalfEdgeMesh<VertexT, NormalT>::tester()
     }
     filestr.close();
 
-//  for(int i=0; i<m_faces.size(); i++)
-//      m_faces[i]->m_region=0;
 }
 
 template<typename VertexT, typename NormalT>
