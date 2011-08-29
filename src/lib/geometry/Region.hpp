@@ -82,11 +82,6 @@ public:
 	virtual void regressionPlane();
 
 	/**
-	 * @ brief sets the m_region of all faces to 0 and clears m_faces
-	 */
-	virtual void dropAllFaces();
-
-	/**
 	 * @brief destructor.
 	 */
 	virtual ~Region();
