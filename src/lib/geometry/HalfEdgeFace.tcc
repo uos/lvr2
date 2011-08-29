@@ -25,8 +25,8 @@ HalfEdgeFace<VertexT, NormalT>::HalfEdgeFace(const HalfEdgeFace<VertexT, NormalT
 template<typename VertexT, typename NormalT>
 HalfEdgeFace<VertexT, NormalT>::~HalfEdgeFace()
 {
-//	if(m_region != 0)
-//		m_region->removeFace(this);
+	if(m_region != 0)
+		m_region->removeFace(this);
 }
 template<typename VertexT, typename NormalT>
 float HalfEdgeFace<VertexT, NormalT>::getArea()

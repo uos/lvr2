@@ -106,16 +106,10 @@ NormalT Region<VertexT, NormalT>::getNormal()
 }
 
 template<typename VertexT, typename NormalT>
-void Region<VertexT, NormalT>::dropAllFaces()
+Region<VertexT, NormalT>::~Region()
 {
 	for (int i = 0; i<m_faces.size(); i++)
 		m_faces[i]->m_region = 0;
-	m_faces.clear();
-}
-
-template<typename VertexT, typename NormalT>
-Region<VertexT, NormalT>::~Region()
-{
 	m_faces.clear();
 }
 

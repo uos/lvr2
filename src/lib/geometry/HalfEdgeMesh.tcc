@@ -381,7 +381,7 @@ void HalfEdgeMesh<VertexT, NormalT>::deleteEdge(HEdge* edge, bool deletePair)
 }
 
 template<typename VertexT, typename NormalT>
-void HalfEdgeMesh<VertexT, NormalT>::collapseEdge(HEdge* edge)
+bool HalfEdgeMesh<VertexT, NormalT>::collapseEdge(HEdge* edge)
 {
 	//Check for redundant edges
 	int edgeCnt = 0;
@@ -389,11 +389,11 @@ void HalfEdgeMesh<VertexT, NormalT>::collapseEdge(HEdge* edge)
 		if (edge->start->out[i]->end == edge->end)
 			edgeCnt++;
 	if(edgeCnt != 1)
-		return;
+		return false;
 
 	if(edge->face != 0 && edge->next->pair->face == 0 && edge->next->next->pair->face == 0
 			|| edge->pair->face != 0 && edge->pair->next->pair->face == 0 && edge->pair->next->next->pair->face == 0)
-		return;
+		return false;
 
 	// Save start and end vertex
 	HVertex* p1 = edge->start;
@@ -422,20 +422,13 @@ void HalfEdgeMesh<VertexT, NormalT>::collapseEdge(HEdge* edge)
 	// Delete faces
 	if(edge->pair->face != 0)
 	{
-
 		m_faces.erase(find(m_faces.begin(), m_faces.end(), edge->pair->face));
-		if(edge->pair->face->m_region != 0)
-			edge->pair->face->m_region->removeFace(edge->pair->face);
-
 		delete edge->pair->face;
 	}
 
 	if(edge->face != 0)
 	{
-
 		m_faces.erase(find(m_faces.begin(), m_faces.end(), edge->face));
-		if(edge->face->m_region != 0)
-			edge->face->m_region->removeFace(edge->face);
 		delete edge->face;
 	}
 
@@ -451,8 +444,8 @@ void HalfEdgeMesh<VertexT, NormalT>::collapseEdge(HEdge* edge)
 		p1->out.push_back(*it);
 		it++;
 	}
-	it = p2->in.begin();
 
+	it = p2->in.begin();
 	while(it != p2->in.end())
 	{
 		(*it)->end = p1;
@@ -462,6 +455,8 @@ void HalfEdgeMesh<VertexT, NormalT>::collapseEdge(HEdge* edge)
 
 	//Delete p2
 	deleteVertex(p2);
+
+	return true;
 }
 
 
@@ -650,7 +645,6 @@ void HalfEdgeMesh<VertexT, NormalT>::optimizePlanes(
 				}
 				else
 				{
-					region->dropAllFaces();
 					delete region;
 				}
 			}
@@ -673,8 +667,8 @@ void HalfEdgeMesh<VertexT, NormalT>::optimizePlanes(
 template<typename VertexT, typename NormalT>
 void HalfEdgeMesh<VertexT, NormalT>::deleteRegion(Region<VertexT, NormalT>* region)
 {
-    for(int i=0; i<region->m_faces.size(); i++)
-        deleteFace(region->m_faces[i]);
+	while(! region->m_faces.empty())
+		deleteFace(region->m_faces.front());
     delete region;
 }
 
@@ -693,7 +687,6 @@ void HalfEdgeMesh<VertexT, NormalT>::removeDanglingArtifacts(int threshold)
                 todelete.push_back(region);
             else
             {
-            	region->dropAllFaces();
             	delete region;
             }
         }
@@ -764,13 +757,15 @@ void HalfEdgeMesh<VertexT, NormalT>::fillHoles(int max_size)
             }
         }
     }
+
     //collapse all holes
     while(!holes.empty())
     {
-    	while(holes.top().size() > 2)
+        int failedCollapses = 0;
+    	while(holes.top().size() > max(2-failedCollapses, 0) )
     	{
-
-    		collapseEdge(holes.top().top());
+    		if (collapseEdge(holes.top().top()) == false)
+    			failedCollapses++;
     		holes.top().pop();
     	}
     	holes.pop();
@@ -861,13 +856,13 @@ void HalfEdgeMesh<VertexT, NormalT>::tester()
 //		if(m_faces[i]->m_edge->next->pair==0) cout << "You created a monster!" << endl;
 //		if(m_faces[i]->m_edge->next->next->pair==0) cout << "You created a monster!" << endl;
 //	}
-
-	for(unsigned int i=0; i<500000; i++)
-	{
+//
+//	for(unsigned int i=0; i<500000; i++)
+//	{
 //		cout << "Collapsing" << endl;
-		if(i%10000000 ==0) cout << (i/500000.0) * 100 << endl;
-		collapseEdge((*m_faces[rand() % m_faces.size()])[rand() % 3]);
-	}
+//		if(i%10000000 ==0) cout << (i/500000.0) * 100 << endl;
+//		collapseEdge((*m_faces[rand() % m_faces.size()])[rand() % 3]);
+//	}
 //	cout << "EDGE COLLAPSE------------------------------------------------" << endl;
 //	for(int i=0; i< m_faces.size(); i++)
 //	{
@@ -878,9 +873,9 @@ void HalfEdgeMesh<VertexT, NormalT>::tester()
 //		if(m_faces[i]->m_edge->next->pair==0) cout << "You created a monster!" << endl;
 //		if(m_faces[i]->m_edge->next->next->pair==0) cout << "You created a monster!" << endl;
 //	}
-
-	cout << "DONE" << endl;
-
+//
+//	cout << "DONE" << endl;
+//
 //	removeDanglingArtifacts(500);
 //	optimizePlanes(3,0.85,50,7);
 //	fillHoles(35);
@@ -888,32 +883,32 @@ void HalfEdgeMesh<VertexT, NormalT>::tester()
 //	m_colorRegions = true;
 
     //Reset all used variables
-//    for(int i=0; i<m_faces.size(); i++)
-//        for(int k=0; k<3; k++)
-//            (*m_faces[i])[k]->used=false;
-//
-//    vector<stack<HalfEdgeVertex<VertexT, NormalT>* > > contours = findAllContours(0.1);
-//    fstream filestr;
-//    filestr.open ("contours.pts", fstream::out);
-//    filestr<<"#X Y Z"<<endl;
-//    for (int i = 0; i<contours.size(); i++)
-//    {
-//        stack<HalfEdgeVertex<VertexT, NormalT>* > contour = contours[i];
-//
-//        HalfEdgeVertex<VertexT, NormalT> first = *(contour.top());
-//
-//        while (!contour.empty())
-//        {
-//            filestr << contour.top()->m_position[0] << " " << contour.top()->m_position[1] << " " << contour.top()->m_position[2] << endl;
-//            contour.pop();
-//        }
-//
-//        filestr << first.m_position[0] << " " << first.m_position[1] << " " << first.m_position[2] << endl;
-//
-//        filestr<<endl<<endl;
-//
-//    }
-//    filestr.close();
+    for(int i=0; i<m_faces.size(); i++)
+        for(int k=0; k<3; k++)
+            (*m_faces[i])[k]->used=false;
+
+    vector<stack<HalfEdgeVertex<VertexT, NormalT>* > > contours = findAllContours(0.1);
+    fstream filestr;
+    filestr.open ("contours.pts", fstream::out);
+    filestr<<"#X Y Z"<<endl;
+    for (int i = 0; i<contours.size(); i++)
+    {
+        stack<HalfEdgeVertex<VertexT, NormalT>* > contour = contours[i];
+
+        HalfEdgeVertex<VertexT, NormalT> first = *(contour.top());
+
+        while (!contour.empty())
+        {
+            filestr << contour.top()->m_position[0] << " " << contour.top()->m_position[1] << " " << contour.top()->m_position[2] << endl;
+            contour.pop();
+        }
+
+        filestr << first.m_position[0] << " " << first.m_position[1] << " " << first.m_position[2] << endl;
+
+        filestr<<endl<<endl;
+
+    }
+    filestr.close();
 
 //  for(int i=0; i<m_faces.size(); i++)
 //      m_faces[i]->m_region=0;
