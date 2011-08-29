@@ -186,8 +186,7 @@ int main(int argc, char** argv)
     mesh.optimizePlaneIntersections();
 
     // Save triangle mesh
-    mesh.finalize_and_retesselate();
-    //mesh.finalize();
+    mesh.finalize();
     mesh.save("triangle_mesh.ply");
 
 

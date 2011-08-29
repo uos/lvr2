@@ -9,7 +9,6 @@
 #define HALFEDGEMESH_H_
 
 #include <boost/unordered_map.hpp>
-#include <boost/unordered_set.hpp>
 
 #include <vector>
 #include <stack>
@@ -36,6 +35,7 @@ using namespace std;
 #include "../io/Progress.hpp"
 
 #include "Region.hpp"
+#include "Tesselator.hpp"
 
 namespace lssr
 {
@@ -228,26 +228,7 @@ public:
 	 *
 	 * @return 	a list of all contours
 	 */
-	virtual vector<stack<HVertex*> > findAllContours(float epsilon, int reg);
-
-    void regressionPlane(int);
-	
-    /**
-     * @brief   Takes a list of vertices as the border of a polygon
-     *          and returns a triangle tesselation
-     */
-    static void tesselatorBegin(GLenum which);
-    static void tesselate(vector<stack<HVertex*> > vectorBorderPoints, double **vertices, int **indices, int &vLength, int &iLength);
-    static void tesselatorEnd();
-    static void tesselatorError(GLenum errorCode);
-    static void tesselatorAddVertex(const GLvoid *data, HVertex* userData);
-    static void tesselatorCombineVertices(GLdouble coords[3],
-							 GLdouble *vertex_data[4],
-							 GLfloat weight[4],
-							 GLdouble **dataOut,
-                             HVertex* userData);
-
-
+	virtual vector<stack<HVertex*> > findAllContours(float epsilon);
 
 	/**
 	 * @brief 	Finalizes a mesh, i.e. converts the template based buffers
@@ -255,11 +236,6 @@ public:
 	 */
 	virtual void finalize();
 
-    /**
-	 * @brief 	Finalizes a mesh, i.e. converts the template based buffers
-	 * 			to OpenGL compatible buffers
-	 */
-	virtual void finalize_and_retesselate();
 
 	void fillHoles(int max_size);
 
@@ -268,6 +244,7 @@ public:
 	void tester();
 
 private:
+
 	/// The faces in the half edge mesh
 	vector<HalfEdgeFace<VertexT, NormalT>*>     m_faces;
 
@@ -278,48 +255,7 @@ private:
 	vector<Region<VertexT, NormalT>*>     m_regions;
 
 	/// The indexed of the newest inserted vertex
-	int 					 m_globalIndex;
-
-    /// Give information about the function optimizePlane(int) if it ran before.
-    bool m_planesOptimized;
-
-	void printStats();
-
-//	void check_next_neighbor(HalfEdgeFace* f0,
-//							 HalfEdgeFace* face,
-//							 HalfEdge* edge,
-//							 HalfEdgePolygon*);
-//
-//	void check_next_neighbor(HalfEdgeFace* f0,
-//			                 HalfEdgeFace* face,
-//			                 HalfEdge* edge,
-//			                 vector<HalfEdgeFace*>& faces);
-
-//	void extract_borders();
-//	void generate_polygons();
-
-//	void getArea(set<HalfEdgeFace*> &faces, HalfEdgeFace* face, int depth, int max);
-//	void shiftIntoPlane(HalfEdgeFace* f);
-
-//	bool check_face(HalfEdgeFace* f0, HalfEdgeFace* current);
-//	bool isFlatFace(HalfEdgeFace* face);
-
-//	int classifyFace(HalfEdgeFace* f);
-//
-//	void create_polygon(vector<int> &polygon,
-//						hash_map< unsigned int, HalfEdge* >* edges);
-
-//	void cluster(vector<planarCluster> &planes);
-//	void optimizeClusters(vector<planarCluster> &clusters);
-//
-//	void classifyCluster(vector<planarCluster> &panes, list<list<planarCluster> > &objectCandidates);
-//	void findNextClusterInRange(int s, vector<planarCluster> &clusters,
-//	        planarCluster &start,
-//	        list<planarCluster> &clustercluster,
-//	        vector<bool> &markers);
-//
-//	virtual void finalize(vector<planarCluster> &planes);
-//	virtual void finalize(list<list<planarCluster> > &objects);
+	int 	                                    m_globalIndex;
 
 	bool                                        m_colorRegions;
 	/**
