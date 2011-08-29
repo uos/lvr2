@@ -102,8 +102,8 @@ void Tesselator<VertexT, NormalT>::getFinalizedTriangles(double **vertexBuffer,
                                       double **normalBuffer,
                                       double **colorBuffer,
                                       uint8_t   **indexBuffer,
-                                      int *numberFaces,
-                                      int *numberVertices)
+                                      int *lengthFaces,
+                                      int *lengthVertices)
 {
     // make a good guess how long the normal buffer is supposed to be
     // colorbuffer, vertexbuffer a.s.o.
@@ -119,11 +119,11 @@ void Tesselator<VertexT, NormalT>::getFinalizedTriangles(double **vertexBuffer,
     uint16_t numVertices = m_triangles.size();
 
     // allocate new memory.
-    vertexBuffer = new double[numVertices*3];
-    normalBuffer = new double[numVertices*3];
-    colorBuffer  = new double[numVertices*3];
+    *vertexBuffer = new double[numVertices*3];
+    *normalBuffer = new double[numVertices*3];
+    *colorBuffer  = new double[numVertices*3];
 
-    indexBuffer =  new uint8_t[numVertices];
+    *indexBuffer =  new uint8_t[numVertices];
 
     uint16_t usedVertices=0, usedNormals=0, usedColors=0, usedFaces=0;
     
@@ -199,6 +199,41 @@ void Tesselator<VertexT, NormalT>::getFinalizedTriangles(double **vertexBuffer,
             usedFaces++;
         }
         count++;
+    }
+
+    // Copy all that stuff and resize array -- this should be improved somehow! TODO:!
+    double *newVertexBuffer = new double[usedVertices*3];
+    double *newNormalBuffer = new double[usedVertices*3];
+    double *newColorBuffer  = new double[usedVertices*3];
+    uint8_t *newIndexBuffer = new uint8_t[usedFaces*3];
+
+    // use memcopy?
+    for(int i=0; i<usedVertices*3; i++)
+    {
+        newVertexBuffer[i] = vertexBuffer[i];
+        newNormalBuffer[i] = normalBuffer[i];
+        newColorBuffer[i]  = colorBuffer[i];
+    }
+
+    for(int i=0; i<usedFaces*3; ++i)
+    {
+        newIndexBuffer[i] = indexBuffer[i];
+    }
+    
+    delete *indexBuffer;
+    delete *vertexBuffer;
+    delete *normalBuffer;
+    delete *colorBuffer;
+    *vertexBuffer = newVertexBuffer;
+    *normalBuffer = newNormalBuffer;
+    *colorBuffer  = newColorBuffer;
+    *indexBuffer = newIndexBuffer;
+    *lengthVertices = usedVertices*3;
+    *lengthFaces = usedFaces*3;
+
+    if(m_debug)
+    {
+        cout << "Retesselation Complete. " << usedVertices << " Vertices. " << usedFaces << " Faces.\n";
     }
 }
 
