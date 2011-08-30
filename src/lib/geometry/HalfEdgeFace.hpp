@@ -16,6 +16,7 @@ using namespace std;
 #include "HalfEdgeVertex.hpp"
 #include "Normal.hpp"
 #include "HalfEdge.hpp"
+#include "Region.hpp"
 
 namespace lssr
 {
@@ -39,6 +40,11 @@ public:
      * @brief   Constructs an empty face
      */
 	HalfEdgeFace() {m_region=0; m_used=false;};
+
+	/**
+	 * @brief Destructor
+	 */
+	~HalfEdgeFace();
 
 	/**
 	 * @brief   Copy constructor
@@ -119,7 +125,7 @@ public:
 	/// The index of the face's texture
 	int 							m_texture_index;
 
-	int 							m_region;
+	Region<VertexT, NormalT>*		m_region;
 
 	bool							m_used;
 

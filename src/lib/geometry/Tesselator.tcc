@@ -378,7 +378,7 @@ template<typename VertexT, typename NormalT>
 void Tesselator<VertexT, NormalT>::tesselate(Region<VertexT, NormalT> region)
 {
     m_region = region.m_region_number;
-    m_normal = region.getNormal();
+    m_normal = region.m_normal;
     //return tesselate(region.getContours(1.1));
     //return 
     tesselate(region.getContours(1.1));
