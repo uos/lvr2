@@ -15,6 +15,7 @@ HalfEdgeMesh<VertexT, NormalT>::HalfEdgeMesh()
 {
 	m_globalIndex = 0;
 	m_colorRegions = false;
+    m_planesOptimized = false;
 }
 
 
@@ -667,6 +668,8 @@ void HalfEdgeMesh<VertexT, NormalT>::optimizePlanes(
 	        ++progress;
 	    }
 	}
+
+    m_planesOptimized = true;
 }
 
 template<typename VertexT, typename NormalT>
@@ -707,6 +710,11 @@ void HalfEdgeMesh<VertexT, NormalT>::removeDanglingArtifacts(int threshold)
 template<typename VertexT, typename NormalT>
 void HalfEdgeMesh<VertexT, NormalT>::fillHoles(int max_size)
 {
+    if(!m_planesOptimized)
+    {
+        cerr << "Cannot fill holes before the planes have been optimized! Aborting fillHoles.\n"; 
+        return;
+    }
     //walk through all edges and start hole finding
     //when pair has no face and a regression plane was applied
     for(int i=0; i < m_faces.size(); i++)

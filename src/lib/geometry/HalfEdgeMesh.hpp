@@ -254,6 +254,8 @@ private:
 	int 	                                    m_globalIndex;
 
 	bool                                        m_colorRegions;
+
+    bool m_planesOptimized;
 	/**
 	 * @brief   Returns an edge that point to the edge defined
 	 *          by the given vertices.
