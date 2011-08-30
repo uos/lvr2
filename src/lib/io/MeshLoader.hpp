@@ -50,6 +50,18 @@ class MeshLoader
 
 protected:
 
+    /**
+      * Ctor.
+      */
+    MeshLoader() : m_vertices(0),
+                   m_vertexNormals(0),
+                   m_vertexColors(0),
+                   m_indices(0),
+                   m_numberOfNormals(0),
+                   m_numberOfVertices(0),
+                   m_numberOfFaces(0)
+    {}
+
     float*                  m_vertices;
     float*                  m_vertexNormals;
     float*                  m_vertexColors;

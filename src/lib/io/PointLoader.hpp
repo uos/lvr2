@@ -25,8 +25,6 @@ namespace lssr
 class PointLoader
 {
 public:
-    PointLoader()
-        : m_points(0), m_pointNormals(0), m_pointColors(0), m_intensities(0), m_numPoints(0) {}
 
 
     /**
@@ -84,6 +82,11 @@ public:
     virtual vector<indexPair>& getScanRanges() { return m_scanRanges;}
 
 protected:
+
+    /// Ctor
+    PointLoader()
+            : m_points(0), m_pointNormals(0), m_pointColors(0), m_intensities(0), m_numPoints(0) {}
+
 
     /// Point cloud data
     float**          m_points;
