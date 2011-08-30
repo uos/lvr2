@@ -16,6 +16,7 @@ namespace lssr
 
 class MeshLoader
 {
+public:
     /**
      * Returns the vertices of triangle mesh.
      *
@@ -47,6 +48,7 @@ class MeshLoader
      * @return      The loaded index array or a null pointer
      */
     virtual unsigned int* getIndexArray(size_t &n) = 0;
+
 
 protected:
 

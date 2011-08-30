@@ -162,6 +162,7 @@ void ViewerApplication::dataCollectorAdded(DataCollector* d)
     if(d->treeItem())
     {
         m_sceneDockWidgetUi->treeWidget->addTopLevelItem(d->treeItem());
+        updateToolbarActions(d->treeItem());
     }
 }
 
@@ -174,6 +175,7 @@ void ViewerApplication::treeItemClicked(QTreeWidgetItem* item, int d)
         if(custom_item->centerOnClick())
         {
             m_viewer->centerViewOnObject(custom_item->renderable());
+            updateToolbarActions(custom_item);
         }
     }
 
@@ -197,12 +199,40 @@ void ViewerApplication::treeSelectionChanged()
     while (*it) {
         if( (*it)->type() >= ServerItem)
         {
+           // Get selected item
            CustomTreeWidgetItem* item = static_cast<CustomTreeWidgetItem*>(*it);
            item->renderable()->setSelected(item->isSelected());
+
+           // Update render modes in tool bar
+           updateToolbarActions(item);
+
         }
         ++it;
     }
     m_viewer->updateGL();
+}
+
+void ViewerApplication::updateToolbarActions(CustomTreeWidgetItem* item)
+{
+    bool point_support = item->supportsMode(Points);
+    bool pn_support = item->supportsMode(PointNormals);
+    bool vn_support = item->supportsMode(VertexNormals);
+    bool mesh_support = item->supportsMode(Mesh);
+
+    if(mesh_support)
+    {
+        m_mainWindowUi->actionVertexView->setEnabled(true);
+        m_mainWindowUi->actionWireframeView->setEnabled(true);
+        m_mainWindowUi->actionSurfaceView->setEnabled(true);
+    }
+    else
+    {
+        m_mainWindowUi->actionVertexView->setEnabled(false);
+        m_mainWindowUi->actionWireframeView->setEnabled(false);
+        m_mainWindowUi->actionSurfaceView->setEnabled(false);
+    }
+
+    m_mainWindowUi->actionPointCloudView->setEnabled(point_support);
 }
 
 void ViewerApplication::toggleFog()
