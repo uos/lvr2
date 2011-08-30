@@ -456,6 +456,7 @@ bool HalfEdgeMesh<VertexT, NormalT>::collapseEdge(HEdge* edge)
 	//Delete p2
 	deleteVertex(p2);
 
+	//set pair pointers at closed holes
 	bool stop = false;
 	for(int i = 0; i<p1->out.size() && !stop; i++)
 	{
@@ -552,6 +553,78 @@ void HalfEdgeMesh<VertexT, NormalT>::flipEdge(HEdge* edge)
 		//delete the old edge
 		deleteEdge(edge);
 	}
+}
+
+template<typename VertexT, typename NormalT>
+void HalfEdgeMesh<VertexT, NormalT>::collapseFace(HFace* f)
+{
+	HVertex* p1 = (*f)(0);
+	HVertex* p2 = (*f)(1);
+	HVertex* p3 = (*f)(2);
+
+	p1->m_position = f->getCentroid();
+
+	for(int e = 0; e<3; e++)
+	{
+		if ((*f)[e]->pair->face != 0)
+		{
+			if((*f)[e]->pair->next->pair->face != 0 && (*f)[e]->pair->next->next->pair->face != 0)
+			{
+				(*f)[e]->pair->next->pair->pair = (*f)[e]->pair->next->next->pair;
+				(*f)[e]->pair->next->next->pair->pair = (*f)[e]->pair->next->pair;
+				m_faces.erase(find(m_faces.begin(), m_faces.end(), (*f)[e]->pair->face));
+				delete (*f)[e]->pair->face;
+				deleteEdge((*f)[e]->pair->next->next, false);
+				deleteEdge((*f)[e]->pair->next, false);
+			}
+			else
+			{
+				deleteFace((*f)[e]->pair->face);
+			}
+		}
+	}
+
+	deleteEdge(f->m_edge->next->next);
+	deleteEdge(f->m_edge->next);
+	deleteEdge(f->m_edge);
+
+	//Update incoming and outgoing edges of p1
+	typename vector<HEdge*>::iterator it;
+	it = p2->out.begin();
+	while(it != p2->out.end())
+	{
+		(*it)->start = p1;
+		p1->out.push_back(*it);
+		it++;
+	}
+
+	it = p2->in.begin();
+	while(it != p2->in.end())
+	{
+		(*it)->end = p1;
+		p1->in.push_back(*it);
+		it++;
+	}
+
+	it = p3->out.begin();
+	while(it != p3->out.end())
+	{
+		(*it)->start = p1;
+		p1->out.push_back(*it);
+		it++;
+	}
+
+	it = p3->in.begin();
+	while(it != p3->in.end())
+	{
+		(*it)->end = p1;
+		p1->in.push_back(*it);
+		it++;
+	}
+	deleteVertex(p2);
+	deleteVertex(p3);
+	m_faces.erase(find(m_faces.begin(), m_faces.end(), f));
+	delete f;
 }
 
 template<typename VertexT, typename NormalT>
@@ -740,6 +813,7 @@ void HalfEdgeMesh<VertexT, NormalT>::fillHoles(int max_size)
                 {
                     next = 0;
                     contour.push(current);
+                    //to ensure that there is no way back to the same vertex
                     for (int e = 0; e<current->start->out.size(); e++)
                     {
                     	if (current->start->out[e]->end == current->end)
@@ -774,11 +848,12 @@ void HalfEdgeMesh<VertexT, NormalT>::fillHoles(int max_size)
     }
 
     //collapse all holes
-	vector<HEdge* > invalid_edges; //holds edges which are deleted automatically if the current edge is collapsed
+    vector<HEdge* > invalid_edges; //holds edges which are deleted automatically if the current edge is collapsed
     while(!holes.empty())
     {
     	while(!holes.top().empty())
     	{
+    		bool pushed = false;
     		//Check if current edge is not invalid
     		if(!(find(invalid_edges.begin(), invalid_edges.end(), holes.top().top()) != invalid_edges.end()))
     		{
@@ -789,9 +864,10 @@ void HalfEdgeMesh<VertexT, NormalT>::fillHoles(int max_size)
     					{
     						invalid_edges.push_back(holes.top().top()->end->out[i]);
     						invalid_edges.push_back(holes.top().top()->start->in[j]);
+    						pushed = true;
     					}
     			//Try to collapse the current edge
-    			if(collapseEdge(holes.top().top()) == false)
+    			if(collapseEdge(holes.top().top()) == false && pushed)
     			{
     				invalid_edges.pop_back();
     				invalid_edges.pop_back();
@@ -801,7 +877,6 @@ void HalfEdgeMesh<VertexT, NormalT>::fillHoles(int max_size)
     	}
     	holes.pop();
     }
-
 }
 
 template<typename VertexT, typename NormalT>
@@ -831,8 +906,8 @@ void HalfEdgeMesh<VertexT, NormalT>::optimizePlaneIntersections()
                 {
                     //calculate intersection between plane i and j
 
-                	NormalT n_i = m_regions[i]->getNormal();
-                	NormalT n_j = m_regions[j]->getNormal();
+                	NormalT n_i = m_regions[i]->m_normal;
+                	NormalT n_j = m_regions[j]->m_normal;
 
                     //don't improve almost parallel regions - they won't cross in a reasonable distance
                     if (fabs(n_i*n_j) < 0.9)
@@ -908,14 +983,22 @@ void HalfEdgeMesh<VertexT, NormalT>::tester()
 //	cout << "DONE" << endl;
 //
 //	removeDanglingArtifacts(500);
-	for(int i=0; i<m_regions.size(); i++)
-		delete m_regions[i];
-
+//	for(int i=0; i<m_regions.size(); i++)
+//		delete m_regions[i];
+//
 	optimizePlanes(3,0.85,50,0);
+
+	//Starts backflipping of all misaligned faces
+	for(int i=0; i<m_regions.size(); i++)
+	{
+		if(m_regions[i]->m_inPlane)
+			m_regions[i]->backflipFaces(this);
+	}
+
 //	fillHoles(35);
 //	optimizePlaneIntersections();
 //	m_colorRegions = true;
-
+//
     //Reset all used variables
     for(int i=0; i<m_faces.size(); i++)
         for(int k=0; k<3; k++)
