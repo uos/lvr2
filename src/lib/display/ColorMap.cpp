@@ -75,8 +75,6 @@ void  ColorMap::calcColorHot(float *d, size_t i)
     }
 }
 
-
-
 void ColorMap::calcColorJet(float *d, size_t i)
 {
     float t = (float)i/(float)m_numBuckets;
