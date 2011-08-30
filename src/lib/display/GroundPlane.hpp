@@ -8,7 +8,10 @@
 #ifndef GROUNDPLANE_H_
 #define GROUNDPLANE_H_
 
-#include "Renderable.h"
+#include "Renderable.hpp"
+
+namespace lssr
+{
 
 class GroundPlane : public Renderable{
 
@@ -18,11 +21,13 @@ public:
 
 	virtual ~GroundPlane();
 	virtual void render();
-	virtual void transform(Matrix4 m);
+	virtual void transform(Matrix4<float> m);
 
 private:
 	void drawGrid(int increment, int count);
 
 };
+
+} // namespace lssr
 
 #endif /* GROUNDPLANE_H_ */

@@ -2,10 +2,13 @@
  * CoordinateAxes.cpp
  *
  *  Created on: 27.08.2008
- *      Author: twiemann
+ *      Author: Thomas Wiemann
  */
 
-#include "CoordinateAxes.h"
+#include "CoordinateAxes.hpp"
+
+namespace lssr
+{
 
 CoordinateAxes::CoordinateAxes() : Renderable("Coordinate System"){
 	drawAxes(100);
@@ -108,11 +111,13 @@ void CoordinateAxes::render(){
 	if (m_visible){
 		glPushMatrix();
 		glScalef(10.0, 10.0, 10.0);
-		glCallList(listIndex);
+		glCallList(m_listIndex);
 		glPopMatrix();
 	}
 }
 
-void CoordinateAxes::transform(Matrix4 m){
+void CoordinateAxes::transform(Matrix4<float> m){
 
 }
+
+} // namespace lssr
