@@ -11,9 +11,11 @@
 #include <cstring>
 #include <iostream>
 #include <vector>
+#include <limits>
 
 using std::pair;
 using std::vector;
+using std::numeric_limits;
 typedef pair<size_t, size_t> indexPair;
 
 
@@ -81,11 +83,28 @@ public:
 
     virtual vector<indexPair>& getScanRanges() { return m_scanRanges;}
 
+    /**
+     * @brief   Returns the minimal intensity in the data set
+     */
+    virtual float getMinIntensity() { return m_minIntensity;}
+
+    /**
+     * @brief   Returns the maximal intensity in the data set
+     */
+    virtual float getMaxIntensity() { return m_maxIntensity;}
+
 protected:
 
     /// Ctor
     PointLoader()
-            : m_points(0), m_pointNormals(0), m_pointColors(0), m_intensities(0), m_numPoints(0) {}
+            : m_points(0),
+              m_pointNormals(0),
+              m_pointColors(0),
+              m_intensities(0),
+              m_numPoints(0),
+              m_minIntensity(numeric_limits<float>::max()),
+              m_maxIntensity(numeric_limits<float>::min())
+    {}
 
 
     /// Point cloud data
@@ -102,6 +121,12 @@ protected:
 
     /// Number of loaded points
     size_t           m_numPoints;
+
+    /// The minimal intensity in the data set
+    float            m_minIntensity;
+
+    /// The maximal intensity in the data set
+    float            m_maxIntensity;
 
     /// Vector to save the indices of the first and last points of single scans
     vector<indexPair> m_scanRanges;

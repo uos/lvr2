@@ -1061,6 +1061,12 @@ void PLYIO::readPointsBinary(ifstream &in, PLYElement* descr)
             {
                 copyElementToIndexedBuffer<float>(in, p, m_pointNormals, i, 2);
             }
+            else if(p->getName() == "i")
+            {
+                copyElementToBuffer(in, p, m_intensities, i);
+                m_maxIntensity = std::max(m_intensities[i], m_maxIntensity);
+                m_minIntensity = std::min(m_intensities[i], m_minIntensity);
+            }
         }
         ++progress;
     }
@@ -1111,6 +1117,12 @@ void PLYIO::readPointsASCII(ifstream &in, PLYElement* descr)
             else if(property_name == "b")
             {
                 in >> m_pointColors[i][2];
+            }
+            else if(property_name == "i")
+            {
+                in >> m_intensities[i];
+                m_maxIntensity = std::max(m_intensities[i], m_maxIntensity);
+                m_minIntensity = std::min(m_intensities[i], m_minIntensity);
             }
             it++;
         }
