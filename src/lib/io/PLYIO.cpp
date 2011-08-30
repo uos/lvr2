@@ -964,7 +964,7 @@ void PLYIO::allocPointBuffers(PLYElement* descr)
 
 void PLYIO::deleteBuffers()
 {
-    cout << m_numberOfVertices << endl;
+
 	if(m_vertices)
 	{
 		delete[] m_vertices;
@@ -987,6 +987,23 @@ void PLYIO::deleteBuffers()
 	{
 		delete[] m_vertexNormals;
 		m_vertexNormals = 0;
+	}
+
+	if(m_points)
+	{
+	    for(size_t i = 0; i < m_numPoints; i++) delete[] m_points[i];
+	    delete[] m_points;
+	}
+
+	if(m_intensities)
+	{
+	    delete[] m_intensities;
+	}
+
+	if(m_pointNormals)
+	{
+	    for(size_t i = 0; i < m_numPoints; i++) delete[] m_pointNormals[i];
+	    delete[] m_pointNormals;
 	}
 }
 
