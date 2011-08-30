@@ -100,6 +100,7 @@ DataCollector* DataCollectorFactory::create(string filename)
 
 	if(mesh_loader)
 	{
+	    lssr::StaticMesh* mesh = new lssr::StaticMesh(*mesh_loader);
 
 	}
 
@@ -108,6 +109,16 @@ DataCollector* DataCollectorFactory::create(string filename)
 	    // Check for multi point object
 	    PointCloud* pc = new PointCloud(*point_loader);
 	    PointCloudTreeWidgetItem* item = new PointCloudTreeWidgetItem(PointCloudItem);
+
+	    // Setup supported render modes
+	    int modes = 0;
+	    modes |= Points;
+	    if(point_loader->getPointNormalArray())
+	    {
+	        modes |= PointNormals;
+	    }
+
+	    item->setSupportedRenderModes(modes);
 	    item->setViewCentering(true);
 	    item->setName(name);
 	    item->setNumPoints(pc->m_points.size());

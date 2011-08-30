@@ -20,6 +20,7 @@
 using namespace std;
 
 #include "Renderable.hpp"
+#include "io/MeshLoader.hpp"
 
 namespace lssr
 {
@@ -27,12 +28,10 @@ namespace lssr
 class StaticMesh : public Renderable{
 public:
 	StaticMesh();
-	StaticMesh(string name);
+	StaticMesh(MeshLoader& loader, string name="<unnamed static mesh>");
 	StaticMesh(const StaticMesh &o);
 	~StaticMesh();
 	inline void render();
-
-	virtual void load(string filename);
 
 	virtual void finalize();
 	virtual void savePLY(string filename);

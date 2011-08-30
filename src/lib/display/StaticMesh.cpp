@@ -26,20 +26,16 @@ StaticMesh::StaticMesh(){
 
 }
 
-StaticMesh::StaticMesh(string name) : Renderable(name){
+StaticMesh::StaticMesh(MeshLoader& loader, string name) : Renderable(name){
 
-	m_normals = 0;
-	m_vertices = 0;
-	m_colors = 0;
-	m_indices = 0;
+	m_normals       = loader.getVertexNormalArray(m_numVertices);
+	m_colors        = loader.getVertexColorArray(m_numVertices);
+	m_vertices      = loader.getVertexArray(m_numVertices);
+	m_indices       = loader.getIndexArray(m_numFaces);
 
-	m_numFaces = 0;
-	m_numVertices = 0;
+	m_finalized     = true;
 
-	m_finalized = false;
-
-	load(name);
-
+	compileDisplayList();
 }
 
 StaticMesh::StaticMesh(const StaticMesh &o)
@@ -107,58 +103,6 @@ void StaticMesh::compileDisplayList(){
 		glEndList();
 
 	}
-
-}
-
-void StaticMesh::load(string filename){
-
-//	PLYIO w;
-//	w.read(filename);
-//
-//	size_t n_m_normals = 0;
-//	size_t n_colors = 0;
-//
-//	m_vertices  = w.getVertexArray(number_of_m_vertices);
-//	m_normals = w.getNormalArray(n_m_normals);
-//	colors = w.getColorArray(n_colors);
-//	m_indices = w.getIndexArray(number_of_faces);
-//
-//	cout << m_normals << endl;
-//
-//	// Calculate bounding box
-//	if(m_boundingBox) delete m_boundingBox;
-//	m_boundingBox = new BoundingBox;
-//
-//	for(size_t i = 0; i < number_of_m_vertices; i++)
-//	{
-//		m_boundingBox->expand(m_vertices[3 * i], m_vertices[3 * i + 1], m_vertices[3 * i + 2]);
-//	}
-//
-//	if(n_colors == 0)
-//	{
-//		colors = new float[number_of_m_vertices * 3];
-//		for(size_t i = 0; i < number_of_m_vertices; i++)
-//		{
-//			colors[i * 3] = 0.0;
-//			colors[i * 3 + 1] = 1.0;
-//			colors[i * 3 + 2] = 0.0;
-//		}
-//	}
-//
-//	if(n_m_normals == 0)
-//	{
-//		interpolatem_normals();
-//	}
-//
-////	for(int i = 0; i < number_of_m_vertices; i++)
-////	{
-////		m_vertices[3 * i] = m_vertices[3 * i] * 100;
-////		m_vertices[3 * i + 1] = m_vertices[3 * i + 1] * 100;
-////		m_vertices[3 * i + 2] = m_vertices[3 * i + 2] * 100;
-////	}
-//
-//	finalized = true;
-//	compileDisplayList();
 
 }
 

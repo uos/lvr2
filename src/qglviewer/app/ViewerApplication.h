@@ -61,6 +61,7 @@ public Q_SLOTS:
 
 private:
 
+	void updateToolbarActions(CustomTreeWidgetItem* item);
 	void connectEvents();
 
 	MainWindow*					m_mainWindowUi;

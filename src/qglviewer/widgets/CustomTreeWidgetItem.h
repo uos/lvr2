@@ -14,7 +14,8 @@
 
 using lssr::Renderable;
 
-enum {
+enum
+{
     ServerItem = 1001,
     InterfaceItem,
     PointCloudItem,
@@ -53,7 +54,9 @@ public:
 
     string name() { return m_name;}
 
-    void setSupportedRednerModes(int mode) {m_renderMode = mode;}
+    void setSupportedRenderModes(int mode) {m_renderMode = mode;}
+
+    bool supportsMode(int mode);
 protected:
 
 	Qt::CheckState      m_oldCheckState;
