@@ -10,6 +10,7 @@ set(LSSR_SOURCES
     display/PointCloud.cpp
     display/MultiPointCloud.cpp
     display/StaticMesh.cpp
+    display/ColorMap.cpp
 )
 
 add_library(lssr STATIC ${LSSR_SOURCES})
