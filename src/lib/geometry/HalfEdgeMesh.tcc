@@ -924,7 +924,7 @@ void HalfEdgeMesh<VertexT, NormalT>::finalize()
 	cout << timestamp << "Number of vertices: " << (uint32_t) m_vertices.size() << endl;
 	cout << timestamp << "Number of faces: " << (uint32_t)m_faces.size() << endl;
 
-	boost::unordered_map<HalfEdgeVertex<VertexT, NormalT>*, int> index_map;
+	/*boost::unordered_map<HalfEdgeVertex<VertexT, NormalT>*, int> index_map;
 
 	this->m_nVertices 		= (uint32_t)m_vertices.size();
 	this->m_nFaces 			= (uint32_t)m_faces.size();
@@ -993,7 +993,20 @@ void HalfEdgeMesh<VertexT, NormalT>::finalize()
 		this->m_colorBuffer[this->m_indexBuffer[3 * i + 2] * 3 + 2] = b;
 
 
-	}
+	} */
+    // take a region and retesselate it by chance or so...
+    cout << "Tesseliere!" << endl;
+    Tesselator<VertexT, NormalT>::init();
+    cout << "Tesseliere!" << endl;
+    Tesselator<VertexT, NormalT>::tesselate(*(m_regions[0]));
+//    double **v = new double*;
+//    double **c = new double*;
+//    double **n = new double*;
+//    uint8_t **in = new uint8_t*;
+//    int *vS = new int;
+//    int *fS = new int;
+	this->m_nVertices 		= 0; //(uint32_t)m_vertices.size();
+	this->m_nFaces 			= 0; //(uint32_t)m_faces.size();
 
 	this->m_finalized = true;
 }

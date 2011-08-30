@@ -60,7 +60,8 @@ public:
      * @return Returns a list of HalfEdgeVertices. Every 3-points represent a triangle.
      *         
      */
-    static vector<HVertex> tesselate(vector<stack<HVertex*> > borderVertices);
+    //static vector<HVertex> tesselate(vector<stack<HVertex*> > borderVertices);
+    static void tesselate(vector<stack<HVertex*> > borderVertices);
     
     /**
      * @brief Takes a list of contours and retesselates the area.
@@ -71,7 +72,8 @@ public:
      * @return Returns a list of HalfEdgeVertices. Every 3-points represent a triangle.
      *         
      */
-    static vector<HVertex> tesselate(Region<VertexT, NormalT> region);
+    //static vector<HVertex> tesselate(Region<VertexT, NormalT> region);
+    static void tesselate(Region<VertexT, NormalT> region);
 
     /**
      * @brief blabla
@@ -129,15 +131,16 @@ public:
 							 GLdouble **dataOut,
                              HVertex* userData);
 
-    static vector<Vertex<double> > m_vertices;
-    static vector<Vertex<double> > m_triangles;
+    static bool   m_tesselated;
+    static int    m_region;
+    //static vector<Vertex<float> > m_vertices;
+    static vector<HVertex> m_vertices;
+    static vector<Vertex<float> > m_triangles;
     static GLUtesselator* m_tesselator;
 
     static GLenum m_primitive;
     static int    m_numContours;    
     static bool   m_debug;
-    static bool   m_tesselated;
-    static int    m_region;
     static NormalT m_normal;
 
 private:
