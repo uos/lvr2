@@ -9,7 +9,6 @@ using std::stringstream;
 #include <boost/algorithm/string.hpp>
 #include <boost/progress.hpp>
 
-
 #include "io/Progress.hpp"
 #include "io/Timestamp.hpp"
 

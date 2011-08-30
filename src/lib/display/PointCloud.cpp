@@ -6,6 +6,7 @@
  */
 
 #include "PointCloud.hpp"
+#include "ColorMap.hpp"
 
 #include <string.h>
 
@@ -17,14 +18,17 @@ PointCloud::PointCloud()
 
 }
 
-PointCloud::PointCloud(PointLoader& loader, string name) : Renderable(name) {
-
+PointCloud::PointCloud(PointLoader& loader, string name) : Renderable(name)
+{
+    int maxColors = 255;
 
     m_boundingBox = new BoundingBox<Vertex<float> >;
 
     float** points = loader.getPointArray();
     uchar** colors = loader.getPointColorArray();
+    float*  intensities = loader.getPointIntensityArray();
 
+    ColorMap c_map(maxColors);
 
     for(size_t i = 0; i < loader.getNumPoints(); i++)
     {
@@ -40,10 +44,21 @@ PointCloud::PointCloud(PointLoader& loader, string name) : Renderable(name) {
             g = colors[i][1];
             b = colors[i][2];
         }
+        else if (intensities)
+        {
+            // Get intensity
+            float color[3];
+            c_map.getColor(color, (size_t)intensities[i], GREY);
+
+            r = (uchar)(color[0] * 255);
+            g = (uchar)(color[1] * 255);
+            b = (uchar)(color[2] * 255);
+
+        }
         else
         {
             r = 0;
-            g = 200;
+            g = 255;
             b = 0;
         }
 
