@@ -24,6 +24,9 @@ class HalfEdgeFace;
 template<typename VertexT, typename NormalT>
 class HalfEdgeVertex;
 
+template<typename VertexT, typename NormalT>
+class HalfEdgeMesh;
+
 
 /**
  * @brief 	This class represents a region.
@@ -69,17 +72,18 @@ public:
 	virtual vector<stack<HVertex*> > getContours(float epsilon);
 
 	/**
-	 * @brief calculates a valid normal of the region
-	 *
-	 * @return a normal of the region
-	 */
-	virtual NormalT getNormal();
-
-	/**
 	 * @brief caluclates a regression plane for the region and fits all faces into this plane
 	 *
 	 */
 	virtual void regressionPlane();
+
+	/**
+	 * @brief	Finds faces whose normals are aligned to the wrong direction and flips them back.
+	 * 			Will result in less flickering effects.
+	 *
+	 * @param	mesh	A pointer to the mesh
+	 */
+	virtual void backflipFaces(HalfEdgeMesh<VertexT, NormalT>* mesh);
 
 	/**
 	 * @brief destructor.
@@ -94,6 +98,18 @@ public:
 
 	/// The number of the region
 	int m_region_number;
+
+	/// The normal of the region (updated every time regressionPlane() is called)
+	NormalT m_normal;
+
+private:
+	/**
+	 * @brief calculates a valid normal of the region
+	 *
+	 * @return a normal of the region
+	 */
+	virtual NormalT calcNormal();
+
 };
 }
 
