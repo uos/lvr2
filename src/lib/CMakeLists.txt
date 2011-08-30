@@ -6,11 +6,13 @@ set(LSSR_SOURCES
     io/UosIO.cpp
     io/Progress.cpp
     io/Timestamp.cpp
+    display/CoordinateAxes.cpp
     display/Renderable.cpp
     display/PointCloud.cpp
     display/MultiPointCloud.cpp
     display/StaticMesh.cpp
     display/ColorMap.cpp
+    display/GroundPlane.cpp
 )
 
 add_library(lssr STATIC ${LSSR_SOURCES})

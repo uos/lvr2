@@ -5,7 +5,10 @@
  *      Author: Thomas Wiemann
  */
 
-#include "GroundPlane.h"
+#include "GroundPlane.hpp"
+
+namespace lssr
+{
 
 GroundPlane::GroundPlane() : Renderable("Ground Plane"){
 	m_listIndex = -1;
@@ -64,13 +67,15 @@ void GroundPlane::drawGrid(int increment, int count){
 void GroundPlane::render(){
 	if(m_visible){
 		glDisable(GL_LIGHTING);
-		glCallList(listIndex);
+		glCallList(m_listIndex);
 		glEnable(GL_LIGHTING);
 	}
 
 }
 
-void GroundPlane::transform(Matrix4 m){
+void GroundPlane::transform(Matrix4<float> m){
 	//To Do: Write transformation code
 }
+
+} // namespace lssr
 
