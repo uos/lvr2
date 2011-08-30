@@ -13,7 +13,6 @@
 #include "io/PointLoader.hpp"
 #include "geometry/ColorVertex.hpp"
 
-
 #include <vector>
 #include <string>
 #include <fstream>
