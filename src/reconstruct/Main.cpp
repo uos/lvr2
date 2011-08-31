@@ -104,7 +104,7 @@
  */
 
 #include "Options.hpp"
-#include "reconstruction/PCLPointCloudManager.hpp"
+
 #include "reconstruction/StannPointCloudManager.hpp"
 #include "reconstruction/FastReconstruction.hpp"
 #include "io/PLYIO.hpp"
@@ -112,6 +112,10 @@
 #include "geometry/TriangleMesh.hpp"
 #include "geometry/HalfEdgeMesh.hpp"
 #include <iostream>
+
+#ifdef _USE_PCL_
+#include "reconstruction/PCLPointCloudManager.hpp"
+#endif
 
 using namespace lssr;
 
@@ -134,8 +138,13 @@ int main(int argc, char** argv)
     PointCloudManager<Vertex<float>, Normal<float> >* pcm;
     if(pcm_name == "PCL")
     {
-        cout << timestamp << "Creating PCL point cloud manager." << endl;
-        pcm = new PCLPointCloudManager<Vertex<float>, Normal<float> > ( options.getInputFileName());
+        #ifdef _USE_PCL_
+            cout << timestamp << "Creating PCL point cloud manager." << endl;
+            pcm = new PCLPointCloudManager<Vertex<float>, Normal<float> > ( options.getInputFileName());
+        #else
+            cout << timestamp << "NO PCL bindings found. Exiting" << endl;
+            exit(-1);
+        #endif
     }
     else
     {
