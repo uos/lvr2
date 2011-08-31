@@ -721,7 +721,7 @@ template<typename VertexT, typename NormalT>
 void HalfEdgeMesh<VertexT, NormalT>::fillHoles(int max_size)
 {
 	//holds all holes to close
-	stack<stack<HEdge*> > holes;
+	vector<vector<HEdge*> > holes;
 
     //walk through all edges and start hole finding
     //when pair has no face and a regression plane was applied
@@ -732,7 +732,7 @@ void HalfEdgeMesh<VertexT, NormalT>::fillHoles(int max_size)
             if((*m_faces[i])[k]->pair->used == false && (*m_faces[i])[k]->pair->face == 0 && m_faces[i]->m_region->m_inPlane)
             {
                 //needed for contour tracking
-                stack<HEdge*> contour;
+                vector<HEdge*> contour;
                 HEdge* next = 0;
                 HEdge* current = (*m_faces[i])[k]->pair;
 
@@ -740,7 +740,7 @@ void HalfEdgeMesh<VertexT, NormalT>::fillHoles(int max_size)
                 while(current != 0)
                 {
                     next = 0;
-                    contour.push(current);
+                    contour.push_back(current);
                     //to ensure that there is no way back to the same vertex
                     for (int e = 0; e<current->start->out.size(); e++)
                     {
@@ -769,7 +769,7 @@ void HalfEdgeMesh<VertexT, NormalT>::fillHoles(int max_size)
                 }
                 if (2 < contour.size() && contour.size() < max_size)
                 {
-                	holes.push(contour);
+                	holes.push_back(contour);
                 }
             }
         }
@@ -779,31 +779,31 @@ void HalfEdgeMesh<VertexT, NormalT>::fillHoles(int max_size)
     vector<HEdge* > invalid_edges; //holds edges which are deleted automatically if the current edge is collapsed
     while(!holes.empty())
     {
-    	while(!holes.top().empty())
+    	while(!holes.back().empty())
     	{
     		bool pushed = false;
     		//Check if current edge is not invalid
-    		if(!(find(invalid_edges.begin(), invalid_edges.end(), holes.top().top()) != invalid_edges.end()))
+    		if(!(find(invalid_edges.begin(), invalid_edges.end(), holes.back().back()) != invalid_edges.end()))
     		{
     			//look for edges which will become invalidated
-    			for(int i = 0; i<holes.top().top()->end->out.size(); i++)
-    				for(int j = 0; j<holes.top().top()->start->in.size(); j++)
-    					if(holes.top().top()->end->out[i]->end == holes.top().top()->start->in[j]->start && holes.top().top()->end->out[i]->face == 0 && holes.top().top()->start->in[j]->face == 0)
+    			for(int i = 0; i<holes.back().back()->end->out.size(); i++)
+    				for(int j = 0; j<holes.back().back()->start->in.size(); j++)
+    					if(holes.back().back()->end->out[i]->end == holes.back().back()->start->in[j]->start && holes.back().back()->end->out[i]->face == 0 && holes.back().back()->start->in[j]->face == 0)
     					{
-    						invalid_edges.push_back(holes.top().top()->end->out[i]);
-    						invalid_edges.push_back(holes.top().top()->start->in[j]);
+    						invalid_edges.push_back(holes.back().back()->end->out[i]);
+    						invalid_edges.push_back(holes.back().back()->start->in[j]);
     						pushed = true;
     					}
     			//Try to collapse the current edge
-    			if(collapseEdge(holes.top().top()) == false && pushed)
+    			if(collapseEdge(holes.back().back()) == false && pushed)
     			{
     				invalid_edges.pop_back();
     				invalid_edges.pop_back();
     			}
     		}
-    		holes.top().pop();
+    		holes.back().pop_back();
     	}
-    	holes.pop();
+    	holes.pop_back();
     }
 }
 
