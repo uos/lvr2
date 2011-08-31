@@ -14,13 +14,14 @@ namespace lssr
 
 StaticMesh::StaticMesh(){
 
-	m_normals = 0;
-	m_vertices = 0;
-	m_colors = 0;
-	m_indices = 0;
+	m_vertexNormals = 0;
+	m_faceNormals   = 0;
+	m_vertices      = 0;
+	m_colors        = 0;
+	m_indices       = 0;
 
-	m_numFaces = 0;
-	m_numVertices = 0;
+	m_numFaces      = 0;
+	m_numVertices   = 0;
 
 	m_finalized = false;
 
@@ -28,33 +29,62 @@ StaticMesh::StaticMesh(){
 
 StaticMesh::StaticMesh(MeshLoader& loader, string name) : Renderable(name){
 
-	m_normals       = loader.getVertexNormalArray(m_numVertices);
+    m_faceNormals = 0;
+
+	m_vertexNormals = loader.getVertexNormalArray(m_numVertices);
 	m_colors        = loader.getVertexColorArray(m_numVertices);
 	m_vertices      = loader.getVertexArray(m_numVertices);
 	m_indices       = loader.getIndexArray(m_numFaces);
 
 	m_finalized     = true;
+	m_visible       = true;
+	m_active = true;
 
+	m_boundingBox = new BoundingBox<Vertex<float> >;
+
+	if(!m_faceNormals) interpolateNormals();
+	if(!m_colors) setDefaultColors();
+
+//	cout << m_faceNormals << endl;
+//	cout << m_numFaces << " " << m_numVertices << endl;
+//
+//	for(int i = 0; i < m_numVertices; i++)
+//	{
+//	    int index = 3 * i;
+//	    cout << m_vertices[index] << " ";
+//	    cout << m_vertices[index + 1] << " ";
+//	    cout << m_vertices[index + 2] << " ";
+//	    cout << endl;
+//	    cout << m_colors[index] << " ";
+//	    cout << m_colors[index + 1] << " ";
+//	    cout << m_colors[index + 2] << " ";
+//	    cout << endl;
+//
+//	}
+
+	// TODO: Standard colors if missing!
+
+	calcBoundingBox();
 	compileDisplayList();
 }
 
 StaticMesh::StaticMesh(const StaticMesh &o)
 {
 
-	if(m_normals != 0) delete[] m_normals;
-	if(m_vertices != 0) delete[] m_vertices;
-	if(m_colors != 0) delete[] m_colors;
-	if(m_indices != 0) delete[] m_indices;
+	if(m_faceNormals != 0) delete[] m_faceNormals;
+	if(m_vertices    != 0) delete[] m_vertices;
+	if(m_colors      != 0) delete[] m_colors;
+	if(m_indices     != 0) delete[] m_indices;
 
-	m_normals = new float[3 * o.m_numVertices];
-	m_vertices = new float[3 * o.m_numVertices];
-	m_colors = new float[3 * o.m_numVertices];
+	m_faceNormals       = new float[3 * o.m_numVertices];
+	m_vertices          = new float[3 * o.m_numVertices];
+	m_colors            = new float[3 * o.m_numVertices];
 
-	m_indices = new unsigned int[3 * o.m_numFaces];
+	m_indices           = new unsigned int[3 * o.m_numFaces];
 
 	for(size_t i = 0; i < 3 * o.m_numVertices; i++)
 	{
-		m_normals[i] = o.m_normals[i];
+		m_faceNormals[i] = o.m_faceNormals[i];
 		m_vertices[i] = o.m_vertices[i];
 		m_colors[i] = o.m_colors[i];
 	}
@@ -94,7 +124,7 @@ void StaticMesh::compileDisplayList(){
 
 		// Assign element pointers
 		glVertexPointer(3, GL_FLOAT, 0, m_vertices);
-		glNormalPointer(GL_FLOAT, 0, m_normals);
+		glNormalPointer(GL_FLOAT, 0, m_faceNormals);
 		glColorPointer(3, GL_FLOAT, 0, m_colors);
 
 		// Draw elements
@@ -113,8 +143,8 @@ void StaticMesh::interpolateNormals()
 	assert(m_indices);
 
 	// Alloc new normal array
-	m_normals = new float[3 * m_numVertices];
-	memset(m_normals, 0, 3 * m_numVertices * sizeof(float));
+	m_faceNormals = new float[3 * m_numVertices];
+	memset(m_faceNormals, 0, 3 * m_numVertices * sizeof(float));
 
 	// Interpolate surface m_normals for each face
 	// and interpolate sum up the normal coordinates
@@ -147,29 +177,53 @@ void StaticMesh::interpolateNormals()
 		Normal<float> p(d1.cross(d2));
 
 		// Sum up coordinate values in normal array
-		m_normals[a    ] = p.x;
-		m_normals[a + 1] = p.y;
-		m_normals[a + 2] = p.z;
+		m_faceNormals[a    ] = p.x;
+		m_faceNormals[a + 1] = p.y;
+		m_faceNormals[a + 2] = p.z;
 
-		m_normals[b    ] = p.x;
-		m_normals[b + 1] = p.y;
-		m_normals[b + 2] = p.z;
+		m_faceNormals[b    ] = p.x;
+		m_faceNormals[b + 1] = p.y;
+		m_faceNormals[b + 2] = p.z;
 
-		m_normals[c    ] = p.x;
-		m_normals[c + 1] = p.y;
-		m_normals[c + 2] = p.z;
+		m_faceNormals[c    ] = p.x;
+		m_faceNormals[c + 1] = p.y;
+		m_faceNormals[c + 2] = p.z;
 
 	}
 
 	// Normalize
 	for(size_t i = 0; i < m_numVertices; i++)
 	{
-		Normal<float> n(m_normals[i * 3], m_normals[i * 3 + 1], m_normals[i * 3 + 2]);
-		m_normals[i * 3]     = n.x;
-		m_normals[i * 3 + 1] = n.y;
-		m_normals[i * 3 + 2] = n.z;
+		Normal<float> n(m_faceNormals[i * 3], m_faceNormals[i * 3 + 1], m_faceNormals[i * 3 + 2]);
+		m_faceNormals[i * 3]     = n.x;
+		m_faceNormals[i * 3 + 1] = n.y;
+		m_faceNormals[i * 3 + 2] = n.z;
 	}
 
+}
+
+void StaticMesh::setDefaultColors()
+{
+    m_colors = new float[3 * m_numVertices];
+    for(size_t i = 0; i < m_numVertices; i++)
+    {
+        m_colors[i] = 0.0;
+        m_colors[i + 1] = 1.0;
+        m_colors[i + 2] = 0.0;
+    }
+}
+
+void StaticMesh::calcBoundingBox()
+{
+    for(size_t i = 0; i < m_numVertices; i++)
+    {
+        m_boundingBox->expand(
+                m_vertices[3 * i],
+                m_vertices[3 * i + 1],
+                m_vertices[3 * i + 2]
+                           );
+
+    }
 }
 
 unsigned int* StaticMesh::getIndices()
@@ -200,7 +254,7 @@ float* StaticMesh::getNormals()
 {
     if(m_finalized)
     {
-        return m_normals;
+        return m_faceNormals;
     }
     else
     {

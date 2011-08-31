@@ -21,6 +21,7 @@ using namespace std;
 
 #include "Renderable.hpp"
 #include "io/MeshLoader.hpp"
+#include "geometry/BoundingBox.hpp"
 
 namespace lssr
 {
@@ -47,13 +48,16 @@ public:
 
 private:
 	void interpolateNormals();
+	void setDefaultColors();
+	void calcBoundingBox();
 
 protected:
 
 	void compileDisplayList();
 	void readPly(string filename);
 
-	float* m_normals;
+	float* m_vertexNormals;
+	float* m_faceNormals;
 	float* m_vertices;
 	float* m_colors;
 
@@ -67,8 +71,12 @@ protected:
 };
 
 void StaticMesh::render(){
-	if(m_visible) {
+    cout << "RENDER 1" << endl;
+	if(m_visible)
+	{
+	    cout << "RENDER 2" << endl;
 		if(m_finalized && m_listIndex != -1){
+		    cout << "RENDER 3" << endl;
 			//glEnable(GL_LIGHTING);
 //			glPolygonMode( GL_FRONT_AND_BACK, GL_LINE); //wire frame
 			glShadeModel(GL_FLAT);  //disable color interpolation

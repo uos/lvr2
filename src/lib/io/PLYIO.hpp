@@ -231,7 +231,7 @@ public:
 
 
 	float* getVertexNormalArray(size_t &n) { return getNormalArray(n); };
-	float* getVertexColorArray(size_t &n) { n = 0; return 0;}
+	float* getVertexColorArray(size_t &n) { return getColorArray(n); }
 
 private:
 

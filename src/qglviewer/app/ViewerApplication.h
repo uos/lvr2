@@ -14,7 +14,7 @@
 #include "FogDensityDialog.h"
 #include "SceneDockWidget.h"
 
-#include "../data/DataManager.h"
+#include "../data/DataCollectorFactory.h"
 
 #include "../viewers/Viewer.h"
 #include "../viewers/PerspectiveViewer.h"
@@ -59,10 +59,13 @@ public Q_SLOTS:
 	void treeWidgetExport();
 	void transformObject();
 
+	void openFile();
+
 private:
 
 	void updateToolbarActions(CustomTreeWidgetItem* item);
 	void connectEvents();
+	void openFile(string filename);
 
 	MainWindow*					m_mainWindowUi;
 	QMainWindow*				m_qMainWindow;
@@ -74,7 +77,7 @@ private:
 
 	Fogsettings*				m_fogSettingsUI;
 	ViewerManager*				m_viewerManager;
-	DataManager*				m_dataManager;
+	DataCollectorFactory*       m_factory;
 };
 
 #endif /* VIEWERAPPLICATION_H_ */
