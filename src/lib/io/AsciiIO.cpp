@@ -7,6 +7,8 @@
 
 #include <fstream>
 #include <string.h>
+#include <algorithm>
+
 using std::ifstream;
 
 #include <boost/filesystem.hpp>
@@ -103,11 +105,17 @@ void AsciiIO::read(string filename)
                 {
                     in >> x >> y >> z >> i;
                     m_intensities[c] = i;
+                    m_maxIntensity = std::max(i, m_maxIntensity);
+                    m_minIntensity = std::min(i, m_minIntensity);
                 }
                 else if(has_intensity && has_color)
                 {
                     in >> x >> y >> z >> i >> r >> g >> b;
                     m_intensities[c] = i;
+
+                    m_maxIntensity = std::max(i, m_maxIntensity);
+                    m_minIntensity = std::min(i, m_minIntensity);
+
                     m_pointColors[c][0] = r;
                     m_pointColors[c][1] = g;
                     m_pointColors[c][2] = b;

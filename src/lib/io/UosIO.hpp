@@ -26,10 +26,7 @@
 using std::string;
 using std::fstream;
 using std::stringstream;
-using std::pair;
-using std::vector;
 
-typedef pair<size_t, size_t> indexPair;
 
 
 namespace lssr
@@ -180,8 +177,7 @@ private:
     /// Number of loaded scans
     int     m_numScans;
 
-    /// Vector to save the indices of the first and last points of single scans
-    vector<indexPair> m_scanRanges;
+
 };
 
 } // namespace lssr
