@@ -556,78 +556,6 @@ void HalfEdgeMesh<VertexT, NormalT>::flipEdge(HEdge* edge)
 }
 
 template<typename VertexT, typename NormalT>
-void HalfEdgeMesh<VertexT, NormalT>::collapseFace(HFace* f)
-{
-	HVertex* p1 = (*f)(0);
-	HVertex* p2 = (*f)(1);
-	HVertex* p3 = (*f)(2);
-
-	p1->m_position = f->getCentroid();
-
-	for(int e = 0; e<3; e++)
-	{
-		if ((*f)[e]->pair->face != 0)
-		{
-			if((*f)[e]->pair->next->pair->face != 0 && (*f)[e]->pair->next->next->pair->face != 0)
-			{
-				(*f)[e]->pair->next->pair->pair = (*f)[e]->pair->next->next->pair;
-				(*f)[e]->pair->next->next->pair->pair = (*f)[e]->pair->next->pair;
-				m_faces.erase(find(m_faces.begin(), m_faces.end(), (*f)[e]->pair->face));
-				delete (*f)[e]->pair->face;
-				deleteEdge((*f)[e]->pair->next->next, false);
-				deleteEdge((*f)[e]->pair->next, false);
-			}
-			else
-			{
-				deleteFace((*f)[e]->pair->face);
-			}
-		}
-	}
-
-	deleteEdge(f->m_edge->next->next);
-	deleteEdge(f->m_edge->next);
-	deleteEdge(f->m_edge);
-
-	//Update incoming and outgoing edges of p1
-	typename vector<HEdge*>::iterator it;
-	it = p2->out.begin();
-	while(it != p2->out.end())
-	{
-		(*it)->start = p1;
-		p1->out.push_back(*it);
-		it++;
-	}
-
-	it = p2->in.begin();
-	while(it != p2->in.end())
-	{
-		(*it)->end = p1;
-		p1->in.push_back(*it);
-		it++;
-	}
-
-	it = p3->out.begin();
-	while(it != p3->out.end())
-	{
-		(*it)->start = p1;
-		p1->out.push_back(*it);
-		it++;
-	}
-
-	it = p3->in.begin();
-	while(it != p3->in.end())
-	{
-		(*it)->end = p1;
-		p1->in.push_back(*it);
-		it++;
-	}
-	deleteVertex(p2);
-	deleteVertex(p3);
-	m_faces.erase(find(m_faces.begin(), m_faces.end(), f));
-	delete f;
-}
-
-template<typename VertexT, typename NormalT>
 int HalfEdgeMesh<VertexT, NormalT>::regionGrowing(HFace* start_face, Region<VertexT, NormalT>* region)
 {
     //Mark face as used
@@ -996,7 +924,7 @@ void HalfEdgeMesh<VertexT, NormalT>::tester()
 	}
 
 //	fillHoles(35);
-//	optimizePlaneIntersections();
+	optimizePlaneIntersections();
 //	m_colorRegions = true;
 //
     //Reset all used variables

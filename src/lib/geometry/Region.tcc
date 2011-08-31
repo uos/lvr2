@@ -181,44 +181,60 @@ void Region<VertexT, NormalT>::backflipFaces(HalfEdgeMesh<VertexT, NormalT>* mes
 {
 	cout << "starting backflipFaces()..." << endl;
 
-//	vector<HFace*>    toCollapse;
-	for (int i = 0; i<m_faces.size(); i++)
+		vector<HFace*>    toCollapse;
+	bool didsomething = false;
+//	do
 	{
-		if ((VertexT(m_faces[i]->getFaceNormal())+VertexT(this->m_normal)).length() < 0.05)
+		for (int i = 0; i<m_faces.size(); i++)
 		{
-//			toCollapse.push_back(m_faces[i]);
-			for (int e=0; e<3; e++)
+			didsomething = false;
+			bool stop = false;
+			if ((VertexT(m_faces[i]->getFaceNormal())+VertexT(this->m_normal)).length() < 0.05)
 			{
-				float alpha =	acos(
-								NormalT((*m_faces[i])[e]->start->m_position -(*m_faces[i])[e]->next->end->m_position)
-							*	NormalT((*m_faces[i])[e]->end->m_position -(*m_faces[i])[e]->next->end->m_position)
-				);
-				for(int k = 0; k<(*m_faces[i])[e]->next->end->out.size(); k++)
+				didsomething = true;
+				for (int e=0; e<3 && !stop; e++)
 				{
-					float beta = acos(
-								NormalT((*m_faces[i])[e]->start->m_position -(*m_faces[i])[e]->next->end->m_position)
-							*   NormalT((*m_faces[i])[e]->next->end->out[k]->end->m_position - (*m_faces[i])[e]->next->end->out[k]->start->m_position)
+					float alpha =	acos(
+							NormalT((*m_faces[i])[e]->start->m_position -(*m_faces[i])[e]->next->end->m_position)
+							*	NormalT((*m_faces[i])[e]->end->m_position -(*m_faces[i])[e]->next->end->m_position)
 					);
-
-					float gamma = acos(
-							NormalT((*m_faces[i])[e]->end->m_position -(*m_faces[i])[e]->next->end->m_position)
-						*   NormalT((*m_faces[i])[e]->next->end->out[k]->end->m_position - (*m_faces[i])[e]->next->end->out[k]->start->m_position)
-					);
-					if ( beta + gamma <= alpha)
+					for(int k = 0; k<(*m_faces[i])[e]->next->end->out.size() && !stop; k++)
 					{
-						cout << "***********erwischt!" << endl;
-						(*m_faces[i])[e]->next->end->m_position = (*m_faces[i])[e]->start->m_position + (((*m_faces[i])[e]->end->m_position -(*m_faces[i])[e]->next->start->m_position) * 0.5) + VertexT(NormalT((*m_faces[i])[e]->next->end->out[k]->end->m_position - (*m_faces[i])[e]->next->end->out[k]->start->m_position))*0.01;
+						float beta = acos(
+								NormalT((*m_faces[i])[e]->start->m_position -(*m_faces[i])[e]->next->end->m_position)
+								*   NormalT((*m_faces[i])[e]->next->end->out[k]->end->m_position - (*m_faces[i])[e]->next->end->out[k]->start->m_position)
+						);
+
+						float gamma = acos(
+								NormalT((*m_faces[i])[e]->end->m_position -(*m_faces[i])[e]->next->end->m_position)
+								*   NormalT((*m_faces[i])[e]->next->end->out[k]->end->m_position - (*m_faces[i])[e]->next->end->out[k]->start->m_position)
+						);
+						if ( beta + gamma <= alpha + 0.0001 )
+						{
+							cout << "***********erwischt!" << endl;
+							(*m_faces[i])[e]->next->end->m_position = (*m_faces[i])[e]->start->m_position + (((*m_faces[i])[e]->end->m_position -(*m_faces[i])[e]->next->start->m_position) * 0.5) + VertexT(NormalT((*m_faces[i])[e]->next->end->out[k]->end->m_position - (*m_faces[i])[e]->next->end->out[k]->start->m_position))*0.01;
+							stop = true;
+						}
 					}
+
 				}
 
 			}
-
 		}
 	}
-//	for (int i = 0; i<toCollapse.size(); i++)
-//		if (find(m_faces.begin(), m_faces.end(), toCollapse[i]) != m_faces.end())
-//			mesh->collapseFace(toCollapse[i]);
+//	while(didsomething);
 
+	for (int i = 0; i<m_faces.size(); i++)
+			{
+				if ((VertexT(m_faces[i]->getFaceNormal())+VertexT(this->m_normal)).length() < 0.05)
+				{
+								toCollapse.push_back(m_faces[i]);
+				}
+			}
+
+		for (int i = 0; i<toCollapse.size(); i++)
+			if (find(m_faces.begin(), m_faces.end(), toCollapse[i]) != m_faces.end())
+				mesh->deleteFace(toCollapse[i]);
 	cout << "finished." << endl;
 }
 
