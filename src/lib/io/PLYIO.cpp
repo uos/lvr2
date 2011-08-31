@@ -296,7 +296,6 @@ void PLYIO::loadElements(ifstream &in)
 			// the appropriate loading procedure
 			if(element_name == "vertex")
 			{
-
 				// Load vertex elements
 				if(m_binary)
 				{
@@ -1199,7 +1198,6 @@ void PLYIO::readVerticesBinary(ifstream &in, PLYElement* descr)
 	vector<Property*>::iterator it;
 	for(size_t i = 0; i < m_numberOfVertices; i++)
 	{
-		if(i % 100000 == 0) cout << "Reading vertices: " << i << endl;
 		for(it = descr->getFirstProperty(); it != descr->getLastProperty(); it++)
 		{
 			// TODO: Calculate buffer position only once.
@@ -1228,13 +1226,13 @@ void PLYIO::readVerticesBinary(ifstream &in, PLYElement* descr)
 			{
 				copyElementToBuffer<float>(in, p, m_vertexColors, i * 3 + 2);
 			}
-			++progress;
 		}
-		cout << endl;
+		++progress;
 //				cout << m_vertices[i    ] << " "
 //					 << m_vertices[i + 1] << " "
 //					 << m_vertices[i + 2] << endl;
 	}
+	cout << endl;
 
 }
 

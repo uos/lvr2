@@ -27,29 +27,15 @@
 using lssr::MeshLoader;
 using lssr::PointLoader;
 
-DataCollectorFactory* DataCollectorFactory::m_instance = 0;
+DataCollectorFactory::DataCollectorFactory() {}
 
-DataCollectorFactory* DataCollectorFactory::instance()
-{
-	if(DataCollectorFactory::m_instance == 0)
-	{
-		return new DataCollectorFactory;
-	}
-	else
-	{
-		return DataCollectorFactory::m_instance;
-	}
-}
-
-DataCollector* DataCollectorFactory::create(string filename)
+void DataCollectorFactory::create(string filename)
 {
 	// Get file extension
 	boost::filesystem::path selectedFile(filename);
 
 	string extension = selectedFile.extension().c_str();
 	string name = selectedFile.filename().c_str();
-
-	Static3DDataCollector* dataCollector = 0;
 
 //	// Try to load given file
 //	if(extension == ".ply")
@@ -101,37 +87,39 @@ DataCollector* DataCollectorFactory::create(string filename)
 	if(mesh_loader)
 	{
 	    lssr::StaticMesh* mesh = new lssr::StaticMesh(*mesh_loader);
-
+	   //TriangleTreeWidgetItem item =
 	}
 
 	if(point_loader)
 	{
-	    // Check for multi point object
-	    PointCloud* pc = new PointCloud(*point_loader);
-	    PointCloudTreeWidgetItem* item = new PointCloudTreeWidgetItem(PointCloudItem);
-
-	    // Setup supported render modes
-	    int modes = 0;
-	    modes |= Points;
-	    if(point_loader->getPointNormalArray())
+	    if(point_loader->getNumPoints() > 0)
 	    {
-	        modes |= PointNormals;
+	        // Check for multi point object
+	        PointCloud* pc = new PointCloud(*point_loader);
+	        PointCloudTreeWidgetItem* item = new PointCloudTreeWidgetItem(PointCloudItem);
+
+	        // Setup supported render modes
+	        int modes = 0;
+	        modes |= Points;
+	        if(point_loader->getPointNormalArray())
+	        {
+	            modes |= PointNormals;
+	        }
+
+	        item->setSupportedRenderModes(modes);
+	        item->setViewCentering(true);
+	        item->setName(name);
+	        item->setNumPoints(pc->m_points.size());
+	        item->setRenderable(pc);
+
+	        Static3DDataCollector* dataCollector = new Static3DDataCollector(pc, name, item);
+
+	        cout << "EMIT" << endl;
+	        Q_EMIT dataCollectorCreated( dataCollector );
+
 	    }
-
-	    item->setSupportedRenderModes(modes);
-	    item->setViewCentering(true);
-	    item->setName(name);
-	    item->setNumPoints(pc->m_points.size());
-	    item->setRenderable(pc);
-	    dataCollector = new Static3DDataCollector(pc, name, item);
 	}
 
-	if(dataCollector == 0)
-	{
-	    cout << "DataCollectorFactory::create(): Warning: Unable to parse given file." << endl;
-	}
-
-	return dataCollector;
 }
 
 

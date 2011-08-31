@@ -27,6 +27,7 @@ Viewer* ViewerManager::current()
 
 void ViewerManager::addDataCollector(DataCollector* c)
 {
+    cout << "ADD DATA COLLECTOR" << endl;
 	// Stub, currently support only one single viewer instance
 	m_currentViewer->addDataObject(c);
 }

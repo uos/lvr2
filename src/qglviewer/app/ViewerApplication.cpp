@@ -24,8 +24,8 @@ ViewerApplication::ViewerApplication( int argc, char ** argv )
 	m_viewerManager = new ViewerManager(m_qMainWindow);
 	m_viewer = m_viewerManager->current();
 
-	m_dataManager = new DataManager;
 
+	m_factory = new DataCollectorFactory;
 
 	// Show window
 	m_qMainWindow->show();
@@ -36,7 +36,7 @@ ViewerApplication::ViewerApplication( int argc, char ** argv )
 	int i;
 	for ( i = 1; i < argc; i++ ) {
 		printf( "Loading »%s«…\n", argv[i] );
-		m_dataManager->loadFile( argv[i] );
+		openFile(string(argv[i]));
 	}
 
 	// Call a resize to fit viewers to their parent widgets
@@ -54,7 +54,7 @@ void ViewerApplication::connectEvents()
 
 	// File operations
 	QObject::connect(m_mainWindowUi->action_Open , SIGNAL(activated()),
-			m_dataManager, SLOT(openFile()));
+			this, SLOT(openFile()));
 
 	// Projection settings
 	QObject::connect(m_mainWindowUi->actionShow_entire_scene, SIGNAL(activated()),
@@ -75,14 +75,17 @@ void ViewerApplication::connectEvents()
 				this, SLOT(displayFogSettingsDialog()));
 
 	// Communication between the manager objects
-	QObject::connect(m_dataManager, SIGNAL(dataCollectorCreated(DataCollector*)),
-					m_viewerManager, SLOT(addDataCollector(DataCollector*)));
+//	QObject::connect(m_dataManager, SIGNAL(dataCollectorCreated(DataCollector*)),
+//					m_viewerManager, SLOT(addDataCollector(DataCollector*)));
+//
+//    QObject::connect(m_dataManager, SIGNAL(dataCollectorCreated(DataCollector*)),
+//                    this, SLOT(dataCollectorAdded(DataCollector*)));
 
-    QObject::connect(m_dataManager, SIGNAL(dataCollectorCreated(DataCollector*)),
-                    this, SLOT(dataCollectorAdded(DataCollector*)));
+    QObject::connect(m_factory, SIGNAL(dataCollectorCreated(DataCollector*)),
+                        m_viewerManager, SLOT(addDataCollector(DataCollector*)));
 
-	QObject::connect(m_dataManager, SIGNAL(dataCollectorUpdate(DataCollector*)),
-					m_viewerManager, SLOT(updateDataObject(DataCollector*)));
+    QObject::connect(m_factory, SIGNAL(dataCollectorCreated(DataCollector*)),
+                        this, SLOT(dataCollectorAdded(DataCollector*)));
 
 	// Communication between tree widget items
 	QObject::connect(m_sceneDockWidgetUi->treeWidget, SIGNAL(itemClicked(QTreeWidgetItem*, int)),
@@ -103,6 +106,43 @@ void ViewerApplication::connectEvents()
 	// Tree widget context menu actions
 	connect(m_sceneDockWidgetUi->actionExport_selected_scans, SIGNAL(triggered()), this, SLOT(treeWidgetExport()));
 
+}
+
+void ViewerApplication::openFile()
+{
+    QFileDialog file_dialog;
+    QStringList file_names;
+    QStringList file_types;
+
+    file_types << "Point Clouds (*.pts)"
+            //             << "Points and Normals (*.nor)"
+            << "PLY Models (*.ply)"
+            //             << "Polygonal Meshes (*.bor)"
+            << "All Files (*.*)";
+
+
+    //Set Title
+    file_dialog.setWindowTitle("Open File");
+    file_dialog.setFileMode(QFileDialog::ExistingFile);
+    file_dialog.setFilters(file_types);
+
+    if(file_dialog.exec()){
+        file_names = file_dialog.selectedFiles();
+    } else {
+        return;
+    }
+
+    //Get filename from list
+    string file_name = file_names.constBegin()->toStdString();
+    m_factory->create(file_name);
+
+
+
+}
+
+void ViewerApplication::openFile(string filename)
+{
+    m_factory->create(filename);
 }
 
 void ViewerApplication::transformObject()
@@ -152,13 +192,15 @@ void ViewerApplication::treeWidgetExport()
         if(item->type() > 1000)
         {
             CustomTreeWidgetItem* c_item = static_cast<CustomTreeWidgetItem*>(item);
-            m_dataManager->exportData(c_item);
+            //m_dataManager->exportData(c_item);
+            cout << "TODO: Export data" << endl;
         }
     }
 }
 
 void ViewerApplication::dataCollectorAdded(DataCollector* d)
 {
+    cout << "ADD" << endl;
     if(d->treeItem())
     {
         m_sceneDockWidgetUi->treeWidget->addTopLevelItem(d->treeItem());
