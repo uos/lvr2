@@ -383,6 +383,15 @@ void HalfEdgeMesh<VertexT, NormalT>::deleteEdge(HEdge* edge, bool deletePair)
 template<typename VertexT, typename NormalT>
 bool HalfEdgeMesh<VertexT, NormalT>::collapseEdge(HEdge* edge)
 {
+	//try to reject all huetchen
+	if(edge->face != 0 && edge->next->pair->face !=0 && edge->next->next->pair->face!=0)
+		if(edge->next->pair->next->next == edge->next->next->pair->next->pair)
+			return false;
+
+	if(edge->pair->face && edge->pair->next->pair->face && edge->pair->next->next->pair->face)
+		if(edge->pair->next->pair->next->next == edge->pair->next->next->pair->next->pair)
+			return false;
+
 	//Check for redundant edges
 	int edgeCnt = 0;
 	for (int i = 0; i<edge->start->out.size(); i++)
@@ -678,6 +687,19 @@ void HalfEdgeMesh<VertexT, NormalT>::optimizePlanes(
 	        ++progress;
 	    }
 	}
+
+	//Delete flickering faces
+	vector<HFace*> flickerer;
+	for(int i=0; i< m_faces.size(); i++)
+		if(m_faces[i]->m_region->detectFlicker(m_faces[i]))
+		{
+			flickerer.push_back(m_faces[i]);
+		}
+	while(!flickerer.empty())
+	{
+		deleteFace(flickerer.back());
+		flickerer.pop_back();
+	}
 }
 
 template<typename VertexT, typename NormalT>
@@ -776,11 +798,14 @@ void HalfEdgeMesh<VertexT, NormalT>::fillHoles(int max_size)
     }
 
     //collapse all holes
+
     vector<HEdge* > invalid_edges; //holds edges which are deleted automatically if the current edge is collapsed
     while(!holes.empty())
     {
-    	while(!holes.back().empty())
+    	int iterations = 0;
+    	while(holes.back().size() > 0)
     	{
+    		iterations++;
     		bool pushed = false;
     		//Check if current edge is not invalid
     		if(!(find(invalid_edges.begin(), invalid_edges.end(), holes.back().back()) != invalid_edges.end()))
@@ -794,8 +819,47 @@ void HalfEdgeMesh<VertexT, NormalT>::fillHoles(int max_size)
     						invalid_edges.push_back(holes.back().back()->start->in[j]);
     						pushed = true;
     					}
-    			//Try to collapse the current edge
-    			if(collapseEdge(holes.back().back()) == false && pushed)
+    			//Test for flickering first
+    			bool flickering = false;
+
+    			//Move edge->start and check for flickering
+    			VertexT origin = holes.back().back()->start->m_position;
+    			holes.back().back()->start->m_position = (holes.back().back()->start->m_position + holes.back().back()->end->m_position)*0.5;
+    			for(int o = 0; o<holes.back().back()->start->out.size(); o++)
+    			{
+    				if(holes.back().back()->start->out[o]->pair->face != holes.back().back()->pair->face)
+    				{
+    					if (holes.back().back()->start->out[o]->pair->face != 0)
+    						flickering = flickering || holes.back().back()->start->out[o]->pair->face->m_region->detectFlicker(holes.back().back()->start->out[o]->pair->face);
+    				}
+
+    			}
+   				holes.back().back()->start->m_position = origin;
+
+   				//Move edge->end and check for flickering
+   				origin = holes.back().back()->end->m_position;
+    			holes.back().back()->end->m_position = (holes.back().back()->start->m_position + holes.back().back()->end->m_position)*0.5;
+    			for(int o = 0; o<holes.back().back()->end->out.size(); o++)
+    			{
+    				if(holes.back().back()->end->out[o]->pair->face != holes.back().back()->pair->face)
+    				{
+    					if (holes.back().back()->end->out[o]->pair->face != 0)
+    						flickering = flickering || holes.back().back()->end->out[o]->pair->face->m_region->detectFlicker(holes.back().back()->end->out[o]->pair->face);
+    				}
+
+    			}
+   				holes.back().back()->end->m_position = origin;
+
+   				//Try to collapse the current edge
+   				bool collapsed = false;
+   				if(!flickering)
+   					collapsed = collapseEdge(holes.back().back());
+   				else
+   					if(iterations < max_size + 5)
+   						holes.back().insert(holes.back().begin(), holes.back().back());
+
+    			//Remove edges predicted to be invalid which are not invalid since no edge was collapsed
+    			if(collapsed == false && pushed)
     			{
     				invalid_edges.pop_back();
     				invalid_edges.pop_back();
@@ -804,6 +868,12 @@ void HalfEdgeMesh<VertexT, NormalT>::fillHoles(int max_size)
     		holes.back().pop_back();
     	}
     	holes.pop_back();
+    }
+
+    for(int r=0; r < m_regions.size(); r++)
+    {
+    	if(m_regions[r]->m_inPlane)
+    		m_regions[r]->regressionPlane();
     }
 }
 
@@ -869,7 +939,8 @@ vector<stack<HalfEdgeVertex<VertexT, NormalT>* > > HalfEdgeMesh<VertexT, NormalT
     vector<stack<HalfEdgeVertex<VertexT, NormalT>* > > contours;
     for (int i = 0; i< m_regions.size(); i++)
     {
-    	if(m_regions[i]->m_inPlane){
+    	if(m_regions[i]->m_inPlane)
+    	{
     		vector<stack<HalfEdgeVertex<VertexT, NormalT>* > > current_contours = m_regions[i]->getContours(epsilon);
     		contours.insert(contours.end(), current_contours.begin(), current_contours.end());
     	}
@@ -880,54 +951,13 @@ vector<stack<HalfEdgeVertex<VertexT, NormalT>* > > HalfEdgeMesh<VertexT, NormalT
 template<typename VertexT, typename NormalT>
 void HalfEdgeMesh<VertexT, NormalT>::tester()
 {
-//	srand(time(NULL));
-//	for(int i=0; i< m_faces.size(); i++)
-//	{
-//		if(m_faces[i]->m_edge==0) cout << "You created a monster!" << endl;
-//		if(m_faces[i]->m_edge->next==0) cout << "You created a monster!" << endl;
-//		if(m_faces[i]->m_edge->next->next==0) cout << "You created a monster!" << endl;
-//		if(m_faces[i]->m_edge->pair==0) cout << "You created a monster!" << endl;
-//		if(m_faces[i]->m_edge->next->pair==0) cout << "You created a monster!" << endl;
-//		if(m_faces[i]->m_edge->next->next->pair==0) cout << "You created a monster!" << endl;
-//	}
-//
-//	for(unsigned int i=0; i<500000; i++)
-//	{
-//		cout << "Collapsing" << endl;
-//		if(i%10000000 ==0) cout << (i/500000.0) * 100 << endl;
-//		collapseEdge((*m_faces[rand() % m_faces.size()])[rand() % 3]);
-//	}
-//	cout << "EDGE COLLAPSE------------------------------------------------" << endl;
-//	for(int i=0; i< m_faces.size(); i++)
-//	{
-//		if(m_faces[i]->m_edge==0) cout << "You created a monster!" << endl;
-//		if(m_faces[i]->m_edge->next==0) cout << "You created a monster!" << endl;
-//		if(m_faces[i]->m_edge->next->next==0) cout << "You created a monster!" << endl;
-//		if(m_faces[i]->m_edge->pair==0) cout << "You created a monster!" << endl;
-//		if(m_faces[i]->m_edge->next->pair==0) cout << "You created a monster!" << endl;
-//		if(m_faces[i]->m_edge->next->next->pair==0) cout << "You created a monster!" << endl;
-//	}
-//
-//	cout << "DONE" << endl;
-//
-//	removeDanglingArtifacts(500);
-//	for(int i=0; i<m_regions.size(); i++)
-//		delete m_regions[i];
-//
-	optimizePlanes(3,0.85,50,0);
 
-	//Starts backflipping of all misaligned faces
-	for(int i=0; i<m_regions.size(); i++)
-	{
-		if(m_regions[i]->m_inPlane)
-			m_regions[i]->backflipFaces(this);
-	}
+	cout << "--------------------------------TESTER" << endl;
+//	for(int r=0; r<m_regions.size(); r++)
+//		if( m_regions[r]->detectFlicker()) cout << "still flickering" << endl;
+	cout << "----------------------------END TESTER" << endl;
 
-//	fillHoles(35);
-	optimizePlaneIntersections();
-//	m_colorRegions = true;
-//
-    //Reset all used variables
+//    Reset all used variables
     for(int i=0; i<m_faces.size(); i++)
         for(int k=0; k<3; k++)
             (*m_faces[i])[k]->used=false;

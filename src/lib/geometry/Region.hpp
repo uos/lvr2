@@ -78,12 +78,14 @@ public:
 	virtual void regressionPlane();
 
 	/**
-	 * @brief	Finds faces whose normals are aligned to the wrong direction and flips them back.
-	 * 			Will result in less flickering effects.
+	 * @brief tells if the given face is flickering
 	 *
-	 * @param	mesh	A pointer to the mesh
+	 * @param	f	the face to test
+	 *
+	 * @return	true if the given face is flickering, false otherwise
+	 *
 	 */
-	virtual void backflipFaces(HalfEdgeMesh<VertexT, NormalT>* mesh);
+	virtual bool detectFlicker(HFace* f);
 
 	/**
 	 * @brief destructor.

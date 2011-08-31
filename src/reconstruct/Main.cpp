@@ -183,9 +183,10 @@ int main(int argc, char** argv)
     }
 
     mesh.fillHoles(options.getFillHoles());
-    mesh.optimizePlaneIntersections();
 
     mesh.tester();
+    mesh.optimizePlaneIntersections();
+
     // Save triangle mesh
     mesh.finalize();
     mesh.save("triangle_mesh.ply");
