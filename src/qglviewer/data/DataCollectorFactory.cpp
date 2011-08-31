@@ -87,7 +87,22 @@ void DataCollectorFactory::create(string filename)
 	if(mesh_loader)
 	{
 	    lssr::StaticMesh* mesh = new lssr::StaticMesh(*mesh_loader);
-	   //TriangleTreeWidgetItem item =
+	    TriangleMeshTreeWidgetItem* item = new TriangleMeshTreeWidgetItem(TriangleMeshItem);
+
+	    int modes = 0;
+	    modes |= Mesh;
+
+	    if(mesh->getNormals())
+	    {
+	        modes |= VertexNormals;
+	    }
+        item->setSupportedRenderModes(modes);
+	    item->setViewCentering(true);
+	    item->setName(name);
+	    item->setRenderable(mesh);
+
+	    Static3DDataCollector* dataCollector = new Static3DDataCollector(mesh, name, item);
+	    Q_EMIT dataCollectorCreated( dataCollector );
 	}
 
 	if(point_loader)

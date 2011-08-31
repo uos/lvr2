@@ -29,8 +29,8 @@ enum
     Points            = 0x02,
     PointNormals      = 0x04,
     VertexNormals     = 0x08,
-    VertexColors      = 0x10,
-    FaceColors        = 0x20
+    Vertices          = 0x10,
+    Wireframe         = 0x20
 };
 
 
