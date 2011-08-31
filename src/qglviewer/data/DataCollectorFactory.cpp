@@ -37,48 +37,6 @@ void DataCollectorFactory::create(string filename)
 	string extension = selectedFile.extension().c_str();
 	string name = selectedFile.filename().c_str();
 
-//	// Try to load given file
-//	if(extension == ".ply")
-//	{
-//		StaticMesh* mesh = new StaticMesh(name);
-//
-//		TriangleMeshTreeWidgetItem* item = new TriangleMeshTreeWidgetItem(TriangleMeshItem);
-//		item->setName(name);
-//		item->setViewCentering(true);
-//		item->setNumFaces(mesh->getNumberOfFaces());
-//		item->setNumVertices(mesh->getNumberOfVertices());
-//		item->setRenderable(mesh);
-//
-//		dataCollector = new Static3DDataCollector(mesh, name, item);
-//	}
-//	else if(extension == ".pts" || extension == ".xyz" || extension == ".3d")
-//	{
-//	    // Create a point cloud object
-//		PointCloud* cloud = new PointCloud(filename);
-//
-//		// Create and setup a tree widget item for the point cloud
-//		PointCloudTreeWidgetItem* item = new PointCloudTreeWidgetItem(PointCloudItem);
-//		item->setViewCentering(true);
-//		item->setName(name);
-//		item->setNumPoints(cloud->points.size());
-//		item->setRenderable(cloud);
-//
-//		// Create a new data collector
-//		dataCollector = new Static3DDataCollector(cloud, name, item);
-//	}
-//	else
-//	{
-//	    MultiPointCloud* mpc = new MultiPointCloud(filename);
-//	    MultiPointCloudTreeWidgetItem* item = new MultiPointCloudTreeWidgetItem(MultiPointCloudItem);
-//
-//	    // Set label etc.
-//	    item->setViewCentering(true);
-//	    item->setName(filename);
-//	    item->setRenderable(mpc);
-//	    dataCollector = new Static3DDataCollector(mpc, name, item);
-//
-//	}
-
 	// Create a factory rto parse given file and extract loaders
 	lssr::IOFactory io(filename);
 	MeshLoader*   mesh_loader  = io.getMeshLoader();
@@ -128,8 +86,6 @@ void DataCollectorFactory::create(string filename)
 	        item->setRenderable(pc);
 
 	        Static3DDataCollector* dataCollector = new Static3DDataCollector(pc, name, item);
-
-	        cout << "EMIT" << endl;
 	        Q_EMIT dataCollectorCreated( dataCollector );
 
 	    }

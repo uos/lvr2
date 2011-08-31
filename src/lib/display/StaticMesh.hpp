@@ -26,6 +26,15 @@ using namespace std;
 namespace lssr
 {
 
+enum
+{
+    RenderSurfaces            = 0x01,
+    RenderTriangles           = 0x02,
+    RenderSurfaceNormals      = 0x04,
+    RenderVertexNormals       = 0x08,
+    RenderColors              = 0x10,
+};
+
 class StaticMesh : public Renderable{
 public:
 	StaticMesh();
@@ -44,7 +53,7 @@ public:
 	size_t			getNumberOfVertices();
 	size_t			getNumberOfFaces();
 
-
+	void setRenderMode(int mode);
 
 private:
 	void interpolateNormals();
@@ -53,41 +62,54 @@ private:
 
 protected:
 
-	void compileDisplayList();
+	//void compileDisplayLists();
+	void compileSurfaceList();
+	void compileWireframeList();
+
 	void readPly(string filename);
 
-	float* m_vertexNormals;
-	float* m_faceNormals;
-	float* m_vertices;
-	float* m_colors;
+	float*          m_vertexNormals;
+	float*          m_faceNormals;
+	float*          m_vertices;
+	float*          m_colors;
+	float*          m_blackColors;
 
-	unsigned int* m_indices;
+	unsigned int*   m_indices;
 
-	bool m_finalized;
+	bool            m_finalized;
 
-	size_t m_numVertices;
-	size_t m_numFaces;
+	size_t          m_numVertices;
+	size_t          m_numFaces;
+
+	int             m_renderMode;
+
+	int             m_surfaceList;
+	int             m_wireframeList;
 
 };
 
 void StaticMesh::render(){
-    cout << "RENDER 1" << endl;
+
 	if(m_visible)
 	{
-	    cout << "RENDER 2" << endl;
-		if(m_finalized && m_listIndex != -1){
-		    cout << "RENDER 3" << endl;
-			//glEnable(GL_LIGHTING);
-//			glPolygonMode( GL_FRONT_AND_BACK, GL_LINE); //wire frame
-			glShadeModel(GL_FLAT);  //disable color interpolation
-			glPushMatrix();
-			glMultMatrixf(m_transformation.getData());
-			glCallList(m_listIndex);
-			if(m_showAxes)
-			{
-				glCallList(m_axesListIndex);
-			}
-			glPopMatrix();
+		if(m_finalized){
+
+		    if(m_renderMode & RenderSurfaces)
+		    {
+		        glEnable(GL_LIGHTING);
+		        glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
+		        glCallList(m_surfaceList);
+		    }
+
+		    if(m_renderMode & RenderTriangles)
+		    {
+		        glDisable(GL_LIGHTING);
+		        glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
+		        glColor3f(0.0, 0.0, 0.0);
+		        glCallList(m_wireframeList);
+		        glEnable(GL_LIGHTING);
+		    }
+
  		}
 	}
 }

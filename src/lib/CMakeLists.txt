@@ -15,6 +15,7 @@ set(LSSR_SOURCES
     display/GroundPlane.cpp
 )
 
+
 add_library(lssr STATIC ${LSSR_SOURCES})
 
 set_target_properties(lssr PROPERTIES LIBRARY_OUTPUT_DIRECTORY ${CMAKE_SOURCE_DIR}/lib)

@@ -25,6 +25,8 @@ StaticMesh::StaticMesh(){
 
 	m_finalized = false;
 
+	m_renderMode    = 0;
+
 }
 
 StaticMesh::StaticMesh(MeshLoader& loader, string name) : Renderable(name){
@@ -36,9 +38,17 @@ StaticMesh::StaticMesh(MeshLoader& loader, string name) : Renderable(name){
 	m_vertices      = loader.getVertexArray(m_numVertices);
 	m_indices       = loader.getIndexArray(m_numFaces);
 
+	m_blackColors   = new float(3 * m_numVertices);
+	for(int i = 0; i < 3 * m_numVertices; i++) m_blackColors[i] = 0.0;
+
+
 	m_finalized     = true;
 	m_visible       = true;
-	m_active = true;
+	m_active        = true;
+
+	m_renderMode = 0;
+	m_renderMode    |= RenderSurfaces;
+	m_renderMode    |= RenderTriangles;
 
 	m_boundingBox = new BoundingBox<Vertex<float> >;
 
@@ -65,7 +75,8 @@ StaticMesh::StaticMesh(MeshLoader& loader, string name) : Renderable(name){
 	// TODO: Standard colors if missing!
 
 	calcBoundingBox();
-	compileDisplayList();
+	compileSurfaceList();
+	compileWireframeList();
 }
 
 StaticMesh::StaticMesh(const StaticMesh &o)
@@ -106,11 +117,38 @@ void StaticMesh::finalize(){
 
 }
 
-void StaticMesh::compileDisplayList(){
+void StaticMesh::compileWireframeList()
+{
+    if(m_finalized){
+
+        m_wireframeList = glGenLists(1);
+
+        // Start new display list
+        glNewList(m_wireframeList, GL_COMPILE);
+
+        glDisable(GL_LIGHTING);
+        glColor3f(0.0, 0.0, 0.0);
+
+        for(size_t i = 0; i < m_numFaces; i++)
+        {
+            int index = 3 * i;
+            glBegin(GL_TRIANGLES);
+            glVertex3f(m_vertices[index], m_vertices[index + 1], m_vertices[index + 2]);
+            glEnd();
+
+        }
+        glEnable(GL_LIGHTING);
+        glEndList();
+
+    }
+}
+
+
+void StaticMesh::compileSurfaceList(){
 
 	if(m_finalized){
 
-		m_listIndex = glGenLists(1);
+		m_surfaceList = glGenLists(1);
 
 		// Enable vertex / normal / color arrays
 		glEnableClientState(GL_VERTEX_ARRAY);
@@ -118,7 +156,7 @@ void StaticMesh::compileDisplayList(){
 		glEnableClientState(GL_COLOR_ARRAY);
 
 		// Start new display list
-		glNewList(m_listIndex, GL_COMPILE);
+		glNewList(m_surfaceList, GL_COMPILE);
 
 		glEnable(GL_LIGHTING);
 

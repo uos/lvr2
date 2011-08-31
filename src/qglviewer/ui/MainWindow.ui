@@ -764,6 +764,9 @@
    </property>
   </action>
   <action name="actionToggle_fog">
+   <property name="checkable">
+    <bool>true</bool>
+   </property>
    <property name="enabled">
     <bool>false</bool>
    </property>
@@ -788,6 +791,9 @@
    </property>
   </action>
   <action name="actionWireframeView">
+   <property name="checkable">
+    <bool>true</bool>
+   </property>
    <property name="enabled">
     <bool>false</bool>
    </property>
@@ -803,6 +809,9 @@
    </property>
   </action>
   <action name="actionVertexView">
+   <property name="checkable">
+    <bool>true</bool>
+   </property>
    <property name="enabled">
     <bool>false</bool>
    </property>
@@ -833,6 +842,9 @@
    </property>
   </action>
   <action name="actionSurfaceView">
+   <property name="checkable">
+    <bool>true</bool>
+   </property>
    <property name="enabled">
     <bool>false</bool>
    </property>
