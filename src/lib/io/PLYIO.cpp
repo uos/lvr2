@@ -9,7 +9,6 @@ using std::stringstream;
 #include <boost/algorithm/string.hpp>
 #include <boost/progress.hpp>
 
-
 #include "io/Progress.hpp"
 #include "io/Timestamp.hpp"
 
@@ -297,7 +296,6 @@ void PLYIO::loadElements(ifstream &in)
 			// the appropriate loading procedure
 			if(element_name == "vertex")
 			{
-
 				// Load vertex elements
 				if(m_binary)
 				{
@@ -988,6 +986,23 @@ void PLYIO::deleteBuffers()
 		delete[] m_vertexNormals;
 		m_vertexNormals = 0;
 	}
+
+	if(m_points)
+	{
+	    for(size_t i = 0; i < m_numPoints; i++) delete[] m_points[i];
+	    delete[] m_points;
+	}
+
+	if(m_intensities)
+	{
+	    delete[] m_intensities;
+	}
+
+	if(m_pointNormals)
+	{
+	    for(size_t i = 0; i < m_numPoints; i++) delete[] m_pointNormals[i];
+	    delete[] m_pointNormals;
+	}
 }
 
 void PLYIO::readPointsBinary(ifstream &in, PLYElement* descr)
@@ -1044,6 +1059,12 @@ void PLYIO::readPointsBinary(ifstream &in, PLYElement* descr)
             {
                 copyElementToIndexedBuffer<float>(in, p, m_pointNormals, i, 2);
             }
+            else if(p->getName() == "i")
+            {
+                copyElementToBuffer(in, p, m_intensities, i);
+                m_maxIntensity = std::max(m_intensities[i], m_maxIntensity);
+                m_minIntensity = std::min(m_intensities[i], m_minIntensity);
+            }
         }
         ++progress;
     }
@@ -1094,6 +1115,12 @@ void PLYIO::readPointsASCII(ifstream &in, PLYElement* descr)
             else if(property_name == "b")
             {
                 in >> m_pointColors[i][2];
+            }
+            else if(property_name == "i")
+            {
+                in >> m_intensities[i];
+                m_maxIntensity = std::max(m_intensities[i], m_maxIntensity);
+                m_minIntensity = std::min(m_intensities[i], m_minIntensity);
             }
             it++;
         }
@@ -1171,7 +1198,6 @@ void PLYIO::readVerticesBinary(ifstream &in, PLYElement* descr)
 	vector<Property*>::iterator it;
 	for(size_t i = 0; i < m_numberOfVertices; i++)
 	{
-		if(i % 100000 == 0) cout << "Reading vertices: " << i << endl;
 		for(it = descr->getFirstProperty(); it != descr->getLastProperty(); it++)
 		{
 			// TODO: Calculate buffer position only once.
@@ -1200,13 +1226,13 @@ void PLYIO::readVerticesBinary(ifstream &in, PLYElement* descr)
 			{
 				copyElementToBuffer<float>(in, p, m_vertexColors, i * 3 + 2);
 			}
-			++progress;
 		}
-		cout << endl;
+		++progress;
 //				cout << m_vertices[i    ] << " "
 //					 << m_vertices[i + 1] << " "
 //					 << m_vertices[i + 2] << endl;
 	}
+	cout << endl;
 
 }
 

@@ -104,7 +104,6 @@
  */
 
 #include "Options.hpp"
-#include "reconstruction/PCLPointCloudManager.hpp"
 #include "reconstruction/StannPointCloudManager.hpp"
 #include "reconstruction/FastReconstruction.hpp"
 #include "io/PLYIO.hpp"
@@ -112,6 +111,10 @@
 #include "geometry/TriangleMesh.hpp"
 #include "geometry/HalfEdgeMesh.hpp"
 #include <iostream>
+
+#ifdef _USE_PCL_
+#include "reconstruction/PCLPointCloudManager.hpp"
+#endif
 
 using namespace lssr;
 
@@ -132,6 +135,7 @@ int main(int argc, char** argv)
     // Create a point cloud manager
     string pcm_name = options.getPCM();
     PointCloudManager<Vertex<float>, Normal<float> >* pcm;
+#ifdef _USE_PCL_
     if(pcm_name == "PCL")
     {
         cout << timestamp << "Creating PCL point cloud manager." << endl;
@@ -142,6 +146,10 @@ int main(int argc, char** argv)
         cout << timestamp << "Creating STANN point cloud manager." << endl;
         pcm = new StannPointCloudManager<Vertex<float>, Normal<float> > ( options.getInputFileName());
     }
+#else
+    cout << timestamp << "Creating STANN point cloud manager." << endl;
+    pcm = new StannPointCloudManager<Vertex<float>, Normal<float> > ( options.getInputFileName());
+#endif
 
     pcm->setKD(options.getKd());
     pcm->setKI(options.getKi());
