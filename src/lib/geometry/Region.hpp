@@ -18,6 +18,16 @@
 
 namespace lssr {
 
+template<typename VertexT, typename NormalT>
+class HalfEdgeFace;
+
+template<typename VertexT, typename NormalT>
+class HalfEdgeVertex;
+
+template<typename VertexT, typename NormalT>
+class HalfEdgeMesh;
+
+
 /**
  * @brief 	This class represents a region.
  */
@@ -36,7 +46,7 @@ public:
 	 *
 	 * @param 	region_number 	the number of the region
 	 */
-		Region(int region_number);
+	Region(int region_number);
 
 	/**
 	 * @brief Adds a face to the region.
@@ -44,6 +54,13 @@ public:
 	 * @param	f	the face to add
 	 */
 	virtual void addFace(HFace* f);
+
+	/**
+	 * @brief Removes a face from the region.
+	 *
+	 * @param	f	the face to remove
+	 */
+	virtual void removeFace(HFace* f);
 
 	/**
 	 * @brief Finds all contours of the region (outer contour + holes)
@@ -55,17 +72,20 @@ public:
 	virtual vector<stack<HVertex*> > getContours(float epsilon);
 
 	/**
-	 * @brief calculates a valid normal of the region
-	 *
-	 * @return a normal of the region
-	 */
-	virtual NormalT getNormal();
-
-	/*
 	 * @brief caluclates a regression plane for the region and fits all faces into this plane
 	 *
 	 */
 	virtual void regressionPlane();
+
+	/**
+	 * @brief tells if the given face is flickering
+	 *
+	 * @param	f	the face to test
+	 *
+	 * @return	true if the given face is flickering, false otherwise
+	 *
+	 */
+	virtual bool detectFlicker(HFace* f);
 
 	/**
 	 * @brief destructor.
@@ -80,6 +100,18 @@ public:
 
 	/// The number of the region
 	int m_region_number;
+
+	/// The normal of the region (updated every time regressionPlane() is called)
+	NormalT m_normal;
+
+private:
+	/**
+	 * @brief calculates a valid normal of the region
+	 *
+	 * @return a normal of the region
+	 */
+	virtual NormalT calcNormal();
+
 };
 }
 
