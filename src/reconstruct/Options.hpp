@@ -224,7 +224,7 @@ private:
 /// Overlaoeded outpur operator
 inline ostream& operator<<(ostream& os, const Options &o)
 {
-	cout << "##### Program options: " 	<< endl;
+	cout << "##### Program options: " << endl;
 	if(o.getIntersections() > 0)
 	{
 	    cout << "##### Intersections \t\t: " << o.getIntersections() << endl;
@@ -233,12 +233,12 @@ inline ostream& operator<<(ostream& os, const Options &o)
 	{
 	    cout << "##### Voxelsize \t\t: " << o.getVoxelsize() << endl;
 	}
-	cout << "##### Output file \t\t: " 	<< o.getInputFileName() << endl;
-	cout << "##### Number of threads \t: " << o.getNumThreads() << endl;
-	cout << "##### Point cloud manager: \t: " << o.getPCM() << endl;
-	cout << "##### k_n \t\t\t: " << o.getKn() << endl;
-	cout << "##### k_i \t\t\t: " << o.getKi() << endl;
-	cout << "##### k_d \t\t\t: " << o.getKd() << endl;
+	cout << "##### Input file \t\t: "         << o.getInputFileName() << endl;
+	cout << "##### Number of threads \t: "    << o.getNumThreads()    << endl;
+	cout << "##### Point cloud manager: \t: " << o.getPCM()           << endl;
+	cout << "##### k_n \t\t\t: "              << o.getKn()            << endl;
+	cout << "##### k_i \t\t\t: "              << o.getKi()            << endl;
+	cout << "##### k_d \t\t\t: "              << o.getKd()            << endl;
 	if(o.saveFaceNormals())
 	{
 		cout << "##### Write Face Normals \t: YES" << endl;
