@@ -129,7 +129,7 @@ public:
 	 *
 	 * @param	edge	The edge to collapse
 	 */
-	virtual void collapseEdge(HEdge* edge);
+	virtual bool collapseEdge(HEdge* edge);
 
 	/**
 	 * @brief	Flip the edge between f1 and f2
@@ -202,15 +202,15 @@ public:
 
 
 	/**
-	 *	@brief	drags the points of the given plane onto the given intersection if those points lay in
-	 *			a certain radius around the intersection line.
+	 *	@brief	drags the points of the given plane onto the given intersection if those points lay at
+	 *			the border between the two given regions
 	 *
-	 *	@param	planeFace		a face of the plane to take into account
+	 *	@param	plane			the region which points are dragged
 	 *	@param	neighbor_region	the region of the other plane belonging to the intersection line
 	 *	@param	x				a point on the intersection line
 	 *	@param	direction		the direction of the intersection line
 	 */
-	virtual void dragOntoIntersection(Region<VertexT, NormalT>* plane, int neighbor_region, VertexT& x, VertexT& direction);
+	virtual void dragOntoIntersection(Region<VertexT, NormalT>* plane, Region<VertexT, NormalT>* neighbor_region, VertexT& x, VertexT& direction);
 
 	/**
 	 * @brief 	optimizes the plane intersections

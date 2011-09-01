@@ -13,8 +13,15 @@ template<typename VertexT, typename NormalT>
 void Region<VertexT, NormalT>::addFace(HFace* f)
 {
 	this->m_faces.push_back(f);
-	f->m_region = this->m_region_number;
+	f->m_region = this;
 }
+
+template<typename VertexT, typename NormalT>
+void Region<VertexT, NormalT>::removeFace(HFace* f)
+{
+	m_faces.erase(find(m_faces.begin(), m_faces.end(), f));
+}
+
 
 template<typename VertexT, typename NormalT>
 vector<stack<HalfEdgeVertex<VertexT, NormalT>* > > Region<VertexT, NormalT>::getContours(float epsilon)
@@ -32,7 +39,7 @@ vector<stack<HalfEdgeVertex<VertexT, NormalT>* > > Region<VertexT, NormalT>::get
 			if(!current->used && (current->pair->face == 0 || current->pair->face->m_region != current->face->m_region))
 			{
 				stack<HalfEdgeVertex<VertexT, NormalT>* > contour;
-				int region = current->face->m_region;
+				Region<VertexT, NormalT>* region = current->face->m_region;
 
 				HEdge* next = 0;
 				while(current->used == false)
@@ -83,7 +90,7 @@ vector<stack<HalfEdgeVertex<VertexT, NormalT>* > > Region<VertexT, NormalT>::get
 }
 
 template<typename VertexT, typename NormalT>
-NormalT Region<VertexT, NormalT>::getNormal()
+NormalT Region<VertexT, NormalT>::calcNormal()
 {
 	NormalT result;
     //search for a valid normal of region
@@ -96,12 +103,6 @@ NormalT Region<VertexT, NormalT>::getNormal()
 
 	result.normalize();
 	return result;
-}
-
-template<typename VertexT, typename NormalT>
-Region<VertexT, NormalT>::~Region()
-{
-	m_faces.clear();
 }
 
 template<typename VertexT, typename NormalT>
@@ -172,7 +173,26 @@ void Region<VertexT, NormalT>::regressionPlane()
     }
 
     this->m_inPlane = true;
+    this->m_normal = calcNormal();
 }
 
+template<typename VertexT, typename NormalT>
+bool Region<VertexT, NormalT>::detectFlicker(HFace* f)
+{
+	if(this->m_inPlane)
+		if ((VertexT(f->getFaceNormal())+VertexT(this->m_normal)).length() < 0.05)
+		{
+			return true;
+		}
+	return false;
+}
+
+template<typename VertexT, typename NormalT>
+Region<VertexT, NormalT>::~Region()
+{
+	for (int i = 0; i<m_faces.size(); i++)
+		m_faces[i]->m_region = 0;
+	m_faces.clear();
+}
 
 }

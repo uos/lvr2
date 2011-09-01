@@ -27,13 +27,13 @@ void HalfEdgeMesh<VertexT, NormalT>::addVertex(VertexT v)
 	m_globalIndex++;
 }
 
+
+
 template<typename VertexT, typename NormalT>
 void HalfEdgeMesh<VertexT, NormalT>::deleteVertex(HVertex* v)
 {
 	// Delete HalfEdgeVertex and decrease vertex counter
-	typename vector<HVertex*>::iterator it = m_vertices.begin();
-	while(*it != v) it++;
-	m_vertices.erase(it);
+	m_vertices.erase(find(m_vertices.begin(), m_vertices.end(), v));
 	m_globalIndex--;
 	delete v;
 }
@@ -326,8 +326,6 @@ void HalfEdgeMesh<VertexT, NormalT>::deleteFace(HFace* f)
 	nextEdge->face = 0;
 	lastEdge->face = 0;
 
-	typename vector<HEdge*>::iterator it;
-
 	if(startEdge->pair->face == 0)
 	{
 		//delete edge and pair
@@ -356,47 +354,57 @@ void HalfEdgeMesh<VertexT, NormalT>::deleteFace(HFace* f)
 	}
 
 	//delete face
-	typename vector<HalfEdgeFace<VertexT, NormalT>*>::iterator face_iter = m_faces.begin();
-	while(*face_iter != f) face_iter++;
-	m_faces.erase(face_iter);
+	m_faces.erase(find(m_faces.begin(), m_faces.end(), f));
 	delete f;
 }
 
 template<typename VertexT, typename NormalT>
 void HalfEdgeMesh<VertexT, NormalT>::deleteEdge(HEdge* edge, bool deletePair)
 {
-	typename vector<HEdge*>::iterator it;
-
 	//delete references from start point to outgoing edge
-	it = edge->start->out.begin();
-	while(*it != edge) it++;
-	edge->start->out.erase(it);
+	edge->start->out.erase(find(edge->start->out.begin(),edge->start->out.end(), edge));
 
 	//delete references from end point to incoming edge
-	it = edge->end->in.begin();
-	while(*it != edge) it++;
-	edge->end->in.erase(it);
+	edge->end->in.erase(find(edge->end->in.begin(),edge->end->in.end(), edge));
 
 	if(deletePair)
 	{
 		//delete references from start point to outgoing edge
-		it = edge->pair->start->out.begin();
-		while(*it != edge->pair) it++;
-		edge->pair->start->out.erase(it);
+		edge->pair->start->out.erase(find(edge->pair->start->out.begin(),edge->pair->start->out.end(), edge->pair));
 
 		//delete references from end point to incoming edge
-		it = edge->pair->end->in.begin();
-		while(*it != edge->pair) it++;
-		edge->pair->end->in.erase(it);
+		edge->pair->end->in.erase(find(edge->pair->end->in.begin(),edge->pair->end->in.end(), edge->pair));
 
 		delete edge->pair;
 	}
+
 	delete edge;
 }
 
 template<typename VertexT, typename NormalT>
-void HalfEdgeMesh<VertexT, NormalT>::collapseEdge(HEdge* edge)
+bool HalfEdgeMesh<VertexT, NormalT>::collapseEdge(HEdge* edge)
 {
+	//try to reject all huetchen
+	if(edge->face != 0 && edge->next->pair->face !=0 && edge->next->next->pair->face!=0)
+		if(edge->next->pair->next->next == edge->next->next->pair->next->pair)
+			return false;
+
+	if(edge->pair->face && edge->pair->next->pair->face && edge->pair->next->next->pair->face)
+		if(edge->pair->next->pair->next->next == edge->pair->next->next->pair->next->pair)
+			return false;
+
+	//Check for redundant edges
+	int edgeCnt = 0;
+	for (int i = 0; i<edge->start->out.size(); i++)
+		if (edge->start->out[i]->end == edge->end)
+			edgeCnt++;
+	if(edgeCnt != 1)
+		return false;
+
+	if(edge->face != 0 && edge->next->pair->face == 0 && edge->next->next->pair->face == 0
+			|| edge->pair->face != 0 && edge->pair->next->pair->face == 0 && edge->pair->next->next->pair->face == 0)
+		return false;
+
 	// Save start and end vertex
 	HVertex* p1 = edge->start;
 	HVertex* p2 = edge->end;
@@ -405,8 +413,6 @@ void HalfEdgeMesh<VertexT, NormalT>::collapseEdge(HEdge* edge)
 	p1->m_position = (p1->m_position + p2->m_position)*0.5;
 
 	//Delete redundant edges
-	typename vector<HEdge*>::iterator it;
-
 	if (edge->face != 0)
 	{
 		edge->next->next->pair->pair = edge->next->pair;
@@ -424,20 +430,15 @@ void HalfEdgeMesh<VertexT, NormalT>::collapseEdge(HEdge* edge)
 	}
 
 	// Delete faces
-	typename	vector<HalfEdgeFace<VertexT, NormalT>*>::iterator face_iter;
 	if(edge->pair->face != 0)
 	{
-		face_iter = m_faces.begin();
-		while(*face_iter != edge->pair->face) face_iter++;
-		m_faces.erase(face_iter);
+		m_faces.erase(find(m_faces.begin(), m_faces.end(), edge->pair->face));
 		delete edge->pair->face;
 	}
 
 	if(edge->face != 0)
 	{
-		face_iter = m_faces.begin();
-		while(*face_iter != edge->face) face_iter++;
-		m_faces.erase(face_iter);
+		m_faces.erase(find(m_faces.begin(), m_faces.end(), edge->face));
 		delete edge->face;
 	}
 
@@ -445,6 +446,7 @@ void HalfEdgeMesh<VertexT, NormalT>::collapseEdge(HEdge* edge)
 	deleteEdge(edge);
 
 	//Update incoming and outgoing edges of p1
+	typename vector<HEdge*>::iterator it;
 	it = p2->out.begin();
 	while(it != p2->out.end())
 	{
@@ -452,8 +454,8 @@ void HalfEdgeMesh<VertexT, NormalT>::collapseEdge(HEdge* edge)
 		p1->out.push_back(*it);
 		it++;
 	}
-	it = p2->in.begin();
 
+	it = p2->in.begin();
 	while(it != p2->in.end())
 	{
 		(*it)->end = p1;
@@ -463,6 +465,24 @@ void HalfEdgeMesh<VertexT, NormalT>::collapseEdge(HEdge* edge)
 
 	//Delete p2
 	deleteVertex(p2);
+
+	//set pair pointers at closed holes
+	bool stop = false;
+	for(int i = 0; i<p1->out.size() && !stop; i++)
+	{
+		for(int j = 0; j<p1->in.size() && !stop; j++)
+		{
+			if (p1->out[i]->end == p1->in[j]->start && p1->out[i]->face == 0 && p1->in[j]->face == 0 && p1->out[i]->pair != p1->in[j])
+			{
+				p1->out[i]->pair->pair = p1->in[j]->pair;
+				p1->in[j]->pair->pair = p1->out[i]->pair;
+				deleteEdge(p1->out[i], false);
+				deleteEdge(p1->in[j], false);
+				stop = true;
+			}
+		}
+	}
+	return true;
 }
 
 
@@ -670,13 +690,26 @@ void HalfEdgeMesh<VertexT, NormalT>::optimizePlanes(
 	}
 
     m_planesOptimized = true;
+
+    //Delete flickering faces
+	vector<HFace*> flickerer;
+	for(int i=0; i< m_faces.size(); i++)
+		if(m_faces[i]->m_region->detectFlicker(m_faces[i]))
+		{
+			flickerer.push_back(m_faces[i]);
+		}
+	while(!flickerer.empty())
+	{
+		deleteFace(flickerer.back());
+		flickerer.pop_back();
+	}
 }
 
 template<typename VertexT, typename NormalT>
 void HalfEdgeMesh<VertexT, NormalT>::deleteRegion(Region<VertexT, NormalT>* region)
 {
-    for(int i=0; i<region->m_faces.size(); i++)
-        deleteFace(region->m_faces[i]);
+	while(! region->m_faces.empty())
+		deleteFace(region->m_faces.front());
     delete region;
 }
 
@@ -689,12 +722,14 @@ void HalfEdgeMesh<VertexT, NormalT>::removeDanglingArtifacts(int threshold)
     {
         if(m_faces[i]->m_used == false)
         {
-        	Region<VertexT, NormalT>* region = new Region<VertexT, NormalT>(-1);
+        	Region<VertexT, NormalT>* region = new Region<VertexT, NormalT>(0);
             int region_size = regionGrowing(m_faces[i], region) + 1;
             if(region_size <= threshold)
                 todelete.push_back(region);
             else
+            {
             	delete region;
+            }
         }
     }
 
@@ -715,28 +750,40 @@ void HalfEdgeMesh<VertexT, NormalT>::fillHoles(int max_size)
         cerr << "Cannot fill holes before the planes have been optimized! Aborting fillHoles.\n"; 
         return;
     }
+	//holds all holes to close
+	vector<vector<HEdge*> > holes;
+
     //walk through all edges and start hole finding
     //when pair has no face and a regression plane was applied
     for(int i=0; i < m_faces.size(); i++)
+    {
         for(int k=0; k<3; k++)
-            if((*m_faces[i])[k]->pair->face == 0 && m_regions[m_faces[i]->m_region]->m_inPlane)
+        {
+            if((*m_faces[i])[k]->pair->used == false && (*m_faces[i])[k]->pair->face == 0 && m_faces[i]->m_region->m_inPlane)
             {
                 //needed for contour tracking
-                vector<HalfEdgeVertex<VertexT, NormalT>*> contour;
+                vector<HEdge*> contour;
                 HEdge* next = 0;
                 HEdge* current = (*m_faces[i])[k]->pair;
-
-                //needed to check if only two different regions are considered
-                HFace* first_region = m_faces[i];
-                HFace* second_region = 0;
-                int number_of_regions = 1;
 
                 //while the contour is not closed
                 while(current != 0)
                 {
                     next = 0;
-                    contour.push_back(current->end);
+                    contour.push_back(current);
+                    //to ensure that there is no way back to the same vertex
+                    for (int e = 0; e<current->start->out.size(); e++)
+                    {
+                    	if (current->start->out[e]->end == current->end)
+                    		current->start->out[e]->used = true;
+                    }
+                    for (int e = 0; e<current->start->in.size(); e++)
+                    {
+                    	if (current->start->in[e]->start == current->end)
+                    		current->start->in[e]->used = true;
+                    }
                     current->used = true;
+
                     typename vector<HEdge*>::iterator it = current->end->out.begin();
                     while(it != current->end->out.end())
                     {
@@ -744,80 +791,126 @@ void HalfEdgeMesh<VertexT, NormalT>::fillHoles(int max_size)
                         if ((*it)->used == false && (*it)->face == 0)
                         {
                             next = *it;
-                            //next is part of a new region
-                            if(next->pair->face->m_region != first_region->m_region)
-                                if (second_region != 0 && next->pair->face->m_region != second_region->m_region)
-                                    number_of_regions = -1;
-                                else
-                                {
-                                    //if two regions were found
-                                    second_region = next->pair->face;
-                                    number_of_regions = 2;
-                                }
                         }
                         it++;
                     }
 
                     current = next;
                 }
-
-                if(number_of_regions == 1)
+                if (2 < contour.size() && contour.size() < max_size)
                 {
-                    //Is the contour of acceptable size and closed?
-                    if(2 < contour.size() && contour.size() < max_size && halfEdgeToVertex(contour[contour.size()-1], contour[0]) != 0)
-                    {
-                        //Simulate a face by setting the face pointer of the edge next to the hole
-                        for(int p=0; p<contour.size(); p++)
-                        {
-                            HEdge* edge = halfEdgeToVertex(contour[p], contour[(p+1) % contour.size()]);
-                            if(edge->face == 0)
-                                edge->face = edge->pair->face;
-                            else
-                                edge->pair->face = edge->face;
-                        }
-                        //Just for testing purposes
-                        HalfEdgeVertex<VertexT, NormalT> newPoint;
-                        for (int c = 0; c<contour.size(); c++)
-                            newPoint.m_position += contour[c]->m_position;
-                        newPoint.m_position /= contour.size();
-
-                        for (int c = 0; c<contour.size(); c++)
-                            contour[c]->m_position = newPoint.m_position;
-                    }
-                }
-                else if (number_of_regions == 2)
-                {
-                    //Is the contour of acceptable size and closed?
-                    if(2 < contour.size() && contour.size() < max_size && halfEdgeToVertex(contour[contour.size()-1], contour[0]) != 0)
-                    {
-                        //Simulate a face by setting the face pointer of the edge next to the hole
-                        //Especially: Simulate that there exists a pair edge of the second region
-                        //This is necessary for optimizePlaneintersections()
-                        for(int p=0; p<contour.size(); p++)
-                        {
-                            HEdge* edge = halfEdgeToVertex(contour[p], contour[(p+1) % contour.size()]);
-                            if(edge->face == 0)
-                            {
-                                if(edge->pair->face->m_region == first_region->m_region)
-                                    edge->face = second_region;
-                                else
-                                    edge->face = first_region;
-                            }
-                            else
-                            {
-                                if(edge->face->m_region == first_region->m_region)
-                                    edge->pair->face= second_region;
-                                else
-                                    edge->pair->face = first_region;
-                            }
-                        }
-                    }
+                	holes.push_back(contour);
                 }
             }
+        }
+    }
+
+    //collapse all holes
+
+    vector<HEdge* > invalid_edges; //holds edges which are deleted automatically if the current edge is collapsed
+    while(!holes.empty())
+    {
+    	int iterations = 0;
+    	while(holes.back().size() > 3)
+    	{
+    		iterations++;
+    		bool pushed = false;
+    		//Check if current edge is not invalid
+    		if(!(find(invalid_edges.begin(), invalid_edges.end(), holes.back().back()) != invalid_edges.end()))
+    		{
+    			//look for edges which will become invalidated
+    			for(int i = 0; i<holes.back().back()->end->out.size(); i++)
+    				for(int j = 0; j<holes.back().back()->start->in.size(); j++)
+    					if(holes.back().back()->end->out[i]->end == holes.back().back()->start->in[j]->start && holes.back().back()->end->out[i]->face == 0 && holes.back().back()->start->in[j]->face == 0)
+    					{
+    						invalid_edges.push_back(holes.back().back()->end->out[i]);
+    						invalid_edges.push_back(holes.back().back()->start->in[j]);
+    						pushed = true;
+    					}
+    			//Test for flickering first
+    			bool flickering = false;
+
+    			//Move edge->start and check for flickering
+    			VertexT origin = holes.back().back()->start->m_position;
+    			holes.back().back()->start->m_position = (holes.back().back()->start->m_position + holes.back().back()->end->m_position)*0.5;
+    			for(int o = 0; o<holes.back().back()->start->out.size(); o++)
+    			{
+    				if(holes.back().back()->start->out[o]->pair->face != holes.back().back()->pair->face)
+    				{
+    					if (holes.back().back()->start->out[o]->pair->face != 0)
+    						flickering = flickering || holes.back().back()->start->out[o]->pair->face->m_region->detectFlicker(holes.back().back()->start->out[o]->pair->face);
+    				}
+
+    			}
+   				holes.back().back()->start->m_position = origin;
+
+   				//Move edge->end and check for flickering
+   				origin = holes.back().back()->end->m_position;
+    			holes.back().back()->end->m_position = (holes.back().back()->start->m_position + holes.back().back()->end->m_position)*0.5;
+    			for(int o = 0; o<holes.back().back()->end->out.size(); o++)
+    			{
+    				if(holes.back().back()->end->out[o]->pair->face != holes.back().back()->pair->face)
+    				{
+    					if (holes.back().back()->end->out[o]->pair->face != 0)
+    						flickering = flickering || holes.back().back()->end->out[o]->pair->face->m_region->detectFlicker(holes.back().back()->end->out[o]->pair->face);
+    				}
+
+    			}
+   				holes.back().back()->end->m_position = origin;
+
+   				//Try to collapse the current edge
+   				bool collapsed = false;
+   				if(!flickering)
+   					collapsed = collapseEdge(holes.back().back());
+   				else
+   					if(iterations < max_size + 5)
+   						holes.back().insert(holes.back().begin(), holes.back().back());
+
+    			//Remove edges predicted to be invalid which are not invalid since no edge was collapsed
+    			if(collapsed == false && pushed)
+    			{
+    				invalid_edges.pop_back();
+    				invalid_edges.pop_back();
+    			}
+    		}
+    		holes.back().pop_back();
+    	}
+
+    	//Insert a new face if the hole isn't closed already
+    	if(
+					find(invalid_edges.begin(), invalid_edges.end(), holes.back()[0])== invalid_edges.end()
+    			&& 	find(invalid_edges.begin(), invalid_edges.end(), holes.back()[1])== invalid_edges.end()
+    			&& 	find(invalid_edges.begin(), invalid_edges.end(), holes.back()[2])== invalid_edges.end()
+    		)
+    	{
+    		HFace* f = new HFace;
+    		f->m_edge = holes.back()[0];
+    		HEdge* current = holes.back()[0];
+    		for(int e = 0; e<3; e++)
+    		{
+    			for(int o = 0; o<current->end->out.size(); o++)
+    				if(find(holes.back().begin(), holes.back().end(),current->end->out[o])!=holes.back().end())
+    					current->next = current->end->out[o];
+    			current->face = f;
+    			current = current->next;
+
+    		}
+    		f->m_edge->pair->face->m_region->addFace(f);
+    		m_faces.push_back(f);
+    	}
+
+    	holes.pop_back();
+    }
+
+    for(int r=0; r < m_regions.size(); r++)
+    {
+    	if(m_regions[r]->m_inPlane)
+    		m_regions[r]->regressionPlane();
+    }
 }
 
 template<typename VertexT, typename NormalT>
-void HalfEdgeMesh<VertexT, NormalT>::dragOntoIntersection(Region<VertexT, NormalT>* plane, int neighbor_region, VertexT& x, VertexT& direction)
+void HalfEdgeMesh<VertexT, NormalT>::dragOntoIntersection(Region<VertexT, NormalT>* plane, Region<VertexT, NormalT>* neighbor_region, VertexT& x, VertexT& direction)
 {
 	for (int i = 0; i<plane->m_faces.size(); i++)
 	{
@@ -843,8 +936,8 @@ void HalfEdgeMesh<VertexT, NormalT>::optimizePlaneIntersections()
                 {
                     //calculate intersection between plane i and j
 
-                	NormalT n_i = m_regions[i]->getNormal();
-                	NormalT n_j = m_regions[j]->getNormal();
+                	NormalT n_i = m_regions[i]->m_normal;
+                	NormalT n_j = m_regions[j]->m_normal;
 
                     //don't improve almost parallel regions - they won't cross in a reasonable distance
                     if (fabs(n_i*n_j) < 0.9)
@@ -865,8 +958,8 @@ void HalfEdgeMesh<VertexT, NormalT>::optimizePlaneIntersections()
                         VertexT direction = n_i.cross(n_j);
 
                         //drag all points at the border between planes i and j onto the intersection
-                        dragOntoIntersection(m_regions[i], m_regions[j]->m_region_number, x, direction);
-                        dragOntoIntersection(m_regions[j], m_regions[i]->m_region_number, x, direction);
+                        dragOntoIntersection(m_regions[i], m_regions[j], x, direction);
+                        dragOntoIntersection(m_regions[j], m_regions[i], x, direction);
                     }
                 }
     }
@@ -878,7 +971,8 @@ vector<stack<HalfEdgeVertex<VertexT, NormalT>* > > HalfEdgeMesh<VertexT, NormalT
     vector<stack<HalfEdgeVertex<VertexT, NormalT>* > > contours;
     for (int i = 0; i< m_regions.size(); i++)
     {
-    	if(m_regions[i]->m_inPlane){
+    	if(m_regions[i]->m_inPlane)
+    	{
     		vector<stack<HalfEdgeVertex<VertexT, NormalT>* > > current_contours = m_regions[i]->getContours(epsilon);
     		contours.insert(contours.end(), current_contours.begin(), current_contours.end());
     	}
@@ -889,13 +983,13 @@ vector<stack<HalfEdgeVertex<VertexT, NormalT>* > > HalfEdgeMesh<VertexT, NormalT
 template<typename VertexT, typename NormalT>
 void HalfEdgeMesh<VertexT, NormalT>::tester()
 {
-//	removeDanglingArtifacts(500);
-//	optimizePlanes(3,0.85,50,7);
-//	fillHoles(35);
-//	optimizePlaneIntersections();
-//	m_colorRegions = true;
 
-    //Reset all used variables
+	cout << "--------------------------------TESTER" << endl;
+//	for(int r=0; r<m_regions.size(); r++)
+//		if( m_regions[r]->detectFlicker()) cout << "still flickering" << endl;
+	cout << "----------------------------END TESTER" << endl;
+
+//    Reset all used variables
     for(int i=0; i<m_faces.size(); i++)
         for(int k=0; k<3; k++)
             (*m_faces[i])[k]->used=false;
@@ -923,8 +1017,6 @@ void HalfEdgeMesh<VertexT, NormalT>::tester()
     }
     filestr.close();
 
-//  for(int i=0; i<m_faces.size(); i++)
-//      m_faces[i]->m_region=0;
 }
 
 template<typename VertexT, typename NormalT>
@@ -975,7 +1067,8 @@ void HalfEdgeMesh<VertexT, NormalT>::finalize()
 		this->m_indexBuffer[3 * i + 2]  = index_map[(*(*face_iter))(2)];
 		
 		int surface_class = 1;
-		surface_class = (*face_iter)->m_region;
+		if ((*face_iter)->m_region != 0)
+			surface_class = (*face_iter)->m_region->m_region_number;
 
 		float r, g, b;
 		if(m_colorRegions)
