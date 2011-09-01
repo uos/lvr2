@@ -803,7 +803,7 @@ void HalfEdgeMesh<VertexT, NormalT>::fillHoles(int max_size)
     while(!holes.empty())
     {
     	int iterations = 0;
-    	while(holes.back().size() > 0)
+    	while(holes.back().size() > 3)
     	{
     		iterations++;
     		bool pushed = false;
@@ -867,6 +867,30 @@ void HalfEdgeMesh<VertexT, NormalT>::fillHoles(int max_size)
     		}
     		holes.back().pop_back();
     	}
+
+    	//Insert a new face if the hole isn't closed already
+    	if(
+					find(invalid_edges.begin(), invalid_edges.end(), holes.back()[0])== invalid_edges.end()
+    			&& 	find(invalid_edges.begin(), invalid_edges.end(), holes.back()[1])== invalid_edges.end()
+    			&& 	find(invalid_edges.begin(), invalid_edges.end(), holes.back()[2])== invalid_edges.end()
+    		)
+    	{
+    		HFace* f = new HFace;
+    		f->m_edge = holes.back()[0];
+    		HEdge* current = holes.back()[0];
+    		for(int e = 0; e<3; e++)
+    		{
+    			for(int o = 0; o<current->end->out.size(); o++)
+    				if(find(holes.back().begin(), holes.back().end(),current->end->out[o])!=holes.back().end())
+    					current->next = current->end->out[o];
+    			current->face = f;
+    			current = current->next;
+
+    		}
+    		f->m_edge->pair->face->m_region->addFace(f);
+    		m_faces.push_back(f);
+    	}
+
     	holes.pop_back();
     }
 
