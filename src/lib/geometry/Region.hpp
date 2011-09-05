@@ -85,6 +85,11 @@ public:
 	 */
 	virtual void backflipFaces(HalfEdgeMesh<VertexT, NormalT>* mesh);
 
+    /**
+     * @brief the number of faces contained in this region
+     */
+    virtual int size();
+
 	/**
 	 * @brief destructor.
 	 */
@@ -101,14 +106,15 @@ public:
 
 	/// The normal of the region (updated every time regressionPlane() is called)
 	NormalT m_normal;
-
-private:
-	/**
+	
+    /**
 	 * @brief calculates a valid normal of the region
 	 *
 	 * @return a normal of the region
 	 */
 	virtual NormalT calcNormal();
+
+private:
 
 };
 }

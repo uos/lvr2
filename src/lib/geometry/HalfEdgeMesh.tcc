@@ -1112,22 +1112,92 @@ void HalfEdgeMesh<VertexT, NormalT>::finalize()
 		this->m_colorBuffer[this->m_indexBuffer[3 * i + 2] * 3 + 2] = b;
 
 
-	} */
-    // take a region and retesselate it by chance or so...
-    cout << "Tesseliere!" << endl;
-    Tesselator<VertexT, NormalT>::init();
-    cout << "Tesseliere!" << endl;
-    Tesselator<VertexT, NormalT>::tesselate(*(m_regions[0]));
-//    double **v = new double*;
-//    double **c = new double*;
-//    double **n = new double*;
-//    uint8_t **in = new uint8_t*;
-//    int *vS = new int;
-//    int *fS = new int;
-	this->m_nVertices 		= 0; //(uint32_t)m_vertices.size();
-	this->m_nFaces 			= 0; //(uint32_t)m_faces.size();
+	}*/ 
 
-	this->m_finalized = true;
+    // Good guess...
+	this->m_nVertices 		= (uint32_t)m_vertices.size();
+	this->m_nFaces 			= (uint32_t)m_faces.size();
+	this->m_vertexBuffer 	= new float[6 * this->m_nVertices];
+	this->m_normalBuffer 	= new float[6 * this->m_nVertices];
+	this->m_colorBuffer 	= new float[6 * this->m_nVertices];
+	this->m_indexBuffer 	= new unsigned int[6 * this->m_nFaces];
+
+    int usedVertices=0,usedFaces=0;
+    int maxFaces=0;
+        
+    int nPointsUsed=0;
+    int nIndizesUsed=0;
+    int *newPoints = new int;
+    int *newIndex = new int;
+    double **v  = new double*;
+    double **n  = new double*;
+    double **c  = new double*;
+    int    **in = new int*;
+    for(int i=0; i<m_regions.size(); ++i)
+    {
+        (m_regions[i])->regressionPlane();
+
+        Tesselator<VertexT, NormalT>::init();
+        Tesselator<VertexT, NormalT>::tesselate(*(m_regions[i]));
+        Tesselator<VertexT, NormalT>::getFinalizedTriangles(v, n, c, in, newIndex, newPoints);
+        if(*newIndex > 0 && *newPoints > 0)
+        {
+            for(int j=0; j<*newPoints; ++j)
+            {
+                this->m_vertexBuffer[j+nPointsUsed] = (*v)[j];
+                this->m_normalBuffer[j+nPointsUsed] = (*n)[j];
+                this->m_colorBuffer[ j+nPointsUsed] = (*c)[j];
+            }
+
+            for(int j=0; j<*newIndex; ++j)
+            {
+                this->m_indexBuffer[j+nIndizesUsed] = ((*in)[j])+nIndizesUsed;
+            }
+            nPointsUsed  += *newPoints;
+            nIndizesUsed += *newIndex;
+            cout << "Durch\n";
+            delete (*v);
+            delete (*c);
+            delete (*n);
+            delete (*in); 
+        }
+    }
+    delete newIndex;
+    delete newPoints;
+	this->m_nVertices = nPointsUsed/3;
+	this->m_nFaces 	  = nIndizesUsed/3;
+	this->m_finalized = true; 
+    /*
+    for(int i=0; i<nPointsUsed-2; i++)
+    {
+        cout << "Vertex: ";
+        cout << this->m_vertexBuffer[i] << " ";
+        cout << this->m_vertexBuffer[i+1] << " ";
+        cout << this->m_vertexBuffer[i+2] << " " << endl;
+        cout << "Color: ";
+        cout << this->m_colorBuffer[i] << " ";
+        cout << this->m_colorBuffer[i+1] << " ";
+        cout << this->m_colorBuffer[i+2] << " " << endl;
+        cout << "Normal: ";
+        cout << this->m_normalBuffer[i] << " ";
+        cout << this->m_normalBuffer[i+1] << " ";
+        cout << this->m_normalBuffer[i+2] << " " << endl;
+    }
+    */
+    cout << "POOOINTS : " << nPointsUsed << endl;
+    for(int i=0; i<nIndizesUsed; i++)
+    {
+        cout << "Index: ";
+        cout << this->m_indexBuffer[i] << " " << endl;
+    }
+    cout << "FIIIIIIILE" << endl;
+    for(int i=0; i<nIndizesUsed; i++)
+    {
+        cout << this->m_vertexBuffer[this->m_indexBuffer[i] *3 + 0] << " " << this->m_indexBuffer[i] *3 + 0 << " ";
+        cout << this->m_vertexBuffer[this->m_indexBuffer[i] *3 + 1] << " " << this->m_indexBuffer[i] *3 + 1 << " ";
+        cout << this->m_vertexBuffer[this->m_indexBuffer[i] *3 + 2] << " " << this->m_indexBuffer[i] *3 + 2 << " ";
+        cout << endl;
+    }
 }
 
 } // namespace lssr
