@@ -185,6 +185,16 @@ int main(int argc, char** argv)
     mesh.fillHoles(options.getFillHoles());
     mesh.optimizePlaneIntersections();
 
+    if(options.optimizePlanes())
+    {
+        if(options.colorRegions()) mesh.enableRegionColoring();
+        mesh.optimizePlanes(1,
+                            options.getNormalThreshold(),
+                            options.getMinPlaneSize(),
+                            0,
+                            false);
+    }
+
     // Save triangle mesh
     mesh.finalize();
     mesh.save("triangle_mesh.ply");

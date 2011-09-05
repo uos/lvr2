@@ -24,9 +24,9 @@ void Region<VertexT, NormalT>::removeFace(HFace* f)
 
 
 template<typename VertexT, typename NormalT>
-vector<stack<HalfEdgeVertex<VertexT, NormalT>* > > Region<VertexT, NormalT>::getContours(float epsilon)
+vector<vector<HalfEdgeVertex<VertexT, NormalT>* > > Region<VertexT, NormalT>::getContours(float epsilon)
 {
-	vector<stack<HVertex*> > result;
+	vector<vector<HVertex*> > result;
 
 	//don't try to find contours of a region which wasn't dragged into a plane
 	if (!this->m_inPlane) return result;
@@ -38,7 +38,7 @@ vector<stack<HalfEdgeVertex<VertexT, NormalT>* > > Region<VertexT, NormalT>::get
 			HEdge* current = (*m_faces[i])[k];
 			if(!current->used && (current->pair->face == 0 || current->pair->face->m_region != current->face->m_region))
 			{
-				stack<HalfEdgeVertex<VertexT, NormalT>* > contour;
+				vector<HalfEdgeVertex<VertexT, NormalT>* > contour;
 				Region<VertexT, NormalT>* region = current->face->m_region;
 
 				HEdge* next = 0;
@@ -48,7 +48,7 @@ vector<stack<HalfEdgeVertex<VertexT, NormalT>* > > Region<VertexT, NormalT>::get
 					current->used = true;
 					next = 0;
 					//push the next vertex
-					contour.push(current->end);
+					contour.push_back(current->end);
 					//find next edge
 					for(int i = 0; i<current->end->out.size(); i++)
 					{
@@ -78,7 +78,7 @@ vector<stack<HalfEdgeVertex<VertexT, NormalT>* > > Region<VertexT, NormalT>::get
 								&& fabs(next->end->m_position[1] - current->end->m_position[1]) <= epsilon
 								&& fabs(next->end->m_position[2] - current->end->m_position[2]) <= epsilon
 						))
-							contour.pop();
+							contour.pop_back();
 						current = next;
 					}
 				}
@@ -86,6 +86,45 @@ vector<stack<HalfEdgeVertex<VertexT, NormalT>* > > Region<VertexT, NormalT>::get
 			}
 		}
 	}
+
+	//move outer contour to the first position
+	float xmax = FLT_MIN;
+	float ymax = FLT_MIN;
+	float zmax = FLT_MIN;
+
+	int outer = -1;
+	for(int c=0; c<result.size(); c++)
+	{
+		for(int v=0; v<result[c].size(); v++)
+		{
+			if(result[c][v]->m_position.x > xmax)
+			{
+				xmax = result[c][v]->m_position.x;
+				outer = c;
+			}
+			if(result[c][v]->m_position.y > ymax)
+			{
+				ymax = result[c][v]->m_position.y;
+				outer = c;
+			}
+			if(result[c][v]->m_position.z > zmax)
+			{
+				zmax = result[c][v]->m_position.z;
+				outer = c;
+			}
+		}
+	}
+
+	if(outer != -1)
+	{
+		result.insert(result.begin(), result[outer]);
+		result.erase(result.begin()+outer+1);
+	}
+	else
+	{
+		cerr << "ERROR: could not find outer contour" << endl;
+	}
+
 	return result;
 }
 

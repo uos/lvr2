@@ -614,8 +614,8 @@ void HalfEdgeMesh<VertexT, NormalT>::optimizePlanes(
         int iterations,
         float angle,
         int min_region_size,
-        int small_region_size
-        )
+        int small_region_size,
+        bool remove_flickering)
 {
     cout << timestamp << "Starting plane optimization with threshold " << angle << endl;
 
@@ -692,17 +692,20 @@ void HalfEdgeMesh<VertexT, NormalT>::optimizePlanes(
     m_planesOptimized = true;
 
     //Delete flickering faces
-	vector<HFace*> flickerer;
-	for(int i=0; i< m_faces.size(); i++)
-		if(m_faces[i]->m_region->detectFlicker(m_faces[i]))
+    if(remove_flickering)
+    {
+		vector<HFace*> flickerer;
+		for(int i=0; i< m_faces.size(); i++)
+			if(m_faces[i]->m_region->detectFlicker(m_faces[i]))
+			{
+				flickerer.push_back(m_faces[i]);
+			}
+		while(!flickerer.empty())
 		{
-			flickerer.push_back(m_faces[i]);
+			deleteFace(flickerer.back());
+			flickerer.pop_back();
 		}
-	while(!flickerer.empty())
-	{
-		deleteFace(flickerer.back());
-		flickerer.pop_back();
-	}
+    }
 }
 
 template<typename VertexT, typename NormalT>
@@ -747,7 +750,7 @@ void HalfEdgeMesh<VertexT, NormalT>::fillHoles(int max_size)
 {
     if(!m_planesOptimized)
     {
-        cerr << "Cannot fill holes before the planes have been optimized! Aborting fillHoles.\n"; 
+        cerr << "Cannot fill holes before the planes have been optimized! Aborting fillHoles.\n";
         return;
     }
 	//holds all holes to close
@@ -759,7 +762,7 @@ void HalfEdgeMesh<VertexT, NormalT>::fillHoles(int max_size)
     {
         for(int k=0; k<3; k++)
         {
-            if((*m_faces[i])[k]->pair->used == false && (*m_faces[i])[k]->pair->face == 0 && m_faces[i]->m_region->m_inPlane)
+            if((*m_faces[i])[k]->pair->used == false && (*m_faces[i])[k]->pair->face == 0 /*&& m_faces[i]->m_region->m_inPlane*/)
             {
                 //needed for contour tracking
                 vector<HEdge*> contour;
@@ -983,14 +986,14 @@ void HalfEdgeMesh<VertexT, NormalT>::optimizePlaneIntersections()
 }
 
 template<typename VertexT, typename NormalT>
-vector<stack<HalfEdgeVertex<VertexT, NormalT>* > > HalfEdgeMesh<VertexT, NormalT>::findAllContours(float epsilon)
+vector<vector<HalfEdgeVertex<VertexT, NormalT>* > > HalfEdgeMesh<VertexT, NormalT>::findAllContours(float epsilon)
 {
-    vector<stack<HalfEdgeVertex<VertexT, NormalT>* > > contours;
+    vector<vector<HalfEdgeVertex<VertexT, NormalT>* > > contours;
     for (int i = 0; i< m_regions.size(); i++)
     {
     	if(m_regions[i]->m_inPlane)
     	{
-    		vector<stack<HalfEdgeVertex<VertexT, NormalT>* > > current_contours = m_regions[i]->getContours(epsilon);
+    		vector<vector<HalfEdgeVertex<VertexT, NormalT>* > > current_contours = m_regions[i]->getContours(epsilon);
     		contours.insert(contours.end(), current_contours.begin(), current_contours.end());
     	}
     }
@@ -1011,20 +1014,20 @@ void HalfEdgeMesh<VertexT, NormalT>::tester()
         for(int k=0; k<3; k++)
             (*m_faces[i])[k]->used=false;
 
-    vector<stack<HalfEdgeVertex<VertexT, NormalT>* > > contours = findAllContours(0.1);
+    vector<vector<HalfEdgeVertex<VertexT, NormalT>* > > contours = findAllContours(0.1);
     fstream filestr;
     filestr.open ("contours.pts", fstream::out);
     filestr<<"#X Y Z"<<endl;
     for (int i = 0; i<contours.size(); i++)
     {
-        stack<HalfEdgeVertex<VertexT, NormalT>* > contour = contours[i];
+        vector<HalfEdgeVertex<VertexT, NormalT>* > contour = contours[i];
 
-        HalfEdgeVertex<VertexT, NormalT> first = *(contour.top());
+        HalfEdgeVertex<VertexT, NormalT> first = *(contour.back());
 
         while (!contour.empty())
         {
-            filestr << contour.top()->m_position[0] << " " << contour.top()->m_position[1] << " " << contour.top()->m_position[2] << endl;
-            contour.pop();
+            filestr << contour.back()->m_position[0] << " " << contour.back()->m_position[1] << " " << contour.back()->m_position[2] << endl;
+            contour.pop_back();
         }
 
         filestr << first.m_position[0] << " " << first.m_position[1] << " " << first.m_position[2] << endl;

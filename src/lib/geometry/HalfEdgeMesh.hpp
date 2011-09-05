@@ -182,7 +182,7 @@ public:
 	 *
 	 * @param iterations	The number of iterations to use
 	 */
-	virtual void optimizePlanes(int iterations, float normalThreshold, int minRegionSize = 50, int smallRegionSize = 0);
+	virtual void optimizePlanes(int iterations, float normalThreshold, int minRegionSize = 50, int smallRegionSize = 0, bool remove_flickering = true);
 
 	/**
 	 * @brief	Deletes all faces belonging to the given region
@@ -224,7 +224,7 @@ public:
 	 *
 	 * @return 	a list of all contours
 	 */
-	virtual vector<stack<HVertex*> > findAllContours(float epsilon);
+	virtual vector<vector<HVertex*> > findAllContours(float epsilon);
 
 	/**
 	 * @brief 	Finalizes a mesh, i.e. converts the template based buffers
