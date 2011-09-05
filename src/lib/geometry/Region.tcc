@@ -29,7 +29,10 @@ vector<stack<HalfEdgeVertex<VertexT, NormalT>* > > Region<VertexT, NormalT>::get
 	vector<stack<HVertex*> > result;
 
 	//don't try to find contours of a region which wasn't dragged into a plane
-	if (!this->m_inPlane) return result;
+	if (!this->m_inPlane) 
+    {
+        return result;
+    }
 
 	for (int i = 0; i<this->m_faces.size(); i++)
 	{
@@ -103,6 +106,12 @@ NormalT Region<VertexT, NormalT>::calcNormal()
 
 	result.normalize();
 	return result;
+}
+
+template<typename VertexT, typename NormalT>
+int Region<VertexT, NormalT>::size()
+{
+	return this->m_faces.size();
 }
 
 template<typename VertexT, typename NormalT>

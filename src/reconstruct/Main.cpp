@@ -180,6 +180,7 @@ int main(int argc, char** argv)
                             options.getNormalThreshold(),
                             options.getMinPlaneSize(),
                             options.getSmallRegionThreshold() );
+        cout << "Optimizing" << endl;
     }
 
     mesh.fillHoles(options.getFillHoles());

@@ -14,6 +14,7 @@ using namespace std;
 #include <stack>
 #include <glu.h>
 #include <glut.h>
+#include <iomanip>
 
 #include "Vertex.hpp"
 #include "Normal.hpp"
@@ -23,6 +24,9 @@ using namespace std;
 //#include "HalfEdgeFace.hpp"
 #include "Region.hpp"
 
+//#ifndef DB_TESS
+//#define DB_TESS
+//#endif
 
 namespace lssr
 {
@@ -61,7 +65,7 @@ public:
      *         
      */
     //static vector<HVertex> tesselate(vector<stack<HVertex*> > borderVertices);
-    static void tesselate(vector<stack<HVertex*> > borderVertices);
+    static void tesselate(const vector<stack<HVertex*> > &borderVertices);
     
     /**
      * @brief Takes a list of contours and retesselates the area.
@@ -73,7 +77,7 @@ public:
      *         
      */
     //static vector<HVertex> tesselate(Region<VertexT, NormalT> region);
-    static void tesselate(Region<VertexT, NormalT> region);
+    static void tesselate(const Region<VertexT, NormalT> &region);
 
     /**
      * @brief blabla
@@ -90,7 +94,7 @@ public:
     static void getFinalizedTriangles(double **vertexBuffer,
                                       double **normalBuffer,
                                       double **colorBuffer,
-                                      uint8_t   **indexBuffer,
+                                      int   **indexBuffer,
                                       int *numberFaces,
                                       int *numVertices);
     
