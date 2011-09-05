@@ -31,7 +31,7 @@ vector<vector<HalfEdgeVertex<VertexT, NormalT>* > > Region<VertexT, NormalT>::ge
 	//don't try to find contours of a region which wasn't dragged into a plane
 	if (!this->m_inPlane) return result;
 
-	for (int i = 0; i<this->m_faces.size(); i++)
+	for (int i = 0; i < this->m_faces.size(); i++)
 	{
 		for (int k = 0; k < 3; k++)
 		{
@@ -39,7 +39,7 @@ vector<vector<HalfEdgeVertex<VertexT, NormalT>* > > Region<VertexT, NormalT>::ge
 			if(!current->used && (current->pair->face == 0 || current->pair->face->m_region != current->face->m_region))
 			{
 				vector<HalfEdgeVertex<VertexT, NormalT>* > contour;
-				Region<VertexT, NormalT>* region = current->face->m_region;
+				Region<VertexT, NormalT>* region = this;
 
 				HEdge* next = 0;
 				while(current->used == false)
@@ -53,9 +53,9 @@ vector<vector<HalfEdgeVertex<VertexT, NormalT>* > > Region<VertexT, NormalT>::ge
 					for(int i = 0; i<current->end->out.size(); i++)
 					{
 						if(!current->end->out[i]->used
-								&& current->end->out[i]->face && current->end->out[i]->face->m_region == region
+								&& current->end->out[i]->face && current->end->out[i]->face->m_region == this
 								&& (current->end->out[i]->pair->face == 0
-										||current->end->out[i]->pair->face  && current->end->out[i]->pair->face->m_region != region))
+										|| current->end->out[i]->pair->face  && current->end->out[i]->pair->face->m_region != this))
 
 							next = current->end->out[i];
 					}
@@ -78,7 +78,9 @@ vector<vector<HalfEdgeVertex<VertexT, NormalT>* > > Region<VertexT, NormalT>::ge
 								&& fabs(next->end->m_position[1] - current->end->m_position[1]) <= epsilon
 								&& fabs(next->end->m_position[2] - current->end->m_position[2]) <= epsilon
 						))
+						{
 							contour.pop_back();
+						}
 						current = next;
 					}
 				}
