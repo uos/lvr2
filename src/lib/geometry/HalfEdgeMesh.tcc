@@ -886,17 +886,34 @@ void HalfEdgeMesh<VertexT, NormalT>::fillHoles(int max_size)
     		HFace* f = new HFace;
     		f->m_edge = holes.back()[0];
     		HEdge* current = holes.back()[0];
-    		for(int e = 0; e<3; e++)
+    		bool cancel = false;
+    		for(int e = 0; e<3 && !cancel; e++)
     		{
+    			cancel = true;
     			for(int o = 0; o<current->end->out.size(); o++)
     				if(find(holes.back().begin(), holes.back().end(),current->end->out[o])!=holes.back().end())
+    				{
     					current->next = current->end->out[o];
+    					cancel = false;
+    				}
     			current->face = f;
     			current = current->next;
 
     		}
-    		f->m_edge->pair->face->m_region->addFace(f);
-    		m_faces.push_back(f);
+    		if(!cancel)
+    		{
+    			f->m_edge->pair->face->m_region->addFace(f);
+    			m_faces.push_back(f);
+    		}
+    		else
+    		{
+    			for(int e = 0; e<3; e++)
+    			{
+    				holes.back()[e]->face = 0;
+    				holes.back()[e]->next = 0;
+    			}
+    			delete f;
+    		}
     	}
 
     	holes.pop_back();
