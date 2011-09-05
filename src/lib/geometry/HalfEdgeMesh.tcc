@@ -631,7 +631,7 @@ void HalfEdgeMesh<VertexT, NormalT>::optimizePlanes(
 
 	for(int j = 0; j < iterations; j++)
 	{
-		cout << timestamp << "Optimizing planes. " <<  j << "th iteration." << endl;
+		cout << timestamp << "Optimizing planes. " <<  j+1 << "th iteration." << endl;
 
 		// Reset all used variables
 		for(int i=0; i < m_faces.size(); i++)
@@ -921,12 +921,6 @@ void HalfEdgeMesh<VertexT, NormalT>::fillHoles(int max_size)
 
     	holes.pop_back();
     }
-
-    for(int r=0; r < m_regions.size(); r++)
-    {
-    	if(m_regions[r]->m_inPlane)
-    		m_regions[r]->regressionPlane();
-    }
 }
 
 template<typename VertexT, typename NormalT>
@@ -1014,7 +1008,7 @@ void HalfEdgeMesh<VertexT, NormalT>::tester()
         for(int k=0; k<3; k++)
             (*m_faces[i])[k]->used=false;
 
-    vector<vector<HalfEdgeVertex<VertexT, NormalT>* > > contours = findAllContours(0.1);
+    vector<vector<HalfEdgeVertex<VertexT, NormalT>* > > contours = findAllContours(0.01);
     fstream filestr;
     filestr.open ("contours.pts", fstream::out);
     filestr<<"#X Y Z"<<endl;
