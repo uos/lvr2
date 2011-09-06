@@ -13,7 +13,7 @@ using namespace std;
 namespace lssr
 {
 
-//template<typename VertexT, typename NormalT> typedef HalfEdgeVertex<VertexT, NormalT> HVertex;
+	/* Deklaration of all static data */
 template<typename VertexT, typename NormalT> vector<HalfEdgeVertex<VertexT, NormalT> > Tesselator<VertexT, NormalT>::m_vertices;
 template<typename VertexT, typename NormalT> vector<Vertex<float> > Tesselator<VertexT, NormalT>::m_triangles;
 template<typename VertexT, typename NormalT> GLUtesselator* Tesselator<VertexT, NormalT>::m_tesselator;
@@ -23,6 +23,7 @@ template<typename VertexT, typename NormalT> int     Tesselator<VertexT, NormalT
 template<typename VertexT, typename NormalT> bool    Tesselator<VertexT, NormalT>::m_debug = true; 
 template<typename VertexT, typename NormalT> bool    Tesselator<VertexT, NormalT>::m_tesselated;
 template<typename VertexT, typename NormalT> int     Tesselator<VertexT, NormalT>::m_region;
+
 
 template<typename VertexT, typename NormalT>
 void Tesselator<VertexT, NormalT>::tesselatorBegin(GLenum which, HVertex* userData)
@@ -118,8 +119,8 @@ void Tesselator<VertexT, NormalT>::tesselatorError(GLenum errorCode)
 template<typename VertexT, typename NormalT>
 void Tesselator<VertexT, NormalT>::tesselatorAddVertex(const GLvoid *data, HVertex* userData)
 {
-    const GLdouble *ptr = (const GLdouble*)data;
-    //Vertex<double> v(*ptr, *(ptr+1), *(ptr+2));
+    const GLfloat *ptr = (const GLfloat*)data;
+    //Vertex<float> v(*ptr, *(ptr+1), *(ptr+2));
     Vertex<float> v(*ptr, *(ptr+1), *(ptr+2));
     HVertex newVertex(v);
     newVertex.m_normal = m_normal;
@@ -127,9 +128,9 @@ void Tesselator<VertexT, NormalT>::tesselatorAddVertex(const GLvoid *data, HVert
 }
 
 template<typename VertexT, typename NormalT>
-void Tesselator<VertexT, NormalT>::getFinalizedTriangles(double **vertexBuffer,
-                                                         double **normalBuffer,
-                                                         double **colorBuffer,
+void Tesselator<VertexT, NormalT>::getFinalizedTriangles(float **vertexBuffer,
+                                                         float **normalBuffer,
+                                                         float **colorBuffer,
                                                          int    **indexBuffer,
                                                          int    *lengthFaces,
                                                          int    *lengthVertices)
@@ -148,9 +149,9 @@ void Tesselator<VertexT, NormalT>::getFinalizedTriangles(double **vertexBuffer,
     int numVertices = m_triangles.size();
 
     // allocate new memory.
-    (*vertexBuffer) = new double[numVertices*3];
-    (*normalBuffer) = new double[numVertices*3];
-    (*colorBuffer)  = new double[numVertices*3];
+    (*vertexBuffer) = new float[numVertices*3];
+    (*normalBuffer) = new float[numVertices*3];
+    (*colorBuffer)  = new float[numVertices*3];
     (*indexBuffer) =  new int[numVertices];
 
 
@@ -170,7 +171,7 @@ void Tesselator<VertexT, NormalT>::getFinalizedTriangles(double **vertexBuffer,
     int usedVertices=0, usedNormals=0, usedColors=0, usedFaces=0;
     int maxColorBufferValue=0;
     
-    // keep track of already used vertices to avoid doubles.t
+    // keep track of already used vertices to avoid floats.t
     vector<Vertex<float> > vertices;
     vector<Vertex<float> >::iterator triangles    = m_triangles.begin();
     vector<Vertex<float> >::iterator trianglesEnd = m_triangles.end();
@@ -179,7 +180,7 @@ void Tesselator<VertexT, NormalT>::getFinalizedTriangles(double **vertexBuffer,
     int posArr[3]; posArr[0]=-1; posArr[1]=-1; posArr[2]=-1;
     // add all triangles and so faces to our buffers and keep track of all used parameters
     int m=0;
-    double r,g,b;
+    float r,g,b;
     int surface_class = m_region;
 
     r = fabs(cos(surface_class)); 
@@ -240,9 +241,9 @@ void Tesselator<VertexT, NormalT>::getFinalizedTriangles(double **vertexBuffer,
     if(usedFaces > 0 && usedVertices > 0)
     {
         // Copy all that stuff and resize array -- this should be improved somehow! TODO:!
-        double *newVertexBuffer = new double[usedVertices*3];
-        double *newNormalBuffer = new double[usedVertices*3];
-        double *newColorBuffer  = new double[usedVertices*3];
+        float *newVertexBuffer = new float[usedVertices*3];
+        float *newNormalBuffer = new float[usedVertices*3];
+        float *newColorBuffer  = new float[usedVertices*3];
         int    *newIndexBuffer  = new int[usedFaces*3];
 
         // use memcopy?
@@ -276,15 +277,15 @@ void Tesselator<VertexT, NormalT>::getFinalizedTriangles(double **vertexBuffer,
 
 
 template<typename VertexT, typename NormalT>
-void Tesselator<VertexT, NormalT>::tesselatorCombineVertices(GLdouble coords[3],
-							 GLdouble *vertex_data[4],
+void Tesselator<VertexT, NormalT>::tesselatorCombineVertices(GLfloat coords[3],
+							 GLfloat *vertex_data[4],
 							 GLfloat weight[4],
-							 GLdouble **dataOut,
+							 GLfloat **dataOut,
                              HVertex* userData)
 {
     
-	GLdouble *vertex = (GLdouble*) malloc(6*sizeof(GLdouble));
-    GLdouble *ptr = coords;
+	GLfloat *vertex = (GLfloat*) malloc(6*sizeof(GLfloat));
+    GLfloat *ptr = coords;
 	
 	if(!vertex)
 	{
@@ -350,13 +351,13 @@ void Tesselator<VertexT, NormalT>::tesselate(vector<vector<HVertex*> > vectorBor
     if(!m_tesselator)
     {
         cerr<<"No Tesselation Object Created. Please use Tesselator::init() before making use of Tesselator::tesselate(...). Aborting Tesselation." << endl;
-        return ; //vector<Vertex<double> >();
+        return ; //vector<Vertex<float> >();
     }
 
     if(!vectorBorderPoints.size())
     {
         //cerr<< "No points received. Aborting Tesselation." << endl;
-        return ; //vector<Vertex<double> >();
+        return ; //vector<Vertex<float> >();
     } 
     
     #ifdef DB_TESS

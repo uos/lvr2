@@ -35,6 +35,7 @@ Options::Options(int argc, char** argv) : m_descr("Supported options")
         ("rda", value<int>(&m_rda)->default_value(100), "Remove dangling artifacts, i.e. remove the n smallest not connected surfaces")
         ("planeNormalThreshold", value<float>(&m_planeNormalThreshold)->default_value(0.85), "Normal threshold for plane optimization. Default 0.85 equals about 3 degrees.")
         ("smallRegionThreshold", value<int>(&m_smallRegionThreshold)->default_value(0), "Threshold for small region removal. If 0 nothing will be deleted.")
+        ("retesselate,rt", "Retesselate regions that are in a regression plane.")
         ("colorRegions", "Color detected regions with color gradient.")
 		;
 
@@ -163,6 +164,11 @@ bool Options::optimizePlanes() const
 bool  Options::colorRegions() const
 {
     return m_variables.count("colorRegions");
+}
+
+bool Options::retesselate() const
+{
+    return m_variables.count("retesselate");
 }
 
 float Options::getNormalThreshold() const
