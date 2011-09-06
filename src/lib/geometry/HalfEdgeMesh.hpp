@@ -151,13 +151,6 @@ public:
 	virtual void flipEdge(HEdge* edge);
 
 	/**
-	 * @brief	Collapse the given face
-	 *
-	 * @param	f	The face to collapse
-	 */
-	virtual void collapseFace(HFace* f);
-
-	/**
 	 * @brief	Starts a region growing and returns the number of connected faces
 	 * 			Faces are connected means they share a common edge - a point is not
 	 *			a connection in this context
@@ -243,6 +236,12 @@ public:
 	 */
 	virtual void finalize();
 
+	/**
+	 * @brief 	Finalizes a mesh, i.e. converts the template based buffers
+	 * 			to OpenGL compatible buffers. Furthermore all regions that
+     * 			belong to a regression plane are retesselated to reduce triangles.
+	 */
+	virtual void finalizeAndRetesselate();
 
 	void fillHoles(int max_size);
 
