@@ -170,7 +170,8 @@ void Tesselator<VertexT, NormalT>::getFinalizedTriangles(double **vertexBuffer,
     int m=0;
     for(; triangles != trianglesEnd; ++triangles)
     {
-        int r,g,b, surface_class = m_region;
+        double r,g,b;
+        int surface_class = m_region;
         // try to find the new triangleVertex in the list of used vertices.
         //vector<Vertex<float> >::iterator it    = vertices.begin();
         //vector<Vertex<float> >::iterator itEnd = vertices.end();
@@ -197,9 +198,9 @@ void Tesselator<VertexT, NormalT>::getFinalizedTriangles(double **vertexBuffer,
         (*normalBuffer)[(usedVertices * 3) + 2] = m_normal[2];
        
         // TODO: remove mod33 and mod23;
-        r = fabs(cos(surface_class%33)); 
-        g = fabs(sin(surface_class%23 * 30));
-        b = fabs(sin(surface_class%23 * 2));
+        r = fabs(cos(surface_class)); 
+        g = fabs(sin(surface_class * 30));
+        b = fabs(sin(surface_class * 2));
         
         (*colorBuffer)[(usedVertices *3) + 0] = r;
         (*colorBuffer)[(usedVertices *3) + 1] = g;
@@ -322,13 +323,13 @@ void Tesselator<VertexT, NormalT>::init(void)
 
 
     /* set Properties for tesselation */
-    gluTessProperty(m_tesselator, GLU_TESS_WINDING_RULE, GLU_TESS_WINDING_POSITIVE);
+    //gluTessProperty(m_tesselator, GLU_TESS_WINDING_RULE, GLU_TESS_WINDING_POSITIVE);
     //gluTessProperty(m_tesselator, GLU_TESS_WINDING_RULE, GLU_TESS_WINDING_NEGATIVE);
     //gluTessProperty(m_tesselator, GLU_TESS_WINDING_RULE, GLU_TESS_WINDING_NONZERO);
-    //gluTessProperty(m_tesselator, GLU_TESS_WINDING_RULE, GLU_TESS_WINDING_ODD);
+    gluTessProperty(m_tesselator, GLU_TESS_WINDING_RULE, GLU_TESS_WINDING_ODD);
 	 /* Use gluTessNormal: speeds up the tessellation if the
 	  	Polygon lies on a x-y plane. and it approximatly does!*/
-	 //gluTessNormal(tesselator, 0, 0, 1);
+	 gluTessNormal(m_tesselator, 0, 0, 1);
 }
 
 template<typename VertexT, typename NormalT>
@@ -359,40 +360,48 @@ void Tesselator<VertexT, NormalT>::tesselate(const vector<stack<HVertex*> > &vec
     for(int i=0; i<vectorBorderPoints.size(); ++i)
     {
         stack<HVertex*> borderPoints = vectorBorderPoints[i];
+        #ifdef DB_TESS
         stringstream tFileName; tFileName << "region[" << setw(5) << setfill('0') 
                                           <<m_region << "]_contour[" << 
                                           setw(3) << setfill ('0') << i << "]_size["<< borderPoints.size() << "].txt";
         ofstream orgContour(tFileName.str().c_str());
-        HVertex* contourBegin = borderPoints.top();
+        #endif
 
-        /* define the contour by vertices */
         if(borderPoints.size() <3 )
         {
-//            cout << "BorderContains less than 3 Points!. Aborting.\n";
+            #ifdef DB_TESS
+            cout << "BorderContains less than 3 Points!. Aborting.\n";
             orgContour.close();
             remove(tFileName.str().c_str());
-            continue;
+            #endif
+            continue; 
         }
+        
+        HVertex* contourBegin = borderPoints.top();
         
         // Begin Contour
         gluTessBeginContour(m_tesselator);
         
         while(borderPoints.size() > 0)
         {
+            #ifdef DB_TESS
+            orgContour << (borderPoints.top())->m_position[0] << " " <<  (borderPoints.top())->m_position[1] << " " << (borderPoints.top())->m_position[2] << endl;
+            #endif
+            
             GLdouble* vertex = new GLdouble[3];
             vertex[0] = (borderPoints.top())->m_position[0];
             vertex[1] = (borderPoints.top())->m_position[1];
             vertex[2] = (borderPoints.top())->m_position[2];
-            orgContour << (borderPoints.top())->m_position[0] << " " <<  (borderPoints.top())->m_position[1] << " " << (borderPoints.top())->m_position[2] << endl;
             borderPoints.pop();
-            /* Add the vertex to the Contour */
             gluTessVertex(m_tesselator, vertex, vertex);
         }
 
         /* End Contour */
         gluTessEndContour(m_tesselator);
+        #ifdef DB_TESS
         orgContour << contourBegin->m_position[0] << " " << contourBegin->m_position[1] << " " << contourBegin->m_position[2];
         orgContour.close();
+        #endif
     }
 
  /* End Tesselation */
@@ -401,7 +410,7 @@ void Tesselator<VertexT, NormalT>::tesselate(const vector<stack<HVertex*> > &vec
  m_tesselated = true;
  gluDeleteTess(m_tesselator);
  m_tesselator = 0;
- return ;//m_triangles;
+ return;
 }
 
 template<typename VertexT, typename NormalT>
