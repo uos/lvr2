@@ -334,7 +334,7 @@ void Tesselator<VertexT, NormalT>::init(void)
 
 template<typename VertexT, typename NormalT>
 //vector<HalfEdgeVertex<VertexT, NormalT> > Tesselator<VertexT, NormalT>::tesselate(vector<stack<HVertex*> > vectorBorderPoints)
-void Tesselator<VertexT, NormalT>::tesselate(const vector<stack<HVertex*> > &vectorBorderPoints)
+void Tesselator<VertexT, NormalT>::tesselate(vector<vector<HVertex*> > vectorBorderPoints)
 {
     if(!m_tesselator)
     {
@@ -359,7 +359,7 @@ void Tesselator<VertexT, NormalT>::tesselate(const vector<stack<HVertex*> > &vec
     
     for(int i=0; i<vectorBorderPoints.size(); ++i)
     {
-        stack<HVertex*> borderPoints = vectorBorderPoints[i];
+        vector<HVertex*> borderPoints = vectorBorderPoints[i];
         #ifdef DB_TESS
         stringstream tFileName; tFileName << "region[" << setw(5) << setfill('0') 
                                           <<m_region << "]_contour[" << 
@@ -371,13 +371,14 @@ void Tesselator<VertexT, NormalT>::tesselate(const vector<stack<HVertex*> > &vec
         {
             #ifdef DB_TESS
             cout << "BorderContains less than 3 Points!. Aborting.\n";
+				cout << "i: " << i << " size:" << borderPoints.size() << endl;
             orgContour.close();
-            remove(tFileName.str().c_str());
+            //remove(tFileName.str().c_str());
             #endif
             continue; 
         }
         
-        HVertex* contourBegin = borderPoints.top();
+        HVertex* contourBegin = borderPoints.back();
         
         // Begin Contour
         gluTessBeginContour(m_tesselator);
@@ -385,14 +386,14 @@ void Tesselator<VertexT, NormalT>::tesselate(const vector<stack<HVertex*> > &vec
         while(borderPoints.size() > 0)
         {
             #ifdef DB_TESS
-            orgContour << (borderPoints.top())->m_position[0] << " " <<  (borderPoints.top())->m_position[1] << " " << (borderPoints.top())->m_position[2] << endl;
+            orgContour << (borderPoints.back())->m_position[0] << " " <<  (borderPoints.back())->m_position[1] << " " << (borderPoints.back())->m_position[2] << endl;
             #endif
             
             GLdouble* vertex = new GLdouble[3];
-            vertex[0] = (borderPoints.top())->m_position[0];
-            vertex[1] = (borderPoints.top())->m_position[1];
-            vertex[2] = (borderPoints.top())->m_position[2];
-            borderPoints.pop();
+            vertex[0] = (borderPoints.back())->m_position[0];
+            vertex[1] = (borderPoints.back())->m_position[1];
+            vertex[2] = (borderPoints.back())->m_position[2];
+            borderPoints.pop_back();
             gluTessVertex(m_tesselator, vertex, vertex);
         }
 
@@ -415,11 +416,12 @@ void Tesselator<VertexT, NormalT>::tesselate(const vector<stack<HVertex*> > &vec
 
 template<typename VertexT, typename NormalT>
 //vector<HalfEdgeVertex<VertexT, NormalT> > Tesselator<VertexT, NormalT>::tesselate(Region<VertexT, NormalT> region)
-void Tesselator<VertexT, NormalT>::tesselate(const Region<VertexT, NormalT> &region)
+void Tesselator<VertexT, NormalT>::tesselate(Region<VertexT, NormalT> *region)
 {
-    m_region = region.m_region_number;
-    m_normal = region.calcNormal(); //.m_normal;
-    tesselate(region.getContours(0.1));
+    m_region = region->m_region_number;
+    m_normal = region->calcNormal(); //.m_normal;
+    //tesselate(region.getContours(0.01));
+    cout << "Anzahl Contouren nach kopie: " << region->getContours(0.01).size() << endl;
 }
 
 } /* namespace lssr */
