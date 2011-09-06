@@ -11,7 +11,6 @@
 using namespace std;
 
 #include <vector>
-#include <stack>
 #include <glu.h>
 #include <glut.h>
 #include <iomanip>
@@ -57,7 +56,7 @@ public:
     /**
      * @brief Takes a list of contours and retesselates the area.
      *
-     * @param borderVertices A vector of stacks containing the contours.
+     * @param borderVertices A vector of vectos containing the contours.
      *                       The first stack is handled as the outer contour,
      *                       the rest are inner contours.
      *
@@ -65,7 +64,7 @@ public:
      *         
      */
     //static vector<HVertex> tesselate(vector<stack<HVertex*> > borderVertices);
-    static void tesselate(const vector<stack<HVertex*> > &borderVertices);
+    static void tesselate(vector<vector<HVertex*> > borderVertices);
     
     /**
      * @brief Takes a list of contours and retesselates the area.
@@ -77,7 +76,7 @@ public:
      *         
      */
     //static vector<HVertex> tesselate(Region<VertexT, NormalT> region);
-    static void tesselate(const Region<VertexT, NormalT> &region);
+    static void tesselate(Region<VertexT, NormalT> *region);
 
     /**
      * @brief blabla

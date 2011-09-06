@@ -69,7 +69,7 @@ public:
 	 *
 	 * @return 	a list of all contours
 	 */
-	virtual vector<stack<HVertex*> > getContours(float epsilon);
+	virtual vector<vector<HVertex*> > getContours(float epsilon);
 
 	/**
 	 * @brief caluclates a regression plane for the region and fits all faces into this plane

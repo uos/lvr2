@@ -11,7 +11,7 @@ include_directories(${LSSR_SOURCE_DIR}/ext/stann)
 include_directories(${LSSR_SOURCE_DIR})
 include_directories(${LSSR_SOURCE_DIR}/src/lib)
 
-set(ADDITIONAL_COMPILER_FLAGS "-g -O0 -msse3 -fpermissive -Wno-deprecated -Wno-write-strings")
+set(ADDITIONAL_COMPILER_FLAGS "-g -O4 -msse3 -fpermissive -Wno-deprecated -Wno-write-strings")
 
 ###############################################################
 # EXTERNAL LIBRARIES

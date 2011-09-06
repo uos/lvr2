@@ -612,8 +612,8 @@ void HalfEdgeMesh<VertexT, NormalT>::optimizePlanes(
         int iterations,
         float angle,
         int min_region_size,
-        int small_region_size
-        )
+        int small_region_size,
+        bool remove_flickering)
 {
     cout << timestamp << "Starting plane optimization with threshold " << angle << endl;
 
@@ -629,7 +629,7 @@ void HalfEdgeMesh<VertexT, NormalT>::optimizePlanes(
 
 	for(int j = 0; j < iterations; j++)
 	{
-		cout << timestamp << "Optimizing planes. " <<  j << "th iteration." << endl;
+		cout << timestamp << "Optimizing planes. " <<  j+1 << "th iteration." << endl;
 
 		// Reset all used variables
 		for(int i=0; i < m_faces.size(); i++)
@@ -687,21 +687,24 @@ void HalfEdgeMesh<VertexT, NormalT>::optimizePlanes(
 	    }
 	}
 
-//<<<<<<< HEAD
-    m_planesOptimized = true;
-//=======
-	//Delete flickering faces
-	vector<HFace*> flickerer;
-	for(int i=0; i< m_faces.size(); i++)
-		if(m_faces[i]->m_region->detectFlicker(m_faces[i]))
+    //Delete flickering faces
+    if(remove_flickering)
+    {
+		vector<HFace*> flickerer;
+		for(int i=0; i< m_faces.size(); i++)
+			if(m_faces[i]->m_region->detectFlicker(m_faces[i]))
+			{
+				flickerer.push_back(m_faces[i]);
+			}
+
+		while(!flickerer.empty())
 		{
-			flickerer.push_back(m_faces[i]);
+			deleteFace(flickerer.back());
+			flickerer.pop_back();
 		}
-	while(!flickerer.empty())
-	{
-		deleteFace(flickerer.back());
-		flickerer.pop_back();
-	}
+    }
+	 
+	 m_planesOptimized = true;
 }
 
 template<typename VertexT, typename NormalT>
@@ -746,7 +749,7 @@ void HalfEdgeMesh<VertexT, NormalT>::fillHoles(int max_size)
 {
     if(!m_planesOptimized)
     {
-        cerr << "Cannot fill holes before the planes have been optimized! Aborting fillHoles.\n"; 
+        cerr << "Cannot fill holes before the planes have been optimized! Aborting fillHoles.\n";
         return;
     }
 	//holds all holes to close
@@ -758,7 +761,7 @@ void HalfEdgeMesh<VertexT, NormalT>::fillHoles(int max_size)
     {
         for(int k=0; k<3; k++)
         {
-            if((*m_faces[i])[k]->pair->used == false && (*m_faces[i])[k]->pair->face == 0 && m_faces[i]->m_region->m_inPlane)
+            if((*m_faces[i])[k]->pair->used == false && (*m_faces[i])[k]->pair->face == 0 /*&& m_faces[i]->m_region->m_inPlane*/)
             {
                 //needed for contour tracking
                 vector<HEdge*> contour;
@@ -885,26 +888,37 @@ void HalfEdgeMesh<VertexT, NormalT>::fillHoles(int max_size)
     		HFace* f = new HFace;
     		f->m_edge = holes.back()[0];
     		HEdge* current = holes.back()[0];
-    		for(int e = 0; e<3; e++)
+    		bool cancel = false;
+    		for(int e = 0; e<3 && !cancel; e++)
     		{
+    			cancel = true;
     			for(int o = 0; o<current->end->out.size(); o++)
     				if(find(holes.back().begin(), holes.back().end(),current->end->out[o])!=holes.back().end())
+    				{
     					current->next = current->end->out[o];
+    					cancel = false;
+    				}
     			current->face = f;
     			current = current->next;
 
     		}
-    		f->m_edge->pair->face->m_region->addFace(f);
-    		m_faces.push_back(f);
+    		if(!cancel)
+    		{
+    			f->m_edge->pair->face->m_region->addFace(f);
+    			m_faces.push_back(f);
+    		}
+    		else
+    		{
+    			for(int e = 0; e<3; e++)
+    			{
+    				holes.back()[e]->face = 0;
+    				holes.back()[e]->next = 0;
+    			}
+    			delete f;
+    		}
     	}
 
     	holes.pop_back();
-    }
-
-    for(int r=0; r < m_regions.size(); r++)
-    {
-    	if(m_regions[r]->m_inPlane)
-    		m_regions[r]->regressionPlane();
     }
 }
 
@@ -965,14 +979,14 @@ void HalfEdgeMesh<VertexT, NormalT>::optimizePlaneIntersections()
 }
 
 template<typename VertexT, typename NormalT>
-vector<stack<HalfEdgeVertex<VertexT, NormalT>* > > HalfEdgeMesh<VertexT, NormalT>::findAllContours(float epsilon)
+vector<vector<HalfEdgeVertex<VertexT, NormalT>* > > HalfEdgeMesh<VertexT, NormalT>::findAllContours(float epsilon)
 {
-    vector<stack<HalfEdgeVertex<VertexT, NormalT>* > > contours;
+    vector<vector<HalfEdgeVertex<VertexT, NormalT>* > > contours;
     for (int i = 0; i< m_regions.size(); i++)
     {
     	if(m_regions[i]->m_inPlane)
     	{
-    		vector<stack<HalfEdgeVertex<VertexT, NormalT>* > > current_contours = m_regions[i]->getContours(epsilon);
+    		vector<vector<HalfEdgeVertex<VertexT, NormalT>* > > current_contours = m_regions[i]->getContours(epsilon);
     		contours.insert(contours.end(), current_contours.begin(), current_contours.end());
     	}
     }
@@ -993,23 +1007,24 @@ void HalfEdgeMesh<VertexT, NormalT>::tester()
         for(int k=0; k<3; k++)
             (*m_faces[i])[k]->used=false;
 
-    vector<stack<HalfEdgeVertex<VertexT, NormalT>* > > contours = findAllContours(0.1);
+    vector<vector<HalfEdgeVertex<VertexT, NormalT>* > > contours = findAllContours(0.01);
     fstream filestr;
     filestr.open ("contours.pts", fstream::out);
     filestr<<"#X Y Z"<<endl;
     for (int i = 0; i<contours.size(); i++)
     {
-        stack<HalfEdgeVertex<VertexT, NormalT>* > contour = contours[i];
+        vector<HalfEdgeVertex<VertexT, NormalT>* > contour = contours[i];
 
-        HalfEdgeVertex<VertexT, NormalT> first = *(contour.top());
+        HalfEdgeVertex<VertexT, NormalT> first = *(contour.back());
 
         while (!contour.empty())
         {
-            filestr << contour.top()->m_position[0] << " " << contour.top()->m_position[1] << " " << contour.top()->m_position[2] << endl;
-            contour.pop();
+            filestr << contour.back()->m_position[0] << " " << contour.back()->m_position[1] << " " << contour.back()->m_position[2] << endl;
+            contour.pop_back();
         }
 
         filestr << first.m_position[0] << " " << first.m_position[1] << " " << first.m_position[2] << endl;
+		  filestr << "## Contour End. " << endl;
 
         filestr<<endl<<endl;
 
@@ -1124,12 +1139,24 @@ void HalfEdgeMesh<VertexT, NormalT>::finalizeAndRetesselate()
     double **n  = new double*;
     double **c  = new double*;
     int    **in = new int*;
+	 int mMaxFaces = 0;
+	 int mMaxFaceRegion = 0;
     for(int i=0; i<m_regions.size(); ++i)
-    {
-        (m_regions[i])->regressionPlane();
-        if(!m_regions[i]->m_inPlane)
-        {
-            cout << "Not In Plane" << endl;
+	 {
+		 if(m_regions[i]->size() > mMaxFaces)
+		 {
+			 mMaxFaces = m_regions[i]->size();
+			 mMaxFaceRegion = i;
+		 }
+	 }
+	 int i = mMaxFaceRegion;
+    //for(int i=0; i<m_regions.size(); ++i)
+    //{
+        //(m_regions[i])->regressionPlane();
+        //if(!m_regions[i]->m_inPlane)
+        //{
+			//  cout << "nip\n";
+			  /*
             double  r,g,b;
             int surface_class = m_regions[i]->m_region_number;
             r = fabs(cos(surface_class)); 
@@ -1139,41 +1166,54 @@ void HalfEdgeMesh<VertexT, NormalT>::finalizeAndRetesselate()
             {
                 for(int k=0; k<3; k++)
                 {
-                    this->m_vertexBuffer[j + nPointsUsed + k+0] = (*m_regions[i]->m_faces[j])(k)->m_position.x;
-                    this->m_vertexBuffer[j + nPointsUsed + k+1] = (*m_regions[i]->m_faces[j])(k)->m_position.y;
-                    this->m_vertexBuffer[j + nPointsUsed + k+2] = (*m_regions[i]->m_faces[j])(k)->m_position.z;
+                    this->m_vertexBuffer[nPointsUsed + 0] = (*m_regions[i]->m_faces[j])(k)->m_position.x;
+                    this->m_vertexBuffer[nPointsUsed + 1] = (*m_regions[i]->m_faces[j])(k)->m_position.y;
+                    this->m_vertexBuffer[nPointsUsed + 2] = (*m_regions[i]->m_faces[j])(k)->m_position.z;
                     
-                    this->m_normalBuffer[j + nPointsUsed + k+0] = (*m_regions[i]->m_faces[j])(k)->m_normal[0];
-                    this->m_normalBuffer[j + nPointsUsed + k+1] = (*m_regions[i]->m_faces[j])(k)->m_normal[1];
-                    this->m_normalBuffer[j + nPointsUsed + k+2] = (*m_regions[i]->m_faces[j])(k)->m_normal[2];
+                    //this->m_normalBuffer[j + nPointsUsed + k+0] = (m_regions[i]->m_faces[j])->getFaceNormal()[0];
+                    //this->m_normalBuffer[j + nPointsUsed + k+1] = (m_regions[i]->m_faces[j])->getFaceNormal()[1];
+                    //this->m_normalBuffer[j + nPointsUsed + k+2] = (m_regions[i]->m_faces[j])->getFaceNormal()[2];
                     
-                    this->m_colorBuffer[j + nPointsUsed + 0] = r;
-                    this->m_colorBuffer[j + nPointsUsed + 1] = g;
-                    this->m_colorBuffer[j + nPointsUsed + 2] = b;
+						  this->m_normalBuffer[nPointsUsed + 0] = (*m_regions[i]->m_faces[j])(k)->m_normal[0];
+                    this->m_normalBuffer[nPointsUsed + 1] = (*m_regions[i]->m_faces[j])(k)->m_normal[1];
+                    this->m_normalBuffer[nPointsUsed + 2] = (*m_regions[i]->m_faces[j])(k)->m_normal[2];
+                    
+                    this->m_colorBuffer[nPointsUsed + 0] = r;
+                    this->m_colorBuffer[nPointsUsed + 1] = g;
+                    this->m_colorBuffer[nPointsUsed + 2] = b;
                     nPointsUsed += 3;
                 }
-                this->m_indexBuffer[j+nIndizesUsed+0] = j+0;
-                this->m_indexBuffer[j+nIndizesUsed+1] = j+1;
-                this->m_indexBuffer[j+nIndizesUsed+2] = j+2;
+                this->m_indexBuffer[nIndizesUsed+0] = nIndizesUsed;
+                this->m_indexBuffer[nIndizesUsed+1] = 1+nIndizesUsed;
+                this->m_indexBuffer[nIndizesUsed+2] = 2+nIndizesUsed;
                 nIndizesUsed += 3;
             }
-        } else 
-        {
-            cout << "In Plane" << endl;
+				*/
+        //}  else 
+        //{
+	 			cout << "I: " << i << endl;
+            cout << "In Plane: " << m_regions[i]->m_inPlane << endl;
             Tesselator<VertexT, NormalT>::init();
-            Tesselator<VertexT, NormalT>::tesselate(*(m_regions[i]));
+            cout << "Anzahl Conturen: " << (*m_regions[i]).getContours(0.01).size() << endl;
+				
+				//    Reset all used variables
+					 for(int j=0; j<m_faces.size(); j++)
+						  for(int k=0; k<3; k++)
+								(*m_faces[j])[k]->used=false;
+
+            Tesselator<VertexT, NormalT>::tesselate(m_regions[i]);
             Tesselator<VertexT, NormalT>::getFinalizedTriangles(v, n, c, in, newIndex, newPoints);
             
             if(*newIndex > 0 && *newPoints > 0)
             {
-                for(int j=0; j<*newPoints; ++j)
+                for(int j=0; j< (*newPoints); ++j)
                 {
                     this->m_vertexBuffer[j+nPointsUsed] = (*v)[j];
                     this->m_normalBuffer[j+nPointsUsed] = (*n)[j];
                     this->m_colorBuffer[ j+nPointsUsed] = (*c)[j];
                 }
 
-                for(int j=0; j<*newIndex; ++j)
+                for(int j=0; j < (*newIndex); ++j)
                 {
                     this->m_indexBuffer[j+nIndizesUsed] = ((*in)[j])+nIndizesUsed;
                 }
@@ -1185,8 +1225,8 @@ void HalfEdgeMesh<VertexT, NormalT>::finalizeAndRetesselate()
                 delete (*n);
                 delete (*in); 
             }
-        }
-    }
+        //} 
+    //}
     delete newIndex;
     delete newPoints;
 	this->m_nVertices = nPointsUsed/3;
@@ -1194,7 +1234,7 @@ void HalfEdgeMesh<VertexT, NormalT>::finalizeAndRetesselate()
 	this->m_finalized = true; 
     cout << " Done. \n\t[" << nPointsUsed << "] Points Used.\n\t[" << nIndizesUsed << "] Indizes Used.\n\t[" << this->m_nVertices << "] m_nVertices.\n\t[" << this->m_nFaces << "] m_nFaces.\n";
     /*
-    for(int i=0; i<nPointsUsed-2; i++)
+	 for(int i=0; i<nPointsUsed-2; i++)
     {
         cout << "Vertex: ";
         cout << this->m_vertexBuffer[i] << " ";
@@ -1209,8 +1249,6 @@ void HalfEdgeMesh<VertexT, NormalT>::finalizeAndRetesselate()
         cout << this->m_normalBuffer[i+1] << " ";
         cout << this->m_normalBuffer[i+2] << " " << endl;
     }
-    */
-    /*
     cout << "POOOINTS : " << nPointsUsed << endl;
     for(int i=0; i<nIndizesUsed; i++)
     {
@@ -1225,7 +1263,7 @@ void HalfEdgeMesh<VertexT, NormalT>::finalizeAndRetesselate()
         cout << this->m_vertexBuffer[this->m_indexBuffer[i] *3 + 2] << " " << this->m_indexBuffer[i] *3 + 2 << " ";
         cout << endl;
     }
-    */
+	 */
 }
 
 } // namespace lssr
