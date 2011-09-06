@@ -48,23 +48,26 @@ void Tesselator<VertexT, NormalT>::tesselatorEnd()
     
     if(m_primitive == GL_TRIANGLES)
     {
-        for(int i=0; i<m_vertices.size(); ++i)
+        for(int i=0; i<m_vertices.size() / 3; ++i)
         {
-            m_triangles.push_back((m_vertices[i]).m_position);
+            m_triangles.push_back((m_vertices[i*3+2]).m_position);
+            m_triangles.push_back((m_vertices[i*3+1]).m_position);
+            m_triangles.push_back((m_vertices[i*3+0]).m_position);
 
             #ifdef DB_TESS
                 tess << m_vertices[i].m_position[0] << " " << m_vertices[i].m_position[1] << " " << m_vertices[i].m_position[2] << endl;
                 if((i+1)%3==0 && i != 0)
                     tess << m_vertices[i-2].m_position[0] << " " << m_vertices[i-2].m_position[1] << " " << m_vertices[i-2].m_position[2] << "\n#EndTriangle<<\n\n";
             #endif
-        }
+        } 
+
     } else if(m_primitive == GL_TRIANGLE_FAN)
     {
         for(int i=0; i<m_vertices.size()-2; ++i)
         {
-            m_triangles.push_back((m_vertices[0]).m_position);
-            m_triangles.push_back((m_vertices[i+1]).m_position);
             m_triangles.push_back((m_vertices[i+2]).m_position);
+            m_triangles.push_back((m_vertices[i+1]).m_position);
+            m_triangles.push_back((m_vertices[0]).m_position);
     
             #ifdef DB_TESS
             tess << m_vertices[0].m_position[0]   << " " << m_vertices[0].m_position[1]   << " " << m_vertices[0].m_position[2]   << endl
@@ -72,14 +75,22 @@ void Tesselator<VertexT, NormalT>::tesselatorEnd()
                  << m_vertices[i+2].m_position[0] << " " << m_vertices[i+2].m_position[1] << " " << m_vertices[i+2].m_position[2] << endl
                  << m_vertices[0].m_position[0]   << " " << m_vertices[0].m_position[1]   << " " << m_vertices[0].m_position[2] << "\n#EndTriangle<<\n\n";
             #endif
-        }
+        } 
     } else if(m_primitive == GL_TRIANGLE_STRIP)
     {
         for(int i=0; i<m_vertices.size()-2; ++i)
         {
-            m_triangles.push_back((m_vertices[i]).m_position);
-            m_triangles.push_back((m_vertices[i+1]).m_position);
-            m_triangles.push_back((m_vertices[i+2]).m_position);
+			   if(i%2 ==  0)
+				{
+					m_triangles.push_back((m_vertices[i+2]).m_position);
+					m_triangles.push_back((m_vertices[i+1]).m_position);
+					m_triangles.push_back((m_vertices[i]).m_position);
+				} else
+				{
+					m_triangles.push_back((m_vertices[i]).m_position);
+					m_triangles.push_back((m_vertices[i+1]).m_position);
+					m_triangles.push_back((m_vertices[i+2]).m_position);
+				}
             
             #ifdef DB_TESS
             tess << m_vertices[i].m_position[0]   << " " << m_vertices[i].m_position[1]   << " " << m_vertices[i].m_position[2]   << endl
@@ -168,47 +179,46 @@ void Tesselator<VertexT, NormalT>::getFinalizedTriangles(double **vertexBuffer,
     int posArr[3]; posArr[0]=-1; posArr[1]=-1; posArr[2]=-1;
     // add all triangles and so faces to our buffers and keep track of all used parameters
     int m=0;
+    double r,g,b;
+    int surface_class = m_region;
+
+    r = fabs(cos(surface_class)); 
+    g = fabs(sin(surface_class * 30));
+    b = fabs(sin(surface_class * 2));
     for(; triangles != trianglesEnd; ++triangles)
     {
-        double r,g,b;
-        int surface_class = m_region;
         // try to find the new triangleVertex in the list of used vertices.
-        //vector<Vertex<float> >::iterator it    = vertices.begin();
-        //vector<Vertex<float> >::iterator itEnd = vertices.end();
-        //int pos=0;
-        //while(it != itEnd && *it != *triangles) 
-        //{
-        //    it++;
-        //    pos++;
-        //}
-        //if(it != itEnd)
-        //{
-        //    posArr[m] = pos;
-        //} else
-        //{
-            // vertex was not used before so store it
-        vertices.push_back(*triangles);
-        
-        (*vertexBuffer)[(usedVertices * 3) + 0] = (*triangles)[0]; 
-        (*vertexBuffer)[(usedVertices * 3) + 1] = (*triangles)[1];
-        (*vertexBuffer)[(usedVertices * 3) + 2] = (*triangles)[2];
+        vector<Vertex<float> >::iterator it    = vertices.begin();
+        vector<Vertex<float> >::iterator itEnd = vertices.end();
+        int pos=0;
+        while(it != itEnd && *it != *triangles) 
+        {
+            it++;
+            pos++;
+        }
+        if(it != itEnd)
+        {
+            posArr[m] = pos;
+        } else
+        {
+			  // vertex was not used before so store it
+			  vertices.push_back(*triangles);
+			  
+			  (*vertexBuffer)[(usedVertices * 3) + 0] = (*triangles)[0]; 
+			  (*vertexBuffer)[(usedVertices * 3) + 1] = (*triangles)[1];
+			  (*vertexBuffer)[(usedVertices * 3) + 2] = (*triangles)[2];
 
-        (*normalBuffer)[(usedVertices * 3) + 0] = m_normal[0];
-        (*normalBuffer)[(usedVertices * 3) + 1] = m_normal[1];
-        (*normalBuffer)[(usedVertices * 3) + 2] = m_normal[2];
-       
-        // TODO: remove mod33 and mod23;
-        r = fabs(cos(surface_class)); 
-        g = fabs(sin(surface_class * 30));
-        b = fabs(sin(surface_class * 2));
-        
-        (*colorBuffer)[(usedVertices *3) + 0] = r;
-        (*colorBuffer)[(usedVertices *3) + 1] = g;
-        (*colorBuffer)[(usedVertices *3) + 2] = b;
-        //cout << "Color: " << r << " " << g << " " << b << endl;
-        posArr[m] = usedVertices;
-        usedVertices++;
-        //}
+			  (*normalBuffer)[(usedVertices * 3) + 0] = m_normal[0];
+			  (*normalBuffer)[(usedVertices * 3) + 1] = m_normal[1];
+			  (*normalBuffer)[(usedVertices * 3) + 2] = m_normal[2];
+			  
+			  (*colorBuffer)[(usedVertices *3) + 0] = r;
+			  (*colorBuffer)[(usedVertices *3) + 1] = g;
+			  (*colorBuffer)[(usedVertices *3) + 2] = b;
+
+			  posArr[m] = usedVertices;
+			  usedVertices++;
+        }
         m++;
         
         if(m == 3) // we added 3 vertices therefore a whole face!!
@@ -216,10 +226,12 @@ void Tesselator<VertexT, NormalT>::getFinalizedTriangles(double **vertexBuffer,
             (*indexBuffer)[(usedFaces * 3) + 0] = posArr[0]; 
             (*indexBuffer)[(usedFaces * 3) + 1] = posArr[1];
             (*indexBuffer)[(usedFaces * 3) + 2] = posArr[2];
-            //cout << "v1: " << (*vertexBuffer)[posArr[0]] << " " << (*vertexBuffer)[posArr[0]+1] << " " << (*vertexBuffer)[posArr[0]+2] << "\n"; 
-            //cout << "v2: " << (*vertexBuffer)[posArr[1]] << " " << (*vertexBuffer)[posArr[1]+1] << " " << (*vertexBuffer)[posArr[1]+2] << "\n"; 
-            //cout << "v3: " << (*vertexBuffer)[posArr[2]] << " " << (*vertexBuffer)[posArr[2]+1] << " " << (*vertexBuffer)[posArr[2]+2] << "\n"; 
-            //cout << "positions: " << posArr[0] << " " << posArr[1] << " " << posArr[2] << endl;
+				#ifdef DB_TESS
+            cout << "v1: " << (*vertexBuffer)[posArr[0]] << " " << (*vertexBuffer)[posArr[0]+1] << " " << (*vertexBuffer)[posArr[0]+2] << "\n"; 
+            cout << "v2: " << (*vertexBuffer)[posArr[1]] << " " << (*vertexBuffer)[posArr[1]+1] << " " << (*vertexBuffer)[posArr[1]+2] << "\n"; 
+            cout << "v3: " << (*vertexBuffer)[posArr[2]] << " " << (*vertexBuffer)[posArr[2]+1] << " " << (*vertexBuffer)[posArr[2]+2] << "\n"; 
+            cout << "positions: " << posArr[0] << " " << posArr[1] << " " << posArr[2] << endl;
+				#endif
             usedFaces++;
             m=0;
         }
@@ -257,7 +269,6 @@ void Tesselator<VertexT, NormalT>::getFinalizedTriangles(double **vertexBuffer,
     }
     *lengthVertices = usedVertices*3;
     *lengthFaces = usedFaces*3;
-    cout << "Retesselation Complete. " << usedVertices << " Vertices. " << usedFaces << " Faces.\n";
     #ifdef DB_TESS
     cout << "Retesselation Complete. " << usedVertices << " Vertices. " << usedFaces << " Faces.\n";
     #endif
@@ -329,7 +340,7 @@ void Tesselator<VertexT, NormalT>::init(void)
     gluTessProperty(m_tesselator, GLU_TESS_WINDING_RULE, GLU_TESS_WINDING_ODD);
 	 /* Use gluTessNormal: speeds up the tessellation if the
 	  	Polygon lies on a x-y plane. and it approximatly does!*/
-	 gluTessNormal(m_tesselator, 0, 0, 1);
+	 //gluTessNormal(m_tesselator, 0, 0, 1);
 }
 
 template<typename VertexT, typename NormalT>
@@ -420,9 +431,43 @@ void Tesselator<VertexT, NormalT>::tesselate(Region<VertexT, NormalT> *region)
 {
     m_region = region->m_region_number;
     m_normal = region->calcNormal(); //.m_normal;
-    //tesselate(region.getContours(0.01));
-    cout << "Anzahl Contouren nach kopie: " << region->getContours(0.01).size() << endl;
+    tesselate(region->getContours(0.01));
+    //cout << "Anzahl Contouren nach kopie: " << region->getContours(0.01).size() << endl;
 }
 
 } /* namespace lssr */
 #endif /* TESSELATOR_C */
+
+
+/** DCC:
+	 for(int i=0; i<nPointsUsed-2; i++)
+    {
+        cout << "Vertex: ";
+        cout << this->m_vertexBuffer[i] << " ";
+        cout << this->m_vertexBuffer[i+1] << " ";
+        cout << this->m_vertexBuffer[i+2] << " " << endl;
+        cout << "Color: ";
+        cout << this->m_colorBuffer[i] << " ";
+        cout << this->m_colorBuffer[i+1] << " ";
+        cout << this->m_colorBuffer[i+2] << " " << endl;
+        cout << "Normal: ";
+        cout << this->m_normalBuffer[i] << " ";
+        cout << this->m_normalBuffer[i+1] << " ";
+        cout << this->m_normalBuffer[i+2] << " " << endl;
+    }
+    cout << "POOOINTS : " << nPointsUsed << endl;
+    for(int i=0; i<nIndizesUsed; i++)
+    {
+        cout << "Index: ";
+        cout << this->m_indexBuffer[i] << " " << endl;
+    }
+    cout << "FIIIIIIILE" << endl;
+    for(int i=0; i<nIndizesUsed; i++)
+    {
+        cout << this->m_vertexBuffer[this->m_indexBuffer[i] *3 + 0] << " " << this->m_indexBuffer[i] *3 + 0 << " ";
+        cout << this->m_vertexBuffer[this->m_indexBuffer[i] *3 + 1] << " " << this->m_indexBuffer[i] *3 + 1 << " ";
+        cout << this->m_vertexBuffer[this->m_indexBuffer[i] *3 + 2] << " " << this->m_indexBuffer[i] *3 + 2 << " ";
+        cout << endl;
+    }
+
+  */
