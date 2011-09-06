@@ -81,7 +81,7 @@ public:
     /**
      * @brief blabla
      *
-     * @param vertices a double array containing all vertices.
+     * @param vertices a float array containing all vertices.
      * @param vLength  the length of the vertice array. /3 == numberVertices
      * @param faces    list of faces. this is just an indexlist pointing to the vertices array.
      *                 for face i: vertices[i+0] == first vertex for this face.
@@ -90,9 +90,9 @@ public:
      *
      *
      */
-    static void getFinalizedTriangles(double **vertexBuffer,
-                                      double **normalBuffer,
-                                      double **colorBuffer,
+    static void getFinalizedTriangles(float **vertexBuffer,
+                                      float **normalBuffer,
+                                      float **colorBuffer,
                                       int   **indexBuffer,
                                       int *numberFaces,
                                       int *numVertices);
@@ -128,10 +128,10 @@ public:
     /**
      * @Brief Callback function
      */
-    static void tesselatorCombineVertices(GLdouble coords[3],
-							 GLdouble *vertex_data[4],
+    static void tesselatorCombineVertices(GLfloat coords[3],
+							 GLfloat *vertex_data[4],
 							 GLfloat weight[4],
-							 GLdouble **dataOut,
+							 GLfloat **dataOut,
                              HVertex* userData);
 
     static bool   m_tesselated;

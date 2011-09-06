@@ -112,6 +112,11 @@ public:
 	int     getKd() const;
 
 	/**
+	  * @brief Return whether the mesh should be retesselated or not.
+	  */
+	bool	  retesselate() const;
+
+	/**
 	 * @brief	Returns the output file name
 	 */
 	string 	getInputFileName() const;
@@ -197,6 +202,9 @@ private:
 	/// The number of intersections used for reconstruction
 	int                             m_intersections;
 
+	/// Whether or not the mesh should be retesselated while being finalized
+	bool									  m_retesselate;
+
 	/// The used point cloud manager
 	string                          m_pcm;
 
@@ -239,6 +247,10 @@ inline ostream& operator<<(ostream& os, const Options &o)
 	cout << "##### k_n \t\t\t: "              << o.getKn()            << endl;
 	cout << "##### k_i \t\t\t: "              << o.getKi()            << endl;
 	cout << "##### k_d \t\t\t: "              << o.getKd()            << endl;
+	if(o.retesselate())
+	{
+		cout << "##### retesselate:\t\t: YES"     << endl;
+	}
 	if(o.saveFaceNormals())
 	{
 		cout << "##### Write Face Normals \t: YES" << endl;

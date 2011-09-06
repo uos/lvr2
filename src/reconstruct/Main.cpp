@@ -196,11 +196,14 @@ int main(int argc, char** argv)
                             false);
     }
 
-	 //mesh.tester();
-
     // Save triangle mesh
-    //mesh.finalize();
-    mesh.finalizeAndRetesselate();
+    if(options.retesselate())
+	 {
+		 mesh.finalizeAndRetesselate();
+	 } else
+	 {
+		 mesh.finalize();
+	 }
     mesh.save("triangle_mesh.ply");
 
 

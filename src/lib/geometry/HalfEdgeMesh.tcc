@@ -851,14 +851,6 @@ namespace lssr
 						holes.back().back()->end->m_position = (holes.back().back()->start->m_position + holes.back().back()->end->m_position)*0.5;
 						for(int o = 0; o<holes.back().back()->end->out.size(); o++)
 						{
-							if( !holes.back().back()->end->out[o]->pair )
-								cerr << "§egfault!\n";
-						   if( !holes.back().back()->pair )
-								cerr << "§egfault!\n";
-							if( !holes.back().back()->end->out[o]->pair->face )
-								cerr << "§egfault!\n";
-						   if( !holes.back().back()->pair->face )
-								cerr << "§egfault!\n";
 							if(holes.back().back()->end->out[o]->pair->face != holes.back().back()->pair->face)
 							{
 								if (holes.back().back()->end->out[o]->pair->face != 0)
@@ -1128,11 +1120,11 @@ namespace lssr
 			cout << timestamp << "Number of vertices: " << (uint32_t) m_vertices.size() << endl;
 			cout << timestamp << "Number of faces: " << (uint32_t)m_faces.size() << endl;
 
-			// Good guess...
-			this->m_nVertices 		= (uint32_t)m_vertices.size();
-			this->m_nFaces 			= (uint32_t)m_faces.size();
-			this->m_vertexBuffer 	= new float[4 * this->m_nVertices];
-			this->m_normalBuffer 	= new float[4 * this->m_nVertices];
+			// Good guess for the sizes. These are not accurate since the retesselation result is unknown here!
+			this->m_nVertices 	= (uint32_t)m_vertices.size();
+			this->m_nFaces 		= (uint32_t)m_faces.size();
+			this->m_vertexBuffer = new float[4 * this->m_nVertices];
+			this->m_normalBuffer	= new float[4 * this->m_nVertices];
 			this->m_colorBuffer 	= new float[4 * this->m_nVertices];
 			this->m_indexBuffer 	= new unsigned int[4 * this->m_nFaces];
 
@@ -1143,16 +1135,19 @@ namespace lssr
 
 			int nPointsUsed=0;
 			int nIndizesUsed=0;
-			int *newPoints = new int;
-			int *newIndex = new int;
-			double **v  = new double*;
-			double **n  = new double*;
-			double **c  = new double*;
+			int *coordinatesLength = new int;
+			int *indexLength = new int;
+			float **v  = new float*;
+			float **n  = new float*;
+			float **c  = new float*;
 			int    **in = new int*;
+
+			// check all regions if they are to be retesselated (only if they lie in a regression plane!)
 			for(int i=0; i<m_regions.size(); ++i)
 			{
 				if(!m_regions[i]->m_inPlane)
 				{
+					// The color values for this region
 					double  r,g,b;
 					int surface_class = m_regions[i]->m_region_number;
 					r = fabs(cos(surface_class)); 
@@ -1162,6 +1157,7 @@ namespace lssr
 					{
 						for(int k=0; k<3; k++)
 						{
+							// copy all vertices, colors and normals to the buffers
 							this->m_vertexBuffer[nPointsUsed + 0] = (*m_regions[i]->m_faces[j])(k)->m_position.x;
 							this->m_vertexBuffer[nPointsUsed + 1] = (*m_regions[i]->m_faces[j])(k)->m_position.y;
 							this->m_vertexBuffer[nPointsUsed + 2] = (*m_regions[i]->m_faces[j])(k)->m_position.z;
@@ -1183,23 +1179,23 @@ namespace lssr
 				{
 					Tesselator<VertexT, NormalT>::init();
 					Tesselator<VertexT, NormalT>::tesselate(m_regions[i]);
-					Tesselator<VertexT, NormalT>::getFinalizedTriangles(v, n, c, in, newIndex, newPoints);
+					Tesselator<VertexT, NormalT>::getFinalizedTriangles(v, n, c, in, indexLength, coordinatesLength);
 
-					if(*newIndex > 0 && *newPoints > 0)
+					if(*indexLength > 0 && *coordinatesLength > 0)
 					{
-						for(int j=0; j< (*newPoints); ++j)
+						for(int j=0; j< (*coordinatesLength); ++j)
 						{
 							this->m_vertexBuffer[j+nPointsUsed] = (*v)[j];
 							this->m_normalBuffer[j+nPointsUsed] = (*n)[j];
 							this->m_colorBuffer[ j+nPointsUsed] = (*c)[j];
 						}
 
-						for(int j=0; j < (*newIndex); ++j)
+						for(int j=0; j < (*indexLength); ++j)
 						{
 							this->m_indexBuffer[j+nIndizesUsed] = ((*in)[j])+nPointsUsed/3; 
 						}
-						nPointsUsed  += *newPoints;
-						nIndizesUsed += *newIndex;
+						nPointsUsed  += (*coordinatesLength);
+						nIndizesUsed += *indexLength;
 
 						delete (*v);
 						delete (*c);
@@ -1208,11 +1204,12 @@ namespace lssr
 					}
 				} 
 			}
-			delete newIndex;
-			delete newPoints;
+			delete indexLength;
+			delete coordinatesLength;
 			this->m_nVertices = nPointsUsed/3;
 			this->m_nFaces 	  = nIndizesUsed/3;
 
+			// resize the buffers to the correct size
 			float *tmp_vBuffer = new float[3 * this->m_nVertices];
 			float *tmp_nBuffer = new float[3 * this->m_nVertices];
 			float *tmp_cBuffer = new float[3 * this->m_nVertices];
@@ -1221,7 +1218,7 @@ namespace lssr
 			memcpy(tmp_vBuffer, this->m_vertexBuffer, 3*this->m_nVertices*sizeof(float));
 			memcpy(tmp_nBuffer, this->m_normalBuffer, 3*this->m_nVertices*sizeof(float));
 			memcpy(tmp_cBuffer, this->m_colorBuffer,  3*this->m_nVertices*sizeof(float));
-			memcpy(tmp_inBuffer, this->m_indexBuffer,  3*this->m_nFaces*sizeof(unsigned int));
+			memcpy(tmp_inBuffer, this->m_indexBuffer, 3*this->m_nFaces*sizeof(unsigned int));
 
 			delete this->m_vertexBuffer;
 			delete this->m_normalBuffer;
@@ -1234,8 +1231,11 @@ namespace lssr
 			this->m_indexBuffer  = tmp_inBuffer;
 
 			this->m_finalized = true; 
-			cout << " Done. \n\t[" << nPointsUsed << "] Points Used.\n\t[" << nIndizesUsed << "] Indizes Used.\n\t[" 
-				  << this->m_nVertices << "] m_nVertices.\n\t[" << this->m_nFaces << "] m_nFaces.\n";
-		}
+			cout << timestamp << "Done retesselating: " 						  	 	<< endl;
+			cout << timestamp << "[" << nPointsUsed << "] Points Used."       << endl;
+			cout << timestamp << "[" << nIndizesUsed << "] Indizes Used."     << endl;
+			cout << timestamp <<	"[" << this->m_nVertices << "] Vertices." << endl;
+			cout << timestamp <<	"[" << this->m_nFaces << "] Faces." 	   << endl;
+		} 
 
 } // namespace lssr
