@@ -133,7 +133,7 @@ public:
 	 *
 	 * @param	edge	The edge to collapse
 	 */
-	virtual bool collapseEdge(HEdge* edge);
+	virtual void collapseEdge(HEdge* edge);
 
 	/**
 	 * @brief	Flip the edge between f1 and f2
@@ -243,7 +243,21 @@ public:
 	 */
 	virtual void finalizeAndRetesselate();
 
-	void fillHoles(int max_size);
+	/**
+	 * @brief 	fills all holes
+	 *
+	 * @param 	max_size 	the maximum size of a hole
+	 */
+	virtual void fillHoles(int max_size);
+
+	/**
+	 * @brief	Collapse the given edge safely
+	 *
+	 * @param	edge	The edge to collapse
+	 *
+	 * @return	true if the edge was collapsed, false otherwise
+	 */
+	virtual bool safeCollapseEdge(HEdge* edge);
 
 	void enableRegionColoring() { m_colorRegions = true;}
 
