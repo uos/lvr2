@@ -230,7 +230,7 @@ template<typename VertexT, typename NormalT>
 bool Region<VertexT, NormalT>::detectFlicker(HFace* f)
 {
 	if(this->m_inPlane)
-		if ((VertexT(f->getFaceNormal())+VertexT(this->m_normal)).length() < 0.05)
+		if ((VertexT(f->getFaceNormal())+VertexT(this->m_normal)).length() < 1.0)
 		{
 			return true;
 		}
