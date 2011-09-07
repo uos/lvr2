@@ -90,9 +90,9 @@ public:
      *
      *
      */
-    static void getFinalizedTriangles(float **vertexBuffer,
-                                      float **normalBuffer,
-                                      float **colorBuffer,
+    static void getFinalizedTriangles(double **vertexBuffer,
+                                      double **normalBuffer,
+                                      double **colorBuffer,
                                       int   **indexBuffer,
                                       int *numberFaces,
                                       int *numVertices);
@@ -128,10 +128,10 @@ public:
     /**
      * @Brief Callback function
      */
-    static void tesselatorCombineVertices(GLfloat coords[3],
-							 GLfloat *vertex_data[4],
-							 GLfloat weight[4],
-							 GLfloat **dataOut,
+    static void tesselatorCombineVertices(GLdouble coords[3],
+							 GLdouble *vertex_data[4],
+							 GLdouble weight[4],
+							 GLdouble **dataOut,
                              HVertex* userData);
 
     static bool   m_tesselated;

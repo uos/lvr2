@@ -1086,9 +1086,9 @@ namespace lssr
 			int nIndizesUsed=0;
 			int *coordinatesLength = new int;
 			int *indexLength = new int;
-			float **v  = new float*;
-			float **n  = new float*;
-			float **c  = new float*;
+			double **v  = new double*;
+			double **n  = new double*;
+			double **c  = new double*;
 			int    **in = new int*;
 
 			// check all regions if they are to be retesselated (only if they lie in a regression plane!)
