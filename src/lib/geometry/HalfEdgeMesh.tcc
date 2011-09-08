@@ -979,6 +979,8 @@ namespace lssr
 			cout<<c*c<<endl;
 
 			Texture<VertexT, NormalT>* t = new Texture<VertexT, NormalT>(m_pointCloudManager, m_regions[0]);
+			t->save();
+			delete t;
 
 		}
 

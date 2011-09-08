@@ -10,6 +10,8 @@
 
 #include "Region.hpp"
 #include "../reconstruction/PointCloudManager.hpp"
+#include "../io/PPMIO.hpp"
+#include <boost/lexical_cast.hpp>
 
 namespace lssr {
 
@@ -49,6 +51,8 @@ private:
 	struct ColorT{
 		uchar r, g, b;
 	};
+
+	Region<VertexT, NormalT>* m_region;
 
 	///The texture data
 	ColorT** m_data;
