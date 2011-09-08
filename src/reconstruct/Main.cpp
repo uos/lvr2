@@ -180,19 +180,18 @@ int main(int argc, char** argv)
                             options.getNormalThreshold(),
                             options.getMinPlaneSize(),
                             options.getSmallRegionThreshold() );
-    }
 
-    mesh.fillHoles(options.getFillHoles());
-    mesh.optimizePlaneIntersections();
+        mesh.fillHoles(options.getFillHoles());
 
-    if(options.optimizePlanes())
-    {
-        if(options.colorRegions()) mesh.enableRegionColoring();
-        mesh.optimizePlanes(3,
-                            options.getNormalThreshold(),
-                            options.getMinPlaneSize(),
-                            0,
-                            false);
+        mesh.optimizePlaneIntersections();
+
+        mesh.optimizePlanes(5,
+        		options.getNormalThreshold(),
+        		options.getMinPlaneSize(),
+        		0,
+        		false);
+
+        mesh.optimizePlaneIntersections();
     }
 
     // Save triangle mesh
