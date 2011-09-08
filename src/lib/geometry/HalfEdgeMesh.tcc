@@ -4,18 +4,19 @@
  *  Created on: 13.11.2008
  *      Author: Thomas Wiemann
  */
-
+#include "ColorVertex.hpp"
 namespace lssr
 {
 
 
 
 	template<typename VertexT, typename NormalT>
-		HalfEdgeMesh<VertexT, NormalT>::HalfEdgeMesh()
+		HalfEdgeMesh<VertexT, NormalT>::HalfEdgeMesh(PointCloudManager<VertexT, NormalT>* pm)
 		{
 			m_globalIndex = 0;
 			m_colorRegions = false;
 			m_planesOptimized = false;
+			m_pointCloudManager = pm;
 		}
 
 
@@ -972,6 +973,12 @@ namespace lssr
 
 			}
 			filestr.close();
+
+
+			ColorVertex<float> c;
+			cout<<c*c<<endl;
+
+			Texture<VertexT, NormalT>* t = new Texture<VertexT, NormalT>(m_pointCloudManager, m_regions[0]);
 
 		}
 

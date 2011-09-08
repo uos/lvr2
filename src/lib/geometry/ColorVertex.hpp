@@ -34,6 +34,16 @@ public:
 	}
 
 	/**
+	 * @brief	Builds a ColorVertex with the given coordinates.
+	 */
+	ColorVertex(const CoordType &_x, const CoordType &_y, const CoordType &_z)
+	{
+		this->x = _x;
+		this->y = _y;
+		this->z = _z;
+	}
+
+	/**
 	 * @brief	Builds a Vertex with the given coordinates.
 	 */
 	ColorVertex(const CoordType &_x, const CoordType &_y, const CoordType &_z, const uchar _r, const uchar _g, const uchar _b)
@@ -59,6 +69,18 @@ public:
 		this->b = o.b;
 	}
 
+	/**
+	 * @brief	Copy Ctor.
+	 */
+	ColorVertex(const Vertex<CoordType> &o)
+	{
+		this->x = o.x;
+		this->y = o.y;
+		this->z = o.z;
+		this->r = 0;
+		this->g = 0;
+		this->b = 0;
+	}
 
 	uchar r, g, b;
 
