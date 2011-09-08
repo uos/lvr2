@@ -907,17 +907,11 @@ namespace lssr
 
 								float d_i = n_i * (*(m_regions[i]->m_faces[0]))(0)->m_position;
 								float d_j = n_j * (*(m_regions[j]->m_faces[0]))(0)->m_position;
-								float n_i1 = n_i[0];
-								float n_i2 = n_i[1];
-								float n_j1 = n_j[0];
-								float n_j2 = n_j[1];
-
-								float x1 = (d_i/n_i1 - ((n_i2*d_j)/(n_j2*n_i1)))/(1-((n_i2*n_j1)/(n_j2*n_i1)));
-								float x2 = (d_j-n_j1*x1)/n_j2;
-								float x3 = 0;
-								VertexT x (x1, x2, x3);
 
 								VertexT direction = n_i.cross(n_j);
+
+								float denom = direction * direction;
+								VertexT x = ((n_j*d_i - n_i*d_j).cross(direction)) * (1/denom);
 
 								//drag all points at the border between planes i and j onto the intersection
 								dragOntoIntersection(m_regions[i], m_regions[j], x, direction);
@@ -973,7 +967,6 @@ namespace lssr
 				}
 
 				filestr << first.m_position[0] << " " << first.m_position[1] << " " << first.m_position[2] << endl;
-				filestr << "## Contour End. " << endl;
 
 				filestr<<endl<<endl;
 
