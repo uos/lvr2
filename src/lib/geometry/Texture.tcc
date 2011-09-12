@@ -11,21 +11,75 @@ template<typename VertexT, typename NormalT>
 Texture<VertexT, NormalT>::Texture(PointCloudManager<VertexT, NormalT>* pm, Region<VertexT, NormalT>* region)
 {
 	this->m_region = region;
+	this->m_data = 0;
 
 	if(this->m_region->m_inPlane)
-		vector<HVertex*> HOuter_contour = this->m_region->getContours(0.01)[0];
-
-	//Just for testing...
-	this->m_sizeX = 640;
-	this->m_sizeY = 480;
-	m_data = new ColorT*[this->m_sizeY];
-	for (int y = 0; y<this->m_sizeY; y++)
 	{
-		m_data[y] = new ColorT[this->m_sizeX];
-		memset(m_data[y],200,this->m_sizeX*sizeof(ColorT));
-	}
-	//End testing
+		vector<vector<HVertex*> > contours = this->m_region->getContours(0.01);
+		if(contours.size() > 0)
+		{
+			vector<HVertex*> HOuter_contour = contours[0];
+			NormalT n = m_region->m_normal;
+			VertexT p = HOuter_contour[0]->m_position;
+			NormalT v1 = HOuter_contour[1]->m_position - HOuter_contour[0]->m_position;
+			NormalT v2 = v1.cross(n);
 
+			float a_min = FLT_MAX, a_max = FLT_MIN, b_min = FLT_MAX, b_max = FLT_MIN;
+
+			for(int c = 0; c < HOuter_contour.size(); c++)
+			{
+				float denom = v1[0] * v2[1] - v1[1] * v2[0];
+				float a = ((HOuter_contour[c]->m_position[0] - p[0]) * v2[1] - (HOuter_contour[c]->m_position[1] - p[1]) * v2[0]) / denom;
+				float b = ((HOuter_contour[c]->m_position[1] - p[1]) * v1[0] - (HOuter_contour[c]->m_position[0] - p[0]) * v1[1]) / denom;
+				if (a > a_max) a_max = a;
+				if (a < a_min) a_min = a;
+				if (b > b_max) b_max = b;
+				if (b < b_min) b_min = b;
+			}
+
+			float pixelSize = 1;
+			this->m_sizeX = (a_max - a_min) / pixelSize;
+			this->m_sizeY = (b_max - b_min) / pixelSize;
+
+			cout<<"sizeX: "<<m_sizeX<<endl;
+			cout<<"sizeY: "<<m_sizeY<<endl;
+
+			m_data = new ColorT*[this->m_sizeY];
+
+			for(int y = 0; y < this->m_sizeY; y++)
+			{
+				m_data[y] = new ColorT[this->m_sizeX];
+				for(int x = 0; x < this->m_sizeX; x++)
+				{
+					vector<VertexT> cv;
+
+					VertexT current_position = p + v1 * (x * pixelSize + a_min - pixelSize/2.0) + v2 * (y * pixelSize + b_min - pixelSize/2.0);
+
+					int one = 1;
+					pm->getkClosestVertices(current_position, one, cv);
+
+					ColorT currCol;
+					currCol.r = cv[0].r;
+					currCol.g = cv[0].g;
+					currCol.b = cv[0].b;
+					m_data[y][x] = currCol;
+				}
+			}
+		}
+	}
+
+	//default texture
+	if(m_data == 0)
+	{
+		this->m_sizeX = 1;
+		this->m_sizeY = 1;
+		m_data = new ColorT*[this->m_sizeY];
+		for (int y = 0; y<this->m_sizeY; y++)
+		{
+			m_data[y] = new ColorT[this->m_sizeX];
+			memset(m_data[y],200,this->m_sizeX*sizeof(ColorT));
+		}
+	}
 }
 
 template<typename VertexT, typename NormalT>

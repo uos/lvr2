@@ -975,12 +975,21 @@ namespace lssr
 			filestr.close();
 
 
+			//    Reset all used variables
+			for(int i=0; i<m_faces.size(); i++)
+				for(int k=0; k<3; k++)
+					(*m_faces[i])[k]->used=false;
+
 			ColorVertex<float> c;
 			cout<<c*c<<endl;
 
-			Texture<VertexT, NormalT>* t = new Texture<VertexT, NormalT>(m_pointCloudManager, m_regions[0]);
-			t->save();
-			delete t;
+			for(int r=0; r<m_regions.size(); r++)
+			{
+				Texture<VertexT, NormalT>* t = new Texture<VertexT, NormalT>(m_pointCloudManager, m_regions[r]);
+				if(m_regions[r]->m_inPlane)
+					t->save();
+				delete t;
+			}
 
 		}
 
