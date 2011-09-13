@@ -38,6 +38,17 @@ public:
 	Texture(PointCloudManager<VertexT, NormalT>* pm, Region<VertexT, NormalT>* region);
 
 	/**
+	 * @brief	computes texture coordinates corresponding to the give Vertex
+	 *
+	 * @param	v	the vertex to generate texture coordinates for
+	 *
+	 * @param	x	returns texture coordinates in x direction
+	 *
+	 * @param	y	returns texture coordinates in y direction
+	 */
+	void textureCoords(VertexT v, float &x, float &y);
+
+	/**
 	 *	@brief	Writes the texture to a file
 	 */
 	void save();
@@ -56,6 +67,15 @@ private:
 
 	///The texture data
 	ColorT** m_data;
+
+	///The coordinate system of the texture plane
+	NormalT v1, v2;
+
+	///A point in the texture plane
+	VertexT p;
+
+	///The bounding box of the texture plane
+	float a_min, b_min, a_max, b_max;
 
 	///The dimensions of the texture
 	int m_sizeX, m_sizeY;
