@@ -74,6 +74,12 @@ protected:
 	/// The vertex colors
 	float*			m_colorBuffer;
 
+	/// The texture coordinates
+	float*			m_textureCoordBuffer;
+
+	/// The texture indices
+	uint*			m_textureIndexBuffer;
+
 	/// The mesh's index buffer
 	uint*			m_indexBuffer;
 

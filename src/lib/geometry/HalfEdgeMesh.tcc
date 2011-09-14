@@ -983,13 +983,21 @@ namespace lssr
 			ColorVertex<float> c;
 			cout<<c*c<<endl;
 
-			for(int r=0; r<m_regions.size(); r++)
-			{
-				Texture<VertexT, NormalT>* t = new Texture<VertexT, NormalT>(m_pointCloudManager, m_regions[r]);
-				if(m_regions[r]->m_inPlane)
-					t->save();
-				delete t;
-			}
+//			for(int r=0; r<m_regions.size(); r++)
+//			{
+//				Texture<VertexT, NormalT>* t = new Texture<VertexT, NormalT>(m_pointCloudManager, m_regions[r]);
+//				if(m_regions[r]->m_inPlane)
+//				{
+//					t->save();
+//					float x, y;
+////					for(int i=0; i<m_regions[r]->m_faces.size(); i++)
+////					{
+////						t->textureCoords((*m_regions[r]->m_faces[i])(0)->m_position, x, y);
+////						cout << x << " " << y << endl;
+////					}
+//				}
+//				delete t;
+//			}
 
 		}
 
@@ -1087,6 +1095,8 @@ namespace lssr
 			this->m_normalBuffer	= new float[4 * this->m_nVertices];
 			this->m_colorBuffer 	= new float[4 * this->m_nVertices];
 			this->m_indexBuffer 	= new unsigned int[4 * this->m_nFaces];
+			this->m_textureCoordBuffer = new float[6 * this->m_nFaces];
+			this->m_textureIndexBuffer = new unsigned int[this->m_nFaces];
 
 			//    Reset all used variables
 			for(int j=0; j<m_faces.size(); j++)
@@ -1129,6 +1139,7 @@ namespace lssr
 							this->m_colorBuffer[nPointsUsed + 0] = r;
 							this->m_colorBuffer[nPointsUsed + 1] = g;
 							this->m_colorBuffer[nPointsUsed + 2] = b;
+
 							nPointsUsed += 3;
 
 							this->m_indexBuffer[nIndizesUsed+k] = (nPointsUsed / 3) - 1;
@@ -1138,16 +1149,35 @@ namespace lssr
 				}  else 
 				{
 					Tesselator<VertexT, NormalT>::init();
-					Tesselator<VertexT, NormalT>::tesselate(m_regions[i]);
+					vector<vector<HVertex*> > contours = m_regions[i]->getContours(0.01);
+					Tesselator<VertexT, NormalT>::tesselate(contours);
 					Tesselator<VertexT, NormalT>::getFinalizedTriangles(v, n, c, in, indexLength, coordinatesLength);
 
 					if(*indexLength > 0 && *coordinatesLength > 0)
 					{
-						for(int j=0; j< (*coordinatesLength); ++j)
+						Texture<VertexT, NormalT>* t = new Texture<VertexT, NormalT>(m_pointCloudManager, m_regions[i], contours);
+						t->save();
+
+						for(int j=0; j< (*coordinatesLength)/3; ++j)
 						{
-							this->m_vertexBuffer[j+nPointsUsed] = (*v)[j];
-							this->m_normalBuffer[j+nPointsUsed] = (*n)[j];
-							this->m_colorBuffer[ j+nPointsUsed] = (*c)[j];
+							this->m_vertexBuffer[j*3+nPointsUsed+0] = (*v)[j*3+0];
+							this->m_normalBuffer[j*3+nPointsUsed+0] = (*n)[j*3+0];
+							this->m_colorBuffer[ j*3+nPointsUsed+0] = (*c)[j*3+0];
+
+							this->m_vertexBuffer[j*3+nPointsUsed+1] = (*v)[j*3+1];
+							this->m_normalBuffer[j*3+nPointsUsed+1] = (*n)[j*3+1];
+							this->m_colorBuffer[ j*3+nPointsUsed+1] = (*c)[j*3+1];
+
+							this->m_vertexBuffer[j*3+nPointsUsed+2] = (*v)[j*3+2];
+							this->m_normalBuffer[j*3+nPointsUsed+2] = (*n)[j*3+2];
+							this->m_colorBuffer[ j*3+nPointsUsed+2] = (*c)[j*3+2];
+
+							float u1 = 0;
+							float u2 = 0;
+							t->textureCoords(VertexT((*v)[j*3+0], (*v)[j*3+1], (*v)[j*3+2]) ,u1 ,u2);
+							this->m_textureCoordBuffer[j*3+nPointsUsed+0] = u1;
+							this->m_textureCoordBuffer[j*3+nPointsUsed+1] = u2;
+							this->m_textureCoordBuffer[j*3+nPointsUsed+2] = 0;
 						}
 
 						for(int j=0; j < (*indexLength); ++j)
@@ -1160,7 +1190,8 @@ namespace lssr
 						delete (*v);
 						delete (*c);
 						delete (*n);
-						delete (*in); 
+						delete (*in);
+						delete t;
 					}
 				} 
 			}

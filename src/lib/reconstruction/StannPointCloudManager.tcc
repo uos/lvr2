@@ -287,8 +287,16 @@ void StannPointCloudManager<VertexT, NormalT>::getkClosestVertices(const VertexT
     //parse result
     for(int i=0; i<k; i++)
     {
-    	VertexT tmp((this->m_points[id[i]])[0], (this->m_points[id[i]])[1], (this->m_points[id[i]])[2], (this->m_colors[id[i]])[0], (this->m_colors[id[i]])[1], (this->m_colors[id[i]])[2]);
-    	nb.push_back(tmp);
+    	if(this->m_colors != 0)
+    	{
+    		VertexT tmp((this->m_points[id[i]])[0], (this->m_points[id[i]])[1], (this->m_points[id[i]])[2], (this->m_colors[id[i]])[0], (this->m_colors[id[i]])[1], (this->m_colors[id[i]])[2]);
+			nb.push_back(tmp);
+		}
+    	else
+    	{
+    		VertexT tmp((this->m_points[id[i]])[0], (this->m_points[id[i]])[1], (this->m_points[id[i]])[2]);
+    		nb.push_back(tmp);
+    	}
     }
 }
 
