@@ -35,7 +35,7 @@ public:
 	 * @param	region	a region to generate a texture for.
 	 *
 	 */
-	Texture(PointCloudManager<VertexT, NormalT>* pm, Region<VertexT, NormalT>* region);
+	Texture(PointCloudManager<VertexT, NormalT>* pm, Region<VertexT, NormalT>* region,  vector<vector<HVertex*> > contours);
 
 	/**
 	 * @brief	computes texture coordinates corresponding to the give Vertex

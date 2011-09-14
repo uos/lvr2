@@ -106,9 +106,17 @@ void PCLPointCloudManager<VertexT, NormalT>::getkClosestVertices(const VertexT &
     for(int i = 0; i < res; i++)
     {
         int index = k_indices[i];
-        nb.push_back(VertexT(m_pointCloud->points[index].x,
+        if(this->m_colors != 0)
+        	nb.push_back(VertexT(m_pointCloud->points[index].x,
                              m_pointCloud->points[index].y,
-                             m_pointCloud->points[index].z));
+                             m_pointCloud->points[index].z,
+                             this->m_colors[index][0],
+                             this->m_colors[index][1],
+                             this->m_colors[index][2]));
+        else
+        	nb.push_back(VertexT(m_pointCloud->points[index].x,
+        	                             m_pointCloud->points[index].y,
+        	                             m_pointCloud->points[index].z));
     }
 }
 

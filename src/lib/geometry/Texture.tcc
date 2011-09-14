@@ -8,14 +8,13 @@
 namespace lssr {
 
 template<typename VertexT, typename NormalT>
-Texture<VertexT, NormalT>::Texture(PointCloudManager<VertexT, NormalT>* pm, Region<VertexT, NormalT>* region)
+Texture<VertexT, NormalT>::Texture(PointCloudManager<VertexT, NormalT>* pm, Region<VertexT, NormalT>* region, vector<vector<HVertex*> > contours)
 {
 	this->m_region = region;
 	this->m_data = 0;
 
 	if(this->m_region->m_inPlane)
 	{
-		vector<vector<HVertex*> > contours = this->m_region->getContours(0.01);
 		if(contours.size() > 0)
 		{
 			vector<HVertex*> HOuter_contour = contours[0];
