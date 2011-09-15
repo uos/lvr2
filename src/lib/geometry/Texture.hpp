@@ -80,6 +80,9 @@ private:
 	///The dimensions of the texture
 	int m_sizeX, m_sizeY;
 
+	///The pixel size determines the resolution
+	float pixelSize;
+
 };
 
 }
