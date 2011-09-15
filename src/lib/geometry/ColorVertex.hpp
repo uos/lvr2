@@ -41,6 +41,9 @@ public:
 		this->x = _x;
 		this->y = _y;
 		this->z = _z;
+		this->r = 0;
+		this->g = 200;
+		this->b = 0;
 	}
 
 	/**

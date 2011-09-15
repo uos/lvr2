@@ -15,39 +15,50 @@ Texture<VertexT, NormalT>::Texture(PointCloudManager<VertexT, NormalT>* pm, Regi
 
 	if(this->m_region->m_inPlane)
 	{
-		if(contours.size() > 0)
+		if(contours.size() > 0 && contours[0].size() > 1)
 		{
 			vector<HVertex*> HOuter_contour = contours[0];
 			NormalT n = m_region->m_normal;
 			p = HOuter_contour[0]->m_position;
 			v1 = HOuter_contour[1]->m_position - HOuter_contour[0]->m_position;
 			v2 = v1.cross(n);
-
 			a_min = FLT_MAX; a_max = FLT_MIN; b_min = FLT_MAX; b_max = FLT_MIN;
 
 			for(int c = 0; c < HOuter_contour.size(); c++)
 			{
-				float denom = v1[0] * v2[1] - v1[1] * v2[0];
-				float a = ((HOuter_contour[c]->m_position[0] - p[0]) * v2[1] - (HOuter_contour[c]->m_position[1] - p[1]) * v2[0]) / denom;
-				float b = ((HOuter_contour[c]->m_position[1] - p[1]) * v1[0] - (HOuter_contour[c]->m_position[0] - p[0]) * v1[1]) / denom;
+				int r = 0;
+				int s = 1;
+				if(n[0] == 0 && n[2] == 0)
+					s = 2;
+				if(n[1] == 0 && n[2] == 0)
+				{
+					r = 1;
+					s = 2;
+				}
+				float denom = v1[r] * v2[s] - v1[s] * v2[r];
+				float a = ((HOuter_contour[c]->m_position[r] - p[r]) * v2[s] - (HOuter_contour[c]->m_position[s] - p[s]) * v2[r]) / denom;
+				float b = ((HOuter_contour[c]->m_position[s] - p[s]) * v1[r] - (HOuter_contour[c]->m_position[r] - p[r]) * v1[s]) / denom;
+
+
 				if (a > a_max) a_max = a;
 				if (a < a_min) a_min = a;
 				if (b > b_max) b_max = b;
 				if (b < b_min) b_min = b;
 			}
 
-			float pixelSize = 1;
+			pixelSize = 1;
 			this->m_sizeX = (a_max - a_min) / pixelSize;
+			cout<<"sizeX: "<<m_sizeX<<endl;
+			this->m_sizeX = pow(2, ceil(log(this->m_sizeX)/log(2)));
 			this->m_sizeY = (b_max - b_min) / pixelSize;
-
-//			cout<<"sizeX: "<<m_sizeX<<endl;
-//			cout<<"sizeY: "<<m_sizeY<<endl;
+			cout<<"sizeY: "<<m_sizeY<<endl;
+			this->m_sizeY = pow(2, ceil(log(this->m_sizeY)/log(2)));
 
 			m_data = new ColorT*[this->m_sizeY];
 
 			for(int y = 0; y < this->m_sizeY; y++)
 			{
-				m_data[y] = new ColorT[this->m_sizeX];
+				m_data[m_sizeY-y-1] = new ColorT[this->m_sizeX];
 				for(int x = 0; x < this->m_sizeX; x++)
 				{
 					vector<VertexT> cv;
@@ -61,7 +72,7 @@ Texture<VertexT, NormalT>::Texture(PointCloudManager<VertexT, NormalT>* pm, Regi
 					currCol.r = cv[0].r;
 					currCol.g = cv[0].g;
 					currCol.b = cv[0].b;
-					m_data[y][x] = currCol;
+					m_data[m_sizeY-y-1][x] = currCol;
 				}
 			}
 		}
@@ -85,8 +96,8 @@ template<typename VertexT, typename NormalT>
 void Texture<VertexT, NormalT>::textureCoords(VertexT v, float &x, float &y)
 {
 	 VertexT t =  v - ((v1 * a_min) + (v2 * b_min) + p);
-	 x = (v1 * (t * v1)).length() / m_sizeX;
-	 y = (v2 * (t * v2)).length() / m_sizeY;
+	 x = (v1 * (t * v1)).length()/pixelSize / m_sizeX;
+	 y = (v2 * (t * v2)).length()/pixelSize / m_sizeY;
 
 	 x = x > 1 ? 1 : x;
 	 x = x < 0 ? 0 : x;
