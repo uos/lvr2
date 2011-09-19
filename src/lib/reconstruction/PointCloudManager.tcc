@@ -64,11 +64,19 @@ void PointCloudManager<VertexT, NormalT>::readFromFile(string filename)
     {
         // Read given input file
         PLYIO plyio;
-        plyio.read(filename);
+		  /* 
+			* Read:
+			*  color       yes
+			*  confidence   no
+			*  intensity    no
+			*  normals     yes
+			*  faces        no
+			**/
+        plyio.read( filename, true, false, false, true, false );
 
-        this->m_points =  plyio.getIndexedVertexArray(this->m_numPoints);
-        this->m_normals = plyio.getIndexedNormalArray(this->m_numPoints);
-        this->m_colors = 0;
+        this->m_points  = plyio.getIndexedVertexArray( this->m_numPoints );
+        this->m_normals = plyio.getIndexedNormalArray( this->m_numPoints );
+        this->m_colors  = plyio.getIndexedColorArray(  this->m_numPoints );
     }
     else if(extension == "")
     {

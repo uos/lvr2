@@ -13,9 +13,7 @@
 #include "BaseIO.hpp"
 #include "MeshLoader.hpp"
 #include "PointLoader.hpp"
-
-#include "PLYProperty.hpp"
-#include "PLYElement.hpp"
+#include <rply.h>
 
 #include <iostream>
 #include <fstream>
@@ -29,18 +27,28 @@ using std::vector;
 using std::cout;
 using std::endl;
 
-#define BUFFER_SIZE 1024
-#define OUT_BUFFER_SIZE 20000
-
 namespace lssr
 {
 
 /**
  * @brief A class for input and output to ply files.
  */
-class PLYIO : public BaseIO,  public PointLoader, public MeshLoader
+class PLYIO : public BaseIO, public MeshLoader
+// ,  public PointLoader
 {
 
+	float        * m_vertices;
+	unsigned char * m_color;
+	float        * m_confidence;
+	float        * m_intensity;
+	float        * m_normals;
+	unsigned int * m_face_indices;
+	uint32_t       m_num_vertex;
+	uint32_t       m_num_normal;
+	uint32_t       m_num_color;
+	uint32_t       m_num_confidence;
+	uint32_t       m_num_intensity;
+	uint32_t       m_num_face;
 
 public:
 
@@ -50,22 +58,22 @@ public:
 	PLYIO();
 
 	/**
-	 * @brief Adds the given element to the file
-	 *
-	 * @param element 		A ply element description
-	 */
-	void addElement(PLYElement* e);
-
-	/**
 	 * @brief Sets the vertex array (for meshes)
+	 * This version uses an interlaced array. Hence the number of floats in the
+	 * array is 3 * \ref{n}.
 	 *
-	 * @param array			A vertex array
-	 * @param n				The number of vertices in the array
-	 *
-	 * This version uses an interlaced array. Hence the number of floats
-	 * in the array is 3 * \ref{n}.
+	 * @param array  Vertex array.
+	 * @param n      Number of vertices in the array.
 	 */
 	void setVertexArray(float* array, size_t n);
+	float * getConfidenceArray( size_t &n );
+	float * getIntensityArray( size_t &n );
+	void setConfidenceArray( float * array, size_t n );
+	void setIntensityArray( float * array, size_t n );
+	static int readVertexCb( p_ply_argument argument );
+	static int readColorCb( p_ply_argument argument );
+	static int readFaceCb( p_ply_argument argument );
+	unsigned char ** getIndexedColorArray( size_t &n );
 
 	/**
 	 * @brief Sets the normal array (for meshes)
@@ -85,6 +93,7 @@ public:
 	 * @param n				The number of elements in the array
 	 */
 	void setColorArray(float* array, size_t n);
+	void setColorArray( unsigned char * array, size_t n );
 
 	/**
 	 * @brief Sets the index buffer
@@ -104,7 +113,9 @@ public:
 	 * @param binary		If, the data is writen in binary format (default). Set
 	 * 						this param to false to create an ASCII ply file
 	 */
-	void save(string filename, bool binary);
+	void save( string filename, e_ply_storage_mode mode, 
+			vector<string> obj_info = vector<string>(), 
+			vector<string> comment = vector<string>() );
 
     /**
      * @brief Save the currently present information to the given file
@@ -113,15 +124,18 @@ public:
      */
 	void save(string filename)
 	{
-	    save(filename, false);
+	    save( filename, PLY_ASCII );
 	}
 
+	void read( string filename, bool readColor, bool readConfidence = true, 
+			bool readIntensity = true, bool readNormals = true, 
+			bool readFaces = true );
 
 	/**
 	 * @brief Reads all supported information from the given file
 	 * @param filename		A ply file
 	 */
-	void read(string filename);
+	void read( string filename );
 
 	/**
 	 * @brief Dtor.
@@ -150,7 +164,7 @@ public:
 	 * @param n				Contains the number of Vertices in the array
 	 * @return				A pointer to color data
 	 */
-	float* getColorArray(size_t &);
+	unsigned char * getColorArray(size_t &);
 
 	/**
 	 * @brief Returns an index accessible representation (2D array) of
@@ -206,76 +220,11 @@ public:
 	 */
 	unsigned int* getIndexArray(size_t &n);
 
-	/**
-	 * @brief Returns true if the current element contains the provided
-	 * 		  element
-	 * @param e				A ply element description object
-	 */
-	bool containsElement(PLYElement& e);
+	void freeBuffer();
 
-	/**
-	 * @brief Returns true if the current element lists contains an
-	 *        element with the given name.
-	 */
-	bool containsElement(string elementName);
-
-	/**
-	 * @brief Checks if \ref{e} has property \ref{p}
-	 */
-	bool hasProperty(PLYElement& e, Property& p);
-
-	/**
-	 * @brief Prints all elements and properties to stdout.
-	 */
-	void printElementsInHeader();
-
-
-	float* getVertexNormalArray(size_t &n) { return getNormalArray(n); };
-	float* getVertexColorArray(size_t &n) { n = 0; return 0;}
-
-private:
-
-	float** interlacedBufferToIndexedBuffer(float* src, size_t n);
-	float*	indexedBufferToInterlacedBuffer(float** src, size_t n);
-
-	void writeHeader(ofstream& str);
-	void writeElements(ofstream &str);
-	void writeFacesBinary(ofstream &str, PLYElement* e);
-	void writeFacesASCII(ofstream &str, PLYElement* e);
-	void writeVerticesBinary(ofstream &str, PLYElement* e);
-	void writeVerticesASCII(ofstream &str, PLYElement* e);
-	void writeNormalsBinary(ofstream &out, PLYElement* e);
-	void writeNormalsASCII(ofstream &out, PLYElement* e);
-
-	void readVerticesBinary(ifstream &in, PLYElement* descr);
-	void readFacesBinary(ifstream &in, PLYElement* descr);
-	void readNormalsBinary(ifstream &in, PLYElement* descr);
-	void readPointsBinary(ifstream &in, PLYElement* descr);
-
-	void readVerticesASCII(ifstream &in, PLYElement* descr);
-	void readFacesASCII(ifstream &in, PLYElement* descr);
-	void readNormalsASCII(ifstream &in, PLYElement* descr);
-	void readPointsASCII(ifstream &in, PLYElement* descr);
-
-	void readHeader(ifstream& str);
-
-	char* putElementInBuffer(char* buffer, string s,  float value);
-
-	bool isSupported(string element_name);
-	bool parseHeaderLine(const char* line);
-
-	void loadElements(ifstream& in);
-
-	void deleteBuffers();
-	void allocVertexBuffers(PLYElement* dscr);
-
-	void copyElementToVertexBuffer(ifstream &str, Property*, float* buffer, size_t position);
-
-	template<typename T>
-	void copyElementToVertexBuffer(char* src, float* buffer, size_t positon);
-
-	bool 					m_binary;
-	vector<PLYElement*> 	m_elements;
+	float * getVertexNormalArray( size_t &n );
+	float * getVertexColorArray( size_t &n );
+	float * getColorArray3f( size_t &n );
 
 };
 

@@ -508,22 +508,12 @@ void StannPointCloudManager<VertexT, NormalT>::savePLY(string filename)
     // Create vertex element
     if(this->m_points)
     {
-        PLYElement* vertex_element = new PLYElement("vertex", this->m_numPoints);
-        vertex_element->addProperty("x", "float");
-        vertex_element->addProperty("y", "float");
-        vertex_element->addProperty("z", "float");
-        ply_writer.addElement(vertex_element);
         ply_writer.setIndexedVertexArray(this->m_points, this->m_numPoints);
     }
 
     // Create normal element
     if(this->m_normals)
       {
-          PLYElement* normal_element = new PLYElement("normal", this->m_numPoints);
-          normal_element->addProperty("x", "float");
-          normal_element->addProperty("y", "float");
-          normal_element->addProperty("z", "float");
-          ply_writer.addElement(normal_element);
           ply_writer.setIndexedVertexArray(this->m_normals, this->m_numPoints);
       }
 
