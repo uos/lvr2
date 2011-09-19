@@ -36,6 +36,7 @@ using namespace std;
 
 #include "Region.hpp"
 #include "Tesselator.hpp"
+#include "Texture.hpp"
 
 namespace lssr
 {
@@ -59,8 +60,10 @@ public:
 
 	/**
 	 * @brief   Ctor.
+	 *
+	 * @param	pm	a pointer to the point cloud manager
 	 */
-	HalfEdgeMesh();
+	HalfEdgeMesh(PointCloudManager<VertexT, NormalT>* pm);
 
 	/**
 	 * @brief   Dtor.
@@ -291,6 +294,9 @@ private:
 	 */
 	HEdge* halfEdgeToVertex(HVertex* v, HVertex* next);
 
+
+	/// a pointer to the point cloud manager
+	PointCloudManager<VertexT, NormalT>* m_pointCloudManager;
 
 
 };

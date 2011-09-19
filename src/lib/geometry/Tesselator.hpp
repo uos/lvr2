@@ -90,10 +90,10 @@ public:
      *
      *
      */
-    static void getFinalizedTriangles(double **vertexBuffer,
-                                      double **normalBuffer,
-                                      double **colorBuffer,
-                                      int   **indexBuffer,
+    static void getFinalizedTriangles(float **vertexBuffer,
+                                      float **normalBuffer,
+                                      float **colorBuffer,
+                                      unsigned int   **indexBuffer,
                                       int *numberFaces,
                                       int *numVertices);
     
