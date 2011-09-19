@@ -61,18 +61,30 @@ Texture<VertexT, NormalT>::Texture(PointCloudManager<VertexT, NormalT>* pm, Regi
 				m_data[m_sizeY-y-1] = new ColorT[this->m_sizeX];
 				for(int x = 0; x < this->m_sizeX; x++)
 				{
-					vector<VertexT> cv;
+					if (y <= (b_max - b_min) / pixelSize  && x <= (a_max - a_min) / pixelSize)
+					{
+						vector<VertexT> cv;
 
-					VertexT current_position = p + v1 * (x * pixelSize + a_min - pixelSize/2.0) + v2 * (y * pixelSize + b_min - pixelSize/2.0);
+						VertexT current_position = p + v1 * (x * pixelSize + a_min - pixelSize/2.0) + v2 * (y * pixelSize + b_min - pixelSize/2.0);
 
-					int one = 1;
-					pm->getkClosestVertices(current_position, one, cv);
+						int one = 1;
+						pm->getkClosestVertices(current_position, one, cv);
 
-					ColorT currCol;
-					currCol.r = cv[0].r;
-					currCol.g = cv[0].g;
-					currCol.b = cv[0].b;
-					m_data[m_sizeY-y-1][x] = currCol;
+						ColorT currCol;
+						currCol.r = cv[0].r;
+						currCol.g = cv[0].g;
+						currCol.b = cv[0].b;
+						m_data[m_sizeY-y-1][x] = currCol;
+					}
+					else
+					{
+						ColorT currCol;
+						currCol.r =0;
+						currCol.g = 0;
+						currCol.b = 255;
+						m_data[m_sizeY-y-1][x] = currCol;
+					}
+
 				}
 			}
 		}
