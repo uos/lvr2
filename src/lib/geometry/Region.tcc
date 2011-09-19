@@ -93,9 +93,9 @@ vector<vector<HalfEdgeVertex<VertexT, NormalT>* > > Region<VertexT, NormalT>::ge
 	}
 
 	//move outer contour to the first position
-	float xmax = FLT_MIN;
-	float ymax = FLT_MIN;
-	float zmax = FLT_MIN;
+	float xmax = -FLT_MAX;
+	float ymax = -FLT_MAX;
+	float zmax = -FLT_MAX;
 
 	int outer = -1;
 	for(int c=0; c<result.size(); c++)
