@@ -127,7 +127,7 @@ int main(int argc, char** argv)
     // (this means required parameters are missing)
     if (options.printUsage()) return 0;
 
-    ::std::cout<<options<<::std::endl;
+    ::std::cout << options << ::std::endl;
 
     // Create a point cloud manager
     string pcm_name = options.getPCM();
@@ -170,6 +170,7 @@ int main(int argc, char** argv)
     FastReconstruction<Vertex<float>, Normal<float> > reconstruction(*pcm, resolution, useVoxelsize);
     reconstruction.getMesh(mesh);
 
+#if 0
     mesh.removeDanglingArtifacts(options.getDanglingArtifacts());
 
     // Optimize mesh
@@ -193,6 +194,7 @@ int main(int argc, char** argv)
 
         mesh.optimizePlaneIntersections();
     }
+#endif
 
     // Save triangle mesh
     if(options.retesselate())
