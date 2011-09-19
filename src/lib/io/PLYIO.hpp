@@ -15,9 +15,6 @@
 #include "PointLoader.hpp"
 #include <rply.h>
 
-#include "PLYProperty.hpp"
-#include "PLYElement.hpp"
-
 #include <iostream>
 #include <fstream>
 #include <vector>
