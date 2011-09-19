@@ -48,10 +48,8 @@ Texture<VertexT, NormalT>::Texture(PointCloudManager<VertexT, NormalT>* pm, Regi
 
 			pixelSize = 1;
 			this->m_sizeX = (a_max - a_min) / pixelSize;
-			cout<<"sizeX: "<<m_sizeX<<endl;
 			this->m_sizeX = pow(2, ceil(log(this->m_sizeX)/log(2)));
 			this->m_sizeY = (b_max - b_min) / pixelSize;
-			cout<<"sizeY: "<<m_sizeY<<endl;
 			this->m_sizeY = pow(2, ceil(log(this->m_sizeY)/log(2)));
 
 			m_data = new ColorT*[this->m_sizeY];
