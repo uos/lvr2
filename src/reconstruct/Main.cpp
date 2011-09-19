@@ -170,7 +170,6 @@ int main(int argc, char** argv)
     FastReconstruction<ColorVertex<float>, Normal<float> > reconstruction(*pcm, resolution, useVoxelsize);
     reconstruction.getMesh(mesh);
 
-#if 0
     mesh.removeDanglingArtifacts(options.getDanglingArtifacts());
 
     // Optimize mesh
@@ -194,7 +193,6 @@ int main(int argc, char** argv)
 
         mesh.optimizePlaneIntersections();
     }
-#endif
 
     mesh.tester();
 

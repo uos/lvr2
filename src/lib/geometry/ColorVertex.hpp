@@ -49,7 +49,8 @@ public:
 	/**
 	 * @brief	Builds a Vertex with the given coordinates.
 	 */
-	ColorVertex(const CoordType &_x, const CoordType &_y, const CoordType &_z, const uchar _r, const uchar _g, const uchar _b)
+	ColorVertex(const CoordType &_x, const CoordType &_y, const CoordType &_z,
+			const unsigned char _r, const unsigned char _g, const unsigned char _b)
 	{
 		this->x = _x;
 		this->y = _y;
@@ -85,7 +86,7 @@ public:
 		this->b = 0;
 	}
 
-	uchar r, g, b;
+	unsigned char r, g, b;
 
 };
 
