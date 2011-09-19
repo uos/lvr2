@@ -271,6 +271,36 @@ bool StannPointCloudManager<VertexT, NormalT>::boundingBoxOK(const float &dx, co
 }
 
 template<typename VertexT, typename NormalT>
+void StannPointCloudManager<VertexT, NormalT>::getkClosestVertices(const VertexT &v,
+        const size_t &k, vector<VertexT> &nb)
+{
+    vector<unsigned long> id;
+
+    //Allocate ANN point
+    float * p;
+    p = new float[3];
+    p[0] = v[0]; p[1] = v[1]; p[2] = v[2];
+
+    //Find nearest tangent plane
+    m_pointTree.ksearch(p, k, id, 0);
+
+    //parse result
+    for(int i=0; i<k; i++)
+    {
+    	if(this->m_colors != 0)
+    	{
+    		VertexT tmp((this->m_points[id[i]])[0], (this->m_points[id[i]])[1], (this->m_points[id[i]])[2], (this->m_colors[id[i]])[0], (this->m_colors[id[i]])[1], (this->m_colors[id[i]])[2]);
+			nb.push_back(tmp);
+		}
+    	else
+    	{
+    		VertexT tmp((this->m_points[id[i]])[0], (this->m_points[id[i]])[1], (this->m_points[id[i]])[2]);
+    		nb.push_back(tmp);
+    	}
+    }
+}
+
+template<typename VertexT, typename NormalT>
 float StannPointCloudManager<VertexT, NormalT>::meanDistance(const Plane<VertexT, NormalT> &p,
         const vector<unsigned long> &id, const int &k)
 {

@@ -60,6 +60,12 @@ public:
 	 */
 	virtual void save(string filename);
 
+	/**
+	 * @brief Save the mesh to the given Obj file
+	 */
+	virtual void saveObj(string filename);
+
+
 protected:
 
 	/// True if mesh is finalized
@@ -74,11 +80,23 @@ protected:
 	/// The vertex colors
 	float*			m_colorBuffer;
 
+	/// The texture coordinates
+	float*			m_textureCoordBuffer;
+
+	/// The texture indices
+	uint*			m_textureIndexBuffer;
+
 	/// The mesh's index buffer
 	uint*			m_indexBuffer;
 
+	/// The mesh's texture numbers
+	uint*			m_textureBuffer;
+
 	/// The number of vertices in the mesh
 	uint			m_nVertices;
+
+	/// The number of the mesh's texture numbers
+	uint			m_nTextures;
 
 	/// The number of face in the mesh
 	uint 			m_nFaces;

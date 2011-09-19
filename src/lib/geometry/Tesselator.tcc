@@ -126,10 +126,10 @@ void Tesselator<VertexT, NormalT>::tesselatorAddVertex(const GLvoid *data, HVert
 }
 
 template<typename VertexT, typename NormalT>
-void Tesselator<VertexT, NormalT>::getFinalizedTriangles(double **vertexBuffer,
-                                                         double **normalBuffer,
-                                                         double **colorBuffer,
-                                                         int    **indexBuffer,
+void Tesselator<VertexT, NormalT>::getFinalizedTriangles(float **vertexBuffer,
+                                                         float **normalBuffer,
+                                                         float **colorBuffer,
+                                                         unsigned int    **indexBuffer,
                                                          int    *lengthFaces,
                                                          int    *lengthVertices)
 {
@@ -147,10 +147,10 @@ void Tesselator<VertexT, NormalT>::getFinalizedTriangles(double **vertexBuffer,
     int numVertices = m_triangles.size();
 
     // allocate new memory.
-    (*vertexBuffer) = new double[numVertices*3];
-    (*normalBuffer) = new double[numVertices*3];
-    (*colorBuffer)  = new double[numVertices*3];
-    (*indexBuffer) =  new int[numVertices];
+    (*vertexBuffer) = new float[numVertices*3];
+    (*normalBuffer) = new float[numVertices*3];
+    (*colorBuffer)  = new float[numVertices*3];
+    (*indexBuffer) =  new unsigned int[numVertices];
 
 
     // init memory
@@ -239,10 +239,10 @@ void Tesselator<VertexT, NormalT>::getFinalizedTriangles(double **vertexBuffer,
     if(usedFaces > 0 && usedVertices > 0)
     {
         // Copy all that stuff and resize array -- this should be improved somehow! TODO:!
-        double *newVertexBuffer = new double[usedVertices*3];
-        double *newNormalBuffer = new double[usedVertices*3];
-        double *newColorBuffer  = new double[usedVertices*3];
-        int    *newIndexBuffer  = new int[usedFaces*3];
+        float *newVertexBuffer = new float[usedVertices*3];
+        float *newNormalBuffer = new float[usedVertices*3];
+        float *newColorBuffer  = new float[usedVertices*3];
+        unsigned int    *newIndexBuffer  = new unsigned int[usedFaces*3];
 
         // use memcopy?
         for(int i=0; i<usedVertices*3; i++)

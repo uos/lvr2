@@ -28,7 +28,7 @@ template<typename VertexT, typename NormalT>
 VertexT PointCloudManager<VertexT, NormalT>::getPoint(size_t index)
 {
     assert(index < m_numPoints);
-    return VertexT(m_points[index][0], m_points[index][1], m_points[index][2]);
+    return VertexT(m_points[index][0], m_points[index][1], m_points[index][2], m_colors[index][0], m_colors[index][1], m_colors[index][2]);
 }
 
 template<typename VertexT, typename NormalT>
@@ -58,7 +58,7 @@ void PointCloudManager<VertexT, NormalT>::readFromFile(string filename)
         this->m_points = asciiIO.getPointArray();
         this->m_numPoints = asciiIO.getNumPoints();
         this->m_normals = 0;
-        this->m_colors = 0;
+        this->m_colors = asciiIO.getPointColorArray();
     }
     else if(extension == ".ply")
     {

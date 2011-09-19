@@ -102,10 +102,7 @@ public:
 	 * @param nb        A vector containing the determined closest points
 	 */
 	virtual void getkClosestVertices(const VertexT &v,
-	        const size_t &k, vector<VertexT> &nb)
-	{
-	    /// TODO: Implement method
-	}
+	        const size_t &k, vector<VertexT> &nb);
 
 	/**
 	 * @brief Return the k closest neighbor normals to a given query point
