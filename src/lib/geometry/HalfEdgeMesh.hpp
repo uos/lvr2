@@ -264,6 +264,31 @@ public:
 
 	void enableRegionColoring() { m_colorRegions = true;}
 
+        void regionsToBuffer(
+                float **vertex, 
+                float **normal,
+                float **color,
+                float **texture,
+                unsigned int **index, 
+                unsigned int **textureIndex, 
+                size_t     &vncSize, 
+                size_t   &indexSize, 
+                vector<int> &regions);
+
+        void retesselateRegionsToBuffer(
+                vector<int> &regions,
+                double epsilon,
+                float **vertex, 
+                float **normal,
+                float **color,
+                float **textureCoord,
+                unsigned int **index, 
+                unsigned int **textureIndex,
+                unsigned int **texture,
+                unsigned int &textureSize,
+                size_t     &vncSize, 
+                size_t   &indexSize); 
+
 	void tester();
 
 private:

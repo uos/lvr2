@@ -133,9 +133,9 @@ void HalfEdgeFace<VertexT, NormalT>::getAdjacentFaces(vector<HalfEdgeFace<Vertex
 template<typename VertexT, typename NormalT>
 NormalT HalfEdgeFace<VertexT, NormalT>::getFaceNormal(){
 
-	VertexT vertices[3];
-	HalfEdgeVertex<VertexT, NormalT>* start = m_edge->start;
-	HalfEdge<HalfEdgeVertex<VertexT, NormalT>, HalfEdgeFace<VertexT, NormalT> >* current_edge = m_edge;
+	//VertexT vertices[3];
+	//HalfEdgeVertex<VertexT, NormalT>* start = m_edge->start;
+	//HalfEdge<HalfEdgeVertex<VertexT, NormalT>, HalfEdgeFace<VertexT, NormalT> >* current_edge = m_edge;
 
 	VertexT p0 = (*this)(0)->m_position;
 	VertexT p1 = (*this)(1)->m_position;

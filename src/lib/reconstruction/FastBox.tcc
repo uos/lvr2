@@ -111,8 +111,9 @@ void FastBox<VertexT, NormalT>::getIntersections(VertexT corners[],
                                                  float distance[],
                                                  VertexT positions[])
 {
-    float d1, d2;
-    d1 = d2 = 0;
+    //float d1, d2;
+    //d1 = 
+    //d2 = 0;
 
     float intersection;
 
