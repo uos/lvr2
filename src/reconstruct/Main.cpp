@@ -69,39 +69,39 @@
  * </tr>
  * <tr>
  * <td>-v or -i</td>
- * <td>
- * <p>These parameters affect the accuracy of the reconstruction.
- * <i>-i</i> defines the number of intersections on the longest side
- * of the scanned scene and determines the corresponding voxelsize.
- * Using this parameter is useful if the scaling of a scene is
- * unknown. A value of about 100 will usually generate coarse surface.
- * Experiment with this value to get a tradeoff between accuracy and
- * mesh size. If you know the scaling of the objects, you can set a
- * fixed voxelsize by using the <i>-v</i> parameter.
- * </p>
- * </td>
- * </tr>
- * <tr>
- * <td>--ki, --kn, --kd</td>
- * <td>These parameters determine the number of nearest neighbors used
- * for initial normal estimation (<i>--kn</i>), normal interpolation
- * (<i>--ki</i>) and distance value evaluation (<i>--kd</i>). In data
- * sets with a lot of noise, increasing these values can lead to better
- * approximations at the cost of running time. Increasing <i>--kd</i>
- * usually helps to generate more continuous surfaces in sparse
- * scans, but yields in a lot of smoothing, i.e. in the
- * reconstuctions, sharp features will be smoothed out.</td>
- * </tr>
- * </table>
- *
- * @section API API Description
- *
- * A detailed API documentation will be made available soon.
- *
- * @section Tutorials Tutorials
- *
- * A set of tutorials how to use LSSR will be made available soon.
- */
+* <td>
+* <p>These parameters affect the accuracy of the reconstruction.
+* <i>-i</i> defines the number of intersections on the longest side
+* of the scanned scene and determines the corresponding voxelsize.
+* Using this parameter is useful if the scaling of a scene is
+* unknown. A value of about 100 will usually generate coarse surface.
+* Experiment with this value to get a tradeoff between accuracy and
+* mesh size. If you know the scaling of the objects, you can set a
+* fixed voxelsize by using the <i>-v</i> parameter.
+* </p>
+* </td>
+* </tr>
+* <tr>
+* <td>--ki, --kn, --kd</td>
+* <td>These parameters determine the number of nearest neighbors used
+* for initial normal estimation (<i>--kn</i>), normal interpolation
+* (<i>--ki</i>) and distance value evaluation (<i>--kd</i>). In data
+* sets with a lot of noise, increasing these values can lead to better
+* approximations at the cost of running time. Increasing <i>--kd</i>
+* usually helps to generate more continuous surfaces in sparse
+* scans, but yields in a lot of smoothing, i.e. in the
+* reconstuctions, sharp features will be smoothed out.</td>
+* </tr>
+* </table>
+*
+* @section API API Description
+*
+* A detailed API documentation will be made available soon.
+*
+* @section Tutorials Tutorials
+*
+* A set of tutorials how to use LSSR will be made available soon.
+*/
 
 #include "Options.hpp"
 #include "reconstruction/PCLPointCloudManager.hpp"
@@ -120,95 +120,94 @@ using namespace lssr;
  */
 int main(int argc, char** argv)
 {
-    // Parse command line arguments
-    reconstruct::Options options(argc, argv);
+        // Parse command line arguments
+        reconstruct::Options options(argc, argv);
 
-    // Exit if options had to generate a usage message
-    // (this means required parameters are missing)
-    if (options.printUsage()) return 0;
+        // Exit if options had to generate a usage message
+        // (this means required parameters are missing)
+        if (options.printUsage()) return 0;
 
-    ::std::cout<<options<<::std::endl;
+        ::std::cout<<options<<::std::endl;
 
-    // Create a point cloud manager
-    string pcm_name = options.getPCM();
-    PointCloudManager<ColorVertex<float>, Normal<float> >* pcm;
-    if(pcm_name == "PCL")
-    {
-        cout << timestamp << "Creating PCL point cloud manager." << endl;
-        pcm = new PCLPointCloudManager<ColorVertex<float>, Normal<float> > ( options.getInputFileName());
-    }
-    else
-    {
-        cout << timestamp << "Creating STANN point cloud manager." << endl;
-        pcm = new StannPointCloudManager<ColorVertex<float>, Normal<float> > ( options.getInputFileName());
-    }
+        // Create a point cloud manager
+        string pcm_name = options.getPCM();
+        PointCloudManager<ColorVertex<float>, Normal<float> >* pcm;
+        if(pcm_name == "PCL")
+        {
+                cout << timestamp << "Creating PCL point cloud manager." << endl;
+                pcm = new PCLPointCloudManager<ColorVertex<float>, Normal<float> > ( options.getInputFileName());
+        }
+        else
+        {
+                cout << timestamp << "Creating STANN point cloud manager." << endl;
+                pcm = new StannPointCloudManager<ColorVertex<float>, Normal<float> > ( options.getInputFileName());
+        }
 
-    pcm->setKD(options.getKd());
-    pcm->setKI(options.getKi());
-    pcm->setKN(options.getKn());
-    pcm->calcNormals();
+        pcm->setKD(options.getKd());
+        pcm->setKI(options.getKi());
+        pcm->setKN(options.getKn());
+        pcm->calcNormals();
 
-    // Create an empty mesh
-    //TriangleMesh<Vertex<float>, Normal<float> > mesh;
-    HalfEdgeMesh<ColorVertex<float>, Normal<float> > mesh(pcm);
+        // Create an empty mesh
+        //TriangleMesh<Vertex<float>, Normal<float> > mesh;
+        HalfEdgeMesh<ColorVertex<float>, Normal<float> > mesh(pcm);
 
-    // Determine weather to use intersections or voxelsize
-    float resolution;
-    bool useVoxelsize;
-    if(options.getIntersections() > 0)
-    {
-        resolution = options.getIntersections();
-        useVoxelsize = true;
-    }
-    else
-    {
-        resolution = options.getVoxelsize();
-        useVoxelsize = true;
-    }
+        // Determine weather to use intersections or voxelsize
+        float resolution;
+        bool useVoxelsize;
+        if(options.getIntersections() > 0)
+        {
+                resolution = options.getIntersections();
+                useVoxelsize = true;
+        }
+        else
+        {
+                resolution = options.getVoxelsize();
+                useVoxelsize = true;
+        }
 
-    // Create a new reconstruction object
-    FastReconstruction<ColorVertex<float>, Normal<float> > reconstruction(*pcm, resolution, useVoxelsize);
-    reconstruction.getMesh(mesh);
+        // Create a new reconstruction object
+        FastReconstruction<ColorVertex<float>, Normal<float> > reconstruction(*pcm, resolution, useVoxelsize);
+        reconstruction.getMesh(mesh);
 
-    mesh.removeDanglingArtifacts(options.getDanglingArtifacts());
+        mesh.removeDanglingArtifacts(options.getDanglingArtifacts());
 
-    // Optimize mesh
-    if(options.optimizePlanes())
-    {
-        if(options.colorRegions()) mesh.enableRegionColoring();
-        mesh.optimizePlanes(options.getPlaneIterations(),
-                            options.getNormalThreshold(),
-                            options.getMinPlaneSize(),
-                            options.getSmallRegionThreshold() );
+        // Optimize mesh
+        if(options.optimizePlanes())
+        {
+                if(options.colorRegions()) mesh.enableRegionColoring();
+                mesh.optimizePlanes(options.getPlaneIterations(),
+                                options.getNormalThreshold(),
+                                options.getMinPlaneSize(),
+                                options.getSmallRegionThreshold() );
 
-        mesh.fillHoles(options.getFillHoles());
+                mesh.fillHoles(options.getFillHoles());
 
-        mesh.optimizePlaneIntersections();
+                mesh.optimizePlaneIntersections();
 
-        mesh.optimizePlanes(5,
-        		options.getNormalThreshold(),
-        		options.getMinPlaneSize(),
-        		0,
-        		false);
+                mesh.optimizePlanes(5,
+                                options.getNormalThreshold(),
+                                options.getMinPlaneSize(),
+                                0,
+                                false);
 
-        mesh.optimizePlaneIntersections();
-    }
-
-    mesh.tester();
-
-    // Save triangle mesh
-    if(options.retesselate())
-	 {
-		 mesh.finalizeAndRetesselate();
-	 } else
-	 {
-		 mesh.finalize();
-	 }
-    mesh.save("triangle_mesh.ply");
+                mesh.optimizePlaneIntersections();
+        }
 
 
-    cout << timestamp << "Program end." << endl;
+        // Save triangle mesh
+        if(options.retesselate())
+        {
+                mesh.finalizeAndRetesselate();
+        } else
+        {
+                mesh.finalize();
+        }
+        mesh.save("triangle_mesh.ply");
 
-	return 0;
+
+        cout << timestamp << "Program end." << endl;
+
+        return 0;
 }
 
