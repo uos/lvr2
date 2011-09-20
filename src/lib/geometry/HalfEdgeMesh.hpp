@@ -287,7 +287,9 @@ public:
                 unsigned int **texture,
                 unsigned int &textureSize,
                 size_t     &vncSize, 
-                size_t   &indexSize); 
+                size_t   &indexSize,
+                int vncOffset,
+                int indexOffset); 
 
 	void tester();
 

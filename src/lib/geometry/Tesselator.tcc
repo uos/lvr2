@@ -143,6 +143,14 @@ void Tesselator<VertexT, NormalT>::getFinalizedTriangles(float **vertexBuffer,
     vector<Vertex<float> > vertices;
     vector<Vertex<float> >::iterator triangles    = m_triangles.begin();
     vector<Vertex<float> >::iterator trianglesEnd = m_triangles.end();
+    /*if( m_triangles.size() < 3 )
+    {
+        cerr << __FILE__ << " " << __LINE__ << ": Not enough points received!" << endl;
+        vertexBuffer = NULL;
+        indexBuffer = NULL;
+        *lengthFaces = *lengthVertices = 0;
+        return;
+    } */
 
     int posArr[3]; posArr[0]=-1; posArr[1]=-1; posArr[2]=-1;
     // add all triangles and so faces to our buffers and keep track of all used parameters
@@ -425,7 +433,6 @@ void Tesselator<VertexT, NormalT>::tesselateRegionsAndFinalize(vector<Region<Ver
 template<typename VertexT, typename NormalT>
 void Tesselator<VertexT, NormalT>::tesselate(vector<vector<HVertex*> > vectorBorderPoints)
 {
-        cout <<"Well?! " << endl;
     if(!m_tesselator)
     {
         cerr<<"No Tesselation Object Created. Please use Tesselator::init() before making use of Tesselator::tesselate(...). Aborting Tesselation." << endl;

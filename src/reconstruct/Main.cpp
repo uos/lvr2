@@ -203,7 +203,7 @@ int main(int argc, char** argv)
         {
                 mesh.finalize();
         }
-        mesh.save("triangle_mesh.ply");
+        mesh.saveObj("triangle_mesh.obj");
 
 
         cout << timestamp << "Program end." << endl;

@@ -1064,104 +1064,162 @@ void HalfEdgeMesh<VertexT, NormalT>::finalize()
 
 template<typename VertexT, typename NormalT>
 void HalfEdgeMesh<VertexT, NormalT>::retesselateRegionsToBuffer(
-                vector<int> &regions,
-                double epsilon,
-                float **vertex, 
-                float **normal,
-                float **color,
-                float **textureCoord,
-                unsigned int **index, 
-                unsigned int **textureIndex,
-                unsigned int **texture,
-                unsigned int &textureSize,
-                size_t     &vncSize, 
-                size_t   &indexSize) 
+        vector<int> &regions,
+        double epsilon,
+        float **vertex, 
+        float **normal,
+        float **color,
+        float **textureCoord,
+        unsigned int **index, 
+        unsigned int **textureIndex,
+        unsigned int **texture,
+        unsigned int &textureSize,
+        size_t     &vncSize, 
+        size_t   &indexSize,
+        int vncOffset=0,
+        int indexOffset=0) 
 {
-        int indexUsed=indexSize, vncUsed=vncSize, textureUsed=textureSize, indexLength, coordinatesLength;
-        float *v = 0, r, g, b;
-        unsigned int *in;
-        for(int j=0; j<regions.size(); j++)
+    int indexUsed=indexOffset, vncUsed=vncOffset, textureUsed=textureSize, indexLength, coordinatesLength;
+    float *v = 0, r, g, b;
+    unsigned int *in;
+    for(int j=0; j<regions.size(); j++)
+    {
+        (*texture)[textureSize++] = m_regions[j]->m_region_number;
+        NormalT norm = m_regions[j]->calcNormal(); 
+        vector<vector<HVertex*> > contours = m_regions[j]->getContours(0.01);
+
+        Tesselator<VertexT, NormalT>::init();
+        Tesselator<VertexT, NormalT>::tesselate(contours);
+        Tesselator<VertexT, NormalT>::getFinalizedTriangles(&v, &in, &indexLength, &coordinatesLength);
+
+        /*
+         * If there were not enough points to retesselate skip.
+         */
+        if( indexLength < 3 ||  coordinatesLength < 9)
         {
-                (*texture)[textureSize++] = m_regions[j]->m_region_number;
-                NormalT norm = m_regions[j]->calcNormal(); 
-                vector<vector<HVertex*> > contours = m_regions[j]->getContours(0.01);
+            //cout << "i<3 || cooL<9" << endl;
+            delete v;
+            delete in;
+            continue;
+        }
+        
+        int surface_class = m_regions[j]->m_region_number;
+        if(m_colorRegions)
+        {
+            r = fabs(cos(surface_class));
+            g = fabs(sin(surface_class * 30));
+            b = fabs(sin(surface_class * 2));
+        }
+        else
+        {
+            r = 0.0;
+            g = 0.8;
+            b = 0.0;
+        }
+        Texture<VertexT, NormalT>* t = new Texture<VertexT, NormalT>(m_pointCloudManager, m_regions[j], contours);
+        t->save();
 
-                Tesselator<VertexT, NormalT>::init();
-                Tesselator<VertexT, NormalT>::tesselate(contours);
-                Tesselator<VertexT, NormalT>::getFinalizedTriangles(&v, &in, &indexLength, &coordinatesLength);
+        /* a small check to see whether we will run out of memory. */
+        if((float)vncUsed / (float)vncSize >= 0.80)
+        {
+            *vertex = (float*)realloc((*vertex), vncSize*2*sizeof(float));
+            *normal = (float*)realloc((*normal), vncSize*2*sizeof(float));
+            *color  = (float*)realloc((*color),  vncSize*2*sizeof(float));
+            *textureCoord =(float*)realloc((*textureCoord),vncSize*2*sizeof(float)); 
+            vncSize *= 2;
+        }
 
+        /* a small check to see whether we will run out of memory. */
+        if((float)indexUsed / (float)indexSize >= 0.80)
+        {
+            *index        = (unsigned int*)realloc((*index), indexSize*2*sizeof(float)); 
+            *textureIndex = (unsigned int*)realloc((*textureIndex), indexSize*2*sizeof(float)); 
+            indexSize *= 2;
+        }
 
-                int surface_class = m_regions[j]->m_region_number;
-                if(m_colorRegions)
+        for(int m=0; m< (coordinatesLength)/3; ++m)
+        {
+            float u1 = 0;
+            float u2 = 0;
+            t->textureCoords(VertexT(v[m*3+0], v[m*3+1], v[m*3+2]) ,u1 ,u2);
+            (*textureCoord)[vncUsed + 0 + m*3] = u1;
+            (*textureCoord)[vncUsed + 1 + m*3] = u2;
+            (*textureCoord)[vncUsed + 2 + m*3] = 0;
+                  
+                  (*vertex)[vncUsed + 0 + m*3] = v[m*3+0];
+                  (*vertex)[vncUsed + 1 + m*3] = v[m*3+1];
+                  (*vertex)[vncUsed + 2 + m*3] = v[m*3+2];
+
+                  if(isnan(v[m*3+0]) || isnan(v[m*3+1]) || isnan(v[m*3+2]))
+                  {
+                      cout << "FUUUUUUUUUUUUUUCK" << endl;
+                  }
+
+                  (*normal)[vncUsed + 0 + m*3] = norm[0];
+                  (*normal)[vncUsed + 1 + m*3] = norm[1];
+                  (*normal)[vncUsed + 2 + m*3] = norm[2];
+
+                   (*color)[vncUsed + 0 + m*3] = r;
+                   (*color)[vncUsed + 1 + m*3] = g;
+                   (*color)[vncUsed + 2 + m*3] = b;
+        }
+
+        for(int m=0; m < indexLength; ++m)
+        {
+            if(indexUsed >= 3 && indexUsed % 3 == 0)
+            {
+
+                float x1 = (*vertex)[(*index)[indexUsed+m-1]*3+0];
+                float y1 = (*vertex)[(*index)[indexUsed+m-1]*3+1];
+                float z1 = (*vertex)[(*index)[indexUsed+m-1]*3+2];
+
+                float x2 = (*vertex)[((*index)[indexUsed+m-2])*3+0];
+                float y2 = (*vertex)[((*index)[indexUsed+m-2])*3+1];
+                float z2 = (*vertex)[((*index)[indexUsed+m-2])*3+2];
+
+                float x3 = (*vertex)[((*index)[indexUsed+m-3])*3+0];
+                float y3 = (*vertex)[((*index)[indexUsed+m-3])*3+1];
+                float z3 = (*vertex)[((*index)[indexUsed+m-3])*3+2];
+
+                /* Check for a degenerated triangle! */
+                if((sqrt( pow(fabs(x1-x2),2) + pow(fabs(y1-y2),2) + pow(fabs(z1-z2),2)) < 0.000001) ||
+                   (sqrt( pow(fabs(x3-x2),2) + pow(fabs(y3-y2),2) + pow(fabs(z3-z2),2)) < 0.000001) ||
+                   (sqrt( pow(fabs(x3-x1),2) + pow(fabs(y3-y1),2) + pow(fabs(z3-z1),2)) < 0.000001) )
                 {
-                        r = fabs(cos(surface_class));
-                        g = fabs(sin(surface_class * 30));
-                        b = fabs(sin(surface_class * 2));
+
+                    cout << "-----------------------------------------------" << endl;
+                    cout << "V1: " << x1 << " " << y1 << " " << z1 << endl;
+                    cout << "V2: " << x2 << " " << y2 << " " << z2 << endl;
+                    cout << "V3: " << x3 << " " << y3 << " " << z3 << endl;
+                    cout << "-----------------------------------------------" << endl;
+                    cout << "decreasing index!" << endl;
+                    //indexUsed -= 4;
                 }
-                else
-                {
-                        r = 0.0;
-                        g = 0.8;
-                        b = 0.0;
-                }
+            } 
+            (*textureIndex)[indexUsed + m] = m_regions[j]->m_region_number; 
+                (*index)[indexUsed + m] = in[m] + vncUsed/3; 
+        }
 
-                if(indexLength > 0 && coordinatesLength > 0)
-                {
-                        Texture<VertexT, NormalT>* t = new Texture<VertexT, NormalT>(m_pointCloudManager, m_regions[j], contours);
-                        t->save();
-                        
-                        /* a small check to see whether we will run out of memory. */
-                        if((float)vncUsed / (float)vncSize >= 0.80)
-                        {
-                                *vertex = (float*)realloc((*vertex), vncSize*2*sizeof(float));
-                                *normal = (float*)realloc((*normal), vncSize*2*sizeof(float));
-                                *color  = (float*)realloc((*color),  vncSize*2*sizeof(float));
-                                *textureCoord =(float*)realloc((*textureCoord),vncSize*2*sizeof(float)); 
-                                vncSize *= 2;
-                        }
+        vncUsed += coordinatesLength;
+        indexUsed += indexLength;
 
-                        /* a small check to see whether we will run out of memory. */
-                        if((float)indexUsed / (float)indexSize >= 0.80)
-                        {
-                                *index        = (unsigned int*)realloc((*index), indexSize*2*sizeof(float)); 
-                                *textureIndex = (unsigned int*)realloc((*textureIndex), indexSize*2*sizeof(float)); 
-                                indexSize *= 2;
-                        }
-
-                        for(int m=0; m< (coordinatesLength)/3; ++m)
-                        {
-                                float u1 = 0;
-                                float u2 = 0;
-                                t->textureCoords(VertexT(v[m*3+0], v[m*3+1], v[m*3+2]) ,u1 ,u2);
-
-                                (*textureCoord)[vncUsed + 0 + m*3] = u1;
-                                (*textureCoord)[vncUsed + 1 + m*3] = u2;
-                                (*textureCoord)[vncUsed + 2 + m*3] = 0;
-                                
-                                (*vertex)[vncUsed + 0 + m*3] = v[m*3+0];
-                                (*vertex)[vncUsed + 1 + m*3] = v[m*3+1];
-                                (*vertex)[vncUsed + 2 + m*3] = v[m*3+2];
-
-                                (*normal)[vncUsed + 0 + m*3] = norm[0];
-                                (*normal)[vncUsed + 1 + m*3] = norm[1];
-                                (*normal)[vncUsed + 2 + m*3] = norm[2];
-
-                                (*color)[ vncUsed + 0 + m*3] = r;
-                                (*color)[ vncUsed + 1 + m*3] = g;
-                                (*color)[ vncUsed + 2 + m*3] = b;
-                        }
-
-                        for(int m=0; m < (indexLength); ++m)
-                        {
-                                (*index)[indexUsed + m] = in[m] + vncUsed/3; 
-                                (*textureIndex)[indexUsed + m] = m_regions[j]->m_region_number; 
-                        }
-
-                        delete v;
-                        delete in;
-                        delete t;
-                }
-        } 
+        delete v;
+        delete in;
+        delete t;
+    }
+    
+    /*
+     * Resize all the arrays to the used sizes.
+     */
+    vncSize = vncUsed;
+    indexSize = indexUsed;
+    *vertex = (float*)realloc((*vertex), vncUsed*sizeof(float));
+    *normal = (float*)realloc((*normal), vncUsed*sizeof(float));
+    *color  = (float*)realloc((*color),  vncUsed*sizeof(float));
+    *textureCoord =(float*)realloc((*textureCoord),vncUsed*sizeof(float)); 
+    *index        = (unsigned int*)realloc((*index), indexUsed*sizeof(float)); 
+    *textureIndex = (unsigned int*)realloc((*textureIndex), indexUsed*sizeof(float)); 
+    *texture      = (unsigned int*)realloc((*texture), textureSize*sizeof(unsigned int));
 }
 
 template<typename VertexT, typename NormalT>
@@ -1320,7 +1378,7 @@ void HalfEdgeMesh<VertexT, NormalT>::finalizeAndRetesselate()
          * If a region does not belong to a regression plane than we don't want
          * to retesselate it and store it directly in the buffer. After this point
          * doubled vertices may be stored in the buffer!
-         */
+         *
         regionsToBuffer(&this->m_vertexBuffer, 
                         &this->m_normalBuffer,
                         &this->m_colorBuffer,
@@ -1331,6 +1389,7 @@ void HalfEdgeMesh<VertexT, NormalT>::finalizeAndRetesselate()
                         indexBufferSize, 
                         normal_regions);
         cout << timestamp << "Done copying untesselated regions" << endl;
+        */
 
         /*
          * All regions that do belong to a regression plane should be retesselated.
