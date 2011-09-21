@@ -124,7 +124,7 @@ public:
      */
 	void save(string filename)
 	{
-	    save( filename, PLY_ASCII );
+	    save( filename, PLY_LITTLE_ENDIAN );
 	}
 
 	void read( string filename, bool readColor, bool readConfidence = true, 
