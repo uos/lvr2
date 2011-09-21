@@ -109,6 +109,9 @@ public:
 	/// The normal of the region (updated every time regressionPlane() is called)
 	NormalT m_normal;
 	
+	///	The stuetzvektor of the plane
+	VertexT m_stuetzvektor;
+
     /**
 	 * @brief calculates a valid normal of the region
 	 *

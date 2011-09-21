@@ -185,16 +185,11 @@ int main(int argc, char** argv)
 
         mesh.optimizePlaneIntersections();
 
-        mesh.optimizePlanes(5,
-        		options.getNormalThreshold(),
-        		options.getMinPlaneSize(),
-        		0,
-        		false);
+        mesh.restorePlanes();
 
-        mesh.optimizePlaneIntersections();
     }
 
-    mesh.tester();
+//    mesh.tester();
 
     // Save triangle mesh
     if(options.retesselate())
