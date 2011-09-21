@@ -194,6 +194,8 @@ int main(int argc, char** argv)
                 mesh.optimizePlaneIntersections();
         }
 
+        //mesh.tester();
+
 
         // Save triangle mesh
         if(options.retesselate())
@@ -203,6 +205,7 @@ int main(int argc, char** argv)
         {
                 mesh.finalize();
         }
+        mesh.save("triangle_mesh.ply");
         mesh.saveObj("triangle_mesh.obj");
 
 
