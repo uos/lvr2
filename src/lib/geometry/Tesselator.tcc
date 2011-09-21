@@ -143,14 +143,14 @@ void Tesselator<VertexT, NormalT>::getFinalizedTriangles(float **vertexBuffer,
     vector<Vertex<float> > vertices;
     vector<Vertex<float> >::iterator triangles    = m_triangles.begin();
     vector<Vertex<float> >::iterator trianglesEnd = m_triangles.end();
-    /*if( m_triangles.size() < 3 )
+    if( m_triangles.size() < 3 )
     {
-        cerr << __FILE__ << " " << __LINE__ << ": Not enough points received!" << endl;
+        //cerr << __FILE__ << " " << __LINE__ << ": Not enough points received!" << endl;
         vertexBuffer = NULL;
         indexBuffer = NULL;
         *lengthFaces = *lengthVertices = 0;
         return;
-    } */
+    } 
 
     int posArr[3]; posArr[0]=-1; posArr[1]=-1; posArr[2]=-1;
     // add all triangles and so faces to our buffers and keep track of all used parameters
@@ -162,7 +162,7 @@ void Tesselator<VertexT, NormalT>::getFinalizedTriangles(float **vertexBuffer,
         vector<Vertex<float> >::iterator it    = vertices.begin();
         vector<Vertex<float> >::iterator itEnd = vertices.end();
         int pos=0;
-        while(it != itEnd && *it != *triangles) 
+        /*while(it != itEnd && *it != *triangles) 
         {
             it++;
             pos++;
@@ -170,18 +170,20 @@ void Tesselator<VertexT, NormalT>::getFinalizedTriangles(float **vertexBuffer,
         if(it != itEnd)
         {
             posArr[m] = pos;
+            cout << "pos: " << pos << endl;
         } else
-        {
+        { */
 			  // vertex was not used before so store it
 			  vertices.push_back(*triangles);
 			  
 			  (*vertexBuffer)[(usedVertices * 3) + 0] = (*triangles)[0]; 
 			  (*vertexBuffer)[(usedVertices * 3) + 1] = (*triangles)[1];
-			  (*vertexBuffer)[(usedVertices * 3) + 2] = (*triangles)[2];
+                          (*vertexBuffer)[(usedVertices * 3) + 2] = (*triangles)[2];
 
-			  posArr[m] = usedVertices;
-			  usedVertices++;
-        }
+                          posArr[m] = usedVertices;
+                          //cout << "pos: " << usedVertices << endl;
+                          usedVertices++;
+        //}
         m++;
         
         if(m == 3) // we added 3 vertices therefore a whole face!!
@@ -189,6 +191,7 @@ void Tesselator<VertexT, NormalT>::getFinalizedTriangles(float **vertexBuffer,
             (*indexBuffer)[(usedFaces * 3) + 0] = posArr[0]; 
             (*indexBuffer)[(usedFaces * 3) + 1] = posArr[1];
             (*indexBuffer)[(usedFaces * 3) + 2] = posArr[2];
+            //cout << "positions: " << posArr[0] << " " << posArr[1] << " " << posArr[2] << endl;
 				#ifdef DB_TESS
             cout << "v1: " << (*vertexBuffer)[posArr[0]] << " " << (*vertexBuffer)[posArr[0]+1] << " " << (*vertexBuffer)[posArr[0]+2] << "\n"; 
             cout << "v2: " << (*vertexBuffer)[posArr[1]] << " " << (*vertexBuffer)[posArr[1]+1] << " " << (*vertexBuffer)[posArr[1]+2] << "\n"; 
@@ -283,10 +286,10 @@ void Tesselator<VertexT, NormalT>::init(void)
 
 
     /* set Properties for tesselation */
-    //gluTessProperty(m_tesselator, GLU_TESS_WINDING_RULE, GLU_TESS_WINDING_POSITIVE);
+    gluTessProperty(m_tesselator, GLU_TESS_WINDING_RULE, GLU_TESS_WINDING_POSITIVE);
     //gluTessProperty(m_tesselator, GLU_TESS_WINDING_RULE, GLU_TESS_WINDING_NEGATIVE);
     //gluTessProperty(m_tesselator, GLU_TESS_WINDING_RULE, GLU_TESS_WINDING_NONZERO);
-    gluTessProperty(m_tesselator, GLU_TESS_WINDING_RULE, GLU_TESS_WINDING_ODD);
+    //gluTessProperty(m_tesselator, GLU_TESS_WINDING_RULE, GLU_TESS_WINDING_ODD);
 	 /* Use gluTessNormal: speeds up the tessellation if the
 	  	Polygon lies on a x-y plane. and it approximatly does!*/
 	 //gluTessNormal(m_tesselator, 0, 0, 1);
