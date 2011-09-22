@@ -262,6 +262,11 @@ public:
 	 */
 	virtual bool safeCollapseEdge(HEdge* edge);
 
+	/**
+	 * restores the position of every triangle in a plane if it has been modified
+	 */
+	virtual void restorePlanes();
+
 	void enableRegionColoring() { m_colorRegions = true;}
 
         void regionsToBuffer(
