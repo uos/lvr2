@@ -127,42 +127,70 @@ void Tesselator<VertexT, NormalT>::tesselatorAddVertex(const GLvoid *data, HVert
 
 template<typename VertexT, typename NormalT>
 void Tesselator<VertexT, NormalT>::getFinalizedTriangles(float **vertexBuffer,
+                                                         float **normalBuffer,
+                                                         float **colorBuffer,
                                                          unsigned int    **indexBuffer,
                                                          int    *lengthFaces,
                                                          int    *lengthVertices)
 {
-    int usedVertices=0, usedFaces=0, numVertices = m_triangles.size();
-    
-    (*vertexBuffer) = new float[numVertices*3];
-    (*indexBuffer) =  new unsigned int[numVertices];
-    memset((*vertexBuffer), 0, numVertices*3*sizeof(float));
-    memset((*indexBuffer),  0, numVertices*sizeof(unsigned int));
+    // make a good guess how long the normal buffer is supposed to be
+    // colorbuffer, vertexbuffer a.s.o.
+    // Vertexbuffer: 3 entries are 1 vertex -> [X1, Y1, Z1, X2, Y2, Z2, X3....]
+    // normalbuffer: 3 entries are 1 Normal -> [n1, n1, n1, n2, n2, n2, ......]
+    // colorbuffer:  3 etnries are 1 vertex -> [r1, g1, b1, ..................]
+    //
+    // indexbuffer: every vertice has an index in vertexbuffer. 
+    //
+    // good guess: #faces * 3 == #vertices
+    // good guess: len(VertexBuffer) = #vertices * 3
+    int numFaces = m_triangles.size() / 3;
+    int numVertices = m_triangles.size();
 
+    // allocate new memory.
+    (*vertexBuffer) = new float[numVertices*3];
+    (*normalBuffer) = new float[numVertices*3];
+    (*colorBuffer)  = new float[numVertices*3];
+    (*indexBuffer) =  new unsigned int[numVertices];
+
+
+    // init memory
+    for(int i=0; i<numVertices*3; ++i)
+    {
+        (*vertexBuffer)[i] = 0.0;
+        (*normalBuffer)[i] = 0.0;
+        (*colorBuffer)[i]  = 0.0;
+    }
+    for(int i=0; i<numVertices; ++i)
+    {
+        (*indexBuffer)[i] = 0.0;
+    }
+
+
+    int usedVertices=0, usedNormals=0, usedColors=0, usedFaces=0;
+    int maxColorBufferValue=0;
     
-    // keep track of already used vertices to avoid doubled triangles 
+    // keep track of already used vertices to avoid floats.t
     vector<Vertex<float> > vertices;
     vector<Vertex<float> >::iterator triangles    = m_triangles.begin();
     vector<Vertex<float> >::iterator trianglesEnd = m_triangles.end();
-    if( m_triangles.size() < 3 )
-    {
-        //cerr << __FILE__ << " " << __LINE__ << ": Not enough points received!" << endl;
-        vertexBuffer = NULL;
-        indexBuffer = NULL;
-        *lengthFaces = *lengthVertices = 0;
-        return;
-    } 
 
+    int count=0;
     int posArr[3]; posArr[0]=-1; posArr[1]=-1; posArr[2]=-1;
     // add all triangles and so faces to our buffers and keep track of all used parameters
     int m=0;
-    
+    double r,g,b;
+    int surface_class = m_region;
+
+    r = fabs(cos(surface_class)); 
+    g = fabs(sin(surface_class * 30));
+    b = fabs(sin(surface_class * 2));
     for(; triangles != trianglesEnd; ++triangles)
     {
         // try to find the new triangleVertex in the list of used vertices.
         vector<Vertex<float> >::iterator it    = vertices.begin();
         vector<Vertex<float> >::iterator itEnd = vertices.end();
         int pos=0;
-        /*while(it != itEnd && *it != *triangles) 
+        while(it != itEnd && *it != *triangles) 
         {
             it++;
             pos++;
@@ -170,20 +198,26 @@ void Tesselator<VertexT, NormalT>::getFinalizedTriangles(float **vertexBuffer,
         if(it != itEnd)
         {
             posArr[m] = pos;
-            cout << "pos: " << pos << endl;
         } else
-        { */
+        {
 			  // vertex was not used before so store it
 			  vertices.push_back(*triangles);
 			  
 			  (*vertexBuffer)[(usedVertices * 3) + 0] = (*triangles)[0]; 
 			  (*vertexBuffer)[(usedVertices * 3) + 1] = (*triangles)[1];
-                          (*vertexBuffer)[(usedVertices * 3) + 2] = (*triangles)[2];
+			  (*vertexBuffer)[(usedVertices * 3) + 2] = (*triangles)[2];
 
-                          posArr[m] = usedVertices;
-                          //cout << "pos: " << usedVertices << endl;
-                          usedVertices++;
-        //}
+			  (*normalBuffer)[(usedVertices * 3) + 0] = m_normal[0];
+			  (*normalBuffer)[(usedVertices * 3) + 1] = m_normal[1];
+			  (*normalBuffer)[(usedVertices * 3) + 2] = m_normal[2];
+			  
+			  (*colorBuffer)[(usedVertices *3) + 0] = r;
+			  (*colorBuffer)[(usedVertices *3) + 1] = g;
+			  (*colorBuffer)[(usedVertices *3) + 2] = b;
+
+			  posArr[m] = usedVertices;
+			  usedVertices++;
+        }
         m++;
         
         if(m == 3) // we added 3 vertices therefore a whole face!!
@@ -191,7 +225,6 @@ void Tesselator<VertexT, NormalT>::getFinalizedTriangles(float **vertexBuffer,
             (*indexBuffer)[(usedFaces * 3) + 0] = posArr[0]; 
             (*indexBuffer)[(usedFaces * 3) + 1] = posArr[1];
             (*indexBuffer)[(usedFaces * 3) + 2] = posArr[2];
-            //cout << "positions: " << posArr[0] << " " << posArr[1] << " " << posArr[2] << endl;
 				#ifdef DB_TESS
             cout << "v1: " << (*vertexBuffer)[posArr[0]] << " " << (*vertexBuffer)[posArr[0]+1] << " " << (*vertexBuffer)[posArr[0]+2] << "\n"; 
             cout << "v2: " << (*vertexBuffer)[posArr[1]] << " " << (*vertexBuffer)[posArr[1]+1] << " " << (*vertexBuffer)[posArr[1]+2] << "\n"; 
@@ -207,16 +240,30 @@ void Tesselator<VertexT, NormalT>::getFinalizedTriangles(float **vertexBuffer,
     {
         // Copy all that stuff and resize array -- this should be improved somehow! TODO:!
         float *newVertexBuffer = new float[usedVertices*3];
+        float *newNormalBuffer = new float[usedVertices*3];
+        float *newColorBuffer  = new float[usedVertices*3];
         unsigned int    *newIndexBuffer  = new unsigned int[usedFaces*3];
 
         // use memcopy?
-        memcpy(newVertexBuffer, (*vertexBuffer), usedVertices*3*sizeof(float));
-        memcpy(newIndexBuffer,  (*indexBuffer),  usedFaces*3*sizeof(unsigned int)); 
-        
+        for(int i=0; i<usedVertices*3; i++)
+        {
+            newVertexBuffer[i] = (*vertexBuffer)[i];
+            newNormalBuffer[i] = (*normalBuffer)[i];
+            newColorBuffer[i]  = (*colorBuffer)[i];
+        }
+
+        for(int i=0; i<usedFaces*3; ++i)
+        {
+            newIndexBuffer[i] = (*indexBuffer)[i];
+        }
+        delete (*colorBuffer);
         delete (*indexBuffer);
         delete (*vertexBuffer);
+        delete (*normalBuffer);
 
         (*vertexBuffer) = newVertexBuffer;
+        (*normalBuffer) = newNormalBuffer;
+        (*colorBuffer)  = newColorBuffer;
         (*indexBuffer) = newIndexBuffer;
     }
     *lengthVertices = usedVertices*3;
@@ -286,154 +333,17 @@ void Tesselator<VertexT, NormalT>::init(void)
 
 
     /* set Properties for tesselation */
-    gluTessProperty(m_tesselator, GLU_TESS_WINDING_RULE, GLU_TESS_WINDING_POSITIVE);
+    //gluTessProperty(m_tesselator, GLU_TESS_WINDING_RULE, GLU_TESS_WINDING_POSITIVE);
     //gluTessProperty(m_tesselator, GLU_TESS_WINDING_RULE, GLU_TESS_WINDING_NEGATIVE);
     //gluTessProperty(m_tesselator, GLU_TESS_WINDING_RULE, GLU_TESS_WINDING_NONZERO);
-    //gluTessProperty(m_tesselator, GLU_TESS_WINDING_RULE, GLU_TESS_WINDING_ODD);
+    gluTessProperty(m_tesselator, GLU_TESS_WINDING_RULE, GLU_TESS_WINDING_ODD);
 	 /* Use gluTessNormal: speeds up the tessellation if the
 	  	Polygon lies on a x-y plane. and it approximatly does!*/
 	 //gluTessNormal(m_tesselator, 0, 0, 1);
 }
 
-        template<typename VertexT, typename NormalT>
-void Tesselator<VertexT, NormalT>::tesselateRegionsAndFinalize(vector<Region<VertexT, NormalT> * > *regions, 
-                double contourEpsilon,
-                bool &color,
-                float **vertexBuffer,
-                float **normalBuffer,
-                float **colorBuffer,
-                float **textureCoordBuffer,
-                unsigned int **indexBuffer,
-                unsigned int **textureIndexBuffer,
-                unsigned int **textureBuffer,
-                uint *textureSize,
-                size_t &vncSize,
-                size_t &indexSize,
-	        PointCloudManager<VertexT, NormalT>* pm)
-{
-        int vncUsed=vncSize, indexUsed=indexSize, textureUsed=0;
-        for(int i=0; i<regions->size(); ++i)
-        {
-                /* a small check to see whether we will run out of memory. */
-                if((float)vncUsed / (float)vncSize >= 0.80)
-                {
-                        *vertexBuffer = (float*)realloc((*vertexBuffer), vncSize*2*sizeof(float));
-                        *normalBuffer = (float*)realloc((*normalBuffer), vncSize*2*sizeof(float));
-                        *colorBuffer  = (float*)realloc((*colorBuffer),  vncSize*2*sizeof(float));
-                        *textureCoordBuffer =(float*)realloc((*textureBuffer),vncSize*2*sizeof(float)); 
-                        vncSize *= 2;
-                }
-
-                /* a small check to see whether we will run out of memory. */
-                if((float)indexUsed / (float)indexSize >= 0.80)
-                {
-                        *indexBuffer        = (unsigned int*)realloc((*indexBuffer), indexSize*2*sizeof(float)); 
-                        *textureIndexBuffer = (unsigned int*)realloc((*textureIndexBuffer), indexSize*2*sizeof(float)); 
-                        indexSize *= 2;
-                }
-
-                /* Initialize tesselator and get all necessary variables like the contours etc. */
-                Tesselator<VertexT, NormalT>::init();
-                m_normal = (*regions)[i]->calcNormal(); 
-                vector<vector<HVertex*> > contours = (*regions)[i]->getContours(contourEpsilon);
-                typename vector<vector<HVertex*> >::iterator beg;
-                typename vector<vector<HVertex*> >::iterator end;
-                beg = contours.begin();
-                end = contours.end();
-                for(; beg != end; ++beg)
-                {
-                        typename vector<HVertex*>::iterator beg1 = beg->begin();
-                        typename vector<HVertex*>::iterator end1 = beg->end();
-                        cout << "BLA?!: " << beg->size() << endl;
-                        for(; beg1 != end1; ++beg1)
-                        {
-                               cout << "?!: " << (*beg1)->m_position[0] << endl;
-                               cout << "?!: " << (*beg1)->m_position[1] << endl;
-                               cout << "?!: " << (*beg1)->m_position[2] << endl;
-                        }
-                }
-                (*textureBuffer)[*textureSize++]   = (*regions)[i]->m_region_number;
-
-                //Tesselator<VertexT, NormalT>::tesselate(contours);
-                cout << "Went good!" << endl;
-
-                /* Generate the texture for this region and store it
-                */
-                Texture<VertexT, NormalT>* t = new Texture<VertexT, NormalT>(pm, (*regions)[i], contours);
-                t->save();
-                return;
-                /* Read out all retesselated triangles and store them to the corresponding buffers.
-                 * also handle the color and normal buffers.
-                 */
-                int surface_class = m_region;
-                float r,g,b;
-                if(color)
-                {
-                        r = fabs(cos(surface_class)); 
-                        g = fabs(sin(surface_class * 30));
-                        b = fabs(sin(surface_class * 2));
-                }else {
-                        r = 0.0;
-                        g = 0.8;
-                        b = 0.0;
-                }
-
-                int count=0;
-                int posArr[3]; posArr[0]=-1; posArr[1]=-1; posArr[2]=-1;
-
-                int m=0;
-                vector<Vertex<float> >::iterator triangles    = m_triangles.begin();
-                vector<Vertex<float> >::iterator trianglesEnd = m_triangles.end();
-                for(; triangles != trianglesEnd; ++triangles)
-                {
-                        float u1 = 0;
-                        float u2 = 0;
-                        t->textureCoords(VertexT((*triangles)[0], (*triangles)[1], (*triangles)[2]) ,u1 ,u2);
-
-                        (*vertexBuffer)[vncUsed + 0] = (*triangles)[0]; 
-                        (*vertexBuffer)[vncUsed + 1] = (*triangles)[1];
-                        (*vertexBuffer)[vncUsed + 2] = (*triangles)[2];
-
-                        (*normalBuffer)[vncUsed + 0] = m_normal[0];
-                        (*normalBuffer)[vncUsed + 1] = m_normal[1];
-                        (*normalBuffer)[vncUsed + 2] = m_normal[2];
-
-                        (*colorBuffer)[vncUsed + 0] = r;
-                        (*colorBuffer)[vncUsed + 1] = g;
-                        (*colorBuffer)[vncUsed + 2] = b;
-
-                        (*textureCoordBuffer)[vncUsed+0] = u1;
-                        (*textureCoordBuffer)[vncUsed+1] = u2;
-                        (*textureCoordBuffer)[vncUsed+2] = 0;
-
-                        posArr[m] = (vncUsed / 3) -1;
-                        vncUsed += 3;
-                }
-                m++;
-
-                if(m == 3) // we added 3 vertices therefore a whole face!!
-                {
-                        (*indexBuffer)[indexUsed + 0] = posArr[0]; 
-                        (*indexBuffer)[indexUsed + 1] = posArr[1];
-                        (*indexBuffer)[indexUsed + 2] = posArr[2];
-                        indexUsed += 3;
-                        m=0;
-                }
-        }
-        /*
-         * Resize all the arrays to the used sizes.
-         */
-        *vertexBuffer = (float*)realloc((*vertexBuffer), vncUsed*sizeof(float));
-        *normalBuffer = (float*)realloc((*normalBuffer), vncUsed*sizeof(float));
-        *colorBuffer  = (float*)realloc((*colorBuffer),  vncUsed*sizeof(float));
-        *textureCoordBuffer =(float*)realloc((*textureCoordBuffer),vncUsed*sizeof(float)); 
-        *indexBuffer        = (unsigned int*)realloc((*indexBuffer), indexUsed*sizeof(float)); 
-        *textureIndexBuffer = (unsigned int*)realloc((*textureIndexBuffer), indexUsed*sizeof(float)); 
-        *textureBuffer= (unsigned int*)realloc((*textureBuffer), *textureSize);
-        return;
-}
-
 template<typename VertexT, typename NormalT>
+//vector<HalfEdgeVertex<VertexT, NormalT> > Tesselator<VertexT, NormalT>::tesselate(vector<stack<HVertex*> > vectorBorderPoints)
 void Tesselator<VertexT, NormalT>::tesselate(vector<vector<HVertex*> > vectorBorderPoints)
 {
     if(!m_tesselator)

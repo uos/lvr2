@@ -262,9 +262,14 @@ public:
 	 */
 	virtual bool safeCollapseEdge(HEdge* edge);
 
+	/**
+	 * restores the position of every triangle in a plane if it has been modified
+	 */
+	virtual void restorePlanes();
+
 	void enableRegionColoring() { m_colorRegions = true;}
 
-        void regionsToBuffer(
+    virtual void regionsToBuffer(
                 float **vertex, 
                 float **normal,
                 float **color,
@@ -274,22 +279,6 @@ public:
                 size_t     &vncSize, 
                 size_t   &indexSize, 
                 vector<int> &regions);
-
-        void retesselateRegionsToBuffer(
-                vector<int> &regions,
-                double epsilon,
-                float **vertex, 
-                float **normal,
-                float **color,
-                float **textureCoord,
-                unsigned int **index, 
-                unsigned int **textureIndex,
-                unsigned int **texture,
-                unsigned int &textureSize,
-                size_t     &vncSize, 
-                size_t   &indexSize,
-                int vncOffset,
-                int indexOffset); 
 
 	void tester();
 
