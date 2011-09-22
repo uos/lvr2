@@ -1098,6 +1098,11 @@ void HalfEdgeMesh<VertexT, NormalT>::retesselateRegionsToBuffer(
 
     float *v = 0, r, g, b;
     unsigned int *in;
+    cout << "inFn:\n";
+    for(int j=0; j<regions.size(); j++)
+    {
+            cout << regions[j] << endl;
+    }
     for(int j=0; j<regions.size(); j++)
     {
         (*texture)[textureSize++] = m_regions[j]->m_region_number;
@@ -1166,11 +1171,6 @@ void HalfEdgeMesh<VertexT, NormalT>::retesselateRegionsToBuffer(
                 (*vertex)[vncUsed + 1 + m*3] = v[m*3+1];
                 (*vertex)[vncUsed + 2 + m*3] = v[m*3+2];
 
-                if(isnan(v[m*3+0]) || isnan(v[m*3+1]) || isnan(v[m*3+2]))
-                {
-                        cout << "FUUUUUUUUUUUUUUCK" << endl;
-                }
-
                 (*normal)[vncUsed + 0 + m*3] = norm[0];
                 (*normal)[vncUsed + 1 + m*3] = norm[1];
                 (*normal)[vncUsed + 2 + m*3] = norm[2];
@@ -1179,39 +1179,12 @@ void HalfEdgeMesh<VertexT, NormalT>::retesselateRegionsToBuffer(
                 (*color)[vncUsed + 1 + m*3] = g;
                 (*color)[vncUsed + 2 + m*3] = b;
 
-                if((m+1) % 3 == 0)
-                {
-                        float x1 = (*vertex)[vncUsed + 0 + (m-2)*3];
-                        float y1 = (*vertex)[vncUsed + 1 + (m-2)*3];
-                        float z1 = (*vertex)[vncUsed + 2 + (m-2)*3];
-
-                        float x2 = (*vertex)[vncUsed + 0 + (m-1)*3];
-                        float y2 = (*vertex)[vncUsed + 1 + (m-1)*3];
-                        float z2 = (*vertex)[vncUsed + 2 + (m-1)*3];
-
-                        float x3 = (*vertex)[vncUsed + 0 + m*3];
-                        float y3 = (*vertex)[vncUsed + 1 + m*3];
-                        float z3 = (*vertex)[vncUsed + 2 + m*3];
-                        if((sqrt( pow(fabs(x1-x2),2) + pow(fabs(y1-y2),2) + pow(fabs(z1-z2),2)) < 0.0001) ||
-                                        (sqrt( pow(fabs(x3-x2),2) + pow(fabs(y3-y2),2) + pow(fabs(z3-z2),2)) < 0.0001) ||
-                                        (sqrt( pow(fabs(x3-x1),2) + pow(fabs(y3-y1),2) + pow(fabs(z3-z1),2)) < 0.0001) )
-                        {
-                                cout << "Bla\n";
-                                //indexUsed -= 4;
-                                cout << "-----------------------------------------------" << endl;
-                                cout << "V1: " << x1 << " " << y1 << " " << z1 << endl;
-                                cout << "V2: " << x2 << " " << y2 << " " << z2 << endl;
-                                cout << "V3: " << x3 << " " << y3 << " " << z3 << endl;
-                                cout << "-----------------------------------------------" << endl;
-                                cout << "decreasing index!" << endl;
-                        }
-                }
         }
 
         for(int m=0; m < indexLength; ++m)
         {
-                (*textureIndex)[indexUsed + m] = m_regions[j]->m_region_number; 
                 (*index)[indexUsed + m] = in[m] + vncUsed/3; 
+                (*textureIndex)[indexUsed + m] = m_regions[j]->m_region_number; 
                 //cout << "Index: " << (in[m] + vncUsed/3) << endl;
         }
 
@@ -1220,6 +1193,8 @@ void HalfEdgeMesh<VertexT, NormalT>::retesselateRegionsToBuffer(
 
         delete v;
         delete in;
+        coordinatesLength = 0;
+        indexLength = 0;
         //delete t;
     }
     
@@ -1378,13 +1353,14 @@ void HalfEdgeMesh<VertexT, NormalT>::finalizeAndRetesselate()
         vector<int> normal_regions;
 
         // check for all regions whether they should be retesselated.
+        cout << "inChk:\n";
         for(int i=0; i<m_regions.size(); ++i)
         {
                 if(m_regions[i]->m_inPlane)
                 {
                         //plane_regions.push_back(m_regions[i]);
                         plane_regions.push_back(i);
-                        //cout << i << endl;
+                        cout << i << endl;
                 } else{
                         normal_regions.push_back(i);
                 }
@@ -1410,6 +1386,12 @@ void HalfEdgeMesh<VertexT, NormalT>::finalizeAndRetesselate()
          * All regions that do belong to a regression plane should be retesselated.
          * The tesselator handles the vertex-coordinate-, normal-, color-, and texture buffers.
          */
+        cout << "preFn:\n";
+        for(int j=0; j<plane_regions.size(); j++)
+        {
+                cout << plane_regions[j] << endl;
+        }
+
         retesselateRegionsToBuffer(
                         plane_regions,
                         0.01,
@@ -1461,4 +1443,39 @@ void HalfEdgeMesh<VertexT, NormalT>::finalizeAndRetesselate()
                     //indexUsed -= 4;
                 }
             } 
+
+
+                if((m+1) % 3 == 0)
+                {
+                        float x1 = (*vertex)[vncUsed + 0 + (m-2)*3];
+                        float y1 = (*vertex)[vncUsed + 1 + (m-2)*3];
+                        float z1 = (*vertex)[vncUsed + 2 + (m-2)*3];
+
+                        float x2 = (*vertex)[vncUsed + 0 + (m-1)*3];
+                        float y2 = (*vertex)[vncUsed + 1 + (m-1)*3];
+                        float z2 = (*vertex)[vncUsed + 2 + (m-1)*3];
+
+                        float x3 = (*vertex)[vncUsed + 0 + m*3];
+                        float y3 = (*vertex)[vncUsed + 1 + m*3];
+                        float z3 = (*vertex)[vncUsed + 2 + m*3];
+                        if((sqrt( pow(fabs(x1-x2),2) + pow(fabs(y1-y2),2) + pow(fabs(z1-z2),2)) < 0.0001) ||
+                                        (sqrt( pow(fabs(x3-x2),2) + pow(fabs(y3-y2),2) + pow(fabs(z3-z2),2)) < 0.0001) ||
+                                        (sqrt( pow(fabs(x3-x1),2) + pow(fabs(y3-y1),2) + pow(fabs(z3-z1),2)) < 0.0001) )
+                        {
+                                cout << "Bla\n";
+                                //indexUsed -= 4;
+                                cout << "-----------------------------------------------" << endl;
+                                cout << "V1: " << x1 << " " << y1 << " " << z1 << endl;
+                                cout << "V2: " << x2 << " " << y2 << " " << z2 << endl;
+                                cout << "V3: " << x3 << " " << y3 << " " << z3 << endl;
+                                cout << "-----------------------------------------------" << endl;
+                                cout << "decreasing index!" << endl;
+                        }
+                }
+
+                if(isnan(v[m*3+0]) || isnan(v[m*3+1]) || isnan(v[m*3+2]))
+                {
+                        cout << "FUUUUUUUUUUUUUUCK" << endl;
+                }
+
             */
