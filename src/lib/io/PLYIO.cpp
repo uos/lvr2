@@ -103,7 +103,7 @@ float * PLYIO::getIntensityArray( size_t &n ) {
 unsigned int * PLYIO::getIndexArray( size_t &n ) {
 
 	n = m_num_face;
-	return m_indices;
+	return m_face_indices;
 
 }
 

@@ -37,18 +37,18 @@ class PLYIO : public BaseIO, public MeshLoader
 // ,  public PointLoader
 {
 
-	float        * m_vertices;
+	float         * m_vertices;
 	unsigned char * m_color;
-	float        * m_confidence;
-	float        * m_intensity;
-	float        * m_normals;
-	unsigned int * m_face_indices;
-	uint32_t       m_num_vertex;
-	uint32_t       m_num_normal;
-	uint32_t       m_num_color;
-	uint32_t       m_num_confidence;
-	uint32_t       m_num_intensity;
-	uint32_t       m_num_face;
+	float         * m_confidence;
+	float         * m_intensity;
+	float         * m_normals;
+	unsigned int  * m_face_indices;
+	uint32_t        m_num_vertex;
+	uint32_t        m_num_normal;
+	uint32_t        m_num_color;
+	uint32_t        m_num_confidence;
+	uint32_t        m_num_intensity;
+	uint32_t        m_num_face;
 
 public:
 
