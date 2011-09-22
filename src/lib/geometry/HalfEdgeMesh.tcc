@@ -891,35 +891,35 @@ void HalfEdgeMesh<VertexT, NormalT>::dragOntoIntersection(Region<VertexT, Normal
         template<typename VertexT, typename NormalT>
 void HalfEdgeMesh<VertexT, NormalT>::optimizePlaneIntersections()
 {
-        for (int i = 0; i<m_regions.size(); i++)
-        {
-                if (m_regions[i]->m_inPlane)
-                        for(int j = i+1; j<m_regions.size(); j++)
-                                if(m_regions[j]->m_inPlane)
-                                {
-                                        //calculate intersection between plane i and j
+	for (int i = 0; i<m_regions.size(); i++)
+	{
+		if (m_regions[i]->m_inPlane)
+			for(int j = i+1; j<m_regions.size(); j++)
+				if(m_regions[j]->m_inPlane)
+				{
+					//calculate intersection between plane i and j
 
-                                        NormalT n_i = m_regions[i]->m_normal;
-                                        NormalT n_j = m_regions[j]->m_normal;
+					NormalT n_i = m_regions[i]->m_normal;
+					NormalT n_j = m_regions[j]->m_normal;
 
-                                        //don't improve almost parallel regions - they won't cross in a reasonable distance
-                                        if (fabs(n_i*n_j) < 0.9)
-                                        {
+					//don't improve almost parallel regions - they won't cross in a reasonable distance
+					if (fabs(n_i*n_j) < 0.9)
+					{
 
-                                                float d_i = n_i * (*(m_regions[i]->m_faces[0]))(0)->m_position;
-                                                float d_j = n_j * (*(m_regions[j]->m_faces[0]))(0)->m_position;
+						float d_i = n_i * m_regions[i]->m_stuetzvektor;
+						float d_j = n_j * m_regions[j]->m_stuetzvektor;
 
-                                                VertexT direction = n_i.cross(n_j);
+						VertexT direction = n_i.cross(n_j);
 
-                                                float denom = direction * direction;
-                                                VertexT x = ((n_j*d_i - n_i*d_j).cross(direction)) * (1/denom);
+						float denom = direction * direction;
+						VertexT x = ((n_j*d_i - n_i*d_j).cross(direction)) * (1/denom);
 
-                                                //drag all points at the border between planes i and j onto the intersection
-                                                dragOntoIntersection(m_regions[i], m_regions[j], x, direction);
-                                                dragOntoIntersection(m_regions[j], m_regions[i], x, direction);
-                                        }
-                                }
-        }
+						//drag all points at the border between planes i and j onto the intersection
+						dragOntoIntersection(m_regions[i], m_regions[j], x, direction);
+						dragOntoIntersection(m_regions[j], m_regions[i], x, direction);
+					}
+				}
+	}
 }
 
         template<typename VertexT, typename NormalT>
@@ -937,14 +937,33 @@ vector<vector<HalfEdgeVertex<VertexT, NormalT>* > > HalfEdgeMesh<VertexT, Normal
         return  contours;
 }
 
-        template<typename VertexT, typename NormalT>
+template<typename VertexT, typename NormalT>
+void HalfEdgeMesh<VertexT, NormalT>::restorePlanes()
+{
+	for(int r=0; r<m_regions.size(); r++)
+		//drag points into the regression plane
+		if( m_regions[r]->m_inPlane)
+			for(int i=0; i<m_regions[r]->m_faces.size(); i++)
+			{
+				for(int p=0; p<3; p++)
+				{
+					float v = ((m_regions[r]->m_stuetzvektor - (*(m_regions[r]->m_faces[i]))(p)->m_position) * m_regions[r]->m_normal) / (m_regions[r]->m_normal * m_regions[r]->m_normal);
+					if(v != 0)
+						(*(m_regions[r]->m_faces[i]))(p)->m_position = (*(m_regions[r]->m_faces[i]))(p)->m_position + (VertexT)m_regions[r]->m_normal * v;
+				}
+			}
+}
+
+	template<typename VertexT, typename NormalT>
 void HalfEdgeMesh<VertexT, NormalT>::tester()
 {
 
-        cout << "--------------------------------TESTER" << endl;
-        //	for(int r=0; r<m_regions.size(); r++)
-        //		if( m_regions[r]->detectFlicker()) cout << "still flickering" << endl;
-        cout << "----------------------------END TESTER" << endl;
+	cout << "--------------------------------TESTER" << endl;
+	//	for(int r=0; r<m_regions.size(); r++)
+//	//		if( m_regions[r]->detectFlicker()) cout << "still flickering" << endl;
+//	for(int r=0; r<m_regions.size(); r++)
+//		if( m_regions[r]->m_inPlane) cout << r << ": " << m_regions[r]->m_region_number << endl;
+	cout << "----------------------------END TESTER" << endl;
 
         //    Reset all used variables
         for(int i=0; i<m_faces.size(); i++)
@@ -1083,30 +1102,26 @@ void HalfEdgeMesh<VertexT, NormalT>::retesselateRegionsToBuffer(
     if( vncSize == 0 )
     {
             vncSize = 1024;
-            (*vertex) = malloc(vncSize*sizeof(float));
-            (*normal) = malloc(vncSize*sizeof(float));
-            (*color)  = malloc(vncSize*sizeof(float));
-            (*textureCoord) = malloc(vncSize*sizeof(float));
+            (*vertex) = (float*)malloc(vncSize*sizeof(float));
+            (*normal) = (float*)malloc(vncSize*sizeof(float));
+            (*color)  = (float*)malloc(vncSize*sizeof(float));
+            (*textureCoord) = (float*)malloc(vncSize*sizeof(float));
     }
 
     if( indexSize == 0 )
     {
             indexSize == 1024;
-            (*index) = malloc(indexSize*sizeof(unsigned int));
-            (*textureIndex) = malloc(indexSize*sizeof(unsigned int));
+            (*index) = (unsigned int*)malloc(indexSize*sizeof(unsigned int));
+            (*textureIndex) = (unsigned int*)malloc(indexSize*sizeof(unsigned int));
     }
 
     float *v = 0, r, g, b;
     unsigned int *in;
-    cout << "inFn:\n";
-    for(int j=0; j<regions.size(); j++)
-    {
-            cout << regions[j] << endl;
-    }
+    
     for(int j=0; j<regions.size(); j++)
     {
         (*texture)[textureSize++] = m_regions[j]->m_region_number;
-        NormalT norm = m_regions[j]->calcNormal(); 
+        //NormalT norm = m_regions[j]->calcNormal(); 
         vector<vector<HVertex*> > contours = m_regions[j]->getContours(0.01);
 
         Tesselator<VertexT, NormalT>::init();
@@ -1171,25 +1186,30 @@ void HalfEdgeMesh<VertexT, NormalT>::retesselateRegionsToBuffer(
                 (*vertex)[vncUsed + 1 + m*3] = v[m*3+1];
                 (*vertex)[vncUsed + 2 + m*3] = v[m*3+2];
 
-                (*normal)[vncUsed + 0 + m*3] = norm[0];
-                (*normal)[vncUsed + 1 + m*3] = norm[1];
-                (*normal)[vncUsed + 2 + m*3] = norm[2];
+                (*normal)[vncUsed + 0 + m*3] = 0.0f; //norm[0];
+                (*normal)[vncUsed + 1 + m*3] = 0.0f; //norm[1];
+                (*normal)[vncUsed + 2 + m*3] = 0.0f; //norm[2];
 
                 (*color)[vncUsed + 0 + m*3] = r;
                 (*color)[vncUsed + 1 + m*3] = g;
                 (*color)[vncUsed + 2 + m*3] = b;
 
+                (*index)[indexUsed+m] = vncUsed/3 + m;
+                cout << "vncU: " << vncUsed << endl;
+                cout << "indU: " << indexUsed << endl;
+                cout << "indV: " << vncUsed/3+m << endl;
+                (*textureIndex)[indexUsed + m] = m_regions[j]->m_region_number; 
         }
-
+        /*
         for(int m=0; m < indexLength; ++m)
         {
                 (*index)[indexUsed + m] = in[m] + vncUsed/3; 
                 (*textureIndex)[indexUsed + m] = m_regions[j]->m_region_number; 
                 //cout << "Index: " << (in[m] + vncUsed/3) << endl;
-        }
+        } */
 
         vncUsed += coordinatesLength;
-        indexUsed += indexLength;
+        indexUsed += vncUsed / 3;
 
         delete v;
         delete in;
@@ -1279,9 +1299,9 @@ void HalfEdgeMesh<VertexT, NormalT>::regionsToBuffer(
                                 (*vertex)[vncUsed + 1] = (*m_regions[i]->m_faces[j])(k)->m_position.y;
                                 (*vertex)[vncUsed + 2] = (*m_regions[i]->m_faces[j])(k)->m_position.z;
 
-                                (*normal)[vncUsed + 0] = (*m_regions[i]->m_faces[j])(k)->m_normal[0];
-                                (*normal)[vncUsed + 1] = (*m_regions[i]->m_faces[j])(k)->m_normal[1];
-                                (*normal)[vncUsed + 2] = (*m_regions[i]->m_faces[j])(k)->m_normal[2];
+                                (*normal)[vncUsed + 0] = 0.0f; //(*m_regions[i]->m_faces[j])(k)->m_normal[0];
+                                (*normal)[vncUsed + 1] = 0.0f; //(*m_regions[i]->m_faces[j])(k)->m_normal[1];
+                                (*normal)[vncUsed + 2] = 0.0f; //(*m_regions[i]->m_faces[j])(k)->m_normal[2];
 
                                 (*color)[vncUsed + 0] = r;
                                 (*color)[vncUsed + 1] = g;
@@ -1353,14 +1373,12 @@ void HalfEdgeMesh<VertexT, NormalT>::finalizeAndRetesselate()
         vector<int> normal_regions;
 
         // check for all regions whether they should be retesselated.
-        cout << "inChk:\n";
         for(int i=0; i<m_regions.size(); ++i)
         {
                 if(m_regions[i]->m_inPlane)
                 {
                         //plane_regions.push_back(m_regions[i]);
                         plane_regions.push_back(i);
-                        cout << i << endl;
                 } else{
                         normal_regions.push_back(i);
                 }
@@ -1371,6 +1389,7 @@ void HalfEdgeMesh<VertexT, NormalT>::finalizeAndRetesselate()
          * to retesselate it and store it directly in the buffer. After this point
          * doubled vertices may be stored in the buffer!
          */
+        /*
         regionsToBuffer(&this->m_vertexBuffer, 
                         &this->m_normalBuffer,
                         &this->m_colorBuffer,
@@ -1381,17 +1400,14 @@ void HalfEdgeMesh<VertexT, NormalT>::finalizeAndRetesselate()
                         indexBufferSize, 
                         normal_regions);
         cout << timestamp << "Done copying untesselated regions" << endl;
+        */
 
         /*
          * All regions that do belong to a regression plane should be retesselated.
          * The tesselator handles the vertex-coordinate-, normal-, color-, and texture buffers.
          */
-        cout << "preFn:\n";
-        for(int j=0; j<plane_regions.size(); j++)
-        {
-                cout << plane_regions[j] << endl;
-        }
-
+        vncBufferSize = 0;
+        indexBufferSize = 0;
         retesselateRegionsToBuffer(
                         plane_regions,
                         0.01,

@@ -11,11 +11,17 @@ namespace lssr
 template<typename CoordType, typename IndexType>
 ObjIO<CoordType, IndexType>::ObjIO()
 {
-    m_normals       = 0;
-    m_vertices      = 0;
-    m_indices       = 0;
-    m_vertexCount   = 0;
-    m_faceCount     = 0;
+    m_normals     			= 0;
+    m_vertices    			= 0;
+    m_indices      			= 0;
+    m_vertexCount  			= 0;
+    m_faceCount    			= 0;
+    m_textureCoords			= 0;
+	m_textureIndices		= 0;
+	m_textures				= 0;
+	m_textureCount			= 0;
+	m_textureIndicesCount	= 0;
+	m_textureCoordsCount    = 0;
 }
 
 template<typename CoordType, typename IndexType>
@@ -68,8 +74,9 @@ void ObjIO<CoordType, IndexType>::write(string filename)
 
     if(out.good())
     {
+    	if(m_textureIndices != 0)
+    		out<<"mtllib textures.mtl"<<endl<<endl;
 
-    	out<<"mtllib textures.mtl"<<endl<<endl;
         for(size_t i = 0; i < m_vertexCount; i++)
         {
             IndexType index = i * 3;
@@ -88,16 +95,18 @@ void ObjIO<CoordType, IndexType>::write(string filename)
         }
 
         out<<endl;
-        for(size_t i = 0; i < m_vertexCount; i++)
+        if(m_textureIndices != 0)
         {
-        	IndexType index = i * 3;
-        	out << "vt " << m_textureCoords[index] << " "
-        	                         << m_textureCoords[index + 1] << " "
-        	                         << m_textureCoords[index + 2] << " " << endl;
+        	for(size_t i = 0; i < m_vertexCount; i++)
+        	{
+        		IndexType index = i * 3;
+        		out << "vt " << m_textureCoords[index] << " "
+        				<< m_textureCoords[index + 1] << " "
+        				<< m_textureCoords[index + 2] << " " << endl;
+        	}
         }
 
         out<<endl;
-        int oldTextureIndice = -1;
         for(size_t i = 0; i < m_faceCount; i++)
         {
             IndexType index = 3 * i;
@@ -107,15 +116,25 @@ void ObjIO<CoordType, IndexType>::write(string filename)
             IndexType v2 = m_indices[index + 1];
             IndexType v3 = m_indices[index + 2];
 
-			if(oldTextureIndice != m_textureIndices[index])
-			{
-				out <<endl<< "usemtl texture_" <<m_textureIndices[index]<< endl;
-			}
-			oldTextureIndice = m_textureIndices[index];
+            if(m_textureIndices != 0)
+            {
+            	int oldTextureIndex = -1;
+            	if(oldTextureIndex != m_textureIndices[index])
+            	{
+            		out <<endl<< "usemtl texture_" <<m_textureIndices[index]<< endl;
+            	}
+            	oldTextureIndex = m_textureIndices[index];
 
-            out << "f " << v1 + 1 << "/" << v1 + 1 << "/" << v1 + 1 << " "
-                        << v2 + 1 << "/" << v2 + 1 << "/" << v2 + 1 << " "
-                        << v3 + 1 << "/" << v3 + 1 << "/" << v3 + 1 << endl;
+            	out << "f " << v1 + 1 << "/" << v1 + 1 << "/" << v1 + 1 << " "
+            			<< v2 + 1 << "/" << v2 + 1 << "/" << v2 + 1 << " "
+            			<< v3 + 1 << "/" << v3 + 1 << "/" << v3 + 1 << endl;
+            }
+            else
+            {
+            	out << "f " << v1 + 1 << "//" << v1 + 1 << " "
+            			<< v2 + 1 << "//" << v2 + 1 << " "
+            			<< v3 + 1 << "//" << v3 + 1 << endl;
+            }
         }
 
         out.close();
@@ -127,22 +146,25 @@ void ObjIO<CoordType, IndexType>::write(string filename)
     }
 
     // write mtl file
-    out.open("textures.mtl");
-    if(out.good())
+    if(m_textureIndices != 0)
     {
-		out<<"newmtl texture_"<< UINT_MAX <<endl;
-		out<<"Kd 0.000 1.000 1.000"<<endl;
-		out<<"Ka 0.000 1.000 0.000"<<endl<<endl;
-
-    	for (int i = 0; i<this->m_textureCount; i++)
+    	out.open("textures.mtl");
+    	if(out.good())
     	{
-    		out<<"newmtl texture_"<<m_textures[i]<<endl;
-    		out<<"Ka 1.000 1.000 1.000"<<endl;
-    		out<<"Kd 1.000 1.000 1.000"<<endl;
-    		out<<"map_Kd texture_"<<m_textures[i]<<".ppm"<<endl<<endl;
-    	}
-    	out.close();
+    		out<<"newmtl texture_"<< UINT_MAX <<endl;
+    		out<<"Kd 0.000 1.000 1.000"<<endl;
+    		out<<"Ka 0.000 1.000 0.000"<<endl<<endl;
 
+    		for (int i = 0; i<this->m_textureCount; i++)
+    		{
+    			out<<"newmtl texture_"<<m_textures[i]<<endl;
+    			out<<"Ka 1.000 1.000 1.000"<<endl;
+    			out<<"Kd 1.000 1.000 1.000"<<endl;
+    			out<<"map_Kd texture_"<<m_textures[i]<<".ppm"<<endl<<endl;
+    		}
+    		out.close();
+
+    	}
     }
 
 
