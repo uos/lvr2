@@ -187,6 +187,12 @@ int main(int argc, char** argv)
 
         mesh.restorePlanes();
 
+        mesh.optimizePlanes(3,
+                            options.getNormalThreshold(),
+                            options.getMinPlaneSize(),
+                            0,
+                            false );
+
     }
 
 //    mesh.tester();
@@ -199,7 +205,7 @@ int main(int argc, char** argv)
 	 {
 		 mesh.finalize();
 	 }
-    mesh.save("triangle_mesh.ply");
+    mesh.saveObj("triangle_mesh.obj");
 
 
     cout << timestamp << "Program end." << endl;
