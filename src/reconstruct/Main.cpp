@@ -120,97 +120,91 @@ using namespace lssr;
  */
 int main(int argc, char** argv)
 {
-        // Parse command line arguments
-        reconstruct::Options options(argc, argv);
+    // Parse command line arguments
+    reconstruct::Options options(argc, argv);
 
-        // Exit if options had to generate a usage message
-        // (this means required parameters are missing)
-        if (options.printUsage()) return 0;
+    // Exit if options had to generate a usage message
+    // (this means required parameters are missing)
+    if (options.printUsage()) return 0;
 
-        ::std::cout<<options<<::std::endl;
+    ::std::cout << options << ::std::endl;
 
-        // Create a point cloud manager
-        string pcm_name = options.getPCM();
-        PointCloudManager<ColorVertex<float>, Normal<float> >* pcm;
-        if(pcm_name == "PCL")
-        {
-                cout << timestamp << "Creating PCL point cloud manager." << endl;
-                pcm = new PCLPointCloudManager<ColorVertex<float>, Normal<float> > ( options.getInputFileName());
-        }
-        else
-        {
-                cout << timestamp << "Creating STANN point cloud manager." << endl;
-                pcm = new StannPointCloudManager<ColorVertex<float>, Normal<float> > ( options.getInputFileName());
-        }
+    // Create a point cloud manager
+    string pcm_name = options.getPCM();
+    PointCloudManager<ColorVertex<float>, Normal<float> >* pcm;
+    if(pcm_name == "PCL")
+    {
+        cout << timestamp << "Creating PCL point cloud manager." << endl;
+        pcm = new PCLPointCloudManager<ColorVertex<float>, Normal<float> > ( options.getInputFileName());
+    }
+    else
+    {
+        cout << timestamp << "Creating STANN point cloud manager." << endl;
+        pcm = new StannPointCloudManager<ColorVertex<float>, Normal<float> > ( options.getInputFileName());
+    }
 
-        pcm->setKD(options.getKd());
-        pcm->setKI(options.getKi());
-        pcm->setKN(options.getKn());
-        pcm->calcNormals();
+    pcm->setKD(options.getKd());
+    pcm->setKI(options.getKi());
+    pcm->setKN(options.getKn());
+    pcm->calcNormals();
 
-        // Create an empty mesh
-        //TriangleMesh<Vertex<float>, Normal<float> > mesh;
-        HalfEdgeMesh<ColorVertex<float>, Normal<float> > mesh(pcm);
+    // Create an empty mesh
+    //TriangleMesh<Vertex<float>, Normal<float> > mesh;
+    HalfEdgeMesh<ColorVertex<float>, Normal<float> > mesh(pcm);
 
-        // Determine weather to use intersections or voxelsize
-        float resolution;
-        bool useVoxelsize;
-        if(options.getIntersections() > 0)
-        {
-                resolution = options.getIntersections();
-                useVoxelsize = true;
-        }
-        else
-        {
-                resolution = options.getVoxelsize();
-                useVoxelsize = true;
-        }
+    // Determine weather to use intersections or voxelsize
+    float resolution;
+    bool useVoxelsize;
+    if(options.getIntersections() > 0)
+    {
+        resolution = options.getIntersections();
+        useVoxelsize = true;
+    }
+    else
+    {
+        resolution = options.getVoxelsize();
+        useVoxelsize = true;
+    }
 
-        // Create a new reconstruction object
-        FastReconstruction<ColorVertex<float>, Normal<float> > reconstruction(*pcm, resolution, useVoxelsize);
-        reconstruction.getMesh(mesh);
+    // Create a new reconstruction object
+    FastReconstruction<ColorVertex<float>, Normal<float> > reconstruction(*pcm, resolution, useVoxelsize);
+    reconstruction.getMesh(mesh);
 
-        mesh.removeDanglingArtifacts(options.getDanglingArtifacts());
+    mesh.removeDanglingArtifacts(options.getDanglingArtifacts());
 
-        // Optimize mesh
-        if(options.optimizePlanes())
-        {
-                if(options.colorRegions()) mesh.enableRegionColoring();
-                mesh.optimizePlanes(options.getPlaneIterations(),
-                                options.getNormalThreshold(),
-                                options.getMinPlaneSize(),
-                                options.getSmallRegionThreshold() );
+    // Optimize mesh
+    if(options.optimizePlanes())
+    {
+        if(options.colorRegions()) mesh.enableRegionColoring();
+        mesh.optimizePlanes(options.getPlaneIterations(),
+                            options.getNormalThreshold(),
+                            options.getMinPlaneSize(),
+                            options.getSmallRegionThreshold() );
 
-                mesh.fillHoles(options.getFillHoles());
+        mesh.fillHoles(options.getFillHoles());
 
-                mesh.optimizePlaneIntersections();
+        mesh.optimizePlaneIntersections();
 
-                mesh.optimizePlanes(5,
-                                options.getNormalThreshold(),
-                                options.getMinPlaneSize(),
-                                0,
-                                false);
+        mesh.restorePlanes();
 
-                mesh.optimizePlaneIntersections();
-        }
+    }
 
-        //mesh.tester();
+//    mesh.tester();
 
-
-        // Save triangle mesh
-        if(options.retesselate())
-        {
-                mesh.finalizeAndRetesselate();
-        } else
-        {
-                mesh.finalize();
-        }
-        mesh.save("triangle_mesh.ply");
-        mesh.saveObj("triangle_mesh.obj");
+    // Save triangle mesh
+    if(options.retesselate())
+	 {
+		 mesh.finalizeAndRetesselate();
+	 } else
+	 {
+		 mesh.finalize();
+	 }
+    mesh.save("triangle_mesh.ply");
+    mesh.saveObj("triangle_mesh.obj");
 
 
-        cout << timestamp << "Program end." << endl;
+    cout << timestamp << "Program end." << endl;
 
-        return 0;
+	return 0;
 }
 
