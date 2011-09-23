@@ -16,221 +16,13 @@
 namespace lssr
 {
 
-PLYIO::PLYIO() {
-
-	m_vertices       = NULL;
-	m_color          = NULL;
-	m_intensity      = NULL;
-	m_confidence     = NULL;
-	m_normals        = NULL;
-	m_face_indices   = NULL;
-	m_num_face       = 0;
-	m_num_normal     = 0;
-	m_num_color      = 0;
-	m_num_intensity  = 0;
-	m_num_vertex     = 0;
-	m_num_confidence = 0;
-
- }
-
 
 PLYIO::~PLYIO() { }
 
 
-float * PLYIO::getVertexArray( size_t &n ) {
+void PLYIO::save( string filename ) {
 
-	n = m_num_vertex;
-	return m_vertices;
-
-}
-
-float * PLYIO::getVertexNormalArray( size_t &n ) {
-	
-	return getNormalArray( n );
-
-};
-
-float * PLYIO::getNormalArray( size_t &n ) {
-
-	n = m_num_normal;
-	return m_normals;
-
-}
-
-float * PLYIO::getVertexColorArray( size_t &n ) {
-
-	getColorArray3f( n );
-
-}
-
-unsigned char * PLYIO::getColorArray( size_t &n ) {
-
-	n = m_num_color;
-	return m_color;
-
-}
-
-float * PLYIO::getColorArray3f( size_t &n ) {
-
-	n = m_num_color;
-	if ( !m_color ) {
-		return NULL;
-	}
-	float * color3fv = (float *) malloc( m_num_color * 3 * sizeof(float) );
-	for ( int i = 0; i < ( 3 * m_num_color ); i++ ) {
-		color3fv[i] = m_color[i] / 255.0;
-	}
-	return color3fv;
-
-}
-
-
-float * PLYIO::getConfidenceArray( size_t &n ) {
-
-	n = m_num_confidence;
-	return m_confidence;
-
-}
-
-
-float * PLYIO::getIntensityArray( size_t &n ) {
-
-	n = m_num_intensity;
-	return m_intensity;
-
-}
-
-unsigned int * PLYIO::getIndexArray( size_t &n ) {
-
-	n = m_num_face;
-	return m_face_indices;
-
-}
-
-float ** PLYIO::getIndexedVertexArray( size_t &n ) {
-
-	n = m_num_vertex;
-	if ( !m_vertices ) {
-		return NULL;
-	}
-
-	float ** ivert = (float **) malloc( m_num_vertex * sizeof(float **) );
-	for ( int i = 0; i < m_num_vertex; i++ ) {
-		ivert[i] = m_vertices + ( i * 3 );
-	}
-	return ivert;
-
-}
-
-float ** PLYIO::getIndexedNormalArray( size_t &n ) {
-
-	n = m_num_normal;
-	if ( !m_normals ) {
-		return NULL;
-	}
-
-	float ** inorm = (float **) malloc( m_num_normal * sizeof(float **) );
-	for ( int i = 0; i < m_num_normal; i++ ) {
-		inorm[i] = m_normals + ( i * 3 );
-	}
-	return inorm;
-
-}
-
-
-unsigned char ** PLYIO::getIndexedColorArray( size_t &n ) {
-
-	n = m_num_color;
-	if ( !m_color ) {
-		return NULL;
-	}
-
-	unsigned char ** icol = (unsigned char **) malloc( 
-			m_num_color * sizeof(unsigned char **) );
-	for ( int i = 0; i < m_num_color; i++ ) {
-		icol[i] = m_color + ( i * 3 );
-	}
-	return icol;
-
-}
-
-
-void PLYIO::setVertexArray( float * array, size_t n ) {
-
-	m_vertices   = array;
-	m_num_vertex = n;
-
-}
-
-void PLYIO::setNormalArray( float * array, size_t n ) {
-
-	m_normals    = array;
-	m_num_normal = n;
-
-}
-
-void PLYIO::setIndexArray( unsigned int * array, size_t n ) {
-
-	m_face_indices  = array;
-	m_num_face      = n;
-
-}
-
-
-void PLYIO::setColorArray( float * array, size_t n ) {
-
-	m_color = (unsigned char *) malloc( n * 3 * sizeof(unsigned char) );
-	for ( int i = 0; i < ( 3 * n ); i++ ) {
-		m_color[i] = (unsigned char) ( array[i] * 255 );
-	}
-	m_num_color = n;
-
-}
-
-
-void PLYIO::setColorArray( unsigned char * array, size_t n ) {
-
-	m_color     = array;
-	m_num_color = n;
-
-}
-
-
-void PLYIO::setConfidenceArray( float * array, size_t n ) {
-
-	m_confidence     = array;
-	m_num_confidence = n;
-
-}
-
-
-void PLYIO::setIntensityArray( float * array, size_t n ) {
-
-	m_intensity     = array;
-	m_num_intensity = n;
-
-}
-
-
-void PLYIO::setIndexedVertexArray( float ** arr, size_t count ) {
-
-	m_vertices = (float *) realloc( m_vertices, count * 3 * sizeof(float) );
-	for ( int i = 0; i < count; i++ ) {
-		m_vertices[ i * 3     ] = arr[i][0];
-		m_vertices[ i * 3 + 1 ] = arr[i][1];
-		m_vertices[ i * 3 + 2 ] = arr[i][2];
-	}
-
-}
-
-void PLYIO::setIndexedNormalArray( float ** arr, size_t count ) {
-
-	m_normals = (float *) realloc( m_normals, count * 3 * sizeof(float) );
-	for ( int i = 0; i < count; i++ ) {
-		m_normals[ i * 3     ] = arr[i][0];
-		m_normals[ i * 3 + 1 ] = arr[i][1];
-		m_normals[ i * 3 + 2 ] = arr[i][2];
-	}
+	 save( filename, PLY_ASCII );
 
 }
 
@@ -238,6 +30,7 @@ void PLYIO::setIndexedNormalArray( float ** arr, size_t count ) {
 void PLYIO::save( string filename, e_ply_storage_mode mode, 
 		vector<string> obj_info, vector<string> comment ) {
 
+#warning Code for saving pointclouds still missing. »lkiesow«
 
 	p_ply oply = ply_create( filename.c_str(), mode, NULL );
 	if ( !oply ) {
@@ -279,8 +72,8 @@ void PLYIO::save( string filename, e_ply_storage_mode mode,
 
 	/* Add color information if there is any. */
 	bool color = false;
-	if ( m_color ) {
-		if ( m_num_color != m_num_vertex ) {
+	if ( m_vertex_colors ) {
+		if ( m_num_vertex_colors != m_num_vertex ) {
 			fprintf( stderr, "WARNING: Amount of vertices and color information is"
 					" not equal. Color information won't be written.\n" );
 		} else {
@@ -293,8 +86,8 @@ void PLYIO::save( string filename, e_ply_storage_mode mode,
 
 	/* Add intensity. */
 	bool intensity = false;
-	if ( m_intensity ) {
-		if ( m_num_intensity != m_num_vertex ) {
+	if ( m_vertex_intensity ) {
+		if ( m_num_vertex_intensity != m_num_vertex ) {
 			fprintf( stderr, "WARNING: Amount of vertices and intensity"
 					" information is not equal. Intensity information won't be"
 					" written.\n" );
@@ -306,8 +99,8 @@ void PLYIO::save( string filename, e_ply_storage_mode mode,
 
 	/* Add confidence. */
 	bool confidence = false;
-	if ( m_confidence ) {
-		if ( m_num_confidence != m_num_vertex ) {
+	if ( m_vertex_confidence ) {
+		if ( m_num_vertex_confidence != m_num_vertex ) {
 			fprintf( stderr, "WARNING: Amount of vertices and confidence"
 					" information is not equal. Confidence information won't be"
 					" written.\n" );
@@ -319,8 +112,8 @@ void PLYIO::save( string filename, e_ply_storage_mode mode,
 
 	/* Add normals if there are any. */
 	bool normal = false;
-	if ( m_normals ) {
-		if ( m_num_normal != m_num_vertex ) {
+	if ( m_vertex_normals ) {
+		if ( m_num_vertex_normals != m_num_vertex ) {
 			fprintf( stderr, "WARNING: Amount of vertices and normals"
 					" does not match. Normals won't be written.\n" );
 		} else {
@@ -350,20 +143,20 @@ void PLYIO::save( string filename, e_ply_storage_mode mode,
 		ply_write( oply, (double) m_vertices[ i * 3 + 1 ] ); /* y */
 		ply_write( oply, (double) m_vertices[ i * 3 + 2 ] ); /* z */
 		if ( color ) {
-			ply_write( oply, m_color[ i * 3     ] ); /* red */
-			ply_write( oply, m_color[ i * 3 + 1 ] ); /* green */
-			ply_write( oply, m_color[ i * 3 + 2 ] ); /* blue */
+			ply_write( oply, m_vertex_colors[ i * 3     ] ); /* red */
+			ply_write( oply, m_vertex_colors[ i * 3 + 1 ] ); /* green */
+			ply_write( oply, m_vertex_colors[ i * 3 + 2 ] ); /* blue */
 		}
 		if ( intensity ) {
-			ply_write( oply, m_intensity[ i ] );
+			ply_write( oply, m_vertex_intensity[ i ] );
 		}
 		if ( confidence ) {
-			ply_write( oply, m_confidence[ i ] );
+			ply_write( oply, m_vertex_confidence[ i ] );
 		}
 		if ( normal ) {
-			ply_write( oply, (double) m_normals[ i * 3     ] ); /* x */
-			ply_write( oply, (double) m_normals[ i * 3 + 1 ] ); /* y */
-			ply_write( oply, (double) m_normals[ i * 3 + 2 ] ); /* z */
+			ply_write( oply, (double) m_vertex_normals[ i * 3     ] ); /* x */
+			ply_write( oply, (double) m_vertex_normals[ i * 3 + 1 ] ); /* y */
+			ply_write( oply, (double) m_vertex_normals[ i * 3 + 2 ] ); /* z */
 		}
 	}
 
@@ -381,11 +174,13 @@ void PLYIO::save( string filename, e_ply_storage_mode mode,
 
 }
 
+
 void PLYIO::read( string filename ) {
 
 	read( filename, true );
 
 }
+
 
 void PLYIO::read( string filename, bool readColor, bool readConfidence,
 		bool readIntensity, bool readNormals, bool readFaces ) {
@@ -417,80 +212,146 @@ void PLYIO::read( string filename, bool readColor, bool readConfidence,
 			m_num_vertex = n;
 			p_ply_property prop = NULL;
 			while ( ( prop = ply_get_next_property( elem, prop ) ) ) {
-				ply_get_property_info( prop, (const char **) &name, NULL, NULL, NULL );
+				ply_get_property_info( prop, &name, NULL, NULL, NULL );
 				if ( !strcmp( name, "red" ) && readColor ) {
 					/* We have color information */
-					m_num_color = n;
+					m_num_vertex_colors = n;
 				} else if ( !strcmp( name, "confidence" ) && readConfidence ) {
 					/* We have confidence information */
-					m_num_confidence = n;
+					m_num_vertex_confidence = n;
 				} else if ( !strcmp( name, "intensity" ) && readIntensity ) {
 					/* We have intensity information */
-					m_num_intensity = n;
+					m_num_vertex_intensity = n;
 				} else if ( !strcmp( name, "nx" ) && readNormals ) {
 					/* We have normals */
-					m_num_normal = n;
+					m_num_vertex_normals = n;
+				}
+			}
+		} else if ( !strcmp( name, "point" ) ) {
+			m_num_points = n;
+			p_ply_property prop = NULL;
+			while ( ( prop = ply_get_next_property( elem, prop ) ) ) {
+				ply_get_property_info( prop, &name, NULL, NULL, NULL );
+				if ( !strcmp( name, "red" ) && readColor ) {
+					/* We have color information */
+					m_num_point_colors = n;
+				} else if ( !strcmp( name, "confidence" ) && readConfidence ) {
+					/* We have confidence information */
+					m_num_point_confidence = n;
+				} else if ( !strcmp( name, "intensity" ) && readIntensity ) {
+					/* We have intensity information */
+					m_num_point_intensities = n;
+				} else if ( !strcmp( name, "nx" ) && readNormals ) {
+					/* We have normals */
+					m_num_point_normals = n;
 				}
 			}
 		} else if ( !strcmp( name, "face" ) && readFaces ) {
 			m_num_face = n;
 		}
 	}
-	if ( !m_num_vertex ) {
-		fprintf( stderr, "warning: No vertices in ply.\n" );
+	if ( !( m_num_vertex || m_num_points ) ) {
+		fprintf( stderr, "warning: Neither vertices nor points in ply.\n" );
 		return;
 	}
 
 	/* Allocate memory. */
-	m_vertices = ( float * ) malloc( m_num_vertex * 3 * sizeof(float) );
-	if ( m_num_color ) {
-		m_color = ( unsigned char * ) malloc( m_num_vertex * 3 * sizeof(unsigned char) );
+	if ( m_num_vertex ) {
+		m_vertices = ( float * ) malloc( m_num_vertex * 3 * sizeof(float) );
 	}
-	if ( m_num_confidence ) {
-		m_confidence = ( float * ) malloc( m_num_vertex * sizeof(float) );
+	if ( m_num_vertex_colors ) {
+		m_vertex_colors = ( uint8_t * ) malloc( m_num_vertex * 3 * sizeof(uint8_t) );
 	}
-	if ( m_num_intensity ) {
-		m_intensity = ( float * ) malloc( m_num_vertex * sizeof(float) );
+	if ( m_num_vertex_confidence ) {
+		m_vertex_confidence = ( float * ) malloc( m_num_vertex * sizeof(float) );
 	}
-	if ( m_num_normal ) {
-		m_normals = ( float * ) malloc( m_num_vertex * 3 * sizeof(float) );
+	if ( m_num_vertex_intensity ) {
+		m_vertex_intensity = ( float * ) malloc( m_num_vertex * sizeof(float) );
+	}
+	if ( m_num_vertex_normals ) {
+		m_vertex_normals = ( float * ) malloc( m_num_vertex * 3 * sizeof(float) );
 	}
 	if ( m_num_face ) {
 		m_face_indices = ( unsigned int * ) malloc( m_num_face * 3 * sizeof(unsigned int) );
 	}
+	if ( m_num_points ) {
+		m_points = ( float * ) malloc( m_num_points * 3 * sizeof(float) );
+	}
+	if ( m_num_point_colors ) {
+		m_point_colors = ( uint8_t * ) malloc( m_num_points * 3 * sizeof(uint8_t) );
+	}
+	if ( m_num_point_confidence ) {
+		m_point_confidence = ( float * ) malloc( m_num_points * sizeof(float) );
+	}
+	if ( m_num_point_intensities ) {
+		m_point_intensities = ( float * ) malloc( m_num_points * sizeof(float) );
+	}
+	if ( m_num_point_normals ) {
+		m_point_normals = ( float * ) malloc( m_num_points * 3 * sizeof(float) );
+	}
 	
-	float * vertex        = m_vertices;
-	unsigned char * color = m_color;
-	float * confidence    = m_confidence;
-	float * intensity     = m_intensity;
-	float * normal        = m_normals;
-	unsigned int * face   = m_face_indices;
+	
+	float        * vertex            = m_vertices;
+	uint8_t      * vertex_color      = m_vertex_colors;
+	float        * vertex_confidence = m_vertex_confidence;
+	float        * vertex_intensity  = m_vertex_intensity;
+	float        * vertex_normal     = m_vertex_normals;
+	unsigned int * face              = m_face_indices;
+	float        * point             = m_points;
+	uint8_t      * point_color       = m_point_colors;
+	float        * point_confidence  = m_point_confidence;
+	float        * point_intensity   = m_point_intensities;
+	float        * point_normal      = m_point_normals;
+
 
 	/* Set callbacks. */
-	ply_set_read_cb( ply, "vertex", "x", readVertexCb, &vertex, 0 );
-	ply_set_read_cb( ply, "vertex", "y", readVertexCb, &vertex, 0 );
-	ply_set_read_cb( ply, "vertex", "z", readVertexCb, &vertex, 1 );
-
-	if ( color ) {
-		ply_set_read_cb( ply, "vertex", "red",   readColorCb,  &color,  0 );
-		ply_set_read_cb( ply, "vertex", "green", readColorCb,  &color,  0 );
-		ply_set_read_cb( ply, "vertex", "blue",  readColorCb,  &color,  1 );
+	if ( vertex ) {
+		ply_set_read_cb( ply, "vertex", "x", readVertexCb, &vertex, 0 );
+		ply_set_read_cb( ply, "vertex", "y", readVertexCb, &vertex, 0 );
+		ply_set_read_cb( ply, "vertex", "z", readVertexCb, &vertex, 1 );
 	}
-	if ( confidence ) {
-		ply_set_read_cb( ply, "vertex", "confidence", readVertexCb, &confidence, 1 );
+	if ( vertex_color ) {
+		ply_set_read_cb( ply, "vertex", "red",   readColorCb,  &vertex_color,  0 );
+		ply_set_read_cb( ply, "vertex", "green", readColorCb,  &vertex_color,  0 );
+		ply_set_read_cb( ply, "vertex", "blue",  readColorCb,  &vertex_color,  1 );
 	}
-	if ( intensity ) {
-		ply_set_read_cb( ply, "vertex", "intensity", readVertexCb, &intensity, 1 );
+	if ( vertex_confidence ) {
+		ply_set_read_cb( ply, "vertex", "confidence", readVertexCb, &vertex_confidence, 1 );
 	}
-	if ( normal ) {
-		ply_set_read_cb( ply, "vertex", "nx", readVertexCb, &intensity, 0 );
-		ply_set_read_cb( ply, "vertex", "ny", readVertexCb, &intensity, 0 );
-		ply_set_read_cb( ply, "vertex", "nz", readVertexCb, &intensity, 1 );
+	if ( vertex_intensity ) {
+		ply_set_read_cb( ply, "vertex", "intensity", readVertexCb, &vertex_intensity, 1 );
+	}
+	if ( vertex_normal ) {
+		ply_set_read_cb( ply, "vertex", "nx", readVertexCb, &vertex_intensity, 0 );
+		ply_set_read_cb( ply, "vertex", "ny", readVertexCb, &vertex_intensity, 0 );
+		ply_set_read_cb( ply, "vertex", "nz", readVertexCb, &vertex_intensity, 1 );
 	}
 
 	if ( face ) {
 		ply_set_read_cb( ply, "face", "vertex_indices", readFaceCb, &face, 0 );
 		ply_set_read_cb( ply, "face", "vertex_index", readFaceCb, &face, 0 );
+	}
+
+	if ( point ) {
+		ply_set_read_cb( ply, "point", "x", readVertexCb, &point, 0 );
+		ply_set_read_cb( ply, "point", "y", readVertexCb, &point, 0 );
+		ply_set_read_cb( ply, "point", "z", readVertexCb, &point, 1 );
+	}
+	if ( point_color ) {
+		ply_set_read_cb( ply, "point", "red",   readColorCb,  &point_color,  0 );
+		ply_set_read_cb( ply, "point", "green", readColorCb,  &point_color,  0 );
+		ply_set_read_cb( ply, "point", "blue",  readColorCb,  &point_color,  1 );
+	}
+	if ( point_confidence ) {
+		ply_set_read_cb( ply, "point", "confidence", readVertexCb, &point_confidence, 1 );
+	}
+	if ( point_intensity ) {
+		ply_set_read_cb( ply, "point", "intensity", readVertexCb, &point_intensity, 1 );
+	}
+	if ( point_normal ) {
+		ply_set_read_cb( ply, "point", "nx", readVertexCb, &point_intensity, 0 );
+		ply_set_read_cb( ply, "point", "ny", readVertexCb, &point_intensity, 0 );
+		ply_set_read_cb( ply, "point", "nz", readVertexCb, &point_intensity, 1 );
 	}
 
 	/* Read ply file. */
@@ -516,7 +377,7 @@ int PLYIO::readVertexCb( p_ply_argument argument ) {
 
 int PLYIO::readColorCb( p_ply_argument argument ) {
 
-	unsigned char ** color;
+	uint8_t ** color;
 	ply_get_argument_user_data( argument, (void **) &color, NULL );
 	**color = ply_get_argument_value( argument );
 	(*color)++;
@@ -543,35 +404,6 @@ int PLYIO::readFaceCb( p_ply_argument argument ) {
 	(*face)++;
 
 	return 1;
-
-}
-
-
-void PLYIO::freeBuffer() {
-
-	if ( m_vertices ) {
-		free( m_vertices );
-	}
-	if ( m_color ) {
-		free( m_color );
-	}
-	if ( m_intensity ) {
-		free( m_intensity );
-	}
-	if ( m_confidence ) {
-		free( m_confidence );
-	}
-	if ( m_normals ) {
-		free( m_normals );
-	}
-	if ( m_face_indices ) {
-		free( m_face_indices );
-	}
-	m_vertices = m_confidence = m_intensity = m_normals = NULL;
-	m_color =  NULL;
-	m_face_indices = NULL;
-	m_num_vertex = m_num_color = m_num_intensity = m_num_confidence
-		= m_num_normal = m_num_face = 0;
 
 }
 

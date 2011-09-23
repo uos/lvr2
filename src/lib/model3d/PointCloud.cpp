@@ -71,9 +71,9 @@ PointCloud::PointCloud(string filename) : Renderable(filename) {
     lssr::AsciiIO io;
     io.read(filename);
 
-    float** p = io.getPointArray();
-    size_t n = io.getNumPoints();
-    unsigned char** c = io.getPointColorArray();
+    size_t n( 0 );
+    float** p = io.getIndexedPointArray( &n );
+    uint8_t** c = io.getIndexedPointColorArray( NULL );
 
     for(size_t i = 0; i < n; i++)
     {

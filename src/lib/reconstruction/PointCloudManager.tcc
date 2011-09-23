@@ -55,10 +55,9 @@ void PointCloudManager<VertexT, NormalT>::readFromFile(string filename)
     {
         AsciiIO asciiIO;
         asciiIO.read(filename);
-        this->m_points = asciiIO.getPointArray();
-        this->m_numPoints = asciiIO.getNumPoints();
+        this->m_points = asciiIO.getIndexedPointArray( &(this->m_numPoints) );
         this->m_normals = 0;
-        this->m_colors = asciiIO.getPointColorArray();
+        this->m_colors = asciiIO.getIndexedPointColorArray();
     }
     else if(extension == ".ply")
     {
@@ -74,6 +73,7 @@ void PointCloudManager<VertexT, NormalT>::readFromFile(string filename)
 			**/
         plyio.read( filename, true, false, false, true, false );
 
+#warning PointCloudManager should load point data instead of vertex data! »lkiesow«
         this->m_points  = plyio.getIndexedVertexArray( this->m_numPoints );
         this->m_normals = plyio.getIndexedNormalArray( this->m_numPoints );
         this->m_colors  = plyio.getIndexedColorArray(  this->m_numPoints );
@@ -82,10 +82,10 @@ void PointCloudManager<VertexT, NormalT>::readFromFile(string filename)
     {
         UosIO uosio;
         uosio.read(filename);
-        this->m_points = uosio.getPointArray();
+        this->m_points = uosio.getIndexedPointArray();
         this->m_numPoints = uosio.getNumPoints();
-        this->m_normals = uosio.getPointNormalArray();
-        this->m_colors = uosio.getPointColorArray();
+        this->m_normals = uosio.getIndexedPointNormalArray();
+        this->m_colors = uosio.getIndexedPointColorArray();
     }
 }
 

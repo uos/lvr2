@@ -13,7 +13,7 @@ void BaseMesh<VertexT, IndexType>::save( string filename ) {
 	ply_writer.setVertexArray( this->m_vertexBuffer, m_nVertices );
 	ply_writer.setIndexArray( this->m_indexBuffer, m_nFaces );
 	if ( this->m_colorBuffer ) {
-		ply_writer.setColorArray( this->m_colorBuffer, this->m_nVertices );
+		ply_writer.setVertexColorArray( this->m_colorBuffer, this->m_nVertices );
 	}
 
 	// Save
