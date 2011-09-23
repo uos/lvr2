@@ -60,7 +60,7 @@ public:
 
 private:
 	struct ColorT{
-		uchar r, g, b;
+		unsigned char r, g, b;
 	};
 
 	Region<VertexT, NormalT>* m_region;

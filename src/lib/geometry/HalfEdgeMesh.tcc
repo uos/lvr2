@@ -957,6 +957,46 @@ void HalfEdgeMesh<VertexT, NormalT>::restorePlanes()
 	template<typename VertexT, typename NormalT>
 void HalfEdgeMesh<VertexT, NormalT>::tester()
 {
+	cout << "--------------------------------TESTER" << endl;
+	//	for(int r=0; r<m_regions.size(); r++)
+//	//		if( m_regions[r]->detectFlicker()) cout << "still flickering" << endl;
+//	for(int r=0; r<m_regions.size(); r++)
+//		if( m_regions[r]->m_inPlane) cout << r << ": " << m_regions[r]->m_region_number << endl;
+	cout << "----------------------------END TESTER" << endl;
+
+	//    Reset all used variables
+	for(int i=0; i<m_faces.size(); i++)
+		for(int k=0; k<3; k++)
+			(*m_faces[i])[k]->used=false;
+
+	vector<vector<HalfEdgeVertex<VertexT, NormalT>* > > contours = findAllContours(0.01);
+	fstream filestr;
+	filestr.open ("contours.pts", fstream::out);
+	filestr<<"#X Y Z"<<endl;
+	for (int i = 0; i<contours.size(); i++)
+	{
+		vector<HalfEdgeVertex<VertexT, NormalT>* > contour = contours[i];
+
+		HalfEdgeVertex<VertexT, NormalT> first = *(contour.back());
+
+		while (!contour.empty())
+		{
+			filestr << contour.back()->m_position[0] << " " << contour.back()->m_position[1] << " " << contour.back()->m_position[2] << endl;
+			contour.pop_back();
+		}
+
+		filestr << first.m_position[0] << " " << first.m_position[1] << " " << first.m_position[2] << endl;
+
+		filestr<<endl<<endl;
+
+	}
+	filestr.close();
+
+
+	//    Reset all used variables
+	for(int i=0; i<m_faces.size(); i++)
+		for(int k=0; k<3; k++)
+			(*m_faces[i])[k]->used=false;
 }
 
 	template<typename VertexT, typename NormalT>
@@ -1075,12 +1115,15 @@ void HalfEdgeMesh<VertexT, NormalT>::regionsToBuffer(
                         b = 0.0;
                 }
 
-                for(int j=0; j<m_regions[i]->m_faces.size(); ++j)
+                /* TODO: 3!!!!!!!!!!
+                 */
+                for(int j=0; j<m_regions[i]->m_faces.size()/3; ++j)
                 {
 
                         /* a small check to see whether we will run out of memory. */
                         if((float)vncUsed / (float)vncSize >= 0.80)
                         {
+                                cout << "Resize" << endl;
                                 *vertex = (float*)realloc((*vertex), vncSize*2*sizeof(float));
                                 *normal = (float*)realloc((*normal), vncSize*2*sizeof(float));
                                 *color  = (float*)realloc((*color),  vncSize*2*sizeof(float));
@@ -1091,6 +1134,7 @@ void HalfEdgeMesh<VertexT, NormalT>::regionsToBuffer(
                         /* a small check to see whether we will run out of memory. */
                         if((float)indexUsed / (float)indexSize >= 0.80)
                         {
+                                cout << "IndexResize" << endl;
                                 *index        = (unsigned int*)realloc((*index), indexSize*2*sizeof(float)); 
                                 *textureIndex = (unsigned int*)realloc((*textureIndex), indexSize*2*sizeof(float)); 
                                 indexSize *= 2;
@@ -1108,14 +1152,16 @@ void HalfEdgeMesh<VertexT, NormalT>::regionsToBuffer(
                                 (*vertex)[vncUsed + 0] = (*m_regions[i]->m_faces[j])(k)->m_position.x;
                                 (*vertex)[vncUsed + 1] = (*m_regions[i]->m_faces[j])(k)->m_position.y;
                                 (*vertex)[vncUsed + 2] = (*m_regions[i]->m_faces[j])(k)->m_position.z;
-                                if( isnan((*vertex)[vncUsed + 0]) || isnan((*vertex)[vncUsed + 0]) || isnan((*vertex)[vncUsed + 0]))
+                                if( isnan((*vertex)[vncUsed + 0]) || isnan((*vertex)[vncUsed + 0]) || isnan((*vertex)[vncUsed + 0]) ||
+                                    isinf((*vertex)[vncUsed + 0]) || isinf((*vertex)[vncUsed + 0]) || isinf((*vertex)[vncUsed + 0]))
                                 {
                                     cerr << "[nan] coordinates!:\n\t: RegNr(external): " << h
                                          << "\n\t RegNr(internal): " << m_regions[i]->m_region_number
                                          << "\n\t vncUsed: " << vncUsed 
                                          << "\n\t face nr: " << j
-                                         << "\n\t" << k << "th vertex\n\t\t\tSKIPPING!\n";
+                                         << "\n\t" << k << "th vertex\n\t\tSKIPPING!\n";
                                          skip = true;
+                                         break;
                                 }
 
                                 (*normal)[vncUsed + 0] = 0.0f; //(*m_regions[i]->m_faces[j])(k)->m_normal[0];
@@ -1130,19 +1176,16 @@ void HalfEdgeMesh<VertexT, NormalT>::regionsToBuffer(
                                 (*texture)[vncUsed + 1] = 0.0;
                                 (*texture)[vncUsed + 2] = 0.0;
                                 vncUsed += 3;
-                                
-                                if( !skip )
-                                {
-                                    (*index)[indexUsed+k] = (vncUsed / 3) - 1;
 
-                                    /* 
-                                     * texture does not exist because all regions that should be handled here
-                                     * dont belong to a regression plane. 
-                                     * the index UINT_MAX points to nowhere, this is necessary for the IO handling when
-                                     * the mesh is stored
-                                     */
-                                    (*textureIndex)[indexUsed+k] = UINT_MAX; 
-                                }
+                                (*index)[indexUsed+k] = (vncUsed / 3) - 1;
+
+                                /* 
+                                 * texture does not exist because all regions that should be handled here
+                                 * dont belong to a regression plane. 
+                                 * the index UINT_MAX points to nowhere, this is necessary for the IO handling when
+                                 * the mesh is stored
+                                 */
+                                (*textureIndex)[indexUsed+k] = UINT_MAX; 
                         }
                         if( !skip )
                         {
@@ -1177,8 +1220,8 @@ void HalfEdgeMesh<VertexT, NormalT>::finalizeAndRetesselate()
 	this->m_nVertices    = (uint32_t)m_vertices.size();
 	this->m_nFaces 	     = (uint32_t)m_faces.size();
 	this->m_nTextures    = 0;
-	size_t vncBufferSize   = 3 * this->m_nVertices * vnc_reallocate * sizeof(float)*10;
-	size_t indexBufferSize = 3 * this->m_nVertices * index_reallocate * sizeof(unsigned int)*10;
+	size_t vncBufferSize   = 1024; //3 * this->m_nVertices; // * vnc_reallocate * sizeof(float)*10;
+	size_t indexBufferSize = 1024; //3 * this->m_nVertices; // * index_reallocate * sizeof(unsigned int)*10;
 
 	// Guess for the array sizes. The correct values are only known after the regions were tesselated.
 	this->m_vertexBuffer       = new float[vncBufferSize];
@@ -1187,7 +1230,7 @@ void HalfEdgeMesh<VertexT, NormalT>::finalizeAndRetesselate()
 	this->m_textureCoordBuffer = new float[vncBufferSize];
 	this->m_indexBuffer        = new unsigned int[indexBufferSize];
 	this->m_textureIndexBuffer = new unsigned int[indexBufferSize];
-	this->m_textureBuffer 	   = new unsigned int[m_regions.size()];
+	this->m_textureBuffer 	   = new unsigned int[m_regions.size()]; 
 
     /*for(int i=0; i<vncBufferSize; ++i)
     {
@@ -1244,6 +1287,33 @@ void HalfEdgeMesh<VertexT, NormalT>::finalizeAndRetesselate()
             normal_regions);
     cout << timestamp << "Done copying untesselated regions" << endl;
 	
+	this->m_nVertices = vncBufferSize/3; 
+	this->m_nFaces 	  = indexBufferSize/3;
+
+   this->m_vertexBuffer = (float*)realloc(this->m_vertexBuffer, this->m_nVertices*3*sizeof(float));
+   this->m_colorBuffer  = (float*)realloc(this->m_colorBuffer,  this->m_nVertices*3*sizeof(float));
+   this->m_normalBuffer = (float*)realloc(this->m_normalBuffer, this->m_nVertices*3*sizeof(float));
+   this->m_textureCoordBuffer = (float*)realloc(this->m_textureCoordBuffer, this->m_nVertices*3*sizeof(float));
+
+   this->m_indexBuffer = (unsigned int*)realloc(this->m_indexBuffer, this->m_nFaces*3*sizeof(unsigned int));
+   this->m_textureIndexBuffer = (unsigned int*)realloc(this->m_textureIndexBuffer, this->m_nFaces*3*sizeof(unsigned int));
+   this->m_textureBuffer = (unsigned int*)realloc(this->m_textureBuffer, this->m_nTextures*sizeof(unsigned int));
+
+	this->m_finalized = true; 
+	cout << timestamp << "Done retesselating: " 						  	 	<< endl;
+	cout << timestamp << "[" << nPointsUsed << "] Points Used."       << endl;
+	cout << timestamp << "[" << nIndizesUsed << "] Indizes Used."     << endl;
+	cout << timestamp <<	"[" << this->m_nVertices << "] Vertices." << endl;
+	cout << timestamp <<	"[" << this->m_nFaces << "] Faces." 	   << endl;
+} 
+
+} // namespace lssr
+
+
+/*
+ *
+
+ */
     // check all regions if they are to be retesselated (only if they lie in a regression plane!)
 	/*
         for(int i=0; i<m_regions.size(); ++i)
@@ -1332,30 +1402,3 @@ void HalfEdgeMesh<VertexT, NormalT>::finalizeAndRetesselate()
 	this->m_nVertices = nPointsUsed/3  + vncBufferSize/3; 
 	this->m_nFaces 	  = nIndizesUsed/3 + indexBufferSize/3;
         */
-	this->m_nVertices = vncBufferSize/3; 
-	this->m_nFaces 	  = indexBufferSize/3;
-
-   this->m_vertexBuffer = (float*)realloc(this->m_vertexBuffer, this->m_nVertices*3*sizeof(float));
-   this->m_colorBuffer  = (float*)realloc(this->m_colorBuffer,  this->m_nVertices*3*sizeof(float));
-   this->m_normalBuffer = (float*)realloc(this->m_normalBuffer, this->m_nVertices*3*sizeof(float));
-   this->m_textureCoordBuffer = (float*)realloc(this->m_textureCoordBuffer, this->m_nVertices*3*sizeof(float));
-
-   this->m_indexBuffer = (unsigned int*)realloc(this->m_indexBuffer, this->m_nFaces*3*sizeof(unsigned int));
-   this->m_textureIndexBuffer = (unsigned int*)realloc(this->m_textureIndexBuffer, this->m_nFaces*3*sizeof(unsigned int));
-   this->m_textureBuffer = (unsigned int*)realloc(this->m_textureBuffer, this->m_nTextures*sizeof(unsigned int));
-
-	this->m_finalized = true; 
-	cout << timestamp << "Done retesselating: " 						  	 	<< endl;
-	cout << timestamp << "[" << nPointsUsed << "] Points Used."       << endl;
-	cout << timestamp << "[" << nIndizesUsed << "] Indizes Used."     << endl;
-	cout << timestamp <<	"[" << this->m_nVertices << "] Vertices." << endl;
-	cout << timestamp <<	"[" << this->m_nFaces << "] Faces." 	   << endl;
-} 
-
-} // namespace lssr
-
-
-/*
- *
-
- */
