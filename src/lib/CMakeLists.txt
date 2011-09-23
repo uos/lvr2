@@ -1,6 +1,7 @@
 set(LSSR_SOURCES
     io/PLYIO.cpp
-#    io/PLYTraits.cpp
+	 io/MeshLoader.cpp
+	 io/PointLoader.cpp
     io/AsciiIO.cpp
     io/UosIO.cpp
     io/Progress.cpp

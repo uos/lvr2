@@ -76,59 +76,65 @@ void AsciiIO::read(string filename) {
 	in.getline(buffer, 2048);
 
 	// Alloc memory for points
-	m_numPoints = lines_in_file - 1;
-	m_points = new float*[m_numPoints * 2];
-	for(int i = 0; i < m_numPoints; i++) m_points[i] = new float[3];
+	m_num_points = lines_in_file - 1;
+	m_points = new float[ m_num_points * 3 ];
 
 	// Alloc buffer memory for additional attributes
 	if ( has_color ) {
-		m_pointColors = new unsigned char*[m_numPoints * 2];
-		for(int i = 0; i < m_numPoints; i++) m_pointColors[i] = new unsigned char[3];
+		m_point_colors = new uint8_t[ m_num_points * 3 ];
+		m_num_point_colors = m_num_points;
 	}
 
 	if ( has_intensity ) {
-		m_intensities = new float[m_numPoints];
+		m_point_intensities = new float[ m_num_points ];
+		m_num_point_intensities = m_num_points;
+	}
+
+	if ( has_accuracy ) {
+		m_point_confidence = new float[ m_num_points ];
+		m_num_point_confidence = m_num_points;
 	}
 
 	// Read data form file
 	size_t c = 0;
-	while (in.good() && c < m_numPoints) {
+	while (in.good() && c < m_num_points) {
 		//cout << has_intensity << " " << has_color << endl;
 		//cout << c << " " << m_colors << " " << m_numPoints << endl;
-		float x, y, z, i, dummy;
-		int r, g, b;
+		float x, y, z, i, dummy, confidence;
+		unsigned int r, g, b;
 
 		// Read according to determined format
 		if(has_intensity && has_color) {
 			in >> x >> y >> z >> i >> r >> g >> b;
-			m_intensities[c] = i;
-			m_pointColors[c][0] = (unsigned char)r;
-			m_pointColors[c][1] = (unsigned char)g;
-			m_pointColors[c][2] = (unsigned char)b;
+			m_point_intensities[c] = i;
+			m_point_colors[ c * 3     ] = (uint8_t) r;
+			m_point_colors[ c * 3 + 1 ] = (uint8_t) g;
+			m_point_colors[ c * 3 + 2 ] = (uint8_t) b;
 
 		} else if ( has_color && has_accuracy && has_validcolor ) {
-			in >> x >> y >> z >> dummy >> dummy >> r >> g >> b;
-			m_pointColors[c][0] = (unsigned char)r;
-			m_pointColors[c][1] = (unsigned char)g;
-			m_pointColors[c][2] = (unsigned char)b;
+			in >> x >> y >> z >> confidence >> dummy >> r >> g >> b;
+			m_point_confidence[c] = confidence;
+			m_point_colors[ c * 3     ] = (uint8_t) r;
+			m_point_colors[ c * 3 + 1 ] = (uint8_t) g;
+			m_point_colors[ c * 3 + 2 ] = (uint8_t) b;
 
 		} else if (has_intensity) {
 			in >> x >> y >> z >> i;
-			m_intensities[c] = i;
+			m_point_intensities[c] = i;
 
 		} else if(has_color) {
 			in >> x >> y >> z >> r >> g >> b;
-			m_pointColors[c][0] = (unsigned char)r;
-			m_pointColors[c][1] = (unsigned char)g;
-			m_pointColors[c][2] = (unsigned char)b;
+			m_point_colors[ c * 3     ] = (uint8_t) r;
+			m_point_colors[ c * 3 + 1 ] = (uint8_t) g;
+			m_point_colors[ c * 3 + 2 ] = (uint8_t) b;
 
 		} else {
 			in >> x >> y >> z;
 			for(int n_dummys = 0; n_dummys < num_attributes; n_dummys++) in >> dummy;
 		}
-		m_points[c][0] = x;
-		m_points[c][1] = y;
-		m_points[c][2] = z;
+		m_points[ c * 3     ] = x;
+		m_points[ c * 3 + 1 ] = y;
+		m_points[ c * 3 + 2 ] = z;
 		c++;
 	}
 

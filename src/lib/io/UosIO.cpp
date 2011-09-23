@@ -46,12 +46,12 @@ void UosIO::read(string dir)
         int firstScan = -1;
         int lastScan =  -1;
 
-		  boost::filesystem::directory_iterator lastFile;
+        boost::filesystem::directory_iterator lastFile;
 
         // First, look for .3d files
         for(boost::filesystem::directory_iterator it(directory); it != lastFile; it++ )
         {
-			  boost::filesystem::path p = it->path();
+            boost::filesystem::path p = it->path();
             if(string(p.extension().c_str()) == ".3d")
             {
                 // Check for naming convention "scanxxx.3d"
@@ -97,7 +97,7 @@ void UosIO::read(string dir)
             int nDirs = 0;
             for(boost::filesystem::directory_iterator it(directory); it != lastFile; it++ )
             {
-					boost::filesystem::path p = it->path();
+                boost::filesystem::path p = it->path();
                 int num = 0;
 
                 // Only count numbered dirs
@@ -185,9 +185,9 @@ void UosIO::readNewFormat(string dir, int first, int last, size_t &n)
         ifstream scan_in, pose_in, frame_in;
 
         // Create scan file name
-		  boost::filesystem::path scan_path(
-				  boost::filesystem::path(dir) / 
-				  boost::filesystem::path( "scan" + to_string( fileCounter, 3 ) + ".3d" ) );
+        boost::filesystem::path scan_path(
+              boost::filesystem::path(dir) / 
+              boost::filesystem::path( "scan" + to_string( fileCounter, 3 ) + ".3d" ) );
         string scanFileName = "/" + scan_path.relative_path().string();
 
         // Count lines in scan
@@ -224,18 +224,18 @@ void UosIO::readNewFormat(string dir, int first, int last, size_t &n)
 
 
             // Try to get fransformation from .frames file
-				boost::filesystem::path frame_path(
-						boost::filesystem::path(dir) / 
-						boost::filesystem::path( "scan" + to_string( fileCounter, 3 ) + ".frames" ) );
+            boost::filesystem::path frame_path(
+                  boost::filesystem::path(dir) / 
+                  boost::filesystem::path( "scan" + to_string( fileCounter, 3 ) + ".frames" ) );
             string frameFileName = "/" + frame_path.relative_path().string();
 
             frame_in.open(frameFileName.c_str());
             if(!frame_in.good())
             {
                 // Try to parse .pose file
-					boost::filesystem::path pose_path(
-							boost::filesystem::path(dir) / 
-							boost::filesystem::path( "scan" + to_string( fileCounter, 3 ) + ".pose" ) );
+                boost::filesystem::path pose_path(
+                      boost::filesystem::path(dir) / 
+                      boost::filesystem::path( "scan" + to_string( fileCounter, 3 ) + ".pose" ) );
                 string poseFileName = "/" + pose_path.relative_path().string();
 
                 pose_in.open(poseFileName.c_str());
@@ -385,33 +385,32 @@ void UosIO::readNewFormat(string dir, int first, int last, size_t &n)
 
         // Save position information
         n = allPoints.size();
-        m_points = new float*[allPoints.size()];
+        m_points = new float[ allPoints.size() * 3 ];
         list<Vertex<float> >::iterator p_it;
         int i = 0;
         for(p_it = allPoints.begin(); p_it != allPoints.end(); p_it++)
         {
-            m_points[i] = new float[3];
             Vertex<float> v = *p_it;
-            m_points[i][0] = v[0];
-            m_points[i][1] = v[1];
-            m_points[i][2] = v[2];
+            m_points[ i * 3     ] = v[0];
+            m_points[ i * 3 + 1 ] = v[1];
+            m_points[ i * 3 + 2 ] = v[2];
             i++;
         }
-        m_numPoints = allPoints.size();
+        m_num_points = allPoints.size();
 
         // Save color information
         if(allColors.size() > 0)
         {
-            m_pointColors = new unsigned char*[m_numPoints];
+            m_point_colors = new uint8_t[ m_num_points * 3 ];
+            m_num_point_colors = m_num_points;
             i = 0;
             list<Vertex<int> >::iterator c_it;
             for(c_it = allColors.begin(); c_it != allColors.end(); c_it++)
             {
-                m_pointColors[i] = new unsigned char[3];
                 Vertex<int> v = *c_it;
-                m_pointColors[i][0] = (unsigned char) v[0];
-                m_pointColors[i][1] = (unsigned char) v[1];
-                m_pointColors[i][2] = (unsigned char) v[2];
+                m_point_colors[ i * 3     ] = (uint8_t) v[0];
+                m_point_colors[ i * 3 + 1 ] = (uint8_t) v[1];
+                m_point_colors[ i * 3 + 2 ] = (uint8_t) v[2];
                 i++;
             }
         }
@@ -449,10 +448,10 @@ void UosIO::readOldFormat(string dir, int first, int last, size_t &n)
         string poseFileName;
 
         // Create correct path
-		  boost::filesystem::path p(
-				  boost::filesystem::path(dir) / 
-				  boost::filesystem::path( to_string( fileCounter, 3 ) ) /
-				  boost::filesystem::path( "position.dat" ) );
+        boost::filesystem::path p(
+              boost::filesystem::path(dir) / 
+              boost::filesystem::path( to_string( fileCounter, 3 ) ) /
+              boost::filesystem::path( "position.dat" ) );
 
         // Get file name (if some knows a more elegant way to
         // extract the pull path let me know
@@ -482,10 +481,10 @@ void UosIO::readOldFormat(string dir, int first, int last, size_t &n)
         for (int i = 1; ; i++) {
             //scanFileName = dir + to_string(fileCounter, 3) + "/scan" + to_string(i,3) + ".dat";
 
-			  boost::filesystem::path sfile(
-					  boost::filesystem::path(dir) /
-					  boost::filesystem::path( to_string( fileCounter, 3 ) ) /
-					  boost::filesystem::path( "scan" + to_string(i) + ".dat" ) );
+            boost::filesystem::path sfile(
+                 boost::filesystem::path(dir) /
+                 boost::filesystem::path( to_string( fileCounter, 3 ) ) /
+                 boost::filesystem::path( "scan" + to_string(i) + ".dat" ) );
             scanFileName = "/" + sfile.relative_path().string();
 
             scan_in.open(scanFileName.c_str());
@@ -566,9 +565,9 @@ void UosIO::readOldFormat(string dir, int first, int last, size_t &n)
         pose_in.clear();
 
         // Create path to frame file
-		  boost::filesystem::path framePath(
-				  boost::filesystem::path(dir) / 
-				  boost::filesystem::path("scan" + to_string( fileCounter, 3 ) + ".frames" ) );
+        boost::filesystem::path framePath(
+              boost::filesystem::path(dir) / 
+              boost::filesystem::path("scan" + to_string( fileCounter, 3 ) + ".frames" ) );
         string frameFileName = "/" + framePath.relative_path().string();
 
         // Try to open frame file
@@ -604,19 +603,18 @@ void UosIO::readOldFormat(string dir, int first, int last, size_t &n)
     {
         cout << timestamp << "UOS Reader: Read " << allPoints.size() << " points." << endl;
         n = allPoints.size();
-        m_points = new float*[allPoints.size()];
+        m_points = new float[ allPoints.size() * 3 ];
         list<Vertex<float> >::iterator p_it;
         int i = 0;
         for(p_it = allPoints.begin(); p_it != allPoints.end(); p_it++)
         {
-            m_points[i] = new float[3];
             Vertex<float> v = *p_it;
-            m_points[i][0] = v[0];
-            m_points[i][1] = v[1];
-            m_points[i][2] = v[2];
+            m_points[ i * 3     ] = v[0];
+            m_points[ i * 3 + 1 ] = v[1];
+            m_points[ i * 3 + 2 ] = v[2];
             i++;
         }
-        m_numPoints = allPoints.size();
+        m_num_points = allPoints.size();
     }
 }
 

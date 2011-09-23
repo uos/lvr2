@@ -1,87 +1,70 @@
 /**
- * PointIO.hpp
  *
- *  @date 04.08.2011
- *  @author Thomas Wiemann
- */
+ * @file      PointLoader.hpp
+ * @brief     
+ * @details   
+ * 
+ * @author    Lars Kiesow (lkiesow), lkiesow@uos.de, Universität Osnabrück
+ * @version   110922
+ * @date      09/22/2011 11:23:57 PM
+ *
+ **/
 
 #ifndef POINTIO_HPP_
 #define POINTIO_HPP_
 
-class PointLoader
-{
-public:
-    PointLoader()
-        : m_points(0), m_pointNormals(0), m_pointColors(0), m_intensities(0), m_numPoints(0) {}
+#include <stdint.h>
+#include <cstddef>
+#include <cstdlib>
 
+class PointLoader {
 
-    /**
-     * Returns a point array
-     *
-     * @param n     The number of loaded points
-     * @return      The point data or a null pointer
-     */
-    virtual float**  getPointArray()
-    {
-        return m_points;
-    }
+	public:
+		PointLoader();
 
-    /**
-     * Returns the point colors (RGB) for a point cloud
-     *
-     * @param n     The number of loaded color elements.
-     * @return      The loaded color array or a null pointer of no vertices could be read
-     */
-    virtual unsigned char**  getPointColorArray()
-    {
-       return m_pointColors;
-    }
+		void setPointArray( float * array, size_t n );
+		void setPointColorArray( uint8_t * array, size_t n );
+		void setPointNormalArray( float * array, size_t n );
+		void setPointIntensityArray( float * array, size_t n );
+		void setPointConfidenceArray( float * array, size_t n );
 
-    /**
-     * Returns the point normals for a point cloud
-     *
-     * @param n     The number of loaded normals.
-     * @return      The loaded normal array or a null pointer of no vertices could be read
-     */
-    virtual float**  getPointNormalArray()
-    {
-       return m_pointNormals;
-    }
+		virtual float * getPointArray( size_t * n = NULL );
+		virtual uint8_t * getPointColorArray( size_t *n = NULL );
+		virtual float * getPointNormalArray( size_t *n = NULL );
+		virtual float * getPointIntensityArray( size_t *n = NULL );
+		virtual float * getPointConfidenceArray( size_t *n = NULL );
 
-    /**
-     * Returns the remission values for a point cloud (one float per point)
-     *
-     * @param n     The number of loaded normals.
-     * @return      The loaded normal array or a null pointer of no vertices could be read
-     */
-    virtual float*  getPointIntensityArray()
-    {
-       return m_intensities;
-    }
+		float ** getIndexedPointArray( size_t * n = NULL );
+		uint8_t ** getIndexedPointColorArray( size_t * n = NULL );
+		float ** getIndexedPointNormalArray( size_t * n = NULL );
+		float ** getIndexedPointIntensityArray( size_t * n = NULL );
+		float ** getIndexedPointConfidenceArray( size_t * n = NULL );
 
-    /**
-     * Returns the number of loaded points
-     */
-    virtual size_t  getNumPoints()
-    {
-        return m_numPoints;
-    }
-protected:
+		virtual size_t getNumPoints();
 
-    /// Point cloud data
-    float**          m_points;
+		float ** getIndexedArrayf( size_t * n, const size_t num, float ** arr1d,
+				float *** arr2d );
 
-    /// Point normals
-    float**          m_pointNormals;
+	protected:
 
-    /// Color information
-    unsigned char**  m_pointColors;
+		float    * m_points;
+		float    * m_point_normals;
+		uint8_t  * m_point_colors;
+		float    * m_point_intensities;
+		float    * m_point_confidence;
 
-    /// Intensities
-    float*           m_intensities;
+		float   ** m_indexed_points;
+		float   ** m_indexed_point_normals;
+		float   ** m_indexed_point_intensities;
+		float   ** m_indexed_point_confidence;
+		uint8_t ** m_indexed_point_colors;
 
-    /// Number of loaded points
-    size_t           m_numPoints;
+		size_t     m_num_points;
+		size_t     m_num_point_colors;
+		size_t     m_num_point_normals;
+		size_t     m_num_point_intensities;
+		size_t     m_num_point_confidence;
+
 };
 
 
