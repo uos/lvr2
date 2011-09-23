@@ -71,7 +71,7 @@ add_subdirectory(src/lib)
 ##############################################################
 
 add_subdirectory(src/reconstruct)
-#add_subdirectory(src/scanreduce)
+add_subdirectory(src/scanreduce)
 
 ##############################################################
 # VIEWERS
@@ -85,19 +85,19 @@ if(QT4_FOUND)
   include_directories(${QT_QTOPENGL_INCLUDE_DIR})
   include_directories(${QT_QTCORE_INCLUDE_DIR})
   include_directories(${QT_QTXML_INCLUDE_DIR})
-  #add_subdirectory(src/viewer)
+  add_subdirectory(src/viewer)
 
   # Try to find libQGLViewer
-  #find_library(QGLVIEWER_LIBRARY_RELEASE 
-  #		NAMES qglviewer-qt4 qglviewer QGLViewer QGLViewer2 
-  #		PATHS /usr/lib /usr/local/lib ENV QGLVIEWERROOT 
-  #		ENV LD_LIBRARY_PATH ENV LIBRARY_PATH
-  #		PATH_SUFFIXES QGLViewer QGLViewer/release)
-  #if(QGLVIEWER_LIBRARY_RELEASE)
-  #  message(STATUS "Found libqglviewer")
-  #  message(STATUS "Building qglviewer application")
-  #  add_subdirectory(src/qglviewer)
-  #endif(QGLVIEWER_LIBRARY_RELEASE)
+  find_library(QGLVIEWER_LIBRARY_RELEASE 
+  		NAMES qglviewer-qt4 qglviewer QGLViewer QGLViewer2 
+  		PATHS /usr/lib /usr/local/lib ENV QGLVIEWERROOT 
+  		ENV LD_LIBRARY_PATH ENV LIBRARY_PATH
+  		PATH_SUFFIXES QGLViewer QGLViewer/release)
+  if(QGLVIEWER_LIBRARY_RELEASE)
+    message(STATUS "Found libqglviewer")
+    message(STATUS "Building qglviewer application")
+    add_subdirectory(src/qglviewer)
+  endif(QGLVIEWER_LIBRARY_RELEASE)
 endif(QT4_FOUND)
 
 ################################################################
