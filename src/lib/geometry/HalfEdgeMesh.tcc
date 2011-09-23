@@ -1098,6 +1098,8 @@ void HalfEdgeMesh<VertexT, NormalT>::regionsToBuffer(
         int vncUsed=0, indexUsed=0;
         for(int h=0; h<regions.size(); ++h)
         {
+            cout << "Copying " << h << "th Region." << endl;
+            cout << "Region Nr: " << regions[h] << endl;
                 int i = regions[h];
                 float r, g, b;
                 int surface_class = m_regions[i]->m_region_number;
@@ -1115,9 +1117,7 @@ void HalfEdgeMesh<VertexT, NormalT>::regionsToBuffer(
                         b = 0.0;
                 }
 
-                /* TODO: 3!!!!!!!!!!
-                 */
-                for(int j=0; j<m_regions[i]->m_faces.size()/3; ++j)
+                for(int j=0; j<m_regions[i]->m_faces.size(); ++j)
                 {
 
                         /* a small check to see whether we will run out of memory. */
@@ -1152,16 +1152,54 @@ void HalfEdgeMesh<VertexT, NormalT>::regionsToBuffer(
                                 (*vertex)[vncUsed + 0] = (*m_regions[i]->m_faces[j])(k)->m_position.x;
                                 (*vertex)[vncUsed + 1] = (*m_regions[i]->m_faces[j])(k)->m_position.y;
                                 (*vertex)[vncUsed + 2] = (*m_regions[i]->m_faces[j])(k)->m_position.z;
+
+                                /* check for nan or ninf coordinates!
+                                 */
                                 if( isnan((*vertex)[vncUsed + 0]) || isnan((*vertex)[vncUsed + 0]) || isnan((*vertex)[vncUsed + 0]) ||
                                     isinf((*vertex)[vncUsed + 0]) || isinf((*vertex)[vncUsed + 0]) || isinf((*vertex)[vncUsed + 0]))
                                 {
-                                    cerr << "[nan] coordinates!:\n\t: RegNr(external): " << h
+                                    /*cerr << "[nan] coordinates!:\n\t: RegNr(external): " << h
                                          << "\n\t RegNr(internal): " << m_regions[i]->m_region_number
                                          << "\n\t vncUsed: " << vncUsed 
                                          << "\n\t face nr: " << j
-                                         << "\n\t" << k << "th vertex\n\t\tSKIPPING!\n";
+                                         << "\n\t" << k << "th vertex\n\t\tSKIPPING!\n"; */
                                          skip = true;
                                          break;
+                                }
+
+                                /*check for broken triangles! */
+                                if( k == 2 )
+                                {
+                                    /* get the the three points */
+                                    float x1 = (*vertex)[vncUsed - 6];
+                                    float y1 = (*vertex)[vncUsed - 5];
+                                    float z1 = (*vertex)[vncUsed - 4];
+                                    
+                                    float x2 = (*vertex)[vncUsed - 3];
+                                    float y2 = (*vertex)[vncUsed - 2];
+                                    float z2 = (*vertex)[vncUsed - 1];
+                                    
+                                    float x3 = (*vertex)[vncUsed  + 0];
+                                    float y3 = (*vertex)[vncUsed  + 1];
+                                    float z3 = (*vertex)[vncUsed  + 2];
+
+                                    /* get the distances between the three points */
+                                    float d12 = sqrt(pow((x1 - x2), 2) + pow((y1 - y2), 2) + pow((z1 - z2), 2));
+                                    float d23 = sqrt(pow((x3 - x2), 2) + pow((y3 - y2), 2) + pow((z3 - z2), 2));
+                                    float d13 = sqrt(pow((x3 - x1), 2) + pow((y3 - y1), 2) + pow((z3 - z1), 2));
+
+                                    /* If the points lay to close together: Skip this triangle! */
+                                    if( d12 <= 0.001 || d23 <= 0.001 || d13 <= 0.001)
+                                    {
+                                    /*cerr << "Degenerated Face!:\n\t: RegNr(external): " << h
+                                         << "\n\t d12: " << d12 
+                                         << "\n\t d13: " << d13
+                                         << "\n\t d23: " << d23
+                                         << "\n\t" << k << "th vertex\n\t\tSKIPPING!\n"; */
+                                        skip = true;
+                                        break;
+                                    }
+
                                 }
 
                                 (*normal)[vncUsed + 0] = 0.0f; //(*m_regions[i]->m_faces[j])(k)->m_normal[0];
@@ -1220,8 +1258,8 @@ void HalfEdgeMesh<VertexT, NormalT>::finalizeAndRetesselate()
         this->m_nVertices    = (uint32_t)m_vertices.size();
         this->m_nFaces 	     = (uint32_t)m_faces.size();
         this->m_nTextures    = 0;
-        size_t vncBufferSize   = 1024; //3 * this->m_nVertices; // * vnc_reallocate * sizeof(float)*10;
-        size_t indexBufferSize = 1024; //3 * this->m_nVertices; // * index_reallocate * sizeof(unsigned int)*10;
+        size_t vncBufferSize   = 4024; //3 * this->m_nVertices; // * vnc_reallocate * sizeof(float)*10;
+        size_t indexBufferSize = 4024; //3 * this->m_nVertices; // * index_reallocate * sizeof(unsigned int)*10;
 
         // Guess for the array sizes. The correct values are only known after the regions were tesselated.
         this->m_vertexBuffer       = new float[vncBufferSize];
