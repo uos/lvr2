@@ -1,8 +1,8 @@
 #include "PLYIO.hpp"
 
 #include <cstring>
+#include <ctime>
 #include <sstream>
-#include <cassert>
 
 //using std::stringstream;
 
@@ -17,7 +17,37 @@ namespace lssr
 {
 
 
+PLYIO::PLYIO()
+	: PointLoader(), MeshLoader() {}
+
+
 PLYIO::~PLYIO() { }
+
+std::string PLYIO::mkTimeStr() {
+
+	std::stringstream ss( std::stringstream::in | std::stringstream::out );
+	clock_t c = clock();
+	ss.fill( '0' );
+	ss << '[';
+	ss.width( 2 );
+	ss << c / ( CLOCKS_PER_SEC * 60 * 60 );
+	ss.width( 1 );
+	ss << ':';
+	ss.width( 2 );
+	ss << ( c / ( CLOCKS_PER_SEC * 60 ) ) % 60;
+	ss.width( 1 );
+	ss << ':';
+	ss.width( 2 );
+	ss << ( c / CLOCKS_PER_SEC ) % 60;
+	ss.width( 1 );
+	ss << ' ';
+	ss.width( 4 );
+	ss << ( c * 1000 / CLOCKS_PER_SEC ) % 1000;
+	ss.width( 1 );
+	ss << ']';
+	return ss.str();
+
+}
 
 
 void PLYIO::save( string filename ) {
@@ -287,7 +317,7 @@ void PLYIO::read( string filename, bool readColor, bool readConfidence,
 		fprintf( stderr, "error: Could not read header.\n" );
 		return;
 	}
-	printf( "Loading »%s«…\n", filename.c_str() );
+	printf( "%s Loading »%s«…\n", mkTimeStr().c_str(), filename.c_str() );
 
 	/* Check if there are vertices and get the amount of vertices. */
 	char buf[256] = "";
@@ -451,16 +481,29 @@ void PLYIO::read( string filename, bool readColor, bool readConfidence,
 	/* Check if we got only vertices and neither points nor faces. If that is
 	 * the case then use the vertices as points. */
 	if ( m_vertices && !m_points && !m_face_indices ) {
-      m_points            = m_vertices;
-      m_point_colors      = m_vertex_colors;
-      m_point_confidence  = m_vertex_confidence;
-      m_point_intensities = m_vertex_intensity;
-      m_point_normals     = m_vertex_normals;
-      m_vertices          = NULL;
-      m_vertex_colors     = NULL;
-      m_vertex_confidence = NULL;
-      m_vertex_intensity  = NULL;
-      m_vertex_normals    = NULL;
+		printf( "%s hint: PLY contains neither faces nor points. "
+				"Assuming that vertices are ment to be points.\n",
+				mkTimeStr().c_str() );
+		m_points                = m_vertices;
+		m_point_colors          = m_vertex_colors;
+		m_point_confidence      = m_vertex_confidence;
+		m_point_intensities     = m_vertex_intensity;
+		m_point_normals         = m_vertex_normals;
+		m_num_points            = m_num_vertex;
+		m_num_point_colors      = m_num_vertex_colors;
+		m_num_point_confidence  = m_num_vertex_confidence;
+		m_num_point_intensities = m_num_vertex_intensity;
+		m_num_point_normals     = m_num_vertex_normals;
+		m_num_vertex            = 0;
+		m_num_vertex_colors     = 0;
+		m_num_vertex_confidence = 0;
+		m_num_vertex_intensity  = 0;
+		m_num_vertex_normals    = 0;
+		m_vertices              = NULL;
+		m_vertex_colors         = NULL;
+		m_vertex_confidence     = NULL;
+		m_vertex_intensity      = NULL;
+		m_vertex_normals        = NULL;
 	}
 
 	ply_close( ply );
