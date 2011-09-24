@@ -289,9 +289,9 @@ void Tesselator<VertexT, NormalT>::tesselatorCombineVertices(GLdouble coords[3],
 	{
 		cerr << "Could not allocate memory - undefined behaviour will/might arise from now on!" << endl;
 	}
-	vertex[0] = coords[0];
-	vertex[1] = coords[1];
-	vertex[2] = coords[2];
+	vertex[0] = coords[0]+5.0;
+	vertex[1] = coords[1]+3.5;
+	vertex[2] = coords[2]+12.1;
     
     Vertex<float> v(coords[0], coords[1], coords[2]);
     HVertex newVertex(v);

@@ -1098,8 +1098,8 @@ void HalfEdgeMesh<VertexT, NormalT>::regionsToBuffer(
         int vncUsed=0, indexUsed=0;
         for(int h=0; h<regions.size(); ++h)
         {
-            cout << "Copying " << h << "th Region." << endl;
-            cout << "Region Nr: " << regions[h] << endl;
+                //cout << "Copying " << h << "th Region." << endl;
+                //cout << "Region Nr: " << regions[h] << endl;
                 int i = regions[h];
                 float r, g, b;
                 int surface_class = m_regions[i]->m_region_number;
@@ -1307,15 +1307,103 @@ void HalfEdgeMesh<VertexT, NormalT>::finalizeAndRetesselate()
                         vncBufferSize, 
                         indexBufferSize, 
                         normal_regions);
-        cout << timestamp << "Done copying untesselated regions" << endl;
+        nPointsUsed = vncBufferSize;
+        nIndizesUsed = indexBufferSize;
+        // check all regions if they are to be retesselated (only if they lie in a regression plane!)
+        for(int h=0; h<plane_regions.size(); ++h)
+        {
+            if( nPointsUsed % 3 != 0 )
+            {
+                cout << "Schummelbude!" << endl;
+                for(int hy=0; hy < nPointsUsed % 3; hy++)
+                {
+                    this->m_vertexBuffer[nPointsUsed+hy] = rand()+hy;
+                    this->m_colorBuffer[nPointsUsed+hy] = rand()+hy;
+                    this->m_normalBuffer[nPointsUsed+hy] = rand()+hy;
+                }
+            }
+            int i = plane_regions[h];
+            // If memory used to 75% reallocate!
+            if((double)nPointsUsed / (double)vncBufferSize >= 0.45)
+            {
+                vncBufferSize *= 2*sizeof(float);
+                this->m_vertexBuffer       = (float*)realloc(this->m_vertexBuffer, vncBufferSize); 
+                this->m_colorBuffer        = (float*)realloc(this->m_colorBuffer, vncBufferSize); 
+                this->m_normalBuffer       = (float*)realloc(this->m_normalBuffer, vncBufferSize); 
+                this->m_textureCoordBuffer = (float*)realloc(this->m_normalBuffer, vncBufferSize);
+            }
+            
 
-        this->m_nVertices = vncBufferSize/3; 
-        this->m_nFaces 	  = indexBufferSize/3;
+            // If memory i used to 75% reallocate!
+            if((double)nIndizesUsed / (double)indexBufferSize >= 0.45)
+            {
+                indexBufferSize *= 2*sizeof(unsigned int);
+                this->m_indexBuffer = (unsigned int*)realloc(this->m_indexBuffer, indexBufferSize);
+                this->m_textureIndexBuffer = (unsigned int*)realloc(this->m_textureIndexBuffer, indexBufferSize);
+            }
+            this->m_textureBuffer[this->m_nTextures++] = m_regions[i]->m_region_number;
 
+            Tesselator<VertexT, NormalT>::init();
+            vector<vector<HVertex*> > contours = m_regions[i]->getContours(0.01);
+            Tesselator<VertexT, NormalT>::tesselate(contours);
+            Tesselator<VertexT, NormalT>::getFinalizedTriangles(v, n, c, in, indexLength, coordinatesLength);
+
+            if(*indexLength > 0 && *coordinatesLength > 0)
+            {
+                //Texture<VertexT, NormalT>* t = new Texture<VertexT, NormalT>(m_pointCloudManager, m_regions[i], contours);
+                //t->save();
+
+                for(int j=0; j< (*coordinatesLength)/3; ++j)
+                {
+                    this->m_vertexBuffer[j*3+nPointsUsed+0] = (*v)[j*3+0];
+                    this->m_vertexBuffer[j*3+nPointsUsed+1] = (*v)[j*3+1];
+                    this->m_vertexBuffer[j*3+nPointsUsed+2] = (*v)[j*3+2];
+                    
+                    this->m_normalBuffer[j*3+nPointsUsed+0] = 0.0; //(*n)[j*3+0];
+                    this->m_normalBuffer[j*3+nPointsUsed+1] = 0.0; //(*n)[j*3+1];
+                    this->m_normalBuffer[j*3+nPointsUsed+2] = 0.0; //(*n)[j*3+2];
+
+                    this->m_colorBuffer[ j*3+nPointsUsed+0] = 0.8; //(*c)[j*3+0];
+                    this->m_colorBuffer[ j*3+nPointsUsed+1] = 0.0; //(*c)[j*3+1];
+                    this->m_colorBuffer[ j*3+nPointsUsed+2] = 0.0; //(*c)[j*3+2];
+
+                    float u1 = 0;
+                    float u2 = 0;
+                    //t->textureCoords(VertexT((*v)[j*3+0], (*v)[j*3+1], (*v)[j*3+2]) ,u1 ,u2);
+                    this->m_textureCoordBuffer[j*3+nPointsUsed+0] = u1;
+                    this->m_textureCoordBuffer[j*3+nPointsUsed+1] = u2;
+                    this->m_textureCoordBuffer[j*3+nPointsUsed+2] = 0;
+                }
+
+                for(int j=0; j < (*indexLength); ++j)
+                {
+                    this->m_indexBuffer[j+nIndizesUsed] = ((*in)[j])+nPointsUsed/3; 
+                    this->m_textureIndexBuffer[j+nIndizesUsed] = m_regions[i]->m_region_number;
+                }
+                nPointsUsed  += (*coordinatesLength);
+                nIndizesUsed += *indexLength;
+
+                delete (*v);
+                delete (*c);
+                delete (*n);
+                delete (*in);
+                //delete t;
+            }
+        }
+        delete indexLength;
+        delete coordinatesLength;
+        
+        cout << timestamp << "Done copying retesselated regions" << endl;
+
+        this->m_nVertices = nPointsUsed/3;//vncBufferSize/3; 
+        this->m_nFaces 	  = nIndizesUsed/3;//indexBufferSize/3;
+
+        cout << "Reloc" << endl;
         this->m_vertexBuffer = (float*)realloc(this->m_vertexBuffer, this->m_nVertices*3*sizeof(float));
         this->m_colorBuffer  = (float*)realloc(this->m_colorBuffer,  this->m_nVertices*3*sizeof(float));
         this->m_normalBuffer = (float*)realloc(this->m_normalBuffer, this->m_nVertices*3*sizeof(float));
         this->m_textureCoordBuffer = (float*)realloc(this->m_textureCoordBuffer, this->m_nVertices*3*sizeof(float));
+        cout << "Reloc2" << endl;
 
         this->m_indexBuffer = (unsigned int*)realloc(this->m_indexBuffer, this->m_nFaces*3*sizeof(unsigned int));
         this->m_textureIndexBuffer = (unsigned int*)realloc(this->m_textureIndexBuffer, this->m_nFaces*3*sizeof(unsigned int));
