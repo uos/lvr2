@@ -30,8 +30,6 @@ void PLYIO::save( string filename ) {
 void PLYIO::save( string filename, e_ply_storage_mode mode, 
 		vector<string> obj_info, vector<string> comment ) {
 
-#warning Code for saving pointclouds still missing. »lkiesow«
-
 	p_ply oply = ply_create( filename.c_str(), mode, NULL, 0, NULL );
 	if ( !oply ) {
 		fprintf( stderr, "ERROR: Could not create »%s«\n", filename.c_str() );
@@ -52,8 +50,8 @@ void PLYIO::save( string filename, e_ply_storage_mode mode,
 	}
 
 	/* Check if we have vertex information. */
-	if ( !m_vertices ) {
-		fprintf( stderr, "WARNING: No vertices to write.\n" );
+	if ( !( m_vertices || m_points ) ) {
+		fprintf( stderr, "WARNING: Neither vertices nor points to write.\n" );
 		if ( !ply_close( oply ) ) {
 			fprintf( stderr, "ERROR: Could not close file.\n" );
 		}
@@ -62,72 +60,139 @@ void PLYIO::save( string filename, e_ply_storage_mode mode,
 
 	/* First: Write Header information according to data. */
 
+   bool vertex_color      = false;
+   bool vertex_intensity  = false;
+   bool vertex_confidence = false;
+   bool vertex_normal     = false;
+   bool point_color       = false;
+   bool point_intensity   = false;
+   bool point_confidence  = false;
+   bool point_normal      = false;
+
 	/* Add vertex element. */
-	ply_add_element( oply, "vertex", m_num_vertex );
+	if ( m_vertices ) {
+		ply_add_element( oply, "vertex", m_num_vertex );
 
-	/* Add vertex properties: x, y, z, (r, g, b) */
-	ply_add_scalar_property( oply, "x", PLY_FLOAT );
-	ply_add_scalar_property( oply, "y", PLY_FLOAT );
-	ply_add_scalar_property( oply, "z", PLY_FLOAT );
+		/* Add vertex properties: x, y, z, (r, g, b) */
+		ply_add_scalar_property( oply, "x", PLY_FLOAT );
+		ply_add_scalar_property( oply, "y", PLY_FLOAT );
+		ply_add_scalar_property( oply, "z", PLY_FLOAT );
 
-	/* Add color information if there is any. */
-	bool color = false;
-	if ( m_vertex_colors ) {
-		if ( m_num_vertex_colors != m_num_vertex ) {
-			fprintf( stderr, "WARNING: Amount of vertices and color information is"
-					" not equal. Color information won't be written.\n" );
-		} else {
-			ply_add_scalar_property( oply, "red",   PLY_UCHAR );
-			ply_add_scalar_property( oply, "green", PLY_UCHAR );
-			ply_add_scalar_property( oply, "blue",  PLY_UCHAR );
-			color = true;
+		/* Add color information if there is any. */
+		if ( m_vertex_colors ) {
+			if ( m_num_vertex_colors != m_num_vertex ) {
+				fprintf( stderr, "WARNING: Amount of vertices and color information is"
+						" not equal. Color information won't be written.\n" );
+			} else {
+				ply_add_scalar_property( oply, "red",   PLY_UCHAR );
+				ply_add_scalar_property( oply, "green", PLY_UCHAR );
+				ply_add_scalar_property( oply, "blue",  PLY_UCHAR );
+				vertex_color = true;
+			}
+		}
+
+		/* Add intensity. */
+		if ( m_vertex_intensity ) {
+			if ( m_num_vertex_intensity != m_num_vertex ) {
+				fprintf( stderr, "WARNING: Amount of vertices and intensity"
+						" information is not equal. Intensity information won't be"
+						" written.\n" );
+			} else {
+				ply_add_scalar_property( oply, "intensity",  PLY_FLOAT );
+				vertex_intensity = true;
+			}
+		}
+
+		/* Add confidence. */
+		if ( m_vertex_confidence ) {
+			if ( m_num_vertex_confidence != m_num_vertex ) {
+				fprintf( stderr, "WARNING: Amount of vertices and confidence"
+						" information is not equal. Confidence information won't be"
+						" written.\n" );
+			} else {
+				ply_add_scalar_property( oply, "confidence",  PLY_FLOAT );
+				vertex_confidence = true;
+			}
+		}
+
+		/* Add normals if there are any. */
+		if ( m_vertex_normals ) {
+			if ( m_num_vertex_normals != m_num_vertex ) {
+				fprintf( stderr, "WARNING: Amount of vertices and normals"
+						" does not match. Normals won't be written.\n" );
+			} else {
+				ply_add_scalar_property( oply, "nx", PLY_FLOAT );
+				ply_add_scalar_property( oply, "ny", PLY_FLOAT );
+				ply_add_scalar_property( oply, "nz", PLY_FLOAT );
+				vertex_normal = true;
+			}
+		}
+
+		/* Add faces. */
+		if ( m_num_face ) {
+			ply_add_element( oply, "face", m_num_face );
+			ply_add_list_property( oply, "vertex_indices", PLY_UCHAR, PLY_INT );
 		}
 	}
 
-	/* Add intensity. */
-	bool intensity = false;
-	if ( m_vertex_intensity ) {
-		if ( m_num_vertex_intensity != m_num_vertex ) {
-			fprintf( stderr, "WARNING: Amount of vertices and intensity"
-					" information is not equal. Intensity information won't be"
-					" written.\n" );
-		} else {
-			ply_add_scalar_property( oply, "intensity",  PLY_FLOAT );
-			intensity = true;
-		}
-	}
+	/* Add point element */
+	if ( m_points ) {
+		ply_add_element( oply, "point", m_num_points );
 
-	/* Add confidence. */
-	bool confidence = false;
-	if ( m_vertex_confidence ) {
-		if ( m_num_vertex_confidence != m_num_vertex ) {
-			fprintf( stderr, "WARNING: Amount of vertices and confidence"
-					" information is not equal. Confidence information won't be"
-					" written.\n" );
-		} else {
-			ply_add_scalar_property( oply, "confidence",  PLY_FLOAT );
-			confidence = true;
-		}
-	}
+		/* Add point properties: x, y, z, (r, g, b) */
+		ply_add_scalar_property( oply, "x", PLY_FLOAT );
+		ply_add_scalar_property( oply, "y", PLY_FLOAT );
+		ply_add_scalar_property( oply, "z", PLY_FLOAT );
 
-	/* Add normals if there are any. */
-	bool normal = false;
-	if ( m_vertex_normals ) {
-		if ( m_num_vertex_normals != m_num_vertex ) {
-			fprintf( stderr, "WARNING: Amount of vertices and normals"
-					" does not match. Normals won't be written.\n" );
-		} else {
-			ply_add_scalar_property( oply, "nx", PLY_FLOAT );
-			ply_add_scalar_property( oply, "ny", PLY_FLOAT );
-			ply_add_scalar_property( oply, "nz", PLY_FLOAT );
-			normal = true;
+		/* Add color information if there is any. */
+		if ( m_point_colors ) {
+			if ( m_num_point_colors != m_num_points ) {
+				fprintf( stderr, "WARNING: Amount of points and color information is"
+						" not equal. Color information won't be written.\n" );
+			} else {
+				ply_add_scalar_property( oply, "red",   PLY_UCHAR );
+				ply_add_scalar_property( oply, "green", PLY_UCHAR );
+				ply_add_scalar_property( oply, "blue",  PLY_UCHAR );
+				point_color = true;
+			}
 		}
-	}
 
-	/* Add faces. */
-	if ( m_num_face ) {
-		ply_add_element( oply, "face", m_num_face );
-		ply_add_list_property( oply, "vertex_indices", PLY_UCHAR, PLY_INT );
+		/* Add intensity. */
+		if ( m_point_intensities ) {
+			if ( m_num_point_intensities != m_num_points ) {
+				fprintf( stderr, "WARNING: Amount of points and intensity"
+						" information is not equal. Intensity information won't be"
+						" written.\n" );
+			} else {
+				ply_add_scalar_property( oply, "intensity",  PLY_FLOAT );
+				point_intensity = true;
+			}
+		}
+
+		/* Add confidence. */
+		if ( m_point_confidence ) {
+			if ( m_num_point_confidence != m_num_points ) {
+				fprintf( stderr, "WARNING: Amount of point and confidence"
+						" information is not equal. Confidence information won't be"
+						" written.\n" );
+			} else {
+				ply_add_scalar_property( oply, "confidence",  PLY_FLOAT );
+				point_confidence = true;
+			}
+		}
+
+		/* Add normals if there are any. */
+		if ( m_point_normals ) {
+			if ( m_num_point_normals != m_num_points ) {
+				fprintf( stderr, "WARNING: Amount of point and normals"
+						" does not match. Normals won't be written.\n" );
+			} else {
+				ply_add_scalar_property( oply, "nx", PLY_FLOAT );
+				ply_add_scalar_property( oply, "ny", PLY_FLOAT );
+				ply_add_scalar_property( oply, "nz", PLY_FLOAT );
+				point_normal = true;
+			}
+		}
 	}
 
 	/* Write header to file. */
@@ -142,30 +207,54 @@ void PLYIO::save( string filename, e_ply_storage_mode mode,
 		ply_write( oply, (double) m_vertices[ i * 3     ] ); /* x */
 		ply_write( oply, (double) m_vertices[ i * 3 + 1 ] ); /* y */
 		ply_write( oply, (double) m_vertices[ i * 3 + 2 ] ); /* z */
-		if ( color ) {
+		if ( vertex_color ) {
 			ply_write( oply, m_vertex_colors[ i * 3     ] ); /* red */
 			ply_write( oply, m_vertex_colors[ i * 3 + 1 ] ); /* green */
 			ply_write( oply, m_vertex_colors[ i * 3 + 2 ] ); /* blue */
 		}
-		if ( intensity ) {
+		if ( vertex_intensity ) {
 			ply_write( oply, m_vertex_intensity[ i ] );
 		}
-		if ( confidence ) {
+		if ( vertex_confidence ) {
 			ply_write( oply, m_vertex_confidence[ i ] );
 		}
-		if ( normal ) {
-			ply_write( oply, (double) m_vertex_normals[ i * 3     ] ); /* x */
-			ply_write( oply, (double) m_vertex_normals[ i * 3 + 1 ] ); /* y */
-			ply_write( oply, (double) m_vertex_normals[ i * 3 + 2 ] ); /* z */
+		if ( vertex_normal ) {
+			ply_write( oply, (double) m_vertex_normals[ i * 3     ] ); /* nx */
+			ply_write( oply, (double) m_vertex_normals[ i * 3 + 1 ] ); /* ny */
+			ply_write( oply, (double) m_vertex_normals[ i * 3 + 2 ] ); /* nz */
 		}
 	}
 
-	/* Write faces. */
-	for ( int i = 0; i < m_num_face; i++ ) {
-		ply_write( oply, 3.0 ); /* Indices per face. */
-		ply_write( oply, (double) m_face_indices[ i * 3     ] );
-		ply_write( oply, (double) m_face_indices[ i * 3 + 1 ] );
-		ply_write( oply, (double) m_face_indices[ i * 3 + 2 ] );
+	/* Write faces (Only if we also have vertices). */
+	if ( m_vertices ) {
+		for ( int i = 0; i < m_num_face; i++ ) {
+			ply_write( oply, 3.0 ); /* Indices per face. */
+			ply_write( oply, (double) m_face_indices[ i * 3     ] );
+			ply_write( oply, (double) m_face_indices[ i * 3 + 1 ] );
+			ply_write( oply, (double) m_face_indices[ i * 3 + 2 ] );
+		}
+	}
+
+	for ( int i = 0; i < m_num_points; i++ ) {
+		ply_write( oply, (double) m_points[ i * 3     ] ); /* x */
+		ply_write( oply, (double) m_points[ i * 3 + 1 ] ); /* y */
+		ply_write( oply, (double) m_points[ i * 3 + 2 ] ); /* z */
+		if ( point_color ) {
+			ply_write( oply, m_point_colors[ i * 3     ] ); /* red */
+			ply_write( oply, m_point_colors[ i * 3 + 1 ] ); /* green */
+			ply_write( oply, m_point_colors[ i * 3 + 2 ] ); /* blue */
+		}
+		if ( point_intensity ) {
+			ply_write( oply, m_point_intensities[ i ] );
+		}
+		if ( point_confidence ) {
+			ply_write( oply, m_point_confidence[ i ] );
+		}
+		if ( point_normal ) {
+			ply_write( oply, (double) m_point_normals[ i * 3     ] ); /* nx */
+			ply_write( oply, (double) m_point_normals[ i * 3 + 1 ] ); /* ny */
+			ply_write( oply, (double) m_point_normals[ i * 3 + 2 ] ); /* nz */
+		}
 	}
 
 	if ( !ply_close( oply ) ) {
@@ -185,7 +274,6 @@ void PLYIO::read( string filename ) {
 void PLYIO::read( string filename, bool readColor, bool readConfidence,
 		bool readIntensity, bool readNormals, bool readFaces ) {
 
-	/* Cleanup members. */
 	freeBuffer();
 
 	/* Start reading new PLY */
@@ -359,6 +447,22 @@ void PLYIO::read( string filename, bool readColor, bool readConfidence,
 		fprintf( stderr, "error: could not read »%s«.\n", filename.c_str() );
 		freeBuffer();
 	}
+
+	/* Check if we got only vertices and neither points nor faces. If that is
+	 * the case then use the vertices as points. */
+	if ( m_vertices && !m_points && !m_face_indices ) {
+      m_points            = m_vertices;
+      m_point_colors      = m_vertex_colors;
+      m_point_confidence  = m_vertex_confidence;
+      m_point_intensities = m_vertex_intensity;
+      m_point_normals     = m_vertex_normals;
+      m_vertices          = NULL;
+      m_vertex_colors     = NULL;
+      m_vertex_confidence = NULL;
+      m_vertex_intensity  = NULL;
+      m_vertex_normals    = NULL;
+	}
+
 	ply_close( ply );
 	
 }
