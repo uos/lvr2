@@ -73,10 +73,16 @@ void PointCloudManager<VertexT, NormalT>::readFromFile(string filename)
 			**/
         plyio.read( filename, true, false, false, true, false );
 
-#warning PointCloudManager should load point data instead of vertex data! »lkiesow«
-        this->m_points  = plyio.getIndexedVertexArray( this->m_numPoints );
-        this->m_normals = plyio.getIndexedNormalArray( this->m_numPoints );
-        this->m_colors  = plyio.getIndexedColorArray(  this->m_numPoints );
+        this->m_points  = plyio.getIndexedPointArray( &this->m_numPoints );
+		  size_t n(0);
+        this->m_normals = plyio.getIndexedPointNormalArray( &n );
+        if ( n != this->m_numPoints ) {
+            m_normals = NULL;
+        }
+        this->m_colors  = plyio.getIndexedPointColorArray( &n );
+        if ( n != this->m_numPoints ) {
+            m_colors = NULL;
+        }
     }
     else if(extension == "")
     {

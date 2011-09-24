@@ -29,22 +29,22 @@ class MeshLoader {
 		void setVertexColorArray( uint8_t * array, size_t n );
 
 		void setIndexedVertexArray( float ** arr, size_t size );
-		void setIndexedNormalArray( float ** arr, size_t size );
+		void setIndexedVertexNormalArray( float ** arr, size_t size );
 
-		float *    getVertexArray( size_t &n );
-		float *    getVertexNormalArray( size_t &n );
-		float *    getVertexConfidenceArray( size_t &n );
-		float *    getVertexIntensityArray( size_t &n );
-		uint8_t *  getVertexColorArray( size_t & );
+		float *    getVertexArray( size_t * n = NULL );
+		float *    getVertexNormalArray( size_t * n = NULL );
+		float *    getVertexConfidenceArray( size_t * n = NULL );
+		float *    getVertexIntensityArray( size_t * n = NULL );
+		uint8_t *  getVertexColorArray( size_t * n = NULL );
 
-		float **   getIndexedVertexArray( size_t &n );
-		float **   getIndexedNormalArray( size_t &n );
-		float **   getIndexedConfidenceArray( size_t &n );
-		float **   getIndexedIntensityArray( size_t &n );
-		uint8_t ** getIndexedColorArray( size_t &n );
+		float **   getIndexedVertexArray( size_t * n = NULL );
+		float **   getIndexedVertexNormalArray( size_t * n = NULL );
+		float **   getIndexedVertexConfidenceArray( size_t * n = NULL );
+		float **   getIndexedVertexIntensityArray( size_t * n = NULL );
+		uint8_t ** getIndexedVertexColorArray( size_t * n = NULL );
 
-		unsigned int * getIndexArray( size_t &n );
-		void setIndexArray( unsigned int * array, size_t n );
+		unsigned int * getFaceArray( size_t * n = NULL );
+		void setFaceArray( unsigned int * array, size_t n );
 
 		void freeBuffer();
 

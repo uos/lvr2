@@ -33,6 +33,7 @@ namespace lssr {
 class PLYIO : public BaseIO, public MeshLoader,  public PointLoader {
 
 public:
+	PLYIO();
 
 	void save( string filename, e_ply_storage_mode mode, 
 			vector<string> obj_info = vector<string>(), 
@@ -48,6 +49,8 @@ public:
 	static int readFaceCb( p_ply_argument argument );
 
 	virtual ~PLYIO();
+
+	std::string mkTimeStr();
 
 };
 

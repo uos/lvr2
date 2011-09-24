@@ -89,7 +89,7 @@ uint8_t ** PointLoader::getIndexedPointColorArray( size_t * n ) {
 
 	if ( !m_indexed_point_colors ) {
 		m_indexed_point_colors = (uint8_t **) 
-			malloc( m_num_point_colors * sizeof(uint8_t **) );
+			malloc( m_num_point_colors * sizeof(uint8_t *) );
 		for ( int i = 0; i < m_num_point_colors; i++ ) {
 			m_indexed_point_colors[i] = m_point_colors + ( i * 3 );
 		}
@@ -105,7 +105,6 @@ float ** PointLoader::getIndexedPointNormalArray( size_t * n ) {
 			&m_indexed_point_normals );
 
 }
-
 
 float ** PointLoader::getIndexedPointArray( size_t * n ) {
 
@@ -144,9 +143,9 @@ float ** PointLoader::getIndexedArrayf( size_t * n, const size_t num,
 
 	/* Generate indexed intensity array in not already done. */
 	if ( !(*arr2d) ) {
-		*arr2d = (float **) malloc( num * sizeof(float **) );
+		*arr2d = (float **) malloc( num * sizeof(float *) );
 		for ( int i = 0; i < num; i++ ) {
-			arr2d[i] = arr1d + ( i * 3 );
+			(*arr2d)[i] = (*arr1d) + ( i * 3 );
 		}
 	}
 

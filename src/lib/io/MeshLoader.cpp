@@ -32,55 +32,69 @@ MeshLoader::MeshLoader() :
 	m_num_vertex_confidence( 0 ) {}
 
 
-float * MeshLoader::getVertexArray( size_t &n ) {
+float * MeshLoader::getVertexArray( size_t * n ) {
 
-	n = m_num_vertex;
+	if ( n ) {
+		*n = m_num_vertex;
+	}
 	return m_vertices;
 
 }
 
-float * MeshLoader::getVertexNormalArray( size_t &n ) {
+float * MeshLoader::getVertexNormalArray( size_t * n ) {
 
-	n = m_num_vertex_normals;
+	if ( n ) {
+		*n = m_num_vertex_normals;
+	}
 	return m_vertex_normals;
 
 }
 
 
-uint8_t * MeshLoader::getVertexColorArray( size_t &n ) {
+uint8_t * MeshLoader::getVertexColorArray( size_t * n ) {
 
-	n = m_num_vertex_colors;
+	if ( n ) {
+		*n = m_num_vertex_colors;
+	}
 	return m_vertex_colors;
 
 }
 
 
-float * MeshLoader::getVertexConfidenceArray( size_t &n ) {
+float * MeshLoader::getVertexConfidenceArray( size_t * n ) {
 
-	n = m_num_vertex_confidence;
+	if ( n ) {
+		*n = m_num_vertex_confidence;
+	}
 	return m_vertex_confidence;
 
 }
 
 
-float * MeshLoader::getVertexIntensityArray( size_t &n ) {
+float * MeshLoader::getVertexIntensityArray( size_t * n ) {
 
-	n = m_num_vertex_intensity;
+	if ( n ) {
+		*n = m_num_vertex_intensity;
+	}
 	return m_vertex_intensity;
 
 }
 
-unsigned int * MeshLoader::getIndexArray( size_t &n ) {
+unsigned int * MeshLoader::getFaceArray( size_t * n ) {
 
-	n = m_num_face;
+	if ( n ) {
+		*n = m_num_face;
+	}
 	return m_face_indices;
 
 }
 
 
-float ** MeshLoader::getIndexedVertexArray( size_t &n ) {
+float ** MeshLoader::getIndexedVertexArray( size_t * n ) {
 
-	n = m_num_vertex;
+	if ( n ) {
+		*n = m_num_vertex;
+	}
 
 	/* Return NULL if we have no vertices. */
 	if ( !m_vertices ) {
@@ -101,9 +115,11 @@ float ** MeshLoader::getIndexedVertexArray( size_t &n ) {
 
 }
 
-float ** MeshLoader::getIndexedNormalArray( size_t &n ) {
+float ** MeshLoader::getIndexedVertexNormalArray( size_t * n ) {
 
-	n = m_num_vertex_normals;
+	if ( n ) {
+		*n = m_num_vertex_normals;
+	}
 
 	/* Return NULL if we have no normals. */
 	if ( !m_vertex_normals ) {
@@ -127,9 +143,11 @@ float ** MeshLoader::getIndexedNormalArray( size_t &n ) {
 }
 
 
-float ** MeshLoader::getIndexedConfidenceArray( size_t &n ) {
+float ** MeshLoader::getIndexedVertexConfidenceArray( size_t * n ) {
 
-	n = m_num_vertex_confidence;
+	if ( n ) {
+		*n = m_num_vertex_confidence;
+	}
 
 	/* Return NULL if we have no confidence information. */
 	if ( !m_vertex_confidence ) {
@@ -152,9 +170,11 @@ float ** MeshLoader::getIndexedConfidenceArray( size_t &n ) {
 }
 
 
-float ** MeshLoader::getIndexedIntensityArray( size_t &n ) {
+float ** MeshLoader::getIndexedVertexIntensityArray( size_t * n ) {
 
-	n = m_num_vertex_intensity;
+	if ( n ) {
+		*n = m_num_vertex_intensity;
+	}
 
 	/* Return NULL if we have no intensity information. */
 	if ( !m_vertex_intensity ) {
@@ -176,9 +196,11 @@ float ** MeshLoader::getIndexedIntensityArray( size_t &n ) {
 }
 
 
-uint8_t ** MeshLoader::getIndexedColorArray( size_t &n ) {
+uint8_t ** MeshLoader::getIndexedVertexColorArray( size_t * n ) {
 
-	n = m_num_vertex_colors;
+	if ( n ) {
+		*n = m_num_vertex_colors;
+	}
 	if ( !m_vertex_colors ) {
 		return NULL;
 	}
@@ -209,7 +231,7 @@ void MeshLoader::setVertexNormalArray( float * array, size_t n ) {
 
 }
 
-void MeshLoader::setIndexArray( unsigned int * array, size_t n ) {
+void MeshLoader::setFaceArray( unsigned int * array, size_t n ) {
 
 	m_face_indices  = array;
 	m_num_face      = n;
@@ -262,7 +284,7 @@ void MeshLoader::setIndexedVertexArray( float ** arr, size_t count ) {
 }
 
 
-void MeshLoader::setIndexedNormalArray( float ** arr, size_t count ) {
+void MeshLoader::setIndexedVertexNormalArray( float ** arr, size_t count ) {
 
 	m_vertex_normals = (float *) malloc( count * 3 * sizeof(float) );
 	for ( int i = 0; i < count; i++ ) {
@@ -276,20 +298,8 @@ void MeshLoader::setIndexedNormalArray( float ** arr, size_t count ) {
 
 void MeshLoader::freeBuffer() {
 
-	if ( m_vertices                  ) { free( m_vertices                  ); }
-	if ( m_vertex_colors             ) { free( m_vertex_colors             ); }
-	if ( m_vertex_intensity          ) { free( m_vertex_intensity          ); }
-	if ( m_vertex_confidence         ) { free( m_vertex_confidence         ); }
-	if ( m_vertex_normals            ) { free( m_vertex_normals            ); }
-	if ( m_face_indices              ) { free( m_face_indices              ); }
-	if ( m_indexed_vertices          ) { free( m_indexed_vertices          ); }
-	if ( m_indexed_vertex_colors     ) { free( m_indexed_vertex_colors     ); }
-	if ( m_indexed_vertex_intensity  ) { free( m_indexed_vertex_intensity  ); }
-	if ( m_indexed_vertex_confidence ) { free( m_indexed_vertex_confidence ); }
-	if ( m_indexed_vertex_normals    ) { free( m_indexed_vertex_normals    ); }
-
 	m_vertices = m_vertex_confidence = m_vertex_intensity = m_vertex_normals = NULL;
-	m_vertex_colors =  NULL;
+	m_vertex_colors = NULL;
 	m_face_indices = NULL;
 	m_num_vertex = m_num_vertex_colors = m_num_vertex_intensity = m_num_vertex_confidence
 		= m_num_vertex_normals = m_num_face = 0;
