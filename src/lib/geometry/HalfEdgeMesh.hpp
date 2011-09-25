@@ -279,6 +279,9 @@ public:
                 size_t     &vncSize, 
                 size_t   &indexSize, 
                 vector<int> &regions);
+    void retesselateRegionsToBuffer(
+        size_t &vncBufferSize, size_t &indexBufferSize,
+        /*int &vncOffset, int &indexOffset, */ vector<int> plane_regions );
 
 	void tester();
 
