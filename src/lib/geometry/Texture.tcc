@@ -15,7 +15,7 @@ Texture<VertexT, NormalT>::Texture(PointCloudManager<VertexT, NormalT>* pm, Regi
 
 	if(this->m_region->m_inPlane)
 	{
-		if(contours.size() > 0 && contours[0].size() > 1)
+		if(contours.size() > 0 && contours[0].size() > 2)
 		{
 			vector<HVertex*> HOuter_contour = contours[0];
 			NormalT n = m_region->m_normal;
