@@ -224,6 +224,7 @@ void Region<VertexT, NormalT>::regressionPlane()
 
     this->m_inPlane = true;
     this->m_normal = calcNormal();
+    this->m_stuetzvektor = point1;
 }
 
 template<typename VertexT, typename NormalT>

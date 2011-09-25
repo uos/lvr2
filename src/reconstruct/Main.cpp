@@ -185,16 +185,17 @@ int main(int argc, char** argv)
 
         mesh.optimizePlaneIntersections();
 
-        mesh.optimizePlanes(5,
-        		options.getNormalThreshold(),
-        		options.getMinPlaneSize(),
-        		0,
-        		false);
+        mesh.restorePlanes();
 
-        mesh.optimizePlaneIntersections();
+        mesh.optimizePlanes(3,
+                            options.getNormalThreshold(),
+                            options.getMinPlaneSize(),
+                            0,
+                            false );
+
     }
 
-    mesh.tester();
+//    mesh.tester();
 
     // Save triangle mesh
     if(options.retesselate())
@@ -204,7 +205,7 @@ int main(int argc, char** argv)
 	 {
 		 mesh.finalize();
 	 }
-    mesh.save("triangle_mesh.ply");
+    mesh.saveObj("triangle_mesh.obj");
 
 
     cout << timestamp << "Program end." << endl;

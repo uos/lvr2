@@ -5,6 +5,22 @@ namespace lssr
 {
 
 template<typename VertexT, typename IndexType>
+BaseMesh<VertexT, IndexType>::BaseMesh()
+{
+	m_finalized = false;
+	m_vertexBuffer = 0;
+	m_normalBuffer = 0;
+	m_colorBuffer = 0;
+	m_textureCoordBuffer = 0;
+	m_textureIndexBuffer = 0;
+	m_indexBuffer = 0;
+	m_textureBuffer = 0;
+	m_nVertices = 0;
+	m_nTextures = 0;
+	m_nFaces = 0;
+}
+
+template<typename VertexT, typename IndexType>
 void BaseMesh<VertexT, IndexType>::save( string filename ) {
 
 	PLYIO ply_writer;

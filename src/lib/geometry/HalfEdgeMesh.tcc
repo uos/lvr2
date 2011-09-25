@@ -906,8 +906,8 @@ void HalfEdgeMesh<VertexT, NormalT>::optimizePlaneIntersections()
 					if (fabs(n_i*n_j) < 0.9)
 					{
 
-						float d_i = n_i * (*(m_regions[i]->m_faces[0]))(0)->m_position;
-						float d_j = n_j * (*(m_regions[j]->m_faces[0]))(0)->m_position;
+						float d_i = n_i * m_regions[i]->m_stuetzvektor;
+						float d_j = n_j * m_regions[j]->m_stuetzvektor;
 
 						VertexT direction = n_i.cross(n_j);
 
@@ -937,13 +937,32 @@ vector<vector<HalfEdgeVertex<VertexT, NormalT>* > > HalfEdgeMesh<VertexT, Normal
 	return  contours;
 }
 
+template<typename VertexT, typename NormalT>
+void HalfEdgeMesh<VertexT, NormalT>::restorePlanes()
+{
+	for(int r=0; r<m_regions.size(); r++)
+		//drag points into the regression plane
+		if( m_regions[r]->m_inPlane)
+			for(int i=0; i<m_regions[r]->m_faces.size(); i++)
+			{
+				for(int p=0; p<3; p++)
+				{
+					float v = ((m_regions[r]->m_stuetzvektor - (*(m_regions[r]->m_faces[i]))(p)->m_position) * m_regions[r]->m_normal) / (m_regions[r]->m_normal * m_regions[r]->m_normal);
+					if(v != 0)
+						(*(m_regions[r]->m_faces[i]))(p)->m_position = (*(m_regions[r]->m_faces[i]))(p)->m_position + (VertexT)m_regions[r]->m_normal * v;
+				}
+			}
+}
+
 	template<typename VertexT, typename NormalT>
 void HalfEdgeMesh<VertexT, NormalT>::tester()
 {
 
 	cout << "--------------------------------TESTER" << endl;
 	//	for(int r=0; r<m_regions.size(); r++)
-	//		if( m_regions[r]->detectFlicker()) cout << "still flickering" << endl;
+//	//		if( m_regions[r]->detectFlicker()) cout << "still flickering" << endl;
+//	for(int r=0; r<m_regions.size(); r++)
+//		if( m_regions[r]->m_inPlane) cout << r << ": " << m_regions[r]->m_region_number << endl;
 	cout << "----------------------------END TESTER" << endl;
 
 	//    Reset all used variables
