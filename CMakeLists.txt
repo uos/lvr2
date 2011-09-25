@@ -11,7 +11,9 @@ include_directories(${LSSR_SOURCE_DIR}/ext/stann)
 include_directories(${LSSR_SOURCE_DIR})
 include_directories(${LSSR_SOURCE_DIR}/src/lib)
 
-set(ADDITIONAL_COMPILER_FLAGS "-g -O4 -msse3 -fpermissive -Wno-deprecated -Wno-write-strings -lrply")
+#set(ADDITIONAL_COMPILER_FLAGS "-g -O4 -msse3 -fpermissive -Wno-deprecated -Wno-write-strings")
+#set(ADDITIONAL_COMPILER_FLAGS "-g -O4 -msse3 -Wall")
+set(ADDITIONAL_COMPILER_FLAGS "-g -O4 -msse3")
 
 ###############################################################
 # EXTERNAL LIBRARIES
@@ -43,6 +45,19 @@ if(OpenGL_FOUND)
   link_directories(${OpenGL_INCLUDE_DIRS})
   include_directories(${OpenGL_LIBRARY_DIRS})
 endif(OpenGL_FOUND)
+
+
+find_library( rply_shared
+	NAMES rply
+	PATHS /usr/lib /usr/local/lib /lib )
+if( rply_shared )
+	message(STATUS "Looking for rply - found")
+else( rply_shared )
+	message(STATUS "Looking for rply - not found")
+	message(STATUS "Building local rply")
+	include_directories( ${CMAKE_CURRENT_SOURCE_DIR}/ext/rply/ )
+	add_subdirectory(ext/rply)
+endif( rply_shared )
 
 IF(APPLE)
   link_directories(/opt/local/lib)
