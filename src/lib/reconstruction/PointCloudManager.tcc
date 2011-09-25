@@ -9,9 +9,8 @@
 #include <string>
 using std::string;
 
-#include "../io/PLYIO.hpp"
-#include "../io/AsciiIO.hpp"
-#include "../io/UosIO.hpp"
+#include "../io/Timestamp.hpp"
+#include "../io/IOFactory.hpp"
 
 #include <boost/filesystem.hpp>
 
@@ -47,51 +46,32 @@ const VertexT PointCloudManager<VertexT, NormalT>::operator[](const size_t& inde
 template<typename VertexT, typename NormalT>
 void PointCloudManager<VertexT, NormalT>::readFromFile(string filename)
 {
-    // Check extension
-    boost::filesystem::path selectedFile(filename);
-    string extension = selectedFile.extension().c_str();
 
-    if(extension == ".pts" || extension == ".3d" || extension == ".xyz" || extension == ".txt")
-    {
-        AsciiIO asciiIO;
-        asciiIO.read(filename);
-        this->m_points = asciiIO.getIndexedPointArray( &(this->m_numPoints) );
-        this->m_normals = 0;
-        this->m_colors = asciiIO.getIndexedPointColorArray();
-    }
-    else if(extension == ".ply")
-    {
-        // Read given input file
-        PLYIO plyio;
-		  /* 
-			* Read:
-			*  color       yes
-			*  confidence   no
-			*  intensity    no
-			*  normals     yes
-			*  faces        no
-			**/
-        plyio.read( filename, true, false, false, true, false );
+    // Try to parse file
+    IOFactory io(filename);
 
-        this->m_points  = plyio.getIndexedPointArray( &this->m_numPoints );
+    // Get PoinLoader
+    PointLoader* loader = io.getPointLoader();
+
+    // Save points and normals (if present)
+    if(loader)
+    {
+        m_points  = loader->getIndexedPointArray( &m_numPoints );
 		  size_t n(0);
-        this->m_normals = plyio.getIndexedPointNormalArray( &n );
-        if ( n != this->m_numPoints ) {
+        m_normals = loader->getIndexedPointNormalArray( &n );
+        if ( n != m_numPoints ) {
             m_normals = NULL;
         }
-        this->m_colors  = plyio.getIndexedPointColorArray( &n );
-        if ( n != this->m_numPoints ) {
+        m_colors  = loader->getIndexedPointColorArray( &n );
+        if ( n != m_numPoints ) {
             m_colors = NULL;
         }
     }
-    else if(extension == "")
+    else
     {
-        UosIO uosio;
-        uosio.read(filename);
-        this->m_points = uosio.getIndexedPointArray();
-        this->m_numPoints = uosio.getNumPoints();
-        this->m_normals = uosio.getIndexedPointNormalArray();
-        this->m_colors = uosio.getIndexedPointColorArray();
+        Timestamp timestamp;
+        cout << timestamp << "PointCloudManager::readFromFile: Unable to read point cloud data from "
+             << filename << endl;
     }
 }
 

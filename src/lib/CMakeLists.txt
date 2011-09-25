@@ -1,11 +1,12 @@
 set(LSSR_SOURCES
-    io/PLYIO.cpp
-	 io/MeshLoader.cpp
-	 io/PointLoader.cpp
-    io/AsciiIO.cpp
-    io/UosIO.cpp
-    io/Progress.cpp
-    io/Timestamp.cpp
+	io/AsciiIO.cpp
+	io/IOFactory.cpp
+	io/MeshLoader.cpp
+	io/PLYIO.cpp
+	io/PointLoader.cpp
+	io/Progress.cpp
+	io/Timestamp.cpp
+	io/UosIO.cpp
 )
 
 add_library(lssr STATIC ${LSSR_SOURCES})
