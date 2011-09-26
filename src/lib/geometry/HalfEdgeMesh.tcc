@@ -1104,7 +1104,7 @@ void HalfEdgeMesh<VertexT, NormalT>::regionsToBuffer(
         float r, g, b;
         int surface_class = m_regions[i]->m_region_number;
 
-        if(m_colorRegions)
+        if(this->m_colorRegions)
         {
             r = fabs(cos(surface_class));
             g = fabs(sin(surface_class * 30));
@@ -1256,25 +1256,29 @@ void HalfEdgeMesh<VertexT, NormalT>::retesselateRegionsToBuffer(
     int *coordinatesLength = new int;
     int *indexLength = new int;
     float **v  = new float*;
-    float **n  = new float*;
-    float **c  = new float*;
     unsigned int **in = new unsigned int*;
+    
     int pointsUsed = vncBufferSize;
     int indicesUsed = indexBufferSize;
     // check all regions if they are to be retesselated (only if they lie in a regression plane!)
     for(int h=0; h<plane_regions.size(); ++h)
     {
-        if( pointsUsed % 3 != 0 )
-        {
-            cout << "Schummelbude!" << endl;
-            for(int hy=0; hy < pointsUsed % 3; hy++)
-            {
-                this->m_vertexBuffer[pointsUsed+hy] = rand()+hy;
-                this->m_colorBuffer[pointsUsed+hy] = rand()+hy;
-                this->m_normalBuffer[pointsUsed+hy] = rand()+hy;
-            }
-        }
         int i = plane_regions[h];
+        float r, g, b;
+        int surface_class = m_regions[i]->m_region_number;
+
+        if(this->m_colorRegions)
+        {
+            r = fabs(cos(surface_class));
+            g = fabs(sin(surface_class * 30));
+            b = fabs(sin(surface_class * 2));
+        }
+        else
+        {
+            r = 0.0;
+            g = 0.8;
+            b = 0.0;
+        }
         // If memory used to 75% reallocate!
         if((double)pointsUsed / (double)vncBufferSize >= 0.45)
         {
@@ -1298,7 +1302,7 @@ void HalfEdgeMesh<VertexT, NormalT>::retesselateRegionsToBuffer(
         Tesselator<VertexT, NormalT>::init();
         vector<vector<HVertex*> > contours = m_regions[i]->getContours(0.01);
         Tesselator<VertexT, NormalT>::tesselate(contours);
-        Tesselator<VertexT, NormalT>::getFinalizedTriangles(v, n, c, in, indexLength, coordinatesLength);
+        Tesselator<VertexT, NormalT>::getFinalizedTriangles(v, in, indexLength, coordinatesLength);
 
         if(*indexLength > 0 && *coordinatesLength > 0)
         {
@@ -1311,13 +1315,13 @@ void HalfEdgeMesh<VertexT, NormalT>::retesselateRegionsToBuffer(
                 this->m_vertexBuffer[j*3+pointsUsed+1] = (*v)[j*3+1];
                 this->m_vertexBuffer[j*3+pointsUsed+2] = (*v)[j*3+2];
 
-                this->m_normalBuffer[j*3+pointsUsed+0] = 0.0; //(*n)[j*3+0];
-                this->m_normalBuffer[j*3+pointsUsed+1] = 0.0; //(*n)[j*3+1];
-                this->m_normalBuffer[j*3+pointsUsed+2] = 0.0; //(*n)[j*3+2];
+                this->m_normalBuffer[j*3+pointsUsed+0] = 0.0; 
+                this->m_normalBuffer[j*3+pointsUsed+1] = 0.0; 
+                this->m_normalBuffer[j*3+pointsUsed+2] = 0.0; 
 
-                this->m_colorBuffer[ j*3+pointsUsed+0] = 0.8; //(*c)[j*3+0];
-                this->m_colorBuffer[ j*3+pointsUsed+1] = 0.0; //(*c)[j*3+1];
-                this->m_colorBuffer[ j*3+pointsUsed+2] = 0.0; //(*c)[j*3+2];
+                this->m_colorBuffer[ j*3+pointsUsed+0] = r; 
+                this->m_colorBuffer[ j*3+pointsUsed+1] = g; 
+                this->m_colorBuffer[ j*3+pointsUsed+2] = b; 
 
                 float u1 = 0;
                 float u2 = 0;
@@ -1336,8 +1340,6 @@ void HalfEdgeMesh<VertexT, NormalT>::retesselateRegionsToBuffer(
             indicesUsed += *indexLength;
 
             delete (*v);
-            delete (*c);
-            delete (*n);
             delete (*in);
             delete t;
         }
@@ -1346,8 +1348,6 @@ void HalfEdgeMesh<VertexT, NormalT>::retesselateRegionsToBuffer(
     delete coordinatesLength;
     vncBufferSize = pointsUsed;
     indexBufferSize = indicesUsed;
-    cout << "vnc: " << vncBufferSize << endl;
-    cout << "ind: " << indexBufferSize << endl;
 }
 
     template<typename VertexT, typename NormalT>
@@ -1361,8 +1361,8 @@ void HalfEdgeMesh<VertexT, NormalT>::finalizeAndRetesselate()
     this->m_nVertices    = (uint32_t)m_vertices.size();
     this->m_nFaces 	     = (uint32_t)m_faces.size();
     this->m_nTextures    = 0;
-    size_t vncBufferSize   = 4024; //3 * this->m_nVertices; // * vnc_reallocate * sizeof(float)*10;
-    size_t indexBufferSize = 4024; //3 * this->m_nVertices; // * index_reallocate * sizeof(unsigned int)*10;
+    size_t vncBufferSize   = 3 * this->m_nVertices;
+    size_t indexBufferSize = 3 * this->m_nFaces;
 
     // Guess for the array sizes. The correct values are only known after the regions were tesselated.
     this->m_vertexBuffer       = new float[vncBufferSize];
@@ -1377,15 +1377,6 @@ void HalfEdgeMesh<VertexT, NormalT>::finalizeAndRetesselate()
     for(int j=0; j<m_faces.size(); j++)
         for(int k=0; k<3; k++)
             (*m_faces[j])[k]->used=false;
-
-    int nPointsUsed=0;
-    int nIndizesUsed=0;
-    int *coordinatesLength = new int;
-    int *indexLength = new int;
-    float **v  = new float*;
-    float **n  = new float*;
-    float **c  = new float*;
-    unsigned int **in = new unsigned int*;
 
     /*vector<Region<VertexT, NormalT> * > plane_regions;*/
     vector<int> plane_regions;
@@ -1427,8 +1418,6 @@ void HalfEdgeMesh<VertexT, NormalT>::finalizeAndRetesselate()
 
     this->m_finalized = true; 
     cout << timestamp << "Done retesselating: " 						  	 	<< endl;
-    cout << timestamp << "[" << nPointsUsed << "] Points Used."       << endl;
-    cout << timestamp << "[" << nIndizesUsed << "] Indizes Used."     << endl;
     cout << timestamp << "[" << this->m_nVertices << "] Vertices." << endl;
     cout << timestamp << "[" << this->m_nFaces << "] Faces." 	   << endl;
 } 
