@@ -22,7 +22,10 @@
 
 #include "../widgets/CustomTreeWidgetItem.h"
 #include "../widgets/PointCloudTreeWidgetItem.h"
+#include "../widgets/TriangleMeshTreeWidgetItem.h"
 #include "../widgets/TransformationDialog.h"
+
+#include "display/StaticMesh.hpp"
 
 
 using Ui::MainWindow;
@@ -60,6 +63,9 @@ public Q_SLOTS:
 	void transformObject();
 
 	void openFile();
+
+	void meshRenderModeChanged();
+	void pointRenderModeChanged();
 
 private:
 
