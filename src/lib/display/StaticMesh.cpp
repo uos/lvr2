@@ -38,7 +38,7 @@ StaticMesh::StaticMesh(MeshLoader& loader, string name) : Renderable(name){
 	m_vertices      = loader.getVertexArray(m_numVertices);
 	m_indices       = loader.getIndexArray(m_numFaces);
 
-	m_blackColors   = new float(3 * m_numVertices);
+	m_blackColors   = new float[3 * m_numVertices];
 	for(int i = 0; i < 3 * m_numVertices; i++) m_blackColors[i] = 0.0;
 
 
@@ -132,8 +132,13 @@ void StaticMesh::compileWireframeList()
         for(size_t i = 0; i < m_numFaces; i++)
         {
             int index = 3 * i;
+            int a = 3 * m_indices[index];
+            int b = 3 * m_indices[index + 1];
+            int c = 3 * m_indices[index + 2];
             glBegin(GL_TRIANGLES);
-            glVertex3f(m_vertices[index], m_vertices[index + 1], m_vertices[index + 2]);
+            glVertex3f(m_vertices[a], m_vertices[a + 1], m_vertices[a + 2]);
+            glVertex3f(m_vertices[b], m_vertices[b + 1], m_vertices[b + 2]);
+            glVertex3f(m_vertices[c], m_vertices[c + 1], m_vertices[c + 2]);
             glEnd();
 
         }

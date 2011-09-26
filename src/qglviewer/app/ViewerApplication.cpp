@@ -68,6 +68,20 @@ void ViewerApplication::connectEvents()
 	QObject::connect(m_mainWindowUi->actionPerspective_projection, SIGNAL(activated()),
 			this, SLOT(setViewerModePerspective()));
 
+	// Render Modes
+	QObject::connect(m_mainWindowUi->actionVertexView, SIGNAL(activated()),
+	        this, SLOT(meshRenderModeChanged()));
+
+	QObject::connect(m_mainWindowUi->actionSurfaceView, SIGNAL(activated()),
+            this, SLOT(meshRenderModeChanged()));
+
+	QObject::connect(m_mainWindowUi->actionWireframeView, SIGNAL(activated()),
+	            this, SLOT(meshRenderModeChanged()));
+
+	QObject::connect(m_mainWindowUi->actionPointCloudView, SIGNAL(activated()),
+	                this, SLOT(pointRenderModeChanged()));
+
+
 	// Fog settings
 	QObject::connect(m_mainWindowUi->actionToggle_fog, SIGNAL(activated()),
 			this, SLOT(toggleFog()));
@@ -140,6 +154,48 @@ void ViewerApplication::openFile()
 
 }
 
+void ViewerApplication::meshRenderModeChanged()
+{
+    QTreeWidgetItem* item = m_sceneDockWidgetUi->treeWidget->currentItem();
+    if(item)
+    {
+        if(item->type() == TriangleMeshItem)
+        {
+            TriangleMeshTreeWidgetItem* t_item = static_cast<TriangleMeshTreeWidgetItem*>(item);
+
+            // Setup new render mode
+            lssr::StaticMesh* mesh = static_cast<lssr::StaticMesh*>(t_item->renderable());
+
+            int renderMode = 0;
+
+            // Check states of buttons
+            if(m_mainWindowUi->actionSurfaceView->isChecked()) renderMode |= lssr::RenderSurfaces;
+            if(m_mainWindowUi->actionWireframeView->isChecked()) renderMode |= lssr::RenderTriangles;
+
+            // Set proper render mode and forbid nothing selected
+            if(renderMode != 0)
+            {
+                mesh->setRenderMode(renderMode);
+            }
+
+            // Avoid inconsistencies in button toggle states
+            m_mainWindowUi->actionSurfaceView->setChecked(mesh->getRenderMode() & lssr::RenderSurfaces);
+            m_mainWindowUi->actionWireframeView->setChecked(mesh->getRenderMode() & lssr::RenderTriangles);
+
+            cout << (renderMode & lssr::RenderSurfaces) << " " << (renderMode & lssr::RenderTriangles) << endl;
+
+
+            // Force redisplay
+            m_viewer->updateGL();
+        }
+    }
+}
+
+void ViewerApplication::pointRenderModeChanged()
+{
+
+}
+
 void ViewerApplication::openFile(string filename)
 {
     m_factory->create(filename);
@@ -200,7 +256,6 @@ void ViewerApplication::treeWidgetExport()
 
 void ViewerApplication::dataCollectorAdded(DataCollector* d)
 {
-    cout << "ADD" << endl;
     if(d->treeItem())
     {
         m_sceneDockWidgetUi->treeWidget->addTopLevelItem(d->treeItem());
@@ -221,7 +276,7 @@ void ViewerApplication::treeItemClicked(QTreeWidgetItem* item, int d)
         }
     }
 
-    // Parse special operations of diffrent items
+    // Parse special operations of different items
 }
 
 void ViewerApplication::treeItemChanged(QTreeWidgetItem* item, int d)

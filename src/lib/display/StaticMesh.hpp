@@ -53,7 +53,8 @@ public:
 	size_t			getNumberOfVertices();
 	size_t			getNumberOfFaces();
 
-	void setRenderMode(int mode);
+	void setRenderMode(int mode) { m_renderMode = mode;}
+	int  getRenderMode() { return m_renderMode;}
 
 private:
 	void interpolateNormals();
@@ -105,6 +106,7 @@ void StaticMesh::render(){
 		    {
 		        glDisable(GL_LIGHTING);
 		        glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
+		        glLineWidth(2);
 		        glColor3f(0.0, 0.0, 0.0);
 		        glCallList(m_wireframeList);
 		        glEnable(GL_LIGHTING);
