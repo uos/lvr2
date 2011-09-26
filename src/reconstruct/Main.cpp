@@ -138,8 +138,13 @@ int main(int argc, char** argv)
 #ifdef _USE_PCL_
     if(pcm_name == "PCL")
     {
-        cout << timestamp << "Creating PCL point cloud manager." << endl;
-        pcm = new PCLPointCloudManager<Vertex<float>, Normal<float> > ( options.getInputFileName());
+        #ifdef _USE_PCL_
+            cout << timestamp << "Creating PCL point cloud manager." << endl;
+            pcm = new PCLPointCloudManager<Vertex<float>, Normal<float> > ( options.getInputFileName());
+        #else
+            cout << timestamp << "NO PCL bindings found. Exiting" << endl;
+            exit(-1);
+        #endif
     }
     else
     {

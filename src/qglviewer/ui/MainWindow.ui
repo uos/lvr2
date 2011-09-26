@@ -527,6 +527,9 @@
   </widget>
   <widget class="QStatusBar" name="statusbar"/>
   <widget class="QToolBar" name="toolBar">
+   <property name="enabled">
+    <bool>true</bool>
+   </property>
    <property name="palette">
     <palette>
      <active>
@@ -614,10 +617,10 @@
    </attribute>
    <addaction name="action_Open"/>
    <addaction name="separator"/>
-   <addaction name="actionActionPointCloudView"/>
-   <addaction name="actionActionVertexView"/>
-   <addaction name="actionActionWireframeView"/>
-   <addaction name="actionActionSurfaceView"/>
+   <addaction name="actionPointCloudView"/>
+   <addaction name="actionVertexView"/>
+   <addaction name="actionWireframeView"/>
+   <addaction name="actionSurfaceView"/>
    <addaction name="actionToggle_fog"/>
    <addaction name="actionFog_settings"/>
    <addaction name="separator"/>
@@ -761,6 +764,12 @@
    </property>
   </action>
   <action name="actionToggle_fog">
+   <property name="checkable">
+    <bool>true</bool>
+   </property>
+   <property name="enabled">
+    <bool>false</bool>
+   </property>
    <property name="icon">
     <iconset resource="../res/viewer.qrc">
      <normaloff>:/qv_fog.png</normaloff>:/qv_fog.png</iconset>
@@ -770,6 +779,9 @@
    </property>
   </action>
   <action name="actionFog_settings">
+   <property name="enabled">
+    <bool>false</bool>
+   </property>
    <property name="icon">
     <iconset resource="../res/viewer.qrc">
      <normaloff>:/qv_fogsettings.png</normaloff>:/qv_fogsettings.png</iconset>
@@ -778,7 +790,13 @@
     <string>Fog settings...</string>
    </property>
   </action>
-  <action name="actionActionWireframeView">
+  <action name="actionWireframeView">
+   <property name="checkable">
+    <bool>true</bool>
+   </property>
+   <property name="enabled">
+    <bool>false</bool>
+   </property>
    <property name="icon">
     <iconset resource="../res/viewer.qrc">
      <normaloff>:/qv_wireframe.png</normaloff>:/qv_wireframe.png</iconset>
@@ -790,7 +808,13 @@
     <string>Render objects in wireframe mode</string>
    </property>
   </action>
-  <action name="actionActionVertexView">
+  <action name="actionVertexView">
+   <property name="checkable">
+    <bool>true</bool>
+   </property>
+   <property name="enabled">
+    <bool>false</bool>
+   </property>
    <property name="icon">
     <iconset resource="../res/viewer.qrc">
      <normaloff>:/qv_vertices.png</normaloff>:/qv_vertices.png</iconset>
@@ -802,7 +826,10 @@
     <string>Renders vertices only</string>
    </property>
   </action>
-  <action name="actionActionPointCloudView">
+  <action name="actionPointCloudView">
+   <property name="enabled">
+    <bool>false</bool>
+   </property>
    <property name="icon">
     <iconset resource="../res/viewer.qrc">
      <normaloff>:/qv_points.png</normaloff>:/qv_points.png</iconset>
@@ -814,7 +841,13 @@
     <string>Renders loaded point clouds only</string>
    </property>
   </action>
-  <action name="actionActionSurfaceView">
+  <action name="actionSurfaceView">
+   <property name="checkable">
+    <bool>true</bool>
+   </property>
+   <property name="enabled">
+    <bool>false</bool>
+   </property>
    <property name="icon">
     <iconset resource="../res/viewer.qrc">
      <normaloff>:/qv_surfaces.png</normaloff>:/qv_surfaces.png</iconset>

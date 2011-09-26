@@ -15,6 +15,7 @@ TriangleMeshTreeWidgetItem::TriangleMeshTreeWidgetItem(int type)
 {
    m_numVertices = 0;
    m_numFaces = 0;
+   setInitialState(Qt::Checked);
 }
 
 TriangleMeshTreeWidgetItem::TriangleMeshTreeWidgetItem(QTreeWidgetItem* parent, int type)
@@ -22,6 +23,7 @@ TriangleMeshTreeWidgetItem::TriangleMeshTreeWidgetItem(QTreeWidgetItem* parent, 
 {
     m_numVertices = 0;
     m_numFaces = 0;
+    setInitialState(Qt::Checked);
 }
 
 

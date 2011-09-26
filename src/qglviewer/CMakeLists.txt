@@ -4,7 +4,7 @@ ADD_DEFINITIONS(-DQT_NO_KEYWORDS )
 
 set(QVIEWER_MOCS 
     app/ViewerApplication.h
-    data/DataManager.h 
+    data/DataCollectorFactory.h
     viewers/Viewer.h
     viewers/ViewerManager.h
     widgets/TransformationDialog.h
@@ -26,7 +26,6 @@ set(QVIEWER_SOURCES
     app/ViewerApplication.cpp
     data/DataCollector.cpp
     data/DataCollectorFactory.cpp
-    data/DataManager.cpp
     data/Static3DDataCollector.cpp
     viewers/OrthoCamera.cpp
     viewers/PerspectiveViewer.cpp
@@ -63,7 +62,7 @@ add_executable(qviewer ${QVIEWER_SOURCES} ${QVIEWER_MOC_SRC} ${QVIEWER_UI_HDRS}
 target_link_libraries(qviewer ${QT_QTCORE_LIBRARIES})
 target_link_libraries(qviewer ${QT_QTGUI_LIBRARIES})
 target_link_libraries(qviewer ${QT_QTOPENGL_LIBRARIES})
-target_link_libraries(qviewer model3d)
+target_link_libraries(qviewer lssr)
 target_link_libraries(qviewer ${OPENGL_LIBRARY})
 target_link_libraries(qviewer ${GLUT_LIBRARIES})
 target_link_libraries(qviewer ${QGLVIEWER_LIBRARY_RELEASE})
