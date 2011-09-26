@@ -9,17 +9,26 @@
 #define VIEWER_H_
 
 #include "../app/Types.h"
+#include "../data/DataCollector.h"
 
-#include "../../lib/model3d/BoundingBox.h"
-#include "model3d/Renderable.h"
+#include "geometry/BoundingBox.hpp"
+
+#include "display/Renderable.hpp"
+#include "display/PointCloud.hpp"
 
 #include <QGLViewer/qglviewer.h>
+
 #include <list>
+#include <iostream>
 using std::list;
 
 class DataCollector;
 
 enum ProjectionMode { PERSPECTIVE, ORTHOXY, ORTHOXZ, ORTHOYZ};
+
+using lssr::Renderable;
+using lssr::BoundingBox;
+using lssr::Vertex;
 
 class Viewer : public QGLViewer
 {
@@ -40,11 +49,11 @@ public Q_SLOTS:
 protected:
 	virtual void draw();
 
-	list<DataCollector*>	m_dataObjects;
-	BoundingBox				m_boundingBox;
+	list<DataCollector*>	    m_dataObjects;
+	BoundingBox<Vertex<float> > m_boundingBox;
 
 private:
-	QWidget*				m_parent;
+	QWidget*				    m_parent;
 };
 
 #endif /* VIEWER_H_ */

@@ -9,23 +9,27 @@
 #define DATACOLLECTORFACTORY_H_
 
 #include <string>
+#include <QtGui>
+
 using std::string;
 
 #include "DataCollector.h"
 
 class DataManager;
 
-class DataCollectorFactory
+class DataCollectorFactory : public QObject
 {
+    Q_OBJECT
 public:
+    DataCollectorFactory();
+
 	virtual ~DataCollectorFactory() {};
+	void create(string filename);
 
-	static DataCollectorFactory* instance();
-    DataCollector* create(string filename);
+Q_SIGNALS:
+    void dataCollectorCreated(DataCollector*);
 
-private:
-	DataCollectorFactory() {};
-	static DataCollectorFactory* m_instance;
+
 
 };
 

@@ -10,7 +10,11 @@
 
 #include "TransformationDialogUI.h"
 
-#include "model3d/Renderable.h"
+#include "display/Renderable.hpp"
+
+using lssr::Renderable;
+using lssr::Vertex;
+using lssr::Matrix4;
 
 using Ui::TransformationDialogUI;
 
