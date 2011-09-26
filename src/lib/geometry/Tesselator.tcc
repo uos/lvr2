@@ -127,8 +127,6 @@ void Tesselator<VertexT, NormalT>::tesselatorAddVertex(const GLvoid *data, HVert
 
 template<typename VertexT, typename NormalT>
 void Tesselator<VertexT, NormalT>::getFinalizedTriangles(float **vertexBuffer,
-                                                         float **normalBuffer,
-                                                         float **colorBuffer,
                                                          unsigned int    **indexBuffer,
                                                          int    *lengthFaces,
                                                          int    *lengthVertices)
@@ -148,8 +146,8 @@ void Tesselator<VertexT, NormalT>::getFinalizedTriangles(float **vertexBuffer,
 
     // allocate new memory.
     (*vertexBuffer) = new float[numVertices*3];
-    (*normalBuffer) = new float[numVertices*3];
-    (*colorBuffer)  = new float[numVertices*3];
+    //(*normalBuffer) = new float[numVertices*3];
+    //(*colorBuffer)  = new float[numVertices*3];
     (*indexBuffer) =  new unsigned int[numVertices];
 
 
@@ -157,8 +155,8 @@ void Tesselator<VertexT, NormalT>::getFinalizedTriangles(float **vertexBuffer,
     for(int i=0; i<numVertices*3; ++i)
     {
         (*vertexBuffer)[i] = 0.0;
-        (*normalBuffer)[i] = 0.0;
-        (*colorBuffer)[i]  = 0.0;
+        //(*normalBuffer)[i] = 0.0;
+        //(*colorBuffer)[i]  = 0.0;
     }
     for(int i=0; i<numVertices; ++i)
     {
@@ -208,13 +206,13 @@ void Tesselator<VertexT, NormalT>::getFinalizedTriangles(float **vertexBuffer,
 			  (*vertexBuffer)[(usedVertices * 3) + 1] = (*triangles)[1];
 			  (*vertexBuffer)[(usedVertices * 3) + 2] = (*triangles)[2];
 
-			  (*normalBuffer)[(usedVertices * 3) + 0] = m_normal[0];
-			  (*normalBuffer)[(usedVertices * 3) + 1] = m_normal[1];
-			  (*normalBuffer)[(usedVertices * 3) + 2] = m_normal[2];
+			  //(*normalBuffer)[(usedVertices * 3) + 0] = m_normal[0];
+			  //(*normalBuffer)[(usedVertices * 3) + 1] = m_normal[1];
+			  //(*normalBuffer)[(usedVertices * 3) + 2] = m_normal[2];
 			  
-			  (*colorBuffer)[(usedVertices *3) + 0] = r;
-			  (*colorBuffer)[(usedVertices *3) + 1] = g;
-			  (*colorBuffer)[(usedVertices *3) + 2] = b;
+			  //(*colorBuffer)[(usedVertices *3) + 0] = r;
+			  //(*colorBuffer)[(usedVertices *3) + 1] = g;
+			  //(*colorBuffer)[(usedVertices *3) + 2] = b;
 
 			  posArr[m] = usedVertices;
 			  usedVertices++;
@@ -269,22 +267,22 @@ void Tesselator<VertexT, NormalT>::getFinalizedTriangles(float **vertexBuffer,
         for(int i=0; i<usedVertices*3; i++)
         {
             newVertexBuffer[i] = (*vertexBuffer)[i];
-            newNormalBuffer[i] = (*normalBuffer)[i];
-            newColorBuffer[i]  = (*colorBuffer)[i];
+            //newNormalBuffer[i] = (*normalBuffer)[i];
+            //newColorBuffer[i]  = (*colorBuffer)[i];
         }
 
         for(int i=0; i<usedFaces*3; ++i)
         {
             newIndexBuffer[i] = (*indexBuffer)[i];
         }
-        delete (*colorBuffer);
+        //delete (*colorBuffer);
         delete (*indexBuffer);
         delete (*vertexBuffer);
-        delete (*normalBuffer);
+        //delete (*normalBuffer);
 
         (*vertexBuffer) = newVertexBuffer;
-        (*normalBuffer) = newNormalBuffer;
-        (*colorBuffer)  = newColorBuffer;
+        //(*normalBuffer) = newNormalBuffer;
+        //(*colorBuffer)  = newColorBuffer;
         (*indexBuffer) = newIndexBuffer;
     }
     *lengthVertices = usedVertices*3;
