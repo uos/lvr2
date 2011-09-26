@@ -182,9 +182,6 @@ void ViewerApplication::meshRenderModeChanged()
             m_mainWindowUi->actionSurfaceView->setChecked(mesh->getRenderMode() & lssr::RenderSurfaces);
             m_mainWindowUi->actionWireframeView->setChecked(mesh->getRenderMode() & lssr::RenderTriangles);
 
-            cout << (renderMode & lssr::RenderSurfaces) << " " << (renderMode & lssr::RenderTriangles) << endl;
-
-
             // Force redisplay
             m_viewer->updateGL();
         }
@@ -281,7 +278,7 @@ void ViewerApplication::treeItemClicked(QTreeWidgetItem* item, int d)
 
 void ViewerApplication::treeItemChanged(QTreeWidgetItem* item, int d)
 {
-    if(item->type() == PointCloudItem)
+    if(item->type() > 1000)
     {
         CustomTreeWidgetItem* custom_item = static_cast<CustomTreeWidgetItem*>(item);
         custom_item->renderable()->setActive(custom_item->checkState(d) == Qt::Checked);

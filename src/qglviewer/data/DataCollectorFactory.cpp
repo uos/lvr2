@@ -55,9 +55,10 @@ void DataCollectorFactory::create(string filename)
 	        modes |= VertexNormals;
 	    }
         item->setSupportedRenderModes(modes);
-	    item->setViewCentering(true);
+	    item->setViewCentering(false);
 	    item->setName(name);
 	    item->setRenderable(mesh);
+	    item->setNumFaces(mesh->getNumberOfFaces());
 
 	    Static3DDataCollector* dataCollector = new Static3DDataCollector(mesh, name, item);
 	    Q_EMIT dataCollectorCreated( dataCollector );
@@ -80,7 +81,7 @@ void DataCollectorFactory::create(string filename)
 	        }
 
 	        item->setSupportedRenderModes(modes);
-	        item->setViewCentering(true);
+	        item->setViewCentering(false);
 	        item->setName(name);
 	        item->setNumPoints(pc->m_points.size());
 	        item->setRenderable(pc);

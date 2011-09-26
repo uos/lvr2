@@ -91,7 +91,7 @@ protected:
 
 void StaticMesh::render(){
 
-	if(m_visible)
+	if(m_active)
 	{
 		if(m_finalized){
 

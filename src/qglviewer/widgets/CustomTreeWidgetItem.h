@@ -50,7 +50,7 @@ public:
 	void setName(string name);
 
     bool centerOnClick()                { return m_centerOnClick;}
-    void setViewCentering(bool center)  { m_centerOnClick = true;}
+    void setViewCentering(bool center)  { m_centerOnClick = center;}
 
     string name() { return m_name;}
 
