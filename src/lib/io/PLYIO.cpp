@@ -60,7 +60,7 @@ void PLYIO::save( string filename ) {
 void PLYIO::save( string filename, e_ply_storage_mode mode, 
 		vector<string> obj_info, vector<string> comment ) {
 
-	p_ply oply = ply_create( filename.c_str(), mode, NULL, 0, NULL );
+	p_ply oply = ply_create( filename.c_str(), mode, NULL );
 	if ( !oply ) {
 		fprintf( stderr, "ERROR: Could not create »%s«\n", filename.c_str() );
 		return;
@@ -307,7 +307,7 @@ void PLYIO::read( string filename, bool readColor, bool readConfidence,
 	freeBuffer();
 
 	/* Start reading new PLY */
-	p_ply ply = ply_open( filename.c_str(), NULL, 0, NULL );
+	p_ply ply = ply_open( filename.c_str(), NULL );
 
 	if ( !ply ) {
 		fprintf( stderr, "error: Could not open »%s«.\n", filename.c_str() );
@@ -322,7 +322,7 @@ void PLYIO::read( string filename, bool readColor, bool readConfidence,
 	/* Check if there are vertices and get the amount of vertices. */
 	char buf[256] = "";
 	const char * name = buf;
-	long int n;
+	int32_t n;
 	p_ply_element elem  = NULL;
 	while ( ( elem = ply_get_next_element( ply, elem ) ) ) {
 		ply_get_element_info( elem, &name, &n );
@@ -536,7 +536,7 @@ int PLYIO::readColorCb( p_ply_argument argument ) {
 int PLYIO::readFaceCb( p_ply_argument argument ) {
 
 	float ** face;
-	long int length, value_index;
+	int32_t length, value_index;
 	ply_get_argument_user_data( argument, (void **) &face, NULL );
 	ply_get_argument_property( argument, NULL, &length, &value_index );
 	if ( value_index < 0 ) {
