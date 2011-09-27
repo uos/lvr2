@@ -1329,6 +1329,30 @@ void HalfEdgeMesh<VertexT, NormalT>::retesselateRegionsToBuffer(
                 this->m_textureCoordBuffer[j*3+pointsUsed+0] = u1;
                 this->m_textureCoordBuffer[j*3+pointsUsed+1] = u2;
                 this->m_textureCoordBuffer[j*3+pointsUsed+2] = 0;
+
+                /* Check for degenerated Faces! */
+                if( (j+1)%3==0 )
+                {
+                    float x1 = this->m_vertexBuffer[(j-2)*3+0];
+                    float y1 = this->m_vertexBuffer[(j-2)*3+1];
+                    float z1 = this->m_vertexBuffer[(j-2)*3+2]; 
+
+                    float x2 = this->m_vertexBuffer[(j-1)*3+0];
+                    float y2 = this->m_vertexBuffer[(j-1)*3+1];
+                    float z2 = this->m_vertexBuffer[(j-1)*3+2]; 
+
+                    float x3 = this->m_vertexBuffer[(j-0)*3+0];
+                    float y3 = this->m_vertexBuffer[(j-0)*3+1];
+                    float z3 = this->m_vertexBuffer[(j-0)*3+2]; 
+
+                    float d12 = sqrt( pow((x1-x2),2) + pow((y1-y2),2) + pow((z1-z2),2) );
+                    float d13 = sqrt( pow((x1-x3),2) + pow((y1-y3),2) + pow((z1-z3),2) );
+                    float d23 = sqrt( pow((x2-x3),2) + pow((y2-y3),2) + pow((z2-z3),2) );
+                    if( d12 <= 0.001 || d13 <= 0.001 || d23 <= 0.001){
+                        cout << "Damnit DEAD Face!: ";
+                    }
+
+                }
             }
 
             for(int j=0; j < (*indexLength); ++j)
