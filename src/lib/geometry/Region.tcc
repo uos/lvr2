@@ -158,7 +158,7 @@ int Region<VertexT, NormalT>::size()
 template<typename VertexT, typename NormalT>
 void Region<VertexT, NormalT>::regressionPlane()
 {
-             srand (5);
+//    srand(time(NULL));
 
     VertexT point1;
     VertexT point2;
@@ -176,16 +176,18 @@ void Region<VertexT, NormalT>::regressionPlane()
 
     while((nonimproving_iterations < 30) && (iterations < 200))
     {
+    	NormalT n0;
         //randomly choose 3 disjoint points
         do{
             point1 = (*m_faces[rand() % m_faces.size()])(0)->m_position;
             point2 = (*m_faces[rand() % m_faces.size()])(1)->m_position;
             point3 = (*m_faces[rand() % m_faces.size()])(2)->m_position;
-        }while(point1 == point2 || point2 == point3 || point3 == point1);
 
-        //compute normal of the plane given by the 3 points
-        NormalT n0 = (point1 - point2).cross(point1 - point3);
-        n0.normalize();
+            //compute normal of the plane given by the 3 points
+            n0 = (point1 - point2).cross(point1 - point3);
+            n0.normalize();
+
+        }while(point1 == point2 || point2 == point3 || point3 == point1 || n0.length() == 0);
 
         //compute error to at most 50 other randomly chosen points
         dist = 0;
