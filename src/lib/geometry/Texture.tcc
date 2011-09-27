@@ -105,6 +105,7 @@ Texture<VertexT, NormalT>::Texture(PointCloudManager<VertexT, NormalT>* pm, Regi
 template<typename VertexT, typename NormalT>
 void Texture<VertexT, NormalT>::textureCoords(VertexT v, float &x, float &y)
 {
+    cout << "aMin: " << a_min << "   b?min : " << b_min << "    p: " << p << endl;
 	 VertexT t =  v - ((v1 * a_min) + (v2 * b_min) + p);
 	 x = (v1 * (t * v1)).length()/pixelSize / m_sizeX;
 	 y = (v2 * (t * v2)).length()/pixelSize / m_sizeY;

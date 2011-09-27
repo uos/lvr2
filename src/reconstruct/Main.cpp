@@ -200,7 +200,7 @@ int main(int argc, char** argv)
     // Save triangle mesh
     if(options.retesselate())
 	 {
-		 mesh.finalizeAndRetesselate();
+		 mesh.finalizeAndRetesselate(options.generateTextures());
 	 } else
 	 {
 		 mesh.finalize();

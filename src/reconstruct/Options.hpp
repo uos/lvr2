@@ -94,6 +94,12 @@ public:
 	bool	recalcNormals() const;
 
 	/**
+	 * @brief	If true, textures will be generated during
+     *          finalization of mesh.
+	 */
+	bool	generateTextures() const;
+
+	/**
 	 * @brief	Returns the number of neighbors
 	 * 			for normal interpolation
 	 */
@@ -203,7 +209,10 @@ private:
 	int                             m_intersections;
 
 	/// Whether or not the mesh should be retesselated while being finalized
-	bool									  m_retesselate;
+	bool						  m_retesselate;
+	
+    /// Whether or not the mesh should be retesselated while being finalized
+	bool						   m_generateTextures;
 
 	/// The used point cloud manager
 	string                          m_pcm;
@@ -296,6 +305,10 @@ inline ostream& operator<<(ostream& os, const Options &o)
 	if(o.savePointsAndNormals())
 	{
 	    cout << "##### Save points and normals \t: YES" << endl;
+	}
+	if(o.generateTextures())
+	{
+	    cout << "##### Generate Textures \t\t: YES" << endl;
 	}
 	return os;
 }

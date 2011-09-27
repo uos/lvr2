@@ -1195,7 +1195,7 @@ void HalfEdgeMesh<VertexT, NormalT>::regionsToBuffer(
                           << "\n\t d12: " << d12 
                           << "\n\t d13: " << d13
                           << "\n\t d23: " << d23
-                          << "\n\t" << k << "th vertex\n\t\tSKIPPING!\n";
+                          << "\n\t\tSKIPPING!\n";
                         skip = true;
                         break;
                     }
@@ -1251,7 +1251,7 @@ void HalfEdgeMesh<VertexT, NormalT>::regionsToBuffer(
 template<typename VertexT, typename NormalT>
 void HalfEdgeMesh<VertexT, NormalT>::retesselateRegionsToBuffer(
         size_t &vncBufferSize, size_t &indexBufferSize,
-        /*int &vncOffset, int &indexOffset, */ vector<int> plane_regions ) {
+        /*int &vncOffset, int &indexOffset, */ vector<int> plane_regions , bool genTextures) {
 
     int *coordinatesLength = new int;
     int *indexLength = new int;
@@ -1306,8 +1306,12 @@ void HalfEdgeMesh<VertexT, NormalT>::retesselateRegionsToBuffer(
 
         if(*indexLength > 0 && *coordinatesLength > 0)
         {
-            Texture<VertexT, NormalT>* t = new Texture<VertexT, NormalT>(m_pointCloudManager, m_regions[i], contours);
-            t->save();
+            Texture<VertexT, NormalT>* t=NULL;
+            if(genTextures)
+            {
+                t = new Texture<VertexT, NormalT>(m_pointCloudManager, m_regions[i], contours);
+                t->save();
+            }
 
             for(int j=0; j< (*coordinatesLength)/3; ++j)
             {
@@ -1325,7 +1329,7 @@ void HalfEdgeMesh<VertexT, NormalT>::retesselateRegionsToBuffer(
 
                 float u1 = 0;
                 float u2 = 0;
-                t->textureCoords(VertexT((*v)[j*3+0], (*v)[j*3+1], (*v)[j*3+2]) ,u1 ,u2);
+                if(t) t->textureCoords(VertexT((*v)[j*3+0], (*v)[j*3+1], (*v)[j*3+2]) ,u1 ,u2);
                 this->m_textureCoordBuffer[j*3+pointsUsed+0] = u1;
                 this->m_textureCoordBuffer[j*3+pointsUsed+1] = u2;
                 this->m_textureCoordBuffer[j*3+pointsUsed+2] = 0;
@@ -1365,7 +1369,7 @@ void HalfEdgeMesh<VertexT, NormalT>::retesselateRegionsToBuffer(
 
             delete (*v);
             delete (*in);
-            delete t;
+            if(t) delete t;
         }
     }
     delete indexLength;
@@ -1375,7 +1379,7 @@ void HalfEdgeMesh<VertexT, NormalT>::retesselateRegionsToBuffer(
 }
 
     template<typename VertexT, typename NormalT>
-void HalfEdgeMesh<VertexT, NormalT>::finalizeAndRetesselate()
+void HalfEdgeMesh<VertexT, NormalT>::finalizeAndRetesselate(bool genTextures)
 {
 
     cout << timestamp << "Finalizing mesh." << endl;
@@ -1427,7 +1431,7 @@ void HalfEdgeMesh<VertexT, NormalT>::finalizeAndRetesselate()
             normal_regions);
     cout << timestamp << "Done copying non-plane regions" << endl;
 
-    retesselateRegionsToBuffer(vncBufferSize, indexBufferSize, plane_regions);
+    retesselateRegionsToBuffer(vncBufferSize, indexBufferSize, plane_regions, genTextures);
     cout << timestamp << "Done retesselated plane regions" << endl;
 
     this->m_nVertices = vncBufferSize/3; 
