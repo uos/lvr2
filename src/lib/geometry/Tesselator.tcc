@@ -127,8 +127,6 @@ void Tesselator<VertexT, NormalT>::tesselatorAddVertex(const GLvoid *data, HVert
 
 template<typename VertexT, typename NormalT>
 void Tesselator<VertexT, NormalT>::getFinalizedTriangles(float **vertexBuffer,
-                                                         float **normalBuffer,
-                                                         float **colorBuffer,
                                                          unsigned int    **indexBuffer,
                                                          int    *lengthFaces,
                                                          int    *lengthVertices)
@@ -148,8 +146,8 @@ void Tesselator<VertexT, NormalT>::getFinalizedTriangles(float **vertexBuffer,
 
     // allocate new memory.
     (*vertexBuffer) = new float[numVertices*3];
-    (*normalBuffer) = new float[numVertices*3];
-    (*colorBuffer)  = new float[numVertices*3];
+    //(*normalBuffer) = new float[numVertices*3];
+    //(*colorBuffer)  = new float[numVertices*3];
     (*indexBuffer) =  new unsigned int[numVertices];
 
 
@@ -157,8 +155,8 @@ void Tesselator<VertexT, NormalT>::getFinalizedTriangles(float **vertexBuffer,
     for(int i=0; i<numVertices*3; ++i)
     {
         (*vertexBuffer)[i] = 0.0;
-        (*normalBuffer)[i] = 0.0;
-        (*colorBuffer)[i]  = 0.0;
+        //(*normalBuffer)[i] = 0.0;
+        //(*colorBuffer)[i]  = 0.0;
     }
     for(int i=0; i<numVertices; ++i)
     {
@@ -187,7 +185,8 @@ void Tesselator<VertexT, NormalT>::getFinalizedTriangles(float **vertexBuffer,
     for(; triangles != trianglesEnd; ++triangles)
     {
         // try to find the new triangleVertex in the list of used vertices.
-        vector<Vertex<float> >::iterator it    = vertices.begin();
+        
+        /*vector<Vertex<float> >::iterator it    = vertices.begin();
         vector<Vertex<float> >::iterator itEnd = vertices.end();
         int pos=0;
         while(it != itEnd && *it != *triangles) 
@@ -199,7 +198,7 @@ void Tesselator<VertexT, NormalT>::getFinalizedTriangles(float **vertexBuffer,
         {
             posArr[m] = pos;
         } else
-        {
+        { */
 			  // vertex was not used before so store it
 			  vertices.push_back(*triangles);
 			  
@@ -207,17 +206,17 @@ void Tesselator<VertexT, NormalT>::getFinalizedTriangles(float **vertexBuffer,
 			  (*vertexBuffer)[(usedVertices * 3) + 1] = (*triangles)[1];
 			  (*vertexBuffer)[(usedVertices * 3) + 2] = (*triangles)[2];
 
-			  (*normalBuffer)[(usedVertices * 3) + 0] = m_normal[0];
-			  (*normalBuffer)[(usedVertices * 3) + 1] = m_normal[1];
-			  (*normalBuffer)[(usedVertices * 3) + 2] = m_normal[2];
+			  //(*normalBuffer)[(usedVertices * 3) + 0] = m_normal[0];
+			  //(*normalBuffer)[(usedVertices * 3) + 1] = m_normal[1];
+			  //(*normalBuffer)[(usedVertices * 3) + 2] = m_normal[2];
 			  
-			  (*colorBuffer)[(usedVertices *3) + 0] = r;
-			  (*colorBuffer)[(usedVertices *3) + 1] = g;
-			  (*colorBuffer)[(usedVertices *3) + 2] = b;
+			  //(*colorBuffer)[(usedVertices *3) + 0] = r;
+			  //(*colorBuffer)[(usedVertices *3) + 1] = g;
+			  //(*colorBuffer)[(usedVertices *3) + 2] = b;
 
 			  posArr[m] = usedVertices;
 			  usedVertices++;
-        }
+        //}
         m++;
         
         if(m == 3) // we added 3 vertices therefore a whole face!!
@@ -225,6 +224,26 @@ void Tesselator<VertexT, NormalT>::getFinalizedTriangles(float **vertexBuffer,
             (*indexBuffer)[(usedFaces * 3) + 0] = posArr[0]; 
             (*indexBuffer)[(usedFaces * 3) + 1] = posArr[1];
             (*indexBuffer)[(usedFaces * 3) + 2] = posArr[2];
+            /* check for corrupt vertices! */
+            float x1 = (*vertexBuffer)[posArr[0]];
+            float y1 = (*vertexBuffer)[posArr[0]+1];
+            float z1 = (*vertexBuffer)[posArr[0]+2]; 
+
+            float x2 = (*vertexBuffer)[posArr[1]];
+            float y2 = (*vertexBuffer)[posArr[1]+1];
+            float z2 = (*vertexBuffer)[posArr[1]+2]; 
+
+            float x3 = (*vertexBuffer)[posArr[2]];
+            float y3 = (*vertexBuffer)[posArr[2]+1];
+            float z3 = (*vertexBuffer)[posArr[2]+2]; 
+
+            float d12 = sqrt( pow((x1-x2),2) + pow((y1-y2),2) + pow((z1-z2),2) );
+            float d13 = sqrt( pow((x1-x3),2) + pow((y1-y3),2) + pow((z1-z3),2) );
+            float d23 = sqrt( pow((x2-x3),2) + pow((y2-y3),2) + pow((z2-z3),2) );
+            if( d12 <= 0.001 || d13 <= 0.001 || d23 <= 0.001){
+                cout << "Damnit DEAD Face!: ";
+                cout << "positions: " << posArr[0] << " " << posArr[1] << " " << posArr[2] << endl;
+            }
 				#ifdef DB_TESS
             cout << "v1: " << (*vertexBuffer)[posArr[0]] << " " << (*vertexBuffer)[posArr[0]+1] << " " << (*vertexBuffer)[posArr[0]+2] << "\n"; 
             cout << "v2: " << (*vertexBuffer)[posArr[1]] << " " << (*vertexBuffer)[posArr[1]+1] << " " << (*vertexBuffer)[posArr[1]+2] << "\n"; 
@@ -248,22 +267,22 @@ void Tesselator<VertexT, NormalT>::getFinalizedTriangles(float **vertexBuffer,
         for(int i=0; i<usedVertices*3; i++)
         {
             newVertexBuffer[i] = (*vertexBuffer)[i];
-            newNormalBuffer[i] = (*normalBuffer)[i];
-            newColorBuffer[i]  = (*colorBuffer)[i];
+            //newNormalBuffer[i] = (*normalBuffer)[i];
+            //newColorBuffer[i]  = (*colorBuffer)[i];
         }
 
         for(int i=0; i<usedFaces*3; ++i)
         {
             newIndexBuffer[i] = (*indexBuffer)[i];
         }
-        delete (*colorBuffer);
+        //delete (*colorBuffer);
         delete (*indexBuffer);
         delete (*vertexBuffer);
-        delete (*normalBuffer);
+        //delete (*normalBuffer);
 
         (*vertexBuffer) = newVertexBuffer;
-        (*normalBuffer) = newNormalBuffer;
-        (*colorBuffer)  = newColorBuffer;
+        //(*normalBuffer) = newNormalBuffer;
+        //(*colorBuffer)  = newColorBuffer;
         (*indexBuffer) = newIndexBuffer;
     }
     *lengthVertices = usedVertices*3;
@@ -294,10 +313,7 @@ void Tesselator<VertexT, NormalT>::tesselatorCombineVertices(GLdouble coords[3],
 	vertex[2] = coords[2];
     
     Vertex<float> v(coords[0], coords[1], coords[2]);
-    HVertex newVertex(v);
-    //newVertex.m_normal = userData->m_normal;
-
-    m_vertices.push_back(newVertex);
+    m_vertices.push_back(HVertex(v));
 	*dataOut = vertex;
 }
 

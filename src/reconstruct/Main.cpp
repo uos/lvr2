@@ -69,39 +69,39 @@
  * </tr>
  * <tr>
  * <td>-v or -i</td>
- * <td>
- * <p>These parameters affect the accuracy of the reconstruction.
- * <i>-i</i> defines the number of intersections on the longest side
- * of the scanned scene and determines the corresponding voxelsize.
- * Using this parameter is useful if the scaling of a scene is
- * unknown. A value of about 100 will usually generate coarse surface.
- * Experiment with this value to get a tradeoff between accuracy and
- * mesh size. If you know the scaling of the objects, you can set a
- * fixed voxelsize by using the <i>-v</i> parameter.
- * </p>
- * </td>
- * </tr>
- * <tr>
- * <td>--ki, --kn, --kd</td>
- * <td>These parameters determine the number of nearest neighbors used
- * for initial normal estimation (<i>--kn</i>), normal interpolation
- * (<i>--ki</i>) and distance value evaluation (<i>--kd</i>). In data
- * sets with a lot of noise, increasing these values can lead to better
- * approximations at the cost of running time. Increasing <i>--kd</i>
- * usually helps to generate more continuous surfaces in sparse
- * scans, but yields in a lot of smoothing, i.e. in the
- * reconstuctions, sharp features will be smoothed out.</td>
- * </tr>
- * </table>
- *
- * @section API API Description
- *
- * A detailed API documentation will be made available soon.
- *
- * @section Tutorials Tutorials
- *
- * A set of tutorials how to use LSSR will be made available soon.
- */
+* <td>
+* <p>These parameters affect the accuracy of the reconstruction.
+* <i>-i</i> defines the number of intersections on the longest side
+* of the scanned scene and determines the corresponding voxelsize.
+* Using this parameter is useful if the scaling of a scene is
+* unknown. A value of about 100 will usually generate coarse surface.
+* Experiment with this value to get a tradeoff between accuracy and
+* mesh size. If you know the scaling of the objects, you can set a
+* fixed voxelsize by using the <i>-v</i> parameter.
+* </p>
+* </td>
+* </tr>
+* <tr>
+* <td>--ki, --kn, --kd</td>
+* <td>These parameters determine the number of nearest neighbors used
+* for initial normal estimation (<i>--kn</i>), normal interpolation
+* (<i>--ki</i>) and distance value evaluation (<i>--kd</i>). In data
+* sets with a lot of noise, increasing these values can lead to better
+* approximations at the cost of running time. Increasing <i>--kd</i>
+* usually helps to generate more continuous surfaces in sparse
+* scans, but yields in a lot of smoothing, i.e. in the
+* reconstuctions, sharp features will be smoothed out.</td>
+* </tr>
+* </table>
+*
+* @section API API Description
+*
+* A detailed API documentation will be made available soon.
+*
+* @section Tutorials Tutorials
+*
+* A set of tutorials how to use LSSR will be made available soon.
+*/
 
 #include "Options.hpp"
 #include "reconstruction/PCLPointCloudManager.hpp"
@@ -205,6 +205,7 @@ int main(int argc, char** argv)
 	 {
 		 mesh.finalize();
 	 }
+    mesh.save("triangle_mesh.ply");
     mesh.saveObj("triangle_mesh.obj");
 
 

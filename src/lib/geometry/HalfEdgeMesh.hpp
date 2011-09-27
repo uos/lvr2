@@ -269,6 +269,21 @@ public:
 
 	void enableRegionColoring() { m_colorRegions = true;}
 
+    virtual void regionsToBuffer(
+                float **vertex, 
+                float **normal,
+                float **color,
+                float **texture,
+                unsigned int **index, 
+                unsigned int **textureIndex, 
+                size_t     &vncSize, 
+                size_t   &indexSize, 
+                vector<int> &regions);
+
+    virtual void retesselateRegionsToBuffer(size_t &vncBufferSize, 
+                                    size_t &indexBufferSize,
+                                    vector<int> plane_regions );
+
 	void tester();
 
 private:
