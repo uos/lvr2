@@ -54,6 +54,13 @@ void ObjIO<CoordType, IndexType>::setTextureCoords(CoordType* coords, size_t c)
 }
 
 template<typename CoordType, typename IndexType>
+void ObjIO<CoordType, IndexType>::setColors(CoordType* coords, size_t c)
+{
+    m_colors = coords;
+    m_colorCount = c;
+}
+
+template<typename CoordType, typename IndexType>
 void ObjIO<CoordType, IndexType>::setTextureIndices(IndexType* indices, size_t c)
 {
     m_textureIndices = indices;
@@ -71,6 +78,7 @@ template<typename CoordType, typename IndexType>
 void ObjIO<CoordType, IndexType>::write(string filename)
 {
     ofstream out(filename.c_str());
+    ofstream mtlFile("textures.mtl");
 
     if(out.good())
     {
@@ -106,7 +114,27 @@ void ObjIO<CoordType, IndexType>::write(string filename)
         	}
         }
 
-        out<<endl;
+        // write material file
+        if(m_textureIndices != 0)
+        {
+        	if(mtlFile.good())
+        	{
+        		mtlFile<<"newmtl texture_"<< UINT_MAX <<endl;
+        		mtlFile<<"Kd 0.000 1.000 1.000"<<endl;
+        		mtlFile<<"Ka 0.000 1.000 0.000"<<endl<<endl;
+
+        		for (int i = 0; i<this->m_textureCount; i++)
+        		{
+        			mtlFile<<"newmtl texture_"<<m_textures[i]<<endl;
+        			mtlFile<<"Ka 1.000 1.000 1.000"<<endl;
+        			mtlFile<<"Kd 1.000 1.000 1.000"<<endl;
+        			mtlFile<<"map_Kd texture_"<<m_textures[i]<<".ppm"<<endl<<endl;
+        		}
+        		mtlFile.close();
+
+        	}
+        }
+        //unsigned int counter = UINT_MAX-1;
         for(size_t i = 0; i < m_faceCount; i++)
         {
             IndexType index = 3 * i;
@@ -123,13 +151,32 @@ void ObjIO<CoordType, IndexType>::write(string filename)
             	{
             		out <<endl<< "usemtl texture_" <<m_textureIndices[index]<< endl;
             	}
-            	oldTextureIndex = m_textureIndices[index];
+ /*           	if(m_textureIndices[index] == UINT_MAX)
+            	{
+            		mtlFile.open("textures.mtl", ios::app);
+            		mtlFile <<"newmtl color_"<< counter <<endl;
 
-            	out << "f " << v1 + 1 << "/" << v1 + 1 << "/" << v1 + 1 << " "
-            			<< v2 + 1 << "/" << v2 + 1 << "/" << v2 + 1 << " "
-            			<< v3 + 1 << "/" << v3 + 1 << "/" << v3 + 1 << endl;
+            		mtlFile << "Kd " << m_colors[v1*3+0] << " " << m_colors[v1*3+1] << " "
+            				<< m_colors[v1*3+2] <<endl;
+
+            		mtlFile << "Ka " << m_colors[v1*3+0] << " " << m_colors[v1*3+1] << " "
+            				<< m_colors[v1*3+2] <<endl;
+
+            		out <<endl<< "usemtl color_" <<counter<< endl;
+            		out << "f " << v1 + 1 << "//" << v1 + 1 << " "
+            				    << v2 + 1 << "//" << v2 + 1 << " "
+            				    << v3 + 1 << "//" << v3 + 1 << endl << endl;
+            		oldTextureIndex = counter;
+            		counter--;
+            		mtlFile.close();
+            	} else { */
+            		oldTextureIndex = m_textureIndices[index];
+            		out << "f " << v1 + 1 << "/" << v1 + 1 << "/" << v1 + 1 << " "
+            				<< v2 + 1 << "/" << v2 + 1 << "/" << v2 + 1 << " "
+            				<< v3 + 1 << "/" << v3 + 1 << "/" << v3 + 1 << endl;
+            /*	} */
             }
-            else
+            else /* If no texture coordinates given write dummy info.*/
             {
             	out << "f " << v1 + 1 << "//" << v1 + 1 << " "
             			<< v2 + 1 << "//" << v2 + 1 << " "
@@ -144,30 +191,6 @@ void ObjIO<CoordType, IndexType>::write(string filename)
     {
 		cerr << "no good. file! \n";
     }
-
-    // write mtl file
-    if(m_textureIndices != 0)
-    {
-    	out.open("textures.mtl");
-    	if(out.good())
-    	{
-    		out<<"newmtl texture_"<< UINT_MAX <<endl;
-    		out<<"Kd 0.000 1.000 1.000"<<endl;
-    		out<<"Ka 0.000 1.000 0.000"<<endl<<endl;
-
-    		for (int i = 0; i<this->m_textureCount; i++)
-    		{
-    			out<<"newmtl texture_"<<m_textures[i]<<endl;
-    			out<<"Ka 1.000 1.000 1.000"<<endl;
-    			out<<"Kd 1.000 1.000 1.000"<<endl;
-    			out<<"map_Kd texture_"<<m_textures[i]<<".ppm"<<endl<<endl;
-    		}
-    		out.close();
-
-    	}
-    }
-
-
 }
 
 }

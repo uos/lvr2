@@ -146,7 +146,34 @@ NormalT Region<VertexT, NormalT>::calcNormal()
 	while ((result.length() == 0 || isnan(result.length())) && i<m_faces.size());
 
 	result.normalize();
-	return result;
+
+	//Check if this normal is representative for most of the others / it is not a flickering normal
+	int fit=0;
+	int nofit=0;
+
+	for(int i=0; i<m_faces.size(); i++)
+	{
+		NormalT comp = m_faces[i]->getFaceNormal();
+		comp.normalize();
+		if(comp == result)
+		{
+			fit++;
+		}
+		else
+		if(comp == (result * -1))
+		{
+			nofit++;
+		}
+	}
+
+	if(fit>nofit)
+	{
+		return result;
+	}
+	else
+	{
+		return result*-1;
+	}
 }
 
 template<typename VertexT, typename NormalT>

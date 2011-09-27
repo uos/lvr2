@@ -48,6 +48,7 @@ void BaseMesh<VertexT, IndexType>::saveObj(string filename)
 	obj_writer.setTextureCoords(this->m_textureCoordBuffer, m_nVertices);
 	obj_writer.setTextureIndices(this->m_textureIndexBuffer, m_nVertices);
 	obj_writer.setTextures(this->m_textureBuffer, m_nTextures);
+	obj_writer.setColors(this->m_colorBuffer, m_nTextures);
 
 	// Save
 	obj_writer.write(filename);
