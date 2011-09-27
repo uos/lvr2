@@ -179,7 +179,8 @@ int main(int argc, char** argv)
         mesh.optimizePlanes(options.getPlaneIterations(),
                             options.getNormalThreshold(),
                             options.getMinPlaneSize(),
-                            options.getSmallRegionThreshold() );
+                            options.getSmallRegionThreshold(),
+                            true);
 
         mesh.fillHoles(options.getFillHoles());
 

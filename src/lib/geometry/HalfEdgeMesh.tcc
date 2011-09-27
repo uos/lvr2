@@ -1202,13 +1202,21 @@ void HalfEdgeMesh<VertexT, NormalT>::regionsToBuffer(
 
                 }
 
-                (*normal)[vncUsed + 0] = 0.0f; //(*m_regions[i]->m_faces[j])(k)->m_normal[0];
-                (*normal)[vncUsed + 1] = 0.0f; //(*m_regions[i]->m_faces[j])(k)->m_normal[1];
-                (*normal)[vncUsed + 2] = 0.0f; //(*m_regions[i]->m_faces[j])(k)->m_normal[2];
+                (*normal)[vncUsed + 0] = (*m_regions[i]->m_faces[j])(k)->m_normal[0];
+                (*normal)[vncUsed + 1] = (*m_regions[i]->m_faces[j])(k)->m_normal[1];
+                (*normal)[vncUsed + 2] = (*m_regions[i]->m_faces[j])(k)->m_normal[2];
 
-                (*color)[vncUsed + 0] = r;
-                (*color)[vncUsed + 1] = g;
-                (*color)[vncUsed + 2] = b;
+                if(typeid( *(*m_regions[i]->m_faces[j])(k) ) == typeid(ColorVertex<float>())){
+                	(*color)[vncUsed + 0] = (*m_regions[i]->m_faces[j])(k)->m_position.r / 255.0f;
+                	(*color)[vncUsed + 1] = (*m_regions[i]->m_faces[j])(k)->m_position.g / 255.0f;
+                	(*color)[vncUsed + 2] = (*m_regions[i]->m_faces[j])(k)->m_position.b / 255.0f;
+
+                } else {
+                	(*color)[vncUsed + 0] = r;
+                	(*color)[vncUsed + 1] = g;
+                	(*color)[vncUsed + 2] = b;
+                }
+
 
                 (*texture)[vncUsed + 0] = 0.0;
                 (*texture)[vncUsed + 1] = 0.0;
