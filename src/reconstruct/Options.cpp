@@ -36,6 +36,7 @@ Options::Options(int argc, char** argv) : m_descr("Supported options")
         ("planeNormalThreshold", value<float>(&m_planeNormalThreshold)->default_value(0.85), "Normal threshold for plane optimization. Default 0.85 equals about 3 degrees.")
         ("smallRegionThreshold", value<int>(&m_smallRegionThreshold)->default_value(0), "Threshold for small region removal. If 0 nothing will be deleted.")
         ("retesselate,rt", "Retesselate regions that are in a regression plane.")
+        ("generateTextures", "Generate textures during finalization.")
         ("colorRegions", "Color detected regions with color gradient.")
 		;
 
@@ -169,6 +170,11 @@ bool  Options::colorRegions() const
 bool Options::retesselate() const
 {
     return m_variables.count("retesselate");
+}
+
+bool Options::generateTextures() const
+{
+    return m_variables.count("generateTextures");
 }
 
 float Options::getNormalThreshold() const

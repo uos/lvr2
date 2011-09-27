@@ -244,7 +244,7 @@ public:
 	 * 			to OpenGL compatible buffers. Furthermore all regions that
      * 			belong to a regression plane are retesselated to reduce triangles.
 	 */
-	virtual void finalizeAndRetesselate();
+	virtual void finalizeAndRetesselate(bool genTextures);
 
 	/**
 	 * @brief 	fills all holes
@@ -282,7 +282,7 @@ public:
 
     virtual void retesselateRegionsToBuffer(size_t &vncBufferSize, 
                                     size_t &indexBufferSize,
-                                    vector<int> plane_regions );
+                                    vector<int> plane_regions , bool genTextures=false);
 
 	void tester();
 
