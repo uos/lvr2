@@ -91,8 +91,6 @@ public:
      *
      */
     static void getFinalizedTriangles(float **vertexBuffer,
-                                      float **normalBuffer,
-                                      float **colorBuffer,
                                       unsigned int   **indexBuffer,
                                       int *numberFaces,
                                       int *numVertices);

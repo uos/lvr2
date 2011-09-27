@@ -158,7 +158,7 @@ int Region<VertexT, NormalT>::size()
 template<typename VertexT, typename NormalT>
 void Region<VertexT, NormalT>::regressionPlane()
 {
-//	srand ( time(NULL) );
+             srand (5);
 
     VertexT point1;
     VertexT point2;

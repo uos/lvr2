@@ -112,7 +112,7 @@ void ObjIO<CoordType, IndexType>::write(string filename)
             IndexType index = 3 * i;
             // Calculate the buffer positions for the three
             // triangle vertices (each vertex has 3 coordinates)
-            IndexType v1 = m_indices[index];
+            IndexType v1 = m_indices[index + 0];
             IndexType v2 = m_indices[index + 1];
             IndexType v3 = m_indices[index + 2];
 
