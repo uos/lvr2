@@ -187,6 +187,12 @@ int main(int argc, char** argv)
 
         mesh.restorePlanes();
 
+        mesh.optimizePlanes(3,
+                            options.getNormalThreshold(),
+                            options.getMinPlaneSize(),
+                            0,
+                            false );
+
     }
 
 //    mesh.tester();

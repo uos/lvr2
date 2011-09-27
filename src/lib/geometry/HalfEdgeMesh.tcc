@@ -1158,11 +1158,11 @@ void HalfEdgeMesh<VertexT, NormalT>::regionsToBuffer(
                 if( isnan((*vertex)[vncUsed + 0]) || isnan((*vertex)[vncUsed + 0]) || isnan((*vertex)[vncUsed + 0]) ||
                         isinf((*vertex)[vncUsed + 0]) || isinf((*vertex)[vncUsed + 0]) || isinf((*vertex)[vncUsed + 0]))
                 {
-                    /*cerr << "[nan] coordinates!:\n\t: RegNr(external): " << h
+                    cerr << "[nan] coordinates!:\n\t: RegNr(external): " << h
                       << "\n\t RegNr(internal): " << m_regions[i]->m_region_number
                       << "\n\t vncUsed: " << vncUsed 
                       << "\n\t face nr: " << j
-                      << "\n\t" << k << "th vertex\n\t\tSKIPPING!\n"; */
+                      << "\n\t" << k << "th vertex\n\t\tSKIPPING!\n"; 
                     skip = true;
                     break;
                 }
@@ -1191,11 +1191,11 @@ void HalfEdgeMesh<VertexT, NormalT>::regionsToBuffer(
                     /* If the points lay to close together: Skip this triangle! */
                     if( d12 <= 0.001 || d23 <= 0.001 || d13 <= 0.001)
                     {
-                        /*cerr << "Degenerated Face!:\n\t: RegNr(external): " << h
+                        cerr << "Degenerated Face!:\n\t: RegNr(external): " << h
                           << "\n\t d12: " << d12 
                           << "\n\t d13: " << d13
                           << "\n\t d23: " << d23
-                          << "\n\t" << k << "th vertex\n\t\tSKIPPING!\n"; */
+                          << "\n\t" << k << "th vertex\n\t\tSKIPPING!\n";
                         skip = true;
                         break;
                     }
@@ -1315,9 +1315,9 @@ void HalfEdgeMesh<VertexT, NormalT>::retesselateRegionsToBuffer(
                 this->m_vertexBuffer[j*3+pointsUsed+1] = (*v)[j*3+1];
                 this->m_vertexBuffer[j*3+pointsUsed+2] = (*v)[j*3+2];
 
-                this->m_normalBuffer[j*3+pointsUsed+0] = 0.0; 
-                this->m_normalBuffer[j*3+pointsUsed+1] = 0.0; 
-                this->m_normalBuffer[j*3+pointsUsed+2] = 0.0; 
+                this->m_normalBuffer[j*3+pointsUsed+0] = m_regions[i]->m_normal[0]; 
+                this->m_normalBuffer[j*3+pointsUsed+1] = m_regions[i]->m_normal[1]; 
+                this->m_normalBuffer[j*3+pointsUsed+2] = m_regions[i]->m_normal[2]; 
 
                 this->m_colorBuffer[ j*3+pointsUsed+0] = r; 
                 this->m_colorBuffer[ j*3+pointsUsed+1] = g; 
@@ -1349,7 +1349,7 @@ void HalfEdgeMesh<VertexT, NormalT>::retesselateRegionsToBuffer(
                     float d13 = sqrt( pow((x1-x3),2) + pow((y1-y3),2) + pow((z1-z3),2) );
                     float d23 = sqrt( pow((x2-x3),2) + pow((y2-y3),2) + pow((z2-z3),2) );
                     if( d12 <= 0.001 || d13 <= 0.001 || d23 <= 0.001){
-                        cout << "Damnit DEAD Face!: ";
+                        cout << "Damnit DEAD Face!: " << endl;
                     }
 
                 }
