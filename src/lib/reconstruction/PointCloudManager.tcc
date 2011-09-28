@@ -56,13 +56,13 @@ void PointCloudManager<VertexT, NormalT>::readFromFile(string filename)
     // Save points and normals (if present)
     if(loader)
     {
-        m_points  = loader->getIndexedPointArray( &m_numPoints );
-		  size_t n(0);
-        m_normals = loader->getIndexedPointNormalArray( &n );
+        m_points  = loader->getIndexedPointArray( m_numPoints );
+        size_t n(0);
+        m_normals = loader->getIndexedPointNormalArray( n );
         if ( n != m_numPoints ) {
             m_normals = NULL;
         }
-        m_colors  = loader->getIndexedPointColorArray( &n );
+        m_colors  = loader->getIndexedPointColorArray( n );
         if ( n != m_numPoints ) {
             m_colors = NULL;
         }

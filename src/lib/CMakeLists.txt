@@ -2,6 +2,7 @@ set(LSSR_SOURCES
 	io/AsciiIO.cpp
 	io/IOFactory.cpp
 	io/MeshLoader.cpp
+	io/Message.cpp
 	io/PLYIO.cpp
 	io/PointLoader.cpp
 	io/Progress.cpp
