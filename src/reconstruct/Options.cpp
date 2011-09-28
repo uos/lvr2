@@ -6,6 +6,7 @@
  */
 
 #include "Options.hpp"
+#include <omp.h>
 
 namespace reconstruct{
 
@@ -24,7 +25,7 @@ Options::Options(int argc, char** argv) : m_descr("Supported options")
 		("optimizePlanes,o", "Shift all triangle vertices of a cluster onto their shared plane")
 		("savePointsAndNormals,s", "Exports original point cloud data together with normals into a single file called 'points_and_normals.ply'")
 		("recalcNormals,r", "Always estimate normals, even if given in .ply file.")
-		("threads,t", value<int>(&m_numThreads)->default_value(4), "Number of threads")
+		("threads,t", value<int>(&m_numThreads)->default_value( omp_get_num_procs() ), "Number of threads")
 		("saveNormals", "Writes all points and interpolated normals to a file called 'normals.nor'")
 		("kd", value<int>(&m_kd)->default_value(5), "Number of normals used for distance function evaluation")
 	    ("ki", value<int>(&m_ki)->default_value(10), "Number of normals used in the normal interpolation process")
