@@ -396,21 +396,21 @@ void UosIO::readNewFormat(string dir, int first, int last, size_t &n)
             m_points[ i * 3 + 2 ] = v[2];
             i++;
         }
-        m_num_points = allPoints.size();
+        m_numPoints = allPoints.size();
 
         // Save color information
         if(allColors.size() > 0)
         {
-            m_point_colors = new uint8_t[ m_num_points * 3 ];
-            m_num_point_colors = m_num_points;
+            m_pointColors = new uint8_t[ m_numPoints * 3 ];
+            m_numPointColors = m_numPoints;
             i = 0;
             list<Vertex<int> >::iterator c_it;
             for(c_it = allColors.begin(); c_it != allColors.end(); c_it++)
             {
                 Vertex<int> v = *c_it;
-                m_point_colors[ i * 3     ] = (uint8_t) v[0];
-                m_point_colors[ i * 3 + 1 ] = (uint8_t) v[1];
-                m_point_colors[ i * 3 + 2 ] = (uint8_t) v[2];
+                m_pointColors[ i * 3     ] = (uint8_t) v[0];
+                m_pointColors[ i * 3 + 1 ] = (uint8_t) v[1];
+                m_pointColors[ i * 3 + 2 ] = (uint8_t) v[2];
                 i++;
             }
         }
@@ -614,7 +614,7 @@ void UosIO::readOldFormat(string dir, int first, int last, size_t &n)
             m_points[ i * 3 + 2 ] = v[2];
             i++;
         }
-        m_num_points = allPoints.size();
+        m_numPoints = allPoints.size();
     }
 }
 

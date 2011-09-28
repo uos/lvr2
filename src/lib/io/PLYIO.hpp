@@ -23,34 +23,32 @@
 #include <cstdio>
 #include <vector>
 
-using std::vector;
-
-namespace lssr {
+namespace lssr
+{
 
 /**
  * @brief A class for input and output to ply files.
  */
-class PLYIO : public BaseIO, public MeshLoader,  public PointLoader {
-	public:
-		PLYIO();
+class PLYIO : public BaseIO, public MeshLoader,  public PointLoader
+{
+    public:
+        PLYIO();
 
-		void save( string filename, e_ply_storage_mode mode, 
-				vector<string> obj_info = vector<string>(), 
-				vector<string> comment = vector<string>() );
-		void save( string filename );
+        void save( string filename, e_ply_storage_mode mode, 
+                std::vector<string> obj_info = std::vector<string>(), 
+                std::vector<string> comment = std::vector<string>() );
+        void save( string filename );
 
-		void read( string filename, bool readColor, bool readConfidence = true, 
-				bool readIntensity = true, bool readNormals = true, 
-				bool readFaces = true );
-		void read( string filename );
+        void read( string filename, bool readColor, bool readConfidence = true, 
+                bool readIntensity = true, bool readNormals = true, 
+                bool readFaces = true );
+        void read( string filename );
 
-		static int readVertexCb( p_ply_argument argument );
-		static int readColorCb( p_ply_argument argument );
-		static int readFaceCb( p_ply_argument argument );
+        static int readVertexCb( p_ply_argument argument );
+        static int readColorCb( p_ply_argument argument );
+        static int readFaceCb( p_ply_argument argument );
 
-		virtual ~PLYIO();
-
-		std::string mkTimeStr();
+        virtual ~PLYIO();
 
 };
 
