@@ -30,7 +30,7 @@ std::string PLYIO::mkTimeStr() {
 	ss.fill( '0' );
 	ss << '[';
 	ss.width( 2 );
-	ss << c / ( CLOCKS_PER_SEC * 60 * 60 );
+	ss << ( c / CLOCKS_PER_SEC ) * ( 60 * 60 );
 	ss.width( 1 );
 	ss << ':';
 	ss.width( 2 );
