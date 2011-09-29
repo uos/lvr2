@@ -121,7 +121,7 @@ void Texture<VertexT, NormalT>::save()
 {
 	PPMIO<ColorT> ppm;
 	ppm.setDataArray(this->m_data,this->m_sizeX, this->m_sizeY);
-	ppm.write("texture_"+boost::lexical_cast<std::string>(this->m_region->m_region_number)+".ppm");
+	ppm.write("texture_"+boost::lexical_cast<std::string>(this->m_region->m_regionNumber)+".ppm");
 }
 
 template<typename VertexT, typename NormalT>
