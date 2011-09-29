@@ -1,3 +1,16 @@
+/**
+ * @file       PLYIO.hpp
+ * @brief      I/O support for PLY files (implementation).
+ * @details    I/O support for PLY files: Reading and writing meshes and
+ *             pointclouds, including color information, confidence, intensity
+ *             and normals.
+ * @author     Lars Kiesow (lkiesow), lkiesow@uos.de
+ * @version   110929
+ * @date       Created:       2011-09-16 17:28:28
+ * @date       Last modified: 2011-09-29 14:23:36
+ */
+
+
 #include "PLYIO.hpp"
 
 #include <cstring>
