@@ -194,6 +194,7 @@ HalfEdgeFace<VertexT, NormalT>::operator[](const int &index) const{
 	case 2:
 		return this->m_edge->next->next;
 	}
+    return 0;
 }
 
 template<typename VertexT, typename NormalT>
@@ -207,6 +208,7 @@ HalfEdgeFace<VertexT, NormalT>::operator()(const int &index) const{
 	case 2:
 		return this->m_edge->next->next->end;
 	}
+    return 0;
 }
 
 

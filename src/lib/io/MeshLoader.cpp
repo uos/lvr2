@@ -17,8 +17,8 @@ namespace lssr
 MeshLoader::MeshLoader() : 
     m_vertices( NULL ),
     m_vertexColors( NULL ),
-    m_vertexIntensity( NULL ),
     m_vertexConfidence( NULL ),
+    m_vertexIntensity( NULL ),
     m_vertexNormals( NULL ),
     m_indexedVertices( NULL ),
     m_indexedVertexColors( NULL ),
@@ -26,12 +26,12 @@ MeshLoader::MeshLoader() :
     m_indexedVertexIntensity( NULL ),
     m_indexedVertexNormals( NULL ),
     m_faceIndices( NULL ),
-    m_numFace( 0 ),
+    m_numVertex( 0 ),
     m_numVertexNormals( 0 ),
     m_numVertexColors( 0 ),
+    m_numVertexConfidence( 0 ),
     m_numVertexIntensity( 0 ),
-    m_numVertex( 0 ),
-    m_numVertexConfidence( 0 )
+    m_numFace( 0 )
 {
 }
 
@@ -104,7 +104,7 @@ float** MeshLoader::getIndexedVertexArray( size_t &n )
     if ( !m_indexedVertices )
     {
         m_indexedVertices = (float**) malloc( m_numVertex * sizeof(float**) );
-        for ( int i = 0; i < m_numVertex; i++ )
+        for ( size_t i = 0; i < m_numVertex; i++ )
         {
             m_indexedVertices[i] = m_vertices + ( i * 3 );
         }
@@ -132,7 +132,7 @@ float** MeshLoader::getIndexedVertexNormalArray( size_t &n )
     {
         m_indexedVertexNormals = (float**) 
             malloc( m_numVertexNormals * sizeof(float**) );
-        for ( int i = 0; i < m_numVertexNormals; i++ )
+        for ( size_t i = 0; i < m_numVertexNormals; i++ )
         {
             m_indexedVertexNormals[i] = m_vertexNormals + ( i * 3 );
         }
@@ -162,7 +162,7 @@ float** MeshLoader::getIndexedVertexConfidenceArray( size_t &n )
     {
         m_indexedVertexConfidence = (float**) 
             malloc( m_numVertexConfidence * sizeof(float**) );
-        for ( int i = 0; i < m_numVertexConfidence; i++ )
+        for ( size_t i = 0; i < m_numVertexConfidence; i++ )
         {
             m_indexedVertexConfidence[i] = m_vertexConfidence + i;
         }
@@ -190,7 +190,7 @@ float** MeshLoader::getIndexedVertexIntensityArray( size_t &n )
     {
         m_indexedVertexIntensity = (float**) 
             malloc( m_numVertexIntensity * sizeof(float**) );
-        for ( int i = 0; i < m_numVertexIntensity; i++ )
+        for ( size_t i = 0; i < m_numVertexIntensity; i++ )
         {
             m_indexedVertexIntensity[i] = m_vertexIntensity + i;
         }
@@ -215,7 +215,7 @@ uint8_t** MeshLoader::getIndexedVertexColorArray( size_t &n )
     {
         m_indexedVertexColors = (uint8_t**) 
             malloc( m_numVertexColors * sizeof(uint8_t**) );
-        for ( int i = 0; i < m_numVertexColors; i++ )
+        for ( size_t i = 0; i < m_numVertexColors; i++ )
         {
             m_indexedVertexColors[i] = m_vertexColors + ( i * 3 );
         }
@@ -292,7 +292,7 @@ void MeshLoader::setIndexedVertexArray( float** arr, size_t count )
 {
 
     m_vertices = (float*) malloc( count * 3 * sizeof(float) );
-    for ( int i = 0; i < count; i++ )
+    for ( size_t i = 0; i < count; i++ )
     {
         m_vertices[ i * 3     ] = arr[i][0];
         m_vertices[ i * 3 + 1 ] = arr[i][1];
@@ -306,7 +306,7 @@ void MeshLoader::setIndexedVertexNormalArray( float** arr, size_t count )
 {
 
     m_vertexNormals = (float*) malloc( count * 3 * sizeof(float) );
-    for ( int i = 0; i < count; i++ )
+    for ( size_t i = 0; i < count; i++ )
     {
         m_vertexNormals[ i * 3     ] = arr[i][0];
         m_vertexNormals[ i * 3 + 1 ] = arr[i][1];

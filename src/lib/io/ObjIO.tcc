@@ -123,7 +123,7 @@ void ObjIO<CoordType, IndexType>::write(string filename)
         		mtlFile<<"Kd 0.000 1.000 1.000"<<endl;
         		mtlFile<<"Ka 0.000 1.000 0.000"<<endl<<endl;
 
-        		for (int i = 0; i<this->m_textureCount; i++)
+        		for (size_t i = 0; i<this->m_textureCount; i++)
         		{
         			mtlFile<<"newmtl texture_"<<m_textures[i]<<endl;
         			mtlFile<<"Ka 1.000 1.000 1.000"<<endl;

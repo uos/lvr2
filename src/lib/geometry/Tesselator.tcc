@@ -48,7 +48,7 @@ void Tesselator<VertexT, NormalT>::tesselatorEnd()
     
     if(m_primitive == GL_TRIANGLES)
     {
-        for(int i=0; i<m_vertices.size() / 3; ++i)
+        for(size_t i=0; i<m_vertices.size() / 3; ++i)
         {
             m_triangles.push_back((m_vertices[i*3+2]).m_position);
             m_triangles.push_back((m_vertices[i*3+1]).m_position);
@@ -63,7 +63,7 @@ void Tesselator<VertexT, NormalT>::tesselatorEnd()
 
     } else if(m_primitive == GL_TRIANGLE_FAN)
     {
-        for(int i=0; i<m_vertices.size()-2; ++i)
+        for(size_t i=0; i<m_vertices.size()-2; ++i)
         {
             m_triangles.push_back((m_vertices[i+2]).m_position);
             m_triangles.push_back((m_vertices[i+1]).m_position);
@@ -78,7 +78,7 @@ void Tesselator<VertexT, NormalT>::tesselatorEnd()
         } 
     } else if(m_primitive == GL_TRIANGLE_STRIP)
     {
-        for(int i=0; i<m_vertices.size()-2; ++i)
+        for(size_t i=0; i<m_vertices.size()-2; ++i)
         {
 			   if(i%2 ==  0)
 				{
@@ -383,7 +383,7 @@ void Tesselator<VertexT, NormalT>::tesselate(vector<vector<HVertex*> > vectorBor
 	/* Begin definition of the polygon to be tesselated */
 	gluTessBeginPolygon(m_tesselator, 0);
     
-    for(int i=0; i<vectorBorderPoints.size(); ++i)
+    for(size_t i=0; i<vectorBorderPoints.size(); ++i)
     {
         vector<HVertex*> borderPoints = vectorBorderPoints[i];
         #ifdef DB_TESS

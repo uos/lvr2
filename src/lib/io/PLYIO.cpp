@@ -24,7 +24,7 @@ namespace lssr
 
 
 PLYIO::PLYIO()
-    : PointLoader(), MeshLoader()
+    : MeshLoader(), PointLoader()
 {
 }
 
@@ -262,7 +262,7 @@ void PLYIO::save( string filename, e_ply_storage_mode mode,
 
     /* Second: Write data. */
 
-    for ( int i = 0; i < m_numVertex; i++ )
+    for ( uint32_t i = 0; i < m_numVertex; i++ )
     {
         ply_write( oply, (double) m_vertices[ i * 3     ] ); /* x */
         ply_write( oply, (double) m_vertices[ i * 3 + 1 ] ); /* y */
@@ -292,7 +292,7 @@ void PLYIO::save( string filename, e_ply_storage_mode mode,
     /* Write faces (Only if we also have vertices). */
     if ( m_vertices )
     {
-        for ( int i = 0; i < m_numFace; i++ )
+        for ( uint32_t i = 0; i < m_numFace; i++ )
         {
             ply_write( oply, 3.0 ); /* Indices per face. */
             ply_write( oply, (double) m_faceIndices[ i * 3     ] );
@@ -301,7 +301,7 @@ void PLYIO::save( string filename, e_ply_storage_mode mode,
         }
     }
 
-    for ( int i = 0; i < m_numPoints; i++ )
+    for ( uint32_t i = 0; i < m_numPoints; i++ )
     {
         ply_write( oply, (double) m_points[ i * 3     ] ); /* x */
         ply_write( oply, (double) m_points[ i * 3 + 1 ] ); /* y */

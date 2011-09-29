@@ -29,7 +29,7 @@ ostream& Message::print( const MsgType t, const char * fmt, ... )
     va_start( args, fmt );
     vsprintf( s, fmt, args );
     va_end( args );
-    print( t, std::string( s ) );
+    return print( t, std::string( s ) );
 
 }
 
@@ -50,7 +50,7 @@ ostream& Message::print( const char* fmt, ... )
     va_start( args, fmt );
     vsprintf( s, fmt, args );
     va_end( args );
-    print( MSG_TYPE_MESSGAE, std::string( s ) );
+    return print( MSG_TYPE_MESSGAE, std::string( s ) );
 
 }
 

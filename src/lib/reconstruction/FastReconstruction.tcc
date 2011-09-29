@@ -104,7 +104,7 @@ void FastReconstruction<VertexT, NormalT>::createGrid()
 	// already present query point, global index is id that the next
 	// created query point will get
 	int global_index = 0;
-	int current_index = 0;
+	uint current_index = 0;
 
 	int dx, dy, dz;
 

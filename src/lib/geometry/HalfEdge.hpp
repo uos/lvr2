@@ -14,7 +14,7 @@ public:
     /**
      * @brief   Ctor.
      */
-	HalfEdge() : start(0), end(0), pair(0), next(0), face(0), used(false) {};
+	HalfEdge() : next(0), pair(0), start(0), end(0), face(0), used(false) {};
 
 	/// A pointer to the next edge in current contour
 	HalfEdge<HVertexT, FaceT>* next;
