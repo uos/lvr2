@@ -961,7 +961,7 @@ void HalfEdgeMesh<VertexT, NormalT>::tester()
     //	for(int r=0; r<m_regions.size(); r++)
     //	//		if( m_regions[r]->detectFlicker()) cout << "still flickering" << endl;
     //	for(int r=0; r<m_regions.size(); r++)
-    //		if( m_regions[r]->m_inPlane) cout << r << ": " << m_regions[r]->m_region_number << endl;
+    //		if( m_regions[r]->m_inPlane) cout << r << ": " << m_regions[r]->m_regionNumber << endl;
     cout << "----------------------------END TESTER" << endl;
 
     //    Reset all used variables
