@@ -37,6 +37,8 @@ using namespace std;
 #include "Region.hpp"
 #include "Tesselator.hpp"
 #include "Texture.hpp"
+#include "ColorVertex.hpp"
+#include "VertexTraits.hpp"
 
 namespace lssr
 {
