@@ -34,6 +34,8 @@ public:
 	 *
 	 * @param	region	a region to generate a texture for.
 	 *
+	 * @param	contours	All contours of the region.
+	 *
 	 */
 	Texture(PointCloudManager<VertexT, NormalT>* pm, Region<VertexT, NormalT>* region,  vector<vector<HVertex*> > contours);
 
@@ -81,7 +83,7 @@ private:
 	int m_sizeX, m_sizeY;
 
 	///The pixel size determines the resolution
-	float pixelSize;
+	float m_pixelSize;
 
 };
 

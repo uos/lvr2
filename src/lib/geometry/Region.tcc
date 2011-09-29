@@ -6,7 +6,7 @@ template<typename VertexT, typename NormalT>
 Region<VertexT, NormalT>::Region(int region_number)
 {
 	this->m_inPlane = false;
-	this->m_region_number = region_number;
+	this->m_regionNumber = region_number;
 }
 
 template<typename VertexT, typename NormalT>

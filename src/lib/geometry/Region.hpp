@@ -104,7 +104,7 @@ public:
 	vector<HFace*>    m_faces;
 
 	/// The number of the region
-	int m_region_number;
+	int m_regionNumber;
 
 	/// The normal of the region (updated every time regressionPlane() is called)
 	NormalT m_normal;

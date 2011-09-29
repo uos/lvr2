@@ -46,10 +46,10 @@ Texture<VertexT, NormalT>::Texture(PointCloudManager<VertexT, NormalT>* pm, Regi
 				if (b < b_min) b_min = b;
 			}
 
-			pixelSize = 1;
-			this->m_sizeX = (a_max - a_min) / pixelSize;
+			m_pixelSize = 1;
+			this->m_sizeX = (a_max - a_min) / m_pixelSize;
 			this->m_sizeX = pow(2, ceil(log(this->m_sizeX)/log(2)));
-			this->m_sizeY = (b_max - b_min) / pixelSize;
+			this->m_sizeY = (b_max - b_min) / m_pixelSize;
 			this->m_sizeY = pow(2, ceil(log(this->m_sizeY)/log(2)));
 
 			m_data = new ColorT*[this->m_sizeY];
@@ -59,11 +59,11 @@ Texture<VertexT, NormalT>::Texture(PointCloudManager<VertexT, NormalT>* pm, Regi
 				m_data[m_sizeY-y-1] = new ColorT[this->m_sizeX];
 				for(int x = 0; x < this->m_sizeX; x++)
 				{
-					if (y <= (b_max - b_min) / pixelSize  && x <= (a_max - a_min) / pixelSize)
+					if (y <= (b_max - b_min) / m_pixelSize  && x <= (a_max - a_min) / m_pixelSize)
 					{
 						vector<VertexT> cv;
 
-						VertexT current_position = p + v1 * (x * pixelSize + a_min - pixelSize/2.0) + v2 * (y * pixelSize + b_min - pixelSize/2.0);
+						VertexT current_position = p + v1 * (x * m_pixelSize + a_min - m_pixelSize/2.0) + v2 * (y * m_pixelSize + b_min - m_pixelSize/2.0);
 
 						int one = 1;
 						pm->getkClosestVertices(current_position, one, cv);
@@ -105,10 +105,9 @@ Texture<VertexT, NormalT>::Texture(PointCloudManager<VertexT, NormalT>* pm, Regi
 template<typename VertexT, typename NormalT>
 void Texture<VertexT, NormalT>::textureCoords(VertexT v, float &x, float &y)
 {
-    cout << "aMin: " << a_min << "   b?min : " << b_min << "    p: " << p << endl;
 	 VertexT t =  v - ((v1 * a_min) + (v2 * b_min) + p);
-	 x = (v1 * (t * v1)).length()/pixelSize / m_sizeX;
-	 y = (v2 * (t * v2)).length()/pixelSize / m_sizeY;
+	 x = (v1 * (t * v1)).length()/m_pixelSize / m_sizeX;
+	 y = (v2 * (t * v2)).length()/m_pixelSize / m_sizeY;
 
 	 x = x > 1 ? 1 : x;
 	 x = x < 0 ? 0 : x;
@@ -121,7 +120,7 @@ void Texture<VertexT, NormalT>::save()
 {
 	PPMIO<ColorT> ppm;
 	ppm.setDataArray(this->m_data,this->m_sizeX, this->m_sizeY);
-	ppm.write("texture_"+boost::lexical_cast<std::string>(this->m_region->m_region_number)+".ppm");
+	ppm.write("texture_"+boost::lexical_cast<std::string>(this->m_region->m_regionNumber)+".ppm");
 }
 
 template<typename VertexT, typename NormalT>
