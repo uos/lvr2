@@ -3,10 +3,10 @@ namespace lssr
 {
 
 template<typename VertexT, typename NormalT>
-Region<VertexT, NormalT>::Region(int region_number)
+Region<VertexT, NormalT>::Region(int regionNumber)
 {
 	this->m_inPlane = false;
-	this->m_region_number = region_number;
+	this->m_regionNumber = regionNumber;
 }
 
 template<typename VertexT, typename NormalT>
