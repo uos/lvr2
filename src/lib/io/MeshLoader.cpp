@@ -164,7 +164,7 @@ float** MeshLoader::getIndexedVertexConfidenceArray( size_t &n )
             malloc( m_numVertexConfidence * sizeof(float**) );
         for ( int i = 0; i < m_numVertexConfidence; i++ )
         {
-            m_indexedVertexConfidence[i] = m_vertexConfidence + ( i * 3 );
+            m_indexedVertexConfidence[i] = m_vertexConfidence + i;
         }
     }
 
@@ -192,7 +192,7 @@ float** MeshLoader::getIndexedVertexIntensityArray( size_t &n )
             malloc( m_numVertexIntensity * sizeof(float**) );
         for ( int i = 0; i < m_numVertexIntensity; i++ )
         {
-            m_indexedVertexIntensity[i] = m_vertexIntensity + ( i * 3 );
+            m_indexedVertexIntensity[i] = m_vertexIntensity + i;
         }
     }
 

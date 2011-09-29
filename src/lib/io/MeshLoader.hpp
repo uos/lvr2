@@ -152,44 +152,231 @@ class MeshLoader {
          **/
         void setIndexedVertexNormalArray( float** arr, size_t size );
 
+
+        /**
+         * \brief Get the vertex array.
+         *
+         * Using getVertexArray the vertex data can be retrieved. The returned
+         * array is a one dimensional interlaced float array containing sets of
+         * \c x, \c y and \c z values. Additionally the passed reference of a
+         * size_t variable is set to the amount of vertices stored in the
+         * array. Thus \c n is set to one third of the array length.
+         *
+         * \param n  Amount of vertices in array.
+         * \return   %Vertex array.
+         **/
         float* getVertexArray( size_t &n );
+
+
+        /**
+         * \brief Get the vertex normal array.
+         *
+         * getVertexNormalArray returns the vertex normal data. The returned
+         * array is a one dimensional interlaced float array containing sets of
+         * \c x, \c y and \c z values. Additionally the passed reference of a
+         * size_t variable is set to the amount of vertex normals stored in the
+         * array. Thus \c n is set to one third of the array length.
+         *
+         * \param n  Amount of vertex normals in array.
+         * \return   %Vertex normal array.
+         **/
         float* getVertexNormalArray( size_t &n );
+
+
+        /**
+         * \brief Get the vertex confidence array.
+         *
+         * getVertexiConfidenceArray returns the vertex confidence
+         * informations. The returned array is a one dimensional float array.
+         * Additionally the passed reference of a size_t variable is set to the
+         * amount of confidence values stored in the array. Thus \c n is set to
+         * the array length.
+         *
+         * \param n  Amount of confidence values in array.
+         * \return   %Vertex confidence array.
+         **/
         float* getVertexConfidenceArray( size_t &n );
+
+
+        /**
+         * \brief Get the vertex intensity array.
+         *
+         * getVertexiIntensityArray returns the vertex intensity informations.
+         * The returned array is a one dimensional float array.  Additionally
+         * the passed reference of a size_t variable is set to the amount of
+         * intensity values stored in the array. Thus \c n is set to the array
+         * length.
+         *
+         * \param n  Amount of intensity values in array.
+         * \return   %Vertex intensity array.
+         **/
         float* getVertexIntensityArray( size_t &n );
+
+
+        /**
+         * \brief Get the vertex color array.
+         *
+         * getVertexColorArray returns the vertex color data. The returned
+         * array is a one dimensional interlaced uint8_t array containing sets
+         * of \c red, \c green and \c blue values. Additionally the passed
+         * reference of a size_t variable is set to the amount of vertex color
+         * sets stored in the array. Thus \c n is set to one third of the array
+         * length.
+         *
+         * \param n  Amount of vertex color sets in array.
+         * \return   %Vertex color array.
+         **/
         uint8_t* getVertexColorArray( size_t &n );
 
+
+        /**
+         * \brief Get indexed vertex array.
+         *
+         * This method return a two dimensional float array containing the
+         * vertex data. The actual data is the same as returned by
+         * getVertexArray. Additionally \c n is set to the amount of vertices
+         * and thus to the length of the array.
+         *
+         * \param n  Amount of vertices in array.
+         * \return   Indexed vertex array.
+         **/
         float** getIndexedVertexArray( size_t &n );
+
+
+        /**
+         * \brief Get indexed vertex normal array.
+         *
+         * This method return a two dimensional float array containing the
+         * vertex normals. The actual data is the same as returned by
+         * getVertexNormalArray. Additionally \c n is set to the amount of
+         * vertex normals and thus to the length of the array.
+         *
+         * \param n  Amount of vertex normals in array.
+         * \return   Indexed vertex normal array.
+         **/
         float** getIndexedVertexNormalArray( size_t &n );
+
+
+        /**
+         * \brief Get indexed vertex confidence array.
+         *
+         * This method return a two dimensional float array containing the
+         * vertex confidence data. The actual data is the same as returned by
+         * getVertexConfidenceArray. Additionally \c n is set to the amount of
+         * data and thus to the length of the array.
+         *
+         * \param n  Amount of vertex confidence data in array.
+         * \return   Indexed vertex confidence array.
+         **/
         float** getIndexedVertexConfidenceArray( size_t &n );
+
+
+        /**
+         * \brief Get indexed vertex intensity array.
+         *
+         * This method return a two dimensional float array containing the
+         * vertex intensity information. The actual data is the same as
+         * returned by getVertexIntensityArray. Additionally \c n is set to the
+         * amount of data and thus to the length of the array.
+         *
+         * \param n  Amount of vertex intensities in array.
+         * \return   Indexed vertex intesity array.
+         **/
         float** getIndexedVertexIntensityArray( size_t &n );
+
+
+        /**
+         * \brief Get indexed vertex color array.
+         *
+         * This method return a two dimensional float array containing the
+         * vertex color information. The actual data is the same as returned by
+         * getVertexColorArray. Additionally \c n is set to the amount of data
+         * and thus to the length of the array.
+         *
+         * \param n  Amount of vertex color sets in array.
+         * \return   Indexed vertex color array.
+         **/
         uint8_t** getIndexedVertexColorArray( size_t &n );
 
-        unsigned int* getFaceArray( size_t &n );
+
+        /**
+         * \brief Set the face index array.
+         *
+         * This method is used to set the face index array. The array passed as
+         * argument is a one dimensional interlaced array of unsigned integers.
+         * Each set of three integers specifies one face. The parameter \c n
+         * specifies the amount of faces. Thus n has to be one third of the
+         * array length.
+         *
+         * \param array  %Face index array.
+         * \param n      Amount of faces in array.
+         **/
         void setFaceArray( unsigned int* array, size_t n );
 
+
+        /**
+         * \brief Get the face index array.
+         *
+         * This method returns the vertex indices defining the faces. The
+         * returned array is a one dimensional interlaced uint8_t array
+         * containing sets of of three vertex indices. Additionally the passed
+         * reference of a size_t variable is set to the amount of faces.
+         * Because every face is a triangle, \c n is set to one third of the
+         * array length.
+         *
+         * \param n  Amount of faces defined in the array.
+         * \return   %Face index array.
+         **/
+        unsigned int* getFaceArray( size_t &n );
+
+        /**
+         * \brief Clear internal vertex and face buffers.
+         *
+         * This method clears all internal buffers and the stored buffer
+         * length. That means all pointers are set to null-pointers and all
+         * length variables are set to zero.
+         * \warning This method does not free any allocated memory.
+         **/
         void freeBuffer();
 
     protected:
 
+        /// %Vertex buffer.
         float*        m_vertices;
+        /// %Vertex color buffer.
         uint8_t*      m_vertexColors;
+        /// %Vertex confidence buffer.
         float*        m_vertexConfidence;
+        /// %Vertex intensity buffer.
         float*        m_vertexIntensity;
+        /// %Vertex normal buffer.
         float*        m_vertexNormals;
 
+        /// Indexed vertex buffer.
         float**       m_indexedVertices;
+        /// Indexed vertex color buffer.
         uint8_t**     m_indexedVertexColors;
+        /// Indexed vertex confidence buffer.
         float**       m_indexedVertexConfidence;
+        /// Indexed vertex intensity buffer.
         float**       m_indexedVertexIntensity;
+        /// Indexed vertex normal buffer.
         float**       m_indexedVertexNormals;
 
+        /// Buffer of face indices
         unsigned int* m_faceIndices;
 
+        /// Number of vertices in internal buffer.
         uint32_t      m_numVertex;
+        /// Number of vertex normals in internal buffer.
         uint32_t      m_numVertexNormals;
+        /// Number of vertex colors sets in internal buffer.
         uint32_t      m_numVertexColors;
+        /// Number of vertex confidence values in internal buffer.
         uint32_t      m_numVertexConfidence;
+        /// Number of vertex intensities in internal buffer.
         uint32_t      m_numVertexIntensity;
+        /// Number of faces in internal buffer.
         uint32_t      m_numFace;
 
 };

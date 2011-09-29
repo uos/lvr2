@@ -49,7 +49,7 @@ class PointLoader {
     protected:
 
         float** getIndexedArrayf( size_t &n, const size_t num, float** arr1d,
-                float*** arr2d );
+                float*** arr2d, const int step = 3 );
 
         float*    m_points;
         float*    m_pointNormals;

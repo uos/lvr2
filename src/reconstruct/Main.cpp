@@ -30,16 +30,28 @@
  * mkdir build
  * cd build
  * cmake .. && make
+ * cd ../bin
  * \endverbatim
  *
  * External library dependencies:
  *
  * <ul>
  * <li>OpenGL</li>
+ * <li>OpenGL Utility Toolkit (glut)</li>
+ * <li>OpenGL Utility Library (glu)</li>
  * <li>OpenMP</li>
- * <li>Boost (Thread, Filesystem, Program Options)</li>
- * <li>Qt 4.7 (for viewer and qviewer)</li>
- * <li>libqglviewer for qviewer</li>
+ * <li>Boost
+ *   <ul>
+ *     <li>Thread</li>
+ *     <li>Filesystem</li>
+ *     <li>Program Options</li>
+ *     <li>System</li>
+ *   </ul>
+ * </li>
+ * <li>Qt 4.7 or above (for viewer and qviewer)</li>
+ * <li>libQGLViewer 2.3.9 or newer (for qviewer)</li>
+ * <li>X.Org X11 libXi runtime library</li>
+ * <li>X.Org X11 libXmu/libXmuu runtime libraries</li>
  * </ul>
  *
  *
