@@ -302,9 +302,15 @@ private:
 	/// The indexed of the newest inserted vertex
 	int 	                                    m_globalIndex;
 
+	/// Indicates if regions will be colored in the ply format
 	bool                                        m_colorRegions;
 
+	///TODO: no longer used... ask fotte
     bool m_planesOptimized;
+
+	/// a pointer to the point cloud manager
+	PointCloudManager<VertexT, NormalT>* m_pointCloudManager;
+
 	/**
 	 * @brief   Returns an edge that point to the edge defined
 	 *          by the given vertices.
@@ -315,11 +321,6 @@ private:
 	 *              edge was found.
 	 */
 	HEdge* halfEdgeToVertex(HVertex* v, HVertex* next);
-
-
-	/// a pointer to the point cloud manager
-	PointCloudManager<VertexT, NormalT>* m_pointCloudManager;
-
 
 };
 
