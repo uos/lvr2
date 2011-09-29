@@ -16,7 +16,7 @@ namespace lssr
 {
 
 IOFactory::IOFactory( string filename )
-    : m_meshLoader(0), m_pointLoader(0), m_baseIO(0)
+    : m_pointLoader(0), m_meshLoader(0), m_baseIO(0)
 {
     // Check extension
     boost::filesystem::path selectedFile(filename);

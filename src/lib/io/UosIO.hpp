@@ -52,7 +52,7 @@ public:
     /**
      * @brief Contructor.
      */
-    UosIO() : m_firstScan(-1), m_lastScan(-1), m_reduction(1), m_saveToDisk(false), m_numScans(0){}
+    UosIO() : m_firstScan(-1), m_lastScan(-1), m_saveToDisk(false), m_reduction(1), m_numScans(0){}
 
     /**
      * @brief Reads all scans or an specified range of scans
@@ -85,7 +85,7 @@ public:
      */
     void reduce(string dir, string target, int reduction = 1);
 
-    indexPair getScanRange(int num);
+    indexPair getScanRange( size_t num );
 
     int getNumScans() { return m_numScans;}
 

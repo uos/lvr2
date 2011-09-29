@@ -95,13 +95,13 @@ void StannPointCloudManager<VertexT, NormalT>::calcNormals()
     //Initialize normal array
     this->m_normals = new float*[this->m_numPoints];
 
-    float mean_distance;
+    //float mean_distance;
     // Create a progress counter
     string comment = timestamp.getElapsedTime() + "Estimating normals ";
     ProgressBar progress(this->m_numPoints, comment);
 
     #pragma omp parallel for
-    for(int i = 0; i < this->m_numPoints; i++){
+    for(size_t i = 0; i < this->m_numPoints; i++){
 
         Vertexf query_point;
         Normalf normal;
@@ -143,7 +143,7 @@ void StannPointCloudManager<VertexT, NormalT>::calcNormals()
              * @todo Use the bounding box object from the old model3d
              *       library for bounding box calculation...
              */
-            for(int j = 0; j < k; j++){
+            for(size_t j = 0; j < k; j++){
                 min_x = min(min_x, this->m_points[id[j]][0]);
                 min_y = min(min_y, this->m_points[id[j]][1]);
                 min_z = min(min_z, this->m_points[id[j]][2]);
@@ -171,7 +171,7 @@ void StannPointCloudManager<VertexT, NormalT>::calcNormals()
         Plane<VertexT, NormalT> p = calcPlane(query_point, k, id);
 
         // Get the mean distance to the tangent plane
-        mean_distance = meanDistance(p, id, k);
+        //mean_distance = meanDistance(p, id, k);
 
         // Flip normals towards the center of the scene
         normal =  p.n;
@@ -203,7 +203,7 @@ void StannPointCloudManager<VertexT, NormalT>::interpolateSurfaceNormals()
 
     // Interpolate normals
     #pragma omp parallel for
-    for(int i = 0; i < this->m_numPoints; i++){
+    for(size_t i = 0; i < this->m_numPoints; i++){
 
         vector<unsigned long> id;
         vector<double> di;
@@ -246,7 +246,7 @@ void StannPointCloudManager<VertexT, NormalT>::interpolateSurfaceNormals()
     cout << endl;
     cout << timestamp << "Copying normals..." << endl;
 
-    for(int i = 0; i < this->m_numPoints; i++){
+    for(size_t i = 0; i < this->m_numPoints; i++){
         this->m_normals[i][0] = tmp[i][0];
         this->m_normals[i][1] = tmp[i][1];
         this->m_normals[i][2] = tmp[i][2];
@@ -285,7 +285,7 @@ void StannPointCloudManager<VertexT, NormalT>::getkClosestVertices(const VertexT
     m_pointTree.ksearch(p, k, id, 0);
 
     //parse result
-    for(int i=0; i<k; i++)
+    for(size_t i=0; i<k; i++)
     {
     	if(this->m_colors != 0)
     	{

@@ -99,7 +99,7 @@ uint8_t** PointLoader::getIndexedPointColorArray( size_t &n )
     {
         m_indexedPointColors = (uint8_t**) 
             malloc( m_numPointColors * sizeof(uint8_t*) );
-        for ( int i = 0; i < m_numPointColors; i++ )
+        for ( size_t i = 0; i < m_numPointColors; i++ )
         {
             m_indexedPointColors[i] = m_pointColors + ( i * 3 );
         }
@@ -159,7 +159,7 @@ float** PointLoader::getIndexedArrayf( size_t &n, const size_t num,
     if ( !(*arr2d) )
     {
         *arr2d = (float**) malloc( num * sizeof(float*) );
-        for ( int i = 0; i < num; i++ )
+        for ( size_t i = 0; i < num; i++ )
         {
             (*arr2d)[i] = (*arr1d) + ( i * step );
         }

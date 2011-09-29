@@ -162,7 +162,6 @@ void UosIO::reduce(string dir, string target, int reduction)
     // Set needed flags for inout code
     m_reduction = reduction;
     m_saveToDisk = true;
-    size_t n;
 
     // Read data and write reduced points
     read(dir);
@@ -419,7 +418,7 @@ void UosIO::readNewFormat(string dir, int first, int last, size_t &n)
 
 }
 
-indexPair UosIO::getScanRange(int num)
+indexPair UosIO::getScanRange( size_t num )
 {
     if(num < m_scanRanges.size())
     {
