@@ -46,7 +46,7 @@ public:
 	 *
 	 * @param 	region_number 	the number of the region
 	 */
-	Region(int region_number);
+	Region(int regionNumber);
 
 	/**
 	 * @brief Adds a face to the region.
@@ -104,7 +104,7 @@ public:
 	vector<HFace*>    m_faces;
 
 	/// The number of the region
-	int m_region_number;
+	int m_regionNumber;
 
 	/// The normal of the region (updated every time regressionPlane() is called)
 	NormalT m_normal;
@@ -112,15 +112,15 @@ public:
 	///	The stuetzvektor of the plane
 	VertexT m_stuetzvektor;
 
+
+
+private:
     /**
 	 * @brief calculates a valid normal of the region
 	 *
 	 * @return a normal of the region
 	 */
 	virtual NormalT calcNormal();
-
-private:
-
 };
 }
 
