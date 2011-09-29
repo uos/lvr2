@@ -129,7 +129,7 @@ float** PointLoader::getIndexedPointIntensityArray( size_t &n )
 {
 
     return getIndexedArrayf( n, m_numPointIntensities, &m_pointIntensities,
-            &m_indexedPointIntensities );
+            &m_indexedPointIntensities, 1 );
 
 }
 
@@ -138,13 +138,13 @@ float** PointLoader::getIndexedPointConfidenceArray( size_t &n )
 {
 
     return getIndexedArrayf( n, m_numPointConfidence, &m_pointConfidence,
-            &m_indexedPointConfidence );
+            &m_indexedPointConfidence, 1 );
 
 }
 
 
 float** PointLoader::getIndexedArrayf( size_t &n, const size_t num, 
-        float** arr1d, float*** arr2d )
+        float** arr1d, float*** arr2d, const int step )
 {
 
     n = num;
@@ -161,7 +161,7 @@ float** PointLoader::getIndexedArrayf( size_t &n, const size_t num,
         *arr2d = (float**) malloc( num * sizeof(float*) );
         for ( int i = 0; i < num; i++ )
         {
-            (*arr2d)[i] = (*arr1d) + ( i * 3 );
+            (*arr2d)[i] = (*arr1d) + ( i * step );
         }
     }
 
