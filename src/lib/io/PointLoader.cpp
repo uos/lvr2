@@ -12,184 +12,207 @@
 
 #include "PointLoader.hpp"
 
+namespace lssr
+{
 
 PointLoader::PointLoader() :
-	m_points( NULL ),
-	m_point_normals( NULL ),
-	m_point_colors( NULL ),
-	m_point_intensities( NULL ),
-	m_point_confidence( NULL ),
-	m_indexed_points( NULL ),
-	m_indexed_point_normals( NULL ),
-	m_indexed_point_intensities( NULL ),
-	m_indexed_point_confidence( NULL ),
-	m_indexed_point_colors( NULL ),
-	m_num_points( 0 ),
-	m_num_point_colors( 0 ),
-	m_num_point_normals( 0 ),
-	m_num_point_intensities( 0 ),
-	m_num_point_confidence( 0 ) {}
+    m_points( NULL ),
+    m_pointNormals( NULL ),
+    m_pointColors( NULL ),
+    m_pointIntensities( NULL ),
+    m_pointConfidence( NULL ),
+    m_indexedPoints( NULL ),
+    m_indexedPointNormals( NULL ),
+    m_indexedPointIntensities( NULL ),
+    m_indexedPointConfidence( NULL ),
+    m_indexedPointColors( NULL ),
+    m_numPoints( 0 ),
+    m_numPointColors( 0 ),
+    m_numPointNormals( 0 ),
+    m_numPointIntensities( 0 ),
+    m_numPointConfidence( 0 ) {}
 
 
-float * PointLoader::getPointArray( size_t * n ) {
+float* PointLoader::getPointArray( size_t &n )
+{
 
-	*n = m_num_points;
-	return m_points;
-
-}
-
-
-uint8_t * PointLoader::getPointColorArray( size_t *n ) {
-
-	*n = m_num_point_colors;
-	return m_point_colors;
+    n = m_numPoints;
+    return m_points;
 
 }
 
 
-float * PointLoader::getPointNormalArray( size_t *n ) {
+uint8_t* PointLoader::getPointColorArray( size_t &n )
+{
 
-	*n = m_num_point_normals;
-	return m_point_normals;
-
-}
-
-
-float * PointLoader::getPointIntensityArray( size_t *n ) {
-
-	*n = m_num_point_intensities;
-	return m_point_intensities;
+    n = m_numPointColors;
+    return m_pointColors;
 
 }
 
 
-float * PointLoader::getPointConfidenceArray( size_t *n ) {
+float* PointLoader::getPointNormalArray( size_t &n )
+{
 
-	*n = m_num_point_confidence;
-	return m_point_confidence;
-
-}
-
-
-size_t PointLoader::getNumPoints() {
-
-	return m_num_points;
+    n = m_numPointNormals;
+    return m_pointNormals;
 
 }
 
 
-uint8_t ** PointLoader::getIndexedPointColorArray( size_t * n ) {
+float* PointLoader::getPointIntensityArray( size_t &n )
+{
 
-	if ( n ) {
-		*n = m_num_point_colors;
-	}
-	if ( !m_point_colors ) {
-		return NULL;
-	}
-
-	if ( !m_indexed_point_colors ) {
-		m_indexed_point_colors = (uint8_t **) 
-			malloc( m_num_point_colors * sizeof(uint8_t *) );
-		for ( int i = 0; i < m_num_point_colors; i++ ) {
-			m_indexed_point_colors[i] = m_point_colors + ( i * 3 );
-		}
-	}
-	return m_indexed_point_colors;
+    n = m_numPointIntensities;
+    return m_pointIntensities;
 
 }
 
 
-float ** PointLoader::getIndexedPointNormalArray( size_t * n ) {
+float* PointLoader::getPointConfidenceArray( size_t &n )
+{
 
-	return getIndexedArrayf( n, m_num_point_normals, &m_point_normals, 
-			&m_indexed_point_normals );
-
-}
-
-float ** PointLoader::getIndexedPointArray( size_t * n ) {
-
-	return getIndexedArrayf( n, m_num_points, &m_points, &m_indexed_points );
+    n = m_numPointConfidence;
+    return m_pointConfidence;
 
 }
 
 
-float ** PointLoader::getIndexedPointIntensityArray( size_t * n ) {
+size_t PointLoader::getNumPoints()
+{
 
-	return getIndexedArrayf( n, m_num_point_intensities, &m_point_intensities,
-			&m_indexed_point_intensities );
-
-}
-
-
-float ** PointLoader::getIndexedPointConfidenceArray( size_t * n ) {
-
-	return getIndexedArrayf( n, m_num_point_confidence, &m_point_confidence,
-			&m_indexed_point_confidence );
+    return m_numPoints;
 
 }
 
 
-float ** PointLoader::getIndexedArrayf( size_t * n, const size_t num, 
-		float ** arr1d, float *** arr2d ) {
+uint8_t** PointLoader::getIndexedPointColorArray( size_t &n )
+{
 
-	if ( n ) {
-		*n = num;
-	}
+    n = m_numPointColors;
+    if ( !m_pointColors )
+    {
+        return NULL;
+    }
 
-	/* Return NULL if we have no data. */
-	if ( !(*arr1d) ) {
-		return NULL;
-	}
-
-	/* Generate indexed intensity array in not already done. */
-	if ( !(*arr2d) ) {
-		*arr2d = (float **) malloc( num * sizeof(float *) );
-		for ( int i = 0; i < num; i++ ) {
-			(*arr2d)[i] = (*arr1d) + ( i * 3 );
-		}
-	}
-
-	/* Return indexed intensity array */
-	return *arr2d;
+    if ( !m_indexedPointColors )
+    {
+        m_indexedPointColors = (uint8_t**) 
+            malloc( m_numPointColors * sizeof(uint8_t*) );
+        for ( int i = 0; i < m_numPointColors; i++ )
+        {
+            m_indexedPointColors[i] = m_pointColors + ( i * 3 );
+        }
+    }
+    return m_indexedPointColors;
 
 }
 
 
-void PointLoader::setPointArray( float * array, size_t n ) {
+float** PointLoader::getIndexedPointNormalArray( size_t &n )
+{
 
-	m_num_points = n;
-	m_points = array;
+    return getIndexedArrayf( n, m_numPointNormals, &m_pointNormals, 
+            &m_indexedPointNormals );
+
+}
+
+float** PointLoader::getIndexedPointArray( size_t &n )
+{
+
+    return getIndexedArrayf( n, m_numPoints, &m_points, &m_indexedPoints );
 
 }
 
 
-void PointLoader::setPointColorArray( uint8_t * array, size_t n ) {
+float** PointLoader::getIndexedPointIntensityArray( size_t &n )
+{
 
-	m_num_point_colors = n;
-	m_point_colors = array;
-
-}
-
-
-void PointLoader::setPointNormalArray( float * array, size_t n ) {
-
-	m_num_point_normals = n;
-	m_point_normals = array;
+    return getIndexedArrayf( n, m_numPointIntensities, &m_pointIntensities,
+            &m_indexedPointIntensities );
 
 }
 
 
-void PointLoader::setPointIntensityArray( float * array, size_t n ) {
+float** PointLoader::getIndexedPointConfidenceArray( size_t &n )
+{
 
-	m_num_point_intensities = n;
-	m_point_intensities = array;
+    return getIndexedArrayf( n, m_numPointConfidence, &m_pointConfidence,
+            &m_indexedPointConfidence );
+
+}
+
+
+float** PointLoader::getIndexedArrayf( size_t &n, const size_t num, 
+        float** arr1d, float*** arr2d )
+{
+
+    n = num;
+
+    /* Return NULL if we have no data. */
+    if ( !(*arr1d) )
+    {
+        return NULL;
+    }
+
+    /* Generate indexed intensity array in not already done. */
+    if ( !(*arr2d) )
+    {
+        *arr2d = (float**) malloc( num * sizeof(float*) );
+        for ( int i = 0; i < num; i++ )
+        {
+            (*arr2d)[i] = (*arr1d) + ( i * 3 );
+        }
+    }
+
+    /* Return indexed intensity array */
+    return *arr2d;
 
 }
 
 
-void PointLoader::setPointConfidenceArray( float * array, size_t n ) {
+void PointLoader::setPointArray( float* array, size_t n )
+{
 
-	m_num_point_confidence = n;
-	m_point_confidence = array;
+    m_numPoints = n;
+    m_points = array;
 
 }
+
+
+void PointLoader::setPointColorArray( uint8_t* array, size_t n )
+{
+
+    m_numPointColors = n;
+    m_pointColors = array;
+
+}
+
+
+void PointLoader::setPointNormalArray( float* array, size_t n )
+{
+
+    m_numPointNormals = n;
+    m_pointNormals = array;
+
+}
+
+
+void PointLoader::setPointIntensityArray( float* array, size_t n )
+{
+
+    m_numPointIntensities = n;
+    m_pointIntensities = array;
+
+}
+
+
+void PointLoader::setPointConfidenceArray( float* array, size_t n )
+{
+
+    m_numPointConfidence = n;
+    m_pointConfidence = array;
+
+}
+
+} /* namespace lssr */

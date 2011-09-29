@@ -30,8 +30,9 @@ MultiPointCloud::MultiPointCloud(string dir)
             PointCloud* pc = new PointCloud;
             for(int a = p.first; a <= p.second; a++)
             {
-                float   ** points = io.getIndexedPointArray( NULL );
-                uint8_t ** colors = io.getIndexedPointColorArray( NULL );
+                size_t n;
+                float   ** points = io.getIndexedPointArray( n );
+                uint8_t ** colors = io.getIndexedPointColorArray( n );
                 if(colors)
                 {
                     pc->addPoint(points[a][0], points[a][1], points[a][2], colors[a][0], colors[a][1], colors[a][2]);
