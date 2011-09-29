@@ -961,7 +961,7 @@ void HalfEdgeMesh<VertexT, NormalT>::tester()
     //	for(int r=0; r<m_regions.size(); r++)
     //	//		if( m_regions[r]->detectFlicker()) cout << "still flickering" << endl;
     //	for(int r=0; r<m_regions.size(); r++)
-    //		if( m_regions[r]->m_inPlane) cout << r << ": " << m_regions[r]->m_region_number << endl;
+    //		if( m_regions[r]->m_inPlane) cout << r << ": " << m_regions[r]->m_regionNumber << endl;
     cout << "----------------------------END TESTER" << endl;
 
     //    Reset all used variables
@@ -1048,7 +1048,7 @@ void HalfEdgeMesh<VertexT, NormalT>::finalize()
 
         int surface_class = 1;
         if ((*face_iter)->m_region != 0)
-            surface_class = (*face_iter)->m_region->m_region_number;
+            surface_class = (*face_iter)->m_region->m_regionNumber;
 
         float r, g, b;
         if(m_colorRegions)
@@ -1102,7 +1102,7 @@ void HalfEdgeMesh<VertexT, NormalT>::regionsToBuffer(
         //cout << "Region Nr: " << regions[h] << endl;
         int i = regions[h];
         float r, g, b;
-        int surface_class = m_regions[i]->m_region_number;
+        int surface_class = m_regions[i]->m_regionNumber;
 
         if(this->m_colorRegions)
         {
@@ -1159,7 +1159,7 @@ void HalfEdgeMesh<VertexT, NormalT>::regionsToBuffer(
                         isinf((*vertex)[vncUsed + 0]) || isinf((*vertex)[vncUsed + 0]) || isinf((*vertex)[vncUsed + 0]))
                 {
                     cerr << "[nan] coordinates!:\n\t: RegNr(external): " << h
-                      << "\n\t RegNr(internal): " << m_regions[i]->m_region_number
+                      << "\n\t RegNr(internal): " << m_regions[i]->m_regionNumber
                       << "\n\t vncUsed: " << vncUsed 
                       << "\n\t face nr: " << j
                       << "\n\t" << k << "th vertex\n\t\tSKIPPING!\n"; 
@@ -1273,7 +1273,7 @@ void HalfEdgeMesh<VertexT, NormalT>::retesselateRegionsToBuffer(
     {
         int i = plane_regions[h];
         float r, g, b;
-        int surface_class = m_regions[i]->m_region_number;
+        int surface_class = m_regions[i]->m_regionNumber;
 
         if(this->m_colorRegions)
         {
@@ -1305,7 +1305,7 @@ void HalfEdgeMesh<VertexT, NormalT>::retesselateRegionsToBuffer(
             this->m_indexBuffer = (unsigned int*)realloc(this->m_indexBuffer, indexBufferSize);
             this->m_textureIndexBuffer = (unsigned int*)realloc(this->m_textureIndexBuffer, indexBufferSize);
         }
-        this->m_textureBuffer[this->m_nTextures++] = m_regions[i]->m_region_number;
+        this->m_textureBuffer[this->m_nTextures++] = m_regions[i]->m_regionNumber;
 
         Tesselator<VertexT, NormalT>::init();
         vector<vector<HVertex*> > contours = m_regions[i]->getContours(0.01);
@@ -1370,7 +1370,7 @@ void HalfEdgeMesh<VertexT, NormalT>::retesselateRegionsToBuffer(
             for(int j=0; j < (*indexLength); ++j)
             {
                 this->m_indexBuffer[j+indicesUsed] = ((*in)[j])+pointsUsed/3; 
-                this->m_textureIndexBuffer[j+indicesUsed] = m_regions[i]->m_region_number;
+                this->m_textureIndexBuffer[j+indicesUsed] = m_regions[i]->m_regionNumber;
             }
             pointsUsed  += (*coordinatesLength);
             indicesUsed += *indexLength;
