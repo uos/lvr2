@@ -19,12 +19,21 @@
 #include <cstddef>
 #include <cstdlib>
 
+#ifdef __GNUC__
+#define DEPRECATED __attribute__ ((deprecated))
+#else
+#define DEPRECATED 
+#endif
+
 namespace lssr
 {
 
 /**
  * \class MeshLoader MeshLoader.hpp "io/MeshLoader.hpp"
  * \brief Interface for all mesh loading classes.
+ * \todo  At the moment this class comes along with a lot of possible memory
+ *        leaks. To prevent those all data should be stored as \c shared_ptr as
+ *        introduced by C++11.
  *
  * The MeshLoader class specifies the storage and access to all available mesh
  * data by implementing the get and set methods for these data. This has to be
@@ -96,6 +105,13 @@ class MeshLoader {
 
         /**
          * \brief Set the vertex color array.
+         * \deprecated This method is deprecated. To be consistent, all
+         *             internal color data should be unsigned 8bit integers. At
+         *             the moment however some parts of the lssr toolkit still
+         *             use float values in the range of [0..1] to describe
+         *             color information. So this function is still available
+         *             for compatibility reasons. But it might be removed
+         *             anytime.
          *
          * By using setVertexColorArray the internal vertex color buffer can be
          * set. The array has to be a one dimensional float array containing
@@ -106,7 +122,7 @@ class MeshLoader {
          * \param array  Pointer to interlaced vertex color data.
          * \param n      Amount of color information in the array.
          **/
-        void setVertexColorArray( float* array, size_t n );
+        void setVertexColorArray( float* array, size_t n ) DEPRECATED;
 
 
         /**
@@ -186,7 +202,7 @@ class MeshLoader {
         /**
          * \brief Get the vertex confidence array.
          *
-         * getVertexiConfidenceArray returns the vertex confidence
+         * getVertexConfidenceArray returns the vertex confidence
          * informations. The returned array is a one dimensional float array.
          * Additionally the passed reference of a size_t variable is set to the
          * amount of confidence values stored in the array. Thus \c n is set to
@@ -234,8 +250,8 @@ class MeshLoader {
          *
          * This method return a two dimensional float array containing the
          * vertex data. The actual data is the same as returned by
-         * getVertexArray. Additionally \c n is set to the amount of vertices
-         * and thus to the length of the array.
+         * \ref getVertexArray. Additionally \c n is set to the amount of
+         * vertices and thus to the length of the array.
          *
          * \param n  Amount of vertices in array.
          * \return   Indexed vertex array.
@@ -248,7 +264,7 @@ class MeshLoader {
          *
          * This method return a two dimensional float array containing the
          * vertex normals. The actual data is the same as returned by
-         * getVertexNormalArray. Additionally \c n is set to the amount of
+         * \ref getVertexNormalArray. Additionally \c n is set to the amount of
          * vertex normals and thus to the length of the array.
          *
          * \param n  Amount of vertex normals in array.
@@ -259,11 +275,16 @@ class MeshLoader {
 
         /**
          * \brief Get indexed vertex confidence array.
+         * \note  As each of the internal arrays only contain one value it is
+         *        strongly suggested to use \ref getVertexConfidenceArray
+         *        instead. That way the overhead introduced by this method is
+         *        omitted and the data can be accessed even more easier as with
+         *        this method.
          *
          * This method return a two dimensional float array containing the
          * vertex confidence data. The actual data is the same as returned by
-         * getVertexConfidenceArray. Additionally \c n is set to the amount of
-         * data and thus to the length of the array.
+         * \ref getVertexConfidenceArray. Additionally \c n is set to the
+         * amount of data and thus to the length of the array.
          *
          * \param n  Amount of vertex confidence data in array.
          * \return   Indexed vertex confidence array.
@@ -273,14 +294,19 @@ class MeshLoader {
 
         /**
          * \brief Get indexed vertex intensity array.
+         * \note  As each of the internal arrays only contain one value it is
+         *        strongly suggested to use \ref getVertexIntensityArray
+         *        instead. That way the overhead introduced by this method is
+         *        omitted and the data can be accessed even more easier as with
+         *        this method.
          *
          * This method return a two dimensional float array containing the
          * vertex intensity information. The actual data is the same as
-         * returned by getVertexIntensityArray. Additionally \c n is set to the
-         * amount of data and thus to the length of the array.
+         * returned by \ref getVertexIntensityArray. Additionally \c n is set
+         * to the amount of data and thus to the length of the array.
          *
          * \param n  Amount of vertex intensities in array.
-         * \return   Indexed vertex intesity array.
+         * \return   Indexed vertex intensity array.
          **/
         float** getIndexedVertexIntensityArray( size_t &n );
 
@@ -290,8 +316,8 @@ class MeshLoader {
          *
          * This method return a two dimensional float array containing the
          * vertex color information. The actual data is the same as returned by
-         * getVertexColorArray. Additionally \c n is set to the amount of data
-         * and thus to the length of the array.
+         * \ref getVertexColorArray. Additionally \c n is set to the amount of
+         * data and thus to the length of the array.
          *
          * \param n  Amount of vertex color sets in array.
          * \return   Indexed vertex color array.
@@ -328,6 +354,7 @@ class MeshLoader {
          * \return   %Face index array.
          **/
         unsigned int* getFaceArray( size_t &n );
+
 
         /**
          * \brief Clear internal vertex and face buffers.

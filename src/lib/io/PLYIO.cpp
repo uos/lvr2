@@ -348,7 +348,8 @@ void PLYIO::read( string filename, bool readColor, bool readConfidence,
         bool readIntensity, bool readNormals, bool readFaces )
 {
 
-    freeBuffer();
+    lssr::PointLoader::freeBuffer();
+    lssr::MeshLoader::freeBuffer();
 
     /* Start reading new PLY */
     p_ply ply = ply_open( filename.c_str(), NULL, 0, NULL );
@@ -567,7 +568,8 @@ void PLYIO::read( string filename, bool readColor, bool readConfidence,
     if ( !ply_read( ply ) )
     {
         g_msg.print( MSG_TYPE_ERROR, "Could not read »%s«.\n", filename.c_str() );
-        freeBuffer();
+        lssr::PointLoader::freeBuffer();
+        lssr::MeshLoader::freeBuffer();
     }
 
     /* Check if we got only vertices and neither points nor faces. If that is

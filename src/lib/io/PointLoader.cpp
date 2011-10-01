@@ -215,4 +215,15 @@ void PointLoader::setPointConfidenceArray( float* array, size_t n )
 
 }
 
+
+void PointLoader::freeBuffer()
+{
+
+    m_points = m_pointConfidence = m_pointIntensities = m_pointNormals = NULL;
+    m_pointColors = NULL;
+    m_numPoints = m_numPointColors = m_numPointIntensities
+        = m_numPointConfidence = m_numPointNormals = 0;
+
+}
+
 } /* namespace lssr */

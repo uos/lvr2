@@ -12,7 +12,7 @@ include_directories(${LSSR_SOURCE_DIR})
 include_directories(${LSSR_SOURCE_DIR}/src/lib)
 
 set( CMAKE_CXX_FLAGS         "-g" )
-set( CMAKE_CXX_FLAGS_RELEASE "-O4 -msse3" )
+set( CMAKE_CXX_FLAGS_RELEASE "-O4 -msse3 -Wno-deprecated-declarations" )
 set( CMAKE_CXX_FLAGS_DEBUG   "-g -Wall" )
 
 ###############################################################
