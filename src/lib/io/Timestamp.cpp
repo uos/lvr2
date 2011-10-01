@@ -11,6 +11,7 @@
 #include <time.h>
 #include <unistd.h>
 #include <cstddef>
+#include <cstdlib>
 #include <cstdio>
 
 #include <iostream>
@@ -59,10 +60,12 @@ string Timestamp::getElapsedTime() const
     unsigned long secs  = ( time %   60000 ) /  1000;
     unsigned long msecs =   time %    1000;
 
-    char times[32];
-    sprintf( times, "[%02lu:%02lu:%02lu %04lu] ", hours, mins, secs, msecs);
+    char * times;
+    asprintf( &times, "[%02lu:%02lu:%02lu %04lu] ", hours, mins, secs, msecs);
+    string result( times );
+    free( times );
 
-    return string( times );
+    return result;
 }
 
 } // namespace lssr
