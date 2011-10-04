@@ -28,7 +28,7 @@ MultiPointCloud::MultiPointCloud(string dir)
 
             // Create new point cloud from scan
             PointCloud* pc = new PointCloud;
-            for(int a = p.first; a <= p.second; a++)
+            for(size_t a = p.first; a <= p.second; a++)
             {
                 size_t n;
                 float   ** points = io.getIndexedPointArray( n );

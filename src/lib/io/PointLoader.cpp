@@ -99,7 +99,7 @@ uint8_t** PointLoader::getIndexedPointColorArray( size_t &n )
     {
         m_indexedPointColors = (uint8_t**) 
             malloc( m_numPointColors * sizeof(uint8_t*) );
-        for ( int i = 0; i < m_numPointColors; i++ )
+        for ( size_t i = 0; i < m_numPointColors; i++ )
         {
             m_indexedPointColors[i] = m_pointColors + ( i * 3 );
         }
@@ -129,7 +129,7 @@ float** PointLoader::getIndexedPointIntensityArray( size_t &n )
 {
 
     return getIndexedArrayf( n, m_numPointIntensities, &m_pointIntensities,
-            &m_indexedPointIntensities );
+            &m_indexedPointIntensities, 1 );
 
 }
 
@@ -138,13 +138,13 @@ float** PointLoader::getIndexedPointConfidenceArray( size_t &n )
 {
 
     return getIndexedArrayf( n, m_numPointConfidence, &m_pointConfidence,
-            &m_indexedPointConfidence );
+            &m_indexedPointConfidence, 1 );
 
 }
 
 
 float** PointLoader::getIndexedArrayf( size_t &n, const size_t num, 
-        float** arr1d, float*** arr2d )
+        float** arr1d, float*** arr2d, const int step )
 {
 
     n = num;
@@ -159,9 +159,9 @@ float** PointLoader::getIndexedArrayf( size_t &n, const size_t num,
     if ( !(*arr2d) )
     {
         *arr2d = (float**) malloc( num * sizeof(float*) );
-        for ( int i = 0; i < num; i++ )
+        for ( size_t i = 0; i < num; i++ )
         {
-            (*arr2d)[i] = (*arr1d) + ( i * 3 );
+            (*arr2d)[i] = (*arr1d) + ( i * step );
         }
     }
 
@@ -212,6 +212,17 @@ void PointLoader::setPointConfidenceArray( float* array, size_t n )
 
     m_numPointConfidence = n;
     m_pointConfidence = array;
+
+}
+
+
+void PointLoader::freeBuffer()
+{
+
+    m_points = m_pointConfidence = m_pointIntensities = m_pointNormals = NULL;
+    m_pointColors = NULL;
+    m_numPoints = m_numPointColors = m_numPointIntensities
+        = m_numPointConfidence = m_numPointNormals = 0;
 
 }
 

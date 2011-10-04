@@ -252,7 +252,7 @@ public:
 	 *
 	 * @param 	max_size 	the maximum size of a hole
 	 */
-	virtual void fillHoles(int max_size);
+	virtual void fillHoles( size_t max_size );
 
 	/**
 	 * @brief	Collapse the given edge safely
@@ -299,7 +299,7 @@ private:
 	vector<Region<VertexT, NormalT>*>     m_regions;
 
 	/// The indexed of the newest inserted vertex
-	int 	                                    m_globalIndex;
+	size_t                                   m_globalIndex;
 
 	/// Indicates if regions will be colored in the ply format
 	bool                                        m_colorRegions;

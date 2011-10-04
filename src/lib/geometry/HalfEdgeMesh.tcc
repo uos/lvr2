@@ -597,13 +597,13 @@ void HalfEdgeMesh<VertexT, NormalT>::optimizePlanes(
         cout << timestamp << "Optimizing planes. " <<  j+1 << "th iteration." << endl;
 
         // Reset all used variables
-        for(int i=0; i < m_faces.size(); i++)
+        for(size_t i=0; i < m_faces.size(); i++)
         {
             m_faces[i]->m_used = false;
         }
 
         // Find all regions by regionGrowing with normal criteria
-        for(int i=0; i < m_faces.size(); i++)
+        for(size_t i=0; i < m_faces.size(); i++)
         {
             if(m_faces[i]->m_used == false)
             {
@@ -645,7 +645,7 @@ void HalfEdgeMesh<VertexT, NormalT>::optimizePlanes(
     {
         string msg = timestamp.getElapsedTime() + "Deleting small regions.";
         ProgressBar progress(smallRegions.size(), msg);
-        for(int i=0; i< smallRegions.size(); i++)
+        for(size_t i=0; i< smallRegions.size(); i++)
         {
             deleteRegion(smallRegions[i]);
             ++progress;
@@ -656,7 +656,7 @@ void HalfEdgeMesh<VertexT, NormalT>::optimizePlanes(
     if(remove_flickering)
     {
         vector<HFace*> flickerer;
-        for(int i=0; i< m_faces.size(); i++)
+        for(size_t i=0; i< m_faces.size(); i++)
             if(m_faces[i]->m_region->detectFlicker(m_faces[i]))
             {
                 flickerer.push_back(m_faces[i]);
@@ -685,7 +685,7 @@ void HalfEdgeMesh<VertexT, NormalT>::removeDanglingArtifacts(int threshold)
 {
     vector<Region<VertexT, NormalT>*> todelete;
 
-    for(int i=0; i<m_faces.size(); i++)
+    for(size_t i=0; i<m_faces.size(); i++)
     {
         if(m_faces[i]->m_used == false)
         {
@@ -700,11 +700,11 @@ void HalfEdgeMesh<VertexT, NormalT>::removeDanglingArtifacts(int threshold)
         }
     }
 
-    for(int i=0; i<todelete.size(); i++ )
+    for(size_t i=0; i<todelete.size(); i++ )
         deleteRegion(todelete[i]);
 
     //reset all used variables
-    for(int i=0; i<m_faces.size(); i++)
+    for(size_t i=0; i<m_faces.size(); i++)
         m_faces[i]->m_used = false;
 }
 
@@ -721,20 +721,20 @@ bool HalfEdgeMesh<VertexT, NormalT>::safeCollapseEdge(HEdge* edge)
 
     //Check for redundant edges
     int edgeCnt = 0;
-    for (int i = 0; i<edge->start->out.size(); i++)
+    for (size_t i = 0; i<edge->start->out.size(); i++)
         if (edge->start->out[i]->end == edge->end)
             edgeCnt++;
     if(edgeCnt != 1)
         return false;
 
     //Avoid creation of edges without faces
-    if(edge->face != 0 && edge->next->pair->face == 0 && edge->next->next->pair->face == 0
-            || edge->pair->face != 0 && edge->pair->next->pair->face == 0 && edge->pair->next->next->pair->face == 0)
+    if( ( edge->face != 0 && edge->next->pair->face == 0 && edge->next->next->pair->face == 0 )
+            || ( edge->pair->face != 0 && edge->pair->next->pair->face == 0 && edge->pair->next->next->pair->face == 0 ) )
         return false;
 
     //Check for triangle hole
-    for(int o1 = 0; o1<edge->end->out.size(); o1++)
-        for(int o2 = 0; o2 < edge->end->out[o1]->end->out.size(); o2++)
+    for(size_t o1 = 0; o1<edge->end->out.size(); o1++)
+        for(size_t o2 = 0; o2 < edge->end->out[o1]->end->out.size(); o2++)
             if(edge->end->out[o1]->face == 0 && edge->end->out[o1]->end->out[o2]->face == 0 && edge->end->out[o1]->end->out[o2]->end == edge->start)
                 return false;
 
@@ -742,7 +742,7 @@ bool HalfEdgeMesh<VertexT, NormalT>::safeCollapseEdge(HEdge* edge)
     //Move edge->start and check for flickering
     VertexT origin = edge->start->m_position;
     edge->start->m_position = (edge->start->m_position + edge->end->m_position)*0.5;
-    for(int o = 0; o<edge->start->out.size(); o++)
+    for(size_t o = 0; o<edge->start->out.size(); o++)
         if(edge->start->out[o]->pair->face != edge->pair->face)
             if (edge->start->out[o]->pair->face != 0 && edge->start->out[o]->pair->face->m_region->detectFlicker(edge->start->out[o]->pair->face))
             {
@@ -753,7 +753,7 @@ bool HalfEdgeMesh<VertexT, NormalT>::safeCollapseEdge(HEdge* edge)
     //Move edge->end and check for flickering
     origin = edge->end->m_position;
     edge->end->m_position = (edge->start->m_position + edge->end->m_position)*0.5;
-    for(int o = 0; o<edge->end->out.size(); o++)
+    for(size_t o = 0; o<edge->end->out.size(); o++)
         if(edge->end->out[o]->pair->face != edge->pair->face)
             if (edge->end->out[o]->pair->face != 0 && edge->end->out[o]->pair->face->m_region->detectFlicker(edge->end->out[o]->pair->face))
             {
@@ -768,14 +768,14 @@ bool HalfEdgeMesh<VertexT, NormalT>::safeCollapseEdge(HEdge* edge)
 }
 
     template<typename VertexT, typename NormalT>
-void HalfEdgeMesh<VertexT, NormalT>::fillHoles(int max_size)
+void HalfEdgeMesh<VertexT, NormalT>::fillHoles(size_t max_size)
 {
     //holds all holes to close
     vector<vector<HEdge*> > holes;
 
     //walk through all edges and start hole finding
     //when pair has no face and a regression plane was applied
-    for(int i=0; i < m_faces.size(); i++)
+    for(size_t i=0; i < m_faces.size(); i++)
     {
         for(int k=0; k<3; k++)
         {
@@ -792,7 +792,7 @@ void HalfEdgeMesh<VertexT, NormalT>::fillHoles(int max_size)
                     next = 0;
                     contour.push_back(current);
                     //to ensure that there is no way back to the same vertex
-                    for (int e = 0; e<current->start->out.size(); e++)
+                    for (size_t e = 0; e<current->start->out.size(); e++)
                     {
                         if (current->start->out[e]->end == current->end)
                         {
@@ -824,7 +824,7 @@ void HalfEdgeMesh<VertexT, NormalT>::fillHoles(int max_size)
     }
 
     //collapse the holes
-    for(int h = 0; h<holes.size(); h++)
+    for(size_t h = 0; h<holes.size(); h++)
     {
         vector<HEdge*> current_hole = holes[h];
 
@@ -833,7 +833,7 @@ void HalfEdgeMesh<VertexT, NormalT>::fillHoles(int max_size)
         while(collapsedSomething)
         {
             collapsedSomething = false;
-            for(int e = 0; e<current_hole.size() && ! collapsedSomething; e++)
+            for(size_t e = 0; e<current_hole.size() && ! collapsedSomething; e++)
                 if(safeCollapseEdge(current_hole[e]))
                 {
                     collapsedSomething = true;
@@ -845,8 +845,8 @@ void HalfEdgeMesh<VertexT, NormalT>::fillHoles(int max_size)
         while(current_hole.size()>0)
         {
             bool stop = false;
-            for(int i = 0; i<current_hole.size() && !stop; i++)
-                for(int j = 0; j<current_hole.size() && !stop; j++)
+            for(size_t i = 0; i<current_hole.size() && !stop; i++)
+                for(size_t j = 0; j<current_hole.size() && !stop; j++)
                     if(current_hole.back()->end == current_hole[i]->start)
                         if(current_hole[i]->end == current_hole[j]->start)
                             if(current_hole[j]->end == current_hole.back()->start)
@@ -875,7 +875,7 @@ void HalfEdgeMesh<VertexT, NormalT>::fillHoles(int max_size)
     template<typename VertexT, typename NormalT>
 void HalfEdgeMesh<VertexT, NormalT>::dragOntoIntersection(Region<VertexT, NormalT>* plane, Region<VertexT, NormalT>* neighbor_region, VertexT& x, VertexT& direction)
 {
-    for (int i = 0; i<plane->m_faces.size(); i++)
+    for (size_t i = 0; i<plane->m_faces.size(); i++)
     {
         for(int k=0; k<=2; k++)
         {
@@ -891,10 +891,10 @@ void HalfEdgeMesh<VertexT, NormalT>::dragOntoIntersection(Region<VertexT, Normal
     template<typename VertexT, typename NormalT>
 void HalfEdgeMesh<VertexT, NormalT>::optimizePlaneIntersections()
 {
-    for (int i = 0; i<m_regions.size(); i++)
+    for (size_t i = 0; i<m_regions.size(); i++)
     {
         if (m_regions[i]->m_inPlane)
-            for(int j = i+1; j<m_regions.size(); j++)
+            for(size_t j = i+1; j<m_regions.size(); j++)
                 if(m_regions[j]->m_inPlane)
                 {
                     //calculate intersection between plane i and j
@@ -926,7 +926,7 @@ void HalfEdgeMesh<VertexT, NormalT>::optimizePlaneIntersections()
 vector<vector<HalfEdgeVertex<VertexT, NormalT>* > > HalfEdgeMesh<VertexT, NormalT>::findAllContours(float epsilon)
 {
     vector<vector<HalfEdgeVertex<VertexT, NormalT>* > > contours;
-    for (int i = 0; i< m_regions.size(); i++)
+    for (size_t i = 0; i< m_regions.size(); i++)
     {
         if(m_regions[i]->m_inPlane)
         {
@@ -940,10 +940,10 @@ vector<vector<HalfEdgeVertex<VertexT, NormalT>* > > HalfEdgeMesh<VertexT, Normal
     template<typename VertexT, typename NormalT>
 void HalfEdgeMesh<VertexT, NormalT>::restorePlanes()
 {
-    for(int r=0; r<m_regions.size(); r++)
+    for(size_t r=0; r<m_regions.size(); r++)
         //drag points into the regression plane
         if( m_regions[r]->m_inPlane)
-            for(int i=0; i<m_regions[r]->m_faces.size(); i++)
+            for(size_t i=0; i<m_regions[r]->m_faces.size(); i++)
             {
                 for(int p=0; p<3; p++)
                 {
@@ -1096,7 +1096,7 @@ void HalfEdgeMesh<VertexT, NormalT>::regionsToBuffer(
      * that was used until now.
      */
     int vncUsed=0, indexUsed=0;
-    for(int h=0; h<regions.size(); ++h)
+    for(size_t h=0; h<regions.size(); ++h)
     {
         //cout << "Copying " << h << "th Region." << endl;
         //cout << "Region Nr: " << regions[h] << endl;
@@ -1117,7 +1117,7 @@ void HalfEdgeMesh<VertexT, NormalT>::regionsToBuffer(
             b = 0.0;
         }
 
-        for(int j=0; j<m_regions[i]->m_faces.size(); ++j)
+        for(size_t j=0; j<m_regions[i]->m_faces.size(); ++j)
         {
 
             /* a small check to see whether we will run out of memory. */
@@ -1269,7 +1269,7 @@ void HalfEdgeMesh<VertexT, NormalT>::retesselateRegionsToBuffer(
     int pointsUsed = vncBufferSize;
     int indicesUsed = indexBufferSize;
     // check all regions if they are to be retesselated (only if they lie in a regression plane!)
-    for(int h=0; h<plane_regions.size(); ++h)
+    for(size_t h=0; h<plane_regions.size(); ++h)
     {
         int i = plane_regions[h];
         float r, g, b;
@@ -1393,8 +1393,6 @@ void HalfEdgeMesh<VertexT, NormalT>::finalizeAndRetesselate(bool genTextures)
 
     cout << timestamp << "Finalizing mesh." << endl;
 
-    int vnc_reallocate = 1;
-    int index_reallocate = 1;
     this->m_nVertices    = (uint32_t)m_vertices.size();
     this->m_nFaces 	     = (uint32_t)m_faces.size();
     this->m_nTextures    = 0;
@@ -1411,7 +1409,7 @@ void HalfEdgeMesh<VertexT, NormalT>::finalizeAndRetesselate(bool genTextures)
     this->m_textureBuffer 	   = new unsigned int[m_regions.size()]; 
 
     // Reset used variable. Necessarsy to use getContours() in tesselator-class. 
-    for(int j=0; j<m_faces.size(); j++)
+    for(size_t j=0; j<m_faces.size(); j++)
         for(int k=0; k<3; k++)
             (*m_faces[j])[k]->used=false;
 
@@ -1420,7 +1418,7 @@ void HalfEdgeMesh<VertexT, NormalT>::finalizeAndRetesselate(bool genTextures)
     vector<int> normal_regions;
 
     // check for all regions whether they should be retesselated.
-    for(int i=0; i<m_regions.size(); ++i)
+    for(size_t i=0; i<m_regions.size(); ++i)
     {
         if(m_regions[i]->m_inPlane)
         {
