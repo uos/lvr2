@@ -24,7 +24,7 @@ Texture<VertexT, NormalT>::Texture(PointCloudManager<VertexT, NormalT>* pm, Regi
 			v2 = v1.cross(n);
 			a_min = FLT_MAX; a_max = FLT_MIN; b_min = FLT_MAX; b_max = FLT_MIN;
 
-			for(int c = 0; c < HOuter_contour.size(); c++)
+			for(size_t c = 0; c < HOuter_contour.size(); c++)
 			{
 				int r = 0;
 				int s = 1;

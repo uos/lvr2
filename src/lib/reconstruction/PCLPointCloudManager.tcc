@@ -94,7 +94,7 @@ void PCLPointCloudManager<VertexT, NormalT>::getkClosestVertices(const VertexT &
     qp.z = v.z;
 
     // Query tree
-    int res = m_kdTree->nearestKSearch(qp, k, k_indices, k_distances);
+    size_t res = m_kdTree->nearestKSearch(qp, k, k_indices, k_distances);
 
     // Check number of found neighbours
     if(res != k)
@@ -103,7 +103,7 @@ void PCLPointCloudManager<VertexT, NormalT>::getkClosestVertices(const VertexT &
     }
 
     // Parse result
-    for(int i = 0; i < res; i++)
+    for(size_t i = 0; i < res; i++)
     {
         int index = k_indices[i];
         if(this->m_colors != 0)
@@ -134,7 +134,7 @@ void PCLPointCloudManager<VertexT, NormalT>::getkClosestNormals(const VertexT &n
       qp.z = n.z;
 
       // Query tree
-      int res = m_kdTree->nearestKSearch(qp, k, k_indices, k_distances);
+      size_t res = m_kdTree->nearestKSearch(qp, k, k_indices, k_distances);
 
       // Check number of found neighbours
       if(res != k)
@@ -143,7 +143,7 @@ void PCLPointCloudManager<VertexT, NormalT>::getkClosestNormals(const VertexT &n
       }
 
       // Parse result
-      for(int i = 0; i < res; i++)
+      for(size_t i = 0; i < res; i++)
       {
           int index = k_indices[i];
           nb.push_back(NormalT(m_pointNormals->points[index].data_c[0],

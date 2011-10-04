@@ -139,8 +139,6 @@ void HalfEdgeMesh::finalize(list<list<planarCluster> > &objects)
     float g[255];
     float b[255];
 
-    float c_r, c_g, c_b;
-
     for(int i = 0; i < 255; i++)
     {
          r[i] = (252 - i % 64 * 4) / 255.0;
@@ -408,7 +406,6 @@ void HalfEdgeMesh::classifyCluster(vector<planarCluster> &planes, list<list<plan
     // COGs.
 
     list<planarCluster> clustercluster;
-    int c = 0;
     for(size_t i = 0; i < planes.size(); i++)
     {
         //cout << i << " / " << planes.size() << endl;

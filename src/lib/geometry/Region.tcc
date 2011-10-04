@@ -34,7 +34,7 @@ vector<vector<HalfEdgeVertex<VertexT, NormalT>* > > Region<VertexT, NormalT>::ge
         return result;
     }
 
-	for (int i = 0; i < this->m_faces.size(); i++)
+	for (size_t i = 0; i < this->m_faces.size(); i++)
 	{
 		for (int k = 0; k < 3; k++)
 		{
@@ -42,7 +42,7 @@ vector<vector<HalfEdgeVertex<VertexT, NormalT>* > > Region<VertexT, NormalT>::ge
 			if(!current->used && (current->pair->face == 0 || current->pair->face->m_region != current->face->m_region))
 			{
 				vector<HalfEdgeVertex<VertexT, NormalT>* > contour;
-				Region<VertexT, NormalT>* region = this;
+				//Region<VertexT, NormalT>* region = this;
 
 				HEdge* next = 0;
 				while(current->used == false)
@@ -53,12 +53,12 @@ vector<vector<HalfEdgeVertex<VertexT, NormalT>* > > Region<VertexT, NormalT>::ge
 					//push the next vertex
 					contour.push_back(current->end);
 					//find next edge
-					for(int i = 0; i<current->end->out.size(); i++)
+					for(size_t i = 0; i<current->end->out.size(); i++)
 					{
-						if(!current->end->out[i]->used
+						if( !current->end->out[i]->used
 								&& current->end->out[i]->face && current->end->out[i]->face->m_region == this
-								&& (current->end->out[i]->pair->face == 0
-										|| current->end->out[i]->pair->face  && current->end->out[i]->pair->face->m_region != this))
+								&& (current->end->out[i]->pair->face == 0 
+										|| ( current->end->out[i]->pair->face  && current->end->out[i]->pair->face->m_region != this )))
 
 							next = current->end->out[i];
 					}
@@ -98,9 +98,9 @@ vector<vector<HalfEdgeVertex<VertexT, NormalT>* > > Region<VertexT, NormalT>::ge
 	float zmax = -FLT_MAX;
 
 	int outer = -1;
-	for(int c=0; c<result.size(); c++)
+	for(size_t c=0; c<result.size(); c++)
 	{
-		for(int v=0; v<result[c].size(); v++)
+		for(size_t v=0; v<result[c].size(); v++)
 		{
 			if(result[c][v]->m_position.x > xmax)
 			{
@@ -138,7 +138,7 @@ NormalT Region<VertexT, NormalT>::calcNormal()
 {
 	NormalT result;
     //search for a valid normal of region
-	int i = 0;
+	size_t i = 0;
 	do
 	{
 		result = m_faces[i++]->getFaceNormal();
@@ -151,7 +151,7 @@ NormalT Region<VertexT, NormalT>::calcNormal()
 	int fit=0;
 	int nofit=0;
 
-	for(int i=0; i<m_faces.size(); i++)
+	for(size_t i=0; i<m_faces.size(); i++)
 	{
 		NormalT comp = m_faces[i]->getFaceNormal();
 		comp.normalize();
@@ -241,7 +241,7 @@ void Region<VertexT, NormalT>::regressionPlane()
     }
 
     //drag points into the regression plane
-    for(int i=0; i<m_faces.size(); i++)
+    for(size_t i=0; i<m_faces.size(); i++)
     {
         for(int p=0; p<3; p++)
         {
@@ -270,7 +270,7 @@ bool Region<VertexT, NormalT>::detectFlicker(HFace* f)
 template<typename VertexT, typename NormalT>
 Region<VertexT, NormalT>::~Region()
 {
-	for (int i = 0; i<m_faces.size(); i++)
+	for (size_t i = 0; i<m_faces.size(); i++)
 		m_faces[i]->m_region = 0;
 	m_faces.clear();
 }

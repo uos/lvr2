@@ -33,8 +33,8 @@ void PPMIO<ColorType>::write(string filename)
     if(out.good())
     {
     	out<<"P6"<<" "<<m_sizeX<<" "<<m_sizeY<<" "<<"255"<<endl;
-    	for(int y = 0; y<m_sizeY; y++)
-    		for(int x = 0; x<m_sizeX; x++)
+    	for(size_t y = 0; y<m_sizeY; y++)
+    		for(size_t x = 0; x<m_sizeX; x++)
     			out<<m_data[y][x].r<<m_data[y][x].g<<m_data[y][x].b;
     }
 

@@ -137,9 +137,9 @@ void BaseVertex::rotateCM(const Matrix4 &m)
     _y = x * m[1 ] + y * m[5 ] + z * m[9 ];
     _z = x * m[2 ] + y * m[6 ] + z * m[10];
 
-    x = x;
-    y = y;
-    z = z;
+    x = _x;
+    y = _y;
+    z = _z;
 }
 
 
