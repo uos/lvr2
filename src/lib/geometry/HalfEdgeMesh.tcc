@@ -1392,8 +1392,6 @@ void HalfEdgeMesh<VertexT, NormalT>::finalizeAndRetesselate(bool genTextures)
 
     cout << timestamp << "Finalizing mesh." << endl;
 
-    //int vnc_reallocate = 1;
-    //int index_reallocate = 1;
     this->m_nVertices    = (uint32_t)m_vertices.size();
     this->m_nFaces 	     = (uint32_t)m_faces.size();
     this->m_nTextures    = 0;

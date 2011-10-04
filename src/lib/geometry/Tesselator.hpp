@@ -17,15 +17,9 @@ using namespace std;
 
 #include "Vertex.hpp"
 #include "Normal.hpp"
-//#include "BaseMesh.hpp"
 #include "HalfEdgeVertex.hpp"
 #include "HalfEdge.hpp"
-//#include "HalfEdgeFace.hpp"
 #include "Region.hpp"
-
-//#ifndef DB_TESS
-//#define DB_TESS
-//#endif
 
 namespace lssr
 {
@@ -47,9 +41,10 @@ class Tesselator
 public:
 	typedef HalfEdgeVertex<VertexT, NormalT> HVertex;
 
-
     /**
      * @brief Initializes the Tesselator
+     *
+     * This is necessary before using the tesselator functions.
      */
     static void init(void);
 
@@ -63,7 +58,6 @@ public:
      * @return Returns a list of HalfEdgeVertices. Every 3-points represent a triangle.
      *         
      */
-    //static vector<HVertex> tesselate(vector<stack<HVertex*> > borderVertices);
     static void tesselate(vector<vector<HVertex*> > borderVertices);
     
     /**
@@ -75,7 +69,6 @@ public:
      * @return Returns a list of HalfEdgeVertices. Every 3-points represent a triangle.
      *         
      */
-    //static vector<HVertex> tesselate(Region<VertexT, NormalT> region);
     static void tesselate(Region<VertexT, NormalT> *region);
 
     /**
@@ -94,6 +87,8 @@ public:
                                       unsigned int   **indexBuffer,
                                       int *numberFaces,
                                       int *numVertices);
+    
+private:
     
     /**
      * @Brief Callback function
@@ -131,26 +126,31 @@ public:
 							 GLdouble weight[4],
 							 GLdouble **dataOut,
                              HVertex* userData);
-
-    static bool   m_tesselated;
-    static int    m_region;
-    //static vector<Vertex<float> > m_vertices;
-    static vector<HVertex> m_vertices;
-    static vector<Vertex<float> > m_triangles;
-    static GLUtesselator* m_tesselator;
-
-    static GLenum m_primitive;
-    static int    m_numContours;    
-    static bool   m_debug;
-    static NormalT m_normal;
-
-private:
     /* All Constructors shall be private since
        this class is just a collection of functions. */
     Tesselator();
+
     ~Tesselator();
+
     Tesselator(const Tesselator& rhs);
 
+
+    /** Variable declarations */
+
+    /* The tesselation object */
+    static GLUtesselator* m_tesselator;
+
+    /* List of vertices. used to keep track until tesselation ends */
+    static vector<HVertex> m_vertices;
+
+    /* List of triangles. used to keep track of triangles until tesselation ends */
+    static vector<Vertex<float> > m_triangles;
+
+    /* The current primitive-type. */
+    static GLenum m_primitive;
+
+    /* Number of already tesselated contours. Used for debugging */
+    static int    m_numContours;    
 }; /* end of class */
 
 } /* namespace lssr */
