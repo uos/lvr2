@@ -11,8 +11,8 @@ include_directories(${LSSR_SOURCE_DIR}/ext/stann)
 include_directories(${LSSR_SOURCE_DIR})
 include_directories(${LSSR_SOURCE_DIR}/src/lib)
 
-set( CMAKE_CXX_FLAGS         "-g" )
-set( CMAKE_CXX_FLAGS_RELEASE "-O4 -msse3 -Wno-deprecated-declarations -Wunused" )
+set( CMAKE_CXX_FLAGS         "-O3 -g" )
+set( CMAKE_CXX_FLAGS_RELEASE "-O3 -msse3 -Wno-deprecated-declarations -Wno-unused" )
 set( CMAKE_CXX_FLAGS_DEBUG   "-g -Wall" )
 
 ###############################################################
