@@ -580,7 +580,7 @@ void HalfEdgeMesh<VertexT, NormalT>::optimizePlanes(
         int small_region_size,
         bool remove_flickering)
 {
-    cout << timestamp << "Starting plane optimization with threshold " << angle << endl;
+    cout << endl << timestamp << "Starting plane optimization with threshold " << angle << endl;
 
     // Magic numbers
     int default_region_threshold = (int)10*log(m_faces.size());
@@ -643,7 +643,7 @@ void HalfEdgeMesh<VertexT, NormalT>::optimizePlanes(
     // Delete too small regions
     if(small_region_size)
     {
-        string msg = timestamp.getElapsedTime() + "Deleting small regions.";
+        string msg = timestamp.getElapsedTime() + "Deleting small regions ";
         ProgressBar progress(smallRegions.size(), msg);
         for(size_t i=0; i< smallRegions.size(); i++)
         {
@@ -651,6 +651,7 @@ void HalfEdgeMesh<VertexT, NormalT>::optimizePlanes(
             ++progress;
         }
     }
+    cout << endl;
 
     //Delete flickering faces
     if(remove_flickering)
@@ -685,6 +686,9 @@ void HalfEdgeMesh<VertexT, NormalT>::removeDanglingArtifacts(int threshold)
 {
     vector<Region<VertexT, NormalT>*> todelete;
 
+    string msg = timestamp.getElapsedTime() + "Removing dangling artifacts ";
+    ProgressBar progress(m_faces.size(), msg);
+
     for(size_t i=0; i<m_faces.size(); i++)
     {
         if(m_faces[i]->m_used == false)
@@ -698,6 +702,7 @@ void HalfEdgeMesh<VertexT, NormalT>::removeDanglingArtifacts(int threshold)
                 delete region;
             }
         }
+        ++progress;
     }
 
     for(size_t i=0; i<todelete.size(); i++ )
@@ -774,7 +779,7 @@ void HalfEdgeMesh<VertexT, NormalT>::fillHoles(size_t max_size)
     vector<vector<HEdge*> > holes;
 
     //walk through all edges and start hole finding
-    //when pair has no face and a regression plane was applied
+    //when pair has no face
     for(size_t i=0; i < m_faces.size(); i++)
     {
         for(int k=0; k<3; k++)
@@ -824,6 +829,9 @@ void HalfEdgeMesh<VertexT, NormalT>::fillHoles(size_t max_size)
     }
 
     //collapse the holes
+    string msg = timestamp.getElapsedTime() + "Filling holes ";
+    ProgressBar progress(holes.size(), msg);
+
     for(size_t h = 0; h<holes.size(); h++)
     {
         vector<HEdge*> current_hole = holes[h];
@@ -868,7 +876,9 @@ void HalfEdgeMesh<VertexT, NormalT>::fillHoles(size_t max_size)
             if(!stop)
                 current_hole.pop_back();
         }
+        ++progress;
     }
+    cout << endl;
 }
 
 
@@ -891,6 +901,9 @@ void HalfEdgeMesh<VertexT, NormalT>::dragOntoIntersection(Region<VertexT, Normal
     template<typename VertexT, typename NormalT>
 void HalfEdgeMesh<VertexT, NormalT>::optimizePlaneIntersections()
 {
+    string msg = timestamp.getElapsedTime() + "Optimizing plane intersections ";
+    ProgressBar progress(m_regions.size(), msg);
+
     for (size_t i = 0; i<m_regions.size(); i++)
     {
         if (m_regions[i]->m_inPlane)
@@ -919,6 +932,7 @@ void HalfEdgeMesh<VertexT, NormalT>::optimizePlaneIntersections()
                         dragOntoIntersection(m_regions[j], m_regions[i], x, direction);
                     }
                 }
+        ++progress;
     }
 }
 
