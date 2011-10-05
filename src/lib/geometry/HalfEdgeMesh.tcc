@@ -686,9 +686,6 @@ void HalfEdgeMesh<VertexT, NormalT>::removeDanglingArtifacts(int threshold)
 {
     vector<Region<VertexT, NormalT>*> todelete;
 
-    string msg = timestamp.getElapsedTime() + "Removing dangling artifacts ";
-    ProgressBar progress(m_faces.size(), msg);
-
     for(size_t i=0; i<m_faces.size(); i++)
     {
         if(m_faces[i]->m_used == false)
@@ -702,11 +699,16 @@ void HalfEdgeMesh<VertexT, NormalT>::removeDanglingArtifacts(int threshold)
                 delete region;
             }
         }
-        ++progress;
     }
 
+    ///delete dangling artifacts
+    string msg = timestamp.getElapsedTime() + "Removing dangling artifacts ";
+    ProgressBar progress(todelete.size(), msg);
     for(size_t i=0; i<todelete.size(); i++ )
+    {
         deleteRegion(todelete[i]);
+        ++progress;
+    }
 
     //reset all used variables
     for(size_t i=0; i<m_faces.size(); i++)
