@@ -84,16 +84,16 @@ public:
 protected:
 
 	/// An interlaced buffer for vertex normals
-	float*						  m_normalBuffer;
+	float*					m_normalBuffer;
 
 	/// The vertex normals
-	vector<VertexT>            m_normals;
+	vector<VertexT>         m_normals;
 
 	/// The vertices
-	vector<VertexT>            m_vertices;
+	vector<VertexT>         m_vertices;
 
 	/// The index list
-	list<uint>               m_triangles;
+	list<uint>              m_triangles;
 
 };
 

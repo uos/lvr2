@@ -12,7 +12,7 @@
 using std::cout;
 using std::endl;
 
-#include "model3d/BaseVertex.h"
+#include "geometry/Vertex.hpp"
 
 ViewerType PerspectiveViewer::type()
 {
@@ -161,8 +161,8 @@ void PerspectiveViewer::setProjectionMode(ProjectionMode mode)
 		}
 
 		// Setup scene boundary
-		Vertex v_min = m_boundingBox.v_min;
-		Vertex v_max = m_boundingBox.v_max;
+		Vertex<float> v_min = m_boundingBox.getMin();
+		Vertex<float> v_max = m_boundingBox.getMax();
 		m_camera[mode]->setSceneBoundingBox(qglviewer::Vec(v_min.x, v_min.y, v_min.z),
 											qglviewer::Vec(v_max.x, v_max.y, v_max.z));
 

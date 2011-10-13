@@ -1222,7 +1222,7 @@ void HalfEdgeMesh<VertexT, NormalT>::regionsToBuffer(
                 (*normal)[vncUsed + 1] = (*m_regions[i]->m_faces[j])(k)->m_normal[1];
                 (*normal)[vncUsed + 2] = (*m_regions[i]->m_faces[j])(k)->m_normal[2];
 
-                if(typeid( *(*m_regions[i]->m_faces[j])(k) ) == typeid(ColorVertex<float>())){
+                if(typeid( *(*m_regions[i]->m_faces[j])(k) ) == typeid(ColorVertex<float, unsigned char>())){
                 	(*color)[vncUsed + 0] = (*m_regions[i]->m_faces[j])(k)->m_position.r / 255.0f;
                 	(*color)[vncUsed + 1] = (*m_regions[i]->m_faces[j])(k)->m_position.g / 255.0f;
                 	(*color)[vncUsed + 2] = (*m_regions[i]->m_faces[j])(k)->m_position.b / 255.0f;

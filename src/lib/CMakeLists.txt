@@ -1,14 +1,22 @@
 set(LSSR_SOURCES
-	io/AsciiIO.cpp
 	io/IOFactory.cpp
-	io/MeshLoader.cpp
-	io/Message.cpp
-	io/PLYIO.cpp
-	io/PointLoader.cpp
-	io/Progress.cpp
-	io/Timestamp.cpp
-	io/UosIO.cpp
+    io/PLYIO.cpp
+    io/AsciiIO.cpp
+    io/UosIO.cpp
+    io/Progress.cpp
+    io/Timestamp.cpp
+    io/MeshLoader.cpp
+    io/PointLoader.cpp
+    io/Message.cpp
+    display/CoordinateAxes.cpp
+    display/Renderable.cpp
+    display/PointCloud.cpp
+    display/MultiPointCloud.cpp
+    display/StaticMesh.cpp
+    display/ColorMap.cpp
+    display/GroundPlane.cpp
 )
+
 
 add_library(lssr STATIC ${LSSR_SOURCES})
 

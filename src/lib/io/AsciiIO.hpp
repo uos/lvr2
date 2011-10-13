@@ -50,7 +50,7 @@ public:
      *
      * @param filename      The file to read
      */
-    void read(string filename);
+    virtual void read(string filename);
 
     /// TODO: Coordinate mapping for ascii files
     static size_t countLines(string filename);

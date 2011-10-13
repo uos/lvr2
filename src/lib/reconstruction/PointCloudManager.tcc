@@ -46,7 +46,6 @@ const VertexT PointCloudManager<VertexT, NormalT>::operator[](const size_t& inde
 template<typename VertexT, typename NormalT>
 void PointCloudManager<VertexT, NormalT>::readFromFile(string filename)
 {
-
     // Try to parse file
     IOFactory io(filename);
 
@@ -69,10 +68,10 @@ void PointCloudManager<VertexT, NormalT>::readFromFile(string filename)
     }
     else
     {
-        Timestamp timestamp;
         cout << timestamp << "PointCloudManager::readFromFile: Unable to read point cloud data from "
              << filename << endl;
     }
+
 }
 
 }

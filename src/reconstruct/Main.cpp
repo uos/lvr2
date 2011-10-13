@@ -143,16 +143,16 @@ int main(int argc, char** argv)
 
     // Create a point cloud manager
     string pcm_name = options.getPCM();
-    PointCloudManager<ColorVertex<float>, Normal<float> >* pcm;
+    PointCloudManager<ColorVertex<float, unsigned char>, Normal<float> >* pcm;
     if(pcm_name == "PCL")
     {
         cout << timestamp << "Creating PCL point cloud manager." << endl;
-        pcm = new PCLPointCloudManager<ColorVertex<float>, Normal<float> > ( options.getInputFileName());
+        pcm = new PCLPointCloudManager<ColorVertex<float, unsigned char>, Normal<float> > ( options.getInputFileName());
     }
     else
     {
         cout << timestamp << "Creating STANN point cloud manager." << endl;
-        pcm = new StannPointCloudManager<ColorVertex<float>, Normal<float> > ( options.getInputFileName());
+        pcm = new StannPointCloudManager<ColorVertex<float, unsigned char>, Normal<float> > ( options.getInputFileName());
     }
 
     pcm->setKD(options.getKd());
@@ -162,7 +162,7 @@ int main(int argc, char** argv)
 
     // Create an empty mesh
     //TriangleMesh<Vertex<float>, Normal<float> > mesh;
-    HalfEdgeMesh<ColorVertex<float>, Normal<float> > mesh(pcm);
+    HalfEdgeMesh<ColorVertex<float, unsigned char>, Normal<float> > mesh(pcm);
 
     // Determine weather to use intersections or voxelsize
     float resolution;
@@ -179,7 +179,7 @@ int main(int argc, char** argv)
     }
 
     // Create a new reconstruction object
-    FastReconstruction<ColorVertex<float>, Normal<float> > reconstruction(*pcm, resolution, useVoxelsize);
+    FastReconstruction<ColorVertex<float, unsigned char>, Normal<float> > reconstruction(*pcm, resolution, useVoxelsize);
     reconstruction.getMesh(mesh);
 
     mesh.removeDanglingArtifacts(options.getDanglingArtifacts());

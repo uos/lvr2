@@ -632,7 +632,7 @@ int PLYIO::readColorCb( p_ply_argument argument )
 int PLYIO::readFaceCb( p_ply_argument argument )
 {
 
-    float ** face;
+    unsigned int ** face;
     long int length, value_index;
     ply_get_argument_user_data( argument, (void **) &face, NULL );
     ply_get_argument_property( argument, NULL, &length, &value_index );

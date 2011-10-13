@@ -13,13 +13,19 @@
 #include <string>
 using std::string;
 
-#include "model3d/Renderable.h"
+#include "display/Renderable.hpp"
 
 #include "../app/Types.h"
 #include "../viewers/Viewer.h"
 #include "../widgets/CustomTreeWidgetItem.h"
 
+using lssr::Renderable;
+using lssr::Vertex;
+
 class DataManager;
+
+using lssr::Renderable;
+using lssr::BoundingBox;
 
 class DataCollector
 {
@@ -28,7 +34,7 @@ public:
 	virtual ~DataCollector();
 	Renderable* renderable();
 	string	name();
-	BoundingBox* boundingBox() { return m_renderable->boundingBox();}
+	BoundingBox<Vertex<float> >* boundingBox() { return m_renderable->boundingBox();}
 
 	virtual CustomTreeWidgetItem* treeItem() { return m_treeItem;}
 	virtual ViewerType supportedViewerType() = 0;

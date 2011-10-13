@@ -24,8 +24,8 @@ ViewerApplication::ViewerApplication( int argc, char ** argv )
 	m_viewerManager = new ViewerManager(m_qMainWindow);
 	m_viewer = m_viewerManager->current();
 
-	m_dataManager = new DataManager;
 
+	m_factory = new DataCollectorFactory;
 
 	// Show window
 	m_qMainWindow->show();
@@ -36,7 +36,7 @@ ViewerApplication::ViewerApplication( int argc, char ** argv )
 	int i;
 	for ( i = 1; i < argc; i++ ) {
 		printf( "Loading »%s«…\n", argv[i] );
-		m_dataManager->loadFile( argv[i] );
+		openFile(string(argv[i]));
 	}
 
 	// Call a resize to fit viewers to their parent widgets
@@ -54,7 +54,7 @@ void ViewerApplication::connectEvents()
 
 	// File operations
 	QObject::connect(m_mainWindowUi->action_Open , SIGNAL(activated()),
-			m_dataManager, SLOT(openFile()));
+			this, SLOT(openFile()));
 
 	// Projection settings
 	QObject::connect(m_mainWindowUi->actionShow_entire_scene, SIGNAL(activated()),
@@ -68,6 +68,20 @@ void ViewerApplication::connectEvents()
 	QObject::connect(m_mainWindowUi->actionPerspective_projection, SIGNAL(activated()),
 			this, SLOT(setViewerModePerspective()));
 
+	// Render Modes
+	QObject::connect(m_mainWindowUi->actionVertexView, SIGNAL(activated()),
+	        this, SLOT(meshRenderModeChanged()));
+
+	QObject::connect(m_mainWindowUi->actionSurfaceView, SIGNAL(activated()),
+            this, SLOT(meshRenderModeChanged()));
+
+	QObject::connect(m_mainWindowUi->actionWireframeView, SIGNAL(activated()),
+	            this, SLOT(meshRenderModeChanged()));
+
+	QObject::connect(m_mainWindowUi->actionPointCloudView, SIGNAL(activated()),
+	                this, SLOT(pointRenderModeChanged()));
+
+
 	// Fog settings
 	QObject::connect(m_mainWindowUi->actionToggle_fog, SIGNAL(activated()),
 			this, SLOT(toggleFog()));
@@ -75,14 +89,17 @@ void ViewerApplication::connectEvents()
 				this, SLOT(displayFogSettingsDialog()));
 
 	// Communication between the manager objects
-	QObject::connect(m_dataManager, SIGNAL(dataCollectorCreated(DataCollector*)),
-					m_viewerManager, SLOT(addDataCollector(DataCollector*)));
+//	QObject::connect(m_dataManager, SIGNAL(dataCollectorCreated(DataCollector*)),
+//					m_viewerManager, SLOT(addDataCollector(DataCollector*)));
+//
+//    QObject::connect(m_dataManager, SIGNAL(dataCollectorCreated(DataCollector*)),
+//                    this, SLOT(dataCollectorAdded(DataCollector*)));
 
-    QObject::connect(m_dataManager, SIGNAL(dataCollectorCreated(DataCollector*)),
-                    this, SLOT(dataCollectorAdded(DataCollector*)));
+    QObject::connect(m_factory, SIGNAL(dataCollectorCreated(DataCollector*)),
+                        m_viewerManager, SLOT(addDataCollector(DataCollector*)));
 
-	QObject::connect(m_dataManager, SIGNAL(dataCollectorUpdate(DataCollector*)),
-					m_viewerManager, SLOT(updateDataObject(DataCollector*)));
+    QObject::connect(m_factory, SIGNAL(dataCollectorCreated(DataCollector*)),
+                        this, SLOT(dataCollectorAdded(DataCollector*)));
 
 	// Communication between tree widget items
 	QObject::connect(m_sceneDockWidgetUi->treeWidget, SIGNAL(itemClicked(QTreeWidgetItem*, int)),
@@ -103,6 +120,82 @@ void ViewerApplication::connectEvents()
 	// Tree widget context menu actions
 	connect(m_sceneDockWidgetUi->actionExport_selected_scans, SIGNAL(triggered()), this, SLOT(treeWidgetExport()));
 
+}
+
+void ViewerApplication::openFile()
+{
+    QFileDialog file_dialog;
+    QStringList file_names;
+    QStringList file_types;
+
+    file_types << "Point Clouds (*.pts)"
+            //             << "Points and Normals (*.nor)"
+            << "PLY Models (*.ply)"
+            //             << "Polygonal Meshes (*.bor)"
+            << "All Files (*.*)";
+
+
+    //Set Title
+    file_dialog.setWindowTitle("Open File");
+    file_dialog.setFileMode(QFileDialog::ExistingFile);
+    file_dialog.setFilters(file_types);
+
+    if(file_dialog.exec()){
+        file_names = file_dialog.selectedFiles();
+    } else {
+        return;
+    }
+
+    //Get filename from list
+    string file_name = file_names.constBegin()->toStdString();
+    m_factory->create(file_name);
+
+
+
+}
+
+void ViewerApplication::meshRenderModeChanged()
+{
+    QTreeWidgetItem* item = m_sceneDockWidgetUi->treeWidget->currentItem();
+    if(item)
+    {
+        if(item->type() == TriangleMeshItem)
+        {
+            TriangleMeshTreeWidgetItem* t_item = static_cast<TriangleMeshTreeWidgetItem*>(item);
+
+            // Setup new render mode
+            lssr::StaticMesh* mesh = static_cast<lssr::StaticMesh*>(t_item->renderable());
+
+            int renderMode = 0;
+
+            // Check states of buttons
+            if(m_mainWindowUi->actionSurfaceView->isChecked()) renderMode |= lssr::RenderSurfaces;
+            if(m_mainWindowUi->actionWireframeView->isChecked()) renderMode |= lssr::RenderTriangles;
+
+            // Set proper render mode and forbid nothing selected
+            if(renderMode != 0)
+            {
+                mesh->setRenderMode(renderMode);
+            }
+
+            // Avoid inconsistencies in button toggle states
+            m_mainWindowUi->actionSurfaceView->setChecked(mesh->getRenderMode() & lssr::RenderSurfaces);
+            m_mainWindowUi->actionWireframeView->setChecked(mesh->getRenderMode() & lssr::RenderTriangles);
+
+            // Force redisplay
+            m_viewer->updateGL();
+        }
+    }
+}
+
+void ViewerApplication::pointRenderModeChanged()
+{
+
+}
+
+void ViewerApplication::openFile(string filename)
+{
+    m_factory->create(filename);
 }
 
 void ViewerApplication::transformObject()
@@ -152,7 +245,8 @@ void ViewerApplication::treeWidgetExport()
         if(item->type() > 1000)
         {
             CustomTreeWidgetItem* c_item = static_cast<CustomTreeWidgetItem*>(item);
-            m_dataManager->exportData(c_item);
+            //m_dataManager->exportData(c_item);
+            cout << "TODO: Export data" << endl;
         }
     }
 }
@@ -162,6 +256,7 @@ void ViewerApplication::dataCollectorAdded(DataCollector* d)
     if(d->treeItem())
     {
         m_sceneDockWidgetUi->treeWidget->addTopLevelItem(d->treeItem());
+        updateToolbarActions(d->treeItem());
     }
 }
 
@@ -174,15 +269,16 @@ void ViewerApplication::treeItemClicked(QTreeWidgetItem* item, int d)
         if(custom_item->centerOnClick())
         {
             m_viewer->centerViewOnObject(custom_item->renderable());
+            updateToolbarActions(custom_item);
         }
     }
 
-    // Parse special operations of diffrent items
+    // Parse special operations of different items
 }
 
 void ViewerApplication::treeItemChanged(QTreeWidgetItem* item, int d)
 {
-    if(item->type() == PointCloudItem)
+    if(item->type() > 1000)
     {
         CustomTreeWidgetItem* custom_item = static_cast<CustomTreeWidgetItem*>(item);
         custom_item->renderable()->setActive(custom_item->checkState(d) == Qt::Checked);
@@ -197,12 +293,40 @@ void ViewerApplication::treeSelectionChanged()
     while (*it) {
         if( (*it)->type() >= ServerItem)
         {
+           // Get selected item
            CustomTreeWidgetItem* item = static_cast<CustomTreeWidgetItem*>(*it);
            item->renderable()->setSelected(item->isSelected());
+
+           // Update render modes in tool bar
+           updateToolbarActions(item);
+
         }
         ++it;
     }
     m_viewer->updateGL();
+}
+
+void ViewerApplication::updateToolbarActions(CustomTreeWidgetItem* item)
+{
+    bool point_support = item->supportsMode(Points);
+    bool pn_support = item->supportsMode(PointNormals);
+    bool vn_support = item->supportsMode(VertexNormals);
+    bool mesh_support = item->supportsMode(Mesh);
+
+    if(mesh_support)
+    {
+        m_mainWindowUi->actionVertexView->setEnabled(true);
+        m_mainWindowUi->actionWireframeView->setEnabled(true);
+        m_mainWindowUi->actionSurfaceView->setEnabled(true);
+    }
+    else
+    {
+        m_mainWindowUi->actionVertexView->setEnabled(false);
+        m_mainWindowUi->actionWireframeView->setEnabled(false);
+        m_mainWindowUi->actionSurfaceView->setEnabled(false);
+    }
+
+    m_mainWindowUi->actionPointCloudView->setEnabled(point_support);
 }
 
 void ViewerApplication::toggleFog()

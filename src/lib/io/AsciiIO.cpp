@@ -7,6 +7,8 @@
 
 #include <fstream>
 #include <string.h>
+#include <algorithm>
+
 using std::ifstream;
 
 #include <boost/filesystem.hpp>
@@ -18,8 +20,8 @@ using std::ifstream;
 namespace lssr
 {
 
-void AsciiIO::read(string filename) {
-
+void AsciiIO::read(string filename)
+{
     // Check extension
     boost::filesystem::path selectedFile(filename);
     string extension(selectedFile.extension().c_str());
