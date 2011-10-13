@@ -20,8 +20,15 @@
 #include <cstddef>
 #include <cstdlib>
 
+#include <vector>
+#include <algorithm>
+using std::vector;
+using std::pair;
+
 namespace lssr
 {
+
+typedef pair<size_t, size_t> indexPair;
 
 /**
  * \class PointLoader PointLoader.hpp "io/PointLoader.hpp"
@@ -142,7 +149,7 @@ class PointLoader {
          * \param n  Amount of point color sets in array.
          * \return   %Point color array.
          **/
-        virtual uint8_t* getPointColorArray( size_t &n );
+        virtual unsigned char* getPointColorArray( size_t &n );
 
 
         /**
@@ -218,7 +225,7 @@ class PointLoader {
          * \param n  Amount of point color sets in array.
          * \return   Indexed point color array.
          **/
-        uint8_t** getIndexedPointColorArray( size_t &n );
+        unsigned char** getIndexedPointColorArray( size_t &n );
 
 
         /**
@@ -290,6 +297,8 @@ class PointLoader {
          **/
         size_t getNumPoints();
 
+        virtual vector<indexPair>& getScanRanges() { return m_scanRanges;}
+
     protected:
 
 
@@ -315,7 +324,7 @@ class PointLoader {
         /// %Point normal buffer.
         float*    m_pointNormals;
         /// %Point color buffer.
-        uint8_t*  m_pointColors;
+        unsigned char*  m_pointColors;
         /// %Point intensity buffer.
         float*    m_pointIntensities;
         /// %Point confidence buffer.
@@ -342,6 +351,9 @@ class PointLoader {
         size_t    m_numPointIntensities;
         /// Number of point confidence values in internal buffer.
         size_t    m_numPointConfidence;
+
+        /// Vector to save the indices of the first and last points of single scans
+        vector<indexPair> m_scanRanges;
 
 };
 

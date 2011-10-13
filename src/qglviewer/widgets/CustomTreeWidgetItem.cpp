@@ -36,3 +36,8 @@ void CustomTreeWidgetItem::setName(string name)
     m_name = name;
     setText(0, QString(m_name.c_str()));
 }
+
+bool CustomTreeWidgetItem::supportsMode(int mode)
+{
+    return (m_renderMode & mode);
+}
