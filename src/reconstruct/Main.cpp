@@ -146,8 +146,13 @@ int main(int argc, char** argv)
     PointCloudManager<ColorVertex<float, unsigned char>, Normal<float> >* pcm;
     if(pcm_name == "PCL")
     {
+#ifdef _USE_PCL_
         cout << timestamp << "Creating PCL point cloud manager." << endl;
         pcm = new PCLPointCloudManager<ColorVertex<float, unsigned char>, Normal<float> > ( options.getInputFileName());
+#else
+        cout << timestamp << "PCL bindings not found. Using STANN instead." << endl;
+        pcm = new StannPointCloudManager<ColorVertex<float, unsigned char>, Normal<float> > ( options.getInputFileName());
+#endif
     }
     else
     {
@@ -170,7 +175,7 @@ int main(int argc, char** argv)
     if(options.getIntersections() > 0)
     {
         resolution = options.getIntersections();
-        useVoxelsize = true;
+        useVoxelsize = false;
     }
     else
     {
