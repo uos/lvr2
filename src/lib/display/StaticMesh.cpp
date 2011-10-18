@@ -36,9 +36,9 @@ StaticMesh::StaticMesh(MeshLoader& loader, string name) : Renderable(name){
 	m_vertexNormals = loader.getVertexNormalArray(m_numVertices);
 	m_colors        = loader.getVertexColorArray(m_numVertices);
 	m_vertices      = loader.getVertexArray(m_numVertices);
-	m_indices       = loader.getIndexArray(m_numFaces);
+	m_indices       = loader.getFaceArray(m_numFaces);
 
-	m_blackColors   = new float[3 * m_numVertices];
+	m_blackColors   = new unsigned char[3 * m_numVertices];
 	for(int i = 0; i < 3 * m_numVertices; i++) m_blackColors[i] = 0.0;
 
 
@@ -89,8 +89,7 @@ StaticMesh::StaticMesh(const StaticMesh &o)
 
 	m_faceNormals       = new float[3 * o.m_numVertices];
 	m_vertices          = new float[3 * o.m_numVertices];
-	m_colors            = new float[3 * o.m_numVertices];
-
+	m_colors            = new unsigned char[3 * o.m_numVertices];
 	m_indices           = new unsigned int[3 * o.m_numFaces];
 
 	for(size_t i = 0; i < 3 * o.m_numVertices; i++)
@@ -168,7 +167,7 @@ void StaticMesh::compileSurfaceList(){
 		// Assign element pointers
 		glVertexPointer(3, GL_FLOAT, 0, m_vertices);
 		glNormalPointer(GL_FLOAT, 0, m_faceNormals);
-		glColorPointer(3, GL_FLOAT, 0, m_colors);
+		glColorPointer(3, GL_UNSIGNED_BYTE, 0, m_colors);
 
 		// Draw elements
 		glDrawElements(GL_TRIANGLES, 3 * m_numFaces, GL_UNSIGNED_INT, m_indices);
@@ -181,6 +180,7 @@ void StaticMesh::compileSurfaceList(){
 
 void StaticMesh::interpolateNormals()
 {
+
 	// Be sure that vertex and indexbuffer exist
 	assert(m_vertices);
 	assert(m_indices);
@@ -205,7 +205,7 @@ void StaticMesh::interpolateNormals()
 		// buffer_pos is the face number
 		// to get real position of the vertex in the buffer
 		// we have to remember, that each vertex has three
-		// coordinates!
+		// coordinates!		cout << 1 << endl;
 		a = m_indices[buffer_pos]     * 3;
 		b = m_indices[buffer_pos + 1] * 3;
 		c = m_indices[buffer_pos + 2] * 3;
@@ -247,7 +247,7 @@ void StaticMesh::interpolateNormals()
 
 void StaticMesh::setDefaultColors()
 {
-    m_colors = new float[3 * m_numVertices];
+    m_colors = new unsigned char[3 * m_numVertices];
     for(size_t i = 0; i < m_numVertices; i++)
     {
         m_colors[i] = 0.0;
@@ -263,8 +263,7 @@ void StaticMesh::calcBoundingBox()
         m_boundingBox->expand(
                 m_vertices[3 * i],
                 m_vertices[3 * i + 1],
-                m_vertices[3 * i + 2]
-                           );
+                m_vertices[3 * i + 2] );
 
     }
 }

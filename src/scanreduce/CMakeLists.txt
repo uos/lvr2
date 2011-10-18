@@ -11,7 +11,4 @@ target_link_libraries(reduce lssr)
 target_link_libraries(reduce ${Boost_FILESYSTEM_LIBRARY}
 	${Boost_SYSTEM_LIBRARY} ${Boost_THREAD_LIBRARY}
 	${Boost_PROGRAM_OPTIONS_LIBRARY})
-target_link_libraries(reduce model3d)
-target_link_libraries(reduce ${OPENGL_LIBRARY})
-target_link_libraries(reduce ${OpenMP_CXX_FLAGS})
 

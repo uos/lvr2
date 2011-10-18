@@ -74,8 +74,9 @@ void DataCollectorFactory::create(string filename)
 
 	        // Setup supported render modes
 	        int modes = 0;
+	        size_t n_pn;
 	        modes |= Points;
-	        if(point_loader->getPointNormalArray())
+	        if(point_loader->getPointNormalArray(n_pn))
 	        {
 	            modes |= PointNormals;
 	        }

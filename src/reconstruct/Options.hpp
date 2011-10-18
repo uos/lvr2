@@ -94,6 +94,12 @@ public:
 	bool	recalcNormals() const;
 
 	/**
+	 * @brief	If true, textures will be generated during
+     *          finalization of mesh.
+	 */
+	bool	generateTextures() const;
+
+	/**
 	 * @brief	Returns the number of neighbors
 	 * 			for normal interpolation
 	 */
@@ -110,6 +116,11 @@ public:
 	 * 			function evaluation
 	 */
 	int     getKd() const;
+
+	/**
+	  * @brief Return whether the mesh should be retesselated or not.
+	  */
+	bool	  retesselate() const;
 
 	/**
 	 * @brief	Returns the output file name
@@ -197,6 +208,12 @@ private:
 	/// The number of intersections used for reconstruction
 	int                             m_intersections;
 
+	/// Whether or not the mesh should be retesselated while being finalized
+	bool						  m_retesselate;
+	
+    /// Whether or not the mesh should be retesselated while being finalized
+	bool						   m_generateTextures;
+
 	/// The used point cloud manager
 	string                          m_pcm;
 
@@ -224,7 +241,7 @@ private:
 /// Overlaoeded outpur operator
 inline ostream& operator<<(ostream& os, const Options &o)
 {
-	cout << "##### Program options: " 	<< endl;
+	cout << "##### Program options: " << endl;
 	if(o.getIntersections() > 0)
 	{
 	    cout << "##### Intersections \t\t: " << o.getIntersections() << endl;
@@ -233,12 +250,16 @@ inline ostream& operator<<(ostream& os, const Options &o)
 	{
 	    cout << "##### Voxelsize \t\t: " << o.getVoxelsize() << endl;
 	}
-	cout << "##### Output file \t\t: " 	<< o.getInputFileName() << endl;
-	cout << "##### Number of threads \t: " << o.getNumThreads() << endl;
-	cout << "##### Point cloud manager: \t: " << o.getPCM() << endl;
-	cout << "##### k_n \t\t\t: " << o.getKn() << endl;
-	cout << "##### k_i \t\t\t: " << o.getKi() << endl;
-	cout << "##### k_d \t\t\t: " << o.getKd() << endl;
+	cout << "##### Input file \t\t: "         << o.getInputFileName() << endl;
+	cout << "##### Number of threads \t: "    << o.getNumThreads()    << endl;
+	cout << "##### Point cloud manager: \t: " << o.getPCM()           << endl;
+	cout << "##### k_n \t\t\t: "              << o.getKn()            << endl;
+	cout << "##### k_i \t\t\t: "              << o.getKi()            << endl;
+	cout << "##### k_d \t\t\t: "              << o.getKd()            << endl;
+	if(o.retesselate())
+	{
+		cout << "##### retesselate:\t\t: YES"     << endl;
+	}
 	if(o.saveFaceNormals())
 	{
 		cout << "##### Write Face Normals \t: YES" << endl;
@@ -284,6 +305,10 @@ inline ostream& operator<<(ostream& os, const Options &o)
 	if(o.savePointsAndNormals())
 	{
 	    cout << "##### Save points and normals \t: YES" << endl;
+	}
+	if(o.generateTextures())
+	{
+	    cout << "##### Generate Textures \t\t: YES" << endl;
 	}
 	return os;
 }

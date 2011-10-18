@@ -1,4 +1,4 @@
-/**
+/*
  * ColorVertex.h
  *
  *  @date 17.06.2011
@@ -10,30 +10,97 @@
 
 #include "Vertex.hpp"
 
-typedef unsigned char uchar;
-
 namespace lssr
 {
 
-template<typename CoordT, typename ColorT>
-class ColorVertex: public Vertex<CoordT>
+/**
+ * @brief	A color vertex
+ */
+template<typename CoordType, typename ColorT>
+class ColorVertex : public Vertex<CoordType>
 {
 public:
-    ColorVertex() : r(0), g(0), b(0) {};
-    ColorVertex(CoordT x, CoordT y, CoordT z) : Vertex<CoordT>(x, y, z), r(0), g(0), b(0) {}
-    ColorVertex(CoordT x, CoordT y, CoordT z, ColorT red, ColorT blue, ColorT green)
-        : Vertex<CoordT>(x, y, z), r(red), b(blue), g(green) {}
 
-    virtual ~ColorVertex() {};
+	/**
+	 * @brief	Default constructor. All coordinates and the color are initialized
+	 * 			with zeros.
+	 */
+	ColorVertex()
+	{
+		this->x = this->y = this->z = 0;
+		this->r = this->g = this->b = 0;
+	}
 
-    ColorT      r;
-    ColorT      g;
-    ColorT      b;
+	/**
+	 * @brief	Builds a ColorVertex with the given coordinates.
+	 */
+	ColorVertex(const CoordType &_x, const CoordType &_y, const CoordType &_z)
+	{
+		this->x = _x;
+		this->y = _y;
+		this->z = _z;
+		this->r = 255;
+		this->g = 255;
+		this->b = 0;
+	}
+
+	/**
+	 * @brief	Builds a Vertex with the given coordinates.
+	 */
+	ColorVertex(const CoordType &_x, const CoordType &_y, const CoordType &_z,
+			const unsigned char _r, const unsigned char _g, const unsigned char _b)
+	{
+		this->x = _x;
+		this->y = _y;
+		this->z = _z;
+		this->r = _r;
+		this->g = _g;
+		this->b = _b;
+	}
+
+	/**
+	 * @brief	Copy Ctor.
+	 */
+	ColorVertex(const ColorVertex &o)
+	{
+		this->x = o.x;
+		this->y = o.y;
+		this->z = o.z;
+		this->r = o.r;
+		this->g = o.g;
+		this->b = o.b;
+	}
+
+	/**
+	 * @brief	Copy Ctor.
+	 */
+	ColorVertex(const Vertex<CoordType> &o)
+	{
+		this->x = o.x;
+		this->y = o.y;
+		this->z = o.z;
+		this->r = 0;
+		this->g = 0;
+		this->b = 0;
+	}
+
+	ColorT r, g, b;
+
 };
 
-typedef ColorVertex<float, uchar> uColorVertex;
-typedef ColorVertex<float, float> fColorVertex;
+typedef ColorVertex<float, unsigned char> uColorVertex;
 
-} // namespace llsr
+
+/**
+ * @brief	Output operator for color vertex types
+ */
+template<typename CoordType, typename ColorT>
+inline ostream& operator<<(ostream& os, const ColorVertex<CoordType, ColorT> v){
+	os << "ColorVertex: " << v.x << " " << v.y << " " << v.z << " " << (int)v.r << " " << (int)v.g << " " << (int)v.b << endl;
+	return os;
+}
+
+
+} // namespace lssr
 
 #endif /* COLORVERTEX_H_ */

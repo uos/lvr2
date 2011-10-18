@@ -378,23 +378,23 @@ void UosIO::readNewFormat(string dir, int first, int last, size_t &n)
         cout << endl;
     }
 
-    // Convert into indexed array
+    // Convert into array
     if(allPoints.size() > 0)
     {
         cout << timestamp << "UOS Reader: Read " << allPoints.size() << " points." << endl;
 
         // Save position information
         n = allPoints.size();
-        m_points = new float*[allPoints.size()];
+        m_points = new float[3 * allPoints.size()];
         list<Vertex<float> >::iterator p_it;
         int i = 0;
         for(p_it = allPoints.begin(); p_it != allPoints.end(); p_it++)
         {
-            m_points[i] = new float[3];
+            int t_index = 3 * i;
             Vertex<float> v = *p_it;
-            m_points[i][0] = v[0];
-            m_points[i][1] = v[1];
-            m_points[i][2] = v[2];
+            m_points[t_index    ] = v[0];
+            m_points[t_index + 1] = v[1];
+            m_points[t_index + 2] = v[2];
             i++;
         }
         m_numPoints = allPoints.size();
@@ -402,16 +402,17 @@ void UosIO::readNewFormat(string dir, int first, int last, size_t &n)
         // Save color information
         if(allColors.size() > 0)
         {
-            m_pointColors = new unsigned char*[m_numPoints];
+            m_pointColors = new unsigned char[3 * m_numPoints];
             i = 0;
             list<Vertex<int> >::iterator c_it;
             for(c_it = allColors.begin(); c_it != allColors.end(); c_it++)
             {
-                m_pointColors[i] = new unsigned char[3];
+                int t_index = 3 * i;
+
                 Vertex<int> v = *c_it;
-                m_pointColors[i][0] = (unsigned char) v[0];
-                m_pointColors[i][1] = (unsigned char) v[1];
-                m_pointColors[i][2] = (unsigned char) v[2];
+                m_pointColors[t_index    ] = (unsigned char) v[0];
+                m_pointColors[t_index + 1] = (unsigned char) v[1];
+                m_pointColors[t_index + 2] = (unsigned char) v[2];
                 i++;
             }
         }
@@ -604,16 +605,16 @@ void UosIO::readOldFormat(string dir, int first, int last, size_t &n)
     {
         cout << timestamp << "UOS Reader: Read " << allPoints.size() << " points." << endl;
         n = allPoints.size();
-        m_points = new float*[allPoints.size()];
+        m_points = new float[3 * allPoints.size()];
         list<Vertex<float> >::iterator p_it;
         int i = 0;
         for(p_it = allPoints.begin(); p_it != allPoints.end(); p_it++)
         {
-            m_points[i] = new float[3];
+            int t_index = 3 * i;
             Vertex<float> v = *p_it;
-            m_points[i][0] = v[0];
-            m_points[i][1] = v[1];
-            m_points[i][2] = v[2];
+            m_points[t_index    ] = v[0];
+            m_points[t_index + 1] = v[1];
+            m_points[t_index + 1] = v[2];
             i++;
         }
         m_numPoints = allPoints.size();

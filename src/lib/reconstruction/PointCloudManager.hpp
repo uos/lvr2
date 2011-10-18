@@ -101,7 +101,7 @@ protected:
     float**                  	m_normals;
 
     /// Color information for points
-    unsigned char**             m_colors;
+    uint8_t **                  m_colors;
 
     /// The bounding box of the point set
     BoundingBox<VertexT>        m_boundingBox;

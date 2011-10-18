@@ -18,6 +18,9 @@
 #include <float.h>
 #include <math.h>
 
+#include <glu.h>
+#include <glut.h>
+
 using namespace std;
 
 #include "Vertex.hpp"
@@ -30,6 +33,11 @@ using namespace std;
 
 //#include "HalfEdgePolygon.h"
 #include "../io/Progress.hpp"
+
+#include "Region.hpp"
+#include "Tesselator.hpp"
+#include "Texture.hpp"
+#include "ColorVertex.hpp"
 
 namespace lssr
 {
@@ -53,8 +61,10 @@ public:
 
 	/**
 	 * @brief   Ctor.
+	 *
+	 * @param	pm	a pointer to the point cloud manager
 	 */
-	HalfEdgeMesh();
+	HalfEdgeMesh(PointCloudManager<VertexT, NormalT>* pm);
 
 	/**
 	 * @brief   Dtor.
@@ -155,7 +165,7 @@ public:
 	 *
 	 * @return	Returns the size of the region - 1 (the start face is not included)
 	 */
-	virtual int regionGrowing(HFace* start_face, int region);
+	virtual int regionGrowing(HFace* start_face, Region<VertexT, NormalT>* region);
 
 	/**
 	 * @brief	Starts a region growing wrt the angle between the faces and returns the
@@ -172,7 +182,7 @@ public:
 	 *
 	 * @return	Returns the size of the region - 1 (the start face is not included)
 	 */
-	virtual int regionGrowing(HFace* start_face, NormalT &normal, float &angle, int region);
+	virtual int regionGrowing(HFace* start_face, NormalT &normal, float &angle, Region<VertexT, NormalT>* region);
 
 	/**
 	 * @brief	Applies region growing and regression plane algorithms and deletes small
@@ -180,30 +190,15 @@ public:
 	 *
 	 * @param iterations	The number of iterations to use
 	 */
-	virtual void optimizePlanes(int iterations, float normalThreshold, int minRegionSize = 50, int smallRegionSize = 0);
-
-	/**
-	 * @brief	Calculates a regression plane for the given region and projects all
-	 * 			vertices of the region into this plane.
-	 *
-	 * @param	region	The region to improve
-	 */
-	virtual void regressionPlane(int region);
+	virtual void optimizePlanes(int iterations, float normalThreshold, int minRegionSize = 50, int smallRegionSize = 0, bool remove_flickering = true);
 
 	/**
 	 * @brief	Deletes all faces belonging to the given region
 	 *
 	 * @param	region	The region to delete
 	 */
-	virtual void deleteRegion(int region);
+	virtual void deleteRegion(Region<VertexT, NormalT>* region);
 
-	/**
-	 * @brief	Deletes all faces connected to the start_face and have the same region
-	 * 			Faster than deleteRegion because no iteration over the whole mesh is needed
-	 *
-	 * @param	start_face	The face to start the recursion from
-	 */
-	virtual void deleteRegionRecursive(HFace* start_face);
 
 	/**
 	 * @brief	Removes artifacts in the mesh that are not connected to the main mesh
@@ -215,30 +210,20 @@ public:
 
 
 	/**
-	 *	@brief	drags the points of the given plane onto the given intersection if those points lay in
-	 *			a certain radius around the intersection line.
+	 *	@brief	drags the points of the given plane onto the given intersection if those points lay at
+	 *			the border between the two given regions
 	 *
-	 *	@param	planeFace		a face of the plane to take into account
+	 *	@param	plane			the region which points are dragged
 	 *	@param	neighbor_region	the region of the other plane belonging to the intersection line
 	 *	@param	x				a point on the intersection line
 	 *	@param	direction		the direction of the intersection line
 	 */
-	virtual void dragOntoIntersection(HFace* planeFace, int neighbor_region, VertexT& x, VertexT& direction);
+	virtual void dragOntoIntersection(Region<VertexT, NormalT>* plane, Region<VertexT, NormalT>* neighbor_region, VertexT& x, VertexT& direction);
 
 	/**
 	 * @brief 	optimizes the plane intersections
 	 */
 	virtual void optimizePlaneIntersections();
-
-	/**
-	 * @brief 	looks for a contour of the given region starting from the given edge
-	 *
-	 * @param	region	The region
-	 * @param	start	The edge to start from
-	 *
-	 * @return	a stack containing the vertices of the contour
-	 */
-	virtual stack<HVertex*>  getContour(HEdge* start, float epsilon);
 
 	/**
 	 * @brief	finds all contours in the mesh
@@ -247,7 +232,7 @@ public:
 	 *
 	 * @return 	a list of all contours
 	 */
-	virtual vector<stack<HVertex*> > findAllContours(float epsilon);
+	virtual vector<vector<HVertex*> > findAllContours(float epsilon);
 
 	/**
 	 * @brief 	Finalizes a mesh, i.e. converts the template based buffers
@@ -255,10 +240,50 @@ public:
 	 */
 	virtual void finalize();
 
+	/**
+	 * @brief 	Finalizes a mesh, i.e. converts the template based buffers
+	 * 			to OpenGL compatible buffers. Furthermore all regions that
+     * 			belong to a regression plane are retesselated to reduce triangles.
+	 */
+	virtual void finalizeAndRetesselate(bool genTextures);
 
-	void fillHoles(int max_size);
+	/**
+	 * @brief 	fills all holes
+	 *
+	 * @param 	max_size 	the maximum size of a hole
+	 */
+	virtual void fillHoles( size_t max_size );
+
+	/**
+	 * @brief	Collapse the given edge safely
+	 *
+	 * @param	edge	The edge to collapse
+	 *
+	 * @return	true if the edge was collapsed, false otherwise
+	 */
+	virtual bool safeCollapseEdge(HEdge* edge);
+
+	/**
+	 * restores the position of every triangle in a plane if it has been modified
+	 */
+	virtual void restorePlanes();
 
 	void enableRegionColoring() { m_colorRegions = true;}
+
+    virtual void regionsToBuffer(
+                float **vertex, 
+                float **normal,
+                float **color,
+                float **texture,
+                unsigned int **index, 
+                unsigned int **textureIndex, 
+                size_t     &vncSize, 
+                size_t   &indexSize, 
+                vector<int> &regions);
+
+    virtual void retesselateRegionsToBuffer(size_t &vncBufferSize, 
+                                    size_t &indexBufferSize,
+                                    vector<int> plane_regions , bool genTextures=false);
 
 	void tester();
 
@@ -270,13 +295,21 @@ private:
 	/// The vertices of the mesh
 	vector<HalfEdgeVertex<VertexT, NormalT>*>   m_vertices;
 
-	/// The regions in the half edge mesh represented by a single face
-	vector<HalfEdgeFace<VertexT, NormalT>*>     m_regions;
+	/// The regions in the half edge mesh
+	vector<Region<VertexT, NormalT>*>     m_regions;
 
 	/// The indexed of the newest inserted vertex
-	int 	                                    m_globalIndex;
+	size_t                                   m_globalIndex;
 
+	/// Indicates if regions will be colored in the ply format
 	bool                                        m_colorRegions;
+
+	///TODO: no longer used... ask fotte
+    bool m_planesOptimized;
+
+	/// a pointer to the point cloud manager
+	PointCloudManager<VertexT, NormalT>* m_pointCloudManager;
+
 	/**
 	 * @brief   Returns an edge that point to the edge defined
 	 *          by the given vertices.
@@ -287,8 +320,6 @@ private:
 	 *              edge was found.
 	 */
 	HEdge* halfEdgeToVertex(HVertex* v, HVertex* next);
-
-
 
 };
 

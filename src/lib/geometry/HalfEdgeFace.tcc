@@ -23,6 +23,13 @@ HalfEdgeFace<VertexT, NormalT>::HalfEdgeFace(const HalfEdgeFace<VertexT, NormalT
 }
 
 template<typename VertexT, typename NormalT>
+HalfEdgeFace<VertexT, NormalT>::~HalfEdgeFace()
+{
+	if(m_region != 0)
+		m_region->removeFace(this);
+}
+
+template<typename VertexT, typename NormalT>
 float HalfEdgeFace<VertexT, NormalT>::getArea()
 {
     vector<VertexT> vertices;
@@ -126,9 +133,9 @@ void HalfEdgeFace<VertexT, NormalT>::getAdjacentFaces(vector<HalfEdgeFace<Vertex
 template<typename VertexT, typename NormalT>
 NormalT HalfEdgeFace<VertexT, NormalT>::getFaceNormal(){
 
-	VertexT vertices[3];
-	HalfEdgeVertex<VertexT, NormalT>* start = m_edge->start;
-	HalfEdge<HalfEdgeVertex<VertexT, NormalT>, HalfEdgeFace<VertexT, NormalT> >* current_edge = m_edge;
+	//VertexT vertices[3];
+	//HalfEdgeVertex<VertexT, NormalT>* start = m_edge->start;
+	//HalfEdge<HalfEdgeVertex<VertexT, NormalT>, HalfEdgeFace<VertexT, NormalT> >* current_edge = m_edge;
 
 	VertexT p0 = (*this)(0)->m_position;
 	VertexT p1 = (*this)(1)->m_position;
@@ -187,6 +194,7 @@ HalfEdgeFace<VertexT, NormalT>::operator[](const int &index) const{
 	case 2:
 		return this->m_edge->next->next;
 	}
+    return 0;
 }
 
 template<typename VertexT, typename NormalT>
@@ -200,6 +208,7 @@ HalfEdgeFace<VertexT, NormalT>::operator()(const int &index) const{
 	case 2:
 		return this->m_edge->next->next->end;
 	}
+    return 0;
 }
 
 
