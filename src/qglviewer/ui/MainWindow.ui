@@ -505,12 +505,13 @@
      <string>&amp;Tools</string>
     </property>
     <addaction name="actionSave_Screenshot"/>
+    <addaction name="actionGenerateMesh"/>
+    <addaction name="actionMatchPointClouds"/>
    </widget>
    <widget class="QMenu" name="menuView">
     <property name="title">
      <string>&amp;Docks</string>
     </property>
-    <addaction name="action_Robot_control"/>
    </widget>
    <widget class="QMenu" name="menu_Scene">
     <property name="title">
@@ -520,10 +521,10 @@
     <addaction name="actionFog_settings"/>
    </widget>
    <addaction name="menu_File"/>
+   <addaction name="menu_Tools"/>
    <addaction name="menuView"/>
    <addaction name="menu_View"/>
    <addaction name="menu_Scene"/>
-   <addaction name="menu_Tools"/>
   </widget>
   <widget class="QStatusBar" name="statusbar"/>
   <widget class="QToolBar" name="toolBar">
@@ -857,6 +858,16 @@
    </property>
    <property name="toolTip">
     <string>Render surfaces of loded meshes</string>
+   </property>
+  </action>
+  <action name="actionGenerateMesh">
+   <property name="text">
+    <string>Generate Mesh</string>
+   </property>
+  </action>
+  <action name="actionMatchPointClouds">
+   <property name="text">
+    <string>Match Point Clouds</string>
    </property>
   </action>
  </widget>
