@@ -28,7 +28,6 @@ using std::fstream;
 using std::stringstream;
 
 
-
 namespace lssr
 {
 /**
@@ -42,6 +41,8 @@ namespace lssr
  * transformation in the file. If no .frame file are present, the
  * .pose files will be sued to transform the scans.
  */
+
+typedef pair<size_t, size_t> indexPair;
 
 class UosIO : public BaseIO, public PointLoader
 {
