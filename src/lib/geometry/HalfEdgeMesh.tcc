@@ -1322,9 +1322,11 @@ void HalfEdgeMesh<VertexT, NormalT>::retesselateRegionsToBuffer(
             g = 0.8;
             b = 0.0;
         }
-        // If memory used to 75% reallocate!
-        if((double)pointsUsed / (double)vncBufferSize >= 0.45)
+       // If memory used to 75% reallocate!
+        if((double)pointsUsed / (double)vncBufferSize >= 0.45 || vncBufferSize==0)
         {
+        	if(vncBufferSize==0)
+        		vncBufferSize=1024;
             vncBufferSize *= 4*sizeof(float);
             this->m_vertexBuffer       = (float*)realloc(this->m_vertexBuffer, vncBufferSize); 
             this->m_colorBuffer        = (float*)realloc(this->m_colorBuffer, vncBufferSize); 
@@ -1334,8 +1336,10 @@ void HalfEdgeMesh<VertexT, NormalT>::retesselateRegionsToBuffer(
 
 
         // If memory i used to 75% reallocate!
-        if((double)indicesUsed / (double)indexBufferSize >= 0.45)
+        if((double)indicesUsed / (double)indexBufferSize >= 0.45 || indexBufferSize==0)
         {
+        	if(indexBufferSize==0)
+        		indexBufferSize=1024;
             indexBufferSize *= 4*sizeof(unsigned int);
             this->m_indexBuffer = (unsigned int*)realloc(this->m_indexBuffer, indexBufferSize);
             this->m_textureIndexBuffer = (unsigned int*)realloc(this->m_textureIndexBuffer, indexBufferSize);
