@@ -241,12 +241,20 @@ void ViewerApplication::treeContextMenuRequested(const QPoint &position)
     {
         if(item->type() == MultiPointCloudItem)
         {
-            QAction* action = m_sceneDockWidgetUi->actionExport_selected_scans;
+            QAction* export_action = m_sceneDockWidgetUi->actionExport_selected_scans;
+            actions.append(export_action);
 
-            actions.append(action);
+            QAction* mesh_action = m_mainWindowUi->actionGenerateMesh;
+            actions.append(mesh_action);
         }
-    }
 
+        if(item->type() == PointCloudItem)
+        {
+            QAction* mesh_action = m_mainWindowUi->actionGenerateMesh;
+            actions.append(mesh_action);
+        }
+
+    }
 
     // Display menu if actions are present
     if (actions.count() > 0)
@@ -308,20 +316,36 @@ void ViewerApplication::treeItemChanged(QTreeWidgetItem* item, int d)
 
 void ViewerApplication::treeSelectionChanged()
 {
-    QTreeWidgetItemIterator it(m_sceneDockWidgetUi->treeWidget);
-    while (*it) {
+//    QTreeWidgetItemIterator it(m_sceneDockWidgetUi->treeWidget);
+//    while (*it) {
+//        if( (*it)->type() >= ServerItem)
+//        {
+//           // Get selected item
+//           CustomTreeWidgetItem* item = static_cast<CustomTreeWidgetItem*>(*it);
+//           item->renderable()->setSelected(item->isSelected());
+//
+//           // Update render modes in tool bar
+//           updateToolbarActions(item);
+//
+//        }
+//        ++it;
+//    }
+    QList<QTreeWidgetItem *> list = m_sceneDockWidgetUi->treeWidget->selectedItems();
+    QList<QTreeWidgetItem *>::iterator it = list.begin();
+    for(it = list.begin(); it != list.end(); it++)
+    {
         if( (*it)->type() >= ServerItem)
         {
-           // Get selected item
-           CustomTreeWidgetItem* item = static_cast<CustomTreeWidgetItem*>(*it);
-           item->renderable()->setSelected(item->isSelected());
+            // Get selected item
+            CustomTreeWidgetItem* item = static_cast<CustomTreeWidgetItem*>(*it);
+            item->renderable()->setSelected(item->isSelected());
 
-           // Update render modes in tool bar
-           updateToolbarActions(item);
+            // Update render modes in tool bar
+            updateToolbarActions(item);
 
         }
-        ++it;
     }
+
     m_viewer->updateGL();
 }
 
@@ -337,15 +361,19 @@ void ViewerApplication::updateToolbarActions(CustomTreeWidgetItem* item)
         m_mainWindowUi->actionVertexView->setEnabled(true);
         m_mainWindowUi->actionWireframeView->setEnabled(true);
         m_mainWindowUi->actionSurfaceView->setEnabled(true);
+        m_mainWindowUi->actionPointCloudView->setEnabled(false);
+        m_mainWindowUi->actionGenerateMesh->setEnabled(false);
     }
     else
     {
+        cout << "OK" << endl;
         m_mainWindowUi->actionVertexView->setEnabled(false);
         m_mainWindowUi->actionWireframeView->setEnabled(false);
         m_mainWindowUi->actionSurfaceView->setEnabled(false);
+        m_mainWindowUi->actionPointCloudView->setEnabled(true);
+        m_mainWindowUi->actionGenerateMesh->setEnabled(true);
     }
 
-    m_mainWindowUi->actionPointCloudView->setEnabled(point_support);
 }
 
 void ViewerApplication::toggleFog()
