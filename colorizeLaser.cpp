@@ -24,7 +24,7 @@
 #include <ctime>
 
 double maxdist = std::numeric_limits<double>::max();
-char nc_rgb[12] = "  0   0   0";
+char nc_rgb[64] = "  0   0   0";
 
 using namespace pcl;
 
@@ -164,6 +164,7 @@ void parseArgs( int argc, char ** argv ) {
 						(int) ((uint8_t *) &rgb)[2], 
 						(int) ((uint8_t *) &rgb)[1], 
 						(int) ((uint8_t *) &rgb)[0] );
+				break;
 		}
 	}
 
