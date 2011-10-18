@@ -1158,7 +1158,6 @@ void HalfEdgeMesh<VertexT, NormalT>::regionsToBuffer(
             /* a small check to see whether we will run out of memory. */
             if((float)vncUsed / (float)vncSize >= 0.80)
             {
-                cout << "Resize" << endl;
                 *vertex = (float*)realloc((*vertex), vncSize*2*sizeof(float));
                 *normal = (float*)realloc((*normal), vncSize*2*sizeof(float));
                 *color  = (float*)realloc((*color),  vncSize*2*sizeof(float));
@@ -1169,7 +1168,6 @@ void HalfEdgeMesh<VertexT, NormalT>::regionsToBuffer(
             /* a small check to see whether we will run out of memory. */
             if((float)indexUsed / (float)indexSize >= 0.80)
             {
-                cout << "IndexResize" << endl;
                 *index        = (unsigned int*)realloc((*index), indexSize*2*sizeof(float)); 
                 *textureIndex = (unsigned int*)realloc((*textureIndex), indexSize*2*sizeof(float)); 
                 indexSize *= 2;
