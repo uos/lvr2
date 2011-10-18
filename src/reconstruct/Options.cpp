@@ -6,6 +6,7 @@
  */
 
 #include "Options.hpp"
+#include <omp.h>
 
 namespace reconstruct{
 
@@ -24,7 +25,7 @@ Options::Options(int argc, char** argv) : m_descr("Supported options")
 		("optimizePlanes,o", "Shift all triangle vertices of a cluster onto their shared plane")
 		("savePointsAndNormals,s", "Exports original point cloud data together with normals into a single file called 'points_and_normals.ply'")
 		("recalcNormals,r", "Always estimate normals, even if given in .ply file.")
-		("threads,t", value<int>(&m_numThreads)->default_value(4), "Number of threads")
+		("threads,t", value<int>(&m_numThreads)->default_value( omp_get_num_procs() ), "Number of threads")
 		("saveNormals", "Writes all points and interpolated normals to a file called 'normals.nor'")
 		("kd", value<int>(&m_kd)->default_value(5), "Number of normals used for distance function evaluation")
 	    ("ki", value<int>(&m_ki)->default_value(10), "Number of normals used in the normal interpolation process")
@@ -35,6 +36,8 @@ Options::Options(int argc, char** argv) : m_descr("Supported options")
         ("rda", value<int>(&m_rda)->default_value(100), "Remove dangling artifacts, i.e. remove the n smallest not connected surfaces")
         ("planeNormalThreshold", value<float>(&m_planeNormalThreshold)->default_value(0.85), "Normal threshold for plane optimization. Default 0.85 equals about 3 degrees.")
         ("smallRegionThreshold", value<int>(&m_smallRegionThreshold)->default_value(0), "Threshold for small region removal. If 0 nothing will be deleted.")
+        ("retesselate,rt", "Retesselate regions that are in a regression plane.")
+        ("generateTextures", "Generate textures during finalization.")
         ("colorRegions", "Color detected regions with color gradient.")
 		;
 
@@ -163,6 +166,16 @@ bool Options::optimizePlanes() const
 bool  Options::colorRegions() const
 {
     return m_variables.count("colorRegions");
+}
+
+bool Options::retesselate() const
+{
+    return m_variables.count("retesselate");
+}
+
+bool Options::generateTextures() const
+{
+    return m_variables.count("generateTextures");
 }
 
 float Options::getNormalThreshold() const

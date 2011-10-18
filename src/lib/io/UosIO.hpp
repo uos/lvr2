@@ -27,7 +27,6 @@ using std::string;
 using std::fstream;
 using std::stringstream;
 
-
 namespace lssr
 {
 /**

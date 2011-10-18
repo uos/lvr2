@@ -27,7 +27,7 @@ template<typename VertexT, typename NormalT>
 VertexT PointCloudManager<VertexT, NormalT>::getPoint(size_t index)
 {
     assert(index < m_numPoints);
-    return VertexT(m_points[index][0], m_points[index][1], m_points[index][2]);
+    return VertexT(m_points[index][0], m_points[index][1], m_points[index][2], m_colors[index][0], m_colors[index][1], m_colors[index][2]);
 }
 
 template<typename VertexT, typename NormalT>
@@ -55,9 +55,16 @@ void PointCloudManager<VertexT, NormalT>::readFromFile(string filename)
     // Save points and normals (if present)
     if(loader)
     {
-        m_points = loader->getPointArray();
-        m_normals = loader->getPointNormalArray();
-        m_numPoints = loader->getNumPoints();
+        m_points  = loader->getIndexedPointArray( m_numPoints );
+        size_t n(0);
+        m_normals = loader->getIndexedPointNormalArray( n );
+        if ( n != m_numPoints ) {
+            m_normals = NULL;
+        }
+        m_colors  = loader->getIndexedPointColorArray( n );
+        if ( n != m_numPoints ) {
+            m_colors = NULL;
+        }
     }
     else
     {

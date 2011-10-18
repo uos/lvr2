@@ -30,16 +30,28 @@
  * mkdir build
  * cd build
  * cmake .. && make
+ * cd ../bin
  * \endverbatim
  *
  * External library dependencies:
  *
  * <ul>
  * <li>OpenGL</li>
+ * <li>OpenGL Utility Toolkit (glut)</li>
+ * <li>OpenGL Utility Library (glu)</li>
  * <li>OpenMP</li>
- * <li>Boost (Thread, Filesystem, Program Options)</li>
- * <li>Qt 4.7 (for viewer and qviewer)</li>
- * <li>libqglviewer for qviewer</li>
+ * <li>Boost
+ *   <ul>
+ *     <li>Thread</li>
+ *     <li>Filesystem</li>
+ *     <li>Program Options</li>
+ *     <li>System</li>
+ *   </ul>
+ * </li>
+ * <li>Qt 4.7 or above (for viewer and qviewer)</li>
+ * <li>libQGLViewer 2.3.9 or newer (for qviewer)</li>
+ * <li>X.Org X11 libXi runtime library</li>
+ * <li>X.Org X11 libXmu/libXmuu runtime libraries</li>
  * </ul>
  *
  *
@@ -69,41 +81,42 @@
  * </tr>
  * <tr>
  * <td>-v or -i</td>
- * <td>
- * <p>These parameters affect the accuracy of the reconstruction.
- * <i>-i</i> defines the number of intersections on the longest side
- * of the scanned scene and determines the corresponding voxelsize.
- * Using this parameter is useful if the scaling of a scene is
- * unknown. A value of about 100 will usually generate coarse surface.
- * Experiment with this value to get a tradeoff between accuracy and
- * mesh size. If you know the scaling of the objects, you can set a
- * fixed voxelsize by using the <i>-v</i> parameter.
- * </p>
- * </td>
- * </tr>
- * <tr>
- * <td>--ki, --kn, --kd</td>
- * <td>These parameters determine the number of nearest neighbors used
- * for initial normal estimation (<i>--kn</i>), normal interpolation
- * (<i>--ki</i>) and distance value evaluation (<i>--kd</i>). In data
- * sets with a lot of noise, increasing these values can lead to better
- * approximations at the cost of running time. Increasing <i>--kd</i>
- * usually helps to generate more continuous surfaces in sparse
- * scans, but yields in a lot of smoothing, i.e. in the
- * reconstuctions, sharp features will be smoothed out.</td>
- * </tr>
- * </table>
- *
- * @section API API Description
- *
- * A detailed API documentation will be made available soon.
- *
- * @section Tutorials Tutorials
- *
- * A set of tutorials how to use LSSR will be made available soon.
- */
+* <td>
+* <p>These parameters affect the accuracy of the reconstruction.
+* <i>-i</i> defines the number of intersections on the longest side
+* of the scanned scene and determines the corresponding voxelsize.
+* Using this parameter is useful if the scaling of a scene is
+* unknown. A value of about 100 will usually generate coarse surface.
+* Experiment with this value to get a tradeoff between accuracy and
+* mesh size. If you know the scaling of the objects, you can set a
+* fixed voxelsize by using the <i>-v</i> parameter.
+* </p>
+* </td>
+* </tr>
+* <tr>
+* <td>--ki, --kn, --kd</td>
+* <td>These parameters determine the number of nearest neighbors used
+* for initial normal estimation (<i>--kn</i>), normal interpolation
+* (<i>--ki</i>) and distance value evaluation (<i>--kd</i>). In data
+* sets with a lot of noise, increasing these values can lead to better
+* approximations at the cost of running time. Increasing <i>--kd</i>
+* usually helps to generate more continuous surfaces in sparse
+* scans, but yields in a lot of smoothing, i.e. in the
+* reconstuctions, sharp features will be smoothed out.</td>
+* </tr>
+* </table>
+*
+* @section API API Description
+*
+* A detailed API documentation will be made available soon.
+*
+* @section Tutorials Tutorials
+*
+* A set of tutorials how to use LSSR will be made available soon.
+*/
 
 #include "Options.hpp"
+#include "reconstruction/PCLPointCloudManager.hpp"
 #include "reconstruction/StannPointCloudManager.hpp"
 #include "reconstruction/FastReconstruction.hpp"
 #include "io/PLYIO.hpp"
@@ -111,10 +124,6 @@
 #include "geometry/TriangleMesh.hpp"
 #include "geometry/HalfEdgeMesh.hpp"
 #include <iostream>
-
-#ifdef _USE_PCL_
-#include "reconstruction/PCLPointCloudManager.hpp"
-#endif
 
 using namespace lssr;
 
@@ -130,31 +139,26 @@ int main(int argc, char** argv)
     // (this means required parameters are missing)
     if (options.printUsage()) return 0;
 
-    ::std::cout<<options<<::std::endl;
+    ::std::cout << options << ::std::endl;
 
     // Create a point cloud manager
     string pcm_name = options.getPCM();
-    PointCloudManager<Vertex<float>, Normal<float> >* pcm;
-#ifdef _USE_PCL_
+    PointCloudManager<ColorVertex<float, unsigned char>, Normal<float> >* pcm;
     if(pcm_name == "PCL")
     {
-        #ifdef _USE_PCL_
-            cout << timestamp << "Creating PCL point cloud manager." << endl;
-            pcm = new PCLPointCloudManager<Vertex<float>, Normal<float> > ( options.getInputFileName());
-        #else
-            cout << timestamp << "NO PCL bindings found. Exiting" << endl;
-            exit(-1);
-        #endif
+#ifdef _USE_PCL_
+        cout << timestamp << "Creating PCL point cloud manager." << endl;
+        pcm = new PCLPointCloudManager<ColorVertex<float, unsigned char>, Normal<float> > ( options.getInputFileName());
+#else
+        cout << timestamp << "PCL bindings not found. Using STANN instead." << endl;
+        pcm = new StannPointCloudManager<ColorVertex<float, unsigned char>, Normal<float> > ( options.getInputFileName());
+#endif
     }
     else
     {
         cout << timestamp << "Creating STANN point cloud manager." << endl;
-        pcm = new StannPointCloudManager<Vertex<float>, Normal<float> > ( options.getInputFileName());
+        pcm = new StannPointCloudManager<ColorVertex<float, unsigned char>, Normal<float> > ( options.getInputFileName());
     }
-#else
-    cout << timestamp << "Creating STANN point cloud manager." << endl;
-    pcm = new StannPointCloudManager<Vertex<float>, Normal<float> > ( options.getInputFileName());
-#endif
 
     pcm->setKD(options.getKd());
     pcm->setKI(options.getKi());
@@ -163,7 +167,7 @@ int main(int argc, char** argv)
 
     // Create an empty mesh
     //TriangleMesh<Vertex<float>, Normal<float> > mesh;
-    HalfEdgeMesh<Vertex<float>, Normal<float> > mesh;
+    HalfEdgeMesh<ColorVertex<float, unsigned char>, Normal<float> > mesh(pcm);
 
     // Determine weather to use intersections or voxelsize
     float resolution;
@@ -180,7 +184,7 @@ int main(int argc, char** argv)
     }
 
     // Create a new reconstruction object
-    FastReconstruction<Vertex<float>, Normal<float> > reconstruction(*pcm, resolution, useVoxelsize);
+    FastReconstruction<ColorVertex<float, unsigned char>, Normal<float> > reconstruction(*pcm, resolution, useVoxelsize);
     reconstruction.getMesh(mesh);
 
     mesh.removeDanglingArtifacts(options.getDanglingArtifacts());
@@ -192,15 +196,35 @@ int main(int argc, char** argv)
         mesh.optimizePlanes(options.getPlaneIterations(),
                             options.getNormalThreshold(),
                             options.getMinPlaneSize(),
-                            options.getSmallRegionThreshold() );
+                            options.getSmallRegionThreshold(),
+                            true);
+
+        mesh.fillHoles(options.getFillHoles());
+
+        mesh.optimizePlaneIntersections();
+
+        mesh.restorePlanes();
+
+        mesh.optimizePlanes(3,
+                            options.getNormalThreshold(),
+                            options.getMinPlaneSize(),
+                            0,
+                            false );
+
     }
 
-    mesh.fillHoles(options.getFillHoles());
-    mesh.optimizePlaneIntersections();
+//    mesh.tester();
 
     // Save triangle mesh
-    mesh.finalize();
+    if(options.retesselate())
+	 {
+		 mesh.finalizeAndRetesselate(options.generateTextures());
+	 } else
+	 {
+		 mesh.finalize();
+	 }
     mesh.save("triangle_mesh.ply");
+    mesh.saveObj("triangle_mesh.obj");
 
 
     cout << timestamp << "Program end." << endl;

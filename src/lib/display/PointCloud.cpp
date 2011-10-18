@@ -24,9 +24,10 @@ PointCloud::PointCloud(PointLoader& loader, string name) : Renderable(name)
 
     m_boundingBox = new BoundingBox<Vertex<float> >;
 
-    float** points = loader.getPointArray();
-    uchar** colors = loader.getPointColorArray();
-    float*  intensities = loader.getPointIntensityArray();
+    size_t n_points;
+    float** points = loader.getIndexedPointArray(n_points);
+    uchar** colors = loader.getIndexedPointColorArray(n_points);
+    float*  intensities = loader.getPointIntensityArray(n_points);
 
     ColorMap c_map(maxColors);
 

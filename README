@@ -22,10 +22,11 @@ REQUIRED LIBRARIES
   + BOOST Program Option
   + BOOST System
   + BOOST Thread
-  + Qt 4.6 or higher for viewer
-  + libQGLViewer 2.3.9 or newe for qglviewer
- (+) libxi6 (debian, maybe +additional headers and dev files)
- (+) libxmu6 (debian, maybe +additional headers and dev files)
+  + Qt 4.6 or newer (for viewer)
+  + libQGLViewer 2.3.9 or newer (for qglviewer)
+  + libXi
+  + libXmu
+  + Optional: librply [https://github.com/lkiesow/librply]
 
 USAGE
 =====

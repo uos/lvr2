@@ -72,8 +72,8 @@ protected:
 	float*          m_vertexNormals;
 	float*          m_faceNormals;
 	float*          m_vertices;
-	float*          m_colors;
-	float*          m_blackColors;
+	unsigned char*  m_colors;
+	unsigned char*  m_blackColors;
 
 	unsigned int*   m_indices;
 

@@ -1,5 +1,5 @@
 /*
- * StannPointCloudManager.h
+ * FlannPointCloudManager.h
  *
  *  Created on: 07.02.2011
  *      Author: Thomas Wiemann
@@ -16,8 +16,9 @@
 #include "../io/AsciiIO.hpp"
 #include "../io/UosIO.hpp"
 
-// Stann
-#include "../stann/sfcnn.hpp"
+// Flann
+#include <flann/flann.h>
+#include <flann/io/hdf5.h> 
 
 // Standard C++ includes
 #include <iostream>
@@ -51,7 +52,7 @@ struct Plane{
  *        given point set as described in the SSRR2010 paper.
  */
 template<typename VertexT, typename NormalT>
-class StannPointCloudManager : public PointCloudManager<VertexT, NormalT>
+class FlannPointCloudManager : public PointCloudManager<VertexT, NormalT>
 {
 public:
 
@@ -68,7 +69,7 @@ public:
 	 * @param ki        The number of neighbor points used for normal interpolation
 	 * @param kd        The number of neighbor points used for distance value calculation
 	 */
-	StannPointCloudManager(float** points,
+	FlannPointCloudManager(float** points,
 	                       NormalT *normals,
 	                       size_t n,
 	                       const int &kn = 10,
@@ -76,7 +77,7 @@ public:
 	                       const int &kd = 10);
 
 	/**
-	 * @brief Trys to read the given file to create a new StannPointCloudManager
+	 * @brief Trys to read the given file to create a new FlannPointCloudManager
 	 *        instance.
 	 *
 	 * @param           The file to read from
@@ -84,7 +85,7 @@ public:
      * @param ki        The number of neighbor points used for normal interpolation
      * @param kd        The number of neighbor points used for distance value calculation
 	 */
-	StannPointCloudManager(string filename,
+	FlannPointCloudManager(string filename,
 	                       const int &kn = 10,
 	                       const int &ki = 10,
 	                       const int &kd = 10);
@@ -92,7 +93,7 @@ public:
 	/**
 	 * @brief   Destructor
 	 */
-	virtual ~StannPointCloudManager() {};
+	virtual ~FlannPointCloudManager() {};
 
 	/**
 	 * @brief Returns the k closest neighbor vertices to a given queryy point
@@ -230,6 +231,6 @@ private:
 }
 
 // Include template code
-#include "StannPointCloudManager.tcc"
+#include "FlannPointCloudManager.tcc"
 
 #endif /* STANNPOINTCLOUDMANAGER_H_ */

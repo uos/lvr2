@@ -26,14 +26,28 @@ public:
     void setVertexArray(CoordType* array, size_t count);
     void setNormalArray(CoordType* array, size_t count);
     void setIndexArray(IndexType* array, size_t count);
+    void setTextureCoords(CoordType* coords, size_t c);
+    void setColors(CoordType* coords, size_t c);
+    void setTextureIndices(IndexType* coords, size_t c);
+    void setTextures(IndexType* textures, size_t c);
+
 
 private:
-    CoordType*              m_vertices;
-    CoordType*              m_normals;
-    IndexType*              m_indices;
+	 CoordType*          m_vertices;
+	 CoordType*          m_normals;
+	 CoordType*				m_colors;
+	 CoordType*          m_textureCoords;
 
-    size_t                  m_faceCount;
-    size_t                  m_vertexCount;
+	 IndexType*          m_indices;
+	 IndexType*				m_textureIndices;
+	 IndexType*				m_textures;
+
+	 size_t					m_colorCount;
+	 size_t 					m_textureCount;
+	 size_t 					m_textureIndicesCount;
+	 size_t              m_faceCount;
+	 size_t              m_vertexCount;
+	 size_t					m_textureCoordsCount;
 
 };
 

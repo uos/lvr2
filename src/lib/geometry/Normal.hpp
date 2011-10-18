@@ -56,9 +56,9 @@ public:
 	template<typename T>
 	Normal(const Normal &other)
 	{
-		this.x = other.x;
-		this.y = other.y;
-		this.z = other.z;
+		this->x = other.x;
+		this->y = other.y;
+		this->z = other.z;
 	}
 
 	virtual ~Normal(){};

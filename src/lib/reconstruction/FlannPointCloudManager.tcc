@@ -1,8 +1,8 @@
 /*
- * StannPointCloudManager.cpp
+ * FlannPointCloudManager.cpp
  *
- *  Created on: 07.02.2011
- *      Author: Thomas Wiemann
+ *  Created on: 11.10.2011
+ *      Author: Florian Otte
  */
 
 
@@ -17,7 +17,7 @@
 namespace lssr{
 
 template<typename VertexT, typename NormalT>
-StannPointCloudManager<VertexT, NormalT>::StannPointCloudManager(float **points,
+FlannPointCloudManager<VertexT, NormalT>::FlannPointCloudManager(float **points,
         NormalT *normals,
         size_t n,
         const int &kn,
@@ -38,7 +38,7 @@ StannPointCloudManager<VertexT, NormalT>::StannPointCloudManager(float **points,
 }
 
 template<typename VertexT, typename NormalT>
-StannPointCloudManager<VertexT, NormalT>::StannPointCloudManager(string filename,
+FlannPointCloudManager<VertexT, NormalT>::FlannPointCloudManager(string filename,
                        const int &kn,
                        const int &ki,
                        const int &kd)
@@ -56,7 +56,7 @@ StannPointCloudManager<VertexT, NormalT>::StannPointCloudManager(string filename
 }
 
 template<typename VertexT, typename NormalT>
-void StannPointCloudManager<VertexT, NormalT>::init()
+void FlannPointCloudManager<VertexT, NormalT>::init()
 {
     // Be sure that point information was given
     assert(this->m_points);
@@ -72,21 +72,13 @@ void StannPointCloudManager<VertexT, NormalT>::init()
 
     // Create kd tree
     cout << timestamp << "Creating STANN Kd-Tree..." << endl;
-    m_pointTree = sfcnn< float*, 3, float>(this->m_points, this->m_numPoints, 4);
-
-    // Estimate surface normals if necessary
-    if(!this->m_normals)
-    {
-        calcNormals();
-    }
-    else
-    {
-        cout << timestamp << " Using the given normals." << endl;
-    }
+    // TODO:
+    flann::Matrix<float> dataset;
+    //m_pointTree = sfcnn< float*, 3, float>(this->m_points, this->m_numPoints, 4);
 }
 
 template<typename VertexT, typename NormalT>
-void StannPointCloudManager<VertexT, NormalT>::calcNormals()
+void FlannPointCloudManager<VertexT, NormalT>::calcNormals()
 {
     int k_0 = this->m_kn;
 
@@ -125,7 +117,7 @@ void StannPointCloudManager<VertexT, NormalT>::calcNormals()
              */
             k = k * 2;
 
-            //T* point = this->m_points[i];
+            // TODO:
             m_pointTree.ksearch(this->m_points[i], k, id, di, 0);
 
             float min_x = 1e15;
@@ -192,7 +184,7 @@ void StannPointCloudManager<VertexT, NormalT>::calcNormals()
 
 
 template<typename VertexT, typename NormalT>
-void StannPointCloudManager<VertexT, NormalT>::interpolateSurfaceNormals()
+void FlannPointCloudManager<VertexT, NormalT>::interpolateSurfaceNormals()
 {
     // Create a temporal normal array for the
     vector<NormalT> tmp(this->m_numPoints, NormalT());
@@ -208,6 +200,7 @@ void StannPointCloudManager<VertexT, NormalT>::interpolateSurfaceNormals()
         vector<unsigned long> id;
         vector<double> di;
 
+        //TODO:
         m_pointTree.ksearch(this->m_points[i], this->m_ki, id, di, 0);
 
         VertexT mean;
@@ -255,7 +248,7 @@ void StannPointCloudManager<VertexT, NormalT>::interpolateSurfaceNormals()
 }
 
 template<typename VertexT, typename NormalT>
-bool StannPointCloudManager<VertexT, NormalT>::boundingBoxOK(const float &dx, const float &dy, const float &dz)
+bool FlannPointCloudManager<VertexT, NormalT>::boundingBoxOK(const float &dx, const float &dy, const float &dz)
 {
     /**
      * @todo Replace magic number here.
@@ -271,7 +264,7 @@ bool StannPointCloudManager<VertexT, NormalT>::boundingBoxOK(const float &dx, co
 }
 
 template<typename VertexT, typename NormalT>
-void StannPointCloudManager<VertexT, NormalT>::getkClosestVertices(const VertexT &v,
+void FlannPointCloudManager<VertexT, NormalT>::getkClosestVertices(const VertexT &v,
         const size_t &k, vector<VertexT> &nb)
 {
     vector<unsigned long> id;
@@ -282,6 +275,7 @@ void StannPointCloudManager<VertexT, NormalT>::getkClosestVertices(const VertexT
     p[0] = v[0]; p[1] = v[1]; p[2] = v[2];
 
     //Find nearest tangent plane
+    //TODO:
     m_pointTree.ksearch(p, k, id, 0);
 
     //parse result
@@ -301,7 +295,7 @@ void StannPointCloudManager<VertexT, NormalT>::getkClosestVertices(const VertexT
 }
 
 template<typename VertexT, typename NormalT>
-float StannPointCloudManager<VertexT, NormalT>::meanDistance(const Plane<VertexT, NormalT> &p,
+float FlannPointCloudManager<VertexT, NormalT>::meanDistance(const Plane<VertexT, NormalT> &p,
         const vector<unsigned long> &id, const int &k)
 {
     float sum = 0;
@@ -313,13 +307,13 @@ float StannPointCloudManager<VertexT, NormalT>::meanDistance(const Plane<VertexT
 }
 
 template<typename VertexT, typename NormalT>
-float StannPointCloudManager<VertexT, NormalT>::distance(VertexT v, Plane<VertexT, NormalT> p)
+float FlannPointCloudManager<VertexT, NormalT>::distance(VertexT v, Plane<VertexT, NormalT> p)
 {
     return fabs((v - p.p) * p.n);
 }
 
 template<typename VertexT, typename NormalT>
-float StannPointCloudManager<VertexT, NormalT>::distance(VertexT v)
+float FlannPointCloudManager<VertexT, NormalT>::distance(VertexT v)
 {
     int k = this->m_kd;
 
@@ -332,6 +326,7 @@ float StannPointCloudManager<VertexT, NormalT>::distance(VertexT v)
     p[0] = v[0]; p[1] = v[1]; p[2] = v[2];
 
     //Find nearest tangent plane
+    // TODO:
     m_pointTree.ksearch(p, k, id, di, 0);
 
     VertexT nearest;
@@ -362,7 +357,7 @@ float StannPointCloudManager<VertexT, NormalT>::distance(VertexT v)
 }
 
 template<typename VertexT, typename NormalT>
-VertexT StannPointCloudManager<VertexT, NormalT>::fromID(int i){
+VertexT FlannPointCloudManager<VertexT, NormalT>::fromID(int i){
     return VertexT(
             this->m_points[i][0],
             this->m_points[i][1],
@@ -370,7 +365,7 @@ VertexT StannPointCloudManager<VertexT, NormalT>::fromID(int i){
 }
 
 template<typename VertexT, typename NormalT>
-Plane<VertexT, NormalT> StannPointCloudManager<VertexT, NormalT>::calcPlane(const VertexT &queryPoint,
+Plane<VertexT, NormalT> FlannPointCloudManager<VertexT, NormalT>::calcPlane(const VertexT &queryPoint,
         const int &k,
         const vector<unsigned long> &id)
 {
@@ -426,7 +421,7 @@ Plane<VertexT, NormalT> StannPointCloudManager<VertexT, NormalT>::calcPlane(cons
 }
 
 template<typename VertexT, typename NormalT>
-void StannPointCloudManager<VertexT, NormalT>::save(string filename)
+void FlannPointCloudManager<VertexT, NormalT>::save(string filename)
 {
     // Get file extension
     boost::filesystem::path selectedFile(filename);
@@ -449,14 +444,14 @@ void StannPointCloudManager<VertexT, NormalT>::save(string filename)
 }
 
 template<typename VertexT, typename NormalT>
-void StannPointCloudManager<VertexT, NormalT>::savePointsAndNormals(string filename)
+void FlannPointCloudManager<VertexT, NormalT>::savePointsAndNormals(string filename)
 {
     ofstream out(filename.c_str());
 
     if(!out.good())
     {
         cout << timestamp
-             << " StannPointCloudManager::SavePointsAndNormals(): Could not open file "
+             << " FlannPointCloudManager::SavePointsAndNormals(): Could not open file "
              << filename << "." << endl;
 
         return;
@@ -475,14 +470,14 @@ void StannPointCloudManager<VertexT, NormalT>::savePointsAndNormals(string filen
 }
 
 template<typename VertexT, typename NormalT>
-void StannPointCloudManager<VertexT, NormalT>::savePoints(string filename)
+void FlannPointCloudManager<VertexT, NormalT>::savePoints(string filename)
 {
     ofstream out(filename.c_str());
 
     if(!out.good())
     {
         cout << timestamp
-                << " StannPointCloudManager::SavePointsAndNormals(): Could not open file "
+                << " FlannPointCloudManager::SavePointsAndNormals(): Could not open file "
                 << filename << "." << endl;
 
         return;
@@ -501,7 +496,7 @@ void StannPointCloudManager<VertexT, NormalT>::savePoints(string filename)
 }
 
 template<typename VertexT, typename NormalT>
-void StannPointCloudManager<VertexT, NormalT>::savePLY(string filename)
+void FlannPointCloudManager<VertexT, NormalT>::savePLY(string filename)
 {
     PLYIO ply_writer;
 
