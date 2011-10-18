@@ -46,15 +46,22 @@ Texture<VertexT, NormalT>::Texture(PointCloudManager<VertexT, NormalT>* pm, Regi
 			for(size_t c = 0; c < HOuter_contour.size(); c++)
 			{
 				int r = 0;
-				int s = 1;
-				if(n[0] == 0 && n[2] == 0)
-					s = 2;
-				if(n[1] == 0 && n[2] == 0)
+				int s = 0;
+				float denom = 0;
+
+				for(int t = 0; t<3; t++)
 				{
-					r = 1;
-					s = 2;
+					for(int u = 0; u<3; u++)
+					{
+						if(fabs(v1[t] * v2[u] - v1[u] * v2[t]) > 0.01)
+						{
+							denom = v1[t] * v2[u] - v1[u] * v2[t];
+							r = t;
+							s = u;
+						}
+					}
 				}
-				float denom = v1[r] * v2[s] - v1[s] * v2[r];
+
 				float a = ((HOuter_contour[c]->m_position[r] - p[r]) * v2[s] - (HOuter_contour[c]->m_position[s] - p[s]) * v2[r]) / denom;
 				float b = ((HOuter_contour[c]->m_position[s] - p[s]) * v1[r] - (HOuter_contour[c]->m_position[r] - p[r]) * v1[s]) / denom;
 
