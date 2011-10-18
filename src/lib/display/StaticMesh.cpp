@@ -189,8 +189,6 @@ void StaticMesh::interpolateNormals()
 	m_faceNormals = new float[3 * m_numVertices];
 	memset(m_faceNormals, 0, 3 * m_numVertices * sizeof(float));
 
-	cout << m_numVertices << endl;
-
 	// Interpolate surface m_normals for each face
 	// and interpolate sum up the normal coordinates
 	// at each vertex position
@@ -207,32 +205,29 @@ void StaticMesh::interpolateNormals()
 		// buffer_pos is the face number
 		// to get real position of the vertex in the buffer
 		// we have to remember, that each vertex has three
-		// coordinates!
-		cout << 1 << endl;
+		// coordinates!		cout << 1 << endl;
 		a = m_indices[buffer_pos]     * 3;
 		b = m_indices[buffer_pos + 1] * 3;
 		c = m_indices[buffer_pos + 2] * 3;
 
-		cout << 2 << endl;
 		Vertex<float> v0(m_vertices[a], m_vertices[a + 1], m_vertices[a + 2]);
 		Vertex<float> v1(m_vertices[b], m_vertices[b + 1], m_vertices[b + 2]);
 		Vertex<float> v2(m_vertices[c], m_vertices[c + 1], m_vertices[c + 2]);
-		cout << 3 << endl;
+
 		Vertex<float> d1 = v0 - v1;
 		Vertex<float> d2 = v2 - v1;
 
 		Normal<float> p(d1.cross(d2));
 
 		// Sum up coordinate values in normal array
-		cout << 4 << endl;
 		m_faceNormals[a    ] = p.x;
 		m_faceNormals[a + 1] = p.y;
 		m_faceNormals[a + 2] = p.z;
-		cout << 5 << endl;
+
 		m_faceNormals[b    ] = p.x;
 		m_faceNormals[b + 1] = p.y;
 		m_faceNormals[b + 2] = p.z;
-		cout << 6 << endl;
+
 		m_faceNormals[c    ] = p.x;
 		m_faceNormals[c + 1] = p.y;
 		m_faceNormals[c + 2] = p.z;
@@ -247,7 +242,7 @@ void StaticMesh::interpolateNormals()
 		m_faceNormals[i * 3 + 1] = n.y;
 		m_faceNormals[i * 3 + 2] = n.z;
 	}
-	cout << "OK" << endl;
+
 }
 
 void StaticMesh::setDefaultColors()

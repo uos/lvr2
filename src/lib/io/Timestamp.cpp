@@ -61,7 +61,7 @@ string Timestamp::getElapsedTime() const
     unsigned long msecs =   time %    1000;
 
     char * times;
-    asprintf( &times, "[%02lu:%02lu:%02lu %04lu] ", hours, mins, secs, msecs);
+    asprintf( &times, "[%02lu:%02lu:%02lu %03lu] ", hours, mins, secs, msecs);
     string result( times );
     free( times );
 
