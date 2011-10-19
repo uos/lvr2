@@ -108,12 +108,6 @@ void ViewerApplication::connectEvents()
 				this, SLOT(displayFogSettingsDialog()));
 
 	// Communication between the manager objects
-//	QObject::connect(m_dataManager, SIGNAL(dataCollectorCreated(DataCollector*)),
-//					m_viewerManager, SLOT(addDataCollector(DataCollector*)));
-//
-//    QObject::connect(m_dataManager, SIGNAL(dataCollectorCreated(DataCollector*)),
-//                    this, SLOT(dataCollectorAdded(DataCollector*)));
-
     QObject::connect(m_factory, SIGNAL(dataCollectorCreated(DataCollector*)),
                         m_viewerManager, SLOT(addDataCollector(DataCollector*)));
 
@@ -138,6 +132,33 @@ void ViewerApplication::connectEvents()
 
 	// Tree widget context menu actions
 	connect(m_sceneDockWidgetUi->actionExport_selected_scans, SIGNAL(triggered()), this, SLOT(treeWidgetExport()));
+
+	connect(m_mainWindowUi->actionGenerateMesh, SIGNAL(triggered()), this, SLOT(createMeshFromPointcloud()));
+}
+
+void ViewerApplication::createMeshFromPointcloud()
+{
+    // Display mesh generation dialog
+    QTreeWidgetItem* item = m_sceneDockWidgetUi->treeWidget->currentItem();
+    if(item)
+    {
+        if(item->type() > 1000)
+        {
+            CustomTreeWidgetItem* c_item = static_cast<CustomTreeWidgetItem*>(item);
+
+            // Create a dialog to parse options
+            QDialog* mesh_dialog = new QDialog(m_qMainWindow);
+            Ui::MeshingOptionsDialogUI* mesh_ui = new Ui::MeshingOptionsDialogUI;
+            mesh_ui->setupUi(mesh_dialog);
+            int result = mesh_dialog->exec();
+
+            // Check dialog result and create mesh
+            if(result == QDialog::Accepted)
+            {
+                cout << "OK" << endl;
+            }
+        }
+    }
 
 }
 
@@ -316,20 +337,6 @@ void ViewerApplication::treeItemChanged(QTreeWidgetItem* item, int d)
 
 void ViewerApplication::treeSelectionChanged()
 {
-//    QTreeWidgetItemIterator it(m_sceneDockWidgetUi->treeWidget);
-//    while (*it) {
-//        if( (*it)->type() >= ServerItem)
-//        {
-//           // Get selected item
-//           CustomTreeWidgetItem* item = static_cast<CustomTreeWidgetItem*>(*it);
-//           item->renderable()->setSelected(item->isSelected());
-//
-//           // Update render modes in tool bar
-//           updateToolbarActions(item);
-//
-//        }
-//        ++it;
-//    }
     QList<QTreeWidgetItem *> list = m_sceneDockWidgetUi->treeWidget->selectedItems();
     QList<QTreeWidgetItem *>::iterator it = list.begin();
     for(it = list.begin(); it != list.end(); it++)
@@ -366,7 +373,6 @@ void ViewerApplication::updateToolbarActions(CustomTreeWidgetItem* item)
     }
     else
     {
-        cout << "OK" << endl;
         m_mainWindowUi->actionVertexView->setEnabled(false);
         m_mainWindowUi->actionWireframeView->setEnabled(false);
         m_mainWindowUi->actionSurfaceView->setEnabled(false);
