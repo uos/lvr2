@@ -32,6 +32,7 @@
 #include "MainWindow.h"
 #include "FogDensityDialog.h"
 #include "SceneDockWidget.h"
+#include "MeshingOptionsDialogUI.h"
 
 #include "../data/DataCollectorFactory.h"
 
@@ -85,6 +86,7 @@ public Q_SLOTS:
 
 	void meshRenderModeChanged();
 	void pointRenderModeChanged();
+	void createMeshFromPointcloud();
 
 private:
 
