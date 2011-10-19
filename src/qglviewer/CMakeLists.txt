@@ -18,6 +18,7 @@ set(QVIEWER_UIS
     ui/MainWindow.ui
     ui/SceneDockWidget.ui
     ui/TransformationDialogUI.ui
+    ui/MeshingOptionsDialogUI.ui
 )
 
 # Main Sources
