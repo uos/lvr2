@@ -47,13 +47,13 @@ Texture<VertexT, NormalT>::Texture(PointCloudManager<VertexT, NormalT>* pm, Regi
 			{
 				int r = 0;
 				int s = 0;
-				float denom = 0;
+				float denom = 0.01;
 
 				for(int t = 0; t<3; t++)
 				{
 					for(int u = 0; u<3; u++)
 					{
-						if(fabs(v1[t] * v2[u] - v1[u] * v2[t]) > 0.01)
+						if(fabs(v1[t] * v2[u] - v1[u] * v2[t]) > fabs(denom))
 						{
 							denom = v1[t] * v2[u] - v1[u] * v2[t];
 							r = t;
