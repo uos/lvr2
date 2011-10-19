@@ -29,6 +29,8 @@
 
 #include "PointCloudManager.hpp"
 
+#include "io/PointLoader.hpp"
+
 #include <pcl/point_types.h>
 #include <pcl/point_cloud.h>
 #include <pcl/io/pcd_io.h>
@@ -42,8 +44,8 @@ template<typename VertexT, typename NormalT>
 class PCLPointCloudManager : public PointCloudManager<VertexT, NormalT>
 {
 public:
-    PCLPointCloudManager(string filename, int kn = 10, int ki = 10, int kd = 10);
-
+    //PCLPointCloudManager(string filename, int kn = 10, int ki = 10, int kd = 10);
+    PCLPointCloudManager(PointLoader* loader, int kn = 10, int ki = 10, int kd = 10);
     virtual ~PCLPointCloudManager();
 
 
