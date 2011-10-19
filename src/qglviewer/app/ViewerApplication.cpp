@@ -136,36 +136,36 @@ void ViewerApplication::connectEvents()
 	connect(m_mainWindowUi->actionGenerateMesh, SIGNAL(triggered()), this, SLOT(createMeshFromPointcloud()));
 }
 
-void ViewerApplication::createMeshFromPointcloud()
-{
-    // Display mesh generation dialog
-    QTreeWidgetItem* item = m_sceneDockWidgetUi->treeWidget->currentItem();
-    if(item)
-    {
-        if(item->type() == PointCloudItem)
-        {
-            CustomTreeWidgetItem* c_item = static_cast<CustomTreeWidgetItem*>(item);
-
-            // Create a dialog to parse options
-            QDialog* mesh_dialog = new QDialog(m_qMainWindow);
-            Ui::MeshingOptionsDialogUI* mesh_ui = new Ui::MeshingOptionsDialogUI;
-            mesh_ui->setupUi(mesh_dialog);
-            int result = mesh_dialog->exec();
-
-            // Check dialog result and create mesh
-            if(result == QDialog::Accepted)
-            {
-
-                // Get point cloud data
-                lssr::PointCloud* pc = static_cast<lssr::PointCloud*>(c_item->renderable());
-
-                // Create point cloud manager object
-
-            }
-        }
-    }
-
-}
+//void ViewerApplication::createMeshFromPointcloud()
+//{
+//    // Display mesh generation dialog
+//    QTreeWidgetItem* item = m_sceneDockWidgetUi->treeWidget->currentItem();
+//    if(item)
+//    {
+//        if(item->type() == PointCloudItem)
+//        {
+//            CustomTreeWidgetItem* c_item = static_cast<CustomTreeWidgetItem*>(item);
+//
+//            // Create a dialog to parse options
+//            QDialog* mesh_dialog = new QDialog(m_qMainWindow);
+//            Ui::MeshingOptionsDialogUI* mesh_ui = new Ui::MeshingOptionsDialogUI;
+//            mesh_ui->setupUi(mesh_dialog);
+//            int result = mesh_dialog->exec();
+//
+//            // Check dialog result and create mesh
+//            if(result == QDialog::Accepted)
+//            {
+//
+//                // Get point cloud data
+//                lssr::PointCloud* pc = static_cast<lssr::PointCloud*>(c_item->renderable());
+//
+//                // Create point cloud manager object
+//
+//            }
+//        }
+//    }
+//
+//}
 
 void ViewerApplication::openFile()
 {

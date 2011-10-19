@@ -31,27 +31,28 @@ namespace lssr
 
 Renderable::Renderable()
 {
-	m_name = "<NO NAME>";
-	m_listIndex = -1;
-	m_activeListIndex = -1;
-	m_axesListIndex = -1;
-	m_visible = true;
-	//rotation_speed = 0.0;
-	m_rotationSpeed = 0.02f;
-	//translation_speed = 0.0;
-	m_translationSpeed = 10.0f;
+	m_name =            "<NO NAME>";
+	m_listIndex         = -1;
+	m_activeListIndex   = -1;
+	m_axesListIndex     = -1;
+	m_visible           = true;
 
-	m_showAxes = false;
-	m_active = true;
-	m_selected = false;
+	m_rotationSpeed     = 0.02f;
+	m_translationSpeed  = 10.0f;
+	m_scaleFactor       = 1.0f;
 
-	m_xAxis = Vertex<float>(1.0f, 0.0f, 0.0f);
-	m_yAxis = Vertex<float>(0.0f, 1.0f, 0.0f);
-	m_z_Axis = Vertex<float>(0.0f, 0.0f, 1.0f);
+	m_showAxes  = false;
+	m_active    = true;
+	m_selected  = false;
 
-	m_scaleFactor = 1.0f;
+	m_xAxis     = Vertex<float>(1.0f, 0.0f, 0.0f);
+	m_yAxis     = Vertex<float>(0.0f, 1.0f, 0.0f);
+	m_z_Axis    = Vertex<float>(0.0f, 0.0f, 1.0f);
 
-	m_boundingBox =  new BoundingBox<Vertex<float> >;
+	m_boundingBox = new BoundingBox<Vertex<float> >;
+
+	m_meshLoader = 0;
+	m_pointLoader = 0;
 
 	computeMatrix();
 	//compileAxesList();
@@ -60,22 +61,22 @@ Renderable::Renderable()
 
 Renderable::Renderable(Matrix4<float> m, string n)
 {
-	m_transformation  = m;
-	m_name = n;
-	m_listIndex = -1;
-	m_axesListIndex = -1;
-	m_visible = true;
-	//rotation_speed = 0.0;
-	m_rotationSpeed = 0.02f;
-	//translation_speed = 0.0;
-	m_translationSpeed = 10.0f;
+	m_transformation    = m;
+	m_name              = n;
+	m_listIndex         = -1;
+	m_axesListIndex     = -1;
+	m_visible           = true;
+	m_rotationSpeed     = 0.02f;
+	m_translationSpeed  = 10.0f;
 
-	m_showAxes = false;
-	m_active = false;
+    m_scaleFactor       = 1.0f;
+    m_boundingBox       = 0;
 
-	m_scaleFactor = 1.0f;
+    m_meshLoader = 0;
+    m_pointLoader = 0;
 
-	m_boundingBox = 0;
+	m_showAxes          = false;
+	m_active            = false;
 
 	setTransformationMatrix(m);
 	computeMatrix();
@@ -84,24 +85,27 @@ Renderable::Renderable(Matrix4<float> m, string n)
 
 Renderable::Renderable(const Renderable& other)
 {
-	m_transformation = other.m_transformation;
-	m_name = other.m_name;
-	m_listIndex = other.m_listIndex;
-	m_axesListIndex = other.m_axesListIndex;
-	m_visible = other.m_visible;
-	m_rotationSpeed = other.m_translationSpeed;
-	m_translationSpeed = other.m_rotationSpeed;
+	m_transformation        = other.m_transformation;
+	m_name                  = other.m_name;
+	m_listIndex             = other.m_listIndex;
+	m_axesListIndex         = other.m_axesListIndex;
+	m_visible               = other.m_visible;
+	m_rotationSpeed         = other.m_translationSpeed;
+	m_translationSpeed      = other.m_rotationSpeed;
 
-	m_showAxes = other.m_showAxes;
-	m_active = other.m_active;
+	m_showAxes              = other.m_showAxes;
+	m_active                = other.m_active;
 
-	m_xAxis = other.m_xAxis;
-	m_yAxis = other.m_yAxis;
-	m_z_Axis = other.m_z_Axis;
+	m_xAxis                 = other.m_xAxis;
+	m_yAxis                 = other.m_yAxis;
+	m_z_Axis                = other.m_z_Axis;
 
-	m_scaleFactor = other.m_scaleFactor;
+	m_scaleFactor           = other.m_scaleFactor;
 
-	m_boundingBox = other.m_boundingBox;
+	m_boundingBox           = other.m_boundingBox;
+
+	m_meshLoader            = other.m_meshLoader;
+	m_pointLoader           = other.m_pointLoader;
 
 	computeMatrix();
 	compileAxesList();
@@ -109,26 +113,27 @@ Renderable::Renderable(const Renderable& other)
 
 Renderable::Renderable(string n)
 {
-	m_name = n;
-	m_visible = true;
-	m_listIndex = -1;
-	m_axesListIndex = -1;
-	m_visible = true;
-	//rotation_speed = 0.0;
-	m_rotationSpeed = 0.02f;
-	//translation_speed = 0.0;
-	m_translationSpeed = 10.0f;
+	m_name                  = n;
+	m_visible               = true;
+	m_listIndex             = -1;
+	m_axesListIndex         = -1;
+	m_visible               = true;
+	m_rotationSpeed         = 0.02f;
+	m_translationSpeed      = 10.0f;
 
-	m_showAxes = false;
-	m_active = false;
+	m_showAxes              = false;
+	m_active                = false;
 
-	m_xAxis = Vertex<float>(1.0f, 0.0f, 0.0f);
-	m_yAxis = Vertex<float>(0.0f, 1.0f, 0.0f);
-	m_z_Axis = Vertex<float>(0.0f, 0.0f, 1.0f);
+	m_xAxis     = Vertex<float>(1.0f, 0.0f, 0.0f);
+	m_yAxis     = Vertex<float>(0.0f, 1.0f, 0.0f);
+	m_z_Axis    = Vertex<float>(0.0f, 0.0f, 1.0f);
 
-	m_scaleFactor = 1.0f;
+	m_scaleFactor           = 1.0f;
 
-	m_boundingBox = 0;
+	m_boundingBox           = 0;
+
+	m_pointLoader           = 0;
+	m_meshLoader            = 0;
 
 	computeMatrix();
 	compileAxesList();
