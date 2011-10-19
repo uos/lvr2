@@ -142,7 +142,7 @@ void ViewerApplication::createMeshFromPointcloud()
     QTreeWidgetItem* item = m_sceneDockWidgetUi->treeWidget->currentItem();
     if(item)
     {
-        if(item->type() > 1000)
+        if(item->type() == PointCloudItem)
         {
             CustomTreeWidgetItem* c_item = static_cast<CustomTreeWidgetItem*>(item);
 
@@ -155,7 +155,11 @@ void ViewerApplication::createMeshFromPointcloud()
             // Check dialog result and create mesh
             if(result == QDialog::Accepted)
             {
-                cout << "OK" << endl;
+
+                // Get point cloud data
+                lssr::PointCloud* pc = static_cast<lssr::PointCloud*>(c_item->renderable());
+
+
             }
         }
     }
