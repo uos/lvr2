@@ -100,6 +100,9 @@ public:
 
 	BoundingBox<Vertex<float> >* boundingBox() { return m_boundingBox;};
 
+	MeshLoader*  getMeshLoader();
+	PointLoader* getPointLoader();
+
 protected:
 
 	virtual void    transform();
