@@ -44,8 +44,16 @@
 #include "../widgets/PointCloudTreeWidgetItem.h"
 #include "../widgets/TriangleMeshTreeWidgetItem.h"
 #include "../widgets/TransformationDialog.h"
+#include "../widgets/DebugOutputDialog.hpp"
 
 #include "display/StaticMesh.hpp"
+#include "geometry/HalfEdgeMesh.hpp"
+
+#include "reconstruction/PointCloudManager.hpp"
+#include "reconstruction/PCLPointCloudManager.hpp"
+#include "reconstruction/StannPointCloudManager.hpp"
+#include "reconstruction/FastReconstruction.hpp"
+
 
 
 using Ui::MainWindow;

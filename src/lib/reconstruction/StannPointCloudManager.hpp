@@ -29,6 +29,8 @@
 
 // Internal includes from lssr
 #include "PointCloudManager.hpp"
+
+#include "../io/PointLoader.hpp"
 #include "../io/Progress.hpp"
 #include "../io/Timestamp.hpp"
 #include "../io/PLYIO.hpp"
@@ -75,26 +77,6 @@ class StannPointCloudManager : public PointCloudManager<VertexT, NormalT>
 public:
 
 	/**
-	 * @brief Creates a new instance using the given coordinate array.
-	 *        The point data is supposed to be stored as a sequence
-	 *        of n tripels that contain the point coordinates.
-	 *
-	 * @param points    An array of point coordinates
-	 * @param normals   A normal array. If a null pointer is passed, normals
-	 *                  are automatically calculated.
-	 * @param n         The number of points in the data set
-	 * @param kn        The number of neighbor points used for normal estimation
-	 * @param ki        The number of neighbor points used for normal interpolation
-	 * @param kd        The number of neighbor points used for distance value calculation
-	 */
-	StannPointCloudManager(float** points,
-	                       NormalT *normals,
-	                       size_t n,
-	                       const int &kn = 10,
-	                       const int &ki = 10,
-	                       const int &kd = 10);
-
-	/**
 	 * @brief Trys to read the given file to create a new StannPointCloudManager
 	 *        instance.
 	 *
@@ -103,7 +85,7 @@ public:
      * @param ki        The number of neighbor points used for normal interpolation
      * @param kd        The number of neighbor points used for distance value calculation
 	 */
-	StannPointCloudManager(string filename,
+	StannPointCloudManager(PointLoader* loader,
 	                       const int &kn = 10,
 	                       const int &ki = 10,
 	                       const int &kd = 10);

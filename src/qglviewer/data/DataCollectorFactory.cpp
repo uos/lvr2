@@ -80,6 +80,7 @@ void DataCollectorFactory::create(string filename)
 	    item->setNumFaces(mesh->getNumberOfFaces());
 
 	    Static3DDataCollector* dataCollector = new Static3DDataCollector(mesh, name, item);
+
 	    Q_EMIT dataCollectorCreated( dataCollector );
 	}
 

@@ -1112,6 +1112,8 @@ void HalfEdgeMesh<VertexT, NormalT>::finalize()
 
 
     }
+
+   this->m_finalized = true;
 }
 
 template<typename VertexT, typename NormalT>
@@ -1490,6 +1492,7 @@ void HalfEdgeMesh<VertexT, NormalT>::finalizeAndRetesselate(bool genTextures)
     cout << timestamp << "Done retesselating: " 						  	 	<< endl;
     cout << timestamp << "[" << this->m_nVertices << "] Vertices." << endl;
     cout << timestamp << "[" << this->m_nFaces << "] Faces." 	   << endl;
+
 } 
 
 } // namespace lssr
