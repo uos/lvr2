@@ -27,6 +27,8 @@
 #ifndef BASEMESH_H_
 #define BASEMESH_H_
 
+#include "io/MeshLoader.hpp"
+
 namespace lssr {
 
 /**
@@ -86,6 +88,8 @@ public:
 	 */
 	virtual void saveObj(string filename);
 
+
+	MeshLoader* getMeshLoader();
 
 protected:
 

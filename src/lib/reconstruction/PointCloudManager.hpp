@@ -105,14 +105,6 @@ public:
 
 protected:
 
-	/**
-	 * @brief Tries to read point and normal information from
-	 *        the given file
-	 *
-	 * @param filename      A file containing point cloud data.
-	 */
-	virtual void readFromFile(string filename);
-
     /// The currently stored points
     float**                   	m_points;
 

@@ -53,6 +53,9 @@
     <property name="decimals">
      <number>6</number>
     </property>
+    <property name="value">
+     <double>5.000000000000000</double>
+    </property>
    </widget>
    <widget class="QLabel" name="label">
     <property name="geometry">
@@ -80,7 +83,7 @@
      <string>Point Cloud Manager</string>
     </property>
    </widget>
-   <widget class="QComboBox" name="comboBox">
+   <widget class="QComboBox" name="comboBoxPCM">
     <property name="geometry">
      <rect>
       <x>190</x>
@@ -89,6 +92,24 @@
       <height>27</height>
      </rect>
     </property>
+    <property name="maxVisibleItems">
+     <number>1</number>
+    </property>
+    <item>
+     <property name="text">
+      <string>STANN</string>
+     </property>
+    </item>
+    <item>
+     <property name="text">
+      <string>PCL</string>
+     </property>
+    </item>
+    <item>
+     <property name="text">
+      <string>FLANN</string>
+     </property>
+    </item>
    </widget>
    <widget class="QLabel" name="label_3">
     <property name="geometry">

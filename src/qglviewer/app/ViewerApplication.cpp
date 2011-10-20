@@ -25,6 +25,7 @@
  */
 
 #include "ViewerApplication.h"
+#include "../data/Static3DDataCollector.h"
 
 ViewerApplication::ViewerApplication( int argc, char ** argv )
 {
@@ -138,6 +139,9 @@ void ViewerApplication::connectEvents()
 
 void ViewerApplication::createMeshFromPointcloud()
 {
+    // Some usings
+    using namespace lssr;
+
     // Display mesh generation dialog
     QTreeWidgetItem* item = m_sceneDockWidgetUi->treeWidget->currentItem();
     if(item)
@@ -155,10 +159,126 @@ void ViewerApplication::createMeshFromPointcloud()
             // Check dialog result and create mesh
             if(result == QDialog::Accepted)
             {
-
                 // Get point cloud data
-                lssr::PointCloud* pc = static_cast<lssr::PointCloud*>(c_item->renderable());
+                PointCloud* pc = static_cast<lssr::PointCloud*>(c_item->renderable());
+                PointLoader* loader = pc->getPointLoader();
 
+                if(loader)
+                {
+                    // Create a point cloud manager object
+                    PointCloudManager<ColorVertex<float, unsigned char>, Normal<float> >* pcm;
+                    QString pcm_name = mesh_ui->comboBoxPCM->currentText();
+
+                    if(pcm_name == "PCL")
+                    {
+#ifdef _USE_PCL_
+                        pcm = new PCLPointCloudManager<ColorVertex<float, unsigned char>, Normal<float> > (loader);
+#else
+                        pcm = new StannPointCloudManager<ColorVertex<float, unsigned char>, Normal<float> > (loader);
+#endif
+                    }
+                    else
+                    {
+                        pcm = new StannPointCloudManager<ColorVertex<float, unsigned char>, Normal<float> > (loader);
+                    }
+
+                    // Set pcm parameters
+                    pcm->setKD(mesh_ui->spinBoxKd->value());
+                    pcm->setKI(mesh_ui->spinBoxKi->value());
+                    pcm->setKN(mesh_ui->spinBoxKn->value());
+                    pcm->calcNormals();
+
+                    // Create an empty mesh
+                    HalfEdgeMesh<ColorVertex<float, unsigned char>, Normal<float> > mesh(pcm);
+
+                    // Get reconstruction mesh
+                    float voxelsize = mesh_ui->spinBoxVoxelsize->value();
+
+                    FastReconstruction<ColorVertex<float, unsigned char>, Normal<float> > reconstruction(*pcm, voxelsize, true);
+                    reconstruction.getMesh(mesh);
+
+                    // Get optimization parameters
+                    bool optimize_planes = mesh_ui->checkBoxOptimizePlanes->isChecked();
+                    bool fill_holes      = mesh_ui->checkBoxFillHoles->isChecked();
+                    bool rds             = mesh_ui->checkBoxRDA->isChecked();
+                    bool small_regions   = mesh_ui->checkBoxRemoveRegions->isChecked();
+                    bool retesselate     = mesh_ui->checkBoxRetesselate->isChecked();
+                    bool texture         = mesh_ui->checkBoxGenerateTextures->isChecked();
+                    bool color_regions   = mesh_ui->checkBoxColorRegions->isChecked();
+
+                    int  num_plane_its   = mesh_ui->spinBoxPlaneIterations->value();
+                    int  num_rda         = mesh_ui->spinBoxRDA->value();
+                    int  num_rm_regions  = mesh_ui->spinBoxRemoveRegions->value();
+
+                    float min_plane_size = mesh_ui->spinBoxMinPlaneSize->value();
+                    float normal_thresh  = mesh_ui->spinBoxNormalThr->value();
+                    float max_hole_size  = mesh_ui->spinBoxHoleSize->value();
+
+                    // Perform optimizations
+                    if(optimize_planes)
+                    {
+                        if(color_regions)
+                        {
+                            mesh.enableRegionColoring();
+                        }
+
+                        mesh.optimizePlanes(num_plane_its,
+                                normal_thresh,
+                                min_plane_size,
+                                num_rm_regions,
+                                true);
+
+                        mesh.fillHoles(max_hole_size);
+                        mesh.optimizePlaneIntersections();
+                        mesh.restorePlanes();
+                        mesh.optimizePlanes(num_plane_its,
+                                            normal_thresh,
+                                            min_plane_size,
+                                            num_rm_regions,
+                                            false);
+
+
+                    }
+
+                    if(retesselate)
+                    {
+                        mesh.finalizeAndRetesselate(texture);
+                    }
+                    else
+                    {
+                        mesh.finalize();
+                    }
+
+
+                    // Create and add mesh to loaded objects
+                    MeshLoader* l = mesh.getMeshLoader();
+
+                    lssr::StaticMesh* static_mesh = new lssr::StaticMesh(*l);
+                    TriangleMeshTreeWidgetItem* mesh_item = new TriangleMeshTreeWidgetItem(TriangleMeshItem);
+
+                    int modes = 0;
+                    modes |= Mesh;
+
+                    string name = "Mesh: " + c_item->name();
+
+                    cout << static_mesh->getNumberOfFaces() << endl;
+                    cout << static_mesh->getNumberOfVertices() << endl;
+
+                    if(static_mesh->getNormals())
+                    {
+                        modes |= VertexNormals;
+                    }
+                    mesh_item->setSupportedRenderModes(modes);
+                    mesh_item->setViewCentering(false);
+                    mesh_item->setName(name);
+                    mesh_item->setRenderable(static_mesh);
+                    mesh_item->setNumFaces(static_mesh->getNumberOfFaces());
+
+                    Static3DDataCollector* dc = new Static3DDataCollector(static_mesh, name, mesh_item);
+
+                    dataCollectorAdded(dc);
+                    m_viewerManager->addDataCollector(dc);
+                }
 
             }
         }
@@ -437,7 +557,7 @@ void ViewerApplication::fogLinear()
 {
 	if(m_viewer->type() == PERSPECTIVE_VIEWER)
 	{
-		(static_cast<PerspectiveViewer*>(m_viewer))->setFogType(LINEAR);
+		(static_cast<PerspectiveViewer*>(m_viewer))->setFogType(FOG_LINEAR);
 	}
 }
 
@@ -445,7 +565,7 @@ void ViewerApplication::fogExp2()
 {
 	if(m_viewer->type() == PERSPECTIVE_VIEWER)
 	{
-		(static_cast<PerspectiveViewer*>(m_viewer))->setFogType(EXP2);
+		(static_cast<PerspectiveViewer*>(m_viewer))->setFogType(FOG_EXP2);
 	}
 }
 
@@ -453,7 +573,7 @@ void ViewerApplication::fogExp()
 {
 	if(m_viewer->type() == PERSPECTIVE_VIEWER)
 	{
-		(static_cast<PerspectiveViewer*>(m_viewer))->setFogType(EXP);
+		(static_cast<PerspectiveViewer*>(m_viewer))->setFogType(FOG_EXP);
 	}
 }
 
