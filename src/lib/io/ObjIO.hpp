@@ -46,7 +46,7 @@ public:
     void setNormalArray(CoordType* array, size_t count);
     void setIndexArray(IndexType* array, size_t count);
     void setTextureCoords(CoordType* coords, size_t c);
-    void setColors(CoordType* coords, size_t c);
+    void setColors(uchar* coords, size_t c);
     void setTextureIndices(IndexType* coords, size_t c);
     void setTextures(IndexType* textures, size_t c);
 
@@ -54,7 +54,7 @@ public:
 private:
 	 CoordType*          m_vertices;
 	 CoordType*          m_normals;
-	 CoordType*				m_colors;
+	 uchar*			     m_colors;
 	 CoordType*          m_textureCoords;
 
 	 IndexType*          m_indices;
