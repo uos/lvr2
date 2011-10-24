@@ -52,7 +52,7 @@ PerspectiveViewer::PerspectiveViewer(QWidget* parent, const QGLWidget* shared)
 	// camera pointers are instantiated only when needed
 	m_projectionMode = PERSPECTIVE;
 	m_showFog = false;
-	m_fogType = LINEAR;
+	m_fogType = FOG_LINEAR;
 
 	// Set a custom mouse binding for look around mod
 }
@@ -112,9 +112,9 @@ void PerspectiveViewer::setFogType(FOGTYPE f)
 {
 	switch(f)
 	{
-	case LINEAR: 	glFogi(GL_FOG_MODE, GL_LINEAR);	break;
-	case EXP:		glFogi(GL_FOG_MODE, GL_EXP); 	break;
-	case EXP2:		glFogi(GL_FOG_MODE, GL_EXP2); 	break;
+	case FOG_LINEAR: 	glFogi(GL_FOG_MODE, GL_LINEAR);	break;
+	case FOG_EXP:		glFogi(GL_FOG_MODE, GL_EXP); 	break;
+	case FOG_EXP2:		glFogi(GL_FOG_MODE, GL_EXP2); 	break;
 	}
 }
 

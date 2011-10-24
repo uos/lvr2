@@ -160,6 +160,12 @@ int main(int argc, char** argv)
 
     ::std::cout << options << ::std::endl;
 
+
+    // Create a point loader object
+    size_t num_points;
+    IOFactory io_factory(options.getInputFileName());
+    PointLoader* p_loader = io_factory.getPointLoader();
+
     // Create a point cloud manager
     string pcm_name = options.getPCM();
     PointCloudManager<ColorVertex<float, unsigned char>, Normal<float> >* pcm;
@@ -167,16 +173,16 @@ int main(int argc, char** argv)
     {
 #ifdef _USE_PCL_
         cout << timestamp << "Creating PCL point cloud manager." << endl;
-        pcm = new PCLPointCloudManager<ColorVertex<float, unsigned char>, Normal<float> > ( options.getInputFileName());
+        pcm = new PCLPointCloudManager<ColorVertex<float, unsigned char>, Normal<float> > (p_loader);
 #else
         cout << timestamp << "PCL bindings not found. Using STANN instead." << endl;
-        pcm = new StannPointCloudManager<ColorVertex<float, unsigned char>, Normal<float> > ( options.getInputFileName());
+        pcm = new StannPointCloudManager<ColorVertex<float, unsigned char>, Normal<float> > (p_loader);
 #endif
     }
     else
     {
         cout << timestamp << "Creating STANN point cloud manager." << endl;
-        pcm = new StannPointCloudManager<ColorVertex<float, unsigned char>, Normal<float> > ( options.getInputFileName());
+        pcm = new StannPointCloudManager<ColorVertex<float, unsigned char>, Normal<float> > (p_loader);
     }
 
     pcm->setKD(options.getKd());

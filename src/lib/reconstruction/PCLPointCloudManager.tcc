@@ -33,7 +33,7 @@ namespace lssr
 {
 
 template<typename VertexT, typename NormalT>
-PCLPointCloudManager<VertexT, NormalT>::PCLPointCloudManager(string filename, int kn, int ki, int kd)
+PCLPointCloudManager<VertexT, NormalT>::PCLPointCloudManager(PointLoader* loader, int kn, int ki, int kd)
 {
     this->m_kn = kn;
     this->m_ki = ki;
@@ -41,8 +41,8 @@ PCLPointCloudManager<VertexT, NormalT>::PCLPointCloudManager(string filename, in
 
     m_pointCloud  = pcl::PointCloud<pcl::PointXYZ>::Ptr (new pcl::PointCloud<pcl::PointXYZ>);
 
-    // Read dat from disk
-    this->readFromFile(filename);
+    // Get data from loader object
+    this->m_points = loader->getIndexedPointArray(this->m_numPoints);
 
     // Parse to PCL point cloud
     cout << timestamp << "Creating PCL point cloud" << endl;

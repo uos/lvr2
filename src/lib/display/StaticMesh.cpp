@@ -71,6 +71,8 @@ StaticMesh::StaticMesh(MeshLoader& loader, string name) : Renderable(name){
 
 	m_boundingBox = new BoundingBox<Vertex<float> >;
 
+	m_meshLoader = &loader;
+
 	if(!m_faceNormals) interpolateNormals();
 	if(!m_colors) setDefaultColors();
 
