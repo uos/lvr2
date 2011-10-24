@@ -38,12 +38,6 @@
 #include <cstddef>
 #include <cstdlib>
 
-#ifdef __GNUC__
-#define DEPRECATED __attribute__ ((deprecated))
-#else
-#define DEPRECATED 
-#endif
-
 namespace lssr
 {
 
@@ -141,7 +135,7 @@ class MeshLoader {
          * \param array  Pointer to interlaced vertex color data.
          * \param n      Amount of color information in the array.
          **/
-        void setVertexColorArray( float* array, size_t n ) DEPRECATED;
+        void setVertexColorArray( float* array, size_t n );
 
 
         /**
