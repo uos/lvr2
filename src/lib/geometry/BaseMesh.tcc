@@ -17,8 +17,9 @@
  */
 
 
- #include "BaseMesh.hpp"
-#include "../io/ObjIO.hpp"
+#include "BaseMesh.hpp"
+#include "io/ObjIO.hpp"
+#include "io/PLYIO.hpp"
 
 namespace lssr
 {
@@ -71,6 +72,22 @@ void BaseMesh<VertexT, IndexType>::saveObj(string filename)
 
 	// Save
 	obj_writer.write(filename);
+}
+
+template<typename VertexT, typename IndexType>
+MeshLoader* BaseMesh<VertexT, IndexType>::getMeshLoader()
+{
+    MeshLoader* l = 0;
+    if(m_finalized)
+    {
+        // Create and setup new loader object
+        l = new MeshLoader;
+        l->setVertexArray(m_vertexBuffer, m_nVertices);
+        l->setFaceArray(m_indexBuffer, m_nFaces);
+        l->setVertexNormalArray(m_normalBuffer, m_nVertices);
+        l->setVertexColorArray(m_colorBuffer, m_nVertices);
+    }
+    return l;
 }
 
 }

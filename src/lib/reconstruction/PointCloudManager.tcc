@@ -62,36 +62,5 @@ const VertexT PointCloudManager<VertexT, NormalT>::operator[](const size_t& inde
 }
 
 
-template<typename VertexT, typename NormalT>
-void PointCloudManager<VertexT, NormalT>::readFromFile(string filename)
-{
-    // Try to parse file
-    IOFactory io(filename);
-
-    // Get PoinLoader
-    PointLoader* loader = io.getPointLoader();
-
-    // Save points and normals (if present)
-    if(loader)
-    {
-        m_points  = loader->getIndexedPointArray( m_numPoints );
-        size_t n(0);
-        m_normals = loader->getIndexedPointNormalArray( n );
-        if ( n != m_numPoints ) {
-            m_normals = NULL;
-        }
-        m_colors  = loader->getIndexedPointColorArray( n );
-        if ( n != m_numPoints ) {
-            m_colors = NULL;
-        }
-    }
-    else
-    {
-        cout << timestamp << "PointCloudManager::readFromFile: Unable to read point cloud data from "
-             << filename << endl;
-    }
-
-}
-
 }
 

@@ -38,6 +38,9 @@ using namespace std;
 #include "geometry/Quaternion.hpp"
 #include "geometry/BoundingBox.hpp"
 
+#include "io/PointLoader.hpp"
+#include "io/MeshLoader.hpp"
+
 namespace lssr
 {
 
@@ -97,6 +100,9 @@ public:
 
 	BoundingBox<Vertex<float> >* boundingBox() { return m_boundingBox;};
 
+	MeshLoader*  getMeshLoader() { return m_meshLoader;};
+	PointLoader* getPointLoader() { return m_pointLoader;};
+
 protected:
 
 	virtual void    transform();
@@ -126,6 +132,9 @@ protected:
 
     Matrix4<float>               m_transformation;
     BoundingBox<Vertex<float> >* m_boundingBox;
+
+    PointLoader*                 m_pointLoader;
+    MeshLoader*                  m_meshLoader;
 
 };
 

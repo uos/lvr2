@@ -60,6 +60,8 @@ namespace lssr
  * .pose files will be sued to transform the scans.
  */
 
+typedef pair<size_t, size_t> indexPair;
+
 class UosIO : public BaseIO, public PointLoader
 {
 public:

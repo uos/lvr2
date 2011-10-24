@@ -16,50 +16,33 @@
  * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA
  */
 
-
- /*
- * PerspectiveViewer.h
+/**
+ * DebugOutputDialog.h
  *
- *  Created on: 22.09.2010
- *      Author: Thomas Wiemann
+ *  @date 20.10.2011
+ *  @author Thomas Wiemann
  */
 
-#ifndef PERSPECTIVEVIEWER_H_
-#define PERSPECTIVEVIEWER_H_
+#ifndef DEBUGOUTPUTDIALOG_H_
+#define DEBUGOUTPUTDIALOG_H_
 
-#include "Viewer.h"
+#include "DebugOutputDialogUI.h"
+#include "QDebugStream.hpp"
 
-enum FOGTYPE { FOG_LINEAR, FOG_EXP, FOG_EXP2};
+using Ui::DebugOutputDialogUI;
 
-class PerspectiveViewer: public Viewer
+class DebugOutputDialog : public QObject
 {
+    Q_OBJECT
 public:
-	PerspectiveViewer(QWidget* parent, const QGLWidget* shared = 0);
-	virtual ~PerspectiveViewer();
-
-	void setProjectionMode(ProjectionMode mode);
-
-	virtual void draw();
-	virtual void init();
-	virtual ViewerType type();
-
-	void toggleFog();
-	void setFogDensity(float density);
-	void setFogType(FOGTYPE f);
-
-	void changeFogSettings();
+    DebugOutputDialog(QWidget* parent);
+    virtual ~DebugOutputDialog();
 
 private:
-	void createBackgroundDisplayList();
-	void showEntireScene();
-
-	int 	m_backgroundDisplayList;
-
-	qglviewer::Camera* 	m_camera[4];
-	ProjectionMode		m_projectionMode;
-
-	bool				m_showFog;
-	FOGTYPE				m_fogType;
+    DebugOutputDialogUI*        m_ui;
+    QWidget*                    m_parent;
+    QDebugStream*               m_stream;
 };
 
-#endif /* PERSPECTIVEVIEWER_H_ */
+
+#endif /* DEBUGOUTPUTDIALOG_H_ */

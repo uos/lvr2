@@ -32,6 +32,7 @@
 #include "MainWindow.h"
 #include "FogDensityDialog.h"
 #include "SceneDockWidget.h"
+#include "MeshingOptionsDialogUI.h"
 
 #include "../data/DataCollectorFactory.h"
 
@@ -43,8 +44,16 @@
 #include "../widgets/PointCloudTreeWidgetItem.h"
 #include "../widgets/TriangleMeshTreeWidgetItem.h"
 #include "../widgets/TransformationDialog.h"
+#include "../widgets/DebugOutputDialog.hpp"
 
 #include "display/StaticMesh.hpp"
+#include "geometry/HalfEdgeMesh.hpp"
+
+#include "reconstruction/PointCloudManager.hpp"
+#include "reconstruction/PCLPointCloudManager.hpp"
+#include "reconstruction/StannPointCloudManager.hpp"
+#include "reconstruction/FastReconstruction.hpp"
+
 
 
 using Ui::MainWindow;
@@ -85,6 +94,7 @@ public Q_SLOTS:
 
 	void meshRenderModeChanged();
 	void pointRenderModeChanged();
+	void createMeshFromPointcloud();
 
 private:
 

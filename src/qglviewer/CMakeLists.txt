@@ -8,6 +8,8 @@ set(QVIEWER_MOCS
     viewers/Viewer.h
     viewers/ViewerManager.h
     widgets/TransformationDialog.h
+    widgets/QDebugStream.hpp
+    widgets/DebugOutputDialog.hpp
 )
 
 # Dynamically generated GUI object's from
@@ -18,6 +20,8 @@ set(QVIEWER_UIS
     ui/MainWindow.ui
     ui/SceneDockWidget.ui
     ui/TransformationDialogUI.ui
+    ui/MeshingOptionsDialogUI.ui
+    ui/DebugOutputDialogUI.ui
 )
 
 # Main Sources
@@ -36,6 +40,7 @@ set(QVIEWER_SOURCES
     widgets/TriangleMeshTreeWidgetItem.cpp
     widgets/MultiPointCloudTreeWidgetItem.cpp
     widgets/TransformationDialog.cpp
+    widgets/DebugOutputDialog.cpp
 )
 
 set(QVIEWER_RESOURCES
@@ -69,3 +74,4 @@ target_link_libraries(qviewer ${QGLVIEWER_LIBRARY_RELEASE})
 target_link_libraries(qviewer ${Boost_FILESYSTEM_LIBRARY}
 	${Boost_SYSTEM_LIBRARY} ${Boost_THREAD_LIBRARY}
 	${Boost_PROGRAM_OPTIONS_LIBRARY})
+target_link_libraries(qviewer ${PCL_LIBRARIES})
