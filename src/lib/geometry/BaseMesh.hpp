@@ -103,7 +103,7 @@ protected:
 	float*			m_normalBuffer;
 
 	/// The vertex colors
-	float*			m_colorBuffer;
+	uchar*			m_colorBuffer;
 
 	/// The texture coordinates
 	float*			m_textureCoordBuffer;

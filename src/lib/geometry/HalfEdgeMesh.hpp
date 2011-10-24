@@ -292,7 +292,7 @@ public:
     virtual void regionsToBuffer(
                 float **vertex, 
                 float **normal,
-                float **color,
+                uchar **color,
                 float **texture,
                 unsigned int **index, 
                 unsigned int **textureIndex, 

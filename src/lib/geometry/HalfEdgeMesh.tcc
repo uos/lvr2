@@ -1038,8 +1038,8 @@ void HalfEdgeMesh<VertexT, NormalT>::tester()
 void HalfEdgeMesh<VertexT, NormalT>::finalize()
 {
     cout << timestamp << "Finalizing mesh." << endl;
-    cout << timestamp << "Number of vertices: " << (uint32_t) m_vertices.size() << endl;
-    cout << timestamp << "Number of faces: " << (uint32_t)m_faces.size() << endl;
+    cout << timestamp << "Number of vertices: " << m_vertices.size() << endl;
+    cout << timestamp << "Number of faces: " << m_faces.size() << endl;
 
     boost::unordered_map<HalfEdgeVertex<VertexT, NormalT>*, int> index_map;
 
@@ -1048,7 +1048,7 @@ void HalfEdgeMesh<VertexT, NormalT>::finalize()
 
     this->m_vertexBuffer 	= new float[3 * this->m_nVertices];
     this->m_normalBuffer 	= new float[3 * this->m_nVertices];
-    this->m_colorBuffer 	= new float[3 * this->m_nVertices];
+    this->m_colorBuffer 	= new uchar[3 * this->m_nVertices];
 
     this->m_indexBuffer 	= new unsigned int[3 * this->m_nFaces];
 
@@ -1120,7 +1120,7 @@ template<typename VertexT, typename NormalT>
 void HalfEdgeMesh<VertexT, NormalT>::regionsToBuffer(
         float **vertex, 
         float **normal,
-        float **color,
+        uchar **color,
         float **texture,
         unsigned int **index, 
         unsigned int **textureIndex, 
@@ -1163,7 +1163,7 @@ void HalfEdgeMesh<VertexT, NormalT>::regionsToBuffer(
                 cout << "Resize" << endl;
                 *vertex = (float*)realloc((*vertex), vncSize*2*sizeof(float));
                 *normal = (float*)realloc((*normal), vncSize*2*sizeof(float));
-                *color  = (float*)realloc((*color),  vncSize*2*sizeof(float));
+                *color  = (uchar*)realloc((*color),  vncSize*2*sizeof(uchar));
                 *texture =(float*)realloc((*texture),vncSize*2*sizeof(float)); 
                 vncSize *= 2;
             }
@@ -1287,7 +1287,7 @@ void HalfEdgeMesh<VertexT, NormalT>::regionsToBuffer(
      */
     *vertex = (float*)realloc((*vertex), vncUsed*sizeof(float));
     *normal = (float*)realloc((*normal), vncUsed*sizeof(float));
-    *color  = (float*)realloc((*color),  vncUsed*sizeof(float));
+    *color  = (uchar*)realloc((*color),  vncUsed*sizeof(uchar));
     *texture =(float*)realloc((*texture),vncUsed*sizeof(float)); 
     *index        = (unsigned int*)realloc((*index), indexUsed*sizeof(float)); 
     *textureIndex = (unsigned int*)realloc((*textureIndex), indexUsed*sizeof(float)); 
@@ -1329,7 +1329,7 @@ void HalfEdgeMesh<VertexT, NormalT>::retesselateRegionsToBuffer(
         {
             vncBufferSize *= 4*sizeof(float);
             this->m_vertexBuffer       = (float*)realloc(this->m_vertexBuffer, vncBufferSize); 
-            this->m_colorBuffer        = (float*)realloc(this->m_colorBuffer, vncBufferSize); 
+            this->m_colorBuffer        = (uchar*)realloc(this->m_colorBuffer, vncBufferSize);
             this->m_normalBuffer       = (float*)realloc(this->m_normalBuffer, vncBufferSize); 
             this->m_textureCoordBuffer = (float*)realloc(this->m_normalBuffer, vncBufferSize);
         }
@@ -1439,7 +1439,7 @@ void HalfEdgeMesh<VertexT, NormalT>::finalizeAndRetesselate(bool genTextures)
     // Guess for the array sizes. The correct values are only known after the regions were tesselated.
     this->m_vertexBuffer       = new float[vncBufferSize];
     this->m_normalBuffer       = new float[vncBufferSize];
-    this->m_colorBuffer        = new float[vncBufferSize];
+    this->m_colorBuffer        = new uchar[vncBufferSize];
     this->m_textureCoordBuffer = new float[vncBufferSize];
     this->m_indexBuffer        = new unsigned int[indexBufferSize];
     this->m_textureIndexBuffer = new unsigned int[indexBufferSize];
@@ -1481,7 +1481,7 @@ void HalfEdgeMesh<VertexT, NormalT>::finalizeAndRetesselate(bool genTextures)
     this->m_nVertices = vncBufferSize/3; 
     this->m_nFaces 	  = indexBufferSize/3;
     this->m_vertexBuffer = (float*)realloc(this->m_vertexBuffer, this->m_nVertices*3*sizeof(float));
-    this->m_colorBuffer  = (float*)realloc(this->m_colorBuffer,  this->m_nVertices*3*sizeof(float));
+    this->m_colorBuffer  = (uchar*)realloc(this->m_colorBuffer,  this->m_nVertices*3*sizeof(uchar));
     this->m_normalBuffer = (float*)realloc(this->m_normalBuffer, this->m_nVertices*3*sizeof(float));
     this->m_textureCoordBuffer = (float*)realloc(this->m_textureCoordBuffer, this->m_nVertices*3*sizeof(float));
     this->m_indexBuffer = (unsigned int*)realloc(this->m_indexBuffer, this->m_nFaces*3*sizeof(unsigned int));

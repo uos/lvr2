@@ -38,8 +38,6 @@
 
 using namespace std;
 
-typedef unsigned char uchar;
-
 namespace lssr
 {
 
