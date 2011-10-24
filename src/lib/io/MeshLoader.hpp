@@ -38,11 +38,7 @@
 #include <cstddef>
 #include <cstdlib>
 
-#ifdef __GNUC__
-#define DEPRECATED __attribute__ ((deprecated))
-#else
-#define DEPRECATED 
-#endif
+typedef unsigned char uchar;
 
 namespace lssr
 {
@@ -141,22 +137,7 @@ class MeshLoader {
          * \param array  Pointer to interlaced vertex color data.
          * \param n      Amount of color information in the array.
          **/
-        void setVertexColorArray( float* array, size_t n ) DEPRECATED;
-
-
-        /**
-         * \brief Set the vertex color array.
-         *
-         * By using setVertexColorArray the internal vertex color buffer can be
-         * set. The array has to be a one dimensional uint8_t array containing
-         * sets of three values for \c red, \c green and \c blue. The values
-         * can be in the range of [0..255].
-         *
-         * \param array  Pointer to interlaced vertex color data.
-         * \param n      Amount of color information in the array.
-         **/
-        void setVertexColorArray( uint8_t* array, size_t n );
-
+        void setVertexColorArray( uchar* array, size_t n );
 
         /**
          * \brief Set the vertex array.
@@ -390,7 +371,7 @@ class MeshLoader {
         /// %Vertex buffer.
         float*        m_vertices;
         /// %Vertex color buffer.
-        uint8_t*      m_vertexColors;
+        uchar*      m_vertexColors;
         /// %Vertex confidence buffer.
         float*        m_vertexConfidence;
         /// %Vertex intensity buffer.
@@ -401,7 +382,7 @@ class MeshLoader {
         /// Indexed vertex buffer.
         float**       m_indexedVertices;
         /// Indexed vertex color buffer.
-        uint8_t**     m_indexedVertexColors;
+        uchar**     m_indexedVertexColors;
         /// Indexed vertex confidence buffer.
         float**       m_indexedVertexConfidence;
         /// Indexed vertex intensity buffer.

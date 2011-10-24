@@ -73,7 +73,7 @@ void ObjIO<CoordType, IndexType>::setTextureCoords(CoordType* coords, size_t c)
 }
 
 template<typename CoordType, typename IndexType>
-void ObjIO<CoordType, IndexType>::setColors(CoordType* coords, size_t c)
+void ObjIO<CoordType, IndexType>::setColors(uchar* coords, size_t c)
 {
     m_colors = coords;
     m_colorCount = c;

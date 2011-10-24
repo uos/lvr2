@@ -44,6 +44,8 @@
 using std::vector;
 using std::pair;
 
+typedef unsigned char uchar;
+
 namespace lssr
 {
 

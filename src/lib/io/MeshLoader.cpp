@@ -268,17 +268,17 @@ void MeshLoader::setFaceArray( unsigned int* array, size_t n )
 
 }
 
-void MeshLoader::setVertexColorArray( float* array, size_t n )
-{
-
-    m_vertexColors = (uint8_t*) malloc( n * 3 * sizeof(uint8_t) );
-    for ( int i = 0; i < ( 3 * n ); i++ )
-    {
-        m_vertexColors[i] = (uint8_t) ( array[i] * 255 );
-    }
-    m_numVertexColors = n;
-
-}
+//void MeshLoader::setVertexColorArray( float* array, size_t n )
+//{
+//
+//    m_vertexColors = (uint8_t*) malloc( n * 3 * sizeof(uint8_t) );
+//    for ( int i = 0; i < ( 3 * n ); i++ )
+//    {
+//        m_vertexColors[i] = (uint8_t) ( array[i] * 255 );
+//    }
+//    m_numVertexColors = n;
+//
+//}
 
 void MeshLoader::setVertexColorArray( uint8_t* array, size_t n )
 {
