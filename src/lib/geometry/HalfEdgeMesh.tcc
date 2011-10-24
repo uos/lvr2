@@ -1088,15 +1088,15 @@ void HalfEdgeMesh<VertexT, NormalT>::finalize()
         float r, g, b;
         if(m_colorRegions)
         {
-            r = fabs(cos(surface_class));
-            g = fabs(sin(surface_class * 30));
-            b = fabs(sin(surface_class * 2));
+            r = (uchar) (255 * fabs(cos(surface_class)));
+            g = (uchar) (255 * fabs(sin(surface_class * 30)));
+            b = (uchar) (255 * fabs(sin(surface_class * 2)));
         }
         else
         {
-            r = 0.0;
-            g = 0.8;
-            b = 0.0;
+            r = 0;
+            g = 200;
+            b = 0;
         }
         this->m_colorBuffer[this->m_indexBuffer[3 * i]  * 3 + 0] = r;
         this->m_colorBuffer[this->m_indexBuffer[3 * i]  * 3 + 1] = g;
@@ -1143,15 +1143,15 @@ void HalfEdgeMesh<VertexT, NormalT>::regionsToBuffer(
 
         if(this->m_colorRegions)
         {
-            r = fabs(cos(surface_class));
-            g = fabs(sin(surface_class * 30));
-            b = fabs(sin(surface_class * 2));
+            r = (uchar)(255 * fabs(cos(surface_class)));
+            g = (uchar)(255 * fabs(sin(surface_class * 30)));
+            b = (uchar)(255 * fabs(sin(surface_class * 2)));
         }
         else
         {
-            r = 0.0;
-            g = 0.8;
-            b = 0.0;
+            r = 0;
+            g = 200;
+            b = 0;
         }
 
         for(size_t j=0; j<m_regions[i]->m_faces.size(); ++j)
@@ -1309,20 +1309,20 @@ void HalfEdgeMesh<VertexT, NormalT>::retesselateRegionsToBuffer(
     for(size_t h=0; h<plane_regions.size(); ++h)
     {
         int i = plane_regions[h];
-        float r, g, b;
+        uchar r, g, b;
         int surface_class = m_regions[i]->m_regionNumber;
 
         if(this->m_colorRegions)
         {
-            r = fabs(cos(surface_class));
-            g = fabs(sin(surface_class * 30));
-            b = fabs(sin(surface_class * 2));
+            r = (uchar)(255 * fabs(cos(surface_class)));
+            g = (uchar)(255 * fabs(sin(surface_class * 30)));
+            b = (uchar)(255 * fabs(sin(surface_class * 2)));
         }
         else
         {
-            r = 0.0;
-            g = 0.8;
-            b = 0.0;
+            r = 0;
+            g = 200;
+            b = 0;
         }
         // If memory used to 75% reallocate!
         if((double)pointsUsed / (double)vncBufferSize >= 0.45)
