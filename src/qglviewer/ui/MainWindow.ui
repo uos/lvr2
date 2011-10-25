@@ -625,6 +625,7 @@
    <addaction name="actionToggle_fog"/>
    <addaction name="actionFog_settings"/>
    <addaction name="separator"/>
+   <addaction name="actionShowSelection"/>
    <addaction name="actionShow_entire_scene"/>
    <addaction name="actionSave_Screenshot"/>
    <addaction name="separator"/>
@@ -868,6 +869,15 @@
   <action name="actionMatchPointClouds">
    <property name="text">
     <string>Match Point Clouds</string>
+   </property>
+  </action>
+  <action name="actionShowSelection">
+   <property name="icon">
+    <iconset resource="../res/viewer.qrc">
+     <normaloff>:/qv_showSelection.png</normaloff>:/qv_showSelection.png</iconset>
+   </property>
+   <property name="text">
+    <string>Show Selection</string>
    </property>
   </action>
  </widget>
