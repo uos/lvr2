@@ -7,7 +7,7 @@
     <x>0</x>
     <y>0</y>
     <width>180</width>
-    <height>154</height>
+    <height>160</height>
    </rect>
   </property>
   <property name="minimumSize">
@@ -19,7 +19,7 @@
   <property name="maximumSize">
    <size>
     <width>180</width>
-    <height>200</height>
+    <height>160</height>
    </size>
   </property>
   <property name="layoutDirection">
@@ -39,9 +39,9 @@
     <property name="geometry">
      <rect>
       <x>0</x>
-      <y>50</y>
+      <y>80</y>
       <width>151</width>
-      <height>51</height>
+      <height>41</height>
      </rect>
     </property>
     <property name="text">
@@ -53,8 +53,8 @@
     </property>
     <property name="iconSize">
      <size>
-      <width>33</width>
-      <height>33</height>
+      <width>25</width>
+      <height>25</height>
      </size>
     </property>
    </widget>
@@ -64,7 +64,7 @@
       <x>0</x>
       <y>0</y>
       <width>151</width>
-      <height>51</height>
+      <height>41</height>
      </rect>
     </property>
     <property name="text">
@@ -76,8 +76,8 @@
     </property>
     <property name="iconSize">
      <size>
-      <width>33</width>
-      <height>33</height>
+      <width>25</width>
+      <height>25</height>
      </size>
     </property>
    </widget>
@@ -85,9 +85,9 @@
     <property name="geometry">
      <rect>
       <x>0</x>
-      <y>100</y>
+      <y>120</y>
       <width>151</width>
-      <height>51</height>
+      <height>41</height>
      </rect>
     </property>
     <property name="text">
@@ -99,8 +99,31 @@
     </property>
     <property name="iconSize">
      <size>
-      <width>33</width>
-      <height>33</height>
+      <width>25</width>
+      <height>25</height>
+     </size>
+    </property>
+   </widget>
+   <widget class="QCommandLinkButton" name="buttonDelete">
+    <property name="geometry">
+     <rect>
+      <x>0</x>
+      <y>40</y>
+      <width>151</width>
+      <height>41</height>
+     </rect>
+    </property>
+    <property name="text">
+     <string>Delete Selection</string>
+    </property>
+    <property name="icon">
+     <iconset resource="../res/viewer.qrc">
+      <normaloff>:/qv_delete.png</normaloff>:/qv_delete.png</iconset>
+    </property>
+    <property name="iconSize">
+     <size>
+      <width>25</width>
+      <height>25</height>
      </size>
     </property>
    </widget>
