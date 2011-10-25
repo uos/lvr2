@@ -29,6 +29,7 @@
 
 #include "../app/Types.h"
 #include "../data/DataCollector.h"
+#include "../widgets/CustomTreeWidgetItem.h"
 
 #include "geometry/BoundingBox.hpp"
 
@@ -57,6 +58,8 @@ public:
 	Viewer(QWidget* parent, const QGLWidget* shared = 0);
 	virtual ~Viewer();
 	virtual void addDataObject(DataCollector* obj);
+	virtual void removeDataObject(DataCollector* obj);
+	void removeDataObject(CustomTreeWidgetItem* item);
 	virtual void updateDataObject(DataCollector* obj);
 
 	virtual ViewerType type() = 0;

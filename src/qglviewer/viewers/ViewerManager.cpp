@@ -50,6 +50,12 @@ void ViewerManager::addDataCollector(DataCollector* c)
 	m_currentViewer->addDataObject(c);
 }
 
+void ViewerManager::removeDataCollector(DataCollector* c)
+{
+    // Stub, currently support only one single viewer instance
+    m_currentViewer->removeDataObject(c);
+}
+
 void ViewerManager::updateDataObject(DataCollector* obj)
 {
 	m_currentViewer->updateDataObject(obj);
