@@ -31,7 +31,8 @@
 
 #include "MainWindow.h"
 #include "FogDensityDialog.h"
-#include "SceneDockWidget.h"
+#include "SceneDockWidgetUI.h"
+#include "ActionDockWidgetUI.h"
 #include "MeshingOptionsDialogUI.h"
 
 #include "../data/DataCollectorFactory.h"
@@ -58,7 +59,8 @@
 
 using Ui::MainWindow;
 using Ui::Fogsettings;
-using Ui::SceneDockWidget;
+using Ui::SceneDockWidgetUI;
+using Ui::ActionDockWidgetUI;
 
 class EventManager;
 
@@ -99,6 +101,7 @@ public Q_SLOTS:
 private:
 
 	void updateToolbarActions(CustomTreeWidgetItem* item);
+	void updateActionDock(CustomTreeWidgetItem* item);
 	void connectEvents();
 	void openFile(string filename);
 
@@ -107,8 +110,12 @@ private:
 
 	Viewer*						m_viewer;
 	QDialog*					m_fogSettingsDialog;
-	SceneDockWidget*			m_sceneDockWidgetUi;
+
+	SceneDockWidgetUI*			m_sceneDockWidgetUi;
+	ActionDockWidgetUI*         m_actionDockWidgetUi;
+
 	QDockWidget*				m_sceneDockWidget;
+	QDockWidget*                m_actionDockWidget;
 
 	Fogsettings*				m_fogSettingsUI;
 	ViewerManager*				m_viewerManager;

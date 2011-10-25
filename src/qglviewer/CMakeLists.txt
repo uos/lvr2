@@ -18,7 +18,8 @@ set(QVIEWER_UIS
     ui/FogDensityDialog.ui
     ui/InputCoordinateSystemDialog.ui
     ui/MainWindow.ui
-    ui/SceneDockWidget.ui
+    ui/SceneDockWidgetUI.ui
+    ui/ActionDockWidgetUI.ui
     ui/TransformationDialogUI.ui
     ui/MeshingOptionsDialogUI.ui
     ui/DebugOutputDialogUI.ui

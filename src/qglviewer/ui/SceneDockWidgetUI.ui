@@ -1,13 +1,13 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <ui version="4.0">
- <class>SceneDockWidget</class>
- <widget class="QDockWidget" name="SceneDockWidget">
+ <class>SceneDockWidgetUI</class>
+ <widget class="QDockWidget" name="SceneDockWidgetUI">
   <property name="geometry">
    <rect>
     <x>0</x>
     <y>0</y>
     <width>180</width>
-    <height>239</height>
+    <height>206</height>
    </rect>
   </property>
   <property name="minimumSize">
@@ -19,7 +19,7 @@
   <property name="maximumSize">
    <size>
     <width>180</width>
-    <height>524287</height>
+    <height>207</height>
    </size>
   </property>
   <property name="layoutDirection">
@@ -70,40 +70,6 @@
       <string notr="true">1</string>
      </property>
     </column>
-   </widget>
-   <widget class="QToolButton" name="buttonTransform">
-    <property name="geometry">
-     <rect>
-      <x>0</x>
-      <y>210</y>
-      <width>24</width>
-      <height>25</height>
-     </rect>
-    </property>
-    <property name="text">
-     <string>...</string>
-    </property>
-    <property name="icon">
-     <iconset resource="../res/viewer.qrc">
-      <normaloff>:/rotate.png</normaloff>:/rotate.png</iconset>
-    </property>
-   </widget>
-   <widget class="QToolButton" name="buttonExport">
-    <property name="geometry">
-     <rect>
-      <x>30</x>
-      <y>210</y>
-      <width>24</width>
-      <height>25</height>
-     </rect>
-    </property>
-    <property name="text">
-     <string>...</string>
-    </property>
-    <property name="icon">
-     <iconset resource="../res/viewer.qrc">
-      <normaloff>:/export.png</normaloff>:/export.png</iconset>
-    </property>
    </widget>
   </widget>
   <action name="actionExport_selected_scans">
