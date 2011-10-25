@@ -142,6 +142,7 @@ void ViewerApplication::connectEvents()
 	// Tree widget context menu actions
 	connect(m_actionDockWidgetUi->buttonCreateMesh, SIGNAL(clicked()), this, SLOT(createMeshFromPointcloud()));
     connect(m_actionDockWidgetUi->buttonTransform, SIGNAL(clicked()), this, SLOT(transformObject()));
+    connect(m_actionDockWidgetUi->buttonDelete, SIGNAL(clicked()), this, SLOT(deleteObject()));
 
 
 	connect(m_mainWindowUi->actionGenerateMesh, SIGNAL(triggered()), this, SLOT(createMeshFromPointcloud()));
@@ -381,6 +382,36 @@ void ViewerApplication::transformObject()
         {
             CustomTreeWidgetItem* c_item = static_cast<CustomTreeWidgetItem*>(item);
             TransformationDialog* d = new TransformationDialog(m_viewer, c_item->renderable());
+        }
+    }
+}
+
+void ViewerApplication::deleteObject()
+{
+    // Ask in Microsoft stype ;-)
+    QMessageBox msgBox;
+    msgBox.setText("Remove selected object?");
+    msgBox.setStandardButtons(QMessageBox::Ok | QMessageBox::Cancel );
+    msgBox.setDefaultButton(QMessageBox::Cancel);
+    int ret = msgBox.exec();
+
+    if(ret == QMessageBox::Ok)
+    {
+
+        QTreeWidgetItem* item = m_sceneDockWidgetUi->treeWidget->currentItem();
+        if(item)
+        {
+            if(item->type() > 1000)
+            {
+                // Remove item from tree widget
+                CustomTreeWidgetItem* c_item = static_cast<CustomTreeWidgetItem*>(item);
+                int i = m_sceneDockWidgetUi->treeWidget->indexOfTopLevelItem(item);
+                m_sceneDockWidgetUi->treeWidget->takeTopLevelItem(i);
+
+                // Delete  data collector
+                m_viewerManager->current()->removeDataObject(c_item);
+
+            }
         }
     }
 }

@@ -35,7 +35,7 @@ DataCollector::DataCollector(Renderable* renderable, string name, CustomTreeWidg
 
 DataCollector::~DataCollector()
 {
-	// TODO Auto-generated destructor stub
+	delete m_renderable;
 }
 
 Renderable* DataCollector::renderable()

@@ -24,8 +24,8 @@
      borderopacity="1.0"
      inkscape:pageopacity="0.0"
      inkscape:pageshadow="2"
-     inkscape:zoom="3.5129947"
-     inkscape:cx="81.864718"
+     inkscape:zoom="2.3639471"
+     inkscape:cx="276.44443"
      inkscape:cy="1000.4912"
      inkscape:document-units="px"
      inkscape:current-layer="layer1"
@@ -910,15 +910,6 @@
        id="radialGradient5210"
        xlink:href="#linearGradient5314-6-2-9"
        inkscape:collect="always" />
-    <filter
-       inkscape:collect="always"
-       id="filter5406-2"
-       color-interpolation-filters="sRGB">
-      <feGaussianBlur
-         inkscape:collect="always"
-         stdDeviation="0.14550076"
-         id="feGaussianBlur5408-3" />
-    </filter>
     <radialGradient
        r="47.219555"
        fy="84.653992"
@@ -1107,6 +1098,50 @@
          style="fill-rule:evenodd;marker-start:none;stroke:#ff0000;stroke-width:1.0pt;fill:#ff0000"
          transform="scale(0.8)" />
     </marker>
+    <linearGradient
+       id="linearGradient5314-6-2-0-4-6-8"
+       osb:paint="solid">
+      <stop
+         style="stop-color:#b3b3b3;stop-opacity:1;"
+         offset="0"
+         id="stop5316-5-1-3-7-3-3" />
+    </linearGradient>
+    <filter
+       color-interpolation-filters="sRGB"
+       inkscape:collect="always"
+       id="filter4196-8">
+      <feGaussianBlur
+         inkscape:collect="always"
+         stdDeviation="0.390625"
+         id="feGaussianBlur4198-0" />
+    </filter>
+    <radialGradient
+       inkscape:collect="always"
+       xlink:href="#linearGradient5314-6-2-0-4-6-8"
+       id="radialGradient3405"
+       gradientUnits="userSpaceOnUse"
+       gradientTransform="matrix(0.32841024,0,0,0.32841023,251.62012,89.260833)"
+       cx="56.91209"
+       cy="84.653992"
+       fx="56.91209"
+       fy="84.653992"
+       r="47.219555" />
+    <filter
+       inkscape:collect="always"
+       id="filter4316">
+      <feGaussianBlur
+         inkscape:collect="always"
+         stdDeviation="0.45167389"
+         id="feGaussianBlur4318" />
+    </filter>
+    <filter
+       inkscape:collect="always"
+       id="filter4348">
+      <feGaussianBlur
+         inkscape:collect="always"
+         stdDeviation="0.39521486"
+         id="feGaussianBlur4350" />
+    </filter>
   </defs>
   <metadata
      id="metadata7">
@@ -3057,5 +3092,68 @@
        inkscape:export-filename="/home/twiemann/software/meshing.twiemann/src/qglviewer/res/qv_export.png"
        inkscape:export-xdpi="90"
        inkscape:export-ydpi="90" />
+    <rect
+       style="fill:url(#radialGradient3405);fill-opacity:1;stroke:#cccccc;stroke-width:1.81400001;stroke-linecap:round;stroke-linejoin:round;stroke-miterlimit:4;stroke-dasharray:none"
+       id="rect3047-2-2-5-1-0-0"
+       width="30.686359"
+       height="30.686359"
+       x="254.96744"
+       y="101.71889"
+       inkscape:export-filename="/home/twiemann/software/meshing.twiemann/src/qglviewer/res/qv_delete.png"
+       inkscape:export-xdpi="90"
+       inkscape:export-ydpi="90" />
+    <path
+       style="fill:#ccff00;stroke:#ccff00;stroke-width:0.91106725px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1"
+       d="m 259.45851,106.78252 10.43972,9.33766 10.50774,-9.65825 z"
+       id="path3647-6"
+       inkscape:connector-curvature="0"
+       sodipodi:nodetypes="cccc"
+       inkscape:export-filename="/home/twiemann/software/meshing.twiemann/src/qglviewer/res/qv_delete.png"
+       inkscape:export-xdpi="90"
+       inkscape:export-ydpi="90" />
+    <path
+       style="fill:#ddff55;stroke:#ddff55;stroke-width:0.94020027px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1"
+       d="m 269.96214,116.87774 -10.17464,8.26555 -0.95659,-17.82765 11.04426,9.88624"
+       id="path3649-5"
+       inkscape:connector-curvature="0"
+       inkscape:export-filename="/home/twiemann/software/meshing.twiemann/src/qglviewer/res/qv_delete.png"
+       inkscape:export-xdpi="90"
+       inkscape:export-ydpi="90" />
+    <path
+       style="fill:#e5ff80;stroke:#e5ff80;stroke-width:1px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1"
+       d="m 280.91438,107.16697 -0.53571,21.60714 -10.35715,-11.875 z"
+       id="path3653-6"
+       inkscape:connector-curvature="0"
+       sodipodi:nodetypes="cccc"
+       inkscape:export-filename="/home/twiemann/software/meshing.twiemann/src/qglviewer/res/qv_delete.png"
+       inkscape:export-xdpi="90"
+       inkscape:export-ydpi="90" />
+    <path
+       style="fill:#aad400;stroke:#aad400;stroke-width:1px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1"
+       d="m 260.46795,125.64911 19.28571,3.66071 -9.99999,-12.14285 z"
+       id="path3651-8"
+       inkscape:connector-curvature="0"
+       sodipodi:nodetypes="cccc"
+       inkscape:export-filename="/home/twiemann/software/meshing.twiemann/src/qglviewer/res/qv_delete.png"
+       inkscape:export-xdpi="90"
+       inkscape:export-ydpi="90" />
+    <path
+       style="fill:none;stroke:#ff0000;stroke-width:2.29404545px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1;filter:url(#filter4348)"
+       d="m 210.49614,158.61713 19.77254,-19.41019"
+       id="path3328"
+       inkscape:connector-curvature="0"
+       inkscape:export-filename="/home/twiemann/software/meshing.twiemann/src/qglviewer/res/qv_delete.png"
+       inkscape:export-xdpi="90"
+       inkscape:export-ydpi="90"
+       transform="matrix(0.70355013,0.18740335,-0.1713467,0.6432702,140.96815,-19.145191)" />
+    <path
+       style="fill:none;stroke:#ff0000;stroke-width:2.29404545px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1;filter:url(#filter4316)"
+       d="m 210.49615,138.55993 19.77252,19.41019"
+       id="path3328-3"
+       inkscape:connector-curvature="0"
+       inkscape:export-filename="/home/twiemann/software/meshing.twiemann/src/qglviewer/res/qv_delete.png"
+       inkscape:export-xdpi="90"
+       inkscape:export-ydpi="90"
+       transform="matrix(0.70311703,0.18902179,-0.17282647,0.64287421,141.283,-19.443154)" />
   </g>
 </svg>

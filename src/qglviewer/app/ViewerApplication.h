@@ -90,7 +90,9 @@ public Q_SLOTS:
 	void treeSelectionChanged();
 	void treeContextMenuRequested(const QPoint &);
 	void treeWidgetExport();
+
 	void transformObject();
+	void deleteObject();
 
 	void openFile();
 

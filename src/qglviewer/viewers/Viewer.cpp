@@ -92,6 +92,28 @@ void Viewer::addDataObject(DataCollector* obj)
 	m_dataObjects.push_back(obj);
 }
 
+void Viewer::removeDataObject(DataCollector* obj)
+{
+    m_dataObjects.remove(obj);
+}
+
+void Viewer::removeDataObject(CustomTreeWidgetItem* item)
+{
+    list<DataCollector*>::iterator it = m_dataObjects.begin();
+
+    while(it != m_dataObjects.end())
+    {
+        DataCollector* d = *it;
+        if(d->renderable() == item->renderable())
+        {
+            break;
+        }
+        it++;
+    }
+    m_dataObjects.erase(it);
+    updateGL();
+}
+
 void Viewer::updateDataObject(DataCollector* obj)
 {
 	updateGL();
