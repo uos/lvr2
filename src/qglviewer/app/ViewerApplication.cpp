@@ -36,9 +36,15 @@ ViewerApplication::ViewerApplication( int argc, char ** argv )
 
 	// Add dock widget for currently active objects in viewer
 	m_sceneDockWidget = new QDockWidget(m_qMainWindow);
-	m_sceneDockWidgetUi = new SceneDockWidget;
+	m_sceneDockWidgetUi = new SceneDockWidgetUI;
 	m_sceneDockWidgetUi->setupUi(m_sceneDockWidget);
 	m_qMainWindow->addDockWidget(Qt::LeftDockWidgetArea, m_sceneDockWidget);
+
+	// Add tool box widget to dock area
+	m_actionDockWidget = new QDockWidget(m_qMainWindow);
+	m_actionDockWidgetUi = new ActionDockWidgetUI;
+	m_actionDockWidgetUi->setupUi(m_actionDockWidget);
+	m_qMainWindow->addDockWidget(Qt::LeftDockWidgetArea, m_actionDockWidget);
 
 	// Setup event manager objects
 	m_viewerManager = new ViewerManager(m_qMainWindow);
@@ -128,11 +134,15 @@ void ViewerApplication::connectEvents()
 	QObject::connect(m_sceneDockWidgetUi->treeWidget, SIGNAL(customContextMenuRequested(const QPoint &)),
 	                        this, SLOT(treeContextMenuRequested(const QPoint &)));
 
-	QObject::connect(m_sceneDockWidgetUi->buttonTransform, SIGNAL(clicked()),
-	                    this, SLOT(transformObject()));
+
+	// Action
+	connect(m_sceneDockWidgetUi->actionExport_selected_scans, SIGNAL(triggered()), this, SLOT(treeWidgetExport()));
+
 
 	// Tree widget context menu actions
-	connect(m_sceneDockWidgetUi->actionExport_selected_scans, SIGNAL(triggered()), this, SLOT(treeWidgetExport()));
+	connect(m_actionDockWidgetUi->buttonCreateMesh, SIGNAL(clicked()), this, SLOT(createMeshFromPointcloud()));
+    connect(m_actionDockWidgetUi->buttonTransform, SIGNAL(clicked()), this, SLOT(transformObject()));
+
 
 	connect(m_mainWindowUi->actionGenerateMesh, SIGNAL(triggered()), this, SLOT(createMeshFromPointcloud()));
 }
@@ -429,6 +439,7 @@ void ViewerApplication::dataCollectorAdded(DataCollector* d)
     {
         m_sceneDockWidgetUi->treeWidget->addTopLevelItem(d->treeItem());
         updateToolbarActions(d->treeItem());
+        updateActionDock(d->treeItem());
     }
 }
 
@@ -442,6 +453,7 @@ void ViewerApplication::treeItemClicked(QTreeWidgetItem* item, int d)
         {
             m_viewer->centerViewOnObject(custom_item->renderable());
             updateToolbarActions(custom_item);
+            updateActionDock(custom_item);
         }
     }
 
@@ -473,6 +485,7 @@ void ViewerApplication::treeSelectionChanged()
 
             // Update render modes in tool bar
             updateToolbarActions(item);
+            updateActionDock(item);
 
         }
     }
@@ -504,6 +517,11 @@ void ViewerApplication::updateToolbarActions(CustomTreeWidgetItem* item)
         m_mainWindowUi->actionGenerateMesh->setEnabled(true);
     }
 
+}
+
+void ViewerApplication::updateActionDock(CustomTreeWidgetItem* item)
+{
+       m_actionDockWidgetUi->buttonCreateMesh->setEnabled(item->supportsMode(Points));
 }
 
 void ViewerApplication::toggleFog()
