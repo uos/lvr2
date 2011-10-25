@@ -9,5 +9,8 @@
 	<file>qv_surfaces.png</file>
 	<file>qv_vertices.png</file>
 	<file>qv_wireframe.png</file>
+	<file>qv_createMesh.png</file>
+	<file>qv_transform.png</file>
+	<file>qv_export.png</file>
 </qresource>
 </RCC>
