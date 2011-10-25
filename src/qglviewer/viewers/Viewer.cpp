@@ -71,14 +71,15 @@ void Viewer::centerViewOnObject(Renderable* renderable)
     setSceneCenter(center);
 
     // Set new scene boundaries
-    Vertex<float> v_min = m_boundingBox.getMin();
-    Vertex<float> v_max = m_boundingBox.getMax();
+    Vertex<float> v_min = bb->getMin();
+    Vertex<float> v_max = bb->getMax();
 
     qglviewer::Vec v1(v_min.x, v_min.y, v_min.z);
     qglviewer::Vec v2(v_max.x, v_max.y, v_max.z);
 
     setSceneBoundingBox(v1, v2);
     showEntireScene();
+    updateGL();
 }
 
 void Viewer::addDataObject(DataCollector* obj)

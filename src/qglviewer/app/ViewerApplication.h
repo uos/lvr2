@@ -99,6 +99,7 @@ public Q_SLOTS:
 	void meshRenderModeChanged();
 	void pointRenderModeChanged();
 	void createMeshFromPointcloud();
+	void centerOnSelection();
 
 private:
 

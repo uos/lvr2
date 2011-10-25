@@ -85,6 +85,12 @@ void ViewerApplication::connectEvents()
 	// Projection settings
 	QObject::connect(m_mainWindowUi->actionShow_entire_scene, SIGNAL(activated()),
 			m_viewer, SLOT(resetCamera()));
+
+	QObject::connect(m_mainWindowUi->actionShowSelection, SIGNAL(activated()),
+	        this, SLOT(centerOnSelection()));
+
+
+
 	QObject::connect(m_mainWindowUi->actionXZ_ortho_projection, SIGNAL(activated()),
 			this, SLOT(setViewerModeOrthoXZ()));
 	QObject::connect(m_mainWindowUi->actionXY_ortho_projection, SIGNAL(activated()),
@@ -395,9 +401,9 @@ void ViewerApplication::deleteObject()
     msgBox.setDefaultButton(QMessageBox::Cancel);
     int ret = msgBox.exec();
 
+    // Only delete objects when uses says "Yeah man, ok! Do It!!"
     if(ret == QMessageBox::Ok)
     {
-
         QTreeWidgetItem* item = m_sceneDockWidgetUi->treeWidget->currentItem();
         if(item)
         {
@@ -439,6 +445,9 @@ void ViewerApplication::treeContextMenuRequested(const QPoint &position)
             QAction* mesh_action = m_mainWindowUi->actionGenerateMesh;
             actions.append(mesh_action);
         }
+
+        // Add standard action to context menu
+        actions.append(m_mainWindowUi->actionShowSelection);
 
     }
 
@@ -656,6 +665,19 @@ void ViewerApplication::setViewerModeOrthoYZ()
 	{
 		(static_cast<PerspectiveViewer*>(m_viewer))->setProjectionMode(ORTHOYZ);
 	}
+}
+
+void ViewerApplication::centerOnSelection()
+{
+    QTreeWidgetItem* item = m_sceneDockWidgetUi->treeWidget->currentItem();
+    if(item)
+    {
+        if(item->type() > 1000)
+        {
+            CustomTreeWidgetItem* c_item = static_cast<CustomTreeWidgetItem*>(item);
+            m_viewer->centerViewOnObject(c_item->renderable());
+        }
+    }
 }
 
 ViewerApplication::~ViewerApplication()
