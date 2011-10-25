@@ -47,6 +47,7 @@ public:
 public Q_SLOTS:
 	void addDataCollector(DataCollector* c);
 	void updateDataObject(DataCollector* obj);
+	void removeDataCollector(DataCollector* obj);
 
 private:
 	Viewer* 			m_currentViewer;

@@ -71,7 +71,7 @@ void TriangleMeshTreeWidgetItem::setNumFaces(size_t n)
 
     // Create label text
     stringstream pstream;
-    pstream << "Faces: " << m_numVertices;
+    pstream << "Faces: " << m_numFaces;
 
     // Set text and add child
     faceItem->setText(0, pstream.str().c_str());
