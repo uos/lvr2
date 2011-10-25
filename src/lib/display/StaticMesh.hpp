@@ -113,7 +113,8 @@ void StaticMesh::render(){
 	if(m_active)
 	{
 		if(m_finalized){
-
+		    glPushMatrix();
+		    glMultMatrixf(m_transformation.getData());
 		    if(m_renderMode & RenderSurfaces)
 		    {
 		        glEnable(GL_LIGHTING);
@@ -130,7 +131,7 @@ void StaticMesh::render(){
 		        glCallList(m_wireframeList);
 		        glEnable(GL_LIGHTING);
 		    }
-
+		    glPopMatrix();
  		}
 	}
 }
