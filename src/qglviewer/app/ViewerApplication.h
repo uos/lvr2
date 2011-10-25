@@ -31,8 +31,8 @@
 
 #include "MainWindow.h"
 #include "FogDensityDialog.h"
-#include "SceneDockWidget.h"
-#include "ToolDockWidget.h"
+#include "SceneDockWidgetUI.h"
+#include "ActionDockWidgetUI.h"
 #include "MeshingOptionsDialogUI.h"
 
 #include "../data/DataCollectorFactory.h"
@@ -59,8 +59,8 @@
 
 using Ui::MainWindow;
 using Ui::Fogsettings;
-using Ui::SceneDockWidget;
-using Ui::ToolDockWidgetUI;
+using Ui::SceneDockWidgetUI;
+using Ui::ActionDockWidgetUI;
 
 class EventManager;
 
@@ -111,11 +111,11 @@ private:
 	Viewer*						m_viewer;
 	QDialog*					m_fogSettingsDialog;
 
-	SceneDockWidget*			m_sceneDockWidgetUi;
-	ToolDockWidgetUI*           m_toolDockWidgetUi;
+	SceneDockWidgetUI*			m_sceneDockWidgetUi;
+	ActionDockWidgetUI*         m_actionDockWidgetUi;
 
 	QDockWidget*				m_sceneDockWidget;
-	QDockWidget*                m_toolDockWidget;
+	QDockWidget*                m_actionDockWidget;
 
 	Fogsettings*				m_fogSettingsUI;
 	ViewerManager*				m_viewerManager;

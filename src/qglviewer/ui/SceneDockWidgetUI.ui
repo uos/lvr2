@@ -1,13 +1,13 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <ui version="4.0">
- <class>SceneDockWidget</class>
- <widget class="QDockWidget" name="SceneDockWidget">
+ <class>SceneDockWidgetUI</class>
+ <widget class="QDockWidget" name="SceneDockWidgetUI">
   <property name="geometry">
    <rect>
     <x>0</x>
     <y>0</y>
     <width>180</width>
-    <height>211</height>
+    <height>206</height>
    </rect>
   </property>
   <property name="minimumSize">
@@ -19,7 +19,7 @@
   <property name="maximumSize">
    <size>
     <width>180</width>
-    <height>300</height>
+    <height>207</height>
    </size>
   </property>
   <property name="layoutDirection">

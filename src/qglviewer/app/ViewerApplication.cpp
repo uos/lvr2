@@ -36,15 +36,15 @@ ViewerApplication::ViewerApplication( int argc, char ** argv )
 
 	// Add dock widget for currently active objects in viewer
 	m_sceneDockWidget = new QDockWidget(m_qMainWindow);
-	m_sceneDockWidgetUi = new SceneDockWidget;
+	m_sceneDockWidgetUi = new SceneDockWidgetUI;
 	m_sceneDockWidgetUi->setupUi(m_sceneDockWidget);
 	m_qMainWindow->addDockWidget(Qt::LeftDockWidgetArea, m_sceneDockWidget);
 
 	// Add tool box widget to dock area
-	m_toolDockWidget = new QDockWidget(m_qMainWindow);
-	m_toolDockWidgetUi = new ToolDockWidgetUI;
-	m_toolDockWidgetUi->setupUi(m_toolDockWidget);
-	m_qMainWindow->addDockWidget(Qt::LeftDockWidgetArea, m_toolDockWidget);
+	m_actionDockWidget = new QDockWidget(m_qMainWindow);
+	m_actionDockWidgetUi = new ActionDockWidgetUI;
+	m_actionDockWidgetUi->setupUi(m_actionDockWidget);
+	m_qMainWindow->addDockWidget(Qt::LeftDockWidgetArea, m_actionDockWidget);
 
 	// Setup event manager objects
 	m_viewerManager = new ViewerManager(m_qMainWindow);
@@ -140,8 +140,8 @@ void ViewerApplication::connectEvents()
 
 
 	// Tree widget context menu actions
-	connect(m_toolDockWidgetUi->buttonCreateMesh, SIGNAL(clicked()), this, SLOT(createMeshFromPointcloud()));
-    connect(m_toolDockWidgetUi->buttonTransform, SIGNAL(clicked()), this, SLOT(transformObject()));
+	connect(m_actionDockWidgetUi->buttonCreateMesh, SIGNAL(clicked()), this, SLOT(createMeshFromPointcloud()));
+    connect(m_actionDockWidgetUi->buttonTransform, SIGNAL(clicked()), this, SLOT(transformObject()));
 
 
 	connect(m_mainWindowUi->actionGenerateMesh, SIGNAL(triggered()), this, SLOT(createMeshFromPointcloud()));
@@ -521,7 +521,7 @@ void ViewerApplication::updateToolbarActions(CustomTreeWidgetItem* item)
 
 void ViewerApplication::updateActionDock(CustomTreeWidgetItem* item)
 {
-       m_toolDockWidgetUi->buttonCreateMesh->setEnabled(item->supportsMode(Points));
+       m_actionDockWidgetUi->buttonCreateMesh->setEnabled(item->supportsMode(Points));
 }
 
 void ViewerApplication::toggleFog()
