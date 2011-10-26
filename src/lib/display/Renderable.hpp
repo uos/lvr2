@@ -39,7 +39,7 @@ using namespace std;
 #include "geometry/BoundingBox.hpp"
 
 #include "io/PointIO.hpp"
-#include "io/MeshLoader.hpp"
+#include "io/MeshIO.hpp"
 
 namespace lssr
 {
@@ -100,7 +100,7 @@ public:
 
 	BoundingBox<Vertex<float> >* boundingBox() { return m_boundingBox;};
 
-	MeshLoader*  getMeshLoader() { return m_meshLoader;};
+	MeshIO*  getMeshLoader() { return m_meshLoader;};
 	PointIO* getPointLoader() { return m_pointLoader;};
 
 protected:
@@ -134,7 +134,7 @@ protected:
     BoundingBox<Vertex<float> >* m_boundingBox;
 
     PointIO*                 m_pointLoader;
-    MeshLoader*                  m_meshLoader;
+    MeshIO*                  m_meshLoader;
 
 };
 

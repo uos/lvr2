@@ -75,13 +75,13 @@ void BaseMesh<VertexT, IndexType>::saveObj(string filename)
 }
 
 template<typename VertexT, typename IndexType>
-MeshLoader* BaseMesh<VertexT, IndexType>::getMeshLoader()
+MeshIO* BaseMesh<VertexT, IndexType>::getMeshLoader()
 {
-    MeshLoader* l = 0;
+    MeshIO* l = 0;
     if(m_finalized)
     {
         // Create and setup new loader object
-        l = new MeshLoader;
+        l = new MeshIO;
         l->setVertexArray(m_vertexBuffer, m_nVertices);
         l->setFaceArray(m_indexBuffer, m_nFaces);
         l->setVertexNormalArray(m_normalBuffer, m_nVertices);

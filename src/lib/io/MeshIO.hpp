@@ -54,7 +54,7 @@ namespace lssr
  * data by implementing the get and set methods for these data. This has to be
  * the superclass of all mesh loading I/O classes.
  **/
-class MeshLoader {
+class MeshIO {
 
     public:
         /**
@@ -63,7 +63,7 @@ class MeshLoader {
          * The default constructor of this class. This clears all internal
          * data.
          **/
-        MeshLoader();
+        MeshIO();
 
 
         /**

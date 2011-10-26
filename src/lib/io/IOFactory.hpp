@@ -27,7 +27,7 @@
 #ifndef IOFACTORY_H_
 #define IOFACTORY_H_
 
-#include "MeshLoader.hpp"
+#include "MeshIO.hpp"
 #include "PointIO.hpp"
 
 #include <string>
@@ -62,7 +62,7 @@ public:
      * @brief   Returns a point to a @ref{MeshLoader} instance or
      *          null if the parsed file does not contain mesh data.
      */
-    MeshLoader* getMeshLoader() { return m_meshLoader;}
+    MeshIO* getMeshLoader() { return m_meshLoader;}
 
     /**
      * @brief   Returns a pointer to a @ref{PointLoader} instance or
@@ -90,7 +90,7 @@ private:
     PointIO*    m_pointLoader;
 
     /// The mesh loader associated with the given file
-    MeshLoader* m_meshLoader;
+    MeshIO* m_meshLoader;
 
     BaseIO*     m_baseIO;
 

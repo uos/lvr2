@@ -39,7 +39,7 @@
 using namespace std;
 
 #include "Renderable.hpp"
-#include "io/MeshLoader.hpp"
+#include "io/MeshIO.hpp"
 #include "geometry/BoundingBox.hpp"
 
 namespace lssr
@@ -57,7 +57,7 @@ enum
 class StaticMesh : public Renderable{
 public:
 	StaticMesh();
-	StaticMesh(MeshLoader& loader, string name="<unnamed static mesh>");
+	StaticMesh(MeshIO& loader, string name="<unnamed static mesh>");
 	StaticMesh(const StaticMesh &o);
 	~StaticMesh();
 	inline void render();
