@@ -27,9 +27,8 @@
 #ifndef IOFACTORY_H_
 #define IOFACTORY_H_
 
-#include "BaseIO.hpp"
 #include "MeshLoader.hpp"
-#include "PointLoader.hpp"
+#include "PointIO.hpp"
 
 #include <string>
 using std::string;
@@ -52,7 +51,7 @@ public:
      * @brief Ctor.
      * @param filename  Full path to the file to parse.
      */
-    IOFactory(string filename);
+    IOFactory() : m_pointLoader(0), m_meshLoader(0), m_baseIO(0){};
 
     /**
      * @brief Dtor.
@@ -71,18 +70,30 @@ public:
      *          data
      * @return
      */
-    PointLoader* getPointLoader() { return m_pointLoader;}
+    PointIO* getPointLoader() { return m_pointLoader;}
+
+    /**
+     * @brief   Extracts point and mesh data from the given file
+     * @param   file Input file.
+     */
+    void read(string file);
+
+    /**
+     * @brief   Save the present data to the given file.
+     */
+    void save(string file);
+
 
 private:
 
     /// The point loader associated with the given file
-    PointLoader*    m_pointLoader;
+    PointIO*    m_pointLoader;
 
     /// The mesh loader associated with the given file
-    MeshLoader*     m_meshLoader;
+    MeshLoader* m_meshLoader;
 
-    /// A BaseIO pointer for reading and writing
-    BaseIO*         m_baseIO;
+    BaseIO*     m_baseIO;
+
 };
 
 } // namespace lssr

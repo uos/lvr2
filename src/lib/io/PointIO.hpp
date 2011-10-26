@@ -26,6 +26,7 @@
  *            methods for these data.
  * 
  * @author    Lars Kiesow (lkiesow), lkiesow@uos.de, Universität Osnabrück
+ * @author    Thomas Wiemann, twiemann@uos.de, Universität Osnabrück
  * @version   111001
  * @date      Recreated:     2011-09-22 23:23:57
  * @date      Last modified: 2011-10-01 15:22:49
@@ -34,6 +35,8 @@
 
 #ifndef POINTIO_HPP_
 #define POINTIO_HPP_
+
+#include "BaseIO.hpp"
 
 #include <stdint.h>
 #include <cstddef>
@@ -63,7 +66,7 @@ typedef pair<size_t, size_t> indexPair;
  * This class is supposed to be the superclass of all point loading I/O
  * classes.
  **/
-class PointLoader {
+class PointIO : public BaseIO{
 
     public:
         /**
@@ -71,7 +74,7 @@ class PointLoader {
          *
          * The default constructor. This clears all internal data.
          **/
-        PointLoader();
+        PointIO();
 
 
         /**

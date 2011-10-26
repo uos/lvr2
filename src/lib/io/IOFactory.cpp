@@ -34,8 +34,7 @@
 namespace lssr
 {
 
-IOFactory::IOFactory( string filename )
-    : m_pointLoader(0), m_meshLoader(0), m_baseIO(0)
+void IOFactory::read( string filename )
 {
     // Check extension
     boost::filesystem::path selectedFile(filename);
@@ -45,28 +44,28 @@ IOFactory::IOFactory( string filename )
     if ( extension == ".pts" || extension == ".3d" || extension == ".xyz" || extension == ".txt" )
     {
         AsciiIO* a_io = new AsciiIO;
-        m_pointLoader = (PointLoader*) a_io;
-        m_baseIO =      (BaseIO*)      a_io;
+        m_pointLoader = (PointIO*)      a_io;
+        m_baseIO      = (BaseIO*)       a_io;
     }
     else if ( extension == ".ply" )
     {
         PLYIO* ply_io = new PLYIO;
-        m_pointLoader = (PointLoader*) ply_io;
-        m_meshLoader  = (MeshLoader*)  ply_io;
-        m_baseIO      = (BaseIO*)      ply_io;
+        m_pointLoader = (PointIO*)      ply_io;
+        m_meshLoader  = (MeshLoader*)   ply_io;
+        m_baseIO      = (BaseIO*)       ply_io;
     }
     else if ( extension == "" )
     {
         UosIO* uos_io =  new UosIO;
-        m_pointLoader = (PointLoader*) uos_io;
-        m_baseIO      = (BaseIO*)      uos_io;
+        m_pointLoader = (PointIO*) uos_io;
+        m_baseIO      = (BaseIO*)  uos_io;
     }
 
-    // Read file data
-    if ( m_baseIO )
+    if(m_baseIO)
     {
-        m_baseIO->read( filename );
+        m_baseIO->read(filename);
     }
+
 }
 
 }

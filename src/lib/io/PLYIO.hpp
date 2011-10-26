@@ -35,7 +35,7 @@
 
 #include "BaseIO.hpp"
 #include "MeshLoader.hpp"
-#include "PointLoader.hpp"
+#include "PointIO.hpp"
 #include <rply.h>
 #include <stdint.h>
 #include <cstdio>
@@ -88,7 +88,7 @@ ELEMENT face
    PROPERTY   vertex_index (LIST uchar int)  <<  [only read]
 \endverbatim
  */
-class PLYIO : public BaseIO, public MeshLoader,  public PointLoader
+class PLYIO : public MeshLoader,  public PointIO
 {
     public:
         /**

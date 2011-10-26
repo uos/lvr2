@@ -30,7 +30,7 @@
 // Internal includes from lssr
 #include "PointCloudManager.hpp"
 
-#include "../io/PointLoader.hpp"
+#include "../io/PointIO.hpp"
 #include "../io/Progress.hpp"
 #include "../io/Timestamp.hpp"
 #include "../io/PLYIO.hpp"
@@ -85,7 +85,7 @@ public:
      * @param ki        The number of neighbor points used for normal interpolation
      * @param kd        The number of neighbor points used for distance value calculation
 	 */
-	StannPointCloudManager(PointLoader* loader,
+	StannPointCloudManager(PointIO* loader,
 	                       const int &kn = 10,
 	                       const int &ki = 10,
 	                       const int &kd = 10);

@@ -37,7 +37,7 @@ PointCloud::PointCloud()
 
 }
 
-PointCloud::PointCloud(PointLoader& loader, string name) : Renderable(name)
+PointCloud::PointCloud(PointIO& loader, string name) : Renderable(name)
 {
     int maxColors = 255;
 

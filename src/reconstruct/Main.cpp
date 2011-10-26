@@ -163,8 +163,9 @@ int main(int argc, char** argv)
 
     // Create a point loader object
     size_t num_points;
-    IOFactory io_factory(options.getInputFileName());
-    PointLoader* p_loader = io_factory.getPointLoader();
+    IOFactory io_factory;
+    io_factory.read(options.getInputFileName());
+    PointIO* p_loader = io_factory.getPointLoader();
 
     // Create a point cloud manager
     string pcm_name = options.getPCM();

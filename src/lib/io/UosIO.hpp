@@ -36,7 +36,7 @@
 #include <vector>
 
 #include "BaseIO.hpp"
-#include "PointLoader.hpp"
+#include "PointIO.hpp"
 #include "AsciiIO.hpp"
 
 #include "../geometry/Vertex.hpp"
@@ -62,7 +62,7 @@ namespace lssr
 
 typedef pair<size_t, size_t> indexPair;
 
-class UosIO : public BaseIO, public PointLoader
+class UosIO : public PointIO
 {
 public:
 
