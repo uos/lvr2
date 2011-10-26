@@ -36,7 +36,7 @@
 namespace lssr{
 
 template<typename VertexT, typename NormalT>
-StannPointCloudManager<VertexT, NormalT>::StannPointCloudManager(PointLoader* loader,
+StannPointCloudManager<VertexT, NormalT>::StannPointCloudManager(PointIO* loader,
                        const int &kn,
                        const int &ki,
                        const int &kd)

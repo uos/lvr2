@@ -43,7 +43,7 @@ namespace lssr
 
 
 PLYIO::PLYIO()
-    : MeshLoader(), PointLoader()
+    : MeshLoader(), PointIO()
 {
 }
 
@@ -367,7 +367,7 @@ void PLYIO::read( string filename, bool readColor, bool readConfidence,
         bool readIntensity, bool readNormals, bool readFaces )
 {
 
-    lssr::PointLoader::freeBuffer();
+    lssr::PointIO::freeBuffer();
     lssr::MeshLoader::freeBuffer();
 
     /* Start reading new PLY */
@@ -587,7 +587,7 @@ void PLYIO::read( string filename, bool readColor, bool readConfidence,
     if ( !ply_read( ply ) )
     {
         g_msg.print( MSG_TYPE_ERROR, "Could not read »%s«.\n", filename.c_str() );
-        lssr::PointLoader::freeBuffer();
+        lssr::PointIO::freeBuffer();
         lssr::MeshLoader::freeBuffer();
     }
 

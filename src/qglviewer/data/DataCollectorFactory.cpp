@@ -32,7 +32,7 @@
 #include "display/MultiPointCloud.hpp"
 
 #include "io/MeshLoader.hpp"
-#include "io/PointLoader.hpp"
+#include "io/PointIO.hpp"
 
 #include "../widgets/PointCloudTreeWidgetItem.h"
 #include "../widgets/TriangleMeshTreeWidgetItem.h"
@@ -44,7 +44,7 @@
 #include <boost/version.hpp>
 
 using lssr::MeshLoader;
-using lssr::PointLoader;
+using lssr::PointIO;
 
 DataCollectorFactory::DataCollectorFactory() {}
 
@@ -57,9 +57,10 @@ void DataCollectorFactory::create(string filename)
 	string name = selectedFile.filename().c_str();
 
 	// Create a factory rto parse given file and extract loaders
-	lssr::IOFactory io(filename);
+	lssr::IOFactory io;
+	io.read(filename);
 	MeshLoader*   mesh_loader  = io.getMeshLoader();
-	PointLoader*  point_loader = io.getPointLoader();
+	PointIO*      point_loader = io.getPointLoader();
 
 	if(mesh_loader)
 	{

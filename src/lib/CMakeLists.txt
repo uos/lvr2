@@ -6,7 +6,7 @@ set(LSSR_SOURCES
     io/Progress.cpp
     io/Timestamp.cpp
     io/MeshLoader.cpp
-    io/PointLoader.cpp
+    io/PointIO.cpp
     io/Message.cpp
     display/CoordinateAxes.cpp
     display/Renderable.cpp

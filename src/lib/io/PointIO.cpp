@@ -29,12 +29,12 @@
  *
  **/
 
-#include "PointLoader.hpp"
+#include "PointIO.hpp"
 
 namespace lssr
 {
 
-PointLoader::PointLoader() :
+PointIO::PointIO() :
     m_points( NULL ),
     m_pointNormals( NULL ),
     m_pointColors( NULL ),
@@ -52,7 +52,7 @@ PointLoader::PointLoader() :
     m_numPointConfidence( 0 ) {}
 
 
-float* PointLoader::getPointArray( size_t &n )
+float* PointIO::getPointArray( size_t &n )
 {
 
     n = m_numPoints;
@@ -61,7 +61,7 @@ float* PointLoader::getPointArray( size_t &n )
 }
 
 
-uint8_t* PointLoader::getPointColorArray( size_t &n )
+uint8_t* PointIO::getPointColorArray( size_t &n )
 {
 
     n = m_numPointColors;
@@ -70,7 +70,7 @@ uint8_t* PointLoader::getPointColorArray( size_t &n )
 }
 
 
-float* PointLoader::getPointNormalArray( size_t &n )
+float* PointIO::getPointNormalArray( size_t &n )
 {
 
     n = m_numPointNormals;
@@ -79,7 +79,7 @@ float* PointLoader::getPointNormalArray( size_t &n )
 }
 
 
-float* PointLoader::getPointIntensityArray( size_t &n )
+float* PointIO::getPointIntensityArray( size_t &n )
 {
 
     n = m_numPointIntensities;
@@ -88,7 +88,7 @@ float* PointLoader::getPointIntensityArray( size_t &n )
 }
 
 
-float* PointLoader::getPointConfidenceArray( size_t &n )
+float* PointIO::getPointConfidenceArray( size_t &n )
 {
 
     n = m_numPointConfidence;
@@ -97,7 +97,7 @@ float* PointLoader::getPointConfidenceArray( size_t &n )
 }
 
 
-size_t PointLoader::getNumPoints()
+size_t PointIO::getNumPoints()
 {
 
     return m_numPoints;
@@ -105,7 +105,7 @@ size_t PointLoader::getNumPoints()
 }
 
 
-uint8_t** PointLoader::getIndexedPointColorArray( size_t &n )
+uint8_t** PointIO::getIndexedPointColorArray( size_t &n )
 {
 
     n = m_numPointColors;
@@ -128,7 +128,7 @@ uint8_t** PointLoader::getIndexedPointColorArray( size_t &n )
 }
 
 
-float** PointLoader::getIndexedPointNormalArray( size_t &n )
+float** PointIO::getIndexedPointNormalArray( size_t &n )
 {
 
     return getIndexedArrayf( n, m_numPointNormals, &m_pointNormals, 
@@ -136,7 +136,7 @@ float** PointLoader::getIndexedPointNormalArray( size_t &n )
 
 }
 
-float** PointLoader::getIndexedPointArray( size_t &n )
+float** PointIO::getIndexedPointArray( size_t &n )
 {
 
     return getIndexedArrayf( n, m_numPoints, &m_points, &m_indexedPoints );
@@ -144,7 +144,7 @@ float** PointLoader::getIndexedPointArray( size_t &n )
 }
 
 
-float** PointLoader::getIndexedPointIntensityArray( size_t &n )
+float** PointIO::getIndexedPointIntensityArray( size_t &n )
 {
 
     return getIndexedArrayf( n, m_numPointIntensities, &m_pointIntensities,
@@ -153,7 +153,7 @@ float** PointLoader::getIndexedPointIntensityArray( size_t &n )
 }
 
 
-float** PointLoader::getIndexedPointConfidenceArray( size_t &n )
+float** PointIO::getIndexedPointConfidenceArray( size_t &n )
 {
 
     return getIndexedArrayf( n, m_numPointConfidence, &m_pointConfidences,
@@ -162,7 +162,7 @@ float** PointLoader::getIndexedPointConfidenceArray( size_t &n )
 }
 
 
-float** PointLoader::getIndexedArrayf( size_t &n, const size_t num, 
+float** PointIO::getIndexedArrayf( size_t &n, const size_t num, 
         float** arr1d, float*** arr2d, const int step )
 {
 
@@ -190,7 +190,7 @@ float** PointLoader::getIndexedArrayf( size_t &n, const size_t num,
 }
 
 
-void PointLoader::setPointArray( float* array, size_t n )
+void PointIO::setPointArray( float* array, size_t n )
 {
 
     m_numPoints = n;
@@ -199,7 +199,7 @@ void PointLoader::setPointArray( float* array, size_t n )
 }
 
 
-void PointLoader::setPointColorArray( uint8_t* array, size_t n )
+void PointIO::setPointColorArray( uint8_t* array, size_t n )
 {
 
     m_numPointColors = n;
@@ -208,7 +208,7 @@ void PointLoader::setPointColorArray( uint8_t* array, size_t n )
 }
 
 
-void PointLoader::setPointNormalArray( float* array, size_t n )
+void PointIO::setPointNormalArray( float* array, size_t n )
 {
 
     m_numPointNormals = n;
@@ -217,7 +217,7 @@ void PointLoader::setPointNormalArray( float* array, size_t n )
 }
 
 
-void PointLoader::setPointIntensityArray( float* array, size_t n )
+void PointIO::setPointIntensityArray( float* array, size_t n )
 {
 
     m_numPointIntensities = n;
@@ -226,7 +226,7 @@ void PointLoader::setPointIntensityArray( float* array, size_t n )
 }
 
 
-void PointLoader::setPointConfidenceArray( float* array, size_t n )
+void PointIO::setPointConfidenceArray( float* array, size_t n )
 {
 
     m_numPointConfidence = n;
@@ -235,7 +235,7 @@ void PointLoader::setPointConfidenceArray( float* array, size_t n )
 }
 
 
-void PointLoader::freeBuffer()
+void PointIO::freeBuffer()
 {
 
     m_points = m_pointConfidences = m_pointIntensities = m_pointNormals = NULL;
