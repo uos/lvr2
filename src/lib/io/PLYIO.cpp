@@ -239,7 +239,7 @@ void PLYIO::save( string filename, e_ply_storage_mode mode,
         }
 
         /* Add confidence. */
-        if ( m_pointConfidence )
+        if ( m_pointConfidences )
         {
             if ( m_numPointConfidence != m_numPoints )
             {
@@ -337,7 +337,7 @@ void PLYIO::save( string filename, e_ply_storage_mode mode,
         }
         if ( point_confidence )
         {
-            ply_write( oply, m_pointConfidence[ i ] );
+            ply_write( oply, m_pointConfidences[ i ] );
         }
         if ( point_normal )
         {
@@ -497,7 +497,7 @@ void PLYIO::read( string filename, bool readColor, bool readConfidence,
     }
     if ( m_numPointConfidence )
     {
-        m_pointConfidence = ( float * ) malloc( m_numPoints * sizeof(float) );
+        m_pointConfidences = ( float * ) malloc( m_numPoints * sizeof(float) );
     }
     if ( m_numPointIntensities )
     {
@@ -517,7 +517,7 @@ void PLYIO::read( string filename, bool readColor, bool readConfidence,
     unsigned int * face              = m_faceIndices;
     float        * point             = m_points;
     uint8_t      * point_color       = m_pointColors;
-    float        * point_confidence  = m_pointConfidence;
+    float        * point_confidence  = m_pointConfidences;
     float        * point_intensity   = m_pointIntensities;
     float        * point_normal      = m_pointNormals;
 
@@ -599,7 +599,7 @@ void PLYIO::read( string filename, bool readColor, bool readConfidence,
                 "Assuming that vertices are ment to be points.\n" );
         m_points               = m_vertices;
         m_pointColors          = m_vertexColors;
-        m_pointConfidence      = m_vertexConfidence;
+        m_pointConfidences      = m_vertexConfidence;
         m_pointIntensities     = m_vertexIntensity;
         m_pointNormals         = m_vertexNormals;
         m_numPoints            = m_numVertices;
@@ -612,11 +612,11 @@ void PLYIO::read( string filename, bool readColor, bool readConfidence,
         m_numVertexConfidences = 0;
         m_numVertexIntensities = 0;
         m_numVertexNormals     = 0;
-        m_vertices             = NULL;
-        m_vertexColors         = NULL;
-        m_vertexConfidence     = NULL;
-        m_vertexIntensity      = NULL;
-        m_vertexNormals        = NULL;
+        m_vertices             = 0;
+        m_vertexColors         = 0;
+        m_vertexConfidence     = 0;
+        m_vertexIntensity      = 0;
+        m_vertexNormals        = 0;
     }
 
     ply_close( ply );
