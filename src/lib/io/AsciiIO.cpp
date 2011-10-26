@@ -112,7 +112,7 @@ void AsciiIO::read(string filename)
     }
 
     if ( has_accuracy ) {
-        m_pointConfidence = new float[ m_numPoints ];
+        m_pointConfidences = new float[ m_numPoints ];
         m_numPointConfidence = m_numPoints;
     }
 
@@ -134,7 +134,7 @@ void AsciiIO::read(string filename)
 
         } else if ( has_color && has_accuracy && has_validcolor ) {
             in >> x >> y >> z >> confidence >> dummy >> r >> g >> b;
-            m_pointConfidence[c] = confidence;
+            m_pointConfidences[c] = confidence;
             m_pointColors[ c * 3     ] = (uint8_t) r;
             m_pointColors[ c * 3 + 1 ] = (uint8_t) g;
             m_pointColors[ c * 3 + 2 ] = (uint8_t) b;

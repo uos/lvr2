@@ -39,7 +39,7 @@ PointLoader::PointLoader() :
     m_pointNormals( NULL ),
     m_pointColors( NULL ),
     m_pointIntensities( NULL ),
-    m_pointConfidence( NULL ),
+    m_pointConfidences( NULL ),
     m_indexedPoints( NULL ),
     m_indexedPointNormals( NULL ),
     m_indexedPointIntensities( NULL ),
@@ -92,7 +92,7 @@ float* PointLoader::getPointConfidenceArray( size_t &n )
 {
 
     n = m_numPointConfidence;
-    return m_pointConfidence;
+    return m_pointConfidences;
 
 }
 
@@ -156,7 +156,7 @@ float** PointLoader::getIndexedPointIntensityArray( size_t &n )
 float** PointLoader::getIndexedPointConfidenceArray( size_t &n )
 {
 
-    return getIndexedArrayf( n, m_numPointConfidence, &m_pointConfidence,
+    return getIndexedArrayf( n, m_numPointConfidence, &m_pointConfidences,
             &m_indexedPointConfidence, 1 );
 
 }
@@ -230,7 +230,7 @@ void PointLoader::setPointConfidenceArray( float* array, size_t n )
 {
 
     m_numPointConfidence = n;
-    m_pointConfidence = array;
+    m_pointConfidences = array;
 
 }
 
@@ -238,7 +238,7 @@ void PointLoader::setPointConfidenceArray( float* array, size_t n )
 void PointLoader::freeBuffer()
 {
 
-    m_points = m_pointConfidence = m_pointIntensities = m_pointNormals = NULL;
+    m_points = m_pointConfidences = m_pointIntensities = m_pointNormals = NULL;
     m_pointColors = NULL;
     m_numPoints = m_numPointColors = m_numPointIntensities
         = m_numPointConfidence = m_numPointNormals = 0;
