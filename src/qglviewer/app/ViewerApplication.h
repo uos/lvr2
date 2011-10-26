@@ -89,7 +89,8 @@ public Q_SLOTS:
 	void treeItemChanged(QTreeWidgetItem*, int);
 	void treeSelectionChanged();
 	void treeContextMenuRequested(const QPoint &);
-	void treeWidgetExport();
+
+	void saveSelectedObject();
 
 	void transformObject();
 	void deleteObject();
