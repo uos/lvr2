@@ -369,42 +369,42 @@ class MeshLoader {
     protected:
 
         /// %Vertex buffer.
-        float*        m_vertices;
+        float*       m_vertices;
         /// %Vertex color buffer.
-        uchar*      m_vertexColors;
+        uchar*       m_vertexColors;
         /// %Vertex confidence buffer.
-        float*        m_vertexConfidence;
+        float*       m_vertexConfidence;
         /// %Vertex intensity buffer.
-        float*        m_vertexIntensity;
+        float*       m_vertexIntensity;
         /// %Vertex normal buffer.
-        float*        m_vertexNormals;
+        float*       m_vertexNormals;
 
         /// Indexed vertex buffer.
-        float**       m_indexedVertices;
+        float**      m_indexedVertices;
         /// Indexed vertex color buffer.
-        uchar**     m_indexedVertexColors;
+        uchar**      m_indexedVertexColors;
         /// Indexed vertex confidence buffer.
-        float**       m_indexedVertexConfidence;
+        float**      m_indexedVertexConfidence;
         /// Indexed vertex intensity buffer.
-        float**       m_indexedVertexIntensity;
+        float**      m_indexedVertexIntensity;
         /// Indexed vertex normal buffer.
-        float**       m_indexedVertexNormals;
+        float**      m_indexedVertexNormals;
 
         /// Buffer of face indices
         unsigned int* m_faceIndices;
 
         /// Number of vertices in internal buffer.
-        uint32_t      m_numVertex;
+        size_t      m_numVertices;
         /// Number of vertex normals in internal buffer.
-        uint32_t      m_numVertexNormals;
+        size_t      m_numVertexNormals;
         /// Number of vertex colors sets in internal buffer.
-        uint32_t      m_numVertexColors;
+        size_t      m_numVertexColors;
         /// Number of vertex confidence values in internal buffer.
-        uint32_t      m_numVertexConfidence;
+        size_t      m_numVertexConfidences;
         /// Number of vertex intensities in internal buffer.
-        uint32_t      m_numVertexIntensity;
+        size_t      m_numVertexIntensities;
         /// Number of faces in internal buffer.
-        uint32_t      m_numFace;
+        size_t      m_numFaces;
 
 };
 

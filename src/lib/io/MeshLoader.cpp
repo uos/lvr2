@@ -45,12 +45,12 @@ MeshLoader::MeshLoader() :
     m_indexedVertexIntensity( NULL ),
     m_indexedVertexNormals( NULL ),
     m_faceIndices( NULL ),
-    m_numVertex( 0 ),
+    m_numVertices( 0 ),
     m_numVertexNormals( 0 ),
     m_numVertexColors( 0 ),
-    m_numVertexConfidence( 0 ),
-    m_numVertexIntensity( 0 ),
-    m_numFace( 0 )
+    m_numVertexConfidences( 0 ),
+    m_numVertexIntensities( 0 ),
+    m_numFaces( 0 )
 {
 }
 
@@ -58,7 +58,7 @@ MeshLoader::MeshLoader() :
 float* MeshLoader::getVertexArray( size_t &n )
 {
 
-    n = m_numVertex;
+    n = m_numVertices;
     return m_vertices;
 
 }
@@ -84,7 +84,7 @@ uint8_t* MeshLoader::getVertexColorArray( size_t &n )
 float* MeshLoader::getVertexConfidenceArray( size_t &n )
 {
 
-    n = m_numVertexConfidence;
+    n = m_numVertexConfidences;
     return m_vertexConfidence;
 
 }
@@ -93,7 +93,7 @@ float* MeshLoader::getVertexConfidenceArray( size_t &n )
 float* MeshLoader::getVertexIntensityArray( size_t &n )
 {
 
-    n = m_numVertexIntensity;
+    n = m_numVertexIntensities;
     return m_vertexIntensity;
 
 }
@@ -101,7 +101,7 @@ float* MeshLoader::getVertexIntensityArray( size_t &n )
 unsigned int* MeshLoader::getFaceArray( size_t &n )
 {
 
-    n = m_numFace;
+    n = m_numFaces;
     return m_faceIndices;
 
 }
@@ -110,7 +110,7 @@ unsigned int* MeshLoader::getFaceArray( size_t &n )
 float** MeshLoader::getIndexedVertexArray( size_t &n )
 {
 
-    n = m_numVertex;
+    n = m_numVertices;
 
     /* Return NULL if we have no vertices. */
     if ( !m_vertices )
@@ -122,8 +122,8 @@ float** MeshLoader::getIndexedVertexArray( size_t &n )
     /* Generate indexed vertex array in not already done. */
     if ( !m_indexedVertices )
     {
-        m_indexedVertices = (float**) malloc( m_numVertex * sizeof(float**) );
-        for ( size_t i = 0; i < m_numVertex; i++ )
+        m_indexedVertices = (float**) malloc( m_numVertices * sizeof(float**) );
+        for ( size_t i = 0; i < m_numVertices; i++ )
         {
             m_indexedVertices[i] = m_vertices + ( i * 3 );
         }
@@ -167,7 +167,7 @@ float** MeshLoader::getIndexedVertexNormalArray( size_t &n )
 float** MeshLoader::getIndexedVertexConfidenceArray( size_t &n )
 {
 
-    n = m_numVertexConfidence;
+    n = m_numVertexConfidences;
 
     /* Return NULL if we have no confidence information. */
     if ( !m_vertexConfidence )
@@ -180,8 +180,8 @@ float** MeshLoader::getIndexedVertexConfidenceArray( size_t &n )
     if ( !m_indexedVertexConfidence )
     {
         m_indexedVertexConfidence = (float**) 
-            malloc( m_numVertexConfidence * sizeof(float**) );
-        for ( size_t i = 0; i < m_numVertexConfidence; i++ )
+            malloc( m_numVertexConfidences * sizeof(float**) );
+        for ( size_t i = 0; i < m_numVertexConfidences; i++ )
         {
             m_indexedVertexConfidence[i] = m_vertexConfidence + i;
         }
@@ -196,7 +196,7 @@ float** MeshLoader::getIndexedVertexConfidenceArray( size_t &n )
 float** MeshLoader::getIndexedVertexIntensityArray( size_t &n )
 {
 
-    n = m_numVertexIntensity;
+    n = m_numVertexIntensities;
 
     /* Return NULL if we have no intensity information. */
     if ( !m_vertexIntensity )
@@ -208,8 +208,8 @@ float** MeshLoader::getIndexedVertexIntensityArray( size_t &n )
     if ( !m_indexedVertexIntensity )
     {
         m_indexedVertexIntensity = (float**) 
-            malloc( m_numVertexIntensity * sizeof(float**) );
-        for ( size_t i = 0; i < m_numVertexIntensity; i++ )
+            malloc( m_numVertexIntensities * sizeof(float**) );
+        for ( size_t i = 0; i < m_numVertexIntensities; i++ )
         {
             m_indexedVertexIntensity[i] = m_vertexIntensity + i;
         }
@@ -248,7 +248,7 @@ void MeshLoader::setVertexArray( float* array, size_t n )
 {
 
     m_vertices   = array;
-    m_numVertex = n;
+    m_numVertices = n;
 
 }
 
@@ -264,7 +264,7 @@ void MeshLoader::setFaceArray( unsigned int* array, size_t n )
 {
 
     m_faceIndices  = array;
-    m_numFace      = n;
+    m_numFaces      = n;
 
 }
 
@@ -293,7 +293,7 @@ void MeshLoader::setVertexConfidenceArray( float* array, size_t n )
 {
 
     m_vertexConfidence     = array;
-    m_numVertexConfidence = n;
+    m_numVertexConfidences = n;
 
 }
 
@@ -302,7 +302,7 @@ void MeshLoader::setVertexIntensityArray( float* array, size_t n )
 {
 
     m_vertexIntensity     = array;
-    m_numVertexIntensity = n;
+    m_numVertexIntensities = n;
 
 }
 
@@ -341,8 +341,8 @@ void MeshLoader::freeBuffer()
     m_vertices = m_vertexConfidence = m_vertexIntensity = m_vertexNormals = NULL;
     m_vertexColors = NULL;
     m_faceIndices = NULL;
-    m_numVertex = m_numVertexColors = m_numVertexIntensity
-        = m_numVertexConfidence = m_numVertexNormals = m_numFace = 0;
+    m_numVertices= m_numVertexColors = m_numVertexIntensities
+        = m_numVertexConfidences = m_numVertexNormals = m_numFaces = 0;
 
 }
 
