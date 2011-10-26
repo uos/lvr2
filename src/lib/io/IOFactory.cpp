@@ -51,7 +51,7 @@ void IOFactory::read( string filename )
     {
         PLYIO* ply_io = new PLYIO;
         m_pointLoader = (PointIO*)      ply_io;
-        m_meshLoader  = (MeshLoader*)   ply_io;
+        m_meshLoader  = (MeshIO*)   ply_io;
         m_baseIO      = (BaseIO*)       ply_io;
     }
     else if ( extension == "" )

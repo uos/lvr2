@@ -43,7 +43,7 @@ namespace lssr
 
 
 PLYIO::PLYIO()
-    : MeshLoader(), PointIO()
+    : MeshIO(), PointIO()
 {
 }
 
@@ -368,7 +368,7 @@ void PLYIO::read( string filename, bool readColor, bool readConfidence,
 {
 
     lssr::PointIO::freeBuffer();
-    lssr::MeshLoader::freeBuffer();
+    lssr::MeshIO::freeBuffer();
 
     /* Start reading new PLY */
     p_ply ply = ply_open( filename.c_str(), NULL, 0, NULL );
@@ -588,7 +588,7 @@ void PLYIO::read( string filename, bool readColor, bool readConfidence,
     {
         g_msg.print( MSG_TYPE_ERROR, "Could not read »%s«.\n", filename.c_str() );
         lssr::PointIO::freeBuffer();
-        lssr::MeshLoader::freeBuffer();
+        lssr::MeshIO::freeBuffer();
     }
 
     /* Check if we got only vertices and neither points nor faces. If that is

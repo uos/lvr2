@@ -48,7 +48,7 @@ StaticMesh::StaticMesh(){
 
 }
 
-StaticMesh::StaticMesh(MeshLoader& loader, string name) : Renderable(name){
+StaticMesh::StaticMesh(MeshIO& loader, string name) : Renderable(name){
 
     m_faceNormals = 0;
 

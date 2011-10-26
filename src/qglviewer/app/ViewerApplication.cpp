@@ -237,7 +237,7 @@ void ViewerApplication::createMeshFromPointcloud()
 
 
                     // Create and add mesh to loaded objects
-                    MeshLoader* l = mesh.getMeshLoader();
+                    MeshIO* l = mesh.getMeshLoader();
 
                     lssr::StaticMesh* static_mesh = new lssr::StaticMesh(*l);
                     TriangleMeshTreeWidgetItem* mesh_item = new TriangleMeshTreeWidgetItem(TriangleMeshItem);
