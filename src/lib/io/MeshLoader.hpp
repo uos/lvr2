@@ -139,6 +139,7 @@ class MeshLoader {
          **/
         void setVertexColorArray( uchar* array, size_t n );
 
+
         /**
          * \brief Set the vertex array.
          *
