@@ -117,6 +117,12 @@ protected:
 	/// The mesh's texture numbers
 	uint*			m_textureBuffer;
 
+	/// The sizes of not tesselated regions
+	uint*			m_regionSizeBuffer;
+
+	/// Number of not tesselated regions
+	uint			m_nRegions;
+
 	/// The number of vertices in the mesh
 	uint			m_nVertices;
 

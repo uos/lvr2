@@ -49,6 +49,7 @@ public:
     void setColors(uchar* coords, size_t c);
     void setTextureIndices(IndexType* coords, size_t c);
     void setTextures(IndexType* textures, size_t c);
+    void setRegionSizes(size_t* m_regionSizeBuffer, size_t m_nRegions);
 
 
 private:
@@ -60,6 +61,7 @@ private:
 	 IndexType*          m_indices;
 	 IndexType*				m_textureIndices;
 	 IndexType*				m_textures;
+	 IndexType*				m_regionSizeBuffer;
 
 	 size_t					m_colorCount;
 	 size_t 					m_textureCount;
@@ -67,6 +69,7 @@ private:
 	 size_t              m_faceCount;
 	 size_t              m_vertexCount;
 	 size_t					m_textureCoordsCount;
+	 size_t				m_nRegions;
 
 };
 

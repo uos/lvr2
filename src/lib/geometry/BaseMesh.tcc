@@ -35,9 +35,12 @@ BaseMesh<VertexT, IndexType>::BaseMesh()
 	m_textureIndexBuffer = 0;
 	m_indexBuffer = 0;
 	m_textureBuffer = 0;
+	m_regionSizeBuffer = 0;
+	m_nRegions = 0;
 	m_nVertices = 0;
 	m_nTextures = 0;
 	m_nFaces = 0;
+
 }
 
 template<typename VertexT, typename IndexType>
@@ -69,6 +72,7 @@ void BaseMesh<VertexT, IndexType>::saveObj(string filename)
 	obj_writer.setTextureIndices(this->m_textureIndexBuffer, m_nVertices);
 	obj_writer.setTextures(this->m_textureBuffer, m_nTextures);
 	obj_writer.setColors(this->m_colorBuffer, m_nTextures);
+	obj_writer.setRegionSizes(this->m_regionSizeBuffer, m_nRegions);
 
 	// Save
 	obj_writer.write(filename);
