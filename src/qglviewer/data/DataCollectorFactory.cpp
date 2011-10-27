@@ -59,8 +59,9 @@ void DataCollectorFactory::create(string filename)
 	// Create a factory rto parse given file and extract loaders
 	lssr::IOFactory io;
 	io.read(filename);
-	MeshIO*   mesh_loader  = io.getMeshLoader();
-	PointIO*      point_loader = io.getPointLoader();
+
+	MeshIO*       mesh_loader  = io.getMeshIO();
+	PointIO*      point_loader = io.getPointIO();
 
 	if(mesh_loader)
 	{

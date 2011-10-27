@@ -1,4 +1,4 @@
-/* Copyright (C) 2011 Uni Osnabrück
+        /* Copyright (C) 2011 Uni Osnabrück
  * This file is part of the LAS VEGAS Reconstruction Toolkit,
  *
  * LAS VEGAS is free software; you can redistribute it and/or modify
@@ -26,8 +26,7 @@
  *            these data.
  * 
  * @author    Lars Kiesow (lkiesow), lkiesow@uos.de, Universität Osnabrück
- * @version   110928
- * @date      09/22/2011 09:16:36 PM
+ * @author    Thomas Wiemann, twiemann@uos.de, Universität Osnabrück
  *
  **/
 
@@ -40,6 +39,8 @@
 
 typedef unsigned char uchar;
 
+#include "BaseIO.hpp"
+
 namespace lssr
 {
 
@@ -47,14 +48,14 @@ namespace lssr
  * \class MeshLoader MeshLoader.hpp "io/MeshLoader.hpp"
  * \brief Interface for all mesh loading classes.
  * \todo  At the moment this class comes along with a lot of possible memory
- *        leaks. To prevent those all data should be stored as \c shared_ptr as
- *        introduced by C++11.
+ *        leaks.
  *
  * The MeshLoader class specifies the storage and access to all available mesh
  * data by implementing the get and set methods for these data. This has to be
  * the superclass of all mesh loading I/O classes.
  **/
-class MeshIO {
+class MeshIO : virtual public BaseIO
+{
 
     public:
         /**

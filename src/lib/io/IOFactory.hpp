@@ -62,7 +62,7 @@ public:
      * @brief   Returns a point to a @ref{MeshLoader} instance or
      *          null if the parsed file does not contain mesh data.
      */
-    MeshIO* getMeshLoader() { return m_meshLoader;}
+    MeshIO* getMeshIO() { return m_meshLoader;}
 
     /**
      * @brief   Returns a pointer to a @ref{PointLoader} instance or
@@ -70,28 +70,31 @@ public:
      *          data
      * @return
      */
-    PointIO* getPointLoader() { return m_pointLoader;}
+    PointIO* getPointIO() { return m_pointLoader;}
 
     /**
      * @brief   Extracts point and mesh data from the given file
-     * @param   file Input file.
+     * @param   file        Input file.
      */
     void read(string file);
 
+
     /**
-     * @brief   Save the present data to the given file.
+     * @brief   Save the present mesh and point data to the given file
      */
     void save(string file);
 
 
 private:
 
+
     /// The point loader associated with the given file
     PointIO*    m_pointLoader;
 
     /// The mesh loader associated with the given file
-    MeshIO* m_meshLoader;
+    MeshIO*     m_meshLoader;
 
+    /// Base io for file operations
     BaseIO*     m_baseIO;
 
 };

@@ -68,4 +68,16 @@ void IOFactory::read( string filename )
 
 }
 
+void IOFactory::save(string filename)
+{
+    // Get file exptension
+    boost::filesystem::path selectedFile(filename);
+    string extension = selectedFile.extension().c_str();
+
+    BaseIO* io;
+    // Create suitable io
+
+
+}
+
 }

@@ -55,14 +55,14 @@ namespace lssr
              *
              * @param filename  The file to read.
              */
-            virtual void read(string filename) = 0;
+            virtual void read(string filename) {};
 
             /**
              * \brief Save the loaded elements to the given file.
              *
              * @param filename Filename of the file to write.
              */
-            virtual void save(string filename) = 0;
+            virtual void save(string filename) {};
 
     };
 
