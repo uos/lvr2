@@ -1,4 +1,23 @@
-/*
+/* Copyright (C) 2011 Uni Osnabrück
+ * This file is part of the LAS VEGAS Reconstruction Toolkit,
+ *
+ * LAS VEGAS is free software; you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation; either version 2 of the License, or
+ * (at your option) any later version.
+ *
+ * LAS VEGAS is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program; if not, write to the Free Software
+ * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA
+ */
+
+
+ /*
  * PointCloudManager.h
  *
  *  Created on: 07.02.2011
@@ -86,14 +105,6 @@ public:
 
 protected:
 
-	/**
-	 * @brief Tries to read point and normal information from
-	 *        the given file
-	 *
-	 * @param filename      A file containing point cloud data.
-	 */
-	virtual void readFromFile(string filename);
-
     /// The currently stored points
     float**                   	m_points;
 
@@ -101,7 +112,7 @@ protected:
     float**                  	m_normals;
 
     /// Color information for points
-    uint8_t **             m_colors;
+    uint8_t **                  m_colors;
 
     /// The bounding box of the point set
     BoundingBox<VertexT>        m_boundingBox;

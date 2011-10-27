@@ -505,12 +505,13 @@
      <string>&amp;Tools</string>
     </property>
     <addaction name="actionSave_Screenshot"/>
+    <addaction name="actionGenerateMesh"/>
+    <addaction name="actionMatchPointClouds"/>
    </widget>
    <widget class="QMenu" name="menuView">
     <property name="title">
      <string>&amp;Docks</string>
     </property>
-    <addaction name="action_Robot_control"/>
    </widget>
    <widget class="QMenu" name="menu_Scene">
     <property name="title">
@@ -520,13 +521,16 @@
     <addaction name="actionFog_settings"/>
    </widget>
    <addaction name="menu_File"/>
+   <addaction name="menu_Tools"/>
    <addaction name="menuView"/>
    <addaction name="menu_View"/>
    <addaction name="menu_Scene"/>
-   <addaction name="menu_Tools"/>
   </widget>
   <widget class="QStatusBar" name="statusbar"/>
   <widget class="QToolBar" name="toolBar">
+   <property name="enabled">
+    <bool>true</bool>
+   </property>
    <property name="palette">
     <palette>
      <active>
@@ -614,13 +618,14 @@
    </attribute>
    <addaction name="action_Open"/>
    <addaction name="separator"/>
-   <addaction name="actionActionPointCloudView"/>
-   <addaction name="actionActionVertexView"/>
-   <addaction name="actionActionWireframeView"/>
-   <addaction name="actionActionSurfaceView"/>
+   <addaction name="actionPointCloudView"/>
+   <addaction name="actionVertexView"/>
+   <addaction name="actionWireframeView"/>
+   <addaction name="actionSurfaceView"/>
    <addaction name="actionToggle_fog"/>
    <addaction name="actionFog_settings"/>
    <addaction name="separator"/>
+   <addaction name="actionShowSelection"/>
    <addaction name="actionShow_entire_scene"/>
    <addaction name="actionSave_Screenshot"/>
    <addaction name="separator"/>
@@ -761,6 +766,12 @@
    </property>
   </action>
   <action name="actionToggle_fog">
+   <property name="checkable">
+    <bool>true</bool>
+   </property>
+   <property name="enabled">
+    <bool>false</bool>
+   </property>
    <property name="icon">
     <iconset resource="../res/viewer.qrc">
      <normaloff>:/qv_fog.png</normaloff>:/qv_fog.png</iconset>
@@ -770,6 +781,9 @@
    </property>
   </action>
   <action name="actionFog_settings">
+   <property name="enabled">
+    <bool>false</bool>
+   </property>
    <property name="icon">
     <iconset resource="../res/viewer.qrc">
      <normaloff>:/qv_fogsettings.png</normaloff>:/qv_fogsettings.png</iconset>
@@ -778,7 +792,13 @@
     <string>Fog settings...</string>
    </property>
   </action>
-  <action name="actionActionWireframeView">
+  <action name="actionWireframeView">
+   <property name="checkable">
+    <bool>true</bool>
+   </property>
+   <property name="enabled">
+    <bool>false</bool>
+   </property>
    <property name="icon">
     <iconset resource="../res/viewer.qrc">
      <normaloff>:/qv_wireframe.png</normaloff>:/qv_wireframe.png</iconset>
@@ -790,7 +810,13 @@
     <string>Render objects in wireframe mode</string>
    </property>
   </action>
-  <action name="actionActionVertexView">
+  <action name="actionVertexView">
+   <property name="checkable">
+    <bool>true</bool>
+   </property>
+   <property name="enabled">
+    <bool>false</bool>
+   </property>
    <property name="icon">
     <iconset resource="../res/viewer.qrc">
      <normaloff>:/qv_vertices.png</normaloff>:/qv_vertices.png</iconset>
@@ -802,7 +828,10 @@
     <string>Renders vertices only</string>
    </property>
   </action>
-  <action name="actionActionPointCloudView">
+  <action name="actionPointCloudView">
+   <property name="enabled">
+    <bool>false</bool>
+   </property>
    <property name="icon">
     <iconset resource="../res/viewer.qrc">
      <normaloff>:/qv_points.png</normaloff>:/qv_points.png</iconset>
@@ -814,7 +843,13 @@
     <string>Renders loaded point clouds only</string>
    </property>
   </action>
-  <action name="actionActionSurfaceView">
+  <action name="actionSurfaceView">
+   <property name="checkable">
+    <bool>true</bool>
+   </property>
+   <property name="enabled">
+    <bool>false</bool>
+   </property>
    <property name="icon">
     <iconset resource="../res/viewer.qrc">
      <normaloff>:/qv_surfaces.png</normaloff>:/qv_surfaces.png</iconset>
@@ -824,6 +859,25 @@
    </property>
    <property name="toolTip">
     <string>Render surfaces of loded meshes</string>
+   </property>
+  </action>
+  <action name="actionGenerateMesh">
+   <property name="text">
+    <string>Generate Mesh</string>
+   </property>
+  </action>
+  <action name="actionMatchPointClouds">
+   <property name="text">
+    <string>Match Point Clouds</string>
+   </property>
+  </action>
+  <action name="actionShowSelection">
+   <property name="icon">
+    <iconset resource="../res/viewer.qrc">
+     <normaloff>:/qv_showSelection.png</normaloff>:/qv_showSelection.png</iconset>
+   </property>
+   <property name="text">
+    <string>Show Selection</string>
    </property>
   </action>
  </widget>

@@ -1,4 +1,23 @@
-/*
+/* Copyright (C) 2011 Uni Osnabrück
+ * This file is part of the LAS VEGAS Reconstruction Toolkit,
+ *
+ * LAS VEGAS is free software; you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation; either version 2 of the License, or
+ * (at your option) any later version.
+ *
+ * LAS VEGAS is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program; if not, write to the Free Software
+ * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA
+ */
+
+
+ /*
  * Texture.tcc
  *
  *  Created on: 08.09.2011
@@ -27,15 +46,22 @@ Texture<VertexT, NormalT>::Texture(PointCloudManager<VertexT, NormalT>* pm, Regi
 			for(size_t c = 0; c < HOuter_contour.size(); c++)
 			{
 				int r = 0;
-				int s = 1;
-				if(n[0] == 0 && n[2] == 0)
-					s = 2;
-				if(n[1] == 0 && n[2] == 0)
+				int s = 0;
+				float denom = 0.01;
+
+				for(int t = 0; t<3; t++)
 				{
-					r = 1;
-					s = 2;
+					for(int u = 0; u<3; u++)
+					{
+						if(fabs(v1[t] * v2[u] - v1[u] * v2[t]) > fabs(denom))
+						{
+							denom = v1[t] * v2[u] - v1[u] * v2[t];
+							r = t;
+							s = u;
+						}
+					}
 				}
-				float denom = v1[r] * v2[s] - v1[s] * v2[r];
+
 				float a = ((HOuter_contour[c]->m_position[r] - p[r]) * v2[s] - (HOuter_contour[c]->m_position[s] - p[s]) * v2[r]) / denom;
 				float b = ((HOuter_contour[c]->m_position[s] - p[s]) * v1[r] - (HOuter_contour[c]->m_position[r] - p[r]) * v1[s]) / denom;
 
@@ -47,9 +73,9 @@ Texture<VertexT, NormalT>::Texture(PointCloudManager<VertexT, NormalT>* pm, Regi
 			}
 
 			m_pixelSize = 1;
-			this->m_sizeX = (a_max - a_min) / m_pixelSize;
+			this->m_sizeX = ceil((a_max - a_min) / m_pixelSize);
 			this->m_sizeX = pow(2, ceil(log(this->m_sizeX)/log(2)));
-			this->m_sizeY = (b_max - b_min) / m_pixelSize;
+			this->m_sizeY = ceil((b_max - b_min) / m_pixelSize);
 			this->m_sizeY = pow(2, ceil(log(this->m_sizeY)/log(2)));
 
 			m_data = new ColorT*[this->m_sizeY];

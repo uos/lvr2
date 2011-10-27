@@ -19,12 +19,13 @@ set( CMAKE_CXX_FLAGS_DEBUG   "-g -Wall" )
 # EXTERNAL LIBRARIES
 ###############################################################
 
-find_package(PCL 1.0 REQUIRED)
+find_package(PCL 1.0)
 if(PCL_FOUND)
-    message(STATUS "Found PCL")
-    include_directories(${PCL_INCLUDE_DIRS})
-    link_directories(${PCL_LIBRARY_DIRS})
-    add_definitions(${PCL_DEFINITIONS})
+  message(STATUS "Found PCL")
+  include_directories(${PCL_INCLUDE_DIRS})
+  link_directories(${PCL_LIBRARY_DIRS})
+  add_definitions(${PCL_DEFINITIONS})
+  add_definitions(-D_USE_PCL_)
 endif(PCL_FOUND)
 
 find_package( Boost 
@@ -85,7 +86,6 @@ set( CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} ${OpenMP_CXX_FLAGS}" )
 # LIBRARIES
 ##############################################################
 
-add_subdirectory(src/lib/model3d)
 add_subdirectory(src/lib)
 
 ##############################################################
@@ -107,7 +107,6 @@ if( QT4_FOUND )
     include_directories(${QT_QTOPENGL_INCLUDE_DIR})
     include_directories(${QT_QTCORE_INCLUDE_DIR})
     include_directories(${QT_QTXML_INCLUDE_DIR})
-    add_subdirectory(src/viewer)
 
     # Try to find libQGLViewer
     find_library(QGLVIEWER_LIBRARY_RELEASE 

@@ -1,4 +1,23 @@
-/**
+/* Copyright (C) 2011 Uni Osnabrück
+ * This file is part of the LAS VEGAS Reconstruction Toolkit,
+ *
+ * LAS VEGAS is free software; you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation; either version 2 of the License, or
+ * (at your option) any later version.
+ *
+ * LAS VEGAS is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program; if not, write to the Free Software
+ * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA
+ */
+
+
+ /**
  * @mainpage LSSR Toolkit Documentation
  *
  * @section Intro Introduction
@@ -141,18 +160,29 @@ int main(int argc, char** argv)
 
     ::std::cout << options << ::std::endl;
 
+
+    // Create a point loader object
+    size_t num_points;
+    IOFactory io_factory(options.getInputFileName());
+    PointLoader* p_loader = io_factory.getPointLoader();
+
     // Create a point cloud manager
     string pcm_name = options.getPCM();
-    PointCloudManager<ColorVertex<float>, Normal<float> >* pcm;
+    PointCloudManager<ColorVertex<float, unsigned char>, Normal<float> >* pcm;
     if(pcm_name == "PCL")
     {
+#ifdef _USE_PCL_
         cout << timestamp << "Creating PCL point cloud manager." << endl;
-        pcm = new PCLPointCloudManager<ColorVertex<float>, Normal<float> > ( options.getInputFileName());
+        pcm = new PCLPointCloudManager<ColorVertex<float, unsigned char>, Normal<float> > (p_loader);
+#else
+        cout << timestamp << "PCL bindings not found. Using STANN instead." << endl;
+        pcm = new StannPointCloudManager<ColorVertex<float, unsigned char>, Normal<float> > (p_loader);
+#endif
     }
     else
     {
         cout << timestamp << "Creating STANN point cloud manager." << endl;
-        pcm = new StannPointCloudManager<ColorVertex<float>, Normal<float> > ( options.getInputFileName());
+        pcm = new StannPointCloudManager<ColorVertex<float, unsigned char>, Normal<float> > (p_loader);
     }
 
     pcm->setKD(options.getKd());
@@ -162,7 +192,7 @@ int main(int argc, char** argv)
 
     // Create an empty mesh
     //TriangleMesh<Vertex<float>, Normal<float> > mesh;
-    HalfEdgeMesh<ColorVertex<float>, Normal<float> > mesh(pcm);
+    HalfEdgeMesh<ColorVertex<float, unsigned char>, Normal<float> > mesh(pcm);
 
     // Determine weather to use intersections or voxelsize
     float resolution;
@@ -170,7 +200,7 @@ int main(int argc, char** argv)
     if(options.getIntersections() > 0)
     {
         resolution = options.getIntersections();
-        useVoxelsize = true;
+        useVoxelsize = false;
     }
     else
     {
@@ -179,7 +209,7 @@ int main(int argc, char** argv)
     }
 
     // Create a new reconstruction object
-    FastReconstruction<ColorVertex<float>, Normal<float> > reconstruction(*pcm, resolution, useVoxelsize);
+    FastReconstruction<ColorVertex<float, unsigned char>, Normal<float> > reconstruction(*pcm, resolution, useVoxelsize);
     reconstruction.getMesh(mesh);
 
     mesh.removeDanglingArtifacts(options.getDanglingArtifacts());

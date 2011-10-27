@@ -1,14 +1,31 @@
-/*
+/* Copyright (C) 2011 Uni Osnabrück
+ * This file is part of the LAS VEGAS Reconstruction Toolkit,
+ *
+ * LAS VEGAS is free software; you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation; either version 2 of the License, or
+ * (at your option) any later version.
+ *
+ * LAS VEGAS is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program; if not, write to the Free Software
+ * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA
+ */
+
+
+ /*
  * ColorVertex.h
  *
- *  Created on: 08.09.2011
- *      Author: pg2011
+ *  @date 17.06.2011
+ *  @author Thomas Wiemann
  */
 
 #ifndef COLORVERTEX_H_
 #define COLORVERTEX_H_
-
-using namespace std;
 
 #include "Vertex.hpp"
 
@@ -18,7 +35,7 @@ namespace lssr
 /**
  * @brief	A color vertex
  */
-template<typename CoordType>
+template<typename CoordType, typename ColorT>
 class ColorVertex : public Vertex<CoordType>
 {
 public:
@@ -86,16 +103,18 @@ public:
 		this->b = 0;
 	}
 
-	unsigned char r, g, b;
+	ColorT r, g, b;
 
 };
+
+typedef ColorVertex<float, unsigned char> uColorVertex;
 
 
 /**
  * @brief	Output operator for color vertex types
  */
-template<typename CoordType>
-inline ostream& operator<<(ostream& os, const ColorVertex<CoordType> v){
+template<typename CoordType, typename ColorT>
+inline ostream& operator<<(ostream& os, const ColorVertex<CoordType, ColorT> v){
 	os << "ColorVertex: " << v.x << " " << v.y << " " << v.z << " " << (int)v.r << " " << (int)v.g << " " << (int)v.b << endl;
 	return os;
 }

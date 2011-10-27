@@ -6,8 +6,17 @@
 	<file>qv_points.png</file>
 	<file>qv_screenshot.png</file>
 	<file>qv_showall.png</file>
+	<file>qv_showSelection.png</file>
 	<file>qv_surfaces.png</file>
 	<file>qv_vertices.png</file>
 	<file>qv_wireframe.png</file>
+	<file>qv_createMesh.png</file>
+	<file>qv_transform.png</file>
+	<file>qv_export.png</file>
+    <file>qv_delete.png</file>
+	<file>tb_left.png</file>
+	<file>tb_right.png</file>
+	<file>tb_delete.png</file>
 </qresource>
 </RCC>
+
