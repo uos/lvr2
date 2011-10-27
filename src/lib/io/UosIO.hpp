@@ -1,4 +1,23 @@
-/**
+/* Copyright (C) 2011 Uni Osnabrück
+ * This file is part of the LAS VEGAS Reconstruction Toolkit,
+ *
+ * LAS VEGAS is free software; you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation; either version 2 of the License, or
+ * (at your option) any later version.
+ *
+ * LAS VEGAS is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program; if not, write to the Free Software
+ * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA
+ */
+
+
+ /**
  * UosIO.h
  *
  *  @date 11.05.2011
@@ -16,6 +35,7 @@
 #include <sstream>
 #include <vector>
 
+#include "BaseIO.hpp"
 #include "PointLoader.hpp"
 #include "AsciiIO.hpp"
 
@@ -25,11 +45,6 @@
 using std::string;
 using std::fstream;
 using std::stringstream;
-using std::pair;
-using std::vector;
-
-typedef pair<size_t, size_t> indexPair;
-
 
 namespace lssr
 {
@@ -45,14 +60,16 @@ namespace lssr
  * .pose files will be sued to transform the scans.
  */
 
-class UosIO : public PointLoader
+typedef pair<size_t, size_t> indexPair;
+
+class UosIO : public BaseIO, public PointLoader
 {
 public:
 
     /**
      * @brief Contructor.
      */
-    UosIO() : m_firstScan(-1), m_lastScan(-1), m_saveToDisk(false), m_reduction(1), m_numScans(0){}
+    UosIO() : m_firstScan(-1), m_lastScan(-1), m_reduction(1), m_saveToDisk(false), m_numScans(0){}
 
     /**
      * @brief Reads all scans or an specified range of scans
@@ -85,9 +102,11 @@ public:
      */
     void reduce(string dir, string target, int reduction = 1);
 
-    indexPair getScanRange( size_t num );
+    indexPair getScanRange(int num);
 
     int getNumScans() { return m_numScans;}
+
+    void save(string filename) {}
 
 private:
 
@@ -177,8 +196,7 @@ private:
     /// Number of loaded scans
     int     m_numScans;
 
-    /// Vector to save the indices of the first and last points of single scans
-    vector<indexPair> m_scanRanges;
+
 };
 
 } // namespace lssr

@@ -112,10 +112,10 @@ namespace std {
   void push_back(const value_type& x)
   { vector_base::push_back(x); } 
   using vector_base::insert;  
-  iterator insert(const_iterator position, const value_type& x)
-  { return vector_base::insert(position,x); }
-  void insert(const_iterator position, size_type new_size, const value_type& x)
-  { vector_base::insert(position, new_size, x); }
+  iterator insert(const_iterator m_position, const value_type& x)
+  { return vector_base::insert(m_position,x); }
+  void insert(const_iterator m_position, size_type new_size, const value_type& x)
+  { vector_base::insert(m_position, new_size, x); }
 #elif defined(_GLIBCXX_VECTOR) && (!(EIGEN_GNUC_AT_LEAST(4,1)))
   /* Note that before gcc-4.1 we already have: std::vector::resize(size_type,const T&).
    * However, this specialization is still needed to make the above EIGEN_DEFINE_STL_VECTOR_SPECIALIZATION trick to work. */

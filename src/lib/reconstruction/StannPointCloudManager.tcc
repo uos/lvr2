@@ -1,4 +1,23 @@
-/*
+/* Copyright (C) 2011 Uni Osnabrück
+ * This file is part of the LAS VEGAS Reconstruction Toolkit,
+ *
+ * LAS VEGAS is free software; you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation; either version 2 of the License, or
+ * (at your option) any later version.
+ *
+ * LAS VEGAS is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program; if not, write to the Free Software
+ * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA
+ */
+
+
+ /*
  * StannPointCloudManager.cpp
  *
  *  Created on: 07.02.2011
@@ -17,28 +36,7 @@
 namespace lssr{
 
 template<typename VertexT, typename NormalT>
-StannPointCloudManager<VertexT, NormalT>::StannPointCloudManager(float **points,
-        NormalT *normals,
-        size_t n,
-        const int &kn,
-        const int &ki,
-        const int &kd)
-{
-    // Save data
-    this->m_ki = ki;
-    this->m_kn = kn;
-    this->m_kd = kd;
-
-    this->m_points = points;
-    this->m_normals = normals;
-    this->m_numPoints = n;
-
-    init();
-
-}
-
-template<typename VertexT, typename NormalT>
-StannPointCloudManager<VertexT, NormalT>::StannPointCloudManager(string filename,
+StannPointCloudManager<VertexT, NormalT>::StannPointCloudManager(PointLoader* loader,
                        const int &kn,
                        const int &ki,
                        const int &kd)
@@ -47,11 +45,12 @@ StannPointCloudManager<VertexT, NormalT>::StannPointCloudManager(string filename
     this->m_kn = kn;
     this->m_kd = kd;
 
+    size_t n_points, n_normals;
 
-    this->m_points = 0;
-    this->m_normals = 0;
-    this->m_numPoints = 0;
-    this->readFromFile(filename);
+    this->m_points = loader->getIndexedPointArray(n_points);
+    this->m_normals = loader->getIndexedPointNormalArray(n_normals);
+    this->m_numPoints = n_points;
+
     init();
 }
 
@@ -74,15 +73,15 @@ void StannPointCloudManager<VertexT, NormalT>::init()
     cout << timestamp << "Creating STANN Kd-Tree..." << endl;
     m_pointTree = sfcnn< float*, 3, float>(this->m_points, this->m_numPoints, 4);
 
-//    // Estimate surface normals if necessary
-//    if(!this->m_normals)
-//    {
-//        estimateSurfaceNormals();
-//    }
-//    else
-//    {
-//        cout << timestamp << " Using the given normals." << endl;
-//    }
+    // Estimate surface normals if necessary
+    if(!this->m_normals)
+    {
+        calcNormals();
+    }
+    else
+    {
+        cout << timestamp << " Using the given normals." << endl;
+    }
 }
 
 template<typename VertexT, typename NormalT>

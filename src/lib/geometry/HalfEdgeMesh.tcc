@@ -1,4 +1,23 @@
-/*
+/* Copyright (C) 2011 Uni Osnabrück
+ * This file is part of the LAS VEGAS Reconstruction Toolkit,
+ *
+ * LAS VEGAS is free software; you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation; either version 2 of the License, or
+ * (at your option) any later version.
+ *
+ * LAS VEGAS is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program; if not, write to the Free Software
+ * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA
+ */
+
+
+ /*
  * HalfEdgeMesh.cpp
  *
  *  Created on: 13.11.2008
@@ -1019,8 +1038,8 @@ void HalfEdgeMesh<VertexT, NormalT>::tester()
 void HalfEdgeMesh<VertexT, NormalT>::finalize()
 {
     cout << timestamp << "Finalizing mesh." << endl;
-    cout << timestamp << "Number of vertices: " << (uint32_t) m_vertices.size() << endl;
-    cout << timestamp << "Number of faces: " << (uint32_t)m_faces.size() << endl;
+    cout << timestamp << "Number of vertices: " << m_vertices.size() << endl;
+    cout << timestamp << "Number of faces: " << m_faces.size() << endl;
 
     boost::unordered_map<HalfEdgeVertex<VertexT, NormalT>*, int> index_map;
 
@@ -1029,7 +1048,7 @@ void HalfEdgeMesh<VertexT, NormalT>::finalize()
 
     this->m_vertexBuffer 	= new float[3 * this->m_nVertices];
     this->m_normalBuffer 	= new float[3 * this->m_nVertices];
-    this->m_colorBuffer 	= new float[3 * this->m_nVertices];
+    this->m_colorBuffer 	= new uchar[3 * this->m_nVertices];
 
     this->m_indexBuffer 	= new unsigned int[3 * this->m_nFaces];
 
@@ -1069,15 +1088,15 @@ void HalfEdgeMesh<VertexT, NormalT>::finalize()
         float r, g, b;
         if(m_colorRegions)
         {
-            r = fabs(cos(surface_class));
-            g = fabs(sin(surface_class * 30));
-            b = fabs(sin(surface_class * 2));
+            r = (uchar) (255 * fabs(cos(surface_class)));
+            g = (uchar) (255 * fabs(sin(surface_class * 30)));
+            b = (uchar) (255 * fabs(sin(surface_class * 2)));
         }
         else
         {
-            r = 0.0;
-            g = 0.8;
-            b = 0.0;
+            r = 0;
+            g = 200;
+            b = 0;
         }
         this->m_colorBuffer[this->m_indexBuffer[3 * i]  * 3 + 0] = r;
         this->m_colorBuffer[this->m_indexBuffer[3 * i]  * 3 + 1] = g;
@@ -1093,13 +1112,15 @@ void HalfEdgeMesh<VertexT, NormalT>::finalize()
 
 
     }
+
+   this->m_finalized = true;
 }
 
 template<typename VertexT, typename NormalT>
 void HalfEdgeMesh<VertexT, NormalT>::regionsToBuffer(
         float **vertex, 
         float **normal,
-        float **color,
+        uchar **color,
         float **texture,
         unsigned int **index, 
         unsigned int **textureIndex, 
@@ -1122,15 +1143,15 @@ void HalfEdgeMesh<VertexT, NormalT>::regionsToBuffer(
 
         if(this->m_colorRegions)
         {
-            r = fabs(cos(surface_class));
-            g = fabs(sin(surface_class * 30));
-            b = fabs(sin(surface_class * 2));
+            r = (uchar)(255 * fabs(cos(surface_class)));
+            g = (uchar)(255 * fabs(sin(surface_class * 30)));
+            b = (uchar)(255 * fabs(sin(surface_class * 2)));
         }
         else
         {
-            r = 0.0;
-            g = 0.8;
-            b = 0.0;
+            r = 0;
+            g = 200;
+            b = 0;
         }
 
         for(size_t j=0; j<m_regions[i]->m_faces.size(); ++j)
@@ -1139,10 +1160,9 @@ void HalfEdgeMesh<VertexT, NormalT>::regionsToBuffer(
             /* a small check to see whether we will run out of memory. */
             if((float)vncUsed / (float)vncSize >= 0.80)
             {
-                cout << "Resize" << endl;
                 *vertex = (float*)realloc((*vertex), vncSize*2*sizeof(float));
                 *normal = (float*)realloc((*normal), vncSize*2*sizeof(float));
-                *color  = (float*)realloc((*color),  vncSize*2*sizeof(float));
+                *color  = (uchar*)realloc((*color),  vncSize*2*sizeof(uchar));
                 *texture =(float*)realloc((*texture),vncSize*2*sizeof(float)); 
                 vncSize *= 2;
             }
@@ -1150,7 +1170,6 @@ void HalfEdgeMesh<VertexT, NormalT>::regionsToBuffer(
             /* a small check to see whether we will run out of memory. */
             if((float)indexUsed / (float)indexSize >= 0.80)
             {
-                cout << "IndexResize" << endl;
                 *index        = (unsigned int*)realloc((*index), indexSize*2*sizeof(float)); 
                 *textureIndex = (unsigned int*)realloc((*textureIndex), indexSize*2*sizeof(float)); 
                 indexSize *= 2;
@@ -1222,7 +1241,7 @@ void HalfEdgeMesh<VertexT, NormalT>::regionsToBuffer(
                 (*normal)[vncUsed + 1] = (*m_regions[i]->m_faces[j])(k)->m_normal[1];
                 (*normal)[vncUsed + 2] = (*m_regions[i]->m_faces[j])(k)->m_normal[2];
 
-                if(typeid( *(*m_regions[i]->m_faces[j])(k) ) == typeid(ColorVertex<float>())){
+                if(typeid( *(*m_regions[i]->m_faces[j])(k) ) == typeid(ColorVertex<float, unsigned char>())){
                 	(*color)[vncUsed + 0] = (*m_regions[i]->m_faces[j])(k)->m_position.r / 255.0f;
                 	(*color)[vncUsed + 1] = (*m_regions[i]->m_faces[j])(k)->m_position.g / 255.0f;
                 	(*color)[vncUsed + 2] = (*m_regions[i]->m_faces[j])(k)->m_position.b / 255.0f;
@@ -1266,7 +1285,7 @@ void HalfEdgeMesh<VertexT, NormalT>::regionsToBuffer(
      */
     *vertex = (float*)realloc((*vertex), vncUsed*sizeof(float));
     *normal = (float*)realloc((*normal), vncUsed*sizeof(float));
-    *color  = (float*)realloc((*color),  vncUsed*sizeof(float));
+    *color  = (uchar*)realloc((*color),  vncUsed*sizeof(uchar));
     *texture =(float*)realloc((*texture),vncUsed*sizeof(float)); 
     *index        = (unsigned int*)realloc((*index), indexUsed*sizeof(float)); 
     *textureIndex = (unsigned int*)realloc((*textureIndex), indexUsed*sizeof(float)); 
@@ -1288,35 +1307,39 @@ void HalfEdgeMesh<VertexT, NormalT>::retesselateRegionsToBuffer(
     for(size_t h=0; h<plane_regions.size(); ++h)
     {
         int i = plane_regions[h];
-        float r, g, b;
+        uchar r, g, b;
         int surface_class = m_regions[i]->m_regionNumber;
 
         if(this->m_colorRegions)
         {
-            r = fabs(cos(surface_class));
-            g = fabs(sin(surface_class * 30));
-            b = fabs(sin(surface_class * 2));
+            r = (uchar)(255 * fabs(cos(surface_class)));
+            g = (uchar)(255 * fabs(sin(surface_class * 30)));
+            b = (uchar)(255 * fabs(sin(surface_class * 2)));
         }
         else
         {
-            r = 0.0;
-            g = 0.8;
-            b = 0.0;
+            r = 0;
+            g = 200;
+            b = 0;
         }
-        // If memory used to 75% reallocate!
-        if((double)pointsUsed / (double)vncBufferSize >= 0.45)
+       // If memory used to 75% reallocate!
+        if((double)pointsUsed / (double)vncBufferSize >= 0.45 || vncBufferSize==0)
         {
+        	if(vncBufferSize==0)
+        		vncBufferSize=1024;
             vncBufferSize *= 4*sizeof(float);
             this->m_vertexBuffer       = (float*)realloc(this->m_vertexBuffer, vncBufferSize); 
-            this->m_colorBuffer        = (float*)realloc(this->m_colorBuffer, vncBufferSize); 
+            this->m_colorBuffer        = (uchar*)realloc(this->m_colorBuffer, vncBufferSize);
             this->m_normalBuffer       = (float*)realloc(this->m_normalBuffer, vncBufferSize); 
             this->m_textureCoordBuffer = (float*)realloc(this->m_normalBuffer, vncBufferSize);
         }
 
 
         // If memory i used to 75% reallocate!
-        if((double)indicesUsed / (double)indexBufferSize >= 0.45)
+        if((double)indicesUsed / (double)indexBufferSize >= 0.45 || indexBufferSize==0)
         {
+        	if(indexBufferSize==0)
+        		indexBufferSize=1024;
             indexBufferSize *= 4*sizeof(unsigned int);
             this->m_indexBuffer = (unsigned int*)realloc(this->m_indexBuffer, indexBufferSize);
             this->m_textureIndexBuffer = (unsigned int*)realloc(this->m_textureIndexBuffer, indexBufferSize);
@@ -1418,7 +1441,7 @@ void HalfEdgeMesh<VertexT, NormalT>::finalizeAndRetesselate(bool genTextures)
     // Guess for the array sizes. The correct values are only known after the regions were tesselated.
     this->m_vertexBuffer       = new float[vncBufferSize];
     this->m_normalBuffer       = new float[vncBufferSize];
-    this->m_colorBuffer        = new float[vncBufferSize];
+    this->m_colorBuffer        = new uchar[vncBufferSize];
     this->m_textureCoordBuffer = new float[vncBufferSize];
     this->m_indexBuffer        = new unsigned int[indexBufferSize];
     this->m_textureIndexBuffer = new unsigned int[indexBufferSize];
@@ -1460,7 +1483,7 @@ void HalfEdgeMesh<VertexT, NormalT>::finalizeAndRetesselate(bool genTextures)
     this->m_nVertices = vncBufferSize/3; 
     this->m_nFaces 	  = indexBufferSize/3;
     this->m_vertexBuffer = (float*)realloc(this->m_vertexBuffer, this->m_nVertices*3*sizeof(float));
-    this->m_colorBuffer  = (float*)realloc(this->m_colorBuffer,  this->m_nVertices*3*sizeof(float));
+    this->m_colorBuffer  = (uchar*)realloc(this->m_colorBuffer,  this->m_nVertices*3*sizeof(uchar));
     this->m_normalBuffer = (float*)realloc(this->m_normalBuffer, this->m_nVertices*3*sizeof(float));
     this->m_textureCoordBuffer = (float*)realloc(this->m_textureCoordBuffer, this->m_nVertices*3*sizeof(float));
     this->m_indexBuffer = (unsigned int*)realloc(this->m_indexBuffer, this->m_nFaces*3*sizeof(unsigned int));
@@ -1471,6 +1494,7 @@ void HalfEdgeMesh<VertexT, NormalT>::finalizeAndRetesselate(bool genTextures)
     cout << timestamp << "Done retesselating: " 						  	 	<< endl;
     cout << timestamp << "[" << this->m_nVertices << "] Vertices." << endl;
     cout << timestamp << "[" << this->m_nFaces << "] Faces." 	   << endl;
+
 } 
 
 } // namespace lssr

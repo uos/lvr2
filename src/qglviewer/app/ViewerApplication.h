@@ -1,4 +1,23 @@
-/*
+/* Copyright (C) 2011 Uni Osnabrück
+ * This file is part of the LAS VEGAS Reconstruction Toolkit,
+ *
+ * LAS VEGAS is free software; you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation; either version 2 of the License, or
+ * (at your option) any later version.
+ *
+ * LAS VEGAS is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program; if not, write to the Free Software
+ * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA
+ */
+
+
+ /*
  * ViewerApplication.h
  *
  *  Created on: 15.09.2010
@@ -12,9 +31,11 @@
 
 #include "MainWindow.h"
 #include "FogDensityDialog.h"
-#include "SceneDockWidget.h"
+#include "SceneDockWidgetUI.h"
+#include "ActionDockWidgetUI.h"
+#include "MeshingOptionsDialogUI.h"
 
-#include "../data/DataManager.h"
+#include "../data/DataCollectorFactory.h"
 
 #include "../viewers/Viewer.h"
 #include "../viewers/PerspectiveViewer.h"
@@ -22,12 +43,24 @@
 
 #include "../widgets/CustomTreeWidgetItem.h"
 #include "../widgets/PointCloudTreeWidgetItem.h"
+#include "../widgets/TriangleMeshTreeWidgetItem.h"
 #include "../widgets/TransformationDialog.h"
+#include "../widgets/DebugOutputDialog.hpp"
+
+#include "display/StaticMesh.hpp"
+#include "geometry/HalfEdgeMesh.hpp"
+
+#include "reconstruction/PointCloudManager.hpp"
+#include "reconstruction/PCLPointCloudManager.hpp"
+#include "reconstruction/StannPointCloudManager.hpp"
+#include "reconstruction/FastReconstruction.hpp"
+
 
 
 using Ui::MainWindow;
 using Ui::Fogsettings;
-using Ui::SceneDockWidget;
+using Ui::SceneDockWidgetUI;
+using Ui::ActionDockWidgetUI;
 
 class EventManager;
 
@@ -57,23 +90,39 @@ public Q_SLOTS:
 	void treeSelectionChanged();
 	void treeContextMenuRequested(const QPoint &);
 	void treeWidgetExport();
+
 	void transformObject();
+	void deleteObject();
+
+	void openFile();
+
+	void meshRenderModeChanged();
+	void pointRenderModeChanged();
+	void createMeshFromPointcloud();
+	void centerOnSelection();
 
 private:
 
+	void updateToolbarActions(CustomTreeWidgetItem* item);
+	void updateActionDock(CustomTreeWidgetItem* item);
 	void connectEvents();
+	void openFile(string filename);
 
 	MainWindow*					m_mainWindowUi;
 	QMainWindow*				m_qMainWindow;
 
 	Viewer*						m_viewer;
 	QDialog*					m_fogSettingsDialog;
-	SceneDockWidget*			m_sceneDockWidgetUi;
+
+	SceneDockWidgetUI*			m_sceneDockWidgetUi;
+	ActionDockWidgetUI*         m_actionDockWidgetUi;
+
 	QDockWidget*				m_sceneDockWidget;
+	QDockWidget*                m_actionDockWidget;
 
 	Fogsettings*				m_fogSettingsUI;
 	ViewerManager*				m_viewerManager;
-	DataManager*				m_dataManager;
+	DataCollectorFactory*       m_factory;
 };
 
 #endif /* VIEWERAPPLICATION_H_ */

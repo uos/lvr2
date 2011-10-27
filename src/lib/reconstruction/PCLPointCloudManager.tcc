@@ -1,4 +1,23 @@
-/**
+/* Copyright (C) 2011 Uni Osnabrück
+ * This file is part of the LAS VEGAS Reconstruction Toolkit,
+ *
+ * LAS VEGAS is free software; you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation; either version 2 of the License, or
+ * (at your option) any later version.
+ *
+ * LAS VEGAS is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program; if not, write to the Free Software
+ * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA
+ */
+
+
+ /**
  * PCLPointCloudManager.cpp
  *
  *  @date 08.08.2011
@@ -14,7 +33,7 @@ namespace lssr
 {
 
 template<typename VertexT, typename NormalT>
-PCLPointCloudManager<VertexT, NormalT>::PCLPointCloudManager(string filename, int kn, int ki, int kd)
+PCLPointCloudManager<VertexT, NormalT>::PCLPointCloudManager(PointLoader* loader, int kn, int ki, int kd)
 {
     this->m_kn = kn;
     this->m_ki = ki;
@@ -22,8 +41,8 @@ PCLPointCloudManager<VertexT, NormalT>::PCLPointCloudManager(string filename, in
 
     m_pointCloud  = pcl::PointCloud<pcl::PointXYZ>::Ptr (new pcl::PointCloud<pcl::PointXYZ>);
 
-    // Read dat from disk
-    this->readFromFile(filename);
+    // Get data from loader object
+    this->m_points = loader->getIndexedPointArray(this->m_numPoints);
 
     // Parse to PCL point cloud
     cout << timestamp << "Creating PCL point cloud" << endl;

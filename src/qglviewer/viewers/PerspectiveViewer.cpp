@@ -1,4 +1,23 @@
-/*
+/* Copyright (C) 2011 Uni Osnabrück
+ * This file is part of the LAS VEGAS Reconstruction Toolkit,
+ *
+ * LAS VEGAS is free software; you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation; either version 2 of the License, or
+ * (at your option) any later version.
+ *
+ * LAS VEGAS is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program; if not, write to the Free Software
+ * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA
+ */
+
+
+ /*
  * PerspectiveViewer.cpp
  *
  *  Created on: 22.09.2010
@@ -12,7 +31,7 @@
 using std::cout;
 using std::endl;
 
-#include "model3d/BaseVertex.h"
+#include "geometry/Vertex.hpp"
 
 ViewerType PerspectiveViewer::type()
 {
@@ -33,7 +52,7 @@ PerspectiveViewer::PerspectiveViewer(QWidget* parent, const QGLWidget* shared)
 	// camera pointers are instantiated only when needed
 	m_projectionMode = PERSPECTIVE;
 	m_showFog = false;
-	m_fogType = LINEAR;
+	m_fogType = FOG_LINEAR;
 
 	// Set a custom mouse binding for look around mod
 }
@@ -93,9 +112,9 @@ void PerspectiveViewer::setFogType(FOGTYPE f)
 {
 	switch(f)
 	{
-	case LINEAR: 	glFogi(GL_FOG_MODE, GL_LINEAR);	break;
-	case EXP:		glFogi(GL_FOG_MODE, GL_EXP); 	break;
-	case EXP2:		glFogi(GL_FOG_MODE, GL_EXP2); 	break;
+	case FOG_LINEAR: 	glFogi(GL_FOG_MODE, GL_LINEAR);	break;
+	case FOG_EXP:		glFogi(GL_FOG_MODE, GL_EXP); 	break;
+	case FOG_EXP2:		glFogi(GL_FOG_MODE, GL_EXP2); 	break;
 	}
 }
 
@@ -161,8 +180,8 @@ void PerspectiveViewer::setProjectionMode(ProjectionMode mode)
 		}
 
 		// Setup scene boundary
-		Vertex v_min = m_boundingBox.v_min;
-		Vertex v_max = m_boundingBox.v_max;
+		Vertex<float> v_min = m_boundingBox.getMin();
+		Vertex<float> v_max = m_boundingBox.getMax();
 		m_camera[mode]->setSceneBoundingBox(qglviewer::Vec(v_min.x, v_min.y, v_min.z),
 											qglviewer::Vec(v_max.x, v_max.y, v_max.z));
 
