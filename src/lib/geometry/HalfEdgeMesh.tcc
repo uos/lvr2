@@ -1128,18 +1128,18 @@ void HalfEdgeMesh<VertexT, NormalT>::regionsToBuffer(
         size_t   &indexSize, 
         vector<int> &regions)
 {
+	this->m_nRegions = 0;
+	this->m_regionSizeBuffer = new uint[regions.size()];
 
     /* xxxUsed variables are used to keep track of the array length
      * that was used until now.
      */
-    int vncUsed=0, indexUsed=0;
+    int vncUsed=0, indexUsed=0, facesUsed=0;
     for(size_t h=0; h<regions.size(); ++h)
     {
-        //cout << "Copying " << h << "th Region." << endl;
-        //cout << "Region Nr: " << regions[h] << endl;
         int i = regions[h];
         float r, g, b;
-        int surface_class = m_regions[i]->m_regionNumber;
+        int surface_class = m_regions[regions[h]]->m_regionNumber;
 
         if(this->m_colorRegions)
         {
@@ -1153,9 +1153,10 @@ void HalfEdgeMesh<VertexT, NormalT>::regionsToBuffer(
             g = 200;
             b = 0;
         }
-
+        facesUsed = 0;
         for(size_t j=0; j<m_regions[i]->m_faces.size(); ++j)
         {
+        	facesUsed++;
 
             /* a small check to see whether we will run out of memory. */
             if((float)vncUsed / (float)vncSize >= 0.80)
@@ -1184,9 +1185,9 @@ void HalfEdgeMesh<VertexT, NormalT>::regionsToBuffer(
                  * loops over all 3 vertices of a face and stores the coordinates, normales
                  * and colors in the corresponding arrays for the IO handling.
                  */
-                (*vertex)[vncUsed + 0] = (*m_regions[i]->m_faces[j])(k)->m_position.x;
-                (*vertex)[vncUsed + 1] = (*m_regions[i]->m_faces[j])(k)->m_position.y;
-                (*vertex)[vncUsed + 2] = (*m_regions[i]->m_faces[j])(k)->m_position.z;
+                (*vertex)[vncUsed + 0] = (*m_regions[regions[h]]->m_faces[j])(k)->m_position.x;
+                (*vertex)[vncUsed + 1] = (*m_regions[regions[h]]->m_faces[j])(k)->m_position.y;
+                (*vertex)[vncUsed + 2] = (*m_regions[regions[h]]->m_faces[j])(k)->m_position.z;
 
                 /* check for nan or ninf coordinates!
                 */
@@ -1241,6 +1242,7 @@ void HalfEdgeMesh<VertexT, NormalT>::regionsToBuffer(
                 (*normal)[vncUsed + 1] = (*m_regions[i]->m_faces[j])(k)->m_normal[1];
                 (*normal)[vncUsed + 2] = (*m_regions[i]->m_faces[j])(k)->m_normal[2];
 
+
                 if(typeid( *(*m_regions[i]->m_faces[j])(k) ) == typeid(ColorVertex<float, unsigned char>())){
                 	(*color)[vncUsed + 0] = (*m_regions[i]->m_faces[j])(k)->m_position.r / 255.0f;
                 	(*color)[vncUsed + 1] = (*m_regions[i]->m_faces[j])(k)->m_position.g / 255.0f;
@@ -1251,7 +1253,6 @@ void HalfEdgeMesh<VertexT, NormalT>::regionsToBuffer(
                 	(*color)[vncUsed + 1] = g;
                 	(*color)[vncUsed + 2] = b;
                 }
-
 
                 (*texture)[vncUsed + 0] = 0.0;
                 (*texture)[vncUsed + 1] = 0.0;
@@ -1270,12 +1271,15 @@ void HalfEdgeMesh<VertexT, NormalT>::regionsToBuffer(
             }
             if( !skip )
             {
+            	facesUsed++;
                 indexUsed += 3;
             } else 
             {
                 vncUsed = oldVncUsed;
             }
         }
+        this->m_regionSizeBuffer[h] = facesUsed;
+        this->m_nRegions++;
     }
     vncSize = vncUsed;
     indexSize = indexUsed;
@@ -1322,7 +1326,8 @@ void HalfEdgeMesh<VertexT, NormalT>::retesselateRegionsToBuffer(
             g = 200;
             b = 0;
         }
-       // If memory used to 75% reallocate!
+
+        // If memory used to 75% reallocate!
         if((double)pointsUsed / (double)vncBufferSize >= 0.45 || vncBufferSize==0)
         {
         	if(vncBufferSize==0)
@@ -1466,6 +1471,7 @@ void HalfEdgeMesh<VertexT, NormalT>::finalizeAndRetesselate(bool genTextures)
             normal_regions.push_back(i);
         }
     }
+
     regionsToBuffer(&this->m_vertexBuffer, 
             &this->m_normalBuffer,
             &this->m_colorBuffer,
@@ -1475,6 +1481,7 @@ void HalfEdgeMesh<VertexT, NormalT>::finalizeAndRetesselate(bool genTextures)
             vncBufferSize, 
             indexBufferSize, 
             normal_regions);
+
     cout << timestamp << "Done copying non-plane regions" << endl;
 
     retesselateRegionsToBuffer(vncBufferSize, indexBufferSize, plane_regions, genTextures);
