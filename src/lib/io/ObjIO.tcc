@@ -184,11 +184,11 @@ void ObjIO<CoordType, IndexType>::write(string filename)
         			mtlFile.open("textures.mtl", ios::app);
         			mtlFile << "newmtl color_" << j <<endl;
 
-        			mtlFile << "Kd " << m_colors[v1*3+0] << " " << m_colors[v1*3+1] << " "
-        					<< m_colors[v1*3+2] << endl;
+        			mtlFile << "Kd " << (m_colors[v1*3+0])/255.0f << " " << (m_colors[v1*3+1])/255.0f << " "
+        					<< (m_colors[v1*3+2])/255.0f << endl;
 
-        			mtlFile << "Ka " << m_colors[v1*3+0] << " " << m_colors[v1*3+1] << " "
-        					<< m_colors[v1*3+2] << endl << endl;
+        			mtlFile << "Ka " << (m_colors[v1*3+0])/255.0f << " " << (m_colors[v1*3+1])/255.0f << " "
+        					<< (m_colors[v1*3+2])/255.0f << endl << endl;
 
         			out << endl;
         			out << endl << "usemtl color_" << j << endl;
