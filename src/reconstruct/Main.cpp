@@ -165,7 +165,7 @@ int main(int argc, char** argv)
     size_t num_points;
     IOFactory io_factory;
     io_factory.read(options.getInputFileName());
-    PointIO* p_loader = io_factory.getPointLoader();
+    PointIO* p_loader = io_factory.getPointIO();
 
     // Create a point cloud manager
     string pcm_name = options.getPCM();

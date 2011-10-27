@@ -66,7 +66,8 @@ typedef pair<size_t, size_t> indexPair;
  * This class is supposed to be the superclass of all point loading I/O
  * classes.
  **/
-class PointIO : public BaseIO{
+class PointIO : virtual public BaseIO
+{
 
     public:
         /**
