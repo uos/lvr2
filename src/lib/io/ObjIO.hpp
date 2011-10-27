@@ -55,7 +55,7 @@ public:
 private:
 	 CoordType*          m_vertices;
 	 CoordType*          m_normals;
-	 uchar*			     m_colors;
+	 uint8_t*			     m_colors;
 	 CoordType*          m_textureCoords;
 
 	 IndexType*          m_indices;
