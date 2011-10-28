@@ -164,8 +164,8 @@ int main(int argc, char** argv)
     // Create a point loader object
     size_t num_points;
     IOFactory io_factory;
-    io_factory.read(options.getInputFileName());
-    PointIO* p_loader = io_factory.getPointIO();
+    Model* model = io_factory.readModel(options.getInputFileName());
+    BufferedPointCloud* p_loader = model->m_pointCloud;
 
     // Create a point cloud manager
     string pcm_name = options.getPCM();
@@ -250,7 +250,7 @@ int main(int argc, char** argv)
 		 mesh.finalize();
 	 }
     mesh.save("triangle_mesh.ply");
-    mesh.saveObj("triangle_mesh.obj");
+    mesh.save("triangle_mesh.obj");
 
 
     cout << timestamp << "Program end." << endl;

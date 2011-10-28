@@ -39,22 +39,24 @@ using std::ifstream;
 namespace lssr
 {
 
-void AsciiIO::read(string filename)
+Model* AsciiIO::read(string filename)
 {
+    Model* model = new Model;
+
     // Check extension
     boost::filesystem::path selectedFile(filename);
     string extension(selectedFile.extension().c_str());
 
     if ( extension != ".pts" && extension != ".3d" && extension != ".xyz" && extension != ".txt" ) {
         cout << "»" << extension << "« is not a valid file extension." << endl;
-        return;
+        return 0;
     }
     // Count lines in file to estimate the number of present points
     int lines_in_file = countLines(filename);
 
     if ( lines_in_file < 2 ) {
         cout << timestamp << "AsciiIO: Too few lines in file (has to be > 2)." << endl;
-        return;
+        return 0;
     }
     // Open the given file. Skip the first line (as it may
     // contain meta data in some formats). Then try to guess
@@ -96,29 +98,34 @@ void AsciiIO::read(string filename)
     // Again skip first line
     in.getline(buffer, 2048);
 
+    // Buffer related variables
+    size_t numPoints = 0;
+
+    float* points            = 0;
+    uchar* pointColors       = 0;
+    float* pointIntensities  = 0;
+    float* pointConfidences  = 0;
+
     // Alloc memory for points
-    m_numPoints = lines_in_file - 1;
-    m_points = new float[ m_numPoints * 3 ];
+    numPoints = lines_in_file - 1;
+    points = new float[ numPoints * 3 ];
 
     // Alloc buffer memory for additional attributes
     if ( has_color ) {
-        m_pointColors = new uint8_t[ m_numPoints * 3 ];
-        m_numPointColors = m_numPoints;
+        pointColors = new uint8_t[ numPoints * 3 ];
     }
 
     if ( has_intensity ) {
-        m_pointIntensities = new float[ m_numPoints ];
-        m_numPointIntensities = m_numPoints;
+        pointIntensities = new float[ numPoints ];
     }
 
     if ( has_accuracy ) {
-        m_pointConfidences = new float[ m_numPoints ];
-        m_numPointConfidence = m_numPoints;
+        pointConfidences = new float[ numPoints ];
     }
 
     // Read data form file
     size_t c = 0;
-    while (in.good() && c < m_numPoints) {
+    while (in.good() && c < numPoints) {
         //cout << has_intensity << " " << has_color << endl;
         //cout << c << " " << m_colors << " " << m_numPoints << endl;
         float x, y, z, i, dummy, confidence;
@@ -127,37 +134,44 @@ void AsciiIO::read(string filename)
         // Read according to determined format
         if(has_intensity && has_color) {
             in >> x >> y >> z >> i >> r >> g >> b;
-            m_pointIntensities[c] = i;
-            m_pointColors[ c * 3     ] = (uint8_t) r;
-            m_pointColors[ c * 3 + 1 ] = (uint8_t) g;
-            m_pointColors[ c * 3 + 2 ] = (uint8_t) b;
+            pointIntensities[c] = i;
+            pointColors[ c * 3     ] = (uchar) r;
+            pointColors[ c * 3 + 1 ] = (uchar) g;
+            pointColors[ c * 3 + 2 ] = (uchar) b;
 
         } else if ( has_color && has_accuracy && has_validcolor ) {
             in >> x >> y >> z >> confidence >> dummy >> r >> g >> b;
-            m_pointConfidences[c] = confidence;
-            m_pointColors[ c * 3     ] = (uint8_t) r;
-            m_pointColors[ c * 3 + 1 ] = (uint8_t) g;
-            m_pointColors[ c * 3 + 2 ] = (uint8_t) b;
+            pointConfidences[c] = confidence;
+            pointColors[ c * 3     ] = (uchar) r;
+            pointColors[ c * 3 + 1 ] = (uchar) g;
+            pointColors[ c * 3 + 2 ] = (uchar) b;
 
         } else if (has_intensity) {
             in >> x >> y >> z >> i;
-            m_pointIntensities[c] = i;
+            pointIntensities[c] = i;
 
         } else if(has_color) {
             in >> x >> y >> z >> r >> g >> b;
-            m_pointColors[ c * 3     ] = (uint8_t) r;
-            m_pointColors[ c * 3 + 1 ] = (uint8_t) g;
-            m_pointColors[ c * 3 + 2 ] = (uint8_t) b;
+            pointColors[ c * 3     ] = (uchar) r;
+            pointColors[ c * 3 + 1 ] = (uchar) g;
+            pointColors[ c * 3 + 2 ] = (uchar) b;
 
         } else {
             in >> x >> y >> z;
             for(int n_dummys = 0; n_dummys < num_attributes; n_dummys++) in >> dummy;
         }
-        m_points[ c * 3     ] = x;
-        m_points[ c * 3 + 1 ] = y;
-        m_points[ c * 3 + 2 ] = z;
+        points[ c * 3     ] = x;
+        points[ c * 3 + 1 ] = y;
+        points[ c * 3 + 2 ] = z;
         c++;
     }
+
+    // Assign buffers
+    model->m_pointCloud = new BufferedPointCloud;
+    model->m_pointCloud->setPointArray(points, numPoints);
+    model->m_pointCloud->setPointColorArray(pointColors, numPoints);
+    model->m_pointCloud->setPointIntensityArray(pointIntensities, numPoints);
+    model->m_pointCloud->setPointConfidenceArray(pointConfidences, numPoints);
 
 }
 

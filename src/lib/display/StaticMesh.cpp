@@ -48,57 +48,79 @@ StaticMesh::StaticMesh(){
 
 }
 
-StaticMesh::StaticMesh(MeshIO& loader, string name) : Renderable(name){
+StaticMesh::StaticMesh(Model& model, string name) : Renderable(name){
 
-    m_faceNormals = 0;
+    m_model = &model;
 
-	m_vertexNormals = loader.getVertexNormalArray(m_numVertices);
-	m_colors        = loader.getVertexColorArray(m_numVertices);
-	m_vertices      = loader.getVertexArray(m_numVertices);
-	m_indices       = loader.getFaceArray(m_numFaces);
-
-	m_blackColors   = new unsigned char[3 * m_numVertices];
-	for(int i = 0; i < 3 * m_numVertices; i++) m_blackColors[i] = 0.0;
-
-
-	m_finalized     = true;
-	m_visible       = true;
-	m_active        = true;
-
-	m_renderMode = 0;
-	m_renderMode    |= RenderSurfaces;
-	m_renderMode    |= RenderTriangles;
-
-	m_boundingBox = new BoundingBox<Vertex<float> >;
-
-	m_meshLoader = &loader;
-
-	if(!m_faceNormals) interpolateNormals();
-	if(!m_colors) setDefaultColors();
-
-//	cout << m_faceNormals << endl;
-//	cout << m_numFaces << " " << m_numVertices << endl;
-//
-//	for(int i = 0; i < m_numVertices; i++)
-//	{
-//	    int index = 3 * i;
-//	    cout << m_vertices[index] << " ";
-//	    cout << m_vertices[index + 1] << " ";
-//	    cout << m_vertices[index + 2] << " ";
-//	    cout << endl;
-//	    cout << m_colors[index] << " ";
-//	    cout << m_colors[index + 1] << " ";
-//	    cout << m_colors[index + 2] << " ";
-//	    cout << endl;
-//
-//	}
-
-	// TODO: Standard colors if missing!
+    init(model.m_mesh);
 
 	calcBoundingBox();
 	compileSurfaceList();
 	compileWireframeList();
 }
+
+StaticMesh::StaticMesh(BufferedMesh* mesh, string name) : Renderable(name){
+
+    m_model = new Model;
+    m_model->m_mesh = mesh;
+
+    init(mesh);
+
+    calcBoundingBox();
+    compileSurfaceList();
+    compileWireframeList();
+}
+
+void StaticMesh::init(BufferedMesh* mesh)
+{
+    if(mesh)
+    {
+
+        m_faceNormals = 0;
+
+        m_vertexNormals = mesh->getVertexNormalArray(m_numVertices);
+        m_colors        = mesh->getVertexColorArray(m_numVertices);
+        m_vertices      = mesh->getVertexArray(m_numVertices);
+        m_indices       = mesh->getFaceArray(m_numFaces);
+
+        m_blackColors   = new unsigned char[3 * m_numVertices];
+        for(int i = 0; i < 3 * m_numVertices; i++) m_blackColors[i] = 0.0;
+
+
+        m_finalized     = true;
+        m_visible       = true;
+        m_active        = true;
+
+        m_renderMode = 0;
+        m_renderMode    |= RenderSurfaces;
+        m_renderMode    |= RenderTriangles;
+
+        m_boundingBox = new BoundingBox<Vertex<float> >;
+
+        if(!m_faceNormals) interpolateNormals();
+        if(!m_colors) setDefaultColors();
+
+        //  cout << m_faceNormals << endl;
+        //  cout << m_numFaces << " " << m_numVertices << endl;
+        //
+        //  for(int i = 0; i < m_numVertices; i++)
+        //  {
+        //      int index = 3 * i;
+        //      cout << m_vertices[index] << " ";
+        //      cout << m_vertices[index + 1] << " ";
+        //      cout << m_vertices[index + 2] << " ";
+        //      cout << endl;
+        //      cout << m_colors[index] << " ";
+        //      cout << m_colors[index + 1] << " ";
+        //      cout << m_colors[index + 2] << " ";
+        //      cout << endl;
+        //
+        //  }
+
+        /// TODO: Standard colors if missing!
+    }
+}
+
 
 StaticMesh::StaticMesh(const StaticMesh &o)
 {

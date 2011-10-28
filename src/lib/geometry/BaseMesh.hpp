@@ -27,7 +27,7 @@
 #ifndef BASEMESH_H_
 #define BASEMESH_H_
 
-#include "io/MeshIO.hpp"
+#include "io/Model.hpp"
 
 namespace lssr {
 
@@ -84,47 +84,21 @@ public:
 	virtual void save(string filename);
 
 	/**
-	 * @brief Save the mesh to the given Obj file
+	 * @brief Creates a buffered mesh from the given file.
+	 *
+	 * @param filename
 	 */
-	virtual void saveObj(string filename);
+	virtual void load(string filename);
 
 
-	MeshIO* getMeshLoader();
+	BufferedMesh* meshBuffer() { return m_meshBuffer;}
 
 protected:
 
 	/// True if mesh is finalized
 	bool			m_finalized;
 
-	/// The mesh's vertex buffer
-	float*			m_vertexBuffer;
-
-	/// The vertex normals
-	float*			m_normalBuffer;
-
-	/// The vertex colors
-	uchar*			m_colorBuffer;
-
-	/// The texture coordinates
-	float*			m_textureCoordBuffer;
-
-	/// The texture indices
-	uint*			m_textureIndexBuffer;
-
-	/// The mesh's index buffer
-	uint*			m_indexBuffer;
-
-	/// The mesh's texture numbers
-	uint*			m_textureBuffer;
-
-	/// The number of vertices in the mesh
-	uint			m_nVertices;
-
-	/// The number of the mesh's texture numbers
-	uint			m_nTextures;
-
-	/// The number of face in the mesh
-	uint 			m_nFaces;
+	BufferedMesh*   m_meshBuffer;
 };
 }
 
