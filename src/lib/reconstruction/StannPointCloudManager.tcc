@@ -36,7 +36,7 @@
 namespace lssr{
 
 template<typename VertexT, typename NormalT>
-StannPointCloudManager<VertexT, NormalT>::StannPointCloudManager(PointLoader* loader,
+StannPointCloudManager<VertexT, NormalT>::StannPointCloudManager(BufferedPointCloud* loader,
                        const int &kn,
                        const int &ki,
                        const int &kd)
@@ -427,97 +427,12 @@ Plane<VertexT, NormalT> StannPointCloudManager<VertexT, NormalT>::calcPlane(cons
 template<typename VertexT, typename NormalT>
 void StannPointCloudManager<VertexT, NormalT>::save(string filename)
 {
-    // Get file extension
-    boost::filesystem::path selectedFile(filename);
-    string extension = selectedFile.extension().c_str();
 
-    // Try to load file by extension
-    if(extension == ".ply")
-    {
-        savePLY(filename);
-    }
-    else if (extension == ".nor")
-    {
-        savePointsAndNormals(filename);
-    }
-    else if (extension == ".pts" || extension == ".3d" || extension == ".xyz")
-    {
-        savePoints(filename);
-    }
+    // TODO implement!
 
 }
 
-template<typename VertexT, typename NormalT>
-void StannPointCloudManager<VertexT, NormalT>::savePointsAndNormals(string filename)
-{
-    ofstream out(filename.c_str());
 
-    if(!out.good())
-    {
-        cout << timestamp
-             << " StannPointCloudManager::SavePointsAndNormals(): Could not open file "
-             << filename << "." << endl;
-
-        return;
-    }
-
-    string prefix = timestamp.getElapsedTime() + "Saving points and normals to '" + filename + "'.";
-    ProgressCounter p(this->m_numPoints, prefix);
-
-    for(size_t i = 0; i < this->m_numPoints; i++)
-    {
-        out << this->m_points[i][0]  << " " << this->m_points[i][1]  << " " << this->m_points[i][2] << " "
-            << this->m_normals[i][0] << " " << this->m_normals[i][1] << " " << this->m_normals[i][2] << endl;
-        ++p;
-    }
-    cout << endl;
-}
-
-template<typename VertexT, typename NormalT>
-void StannPointCloudManager<VertexT, NormalT>::savePoints(string filename)
-{
-    ofstream out(filename.c_str());
-
-    if(!out.good())
-    {
-        cout << timestamp
-                << " StannPointCloudManager::SavePointsAndNormals(): Could not open file "
-                << filename << "." << endl;
-
-        return;
-    }
-
-    string prefix = timestamp.getElapsedTime() + "Saving points to '" + filename + "'.";
-    ProgressCounter p(this->m_numPoints, prefix);
-
-    for(size_t i = 0; i < this->m_numPoints; i++)
-    {
-        out << this->m_points[i][0] << " " << this->m_points[i][1] << " " << this->m_points[i][2] << endl;
-        ++p;
-    }
-
-    cout << endl;
-}
-
-template<typename VertexT, typename NormalT>
-void StannPointCloudManager<VertexT, NormalT>::savePLY(string filename)
-{
-    PLYIO ply_writer;
-
-    // Create vertex element
-    if(this->m_points)
-    {
-        ply_writer.setIndexedVertexArray(this->m_points, this->m_numPoints);
-    }
-
-    // Create normal element
-    if(this->m_normals)
-      {
-          ply_writer.setIndexedVertexArray(this->m_normals, this->m_numPoints);
-      }
-
-    ply_writer.save(filename);
-}
 
 } // namespace lssr
 

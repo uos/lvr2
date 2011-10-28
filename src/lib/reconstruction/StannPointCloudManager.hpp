@@ -30,7 +30,7 @@
 // Internal includes from lssr
 #include "PointCloudManager.hpp"
 
-#include "../io/PointLoader.hpp"
+#include "../io/Model.hpp"
 #include "../io/Progress.hpp"
 #include "../io/Timestamp.hpp"
 #include "../io/PLYIO.hpp"
@@ -85,7 +85,7 @@ public:
      * @param ki        The number of neighbor points used for normal interpolation
      * @param kd        The number of neighbor points used for distance value calculation
 	 */
-	StannPointCloudManager(PointLoader* loader,
+	StannPointCloudManager(BufferedPointCloud* loader,
 	                       const int &kn = 10,
 	                       const int &ki = 10,
 	                       const int &kd = 10);
@@ -151,21 +151,6 @@ private:
      */
     void init();
 
-	/**
-	 * @brief Save points and normals to a binary PLY file.
-	 * @param filename The target file
-	 */
-	void savePLY(string filename);
-
-	/**
-	 * @brief Save points and normals to an ASCII file
-	 */
-	void savePointsAndNormals(string filename);
-
-	/**
-	 * @brief Save points to a ascii file
-	 */
-	void savePoints(string filename);
 
 	/**
 	 * @brief Interpolate the initial normals with the \ref m_ki neighbors

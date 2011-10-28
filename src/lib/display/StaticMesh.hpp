@@ -39,7 +39,6 @@
 using namespace std;
 
 #include "Renderable.hpp"
-#include "io/MeshLoader.hpp"
 #include "geometry/BoundingBox.hpp"
 
 namespace lssr
@@ -54,10 +53,13 @@ enum
     RenderColors              = 0x10,
 };
 
-class StaticMesh : public Renderable{
+class StaticMesh : public Renderable
+{
 public:
 	StaticMesh();
-	StaticMesh(MeshLoader& loader, string name="<unnamed static mesh>");
+	StaticMesh(Model& model, string name="<unnamed static mesh>");
+	StaticMesh(BufferedMesh* buffer, string name="<unnamed static mesh>");
+
 	StaticMesh(const StaticMesh &o);
 	~StaticMesh();
 	inline void render();
@@ -76,6 +78,9 @@ public:
 	int  getRenderMode() { return m_renderMode;}
 
 private:
+
+	void init(BufferedMesh* mesh);
+
 	void interpolateNormals();
 	void setDefaultColors();
 	void calcBoundingBox();

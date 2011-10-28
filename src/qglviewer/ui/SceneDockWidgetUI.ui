@@ -72,9 +72,9 @@
     </column>
    </widget>
   </widget>
-  <action name="actionExport_selected_scans">
+  <action name="actionExport">
    <property name="text">
-    <string>Export selected scans...</string>
+    <string>Export selection</string>
    </property>
   </action>
  </widget>

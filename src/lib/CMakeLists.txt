@@ -5,9 +5,9 @@ set(LSSR_SOURCES
     io/UosIO.cpp
     io/Progress.cpp
     io/Timestamp.cpp
-    io/MeshLoader.cpp
-    io/PointLoader.cpp
     io/Message.cpp
+    io/BufferedMesh.cpp
+    io/BufferedPointCloud.cpp
     display/CoordinateAxes.cpp
     display/Renderable.cpp
     display/PointCloud.cpp
