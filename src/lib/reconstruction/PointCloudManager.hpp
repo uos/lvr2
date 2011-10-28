@@ -29,10 +29,11 @@
 
 #include <vector>
 
+#include "io/Model.hpp"
 
-#include "../geometry/Vertex.hpp"
-#include "../geometry/Normal.hpp"
-#include "../geometry/BoundingBox.hpp"
+#include "geometry/Vertex.hpp"
+#include "geometry/Normal.hpp"
+#include "geometry/BoundingBox.hpp"
 
 using std::vector;
 
@@ -112,7 +113,7 @@ protected:
     float**                  	m_normals;
 
     /// Color information for points
-    uint8_t **                  m_colors;
+    uchar **                    m_colors;
 
     /// The bounding box of the point set
     BoundingBox<VertexT>        m_boundingBox;

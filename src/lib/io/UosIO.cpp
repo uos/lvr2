@@ -52,7 +52,7 @@ namespace lssr
 {
 
 
-void UosIO::read(string dir)
+void UosIO::read(Model* model, string dir)
 {
     size_t n = 0;
     boost::filesystem::path directory(dir);
@@ -108,7 +108,7 @@ void UosIO::read(string dir)
 
             cout << timestamp << "Reading " << n3dFiles << " scans in UOS format "
                  << "(From " << firstScan << " to " << lastScan << ")." << endl;
-            readNewFormat(dir, firstScan, lastScan, n);
+            readNewFormat(model, dir, firstScan, lastScan, n);
         }
         else
         {
@@ -152,7 +152,7 @@ void UosIO::read(string dir)
 
                 cout << timestamp << "Reading " << nDirs << " scans in old UOS format "
                      << "(From " << firstScan << " to " << lastScan << ")." << endl;
-                readOldFormat(dir, firstScan, lastScan, n);
+                readOldFormat(model, dir, firstScan, lastScan, n);
             }
             else
             {
@@ -184,11 +184,15 @@ void UosIO::reduce(string dir, string target, int reduction)
     size_t n;
 
     // Read data and write reduced points
-    read(dir);
+    Model* m;
+    read(m, dir);
+
+    // Write reduced points...
+    ///TODO: Implement writing...
 }
 
 
-void UosIO::readNewFormat(string dir, int first, int last, size_t &n)
+void UosIO::readNewFormat(Model* model, string dir, int first, int last, size_t &n)
 {
     list<Vertex<float> > allPoints;
     list<Vertex<int> > allColors;
@@ -403,25 +407,30 @@ void UosIO::readNewFormat(string dir, int first, int last, size_t &n)
         cout << timestamp << "UOS Reader: Read " << allPoints.size() << " points." << endl;
 
         // Save position information
-        n = allPoints.size();
-        m_points = new float[3 * allPoints.size()];
+
+        size_t numPoints = 0;
+        float* points = 0;
+        uchar* pointColors = 0;
+
+
+        numPoints = allPoints.size();
+        points = new float[3 * allPoints.size()];
         list<Vertex<float> >::iterator p_it;
         int i = 0;
         for(p_it = allPoints.begin(); p_it != allPoints.end(); p_it++)
         {
             int t_index = 3 * i;
             Vertex<float> v = *p_it;
-            m_points[t_index    ] = v[0];
-            m_points[t_index + 1] = v[1];
-            m_points[t_index + 2] = v[2];
+            points[t_index    ] = v[0];
+            points[t_index + 1] = v[1];
+            points[t_index + 2] = v[2];
             i++;
         }
-        m_numPoints = allPoints.size();
 
         // Save color information
         if(allColors.size() > 0)
         {
-            m_pointColors = new unsigned char[3 * m_numPoints];
+            pointColors = new unsigned char[3 * numPoints];
             i = 0;
             list<Vertex<int> >::iterator c_it;
             for(c_it = allColors.begin(); c_it != allColors.end(); c_it++)
@@ -429,13 +438,18 @@ void UosIO::readNewFormat(string dir, int first, int last, size_t &n)
                 int t_index = 3 * i;
 
                 Vertex<int> v = *c_it;
-                m_pointColors[t_index    ] = (unsigned char) v[0];
-                m_pointColors[t_index + 1] = (unsigned char) v[1];
-                m_pointColors[t_index + 2] = (unsigned char) v[2];
+                pointColors[t_index    ] = (unsigned char) v[0];
+                pointColors[t_index + 1] = (unsigned char) v[1];
+                pointColors[t_index + 2] = (unsigned char) v[2];
                 i++;
             }
         }
 
+        // Create point cloud in model
+        model = new Model;
+        model->m_pointCloud = new BufferedPointCloud;
+        model->m_pointCloud->setPointArray(points, numPoints);
+        model->m_pointCloud->setPointColorArray(pointColors, numPoints);
     }
 
 }
@@ -453,7 +467,7 @@ indexPair UosIO::getScanRange(int num)
 }
 
 
-void UosIO::readOldFormat(string dir, int first, int last, size_t &n)
+void UosIO::readOldFormat(Model* model, string dir, int first, int last, size_t &n)
 {
     Matrix4<float> m_tf;
 
@@ -624,19 +638,25 @@ void UosIO::readOldFormat(string dir, int first, int last, size_t &n)
     {
         cout << timestamp << "UOS Reader: Read " << allPoints.size() << " points." << endl;
         n = allPoints.size();
-        m_points = new float[3 * allPoints.size()];
+        float* points;
+        points = new float[3 * allPoints.size()];
         list<Vertex<float> >::iterator p_it;
         int i = 0;
         for(p_it = allPoints.begin(); p_it != allPoints.end(); p_it++)
         {
             int t_index = 3 * i;
             Vertex<float> v = *p_it;
-            m_points[t_index    ] = v[0];
-            m_points[t_index + 1] = v[1];
-            m_points[t_index + 1] = v[2];
+            points[t_index    ] = v[0];
+            points[t_index + 1] = v[1];
+            points[t_index + 1] = v[2];
             i++;
         }
-        m_numPoints = allPoints.size();
+        size_t numPoints = allPoints.size();
+
+        // Alloc model
+        model = new Model;
+        model->m_pointCloud = new BufferedPointCloud;
+        model->m_pointCloud->setPointArray(points, n);
     }
 }
 

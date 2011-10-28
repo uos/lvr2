@@ -35,8 +35,6 @@
 #define ASCIIIO_H_
 
 #include "BaseIO.hpp"
-#include "PointIO.hpp"
-
 
 namespace lssr
 {
@@ -46,7 +44,7 @@ namespace lssr
  *        text formats. Currently the file extensions .xyz, .txt,
  *        .3d and .pts are supported.
  */
-class AsciiIO : public PointIO
+class AsciiIO
 {
 public:
 
@@ -61,13 +59,13 @@ public:
      *
      * @param filename      The file to read
      */
-    virtual void read(string filename);
+    virtual Model* read(string filename);
 
     /**
      * @todo : Implement save method for ASCII Files...
      * @param filename
      */
-    virtual void save(string filename) {}
+    virtual void save(Model*, string filename) {}
 
     /// TODO: Coordinate mapping for ascii files
     static size_t countLines(string filename);

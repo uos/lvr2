@@ -27,8 +27,7 @@
 #ifndef IOFACTORY_H_
 #define IOFACTORY_H_
 
-#include "MeshIO.hpp"
-#include "PointIO.hpp"
+#include "Model.hpp"
 
 #include <string>
 using std::string;
@@ -47,55 +46,8 @@ class IOFactory
 {
 public:
 
-    /**
-     * @brief Ctor.
-     * @param filename  Full path to the file to parse.
-     */
-    IOFactory() : m_pointLoader(0), m_meshLoader(0), m_baseIO(0){};
-
-    /**
-     * @brief Dtor.
-     */
-    virtual ~IOFactory() {}
-
-    /**
-     * @brief   Returns a point to a @ref{MeshLoader} instance or
-     *          null if the parsed file does not contain mesh data.
-     */
-    MeshIO* getMeshIO() { return m_meshLoader;}
-
-    /**
-     * @brief   Returns a pointer to a @ref{PointLoader} instance or
-     *          null if the parsed file does not contain point cloud
-     *          data
-     * @return
-     */
-    PointIO* getPointIO() { return m_pointLoader;}
-
-    /**
-     * @brief   Extracts point and mesh data from the given file
-     * @param   file        Input file.
-     */
-    void read(string file);
-
-
-    /**
-     * @brief   Save the present mesh and point data to the given file
-     */
-    void save(string file);
-
-
-private:
-
-
-    /// The point loader associated with the given file
-    PointIO*    m_pointLoader;
-
-    /// The mesh loader associated with the given file
-    MeshIO*     m_meshLoader;
-
-    /// Base io for file operations
-    BaseIO*     m_baseIO;
+    static Model* readModel(string filename);
+    static void saveModel(Model* m, string file);
 
 };
 

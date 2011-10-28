@@ -36,7 +36,6 @@
 #include <vector>
 
 #include "BaseIO.hpp"
-#include "PointIO.hpp"
 #include "AsciiIO.hpp"
 
 #include "../geometry/Vertex.hpp"
@@ -62,7 +61,7 @@ namespace lssr
 
 typedef pair<size_t, size_t> indexPair;
 
-class UosIO : public PointIO
+class UosIO
 {
 public:
 
@@ -78,7 +77,7 @@ public:
      * @param dir       A directory containing scans in UOS format.
      * @return          An indexed array of scan points
      */
-    void read(string dir);
+    void read(Model* m, string dir);
 
     /**
      * @brief Defines the first scan to read
@@ -117,7 +116,7 @@ private:
      * @param last      The last scan to read
      * @return          All read data points
      */
-    void readNewFormat(string dir, int first, int last, size_t &n);
+    void readNewFormat(Model* m, string dir, int first, int last, size_t &n);
 
     /**
      * @brief Reads scans from \ref{first} to \ref{last} in old UOS format.
@@ -126,7 +125,7 @@ private:
      * @param last      The last scan to read
      * @return          All read data points
      */
-    void readOldFormat(string dir, int first, int last, size_t &n);
+    void readOldFormat(Model* m, string dir, int first, int last, size_t &n);
 
     /**
      * @brief Creates a transformation matrix from given frame file
@@ -195,6 +194,8 @@ private:
 
     /// Number of loaded scans
     int     m_numScans;
+
+    vector<indexPair> m_scanRanges;
 
 
 };

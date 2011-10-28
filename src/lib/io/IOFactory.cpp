@@ -34,41 +34,21 @@
 namespace lssr
 {
 
-void IOFactory::read( string filename )
+Model* IOFactory::readModel( string filename )
 {
+    Model* m = new Model;
+
     // Check extension
     boost::filesystem::path selectedFile(filename);
     string extension = selectedFile.extension().c_str();
 
-    // Create objects
-    if ( extension == ".pts" || extension == ".3d" || extension == ".xyz" || extension == ".txt" )
-    {
-        AsciiIO* a_io = new AsciiIO;
-        m_pointLoader = (PointIO*)      a_io;
-        m_baseIO      = (BaseIO*)       a_io;
-    }
-    else if ( extension == ".ply" )
-    {
-        PLYIO* ply_io = new PLYIO;
-        m_pointLoader = (PointIO*)      ply_io;
-        m_meshLoader  = (MeshIO*)   ply_io;
-        m_baseIO      = (BaseIO*)       ply_io;
-    }
-    else if ( extension == "" )
-    {
-        UosIO* uos_io =  new UosIO;
-        m_pointLoader = (PointIO*) uos_io;
-        m_baseIO      = (BaseIO*)  uos_io;
-    }
 
-    if(m_baseIO)
-    {
-        m_baseIO->read(filename);
-    }
+
+    return m;
 
 }
 
-void IOFactory::save(string filename)
+void IOFactory::saveModel(Model* m, string filename)
 {
     // Get file exptension
     boost::filesystem::path selectedFile(filename);

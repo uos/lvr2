@@ -31,8 +31,7 @@
 #include "display/PointCloud.hpp"
 #include "display/MultiPointCloud.hpp"
 
-#include "io/MeshIO.hpp"
-#include "io/PointIO.hpp"
+#include "io/Model.hpp"
 
 #include "../widgets/PointCloudTreeWidgetItem.h"
 #include "../widgets/TriangleMeshTreeWidgetItem.h"
@@ -43,8 +42,9 @@
 #include <boost/filesystem.hpp>
 #include <boost/version.hpp>
 
-using lssr::MeshIO;
-using lssr::PointIO;
+using lssr::Model;
+using lssr::BufferedMesh;
+using lssr::BufferedPointCloud;
 
 DataCollectorFactory::DataCollectorFactory() {}
 
@@ -58,14 +58,14 @@ void DataCollectorFactory::create(string filename)
 
 	// Create a factory rto parse given file and extract loaders
 	lssr::IOFactory io;
-	io.read(filename);
+	Model* model = io.readModel(filename);
 
-	MeshIO*       mesh_loader  = io.getMeshIO();
-	PointIO*      point_loader = io.getPointIO();
+	BufferedMesh*           mesh_buffer  = model->m_mesh;
+	BufferedPointCloud*     point_buffer = model->m_pointCloud;
 
-	if(mesh_loader)
+	if(mesh_buffer)
 	{
-	    lssr::StaticMesh* mesh = new lssr::StaticMesh(*mesh_loader);
+	    lssr::StaticMesh* mesh = new lssr::StaticMesh(*model);
 	    TriangleMeshTreeWidgetItem* item = new TriangleMeshTreeWidgetItem(TriangleMeshItem);
 
 	    int modes = 0;
@@ -86,19 +86,19 @@ void DataCollectorFactory::create(string filename)
 	    Q_EMIT dataCollectorCreated( dataCollector );
 	}
 
-	if(point_loader)
+	if(point_buffer)
 	{
-	    if(point_loader->getNumPoints() > 0)
+	    if(point_buffer->getNumPoints() > 0)
 	    {
 	        // Check for multi point object
-	        PointCloud* pc = new PointCloud(*point_loader);
+	        PointCloud* pc = new PointCloud(*model);
 	        PointCloudTreeWidgetItem* item = new PointCloudTreeWidgetItem(PointCloudItem);
 
 	        // Setup supported render modes
 	        int modes = 0;
 	        size_t n_pn;
 	        modes |= Points;
-	        if(point_loader->getPointNormalArray(n_pn))
+	        if(point_buffer->getPointNormalArray(n_pn))
 	        {
 	            modes |= PointNormals;
 	        }
