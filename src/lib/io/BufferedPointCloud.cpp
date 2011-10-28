@@ -29,17 +29,17 @@
  *
  **/
 
-#include "PointLoader.hpp"
+#include "BufferedPointCloud.hpp"
 
 namespace lssr
 {
 
-PointLoader::PointLoader() :
+BufferedPointCloud::BufferedPointCloud() :
     m_points( NULL ),
     m_pointNormals( NULL ),
     m_pointColors( NULL ),
     m_pointIntensities( NULL ),
-    m_pointConfidence( NULL ),
+    m_pointConfidences( NULL ),
     m_indexedPoints( NULL ),
     m_indexedPointNormals( NULL ),
     m_indexedPointIntensities( NULL ),
@@ -52,7 +52,7 @@ PointLoader::PointLoader() :
     m_numPointConfidence( 0 ) {}
 
 
-float* PointLoader::getPointArray( size_t &n )
+float* BufferedPointCloud::getPointArray( size_t &n )
 {
 
     n = m_numPoints;
@@ -61,7 +61,7 @@ float* PointLoader::getPointArray( size_t &n )
 }
 
 
-uint8_t* PointLoader::getPointColorArray( size_t &n )
+uint8_t* BufferedPointCloud::getPointColorArray( size_t &n )
 {
 
     n = m_numPointColors;
@@ -70,7 +70,7 @@ uint8_t* PointLoader::getPointColorArray( size_t &n )
 }
 
 
-float* PointLoader::getPointNormalArray( size_t &n )
+float* BufferedPointCloud::getPointNormalArray( size_t &n )
 {
 
     n = m_numPointNormals;
@@ -79,7 +79,7 @@ float* PointLoader::getPointNormalArray( size_t &n )
 }
 
 
-float* PointLoader::getPointIntensityArray( size_t &n )
+float* BufferedPointCloud::getPointIntensityArray( size_t &n )
 {
 
     n = m_numPointIntensities;
@@ -88,16 +88,16 @@ float* PointLoader::getPointIntensityArray( size_t &n )
 }
 
 
-float* PointLoader::getPointConfidenceArray( size_t &n )
+float* BufferedPointCloud::getPointConfidenceArray( size_t &n )
 {
 
     n = m_numPointConfidence;
-    return m_pointConfidence;
+    return m_pointConfidences;
 
 }
 
 
-size_t PointLoader::getNumPoints()
+size_t BufferedPointCloud::getNumPoints()
 {
 
     return m_numPoints;
@@ -105,7 +105,7 @@ size_t PointLoader::getNumPoints()
 }
 
 
-uint8_t** PointLoader::getIndexedPointColorArray( size_t &n )
+uint8_t** BufferedPointCloud::getIndexedPointColorArray( size_t &n )
 {
 
     n = m_numPointColors;
@@ -128,7 +128,7 @@ uint8_t** PointLoader::getIndexedPointColorArray( size_t &n )
 }
 
 
-float** PointLoader::getIndexedPointNormalArray( size_t &n )
+float** BufferedPointCloud::getIndexedPointNormalArray( size_t &n )
 {
 
     return getIndexedArrayf( n, m_numPointNormals, &m_pointNormals, 
@@ -136,7 +136,7 @@ float** PointLoader::getIndexedPointNormalArray( size_t &n )
 
 }
 
-float** PointLoader::getIndexedPointArray( size_t &n )
+float** BufferedPointCloud::getIndexedPointArray( size_t &n )
 {
 
     return getIndexedArrayf( n, m_numPoints, &m_points, &m_indexedPoints );
@@ -144,7 +144,7 @@ float** PointLoader::getIndexedPointArray( size_t &n )
 }
 
 
-float** PointLoader::getIndexedPointIntensityArray( size_t &n )
+float** BufferedPointCloud::getIndexedPointIntensityArray( size_t &n )
 {
 
     return getIndexedArrayf( n, m_numPointIntensities, &m_pointIntensities,
@@ -153,16 +153,16 @@ float** PointLoader::getIndexedPointIntensityArray( size_t &n )
 }
 
 
-float** PointLoader::getIndexedPointConfidenceArray( size_t &n )
+float** BufferedPointCloud::getIndexedPointConfidenceArray( size_t &n )
 {
 
-    return getIndexedArrayf( n, m_numPointConfidence, &m_pointConfidence,
+    return getIndexedArrayf( n, m_numPointConfidence, &m_pointConfidences,
             &m_indexedPointConfidence, 1 );
 
 }
 
 
-float** PointLoader::getIndexedArrayf( size_t &n, const size_t num, 
+float** BufferedPointCloud::getIndexedArrayf( size_t &n, const size_t num, 
         float** arr1d, float*** arr2d, const int step )
 {
 
@@ -190,7 +190,7 @@ float** PointLoader::getIndexedArrayf( size_t &n, const size_t num,
 }
 
 
-void PointLoader::setPointArray( float* array, size_t n )
+void BufferedPointCloud::setPointArray( float* array, size_t n )
 {
 
     m_numPoints = n;
@@ -199,7 +199,7 @@ void PointLoader::setPointArray( float* array, size_t n )
 }
 
 
-void PointLoader::setPointColorArray( uint8_t* array, size_t n )
+void BufferedPointCloud::setPointColorArray( uint8_t* array, size_t n )
 {
 
     m_numPointColors = n;
@@ -208,7 +208,7 @@ void PointLoader::setPointColorArray( uint8_t* array, size_t n )
 }
 
 
-void PointLoader::setPointNormalArray( float* array, size_t n )
+void BufferedPointCloud::setPointNormalArray( float* array, size_t n )
 {
 
     m_numPointNormals = n;
@@ -217,7 +217,7 @@ void PointLoader::setPointNormalArray( float* array, size_t n )
 }
 
 
-void PointLoader::setPointIntensityArray( float* array, size_t n )
+void BufferedPointCloud::setPointIntensityArray( float* array, size_t n )
 {
 
     m_numPointIntensities = n;
@@ -226,19 +226,19 @@ void PointLoader::setPointIntensityArray( float* array, size_t n )
 }
 
 
-void PointLoader::setPointConfidenceArray( float* array, size_t n )
+void BufferedPointCloud::setPointConfidenceArray( float* array, size_t n )
 {
 
     m_numPointConfidence = n;
-    m_pointConfidence = array;
+    m_pointConfidences = array;
 
 }
 
 
-void PointLoader::freeBuffer()
+void BufferedPointCloud::freeBuffer()
 {
 
-    m_points = m_pointConfidence = m_pointIntensities = m_pointNormals = NULL;
+    m_points = m_pointConfidences = m_pointIntensities = m_pointNormals = NULL;
     m_pointColors = NULL;
     m_numPoints = m_numPointColors = m_numPointIntensities
         = m_numPointConfidence = m_numPointNormals = 0;

@@ -77,81 +77,50 @@ ViewerApplication::ViewerApplication( int argc, char ** argv )
 
 void ViewerApplication::connectEvents()
 {
+    QTreeWidget* treeWidget = m_sceneDockWidgetUi->treeWidget;
 
 	// File operations
-	QObject::connect(m_mainWindowUi->action_Open , SIGNAL(activated()),
-			this, SLOT(openFile()));
+	QObject::connect(m_mainWindowUi->action_Open , SIGNAL(activated()), this, SLOT(openFile()));
 
-	// Projection settings
-	QObject::connect(m_mainWindowUi->actionShow_entire_scene, SIGNAL(activated()),
-			m_viewer, SLOT(resetCamera()));
+	// Scene views
+    connect(m_mainWindowUi->actionShow_entire_scene, SIGNAL(activated()), m_viewer, SLOT(resetCamera()));
+    connect(m_mainWindowUi->actionShowSelection, SIGNAL(activated()), this, SLOT(centerOnSelection()));
 
-	QObject::connect(m_mainWindowUi->actionShowSelection, SIGNAL(activated()),
-	        this, SLOT(centerOnSelection()));
-
-
-
-	QObject::connect(m_mainWindowUi->actionXZ_ortho_projection, SIGNAL(activated()),
-			this, SLOT(setViewerModeOrthoXZ()));
-	QObject::connect(m_mainWindowUi->actionXY_ortho_projection, SIGNAL(activated()),
-			this, SLOT(setViewerModeOrthoXY()));
-	QObject::connect(m_mainWindowUi->actionYZ_ortho_projection, SIGNAL(activated()),
-			this, SLOT(setViewerModeOrthoYZ()));
-	QObject::connect(m_mainWindowUi->actionPerspective_projection, SIGNAL(activated()),
-			this, SLOT(setViewerModePerspective()));
+    // Projections
+    connect(m_mainWindowUi->actionXZ_ortho_projection,    SIGNAL(activated()), this, SLOT(setViewerModeOrthoXZ()));
+    connect(m_mainWindowUi->actionXY_ortho_projection,    SIGNAL(activated()), this, SLOT(setViewerModeOrthoXY()));
+	connect(m_mainWindowUi->actionYZ_ortho_projection,    SIGNAL(activated()), this, SLOT(setViewerModeOrthoYZ()));
+    connect(m_mainWindowUi->actionPerspective_projection, SIGNAL(activated()), this, SLOT(setViewerModePerspective()));
 
 	// Render Modes
-	QObject::connect(m_mainWindowUi->actionVertexView, SIGNAL(activated()),
-	        this, SLOT(meshRenderModeChanged()));
-
-	QObject::connect(m_mainWindowUi->actionSurfaceView, SIGNAL(activated()),
-            this, SLOT(meshRenderModeChanged()));
-
-	QObject::connect(m_mainWindowUi->actionWireframeView, SIGNAL(activated()),
-	            this, SLOT(meshRenderModeChanged()));
-
-	QObject::connect(m_mainWindowUi->actionPointCloudView, SIGNAL(activated()),
-	                this, SLOT(pointRenderModeChanged()));
-
+	connect(m_mainWindowUi->actionVertexView,     SIGNAL(activated()), this, SLOT(meshRenderModeChanged()));
+	connect(m_mainWindowUi->actionSurfaceView,    SIGNAL(activated()), this, SLOT(meshRenderModeChanged()));
+	connect(m_mainWindowUi->actionWireframeView,  SIGNAL(activated()), this, SLOT(meshRenderModeChanged()));
+	connect(m_mainWindowUi->actionPointCloudView, SIGNAL(activated()), this, SLOT(pointRenderModeChanged()));
 
 	// Fog settings
-	QObject::connect(m_mainWindowUi->actionToggle_fog, SIGNAL(activated()),
-			this, SLOT(toggleFog()));
-	QObject::connect(m_mainWindowUi->actionFog_settings, SIGNAL(activated()),
-				this, SLOT(displayFogSettingsDialog()));
+	connect(m_mainWindowUi->actionToggle_fog, SIGNAL(activated()),  this, SLOT(toggleFog()));
+	connect(m_mainWindowUi->actionFog_settings, SIGNAL(activated()),this, SLOT(displayFogSettingsDialog()));
 
 	// Communication between the manager objects
-    QObject::connect(m_factory, SIGNAL(dataCollectorCreated(DataCollector*)),
-                        m_viewerManager, SLOT(addDataCollector(DataCollector*)));
-
-    QObject::connect(m_factory, SIGNAL(dataCollectorCreated(DataCollector*)),
-                        this, SLOT(dataCollectorAdded(DataCollector*)));
+    connect(m_factory, SIGNAL(dataCollectorCreated(DataCollector*)), m_viewerManager, SLOT(addDataCollector(DataCollector*)));
+    connect(m_factory, SIGNAL(dataCollectorCreated(DataCollector*)), this,            SLOT(dataCollectorAdded(DataCollector*)));
 
 	// Communication between tree widget items
-	QObject::connect(m_sceneDockWidgetUi->treeWidget, SIGNAL(itemClicked(QTreeWidgetItem*, int)),
-					this, SLOT(treeItemClicked(QTreeWidgetItem*, int)));
+	connect(treeWidget, SIGNAL(itemClicked(QTreeWidgetItem*, int)),         this, SLOT(treeItemClicked(QTreeWidgetItem*, int)));
+	connect(treeWidget, SIGNAL(itemChanged(QTreeWidgetItem*, int)),         this, SLOT(treeItemChanged(QTreeWidgetItem*, int)));
+	connect(treeWidget, SIGNAL(itemSelectionChanged()),                     this, SLOT(treeSelectionChanged()));
+	connect(treeWidget, SIGNAL(customContextMenuRequested(const QPoint &)), this, SLOT(treeContextMenuRequested(const QPoint &)));
 
-	QObject::connect(m_sceneDockWidgetUi->treeWidget, SIGNAL(itemChanged(QTreeWidgetItem*, int)),
-	                    this, SLOT(treeItemChanged(QTreeWidgetItem*, int)));
+	// Actions
+	connect(m_sceneDockWidgetUi->actionExport, SIGNAL(triggered()), this, SLOT(saveSelectedObject()));
+	connect(m_mainWindowUi->actionGenerateMesh,               SIGNAL(triggered()), this, SLOT(createMeshFromPointcloud()));
 
-	QObject::connect(m_sceneDockWidgetUi->treeWidget, SIGNAL(itemSelectionChanged()),
-	                    this, SLOT(treeSelectionChanged()));
-
-	QObject::connect(m_sceneDockWidgetUi->treeWidget, SIGNAL(customContextMenuRequested(const QPoint &)),
-	                        this, SLOT(treeContextMenuRequested(const QPoint &)));
-
-
-	// Action
-	connect(m_sceneDockWidgetUi->actionExport_selected_scans, SIGNAL(triggered()), this, SLOT(treeWidgetExport()));
-
-
-	// Tree widget context menu actions
+	// Action dock functions
 	connect(m_actionDockWidgetUi->buttonCreateMesh, SIGNAL(clicked()), this, SLOT(createMeshFromPointcloud()));
-    connect(m_actionDockWidgetUi->buttonTransform, SIGNAL(clicked()), this, SLOT(transformObject()));
-    connect(m_actionDockWidgetUi->buttonDelete, SIGNAL(clicked()), this, SLOT(deleteObject()));
-
-
-	connect(m_mainWindowUi->actionGenerateMesh, SIGNAL(triggered()), this, SLOT(createMeshFromPointcloud()));
+    connect(m_actionDockWidgetUi->buttonTransform,  SIGNAL(clicked()), this, SLOT(transformObject()));
+    connect(m_actionDockWidgetUi->buttonDelete,     SIGNAL(clicked()), this, SLOT(deleteObject()));
+    connect(m_actionDockWidgetUi->buttonExport,     SIGNAL(clicked()), this, SLOT(saveSelectedObject()));
 }
 
 void ViewerApplication::createMeshFromPointcloud()
@@ -178,7 +147,7 @@ void ViewerApplication::createMeshFromPointcloud()
             {
                 // Get point cloud data
                 PointCloud* pc = static_cast<lssr::PointCloud*>(c_item->renderable());
-                PointLoader* loader = pc->getPointLoader();
+                BufferedPointCloud* loader = pc->model()->m_pointCloud;
 
                 if(loader)
                 {
@@ -268,9 +237,9 @@ void ViewerApplication::createMeshFromPointcloud()
 
 
                     // Create and add mesh to loaded objects
-                    MeshLoader* l = mesh.getMeshLoader();
+                    BufferedMesh* l = mesh.meshBuffer();
 
-                    lssr::StaticMesh* static_mesh = new lssr::StaticMesh(*l);
+                    lssr::StaticMesh* static_mesh = new lssr::StaticMesh(l);
                     TriangleMeshTreeWidgetItem* mesh_item = new TriangleMeshTreeWidgetItem(TriangleMeshItem);
 
                     int modes = 0;
@@ -433,9 +402,6 @@ void ViewerApplication::treeContextMenuRequested(const QPoint &position)
     {
         if(item->type() == MultiPointCloudItem)
         {
-            QAction* export_action = m_sceneDockWidgetUi->actionExport_selected_scans;
-            actions.append(export_action);
-
             QAction* mesh_action = m_mainWindowUi->actionGenerateMesh;
             actions.append(mesh_action);
         }
@@ -448,7 +414,7 @@ void ViewerApplication::treeContextMenuRequested(const QPoint &position)
 
         // Add standard action to context menu
         actions.append(m_mainWindowUi->actionShowSelection);
-
+        actions.append(m_sceneDockWidgetUi->actionExport);
     }
 
     // Display menu if actions are present
@@ -459,17 +425,55 @@ void ViewerApplication::treeContextMenuRequested(const QPoint &position)
 
 }
 
-void ViewerApplication::treeWidgetExport()
+void ViewerApplication::saveSelectedObject()
 {
     QTreeWidgetItem* item = m_sceneDockWidgetUi->treeWidget->currentItem();
     if(item)
     {
+
+        QFileDialog file_dialog;
+        QStringList file_names;
+        QStringList file_types;
+
+        // Parse extensions by file type
+        if(item->type() == PointCloudItem || item->type() == MultiPointCloudItem)
+        {
+            file_types << "Point Clouds (*.pts)"
+                       << "PLY Models (*.ply)"
+                       << "All Files (*.*)";
+        }
+        else if (item->type() == TriangleMeshItem)
+        {
+            file_types << "PLY Models (*.ply)"
+                       << "OBJ Models (*.obj)"
+                       << "All Files (*.*)";
+        }
+        else
+        {
+            QMessageBox msgBox;
+            msgBox.setText("Object type not supported");
+            msgBox.setStandardButtons(QMessageBox::Ok);
+            return;
+        }
+
+        //Set Title
+        file_dialog.setWindowTitle("Save selected object");
+        file_dialog.setFilters(file_types);
+
+        if(file_dialog.exec()){
+            file_names = file_dialog.selectedFiles();
+        } else {
+            return;
+        }
+
+        string file_name = file_names.constBegin()->toStdString();
+
+        // Cast to custom item
         if(item->type() > 1000)
         {
             CustomTreeWidgetItem* c_item = static_cast<CustomTreeWidgetItem*>(item);
-            //m_dataManager->exportData(c_item);
-            cout << "TODO: Export data" << endl;
         }
+
     }
 }
 
@@ -590,7 +594,6 @@ void ViewerApplication::displayFogSettingsDialog()
 						this, SLOT(fogExp()));
 		QObject::connect(m_fogSettingsUI->radioButtonExp2 , SIGNAL(clicked()),
 						this, SLOT(fogExp2()));
-
 
 	}
 

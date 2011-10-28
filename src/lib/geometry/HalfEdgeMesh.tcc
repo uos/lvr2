@@ -1029,9 +1029,13 @@ void HalfEdgeMesh<VertexT, NormalT>::tester()
 
 
     //    Reset all used variables
-    for(int i=0; i<m_faces.size(); i++)
-        for(int k=0; k<3; k++)
-            (*m_faces[i])[k]->used=false;
+    for(int i = 0; i < m_faces.size(); i++)
+    {
+        for(int k = 0; k < 3; k++)
+        {
+            (*m_faces[i])[k]->used = false;
+        }
+    }
 }
 
     template<typename VertexT, typename NormalT>
@@ -1043,8 +1047,8 @@ void HalfEdgeMesh<VertexT, NormalT>::finalize()
 
     boost::unordered_map<HalfEdgeVertex<VertexT, NormalT>*, int> index_map;
 
-    this->m_nVertices 		= (uint32_t)m_vertices.size();
-    this->m_nFaces 			= (uint32_t)m_faces.size();
+    this->m_nVertices 		= m_vertices.size();
+    this->m_nFaces 			= m_faces.size();
 
     this->m_vertexBuffer 	= new float[3 * this->m_nVertices];
     this->m_normalBuffer 	= new float[3 * this->m_nVertices];
@@ -1241,7 +1245,8 @@ void HalfEdgeMesh<VertexT, NormalT>::regionsToBuffer(
                 (*normal)[vncUsed + 1] = (*m_regions[i]->m_faces[j])(k)->m_normal[1];
                 (*normal)[vncUsed + 2] = (*m_regions[i]->m_faces[j])(k)->m_normal[2];
 
-                if(typeid( *(*m_regions[i]->m_faces[j])(k) ) == typeid(ColorVertex<float, unsigned char>())){
+                if(typeid( *(*m_regions[i]->m_faces[j])(k) ) == typeid(ColorVertex<float, unsigned char>()))
+                {
                 	(*color)[vncUsed + 0] = (*m_regions[i]->m_faces[j])(k)->m_position.r / 255.0f;
                 	(*color)[vncUsed + 1] = (*m_regions[i]->m_faces[j])(k)->m_position.g / 255.0f;
                 	(*color)[vncUsed + 2] = (*m_regions[i]->m_faces[j])(k)->m_position.b / 255.0f;
@@ -1432,8 +1437,8 @@ void HalfEdgeMesh<VertexT, NormalT>::finalizeAndRetesselate(bool genTextures)
 
     cout << timestamp << "Finalizing mesh." << endl;
 
-    this->m_nVertices    = (uint32_t)m_vertices.size();
-    this->m_nFaces 	     = (uint32_t)m_faces.size();
+    this->m_nVertices    = m_vertices.size();
+    this->m_nFaces 	     = m_faces.size();
     this->m_nTextures    = 0;
     size_t vncBufferSize   = 3 * this->m_nVertices;
     size_t indexBufferSize = 3 * this->m_nFaces;
@@ -1449,8 +1454,12 @@ void HalfEdgeMesh<VertexT, NormalT>::finalizeAndRetesselate(bool genTextures)
 
     // Reset used variable. Necessarsy to use getContours() in tesselator-class. 
     for(size_t j=0; j<m_faces.size(); j++)
+    {
         for(int k=0; k<3; k++)
+        {
             (*m_faces[j])[k]->used=false;
+        }
+    }
 
     /*vector<Region<VertexT, NormalT> * > plane_regions;*/
     vector<int> plane_regions;

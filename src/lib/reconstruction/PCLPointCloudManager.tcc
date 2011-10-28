@@ -33,7 +33,7 @@ namespace lssr
 {
 
 template<typename VertexT, typename NormalT>
-PCLPointCloudManager<VertexT, NormalT>::PCLPointCloudManager(PointLoader* loader, int kn, int ki, int kd)
+PCLPointCloudManager<VertexT, NormalT>::PCLPointCloudManager(BufferedPointCloud* loader, int kn, int ki, int kd)
 {
     this->m_kn = kn;
     this->m_ki = ki;
@@ -60,8 +60,6 @@ PCLPointCloudManager<VertexT, NormalT>::PCLPointCloudManager(PointLoader* loader
         m_pointCloud->points[i].y = y;
         m_pointCloud->points[i].z = z;
     }
-
-    //cout << cloud_normals->points.size() << endl;
 
 }
 

@@ -35,15 +35,6 @@
 #define ASCIIIO_H_
 
 #include "BaseIO.hpp"
-#include "PointLoader.hpp"
-
-
-#ifdef __GNUC__
-#define WARN(msg) __attribute__ ((warning (msg)))
-#else
-#define WARN(msg)  
-#endif
-
 
 namespace lssr
 {
@@ -52,9 +43,8 @@ namespace lssr
  * @brief A import / export class for point cloud data in plain
  *        text formats. Currently the file extensions .xyz, .txt,
  *        .3d and .pts are supported.
- * @todo  Implement save method
  */
-class AsciiIO : public BaseIO, public PointLoader
+class AsciiIO
 {
 public:
 
@@ -69,7 +59,13 @@ public:
      *
      * @param filename      The file to read
      */
-    virtual void read(string filename);
+    virtual Model* read(string filename);
+
+    /**
+     * @todo : Implement save method for ASCII Files...
+     * @param filename
+     */
+    virtual void save(Model*, string filename) {}
 
     /// TODO: Coordinate mapping for ascii files
     static size_t countLines(string filename);
@@ -80,17 +76,7 @@ public:
      */
     static int getEntriesInLine(string filename);
 
-    /**
-     * \brief   Save the loaded elements to the given file.
-     * \todo    Implement this.
-     * \warning This method is not yet implemented. It has no functionality.
-     *
-     * \param filename Filename of the file to write.
-     **/
-    virtual void save(string filename) WARN( "Warning: This method is not yet implemented." )
-    {
 
-    }
 
 };
 

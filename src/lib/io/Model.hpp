@@ -16,28 +16,32 @@
  * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA
  */
 
+/**
+ * Model.h
+ *
+ *  @date 27.10.2011
+ *  @author Thomas Wiemann
+ */
 
-#include "BaseMesh.hpp"
-#include "io/ObjIO.hpp"
-#include "io/PLYIO.hpp"
+#include "io/BufferedMesh.hpp"
+#include "io/BufferedPointCloud.hpp"
+
+#ifndef MODEL_H_
+#define MODEL_H_
 
 namespace lssr
 {
 
-template<typename VertexT, typename IndexType>
-BaseMesh<VertexT, IndexType>::BaseMesh()
+class Model
 {
-	m_finalized = false;
-	m_meshBuffer = 0;
-}
+public:
+    Model() : m_pointCloud(0), m_mesh(0) {};
+    virtual ~Model() {};
 
-template<typename VertexT, typename IndexType>
-void BaseMesh<VertexT, IndexType>::save( string filename )
-{
+    BufferedPointCloud*     m_pointCloud;
+    BufferedMesh*           m_mesh;
+};
 
+} // namespace lssr
 
-}
-
-
-
-}
+#endif /* MODEL_H_ */
