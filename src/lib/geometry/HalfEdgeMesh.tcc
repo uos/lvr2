@@ -1038,421 +1038,127 @@ void HalfEdgeMesh<VertexT, NormalT>::tester()
     }
 }
 
-    template<typename VertexT, typename NormalT>
+template<typename VertexT, typename NormalT>
 void HalfEdgeMesh<VertexT, NormalT>::finalize()
 {
     cout << timestamp << "Finalizing mesh." << endl;
-    cout << timestamp << "Number of vertices: " << m_vertices.size() << endl;
-    cout << timestamp << "Number of faces: " << m_faces.size() << endl;
 
     boost::unordered_map<HalfEdgeVertex<VertexT, NormalT>*, int> index_map;
 
-    this->m_nVertices 		= m_vertices.size();
-    this->m_nFaces 			= m_faces.size();
+    int numVertices = m_vertices.size();
+    int numFaces 	= m_faces.size();
+    // Default Color values. Used if regions should not be colored.
+    float r=0, g=200, b=0;
+    float *vertexBuffer, *normalBuffer;
+    uchar *colorBuffer;
+    unsigned int *indexBuffer;
 
-    this->m_vertexBuffer 	= new float[3 * this->m_nVertices];
-    this->m_normalBuffer 	= new float[3 * this->m_nVertices];
-    this->m_colorBuffer 	= new uchar[3 * this->m_nVertices];
+    vertexBuffer 	= new float[3 * numVertices];
+    normalBuffer 	= new float[3 * numVertices];
+    colorBuffer 	= new uchar[3 * numVertices];
+    indexBuffer 	= new unsigned int[3 * numFaces];
 
-    this->m_indexBuffer 	= new unsigned int[3 * this->m_nFaces];
-
+    // Set the Vertex and Normal Buffer for every Vertex.
     typename vector<HVertex*>::iterator vertices_iter = m_vertices.begin();
     typename vector<HVertex*>::iterator vertices_end = m_vertices.end();
     for(size_t i = 0; vertices_iter != vertices_end; ++i, ++vertices_iter)
     {
-        this->m_vertexBuffer[3 * i] =     (*vertices_iter)->m_position[0];
-        this->m_vertexBuffer[3 * i + 1] = (*vertices_iter)->m_position[1];
-        this->m_vertexBuffer[3 * i + 2] = (*vertices_iter)->m_position[2];
+        vertexBuffer[3 * i] =     (*vertices_iter)->m_position[0];
+        vertexBuffer[3 * i + 1] = (*vertices_iter)->m_position[1];
+        vertexBuffer[3 * i + 2] = (*vertices_iter)->m_position[2];
 
-        this->m_normalBuffer [3 * i] =     -(*vertices_iter)->m_normal[0];
-        this->m_normalBuffer [3 * i + 1] = -(*vertices_iter)->m_normal[1];
-        this->m_normalBuffer [3 * i + 2] = -(*vertices_iter)->m_normal[2];
+        normalBuffer [3 * i] =     -(*vertices_iter)->m_normal[0];
+        normalBuffer [3 * i + 1] = -(*vertices_iter)->m_normal[1];
+        normalBuffer [3 * i + 2] = -(*vertices_iter)->m_normal[2];
 
-        this->m_colorBuffer  [3 * i] = 0.8;
-        this->m_colorBuffer  [3 * i + 1] = 0.8;
-        this->m_colorBuffer  [3 * i + 2] = 0.8;
-
-        // map the old index to the new index in the vertexBuffer
+        // Map the vertices to a position in the buffer.
+        // This is necessary since the old indices might have been compromised.
         index_map[*vertices_iter] = i;
     }
 
     typename vector<HalfEdgeFace<VertexT, NormalT>*>::iterator face_iter = m_faces.begin();
     typename vector<HalfEdgeFace<VertexT, NormalT>*>::iterator face_end  = m_faces.end();
 
+    int surface_class;
     for(size_t i = 0; face_iter != face_end; ++i, ++face_iter)
     {
-        this->m_indexBuffer[3 * i]      = index_map[(*(*face_iter))(0)];
-        this->m_indexBuffer[3 * i + 1]  = index_map[(*(*face_iter))(1)];
-        this->m_indexBuffer[3 * i + 2]  = index_map[(*(*face_iter))(2)];
+        indexBuffer[3 * i]      = index_map[(*(*face_iter))(0)];
+        indexBuffer[3 * i + 1]  = index_map[(*(*face_iter))(1)];
+        indexBuffer[3 * i + 2]  = index_map[(*(*face_iter))(2)];
 
-        int surface_class = 1;
-        if ((*face_iter)->m_region != 0)
+        if( (*face_iter)->m_region != 0 )
             surface_class = (*face_iter)->m_region->m_regionNumber;
+        else
+            surface_class = 1; // TODO: Think of a better default value for this
 
-        float r, g, b;
-        if(m_colorRegions)
+        if( m_colorRegions )
         {
             r = (uchar) (255 * fabs(cos(surface_class)));
             g = (uchar) (255 * fabs(sin(surface_class * 30)));
             b = (uchar) (255 * fabs(sin(surface_class * 2)));
         }
-        else
-        {
-            r = 0;
-            g = 200;
-            b = 0;
-        }
-        this->m_colorBuffer[this->m_indexBuffer[3 * i]  * 3 + 0] = r;
-        this->m_colorBuffer[this->m_indexBuffer[3 * i]  * 3 + 1] = g;
-        this->m_colorBuffer[this->m_indexBuffer[3 * i]  * 3 + 2] = b;
 
-        this->m_colorBuffer[this->m_indexBuffer[3 * i + 1] * 3 + 0] = r;
-        this->m_colorBuffer[this->m_indexBuffer[3 * i + 1] * 3 + 1] = g;
-        this->m_colorBuffer[this->m_indexBuffer[3 * i + 1] * 3 + 2] = b;
-
-        this->m_colorBuffer[this->m_indexBuffer[3 * i + 2] * 3 + 0] = r;
-        this->m_colorBuffer[this->m_indexBuffer[3 * i + 2] * 3 + 1] = g;
-        this->m_colorBuffer[this->m_indexBuffer[3 * i + 2] * 3 + 2] = b;
-
+        colorBuffer[indexBuffer[3 * i]  * 3 + 0] = r;
+        colorBuffer[indexBuffer[3 * i]  * 3 + 1] = g;
+        colorBuffer[indexBuffer[3 * i]  * 3 + 2] = b;
+        colorBuffer[indexBuffer[3 * i + 1] * 3 + 0] = r;
+        colorBuffer[indexBuffer[3 * i + 1] * 3 + 1] = g;
+        colorBuffer[indexBuffer[3 * i + 1] * 3 + 2] = b;
+        colorBuffer[indexBuffer[3 * i + 2] * 3 + 0] = r;
+        colorBuffer[indexBuffer[3 * i + 2] * 3 + 1] = g;
+        colorBuffer[indexBuffer[3 * i + 2] * 3 + 2] = b;
 
     }
 
-   this->m_finalized = true;
+    // Hand the buffers over to the Model class for IO operations.
+    this->m_meshBuffer->setVertexArray( vertexBuffer, numVertices );
+    this->m_meshBuffer->setVertexColorArray( colorBuffer, numVertices * 3 );
+    this->m_meshBuffer->setVertexNormalArray( normalBuffer, numVertices * 3 );
+    this->m_meshBuffer->setFaceArray( indexBuffer, numFaces );
+    this->m_finalized = true;
 }
+
+//template<typename VertexT, typename NormalT>
+//void HalfEdgeMesh<VertexT, NormalT>::regionsToBuffer(
+//        unsigned int **index, 
+//        unsigned int **textureIndex, 
+//        size_t     &vncSize, 
+//        size_t   &indexSize, 
+//        vector<int> &regions)
+//{
+//}
+
+//template<typename VertexT, typename NormalT>
+//void HalfEdgeMesh<VertexT, NormalT>::retesselateRegionsToBuffer( vector<int> plane_regions , bool genTextures )
+//{
+//}
 
 template<typename VertexT, typename NormalT>
-void HalfEdgeMesh<VertexT, NormalT>::regionsToBuffer(
-        float **vertex, 
-        float **normal,
-        uchar **color,
-        float **texture,
-        unsigned int **index, 
-        unsigned int **textureIndex, 
-        size_t     &vncSize, 
-        size_t   &indexSize, 
-        vector<int> &regions)
+void HalfEdgeMesh<VertexT, NormalT>::finalizeAndRetesselate( bool genTextures )
 {
+    // used Typedef's
+    typedef std::vector<int>::iterator   intIterator;
+    typedef std::vector<float>::iterator floatIterator;
 
-    /* xxxUsed variables are used to keep track of the array length
-     * that was used until now.
-     */
-    int vncUsed=0, indexUsed=0;
-    for(size_t h=0; h<regions.size(); ++h)
-    {
-        //cout << "Copying " << h << "th Region." << endl;
-        //cout << "Region Nr: " << regions[h] << endl;
-        int i = regions[h];
-        float r, g, b;
-        int surface_class = m_regions[i]->m_regionNumber;
+    // default colors
+    float r=0, g=200, b=0;
 
-        if(this->m_colorRegions)
-        {
-            r = (uchar)(255 * fabs(cos(surface_class)));
-            g = (uchar)(255 * fabs(sin(surface_class * 30)));
-            b = (uchar)(255 * fabs(sin(surface_class * 2)));
-        }
-        else
-        {
-            r = 0;
-            g = 200;
-            b = 0;
-        }
+    // keep track of used space
+    int verticesUsed=0;
+    int facesUsed=0;
+    int numTextures=0;
 
-        for(size_t j=0; j<m_regions[i]->m_faces.size(); ++j)
-        {
+    // Since all buffer sizes are unknown when retesselating
+    // all buffers are instantiated as vectors, to avoid manual reallocation
+    std::vector<float> vertexBuffer;
+    std::vector<float> normalBuffer;
+    std::vector<uchar> colorBuffer;
+    std::vector<float> textureBuffer;
+    std::vector<unsigned int> indexBuffer;
+    std::vector<unsigned int> textureIndexBuffer;
+    std::vector<float> textureCoordBuffer;
 
-            /* a small check to see whether we will run out of memory. */
-            if((float)vncUsed / (float)vncSize >= 0.80)
-            {
-                *vertex = (float*)realloc((*vertex), vncSize*2*sizeof(float));
-                *normal = (float*)realloc((*normal), vncSize*2*sizeof(float));
-                *color  = (uchar*)realloc((*color),  vncSize*2*sizeof(uchar));
-                *texture =(float*)realloc((*texture),vncSize*2*sizeof(float)); 
-                vncSize *= 2;
-            }
-
-            /* a small check to see whether we will run out of memory. */
-            if((float)indexUsed / (float)indexSize >= 0.80)
-            {
-                *index        = (unsigned int*)realloc((*index), indexSize*2*sizeof(float)); 
-                *textureIndex = (unsigned int*)realloc((*textureIndex), indexSize*2*sizeof(float)); 
-                indexSize *= 2;
-            }
-
-            int oldVncUsed = vncUsed;
-            bool skip = false;
-
-            for(int k=0; k<3; k++)
-            {
-                /*
-                 * loops over all 3 vertices of a face and stores the coordinates, normales
-                 * and colors in the corresponding arrays for the IO handling.
-                 */
-                (*vertex)[vncUsed + 0] = (*m_regions[i]->m_faces[j])(k)->m_position.x;
-                (*vertex)[vncUsed + 1] = (*m_regions[i]->m_faces[j])(k)->m_position.y;
-                (*vertex)[vncUsed + 2] = (*m_regions[i]->m_faces[j])(k)->m_position.z;
-
-                /* check for nan or ninf coordinates!
-                */
-                if( isnan((*vertex)[vncUsed + 0]) || isnan((*vertex)[vncUsed + 0]) || isnan((*vertex)[vncUsed + 0]) ||
-                        isinf((*vertex)[vncUsed + 0]) || isinf((*vertex)[vncUsed + 0]) || isinf((*vertex)[vncUsed + 0]))
-                {
-                    cerr << "[nan] coordinates!:\n\t: RegNr(external): " << h
-                      << "\n\t RegNr(internal): " << m_regions[i]->m_regionNumber
-                      << "\n\t vncUsed: " << vncUsed 
-                      << "\n\t face nr: " << j
-                      << "\n\t" << k << "th vertex\n\t\tSKIPPING!\n"; 
-                    skip = true;
-                    break;
-                }
-
-                /*check for broken triangles! */
-                if( k == 2 )
-                {
-                    /* get the the three points */
-                    float x1 = (*vertex)[vncUsed - 6];
-                    float y1 = (*vertex)[vncUsed - 5];
-                    float z1 = (*vertex)[vncUsed - 4];
-
-                    float x2 = (*vertex)[vncUsed - 3];
-                    float y2 = (*vertex)[vncUsed - 2];
-                    float z2 = (*vertex)[vncUsed - 1];
-
-                    float x3 = (*vertex)[vncUsed  + 0];
-                    float y3 = (*vertex)[vncUsed  + 1];
-                    float z3 = (*vertex)[vncUsed  + 2];
-
-                    /* get the distances between the three points */
-                    float d12 = sqrt(pow((x1 - x2), 2) + pow((y1 - y2), 2) + pow((z1 - z2), 2));
-                    float d23 = sqrt(pow((x3 - x2), 2) + pow((y3 - y2), 2) + pow((z3 - z2), 2));
-                    float d13 = sqrt(pow((x3 - x1), 2) + pow((y3 - y1), 2) + pow((z3 - z1), 2));
-
-                    /* If the points lay to close together: Skip this triangle! */
-                    if( d12 <= 0.001 || d23 <= 0.001 || d13 <= 0.001)
-                    {
-                        cerr << "Degenerated Face!:\n\t: RegNr(external): " << h
-                          << "\n\t d12: " << d12 
-                          << "\n\t d13: " << d13
-                          << "\n\t d23: " << d23
-                          << "\n\t\tSKIPPING!\n";
-                        skip = true;
-                        break;
-                    }
-
-                }
-
-                (*normal)[vncUsed + 0] = (*m_regions[i]->m_faces[j])(k)->m_normal[0];
-                (*normal)[vncUsed + 1] = (*m_regions[i]->m_faces[j])(k)->m_normal[1];
-                (*normal)[vncUsed + 2] = (*m_regions[i]->m_faces[j])(k)->m_normal[2];
-
-                if(typeid( *(*m_regions[i]->m_faces[j])(k) ) == typeid(ColorVertex<float, unsigned char>()))
-                {
-                	(*color)[vncUsed + 0] = (*m_regions[i]->m_faces[j])(k)->m_position.r / 255.0f;
-                	(*color)[vncUsed + 1] = (*m_regions[i]->m_faces[j])(k)->m_position.g / 255.0f;
-                	(*color)[vncUsed + 2] = (*m_regions[i]->m_faces[j])(k)->m_position.b / 255.0f;
-
-                } else {
-                	(*color)[vncUsed + 0] = r;
-                	(*color)[vncUsed + 1] = g;
-                	(*color)[vncUsed + 2] = b;
-                }
-
-
-                (*texture)[vncUsed + 0] = 0.0;
-                (*texture)[vncUsed + 1] = 0.0;
-                (*texture)[vncUsed + 2] = 0.0;
-                vncUsed += 3;
-
-                (*index)[indexUsed+k] = (vncUsed / 3) - 1;
-
-                /* 
-                 * texture does not exist because all regions that should be handled here
-                 * dont belong to a regression plane. 
-                 * the index UINT_MAX points to nowhere, this is necessary for the IO handling when
-                 * the mesh is stored
-                 */
-                (*textureIndex)[indexUsed+k] = UINT_MAX; 
-            }
-            if( !skip )
-            {
-                indexUsed += 3;
-            } else 
-            {
-                vncUsed = oldVncUsed;
-            }
-        }
-    }
-    vncSize = vncUsed;
-    indexSize = indexUsed;
-
-    /*
-     * Resize all the arrays to the used sizes.
-     */
-    *vertex = (float*)realloc((*vertex), vncUsed*sizeof(float));
-    *normal = (float*)realloc((*normal), vncUsed*sizeof(float));
-    *color  = (uchar*)realloc((*color),  vncUsed*sizeof(uchar));
-    *texture =(float*)realloc((*texture),vncUsed*sizeof(float)); 
-    *index        = (unsigned int*)realloc((*index), indexUsed*sizeof(float)); 
-    *textureIndex = (unsigned int*)realloc((*textureIndex), indexUsed*sizeof(float)); 
-}
-
-template<typename VertexT, typename NormalT>
-void HalfEdgeMesh<VertexT, NormalT>::retesselateRegionsToBuffer(
-        size_t &vncBufferSize, size_t &indexBufferSize,
-        /*int &vncOffset, int &indexOffset, */ vector<int> plane_regions , bool genTextures) {
-
-    int *coordinatesLength = new int;
-    int *indexLength = new int;
-    float **v  = new float*;
-    unsigned int **in = new unsigned int*;
-    
-    int pointsUsed = vncBufferSize;
-    int indicesUsed = indexBufferSize;
-    // check all regions if they are to be retesselated (only if they lie in a regression plane!)
-    for(size_t h=0; h<plane_regions.size(); ++h)
-    {
-        int i = plane_regions[h];
-        uchar r, g, b;
-        int surface_class = m_regions[i]->m_regionNumber;
-
-        if(this->m_colorRegions)
-        {
-            r = (uchar)(255 * fabs(cos(surface_class)));
-            g = (uchar)(255 * fabs(sin(surface_class * 30)));
-            b = (uchar)(255 * fabs(sin(surface_class * 2)));
-        }
-        else
-        {
-            r = 0;
-            g = 200;
-            b = 0;
-        }
-       // If memory used to 75% reallocate!
-        if((double)pointsUsed / (double)vncBufferSize >= 0.45 || vncBufferSize==0)
-        {
-        	if(vncBufferSize==0)
-        		vncBufferSize=1024;
-            vncBufferSize *= 4*sizeof(float);
-            this->m_vertexBuffer       = (float*)realloc(this->m_vertexBuffer, vncBufferSize); 
-            this->m_colorBuffer        = (uchar*)realloc(this->m_colorBuffer, vncBufferSize);
-            this->m_normalBuffer       = (float*)realloc(this->m_normalBuffer, vncBufferSize); 
-            this->m_textureCoordBuffer = (float*)realloc(this->m_normalBuffer, vncBufferSize);
-        }
-
-
-        // If memory i used to 75% reallocate!
-        if((double)indicesUsed / (double)indexBufferSize >= 0.45 || indexBufferSize==0)
-        {
-        	if(indexBufferSize==0)
-        		indexBufferSize=1024;
-            indexBufferSize *= 4*sizeof(unsigned int);
-            this->m_indexBuffer = (unsigned int*)realloc(this->m_indexBuffer, indexBufferSize);
-            this->m_textureIndexBuffer = (unsigned int*)realloc(this->m_textureIndexBuffer, indexBufferSize);
-        }
-        this->m_textureBuffer[this->m_nTextures++] = m_regions[i]->m_regionNumber;
-
-        Tesselator<VertexT, NormalT>::init();
-        vector<vector<HVertex*> > contours = m_regions[i]->getContours(0.01);
-
-        Tesselator<VertexT, NormalT>::tesselate(contours);
-        Tesselator<VertexT, NormalT>::getFinalizedTriangles(v, in, indexLength, coordinatesLength);
-
-        if(*indexLength > 0 && *coordinatesLength > 0)
-        {
-            Texture<VertexT, NormalT>* t=NULL;
-            if(genTextures)
-            {
-                t = new Texture<VertexT, NormalT>(m_pointCloudManager, m_regions[i], contours);
-                t->save();
-            }
-
-            for(int j=0; j< (*coordinatesLength)/3; ++j)
-            {
-                this->m_vertexBuffer[j*3+pointsUsed+0] = (*v)[j*3+0];
-                this->m_vertexBuffer[j*3+pointsUsed+1] = (*v)[j*3+1];
-                this->m_vertexBuffer[j*3+pointsUsed+2] = (*v)[j*3+2];
-
-                this->m_normalBuffer[j*3+pointsUsed+0] = m_regions[i]->m_normal[0]; 
-                this->m_normalBuffer[j*3+pointsUsed+1] = m_regions[i]->m_normal[1]; 
-                this->m_normalBuffer[j*3+pointsUsed+2] = m_regions[i]->m_normal[2]; 
-
-                this->m_colorBuffer[ j*3+pointsUsed+0] = r; 
-                this->m_colorBuffer[ j*3+pointsUsed+1] = g; 
-                this->m_colorBuffer[ j*3+pointsUsed+2] = b; 
-
-                float u1 = 0;
-                float u2 = 0;
-                if(t) t->textureCoords(VertexT((*v)[j*3+0], (*v)[j*3+1], (*v)[j*3+2]) ,u1 ,u2);
-                this->m_textureCoordBuffer[j*3+pointsUsed+0] = u1;
-                this->m_textureCoordBuffer[j*3+pointsUsed+1] = u2;
-                this->m_textureCoordBuffer[j*3+pointsUsed+2] = 0;
-
-                /* Check for degenerated Faces! */
-                if( (j+1)%3==0 )
-                {
-                    float x1 = this->m_vertexBuffer[(j-2)*3+0];
-                    float y1 = this->m_vertexBuffer[(j-2)*3+1];
-                    float z1 = this->m_vertexBuffer[(j-2)*3+2]; 
-
-                    float x2 = this->m_vertexBuffer[(j-1)*3+0];
-                    float y2 = this->m_vertexBuffer[(j-1)*3+1];
-                    float z2 = this->m_vertexBuffer[(j-1)*3+2]; 
-
-                    float x3 = this->m_vertexBuffer[(j-0)*3+0];
-                    float y3 = this->m_vertexBuffer[(j-0)*3+1];
-                    float z3 = this->m_vertexBuffer[(j-0)*3+2]; 
-
-                    float d12 = sqrt( pow((x1-x2),2) + pow((y1-y2),2) + pow((z1-z2),2) );
-                    float d13 = sqrt( pow((x1-x3),2) + pow((y1-y3),2) + pow((z1-z3),2) );
-                    float d23 = sqrt( pow((x2-x3),2) + pow((y2-y3),2) + pow((z2-z3),2) );
-                    if( d12 <= 0.001 || d13 <= 0.001 || d23 <= 0.001){
-                        cout << "Damnit DEAD Face!: " << endl;
-                    }
-
-                }
-            }
-
-            for(int j=0; j < (*indexLength); ++j)
-            {
-                this->m_indexBuffer[j+indicesUsed] = ((*in)[j])+pointsUsed/3; 
-                this->m_textureIndexBuffer[j+indicesUsed] = m_regions[i]->m_regionNumber;
-            }
-            pointsUsed  += (*coordinatesLength);
-            indicesUsed += *indexLength;
-
-            delete (*v);
-            delete (*in);
-            if(t) delete t;
-        }
-    }
-    delete indexLength;
-    delete coordinatesLength;
-    vncBufferSize = pointsUsed;
-    indexBufferSize = indicesUsed;
-}
-
-    template<typename VertexT, typename NormalT>
-void HalfEdgeMesh<VertexT, NormalT>::finalizeAndRetesselate(bool genTextures)
-{
-
-    cout << timestamp << "Finalizing mesh." << endl;
-
-    this->m_nVertices    = m_vertices.size();
-    this->m_nFaces 	     = m_faces.size();
-    this->m_nTextures    = 0;
-    size_t vncBufferSize   = 3 * this->m_nVertices;
-    size_t indexBufferSize = 3 * this->m_nFaces;
-
-    // Guess for the array sizes. The correct values are only known after the regions were tesselated.
-    this->m_vertexBuffer       = new float[vncBufferSize];
-    this->m_normalBuffer       = new float[vncBufferSize];
-    this->m_colorBuffer        = new uchar[vncBufferSize];
-    this->m_textureCoordBuffer = new float[vncBufferSize];
-    this->m_indexBuffer        = new unsigned int[indexBufferSize];
-    this->m_textureIndexBuffer = new unsigned int[indexBufferSize];
-    this->m_textureBuffer 	   = new unsigned int[m_regions.size()]; 
-
-    // Reset used variable. Necessarsy to use getContours() in tesselator-class. 
+    // Reset used variables. Otherwise the getContours() function might not work quite as expected.
     for(size_t j=0; j<m_faces.size(); j++)
     {
         for(int k=0; k<3; k++)
@@ -1461,49 +1167,142 @@ void HalfEdgeMesh<VertexT, NormalT>::finalizeAndRetesselate(bool genTextures)
         }
     }
 
-    /*vector<Region<VertexT, NormalT> * > plane_regions;*/
-    vector<int> plane_regions;
-    vector<int> normal_regions;
+    // Take all regions that are not in an intersection plane
+    std::vector<int> nonPlaneRegions;
+    // Take all regions that were drawn into an intersection plan
+    std::vector<int> planeRegions;
+    for( size_t i = 0; i < m_regions.size(); ++i )
+        if( !m_regions[i]->m_inPlane )
+            nonPlaneRegions.push_back(i);
+        else
+            planeRegions.push_back(i);
 
-    // check for all regions whether they should be retesselated.
-    for(size_t i=0; i<m_regions.size(); ++i)
+
+    // Copy all regions that are non in an intersection plane directly to the buffers.
+    intIterator nonPlaneBegin = nonPlaneRegions.begin();
+    intIterator nonPlaneEnd   = nonPlaneRegions.end();
+    for( ; nonPlaneBegin != nonPlaneEnd; ++nonPlaneBegin )
     {
-        if(m_regions[i]->m_inPlane)
+        int iRegion = *nonPlaneBegin;
+        if( this->m_colorRegions )
         {
-            plane_regions.push_back(i);
-        } else{
-            normal_regions.push_back(i);
+            int surfaceClass = m_regions[iRegion]->m_regionNumber;
+            r = (uchar)( 255 * fabs( cos( surfaceClass ) ) );
+            g = (uchar)( 255 * fabs( sin( surfaceClass * 30 ) ) );
+            b = (uchar)( 255 * fabs( sin( surfaceClass * 2 ) ) ) ;
+        }
+
+        // iterate over every face for the region number '*nonPlaneBegin'
+        for( size_t i=0; i < m_regions[iRegion]->m_faces.size(); i++ )
+        {
+            int iFace=i;
+            // loop over each vertex for this face
+            for( int j=0; j < 3; j++ )
+            {
+                int iVertex = j;
+                vertexBuffer.push_back( (*m_regions[iRegion]->m_faces[iFace])(iVertex)->m_position.x );
+                vertexBuffer.push_back( (*m_regions[iRegion]->m_faces[iFace])(iVertex)->m_position.y );
+                vertexBuffer.push_back( (*m_regions[iRegion]->m_faces[iFace])(iVertex)->m_position.z );
+
+                normalBuffer.push_back( (*m_regions[iRegion]->m_faces[iFace])(iVertex)->m_normal[0] );
+                normalBuffer.push_back( (*m_regions[iRegion]->m_faces[iFace])(iVertex)->m_normal[1] );
+                normalBuffer.push_back( (*m_regions[iRegion]->m_faces[iFace])(iVertex)->m_normal[2] );
+
+                //TODO: Color Vertex Traits stuff?
+
+                textureBuffer.push_back( 0.0 );
+                textureBuffer.push_back( 0.0 );
+                textureBuffer.push_back( 0.0 );
+
+                verticesUsed += 3; //TODO: get rid of this!
+
+                indexBuffer.push_back( (verticesUsed / 3) - 1 );
+                textureIndexBuffer.push_back( UINT_MAX );
+            }
         }
     }
-    regionsToBuffer(&this->m_vertexBuffer, 
-            &this->m_normalBuffer,
-            &this->m_colorBuffer,
-            &this->m_textureCoordBuffer,
-            &this->m_indexBuffer,
-            &this->m_textureIndexBuffer,
-            vncBufferSize, 
-            indexBufferSize, 
-            normal_regions);
-    cout << timestamp << "Done copying non-plane regions" << endl;
+    cout << timestamp << "Done copying non planar regions." << endl;
 
-    retesselateRegionsToBuffer(vncBufferSize, indexBufferSize, plane_regions, genTextures);
-    cout << timestamp << "Done retesselated plane regions" << endl;
+    // Retesselate all planar regions and copy them to the buffers. 
+    // TODO: get rid of this mess - somehow?!    
+    int *coordinatesLength = new int;
+    int *indexLength = new int;
+    float **v  = new float*;
+    unsigned int **in = new unsigned int*;
 
-    this->m_nVertices = vncBufferSize/3; 
-    this->m_nFaces 	  = indexBufferSize/3;
-    this->m_vertexBuffer = (float*)realloc(this->m_vertexBuffer, this->m_nVertices*3*sizeof(float));
-    this->m_colorBuffer  = (uchar*)realloc(this->m_colorBuffer,  this->m_nVertices*3*sizeof(uchar));
-    this->m_normalBuffer = (float*)realloc(this->m_normalBuffer, this->m_nVertices*3*sizeof(float));
-    this->m_textureCoordBuffer = (float*)realloc(this->m_textureCoordBuffer, this->m_nVertices*3*sizeof(float));
-    this->m_indexBuffer = (unsigned int*)realloc(this->m_indexBuffer, this->m_nFaces*3*sizeof(unsigned int));
-    this->m_textureIndexBuffer = (unsigned int*)realloc(this->m_textureIndexBuffer, this->m_nFaces*3*sizeof(unsigned int));
-    this->m_textureBuffer = (unsigned int*)realloc(this->m_textureBuffer, this->m_nTextures*sizeof(unsigned int));
+    intIterator planeBegin = planeRegions.begin();
+    intIterator planeEnd   = planeRegions.end();
+    for( ; planeBegin != planeEnd; ++planeBegin )
+    {
+        int iRegion = *planeBegin;
+        if( this->m_colorRegions )
+        {
+            int surfaceClass = m_regions[iRegion]->m_regionNumber;
+            r = (uchar)( 255 * fabs( cos( surfaceClass ) ) );
+            g = (uchar)( 255 * fabs( sin( surfaceClass * 30 ) ) );
+            b = (uchar)( 255 * fabs( sin( surfaceClass * 2 ) ) ) ;
+        }
+        textureBuffer.push_back( m_regions[iRegion]->m_regionNumber );
+        numTextures++;
 
-    this->m_finalized = true; 
-    cout << timestamp << "Done retesselating: " 						  	 	<< endl;
-    cout << timestamp << "[" << this->m_nVertices << "] Vertices." << endl;
-    cout << timestamp << "[" << this->m_nFaces << "] Faces." 	   << endl;
+        // initialize the tesselator and retesselate planar regions
+        vector<vector<HVertex*> > contours = m_regions[iRegion]->getContours(0.01);
+        Tesselator<VertexT, NormalT>::getFinalizedTriangles(v, in, indexLength, coordinatesLength, contours);
 
+        if( *indexLength <= 0 || *coordinatesLength <= 0 ) // TODO: Find out why this happens from time to time!
+            continue;
+
+        Texture<VertexT, NormalT>* t=NULL;
+        if( genTextures )
+        {
+            t = new Texture<VertexT, NormalT>( m_pointCloudManager, m_regions[iRegion], contours );
+            t->save();
+        }
+
+        // copy vertex, normal and color data.
+        for(int j=0; j< (*coordinatesLength)/3; ++j)
+        {
+            vertexBuffer.push_back( (*v)[j*3+0] );
+            vertexBuffer.push_back( (*v)[j*3+1] );
+            vertexBuffer.push_back( (*v)[j*3+2] );
+
+            normalBuffer.push_back( m_regions[iRegion]->m_normal[0] );
+            normalBuffer.push_back( m_regions[iRegion]->m_normal[1] );
+            normalBuffer.push_back( m_regions[iRegion]->m_normal[2] );
+
+            colorBuffer.push_back( r ); 
+            colorBuffer.push_back( g );
+            colorBuffer.push_back( b );
+
+            float u1 = 0;
+            float u2 = 0;
+            if(t) t->textureCoords(VertexT((*v)[j*3+0], (*v)[j*3+1], (*v)[j*3+2]) ,u1 ,u2);
+            textureCoordBuffer.push_back( u1 );
+            textureCoordBuffer.push_back( u2 );
+            textureCoordBuffer.push_back(  0 );
+
+        }
+
+        // copy indices...
+        for(int j=0; j < (*indexLength); ++j)
+        {
+            indexBuffer.push_back( ((*in)[j])+verticesUsed/3 );
+            textureIndexBuffer.push_back( m_regions[iRegion]->m_regionNumber );
+        }
+
+        verticesUsed += *coordinatesLength;
+
+        delete (*v);
+        delete (*in);
+        if(t) delete t;
+    }
+
+    this->m_meshBuffer->setVertexArray( vertexBuffer );
+    this->m_meshBuffer->setVertexColorArray( colorBuffer );
+    this->m_meshBuffer->setVertexNormalArray( normalBuffer );
+    this->m_meshBuffer->setFaceArray( indexBuffer );
+    this->m_finalized = true;
+    cout << timestamp << "Done retesselating." << endl;
 } 
 
 } // namespace lssr
