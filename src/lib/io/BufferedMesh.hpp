@@ -36,6 +36,8 @@
 #include <stdint.h>
 #include <cstddef>
 #include <cstdlib>
+#include <vector>
+#include <algorithm>
 
 typedef unsigned char uchar;
 
@@ -79,6 +81,18 @@ class BufferedMesh
 
 
         /**
+         * \brief Set the vertex array.
+         *
+         * By using setVertexArray the internal vertex buffer can be set. The
+         * vertex array has to be a vector of floats containing sets
+         * of \c x, \c y and \c z values.
+         *
+         * \param array  Pointer to interlaced vertex data.
+         **/
+        void setVertexArray( std::vector<float>& array );
+
+
+        /**
          * \brief Set the vertex confidence array.
          *
          * By using setVertexConfidenceArray the internal confidence buffer for
@@ -89,6 +103,17 @@ class BufferedMesh
          * \param n      Amount of data in the array.
          **/
         void setVertexConfidenceArray( float* array, size_t n );
+
+
+        /**
+         * \brief Set the vertex confidence array.
+         *
+         * By using setVertexConfidenceArray the internal confidence buffer for
+         * vertices can be set. The array has to be a vector of floats. 
+         *
+         * \param array  Pointer to vertex confidence data.
+         **/
+        void setVertexConfidenceArray( std::vector<float>& array );
 
 
         /**
@@ -105,6 +130,17 @@ class BufferedMesh
 
 
         /**
+         * \brief Set the vertex intensity array.
+         *
+         * By using setVertexIntensityArray the internal intensity buffer for
+         * vertices can be set. The array has to be a vector of floats.
+         *
+         * \param array  Pointer to vertex intensity data.
+         **/
+        void setVertexIntensityArray( std::vector<float>& array );
+
+
+        /**
          * \brief Set the vertex normal array.
          *
          * By using setVertexNormalArray the internal vertex normal buffer can
@@ -115,6 +151,19 @@ class BufferedMesh
          * \param n      Amount of normals in the array.
          **/
         void setVertexNormalArray( float* array, size_t n );
+
+
+        /**
+         * \brief Set the vertex normal array.
+         *
+         * By using setVertexNormalArray the internal vertex normal buffer can
+         * be set. The array has to be a one dimensional float array containing
+         * sets of \c x, \c y and \c z values.
+         *
+         * \param array  Pointer to interlaced vertex normal data.
+         * \param n      Amount of normals in the array.
+         **/
+        void setVertexNormalArray( std::vector<float>& array );
 
 
         /**
@@ -138,6 +187,29 @@ class BufferedMesh
          **/
         void setVertexColorArray( uchar* array, size_t n );
 
+
+        /**
+         * \brief Set the vertex color array.
+         * \deprecated This method is deprecated. To be consistent, all
+         *             internal color data should be unsigned 8bit integers. At
+         *             the moment however some parts of the lssr toolkit still
+         *             use float values in the range of [0..1] to describe
+         *             color information. So this function is still available
+         *             for compatibility reasons. But it might be removed
+         *             anytime.
+         *
+         * By using setVertexColorArray the internal vertex color buffer can be
+         * set. The array has to be a one dimensional float array containing
+         * sets of three values for \c red, \c green and \c blue. The values
+         * have to be in the range of [0..1]. These vales are automatically
+         * converted to uint8_t values in the range of [0..255].
+         *
+         * \param array  Pointer to interlaced vertex color data.
+         * \param n      Amount of color information in the array.
+         **/
+        void setVertexColorArray( std::vector<uchar>& array );
+
+
         /**
          * \brief Set the vertex array.
          *
@@ -154,6 +226,21 @@ class BufferedMesh
 
 
         /**
+         * \brief Set the vertex array.
+         *
+         * By using setIndexedVertexArray the internal vertex buffer can be set. The
+         * vertex array has to be a two dimensional float array containing sets
+         * of \c x, \c y and \c z values. \n
+         * The two dimensional array is automatically converted to an
+         * interlaced one dimensional vertex array.
+         *
+         * \param array  Pointer to indexed vertex data.
+         * \param n      Amount of vertices in the array.
+         **/
+        void setIndexedVertexArray( std::vector<float>& array );
+
+
+        /**
          * \brief Set the vertex normal array.
          *
          * By using setIndexedVertexNormalArray the internal vertex normal
@@ -166,6 +253,21 @@ class BufferedMesh
          * \param n      Amount of vertices in the array.
          **/
         void setIndexedVertexNormalArray( float** arr, size_t size );
+        
+        
+        /**
+         * \brief Set the vertex normal array.
+         *
+         * By using setIndexedVertexNormalArray the internal vertex normal
+         * buffer can be set. The array has to be a two dimensional float array
+         * containing sets of \c x, \c y and \c z values. \n
+         * The two dimensional array is automatically converted to an
+         * interlaced one dimensional vertex  normal array.
+         *
+         * \param array  Pointer to indexed vertex data.
+         * \param n      Amount of vertices in the array.
+         **/
+        void setIndexedVertexNormalArray( std::vector<float>&array);
 
 
         /**
@@ -337,6 +439,18 @@ class BufferedMesh
          * \param n      Amount of faces in array.
          **/
         void setFaceArray( unsigned int* array, size_t n );
+
+
+        /**
+         * \brief Set the face index array.
+         *
+         * This method is used to set the face index array. The array passed as
+         * argument is a STL vector.
+         * Each set of three integers specifies one face. 
+         *
+         * \param array  %Face index vector.
+         **/
+        void setFaceArray( std::vector<unsigned int>& array );
 
 
         /**
