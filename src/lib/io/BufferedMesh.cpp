@@ -243,12 +243,22 @@ uint8_t** BufferedMesh::getIndexedVertexColorArray( size_t &n )
 
 }
 
-
 void BufferedMesh::setVertexArray( float* array, size_t n )
 {
 
     m_vertices   = array;
     m_numVertices = n;
+
+}
+
+
+void BufferedMesh::setVertexArray( std::vector<float>& array )
+{
+
+    if(m_vertices) delete m_vertices;
+    m_vertices = new float[array.size()];
+    std::copy(array.begin(), array.end(), m_vertices);
+    m_numVertices = array.size()/3;
 
 }
 
@@ -260,11 +270,29 @@ void BufferedMesh::setVertexNormalArray( float* array, size_t n )
 
 }
 
+void BufferedMesh::setVertexNormalArray( std::vector<float>& array )
+{
+
+    if(m_vertexNormals) delete m_vertexNormals;
+    std::copy(array.begin(), array.end(), m_vertexNormals);
+    m_numVertexNormals = array.size();
+
+}
+
 void BufferedMesh::setFaceArray( unsigned int* array, size_t n )
 {
 
     m_faceIndices  = array;
     m_numFaces      = n;
+
+}
+
+void BufferedMesh::setFaceArray( std::vector<unsigned int>& array )
+{
+    if(m_faceIndices) delete m_faceIndices;
+    m_faceIndices = new unsigned int[array.size()];
+    std::copy(array.begin(), array.end(), m_faceIndices);
+    m_numFaces      = array.size()/3;
 
 }
 
@@ -288,6 +316,13 @@ void BufferedMesh::setVertexColorArray( uint8_t* array, size_t n )
 
 }
 
+void BufferedMesh::setVertexColorArray( std::vector<uint8_t>& array )
+{
+    if(m_vertexColors) delete m_vertexColors;
+    std::copy(array.begin(), array.end(), m_vertexColors);
+    m_numVertexColors = array.size();
+
+}
 
 void BufferedMesh::setVertexConfidenceArray( float* array, size_t n )
 {
@@ -298,11 +333,33 @@ void BufferedMesh::setVertexConfidenceArray( float* array, size_t n )
 }
 
 
+void BufferedMesh::setVertexConfidenceArray( std::vector<float>& array )
+{
+
+    if(m_vertexConfidence) delete m_vertexConfidence;
+    m_vertexConfidence = new float[array.size()];
+    std::copy(array.begin(), array.end(), m_vertexConfidence);
+    m_numVertexConfidences = array.size();
+
+}
+
+
 void BufferedMesh::setVertexIntensityArray( float* array, size_t n )
 {
 
     m_vertexIntensity     = array;
     m_numVertexIntensities = n;
+
+}
+
+
+void BufferedMesh::setVertexIntensityArray( std::vector<float>& array )
+{
+    
+    if(m_vertexIntensity) 
+        delete m_vertexIntensity;
+    std::copy(array.begin(), array.end(), m_vertexIntensity);
+    m_numVertexIntensities = array.size();
 
 }
 
@@ -321,6 +378,17 @@ void BufferedMesh::setIndexedVertexArray( float** arr, size_t count )
 }
 
 
+void BufferedMesh::setIndexedVertexArray( std::vector<float>& array )
+{
+
+    // TODO: no size here? ask thomas / lars
+    if(m_vertices) delete m_vertices;
+    m_vertices = new float[array.size()];
+    std::copy(array.begin(), array.end(), m_vertices);
+
+}
+
+
 void BufferedMesh::setIndexedVertexNormalArray( float** arr, size_t count )
 {
 
@@ -331,6 +399,17 @@ void BufferedMesh::setIndexedVertexNormalArray( float** arr, size_t count )
         m_vertexNormals[ i * 3 + 1 ] = arr[i][1];
         m_vertexNormals[ i * 3 + 2 ] = arr[i][2];
     }
+
+}
+
+
+void BufferedMesh::setIndexedVertexNormalArray( std::vector<float>& array )
+{
+
+    // TODO: no size here? ask thomas / lars
+    if(m_vertexNormals) delete m_vertexNormals;
+    m_vertexNormals = new float[array.size()];
+    std::copy(array.begin(), array.end(), m_vertexNormals);
 
 }
 
