@@ -49,24 +49,21 @@ Model* IOFactory::readModel( string filename )
     BaseIO* io = 0;
     if(extension == ".ply")
     {
-        cout << "New ply io" << endl;
         io = new PLYIO;
     }
     else if(extension == ".pts" || extension == ".3d" || extension == ".xyz")
     {
-        cout << "New ascii io" << endl;
         io = new AsciiIO;
     }
     else if (extension == ".obj")
     {
         /// TODO: Integrate ObJIO in factory
-        cout << "New obj io" << endl;
+
     }
 
     // Return data model
     if(io)
     {
-        cout << "New model" << endl;
         m = io->read(filename);
     }
     cout << "Model pointer: " << m << endl;

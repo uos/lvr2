@@ -258,7 +258,7 @@ void BufferedMesh::setVertexArray( std::vector<float>& array )
     if(m_vertices) delete m_vertices;
     m_vertices = new float[array.size()];
     std::copy(array.begin(), array.end(), m_vertices);
-    m_numVertices = array.size()/3;
+    m_numVertices = array.size() / 3;
 
 }
 
