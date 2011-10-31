@@ -315,10 +315,10 @@ private:
 	vector<HalfEdgeVertex<VertexT, NormalT>*>   m_vertices;
 
 	/// The regions in the half edge mesh
-	vector<Region<VertexT, NormalT>*>     m_regions;
+	vector<Region<VertexT, NormalT>*>           m_regions;
 
 	/// The indexed of the newest inserted vertex
-	size_t                                   m_globalIndex;
+	size_t                                      m_globalIndex;
 
 	/// Indicates if regions will be colored in the ply format
 	bool                                        m_colorRegions;

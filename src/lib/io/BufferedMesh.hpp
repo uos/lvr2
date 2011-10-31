@@ -38,6 +38,7 @@
 #include <cstdlib>
 #include <vector>
 #include <algorithm>
+#include <iostream>
 
 typedef unsigned char uchar;
 
@@ -343,7 +344,7 @@ class BufferedMesh
          * \param n  Amount of vertex color sets in array.
          * \return   %Vertex color array.
          **/
-        uint8_t* getVertexColorArray( size_t &n );
+        uchar* getVertexColorArray( size_t &n );
 
 
         /**
@@ -423,7 +424,7 @@ class BufferedMesh
          * \param n  Amount of vertex color sets in array.
          * \return   Indexed vertex color array.
          **/
-        uint8_t** getIndexedVertexColorArray( size_t &n );
+        uchar** getIndexedVertexColorArray( size_t &n );
 
 
         /**

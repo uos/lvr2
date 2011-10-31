@@ -44,7 +44,7 @@ namespace lssr
  *        text formats. Currently the file extensions .xyz, .txt,
  *        .3d and .pts are supported.
  */
-class AsciiIO
+class AsciiIO : public BaseIO
 {
 public:
 
