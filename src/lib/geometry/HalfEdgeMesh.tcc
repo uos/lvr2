@@ -1138,7 +1138,7 @@ void HalfEdgeMesh<VertexT, NormalT>::regionsToBuffer(
     for(size_t h=0; h<regions.size(); ++h)
     {
         int i = regions[h];
-        float r, g, b;
+        float r = 0, g = 0, b = 0;
         int surface_class = m_regions[regions[h]]->m_regionNumber;
 
         if(this->m_colorRegions)
@@ -1149,10 +1149,25 @@ void HalfEdgeMesh<VertexT, NormalT>::regionsToBuffer(
         }
         else
         {
-            r = 0;
-            g = 200;
-            b = 0;
+        	//calculate an average color for the region
+        	vector<VertexT> cv;
+        	for(int m=0; m<m_regions[regions[h]]->m_faces.size(); m++)
+        	{
+        		for(int n=0; n<3; n++)
+        		{
+        			VertexT current_position = (*m_regions[regions[h]]->m_faces[m])(n)->m_position;
+        			int one = 1;
+        			this->m_pointCloudManager->getkClosestVertices(current_position, one, cv);
+        			r += cv[0].r;
+        			g += cv[0].g;
+        			b += cv[0].b;
+        		}
+        	}
+        	r /= 3 * m_regions[regions[h]]->m_faces.size();
+        	g /= 3 * m_regions[regions[h]]->m_faces.size();
+        	b /= 3 * m_regions[regions[h]]->m_faces.size();
         }
+
         facesUsed = 0;
         for(size_t j=0; j<m_regions[i]->m_faces.size(); ++j)
         {
@@ -1242,17 +1257,9 @@ void HalfEdgeMesh<VertexT, NormalT>::regionsToBuffer(
                 (*normal)[vncUsed + 1] = (*m_regions[i]->m_faces[j])(k)->m_normal[1];
                 (*normal)[vncUsed + 2] = (*m_regions[i]->m_faces[j])(k)->m_normal[2];
 
-
-                if(typeid( *(*m_regions[i]->m_faces[j])(k) ) == typeid(ColorVertex<float, unsigned char>())){
-                	(*color)[vncUsed + 0] = (*m_regions[i]->m_faces[j])(k)->m_position.r / 255.0f;
-                	(*color)[vncUsed + 1] = (*m_regions[i]->m_faces[j])(k)->m_position.g / 255.0f;
-                	(*color)[vncUsed + 2] = (*m_regions[i]->m_faces[j])(k)->m_position.b / 255.0f;
-
-                } else {
-                	(*color)[vncUsed + 0] = r;
-                	(*color)[vncUsed + 1] = g;
-                	(*color)[vncUsed + 2] = b;
-                }
+                (*color)[vncUsed + 0] = r;
+                (*color)[vncUsed + 1] = g;
+                (*color)[vncUsed + 2] = b;
 
                 (*texture)[vncUsed + 0] = 0.0;
                 (*texture)[vncUsed + 1] = 0.0;
