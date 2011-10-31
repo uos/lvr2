@@ -55,21 +55,21 @@ public:
 private:
 	 CoordType*          m_vertices;
 	 CoordType*          m_normals;
-	 uint8_t*			     m_colors;
+	 uint8_t*            m_colors;
 	 CoordType*          m_textureCoords;
 
 	 IndexType*          m_indices;
-	 IndexType*				m_textureIndices;
-	 IndexType*				m_textures;
-	 IndexType*				m_regionSizeBuffer;
+	 IndexType*	         m_textureIndices;
+	 IndexType*          m_textures;
+	 IndexType*          m_regionSizeBuffer;
 
-	 size_t					m_colorCount;
-	 size_t 					m_textureCount;
-	 size_t 					m_textureIndicesCount;
+	 size_t              m_colorCount;
+	 size_t              m_textureCount;
+	 size_t              m_textureIndicesCount;
 	 size_t              m_faceCount;
 	 size_t              m_vertexCount;
-	 size_t					m_textureCoordsCount;
-	 size_t				m_nRegions;
+	 size_t              m_textureCoordsCount;
+	 size_t              m_nRegions;
 
 };
 
