@@ -90,13 +90,13 @@ private:
 	ColorT** m_data;
 
 	///The coordinate system of the texture plane
-	NormalT v1, v2;
+	NormalT best_v1, best_v2;
 
 	///A point in the texture plane
 	VertexT p;
 
 	///The bounding box of the texture plane
-	float a_min, b_min, a_max, b_max;
+	float best_a_min, best_b_min, best_a_max, best_b_max;
 
 	///The dimensions of the texture
 	int m_sizeX, m_sizeY;
