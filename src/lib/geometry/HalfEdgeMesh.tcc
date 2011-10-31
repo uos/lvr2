@@ -1114,8 +1114,8 @@ void HalfEdgeMesh<VertexT, NormalT>::finalize()
 
     if(!this->m_meshBuffer) this->m_meshBuffer = new BufferedMesh;
     this->m_meshBuffer->setVertexArray( vertexBuffer, numVertices );
-    this->m_meshBuffer->setVertexColorArray( colorBuffer, numVertices * 3 );
-    this->m_meshBuffer->setVertexNormalArray( normalBuffer, numVertices * 3 );
+    this->m_meshBuffer->setVertexColorArray( colorBuffer, numVertices );
+    this->m_meshBuffer->setVertexNormalArray( normalBuffer, numVertices  );
     this->m_meshBuffer->setFaceArray( indexBuffer, numFaces );
     this->m_finalized = true;
 }
@@ -1212,6 +1212,10 @@ void HalfEdgeMesh<VertexT, NormalT>::finalizeAndRetesselate( bool genTextures )
 
                 //TODO: Color Vertex Traits stuff?
 
+                colorBuffer.push_back( r );
+                colorBuffer.push_back( g );
+                colorBuffer.push_back( b );
+
                 textureBuffer.push_back( 0.0 );
                 textureBuffer.push_back( 0.0 );
                 textureBuffer.push_back( 0.0 );
@@ -1299,12 +1303,17 @@ void HalfEdgeMesh<VertexT, NormalT>::finalizeAndRetesselate( bool genTextures )
         if(t) delete t;
     }
 
-    if(!this->m_meshBuffer) this->m_meshBuffer = new BufferedMesh;
+    if(!this->m_meshBuffer)
+    {
+        this->m_meshBuffer = new BufferedMesh;
+    }
+
     this->m_meshBuffer->setVertexArray( vertexBuffer );
     this->m_meshBuffer->setVertexColorArray( colorBuffer );
     this->m_meshBuffer->setVertexNormalArray( normalBuffer );
     this->m_meshBuffer->setFaceArray( indexBuffer );
     this->m_finalized = true;
+
     cout << timestamp << "Done retesselating." << endl;
 } 
 
