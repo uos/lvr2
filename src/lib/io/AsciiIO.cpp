@@ -173,6 +173,7 @@ Model* AsciiIO::read(string filename)
     model->m_pointCloud->setPointIntensityArray(pointIntensities, numPoints);
     model->m_pointCloud->setPointConfidenceArray(pointConfidences, numPoints);
 
+    return model;
 }
 
 

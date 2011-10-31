@@ -18,8 +18,7 @@
 
 
 #include "BaseMesh.hpp"
-#include "io/ObjIO.hpp"
-#include "io/PLYIO.hpp"
+#include "io/IOFactory.hpp"
 
 namespace lssr
 {
@@ -35,6 +34,12 @@ template<typename VertexT, typename IndexType>
 void BaseMesh<VertexT, IndexType>::save( string filename )
 {
 
+    if(m_meshBuffer)
+    {
+        Model* m = new Model;
+        m->m_mesh = this->m_meshBuffer;
+        IOFactory::saveModel(m, filename);
+    }
 
 }
 

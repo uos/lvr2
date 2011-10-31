@@ -87,7 +87,7 @@ ELEMENT face
    PROPERTY   vertex_index (LIST uchar int)  <<  [only read]
 \endverbatim
  */
-class PLYIO : BaseIO
+class PLYIO : public BaseIO
 {
     public:
         /**

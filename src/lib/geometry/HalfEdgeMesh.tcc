@@ -1111,6 +1111,8 @@ void HalfEdgeMesh<VertexT, NormalT>::finalize()
     }
 
     // Hand the buffers over to the Model class for IO operations.
+
+    if(!this->m_meshBuffer) this->m_meshBuffer = new BufferedMesh;
     this->m_meshBuffer->setVertexArray( vertexBuffer, numVertices );
     this->m_meshBuffer->setVertexColorArray( colorBuffer, numVertices * 3 );
     this->m_meshBuffer->setVertexNormalArray( normalBuffer, numVertices * 3 );
@@ -1224,7 +1226,7 @@ void HalfEdgeMesh<VertexT, NormalT>::finalizeAndRetesselate( bool genTextures )
     cout << timestamp << "Done copying non planar regions." << endl;
 
     // Retesselate all planar regions and copy them to the buffers. 
-    // TODO: get rid of this mess - somehow?!    
+    /// TODO: get rid of this mess - somehow?!
     int *coordinatesLength = new int;
     int *indexLength = new int;
     float **v  = new float*;
@@ -1297,6 +1299,7 @@ void HalfEdgeMesh<VertexT, NormalT>::finalizeAndRetesselate( bool genTextures )
         if(t) delete t;
     }
 
+    if(!this->m_meshBuffer) this->m_meshBuffer = new BufferedMesh;
     this->m_meshBuffer->setVertexArray( vertexBuffer );
     this->m_meshBuffer->setVertexColorArray( colorBuffer );
     this->m_meshBuffer->setVertexNormalArray( normalBuffer );

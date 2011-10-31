@@ -29,6 +29,9 @@
 #include "UosIO.hpp"
 #include "IOFactory.hpp"
 
+#include "Timestamp.hpp"
+#include "Progress.hpp"
+
 #include <boost/filesystem.hpp>
 
 namespace lssr
@@ -36,14 +39,37 @@ namespace lssr
 
 Model* IOFactory::readModel( string filename )
 {
-    Model* m = new Model;
+    Model* m = 0;
 
     // Check extension
     boost::filesystem::path selectedFile(filename);
     string extension = selectedFile.extension().c_str();
 
+    // Try to parse given file
+    BaseIO* io = 0;
+    if(extension == ".ply")
+    {
+        cout << "New ply io" << endl;
+        io = new PLYIO;
+    }
+    else if(extension == ".pts" || extension == ".3d" || extension == ".xyz")
+    {
+        cout << "New ascii io" << endl;
+        io = new AsciiIO;
+    }
+    else if (extension == ".obj")
+    {
+        /// TODO: Integrate ObJIO in factory
+        cout << "New obj io" << endl;
+    }
 
-
+    // Return data model
+    if(io)
+    {
+        cout << "New model" << endl;
+        m = io->read(filename);
+    }
+    cout << "Model pointer: " << m << endl;
     return m;
 
 }
@@ -54,8 +80,28 @@ void IOFactory::saveModel(Model* m, string filename)
     boost::filesystem::path selectedFile(filename);
     string extension = selectedFile.extension().c_str();
 
-    BaseIO* io;
+    BaseIO* io = 0;
+
     // Create suitable io
+    if(extension == ".ply")
+    {
+        io = new PLYIO;
+    }
+    else if (extension == ".pts" || extension == ".3d" || extension == ".xyz")
+    {
+        io = new AsciiIO;
+    }
+
+    // Save model
+    if(io)
+    {
+        io->save(m, filename);
+    }
+    else
+    {
+        cout << timestamp << "File format " << extension << " is currrently not supported." << endl;
+    }
+
 
 
 }
