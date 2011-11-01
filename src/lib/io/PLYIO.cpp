@@ -617,9 +617,9 @@ Model* PLYIO::read( string filename, bool readColor, bool readConfidence,
     }
     if ( vertex_normal )
     {
-        ply_set_read_cb( ply, "vertex", "nx", readVertexCb, &vertex_intensity, 0 );
-        ply_set_read_cb( ply, "vertex", "ny", readVertexCb, &vertex_intensity, 0 );
-        ply_set_read_cb( ply, "vertex", "nz", readVertexCb, &vertex_intensity, 1 );
+        ply_set_read_cb( ply, "vertex", "nx", readVertexCb, &vertex_normal, 0 );
+        ply_set_read_cb( ply, "vertex", "ny", readVertexCb, &vertex_normal, 0 );
+        ply_set_read_cb( ply, "vertex", "nz", readVertexCb, &vertex_normal, 1 );
     }
 
     if ( face )
