@@ -247,14 +247,7 @@ void ViewerApplication::createMeshFromPointcloud()
 
                         mesh.fillHoles(max_hole_size);
                         mesh.optimizePlaneIntersections();
-                        mesh.restorePlanes();
-                        mesh.optimizePlanes(num_plane_its,
-                                            normal_thresh,
-                                            min_plane_size,
-                                            num_rm_regions,
-                                            false);
-
-
+                        mesh.restorePlanes(min_plane_size);
                     }
 
                     if(retesselate)

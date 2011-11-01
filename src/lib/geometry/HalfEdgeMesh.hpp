@@ -207,7 +207,15 @@ public:
 	 * @brief	Applies region growing and regression plane algorithms and deletes small
 	 * 			regions
 	 *
-	 * @param iterations	The number of iterations to use
+	 * @param iterations        The number of iterations to use
+	 *
+	 * @param normalThreshold   The normal threshold
+	 *
+	 * @param minRegionSize		The minimum size of a region
+	 *
+	 * @param smallRegionSize	The size up to which a region is considered as small
+	 *
+	 * @param remove_flickering	Whether to remove flickering faces or not
 	 */
 	virtual void optimizePlanes(int iterations, float normalThreshold, int minRegionSize = 50, int smallRegionSize = 0, bool remove_flickering = true);
 
@@ -284,8 +292,10 @@ public:
 
 	/**
 	 * restores the position of every triangle in a plane if it has been modified
+	 *
+	 * @param minRegionSize		The minimum size of a region
 	 */
-	virtual void restorePlanes();
+	virtual void restorePlanes(int minRegionSize);
 
 	void enableRegionColoring() { m_colorRegions = true;}
 
