@@ -42,7 +42,7 @@ namespace lssr
  *        not be freed in the destructor of this class to prevent
  *        side effects.
  */
-class IOFactory
+class ModelFactory
 {
 public:
 

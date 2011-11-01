@@ -18,7 +18,7 @@
 
 
 #include "BaseMesh.hpp"
-#include "io/IOFactory.hpp"
+#include "io/ModelFactory.hpp"
 
 namespace lssr
 {
@@ -38,7 +38,7 @@ void BaseMesh<VertexT, IndexType>::save( string filename )
     {
         Model* m = new Model;
         m->m_mesh = this->m_meshBuffer;
-        IOFactory::saveModel(m, filename);
+        ModelFactory::saveModel(m, filename);
     }
 
 }

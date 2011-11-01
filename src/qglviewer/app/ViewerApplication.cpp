@@ -147,7 +147,7 @@ void ViewerApplication::createMeshFromPointcloud()
             {
                 // Get point cloud data
                 PointCloud* pc = static_cast<lssr::PointCloud*>(c_item->renderable());
-                BufferedPointCloud* loader = pc->model()->m_pointCloud;
+                PointBuffer* loader = pc->model()->m_pointCloud;
 
                 if(loader)
                 {
@@ -237,7 +237,7 @@ void ViewerApplication::createMeshFromPointcloud()
 
 
                     // Create and add mesh to loaded objects
-                    BufferedMesh* l = mesh.meshBuffer();
+                    MeshBuffer* l = mesh.meshBuffer();
 
                     lssr::StaticMesh* static_mesh = new lssr::StaticMesh(l);
                     TriangleMeshTreeWidgetItem* mesh_item = new TriangleMeshTreeWidgetItem(TriangleMeshItem);

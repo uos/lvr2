@@ -27,7 +27,7 @@
 #include "AsciiIO.hpp"
 #include "PLYIO.hpp"
 #include "UosIO.hpp"
-#include "IOFactory.hpp"
+#include "ModelFactory.hpp"
 
 #include "Timestamp.hpp"
 #include "Progress.hpp"
@@ -37,7 +37,7 @@
 namespace lssr
 {
 
-Model* IOFactory::readModel( string filename )
+Model* ModelFactory::readModel( string filename )
 {
     Model* m = 0;
 
@@ -71,7 +71,7 @@ Model* IOFactory::readModel( string filename )
 
 }
 
-void IOFactory::saveModel(Model* m, string filename)
+void ModelFactory::saveModel(Model* m, string filename)
 {
     // Get file exptension
     boost::filesystem::path selectedFile(filename);

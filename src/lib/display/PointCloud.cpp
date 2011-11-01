@@ -44,7 +44,7 @@ PointCloud::PointCloud(Model& model, string name) : Renderable(name)
     m_boundingBox = new BoundingBox<Vertex<float> >;
     m_model = &model;
 
-    BufferedPointCloud* pc = model.m_pointCloud;
+    PointBuffer* pc = model.m_pointCloud;
 
     if(pc)
     {

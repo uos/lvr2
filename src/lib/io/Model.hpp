@@ -23,8 +23,8 @@
  *  @author Thomas Wiemann
  */
 
-#include "io/BufferedMesh.hpp"
-#include "io/BufferedPointCloud.hpp"
+#include "io/MeshBuffer.hpp"
+#include "io/PointBuffer.hpp"
 
 #ifndef MODEL_H_
 #define MODEL_H_
@@ -38,8 +38,8 @@ public:
     Model() : m_pointCloud(0), m_mesh(0) {};
     virtual ~Model() {};
 
-    BufferedPointCloud*     m_pointCloud;
-    BufferedMesh*           m_mesh;
+    PointBuffer*     m_pointCloud;
+    MeshBuffer*           m_mesh;
 };
 
 } // namespace lssr
