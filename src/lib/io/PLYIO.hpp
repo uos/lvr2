@@ -139,7 +139,7 @@ class PLYIO : public BaseIO
          * \param readNormals     Specifies if normals should be read.
          * \param readFaces       Specifies if faces should be read.
          **/
-        void read( string filename, bool readColor, bool readConfidence = true,
+        Model* read( string filename, bool readColor, bool readConfidence = true,
                 bool readIntensity = true, bool readNormals = true, 
                 bool readFaces = true );
 

@@ -401,13 +401,11 @@ void PLYIO::save( string filename, e_ply_storage_mode mode,
 
 Model* PLYIO::read( string filename )
 {
-
-    read( filename, true );
-
+   return read( filename, true );
 }
 
 
-void PLYIO::read( string filename, bool readColor, bool readConfidence,
+Model* PLYIO::read( string filename, bool readColor, bool readConfidence,
         bool readIntensity, bool readNormals, bool readFaces )
 {
 
@@ -417,12 +415,12 @@ void PLYIO::read( string filename, bool readColor, bool readConfidence,
     if ( !ply )
     {
         g_msg.print( MSG_TYPE_ERROR, "Could not open »%s«.\n", filename.c_str() );
-        return;
+        return 0;
     }
     if ( !ply_read_header( ply ) )
     {
         g_msg.print( MSG_TYPE_ERROR, "Could not read header.\n" );
-        return;
+        return 0;
     }
     g_msg.print( MSG_TYPE_MESSGAE, "Loading »%s«…\n", filename.c_str() );
 
@@ -516,7 +514,7 @@ void PLYIO::read( string filename, bool readColor, bool readConfidence,
     if ( !( numVertices || numPoints ) )
     {
         g_msg.print( MSG_TYPE_WARNING, "Neither vertices nor points in ply.\n" );
-        return;
+        return 0;
     }
 
     // Buffers
@@ -534,6 +532,7 @@ void PLYIO::read( string filename, bool readColor, bool readConfidence,
 
     unsigned int* faceIndices = 0;
 
+    std::cout << numVertices << std::endl;
 
     /* Allocate memory. */
     if ( numVertices )
@@ -716,6 +715,10 @@ void PLYIO::read( string filename, bool readColor, bool readConfidence,
         mesh->setFaceArray(faceIndices, numFaces);
     }
 
+    Model* m = new Model;
+    m->m_mesh = mesh;
+    m->m_pointCloud = pc;
+    return m;
 
 }
 
