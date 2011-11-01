@@ -135,7 +135,7 @@
 */
 
 #include "Options.hpp"
-#include "reconstruction/PCLPointCloudManager.hpp"
+
 #include "reconstruction/StannPointCloudManager.hpp"
 #include "reconstruction/FastReconstruction.hpp"
 #include "io/PLYIO.hpp"
@@ -143,6 +143,11 @@
 #include "geometry/TriangleMesh.hpp"
 #include "geometry/HalfEdgeMesh.hpp"
 #include <iostream>
+
+// Optional PCL bindings
+#ifdef _USE_PCL_
+#include "reconstruction/PCLPointCloudManager.hpp"
+#endif
 
 using namespace lssr;
 

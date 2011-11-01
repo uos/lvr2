@@ -51,10 +51,13 @@
 #include "geometry/HalfEdgeMesh.hpp"
 
 #include "reconstruction/PointCloudManager.hpp"
-#include "reconstruction/PCLPointCloudManager.hpp"
 #include "reconstruction/StannPointCloudManager.hpp"
 #include "reconstruction/FastReconstruction.hpp"
 
+// Optinal PCL bindings
+#ifdef _USE_PCL_
+#include "reconstruction/PCLPointCloudManager.hpp"
+#endif
 
 
 using Ui::MainWindow;
