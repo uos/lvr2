@@ -167,7 +167,7 @@ Model* AsciiIO::read(string filename)
     }
 
     // Assign buffers
-    model->m_pointCloud = new BufferedPointCloud;
+    model->m_pointCloud = new PointBuffer;
     model->m_pointCloud->setPointArray(points, numPoints);
     model->m_pointCloud->setPointColorArray(pointColors, numPoints);
     model->m_pointCloud->setPointIntensityArray(pointIntensities, numPoints);

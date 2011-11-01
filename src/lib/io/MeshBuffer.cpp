@@ -28,12 +28,12 @@
  * @date      09/22/2011 09:16:36 PM
  *
  **/
-#include "BufferedMesh.hpp"
+#include "MeshBuffer.hpp"
 
 namespace lssr
 {
 
-BufferedMesh::BufferedMesh() : 
+MeshBuffer::MeshBuffer() : 
     m_vertices( NULL ),
     m_vertexColors( NULL ),
     m_vertexConfidence( NULL ),
@@ -55,7 +55,7 @@ BufferedMesh::BufferedMesh() :
 }
 
 
-float* BufferedMesh::getVertexArray( size_t &n )
+float* MeshBuffer::getVertexArray( size_t &n )
 {
 
     n = m_numVertices;
@@ -63,7 +63,7 @@ float* BufferedMesh::getVertexArray( size_t &n )
 
 }
 
-float* BufferedMesh::getVertexNormalArray( size_t &n )
+float* MeshBuffer::getVertexNormalArray( size_t &n )
 {
 
     n = m_numVertexNormals;
@@ -72,7 +72,7 @@ float* BufferedMesh::getVertexNormalArray( size_t &n )
 }
 
 
-uint8_t* BufferedMesh::getVertexColorArray( size_t &n )
+uint8_t* MeshBuffer::getVertexColorArray( size_t &n )
 {
 
     n = m_numVertexColors;
@@ -81,7 +81,7 @@ uint8_t* BufferedMesh::getVertexColorArray( size_t &n )
 }
 
 
-float* BufferedMesh::getVertexConfidenceArray( size_t &n )
+float* MeshBuffer::getVertexConfidenceArray( size_t &n )
 {
 
     n = m_numVertexConfidences;
@@ -90,7 +90,7 @@ float* BufferedMesh::getVertexConfidenceArray( size_t &n )
 }
 
 
-float* BufferedMesh::getVertexIntensityArray( size_t &n )
+float* MeshBuffer::getVertexIntensityArray( size_t &n )
 {
 
     n = m_numVertexIntensities;
@@ -98,7 +98,7 @@ float* BufferedMesh::getVertexIntensityArray( size_t &n )
 
 }
 
-unsigned int* BufferedMesh::getFaceArray( size_t &n )
+unsigned int* MeshBuffer::getFaceArray( size_t &n )
 {
 
     n = m_numFaces;
@@ -107,7 +107,7 @@ unsigned int* BufferedMesh::getFaceArray( size_t &n )
 }
 
 
-float** BufferedMesh::getIndexedVertexArray( size_t &n )
+float** MeshBuffer::getIndexedVertexArray( size_t &n )
 {
 
     n = m_numVertices;
@@ -134,7 +134,7 @@ float** BufferedMesh::getIndexedVertexArray( size_t &n )
 
 }
 
-float** BufferedMesh::getIndexedVertexNormalArray( size_t &n )
+float** MeshBuffer::getIndexedVertexNormalArray( size_t &n )
 {
 
     n = m_numVertexNormals;
@@ -164,7 +164,7 @@ float** BufferedMesh::getIndexedVertexNormalArray( size_t &n )
 }
 
 
-float** BufferedMesh::getIndexedVertexConfidenceArray( size_t &n )
+float** MeshBuffer::getIndexedVertexConfidenceArray( size_t &n )
 {
 
     n = m_numVertexConfidences;
@@ -193,7 +193,7 @@ float** BufferedMesh::getIndexedVertexConfidenceArray( size_t &n )
 }
 
 
-float** BufferedMesh::getIndexedVertexIntensityArray( size_t &n )
+float** MeshBuffer::getIndexedVertexIntensityArray( size_t &n )
 {
 
     n = m_numVertexIntensities;
@@ -221,7 +221,7 @@ float** BufferedMesh::getIndexedVertexIntensityArray( size_t &n )
 }
 
 
-uint8_t** BufferedMesh::getIndexedVertexColorArray( size_t &n )
+uint8_t** MeshBuffer::getIndexedVertexColorArray( size_t &n )
 {
 
     n = m_numVertexColors;
@@ -243,7 +243,7 @@ uint8_t** BufferedMesh::getIndexedVertexColorArray( size_t &n )
 
 }
 
-void BufferedMesh::setVertexArray( float* array, size_t n )
+void MeshBuffer::setVertexArray( float* array, size_t n )
 {
 
     m_vertices   = array;
@@ -252,7 +252,7 @@ void BufferedMesh::setVertexArray( float* array, size_t n )
 }
 
 
-void BufferedMesh::setVertexArray( std::vector<float>& array )
+void MeshBuffer::setVertexArray( std::vector<float>& array )
 {
 
     if(m_vertices) delete m_vertices;
@@ -262,7 +262,7 @@ void BufferedMesh::setVertexArray( std::vector<float>& array )
 
 }
 
-void BufferedMesh::setVertexNormalArray( float* array, size_t n )
+void MeshBuffer::setVertexNormalArray( float* array, size_t n )
 {
 
     m_vertexNormals    = array;
@@ -270,7 +270,7 @@ void BufferedMesh::setVertexNormalArray( float* array, size_t n )
 
 }
 
-void BufferedMesh::setVertexNormalArray( std::vector<float>& array )
+void MeshBuffer::setVertexNormalArray( std::vector<float>& array )
 {
 
     if(m_vertexNormals)
@@ -285,7 +285,7 @@ void BufferedMesh::setVertexNormalArray( std::vector<float>& array )
 
 }
 
-void BufferedMesh::setFaceArray( unsigned int* array, size_t n )
+void MeshBuffer::setFaceArray( unsigned int* array, size_t n )
 {
 
     m_faceIndices  = array;
@@ -293,7 +293,7 @@ void BufferedMesh::setFaceArray( unsigned int* array, size_t n )
 
 }
 
-void BufferedMesh::setFaceArray( std::vector<unsigned int>& array )
+void MeshBuffer::setFaceArray( std::vector<unsigned int>& array )
 {
     if(m_faceIndices)
     {
@@ -317,7 +317,7 @@ void BufferedMesh::setFaceArray( std::vector<unsigned int>& array )
 //
 //}
 
-void BufferedMesh::setVertexColorArray( uint8_t* array, size_t n )
+void MeshBuffer::setVertexColorArray( uint8_t* array, size_t n )
 {
 
     m_vertexColors     = array;
@@ -325,7 +325,7 @@ void BufferedMesh::setVertexColorArray( uint8_t* array, size_t n )
 
 }
 
-void BufferedMesh::setVertexColorArray( std::vector<uint8_t>& array )
+void MeshBuffer::setVertexColorArray( std::vector<uint8_t>& array )
 {
     if(m_vertexColors)
     {
@@ -338,7 +338,7 @@ void BufferedMesh::setVertexColorArray( std::vector<uint8_t>& array )
 
 }
 
-void BufferedMesh::setVertexConfidenceArray( float* array, size_t n )
+void MeshBuffer::setVertexConfidenceArray( float* array, size_t n )
 {
 
     m_vertexConfidence     = array;
@@ -347,7 +347,7 @@ void BufferedMesh::setVertexConfidenceArray( float* array, size_t n )
 }
 
 
-void BufferedMesh::setVertexConfidenceArray( std::vector<float>& array )
+void MeshBuffer::setVertexConfidenceArray( std::vector<float>& array )
 {
 
     if(m_vertexConfidence) delete m_vertexConfidence;
@@ -358,7 +358,7 @@ void BufferedMesh::setVertexConfidenceArray( std::vector<float>& array )
 }
 
 
-void BufferedMesh::setVertexIntensityArray( float* array, size_t n )
+void MeshBuffer::setVertexIntensityArray( float* array, size_t n )
 {
 
     m_vertexIntensity     = array;
@@ -367,7 +367,7 @@ void BufferedMesh::setVertexIntensityArray( float* array, size_t n )
 }
 
 
-void BufferedMesh::setVertexIntensityArray( std::vector<float>& array )
+void MeshBuffer::setVertexIntensityArray( std::vector<float>& array )
 {
     
     if(m_vertexIntensity) 
@@ -383,7 +383,7 @@ void BufferedMesh::setVertexIntensityArray( std::vector<float>& array )
 }
 
 
-void BufferedMesh::setIndexedVertexArray( float** arr, size_t count )
+void MeshBuffer::setIndexedVertexArray( float** arr, size_t count )
 {
 
     m_vertices = (float*) malloc( count * 3 * sizeof(float) );
@@ -418,7 +418,7 @@ void BufferedMesh::setIndexedVertexArray( float** arr, size_t count )
 //}
 
 
-void BufferedMesh::setIndexedVertexNormalArray( float** arr, size_t count )
+void MeshBuffer::setIndexedVertexNormalArray( float** arr, size_t count )
 {
 
     m_vertexNormals = (float*) malloc( count * 3 * sizeof(float) );
@@ -443,7 +443,7 @@ void BufferedMesh::setIndexedVertexNormalArray( float** arr, size_t count )
 //}
 
 
-void BufferedMesh::freeBuffer()
+void MeshBuffer::freeBuffer()
 {
 
     m_vertices = m_vertexConfidence = m_vertexIntensity = m_vertexNormals = NULL;

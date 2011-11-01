@@ -86,7 +86,7 @@ void PLYIO::save( string filename, e_ply_storage_mode mode,
     // Get buffers
     if(m_model->m_pointCloud)
     {
-        BufferedPointCloud* pc  = m_model->m_pointCloud;
+        PointBuffer* pc  = m_model->m_pointCloud;
         m_points                = pc->getPointArray(m_numPoints);
         m_pointConfidences      = pc->getPointConfidenceArray(m_numPoints);
         m_pointColors           = pc->getPointColorArray(m_numPointColors);
@@ -96,7 +96,7 @@ void PLYIO::save( string filename, e_ply_storage_mode mode,
 
     if(m_model->m_mesh)
     {
-        BufferedMesh* mesh = m_model->m_mesh;
+        MeshBuffer* mesh = m_model->m_mesh;
         m_vertices         = mesh->getVertexArray(m_numVertices);
         m_vertexColors     = mesh->getVertexColorArray(m_numVertexColors);
         m_vertexConfidence = mesh->getVertexConfidenceArray(m_numVertexConfidences);
@@ -693,11 +693,11 @@ Model* PLYIO::read( string filename, bool readColor, bool readConfidence,
 
 
     // Save buffers in model
-    BufferedPointCloud* pc = 0;
-    BufferedMesh* mesh = 0;
+    PointBuffer* pc = 0;
+    MeshBuffer* mesh = 0;
     if(points)
     {
-        pc = new BufferedPointCloud;
+        pc = new PointBuffer;
         pc->setPointArray(points, numPoints);
         pc->setPointColorArray(pointColors, numPointColors);
         pc->setPointIntensityArray(pointIntensities, numPointIntensities);
@@ -706,7 +706,7 @@ Model* PLYIO::read( string filename, bool readColor, bool readConfidence,
 
     if(vertices)
     {
-        mesh = new BufferedMesh;
+        mesh = new MeshBuffer;
         mesh->setVertexArray(vertices, numVertices);
         mesh->setVertexColorArray(vertexColors, numVertexColors);
         mesh->setVertexIntensityArray(vertexIntensity, numVertexIntensities);

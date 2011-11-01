@@ -85,7 +85,7 @@ public:
      * @param ki        The number of neighbor points used for normal interpolation
      * @param kd        The number of neighbor points used for distance value calculation
 	 */
-	StannPointCloudManager(BufferedPointCloud* loader,
+	StannPointCloudManager(PointBuffer* loader,
 	                       const int &kn = 10,
 	                       const int &ki = 10,
 	                       const int &kd = 10);

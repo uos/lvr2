@@ -36,7 +36,7 @@
 namespace lssr{
 
 template<typename VertexT, typename NormalT>
-StannPointCloudManager<VertexT, NormalT>::StannPointCloudManager(BufferedPointCloud* loader,
+StannPointCloudManager<VertexT, NormalT>::StannPointCloudManager(PointBuffer* loader,
                        const int &kn,
                        const int &ki,
                        const int &kd)
@@ -73,15 +73,7 @@ void StannPointCloudManager<VertexT, NormalT>::init()
     cout << timestamp << "Creating STANN Kd-Tree..." << endl;
     m_pointTree = sfcnn< float*, 3, float>(this->m_points, this->m_numPoints, 4);
 
-    // Estimate surface normals if necessary
-    if(!this->m_normals)
-    {
-        calcNormals();
-    }
-    else
-    {
-        cout << timestamp << " Using the given normals." << endl;
-    }
+
 }
 
 template<typename VertexT, typename NormalT>

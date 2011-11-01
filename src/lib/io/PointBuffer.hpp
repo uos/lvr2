@@ -64,7 +64,7 @@ typedef pair<size_t, size_t> indexPair;
  * This class is supposed to be the superclass of all point loading I/O
  * classes.
  **/
-class BufferedPointCloud
+class PointBuffer
 {
 
     public:
@@ -73,7 +73,7 @@ class BufferedPointCloud
          *
          * The default constructor. This clears all internal data.
          **/
-        BufferedPointCloud();
+        PointBuffer();
 
 
         /**

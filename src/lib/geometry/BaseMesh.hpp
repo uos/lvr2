@@ -91,14 +91,14 @@ public:
 	virtual void load(string filename);
 
 
-	BufferedMesh* meshBuffer() { return m_meshBuffer;}
+	MeshBuffer* meshBuffer() { return m_meshBuffer;}
 
 protected:
 
 	/// True if mesh is finalized
 	bool			m_finalized;
 
-	BufferedMesh*   m_meshBuffer;
+	MeshBuffer*   m_meshBuffer;
 };
 }
 

@@ -59,7 +59,7 @@ StaticMesh::StaticMesh(Model& model, string name) : Renderable(name){
 	compileWireframeList();
 }
 
-StaticMesh::StaticMesh(BufferedMesh* mesh, string name) : Renderable(name){
+StaticMesh::StaticMesh(MeshBuffer* mesh, string name) : Renderable(name){
 
     m_model = new Model;
     m_model->m_mesh = mesh;
@@ -71,7 +71,7 @@ StaticMesh::StaticMesh(BufferedMesh* mesh, string name) : Renderable(name){
     compileWireframeList();
 }
 
-void StaticMesh::init(BufferedMesh* mesh)
+void StaticMesh::init(MeshBuffer* mesh)
 {
     if(mesh)
     {

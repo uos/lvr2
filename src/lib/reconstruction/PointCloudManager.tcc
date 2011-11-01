@@ -29,7 +29,7 @@
 using std::string;
 
 #include "../io/Timestamp.hpp"
-#include "../io/IOFactory.hpp"
+#include "../io/ModelFactory.hpp"
 
 #include <boost/filesystem.hpp>
 

@@ -37,14 +37,14 @@
 #include "../widgets/TriangleMeshTreeWidgetItem.h"
 #include "../widgets/MultiPointCloudTreeWidgetItem.h"
 
-#include "io/IOFactory.hpp"
+#include "io/ModelFactory.hpp"
 
 #include <boost/filesystem.hpp>
 #include <boost/version.hpp>
 
 using lssr::Model;
-using lssr::BufferedMesh;
-using lssr::BufferedPointCloud;
+using lssr::MeshBuffer;
+using lssr::PointBuffer;
 
 DataCollectorFactory::DataCollectorFactory() {}
 
@@ -57,7 +57,7 @@ void DataCollectorFactory::create(string filename)
 	string name = selectedFile.filename().c_str();
 
 	// Create a factory rto parse given file and extract loaders
-	lssr::IOFactory io;
+	lssr::ModelFactory io;
 	Model* model = io.readModel(filename);
 
 	cout << "Model: " << model << endl;
@@ -65,8 +65,8 @@ void DataCollectorFactory::create(string filename)
 	if(model)
 	{
 
-	    BufferedMesh*           mesh_buffer  = model->m_mesh;
-	    BufferedPointCloud*     point_buffer = model->m_pointCloud;
+	    MeshBuffer*           mesh_buffer  = model->m_mesh;
+	    PointBuffer*     point_buffer = model->m_pointCloud;
 
 	    if(mesh_buffer)
 	    {
