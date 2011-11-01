@@ -734,13 +734,18 @@ void HalfEdgeMesh<VertexT, NormalT>::removeDanglingArtifacts(int threshold)
         m_faces[i]->m_used = false;
 }
 
-    template<typename VertexT, typename NormalT>
+template<typename VertexT, typename NormalT>
 bool HalfEdgeMesh<VertexT, NormalT>::safeCollapseEdge(HEdge* edge)
 {
     //try to reject all huetchen
     if(edge->face != 0 && edge->next->pair->face !=0 && edge->next->next->pair->face!=0)
+    {
         if(edge->next->pair->next->next == edge->next->next->pair->next->pair)
+        {
             return false;
+        }
+    }
+
     if(edge->pair->face && edge->pair->next->pair->face && edge->pair->next->next->pair->face)
         if(edge->pair->next->pair->next->next == edge->pair->next->next->pair->next->pair)
             return false;

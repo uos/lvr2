@@ -60,58 +60,64 @@ void DataCollectorFactory::create(string filename)
 	lssr::IOFactory io;
 	Model* model = io.readModel(filename);
 
-	BufferedMesh*           mesh_buffer  = model->m_mesh;
-	BufferedPointCloud*     point_buffer = model->m_pointCloud;
+	cout << "Model: " << model << endl;
 
-	if(mesh_buffer)
+	if(model)
 	{
-	    lssr::StaticMesh* mesh = new lssr::StaticMesh(*model);
-	    TriangleMeshTreeWidgetItem* item = new TriangleMeshTreeWidgetItem(TriangleMeshItem);
 
-	    int modes = 0;
-	    modes |= Mesh;
+	    BufferedMesh*           mesh_buffer  = model->m_mesh;
+	    BufferedPointCloud*     point_buffer = model->m_pointCloud;
 
-	    if(mesh->getNormals())
+	    if(mesh_buffer)
 	    {
-	        modes |= VertexNormals;
-	    }
-        item->setSupportedRenderModes(modes);
-	    item->setViewCentering(false);
-	    item->setName(name);
-	    item->setRenderable(mesh);
-	    item->setNumFaces(mesh->getNumberOfFaces());
+	        lssr::StaticMesh* mesh = new lssr::StaticMesh(*model);
+	        TriangleMeshTreeWidgetItem* item = new TriangleMeshTreeWidgetItem(TriangleMeshItem);
 
-	    Static3DDataCollector* dataCollector = new Static3DDataCollector(mesh, name, item);
-
-	    Q_EMIT dataCollectorCreated( dataCollector );
-	}
-
-	if(point_buffer)
-	{
-	    if(point_buffer->getNumPoints() > 0)
-	    {
-	        // Check for multi point object
-	        PointCloud* pc = new PointCloud(*model);
-	        PointCloudTreeWidgetItem* item = new PointCloudTreeWidgetItem(PointCloudItem);
-
-	        // Setup supported render modes
 	        int modes = 0;
-	        size_t n_pn;
-	        modes |= Points;
-	        if(point_buffer->getPointNormalArray(n_pn))
-	        {
-	            modes |= PointNormals;
-	        }
+	        modes |= Mesh;
 
+	        if(mesh->getNormals())
+	        {
+	            modes |= VertexNormals;
+	        }
 	        item->setSupportedRenderModes(modes);
 	        item->setViewCentering(false);
 	        item->setName(name);
-	        item->setNumPoints(pc->m_points.size());
-	        item->setRenderable(pc);
+	        item->setRenderable(mesh);
+	        item->setNumFaces(mesh->getNumberOfFaces());
 
-	        Static3DDataCollector* dataCollector = new Static3DDataCollector(pc, name, item);
+	        Static3DDataCollector* dataCollector = new Static3DDataCollector(mesh, name, item);
+
 	        Q_EMIT dataCollectorCreated( dataCollector );
+	    }
 
+	    if(point_buffer)
+	    {
+	        if(point_buffer->getNumPoints() > 0)
+	        {
+	            // Check for multi point object
+	            PointCloud* pc = new PointCloud(*model);
+	            PointCloudTreeWidgetItem* item = new PointCloudTreeWidgetItem(PointCloudItem);
+
+	            // Setup supported render modes
+	            int modes = 0;
+	            size_t n_pn;
+	            modes |= Points;
+	            if(point_buffer->getPointNormalArray(n_pn))
+	            {
+	                modes |= PointNormals;
+	            }
+
+	            item->setSupportedRenderModes(modes);
+	            item->setViewCentering(false);
+	            item->setName(name);
+	            item->setNumPoints(pc->m_points.size());
+	            item->setRenderable(pc);
+
+	            Static3DDataCollector* dataCollector = new Static3DDataCollector(pc, name, item);
+	            Q_EMIT dataCollectorCreated( dataCollector );
+
+	        }
 	    }
 	}
 
