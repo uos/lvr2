@@ -963,17 +963,17 @@ vector<vector<HalfEdgeVertex<VertexT, NormalT>* > > HalfEdgeMesh<VertexT, Normal
     vector<vector<HalfEdgeVertex<VertexT, NormalT>* > > contours;
     for (size_t i = 0; i< m_regions.size(); i++)
     {
-        if(m_regions[i]->m_inPlane)
+        if(m_regions[i]->m_inPlane && (m_regions[i]->m_regionNumber == 35  || m_regions[i]->m_regionNumber == 16653))
         {
             vector<vector<HalfEdgeVertex<VertexT, NormalT>* > > current_contours = m_regions[i]->getContours(epsilon);
-            contours.insert(contours.end(), current_contours.begin(), current_contours.end());
+            contours.insert(contours.end(), current_contours.begin(), current_contours.begin() + 1);
         }
     }
     return  contours;
 }
 
     template<typename VertexT, typename NormalT>
-void HalfEdgeMesh<VertexT, NormalT>::restorePlanes()
+void HalfEdgeMesh<VertexT, NormalT>::restorePlanes(int min_region_size)
 {
     for(size_t r=0; r<m_regions.size(); r++)
         //drag points into the regression plane
@@ -987,6 +987,40 @@ void HalfEdgeMesh<VertexT, NormalT>::restorePlanes()
                         (*(m_regions[r]->m_faces[i]))(p)->m_position = (*(m_regions[r]->m_faces[i]))(p)->m_position + (VertexT)m_regions[r]->m_normal * v;
                 }
             }
+
+    //start the last region growing
+    int region_size = 0;
+    m_regions.clear();
+    int region_number = 0;
+    int default_region_threshold = (int)10*log(m_faces.size());
+
+    // Reset all used variables
+    for(size_t i=0; i < m_faces.size(); i++)
+    {
+    	m_faces[i]->m_used = false;
+    }
+
+    // Find all regions by regionGrowing with normal criteria
+    for(size_t i=0; i < m_faces.size(); i++)
+    {
+    	if(m_faces[i]->m_used == false)
+    	{
+    		NormalT n = m_faces[i]->getFaceNormal();
+
+    		Region<VertexT, NormalT>* region = new Region<VertexT, NormalT>(region_number);
+    		float almostone = 0.999;
+    		region_size = regionGrowing(m_faces[i], n, almostone, region) + 1;
+
+    		if(region_size > max(min_region_size, default_region_threshold))
+            {
+            	region->regressionPlane();
+            }
+
+			// Save pointer to the region
+    		m_regions.push_back(region);
+    		region_number++;
+    	}
+    }
 }
 
     template<typename VertexT, typename NormalT>
