@@ -83,11 +83,6 @@ public:
 	 */
 	virtual void save(string filename);
 
-	/**
-	 * @brief Save the mesh to the given Obj file
-	 */
-	virtual void saveObj(string filename);
-
 
 	MeshLoader* getMeshLoader();
 
