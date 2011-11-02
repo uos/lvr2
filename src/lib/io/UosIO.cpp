@@ -183,8 +183,8 @@ void UosIO::reduce(string dir, string target, int reduction)
     m_saveToDisk = true;
 
     // Read data and write reduced points
-    Model* m;
-    read(m, dir);
+    Model m;
+    read( &m, dir);
 
     // Write reduced points...
     ///TODO: Implement writing...
@@ -453,7 +453,7 @@ void UosIO::readNewFormat(Model* model, string dir, int first, int last, size_t 
 
 }
 
-indexPair UosIO::getScanRange(int num)
+indexPair UosIO::getScanRange( size_t num )
 {
     if(num < m_scanRanges.size())
     {
@@ -650,7 +650,6 @@ void UosIO::readOldFormat(Model* model, string dir, int first, int last, size_t 
             points[t_index + 1] = v[2];
             i++;
         }
-        size_t numPoints = allPoints.size();
 
         // Alloc model
         model = new Model;

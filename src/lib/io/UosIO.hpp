@@ -101,7 +101,7 @@ public:
      */
     void reduce(string dir, string target, int reduction = 1);
 
-    indexPair getScanRange(int num);
+    indexPair getScanRange( size_t num );
 
     int getNumScans() { return m_numScans;}
 
