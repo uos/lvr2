@@ -20,8 +20,9 @@
  /*
  * Texture.tcc
  *
- *  Created on: 08.09.2011
- *      Author: pg2011
+ *  @date 08.09.2011
+ *  @author Kim Rinnewitz (krinnewitz@uos.de)
+ *  @author Sven Schalk (sschalk@uos.de)
  */
 
 namespace lssr {
@@ -30,7 +31,7 @@ template<typename VertexT, typename NormalT>
 Texture<VertexT, NormalT>::Texture(PointCloudManager<VertexT, NormalT>* pm, Region<VertexT, NormalT>* region, vector<vector<HVertex*> > contours)
 {
 	this->m_region = region;
-	this->m_data = 0;
+	this->m_data   = 0;
 
 	//determines the texture resolution
 	m_pixelSize = 1;
@@ -44,7 +45,7 @@ Texture<VertexT, NormalT>::Texture(PointCloudManager<VertexT, NormalT>* pm, Regi
 			vector<HVertex*> HOuter_contour = contours[0];
 			NormalT n = m_region->m_normal;
 
-			//store a stutzvector for the bounding box
+			//store a stuetzvector for the bounding box
 			p = HOuter_contour[0]->m_position;
 
 			//calculate a vector in the plane of the bounding box
@@ -182,7 +183,9 @@ void Texture<VertexT, NormalT>::save()
 template<typename VertexT, typename NormalT>
 Texture<VertexT, NormalT>::~Texture() {
 	for(int y = 0; y < m_sizeY; y++)
+	{
 		delete m_data[y];
+	}
 	delete m_data;
 }
 

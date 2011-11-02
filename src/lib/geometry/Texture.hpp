@@ -20,8 +20,9 @@
  /*
  * Texture.hpp
  *
- *  Created on: 08.09.2011
- *      Author: pg2011
+ *  @date 08.09.2011
+ *  @author Kim Rinnewitz (krinnewitz@uos.de)
+ *  @author Sven Schalk (sschalk@uos.de)
  */
 
 #ifndef TEXTURE_HPP_
@@ -84,6 +85,7 @@ private:
 		unsigned char r, g, b;
 	};
 
+	///The region belonging to the texture
 	Region<VertexT, NormalT>* m_region;
 
 	///The texture data
