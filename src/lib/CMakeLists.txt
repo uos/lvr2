@@ -1,13 +1,13 @@
 set(LSSR_SOURCES
-	io/IOFactory.cpp
+	io/ModelFactory.cpp
     io/PLYIO.cpp
     io/AsciiIO.cpp
     io/UosIO.cpp
     io/Progress.cpp
     io/Timestamp.cpp
-    io/MeshLoader.cpp
-    io/PointLoader.cpp
     io/Message.cpp
+    io/MeshBuffer.cpp
+    io/PointBuffer.cpp
     display/CoordinateAxes.cpp
     display/Renderable.cpp
     display/PointCloud.cpp

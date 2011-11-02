@@ -36,6 +36,8 @@
 #include <cstdlib>
 #include <string>
 
+#include "Model.hpp"
+
 using std::string;
 
 namespace lssr
@@ -55,14 +57,14 @@ namespace lssr
              *
              * @param filename  The file to read.
              */
-            virtual void read(string filename) = 0;
+            virtual Model* read(string filename) = 0;
 
             /**
              * \brief Save the loaded elements to the given file.
              *
              * @param filename Filename of the file to write.
              */
-            virtual void save(string filename) = 0;
+            virtual void save(Model* model, string filename) = 0;
 
     };
 

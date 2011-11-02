@@ -24,9 +24,9 @@
      borderopacity="1.0"
      inkscape:pageopacity="0.0"
      inkscape:pageshadow="2"
-     inkscape:zoom="3.343126"
-     inkscape:cx="307.63603"
-     inkscape:cy="957.36065"
+     inkscape:zoom="1.7564974"
+     inkscape:cx="270.21146"
+     inkscape:cy="1016.0278"
      inkscape:document-units="px"
      inkscape:current-layer="layer1"
      showgrid="false"
@@ -39,6 +39,18 @@
      inkscape:snap-nodes="true" />
   <defs
      id="defs4">
+    <linearGradient
+       inkscape:collect="always"
+       id="linearGradient4844">
+      <stop
+         style="stop-color:#ffffff;stop-opacity:1;"
+         offset="0"
+         id="stop4846" />
+      <stop
+         style="stop-color:#ffffff;stop-opacity:0;"
+         offset="1"
+         id="stop4848" />
+    </linearGradient>
     <marker
        inkscape:stockid="TriangleOutL"
        orient="auto"
@@ -1221,6 +1233,25 @@
          stdDeviation="0.15434469"
          id="feGaussianBlur4819" />
     </filter>
+    <filter
+       inkscape:collect="always"
+       id="filter4840">
+      <feGaussianBlur
+         inkscape:collect="always"
+         stdDeviation="0.085964852"
+         id="feGaussianBlur4842" />
+    </filter>
+    <radialGradient
+       inkscape:collect="always"
+       xlink:href="#linearGradient4844"
+       id="radialGradient4850"
+       cx="35.894552"
+       cy="137.86951"
+       fx="35.894552"
+       fy="137.86951"
+       r="6.2046189"
+       gradientTransform="matrix(1,0,0,1.0836788,-4.7859398,-133.57822)"
+       gradientUnits="userSpaceOnUse" />
   </defs>
   <metadata
      id="metadata7">
@@ -1245,7 +1276,7 @@
        height="30.686359"
        x="7.478251"
        y="7.922863"
-       inkscape:export-filename="/home/twiemann/software/meshing.twiemann/src/qglviewer/res/qv_export.png"
+       inkscape:export-filename="/home/twiemann/software/meshing.twiemann/src/qglviewer/res/qv_import.png"
        inkscape:export-xdpi="90"
        inkscape:export-ydpi="90" />
     <rect
@@ -1259,46 +1290,46 @@
        inkscape:export-xdpi="90"
        inkscape:export-ydpi="90" />
     <rect
-       style="fill:#0092ff;fill-rule:evenodd;stroke:#000000;stroke-width:1px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1;fill-opacity:0.2112069"
+       style="fill:#0092ff;fill-opacity:0.21120689;fill-rule:evenodd;stroke:#000000;stroke-width:0.84988433px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1"
        id="rect3095"
-       width="24.910715"
-       height="25"
-       x="10.357144"
-       y="10.665753"
-       ry="2.9464285"
-       inkscape:export-filename="/home/twiemann/software/meshing.twiemann/src/qglviewer/res/qv_export.png"
+       width="21.171228"
+       height="21.24711"
+       x="10.282086"
+       y="13.89546"
+       ry="2.5041234"
+       inkscape:export-filename="/home/twiemann/software/meshing.twiemann/src/qglviewer/res/qv_import.png"
        inkscape:export-xdpi="90"
        inkscape:export-ydpi="90" />
     <rect
-       style="fill:#ffffff;fill-rule:evenodd;stroke:#000000;stroke-width:1px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1"
+       style="fill:#ffffff;fill-rule:evenodd;stroke:#000000;stroke-width:0.84988433px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1"
        id="rect3097"
-       width="17.678572"
-       height="9.1964283"
-       x="14.017858"
-       y="10.665754"
+       width="15.024742"
+       height="7.8159008"
+       x="13.39327"
+       y="13.89546"
        ry="0"
-       inkscape:export-filename="/home/twiemann/software/meshing.twiemann/src/qglviewer/res/qv_export.png"
+       inkscape:export-filename="/home/twiemann/software/meshing.twiemann/src/qglviewer/res/qv_import.png"
        inkscape:export-xdpi="90"
        inkscape:export-ydpi="90" />
     <rect
        style="fill:#ffffff"
        id="rect3099"
-       width="18.392857"
-       height="10"
-       x="13.839288"
-       y="23.433613"
-       ry="2.5"
-       inkscape:export-filename="/home/twiemann/software/meshing.twiemann/src/qglviewer/res/qv_export.png"
+       width="15.6318"
+       height="8.4988432"
+       x="13.241506"
+       y="24.746664"
+       ry="2.1247108"
+       inkscape:export-filename="/home/twiemann/software/meshing.twiemann/src/qglviewer/res/qv_import.png"
        inkscape:export-xdpi="90"
        inkscape:export-ydpi="90" />
     <rect
-       style="fill:#808080;stroke:#000000;stroke-width:0.82389402"
+       style="fill:#808080;stroke:#000000;stroke-width:0.70021468"
        id="rect3101"
-       width="3.6310334"
-       height="6.1698813"
-       x="26.279684"
-       y="12.263728"
-       inkscape:export-filename="/home/twiemann/software/meshing.twiemann/src/qglviewer/res/qv_export.png"
+       width="3.0859585"
+       height="5.2436857"
+       x="23.814405"
+       y="15.253553"
+       inkscape:export-filename="/home/twiemann/software/meshing.twiemann/src/qglviewer/res/qv_import.png"
        inkscape:export-xdpi="90"
        inkscape:export-ydpi="90" />
     <path
@@ -3163,14 +3194,6 @@
        inkscape:export-filename="/home/twiemann/software/meshing.twiemann/src/qglviewer/res/qv_tranform.png"
        inkscape:export-xdpi="90"
        inkscape:export-ydpi="90" />
-    <path
-       style="fill:#ff0000;stroke:#ff0000;stroke-width:0.4966763;stroke-linecap:round;stroke-linejoin:miter;stroke-miterlimit:0;stroke-opacity:1;stroke-dasharray:none;marker-end:url(#TriangleOutLRD)"
-       d="m 22.778114,32.222054 -0.01569,-5.526757"
-       id="path11415"
-       inkscape:connector-curvature="0"
-       inkscape:export-filename="/home/twiemann/software/meshing.twiemann/src/qglviewer/res/qv_export.png"
-       inkscape:export-xdpi="90"
-       inkscape:export-ydpi="90" />
     <rect
        style="fill:url(#radialGradient3405);fill-opacity:1;stroke:#cccccc;stroke-width:1.81400001;stroke-linecap:round;stroke-linejoin:round;stroke-miterlimit:4;stroke-dasharray:none"
        id="rect3047-2-2-5-1-0-0"
@@ -3308,5 +3331,30 @@
        inkscape:export-filename="/home/twiemann/software/meshing.twiemann/src/qglviewer/res/qv_showall.png"
        inkscape:export-xdpi="90"
        inkscape:export-ydpi="90" />
+    <rect
+       style="opacity:0.91253644;fill:url(#radialGradient4850);fill-opacity:1;stroke:#b3b3b3;stroke-width:0.58399999;stroke-linecap:round;stroke-miterlimit:0;stroke-dasharray:none;filter:url(#filter4840)"
+       id="rect4832"
+       width="11.412726"
+       height="12.451117"
+       x="25.402248"
+       y="9.6024942"
+       inkscape:export-filename="/home/twiemann/software/meshing.twiemann/src/qglviewer/res/qv_import.png"
+       inkscape:export-xdpi="90"
+       inkscape:export-ydpi="90" />
+    <text
+       xml:space="preserve"
+       style="font-size:9.35410118px;font-style:normal;font-weight:normal;line-height:125%;letter-spacing:0px;word-spacing:0px;fill:#000000;fill-opacity:1;stroke:none;font-family:Sans"
+       x="26.78969"
+       y="18.599186"
+       id="text4852"
+       sodipodi:linespacing="125%"
+       inkscape:export-filename="/home/twiemann/software/meshing.twiemann/src/qglviewer/res/qv_import.png"
+       inkscape:export-xdpi="90"
+       inkscape:export-ydpi="90"><tspan
+         sodipodi:role="line"
+         id="tspan4854"
+         x="26.78969"
+         y="18.599186"
+         style="font-size:9.35410118px;font-style:normal;font-variant:normal;font-weight:bold;font-stretch:normal;text-align:start;line-height:125%;writing-mode:lr-tb;text-anchor:start;fill:#ff0000;font-family:Ubuntu;-inkscape-font-specification:Ubuntu Bold">-1</tspan></text>
   </g>
 </svg>

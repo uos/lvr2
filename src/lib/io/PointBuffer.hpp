@@ -26,6 +26,7 @@
  *            methods for these data.
  * 
  * @author    Lars Kiesow (lkiesow), lkiesow@uos.de, Universität Osnabrück
+ * @author    Thomas Wiemann, twiemann@uos.de, Universität Osnabrück
  * @version   111001
  * @date      Recreated:     2011-09-22 23:23:57
  * @date      Last modified: 2011-10-01 15:22:49
@@ -63,7 +64,8 @@ typedef pair<size_t, size_t> indexPair;
  * This class is supposed to be the superclass of all point loading I/O
  * classes.
  **/
-class PointLoader {
+class PointBuffer
+{
 
     public:
         /**
@@ -71,7 +73,7 @@ class PointLoader {
          *
          * The default constructor. This clears all internal data.
          **/
-        PointLoader();
+        PointBuffer();
 
 
         /**
@@ -341,37 +343,37 @@ class PointLoader {
                 float*** arr2d, const int step = 3 );
 
         /// %Point buffer.
-        float*    m_points;
+        float*          m_points;
         /// %Point normal buffer.
-        float*    m_pointNormals;
+        float*          m_pointNormals;
         /// %Point color buffer.
-        unsigned char*  m_pointColors;
+        uchar*          m_pointColors;
         /// %Point intensity buffer.
-        float*    m_pointIntensities;
+        float*          m_pointIntensities;
         /// %Point confidence buffer.
-        float*    m_pointConfidence;
+        float*          m_pointConfidences;
 
         /// Indexed point buffer.
-        float**   m_indexedPoints;
+        float**         m_indexedPoints;
         /// Indexed point normal buffer.
-        float**   m_indexedPointNormals;
+        float**         m_indexedPointNormals;
         /// Indexed point intensity buffer.
-        float**   m_indexedPointIntensities;
+        float**         m_indexedPointIntensities;
         /// Indexed point confidence buffer.
-        float**   m_indexedPointConfidence;
+        float**         m_indexedPointConfidence;
         /// Indexed point color buffer.
-        uint8_t** m_indexedPointColors;
+        uchar**         m_indexedPointColors;
 
         /// Number of points in internal buffer.
-        size_t    m_numPoints;
+        size_t          m_numPoints;
         /// Number of point color sets in internal buffer.
-        size_t    m_numPointColors;
+        size_t          m_numPointColors;
         /// Number of point normals in internal buffer.
-        size_t    m_numPointNormals;
+        size_t          m_numPointNormals;
         /// Number of point intensity values in internal buffer.
-        size_t    m_numPointIntensities;
+        size_t          m_numPointIntensities;
         /// Number of point confidence values in internal buffer.
-        size_t    m_numPointConfidence;
+        size_t          m_numPointConfidence;
 
         /// Vector to save the indices of the first and last points of single scans
         vector<indexPair> m_scanRanges;

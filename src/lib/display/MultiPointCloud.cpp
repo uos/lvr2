@@ -40,8 +40,9 @@ MultiPointCloud::MultiPointCloud(string dir)
     boost::filesystem::path directory(dir);
     if(is_directory(directory))
     {
+        Model* model;
         UosIO io;
-        io.read(dir);
+        io.read(model, dir);
         int n = io.getNumScans();
         for(int i = 0; i < n; i++)
         {
@@ -52,8 +53,8 @@ MultiPointCloud::MultiPointCloud(string dir)
             for(size_t a = p.first; a <= p.second; a++)
             {
                 size_t n;
-                float   ** points = io.getIndexedPointArray( n );
-                uint8_t ** colors = io.getIndexedPointColorArray( n );
+                float   ** points = model->m_pointCloud->getIndexedPointArray( n );
+                uchar ** colors = model->m_pointCloud->getIndexedPointColorArray( n );
                 if(colors)
                 {
                     pc->addPoint(points[a][0], points[a][1], points[a][2], colors[a][0], colors[a][1], colors[a][2]);

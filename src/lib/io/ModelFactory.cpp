@@ -27,46 +27,80 @@
 #include "AsciiIO.hpp"
 #include "PLYIO.hpp"
 #include "UosIO.hpp"
-#include "IOFactory.hpp"
+#include "ModelFactory.hpp"
+
+#include "Timestamp.hpp"
+#include "Progress.hpp"
 
 #include <boost/filesystem.hpp>
 
 namespace lssr
 {
 
-IOFactory::IOFactory( string filename )
-    : m_pointLoader(0), m_meshLoader(0), m_baseIO(0)
+Model* ModelFactory::readModel( string filename )
 {
+    Model* m = 0;
+
     // Check extension
     boost::filesystem::path selectedFile(filename);
     string extension = selectedFile.extension().c_str();
 
-    // Create objects
-    if ( extension == ".pts" || extension == ".3d" || extension == ".xyz" || extension == ".txt" )
+    // Try to parse given file
+    BaseIO* io = 0;
+    if(extension == ".ply")
     {
-        AsciiIO* a_io = new AsciiIO;
-        m_pointLoader = (PointLoader*) a_io;
-        m_baseIO =      (BaseIO*)      a_io;
+        io = new PLYIO;
     }
-    else if ( extension == ".ply" )
+    else if(extension == ".pts" || extension == ".3d" || extension == ".xyz")
     {
-        PLYIO* ply_io = new PLYIO;
-        m_pointLoader = (PointLoader*) ply_io;
-        m_meshLoader  = (MeshLoader*)  ply_io;
-        m_baseIO      = (BaseIO*)      ply_io;
+        io = new AsciiIO;
     }
-    else if ( extension == "" )
+    else if (extension == ".obj")
     {
-        UosIO* uos_io =  new UosIO;
-        m_pointLoader = (PointLoader*) uos_io;
-        m_baseIO      = (BaseIO*)      uos_io;
+        /// TODO: Integrate ObJIO in factory
+
     }
 
-    // Read file data
-    if ( m_baseIO )
+    // Return data model
+    if(io)
     {
-        m_baseIO->read( filename );
+        m = io->read(filename);
     }
+    cout << "Model pointer: " << m << endl;
+    return m;
+
+}
+
+void ModelFactory::saveModel(Model* m, string filename)
+{
+    // Get file exptension
+    boost::filesystem::path selectedFile(filename);
+    string extension = selectedFile.extension().c_str();
+
+    BaseIO* io = 0;
+
+    // Create suitable io
+    if(extension == ".ply")
+    {
+        io = new PLYIO;
+    }
+    else if (extension == ".pts" || extension == ".3d" || extension == ".xyz")
+    {
+        io = new AsciiIO;
+    }
+
+    // Save model
+    if(io)
+    {
+        io->save(m, filename);
+    }
+    else
+    {
+        cout << timestamp << "File format " << extension << " is currrently not supported." << endl;
+    }
+
+
+
 }
 
 }
