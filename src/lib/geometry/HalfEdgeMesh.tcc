@@ -963,7 +963,7 @@ vector<vector<HalfEdgeVertex<VertexT, NormalT>* > > HalfEdgeMesh<VertexT, Normal
     vector<vector<HalfEdgeVertex<VertexT, NormalT>* > > contours;
     for (size_t i = 0; i< m_regions.size(); i++)
     {
-        if(m_regions[i]->m_inPlane && (m_regions[i]->m_regionNumber == 35  || m_regions[i]->m_regionNumber == 16653))
+        if(m_regions[i]->m_inPlane)
         {
             vector<vector<HalfEdgeVertex<VertexT, NormalT>* > > current_contours = m_regions[i]->getContours(epsilon);
             contours.insert(contours.end(), current_contours.begin(), current_contours.begin() + 1);
