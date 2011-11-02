@@ -59,24 +59,6 @@ void BaseMesh<VertexT, IndexType>::save( string filename ) {
 	ply_writer.save( filename );
 }
 
-template<typename VertexT, typename IndexType>
-void BaseMesh<VertexT, IndexType>::saveObj(string filename)
-{
-	ObjIO<float, uint> obj_writer;
-
-	// Set data arrays
-	obj_writer.setVertexArray(this->m_vertexBuffer, m_nVertices);
-	obj_writer.setIndexArray(this->m_indexBuffer, m_nFaces);
-	obj_writer.setNormalArray(this->m_normalBuffer, m_nVertices);
-	obj_writer.setTextureCoords(this->m_textureCoordBuffer, m_nVertices);
-	obj_writer.setTextureIndices(this->m_textureIndexBuffer, m_nVertices);
-	obj_writer.setTextures(this->m_textureBuffer, m_nTextures);
-	obj_writer.setColors(this->m_colorBuffer, m_nTextures);
-	obj_writer.setRegionSizes(this->m_regionSizeBuffer, m_nRegions);
-
-	// Save
-	obj_writer.write(filename);
-}
 
 template<typename VertexT, typename IndexType>
 MeshLoader* BaseMesh<VertexT, IndexType>::getMeshLoader()
