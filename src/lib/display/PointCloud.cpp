@@ -37,56 +37,61 @@ PointCloud::PointCloud()
 
 }
 
-PointCloud::PointCloud(PointLoader& loader, string name) : Renderable(name)
+PointCloud::PointCloud(Model& model, string name) : Renderable(name)
 {
     int maxColors = 255;
 
     m_boundingBox = new BoundingBox<Vertex<float> >;
-    m_pointLoader = &loader;
+    m_model = &model;
 
-    size_t n_points;
-    float** points = loader.getIndexedPointArray(n_points);
-    uchar** colors = loader.getIndexedPointColorArray(n_points);
-    float*  intensities = loader.getPointIntensityArray(n_points);
+    PointBuffer* pc = model.m_pointCloud;
 
-    ColorMap c_map(maxColors);
-
-    for(size_t i = 0; i < loader.getNumPoints(); i++)
+    if(pc)
     {
-        float x = points[i][0];
-        float y = points[i][1];
-        float z = points[i][2];
 
-        unsigned char r, g, b;
+        size_t n_points;
+        float** points = pc->getIndexedPointArray(n_points);
+        uchar** colors = pc->getIndexedPointColorArray(n_points);
+        float*  intensities = pc->getPointIntensityArray(n_points);
 
-        if(colors)
+        ColorMap c_map(maxColors);
+
+        for(size_t i = 0; i < pc->getNumPoints(); i++)
         {
-            r = colors[i][0];
-            g = colors[i][1];
-            b = colors[i][2];
-        }
-        else if (intensities)
-        {
-            // Get intensity
-            float color[3];
-            c_map.getColor(color, (size_t)intensities[i], GREY);
+            float x = points[i][0];
+            float y = points[i][1];
+            float z = points[i][2];
 
-            r = (uchar)(color[0] * 255);
-            g = (uchar)(color[1] * 255);
-            b = (uchar)(color[2] * 255);
+            unsigned char r, g, b;
 
-        }
-        else
-        {
-            r = 0;
-            g = 255;
-            b = 0;
-        }
+            if(colors)
+            {
+                r = colors[i][0];
+                g = colors[i][1];
+                b = colors[i][2];
+            }
+            else if (intensities)
+            {
+                // Get intensity
+                float color[3];
+                c_map.getColor(color, (size_t)intensities[i], GREY);
 
-        m_boundingBox->expand(x, y, z);
-        m_points.push_back(uColorVertex(x, y, z, r, g, b));
+                r = (uchar)(color[0] * 255);
+                g = (uchar)(color[1] * 255);
+                b = (uchar)(color[2] * 255);
+
+            }
+            else
+            {
+                r = 0;
+                g = 255;
+                b = 0;
+            }
+
+            m_boundingBox->expand(x, y, z);
+            m_points.push_back(uColorVertex(x, y, z, r, g, b));
+        }
     }
-
     updateDisplayLists();
 }
 

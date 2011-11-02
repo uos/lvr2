@@ -325,21 +325,6 @@ private:
 	 */
 	virtual bool safeCollapseEdge(HEdge* edge);
 
-    virtual void regionsToBuffer(
-                float **vertex,
-                float **normal,
-                uchar **color,
-                float **texture,
-                unsigned int **index,
-                unsigned int **textureIndex,
-                size_t     &vncSize,
-                size_t   &indexSize,
-                vector<int> &regions);
-
-    virtual void retesselateRegionsToBuffer(size_t &vncBufferSize,
-                                    size_t &indexBufferSize,
-                                    vector<int> plane_regions , bool genTextures=false);
-
 
 };
 

@@ -29,7 +29,6 @@
 
 #include "Renderable.hpp"
 
-#include "io/PointLoader.hpp"
 #include "geometry/ColorVertex.hpp"
 
 #include <vector>
@@ -45,7 +44,7 @@ class PointCloud : public Renderable{
 public:
 
     PointCloud();
-    PointCloud(PointLoader& loader, string name = "<unamed cloud>");
+    PointCloud(Model& loader, string name = "<unamed cloud>");
 
     virtual ~PointCloud();
     virtual inline void render();

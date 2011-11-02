@@ -18,8 +18,7 @@
 
 
 #include "BaseMesh.hpp"
-#include "io/ObjIO.hpp"
-#include "io/PLYIO.hpp"
+#include "io/ModelFactory.hpp"
 
 namespace lssr
 {
@@ -28,52 +27,29 @@ template<typename VertexT, typename IndexType>
 BaseMesh<VertexT, IndexType>::BaseMesh()
 {
 	m_finalized = false;
-	m_vertexBuffer = 0;
-	m_normalBuffer = 0;
-	m_colorBuffer = 0;
-	m_textureCoordBuffer = 0;
-	m_textureIndexBuffer = 0;
-	m_indexBuffer = 0;
-	m_textureBuffer = 0;
-	m_regionSizeBuffer = 0;
-	m_nRegions = 0;
-	m_nVertices = 0;
-	m_nTextures = 0;
-	m_nFaces = 0;
-
+	m_meshBuffer = 0;
 }
 
 template<typename VertexT, typename IndexType>
-void BaseMesh<VertexT, IndexType>::save( string filename ) {
-
-	PLYIO ply_writer;
-
-	// Set data arrays
-	ply_writer.setVertexArray( this->m_vertexBuffer, m_nVertices );
-	ply_writer.setFaceArray( this->m_indexBuffer, m_nFaces );
-	if ( this->m_colorBuffer ) {
-		ply_writer.setVertexColorArray( this->m_colorBuffer, this->m_nVertices );
-	}
-
-	// Save
-	ply_writer.save( filename );
-}
-
-
-template<typename VertexT, typename IndexType>
-MeshLoader* BaseMesh<VertexT, IndexType>::getMeshLoader()
+void BaseMesh<VertexT, IndexType>::save( string filename )
 {
-    MeshLoader* l = 0;
-    if(m_finalized)
+
+    if(m_meshBuffer)
     {
-        // Create and setup new loader object
-        l = new MeshLoader;
-        l->setVertexArray(m_vertexBuffer, m_nVertices);
-        l->setFaceArray(m_indexBuffer, m_nFaces);
-        l->setVertexNormalArray(m_normalBuffer, m_nVertices);
-        l->setVertexColorArray(m_colorBuffer, m_nVertices);
+        Model* m = new Model;
+        m->m_mesh = this->m_meshBuffer;
+        ModelFactory::saveModel(m, filename);
     }
-    return l;
+
 }
+
+
+template<typename VertexT, typename IndexType>
+void BaseMesh<VertexT, IndexType>::load( string filename )
+{
+
+
+}
+
 
 }

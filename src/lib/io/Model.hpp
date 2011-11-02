@@ -16,35 +16,32 @@
  * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA
  */
 
-
- #include "Options.hpp"
-
-#include "io/UosIO.hpp"
-
-#include <iostream>
-
-using namespace lssr;
-
 /**
- * @brief   Main entry point for the LSSR surface executable
+ * Model.h
+ *
+ *  @date 27.10.2011
+ *  @author Thomas Wiemann
  */
-int main(int argc, char** argv)
+
+#include "io/MeshBuffer.hpp"
+#include "io/PointBuffer.hpp"
+
+#ifndef MODEL_H_
+#define MODEL_H_
+
+namespace lssr
 {
-    // Parse command line arguments
-    reduce::Options options(argc, argv);
 
-    // Exit if options had to generate a usage message
-    // (this means required parameters are missing)
-    if (options.printUsage()) return 0;
+class Model
+{
+public:
+    Model() : m_pointCloud(0), m_mesh(0) {};
+    virtual ~Model() {};
 
-    ::std::cout<<options<<::std::endl;
+    PointBuffer*     m_pointCloud;
+    MeshBuffer*           m_mesh;
+};
 
-    UosIO io;
+} // namespace lssr
 
-    io.setFirstScan(options.firstScan());
-    io.setLastScan(options.lastScan());
-    io.reduce(options.directory(), options.outputFile(), options.reduction());
-
-	return 0;
-}
-
+#endif /* MODEL_H_ */

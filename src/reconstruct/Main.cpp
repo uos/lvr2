@@ -163,8 +163,19 @@ int main(int argc, char** argv)
 
     // Create a point loader object
     size_t num_points;
-    IOFactory io_factory(options.getInputFileName());
-    PointLoader* p_loader = io_factory.getPointLoader();
+    ModelFactory io_factory;
+    Model* model = io_factory.readModel(options.getInputFileName());
+    PointBuffer* p_loader = 0;
+
+    if(model)
+    {
+        p_loader = model->m_pointCloud;
+    }
+    else
+    {
+        cout << timestamp << "IO Error: Unable to parse " << options.getInputFileName() << endl;
+        exit(-1);
+    }
 
     // Create a point cloud manager
     string pcm_name = options.getPCM();
@@ -241,7 +252,9 @@ int main(int argc, char** argv)
 	 {
 		 mesh.finalize();
 	 }
+
     mesh.save("triangle_mesh.ply");
+    mesh.save("triangle_mesh.obj");
 
     cout << timestamp << "Program end." << endl;
 

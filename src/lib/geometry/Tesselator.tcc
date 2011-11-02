@@ -146,8 +146,12 @@ template<typename VertexT, typename NormalT>
 void Tesselator<VertexT, NormalT>::getFinalizedTriangles(float **vertexBuffer,
         unsigned int    **indexBuffer,
         int    *lengthFaces,
-        int    *lengthVertices)
+        int    *lengthVertices,
+        vector<vector<HVertex*> > vectorBorderPoints)
 {
+    init();
+    tesselate(vectorBorderPoints);
+
     int numFaces = m_triangles.size() / 3;
     int numVertices = m_triangles.size();
 

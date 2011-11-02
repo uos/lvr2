@@ -35,6 +35,7 @@
 #include <cstring>
 #include <ctime>
 #include <sstream>
+#include <cassert>
 #include "Message.hpp"
 
 
@@ -42,20 +43,9 @@ namespace lssr
 {
 
 
-PLYIO::PLYIO()
-    : MeshLoader(), PointLoader()
+void PLYIO::save( Model* model, string filename )
 {
-}
-
-
-PLYIO::~PLYIO()
-{
-}
-
-
-void PLYIO::save( string filename )
-{
-
+    m_model = model;
     save( filename, PLY_LITTLE_ENDIAN );
 
 }
@@ -64,6 +54,58 @@ void PLYIO::save( string filename )
 void PLYIO::save( string filename, e_ply_storage_mode mode, 
         std::vector<string> obj_info, std::vector<string> comment )
 {
+    assert(m_model);
+
+    // Local buffer shortcuts
+    float* m_vertices         = 0;
+    float* m_vertexConfidence = 0;
+    float* m_vertexIntensity  = 0;
+    float* m_vertexNormals    = 0;
+    float* m_points           = 0;
+    float* m_pointConfidences = 0;
+    float* m_pointIntensities = 0;
+    float* m_pointNormals     = 0;
+
+    size_t m_numVertices              = 0;
+    size_t m_numVertexColors          = 0;
+    size_t m_numVertexConfidences     = 0;
+    size_t m_numVertexIntensities     = 0;
+    size_t m_numVertexNormals         = 0;
+
+    size_t m_numPoints                = 0;
+    size_t m_numPointColors           = 0;
+    size_t m_numPointConfidence       = 0;
+    size_t m_numPointIntensities      = 0;
+    size_t m_numPointNormals          = 0;
+    size_t m_numFaces                 = 0;
+
+    uchar* m_vertexColors = 0;
+    uchar* m_pointColors = 0;
+    unsigned int* m_faceIndices = 0;
+
+    // Get buffers
+    if(m_model->m_pointCloud)
+    {
+        PointBuffer* pc  = m_model->m_pointCloud;
+        m_points                = pc->getPointArray(m_numPoints);
+        m_pointConfidences      = pc->getPointConfidenceArray(m_numPoints);
+        m_pointColors           = pc->getPointColorArray(m_numPointColors);
+        m_pointIntensities      = pc->getPointIntensityArray(m_numPointIntensities);
+        m_pointNormals          = pc->getPointNormalArray(m_numPointNormals);
+    }
+
+    if(m_model->m_mesh)
+    {
+        MeshBuffer* mesh = m_model->m_mesh;
+        m_vertices         = mesh->getVertexArray(m_numVertices);
+        m_vertexColors     = mesh->getVertexColorArray(m_numVertexColors);
+        m_vertexConfidence = mesh->getVertexConfidenceArray(m_numVertexConfidences);
+        m_vertexIntensity  = mesh->getVertexIntensityArray(m_numVertexIntensities);
+        m_vertexNormals    = mesh->getVertexNormalArray(m_numVertexNormals);
+        m_faceIndices      = mesh->getFaceArray(m_numFaces);
+    }
+
+
 
     p_ply oply = ply_create( filename.c_str(), mode, NULL, 0, NULL );
     if ( !oply )
@@ -111,10 +153,11 @@ void PLYIO::save( string filename, e_ply_storage_mode mode,
     bool point_confidence  = false;
     bool point_normal      = false;
 
+
     /* Add vertex element. */
     if ( m_vertices )
     {
-        ply_add_element( oply, "vertex", m_numVertex );
+        ply_add_element( oply, "vertex", m_numVertices );
 
         /* Add vertex properties: x, y, z, (r, g, b) */
         ply_add_scalar_property( oply, "x", PLY_FLOAT );
@@ -124,8 +167,9 @@ void PLYIO::save( string filename, e_ply_storage_mode mode,
         /* Add color information if there is any. */
         if ( m_vertexColors )
         {
-            if ( m_numVertexColors != m_numVertex )
+            if ( m_numVertexColors != m_numVertices )
             {
+                std::cout << m_numVertexColors << " " << m_numVertices << std::endl;
                 g_msg.print( MSG_TYPE_WARNING, "Amount of vertices and color information is"
                         " not equal. Color information won't be written.\n" );
             }
@@ -141,7 +185,7 @@ void PLYIO::save( string filename, e_ply_storage_mode mode,
         /* Add intensity. */
         if ( m_vertexIntensity )
         {
-            if ( m_numVertexIntensity != m_numVertex )
+            if ( m_numVertexIntensities != m_numVertices )
             {
                 g_msg.print( MSG_TYPE_WARNING, "Amount of vertices and intensity"
                         " information is not equal. Intensity information won't be"
@@ -157,7 +201,7 @@ void PLYIO::save( string filename, e_ply_storage_mode mode,
         /* Add confidence. */
         if ( m_vertexConfidence )
         {
-            if ( m_numVertexConfidence != m_numVertex )
+            if ( m_numVertexConfidences != m_numVertices )
             {
                 g_msg.print( MSG_TYPE_WARNING, "Amount of vertices and confidence"
                         " information is not equal. Confidence information won't be"
@@ -173,7 +217,7 @@ void PLYIO::save( string filename, e_ply_storage_mode mode,
         /* Add normals if there are any. */
         if ( m_vertexNormals )
         {
-            if ( m_numVertexNormals != m_numVertex )
+            if ( m_numVertexNormals != m_numVertices )
             {
                 g_msg.print( MSG_TYPE_WARNING, "Amount of vertices and normals"
                         " does not match. Normals won't be written.\n" );
@@ -188,9 +232,9 @@ void PLYIO::save( string filename, e_ply_storage_mode mode,
         }
 
         /* Add faces. */
-        if ( m_numFace )
+        if ( m_numFaces )
         {
-            ply_add_element( oply, "face", m_numFace );
+            ply_add_element( oply, "face", m_numFaces );
             ply_add_list_property( oply, "vertex_indices", PLY_UCHAR, PLY_INT );
         }
     }
@@ -239,7 +283,7 @@ void PLYIO::save( string filename, e_ply_storage_mode mode,
         }
 
         /* Add confidence. */
-        if ( m_pointConfidence )
+        if ( m_pointConfidences )
         {
             if ( m_numPointConfidence != m_numPoints )
             {
@@ -281,7 +325,7 @@ void PLYIO::save( string filename, e_ply_storage_mode mode,
 
     /* Second: Write data. */
 
-    for ( uint32_t i = 0; i < m_numVertex; i++ )
+    for (size_t i = 0; i < m_numVertices; i++ )
     {
         ply_write( oply, (double) m_vertices[ i * 3     ] ); /* x */
         ply_write( oply, (double) m_vertices[ i * 3 + 1 ] ); /* y */
@@ -311,7 +355,7 @@ void PLYIO::save( string filename, e_ply_storage_mode mode,
     /* Write faces (Only if we also have vertices). */
     if ( m_vertices )
     {
-        for ( uint32_t i = 0; i < m_numFace; i++ )
+        for ( size_t i = 0; i < m_numFaces; i++ )
         {
             ply_write( oply, 3.0 ); /* Indices per face. */
             ply_write( oply, (double) m_faceIndices[ i * 3     ] );
@@ -320,7 +364,7 @@ void PLYIO::save( string filename, e_ply_storage_mode mode,
         }
     }
 
-    for ( uint32_t i = 0; i < m_numPoints; i++ )
+    for ( size_t i = 0; i < m_numPoints; i++ )
     {
         ply_write( oply, (double) m_points[ i * 3     ] ); /* x */
         ply_write( oply, (double) m_points[ i * 3 + 1 ] ); /* y */
@@ -337,7 +381,7 @@ void PLYIO::save( string filename, e_ply_storage_mode mode,
         }
         if ( point_confidence )
         {
-            ply_write( oply, m_pointConfidence[ i ] );
+            ply_write( oply, m_pointConfidences[ i ] );
         }
         if ( point_normal )
         {
@@ -355,20 +399,15 @@ void PLYIO::save( string filename, e_ply_storage_mode mode,
 }
 
 
-void PLYIO::read( string filename )
+Model* PLYIO::read( string filename )
 {
-
-    read( filename, true );
-
+   return read( filename, true );
 }
 
 
-void PLYIO::read( string filename, bool readColor, bool readConfidence,
+Model* PLYIO::read( string filename, bool readColor, bool readConfidence,
         bool readIntensity, bool readNormals, bool readFaces )
 {
-
-    lssr::PointLoader::freeBuffer();
-    lssr::MeshLoader::freeBuffer();
 
     /* Start reading new PLY */
     p_ply ply = ply_open( filename.c_str(), NULL, 0, NULL );
@@ -376,12 +415,12 @@ void PLYIO::read( string filename, bool readColor, bool readConfidence,
     if ( !ply )
     {
         g_msg.print( MSG_TYPE_ERROR, "Could not open »%s«.\n", filename.c_str() );
-        return;
+        return 0;
     }
     if ( !ply_read_header( ply ) )
     {
         g_msg.print( MSG_TYPE_ERROR, "Could not read header.\n" );
-        return;
+        return 0;
     }
     g_msg.print( MSG_TYPE_MESSGAE, "Loading »%s«…\n", filename.c_str() );
 
@@ -390,12 +429,27 @@ void PLYIO::read( string filename, bool readColor, bool readConfidence,
     const char * name = buf;
     long int n;
     p_ply_element elem  = NULL;
+
+    // Buffer count variables
+    size_t numVertices              = 0;
+    size_t numVertexColors          = 0;
+    size_t numVertexConfidences     = 0;
+    size_t numVertexIntensities     = 0;
+    size_t numVertexNormals         = 0;
+
+    size_t numPoints                = 0;
+    size_t numPointColors           = 0;
+    size_t numPointConfidence       = 0;
+    size_t numPointIntensities      = 0;
+    size_t numPointNormals          = 0;
+    size_t numFaces                 = 0;
+
     while ( ( elem = ply_get_next_element( ply, elem ) ) )
     {
         ply_get_element_info( elem, &name, &n );
         if ( !strcmp( name, "vertex" ) )
         {
-            m_numVertex = n;
+            numVertices = n;
             p_ply_property prop = NULL;
             while ( ( prop = ply_get_next_property( elem, prop ) ) )
             {
@@ -403,28 +457,28 @@ void PLYIO::read( string filename, bool readColor, bool readConfidence,
                 if ( !strcmp( name, "red" ) && readColor )
                 {
                     /* We have color information */
-                    m_numVertexColors = n;
+                    numVertexColors = n;
                 }
                 else if ( !strcmp( name, "confidence" ) && readConfidence )
                 {
                     /* We have confidence information */
-                    m_numVertexConfidence = n;
+                    numVertexConfidences = n;
                 }
                 else if ( !strcmp( name, "intensity" ) && readIntensity )
                 {
                     /* We have intensity information */
-                    m_numVertexIntensity = n;
+                    numVertexIntensities = n;
                 }
                 else if ( !strcmp( name, "nx" ) && readNormals )
                 {
                     /* We have normals */
-                    m_numVertexNormals = n;
+                    numVertexNormals = n;
                 }
             }
         }
         else if ( !strcmp( name, "point" ) )
         {
-            m_numPoints = n;
+            numPoints = n;
             p_ply_property prop = NULL;
             while ( ( prop = ply_get_next_property( elem, prop ) ) )
             {
@@ -432,94 +486,112 @@ void PLYIO::read( string filename, bool readColor, bool readConfidence,
                 if ( !strcmp( name, "red" ) && readColor )
                 {
                     /* We have color information */
-                    m_numPointColors = n;
+                    numPointColors = n;
                 }
                 else if ( !strcmp( name, "confidence" ) && readConfidence )
                 {
                     /* We have confidence information */
-                    m_numPointConfidence = n;
+                    numPointConfidence = n;
                 }
                 else if ( !strcmp( name, "intensity" ) && readIntensity )
                 {
                     /* We have intensity information */
-                    m_numPointIntensities = n;
+                    numPointIntensities = n;
                 }
                 else if ( !strcmp( name, "nx" ) && readNormals )
                 {
                     /* We have normals */
-                    m_numPointNormals = n;
+                    numPointNormals = n;
                 }
             }
         }
         else if ( !strcmp( name, "face" ) && readFaces )
         {
-            m_numFace = n;
+            numFaces = n;
         }
     }
-    if ( !( m_numVertex || m_numPoints ) )
+
+    if ( !( numVertices || numPoints ) )
     {
         g_msg.print( MSG_TYPE_WARNING, "Neither vertices nor points in ply.\n" );
-        return;
+        return 0;
     }
+
+    // Buffers
+    float* vertices         = 0;
+    float* vertexConfidence = 0;
+    float* vertexIntensity  = 0;
+    float* vertexNormals    = 0;
+    float* points           = 0;
+    float* pointConfidences = 0;
+    float* pointIntensities = 0;
+    float* pointNormals     = 0;
+
+    uchar* pointColors = 0;
+    uchar* vertexColors     = 0;
+
+    unsigned int* faceIndices = 0;
+
+    std::cout << numVertices << std::endl;
 
     /* Allocate memory. */
-    if ( m_numVertex )
+    if ( numVertices )
     {
-        m_vertices = ( float * ) malloc( m_numVertex * 3 * sizeof(float) );
+        vertices = ( float * ) malloc( numVertices * 3 * sizeof(float) );
     }
-    if ( m_numVertexColors )
+    if ( numVertexColors )
     {
-        m_vertexColors = ( uint8_t * ) malloc( m_numVertex * 3 * sizeof(uint8_t) );
+        vertexColors = ( uchar* ) malloc( numVertices * 3 * sizeof(uchar) );
     }
-    if ( m_numVertexConfidence )
+    if ( numVertexConfidences )
     {
-        m_vertexConfidence = ( float * ) malloc( m_numVertex * sizeof(float) );
+        vertexConfidence = ( float * ) malloc( numVertices * sizeof(float) );
     }
-    if ( m_numVertexIntensity )
+    if ( numVertexIntensities )
     {
-        m_vertexIntensity = ( float * ) malloc( m_numVertex * sizeof(float) );
+        vertexIntensity = ( float * ) malloc( numVertices * sizeof(float) );
     }
-    if ( m_numVertexNormals )
+    if ( numVertexNormals )
     {
-        m_vertexNormals = ( float * ) malloc( m_numVertex * 3 * sizeof(float) );
+        vertexNormals = ( float * ) malloc( numVertices * 3 * sizeof(float) );
     }
-    if ( m_numFace )
+    if ( numFaces )
     {
-        m_faceIndices = ( unsigned int * ) malloc( m_numFace * 3 * sizeof(unsigned int) );
+        faceIndices = ( unsigned int * ) malloc( numFaces * 3 * sizeof(unsigned int) );
     }
-    if ( m_numPoints )
+    if ( numPoints )
     {
-        m_points = ( float * ) malloc( m_numPoints * 3 * sizeof(float) );
+        points = ( float * ) malloc( numPoints * 3 * sizeof(float) );
     }
-    if ( m_numPointColors )
+    if ( numPointColors )
     {
-        m_pointColors = ( uint8_t * ) malloc( m_numPoints * 3 * sizeof(uint8_t) );
+        pointColors = ( uchar * ) malloc( numPoints * 3 * sizeof(uchar) );
     }
-    if ( m_numPointConfidence )
+    if ( numPointConfidence )
     {
-        m_pointConfidence = ( float * ) malloc( m_numPoints * sizeof(float) );
+        pointConfidences = ( float * ) malloc( numPoints * sizeof(float) );
     }
-    if ( m_numPointIntensities )
+    if ( numPointIntensities )
     {
-        m_pointIntensities = ( float * ) malloc( m_numPoints * sizeof(float) );
+        pointIntensities = ( float * ) malloc( numPoints * sizeof(float) );
     }
-    if ( m_numPointNormals )
+    if ( numPointNormals )
     {
-        m_pointNormals = ( float * ) malloc( m_numPoints * 3 * sizeof(float) );
+        pointNormals = ( float * ) malloc( numPoints * 3 * sizeof(float) );
     }
 
 
-    float        * vertex            = m_vertices;
-    uint8_t      * vertex_color      = m_vertexColors;
-    float        * vertex_confidence = m_vertexConfidence;
-    float        * vertex_intensity  = m_vertexIntensity;
-    float        * vertex_normal     = m_vertexNormals;
-    unsigned int * face              = m_faceIndices;
-    float        * point             = m_points;
-    uint8_t      * point_color       = m_pointColors;
-    float        * point_confidence  = m_pointConfidence;
-    float        * point_intensity   = m_pointIntensities;
-    float        * point_normal      = m_pointNormals;
+    float        * vertex            = vertices;
+    uint8_t      * vertex_color      = vertexColors;
+    float        * vertex_confidence = vertexConfidence;
+    float        * vertex_intensity  = vertexIntensity;
+    float        * vertex_normal     = vertexNormals;
+    unsigned int * face              = faceIndices;
+    float        * point             = points;
+    uint8_t      * point_color       = pointColors;
+    float        * point_confidence  = pointConfidences;
+    float        * point_intensity   = pointIntensities;
+    float        * point_normal      = pointNormals;
 
 
     /* Set callbacks. */
@@ -545,9 +617,9 @@ void PLYIO::read( string filename, bool readColor, bool readConfidence,
     }
     if ( vertex_normal )
     {
-        ply_set_read_cb( ply, "vertex", "nx", readVertexCb, &vertex_intensity, 0 );
-        ply_set_read_cb( ply, "vertex", "ny", readVertexCb, &vertex_intensity, 0 );
-        ply_set_read_cb( ply, "vertex", "nz", readVertexCb, &vertex_intensity, 1 );
+        ply_set_read_cb( ply, "vertex", "nx", readVertexCb, &vertex_normal, 0 );
+        ply_set_read_cb( ply, "vertex", "ny", readVertexCb, &vertex_normal, 0 );
+        ply_set_read_cb( ply, "vertex", "nz", readVertexCb, &vertex_normal, 1 );
     }
 
     if ( face )
@@ -587,39 +659,66 @@ void PLYIO::read( string filename, bool readColor, bool readConfidence,
     if ( !ply_read( ply ) )
     {
         g_msg.print( MSG_TYPE_ERROR, "Could not read »%s«.\n", filename.c_str() );
-        lssr::PointLoader::freeBuffer();
-        lssr::MeshLoader::freeBuffer();
     }
 
     /* Check if we got only vertices and neither points nor faces. If that is
      * the case then use the vertices as points. */
-    if ( m_vertices && !m_points && !m_faceIndices )
+    if ( vertices && !points && !faceIndices )
     {
         g_msg.print( MSG_TYPE_HINT, "PLY contains neither faces nor points. "
                 "Assuming that vertices are ment to be points.\n" );
-        m_points              = m_vertices;
-        m_pointColors         = m_vertexColors;
-        m_pointConfidence     = m_vertexConfidence;
-        m_pointIntensities    = m_vertexIntensity;
-        m_pointNormals        = m_vertexNormals;
-        m_numPoints           = m_numVertex;
-        m_numPointColors      = m_numVertexColors;
-        m_numPointConfidence  = m_numVertexConfidence;
-        m_numPointIntensities = m_numVertexIntensity;
-        m_numPointNormals     = m_numVertexNormals;
-        m_numVertex           = 0;
-        m_numVertexColors     = 0;
-        m_numVertexConfidence = 0;
-        m_numVertexIntensity  = 0;
-        m_numVertexNormals    = 0;
-        m_vertices            = NULL;
-        m_vertexColors        = NULL;
-        m_vertexConfidence    = NULL;
-        m_vertexIntensity     = NULL;
-        m_vertexNormals       = NULL;
+        points               = vertices;
+        pointColors          = vertexColors;
+        pointConfidences     = vertexConfidence;
+        pointIntensities     = vertexIntensity;
+        pointNormals         = vertexNormals;
+        numPoints            = numVertices;
+        numPointColors       = numVertexColors;
+        numPointConfidence   = numVertexConfidences;
+        numPointIntensities  = numVertexIntensities;
+        numPointNormals      = numVertexNormals;
+        numVertices          = 0;
+        numVertexColors      = 0;
+        numVertexConfidences = 0;
+        numVertexIntensities = 0;
+        numVertexNormals     = 0;
+        vertices             = 0;
+        vertexColors         = 0;
+        vertexConfidence     = 0;
+        vertexIntensity      = 0;
+        vertexNormals        = 0;
     }
 
     ply_close( ply );
+
+
+    // Save buffers in model
+    PointBuffer* pc = 0;
+    MeshBuffer* mesh = 0;
+    if(points)
+    {
+        pc = new PointBuffer;
+        pc->setPointArray(points, numPoints);
+        pc->setPointColorArray(pointColors, numPointColors);
+        pc->setPointIntensityArray(pointIntensities, numPointIntensities);
+        pc->setPointConfidenceArray(pointConfidences, numPointConfidence);
+    }
+
+    if(vertices)
+    {
+        mesh = new MeshBuffer;
+        mesh->setVertexArray(vertices, numVertices);
+        mesh->setVertexColorArray(vertexColors, numVertexColors);
+        mesh->setVertexIntensityArray(vertexIntensity, numVertexIntensities);
+        mesh->setVertexNormalArray(vertexNormals, numVertexNormals);
+        mesh->setVertexConfidenceArray(vertexConfidence, numVertexConfidences);
+        mesh->setFaceArray(faceIndices, numFaces);
+    }
+
+    Model* m = new Model;
+    m->m_mesh = mesh;
+    m->m_pointCloud = pc;
+    return m;
 
 }
 

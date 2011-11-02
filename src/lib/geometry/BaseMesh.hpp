@@ -27,7 +27,7 @@
 #ifndef BASEMESH_H_
 #define BASEMESH_H_
 
-#include "io/MeshLoader.hpp"
+#include "io/Model.hpp"
 
 namespace lssr {
 
@@ -83,49 +83,22 @@ public:
 	 */
 	virtual void save(string filename);
 
+	/**
+	 * @brief Creates a buffered mesh from the given file.
+	 *
+	 * @param filename
+	 */
+	virtual void load(string filename);
 
-	MeshLoader* getMeshLoader();
+
+	MeshBuffer* meshBuffer() { return m_meshBuffer;}
 
 protected:
 
 	/// True if mesh is finalized
 	bool			m_finalized;
 
-	/// The mesh's vertex buffer
-	float*			m_vertexBuffer;
-
-	/// The vertex normals
-	float*			m_normalBuffer;
-
-	/// The vertex colors
-	uchar*			m_colorBuffer;
-
-	/// The texture coordinates
-	float*			m_textureCoordBuffer;
-
-	/// The texture indices
-	uint*			m_textureIndexBuffer;
-
-	/// The mesh's index buffer
-	uint*			m_indexBuffer;
-
-	/// The mesh's texture numbers
-	uint*			m_textureBuffer;
-
-	/// The sizes of not tesselated regions
-	uint*			m_regionSizeBuffer;
-
-	/// Number of not tesselated regions
-	uint			m_nRegions;
-
-	/// The number of vertices in the mesh
-	uint			m_nVertices;
-
-	/// The number of the mesh's texture numbers
-	uint			m_nTextures;
-
-	/// The number of face in the mesh
-	uint 			m_nFaces;
+	MeshBuffer*   m_meshBuffer;
 };
 }
 

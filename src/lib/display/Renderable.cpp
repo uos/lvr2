@@ -51,8 +51,7 @@ Renderable::Renderable()
 
 	m_boundingBox = new BoundingBox<Vertex<float> >;
 
-	m_meshLoader = 0;
-	m_pointLoader = 0;
+	m_model = 0;
 
 	computeMatrix();
 	//compileAxesList();
@@ -72,8 +71,7 @@ Renderable::Renderable(Matrix4<float> m, string n)
     m_scaleFactor       = 1.0f;
     m_boundingBox       = 0;
 
-    m_meshLoader = 0;
-    m_pointLoader = 0;
+    m_model = 0;
 
 	m_showAxes          = false;
 	m_active            = false;
@@ -104,8 +102,7 @@ Renderable::Renderable(const Renderable& other)
 
 	m_boundingBox           = other.m_boundingBox;
 
-	m_meshLoader            = other.m_meshLoader;
-	m_pointLoader           = other.m_pointLoader;
+	m_model = other.m_model;
 
 	computeMatrix();
 	compileAxesList();
@@ -132,8 +129,7 @@ Renderable::Renderable(string n)
 
 	m_boundingBox           = 0;
 
-	m_pointLoader           = 0;
-	m_meshLoader            = 0;
+	m_model = 0;
 
 	computeMatrix();
 	compileAxesList();

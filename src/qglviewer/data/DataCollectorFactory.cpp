@@ -31,20 +31,20 @@
 #include "display/PointCloud.hpp"
 #include "display/MultiPointCloud.hpp"
 
-#include "io/MeshLoader.hpp"
-#include "io/PointLoader.hpp"
+#include "io/Model.hpp"
 
 #include "../widgets/PointCloudTreeWidgetItem.h"
 #include "../widgets/TriangleMeshTreeWidgetItem.h"
 #include "../widgets/MultiPointCloudTreeWidgetItem.h"
 
-#include "io/IOFactory.hpp"
+#include "io/ModelFactory.hpp"
 
 #include <boost/filesystem.hpp>
 #include <boost/version.hpp>
 
-using lssr::MeshLoader;
-using lssr::PointLoader;
+using lssr::Model;
+using lssr::MeshBuffer;
+using lssr::PointBuffer;
 
 DataCollectorFactory::DataCollectorFactory() {}
 
@@ -57,59 +57,67 @@ void DataCollectorFactory::create(string filename)
 	string name = selectedFile.filename().c_str();
 
 	// Create a factory rto parse given file and extract loaders
-	lssr::IOFactory io(filename);
-	MeshLoader*   mesh_loader  = io.getMeshLoader();
-	PointLoader*  point_loader = io.getPointLoader();
+	lssr::ModelFactory io;
+	Model* model = io.readModel(filename);
 
-	if(mesh_loader)
+	cout << "Model: " << model << endl;
+
+	if(model)
 	{
-	    lssr::StaticMesh* mesh = new lssr::StaticMesh(*mesh_loader);
-	    TriangleMeshTreeWidgetItem* item = new TriangleMeshTreeWidgetItem(TriangleMeshItem);
 
-	    int modes = 0;
-	    modes |= Mesh;
+	    MeshBuffer*           mesh_buffer  = model->m_mesh;
+	    PointBuffer*     point_buffer = model->m_pointCloud;
 
-	    if(mesh->getNormals())
+	    if(mesh_buffer)
 	    {
-	        modes |= VertexNormals;
-	    }
-        item->setSupportedRenderModes(modes);
-	    item->setViewCentering(false);
-	    item->setName(name);
-	    item->setRenderable(mesh);
-	    item->setNumFaces(mesh->getNumberOfFaces());
+	        lssr::StaticMesh* mesh = new lssr::StaticMesh(*model);
+	        TriangleMeshTreeWidgetItem* item = new TriangleMeshTreeWidgetItem(TriangleMeshItem);
 
-	    Static3DDataCollector* dataCollector = new Static3DDataCollector(mesh, name, item);
-
-	    Q_EMIT dataCollectorCreated( dataCollector );
-	}
-
-	if(point_loader)
-	{
-	    if(point_loader->getNumPoints() > 0)
-	    {
-	        // Check for multi point object
-	        PointCloud* pc = new PointCloud(*point_loader);
-	        PointCloudTreeWidgetItem* item = new PointCloudTreeWidgetItem(PointCloudItem);
-
-	        // Setup supported render modes
 	        int modes = 0;
-	        size_t n_pn;
-	        modes |= Points;
-	        if(point_loader->getPointNormalArray(n_pn))
-	        {
-	            modes |= PointNormals;
-	        }
+	        modes |= Mesh;
 
+	        if(mesh->getNormals())
+	        {
+	            modes |= VertexNormals;
+	        }
 	        item->setSupportedRenderModes(modes);
 	        item->setViewCentering(false);
 	        item->setName(name);
-	        item->setNumPoints(pc->m_points.size());
-	        item->setRenderable(pc);
+	        item->setRenderable(mesh);
+	        item->setNumFaces(mesh->getNumberOfFaces());
 
-	        Static3DDataCollector* dataCollector = new Static3DDataCollector(pc, name, item);
+	        Static3DDataCollector* dataCollector = new Static3DDataCollector(mesh, name, item);
+
 	        Q_EMIT dataCollectorCreated( dataCollector );
+	    }
 
+	    if(point_buffer)
+	    {
+	        if(point_buffer->getNumPoints() > 0)
+	        {
+	            // Check for multi point object
+	            PointCloud* pc = new PointCloud(*model);
+	            PointCloudTreeWidgetItem* item = new PointCloudTreeWidgetItem(PointCloudItem);
+
+	            // Setup supported render modes
+	            int modes = 0;
+	            size_t n_pn;
+	            modes |= Points;
+	            if(point_buffer->getPointNormalArray(n_pn))
+	            {
+	                modes |= PointNormals;
+	            }
+
+	            item->setSupportedRenderModes(modes);
+	            item->setViewCentering(false);
+	            item->setName(name);
+	            item->setNumPoints(pc->m_points.size());
+	            item->setRenderable(pc);
+
+	            Static3DDataCollector* dataCollector = new Static3DDataCollector(pc, name, item);
+	            Q_EMIT dataCollectorCreated( dataCollector );
+
+	        }
 	    }
 	}
 

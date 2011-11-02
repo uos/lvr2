@@ -34,8 +34,7 @@
 #define __PLY_IO_H__
 
 #include "BaseIO.hpp"
-#include "MeshLoader.hpp"
-#include "PointLoader.hpp"
+
 #include <rply.h>
 #include <stdint.h>
 #include <cstdio>
@@ -88,13 +87,15 @@ ELEMENT face
    PROPERTY   vertex_index (LIST uchar int)  <<  [only read]
 \endverbatim
  */
-class PLYIO : public BaseIO, public MeshLoader,  public PointLoader
+class PLYIO : public BaseIO
 {
     public:
         /**
          * \brief Constructor.
          **/
-        PLYIO();
+        PLYIO() : m_model(0) {};
+
+        ~PLYIO() {}
 
 
         /**
@@ -122,7 +123,7 @@ class PLYIO : public BaseIO, public MeshLoader,  public PointLoader
          *
          * \param filename  Filename of the output file.
          **/
-        void save( string filename );
+        void save( Model* m, string filename );
 
 
         /**
@@ -138,7 +139,7 @@ class PLYIO : public BaseIO, public MeshLoader,  public PointLoader
          * \param readNormals     Specifies if normals should be read.
          * \param readFaces       Specifies if faces should be read.
          **/
-        void read( string filename, bool readColor, bool readConfidence = true, 
+        Model* read( string filename, bool readColor, bool readConfidence = true,
                 bool readIntensity = true, bool readNormals = true, 
                 bool readFaces = true );
 
@@ -150,7 +151,7 @@ class PLYIO : public BaseIO, public MeshLoader,  public PointLoader
          *
          * \param filename        Filename of file to read.
          **/
-        void read( string filename );
+        Model* read( string filename );
 
 
         /**
@@ -174,10 +175,8 @@ class PLYIO : public BaseIO, public MeshLoader,  public PointLoader
         static int readFaceCb( p_ply_argument argument );
 
 
-        /**
-         * \brief Destructor.
-         **/
-        virtual ~PLYIO();
+    private:
+        Model* m_model;
 
 };
 
