@@ -102,7 +102,7 @@ void TransformationDialog::reset()
 {
     // Reset values
     m_rotX = m_rotY = m_rotZ = 0.0;
-    m_posX = m_posX = m_posZ = 0.0;
+    m_posX = m_posY = m_posZ = 0.0;
 
     // Reset sliders
     m_dialog->sliderXRot->setValue(0);
@@ -134,7 +134,6 @@ void TransformationDialog::transformLocal()
 
 void TransformationDialog::rotationXEntered(double value)
 {
-    double step = m_rotX - value;
     m_rotX = value;
 
     // Update slider
@@ -146,7 +145,6 @@ void TransformationDialog::rotationXEntered(double value)
 
 void TransformationDialog::rotationYEntered(double value)
 {
-    double step = m_rotY - value;
     m_rotY = value;
 
     // Update slider
@@ -158,7 +156,6 @@ void TransformationDialog::rotationYEntered(double value)
 
 void TransformationDialog::rotationZEntered(double value)
 {
-    double step = m_rotZ - value;
     m_rotZ = value;
 
     // Update slider
@@ -196,7 +193,6 @@ void TransformationDialog::rotationXSlided(int value)
 {
     // Calc new value
     double new_rot = (double)value / 100000.0;
-    double step = m_rotX - new_rot;
     m_rotX = new_rot;
 
     // Update spin box
@@ -208,7 +204,6 @@ void TransformationDialog::rotationYSlided(int value)
 {
     // Calc new value
     double new_rot = (double)value / 100000.0;
-    double step = m_rotY - new_rot;
     m_rotY = new_rot;
 
     // Update spin box
@@ -219,7 +214,6 @@ void TransformationDialog::rotationZSlided(int value)
 {
     // Calc new value
     double new_rot = (double)value / 100000.0;
-    double step = m_rotZ - new_rot;
     m_rotZ = new_rot;
 
     // Update spin box

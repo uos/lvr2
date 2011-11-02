@@ -185,15 +185,15 @@ void ViewerApplication::createMeshFromPointcloud()
 
                     // Get optimization parameters
                     bool optimize_planes = mesh_ui->checkBoxOptimizePlanes->isChecked();
-                    bool fill_holes      = mesh_ui->checkBoxFillHoles->isChecked();
-                    bool rds             = mesh_ui->checkBoxRDA->isChecked();
-                    bool small_regions   = mesh_ui->checkBoxRemoveRegions->isChecked();
+//                  bool fill_holes      = mesh_ui->checkBoxFillHoles->isChecked();
+//                  bool rds             = mesh_ui->checkBoxRDA->isChecked();
+//                  bool small_regions   = mesh_ui->checkBoxRemoveRegions->isChecked();
                     bool retesselate     = mesh_ui->checkBoxRetesselate->isChecked();
                     bool texture         = mesh_ui->checkBoxGenerateTextures->isChecked();
                     bool color_regions   = mesh_ui->checkBoxColorRegions->isChecked();
 
                     int  num_plane_its   = mesh_ui->spinBoxPlaneIterations->value();
-                    int  num_rda         = mesh_ui->spinBoxRDA->value();
+//                  int  num_rda         = mesh_ui->spinBoxRDA->value();
                     int  num_rm_regions  = mesh_ui->spinBoxRemoveRegions->value();
 
                     float min_plane_size = mesh_ui->spinBoxMinPlaneSize->value();
@@ -349,7 +349,8 @@ void ViewerApplication::transformObject()
         if(item->type() > 1000)
         {
             CustomTreeWidgetItem* c_item = static_cast<CustomTreeWidgetItem*>(item);
-            TransformationDialog* d = new TransformationDialog(m_viewer, c_item->renderable());
+//            TransformationDialog* d = 
+			new TransformationDialog(m_viewer, c_item->renderable());
         }
     }
 }
@@ -532,9 +533,9 @@ void ViewerApplication::treeSelectionChanged()
 
 void ViewerApplication::updateToolbarActions(CustomTreeWidgetItem* item)
 {
-    bool point_support = item->supportsMode(Points);
-    bool pn_support = item->supportsMode(PointNormals);
-    bool vn_support = item->supportsMode(VertexNormals);
+//    bool point_support = item->supportsMode(Points);
+//    bool pn_support = item->supportsMode(PointNormals);
+//    bool vn_support = item->supportsMode(VertexNormals);
     bool mesh_support = item->supportsMode(Mesh);
 
     if(mesh_support)
