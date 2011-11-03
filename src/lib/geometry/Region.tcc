@@ -16,7 +16,13 @@
  * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA
  */
 
-
+ /*
+ * Region.tcc
+ *
+ *  @date 18.08.2011
+ *  @author Kim Rinnewitz (krinnewitz@uos.de)
+ *  @author Sven Schalk (sschalk@uos.de)
+ */
  
 namespace lssr
 {
@@ -24,7 +30,7 @@ namespace lssr
 template<typename VertexT, typename NormalT>
 Region<VertexT, NormalT>::Region(int regionNumber)
 {
-	this->m_inPlane = false;
+	this->m_inPlane      = false;
 	this->m_regionNumber = regionNumber;
 }
 
@@ -78,8 +84,9 @@ vector<vector<HalfEdgeVertex<VertexT, NormalT>* > > Region<VertexT, NormalT>::ge
 								&& current->end->out[i]->face && current->end->out[i]->face->m_region == this
 								&& (current->end->out[i]->pair->face == 0 
 										|| ( current->end->out[i]->pair->face  && current->end->out[i]->pair->face->m_region != this )))
-
+						{
 							next = current->end->out[i];
+						}
 					}
 
 					if(next)
@@ -117,9 +124,9 @@ vector<vector<HalfEdgeVertex<VertexT, NormalT>* > > Region<VertexT, NormalT>::ge
 	float zmax = -FLT_MAX;
 
 	int outer = -1;
-	for(size_t c=0; c<result.size(); c++)
+	for(size_t c = 0; c < result.size(); c++)
 	{
-		for(size_t v=0; v<result[c].size(); v++)
+		for(size_t v = 0; v < result[c].size(); v++)
 		{
 			if(result[c][v]->m_position.x > xmax)
 			{
@@ -162,15 +169,15 @@ NormalT Region<VertexT, NormalT>::calcNormal()
 	{
 		result = m_faces[i++]->getFaceNormal();
 	}
-	while ((result.length() == 0 || isnan(result.length())) && i<m_faces.size());
+	while ((result.length() == 0 || isnan(result.length())) && i < m_faces.size());
 
 	result.normalize();
 
 	//Check if this normal is representative for most of the others / it is not a flickering normal
-	int fit=0;
-	int nofit=0;
+	int fit   = 0;
+	int nofit = 0;
 
-	for(size_t i=0; i<m_faces.size(); i++)
+	for(size_t i = 0; i < m_faces.size(); i++)
 	{
 		NormalT comp = m_faces[i]->getFaceNormal();
 		comp.normalize();
@@ -179,9 +186,11 @@ NormalT Region<VertexT, NormalT>::calcNormal()
 			fit++;
 		}
 		else
-		if(comp == (result * -1))
 		{
-			nofit++;
+			if(comp == (result * -1))
+			{
+				nofit++;
+			}
 		}
 	}
 
@@ -191,7 +200,7 @@ NormalT Region<VertexT, NormalT>::calcNormal()
 	}
 	else
 	{
-		return result*-1;
+		return result * -1;
 	}
 }
 
@@ -215,9 +224,9 @@ void Region<VertexT, NormalT>::regressionPlane()
     NormalT bestNorm;
 
     float bestdist = FLT_MAX;
-    float dist = 0;
+    float dist     = 0;
 
-    int iterations = 0;
+    int iterations              = 0;
     int nonimproving_iterations = 0;
 
     while((nonimproving_iterations < 30) && (iterations < 200))
@@ -237,7 +246,7 @@ void Region<VertexT, NormalT>::regressionPlane()
 
         //compute error to at most 50 other randomly chosen points
         dist = 0;
-        for(int i=0; i < min(50, (int)m_faces.size()); i++)
+        for(int i = 0; i < min(50, (int)m_faces.size()); i++)
         {
             VertexT refpoint = (*m_faces[rand() % m_faces.size()])(0)->m_position;
             dist += fabs(refpoint * n0 - point1 * n0) / min(50, (int)m_faces.size());
@@ -254,19 +263,23 @@ void Region<VertexT, NormalT>::regressionPlane()
             nonimproving_iterations = 0;
         }
         else
+        {
             nonimproving_iterations++;
+        }
 
         iterations++;
     }
 
     //drag points into the regression plane
-    for(size_t i=0; i<m_faces.size(); i++)
+    for(size_t i = 0; i < m_faces.size(); i++)
     {
-        for(int p=0; p<3; p++)
+        for(int p = 0; p < 3; p++)
         {
             float v = ((bestpoint - (*m_faces[i])(p)->m_position) * bestNorm) / (bestNorm * bestNorm);
             if(v != 0)
+            {
                 (*m_faces[i])(p)->m_position = (*m_faces[i])(p)->m_position + (VertexT)bestNorm * v;
+            }
         }
     }
 
@@ -279,18 +292,22 @@ template<typename VertexT, typename NormalT>
 bool Region<VertexT, NormalT>::detectFlicker(HFace* f)
 {
 	if(this->m_inPlane)
-		if ((VertexT(f->getFaceNormal())+VertexT(this->m_normal)).length() < 1.0)
+	{
+		if ((VertexT(f->getFaceNormal()) + VertexT(this->m_normal)).length() < 1.0)
 		{
 			return true;
 		}
+	}
 	return false;
 }
 
 template<typename VertexT, typename NormalT>
 Region<VertexT, NormalT>::~Region()
 {
-	for (size_t i = 0; i<m_faces.size(); i++)
+	for (size_t i = 0; i < m_faces.size(); i++)
+	{
 		m_faces[i]->m_region = 0;
+	}
 	m_faces.clear();
 }
 

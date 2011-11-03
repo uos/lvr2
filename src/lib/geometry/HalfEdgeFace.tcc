@@ -18,11 +18,14 @@
 
 
   /*
- * HalfEdgeFace.cpp
- *
- *  Created on: 03.12.2008
- *      Author: Thomas Wiemann
+ * HalfEdgeFace.tcc
+  *
+ *  @date 03.12.2008
+ *  @author Kim Rinnewitz (krinnewitz@uos.de)
+ *  @author Sven Schalk (sschalk@uos.de)
+ *  @author Thomas Wiemann (twiemann@uos.de)
  */
+
 #include "HalfEdgeVertex.hpp"
 
 
@@ -36,16 +39,15 @@ namespace lssr
 template<typename VertexT, typename NormalT>
 HalfEdgeFace<VertexT, NormalT>::HalfEdgeFace(const HalfEdgeFace<VertexT, NormalT> &o){
 	m_edge = o.m_edge;
-
-	//for(size_t i = 0; i < o.m_indices.size(); i++) m_indices.push_back(o.m_indices[i]);
-	//for(int i = 0; i < 3; i++) m_index[i] = o.m_index[i];
 }
 
 template<typename VertexT, typename NormalT>
 HalfEdgeFace<VertexT, NormalT>::~HalfEdgeFace()
 {
 	if(m_region != 0)
+	{
 		m_region->removeFace(this);
+	}
 }
 
 template<typename VertexT, typename NormalT>
@@ -71,7 +73,8 @@ void HalfEdgeFace<VertexT, NormalT>::calc_normal(){
 	HalfEdge<HalfEdgeVertex<VertexT, NormalT>, HalfEdgeFace<VertexT, NormalT> >* current_edge = m_edge;
 
 	int c = 0;
-	while(current_edge->end != start){
+	while(current_edge->end != start)
+	{
 		vertices[c] = current_edge->start->m_position;
 		current_edge = current_edge->next;
 		c++;
@@ -91,7 +94,8 @@ void HalfEdgeFace<VertexT, NormalT>::interpolate_normal(){
 	HalfEdge<NormalT, HalfEdgeFace<VertexT, NormalT> >* current_edge = m_edge;
 
 	int c = 0;
-	while(current_edge->end != start){
+	while(current_edge->end != start)
+	{
 		m_normal += current_edge->start->normal;
 		current_edge = current_edge->next;
 		c++;
@@ -109,9 +113,9 @@ void HalfEdgeFace<VertexT, NormalT>::getVertexNormals(vector<NormalT> &n){
 
 	HalfEdgeVertex<VertexT, NormalT>* start = m_edge->start;
 	HalfEdge<VertexT, HalfEdgeFace<VertexT, NormalT> >* current_edge = m_edge;
-	while(current_edge->end != start){
+	while(current_edge->end != start)
+	{
 		n.push_back(current_edge->end->normal);
-		//normal += current_edge->start->normal;
 		current_edge = current_edge->next;
 	}
 
@@ -121,12 +125,13 @@ template<typename VertexT, typename NormalT>
 void HalfEdgeFace<VertexT, NormalT>::getVertices(vector<VertexT> &v){
 
 	HalfEdgeVertex<VertexT, NormalT>* start = m_edge->start;
-	HalfEdge<HalfEdgeVertex<VertexT, NormalT>, HalfEdgeFace<VertexT, NormalT> >* current_edge = m_edge;		//LASVEGAS: changed type
-	do{
-		v.push_back(current_edge->end->m_position);		//LASVEGAS: changed position to m_position
+	HalfEdge<HalfEdgeVertex<VertexT, NormalT>, HalfEdgeFace<VertexT, NormalT> >* current_edge = m_edge;
+	do
+	{
+		v.push_back(current_edge->end->m_position);
 		current_edge = current_edge->next;
 	} while(current_edge->end != start);
-	v.push_back(current_edge->end->m_position);			//LASVEGAS: changed position to m_position
+	v.push_back(current_edge->end->m_position);
 }
 
 template<typename VertexT, typename NormalT>
@@ -136,11 +141,14 @@ void HalfEdgeFace<VertexT, NormalT>::getAdjacentFaces(vector<HalfEdgeFace<Vertex
 	HalfEdge<VertexT, HalfEdgeFace<VertexT, NormalT> >* pair;
 	HalfEdgeFace<VertexT, NormalT>* neighbor;
 
-	do{
+	do
+	{
 		pair = current->pair;
-		if(pair != 0){
+		if(pair != 0)
+		{
 			neighbor = pair->face;
-			if(neighbor != 0){
+			if(neighbor != 0)
+			{
 				adj.push_back(neighbor);
 			}
 		}
@@ -151,10 +159,6 @@ void HalfEdgeFace<VertexT, NormalT>::getAdjacentFaces(vector<HalfEdgeFace<Vertex
 
 template<typename VertexT, typename NormalT>
 NormalT HalfEdgeFace<VertexT, NormalT>::getFaceNormal(){
-
-	//VertexT vertices[3];
-	//HalfEdgeVertex<VertexT, NormalT>* start = m_edge->start;
-	//HalfEdge<HalfEdgeVertex<VertexT, NormalT>, HalfEdgeFace<VertexT, NormalT> >* current_edge = m_edge;
 
 	VertexT p0 = (*this)(0)->m_position;
 	VertexT p1 = (*this)(1)->m_position;
@@ -170,8 +174,10 @@ template<typename VertexT, typename NormalT>
 NormalT HalfEdgeFace<VertexT, NormalT>::getInterpolatedNormal(){
 	NormalT return_normal = NormalT();
 
-	for (int i = 0; i<3; i++)
+	for (int i = 0; i < 3; i++)
+	{
 		return_normal += (*this)(i)->m_normal;
+	}
 
 	return_normal /= 3.0f;
 
@@ -186,15 +192,19 @@ VertexT HalfEdgeFace<VertexT, NormalT>::getCentroid(){
 
 	VertexT centroid;
 
-	for(size_t i = 0; i < vert.size(); i++){
+	for(size_t i = 0; i < vert.size(); i++)
+	{
 		centroid += vert[i];
 	}
 
-	if(vert.size() > 0){
+	if(vert.size() > 0)
+	{
 		centroid.x = centroid.x / vert.size();
 		centroid.y = centroid.y / vert.size();
 		centroid.z = centroid.z / vert.size();
-	} else {
+	}
+	else
+	{
 		cout << "Warning: HalfEdgeFace::getCentroid: No vertices found." << endl;
 		return VertexT();
 	}
@@ -205,7 +215,8 @@ VertexT HalfEdgeFace<VertexT, NormalT>::getCentroid(){
 template<typename VertexT, typename NormalT>
 HalfEdge<HalfEdgeVertex<VertexT, NormalT>, HalfEdgeFace<VertexT, NormalT> >* 
 HalfEdgeFace<VertexT, NormalT>::operator[](const int &index) const{
-	switch(index){
+	switch(index)
+	{
 	case 0:
 		return this->m_edge;
 	case 1:
@@ -219,7 +230,8 @@ HalfEdgeFace<VertexT, NormalT>::operator[](const int &index) const{
 template<typename VertexT, typename NormalT>
 HalfEdgeVertex<VertexT, NormalT>* 
 HalfEdgeFace<VertexT, NormalT>::operator()(const int &index) const{
-	switch(index){
+	switch(index)
+	{
 	case 0:
 		return this->m_edge->end;
 	case 1:

@@ -152,7 +152,6 @@ void Tesselator<VertexT, NormalT>::getFinalizedTriangles(float **vertexBuffer,
     init();
     tesselate(vectorBorderPoints);
 
-    int numFaces = m_triangles.size() / 3;
     int numVertices = m_triangles.size();
 
     // allocate new memory.
@@ -171,14 +170,12 @@ void Tesselator<VertexT, NormalT>::getFinalizedTriangles(float **vertexBuffer,
     }
 
 
-    int usedVertices=0, usedNormals=0, usedColors=0, usedFaces=0;
-    int maxColorBufferValue=0;
+    int usedVertices=0, usedFaces=0;
 
     // keep track of already used vertices to avoid floats.t
     vector<Vertex<float> >::iterator triangles    = m_triangles.begin();
     vector<Vertex<float> >::iterator trianglesEnd = m_triangles.end();
 
-    int count=0;
     int posArr[3]; posArr[0]=-1; posArr[1]=-1; posArr[2]=-1;
     // add all triangles and so faces to our buffers and keep track of all used parameters
     int m=0;
@@ -233,8 +230,8 @@ void Tesselator<VertexT, NormalT>::getFinalizedTriangles(float **vertexBuffer,
     {
         // Copy all that stuff and resize array -- this should be improved somehow! TODO:!
         float *newVertexBuffer = new float[usedVertices*3];
-        float *newNormalBuffer = new float[usedVertices*3];
-        float *newColorBuffer  = new float[usedVertices*3];
+//        float *newNormalBuffer = new float[usedVertices*3];
+//        float *newColorBuffer  = new float[usedVertices*3];
         unsigned int    *newIndexBuffer  = new unsigned int[usedFaces*3];
 
         // use memcopy?
@@ -270,7 +267,6 @@ void Tesselator<VertexT, NormalT>::tesselatorCombineVertices(GLdouble coords[3],
 {
 
     GLdouble *vertex = (GLdouble*) malloc(6*sizeof(GLdouble));
-    GLdouble *ptr = coords;
 
     if(!vertex)
     {
@@ -368,7 +364,7 @@ void Tesselator<VertexT, NormalT>::tesselate(vector<vector<HVertex*> > vectorBor
             continue; 
         }
 
-        HVertex* contourBegin = borderPoints.back();
+///        HVertex* contourBegin = borderPoints.back();
 
         // Begin Contour
         gluTessBeginContour(m_tesselator);

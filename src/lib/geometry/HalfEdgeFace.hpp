@@ -18,10 +18,12 @@
 
 
  /*
- * HalfEdgeFace.h
+ * HalfEdgeFace.hpp
  *
- *  Created on: 03.12.2008
- *      Author: Thomas Wiemann
+ *  @date 03.12.2008
+ *  @author Kim Rinnewitz (krinnewitz@uos.de)
+ *  @author Sven Schalk (sschalk@uos.de)
+ *  @author Thomas Wiemann (twiemann@uos.de)
  */
 
 #ifndef HALFEDGEFACE_H_
@@ -144,8 +146,10 @@ public:
 	/// The index of the face's texture
 	int 							m_texture_index;
 
+	/// The region of the face
 	Region<VertexT, NormalT>*		m_region;
 
+	/// used for region growing
 	bool							m_used;
 
 	/// The number of the face in the half edge mesh (convenience only, will be removed soon)

@@ -20,8 +20,9 @@
  /*
  * Texture.hpp
  *
- *  Created on: 08.09.2011
- *      Author: pg2011
+ *  @date 08.09.2011
+ *  @author Kim Rinnewitz (krinnewitz@uos.de)
+ *  @author Sven Schalk (sschalk@uos.de)
  */
 
 #ifndef TEXTURE_HPP_
@@ -84,19 +85,20 @@ private:
 		unsigned char r, g, b;
 	};
 
+	///The region belonging to the texture
 	Region<VertexT, NormalT>* m_region;
 
 	///The texture data
 	ColorT** m_data;
 
 	///The coordinate system of the texture plane
-	NormalT v1, v2;
+	NormalT best_v1, best_v2;
 
 	///A point in the texture plane
 	VertexT p;
 
 	///The bounding box of the texture plane
-	float a_min, b_min, a_max, b_max;
+	float best_a_min, best_b_min, best_a_max, best_b_max;
 
 	///The dimensions of the texture
 	int m_sizeX, m_sizeY;

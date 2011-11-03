@@ -20,8 +20,9 @@
  /*
  * Texture.tcc
  *
- *  Created on: 08.09.2011
- *      Author: pg2011
+ *  @date 08.09.2011
+ *  @author Kim Rinnewitz (krinnewitz@uos.de)
+ *  @author Sven Schalk (sschalk@uos.de)
  */
 
 namespace lssr {
@@ -30,7 +31,12 @@ template<typename VertexT, typename NormalT>
 Texture<VertexT, NormalT>::Texture(PointCloudManager<VertexT, NormalT>* pm, Region<VertexT, NormalT>* region, vector<vector<HVertex*> > contours)
 {
 	this->m_region = region;
-	this->m_data = 0;
+	this->m_data   = 0;
+
+	//determines the texture resolution
+	m_pixelSize = 1;
+
+	int minArea = INT_MAX;
 
 	if(this->m_region->m_inPlane)
 	{
@@ -38,58 +44,83 @@ Texture<VertexT, NormalT>::Texture(PointCloudManager<VertexT, NormalT>* pm, Regi
 		{
 			vector<HVertex*> HOuter_contour = contours[0];
 			NormalT n = m_region->m_normal;
+
+			//store a stuetzvector for the bounding box
 			p = HOuter_contour[0]->m_position;
-			v1 = HOuter_contour[1]->m_position - HOuter_contour[0]->m_position;
-			v2 = v1.cross(n);
-			a_min = FLT_MAX; a_max = FLT_MIN; b_min = FLT_MAX; b_max = FLT_MIN;
 
-			for(size_t c = 0; c < HOuter_contour.size(); c++)
+			//calculate a vector in the plane of the bounding box
+			NormalT v1 = HOuter_contour[1]->m_position - HOuter_contour[0]->m_position, v2;
+
+			//determines the resolution of iterative improvement steps
+			float delta = M_PI / 90;
+
+			for(float theta = 0; theta < M_PI; theta += delta)
 			{
-				int r = 0;
-				int s = 0;
-				float denom = 0.01;
+				//rotate the bounding box
+				v1 = v1 * cos(theta) + v2 * sin(theta);
+				v2 = v1.cross(n);
 
-				for(int t = 0; t<3; t++)
+				//calculate the bounding box
+				float a_min = FLT_MAX, a_max = FLT_MIN, b_min = FLT_MAX, b_max = FLT_MIN;
+				for(size_t c = 0; c < HOuter_contour.size(); c++)
 				{
-					for(int u = 0; u<3; u++)
+					int r = 0;
+					int s = 0;
+					float denom = 0.01;
+					for(int t = 0; t < 3; t++)
 					{
-						if(fabs(v1[t] * v2[u] - v1[u] * v2[t]) > fabs(denom))
+						for(int u = 0; u < 3; u++)
 						{
-							denom = v1[t] * v2[u] - v1[u] * v2[t];
-							r = t;
-							s = u;
+							if(fabs(v1[t] * v2[u] - v1[u] * v2[t]) > fabs(denom))
+							{
+								denom = v1[t] * v2[u] - v1[u] * v2[t];
+								r = t;
+								s = u;
+							}
 						}
 					}
+					float a = ((HOuter_contour[c]->m_position[r] - p[r]) * v2[s] - (HOuter_contour[c]->m_position[s] - p[s]) * v2[r]) / denom;
+					float b = ((HOuter_contour[c]->m_position[s] - p[s]) * v1[r] - (HOuter_contour[c]->m_position[r] - p[r]) * v1[s]) / denom;
+					if (a > a_max) a_max = a;
+					if (a < a_min) a_min = a;
+					if (b > b_max) b_max = b;
+					if (b < b_min) b_min = b;
 				}
+				int x = ceil((a_max - a_min) / m_pixelSize);
+				int y = ceil((b_max - b_min) / m_pixelSize);
 
-				float a = ((HOuter_contour[c]->m_position[r] - p[r]) * v2[s] - (HOuter_contour[c]->m_position[s] - p[s]) * v2[r]) / denom;
-				float b = ((HOuter_contour[c]->m_position[s] - p[s]) * v1[r] - (HOuter_contour[c]->m_position[r] - p[r]) * v1[s]) / denom;
-
-
-				if (a > a_max) a_max = a;
-				if (a < a_min) a_min = a;
-				if (b > b_max) b_max = b;
-				if (b < b_min) b_min = b;
+				//iterative improvement of the area
+				if(x * y < minArea)
+				{
+					minArea = x * y;
+					best_a_min = a_min;
+					best_a_max = a_max;
+					best_b_min = b_min;
+					best_b_max = b_max;
+					best_v1 = v1;
+					best_v2 = v2;
+				}
 			}
 
-			m_pixelSize = 1;
-			this->m_sizeX = ceil((a_max - a_min) / m_pixelSize);
-			this->m_sizeX = pow(2, ceil(log(this->m_sizeX)/log(2)));
-			this->m_sizeY = ceil((b_max - b_min) / m_pixelSize);
-			this->m_sizeY = pow(2, ceil(log(this->m_sizeY)/log(2)));
+			//calculate the texture size and round up to a size to base 2
+			this->m_sizeX = ceil((best_a_max - best_a_min) / m_pixelSize);
+			this->m_sizeX = pow(2, ceil(log(this->m_sizeX) / log(2)));
+			this->m_sizeY = ceil((best_b_max - best_b_min) / m_pixelSize);
+			this->m_sizeY = pow(2, ceil(log(this->m_sizeY) / log(2)));
 
 			m_data = new ColorT*[this->m_sizeY];
 
+			//walk through the bounding box and collect color information for each texel
 			for(int y = 0; y < this->m_sizeY; y++)
 			{
 				m_data[m_sizeY-y-1] = new ColorT[this->m_sizeX];
 				for(int x = 0; x < this->m_sizeX; x++)
 				{
-					if (y <= (b_max - b_min) / m_pixelSize  && x <= (a_max - a_min) / m_pixelSize)
+					if (y <= (best_b_max - best_b_min) / m_pixelSize  && x <= (best_a_max - best_a_min) / m_pixelSize)
 					{
 						vector<VertexT> cv;
 
-						VertexT current_position = p + v1 * (x * m_pixelSize + a_min - m_pixelSize/2.0) + v2 * (y * m_pixelSize + b_min - m_pixelSize/2.0);
+						VertexT current_position = p + best_v1 * (x * m_pixelSize + best_a_min - m_pixelSize / 2.0) + best_v2 * (y * m_pixelSize + best_b_min - m_pixelSize / 2.0);
 
 						int one = 1;
 						pm->getkClosestVertices(current_position, one, cv);
@@ -98,15 +129,15 @@ Texture<VertexT, NormalT>::Texture(PointCloudManager<VertexT, NormalT>* pm, Regi
 						currCol.r = cv[0].r;
 						currCol.g = cv[0].g;
 						currCol.b = cv[0].b;
-						m_data[m_sizeY-y-1][x] = currCol;
+						m_data[m_sizeY - y - 1][x] = currCol;
 					}
 					else
 					{
 						ColorT currCol;
-						currCol.r =0;
+						currCol.r = 0;
 						currCol.g = 0;
 						currCol.b = 255;
-						m_data[m_sizeY-y-1][x] = currCol;
+						m_data[m_sizeY - y - 1][x] = currCol;
 					}
 
 				}
@@ -120,10 +151,10 @@ Texture<VertexT, NormalT>::Texture(PointCloudManager<VertexT, NormalT>* pm, Regi
 		this->m_sizeX = 1;
 		this->m_sizeY = 1;
 		m_data = new ColorT*[this->m_sizeY];
-		for (int y = 0; y<this->m_sizeY; y++)
+		for (int y = 0; y < this->m_sizeY; y++)
 		{
 			m_data[y] = new ColorT[this->m_sizeX];
-			memset(m_data[y],200,this->m_sizeX*sizeof(ColorT));
+			memset(m_data[y], 200, this->m_sizeX * sizeof(ColorT));
 		}
 	}
 }
@@ -131,9 +162,9 @@ Texture<VertexT, NormalT>::Texture(PointCloudManager<VertexT, NormalT>* pm, Regi
 template<typename VertexT, typename NormalT>
 void Texture<VertexT, NormalT>::textureCoords(VertexT v, float &x, float &y)
 {
-	 VertexT t =  v - ((v1 * a_min) + (v2 * b_min) + p);
-	 x = (v1 * (t * v1)).length()/m_pixelSize / m_sizeX;
-	 y = (v2 * (t * v2)).length()/m_pixelSize / m_sizeY;
+	 VertexT t =  v - ((best_v1 * best_a_min) + (best_v2 * best_b_min) + p);
+	 x = (best_v1 * (t * best_v1)).length() / m_pixelSize / m_sizeX;
+	 y = (best_v2 * (t * best_v2)).length() / m_pixelSize / m_sizeY;
 
 	 x = x > 1 ? 1 : x;
 	 x = x < 0 ? 0 : x;
@@ -151,8 +182,10 @@ void Texture<VertexT, NormalT>::save()
 
 template<typename VertexT, typename NormalT>
 Texture<VertexT, NormalT>::~Texture() {
-	for(int y = 0; y<m_sizeY; y++)
+	for(int y = 0; y < m_sizeY; y++)
+	{
 		delete m_data[y];
+	}
 	delete m_data;
 }
 

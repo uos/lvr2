@@ -61,6 +61,13 @@ PCLPointCloudManager<VertexT, NormalT>::PCLPointCloudManager(PointBuffer* loader
         m_pointCloud->points[i].z = z;
     }
 
+    size_t n = 0;
+    this->m_colors  = loader->getIndexedPointColorArray( n );
+    if ( n != this->m_numPoints ) {
+    	this->m_colors = 0;
+    }
+    //cout << cloud_normals->points.size() << endl;
+
 }
 
 template<typename VertexT, typename NormalT>

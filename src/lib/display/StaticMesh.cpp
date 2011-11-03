@@ -84,7 +84,9 @@ void StaticMesh::init(MeshBuffer* mesh)
         m_indices       = mesh->getFaceArray(m_numFaces);
 
         m_blackColors   = new unsigned char[3 * m_numVertices];
-        for(int i = 0; i < 3 * m_numVertices; i++) m_blackColors[i] = 0.0;
+        for ( size_t i = 0; i < 3 * m_numVertices; i++ ) {
+            m_blackColors[i] = 0.0;
+        }
 
 
         m_finalized     = true;
