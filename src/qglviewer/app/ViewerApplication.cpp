@@ -487,8 +487,6 @@ void ViewerApplication::dataCollectorAdded(DataCollector* d)
 
 void ViewerApplication::treeItemClicked(QTreeWidgetItem* item, int d)
 {
-    cout << "Clicked" << endl;
-
     // Center view on selected item if enabled
     if(item->type() > 1000)
     {
@@ -506,8 +504,6 @@ void ViewerApplication::treeItemClicked(QTreeWidgetItem* item, int d)
 
 void ViewerApplication::treeItemChanged(QTreeWidgetItem* item, int d)
 {
-    cout << "changed" << endl;
-
     if(item->type() > 1000)
     {
         CustomTreeWidgetItem* custom_item = static_cast<CustomTreeWidgetItem*>(item);
