@@ -466,6 +466,10 @@ void ViewerApplication::saveSelectedObject()
         if(item->type() > 1000)
         {
             CustomTreeWidgetItem* c_item = static_cast<CustomTreeWidgetItem*>(item);
+
+            lssr::Model* m = c_item->renderable()->model();
+            lssr::ModelFactory::saveModel(m, file_name);
+
         }
 
     }
