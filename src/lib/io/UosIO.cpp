@@ -52,8 +52,10 @@ namespace lssr
 {
 
 
-void UosIO::read(Model* model, string dir)
+Model* UosIO::read(string dir)
 {
+    Model* model = 0;
+
     size_t n = 0;
     boost::filesystem::path directory(dir);
     if(is_directory(directory))
@@ -156,7 +158,7 @@ void UosIO::read(Model* model, string dir)
             }
             else
             {
-                return;
+                return 0;
             }
         }
 
@@ -165,6 +167,8 @@ void UosIO::read(Model* model, string dir)
     {
         cout << timestamp << "UOSReader: " << dir << " is not a directory." << endl;
     }
+
+    return model;
 }
 
 
@@ -183,15 +187,14 @@ void UosIO::reduce(string dir, string target, int reduction)
     m_saveToDisk = true;
 
     // Read data and write reduced points
-    Model m;
-    read( &m, dir);
+    Model* m = read(dir);
 
     // Write reduced points...
     ///TODO: Implement writing...
 }
 
 
-void UosIO::readNewFormat(Model* model, string dir, int first, int last, size_t &n)
+void UosIO::readNewFormat(Model* &model, string dir, int first, int last, size_t &n)
 {
     list<Vertex<float> > allPoints;
     list<Vertex<int> > allColors;
@@ -466,7 +469,7 @@ indexPair UosIO::getScanRange( size_t num )
 }
 
 
-void UosIO::readOldFormat(Model* model, string dir, int first, int last, size_t &n)
+void UosIO::readOldFormat(Model* &model, string dir, int first, int last, size_t &n)
 {
     Matrix4<float> m_tf;
 

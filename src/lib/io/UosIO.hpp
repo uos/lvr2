@@ -61,7 +61,7 @@ namespace lssr
 
 typedef pair<size_t, size_t> indexPair;
 
-class UosIO
+class UosIO : public BaseIO
 {
 public:
 
@@ -77,7 +77,9 @@ public:
      * @param dir       A directory containing scans in UOS format.
      * @return          An indexed array of scan points
      */
-    void read(Model* m, string dir);
+    Model* read(string dir);
+
+    void save(Model* m, string filename) {};
 
     /**
      * @brief Defines the first scan to read
@@ -116,7 +118,7 @@ private:
      * @param last      The last scan to read
      * @return          All read data points
      */
-    void readNewFormat(Model* m, string dir, int first, int last, size_t &n);
+    void readNewFormat(Model* &m, string dir, int first, int last, size_t &n);
 
     /**
      * @brief Reads scans from \ref{first} to \ref{last} in old UOS format.
@@ -125,7 +127,7 @@ private:
      * @param last      The last scan to read
      * @return          All read data points
      */
-    void readOldFormat(Model* m, string dir, int first, int last, size_t &n);
+    void readOldFormat(Model* &m, string dir, int first, int last, size_t &n);
 
     /**
      * @brief Creates a transformation matrix from given frame file
