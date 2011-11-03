@@ -577,7 +577,22 @@ void ViewerApplication::updateToolbarActions(CustomTreeWidgetItem* item)
 
 void ViewerApplication::updateActionDock(CustomTreeWidgetItem* item)
 {
+       // Enable meshing for point clouds
        m_actionDockWidgetUi->buttonCreateMesh->setEnabled(item->supportsMode(Points));
+
+       // Don't allow deletion of sub point clouds from multi
+       // point cloud items
+       m_actionDockWidgetUi->buttonDelete->setEnabled(true);
+       if(item->type() == PointCloudItem)
+       {
+           if(item->parent())
+           {
+               if(item->parent()->type() == MultiPointCloudItem)
+               {
+                   m_actionDockWidgetUi->buttonDelete->setEnabled(false);
+               }
+           }
+       }
 }
 
 void ViewerApplication::toggleFog()
