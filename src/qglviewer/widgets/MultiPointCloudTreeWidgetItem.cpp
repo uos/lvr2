@@ -63,7 +63,6 @@ void MultiPointCloudTreeWidgetItem::setRenderable(MultiPointCloud* mpc)
         size_t n_pn;
         modes |= Points;
 
-
         item->setName(pc->Name());
         item->setNumPoints(pc->m_points.size());
         item->setRenderable(pc);
