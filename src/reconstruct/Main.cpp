@@ -162,7 +162,6 @@ int main(int argc, char** argv)
 
 
     // Create a point loader object
-    size_t num_points;
     ModelFactory io_factory;
     Model* model = io_factory.readModel(options.getInputFileName());
     PointBuffer* p_loader = 0;
