@@ -17,7 +17,7 @@
  */
 
 
- namespace lssr
+namespace lssr
 {
 
 template<typename T>

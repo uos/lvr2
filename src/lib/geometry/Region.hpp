@@ -18,10 +18,11 @@
 
 
  /*
- * Region.h
+ * Region.hpp
  *
- *  Created on: 18.08.2011
- *      Author: PG2011
+ *  @date 18.08.2011
+ *  @author Kim Rinnewitz (krinnewitz@uos.de)
+ *  @author Sven Schalk (sschalk@uos.de)
  */
 
 #ifndef REGION_H_

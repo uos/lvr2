@@ -94,6 +94,13 @@ void ObjIO<CoordType, IndexType>::setTextures(IndexType* textures, size_t c)
 }
 
 template<typename CoordType, typename IndexType>
+void ObjIO<CoordType, IndexType>::setRegionSizes(size_t* m_regionSizeBuffer, size_t m_nRegions){
+	this->m_regionSizeBuffer=m_regionSizeBuffer;
+	this->m_nRegions=m_nRegions;
+}
+
+
+template<typename CoordType, typename IndexType>
 void ObjIO<CoordType, IndexType>::write(string filename)
 {
     ofstream out(filename.c_str());
@@ -153,54 +160,57 @@ void ObjIO<CoordType, IndexType>::write(string filename)
 
         	}
         }
+        int oldTextureIndex=-1, facesUsed=0, j=0, pommes=0;
         //unsigned int counter = UINT_MAX-1;
         for(size_t i = 0; i < m_faceCount; i++)
         {
-            IndexType index = 3 * i;
-            // Calculate the buffer positions for the three
-            // triangle vertices (each vertex has 3 coordinates)
-            IndexType v1 = m_indices[index + 0];
-            IndexType v2 = m_indices[index + 1];
-            IndexType v3 = m_indices[index + 2];
+        	IndexType index = 3 * i;
+        	// Calculate the buffer positions for the three
+        	// triangle vertices (each vertex has 3 coordinates)
+        	IndexType v1 = m_indices[index + 0];
+        	IndexType v2 = m_indices[index + 1];
+        	IndexType v3 = m_indices[index + 2];
 
-            if(m_textureIndices != 0)
-            {
-            	int oldTextureIndex = -1;
-            	if(oldTextureIndex != m_textureIndices[index])
-            	{
-            		out <<endl<< "usemtl texture_" <<m_textureIndices[index]<< endl;
-            	}
- /*           	if(m_textureIndices[index] == UINT_MAX)
-            	{
-            		mtlFile.open("textures.mtl", ios::app);
-            		mtlFile <<"newmtl color_"<< counter <<endl;
+        	if(m_textureIndices != 0)
+        	{
 
-            		mtlFile << "Kd " << m_colors[v1*3+0] << " " << m_colors[v1*3+1] << " "
-            				<< m_colors[v1*3+2] <<endl;
+        		if(/*j >= m_nRegions &&*/ oldTextureIndex != m_textureIndices[index] && m_textureIndices[index] != UINT_MAX)
+        		{
+        			out << endl << "usemtl texture_" << m_textureIndices[index] << endl;
+        		}
 
-            		mtlFile << "Ka " << m_colors[v1*3+0] << " " << m_colors[v1*3+1] << " "
-            				<< m_colors[v1*3+2] <<endl;
+        		if(j < m_nRegions && facesUsed == pommes && m_textureIndices[index] == UINT_MAX)
+        		{
+        			mtlFile.open("textures.mtl", ios::app);
+        			mtlFile << "newmtl color_" << j <<endl;
 
-            		out <<endl<< "usemtl color_" <<counter<< endl;
-            		out << "f " << v1 + 1 << "//" << v1 + 1 << " "
-            				    << v2 + 1 << "//" << v2 + 1 << " "
-            				    << v3 + 1 << "//" << v3 + 1 << endl << endl;
-            		oldTextureIndex = counter;
-            		counter--;
-            		mtlFile.close();
-            	} else { */
-            		oldTextureIndex = m_textureIndices[index];
-            		out << "f " << v1 + 1 << "/" << v1 + 1 << "/" << v1 + 1 << " "
-            				<< v2 + 1 << "/" << v2 + 1 << "/" << v2 + 1 << " "
-            				<< v3 + 1 << "/" << v3 + 1 << "/" << v3 + 1 << endl;
-            /*	} */
-            }
-            else /* If no texture coordinates given write dummy info.*/
-            {
-            	out << "f " << v1 + 1 << "//" << v1 + 1 << " "
-            			<< v2 + 1 << "//" << v2 + 1 << " "
-            			<< v3 + 1 << "//" << v3 + 1 << endl;
-            }
+        			mtlFile << "Kd " << (m_colors[v1*3+0])/255.0f << " " << (m_colors[v1*3+1])/255.0f << " "
+        					<< (m_colors[v1*3+2])/255.0f << endl;
+
+        			mtlFile << "Ka " << (m_colors[v1*3+0])/255.0f << " " << (m_colors[v1*3+1])/255.0f << " "
+        					<< (m_colors[v1*3+2])/255.0f << endl << endl;
+
+        			out << endl;
+        			out << endl << "usemtl color_" << j << endl;
+        			pommes += m_regionSizeBuffer[j];
+        			j++;
+        			mtlFile.close();
+        			oldTextureIndex = -1;
+        		}
+
+        		oldTextureIndex = m_textureIndices[index];
+        		out << "f " << v1 + 1 << "/" << v1 + 1 << "/" << v1 + 1 << " "
+        				<< v2 + 1 << "/" << v2 + 1 << "/" << v2 + 1 << " "
+        				<< v3 + 1 << "/" << v3 + 1 << "/" << v3 + 1 << endl;
+
+
+        	} else /* If no texture coordinates given write dummy info.*/
+        	{
+        		out << "f " << v1 + 1 << "//" << v1 + 1 << " "
+        				<< v2 + 1 << "//" << v2 + 1 << " "
+        				<< v3 + 1 << "//" << v3 + 1 << endl;
+        	}
+        	facesUsed++;
         }
 
         out.close();
@@ -208,7 +218,7 @@ void ObjIO<CoordType, IndexType>::write(string filename)
     }
     else
     {
-		cerr << "no good. file! \n";
+    	cerr << "no good. file! \n";
     }
 }
 

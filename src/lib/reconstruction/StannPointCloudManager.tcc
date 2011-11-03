@@ -50,6 +50,12 @@ StannPointCloudManager<VertexT, NormalT>::StannPointCloudManager(PointBuffer* lo
     this->m_points = loader->getIndexedPointArray(n_points);
     this->m_normals = loader->getIndexedPointNormalArray(n_normals);
     this->m_numPoints = n_points;
+    size_t n = 0;
+    this->m_colors  = loader->getIndexedPointColorArray( n );
+    if ( n != this->m_numPoints ) {
+    	this->m_colors = 0;
+    }
+
 
     init();
 }
