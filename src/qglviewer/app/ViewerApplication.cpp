@@ -487,6 +487,8 @@ void ViewerApplication::dataCollectorAdded(DataCollector* d)
 
 void ViewerApplication::treeItemClicked(QTreeWidgetItem* item, int d)
 {
+    cout << "Clicked" << endl;
+
     // Center view on selected item if enabled
     if(item->type() > 1000)
     {
@@ -504,6 +506,8 @@ void ViewerApplication::treeItemClicked(QTreeWidgetItem* item, int d)
 
 void ViewerApplication::treeItemChanged(QTreeWidgetItem* item, int d)
 {
+    cout << "changed" << endl;
+
     if(item->type() > 1000)
     {
         CustomTreeWidgetItem* custom_item = static_cast<CustomTreeWidgetItem*>(item);
@@ -515,15 +519,29 @@ void ViewerApplication::treeItemChanged(QTreeWidgetItem* item, int d)
 
 void ViewerApplication::treeSelectionChanged()
 {
+
+    // Unselect all custom items
+    QTreeWidgetItemIterator w_it( m_sceneDockWidgetUi->treeWidget);
+    while (*w_it)
+    {
+        if( (*w_it)->type() >= ServerItem)
+        {
+            CustomTreeWidgetItem* item = static_cast<CustomTreeWidgetItem*>(*w_it);
+            item->renderable()->setSelected(false);
+        }
+        ++w_it;
+    }
+
     QList<QTreeWidgetItem *> list = m_sceneDockWidgetUi->treeWidget->selectedItems();
     QList<QTreeWidgetItem *>::iterator it = list.begin();
+
     for(it = list.begin(); it != list.end(); it++)
     {
         if( (*it)->type() >= ServerItem)
         {
             // Get selected item
             CustomTreeWidgetItem* item = static_cast<CustomTreeWidgetItem*>(*it);
-            item->renderable()->setSelected(item->isSelected());
+            item->renderable()->setSelected(true);
 
             // Update render modes in tool bar
             updateToolbarActions(item);

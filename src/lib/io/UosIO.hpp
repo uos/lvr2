@@ -59,8 +59,6 @@ namespace lssr
  * .pose files will be sued to transform the scans.
  */
 
-typedef pair<size_t, size_t> indexPair;
-
 class UosIO : public BaseIO
 {
 public:
@@ -103,9 +101,9 @@ public:
      */
     void reduce(string dir, string target, int reduction = 1);
 
-    indexPair getScanRange( size_t num );
+    //indexPair getScanRange( size_t num );
 
-    int getNumScans() { return m_numScans;}
+    //int getNumScans() { return m_numScans;}
 
     void save(string filename) {}
 
@@ -196,9 +194,6 @@ private:
 
     /// Number of loaded scans
     int     m_numScans;
-
-    vector<indexPair> m_scanRanges;
-
 
 };
 

@@ -201,6 +201,8 @@ void UosIO::readNewFormat(Model* &model, string dir, int first, int last, size_t
 
     size_t point_counter = 0;
 
+    vector<indexPair> sub_clouds;
+
     for(int fileCounter = first; fileCounter <= last; fileCounter++)
     {
         // New (unit) transformation matrix
@@ -397,7 +399,7 @@ void UosIO::readNewFormat(Model* &model, string dir, int first, int last, size_t
             }
 
             // Save index pair for current scan
-            m_scanRanges.push_back(make_pair(firstIndex, lastIndex));
+            sub_clouds.push_back(make_pair(firstIndex, lastIndex));
             m_numScans++;
         }
         cout << endl;
@@ -452,22 +454,15 @@ void UosIO::readNewFormat(Model* &model, string dir, int first, int last, size_t
         model->m_pointCloud = new PointBuffer;
         model->m_pointCloud->setPointArray(points, numPoints);
         model->m_pointCloud->setPointColorArray(pointColors, numPoints);
+
+        // Add sub cloud information
+        for(size_t i = 0; i < sub_clouds.size(); i++)
+        {
+            model->m_pointCloud->defineSubCloud(sub_clouds[i]);
+        }
     }
 
 }
-
-indexPair UosIO::getScanRange( size_t num )
-{
-    if(num < m_scanRanges.size())
-    {
-        return m_scanRanges[num];
-    }
-    else
-    {
-        return make_pair(0,0);
-    }
-}
-
 
 void UosIO::readOldFormat(Model* &model, string dir, int first, int last, size_t &n)
 {

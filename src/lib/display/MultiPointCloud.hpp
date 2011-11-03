@@ -54,7 +54,8 @@ typedef map<PointCloud*, PointCloudAttribute*>::iterator pc_attr_it;
 class MultiPointCloud : public Renderable
 {
 public:
-    MultiPointCloud(string pathname);
+    MultiPointCloud(Model& model, string name = "<unnamed point cloud>");
+
     virtual ~MultiPointCloud();
     virtual inline void render();
 
