@@ -1040,7 +1040,6 @@ void HalfEdgeMesh<VertexT, NormalT>::finalize()
     typename vector<HalfEdgeFace<VertexT, NormalT>*>::iterator face_iter = m_faces.begin();
     typename vector<HalfEdgeFace<VertexT, NormalT>*>::iterator face_end  = m_faces.end();
 
-    int surface_class;
     for(size_t i = 0; face_iter != face_end; ++i, ++face_iter)
     {
         indexBuffer[3 * i]      = index_map[(*(*face_iter))(0)];
@@ -1109,7 +1108,6 @@ void HalfEdgeMesh<VertexT, NormalT>::finalizeAndRetesselate( bool genTextures )
 
     // keep track of used space
     int verticesUsed=0;
-    int facesUsed=0;
     int numTextures=0;
 
     // Since all buffer sizes are unknown when retesselating
