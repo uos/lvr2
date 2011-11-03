@@ -245,4 +245,10 @@ void PointBuffer::freeBuffer()
 
 }
 
+void PointBuffer::defineSubCloud(indexPair& range)
+{
+    m_subClouds.push_back(range);
+}
+
+
 } /* namespace lssr */
