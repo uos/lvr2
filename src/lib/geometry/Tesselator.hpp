@@ -102,12 +102,9 @@ public:
      *
      *
      */
-    static void getFinalizedTriangles(float **vertexBuffer,
-                                      unsigned int   **indexBuffer,
-                                      int *numberFaces,
-                                      int *numVertices,
-                                      vector<vector<HVertex*> > borderVertices);
-    
+    static void getFinalizedTriangles(vector<float> &vertexBuffer, vector<unsigned int> &indexBuffer, vector<vector<HVertex*> > &vectorBorderPoints);
+
+
 private:
     
     /**

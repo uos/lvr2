@@ -53,7 +53,7 @@ void Tesselator<VertexT, NormalT>::tesselatorEnd()
 {
     if(m_vertices.size() < 3)
     {
-        cout << "Only 3 Points after retriangulation. Aborting.\n";
+        cerr << "Only 3 Points after retriangulation. Aborting.\n";
         m_vertices.clear();
         return;
     }
@@ -143,38 +143,22 @@ void Tesselator<VertexT, NormalT>::tesselatorAddVertex(const GLvoid *data, HVert
 
 
 template<typename VertexT, typename NormalT>
-void Tesselator<VertexT, NormalT>::getFinalizedTriangles(float **vertexBuffer,
-        unsigned int    **indexBuffer,
-        int    *lengthFaces,
-        int    *lengthVertices,
-        vector<vector<HVertex*> > vectorBorderPoints)
+void Tesselator<VertexT, NormalT>::getFinalizedTriangles(vector<float> &vertexBuffer, vector<unsigned int> &indexBuffer, vector<vector<HVertex*> > &vectorBorderPoints)
 {
+    // used typedefs
+    typedef vector<Vertex<float> >::iterator vertexIter;
+    // make sure everything is initialized
     init();
+
+    // retesselate the contours
     tesselate(vectorBorderPoints);
 
-    int numVertices = m_triangles.size();
+    // keep track of already used vertices to avoid doubled or tripled vertices
+    vector<Vertex<float> > usedVertices;
+    size_t search;
 
-    // allocate new memory.
-    (*vertexBuffer) = new float[numVertices*3];
-    (*indexBuffer) =  new unsigned int[numVertices];
-
-
-    // init memory
-    for(int i=0; i<numVertices*3; ++i)
-    {
-        (*vertexBuffer)[i] = 0.0;
-    }
-    for(int i=0; i<numVertices; ++i)
-    {
-        (*indexBuffer)[i] = 0.0;
-    }
-
-
-    int usedVertices=0, usedFaces=0;
-
-    // keep track of already used vertices to avoid floats.t
-    vector<Vertex<float> >::iterator triangles    = m_triangles.begin();
-    vector<Vertex<float> >::iterator trianglesEnd = m_triangles.end();
+    // iterate over all new triangles:
+    vertexIter triangles=m_triangles.begin(), trianglesEnd=m_triangles.end();
 
     int posArr[3]; posArr[0]=-1; posArr[1]=-1; posArr[2]=-1;
     // add all triangles and so faces to our buffers and keep track of all used parameters
@@ -182,79 +166,35 @@ void Tesselator<VertexT, NormalT>::getFinalizedTriangles(float **vertexBuffer,
 
     for(; triangles != trianglesEnd; ++triangles)
     {
-        (*vertexBuffer)[(usedVertices * 3) + 0] = (*triangles)[0]; 
-        (*vertexBuffer)[(usedVertices * 3) + 1] = (*triangles)[1];
-        (*vertexBuffer)[(usedVertices * 3) + 2] = (*triangles)[2];
+        //search = ( std::find(usedVertices.begin(), usedVertices.end(), (*triangles) ) - usedVertices.begin() );
+        //if(search!=usedVertices.size())
+        //{
+        //    posArr[m] = search;
+        //    cout << "Found: " << " " << *triangles << endl << "\t Search: " << search << endl;
 
-        posArr[m] = usedVertices;
-        usedVertices++;
+        //   vector<Vertex<float> >::iterator mm=usedVertices.begin();
+        //    for(; mm != usedVertices.end(); ++mm)
+        //        cout <<"\t"<< *mm;
+        //} else
+        { 
+            vertexBuffer.push_back((*triangles)[0]);
+            vertexBuffer.push_back((*triangles)[1]);
+            vertexBuffer.push_back((*triangles)[2]);
+            posArr[m] = usedVertices.size();
+            usedVertices.push_back(*triangles);
+        }
+
         m++;
 
         if(m == 3) // we added 3 vertices therefore a whole face!!
         {
-            (*indexBuffer)[(usedFaces * 3) + 0] = posArr[0]; 
-            (*indexBuffer)[(usedFaces * 3) + 1] = posArr[1];
-            (*indexBuffer)[(usedFaces * 3) + 2] = posArr[2];
-            /* check for corrupt vertices! */
-            float x1 = (*vertexBuffer)[posArr[0]];
-            float y1 = (*vertexBuffer)[posArr[0]+1];
-            float z1 = (*vertexBuffer)[posArr[0]+2]; 
+            indexBuffer.push_back(posArr[0]);
+            indexBuffer.push_back(posArr[1]);
+            indexBuffer.push_back(posArr[2]);
 
-            float x2 = (*vertexBuffer)[posArr[1]];
-            float y2 = (*vertexBuffer)[posArr[1]+1];
-            float z2 = (*vertexBuffer)[posArr[1]+2]; 
-
-            float x3 = (*vertexBuffer)[posArr[2]];
-            float y3 = (*vertexBuffer)[posArr[2]+1];
-            float z3 = (*vertexBuffer)[posArr[2]+2]; 
-
-            float d12 = sqrt( pow((x1-x2),2) + pow((y1-y2),2) + pow((z1-z2),2) );
-            float d13 = sqrt( pow((x1-x3),2) + pow((y1-y3),2) + pow((z1-z3),2) );
-            float d23 = sqrt( pow((x2-x3),2) + pow((y2-y3),2) + pow((z2-z3),2) );
-            if( d12 <= 0.001 || d13 <= 0.001 || d23 <= 0.001){
-                cout << "Damnit DEAD Face!: ";
-                cout << "positions: " << posArr[0] << " " << posArr[1] << " " << posArr[2] << endl;
-            }
-#ifdef DB_TESS
-            cout << "v1: " << (*vertexBuffer)[posArr[0]] << " " << (*vertexBuffer)[posArr[0]+1] << " " << (*vertexBuffer)[posArr[0]+2] << "\n"; 
-            cout << "v2: " << (*vertexBuffer)[posArr[1]] << " " << (*vertexBuffer)[posArr[1]+1] << " " << (*vertexBuffer)[posArr[1]+2] << "\n"; 
-            cout << "v3: " << (*vertexBuffer)[posArr[2]] << " " << (*vertexBuffer)[posArr[2]+1] << " " << (*vertexBuffer)[posArr[2]+2] << "\n"; 
-            cout << "positions: " << posArr[0] << " " << posArr[1] << " " << posArr[2] << endl;
-#endif
-            usedFaces++;
             m=0;
         }
     }
-
-    if(usedFaces > 0 && usedVertices > 0)
-    {
-        // Copy all that stuff and resize array -- this should be improved somehow! TODO:!
-        float *newVertexBuffer = new float[usedVertices*3];
-//        float *newNormalBuffer = new float[usedVertices*3];
-//        float *newColorBuffer  = new float[usedVertices*3];
-        unsigned int    *newIndexBuffer  = new unsigned int[usedFaces*3];
-
-        // use memcopy?
-        for(int i=0; i<usedVertices*3; i++)
-        {
-            newVertexBuffer[i] = (*vertexBuffer)[i];
-        }
-
-        for(int i=0; i<usedFaces*3; ++i)
-        {
-            newIndexBuffer[i] = (*indexBuffer)[i];
-        }
-        delete (*indexBuffer);
-        delete (*vertexBuffer);
-
-        (*vertexBuffer) = newVertexBuffer;
-        (*indexBuffer) = newIndexBuffer;
-    }
-    *lengthVertices = usedVertices*3;
-    *lengthFaces = usedFaces*3;
-#ifdef DB_TESS
-    cout << "Retesselation Complete. " << usedVertices << " Vertices. " << usedFaces << " Faces.\n";
-#endif
 }
 
 
@@ -287,6 +227,10 @@ void Tesselator<VertexT, NormalT>::init(void)
 {
     m_vertices.clear();
     m_triangles.clear();
+    if( m_tesselator )
+    {
+        return;
+    }
 
     if( GLU_VERSION < 1.1)
     {

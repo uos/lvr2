@@ -1142,7 +1142,8 @@ void HalfEdgeMesh<VertexT, NormalT>::finalizeAndRetesselate( bool genTextures )
 
     // Copy all regions that are non in an intersection plane directly to the buffers.
     intIterator nonPlaneBegin = nonPlaneRegions.begin();
-    intIterator nonPlaneEnd   = nonPlaneRegions.end();
+    intIterator nonPlaneEnd   = nonPlaneRegions.begin(); // SKIP all nonplanes. FOR TESTING ONLY!
+    //intIterator nonPlaneEnd   = nonPlaneRegions.end();
     for( ; nonPlaneBegin != nonPlaneEnd; ++nonPlaneBegin )
     {
         int iRegion = *nonPlaneBegin;
@@ -1191,13 +1192,13 @@ void HalfEdgeMesh<VertexT, NormalT>::finalizeAndRetesselate( bool genTextures )
 
     // Retesselate all planar regions and copy them to the buffers. 
     /// TODO: get rid of this mess - somehow?!
-    int *coordinatesLength = new int;
-    int *indexLength = new int;
-    float **v  = new float*;
-    unsigned int **in = new unsigned int*;
+    /// Yeah Baby.
+    std::vector<float> tesselatedPoints;
+    std::vector<unsigned int> tesselatedIndices;
 
     intIterator planeBegin = planeRegions.begin();
     intIterator planeEnd   = planeRegions.end();
+    int idU=0;
     for( ; planeBegin != planeEnd; ++planeBegin )
     {
         int iRegion = *planeBegin;
@@ -1213,10 +1214,10 @@ void HalfEdgeMesh<VertexT, NormalT>::finalizeAndRetesselate( bool genTextures )
 
         // initialize the tesselator and retesselate planar regions
         vector<vector<HVertex*> > contours = m_regions[iRegion]->getContours(0.01);
-        Tesselator<VertexT, NormalT>::getFinalizedTriangles(v, in, indexLength, coordinatesLength, contours);
+        Tesselator<VertexT, NormalT>::getFinalizedTriangles(tesselatedPoints, tesselatedIndices, contours);
 
-        if( *indexLength <= 0 || *coordinatesLength <= 0 ) // TODO: Find out why this happens from time to time!
-            continue;
+        assert(tesselatedPoints.size()>0);
+        assert(tesselatedIndices.size()>0);
 
         Texture<VertexT, NormalT>* t=NULL;
         if( genTextures )
@@ -1225,13 +1226,13 @@ void HalfEdgeMesh<VertexT, NormalT>::finalizeAndRetesselate( bool genTextures )
             t->save();
         }
 
-        // copy vertex, normal and color data.
-        for(int j=0; j< (*coordinatesLength)/3; ++j)
-        {
-            vertexBuffer.push_back( (*v)[j*3+0] );
-            vertexBuffer.push_back( (*v)[j*3+1] );
-            vertexBuffer.push_back( (*v)[j*3+2] );
+        // copy new vertex data:
+        vertexBuffer.insert( vertexBuffer.end(), tesselatedPoints.begin(), tesselatedPoints.end() ); 
 
+        // copy vertex, normal and color data.
+        for(int j=0; j< tesselatedPoints.size()/3; ++j)
+        {
+            assert(tesselatedPoints.size()%3==0); // just for testing purpose!
             normalBuffer.push_back( m_regions[iRegion]->m_normal[0] );
             normalBuffer.push_back( m_regions[iRegion]->m_normal[1] );
             normalBuffer.push_back( m_regions[iRegion]->m_normal[2] );
@@ -1242,24 +1243,24 @@ void HalfEdgeMesh<VertexT, NormalT>::finalizeAndRetesselate( bool genTextures )
 
             float u1 = 0;
             float u2 = 0;
-            if(t) t->textureCoords(VertexT((*v)[j*3+0], (*v)[j*3+1], (*v)[j*3+2]) ,u1 ,u2);
+            if(t) t->textureCoords(VertexT(tesselatedPoints[j*3+0], tesselatedPoints[j*3+1], tesselatedPoints[j*3+2]) ,u1 ,u2);
             textureCoordBuffer.push_back( u1 );
             textureCoordBuffer.push_back( u2 );
             textureCoordBuffer.push_back(  0 );
 
+            //indexBuffer.push_back( (verticesUsed/3) + j ); // just for testing purpose! Remove me!!
         }
 
         // copy indices...
-        for(int j=0; j < (*indexLength); ++j)
+        for(int j=0; j < tesselatedIndices.size(); ++j)
         {
-            indexBuffer.push_back( ((*in)[j])+verticesUsed/3 );
+            cout << "I: " << tesselatedIndices[j]+idU<< "   ID: " << tesselatedIndices[j] << "  IDU: " << idU << endl;
+            indexBuffer.push_back( tesselatedIndices[j] + idU );
             textureIndexBuffer.push_back( m_regions[iRegion]->m_regionNumber );
         }
-
-        verticesUsed += *coordinatesLength;
-
-        delete (*v);
-        delete (*in);
+        idU += tesselatedIndices.size();
+        cout << "BREAK" << endl;
+        verticesUsed += tesselatedPoints.size(); 
         if(t) delete t;
     }
 
