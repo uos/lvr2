@@ -18,10 +18,12 @@
 
 
  /*
- * ObjIO.h
+ * ObjIO.hpp
  *
- *  Created on: 10.03.2011
- *      Author: Thomas Wiemann
+ *  @date 07.11.2011
+ *  @author Florian Otte (fotte@uos.de)
+ *  @author Kim Rinnewitz (krinnewitz@uos.de)
+ *  @author Sven Schalk (sschalk@uos.de)
  */
 
 #ifndef OBJIO_HPP_
@@ -31,50 +33,30 @@ namespace lssr
 {
 
 /**
- * @brief A basic implementation of the obj file format. Currently
- *        only geometry information is supported. Color / Material
- *        support will follow shortly.
+ * @brief A basic implementation of the obj file format.
  */
-template<typename CoordType, typename IndexType>
 class ObjIO
 {
 public:
-    ObjIO();
 
-    void write(string filename);
-    void setVertexArray(CoordType* array, size_t count);
-    void setNormalArray(CoordType* array, size_t count);
-    void setIndexArray(IndexType* array, size_t count);
-    void setTextureCoords(CoordType* coords, size_t c);
-    void setColors(uchar* coords, size_t c);
-    void setTextureIndices(IndexType* coords, size_t c);
-    void setTextures(IndexType* textures, size_t c);
-    void setRegionSizes(size_t* m_regionSizeBuffer, size_t m_nRegions);
+	/**
+	 * @brief Constructor.
+	 **/
+    ObjIO() : m_model(0) {};
 
+    /**
+     * @brief 	Writes the mesh to an obj file.
+     *
+     * @param 	model		The model containing all mesh data
+     * @param	filename 	The file name to use
+     */
+    void save(Model* model, string filename);
 
 private:
-	 CoordType*          m_vertices;
-	 CoordType*          m_normals;
-	 uchar*			     m_colors;
-	 CoordType*          m_textureCoords;
-
-	 IndexType*          m_indices;
-	 IndexType*	         m_textureIndices;
-	 IndexType*          m_textures;
-	 IndexType*          m_regionSizeBuffer;
-
-	 size_t              m_colorCount;
-	 size_t              m_textureCount;
-	 size_t              m_textureIndicesCount;
-	 size_t              m_faceCount;
-	 size_t              m_vertexCount;
-	 size_t              m_textureCoordsCount;
-	 size_t              m_nRegions;
-
+    /// The model containing all mesh data
+    Model* m_model;
 };
 
 }
-
-#include "ObjIO.tcc"
 
 #endif /* OBJIO_H_ */
