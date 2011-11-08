@@ -77,12 +77,13 @@ vector<vector<HalfEdgeVertex<VertexT, NormalT>* > > Region<VertexT, NormalT>::ge
 					next = 0;
 					//push the next vertex
 					contour.push_back(current->end);
+
 					//find next edge
 					for(size_t i = 0; i<current->end->out.size(); i++)
 					{
 						if( !current->end->out[i]->used
 								&& current->end->out[i]->face && current->end->out[i]->face->m_region == this
-								&& (current->end->out[i]->pair->face == 0 
+								&& (current->end->out[i]->pair->face == 0
 										|| ( current->end->out[i]->pair->face  && current->end->out[i]->pair->face->m_region != this )))
 						{
 							next = current->end->out[i];
@@ -91,28 +92,65 @@ vector<vector<HalfEdgeVertex<VertexT, NormalT>* > > Region<VertexT, NormalT>::ge
 
 					if(next)
 					{
-						//calculate direction of the current edge
-						NormalT currentDirection(current->end->m_position - current->start->m_position);
-
-						//calculate direction of the next edge
-						NormalT nextDirection(next->end->m_position - next->start->m_position);
-						//Check if we have to remove the top vertex
-						if(    (    fabs(fabs(nextDirection[0]) - fabs(currentDirection[0])) <= epsilon
-								&& fabs(fabs(nextDirection[1]) - fabs(currentDirection[1])) <= epsilon
-								&& fabs(fabs(nextDirection[2]) - fabs(currentDirection[2])) <= epsilon
-						)
-						||
-						(
-								fabs(next->end->m_position[0] - current->end->m_position[0]) <= epsilon
-								&& fabs(next->end->m_position[1] - current->end->m_position[1]) <= epsilon
-								&& fabs(next->end->m_position[2] - current->end->m_position[2]) <= epsilon
-						))
-						{
-							contour.pop_back();
-						}
 						current = next;
 					}
 				}
+
+				// delete vertices due to direction
+				bool didSomething = true;
+				while(didSomething)
+				{
+					vector<HalfEdgeVertex<VertexT, NormalT>*> toDelete;
+					for(int c = 1; c < contour.size()-1; c++)
+					{
+						//calculate direction of the current edge
+						NormalT nextDirection(contour[c+1]->m_position - contour[c]->m_position);
+
+						//calculate direction of the next edge
+						NormalT previousDirection(contour[c]->m_position - contour[c-1]->m_position);
+
+						if
+						(
+								fabs(fabs(previousDirection[0]) - fabs(nextDirection[0])) <= epsilon
+								&& fabs(fabs(previousDirection[1]) - fabs(nextDirection[1])) <= epsilon
+								&& fabs(fabs(previousDirection[2]) - fabs(nextDirection[2])) <= epsilon
+						)
+						{
+							toDelete.push_back(contour[c]);
+						}
+					}
+					didSomething = false;
+					for(int d = 0; d < toDelete.size(); d++)
+					{
+						contour.erase(find(contour.begin(), contour.end(), toDelete[d]));
+						didSomething = true;
+					}
+				}
+				// delete vertices due to distance
+				didSomething = true;
+				while(didSomething)
+				{
+					vector<HalfEdgeVertex<VertexT, NormalT>*> toDelete;
+					for(int c = 0; c < contour.size()-1; c++)
+					{
+						if
+						(
+								   fabs(contour[c+1]->m_position[0] - contour[c]->m_position[0]) <= epsilon
+								&& fabs(contour[c+1]->m_position[1] - contour[c]->m_position[1]) <= epsilon
+								&& fabs(contour[c+1]->m_position[2] - contour[c]->m_position[2]) <= epsilon
+						)
+						{
+							toDelete.push_back(contour[c]);
+						}
+					}
+					didSomething = false;
+					for(int d = 0; d < toDelete.size(); d++)
+					{
+						contour.erase(find(contour.begin(), contour.end(), toDelete[d]));
+						didSomething = true;
+					}
+				}
+
 				result.push_back(contour);
 			}
 		}

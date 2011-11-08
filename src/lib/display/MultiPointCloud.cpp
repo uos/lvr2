@@ -25,7 +25,9 @@
  */
 
 #include <fstream>
+#include <sstream>
 using std::ofstream;
+using std::stringstream;
 
 #include "MultiPointCloud.hpp"
 #include <boost/filesystem.hpp>
@@ -35,26 +37,30 @@ using std::ofstream;
 namespace lssr
 {
 
-MultiPointCloud::MultiPointCloud(string dir)
+MultiPointCloud::MultiPointCloud(Model &model, string name)
 {
-    boost::filesystem::path directory(dir);
-    if(is_directory(directory))
+
+    PointBuffer* p_buffer = model.m_pointCloud;
+
+    if(p_buffer)
     {
-        Model model;
-        UosIO io;
-        io.read( &model, dir );
-        int n = io.getNumScans();
-        for(int i = 0; i < n; i++)
+        vector<indexPair> pairs = p_buffer->getSubClouds();
+        vector<indexPair>::iterator it;
+
+        int c = 1;
+
+        for(it = pairs.begin(); it != pairs.end(); it ++)
         {
-            indexPair p = io.getScanRange(i);
+            indexPair p = *it;
 
             // Create new point cloud from scan
             PointCloud* pc = new PointCloud;
             for(size_t a = p.first; a <= p.second; a++)
             {
                 size_t n;
-                float   ** points = model.m_pointCloud->getIndexedPointArray( n );
-                uchar ** colors = model.m_pointCloud->getIndexedPointColorArray( n );
+                float** points = model.m_pointCloud->getIndexedPointArray(n);
+                uchar** colors = model.m_pointCloud->getIndexedPointColorArray(n);
+
                 if(colors)
                 {
                     pc->addPoint(points[a][0], points[a][1], points[a][2], colors[a][0], colors[a][1], colors[a][2]);
@@ -64,14 +70,13 @@ MultiPointCloud::MultiPointCloud(string dir)
                     pc->addPoint(points[a][0], points[a][1], points[a][2], 255, 0, 0);
                 }
             }
+            stringstream ss;
+            ss << name << " " << c;
             pc->updateDisplayLists();
-            pc->setName(dir);
+            pc->setName(ss.str());
             addCloud(pc);
+            c++;
         }
-    }
-    else
-    {
-        cout << "MultiPointCloud: " << dir << " is not a directory." << endl;
     }
 }
 
