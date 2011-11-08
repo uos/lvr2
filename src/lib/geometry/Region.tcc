@@ -32,6 +32,7 @@ Region<VertexT, NormalT>::Region(int regionNumber)
 {
 	this->m_inPlane      = false;
 	this->m_regionNumber = regionNumber;
+	this->m_toDelete     = false;
 }
 
 template<typename VertexT, typename NormalT>
@@ -320,7 +321,6 @@ void Region<VertexT, NormalT>::regressionPlane()
             }
         }
     }
-
     this->m_inPlane = true;
     this->m_normal = calcNormal();
     this->m_stuetzvektor = point1;

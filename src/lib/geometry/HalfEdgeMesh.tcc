@@ -194,7 +194,7 @@ void HalfEdgeMesh<VertexT, NormalT>::addTriangle(uint a, uint b, uint c)
 }
 
     template<typename VertexT, typename NormalT>
-void HalfEdgeMesh<VertexT, NormalT>::deleteFace(HFace* f)
+void HalfEdgeMesh<VertexT, NormalT>::deleteFace(HFace* f, bool erase)
 {
     //save references to edges and vertices
     HEdge* startEdge = (*f)[0];
@@ -239,8 +239,11 @@ void HalfEdgeMesh<VertexT, NormalT>::deleteFace(HFace* f)
     }
 
     //delete face
-    m_faces.erase(find(m_faces.begin(), m_faces.end(), f));
-    delete f;
+    if(erase)
+    {
+    	m_faces.erase(find(m_faces.begin(), m_faces.end(), f));
+    	delete f;
+    }
 }
 
     template<typename VertexT, typename NormalT>
@@ -470,13 +473,10 @@ void HalfEdgeMesh<VertexT, NormalT>::optimizePlanes(
         int small_region_size,
         bool remove_flickering)
 {
-    cout << endl << timestamp << "Starting plane optimization with threshold " << angle << endl;
+    cout << timestamp << "Starting plane optimization with threshold " << angle << endl;
 
     // Magic numbers
     int default_region_threshold = (int) 10 * log(m_faces.size());
-
-    // Regions that will be deleted due to size
-    vector<Region<VertexT, NormalT>*> smallRegions;
 
     int region_size   = 0;
     int region_number = 0;
@@ -513,7 +513,7 @@ void HalfEdgeMesh<VertexT, NormalT>::optimizePlanes(
                     // Save too small regions with size smaller than small_region_size
                     if (region_size < small_region_size)
                     {
-                        smallRegions.push_back(region);
+                        region->m_toDelete = true;
                     }
                     else
                     {
@@ -533,15 +533,9 @@ void HalfEdgeMesh<VertexT, NormalT>::optimizePlanes(
     // Delete too small regions
     if(small_region_size)
     {
-        string msg = timestamp.getElapsedTime() + "Deleting small regions ";
-        ProgressBar progress(smallRegions.size(), msg);
-        for(size_t i = 0; i < smallRegions.size(); i++)
-        {
-            deleteRegion(smallRegions[i]);
-            ++progress;
-        }
+    	cout << timestamp << "Deleting small regions" << endl;
+    	deleteRegions();
     }
-    cout << endl;
 
     //Delete flickering faces
     if(remove_flickering)
@@ -562,21 +556,26 @@ void HalfEdgeMesh<VertexT, NormalT>::optimizePlanes(
 
 }
 
-    template<typename VertexT, typename NormalT>
-void HalfEdgeMesh<VertexT, NormalT>::deleteRegion(Region<VertexT, NormalT>* region)
+template<typename VertexT, typename NormalT>
+void HalfEdgeMesh<VertexT, NormalT>::deleteRegions()
 {
-    while(! region->m_faces.empty())
+    for(int i = 0; i < m_faces.size(); i++)
     {
-        deleteFace(region->m_faces.front());
+    	if(m_faces[i]->m_region && m_faces[i]->m_region->m_toDelete)
+    	{
+    		deleteFace(m_faces[i], false);
+    		delete m_faces[i];
+    		m_faces[i] = 0;
+    	}
     }
-    delete region;
+
+    typename vector<HFace*>::iterator newEnd = remove_if(m_faces.begin(), m_faces.end(), bind1st(mem_fun(&HalfEdgeMesh<VertexT, NormalT>::faceIsNull), this));
+    m_faces.erase(newEnd, m_faces.end());
 }
 
-    template<typename VertexT, typename NormalT>
+     template<typename VertexT, typename NormalT>
 void HalfEdgeMesh<VertexT, NormalT>::removeDanglingArtifacts(int threshold)
 {
-    vector<Region<VertexT, NormalT>*> todelete;
-
     for(size_t i = 0; i < m_faces.size(); i++)
     {
         if(m_faces[i]->m_used == false)
@@ -585,7 +584,7 @@ void HalfEdgeMesh<VertexT, NormalT>::removeDanglingArtifacts(int threshold)
             int region_size = regionGrowing(m_faces[i], region) + 1;
             if(region_size <= threshold)
             {
-                todelete.push_back(region);
+                region->m_toDelete = true;
             }
             else
             {
@@ -594,14 +593,9 @@ void HalfEdgeMesh<VertexT, NormalT>::removeDanglingArtifacts(int threshold)
         }
     }
 
-    ///delete dangling artifacts
-    string msg = timestamp.getElapsedTime() + "Removing dangling artifacts ";
-    ProgressBar progress(todelete.size(), msg);
-    for(size_t i = 0; i < todelete.size(); i++ )
-    {
-        deleteRegion(todelete[i]);
-        ++progress;
-    }
+    //delete dangling artifacts
+    cout << timestamp << "Removing dangling artifacts" << endl;
+    deleteRegions();
 
     //reset all used variables
     for(size_t i = 0; i < m_faces.size(); i++)
@@ -876,6 +870,7 @@ void HalfEdgeMesh<VertexT, NormalT>::optimizePlaneIntersections()
         }
         ++progress;
     }
+    cout << endl;
 }
 
     template<typename VertexT, typename NormalT>
