@@ -39,7 +39,8 @@ Options::Options(int argc, char** argv) : m_descr("Supported options")
 		("reduction,r", value<int>(&m_reduction)->default_value(1), "Reduction factor, i.e. only read every n-th point.")
 		("convertRemission,c", "Interpret Remission values as colors.")
 		("output,o", value<string>()->default_value("out.txt"), "Name of the generated output file.")
-	    ("inputFile", value< vector<string> >(), "Directory containg scans in uos format.")
+	    ("inputFile", value< vector<string> >(), "Directory containing scans in uos format.")
+	    ("saveRemission,r", "Save remission values")
 		;
 
 	m_pdescr.add("inputFile", -1);
@@ -59,6 +60,11 @@ Options::Options(int argc, char** argv) : m_descr("Supported options")
 bool  Options::convertRemission() const
 {
     return m_variables.count("convertRemission");
+}
+
+bool  Options::saveRemission() const
+{
+    return m_variables.count("saveRemission");
 }
 
 int Options::firstScan() const

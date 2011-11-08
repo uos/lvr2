@@ -66,6 +66,7 @@ public:
 	string  directory() const;
 	string  outputFile() const;
 	bool    convertRemission() const;
+	bool    saveRemission() const;
 
 	bool    printUsage() const;
 
@@ -98,6 +99,7 @@ inline ostream& operator<<(ostream& os, const Options &o)
 	cout << "##### First scan to read \t: " << o.firstScan() << endl;
 	cout << "##### Last scan to read \t: " << o.lastScan() << endl;
 	cout << "##### Reduction \t\t: " << o.reduction() << endl;
+	cout << "##### Save Remission:\t\t" << o.saveRemission() << endl;
 	cout << "##### Convert Remission: " << o.convertRemission() << endl;
 	return os;
 }

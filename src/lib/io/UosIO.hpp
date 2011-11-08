@@ -66,7 +66,14 @@ public:
     /**
      * @brief Contructor.
      */
-    UosIO() : m_firstScan(-1), m_lastScan(-1), m_saveToDisk(false), m_reductionTarget(1), m_numScans(0){}
+    UosIO() :
+        m_firstScan(-1),
+        m_lastScan(-1),
+        m_saveToDisk(false),
+        m_reductionTarget(1),
+        m_numScans(0),
+        m_saveRemission(false),
+        m_saveRemissionColor(false){}
 
     /**
      * @brief Reads all scans or an specified range of scans
@@ -107,7 +114,9 @@ public:
 
     void save(string filename) {}
 
-    void saveRemissionAsColor(bool convert);
+    void saveRemissionAsColor(bool convert) {m_saveRemissionColor = convert;}
+
+    void saveRemission(bool yes) { m_saveRemission= yes;}
 
 private:
 
@@ -199,6 +208,7 @@ private:
 
     bool    m_saveRemissionColor;
 
+    bool    m_saveRemission;
 };
 
 } // namespace lssr

@@ -371,7 +371,7 @@ void UosIO::readNewFormat(Model* &model, string dir, int first, int last, size_t
                             m_outputFile << point[0] << " " << point[1] << " " << point[2] << " ";
 
                             // Save remission values if present
-                            if(has_intensity)
+                            if(has_intensity && m_saveRemission)
                             {
                                 m_outputFile << rem << " ";
                             }
