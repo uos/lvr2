@@ -466,6 +466,10 @@ void ViewerApplication::saveSelectedObject()
         if(item->type() > 1000)
         {
             CustomTreeWidgetItem* c_item = static_cast<CustomTreeWidgetItem*>(item);
+
+            lssr::Model* m = c_item->renderable()->model();
+            lssr::ModelFactory::saveModel(m, file_name);
+
         }
 
     }
@@ -511,15 +515,29 @@ void ViewerApplication::treeItemChanged(QTreeWidgetItem* item, int d)
 
 void ViewerApplication::treeSelectionChanged()
 {
+
+    // Unselect all custom items
+    QTreeWidgetItemIterator w_it( m_sceneDockWidgetUi->treeWidget);
+    while (*w_it)
+    {
+        if( (*w_it)->type() >= ServerItem)
+        {
+            CustomTreeWidgetItem* item = static_cast<CustomTreeWidgetItem*>(*w_it);
+            item->renderable()->setSelected(false);
+        }
+        ++w_it;
+    }
+
     QList<QTreeWidgetItem *> list = m_sceneDockWidgetUi->treeWidget->selectedItems();
     QList<QTreeWidgetItem *>::iterator it = list.begin();
+
     for(it = list.begin(); it != list.end(); it++)
     {
         if( (*it)->type() >= ServerItem)
         {
             // Get selected item
             CustomTreeWidgetItem* item = static_cast<CustomTreeWidgetItem*>(*it);
-            item->renderable()->setSelected(item->isSelected());
+            item->renderable()->setSelected(true);
 
             // Update render modes in tool bar
             updateToolbarActions(item);
@@ -559,7 +577,22 @@ void ViewerApplication::updateToolbarActions(CustomTreeWidgetItem* item)
 
 void ViewerApplication::updateActionDock(CustomTreeWidgetItem* item)
 {
+       // Enable meshing for point clouds
        m_actionDockWidgetUi->buttonCreateMesh->setEnabled(item->supportsMode(Points));
+
+       // Don't allow deletion of sub point clouds from multi
+       // point cloud items
+       m_actionDockWidgetUi->buttonDelete->setEnabled(true);
+       if(item->type() == PointCloudItem)
+       {
+           if(item->parent())
+           {
+               if(item->parent()->type() == MultiPointCloudItem)
+               {
+                   m_actionDockWidgetUi->buttonDelete->setEnabled(false);
+               }
+           }
+       }
 }
 
 void ViewerApplication::toggleFog()

@@ -52,8 +52,10 @@ namespace lssr
 {
 
 
-void UosIO::read(Model* model, string dir)
+Model* UosIO::read(string dir)
 {
+    Model* model = 0;
+
     size_t n = 0;
     boost::filesystem::path directory(dir);
     if(is_directory(directory))
@@ -156,7 +158,7 @@ void UosIO::read(Model* model, string dir)
             }
             else
             {
-                return;
+                return 0;
             }
         }
 
@@ -165,6 +167,8 @@ void UosIO::read(Model* model, string dir)
     {
         cout << timestamp << "UOSReader: " << dir << " is not a directory." << endl;
     }
+
+    return model;
 }
 
 
@@ -183,20 +187,21 @@ void UosIO::reduce(string dir, string target, int reduction)
     m_saveToDisk = true;
 
     // Read data and write reduced points
-    Model m;
-    read( &m, dir);
+    Model* m = read(dir);
 
     // Write reduced points...
     ///TODO: Implement writing...
 }
 
 
-void UosIO::readNewFormat(Model* model, string dir, int first, int last, size_t &n)
+void UosIO::readNewFormat(Model* &model, string dir, int first, int last, size_t &n)
 {
     list<Vertex<float> > allPoints;
     list<Vertex<int> > allColors;
 
     size_t point_counter = 0;
+
+    vector<indexPair> sub_clouds;
 
     for(int fileCounter = first; fileCounter <= last; fileCounter++)
     {
@@ -394,7 +399,7 @@ void UosIO::readNewFormat(Model* model, string dir, int first, int last, size_t 
             }
 
             // Save index pair for current scan
-            m_scanRanges.push_back(make_pair(firstIndex, lastIndex));
+            sub_clouds.push_back(make_pair(firstIndex, lastIndex));
             m_numScans++;
         }
         cout << endl;
@@ -449,24 +454,17 @@ void UosIO::readNewFormat(Model* model, string dir, int first, int last, size_t 
         model->m_pointCloud = new PointBuffer;
         model->m_pointCloud->setPointArray(points, numPoints);
         model->m_pointCloud->setPointColorArray(pointColors, numPoints);
+
+        // Add sub cloud information
+        for(size_t i = 0; i < sub_clouds.size(); i++)
+        {
+            model->m_pointCloud->defineSubCloud(sub_clouds[i]);
+        }
     }
 
 }
 
-indexPair UosIO::getScanRange( size_t num )
-{
-    if(num < m_scanRanges.size())
-    {
-        return m_scanRanges[num];
-    }
-    else
-    {
-        return make_pair(0,0);
-    }
-}
-
-
-void UosIO::readOldFormat(Model* model, string dir, int first, int last, size_t &n)
+void UosIO::readOldFormat(Model* &model, string dir, int first, int last, size_t &n)
 {
     Matrix4<float> m_tf;
 

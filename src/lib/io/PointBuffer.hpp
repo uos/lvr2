@@ -320,7 +320,9 @@ class PointBuffer
          **/
         size_t getNumPoints();
 
-        virtual vector<indexPair>& getScanRanges() { return m_scanRanges;}
+        virtual vector<indexPair>& getSubClouds() { return m_subClouds;}
+
+        void defineSubCloud(indexPair &range);
 
     protected:
 
@@ -376,7 +378,7 @@ class PointBuffer
         size_t          m_numPointConfidence;
 
         /// Vector to save the indices of the first and last points of single scans
-        vector<indexPair> m_scanRanges;
+        vector<indexPair> m_subClouds;
 
 };
 

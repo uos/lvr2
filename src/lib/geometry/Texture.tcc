@@ -52,9 +52,9 @@ Texture<VertexT, NormalT>::Texture(PointCloudManager<VertexT, NormalT>* pm, Regi
 			NormalT v1 = HOuter_contour[1]->m_position - HOuter_contour[0]->m_position, v2;
 
 			//determines the resolution of iterative improvement steps
-			float delta = M_PI / 90;
+			float delta = M_PI / 2 / 90;
 
-			for(float theta = 0; theta < M_PI; theta += delta)
+			for(float theta = 0; theta < M_PI / 2; theta += delta)
 			{
 				//rotate the bounding box
 				v1 = v1 * cos(theta) + v2 * sin(theta);

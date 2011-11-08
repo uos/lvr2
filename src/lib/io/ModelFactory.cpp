@@ -60,6 +60,10 @@ Model* ModelFactory::readModel( string filename )
         /// TODO: Integrate ObJIO in factory
 
     }
+    else if (extension == "")
+    {
+        io = new UosIO;
+    }
 
     // Return data model
     if(io)
@@ -87,6 +91,11 @@ void ModelFactory::saveModel(Model* m, string filename)
     else if (extension == ".pts" || extension == ".3d" || extension == ".xyz")
     {
         io = new AsciiIO;
+    }
+    else if (extension == "")
+    {
+        // Try to load UOS format data from directory in
+        io = new UosIO;
     }
 
     // Save model
