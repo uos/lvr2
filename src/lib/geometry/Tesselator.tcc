@@ -65,7 +65,6 @@ void Tesselator<VertexT, NormalT>::tesselatorEnd()
     int test=0;
     if(m_primitive == GL_TRIANGLES ) // && 1 !=1 )
     {
-       //cout << "GL_TRIANGLES" << endl;
         for(size_t i=0; i<m_vertices.size() / 3; ++i)
         {
             m_triangles.push_back((m_vertices[i*3+2]).m_position);
@@ -88,7 +87,6 @@ void Tesselator<VertexT, NormalT>::tesselatorEnd()
         } 
     } else if(m_primitive == GL_TRIANGLE_FAN ) 
     {
-       //cout << "GL_TRIANGLEFAN" << endl;
         for(size_t i=0; i<m_vertices.size()-2; ++i)
         {
             m_triangles.push_back((m_vertices[i+2]).m_position);
@@ -113,7 +111,6 @@ void Tesselator<VertexT, NormalT>::tesselatorEnd()
         } 
     } else if(m_primitive == GL_TRIANGLE_STRIP )
     {
-       //cout << "GL_TRIANGLestip" << endl;
         for(size_t i=0; i<m_vertices.size()-2; ++i)
         {
             if(i%2 ==  0)
@@ -166,10 +163,6 @@ void Tesselator<VertexT, NormalT>::tesselatorAddVertex(const GLvoid *data, HVert
     const GLdouble *ptr = (const GLdouble*)data;
     Vertex<float> v(*ptr, *(ptr+1), *(ptr+2));
     HVertex newVertex(v);
-    if( m_vertices.size() > 1 && (m_vertices.end()-1)->m_position == newVertex.m_position )
-    {
-       cout << "Funny" << endl;
-    }
     m_vertices.push_back(newVertex);
 }
 
@@ -194,17 +187,6 @@ void Tesselator<VertexT, NormalT>::getFinalizedTriangles(vector<float> &vertexBu
     // retesselate the contours
     tesselate(vectorBorderPoints);
     
-    // DEBUG!!
-    for ( int i=0; i < m_triangles.size(); i++ )
-    {
-       if( (i+1)%3 == 0 && ( m_triangles[i-2] == m_triangles[i-1] ||
-           m_triangles[i-1] == m_triangles[i] ||
-           m_triangles[i-2] == m_triangles[i] ) )
-       {
-          cout << "Fatal. Degenerated Face!!" << endl;
-       }
-    }
-
     // keep track of already used vertices to avoid doubled or tripled vertices
     vector<Vertex<float> > usedVertices;
     size_t search;
@@ -218,6 +200,12 @@ void Tesselator<VertexT, NormalT>::getFinalizedTriangles(vector<float> &vertexBu
     int t=0;
     for(; triangles != trianglesEnd; ++triangles)
     {
+        if( (t+1)%3 == 0 && ( m_triangles[t-2] == m_triangles[t-1] ||
+                    m_triangles[t-1] == m_triangles[t] ||
+                    m_triangles[t-2] == m_triangles[t] ) )
+        {
+            cout << "Fatal. Degenerated Face!!" << endl;
+        }
         t++;
         search = ( std::find(usedVertices.begin(), usedVertices.end(), (*triangles) ) - usedVertices.begin() );
         if(search!=usedVertices.size())
@@ -367,7 +355,12 @@ void Tesselator<VertexT, NormalT>::tesselate(vector<vector<HVertex*> > vectorBor
     for(size_t i=0; i<vectorBorderPoints.size(); ++i)
     {
         vector<HVertex*> borderPoints = vectorBorderPoints[i];
-        vector<HVertex> bP;
+
+        //for ( int m=0; m < borderPoints.size(); ++m )
+        //    for( int n=0; n < borderPoints.size(); ++n )
+        //        if( m!=n && (borderPoints[n]->m_position == borderPoints[m]->m_position ) )
+        //            cout << "Doubled Contour Points.\n\t" << borderPoints[m]->m_position << "\t"  << borderPoints[n]->m_position << endl;
+
 #ifdef DB_TESS
         stringstream tFileName; tFileName << "contour[" << 
             setw(3) << setfill ('0') << i << "]_size["<< borderPoints.size() << "].txt";
