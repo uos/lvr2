@@ -70,7 +70,7 @@ public:
         m_firstScan(-1),
         m_lastScan(-1),
         m_saveToDisk(false),
-        m_reductionTarget(1),
+        m_reductionTarget(0),
         m_numScans(0),
         m_saveRemission(false),
         m_saveRemissionColor(false){}
