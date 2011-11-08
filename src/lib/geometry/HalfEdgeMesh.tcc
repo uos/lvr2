@@ -1100,7 +1100,7 @@ void HalfEdgeMesh<VertexT, NormalT>::finalizeAndRetesselate( bool genTextures )
     std::vector<float> vertexBuffer;
     std::vector<float> normalBuffer;
     std::vector<uchar> colorBuffer;
-    std::vector<float> textureBuffer;
+    std::vector<unsigned int> textureBuffer;
     std::vector<unsigned int> indexBuffer;
     std::vector<unsigned int> textureIndexBuffer;
     std::vector<float> textureCoordBuffer;
@@ -1120,15 +1120,14 @@ void HalfEdgeMesh<VertexT, NormalT>::finalizeAndRetesselate( bool genTextures )
     std::vector<int> planeRegions;
     for( size_t i = 0; i < m_regions.size(); ++i )
         if( !m_regions[i]->m_inPlane )
-            nonPlaneRegions.push_back(i);
+            ;//nonPlaneRegions.push_back(i);
         else
             planeRegions.push_back(i);
 
 
     // Copy all regions that are non in an intersection plane directly to the buffers.
     intIterator nonPlaneBegin = nonPlaneRegions.begin();
-    intIterator nonPlaneEnd   = nonPlaneRegions.begin(); // SKIP all nonplanes. FOR TESTING ONLY!
-    //intIterator nonPlaneEnd   = nonPlaneRegions.end();
+    intIterator nonPlaneEnd   = nonPlaneRegions.end();
     for( ; nonPlaneBegin != nonPlaneEnd; ++nonPlaneBegin )
     {
         int iRegion = *nonPlaneBegin;
@@ -1162,9 +1161,9 @@ void HalfEdgeMesh<VertexT, NormalT>::finalizeAndRetesselate( bool genTextures )
                 colorBuffer.push_back( g );
                 colorBuffer.push_back( b );
 
-                textureBuffer.push_back( 0.0 );
-                textureBuffer.push_back( 0.0 );
-                textureBuffer.push_back( 0.0 );
+                textureCoordBuffer.push_back( 0.0 );
+                textureCoordBuffer.push_back( 0.0 );
+                textureCoordBuffer.push_back( 0.0 );
 
                 // TODO: Explain the indexing-sheme!
                 indexBuffer.push_back( (vertexBuffer.size() / 3) - 1 );
