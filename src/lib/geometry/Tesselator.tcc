@@ -218,18 +218,18 @@ void Tesselator<VertexT, NormalT>::getFinalizedTriangles(vector<float> &vertexBu
     int t=0;
     for(; triangles != trianglesEnd; ++triangles)
     {
-          t++;
-//        search = ( std::find(usedVertices.begin(), usedVertices.end(), (*triangles) ) - usedVertices.begin() );
-//        if(search!=usedVertices.size())
-//        {
-//            posArr[m] = search;
+        t++;
+        search = ( std::find(usedVertices.begin(), usedVertices.end(), (*triangles) ) - usedVertices.begin() );
+        if(search!=usedVertices.size())
+        {
+            posArr[m] = search;
 //            cout << search << "["<<usedVertices.size()<<"]\t";
 //            cout << "Found: " << " " << *triangles << endl << "\t Search: " << search << endl;
 
             //vector<Vertex<float> >::iterator mm=usedVertices.begin();
             //for(; mm != usedVertices.end(); ++mm)
             //    cout <<"\t"<< *mm;
-//        } else
+        } else
         { 
             vertexBuffer.push_back((*triangles)[0]);
             vertexBuffer.push_back((*triangles)[1]);
@@ -287,7 +287,6 @@ void Tesselator<VertexT, NormalT>::tesselatorCombineVertices(GLdouble coords[3],
     vertex[0] = coords[0];
     vertex[1] = coords[1];
     vertex[2] = coords[2];
-    cout << "Combining" << endl;
     Vertex<float> v(coords[0], coords[1], coords[2]);
     if( m_vertices.size() > 1 && (m_vertices.end()-1)->m_position == v )
     {
@@ -395,19 +394,17 @@ void Tesselator<VertexT, NormalT>::tesselate(vector<vector<HVertex*> > vectorBor
 #ifdef DB_TESS
            orgContour << (borderPoints.back())->m_position[0] << " " <<  (borderPoints.back())->m_position[1] << " " << (borderPoints.back())->m_position[2] << endl;
 #endif
-           cout << " Not Found " << endl;
            GLdouble* vertex = new GLdouble[3];
            vertex[0] = (borderPoints.back())->m_position[0];
            vertex[1] = (borderPoints.back())->m_position[1];
            vertex[2] = (borderPoints.back())->m_position[2];
-           bP.push_back( *borderPoints.back() );
+           //bP.push_back( *borderPoints.back() );
            borderPoints.pop_back();
            gluTessVertex(m_tesselator, vertex, vertex);
         }
 
         /* End Contour */
         gluTessEndContour(m_tesselator);
-        cout << "WT";
 #ifdef DB_TESS
         orgContour << contourBegin->m_position[0] << " " << contourBegin->m_position[1] << " " << contourBegin->m_position[2];
         orgContour.close();
