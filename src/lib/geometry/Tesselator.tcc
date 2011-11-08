@@ -57,96 +57,29 @@ void Tesselator<VertexT, NormalT>::tesselatorEnd()
         m_vertices.clear();
         return;
     }
-
-#ifdef DB_TESS
-    stringstream tFileName; tFileName << "tesselationResult_" << setw(4) << setfill('0') << m_numContours << ".txt";
-    ofstream tess(tFileName.str().c_str(), ios_base::app);
-#endif
-    int test=0;
-    if(m_primitive == GL_TRIANGLES ) // && 1 !=1 )
+    if(m_primitive == GL_TRIANGLES )
     {
-        for(size_t i=0; i<m_vertices.size() / 3; ++i)
+        for(size_t i=0; i<m_vertices.size(); ++i)
         {
-            m_triangles.push_back((m_vertices[i*3+2]).m_position);
-            m_triangles.push_back((m_vertices[i*3+1]).m_position);
-            m_triangles.push_back((m_vertices[i*3+0]).m_position);
-           
-            // THE FOLLOWING CODE IS JUST FOR DEBUGGING!
-            if( m_vertices[i*3+2].m_position == m_vertices[i*3+1].m_position ||
-                m_vertices[i*3+0].m_position == m_vertices[i*3+1].m_position ||
-                m_vertices[i*3+0].m_position == m_vertices[i*3+2].m_position )
-            {
-               cout << "Error at least two same vertices for 1 triangle! GL_TRIANGLES." << endl;
-            }
-            // END OF DEBUG
-#ifdef DB_TESS
-            tess << m_vertices[i].m_position[0] << " " << m_vertices[i].m_position[1] << " " << m_vertices[i].m_position[2] << endl;
-            if((i+1)%3==0 && i != 0)
-                tess << m_vertices[i-2].m_position[0] << " " << m_vertices[i-2].m_position[1] << " " << m_vertices[i-2].m_position[2] << "\n#EndTriangle<<\n\n";
-#endif
+            m_triangles.push_back((m_vertices[i]).m_position);
         } 
     } else if(m_primitive == GL_TRIANGLE_FAN ) 
     {
         for(size_t i=0; i<m_vertices.size()-2; ++i)
         {
-            m_triangles.push_back((m_vertices[i+2]).m_position);
-            m_triangles.push_back((m_vertices[i+1]).m_position);
             m_triangles.push_back((m_vertices[0]).m_position);
-            
-            // THE FOLLOWING CODE IS JUST FOR DEBUGGING!
-            if( m_vertices[i+2].m_position == m_vertices[i+1].m_position ||
-                m_vertices[i+0].m_position == m_vertices[i+1].m_position ||
-                m_vertices[i+0].m_position == m_vertices[i+2].m_position )
-            {
-               cout << "Error at least two same vertices for 1 triangle! GL_TRIANGLE_FAN." << endl;
-            }
-            // END OF DEBUG
-
-#ifdef DB_TESS
-            tess << m_vertices[0].m_position[0]   << " " << m_vertices[0].m_position[1]   << " " << m_vertices[0].m_position[2]   << endl
-                << m_vertices[i+1].m_position[0] << " " << m_vertices[i+1].m_position[1] << " " << m_vertices[i+1].m_position[2] << endl
-                << m_vertices[i+2].m_position[0] << " " << m_vertices[i+2].m_position[1] << " " << m_vertices[i+2].m_position[2] << endl
-                << m_vertices[0].m_position[0]   << " " << m_vertices[0].m_position[1]   << " " << m_vertices[0].m_position[2] << "\n#EndTriangle<<\n\n";
-#endif
-        } 
+            m_triangles.push_back((m_vertices[i+1]).m_position);
+            m_triangles.push_back((m_vertices[i+2]).m_position);
+        }
     } else if(m_primitive == GL_TRIANGLE_STRIP )
     {
         for(size_t i=0; i<m_vertices.size()-2; ++i)
         {
-            if(i%2 ==  0)
-            {
-                m_triangles.push_back((m_vertices[i+2]).m_position);
-                m_triangles.push_back((m_vertices[i+1]).m_position);
-                m_triangles.push_back((m_vertices[i]).m_position);
-            } else
-            {
-                m_triangles.push_back((m_vertices[i]).m_position);
-                m_triangles.push_back((m_vertices[i+1]).m_position);
-                m_triangles.push_back((m_vertices[i+2]).m_position);
-            }
-            
-            // THE FOLLOWING CODE IS JUST FOR DEBUGGING!
-            if( m_vertices[i+2].m_position == m_vertices[i+1].m_position ||
-                m_vertices[i+0].m_position == m_vertices[i+1].m_position ||
-                m_vertices[i+0].m_position == m_vertices[i+2].m_position )
-            {
-               cout << "Error at least two same vertices for 1 triangle! GL_TRIANGLE_STRIP." << endl;
-            }
-            // END OF DEBUG
-
-#ifdef DB_TESS
-            tess << m_vertices[i].m_position[0]   << " " << m_vertices[i].m_position[1]   << " " << m_vertices[i].m_position[2]   << endl
-                << m_vertices[i+1].m_position[0] << " " << m_vertices[i+1].m_position[1] << " " << m_vertices[i+1].m_position[2] << endl
-                << m_vertices[i+2].m_position[0] << " " << m_vertices[i+2].m_position[1] << " " << m_vertices[i+2].m_position[2] << endl
-                << m_vertices[i].m_position[0]   << " " << m_vertices[i].m_position[1]   << " " << m_vertices[i].m_position[2]   << "\n#EndTriangle<<\n\n";
-#endif
+            m_triangles.push_back((m_vertices[i]).m_position);
+            m_triangles.push_back((m_vertices[i+1]).m_position);
+            m_triangles.push_back((m_vertices[i+2]).m_position);
         }
     }
-
-#ifdef DB_TESS
-    tess << "#EndPoly<<" << endl;
-    tess.close();
-#endif
 }
 
 
@@ -200,30 +133,25 @@ void Tesselator<VertexT, NormalT>::getFinalizedTriangles(vector<float> &vertexBu
     int t=0;
     for(; triangles != trianglesEnd; ++triangles)
     {
-        if( (t+1)%3 == 0 && ( m_triangles[t-2] == m_triangles[t-1] ||
-                    m_triangles[t-1] == m_triangles[t] ||
-                    m_triangles[t-2] == m_triangles[t] ) )
+        if( ((t%3 == 0) && t+2 < m_triangles.size()) && ( m_triangles[t] == m_triangles[t+1] ||
+                          m_triangles[t] == m_triangles[t+2] ||
+                          m_triangles[t+1] == m_triangles[t+2] ) )
         {
-            cout << "Fatal. Degenerated Face!!" << endl;
+            //cout << "Fatal. Degenerated Face! Skipping." << endl;
+            triangles+=2;
+            continue;
         }
         t++;
         search = ( std::find(usedVertices.begin(), usedVertices.end(), (*triangles) ) - usedVertices.begin() );
         if(search!=usedVertices.size())
         {
             posArr[m] = search;
-//            cout << search << "["<<usedVertices.size()<<"]\t";
-//            cout << "Found: " << " " << *triangles << endl << "\t Search: " << search << endl;
-
-            //vector<Vertex<float> >::iterator mm=usedVertices.begin();
-            //for(; mm != usedVertices.end(); ++mm)
-            //    cout <<"\t"<< *mm;
         } else
         { 
             vertexBuffer.push_back((*triangles)[0]);
             vertexBuffer.push_back((*triangles)[1]);
             vertexBuffer.push_back((*triangles)[2]);
             posArr[m] = usedVertices.size();
-            //cout << usedVertices.size() << "\t";
             usedVertices.push_back(*triangles);
         }
 
@@ -234,25 +162,7 @@ void Tesselator<VertexT, NormalT>::getFinalizedTriangles(vector<float> &vertexBu
             indexBuffer.push_back(posArr[0]);
             indexBuffer.push_back(posArr[1]);
             indexBuffer.push_back(posArr[2]);
-
             m=0;
-            //cout << endl;
-            if( posArr[0] == posArr[1] || posArr[1] == posArr[2] || posArr[0] == posArr[2] ||
-                posArr[0] == -1 || posArr[1] == -1 || posArr[2] == -1 ||
-                usedVertices[posArr[0]] == usedVertices[posArr[1]] ||
-                usedVertices[posArr[0]] == usedVertices[posArr[2]] ||
-                usedVertices[posArr[1]] == usedVertices[posArr[2]] 
-                )
-            {
-               cout << "Terrible: Pos: [" <<posArr[0]<<"] ["<<posArr[1]<<"] ["<<posArr[2]<<"]\n";
-               cout << "VertexInfo: t: " << t << "  t%3: " << t%3<< endl;
-               cout << "\t1\n\t\t" << usedVertices[posArr[0]] << endl;
-               cout << "\t2\n\t\t" << usedVertices[posArr[1]] << endl;
-               cout << "\t3\n\t\t" << usedVertices[posArr[2]] << endl;
-            }
-            posArr[0] = posArr[1] = posArr[2] = -1;
-
-
         }
     }
 }
@@ -320,8 +230,8 @@ void Tesselator<VertexT, NormalT>::init(void)
     /* set Properties for tesselation */
     //gluTessProperty(m_tesselator, GLU_TESS_WINDING_RULE, GLU_TESS_WINDING_POSITIVE);
     //gluTessProperty(m_tesselator, GLU_TESS_WINDING_RULE, GLU_TESS_WINDING_NEGATIVE);
-    //gluTessProperty(m_tesselator, GLU_TESS_WINDING_RULE, GLU_TESS_WINDING_NONZERO);
-    gluTessProperty(m_tesselator, GLU_TESS_WINDING_RULE, GLU_TESS_WINDING_ODD);
+    gluTessProperty(m_tesselator, GLU_TESS_WINDING_RULE, GLU_TESS_WINDING_NONZERO);
+    //gluTessProperty(m_tesselator, GLU_TESS_WINDING_RULE, GLU_TESS_WINDING_ODD);
     /* Use gluTessNormal: speeds up the tessellation if the
        Polygon lies on a x-y plane. and it approximatly does!*/
     //gluTessNormal(m_tesselator, 0, 0, 1);
@@ -343,12 +253,6 @@ void Tesselator<VertexT, NormalT>::tesselate(vector<vector<HVertex*> > vectorBor
         return;
     } 
 
-#ifdef DB_TESS
-    //cout << "Received " << vectorBorderPoints.size() << " contours to retesselate.\n";
-#endif
-
-
-
     /* Begin definition of the polygon to be tesselated */
     gluTessBeginPolygon(m_tesselator, 0);
 
@@ -356,57 +260,32 @@ void Tesselator<VertexT, NormalT>::tesselate(vector<vector<HVertex*> > vectorBor
     {
         vector<HVertex*> borderPoints = vectorBorderPoints[i];
 
-        //for ( int m=0; m < borderPoints.size(); ++m )
-        //    for( int n=0; n < borderPoints.size(); ++n )
-        //        if( m!=n && (borderPoints[n]->m_position == borderPoints[m]->m_position ) )
-        //            cout << "Doubled Contour Points.\n\t" << borderPoints[m]->m_position << "\t"  << borderPoints[n]->m_position << endl;
-
-#ifdef DB_TESS
-        stringstream tFileName; tFileName << "contour[" << 
-            setw(3) << setfill ('0') << i << "]_size["<< borderPoints.size() << "].txt";
-        ofstream orgContour(tFileName.str().c_str());
-#endif
-
         if(borderPoints.size() <3 )
         {
-#ifdef DB_TESS
-            cout << "BorderContains less than 3 Points!. Aborting.\n";
-            cout << "i: " << i << " size:" << borderPoints.size() << endl;
-            orgContour.close();
-#endif
+            cout << "BorderContains less than 3 Points!. Continue. S: " << borderPoints.size() << endl;
             continue; 
         }
 
-///        HVertex* contourBegin = borderPoints.back();
 
         // Begin Contour
         gluTessBeginContour(m_tesselator);
 
         while(borderPoints.size() > 0)
         {
-#ifdef DB_TESS
-           orgContour << (borderPoints.back())->m_position[0] << " " <<  (borderPoints.back())->m_position[1] << " " << (borderPoints.back())->m_position[2] << endl;
-#endif
-           GLdouble* vertex = new GLdouble[3];
-           vertex[0] = (borderPoints.back())->m_position[0];
-           vertex[1] = (borderPoints.back())->m_position[1];
-           vertex[2] = (borderPoints.back())->m_position[2];
-           //bP.push_back( *borderPoints.back() );
-           borderPoints.pop_back();
-           gluTessVertex(m_tesselator, vertex, vertex);
+            GLdouble* vertex = new GLdouble[3];
+            vertex[0] = (borderPoints.back())->m_position[0];
+            vertex[1] = (borderPoints.back())->m_position[1];
+            vertex[2] = (borderPoints.back())->m_position[2];
+            borderPoints.pop_back();
+            gluTessVertex(m_tesselator, vertex, vertex);
         }
 
         /* End Contour */
         gluTessEndContour(m_tesselator);
-#ifdef DB_TESS
-        orgContour << contourBegin->m_position[0] << " " << contourBegin->m_position[1] << " " << contourBegin->m_position[2];
-        orgContour.close();
-#endif
     }
 
     /* End Tesselation */
     gluTessEndPolygon(m_tesselator);
-    m_numContours++;
     gluDeleteTess(m_tesselator);
     m_tesselator = 0;
     return;

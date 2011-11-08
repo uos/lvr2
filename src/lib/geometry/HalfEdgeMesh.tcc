@@ -1081,21 +1081,6 @@ void HalfEdgeMesh<VertexT, NormalT>::finalize()
     this->m_finalized = true;
 }
 
-//template<typename VertexT, typename NormalT>
-//void HalfEdgeMesh<VertexT, NormalT>::regionsToBuffer(
-//        unsigned int **index, 
-//        unsigned int **textureIndex, 
-//        size_t     &vncSize, 
-//        size_t   &indexSize, 
-//        vector<int> &regions)
-//{
-//}
-
-//template<typename VertexT, typename NormalT>
-//void HalfEdgeMesh<VertexT, NormalT>::retesselateRegionsToBuffer( vector<int> plane_regions , bool genTextures )
-//{
-//}
-
 template<typename VertexT, typename NormalT>
 void HalfEdgeMesh<VertexT, NormalT>::finalizeAndRetesselate( bool genTextures )
 {
@@ -1190,15 +1175,11 @@ void HalfEdgeMesh<VertexT, NormalT>::finalizeAndRetesselate( bool genTextures )
     cout << timestamp << "Done copying non planar regions." << endl;
 
     // Retesselate all planar regions and copy them to the buffers. 
-    /// TODO: get rid of this mess - somehow?!
-    /// Yeah Baby.
     std::vector<float> tesselatedPoints;
     std::vector<unsigned int> tesselatedIndices;
 
     intIterator planeBegin = planeRegions.begin();
     intIterator planeEnd   = planeRegions.end();
-    int idU=0;
-    int sizeT=0;
     for( ; planeBegin != planeEnd; ++planeBegin )
     {
         int iRegion = *planeBegin;
@@ -1216,8 +1197,6 @@ void HalfEdgeMesh<VertexT, NormalT>::finalizeAndRetesselate( bool genTextures )
         vector<vector<HVertex*> > contours = m_regions[iRegion]->getContours(0.01);
         Tesselator<VertexT, NormalT>::getFinalizedTriangles(tesselatedPoints, tesselatedIndices, contours);
 
-        //assert(tesselatedPoints.size()>0);
-        //assert(tesselatedIndices.size()>0);
         if(tesselatedPoints.size() < 3 || tesselatedIndices.size() < 1)
            continue;
 
@@ -1230,10 +1209,10 @@ void HalfEdgeMesh<VertexT, NormalT>::finalizeAndRetesselate( bool genTextures )
 
         // copy new vertex data:
         vertexBuffer.insert( vertexBuffer.end(), tesselatedPoints.begin(), tesselatedPoints.end() ); 
+
         // copy vertex, normal and color data.
         for(int j=0; j< tesselatedPoints.size()/3; ++j)
         {
-            assert(tesselatedPoints.size()%3==0); // just for testing purpose!
             normalBuffer.push_back( m_regions[iRegion]->m_normal[0] );
             normalBuffer.push_back( m_regions[iRegion]->m_normal[1] );
             normalBuffer.push_back( m_regions[iRegion]->m_normal[2] );
@@ -1263,68 +1242,10 @@ void HalfEdgeMesh<VertexT, NormalT>::finalizeAndRetesselate( bool genTextures )
             // store the indices with the correct offset to the indices buffer.
             indexBuffer.push_back( tesselatedIndices[j] + offset );
             textureIndexBuffer.push_back( m_regions[iRegion]->m_regionNumber );
-
-            //cout << "O: " << offset << "   T: " << tesselatedIndices[j] << "   I: " << tesselatedIndices[j] + offset << "   LV: " << vertexBuffer.size() << "    LI: " << tesselatedIndices.size() << "    j: " << j<< endl;
         }
-        //cout << "BREAK   "<< tesselatedIndices.size() << endl;
         if(t) delete t;
     }
-
-    for( int i=0; i<indexBuffer.size()/3; )
-    {
-       //cout << "Face["<<i<<"]"<<endl;
-       int a = indexBuffer[i];
-       int b = indexBuffer[i+1];
-       int c = indexBuffer[i+2];
-       i+=3;
-       
-       float x1=vertexBuffer[((a+0)*3)+0];
-       float y1=vertexBuffer[((a+0)*3)+1];
-       float z1=vertexBuffer[((a+0)*3)+2];
-
-       float x2=vertexBuffer[((b)*3)+0];
-       float y2=vertexBuffer[((b)*3)+1];
-       float z2=vertexBuffer[((b)*3)+2];
-
-       float x3=vertexBuffer[((c)*3)+0];
-       float y3=vertexBuffer[((c)*3)+1];
-       float z3=vertexBuffer[((c)*3)+2];
-
-       float dx12 = x1-x2; dx12 *= dx12;
-       float dx13 = x1-x3; dx13 *= dx13;
-       float dx23 = x2-x3; dx23 *= dx23;
-
-       float dy12 = y1-y2; dy12 *= dy12;
-       float dy13 = y1-y3; dy13 *= dy13;
-       float dy23 = y2-y3; dy23 *= dy23;
-       
-       float dz12 = z1-z2; dz12 *= dx12;
-       float dz13 = z1-z3; dz13 *= dx13;
-       float dz23 = z2-z3; dz23 *= dx23;
-
-       if( sqrt(dx12+dy12+dz12) <= 0.00001 ||
-           sqrt(dx13+dy13+dz13) <= 0.00001 ||
-           sqrt(dx23+dy23+dz23) <= 0.00001 )
-       {
-          cout << "DEAD?!Face[i: "<<i<<"] [a: " << a << "]"<<endl;
-          
-          cout << "I: " << a << " ";
-          cout << vertexBuffer[((a+0)*3)+0] << "\t";
-          cout << vertexBuffer[((a+0)*3)+1] << "\t";
-          cout << vertexBuffer[((a+0)*3)+2] << endl;
-
-          cout << "I: " << b << " ";
-          cout << vertexBuffer[((b)*3)+0] << "\t";
-          cout << vertexBuffer[((b)*3)+1] << "\t";
-          cout << vertexBuffer[((b)*3)+2] << endl;
-          
-          cout << "I: " << c << " ";
-          cout << vertexBuffer[((c)*3)+0] << "\t";
-          cout << vertexBuffer[((c)*3)+1] << "\t";
-          cout << vertexBuffer[((c)*3)+2] << endl;
-       }
-    }
-
+    
     if(!this->m_meshBuffer)
     {
         this->m_meshBuffer = new MeshBuffer;
