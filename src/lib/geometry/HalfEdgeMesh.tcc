@@ -531,6 +531,7 @@ void HalfEdgeMesh<VertexT, NormalT>::optimizePlanes(
     }
 
     // Delete too small regions
+    cout << timestamp << "Starting to delete small regions" << endl;
     if(small_region_size)
     {
         string msg = timestamp.getElapsedTime() + "Deleting small regions ";
