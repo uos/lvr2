@@ -217,8 +217,9 @@ void UosIO::readNewFormat(Model* &model, string dir, int first, int last, size_t
     }
 
     // Calculate the number of points to skip when writing to disk
-    size_t skipPoints = 0;
-    if(m_reductionTarget)
+    size_t skipPoints = 1;
+
+    if(m_reductionTarget > 1)
     {
        skipPoints = (int)numPointsTotal / m_reductionTarget;
     }
