@@ -183,14 +183,13 @@ void UosIO::reduce(string dir, string target, int reduction)
     }
 
     // Set needed flags for inout code
-    m_reduction = reduction;
+    m_reductionTarget = reduction;
     m_saveToDisk = true;
 
     // Read data and write reduced points
     Model* m = read(dir);
+    delete m;
 
-    // Write reduced points...
-    ///TODO: Implement writing...
 }
 
 
@@ -202,6 +201,28 @@ void UosIO::readNewFormat(Model* &model, string dir, int first, int last, size_t
     size_t point_counter = 0;
 
     vector<indexPair> sub_clouds;
+
+    // Count points in all given files
+    size_t numPointsTotal = 0;
+    for(int fileCounter = first; fileCounter <= last; fileCounter++)
+    {
+        // Create scan file name
+        boost::filesystem::path scan_path(
+                boost::filesystem::path(dir) /
+                boost::filesystem::path( "scan" + to_string( fileCounter, 3 ) + ".3d" ) );
+        string scanFileName = "/" + scan_path.relative_path().string();
+
+        // Count lines in scan
+        numPointsTotal += AsciiIO::countLines(scanFileName);
+    }
+
+    // Calculate the number of points to skip when writing to disk
+    size_t skipPoints = (int)numPointsTotal / m_reductionTarget;
+    if(m_saveToDisk)
+    {
+        cout << timestamp << "Reduction mode. Writing every " << skipPoints << "th point." << endl;
+    }
+
 
     for(int fileCounter = first; fileCounter <= last; fileCounter++)
     {
@@ -251,9 +272,9 @@ void UosIO::readNewFormat(Model* &model, string dir, int first, int last, size_t
 
 
             // Try to get fransformation from .frames file
-				boost::filesystem::path frame_path(
-						boost::filesystem::path(dir) / 
-						boost::filesystem::path( "scan" + to_string( fileCounter, 3 ) + ".frames" ) );
+            boost::filesystem::path frame_path(
+                    boost::filesystem::path(dir) /
+                    boost::filesystem::path( "scan" + to_string( fileCounter, 3 ) + ".frames" ) );
             string frameFileName = "/" + frame_path.relative_path().string();
 
             frame_in.open(frameFileName.c_str());
@@ -344,7 +365,7 @@ void UosIO::readNewFormat(Model* &model, string dir, int first, int last, size_t
                 {
                     if(m_outputFile.good())
                     {
-                        if(point_counter % m_reduction == 0)
+                        if(point_counter % skipPoints == 0)
                         {
                             point.transform(tf);
                             m_outputFile << point[0] << " " << point[1] << " " << point[2] << " ";
@@ -358,6 +379,11 @@ void UosIO::readNewFormat(Model* &model, string dir, int first, int last, size_t
                             // Save color values if present
                             if(has_color)
                             {
+                                m_outputFile << r << " " << g << " " << b;
+                            }
+                            else if(m_saveRemissionColor)
+                            {
+                                r = g = b = rem;
                                 m_outputFile << r << " " << g << " " << b;
                             }
                             m_outputFile << endl;
