@@ -43,6 +43,10 @@ int main(int argc, char** argv)
 
     io.setFirstScan(options.firstScan());
     io.setLastScan(options.lastScan());
+    io.saveRemission(options.saveRemission());
+    io.saveRemissionAsColor(options.convertRemission());
+
+
     io.reduce(options.directory(), options.outputFile(), options.reduction());
 
 	return 0;
