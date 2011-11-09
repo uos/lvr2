@@ -47,10 +47,6 @@ HalfEdgeFace<VertexT, NormalT>::~HalfEdgeFace()
 	if(m_region != 0)
 	{
 		m_region->removeFace(this);
-		if(m_region->m_faces.empty())
-		{
-			delete m_region;
-		}
 	}
 }
 

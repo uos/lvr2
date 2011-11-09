@@ -297,13 +297,13 @@ private:
 	virtual void deleteRegions();
 
 	/**
-	 * @brief 	Tells if the given face is a null pointer (needed for fast deletion of regions)
+	 * @brief 	Tells if the given pointer is a null pointer (needed for fast deletion of regions)
 	 *
-	 * @param	f	The face
+	 * @param	f	The pointer
 	 *
-	 * @return	True if the face given is a null pointer
+	 * @return	True if the pointer given is a null pointer
 	 */
-	virtual bool faceIsNull(HFace* f){return f == 0;};
+	virtual bool isNull(void* f){return f == 0;};
 
 	/**
 	 *	@brief	drags the points of the given plane onto the given intersection if those points lay at
