@@ -1086,14 +1086,9 @@ void HalfEdgeMesh<VertexT, NormalT>::finalizeAndRetesselate( bool genTextures )
 {
     // used Typedef's
     typedef std::vector<int>::iterator   intIterator;
-    typedef std::vector<float>::iterator floatIterator;
 
     // default colors
     float r=0, g=200, b=0;
-
-    // keep track of used space
-    int verticesUsed=0;
-    int numTextures=0;
 
     // Since all buffer sizes are unknown when retesselating
     // all buffers are instantiated as vectors, to avoid manual reallocation
@@ -1124,13 +1119,14 @@ void HalfEdgeMesh<VertexT, NormalT>::finalizeAndRetesselate( bool genTextures )
         else
             planeRegions.push_back(i);
 
+    // keep track of used vertices to avoid doubles.
+    map<Vertex<float>, unsigned int> vertexMap;
+    Vertex<float> current;
 
     // Copy all regions that are non in an intersection plane directly to the buffers.
-    intIterator nonPlaneBegin = nonPlaneRegions.begin();
-    intIterator nonPlaneEnd   = nonPlaneRegions.end();
-    for( ; nonPlaneBegin != nonPlaneEnd; ++nonPlaneBegin )
+    for( intIterator nonPlane = nonPlaneRegions.begin(); nonPlane != nonPlaneRegions.end(); ++nonPlane )
     {
-        int iRegion = *nonPlaneBegin;
+        int iRegion = *nonPlane;
         if( this->m_colorRegions )
         {
             int surfaceClass = m_regions[iRegion]->m_regionNumber;
@@ -1143,45 +1139,57 @@ void HalfEdgeMesh<VertexT, NormalT>::finalizeAndRetesselate( bool genTextures )
         for( size_t i=0; i < m_regions[iRegion]->m_faces.size(); i++ )
         {
             int iFace=i;
+            unsigned int pos;
             // loop over each vertex for this face
             for( int j=0; j < 3; j++ )
             {
-                int iVertex = j;
-                vertexBuffer.push_back( (*m_regions[iRegion]->m_faces[iFace])(iVertex)->m_position.x );
-                vertexBuffer.push_back( (*m_regions[iRegion]->m_faces[iFace])(iVertex)->m_position.y );
-                vertexBuffer.push_back( (*m_regions[iRegion]->m_faces[iFace])(iVertex)->m_position.z );
+               int iVertex = j;
+               current = (*m_regions[iRegion]->m_faces[iFace])(iVertex)->m_position;
 
-                normalBuffer.push_back( (*m_regions[iRegion]->m_faces[iFace])(iVertex)->m_normal[0] );
-                normalBuffer.push_back( (*m_regions[iRegion]->m_faces[iFace])(iVertex)->m_normal[1] );
-                normalBuffer.push_back( (*m_regions[iRegion]->m_faces[iFace])(iVertex)->m_normal[2] );
+               // look up the current vertex. If it was used before get the position for the indexBuffer.
+               if( vertexMap.find(current) != vertexMap.end() )
+               {
+                  pos = vertexMap[current];
+               } 
+               else
+               {
+                  pos = vertexBuffer.size() / 3;
+                  vertexMap.insert(make_pair<Vertex<float>, unsigned int>(current, pos));
+                  vertexBuffer.push_back( (*m_regions[iRegion]->m_faces[iFace])(iVertex)->m_position.x );
+                  vertexBuffer.push_back( (*m_regions[iRegion]->m_faces[iFace])(iVertex)->m_position.y );
+                  vertexBuffer.push_back( (*m_regions[iRegion]->m_faces[iFace])(iVertex)->m_position.z );
 
-                //TODO: Color Vertex Traits stuff?
+                  normalBuffer.push_back( (*m_regions[iRegion]->m_faces[iFace])(iVertex)->m_normal[0] );
+                  normalBuffer.push_back( (*m_regions[iRegion]->m_faces[iFace])(iVertex)->m_normal[1] );
+                  normalBuffer.push_back( (*m_regions[iRegion]->m_faces[iFace])(iVertex)->m_normal[2] );
 
-                colorBuffer.push_back( r );
-                colorBuffer.push_back( g );
-                colorBuffer.push_back( b );
+                  //TODO: Color Vertex Traits stuff?
+                  colorBuffer.push_back( r );
+                  colorBuffer.push_back( g );
+                  colorBuffer.push_back( b );
 
-                textureCoordBuffer.push_back( 0.0 );
-                textureCoordBuffer.push_back( 0.0 );
-                textureCoordBuffer.push_back( 0.0 );
+                  textureCoordBuffer.push_back( 0.0 );
+                  textureCoordBuffer.push_back( 0.0 );
+                  textureCoordBuffer.push_back( 0.0 );
+               }
 
-                // TODO: Explain the indexing-sheme!
-                indexBuffer.push_back( (vertexBuffer.size() / 3) - 1 );
+                indexBuffer.push_back( pos );
                 textureIndexBuffer.push_back( UINT_MAX );
             }
         }
     }
     cout << timestamp << "Done copying non planar regions." << endl;
 
-    // Retesselate all planar regions and copy them to the buffers. 
-    std::vector<float> tesselatedPoints;
-    std::vector<unsigned int> tesselatedIndices;
 
-    intIterator planeBegin = planeRegions.begin();
-    intIterator planeEnd   = planeRegions.end();
-    for( ; planeBegin != planeEnd; ++planeBegin )
+   /*
+         Done copying the simple stuff. Now the planes are going to be retesselated
+         and the textures are generated if there are textures to generate at all.!
+      */
+
+    // for every plane region there is
+    for(intIterator planeNr = planeRegions.begin(); planeNr != planeRegions.end(); ++planeNr )
     {
-        int iRegion = *planeBegin;
+        int iRegion = *planeNr;
         if( this->m_colorRegions )
         {
             int surfaceClass = m_regions[iRegion]->m_regionNumber;
@@ -1190,16 +1198,19 @@ void HalfEdgeMesh<VertexT, NormalT>::finalizeAndRetesselate( bool genTextures )
             b = (uchar)( 255 * fabs( sin( surfaceClass * 2 ) ) ) ;
         }
         textureBuffer.push_back( m_regions[iRegion]->m_regionNumber );
-        numTextures++;
 
-        // initialize the tesselator and retesselate planar regions
+        // get the contours for this region
         vector<vector<HVertex*> > contours = m_regions[iRegion]->getContours(0.01);
-        Tesselator<VertexT, NormalT>::getFinalizedTriangles(tesselatedPoints, tesselatedIndices, contours);
 
-        if(tesselatedPoints.size() < 3 || tesselatedIndices.size() < 1)
-           continue;
-
+        // alocate a new texture
         Texture<VertexT, NormalT>* t=NULL;
+
+        //retesselate these contours.
+        std::vector<float> points;
+        std::vector<unsigned int> indices;
+        Tesselator<VertexT, NormalT>::getFinalizedTriangles(points, indices, contours);
+
+
         if( genTextures )
         {
             t = new Texture<VertexT, NormalT>( m_pointCloudManager, m_regions[iRegion], contours );
@@ -1207,10 +1218,10 @@ void HalfEdgeMesh<VertexT, NormalT>::finalizeAndRetesselate( bool genTextures )
         }
 
         // copy new vertex data:
-        vertexBuffer.insert( vertexBuffer.end(), tesselatedPoints.begin(), tesselatedPoints.end() ); 
+        vertexBuffer.insert( vertexBuffer.end(), points.begin(), points.end() ); 
 
         // copy vertex, normal and color data.
-        for(int j=0; j< tesselatedPoints.size()/3; ++j)
+        for(int j=0; j< points.size()/3; ++j)
         {
             normalBuffer.push_back( m_regions[iRegion]->m_normal[0] );
             normalBuffer.push_back( m_regions[iRegion]->m_normal[1] );
@@ -1222,7 +1233,7 @@ void HalfEdgeMesh<VertexT, NormalT>::finalizeAndRetesselate( bool genTextures )
 
             float u1 = 0;
             float u2 = 0;
-            if(t) t->textureCoords(VertexT(tesselatedPoints[j*3+0], tesselatedPoints[j*3+1], tesselatedPoints[j*3+2]) ,u1 ,u2);
+            if(t) t->textureCoords( VertexT( points[j * 3 + 0], points[j * 3 + 1], points[j * 3 + 2]), u1, u2 );
             textureCoordBuffer.push_back( u1 );
             textureCoordBuffer.push_back( u2 );
             textureCoordBuffer.push_back(  0 );
@@ -1230,26 +1241,25 @@ void HalfEdgeMesh<VertexT, NormalT>::finalizeAndRetesselate( bool genTextures )
         }
 
         // copy indices...
-        for(int j=0; j < tesselatedIndices.size(); ++j)
+        for(int j=0; j < indices.size(); ++j)
         {
             // get the old end of the vertexbuffer.
-            int offset = vertexBuffer.size() - tesselatedPoints.size();
+            int offset = vertexBuffer.size() - points.size();
 
             // calculate the index value for the old end of the vertexbuffer.
             offset = ( offset / 3 );
 
             // store the indices with the correct offset to the indices buffer.
-            indexBuffer.push_back( tesselatedIndices[j] + offset );
+            indexBuffer.push_back( indices[j] + offset );
             textureIndexBuffer.push_back( m_regions[iRegion]->m_regionNumber );
         }
         if(t) delete t;
     }
-    
+
     if(!this->m_meshBuffer)
     {
         this->m_meshBuffer = new MeshBuffer;
     }
-
     this->m_meshBuffer->setVertexArray( vertexBuffer );
     this->m_meshBuffer->setVertexColorArray( colorBuffer );
     this->m_meshBuffer->setVertexNormalArray( normalBuffer );
