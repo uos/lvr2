@@ -1120,7 +1120,7 @@ void HalfEdgeMesh<VertexT, NormalT>::finalizeAndRetesselate( bool genTextures )
     std::vector<int> planeRegions;
     for( size_t i = 0; i < m_regions.size(); ++i )
         if( !m_regions[i]->m_inPlane )
-            ;//nonPlaneRegions.push_back(i);
+            nonPlaneRegions.push_back(i);
         else
             planeRegions.push_back(i);
 
