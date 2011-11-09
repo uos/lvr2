@@ -146,28 +146,30 @@ void Tesselator<VertexT, NormalT>::getFinalizedTriangles(vector<float> &vertexBu
     // add all triangles and so faces to our buffers and keep track of all used parameters
     int m=0;
     int t=0;
+    int k=0;
     for(; triangles != trianglesEnd; ++triangles)
     {
-        //if( ((t%3 == 0) && t+2 < m_triangles.size()) && ( m_triangles[t] == m_triangles[t+1] ||
-        //                  m_triangles[t] == m_triangles[t+2] ||
-        //                  m_triangles[t+1] == m_triangles[t+2] ) )
-        //{
-        //    //cout << "Fatal. Degenerated Face! Skipping." << endl;
-        //    triangles+=2;
-        //    continue;
-        //}
-        t++;
-        search = ( std::find(usedVertices.begin(), usedVertices.end(), (*triangles) ) - usedVertices.begin() );
-        if(search!=usedVertices.size())
+        if( (((t+1)%3 == 0) && t+2 < m_triangles.size()) && ( m_triangles[t] == m_triangles[t+1] ||
+                          m_triangles[t] == m_triangles[t+2] ||
+                          m_triangles[t+1] == m_triangles[t+2] ) )
         {
+            cout << "Fatal. Degenerated Face! Skipping." << endl;
+        }
+        t++;
+        if( std::find(usedVertices.begin(), usedVertices.end(), (*triangles) ) != usedVertices.end() )
+        {
+            search = ( std::find(usedVertices.begin(), usedVertices.end(), (*triangles) ) - usedVertices.begin() );
             posArr[m] = search;
+            cout << "Looking for: " << *triangles << "\n\t";
+            for( int p=0; p<usedVertices.size(); p++ )
+                cout << "p: " << p << "  " << usedVertices[p] << endl;
         } else
         { 
             vertexBuffer.push_back((*triangles)[0]);
             vertexBuffer.push_back((*triangles)[1]);
             vertexBuffer.push_back((*triangles)[2]);
-            posArr[m] = usedVertices.size();
             usedVertices.push_back(*triangles);
+            posArr[m] = (usedVertices.size( ) - 1);
         }
 
         m++;
@@ -177,6 +179,7 @@ void Tesselator<VertexT, NormalT>::getFinalizedTriangles(vector<float> &vertexBu
             indexBuffer.push_back(posArr[0]);
             indexBuffer.push_back(posArr[1]);
             indexBuffer.push_back(posArr[2]);
+            cout << "i: " << k << "  " << posArr[0] << " " <<posArr[1] << " " <<posArr[2] << endl;
             m=0;
         }
     }
@@ -277,7 +280,7 @@ void Tesselator<VertexT, NormalT>::tesselate(vector<vector<HVertex*> > vectorBor
 
         if(borderPoints.size() <3 )
         {
-            cout << "BorderContains less than 3 Points!. Continue. S: " << borderPoints.size() << endl;
+//            cout << "BorderContains less than 3 Points!. Continue. S: " << borderPoints.size() << endl;
             continue; 
         }
 
