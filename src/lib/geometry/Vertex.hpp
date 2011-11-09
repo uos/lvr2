@@ -202,6 +202,19 @@ public:
 		return !(*this == other);
 	}
 
+
+  virtual bool operator<(const Vertex &other) const
+  {
+     if( this->x < other.x ) return true;
+     if( (this->x - other.x) <= 0.00001 )
+     {
+        if(this->y < other.y ) return true;
+        if((this->y - other.y) <= 0.00001 ) 
+           if(this->z < other.z) return true;
+     }
+     return false;
+  }
+
 	/**
 	 * @brief	Indexed coordinate access (reading)
 	 */
@@ -225,7 +238,7 @@ public:
 private:
 
 	/// Epsilon value for vertex comparism
-	static const float epsilon = 0.001;
+	static const float epsilon = 0.00001;
 };
 
 
