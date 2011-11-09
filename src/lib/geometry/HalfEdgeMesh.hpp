@@ -39,6 +39,7 @@
 #include <sstream>
 #include <float.h>
 #include <math.h>
+#include <algorithm>
 
 #include <glu.h>
 #include <glut.h>
@@ -234,8 +235,9 @@ private:
 	 * 			Also deletes dangling vertices and Edges
 	 *
 	 * @param	f		The face to be deleted
+	 * @param   erase   If the Face will be erased
 	 */
-	virtual void deleteFace(HFace* f);
+	virtual void deleteFace(HFace* f, bool erase = true);
 
 	/**
 	 * @brief	Collapse the given edge
@@ -290,11 +292,18 @@ private:
 	virtual int regionGrowing(HFace* start_face, NormalT &normal, float &angle, Region<VertexT, NormalT>* region);
 
 	/**
-	 * @brief	Deletes all faces belonging to the given region
-	 *
-	 * @param	region	The region to delete
+	 * @brief	Deletes all faces of the regions marked by region->m_toDelete
 	 */
-	virtual void deleteRegion(Region<VertexT, NormalT>* region);
+	virtual void deleteRegions();
+
+	/**
+	 * @brief 	Tells if the given face is a null pointer (needed for fast deletion of regions)
+	 *
+	 * @param	f	The face
+	 *
+	 * @return	True if the face given is a null pointer
+	 */
+	virtual bool faceIsNull(HFace* f){return f == 0;};
 
 	/**
 	 *	@brief	drags the points of the given plane onto the given intersection if those points lay at
