@@ -64,12 +64,6 @@ void Tesselator<VertexT, NormalT>::tesselatorEnd()
             m_triangles.push_back((m_vertices[i*3+2]).m_position);
             m_triangles.push_back((m_vertices[i*3+1]).m_position);
             m_triangles.push_back((m_vertices[i*3+0]).m_position);
-
-#ifdef DB_TESS
-            tess << m_vertices[i].m_position[0] << " " << m_vertices[i].m_position[1] << " " << m_vertices[i].m_position[2] << endl;
-            if((i+1)%3==0 && i != 0)
-                tess << m_vertices[i-2].m_position[0] << " " << m_vertices[i-2].m_position[1] << " " << m_vertices[i-2].m_position[2] << "\n#EndTriangle<<\n\n";
-#endif
         } 
     } else if(m_primitive == GL_TRIANGLE_FAN ) 
     {
@@ -94,13 +88,6 @@ void Tesselator<VertexT, NormalT>::tesselatorEnd()
                 m_triangles.push_back((m_vertices[i+1]).m_position);
                 m_triangles.push_back((m_vertices[i+2]).m_position);
             }
-
-#ifdef DB_TESS
-            tess << m_vertices[i].m_position[0]   << " " << m_vertices[i].m_position[1]   << " " << m_vertices[i].m_position[2]   << endl
-                << m_vertices[i+1].m_position[0] << " " << m_vertices[i+1].m_position[1] << " " << m_vertices[i+1].m_position[2] << endl
-                << m_vertices[i+2].m_position[0] << " " << m_vertices[i+2].m_position[1] << " " << m_vertices[i+2].m_position[2] << endl
-                << m_vertices[i].m_position[0]   << " " << m_vertices[i].m_position[1]   << " " << m_vertices[i].m_position[2]   << "\n#EndTriangle<<\n\n";
-#endif
         }
     }
 }
@@ -126,62 +113,33 @@ void Tesselator<VertexT, NormalT>::tesselatorAddVertex(const GLvoid *data, HVert
 template<typename VertexT, typename NormalT>
 void Tesselator<VertexT, NormalT>::getFinalizedTriangles(vector<float> &vertexBuffer, vector<unsigned int> &indexBuffer, vector<vector<HVertex*> > &vectorBorderPoints)
 {
+    // initialize tesselator. make sure datastructures are empty.
     init();
     tesselate(vectorBorderPoints);
     indexBuffer.clear();
     vertexBuffer.clear();
     
-    // used typedefs
-    typedef vector<Vertex<float> >::iterator vertexIter;
-
-    
     // keep track of already used vertices to avoid doubled or tripled vertices
-    vector<Vertex<float> > usedVertices;
-    size_t search;
+    map<Vertex<float>, unsigned int> vertexMap;
+    unsigned int pos;
 
     // iterate over all new triangles:
-    vertexIter triangles=m_triangles.begin(), trianglesEnd=m_triangles.end();
+    typename std::vector<Vertex<float> >::iterator triangles=m_triangles.begin();
+    typename std::vector<Vertex<float> >::iterator trianglesEnd=m_triangles.end();
 
-    int posArr[3]; posArr[0]=-1; posArr[1]=-1; posArr[2]=-1;
     // add all triangles and so faces to our buffers and keep track of all used parameters
-    int m=0;
-    int t=0;
-    int k=0;
     for(; triangles != trianglesEnd; ++triangles)
     {
-        if( (((t+1)%3 == 0) && t+2 < m_triangles.size()) && ( m_triangles[t] == m_triangles[t+1] ||
-                          m_triangles[t] == m_triangles[t+2] ||
-                          m_triangles[t+1] == m_triangles[t+2] ) )
-        {
-            cout << "Fatal. Degenerated Face! Skipping." << endl;
-        }
-        t++;
-        if( std::find(usedVertices.begin(), usedVertices.end(), (*triangles) ) != usedVertices.end() )
-        {
-            search = ( std::find(usedVertices.begin(), usedVertices.end(), (*triangles) ) - usedVertices.begin() );
-            posArr[m] = search;
-            cout << "Looking for: " << *triangles << "\n\t";
-            for( int p=0; p<usedVertices.size(); p++ )
-                cout << "p: " << p << "  " << usedVertices[p] << endl;
-        } else
-        { 
+        //if( vertexMap.find(*triangles) != vertexMap.end() ) {
+        //   pos = vertexMap[*triangles];
+        //} else { 
+            pos = vertexBuffer.size() / 3;
             vertexBuffer.push_back((*triangles)[0]);
             vertexBuffer.push_back((*triangles)[1]);
             vertexBuffer.push_back((*triangles)[2]);
-            usedVertices.push_back(*triangles);
-            posArr[m] = (usedVertices.size( ) - 1);
-        }
-
-        m++;
-
-        if(m == 3) // we added 3 vertices therefore a whole face!!
-        {
-            indexBuffer.push_back(posArr[0]);
-            indexBuffer.push_back(posArr[1]);
-            indexBuffer.push_back(posArr[2]);
-            cout << "i: " << k << "  " << posArr[0] << " " <<posArr[1] << " " <<posArr[2] << endl;
-            m=0;
-        }
+            vertexMap.insert( make_pair<Vertex<float>, unsigned int>( *triangles, pos ) ); 
+        //}
+        indexBuffer.push_back( pos );
     }
 }
 
@@ -193,21 +151,16 @@ void Tesselator<VertexT, NormalT>::tesselatorCombineVertices(GLdouble coords[3],
         GLdouble **dataOut,
         HVertex* userData)
 {
-
-    GLdouble *vertex = (GLdouble*) malloc(6*sizeof(GLdouble));
-
+    GLdouble *vertex = new GLdouble[6]; 
     if(!vertex)
     {
         cerr << "Could not allocate memory - undefined behaviour will/might arise from now on!" << endl;
+        return;
     }
     vertex[0] = coords[0];
     vertex[1] = coords[1];
     vertex[2] = coords[2];
-    Vertex<float> v(coords[0], coords[1], coords[2]);
-    //if( m_vertices.size() > 1 && (m_vertices.end()-1)->m_position == v )
-    //{
-    //   cout << "Combining Error! [" << m_vertices.size()%3 << "]" << endl;
-    //}
+    Vertex<float> v(vertex[0], vertex[1], vertex[2]);
     m_vertices.push_back(HVertex(v));
     *dataOut = vertex;
 }
@@ -280,10 +233,9 @@ void Tesselator<VertexT, NormalT>::tesselate(vector<vector<HVertex*> > vectorBor
 
         if(borderPoints.size() <3 )
         {
-//            cout << "BorderContains less than 3 Points!. Continue. S: " << borderPoints.size() << endl;
+//            cout << "BorderContains less than 3 Points!. Continue. S: " << borderPoints.size() << endl; // lets gracefully ignore this. FOREVER!;
             continue; 
         }
-
 
         // Begin Contour
         gluTessBeginContour(m_tesselator);
