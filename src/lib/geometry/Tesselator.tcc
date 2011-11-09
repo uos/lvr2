@@ -130,15 +130,15 @@ void Tesselator<VertexT, NormalT>::getFinalizedTriangles(vector<float> &vertexBu
     // add all triangles and so faces to our buffers and keep track of all used parameters
     for(; triangles != trianglesEnd; ++triangles)
     {
-        //if( vertexMap.find(*triangles) != vertexMap.end() ) {
-        //   pos = vertexMap[*triangles];
-        //} else { 
+        if( vertexMap.find(*triangles) != vertexMap.end() ) {
+           pos = vertexMap[*triangles];
+        } else { 
             pos = vertexBuffer.size() / 3;
             vertexBuffer.push_back((*triangles)[0]);
             vertexBuffer.push_back((*triangles)[1]);
             vertexBuffer.push_back((*triangles)[2]);
             vertexMap.insert( make_pair<Vertex<float>, unsigned int>( *triangles, pos ) ); 
-        //}
+        }
         indexBuffer.push_back( pos );
     }
 }
