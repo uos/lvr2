@@ -111,6 +111,7 @@ Texture<VertexT, NormalT>::Texture(PointCloudManager<VertexT, NormalT>* pm, Regi
 			m_data = new ColorT*[this->m_sizeY];
 
 			//walk through the bounding box and collect color information for each texel
+            #pragma omp parallel for
 			for(int y = 0; y < this->m_sizeY; y++)
 			{
 				m_data[m_sizeY-y-1] = new ColorT[this->m_sizeX];
