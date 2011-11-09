@@ -107,6 +107,7 @@ public:
 	 */
 	virtual bool detectFlicker(HFace* f);
 
+
     /**
      * @brief the number of faces contained in this region
      */
@@ -132,7 +133,8 @@ public:
 	///	The stuetzvektor of the plane
 	VertexT m_stuetzvektor;
 
-
+	/// indicates if the region is to be deleted or not
+	bool m_toDelete;
 
 private:
     /**
