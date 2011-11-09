@@ -568,9 +568,19 @@ void HalfEdgeMesh<VertexT, NormalT>::deleteRegions()
     		m_faces[i] = 0;
     	}
     }
-
-    typename vector<HFace*>::iterator newEnd = remove_if(m_faces.begin(), m_faces.end(), bind1st(mem_fun(&HalfEdgeMesh<VertexT, NormalT>::faceIsNull), this));
+    typename vector<HFace*>::iterator newEnd = remove_if(m_faces.begin(), m_faces.end(), bind1st(mem_fun(&HalfEdgeMesh<VertexT, NormalT>::isNull), this));
     m_faces.erase(newEnd, m_faces.end());
+
+    for (int i = 0; i < m_regions.size(); i++)
+    {
+    	if(m_regions[i]->m_toDelete)
+    	{
+    		delete m_regions[i];
+    		m_regions[i] = 0;
+    	}
+    }
+    typename vector<Region<VertexT, NormalT>*>::iterator newRegionsEnd = remove_if(m_regions.begin(), m_regions.end(), bind1st(mem_fun(&HalfEdgeMesh<VertexT, NormalT>::isNull), this));
+    m_regions.erase(newRegionsEnd, m_regions.end());
 }
 
      template<typename VertexT, typename NormalT>
