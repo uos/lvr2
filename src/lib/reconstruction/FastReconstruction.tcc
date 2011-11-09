@@ -256,7 +256,7 @@ void FastReconstruction<VertexT, NormalT>::calcQueryPointValues(){
     Timestamp ts;
 
     // Calculate a distance value for each query point
-    //#pragma omp parallel for
+    #pragma omp parallel for
     for(size_t i = 0; i < m_queryPoints.size(); i++){
         QueryPoint<VertexT> p = m_queryPoints[i];
         p.m_distance = this->m_manager.distance(p.m_position);
