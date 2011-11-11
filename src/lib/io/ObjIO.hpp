@@ -28,6 +28,9 @@
 
 #ifndef OBJIO_HPP_
 #define OBJIO_HPP_
+#include "BaseIO.hpp"
+#include <fstream>
+#include <set>
 
 namespace lssr
 {
@@ -35,22 +38,32 @@ namespace lssr
 /**
  * @brief A basic implementation of the obj file format.
  */
-class ObjIO
+class ObjIO : public BaseIO
 {
 public:
 
 	/**
 	 * @brief Constructor.
 	 **/
-    ObjIO() : m_model(0) {};
+	ObjIO() : m_model(0) {};
+	~ObjIO() { };
 
-    /**
-     * @brief 	Writes the mesh to an obj file.
-     *
-     * @param 	model		The model containing all mesh data
-     * @param	filename 	The file name to use
+	/**
+	 * \brief Parse the given file and load supported elements.
+	 *
+	 * @param filename  The file to read.
+	 */
+	Model* read(string filename){ return new Model; };
+
+	/**
+	 * @brief 	Writes the mesh to an obj file.
+	 *
+	 * @param 	model		The model containing all mesh data
+	 * @param	filename 	The file name to use
      */
-    void save(Model* model, string filename);
+    void save(Model *model, string filename);
+
+
 
 private:
     /// The model containing all mesh data
