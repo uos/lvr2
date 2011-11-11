@@ -1018,6 +1018,7 @@ void HalfEdgeMesh<VertexT, NormalT>::finalize()
     float *vertexBuffer, *normalBuffer;
     uchar *colorBuffer;
     unsigned int *indexBuffer;
+    std::vector<uchar> faceColorBuffer;
 
     vertexBuffer 	= new float[3 * numVertices];
     normalBuffer 	= new float[3 * numVertices];
@@ -1073,7 +1074,9 @@ void HalfEdgeMesh<VertexT, NormalT>::finalize()
         colorBuffer[indexBuffer[3 * i + 2] * 3 + 0] = r;
         colorBuffer[indexBuffer[3 * i + 2] * 3 + 1] = g;
         colorBuffer[indexBuffer[3 * i + 2] * 3 + 2] = b;
-
+        faceColorBuffer.push_back( r );
+        faceColorBuffer.push_back( g );
+        faceColorBuffer.push_back( b );
     }
 
     // Hand the buffers over to the Model class for IO operations.
@@ -1083,6 +1086,7 @@ void HalfEdgeMesh<VertexT, NormalT>::finalize()
     this->m_meshBuffer->setVertexColorArray( colorBuffer, numVertices );
     this->m_meshBuffer->setVertexNormalArray( normalBuffer, numVertices  );
     this->m_meshBuffer->setFaceArray( indexBuffer, numFaces );
+    this->m_meshBuffer->setFaceColorArray( faceColorBuffer );
     this->m_finalized = true;
 }
 
@@ -1100,6 +1104,7 @@ void HalfEdgeMesh<VertexT, NormalT>::finalizeAndRetesselate( bool genTextures )
     std::vector<float> vertexBuffer;
     std::vector<float> normalBuffer;
     std::vector<uchar> colorBuffer;
+    std::vector<uchar> faceColorBuffer;
     std::vector<unsigned int> textureBuffer;
     std::vector<unsigned int> indexBuffer;
     std::vector<unsigned int> textureIndexBuffer;
@@ -1181,6 +1186,20 @@ void HalfEdgeMesh<VertexT, NormalT>::finalizeAndRetesselate( bool genTextures )
                 indexBuffer.push_back( pos );
                 textureIndexBuffer.push_back( UINT_MAX );
             }
+
+            if (genTextures)
+            {
+            	int one = 1;
+            	vector<VertexT> cv;
+            	this->m_pointCloudManager->getkClosestVertices((*m_regions[iRegion]->m_faces[iFace]).getCentroid(), one, cv);
+            	r = cv[0].r;
+            	g = cv[0].g;
+            	b = cv[0].b;
+            }
+
+            faceColorBuffer.push_back( r );
+            faceColorBuffer.push_back( g );
+            faceColorBuffer.push_back( b );
         }
     }
     cout << timestamp << "Done copying non planar regions." << endl;
@@ -1202,7 +1221,7 @@ void HalfEdgeMesh<VertexT, NormalT>::finalizeAndRetesselate( bool genTextures )
             g = (uchar)( 255 * fabs( sin( surfaceClass * 30 ) ) );
             b = (uchar)( 255 * fabs( sin( surfaceClass * 2 ) ) ) ;
         }
-        textureBuffer.push_back( m_regions[iRegion]->m_regionNumber );
+        //textureBuffer.push_back( m_regions[iRegion]->m_regionNumber );
 
         // get the contours for this region
         vector<vector<HVertex*> > contours = m_regions[iRegion]->getContours(0.01);
@@ -1256,7 +1275,16 @@ void HalfEdgeMesh<VertexT, NormalT>::finalizeAndRetesselate( bool genTextures )
 
             // store the indices with the correct offset to the indices buffer.
             indexBuffer.push_back( indices[j] + offset );
-            textureIndexBuffer.push_back( m_regions[iRegion]->m_regionNumber );
+            if( genTextures )
+            	textureIndexBuffer.push_back( m_regions[iRegion]->m_regionNumber );
+            else
+            	textureIndexBuffer.push_back( UINT_MAX );
+        }
+        for( int j = 0; j < indices.size() / 3; j++ )
+        {
+            faceColorBuffer.push_back( r );
+            faceColorBuffer.push_back( g );
+            faceColorBuffer.push_back( b );
         }
         if(t) delete t;
     }
@@ -1269,9 +1297,13 @@ void HalfEdgeMesh<VertexT, NormalT>::finalizeAndRetesselate( bool genTextures )
     this->m_meshBuffer->setVertexColorArray( colorBuffer );
     this->m_meshBuffer->setVertexNormalArray( normalBuffer );
     this->m_meshBuffer->setFaceArray( indexBuffer );
+    this->m_meshBuffer->setVertexTextureCoordinateArray( textureCoordBuffer );
+    this->m_meshBuffer->setFaceTextureIndexArray( textureIndexBuffer );
+    this->m_meshBuffer->setFaceColorArray( faceColorBuffer );
     this->m_finalized = true;
 
     cout << timestamp << "Done retesselating." << endl;
+
 } 
 
 } // namespace lssr
