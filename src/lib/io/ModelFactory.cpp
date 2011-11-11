@@ -27,6 +27,7 @@
 #include "AsciiIO.hpp"
 #include "PLYIO.hpp"
 #include "UosIO.hpp"
+#include "ObjIO.hpp"
 #include "ModelFactory.hpp"
 
 #include "Timestamp.hpp"
@@ -92,6 +93,10 @@ void ModelFactory::saveModel(Model* m, string filename)
     {
         io = new AsciiIO;
     }
+	 else if ( extension == ".obj" )
+	 {
+		 io = new ObjIO;
+	 }
     else if (extension == "")
     {
         // Try to load UOS format data from directory in
