@@ -279,7 +279,9 @@ void HalfEdgeMesh<VertexT, NormalT>::collapseEdge(HEdge* edge)
     // Move p1 to the center between p1 and p2 (recycle p1)
     p1->m_position = (p1->m_position + p2->m_position) * 0.5;
 
-    //Delete redundant edges
+    // Reorganize the pointer structure between the edges.
+    // If a face will be deleted after the edge is collapsed the pair pointers
+    // have to be reseted.
     if (edge->face != 0)
     {
         edge->next->next->pair->pair = edge->next->pair;
@@ -287,7 +289,6 @@ void HalfEdgeMesh<VertexT, NormalT>::collapseEdge(HEdge* edge)
         deleteEdge(edge->next->next, false);
         deleteEdge(edge->next, false);
     }
-
     if (edge->pair->face != 0)
     {
         edge->pair->next->next->pair->pair = edge->pair->next->pair;
@@ -296,13 +297,12 @@ void HalfEdgeMesh<VertexT, NormalT>::collapseEdge(HEdge* edge)
         deleteEdge(edge->pair->next, false);
     }
 
-    // Delete faces
+    // Now do really delete faces
     if(edge->pair->face != 0)
     {
         m_faces.erase(find(m_faces.begin(), m_faces.end(), edge->pair->face));
         delete edge->pair->face;
     }
-
     if(edge->face != 0)
     {
         m_faces.erase(find(m_faces.begin(), m_faces.end(), edge->face));
@@ -364,13 +364,15 @@ void HalfEdgeMesh<VertexT, NormalT>::flipEdge(HFace* f1, HFace* f2)
     template<typename VertexT, typename NormalT>
 void HalfEdgeMesh<VertexT, NormalT>::flipEdge(HEdge* edge)
 {
+    // This can only be done if there are two faces on both sides of the edge
     if (edge->pair->face != 0 && edge->face != 0)
     {
+
         HVertex* newEdgeStart = edge->next->end;
-        HVertex* newEdgeEnd = edge->pair->next->end;
+        HVertex* newEdgeEnd   = edge->pair->next->end;
 
         //update next pointers
-        edge->next->next->next = edge->pair->next;
+        edge->next->next->next       = edge->pair->next;
         edge->pair->next->next->next = edge->next;
 
         //create the new edge
@@ -403,9 +405,9 @@ void HalfEdgeMesh<VertexT, NormalT>::flipEdge(HEdge* edge)
         edge->pair->next->next = newPair;
 
         //update edge->face pointers
-        newEdge->next->face = newEdge->face;
+        newEdge->next->face       = newEdge->face;
         newEdge->next->next->face = newEdge->face;
-        newPair->next->face = newPair->face;
+        newPair->next->face       = newPair->face;
         newPair->next->next->face = newPair->face;
 
         //recalculate face normals
