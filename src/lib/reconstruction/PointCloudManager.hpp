@@ -58,8 +58,8 @@ public:
      * @param k  The (max) number of returned closest points to v
      * @param nb A vector containing the determined closest points
      */
-    virtual void getkClosestVertices(const VertexT &v,
-        const size_t &k, vector<VertexT> &nb) = 0;
+    virtual void getkClosestVertices( const VertexT &v,
+        const size_t &k, vector<VertexT> &nb ) = 0;
 
     /**
      * @brief Returns the k closest neighbor normals to a given query point
@@ -68,8 +68,8 @@ public:
      * @param k  The (max) number of returned closest points to v
      * @param nb A vector containing the determined closest normals
      */
-    virtual void getkClosestNormals(const VertexT &n,
-        const size_t &k, vector<NormalT> &nb) = 0;
+    virtual void getkClosestNormals( const VertexT &n,
+        const size_t &k, vector<NormalT> &nb ) = 0;
 
     /**
      * @brief Returns the bounding box of the loaded point set
@@ -82,7 +82,7 @@ public:
      * @param index
      * @return
      */
-    virtual VertexT getPoint(size_t index);
+    virtual VertexT getPoint( size_t index );
 
     /**
      * @brief Returns the number of managed points
@@ -92,7 +92,7 @@ public:
     /**
      * @brief Returns the point at the given \ref{index}
      */
-    virtual const VertexT operator[](const size_t &index) const;
+    virtual const VertexT operator[]( const size_t &index ) const;
 
 
     /**
@@ -120,13 +120,22 @@ public:
     /**
      * @brief Returns the distance of vertex v from the nearest tangent plane.
      **/
-    virtual float distance(VertexT v) = 0;
+    virtual float distance( VertexT v ) = 0;
 
-    void setKD(int kd) {m_kd = kd;}
+    void setKD( int kd )
+	{
+		m_kd = kd;
+	}
 
-    void setKI(int ki) {m_ki = ki;}
+    void setKI( int ki )
+	{
+		m_ki = ki;
+	}
 
-    void setKN(int kn) {m_kn = kn;}
+    void setKN( int kn )
+	{
+		m_kn = kn;
+	}
 
     virtual void calcNormals() = 0;
 
