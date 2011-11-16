@@ -22,6 +22,7 @@
 #include <iostream>
 #include <vector>
 #include <ctime>
+#include <io/ModelFactory.hpp>
 
 double maxdist = std::numeric_limits<double>::max();
 char nc_rgb[64] = "  0   0   0";
@@ -244,6 +245,14 @@ int main( int argc, char ** argv ) {
 
 	/* Read clouds from file. */
 	printf( "Loading laserscan data...\n" );
+    ModelFactory io_factory;
+    Model* model = io_factory.readModel( argv[optind] );
+    PointBuffer* pointloader = model ? model->m_pointCloud : NULL;
+    if ( !pointloader )
+    {
+        printf( "error: Clould not load pointcloud from »%s«", argv[optind] );
+        exit( EXIT_FAILURE );
+    }
 	readPts( argv[optind], lasercloud );
 	printf( "Loading kinect data...\n" );
 	for ( int i = optind + 1; i < argc - 1; i++ ) {
