@@ -26,7 +26,8 @@
 
 #include <cassert>
 #include <string>
-using std::string;
+#include <cmath>
+#include <cstring>
 
 #include "../io/Timestamp.hpp"
 #include "../io/ModelFactory.hpp"
@@ -46,7 +47,9 @@ template<typename VertexT, typename NormalT>
 VertexT PointCloudManager<VertexT, NormalT>::getPoint(size_t index)
 {
     assert(index < m_numPoints);
-    return VertexT(m_points[index][0], m_points[index][1], m_points[index][2], m_colors[index][0], m_colors[index][1], m_colors[index][2]);
+    return VertexT(
+            m_points[index][0], m_points[index][1], m_points[index][2], 
+            m_colors[index][0], m_colors[index][1], m_colors[index][2] );
 }
 
 template<typename VertexT, typename NormalT>
@@ -59,6 +62,47 @@ template<typename VertexT, typename NormalT>
 const VertexT PointCloudManager<VertexT, NormalT>::operator[](const size_t& index) const
 {
     return VertexT(m_points[index][0], m_points[index][1], m_points[index][2]);
+}
+
+
+template<typename VertexT, typename NormalT>
+void PointCloudManager<VertexT, NormalT>::colorizePointCloud( 
+        PointCloudManager<VertexT, NormalT>* pcm, const float &maxDist,
+        const uchar* blankColor )
+{
+
+#pragma omp parallel for
+    /* Run through laserscan cloud and find neighbours. */
+    for ( int i = 0; i < m_numPoints; i++ ) {
+
+        std::vector<VertexT> nearestPoint(1);
+
+        /* nearest neighbor search */
+        VertexT p( this->getPoint( i ) );
+        pcm->getkClosestVertices( p, 1, nearestPoint );
+        /* Check if vector contains point. */
+        if ( nearestPoint.size() ) {
+            VertexT q( nearestPoint[0] );
+            float dist = sqrt( 
+                      ( p.x - q.x ) * ( p.x - q.x ) 
+                    + ( p.y - q.y ) * ( p.y - q.y ) 
+                    + ( p.z - q.z ) * ( p.z - q.z ) );
+            if ( dist && dist > maxDist && blankColor ) {
+                /* Set default color. */
+                m_colors[i][0] = blankColor[0];
+                m_colors[i][1] = blankColor[1];
+                m_colors[i][2] = blankColor[2];
+            } else {
+                /* Get color from other pointcloud. */
+                m_colors[i][0] = q.r;
+                m_colors[i][1] = q.g;
+                m_colors[i][2] = q.b;
+            }
+            /* TODO: Store the distance as confidence information. */
+
+        }
+    }
+
 }
 
 
