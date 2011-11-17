@@ -87,10 +87,13 @@ void PointCloudManager<VertexT, NormalT>::colorizePointCloud(
         /* Check if vector contains point. */
         if ( nearestPoint.size() ) {
             VertexT q( nearestPoint[0] );
-            float dist = sqrt( 
+            float dist = p.distance( q );
+                /*
+                sqrt( 
                       ( p.x - q.x ) * ( p.x - q.x ) 
                     + ( p.y - q.y ) * ( p.y - q.y ) 
                     + ( p.z - q.z ) * ( p.z - q.z ) );
+                */
             if ( dist && dist > maxDist && blankColor ) {
                 /* Set default color. */
                 m_colors[i][0] = blankColor[0];
