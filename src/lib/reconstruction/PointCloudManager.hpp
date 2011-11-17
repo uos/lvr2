@@ -139,7 +139,6 @@ public:
 
     virtual void calcNormals() = 0;
 
-protected:
 
     /// The currently stored points
     float**                    m_points;
