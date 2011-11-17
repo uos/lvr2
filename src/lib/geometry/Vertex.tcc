@@ -20,11 +20,14 @@
  /*
  * Vertex.tcc
  *
- *  Created on: 10.02.2011
- *      Author: Thomas Wiemann
+ * @date     Created:       2011-02-10
+ * @date     Last modified: 2011-11-17 14:02:50
+ * @author   Thomas Wiemann (twiemann), Universität Osnabrück
+ * @author   Lars Kiesow (lkiesow), lkiesow@uos.de, Universität Osnabrück
  */
 
 #include <stdexcept>
+#include <cmath>
 
 namespace lssr
 {
@@ -49,6 +52,7 @@ CoordType Vertex<CoordType>::operator[](const int &index) const
     }
     return ret;
 }
+
 
 template<typename CoordType>
 CoordType& Vertex<CoordType>::operator[](const int &index)
@@ -144,6 +148,17 @@ void Vertex<CoordType>::crossTo(const Vertex<CoordType>  &other)
     z = x * other.y - y * other.x;
 }
 
+
+template<typename CoordType>
+CoordType Vertex<CoordType>::distance( const Vertex &other ) const
+{
+    return sqrt( 
+              ( x - other.x ) * ( x - other.x ) 
+            + ( y - other.y ) * ( y - other.y ) 
+            + ( z - other.z ) * ( z - other.z ) );
+}
+
+
 template<typename CoordType>
 void Vertex<CoordType>::rotateCM(const Matrix4<CoordType> &m)
 {
@@ -174,10 +189,10 @@ void Vertex<CoordType>::rotateRM(const Matrix4<CoordType> &m)
 template<typename CoordType>
 void Vertex<CoordType>::transformCM(const Matrix4<CoordType> &m)
 {
-	rotateCM(m);
-	x += m[12];
-	y += m[13];
-	z += m[14];
+    rotateCM(m);
+    x += m[12];
+    y += m[13];
+    z += m[14];
 }
 
 template<typename CoordType>
