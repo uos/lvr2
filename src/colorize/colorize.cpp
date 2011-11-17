@@ -23,95 +23,26 @@
 #include <vector>
 #include <ctime>
 #include <io/ModelFactory.hpp>
+#include <geometry/ColorVertex.hpp>
 
-double maxdist = std::numeric_limits<double>::max();
-char nc_rgb[64] = "  0   0   0";
+#include "reconstruction/StannPointCloudManager.hpp"
+#include "reconstruction/FastReconstruction.hpp"
+#include "io/PLYIO.hpp"
 
-using namespace pcl;
-
-
-/*******************************************************************************
- *         Name:  readPts
- *  Description:  Load a pts file into memory.
- ******************************************************************************/
-void readPts( char * filename, PointCloud<PointXYZRGB>::Ptr cloud ) {
-
-	/* Open input file. */
-	FILE * f = fopen( filename, "r" );
-	if ( !f ) {
-		fprintf( stderr, "error: Could not open »%s«.\n", filename );
-		exit( EXIT_FAILURE );
-	}
-
-	/* Determine amount of values per line */
-	char line[1024];
-	fgets( line, 1023, f );
-	int valcount = 0;
-	char * pch = strtok( line, "\t " );
-	while ( pch ) {
-		if ( strcmp( pch, "" ) && strcmp( pch, "\n" ) ) {
-			valcount++;
-		}
-		pch = strtok( NULL, "\t " );
-	}
-
-	/* Do we have color information in the pts file? */
-	int read_color = valcount >= 6;
-	/* Are there additional columns we dont want to have? */
-	int dummy_count = valcount - ( read_color ? 6 : 3 );
-	float dummy;
-
-	/* Resize cloud. Keep old points. */
-	int i = cloud->width;
-	cloud->width += 100000;
-	cloud->height = 1;
-	cloud->points.resize( cloud->width * cloud->height );
-
-	/* Start from the beginning */
-	fseek( f, 0, SEEK_SET );
-
-	/* Read values */
-	while ( !feof( f ) ) {
-		/* Read coordinates */
-		fscanf( f, "%f %f %f", &cloud->points[i].x, &cloud->points[i].y,
-				&cloud->points[i].z );
-
-		/* Igbore remission, ... */
-		for ( int j = 0; j < dummy_count; j++ ) {
-			fscanf( f, "%f", &dummy );
-			printf( "read dummy...\n" );
-		}
-
-		/* Read color information, if available */
-		if ( read_color ) {
-			uint32_t r, g, b;
-			fscanf( f, "%u %u %u", &r, &g, &b );
-			uint32_t rgb = r << 16 | g << 8 | b;
-			cloud->points[i].rgb = *reinterpret_cast<float*>( &rgb );
-		}
-		i++;
-		/* We have more points: enlarge cloud */
-		if ( i >= cloud->points.size() ) {
-			printf( "%u values read.\n", i );
-			cloud->width = cloud->width + 100000;
-			cloud->points.resize( cloud->width * cloud->height );
-		}
-	}
-	i--;
-	
-	/* Resize cloud to amount of points. */
-	cloud->width = i;
-	cloud->points.resize( cloud->width * cloud->height );
-
-	printf( "%u values read.\nPointcloud loaded.\n", i );
-
-	if ( f ) {
-		fclose( f );
-	}
+// Optional PCL bindings
+#ifdef _USE_PCL_
+#include "reconstruction/PCLPointCloudManager.hpp"
+#endif
 
 
+typedef lssr::PointCloudManager<lssr::ColorVertex<float, unsigned char>,
+        lssr::Normal<float> >* pcm_p;
 
-}
+typedef lssr::PointBuffer* pc_p;
+
+
+float maxdist = std::numeric_limits<float>::max();
+unsigned char rgb[3] = { 255, 0, 0 };
 
 
 /*******************************************************************************
@@ -120,7 +51,7 @@ void readPts( char * filename, PointCloud<PointXYZRGB>::Ptr cloud ) {
  ******************************************************************************/
 void printHelp( char * name ) {
 
-	printf( "Usage: %s [options] laserdat kinectdat1 [kinectdat2 ...] outfile\n"
+	printf( "Usage: %s [options] infile1 infile2 outfile\n"
 			"Options:\n"
 			"   -h   Show this help and exit.\n"
 			"   -d   Maximum distance for neighbourhood.\n"
@@ -159,13 +90,11 @@ void parseArgs( int argc, char ** argv ) {
 				}
 				break;
 			case 'c':
-				uint32_t rgb = 0;
-				sscanf( optarg, "%x", &rgb );
-				sprintf( nc_rgb, "% 3d % 3d % 3d", 
-						(int) ((uint8_t *) &rgb)[2], 
-						(int) ((uint8_t *) &rgb)[1], 
-						(int) ((uint8_t *) &rgb)[0] );
-				break;
+				uint32_t new_rgb = 0;
+				sscanf( optarg, "%x", &new_rgb );
+                rgb[0] = (int) ((uint8_t *) &new_rgb)[2];
+                rgb[1] = (int) ((uint8_t *) &new_rgb)[1];
+                rgb[2] = (int) ((uint8_t *) &new_rgb)[0];
 		}
 	}
 
@@ -179,54 +108,49 @@ void parseArgs( int argc, char ** argv ) {
 
 
 /*******************************************************************************
- *         Name:  colorizeCloud
+ *         Name:  loadPointCloud
  *  Description:  
  ******************************************************************************/
-void colorizeCloud( PointCloud<PointXYZRGB>::Ptr lasercloud, 
-		PointCloud<PointXYZRGB>::Ptr kinectcloud, char * filename ) {
+void loadPointCloud( pc_p* pc, pcm_p* pcm, char* filename )
+{
+    
+	/* Read clouds from file. */
+	printf( "Loading pointcloud %s…\n", filename );
+    lssr::ModelFactory io_factory;
+    lssr::Model* model = io_factory.readModel( filename );
+    *pc = model ? model->m_pointCloud : NULL;
+    if ( !(*pc) )
+    {
+        printf( "error: Clould not load pointcloud from »%s«", filename );
+        exit( EXIT_FAILURE );
+    }
 
-	/* Generate octree for kinect pointcloud */
-	KdTreeFLANN<PointXYZRGB> kdtree; /* param: sorted */
-	kdtree.setInputCloud( kinectcloud );
+    std::string pcm_name = "stann";
+    if ( pcm_name == "stann" )
+    {
+        printf( "Creating STANN point cloud manager…\n" );
+        *pcm = new lssr::StannPointCloudManager<
+            lssr::ColorVertex<float, unsigned char>, 
+            lssr::Normal<float> >( *pc );
+    }
+#ifdef _USE_PCL_
+    else if ( pcm_name == "pcl" ) 
+    {
+        printf( "Creating STANN point cloud manager…\n" );
+        *pcm = new lssr::PCLPointCloudManager<
+            lssr::ColorVertex<float, unsigned char>, 
+            lssr::Normal<float> >( *pc );
+    }
+#endif
+    else
+    {
+        printf( "error: Invalid point cloud manager specified.\n" );
+        exit( EXIT_FAILURE );
+    }
 
-	/* Open output file. */
-	FILE * out = fopen( filename, "w" );
-	if ( !out ) {
-		fprintf( stderr, "error: Could not open »%s«.\n", filename );
-		exit( EXIT_FAILURE );
-	}
-
-	printf( "Adding color information...\n" );
-
-	/* Run through laserscan cloud and find neighbours. */
-	#pragma omp parallel for
-	for ( int i = 0; i < lasercloud->points.size(); i++ ) {
-
-		std::vector<int>   pointIdx(1);
-		std::vector<float> pointSqrDist(1);
-
-		/* nearest neighbor search */
-		if ( kdtree.nearestKSearch( *lasercloud, i, 1, pointIdx, pointSqrDist ) ) {
-			if ( pointSqrDist[0] > maxdist ) {
-				fprintf( out, "% 11f % 11f % 11f % 14f 0 %s\n",
-						lasercloud->points[i].x, lasercloud->points[i].y,
-						lasercloud->points[i].z, pointSqrDist[0],
-						nc_rgb );
-			} else {
-				uint8_t * rgb = (uint8_t *) &kinectcloud->points[ pointIdx[0] ].rgb;
-				/* lasercloud->points[i].rgb = kinectcloud->points[ pointIdx[0] ].rgb; */
-				fprintf( out, "% 11f % 11f % 11f % 14f 1 % 3d % 3d % 3d\n",
-						lasercloud->points[i].x, lasercloud->points[i].y,
-						lasercloud->points[i].z, pointSqrDist[0],
-						rgb[2], rgb[1], rgb[0] );
-			}
-
-		}
-	}
-
-	if ( out ) {
-		fclose( out );
-	}
+    (*pcm)->setKD( 10 );
+    (*pcm)->setKI( 10 );
+    (*pcm)->setKN( 10 );
 
 }
 
@@ -235,30 +159,31 @@ void colorizeCloud( PointCloud<PointXYZRGB>::Ptr lasercloud,
  *         Name:  main
  *  Description:  Main function.
  ******************************************************************************/
-int main( int argc, char ** argv ) {
+int main( int argc, char ** argv )
+{
 
 	omp_set_num_threads( omp_get_num_procs() );
 	parseArgs( argc, argv );
 
-	PointCloud<PointXYZRGB>::Ptr lasercloud(  new PointCloud<PointXYZRGB> );
-	PointCloud<PointXYZRGB>::Ptr kinectcloud( new PointCloud<PointXYZRGB> );
-
 	/* Read clouds from file. */
-	printf( "Loading laserscan data...\n" );
-    ModelFactory io_factory;
-    Model* model = io_factory.readModel( argv[optind] );
-    PointBuffer* pointloader = model ? model->m_pointCloud : NULL;
-    if ( !pointloader )
-    {
-        printf( "error: Clould not load pointcloud from »%s«", argv[optind] );
-        exit( EXIT_FAILURE );
-    }
-	readPts( argv[optind], lasercloud );
-	printf( "Loading kinect data...\n" );
-	for ( int i = optind + 1; i < argc - 1; i++ ) {
-		readPts( argv[i], kinectcloud );
-	}
+    pcm_p pcm1 = NULL, pcm2 = NULL;
+    pc_p  pc1  = NULL, pc2  = NULL;
+    loadPointCloud( &pc1, &pcm1, argv[ optind     ] );
+    loadPointCloud( &pc2, &pcm2, argv[ optind + 1 ] );
 
-	colorizeCloud( lasercloud, kinectcloud, argv[ argc - 1 ] );
+    /* Colorize first point cloud. */
+    pcm1->colorizePointCloud( pcm2, maxdist, rgb );
+
+    /* Reset color array of first point cloud. */
+    printf( "%d, %d\n", pcm1->getNumPoints(), pc1->getNumPoints() );
+    pc1->setPointColorArray( *(pcm1->m_colors), pcm1->getNumPoints() );
+
+    /* Save point cloud. */
+    lssr::ModelFactory io_factory;
+    lssr::Model model;
+    model.m_pointCloud = pc1;
+    io_factory.saveModel( &model, argv[ optind + 2 ] );
+
+    return EXIT_SUCCESS;
 
 }

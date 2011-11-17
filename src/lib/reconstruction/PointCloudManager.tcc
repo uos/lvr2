@@ -28,6 +28,7 @@
 #include <string>
 #include <cmath>
 #include <cstring>
+#include <cstdio>
 
 #include "../io/Timestamp.hpp"
 #include "../io/ModelFactory.hpp"
@@ -65,7 +66,9 @@ size_t PointCloudManager<VertexT, NormalT>::getNumPoints()
 template<typename VertexT, typename NormalT>
 const VertexT PointCloudManager<VertexT, NormalT>::operator[]( const size_t& index ) const
 {
-    return VertexT( m_points[index][0], m_points[index][1], m_points[index][2] );
+    return VertexT(
+            m_points[index][0], m_points[index][1], m_points[index][2], 
+            m_colors[index][0], m_colors[index][1], m_colors[index][2] );
 }
 
 
@@ -75,9 +78,18 @@ void PointCloudManager<VertexT, NormalT>::colorizePointCloud(
         const uchar* blankColor )
 {
 
+    /* Check if we already have a color buffer. */
+    if ( !m_colors ) {
+        uchar* c = new uchar[ m_numPoints * 3 ];
+        m_colors = new uchar*[ m_numPoints    ];
+        for ( size_t i = 0; i < m_numPoints; i++ ) {
+            m_colors[i] = c + ( 3 * i );
+        }
+    }
+
 #pragma omp parallel for
     /* Run through laserscan cloud and find neighbours. */
-    for ( int i = 0; i < m_numPoints; i++ ) {
+    for ( size_t i = 0; i < m_numPoints; i++ ) {
 
         std::vector<VertexT> nearestPoint(1);
 
@@ -88,12 +100,7 @@ void PointCloudManager<VertexT, NormalT>::colorizePointCloud(
         if ( nearestPoint.size() ) {
             VertexT q( nearestPoint[0] );
             float dist = p.distance( q );
-                /*
-                sqrt( 
-                      ( p.x - q.x ) * ( p.x - q.x ) 
-                    + ( p.y - q.y ) * ( p.y - q.y ) 
-                    + ( p.z - q.z ) * ( p.z - q.z ) );
-                */
+            printf( "%f %d %d %d\n", dist, q.r, q.g, q.b );
             if ( dist && dist > maxDist && blankColor ) {
                 /* Set default color. */
                 m_colors[i][0] = blankColor[0];
