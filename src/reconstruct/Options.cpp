@@ -58,6 +58,7 @@ Options::Options(int argc, char** argv) : m_descr("Supported options")
         ("retesselate,rt", "Retesselate regions that are in a regression plane.")
         ("generateTextures", "Generate textures during finalization.")
         ("colorRegions", "Color detected regions with color gradient.")
+        ("depth", value<int>(&m_depth)->default_value(100), "Maximum recursion depth for region growing.")
 		;
 
 	m_pdescr.add("inputFile", -1);
@@ -205,6 +206,11 @@ float Options::getNormalThreshold() const
 int   Options::getSmallRegionThreshold() const
 {
     return m_variables["smallRegionThreshold"].as<int>();
+}
+
+int Options::getDepth() const
+{
+	return m_depth;
 }
 
 Options::~Options() {

@@ -70,7 +70,7 @@ public:
     virtual void getkClosestNormals(const VertexT &n,
             const size_t &k, vector<NormalT> &nb);
 
-    virtual float distance(VertexT v);
+    virtual void distance(VertexT v, float &projectedDistance, float &euklideanDistance);
 
     virtual void calcNormals();
 

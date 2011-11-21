@@ -330,7 +330,7 @@ float StannPointCloudManager<VertexT, NormalT>::distance(VertexT v, Plane<Vertex
 }
 
 template<typename VertexT, typename NormalT>
-float StannPointCloudManager<VertexT, NormalT>::distance(VertexT v)
+void StannPointCloudManager<VertexT, NormalT>::distance(VertexT v, float &projectedDistance, float &euklideanDistance)
 {
     int k = this->m_kd;
 
@@ -365,11 +365,11 @@ float StannPointCloudManager<VertexT, NormalT>::distance(VertexT v)
 
 
     //Calculate distance
-    float distance = (v - nearest) * normal;
+    projectedDistance = (v - nearest) * normal;
+    euklideanDistance = (v - nearest).length();
 
     delete[] p;
 
-    return distance;
 }
 
 template<typename VertexT, typename NormalT>

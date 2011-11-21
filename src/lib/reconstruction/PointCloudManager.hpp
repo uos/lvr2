@@ -61,36 +61,40 @@ public:
     virtual void getkClosestVertices( const VertexT &v,
         const size_t &k, vector<VertexT> &nb ) = 0;
 
-    /**
-     * @brief Returns the k closest neighbor normals to a given query point
-     *
-     * @param n  A query vertex
-     * @param k  The (max) number of returned closest points to v
-     * @param nb A vector containing the determined closest normals
-     */
+
+	/**
+	 * @brief Returns the k closest neighbor normals to a given query point
+	 *
+	 * @param n			A query vertex
+	 * @param k			The (max) number of returned closest points to v
+	 * @param nb		A vector containing the determined closest normals
+	 */
     virtual void getkClosestNormals( const VertexT &n,
         const size_t &k, vector<NormalT> &nb ) = 0;
 
     /**
-     * @brief Returns the bounding box of the loaded point set
+     * @brief Returns the bounding box of the loaded point set.
      */
     virtual BoundingBox<VertexT>& getBoundingBox();
 
+
     /**
-     * @brief Returns the points at index \ref{index} in the point array
+     * @brief Returns the points at index \ref{index} in the point array.
      *
      * @param index
      * @return
      */
     virtual VertexT getPoint( size_t index );
 
+
     /**
      * @brief Returns the number of managed points
      */
     virtual size_t getNumPoints();
 
+
     /**
-     * @brief Returns the point at the given \ref{index}
+     * @brief Returns the point at the given \ref{index}.
      */
     virtual const VertexT operator[]( const size_t &index ) const;
 
@@ -123,7 +127,7 @@ public:
     /**
      * @brief Returns the distance of vertex v from the nearest tangent plane.
      **/
-    virtual float distance( VertexT v ) = 0;
+	virtual void distance(VertexT v, float &projectedDistance, float &euklideanDistance) = 0;
 
     void setKD( int kd )
     {

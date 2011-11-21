@@ -192,6 +192,11 @@ public:
 	 */
 	int   getFillHoles() const;
 
+	/**
+	 * @brief 	Returns the maximum recursion depth for region growing
+	 */
+	int getDepth() const;
+
 private:
 
 	/// The set voxelsize
@@ -253,6 +258,9 @@ private:
 
 	/// Threshold for plane optimization
 	int                             m_minPlaneSize;
+
+	/// Maximum recursion depth for region growing
+	int								m_depth;
 
 };
 
@@ -328,6 +336,10 @@ inline ostream& operator<<(ostream& os, const Options &o)
 	if(o.generateTextures())
 	{
 	    cout << "##### Generate Textures \t\t: YES" << endl;
+	}
+	if(o.getDepth())
+	{
+	    cout << "##### Recursion depth \t\t: " << o.getDepth() << endl;
 	}
 	return os;
 }

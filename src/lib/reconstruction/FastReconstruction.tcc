@@ -258,9 +258,14 @@ void FastReconstruction<VertexT, NormalT>::calcQueryPointValues(){
     // Calculate a distance value for each query point
     #pragma omp parallel for
     for(size_t i = 0; i < m_queryPoints.size(); i++){
-        QueryPoint<VertexT> p = m_queryPoints[i];
-        p.m_distance = this->m_manager.distance(p.m_position);
-        m_queryPoints[i] = p;
+        float projectedDistance;
+        float euklideanDistance;
+        this->m_manager.distance(m_queryPoints[i].m_position, projectedDistance, euklideanDistance);
+        if (euklideanDistance > 1.7320 * m_voxelsize)
+        {
+        	m_queryPoints[i].m_invalid = true;
+        }
+        m_queryPoints[i].m_distance = projectedDistance;
         ++progress;
     }
 
