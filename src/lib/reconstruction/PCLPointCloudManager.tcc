@@ -177,7 +177,7 @@ void PCLPointCloudManager<VertexT, NormalT>::getkClosestNormals(const VertexT &n
 }
 
 template<typename VertexT, typename NormalT>
-float PCLPointCloudManager<VertexT, NormalT>::distance(VertexT v)
+void PCLPointCloudManager<VertexT, NormalT>::distance(VertexT v, float &projectedDistance, float &euklideanDistance)
 {
     std::vector< int > k_indices;
     std::vector< float > k_distances;
@@ -219,7 +219,8 @@ float PCLPointCloudManager<VertexT, NormalT>::distance(VertexT v)
     n /= res;
     c /= res;
 
-    return (v - c) * n;
+    projectedDistance = (v - c) * n;
+    euklideanDistance = (v - c).length();
 
 }
 
