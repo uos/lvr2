@@ -74,7 +74,7 @@ const VertexT PointCloudManager<VertexT, NormalT>::operator[]( const size_t& ind
 
 template<typename VertexT, typename NormalT>
 void PointCloudManager<VertexT, NormalT>::colorizePointCloud( 
-        PointCloudManager<VertexT, NormalT>* pcm, const float &maxDist,
+		PointCloudManager<VertexT, NormalT>* pcm, const float &sqrMaxDist,
         const uchar* blankColor )
 {
 
@@ -102,8 +102,7 @@ void PointCloudManager<VertexT, NormalT>::colorizePointCloud(
         /* Check if vector contains point. */
         if ( nearestPoint.size() )
         {
-            float dist = p.distance( nearestPoint[0] );
-            if ( dist < maxDist )
+            if ( p.sqrDistance( nearestPoint[0] ) < sqrMaxDist )
             {
                 /* Get color from other pointcloud. */
                 m_colors[i][0] = nearestPoint[0].r;

@@ -1,22 +1,34 @@
 /*******************************************************************************
+ * Copyright © 2011 Universität Osnabrück
+ * This file is part of the LAS VEGAS Reconstruction Toolkit,
  *
- *       Filename:  colorizeLaser.cpp
+ * LAS VEGAS is free software; you can redistribute it and/or modify it under
+ * the terms of the GNU General Public License as published by the Free
+ * Software Foundation; either version 2 of the License, or (at your option)
+ * any later version.
  *
- *    Description:  Takes the color information from one or more colored
- *    (kinect-) pointclouds and transfers these color informations to near
- *    points in an uncolored (laser-) cloud.
+ * LAS VEGAS is distributed in the hope that it will be useful, but WITHOUT ANY
+ * WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
+ * FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more
+ * details.
  *
- *        Version:  0.2
- *        Created:  07/02/2011 12:18:03 AM
- *       Compiler:  g++
- *
- *         Author:  Lars Kiesow (lkiesow), lkiesow@uos.de
- *        Company:  Universität Osnabrück
- *
+ * You should have received a copy of the GNU General Public License along with
+ * this program; if not, write to the Free Software Foundation, Inc., 59 Temple
+ * Place - Suite 330, Boston, MA  02111-1307, USA
  ******************************************************************************/
 
-#include <pcl/point_cloud.h>
-#include <pcl/kdtree/kdtree_flann.h>
+
+ /**
+ * @file       colorize.cpp
+ * @brief      Transfer color information from one to another pointcloud.
+ * @details    Takes the color information from one colored point clouds and
+ *             transfers these color informations to near points in an
+ *             uncolored second point cloud.
+ * @author     Lars Kiesow (lkiesow), lkiesow@uos.de
+ * @version    111121
+ * @date       Created:       2011-07-02 12:18:03
+ * @date       Last modified: 2011-11-21 23:29:45
+ */
 
 #include <stdio.h>
 #include <iostream>
@@ -44,18 +56,20 @@ typedef lssr::PointBuffer* pc_p;
 
 float maxdist = std::numeric_limits<float>::max();
 unsigned char rgb[3] = { 255, 0, 0 };
+std::string pcm_name = "stann";
 
 
-/*******************************************************************************
- *         Name:  printHelp
- *  Description:  Prints usage information.
- ******************************************************************************/
+/**
+ * @brief Prints usage information.
+ * @param name  Program name (pass argv[0] to this)
+ **/
 void printHelp( char * name ) {
 
 	printf( "Usage: %s [options] infile1 infile2 outfile\n"
 			"Options:\n"
 			"   -h   Show this help and exit.\n"
 			"   -d   Maximum distance for neighbourhood.\n"
+			"   -p   Set point cloud manager (default: stann).\n"
 			"   -j   Number of jobs to be scheduled parallel.\n"
 			"        Positive integer or “auto” (default)\n"
 			"   -c   Set color of points with no neighbours \n"
@@ -64,29 +78,37 @@ void printHelp( char * name ) {
 }
 
 
-/*******************************************************************************
- *         Name:  printHelp
- *  Description:  Prints usage information.
- ******************************************************************************/
+/**
+ * @brief Parse command line arguments.
+ **/
 void parseArgs( int argc, char ** argv ) {
 
 	/* Parse options */
 	char c;
-	while ( ( c = getopt( argc, argv, "hd:j:c:" ) ) != -1 ) {
+	while ( ( c = getopt( argc, argv, "hd:j:c:p:" ) ) != -1 ) {
 		switch (c) {
 			case 'h':
 				printHelp( *argv );
 				exit( EXIT_SUCCESS );
 			case 'd':
-				maxdist = fabs( atof( optarg ) );
+				maxdist = atof( optarg ) * atof( optarg );
+				break;
+			case 'p':
+				if ( strcmp( optarg, "pcl" ) && strcmp( optarg, "stann" ) ) {
+					fprintf( stderr, "Invaild option »%s« for point cloud "
+							"manager. Ignoring option.\n", optarg );
+					break;
+				}
+				pcm_name = optarg;
 				break;
 			case 'm':
 				if ( !strcmp( optarg, "auto" ) ) {
 					omp_set_num_threads( omp_get_num_procs() );
 				} else {
 					omp_set_num_threads( 
-							atoi( optarg ) > 1 ? atoi( optarg ) 
-						: omp_get_num_procs() );
+							atoi( optarg ) > 1 
+							? atoi( optarg )
+							: omp_get_num_procs() );
 				}
 				break;
 			case 'c':
@@ -107,10 +129,10 @@ void parseArgs( int argc, char ** argv ) {
 }
 
 
-/*******************************************************************************
- *         Name:  loadPointCloud
- *  Description:  
- ******************************************************************************/
+/**
+ * @brief Load a point cloud from a file.
+ * @param pc 
+ **/
 void loadPointCloud( pc_p* pc, pcm_p* pcm, char* filename )
 {
     
@@ -125,7 +147,6 @@ void loadPointCloud( pc_p* pc, pcm_p* pcm, char* filename )
         exit( EXIT_FAILURE );
     }
 
-    std::string pcm_name = "stann";
     if ( pcm_name == "stann" )
     {
         printf( "Creating STANN point cloud manager…\n" );
@@ -177,18 +198,16 @@ int main( int argc, char ** argv )
     /* Reset color array of first point cloud. */
     pc1->setPointColorArray( *(pcm1->m_colors), pcm1->getNumPoints() );
 
-    lssr::ModelFactory io_factory2;
-    lssr::Model model2;
-	lssr::PointBuffer pb2;
-	pb2.setPointArray( *(pcm2->m_points), pcm2->getNumPoints() );
-    model2.m_pointCloud = &pb2;
-    io_factory2.saveModel( &model2, "123.ply" );
-
     /* Save point cloud. */
     lssr::ModelFactory io_factory;
     lssr::Model model;
     model.m_pointCloud = pc1;
     io_factory.saveModel( &model, argv[ optind + 2 ] );
+
+	delete pc1;
+	delete pc2;
+	delete pcm1;
+	delete pcm2;
 
     return EXIT_SUCCESS;
 

@@ -100,21 +100,23 @@ public:
      *
      * The function “colorizePointCloud” takes another point cloud and
      * transferes the color information from that point cloud to this one using
-     * a nearest neighbor search. Using the parameter “maxDist” you can specify
-     * the maximum distance for the nearest neighbor search. Setting this to 0
-     * will make your search range unlimited. You also can specify a color for
-     * these unmatched points using “blankColor”. This parameter must be either
-     * a pointer to an array containing three uchars (red, green and blue) or a
-     * NULL pointer. In the latter case this option will be ignored.
+     * a nearest neighbor search. Using the parameter “sqrMaxDist” you can specify
+	 * the maximum distance for the nearest neighbor search. Beware that the
+	 * parameter takes the squared maximum distance. Thus if you want a maximum
+	 * distance of 100 you have to set the parameter to 10000 (= 100 * 100).
+	 * You also can specify a color for these unmatched points using
+	 * “blankColor”. This parameter must be either a pointer to an array
+	 * containing three uchars (red, green and blue) or a NULL pointer. In the
+	 * latter case this option will be ignored.
      *
      * @param pcm        PointCloudManager containing the point cloud to get
      *                   the color information from.
-     * @param maxDist    Maximum distance for nearest neighbor search.
+     * @param sqrMaxDist Squared maximum distance for nearest neighbor search.
      * @param blankColor Color to set the point to if there are no near color
      *                   information.
      */
     virtual void colorizePointCloud( PointCloudManager<VertexT, NormalT>* pcm,
-            const float &maxDist = std::numeric_limits<float>::max(), 
+            const float &sqrMaxDist = std::numeric_limits<float>::max(), 
             const uchar* blankColor = NULL );
 
 
