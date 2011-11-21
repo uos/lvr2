@@ -78,7 +78,6 @@ void parseArgs( int argc, char ** argv ) {
 				exit( EXIT_SUCCESS );
 			case 'd':
 				maxdist = atof( optarg );
-				maxdist *= maxdist;
 				break;
 			case 'm':
 				if ( !strcmp( optarg, "auto" ) ) {
@@ -175,8 +174,14 @@ int main( int argc, char ** argv )
     pcm1->colorizePointCloud( pcm2, maxdist, rgb );
 
     /* Reset color array of first point cloud. */
-    printf( "%d, %d\n", pcm1->getNumPoints(), pc1->getNumPoints() );
     pc1->setPointColorArray( *(pcm1->m_colors), pcm1->getNumPoints() );
+
+    lssr::ModelFactory io_factory2;
+    lssr::Model model2;
+	lssr::PointBuffer pb2;
+	pb2.setPointArray( *(pcm2->m_points), pcm2->getNumPoints() );
+    model2.m_pointCloud = &pb2;
+    io_factory2.saveModel( &model2, "123.ply" );
 
     /* Save point cloud. */
     lssr::ModelFactory io_factory;
