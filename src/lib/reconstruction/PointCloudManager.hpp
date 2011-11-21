@@ -114,7 +114,8 @@ public:
      *                   information.
      */
     virtual void colorizePointCloud( PointCloudManager<VertexT, NormalT>* pcm,
-            const float &maxDist = 0, const uchar* blankColor = NULL );
+            const float &maxDist = std::numeric_limits<float>::max(), 
+            const uchar* blankColor = NULL );
 
 
     /**

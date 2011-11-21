@@ -79,19 +79,20 @@ void PointCloudManager<VertexT, NormalT>::colorizePointCloud(
 {
 
     /* Check if we already have a color buffer. */
-    if ( !m_colors ) {
+    if ( !m_colors )
+    {
         uchar* c = new uchar[ m_numPoints * 3 ];
         m_colors = new uchar*[ m_numPoints    ];
-        for ( size_t i = 0; i < m_numPoints; i++ ) {
+        for ( size_t i = 0; i < m_numPoints; i++ )
+        {
             m_colors[i] = c + ( 3 * i );
         }
     }
 
-	printf( "maxDist %f\n", maxDist );
-	float m = 0;
-//#pragma omp parallel for
+#pragma omp parallel for
     /* Run through laserscan cloud and find neighbours. */
-    for ( size_t i = 0; i < m_numPoints; i++ ) {
+    for ( size_t i = 0; i < m_numPoints; i++ )
+    {
 
         std::vector<VertexT> nearestPoint(1);
 
@@ -99,25 +100,27 @@ void PointCloudManager<VertexT, NormalT>::colorizePointCloud(
         VertexT p( this->getPoint( i ) );
         pcm->getkClosestVertices( p, 1, nearestPoint );
         /* Check if vector contains point. */
-        if ( nearestPoint.size() ) {
+        if ( nearestPoint.size() )
+        {
             float dist = p.distance( nearestPoint[0] );
-			m = dist > m ? dist : m;
-            if ( dist && dist > maxDist && blankColor ) {
-                /* Set default color. */
-                m_colors[i][0] = blankColor[0];
-                m_colors[i][1] = blankColor[1];
-                m_colors[i][2] = blankColor[2];
-            } else {
+            if ( dist < maxDist )
+            {
                 /* Get color from other pointcloud. */
                 m_colors[i][0] = nearestPoint[0].r;
                 m_colors[i][1] = nearestPoint[0].g;
                 m_colors[i][2] = nearestPoint[0].b;
             }
+            else if ( blankColor )
+            {
+                /* Set default color. */
+                m_colors[i][0] = blankColor[0];
+                m_colors[i][1] = blankColor[1];
+                m_colors[i][2] = blankColor[2];
+            }
             /* TODO: Store the distance as confidence information. */
 
         }
     }
-	printf( "m=%f\n", m );
 
 }
 

@@ -22,6 +22,7 @@
 #include <iostream>
 #include <vector>
 #include <ctime>
+#include <cmath>
 #include <io/ModelFactory.hpp>
 #include <geometry/ColorVertex.hpp>
 
@@ -77,7 +78,7 @@ void parseArgs( int argc, char ** argv ) {
 				printHelp( *argv );
 				exit( EXIT_SUCCESS );
 			case 'd':
-				maxdist = atof( optarg );
+				maxdist = fabs( atof( optarg ) );
 				break;
 			case 'm':
 				if ( !strcmp( optarg, "auto" ) ) {
