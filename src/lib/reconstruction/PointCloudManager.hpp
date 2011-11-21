@@ -94,7 +94,7 @@ public:
 	 */
 	virtual const VertexT operator[](const size_t &index) const;
 
-	virtual float distance(VertexT v) = 0;
+	virtual void distance(VertexT v, float &projectedDistance, float &euklideanDistance) = 0;
 
 	void setKD(int kd) {m_kd = kd;}
 

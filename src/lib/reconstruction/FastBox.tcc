@@ -194,6 +194,14 @@ void FastBox<VertexT, NormalT>::getSurface(BaseMesh<VertexT, NormalT> &mesh,
 
     int index = getIndex(qp);
 
+    for (int i = 0; i < 8; i++)
+    {
+    	if (qp[m_vertices[i]].m_invalid)
+    	{
+    		return;
+    	}
+    }
+
     uint edge_index = 0;
 
     int triangle_indices[3];
