@@ -78,6 +78,9 @@ public:
 
 	/// The associated distance value
 	float           m_distance;
+
+	/// Indicates if the query point is valid
+	bool            m_invalid;
 };
 
 } // namespace lssr

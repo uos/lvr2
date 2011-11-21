@@ -154,7 +154,7 @@ public:
     /**
      * @brief Returns the distance of vertex v from the nearest tangent plane
      */
-    virtual float distance(VertexT v);
+    virtual void distance(VertexT v, float &projectedDistance, float &euklideanDistance);
 
     /**
      * @brief Calculates initial point normals using a least squares fit to
