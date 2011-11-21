@@ -36,6 +36,7 @@ HalfEdgeMesh<VertexT, NormalT>::HalfEdgeMesh(PointCloudManager<VertexT, NormalT>
     m_globalIndex = 0;
     m_colorRegions = false;
     m_pointCloudManager = pm;
+    m_depth = 100;
 }
 
 
@@ -420,30 +421,27 @@ void HalfEdgeMesh<VertexT, NormalT>::flipEdge(HEdge* edge)
 }
 
     template<typename VertexT, typename NormalT>
-int HalfEdgeMesh<VertexT, NormalT>::regionGrowing(HFace* start_face, Region<VertexT, NormalT>* region)
+int HalfEdgeMesh<VertexT, NormalT>::stackSafeRegionGrowing(HFace* start_face, NormalT &normal, float &angle, Region<VertexT, NormalT>* region)
 {
-    //Mark face as used
-    start_face->m_used = true;
-
-    //Add face to region
-    region->addFace(start_face);
-
-    int neighbor_cnt = 0;
-
-    //Get the unmarked neighbor faces and start the recursion
-    for(int k = 0; k < 3; k++)
+    // stores the faces where we need to continue
+    vector<HFace*> leafs;
+    int regionSize = 0;
+    leafs.push_back(start_face);
+    do
     {
-        if((*start_face)[k]->pair->face != 0 && (*start_face)[k]->pair->face->m_used == false)
-        {
-            ++neighbor_cnt += regionGrowing((*start_face)[k]->pair->face, region);
-        }
+    	if(leafs.front()->m_used == false)
+    	{
+    		regionSize += regionGrowing(leafs.front(), normal, angle, region, leafs, m_depth);
+    	}
+    	leafs.erase(leafs.begin());
     }
+    while(!leafs.empty());
 
-    return neighbor_cnt;
+    return regionSize;
 }
 
     template<typename VertexT, typename NormalT>
-int HalfEdgeMesh<VertexT, NormalT>::regionGrowing(HFace* start_face, NormalT &normal, float &angle, Region<VertexT, NormalT>* region)
+int HalfEdgeMesh<VertexT, NormalT>::regionGrowing(HFace* start_face, NormalT &normal, float &angle, Region<VertexT, NormalT>* region, vector<HFace*> &leafs, unsigned int depth)
 {
     //Mark face as used
     start_face->m_used = true;
@@ -459,7 +457,16 @@ int HalfEdgeMesh<VertexT, NormalT>::regionGrowing(HFace* start_face, NormalT &no
         if((*start_face)[k]->pair->face != 0 && (*start_face)[k]->pair->face->m_used == false
                 && fabs((*start_face)[k]->pair->face->getFaceNormal() * normal) > angle )
         {
-            ++neighbor_cnt += regionGrowing((*start_face)[k]->pair->face, normal, angle, region);
+        	if(depth == 0)
+        	{
+        		// if the maximum recursion depth is reached save the child faces to restart the recursion from
+        		leafs.push_back((*start_face)[k]->pair->face);
+        	}
+        	else
+        	{
+        		// start the recursion
+        		++neighbor_cnt += regionGrowing((*start_face)[k]->pair->face, normal, angle, region, leafs, depth - 1);
+        	}
         }
     }
 
@@ -502,7 +509,7 @@ void HalfEdgeMesh<VertexT, NormalT>::optimizePlanes(
                 NormalT n = m_faces[i]->getFaceNormal();
 
                 Region<VertexT, NormalT>* region = new Region<VertexT, NormalT>(region_number);
-                region_size = regionGrowing(m_faces[i], n, angle, region) + 1;
+                region_size = stackSafeRegionGrowing(m_faces[i], n, angle, region) + 1;
 
                 // Fit big regions into the regression plane
                 if(region_size > max(min_region_size, default_region_threshold))
@@ -593,7 +600,9 @@ void HalfEdgeMesh<VertexT, NormalT>::removeDanglingArtifacts(int threshold)
         if(m_faces[i]->m_used == false)
         {
             Region<VertexT, NormalT>* region = new Region<VertexT, NormalT>(0);
-            int region_size = regionGrowing(m_faces[i], region) + 1;
+            NormalT n = m_faces[i]->getFaceNormal();
+            float angle = -1;
+            int region_size = stackSafeRegionGrowing(m_faces[i], n, angle, region) + 1;
             if(region_size <= threshold)
             {
                 region->m_toDelete = true;
@@ -943,7 +952,7 @@ void HalfEdgeMesh<VertexT, NormalT>::restorePlanes(int min_region_size)
 
     		Region<VertexT, NormalT>* region = new Region<VertexT, NormalT>(region_number);
     		float almostOne = 0.999;
-    		region_size = regionGrowing(m_faces[i], n, almostOne, region) + 1;
+    		region_size = stackSafeRegionGrowing(m_faces[i], n, almostOne, region) + 1;
 
     		if(region_size > max(min_region_size, default_region_threshold))
             {

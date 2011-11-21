@@ -179,7 +179,9 @@ public:
 	 */
 	virtual void restorePlanes(int minRegionSize);
 
-	void enableRegionColoring() { m_colorRegions = true;}
+	void enableRegionColoring() {m_colorRegions = true;}
+
+	void setDepth(unsigned int depth) {m_depth = depth;};
 
 	void tester();
 
@@ -190,6 +192,9 @@ private:
 
 	/// The vertices of the mesh
 	vector<HalfEdgeVertex<VertexT, NormalT>*>   m_vertices;
+
+	/// The maximum recursion depth
+	unsigned int 								m_depth;
 
 	/// The regions in the half edge mesh
 	vector<Region<VertexT, NormalT>*>           m_regions;
@@ -262,17 +267,19 @@ private:
 	virtual void flipEdge(HEdge* edge);
 
 	/**
-	 * @brief	Starts a region growing and returns the number of connected faces
-	 * 			Faces are connected means they share a common edge - a point is not
-	 *			a connection in this context
+	 * @brief    performs the stack safe region growing by limiting the used stack size
 	 *
 	 * @param	start_face	The face from which the region growing is started
+	 *
+	 * @param	normal		The normal to refer to
+	 *
+	 * @param	angle		the maximum angle allowed between two faces
 	 *
 	 * @param	region		The region number to apply to the faces of the found region
 	 *
 	 * @return	Returns the size of the region - 1 (the start face is not included)
 	 */
-	virtual int regionGrowing(HFace* start_face, Region<VertexT, NormalT>* region);
+	int stackSafeRegionGrowing(HFace* start_face, NormalT &normal, float &angle, Region<VertexT, NormalT>* region);
 
 	/**
 	 * @brief	Starts a region growing wrt the angle between the faces and returns the
@@ -287,9 +294,13 @@ private:
 	 *
 	 * @param	region		The region number to apply to the faces of the found region
 	 *
+	 * @param   leafs       A vector to store the faces from which the region growing needs to start again
+	 *
+	 * @param   depth       The maximum recursion depth
+	 *
 	 * @return	Returns the size of the region - 1 (the start face is not included)
 	 */
-	virtual int regionGrowing(HFace* start_face, NormalT &normal, float &angle, Region<VertexT, NormalT>* region);
+	virtual int regionGrowing(HFace* start_face, NormalT &normal, float &angle, Region<VertexT, NormalT>* region, vector<HFace*> &leafs, unsigned int depth);
 
 	/**
 	 * @brief	Deletes all faces of the regions marked by region->m_toDelete
