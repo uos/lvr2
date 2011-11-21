@@ -87,7 +87,9 @@ void PointCloudManager<VertexT, NormalT>::colorizePointCloud(
         }
     }
 
-#pragma omp parallel for
+	printf( "maxDist %f\n", maxDist );
+	float m = 0;
+//#pragma omp parallel for
     /* Run through laserscan cloud and find neighbours. */
     for ( size_t i = 0; i < m_numPoints; i++ ) {
 
@@ -98,9 +100,8 @@ void PointCloudManager<VertexT, NormalT>::colorizePointCloud(
         pcm->getkClosestVertices( p, 1, nearestPoint );
         /* Check if vector contains point. */
         if ( nearestPoint.size() ) {
-            VertexT q( nearestPoint[0] );
-            float dist = p.distance( q );
-            printf( "%f %d %d %d\n", dist, q.r, q.g, q.b );
+            float dist = p.distance( nearestPoint[0] );
+			m = dist > m ? dist : m;
             if ( dist && dist > maxDist && blankColor ) {
                 /* Set default color. */
                 m_colors[i][0] = blankColor[0];
@@ -108,14 +109,15 @@ void PointCloudManager<VertexT, NormalT>::colorizePointCloud(
                 m_colors[i][2] = blankColor[2];
             } else {
                 /* Get color from other pointcloud. */
-                m_colors[i][0] = q.r;
-                m_colors[i][1] = q.g;
-                m_colors[i][2] = q.b;
+                m_colors[i][0] = nearestPoint[0].r;
+                m_colors[i][1] = nearestPoint[0].g;
+                m_colors[i][2] = nearestPoint[0].b;
             }
             /* TODO: Store the distance as confidence information. */
 
         }
     }
+	printf( "m=%f\n", m );
 
 }
 
