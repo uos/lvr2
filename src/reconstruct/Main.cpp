@@ -209,6 +209,11 @@ int main(int argc, char** argv)
     //TriangleMesh<Vertex<float>, Normal<float> > mesh;
     HalfEdgeMesh<ColorVertex<float, unsigned char>, Normal<float> > mesh(pcm);
 
+    if(options.getDepth())
+    {
+        mesh.setDepth(options.getDepth());
+    }
+
     // Determine weather to use intersections or voxelsize
     float resolution;
     bool useVoxelsize;
