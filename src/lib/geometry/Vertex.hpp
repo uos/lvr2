@@ -154,6 +154,14 @@ class Vertex{
         virtual CoordType distance( const Vertex &other ) const;
 
 
+
+        /**
+		 * @brief  Calculates the squared distance to another vertex.
+         *
+         * @param other  Another Vertex.
+         */
+		virtual CoordType sqrDistance( const Vertex &other ) const;
+
         /**
          * @brief    Multiplication operator (dot product)
          */
