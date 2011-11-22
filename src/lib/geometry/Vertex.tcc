@@ -20,11 +20,14 @@
  /*
  * Vertex.tcc
  *
- *  Created on: 10.02.2011
- *      Author: Thomas Wiemann
+ * @date     Created:       2011-02-10
+ * @date     Last modified: 2011-11-17 14:02:50
+ * @author   Thomas Wiemann (twiemann), Universität Osnabrück
+ * @author   Lars Kiesow (lkiesow), lkiesow@uos.de, Universität Osnabrück
  */
 
 #include <stdexcept>
+#include <cmath>
 
 namespace lssr
 {
@@ -32,37 +35,35 @@ namespace lssr
 template<typename CoordType>
 CoordType Vertex<CoordType>::operator[](const int &index) const
 {
-    CoordType ret = 0.0;
 
-    switch(index){
-    case 0:
-        ret = x;
-        break;
-    case 1:
-        ret = y;
-        break;
-    case 2:
-        ret = z;
-        break;
-    default:
-        throw std::overflow_error("Access index out of range.");
-    }
-    return ret;
+	switch ( index )
+	{
+		case 0:
+			return x;
+		case 1:
+			return y;
+		case 2:
+			return z;
+		default:
+			throw std::overflow_error( "Access index out of range." );
+	}
 }
+
 
 template<typename CoordType>
 CoordType& Vertex<CoordType>::operator[](const int &index)
 {
-    switch(index){
-    case 0:
-        return x;
-    case 1:
-        return y;
-    case 2:
-        return z;
-    default:
-        throw std::overflow_error("Access index out of range.");
-    }
+	switch ( index )
+	{
+		case 0:
+			return x;
+		case 1:
+			return y;
+		case 2:
+			return z;
+		default:
+			throw std::overflow_error("Access index out of range.");
+	}
 }
 
 template<typename CoordType>
@@ -76,7 +77,7 @@ bool Vertex<CoordType>::operator==(const Vertex &other) const
 template<typename CoordType>
 void Vertex<CoordType>::operator/=(const CoordType &scale)
 {
-    if(scale != 0)
+    if ( scale )
     {
         x /= scale;
         y /= scale;
@@ -90,7 +91,7 @@ void Vertex<CoordType>::operator/=(const CoordType &scale)
 
 template<typename CoordType>
 void Vertex<CoordType>::operator*=(const CoordType &scale)
-      {
+{
     x *= scale;
     y *= scale;
     z *= scale;
@@ -144,6 +145,26 @@ void Vertex<CoordType>::crossTo(const Vertex<CoordType>  &other)
     z = x * other.y - y * other.x;
 }
 
+
+template<typename CoordType>
+CoordType Vertex<CoordType>::distance( const Vertex &other ) const
+{
+    return sqrt( 
+              ( x - other.x ) * ( x - other.x ) 
+            + ( y - other.y ) * ( y - other.y ) 
+            + ( z - other.z ) * ( z - other.z ) );
+}
+
+
+template<typename CoordType>
+CoordType Vertex<CoordType>::sqrDistance( const Vertex &other ) const
+{
+	return ( x - other.x ) * ( x - other.x )
+		+  ( y - other.y ) * ( y - other.y ) 
+    	+  ( z - other.z ) * ( z - other.z );
+}
+
+
 template<typename CoordType>
 void Vertex<CoordType>::rotateCM(const Matrix4<CoordType> &m)
 {
@@ -174,10 +195,10 @@ void Vertex<CoordType>::rotateRM(const Matrix4<CoordType> &m)
 template<typename CoordType>
 void Vertex<CoordType>::transformCM(const Matrix4<CoordType> &m)
 {
-	rotateCM(m);
-	x += m[12];
-	y += m[13];
-	z += m[14];
+    rotateCM(m);
+    x += m[12];
+    y += m[13];
+    z += m[14];
 }
 
 template<typename CoordType>

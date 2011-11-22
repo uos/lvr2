@@ -43,14 +43,13 @@
 #include <vector>
 #include <algorithm>
 using std::vector;
-using std::pair;
 
 typedef unsigned char uchar;
 
 namespace lssr
 {
 
-typedef pair<size_t, size_t> indexPair;
+typedef std::pair<size_t, size_t> indexPair;
 
 /**
  * \class PointLoader PointLoader.hpp "io/PointLoader.hpp"
