@@ -78,6 +78,8 @@ Model* ModelFactory::readModel( string filename )
 
 void ModelFactory::saveModel(Model* m, string filename)
 {
+    cout << 1 << " " << m->m_pointCloud->getNumPoints() << endl;
+
     // Get file exptension
     boost::filesystem::path selectedFile(filename);
     string extension = selectedFile.extension().c_str();

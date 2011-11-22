@@ -95,6 +95,10 @@ add_subdirectory(src/lib)
 add_subdirectory(src/reconstruct)
 add_subdirectory(src/scanreduce)
 
+if(PCL_FOUND)
+add_subdirectory(src/scanfilter)
+endif(PCL_FOUND)
+
 ##############################################################
 # VIEWERS
 ##############################################################
