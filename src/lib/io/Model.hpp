@@ -31,6 +31,8 @@
 
 #include <algorithm>
 
+typedef unsigned int uint;
+
 namespace lssr
 {
 
