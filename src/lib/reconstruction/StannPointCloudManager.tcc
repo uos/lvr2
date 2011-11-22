@@ -56,6 +56,7 @@ StannPointCloudManager<VertexT, NormalT>::StannPointCloudManager(PointBuffer* lo
     	this->m_colors = 0;
     }
 
+    m_useRANSAC = false;
 
     init();
 }
@@ -165,8 +166,15 @@ void StannPointCloudManager<VertexT, NormalT>::calcNormals()
                 			  this->m_points[i][2]);
 
         // Interpolate a plane based on the k-neighborhood
-        Plane<VertexT, NormalT> p = calcPlaneRANSAC(query_point, k, id);
-
+        Plane<VertexT, NormalT> p;
+        if(m_useRANSAC)
+        {
+            p = calcPlaneRANSAC(query_point, k, id);
+        }
+        else
+        {
+            p = calcPlane(query_point, k, id);
+        }
         // Get the mean distance to the tangent plane
         //mean_distance = meanDistance(p, id, k);
 
@@ -200,7 +208,7 @@ void StannPointCloudManager<VertexT, NormalT>::interpolateSurfaceNormals()
     ProgressBar progress(this->m_numPoints, comment);
 
     // Interpolate normals
-    //#pragma omp parallel for
+    #pragma omp parallel for
     for(size_t i = 0; i < this->m_numPoints; i++){
 
         vector<unsigned long> id;
@@ -458,7 +466,7 @@ Plane<VertexT, NormalT> StannPointCloudManager<VertexT, NormalT>::calcPlaneRANSA
     int nonimproving_iterations = 0;
 
     int max_nonimproving = max(5, k / 2);
-    int max_interations  = 200;
+    int max_interations  = 10;
 
     while((nonimproving_iterations < 5) && (iterations < max_interations))
     {
@@ -466,9 +474,6 @@ Plane<VertexT, NormalT> StannPointCloudManager<VertexT, NormalT>::calcPlaneRANSA
 
         //randomly choose 3 disjoint points
         do{
-//            point1 = (id[rand() % k])(0)->m_position;
-//            point2 = (id[rand() % m_faces.size()])(1)->m_position;
-//            point3 = (id[rand() % m_faces.size()])(2)->m_position;
 
             int index[3];
             for(int i = 0; i < 3; i++)
@@ -485,7 +490,8 @@ Plane<VertexT, NormalT> StannPointCloudManager<VertexT, NormalT>::calcPlaneRANSA
             n0 = (point1 - point2).cross(point1 - point3);
             n0.normalize();
 
-        }while(point1 == point2 || point2 == point3 || point3 == point1 || n0.length() == 0);
+        }
+        while(point1 == point2 || point2 == point3 || point3 == point1 || n0.length() == 0);
 
         //compute error to at most 50 other randomly chosen points
         dist = 0;

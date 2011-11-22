@@ -146,6 +146,11 @@ public:
      */
     void calcNormals();
 
+    /**
+     * @brief If set to true, normals will be calculated using RANSAC instead of
+     *        plane fitting
+     */
+    void useRansac(bool use_it) { m_useRANSAC = use_it;}
 
 private:
 
@@ -218,6 +223,8 @@ private:
 
 	/// The centroid of the point set
 	VertexT               		m_centroid;
+
+	bool                        m_useRANSAC;
 };
 
 }
