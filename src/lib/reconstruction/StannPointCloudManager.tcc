@@ -286,23 +286,37 @@ void StannPointCloudManager<VertexT, NormalT>::getkClosestVertices(const VertexT
     //Allocate ANN point
     float * p;
     p = new float[3];
-    p[0] = v[0]; p[1] = v[1]; p[2] = v[2];
+    p[0] = v[0];
+	p[1] = v[1];
+	p[2] = v[2];
 
     //Find nearest tangent plane
-    m_pointTree.ksearch(p, k, id, 0);
+    m_pointTree.ksearch( p, k, id, 0 );
+
+	delete[] p;
 
     //parse result
-    for(size_t i=0; i<k; i++)
-    {
-    	if(this->m_colors != 0)
-    	{
-    		VertexT tmp((this->m_points[id[i]])[0], (this->m_points[id[i]])[1], (this->m_points[id[i]])[2], (this->m_colors[id[i]])[0], (this->m_colors[id[i]])[1], (this->m_colors[id[i]])[2]);
-			nb.push_back(tmp);
+	if ( this->m_colors )
+	{
+		for ( size_t i = 0; i < k; i++ )
+		{
+			VertexT tmp;
+			nb.push_back( tmp );
+            nb[i].x = this->m_points[id[i]][0];
+            nb[i].y = this->m_points[id[i]][1];
+            nb[i].z = this->m_points[id[i]][2];
+			nb[i].r = this->m_colors[id[i]][0];
+			nb[i].g = this->m_colors[id[i]][1];
+			nb[i].b = this->m_colors[id[i]][2];
 		}
-    	else
-    	{
-    		VertexT tmp((this->m_points[id[i]])[0], (this->m_points[id[i]])[1], (this->m_points[id[i]])[2]);
-    		nb.push_back(tmp);
+	}
+	else
+	{
+		for ( size_t i = 0; i < k; i++ )
+		{
+			VertexT tmp( this->m_points[id[i]][0], this->m_points[id[i]][1],
+					this->m_points[id[i]][2] );
+    		nb.push_back( tmp );
     	}
     }
 }
