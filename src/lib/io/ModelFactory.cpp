@@ -71,7 +71,7 @@ Model* ModelFactory::readModel( string filename )
     {
         m = io->read(filename);
     }
-    cout << "Model pointer: " << m << endl;
+
     return m;
 
 }
