@@ -194,10 +194,22 @@ int main(int argc, char** argv)
         pcm = new StannPointCloudManager<ColorVertex<float, unsigned char>, Normal<float> > (p_loader);
 #endif
     }
-    else
+    else if(pcm_name == "STANN" || pcm_name == "STANN_RANSAC")
     {
-        cout << timestamp << "Creating STANN point cloud manager." << endl;
-        pcm = new StannPointCloudManager<ColorVertex<float, unsigned char>, Normal<float> > (p_loader);
+        StannPointCloudManager<ColorVertex<float, unsigned char>, Normal<float> > *m =
+                new StannPointCloudManager<ColorVertex<float, unsigned char>, Normal<float> > (p_loader);
+
+        if(pcm_name == "STANN_RANSAC")
+        {
+            cout << timestamp << "Creating STANN_RANSAC point cloud manager." << endl;
+            m->useRansac(true);
+        }
+        else
+        {
+            cout << timestamp << "Creating STANN point cloud manager." << endl;
+        }
+
+        pcm = m;
     }
 
     pcm->setKD(options.getKd());
