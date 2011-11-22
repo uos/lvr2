@@ -41,9 +41,9 @@ namespace lssr
 {
 
 /**
- * @brief	Abstract interface class for objects that are
- * 			able to handle point cloud data with normals. It
- * 			defines queries for nearest neighbor search.
+ * @brief    Abstract interface class for objects that are
+ *             able to handle point cloud data with normals. It
+ *             defines queries for nearest neighbor search.
  */
 template<typename VertexT, typename NormalT>
 class PointCloudManager
@@ -51,15 +51,16 @@ class PointCloudManager
 public:
 
 
-	/**
-	 * @brief Returns the k closest neighbor vertices to a given query point
-	 *
-	 * @param v			A query vertex
-	 * @param k			The (max) number of returned closest points to v
-	 * @param nb		A vector containing the determined closest points
-	 */
-	virtual void getkClosestVertices(const VertexT &v,
-		const size_t &k, vector<VertexT> &nb) = 0;
+    /**
+     * @brief Returns the k closest neighbor vertices to a given query point
+     *
+     * @param v  A query vertex
+     * @param k  The (max) number of returned closest points to v
+     * @param nb A vector containing the determined closest points
+     */
+    virtual void getkClosestVertices( const VertexT &v,
+        const size_t &k, vector<VertexT> &nb ) = 0;
+
 
 	/**
 	 * @brief Returns the k closest neighbor normals to a given query point
@@ -68,52 +69,92 @@ public:
 	 * @param k			The (max) number of returned closest points to v
 	 * @param nb		A vector containing the determined closest normals
 	 */
-	virtual void getkClosestNormals(const VertexT &n,
-		const size_t &k, vector<NormalT> &nb) = 0;
+    virtual void getkClosestNormals( const VertexT &n,
+        const size_t &k, vector<NormalT> &nb ) = 0;
 
-	/**
-	 * @brief Returns the bounding box of the loaded point set
-	 */
-	virtual BoundingBox<VertexT>& getBoundingBox();
+    /**
+     * @brief Returns the bounding box of the loaded point set.
+     */
+    virtual BoundingBox<VertexT>& getBoundingBox();
 
-	/**
-	 * @brief Returns the points at index \ref{index} in the point array
-	 *
-	 * @param index
-	 * @return
-	 */
-	virtual VertexT getPoint(size_t index);
 
-	/**
-	 * @brief Returns the number of managed points
-	 */
-	virtual size_t getNumPoints();
+    /**
+     * @brief Returns the points at index \ref{index} in the point array.
+     *
+     * @param index
+     * @return
+     */
+    virtual VertexT getPoint( size_t index );
 
-	/**
-	 * @brief Returns the point at the given \ref{index}
-	 */
-	virtual const VertexT operator[](const size_t &index) const;
 
+    /**
+     * @brief Returns the number of managed points
+     */
+    virtual size_t getNumPoints();
+
+
+    /**
+     * @brief Returns the point at the given \ref{index}.
+     */
+    virtual const VertexT operator[]( const size_t &index ) const;
+
+
+    /**
+     * @brief Transfer color information from another pointcloud.
+     *
+     * The function “colorizePointCloud” takes another point cloud and
+     * transferes the color information from that point cloud to this one using
+     * a nearest neighbor search. Using the parameter “sqrMaxDist” you can specify
+	 * the maximum distance for the nearest neighbor search. Beware that the
+	 * parameter takes the squared maximum distance. Thus if you want a maximum
+	 * distance of 100 you have to set the parameter to 10000 (= 100 * 100).
+	 * You also can specify a color for these unmatched points using
+	 * “blankColor”. This parameter must be either a pointer to an array
+	 * containing three uchars (red, green and blue) or a NULL pointer. In the
+	 * latter case this option will be ignored.
+     *
+     * @param pcm        PointCloudManager containing the point cloud to get
+     *                   the color information from.
+     * @param sqrMaxDist Squared maximum distance for nearest neighbor search.
+     * @param blankColor Color to set the point to if there are no near color
+     *                   information.
+     */
+    virtual void colorizePointCloud( PointCloudManager<VertexT, NormalT>* pcm,
+            const float &sqrMaxDist = std::numeric_limits<float>::max(), 
+            const uchar* blankColor = NULL );
+
+
+    /**
+     * @brief Returns the distance of vertex v from the nearest tangent plane.
+     **/
 	virtual void distance(VertexT v, float &projectedDistance, float &euklideanDistance) = 0;
 
-	void setKD(int kd) {m_kd = kd;}
+    void setKD( int kd )
+    {
+        m_kd = kd;
+    }
 
-	void setKI(int ki) {m_ki = ki;}
+    void setKI( int ki )
+    {
+        m_ki = ki;
+    }
 
-	void setKN(int kn) {m_kn = kn;}
+    void setKN( int kn )
+    {
+        m_kn = kn;
+    }
 
-	virtual void calcNormals() = 0;
+    virtual void calcNormals() = 0;
 
-protected:
 
     /// The currently stored points
-    float**                   	m_points;
+    float**                    m_points;
 
     /// The point normals
-    float**                  	m_normals;
+    float**                    m_normals;
 
     /// Color information for points
-    uchar **                    m_colors;
+    uchar**                     m_colors;
 
     /// The bounding box of the point set
     BoundingBox<VertexT>        m_boundingBox;
