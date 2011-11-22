@@ -45,11 +45,13 @@
 #include <fstream>
 #include <string>
 #include <cassert>
+#include <limits>
 using std::cout;
 using std::endl;
 using std::string;
 using std::ifstream;
 using std::ofstream;
+using std::numeric_limits;
 
 namespace lssr
 {
@@ -204,6 +206,10 @@ private:
 	 * @param id            The positions of the neighborhood points in \ref m_points
 	 */
 	Plane<VertexT, NormalT> calcPlane(const VertexT &queryPoint,
+	        const int &k,
+	        const vector<unsigned long> &id);
+
+	Plane<VertexT, NormalT> calcPlaneRANSAC(const VertexT &queryPoint,
 	        const int &k,
 	        const vector<unsigned long> &id);
 

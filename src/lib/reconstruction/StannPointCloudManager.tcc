@@ -165,13 +165,14 @@ void StannPointCloudManager<VertexT, NormalT>::calcNormals()
                 			  this->m_points[i][2]);
 
         // Interpolate a plane based on the k-neighborhood
-        Plane<VertexT, NormalT> p = calcPlane(query_point, k, id);
+        Plane<VertexT, NormalT> p = calcPlaneRANSAC(query_point, k, id);
 
         // Get the mean distance to the tangent plane
         //mean_distance = meanDistance(p, id, k);
 
         // Flip normals towards the center of the scene
         normal =  p.n;
+
         if(normal * (query_point - m_centroid) < 0) normal = normal * -1;
 
         // Save result in normal array
@@ -199,7 +200,7 @@ void StannPointCloudManager<VertexT, NormalT>::interpolateSurfaceNormals()
     ProgressBar progress(this->m_numPoints, comment);
 
     // Interpolate normals
-    #pragma omp parallel for
+    //#pragma omp parallel for
     for(size_t i = 0; i < this->m_numPoints; i++){
 
         vector<unsigned long> id;
@@ -210,7 +211,8 @@ void StannPointCloudManager<VertexT, NormalT>::interpolateSurfaceNormals()
         VertexT mean;
         NormalT mean_normal;
 
-        for(int j = 0; j < this->m_ki; j++){
+        for(int j = 0; j < this->m_ki; j++)
+        {
             mean += VertexT(this->m_normals[id[j]][0],
                             this->m_normals[id[j]][1],
                             this->m_normals[id[j]][2]);
@@ -219,10 +221,9 @@ void StannPointCloudManager<VertexT, NormalT>::interpolateSurfaceNormals()
 
         tmp[i] = mean;
 
-        /**
-         * @todo Try to remove this code. Should improve the results at all.
-         */
-        for(int j = 0; j < this->m_ki; j++){
+        ///todo Try to remove this code. Should improve the results at all.
+        for(int j = 0; j < this->m_ki; j++)
+        {
             NormalT n(this->m_normals[id[j]][0],
                       this->m_normals[id[j]][1],
                       this->m_normals[id[j]][2]);
@@ -232,7 +233,8 @@ void StannPointCloudManager<VertexT, NormalT>::interpolateSurfaceNormals()
             // normals is significantly different from the initial
             // estimation. This helps to avoid a to smooth normal
             // field
-            if(fabs(n * mean_normal) > 0.2 ){
+            if(fabs(n * mean_normal) > 0.2 )
+            {
                 this->m_normals[id[j]][0] = mean_normal[0];
                 this->m_normals[id[j]][1] = mean_normal[1];
                 this->m_normals[id[j]][2] = mean_normal[2];
@@ -349,7 +351,6 @@ void StannPointCloudManager<VertexT, NormalT>::distance(VertexT v, float &projec
     normal /= k;
     nearest /= k;
 
-
     //Calculate distance
     projectedDistance = (v - nearest) * normal;
     euklideanDistance = (v - nearest).length();
@@ -418,6 +419,94 @@ Plane<VertexT, NormalT> StannPointCloudManager<VertexT, NormalT>::calcPlane(cons
     p.c = C(2);
     p.n = normal;
     p.p = queryPoint;
+
+    return p;
+}
+
+
+template<typename VertexT, typename NormalT>
+Plane<VertexT, NormalT> StannPointCloudManager<VertexT, NormalT>::calcPlaneRANSAC(const VertexT &queryPoint,
+        const int &k,
+        const vector<unsigned long> &id)
+{
+    VertexT point1;
+    VertexT point2;
+    VertexT point3;
+
+    //representation of best regression plane by point and normal
+    VertexT bestpoint;
+    NormalT bestNorm;
+
+    float bestdist = numeric_limits<float>::max();
+    float dist     = 0;
+
+    int iterations              = 0;
+    int nonimproving_iterations = 0;
+
+    int max_nonimproving = max(5, k / 2);
+    int max_interations  = 200;
+
+    while((nonimproving_iterations < 5) && (iterations < max_interations))
+    {
+        NormalT n0;
+
+        //randomly choose 3 disjoint points
+        do{
+//            point1 = (id[rand() % k])(0)->m_position;
+//            point2 = (id[rand() % m_faces.size()])(1)->m_position;
+//            point3 = (id[rand() % m_faces.size()])(2)->m_position;
+
+            int index[3];
+            for(int i = 0; i < 3; i++)
+            {
+                index[i] = id[rand() % k];
+            }
+
+            point1 = VertexT(this->m_points[index[0]][0],this->m_points[index[0]][1], this->m_points[index[0]][2]);
+            point2 = VertexT(this->m_points[index[1]][0],this->m_points[index[1]][1], this->m_points[index[1]][2]);
+            point3 = VertexT(this->m_points[index[2]][0],this->m_points[index[2]][1], this->m_points[index[2]][2]);
+
+
+            //compute normal of the plane given by the 3 points
+            n0 = (point1 - point2).cross(point1 - point3);
+            n0.normalize();
+
+        }while(point1 == point2 || point2 == point3 || point3 == point1 || n0.length() == 0);
+
+        //compute error to at most 50 other randomly chosen points
+        dist = 0;
+        for(int i = 0; i < min(50, k); i++)
+        {
+            int index = id[rand() % k];
+            VertexT refpoint = VertexT(this->m_points[index][0], this->m_points[index][1] ,this->m_points[index][2]);
+            dist += fabs(refpoint * n0 - point1 * n0) / min(50, k);
+        }
+
+        //a new optimum is found
+        if(dist < bestdist)
+        {
+            bestdist = dist;
+
+            bestpoint = point1;
+            bestNorm = n0;
+
+            nonimproving_iterations = 0;
+        }
+        else
+        {
+            nonimproving_iterations++;
+        }
+
+        iterations++;
+    }
+
+    Plane<VertexT, NormalT> p;
+    p.a = 0;
+    p.b = 0;
+    p.c = 0;
+    p.n = bestNorm;
+    p.p = bestpoint;
+
 
     return p;
 }

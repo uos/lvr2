@@ -260,6 +260,9 @@ void FastReconstruction<VertexT, NormalT>::calcQueryPointValues(){
     for(size_t i = 0; i < m_queryPoints.size(); i++){
         float projectedDistance;
         float euklideanDistance;
+
+        //cout << euklideanDistance << " " << projectedDistance << endl;
+
         this->m_manager.distance(m_queryPoints[i].m_position, projectedDistance, euklideanDistance);
         if (euklideanDistance > 1.7320 * m_voxelsize)
         {
