@@ -36,6 +36,7 @@
 #include <ctime>
 #include <sstream>
 #include <cassert>
+#include <iostream>
 #include "Message.hpp"
 
 
@@ -45,6 +46,7 @@ namespace lssr
 
 void PLYIO::save( Model* model, string filename )
 {
+    std::cout << 2 << " " << model->m_pointCloud->getNumPoints() << std::endl;
     m_model = model;
     save( filename, PLY_LITTLE_ENDIAN );
 
@@ -55,6 +57,8 @@ void PLYIO::save( string filename, e_ply_storage_mode mode,
         std::vector<string> obj_info, std::vector<string> comment )
 {
     assert(m_model);
+
+    std::cout << 3 << " " << m_model->m_pointCloud->getNumPoints() << std::endl;
 
     // Local buffer shortcuts
     float* m_vertices         = 0;
@@ -87,11 +91,15 @@ void PLYIO::save( string filename, e_ply_storage_mode mode,
     if(m_model->m_pointCloud)
     {
         PointBuffer* pc  = m_model->m_pointCloud;
+        std::cout << 4 << " " << pc->getNumPoints() << std::endl;
+        size_t dummy;
         m_points                = pc->getPointArray(m_numPoints);
-        m_pointConfidences      = pc->getPointConfidenceArray(m_numPoints);
+        m_pointConfidences      = pc->getPointConfidenceArray(dummy);
         m_pointColors           = pc->getPointColorArray(m_numPointColors);
         m_pointIntensities      = pc->getPointIntensityArray(m_numPointIntensities);
         m_pointNormals          = pc->getPointNormalArray(m_numPointNormals);
+
+        std::cout << "Save: " << m_points << " " << m_numPoints << std::endl;
     }
 
     if(m_model->m_mesh)

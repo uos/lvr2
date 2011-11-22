@@ -54,7 +54,7 @@ PointBuffer::PointBuffer() :
 
 float* PointBuffer::getPointArray( size_t &n )
 {
-
+    std::cout << "PB: " <<  m_numPoints << std::endl;
     n = m_numPoints;
     return m_points;
 
