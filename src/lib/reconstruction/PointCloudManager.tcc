@@ -50,8 +50,7 @@ template<typename VertexT, typename NormalT>
 VertexT PointCloudManager<VertexT, NormalT>::getPoint(size_t index)
 {
     assert(index < m_numPoints);
-#warning VertexTraits still missing but needed.
-/*          m_colors may be NULL and thus this may segfault. */
+    /// TODO: Implement vertex traits
     return VertexT(
             m_points[index][0], m_points[index][1], m_points[index][2], 
             m_colors[index][0], m_colors[index][1], m_colors[index][2] );
@@ -70,7 +69,7 @@ const VertexT PointCloudManager<VertexT, NormalT>::operator[]( const size_t& ind
 {
         return VertexT(
                 m_points[index][0], m_points[index][1], m_points[index][2] );
-#warning VertexTraits still missing but needed.
+        /// TODO: Implement vertex traits
 /*              m_colors[index][0], m_colors[index][1], m_colors[index][2] );
  *              --- m_colors may be NULL and thus this may segfault. ---
  **/
