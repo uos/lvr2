@@ -75,7 +75,7 @@ void ObjIO::save(Model *model, string filename)
 			return;
 		}
 		out << endl << endl << "##  Beginning of vertex definitions.\n";
-		cout << lenVertices << "lV\n";
+
 		for( size_t i=0; i < lenVertices; ++i )
 		{
 			out << "v " << vertices[i][0] << " "
