@@ -171,6 +171,7 @@ int main(int argc, char** argv)
     Model* model = io_factory.readModel(options.getInputFileName());
     PointBuffer* p_loader = 0;
 
+    // Parse loaded data
     if(model)
     {
         p_loader = model->m_pointCloud;
@@ -183,7 +184,7 @@ int main(int argc, char** argv)
 
     // Create a point cloud manager
     string pcm_name = options.getPCM();
-    PointCloudManager<ColorVertex<float, unsigned char>, Normal<float> >* pcm;
+    PointCloudManager<ColorVertex<float, unsigned char>, Normal<float> >* pcm = 0;
     if(pcm_name == "PCL")
     {
 #ifdef _USE_PCL_
@@ -212,15 +213,31 @@ int main(int argc, char** argv)
         pcm = m;
     }
 
+    // Check if a point cloud manager object was created. Exit if not and display
+    // available objects
+    if(pcm == 0)
+    {
+        cout << timestamp << "Unable to create PointCloudMansger." << endl;
+        cout << timestamp << "Unknown option '" << pcm_name << "'." << endl;
+        cout << timestamp << "Available PCMs are: " << endl;
+        cout << timestamp << "STANN, STANN_RANSAC, STANN ";
+#ifdef _USE_PCL_
+        cout << "PCL ";
+#endif
+        cout << endl;
+        return 0;
+    }
+
+    // Set search options for normal estimation and distance evaluation
     pcm->setKD(options.getKd());
     pcm->setKI(options.getKi());
     pcm->setKN(options.getKn());
     pcm->calcNormals();
 
     // Create an empty mesh
-    //TriangleMesh<Vertex<float>, Normal<float> > mesh;
     HalfEdgeMesh<ColorVertex<float, unsigned char>, Normal<float> > mesh(pcm);
 
+    // Set recursion depth for region growing
     if(options.getDepth())
     {
         mesh.setDepth(options.getDepth());

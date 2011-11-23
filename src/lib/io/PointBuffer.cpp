@@ -61,7 +61,7 @@ float* PointBuffer::getPointArray( size_t &n )
 }
 
 
-uint8_t* PointBuffer::getPointColorArray( size_t &n )
+unsigned char* PointBuffer::getPointColorArray( size_t &n )
 {
 
     n = m_numPointColors;
@@ -105,7 +105,7 @@ size_t PointBuffer::getNumPoints()
 }
 
 
-uint8_t** PointBuffer::getIndexedPointColorArray( size_t &n )
+unsigned char** PointBuffer::getIndexedPointColorArray( size_t &n )
 {
 
     n = m_numPointColors;
@@ -237,7 +237,7 @@ void PointBuffer::setPointConfidenceArray( float* array, size_t n )
 
 void PointBuffer::freeBuffer()
 {
-
+    /// TODO: Memory leak in PointBuffer
     m_points = m_pointConfidences = m_pointIntensities = m_pointNormals = NULL;
     m_pointColors = NULL;
     m_numPoints = m_numPointColors = m_numPointIntensities
