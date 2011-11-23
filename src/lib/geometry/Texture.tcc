@@ -28,13 +28,13 @@
 namespace lssr {
 
 template<typename VertexT, typename NormalT>
+float Texture<VertexT, NormalT>::m_texelSize = 1;
+
+template<typename VertexT, typename NormalT>
 Texture<VertexT, NormalT>::Texture(PointCloudManager<VertexT, NormalT>* pm, Region<VertexT, NormalT>* region, vector<vector<HVertex*> > contours)
 {
 	this->m_region = region;
 	this->m_data   = 0;
-
-	//determines the texture resolution
-	m_pixelSize = 1;
 
 	int minArea = INT_MAX;
 
@@ -86,8 +86,8 @@ Texture<VertexT, NormalT>::Texture(PointCloudManager<VertexT, NormalT>* pm, Regi
 					if (b > b_max) b_max = b;
 					if (b < b_min) b_min = b;
 				}
-				int x = ceil((a_max - a_min) / m_pixelSize);
-				int y = ceil((b_max - b_min) / m_pixelSize);
+				int x = ceil((a_max - a_min) / m_texelSize);
+				int y = ceil((b_max - b_min) / m_texelSize);
 
 				//iterative improvement of the area
 				if(x * y < minArea)
@@ -103,9 +103,9 @@ Texture<VertexT, NormalT>::Texture(PointCloudManager<VertexT, NormalT>* pm, Regi
 			}
 
 			//calculate the texture size and round up to a size to base 2
-			this->m_sizeX = ceil((best_a_max - best_a_min) / m_pixelSize);
+			this->m_sizeX = ceil((best_a_max - best_a_min) / m_texelSize);
 			this->m_sizeX = pow(2, ceil(log(this->m_sizeX) / log(2)));
-			this->m_sizeY = ceil((best_b_max - best_b_min) / m_pixelSize);
+			this->m_sizeY = ceil((best_b_max - best_b_min) / m_texelSize);
 			this->m_sizeY = pow(2, ceil(log(this->m_sizeY) / log(2)));
 
 			m_data = new ColorT*[this->m_sizeY];
@@ -117,11 +117,11 @@ Texture<VertexT, NormalT>::Texture(PointCloudManager<VertexT, NormalT>* pm, Regi
 				m_data[m_sizeY-y-1] = new ColorT[this->m_sizeX];
 				for(int x = 0; x < this->m_sizeX; x++)
 				{
-					if (y <= (best_b_max - best_b_min) / m_pixelSize  && x <= (best_a_max - best_a_min) / m_pixelSize)
+					if (y <= (best_b_max - best_b_min) / m_texelSize  && x <= (best_a_max - best_a_min) / m_texelSize)
 					{
 						vector<VertexT> cv;
 
-						VertexT current_position = p + best_v1 * (x * m_pixelSize + best_a_min - m_pixelSize / 2.0) + best_v2 * (y * m_pixelSize + best_b_min - m_pixelSize / 2.0);
+						VertexT current_position = p + best_v1 * (x * m_texelSize + best_a_min - m_texelSize / 2.0) + best_v2 * (y * m_texelSize + best_b_min - m_texelSize / 2.0);
 
 						int one = 1;
 						pm->getkClosestVertices(current_position, one, cv);
@@ -164,8 +164,8 @@ template<typename VertexT, typename NormalT>
 void Texture<VertexT, NormalT>::textureCoords(VertexT v, float &x, float &y)
 {
 	 VertexT t =  v - ((best_v1 * best_a_min) + (best_v2 * best_b_min) + p);
-	 x = (best_v1 * (t * best_v1)).length() / m_pixelSize / m_sizeX;
-	 y = (best_v2 * (t * best_v2)).length() / m_pixelSize / m_sizeY;
+	 x = (best_v1 * (t * best_v1)).length() / m_texelSize / m_sizeX;
+	 y = (best_v2 * (t * best_v2)).length() / m_texelSize / m_sizeY;
 
 	 x = x > 1 ? 1 : x;
 	 x = x < 0 ? 0 : x;

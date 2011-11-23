@@ -59,6 +59,7 @@ Options::Options(int argc, char** argv) : m_descr("Supported options")
         ("generateTextures", "Generate textures during finalization.")
         ("colorRegions", "Color detected regions with color gradient.")
         ("depth", value<int>(&m_depth)->default_value(100), "Maximum recursion depth for region growing.")
+        ("texelSize", value<float>(&m_texelSize)->default_value(1), "Texel size that determines texture resolution.")
 		;
 
 	m_pdescr.add("inputFile", -1);
@@ -211,6 +212,11 @@ int   Options::getSmallRegionThreshold() const
 int Options::getDepth() const
 {
 	return m_depth;
+}
+
+float Options::getTexelSize() const
+{
+	return m_texelSize;
 }
 
 Options::~Options() {

@@ -197,6 +197,11 @@ public:
 	 */
 	int getDepth() const;
 
+	/**
+	 * @brief   Returns the texel size for texture resolution
+	 */
+	float getTexelSize() const;
+
 private:
 
 	/// The set voxelsize
@@ -262,6 +267,8 @@ private:
 	/// Maximum recursion depth for region growing
 	int								m_depth;
 
+	/// Texel size
+	float                           m_texelSize;
 };
 
 
@@ -279,13 +286,13 @@ inline ostream& operator<<(ostream& os, const Options &o)
 	}
 	cout << "##### Input file \t\t: "         << o.getInputFileName() << endl;
 	cout << "##### Number of threads \t: "    << o.getNumThreads()    << endl;
-	cout << "##### Point cloud manager: \t: " << o.getPCM()           << endl;
+	cout << "##### Point cloud manager  \t: " << o.getPCM()           << endl;
 	cout << "##### k_n \t\t\t: "              << o.getKn()            << endl;
 	cout << "##### k_i \t\t\t: "              << o.getKi()            << endl;
 	cout << "##### k_d \t\t\t: "              << o.getKd()            << endl;
 	if(o.retesselate())
 	{
-		cout << "##### retesselate:\t\t: YES"     << endl;
+		cout << "##### retesselate \t\t: YES"     << endl;
 	}
 	if(o.saveFaceNormals())
 	{
@@ -335,7 +342,8 @@ inline ostream& operator<<(ostream& os, const Options &o)
 	}
 	if(o.generateTextures())
 	{
-	    cout << "##### Generate Textures \t\t: YES" << endl;
+	    cout << "##### Generate Textures \t: YES" << endl;
+	    cout << "##### Texel size \t\t: " << o.getTexelSize() << endl;
 	}
 	if(o.getDepth())
 	{
