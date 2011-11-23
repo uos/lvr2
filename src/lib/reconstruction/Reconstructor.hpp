@@ -49,7 +49,7 @@ public:
     Reconstructor(PointCloudManager<VertexT, NormalT> &manager) : m_manager(manager) {}
 
     /**
-     * @brief Generated a triangle mesh representation of the current
+     * @brief Generates a triangle mesh representation of the current
      *        point set.
      *
      * @param mesh      A surface representation of the current point
