@@ -24,8 +24,7 @@
  * @details   
  * 
  * @author    Lars Kiesow (lkiesow), lkiesow@uos.de, Universität Osnabrück
- * @version   110922
- * @date      09/22/2011 11:23:57 PM
+ * @author    Thomas Wiemann
  *
  **/
 
