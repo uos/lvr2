@@ -285,20 +285,24 @@ void HalfEdgeMesh<VertexT, NormalT>::collapseEdge(HEdge* edge)
     // have to be reseted.
     if (edge->face != 0)
     {
+    	// reorganize pair pointers
         edge->next->next->pair->pair = edge->next->pair;
         edge->next->pair->pair = edge->next->next->pair;
+        //delete old edges
         deleteEdge(edge->next->next, false);
         deleteEdge(edge->next, false);
     }
     if (edge->pair->face != 0)
     {
+    	// reorganize pair pointers
         edge->pair->next->next->pair->pair = edge->pair->next->pair;
         edge->pair->next->pair->pair = edge->pair->next->next->pair;
+        //delete old edges
         deleteEdge(edge->pair->next->next, false);
         deleteEdge(edge->pair->next, false);
     }
 
-    // Now do really delete faces
+    // Now really delete faces
     if(edge->pair->face != 0)
     {
         m_faces.erase(find(m_faces.begin(), m_faces.end(), edge->pair->face));
@@ -310,10 +314,10 @@ void HalfEdgeMesh<VertexT, NormalT>::collapseEdge(HEdge* edge)
         delete edge->face;
     }
 
-    //Delete edge and its' pair
+    //Delete collapsed edge and its' pair
     deleteEdge(edge);
 
-    //Update incoming and outgoing edges of p1
+    //Update incoming and outgoing edges of p1 (the start point of the collapsed edge)
     typename vector<HEdge*>::iterator it;
     it = p2->out.begin();
     while(it != p2->out.end())
@@ -323,6 +327,7 @@ void HalfEdgeMesh<VertexT, NormalT>::collapseEdge(HEdge* edge)
         it++;
     }
 
+    //Update incoming and outgoing edges of p2 (the end point of the collapsed edge)
     it = p2->in.begin();
     while(it != p2->in.end())
     {
@@ -368,40 +373,63 @@ void HalfEdgeMesh<VertexT, NormalT>::flipEdge(HEdge* edge)
     // This can only be done if there are two faces on both sides of the edge
     if (edge->pair->face != 0 && edge->face != 0)
     {
+    	//The old egde will be deleted while a new edge is created
 
+    	//save the start and end vertex of the new edge
         HVertex* newEdgeStart = edge->next->end;
         HVertex* newEdgeEnd   = edge->pair->next->end;
 
-        //update next pointers
+        //update the next pointers of the remaining edges
+        //Those next pointers pointed to the edge that will be deleted before.
         edge->next->next->next       = edge->pair->next;
         edge->pair->next->next->next = edge->next;
 
         //create the new edge
         HEdge* newEdge = new HEdge();
+        //set its' start and end vertex
         newEdge->start = newEdgeStart;
         newEdge->end   = newEdgeEnd;
+
         newEdge->pair  = 0;
+
+        //set the new edge's next pointer to the appropriate edge
         newEdge->next  = edge->pair->next->next;
+
+        //use one of the old faces for the new edge
         newEdge->face  = edge->pair->next->next->face;
+
+        //update incoming and outgoing edges of the start and end vertex
         newEdge->start->out.push_back(newEdge);
         newEdge->end->in.push_back(newEdge);
 
+        //create the new pair
         HEdge* newPair = new HEdge();
+
+        //set its' start and end vertex (complementary to new edge)
         newPair->start = newEdgeEnd;
         newPair->end   = newEdgeStart;
+
+        //set the pair pointer to the new edge
         newPair->pair  = newEdge;
+
+        //set the new pair's next pointer to the appropriate edge
         newPair->next  = edge->next->next;
+
+        //use the other one of the old faces for the new pair
         newPair->face  = edge->next->next->face;
+
+        //update incoming and outgoing edges of the start and end vertex
         newPair->start->out.push_back(newPair);
         newPair->end->in.push_back(newPair);
 
+        //set the new edge's pair pointer to the new pair
         newEdge->pair = newPair;
 
-        //update face->edge pointers
+        //update face->edge pointers of the recycled faces
         newEdge->face->m_edge = newEdge;
         newPair->face->m_edge = newPair;
 
-        //update next pointers
+        //update next pointers of the edges pointing to new edge and new pair
         edge->next->next = newEdge;
         edge->pair->next->next = newPair;
 
@@ -629,6 +657,7 @@ template<typename VertexT, typename NormalT>
 bool HalfEdgeMesh<VertexT, NormalT>::safeCollapseEdge(HEdge* edge)
 {
     //try to reject all huetchen
+	//A huetchen geometry must not be present at the edge or it's pair
     if(edge->face != 0 && edge->next->pair->face != 0 && edge->next->next->pair->face != 0)
     {
         if(edge->next->pair->next->next == edge->next->next->pair->next->pair)
@@ -644,7 +673,8 @@ bool HalfEdgeMesh<VertexT, NormalT>::safeCollapseEdge(HEdge* edge)
         }
     }
 
-    //Check for redundant edges
+    //Check for redundant edges i.e. more than one edge between the start and the
+    //end point of the edge which is tried to collapse
     int edgeCnt = 0;
     for (size_t i = 0; i < edge->start->out.size(); i++)
     {
@@ -659,6 +689,7 @@ bool HalfEdgeMesh<VertexT, NormalT>::safeCollapseEdge(HEdge* edge)
     }
 
     //Avoid creation of edges without faces
+    //Collapsing the edge in this constellation leads to the creation of edges without any face
     if( ( edge->face != 0 && edge->next->pair->face == 0 && edge->next->next->pair->face == 0 )
             || ( edge->pair->face != 0 && edge->pair->next->pair->face == 0 && edge->pair->next->next->pair->face == 0 ) )
     {
@@ -666,6 +697,7 @@ bool HalfEdgeMesh<VertexT, NormalT>::safeCollapseEdge(HEdge* edge)
     }
 
     //Check for triangle hole
+    //We do not want to close triangle holes as this can be achieved by adding a new face
     for(size_t o1 = 0; o1 < edge->end->out.size(); o1++)
     {
         for(size_t o2 = 0; o2 < edge->end->out[o1]->end->out.size(); o2++)
@@ -678,7 +710,7 @@ bool HalfEdgeMesh<VertexT, NormalT>::safeCollapseEdge(HEdge* edge)
     }
 
     //Check for flickering
-    //Move edge->start and check for flickering
+    //Move edge->start to its' theoretical position and check for flickering
     VertexT origin = edge->start->m_position;
     edge->start->m_position = (edge->start->m_position + edge->end->m_position) * 0.5;
     for(size_t o = 0; o < edge->start->out.size(); o++)
@@ -693,7 +725,7 @@ bool HalfEdgeMesh<VertexT, NormalT>::safeCollapseEdge(HEdge* edge)
         }
     }
 
-    //Move edge->end and check for flickering
+    //Move edge->end to its' theoretical position and check for flickering
     origin = edge->end->m_position;
     edge->end->m_position = (edge->start->m_position + edge->end->m_position) * 0.5;
     for(size_t o = 0; o < edge->end->out.size(); o++)

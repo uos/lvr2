@@ -279,7 +279,7 @@ private:
 	 *
 	 * @return	Returns the size of the region - 1 (the start face is not included)
 	 */
-	int stackSafeRegionGrowing(HFace* start_face, NormalT &normal, float &angle, Region<VertexT, NormalT>* region);
+	virtual int stackSafeRegionGrowing(HFace* start_face, NormalT &normal, float &angle, Region<VertexT, NormalT>* region);
 
 	/**
 	 * @brief	Starts a region growing wrt the angle between the faces and returns the
