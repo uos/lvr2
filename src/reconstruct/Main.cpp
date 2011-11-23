@@ -142,6 +142,7 @@
 #include "geometry/Matrix4.hpp"
 #include "geometry/TriangleMesh.hpp"
 #include "geometry/HalfEdgeMesh.hpp"
+#include "geometry/Texture.hpp"
 #include <iostream>
 
 // Optional PCL bindings
@@ -241,6 +242,11 @@ int main(int argc, char** argv)
     if(options.getDepth())
     {
         mesh.setDepth(options.getDepth());
+    }
+
+    if(options.getTexelSize())
+    {
+    	Texture<ColorVertex<float, unsigned char>, Normal<float> >::m_texelSize = options.getTexelSize();
     }
 
     // Determine weather to use intersections or voxelsize

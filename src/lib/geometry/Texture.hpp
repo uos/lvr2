@@ -80,6 +80,9 @@ public:
 	 */
 	virtual ~Texture();
 
+	///The pixel size determines the resolution
+	static float m_texelSize;
+
 private:
 	struct ColorT{
 		unsigned char r, g, b;
@@ -102,9 +105,6 @@ private:
 
 	///The dimensions of the texture
 	int m_sizeX, m_sizeY;
-
-	///The pixel size determines the resolution
-	float m_pixelSize;
 
 };
 
