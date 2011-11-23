@@ -169,7 +169,6 @@ void PLYIO::save( string filename, e_ply_storage_mode mode,
         {
             if ( m_numVertexColors != m_numVertices )
             {
-                std::cout << m_numVertexColors << " " << m_numVertices << std::endl;
                 g_msg.print( MSG_TYPE_WARNING, "Amount of vertices and color information is"
                         " not equal. Color information won't be written.\n" );
             }
