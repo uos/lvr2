@@ -164,6 +164,11 @@ public:
 	 */
 	string getPCM() const;
 
+    /**
+     * @brief   Returns the name of the used point cloud handler.
+     */
+    string getDecomposition() const;
+
 
 	/**
 	 * @brief   Returns the normal threshold for plane optimization.
@@ -277,15 +282,16 @@ inline ostream& operator<<(ostream& os, const Options &o)
 	{
 	    cout << "##### Voxelsize \t\t: " << o.getVoxelsize() << endl;
 	}
-	cout << "##### Input file \t\t: "         << o.getInputFileName() << endl;
-	cout << "##### Number of threads \t: "    << o.getNumThreads()    << endl;
-	cout << "##### Point cloud manager: \t: " << o.getPCM()           << endl;
-	cout << "##### k_n \t\t\t: "              << o.getKn()            << endl;
-	cout << "##### k_i \t\t\t: "              << o.getKi()            << endl;
-	cout << "##### k_d \t\t\t: "              << o.getKd()            << endl;
+	cout << "##### Input file \t\t: "         << o.getInputFileName()   << endl;
+	cout << "##### Number of threads \t: "    << o.getNumThreads()      << endl;
+	cout << "##### Point cloud manager: \t: " << o.getPCM()             << endl;
+	cout << "##### Voxel decomposition: \t: " << o.getDecomposition()   << endl;
+	cout << "##### k_n \t\t\t: "              << o.getKn()              << endl;
+	cout << "##### k_i \t\t\t: "              << o.getKi()              << endl;
+	cout << "##### k_d \t\t\t: "              << o.getKd()              << endl;
 	if(o.retesselate())
 	{
-		cout << "##### retesselate:\t\t: YES"     << endl;
+		cout << "##### Retesselate:\t\t: YES"     << endl;
 	}
 	if(o.saveFaceNormals())
 	{
