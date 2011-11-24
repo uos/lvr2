@@ -26,15 +26,43 @@
 #ifndef TETRAEDER_H_
 #define TETRAEDER_H_
 
+#include "QueryPoint.hpp"
+
 namespace lssr
 {
 
+template<typename VertexT, typename NormalT>
 class Tetraeder
 {
 public:
-    Tetraeder();
+    Tetraeder(
+            QueryPoint<VertexT> p1,
+            QueryPoint<VertexT> p2,
+            QueryPoint<VertexT> p3,
+            QueryPoint<VertexT> p4,
+            int index1,
+            int index2,
+            int index3,
+            int index4);
+
+    void getSurface(BaseMesh<VertexT, NormalT> &mesh);
+
     virtual ~Tetraeder();
+
+private:
+
+    float       calcIntersection(float x1, float x2, float d1, float d2);
+    VertexT     calcIntersection(int v1, int v2);
+
+
+    QueryPoint<VertexT>     m_queryPoints[4];
+    VertexT                 m_intersections[5];
+    int                     m_globalIndex;
+
 };
 
 } /* namespace lssr */
+
+#include "Tetraeder.tcc"
+
 #endif /* TETRAEDER_H_ */

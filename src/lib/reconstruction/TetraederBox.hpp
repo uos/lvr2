@@ -28,6 +28,7 @@
 
 
 #include "FastBox.hpp"
+#include "Tetraeder.hpp"
 
 namespace lssr
 {
