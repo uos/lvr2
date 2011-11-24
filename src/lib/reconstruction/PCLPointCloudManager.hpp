@@ -45,7 +45,7 @@ class PCLPointCloudManager : public PointCloudManager<VertexT, NormalT>
 {
 public:
 
-    PCLPointCloudManager(PointBuffer* loader, int kn = 10, int ki = 10, int kd = 10);
+    PCLPointCloudManager( PointBufferPtr loader, int kn = 10, int ki = 10, int kd = 10 );
 
     virtual ~PCLPointCloudManager();
 

@@ -86,7 +86,8 @@ void PLYIO::save( string filename, e_ply_storage_mode mode,
     // Get buffers
     if(m_model->m_pointCloud)
     {
-        PointBuffer* pc  = m_model->m_pointCloud;
+        PointBufferPtr pc( m_model->m_pointCloud );
+
         m_points                = pc->getPointArray(m_numPoints);
         m_pointConfidences      = pc->getPointConfidenceArray(m_numPoints);
         m_pointColors           = pc->getPointColorArray(m_numPointColors);
@@ -692,11 +693,11 @@ Model* PLYIO::read( string filename, bool readColor, bool readConfidence,
 
 
     // Save buffers in model
-    PointBuffer* pc = 0;
+    PointBufferPtr pc;
     MeshBuffer* mesh = 0;
     if(points)
     {
-        pc = new PointBuffer;
+        pc = PointBufferPtr( new PointBuffer );
         pc->setPointArray(points, numPoints);
         pc->setPointColorArray(pointColors, numPointColors);
         pc->setPointIntensityArray(pointIntensities, numPointIntensities);

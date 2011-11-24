@@ -36,10 +36,8 @@
 namespace lssr{
 
 template<typename VertexT, typename NormalT>
-StannPointCloudManager<VertexT, NormalT>::StannPointCloudManager(PointBuffer* loader,
-                       const int &kn,
-                       const int &ki,
-                       const int &kd)
+StannPointCloudManager<VertexT, NormalT>::StannPointCloudManager(
+        PointBufferPtr loader, const int &kn, const int &ki, const int &kd )
 {
     this->m_ki = ki;
     this->m_kn = kn;
@@ -52,8 +50,9 @@ StannPointCloudManager<VertexT, NormalT>::StannPointCloudManager(PointBuffer* lo
     this->m_numPoints = n_points;
     size_t n = 0;
     this->m_colors  = loader->getIndexedPointColorArray( n );
-    if ( n != this->m_numPoints ) {
-    	this->m_colors = 0;
+    if ( n != this->m_numPoints )
+    {
+        this->m_colors = 0;
     }
 
     m_useRANSAC = false;

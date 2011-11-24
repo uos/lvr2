@@ -147,7 +147,7 @@ void ViewerApplication::createMeshFromPointcloud()
             {
                 // Get point cloud data
                 PointCloud* pc = static_cast<lssr::PointCloud*>(c_item->renderable());
-                PointBuffer* loader = pc->model()->m_pointCloud;
+                PointBufferPtr loader = pc->model()->m_pointCloud;
 
                 if(loader)
                 {

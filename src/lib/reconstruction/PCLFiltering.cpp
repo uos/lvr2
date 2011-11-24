@@ -30,7 +30,7 @@
 namespace lssr
 {
 
-PCLFiltering::PCLFiltering(PointBuffer* loader)
+PCLFiltering::PCLFiltering( PointBufferPtr loader )
 {
     // TODO Auto-generated constructor stub
     m_pointCloud  = pcl::PointCloud<pcl::PointXYZ>::Ptr (new pcl::PointCloud<pcl::PointXYZ>);
@@ -121,9 +121,9 @@ void PCLFiltering::applyOutlierRemoval(int meank, float thresh)
     }
 }
 
-PointBuffer* PCLFiltering::getPointBuffer()
+PointBufferPtr PCLFiltering::getPointBuffer()
 {
-    PointBuffer* p = new PointBuffer;
+    PointBufferPtr p( new PointBuffer );
 
     float* points = new float[3 * m_pointCloud->size()];
     for(int i = 0; i < m_pointCloud->size(); i++)
