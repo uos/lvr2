@@ -34,6 +34,7 @@
 #include "geometry/Vertex.hpp"
 #include "geometry/Normal.hpp"
 #include "geometry/BoundingBox.hpp"
+#include "boost/shared_ptr.hpp"
 
 using std::vector;
 
@@ -147,6 +148,9 @@ public:
     virtual void calcNormals() = 0;
 
 
+	/// Model of the current pointcloud.
+
+//#if 0
     /// The currently stored points
     float**                    m_points;
 
@@ -155,6 +159,8 @@ public:
 
     /// Color information for points
     uchar**                     m_colors;
+//#endif
+	boost::shared_ptr<Model>    m_model;
 
     /// The bounding box of the point set
     BoundingBox<VertexT>        m_boundingBox;

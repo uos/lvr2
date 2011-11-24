@@ -28,6 +28,7 @@
 
 #include "io/MeshBuffer.hpp"
 #include "io/PointBuffer.hpp"
+#include "boost/shared_ptr.hpp"
 
 #include <algorithm>
 
@@ -39,12 +40,16 @@ namespace lssr
 class Model
 {
 public:
-    Model() : m_pointCloud(0), m_mesh(0) {};
+    Model() : m_mesh(0) {
+        m_pointCloud.reset();
+    };
     virtual ~Model() {};
 
-    PointBuffer*        m_pointCloud;
+    PointBufferPtr      m_pointCloud;
     MeshBuffer*         m_mesh;
 };
+
+typedef boost::shared_ptr<Model> ModelPtr;
 
 } // namespace lssr
 

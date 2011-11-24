@@ -45,13 +45,13 @@ namespace lssr
 class PCLFiltering
 {
 public:
-    PCLFiltering(PointBuffer* buffer);
+    PCLFiltering( PointBufferPtr buffer );
     virtual ~PCLFiltering();
 
     void applyMLSProjection(float searchRadius);
     void applyOutlierRemoval(int meank, float thresh);
 
-    PointBuffer* getPointBuffer();
+    PointBufferPtr getPointBuffer();
 
 private:
     pcl::PointCloud<pcl::PointXYZ>::Ptr     m_pointCloud;

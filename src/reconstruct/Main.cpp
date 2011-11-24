@@ -169,11 +169,11 @@ int main(int argc, char** argv)
 
     // Create a point loader object
     ModelFactory io_factory;
-    Model* model = io_factory.readModel(options.getInputFileName());
-    PointBuffer* p_loader = 0;
+    ModelPtr model( io_factory.readModel(options.getInputFileName()) );
+    PointBufferPtr p_loader;
 
     // Parse loaded data
-    if(model)
+    if ( model )
     {
         p_loader = model->m_pointCloud;
     }

@@ -42,6 +42,7 @@
 
 #include <vector>
 #include <algorithm>
+#include "boost/shared_ptr.hpp"
 using std::vector;
 
 typedef unsigned char uchar;
@@ -380,6 +381,8 @@ class PointBuffer
         vector<indexPair> m_subClouds;
 
 };
+
+typedef boost::shared_ptr<PointBuffer> PointBufferPtr;
 
 } /* namespace lssr */
 

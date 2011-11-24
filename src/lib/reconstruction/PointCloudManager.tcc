@@ -47,7 +47,7 @@ BoundingBox<VertexT>& PointCloudManager<VertexT, NormalT>::getBoundingBox()
 
 
 template<typename VertexT, typename NormalT>
-VertexT PointCloudManager<VertexT, NormalT>::getPoint(size_t index)
+VertexT PointCloudManager<VertexT, NormalT>::getPoint( size_t index )
 {
     assert(index < m_numPoints);
     /// TODO: Implement vertex traits

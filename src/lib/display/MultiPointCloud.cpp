@@ -40,7 +40,7 @@ namespace lssr
 MultiPointCloud::MultiPointCloud(Model &model, string name)
 {
 
-    PointBuffer* p_buffer = model.m_pointCloud;
+    PointBufferPtr p_buffer = model.m_pointCloud;
 
     if(p_buffer)
     {

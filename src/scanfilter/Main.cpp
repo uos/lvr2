@@ -62,7 +62,7 @@ int main(int argc, char** argv)
                 filter.applyMLSProjection(options.mlsDistance());
             }
 
-            PointBuffer* pb = filter.getPointBuffer();
+            PointBufferPtr pb( filter.getPointBuffer() );
             Model* out_model = new Model;
             out_model->m_pointCloud = pb;
 
