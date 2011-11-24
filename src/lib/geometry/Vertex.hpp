@@ -17,6 +17,14 @@
  */
 
 
+/*
+ * Vertex.hpp
+ *
+ * @date 10.02.2011
+ * @author   Thomas Wiemann (twiemann@uos.de)
+ * @author   Lars Kiesow (lkiesow@uos.de)
+ */
+
 #ifndef __BASE_VERTEX_HPP__
 #define __BASE_VERTEX_HPP__
 

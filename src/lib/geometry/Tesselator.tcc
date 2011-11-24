@@ -17,11 +17,11 @@
  */
 
 
- /*
+/*
  * Tesselator.tcc
  *
- * Created on: 29.08.2011
- *     Author: Florian Otte <fotte@uos.de>
+ *  @date 29.08.2011
+ *  @author Florian Otte <fotte@uos.de>
  */
 
 #ifndef TESSELATOR_C_

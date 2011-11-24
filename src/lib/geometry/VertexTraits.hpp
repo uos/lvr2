@@ -17,11 +17,11 @@
  */
 
 
- /**
+/*
  * VertexTraits.hpp
  *
  *  @date 17.06.2011
- *  @author Thomas Wiemann
+ *  @author Thomas Wiemann (twiemann@uos.de)
  */
 
 #ifndef VERTEXTRAITS_HPP_

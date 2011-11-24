@@ -17,11 +17,11 @@
  */
 
 
- /*
- * BaseMesh.h
+/*
+ * BaseMesh.hpp
  *
- *  Created on: 03.02.2011
- *      Author: Thomas Wiemann
+ *  @date 03.02.2011
+ *  @author Thomas Wiemann (twiemann@uos.de)
  */
 
 #ifndef BASEMESH_H_

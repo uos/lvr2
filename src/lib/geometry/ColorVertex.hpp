@@ -17,8 +17,8 @@
  */
 
 
- /*
- * ColorVertex.h
+/*
+ * ColorVertex.hpp
  *
  *  @date 17.06.2011
  *  @author Thomas Wiemann

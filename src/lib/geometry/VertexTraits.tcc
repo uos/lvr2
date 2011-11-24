@@ -17,6 +17,13 @@
  */
 
 
+/*
+ * VertexTraits.tcc
+ *
+ *  @date 17.06.2011
+ *  @author Thomas Wiemann (twiemann@uos.de)
+ */
+
 namespace lssr
 {
 

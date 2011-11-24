@@ -17,11 +17,11 @@
  */
 
 
- /*
+/*
  * TriangleMesh.cpp
  *
- *  Created on: 17.10.2008
- *      Author: Thomas Wiemann
+ *  @date 17.10.2008
+ *  @author Thomas Wiemann (twiemann@uos.de)
  */
 
 #include "../io/PLYIO.hpp"

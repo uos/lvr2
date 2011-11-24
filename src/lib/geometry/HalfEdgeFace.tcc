@@ -17,9 +17,9 @@
  */
 
 
-  /*
+/*
  * HalfEdgeFace.tcc
-  *
+ *
  *  @date 03.12.2008
  *  @author Kim Rinnewitz (krinnewitz@uos.de)
  *  @author Sven Schalk (sschalk@uos.de)

@@ -17,12 +17,11 @@
  */
 
 
- 
 /*
- * BoundingBox.h
+ * BoundingBox.hpp
  *
- *  Created on: 22.10.2008
- *      Author: Thomas Wiemann
+ *  @date 22.10.2008
+ *  @author Thomas Wiemann (twiemann@uos.de)
  */
 
 #ifndef BOUNDINGBOX_H_

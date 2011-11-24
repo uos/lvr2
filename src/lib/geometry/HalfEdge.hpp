@@ -17,6 +17,12 @@
  */
 
 
+/*
+ * HalfEdge.hpp
+ *
+ * @author Thomas Wiemann (twiemann@uos.de)
+ */
+
  #ifndef __HALF_EDGE_H__
 #define __HALF_EDGE_H__
 

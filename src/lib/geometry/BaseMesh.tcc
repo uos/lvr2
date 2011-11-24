@@ -17,6 +17,13 @@
  */
 
 
+/*
+ * BaseMesh.tcc
+ *
+ *  @date 03.02.2011
+ *  @author Thomas Wiemann (twiemann@uos.de)
+ */
+
 #include "BaseMesh.hpp"
 #include "io/ModelFactory.hpp"
 
