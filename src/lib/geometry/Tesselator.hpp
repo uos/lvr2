@@ -17,11 +17,11 @@
  */
 
 
- /*
+/*
  * Tesselator.hpp
  *
- * Created on: 28.08.2011
- *     Author: Florian Otte <fotte@uos.de>
+ *  @date 28.08.2011
+ *  @author Florian Otte <fotte@uos.de>
  */
 
 #ifndef TESSELATOR_H_

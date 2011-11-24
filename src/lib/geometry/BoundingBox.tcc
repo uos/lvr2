@@ -17,11 +17,11 @@
  */
 
 
- /*
- * BoundingBox.cpp
+/*
+ * BoundingBox.tcc
  *
- *  Created on: 22.10.2008
- *      Author: Thomas Wiemann
+ *  @date 22.10.2008
+ *  @author Thomas Wiemann (twiemann@uos.de)
  */
 
 namespace lssr

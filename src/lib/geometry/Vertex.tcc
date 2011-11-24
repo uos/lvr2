@@ -17,13 +17,12 @@
  */
 
 
- /*
- * Vertex.tcc
+/*
+ * Vertex.hpp
  *
- * @date     Created:       2011-02-10
- * @date     Last modified: 2011-11-17 14:02:50
- * @author   Thomas Wiemann (twiemann), Universität Osnabrück
- * @author   Lars Kiesow (lkiesow), lkiesow@uos.de, Universität Osnabrück
+ * @date 10.02.2011
+ * @author   Thomas Wiemann (twiemann@uos.de)
+ * @author   Lars Kiesow (lkiesow@uos.de)
  */
 
 #include <stdexcept>

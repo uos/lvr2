@@ -17,11 +17,11 @@
  */
 
 
- /*
- * HalfEdgeVertex.h
+/*
+ * HalfEdgeVertex.hpp
  *
- *  Created on: 03.12.2008
- *      Author: twiemann
+ *  @date 03.12.2008
+ *  @author Thomas Wiemann (twiemann@uos.de)
  */
 
 #ifndef HALFEDGEVERTEX_H_

@@ -17,7 +17,7 @@
  */
 
 
- /*
+/*
  * HalfEdgeMesh.hpp
  *
  *  @date 13.11.2008

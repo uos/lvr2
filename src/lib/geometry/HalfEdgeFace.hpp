@@ -17,7 +17,7 @@
  */
 
 
- /*
+/*
  * HalfEdgeFace.hpp
  *
  *  @date 03.12.2008

@@ -17,11 +17,11 @@
  */
 
 
- /*
+/*
  * Normal.tcc
  *
- *  Created on: 10.02.2011
- *      Author: Thomas Wiemann
+ *  @date 10.02.2011
+ *  @author Thomas Wiemann (twiemann@uos.de)
  */
 
 namespace lssr

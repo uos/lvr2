@@ -17,6 +17,12 @@
  */
 
 
+/*
+ * Quatrnion.tcc
+ *
+ *  @date 29.08.2008
+ *  @author Thomas Wiemann (twiemann@uos.de)
+ */
  
 namespace lssr
 {

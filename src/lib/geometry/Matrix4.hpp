@@ -17,11 +17,11 @@
  */
 
 
- /*
+/*
  * Matrix.hpp
  *
- *  Created on: 26.08.2008
- *      Author: Thomas Wiemann
+ *  @date 26.08.2008
+ *  @author Thomas Wiemann (twiemann@uos.de)
  */
 
 #ifndef MATRIX_H_

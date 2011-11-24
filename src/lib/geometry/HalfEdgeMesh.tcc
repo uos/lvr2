@@ -17,7 +17,7 @@
  */
 
 
- /*
+/*
  * HalfEdgeMesh.tcc
  *
  *  @date 13.11.2008
