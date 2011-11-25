@@ -33,6 +33,7 @@
 
 #include "geometry/Vertex.hpp"
 #include "geometry/Normal.hpp"
+#include "geometry/ColorVertex.hpp"
 #include "geometry/BoundingBox.hpp"
 
 using std::vector;
@@ -62,13 +63,13 @@ public:
         const size_t &k, vector<VertexT> &nb ) = 0;
 
 
-	/**
-	 * @brief Returns the k closest neighbor normals to a given query point
-	 *
-	 * @param n			A query vertex
-	 * @param k			The (max) number of returned closest points to v
-	 * @param nb		A vector containing the determined closest normals
-	 */
+    /**
+     * @brief Returns the k closest neighbor normals to a given query point
+     *
+     * @param n            A query vertex
+     * @param k            The (max) number of returned closest points to v
+     * @param nb        A vector containing the determined closest normals
+     */
     virtual void getkClosestNormals( const VertexT &n,
         const size_t &k, vector<NormalT> &nb ) = 0;
 
@@ -105,13 +106,13 @@ public:
      * The function “colorizePointCloud” takes another point cloud and
      * transferes the color information from that point cloud to this one using
      * a nearest neighbor search. Using the parameter “sqrMaxDist” you can specify
-	 * the maximum distance for the nearest neighbor search. Beware that the
-	 * parameter takes the squared maximum distance. Thus if you want a maximum
-	 * distance of 100 you have to set the parameter to 10000 (= 100 * 100).
-	 * You also can specify a color for these unmatched points using
-	 * “blankColor”. This parameter must be either a pointer to an array
-	 * containing three uchars (red, green and blue) or a NULL pointer. In the
-	 * latter case this option will be ignored.
+     * the maximum distance for the nearest neighbor search. Beware that the
+     * parameter takes the squared maximum distance. Thus if you want a maximum
+     * distance of 100 you have to set the parameter to 10000 (= 100 * 100).
+     * You also can specify a color for these unmatched points using
+     * “blankColor”. This parameter must be either a pointer to an array
+     * containing three uchars (red, green and blue) or a NULL pointer. In the
+     * latter case this option will be ignored.
      *
      * @param pcm        PointCloudManager containing the point cloud to get
      *                   the color information from.
@@ -127,7 +128,7 @@ public:
     /**
      * @brief Returns the distance of vertex v from the nearest tangent plane.
      **/
-	virtual void distance(VertexT v, float &projectedDistance, float &euklideanDistance) = 0;
+    virtual void distance(VertexT v, float &projectedDistance, float &euklideanDistance) = 0;
 
     void setKD( int kd )
     {
@@ -170,6 +171,41 @@ public:
     /// The number of tangent planes used for distance determination
     int                         m_kd;
 };
+
+
+template< typename VertexT >
+struct VertexTraits { };
+
+
+template< typename CoordType, typename ColorT >
+struct VertexTraits< ColorVertex< CoordType, ColorT > > 
+{
+    static inline ColorVertex< CoordType, ColorT > vertex(
+            CoordType** p, ColorT** c, unsigned int idx )
+    {
+        return c
+            ? ColorVertex< CoordType, ColorT >(
+                p[idx][0], p[idx][1], p[idx][2],
+                c[idx][0], c[idx][1], c[idx][2] )
+            : ColorVertex< CoordType, ColorT >(
+                p[idx][0], p[idx][1], p[idx][2] );
+        /* TODO: Make sure we always have color information if we have
+         *       ColorVertex! */
+    }
+};
+
+
+template< typename CoordType >
+struct VertexTraits< Vertex< CoordType > > 
+{
+    static inline Vertex< CoordType > vertex(
+            CoordType** p, void** c, unsigned int idx )
+    {
+        return Vertex< CoordType >(
+                p[idx][0], p[idx][1], p[idx][2] );
+    }
+};
+
 
 } // namespace lssr
 
