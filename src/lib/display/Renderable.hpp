@@ -99,7 +99,10 @@ public:
 
 	BoundingBox<Vertex<float> >* boundingBox() { return m_boundingBox;};
 
-	Model* model() { return m_model;}
+	ModelPtr model()
+    {
+        return m_model;
+    }
 
 protected:
 
@@ -131,7 +134,7 @@ protected:
     Matrix4<float>               m_transformation;
     BoundingBox<Vertex<float> >* m_boundingBox;
 
-    Model*                       m_model;
+    ModelPtr                       m_model;
 };
 
 }

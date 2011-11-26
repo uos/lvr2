@@ -47,6 +47,12 @@ public:
         m_mesh = m;
     };
 
+    Model( MeshBufferPtr m, PointBufferPtr p )
+    {
+        m_pointCloud = p;
+        m_mesh = m;
+    };
+
     Model( MeshBufferPtr m )
     {
         m_pointCloud.reset();

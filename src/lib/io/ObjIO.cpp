@@ -35,10 +35,11 @@
 namespace lssr
 {
 	using namespace std; // Bitte vergebt mir....
+    // Meinst du wirklich, dass ich dir so etwas durchgehen lassen kann?
 
 
 
-void ObjIO::save(Model *model, string filename)
+void ObjIO::save( ModelPtr model, string filename )
 {
 	typedef Vertex<uchar> ObjColor;
 

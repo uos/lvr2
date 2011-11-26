@@ -43,7 +43,7 @@ namespace lssr
 {
 
 
-void PLYIO::save( Model* model, string filename )
+void PLYIO::save( ModelPtr model, string filename )
 {
     m_model = model;
     save( filename, PLY_LITTLE_ENDIAN );
@@ -400,13 +400,13 @@ void PLYIO::save( string filename, e_ply_storage_mode mode,
 }
 
 
-Model* PLYIO::read( string filename )
+ModelPtr PLYIO::read( string filename )
 {
    return read( filename, true );
 }
 
 
-Model* PLYIO::read( string filename, bool readColor, bool readConfidence,
+ModelPtr PLYIO::read( string filename, bool readColor, bool readConfidence,
         bool readIntensity, bool readNormals, bool readFaces )
 {
 
@@ -416,12 +416,12 @@ Model* PLYIO::read( string filename, bool readColor, bool readConfidence,
     if ( !ply )
     {
         g_msg.print( MSG_TYPE_ERROR, "Could not open »%s«.\n", filename.c_str() );
-        return 0;
+        return ModelPtr();
     }
     if ( !ply_read_header( ply ) )
     {
         g_msg.print( MSG_TYPE_ERROR, "Could not read header.\n" );
-        return 0;
+        return ModelPtr();
     }
     g_msg.print( MSG_TYPE_MESSGAE, "Loading »%s«…\n", filename.c_str() );
 
@@ -515,7 +515,7 @@ Model* PLYIO::read( string filename, bool readColor, bool readConfidence,
     if ( !( numVertices || numPoints ) )
     {
         g_msg.print( MSG_TYPE_WARNING, "Neither vertices nor points in ply.\n" );
-        return 0;
+        return ModelPtr();
     }
 
     // Buffers
@@ -716,9 +716,7 @@ Model* PLYIO::read( string filename, bool readColor, bool readConfidence,
         mesh->setFaceArray(faceIndices, numFaces);
     }
 
-    Model* m = new Model;
-    m->m_mesh = mesh;
-    m->m_pointCloud = pc;
+    ModelPtr m( new Model( mesh, pc ) );
     return m;
 
 }

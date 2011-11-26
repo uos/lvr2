@@ -45,7 +45,11 @@ public:
 	/**
 	 * @brief Constructor.
 	 **/
-	ObjIO() : m_model(0) {};
+	ObjIO()
+    {
+        m_model.reset();
+    }
+
 	~ObjIO() { };
 
 	/**
@@ -53,7 +57,11 @@ public:
 	 *
 	 * @param filename  The file to read.
 	 */
-	Model* read(string filename){ return new Model; };
+	ModelPtr read(string filename)
+    {
+        ModelPtr m( new Model );
+        return m;
+    };
 
 	/**
 	 * @brief 	Writes the mesh to an obj file.
@@ -61,13 +69,13 @@ public:
 	 * @param 	model		The model containing all mesh data
 	 * @param	filename 	The file name to use
      */
-    void save(Model *model, string filename);
+    void save( ModelPtr model, string filename );
 
 
 
 private:
     /// The model containing all mesh data
-    Model* m_model;
+    ModelPtr m_model;
 };
 
 }

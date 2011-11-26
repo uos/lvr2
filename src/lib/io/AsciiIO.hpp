@@ -59,13 +59,13 @@ public:
      *
      * @param filename      The file to read
      */
-    virtual Model* read(string filename);
+    virtual ModelPtr read( string filename );
 
     /**
      * @todo : Implement save method for ASCII Files...
      * @param filename
      */
-    virtual void save(Model*, string filename) {}
+    virtual void save( ModelPtr m, string filename ) {}
 
     /// TODO: Coordinate mapping for ascii files
     static size_t countLines(string filename);

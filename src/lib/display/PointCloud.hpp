@@ -44,7 +44,7 @@ class PointCloud : public Renderable{
 public:
 
     PointCloud();
-    PointCloud(Model& loader, string name = "<unamed cloud>");
+    PointCloud(ModelPtr loader, string name = "<unamed cloud>");
 
     virtual ~PointCloud();
     virtual inline void render();

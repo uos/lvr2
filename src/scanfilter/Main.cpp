@@ -41,7 +41,7 @@ int main(int argc, char** argv)
 
     ::std::cout<<options<<::std::endl;
 
-    Model* m = ModelFactory::readModel(options.inputFile());
+    ModelPtr m = ModelFactory::readModel(options.inputFile());
 
     // Check if Reading was successful
     if(m)
@@ -63,8 +63,7 @@ int main(int argc, char** argv)
             }
 
             PointBufferPtr pb( filter.getPointBuffer() );
-            Model* out_model = new Model;
-            out_model->m_pointCloud = pb;
+            ModelPtr out_model( new Model( pb ) );
 
             std::cout << pb << std::endl;
             std::cout << pb-> getNumPoints() << std::endl;

@@ -467,8 +467,8 @@ void ViewerApplication::saveSelectedObject()
         {
             CustomTreeWidgetItem* c_item = static_cast<CustomTreeWidgetItem*>(item);
 
-            lssr::Model* m = c_item->renderable()->model();
-            lssr::ModelFactory::saveModel(m, file_name);
+            lssr::ModelPtr m = c_item->renderable()->model();
+            lssr::ModelFactory::saveModel( m, file_name );
 
         }
 

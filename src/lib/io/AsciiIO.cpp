@@ -39,9 +39,9 @@ using std::ifstream;
 namespace lssr
 {
 
-Model* AsciiIO::read(string filename)
+ModelPtr AsciiIO::read(string filename)
 {
-    Model* model = new Model;
+    ModelPtr model( new Model );
 
     // Check extension
     boost::filesystem::path selectedFile(filename);
@@ -49,14 +49,14 @@ Model* AsciiIO::read(string filename)
 
     if ( extension != ".pts" && extension != ".3d" && extension != ".xyz" && extension != ".txt" ) {
         cout << "»" << extension << "« is not a valid file extension." << endl;
-        return 0;
+        return ModelPtr();
     }
     // Count lines in file to estimate the number of present points
     int lines_in_file = countLines(filename);
 
     if ( lines_in_file < 2 ) {
         cout << timestamp << "AsciiIO: Too few lines in file (has to be > 2)." << endl;
-        return 0;
+        return ModelPtr();
     }
     // Open the given file. Skip the first line (as it may
     // contain meta data in some formats). Then try to guess

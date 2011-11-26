@@ -43,7 +43,7 @@ void BaseMesh<VertexT, IndexType>::save( string filename )
 
     if ( m_meshBuffer )
     {
-        Model* m = new Model( this->m_meshBuffer );
+        ModelPtr m( new Model( this->m_meshBuffer ) );
         ModelFactory::saveModel( m, filename );
     }
 

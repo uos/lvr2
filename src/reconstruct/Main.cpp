@@ -169,7 +169,7 @@ int main(int argc, char** argv)
 
     // Create a point loader object
     ModelFactory io_factory;
-    ModelPtr model( io_factory.readModel(options.getInputFileName()) );
+    ModelPtr model = io_factory.readModel( options.getInputFileName() );
     PointBufferPtr p_loader;
 
     // Parse loaded data

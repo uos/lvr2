@@ -30,7 +30,7 @@
 #include "Model.hpp"
 
 #include <string>
-using std::string;
+#include "boost/shared_ptr.hpp"
 
 namespace lssr
 {
@@ -44,12 +44,14 @@ namespace lssr
  */
 class ModelFactory
 {
-public:
+    public:
 
-    static Model* readModel(string filename);
-    static void saveModel(Model* m, string file);
+        static ModelPtr readModel( std::string filename );
+        static void saveModel( ModelPtr m, std::string file );
 
 };
+
+typedef boost::shared_ptr<ModelFactory> ModelFactoryPtr;
 
 } // namespace lssr
 
