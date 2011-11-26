@@ -43,8 +43,6 @@
 #include <boost/version.hpp>
 
 using lssr::Model;
-using lssr::MeshBuffer;
-using lssr::PointBuffer;
 
 DataCollectorFactory::DataCollectorFactory() {}
 
@@ -63,7 +61,7 @@ void DataCollectorFactory::create(string filename)
 	if(model)
 	{
 
-	    MeshBuffer*      mesh_buffer  = model->m_mesh;
+        lssr::MeshBufferPtr    mesh_buffer  = model->m_mesh;
 		lssr::PointBufferPtr   point_buffer = model->m_pointCloud;
 
 	    if(mesh_buffer)

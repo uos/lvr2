@@ -1124,7 +1124,10 @@ void HalfEdgeMesh<VertexT, NormalT>::finalize()
 
     // Hand the buffers over to the Model class for IO operations.
 
-    if(!this->m_meshBuffer) this->m_meshBuffer = new MeshBuffer;
+    if ( !this->m_meshBuffer )
+    {
+        this->m_meshBuffer = MeshBufferPtr( new MeshBuffer );
+    }
     this->m_meshBuffer->setVertexArray( vertexBuffer, numVertices );
     this->m_meshBuffer->setVertexColorArray( colorBuffer, numVertices );
     this->m_meshBuffer->setVertexNormalArray( normalBuffer, numVertices  );
@@ -1332,9 +1335,9 @@ void HalfEdgeMesh<VertexT, NormalT>::finalizeAndRetesselate( bool genTextures )
         if(t) delete t;
     }
 
-    if(!this->m_meshBuffer)
+    if ( !this->m_meshBuffer )
     {
-        this->m_meshBuffer = new MeshBuffer;
+        this->m_meshBuffer = MeshBufferPtr( new MeshBuffer );
     }
     this->m_meshBuffer->setVertexArray( vertexBuffer );
     this->m_meshBuffer->setVertexColorArray( colorBuffer );

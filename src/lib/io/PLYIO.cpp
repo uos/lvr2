@@ -97,7 +97,8 @@ void PLYIO::save( string filename, e_ply_storage_mode mode,
 
     if(m_model->m_mesh)
     {
-        MeshBuffer* mesh = m_model->m_mesh;
+        MeshBufferPtr mesh( m_model->m_mesh );
+
         m_vertices         = mesh->getVertexArray(m_numVertices);
         m_vertexColors     = mesh->getVertexColorArray(m_numVertexColors);
         m_vertexConfidence = mesh->getVertexConfidenceArray(m_numVertexConfidences);
@@ -694,7 +695,7 @@ Model* PLYIO::read( string filename, bool readColor, bool readConfidence,
 
     // Save buffers in model
     PointBufferPtr pc;
-    MeshBuffer* mesh = 0;
+    MeshBufferPtr mesh;
     if(points)
     {
         pc = PointBufferPtr( new PointBuffer );
@@ -706,7 +707,7 @@ Model* PLYIO::read( string filename, bool readColor, bool readConfidence,
 
     if(vertices)
     {
-        mesh = new MeshBuffer;
+        mesh = MeshBufferPtr( new MeshBuffer );
         mesh->setVertexArray(vertices, numVertices);
         mesh->setVertexColorArray(vertexColors, numVertexColors);
         mesh->setVertexIntensityArray(vertexIntensity, numVertexIntensities);

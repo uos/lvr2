@@ -48,30 +48,36 @@ StaticMesh::StaticMesh(){
 
 }
 
-StaticMesh::StaticMesh(Model& model, string name) : Renderable(name){
+StaticMesh::StaticMesh( Model& model, string name )
+    : Renderable( name )
+{
 
     m_model = &model;
 
-    init(model.m_mesh);
+    init( model.m_mesh );
 
 	calcBoundingBox();
 	compileSurfaceList();
 	compileWireframeList();
+
 }
 
-StaticMesh::StaticMesh(MeshBuffer* mesh, string name) : Renderable(name){
+StaticMesh::StaticMesh( MeshBufferPtr mesh, string name )
+    : Renderable( name )
+{
 
     m_model = new Model;
     m_model->m_mesh = mesh;
 
-    init(mesh);
+    init( mesh );
 
     calcBoundingBox();
     compileSurfaceList();
     compileWireframeList();
+
 }
 
-void StaticMesh::init(MeshBuffer* mesh)
+void StaticMesh::init( MeshBufferPtr mesh )
 {
     if(mesh)
     {
