@@ -49,7 +49,7 @@
 
 
 typedef lssr::PointCloudManager<lssr::ColorVertex<float, unsigned char>,
-        lssr::Normal<float> >* pcm_p;
+        lssr::Normal<float> >::Ptr PointCloudManagerPtr;
 
 
 float maxdist = std::numeric_limits<float>::max();
@@ -131,7 +131,7 @@ void parseArgs( int argc, char ** argv ) {
  * @brief Load a point cloud from a file.
  * @param pc 
  **/
-void loadPointCloud( lssr::PointBufferPtr &pc, pcm_p* pcm, char* filename )
+void loadPointCloud( lssr::PointBufferPtr &pc, PointCloudManagerPtr &pcm, char* filename )
 {
     
 	/* Read clouds from file. */
@@ -151,17 +151,17 @@ void loadPointCloud( lssr::PointBufferPtr &pc, pcm_p* pcm, char* filename )
     if ( pcm_name == "stann" )
     {
         printf( "Creating STANN point cloud manager…\n" );
-        *pcm = new lssr::StannPointCloudManager<
+        pcm = PointCloudManagerPtr( new lssr::StannPointCloudManager<
             lssr::ColorVertex<float, unsigned char>, 
-            lssr::Normal<float> >( pc );
+            lssr::Normal<float> >( pc ) );
     }
 #ifdef _USE_PCL_
     else if ( pcm_name == "pcl" ) 
     {
         printf( "Creating STANN point cloud manager…\n" );
-        *pcm = new lssr::PCLPointCloudManager<
+        pcm = PointCloudManagerPtr( new lssr::PCLPointCloudManager<
             lssr::ColorVertex<float, unsigned char>, 
-            lssr::Normal<float> >( pc );
+            lssr::Normal<float> >( pc ) );
     }
 #endif
     else
@@ -170,9 +170,9 @@ void loadPointCloud( lssr::PointBufferPtr &pc, pcm_p* pcm, char* filename )
         exit( EXIT_FAILURE );
     }
 
-    (*pcm)->setKD( 10 );
-    (*pcm)->setKI( 10 );
-    (*pcm)->setKN( 10 );
+    pcm->setKD( 10 );
+    pcm->setKI( 10 );
+    pcm->setKN( 10 );
 
 }
 
@@ -188,10 +188,10 @@ int main( int argc, char ** argv )
 	parseArgs( argc, argv );
 
 	/* Read clouds from file. */
-    pcm_p pcm1 = NULL, pcm2 = NULL;
+    PointCloudManagerPtr pcm1, pcm2;
 	lssr::PointBufferPtr pc1, pc2;
-    loadPointCloud( pc1, &pcm1, argv[ optind     ] );
-    loadPointCloud( pc2, &pcm2, argv[ optind + 1 ] );
+    loadPointCloud( pc1, pcm1, argv[ optind     ] );
+    loadPointCloud( pc2, pcm2, argv[ optind + 1 ] );
 
     /* Colorize first point cloud. */
     pcm1->colorizePointCloud( pcm2, maxdist, rgb );
@@ -203,9 +203,6 @@ int main( int argc, char ** argv )
     lssr::ModelFactory io_factory;
     lssr::ModelPtr model( new lssr::Model( pc1 ) );
     io_factory.saveModel( model, argv[ optind + 2 ] );
-
-	delete pcm1;
-	delete pcm2;
 
     return EXIT_SUCCESS;
 

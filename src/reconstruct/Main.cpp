@@ -152,6 +152,9 @@
 
 using namespace lssr;
 
+#define RC_PCM_TYPE lssr::ColorVertex<float, unsigned char>, lssr::Normal<float>
+
+
 /**
  * @brief   Main entry point for the LSSR surface executable
  */
@@ -185,21 +188,23 @@ int main(int argc, char** argv)
 
     // Create a point cloud manager
     string pcm_name = options.getPCM();
-    PointCloudManager<ColorVertex<float, unsigned char>, Normal<float> >* pcm = 0;
+    lssr::PointCloudManager< RC_PCM_TYPE >::Ptr pcm;
     if(pcm_name == "PCL")
     {
 #ifdef _USE_PCL_
         cout << timestamp << "Creating PCL point cloud manager." << endl;
-        pcm = new PCLPointCloudManager<ColorVertex<float, unsigned char>, Normal<float> > (p_loader);
+        pcm = PointCloudManager< RC_PCM_TYPE >::Ptr( 
+                new PCLPointCloudManager< RC_PCM_TYPE >( p_loader ) );
 #else
         cout << timestamp << "PCL bindings not found. Using STANN instead." << endl;
-        pcm = new StannPointCloudManager<ColorVertex<float, unsigned char>, Normal<float> > (p_loader);
+        pcm = PointCloudManager< RC_PCM_TYPE >::Ptr( 
+                new StannPointCloudManager< RC_PCM_TYPE >( p_loader ) );
 #endif
     }
     else if(pcm_name == "STANN" || pcm_name == "STANN_RANSAC")
     {
-        StannPointCloudManager<ColorVertex<float, unsigned char>, Normal<float> > *m =
-                new StannPointCloudManager<ColorVertex<float, unsigned char>, Normal<float> > (p_loader);
+        StannPointCloudManager< RC_PCM_TYPE >::Ptr m( 
+                new StannPointCloudManager< RC_PCM_TYPE >( p_loader ) );
 
         if(pcm_name == "STANN_RANSAC")
         {
@@ -236,7 +241,7 @@ int main(int argc, char** argv)
     pcm->calcNormals();
 
     // Create an empty mesh
-    HalfEdgeMesh<ColorVertex<float, unsigned char>, Normal<float> > mesh(pcm);
+    HalfEdgeMesh< RC_PCM_TYPE > mesh( pcm );
 
     // Set recursion depth for region growing
     if(options.getDepth())
@@ -246,7 +251,7 @@ int main(int argc, char** argv)
 
     if(options.getTexelSize())
     {
-    	Texture<ColorVertex<float, unsigned char>, Normal<float> >::m_texelSize = options.getTexelSize();
+    	Texture< RC_PCM_TYPE >::m_texelSize = options.getTexelSize();
     }
 
     // Determine weather to use intersections or voxelsize
@@ -264,7 +269,7 @@ int main(int argc, char** argv)
     }
 
     // Create a new reconstruction object
-    FastReconstruction<ColorVertex<float, unsigned char>, Normal<float> > reconstruction(*pcm, resolution, useVoxelsize);
+    FastReconstruction< RC_PCM_TYPE > reconstruction( pcm, resolution, useVoxelsize);
     reconstruction.getMesh(mesh);
 
     mesh.removeDanglingArtifacts(options.getDanglingArtifacts());

@@ -78,6 +78,8 @@ class StannPointCloudManager : public PointCloudManager<VertexT, NormalT>
 {
 public:
 
+    typedef boost::shared_ptr< StannPointCloudManager<VertexT, NormalT> > Ptr;
+
 	/**
 	 * @brief Trys to read the given file to create a new StannPointCloudManager
 	 *        instance.
