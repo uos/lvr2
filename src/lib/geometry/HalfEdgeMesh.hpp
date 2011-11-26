@@ -86,7 +86,7 @@ public:
 	 *
 	 * @param	pm	a pointer to the point cloud manager
 	 */
-	HalfEdgeMesh(PointCloudManager<VertexT, NormalT>* pm);
+	HalfEdgeMesh( typename PointCloudManager<VertexT, NormalT>::Ptr pm );
 
 	/**
 	 * @brief   Dtor.
@@ -206,7 +206,7 @@ private:
 	bool                                        m_colorRegions;
 
 	/// a pointer to the point cloud manager
-	PointCloudManager<VertexT, NormalT>*        m_pointCloudManager;
+	typename PointCloudManager<VertexT, NormalT>::Ptr        m_pointCloudManager;
 
 	/**
 	 * @brief   Returns an edge that point to the edge defined

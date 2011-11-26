@@ -31,7 +31,8 @@ namespace lssr
 {
 
     template<typename VertexT, typename NormalT>
-HalfEdgeMesh<VertexT, NormalT>::HalfEdgeMesh(PointCloudManager<VertexT, NormalT>* pm)
+HalfEdgeMesh<VertexT, NormalT>::HalfEdgeMesh( 
+        typename PointCloudManager<VertexT, NormalT>::Ptr pm )
 {
     m_globalIndex = 0;
     m_colorRegions = false;

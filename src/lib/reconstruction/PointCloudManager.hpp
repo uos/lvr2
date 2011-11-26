@@ -52,6 +52,7 @@ class PointCloudManager
 {
 public:
 
+    typedef boost::shared_ptr< PointCloudManager<VertexT, NormalT> > Ptr;
 
     /**
      * @brief Returns the k closest neighbor vertices to a given query point
@@ -121,7 +122,7 @@ public:
      * @param blankColor Color to set the point to if there are no near color
      *                   information.
      */
-    virtual void colorizePointCloud( PointCloudManager<VertexT, NormalT>* pcm,
+    virtual void colorizePointCloud( PointCloudManager<VertexT, NormalT>::Ptr pcm,
             const float &sqrMaxDist = std::numeric_limits<float>::max(), 
             const uchar* blankColor = NULL );
 
@@ -176,6 +177,7 @@ public:
 
     /// The number of tangent planes used for distance determination
     int                         m_kd;
+
 };
 
 
@@ -211,7 +213,6 @@ struct VertexTraits< Vertex< CoordType > >
                 p[idx][0], p[idx][1], p[idx][2] );
     }
 };
-
 
 } // namespace lssr
 

@@ -69,7 +69,7 @@ const VertexT PointCloudManager<VertexT, NormalT>::operator[]( const size_t& ind
 
 template<typename VertexT, typename NormalT>
 void PointCloudManager<VertexT, NormalT>::colorizePointCloud( 
-        PointCloudManager<VertexT, NormalT>* pcm, const float &sqrMaxDist,
+        PointCloudManager<VertexT, NormalT>::Ptr pcm, const float &sqrMaxDist,
         const uchar* blankColor )
 {
 

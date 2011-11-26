@@ -60,7 +60,9 @@ public:
      * @param isVoxelsize   If set to true, interpret resolution as voxelsize
      *                      instead of number of intersections
      */
-    FastReconstruction(PointCloudManager<VertexT, NormalT> &manager,  float resolution, bool isVoxelsize = false);
+    FastReconstruction( 
+            typename PointCloudManager<VertexT, NormalT>::Ptr manager,
+            float resolution, bool isVoxelsize = false );
 
 
     /**
