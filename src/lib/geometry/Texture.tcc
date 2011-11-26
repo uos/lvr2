@@ -31,7 +31,7 @@ template<typename VertexT, typename NormalT>
 float Texture<VertexT, NormalT>::m_texelSize = 1;
 
 template<typename VertexT, typename NormalT>
-Texture<VertexT, NormalT>::Texture(PointCloudManager<VertexT, NormalT>* pm, Region<VertexT, NormalT>* region, vector<vector<HVertex*> > contours)
+Texture<VertexT, NormalT>::Texture( typename PointCloudManager<VertexT, NormalT>::Ptr pm, Region<VertexT, NormalT>* region, vector<vector<HVertex*> > contours)
 {
 	this->m_region = region;
 	this->m_data   = 0;
