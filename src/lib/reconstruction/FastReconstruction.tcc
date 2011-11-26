@@ -37,7 +37,7 @@ FastReconstruction<VertexT, NormalT>::FastReconstruction(
 {
     // Determine m_voxelsize
     assert(resolution > 0);
-    BoundingBox<VertexT> bb = this->m_manager.getBoundingBox();
+    BoundingBox<VertexT> bb = this->m_manager->getBoundingBox();
 
     assert(bb.isValid());
     if(!isVoxelsize)
@@ -62,7 +62,7 @@ FastReconstruction<VertexT, NormalT>::FastReconstruction(
 template<typename VertexT, typename NormalT>
 void FastReconstruction<VertexT, NormalT>::calcIndices()
 {
-    BoundingBox<VertexT> bb = this->m_manager.getBoundingBox();
+    BoundingBox<VertexT> bb = this->m_manager->getBoundingBox();
 
     float max_size = bb.getLongestSide();
 
@@ -130,16 +130,20 @@ void FastReconstruction<VertexT, NormalT>::createGrid()
 	int dx, dy, dz;
 
 	// Get min and max vertex of the point clouds bounding box
-	BoundingBox<VertexT> bounding_box = this->m_manager.getBoundingBox();
+	BoundingBox<VertexT> bounding_box = this->m_manager->getBoundingBox();
 	VertexT v_min = bounding_box.getMin();
 	VertexT v_max = bounding_box.getMax();
 
-	for(size_t i = 0; i < this->m_manager.getNumPoints(); i++)
+	for(size_t i = 0; i < this->m_manager->getNumPoints(); i++)
 	{
+        VertexT currentVertex = this->m_manager->getPoint(i);
 		/// TODO: Replace with Vertex<> ???
-		index_x = calcIndex((this->m_manager[i][0] - v_min[0]) / m_voxelsize);
-		index_y = calcIndex((this->m_manager[i][1] - v_min[1]) / m_voxelsize);
-		index_z = calcIndex((this->m_manager[i][2] - v_min[2]) / m_voxelsize);
+		index_x = calcIndex((currentVertex[0] - v_min[0]) / m_voxelsize);
+		index_y = calcIndex((currentVertex[1] - v_min[1]) / m_voxelsize);
+		index_z = calcIndex((currentVertex[2] - v_min[2]) / m_voxelsize);
+		//index_x = calcIndex((this->m_manager[i][0] - v_min[0]) / m_voxelsize);
+		//index_y = calcIndex((this->m_manager[i][1] - v_min[1]) / m_voxelsize);
+		//index_z = calcIndex((this->m_manager[i][2] - v_min[2]) / m_voxelsize);
 
 
 		for(int j = 0; j < 8; j++){
@@ -265,7 +269,7 @@ void FastReconstruction<VertexT, NormalT>::calcQueryPointValues(){
 
         //cout << euklideanDistance << " " << projectedDistance << endl;
 
-        this->m_manager.distance(m_queryPoints[i].m_position, projectedDistance, euklideanDistance);
+        this->m_manager->distance(m_queryPoints[i].m_position, projectedDistance, euklideanDistance);
         if (euklideanDistance > 1.7320 * m_voxelsize)
         {
         	m_queryPoints[i].m_invalid = true;

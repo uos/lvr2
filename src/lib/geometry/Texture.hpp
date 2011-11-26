@@ -57,7 +57,7 @@ public:
 	 * @param	contours	All contours of the region.
 	 *
 	 */
-	Texture(PointCloudManager<VertexT, NormalT>* pm, Region<VertexT, NormalT>* region,  vector<vector<HVertex*> > contours);
+	Texture( typename PointCloudManager<VertexT, NormalT>::Ptr pm,   Region<VertexT, NormalT>* region,  vector<vector<HVertex*> > contours);
 
 	/**
 	 * @brief	computes texture coordinates corresponding to the give Vertex

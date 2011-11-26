@@ -27,6 +27,8 @@
 #include "ViewerApplication.h"
 #include "../data/Static3DDataCollector.h"
 
+#define RC_PCM_TYPE lssr::ColorVertex<float, unsigned char>, lssr::Normal<float>
+
 ViewerApplication::ViewerApplication( int argc, char ** argv )
 {
 	// Setup main window
@@ -152,20 +154,24 @@ void ViewerApplication::createMeshFromPointcloud()
                 if(loader)
                 {
                     // Create a point cloud manager object
-                    PointCloudManager<ColorVertex<float, unsigned char>, Normal<float> >* pcm;
+                    lssr::PointCloudManager< RC_PCM_TYPE >::Ptr pcm;
+//                    PointCloudManager<ColorVertex<float, unsigned char>, Normal<float> >* pcm;
                     QString pcm_name = mesh_ui->comboBoxPCM->currentText();
 
                     if(pcm_name == "PCL")
                     {
 #ifdef _USE_PCL_
-                        pcm = new PCLPointCloudManager<ColorVertex<float, unsigned char>, Normal<float> > (loader);
+                        pcm = PointCloudManager< RC_PCM_TYPE >::Ptr(
+                              new PCLPointCloudManager<ColorVertex<float, unsigned char>, Normal<float> > (loader));
 #else
-                        pcm = new StannPointCloudManager<ColorVertex<float, unsigned char>, Normal<float> > (loader);
+                        pcm = PointCloudManager< RC_PCM_TYPE >::Ptr(
+                              new StannPointCloudManager<ColorVertex<float, unsigned char>, Normal<float> > (loader));
 #endif
                     }
                     else
                     {
-                        pcm = new StannPointCloudManager<ColorVertex<float, unsigned char>, Normal<float> > (loader);
+                        pcm = PointCloudManager< RC_PCM_TYPE >::Ptr(
+                              new StannPointCloudManager<ColorVertex<float, unsigned char>, Normal<float> > (loader));
                     }
 
                     // Set pcm parameters
@@ -180,7 +186,7 @@ void ViewerApplication::createMeshFromPointcloud()
                     // Get reconstruction mesh
                     float voxelsize = mesh_ui->spinBoxVoxelsize->value();
 
-                    FastReconstruction<ColorVertex<float, unsigned char>, Normal<float> > reconstruction(*pcm, voxelsize, true);
+                    FastReconstruction<ColorVertex<float, unsigned char>, Normal<float> > reconstruction(pcm, voxelsize, true);
                     reconstruction.getMesh(mesh);
 
                     // Get optimization parameters

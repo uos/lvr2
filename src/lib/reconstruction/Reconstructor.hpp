@@ -46,7 +46,8 @@ public:
      * @brief Constructs a Reconstructor object using the given point
      *        cloud handler
      */
-    Reconstructor(PointCloudManager<VertexT, NormalT> &manager) : m_manager(manager) {}
+    //Reconstructor(PointCloudManager<VertexT, NormalT> &manager) : m_manager(manager) {}
+    Reconstructor( typename PointCloudManager<VertexT, NormalT>::Ptr manager) : m_manager(manager) {}
 
     /**
      * @brief Generated a triangle mesh representation of the current
@@ -60,7 +61,7 @@ public:
 protected:
 
     /// The point cloud manager that handles the loaded point cloud data.
-    PointCloudManager<VertexT, NormalT>&      m_manager;
+    typename PointCloudManager<VertexT, NormalT>::Ptr      m_manager;
 };
 
 } //namespace lssr
