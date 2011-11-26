@@ -49,11 +49,7 @@ BoundingBox<VertexT>& PointCloudManager<VertexT, NormalT>::getBoundingBox()
 template<typename VertexT, typename NormalT>
 VertexT PointCloudManager<VertexT, NormalT>::getPoint( size_t index )
 {
-    assert(index < m_numPoints);
-    /// TODO: Implement vertex traits
-    return VertexT(
-            m_points[index][0], m_points[index][1], m_points[index][2], 
-            m_colors[index][0], m_colors[index][1], m_colors[index][2] );
+    return VertexTraits< VertexT >::vertex( m_points, m_colors, index );
 }
 
 
@@ -67,18 +63,13 @@ size_t PointCloudManager<VertexT, NormalT>::getNumPoints()
 template<typename VertexT, typename NormalT>
 const VertexT PointCloudManager<VertexT, NormalT>::operator[]( const size_t& index ) const
 {
-        return VertexT(
-                m_points[index][0], m_points[index][1], m_points[index][2] );
-        /// TODO: Implement vertex traits
-/*              m_colors[index][0], m_colors[index][1], m_colors[index][2] );
- *              --- m_colors may be NULL and thus this may segfault. ---
- **/
+    return VertexTraits< VertexT >::vertex( m_points, m_colors, index );
 }
 
 
 template<typename VertexT, typename NormalT>
 void PointCloudManager<VertexT, NormalT>::colorizePointCloud( 
-		PointCloudManager<VertexT, NormalT>* pcm, const float &sqrMaxDist,
+        PointCloudManager<VertexT, NormalT>* pcm, const float &sqrMaxDist,
         const uchar* blankColor )
 {
 
