@@ -39,6 +39,7 @@
 #include <vector>
 #include <algorithm>
 #include <iostream>
+#include "boost/shared_ptr.hpp"
 
 typedef unsigned char uchar;
 
@@ -598,6 +599,8 @@ class MeshBuffer
         size_t 	    m_numFaceColors;
 
 };
+
+typedef boost::shared_ptr<MeshBuffer> MeshBufferPtr;
 
 } /* namespace lssr */
 #endif /* MESHIO_HPP_ */

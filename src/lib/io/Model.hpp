@@ -40,13 +40,23 @@ namespace lssr
 class Model
 {
 public:
-    Model() : m_mesh(0) {
-        m_pointCloud.reset();
+
+    Model( PointBufferPtr p = PointBufferPtr(), MeshBufferPtr m = MeshBufferPtr() )
+    {
+        m_pointCloud = p;
+        m_mesh = m;
     };
+
+    Model( MeshBufferPtr m )
+    {
+        m_pointCloud.reset();
+        m_mesh = m;
+    };
+
     virtual ~Model() {};
 
     PointBufferPtr      m_pointCloud;
-    MeshBuffer*         m_mesh;
+    MeshBufferPtr       m_mesh;
 };
 
 typedef boost::shared_ptr<Model> ModelPtr;

@@ -34,18 +34,17 @@ template<typename VertexT, typename IndexType>
 BaseMesh<VertexT, IndexType>::BaseMesh()
 {
 	m_finalized = false;
-	m_meshBuffer = 0;
+	m_meshBuffer.reset();
 }
 
 template<typename VertexT, typename IndexType>
 void BaseMesh<VertexT, IndexType>::save( string filename )
 {
 
-    if(m_meshBuffer)
+    if ( m_meshBuffer )
     {
-        Model* m = new Model;
-        m->m_mesh = this->m_meshBuffer;
-        ModelFactory::saveModel(m, filename);
+        Model* m = new Model( this->m_meshBuffer );
+        ModelFactory::saveModel( m, filename );
     }
 
 }
