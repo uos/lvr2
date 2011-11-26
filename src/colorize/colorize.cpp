@@ -137,7 +137,7 @@ void loadPointCloud( lssr::PointBufferPtr &pc, pcm_p* pcm, char* filename )
 	/* Read clouds from file. */
 	printf( "Loading pointcloud %s…\n", filename );
     lssr::ModelFactory io_factory;
-    lssr::Model* model = io_factory.readModel( filename );
+    lssr::ModelPtr model = io_factory.readModel( filename );
     if ( model && model->m_pointCloud ) 
 	{
 		pc = model->m_pointCloud;
@@ -201,9 +201,8 @@ int main( int argc, char ** argv )
 
     /* Save point cloud. */
     lssr::ModelFactory io_factory;
-    lssr::Model model;
-    model.m_pointCloud = pc1;
-    io_factory.saveModel( &model, argv[ optind + 2 ] );
+    lssr::ModelPtr model( new lssr::Model( pc1 ) );
+    io_factory.saveModel( model, argv[ optind + 2 ] );
 
 	delete pcm1;
 	delete pcm2;

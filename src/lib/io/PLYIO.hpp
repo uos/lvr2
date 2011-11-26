@@ -93,7 +93,10 @@ class PLYIO : public BaseIO
         /**
          * \brief Constructor.
          **/
-        PLYIO() : m_model(0) {};
+        PLYIO()
+        {
+            m_model.reset();
+        }
 
         ~PLYIO() {}
 
@@ -123,7 +126,7 @@ class PLYIO : public BaseIO
          *
          * \param filename  Filename of the output file.
          **/
-        void save( Model* m, string filename );
+        void save( ModelPtr m, string filename );
 
 
         /**
@@ -139,7 +142,7 @@ class PLYIO : public BaseIO
          * \param readNormals     Specifies if normals should be read.
          * \param readFaces       Specifies if faces should be read.
          **/
-        Model* read( string filename, bool readColor, bool readConfidence = true,
+        ModelPtr read( string filename, bool readColor, bool readConfidence = true,
                 bool readIntensity = true, bool readNormals = true, 
                 bool readFaces = true );
 
@@ -151,7 +154,7 @@ class PLYIO : public BaseIO
          *
          * \param filename        Filename of file to read.
          **/
-        Model* read( string filename );
+        ModelPtr read( string filename );
 
 
         /**
@@ -176,7 +179,7 @@ class PLYIO : public BaseIO
 
 
     private:
-        Model* m_model;
+        ModelPtr m_model;
 
 };
 

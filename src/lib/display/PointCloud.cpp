@@ -37,14 +37,14 @@ PointCloud::PointCloud()
 
 }
 
-PointCloud::PointCloud(Model& model, string name) : Renderable(name)
+PointCloud::PointCloud( ModelPtr model, string name) : Renderable(name)
 {
     int maxColors = 255;
 
     m_boundingBox = new BoundingBox<Vertex<float> >;
-    m_model = &model;
+    m_model = model;
 
-    PointBufferPtr pc = model.m_pointCloud;
+    PointBufferPtr pc = model->m_pointCloud;
 
     if(pc)
     {

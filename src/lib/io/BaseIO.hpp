@@ -57,14 +57,14 @@ namespace lssr
              *
              * @param filename  The file to read.
              */
-            virtual Model* read(string filename) = 0;
+            virtual ModelPtr read(string filename ) = 0;
 
             /**
              * \brief Save the loaded elements to the given file.
              *
              * @param filename Filename of the file to write.
              */
-            virtual void save(Model* model, string filename) = 0;
+            virtual void save( ModelPtr model, string filename ) = 0;
 
     };
 

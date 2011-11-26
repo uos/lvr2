@@ -52,9 +52,9 @@ namespace lssr
 {
 
 
-Model* UosIO::read(string dir)
+ModelPtr UosIO::read(string dir)
 {
-    Model* model = 0;
+    ModelPtr model;
 
     size_t n = 0;
     boost::filesystem::path directory(dir);
@@ -158,7 +158,7 @@ Model* UosIO::read(string dir)
             }
             else
             {
-                return 0;
+                return ModelPtr();
             }
         }
 
@@ -187,14 +187,14 @@ void UosIO::reduce(string dir, string target, int reduction)
     m_saveToDisk = true;
 
     // Read data and write reduced points
-    Model* m = read(dir);
+    ModelPtr m = read(dir);
 
     // Write reduced points...
     ///TODO: Implement writing...
 }
 
 
-void UosIO::readNewFormat(Model* &model, string dir, int first, int last, size_t &n)
+void UosIO::readNewFormat(ModelPtr &model, string dir, int first, int last, size_t &n)
 {
     list<Vertex<float> > allPoints;
     list<Vertex<int> > allColors;
@@ -450,7 +450,7 @@ void UosIO::readNewFormat(Model* &model, string dir, int first, int last, size_t
         }
 
         // Create point cloud in model
-        model = new Model;
+        model = ModelPtr( new Model );
         model->m_pointCloud = PointBufferPtr( new PointBuffer );
         model->m_pointCloud->setPointArray(points, numPoints);
         model->m_pointCloud->setPointColorArray(pointColors, numPoints);
@@ -464,7 +464,7 @@ void UosIO::readNewFormat(Model* &model, string dir, int first, int last, size_t
 
 }
 
-void UosIO::readOldFormat(Model* &model, string dir, int first, int last, size_t &n)
+void UosIO::readOldFormat(ModelPtr &model, string dir, int first, int last, size_t &n)
 {
     Matrix4<float> m_tf;
 
@@ -650,7 +650,7 @@ void UosIO::readOldFormat(Model* &model, string dir, int first, int last, size_t
         }
 
         // Alloc model
-        model = new Model;
+        model = ModelPtr( new Model );
         model->m_pointCloud = PointBufferPtr( new PointBuffer );
         model->m_pointCloud->setPointArray( points, n );
     }

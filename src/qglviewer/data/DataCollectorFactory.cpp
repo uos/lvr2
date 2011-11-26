@@ -56,7 +56,7 @@ void DataCollectorFactory::create(string filename)
 
 	// Create a factory rto parse given file and extract loaders
 	lssr::ModelFactory io;
-	Model* model = io.readModel(filename);
+    lssr::ModelPtr model = io.readModel( filename );
 
 	if(model)
 	{
@@ -66,7 +66,7 @@ void DataCollectorFactory::create(string filename)
 
 	    if(mesh_buffer)
 	    {
-	        lssr::StaticMesh* mesh = new lssr::StaticMesh(*model);
+	        lssr::StaticMesh* mesh = new lssr::StaticMesh( model );
 	        TriangleMeshTreeWidgetItem* item = new TriangleMeshTreeWidgetItem(TriangleMeshItem);
 
 	        int modes = 0;
@@ -117,7 +117,7 @@ void DataCollectorFactory::create(string filename)
 	            else
 	            {
 
-	                PointCloud* pc = new PointCloud(*model);
+	                PointCloud* pc = new PointCloud( model );
 	                PointCloudTreeWidgetItem* item = new PointCloudTreeWidgetItem(PointCloudItem);
 
 	                // Setup supported render modes

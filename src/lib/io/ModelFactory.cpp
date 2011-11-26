@@ -38,13 +38,13 @@
 namespace lssr
 {
 
-Model* ModelFactory::readModel( string filename )
+ModelPtr ModelFactory::readModel( std::string filename )
 {
-    Model* m = 0;
+    ModelPtr m;
 
     // Check extension
-    boost::filesystem::path selectedFile(filename);
-    string extension = selectedFile.extension().c_str();
+    boost::filesystem::path selectedFile( filename );
+    std::string extension = selectedFile.extension().c_str();
 
     // Try to parse given file
     BaseIO* io = 0;
@@ -67,20 +67,20 @@ Model* ModelFactory::readModel( string filename )
     }
 
     // Return data model
-    if(io)
+    if( io )
     {
-        m = io->read(filename);
+        m = io->read( filename );
     }
 
     return m;
 
 }
 
-void ModelFactory::saveModel(Model* m, string filename)
+void ModelFactory::saveModel( ModelPtr m, std::string filename )
 {
     // Get file exptension
     boost::filesystem::path selectedFile(filename);
-    string extension = selectedFile.extension().c_str();
+    std::string extension = selectedFile.extension().c_str();
 
     BaseIO* io = 0;
 
@@ -106,7 +106,7 @@ void ModelFactory::saveModel(Model* m, string filename)
     // Save model
     if(io)
     {
-        io->save(m, filename);
+        io->save( m, filename );
     }
     else
     {

@@ -51,7 +51,7 @@ Renderable::Renderable()
 
 	m_boundingBox = new BoundingBox<Vertex<float> >;
 
-	m_model = 0;
+	m_model.reset();
 
 	computeMatrix();
 	//compileAxesList();
@@ -71,7 +71,7 @@ Renderable::Renderable(Matrix4<float> m, string n)
     m_scaleFactor       = 1.0f;
     m_boundingBox       = 0;
 
-    m_model = 0;
+    m_model.reset();
 
 	m_showAxes          = false;
 	m_active            = false;
@@ -129,7 +129,7 @@ Renderable::Renderable(string n)
 
 	m_boundingBox           = 0;
 
-	m_model = 0;
+	m_model.reset();
 
 	computeMatrix();
 	compileAxesList();

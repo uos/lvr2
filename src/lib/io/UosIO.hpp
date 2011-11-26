@@ -75,9 +75,9 @@ public:
      * @param dir       A directory containing scans in UOS format.
      * @return          An indexed array of scan points
      */
-    Model* read(string dir);
+    ModelPtr read(string dir);
 
-    void save(Model* m, string filename) {};
+    void save( ModelPtr m, string filename) {};
 
     /**
      * @brief Defines the first scan to read
@@ -116,7 +116,7 @@ private:
      * @param last      The last scan to read
      * @return          All read data points
      */
-    void readNewFormat(Model* &m, string dir, int first, int last, size_t &n);
+    void readNewFormat(ModelPtr &m, string dir, int first, int last, size_t &n);
 
     /**
      * @brief Reads scans from \ref{first} to \ref{last} in old UOS format.
@@ -125,7 +125,7 @@ private:
      * @param last      The last scan to read
      * @return          All read data points
      */
-    void readOldFormat(Model* &m, string dir, int first, int last, size_t &n);
+    void readOldFormat(ModelPtr &m, string dir, int first, int last, size_t &n);
 
     /**
      * @brief Creates a transformation matrix from given frame file
