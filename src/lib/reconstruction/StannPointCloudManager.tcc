@@ -37,7 +37,7 @@ namespace lssr{
 
 template<typename VertexT, typename NormalT>
 StannPointCloudManager<VertexT, NormalT>::StannPointCloudManager(
-        PointBufferPtr loader, const int &kn, const int &ki, const int &kd )
+        PointBufferPtr loader, const int &kn, const int &ki, const int &kd, const bool &useRansac )
 {
     this->m_ki = ki;
     this->m_kn = kn;
@@ -55,7 +55,7 @@ StannPointCloudManager<VertexT, NormalT>::StannPointCloudManager(
         this->m_colors = 0;
     }
 
-    m_useRANSAC = false;
+    m_useRANSAC = useRansac;
 
     init();
 }

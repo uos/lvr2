@@ -92,7 +92,8 @@ public:
 	StannPointCloudManager( PointBufferPtr loader,
 	                       const int &kn = 10,
 	                       const int &ki = 10,
-	                       const int &kd = 10);
+	                       const int &kd = 10,
+						   const bool &useRansac = false );
 
 	/**
 	 * @brief   Destructor
