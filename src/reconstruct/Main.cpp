@@ -165,7 +165,10 @@ int main(int argc, char** argv)
 
     // Exit if options had to generate a usage message
     // (this means required parameters are missing)
-    if (options.printUsage()) return 0;
+    if ( options.printUsage() )
+	{
+		return 0;
+	}
 
     ::std::cout << options << ::std::endl;
 
@@ -176,20 +179,17 @@ int main(int argc, char** argv)
     PointBufferPtr p_loader;
 
     // Parse loaded data
-    if ( model )
-    {
-        p_loader = model->m_pointCloud;
-    }
-    else
+    if ( !model )
     {
         cout << timestamp << "IO Error: Unable to parse " << options.getInputFileName() << endl;
         exit(-1);
     }
+	p_loader = model->m_pointCloud;
 
     // Create a point cloud manager
     string pcm_name = options.getPCM();
     lssr::PointCloudManager< RC_PCM_TYPE >::Ptr pcm;
-    if(pcm_name == "PCL")
+    if ( pcm_name == "PCL" )
     {
 #ifdef _USE_PCL_
         cout << timestamp << "Creating PCL point cloud manager." << endl;
@@ -201,34 +201,23 @@ int main(int argc, char** argv)
                 new StannPointCloudManager< RC_PCM_TYPE >( p_loader ) );
 #endif
     }
-    else if(pcm_name == "STANN" || pcm_name == "STANN_RANSAC")
+    else if ( pcm_name == "STANN" || pcm_name == "STANN_RANSAC" )
     {
-        StannPointCloudManager< RC_PCM_TYPE >::Ptr m( 
-                new StannPointCloudManager< RC_PCM_TYPE >( p_loader ) );
-
-        if(pcm_name == "STANN_RANSAC")
-        {
-            cout << timestamp << "Creating STANN_RANSAC point cloud manager." << endl;
-            m->useRansac(true);
-        }
-        else
-        {
-            cout << timestamp << "Creating STANN point cloud manager." << endl;
-        }
-
-        pcm = m;
+		cout << timestamp << "Creating STANN point cloud manager." << endl;
+        pcm = StannPointCloudManager< RC_PCM_TYPE >::Ptr( 
+                new StannPointCloudManager< RC_PCM_TYPE >( p_loader, 10, 10, 10, pcm_name == "STANN_RANSAC" ) );
     }
 
     // Check if a point cloud manager object was created. Exit if not and display
     // available objects
-    if(pcm == 0)
+    if ( !pcm )
     {
         cout << timestamp << "Unable to create PointCloudMansger." << endl;
         cout << timestamp << "Unknown option '" << pcm_name << "'." << endl;
         cout << timestamp << "Available PCMs are: " << endl;
-        cout << timestamp << "STANN, STANN_RANSAC, STANN ";
+        cout << timestamp << "STANN, STANN_RANSAC";
 #ifdef _USE_PCL_
-        cout << "PCL ";
+        cout << ", PCL";
 #endif
         cout << endl;
         return 0;
@@ -269,7 +258,8 @@ int main(int argc, char** argv)
     }
 
     // Create a new reconstruction object
-    FastReconstruction< RC_PCM_TYPE > reconstruction( pcm, resolution, useVoxelsize);
+    FastReconstruction< RC_PCM_TYPE > reconstruction(
+			pcm, resolution, useVoxelsize );
     reconstruction.getMesh(mesh);
 
     mesh.removeDanglingArtifacts(options.getDanglingArtifacts());
@@ -277,7 +267,10 @@ int main(int argc, char** argv)
     // Optimize mesh
     if(options.optimizePlanes())
     {
-        if(options.colorRegions()) mesh.enableRegionColoring();
+        if ( options.colorRegions() )
+		{
+			mesh.enableRegionColoring();
+		}
         mesh.optimizePlanes(options.getPlaneIterations(),
                             options.getNormalThreshold(),
                             options.getMinPlaneSize(),
@@ -294,13 +287,14 @@ int main(int argc, char** argv)
 //    mesh.tester();
 
     // Save triangle mesh
-    if(options.retesselate())
-	 {
-		 mesh.finalizeAndRetesselate(options.generateTextures());
-	 } else
-	 {
-		 mesh.finalize();
-	 }
+	if ( options.retesselate() )
+	{
+		mesh.finalizeAndRetesselate(options.generateTextures());
+	}
+	else
+	{
+		mesh.finalize();
+	}
 
     mesh.save("triangle_mesh.ply");
     mesh.save("triangle_mesh.obj");
