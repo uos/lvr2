@@ -40,12 +40,9 @@ public:
             QueryPoint<VertexT> p2,
             QueryPoint<VertexT> p3,
             QueryPoint<VertexT> p4,
-            int index1,
-            int index2,
-            int index3,
-            int index4);
+            int tetra_index);
 
-    void getSurface(BaseMesh<VertexT, NormalT> &mesh);
+    void getIntersectionIndices(vector<uint> ind);
 
     virtual ~Tetraeder();
 

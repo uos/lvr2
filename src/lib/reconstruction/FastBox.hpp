@@ -115,17 +115,6 @@ public:
     static uint		   		INVALID_INDEX;
 private:
 
-    /***
-     * @brief Interpolates the intersection between x1 and x1.
-     *
-     * @param x1			The first coordinate
-     * @param x2			The second coordinate
-     * @param d1			The distance value for the first coordinate
-     * @param d2			The distance value for the second coordinate
-     * @return The interpolated distance.
-     */
-    float calcIntersection(float x1, float x2, float d1, float d2);
-
     /**
      * @brief Calculated the index for the MC table
      */
@@ -156,6 +145,19 @@ private:
      * @param positions		The interpolated intersections.
      */
     void getIntersections(VertexT corners[], float distance[], VertexT positions[]);
+
+protected:
+
+    /***
+     * @brief Interpolates the intersection between x1 and x1.
+     *
+     * @param x1            The first coordinate
+     * @param x2            The second coordinate
+     * @param d1            The distance value for the first coordinate
+     * @param d2            The distance value for the second coordinate
+     * @return The interpolated distance.
+     */
+    float calcIntersection(float x1, float x2, float d1, float d2);
 
     /// The box center
     VertexT               		m_center;
