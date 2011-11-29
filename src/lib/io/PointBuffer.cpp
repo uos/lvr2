@@ -37,10 +37,8 @@ PointBuffer::PointBuffer() :
     m_points( NULL ),
     m_pointNormals( NULL ),
     m_pointColors( NULL ),
-    m_pointIntensities( NULL ),
     m_indexedPoints( NULL ),
     m_indexedPointNormals( NULL ),
-    m_indexedPointIntensities( NULL ),
     m_indexedPointColors( NULL ),
     m_numPoints( 0 ),
     m_numPointColors( 0 ),
@@ -51,8 +49,12 @@ PointBuffer::PointBuffer() :
         /* coordf must be the exact size of three floats to cast the float
          * array to a coordf array. */
         assert( 3 * sizeof(float) == sizeof(coordf) );
+        assert( 3 * sizeof(uchar) == sizeof(colorb) );
+        assert( sizeof(float) == sizeof(idxFloat) );
+        assert( sizeof(uchar) == sizeof(idxByte) );
 
         m_pointConfidences.reset();
+        m_pointIntensities.reset();
     }
 
 
@@ -83,7 +85,7 @@ float* PointBuffer::getPointNormalArray( size_t &n )
 }
 
 
-float* PointBuffer::getPointIntensityArray( size_t &n )
+floatArr PointBuffer::getPointIntensityArray( size_t &n )
 {
 
     n = m_numPointIntensities;
@@ -148,11 +150,12 @@ float** PointBuffer::getIndexedPointArray( size_t &n )
 }
 
 
-float** PointBuffer::getIndexedPointIntensityArray( size_t &n )
+idxFloatArr PointBuffer::getIndexedPointIntensityArray( size_t &n )
 {
 
-    return getIndexedArrayf( n, m_numPointIntensities, &m_pointIntensities,
-            &m_indexedPointIntensities, 1 );
+    n = m_numPointIntensities;
+    idxFloatArr p = *((idxFloatArr*) &m_pointIntensities);
+    return p;
 
 }
 
@@ -222,7 +225,7 @@ void PointBuffer::setPointNormalArray( float* array, size_t n )
 }
 
 
-void PointBuffer::setPointIntensityArray( float* array, size_t n )
+void PointBuffer::setPointIntensityArray( floatArr array, size_t n )
 {
 
     m_numPointIntensities = n;
@@ -243,7 +246,8 @@ void PointBuffer::setPointConfidenceArray( floatArr array, size_t n )
 void PointBuffer::freeBuffer()
 {
     m_pointConfidences.reset();
-    m_points = m_pointIntensities = m_pointNormals = NULL;
+    m_pointIntensities.reset();
+    m_points = m_pointNormals = NULL;
     m_pointColors = NULL;
     m_numPoints = m_numPointColors = m_numPointIntensities
         = m_numPointConfidence = m_numPointNormals = 0;

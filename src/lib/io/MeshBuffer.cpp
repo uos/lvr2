@@ -36,12 +36,10 @@ namespace lssr
 MeshBuffer::MeshBuffer() : 
     m_vertices( NULL ),
     m_vertexColors( NULL ),
-    m_vertexIntensity( NULL ),
     m_vertexNormals( NULL ),
     m_vertexTextureCoordinates( NULL ),
     m_indexedVertices( NULL ),
     m_indexedVertexColors( NULL ),
-    m_indexedVertexIntensity( NULL ),
     m_indexedVertexNormals( NULL ),
     m_indexedVertexTextureCoordinates( NULL ),
     m_faceIndices( NULL ),
@@ -58,6 +56,7 @@ MeshBuffer::MeshBuffer() :
     m_numFaceColors ( 0 )
 {
     m_vertexConfidence.reset();
+    m_vertexIntensity.reset();
 }
 
 
@@ -94,7 +93,7 @@ floatArr MeshBuffer::getVertexConfidenceArray( size_t &n )
 }
 
 
-float* MeshBuffer::getVertexIntensityArray( size_t &n )
+floatArr MeshBuffer::getVertexIntensityArray( size_t &n )
 {
     n = m_numVertexIntensities;
     return m_vertexIntensity;
@@ -200,29 +199,12 @@ idxFloatArr MeshBuffer::getIndexedVertexConfidenceArray( size_t &n )
 }
 
 
-float** MeshBuffer::getIndexedVertexIntensityArray( size_t &n )
+idxFloatArr MeshBuffer::getIndexedVertexIntensityArray( size_t &n )
 {
 
     n = m_numVertexIntensities;
-
-    /* Return NULL if we have no intensity information. */
-    if ( !m_vertexIntensity )
-    {
-        return NULL;
-    }
-
-    /* Generate indexed intensity array in not already done. */
-    if ( !m_indexedVertexIntensity )
-    {
-        m_indexedVertexIntensity = (float**) malloc( m_numVertexIntensities * sizeof(float**) );
-        for ( size_t i = 0; i < m_numVertexIntensities; i++ )
-        {
-            m_indexedVertexIntensity[i] = m_vertexIntensity + i;
-        }
-    }
-
-    /* Return indexed intensity array */
-    return m_indexedVertexIntensity;
+    idxFloatArr p = *((idxFloatArr*) &m_vertexIntensity);
+    return p;
 
 }
 
@@ -425,10 +407,10 @@ float** MeshBuffer::getIndexedVertexTextureCoordinateArray( size_t &n )
 }
 
 
-void MeshBuffer::setVertexIntensityArray( float* array, size_t n )
+void MeshBuffer::setVertexIntensityArray( floatArr array, size_t n )
 {
 
-    m_vertexIntensity     = array;
+    m_vertexIntensity      = array;
     m_numVertexIntensities = n;
 
 }
@@ -437,14 +419,12 @@ void MeshBuffer::setVertexIntensityArray( float* array, size_t n )
 void MeshBuffer::setVertexIntensityArray( std::vector<float>& array )
 {
     
-    if( m_vertexIntensity )
+    m_vertexIntensity = floatArr( new float[array.size()] );
+
+    for ( int i(0); i < array.size(); i++ ) 
     {
-        delete m_vertexIntensity;
+        m_vertexIntensity[i] = array[i];
     }
-
-    m_vertexIntensity = new float[array.size()];
-
-    std::copy(array.begin(), array.end(), m_vertexIntensity);
     m_numVertexIntensities = array.size();
 
 }
@@ -493,7 +473,8 @@ void MeshBuffer::freeBuffer()
 {
 
     m_vertexConfidence.reset();
-    m_vertices = m_vertexIntensity = m_vertexNormals = NULL;
+    m_vertexIntensity.reset();
+    m_vertices = m_vertexNormals = NULL;
     m_vertexColors = NULL;
     m_faceIndices = NULL;
     m_numVertices= m_numVertexColors = m_numVertexIntensities

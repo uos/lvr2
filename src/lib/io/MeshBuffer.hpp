@@ -129,7 +129,7 @@ class MeshBuffer
          * \param array  Pointer to vertex intensity data.
          * \param n      Amount of data in the array.
          **/
-        void setVertexIntensityArray( float* array, size_t n );
+        void setVertexIntensityArray( floatArr array, size_t n );
 
 
         /**
@@ -330,7 +330,7 @@ class MeshBuffer
          * \param n  Amount of intensity values in array.
          * \return   %Vertex intensity array.
          **/
-        float* getVertexIntensityArray( size_t &n );
+        floatArr getVertexIntensityArray( size_t &n );
 
 
         /**
@@ -412,7 +412,7 @@ class MeshBuffer
          * \param n  Amount of vertex intensities in array.
          * \return   Indexed vertex intensity array.
          **/
-        float** getIndexedVertexIntensityArray( size_t &n );
+        idxFloatArr getIndexedVertexIntensityArray( size_t &n );
 
 
         /**
@@ -553,7 +553,7 @@ class MeshBuffer
         /// %Vertex confidence buffer.
         floatArr     m_vertexConfidence;
         /// %Vertex intensity buffer.
-        float*       m_vertexIntensity;
+        floatArr     m_vertexIntensity;
         /// %Vertex normal buffer.
         float*       m_vertexNormals;
         /// %Vertex texture-coordinate buffer.
@@ -563,8 +563,6 @@ class MeshBuffer
         float**      m_indexedVertices;
         /// Indexed vertex color buffer.
         uchar**      m_indexedVertexColors;
-        /// Indexed vertex intensity buffer.
-        float**      m_indexedVertexIntensity;
         /// Indexed vertex normal buffer.
         float**      m_indexedVertexNormals;
         /// Indexed vertex texture-coordinate buffer.

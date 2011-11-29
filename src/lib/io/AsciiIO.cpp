@@ -103,7 +103,7 @@ ModelPtr AsciiIO::read(string filename)
 
     float* points            = 0;
     uchar* pointColors       = 0;
-    float* pointIntensities  = 0;
+    floatArr pointIntensities;
     floatArr pointConfidences;
 
     // Alloc memory for points
@@ -116,7 +116,7 @@ ModelPtr AsciiIO::read(string filename)
     }
 
     if ( has_intensity ) {
-        pointIntensities = new float[ numPoints ];
+        pointIntensities = floatArr( new float[ numPoints ] );
     }
 
     if ( has_accuracy ) {
