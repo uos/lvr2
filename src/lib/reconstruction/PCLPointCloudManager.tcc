@@ -224,4 +224,30 @@ void PCLPointCloudManager<VertexT, NormalT>::distance(VertexT v, float &projecte
 
 }
 
+
+template<typename VertexT, typename NormalT>
+void PCLPointCloudManager<VertexT, NormalT>::radiusSearch(const VertexT &v, double r, vector<VertexT> &resV, vector<NormalT> &resN)
+{
+    std::vector< int > result_indices;
+    std::vector< float > result_distances;
+
+    pcl::PointXYZ qp;
+    qp.x = v.x;
+    qp.y = v.y;
+    qp.z = v.z;
+
+    size_t res = m_kdTree->radiusSearch(qp, r, result_indices, result_distances);
+    // Parse result
+    for(size_t i = 0; i < res; i++)
+    {
+    	int index = result_indices[i];
+    	resV.push_back(VertexT(m_pointCloud->points[index].x,
+    			m_pointCloud->points[index].y,
+    			m_pointCloud->points[index].z));
+    	resN.push_back(NormalT(m_pointNormals->points[index].normal[0],
+    			m_pointNormals->points[index].normal[1],
+    			m_pointNormals->points[index].normal[2]));
+    }
+}
+
 } // namespace lssr
