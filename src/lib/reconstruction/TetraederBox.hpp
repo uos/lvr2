@@ -75,10 +75,11 @@ private:
     inline void interpolateIntersections(
             int tetraNumber,
             VertexT positions[4],
-            float distances[4],
-            VertexT intersections[6]);
+            float distances[4]
+            );
 
-    uint     m_tetraIntersections[19];
+    uint     m_intersections[19];
+    VertexT  m_intersectionPositionsTetraeder[6];
 
 };
 

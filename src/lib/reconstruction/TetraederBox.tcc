@@ -31,15 +31,15 @@ namespace lssr
 template<typename VertexT, typename NormalT>
 TetraederBox<VertexT, NormalT>::TetraederBox(VertexT v) : FastBox<VertexT, NormalT>(v)
 {
-    for(int i = 0; i < 19; i++) this->m_tetraIntersections[i] = this->INVALID_INDEX;
+    for(int i = 0; i < 19; i++) this->m_intersections[i] = this->INVALID_INDEX;
 }
 
 template<typename VertexT, typename NormalT>
 void TetraederBox<VertexT, NormalT>::interpolateIntersections(
         int tetraNumber,
         VertexT positions[4],
-        float distances[4],
-        VertexT intersections[6])
+        float distances[4]
+        )
 {
     // Index variables
     int v1;
@@ -53,42 +53,42 @@ void TetraederBox<VertexT, NormalT>::interpolateIntersections(
     x = calcIntersection(positions[v1].x, positions[v2].x, distances[v1], distances[v2]);
     y = calcIntersection(positions[v1].y, positions[v2].y, distances[v1], distances[v2]);
     z = calcIntersection(positions[v1].z, positions[v2].z, distances[v1], distances[v2]);
-    intersections[0] = VertexT(x, y, z);
+    m_intersectionPositionsTetraeder[0] = VertexT(x, y, z);
 
     v1 = 0;
     v2 = 2;
     x = calcIntersection(positions[v1].x, positions[v2].x, distances[v1], distances[v2]);
     y = calcIntersection(positions[v1].y, positions[v2].y, distances[v1], distances[v2]);
     z = calcIntersection(positions[v1].z, positions[v2].z, distances[v1], distances[v2]);
-    intersections[1] = VertexT(x, y, z);
+    m_intersectionPositionsTetraeder[1] = VertexT(x, y, z);
 
     v1 = 0;
     v2 = 3;
     x = calcIntersection(positions[v1].x, positions[v2].x, distances[v1], distances[v2]);
     y = calcIntersection(positions[v1].y, positions[v2].y, distances[v1], distances[v2]);
     z = calcIntersection(positions[v1].z, positions[v2].z, distances[v1], distances[v2]);
-    intersections[2] = VertexT(x, y, z);
+    m_intersectionPositionsTetraeder[2] = VertexT(x, y, z);
 
     v1 = 1;
     v2 = 2;
     x = calcIntersection(positions[v1].x, positions[v2].x, distances[v1], distances[v2]);
     y = calcIntersection(positions[v1].y, positions[v2].y, distances[v1], distances[v2]);
     z = calcIntersection(positions[v1].z, positions[v2].z, distances[v1], distances[v2]);
-    intersections[3] = VertexT(x, y, z);
+    m_intersectionPositionsTetraeder[3] = VertexT(x, y, z);
 
     v1 = 2;
     v2 = 3;
     x = calcIntersection(positions[v1].x, positions[v2].x, distances[v1], distances[v2]);
     y = calcIntersection(positions[v1].y, positions[v2].y, distances[v1], distances[v2]);
     z = calcIntersection(positions[v1].z, positions[v2].z, distances[v1], distances[v2]);
-    intersections[4] = VertexT(x, y, z);
+    m_intersectionPositionsTetraeder[4] = VertexT(x, y, z);
 
     v1 = 1;
     v2 = 4;
     x = calcIntersection(positions[v1].x, positions[v2].x, distances[v1], distances[v2]);
     y = calcIntersection(positions[v1].y, positions[v2].y, distances[v1], distances[v2]);
     z = calcIntersection(positions[v1].z, positions[v2].z, distances[v1], distances[v2]);
-    intersections[5] = VertexT(x, y, z);
+    m_intersectionPositionsTetraeder[5] = VertexT(x, y, z);
 
 }
 
@@ -108,7 +108,7 @@ void TetraederBox<VertexT, NormalT>::getSurface(
 
     // Calc the vertex positions for all possible edge intersection
     // of all tetraeders (up to 19 for a single box)
-    VertexT intersection_positions[19];
+    //VertexT intersection_positions[19];
 
     // Sub-divide the box into six tetraeders using the existing
     // box corners. The defintions of the six tetraeders can be
@@ -133,7 +133,7 @@ void TetraederBox<VertexT, NormalT>::getSurface(
         }
 
         // Interpolate the intersection vertices
-        interpolateIntersections(t_number, t_vertices, distances, intersection_positions);
+        interpolateIntersections(t_number, t_vertices, distances);
 
         // Calculate the index for the surface generation look
         // up table
@@ -153,10 +153,10 @@ void TetraederBox<VertexT, NormalT>::getSurface(
 
                 //If no index was found generate new index and vertex
                 //and update all neighbor boxes
-                if(this->m_tetraIntersections[edge_index] == this->INVALID_INDEX)
+                if(this->m_intersections[edge_index] == this->INVALID_INDEX)
                 {
-                    this->m_tetraIntersections[edge_index] = globalIndex;
-                    VertexT v = intersection_positions[edge_index];
+                    this->m_intersections[edge_index] = globalIndex;
+                    VertexT v = this->m_intersectionPositionsTetraeder[TetraederTable[index][a + b]];
 
                     // Insert vertex and a new temp normal into mesh.
                     // The normal is inserted to assure that vertex
@@ -184,7 +184,7 @@ void TetraederBox<VertexT, NormalT>::getSurface(
                         // Update index
                         if(b)
                         {
-                            b->m_tetraIntersections[TetraederVertexNBTable[edge_index][i]] = globalIndex;
+                            b->m_intersections[TetraederVertexNBTable[edge_index][i]] = globalIndex;
                         }
 
                     }
@@ -194,15 +194,12 @@ void TetraederBox<VertexT, NormalT>::getSurface(
                 }
 
                 //Save vertex index in mesh
-                triangle_indices[b] = this->m_tetraIntersections[edge_index];
-                //cout << triangle_indices[b] << " ";
-
+                triangle_indices[b] = this->m_intersections[edge_index];
 
             }
 
             // Add triangle actually does the normal interpolation for us.
             mesh.addTriangle(triangle_indices[0], triangle_indices[1], triangle_indices[2]);
-            cout << triangle_indices[0] << " " << triangle_indices[1] << " " << triangle_indices[2] << endl;
         }
     }
 }
