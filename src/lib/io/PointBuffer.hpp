@@ -110,7 +110,7 @@ class PointBuffer
          * \param array  Pointer to interlaced point normal data.
          * \param n      Amount of normals in the array.
          **/
-        void setPointNormalArray( float* array, size_t n );
+        void setPointNormalArray( floatArr array, size_t n );
 
 
         /**
@@ -184,7 +184,7 @@ class PointBuffer
          * \param n  Amount of point normals in array.
          * \return   %Point normal array.
          **/
-        virtual float* getPointNormalArray( size_t &n );
+        virtual floatArr getPointNormalArray( size_t &n );
 
 
         /**
@@ -259,7 +259,7 @@ class PointBuffer
          * \param n  Amount of point normals in array.
          * \return   Indexed point normal array.
          **/
-        float** getIndexedPointNormalArray( size_t &n );
+        coordfArr getIndexedPointNormalArray( size_t &n );
 
 
         /**
@@ -347,7 +347,7 @@ class PointBuffer
         /// %Point buffer.
         float*          m_points;
         /// %Point normal buffer.
-        float*          m_pointNormals;
+        floatArr        m_pointNormals;
         /// %Point color buffer.
         uchar*          m_pointColors;
         /// %Point intensity buffer.
@@ -357,8 +357,6 @@ class PointBuffer
 
         /// Indexed point buffer.
         float**         m_indexedPoints;
-        /// Indexed point normal buffer.
-        float**         m_indexedPointNormals;
         /// Indexed point color buffer.
         uchar**         m_indexedPointColors;
 

@@ -33,7 +33,7 @@ namespace lssr
 
 StaticMesh::StaticMesh(){
 
-	m_vertexNormals = 0;
+	m_vertexNormals.reset();
 	m_faceNormals   = 0;
 	m_vertices      = 0;
 	m_colors        = 0;

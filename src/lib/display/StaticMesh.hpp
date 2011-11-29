@@ -93,7 +93,7 @@ protected:
 
 	void readPly(string filename);
 
-	float*          m_vertexNormals;
+	floatArr        m_vertexNormals;
 	float*          m_faceNormals;
 	float*          m_vertices;
 	unsigned char*  m_colors;

@@ -153,7 +153,7 @@ class MeshBuffer
          * \param array  Pointer to interlaced vertex normal data.
          * \param n      Amount of normals in the array.
          **/
-        void setVertexNormalArray( float* array, size_t n );
+        void setVertexNormalArray( floatArr array, size_t n );
 
 
         /**
@@ -255,7 +255,7 @@ class MeshBuffer
          * \param array  Pointer to indexed vertex data.
          * \param n      Amount of vertices in the array.
          **/
-        void setIndexedVertexNormalArray( float** arr, size_t size );
+        void setIndexedVertexNormalArray( coordfArr arr, size_t size );
         
         
         /**
@@ -300,7 +300,7 @@ class MeshBuffer
          * \param n  Amount of vertex normals in array.
          * \return   %Vertex normal array.
          **/
-        float* getVertexNormalArray( size_t &n );
+        floatArr getVertexNormalArray( size_t &n );
 
 
         /**
@@ -374,7 +374,7 @@ class MeshBuffer
          * \param n  Amount of vertex normals in array.
          * \return   Indexed vertex normal array.
          **/
-        float** getIndexedVertexNormalArray( size_t &n );
+        coordfArr getIndexedVertexNormalArray( size_t &n );
 
 
         /**
@@ -555,7 +555,7 @@ class MeshBuffer
         /// %Vertex intensity buffer.
         floatArr     m_vertexIntensity;
         /// %Vertex normal buffer.
-        float*       m_vertexNormals;
+        floatArr     m_vertexNormals;
         /// %Vertex texture-coordinate buffer.
         float*       m_vertexTextureCoordinates;
 
@@ -563,8 +563,6 @@ class MeshBuffer
         float**      m_indexedVertices;
         /// Indexed vertex color buffer.
         uchar**      m_indexedVertexColors;
-        /// Indexed vertex normal buffer.
-        float**      m_indexedVertexNormals;
         /// Indexed vertex texture-coordinate buffer.
         float**      m_indexedVertexTextureCoordinates;
 
