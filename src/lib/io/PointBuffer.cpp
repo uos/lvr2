@@ -38,7 +38,6 @@ PointBuffer::PointBuffer() :
     m_pointNormals( NULL ),
     m_pointColors( NULL ),
     m_indexedPoints( NULL ),
-    m_indexedPointNormals( NULL ),
     m_indexedPointColors( NULL ),
     m_numPoints( 0 ),
     m_numPointColors( 0 ),
@@ -55,6 +54,7 @@ PointBuffer::PointBuffer() :
 
         m_pointConfidences.reset();
         m_pointIntensities.reset();
+        m_pointNormals.reset();
     }
 
 
@@ -76,7 +76,7 @@ unsigned char* PointBuffer::getPointColorArray( size_t &n )
 }
 
 
-float* PointBuffer::getPointNormalArray( size_t &n )
+floatArr PointBuffer::getPointNormalArray( size_t &n )
 {
 
     n = m_numPointNormals;
@@ -134,11 +134,12 @@ unsigned char** PointBuffer::getIndexedPointColorArray( size_t &n )
 }
 
 
-float** PointBuffer::getIndexedPointNormalArray( size_t &n )
+coordfArr PointBuffer::getIndexedPointNormalArray( size_t &n )
 {
 
-    return getIndexedArrayf( n, m_numPointNormals, &m_pointNormals, 
-            &m_indexedPointNormals );
+    n = m_numPointNormals;
+    coordfArr p = *((coordfArr*) &m_pointNormals);
+    return p;
 
 }
 
@@ -216,7 +217,7 @@ void PointBuffer::setPointColorArray( uint8_t* array, size_t n )
 }
 
 
-void PointBuffer::setPointNormalArray( float* array, size_t n )
+void PointBuffer::setPointNormalArray( floatArr array, size_t n )
 {
 
     m_numPointNormals = n;
@@ -247,7 +248,8 @@ void PointBuffer::freeBuffer()
 {
     m_pointConfidences.reset();
     m_pointIntensities.reset();
-    m_points = m_pointNormals = NULL;
+    m_pointNormals.reset();
+    m_points = NULL;
     m_pointColors = NULL;
     m_numPoints = m_numPointColors = m_numPointIntensities
         = m_numPointConfidence = m_numPointNormals = 0;

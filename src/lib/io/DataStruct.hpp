@@ -102,6 +102,9 @@ typedef boost::shared_array<idxByte> idxByteArr;
 typedef boost::shared_array<colorb> colorbArr;
 
 
+typedef boost::shared_array<coordf> coordfArr;
+
+
 typedef boost::shared_array<idxFloat> idxFloatArr;
 
 

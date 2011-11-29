@@ -157,7 +157,7 @@ public:
     float**                    m_points;
 
     /// The point normals
-    float**                    m_normals;
+    coordfArr                  m_normals;
 
     /// Color information for points
     uchar**                     m_colors;
