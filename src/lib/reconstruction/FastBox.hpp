@@ -103,7 +103,7 @@ public:
      * 						a newly generated vertex shout have the index
      * 						globalIndex + 1.
      */
-    void getSurface(
+    virtual void getSurface(
             BaseMesh<VertexT, NormalT> &mesh,
             vector<QueryPoint<VertexT> > &query_points,
             uint &globalIndex);

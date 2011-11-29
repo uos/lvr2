@@ -78,7 +78,7 @@ private:
             float distances[4],
             VertexT intersections[6]);
 
-    uint     m_intersections[19];
+    uint     m_tetraIntersections[19];
 
 };
 

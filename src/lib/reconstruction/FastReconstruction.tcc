@@ -164,7 +164,7 @@ void FastReconstruction<VertexT, NormalT>::createGrid()
 
 				//Create new box
 				FastBox<VertexT, NormalT>* box = 0;
-				if(m_useTetraeder)
+				if(!m_useTetraeder)
 				{
 				    box = new FastBox<VertexT, NormalT>(box_center);
 				}

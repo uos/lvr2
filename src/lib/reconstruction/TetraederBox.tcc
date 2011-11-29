@@ -31,7 +31,7 @@ namespace lssr
 template<typename VertexT, typename NormalT>
 TetraederBox<VertexT, NormalT>::TetraederBox(VertexT v) : FastBox<VertexT, NormalT>(v)
 {
-    for(int i = 0; i < 18; i++) m_intersections[i] = this->INVALID_INDEX;
+    for(int i = 0; i < 19; i++) this->m_tetraIntersections[i] = this->INVALID_INDEX;
 }
 
 template<typename VertexT, typename NormalT>
@@ -104,7 +104,6 @@ void TetraederBox<VertexT, NormalT>::getSurface(
         vector<QueryPoint<VertexT> > &query_points,
         uint &globalIndex)
 {
-    cout << "TVOY" << endl;
     typedef TetraederBox<VertexT, NormalT>*  p_tBox;
 
     // Calc the vertex positions for all possible edge intersection
@@ -141,7 +140,7 @@ void TetraederBox<VertexT, NormalT>::getSurface(
         int index = calcPatternIndex(distances);
 
         // Create the surface triangles
-        int triangle_indices[3];
+        int triangle_indices[3] = {-1, -1, -1};
         for(int a = 0; TetraederTable[index][a] != -1; a+= 3)
         {
             for(int b = 0; b < 3; b++)
@@ -154,9 +153,9 @@ void TetraederBox<VertexT, NormalT>::getSurface(
 
                 //If no index was found generate new index and vertex
                 //and update all neighbor boxes
-                if(this->m_intersections[edge_index] == this->INVALID_INDEX)
+                if(this->m_tetraIntersections[edge_index] == this->INVALID_INDEX)
                 {
-                    this->m_intersections[edge_index] = globalIndex;
+                    this->m_tetraIntersections[edge_index] = globalIndex;
                     VertexT v = intersection_positions[edge_index];
 
                     // Insert vertex and a new temp normal into mesh.
@@ -174,7 +173,7 @@ void TetraederBox<VertexT, NormalT>::getSurface(
                         // Check if neighbor exists. The table contains
                         // a -1 flag, we can stop searching due to the
                         // structure of the tables
-                        if(nb_index != -1)
+                        if(nb_index == -1)
                         {
                             break;
                         }
@@ -185,7 +184,7 @@ void TetraederBox<VertexT, NormalT>::getSurface(
                         // Update index
                         if(b)
                         {
-                            b->m_intersections[TetraederVertexNBTable[edge_index][i]] = globalIndex;
+                            b->m_tetraIntersections[TetraederVertexNBTable[edge_index][i]] = globalIndex;
                         }
 
                     }
@@ -195,10 +194,15 @@ void TetraederBox<VertexT, NormalT>::getSurface(
                 }
 
                 //Save vertex index in mesh
-                triangle_indices[b] = this->m_intersections[edge_index];
+                triangle_indices[b] = this->m_tetraIntersections[edge_index];
+                //cout << triangle_indices[b] << " ";
+
+
             }
+
             // Add triangle actually does the normal interpolation for us.
             mesh.addTriangle(triangle_indices[0], triangle_indices[1], triangle_indices[2]);
+            cout << triangle_indices[0] << " " << triangle_indices[1] << " " << triangle_indices[2] << endl;
         }
     }
 }
