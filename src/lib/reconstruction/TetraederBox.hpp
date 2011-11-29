@@ -28,7 +28,6 @@
 
 
 #include "FastBox.hpp"
-#include "Tetraeder.hpp"
 
 namespace lssr
 {
@@ -60,8 +59,26 @@ public:
             vector<QueryPoint<VertexT> > &query_points,
             uint &globalIndex);
 
+
 private:
 
+    int calcPatternIndex(float distances[4])
+    {
+        int index = 0;
+        for(int i = 0; i < 4; i++)
+        {
+            if(distances[i] > 0) index |= (1 << i);
+        }
+        return index;
+    }
+
+    inline void interpolateIntersections(
+            int tetraNumber,
+            VertexT positions[4],
+            float distances[4],
+            VertexT intersections[6]);
+
+    uint     m_intersections[19];
 
 };
 
