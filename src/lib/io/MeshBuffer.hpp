@@ -39,12 +39,13 @@
 #include <vector>
 #include <algorithm>
 #include <iostream>
-#include "boost/shared_ptr.hpp"
+#include "DataStruct.hpp"
 
 typedef unsigned char uchar;
 
 namespace lssr
 {
+
 
 /**
  * \class MeshLoader MeshLoader.hpp "io/MeshLoader.hpp"
@@ -104,7 +105,7 @@ class MeshBuffer
          * \param array  Pointer to vertex confidence data.
          * \param n      Amount of data in the array.
          **/
-        void setVertexConfidenceArray( float* array, size_t n );
+        void setVertexConfidenceArray( floatArr array, size_t n );
 
 
         /**
@@ -314,7 +315,7 @@ class MeshBuffer
          * \param n  Amount of confidence values in array.
          * \return   %Vertex confidence array.
          **/
-        float* getVertexConfidenceArray( size_t &n );
+        floatArr getVertexConfidenceArray( size_t &n );
 
 
         /**
@@ -392,7 +393,7 @@ class MeshBuffer
          * \param n  Amount of vertex confidence data in array.
          * \return   Indexed vertex confidence array.
          **/
-        float** getIndexedVertexConfidenceArray( size_t &n );
+        idxFloatArr getIndexedVertexConfidenceArray( size_t &n );
 
 
         /**
@@ -550,7 +551,7 @@ class MeshBuffer
         /// %Vertex color buffer.
         uchar*       m_vertexColors;
         /// %Vertex confidence buffer.
-        float*       m_vertexConfidence;
+        floatArr     m_vertexConfidence;
         /// %Vertex intensity buffer.
         float*       m_vertexIntensity;
         /// %Vertex normal buffer.
@@ -562,17 +563,15 @@ class MeshBuffer
         float**      m_indexedVertices;
         /// Indexed vertex color buffer.
         uchar**      m_indexedVertexColors;
-        /// Indexed vertex confidence buffer.
-        float**      m_indexedVertexConfidence;
         /// Indexed vertex intensity buffer.
         float**      m_indexedVertexIntensity;
         /// Indexed vertex normal buffer.
         float**      m_indexedVertexNormals;
         /// Indexed vertex texture-coordinate buffer.
-        float**		 m_indexedVertexTextureCoordinates;
+        float**      m_indexedVertexTextureCoordinates;
 
         /// List of Colors for every face
-        uchar*		m_faceColors;
+        uchar*       m_faceColors;
 
         /// Buffer of face indices
         unsigned int* m_faceIndices;
@@ -596,7 +595,7 @@ class MeshBuffer
         /// Number of FaceTexture indices
         size_t      m_numFaceTextureIndices;
         /// Numer of face colors
-        size_t 	    m_numFaceColors;
+        size_t      m_numFaceColors;
 
 };
 

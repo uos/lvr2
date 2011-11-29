@@ -38,17 +38,22 @@ PointBuffer::PointBuffer() :
     m_pointNormals( NULL ),
     m_pointColors( NULL ),
     m_pointIntensities( NULL ),
-    m_pointConfidences( NULL ),
     m_indexedPoints( NULL ),
     m_indexedPointNormals( NULL ),
     m_indexedPointIntensities( NULL ),
-    m_indexedPointConfidence( NULL ),
     m_indexedPointColors( NULL ),
     m_numPoints( 0 ),
     m_numPointColors( 0 ),
     m_numPointNormals( 0 ),
     m_numPointIntensities( 0 ),
-    m_numPointConfidence( 0 ) {}
+    m_numPointConfidence( 0 )
+    {
+        /* coordf must be the exact size of three floats to cast the float
+         * array to a coordf array. */
+        assert( 3 * sizeof(float) == sizeof(coordf) );
+
+        m_pointConfidences.reset();
+    }
 
 
 float* PointBuffer::getPointArray( size_t &n )
@@ -87,7 +92,7 @@ float* PointBuffer::getPointIntensityArray( size_t &n )
 }
 
 
-float* PointBuffer::getPointConfidenceArray( size_t &n )
+floatArr PointBuffer::getPointConfidenceArray( size_t &n )
 {
 
     n = m_numPointConfidence;
@@ -152,11 +157,12 @@ float** PointBuffer::getIndexedPointIntensityArray( size_t &n )
 }
 
 
-float** PointBuffer::getIndexedPointConfidenceArray( size_t &n )
+idxFloatArr PointBuffer::getIndexedPointConfidenceArray( size_t &n )
 {
 
-    return getIndexedArrayf( n, m_numPointConfidence, &m_pointConfidences,
-            &m_indexedPointConfidence, 1 );
+    n = m_numPointConfidence;
+    idxFloatArr p = *((idxFloatArr*) &m_pointConfidences);
+    return p;
 
 }
 
@@ -225,7 +231,7 @@ void PointBuffer::setPointIntensityArray( float* array, size_t n )
 }
 
 
-void PointBuffer::setPointConfidenceArray( float* array, size_t n )
+void PointBuffer::setPointConfidenceArray( floatArr array, size_t n )
 {
 
     m_numPointConfidence = n;
@@ -236,8 +242,8 @@ void PointBuffer::setPointConfidenceArray( float* array, size_t n )
 
 void PointBuffer::freeBuffer()
 {
-    /// TODO: Memory leak in PointBuffer
-    m_points = m_pointConfidences = m_pointIntensities = m_pointNormals = NULL;
+    m_pointConfidences.reset();
+    m_points = m_pointIntensities = m_pointNormals = NULL;
     m_pointColors = NULL;
     m_numPoints = m_numPointColors = m_numPointIntensities
         = m_numPointConfidence = m_numPointNormals = 0;

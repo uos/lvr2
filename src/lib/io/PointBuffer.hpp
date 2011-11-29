@@ -42,15 +42,12 @@
 
 #include <vector>
 #include <algorithm>
-#include "boost/shared_ptr.hpp"
-using std::vector;
+#include "DataStruct.hpp"
 
-typedef unsigned char uchar;
 
 namespace lssr
 {
 
-typedef std::pair<size_t, size_t> indexPair;
 
 /**
  * \class PointLoader PointLoader.hpp "io/PointLoader.hpp"
@@ -139,7 +136,7 @@ class PointBuffer
          * \param array  Pointer to point confidence data.
          * \param n      Amount of data in the array.
          **/
-        void setPointConfidenceArray( float* array, size_t n );
+        void setPointConfidenceArray( floatArr array, size_t n );
 
 
         /************************* Get *************************/
@@ -217,7 +214,7 @@ class PointBuffer
          * \param n  Amount of confidence values in array.
          * \return   %Point confidence array.
          **/
-        virtual float* getPointConfidenceArray( size_t &n );
+        floatArr getPointConfidenceArray( size_t &n );
 
 
         /************************* Indexed Get *************************/
@@ -300,7 +297,7 @@ class PointBuffer
          * \param n  Amount of point confidence data in array.
          * \return   Indexed point confidence array.
          **/
-        float** getIndexedPointConfidenceArray( size_t &n );
+        idxFloatArr getIndexedPointConfidenceArray( size_t &n );
 
         
         /**
@@ -320,9 +317,12 @@ class PointBuffer
          **/
         size_t getNumPoints();
 
-        virtual vector<indexPair>& getSubClouds() { return m_subClouds;}
+        virtual std::vector<indexPair>& getSubClouds()
+        {
+            return m_subClouds;
+        }
 
-        void defineSubCloud(indexPair &range);
+        void defineSubCloud( indexPair &range );
 
     protected:
 
@@ -353,7 +353,7 @@ class PointBuffer
         /// %Point intensity buffer.
         float*          m_pointIntensities;
         /// %Point confidence buffer.
-        float*          m_pointConfidences;
+        floatArr        m_pointConfidences;
 
         /// Indexed point buffer.
         float**         m_indexedPoints;
@@ -361,8 +361,6 @@ class PointBuffer
         float**         m_indexedPointNormals;
         /// Indexed point intensity buffer.
         float**         m_indexedPointIntensities;
-        /// Indexed point confidence buffer.
-        float**         m_indexedPointConfidence;
         /// Indexed point color buffer.
         uchar**         m_indexedPointColors;
 
@@ -378,7 +376,7 @@ class PointBuffer
         size_t          m_numPointConfidence;
 
         /// Vector to save the indices of the first and last points of single scans
-        vector<indexPair> m_subClouds;
+        std::vector<indexPair> m_subClouds;
 
 };
 

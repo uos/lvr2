@@ -104,7 +104,7 @@ ModelPtr AsciiIO::read(string filename)
     float* points            = 0;
     uchar* pointColors       = 0;
     float* pointIntensities  = 0;
-    float* pointConfidences  = 0;
+    floatArr pointConfidences;
 
     // Alloc memory for points
     numPoints = lines_in_file - 1;
@@ -120,7 +120,7 @@ ModelPtr AsciiIO::read(string filename)
     }
 
     if ( has_accuracy ) {
-        pointConfidences = new float[ numPoints ];
+        pointConfidences = floatArr( new float[ numPoints ] );
     }
 
     // Read data form file
@@ -141,7 +141,7 @@ ModelPtr AsciiIO::read(string filename)
 
         } else if ( has_color && has_accuracy && has_validcolor ) {
             in >> x >> y >> z >> confidence >> dummy >> r >> g >> b;
-            pointConfidences[c] = confidence;
+            pointConfidences[c]      = confidence;
             pointColors[ c * 3     ] = (uchar) r;
             pointColors[ c * 3 + 1 ] = (uchar) g;
             pointColors[ c * 3 + 2 ] = (uchar) b;
