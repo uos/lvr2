@@ -52,7 +52,7 @@ PointCloud::PointCloud( ModelPtr model, string name) : Renderable(name)
         size_t n_points;
         float** points = pc->getIndexedPointArray(n_points);
         uchar** colors = pc->getIndexedPointColorArray(n_points);
-        float*  intensities = pc->getPointIntensityArray(n_points);
+        floatArr intensities = pc->getPointIntensityArray(n_points);
 
         ColorMap c_map(maxColors);
 

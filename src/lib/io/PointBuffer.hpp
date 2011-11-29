@@ -123,7 +123,7 @@ class PointBuffer
          * \param array  Pointer to point intensity data.
          * \param n      Amount of data in the array.
          **/
-        void setPointIntensityArray( float* array, size_t n );
+        void setPointIntensityArray( floatArr array, size_t n );
 
 
         /**
@@ -199,7 +199,7 @@ class PointBuffer
          * \param n  Amount of intensity values in array.
          * \return   %Point intensity array.
          **/
-        virtual float* getPointIntensityArray( size_t &n );
+        virtual floatArr getPointIntensityArray( size_t &n );
 
 
         /**
@@ -278,7 +278,7 @@ class PointBuffer
          * \param n  Amount of point intensities in array.
          * \return   Indexed point intensity array.
          **/
-        float** getIndexedPointIntensityArray( size_t &n );
+        idxFloatArr getIndexedPointIntensityArray( size_t &n );
 
 
         /**
@@ -351,7 +351,7 @@ class PointBuffer
         /// %Point color buffer.
         uchar*          m_pointColors;
         /// %Point intensity buffer.
-        float*          m_pointIntensities;
+        floatArr        m_pointIntensities;
         /// %Point confidence buffer.
         floatArr        m_pointConfidences;
 
@@ -359,8 +359,6 @@ class PointBuffer
         float**         m_indexedPoints;
         /// Indexed point normal buffer.
         float**         m_indexedPointNormals;
-        /// Indexed point intensity buffer.
-        float**         m_indexedPointIntensities;
         /// Indexed point color buffer.
         uchar**         m_indexedPointColors;
 
