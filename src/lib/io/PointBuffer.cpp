@@ -34,9 +34,6 @@ namespace lssr
 {
 
 PointBuffer::PointBuffer() :
-    m_pointNormals( NULL ),
-    m_pointColors( NULL ),
-    m_indexedPointColors( NULL ),
     m_numPoints( 0 ),
     m_numPointColors( 0 ),
     m_numPointNormals( 0 ),
@@ -47,12 +44,13 @@ PointBuffer::PointBuffer() :
          * array to a coordf array. */
         assert( 3 * sizeof(float) == sizeof(coord<float>) );
         assert( 3 * sizeof(uchar) == sizeof(color<uchar>) );
-        assert( sizeof(float) == sizeof(idx1fArr) );
+        assert( sizeof(float) == sizeof(idxVal<float>) );
 
         m_points.reset();
         m_pointConfidences.reset();
         m_pointIntensities.reset();
         m_pointNormals.reset();
+		m_pointColors.reset();
     }
 
 
@@ -65,7 +63,7 @@ floatArr PointBuffer::getPointArray( size_t &n )
 }
 
 
-unsigned char* PointBuffer::getPointColorArray( size_t &n )
+ucharArr PointBuffer::getPointColorArray( size_t &n )
 {
 
     n = m_numPointColors;
@@ -109,25 +107,12 @@ size_t PointBuffer::getNumPoints()
 }
 
 
-unsigned char** PointBuffer::getIndexedPointColorArray( size_t &n )
+color3bArr PointBuffer::getIndexedPointColorArray( size_t &n )
 {
 
     n = m_numPointColors;
-    if ( !m_pointColors )
-    {
-        return NULL;
-    }
-
-    if ( !m_indexedPointColors )
-    {
-        m_indexedPointColors = (uint8_t**) 
-            malloc( m_numPointColors * sizeof(uint8_t*) );
-        for ( size_t i = 0; i < m_numPointColors; i++ )
-        {
-            m_indexedPointColors[i] = m_pointColors + ( i * 3 );
-        }
-    }
-    return m_indexedPointColors;
+    color3bArr p = *((color3bArr*) &m_pointNormals);
+    return p;
 
 }
 
@@ -180,7 +165,7 @@ void PointBuffer::setPointArray( floatArr array, size_t n )
 }
 
 
-void PointBuffer::setPointColorArray( uint8_t* array, size_t n )
+void PointBuffer::setPointColorArray( ucharArr array, size_t n )
 {
 
     m_numPointColors = n;
@@ -222,7 +207,7 @@ void PointBuffer::freeBuffer()
     m_pointIntensities.reset();
     m_pointNormals.reset();
     m_points.reset();
-    m_pointColors = NULL;
+    m_pointColors.reset();
     m_numPoints = m_numPointColors = m_numPointIntensities
         = m_numPointConfidence = m_numPointNormals = 0;
 

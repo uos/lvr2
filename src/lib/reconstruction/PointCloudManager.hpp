@@ -163,7 +163,7 @@ public:
     coord3fArr                  m_normals;
 
     /// Color information for points
-    uchar**                     m_colors;
+    color3bArr                  m_colors;
 //#endif
 	boost::shared_ptr<Model>    m_model;
 
@@ -192,7 +192,7 @@ template< typename CoordType, typename ColorT >
 struct VertexTraits< ColorVertex< CoordType, ColorT > > 
 {
     static inline ColorVertex< CoordType, ColorT > vertex(
-            const coord3fArr &p, ColorT** c, const unsigned int idx )
+            const coord3fArr &p, color3bArr c, const unsigned int idx )
     {
         return c
             ? ColorVertex< CoordType, ColorT >(
@@ -210,7 +210,7 @@ template< typename CoordType >
 struct VertexTraits< Vertex< CoordType > > 
 {
     static inline Vertex< CoordType > vertex(
-            const coord3fArr &p, void** c, const unsigned int idx )
+            const coord3fArr &p, color3bArr c, const unsigned int idx )
     {
         return Vertex< CoordType >(
                 p[idx][0], p[idx][1], p[idx][2] );

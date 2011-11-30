@@ -197,7 +197,7 @@ int main( int argc, char ** argv )
     pcm1->colorizePointCloud( pcm2, maxdist, rgb );
 
     /* Reset color array of first point cloud. */
-    pc1->setPointColorArray( *(pcm1->m_colors), pcm1->getNumPoints() );
+    pc1->setPointColorArray( *((lssr::ucharArr*) &(pcm1->m_colors)), pcm1->getNumPoints() );
 
     /* Save point cloud. */
     lssr::ModelFactory io_factory;

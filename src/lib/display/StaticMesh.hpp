@@ -96,7 +96,7 @@ protected:
 	floatArr        m_vertexNormals;
 	float*          m_faceNormals;
 	floatArr        m_vertices;
-	unsigned char*  m_colors;
+	ucharArr        m_colors;
 	unsigned char*  m_blackColors;
 
 	unsigned int*   m_indices;

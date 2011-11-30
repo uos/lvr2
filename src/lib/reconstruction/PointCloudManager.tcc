@@ -76,12 +76,7 @@ void PointCloudManager<VertexT, NormalT>::colorizePointCloud(
     /* Check if we already have a color buffer. */
     if ( !m_colors )
     {
-        uchar* c = new uchar[ m_numPoints * 3 ];
-        m_colors = new uchar*[ m_numPoints    ];
-        for ( size_t i = 0; i < m_numPoints; i++ )
-        {
-            m_colors[i] = c + ( 3 * i );
-        }
+        m_colors = color3bArr( new color<uchar>[ m_numPoints ] );
     }
 
 #pragma omp parallel for

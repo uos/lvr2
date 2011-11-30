@@ -368,15 +368,7 @@ void UosIO::readNewFormat(ModelPtr &model, string dir, int first, int last, size
             }
 
             // Save index of first point of new scan
-            size_t firstIndex;
-            if(allPoints.size() > 0)
-            {
-                firstIndex = allPoints.size();
-            }
-            else
-            {
-                firstIndex = 0;
-            }
+            size_t firstIndex( allPoints.size() );
 
             // Transform scan point with current matrix
             list<Vertex<float> >::iterator it, it1;
@@ -388,15 +380,7 @@ void UosIO::readNewFormat(ModelPtr &model, string dir, int first, int last, size
             }
 
             // Save last index
-            size_t lastIndex;
-            if(allPoints.size() > 0)
-            {
-                lastIndex = allPoints.size() - 1;
-            }
-            else
-            {
-                lastIndex = 0;
-            }
+            size_t lastIndex( allPoints.size() ? allPoints.size() - 1 : 0 );
 
             // Save index pair for current scan
             sub_clouds.push_back(make_pair(firstIndex, lastIndex));
@@ -406,46 +390,43 @@ void UosIO::readNewFormat(ModelPtr &model, string dir, int first, int last, size
     }
 
     // Convert into array
-    if(allPoints.size() > 0)
+    if ( allPoints.size() )
     {
         cout << timestamp << "UOS Reader: Read " << allPoints.size() << " points." << endl;
 
         // Save position information
 
-        size_t numPoints = 0;
+        size_t numPoints(0);
         floatArr points;
-        uchar* pointColors = 0;
+        ucharArr pointColors;
 
 
         numPoints = allPoints.size();
         points = floatArr( new float[3 * allPoints.size()] );
         list<Vertex<float> >::iterator p_it;
-        int i = 0;
-        for(p_it = allPoints.begin(); p_it != allPoints.end(); p_it++)
+        size_t i(0);
+        for( p_it = allPoints.begin(); p_it != allPoints.end(); p_it++ )
         {
-            int t_index = 3 * i;
             Vertex<float> v = *p_it;
-            points[t_index    ] = v[0];
-            points[t_index + 1] = v[1];
-            points[t_index + 2] = v[2];
-            i++;
+            points[i    ] = v[0];
+            points[i + 1] = v[1];
+            points[i + 2] = v[2];
+            i += 3;
         }
 
         // Save color information
-        if(allColors.size() > 0)
+        if ( allColors.size() )
         {
-            pointColors = new unsigned char[3 * numPoints];
+            pointColors = ucharArr( new uchar[ 3 * numPoints ] );
             i = 0;
             list<Vertex<int> >::iterator c_it;
             for(c_it = allColors.begin(); c_it != allColors.end(); c_it++)
             {
-                int t_index = 3 * i;
-
                 Vertex<int> v = *c_it;
-                pointColors[t_index    ] = (unsigned char) v[0];
-                pointColors[t_index + 1] = (unsigned char) v[1];
-                pointColors[t_index + 2] = (unsigned char) v[2];
-                i++;
+                pointColors[i    ] = (unsigned char) v[0];
+                pointColors[i + 1] = (unsigned char) v[1];
+                pointColors[i + 2] = (unsigned char) v[2];
+                i += 3;
             }
         }
 

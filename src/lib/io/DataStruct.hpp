@@ -79,8 +79,6 @@ struct color
 template<typename T>
 struct idxVal
 {
-	typedef boost::shared_array< idxVal<T> > Arr;
-
     T value;
     T& operator[] ( const size_t i ) {
         return value;
