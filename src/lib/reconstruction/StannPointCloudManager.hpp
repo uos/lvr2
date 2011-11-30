@@ -205,6 +205,9 @@ private:
 	 */
 	float distance(VertexT v, Plane<VertexT, NormalT> p);
 
+
+	void radiusSearch(const VertexT &v, double r, vector<VertexT> &resV, vector<NormalT> &resN){};
+
 	/**
 	 * @brief Calculates a tangent plane for the query point using the provided
 	 *        k-neighborhood

@@ -74,6 +74,17 @@ public:
 
     virtual void calcNormals();
 
+
+    /**
+     * @brief Returns the all points within a given radius from a given query point
+     *
+     * @param v         A query vertex
+     * @param r         The (max) radius
+     * @param nb        A vector containing the determined points
+     */
+    virtual void radiusSearch(const VertexT &v,
+            double r, vector<VertexT> &resV, vector<NormalT> &resN);
+
 private:
     pcl::KdTreeFLANN<pcl::PointXYZ>::Ptr    m_kdTree;
     pcl::PointCloud<pcl::PointXYZ>::Ptr     m_pointCloud;

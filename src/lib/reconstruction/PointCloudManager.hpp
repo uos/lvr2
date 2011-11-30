@@ -132,6 +132,9 @@ public:
      **/
     virtual void distance(VertexT v, float &projectedDistance, float &euklideanDistance) = 0;
 
+
+    virtual void radiusSearch(const VertexT &v, double r, vector<VertexT> &resV, vector<NormalT> &resN) = 0;
+
     void setKD( int kd )
     {
         m_kd = kd;
