@@ -57,11 +57,11 @@ void PLYIO::save( string filename, e_ply_storage_mode mode,
     assert(m_model);
 
     // Local buffer shortcuts
-    float* m_vertices         = 0;
+    floatArr m_vertices;
     floatArr m_vertexConfidence;
     floatArr m_vertexIntensity;
     floatArr m_vertexNormals;
-    float* m_points           = 0;
+    floatArr m_points;
     floatArr m_pointConfidences;
     floatArr m_pointIntensities;
     floatArr m_pointNormals;
@@ -519,11 +519,11 @@ ModelPtr PLYIO::read( string filename, bool readColor, bool readConfidence,
     }
 
     // Buffers
-    float* vertices         = 0;
+    floatArr vertices;
     floatArr vertexConfidence;
     floatArr vertexIntensity;
     floatArr vertexNormals;
-    float* points           = 0;
+    floatArr points;
     floatArr pointConfidences;
     floatArr pointIntensities;
     floatArr pointNormals;
@@ -538,7 +538,7 @@ ModelPtr PLYIO::read( string filename, bool readColor, bool readConfidence,
     /* Allocate memory. */
     if ( numVertices )
     {
-        vertices = ( float * ) malloc( numVertices * 3 * sizeof(float) );
+        vertices = floatArr( new float[ numVertices * 3 ] );
     }
     if ( numVertexColors )
     {
@@ -562,7 +562,7 @@ ModelPtr PLYIO::read( string filename, bool readColor, bool readConfidence,
     }
     if ( numPoints )
     {
-        points = ( float * ) malloc( numPoints * 3 * sizeof(float) );
+        points = floatArr( new float[ numPoints * 3 ] );
     }
     if ( numPointColors )
     {
@@ -582,13 +582,13 @@ ModelPtr PLYIO::read( string filename, bool readColor, bool readConfidence,
     }
 
 
-    float*        vertex            = vertices;
+    float*        vertex            = vertices.get();
     uint8_t*      vertex_color      = vertexColors;
     float*        vertex_confidence = vertexConfidence.get();
     float*        vertex_intensity  = vertexIntensity.get();
     float*        vertex_normal     = vertexNormals.get();
     unsigned int* face              = faceIndices;
-    float*        point             = points;
+    float*        point             = points.get();
     uint8_t*      point_color       = pointColors;
     float*        point_confidence  = pointConfidences.get();
     float*        point_intensity   = pointIntensities.get();
@@ -683,7 +683,7 @@ ModelPtr PLYIO::read( string filename, bool readColor, bool readConfidence,
         numVertexConfidences = 0;
         numVertexIntensities = 0;
         numVertexNormals     = 0;
-        vertices             = 0;
+        vertices.reset();
         vertexColors         = 0;
         vertexConfidence.reset();
         vertexIntensity.reset();

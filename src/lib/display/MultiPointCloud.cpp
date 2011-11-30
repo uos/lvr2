@@ -47,7 +47,10 @@ MultiPointCloud::MultiPointCloud(Model &model, string name)
         vector<indexPair> pairs = p_buffer->getSubClouds();
         vector<indexPair>::iterator it;
 
-        int c = 1;
+        int c(1);
+        size_t n;
+        coordfArr points = model.m_pointCloud->getIndexedPointArray( n );
+        uchar** colors = model.m_pointCloud->getIndexedPointColorArray(n);
 
         for(it = pairs.begin(); it != pairs.end(); it ++)
         {
@@ -57,10 +60,6 @@ MultiPointCloud::MultiPointCloud(Model &model, string name)
             PointCloud* pc = new PointCloud;
             for(size_t a = p.first; a <= p.second; a++)
             {
-                size_t n;
-                float** points = model.m_pointCloud->getIndexedPointArray(n);
-                uchar** colors = model.m_pointCloud->getIndexedPointColorArray(n);
-
                 if(colors)
                 {
                     pc->addPoint(points[a][0], points[a][1], points[a][2], colors[a][0], colors[a][1], colors[a][2]);

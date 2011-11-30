@@ -68,7 +68,7 @@ void StannPointCloudManager<VertexT, NormalT>::init()
 
     // Calculate bounding box
     cout << timestamp << "Calculating bounding box." << endl;
-    for(size_t i = 0; i < this->m_numPoints; i++)
+    for( size_t i(0); i < this->m_numPoints; i++ )
     {
         this->m_boundingBox.expand(this->m_points[i][0],
                                    this->m_points[i][1],
@@ -77,7 +77,8 @@ void StannPointCloudManager<VertexT, NormalT>::init()
 
     // Create kd tree
     cout << timestamp << "Creating STANN Kd-Tree..." << endl;
-    m_pointTree = sfcnn< float*, 3, float>(this->m_points, this->m_numPoints, 4);
+    m_pointTree = sfcnn< coordf, 3, float>( this->m_points.get(),
+            this->m_numPoints, omp_get_num_procs() );
 
 
 }
@@ -282,16 +283,15 @@ void StannPointCloudManager<VertexT, NormalT>::getkClosestVertices(const VertexT
     vector<unsigned long> id;
 
     //Allocate ANN point
-    float * p;
-    p = new float[3];
-    p[0] = v[0];
-	p[1] = v[1];
-	p[2] = v[2];
+    {
+        coordf p;
+        p[0] = v[0];
+        p[1] = v[1];
+        p[2] = v[2];
 
-    //Find nearest tangent plane
-    m_pointTree.ksearch( p, k, id, 0 );
-
-	delete[] p;
+        //Find nearest tangent plane
+        m_pointTree.ksearch( p, k, id, 0 );
+    }
 
     //parse result
 	if ( this->m_colors )
@@ -346,22 +346,26 @@ void StannPointCloudManager<VertexT, NormalT>::distance(VertexT v, float &projec
     vector<double> di;
 
     //Allocate ANN point
-    float * p;
-    p = new float[3];
-    p[0] = v[0]; p[1] = v[1]; p[2] = v[2];
+    {
+        coordf p;
+        p[0] = v[0];
+        p[1] = v[1];
+        p[2] = v[2];
 
-    //Find nearest tangent plane
-    m_pointTree.ksearch(p, k, id, di, 0);
+        // Find nearest tangent plane
+        m_pointTree.ksearch( p, k, id, di, 0 );
+    }
 
     VertexT nearest;
     NormalT normal;
 
-    for(int i = 0; i < k; i++){
+    for ( size_t i(0); i < k; i++ )
+    {
         //Get nearest tangent plane
-        VertexT vq (this->m_points[id[i]][0], this->m_points[id[i]][1], this->m_points[id[i]][2]);
+        VertexT vq( this->m_points[id[i]][0], this->m_points[id[i]][1], this->m_points[id[i]][2] );
 
         //Get normal
-        NormalT n(this->m_normals[id[i]][0], this->m_normals[id[i]][1], this->m_normals[id[i]][2]);
+        NormalT n( this->m_normals[id[i]][0], this->m_normals[id[i]][1], this->m_normals[id[i]][2] );
 
         nearest += vq;
         normal += n;
@@ -374,8 +378,6 @@ void StannPointCloudManager<VertexT, NormalT>::distance(VertexT v, float &projec
     //Calculate distance
     projectedDistance = (v - nearest) * normal;
     euklideanDistance = (v - nearest).length();
-
-    delete[] p;
 
 }
 

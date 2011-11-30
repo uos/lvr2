@@ -1059,14 +1059,12 @@ void HalfEdgeMesh<VertexT, NormalT>::finalize()
     int numFaces 	= m_faces.size();
     // Default Color values. Used if regions should not be colored.
     float r=0, g=200, b=0;
-    float *vertexBuffer;
-    floatArr normalBuffer;
     uchar *colorBuffer;
     unsigned int *indexBuffer;
     std::vector<uchar> faceColorBuffer;
 
-    vertexBuffer 	= new float[3 * numVertices];
-    normalBuffer 	= floatArr( new float[3 * numVertices] );
+    floatArr vertexBuffer( new float[3 * numVertices] );
+    floatArr normalBuffer( new float[3 * numVertices] );
     colorBuffer 	= new uchar[3 * numVertices];
     indexBuffer 	= new unsigned int[3 * numFaces];
 

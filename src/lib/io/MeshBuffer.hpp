@@ -80,7 +80,7 @@ class MeshBuffer
          * \param array  Pointer to interlaced vertex data.
          * \param n      Amount of vertices in the array.
          **/
-        void setVertexArray( float* array, size_t n );
+        void setVertexArray( floatArr array, size_t n );
 
 
         /**
@@ -225,7 +225,7 @@ class MeshBuffer
          * \param array  Pointer to indexed vertex data.
          * \param n      Amount of vertices in the array.
          **/
-        void setIndexedVertexArray( float** arr, size_t size );
+        void setIndexedVertexArray( coordfArr arr, size_t size );
 
 
         /**
@@ -285,7 +285,7 @@ class MeshBuffer
          * \param n  Amount of vertices in array.
          * \return   %Vertex array.
          **/
-        float* getVertexArray( size_t &n );
+        floatArr getVertexArray( size_t &n );
 
 
         /**
@@ -360,7 +360,7 @@ class MeshBuffer
          * \param n  Amount of vertices in array.
          * \return   Indexed vertex array.
          **/
-        float** getIndexedVertexArray( size_t &n );
+        coordfArr getIndexedVertexArray( size_t &n );
 
 
         /**
@@ -547,7 +547,7 @@ class MeshBuffer
     protected:
 
         /// %Vertex buffer.
-        float*       m_vertices;
+        floatArr     m_vertices;
         /// %Vertex color buffer.
         uchar*       m_vertexColors;
         /// %Vertex confidence buffer.
@@ -559,8 +559,6 @@ class MeshBuffer
         /// %Vertex texture-coordinate buffer.
         float*       m_vertexTextureCoordinates;
 
-        /// Indexed vertex buffer.
-        float**      m_indexedVertices;
         /// Indexed vertex color buffer.
         uchar**      m_indexedVertexColors;
         /// Indexed vertex texture-coordinate buffer.
