@@ -225,7 +225,7 @@ class MeshBuffer
          * \param array  Pointer to indexed vertex data.
          * \param n      Amount of vertices in the array.
          **/
-        void setIndexedVertexArray( coordfArr arr, size_t size );
+        void setIndexedVertexArray( coord3fArr arr, size_t size );
 
 
         /**
@@ -255,7 +255,7 @@ class MeshBuffer
          * \param array  Pointer to indexed vertex data.
          * \param n      Amount of vertices in the array.
          **/
-        void setIndexedVertexNormalArray( coordfArr arr, size_t size );
+        void setIndexedVertexNormalArray( coord3fArr arr, size_t size );
         
         
         /**
@@ -360,7 +360,7 @@ class MeshBuffer
          * \param n  Amount of vertices in array.
          * \return   Indexed vertex array.
          **/
-        coordfArr getIndexedVertexArray( size_t &n );
+        coord3fArr getIndexedVertexArray( size_t &n );
 
 
         /**
@@ -374,7 +374,7 @@ class MeshBuffer
          * \param n  Amount of vertex normals in array.
          * \return   Indexed vertex normal array.
          **/
-        coordfArr getIndexedVertexNormalArray( size_t &n );
+        coord3fArr getIndexedVertexNormalArray( size_t &n );
 
 
         /**
@@ -393,7 +393,7 @@ class MeshBuffer
          * \param n  Amount of vertex confidence data in array.
          * \return   Indexed vertex confidence array.
          **/
-        idxFloatArr getIndexedVertexConfidenceArray( size_t &n );
+        idx1fArr getIndexedVertexConfidenceArray( size_t &n );
 
 
         /**
@@ -412,7 +412,7 @@ class MeshBuffer
          * \param n  Amount of vertex intensities in array.
          * \return   Indexed vertex intensity array.
          **/
-        idxFloatArr getIndexedVertexIntensityArray( size_t &n );
+        idx1fArr getIndexedVertexIntensityArray( size_t &n );
 
 
         /**

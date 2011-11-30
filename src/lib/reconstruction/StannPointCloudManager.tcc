@@ -77,7 +77,7 @@ void StannPointCloudManager<VertexT, NormalT>::init()
 
     // Create kd tree
     cout << timestamp << "Creating STANN Kd-Tree..." << endl;
-    m_pointTree = sfcnn< coordf, 3, float>( this->m_points.get(),
+    m_pointTree = sfcnn< coord<float>, 3, float>( this->m_points.get(),
             this->m_numPoints, omp_get_num_procs() );
 
 
@@ -91,7 +91,7 @@ void StannPointCloudManager<VertexT, NormalT>::calcNormals()
     cout << timestamp << "Initializing normal array..." << endl;
 
     //Initialize normal array
-    this->m_normals = coordfArr( new coordf[this->m_numPoints] );
+    this->m_normals = coord3fArr( new coord<float>[this->m_numPoints] );
 
     //float mean_distance;
     // Create a progress counter
@@ -284,7 +284,7 @@ void StannPointCloudManager<VertexT, NormalT>::getkClosestVertices(const VertexT
 
     //Allocate ANN point
     {
-        coordf p;
+        coord<float> p;
         p[0] = v[0];
         p[1] = v[1];
         p[2] = v[2];
@@ -347,7 +347,7 @@ void StannPointCloudManager<VertexT, NormalT>::distance(VertexT v, float &projec
 
     //Allocate ANN point
     {
-        coordf p;
+        coord<float> p;
         p[0] = v[0];
         p[1] = v[1];
         p[2] = v[2];

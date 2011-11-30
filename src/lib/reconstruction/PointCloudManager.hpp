@@ -157,10 +157,10 @@ public:
 
 //#if 0
     /// The currently stored points
-    coordfArr                  m_points;
+    coord3fArr                  m_points;
 
     /// The point normals
-    coordfArr                  m_normals;
+    coord3fArr                  m_normals;
 
     /// Color information for points
     uchar**                     m_colors;
@@ -192,7 +192,7 @@ template< typename CoordType, typename ColorT >
 struct VertexTraits< ColorVertex< CoordType, ColorT > > 
 {
     static inline ColorVertex< CoordType, ColorT > vertex(
-            const coordfArr &p, ColorT** c, const unsigned int idx )
+            const coord3fArr &p, ColorT** c, const unsigned int idx )
     {
         return c
             ? ColorVertex< CoordType, ColorT >(
@@ -210,7 +210,7 @@ template< typename CoordType >
 struct VertexTraits< Vertex< CoordType > > 
 {
     static inline Vertex< CoordType > vertex(
-            const coordfArr &p, void** c, const unsigned int idx )
+            const coord3fArr &p, void** c, const unsigned int idx )
     {
         return Vertex< CoordType >(
                 p[idx][0], p[idx][1], p[idx][2] );

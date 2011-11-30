@@ -225,7 +225,7 @@ private:
 	        const vector<unsigned long> &id);
 
 	/// STANN tree to manage the data points
-	sfcnn< coordf, 3, float>    m_pointTree;
+	sfcnn< coord<float>, 3, float>    m_pointTree;
 
 	/// The centroid of the point set
 	VertexT               		m_centroid;

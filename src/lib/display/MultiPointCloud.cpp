@@ -49,7 +49,7 @@ MultiPointCloud::MultiPointCloud(Model &model, string name)
 
         int c(1);
         size_t n;
-        coordfArr points = model.m_pointCloud->getIndexedPointArray( n );
+        coord3fArr points = model.m_pointCloud->getIndexedPointArray( n );
         uchar** colors = model.m_pointCloud->getIndexedPointColorArray(n);
 
         for(it = pairs.begin(); it != pairs.end(); it ++)
