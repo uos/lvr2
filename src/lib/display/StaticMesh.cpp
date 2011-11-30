@@ -36,7 +36,7 @@ StaticMesh::StaticMesh(){
 	m_vertexNormals.reset();
 	m_faceNormals   = 0;
 	m_vertices.reset();
-	m_colors        = 0;
+	m_colors.reset();
 	m_indices       = 0;
 
 	m_numFaces      = 0;
@@ -133,12 +133,11 @@ StaticMesh::StaticMesh(const StaticMesh &o)
 {
 
 	if(m_faceNormals != 0) delete[] m_faceNormals;
-	if(m_colors      != 0) delete[] m_colors;
 	if(m_indices     != 0) delete[] m_indices;
 
 	m_faceNormals       = new float[3 * o.m_numVertices];
 	m_vertices          = floatArr( new float[3 * o.m_numVertices] );
-	m_colors            = new unsigned char[3 * o.m_numVertices];
+	m_colors            = ucharArr( new unsigned char[3 * o.m_numVertices] );
 	m_indices           = new unsigned int[3 * o.m_numFaces];
 
 	for ( size_t i(0); i < 3 * o.m_numVertices; i++ )
@@ -216,7 +215,7 @@ void StaticMesh::compileSurfaceList(){
 		// Assign element pointers
 		glVertexPointer( 3, GL_FLOAT, 0, m_vertices.get() );
 		glNormalPointer( GL_FLOAT, 0, m_faceNormals );
-		glColorPointer( 3, GL_UNSIGNED_BYTE, 0, m_colors );
+		glColorPointer( 3, GL_UNSIGNED_BYTE, 0, m_colors.get() );
 
 		// Draw elements
 		glDrawElements(GL_TRIANGLES, 3 * m_numFaces, GL_UNSIGNED_INT, m_indices);
@@ -296,7 +295,7 @@ void StaticMesh::interpolateNormals()
 
 void StaticMesh::setDefaultColors()
 {
-    m_colors = new unsigned char[3 * m_numVertices];
+    m_colors = ucharArr( new uchar[3 * m_numVertices] );
     for(size_t i = 0; i < m_numVertices; i++)
     {
         m_colors[i] = 0.0;

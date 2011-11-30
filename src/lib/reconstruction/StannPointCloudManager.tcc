@@ -52,7 +52,7 @@ StannPointCloudManager<VertexT, NormalT>::StannPointCloudManager(
     this->m_colors  = loader->getIndexedPointColorArray( n );
     if ( n != this->m_numPoints )
     {
-        this->m_colors = 0;
+        this->m_colors.reset();
     }
 
     m_useRANSAC = useRansac;

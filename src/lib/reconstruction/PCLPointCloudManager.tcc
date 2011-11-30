@@ -64,7 +64,7 @@ PCLPointCloudManager<VertexT, NormalT>::PCLPointCloudManager( PointBufferPtr loa
     size_t n = 0;
     this->m_colors  = loader->getIndexedPointColorArray( n );
     if ( n != this->m_numPoints ) {
-    	this->m_colors = 0;
+    	this->m_colors.reset();
     }
     //cout << cloud_normals->points.size() << endl;
 

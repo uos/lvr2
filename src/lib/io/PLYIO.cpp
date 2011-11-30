@@ -79,12 +79,12 @@ void PLYIO::save( string filename, e_ply_storage_mode mode,
     size_t m_numPointNormals          = 0;
     size_t m_numFaces                 = 0;
 
-    uchar* m_vertexColors = 0;
-    uchar* m_pointColors = 0;
+    ucharArr m_vertexColors;
+    ucharArr m_pointColors;
     unsigned int* m_faceIndices = 0;
 
     // Get buffers
-    if(m_model->m_pointCloud)
+    if ( m_model->m_pointCloud )
     {
         PointBufferPtr pc( m_model->m_pointCloud );
 
@@ -95,7 +95,7 @@ void PLYIO::save( string filename, e_ply_storage_mode mode,
         m_pointNormals          = pc->getPointNormalArray(m_numPointNormals);
     }
 
-    if(m_model->m_mesh)
+    if ( m_model->m_mesh )
     {
         MeshBufferPtr mesh( m_model->m_mesh );
 
@@ -528,8 +528,8 @@ ModelPtr PLYIO::read( string filename, bool readColor, bool readConfidence,
     floatArr pointIntensities;
     floatArr pointNormals;
 
-    uchar* pointColors = 0;
-    uchar* vertexColors     = 0;
+    ucharArr pointColors;
+    ucharArr vertexColors;
 
     unsigned int* faceIndices = 0;
 
@@ -542,7 +542,7 @@ ModelPtr PLYIO::read( string filename, bool readColor, bool readConfidence,
     }
     if ( numVertexColors )
     {
-        vertexColors = ( uchar* ) malloc( numVertices * 3 * sizeof(uchar) );
+        vertexColors = ucharArr( new uchar[ numVertices * 3 ] );
     }
     if ( numVertexConfidences )
     {
@@ -566,7 +566,7 @@ ModelPtr PLYIO::read( string filename, bool readColor, bool readConfidence,
     }
     if ( numPointColors )
     {
-        pointColors = ( uchar * ) malloc( numPoints * 3 * sizeof(uchar) );
+        pointColors = ucharArr( new uchar[ numPoints * 3 ] );
     }
     if ( numPointConfidence )
     {
@@ -583,13 +583,13 @@ ModelPtr PLYIO::read( string filename, bool readColor, bool readConfidence,
 
 
     float*        vertex            = vertices.get();
-    uint8_t*      vertex_color      = vertexColors;
+    uint8_t*      vertex_color      = vertexColors.get();
     float*        vertex_confidence = vertexConfidence.get();
     float*        vertex_intensity  = vertexIntensity.get();
     float*        vertex_normal     = vertexNormals.get();
     unsigned int* face              = faceIndices;
     float*        point             = points.get();
-    uint8_t*      point_color       = pointColors;
+    uint8_t*      point_color       = pointColors.get();
     float*        point_confidence  = pointConfidences.get();
     float*        point_intensity   = pointIntensities.get();
     float*        point_normal      = pointNormals.get();
@@ -684,7 +684,7 @@ ModelPtr PLYIO::read( string filename, bool readColor, bool readConfidence,
         numVertexIntensities = 0;
         numVertexNormals     = 0;
         vertices.reset();
-        vertexColors         = 0;
+        vertexColors.reset();
         vertexConfidence.reset();
         vertexIntensity.reset();
         vertexNormals.reset();
@@ -699,21 +699,21 @@ ModelPtr PLYIO::read( string filename, bool readColor, bool readConfidence,
     if(points)
     {
         pc = PointBufferPtr( new PointBuffer );
-        pc->setPointArray(points, numPoints);
-        pc->setPointColorArray(pointColors, numPointColors);
-        pc->setPointIntensityArray(pointIntensities, numPointIntensities);
-        pc->setPointConfidenceArray(pointConfidences, numPointConfidence);
+        pc->setPointArray(           points,           numPoints );
+        pc->setPointColorArray(      pointColors,      numPointColors );
+        pc->setPointIntensityArray(  pointIntensities, numPointIntensities );
+        pc->setPointConfidenceArray( pointConfidences, numPointConfidence );
     }
 
     if(vertices)
     {
         mesh = MeshBufferPtr( new MeshBuffer );
-        mesh->setVertexArray(vertices, numVertices);
-        mesh->setVertexColorArray(vertexColors, numVertexColors);
-        mesh->setVertexIntensityArray(vertexIntensity, numVertexIntensities);
-        mesh->setVertexNormalArray(vertexNormals, numVertexNormals);
-        mesh->setVertexConfidenceArray(vertexConfidence, numVertexConfidences);
-        mesh->setFaceArray(faceIndices, numFaces);
+        mesh->setVertexArray(           vertices,         numVertices );
+        mesh->setVertexColorArray(      vertexColors,     numVertexColors );
+        mesh->setVertexIntensityArray(  vertexIntensity,  numVertexIntensities );
+        mesh->setVertexNormalArray(     vertexNormals,    numVertexNormals );
+        mesh->setVertexConfidenceArray( vertexConfidence, numVertexConfidences );
+        mesh->setFaceArray(             faceIndices,      numFaces );
     }
 
     ModelPtr m( new Model( mesh, pc ) );

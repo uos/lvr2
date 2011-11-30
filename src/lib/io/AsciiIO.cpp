@@ -102,7 +102,7 @@ ModelPtr AsciiIO::read(string filename)
     size_t numPoints = 0;
 
     floatArr points;
-    uchar* pointColors       = 0;
+    ucharArr pointColors;
     floatArr pointIntensities;
     floatArr pointConfidences;
 
@@ -112,7 +112,7 @@ ModelPtr AsciiIO::read(string filename)
 
     // Alloc buffer memory for additional attributes
     if ( has_color ) {
-        pointColors = new uint8_t[ numPoints * 3 ];
+        pointColors = ucharArr( new uint8_t[ numPoints * 3 ] );
     }
 
     if ( has_intensity ) {
@@ -168,10 +168,10 @@ ModelPtr AsciiIO::read(string filename)
 
     // Assign buffers
     model->m_pointCloud = PointBufferPtr( new PointBuffer );
-    model->m_pointCloud->setPointArray(points, numPoints);
-    model->m_pointCloud->setPointColorArray(pointColors, numPoints);
-    model->m_pointCloud->setPointIntensityArray(pointIntensities, numPoints);
-    model->m_pointCloud->setPointConfidenceArray(pointConfidences, numPoints);
+    model->m_pointCloud->setPointArray(           points,           numPoints );
+    model->m_pointCloud->setPointColorArray(      pointColors,      numPoints );
+    model->m_pointCloud->setPointIntensityArray(  pointIntensities, numPoints );
+    model->m_pointCloud->setPointConfidenceArray( pointConfidences, numPoints );
 
     return model;
 }

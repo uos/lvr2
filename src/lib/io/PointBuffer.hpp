@@ -97,7 +97,7 @@ class PointBuffer
          * \param array  Pointer to interlaced point color data.
          * \param n      Amount of color information in the array.
          **/
-        void setPointColorArray( uint8_t* array, size_t n );
+        void setPointColorArray( ucharArr array, size_t n );
 
 
         /**
@@ -169,7 +169,7 @@ class PointBuffer
          * \param n  Amount of point color sets in array.
          * \return   %Point color array.
          **/
-        virtual unsigned char* getPointColorArray( size_t &n );
+        virtual ucharArr getPointColorArray( size_t &n );
 
 
         /**
@@ -245,7 +245,7 @@ class PointBuffer
          * \param n  Amount of point color sets in array.
          * \return   Indexed point color array.
          **/
-        unsigned char** getIndexedPointColorArray( size_t &n );
+        color3bArr getIndexedPointColorArray( size_t &n );
 
 
         /**
@@ -332,14 +332,12 @@ class PointBuffer
         /// %Point normal buffer.
         floatArr        m_pointNormals;
         /// %Point color buffer.
-        uchar*          m_pointColors;
+        ucharArr        m_pointColors;
         /// %Point intensity buffer.
         floatArr        m_pointIntensities;
         /// %Point confidence buffer.
         floatArr        m_pointConfidences;
 
-        /// Indexed point color buffer.
-        uchar**         m_indexedPointColors;
 
         /// Number of points in internal buffer.
         size_t          m_numPoints;
