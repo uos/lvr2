@@ -84,7 +84,7 @@ void TetraederBox<VertexT, NormalT>::interpolateIntersections(
     m_intersectionPositionsTetraeder[4] = VertexT(x, y, z);
 
     v1 = 1;
-    v2 = 4;
+    v2 = 3;
     x = calcIntersection(positions[v1].x, positions[v2].x, distances[v1], distances[v2]);
     y = calcIntersection(positions[v1].y, positions[v2].y, distances[v1], distances[v2]);
     z = calcIntersection(positions[v1].z, positions[v2].z, distances[v1], distances[v2]);
@@ -157,7 +157,7 @@ void TetraederBox<VertexT, NormalT>::getSurface(
                 {
                     this->m_intersections[edge_index] = globalIndex;
                     VertexT v = this->m_intersectionPositionsTetraeder[TetraederTable[index][a + b]];
-
+                    cout << v;
                     // Insert vertex and a new temp normal into mesh.
                     // The normal is inserted to assure that vertex
                     // and normal array always have the same size.
@@ -195,9 +195,9 @@ void TetraederBox<VertexT, NormalT>::getSurface(
 
                 //Save vertex index in mesh
                 triangle_indices[b] = this->m_intersections[edge_index];
-
+                //cout << triangle_indices[b] << " ";
             }
-
+            //cout << endl;
             // Add triangle actually does the normal interpolation for us.
             mesh.addTriangle(triangle_indices[0], triangle_indices[1], triangle_indices[2]);
         }
