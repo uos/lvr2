@@ -45,10 +45,9 @@ PointBuffer::PointBuffer() :
     {
         /* coordf must be the exact size of three floats to cast the float
          * array to a coordf array. */
-        assert( 3 * sizeof(float) == sizeof(coordf) );
-        assert( 3 * sizeof(uchar) == sizeof(colorb) );
-        assert( sizeof(float) == sizeof(idxFloat) );
-        assert( sizeof(uchar) == sizeof(idxByte) );
+        assert( 3 * sizeof(float) == sizeof(coord<float>) );
+        assert( 3 * sizeof(uchar) == sizeof(color<uchar>) );
+        assert( sizeof(float) == sizeof(idx1fArr) );
 
         m_points.reset();
         m_pointConfidences.reset();
@@ -133,40 +132,40 @@ unsigned char** PointBuffer::getIndexedPointColorArray( size_t &n )
 }
 
 
-coordfArr PointBuffer::getIndexedPointNormalArray( size_t &n )
+coord3fArr PointBuffer::getIndexedPointNormalArray( size_t &n )
 {
 
     n = m_numPointNormals;
-    coordfArr p = *((coordfArr*) &m_pointNormals);
+    coord3fArr p = *((coord3fArr*) &m_pointNormals);
     return p;
 
 }
 
-coordfArr PointBuffer::getIndexedPointArray( size_t &n )
+coord3fArr PointBuffer::getIndexedPointArray( size_t &n )
 {
 
     n = m_numPoints;
-    coordfArr p = *((coordfArr*) &m_points);
+    coord3fArr p = *((coord3fArr*) &m_points);
     return p;
 
 }
 
 
-idxFloatArr PointBuffer::getIndexedPointIntensityArray( size_t &n )
+idx1fArr PointBuffer::getIndexedPointIntensityArray( size_t &n )
 {
 
     n = m_numPointIntensities;
-    idxFloatArr p = *((idxFloatArr*) &m_pointIntensities);
+    idx1fArr p = *((idx1fArr*) &m_pointIntensities);
     return p;
 
 }
 
 
-idxFloatArr PointBuffer::getIndexedPointConfidenceArray( size_t &n )
+idx1fArr PointBuffer::getIndexedPointConfidenceArray( size_t &n )
 {
 
     n = m_numPointConfidence;
-    idxFloatArr p = *((idxFloatArr*) &m_pointConfidences);
+    idx1fArr p = *((idx1fArr*) &m_pointConfidences);
     return p;
 
 }

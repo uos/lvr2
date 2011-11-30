@@ -42,12 +42,13 @@ namespace lssr
 typedef unsigned char uchar;
 
 
-struct coordf
+template<typename CoordT>
+struct coord
 {
-    float x;
-    float y;
-    float z;
-    float& operator[]( const size_t i ) {
+    CoordT x;
+    CoordT y;
+    CoordT z;
+    CoordT& operator[]( const size_t i ) {
         switch ( i ) {
             case 0: return x; break;
             case 1: return y; break;
@@ -58,12 +59,13 @@ struct coordf
 };
 
 
-struct colorb
+template<typename ColorT>
+struct color
 {
-    uchar r;
-    uchar g;
-    uchar b;
-    uchar& operator[]( const size_t i ) {
+    ColorT r;
+    ColorT g;
+    ColorT b;
+    ColorT& operator[] ( const size_t i ) {
         switch ( i ) {
             case 0: return r; break;
             case 1: return g; break;
@@ -74,20 +76,13 @@ struct colorb
 };
 
 
-struct idxFloat
+template<typename T>
+struct idxVal
 {
-    float value;
-    float& operator[]( const size_t i ) {
-        return value;
-    }
+	typedef boost::shared_array< idxVal<T> > Arr;
 
-};
-
-
-struct idxByte
-{
-    uchar value;
-    uchar& operator[]( const size_t i ) {
+    T value;
+    T& operator[] ( const size_t i ) {
         return value;
     }
 };
@@ -96,16 +91,16 @@ struct idxByte
 typedef boost::shared_array<float> floatArr;
 
 
-typedef boost::shared_array<idxByte> idxByteArr;
+typedef boost::shared_array<uchar> ucharArr;
 
 
-typedef boost::shared_array<colorb> colorbArr;
+typedef boost::shared_array< color<uchar> > color3bArr;
 
 
-typedef boost::shared_array<coordf> coordfArr;
+typedef boost::shared_array< coord<float> > coord3fArr;
 
 
-typedef boost::shared_array<idxFloat> idxFloatArr;
+typedef boost::shared_array< idxVal<float> > idx1fArr;
 
 
 typedef std::pair<size_t, size_t> indexPair;

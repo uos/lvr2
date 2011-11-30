@@ -231,7 +231,7 @@ class PointBuffer
          * \param n  Amount of points in array.
          * \return   Indexed point array.
          **/
-        coordfArr getIndexedPointArray( size_t &n );
+        coord3fArr getIndexedPointArray( size_t &n );
 
 
         /**
@@ -259,7 +259,7 @@ class PointBuffer
          * \param n  Amount of point normals in array.
          * \return   Indexed point normal array.
          **/
-        coordfArr getIndexedPointNormalArray( size_t &n );
+        coord3fArr getIndexedPointNormalArray( size_t &n );
 
 
         /**
@@ -278,7 +278,7 @@ class PointBuffer
          * \param n  Amount of point intensities in array.
          * \return   Indexed point intensity array.
          **/
-        idxFloatArr getIndexedPointIntensityArray( size_t &n );
+        idx1fArr getIndexedPointIntensityArray( size_t &n );
 
 
         /**
@@ -297,7 +297,7 @@ class PointBuffer
          * \param n  Amount of point confidence data in array.
          * \return   Indexed point confidence array.
          **/
-        idxFloatArr getIndexedPointConfidenceArray( size_t &n );
+        idx1fArr getIndexedPointConfidenceArray( size_t &n );
 
         
         /**

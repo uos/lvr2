@@ -118,39 +118,39 @@ unsigned int* MeshBuffer::getFaceTextureIndexArray( size_t &n )
 }
 
 
-coordfArr MeshBuffer::getIndexedVertexArray( size_t &n )
+coord3fArr MeshBuffer::getIndexedVertexArray( size_t &n )
 {
 
     n = m_numVertices;
-    return *((coordfArr*) &m_vertices);
+    return *((coord3fArr*) &m_vertices);
 
 }
 
-coordfArr MeshBuffer::getIndexedVertexNormalArray( size_t &n )
+coord3fArr MeshBuffer::getIndexedVertexNormalArray( size_t &n )
 {
 
     n = m_numVertexNormals;
-    coordfArr p = *((coordfArr*) &m_vertexNormals);
+    coord3fArr p = *((coord3fArr*) &m_vertexNormals);
     return p;
 
 }
 
 
-idxFloatArr MeshBuffer::getIndexedVertexConfidenceArray( size_t &n )
+idx1fArr MeshBuffer::getIndexedVertexConfidenceArray( size_t &n )
 {
 
     n = m_numVertexConfidences;
-    idxFloatArr p = *((idxFloatArr*) &m_vertexConfidence);
+    idx1fArr p = *((idx1fArr*) &m_vertexConfidence);
     return p;
 
 }
 
 
-idxFloatArr MeshBuffer::getIndexedVertexIntensityArray( size_t &n )
+idx1fArr MeshBuffer::getIndexedVertexIntensityArray( size_t &n )
 {
 
     n = m_numVertexIntensities;
-    idxFloatArr p = *((idxFloatArr*) &m_vertexIntensity);
+    idx1fArr p = *((idx1fArr*) &m_vertexIntensity);
     return p;
 
 }
@@ -391,7 +391,7 @@ void MeshBuffer::setFaceColorArray( std::vector<uchar> &array )
 }
 
 
-void MeshBuffer::setIndexedVertexArray( coordfArr arr, size_t count )
+void MeshBuffer::setIndexedVertexArray( coord3fArr arr, size_t count )
 {
 
     m_numVertices = count;
@@ -400,7 +400,7 @@ void MeshBuffer::setIndexedVertexArray( coordfArr arr, size_t count )
 }
 
 
-void MeshBuffer::setIndexedVertexNormalArray( coordfArr arr, size_t count )
+void MeshBuffer::setIndexedVertexNormalArray( coord3fArr arr, size_t count )
 {
 
     m_vertexNormals    = *((floatArr*) &m_vertexNormals);
