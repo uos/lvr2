@@ -67,7 +67,7 @@ public:
 	virtual void finalize();
 	virtual void savePLY(string filename);
 
-	float* 			getVertices();
+	floatArr		getVertices();
 	unsigned int* 	getIndices();
 	float*          getNormals();
 
@@ -95,7 +95,7 @@ protected:
 
 	floatArr        m_vertexNormals;
 	float*          m_faceNormals;
-	float*          m_vertices;
+	floatArr        m_vertices;
 	unsigned char*  m_colors;
 	unsigned char*  m_blackColors;
 

@@ -35,7 +35,7 @@ StaticMesh::StaticMesh(){
 
 	m_vertexNormals.reset();
 	m_faceNormals   = 0;
-	m_vertices      = 0;
+	m_vertices.reset();
 	m_colors        = 0;
 	m_indices       = 0;
 
@@ -133,20 +133,19 @@ StaticMesh::StaticMesh(const StaticMesh &o)
 {
 
 	if(m_faceNormals != 0) delete[] m_faceNormals;
-	if(m_vertices    != 0) delete[] m_vertices;
 	if(m_colors      != 0) delete[] m_colors;
 	if(m_indices     != 0) delete[] m_indices;
 
 	m_faceNormals       = new float[3 * o.m_numVertices];
-	m_vertices          = new float[3 * o.m_numVertices];
+	m_vertices          = floatArr( new float[3 * o.m_numVertices] );
 	m_colors            = new unsigned char[3 * o.m_numVertices];
 	m_indices           = new unsigned int[3 * o.m_numFaces];
 
-	for(size_t i = 0; i < 3 * o.m_numVertices; i++)
+	for ( size_t i(0); i < 3 * o.m_numVertices; i++ )
 	{
 		m_faceNormals[i] = o.m_faceNormals[i];
-		m_vertices[i] = o.m_vertices[i];
-		m_colors[i] = o.m_colors[i];
+		m_vertices[i]    = o.m_vertices[i];
+		m_colors[i]      = o.m_colors[i];
 	}
 
 	for(size_t i = 0; i < 3 * o.m_numFaces; i++)
@@ -215,9 +214,9 @@ void StaticMesh::compileSurfaceList(){
 		glEnable(GL_LIGHTING);
 
 		// Assign element pointers
-		glVertexPointer(3, GL_FLOAT, 0, m_vertices);
-		glNormalPointer(GL_FLOAT, 0, m_faceNormals);
-		glColorPointer(3, GL_UNSIGNED_BYTE, 0, m_colors);
+		glVertexPointer( 3, GL_FLOAT, 0, m_vertices.get() );
+		glNormalPointer( GL_FLOAT, 0, m_faceNormals );
+		glColorPointer( 3, GL_UNSIGNED_BYTE, 0, m_colors );
 
 		// Draw elements
 		glDrawElements(GL_TRIANGLES, 3 * m_numFaces, GL_UNSIGNED_INT, m_indices);
@@ -330,28 +329,18 @@ unsigned int* StaticMesh::getIndices()
 	}
 }
 
-float* StaticMesh::getVertices()
+floatArr StaticMesh::getVertices()
 {
-	if(m_finalized)
-	{
-		return m_vertices;
-	}
-	else
-	{
-		return 0;
-	}
+
+    return m_finalized ? m_vertices : floatArr();
+
 }
 
 float* StaticMesh::getNormals()
 {
-    if(m_finalized)
-    {
-        return m_faceNormals;
-    }
-    else
-    {
-        return 0;
-    }
+
+    return m_finalized ? m_faceNormals : 0;
+
 }
 
 size_t StaticMesh::getNumberOfVertices()

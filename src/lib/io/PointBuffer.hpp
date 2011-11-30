@@ -83,7 +83,7 @@ class PointBuffer
          * \param array  Pointer to interlaced point data.
          * \param n      Amount of points in the array.
          **/
-        void setPointArray( float* array, size_t n );
+        void setPointArray( floatArr array, size_t n );
 
 
         /**
@@ -154,7 +154,7 @@ class PointBuffer
          * \param n  Amount of points in array.
          * \return   %Point array.
          **/
-        virtual float* getPointArray( size_t &n );
+        virtual floatArr getPointArray( size_t &n );
 
 
         /**
@@ -231,7 +231,7 @@ class PointBuffer
          * \param n  Amount of points in array.
          * \return   Indexed point array.
          **/
-        float** getIndexedPointArray( size_t &n );
+        coordfArr getIndexedPointArray( size_t &n );
 
 
         /**
@@ -327,25 +327,8 @@ class PointBuffer
     protected:
 
 
-        /**
-         * \brief Create and return indexed array for given data.
-         *
-         * This method returns and if necessary generates a two dimensional
-         * float array from given data.
-         *
-         * \param n      Amount of data in 2d-array.
-         * \param num    Amount of data in 1d array.
-         * \param arr1d  Pointer to one dimensional float array containing the
-         *               data.
-         * \param arr2d  Pointer to two dimensional float array to be created.
-         * \param step   Amount of values in one set of data.
-         * \return       Indexed array.
-         **/
-        float** getIndexedArrayf( size_t &n, const size_t num, float** arr1d,
-                float*** arr2d, const int step = 3 );
-
         /// %Point buffer.
-        float*          m_points;
+        floatArr        m_points;
         /// %Point normal buffer.
         floatArr        m_pointNormals;
         /// %Point color buffer.
@@ -355,8 +338,6 @@ class PointBuffer
         /// %Point confidence buffer.
         floatArr        m_pointConfidences;
 
-        /// Indexed point buffer.
-        float**         m_indexedPoints;
         /// Indexed point color buffer.
         uchar**         m_indexedPointColors;
 

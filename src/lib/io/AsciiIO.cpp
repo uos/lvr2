@@ -101,14 +101,14 @@ ModelPtr AsciiIO::read(string filename)
     // Buffer related variables
     size_t numPoints = 0;
 
-    float* points            = 0;
+    floatArr points;
     uchar* pointColors       = 0;
     floatArr pointIntensities;
     floatArr pointConfidences;
 
     // Alloc memory for points
     numPoints = lines_in_file - 1;
-    points = new float[ numPoints * 3 ];
+    points = floatArr( new float[ numPoints * 3 ] );
 
     // Alloc buffer memory for additional attributes
     if ( has_color ) {

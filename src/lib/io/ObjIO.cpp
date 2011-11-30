@@ -51,7 +51,7 @@ void ObjIO::save( ModelPtr model, string filename )
 	size_t lenTextureCoordinates;
 	size_t lenFaceIndices;
 	size_t lenFaceColors;
-    float**       vertices           = m_model->m_mesh->getIndexedVertexArray( lenVertices );
+    coordfArr     vertices           = m_model->m_mesh->getIndexedVertexArray( lenVertices );
     coordfArr     normals            = m_model->m_mesh->getIndexedVertexNormalArray( lenNormals );
     float**       textureCoordinates = m_model->m_mesh->getIndexedVertexTextureCoordinateArray( lenTextureCoordinates );
     unsigned int* faceIndices        = m_model->m_mesh->getFaceArray( lenFaces );

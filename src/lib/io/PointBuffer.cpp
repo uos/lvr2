@@ -34,10 +34,8 @@ namespace lssr
 {
 
 PointBuffer::PointBuffer() :
-    m_points( NULL ),
     m_pointNormals( NULL ),
     m_pointColors( NULL ),
-    m_indexedPoints( NULL ),
     m_indexedPointColors( NULL ),
     m_numPoints( 0 ),
     m_numPointColors( 0 ),
@@ -52,13 +50,14 @@ PointBuffer::PointBuffer() :
         assert( sizeof(float) == sizeof(idxFloat) );
         assert( sizeof(uchar) == sizeof(idxByte) );
 
+        m_points.reset();
         m_pointConfidences.reset();
         m_pointIntensities.reset();
         m_pointNormals.reset();
     }
 
 
-float* PointBuffer::getPointArray( size_t &n )
+floatArr PointBuffer::getPointArray( size_t &n )
 {
 
     n = m_numPoints;
@@ -143,10 +142,12 @@ coordfArr PointBuffer::getIndexedPointNormalArray( size_t &n )
 
 }
 
-float** PointBuffer::getIndexedPointArray( size_t &n )
+coordfArr PointBuffer::getIndexedPointArray( size_t &n )
 {
 
-    return getIndexedArrayf( n, m_numPoints, &m_points, &m_indexedPoints );
+    n = m_numPoints;
+    coordfArr p = *((coordfArr*) &m_points);
+    return p;
 
 }
 
@@ -171,35 +172,7 @@ idxFloatArr PointBuffer::getIndexedPointConfidenceArray( size_t &n )
 }
 
 
-float** PointBuffer::getIndexedArrayf( size_t &n, const size_t num, 
-        float** arr1d, float*** arr2d, const int step )
-{
-
-    n = num;
-
-    /* Return NULL if we have no data. */
-    if ( !(*arr1d) )
-    {
-        return NULL;
-    }
-
-    /* Generate indexed intensity array in not already done. */
-    if ( !(*arr2d) )
-    {
-        *arr2d = (float**) malloc( num * sizeof(float*) );
-        for ( size_t i = 0; i < num; i++ )
-        {
-            (*arr2d)[i] = (*arr1d) + ( i * step );
-        }
-    }
-
-    /* Return indexed intensity array */
-    return *arr2d;
-
-}
-
-
-void PointBuffer::setPointArray( float* array, size_t n )
+void PointBuffer::setPointArray( floatArr array, size_t n )
 {
 
     m_numPoints = n;
@@ -249,7 +222,7 @@ void PointBuffer::freeBuffer()
     m_pointConfidences.reset();
     m_pointIntensities.reset();
     m_pointNormals.reset();
-    m_points = NULL;
+    m_points.reset();
     m_pointColors = NULL;
     m_numPoints = m_numPointColors = m_numPointIntensities
         = m_numPointConfidence = m_numPointNormals = 0;
