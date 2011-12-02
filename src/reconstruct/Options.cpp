@@ -40,11 +40,12 @@ Options::Options(int argc, char** argv) : m_descr("Supported options")
 		("voxelsize,v", value<float>(&m_voxelsize)->default_value(10), "Voxelsize of grid used for reconstruction.")
 	    ("intersections,i", value<int>(&m_intersections)->default_value(-1), "Number of intersections used for reconstruction. If other than -1, voxelsize will calculated automatically.")
 	    ("pcm,p", value<string>(&m_pcm)->default_value("STANN"), "Point cloud manager used for point handling and normal estimation. Choose from {STANN, STANN_RANSAC, PCL}.")
-		("saveFaceNormals", "Writes all interpolated triangle normals together with triangle centroid to a file called 'face_normals.nor'")
+        ("decomposition,d", value<string>(&m_pcm)->default_value("MC"), "Defines the type of decomposition that ist used for the voxels (Standard Marching Cubes (MC) or Tetraeder (MT) decomposition. Choose from {MC, MT}")
+	    ("saveFaceNormals", "Writes all interpolated triangle normals together with triangle centroid to a file called 'face_normals.nor'")
 		("optimizePlanes,o", "Shift all triangle vertices of a cluster onto their shared plane")
 		("savePointsAndNormals,s", "Exports original point cloud data together with normals into a single file called 'points_and_normals.ply'")
 		("recalcNormals,r", "Always estimate normals, even if given in .ply file.")
-		("threads,t", value<int>(&m_numThreads)->default_value( omp_get_num_procs() ), "Number of threads")
+		("threads", value<int>(&m_numThreads)->default_value( omp_get_num_procs() ), "Number of threads")
 		("saveNormals", "Writes all points and interpolated normals to a file called 'normals.nor'")
 		("kd", value<int>(&m_kd)->default_value(5), "Number of normals used for distance function evaluation")
 	    ("ki", value<int>(&m_ki)->default_value(10), "Number of normals used in the normal interpolation process")
@@ -55,7 +56,7 @@ Options::Options(int argc, char** argv) : m_descr("Supported options")
         ("rda", value<int>(&m_rda)->default_value(100), "Remove dangling artifacts, i.e. remove the n smallest not connected surfaces")
         ("planeNormalThreshold", value<float>(&m_planeNormalThreshold)->default_value(0.85), "Normal threshold for plane optimization. Default 0.85 equals about 3 degrees.")
         ("smallRegionThreshold", value<int>(&m_smallRegionThreshold)->default_value(0), "Threshold for small region removal. If 0 nothing will be deleted.")
-        ("retesselate,rt", "Retesselate regions that are in a regression plane.")
+        ("retesselate,t", "Retesselate regions that are in a regression plane.")
         ("generateTextures", "Generate textures during finalization.")
         ("colorRegions", "Color detected regions with color gradient.")
         ("depth", value<int>(&m_depth)->default_value(100), "Maximum recursion depth for region growing.")
@@ -117,6 +118,11 @@ string Options::getInputFileName() const
 string Options::getPCM() const
 {
     return (m_variables["pcm"].as< string >());
+}
+
+string Options::getDecomposition() const
+{
+    return (m_variables["decomposition"].as< string >());
 }
 
 int    Options::getDanglingArtifacts() const
