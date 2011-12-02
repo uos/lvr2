@@ -23,7 +23,7 @@
  *  @author Thomas Wiemann
  */
 
-#include "TetraederTable.hpp"
+#include "TetraederTables.hpp"
 
 namespace lssr
 {
@@ -48,8 +48,7 @@ void TetraederBox<VertexT, NormalT>::interpolateIntersections(
     float y;
     float z;
 
-    //for(int i = 0; i < 4; i++) cout << distances[i] << endl;
-
+    // Calc intersections for tetraeders
     v1 = 0;
     v2 = 1;
     x = calcIntersection(positions[v1].x, positions[v2].x, distances[v1], distances[v2]);
@@ -97,7 +96,7 @@ void TetraederBox<VertexT, NormalT>::interpolateIntersections(
 template<typename VertexT, typename NormalT>
 TetraederBox<VertexT, NormalT>::~TetraederBox()
 {
-    // TODO Auto-generated destructor stub
+
 }
 
 template<typename VertexT, typename NormalT>
