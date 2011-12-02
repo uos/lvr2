@@ -107,8 +107,6 @@ void TetraederBox<VertexT, NormalT>::getSurface(
 {
     typedef TetraederBox<VertexT, NormalT>*  p_tBox;
 
-    static VertexT vmax(0,0,0);
-
     // Calc the vertex positions for all possible edge intersection
     // of all tetraeders (up to 19 for a single box)
     //VertexT intersection_positions[19];
@@ -142,7 +140,7 @@ void TetraederBox<VertexT, NormalT>::getSurface(
         // Calculate the index for the surface generation look
         // up table
         int index = calcPatternIndex(distances);
-       // cout << "INDEX" << index << endl;
+
         // Create the surface triangles
         int triangle_indices[3] = {-1, -1, -1};
         for(int a = 0; TetraederTable[index][a] != -1; a+= 3)
@@ -199,14 +197,11 @@ void TetraederBox<VertexT, NormalT>::getSurface(
 
                 //Save vertex index in mesh
                 triangle_indices[b] = this->m_intersections[edge_index];
-                //cout << triangle_indices[b] << " ";
-            }
-            // cout << endl;
+             }
             // Add triangle actually does the normal interpolation for us.
             mesh.addTriangle(triangle_indices[0], triangle_indices[1], triangle_indices[2]);
         }
     }
-    //cout << "MAX: " << vmax;
 }
 
 
