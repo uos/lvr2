@@ -243,7 +243,7 @@ int main(int argc, char** argv)
     	Texture< RC_PCM_TYPE >::m_texelSize = options.getTexelSize();
     }
 
-    // Determine weather to use intersections or voxelsize
+    // Determine whether to use intersections or voxelsize
     float resolution;
     bool useVoxelsize;
     if(options.getIntersections() > 0)
@@ -257,9 +257,21 @@ int main(int argc, char** argv)
         useVoxelsize = true;
     }
 
+    // Determine whether to use MC decomposition
+    bool useMT = false;
+    if(options.getDecomposition() == "MT")
+    {
+        useMT = true;
+    }
+
     // Create a new reconstruction object
     FastReconstruction< RC_PCM_TYPE > reconstruction(
-			pcm, resolution, useVoxelsize );
+			pcm,
+			resolution,
+			useVoxelsize,
+			useMT);
+
+    // Create mesh
     reconstruction.getMesh(mesh);
 
     mesh.removeDanglingArtifacts(options.getDanglingArtifacts());
