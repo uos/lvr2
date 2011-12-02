@@ -32,8 +32,10 @@ namespace lssr
 template<typename VertexT, typename NormalT>
 FastReconstruction<VertexT, NormalT>::FastReconstruction(
         typename PointCloudManager<VertexT, NormalT>::Ptr manager,
-        float resolution, bool isVoxelsize )
-    : Reconstructor<VertexT, NormalT>(manager)
+        float resolution,
+        bool isVoxelsize,
+        bool useTetraeder)
+    : Reconstructor<VertexT, NormalT>(manager), m_useTetraeder(useTetraeder)
 {
     // Determine m_voxelsize
     assert(resolution > 0);
@@ -165,7 +167,15 @@ void FastReconstruction<VertexT, NormalT>::createGrid()
 						(index_z + dz) * m_voxelsize + v_min[2]);
 
 				//Create new box
-				FastBox<VertexT, NormalT>* box = new FastBox<VertexT, NormalT>(box_center);
+				FastBox<VertexT, NormalT>* box = 0;
+				if(!m_useTetraeder)
+				{
+				    box = new FastBox<VertexT, NormalT>(box_center);
+				}
+				else
+				{
+				    box = new TetraederBox<VertexT, NormalT>(box_center);
+				}
 
 				//Setup the box itself
 				for(int k = 0; k < 8; k++){
