@@ -48,7 +48,7 @@ void TetraederBox<VertexT, NormalT>::interpolateIntersections(
     float y;
     float z;
 
-    for(int i = 0; i < 4; i++) cout << distances[i] << endl;
+    //for(int i = 0; i < 4; i++) cout << distances[i] << endl;
 
     v1 = 0;
     v2 = 1;
@@ -119,7 +119,7 @@ void TetraederBox<VertexT, NormalT>::getSurface(
     // found in the TetraederDefinitionTable.
     for(int t_number = 0; t_number < 6; t_number++)
     {
-        cout << "NEW TETRA" << " " << t_number <<  endl;
+        //cout << "NEW TETRA" << " " << t_number <<  endl;
         // Get the 4 vertices of the current tetraeder
         VertexT t_vertices[4];
         for(int i = 0; i < 4; i++)
@@ -143,7 +143,7 @@ void TetraederBox<VertexT, NormalT>::getSurface(
         // Calculate the index for the surface generation look
         // up table
         int index = calcPatternIndex(distances);
-        cout << "INDEX" << index << endl;
+       // cout << "INDEX" << index << endl;
         // Create the surface triangles
         int triangle_indices[3] = {-1, -1, -1};
         for(int a = 0; TetraederTable[index][a] != -1; a+= 3)
@@ -163,7 +163,9 @@ void TetraederBox<VertexT, NormalT>::getSurface(
                 {
                     this->m_intersections[edge_index] = globalIndex;
                     VertexT v = this->m_intersectionPositionsTetraeder[TetraederTable[index][a + b]];
-                    cout << v << " " << edge_index << " " << TetraederTable[index][a + b] << endl;
+                    //cout << v << " " << edge_index << " " << TetraederTable[index][a + b] << endl;
+
+                    v.r = 40 * t_number;
 
                     if(v.length() > vmax.length()) vmax = v;
 
@@ -211,7 +213,7 @@ void TetraederBox<VertexT, NormalT>::getSurface(
             mesh.addTriangle(triangle_indices[0], triangle_indices[1], triangle_indices[2]);
         }
     }
-    cout << "MAX: " << vmax;
+    //cout << "MAX: " << vmax;
 }
 
 
