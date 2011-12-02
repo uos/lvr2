@@ -158,16 +158,10 @@ void TetraederBox<VertexT, NormalT>::getSurface(
 
                 //If no index was found generate new index and vertex
                 //and update all neighbor boxes
-                //if(this->m_intersections[edge_index] == this->INVALID_INDEX)
-                if(true)
+                if(this->m_intersections[edge_index] == this->INVALID_INDEX)
                 {
                     this->m_intersections[edge_index] = globalIndex;
                     VertexT v = this->m_intersectionPositionsTetraeder[TetraederTable[index][a + b]];
-                    //cout << v << " " << edge_index << " " << TetraederTable[index][a + b] << endl;
-
-                    v.r = 40 * t_number;
-
-                    if(v.length() > vmax.length()) vmax = v;
 
                     // Insert vertex and a new temp normal into mesh.
                     // The normal is inserted to assure that vertex
@@ -176,29 +170,29 @@ void TetraederBox<VertexT, NormalT>::getSurface(
                     mesh.addVertex(v);
                     mesh.addNormal(NormalT());
 
-                    // Update adjacent cells (three at most)
-//                    for(int i = 0; i < 3; i++)
-//                    {
-//                        int nb_index = TetraederNeighborTable[edge_index][i];
-//
-//                        // Check if neighbor exists. The table contains
-//                        // a -1 flag, we can stop searching due to the
-//                        // structure of the tables
-//                        if(nb_index == -1)
-//                        {
-//                            break;
-//                        }
-//
-//                        // Cast to correct correct type, we need a TetraederBox
-//                        p_tBox b = static_cast<p_tBox>(this->m_neighbors[nb_index]);
-//
-//                        // Update index
-//                        if(b)
-//                        {
-//                            b->m_intersections[TetraederVertexNBTable[edge_index][i]] = globalIndex;
-//                        }
-//
-//                    }
+                   //Update adjacent cells (three at most)
+                    for(int i = 0; i < 3; i++)
+                    {
+                        int nb_index = TetraederNeighborTable[edge_index][i];
+
+                        // Check if neighbor exists. The table contains
+                        // a -1 flag, we can stop searching due to the
+                        // structure of the tables
+                        if(nb_index == -1)
+                        {
+                            break;
+                        }
+
+                        // Cast to correct correct type, we need a TetraederBox
+                        p_tBox b = static_cast<p_tBox>(this->m_neighbors[nb_index]);
+
+                        // Update index
+                        if(b)
+                        {
+                            b->m_intersections[TetraederVertexNBTable[edge_index][i]] = globalIndex;
+                        }
+
+                    }
                     // Increase the global vertex counter to save the buffer
                     // position were the next new vertex has to be inserted
                     globalIndex++;
