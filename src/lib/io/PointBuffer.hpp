@@ -139,6 +139,23 @@ class PointBuffer
         void setPointConfidenceArray( floatArr array, size_t n );
 
 
+        /************************* Indexed Set *************************/
+
+
+        /**
+         * \brief Set the point color array.
+         *
+         * By using setIndexedPointColorArray the internal point color buffer
+         * can be set. The array has to be a shared color<uchar> array
+         * containing sets of three values for \c red, \c green and \c blue.
+         * The values can be in the range of [0..255].
+         *
+         * \param array  Pointer to point color data.
+         * \param n      Amount of color information in the array.
+         **/
+        void setIndexedPointColorArray( color3bArr array, size_t n );
+
+
         /************************* Get *************************/
 
 

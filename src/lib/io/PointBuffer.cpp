@@ -173,6 +173,14 @@ void PointBuffer::setPointColorArray( ucharArr array, size_t n )
 
 }
 
+void PointBuffer::setIndexedPointColorArray( color3bArr array, size_t n )
+{
+
+    m_numPointColors = n;
+    m_pointColors = *((ucharArr *) &array);
+
+}
+
 
 void PointBuffer::setPointNormalArray( floatArr array, size_t n )
 {
