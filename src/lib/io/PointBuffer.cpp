@@ -111,7 +111,7 @@ color3bArr PointBuffer::getIndexedPointColorArray( size_t &n )
 {
 
     n = m_numPointColors;
-    color3bArr p = *((color3bArr*) &m_pointNormals);
+    color3bArr p = *((color3bArr*) &m_pointColors);
     return p;
 
 }
