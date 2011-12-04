@@ -201,7 +201,7 @@ int main( int argc, char ** argv )
 
 	printf( "Saving new point cloud to »%s«…\n", argv[ optind + 2 ] );
     /* Reset color array of first point cloud. */
-    pc1->setPointColorArray( *((lssr::ucharArr*) &(pcm1->m_colors)), pcm1->getNumPoints() );
+    pc1->setIndexedPointColorArray( pcm1->m_colors, pcm1->getNumPoints() );
 
     /* Save point cloud. */
     lssr::ModelFactory io_factory;
