@@ -39,7 +39,7 @@ int main(int argc, char** argv)
     // (this means required parameters are missing)
     if (options.printUsage()) return 0;
 
-    ::std::cout<<options<<::std::endl;
+    ::std::cout<< options<<::std::endl;
 
     ModelPtr m = ModelFactory::readModel(options.inputFile());
 
@@ -65,8 +65,6 @@ int main(int argc, char** argv)
             PointBufferPtr pb( filter.getPointBuffer() );
             ModelPtr out_model( new Model( pb ) );
 
-            std::cout << pb << std::endl;
-            std::cout << pb-> getNumPoints() << std::endl;
             ModelFactory::saveModel(out_model, options.outputFile());
         }
     }
