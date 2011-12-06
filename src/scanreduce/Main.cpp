@@ -37,12 +37,14 @@ int main(int argc, char** argv)
     // (this means required parameters are missing)
     if (options.printUsage()) return 0;
 
-    ::std::cout<<options<<::std::endl;
+    ::std::cout << options << ::std::endl;
 
     UosIO io;
 
     io.setFirstScan(options.firstScan());
     io.setLastScan(options.lastScan());
+    io.saveRemission(options.saveRemission());
+    io.saveRemissionAsColor(options.convertRemission());
     io.reduce(options.directory(), options.outputFile(), options.reduction());
 
 	return 0;

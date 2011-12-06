@@ -66,7 +66,14 @@ public:
     /**
      * @brief Contructor.
      */
-    UosIO() : m_firstScan(-1), m_lastScan(-1), m_saveToDisk(false), m_reduction(1), m_numScans(0){}
+    UosIO() :
+        m_firstScan(-1),
+        m_lastScan(-1),
+        m_saveToDisk(false),
+        m_reductionTarget(0),
+        m_numScans(0),
+        m_saveRemission(false),
+        m_saveRemissionColor(false){}
 
     /**
      * @brief Reads all scans or an specified range of scans
@@ -106,6 +113,16 @@ public:
     //int getNumScans() { return m_numScans;}
 
     void save(string filename) {}
+
+    /**
+     * @brief Convert remission value to pseudo RGB values while saving
+     */
+    void saveRemissionAsColor(bool convert) {m_saveRemissionColor = convert;}
+
+    /**
+     * @brief Save remission (if present)
+     */
+    void saveRemission(bool yes) { m_saveRemission= yes;}
 
 private:
 
@@ -194,6 +211,15 @@ private:
 
     /// Number of loaded scans
     int     m_numScans;
+
+    /// Number of targeted points for reduction
+    int     m_reductionTarget;
+
+    /// If true, remission values will be converted to color
+    bool    m_saveRemissionColor;
+
+    /// If true, the original remission information will be saved
+    bool    m_saveRemission;
 
 };
 
