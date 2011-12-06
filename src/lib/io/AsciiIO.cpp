@@ -166,7 +166,6 @@ ModelPtr AsciiIO::read(string filename)
             pointColors[ c * 3     ] = (uchar) r;
             pointColors[ c * 3 + 1 ] = (uchar) g;
             pointColors[ c * 3 + 2 ] = (uchar) b;
-
         }
         else
         {
