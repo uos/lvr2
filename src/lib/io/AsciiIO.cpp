@@ -53,8 +53,6 @@ ModelPtr AsciiIO::read(string filename)
     // Count lines in file to estimate the number of present points
     int lines_in_file = countLines(filename);
 
-    cout << lines_in_file << endl;
-
     if ( lines_in_file < 2 )
     {
         cout << timestamp << "AsciiIO: Too few lines in file (has to be > 2)." << endl;
