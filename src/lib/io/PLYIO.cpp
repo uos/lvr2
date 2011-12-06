@@ -36,6 +36,7 @@
 #include <ctime>
 #include <sstream>
 #include <cassert>
+#include <iostream>
 #include "Message.hpp"
 
 
@@ -93,6 +94,8 @@ void PLYIO::save( string filename, e_ply_storage_mode mode,
         m_pointColors           = pc->getPointColorArray(m_numPointColors);
         m_pointIntensities      = pc->getPointIntensityArray(m_numPointIntensities);
         m_pointNormals          = pc->getPointNormalArray(m_numPointNormals);
+
+       std::cout << m_numPoints << std::endl;
     }
 
     if ( m_model->m_mesh )

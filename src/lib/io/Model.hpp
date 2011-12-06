@@ -31,6 +31,7 @@
 #include "boost/shared_ptr.hpp"
 
 #include <algorithm>
+#include <iostream>
 
 typedef unsigned int uint;
 
@@ -44,6 +45,7 @@ public:
     Model( PointBufferPtr p = PointBufferPtr(), MeshBufferPtr m = MeshBufferPtr() )
     {
         m_pointCloud = p;
+        std::cout << m_pointCloud->getNumPoints() << std::endl;
         m_mesh = m;
     };
 
