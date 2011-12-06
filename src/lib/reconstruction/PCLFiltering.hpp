@@ -54,11 +54,14 @@ public:
     PointBufferPtr getPointBuffer();
 
 private:
-    pcl::PointCloud<pcl::PointXYZ>::Ptr     m_pointCloud;
-    pcl::PointCloud<pcl::Normal>::Ptr       m_pointNormals;
-    pcl::KdTreeFLANN<pcl::PointXYZ>::Ptr    m_kdTree;
+    pcl::PointCloud<pcl::PointXYZRGB>::Ptr     m_pointCloud;
+    pcl::PointCloud<pcl::Normal>::Ptr          m_pointNormals;
+    pcl::KdTreeFLANN<pcl::PointXYZRGB>::Ptr    m_kdTree;
 
-    pcl::PointCloud<pcl::PointXYZ>::Ptr     m_FilteredCloud;
+    pcl::PointCloud<pcl::PointXYZRGB>::Ptr     m_FilteredCloud;
+
+    bool m_useColors;
+
 };
 
 } /* namespace lssr */
