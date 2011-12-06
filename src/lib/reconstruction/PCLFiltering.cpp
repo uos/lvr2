@@ -37,7 +37,7 @@ PCLFiltering::PCLFiltering( PointBufferPtr loader )
 
     // Get data from loader object
     size_t numPoints;
-    float** points = loader->getIndexedPointArray(numPoints);
+    coord3fArr points = loader->getIndexedPointArray(numPoints);
 
     // Parse to PCL point cloud
     std::cout << timestamp << "Creating PCL point cloud for filtering" << std::endl;
@@ -125,7 +125,7 @@ PointBufferPtr PCLFiltering::getPointBuffer()
 {
     PointBufferPtr p( new PointBuffer );
 
-    float* points = new float[3 * m_pointCloud->size()];
+    floatArr points(new float[3 * m_pointCloud->size()]);
     for(int i = 0; i < m_pointCloud->size(); i++)
     {
         size_t pos = 3 * i;

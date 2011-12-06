@@ -16,6 +16,7 @@ set(LSSR_SOURCES
     display/StaticMesh.cpp
     display/ColorMap.cpp
     display/GroundPlane.cpp
+    reconstruction/PCLFiltering.cpp
 )
 
 
