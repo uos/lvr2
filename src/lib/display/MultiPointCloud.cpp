@@ -37,10 +37,10 @@ using std::stringstream;
 namespace lssr
 {
 
-MultiPointCloud::MultiPointCloud(Model &model, string name)
+MultiPointCloud::MultiPointCloud(ModelPtr model, string name)
 {
 
-    PointBufferPtr p_buffer = model.m_pointCloud;
+    PointBufferPtr p_buffer = model->m_pointCloud;
 
     if(p_buffer)
     {
@@ -49,8 +49,8 @@ MultiPointCloud::MultiPointCloud(Model &model, string name)
 
         int c(1);
         size_t n;
-        coord3fArr points = model.m_pointCloud->getIndexedPointArray( n );
-        color3bArr colors = model.m_pointCloud->getIndexedPointColorArray( n );
+        coord3fArr points = model->m_pointCloud->getIndexedPointArray( n );
+        color3bArr colors = model->m_pointCloud->getIndexedPointColorArray( n );
 
         for(it = pairs.begin(); it != pairs.end(); it ++)
         {
@@ -70,13 +70,15 @@ MultiPointCloud::MultiPointCloud(Model &model, string name)
                 }
             }
             stringstream ss;
-            ss << name << " " << c;
+
             pc->updateDisplayLists();
             pc->setName(ss.str());
             addCloud(pc);
             c++;
         }
     }
+
+    m_model = model;
 }
 
 MultiPointCloud::~MultiPointCloud()
@@ -97,31 +99,88 @@ void MultiPointCloud::removeCloud(PointCloud* pc)
     m_clouds.erase(pc);
 }
 
-void MultiPointCloud::exportAllPoints(string filename)
+ModelPtr MultiPointCloud::model( )
 {
-    ofstream out(filename.c_str());
-    if(out.good())
-    {
+    //    ofstream out(filename.c_str());
+    //    if(out.good())
+    //    {
+    //
+    //        pc_attr_it it;
+    //        for(it = m_clouds.begin(); it != m_clouds.end(); it++)
+    //        {
+    //            PointCloud* pc = it->second->cloud;
+    //            if(pc->isActive())
+    //            {
+    //                cout << "Exporting points from " << pc->Name() << " to " << filename << endl;
+    //                vector<uColorVertex>::iterator p_it;
+    //                for(p_it = pc->m_points.begin(); p_it != pc->m_points.end(); p_it++)
+    //                {
+    //                    uColorVertex v = *p_it;
+    //                    out << v.x << " " << v.y << " " << v.z <<  " "
+    //                        << (int)v.r << " " << (int)v.g << " " << (int)v.b << endl;
+    //                }
+    //            }
+    //        }
+    //        out.close();
+    //    }
 
-        pc_attr_it it;
-        for(it = m_clouds.begin(); it != m_clouds.end(); it++)
+    // Count all points that need to be exported
+    pc_attr_it it;
+    size_t c = 0;
+    for(it = m_clouds.begin(); it != m_clouds.end(); it++)
+    {
+        PointCloud* pc = it->second->cloud;
+        if(pc->isActive())
         {
-            PointCloud* pc = it->second->cloud;
-            if(pc->isActive())
+            vector<uColorVertex>::iterator p_it;
+            for(p_it = pc->m_points.begin(); p_it != pc->m_points.end(); p_it++)
             {
-                cout << "Exporting points from " << pc->Name() << " to " << filename << endl;
-                vector<uColorVertex>::iterator p_it;
-                for(p_it = pc->m_points.begin(); p_it != pc->m_points.end(); p_it++)
-                {
-                    uColorVertex v = *p_it;
-                    out << v.x << " " << v.y << " " << v.z <<  " "
-                        << (int)v.r << " " << (int)v.g << " " << (int)v.b << endl;
-                }
+                c++;
             }
         }
-        out.close();
     }
 
-}
+
+    // Create a new model and save points
+    PointBufferPtr pcBuffer( new PointBuffer);
+    floatArr pointBuffer(new float[3 * c]);
+    ucharArr colorBuffer(new uchar[3 * c]);
+    c = 0;
+
+    for(it = m_clouds.begin(); it != m_clouds.end(); it++)
+    {
+        PointCloud* pc = it->second->cloud;
+        if(pc->isActive())
+        {
+            vector<uColorVertex>::iterator p_it;
+            for(p_it = pc->m_points.begin(); p_it != pc->m_points.end(); p_it++)
+            {
+                size_t bufferPos = 3 * c;
+
+                uColorVertex v = *p_it;
+                pointBuffer[bufferPos    ] = v.x;
+                pointBuffer[bufferPos + 1] = v.y;
+                pointBuffer[bufferPos + 2] = v.z;
+
+                colorBuffer[bufferPos    ] = v.r;
+                colorBuffer[bufferPos + 1] = v.g;
+                colorBuffer[bufferPos + 2] = v.b;
+
+                c++;
+            }
+        }
+
+    }
+
+    pcBuffer->setPointArray(pointBuffer, c);
+    pcBuffer->setPointColorArray(colorBuffer, c);
+
+    ModelPtr modelPtr(new Model);
+    modelPtr->m_pointCloud = pcBuffer;
+
+
+    return modelPtr;
 
 }
+
+} // namespace lssr

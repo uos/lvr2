@@ -60,6 +60,8 @@ PCLPointCloudManager<VertexT, NormalT>::PCLPointCloudManager( PointBufferPtr loa
         m_pointCloud->points[i].y = y;
         m_pointCloud->points[i].z = z;
     }
+    m_pointCloud->width = this->m_numPoints;
+    m_pointCloud->height = 1;
 
     size_t n = 0;
     this->m_colors  = loader->getIndexedPointColorArray( n );
