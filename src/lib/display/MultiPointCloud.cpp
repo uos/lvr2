@@ -101,28 +101,6 @@ void MultiPointCloud::removeCloud(PointCloud* pc)
 
 ModelPtr MultiPointCloud::model( )
 {
-    //    ofstream out(filename.c_str());
-    //    if(out.good())
-    //    {
-    //
-    //        pc_attr_it it;
-    //        for(it = m_clouds.begin(); it != m_clouds.end(); it++)
-    //        {
-    //            PointCloud* pc = it->second->cloud;
-    //            if(pc->isActive())
-    //            {
-    //                cout << "Exporting points from " << pc->Name() << " to " << filename << endl;
-    //                vector<uColorVertex>::iterator p_it;
-    //                for(p_it = pc->m_points.begin(); p_it != pc->m_points.end(); p_it++)
-    //                {
-    //                    uColorVertex v = *p_it;
-    //                    out << v.x << " " << v.y << " " << v.z <<  " "
-    //                        << (int)v.r << " " << (int)v.g << " " << (int)v.b << endl;
-    //                }
-    //            }
-    //        }
-    //        out.close();
-    //    }
 
     // Count all points that need to be exported
     pc_attr_it it;

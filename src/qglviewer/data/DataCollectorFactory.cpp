@@ -94,6 +94,7 @@ void DataCollectorFactory::create(string filename)
 	            // Check for multi point object
 	            if(point_buffer->getSubClouds().size() > 1)
 	            {
+	                name = filename;
 	                MultiPointCloud* pc = new MultiPointCloud(lssr::ModelPtr(model), name);
 	                MultiPointCloudTreeWidgetItem* item = new MultiPointCloudTreeWidgetItem(MultiPointCloudItem);
 
