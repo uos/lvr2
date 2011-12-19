@@ -28,15 +28,17 @@
 namespace lssr
 {
 
-PlayerDialog::PlayerDialog()
+PlayerDialog::PlayerDialog(QWidget* parent)
+    : m_parent(parent)
 {
-    // TODO Auto-generated constructor stub
+    m_ui = new PlayerDialogUI;
 
-}
+    QDialog* dialog = new QDialog(parent);
+    m_ui->setupUi(dialog);
 
-PlayerDialog::~PlayerDialog()
-{
-    // TODO Auto-generated destructor stub
+    dialog->show();
+    dialog->raise();
+    dialog->activateWindow();
 }
 
 } /* namespace lssr */
