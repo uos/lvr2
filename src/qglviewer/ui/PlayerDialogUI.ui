@@ -1,0 +1,408 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ui version="4.0">
+ <class>PlayerDialog</class>
+ <widget class="QDialog" name="PlayerDialog">
+  <property name="geometry">
+   <rect>
+    <x>0</x>
+    <y>0</y>
+    <width>508</width>
+    <height>255</height>
+   </rect>
+  </property>
+  <property name="sizePolicy">
+   <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
+    <horstretch>0</horstretch>
+    <verstretch>0</verstretch>
+   </sizepolicy>
+  </property>
+  <property name="minimumSize">
+   <size>
+    <width>508</width>
+    <height>255</height>
+   </size>
+  </property>
+  <property name="maximumSize">
+   <size>
+    <width>508</width>
+    <height>255</height>
+   </size>
+  </property>
+  <property name="windowTitle">
+   <string>Dialog</string>
+  </property>
+  <widget class="QListWidget" name="listWidget">
+   <property name="geometry">
+    <rect>
+     <x>10</x>
+     <y>10</y>
+     <width>201</width>
+     <height>201</height>
+    </rect>
+   </property>
+  </widget>
+  <widget class="QGroupBox" name="groupBoxControlls">
+   <property name="geometry">
+    <rect>
+     <x>220</x>
+     <y>10</y>
+     <width>291</width>
+     <height>71</height>
+    </rect>
+   </property>
+   <property name="title">
+    <string>Frame Controlls</string>
+   </property>
+   <widget class="QToolButton" name="toolButton">
+    <property name="geometry">
+     <rect>
+      <x>10</x>
+      <y>30</y>
+      <width>33</width>
+      <height>33</height>
+     </rect>
+    </property>
+    <property name="text">
+     <string>...</string>
+    </property>
+    <property name="icon">
+     <iconset resource="../res/viewer.qrc">
+      <normaloff>:/qv_play_first.png</normaloff>:/qv_play_first.png</iconset>
+    </property>
+    <property name="iconSize">
+     <size>
+      <width>32</width>
+      <height>32</height>
+     </size>
+    </property>
+   </widget>
+   <widget class="QToolButton" name="buttonPrev">
+    <property name="geometry">
+     <rect>
+      <x>50</x>
+      <y>30</y>
+      <width>33</width>
+      <height>33</height>
+     </rect>
+    </property>
+    <property name="text">
+     <string>...</string>
+    </property>
+    <property name="icon">
+     <iconset resource="../res/viewer.qrc">
+      <normaloff>:/qv_play_prev.png</normaloff>:/qv_play_prev.png</iconset>
+    </property>
+    <property name="iconSize">
+     <size>
+      <width>32</width>
+      <height>32</height>
+     </size>
+    </property>
+   </widget>
+   <widget class="QToolButton" name="buttonAddFrame">
+    <property name="geometry">
+     <rect>
+      <x>90</x>
+      <y>30</y>
+      <width>33</width>
+      <height>33</height>
+     </rect>
+    </property>
+    <property name="text">
+     <string>...</string>
+    </property>
+    <property name="icon">
+     <iconset resource="../res/viewer.qrc">
+      <normaloff>:/qv_play_add.png</normaloff>:/qv_play_add.png</iconset>
+    </property>
+    <property name="iconSize">
+     <size>
+      <width>32</width>
+      <height>32</height>
+     </size>
+    </property>
+   </widget>
+   <widget class="QToolButton" name="buttonDeleteFrame">
+    <property name="geometry">
+     <rect>
+      <x>130</x>
+      <y>30</y>
+      <width>33</width>
+      <height>33</height>
+     </rect>
+    </property>
+    <property name="text">
+     <string>...</string>
+    </property>
+    <property name="icon">
+     <iconset resource="../res/viewer.qrc">
+      <normaloff>:/qv_play_delete.png</normaloff>:/qv_play_delete.png</iconset>
+    </property>
+    <property name="iconSize">
+     <size>
+      <width>32</width>
+      <height>32</height>
+     </size>
+    </property>
+   </widget>
+   <widget class="QToolButton" name="buttonAnimate">
+    <property name="geometry">
+     <rect>
+      <x>170</x>
+      <y>30</y>
+      <width>33</width>
+      <height>33</height>
+     </rect>
+    </property>
+    <property name="text">
+     <string>...</string>
+    </property>
+    <property name="icon">
+     <iconset resource="../res/viewer.qrc">
+      <normaloff>:/qv_play_animate.png</normaloff>:/qv_play_animate.png</iconset>
+    </property>
+    <property name="iconSize">
+     <size>
+      <width>32</width>
+      <height>32</height>
+     </size>
+    </property>
+   </widget>
+   <widget class="QToolButton" name="buttonNext">
+    <property name="geometry">
+     <rect>
+      <x>210</x>
+      <y>30</y>
+      <width>33</width>
+      <height>33</height>
+     </rect>
+    </property>
+    <property name="text">
+     <string>...</string>
+    </property>
+    <property name="icon">
+     <iconset resource="../res/viewer.qrc">
+      <normaloff>:/qv_play_next.png</normaloff>:/qv_play_next.png</iconset>
+    </property>
+    <property name="iconSize">
+     <size>
+      <width>32</width>
+      <height>32</height>
+     </size>
+    </property>
+   </widget>
+   <widget class="QToolButton" name="buttonLast">
+    <property name="geometry">
+     <rect>
+      <x>250</x>
+      <y>30</y>
+      <width>33</width>
+      <height>33</height>
+     </rect>
+    </property>
+    <property name="text">
+     <string>...</string>
+    </property>
+    <property name="icon">
+     <iconset resource="../res/viewer.qrc">
+      <normaloff>:/qv_play_last.png</normaloff>:/qv_play_last.png</iconset>
+    </property>
+    <property name="iconSize">
+     <size>
+      <width>32</width>
+      <height>32</height>
+     </size>
+    </property>
+   </widget>
+  </widget>
+  <widget class="QGroupBox" name="groupBoxTiming">
+   <property name="geometry">
+    <rect>
+     <x>230</x>
+     <y>90</y>
+     <width>291</width>
+     <height>121</height>
+    </rect>
+   </property>
+   <property name="title">
+    <string>Timing</string>
+   </property>
+   <widget class="QLabel" name="labelStartTime">
+    <property name="geometry">
+     <rect>
+      <x>0</x>
+      <y>30</y>
+      <width>141</width>
+      <height>17</height>
+     </rect>
+    </property>
+    <property name="text">
+     <string>First Possible Time:</string>
+    </property>
+   </widget>
+   <widget class="QDoubleSpinBox" name="spinBoxStartTime">
+    <property name="enabled">
+     <bool>false</bool>
+    </property>
+    <property name="geometry">
+     <rect>
+      <x>170</x>
+      <y>20</y>
+      <width>101</width>
+      <height>27</height>
+     </rect>
+    </property>
+    <property name="maximum">
+     <double>10000000.000000000000000</double>
+    </property>
+   </widget>
+   <widget class="QDoubleSpinBox" name="spinBoxCurrentTime">
+    <property name="enabled">
+     <bool>true</bool>
+    </property>
+    <property name="geometry">
+     <rect>
+      <x>170</x>
+      <y>50</y>
+      <width>101</width>
+      <height>27</height>
+     </rect>
+    </property>
+    <property name="maximum">
+     <double>10000000.000000000000000</double>
+    </property>
+   </widget>
+   <widget class="QLabel" name="labeCurrentTime">
+    <property name="geometry">
+     <rect>
+      <x>0</x>
+      <y>60</y>
+      <width>141</width>
+      <height>17</height>
+     </rect>
+    </property>
+    <property name="text">
+     <string>Current Time:</string>
+    </property>
+   </widget>
+   <widget class="QDoubleSpinBox" name="spinBoxLastTime">
+    <property name="enabled">
+     <bool>false</bool>
+    </property>
+    <property name="geometry">
+     <rect>
+      <x>170</x>
+      <y>80</y>
+      <width>101</width>
+      <height>27</height>
+     </rect>
+    </property>
+    <property name="maximum">
+     <double>10000000.000000000000000</double>
+    </property>
+   </widget>
+   <widget class="QLabel" name="labelEndTime">
+    <property name="geometry">
+     <rect>
+      <x>0</x>
+      <y>90</y>
+      <width>141</width>
+      <height>17</height>
+     </rect>
+    </property>
+    <property name="text">
+     <string>Last Possible Time:</string>
+    </property>
+   </widget>
+  </widget>
+  <widget class="QPushButton" name="buttonCancel">
+   <property name="geometry">
+    <rect>
+     <x>400</x>
+     <y>220</y>
+     <width>97</width>
+     <height>27</height>
+    </rect>
+   </property>
+   <property name="text">
+    <string>Cancel</string>
+   </property>
+  </widget>
+  <widget class="QPushButton" name="buttonCreate">
+   <property name="geometry">
+    <rect>
+     <x>230</x>
+     <y>220</y>
+     <width>97</width>
+     <height>27</height>
+    </rect>
+   </property>
+   <property name="text">
+    <string>Create Video</string>
+   </property>
+  </widget>
+  <widget class="QPushButton" name="buttonLoad">
+   <property name="geometry">
+    <rect>
+     <x>10</x>
+     <y>220</y>
+     <width>97</width>
+     <height>27</height>
+    </rect>
+   </property>
+   <property name="text">
+    <string>Load Path</string>
+   </property>
+  </widget>
+  <widget class="QPushButton" name="buttonSave">
+   <property name="geometry">
+    <rect>
+     <x>120</x>
+     <y>220</y>
+     <width>97</width>
+     <height>27</height>
+    </rect>
+   </property>
+   <property name="text">
+    <string>Save Path</string>
+   </property>
+  </widget>
+ </widget>
+ <resources>
+  <include location="../res/viewer.qrc"/>
+ </resources>
+ <connections>
+  <connection>
+   <sender>buttonCancel</sender>
+   <signal>clicked()</signal>
+   <receiver>PlayerDialog</receiver>
+   <slot>reject()</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>448</x>
+     <y>233</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>253</x>
+     <y>127</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>buttonCreate</sender>
+   <signal>clicked()</signal>
+   <receiver>PlayerDialog</receiver>
+   <slot>accept()</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>278</x>
+     <y>233</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>253</x>
+     <y>127</y>
+    </hint>
+   </hints>
+  </connection>
+ </connections>
+</ui>
