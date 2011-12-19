@@ -26,15 +26,24 @@
 #ifndef PLAYERDIALOG_H_
 #define PLAYERDIALOG_H_
 
+#include "PlayerDialogUI.h"
+
+using Ui::PlayerDialogUI;
+
 namespace lssr
 {
 
 class PlayerDialog
 {
 public:
-    PlayerDialog();
-    virtual ~PlayerDialog();
+    PlayerDialog(QWidget* parent);
+    virtual ~PlayerDialog() {};
+
+private:
+    QWidget*            m_parent;
+    PlayerDialogUI*       m_ui;
 };
 
 } /* namespace lssr */
+
 #endif /* PLAYERDIALOG_H_ */
