@@ -46,6 +46,7 @@
 #include "../widgets/TriangleMeshTreeWidgetItem.h"
 #include "../widgets/TransformationDialog.h"
 #include "../widgets/DebugOutputDialog.hpp"
+#include "../widgets/PlayerDialog.hpp"
 
 #include "display/StaticMesh.hpp"
 #include "geometry/HalfEdgeMesh.hpp"
@@ -99,6 +100,7 @@ public Q_SLOTS:
 	void saveSelectedObject();
 
 	void transformObject();
+	void createAnimation();
 	void deleteObject();
 
 	void openFile();
