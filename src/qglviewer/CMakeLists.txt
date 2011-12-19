@@ -23,6 +23,7 @@ set(QVIEWER_UIS
     ui/TransformationDialogUI.ui
     ui/MeshingOptionsDialogUI.ui
     ui/DebugOutputDialogUI.ui
+    ui/PlayerDialogUI.ui
 )
 
 # Main Sources
@@ -42,6 +43,7 @@ set(QVIEWER_SOURCES
     widgets/MultiPointCloudTreeWidgetItem.cpp
     widgets/TransformationDialog.cpp
     widgets/DebugOutputDialog.cpp
+    widgets/PlayerDialog.cpp
 )
 
 set(QVIEWER_RESOURCES
