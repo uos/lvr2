@@ -123,6 +123,7 @@ void ViewerApplication::connectEvents()
     connect(m_actionDockWidgetUi->buttonTransform,  SIGNAL(clicked()), this, SLOT(transformObject()));
     connect(m_actionDockWidgetUi->buttonDelete,     SIGNAL(clicked()), this, SLOT(deleteObject()));
     connect(m_actionDockWidgetUi->buttonExport,     SIGNAL(clicked()), this, SLOT(saveSelectedObject()));
+    connect(m_actionDockWidgetUi->buttonAnimation,  SIGNAL(clicked()), this, SLOT(createAnimation()));
 }
 
 void ViewerApplication::createMeshFromPointcloud()
@@ -376,6 +377,11 @@ void ViewerApplication::transformObject()
 			new TransformationDialog(m_viewer, c_item->renderable());
         }
     }
+}
+
+void ViewerApplication::createAnimation()
+{
+    lssr::PlayerDialog* d = new lssr::PlayerDialog(m_viewer);
 }
 
 void ViewerApplication::deleteObject()
