@@ -53,10 +53,10 @@
    <property name="title">
     <string>Frame Controlls</string>
    </property>
-   <widget class="QToolButton" name="toolButton">
+   <widget class="QToolButton" name="buttonFirst">
     <property name="geometry">
      <rect>
-      <x>10</x>
+      <x>0</x>
       <y>30</y>
       <width>33</width>
       <height>33</height>
@@ -79,7 +79,7 @@
    <widget class="QToolButton" name="buttonPrev">
     <property name="geometry">
      <rect>
-      <x>50</x>
+      <x>40</x>
       <y>30</y>
       <width>33</width>
       <height>33</height>
@@ -102,7 +102,7 @@
    <widget class="QToolButton" name="buttonAnimate">
     <property name="geometry">
      <rect>
-      <x>90</x>
+      <x>80</x>
       <y>30</y>
       <width>33</width>
       <height>33</height>
@@ -125,7 +125,7 @@
    <widget class="QToolButton" name="buttonNext">
     <property name="geometry">
      <rect>
-      <x>130</x>
+      <x>120</x>
       <y>30</y>
       <width>33</width>
       <height>33</height>
@@ -148,7 +148,7 @@
    <widget class="QToolButton" name="buttonLast">
     <property name="geometry">
      <rect>
-      <x>170</x>
+      <x>160</x>
       <y>30</y>
       <width>33</width>
       <height>33</height>
@@ -282,7 +282,7 @@
      </rect>
     </property>
     <property name="text">
-     <string>Current Time:</string>
+     <string>Duration:</string>
     </property>
    </widget>
    <widget class="QDoubleSpinBox" name="spinBoxLastTime">

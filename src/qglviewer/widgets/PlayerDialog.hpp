@@ -28,18 +28,39 @@
 
 #include "PlayerDialogUI.h"
 
+#include "AnimationListItem.hpp"
+
 using Ui::PlayerDialogUI;
 
 namespace lssr
 {
 
-class PlayerDialog
+class PlayerDialog : public QObject
 {
+    Q_OBJECT
+
 public:
-    PlayerDialog(QWidget* parent);
+    PlayerDialog(QWidget* parent = 0);
     virtual ~PlayerDialog() {};
 
+public Q_SLOTS:
+    void addItem();
+    void removeItem();
+    void updateTimes(double d);
+    void selectNext();
+    void selectPrev();
+    void selectFirst();
+    void selectLast();
+    void play();
+    void updateSelectedItem(QListWidgetItem* item);
+
+public:
+    AnimationListItem* item() { return m_item;}
 private:
+
+    void connectEvents();
+
+    AnimationListItem*      m_item;
     QWidget*                m_parent;
     PlayerDialogUI*         m_ui;
 };
