@@ -67,6 +67,9 @@ void PlayerDialog::updateSelectedItem(QListWidgetItem* item)
         if(item->type() == PlayListItem)
         {
             m_item = static_cast<AnimationListItem*>(item);
+            m_ui->spinBoxStartTime->setValue(m_item->time());
+            m_ui->spinBoxCurrentTime->setValue(m_item->duration());
+            m_ui->spinBoxLastTime->setValue(m_item->time() + m_item->duration());
         }
     }
 }
@@ -120,13 +123,15 @@ void PlayerDialog::removeItem()
 
 void PlayerDialog::updateTimes(double d)
 {
-    static float oldValue;
+
     if(m_item)
     {
+        float oldValue = m_item->duration();
         float value = m_ui->spinBoxCurrentTime->value();
+
         m_item->setDuration(value);
+        m_item->updateLabel();
         m_item->updateFollowingTimes(value - oldValue);
-        oldValue = m_ui->spinBoxCurrentTime->value();
     }
 }
 
