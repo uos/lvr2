@@ -233,22 +233,22 @@ void AsciiIO::save( ModelPtr m, string filename )
         return;
     }
 
-
-
     for ( size_t i(0); i < pointcount; i++ )
     {
-        out << points[i].x << "\t" 
-            << points[i].y << "\t" 
+        out << points[i].x << " " 
+            << points[i].y << " " 
             << points[i].z;
         if ( pointIntensities )
         {
-            out << "\t" << pointIntensities[i];
+            out << " " << pointIntensities[i];
         }
         if ( pointColors )
         {
-            out << "\t" << pointColors[i].r 
-                << "\t" << pointColors[i].g 
-                << "\t" << pointColors[i].b;
+            /* Bad behaviour of C++ output streams: We have to cast the uchars
+             * to unsigned integers. */
+            out << " " << (unsigned int) pointColors[i].r 
+                << " " << (unsigned int) pointColors[i].g 
+                << " " << (unsigned int) pointColors[i].b;
         }
         out << std::endl;
     }
