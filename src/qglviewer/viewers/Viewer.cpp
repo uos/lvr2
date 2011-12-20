@@ -27,7 +27,10 @@
 #include "Viewer.h"
 
 Viewer::Viewer(QWidget* parent, const QGLWidget* shared)
-	: QGLViewer(parent, shared),  m_parent(parent) {}
+	: QGLViewer(parent, shared),  m_parent(parent)
+{
+    m_kfi = new qglviewer::KeyFrameInterpolator;
+}
 
 
 Viewer::~Viewer()
@@ -37,13 +40,24 @@ Viewer::~Viewer()
 
 void Viewer::draw()
 {
-	list<DataCollector*>::iterator it;
-	for(it = m_dataObjects.begin(); it != m_dataObjects.end(); it++)
-	{
-		glPushAttrib(GL_ALL_ATTRIB_BITS);
-		(*it)->renderable()->render();
-		glPopAttrib();
-	}
+    if(m_kfi->interpolationIsStarted())
+    {
+        glPushMatrix();
+        glMultMatrixd(m_kfi->frame()->matrix());
+    }
+
+    list<DataCollector*>::iterator it;
+    for(it = m_dataObjects.begin(); it != m_dataObjects.end(); it++)
+    {
+        glPushAttrib(GL_ALL_ATTRIB_BITS);
+        (*it)->renderable()->render();
+        glPopAttrib();
+    }
+
+    if(m_kfi->interpolationIsStarted())
+    {
+        glPopMatrix();
+    }
 }
 
 void Viewer::resetCamera()

@@ -65,14 +65,20 @@ public:
 	virtual ViewerType type() = 0;
 	virtual void centerViewOnObject(Renderable* renderable);
 
+	qglviewer::KeyFrameInterpolator* m_kfi;
+
 public Q_SLOTS:
 	virtual void resetCamera();
+
+
 
 protected:
 	virtual void draw();
 
 	list<DataCollector*>	    m_dataObjects;
 	BoundingBox<Vertex<float> > m_boundingBox;
+
+
 
 private:
 	QWidget*				    m_parent;
