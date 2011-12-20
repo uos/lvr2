@@ -115,13 +115,19 @@ void PlayerDialog::removeItem()
         {
             m_item = prev;
         }
-
     }
 }
 
 void PlayerDialog::updateTimes(double d)
 {
-
+    static float oldValue;
+    if(m_item)
+    {
+        float value = m_ui->spinBoxCurrentTime->value();
+        m_item->setDuration(value);
+        m_item->updateFollowingTimes(value - oldValue);
+        oldValue = m_ui->spinBoxCurrentTime->value();
+    }
 }
 
 void PlayerDialog::selectNext()
