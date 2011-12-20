@@ -24,21 +24,129 @@
  */
 
 #include "PlayerDialog.hpp"
+#include <iostream>
+using std::cout;
+using std::endl;
 
 namespace lssr
 {
 
 PlayerDialog::PlayerDialog(QWidget* parent)
-    : m_parent(parent)
+    : m_parent(parent), m_item(0)
 {
     m_ui = new PlayerDialogUI;
 
     QDialog* dialog = new QDialog(parent);
     m_ui->setupUi(dialog);
 
+    connectEvents();
+
     dialog->show();
     dialog->raise();
     dialog->activateWindow();
 }
+
+void PlayerDialog::connectEvents()
+{
+    connect(m_ui->buttonLast       , SIGNAL(clicked()),this, SLOT(selectLast()));
+    connect(m_ui->buttonFirst      , SIGNAL(clicked()),this, SLOT(selectFirst()));
+    connect(m_ui->buttonAddFrame   , SIGNAL(clicked()),this, SLOT(addItem()));
+    connect(m_ui->buttonDeleteFrame, SIGNAL(clicked()),this, SLOT(removeItem()));
+    connect(m_ui->buttonNext        ,SIGNAL(clicked()),this, SLOT(selectNext()));
+    connect(m_ui->buttonPrev        ,SIGNAL(clicked()),this, SLOT(selectPrev()));
+
+    connect(m_ui->spinBoxCurrentTime,SIGNAL(valueChanged(double)),this, SLOT(updateTimes(double)));
+    connect(m_ui->listWidget        ,SIGNAL(itemClicked(QListWidgetItem*)), this, SLOT(updateSelectedItem(QListWidgetItem*)));
+
+}
+
+void PlayerDialog::updateSelectedItem(QListWidgetItem* item)
+{
+    if(item)
+    {
+        if(item->type() == PlayListItem)
+        {
+            m_item = static_cast<AnimationListItem*>(item);
+        }
+    }
+}
+
+void PlayerDialog::addItem()
+{
+    // Default duration is 1 second
+    float duration = 1.0;
+
+    if(m_item)
+    {
+        AnimationListItem* item = new AnimationListItem(m_ui->listWidget, duration);
+        m_ui->listWidget->insertItem(m_ui->listWidget->row(m_item) + 1, item);
+    }
+    else
+    {
+        AnimationListItem* item = new AnimationListItem(m_ui->listWidget, duration);
+        m_ui->listWidget->insertItem(0, item);
+        m_item = item;
+
+    }
+}
+
+void PlayerDialog::removeItem()
+{
+
+    if(m_item)
+    {
+        m_item->updateFollowingTimes(-m_item->duration());
+
+        // Get next item
+        AnimationListItem* next = m_item->getNext();
+        AnimationListItem* prev = m_item->getPrev();
+
+        // Remove current item item
+        m_ui->listWidget->removeItemWidget(m_item);
+        delete m_item;
+
+        // Set current to previous
+        m_item = next;
+
+        // Check if we delete the last item in the list.
+        // If we did, the nex item is the previous
+        // one
+        if(m_item == 0)
+        {
+            m_item = prev;
+        }
+
+    }
+}
+
+void PlayerDialog::updateTimes(double d)
+{
+
+}
+
+void PlayerDialog::selectNext()
+{
+
+}
+
+void PlayerDialog::selectPrev()
+{
+
+}
+void PlayerDialog::selectFirst()
+{
+
+}
+
+void PlayerDialog::selectLast()
+{
+
+}
+
+void PlayerDialog::play()
+{
+
+}
+
 
 } /* namespace lssr */

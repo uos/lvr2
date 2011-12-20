@@ -10,6 +10,7 @@ set(QVIEWER_MOCS
     widgets/TransformationDialog.h
     widgets/QDebugStream.hpp
     widgets/DebugOutputDialog.hpp
+    widgets/PlayerDialog.hpp
 )
 
 # Dynamically generated GUI object's from
