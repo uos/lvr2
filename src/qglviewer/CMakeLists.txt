@@ -44,6 +44,7 @@ set(QVIEWER_SOURCES
     widgets/TransformationDialog.cpp
     widgets/DebugOutputDialog.cpp
     widgets/PlayerDialog.cpp
+    widgets/AnimationListItem.cpp
 )
 
 set(QVIEWER_RESOURCES

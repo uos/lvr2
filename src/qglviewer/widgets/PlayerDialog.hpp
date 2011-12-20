@@ -40,8 +40,8 @@ public:
     virtual ~PlayerDialog() {};
 
 private:
-    QWidget*            m_parent;
-    PlayerDialogUI*       m_ui;
+    QWidget*                m_parent;
+    PlayerDialogUI*         m_ui;
 };
 
 } /* namespace lssr */
