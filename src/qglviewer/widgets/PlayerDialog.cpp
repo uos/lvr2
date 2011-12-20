@@ -71,7 +71,10 @@ void PlayerDialog::updateSelectedItem(QListWidgetItem* item)
             m_ui->spinBoxCurrentTime->setValue(m_item->duration());
             m_ui->spinBoxLastTime->setValue(m_item->time() + m_item->duration());
         }
+
+        m_parent->camera()->interpolateTo(m_item->frame(), 0.5);
     }
+
 }
 
 void PlayerDialog::addItem()
@@ -94,6 +97,7 @@ void PlayerDialog::addItem()
         m_item = item;
 
     }
+
 }
 
 void PlayerDialog::removeItem()
