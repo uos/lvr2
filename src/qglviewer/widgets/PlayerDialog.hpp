@@ -29,6 +29,7 @@
 #include "PlayerDialogUI.h"
 
 #include "AnimationListItem.hpp"
+#include "../viewers/Viewer.h"
 
 using Ui::PlayerDialogUI;
 
@@ -40,7 +41,7 @@ class PlayerDialog : public QObject
     Q_OBJECT
 
 public:
-    PlayerDialog(QWidget* parent = 0);
+    PlayerDialog(Viewer* parent = 0);
     virtual ~PlayerDialog() {};
 
 public Q_SLOTS:
@@ -61,7 +62,7 @@ private:
     void connectEvents();
 
     AnimationListItem*      m_item;
-    QWidget*                m_parent;
+    Viewer*                 m_parent;
     PlayerDialogUI*         m_ui;
 };
 

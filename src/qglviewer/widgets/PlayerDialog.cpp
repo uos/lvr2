@@ -31,7 +31,7 @@ using std::endl;
 namespace lssr
 {
 
-PlayerDialog::PlayerDialog(QWidget* parent)
+PlayerDialog::PlayerDialog(Viewer* parent)
     : m_parent(parent), m_item(0)
 {
     m_ui = new PlayerDialogUI;
@@ -79,14 +79,17 @@ void PlayerDialog::addItem()
     // Default duration is 1 second
     float duration = 1.0;
 
+    // Get current camera frame
+    qglviewer::Frame* frame = m_parent->camera()->frame();
+
     if(m_item)
     {
-        AnimationListItem* item = new AnimationListItem(m_ui->listWidget, duration);
+        AnimationListItem* item = new AnimationListItem(frame, m_ui->listWidget, duration);
         m_ui->listWidget->insertItem(m_ui->listWidget->row(m_item) + 1, item);
     }
     else
     {
-        AnimationListItem* item = new AnimationListItem(m_ui->listWidget, duration);
+        AnimationListItem* item = new AnimationListItem(frame, m_ui->listWidget, duration);
         m_ui->listWidget->insertItem(0, item);
         m_item = item;
 
@@ -151,7 +154,7 @@ void PlayerDialog::selectFirst()
 
 void PlayerDialog::selectLast()
 {
-
+    // Create
 }
 
 void PlayerDialog::play()

@@ -110,6 +110,8 @@ public Q_SLOTS:
 	void createMeshFromPointcloud();
 	void centerOnSelection();
 
+
+
 private:
 
 	void updateToolbarActions(CustomTreeWidgetItem* item);
@@ -119,8 +121,6 @@ private:
 
 	MainWindow*					m_mainWindowUi;
 	QMainWindow*				m_qMainWindow;
-
-	Viewer*						m_viewer;
 	QDialog*					m_fogSettingsDialog;
 
 	SceneDockWidgetUI*			m_sceneDockWidgetUi;
@@ -132,6 +132,9 @@ private:
 	Fogsettings*				m_fogSettingsUI;
 	ViewerManager*				m_viewerManager;
 	DataCollectorFactory*       m_factory;
+
+public:
+    Viewer*                     m_viewer;
 };
 
 #endif /* VIEWERAPPLICATION_H_ */
