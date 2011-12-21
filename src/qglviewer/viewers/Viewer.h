@@ -67,9 +67,10 @@ public:
 
 	qglviewer::KeyFrameInterpolator* m_kfi;
 
+
 public Q_SLOTS:
 	virtual void resetCamera();
-
+	void createSnapshot();
 
 
 protected:

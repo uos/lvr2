@@ -33,6 +33,8 @@ Viewer::Viewer(QWidget* parent, const QGLWidget* shared)
 
 
     connect(m_kfi, SIGNAL(interpolated()), this, SLOT(updateGL()));
+    connect(m_kfi, SIGNAL(interpolated()), this, SLOT(createShapshot));
+
 }
 
 
@@ -56,6 +58,12 @@ void Viewer::draw()
         (*it)->renderable()->render();
         glPopAttrib();
     }
+}
+
+void Viewer::createSnapshot()
+{
+    cout << "SAVE" << endl;
+    saveSnapshot(true);
 }
 
 void Viewer::resetCamera()
