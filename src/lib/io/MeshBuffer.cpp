@@ -34,8 +34,6 @@ namespace lssr
 {
 
 MeshBuffer::MeshBuffer() : 
-    m_vertexTextureCoordinates( NULL ),
-    m_indexedVertexTextureCoordinates( NULL ),
     m_faceIndices( NULL ),
     m_faceTextureIndices( NULL ),
     m_faceColors (NULL),
@@ -54,10 +52,12 @@ MeshBuffer::MeshBuffer() :
 	assert( sizeof(float) == sizeof(idxVal<float>) );
 
     m_vertexColors.reset();
-    m_vertices.reset();
     m_vertexConfidence.reset();
     m_vertexIntensity.reset();
     m_vertexNormals.reset();
+    m_vertexTextureCoordinates.reset();
+    m_vertices.reset();
+
 }
 
 
@@ -291,49 +291,22 @@ void MeshBuffer::setVertexConfidenceArray( std::vector<float>& array )
 
 void MeshBuffer::setVertexTextureCoordinateArray( std::vector<float>& array )
 {
-    if(m_vertexTextureCoordinates) 
+
+    m_vertexTextureCoordinates = floatArr( new float[array.size()] );
+    for ( int i(0); i < array.size(); i++ )
     {
-         delete m_vertexTextureCoordinates;
+        m_vertexTextureCoordinates[i] = array[i];
     }
-
-    m_vertexTextureCoordinates = new float[array.size()];
-
-    std::copy(array.begin(), array.end(), m_vertexTextureCoordinates);
     m_numVertexTextureCoordinates = array.size() / 3;
 }
 
 
-float** MeshBuffer::getIndexedVertexTextureCoordinateArray( size_t &n )
+coord3fArr MeshBuffer::getIndexedVertexTextureCoordinateArray( size_t &n )
 {
 
     n = m_numVertexTextureCoordinates;
+    return *((coord3fArr*) &m_vertexTextureCoordinates);
 
-  /* Return NULL if we have no vertices. */
-    if ( !m_vertexTextureCoordinates )
-    {
-        n = 0;
-        return NULL;
-    }
-
-
-  /* Generate indexed vertex array in not already done. */
-    if ( !m_indexedVertexTextureCoordinates )
-    {
-          m_indexedVertexTextureCoordinates = (float**) malloc( m_numVertexTextureCoordinates * sizeof(float**) );
-          if( !m_indexedVertexTextureCoordinates )
-          {
-              std::cerr << "Could not Allocate memory. Lets just gracefully die now my dear :)" << std::endl;
-              n = 0;
-              return NULL;
-          }
-        for ( size_t i = 0; i < m_numVertexTextureCoordinates; i++ )
-        {
-            m_indexedVertexTextureCoordinates[i] = m_vertexTextureCoordinates + ( i * 3 );
-        }
-    }
-
-    /* Return indexed vertex array */
-    return m_indexedVertexTextureCoordinates;
 }
 
 
