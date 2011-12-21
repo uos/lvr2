@@ -146,21 +146,49 @@ void PlayerDialog::updateTimes(double d)
 
 void PlayerDialog::selectNext()
 {
+    QListWidget* list = m_ui->listWidget;
+    int next =  list->row(m_item) + 1;
+    if(next > list->count() - 1)
+    {
+        next = list->count() - 1;
+    }
 
+    AnimationListItem* item = static_cast<AnimationListItem*>(list->item(next));
+    list->setCurrentItem(item);
+    m_item = item;
+    m_parent->camera()->interpolateTo(m_item->frame(), 0.5);
 }
 
 void PlayerDialog::selectPrev()
 {
+    QListWidget* list = m_ui->listWidget;
+    int prev =  list->row(m_item) - 1;
+    if( !(prev >= 0 && list->count()) )
+    {
+        prev = 0;
+    }
 
+    AnimationListItem* item = static_cast<AnimationListItem*>(list->item(prev));
+    list->setCurrentItem(item);
+    m_item = item;
+    m_parent->camera()->interpolateTo(m_item->frame(), 0.5);
 }
-void PlayerDialog::selectFirst()
-{
-
-}
-
 void PlayerDialog::selectLast()
 {
-    // Create
+    // Get first item from list
+    QListWidgetItem* item = m_ui->listWidget->item(m_ui->listWidget->count() - 1);
+    m_ui->listWidget->setCurrentItem(item);
+    m_item = static_cast<AnimationListItem*>(item);
+    m_parent->camera()->interpolateTo(m_item->frame(), 0.5);
+}
+
+void PlayerDialog::selectFirst()
+{
+    // Get last item
+    QListWidgetItem* item = m_ui->listWidget->item(0);
+    m_ui->listWidget->setCurrentItem(item);
+    m_item = static_cast<AnimationListItem*>(item);
+    m_parent->camera()->interpolateTo(m_item->frame(), 0.5);
 }
 
 void PlayerDialog::play()
