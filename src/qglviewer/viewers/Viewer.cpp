@@ -33,7 +33,7 @@ Viewer::Viewer(QWidget* parent, const QGLWidget* shared)
 
 
     connect(m_kfi, SIGNAL(interpolated()), this, SLOT(updateGL()));
-    connect(m_kfi, SIGNAL(interpolated()), this, SLOT(createShapshot));
+    connect(m_kfi, SIGNAL(interpolated()), this, SLOT(createShapshot()));
 
 }
 
