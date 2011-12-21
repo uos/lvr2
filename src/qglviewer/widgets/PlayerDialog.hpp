@@ -44,6 +44,8 @@ public:
     PlayerDialog(Viewer* parent = 0);
     virtual ~PlayerDialog() {};
 
+    void show();
+
 public Q_SLOTS:
     void addItem();
     void removeItem();
@@ -64,6 +66,7 @@ private:
     AnimationListItem*      m_item;
     Viewer*                 m_parent;
     PlayerDialogUI*         m_ui;
+    QDialog*                m_dialog;
 };
 
 } /* namespace lssr */

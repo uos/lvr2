@@ -36,14 +36,17 @@ PlayerDialog::PlayerDialog(Viewer* parent)
 {
     m_ui = new PlayerDialogUI;
 
-    QDialog* dialog = new QDialog(parent);
-    m_ui->setupUi(dialog);
+    m_dialog = new QDialog(parent);
+    m_ui->setupUi(m_dialog);
 
     connectEvents();
+}
 
-    dialog->show();
-    dialog->raise();
-    dialog->activateWindow();
+void PlayerDialog::show()
+{
+    m_dialog->show();
+    m_dialog->raise();
+    m_dialog->activateWindow();
 }
 
 void PlayerDialog::connectEvents()
