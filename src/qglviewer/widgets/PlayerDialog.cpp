@@ -59,6 +59,8 @@ void PlayerDialog::connectEvents()
     connect(m_ui->buttonPrev        ,SIGNAL(clicked()),this, SLOT(selectPrev()));
     connect(m_ui->buttonAnimate     ,SIGNAL(clicked()),this, SLOT(play()));
 
+    connect(m_ui->buttonCreateVideo, SIGNAL(clicked()), this, SLOT(createVideo()));
+
     connect(m_ui->spinBoxCurrentTime,SIGNAL(valueChanged(double)),this, SLOT(updateTimes(double)));
     connect(m_ui->listWidget        ,SIGNAL(itemClicked(QListWidgetItem*)), this, SLOT(updateSelectedItem(QListWidgetItem*)));
 
@@ -220,6 +222,11 @@ void PlayerDialog::play()
         m_parent->m_kfi->stopInterpolation();
     }
 
+
+}
+
+void PlayerDialog::createVideo()
+{
 
 }
 

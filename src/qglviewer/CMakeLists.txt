@@ -25,6 +25,7 @@ set(QVIEWER_UIS
     ui/MeshingOptionsDialogUI.ui
     ui/DebugOutputDialogUI.ui
     ui/PlayerDialogUI.ui
+    ui/VideoExportDialogUI.ui
 )
 
 # Main Sources
@@ -46,6 +47,7 @@ set(QVIEWER_SOURCES
     widgets/DebugOutputDialog.cpp
     widgets/PlayerDialog.cpp
     widgets/AnimationListItem.cpp
+    widgets/VideoExportDialog.cpp
 )
 
 set(QVIEWER_RESOURCES

@@ -55,6 +55,7 @@ public Q_SLOTS:
     void selectFirst();
     void selectLast();
     void play();
+    void createVideo();
     void updateSelectedItem(QListWidgetItem* item);
 
 public:
