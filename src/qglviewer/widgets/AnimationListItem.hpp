@@ -29,9 +29,6 @@
 #include <QtGui>
 #include <QGLViewer/qglviewer.h>
 
-namespace lssr
-{
-
 enum
 {
     PlayListItem = 1001
@@ -112,5 +109,5 @@ private:
     qglviewer::Frame    m_frame;
 };
 
-} /* namespace lssr */
+
 #endif /* ANIMATIONLISTITEM_HPP_ */

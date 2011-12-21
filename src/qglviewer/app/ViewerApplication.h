@@ -46,7 +46,7 @@
 #include "../widgets/TriangleMeshTreeWidgetItem.h"
 #include "../widgets/TransformationDialog.h"
 #include "../widgets/DebugOutputDialog.hpp"
-#include "../widgets/PlayerDialog.hpp"
+#include "../widgets/AnimationDialog.hpp"
 
 #include "display/StaticMesh.hpp"
 #include "geometry/HalfEdgeMesh.hpp"
@@ -133,7 +133,7 @@ private:
 	ViewerManager*				m_viewerManager;
 	DataCollectorFactory*       m_factory;
 
-	lssr::PlayerDialog*         m_playerDialog;
+	AnimationDialog*            m_playerDialog;
 
 public:
     Viewer*                     m_viewer;
