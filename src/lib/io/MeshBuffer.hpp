@@ -483,7 +483,7 @@ class MeshBuffer
          * \param n  Amount of confidence values in array.
          * \return   %Vertex confidence array.
          **/
-        float** getIndexedVertexTextureCoordinateArray( size_t &n );
+        coord3fArr getIndexedVertexTextureCoordinateArray( size_t &n );
 
         uchar* getFaceColorArray( size_t &n );
 
@@ -557,10 +557,7 @@ class MeshBuffer
         /// %Vertex normal buffer.
         floatArr     m_vertexNormals;
         /// %Vertex texture-coordinate buffer.
-        float*       m_vertexTextureCoordinates;
-
-        /// Indexed vertex texture-coordinate buffer.
-        float**      m_indexedVertexTextureCoordinates;
+        floatArr     m_vertexTextureCoordinates;
 
         /// List of Colors for every face
         uchar*       m_faceColors;
