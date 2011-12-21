@@ -63,6 +63,7 @@ void PlayerDialog::connectEvents()
 
 void PlayerDialog::updateSelectedItem(QListWidgetItem* item)
 {
+    m_parent->m_kfi->stopInterpolation();
     if(item)
     {
         if(item->type() == PlayListItem)
@@ -81,6 +82,7 @@ void PlayerDialog::updateSelectedItem(QListWidgetItem* item)
 
 void PlayerDialog::addItem()
 {
+    m_parent->m_kfi->stopInterpolation();
     // Default duration is 1 second
     float duration = 1.0;
 
@@ -104,7 +106,7 @@ void PlayerDialog::addItem()
 
 void PlayerDialog::removeItem()
 {
-
+    m_parent->m_kfi->stopInterpolation();
     if(m_item)
     {
         m_item->updateFollowingTimes(-m_item->duration());
@@ -132,7 +134,7 @@ void PlayerDialog::removeItem()
 
 void PlayerDialog::updateTimes(double d)
 {
-
+    m_parent->m_kfi->stopInterpolation();
     if(m_item)
     {
         float oldValue = m_item->duration();
@@ -146,6 +148,7 @@ void PlayerDialog::updateTimes(double d)
 
 void PlayerDialog::selectNext()
 {
+    m_parent->m_kfi->stopInterpolation();
     QListWidget* list = m_ui->listWidget;
     int next =  list->row(m_item) + 1;
     if(next > list->count() - 1)
@@ -161,6 +164,7 @@ void PlayerDialog::selectNext()
 
 void PlayerDialog::selectPrev()
 {
+    m_parent->m_kfi->stopInterpolation();
     QListWidget* list = m_ui->listWidget;
     int prev =  list->row(m_item) - 1;
     if( !(prev >= 0 && list->count()) )
@@ -176,6 +180,7 @@ void PlayerDialog::selectPrev()
 void PlayerDialog::selectLast()
 {
     // Get first item from list
+    m_parent->m_kfi->stopInterpolation();
     QListWidgetItem* item = m_ui->listWidget->item(m_ui->listWidget->count() - 1);
     m_ui->listWidget->setCurrentItem(item);
     m_item = static_cast<AnimationListItem*>(item);
@@ -185,6 +190,7 @@ void PlayerDialog::selectLast()
 void PlayerDialog::selectFirst()
 {
     // Get last item
+    m_parent->m_kfi->stopInterpolation();
     QListWidgetItem* item = m_ui->listWidget->item(0);
     m_ui->listWidget->setCurrentItem(item);
     m_item = static_cast<AnimationListItem*>(item);
