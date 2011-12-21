@@ -33,7 +33,7 @@ Viewer::Viewer(QWidget* parent, const QGLWidget* shared)
 
 
     connect(m_kfi, SIGNAL(interpolated()), this, SLOT(updateGL()));
-    connect(m_kfi, SIGNAL(interpolated()), this, SLOT(createShnapshot()));
+    connect(m_kfi, SIGNAL(interpolated()), this, SLOT(createSnapshot()));
 
 }
 
@@ -62,7 +62,6 @@ void Viewer::draw()
 
 void Viewer::createSnapshot()
 {
-    cout << "SAVE" << endl;
     saveSnapshot(true);
 }
 
