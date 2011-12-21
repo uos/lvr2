@@ -56,6 +56,8 @@ public Q_SLOTS:
     void selectLast();
     void play();
     void createVideo();
+    void savePath();
+    void loadPath();
     void updateSelectedItem(QListWidgetItem* item);
 
 public:
@@ -63,6 +65,7 @@ public:
 private:
 
     void connectEvents();
+    void updateKfi(bool loop);
 
     AnimationListItem*      m_item;
     Viewer*                 m_parent;

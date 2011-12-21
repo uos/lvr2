@@ -74,6 +74,7 @@ add_executable(qviewer ${QVIEWER_SOURCES} ${QVIEWER_MOC_SRC} ${QVIEWER_UI_HDRS}
 target_link_libraries(qviewer ${QT_QTCORE_LIBRARIES})
 target_link_libraries(qviewer ${QT_QTGUI_LIBRARIES})
 target_link_libraries(qviewer ${QT_QTOPENGL_LIBRARIES})
+target_link_libraries(qviewer ${QT_QTXML_LIBRARY})
 target_link_libraries(qviewer lssr)
 target_link_libraries(qviewer ${OPENGL_LIBRARY})
 target_link_libraries(qviewer ${GLUT_LIBRARIES})

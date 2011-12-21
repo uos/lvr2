@@ -62,10 +62,95 @@ void PlayerDialog::connectEvents()
     connect(m_ui->buttonAnimate     ,SIGNAL(clicked()),this, SLOT(play()));
 
     connect(m_ui->buttonCreateVideo, SIGNAL(clicked()), this, SLOT(createVideo()));
+    connect(m_ui->buttonSave       , SIGNAL(clicked()), this, SLOT(savePath()));
+    connect(m_ui->buttonLoad       , SIGNAL(clicked()), this, SLOT(loadPath()));
 
     connect(m_ui->spinBoxCurrentTime,SIGNAL(valueChanged(double)),this, SLOT(updateTimes(double)));
     connect(m_ui->listWidget        ,SIGNAL(itemClicked(QListWidgetItem*)), this, SLOT(updateSelectedItem(QListWidgetItem*)));
 
+}
+
+void PlayerDialog::savePath()
+{
+    QString filename = QFileDialog::getSaveFileName(m_parent,
+            tr("Save Path"), "", tr("XML files (*.xml)"));
+
+    updateKfi(false);
+
+    QDomDocument document("PathDocument");
+    QDomElement pathElement = m_parent->m_kfi->domElement("KeyFrame", document);
+    document.appendChild(pathElement);
+
+    QFile f(filename);
+    if (f.open(QIODevice::WriteOnly))
+    {
+        QTextStream out(&f);
+        document.save(out, 2);
+        f.close();
+    }
+
+}
+
+void PlayerDialog::loadPath()
+{
+    // Open file
+    QString filename = QFileDialog::getOpenFileName(m_parent,
+                tr("Open Path"), "", tr("XML files (*.xml)"));
+
+    // Get DOM element
+    QDomDocument doc;
+    QFile f(filename);
+    if (f.open(QIODevice::ReadOnly))
+    {
+        doc.setContent(&f);
+        f.close();
+    }
+
+    QDomElement main=doc.documentElement();
+
+    if(main.isNull())
+    {
+        QMessageBox msgBox;
+        msgBox.setText("Unable to parse path information.");
+        msgBox.exec();
+        return;
+    }
+
+    // Re-init from element
+    m_parent->m_kfi->deletePath();
+    m_parent->m_kfi->initFromDOMElement(main);
+
+    // Clear list
+    m_ui->listWidget->clear();
+
+    // Add frames
+    float duration = 0;
+    for(int i = 0; i < m_parent->m_kfi->numberOfKeyFrames(); i++)
+    {
+        qglviewer::Frame* frame = new qglviewer::Frame(m_parent->m_kfi->keyFrame(i));
+
+        // Calculate durations
+        if(i > 0)
+        {
+            duration = m_parent->m_kfi->keyFrameTime(i) - m_parent->m_kfi->keyFrameTime(i - 1);
+        }
+
+        AnimationListItem* item = new AnimationListItem(frame, m_ui->listWidget, duration);
+        m_ui->listWidget->insertItem(0,item);
+    }
+}
+
+void PlayerDialog::updateKfi(bool loop)
+{
+    m_parent->m_kfi->deletePath();
+
+    QListWidget *list = m_ui->listWidget;
+    for(int i = 0; i < list->count(); i++)
+    {
+        AnimationListItem *item = static_cast<AnimationListItem*>(list->item(i));
+        m_parent->m_kfi->addKeyFrame(item->frame(), item->time());
+    }
+    m_parent->m_kfi->setLoopInterpolation(loop);
 }
 
 void PlayerDialog::updateSelectedItem(QListWidgetItem* item)
@@ -208,15 +293,7 @@ void PlayerDialog::play()
 {
     if(!m_parent->m_kfi->interpolationIsStarted())
     {
-        m_parent->m_kfi->deletePath();
-
-        QListWidget *list = m_ui->listWidget;
-        for(int i = 0; i < list->count(); i++)
-        {
-            AnimationListItem *item = static_cast<AnimationListItem*>(list->item(i));
-            m_parent->m_kfi->addKeyFrame(item->frame(), item->time());
-        }
-        m_parent->m_kfi->setLoopInterpolation(false);
+        updateKfi(false);
         m_parent->m_kfi->startInterpolation();
     }
     else
