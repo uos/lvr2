@@ -78,7 +78,7 @@ ViewerApplication::ViewerApplication( int argc, char ** argv )
 	m_fogSettingsUI = 0;
 	m_fogSettingsDialog = 0;
 
-	m_playerDialog = new lssr::PlayerDialog(m_viewer);
+	m_playerDialog = new AnimationDialog(m_viewer);
 }
 
 void ViewerApplication::connectEvents()

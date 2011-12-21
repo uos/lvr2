@@ -10,7 +10,7 @@ set(QVIEWER_MOCS
     widgets/TransformationDialog.h
     widgets/QDebugStream.hpp
     widgets/DebugOutputDialog.hpp
-    widgets/PlayerDialog.hpp
+    widgets/AnimationDialog.hpp
 )
 
 # Dynamically generated GUI object's from
@@ -45,7 +45,7 @@ set(QVIEWER_SOURCES
     widgets/MultiPointCloudTreeWidgetItem.cpp
     widgets/TransformationDialog.cpp
     widgets/DebugOutputDialog.cpp
-    widgets/PlayerDialog.cpp
+    widgets/AnimationDialog.cpp
     widgets/AnimationListItem.cpp
     widgets/VideoExportDialog.cpp
 )

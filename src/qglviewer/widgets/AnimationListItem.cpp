@@ -30,9 +30,6 @@ using namespace std;
 
 #include "AnimationListItem.hpp"
 
-namespace lssr
-{
-
 AnimationListItem::AnimationListItem(qglviewer::Frame* frame, QListWidget * parent, float timeOffset, int type)
     : QListWidgetItem(parent, type), m_parent(parent)
 {
@@ -167,4 +164,3 @@ AnimationListItem::~AnimationListItem()
     // TODO Auto-generated destructor stub
 }
 
-} /* namespace lssr */
