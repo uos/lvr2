@@ -133,6 +133,8 @@ private:
 	ViewerManager*				m_viewerManager;
 	DataCollectorFactory*       m_factory;
 
+	lssr::PlayerDialog*         m_playerDialog;
+
 public:
     Viewer*                     m_viewer;
 };

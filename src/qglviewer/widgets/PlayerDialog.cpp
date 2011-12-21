@@ -54,6 +54,7 @@ void PlayerDialog::connectEvents()
     connect(m_ui->buttonDeleteFrame, SIGNAL(clicked()),this, SLOT(removeItem()));
     connect(m_ui->buttonNext        ,SIGNAL(clicked()),this, SLOT(selectNext()));
     connect(m_ui->buttonPrev        ,SIGNAL(clicked()),this, SLOT(selectPrev()));
+    connect(m_ui->buttonAnimate     ,SIGNAL(clicked()),this, SLOT(play()));
 
     connect(m_ui->spinBoxCurrentTime,SIGNAL(valueChanged(double)),this, SLOT(updateTimes(double)));
     connect(m_ui->listWidget        ,SIGNAL(itemClicked(QListWidgetItem*)), this, SLOT(updateSelectedItem(QListWidgetItem*)));
@@ -76,6 +77,7 @@ void PlayerDialog::updateSelectedItem(QListWidgetItem* item)
     }
 
 }
+
 
 void PlayerDialog::addItem()
 {
@@ -163,6 +165,24 @@ void PlayerDialog::selectLast()
 
 void PlayerDialog::play()
 {
+    if(!m_parent->m_kfi->interpolationIsStarted())
+    {
+        m_parent->m_kfi->deletePath();
+
+        QListWidget *list = m_ui->listWidget;
+        for(int i = 0; i < list->count(); i++)
+        {
+            AnimationListItem *item = static_cast<AnimationListItem*>(list->item(i));
+            m_parent->m_kfi->addKeyFrame(item->frame(), item->time());
+        }
+        m_parent->m_kfi->setLoopInterpolation(true);
+        m_parent->m_kfi->startInterpolation();
+    }
+    else
+    {
+        m_parent->m_kfi->stopInterpolation();
+    }
+
 
 }
 
