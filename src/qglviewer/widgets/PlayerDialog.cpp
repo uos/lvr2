@@ -24,6 +24,8 @@
  */
 
 #include "PlayerDialog.hpp"
+#include "VideoExportDialog.hpp"
+
 #include <iostream>
 using std::cout;
 using std::endl;
@@ -214,7 +216,7 @@ void PlayerDialog::play()
             AnimationListItem *item = static_cast<AnimationListItem*>(list->item(i));
             m_parent->m_kfi->addKeyFrame(item->frame(), item->time());
         }
-        m_parent->m_kfi->setLoopInterpolation(true);
+        m_parent->m_kfi->setLoopInterpolation(false);
         m_parent->m_kfi->startInterpolation();
     }
     else
@@ -227,6 +229,39 @@ void PlayerDialog::play()
 
 void PlayerDialog::createVideo()
 {
+    // Create a dialog to select output directory
+    QFileDialog dialog(m_parent);
+    dialog.setFileMode(QFileDialog::Directory);
+    dialog.setWindowTitle("Select Output Directory");
+
+    QStringList fileNames;
+    if(dialog.exec())
+    {
+        fileNames = dialog.selectedFiles();
+    }
+    else
+    {
+        return;
+    }
+
+    // Get directory and save
+    string outputDir = fileNames.constBegin()->toStdString() + "frame";
+    m_parent->setSnapshotFileName(QString(outputDir.c_str()));
+
+    // Open settingsdialog
+    if(m_parent->openSnapshotFormatDialog())
+    {
+        m_parent->setSnapshotQuality(100);
+        m_parent->setSnapshotCounter(0);
+    }
+    else
+    {
+        return;
+    }
+
+    // Start export
+    play();
+
 
 }
 
