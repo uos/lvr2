@@ -55,6 +55,8 @@ ViewerApplication::ViewerApplication( int argc, char ** argv )
 
 	m_factory = new DataCollectorFactory;
 
+
+
 	// Show window
 	m_qMainWindow->show();
 
@@ -75,6 +77,8 @@ ViewerApplication::ViewerApplication( int argc, char ** argv )
 	// Initalize dialogs
 	m_fogSettingsUI = 0;
 	m_fogSettingsDialog = 0;
+
+	m_playerDialog = new lssr::PlayerDialog(m_viewer);
 }
 
 void ViewerApplication::connectEvents()
@@ -382,7 +386,7 @@ void ViewerApplication::transformObject()
 
 void ViewerApplication::createAnimation()
 {
-    lssr::PlayerDialog* d = new lssr::PlayerDialog(m_viewer);
+    m_playerDialog->show();
 }
 
 void ViewerApplication::deleteObject()
