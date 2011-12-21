@@ -29,7 +29,10 @@
 Viewer::Viewer(QWidget* parent, const QGLWidget* shared)
 	: QGLViewer(parent, shared),  m_parent(parent)
 {
-    m_kfi = new qglviewer::KeyFrameInterpolator;
+    m_kfi = new qglviewer::KeyFrameInterpolator(new qglviewer::Frame());
+
+
+    connect(m_kfi, SIGNAL(interpolated()), this, SLOT(updateGL()));
 }
 
 
@@ -42,8 +45,8 @@ void Viewer::draw()
 {
     if(m_kfi->interpolationIsStarted())
     {
-        glPushMatrix();
-        glMultMatrixd(m_kfi->frame()->matrix());
+        camera()->setPosition(m_kfi->frame()->position());
+        camera()->setOrientation(m_kfi->frame()->orientation());
     }
 
     list<DataCollector*>::iterator it;
@@ -52,11 +55,6 @@ void Viewer::draw()
         glPushAttrib(GL_ALL_ATTRIB_BITS);
         (*it)->renderable()->render();
         glPopAttrib();
-    }
-
-    if(m_kfi->interpolationIsStarted())
-    {
-        glPopMatrix();
     }
 }
 

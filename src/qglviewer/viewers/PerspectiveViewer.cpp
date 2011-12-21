@@ -153,10 +153,10 @@ void PerspectiveViewer::createBackgroundDisplayList()
 
 void PerspectiveViewer::draw()
 {
-	// Render background
-	glDisable(GL_DEPTH_TEST);
-	glCallList(m_backgroundDisplayList);
-	glEnable(GL_DEPTH_TEST);
+//	// Render background
+//	glDisable(GL_DEPTH_TEST);
+//	glCallList(m_backgroundDisplayList);
+//	glEnable(GL_DEPTH_TEST);
 
 	// Draw contends
 	Viewer::draw();
