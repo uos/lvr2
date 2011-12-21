@@ -36,7 +36,6 @@ namespace lssr
 MeshBuffer::MeshBuffer() : 
     m_faceIndices( NULL ),
     m_faceTextureIndices( NULL ),
-    m_faceColors (NULL),
     m_numVertices( 0 ),
     m_numVertexNormals( 0 ),
     m_numVertexColors( 0 ),
@@ -51,6 +50,7 @@ MeshBuffer::MeshBuffer() :
 	assert( 3 * sizeof(uchar) == sizeof(color<uchar>) );
 	assert( sizeof(float) == sizeof(idxVal<float>) );
 
+    m_faceColors.reset();
     m_vertexColors.reset();
     m_vertexConfidence.reset();
     m_vertexIntensity.reset();
@@ -107,7 +107,7 @@ unsigned int* MeshBuffer::getFaceArray( size_t &n )
     return m_faceIndices;
 }
 
-uchar* MeshBuffer::getFaceColorArray( size_t &n )
+ucharArr MeshBuffer::getFaceColorArray( size_t &n )
 {
     n = m_numFaceColors;
     return m_faceColors;
@@ -335,15 +335,14 @@ void MeshBuffer::setVertexIntensityArray( std::vector<float>& array )
 
 void MeshBuffer::setFaceColorArray( std::vector<uchar> &array )
 {
-    if( m_faceColors)
+
+    m_faceColors = ucharArr( new uchar[array.size()] );
+
+    for ( int i(0); i < array.size(); i++ ) 
     {
-        delete m_faceColors;
+        m_faceColors[i] = array[i];
     }
-
-    m_faceColors = new uchar[array.size()];
-
-    std::copy(array.begin(), array.end(), m_faceColors);
-    m_numFaceColors = array.size();
+    m_numFaceColors = array.size() / 3;
 }
 
 

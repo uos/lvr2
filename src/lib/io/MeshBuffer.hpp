@@ -485,7 +485,7 @@ class MeshBuffer
          **/
         coord3fArr getIndexedVertexTextureCoordinateArray( size_t &n );
 
-        uchar* getFaceColorArray( size_t &n );
+        ucharArr getFaceColorArray( size_t &n );
 
         /**
          * \brief Set the vertex texture-coordinates array.
@@ -560,7 +560,7 @@ class MeshBuffer
         floatArr     m_vertexTextureCoordinates;
 
         /// List of Colors for every face
-        uchar*       m_faceColors;
+        ucharArr     m_faceColors;
 
         /// Buffer of face indices
         unsigned int* m_faceIndices;
