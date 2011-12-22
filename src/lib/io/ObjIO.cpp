@@ -52,12 +52,13 @@ void ObjIO::save( ModelPtr model, string filename )
     size_t lenTextureCoordinates;
     size_t lenFaceIndices;
     size_t lenFaceColors;
-    coord3fArr     vertices           = m_model->m_mesh->getIndexedVertexArray( lenVertices );
-    coord3fArr     normals            = m_model->m_mesh->getIndexedVertexNormalArray( lenNormals );
-    coord3fArr     textureCoordinates = m_model->m_mesh->getIndexedVertexTextureCoordinateArray( lenTextureCoordinates );
-    uintArr        faceIndices        = m_model->m_mesh->getFaceArray( lenFaces );
-    unsigned int*  faceTextureIndices = m_model->m_mesh->getFaceTextureIndexArray( lenFaceIndices );
-    ucharArr       faceColors         = m_model->m_mesh->getFaceColorArray( lenFaceColors );
+    coord3fArr vertices           = m_model->m_mesh->getIndexedVertexArray( lenVertices );
+    coord3fArr normals            = m_model->m_mesh->getIndexedVertexNormalArray( lenNormals );
+    coord3fArr textureCoordinates = m_model->m_mesh->getIndexedVertexTextureCoordinateArray( lenTextureCoordinates );
+    uintArr    faceIndices        = m_model->m_mesh->getFaceArray( lenFaces );
+    uintArr    faceTextureIndices = m_model->m_mesh->getFaceTextureIndexArray( lenFaceIndices );
+    ucharArr   faceColors         = m_model->m_mesh->getFaceColorArray( lenFaceColors );
+
     std::map<ObjColor, unsigned int> colorMap;
 
 

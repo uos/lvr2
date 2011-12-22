@@ -531,7 +531,7 @@ class MeshBuffer
          * \param array  %Face index array.
          * \param n      Amount of faces in array.
          **/
-        unsigned int* getFaceTextureIndexArray( size_t &n );
+        uintArr getFaceTextureIndexArray( size_t &n );
 
 
         /**
@@ -547,24 +547,24 @@ class MeshBuffer
     protected:
 
         /// %Vertex buffer.
-        floatArr     m_vertices;
+        floatArr    m_vertices;
         /// %Vertex color buffer.
-        ucharArr     m_vertexColors;
+        ucharArr    m_vertexColors;
         /// %Vertex confidence buffer.
-        floatArr     m_vertexConfidence;
+        floatArr    m_vertexConfidence;
         /// %Vertex intensity buffer.
-        floatArr     m_vertexIntensity;
+        floatArr    m_vertexIntensity;
         /// %Vertex normal buffer.
-        floatArr     m_vertexNormals;
+        floatArr    m_vertexNormals;
         /// %Vertex texture-coordinate buffer.
-        floatArr     m_vertexTextureCoordinates;
+        floatArr    m_vertexTextureCoordinates;
 
         /// Buffer of face indices
-        uintArr      m_faceIndices;
+        uintArr     m_faceIndices;
         /// List of Colors for every face
-        ucharArr     m_faceColors;
+        ucharArr    m_faceColors;
         /// Buffer of FaceTexture indices
-        unsigned int* m_faceTextureIndices;
+        uintArr     m_faceTextureIndices;
 
         /// Number of vertices in internal buffer.
         size_t      m_numVertices;
