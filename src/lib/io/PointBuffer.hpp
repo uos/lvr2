@@ -343,7 +343,6 @@ class PointBuffer
 
     protected:
 
-
         /// %Point buffer.
         floatArr        m_points;
         /// %Point normal buffer.

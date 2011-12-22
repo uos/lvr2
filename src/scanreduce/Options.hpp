@@ -39,7 +39,8 @@ using std::string;
 using std::vector;
 
 
-namespace reduce{
+namespace reduce
+{
 
 using namespace boost::program_options;
 
