@@ -92,6 +92,9 @@ typedef boost::shared_array<float> floatArr;
 typedef boost::shared_array<uchar> ucharArr;
 
 
+typedef boost::shared_array<unsigned int> uintArr;
+
+
 typedef boost::shared_array< color<uchar> > color3bArr;
 
 

@@ -441,7 +441,7 @@ class MeshBuffer
          * \param array  %Face index array.
          * \param n      Amount of faces in array.
          **/
-        void setFaceArray( unsigned int* array, size_t n );
+        void setFaceArray( uintArr array, size_t n );
 
 
         /**
@@ -469,7 +469,7 @@ class MeshBuffer
          * \param n  Amount of faces defined in the array.
          * \return   %Face index array.
          **/
-        unsigned int* getFaceArray( size_t &n );
+        uintArr getFaceArray( size_t &n );
 
 
         /**
@@ -559,11 +559,10 @@ class MeshBuffer
         /// %Vertex texture-coordinate buffer.
         floatArr     m_vertexTextureCoordinates;
 
+        /// Buffer of face indices
+        uintArr      m_faceIndices;
         /// List of Colors for every face
         ucharArr     m_faceColors;
-
-        /// Buffer of face indices
-        unsigned int* m_faceIndices;
         /// Buffer of FaceTexture indices
         unsigned int* m_faceTextureIndices;
 

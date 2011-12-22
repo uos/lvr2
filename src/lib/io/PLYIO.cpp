@@ -82,7 +82,7 @@ void PLYIO::save( string filename, e_ply_storage_mode mode,
 
     ucharArr m_vertexColors;
     ucharArr m_pointColors;
-    unsigned int* m_faceIndices = 0;
+    uintArr  m_faceIndices;
 
     // Get buffers
     if ( m_model->m_pointCloud )
@@ -532,7 +532,7 @@ ModelPtr PLYIO::read( string filename, bool readColor, bool readConfidence,
     ucharArr pointColors;
     ucharArr vertexColors;
 
-    unsigned int* faceIndices = 0;
+    uintArr  faceIndices;
 
     std::cout << numVertices << std::endl;
 
@@ -559,7 +559,7 @@ ModelPtr PLYIO::read( string filename, bool readColor, bool readConfidence,
     }
     if ( numFaces )
     {
-        faceIndices = ( unsigned int * ) malloc( numFaces * 3 * sizeof(unsigned int) );
+        faceIndices = uintArr( new unsigned int[ numFaces * 3 ] );
     }
     if ( numPoints )
     {
@@ -588,7 +588,7 @@ ModelPtr PLYIO::read( string filename, bool readColor, bool readConfidence,
     float*        vertex_confidence = vertexConfidence.get();
     float*        vertex_intensity  = vertexIntensity.get();
     float*        vertex_normal     = vertexNormals.get();
-    unsigned int* face              = faceIndices;
+    unsigned int* face              = faceIndices.get();
     float*        point             = points.get();
     uint8_t*      point_color       = pointColors.get();
     float*        point_confidence  = pointConfidences.get();

@@ -34,7 +34,6 @@ namespace lssr
 {
 
 MeshBuffer::MeshBuffer() : 
-    m_faceIndices( NULL ),
     m_faceTextureIndices( NULL ),
     m_numVertices( 0 ),
     m_numVertexNormals( 0 ),
@@ -50,6 +49,7 @@ MeshBuffer::MeshBuffer() :
 	assert( 3 * sizeof(uchar) == sizeof(color<uchar>) );
 	assert( sizeof(float) == sizeof(idxVal<float>) );
 
+    m_faceIndices.reset();
     m_faceColors.reset();
     m_vertexColors.reset();
     m_vertexConfidence.reset();
@@ -101,7 +101,7 @@ floatArr MeshBuffer::getVertexIntensityArray( size_t &n )
     return m_vertexIntensity;
 }
 
-unsigned int* MeshBuffer::getFaceArray( size_t &n )
+uintArr MeshBuffer::getFaceArray( size_t &n )
 {
     n = m_numFaces;
     return m_faceIndices;
@@ -212,7 +212,7 @@ void MeshBuffer::setVertexNormalArray( std::vector<float>& array )
 }
 
 
-void MeshBuffer::setFaceArray( unsigned int* array, size_t n )
+void MeshBuffer::setFaceArray( uintArr array, size_t n )
 {
 
     m_faceIndices  = array;
@@ -223,13 +223,12 @@ void MeshBuffer::setFaceArray( unsigned int* array, size_t n )
 
 void MeshBuffer::setFaceArray( std::vector<unsigned int>& array )
 {
-    if(m_faceIndices)
+    m_faceIndices = uintArr( new unsigned int[ array.size() ] );
+    for ( size_t i(0); i < array.size(); i++ )
     {
-        delete m_faceIndices;
+        m_faceIndices[i] = array[i];
     }
-    m_faceIndices = new unsigned int[array.size()];
-    std::copy(array.begin(), array.end(), m_faceIndices);
-    m_numFaces      = array.size() / 3;
+    m_numFaces    = array.size() / 3;
 
 }
 
@@ -367,12 +366,15 @@ void MeshBuffer::setIndexedVertexNormalArray( coord3fArr arr, size_t count )
 void MeshBuffer::freeBuffer()
 {
 
+    m_faceIndices.reset();
+    m_faceColors.reset();
+    m_vertexColors.reset();
     m_vertexConfidence.reset();
     m_vertexIntensity.reset();
     m_vertexNormals.reset();
+    m_vertexTextureCoordinates.reset();
     m_vertices.reset();
-    m_vertexColors.reset();
-    m_faceIndices = NULL;
+
     m_numVertices = m_numVertexColors = m_numVertexIntensities
         = m_numVertexConfidences = m_numVertexNormals = m_numFaces = 0;
 
