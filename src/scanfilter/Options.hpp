@@ -130,6 +130,16 @@ inline ostream& operator<<(ostream& os, const Options &o)
 	{
 	    cout << "##### Using MLS Projection\t: NO" << endl;
 	}
+	if( o.removeOutliers())
+	{
+	    cout << "##### Apply outlier removal\t: YES" << endl;
+	    cout << "##### k-neighborhood\t\t: " << o.sorMeanK() << endl;
+	    cout << "##### Deviation threshold\t: " << o.sorDevThreshold() << endl;
+	}
+	else
+	{
+	    cout << "##### Apply outlier removal\t: NO" << endl;
+	}
 	return os;
 }
 

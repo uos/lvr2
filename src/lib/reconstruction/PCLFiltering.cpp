@@ -30,14 +30,28 @@
 namespace lssr
 {
 
+
 PCLFiltering::PCLFiltering( PointBufferPtr loader )
 {
-    // TODO Auto-generated constructor stub
-    m_pointCloud  = pcl::PointCloud<pcl::PointXYZ>::Ptr (new pcl::PointCloud<pcl::PointXYZ>);
+
+    // Check if we have RGB data
+    size_t numColors;
+    m_useColors = loader->getPointColorArray(numColors);
+
+    m_pointCloud  = pcl::PointCloud<pcl::PointXYZRGB>::Ptr (new pcl::PointCloud<pcl::PointXYZRGB>);
+
 
     // Get data from loader object
     size_t numPoints;
-    float** points = loader->getIndexedPointArray(numPoints);
+    coord3fArr points = loader->getIndexedPointArray(numPoints);
+    color3bArr colors;
+
+    if(m_useColors)
+    {
+        assert(numColors == numPoints);
+        colors = loader->getIndexedPointColorArray(numColors);
+    }
+
 
     // Parse to PCL point cloud
     std::cout << timestamp << "Creating PCL point cloud for filtering" << std::endl;
@@ -50,6 +64,19 @@ PCLFiltering::PCLFiltering( PointBufferPtr loader )
         y = points[i][1];
         z = points[i][2];
 
+        if(m_useColors)
+        {
+//            // Pack color information
+            uint8_t r = colors[i][0];
+            uint8_t g = colors[i][1];
+            uint8_t b = colors[i][2];
+
+//            uint32_t rgb = ((uint32_t)r << 16 | (uint32_t)g << 8 | (uint32_t)b);
+//            m_pointCloud->points[i].rgb = *reinterpret_cast<float*>(&rgb);
+
+            m_pointCloud->points[i] = pcl::PointXYZRGB(r,g,b);
+        }
+
         m_pointCloud->points[i].x = x;
         m_pointCloud->points[i].y = y;
         m_pointCloud->points[i].z = z;
@@ -58,14 +85,14 @@ PCLFiltering::PCLFiltering( PointBufferPtr loader )
     // Create an empty kdtree representation, and pass it to the normal estimation object.
     // Its content will be filled inside the object, based on the given input dataset
     // (as no other search surface is given).
-    m_kdTree = pcl::KdTreeFLANN<pcl::PointXYZ>::Ptr (new pcl::KdTreeFLANN<pcl::PointXYZ> ());
+    m_kdTree = pcl::KdTreeFLANN<pcl::PointXYZRGB>::Ptr (new pcl::KdTreeFLANN<pcl::PointXYZRGB> ());
     m_kdTree->setInputCloud (m_pointCloud);
 }
 
 void PCLFiltering::applyMLSProjection(float searchRadius)
 {
-    pcl::MovingLeastSquares<pcl::PointXYZ, pcl::Normal> mls;
-    pcl::PointCloud<pcl::PointXYZ> mls_points;
+    pcl::MovingLeastSquares<pcl::PointXYZRGB, pcl::Normal> mls;
+    pcl::PointCloud<pcl::PointXYZRGB> mls_points;
 
     // Set Parameters
     mls.setInputCloud(m_pointCloud);
@@ -89,18 +116,17 @@ void PCLFiltering::applyMLSProjection(float searchRadius)
         m_pointCloud->points[i].x = mls_points.points[i].x;
         m_pointCloud->points[i].y = mls_points.points[i].y;
         m_pointCloud->points[i].z = mls_points.points[i].z;
-
     }
 }
 
 void PCLFiltering::applyOutlierRemoval(int meank, float thresh)
 {
-    pcl::PointCloud<pcl::PointXYZ>::Ptr cloud_filtered (new pcl::PointCloud<pcl::PointXYZ>);
+    pcl::PointCloud<pcl::PointXYZRGB>::Ptr cloud_filtered (new pcl::PointCloud<pcl::PointXYZRGB>);
 
     std::cout << timestamp << "Applying outlier removal" << std::endl;
 
     // Create the filtering object
-    pcl::StatisticalOutlierRemoval<pcl::PointXYZ> sor;
+    pcl::StatisticalOutlierRemoval<pcl::PointXYZRGB> sor;
     sor.setInputCloud (m_pointCloud);
     sor.setMeanK (meank);
     sor.setStddevMulThresh (thresh);
@@ -109,32 +135,48 @@ void PCLFiltering::applyOutlierRemoval(int meank, float thresh)
     std::cout << timestamp << "Filtered cloud has " << cloud_filtered->size() << " points" << std::endl;
     std::cout << timestamp << "Saving result" << std::endl;
 
-    // Save filtered points
-    m_pointCloud->resize(cloud_filtered->size());
-    float x, y, z;
-    for(size_t i = 0; i < cloud_filtered->size(); i++)
-    {
-        m_pointCloud->points[i].x = cloud_filtered->points[i].x;
-        m_pointCloud->points[i].y = cloud_filtered->points[i].y;
-        m_pointCloud->points[i].z = cloud_filtered->points[i].z;
-
-    }
+    m_pointCloud->width = cloud_filtered->width;
+    m_pointCloud->height = cloud_filtered->height;
+    m_pointCloud->points.swap (cloud_filtered->points);
 }
 
 PointBufferPtr PCLFiltering::getPointBuffer()
 {
     PointBufferPtr p( new PointBuffer );
 
-    float* points = new float[3 * m_pointCloud->size()];
+    floatArr points(new float[3 * m_pointCloud->size()]);
+    ucharArr colors;
+
+    if(m_useColors)
+    {
+       colors = ucharArr(new uchar[3 * m_pointCloud->size()]);
+    }
+
     for(int i = 0; i < m_pointCloud->size(); i++)
     {
         size_t pos = 3 * i;
         points[pos    ] = m_pointCloud->points[i].x;
         points[pos + 1] = m_pointCloud->points[i].y;
         points[pos + 2] = m_pointCloud->points[i].z;
+
+        if(m_useColors)
+        {
+            colors[pos    ] = m_pointCloud->points[i].r;
+            colors[pos + 1] = m_pointCloud->points[i].g;
+            colors[pos + 2] = m_pointCloud->points[i].b;
+//            std::cout << (int)m_pointCloud->points[i].r << " "
+//                 <<  (int)m_pointCloud->points[i].g << " "
+//                 <<  (int)m_pointCloud->points[i].b << " " << std::endl;
+        }
     }
 
     p->setPointArray(points, m_pointCloud->size());
+
+    if(m_useColors)
+    {
+        p->setPointColorArray(colors, m_pointCloud->size());
+    }
+
     return p;
 }
 

@@ -46,6 +46,7 @@
 #include "../widgets/TriangleMeshTreeWidgetItem.h"
 #include "../widgets/TransformationDialog.h"
 #include "../widgets/DebugOutputDialog.hpp"
+#include "../widgets/AnimationDialog.hpp"
 
 #include "display/StaticMesh.hpp"
 #include "geometry/HalfEdgeMesh.hpp"
@@ -99,6 +100,7 @@ public Q_SLOTS:
 	void saveSelectedObject();
 
 	void transformObject();
+	void createAnimation();
 	void deleteObject();
 
 	void openFile();
@@ -107,6 +109,8 @@ public Q_SLOTS:
 	void pointRenderModeChanged();
 	void createMeshFromPointcloud();
 	void centerOnSelection();
+
+
 
 private:
 
@@ -117,8 +121,6 @@ private:
 
 	MainWindow*					m_mainWindowUi;
 	QMainWindow*				m_qMainWindow;
-
-	Viewer*						m_viewer;
 	QDialog*					m_fogSettingsDialog;
 
 	SceneDockWidgetUI*			m_sceneDockWidgetUi;
@@ -130,6 +132,11 @@ private:
 	Fogsettings*				m_fogSettingsUI;
 	ViewerManager*				m_viewerManager;
 	DataCollectorFactory*       m_factory;
+
+	AnimationDialog*            m_playerDialog;
+
+public:
+    Viewer*                     m_viewer;
 };
 
 #endif /* VIEWERAPPLICATION_H_ */

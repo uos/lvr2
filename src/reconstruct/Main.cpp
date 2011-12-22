@@ -152,8 +152,12 @@
 
 using namespace lssr;
 
-#define RC_PCM_TYPE lssr::ColorVertex<float, unsigned char>, lssr::Normal<float>
 
+typedef ColorVertex<float, unsigned char>               cVertex;
+typedef Normal<float>                                   cNormal;
+typedef PointCloudManager<cVertex, cNormal>             PCM;
+typedef StannPointCloudManager<cVertex, cNormal>        StannPCM;
+typedef PCLPointCloudManager<cVertex, cNormal>          PCLPCM;
 
 /**
  * @brief   Main entry point for the LSSR surface executable
@@ -188,24 +192,21 @@ int main(int argc, char** argv)
 
     // Create a point cloud manager
     string pcm_name = options.getPCM();
-    lssr::PointCloudManager< RC_PCM_TYPE >::Ptr pcm;
+    PCM::Ptr pcm;
     if ( pcm_name == "PCL" )
     {
 #ifdef _USE_PCL_
         cout << timestamp << "Creating PCL point cloud manager." << endl;
-        pcm = PointCloudManager< RC_PCM_TYPE >::Ptr( 
-                new PCLPointCloudManager< RC_PCM_TYPE >( p_loader ) );
+        pcm = PCM::Ptr( new PCLPCM( p_loader ) );
 #else
         cout << timestamp << "PCL bindings not found. Using STANN instead." << endl;
-        pcm = PointCloudManager< RC_PCM_TYPE >::Ptr( 
-                new StannPointCloudManager< RC_PCM_TYPE >( p_loader ) );
+        pcm = PCM::Ptr( new StannPCM( p_loader ) );
 #endif
     }
     else if ( pcm_name == "STANN" || pcm_name == "STANN_RANSAC" )
     {
 		cout << timestamp << "Creating STANN point cloud manager." << endl;
-        pcm = StannPointCloudManager< RC_PCM_TYPE >::Ptr( 
-                new StannPointCloudManager< RC_PCM_TYPE >( p_loader, 10, 10, 10, pcm_name == "STANN_RANSAC" ) );
+        pcm = PCM::Ptr( new StannPCM( p_loader, 10, 10, 10, pcm_name == "STANN_RANSAC" ) );
     }
 
     // Check if a point cloud manager object was created. Exit if not and display
@@ -230,7 +231,7 @@ int main(int argc, char** argv)
     pcm->calcNormals();
 
     // Create an empty mesh
-    HalfEdgeMesh< RC_PCM_TYPE > mesh( pcm );
+    HalfEdgeMesh<cVertex, cNormal> mesh( pcm );
 
     // Set recursion depth for region growing
     if(options.getDepth())
@@ -240,10 +241,10 @@ int main(int argc, char** argv)
 
     if(options.getTexelSize())
     {
-    	Texture< RC_PCM_TYPE >::m_texelSize = options.getTexelSize();
+    	Texture<cVertex, cNormal>::m_texelSize = options.getTexelSize();
     }
 
-    // Determine weather to use intersections or voxelsize
+    // Determine whether to use intersections or voxelsize
     float resolution;
     bool useVoxelsize;
     if(options.getIntersections() > 0)
@@ -257,9 +258,21 @@ int main(int argc, char** argv)
         useVoxelsize = true;
     }
 
+    // Determine whether to use MC decomposition
+    bool useMT = false;
+    if(options.getDecomposition() == "MT")
+    {
+        useMT = true;
+    }
+
     // Create a new reconstruction object
-    FastReconstruction< RC_PCM_TYPE > reconstruction(
-			pcm, resolution, useVoxelsize );
+    FastReconstruction<cVertex, cNormal > reconstruction(
+			pcm,
+			resolution,
+			useVoxelsize,
+			useMT);
+
+    // Create mesh
     reconstruction.getMesh(mesh);
 
     mesh.removeDanglingArtifacts(options.getDanglingArtifacts());
@@ -283,8 +296,6 @@ int main(int argc, char** argv)
 
         mesh.restorePlanes(options.getMinPlaneSize());
     }
-
-//    mesh.tester();
 
     // Save triangle mesh
 	if ( options.retesselate() )

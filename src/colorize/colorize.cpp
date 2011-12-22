@@ -135,7 +135,7 @@ void loadPointCloud( lssr::PointBufferPtr &pc, PointCloudManagerPtr &pcm, char* 
 {
     
 	/* Read clouds from file. */
-	printf( "Loading pointcloud %s…\n", filename );
+	printf( "Loading point cloud %s…\n", filename );
     lssr::ModelFactory io_factory;
     lssr::ModelPtr model = io_factory.readModel( filename );
     if ( model && model->m_pointCloud ) 
@@ -174,6 +174,8 @@ void loadPointCloud( lssr::PointBufferPtr &pc, PointCloudManagerPtr &pcm, char* 
     pcm->setKI( 10 );
     pcm->setKN( 10 );
 
+	printf( "Point cloud with %u points loaded…\n", pcm->getNumPoints() );
+
 }
 
 
@@ -194,10 +196,12 @@ int main( int argc, char ** argv )
     loadPointCloud( pc2, pcm2, argv[ optind + 1 ] );
 
     /* Colorize first point cloud. */
+	printf( "Transfering color information…\n" );
     pcm1->colorizePointCloud( pcm2, maxdist, rgb );
 
+	printf( "Saving new point cloud to »%s«…\n", argv[ optind + 2 ] );
     /* Reset color array of first point cloud. */
-    pc1->setPointColorArray( *((lssr::ucharArr*) &(pcm1->m_colors)), pcm1->getNumPoints() );
+    pc1->setIndexedPointColorArray( pcm1->m_colors, pcm1->getNumPoints() );
 
     /* Save point cloud. */
     lssr::ModelFactory io_factory;

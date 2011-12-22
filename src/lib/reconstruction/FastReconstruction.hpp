@@ -27,12 +27,13 @@
 #ifndef FastReconstruction_H_
 #define FastReconstruction_H_
 
-#include "../geometry/Vertex.hpp"
-#include "../geometry/BoundingBox.hpp"
-#include "../reconstruction/Reconstructor.hpp"
-#include "../reconstruction/LocalApproximation.hpp"
-#include "../reconstruction/FastBox.hpp"
-#include "../reconstruction/QueryPoint.hpp"
+#include "geometry/Vertex.hpp"
+#include "geometry/BoundingBox.hpp"
+#include "reconstruction/Reconstructor.hpp"
+#include "reconstruction/LocalApproximation.hpp"
+#include "reconstruction/FastBox.hpp"
+#include "reconstruction/TetraederBox.hpp"
+#include "reconstruction/QueryPoint.hpp"
 
 #include <ext/hash_map>
 using namespace __gnu_cxx;
@@ -62,7 +63,9 @@ public:
      */
     FastReconstruction( 
             typename PointCloudManager<VertexT, NormalT>::Ptr manager,
-            float resolution, bool isVoxelsize = false );
+            float resolution,
+            bool isVoxelsize = false,
+            bool use_mt = false);
 
 
     /**
@@ -148,6 +151,9 @@ private:
 
     /// A vector containing the query points for the reconstruction
     vector<QueryPoint<VertexT> > m_queryPoints;
+
+    /// True if a local tetraeder decomposition is used for reconstruction
+    bool                        m_useTetraeder;
 };
 
 

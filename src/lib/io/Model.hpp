@@ -31,6 +31,7 @@
 #include "boost/shared_ptr.hpp"
 
 #include <algorithm>
+#include <iostream>
 
 typedef unsigned int uint;
 

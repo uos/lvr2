@@ -54,7 +54,7 @@ PerspectiveViewer::PerspectiveViewer(QWidget* parent, const QGLWidget* shared)
 	m_showFog = false;
 	m_fogType = FOG_LINEAR;
 
-	// Set a custom mouse binding for look around mod
+	// Set a custom mouse binding for look around mode
 }
 
 PerspectiveViewer::~PerspectiveViewer()
@@ -153,7 +153,7 @@ void PerspectiveViewer::createBackgroundDisplayList()
 
 void PerspectiveViewer::draw()
 {
-	// Render background
+//	// Render background
 	glDisable(GL_DEPTH_TEST);
 	glCallList(m_backgroundDisplayList);
 	glEnable(GL_DEPTH_TEST);

@@ -54,7 +54,7 @@ typedef map<PointCloud*, PointCloudAttribute*>::iterator pc_attr_it;
 class MultiPointCloud : public Renderable
 {
 public:
-    MultiPointCloud(Model& model, string name = "<unnamed point cloud>");
+    MultiPointCloud(ModelPtr model, string name = "<unnamed point cloud>");
 
     virtual ~MultiPointCloud();
     virtual inline void render();
@@ -65,8 +65,9 @@ public:
     pc_attr_it first() { return m_clouds.begin();}
     pc_attr_it last()  { return m_clouds.end();}
 
-    void exportAllPoints(string filename);
+    //void exportAllPoints(string filename);
 
+    virtual ModelPtr model();
 private:
 
     map<PointCloud*, PointCloudAttribute*>    m_clouds;

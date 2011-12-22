@@ -30,6 +30,8 @@
 
 #include "PointBuffer.hpp"
 
+#include <iostream>
+
 namespace lssr
 {
 
@@ -67,6 +69,7 @@ ucharArr PointBuffer::getPointColorArray( size_t &n )
 {
 
     n = m_numPointColors;
+    std::cout << "GET: " << n << std::endl;
     return m_pointColors;
 
 }
@@ -111,7 +114,7 @@ color3bArr PointBuffer::getIndexedPointColorArray( size_t &n )
 {
 
     n = m_numPointColors;
-    color3bArr p = *((color3bArr*) &m_pointNormals);
+    color3bArr p = *((color3bArr*) &m_pointColors);
     return p;
 
 }
@@ -170,6 +173,14 @@ void PointBuffer::setPointColorArray( ucharArr array, size_t n )
 
     m_numPointColors = n;
     m_pointColors = array;
+
+}
+
+void PointBuffer::setIndexedPointColorArray( color3bArr array, size_t n )
+{
+
+    m_numPointColors = n;
+    m_pointColors = *((ucharArr *) &array);
 
 }
 
