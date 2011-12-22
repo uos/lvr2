@@ -10,6 +10,7 @@ set(QVIEWER_MOCS
     widgets/TransformationDialog.h
     widgets/QDebugStream.hpp
     widgets/DebugOutputDialog.hpp
+    widgets/AnimationDialog.hpp
 )
 
 # Dynamically generated GUI object's from
@@ -23,6 +24,8 @@ set(QVIEWER_UIS
     ui/TransformationDialogUI.ui
     ui/MeshingOptionsDialogUI.ui
     ui/DebugOutputDialogUI.ui
+    ui/PlayerDialogUI.ui
+    ui/VideoExportDialogUI.ui
 )
 
 # Main Sources
@@ -42,6 +45,9 @@ set(QVIEWER_SOURCES
     widgets/MultiPointCloudTreeWidgetItem.cpp
     widgets/TransformationDialog.cpp
     widgets/DebugOutputDialog.cpp
+    widgets/AnimationDialog.cpp
+    widgets/AnimationListItem.cpp
+    widgets/VideoExportDialog.cpp
 )
 
 set(QVIEWER_RESOURCES
@@ -68,6 +74,7 @@ add_executable(qviewer ${QVIEWER_SOURCES} ${QVIEWER_MOC_SRC} ${QVIEWER_UI_HDRS}
 target_link_libraries(qviewer ${QT_QTCORE_LIBRARIES})
 target_link_libraries(qviewer ${QT_QTGUI_LIBRARIES})
 target_link_libraries(qviewer ${QT_QTOPENGL_LIBRARIES})
+target_link_libraries(qviewer ${QT_QTXML_LIBRARY})
 target_link_libraries(qviewer lssr)
 target_link_libraries(qviewer ${OPENGL_LIBRARY})
 target_link_libraries(qviewer ${GLUT_LIBRARIES})

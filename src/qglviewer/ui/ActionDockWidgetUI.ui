@@ -7,19 +7,19 @@
     <x>0</x>
     <y>0</y>
     <width>180</width>
-    <height>160</height>
+    <height>200</height>
    </rect>
   </property>
   <property name="minimumSize">
    <size>
     <width>180</width>
-    <height>79</height>
+    <height>200</height>
    </size>
   </property>
   <property name="maximumSize">
    <size>
     <width>180</width>
-    <height>160</height>
+    <height>200</height>
    </size>
   </property>
   <property name="layoutDirection">
@@ -85,7 +85,7 @@
     <property name="geometry">
      <rect>
       <x>0</x>
-      <y>120</y>
+      <y>160</y>
       <width>151</width>
       <height>41</height>
      </rect>
@@ -119,6 +119,29 @@
     <property name="icon">
      <iconset resource="../res/viewer.qrc">
       <normaloff>:/qv_delete.png</normaloff>:/qv_delete.png</iconset>
+    </property>
+    <property name="iconSize">
+     <size>
+      <width>25</width>
+      <height>25</height>
+     </size>
+    </property>
+   </widget>
+   <widget class="QCommandLinkButton" name="buttonAnimation">
+    <property name="geometry">
+     <rect>
+      <x>0</x>
+      <y>120</y>
+      <width>151</width>
+      <height>41</height>
+     </rect>
+    </property>
+    <property name="text">
+     <string>Anmation</string>
+    </property>
+    <property name="icon">
+     <iconset resource="../res/viewer.qrc">
+      <normaloff>:/qv_animation.png</normaloff>:/qv_animation.png</iconset>
     </property>
     <property name="iconSize">
      <size>

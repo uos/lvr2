@@ -55,6 +55,8 @@ ViewerApplication::ViewerApplication( int argc, char ** argv )
 
 	m_factory = new DataCollectorFactory;
 
+
+
 	// Show window
 	m_qMainWindow->show();
 
@@ -75,6 +77,8 @@ ViewerApplication::ViewerApplication( int argc, char ** argv )
 	// Initalize dialogs
 	m_fogSettingsUI = 0;
 	m_fogSettingsDialog = 0;
+
+	m_playerDialog = new AnimationDialog(m_viewer);
 }
 
 void ViewerApplication::connectEvents()
@@ -123,6 +127,8 @@ void ViewerApplication::connectEvents()
     connect(m_actionDockWidgetUi->buttonTransform,  SIGNAL(clicked()), this, SLOT(transformObject()));
     connect(m_actionDockWidgetUi->buttonDelete,     SIGNAL(clicked()), this, SLOT(deleteObject()));
     connect(m_actionDockWidgetUi->buttonExport,     SIGNAL(clicked()), this, SLOT(saveSelectedObject()));
+    connect(m_actionDockWidgetUi->buttonAnimation,  SIGNAL(clicked()), this, SLOT(createAnimation()));
+
 }
 
 void ViewerApplication::createMeshFromPointcloud()
@@ -134,7 +140,7 @@ void ViewerApplication::createMeshFromPointcloud()
     QTreeWidgetItem* item = m_sceneDockWidgetUi->treeWidget->currentItem();
     if(item)
     {
-        if(item->type() == PointCloudItem)
+        if(item->type() == PointCloudItem || item->type() == MultiPointCloudItem)
         {
             CustomTreeWidgetItem* c_item = static_cast<CustomTreeWidgetItem*>(item);
 
@@ -191,20 +197,30 @@ void ViewerApplication::createMeshFromPointcloud()
 
                     // Get optimization parameters
                     bool optimize_planes = mesh_ui->checkBoxOptimizePlanes->isChecked();
-//                  bool fill_holes      = mesh_ui->checkBoxFillHoles->isChecked();
-//                  bool rds             = mesh_ui->checkBoxRDA->isChecked();
-//                  bool small_regions   = mesh_ui->checkBoxRemoveRegions->isChecked();
+                    bool fill_holes      = mesh_ui->checkBoxFillHoles->isChecked();
+                    bool rda             = mesh_ui->checkBoxRDA->isChecked();
+                    bool small_regions   = mesh_ui->checkBoxRemoveRegions->isChecked();
                     bool retesselate     = mesh_ui->checkBoxRetesselate->isChecked();
                     bool texture         = mesh_ui->checkBoxGenerateTextures->isChecked();
                     bool color_regions   = mesh_ui->checkBoxColorRegions->isChecked();
 
                     int  num_plane_its   = mesh_ui->spinBoxPlaneIterations->value();
-//                  int  num_rda         = mesh_ui->spinBoxRDA->value();
+                    int  num_rda         = mesh_ui->spinBoxRDA->value();
                     int  num_rm_regions  = mesh_ui->spinBoxRemoveRegions->value();
 
                     float min_plane_size = mesh_ui->spinBoxMinPlaneSize->value();
                     float normal_thresh  = mesh_ui->spinBoxNormalThr->value();
                     float max_hole_size  = mesh_ui->spinBoxHoleSize->value();
+
+                    if(rda)
+                    {
+                        mesh.removeDanglingArtifacts(num_rda);
+                    }
+
+                    if(!small_regions)
+                    {
+                        num_rm_regions = 0;
+                    }
 
                     // Perform optimizations
                     if(optimize_planes)
@@ -263,6 +279,13 @@ void ViewerApplication::createMeshFromPointcloud()
 
                     dataCollectorAdded(dc);
                     m_viewerManager->addDataCollector(dc);
+                }
+                else
+                {
+                    QMessageBox msgBox;
+                    msgBox.setText("Action not supported.");
+                    msgBox.setStandardButtons(QMessageBox::Ok  );
+                    int ret = msgBox.exec();
                 }
 
             }
@@ -359,6 +382,11 @@ void ViewerApplication::transformObject()
 			new TransformationDialog(m_viewer, c_item->renderable());
         }
     }
+}
+
+void ViewerApplication::createAnimation()
+{
+    m_playerDialog->show();
 }
 
 void ViewerApplication::deleteObject()

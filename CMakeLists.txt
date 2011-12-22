@@ -105,6 +105,7 @@ endif(PCL_FOUND)
 ##############################################################
 
 set( QT_USE_QTOPENGL TRUE )
+set( QT_USE_XML TRUE)
 find_package( Qt4 )
 if( QT4_FOUND )
     include_directories(${QT_INCLUDE_DIR})
