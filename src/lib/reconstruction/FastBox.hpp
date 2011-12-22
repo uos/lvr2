@@ -103,7 +103,10 @@ public:
      * 						a newly generated vertex shout have the index
      * 						globalIndex + 1.
      */
-    void getSurface(BaseMesh<VertexT, NormalT> &mesh, vector<QueryPoint<VertexT> > &query_points, uint &globalIndex);
+    virtual void getSurface(
+            BaseMesh<VertexT, NormalT> &mesh,
+            vector<QueryPoint<VertexT> > &query_points,
+            uint &globalIndex);
 
     /// The voxelsize of the reconstruction grid
     static float             m_voxelsize;
@@ -111,17 +114,6 @@ public:
     /// An index value that is used to reference vertices that are not in the grid
     static uint		   		INVALID_INDEX;
 private:
-
-    /***
-     * @brief Interpolates the intersection between x1 and x1.
-     *
-     * @param x1			The first coordinate
-     * @param x2			The second coordinate
-     * @param d1			The distance value for the first coordinate
-     * @param d2			The distance value for the second coordinate
-     * @return The interpolated distance.
-     */
-    float calcIntersection(float x1, float x2, float d1, float d2);
 
     /**
      * @brief Calculated the index for the MC table
@@ -153,6 +145,19 @@ private:
      * @param positions		The interpolated intersections.
      */
     void getIntersections(VertexT corners[], float distance[], VertexT positions[]);
+
+protected:
+
+    /***
+     * @brief Interpolates the intersection between x1 and x1.
+     *
+     * @param x1            The first coordinate
+     * @param x2            The second coordinate
+     * @param d1            The distance value for the first coordinate
+     * @param d2            The distance value for the second coordinate
+     * @return The interpolated distance.
+     */
+    float calcIntersection(float x1, float x2, float d1, float d2);
 
     /// The box center
     VertexT               		m_center;

@@ -16,37 +16,23 @@
  * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA
  */
 
-
- #include "Options.hpp"
-
-#include "io/UosIO.hpp"
-
-#include <iostream>
-
-using namespace lssr;
-
 /**
- * @brief   Main entry point for the LSSR surface executable
+ * VideoExportDialog.cpp
+ *
+ *  @date 21.12.2011
+ *  @author Thomas Wiemann
  */
-int main(int argc, char** argv)
+
+#include "VideoExportDialog.hpp"
+
+VideoExportDialog::VideoExportDialog()
 {
-    // Parse command line arguments
-    reduce::Options options(argc, argv);
+    // TODO Auto-generated constructor stub
 
-    // Exit if options had to generate a usage message
-    // (this means required parameters are missing)
-    if (options.printUsage()) return 0;
+}
 
-    ::std::cout << options << ::std::endl;
-
-    UosIO io;
-
-    io.setFirstScan(options.firstScan());
-    io.setLastScan(options.lastScan());
-    io.saveRemission(options.saveRemission());
-    io.saveRemissionAsColor(options.convertRemission());
-    io.reduce(options.directory(), options.outputFile(), options.reduction());
-
-	return 0;
+VideoExportDialog::~VideoExportDialog()
+{
+    // TODO Auto-generated destructor stub
 }
 

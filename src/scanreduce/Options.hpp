@@ -39,7 +39,8 @@ using std::string;
 using std::vector;
 
 
-namespace reduce{
+namespace reduce
+{
 
 using namespace boost::program_options;
 
@@ -65,6 +66,8 @@ public:
 	int     reduction() const;
 	string  directory() const;
 	string  outputFile() const;
+	bool    convertRemission() const;
+	bool    saveRemission() const;
 
 	bool    printUsage() const;
 
@@ -74,6 +77,8 @@ private:
 	int m_last;
 	int m_reduction;
 	string m_outputFile;
+	bool m_convertRemission;
+
     /// The internally used variable map
     variables_map                   m_variables;
 
@@ -95,6 +100,8 @@ inline ostream& operator<<(ostream& os, const Options &o)
 	cout << "##### First scan to read \t: " << o.firstScan() << endl;
 	cout << "##### Last scan to read \t: " << o.lastScan() << endl;
 	cout << "##### Reduction \t\t: " << o.reduction() << endl;
+	cout << "##### Save Remission \t\t: " << o.saveRemission() << endl;
+	cout << "##### Convert Remission\t\t: " << o.convertRemission() << endl;
 	return os;
 }
 

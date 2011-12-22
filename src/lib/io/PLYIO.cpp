@@ -36,6 +36,7 @@
 #include <ctime>
 #include <sstream>
 #include <cassert>
+#include <iostream>
 #include "Message.hpp"
 
 
@@ -89,7 +90,7 @@ void PLYIO::save( string filename, e_ply_storage_mode mode,
         PointBufferPtr pc( m_model->m_pointCloud );
 
         m_points                = pc->getPointArray(m_numPoints);
-        m_pointConfidences      = pc->getPointConfidenceArray(m_numPoints);
+        m_pointConfidences      = pc->getPointConfidenceArray(m_numPointConfidence);
         m_pointColors           = pc->getPointColorArray(m_numPointColors);
         m_pointIntensities      = pc->getPointIntensityArray(m_numPointIntensities);
         m_pointNormals          = pc->getPointNormalArray(m_numPointNormals);

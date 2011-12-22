@@ -99,7 +99,7 @@ public:
 
 	BoundingBox<Vertex<float> >* boundingBox() { return m_boundingBox;};
 
-	ModelPtr model()
+	virtual ModelPtr model()
     {
         return m_model;
     }

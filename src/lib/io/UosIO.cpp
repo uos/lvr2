@@ -183,7 +183,7 @@ void UosIO::reduce(string dir, string target, int reduction)
     }
 
     // Set needed flags for inout code
-    m_reduction = reduction;
+    m_reductionTarget = reduction;
     m_saveToDisk = true;
 
     // Read data and write reduced points
@@ -203,6 +203,33 @@ void UosIO::readNewFormat(ModelPtr &model, string dir, int first, int last, size
 
     vector<indexPair> sub_clouds;
 
+    // Count points in all given files
+    size_t numPointsTotal = 0;
+    for(int fileCounter = first; fileCounter <= last; fileCounter++)
+    {
+        // Create scan file name
+        boost::filesystem::path scan_path(
+                boost::filesystem::path(dir) /
+                boost::filesystem::path( "scan" + to_string( fileCounter, 3 ) + ".3d" ) );
+        string scanFileName = "/" + scan_path.relative_path().string();
+
+        // Count lines in scan
+        numPointsTotal += AsciiIO::countLines(scanFileName);
+    }
+
+    // Calculate the number of points to skip when writing to disk
+    size_t skipPoints = 1;
+
+    if(m_reductionTarget > 1)
+    {
+        skipPoints = (int)numPointsTotal / m_reductionTarget;
+    }
+
+    if(m_saveToDisk)
+    {
+        cout << timestamp << "Reduction mode. Writing every " << skipPoints << "th point." << endl;
+    }
+
     for(int fileCounter = first; fileCounter <= last; fileCounter++)
     {
         // New (unit) transformation matrix
@@ -212,9 +239,9 @@ void UosIO::readNewFormat(ModelPtr &model, string dir, int first, int last, size
         ifstream scan_in, pose_in, frame_in;
 
         // Create scan file name
-		  boost::filesystem::path scan_path(
-				  boost::filesystem::path(dir) / 
-				  boost::filesystem::path( "scan" + to_string( fileCounter, 3 ) + ".3d" ) );
+        boost::filesystem::path scan_path(
+                boost::filesystem::path(dir) /
+                boost::filesystem::path( "scan" + to_string( fileCounter, 3 ) + ".3d" ) );
         string scanFileName = "/" + scan_path.relative_path().string();
 
         // Count lines in scan
@@ -251,18 +278,18 @@ void UosIO::readNewFormat(ModelPtr &model, string dir, int first, int last, size
 
 
             // Try to get fransformation from .frames file
-				boost::filesystem::path frame_path(
-						boost::filesystem::path(dir) / 
-						boost::filesystem::path( "scan" + to_string( fileCounter, 3 ) + ".frames" ) );
+            boost::filesystem::path frame_path(
+                    boost::filesystem::path(dir) /
+                    boost::filesystem::path( "scan" + to_string( fileCounter, 3 ) + ".frames" ) );
             string frameFileName = "/" + frame_path.relative_path().string();
 
             frame_in.open(frameFileName.c_str());
             if(!frame_in.good())
             {
                 // Try to parse .pose file
-					boost::filesystem::path pose_path(
-							boost::filesystem::path(dir) / 
-							boost::filesystem::path( "scan" + to_string( fileCounter, 3 ) + ".pose" ) );
+                boost::filesystem::path pose_path(
+                        boost::filesystem::path(dir) /
+                        boost::filesystem::path( "scan" + to_string( fileCounter, 3 ) + ".pose" ) );
                 string poseFileName = "/" + pose_path.relative_path().string();
 
                 pose_in.open(poseFileName.c_str());
@@ -344,13 +371,13 @@ void UosIO::readNewFormat(ModelPtr &model, string dir, int first, int last, size
                 {
                     if(m_outputFile.good())
                     {
-                        if(point_counter % m_reduction == 0)
+                        if(point_counter % skipPoints == 0)
                         {
                             point.transform(tf);
                             m_outputFile << point[0] << " " << point[1] << " " << point[2] << " ";
 
                             // Save remission values if present
-                            if(has_intensity)
+                            if(has_intensity && m_saveRemission)
                             {
                                 m_outputFile << rem << " ";
                             }
@@ -358,6 +385,11 @@ void UosIO::readNewFormat(ModelPtr &model, string dir, int first, int last, size
                             // Save color values if present
                             if(has_color)
                             {
+                                m_outputFile << r << " " << g << " " << b;
+                            }
+                            else if(m_saveRemissionColor)
+                            {
+                                r = g = b = rem;
                                 m_outputFile << r << " " << g << " " << b;
                             }
                             m_outputFile << endl;
@@ -368,7 +400,15 @@ void UosIO::readNewFormat(ModelPtr &model, string dir, int first, int last, size
             }
 
             // Save index of first point of new scan
-            size_t firstIndex( allPoints.size() );
+            size_t firstIndex;
+            if(allPoints.size() > 0)
+            {
+                firstIndex = allPoints.size();
+            }
+            else
+            {
+                firstIndex = 0;
+            }
 
             // Transform scan point with current matrix
             list<Vertex<float> >::iterator it, it1;
@@ -380,7 +420,15 @@ void UosIO::readNewFormat(ModelPtr &model, string dir, int first, int last, size
             }
 
             // Save last index
-            size_t lastIndex( allPoints.size() ? allPoints.size() - 1 : 0 );
+            size_t lastIndex;
+            if(allPoints.size() > 0)
+            {
+                lastIndex = allPoints.size() - 1;
+            }
+            else
+            {
+                lastIndex = 0;
+            }
 
             // Save index pair for current scan
             sub_clouds.push_back(make_pair(firstIndex, lastIndex));

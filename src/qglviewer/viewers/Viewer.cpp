@@ -27,7 +27,15 @@
 #include "Viewer.h"
 
 Viewer::Viewer(QWidget* parent, const QGLWidget* shared)
-	: QGLViewer(parent, shared),  m_parent(parent) {}
+	: QGLViewer(parent, shared),  m_parent(parent)
+{
+    m_kfi = new qglviewer::KeyFrameInterpolator(new qglviewer::Frame());
+
+
+    connect(m_kfi, SIGNAL(interpolated()), this, SLOT(updateGL()));
+    connect(m_kfi, SIGNAL(interpolated()), this, SLOT(createSnapshot()));
+
+}
 
 
 Viewer::~Viewer()
@@ -37,13 +45,24 @@ Viewer::~Viewer()
 
 void Viewer::draw()
 {
-	list<DataCollector*>::iterator it;
-	for(it = m_dataObjects.begin(); it != m_dataObjects.end(); it++)
-	{
-		glPushAttrib(GL_ALL_ATTRIB_BITS);
-		(*it)->renderable()->render();
-		glPopAttrib();
-	}
+    if(m_kfi->interpolationIsStarted())
+    {
+        camera()->setPosition(m_kfi->frame()->position());
+        camera()->setOrientation(m_kfi->frame()->orientation());
+    }
+
+    list<DataCollector*>::iterator it;
+    for(it = m_dataObjects.begin(); it != m_dataObjects.end(); it++)
+    {
+        glPushAttrib(GL_ALL_ATTRIB_BITS);
+        (*it)->renderable()->render();
+        glPopAttrib();
+    }
+}
+
+void Viewer::createSnapshot()
+{
+    saveSnapshot(true);
 }
 
 void Viewer::resetCamera()

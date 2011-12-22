@@ -96,11 +96,16 @@ add_subdirectory(src/reconstruct)
 add_subdirectory(src/colorize)
 add_subdirectory(src/scanreduce)
 
+if(PCL_FOUND)
+	add_subdirectory(src/scanfilter)
+endif(PCL_FOUND)
+
 ##############################################################
 # VIEWERS
 ##############################################################
 
 set( QT_USE_QTOPENGL TRUE )
+set( QT_USE_XML TRUE)
 find_package( Qt4 )
 if( QT4_FOUND )
     include_directories(${QT_INCLUDE_DIR})

@@ -50,6 +50,8 @@ using lssr::Renderable;
 using lssr::BoundingBox;
 using lssr::Vertex;
 
+using qglviewer::KeyFrameInterpolator;
+
 class Viewer : public QGLViewer
 {
 	Q_OBJECT
@@ -65,14 +67,21 @@ public:
 	virtual ViewerType type() = 0;
 	virtual void centerViewOnObject(Renderable* renderable);
 
+
+	KeyFrameInterpolator* kfi() { return m_kfi;}
+
 public Q_SLOTS:
 	virtual void resetCamera();
+	void createSnapshot();
+
 
 protected:
 	virtual void draw();
 
 	list<DataCollector*>	    m_dataObjects;
 	BoundingBox<Vertex<float> > m_boundingBox;
+	KeyFrameInterpolator*       m_kfi;
+
 
 private:
 	QWidget*				    m_parent;
