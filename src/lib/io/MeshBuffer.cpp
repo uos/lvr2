@@ -34,7 +34,6 @@ namespace lssr
 {
 
 MeshBuffer::MeshBuffer() : 
-    m_faceTextureIndices( NULL ),
     m_numVertices( 0 ),
     m_numVertexNormals( 0 ),
     m_numVertexColors( 0 ),
@@ -51,6 +50,7 @@ MeshBuffer::MeshBuffer() :
 
     m_faceIndices.reset();
     m_faceColors.reset();
+    m_faceTextureIndices.reset();
     m_vertexColors.reset();
     m_vertexConfidence.reset();
     m_vertexIntensity.reset();
@@ -114,7 +114,7 @@ ucharArr MeshBuffer::getFaceColorArray( size_t &n )
 }
 
 
-unsigned int* MeshBuffer::getFaceTextureIndexArray( size_t &n )
+uintArr MeshBuffer::getFaceTextureIndexArray( size_t &n )
 {
     n = m_numFaceTextureIndices;
     return m_faceTextureIndices;
@@ -235,12 +235,11 @@ void MeshBuffer::setFaceArray( std::vector<unsigned int>& array )
 
 void MeshBuffer::setFaceTextureIndexArray( std::vector<unsigned int>& array )
 {
-    if(m_faceTextureIndices)
+    m_faceTextureIndices = uintArr( new unsigned int[array.size()] );
+    for ( size_t i(0); i < array.size(); i++ )
     {
-        delete m_faceTextureIndices;
+        m_faceTextureIndices[i] = array[i];
     }
-    m_faceTextureIndices = new unsigned int[array.size()];
-    std::copy(array.begin(), array.end(), m_faceTextureIndices);
     m_numFaceTextureIndices = array.size() / 3;
 }
 
@@ -368,6 +367,7 @@ void MeshBuffer::freeBuffer()
 
     m_faceIndices.reset();
     m_faceColors.reset();
+    m_faceTextureIndices.reset();
     m_vertexColors.reset();
     m_vertexConfidence.reset();
     m_vertexIntensity.reset();
