@@ -189,10 +189,10 @@ ModelPtr AsciiIO::read(string filename)
 }
 
 
-void AsciiIO::save( ModelPtr m, string filename )
+void AsciiIO::save( string filename )
 {
 
-    if ( !m->m_pointCloud ) {
+    if ( !m_model->m_pointCloud ) {
         std::cerr << "No point buffer available for output." << std::endl;
         return;
     }
@@ -203,9 +203,9 @@ void AsciiIO::save( ModelPtr m, string filename )
     color3bArr pointColors;
     floatArr   pointIntensities;
 
-    points = m->m_pointCloud->getIndexedPointArray( pointcount );
+    points = m_model->m_pointCloud->getIndexedPointArray( pointcount );
 
-    pointColors = m->m_pointCloud->getIndexedPointColorArray( buf );
+    pointColors = m_model->m_pointCloud->getIndexedPointColorArray( buf );
     /* We need the same amount of color information and points. */
     if ( pointcount != buf )
     {
@@ -214,7 +214,7 @@ void AsciiIO::save( ModelPtr m, string filename )
             " not equal. Color information won't be written.\n";
     }
 
-    pointIntensities = m->m_pointCloud->getPointIntensityArray( buf );
+    pointIntensities = m_model->m_pointCloud->getPointIntensityArray( buf );
     /* We need the same amount of intensity values and points. */
     if ( pointcount != buf )
     {

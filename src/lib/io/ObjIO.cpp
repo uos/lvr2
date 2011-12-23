@@ -40,11 +40,10 @@ using namespace std; // Bitte vergebt mir....
 
 
 
-void ObjIO::save( ModelPtr model, string filename )
+void ObjIO::save( string filename )
 {
     typedef Vertex<uchar> ObjColor;
 
-    m_model = model;
     size_t lenVertices;
     size_t lenNormals;
     size_t lenColors;

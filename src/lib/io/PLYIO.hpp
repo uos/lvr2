@@ -126,7 +126,7 @@ class PLYIO : public BaseIO
          *
          * \param filename  Filename of the output file.
          **/
-        void save( ModelPtr m, string filename );
+        void save( string filename );
 
 
         /**
@@ -176,10 +176,6 @@ class PLYIO : public BaseIO
          * \param argument  Argument to pass the read data.
          **/
         static int readFaceCb( p_ply_argument argument );
-
-
-    private:
-        ModelPtr m_model;
 
 };
 

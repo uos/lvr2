@@ -65,7 +65,7 @@ public:
      * @todo : Implement save method for ASCII Files...
      * @param filename
      */
-    virtual void save( ModelPtr m, string filename );
+    virtual void save( string filename );
 
     /// TODO: Coordinate mapping for ascii files
     static size_t countLines(string filename);
