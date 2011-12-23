@@ -258,19 +258,13 @@ int main(int argc, char** argv)
         useVoxelsize = true;
     }
 
-    // Determine whether to use MC decomposition
-    bool useMT = false;
-    if(options.getDecomposition() == "MT")
-    {
-        useMT = true;
-    }
-
     // Create a new reconstruction object
     FastReconstruction<cVertex, cNormal > reconstruction(
 			pcm,
 			resolution,
 			useVoxelsize,
-			useMT);
+            /* Determine whether to use MC decomposition */
+			options.getDecomposition() == "MT" );
 
     // Create mesh
     reconstruction.getMesh(mesh);
@@ -307,8 +301,21 @@ int main(int argc, char** argv)
 		mesh.finalize();
 	}
 
-    mesh.save("triangle_mesh.ply");
-    mesh.save("triangle_mesh.obj");
+    std::vector<std::string> comment, obj_info;
+    /* Build call string */
+    {
+        std::string s("");
+        for ( size_t i(0); i < argc-1; i++ )
+        {
+            s += std::string( argv[i] ) + " ";
+        }
+        s += argv[ argc-1 ];
+        comment.push_back( s );
+    }
+    comment.push_back( "Created with las-vegas-reconstruction: http://las-vegas.uos.de/" );
+
+    mesh.save( "triangle_mesh.ply", obj_info, comment );
+    mesh.save( "triangle_mesh.obj" );
 
     cout << timestamp << "Program end." << endl;
 

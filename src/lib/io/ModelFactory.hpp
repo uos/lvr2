@@ -30,6 +30,7 @@
 #include "Model.hpp"
 
 #include <string>
+#include <vector>
 #include "boost/shared_ptr.hpp"
 
 namespace lssr
@@ -47,7 +48,10 @@ class ModelFactory
     public:
 
         static ModelPtr readModel( std::string filename );
-        static void saveModel( ModelPtr m, std::string file );
+
+        static void saveModel( ModelPtr m, std::string file,
+                std::vector<string> obj_info = std::vector<string>(), 
+                std::vector<string> comment = std::vector<string>() );
 
 };
 

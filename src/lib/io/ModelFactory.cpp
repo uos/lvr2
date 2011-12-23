@@ -17,7 +17,7 @@
  */
 
 
- /**
+/**
  * IOFactory.cpp
  *
  *  @date 24.08.2011
@@ -70,13 +70,15 @@ ModelPtr ModelFactory::readModel( std::string filename )
     if( io )
     {
         m = io->read( filename );
+        delete io;
     }
 
     return m;
 
 }
 
-void ModelFactory::saveModel( ModelPtr m, std::string filename )
+void ModelFactory::saveModel( ModelPtr m, std::string filename,
+        std::vector<string> obj_info, std::vector<string> comment )
 {
     // Get file exptension
     boost::filesystem::path selectedFile(filename);
@@ -87,16 +89,19 @@ void ModelFactory::saveModel( ModelPtr m, std::string filename )
     // Create suitable io
     if(extension == ".ply")
     {
-        io = new PLYIO;
+        PLYIO plyio;
+        plyio.setModel( m );
+        plyio.save( filename, PLY_LITTLE_ENDIAN, obj_info, comment );
+        return;
     }
     else if (extension == ".pts" || extension == ".3d" || extension == ".xyz")
     {
         io = new AsciiIO;
     }
-	 else if ( extension == ".obj" )
-	 {
-		 io = new ObjIO;
-	 }
+    else if ( extension == ".obj" )
+    {
+        io = new ObjIO;
+    }
     else if (extension == "")
     {
         // Try to load UOS format data from directory in
@@ -107,6 +112,7 @@ void ModelFactory::saveModel( ModelPtr m, std::string filename )
     if(io)
     {
         io->save( m, filename );
+        delete io;
     }
     else
     {
