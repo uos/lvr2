@@ -59,12 +59,39 @@ namespace lssr
              */
             virtual ModelPtr read(string filename ) = 0;
 
+
             /**
              * \brief Save the loaded elements to the given file.
              *
              * @param filename Filename of the file to write.
              */
-            virtual void save( ModelPtr model, string filename ) = 0;
+            virtual void save( string filename ) = 0;
+
+
+            /**
+             * \brief Set the model and save the loaded elements to the given
+             *        file.
+             *
+             * @param filename Filename of the file to write.
+             */
+            virtual void save( ModelPtr model, string filename )
+            {
+                m_model = model;
+                save( filename );
+            }
+
+            virtual void setModel( ModelPtr m )
+            {
+                m_model = m;
+            }
+
+            virtual ModelPtr getModel() 
+            {
+                return m_model;
+            }
+
+        protected:
+            ModelPtr m_model;
 
     };
 

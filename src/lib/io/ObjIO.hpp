@@ -53,11 +53,13 @@ public:
 	~ObjIO() { };
 
 	/**
-	 * \brief Parse the given file and load supported elements.
+	 * \brief   Parse the given file and load supported elements.
+     * \warning This function is yet to be implemented.
+     * \todo    Implement this function propperly.
 	 *
 	 * @param filename  The file to read.
 	 */
-	ModelPtr read(string filename)
+	ModelPtr read( string filename )
     {
         ModelPtr m( new Model );
         return m;
@@ -69,13 +71,9 @@ public:
 	 * @param 	model		The model containing all mesh data
 	 * @param	filename 	The file name to use
      */
-    void save( ModelPtr model, string filename );
+    void save( string filename );
 
 
-
-private:
-    /// The model containing all mesh data
-    ModelPtr m_model;
 };
 
 }

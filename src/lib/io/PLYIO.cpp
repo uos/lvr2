@@ -44,9 +44,8 @@ namespace lssr
 {
 
 
-void PLYIO::save( ModelPtr model, string filename )
+void PLYIO::save( string filename )
 {
-    m_model = model;
     save( filename, PLY_LITTLE_ENDIAN );
 
 }
