@@ -38,13 +38,14 @@ BaseMesh<VertexT, IndexType>::BaseMesh()
 }
 
 template<typename VertexT, typename IndexType>
-void BaseMesh<VertexT, IndexType>::save( string filename )
+void BaseMesh<VertexT, IndexType>::save( string filename,
+        std::vector<string> obj_info, std::vector<string> comment )
 {
 
     if ( m_meshBuffer )
     {
         ModelPtr m( new Model( this->m_meshBuffer ) );
-        ModelFactory::saveModel( m, filename );
+        ModelFactory::saveModel( m, filename, obj_info, comment );
     }
 
 }
