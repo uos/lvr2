@@ -1,19 +1,19 @@
-        /* Copyright (C) 2011 Uni Osnabrück
+/* Copyright (C) 2011 Uni Osnabrück
  * This file is part of the LAS VEGAS Reconstruction Toolkit,
  *
- * LAS VEGAS is free software; you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation; either version 2 of the License, or
- * (at your option) any later version.
+ * LAS VEGAS is free software; you can redistribute it and/or modify it under
+ * the terms of the GNU General Public License as published by the Free
+ * Software Foundation; either version 2 of the License, or (at your option)
+ * any later version.
  *
- * LAS VEGAS is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
+ * LAS VEGAS is distributed in the hope that it will be useful, but WITHOUT ANY
+ * WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
+ * FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more
+ * details.
  *
- * You should have received a copy of the GNU General Public License
- * along with this program; if not, write to the Free Software
- * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA
+ * You should have received a copy of the GNU General Public License along with
+ * this program; if not, write to the Free Software Foundation, Inc., 59 Temple
+ * Place - Suite 330, Boston, MA  02111-1307, USA
  */
 
 
@@ -41,8 +41,6 @@
 #include <iostream>
 #include "DataStruct.hpp"
 
-typedef unsigned char uchar;
-
 namespace lssr
 {
 
@@ -50,8 +48,6 @@ namespace lssr
 /**
  * \class MeshLoader MeshLoader.hpp "io/MeshLoader.hpp"
  * \brief Interface for all mesh loading classes.
- * \todo  At the moment this class comes along with a lot of possible memory
- *        leaks.
  *
  * The MeshLoader class specifies the storage and access to all available mesh
  * data by implementing the get and set methods for these data. This has to be
@@ -174,6 +170,9 @@ class MeshBuffer
         uintArr getFaceTextureIndexArray( size_t &n );
 
 
+        floatArr getVertexTextureCoordinateArray( size_t &n );
+
+
 
 #define SECTION_INDEXED_GETTER
         /**********************************************************************
@@ -264,6 +263,14 @@ class MeshBuffer
 
         coord3fArr getIndexedVertexTextureCoordinateArray( size_t &n );
 
+
+        idx1uArr getIndexedFaceArray( size_t &n );
+
+
+        color3bArr getIndexedFaceColorArray( size_t &n );
+
+
+        idx1uArr getIndexedFaceTextureIndexArray( size_t &n );
 
 
 #define SECTION_SETTER
