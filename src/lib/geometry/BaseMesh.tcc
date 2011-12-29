@@ -50,12 +50,5 @@ void BaseMesh<VertexT, IndexType>::save( string filename )
 }
 
 
-template<typename VertexT, typename IndexType>
-void BaseMesh<VertexT, IndexType>::load( string filename )
-{
-
-
-}
-
 
 }

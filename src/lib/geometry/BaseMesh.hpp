@@ -89,7 +89,7 @@ class BaseMesh
          *
          * @param filename
          */
-        virtual void load( string filename );
+        //virtual void load( string filename );
 
 
         MeshBufferPtr meshBuffer()
