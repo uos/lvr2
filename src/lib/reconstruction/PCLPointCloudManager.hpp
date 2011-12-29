@@ -30,6 +30,7 @@
 #include "PointCloudManager.hpp"
 
 #include "io/PointBuffer.hpp"
+#include "io/Model.hpp"
 
 #include <pcl/point_types.h>
 #include <pcl/point_cloud.h>
@@ -74,6 +75,7 @@ public:
 
     virtual void calcNormals();
 
+    PointBufferPtr pointBuffer();
 
     /**
      * @brief Returns the all points within a given radius from a given query point

@@ -81,6 +81,7 @@ void StannPointCloudManager<VertexT, NormalT>::calcNormals()
 
     //Initialize normal array
     this->m_normals = coord3fArr( new coord<float>[this->m_numPoints] );
+    this->m_pointBuffer->setIndexedPointNormalArray(this->m_normals, this->m_numPoints);
 
     //float mean_distance;
     // Create a progress counter
@@ -246,11 +247,6 @@ void StannPointCloudManager<VertexT, NormalT>::interpolateSurfaceNormals()
         this->m_normals[i][1] = tmp[i][1];
         this->m_normals[i][2] = tmp[i][2];
     }
-
-    // Update pointer
-    this->m_pointBuffer->setIndexedPointNormalArray(this->m_normals, this->m_numPoints);
-
-
 }
 
 template<typename VertexT, typename NormalT>
