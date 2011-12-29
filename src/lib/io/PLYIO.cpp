@@ -582,6 +582,7 @@ ModelPtr PLYIO::read( string filename, bool readColor, bool readConfidence,
     }
     if ( numPointNormals )
     {
+        cout << "Point Normals: " << numPointNormals << endl;
         pointNormals = floatArr( new float[ 3 * numPoints ] );
     }
 
@@ -655,9 +656,9 @@ ModelPtr PLYIO::read( string filename, bool readColor, bool readConfidence,
     }
     if ( point_normal )
     {
-        ply_set_read_cb( ply, "point", "nx", readVertexCb, &point_intensity, 0 );
-        ply_set_read_cb( ply, "point", "ny", readVertexCb, &point_intensity, 0 );
-        ply_set_read_cb( ply, "point", "nz", readVertexCb, &point_intensity, 1 );
+        ply_set_read_cb( ply, "point", "nx", readVertexCb, &point_normal, 0 );
+        ply_set_read_cb( ply, "point", "ny", readVertexCb, &point_normal, 0 );
+        ply_set_read_cb( ply, "point", "nz", readVertexCb, &point_normal, 1 );
     }
 
     /* Read ply file. */
@@ -707,6 +708,7 @@ ModelPtr PLYIO::read( string filename, bool readColor, bool readConfidence,
         pc->setPointColorArray(      pointColors,      numPointColors );
         pc->setPointIntensityArray(  pointIntensities, numPointIntensities );
         pc->setPointConfidenceArray( pointConfidences, numPointConfidence );
+        pc->setPointNormalArray    ( pointNormals,     numPointNormals);
     }
 
     if(vertices)
