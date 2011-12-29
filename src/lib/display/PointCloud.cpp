@@ -40,11 +40,14 @@ PointCloud::PointCloud()
 PointCloud::PointCloud( ModelPtr model, string name) : Renderable(name)
 {
     int maxColors = 255;
+    m_numNormals = 0;
 
     m_boundingBox = new BoundingBox<Vertex<float> >;
     m_model = model;
+    m_renderMode = RenderPoints;
 
     PointBufferPtr pc = model->m_pointCloud;
+    m_normals = pc->getIndexedPointNormalArray(m_numNormals);
 
     if(pc)
     {
@@ -146,8 +149,25 @@ void PointCloud::updateDisplayLists(){
     glEnd();
     glEndList();
 
-
-
+    float length = 0.01 * m_boundingBox->getRadius();
+    // Create a new display list for normals
+    if(m_numNormals)
+    {
+        m_normalListIndex = glGenLists(1);
+        glNewList(m_normalListIndex, GL_COMPILE);
+        glColor3f(1.0, 0.0, 1.0);
+        for(int i = 0; i < m_numNormals; i++)
+        {
+            Vertex<float> start(m_points[i].x, m_points[i].y, m_points[i].z);
+            Normal<float> normal(m_normals[i].x, m_normals[i].y, m_normals[i].z);
+            Vertex<float> end = start + normal * length;
+            glBegin(GL_LINES);
+            glVertex3f(start[0], start[1], start[2]);
+            glVertex3f(end[0], end[1], end[2]);
+            glEnd();
+        }
+        glEndList();
+    }
 
 }
 

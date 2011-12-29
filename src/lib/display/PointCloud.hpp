@@ -37,8 +37,16 @@
 
 using namespace std;
 
+
+
 namespace lssr
 {
+
+enum
+{
+    RenderPoints                = 0x01,
+    RenderNormals               = 0x02,
+};
 
 class PointCloud : public Renderable{
 public:
@@ -72,9 +80,16 @@ public:
 //private:
     vector<uColorVertex> m_points;
 
+    void setRenderMode(int mode) {m_renderMode = mode;}
+
 
 private:
     int getFieldsPerLine(string filename);
+
+    int                        m_renderMode;
+    GLuint                     m_normalListIndex;
+    coord3fArr                 m_normals;
+    size_t                     m_numNormals;
 
 };
 
@@ -83,10 +98,16 @@ inline void PointCloud::render()
     //cout << name << " : Active: " << " " << active << " selected : " << selected << endl;
     if(m_listIndex != -1 && m_active)
     {
+        // Increase point size if normal rendering is enabled
+        if(m_renderMode & RenderNormals)
+        {
+            glPointSize(5.0);
+        }
         glDisable(GL_LIGHTING);
         glPushMatrix();
         glMultMatrixf(m_transformation.getData());
 
+        // Render points
         if(m_selected)
         {
             glCallList(m_activeListIndex);
@@ -95,6 +116,14 @@ inline void PointCloud::render()
         {
             glCallList(m_listIndex);
         }
+
+        // Render normals
+        if(m_renderMode & RenderNormals)
+        {
+            glCallList(m_normalListIndex);
+
+        }
+        glPointSize(1.0);
         glEnable(GL_LIGHTING);
         glPopMatrix();
     }
