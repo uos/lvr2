@@ -90,7 +90,6 @@ void PLYIO::save( string filename, e_ply_storage_mode mode,
     // Get buffers
     if ( m_model->m_pointCloud )
     {
-        cout << "POINT CLOUD 1" << endl;
         PointBufferPtr pc( m_model->m_pointCloud );
 
         m_points                = pc->getPointArray(m_numPoints);

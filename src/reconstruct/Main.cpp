@@ -316,9 +316,6 @@ int main(int argc, char** argv)
 		mesh.finalize();
 	}
 
-    //mesh.save("triangle_mesh.ply");
-    //mesh.save("triangle_mesh.obj");
-
 	// Create output model and save to file
 	ModelPtr m( new Model( mesh.meshBuffer() ) );
 	m->m_pointCloud = pcm->pointBuffer();
