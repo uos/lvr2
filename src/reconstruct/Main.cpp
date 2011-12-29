@@ -228,7 +228,16 @@ int main(int argc, char** argv)
     pcm->setKD(options.getKd());
     pcm->setKI(options.getKi());
     pcm->setKN(options.getKn());
-    pcm->calcNormals();
+
+    // Calculate normals if necessary
+    if(!pcm->haveNormals() || (pcm->haveNormals() && options.recalcNormals()))
+    {
+        pcm->calcNormals();
+    }
+    else
+    {
+        cout << timestamp << "Using given normals." << endl;
+    }
 
     // Create an empty mesh
     HalfEdgeMesh<cVertex, cNormal> mesh( pcm );
@@ -307,8 +316,14 @@ int main(int argc, char** argv)
 		mesh.finalize();
 	}
 
-    mesh.save("triangle_mesh.ply");
-    mesh.save("triangle_mesh.obj");
+    //mesh.save("triangle_mesh.ply");
+    //mesh.save("triangle_mesh.obj");
+
+	// Create output model and save to file
+	ModelPtr m( new Model( mesh.meshBuffer() ) );
+	m->m_pointCloud = pcm->pointBuffer();
+	ModelFactory::saveModel(m, "triangle_mesh.ply");
+
 
     cout << timestamp << "Program end." << endl;
 

@@ -155,6 +155,8 @@ class PointBuffer
          **/
         void setIndexedPointColorArray( color3bArr array, size_t n );
 
+        void setIndexedPointArray( coord3fArr array, size_t n);
+
 
         /************************* Get *************************/
 
