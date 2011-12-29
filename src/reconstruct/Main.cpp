@@ -239,6 +239,15 @@ int main(int argc, char** argv)
         cout << timestamp << "Using given normals." << endl;
     }
 
+    // Save points and normals only
+    if(options.savePointNormals())
+    {
+        ModelPtr pn( new Model);
+        pn->m_pointCloud = pcm->pointBuffer();
+        ModelFactory::saveModel(pn, "pointnormals.ply");
+    }
+
+
     // Create an empty mesh
     HalfEdgeMesh<cVertex, cNormal> mesh( pcm );
 
@@ -321,13 +330,6 @@ int main(int argc, char** argv)
 	m->m_pointCloud = pcm->pointBuffer();
 	ModelFactory::saveModel(m, "triangle_mesh.ply");
 
-	// Save points and normals only
-	if(options.savePointNormals())
-	{
-	    ModelPtr pn( new Model);
-	    pn->m_pointCloud = pcm->pointBuffer();
-	    ModelFactory::saveModel(pn, "pointnormals.ply");
-	}
 
 	//
 
