@@ -43,7 +43,7 @@ Options::Options(int argc, char** argv) : m_descr("Supported options")
         ("decomposition,d", value<string>(&m_pcm)->default_value("MC"), "Defines the type of decomposition that ist used for the voxels (Standard Marching Cubes (MC) or Tetraeder (MT) decomposition. Choose from {MC, MT}")
 	    ("saveFaceNormals", "Writes all interpolated triangle normals together with triangle centroid to a file called 'face_normals.nor'")
 		("optimizePlanes,o", "Shift all triangle vertices of a cluster onto their shared plane")
-		("savePointsAndNormals,s", "Exports original point cloud data together with normals into a single file called 'points_and_normals.ply'")
+		("savePointNormals,s", "Exports original point cloud data together with normals into a single file called 'points_and_normals.ply'")
 		("recalcNormals,r", "Always estimate normals, even if given in .ply file.")
 		("threads", value<int>(&m_numThreads)->default_value( omp_get_num_procs() ), "Number of threads")
 		("saveNormals", "Writes all points and interpolated normals to a file called 'normals.nor'")
@@ -175,9 +175,9 @@ bool Options::recalcNormals() const
 	return (m_variables.count("recalcNormals"));
 }
 
-bool Options::savePointsAndNormals() const
+bool Options::savePointNormals() const
 {
-	return (m_variables.count("savePointsAndNormals"));
+	return (m_variables.count("savePointNormals"));
 }
 
 bool Options::saveNormals() const

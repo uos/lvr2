@@ -104,7 +104,7 @@ public:
 	 * @brief 	Indicates whether to save the used points
 	 * 			together with the interpolated normals.
 	 */
-	bool 	savePointsAndNormals() const;
+	bool 	savePointNormals() const;
 
 	/**
 	 * @brief	If true, normals should be calculated even if
@@ -342,9 +342,9 @@ inline ostream& operator<<(ostream& os, const Options &o)
 	{
 		cout << "##### Recalc normals \t\t: YES" << endl;
 	}
-	if(o.savePointsAndNormals())
+	if(o.savePointNormals())
 	{
-	    cout << "##### Save points and normals \t: YES" << endl;
+	    cout << "##### Save points normals \t: YES" << endl;
 	}
 	if(o.generateTextures())
 	{
