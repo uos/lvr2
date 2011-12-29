@@ -619,6 +619,7 @@
    <addaction name="action_Open"/>
    <addaction name="separator"/>
    <addaction name="actionPointCloudView"/>
+   <addaction name="actionPointNormalView"/>
    <addaction name="actionVertexView"/>
    <addaction name="actionWireframeView"/>
    <addaction name="actionSurfaceView"/>
@@ -878,6 +879,18 @@
    </property>
    <property name="text">
     <string>Show Selection</string>
+   </property>
+  </action>
+  <action name="actionPointNormalView">
+   <property name="checkable">
+    <bool>true</bool>
+   </property>
+   <property name="icon">
+    <iconset resource="../res/viewer.qrc">
+     <normaloff>:/qv_pointNormals.png</normaloff>:/qv_pointNormals.png</iconset>
+   </property>
+   <property name="text">
+    <string>actionPointNormalView</string>
    </property>
   </action>
  </widget>

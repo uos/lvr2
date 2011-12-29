@@ -582,7 +582,6 @@ ModelPtr PLYIO::read( string filename, bool readColor, bool readConfidence,
     }
     if ( numPointNormals )
     {
-        cout << "Point Normals: " << numPointNormals << endl;
         pointNormals = floatArr( new float[ 3 * numPoints ] );
     }
 

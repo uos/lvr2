@@ -102,7 +102,9 @@ void ViewerApplication::connectEvents()
 	connect(m_mainWindowUi->actionVertexView,     SIGNAL(activated()), this, SLOT(meshRenderModeChanged()));
 	connect(m_mainWindowUi->actionSurfaceView,    SIGNAL(activated()), this, SLOT(meshRenderModeChanged()));
 	connect(m_mainWindowUi->actionWireframeView,  SIGNAL(activated()), this, SLOT(meshRenderModeChanged()));
+
 	connect(m_mainWindowUi->actionPointCloudView, SIGNAL(activated()), this, SLOT(pointRenderModeChanged()));
+	connect(m_mainWindowUi->actionPointNormalView, SIGNAL(activated()), this, SLOT(pointRenderModeChanged()));
 
 	// Fog settings
 	connect(m_mainWindowUi->actionToggle_fog, SIGNAL(activated()),  this, SLOT(toggleFog()));
@@ -362,7 +364,24 @@ void ViewerApplication::meshRenderModeChanged()
 
 void ViewerApplication::pointRenderModeChanged()
 {
+    QTreeWidgetItem* item = m_sceneDockWidgetUi->treeWidget->currentItem();
+    if(item)
+    {
+        if(item->type() == PointCloudItem)
+        {
+            PointCloudTreeWidgetItem* t_item = static_cast<PointCloudTreeWidgetItem*>(item);
+            lssr::PointCloud* pc = static_cast<lssr::PointCloud*>(t_item->renderable());
 
+            int renderMode = 0;
+            renderMode |= lssr::RenderPoints;
+            if(m_mainWindowUi->actionPointNormalView->isChecked())
+            {
+                renderMode |= lssr::RenderNormals;
+            }
+             pc->setRenderMode(renderMode);
+             m_viewer->updateGL();
+        }
+    }
 }
 
 void ViewerApplication::openFile(string filename)
@@ -585,27 +604,36 @@ void ViewerApplication::treeSelectionChanged()
 
 void ViewerApplication::updateToolbarActions(CustomTreeWidgetItem* item)
 {
-//    bool point_support = item->supportsMode(Points);
-//    bool pn_support = item->supportsMode(PointNormals);
-//    bool vn_support = item->supportsMode(VertexNormals);
+    bool point_support = item->supportsMode(Points);
+    bool pn_support = item->supportsMode(PointNormals);
+    //    bool vn_support = item->supportsMode(VertexNormals);
     bool mesh_support = item->supportsMode(Mesh);
+
+
+    m_mainWindowUi->actionVertexView->setEnabled(false);
+    m_mainWindowUi->actionWireframeView->setEnabled(false);
+    m_mainWindowUi->actionSurfaceView->setEnabled(false);
+    m_mainWindowUi->actionPointCloudView->setEnabled(false);
+    m_mainWindowUi->actionGenerateMesh->setEnabled(false);
+    m_mainWindowUi->actionPointNormalView->setEnabled(false);
 
     if(mesh_support)
     {
         m_mainWindowUi->actionVertexView->setEnabled(true);
         m_mainWindowUi->actionWireframeView->setEnabled(true);
         m_mainWindowUi->actionSurfaceView->setEnabled(true);
-        m_mainWindowUi->actionPointCloudView->setEnabled(false);
-        m_mainWindowUi->actionGenerateMesh->setEnabled(false);
     }
-    else
+
+    if(point_support)
     {
-        m_mainWindowUi->actionVertexView->setEnabled(false);
-        m_mainWindowUi->actionWireframeView->setEnabled(false);
-        m_mainWindowUi->actionSurfaceView->setEnabled(false);
         m_mainWindowUi->actionPointCloudView->setEnabled(true);
-        m_mainWindowUi->actionGenerateMesh->setEnabled(true);
     }
+
+    if(pn_support)
+    {
+        m_mainWindowUi->actionPointNormalView->setEnabled(true);
+    }
+
 
 }
 
