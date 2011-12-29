@@ -24,6 +24,7 @@
  *             pointclouds, including color information, confidence, intensity
  *             and normals.
  * @author     Lars Kiesow (lkiesow), lkiesow@uos.de
+ * @author     Thomas Wiemann
  * @version   110929
  * @date       Created:       2011-09-16 17:28:28
  * @date       Last modified: 2011-09-29 14:23:36
@@ -39,6 +40,8 @@
 #include <iostream>
 #include "Message.hpp"
 
+using std::cout;
+using std::endl;
 
 namespace lssr
 {
@@ -87,6 +90,7 @@ void PLYIO::save( string filename, e_ply_storage_mode mode,
     // Get buffers
     if ( m_model->m_pointCloud )
     {
+        cout << "POINT CLOUD 1" << endl;
         PointBufferPtr pc( m_model->m_pointCloud );
 
         m_points                = pc->getPointArray(m_numPoints);

@@ -34,6 +34,7 @@ namespace lssr
 
 template<typename VertexT, typename NormalT>
 PCLPointCloudManager<VertexT, NormalT>::PCLPointCloudManager( PointBufferPtr loader, int kn, int ki, int kd )
+    : PointCloudManager<VertexT, NormalT>(loader)
 {
     this->m_kn = kn;
     this->m_ki = ki;
@@ -62,13 +63,6 @@ PCLPointCloudManager<VertexT, NormalT>::PCLPointCloudManager( PointBufferPtr loa
     }
     m_pointCloud->width = this->m_numPoints;
     m_pointCloud->height = 1;
-
-    size_t n = 0;
-    this->m_colors  = loader->getIndexedPointColorArray( n );
-    if ( n != this->m_numPoints ) {
-    	this->m_colors.reset();
-    }
-    //cout << cloud_normals->points.size() << endl;
 
 }
 
