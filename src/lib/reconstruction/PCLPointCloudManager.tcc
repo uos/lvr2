@@ -42,9 +42,6 @@ PCLPointCloudManager<VertexT, NormalT>::PCLPointCloudManager( PointBufferPtr loa
 
     m_pointCloud  = pcl::PointCloud<pcl::PointXYZ>::Ptr (new pcl::PointCloud<pcl::PointXYZ>);
 
-    // Get data from loader object
-    this->m_points = loader->getIndexedPointArray(this->m_numPoints);
-
     // Parse to PCL point cloud
     cout << timestamp << "Creating PCL point cloud" << endl;
     m_pointCloud->resize(this->m_numPoints);
@@ -86,13 +83,28 @@ void PCLPointCloudManager<VertexT, NormalT>::calcNormals()
     // Output datasets
     m_pointNormals = pcl::PointCloud<pcl::Normal>::Ptr (new pcl::PointCloud<pcl::Normal>);
 
-    // Use all neighbors in a sphere of radius 3cm
-    //ne.setKSearch(this->m_kn);
+
     ne.setKSearch(this->m_kn);
 
     // Compute the features
     ne.compute (*m_pointNormals);
     cout << timestamp << "Normal estimation done" << endl;
+}
+
+template<typename VertexT, typename NormalT>
+PointBufferPtr PCLPointCloudManager<VertexT, NormalT>::pointBuffer()
+{
+    coord3fArr normals( new coord<float>[this->m_numPoints] );
+
+    for(size_t i = 0; i < this->m_numPoints; i++)
+    {
+        normals[i][0] = m_pointNormals->points[i].normal[0];
+        normals[i][1] = m_pointNormals->points[i].normal[1];
+        normals[i][2] = m_pointNormals->points[i].normal[2];
+    }
+
+    this->m_pointBuffer->setIndexedPointNormalArray(normals, this->m_numPoints);
+    return this->m_pointBuffer;
 }
 
 template<typename VertexT, typename NormalT>

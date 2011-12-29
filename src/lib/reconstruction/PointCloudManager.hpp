@@ -106,7 +106,7 @@ public:
     /**
      * @brief Returns the point buffer object
      */
-    PointBufferPtr pointBuffer() { return m_pointBuffer; }
+    virtual PointBufferPtr pointBuffer() { return m_pointBuffer; }
 
     /**
      * @brief Returns the point at the given \ref{index}.
