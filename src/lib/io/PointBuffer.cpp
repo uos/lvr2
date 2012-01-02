@@ -69,7 +69,6 @@ ucharArr PointBuffer::getPointColorArray( size_t &n )
 {
 
     n = m_numPointColors;
-    std::cout << "GET: " << n << std::endl;
     return m_pointColors;
 
 }
