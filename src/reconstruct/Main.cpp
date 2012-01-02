@@ -140,7 +140,6 @@
 #include "reconstruction/FastReconstruction.hpp"
 #include "io/PLYIO.hpp"
 #include "geometry/Matrix4.hpp"
-#include "geometry/TriangleMesh.hpp"
 #include "geometry/HalfEdgeMesh.hpp"
 #include "geometry/Texture.hpp"
 #include <iostream>
