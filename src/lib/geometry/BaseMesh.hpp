@@ -84,8 +84,8 @@ class BaseMesh
          * @brief    Save the mesh to the given file
          */
         virtual void save( string filename,
-                std::vector<string> obj_info = std::vector<string>(), 
-                std::vector<string> comment = std::vector<string>() );
+                std::multimap< std::string, std::string > options
+                = std::multimap< std::string, std::string >() );
 
         /**
          * @brief    Creates a buffered mesh from the given file.

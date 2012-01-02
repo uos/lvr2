@@ -39,6 +39,7 @@
 #include <stdint.h>
 #include <cstdio>
 #include <vector>
+#include <map>
 
 namespace lssr
 {
@@ -116,6 +117,31 @@ class PLYIO : public BaseIO
         void save( string filename, e_ply_storage_mode mode, 
                 std::vector<string> obj_info = std::vector<string>(), 
                 std::vector<string> comment = std::vector<string>() );
+
+
+        /**
+         * \brief Save PLY with previously specified data.
+         *
+         * Save a PLY file with given filename. Additional options can be set
+         * via option multimap.
+         *
+         * \param filename  Filename of the output file.
+         **/
+        void save( string filename, ModelPtr m,
+                std::multimap< std::string, std::string > options );
+
+
+        /**
+         * \brief Save PLY with previously specified data.
+         *
+         * Save a PLY file with given filename. Additional options can be set
+         * via option multimap.
+         *
+         * \param filename  Filename of the output file.
+         **/
+        void save( string filename,
+                std::multimap< std::string, std::string > options, 
+                ModelPtr m = ModelPtr() );
 
 
         /**

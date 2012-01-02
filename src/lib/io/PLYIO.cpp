@@ -51,6 +51,52 @@ void PLYIO::save( string filename )
 }
 
 
+void PLYIO::save( string filename,
+        std::multimap< std::string, std::string > options, ModelPtr m )
+{
+
+    if ( m ) 
+    {
+        m_model = m;
+    }
+
+    std::vector< std::string > obj_info, comment;
+    e_ply_storage_mode mode = PLY_LITTLE_ENDIAN;
+    std::multimap< std::string, std::string >::iterator it;
+
+    /* Set comments. */
+    for ( it = options.equal_range( "comment" ).first;
+            it != options.equal_range( "comment" ).second; it++ )
+    {
+        comment.push_back( (*it).second );
+    }
+
+    /* Set object information. */
+    for ( it = options.equal_range( "obj_info" ).first;
+            it != options.equal_range( "obj_info" ).second; it++ )
+    {
+        obj_info.push_back( (*it).second );
+    }
+
+    /* Set PLY mode. */
+    it = options.find( "ply_mode" );
+    if ( it != options.end() )
+    {
+        mode = it->second == "PLY_ASCII" ? PLY_ASCII
+            : ( it->second == "PLY_BIG_ENDIAN" ? PLY_BIG_ENDIAN 
+                    : PLY_LITTLE_ENDIAN );
+    }
+    save( filename, mode, obj_info, comment );
+}
+
+
+void PLYIO::save( string filename, ModelPtr m,
+        std::multimap< std::string, std::string > options )
+{
+    save( filename, options, m );
+}
+
+
 void PLYIO::save( string filename, e_ply_storage_mode mode, 
         std::vector<string> obj_info, std::vector<string> comment )
 {

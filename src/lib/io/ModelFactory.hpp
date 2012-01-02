@@ -32,6 +32,7 @@
 #include <string>
 #include <vector>
 #include "boost/shared_ptr.hpp"
+#include <map>
 
 namespace lssr
 {
@@ -50,8 +51,8 @@ class ModelFactory
         static ModelPtr readModel( std::string filename );
 
         static void saveModel( ModelPtr m, std::string file,
-                std::vector<string> obj_info = std::vector<string>(), 
-                std::vector<string> comment = std::vector<string>() );
+                std::multimap< std::string, std::string > options 
+                = std::multimap< std::string, std::string >() );
 
 };
 

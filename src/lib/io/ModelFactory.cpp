@@ -78,7 +78,7 @@ ModelPtr ModelFactory::readModel( std::string filename )
 }
 
 void ModelFactory::saveModel( ModelPtr m, std::string filename,
-        std::vector<string> obj_info, std::vector<string> comment )
+        std::multimap< std::string, std::string > options )
 {
     // Get file exptension
     boost::filesystem::path selectedFile(filename);
@@ -90,8 +90,7 @@ void ModelFactory::saveModel( ModelPtr m, std::string filename,
     if(extension == ".ply")
     {
         PLYIO plyio;
-        plyio.setModel( m );
-        plyio.save( filename, PLY_LITTLE_ENDIAN, obj_info, comment );
+        plyio.save( filename, options, m );
         return;
     }
     else if (extension == ".pts" || extension == ".3d" || extension == ".xyz")
