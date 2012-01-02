@@ -301,7 +301,7 @@ int main(int argc, char** argv)
 		mesh.finalize();
 	}
 
-    std::vector<std::string> comment, obj_info;
+    std::multimap< std::string, std::string > save_opts;
     /* Build call string */
     {
         std::string s("");
@@ -310,11 +310,12 @@ int main(int argc, char** argv)
             s += std::string( argv[i] ) + " ";
         }
         s += argv[ argc-1 ];
-        comment.push_back( s );
+        save_opts.insert( pair< std::string, std::string >( "comment", s ) );
     }
-    comment.push_back( "Created with las-vegas-reconstruction: http://las-vegas.uos.de/" );
+    save_opts.insert( pair< std::string, std::string >( "comment",
+                "Created with las-vegas-reconstruction: http://las-vegas.uos.de/" ) );
 
-    mesh.save( "triangle_mesh.ply", obj_info, comment );
+    mesh.save( "triangle_mesh.ply", save_opts );
     mesh.save( "triangle_mesh.obj" );
 
     cout << timestamp << "Program end." << endl;
