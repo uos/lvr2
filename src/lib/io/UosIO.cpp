@@ -17,7 +17,7 @@
  */
 
 
- /**
+/**
  * UosIO.tcc
  *
  *  @date 11.05.2011
@@ -52,6 +52,19 @@ namespace lssr
 {
 
 
+void UosIO::save( std::string filename,
+        std::multimap< std::string, std::string > options, ModelPtr m )
+{
+
+    if ( m ) 
+    {
+        m_model = m;
+    }
+    save( filename );
+
+}
+
+
 ModelPtr UosIO::read(string dir)
 {
     ModelPtr model;
@@ -67,12 +80,12 @@ ModelPtr UosIO::read(string dir)
         int firstScan = -1;
         int lastScan =  -1;
 
-		  boost::filesystem::directory_iterator lastFile;
+        boost::filesystem::directory_iterator lastFile;
 
         // First, look for .3d files
         for(boost::filesystem::directory_iterator it(directory); it != lastFile; it++ )
         {
-			  boost::filesystem::path p = it->path();
+            boost::filesystem::path p = it->path();
             if(string(p.extension().c_str()) == ".3d")
             {
                 // Check for naming convention "scanxxx.3d"
@@ -109,7 +122,7 @@ ModelPtr UosIO::read(string dir)
             m_lastScan = lastScan;
 
             cout << timestamp << "Reading " << n3dFiles << " scans in UOS format "
-                 << "(From " << firstScan << " to " << lastScan << ")." << endl;
+                << "(From " << firstScan << " to " << lastScan << ")." << endl;
             readNewFormat(model, dir, firstScan, lastScan, n);
         }
         else
@@ -118,7 +131,7 @@ ModelPtr UosIO::read(string dir)
             int nDirs = 0;
             for(boost::filesystem::directory_iterator it(directory); it != lastFile; it++ )
             {
-					boost::filesystem::path p = it->path();
+                boost::filesystem::path p = it->path();
                 int num = 0;
 
                 // Only count numbered dirs
@@ -153,7 +166,7 @@ ModelPtr UosIO::read(string dir)
                 m_lastScan = lastScan;
 
                 cout << timestamp << "Reading " << nDirs << " scans in old UOS format "
-                     << "(From " << firstScan << " to " << lastScan << ")." << endl;
+                    << "(From " << firstScan << " to " << lastScan << ")." << endl;
                 readOldFormat(model, dir, firstScan, lastScan, n);
             }
             else
@@ -320,8 +333,8 @@ void UosIO::readNewFormat(ModelPtr &model, string dir, int first, int last, size
             tf.toPostionAngle(euler);
 
             cout << timestamp << "Processing " << scanFileName << " @ "
-                    << euler[0] << " " << euler[1] << " " << euler[2] << " "
-                    << euler[3] << " " << euler[4] << " " << euler[5] << endl;
+                << euler[0] << " " << euler[1] << " " << euler[2] << " "
+                << euler[3] << " " << euler[4] << " " << euler[5] << endl;
 
             // Skip first line in scan file (maybe metadata)
             char dummy[1024];
@@ -509,10 +522,10 @@ void UosIO::readOldFormat(ModelPtr &model, string dir, int first, int last, size
         string poseFileName;
 
         // Create correct path
-		  boost::filesystem::path p(
-				  boost::filesystem::path(dir) / 
-				  boost::filesystem::path( to_string( fileCounter, 3 ) ) /
-				  boost::filesystem::path( "position.dat" ) );
+        boost::filesystem::path p(
+                boost::filesystem::path(dir) / 
+                boost::filesystem::path( to_string( fileCounter, 3 ) ) /
+                boost::filesystem::path( "position.dat" ) );
 
         // Get file name (if some knows a more elegant way to
         // extract the pull path let me know
@@ -542,10 +555,10 @@ void UosIO::readOldFormat(ModelPtr &model, string dir, int first, int last, size
         for (int i = 1; ; i++) {
             //scanFileName = dir + to_string(fileCounter, 3) + "/scan" + to_string(i,3) + ".dat";
 
-			  boost::filesystem::path sfile(
-					  boost::filesystem::path(dir) /
-					  boost::filesystem::path( to_string( fileCounter, 3 ) ) /
-					  boost::filesystem::path( "scan" + to_string(i) + ".dat" ) );
+            boost::filesystem::path sfile(
+                    boost::filesystem::path(dir) /
+                    boost::filesystem::path( to_string( fileCounter, 3 ) ) /
+                    boost::filesystem::path( "scan" + to_string(i) + ".dat" ) );
             scanFileName = "/" + sfile.relative_path().string();
 
             scan_in.open(scanFileName.c_str());
@@ -626,9 +639,9 @@ void UosIO::readOldFormat(ModelPtr &model, string dir, int first, int last, size
         pose_in.clear();
 
         // Create path to frame file
-		  boost::filesystem::path framePath(
-				  boost::filesystem::path(dir) / 
-				  boost::filesystem::path("scan" + to_string( fileCounter, 3 ) + ".frames" ) );
+        boost::filesystem::path framePath(
+                boost::filesystem::path(dir) / 
+                boost::filesystem::path("scan" + to_string( fileCounter, 3 ) + ".frames" ) );
         string frameFileName = "/" + framePath.relative_path().string();
 
         // Try to open frame file

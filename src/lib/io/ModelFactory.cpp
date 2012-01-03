@@ -17,7 +17,7 @@
  */
 
 
- /**
+/**
  * IOFactory.cpp
  *
  *  @date 24.08.2011
@@ -70,13 +70,15 @@ ModelPtr ModelFactory::readModel( std::string filename )
     if( io )
     {
         m = io->read( filename );
+        delete io;
     }
 
     return m;
 
 }
 
-void ModelFactory::saveModel( ModelPtr m, std::string filename )
+void ModelFactory::saveModel( ModelPtr m, std::string filename,
+        std::multimap< std::string, std::string > options )
 {
     // Get file exptension
     boost::filesystem::path selectedFile(filename);
@@ -93,10 +95,10 @@ void ModelFactory::saveModel( ModelPtr m, std::string filename )
     {
         io = new AsciiIO;
     }
-	 else if ( extension == ".obj" )
-	 {
-		 io = new ObjIO;
-	 }
+    else if ( extension == ".obj" )
+    {
+        io = new ObjIO;
+    }
     else if (extension == "")
     {
         // Try to load UOS format data from directory in
@@ -106,11 +108,13 @@ void ModelFactory::saveModel( ModelPtr m, std::string filename )
     // Save model
     if(io)
     {
-        io->save( m, filename );
+        io->save( filename, options, m );
+        delete io;
     }
     else
     {
-        cout << timestamp << "File format " << extension << " is currrently not supported." << endl;
+        cout << timestamp << "File format " << extension
+            << " is currrently not supported." << endl;
     }
 
 

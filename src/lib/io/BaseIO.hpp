@@ -35,6 +35,7 @@
 
 #include <cstdlib>
 #include <string>
+#include <map>
 
 #include "Model.hpp"
 
@@ -59,12 +60,67 @@ namespace lssr
              */
             virtual ModelPtr read(string filename ) = 0;
 
+
             /**
              * \brief Save the loaded elements to the given file.
              *
              * @param filename Filename of the file to write.
              */
-            virtual void save( ModelPtr model, string filename ) = 0;
+            virtual void save( string filename ) = 0;
+
+
+            /**
+             * \brief Set the model and save the loaded elements to the given
+             *        file.
+             *
+             * @param filename Filename of the file to write.
+             */
+            virtual void save( ModelPtr model, string filename );
+
+
+            /**
+             * \brief Save model to file.
+             *
+             * Save a model. Additional options can be set via option multimap.
+             *
+             * \param filename  Filename of the output file.
+             * \param m         Model to save.
+             * \param options   Additional options.
+             **/
+            virtual void save( string filename, ModelPtr m,
+                    std::multimap< std::string, std::string > options );
+
+
+            /**
+             * \brief Save model to file.
+             *
+             * Save a model. Additional options can be set via option multimap.
+             *
+             * \param filename  Filename of the output file.
+             * \param options   Additional options.
+             * \param m         Model to save.
+             **/
+            virtual void save( string filename,
+                    std::multimap< std::string, std::string > options, 
+                    ModelPtr m = ModelPtr() ) = 0;
+
+
+            /**
+             * \brief  Set the model for io operations to use.
+             * \param m  Shared pointer to model.
+             **/
+            virtual void setModel( ModelPtr m );
+
+
+            /**
+             * \brief  Get the model for io operations.
+             * \return  Shared pointer to model.
+             **/
+            virtual ModelPtr getModel();
+
+
+        protected:
+            ModelPtr m_model;
 
     };
 

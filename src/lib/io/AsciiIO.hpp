@@ -46,35 +46,64 @@ namespace lssr
  */
 class AsciiIO : public BaseIO
 {
-public:
+    public:
 
-    /**
-     * \brief Default constructor.
-     **/
-    AsciiIO() {};
+        /**
+         * \brief Default constructor.
+         **/
+        AsciiIO() {};
 
-    /**
-     * @brief Reads the given file and stores point and normal
-     *        information in the given parameters
-     *
-     * @param filename      The file to read
-     */
-    virtual ModelPtr read( string filename );
 
-    /**
-     * @todo : Implement save method for ASCII Files...
-     * @param filename
-     */
-    virtual void save( ModelPtr m, string filename );
+        /**
+         * @brief Reads the given file and stores point and normal
+         *        information in the given parameters
+         *
+         * @param filename      The file to read
+         */
+        virtual ModelPtr read( string filename );
 
-    /// TODO: Coordinate mapping for ascii files
-    static size_t countLines(string filename);
 
-    /**
-     * @brief Helper method. Returns the number of columns in the
-     *        given file.
-     */
-    static int getEntriesInLine(string filename);
+        /**
+         * @todo : Implement save method for ASCII Files...
+         * @param filename
+         */
+        virtual void save( string filename );
+
+
+        /**
+         * \brief Save model to given filename.
+         * 
+         * This method will save the model ti the given filename. Additional one single line comment can be set.
+         *
+         * \param filename  File to write.
+         * \param comment   Single line comment.
+         **/
+        void save( std::string filename, std::string comment );
+
+
+        /**
+         * \brief Save model to file.
+         *
+         * Save a model. Additional options can be set via option multimap.
+         *
+         * \param filename  Filename of the output file.
+         * \param options   Additional options.
+         * \param m         Model to save.
+         **/
+        void save( string filename,
+                std::multimap< std::string, std::string > options, 
+                ModelPtr m = ModelPtr() );
+
+
+        /// TODO: Coordinate mapping for ascii files
+        static size_t countLines(string filename);
+
+
+        /**
+         * @brief Helper method. Returns the number of columns in the
+         *        given file.
+         */
+        static int getEntriesInLine(string filename);
 
 
 

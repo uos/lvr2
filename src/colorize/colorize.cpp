@@ -55,6 +55,7 @@ typedef lssr::PointCloudManager<lssr::ColorVertex<float, unsigned char>,
 float maxdist = std::numeric_limits<float>::max();
 unsigned char rgb[3] = { 255, 0, 0 };
 std::string pcm_name = "stann";
+std::string ply_mode = "PLY_LITTLE_ENDIAN";
 
 
 /**
@@ -68,6 +69,8 @@ void printHelp( char * name ) {
             "   -h   Show this help and exit.\n"
             "   -d   Maximum distance for neighbourhood.\n"
             "   -p   Set point cloud manager (default: stann).\n"
+            "   -m   Set mode of PLY output files. If output file\n"
+            "        format is not PLY this option will have no effect.\n"
             "   -j   Number of jobs to be scheduled parallel.\n"
             "        Positive integer or “auto” (default)\n"
             "   -c   Set color of points with no neighbours \n"
@@ -83,7 +86,7 @@ void parseArgs( int argc, char ** argv ) {
 
     /* Parse options */
     char c;
-    while ( ( c = getopt( argc, argv, "hd:j:c:p:" ) ) != -1 ) {
+    while ( ( c = getopt( argc, argv, "hd:j:c:p:m:" ) ) != -1 ) {
         switch (c) {
             case 'h':
                 printHelp( *argv );
@@ -100,6 +103,9 @@ void parseArgs( int argc, char ** argv ) {
                 pcm_name = optarg;
                 break;
             case 'm':
+                ply_mode = std::string( optarg );
+                break;
+            case 'j':
                 if ( !strcmp( optarg, "auto" ) ) {
                     omp_set_num_threads( omp_get_num_procs() );
                 } else {
@@ -123,7 +129,7 @@ void parseArgs( int argc, char ** argv ) {
         printHelp( *argv );
         exit( EXIT_SUCCESS );
     }
-
+    
 }
 
 
@@ -133,7 +139,7 @@ void parseArgs( int argc, char ** argv ) {
  **/
 void loadPointCloud( lssr::PointBufferPtr &pc, PointCloudManagerPtr &pcm, char* filename )
 {
-
+    
     /* Read clouds from file. */
     printf( "Loading point cloud %s…\n", filename );
     lssr::ModelFactory io_factory;
@@ -206,7 +212,25 @@ int main( int argc, char ** argv )
     /* Save point cloud. */
     lssr::ModelFactory io_factory;
     lssr::ModelPtr model( new lssr::Model( pc1 ) );
-    io_factory.saveModel( model, argv[ optind + 2 ] );
+
+    
+    std::multimap< std::string, std::string > save_opts;
+    /* Build call string */
+    {
+        std::string s("");
+        for ( size_t i(0); i < argc-1; i++ )
+        {
+            s += std::string( argv[i] ) + " ";
+        }
+        s += argv[ argc-1 ];
+        save_opts.insert( pair< std::string, std::string >( "comment", s ) );
+    }
+    save_opts.insert( pair< std::string, std::string >( "comment",
+                "Created with las-vegas-reconstruction (colorize): "
+                "http://las-vegas.uos.de/" ) );
+    save_opts.insert( pair<std::string, std::string>( "ply_mode", ply_mode ));
+
+    io_factory.saveModel( model, argv[ optind + 2 ], save_opts );
 
     return EXIT_SUCCESS;
 
