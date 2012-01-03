@@ -90,13 +90,6 @@ void PLYIO::save( string filename,
 }
 
 
-void PLYIO::save( string filename, ModelPtr m,
-        std::multimap< std::string, std::string > options )
-{
-    save( filename, options, m );
-}
-
-
 void PLYIO::save( string filename, e_ply_storage_mode mode, 
         std::vector<string> obj_info, std::vector<string> comment )
 {

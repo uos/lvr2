@@ -1,4 +1,5 @@
 set(LSSR_SOURCES
+    io/BaseIO.cpp
 	io/ModelFactory.cpp
     io/PLYIO.cpp
     io/AsciiIO.cpp

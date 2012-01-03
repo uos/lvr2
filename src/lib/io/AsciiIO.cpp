@@ -199,10 +199,11 @@ void AsciiIO::save( std::string filename,
     }
 
     /* Set PLY mode. */
-    it = options.find( "comment" );
+    std::multimap< std::string, std::string >::iterator it 
+        = options.find( "comment" );
     if ( it != options.end() )
     {
-        save( filename, it->second; );
+        save( filename, it->second );
     }
     else
     {
