@@ -3,7 +3,8 @@ set(LSSR_SOURCES
     io/PLYIO.cpp
     io/AsciiIO.cpp
     io/UosIO.cpp
-    io/ObjIO.cpp
+    io/ObjIO.cpp	
+    io/LasIO.cpp
     io/Progress.cpp
     io/Timestamp.cpp
     io/Message.cpp
