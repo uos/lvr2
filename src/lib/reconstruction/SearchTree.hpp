@@ -37,6 +37,7 @@
 // Standard C++ includes
 #include <vector>
 #include <iostream>
+
 using std::cout;
 using std::endl;
 
@@ -65,11 +66,11 @@ namespace lssr
             * @param neighbours  The number of neighbours that should be searched.
             * @param indices     A vector that stores the indices for the neighbours whithin the dataset.
             */
-            virtual void kSearch( float              qp[3], int neighbours, vector< ulong > &indices ) = 0;
-            virtual void kSearch( VertexT&              qp, int neighbours, vector< ulong > &indices ) = 0;
-            virtual void kSearch( const VertexT&        qp, int neighbours, vector< ulong > &indices ) = 0;
-            virtual void kSearch( coord< float >&       qp, int neighbours, vector< ulong > &indices ) = 0;
-            virtual void kSearch( const coord< float >& qp, int neighbours, vector< ulong > &indices ) = 0;
+            virtual void kSearch( float              qp[3], int neighbours, vector< ulong > &indices );
+            virtual void kSearch( VertexT&              qp, int neighbours, vector< ulong > &indices );
+            virtual void kSearch( const VertexT&        qp, int neighbours, vector< ulong > &indices );
+            virtual void kSearch( const coord< float >& qp, int neighbours, vector< ulong > &indices );
+            virtual void kSearch( coord< float >&       qp, int neighbours, vector< ulong > &indices );
 
 
             /**
@@ -81,11 +82,13 @@ namespace lssr
             * @param indices     A vector that stores the indices for the neighbours whithin the dataset.
             * @param distances   A vector that sotres the distances for the neighbours that are found.
             */
-            virtual void kSearch( float               qp[3], int neighbours, vector< ulong > &indices, vector< double > &distances ) = 0;
-            virtual void kSearch( VertexT&               qp, int neighbours, vector< ulong > &indices, vector< double > &distances ) = 0;
-            virtual void kSearch( const VertexT&         qp, int neighbours, vector< ulong > &indices, vector< double > &distances ) = 0;
+            virtual void kSearch( float               qp[3], int neighbours, vector< ulong > &indices, vector< double > &distances );
+            virtual void kSearch( VertexT&               qp, int neighbours, vector< ulong > &indices, vector< double > &distances );
+            virtual void kSearch( const VertexT&         qp, int neighbours, vector< ulong > &indices, vector< double > &distances );
+            virtual void kSearch( const coord < float >& qp, int neighbours, vector< ulong > &indices, vector< double > &distances );
+            
+            // Pure virtual. All other search functions map to this. Must be implemented in sub-class.
             virtual void kSearch( coord < float >&       qp, int neighbours, vector< ulong > &indices, vector< double > &distances ) = 0;
-            virtual void kSearch( const coord < float >& qp, int neighbours, vector< ulong > &indices, vector< double > &distances ) = 0;
 
             virtual void radiusSearch( float              qp[3], double r, vector< ulong > &indices ) = 0; 
             virtual void radiusSearch( VertexT&              qp, double r, vector< ulong > &indices ) = 0;

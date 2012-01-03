@@ -24,6 +24,96 @@
  */
 
 namespace lssr {
+/*
+   Begin of kSearch implementations
+*/
+template<typename VertexT, typename NormalT>
+   void SearchTree< VertexT, NormalT >::kSearch( float qp[3], int neighbours, vector< ulong > &indices )
+   {
+      vector< double > distances;
+      this->kSearch( qp, neighbours, indices, distances);
+   }
+
+
+template<typename VertexT, typename NormalT>
+   void SearchTree< VertexT, NormalT >::kSearch( VertexT &qp, int neighbours, vector< ulong > &indices )
+   {
+      vector< double > distances;
+      this->kSearch( qp, neighbours, indices, distances);
+   }
+
+
+template<typename VertexT, typename NormalT>
+   void SearchTree< VertexT, NormalT >::kSearch( const VertexT &qp, int neighbours, vector< ulong > &indices )
+   {
+      vector< double > distances;
+      this->kSearch( qp, neighbours, indices, distances);
+   }
+
+
+template<typename VertexT, typename NormalT>
+   void SearchTree< VertexT, NormalT >::kSearch( coord< float > &qp, int neighbours, vector< ulong > &indices )
+   {
+      vector< double > distances;
+      this->kSearch( qp, neighbours, indices, distances);
+   }
+
+
+template<typename VertexT, typename NormalT>
+   void SearchTree< VertexT, NormalT >::kSearch( const coord< float > &qp, int neighbours, vector< ulong > &indices )
+   {
+      vector< double > distances;
+      this->kSearch( qp, neighbours, indices, distances);
+   }
+
+
+/*
+   Begin of kSearch implementations with distances
+*/
+template<typename VertexT, typename NormalT>
+   void SearchTree< VertexT, NormalT >::kSearch( float qp[3], int neighbours, vector< ulong > &indices, vector< double > &distances )
+   {
+      coord< float > Point;
+      Point[0] = qp[0];
+      Point[1] = qp[1];
+      Point[2] = qp[2];
+      this->kSearch( Point, neighbours, indices, distances );
+   }
+
+
+template<typename VertexT, typename NormalT>
+   void SearchTree< VertexT, NormalT >::kSearch( VertexT &qp, int neighbours, vector< ulong > &indices, vector< double > &distances )
+   {
+      float qp_arr[3];
+      qp_arr[0] = qp[0];
+      qp_arr[1] = qp[1];
+      qp_arr[2] = qp[2];
+      this->kSearch( qp_arr, neighbours, indices, distances );
+   }
+
+
+template<typename VertexT, typename NormalT>
+   void SearchTree< VertexT, NormalT >::kSearch( const VertexT &qp, int neighbours, vector< ulong > &indices, vector< double > &distances )
+   {
+      float qp_arr[3];
+      qp_arr[0] = qp[0];
+      qp_arr[1] = qp[1];
+      qp_arr[2] = qp[2];
+      this->kSearch( qp_arr, neighbours, indices, distances);
+   }
+
+
+template<typename VertexT, typename NormalT>
+   void SearchTree< VertexT, NormalT >::kSearch( const coord< float > &qp, int neighbours, vector< ulong > &indices, vector< double > &distances )
+   {
+      float qp_arr[3];
+      coord< float > qpcpy = qp;
+      qp_arr[0] = qpcpy[0];
+      qp_arr[1] = qpcpy[1];
+      qp_arr[2] = qpcpy[2];
+      this->kSearch( qp, neighbours, indices, distances);
+   }
+
 
    template<typename VertexT, typename NormalT>
       void SearchTree< VertexT, NormalT >::setKn( int kn ) {
