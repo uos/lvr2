@@ -53,18 +53,6 @@ if(OpenGL_FOUND)
 endif(OpenGL_FOUND)
 
 
-find_library( rply_shared
-    NAMES rply
-    PATHS /usr/lib /usr/local/lib /lib )
-if( rply_shared )
-    message(STATUS "Looking for rply - found")
-else( rply_shared )
-    message(STATUS "Looking for rply - not found")
-    message(STATUS "Building local rply")
-    include_directories( ${CMAKE_CURRENT_SOURCE_DIR}/ext/rply/ )
-    add_subdirectory(ext/rply)
-endif( rply_shared )
-
 IF(APPLE)
     link_directories(/opt/local/lib)
     include_directories(/System/Library/Frameworks/GLUT.framework/Headers)
@@ -81,6 +69,19 @@ find_package(GLUT REQUIRED)
 set( CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${OpenMP_CXX_FLAGS}" )
 set( CMAKE_CXX_FLAGS_RELEASE "${CMAKE_CXX_FLAGS_RELEASE} ${OpenMP_CXX_FLAGS}" )
 set( CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} ${OpenMP_CXX_FLAGS}" )
+
+##############################################################
+# USED THIRD PARTY STUFF
+##############################################################
+
+# RPLY
+include_directories( ${CMAKE_CURRENT_SOURCE_DIR}/ext/rply/ )
+add_subdirectory(ext/rply)
+
+# LASLIB
+
+include_directories( ${CMAKE_CURRENT_SOURCE_DIR}/ext/laslib/inc )
+add_subdirectory(ext/laslib)
 
 ##############################################################
 # LIBRARIES
