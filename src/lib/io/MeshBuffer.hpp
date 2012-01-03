@@ -441,7 +441,7 @@ class MeshBuffer
          * \param array  %Face index array.
          * \param n      Amount of faces in array.
          **/
-        void setFaceArray( unsigned int* array, size_t n );
+        void setFaceArray( uintArr array, size_t n );
 
 
         /**
@@ -469,7 +469,7 @@ class MeshBuffer
          * \param n  Amount of faces defined in the array.
          * \return   %Face index array.
          **/
-        unsigned int* getFaceArray( size_t &n );
+        uintArr getFaceArray( size_t &n );
 
 
         /**
@@ -483,9 +483,9 @@ class MeshBuffer
          * \param n  Amount of confidence values in array.
          * \return   %Vertex confidence array.
          **/
-        float** getIndexedVertexTextureCoordinateArray( size_t &n );
+        coord3fArr getIndexedVertexTextureCoordinateArray( size_t &n );
 
-        uchar* getFaceColorArray( size_t &n );
+        ucharArr getFaceColorArray( size_t &n );
 
         /**
          * \brief Set the vertex texture-coordinates array.
@@ -531,7 +531,7 @@ class MeshBuffer
          * \param array  %Face index array.
          * \param n      Amount of faces in array.
          **/
-        unsigned int* getFaceTextureIndexArray( size_t &n );
+        uintArr getFaceTextureIndexArray( size_t &n );
 
 
         /**
@@ -547,28 +547,24 @@ class MeshBuffer
     protected:
 
         /// %Vertex buffer.
-        floatArr     m_vertices;
+        floatArr    m_vertices;
         /// %Vertex color buffer.
-        ucharArr     m_vertexColors;
+        ucharArr    m_vertexColors;
         /// %Vertex confidence buffer.
-        floatArr     m_vertexConfidence;
+        floatArr    m_vertexConfidence;
         /// %Vertex intensity buffer.
-        floatArr     m_vertexIntensity;
+        floatArr    m_vertexIntensity;
         /// %Vertex normal buffer.
-        floatArr     m_vertexNormals;
+        floatArr    m_vertexNormals;
         /// %Vertex texture-coordinate buffer.
-        float*       m_vertexTextureCoordinates;
-
-        /// Indexed vertex texture-coordinate buffer.
-        float**      m_indexedVertexTextureCoordinates;
-
-        /// List of Colors for every face
-        uchar*       m_faceColors;
+        floatArr    m_vertexTextureCoordinates;
 
         /// Buffer of face indices
-        unsigned int* m_faceIndices;
+        uintArr     m_faceIndices;
+        /// List of Colors for every face
+        ucharArr    m_faceColors;
         /// Buffer of FaceTexture indices
-        unsigned int* m_faceTextureIndices;
+        uintArr     m_faceTextureIndices;
 
         /// Number of vertices in internal buffer.
         size_t      m_numVertices;

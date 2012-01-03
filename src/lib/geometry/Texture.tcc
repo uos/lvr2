@@ -31,7 +31,9 @@ template<typename VertexT, typename NormalT>
 float Texture<VertexT, NormalT>::m_texelSize = 1;
 
 template<typename VertexT, typename NormalT>
-Texture<VertexT, NormalT>::Texture( typename PointCloudManager<VertexT, NormalT>::Ptr pm, Region<VertexT, NormalT>* region, vector<vector<HVertex*> > contours)
+Texture<VertexT, NormalT>::Texture(
+		typename PointCloudManager<VertexT, NormalT>::Ptr pm,
+		Region<VertexT, NormalT>* region, vector<vector<HVertex*> > contours)
 {
 	this->m_region = region;
 	this->m_data   = 0;
@@ -121,7 +123,10 @@ Texture<VertexT, NormalT>::Texture( typename PointCloudManager<VertexT, NormalT>
 					{
 						vector<VertexT> cv;
 
-						VertexT current_position = p + best_v1 * (x * m_texelSize + best_a_min - m_texelSize / 2.0) + best_v2 * (y * m_texelSize + best_b_min - m_texelSize / 2.0);
+						VertexT current_position = p + best_v1
+							* (x * m_texelSize + best_a_min - m_texelSize / 2.0)
+							+ best_v2
+							* (y * m_texelSize + best_b_min - m_texelSize / 2.0);
 
 						int one = 1;
 						pm->getkClosestVertices(current_position, one, cv);
