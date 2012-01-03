@@ -37,7 +37,7 @@ StaticMesh::StaticMesh(){
 	m_faceNormals   = 0;
 	m_vertices.reset();
 	m_colors.reset();
-	m_indices       = 0;
+	m_indices.reset();
 
 	m_numFaces      = 0;
 	m_numVertices   = 0;
@@ -133,12 +133,11 @@ StaticMesh::StaticMesh(const StaticMesh &o)
 {
 
 	if(m_faceNormals != 0) delete[] m_faceNormals;
-	if(m_indices     != 0) delete[] m_indices;
 
-	m_faceNormals       = new float[3 * o.m_numVertices];
-	m_vertices          = floatArr( new float[3 * o.m_numVertices] );
-	m_colors            = ucharArr( new unsigned char[3 * o.m_numVertices] );
-	m_indices           = new unsigned int[3 * o.m_numFaces];
+	m_faceNormals = new float[3 * o.m_numVertices];
+	m_vertices    = floatArr( new float[3 * o.m_numVertices] );
+	m_colors      = ucharArr( new unsigned char[3 * o.m_numVertices] );
+	m_indices     = uintArr(  new unsigned int[3 * o.m_numFaces] );
 
 	for ( size_t i(0); i < 3 * o.m_numVertices; i++ )
 	{
@@ -218,7 +217,7 @@ void StaticMesh::compileSurfaceList(){
 		glColorPointer( 3, GL_UNSIGNED_BYTE, 0, m_colors.get() );
 
 		// Draw elements
-		glDrawElements(GL_TRIANGLES, 3 * m_numFaces, GL_UNSIGNED_INT, m_indices);
+		glDrawElements(GL_TRIANGLES, 3 * m_numFaces, GL_UNSIGNED_INT, m_indices.get());
 
 		glEndList();
 
@@ -316,16 +315,11 @@ void StaticMesh::calcBoundingBox()
     }
 }
 
-unsigned int* StaticMesh::getIndices()
+uintArr StaticMesh::getIndices()
 {
-	if(m_finalized)
-	{
-		return m_indices;
-	}
-	else
-	{
-		return 0;
-	}
+
+    return m_finalized ? m_indices : uintArr();
+
 }
 
 floatArr StaticMesh::getVertices()
