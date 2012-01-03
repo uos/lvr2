@@ -47,9 +47,36 @@ ModelPtr LasIO::read(string filename )
     {
         LASreader* lasreader = lasreadopener.open();
 
-        cout << lasreader->npoints << endl;
+        // Get number of points in file
+        size_t num_points = lasreader->npoints;
+
+        // Alloc coordinate array
+        floatArr points ( new float[3 * num_points]);
+        floatArr intensities ( new float[num_points]);
+
+        // Read point data
+        for(size_t i = 0; i < num_points; i++)
+        {
+            size_t buf_pos = 3 * i;
+            lasreader->read_point();
+            points[buf_pos]     = lasreader->point.x;
+            points[buf_pos + 1] = lasreader->point.y;
+            points[buf_pos + 2] = lasreader->point.z;
+
+            intensities[i] = lasreader->point.intensity;
+
+        }
+
+        // Create point buffer and model
+        PointBufferPtr p_buffer( new PointBuffer);
+        p_buffer->setPointArray(points, num_points);
+        p_buffer->setPointIntensityArray(intensities, num_points);
+
+        ModelPtr m_ptr( new Model(p_buffer));
 
         delete lasreader;
+
+        return m_ptr;
     }
     else
     {
