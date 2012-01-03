@@ -28,6 +28,7 @@
 #include "PLYIO.hpp"
 #include "UosIO.hpp"
 #include "ObjIO.hpp"
+#include "LasIO.hpp"
 #include "ModelFactory.hpp"
 
 #include "Timestamp.hpp"
@@ -60,6 +61,10 @@ ModelPtr ModelFactory::readModel( std::string filename )
     {
         /// TODO: Integrate ObJIO in factory
 
+    }
+    else if (extension == ".las")
+    {
+        io = new LasIO;
     }
     else if (extension == "")
     {
