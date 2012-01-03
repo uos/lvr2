@@ -36,6 +36,9 @@
 
 // Standard C++ includes
 #include <vector>
+#include <iostream>
+using std::cout;
+using std::endl;
 
 namespace lssr
 {
@@ -54,19 +57,42 @@ namespace lssr
 
             typedef boost::shared_ptr< SearchTree< VertexT, NormalT > > Ptr; 
 
+            /**
+            * @brief This function performs a k-next-neightbour search on the 
+                     data that were given in the conrstructor.
 
-            virtual void kSearch( float[3] qp, int neighbours, vector< ulong > indices ) = 0;
-            virtual void kSearch( VertexT& qp, int neighbours, vector< ulong > indices ) = 0;
-            virtual void kSearch( const VertexT& qp, int neighbours, vector< ulong > indices ) = 0;
+            * @param qp          A float array which contains the query point for which the neighbours are searched.
+            * @param neighbours  The number of neighbours that should be searched.
+            * @param indices     A vector that stores the indices for the neighbours whithin the dataset.
+            */
+            virtual void kSearch( float              qp[3], int neighbours, vector< ulong > &indices ) = 0;
+            virtual void kSearch( VertexT&              qp, int neighbours, vector< ulong > &indices ) = 0;
+            virtual void kSearch( const VertexT&        qp, int neighbours, vector< ulong > &indices ) = 0;
+            virtual void kSearch( coord< float >&       qp, int neighbours, vector< ulong > &indices ) = 0;
+            virtual void kSearch( const coord< float >& qp, int neighbours, vector< ulong > &indices ) = 0;
 
-            virtual void kSearch( float[3] qp, int neighbours, vector< ulong > indices, vector< float > distances ) = 0;
-            virtual void kSearch( VertexT& qp, int neighbours, vector< ulong > indices, vector< float > distances ) = 0;
-            virtual void kSearch( const VertexT& qp, int neighbours, vector< ulong > indices, vector< float > distances ) = 0;
 
-            virtual void radiusSearch( float[3] qp, double r, vector<VertexT> &resV, vector<NormalT> &resN ) = 0;
-            virtual void radiusSearch( VertexT& qp, double r, vector<VertexT> &resV, vector<NormalT> &resN ) = 0;
-            virtual void radiusSearch( const VertexT& qp, double r, vector<VertexT> &resV, vector<NormalT> &resN ) = 0;
+            /**
+            * @brief This function performs a k-next-neightbour search on the 
+                     data that were given in the conrstructor.
 
+            * @param qp          A float array which contains the query point for which the neighbours are searched.
+            * @param neighbours  The number of neighbours that should be searched.
+            * @param indices     A vector that stores the indices for the neighbours whithin the dataset.
+            * @param distances   A vector that sotres the distances for the neighbours that are found.
+            */
+            virtual void kSearch( float               qp[3], int neighbours, vector< ulong > &indices, vector< double > &distances ) = 0;
+            virtual void kSearch( VertexT&               qp, int neighbours, vector< ulong > &indices, vector< double > &distances ) = 0;
+            virtual void kSearch( const VertexT&         qp, int neighbours, vector< ulong > &indices, vector< double > &distances ) = 0;
+            virtual void kSearch( coord < float >&       qp, int neighbours, vector< ulong > &indices, vector< double > &distances ) = 0;
+            virtual void kSearch( const coord < float >& qp, int neighbours, vector< ulong > &indices, vector< double > &distances ) = 0;
+
+            virtual void radiusSearch( float              qp[3], double r, vector< ulong > &indices ) = 0; 
+            virtual void radiusSearch( VertexT&              qp, double r, vector< ulong > &indices ) = 0;
+            virtual void radiusSearch( const VertexT&        qp, double r, vector< ulong > &indices ) = 0;
+            virtual void radiusSearch( coord< float >&       qp, double r, vector< ulong > &indices ) = 0; 
+            virtual void radiusSearch( const coord< float >& qp, double r, vector< ulong > &indices ) = 0; 
+            
 
             /**
             * @brief Set the number of neighbours used to estimate and interpolate normals.
@@ -118,7 +144,7 @@ namespace lssr
       }; // SearchTreeClass.
 
 // include implementation for this class
-#include "SeachTree.tcc"
 
 }  // namespace lssr{;
+#include "SearchTree.tcc"
 #endif // include-guard
