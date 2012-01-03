@@ -17,7 +17,7 @@
  */
 
 
- /*
+/*
  * ObjIO.hpp
  *
  *  @date 07.11.2011
@@ -40,38 +40,38 @@ namespace lssr
  */
 class ObjIO : public BaseIO
 {
-public:
+    public:
 
-	/**
-	 * @brief Constructor.
-	 **/
-	ObjIO()
-    {
-        m_model.reset();
-    }
+        /**
+         * @brief Constructor.
+         **/
+        ObjIO()
+        {
+            m_model.reset();
+        }
 
-	~ObjIO() { };
+        ~ObjIO() { };
 
-	/**
-	 * \brief   Parse the given file and load supported elements.
-     * \warning This function is yet to be implemented.
-     * \todo    Implement this function propperly.
-	 *
-	 * @param filename  The file to read.
-	 */
-	ModelPtr read( string filename )
-    {
-        ModelPtr m( new Model );
-        return m;
-    };
+        /**
+         * \brief   Parse the given file and load supported elements.
+         * \warning This function is yet to be implemented.
+         * \todo    Implement this function propperly.
+         *
+         * @param filename  The file to read.
+         */
+        ModelPtr read( string filename )
+        {
+            ModelPtr m( new Model );
+            return m;
+        };
 
-	/**
-	 * @brief 	Writes the mesh to an obj file.
-	 *
-	 * @param 	model		The model containing all mesh data
-	 * @param	filename 	The file name to use
-     */
-    void save( string filename );
+        /**
+         * @brief     Writes the mesh to an obj file.
+         *
+         * @param  model     The model containing all mesh data
+         * @param  filename  The file name to use
+         */
+        void save( string filename );
 
 
 };
