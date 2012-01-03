@@ -39,6 +39,19 @@ using namespace std; // Bitte vergebt mir....
 // Meinst du wirklich, dass ich dir so etwas durchgehen lassen kann?
 
 
+void ObjIO::save( std::string filename,
+        std::multimap< std::string, std::string > options, ModelPtr m )
+{
+
+    if ( m ) 
+    {
+        m_model = m;
+    }
+
+    save( filename );
+
+}
+
 
 void ObjIO::save( string filename )
 {

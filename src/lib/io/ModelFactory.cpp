@@ -89,9 +89,7 @@ void ModelFactory::saveModel( ModelPtr m, std::string filename,
     // Create suitable io
     if(extension == ".ply")
     {
-        PLYIO plyio;
-        plyio.save( filename, options, m );
-        return;
+        io = new PLYIO;
     }
     else if (extension == ".pts" || extension == ".3d" || extension == ".xyz")
     {
@@ -110,12 +108,13 @@ void ModelFactory::saveModel( ModelPtr m, std::string filename,
     // Save model
     if(io)
     {
-        io->save( m, filename );
+        io->save( filename, options, m );
         delete io;
     }
     else
     {
-        cout << timestamp << "File format " << extension << " is currrently not supported." << endl;
+        cout << timestamp << "File format " << extension
+            << " is currrently not supported." << endl;
     }
 
 

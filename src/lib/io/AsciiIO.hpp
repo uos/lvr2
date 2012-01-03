@@ -80,6 +80,7 @@ class AsciiIO : public BaseIO
          **/
         void save( std::string filename, std::string comment );
 
+
         /**
          * \brief Save model to file.
          *
