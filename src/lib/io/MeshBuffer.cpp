@@ -44,10 +44,14 @@ MeshBuffer::MeshBuffer() :
     m_numFaceTextureIndices( 0 ),
     m_numFaceColors ( 0 )
 {
+
+    /* Make shure we can convert the indexed arrays into interlaced arrays and
+     * vice versa. */
 	assert( 3 * sizeof(float) == sizeof(coord<float>) );
 	assert( 3 * sizeof(uchar) == sizeof(color<uchar>) );
 	assert( sizeof(float) == sizeof(idxVal<float>) );
 
+    /* Reset all internal buffer. */
     m_faceIndices.reset();
     m_faceColors.reset();
     m_faceTextureIndices.reset();
@@ -63,28 +67,22 @@ MeshBuffer::MeshBuffer() :
 
 floatArr MeshBuffer::getVertexArray( size_t &n )
 {
-
     n = m_numVertices;
     return m_vertices;
-
 }
 
 
 floatArr MeshBuffer::getVertexNormalArray( size_t &n )
 {
-
     n = m_numVertexNormals;
     return m_vertexNormals;
-
 }
 
 
 ucharArr MeshBuffer::getVertexColorArray( size_t &n )
 {
-
     n = m_numVertexColors;
     return m_vertexColors;
-
 }
 
 
@@ -118,6 +116,13 @@ uintArr MeshBuffer::getFaceTextureIndexArray( size_t &n )
 {
     n = m_numFaceTextureIndices;
     return m_faceTextureIndices;
+}
+
+
+floatArr MeshBuffer::getVertexTextureCoordinateArray( size_t &n )
+{
+    n = m_numVertexTextureCoordinates;
+    return m_vertexTextureCoordinates;
 }
 
 
@@ -163,10 +168,41 @@ color3bArr MeshBuffer::getIndexedVertexColorArray( size_t &n )
 {
 
     n = m_numVertexColors;
-    color3bArr p = *((color3bArr*) &m_vertexIntensity);
+    color3bArr p = *((color3bArr*) &m_vertexColors);
     return p;
 
 }
+
+
+idx1uArr MeshBuffer::getIndexedFaceArray( size_t &n )
+{
+
+    n = m_numFaces;
+    idx1uArr p = *((idx1uArr*) &m_faceIndices);
+    return p;
+
+}
+
+
+color3bArr MeshBuffer::getIndexedFaceColorArray( size_t &n )
+{
+
+    n = m_numFaceColors;
+    color3bArr p = *((color3bArr*) &m_faceColors);
+    return p;
+
+}
+
+
+idx1uArr MeshBuffer::getIndexedFaceTextureIndexArray( size_t &n )
+{
+
+    n = m_numFaceTextureIndices;
+    idx1uArr p = *((idx1uArr*) &m_faceTextureIndices);
+    return p;
+
+}
+
 
 void MeshBuffer::setVertexArray( floatArr array, size_t n )
 {

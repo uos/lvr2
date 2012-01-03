@@ -119,6 +119,20 @@ class PLYIO : public BaseIO
 
 
         /**
+         * \brief Save model to file.
+         *
+         * Save a model. Additional options can be set via option multimap.
+         *
+         * \param filename  Filename of the output file.
+         * \param options   Additional options.
+         * \param m         Model to save.
+         **/
+        void save( string filename,
+                std::multimap< std::string, std::string > options, 
+                ModelPtr m = ModelPtr() );
+
+
+        /**
          * \brief Save PLY with previously specified data.
          *
          * Save a PLY file with given filename. The mode is automatically set
@@ -126,7 +140,7 @@ class PLYIO : public BaseIO
          *
          * \param filename  Filename of the output file.
          **/
-        void save( ModelPtr m, string filename );
+        void save( string filename );
 
 
         /**
@@ -176,10 +190,6 @@ class PLYIO : public BaseIO
          * \param argument  Argument to pass the read data.
          **/
         static int readFaceCb( p_ply_argument argument );
-
-
-    private:
-        ModelPtr m_model;
 
 };
 

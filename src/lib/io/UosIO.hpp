@@ -108,11 +108,17 @@ public:
      */
     void reduce(string dir, string target, int reduction = 1);
 
-    //indexPair getScanRange( size_t num );
 
-    //int getNumScans() { return m_numScans;}
-
+    /**
+     * \todo Implement this!
+     * \warning This function is not yet implemented!
+     **/
     void save(string filename) {}
+
+
+    void save( std::string filename,
+            std::multimap< std::string, std::string > options, ModelPtr m );
+
 
     /**
      * @brief Convert remission value to pseudo RGB values while saving

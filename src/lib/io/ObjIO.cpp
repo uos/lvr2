@@ -39,12 +39,24 @@ using namespace std; // Bitte vergebt mir....
 // Meinst du wirklich, dass ich dir so etwas durchgehen lassen kann?
 
 
+void ObjIO::save( std::string filename,
+        std::multimap< std::string, std::string > options, ModelPtr m )
+{
 
-void ObjIO::save( ModelPtr model, string filename )
+    if ( m ) 
+    {
+        m_model = m;
+    }
+
+    save( filename );
+
+}
+
+
+void ObjIO::save( string filename )
 {
     typedef Vertex<uchar> ObjColor;
 
-    m_model = model;
     size_t lenVertices;
     size_t lenNormals;
     size_t lenColors;

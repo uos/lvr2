@@ -28,15 +28,16 @@
 #define BASEMESH_H_
 
 #include "io/Model.hpp"
+#include <vector>
 
 namespace lssr
 {
 
 /**
- * @brief 	Abstract interface class for dynamic triangle meshes.
- * 			The surface reconstruction algorithm can handle all
- *			all data structures that allow sequential insertion
- *			all of indexed triangles.
+ * @brief     Abstract interface class for dynamic triangle meshes.
+ *             The surface reconstruction algorithm can handle all
+ *            all data structures that allow sequential insertion
+ *            all of indexed triangles.
  */
 template<typename VertexT, typename NormalT>
 class BaseMesh
@@ -46,48 +47,50 @@ class BaseMesh
         BaseMesh();
 
         /**
-         * @brief 	This method should be called every time
-         * 			a new vertex is created.
+         * @brief    This method should be called every time
+         *           a new vertex is created.
          *
-         * @param	v 		A supported vertex type. All used vertex types
-         * 					must support []-access.
+         * @param v  A supported vertex type. All used vertex types
+         *           must support []-access.
          */
         virtual void addVertex(VertexT v) = 0;
 
         /**
-         * @brief 	This method should be called every time
-         * 			a new vertex is created to ensure that vertex
-         * 			and normal buffer always have the same size
+         * @brief    This method should be called every time
+         *           a new vertex is created to ensure that vertex
+         *           and normal buffer always have the same size
          *
-         * @param	n 		A supported vertex type. All used vertex types
-         * 					must support []-access.
+         * @param n  A supported vertex type. All used vertex types
+         *           must support []-access.
          */
         virtual void addNormal(NormalT n) = 0;
 
         /**
-         * @brief 	Insert a new triangle into the mesh
+         * @brief    Insert a new triangle into the mesh
          *
-         * @param	a 		The first vertex of the triangle
-         * @param 	b		The second vertex of the triangle
-         * @param	c		The third vertex of the triangle
+         * @param a  The first vertex of the triangle
+         * @param b  The second vertex of the triangle
+         * @param c  The third vertex of the triangle
          */
         virtual void addTriangle(uint a, uint b, uint c) = 0;
 
         /**
-         * @brief 	Finalizes a mesh, i.e. converts the template based buffers
-         * 			to OpenGL compatible buffers
+         * @brief    Finalizes a mesh, i.e. converts the template based buffers
+         *           to OpenGL compatible buffers
          */
         virtual void finalize() = 0;
 
         /**
-         * @brief Save the mesh to the given file
+         * @brief    Save the mesh to the given file
          */
-        virtual void save(string filename);
+        virtual void save( string filename,
+                std::multimap< std::string, std::string > options
+                = std::multimap< std::string, std::string >() );
 
         /**
-         * @brief Creates a buffered mesh from the given file.
+         * @brief    Creates a buffered mesh from the given file.
          *
-         * @param filename
+         * @param    filename
          */
         //virtual void load( string filename );
 
@@ -100,7 +103,7 @@ class BaseMesh
     protected:
 
         /// True if mesh is finalized
-        bool			m_finalized;
+        bool            m_finalized;
 
         MeshBufferPtr   m_meshBuffer;
 };
