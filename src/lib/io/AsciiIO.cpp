@@ -189,7 +189,35 @@ ModelPtr AsciiIO::read(string filename)
 }
 
 
-void AsciiIO::save( string filename )
+void AsciiIO::save( std::string filename,
+        std::multimap< std::string, std::string > options, ModelPtr m )
+{
+
+    if ( m ) 
+    {
+        m_model = m;
+    }
+
+    /* Set PLY mode. */
+    it = options.find( "comment" );
+    if ( it != options.end() )
+    {
+        save( filename, it->second; );
+    }
+    else
+    {
+        save( filename, "" );
+    }
+}
+
+
+void AsciiIO::save( std::string filename )
+{
+    save( filename, "" );
+}
+
+
+void AsciiIO::save( std::string filename, std::string comment )
 {
 
     if ( !m_model->m_pointCloud ) {
@@ -220,7 +248,7 @@ void AsciiIO::save( string filename )
     {
         pointIntensities.reset();
         std::cerr << "Amount of points and intensity values are"
-            " not equal. Color information won't be written.\n";
+            " not equal. Intensity information will not be written.\n";
     }
 
 
@@ -232,6 +260,9 @@ void AsciiIO::save( string filename )
             << "« for output." << std::endl;
         return;
     }
+
+    /* Write comment. */
+    out << "# " << comment << std::endl;
 
     for ( size_t i(0); i < pointcount; i++ )
     {
