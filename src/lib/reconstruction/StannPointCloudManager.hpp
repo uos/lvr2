@@ -56,6 +56,8 @@ using std::numeric_limits;
 namespace lssr
 {
 
+#ifndef STRUCT_PLANE_
+#define STRUCT_PLANE_
 /**
  * @brief A helper struct to represent a tangent plane
  *        of a query point. Used for normal estimation.
@@ -66,6 +68,7 @@ struct Plane{
     NormalT n;
     VertexT p;
 };
+#endif
 
 /**
  * @brief A point cloud manager class that uses the STANN
