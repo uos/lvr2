@@ -1,0 +1,91 @@
+This tutorial describes how to use the i/o functionalities of the
+las-vegas-reconstruction library to read and write point clouds and meshes from
+various file formats. 
+
+
+The following table shows which file formats are supported at the moment and
+for what kind of data they can be used:
+
+                       Points           Meshes
+                     read    write    read    write
+PLY   (.ply)          x       x        x       x
+Ascii (.pts, .3d)     x       x
+Obj   (.obj)                           x
+UOS                   x
+
+
+So let's say you want to read a PLY file (“test.ply”). The first thing you have
+to do ist to include the specific header file. For reading PLY it is
+“PLYIO.hpp” from the directory “io”. Actually everything we use in this
+tutorial is in the “io” dir.
+
+    #include <io/PLYIO.hpp>
+
+Next we have to create a PLYIO object and use it to read the file:
+
+    lssr::PLYIO io;
+    lssr::ModelPtr model;
+    model = io.read( "test.ply" );
+
+This will do. With this three lines of code we can read a PLY file, regardless
+of the PLY format, into memory. To access the read data we can get them from
+the model. “model->m_pointCloud“ will let you access a read point cloud
+“model->m_mesh” a read mesh. 
+So if you for example want to print out the coordinates of all read points you
+can do it like this:
+
+    int i;
+    size_t npoints;
+    lssr::coord3fArr point_coords;
+
+    /* Make shure there were point data in the read file. */
+    if ( model->m_pointCloud ) {
+        /* Get coordinates. */
+        coords = model->m_pointCloud->getIndexedPointArray( npoints );
+        for ( i = 0; i < npoints; i++ ) {
+            printf( "%f %f %f\n", coords.x, coords.y, coords.z );
+        }
+    }
+
+You do not need to free the memory allocated for the point and mesh buffer. For
+this purpose boost::shared_ptr is used. Thus the memory is freed automatically
+when there is no reference to the buffer.
+
+
+To make file handling even simpler you can use the “ModelFactory” to
+automatically determine which i/o class to use for reading a given file and
+getting a model out. For the determination of the appropriate i/o class the
+file extension ist used. That means that files ending with “.ply” are
+automatically handled via the PLYIO class, files with the ending “.pts” are
+handles via the AsciiIO, and so forth.
+
+To use the ModelFactory you can simply create a ModelFactory and call its
+“readModel” function like this:
+
+    lssr::ModelFactory io_factory;
+    lssr::ModelPtr model( io_factory.readModel( filename ) );
+
+
+So it os really easy to handle files. Concluding I want to give a really simple
+example of a conversion application which reads a file and stores it as another
+format. This tool can be found in a slightly extended version in
+“src/convert/convert.cpp”.
+
+    #include <cstdio>
+    #include <io/ModelFactory.hpp>
+
+
+    int main( int argc, char ** argv )
+    {
+
+        lssr::ModelFactory io_factory;
+        
+        printf( "Loading point cloud from „%s“…\n", argv[1] );
+        lssr::ModelPtr model( io_factory.readModel( argv[1] ) );
+
+        printf( "Writing point cloud to „%s“…\n", argv[2] );
+        io_factory.saveModel( model, argv[2] );
+
+        return EXIT_SUCCESS;
+
+    }
