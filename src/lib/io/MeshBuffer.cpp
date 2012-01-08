@@ -271,12 +271,23 @@ void MeshBuffer::setFaceArray( std::vector<unsigned int>& array )
 
 void MeshBuffer::setFaceTextureIndexArray( std::vector<unsigned int>& array )
 {
+
     m_faceTextureIndices = uintArr( new unsigned int[array.size()] );
     for ( size_t i(0); i < array.size(); i++ )
     {
         m_faceTextureIndices[i] = array[i];
     }
     m_numFaceTextureIndices = array.size() / 3;
+
+}
+
+
+void MeshBuffer::setFaceTextureIndexArray( uintArr array, size_t n )
+{
+
+    m_faceTextureIndices = array;
+    m_numFaceTextureIndices = n;
+
 }
 
 
@@ -332,6 +343,16 @@ void MeshBuffer::setVertexTextureCoordinateArray( std::vector<float>& array )
         m_vertexTextureCoordinates[i] = array[i];
     }
     m_numVertexTextureCoordinates = array.size() / 3;
+
+}
+
+
+void MeshBuffer::setVertexTextureCoordinateArray( floatArr array, size_t n )
+{
+
+    m_vertexTextureCoordinates = array;
+    m_numVertexTextureCoordinates = n;
+
 }
 
 
@@ -377,6 +398,15 @@ void MeshBuffer::setFaceColorArray( std::vector<uchar> &array )
         m_faceColors[i] = array[i];
     }
     m_numFaceColors = array.size() / 3;
+}
+
+
+void MeshBuffer::setFaceColorArray( ucharArr array, size_t n )
+{
+
+    m_faceColors = array;
+    m_numFaceColors = n;
+
 }
 
 

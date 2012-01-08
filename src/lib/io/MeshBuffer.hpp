@@ -361,6 +361,14 @@ class MeshBuffer
         void setFaceArray( uintArr array, size_t n );
 
 
+        void setVertexTextureCoordinateArray( floatArr array, size_t n );
+
+
+        void setFaceColorArray( ucharArr array, size_t n );
+
+
+        void setFaceTextureIndexArray( uintArr array, size_t n );
+
 
 #define SECTION_VECTOR_SETTER
         /**********************************************************************
