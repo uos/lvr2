@@ -68,18 +68,18 @@ include_directories(${CMAKE_CURRENT_BINARY_DIR})
 
 # Create a new targer
 add_executable(qviewer ${QVIEWER_SOURCES} ${QVIEWER_MOC_SRC} ${QVIEWER_UI_HDRS}
-	${QVIEWER_RES_SRC})
+    ${QVIEWER_RES_SRC})
 
 # Add needed libraries
 target_link_libraries(qviewer ${QT_QTCORE_LIBRARIES})
 target_link_libraries(qviewer ${QT_QTGUI_LIBRARIES})
 target_link_libraries(qviewer ${QT_QTOPENGL_LIBRARIES})
 target_link_libraries(qviewer ${QT_QTXML_LIBRARY})
-target_link_libraries(qviewer lssr)
+target_link_libraries(qviewer staticlssr)
 target_link_libraries(qviewer ${OPENGL_LIBRARY})
 target_link_libraries(qviewer ${GLUT_LIBRARIES})
 target_link_libraries(qviewer ${QGLVIEWER_LIBRARY_RELEASE})
 target_link_libraries(qviewer ${Boost_FILESYSTEM_LIBRARY}
-	${Boost_SYSTEM_LIBRARY} ${Boost_THREAD_LIBRARY}
-	${Boost_PROGRAM_OPTIONS_LIBRARY})
+    ${Boost_SYSTEM_LIBRARY} ${Boost_THREAD_LIBRARY}
+    ${Boost_PROGRAM_OPTIONS_LIBRARY})
 target_link_libraries(qviewer ${PCL_LIBRARIES})

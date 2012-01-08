@@ -53,6 +53,8 @@ if(OpenGL_FOUND)
 endif(OpenGL_FOUND)
 
 
+# Try to find an installed rply library.
+# If nothing is found we will build it ourself.
 find_library( rply_shared
     NAMES rply
     PATHS /usr/lib /usr/local/lib /lib )
@@ -97,7 +99,7 @@ add_subdirectory(src/colorize)
 add_subdirectory(src/scanreduce)
 
 if(PCL_FOUND)
-	add_subdirectory(src/scanfilter)
+    add_subdirectory(src/scanfilter)
 endif(PCL_FOUND)
 
 ##############################################################
