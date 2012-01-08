@@ -64,8 +64,13 @@ in the root directory of the project. This will create a file called
 If you want to use the example data, call for colorizing a point cloud without
 color informaion call:
 
-% ./colorizeLaser -d 100 -c ff0000 example-data/scan-no-color.3d \
+% ./colorize -d 100 -c ff0000 example-data/scan-no-color.3d \
      example-data/scan-with-color.pts colored-scan.pts
+
+For file conversion of point clouds and meshes use the convertmodel
+application:
+
+% ./convertmodel examplefile.pts examplefile.ply
 
 
 For more information, build the Doxygen documentation by calling
