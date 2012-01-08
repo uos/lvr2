@@ -137,6 +137,7 @@
 #include "Options.hpp"
 
 #include "reconstruction/StannPointCloudManager.hpp"
+#include "reconstruction/mPointCloudManager.hpp"
 #include "reconstruction/FastReconstruction.hpp"
 #include "io/PLYIO.hpp"
 #include "geometry/Matrix4.hpp"
@@ -156,7 +157,7 @@ using namespace lssr;
 typedef ColorVertex<float, unsigned char>               cVertex;
 typedef Normal<float>                                   cNormal;
 typedef PointCloudManager<cVertex, cNormal>             PCM;
-typedef StannPointCloudManager<cVertex, cNormal>        StannPCM;
+typedef mPointCloudManager<cVertex, cNormal>        StannPCM;
 typedef PCLPointCloudManager<cVertex, cNormal>          PCLPCM;
 
 /**
