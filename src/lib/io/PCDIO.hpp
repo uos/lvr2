@@ -31,8 +31,6 @@
  *
  **/
 
-#ifdef _USE_PCL_
-
 #ifndef PCDIO_HPP_INCLUDED
 #define PCDIO_HPP_INCLUDED
 
@@ -91,5 +89,3 @@ class PCDIO : public BaseIO
 
 
 #endif /* PCDIO_HPP_INCLUDED */
-
-#endif /* _USE_PCL_ */

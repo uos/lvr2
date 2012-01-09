@@ -1,4 +1,3 @@
-#ifdef _USE_PCL_
 
 #include "PCDIO.hpp"
 #include <fstream>
@@ -17,6 +16,7 @@ void lssr::PCDIO::save( string filename,
 }
 
 
+#ifdef _USE_PCL_
 lssr::ModelPtr lssr::PCDIO::read( string filename )
 {
     pcl::PointCloud<pcl::PointXYZ>::Ptr cloud( new pcl::PointCloud<pcl::PointXYZ> );
@@ -44,6 +44,15 @@ lssr::ModelPtr lssr::PCDIO::read( string filename )
     return model;
 
 }
+#else /*  _USE_PCL_ */
+
+lssr::ModelPtr lssr::PCDIO::read( string filename )
+{
+    /* Without PCL we do not read pcd files. */
+    lssr::ModelPtr m( new Model );
+    return m;
+}
+#endif /* _USE_PCL_ */
 
 
 void lssr::PCDIO::save( string filename )
@@ -110,5 +119,3 @@ void lssr::PCDIO::save( string filename )
     out.close();
 
 }
-
-#endif /* _USE_PCL_ */

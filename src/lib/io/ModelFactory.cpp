@@ -61,10 +61,12 @@ ModelPtr ModelFactory::readModel( std::string filename )
     {
         /// TODO: Integrate ObJIO in factory
     }
+#ifdef _USE_PCL_
     else if (extension == ".pcd")
     {
         io = new PCDIO;
     }
+#endif /* _USE_PCL_ */
     else if (extension == "")
     {
         io = new UosIO;
