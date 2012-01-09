@@ -28,6 +28,7 @@
 #include "PLYIO.hpp"
 #include "UosIO.hpp"
 #include "ObjIO.hpp"
+#include "PCDIO.hpp"
 #include "ModelFactory.hpp"
 
 #include "Timestamp.hpp"
@@ -59,7 +60,10 @@ ModelPtr ModelFactory::readModel( std::string filename )
     else if (extension == ".obj")
     {
         /// TODO: Integrate ObJIO in factory
-
+    }
+    else if (extension == ".pcd")
+    {
+        io = new PCDIO;
     }
     else if (extension == "")
     {
@@ -99,10 +103,9 @@ void ModelFactory::saveModel( ModelPtr m, std::string filename,
     {
         io = new ObjIO;
     }
-    else if (extension == "")
+    else if (extension == ".pcd")
     {
-        // Try to load UOS format data from directory in
-        io = new UosIO;
+        io = new PCDIO;
     }
 
     // Save model
