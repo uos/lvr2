@@ -30,17 +30,12 @@
  * @date       Last modified: 2011-11-21 23:29:45
  */
 
-#include <cstdio>
 #include <iostream>
-#include <vector>
-#include <ctime>
 #include <cmath>
 #include <io/ModelFactory.hpp>
-#include <geometry/ColorVertex.hpp>
+#include <io/Timestamp.hpp>
 
 #include "reconstruction/StannPointCloudManager.hpp"
-#include "reconstruction/FastReconstruction.hpp"
-#include "io/PLYIO.hpp"
 
 // Optional PCL bindings
 #ifdef _USE_PCL_
@@ -64,17 +59,17 @@ std::string ply_mode = "PLY_LITTLE_ENDIAN";
  **/
 void printHelp( char * name ) {
 
-    printf( "Usage: %s [options] infile1 infile2 outfile\n"
-            "Options:\n"
-            "   -h   Show this help and exit.\n"
-            "   -d   Maximum distance for neighbourhood.\n"
-            "   -p   Set point cloud manager (default: stann).\n"
-            "   -m   Set mode of PLY output files. If output file\n"
-            "        format is not PLY this option will have no effect.\n"
-            "   -j   Number of jobs to be scheduled parallel.\n"
-            "        Positive integer or “auto” (default)\n"
-            "   -c   Set color of points with no neighbours \n"
-            "        as 24 bit hexadecimal integer.\n", name );
+    std::cout << "Usage: " << name << " [options] infile1 infile2 outfile" << std::endl
+            << "Options:" << std::endl
+            << "   -h   Show this help and exit." << std::endl
+            << "   -d   Maximum distance for neighbourhood." << std::endl
+            << "   -p   Set point cloud manager (default: stann)." << std::endl
+            << "   -m   Set mode of PLY output files. If output file" << std::endl
+            << "        format is not PLY this option will have no effect." << std::endl
+            << "   -j   Number of jobs to be scheduled parallel." << std::endl
+            << "        Positive integer or “auto” (default)" << std::endl
+            << "   -c   Set color of points with no neighbours " << std::endl
+            << "        as 24 bit hexadecimal integer." << std::endl;
 
 }
 
@@ -96,8 +91,8 @@ void parseArgs( int argc, char ** argv ) {
                 break;
             case 'p':
                 if ( strcmp( optarg, "pcl" ) && strcmp( optarg, "stann" ) ) {
-                    fprintf( stderr, "Invaild option »%s« for point cloud "
-                            "manager. Ignoring option.\n", optarg );
+                    std::cerr << "Invaild option »" << optarg << "« for point cloud "
+                            << "manager. Ignoring option." << std::endl;
                     break;
                 }
                 pcm_name = optarg;
@@ -141,7 +136,8 @@ void loadPointCloud( lssr::PointBufferPtr &pc, PointCloudManagerPtr &pcm, char* 
 {
     
     /* Read clouds from file. */
-    printf( "Loading point cloud %s…\n", filename );
+    std::cout << lssr::timestamp <<  "Loading point cloud »" << filename
+        << "«…" << std::endl;
     lssr::ModelFactory io_factory;
     lssr::ModelPtr model = io_factory.readModel( filename );
     if ( model && model->m_pointCloud ) 
@@ -150,13 +146,15 @@ void loadPointCloud( lssr::PointBufferPtr &pc, PointCloudManagerPtr &pcm, char* 
     }
     else
     {
-        printf( "error: Clould not load pointcloud from »%s«", filename );
+        std::cerr << lssr::timestamp << "Clould not load pointcloud from »"
+            << filename << "«" << std::endl;
         exit( EXIT_FAILURE );
     }
 
     if ( pcm_name == "stann" )
     {
-        printf( "Creating STANN point cloud manager…\n" );
+        std::cout << lssr::timestamp << "Creating STANN point cloud manager…" 
+            << std::endl;
         pcm = PointCloudManagerPtr( new lssr::StannPointCloudManager<
                 lssr::ColorVertex<float, unsigned char>, 
                 lssr::Normal<float> >( pc ) );
@@ -164,7 +162,8 @@ void loadPointCloud( lssr::PointBufferPtr &pc, PointCloudManagerPtr &pcm, char* 
 #ifdef _USE_PCL_
     else if ( pcm_name == "pcl" ) 
     {
-        printf( "Creating STANN point cloud manager…\n" );
+        std::cout << lssr::timestamp << "Creating STANN point cloud manager…"
+            << std::endl;
         pcm = PointCloudManagerPtr( new lssr::PCLPointCloudManager<
                 lssr::ColorVertex<float, unsigned char>, 
                 lssr::Normal<float> >( pc ) );
@@ -172,7 +171,8 @@ void loadPointCloud( lssr::PointBufferPtr &pc, PointCloudManagerPtr &pcm, char* 
 #endif
     else
     {
-        printf( "error: Invalid point cloud manager specified.\n" );
+        std::cerr << lssr::timestamp << "Invalid point cloud manager specified."
+            << std::endl;
         exit( EXIT_FAILURE );
     }
 
@@ -180,7 +180,8 @@ void loadPointCloud( lssr::PointBufferPtr &pc, PointCloudManagerPtr &pcm, char* 
     pcm->setKI( 10 );
     pcm->setKN( 10 );
 
-    printf( "Point cloud with %u points loaded…\n", pcm->getNumPoints() );
+    std::cout << lssr::timestamp << "Point cloud with " << pcm->getNumPoints()
+        << " points loaded…" << std::endl;
 
 }
 
@@ -202,10 +203,12 @@ int main( int argc, char ** argv )
     loadPointCloud( pc2, pcm2, argv[ optind + 1 ] );
 
     /* Colorize first point cloud. */
-    printf( "Transfering color information…\n" );
+    std::cout << lssr::timestamp << "Transfering color information…"
+        << std::endl;
     pcm1->colorizePointCloud( pcm2, maxdist, rgb );
 
-    printf( "Saving new point cloud to »%s«…\n", argv[ optind + 2 ] );
+    std::cout << lssr::timestamp << "Saving new point cloud to »"
+        << argv[ optind + 2 ] << "«…" << std::endl;
     /* Reset color array of first point cloud. */
     pc1->setIndexedPointColorArray( pcm1->m_colors, pcm1->getNumPoints() );
 

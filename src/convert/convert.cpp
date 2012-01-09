@@ -28,8 +28,9 @@
  * @date       Last modified: 2012-01-08 02:49:30
  */
 
-#include <cstdio>
+#include <iostream>
 #include <io/ModelFactory.hpp>
+#include <io/Timestamp.hpp>
 
 
 int main( int argc, char ** argv )
@@ -37,19 +38,25 @@ int main( int argc, char ** argv )
 
     if ( argc != 3 )
     {
-        printf( "Usage: %s [options] infile outfile\n", *argv );
+        std::cout << "Usage: " << *argv << "%s [options] infile outfile"
+            << std::endl;
         return EXIT_SUCCESS;
     }
 
     /* Convert point cloud. */
     lssr::ModelFactory io_factory;
     
-    printf( "Loading point cloud from „%s“…\n", argv[1] );
+    /* Load point cloud. */
+    std::cout << lssr::timestamp << "Loading point cloud from »" << argv[1]
+        << "«…" << std::endl;
     lssr::ModelPtr model( io_factory.readModel( argv[1] ) );
 
-    printf( "Writing point cloud to „%s“…\n", argv[2] );
+    /* Save in new format. */
+    std::cout << lssr::timestamp << "Writing point cloud to »" << argv[2]
+        << "«…" << std::endl;
     io_factory.saveModel( model, argv[2] );
 
+    std::cout << lssr::timestamp << "Done." << std::endl;
     return EXIT_SUCCESS;
 
 }
