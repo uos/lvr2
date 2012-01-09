@@ -1,7 +1,7 @@
 #ifdef _USE_PCL_
 
 #include "PCDIO.hpp"
-#include <iostream>
+#include <fstream>
 #include <pcl/io/pcd_io.h>
 #include <pcl/point_types.h>
 
@@ -40,6 +40,7 @@ lssr::ModelPtr lssr::PCDIO::read( string filename )
 
     lssr::ModelPtr model( new Model( lssr::PointBufferPtr( new lssr::PointBuffer )));
     model->m_pointCloud->setIndexedPointArray( points, cloud->points.size() );
+    m_model = model;
     return model;
 
 }
@@ -61,58 +62,52 @@ void lssr::PCDIO::save( string filename )
     {
         pointColors.reset();
         std::cerr << "Amount of points and color information is"
-            " not equal. Color information won't be written.\n";
+            " not equal. Color information won't be written." << std::endl;
     }
 
-    if ( !pointColors )
+    std::ofstream out( filename.c_str() );
+
+    if ( !out.is_open() )
     {
-
-        pcl::PointCloud<pcl::PointXYZ> cloud;
-
-        /* Fill in the cloud data. */
-        cloud.width    = pointcount;
-        cloud.height   = 1;
-        cloud.is_dense = false;
-        cloud.points.resize( cloud.width * cloud.height );
-
-        for ( size_t i(0); i < pointcount; i++ )
-        {
-            cloud.points[i].x = points[i].x;
-            cloud.points[i].y = points[i].y;
-            cloud.points[i].z = points[i].z;
-        }
-
-        pcl::io::savePCDFileASCII( filename, cloud );
-
+        std::cerr << "Could not open file »" << filename << "«…"
+            << std::endl;
+        return;
     }
-    else if ( !pointColors )
+
+    out << "# .PCD v.7 - Point Cloud Data file format" << std::endl;
+    out << "FIELDS x y z" << ( pointColors ? " rgb" : "" ) << std::endl;
+    out << "SIZE 4 4 4" << ( pointColors ? " 4" : "" ) << std::endl;
+    out << "TYPE F F F" << ( pointColors ? " F" : "" ) << std::endl;
+    out << "WIDTH " << pointcount << std::endl;
+    out << "HEIGHT 1" << std::endl;
+    out << "POINTS " << pointcount << std::endl;
+    out << "DATA ascii" << std::endl;
+
+
+    for ( size_t i(0); i < pointcount; i++ )
     {
+        /* Write coordinates. */
+        out << points[i].x << " " << points[i].y << " " << points[i].z;
 
-        pcl::PointCloud<pcl::PointXYZRGB> cloud;
-
-        /* Fill in the cloud data. */
-        cloud.width    = pointcount;
-        cloud.height   = 1;
-        cloud.is_dense = false;
-        cloud.points.resize( cloud.width * cloud.height );
-
-        for ( size_t i(0); i < pointcount; i++ )
+        /* Write color information if there are any. */
+        if ( pointColors )
         {
-            cloud.points[i].x = points[i].x;
-            cloud.points[i].y = points[i].y;
-            cloud.points[i].z = points[i].z;
-
-            uint8_t* rgb = (uint8_t*) reinterpret_cast<uint8_t*>( 
-                    const_cast<float *>( &(cloud.points[i].rgb) ) );
-
+            /* Convert uchar array to float. */
+            float rgbf(0);
+            uint8_t* rgb = (uint8_t*) reinterpret_cast<uint8_t*>( &rgbf );
             rgb[2] = pointColors[i].r;
             rgb[1] = pointColors[i].g;
             rgb[0] = pointColors[i].b;
-        }
 
-        pcl::io::savePCDFileASCII( filename, cloud );
+            /* Write data. */
+            out << " " << rgbf;
+
+        }
+        out << std::endl;
 
     }
+
+    out.close();
 
 }
 
