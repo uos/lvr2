@@ -5,6 +5,7 @@ set(LSSR_SOURCES
     io/AsciiIO.cpp
     io/UosIO.cpp
     io/ObjIO.cpp
+    io/PCDIO.cpp
     io/Progress.cpp
     io/Timestamp.cpp
     io/Message.cpp
