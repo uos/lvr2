@@ -507,6 +507,15 @@ class MeshBuffer
         void setIndexedVertexNormalArray( coord3fArr arr, size_t size );
 
 
+        void setIndexedVertexColorArray( color3bArr arr, size_t size );
+
+
+        void setIndexedVertexTextureCoordinateArray( coord3fArr arr, size_t size );
+
+
+        void setIndexedFaceColorArray( color3bArr arr, size_t size );
+
+
 
 #define SECTION_INDEXED_VECTOR_SETTER
         /**********************************************************************

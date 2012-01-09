@@ -347,6 +347,24 @@ void MeshBuffer::setVertexTextureCoordinateArray( std::vector<float>& array )
 }
 
 
+void MeshBuffer::setIndexedVertexTextureCoordinateArray( coord3fArr arr, size_t size )
+{
+
+    m_vertexTextureCoordinates = *((floatArr*) &arr);
+    m_numVertexTextureCoordinates = size;
+
+}
+
+
+void MeshBuffer::setIndexedFaceColorArray( color3bArr arr, size_t size )
+{
+
+    m_faceColors    = *((ucharArr*) &arr);
+    m_numFaceColors = size;
+
+}
+
+
 void MeshBuffer::setVertexTextureCoordinateArray( floatArr array, size_t n )
 {
 
@@ -413,8 +431,8 @@ void MeshBuffer::setFaceColorArray( ucharArr array, size_t n )
 void MeshBuffer::setIndexedVertexArray( coord3fArr arr, size_t count )
 {
 
-    m_numVertices = count;
     m_vertices    = *((floatArr*) &arr);
+    m_numVertices = count;
 
 }
 
@@ -422,8 +440,17 @@ void MeshBuffer::setIndexedVertexArray( coord3fArr arr, size_t count )
 void MeshBuffer::setIndexedVertexNormalArray( coord3fArr arr, size_t count )
 {
 
-    m_vertexNormals    = *((floatArr*) &m_vertexNormals);
+    m_vertexNormals    = *((floatArr*) &arr);
     m_numVertexNormals = count;
+
+}
+
+
+void MeshBuffer::setIndexedVertexColorArray( color3bArr arr, size_t count )
+{
+
+    m_vertexColors    = *((ucharArr*) &arr);
+    m_numVertexColors = count;
 
 }
 
