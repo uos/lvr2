@@ -54,9 +54,9 @@ public:
     PointBufferPtr getPointBuffer();
 
 private:
-    pcl::PointCloud<pcl::PointXYZRGB>::Ptr     m_pointCloud;
-    pcl::PointCloud<pcl::Normal>::Ptr          m_pointNormals;
-    pcl::KdTreeFLANN<pcl::PointXYZRGB>::Ptr    m_kdTree;
+    pcl::PointCloud<pcl::PointXYZRGB>::Ptr       m_pointCloud;
+    pcl::PointCloud<pcl::Normal>::Ptr            m_pointNormals;
+	 pcl::search::KdTree<pcl::PointXYZRGB>::Ptr   m_kdTree;
 
     pcl::PointCloud<pcl::PointXYZRGB>::Ptr     m_FilteredCloud;
 

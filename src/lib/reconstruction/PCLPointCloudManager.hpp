@@ -88,9 +88,9 @@ public:
             double r, vector<VertexT> &resV, vector<NormalT> &resN);
 
 private:
-    pcl::KdTreeFLANN<pcl::PointXYZ>::Ptr    m_kdTree;
-    pcl::PointCloud<pcl::PointXYZ>::Ptr     m_pointCloud;
-    pcl::PointCloud<pcl::Normal>::Ptr       m_pointNormals;
+	 pcl::search::KdTree<pcl::PointXYZ>::Ptr   m_kdTree;
+    pcl::PointCloud<pcl::PointXYZ>::Ptr       m_pointCloud;
+    pcl::PointCloud<pcl::Normal>::Ptr         m_pointNormals;
 };
 
 } // namespace lssr
