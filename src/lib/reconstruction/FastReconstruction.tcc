@@ -306,7 +306,7 @@ void FastReconstruction<VertexT, NormalT>::saveGrid(string filename)
     if(out.good())
     {
         // Write header
-        out << m_queryPoints.size() << " " << m_voxelsize << endl;
+        out << m_queryPoints.size() << " " << m_voxelsize << " " << m_cells.size() << endl;
 
         // Write query points and distances
         for(size_t i = 0; i < m_queryPoints.size(); i++)
