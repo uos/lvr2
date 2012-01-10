@@ -56,7 +56,11 @@ public:
 private:
     pcl::PointCloud<pcl::PointXYZRGB>::Ptr       m_pointCloud;
     pcl::PointCloud<pcl::Normal>::Ptr            m_pointNormals;
-	 pcl::search::KdTree<pcl::PointXYZRGB>::Ptr   m_kdTree;
+#ifdef _PCL_VERSION_12_
+    pcl::KdTreeFLANN<pcl::PointXYZRGB>::Ptr      m_kdTree;
+#else
+    pcl::search::KdTree<pcl::PointXYZRGB>::Ptr   m_kdTree;
+#endif
 
     pcl::PointCloud<pcl::PointXYZRGB>::Ptr     m_FilteredCloud;
 

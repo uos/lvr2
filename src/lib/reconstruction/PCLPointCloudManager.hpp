@@ -88,7 +88,11 @@ public:
             double r, vector<VertexT> &resV, vector<NormalT> &resN);
 
 private:
-	 pcl::search::KdTree<pcl::PointXYZ>::Ptr   m_kdTree;
+#ifdef _PCL_VERSION_12_
+    pcl::KdTreeFLANN<pcl::PointXYZ>::Ptr      m_kdTree;
+#else
+    pcl::search::KdTree<pcl::PointXYZ>::Ptr   m_kdTree;
+#endif
     pcl::PointCloud<pcl::PointXYZ>::Ptr       m_pointCloud;
     pcl::PointCloud<pcl::Normal>::Ptr         m_pointNormals;
 };
