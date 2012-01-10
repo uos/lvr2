@@ -176,8 +176,6 @@ class PointBuffer
         void setIndexedPointNormalArray( coord3fArr array, size_t n);
 
 
-        void setIndexedPointArray( coord3fArr array, size_t n );
-
 
         /************************* Get *************************/
 
