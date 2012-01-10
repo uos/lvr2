@@ -17,8 +17,12 @@ PLY   (.ply)          x       x        x       x
 Ascii (.pts, .3d)     x       x
 Obj   (.obj)                           x
 UOS                   x
+PCD   (.pcd)          x*      x
 </pre>
 
+<p style="font-size: xx-small; text-align: right;">
+ *) PCD files can only be read if the project was build with PCL.
+</p>
 
 <p>
 So let's say you want to read a PLY file (“test.ply”). The first thing you have
