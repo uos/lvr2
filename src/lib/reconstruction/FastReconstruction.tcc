@@ -25,6 +25,7 @@
  */
 #include "../geometry/BaseMesh.hpp"
 #include "../reconstruction/FastReconstructionTables.hpp"
+#include "io/Progress.hpp"
 
 namespace lssr
 {
@@ -187,7 +188,8 @@ void FastReconstruction<VertexT, NormalT>::createGrid()
 					if(current_index != INVALID) box->setVertex(k, current_index);
 
 					//Otherwise create new grid point and associate it with the current box
-					else{
+					else
+					{
 						VertexT position(box_center[0] + box_creation_table[k][0] * vsh,
 								box_center[1] + box_creation_table[k][1] * vsh,
 								box_center[2] + box_creation_table[k][2] * vsh);
@@ -292,5 +294,42 @@ void FastReconstruction<VertexT, NormalT>::calcQueryPointValues(){
     cout << timestamp << "Elapsed time: " << ts << endl;
 }
 
+template<typename VertexT, typename NormalT>
+void FastReconstruction<VertexT, NormalT>::saveGrid(string filename)
+{
+    cout << timestamp << "Writing grid..." << endl;
+
+    // Open file for writing
+    ofstream out(filename.c_str());
+
+    // Write data
+    if(out.good())
+    {
+        // Write header
+        out << m_queryPoints.size() << " " << m_voxelsize << endl;
+
+        // Write query points and distances
+        for(size_t i = 0; i < m_queryPoints.size(); i++)
+        {
+            out << m_queryPoints[i].m_position[0] << " "
+                << m_queryPoints[i].m_position[1] << " "
+                << m_queryPoints[i].m_position[2] << " "
+                << m_queryPoints[i].m_distance << endl;
+        }
+
+        // Write box definitions
+        typename hash_map<size_t, FastBox<VertexT, NormalT>* >::iterator it;
+        FastBox<VertexT, NormalT>* box;
+        for(it = m_cells.begin(); it != m_cells.end(); it++)
+        {
+            box = it->second;
+            for(int i = 0; i < 8; i++)
+            {
+                out << box->getVertex(i) << " ";
+            }
+            out << endl;
+        }
+    }
+}
 
 } //namespace lssr
