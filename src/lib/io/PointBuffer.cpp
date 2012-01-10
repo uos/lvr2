@@ -175,6 +175,16 @@ void PointBuffer::setPointColorArray( ucharArr array, size_t n )
 
 }
 
+
+void PointBuffer::setIndexedPointArray( coord3fArr array, size_t n )
+{
+
+    m_numPoints = n;
+    m_points = *((floatArr *) &array);
+
+}
+
+
 void PointBuffer::setIndexedPointColorArray( color3bArr array, size_t n )
 {
 
