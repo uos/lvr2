@@ -80,6 +80,14 @@ public:
      */
     virtual void getMesh(BaseMesh<VertexT, NormalT> &mesh);
 
+    /**
+     * @brief Saves a grid representation to an ASCII file. File format is as follows:
+     *        First line declares the number of query points in the grid and the cells size. Then one point
+     *        per line is defined (x, y, z, distance). After that, tuples of eight
+     *        indices per line define the grid cells.
+     */
+    void saveGrid(string filename);
+
 private:
 
     /**
