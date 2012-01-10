@@ -143,6 +143,14 @@ void DataCollectorFactory::create(string filename)
 	        }
 	    }
 	}
+	else
+	{
+	    // Try to load other objects
+	    if(extension == ".grid")
+	    {
+
+	    }
+	}
 
 }
 
