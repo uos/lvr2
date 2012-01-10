@@ -53,3 +53,21 @@ void lssr::BaseIO::save( std::string filename, lssr::ModelPtr m,
 {
     save( filename, options, m );
 }
+
+
+void lssr::BaseIO::addOption( std::string key, std::string val )
+{
+    m_options[ key ].push_back( val );
+}
+
+
+std::vector< std::string > lssr::BaseIO::getOption( std::string key )
+{
+    return m_options[ key ];
+}
+
+
+void lssr::BaseIO::clearOption()
+{
+    m_options.clear();
+}

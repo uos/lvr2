@@ -118,9 +118,16 @@ namespace lssr
              **/
             virtual ModelPtr getModel();
 
+            virtual void addOption( std::string key, std::string val );
+
+            virtual std::vector< std::string > getOption( std::string key );
+
+            virtual void clearOption();
 
         protected:
             ModelPtr m_model;
+
+            std::map< std::string, std::vector< std::string > > m_options;
 
     };
 
