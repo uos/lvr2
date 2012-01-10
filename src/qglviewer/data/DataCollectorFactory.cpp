@@ -27,11 +27,13 @@
 #include "DataCollectorFactory.h"
 #include "Static3DDataCollector.h"
 
+#include "display/Grid.hpp"
 #include "display/StaticMesh.hpp"
 #include "display/PointCloud.hpp"
 #include "display/MultiPointCloud.hpp"
 
 #include "io/Model.hpp"
+#include "io/GridIO.hpp"
 
 #include "../widgets/PointCloudTreeWidgetItem.h"
 #include "../widgets/TriangleMeshTreeWidgetItem.h"
@@ -43,6 +45,8 @@
 #include <boost/version.hpp>
 
 using lssr::Model;
+using lssr::GridIO;
+using lssr::Grid;
 
 DataCollectorFactory::DataCollectorFactory() {}
 
@@ -148,7 +152,21 @@ void DataCollectorFactory::create(string filename)
 	    // Try to load other objects
 	    if(extension == ".grid")
 	    {
+	        GridIO io;
+	        Grid* grid = io.read(filename);
+	        if(grid)
+	        {
+	            int modes = 0;
+	            PointCloudTreeWidgetItem* item = new PointCloudTreeWidgetItem(PointCloudItem);
+	            item->setSupportedRenderModes(modes);
+	            item->setViewCentering(false);
+	            item->setName("Grid");
+	            item->setRenderable(grid);
 
+	            Static3DDataCollector* dataCollector = new Static3DDataCollector(grid, "Grid", item);
+	            Q_EMIT dataCollectorCreated( dataCollector );
+
+	        }
 	    }
 	}
 
