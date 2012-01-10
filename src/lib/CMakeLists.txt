@@ -10,6 +10,7 @@ set(LSSR_SOURCES
     io/Message.cpp
     io/MeshBuffer.cpp
     io/PointBuffer.cpp
+    io/GridIO.cpp
     display/CoordinateAxes.cpp
     display/Renderable.cpp
     display/PointCloud.cpp

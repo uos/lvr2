@@ -26,22 +26,20 @@
 #ifndef GRIDIO_HPP_
 #define GRIDIO_HPP_
 
+#include "display/Grid.hpp"
+
 namespace lssr
 {
 
-template<typename VertexT, NormalT>
 class GridIO
 {
 public:
-    GridIO(s;
-
-
-
+    GridIO();
+    Grid* read(string filename);
     virtual ~GridIO();
 };
 
 } /* namespace lssr */
 
-#include "GridIO.tcc"
 
 #endif /* GRIDIO_HPP_ */
