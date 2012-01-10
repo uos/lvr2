@@ -79,6 +79,8 @@ Grid::Grid(floatArr vertices, uintArr boxes, uint numPoints, uint numBoxes)
             x[j] = m_vertices[vertex_pos];
             y[j] = m_vertices[vertex_pos + 1];
             z[j] = m_vertices[vertex_pos + 2];
+
+            m_boundingBox->expand(x[j], y[j], z[j]);
         }
 
         // Render quads
