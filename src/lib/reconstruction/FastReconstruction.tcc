@@ -313,8 +313,17 @@ void FastReconstruction<VertexT, NormalT>::saveGrid(string filename)
         {
             out << m_queryPoints[i].m_position[0] << " "
                 << m_queryPoints[i].m_position[1] << " "
-                << m_queryPoints[i].m_position[2] << " "
-                << m_queryPoints[i].m_distance << endl;
+                << m_queryPoints[i].m_position[2] << " ";
+
+                if(!isnan(m_queryPoints[i].m_distance))
+                {
+                    out << m_queryPoints[i].m_distance << endl;
+                }
+                else
+                {
+                    out << 0 << endl;
+                }
+
         }
 
         // Write box definitions

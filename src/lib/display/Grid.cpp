@@ -48,11 +48,11 @@ Grid::Grid(floatArr vertices, uintArr boxes, uint numPoints, uint numBoxes)
 
         if(d > 0)
         {
-            glColor3f(1.0, 0.0, 0.0);
+            glColor3f(0.54, 0.17, 0.89);
         }
         else
         {
-            glColor3f(0.0, 1.0, 0.0);
+            glColor3f(1.0, 0.64, 0.0);
         }
         glVertex3f(x, y, z);
 
@@ -81,7 +81,6 @@ Grid::Grid(floatArr vertices, uintArr boxes, uint numPoints, uint numBoxes)
             z[j] = m_vertices[vertex_pos + 2];
 
             m_boundingBox->expand(x[j], y[j], z[j]);
-
         }
 
         // Render quads
@@ -121,7 +120,7 @@ Grid::Grid(floatArr vertices, uintArr boxes, uint numPoints, uint numBoxes)
 void Grid::render()
 {
     glCallList(m_gridDisplayList);
-    glPointSize(8.0);
+    glPointSize(5.0);
     glCallList(m_pointDisplayList);
     glPointSize(1.0);
 }

@@ -163,7 +163,7 @@ void Tesselator<VertexT, NormalT>::tesselatorCombineVertices(GLdouble coords[3],
     Vertex<float> v(vertex[0], vertex[1], vertex[2]);
     m_vertices.push_back(HVertex(v));
     *dataOut = vertex;
-	 delete[] vertex;
+//	 delete[] vertex;
 }
 
 
