@@ -43,18 +43,15 @@ int main( int argc, char ** argv )
         return EXIT_SUCCESS;
     }
 
-    /* Convert point cloud. */
-    lssr::ModelFactory io_factory;
-    
     /* Load point cloud. */
     std::cout << lssr::timestamp << "Loading point cloud from »" << argv[1]
         << "«…" << std::endl;
-    lssr::ModelPtr model( io_factory.readModel( argv[1] ) );
+    lssr::ModelPtr model( lssr::ModelFactory::readModel( argv[1] ) );
 
     /* Save in new format. */
     std::cout << lssr::timestamp << "Writing point cloud to »" << argv[2]
         << "«…" << std::endl;
-    io_factory.saveModel( model, argv[2] );
+	 lssr::ModelFactory::saveModel( model, argv[2] );
 
     std::cout << lssr::timestamp << "Done." << std::endl;
     return EXIT_SUCCESS;
