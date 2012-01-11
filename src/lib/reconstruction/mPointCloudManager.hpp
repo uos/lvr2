@@ -44,7 +44,14 @@
 #include "SearchTreeStann.hpp"
 
 // SearchTreePCL
-#include "SearchTreePCL.hpp"
+#ifdef _USE_PCL_
+    #include "SearchTreePCL.hpp"
+#endif
+
+// SearchTreeNabo
+#ifdef _USE_NABO_
+    #include "SearchTreeNabo.hpp"
+#endif
 
 // Standard C++ includes
 #include <iostream>

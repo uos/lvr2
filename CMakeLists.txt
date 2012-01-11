@@ -2,6 +2,7 @@ cmake_minimum_required(VERSION 2.8)
 project(LSSR)
 
 set( CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_SOURCE_DIR}/bin )
+#set( CMAKE_VERBOSE_MAKEFILE TRUE )
 
 link_directories("${CMAKE_SOURCE_DIR}/lib")
 link_directories("$ENV{HOME}/local/lib")
@@ -19,14 +20,31 @@ set( CMAKE_CXX_FLAGS_DEBUG   "-g -Wall" )
 # EXTERNAL LIBRARIES
 ###############################################################
 
-find_package(PCL 1.0)
-if(PCL_FOUND)
-  message(STATUS "Found PCL")
-  include_directories(${PCL_INCLUDE_DIRS})
-  link_directories(${PCL_LIBRARY_DIRS})
-  add_definitions(${PCL_DEFINITIONS})
-  add_definitions(-D_USE_PCL_)
-endif(PCL_FOUND)
+message( STATUS "looking for nabo" )
+find_package( nabo )
+if( NABO_FOUND )
+   message( STATUS "looking for nabo - found" )
+   include_directories( ${NABO_INCLUDE_DIRS} )
+   link_directories( ${NABO_LIBRARIES} ) 
+   add_definitions( ${NABO_DEFINITIONS} )
+   add_definitions( -D_USE_NABO_ )
+elseif( NABO_FOUND )
+   message( STATUS "looking for nabo - not found" )
+endif( NABO_FOUND )
+
+
+
+message( STATUS "looking for PCL" )
+find_package( PCL 1.0 )
+if( PCL_FOUND )
+  message( STATUS "looking for PCL - found" )
+  include_directories( ${PCL_INCLUDE_DIRS} )
+  link_directories( ${PCL_LIBRARY_DIRS} )
+  add_definitions( ${PCL_DEFINITIONS} )
+  add_definitions( -D_USE_PCL_ )
+elseif( PCL_FOUND )
+  message( STATUS "looking for PCL - not found" )
+endif( PCL_FOUND )
 
 find_package( Boost 
     COMPONENTS 
@@ -53,6 +71,7 @@ if(OpenGL_FOUND)
 endif(OpenGL_FOUND)
 
 
+message(STATUS "Looking for rply")
 find_library( rply_shared
     NAMES rply
     PATHS /usr/lib /usr/local/lib /lib )
@@ -93,8 +112,8 @@ add_subdirectory(src/lib)
 ##############################################################
 
 add_subdirectory(src/reconstruct)
-add_subdirectory(src/colorize)
-add_subdirectory(src/scanreduce)
+#add_subdirectory(src/colorize)
+#add_subdirectory(src/scanreduce)
 
 if(PCL_FOUND)
 	add_subdirectory(src/scanfilter)
@@ -123,7 +142,7 @@ if( QT4_FOUND )
     if(QGLVIEWER_LIBRARY_RELEASE)
         message(STATUS "Found libqglviewer")
         message(STATUS "Building qglviewer application")
-        add_subdirectory(src/qglviewer)
+        #        add_subdirectory(src/qglviewer)
     endif(QGLVIEWER_LIBRARY_RELEASE)
 
 endif(QT4_FOUND)

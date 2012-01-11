@@ -50,20 +50,17 @@ template<typename VertexT, typename NormalT>
       this->m_kd = kd;
 
       m_points = Eigen::MatrixXf(n_points, 3);
-
-      for( long unsigned int i(0); i < n_points; ++i )
+      for( size_t i(0); i < n_points; ++i )
       {
          m_points(i, 0) = points[i].x;
          m_points(i, 1) = points[i].y;
          m_points(i, 2) = points[i].z;
       }
 
-      Eigen::MatrixXf M = Eigen::MatrixXf::Random(3, 100);
-
       // Create Nabo Kd-tree
+      enum Nabo::NearestNeighbourSearch<float>::SearchType         seType = Nabo::NearestNeighbourSearch<float>::KDTREE_TREE_HEAP;
       cout << timestamp << "Creating NABO Kd-Tree" << endl;
-      //m_pointTree = Nabo::NNSearchF::createKDTreeLinearHeap( m_points ); 
-      m_pointTree = Nabo::NNSearchF::createKDTreeLinearHeap( M ); 
+      m_pointTree = Nabo::NNSearchF::create( m_points, 3, seType );
    }
 
 
@@ -85,19 +82,26 @@ template<typename VertexT, typename NormalT>
       Eigen::VectorXi ind( neighbours );
       Eigen::VectorXf dist( neighbours );
       
-      m_pointTree->knn( q, ind, dist, neighbours );
+      enum Nabo::NearestNeighbourSearch<float>::SearchOptionFlags opType = Nabo::NearestNeighbourSearch<float>::SORT_RESULTS;
+      m_pointTree->knn( q, ind, dist, neighbours, 0,opType);
+
+//      cout << "After Search:\n\tind.cols(): " << ind.cols() << "\n\tind.rows(): " << ind.rows() << "\n\n\tdist.cols(): " << dist.cols() << "\n\tdist.rows(): " << dist.rows() << endl;
 
       // store the found data
-      indices.resize( ind.cols() );
-      distances.resize( dist.cols() );
-      for( size_t i(0); i < ind.cols(); i++ )
+      indices.resize( ind.rows() );
+      distances.resize( dist.rows() );
+      int valid = 0;
+      for( size_t i(0); i < ind.rows(); i++ )
       {
-        indices[i] = ind.cols();
+         if( !isinf( dist(i, 0) ) && !isnan( dist(i, 0) ) )
+         {
+            indices[i] = ind(i, 0);
+            distances[i] = dist(i, 0);
+            valid++;
+         }
       }
-      for( size_t i(0); i < dist.cols(); i++ )
-      {
-        distances[i] = ind.cols();
-      }
+      indices.resize( valid );
+      distances.resize( valid );
    }
 
 
