@@ -102,7 +102,7 @@ namespace lssr
              **/
             virtual void save( string filename,
                     std::multimap< std::string, std::string > options, 
-                    ModelPtr m = ModelPtr() ) = 0;
+                    ModelPtr m = ModelPtr() );
 
 
             /**
@@ -118,11 +118,15 @@ namespace lssr
              **/
             virtual ModelPtr getModel();
 
+
             virtual void addOption( std::string key, std::string val );
+
 
             virtual std::vector< std::string > getOption( std::string key );
 
+
             virtual void clearOption();
+
 
         protected:
             ModelPtr m_model;
