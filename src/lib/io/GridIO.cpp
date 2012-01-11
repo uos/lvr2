@@ -50,23 +50,21 @@ Grid* GridIO::read(string filename)
         // Read header
         in >> n_points >> voxelsize >> n_cells;
 
-
         // Alloc and read points
         floatArr points(new float[4 * n_points]);
         for(int i = 0; i < n_points; i++)
         {
             in >> points[i * 4] >> points[i * 4 + 1] >> points[i * 4 + 2] >> points[i * 4 + 3];
-            cout << i << " " << points[i * 4] << " " << points[i * 4 + 1] << " " <<  points[i * 4 + 2] << " " <<  points[i * 4 + 3] << endl;
         }
 
         // Alloc and read box indices
         uintArr boxes(new uint[8 * n_cells]);
         for(int i = 0; i < n_cells; i++)
         {
+            int pos = i * 8;
             for(int j = 0; j < 8; j++)
             {
-                in >> boxes[j];
-                //cout << boxes[j] << endl;
+                in >> boxes[pos + j];
             }
         }
 
