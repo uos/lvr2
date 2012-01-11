@@ -70,31 +70,6 @@ class AsciiIO : public BaseIO
         virtual void save( string filename );
 
 
-        /**
-         * \brief Save model to given filename.
-         * 
-         * This method will save the model ti the given filename. Additional one single line comment can be set.
-         *
-         * \param filename  File to write.
-         * \param comment   Single line comment.
-         **/
-        void save( std::string filename, std::string comment );
-
-
-        /**
-         * \brief Save model to file.
-         *
-         * Save a model. Additional options can be set via option multimap.
-         *
-         * \param filename  Filename of the output file.
-         * \param options   Additional options.
-         * \param m         Model to save.
-         **/
-        void save( string filename,
-                std::multimap< std::string, std::string > options, 
-                ModelPtr m = ModelPtr() );
-
-
         /// TODO: Coordinate mapping for ascii files
         static size_t countLines(string filename);
 

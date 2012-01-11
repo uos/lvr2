@@ -31,20 +31,11 @@
 
 #include "BaseIO.hpp"
 
+
 void lssr::BaseIO::save( ModelPtr model, string filename )
 {
     m_model = model;
     save( filename );
-}
-
-void lssr::BaseIO::setModel( ModelPtr m )
-{
-    m_model = m;
-}
-
-lssr::ModelPtr lssr::BaseIO::getModel() 
-{
-    return m_model;
 }
 
 
@@ -52,4 +43,48 @@ void lssr::BaseIO::save( std::string filename, lssr::ModelPtr m,
         std::multimap< std::string, std::string > options )
 {
     save( filename, options, m );
+}
+
+
+void lssr::BaseIO::save( string filename,
+        std::multimap< std::string, std::string > options, ModelPtr m )
+{
+    std::multimap< std::string, std::string >::iterator it;
+    for ( it = options.begin(); it != options.end(); it++ )
+    {
+        addOption( it->first, it->second );
+    }
+    m_model = m;
+    save( filename );
+}
+
+
+void lssr::BaseIO::setModel( ModelPtr m )
+{
+    m_model = m;
+}
+
+
+lssr::ModelPtr lssr::BaseIO::getModel() 
+{
+    return m_model;
+}
+
+
+
+void lssr::BaseIO::addOption( std::string key, std::string val )
+{
+    m_options[ key ].push_back( val );
+}
+
+
+std::vector< std::string > lssr::BaseIO::getOption( std::string key )
+{
+    return m_options[ key ];
+}
+
+
+void lssr::BaseIO::clearOption()
+{
+    m_options.clear();
 }

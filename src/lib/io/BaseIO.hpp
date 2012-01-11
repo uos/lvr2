@@ -52,7 +52,6 @@ class BaseIO
     public:
         BaseIO() {}
 
-
         /**
          * \brief Parse the given file and load supported elements.
          *
@@ -102,7 +101,7 @@ class BaseIO
          **/
         virtual void save( string filename,
                 std::multimap< std::string, std::string > options, 
-                ModelPtr m = ModelPtr() ) = 0;
+                ModelPtr m = ModelPtr() );
 
 
         /**
@@ -119,8 +118,19 @@ class BaseIO
         virtual ModelPtr getModel();
 
 
+        virtual void addOption( std::string key, std::string val );
+
+
+        virtual std::vector< std::string > getOption( std::string key );
+
+
+        virtual void clearOption();
+
+
     protected:
         ModelPtr m_model;
+
+        std::map< std::string, std::vector< std::string > > m_options;
 
 };
 

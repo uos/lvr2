@@ -104,37 +104,6 @@ class PLYIO : public BaseIO
         /**
          * \brief Save PLY with previously specified data.
          *
-         * Save a PLY file with given filename and mode. The data to be saved
-         * have to be specified beforehand using the \c setXY methods.
-         * Additionally some object descriptions and comments can be added.
-         *
-         * \param filename  Filename of the output file.
-         * \param mode      PLY mode.
-         * \param obj_info  Vector of object descriptions.
-         * \param comments  Vector of comment strings.
-         **/
-        void save( string filename, e_ply_storage_mode mode, 
-                std::vector<string> obj_info = std::vector<string>(), 
-                std::vector<string> comment = std::vector<string>() );
-
-
-        /**
-         * \brief Save model to file.
-         *
-         * Save a model. Additional options can be set via option multimap.
-         *
-         * \param filename  Filename of the output file.
-         * \param options   Additional options.
-         * \param m         Model to save.
-         **/
-        void save( string filename,
-                std::multimap< std::string, std::string > options, 
-                ModelPtr m = ModelPtr() );
-
-
-        /**
-         * \brief Save PLY with previously specified data.
-         *
          * Save a PLY file with given filename. The mode is automatically set
          * to little endian binary.
          *
@@ -169,6 +138,9 @@ class PLYIO : public BaseIO
          * \param filename        Filename of file to read.
          **/
         ModelPtr read( string filename );
+
+
+    private:
 
 
         /**

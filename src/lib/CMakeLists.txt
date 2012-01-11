@@ -8,7 +8,6 @@ set(LSSR_SOURCES
     io/LasIO.cpp
     io/Progress.cpp
     io/Timestamp.cpp
-    io/Message.cpp
     io/MeshBuffer.cpp
     io/PointBuffer.cpp
     io/GridIO.cpp
