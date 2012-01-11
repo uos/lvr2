@@ -88,7 +88,7 @@ ModelPtr LasIO::read(string filename )
 void LasIO::save( string filename )
 {
     /// TODO: Implement LAS output
-    cerr << "LASIO: Saving not yet implemented." << endl;
+    std::cerr << "LASIO: Saving not yet implemented." << endl;
 }
 
 } /* namespace lssr */

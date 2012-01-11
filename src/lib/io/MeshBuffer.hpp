@@ -361,6 +361,14 @@ class MeshBuffer
         void setFaceArray( uintArr array, size_t n );
 
 
+        void setVertexTextureCoordinateArray( floatArr array, size_t n );
+
+
+        void setFaceColorArray( ucharArr array, size_t n );
+
+
+        void setFaceTextureIndexArray( uintArr array, size_t n );
+
 
 #define SECTION_VECTOR_SETTER
         /**********************************************************************
@@ -497,6 +505,15 @@ class MeshBuffer
          * \param n      Amount of vertices in the array.
          **/
         void setIndexedVertexNormalArray( coord3fArr arr, size_t size );
+
+
+        void setIndexedVertexColorArray( color3bArr arr, size_t size );
+
+
+        void setIndexedVertexTextureCoordinateArray( coord3fArr arr, size_t size );
+
+
+        void setIndexedFaceColorArray( color3bArr arr, size_t size );
 
 
 
