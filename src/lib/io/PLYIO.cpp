@@ -36,12 +36,9 @@
 #include <cstring>
 #include <ctime>
 #include <sstream>
-#include <cassert>
-#include <iostream>
-#include "Message.hpp"
+#include <fstream>
+#include "Timestamp.hpp"
 
-using std::cout;
-using std::endl;
 
 namespace lssr
 {
@@ -49,54 +46,28 @@ namespace lssr
 
 void PLYIO::save( string filename )
 {
-    save( filename, PLY_LITTLE_ENDIAN );
-
-}
-
-
-void PLYIO::save( string filename,
-        std::multimap< std::string, std::string > options, ModelPtr m )
-{
-
-    if ( m ) 
+    if ( !m_model )
     {
-        m_model = m;
+        std::cerr << timestamp << "No data to save." << std::endl;
+        return;
     }
 
-    std::vector< std::string > obj_info, comment;
-    e_ply_storage_mode mode = PLY_LITTLE_ENDIAN;
-    std::multimap< std::string, std::string >::iterator it;
+    /* Handle options. */
+    std::vector<std::string> comment  = getOption( "comment" );
+    std::vector<std::string> obj_info = getOption( "obj_info" );
 
-    /* Set comments. */
-    for ( it = options.equal_range( "comment" ).first;
-            it != options.equal_range( "comment" ).second; it++ )
+    e_ply_storage_mode mode( PLY_LITTLE_ENDIAN );
     {
-        comment.push_back( (*it).second );
+        std::vector<std::string>  m( getOption( "ply_mode" ) );
+        if ( m.size() && m[0] == "PLY_ASCII" )
+        {
+            mode = PLY_ASCII;
+        }
+        else if ( m.size() && m[0] == "PLY_BIG_ENDIAN" )
+        {
+            mode = PLY_BIG_ENDIAN;
+        }
     }
-
-    /* Set object information. */
-    for ( it = options.equal_range( "obj_info" ).first;
-            it != options.equal_range( "obj_info" ).second; it++ )
-    {
-        obj_info.push_back( (*it).second );
-    }
-
-    /* Set PLY mode. */
-    it = options.find( "ply_mode" );
-    if ( it != options.end() )
-    {
-        mode = it->second == "PLY_ASCII" ? PLY_ASCII
-            : ( it->second == "PLY_BIG_ENDIAN" ? PLY_BIG_ENDIAN 
-                    : PLY_LITTLE_ENDIAN );
-    }
-    save( filename, mode, obj_info, comment );
-}
-
-
-void PLYIO::save( string filename, e_ply_storage_mode mode, 
-        std::vector<string> obj_info, std::vector<string> comment )
-{
-    assert(m_model);
 
     // Local buffer shortcuts
     floatArr m_vertices;
@@ -154,7 +125,7 @@ void PLYIO::save( string filename, e_ply_storage_mode mode,
     p_ply oply = ply_create( filename.c_str(), mode, NULL, 0, NULL );
     if ( !oply )
     {
-        g_msg.print( MSG_TYPE_ERROR, "Could not create »%s«\n", filename.c_str() );
+        std::cerr << timestamp << "Could not create »" << filename << "«" << std::endl;
         return;
     }
 
@@ -164,24 +135,24 @@ void PLYIO::save( string filename, e_ply_storage_mode mode,
     {
         if ( !ply_add_obj_info( oply, it->c_str() ) )
         {
-            g_msg.print( MSG_TYPE_ERROR, "Could not add object info.\n" );
+            std::cerr << timestamp << "Could not add object info." << std::endl;
         }
     }
     for ( it = comment.begin(); it < comment.end(); it++ )
     {
         if ( !ply_add_comment( oply, it->c_str() ) )
         {
-            g_msg.print( MSG_TYPE_ERROR, "Could not add comment.\n" );
+            std::cerr << timestamp << "Could not add comment." << std::endl;
         }
     }
 
     /* Check if we have vertex information. */
     if ( !( m_vertices || m_points ) )
     {
-        g_msg.print( MSG_TYPE_WARNING, "Neither vertices nor points to write.\n" );
+        std::cout << timestamp << "Neither vertices nor points to write." << std::endl;
         if ( !ply_close( oply ) )
         {
-            g_msg.print( MSG_TYPE_ERROR, "Could not close file.\n" );
+            std::cerr << timestamp << "Could not close file." << std::endl;
         }
         return;
     }
@@ -213,8 +184,8 @@ void PLYIO::save( string filename, e_ply_storage_mode mode,
         {
             if ( m_numVertexColors != m_numVertices )
             {
-                g_msg.print( MSG_TYPE_WARNING, "Amount of vertices and color information is"
-                        " not equal. Color information won't be written.\n" );
+                std::cerr << timestamp << "Amount of vertices and color information is"
+                    << " not equal. Color information won't be written." << std::endl;
             }
             else
             {
@@ -230,9 +201,9 @@ void PLYIO::save( string filename, e_ply_storage_mode mode,
         {
             if ( m_numVertexIntensities != m_numVertices )
             {
-                g_msg.print( MSG_TYPE_WARNING, "Amount of vertices and intensity"
-                        " information is not equal. Intensity information won't be"
-                        " written.\n" );
+                std::cout << timestamp << "Amount of vertices and intensity"
+                    << " information is not equal. Intensity information won't be"
+                    << " written." << std::endl;
             }
             else
             {
@@ -246,9 +217,9 @@ void PLYIO::save( string filename, e_ply_storage_mode mode,
         {
             if ( m_numVertexConfidences != m_numVertices )
             {
-                g_msg.print( MSG_TYPE_WARNING, "Amount of vertices and confidence"
-                        " information is not equal. Confidence information won't be"
-                        " written.\n" );
+                std::cout << timestamp << "Amount of vertices and confidence"
+                    << " information is not equal. Confidence information won't be"
+                    << " written." << std::endl;
             }
             else
             {
@@ -262,8 +233,8 @@ void PLYIO::save( string filename, e_ply_storage_mode mode,
         {
             if ( m_numVertexNormals != m_numVertices )
             {
-                g_msg.print( MSG_TYPE_WARNING, "Amount of vertices and normals"
-                        " does not match. Normals won't be written.\n" );
+                std::cout << timestamp << "Amount of vertices and normals"
+                    << " does not match. Normals won't be written." << std::endl;
             }
             else
             {
@@ -297,8 +268,8 @@ void PLYIO::save( string filename, e_ply_storage_mode mode,
         {
             if ( m_numPointColors != m_numPoints )
             {
-                g_msg.print( MSG_TYPE_WARNING, "Amount of points and color information is"
-                        " not equal. Color information won't be written.\n" );
+                std::cout << timestamp << "Amount of points and color information is"
+                    << " not equal. Color information won't be written." << std::endl;
             }
             else
             {
@@ -314,9 +285,9 @@ void PLYIO::save( string filename, e_ply_storage_mode mode,
         {
             if ( m_numPointIntensities != m_numPoints )
             {
-                g_msg.print( MSG_TYPE_WARNING, "Amount of points and intensity"
-                        " information is not equal. Intensity information won't be"
-                        " written.\n" );
+                std::cout << timestamp << "Amount of points and intensity"
+                    << " information is not equal. Intensity information won't be"
+                    << " written." << std::endl;
             }
             else
             {
@@ -330,9 +301,9 @@ void PLYIO::save( string filename, e_ply_storage_mode mode,
         {
             if ( m_numPointConfidence != m_numPoints )
             {
-                g_msg.print( MSG_TYPE_WARNING, "Amount of point and confidence"
-                        " information is not equal. Confidence information won't be"
-                        " written.\n" );
+                std::cout << timestamp << "Amount of point and confidence"
+                    << " information is not equal. Confidence information won't be"
+                    << " written." << std::endl;
             }
             else
             {
@@ -346,8 +317,8 @@ void PLYIO::save( string filename, e_ply_storage_mode mode,
         {
             if ( m_numPointNormals != m_numPoints )
             {
-                g_msg.print( MSG_TYPE_WARNING, "Amount of point and normals"
-                        " does not match. Normals won't be written.\n" );
+                std::cout << timestamp << "Amount of point and normals does"
+                    << " not match. Normals won't be written." << std::endl;
             }
             else
             {
@@ -362,7 +333,7 @@ void PLYIO::save( string filename, e_ply_storage_mode mode,
     /* Write header to file. */
     if ( !ply_write_header( oply ) )
     {
-        g_msg.print( MSG_TYPE_ERROR, "Could not write header.\n" );
+        std::cerr << timestamp << "Could not write header." << std::endl;
         return;
     }
 
@@ -436,7 +407,7 @@ void PLYIO::save( string filename, e_ply_storage_mode mode,
 
     if ( !ply_close( oply ) )
     {
-        g_msg.print( MSG_TYPE_ERROR, "Could not close file.\n" );
+       std::cerr << timestamp << "Could not close file." << std::endl;
     }
 
 }
@@ -457,15 +428,16 @@ ModelPtr PLYIO::read( string filename, bool readColor, bool readConfidence,
 
     if ( !ply )
     {
-        g_msg.print( MSG_TYPE_ERROR, "Could not open »%s«.\n", filename.c_str() );
+       std::cerr << timestamp << "Could not open »" << filename << "«."
+           << std::endl;
         return ModelPtr();
     }
     if ( !ply_read_header( ply ) )
     {
-        g_msg.print( MSG_TYPE_ERROR, "Could not read header.\n" );
+       std::cerr << timestamp << "Could not read header." << std::endl;
         return ModelPtr();
     }
-    g_msg.print( MSG_TYPE_MESSGAE, "Loading »%s«…\n", filename.c_str() );
+    std::cout << timestamp << "Loading »" << filename << "«." << std::endl;
 
     /* Check if there are vertices and get the amount of vertices. */
     char buf[256] = "";
@@ -556,7 +528,8 @@ ModelPtr PLYIO::read( string filename, bool readColor, bool readConfidence,
 
     if ( !( numVertices || numPoints ) )
     {
-        g_msg.print( MSG_TYPE_WARNING, "Neither vertices nor points in ply.\n" );
+        std::cout << timestamp << "Neither vertices nor points in ply."
+            << std::endl;
         return ModelPtr();
     }
 
@@ -700,15 +673,16 @@ ModelPtr PLYIO::read( string filename, bool readColor, bool readConfidence,
     /* Read ply file. */
     if ( !ply_read( ply ) )
     {
-        g_msg.print( MSG_TYPE_ERROR, "Could not read »%s«.\n", filename.c_str() );
+        std::cerr << timestamp << "Could not read »" << filename << "«."
+            << std::endl;
     }
 
     /* Check if we got only vertices and neither points nor faces. If that is
      * the case then use the vertices as points. */
     if ( vertices && !points && !faceIndices )
     {
-        g_msg.print( MSG_TYPE_HINT, "PLY contains neither faces nor points. "
-                "Assuming that vertices are ment to be points.\n" );
+        std::cout << timestamp << "PLY contains neither faces nor points. "
+            << "Assuming that vertices are ment to be points." << std::endl;
         points               = vertices;
         pointColors          = vertexColors;
         pointConfidences     = vertexConfidence;
@@ -802,7 +776,7 @@ int PLYIO::readFaceCb( p_ply_argument argument )
         {
             return 1;
         }
-        g_msg.print( MSG_TYPE_ERROR, "Mesh is not a triangle mesh.\n" );
+        std::cerr << timestamp << "Mesh is not a triangle mesh." << std::endl;
         return 0;
     }
     **face = ply_get_argument_value( argument );
