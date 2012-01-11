@@ -47,6 +47,7 @@ Options::Options(int argc, char** argv) : m_descr("Supported options")
 		("recalcNormals,r", "Always estimate normals, even if given in .ply file.")
 		("threads", value<int>(&m_numThreads)->default_value( omp_get_num_procs() ), "Number of threads")
 		("saveNormals", "Writes all points and interpolated normals to a file called 'normals.nor'")
+		("saveGrid,g", "Writes the geenrated grid to a file called 'fastgrid.grid. The result can be rendered with qviewer.")
 		("kd", value<int>(&m_kd)->default_value(5), "Number of normals used for distance function evaluation")
 	    ("ki", value<int>(&m_ki)->default_value(10), "Number of normals used in the normal interpolation process")
 	    ("kn", value<int>(&m_kn)->default_value(10), "Size of k-neighborhood used for normal estimation")
@@ -183,6 +184,11 @@ bool Options::savePointNormals() const
 bool Options::saveNormals() const
 {
     return (m_variables.count("saveNormals"));
+}
+
+bool Options::saveGrid() const
+{
+    return (m_variables.count("saveGrid"));
 }
 
 bool Options::optimizePlanes() const
