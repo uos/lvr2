@@ -55,6 +55,7 @@ void lssr::BaseIO::save( string filename,
         addOption( it->first, it->second );
     }
     m_model = m;
+    save( filename );
 }
 
 
