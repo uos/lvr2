@@ -184,41 +184,13 @@ ModelPtr AsciiIO::read(string filename)
     model->m_pointCloud->setPointColorArray(      pointColors,      numPoints );
     model->m_pointCloud->setPointIntensityArray(  pointIntensities, numPoints );
     model->m_pointCloud->setPointConfidenceArray( pointConfidences, numPoints );
+    m_model = model;
 
     return model;
 }
 
 
-void AsciiIO::save( std::string filename,
-        std::multimap< std::string, std::string > options, ModelPtr m )
-{
-
-    if ( m ) 
-    {
-        m_model = m;
-    }
-
-    /* Set PLY mode. */
-    std::multimap< std::string, std::string >::iterator it 
-        = options.find( "comment" );
-    if ( it != options.end() )
-    {
-        save( filename, it->second );
-    }
-    else
-    {
-        save( filename, "" );
-    }
-}
-
-
 void AsciiIO::save( std::string filename )
-{
-    save( filename, "" );
-}
-
-
-void AsciiIO::save( std::string filename, std::string comment )
 {
 
     if ( !m_model->m_pointCloud ) {
@@ -263,7 +235,10 @@ void AsciiIO::save( std::string filename, std::string comment )
     }
 
     /* Write comment. */
-    out << "# " << comment << std::endl;
+    {
+        std::vector< std::string > c( getOption( "comment" ) );
+        out << "# " << ( c.size() ? c[0] : "" ) << std::endl;
+    }
 
     for ( size_t i(0); i < pointcount; i++ )
     {
@@ -315,24 +290,21 @@ int AsciiIO::getEntriesInLine(string filename)
     ifstream in(filename.c_str());
 
     // Get first line from file and skip it (possibly metadata)
-    char first_line[1024];
-    in.getline(first_line, 1024);
+    char line[1024];
+    in.getline(line, 1024);
 
     // Get second line -> hopefully point data
-    char second_line[1024];
-    in.getline(second_line, 1024);
+    in.getline(line, 1024);
 
     in.close();
 
     // Get number of blanks
     int c = 0;
-    char* pch = strtok(second_line, " ");
-    while(pch != NULL){
+    char* pch = strtok(line, " ");
+    while(pch){
         c++;
         pch = strtok(NULL, " ");
     }
-
-    in.close();
 
     return c;
 }
