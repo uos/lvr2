@@ -275,19 +275,13 @@ int main(int argc, char** argv)
         useVoxelsize = true;
     }
 
-    // Determine whether to use MC decomposition
-    bool useMT = false;
-    if(options.getDecomposition() == "MT")
-    {
-        useMT = true;
-    }
-
     // Create a new reconstruction object
     FastReconstruction<cVertex, cNormal > reconstruction(
 			pcm,
 			resolution,
 			useVoxelsize,
-			useMT);
+            /* Determine whether to use MC decomposition */
+			options.getDecomposition() == "MT" );
 
     // Create mesh
     reconstruction.getMesh(mesh);
@@ -331,13 +325,25 @@ int main(int argc, char** argv)
 		mesh.finalize();
 	}
 
+
+    std::multimap< std::string, std::string > save_opts;
+    /* Build call string */
+    {
+        std::string s("");
+        for ( size_t i(0); i < argc-1; i++ )
+        {
+            s += std::string( argv[i] ) + " ";
+        }
+        s += argv[ argc-1 ];
+        save_opts.insert( pair< std::string, std::string >( "comment", s ) );
+    }
+    save_opts.insert( pair< std::string, std::string >( "comment",
+                "Created with las-vegas-reconstruction: http://las-vegas.uos.de/" ) );
+
 	// Create output model and save to file
-	ModelPtr m( new Model( mesh.meshBuffer() ) );
-	m->m_pointCloud = pcm->pointBuffer();
-	ModelFactory::saveModel(m, "triangle_mesh.ply");
-
-
-	//
+	ModelPtr m( new Model( mesh.meshBuffer(), pcm->pointBuffer() ) );
+	ModelFactory::saveModel( m, "triangle_mesh.ply", save_opts );
+	ModelFactory::saveModel( m, "triangle_mesh.obj", save_opts );
 
     cout << timestamp << "Program end." << endl;
 

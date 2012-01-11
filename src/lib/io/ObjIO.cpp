@@ -30,7 +30,6 @@
 #include "ObjIO.hpp"
 #include <climits>
 #include "boost/tuple/tuple.hpp"
-#include <map>
 #include "../geometry/Vertex.hpp"
 
 namespace lssr
@@ -39,12 +38,10 @@ using namespace std; // Bitte vergebt mir....
 // Meinst du wirklich, dass ich dir so etwas durchgehen lassen kann?
 
 
-
-void ObjIO::save( ModelPtr model, string filename )
+void ObjIO::save( string filename )
 {
     typedef Vertex<uchar> ObjColor;
 
-    m_model = model;
     size_t lenVertices;
     size_t lenNormals;
     size_t lenColors;

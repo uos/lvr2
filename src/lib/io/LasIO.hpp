@@ -52,7 +52,7 @@ public:
      *
      * @param filename Filename of the file to write.
      */
-    virtual void save( ModelPtr model, string filename );
+    virtual void save( string filename );
 
 };
 

@@ -26,6 +26,7 @@
 #ifdef _USE_PCL_
 
 #include "PCLFiltering.hpp"
+#include <pcl/pcl_config.h>
 
 namespace lssr
 {
@@ -85,7 +86,12 @@ PCLFiltering::PCLFiltering( PointBufferPtr loader )
     // Create an empty kdtree representation, and pass it to the normal estimation object.
     // Its content will be filled inside the object, based on the given input dataset
     // (as no other search surface is given).
+#ifdef _PCL_VERSION_12_
     m_kdTree = pcl::KdTreeFLANN<pcl::PointXYZRGB>::Ptr (new pcl::KdTreeFLANN<pcl::PointXYZRGB> ());
+#else
+	m_kdTree = pcl::search::KdTree<pcl::PointXYZRGB>::Ptr( new pcl::search::KdTree<pcl::PointXYZRGB> );
+#endif
+     
     m_kdTree->setInputCloud (m_pointCloud);
 }
 
