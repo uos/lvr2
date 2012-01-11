@@ -21,6 +21,7 @@ set(QVIEWER_UIS
     ui/MainWindow.ui
     ui/SceneDockWidgetUI.ui
     ui/ActionDockWidgetUI.ui
+    ui/StatusDockWidgetUI.ui
     ui/TransformationDialogUI.ui
     ui/MeshingOptionsDialogUI.ui
     ui/DebugOutputDialogUI.ui
