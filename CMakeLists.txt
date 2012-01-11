@@ -85,6 +85,19 @@ set( CMAKE_CXX_FLAGS_RELEASE "${CMAKE_CXX_FLAGS_RELEASE} ${OpenMP_CXX_FLAGS}" )
 set( CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} ${OpenMP_CXX_FLAGS}" )
 
 ##############################################################
+# USED THIRD PARTY STUFF
+##############################################################
+
+# RPLY
+include_directories( ${CMAKE_CURRENT_SOURCE_DIR}/ext/rply/ )
+add_subdirectory(ext/rply)
+
+# LASLIB
+
+include_directories( ${CMAKE_CURRENT_SOURCE_DIR}/ext/laslib/inc )
+add_subdirectory(ext/laslib)
+
+##############################################################
 # LIBRARIES
 ##############################################################
 

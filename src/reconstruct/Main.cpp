@@ -286,6 +286,13 @@ int main(int argc, char** argv)
     // Create mesh
     reconstruction.getMesh(mesh);
 
+    // Save grid to file
+    if(options.saveGrid())
+    {
+        reconstruction.saveGrid("fastgrid.grid");
+    }
+
+
     mesh.removeDanglingArtifacts(options.getDanglingArtifacts());
 
     // Optimize mesh

@@ -95,6 +95,12 @@ public:
 	 */
 	bool    saveNormals() const;
 
+    /**
+     * @brief   Returns true if the marching Cubes grid should be save
+     */
+    bool    saveGrid() const;
+
+
 	/**
 	 * @brief 	Returns true if cluster optimization is enabled
 	 */

@@ -4,12 +4,14 @@ set(LSSR_SOURCES
     io/PLYIO.cpp
     io/AsciiIO.cpp
     io/UosIO.cpp
-    io/ObjIO.cpp
+    io/ObjIO.cpp	
+    io/LasIO.cpp
     io/Progress.cpp
     io/Timestamp.cpp
     io/Message.cpp
     io/MeshBuffer.cpp
     io/PointBuffer.cpp
+    io/GridIO.cpp
     display/CoordinateAxes.cpp
     display/Renderable.cpp
     display/PointCloud.cpp
@@ -17,6 +19,7 @@ set(LSSR_SOURCES
     display/StaticMesh.cpp
     display/ColorMap.cpp
     display/GroundPlane.cpp
+    display/Grid.cpp
     reconstruction/PCLFiltering.cpp
 )
 
@@ -30,6 +33,7 @@ set_target_properties(staticlssr PROPERTIES LIBRARY_OUTPUT_DIRECTORY
 target_link_libraries(staticlssr ${Boost_PROGRAM_OPTIONS_LIBRARY}
     ${Boost_SYSTEM_LIBRARY} ${Boost_THREAD_LIBRARY} ${Boost_FILESYSTEM_LIBRARY}
     ${OpenMP_CXX_FLAGS} ${OPENGL_LIBRARY} )
+target_link_libraries(staticlssr laslib)
 
 if ( rply_shared ) 
     target_link_libraries(staticlssr ${rply_shared})
@@ -45,6 +49,7 @@ if ( "${CMAKE_BUILD_TYPE}" STREQUAL "Release" )
     target_link_libraries(lssr ${Boost_PROGRAM_OPTIONS_LIBRARY}
          ${Boost_SYSTEM_LIBRARY} ${Boost_THREAD_LIBRARY} ${Boost_FILESYSTEM_LIBRARY}
          ${OpenMP_CXX_FLAGS} ${OPENGL_LIBRARY} )
+    target_link_libraries(lssr laslib)
     if ( rply_shared ) 
          target_link_libraries(lssr ${rply_shared})
          target_link_libraries(staticlssr ${rply_shared})

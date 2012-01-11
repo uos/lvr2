@@ -33,7 +33,6 @@
 #ifndef BASEIO_HPP_
 #define BASEIO_HPP_
 
-#include <cstdlib>
 #include <string>
 #include <map>
 
@@ -44,85 +43,86 @@ using std::string;
 namespace lssr
 {
 
-    /**
-     * @brief Interface specification for low-level io. All read
-     *        elements are stored in linear arrays.
-     */
-    class BaseIO
-    {
-        public:
-            BaseIO() {}
-
-            /**
-             * \brief Parse the given file and load supported elements.
-             *
-             * @param filename  The file to read.
-             */
-            virtual ModelPtr read(string filename ) = 0;
+/**
+ * @brief Interface specification for low-level io. All read
+ *        elements are stored in linear arrays.
+ */
+class BaseIO
+{
+    public:
+        BaseIO() {}
 
 
-            /**
-             * \brief Save the loaded elements to the given file.
-             *
-             * @param filename Filename of the file to write.
-             */
-            virtual void save( string filename ) = 0;
+        /**
+         * \brief Parse the given file and load supported elements.
+         *
+         * @param filename  The file to read.
+         */
+        virtual ModelPtr read(string filename ) = 0;
 
 
-            /**
-             * \brief Set the model and save the loaded elements to the given
-             *        file.
-             *
-             * @param filename Filename of the file to write.
-             */
-            virtual void save( ModelPtr model, string filename );
+        /**
+         * \brief Save the loaded elements to the given file.
+         *
+         * @param filename Filename of the file to write.
+         */
+        virtual void save( string filename ) = 0;
 
 
-            /**
-             * \brief Save model to file.
-             *
-             * Save a model. Additional options can be set via option multimap.
-             *
-             * \param filename  Filename of the output file.
-             * \param m         Model to save.
-             * \param options   Additional options.
-             **/
-            virtual void save( string filename, ModelPtr m,
-                    std::multimap< std::string, std::string > options );
+        /**
+         * \brief Set the model and save the loaded elements to the given
+         *        file.
+         *
+         * @param filename Filename of the file to write.
+         */
+        virtual void save( ModelPtr model, string filename );
 
 
-            /**
-             * \brief Save model to file.
-             *
-             * Save a model. Additional options can be set via option multimap.
-             *
-             * \param filename  Filename of the output file.
-             * \param options   Additional options.
-             * \param m         Model to save.
-             **/
-            virtual void save( string filename,
-                    std::multimap< std::string, std::string > options, 
-                    ModelPtr m = ModelPtr() ) = 0;
+        /**
+         * \brief Save model to file.
+         *
+         * Save a model. Additional options can be set via option multimap.
+         *
+         * \param filename  Filename of the output file.
+         * \param m         Model to save.
+         * \param options   Additional options.
+         **/
+        virtual void save( string filename, ModelPtr m,
+                std::multimap< std::string, std::string > options );
 
 
-            /**
-             * \brief  Set the model for io operations to use.
-             * \param m  Shared pointer to model.
-             **/
-            virtual void setModel( ModelPtr m );
+        /**
+         * \brief Save model to file.
+         *
+         * Save a model. Additional options can be set via option multimap.
+         *
+         * \param filename  Filename of the output file.
+         * \param options   Additional options.
+         * \param m         Model to save.
+         **/
+        virtual void save( string filename,
+                std::multimap< std::string, std::string > options, 
+                ModelPtr m = ModelPtr() ) = 0;
 
 
-            /**
-             * \brief  Get the model for io operations.
-             * \return  Shared pointer to model.
-             **/
-            virtual ModelPtr getModel();
+        /**
+         * \brief  Set the model for io operations to use.
+         * \param m  Shared pointer to model.
+         **/
+        virtual void setModel( ModelPtr m );
 
 
-        protected:
-            ModelPtr m_model;
+        /**
+         * \brief  Get the model for io operations.
+         * \return  Shared pointer to model.
+         **/
+        virtual ModelPtr getModel();
 
-    };
+
+    protected:
+        ModelPtr m_model;
+
+};
 
 }
 
