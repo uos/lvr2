@@ -127,11 +127,9 @@ private:
 
 	SceneDockWidgetUI*			m_sceneDockWidgetUi;
 	ActionDockWidgetUI*         m_actionDockWidgetUi;
-	PropertyDockWidgetUI*       m_propertyDockWidgetUi;
 
 	QDockWidget*				m_sceneDockWidget;
 	QDockWidget*                m_actionDockWidget;
-	QDockWidget*                m_propertyDockWidget;
 
 	Fogsettings*				m_fogSettingsUI;
 	ViewerManager*				m_viewerManager;

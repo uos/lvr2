@@ -42,17 +42,11 @@ ViewerApplication::ViewerApplication( int argc, char ** argv )
 	m_sceneDockWidgetUi->setupUi(m_sceneDockWidget);
 	m_qMainWindow->addDockWidget(Qt::LeftDockWidgetArea, m_sceneDockWidget);
 
-	// Add tool box widget to dock area
-	m_actionDockWidget = new QDockWidget(m_qMainWindow);
-	m_actionDockWidgetUi = new ActionDockWidgetUI;
-	m_actionDockWidgetUi->setupUi(m_actionDockWidget);
-	m_qMainWindow->addDockWidget(Qt::LeftDockWidgetArea, m_actionDockWidget);
-
-    // Add property widget for currently active objects in viewer
-    m_propertyDockWidget = new QDockWidget(m_qMainWindow);
-    m_propertyDockWidgetUi = new PropertyDockWidgetUI;
-    m_propertyDockWidgetUi->setupUi(m_propertyDockWidget);
-    m_qMainWindow->addDockWidget(Qt::LeftDockWidgetArea, m_propertyDockWidget);
+    // Add tool box widget to dock area
+    m_actionDockWidget = new QDockWidget(m_qMainWindow);
+    m_actionDockWidgetUi = new ActionDockWidgetUI;
+    m_actionDockWidgetUi->setupUi(m_actionDockWidget);
+    m_qMainWindow->addDockWidget(Qt::LeftDockWidgetArea, m_actionDockWidget);
 
 	// Setup event manager objects
 	m_viewerManager = new ViewerManager(m_qMainWindow);
