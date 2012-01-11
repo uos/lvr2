@@ -62,7 +62,7 @@ Grid::Grid(floatArr vertices, uintArr boxes, uint numPoints, uint numBoxes)
 
     // Render boxes
     glNewList(m_gridDisplayList, GL_COMPILE);
-    glColor3f(0.0, 0.0, 0.0);
+    glColor3f(125.0, 125.0, 125.0);
 
     // Coordinates for box corners
     float x[8];
