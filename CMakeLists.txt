@@ -19,13 +19,26 @@ set( CMAKE_CXX_FLAGS_DEBUG   "-g -Wall" )
 # EXTERNAL LIBRARIES
 ###############################################################
 
-find_package(PCL 1.0)
+find_package(PCL 1.2 EXACT QUIET)
 if(PCL_FOUND)
-  message(STATUS "Found PCL")
-  include_directories(${PCL_INCLUDE_DIRS})
-  link_directories(${PCL_LIBRARY_DIRS})
-  add_definitions(${PCL_DEFINITIONS})
-  add_definitions(-D_USE_PCL_)
+    message( "-- Found PCL version 1.2" )
+    include_directories(${PCL_INCLUDE_DIRS})
+    link_directories(${PCL_LIBRARY_DIRS})
+    add_definitions(${PCL_DEFINITIONS})
+    add_definitions(-D_USE_PCL_)
+    add_definitions(-D_PCL_VERSION_12_)
+else(PCL_FOUND)
+    find_package(PCL 1.3 QUIET)
+    if(PCL_FOUND)
+        message( "-- Found PCL version >= 1.3" )
+        include_directories(${PCL_INCLUDE_DIRS})
+        link_directories(${PCL_LIBRARY_DIRS})
+        add_definitions(${PCL_DEFINITIONS})
+        add_definitions(-D_USE_PCL_)
+    else(PCL_FOUND)
+        message( "-- No PCL version found." )
+        message( "-- PCL related stuff will be disabled." )
+    endif(PCL_FOUND)
 endif(PCL_FOUND)
 
 find_package( Boost 
@@ -52,6 +65,20 @@ if(OpenGL_FOUND)
     include_directories(${OpenGL_LIBRARY_DIRS})
 endif(OpenGL_FOUND)
 
+
+# Try to find an installed rply library.
+# If nothing is found we will build it ourself.
+find_library( rply_shared
+    NAMES rply
+    PATHS /usr/lib /usr/local/lib /lib )
+if( rply_shared )
+    message(STATUS "Looking for rply - found")
+else( rply_shared )
+    message(STATUS "Looking for rply - not found")
+    message(STATUS "Building local rply")
+    include_directories( ${CMAKE_CURRENT_SOURCE_DIR}/ext/rply/ )
+    add_subdirectory(ext/rply)
+endif( rply_shared )
 
 IF(APPLE)
     link_directories(/opt/local/lib)
@@ -96,9 +123,10 @@ add_subdirectory(src/lib)
 add_subdirectory(src/reconstruct)
 add_subdirectory(src/colorize)
 add_subdirectory(src/scanreduce)
+add_subdirectory(src/convert)
 
 if(PCL_FOUND)
-	add_subdirectory(src/scanfilter)
+    add_subdirectory(src/scanfilter)
 endif(PCL_FOUND)
 
 ##############################################################
