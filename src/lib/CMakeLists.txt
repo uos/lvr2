@@ -6,6 +6,7 @@ set(LSSR_SOURCES
     io/UosIO.cpp
     io/ObjIO.cpp	
     io/LasIO.cpp
+    io/PCDIO.cpp
     io/Progress.cpp
     io/Timestamp.cpp
     io/MeshBuffer.cpp
