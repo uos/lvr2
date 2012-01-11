@@ -52,19 +52,6 @@ namespace lssr
 {
 
 
-void UosIO::save( std::string filename,
-        std::multimap< std::string, std::string > options, ModelPtr m )
-{
-
-    if ( m ) 
-    {
-        m_model = m;
-    }
-    save( filename );
-
-}
-
-
 ModelPtr UosIO::read(string dir)
 {
     ModelPtr model;
