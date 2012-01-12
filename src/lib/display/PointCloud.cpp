@@ -91,7 +91,7 @@ PointCloud::PointCloud( ModelPtr model, string name) : Renderable(name)
                 b = 0;
             }
 
-            m_boundingBox->expand(x, y, z);
+
             m_points.push_back(uColorVertex(x, y, z, r, g, b));
         }
     }

@@ -30,6 +30,9 @@
    </property>
   </widget>
   <widget class="QGroupBox" name="groupBox_2">
+   <property name="enabled">
+    <bool>false</bool>
+   </property>
    <property name="geometry">
     <rect>
      <x>20</x>
@@ -79,6 +82,9 @@
    </widget>
   </widget>
   <widget class="QGroupBox" name="groupBox_3">
+   <property name="enabled">
+    <bool>false</bool>
+   </property>
    <property name="geometry">
     <rect>
      <x>210</x>
