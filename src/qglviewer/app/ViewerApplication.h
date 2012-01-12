@@ -33,7 +33,6 @@
 #include "FogDensityDialog.h"
 #include "SceneDockWidgetUI.h"
 #include "ActionDockWidgetUI.h"
-#include "StatusDockWidgetUI.h"
 #include "MeshingOptionsDialogUI.h"
 
 #include "../data/DataCollectorFactory.h"
@@ -69,7 +68,6 @@ using Ui::MainWindow;
 using Ui::Fogsettings;
 using Ui::SceneDockWidgetUI;
 using Ui::ActionDockWidgetUI;
-using Ui::PropertyDockWidgetUI;
 
 class EventManager;
 
