@@ -142,8 +142,31 @@ void ViewerApplication::displayRenderingSettings()
     QDialog dialog;
     render_ui->setupUi(&dialog);
 
-    // Execute dialog
-    dialog.exec();
+    // Get selected object
+    QTreeWidgetItem * t_item = m_sceneDockWidgetUi->treeWidget->currentItem();
+
+    if(t_item)
+    {
+        if(t_item->type() >= PointCloudItem)
+        {
+            // Convert to custom item
+            CustomTreeWidgetItem* item = static_cast<CustomTreeWidgetItem*>(t_item);
+
+            // Get relevant values from renderable and set them in ui
+            Renderable* renderable = item->renderable();
+            render_ui->spinBoxLineWidth->setValue(renderable->lineWidth());
+            render_ui->spinBoxPointSize->setValue(renderable->pointSize());
+
+            // Execute dialog and set new values
+            if(dialog.exec() == QDialog::Accepted)
+            {
+                renderable->setPointSize(render_ui->spinBoxPointSize->value());
+                renderable->setLineWidth(render_ui->spinBoxLineWidth->value());
+            }
+        }
+    }
+
+
 }
 
 void ViewerApplication::createMeshFromPointcloud()

@@ -1268,7 +1268,7 @@ void HalfEdgeMesh<VertexT, NormalT>::finalizeAndRetesselate( bool genTextures )
         //textureBuffer.push_back( m_regions[iRegion]->m_regionNumber );
 
         // get the contours for this region
-        vector<vector<HVertex*> > contours = m_regions[iRegion]->getContours(0.01);
+        vector<vector<HVertex*> > contours = m_regions[iRegion]->getContours(0.10);
 
         // alocate a new texture
         Texture<VertexT, NormalT>* t=NULL;
