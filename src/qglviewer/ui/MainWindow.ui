@@ -191,6 +191,7 @@
    <addaction name="actionVertexView"/>
    <addaction name="actionWireframeView"/>
    <addaction name="actionSurfaceView"/>
+   <addaction name="actionRenderingSettings"/>
    <addaction name="actionToggle_fog"/>
    <addaction name="actionFog_settings"/>
    <addaction name="separator"/>
@@ -450,15 +451,21 @@
    </property>
   </action>
   <action name="actionPointNormalView">
-   <property name="checkable">
-    <bool>true</bool>
-   </property>
    <property name="icon">
     <iconset resource="../res/viewer.qrc">
      <normaloff>:/qv_pointNormals.png</normaloff>:/qv_pointNormals.png</iconset>
    </property>
    <property name="text">
     <string>actionPointNormalView</string>
+   </property>
+  </action>
+  <action name="actionRenderingSettings">
+   <property name="icon">
+    <iconset resource="../res/viewer.qrc">
+     <normaloff>:/qv_rendering.png</normaloff>:/qv_rendering.png</iconset>
+   </property>
+   <property name="text">
+    <string>Rendering Settings</string>
    </property>
   </action>
  </widget>
