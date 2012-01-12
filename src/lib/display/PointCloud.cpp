@@ -65,6 +65,8 @@ PointCloud::PointCloud( ModelPtr model, string name) : Renderable(name)
             float y = points[i][1];
             float z = points[i][2];
 
+            m_boundingBox->expand(x,y,z);
+
             unsigned char r, g, b;
 
             if(colors)
