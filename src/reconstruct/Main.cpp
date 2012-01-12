@@ -333,7 +333,12 @@ int main(int argc, char** argv)
 
 	// Create output model and save to file
 	ModelPtr m( new Model( mesh.meshBuffer() ) );
-	m->m_pointCloud = pcm->pointBuffer();
+
+	// Save original points and normals as well if needed
+	if(options.saveOriginalData())
+	{
+	    m->m_pointCloud = pcm->pointBuffer();
+	}
 	ModelFactory::saveModel(m, "triangle_mesh.ply");
 
 

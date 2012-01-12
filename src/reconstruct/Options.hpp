@@ -96,9 +96,15 @@ public:
 	bool    saveNormals() const;
 
     /**
-     * @brief   Returns true if the marching Cubes grid should be save
+     * @brief   Returns true if the Marching Cubes grid should be save
      */
     bool    saveGrid() const;
+
+    /**
+     * @brief   Returns true if the original points should be stored
+     *          together with the reconstruction
+     */
+    bool    saveOriginalData() const;
 
 
 	/**
@@ -339,6 +345,10 @@ inline ostream& operator<<(ostream& os, const Options &o)
 	if(o.saveNormals())
 	{
 		cout << "##### Save normals \t\t: YES" << endl;
+	}
+	if(o.saveOriginalData())
+	{
+	    cout << "##### Save input data \t\t: YES" << endl;
 	}
 	if(o.colorRegions())
 	{
