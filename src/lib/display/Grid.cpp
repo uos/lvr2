@@ -30,6 +30,8 @@ namespace lssr
 Grid::Grid(floatArr vertices, uintArr boxes, uint numPoints, uint numBoxes)
     : m_vertices(vertices), m_boxes(boxes), m_numPoints(numPoints), m_numBoxes(numBoxes)
 {
+    m_lineWidth = 2.0;
+    m_pointSize = 5.0;
 
     // Create display lists for points and grid
     m_pointDisplayList = glGenLists(1);
