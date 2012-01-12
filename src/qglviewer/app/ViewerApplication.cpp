@@ -106,6 +106,8 @@ void ViewerApplication::connectEvents()
 	connect(m_mainWindowUi->actionPointCloudView, SIGNAL(activated()), this, SLOT(pointRenderModeChanged()));
 	connect(m_mainWindowUi->actionPointNormalView, SIGNAL(activated()), this, SLOT(pointRenderModeChanged()));
 
+	connect(m_mainWindowUi->actionRenderingSettings, SIGNAL(activated()), this, SLOT(displayRenderingSettings()));
+
 	// Fog settings
 	connect(m_mainWindowUi->actionToggle_fog, SIGNAL(activated()),  this, SLOT(toggleFog()));
 	connect(m_mainWindowUi->actionFog_settings, SIGNAL(activated()),this, SLOT(displayFogSettingsDialog()));
@@ -131,6 +133,17 @@ void ViewerApplication::connectEvents()
     connect(m_actionDockWidgetUi->buttonExport,     SIGNAL(clicked()), this, SLOT(saveSelectedObject()));
     connect(m_actionDockWidgetUi->buttonAnimation,  SIGNAL(clicked()), this, SLOT(createAnimation()));
 
+}
+
+void ViewerApplication::displayRenderingSettings()
+{
+    // Create dialog ui
+    RenderingDialogUI*  render_ui = new RenderingDialogUI;
+    QDialog dialog;
+    render_ui->setupUi(&dialog);
+
+    // Execute dialog
+    dialog.exec();
 }
 
 void ViewerApplication::createMeshFromPointcloud()
