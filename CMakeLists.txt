@@ -66,20 +66,6 @@ if(OpenGL_FOUND)
 endif(OpenGL_FOUND)
 
 
-# Try to find an installed rply library.
-# If nothing is found we will build it ourself.
-find_library( rply_shared
-    NAMES rply
-    PATHS /usr/lib /usr/local/lib /lib )
-if( rply_shared )
-    message(STATUS "Looking for rply - found")
-else( rply_shared )
-    message(STATUS "Looking for rply - not found")
-    message(STATUS "Building local rply")
-    include_directories( ${CMAKE_CURRENT_SOURCE_DIR}/ext/rply/ )
-    add_subdirectory(ext/rply)
-endif( rply_shared )
-
 IF(APPLE)
     link_directories(/opt/local/lib)
     include_directories(/System/Library/Frameworks/GLUT.framework/Headers)

@@ -156,7 +156,9 @@ typedef ColorVertex<float, unsigned char>               cVertex;
 typedef Normal<float>                                   cNormal;
 typedef PointCloudManager<cVertex, cNormal>             PCM;
 typedef StannPointCloudManager<cVertex, cNormal>        StannPCM;
+#ifdef _USE_PCL_
 typedef PCLPointCloudManager<cVertex, cNormal>          PCLPCM;
+#endif /* _USE_PCL_ */
 
 /**
  * @brief   Main entry point for the LSSR surface executable
