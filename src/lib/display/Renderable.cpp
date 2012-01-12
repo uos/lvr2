@@ -41,6 +41,9 @@ Renderable::Renderable()
 	m_translationSpeed  = 10.0f;
 	m_scaleFactor       = 1.0f;
 
+	m_lineWidth         = 1.0;
+	m_pointSize         = 1.0;
+
 	m_showAxes  = false;
 	m_active    = true;
 	m_selected  = false;
