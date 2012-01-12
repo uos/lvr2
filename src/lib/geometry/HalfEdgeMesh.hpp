@@ -163,7 +163,7 @@ public:
      *
      * @param 	genTextures	Whether to generate textures or not
 	 */
-	virtual void finalizeAndRetesselate(bool genTextures);
+	virtual void finalizeAndRetesselate(bool genTextures, float fusionThreshold = 0.01);
 
 	/**
 	 * @brief 	fills all holes
