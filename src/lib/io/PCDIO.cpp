@@ -1,8 +1,10 @@
 
 #include "PCDIO.hpp"
 #include <fstream>
+#ifdef _USE_PCL_
 #include <pcl/io/pcd_io.h>
 #include <pcl/point_types.h>
+#endif /* _USE_PCL_ */
 
 void lssr::PCDIO::save( string filename,
         std::multimap< std::string, std::string > options, lssr::ModelPtr m )
