@@ -1135,7 +1135,7 @@ void HalfEdgeMesh<VertexT, NormalT>::finalize()
 }
 
 template<typename VertexT, typename NormalT>
-void HalfEdgeMesh<VertexT, NormalT>::finalizeAndRetesselate( bool genTextures )
+void HalfEdgeMesh<VertexT, NormalT>::finalizeAndRetesselate( bool genTextures, float fusionThreshold )
 {
     // used Typedef's
     typedef std::vector<int>::iterator   intIterator;
@@ -1268,7 +1268,7 @@ void HalfEdgeMesh<VertexT, NormalT>::finalizeAndRetesselate( bool genTextures )
         //textureBuffer.push_back( m_regions[iRegion]->m_regionNumber );
 
         // get the contours for this region
-        vector<vector<HVertex*> > contours = m_regions[iRegion]->getContours(0.10);
+        vector<vector<HVertex*> > contours = m_regions[iRegion]->getContours(fusionThreshold);
 
         // alocate a new texture
         Texture<VertexT, NormalT>* t=NULL;

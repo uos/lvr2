@@ -324,7 +324,8 @@ int main(int argc, char** argv)
     // Save triangle mesh
 	if ( options.retesselate() )
 	{
-		mesh.finalizeAndRetesselate(options.generateTextures());
+		mesh.finalizeAndRetesselate(options.generateTextures(),
+		                            options.getLineFusionThreshold());
 	}
 	else
 	{

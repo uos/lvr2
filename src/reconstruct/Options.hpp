@@ -219,6 +219,11 @@ public:
 	 */
 	float getTexelSize() const;
 
+    /**
+     * @brief   Returns the fusion threshold for tesselation
+     */
+    float getLineFusionThreshold() const;
+
 private:
 
 	/// The set voxelsize
@@ -286,6 +291,9 @@ private:
 
 	/// Texel size
 	float                           m_texelSize;
+
+	/// Threshold for line fusing when tesselating
+	float                           m_lineFusionThreshold;
 };
 
 
@@ -310,7 +318,8 @@ inline ostream& operator<<(ostream& os, const Options &o)
 	cout << "##### k_d \t\t\t: "              << o.getKd()              << endl;
 	if(o.retesselate())
 	{
-		cout << "##### retesselate \t\t: YES"     << endl;
+		cout << "##### Retesselate \t\t: YES"     << endl;
+		cout << "##### Line fusion threshold \t: " << o.getLineFusionThreshold() << endl;
 	}
 	if(o.saveFaceNormals())
 	{
