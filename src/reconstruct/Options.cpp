@@ -178,7 +178,7 @@ bool Options::recalcNormals() const
 
 bool Options::savePointNormals() const
 {
-	return (m_variables.count("savePointNormals"));
+	return (m_variables.count("exportPointNormals"));
 }
 
 bool Options::saveNormals() const
