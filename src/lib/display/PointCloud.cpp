@@ -34,7 +34,9 @@ namespace lssr
 
 PointCloud::PointCloud()
 {
-
+    m_numNormals = 0;
+    m_boundingBox = new BoundingBox<Vertex<float> >;
+    m_renderMode = RenderPoints;
 }
 
 PointCloud::PointCloud( ModelPtr model, string name) : Renderable(name)
@@ -152,6 +154,7 @@ void PointCloud::updateDisplayLists(){
     glEndList();
 
     float length = 0.01 * m_boundingBox->getRadius();
+
     // Create a new display list for normals
     if(m_numNormals)
     {
