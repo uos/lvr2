@@ -156,6 +156,7 @@ void PointCloud::updateDisplayLists(){
     float length = 0.01 * m_boundingBox->getRadius();
 
     // Create a new display list for normals
+    cout << m_numNormals << endl;
     if(m_numNormals)
     {
         m_normalListIndex = glGenLists(1);
