@@ -451,6 +451,9 @@
    </property>
   </action>
   <action name="actionPointNormalView">
+   <property name="checkable">
+    <bool>true</bool>
+   </property>
    <property name="icon">
     <iconset resource="../res/viewer.qrc">
      <normaloff>:/qv_pointNormals.png</normaloff>:/qv_pointNormals.png</iconset>

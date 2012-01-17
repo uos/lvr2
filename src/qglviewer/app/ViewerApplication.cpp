@@ -414,8 +414,8 @@ void ViewerApplication::pointRenderModeChanged()
             {
                 renderMode |= lssr::RenderNormals;
             }
-             pc->setRenderMode(renderMode);
-             m_viewer->updateGL();
+            pc->setRenderMode(renderMode);
+            m_viewer->updateGL();
         }
     }
 }

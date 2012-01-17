@@ -125,7 +125,6 @@ inline void PointCloud::render()
         if(m_renderMode & RenderNormals)
         {
             glCallList(m_normalListIndex);
-
         }
         glPointSize(1.0);
         glEnable(GL_LIGHTING);

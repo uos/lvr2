@@ -537,7 +537,6 @@ ModelPtr PLYIO::read( string filename, bool readColor, bool readConfidence,
 
     uintArr  faceIndices;
 
-    std::cout << numVertices << std::endl;
 
     /* Allocate memory. */
     if ( numVertices )
