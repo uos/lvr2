@@ -149,15 +149,7 @@ using namespace lssr;
 
 typedef ColorVertex<float, unsigned char>               cVertex;
 typedef Normal<float>                                   cNormal;
-<<<<<<< HEAD
 typedef mPointCloudManager<cVertex, cNormal>            PCM;
-=======
-typedef PointCloudManager<cVertex, cNormal>             PCM;
-typedef StannPointCloudManager<cVertex, cNormal>        StannPCM;
-#ifdef _USE_PCL_
-typedef PCLPointCloudManager<cVertex, cNormal>          PCLPCM;
-#endif /* _USE_PCL_ */
->>>>>>> master
 
 /**
  * @brief   Main entry point for the LSSR surface executable
@@ -195,20 +187,23 @@ int main(int argc, char** argv)
     PCM::Ptr pcm;
     pcm = PCM::Ptr( new PCM( p_loader, pcm_name ) );
 
-//    // Check if a point cloud manager object was created. Exit if not and display
-//    // available objects
-//    if ( !pcm )
-//    {
-//        cout << timestamp << "Unable to create PointCloudMansger." << endl;
-//        cout << timestamp << "Unknown option '" << pcm_name << "'." << endl;
-//        cout << timestamp << "Available PCMs are: " << endl;
-//        cout << timestamp << "STANN, STANN_RANSAC";
-//#ifdef _USE_PCL_
-//        cout << ", PCL";
-//#endif
-//        cout << endl;
-//        return 0;
-//    }
+    // Check if a point cloud manager object was created. Exit if not and display
+    // available objects
+    if ( !pcm )
+    {
+        cout << timestamp << "Unable to create PointCloudMansger." << endl;
+        cout << timestamp << "Unknown option '" << pcm_name << "'." << endl;
+        cout << timestamp << "Available PCMs are: " << endl;
+        cout << timestamp << "STANN, STANN_RANSAC";
+#ifdef _USE_PCL_
+        cout << ", PCL";
+#endif
+#ifdef _USE_NABO
+        cout << ", Nabo";
+#endif
+        cout << endl;
+        return 0;
+    }
 
     // Set search options for normal estimation and distance evaluation
     pcm->setKD(options.getKd());

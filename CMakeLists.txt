@@ -53,7 +53,6 @@ else(PCL_FOUND)
         message( "-- No PCL found." )
         message( "-- PCL related stuff will be disabled." )
 endif(PCL_FOUND)
->>>>>>> master
 
 find_package( Boost 
     COMPONENTS 
