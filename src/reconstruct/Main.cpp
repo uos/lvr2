@@ -342,8 +342,12 @@ int main(int argc, char** argv)
 	}
 	ModelFactory::saveModel(m, "triangle_mesh.ply");
 
+	// Save obj file if textures were generated
+	if(options.getTexelSize())
+	{
+	    ModelFactory::saveModel(m, "triangle_mesh.obj");
+	}
 
-	//
 
     cout << timestamp << "Program end." << endl;
 
