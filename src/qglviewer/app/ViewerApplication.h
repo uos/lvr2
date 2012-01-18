@@ -52,18 +52,11 @@
 #include "display/StaticMesh.hpp"
 #include "geometry/HalfEdgeMesh.hpp"
 
-#include "reconstruction/PointCloudManager.hpp"
-#include "reconstruction/StannPointCloudManager.hpp"
+#include "reconstruction/mPointCloudManager.hpp"
 #include "reconstruction/FastReconstruction.hpp"
 
 #include "io/Model.hpp"
 #include "io/ModelFactory.hpp"
-
-// Optinal PCL bindings
-#ifdef _USE_PCL_
-#include "reconstruction/PCLPointCloudManager.hpp"
-#endif
-
 
 using Ui::MainWindow;
 using Ui::Fogsettings;

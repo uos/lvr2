@@ -52,15 +52,16 @@ mPointCloudManager<VertexT, NormalT>::mPointCloudManager(
 
     init();
 
-    if( searchTreeName == "pcl" )
+    if( searchTreeName == "pcl"  || searchTreeName == "PCL" )
     {
-        m_searchTree = SEARCH_TREE::Ptr( new SearchTreePCL< VertexT, NormalT >(this->m_points, this->m_numPoints, kn, ki, kd) );  
-    } else if( searchTreeName == "stann" )
+        m_searchTree = search_tree::Ptr( new SearchTreePCL< VertexT, NormalT >(this->m_points, this->m_numPoints, kn, ki, kd) );  
+    } else if( searchTreeName == "stann" || searchTreeName == "STANN" )
     {
-        m_searchTree = SEARCH_TREE::Ptr( new SearchTreeStann< VertexT, NormalT >(this->m_points, this->m_numPoints, kn, ki, kd) );  
+        m_searchTree = search_tree::Ptr( new SearchTreeStann< VertexT, NormalT >(this->m_points, this->m_numPoints, kn, ki, kd) );  
     } else
     {
        cout << timestamp << "No Valid Searchtree class specified!" << endl;
+       cout << timestamp << "Class: " << searchTreeName << endl;
     }
 }
 
@@ -130,13 +131,6 @@ void mPointCloudManager<VertexT, NormalT>::calcNormals()
 
             //T* point = this->m_points[i];
             m_searchTree->kSearch(this->m_points[i], k, id, di);
-            cout << "DI.size(): " << di.size() << endl;
-            cout << "ID.size(): " << id.size() << endl;
-            for( int x(0); x < di.size(); x++ )
-            {
-               cout << "DIst[" << x << "]: " << di[x] << endl;
-            }
-            
             
             float min_x = 1e15;
             float min_y = 1e15;

@@ -54,7 +54,7 @@ template<typename VertexT, typename NormalT>
       this->m_kd = kd;
 
       // initialize pointCloud for pcl.
-      m_pointCloud = PointCloud< PointXYZ >::Ptr( new PointCloud< PointXYZ >() );
+      m_pointCloud = pcl::PointCloud< PointXYZ >::Ptr( new pcl::PointCloud< PointXYZ >() );
       m_pointCloud->resize( n_points );
 
       // Store points in pclCloud
