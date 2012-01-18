@@ -42,11 +42,11 @@ ViewerApplication::ViewerApplication( int argc, char ** argv )
 	m_sceneDockWidgetUi->setupUi(m_sceneDockWidget);
 	m_qMainWindow->addDockWidget(Qt::LeftDockWidgetArea, m_sceneDockWidget);
 
-	// Add tool box widget to dock area
-	m_actionDockWidget = new QDockWidget(m_qMainWindow);
-	m_actionDockWidgetUi = new ActionDockWidgetUI;
-	m_actionDockWidgetUi->setupUi(m_actionDockWidget);
-	m_qMainWindow->addDockWidget(Qt::LeftDockWidgetArea, m_actionDockWidget);
+    // Add tool box widget to dock area
+    m_actionDockWidget = new QDockWidget(m_qMainWindow);
+    m_actionDockWidgetUi = new ActionDockWidgetUI;
+    m_actionDockWidgetUi->setupUi(m_actionDockWidget);
+    m_qMainWindow->addDockWidget(Qt::LeftDockWidgetArea, m_actionDockWidget);
 
 	// Setup event manager objects
 	m_viewerManager = new ViewerManager(m_qMainWindow);
@@ -102,7 +102,11 @@ void ViewerApplication::connectEvents()
 	connect(m_mainWindowUi->actionVertexView,     SIGNAL(activated()), this, SLOT(meshRenderModeChanged()));
 	connect(m_mainWindowUi->actionSurfaceView,    SIGNAL(activated()), this, SLOT(meshRenderModeChanged()));
 	connect(m_mainWindowUi->actionWireframeView,  SIGNAL(activated()), this, SLOT(meshRenderModeChanged()));
+
 	connect(m_mainWindowUi->actionPointCloudView, SIGNAL(activated()), this, SLOT(pointRenderModeChanged()));
+	connect(m_mainWindowUi->actionPointNormalView, SIGNAL(activated()), this, SLOT(pointRenderModeChanged()));
+
+	connect(m_mainWindowUi->actionRenderingSettings, SIGNAL(activated()), this, SLOT(displayRenderingSettings()));
 
 	// Fog settings
 	connect(m_mainWindowUi->actionToggle_fog, SIGNAL(activated()),  this, SLOT(toggleFog()));
@@ -128,6 +132,40 @@ void ViewerApplication::connectEvents()
     connect(m_actionDockWidgetUi->buttonDelete,     SIGNAL(clicked()), this, SLOT(deleteObject()));
     connect(m_actionDockWidgetUi->buttonExport,     SIGNAL(clicked()), this, SLOT(saveSelectedObject()));
     connect(m_actionDockWidgetUi->buttonAnimation,  SIGNAL(clicked()), this, SLOT(createAnimation()));
+
+}
+
+void ViewerApplication::displayRenderingSettings()
+{
+    // Create dialog ui
+    RenderingDialogUI*  render_ui = new RenderingDialogUI;
+    QDialog dialog;
+    render_ui->setupUi(&dialog);
+
+    // Get selected object
+    QTreeWidgetItem * t_item = m_sceneDockWidgetUi->treeWidget->currentItem();
+
+    if(t_item)
+    {
+        if(t_item->type() >= PointCloudItem)
+        {
+            // Convert to custom item
+            CustomTreeWidgetItem* item = static_cast<CustomTreeWidgetItem*>(t_item);
+
+            // Get relevant values from renderable and set them in ui
+            Renderable* renderable = item->renderable();
+            render_ui->spinBoxLineWidth->setValue(renderable->lineWidth());
+            render_ui->spinBoxPointSize->setValue(renderable->pointSize());
+
+            // Execute dialog and set new values
+            if(dialog.exec() == QDialog::Accepted)
+            {
+                renderable->setPointSize(render_ui->spinBoxPointSize->value());
+                renderable->setLineWidth(render_ui->spinBoxLineWidth->value());
+            }
+        }
+    }
+
 
 }
 
@@ -362,7 +400,24 @@ void ViewerApplication::meshRenderModeChanged()
 
 void ViewerApplication::pointRenderModeChanged()
 {
+    QTreeWidgetItem* item = m_sceneDockWidgetUi->treeWidget->currentItem();
+    if(item)
+    {
+        if(item->type() == PointCloudItem)
+        {
+            PointCloudTreeWidgetItem* t_item = static_cast<PointCloudTreeWidgetItem*>(item);
+            lssr::PointCloud* pc = static_cast<lssr::PointCloud*>(t_item->renderable());
 
+            int renderMode = 0;
+            renderMode |= lssr::RenderPoints;
+            if(m_mainWindowUi->actionPointNormalView->isChecked())
+            {
+                renderMode |= lssr::RenderNormals;
+            }
+            pc->setRenderMode(renderMode);
+            m_viewer->updateGL();
+        }
+    }
 }
 
 void ViewerApplication::openFile(string filename)
@@ -585,27 +640,36 @@ void ViewerApplication::treeSelectionChanged()
 
 void ViewerApplication::updateToolbarActions(CustomTreeWidgetItem* item)
 {
-//    bool point_support = item->supportsMode(Points);
-//    bool pn_support = item->supportsMode(PointNormals);
-//    bool vn_support = item->supportsMode(VertexNormals);
+    bool point_support = item->supportsMode(Points);
+    bool pn_support = item->supportsMode(PointNormals);
+    //    bool vn_support = item->supportsMode(VertexNormals);
     bool mesh_support = item->supportsMode(Mesh);
+
+
+    m_mainWindowUi->actionVertexView->setEnabled(false);
+    m_mainWindowUi->actionWireframeView->setEnabled(false);
+    m_mainWindowUi->actionSurfaceView->setEnabled(false);
+    m_mainWindowUi->actionPointCloudView->setEnabled(false);
+    m_mainWindowUi->actionGenerateMesh->setEnabled(false);
+    m_mainWindowUi->actionPointNormalView->setEnabled(false);
 
     if(mesh_support)
     {
         m_mainWindowUi->actionVertexView->setEnabled(true);
         m_mainWindowUi->actionWireframeView->setEnabled(true);
         m_mainWindowUi->actionSurfaceView->setEnabled(true);
-        m_mainWindowUi->actionPointCloudView->setEnabled(false);
-        m_mainWindowUi->actionGenerateMesh->setEnabled(false);
     }
-    else
+
+    if(point_support)
     {
-        m_mainWindowUi->actionVertexView->setEnabled(false);
-        m_mainWindowUi->actionWireframeView->setEnabled(false);
-        m_mainWindowUi->actionSurfaceView->setEnabled(false);
         m_mainWindowUi->actionPointCloudView->setEnabled(true);
-        m_mainWindowUi->actionGenerateMesh->setEnabled(true);
     }
+
+    if(pn_support)
+    {
+        m_mainWindowUi->actionPointNormalView->setEnabled(true);
+    }
+
 
 }
 

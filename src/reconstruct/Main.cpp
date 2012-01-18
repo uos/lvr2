@@ -140,7 +140,6 @@
 #include "reconstruction/FastReconstruction.hpp"
 #include "io/PLYIO.hpp"
 #include "geometry/Matrix4.hpp"
-#include "geometry/TriangleMesh.hpp"
 #include "geometry/HalfEdgeMesh.hpp"
 #include "geometry/Texture.hpp"
 #include <iostream>
@@ -207,7 +206,25 @@ int main(int argc, char** argv)
     pcm->setKD(options.getKd());
     pcm->setKI(options.getKi());
     pcm->setKN(options.getKn());
-    pcm->calcNormals();
+
+    // Calculate normals if necessary
+    if(!pcm->haveNormals() || (pcm->haveNormals() && options.recalcNormals()))
+    {
+        pcm->calcNormals();
+    }
+    else
+    {
+        cout << timestamp << "Using given normals." << endl;
+    }
+
+    // Save points and normals only
+    if(options.savePointNormals())
+    {
+        ModelPtr pn( new Model);
+        pn->m_pointCloud = pcm->pointBuffer();
+        ModelFactory::saveModel(pn, "pointnormals.ply");
+    }
+
 
     // Create an empty mesh
     HalfEdgeMesh<cVertex, cNormal> mesh( pcm );
@@ -254,6 +271,13 @@ int main(int argc, char** argv)
     // Create mesh
     reconstruction.getMesh(mesh);
 
+    // Save grid to file
+    if(options.saveGrid())
+    {
+        reconstruction.saveGrid("fastgrid.grid");
+    }
+
+
     mesh.removeDanglingArtifacts(options.getDanglingArtifacts());
 
     // Optimize mesh
@@ -279,15 +303,26 @@ int main(int argc, char** argv)
     // Save triangle mesh
 	if ( options.retesselate() )
 	{
-		mesh.finalizeAndRetesselate(options.generateTextures());
+		mesh.finalizeAndRetesselate(options.generateTextures(),
+		                            options.getLineFusionThreshold());
 	}
 	else
 	{
 		mesh.finalize();
 	}
 
-    mesh.save("triangle_mesh.ply");
-    mesh.save("triangle_mesh.obj");
+	// Create output model and save to file
+	ModelPtr m( new Model( mesh.meshBuffer() ) );
+
+	// Save original points and normals as well if needed
+	if(options.saveOriginalData())
+	{
+	    m->m_pointCloud = pcm->pointBuffer();
+	}
+	ModelFactory::saveModel(m, "triangle_mesh.ply");
+
+
+	//
 
     cout << timestamp << "Program end." << endl;
 

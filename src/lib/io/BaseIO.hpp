@@ -33,7 +33,6 @@
 #ifndef BASEIO_HPP_
 #define BASEIO_HPP_
 
-#include <cstdlib>
 #include <string>
 
 #include "Model.hpp"
@@ -43,30 +42,30 @@ using std::string;
 namespace lssr
 {
 
+/**
+ * @brief Interface specification for low-level io. All read
+ *        elements are stored in linear arrays.
+ */
+class BaseIO
+{
+public:
+    BaseIO() {}
+
     /**
-     * @brief Interface specification for low-level io. All read
-     *        elements are stored in linear arrays.
+     * \brief Parse the given file and load supported elements.
+     *
+     * @param filename  The file to read.
      */
-    class BaseIO
-    {
-        public:
-            BaseIO() {}
+    virtual ModelPtr read(string filename ) = 0;
 
-            /**
-             * \brief Parse the given file and load supported elements.
-             *
-             * @param filename  The file to read.
-             */
-            virtual ModelPtr read(string filename ) = 0;
+    /**
+     * \brief Save the loaded elements to the given file.
+     *
+     * @param filename Filename of the file to write.
+     */
+    virtual void save( ModelPtr model, string filename ) = 0;
 
-            /**
-             * \brief Save the loaded elements to the given file.
-             *
-             * @param filename Filename of the file to write.
-             */
-            virtual void save( ModelPtr model, string filename ) = 0;
-
-    };
+};
 
 }
 

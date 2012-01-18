@@ -1059,13 +1059,12 @@ void HalfEdgeMesh<VertexT, NormalT>::finalize()
     int numFaces 	= m_faces.size();
     // Default Color values. Used if regions should not be colored.
     float r=0, g=200, b=0;
-    unsigned int *indexBuffer;
     std::vector<uchar> faceColorBuffer;
 
     floatArr vertexBuffer( new float[3 * numVertices] );
     floatArr normalBuffer( new float[3 * numVertices] );
     ucharArr colorBuffer(  new uchar[3 * numVertices] );
-    indexBuffer 	= new unsigned int[3 * numFaces];
+    uintArr  indexBuffer(  new unsigned int[3 * numFaces] );
 
     // Set the Vertex and Normal Buffer for every Vertex.
     typename vector<HVertex*>::iterator vertices_iter = m_vertices.begin();
@@ -1136,7 +1135,7 @@ void HalfEdgeMesh<VertexT, NormalT>::finalize()
 }
 
 template<typename VertexT, typename NormalT>
-void HalfEdgeMesh<VertexT, NormalT>::finalizeAndRetesselate( bool genTextures )
+void HalfEdgeMesh<VertexT, NormalT>::finalizeAndRetesselate( bool genTextures, float fusionThreshold )
 {
     // used Typedef's
     typedef std::vector<int>::iterator   intIterator;
@@ -1269,7 +1268,7 @@ void HalfEdgeMesh<VertexT, NormalT>::finalizeAndRetesselate( bool genTextures )
         //textureBuffer.push_back( m_regions[iRegion]->m_regionNumber );
 
         // get the contours for this region
-        vector<vector<HVertex*> > contours = m_regions[iRegion]->getContours(0.01);
+        vector<vector<HVertex*> > contours = m_regions[iRegion]->getContours(fusionThreshold);
 
         // alocate a new texture
         Texture<VertexT, NormalT>* t=NULL;

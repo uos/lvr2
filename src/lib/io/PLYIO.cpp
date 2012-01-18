@@ -24,6 +24,7 @@
  *             pointclouds, including color information, confidence, intensity
  *             and normals.
  * @author     Lars Kiesow (lkiesow), lkiesow@uos.de
+ * @author     Thomas Wiemann
  * @version   110929
  * @date       Created:       2011-09-16 17:28:28
  * @date       Last modified: 2011-09-29 14:23:36
@@ -39,6 +40,8 @@
 #include <iostream>
 #include "Message.hpp"
 
+using std::cout;
+using std::endl;
 
 namespace lssr
 {
@@ -82,7 +85,7 @@ void PLYIO::save( string filename, e_ply_storage_mode mode,
 
     ucharArr m_vertexColors;
     ucharArr m_pointColors;
-    unsigned int* m_faceIndices = 0;
+    uintArr  m_faceIndices;
 
     // Get buffers
     if ( m_model->m_pointCloud )
@@ -532,9 +535,8 @@ ModelPtr PLYIO::read( string filename, bool readColor, bool readConfidence,
     ucharArr pointColors;
     ucharArr vertexColors;
 
-    unsigned int* faceIndices = 0;
+    uintArr  faceIndices;
 
-    std::cout << numVertices << std::endl;
 
     /* Allocate memory. */
     if ( numVertices )
@@ -559,7 +561,7 @@ ModelPtr PLYIO::read( string filename, bool readColor, bool readConfidence,
     }
     if ( numFaces )
     {
-        faceIndices = ( unsigned int * ) malloc( numFaces * 3 * sizeof(unsigned int) );
+        faceIndices = uintArr( new unsigned int[ numFaces * 3 ] );
     }
     if ( numPoints )
     {
@@ -588,7 +590,7 @@ ModelPtr PLYIO::read( string filename, bool readColor, bool readConfidence,
     float*        vertex_confidence = vertexConfidence.get();
     float*        vertex_intensity  = vertexIntensity.get();
     float*        vertex_normal     = vertexNormals.get();
-    unsigned int* face              = faceIndices;
+    unsigned int* face              = faceIndices.get();
     float*        point             = points.get();
     uint8_t*      point_color       = pointColors.get();
     float*        point_confidence  = pointConfidences.get();
@@ -652,9 +654,9 @@ ModelPtr PLYIO::read( string filename, bool readColor, bool readConfidence,
     }
     if ( point_normal )
     {
-        ply_set_read_cb( ply, "point", "nx", readVertexCb, &point_intensity, 0 );
-        ply_set_read_cb( ply, "point", "ny", readVertexCb, &point_intensity, 0 );
-        ply_set_read_cb( ply, "point", "nz", readVertexCb, &point_intensity, 1 );
+        ply_set_read_cb( ply, "point", "nx", readVertexCb, &point_normal, 0 );
+        ply_set_read_cb( ply, "point", "ny", readVertexCb, &point_normal, 0 );
+        ply_set_read_cb( ply, "point", "nz", readVertexCb, &point_normal, 1 );
     }
 
     /* Read ply file. */
@@ -704,6 +706,7 @@ ModelPtr PLYIO::read( string filename, bool readColor, bool readConfidence,
         pc->setPointColorArray(      pointColors,      numPointColors );
         pc->setPointIntensityArray(  pointIntensities, numPointIntensities );
         pc->setPointConfidenceArray( pointConfidences, numPointConfidence );
+        pc->setPointNormalArray    ( pointNormals,     numPointNormals);
     }
 
     if(vertices)

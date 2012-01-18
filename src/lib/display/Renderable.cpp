@@ -41,6 +41,9 @@ Renderable::Renderable()
 	m_translationSpeed  = 10.0f;
 	m_scaleFactor       = 1.0f;
 
+	m_lineWidth         = 1.0;
+	m_pointSize         = 1.0;
+
 	m_showAxes  = false;
 	m_active    = true;
 	m_selected  = false;
@@ -70,6 +73,9 @@ Renderable::Renderable(Matrix4<float> m, string n)
 
     m_scaleFactor       = 1.0f;
     m_boundingBox       = 0;
+
+    m_lineWidth         = 1.0;
+    m_pointSize         = 1.0;
 
     m_model.reset();
 
@@ -102,6 +108,9 @@ Renderable::Renderable(const Renderable& other)
 
 	m_boundingBox           = other.m_boundingBox;
 
+    m_lineWidth         = 1.0;
+    m_pointSize         = 1.0;
+
 	m_model = other.m_model;
 
 	computeMatrix();
@@ -120,6 +129,9 @@ Renderable::Renderable(string n)
 
 	m_showAxes              = false;
 	m_active                = false;
+
+    m_lineWidth         = 1.0;
+    m_pointSize         = 1.0;
 
 	m_xAxis     = Vertex<float>(1.0f, 0.0f, 0.0f);
 	m_yAxis     = Vertex<float>(0.0f, 1.0f, 0.0f);

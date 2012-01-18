@@ -21,17 +21,6 @@ set( CMAKE_CXX_FLAGS_DEBUG   "-g -Wall" )
 # EXTERNAL LIBRARIES
 ###############################################################
 
-message( STATUS "looking for nabo" )
-find_package( nabo )
-if( NABO_FOUND )
-   message( STATUS "looking for nabo - found" )
-   include_directories( ${NABO_INCLUDE_DIRS} )
-   link_directories( ${NABO_LIBRARIES} ) 
-   add_definitions( ${NABO_DEFINITIONS} )
-   add_definitions( -D_USE_NABO_ )
-elseif( NABO_FOUND )
-   message( STATUS "looking for nabo - not found" )
-endif( NABO_FOUND )
 
 
 
@@ -75,19 +64,6 @@ if(OpenGL_FOUND)
 endif(OpenGL_FOUND)
 
 
-message(STATUS "Looking for rply")
-find_library( rply_shared
-    NAMES rply
-    PATHS /usr/lib /usr/local/lib /lib )
-if( rply_shared )
-    message(STATUS "Looking for rply - found")
-else( rply_shared )
-    message(STATUS "Looking for rply - not found")
-    message(STATUS "Building local rply")
-    include_directories( ${CMAKE_CURRENT_SOURCE_DIR}/ext/rply/ )
-    add_subdirectory(ext/rply)
-endif( rply_shared )
-
 IF(APPLE)
     link_directories(/opt/local/lib)
     include_directories(/System/Library/Frameworks/GLUT.framework/Headers)
@@ -106,6 +82,32 @@ set( CMAKE_CXX_FLAGS_RELEASE "${CMAKE_CXX_FLAGS_RELEASE} ${OpenMP_CXX_FLAGS}" )
 set( CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} ${OpenMP_CXX_FLAGS}" )
 
 ##############################################################
+# USED THIRD PARTY STUFF
+##############################################################
+
+# NABO
+message( STATUS "looking for nabo" )
+find_package( nabo )
+if( NABO_FOUND )
+   message( STATUS "looking for nabo - found" )
+   include_directories( ${NABO_INCLUDE_DIRS} )
+   link_directories( ${NABO_LIBRARIES} ) 
+   add_definitions( ${NABO_DEFINITIONS} )
+   add_definitions( -D_USE_NABO_ )
+elseif( NABO_FOUND )
+   message( STATUS "looking for nabo - not found" )
+endif( NABO_FOUND )
+
+# RPLY
+include_directories( ${CMAKE_CURRENT_SOURCE_DIR}/ext/rply/ )
+add_subdirectory(ext/rply)
+
+# LASLIB
+
+include_directories( ${CMAKE_CURRENT_SOURCE_DIR}/ext/laslib/inc )
+add_subdirectory(ext/laslib)
+
+##############################################################
 # LIBRARIES
 ##############################################################
 
@@ -116,8 +118,9 @@ add_subdirectory(src/lib)
 ##############################################################
 
 add_subdirectory(src/reconstruct)
-#add_subdirectory(src/colorize)
-#add_subdirectory(src/scanreduce)
+add_subdirectory(src/colorize)
+add_subdirectory(src/scanreduce)
+add_subdirectory(src/asciiconverter)	
 
 if(PCL_FOUND)
 	add_subdirectory(src/scanfilter)

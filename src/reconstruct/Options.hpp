@@ -95,6 +95,18 @@ public:
 	 */
 	bool    saveNormals() const;
 
+    /**
+     * @brief   Returns true if the Marching Cubes grid should be save
+     */
+    bool    saveGrid() const;
+
+    /**
+     * @brief   Returns true if the original points should be stored
+     *          together with the reconstruction
+     */
+    bool    saveOriginalData() const;
+
+
 	/**
 	 * @brief 	Returns true if cluster optimization is enabled
 	 */
@@ -104,7 +116,7 @@ public:
 	 * @brief 	Indicates whether to save the used points
 	 * 			together with the interpolated normals.
 	 */
-	bool 	savePointsAndNormals() const;
+	bool 	savePointNormals() const;
 
 	/**
 	 * @brief	If true, normals should be calculated even if
@@ -207,6 +219,11 @@ public:
 	 */
 	float getTexelSize() const;
 
+    /**
+     * @brief   Returns the fusion threshold for tesselation
+     */
+    float getLineFusionThreshold() const;
+
 private:
 
 	/// The set voxelsize
@@ -274,6 +291,9 @@ private:
 
 	/// Texel size
 	float                           m_texelSize;
+
+	/// Threshold for line fusing when tesselating
+	float                           m_lineFusionThreshold;
 };
 
 
@@ -298,7 +318,8 @@ inline ostream& operator<<(ostream& os, const Options &o)
 	cout << "##### k_d \t\t\t: "              << o.getKd()              << endl;
 	if(o.retesselate())
 	{
-		cout << "##### retesselate \t\t: YES"     << endl;
+		cout << "##### Retesselate \t\t: YES"     << endl;
+		cout << "##### Line fusion threshold \t: " << o.getLineFusionThreshold() << endl;
 	}
 	if(o.saveFaceNormals())
 	{
@@ -334,6 +355,10 @@ inline ostream& operator<<(ostream& os, const Options &o)
 	{
 		cout << "##### Save normals \t\t: YES" << endl;
 	}
+	if(o.saveOriginalData())
+	{
+	    cout << "##### Save input data \t\t: YES" << endl;
+	}
 	if(o.colorRegions())
 	{
 	    cout << "##### Color regions \t\t: YES" << endl;
@@ -342,9 +367,9 @@ inline ostream& operator<<(ostream& os, const Options &o)
 	{
 		cout << "##### Recalc normals \t\t: YES" << endl;
 	}
-	if(o.savePointsAndNormals())
+	if(o.savePointNormals())
 	{
-	    cout << "##### Save points and normals \t: YES" << endl;
+	    cout << "##### Save points normals \t: YES" << endl;
 	}
 	if(o.generateTextures())
 	{
