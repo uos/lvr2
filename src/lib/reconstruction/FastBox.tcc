@@ -194,6 +194,7 @@ void FastBox<VertexT, NormalT>::getSurface(BaseMesh<VertexT, NormalT> &mesh,
 
     int index = getIndex(qp);
 
+    // Do not create traingles for invalid boxes
     for (int i = 0; i < 8; i++)
     {
     	if (qp[m_vertices[i]].m_invalid)

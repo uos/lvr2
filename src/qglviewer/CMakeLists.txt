@@ -26,6 +26,7 @@ set(QVIEWER_UIS
     ui/DebugOutputDialogUI.ui
     ui/PlayerDialogUI.ui
     ui/VideoExportDialogUI.ui
+    ui/RenderingDialogUI.ui
 )
 
 # Main Sources

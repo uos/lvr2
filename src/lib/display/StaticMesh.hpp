@@ -68,7 +68,7 @@ public:
 	virtual void savePLY(string filename);
 
 	floatArr		getVertices();
-	unsigned int* 	getIndices();
+	uintArr 	getIndices();
 	float*          getNormals();
 
 	size_t			getNumberOfVertices();
@@ -99,7 +99,7 @@ protected:
 	ucharArr        m_colors;
 	unsigned char*  m_blackColors;
 
-	unsigned int*   m_indices;
+	uintArr         m_indices;
 
 	bool            m_finalized;
 
@@ -131,7 +131,7 @@ void StaticMesh::render(){
 		    {
 		        glDisable(GL_LIGHTING);
 		        glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
-		        glLineWidth(2);
+		        glLineWidth(m_lineWidth);
 		        glColor3f(0.0, 0.0, 0.0);
 		        glCallList(m_wireframeList);
 		        glEnable(GL_LIGHTING);

@@ -34,17 +34,22 @@ namespace lssr
 
 PointCloud::PointCloud()
 {
-
+    m_numNormals = 0;
+    m_boundingBox = new BoundingBox<Vertex<float> >;
+    m_renderMode = RenderPoints;
 }
 
 PointCloud::PointCloud( ModelPtr model, string name) : Renderable(name)
 {
     int maxColors = 255;
+    m_numNormals = 0;
 
     m_boundingBox = new BoundingBox<Vertex<float> >;
     m_model = model;
+    m_renderMode = RenderPoints;
 
     PointBufferPtr pc = model->m_pointCloud;
+    m_normals = pc->getIndexedPointNormalArray(m_numNormals);
 
     if(pc)
     {
@@ -61,6 +66,8 @@ PointCloud::PointCloud( ModelPtr model, string name) : Renderable(name)
             float x = points[i][0];
             float y = points[i][1];
             float z = points[i][2];
+
+            m_boundingBox->expand(x,y,z);
 
             unsigned char r, g, b;
 
@@ -88,7 +95,7 @@ PointCloud::PointCloud( ModelPtr model, string name) : Renderable(name)
                 b = 0;
             }
 
-            m_boundingBox->expand(x, y, z);
+
             m_points.push_back(uColorVertex(x, y, z, r, g, b));
         }
     }
@@ -124,10 +131,8 @@ void PointCloud::updateDisplayLists(){
 
     // Check for existing list index for rendering a selected point
     // cloud
-
     if(m_activeListIndex != -1)
     {
-        cout<<"PointCloud::initDisplayList() delete  active display list"<<endl;
         glDeleteLists(m_activeListIndex,1);
     }
 
@@ -146,8 +151,26 @@ void PointCloud::updateDisplayLists(){
     glEnd();
     glEndList();
 
+    float length = 0.01 * m_boundingBox->getRadius();
 
-
+    // Create a new display list for normals
+    if(m_numNormals)
+    {
+        m_normalListIndex = glGenLists(1);
+        glNewList(m_normalListIndex, GL_COMPILE);
+        glColor3f(1.0, 0.0, 1.0);
+        for(int i = 0; i < m_numNormals; i++)
+        {
+            Vertex<float> start(m_points[i].x, m_points[i].y, m_points[i].z);
+            Normal<float> normal(m_normals[i].x, m_normals[i].y, m_normals[i].z);
+            Vertex<float> end = start + normal * length;
+            glBegin(GL_LINES);
+            glVertex3f(start[0], start[1], start[2]);
+            glVertex3f(end[0], end[1], end[2]);
+            glEnd();
+        }
+        glEndList();
+    }
 
 }
 

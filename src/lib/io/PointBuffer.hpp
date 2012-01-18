@@ -151,9 +151,29 @@ class PointBuffer
          * The values can be in the range of [0..255].
          *
          * \param array  Pointer to point color data.
-         * \param n      Amount of color information in the array.
+         * \param n      Number of color triples in the array
          **/
         void setIndexedPointColorArray( color3bArr array, size_t n );
+
+        /**
+         * \brief Set the point array.
+         *
+         * By using setIndexedPointArray the internal point color buffer
+         * can be set.
+         * \param array  Pointer to a point array
+         * \param n      Number of points in the array
+         **/
+        void setIndexedPointArray( coord3fArr array, size_t n);
+
+        /**
+         * \brief Set the point array.
+         *
+         * By using setIndexedPointArray the internal point color buffer
+         * can be set.
+         * \param array  Pointer to a point normal array
+         * \param n      Number of points in the array
+         **/
+        void setIndexedPointNormalArray( coord3fArr array, size_t n);
 
 
         /************************* Get *************************/

@@ -54,6 +54,14 @@ public:
 
     typedef boost::shared_ptr< PointCloudManager<VertexT, NormalT> > Ptr;
 
+
+    /**
+     * @brief Initializes the internal buffers for points, normals and colors
+     *        from the given PointLoader object
+     */
+    PointCloudManager(PointBufferPtr loader);
+
+
     /**
      * @brief Returns the k closest neighbor vertices to a given query point
      *
@@ -95,6 +103,10 @@ public:
      */
     virtual size_t getNumPoints();
 
+    /**
+     * @brief Returns the point buffer object
+     */
+    virtual PointBufferPtr pointBuffer() { return m_pointBuffer; }
 
     /**
      * @brief Returns the point at the given \ref{index}.
@@ -150,8 +162,14 @@ public:
         m_kn = kn;
     }
 
+    bool haveNormals()
+    {
+        return m_normals != 0;
+    }
+
     virtual void calcNormals() = 0;
 
+    PointBufferPtr              m_pointBuffer;
 
 	/// Model of the current pointcloud.
 

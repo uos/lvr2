@@ -90,7 +90,7 @@ struct Plane{
  *        given point set as described in the SSRR2010 paper.
  */
 template<typename VertexT, typename NormalT>
-class mPointCloudManager //: public PointCloudManager<VertexT, NormalT>
+class mPointCloudManager : public PointCloudManager<VertexT, NormalT>
 {
 public:
 
@@ -101,6 +101,7 @@ public:
 	 *        instance.
 	 *
 	 * @param           The file to read from
+     * @param searchTN  The of the searchTree type that shall be used
 	 * @param kn        The number of neighbor points used for normal estimation
      * @param ki        The number of neighbor points used for normal interpolation
      * @param kd        The number of neighbor points used for distance value calculation

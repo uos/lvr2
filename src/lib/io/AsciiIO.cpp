@@ -189,6 +189,76 @@ ModelPtr AsciiIO::read(string filename)
 }
 
 
+void AsciiIO::save( ModelPtr m, string filename )
+{
+
+    if ( !m->m_pointCloud ) {
+        std::cerr << "No point buffer available for output." << std::endl;
+        return;
+    }
+
+    size_t   pointcount( 0 ), buf ( 0 );
+
+    coord3fArr points;
+    color3bArr pointColors;
+    floatArr   pointIntensities;
+
+    points = m->m_pointCloud->getIndexedPointArray( pointcount );
+
+    pointColors = m->m_pointCloud->getIndexedPointColorArray( buf );
+    /* We need the same amount of color information and points. */
+    if ( pointcount != buf )
+    {
+        pointColors.reset();
+        std::cerr << "Amount of points and color information is"
+	  " not equal. Color information won't be written" << std::endl;
+    }
+
+    pointIntensities = m->m_pointCloud->getPointIntensityArray( buf );
+    /* We need the same amount of intensity values and points. */
+    if ( pointcount != buf )
+    {
+        pointIntensities.reset();
+        std::cerr << "Amount of points and intensity values are"
+	  " not equal. Color information won't be written." << std::endl;
+    }
+
+
+    /* Prepare file for writing. */
+    std::ofstream out( filename.c_str() );
+
+    if ( !out.is_open() ) {
+        std::cerr << "Could not open file »" << filename
+            << "« for output." << std::endl;
+        return;
+    }
+
+    for ( size_t i(0); i < pointcount; i++ )
+    {
+        out << points[i].x << " " 
+            << points[i].y << " " 
+            << points[i].z;
+        if ( pointIntensities )
+        {
+            out << " " << pointIntensities[i];
+        }
+        if ( pointColors )
+        {
+            /* Bad behaviour of C++ output streams: We have to cast the uchars
+             * to unsigned integers. */
+            out << " " << (unsigned int) pointColors[i].r 
+                << " " << (unsigned int) pointColors[i].g 
+                << " " << (unsigned int) pointColors[i].b;
+        }
+        out << std::endl;
+    }
+
+    out.close();
+
+
+}
+
+
 size_t AsciiIO::countLines(string filename)
 {
     // Open file for reading

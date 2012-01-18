@@ -43,6 +43,10 @@ REQUIRED LIBRARIES
   + libXmu
   + Optional: librply [https://github.com/lkiesow/librply]
 
+You need to compile libQGLViewer with CONFIG += no_keywords to be compatible 
+with Boost. If the version that comes with your Linux distrubution is not
+build this way, you have to compile and install the library manually with these 
+flags. The sources can be found on the project website: http://www.libqglviewer.com/
 
 USAGE
 =====

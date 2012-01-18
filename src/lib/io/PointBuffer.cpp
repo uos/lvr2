@@ -69,7 +69,6 @@ ucharArr PointBuffer::getPointColorArray( size_t &n )
 {
 
     n = m_numPointColors;
-    std::cout << "GET: " << n << std::endl;
     return m_pointColors;
 
 }
@@ -182,6 +181,19 @@ void PointBuffer::setIndexedPointColorArray( color3bArr array, size_t n )
     m_numPointColors = n;
     m_pointColors = *((ucharArr *) &array);
 
+}
+
+void PointBuffer::setIndexedPointArray( coord3fArr array, size_t n)
+{
+    m_numPoints = n;
+    m_points =  *((floatArr*) &array);
+}
+
+
+void PointBuffer::setIndexedPointNormalArray( coord3fArr array, size_t n)
+{
+    m_numPointNormals = n;
+    m_pointNormals =  *((floatArr*) &array);
 }
 
 

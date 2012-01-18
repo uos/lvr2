@@ -42,22 +42,11 @@ typedef SearchTree<cVertex, cNormal> search_tree;
 template<typename VertexT, typename NormalT>
 mPointCloudManager<VertexT, NormalT>::mPointCloudManager(
         PointBufferPtr loader, std::string searchTreeName, const int &kn, const int &ki, const int &kd, const bool &useRansac )
+        : PointCloudManager<VertexT, NormalT>(loader)
 {
     this->m_ki = ki;
     this->m_kn = kn;
     this->m_kd = kd;
-
-    size_t n_points, n_normals;
-
-    this->m_points = loader->getIndexedPointArray(n_points);
-    this->m_normals = loader->getIndexedPointNormalArray(n_normals);
-    this->m_numPoints = n_points;
-    size_t n = 0;
-    this->m_colors  = loader->getIndexedPointColorArray( n );
-    if ( n != this->m_numPoints )
-    {
-        this->m_colors.reset();
-    }
 
     m_useRANSAC = useRansac;
 
@@ -107,6 +96,7 @@ void mPointCloudManager<VertexT, NormalT>::calcNormals()
 
     //Initialize normal array
     this->m_normals = coord3fArr( new coord<float>[this->m_numPoints] );
+    this->m_pointBuffer->setIndexedPointNormalArray(this->m_normals, this->m_numPoints);
 
     //float mean_distance;
     // Create a progress counter
@@ -284,12 +274,6 @@ void mPointCloudManager<VertexT, NormalT>::interpolateSurfaceNormals()
         this->m_normals[i][1] = tmp[i][1];
         this->m_normals[i][2] = tmp[i][2];
     }
-    //cout << "NumPoints: " << this->m_numPoints << endl;
-    //for( size_t i(0); i < this->m_numPoints; i++ )
-    //{
-   //    cout << this->m_points[i][0] << " " << this->m_points[i][1] << " " << this->m_points[i][2] << " " << this->m_normals[i][0] << " " << this->m_normals[i][1] << " " << this->m_normals[i][2] << endl;
-    //}
-
 }
 
 template<typename VertexT, typename NormalT>
