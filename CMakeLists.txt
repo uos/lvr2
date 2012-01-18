@@ -2,10 +2,9 @@ cmake_minimum_required(VERSION 2.8)
 project(LSSR)
 
 set( CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_SOURCE_DIR}/bin )
-#set( CMAKE_VERBOSE_MAKEFILE TRUE )
+set( CMAKE_MODULE_PATH ${LSSR_SOURCE_DIR}/CMakeModules )
 
 link_directories("${CMAKE_SOURCE_DIR}/lib")
-link_directories("/usr/lib")
 link_directories("$ENV{HOME}/local/lib")
 
 include_directories(${LSSR_SOURCE_DIR}/ext/Eigen)
@@ -21,24 +20,40 @@ set( CMAKE_CXX_FLAGS_DEBUG   "-g -Wall" )
 # EXTERNAL LIBRARIES
 ###############################################################
 
+find_package(Nabo)
+if(NABO_FOUND)
+   include_directories(${NABO_INCLUDE_DIRS})
+   link_directories(${NABO_LIBRARIES})
+   add_definitions(-D_USE_NABO)
+endif(NABO_FOUND)
 
+# We intentionally do this twice as there seems to be a bug in PCL 1.4 which
+# leads to a non set PCL_VERSION variable if you call it only once.
+# find_package(PCL 1.0)
+# if ( "${PCL_VERSION}" STREQUAL "" )
+#     find_package(PCL 1.0)
+# endif ( "${PCL_VERSION}" STREQUAL "" )
+# if(PCL_FOUND)
+#    #message(STATUS "Found PCL ${PCL_VERSION}")
+# 	if ( "${PCL_VERSION}" VERSION_GREATER "1.0" )
+#         include_directories(${PCL_INCLUDE_DIRS})
+#         link_directories(${PCL_LIBRARY_DIRS})
+#         add_definitions(${PCL_DEFINITIONS})
+#         add_definitions(-D_USE_PCL_)
+# 		if ( "${PCL_VERSION}" VERSION_GREATER "1.2" )
+#             add_definitions(-D_PCL_VERSION_GT_12_)
+# 		else ( "${PCL_VERSION}" VERSION_GREATER "1.2" )
+#             add_definitions(-D_PCL_VERSION_12_)
+# 		endif ( "${PCL_VERSION}" VERSION_GREATER "1.2" )
+#     else ( "${PCL_VERSION}" VERSION_GREATER "1.0" )
+#         message( "-- Your PCL version is to old.." )
+#         message( "-- PCL related stuff will be disabled." )
+# 	endif ( "${PCL_VERSION}" VERSION_GREATER "1.0" )
+# else(PCL_FOUND)
+#         message( "-- No PCL found." )
+#         message( "-- PCL related stuff will be disabled." )
+# endif(PCL_FOUND)
 
-
-message( STATUS "looking for PCL" )
-find_package( PCL 1.0 )
-if( PCL_FOUND )
-  message( STATUS "looking for PCL - found" )
-  include_directories( ${PCL_INCLUDE_DIRS} )
-  link_directories( ${PCL_LIBRARY_DIRS} )
-  add_definitions( ${PCL_DEFINITIONS} )
-  add_definitions( -D_USE_PCL_ )
-elseif( PCL_FOUND )
-  message( STATUS "looking for PCL - not found" )
-endif( PCL_FOUND )
-
-#set(Boost_DEBUG TRUE)
-#set(BOOST_LIBRARYDIR /usr/lib)
-#set(BOOST_INCLUDEDIR /usr/include)
 find_package( Boost 
     COMPONENTS 
     program_options 
@@ -85,19 +100,6 @@ set( CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} ${OpenMP_CXX_FLAGS}" )
 # USED THIRD PARTY STUFF
 ##############################################################
 
-# NABO
-message( STATUS "looking for nabo" )
-find_package( nabo )
-if( NABO_FOUND )
-   message( STATUS "looking for nabo - found" )
-   include_directories( ${NABO_INCLUDE_DIRS} )
-   link_directories( ${NABO_LIBRARIES} ) 
-   add_definitions( ${NABO_DEFINITIONS} )
-   add_definitions( -D_USE_NABO_ )
-elseif( NABO_FOUND )
-   message( STATUS "looking for nabo - not found" )
-endif( NABO_FOUND )
-
 # RPLY
 include_directories( ${CMAKE_CURRENT_SOURCE_DIR}/ext/rply/ )
 add_subdirectory(ext/rply)
@@ -120,10 +122,10 @@ add_subdirectory(src/lib)
 add_subdirectory(src/reconstruct)
 add_subdirectory(src/colorize)
 add_subdirectory(src/scanreduce)
-add_subdirectory(src/asciiconverter)	
+add_subdirectory(src/convert)
 
 if(PCL_FOUND)
-	add_subdirectory(src/scanfilter)
+    add_subdirectory(src/scanfilter)
 endif(PCL_FOUND)
 
 ##############################################################
@@ -149,7 +151,8 @@ if( QT4_FOUND )
     if(QGLVIEWER_LIBRARY_RELEASE)
         message(STATUS "Found libqglviewer")
         message(STATUS "Building qglviewer application")
-        #        add_subdirectory(src/qglviewer)
+        add_subdirectory(src/qglviewer)
+    endif(QGLVIEWER_LIBRARY_RELEASE)
 
 endif(QT4_FOUND)
 
