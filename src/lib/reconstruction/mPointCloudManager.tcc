@@ -41,7 +41,7 @@ typedef SearchTree<cVertex, cNormal> SEARCH_TREE;
 
 template<typename VertexT, typename NormalT>
 mPointCloudManager<VertexT, NormalT>::mPointCloudManager(
-        PointBufferPtr loader, const int &kn, const int &ki, const int &kd, const bool &useRansac )
+        PointBufferPtr loader, std::string searchTreeName, const int &kn, const int &ki, const int &kd, const bool &useRansac )
 {
     this->m_ki = ki;
     this->m_kn = kn;
@@ -63,7 +63,16 @@ mPointCloudManager<VertexT, NormalT>::mPointCloudManager(
 
     init();
 
-    m_searchTree = SEARCH_TREE::Ptr( new SearchTreePCL< VertexT, NormalT >(this->m_points, this->m_numPoints, kn, ki, kd) );  
+    if( searchTreeName == "pcl" )
+    {
+        m_searchTree = SEARCH_TREE::Ptr( new SearchTreePCL< VertexT, NormalT >(this->m_points, this->m_numPoints, kn, ki, kd) );  
+    } else if( searchTreeName == "stann" )
+    {
+        m_searchTree = SEARCH_TREE::Ptr( new SearchTreeStann< VertexT, NormalT >(this->m_points, this->m_numPoints, kn, ki, kd) );  
+    } else
+    {
+       cout << timestamp << "No Valid Searchtree class specified!" << endl;
+    }
 }
 
 template<typename VertexT, typename NormalT>
