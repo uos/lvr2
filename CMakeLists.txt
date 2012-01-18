@@ -4,6 +4,7 @@ project(LSSR)
 set( CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_SOURCE_DIR}/bin )
 
 link_directories("${CMAKE_SOURCE_DIR}/lib")
+link_directories("/usr/lib")
 link_directories("$ENV{HOME}/local/lib")
 
 include_directories(${LSSR_SOURCE_DIR}/ext/Eigen)
@@ -28,6 +29,9 @@ if(PCL_FOUND)
   add_definitions(-D_USE_PCL_)
 endif(PCL_FOUND)
 
+#set(Boost_DEBUG TRUE)
+#set(BOOST_LIBRARYDIR /usr/lib)
+#set(BOOST_INCLUDEDIR /usr/include)
 find_package( Boost 
     COMPONENTS 
     program_options 
@@ -93,8 +97,8 @@ add_subdirectory(src/lib)
 ##############################################################
 
 add_subdirectory(src/reconstruct)
-add_subdirectory(src/colorize)
-add_subdirectory(src/scanreduce)
+#add_subdirectory(src/colorize)
+#add_subdirectory(src/scanreduce)
 
 if(PCL_FOUND)
 	add_subdirectory(src/scanfilter)
@@ -115,16 +119,16 @@ if( QT4_FOUND )
     include_directories(${QT_QTXML_INCLUDE_DIR})
 
     # Try to find libQGLViewer
-    find_library(QGLVIEWER_LIBRARY_RELEASE 
-        NAMES qglviewer-qt4 qglviewer QGLViewer QGLViewer2 
-        PATHS /usr/lib /usr/local/lib ENV QGLVIEWERROOT 
-        ENV LD_LIBRARY_PATH ENV LIBRARY_PATH
-        PATH_SUFFIXES QGLViewer QGLViewer/release)
-    if(QGLVIEWER_LIBRARY_RELEASE)
-        message(STATUS "Found libqglviewer")
-        message(STATUS "Building qglviewer application")
-        add_subdirectory(src/qglviewer)
-    endif(QGLVIEWER_LIBRARY_RELEASE)
+    #    find_library(QGLVIEWER_LIBRARY_RELEASE 
+    #        NAMES qglviewer-qt4 qglviewer QGLViewer QGLViewer2 
+    #        PATHS /usr/lib /usr/local/lib ENV QGLVIEWERROOT 
+    #        ENV LD_LIBRARY_PATH ENV LIBRARY_PATH
+    #        PATH_SUFFIXES QGLViewer QGLViewer/release)
+    #    if(QGLVIEWER_LIBRARY_RELEASE)
+    #        message(STATUS "Found libqglviewer")
+    #        message(STATUS "Building qglviewer application")
+    #        #add_subdirectory(src/qglviewer)
+    #    endif(QGLVIEWER_LIBRARY_RELEASE)
 
 endif(QT4_FOUND)
 

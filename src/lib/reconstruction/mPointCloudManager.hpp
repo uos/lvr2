@@ -83,7 +83,7 @@ struct Plane{
  *        given point set as described in the SSRR2010 paper.
  */
 template<typename VertexT, typename NormalT>
-class mPointCloudManager : public PointCloudManager<VertexT, NormalT>
+class mPointCloudManager //: public PointCloudManager<VertexT, NormalT>
 {
 public:
 
@@ -99,6 +99,7 @@ public:
      * @param kd        The number of neighbor points used for distance value calculation
 	 */
 	mPointCloudManager( PointBufferPtr loader,
+                        std::string searchTreeName,
 	                       const int &kn = 10,
 	                       const int &ki = 10,
 	                       const int &kd = 10,

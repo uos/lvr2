@@ -136,7 +136,6 @@
 
 #include "Options.hpp"
 
-#include "reconstruction/StannPointCloudManager.hpp"
 #include "reconstruction/mPointCloudManager.hpp"
 #include "reconstruction/FastReconstruction.hpp"
 #include "io/PLYIO.hpp"
@@ -146,19 +145,12 @@
 #include "geometry/Texture.hpp"
 #include <iostream>
 
-// Optional PCL bindings
-#ifdef _USE_PCL_
-#include "reconstruction/PCLPointCloudManager.hpp"
-#endif
-
 using namespace lssr;
 
 
 typedef ColorVertex<float, unsigned char>               cVertex;
 typedef Normal<float>                                   cNormal;
-typedef PointCloudManager<cVertex, cNormal>             PCM;
-typedef mPointCloudManager<cVertex, cNormal>        StannPCM;
-typedef PCLPointCloudManager<cVertex, cNormal>          PCLPCM;
+typedef mPointCloudManager<cVertex, cNormal>            PCM;
 
 /**
  * @brief   Main entry point for the LSSR surface executable
@@ -194,36 +186,22 @@ int main(int argc, char** argv)
     // Create a point cloud manager
     string pcm_name = options.getPCM();
     PCM::Ptr pcm;
-    if ( pcm_name == "PCL" )
-    {
-#ifdef _USE_PCL_
-        cout << timestamp << "Creating PCL point cloud manager." << endl;
-        pcm = PCM::Ptr( new PCLPCM( p_loader ) );
-#else
-        cout << timestamp << "PCL bindings not found. Using STANN instead." << endl;
-        pcm = PCM::Ptr( new StannPCM( p_loader ) );
-#endif
-    }
-    else if ( pcm_name == "STANN" || pcm_name == "STANN_RANSAC" )
-    {
-		cout << timestamp << "Creating STANN point cloud manager." << endl;
-        pcm = PCM::Ptr( new StannPCM( p_loader, 10, 10, 10, pcm_name == "STANN_RANSAC" ) );
-    }
+    pcm = PCM::Ptr( new PCM( p_loader, pcm_name ) );
 
-    // Check if a point cloud manager object was created. Exit if not and display
-    // available objects
-    if ( !pcm )
-    {
-        cout << timestamp << "Unable to create PointCloudMansger." << endl;
-        cout << timestamp << "Unknown option '" << pcm_name << "'." << endl;
-        cout << timestamp << "Available PCMs are: " << endl;
-        cout << timestamp << "STANN, STANN_RANSAC";
-#ifdef _USE_PCL_
-        cout << ", PCL";
-#endif
-        cout << endl;
-        return 0;
-    }
+//    // Check if a point cloud manager object was created. Exit if not and display
+//    // available objects
+//    if ( !pcm )
+//    {
+//        cout << timestamp << "Unable to create PointCloudMansger." << endl;
+//        cout << timestamp << "Unknown option '" << pcm_name << "'." << endl;
+//        cout << timestamp << "Available PCMs are: " << endl;
+//        cout << timestamp << "STANN, STANN_RANSAC";
+//#ifdef _USE_PCL_
+//        cout << ", PCL";
+//#endif
+//        cout << endl;
+//        return 0;
+//    }
 
     // Set search options for normal estimation and distance evaluation
     pcm->setKD(options.getKd());
