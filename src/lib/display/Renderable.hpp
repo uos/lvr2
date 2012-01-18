@@ -104,6 +104,12 @@ public:
         return m_model;
     }
 
+	void setPointSize(float size)   { m_pointSize = size;}
+	void setLineWidth(float width)  { m_lineWidth = width;}
+
+	float lineWidth() { return m_lineWidth;}
+	float pointSize() { return m_pointSize;}
+
 protected:
 
 	virtual void    transform();
@@ -134,7 +140,10 @@ protected:
     Matrix4<float>               m_transformation;
     BoundingBox<Vertex<float> >* m_boundingBox;
 
-    ModelPtr                       m_model;
+    ModelPtr                     m_model;
+
+    float                        m_lineWidth;
+    float                        m_pointSize;
 };
 
 }

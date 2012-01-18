@@ -96,9 +96,15 @@ public:
 	bool    saveNormals() const;
 
     /**
-     * @brief   Returns true if the marching Cubes grid should be save
+     * @brief   Returns true if the Marching Cubes grid should be save
      */
     bool    saveGrid() const;
+
+    /**
+     * @brief   Returns true if the original points should be stored
+     *          together with the reconstruction
+     */
+    bool    saveOriginalData() const;
 
 
 	/**
@@ -213,6 +219,11 @@ public:
 	 */
 	float getTexelSize() const;
 
+    /**
+     * @brief   Returns the fusion threshold for tesselation
+     */
+    float getLineFusionThreshold() const;
+
 private:
 
 	/// The set voxelsize
@@ -280,6 +291,9 @@ private:
 
 	/// Texel size
 	float                           m_texelSize;
+
+	/// Threshold for line fusing when tesselating
+	float                           m_lineFusionThreshold;
 };
 
 
@@ -304,7 +318,8 @@ inline ostream& operator<<(ostream& os, const Options &o)
 	cout << "##### k_d \t\t\t: "              << o.getKd()              << endl;
 	if(o.retesselate())
 	{
-		cout << "##### retesselate \t\t: YES"     << endl;
+		cout << "##### Retesselate \t\t: YES"     << endl;
+		cout << "##### Line fusion threshold \t: " << o.getLineFusionThreshold() << endl;
 	}
 	if(o.saveFaceNormals())
 	{
@@ -339,6 +354,10 @@ inline ostream& operator<<(ostream& os, const Options &o)
 	if(o.saveNormals())
 	{
 		cout << "##### Save normals \t\t: YES" << endl;
+	}
+	if(o.saveOriginalData())
+	{
+	    cout << "##### Save input data \t\t: YES" << endl;
 	}
 	if(o.colorRegions())
 	{

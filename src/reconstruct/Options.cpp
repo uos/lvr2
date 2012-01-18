@@ -35,34 +35,34 @@ Options::Options(int argc, char** argv) : m_descr("Supported options")
 	// Create option descriptions
 
 	m_descr.add_options()
-		("help", "Produce help message")
-		("inputFile", value< vector<string> >(), "Input file name. Supported formats are ASCII (.pts, .xyz) and .ply")
-		("voxelsize,v", value<float>(&m_voxelsize)->default_value(10), "Voxelsize of grid used for reconstruction.")
-	    ("intersections,i", value<int>(&m_intersections)->default_value(-1), "Number of intersections used for reconstruction. If other than -1, voxelsize will calculated automatically.")
-	    ("pcm,p", value<string>(&m_pcm)->default_value("STANN"), "Point cloud manager used for point handling and normal estimation. Choose from {STANN, STANN_RANSAC, PCL}.")
-        ("decomposition,d", value<string>(&m_pcm)->default_value("MC"), "Defines the type of decomposition that ist used for the voxels (Standard Marching Cubes (MC) or Tetraeder (MT) decomposition. Choose from {MC, MT}")
-	    ("saveFaceNormals", "Writes all interpolated triangle normals together with triangle centroid to a file called 'face_normals.nor'")
-		("optimizePlanes,o", "Shift all triangle vertices of a cluster onto their shared plane")
-		("savePointNormals,s", "Exports original point cloud data together with normals into a single file called 'points_and_normals.ply'")
-		("recalcNormals,r", "Always estimate normals, even if given in .ply file.")
-		("threads", value<int>(&m_numThreads)->default_value( omp_get_num_procs() ), "Number of threads")
-		("saveNormals", "Writes all points and interpolated normals to a file called 'normals.nor'")
-		("saveGrid,g", "Writes the geenrated grid to a file called 'fastgrid.grid. The result can be rendered with qviewer.")
-		("kd", value<int>(&m_kd)->default_value(5), "Number of normals used for distance function evaluation")
-	    ("ki", value<int>(&m_ki)->default_value(10), "Number of normals used in the normal interpolation process")
-	    ("kn", value<int>(&m_kn)->default_value(10), "Size of k-neighborhood used for normal estimation")
-	    ("mp", value<int>(&m_minPlaneSize)->default_value(7), "Minimum value for plane optimzation")
-        ("planeIterations", value<int>(&m_planeIterations)->default_value(3), "Number of iterations for plane optimization")
-        ("fillHoles,f", value<int>(&m_fillHoles)->default_value(30), "Maximum size for hole filling")
-        ("rda", value<int>(&m_rda)->default_value(100), "Remove dangling artifacts, i.e. remove the n smallest not connected surfaces")
-        ("planeNormalThreshold", value<float>(&m_planeNormalThreshold)->default_value(0.85), "Normal threshold for plane optimization. Default 0.85 equals about 3 degrees.")
-        ("smallRegionThreshold", value<int>(&m_smallRegionThreshold)->default_value(0), "Threshold for small region removal. If 0 nothing will be deleted.")
-        ("retesselate,t", "Retesselate regions that are in a regression plane. Implies --optimizePlanes.")
-        ("generateTextures", "Generate textures during finalization.")
-        ("colorRegions", "Color detected regions with color gradient.")
-        ("depth", value<int>(&m_depth)->default_value(100), "Maximum recursion depth for region growing.")
-        ("texelSize", value<float>(&m_texelSize)->default_value(1), "Texel size that determines texture resolution.")
-		;
+		        ("help", "Produce help message")
+		        ("inputFile", value< vector<string> >(), "Input file name. Supported formats are ASCII (.pts, .xyz) and .ply")
+		        ("voxelsize,v", value<float>(&m_voxelsize)->default_value(10), "Voxelsize of grid used for reconstruction.")
+		        ("intersections,i", value<int>(&m_intersections)->default_value(-1), "Number of intersections used for reconstruction. If other than -1, voxelsize will calculated automatically.")
+		        ("pcm,p", value<string>(&m_pcm)->default_value("STANN"), "Point cloud manager used for point handling and normal estimation. Choose from {STANN, STANN_RANSAC, PCL}.")
+		        ("decomposition,d", value<string>(&m_pcm)->default_value("MC"), "Defines the type of decomposition that ist used for the voxels (Standard Marching Cubes (MC) or Tetraeder (MT) decomposition. Choose from {MC, MT}")
+		        ("optimizePlanes,o", "Shift all triangle vertices of a cluster onto their shared plane")
+                ("planeIterations", value<int>(&m_planeIterations)->default_value(3), "Number of iterations for plane optimization")
+                ("fillHoles,f", value<int>(&m_fillHoles)->default_value(30), "Maximum size for hole filling")
+                ("rda", value<int>(&m_rda)->default_value(0), "Remove dangling artifacts, i.e. remove the n smallest not connected surfaces")
+		        ("pnt", value<float>(&m_planeNormalThreshold)->default_value(0.85), "(Plane Normal Threshold) Normal threshold for plane optimization. Default 0.85 equals about 3 degrees.")
+		        ("smallRegionThreshold", value<int>(&m_smallRegionThreshold)->default_value(0), "Threshold for small region removal. If 0 nothing will be deleted.")
+                ("exportPointNormals,e", "Exports original point cloud data together with normals into a single file called 'pointnormals.ply'")
+		        ("saveGrid,g", "Writes the generated grid to a file called 'fastgrid.grid. The result can be rendered with qviewer.")
+		        ("saveOriginalData,s", "Save the original points and the estimated normals together with the reconstruction into one file ('triangle_mesh.ply')")
+		        ("kd", value<int>(&m_kd)->default_value(5), "Number of normals used for distance function evaluation")
+		        ("ki", value<int>(&m_ki)->default_value(10), "Number of normals used in the normal interpolation process")
+		        ("kn", value<int>(&m_kn)->default_value(10), "Size of k-neighborhood used for normal estimation")
+		        ("mp", value<int>(&m_minPlaneSize)->default_value(7), "Minimum value for plane optimzation")
+		        ("retesselate,t", "Retesselate regions that are in a regression plane. Implies --optimizePlanes.")
+		        ("lft", value<float>(&m_lineFusionThreshold)->default_value(0.01), "(Line Fusion Threshold) Threshold for fusing line segments while tesselating.")
+		        ("generateTextures", "Generate textures during finalization.")
+		        ("texelSize", value<float>(&m_texelSize)->default_value(1), "Texel size that determines texture resolution.")
+		        ("colorRegions", "Color detected regions with color gradient.")
+		        ("depth", value<int>(&m_depth)->default_value(100), "Maximum recursion depth for region growing.")
+		        ("recalcNormals,r", "Always estimate normals, even if given in .ply file.")
+		        ("threads", value<int>(&m_numThreads)->default_value( omp_get_num_procs() ), "Number of threads")
+        ;
 
 	m_pdescr.add("inputFile", -1);
 
@@ -178,7 +178,7 @@ bool Options::recalcNormals() const
 
 bool Options::savePointNormals() const
 {
-	return (m_variables.count("savePointNormals"));
+	return (m_variables.count("exportPointNormals"));
 }
 
 bool Options::saveNormals() const
@@ -189,6 +189,11 @@ bool Options::saveNormals() const
 bool Options::saveGrid() const
 {
     return (m_variables.count("saveGrid"));
+}
+
+bool Options::saveOriginalData() const
+{
+    return (m_variables.count("saveOriginalData"));
 }
 
 bool Options::optimizePlanes() const
@@ -214,7 +219,7 @@ bool Options::generateTextures() const
 
 float Options::getNormalThreshold() const
 {
-    return m_variables["planeNormalThreshold"].as<float>();
+    return m_variables["pnt"].as<float>();
 }
 
 int   Options::getSmallRegionThreshold() const
@@ -230,6 +235,11 @@ int Options::getDepth() const
 float Options::getTexelSize() const
 {
 	return m_texelSize;
+}
+
+float Options::getLineFusionThreshold() const
+{
+    return m_variables["lft"].as<float>();
 }
 
 Options::~Options() {

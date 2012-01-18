@@ -34,6 +34,7 @@
 #include "SceneDockWidgetUI.h"
 #include "ActionDockWidgetUI.h"
 #include "MeshingOptionsDialogUI.h"
+#include "RenderingDialogUI.h"
 
 #include "../data/DataCollectorFactory.h"
 
@@ -68,6 +69,7 @@ using Ui::MainWindow;
 using Ui::Fogsettings;
 using Ui::SceneDockWidgetUI;
 using Ui::ActionDockWidgetUI;
+using Ui::RenderingDialogUI;
 
 class EventManager;
 
@@ -90,6 +92,8 @@ public Q_SLOTS:
 	void fogLinear();
 	void fogExp2();
 	void fogExp();
+
+	void displayRenderingSettings();
 
 	void dataCollectorAdded(DataCollector* d);
 	void treeItemClicked(QTreeWidgetItem* item, int n);

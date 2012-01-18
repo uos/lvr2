@@ -34,7 +34,9 @@ namespace lssr
 
 PointCloud::PointCloud()
 {
-
+    m_numNormals = 0;
+    m_boundingBox = new BoundingBox<Vertex<float> >;
+    m_renderMode = RenderPoints;
 }
 
 PointCloud::PointCloud( ModelPtr model, string name) : Renderable(name)
@@ -65,6 +67,8 @@ PointCloud::PointCloud( ModelPtr model, string name) : Renderable(name)
             float y = points[i][1];
             float z = points[i][2];
 
+            m_boundingBox->expand(x,y,z);
+
             unsigned char r, g, b;
 
             if(colors)
@@ -91,7 +95,7 @@ PointCloud::PointCloud( ModelPtr model, string name) : Renderable(name)
                 b = 0;
             }
 
-            m_boundingBox->expand(x, y, z);
+
             m_points.push_back(uColorVertex(x, y, z, r, g, b));
         }
     }
@@ -127,10 +131,8 @@ void PointCloud::updateDisplayLists(){
 
     // Check for existing list index for rendering a selected point
     // cloud
-
     if(m_activeListIndex != -1)
     {
-        cout<<"PointCloud::initDisplayList() delete  active display list"<<endl;
         glDeleteLists(m_activeListIndex,1);
     }
 
@@ -150,6 +152,7 @@ void PointCloud::updateDisplayLists(){
     glEndList();
 
     float length = 0.01 * m_boundingBox->getRadius();
+
     // Create a new display list for normals
     if(m_numNormals)
     {
