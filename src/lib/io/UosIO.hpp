@@ -84,7 +84,6 @@ public:
      */
     ModelPtr read(string dir);
 
-    void save( ModelPtr m, string filename) {};
 
     /**
      * @brief Defines the first scan to read
@@ -92,11 +91,13 @@ public:
      */
     void setFirstScan(int n) { m_firstScan = n;}
 
+
     /**
      * @brief Defines the last scan to read
      * @param n         The last scan to read
      */
     void setLastScan(int n) {m_lastScan = n;}
+
 
     /**
      * Reduces the given point cloud and exports all points
@@ -108,21 +109,25 @@ public:
      */
     void reduce(string dir, string target, int reduction = 1);
 
-    //indexPair getScanRange( size_t num );
 
-    //int getNumScans() { return m_numScans;}
-
+    /**
+     * \todo Implement this!
+     * \warning This function is not yet implemented!
+     **/
     void save(string filename) {}
+
 
     /**
      * @brief Convert remission value to pseudo RGB values while saving
      */
     void saveRemissionAsColor(bool convert) {m_saveRemissionColor = convert;}
 
+
     /**
      * @brief Save remission (if present)
      */
     void saveRemission(bool yes) { m_saveRemission= yes;}
+
 
 private:
 
@@ -135,6 +140,7 @@ private:
      */
     void readNewFormat(ModelPtr &m, string dir, int first, int last, size_t &n);
 
+
     /**
      * @brief Reads scans from \ref{first} to \ref{last} in old UOS format.
      * @param dir       The directory path
@@ -143,6 +149,7 @@ private:
      * @return          All read data points
      */
     void readOldFormat(ModelPtr &m, string dir, int first, int last, size_t &n);
+
 
     /**
      * @brief Creates a transformation matrix from given frame file
@@ -153,6 +160,7 @@ private:
      */
     Matrix4<float> parseFrameFile(ifstream& frameFile);
 
+
     inline std::string to_string(const int& t, int width)
     {
       stringstream ss;
@@ -160,12 +168,14 @@ private:
       return ss.str();
     }
 
+
     inline std::string to_string(const int& t)
     {
       stringstream ss;
       ss << t;
       return ss.str();
     }
+
 
     /**
      * Converts an angle (given in deg) to rad
@@ -180,6 +190,7 @@ private:
     {
       return ( (2 * M_PI * deg) / 360 );
     }
+
 
     /**
      * Converts an angle (given in rad) to deg
