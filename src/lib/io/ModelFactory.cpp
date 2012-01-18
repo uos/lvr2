@@ -17,7 +17,7 @@
  */
 
 
- /**
+/**
  * IOFactory.cpp
  *
  *  @date 24.08.2011
@@ -29,6 +29,7 @@
 #include "UosIO.hpp"
 #include "ObjIO.hpp"
 #include "LasIO.hpp"
+#include "PCDIO.hpp"
 #include "ModelFactory.hpp"
 
 #include "Timestamp.hpp"
@@ -60,12 +61,17 @@ ModelPtr ModelFactory::readModel( std::string filename )
     else if (extension == ".obj")
     {
         /// TODO: Integrate ObJIO in factory
-
     }
     else if (extension == ".las")
     {
         io = new LasIO;
     }
+#ifdef _USE_PCL_
+    else if (extension == ".pcd")
+    {
+        io = new PCDIO;
+    }
+#endif /* _USE_PCL_ */
     else if (extension == "")
     {
         io = new UosIO;
@@ -75,13 +81,15 @@ ModelPtr ModelFactory::readModel( std::string filename )
     if( io )
     {
         m = io->read( filename );
+        delete io;
     }
 
     return m;
 
 }
 
-void ModelFactory::saveModel( ModelPtr m, std::string filename )
+void ModelFactory::saveModel( ModelPtr m, std::string filename,
+        std::multimap< std::string, std::string > options )
 {
     // Get file exptension
     boost::filesystem::path selectedFile(filename);
@@ -98,24 +106,25 @@ void ModelFactory::saveModel( ModelPtr m, std::string filename )
     {
         io = new AsciiIO;
     }
-	 else if ( extension == ".obj" )
-	 {
-		 io = new ObjIO;
-	 }
-    else if (extension == "")
+    else if ( extension == ".obj" )
     {
-        // Try to load UOS format data from directory in
-        io = new UosIO;
+        io = new ObjIO;
+    }
+    else if (extension == ".pcd")
+    {
+        io = new PCDIO;
     }
 
     // Save model
     if(io)
     {
-        io->save( m, filename );
+        io->save( filename, options, m );
+        delete io;
     }
     else
     {
-        cout << timestamp << "File format " << extension << " is currrently not supported." << endl;
+        cout << timestamp << "File format " << extension
+            << " is currrently not supported." << endl;
     }
 
 

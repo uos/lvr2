@@ -184,15 +184,16 @@ ModelPtr AsciiIO::read(string filename)
     model->m_pointCloud->setPointColorArray(      pointColors,      numPoints );
     model->m_pointCloud->setPointIntensityArray(  pointIntensities, numPoints );
     model->m_pointCloud->setPointConfidenceArray( pointConfidences, numPoints );
+    m_model = model;
 
     return model;
 }
 
 
-void AsciiIO::save( ModelPtr m, string filename )
+void AsciiIO::save( std::string filename )
 {
 
-    if ( !m->m_pointCloud ) {
+    if ( !m_model->m_pointCloud ) {
         std::cerr << "No point buffer available for output." << std::endl;
         return;
     }
@@ -203,9 +204,9 @@ void AsciiIO::save( ModelPtr m, string filename )
     color3bArr pointColors;
     floatArr   pointIntensities;
 
-    points = m->m_pointCloud->getIndexedPointArray( pointcount );
+    points = m_model->m_pointCloud->getIndexedPointArray( pointcount );
 
-    pointColors = m->m_pointCloud->getIndexedPointColorArray( buf );
+    pointColors = m_model->m_pointCloud->getIndexedPointColorArray( buf );
     /* We need the same amount of color information and points. */
     if ( pointcount != buf )
     {
@@ -214,13 +215,13 @@ void AsciiIO::save( ModelPtr m, string filename )
 	  " not equal. Color information won't be written" << std::endl;
     }
 
-    pointIntensities = m->m_pointCloud->getPointIntensityArray( buf );
+    pointIntensities = m_model->m_pointCloud->getPointIntensityArray( buf );
     /* We need the same amount of intensity values and points. */
     if ( pointcount != buf )
     {
         pointIntensities.reset();
         std::cerr << "Amount of points and intensity values are"
-	  " not equal. Color information won't be written." << std::endl;
+            " not equal. Intensity information will not be written." << std::endl;
     }
 
 
@@ -231,6 +232,12 @@ void AsciiIO::save( ModelPtr m, string filename )
         std::cerr << "Could not open file »" << filename
             << "« for output." << std::endl;
         return;
+    }
+
+    /* Write comment. */
+    {
+        std::vector< std::string > c( getOption( "comment" ) );
+        out << "# " << ( c.size() ? c[0] : "" ) << std::endl;
     }
 
     for ( size_t i(0); i < pointcount; i++ )
@@ -283,24 +290,21 @@ int AsciiIO::getEntriesInLine(string filename)
     ifstream in(filename.c_str());
 
     // Get first line from file and skip it (possibly metadata)
-    char first_line[1024];
-    in.getline(first_line, 1024);
+    char line[1024];
+    in.getline(line, 1024);
 
     // Get second line -> hopefully point data
-    char second_line[1024];
-    in.getline(second_line, 1024);
+    in.getline(line, 1024);
 
     in.close();
 
     // Get number of blanks
     int c = 0;
-    char* pch = strtok(second_line, " ");
-    while(pch != NULL){
+    char* pch = strtok(line, " ");
+    while(pch){
         c++;
         pch = strtok(NULL, " ");
     }
-
-    in.close();
 
     return c;
 }
