@@ -78,6 +78,7 @@ StaticMesh::StaticMesh( MeshBufferPtr mesh, string name )
 
 void StaticMesh::init( MeshBufferPtr mesh )
 {
+    m_lineWidth = 2.0;
     if(mesh)
     {
 

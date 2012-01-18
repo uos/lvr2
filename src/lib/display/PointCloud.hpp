@@ -103,6 +103,10 @@ inline void PointCloud::render()
         {
             glPointSize(5.0);
         }
+        else
+        {
+            glPointSize(m_pointSize);
+        }
         glDisable(GL_LIGHTING);
         glPushMatrix();
         glMultMatrixf(m_transformation.getData());
@@ -121,7 +125,6 @@ inline void PointCloud::render()
         if(m_renderMode & RenderNormals)
         {
             glCallList(m_normalListIndex);
-
         }
         glPointSize(1.0);
         glEnable(GL_LIGHTING);

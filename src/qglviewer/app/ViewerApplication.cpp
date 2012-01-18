@@ -42,11 +42,11 @@ ViewerApplication::ViewerApplication( int argc, char ** argv )
 	m_sceneDockWidgetUi->setupUi(m_sceneDockWidget);
 	m_qMainWindow->addDockWidget(Qt::LeftDockWidgetArea, m_sceneDockWidget);
 
-	// Add tool box widget to dock area
-	m_actionDockWidget = new QDockWidget(m_qMainWindow);
-	m_actionDockWidgetUi = new ActionDockWidgetUI;
-	m_actionDockWidgetUi->setupUi(m_actionDockWidget);
-	m_qMainWindow->addDockWidget(Qt::LeftDockWidgetArea, m_actionDockWidget);
+    // Add tool box widget to dock area
+    m_actionDockWidget = new QDockWidget(m_qMainWindow);
+    m_actionDockWidgetUi = new ActionDockWidgetUI;
+    m_actionDockWidgetUi->setupUi(m_actionDockWidget);
+    m_qMainWindow->addDockWidget(Qt::LeftDockWidgetArea, m_actionDockWidget);
 
 	// Setup event manager objects
 	m_viewerManager = new ViewerManager(m_qMainWindow);
@@ -106,6 +106,8 @@ void ViewerApplication::connectEvents()
 	connect(m_mainWindowUi->actionPointCloudView, SIGNAL(activated()), this, SLOT(pointRenderModeChanged()));
 	connect(m_mainWindowUi->actionPointNormalView, SIGNAL(activated()), this, SLOT(pointRenderModeChanged()));
 
+	connect(m_mainWindowUi->actionRenderingSettings, SIGNAL(activated()), this, SLOT(displayRenderingSettings()));
+
 	// Fog settings
 	connect(m_mainWindowUi->actionToggle_fog, SIGNAL(activated()),  this, SLOT(toggleFog()));
 	connect(m_mainWindowUi->actionFog_settings, SIGNAL(activated()),this, SLOT(displayFogSettingsDialog()));
@@ -130,6 +132,40 @@ void ViewerApplication::connectEvents()
     connect(m_actionDockWidgetUi->buttonDelete,     SIGNAL(clicked()), this, SLOT(deleteObject()));
     connect(m_actionDockWidgetUi->buttonExport,     SIGNAL(clicked()), this, SLOT(saveSelectedObject()));
     connect(m_actionDockWidgetUi->buttonAnimation,  SIGNAL(clicked()), this, SLOT(createAnimation()));
+
+}
+
+void ViewerApplication::displayRenderingSettings()
+{
+    // Create dialog ui
+    RenderingDialogUI*  render_ui = new RenderingDialogUI;
+    QDialog dialog;
+    render_ui->setupUi(&dialog);
+
+    // Get selected object
+    QTreeWidgetItem * t_item = m_sceneDockWidgetUi->treeWidget->currentItem();
+
+    if(t_item)
+    {
+        if(t_item->type() >= PointCloudItem)
+        {
+            // Convert to custom item
+            CustomTreeWidgetItem* item = static_cast<CustomTreeWidgetItem*>(t_item);
+
+            // Get relevant values from renderable and set them in ui
+            Renderable* renderable = item->renderable();
+            render_ui->spinBoxLineWidth->setValue(renderable->lineWidth());
+            render_ui->spinBoxPointSize->setValue(renderable->pointSize());
+
+            // Execute dialog and set new values
+            if(dialog.exec() == QDialog::Accepted)
+            {
+                renderable->setPointSize(render_ui->spinBoxPointSize->value());
+                renderable->setLineWidth(render_ui->spinBoxLineWidth->value());
+            }
+        }
+    }
+
 
 }
 
@@ -378,8 +414,8 @@ void ViewerApplication::pointRenderModeChanged()
             {
                 renderMode |= lssr::RenderNormals;
             }
-             pc->setRenderMode(renderMode);
-             m_viewer->updateGL();
+            pc->setRenderMode(renderMode);
+            m_viewer->updateGL();
         }
     }
 }

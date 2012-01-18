@@ -30,6 +30,8 @@ namespace lssr
 Grid::Grid(floatArr vertices, uintArr boxes, uint numPoints, uint numBoxes)
     : m_vertices(vertices), m_boxes(boxes), m_numPoints(numPoints), m_numBoxes(numBoxes)
 {
+    m_lineWidth = 2.0;
+    m_pointSize = 5.0;
 
     // Create display lists for points and grid
     m_pointDisplayList = glGenLists(1);
@@ -62,7 +64,7 @@ Grid::Grid(floatArr vertices, uintArr boxes, uint numPoints, uint numBoxes)
 
     // Render boxes
     glNewList(m_gridDisplayList, GL_COMPILE);
-    glColor3f(0.0, 0.0, 0.0);
+    glColor3f(125.0, 125.0, 125.0);
 
     // Coordinates for box corners
     float x[8];
@@ -119,10 +121,12 @@ Grid::Grid(floatArr vertices, uintArr boxes, uint numPoints, uint numBoxes)
 
 void Grid::render()
 {
+    glLineWidth(m_lineWidth);
     glCallList(m_gridDisplayList);
-    glPointSize(5.0);
+    glPointSize(m_pointSize);
     glCallList(m_pointDisplayList);
     glPointSize(1.0);
+    glLineWidth(1.0);
 }
 
 Grid::~Grid()

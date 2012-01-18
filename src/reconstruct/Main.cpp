@@ -277,13 +277,19 @@ int main(int argc, char** argv)
         useVoxelsize = true;
     }
 
+    // Determine whether to use MC decomposition
+    bool useMT = false;
+    if(options.getDecomposition() == "MT")
+    {
+        useMT = true;
+    }
+
     // Create a new reconstruction object
     FastReconstruction<cVertex, cNormal > reconstruction(
 			pcm,
 			resolution,
 			useVoxelsize,
-            /* Determine whether to use MC decomposition */
-			options.getDecomposition() == "MT" );
+			useMT);
 
     // Create mesh
     reconstruction.getMesh(mesh);
@@ -320,7 +326,8 @@ int main(int argc, char** argv)
     // Save triangle mesh
 	if ( options.retesselate() )
 	{
-		mesh.finalizeAndRetesselate(options.generateTextures());
+		mesh.finalizeAndRetesselate(options.generateTextures(),
+		                            options.getLineFusionThreshold());
 	}
 	else
 	{
@@ -345,8 +352,12 @@ int main(int argc, char** argv)
 	// Create output model and save to file
 	ModelPtr m( new Model( mesh.meshBuffer(), pcm->pointBuffer() ) );
 	ModelFactory::saveModel( m, "triangle_mesh.ply", save_opts );
-	ModelFactory::saveModel( m, "triangle_mesh.obj", save_opts );
 
+	// Save obj model if textures were generated
+	if(options.generateTextures())
+	{
+	    ModelFactory::saveModel( m, "triangle_mesh.obj", save_opts );
+	}
     cout << timestamp << "Program end." << endl;
 
 	return 0;
