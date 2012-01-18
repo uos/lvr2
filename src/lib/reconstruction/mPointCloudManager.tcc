@@ -37,7 +37,7 @@ namespace lssr{
     
 typedef ColorVertex<float, unsigned char>               cVertex;
 typedef Normal<float>                                   cNormal;
-typedef SearchTree<cVertex, cNormal> SEARCH_TREE;
+typedef SearchTree<cVertex, cNormal> search_tree;
 
 template<typename VertexT, typename NormalT>
 mPointCloudManager<VertexT, NormalT>::mPointCloudManager(
@@ -113,7 +113,7 @@ void mPointCloudManager<VertexT, NormalT>::calcNormals()
     string comment = timestamp.getElapsedTime() + "Estimating normals ";
     ProgressBar progress(this->m_numPoints, comment);
 
-    #pragma omp parallel for
+    //#pragma omp parallel for
     for(size_t i = 0; i < this->m_numPoints; i++){
 
         Vertexf query_point;
@@ -140,7 +140,14 @@ void mPointCloudManager<VertexT, NormalT>::calcNormals()
 
             //T* point = this->m_points[i];
             m_searchTree->kSearch(this->m_points[i], k, id, di);
-
+            cout << "DI.size(): " << di.size() << endl;
+            cout << "ID.size(): " << id.size() << endl;
+            for( int x(0); x < di.size(); x++ )
+            {
+               cout << "DIst[" << x << "]: " << di[x] << endl;
+            }
+            
+            
             float min_x = 1e15;
             float min_y = 1e15;
             float min_z = 1e15;
@@ -164,6 +171,11 @@ void mPointCloudManager<VertexT, NormalT>::calcNormals()
                 max_x = max(max_x, this->m_points[id[j]][0]);
                 max_y = max(max_y, this->m_points[id[j]][1]);
                 max_z = max(max_z, this->m_points[id[j]][2]);
+                
+//                cout << "Points: " << this->m_numPoints << "Point[" << id[j] << "].x: " <<  this->m_points[id[j]][0] << endl ;
+//                cout << "Points: " << this->m_numPoints << "Point[" << id[j] << "].y: " <<  this->m_points[id[j]][1] << endl ;
+//                cout << "Points: " << this->m_numPoints << "Point[" << id[j] << "].z: " <<  this->m_points[id[j]][2] << endl ;
+
 
                 dx = max_x - min_x;
                 dy = max_y - min_y;
@@ -222,7 +234,7 @@ void mPointCloudManager<VertexT, NormalT>::interpolateSurfaceNormals()
     ProgressBar progress(this->m_numPoints, comment);
 
     // Interpolate normals
-    #pragma omp parallel for
+    //#pragma omp parallel for
     for(size_t i = 0; i < this->m_numPoints; i++){
 
         vector<unsigned long> id;
@@ -272,6 +284,11 @@ void mPointCloudManager<VertexT, NormalT>::interpolateSurfaceNormals()
         this->m_normals[i][1] = tmp[i][1];
         this->m_normals[i][2] = tmp[i][2];
     }
+    //cout << "NumPoints: " << this->m_numPoints << endl;
+    //for( size_t i(0); i < this->m_numPoints; i++ )
+    //{
+   //    cout << this->m_points[i][0] << " " << this->m_points[i][1] << " " << this->m_points[i][2] << " " << this->m_normals[i][0] << " " << this->m_normals[i][1] << " " << this->m_normals[i][2] << endl;
+    //}
 
 }
 
