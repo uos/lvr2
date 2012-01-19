@@ -83,6 +83,9 @@ PCLFiltering::PCLFiltering( PointBufferPtr loader )
         m_pointCloud->points[i].z = z;
     }
 
+    m_pointCloud->width = numPoints;
+    m_pointCloud->height = 1;
+
     // Create an empty kdtree representation, and pass it to the normal estimation object.
     // Its content will be filled inside the object, based on the given input dataset
     // (as no other search surface is given).
@@ -123,6 +126,10 @@ void PCLFiltering::applyMLSProjection(float searchRadius)
         m_pointCloud->points[i].y = mls_points.points[i].y;
         m_pointCloud->points[i].z = mls_points.points[i].z;
     }
+
+    m_pointCloud->height = 1;
+    m_pointCloud->width = mls_points.size();
+
 }
 
 void PCLFiltering::applyOutlierRemoval(int meank, float thresh)
