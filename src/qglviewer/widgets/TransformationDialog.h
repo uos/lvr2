@@ -60,6 +60,7 @@ public Q_SLOTS:
     void translationZEntered(double value);
 
     void reset();
+    void save();
 private:
 
     void connectSignalsAndSlots();
