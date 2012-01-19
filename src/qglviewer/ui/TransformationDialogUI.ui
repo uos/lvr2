@@ -6,8 +6,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>403</width>
-    <height>303</height>
+    <width>407</width>
+    <height>277</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -16,8 +16,8 @@
   <widget class="QDialogButtonBox" name="buttonBox">
    <property name="geometry">
     <rect>
-     <x>206</x>
-     <y>261</y>
+     <x>209</x>
+     <y>242</y>
      <width>191</width>
      <height>32</height>
     </rect>
@@ -35,7 +35,7 @@
      <x>10</x>
      <y>10</y>
      <width>393</width>
-     <height>161</height>
+     <height>112</height>
     </rect>
    </property>
    <property name="title">
@@ -136,7 +136,7 @@
      <double>180.000000000000000</double>
     </property>
     <property name="singleStep">
-     <double>0.010000000000000</double>
+     <double>1.000000000000000</double>
     </property>
    </widget>
    <widget class="QLabel" name="label_6">
@@ -323,33 +323,14 @@
      <string>-180 °</string>
     </property>
    </widget>
-   <widget class="QCheckBox" name="checkBoxRotLocal">
-    <property name="enabled">
-     <bool>false</bool>
-    </property>
-    <property name="geometry">
-     <rect>
-      <x>6</x>
-      <y>121</y>
-      <width>131</width>
-      <height>22</height>
-     </rect>
-    </property>
-    <property name="text">
-     <string>Local System</string>
-    </property>
-    <property name="checked">
-     <bool>true</bool>
-    </property>
-   </widget>
   </widget>
   <widget class="QGroupBox" name="groupBoxTranslation">
    <property name="geometry">
     <rect>
-     <x>10</x>
-     <y>170</y>
+     <x>7</x>
+     <y>123</y>
      <width>381</width>
-     <height>91</height>
+     <height>62</height>
     </rect>
    </property>
    <property name="title">
@@ -373,7 +354,7 @@
      <rect>
       <x>30</x>
       <y>30</y>
-      <width>94</width>
+      <width>89</width>
       <height>21</height>
      </rect>
     </property>
@@ -411,25 +392,6 @@
     </property>
     <property name="text">
      <string>Z:</string>
-    </property>
-   </widget>
-   <widget class="QCheckBox" name="checkBoxTransLocal">
-    <property name="enabled">
-     <bool>false</bool>
-    </property>
-    <property name="geometry">
-     <rect>
-      <x>5</x>
-      <y>60</y>
-      <width>131</width>
-      <height>22</height>
-     </rect>
-    </property>
-    <property name="text">
-     <string>Local System</string>
-    </property>
-    <property name="checked">
-     <bool>true</bool>
     </property>
    </widget>
    <widget class="QDoubleSpinBox" name="spinBoxYTrans">
@@ -474,8 +436,8 @@
   <widget class="QPushButton" name="buttonReset">
    <property name="geometry">
     <rect>
-     <x>10</x>
-     <y>263</y>
+     <x>5</x>
+     <y>246</y>
      <width>97</width>
      <height>27</height>
     </rect>
@@ -487,8 +449,8 @@
   <widget class="QPushButton" name="buttonSave">
    <property name="geometry">
     <rect>
-     <x>110</x>
-     <y>262</y>
+     <x>108</x>
+     <y>244</y>
      <width>97</width>
      <height>27</height>
     </rect>
@@ -496,6 +458,41 @@
    <property name="text">
     <string>Save...</string>
    </property>
+  </widget>
+  <widget class="QGroupBox" name="groupBox">
+   <property name="geometry">
+    <rect>
+     <x>7</x>
+     <y>185</y>
+     <width>120</width>
+     <height>48</height>
+    </rect>
+   </property>
+   <property name="title">
+    <string>Step:</string>
+   </property>
+   <widget class="QDoubleSpinBox" name="spinBoxStep">
+    <property name="geometry">
+     <rect>
+      <x>5</x>
+      <y>23</y>
+      <width>87</width>
+      <height>21</height>
+     </rect>
+    </property>
+    <property name="minimum">
+     <double>-1000000.000000000000000</double>
+    </property>
+    <property name="maximum">
+     <double>1000000.000000000000000</double>
+    </property>
+    <property name="singleStep">
+     <double>0.010000000000000</double>
+    </property>
+    <property name="value">
+     <double>0.010000000000000</double>
+    </property>
+   </widget>
   </widget>
  </widget>
  <resources/>

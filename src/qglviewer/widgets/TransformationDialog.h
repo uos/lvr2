@@ -59,6 +59,8 @@ public Q_SLOTS:
     void translationYEntered(double value);
     void translationZEntered(double value);
 
+    void stepChanged(double value);
+
     void reset();
     void save();
 private:
