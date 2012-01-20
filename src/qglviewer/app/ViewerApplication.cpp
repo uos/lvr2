@@ -203,7 +203,7 @@ void ViewerApplication::createMeshFromPointcloud()
                     std::string pcm_name = mesh_ui->comboBoxPCM->currentText().toAscii().data();
 
                     pcm = PointCloudManager< RC_PCM_TYPE >::Ptr(
-                          new mPointCloudManager<ColorVertex<float, unsigned char>, Normal<float> > ( loader, pcm_name ));
+                          new PointCloudManager<ColorVertex<float, unsigned char>, Normal<float> > ( loader, pcm_name ));
 
                     // Set pcm parameters
                     pcm->setKD(mesh_ui->spinBoxKd->value());

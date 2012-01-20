@@ -198,6 +198,11 @@ public:
      */
     virtual void distance(VertexT v, float &projectedDistance, float &euklideanDistance);
 
+
+    virtual void colorizePointCloud( PointCloudManager<VertexT, NormalT>::Ptr pcm,
+          const float &sqrtMaxDist = std::numeric_limits<float>::max(),
+          const uchar* blankColor = NULL );
+
     /**
      * @brief Calculates initial point normals using a least squares fit to
      *        the \ref m_kn nearest points
@@ -230,6 +235,9 @@ public:
     {
         return m_normals != 0;
     }
+    
+    /// Color information for points public: TODO: This is not the best idea!
+    color3bArr                  m_colors;
 
 private:
 
@@ -308,7 +316,7 @@ private:
     /// Should a randomized algorithm be used to determine planes?
 	bool                        m_useRANSAC;
     
-	/// Model of the current pointcloud.
+	/// A buffer containing the points that are managed here. 
     PointBufferPtr              m_pointBuffer;
 
     /// The currently stored points
@@ -317,9 +325,7 @@ private:
     /// The point normals
     coord3fArr                  m_normals;
 
-    /// Color information for points
-    color3bArr                  m_colors;
-//#endif
+    /// A model of the current pointcloud
 	boost::shared_ptr<Model>    m_model;
 
     /// The bounding box of the point set
