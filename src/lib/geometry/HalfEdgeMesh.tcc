@@ -1255,6 +1255,8 @@ void HalfEdgeMesh<VertexT, NormalT>::finalizeAndRetesselate( bool genTextures, f
       */
 
     // for every plane region there is
+    string msg = timestamp.getElapsedTime() + "Optimizing plane intersections ";
+    ProgressBar progress(m_regions.size(), msg);
     for(intIterator planeNr = planeRegions.begin(); planeNr != planeRegions.end(); ++planeNr )
     {
         int iRegion = *planeNr;
@@ -1331,6 +1333,7 @@ void HalfEdgeMesh<VertexT, NormalT>::finalizeAndRetesselate( bool genTextures, f
             faceColorBuffer.push_back( b );
         }
         if(t) delete t;
+        ++progress;
     }
 
     if ( !this->m_meshBuffer )
