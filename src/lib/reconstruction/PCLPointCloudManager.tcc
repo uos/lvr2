@@ -75,8 +75,9 @@ void PCLPointCloudManager<VertexT, NormalT>::calcNormals()
     ne.setInputCloud (m_pointCloud);
     ne.setViewPoint(center.x, center.y, center.z);
 
-    // Create an empty kdtree representation, and pass it to the normal estimation object.
-    // Its content will be filled inside the object, based on the given input dataset (as no other search surface is given).
+    // Create an empty kdtree representation, and pass it to the normal
+    // estimation object. Its content will be filled inside the object,
+    // based on the given input dataset (as no other search surface is given).
 #ifdef _PCL_VERSION_12_
     m_kdTree = pcl::KdTreeFLANN<pcl::PointXYZ>::Ptr (new pcl::KdTreeFLANN<pcl::PointXYZ> ());
 #else
@@ -86,8 +87,6 @@ void PCLPointCloudManager<VertexT, NormalT>::calcNormals()
 
     // Output datasets
     m_pointNormals = pcl::PointCloud<pcl::Normal>::Ptr (new pcl::PointCloud<pcl::Normal>);
-
-
     ne.setKSearch(this->m_kn);
 
     // Compute the features

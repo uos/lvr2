@@ -53,6 +53,7 @@ ModelPtr LasIO::read(string filename )
         // Alloc coordinate array
         floatArr points ( new float[3 * num_points]);
         floatArr intensities ( new float[num_points]);
+        ucharArr colors (new uchar[3 * num_points]);
 
         // Read point data
         for(size_t i = 0; i < num_points; i++)
@@ -63,6 +64,12 @@ ModelPtr LasIO::read(string filename )
             points[buf_pos + 1] = lasreader->point.y;
             points[buf_pos + 2] = lasreader->point.z;
 
+            // Create fake colors from intensities
+            /// TODO: Check for color attributes if possible...
+            colors[buf_pos] = lasreader->point.intensity;
+            colors[buf_pos + 1] = lasreader->point.intensity;
+            colors[buf_pos + 2] = lasreader->point.intensity;
+
             intensities[i] = lasreader->point.intensity;
 
         }
@@ -71,6 +78,7 @@ ModelPtr LasIO::read(string filename )
         PointBufferPtr p_buffer( new PointBuffer);
         p_buffer->setPointArray(points, num_points);
         p_buffer->setPointIntensityArray(intensities, num_points);
+        p_buffer->setPointColorArray(colors, num_points);
 
         ModelPtr m_ptr( new Model(p_buffer));
 
