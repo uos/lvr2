@@ -52,7 +52,7 @@
 #include "display/StaticMesh.hpp"
 #include "geometry/HalfEdgeMesh.hpp"
 
-#include "reconstruction/mPointCloudManager.hpp"
+#include "reconstruction/PointCloudManager.hpp"
 #include "reconstruction/FastReconstruction.hpp"
 
 #include "io/Model.hpp"

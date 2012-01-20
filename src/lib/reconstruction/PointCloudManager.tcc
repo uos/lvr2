@@ -42,7 +42,21 @@ typedef SearchTree<cVertex, cNormal> search_tree;
 template<typename VertexT, typename NormalT>
 PointCloudManager<VertexT, NormalT>::PointCloudManager(
         PointBufferPtr loader, std::string searchTreeName, const int &kn, const int &ki, const int &kd, const bool &useRansac )
+: m_pointBuffer( loader )
 {
+   // Init:
+   size_t n_points, n_normals;
+   this->m_points = loader->getIndexedPointArray(n_points);
+   this->m_normals = loader->getIndexedPointNormalArray(n_normals);
+   this->m_numPoints = n_points;
+
+   size_t n(0);
+   this->m_colors = loader->getIndexedPointColorArray( n );
+   if( n != this->m_numPoints )
+   {
+      this->m_colors.reset();
+   }
+
     this->m_ki = ki;
     this->m_kn = kn;
     this->m_kd = kd;
@@ -566,6 +580,42 @@ Plane<VertexT, NormalT> PointCloudManager<VertexT, NormalT>::calcPlaneRANSAC(con
 
 
     return p;
+}
+
+
+template<typename VertexT, typename NormalT>
+void PointCloudManager<VertexT, NormalT>::colorizePointCloud(
+      PointCloudManager<VertexT, NormalT>::Ptr pcm, const float& sqrtMaxDist,
+      const uchar* blankColor)
+{
+   if( !m_colors )
+   {
+      m_colors = color3bArr( new color<uchar>[ m_numPoints ] );
+   }
+
+    #pragma omp parallel for
+   for( size_t i = 0; i < m_numPoints; i++ )
+   {
+      std::vector< VertexT > nearestPoint( 1 );
+
+      VertexT p( this->getPoint( i ) );
+      pcm->getkClosestVertices( p, 1, nearestPoint );
+      if(nearestPoint.size() )
+      {
+         if( p.sqrDistance( nearestPoint[0] ) < sqrtMaxDist )
+         {
+            m_colors[i][0] = nearestPoint[0].r;
+            m_colors[i][1] = nearestPoint[0].g;
+            m_colors[i][2] = nearestPoint[0].b;
+         }
+         else if( blankColor )
+         {
+            m_colors[i][0] = blankColor[0]; 
+            m_colors[i][1] = blankColor[1];
+            m_colors[i][2] = blankColor[2];
+         }
+      }
+   }
 }
 
 template<typename VertexT, typename NormalT>
