@@ -35,7 +35,7 @@
 #include <io/ModelFactory.hpp>
 #include <io/Timestamp.hpp>
 
-#include "reconstruction/mPointCloudManager.hpp"
+#include "reconstruction/PointCloudManager.hpp"
 
 
 typedef lssr::PointCloudManager<lssr::ColorVertex<float, unsigned char>,
@@ -146,7 +146,7 @@ void loadPointCloud( lssr::PointBufferPtr &pc, PointCloudManagerPtr &pcm, char* 
         exit( EXIT_FAILURE );
     }
 
-    pcm = PointCloudManagerPtr( new lssr::mPointCloudManager<lssr::ColorVertex<float, unsigned char>, lssr::Normal<float> >( pc, pcm_name ));
+    pcm = PointCloudManagerPtr( new lssr::PointCloudManager<lssr::ColorVertex<float, unsigned char>, lssr::Normal<float> >( pc, pcm_name ));
 
     pcm->setKD( 10 );
     pcm->setKI( 10 );
