@@ -20,6 +20,8 @@ set( CMAKE_CXX_FLAGS_DEBUG   "-g -Wall" )
 # EXTERNAL LIBRARIES
 ###############################################################
 
+SET(NABO_INCLUDE_DIRS "")
+SET(NABO_LIBRARIES "")
 find_package(Nabo)
 if(NABO_FOUND)
    include_directories(${NABO_INCLUDE_DIRS})
