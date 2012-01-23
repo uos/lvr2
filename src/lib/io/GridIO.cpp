@@ -37,43 +37,54 @@ GridIO::GridIO()
 
 }
 
-Grid* GridIO::read(string filename)
+void GridIO::read( std::string filename )
 {
     ifstream in(filename.c_str());
 
     if(in.good())
     {
-        int n_points;
-        int n_cells;
+        size_t n_points;
+        size_t n_cells;
         float voxelsize;
 
         // Read header
         in >> n_points >> voxelsize >> n_cells;
 
         // Alloc and read points
-        floatArr points(new float[4 * n_points]);
-        for(int i = 0; i < n_points; i++)
+        m_points = floatArr( new float[4 * n_points] );
+        m_numPoints = n_points;
+        for(size_t i = 0; i < n_points; i++)
         {
-            in >> points[i * 4] >> points[i * 4 + 1] >> points[i * 4 + 2] >> points[i * 4 + 3];
+            in >> m_points[i * 4] >> m_points[i * 4 + 1] >> m_points[i * 4 + 2] >> m_points[i * 4 + 3];
         }
 
         // Alloc and read box indices
-        uintArr boxes(new uint[8 * n_cells]);
-        for(int i = 0; i < n_cells; i++)
+        m_boxes = uintArr( new uint[8 * n_cells] );
+        m_numBoxes = n_cells;
+        for(size_t i = 0; i < n_cells; i++)
         {
-            int pos = i * 8;
-            for(int j = 0; j < 8; j++)
+            size_t pos = i * 8;
+            for(size_t j = 0; j < 8; j++)
             {
-                in >> boxes[pos + j];
+                in >> m_boxes[pos + j];
             }
         }
 
-        return new Grid(points, boxes, n_points, n_cells);
     }
-    else
-    {
-        return 0;
-    }
+}
+
+
+floatArr GridIO::getPoints( size_t &n )
+{
+    n = m_numPoints;
+    return m_points;
+}
+
+
+uintArr GridIO::getBoxes( size_t &n )
+{
+    n = m_numBoxes;
+    return m_boxes;
 }
 
 
