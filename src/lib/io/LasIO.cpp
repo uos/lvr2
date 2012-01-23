@@ -73,6 +73,7 @@ ModelPtr LasIO::read(string filename )
         p_buffer->setPointIntensityArray(intensities, num_points);
 
         ModelPtr m_ptr( new Model(p_buffer));
+        m_model = m_ptr;
 
         delete lasreader;
 

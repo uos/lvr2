@@ -168,6 +168,7 @@ ModelPtr UosIO::read(string dir)
         cout << timestamp << "UOSReader: " << dir << " is not a directory." << endl;
     }
 
+    m_model = model;
     return model;
 }
 
