@@ -733,6 +733,7 @@ ModelPtr PLYIO::read( string filename, bool readColor, bool readConfidence,
     }
 
     ModelPtr m( new Model( mesh, pc ) );
+    m_model = m;
     return m;
 
 }
