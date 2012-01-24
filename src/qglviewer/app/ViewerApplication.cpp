@@ -198,12 +198,12 @@ void ViewerApplication::createMeshFromPointcloud()
                 if(loader)
                 {
                     // Create a point cloud manager object
-                    lssr::PointCloudManager< RC_PCM_TYPE >::Ptr pcm;
+                    lssr::AdaptiveKSearchSurface< RC_PCM_TYPE >::Ptr pcm;
 //                    PointCloudManager<ColorVertex<float, unsigned char>, Normal<float> >* pcm;
                     std::string pcm_name = mesh_ui->comboBoxPCM->currentText().toAscii().data();
 
-                    pcm = PointCloudManager< RC_PCM_TYPE >::Ptr(
-                          new PointCloudManager<ColorVertex<float, unsigned char>, Normal<float> > ( loader, pcm_name ));
+                    pcm = AdaptiveKSearchSurface< RC_PCM_TYPE >::Ptr(
+                          new AdaptiveKSearchSurface<ColorVertex<float, unsigned char>, Normal<float> > ( loader, pcm_name ));
 
                     // Set pcm parameters
                     pcm->setKD(mesh_ui->spinBoxKd->value());

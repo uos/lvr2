@@ -30,9 +30,10 @@ namespace lssr {
 template<typename VertexT, typename NormalT>
 float Texture<VertexT, NormalT>::m_texelSize = 1;
 
+
 template<typename VertexT, typename NormalT>
 Texture<VertexT, NormalT>::Texture(
-		typename PointCloudManager<VertexT, NormalT>::Ptr pm,
+		typename PointsetSurface<VertexT>::Ptr pm,
 		Region<VertexT, NormalT>* region, vector<vector<HVertex*> > contours)
 {
 	this->m_region = region;
@@ -129,7 +130,7 @@ Texture<VertexT, NormalT>::Texture(
 							* (y * m_texelSize + best_b_min - m_texelSize / 2.0);
 
 						int one = 1;
-						pm->getkClosestVertices(current_position, one, cv);
+						pm->searchTree()->kSearch(current_position, one, cv);
 
 						ColorT currCol;
 						currCol.r = cv[0].r;

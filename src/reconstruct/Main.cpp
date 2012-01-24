@@ -136,7 +136,7 @@
 
 #include "Options.hpp"
 
-#include "reconstruction/PointCloudManager.hpp"
+#include "reconstruction/AdaptiveKSearchSurface.hpp"
 #include "reconstruction/FastReconstruction.hpp"
 #include "io/PLYIO.hpp"
 #include "geometry/Matrix4.hpp"
@@ -149,7 +149,7 @@ using namespace lssr;
 
 typedef ColorVertex<float, unsigned char>               cVertex;
 typedef Normal<float>                                   cNormal;
-typedef PointCloudManager<cVertex, cNormal>             PCM;
+typedef AdaptiveKSearchSurface<cVertex, cNormal>             PCM;
 
 /**
  * @brief   Main entry point for the LSSR surface executable

@@ -28,7 +28,7 @@
 #define RECONSTRUCTOR_H_
 
 #include "../geometry/BaseMesh.hpp"
-#include "../reconstruction/PointCloudManager.hpp"
+#include "../reconstruction/AdaptiveKSearchSurface.hpp"
 
 namespace lssr
 {
@@ -47,7 +47,7 @@ public:
      *        cloud handler
      */
     //Reconstructor(PointCloudManager<VertexT, NormalT> &manager) : m_manager(manager) {}
-    Reconstructor( typename PointCloudManager<VertexT, NormalT>::Ptr manager) : m_manager(manager) {}
+    Reconstructor( typename AdaptiveKSearchSurface<VertexT, NormalT>::Ptr manager) : m_manager(manager) {}
 
     /**
      * @brief Generates a triangle mesh representation of the current
@@ -61,7 +61,7 @@ public:
 protected:
 
     /// The point cloud manager that handles the loaded point cloud data.
-    typename PointCloudManager<VertexT, NormalT>::Ptr      m_manager;
+    typename AdaptiveKSearchSurface<VertexT, NormalT>::Ptr      m_manager;
 };
 
 } //namespace lssr
