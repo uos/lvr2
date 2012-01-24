@@ -192,7 +192,7 @@ void ViewerApplication::createMeshFromPointcloud()
             if(result == QDialog::Accepted)
             {
                 // Get point cloud data
-                PointCloud* pc = static_cast<lssr::PointCloud*>(c_item->renderable());
+                lssr::PointCloud* pc = static_cast<lssr::PointCloud*>(c_item->renderable());
                 PointBufferPtr loader = pc->model()->m_pointCloud;
 
                 if(loader)
@@ -200,23 +200,10 @@ void ViewerApplication::createMeshFromPointcloud()
                     // Create a point cloud manager object
                     lssr::PointCloudManager< RC_PCM_TYPE >::Ptr pcm;
 //                    PointCloudManager<ColorVertex<float, unsigned char>, Normal<float> >* pcm;
-                    QString pcm_name = mesh_ui->comboBoxPCM->currentText();
+                    std::string pcm_name = mesh_ui->comboBoxPCM->currentText().toAscii().data();
 
-                    if(pcm_name == "PCL")
-                    {
-#ifdef _USE_PCL_
-                        pcm = PointCloudManager< RC_PCM_TYPE >::Ptr(
-                              new PCLPointCloudManager<ColorVertex<float, unsigned char>, Normal<float> > (loader));
-#else
-                        pcm = PointCloudManager< RC_PCM_TYPE >::Ptr(
-                              new StannPointCloudManager<ColorVertex<float, unsigned char>, Normal<float> > (loader));
-#endif
-                    }
-                    else
-                    {
-                        pcm = PointCloudManager< RC_PCM_TYPE >::Ptr(
-                              new StannPointCloudManager<ColorVertex<float, unsigned char>, Normal<float> > (loader));
-                    }
+                    pcm = PointCloudManager< RC_PCM_TYPE >::Ptr(
+                          new PointCloudManager<ColorVertex<float, unsigned char>, Normal<float> > ( loader, pcm_name ));
 
                     // Set pcm parameters
                     pcm->setKD(mesh_ui->spinBoxKd->value());
