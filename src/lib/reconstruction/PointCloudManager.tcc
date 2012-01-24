@@ -65,13 +65,15 @@ PointCloudManager<VertexT, NormalT>::PointCloudManager(
 
     init();
 
-    if( searchTreeName == "pcl"  || searchTreeName == "PCL" )
+    if( searchTreeName == "flann"  || searchTreeName == "FLANN" )
     {
         m_searchTree = search_tree::Ptr( new SearchTreePCL< VertexT, NormalT >(this->m_points, this->m_numPoints, kn, ki, kd) );  
-    } else if( searchTreeName == "stann" || searchTreeName == "STANN" )
+    }
+    else if( searchTreeName == "stann" || searchTreeName == "STANN" )
     {
         m_searchTree = search_tree::Ptr( new SearchTreeStann< VertexT, NormalT >(this->m_points, this->m_numPoints, kn, ki, kd) );  
-    } else
+    }
+    else
     {
        cout << timestamp << "No Valid Searchtree class specified!" << endl;
        cout << timestamp << "Class: " << searchTreeName << endl;
@@ -117,7 +119,7 @@ void PointCloudManager<VertexT, NormalT>::calcNormals()
     string comment = timestamp.getElapsedTime() + "Estimating normals ";
     ProgressBar progress(this->m_numPoints, comment);
 
-    //#pragma omp parallel for
+    #pragma omp parallel for
     for(size_t i = 0; i < this->m_numPoints; i++){
 
         Vertexf query_point;
@@ -191,9 +193,15 @@ void PointCloudManager<VertexT, NormalT>::calcNormals()
 
         // Interpolate a plane based on the k-neighborhood
         Plane<VertexT, NormalT> p;
+        bool ransac_ok;
         if(m_useRANSAC)
         {
-            p = calcPlaneRANSAC(query_point, k, id);
+            p = calcPlaneRANSAC(query_point, k, id, ransac_ok);
+            // Fallback if RANSAC failed
+            if(!ransac_ok)
+            {
+                p = calcPlane(query_point, k, id);
+            }
         }
         else
         {
@@ -211,7 +219,6 @@ void PointCloudManager<VertexT, NormalT>::calcNormals()
         this->m_normals[i][0] = normal[0];
         this->m_normals[i][1] = normal[1];
         this->m_normals[i][2] = normal[2];
-
         ++progress;
     }
     cout << endl;
@@ -231,7 +238,7 @@ void PointCloudManager<VertexT, NormalT>::interpolateSurfaceNormals()
     ProgressBar progress(this->m_numPoints, comment);
 
     // Interpolate normals
-    //#pragma omp parallel for
+    #pragma omp parallel for
     for(size_t i = 0; i < this->m_numPoints; i++){
 
         vector<unsigned long> id;
@@ -500,8 +507,12 @@ BoundingBox<VertexT>& PointCloudManager<VertexT, NormalT>::getBoundingBox()
 template<typename VertexT, typename NormalT>
 Plane<VertexT, NormalT> PointCloudManager<VertexT, NormalT>::calcPlaneRANSAC(const VertexT &queryPoint,
         const int &k,
-        const vector<unsigned long> &id)
+        const vector<unsigned long> &id,
+        bool &ok)
 {
+
+    Plane<VertexT, NormalT> p;
+
     VertexT point1;
     VertexT point2;
     VertexT point3;
@@ -524,6 +535,7 @@ Plane<VertexT, NormalT> PointCloudManager<VertexT, NormalT>::calcPlaneRANSAC(con
         NormalT n0;
 
         //randomly choose 3 disjoint points
+        int c = 0;
         do{
 
             int index[3];
@@ -536,13 +548,24 @@ Plane<VertexT, NormalT> PointCloudManager<VertexT, NormalT>::calcPlaneRANSAC(con
             point2 = VertexT(this->m_points[index[1]][0],this->m_points[index[1]][1], this->m_points[index[1]][2]);
             point3 = VertexT(this->m_points[index[2]][0],this->m_points[index[2]][1], this->m_points[index[2]][2]);
 
-
             //compute normal of the plane given by the 3 points
             n0 = (point1 - point2).cross(point1 - point3);
             n0.normalize();
 
+            if( (point1 != point2) && (point2 != point3) && (point3 != point1) )
+            {
+                break;
+            }
+            c++;
+
+            // Check for deadlock
+            if(c > 50)
+            {
+                ok = false;
+                return p;
+            }
         }
-        while(point1 == point2 || point2 == point3 || point3 == point1 || n0.length() == 0);
+        while(true);
 
         //compute error to at most 50 other randomly chosen points
         dist = 0;
@@ -571,7 +594,7 @@ Plane<VertexT, NormalT> PointCloudManager<VertexT, NormalT>::calcPlaneRANSAC(con
         iterations++;
     }
 
-    Plane<VertexT, NormalT> p;
+    // Save plane parameters
     p.a = 0;
     p.b = 0;
     p.c = 0;
@@ -618,13 +641,6 @@ void PointCloudManager<VertexT, NormalT>::colorizePointCloud(
    }
 }
 
-template<typename VertexT, typename NormalT>
-void PointCloudManager<VertexT, NormalT>::save(string filename)
-{
-
-    // TODO implement!
-
-}
 
 
 

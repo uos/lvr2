@@ -124,6 +124,11 @@ public:
 	 */
 	bool	recalcNormals() const;
 
+    /**
+     * @brief   If true, RANSAC based normal estimation is used
+     */
+    bool    useRansac() const;
+
 	/**
 	 * @brief	If true, textures will be generated during
      *          finalization of mesh.
@@ -311,7 +316,15 @@ inline ostream& operator<<(ostream& os, const Options &o)
 	}
 	cout << "##### Input file \t\t: "         << o.getInputFileName()   << endl;
 	cout << "##### Number of threads \t: "    << o.getNumThreads()      << endl;
-	cout << "##### Point cloud manager: \t: " << o.getPCM()             << endl;
+	cout << "##### Point cloud manager \t: " << o.getPCM()             << endl;
+	if(o.useRansac())
+	{
+	    cout << "##### Use RANSAC\t\t: YES" << endl;
+	}
+	else
+	{
+	    cout << "##### Use RANSAC\t\t: NO" << endl;
+	}
 	cout << "##### Voxel decomposition: \t: " << o.getDecomposition()   << endl;
 	cout << "##### k_n \t\t\t: "              << o.getKn()              << endl;
 	cout << "##### k_i \t\t\t: "              << o.getKi()              << endl;
