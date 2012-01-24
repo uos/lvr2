@@ -104,6 +104,9 @@ typedef boost::shared_array< coord<float> > coord3fArr;
 typedef boost::shared_array< idxVal<float> > idx1fArr;
 
 
+typedef boost::shared_array< coord<unsigned int> > idx3uArr;
+
+
 typedef boost::shared_array< idxVal<unsigned int> > idx1uArr;
 
 
