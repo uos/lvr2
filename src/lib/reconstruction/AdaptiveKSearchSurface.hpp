@@ -124,16 +124,6 @@ public:
 	 */
 	virtual ~AdaptiveKSearchSurface() {};
 
-	/**
-	 * @brief Returns the k closest neighbor vertices to a given queryy point
-	 *
-	 * @param v         A query vertex
-	 * @param k         The (max) number of returned closest points to v
-	 * @param nb        A vector containing the determined closest points
-	 */
-	virtual void getkClosestVertices(const VertexT &v,
-	        const size_t &k, vector<VertexT> &nb);
-    
     
     /**
      * @brief Returns the bounding box of the loaded point set.
@@ -160,21 +150,6 @@ public:
      * @return
      */
     virtual VertexT getPoint( size_t index );
-	
-
-	/**
-	 * @brief Return the k closest neighbor normals to a given query point
-	 *
-	 * @param n         A query vertex
-	 * @param k         The (max) number of returned closest points to v
-	 * @param nb        A vector containing the determined closest normals
-	 */
-    virtual void getkClosestNormals(const VertexT &n,
-	        const size_t &k, vector<NormalT> &nb)
-	{
-	    /// TODO: Implement method
-	}
-
 
     /**
      * @brief Returns the distance of vertex v from the nearest tangent plane
@@ -227,6 +202,17 @@ public:
     color3bArr                  m_colors;
 
 private:
+
+    /**
+     * @brief Returns the k closest neighbor vertices to a given queryy point
+     *
+     * @param v         A query vertex
+     * @param k         The (max) number of returned closest points to v
+     * @param nb        A vector containing the determined closest points
+     */
+    virtual void getkClosestVertices(const VertexT &v,
+            const size_t &k, vector<VertexT> &nb);
+
 
     /**
      * @brief Helper function for constructors
