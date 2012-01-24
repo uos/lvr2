@@ -2,6 +2,7 @@ cmake_minimum_required(VERSION 2.8)
 project(LSSR)
 
 set( CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_SOURCE_DIR}/bin )
+set( CMAKE_MODULE_PATH ${LSSR_SOURCE_DIR}/CMakeModules )
 
 link_directories("${CMAKE_SOURCE_DIR}/lib")
 link_directories("$ENV{HOME}/local/lib")
@@ -18,6 +19,15 @@ set( CMAKE_CXX_FLAGS_DEBUG   "-g -Wall" )
 ###############################################################
 # EXTERNAL LIBRARIES
 ###############################################################
+
+SET(NABO_INCLUDE_DIRS "")
+SET(NABO_LIBRARIES "")
+find_package(Nabo)
+if(NABO_FOUND)
+   include_directories(${NABO_INCLUDE_DIRS})
+   link_directories(${NABO_LIBRARIES})
+   add_definitions(-D_USE_NABO)
+endif(NABO_FOUND)
 
 # We intentionally do this twice as there seems to be a bug in PCL 1.4 which
 # leads to a non set PCL_VERSION variable if you call it only once.

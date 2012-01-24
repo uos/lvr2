@@ -13,4 +13,6 @@ target_link_libraries(reconstruct ${Boost_FILESYSTEM_LIBRARY}
     ${Boost_PROGRAM_OPTIONS_LIBRARY})
 target_link_libraries(reconstruct ${OpenMP_CXX_FLAGS})
 target_link_libraries(reconstruct ${PCL_LIBRARIES})
-
+if( ${NABO_FOUND} )
+    target_link_libraries(reconstruct ${NABO_LIBRARIES})
+endif( ${NABO_FOUND} )

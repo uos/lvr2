@@ -35,12 +35,7 @@
 #include <io/ModelFactory.hpp>
 #include <io/Timestamp.hpp>
 
-#include "reconstruction/StannPointCloudManager.hpp"
-
-// Optional PCL bindings
-#ifdef _USE_PCL_
-#include "reconstruction/PCLPointCloudManager.hpp"
-#endif
+#include "reconstruction/PointCloudManager.hpp"
 
 
 typedef lssr::PointCloudManager<lssr::ColorVertex<float, unsigned char>,
@@ -151,30 +146,7 @@ void loadPointCloud( lssr::PointBufferPtr &pc, PointCloudManagerPtr &pcm, char* 
         exit( EXIT_FAILURE );
     }
 
-    if ( pcm_name == "stann" )
-    {
-        std::cout << lssr::timestamp << "Creating STANN point cloud manager…" 
-            << std::endl;
-        pcm = PointCloudManagerPtr( new lssr::StannPointCloudManager<
-                lssr::ColorVertex<float, unsigned char>, 
-                lssr::Normal<float> >( pc ) );
-    }
-#ifdef _USE_PCL_
-    else if ( pcm_name == "pcl" ) 
-    {
-        std::cout << lssr::timestamp << "Creating STANN point cloud manager…"
-            << std::endl;
-        pcm = PointCloudManagerPtr( new lssr::PCLPointCloudManager<
-                lssr::ColorVertex<float, unsigned char>, 
-                lssr::Normal<float> >( pc ) );
-    }
-#endif
-    else
-    {
-        std::cerr << lssr::timestamp << "Invalid point cloud manager specified."
-            << std::endl;
-        exit( EXIT_FAILURE );
-    }
+    pcm = PointCloudManagerPtr( new lssr::PointCloudManager<lssr::ColorVertex<float, unsigned char>, lssr::Normal<float> >( pc, pcm_name ));
 
     pcm->setKD( 10 );
     pcm->setKI( 10 );
