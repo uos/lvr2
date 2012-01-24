@@ -41,8 +41,13 @@ typedef SearchTree<cVertex, cNormal> search_tree;
 
 template<typename VertexT, typename NormalT>
 PointCloudManager<VertexT, NormalT>::PointCloudManager(
-        PointBufferPtr loader, std::string searchTreeName, const int &kn, const int &ki, const int &kd, const bool &useRansac )
-: m_pointBuffer( loader )
+        PointBufferPtr loader,
+        std::string searchTreeName,
+        const int &kn,
+        const int &ki,
+        const int &kd,
+        const bool &useRansac )
+: PointsetSurface<VertexT>( loader )
 {
    // Init:
    size_t n_points, n_normals;
@@ -104,7 +109,7 @@ void PointCloudManager<VertexT, NormalT>::init()
 }
 
 template<typename VertexT, typename NormalT>
-void PointCloudManager<VertexT, NormalT>::calcNormals()
+void PointCloudManager<VertexT, NormalT>::calculateSurfaceNormals()
 {
     int k_0 = this->m_kn;
 

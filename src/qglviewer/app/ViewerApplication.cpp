@@ -209,7 +209,7 @@ void ViewerApplication::createMeshFromPointcloud()
                     pcm->setKD(mesh_ui->spinBoxKd->value());
                     pcm->setKI(mesh_ui->spinBoxKi->value());
                     pcm->setKN(mesh_ui->spinBoxKn->value());
-                    pcm->calcNormals();
+                    pcm->calculateSurfaceNormals();
 
                     // Create an empty mesh
                     HalfEdgeMesh<ColorVertex<float, unsigned char>, Normal<float> > mesh(pcm);

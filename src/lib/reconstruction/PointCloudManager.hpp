@@ -27,17 +27,20 @@
 #ifndef M_POINTCLOUDMANAGER_H_
 #define M_POINTCLOUDMANAGER_H_
 
-#include "../io/Model.hpp"
-#include "../io/Progress.hpp"
-#include "../io/Timestamp.hpp"
-#include "../io/PLYIO.hpp"
-#include "../io/AsciiIO.hpp"
-#include "../io/UosIO.hpp"
+#include "io/Model.hpp"
+#include "io/Progress.hpp"
+#include "io/Timestamp.hpp"
+#include "io/PLYIO.hpp"
+#include "io/AsciiIO.hpp"
+#include "io/UosIO.hpp"
 
 #include "geometry/Vertex.hpp"
 #include "geometry/Normal.hpp"
 #include "geometry/ColorVertex.hpp"
 #include "geometry/BoundingBox.hpp"
+
+#include "PointsetSurface.hpp"
+
 #include "boost/shared_ptr.hpp"
 
 // Stann
@@ -94,15 +97,14 @@ struct Plane
  *        given point set as described in the SSRR2010 paper.
  */
 template<typename VertexT, typename NormalT>
-class PointCloudManager
+class PointCloudManager : public PointsetSurface<VertexT>
 {
 public:
 
     typedef boost::shared_ptr< PointCloudManager<VertexT, NormalT> > Ptr;
 
 	/**
-	 * @brief Trys to read the given file to create a new PointCloudManager
-	 *        instance.
+	 * @brief Constructor.
 	 *
 	 * @param           The file to read from
      * @param searchTN  The of the searchTree type that shall be used
@@ -110,12 +112,12 @@ public:
      * @param ki        The number of neighbor points used for normal interpolation
      * @param kd        The number of neighbor points used for distance value calculation
 	 */
-	PointCloudManager( PointBufferPtr loader,
-                        std::string searchTreeName,
-	                       const int &kn = 10,
-	                       const int &ki = 10,
-	                       const int &kd = 10,
-						   const bool &useRansac = false );
+    PointCloudManager( PointBufferPtr loader,
+            std::string searchTreeName,
+            const int &kn = 10,
+            const int &ki = 10,
+            const int &kd = 10,
+            const bool &useRansac = false );
 
 	/**
 	 * @brief   Destructor
@@ -143,12 +145,6 @@ public:
      * @brief Returns the number of managed points
      */
     virtual size_t getNumPoints();
-
-
-    /**
-     * @brief Returns the point buffer object
-     */
-    virtual PointBufferPtr pointBuffer() { return m_pointBuffer; }
 
 
     /**
@@ -198,7 +194,7 @@ public:
      * @brief Calculates initial point normals using a least squares fit to
      *        the \ref m_kn nearest points
      */
-    void calcNormals();
+    void calculateSurfaceNormals();
 
     /**
      * @brief If set to true, normals will be calculated using RANSAC instead of

@@ -219,7 +219,7 @@ int main(int argc, char** argv)
     // Calculate normals if necessary
     if(!pcm->haveNormals() || (pcm->haveNormals() && options.recalcNormals()))
     {
-        pcm->calcNormals();
+        pcm->calculateSurfaceNormals();
     }
     else
     {
