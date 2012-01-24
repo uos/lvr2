@@ -182,7 +182,10 @@ public:
 
     /**
      * @brief Returns the distance of vertex v from the nearest tangent plane
-     * @TODO ///TODO: Doku
+     * @param v                     A grid point
+     * @param projectedDistance     Projected distance of the query point to the
+     *                              isosurface
+     * @param euclideanDistance     Euklidean Distance to the nearest data point
      */
     virtual void distance(VertexT v, float &projectedDistance, float &euklideanDistance);
 
