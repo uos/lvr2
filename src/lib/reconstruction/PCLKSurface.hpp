@@ -17,36 +17,45 @@
  */
 
 /**
- * SurfaceApproximation.hpp
+ * PCLKSurface.hpp
  *
  *  @date 24.01.2012
  *  @author Thomas Wiemann
  */
 
-#ifndef POINTSETSURFACE_HPP_
-#define POINTSETSURFACE_HPP_
+#ifndef PCLKSURFACE_HPP_
+#define PCLKSURFACE_HPP_
+
+#include <pcl/point_types.h>
+#include <pcl/point_cloud.h>
+#include <pcl/io/pcd_io.h>
+#include <pcl/features/normal_3d.h>
+#include <pcl/features/normal_3d_omp.h>
+
+#include "PointSetSurface.hpp"
 
 #include "io/PointBuffer.hpp"
-#include "SearchTree.hpp"
+#include "io/Model.hpp"
 
 namespace lssr
 {
 
 /**
- * @brief       An interface class to wrap all functionality that is needed
- *              to generate a surface approximation from point cloud data.
- *
- *              Classes that implement this interface can be used for Marching
- *              Cubes based mesh generation algorithms in this toolkit via
- *              the @ref SurfaceReconstruction interface.
+ * @brief   PointsetSurface interpolation based on PCL's internal normal
+ *          estimation
  */
 template<typename VertexT>
-class PointsetSurface
+class PCLKSurface : public PointsetSurface
 {
 public:
 
-    /// Shared pointer type declaration
-    typedef boost::shared_ptr< PointsetSurface<VertexT> > Ptr;
+    /**
+     * @brief   Ctor.
+     *
+     * @param kn    Number of points used for normal estimation
+     * @param kd    Number of points used for distance function evaluation
+     */
+    PCLKSurface( PointBufferPtr loader, int kn = 10, int kd = 10 );
 
     /**
      * @brief   Returns the distance of vertex v from the nearest tangent plane
@@ -55,47 +64,47 @@ public:
      *                              isosurface
      * @param   euclideanDistance     Euklidean Distance to the nearest data point
      */
-    virtual void distance(VertexT v,
-            float &projectedDistance,
-            float &euklideanDistance) = 0;
+    virtual void distance(VertexT v, float &projectedDistance, float &euklideanDistance);
 
     /**
      * @brief   Calculates surface normals for each data point in the given
      *          PointBuffeer. If the buffer alreay contains normal information
      *          it will be overwritten with the new normals.
      */
-    virtual void calculateSurfaceNormals() = 0;
-
+    virtual void calculateSurfaceNormals();
 
     /**
      * @brief   Returns the internal point buffer. After a call of
      *          @ref calculateSurfaceNormals the buffer will contain
      *          normal information.
      */
-    virtual PointBufferPtr  pointBuffer() { return m_pointBuffer;}
+    virtual PointBufferPtr  pointBuffer();
 
-    /**
-     * @brief   Returns a pointer to the search tree
-     */
-    typename SearchTree<VertexT>::Ptr searchTree() { return  m_searchTree;}
+    virtual ~PCLKSurface();
 
-protected:
+private:
 
-    /**
-     * @brief   Constructor. Stores the given buffer pointer. If the point
-     *          buffer does not contain surface normals, you will have to call
-     *          @ref calculateSurfaceNormals before the first call @distance.
-     */
-    PointsetSurface(PointBufferPtr pointcloud)
-        : m_pointBuffer(pointcloud) {}
+    /// The FLANN search tree
+    pcl::KdTreeFLANN<pcl::PointXYZ>::Ptr    m_kdTree;
 
-    /// The point cloud used for surface approximation
-    PointBufferPtr                      m_pointBuffer;
+    /// A PCL point cloud representation of the given buffer
+    pcl::PointCloud<pcl::PointXYZ>::Ptr     m_pointCloud;
 
-    /// The search tree that is build from the point cloud data
-    typename SearchTree<VertexT>::Ptr   m_searchTree;
+    /// The estimated point normals
+    pcl::PointCloud<pcl::Normal>::Ptr       m_pointNormals;
+
+    /// The number of points used for normal estimation
+    int                                     m_kn;
+
+    /// The number of points used for normal interpolation
+    int                                     m_ki;
+
+    /// The number of points used for distance function evaluation
+    int                                     m_kd;
 };
 
-} // namespace lssr
+} /* namespace lssr */
 
-#endif /* POINTSETSURFACE_HPP_ */
+#include "PCLKSurface.tcc"
+
+#endif /* PCLKSURFACE_HPP_ */
