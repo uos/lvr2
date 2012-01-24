@@ -62,7 +62,7 @@ public:
      *                      instead of number of intersections
      */
     FastReconstruction( 
-            typename PointCloudManager<VertexT, NormalT>::Ptr manager,
+            typename AdaptiveKSearchSurface<VertexT, NormalT>::Ptr manager,
             float resolution,
             bool isVoxelsize = false,
             bool use_mt = false);

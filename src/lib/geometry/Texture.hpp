@@ -29,8 +29,8 @@
 #define TEXTURE_HPP_
 
 #include "Region.hpp"
-#include "../reconstruction/PointCloudManager.hpp"
-#include "../io/PPMIO.hpp"
+#include "reconstruction/PointsetSurface.hpp"
+#include "io/PPMIO.hpp"
 #include <boost/lexical_cast.hpp>
 
 namespace lssr {
@@ -57,7 +57,7 @@ public:
 	 * @param	contours	All contours of the region.
 	 *
 	 */
-	Texture( typename PointCloudManager<VertexT, NormalT>::Ptr pm,   Region<VertexT, NormalT>* region,  vector<vector<HVertex*> > contours);
+	Texture( typename PointsetSurface<VertexT>::Ptr pm,   Region<VertexT, NormalT>* region,  vector<vector<HVertex*> > contours);
 
 	/**
 	 * @brief	computes texture coordinates corresponding to the give Vertex

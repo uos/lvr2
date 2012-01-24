@@ -54,12 +54,15 @@ using namespace std;
 #include "HalfEdge.hpp"
 #include "HalfEdgeFace.hpp"
 
-#include "../io/Progress.hpp"
+#include "io/Timestamp.hpp"
+#include "io/Progress.hpp"
 
 #include "Region.hpp"
 #include "Tesselator.hpp"
 #include "Texture.hpp"
 #include "ColorVertex.hpp"
+
+#include "reconstruction/PointsetSurface.hpp"
 
 namespace lssr
 {
@@ -86,7 +89,7 @@ public:
 	 *
 	 * @param	pm	a pointer to the point cloud manager
 	 */
-	HalfEdgeMesh( typename PointCloudManager<VertexT, NormalT>::Ptr pm );
+	HalfEdgeMesh( typename PointsetSurface<VertexT>::Ptr pm );
 
 	/**
 	 * @brief   Dtor.
@@ -206,7 +209,7 @@ private:
 	bool                                        m_colorRegions;
 
 	/// a pointer to the point cloud manager
-	typename PointCloudManager<VertexT, NormalT>::Ptr        m_pointCloudManager;
+	typename PointsetSurface<VertexT>::Ptr        m_pointCloudManager;
 
 	/**
 	 * @brief   Returns an edge that point to the edge defined

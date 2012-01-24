@@ -35,10 +35,10 @@
 #include <io/ModelFactory.hpp>
 #include <io/Timestamp.hpp>
 
-#include "reconstruction/PointCloudManager.hpp"
+#include "reconstruction/AdaptiveKSearchSurface.hpp"
 
 
-typedef lssr::PointCloudManager<lssr::ColorVertex<float, unsigned char>,
+typedef lssr::AdaptiveKSearchSurface<lssr::ColorVertex<float, unsigned char>,
         lssr::Normal<float> >::Ptr PointCloudManagerPtr;
 
 
@@ -146,7 +146,7 @@ void loadPointCloud( lssr::PointBufferPtr &pc, PointCloudManagerPtr &pcm, char* 
         exit( EXIT_FAILURE );
     }
 
-    pcm = PointCloudManagerPtr( new lssr::PointCloudManager<lssr::ColorVertex<float, unsigned char>, lssr::Normal<float> >( pc, pcm_name ));
+    pcm = PointCloudManagerPtr( new lssr::AdaptiveKSearchSurface<lssr::ColorVertex<float, unsigned char>, lssr::Normal<float> >( pc, pcm_name ));
 
     pcm->setKD( 10 );
     pcm->setKI( 10 );

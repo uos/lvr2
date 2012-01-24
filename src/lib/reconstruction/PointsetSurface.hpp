@@ -27,7 +27,7 @@
 #define POINTSETSURFACE_HPP_
 
 #include "io/PointBuffer.hpp"
-
+#include "SearchTree.hpp"
 
 namespace lssr
 {
@@ -44,6 +44,10 @@ template<typename VertexT>
 class PointsetSurface
 {
 public:
+
+    /// Shared pointer type declaration
+    typedef boost::shared_ptr< PointsetSurface<VertexT> > Ptr;
+
     /**
      * @brief   Returns the distance of vertex v from the nearest tangent plane
      * @param   v                     A grid point
@@ -68,11 +72,12 @@ public:
      *          @ref calculateSurfaceNormals the buffer will contain
      *          normal information.
      */
+    PointBufferPtr  pointBuffer() { return m_pointBuffer;}
 
     /**
-     * @brief   Retruns the used point buffer
+     * @brief   Returns a pointer to the search tree
      */
-    virtual PointBufferPtr  pointBuffer() { return m_pointBuffer;}
+    typename SearchTree<VertexT>::Ptr searchTree() { return  m_searchTree;}
 
 protected:
 
@@ -85,7 +90,10 @@ protected:
         : m_pointBuffer(pointcloud) {}
 
     /// The point cloud used for surface approximation
-    PointBufferPtr         m_pointBuffer;
+    PointBufferPtr                      m_pointBuffer;
+
+    /// The search tree that is build from the point cloud data
+    typename SearchTree<VertexT>::Ptr   m_searchTree;
 };
 
 } // namespace lssr

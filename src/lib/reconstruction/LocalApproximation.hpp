@@ -28,7 +28,7 @@
 #define LOCALAPPROXIMATION_HPP_
 
 #include "../geometry/BaseMesh.hpp"
-#include "../reconstruction/PointCloudManager.hpp"
+#include "../reconstruction/AdaptiveKSearchSurface.hpp"
 
 namespace lssr
 {
@@ -50,7 +50,7 @@ public:
 	 * @param	globalIndex	 The index of the latest vertex in the mesh
 	 */
     virtual void getSurface(BaseMesh<VertexT, NormalT> &mesh,
-            PointCloudManager<VertexT, NormalT> &manager,
+            AdaptiveKSearchSurface<VertexT, NormalT> &manager,
             uint &globalIndex);
 
 };

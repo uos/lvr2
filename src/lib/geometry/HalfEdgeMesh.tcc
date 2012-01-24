@@ -32,7 +32,7 @@ namespace lssr
 
     template<typename VertexT, typename NormalT>
 HalfEdgeMesh<VertexT, NormalT>::HalfEdgeMesh( 
-        typename PointCloudManager<VertexT, NormalT>::Ptr pm )
+        typename PointsetSurface<VertexT>::Ptr pm )
 {
     m_globalIndex = 0;
     m_colorRegions = false;
@@ -1235,7 +1235,7 @@ void HalfEdgeMesh<VertexT, NormalT>::finalizeAndRetesselate( bool genTextures, f
             {
             	int one = 1;
             	vector<VertexT> cv;
-            	this->m_pointCloudManager->getkClosestVertices((*m_regions[iRegion]->m_faces[iFace]).getCentroid(), one, cv);
+            	this->m_pointCloudManager->searchTree()->kSearch((*m_regions[iRegion]->m_faces[iFace]).getCentroid(), one, cv);
             	r = cv[0].r;
             	g = cv[0].g;
             	b = cv[0].b;

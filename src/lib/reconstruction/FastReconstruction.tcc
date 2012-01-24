@@ -32,7 +32,7 @@ namespace lssr
 
 template<typename VertexT, typename NormalT>
 FastReconstruction<VertexT, NormalT>::FastReconstruction(
-        typename PointCloudManager<VertexT, NormalT>::Ptr manager,
+        typename AdaptiveKSearchSurface<VertexT, NormalT>::Ptr manager,
         float resolution,
         bool isVoxelsize,
         bool useTetraeder)
