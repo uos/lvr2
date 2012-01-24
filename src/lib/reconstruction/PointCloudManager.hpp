@@ -79,7 +79,8 @@ namespace lssr
  *        of a query point. Used for normal estimation.
  */
 template<typename VertexT, typename NormalT>
-struct Plane{
+struct Plane
+{
     float a, b, c;
     NormalT n;
     VertexT p;
@@ -177,19 +178,6 @@ public:
 	{
 	    /// TODO: Implement method
 	}
-
-	/**
-	 * @brief Saves currently present data to a file
-	 *
-	 * Which data is saved depends on the file extension. Extensions
-	 * .xyz, .pts and .3d will produce ASCII files that contain point
-	 * cloud data only. Files with extension .nor will additionally
-	 * contain normal defintions. Extension .ply will produce a
-	 * binary .ply file with point and normal information.
-	 *
-	 * @param filename  The target file.
-	 */
-	void save(string filename);
 
 
     /**
@@ -299,6 +287,7 @@ private:
 	 * @param queryPoint    The point fpr which the tangent plane is created
 	 * @param k             The size of the used k-neighborhood
 	 * @param id            The positions of the neighborhood points in \ref m_points
+	 * @param ok            True, if RANSAC interpolation was succesfull
 	 */
 	Plane<VertexT, NormalT> calcPlane(const VertexT &queryPoint,
 	        const int &k,
@@ -306,7 +295,7 @@ private:
 
 	Plane<VertexT, NormalT> calcPlaneRANSAC(const VertexT &queryPoint,
 	        const int &k,
-	        const vector<unsigned long> &id);
+	        const vector<unsigned long> &id, bool &ok );
 
     boost::shared_ptr< SearchTree< VertexT, NormalT > > m_searchTree;
 

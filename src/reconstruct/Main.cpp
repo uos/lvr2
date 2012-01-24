@@ -149,7 +149,7 @@ using namespace lssr;
 
 typedef ColorVertex<float, unsigned char>               cVertex;
 typedef Normal<float>                                   cNormal;
-typedef PointCloudManager<cVertex, cNormal>            PCM;
+typedef PointCloudManager<cVertex, cNormal>             PCM;
 
 /**
  * @brief   Main entry point for the LSSR surface executable
@@ -209,6 +209,12 @@ int main(int argc, char** argv)
     pcm->setKD(options.getKd());
     pcm->setKI(options.getKi());
     pcm->setKN(options.getKn());
+
+    // Set RANSAC flag
+    if(options.useRansac())
+    {
+        pcm->useRansac(true);
+    }
 
     // Calculate normals if necessary
     if(!pcm->haveNormals() || (pcm->haveNormals() && options.recalcNormals()))

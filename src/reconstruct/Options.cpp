@@ -39,7 +39,8 @@ Options::Options(int argc, char** argv) : m_descr("Supported options")
 		        ("inputFile", value< vector<string> >(), "Input file name. Supported formats are ASCII (.pts, .xyz) and .ply")
 		        ("voxelsize,v", value<float>(&m_voxelsize)->default_value(10), "Voxelsize of grid used for reconstruction.")
 		        ("intersections,i", value<int>(&m_intersections)->default_value(-1), "Number of intersections used for reconstruction. If other than -1, voxelsize will calculated automatically.")
-		        ("pcm,p", value<string>(&m_pcm)->default_value("STANN"), "Point cloud manager used for point handling and normal estimation. Choose from {STANN, STANN_RANSAC, PCL}.")
+		        ("pcm,p", value<string>(&m_pcm)->default_value("STANN"), "Point cloud manager used for point handling and normal estimation. Choose from {STANN, PCL, NABO}.")
+                ("ransac", "Set this flag for RANSAC based normal estimation.")
 		        ("decomposition,d", value<string>(&m_pcm)->default_value("MC"), "Defines the type of decomposition that ist used for the voxels (Standard Marching Cubes (MC) or Tetraeder (MT) decomposition. Choose from {MC, MT}")
 		        ("optimizePlanes,o", "Shift all triangle vertices of a cluster onto their shared plane")
                 ("planeIterations", value<int>(&m_planeIterations)->default_value(3), "Number of iterations for plane optimization")
@@ -189,6 +190,11 @@ bool Options::saveNormals() const
 bool Options::saveGrid() const
 {
     return (m_variables.count("saveGrid"));
+}
+
+bool Options::useRansac() const
+{
+    return (m_variables.count("ransac"));
 }
 
 bool Options::saveOriginalData() const
