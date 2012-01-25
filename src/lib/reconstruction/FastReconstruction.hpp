@@ -29,7 +29,7 @@
 
 #include "geometry/Vertex.hpp"
 #include "geometry/BoundingBox.hpp"
-#include "reconstruction/MeshGenerator.hpp"
+#include "reconstruction/PointsetMeshGenerator.hpp"
 #include "reconstruction/LocalApproximation.hpp"
 #include "reconstruction/FastBox.hpp"
 #include "reconstruction/TetraederBox.hpp"
@@ -48,7 +48,7 @@ namespace lssr
  *        parallel computation.
  */
 template<typename VertexT, typename NormalT>
-class FastReconstruction : public MeshGenerator<VertexT, NormalT>
+class FastReconstruction : public PointsetMeshGenerator<VertexT, NormalT>
 {
 public:
 
