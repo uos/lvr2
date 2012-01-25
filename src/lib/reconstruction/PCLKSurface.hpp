@@ -32,10 +32,12 @@
 #include <pcl/features/normal_3d.h>
 #include <pcl/features/normal_3d_omp.h>
 
-#include "PointSetSurface.hpp"
+#include "PointsetSurface.hpp"
 
 #include "io/PointBuffer.hpp"
 #include "io/Model.hpp"
+
+#include "geometry/BoundingBox.hpp"
 
 namespace lssr
 {
@@ -44,8 +46,8 @@ namespace lssr
  * @brief   PointsetSurface interpolation based on PCL's internal normal
  *          estimation
  */
-template<typename VertexT>
-class PCLKSurface : public PointsetSurface
+template<typename VertexT, typename NormalT>
+class PCLKSurface : public PointsetSurface<VertexT>
 {
 public:
 
@@ -73,19 +75,16 @@ public:
      */
     virtual void calculateSurfaceNormals();
 
-    /**
-     * @brief   Returns the internal point buffer. After a call of
-     *          @ref calculateSurfaceNormals the buffer will contain
-     *          normal information.
-     */
-    virtual PointBufferPtr  pointBuffer();
 
-    virtual ~PCLKSurface();
+    virtual ~PCLKSurface() {};
 
 private:
 
-    /// The FLANN search tree
-    pcl::KdTreeFLANN<pcl::PointXYZ>::Ptr    m_kdTree;
+#ifdef _PCL_VERSION_12_
+    pcl::KdTreeFLANN<pcl::PointXYZ>::Ptr      m_kdTree;
+#else
+    pcl::search::KdTree<pcl::PointXYZ>::Ptr   m_kdTree;
+#endif
 
     /// A PCL point cloud representation of the given buffer
     pcl::PointCloud<pcl::PointXYZ>::Ptr     m_pointCloud;
@@ -93,14 +92,6 @@ private:
     /// The estimated point normals
     pcl::PointCloud<pcl::Normal>::Ptr       m_pointNormals;
 
-    /// The number of points used for normal estimation
-    int                                     m_kn;
-
-    /// The number of points used for normal interpolation
-    int                                     m_ki;
-
-    /// The number of points used for distance function evaluation
-    int                                     m_kd;
 };
 
 } /* namespace lssr */

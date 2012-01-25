@@ -123,13 +123,6 @@ public:
 	 * @brief   Destructor
 	 */
 	virtual ~AdaptiveKSearchSurface() {};
-
-    
-    /**
-     * @brief Returns the bounding box of the loaded point set.
-     */
-    virtual BoundingBox<VertexT>& getBoundingBox();
-    
     
     /**
      * @brief Returns the number of managed points
@@ -143,14 +136,6 @@ public:
     virtual const VertexT operator[]( const size_t &index ) const;
     
     
-    /**
-     * @brief Returns the points at index \ref{index} in the point array.
-     *
-     * @param index
-     * @return
-     */
-    virtual VertexT getPoint( size_t index );
-
     /**
      * @brief Returns the distance of vertex v from the nearest tangent plane
      * @param v                     A grid point
@@ -193,10 +178,6 @@ public:
         m_kn = kn;
     }
 
-    bool haveNormals()
-    {
-        return m_normals != 0;
-    }
     
     /// Color information for points public: TODO: This is not the best idea!
     color3bArr                  m_colors;
@@ -297,9 +278,6 @@ private:
 
     /// A model of the current pointcloud
 	boost::shared_ptr<Model>    m_model;
-
-    /// The bounding box of the point set
-    BoundingBox<VertexT>        m_boundingBox;
 
     size_t                      m_numPoints;
 

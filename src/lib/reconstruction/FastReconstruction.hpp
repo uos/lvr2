@@ -34,6 +34,7 @@
 #include "reconstruction/FastBox.hpp"
 #include "reconstruction/TetraederBox.hpp"
 #include "reconstruction/QueryPoint.hpp"
+#include "reconstruction/PointsetSurface.hpp"
 
 #include <ext/hash_map>
 using namespace __gnu_cxx;
@@ -62,7 +63,7 @@ public:
      *                      instead of number of intersections
      */
     FastReconstruction( 
-            typename AdaptiveKSearchSurface<VertexT, NormalT>::Ptr manager,
+            typename PointsetSurface<VertexT>::Ptr manager,
             float resolution,
             bool isVoxelsize = false,
             bool use_mt = false);

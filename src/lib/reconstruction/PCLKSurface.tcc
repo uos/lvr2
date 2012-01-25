@@ -28,38 +28,38 @@
 namespace lssr
 {
 
-template<typename VertexT>
-PCLKSurface<VertexT>::PCLKSurface(PointBufferPtr loader, int kn, int kd)
-    : PointsetSurface(loader)
+template<typename VertexT, typename NormalT>
+PCLKSurface<VertexT, NormalT>::PCLKSurface(PointBufferPtr loader, int kn, int kd)
+    : PointsetSurface<VertexT>(loader)
 {
     this->m_kn = kn;
-    this->m_ki = ki;
+    this->m_ki = 0;
     this->m_kd = kd;
 
-    m_pointCloud  = pcl::PointCloud<pcl::PointXYZ>::Ptr (new pcl::PointCloud<pcl::PointXYZ>);
-
-    // Parse to PCL point cloud
+    // Get buffer array and conver it to a PCL point cloud
     cout << timestamp << "Creating PCL point cloud" << endl;
-    m_pointCloud->resize(this->m_numPoints);
-    float x, y, z;
-    for(size_t i = 0; i < this->m_numPoints; i++)
-    {
-        x = this->m_points[i][0];
-        y = this->m_points[i][1];
-        z = this->m_points[i][2];
+    size_t numPoints;
+    coord3fArr b_points = this->m_pointBuffer->getIndexedPointArray(numPoints);
 
-        this->m_boundingBox.expand(x, y, z);
+    m_pointCloud  = pcl::PointCloud<pcl::PointXYZ>::Ptr (new pcl::PointCloud<pcl::PointXYZ>);
+    m_pointCloud->resize(numPoints);
+    float x, y, z;
+    for(size_t i = 0; i < numPoints; i++)
+    {
+        x = b_points[i][0];
+        y = b_points[i][1];
+        z = b_points[i][2];
 
         m_pointCloud->points[i].x = x;
         m_pointCloud->points[i].y = y;
         m_pointCloud->points[i].z = z;
     }
-    m_pointCloud->width = this->m_numPoints;
+    m_pointCloud->width = numPoints;
     m_pointCloud->height = 1;
 }
 
-template<typename VertexT>
-void PCLKSurface<VertexT>::calculateSurfaceNormals()
+template<typename VertexT, typename NormalT>
+void PCLKSurface<VertexT, NormalT>::calculateSurfaceNormals()
 {
     VertexT center = this->m_boundingBox.getCentroid();
 
@@ -72,7 +72,11 @@ void PCLKSurface<VertexT>::calculateSurfaceNormals()
 
     // Create an empty kdtree representation, and pass it to the normal estimation object.
     // Its content will be filled inside the object, based on the given input dataset (as no other search surface is given).
+#ifdef _PCL_VERSION_12_
     m_kdTree = pcl::KdTreeFLANN<pcl::PointXYZ>::Ptr (new pcl::KdTreeFLANN<pcl::PointXYZ> ());
+#else
+    m_kdTree = pcl::search::KdTree<pcl::PointXYZ>::Ptr( new pcl::search::KdTree<pcl::PointXYZ> );
+#endif
     ne.setSearchMethod (m_kdTree);
 
     // Output datasets
@@ -84,22 +88,67 @@ void PCLKSurface<VertexT>::calculateSurfaceNormals()
     // Compute the features
     ne.compute (*m_pointNormals);
     cout << timestamp << "Normal estimation done" << endl;
-}
+    cout << timestamp << "Saving normals" << endl;
 
-template<typename VertexT>
-PointBufferPtr PCLKSurface<VertexT>::pointBuffer()
-{
-    coord3fArr normals( new coord<float>[this->m_numPoints] );
+    size_t numPoints = this->m_pointBuffer->getNumPoints();
+    coord3fArr normals( new coord<float>[numPoints] );
 
-    for(size_t i = 0; i < this->m_numPoints; i++)
+    for(size_t i = 0; i < numPoints; i++)
     {
         normals[i][0] = m_pointNormals->points[i].normal[0];
         normals[i][1] = m_pointNormals->points[i].normal[1];
         normals[i][2] = m_pointNormals->points[i].normal[2];
     }
 
-    this->m_pointBuffer->setIndexedPointNormalArray(normals, this->m_numPoints);
-    return this->m_pointBuffer;
+    this->m_pointBuffer->setIndexedPointNormalArray(normals, numPoints);
+}
+
+template<typename VertexT, typename NormalT>
+void PCLKSurface<VertexT, NormalT>::distance(VertexT v, float &projectedDistance, float &euklideanDistance)
+{
+    std::vector< int > k_indices;
+    std::vector< float > k_distances;
+
+    pcl::PointXYZ qp;
+    qp.x = v.x;
+    qp.y = v.y;
+    qp.z = v.z;
+
+    // Query tree
+    int res = m_kdTree->nearestKSearch(qp, this->m_kd, k_indices, k_distances);
+
+    // Round distance
+    float q_distance = 0.0f;
+    NormalT n;
+    VertexT c;
+    for(int i = 0; i < res; i++)
+    {
+        int ind = k_indices[i];
+        NormalT tmp_n = NormalT(
+                m_pointNormals->points[ind].normal[0],
+                m_pointNormals->points[ind].normal[1],
+                m_pointNormals->points[ind].normal[2]
+                );
+
+        VertexT tmp_p = VertexT(
+                m_pointCloud->points[ind].x,
+                m_pointCloud->points[ind].y,
+                m_pointCloud->points[ind].z
+                );
+
+
+        //cout << ind << " / " << m_pointNormals->points.size() << " " << tmp << endl;
+        n += tmp_n;
+        c += tmp_p;
+
+        q_distance += k_distances[i];
+    }
+    n /= res;
+    c /= res;
+
+    projectedDistance = (v - c) * n;
+    euklideanDistance = (v - c).length();
+
 }
 
 } /* namespace lssr */
