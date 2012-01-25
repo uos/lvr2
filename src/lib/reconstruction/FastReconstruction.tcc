@@ -32,11 +32,11 @@ namespace lssr
 
 template<typename VertexT, typename NormalT>
 FastReconstruction<VertexT, NormalT>::FastReconstruction(
-        typename PointsetSurface<VertexT>::Ptr manager,
+        typename PointsetSurface<VertexT>::Ptr surface,
         float resolution,
         bool isVoxelsize,
         bool useTetraeder)
-    : Reconstructor<VertexT, NormalT>(manager), m_useTetraeder(useTetraeder)
+    : MeshGenerator<VertexT, NormalT>(surface), m_useTetraeder(useTetraeder)
 {
     // Determine m_voxelsize
     assert(resolution > 0);

@@ -29,7 +29,7 @@
 
 #include "geometry/Vertex.hpp"
 #include "geometry/BoundingBox.hpp"
-#include "reconstruction/Reconstructor.hpp"
+#include "reconstruction/MeshGenerator.hpp"
 #include "reconstruction/LocalApproximation.hpp"
 #include "reconstruction/FastBox.hpp"
 #include "reconstruction/TetraederBox.hpp"
@@ -48,7 +48,7 @@ namespace lssr
  *        parallel computation.
  */
 template<typename VertexT, typename NormalT>
-class FastReconstruction : public Reconstructor<VertexT, NormalT>
+class FastReconstruction : public MeshGenerator<VertexT, NormalT>
 {
 public:
 
@@ -63,7 +63,7 @@ public:
      *                      instead of number of intersections
      */
     FastReconstruction( 
-            typename PointsetSurface<VertexT>::Ptr manager,
+            typename PointsetSurface<VertexT>::Ptr surface,
             float resolution,
             bool isVoxelsize = false,
             bool use_mt = false);

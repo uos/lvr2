@@ -31,9 +31,8 @@
 // boost libraries
 #include <boost/filesystem.hpp>
 
-#include "../geometry/BoundingBox.hpp"
-
-namespace lssr{
+namespace lssr
+{
     
 typedef ColorVertex<float, unsigned char>               cVertex;
 typedef Normal<float>                                   cNormal;
@@ -72,7 +71,7 @@ AdaptiveKSearchSurface<VertexT, NormalT>::AdaptiveKSearchSurface(
 
     if( searchTreeName == "flann"  || searchTreeName == "FLANN" )
     {
-        this->m_searchTree = search_tree::Ptr( new SearchTreePCL<VertexT>(this->m_points, this->m_numPoints, kn, ki, kd) );
+        this->m_searchTree = search_tree::Ptr( new SearchTreeFlann<VertexT>(this->m_points, this->m_numPoints, kn, ki, kd) );
     }
     else if( searchTreeName == "stann" || searchTreeName == "STANN" )
     {

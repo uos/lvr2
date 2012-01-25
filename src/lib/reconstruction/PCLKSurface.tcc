@@ -81,8 +81,6 @@ void PCLKSurface<VertexT, NormalT>::calculateSurfaceNormals()
 
     // Output datasets
     m_pointNormals = pcl::PointCloud<pcl::Normal>::Ptr (new pcl::PointCloud<pcl::Normal>);
-
-
     ne.setKSearch(this->m_kn);
 
     // Compute the features
