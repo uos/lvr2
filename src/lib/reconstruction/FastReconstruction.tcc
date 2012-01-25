@@ -32,7 +32,7 @@ namespace lssr
 
 template<typename VertexT, typename NormalT>
 FastReconstruction<VertexT, NormalT>::FastReconstruction(
-        typename AdaptiveKSearchSurface<VertexT, NormalT>::Ptr manager,
+        typename PointsetSurface<VertexT>::Ptr manager,
         float resolution,
         bool isVoxelsize,
         bool useTetraeder)
@@ -137,13 +137,18 @@ void FastReconstruction<VertexT, NormalT>::createGrid()
 	VertexT v_min = bounding_box.getMin();
 	VertexT v_max = bounding_box.getMax();
 
-	for(size_t i = 0; i < this->m_manager->getNumPoints(); i++)
+	// Get indexed point buffer pointer
+	size_t num_points;
+	coord3fArr points = this->m_manager->pointBuffer()->getIndexedPointArray(num_points);
+
+	for(size_t i = 0; i < num_points; i++)
 	{
-        VertexT currentVertex = this->m_manager->getPoint(i);
+
+
 		/// TODO: Replace with Vertex<> ???
-		index_x = calcIndex((currentVertex[0] - v_min[0]) / m_voxelsize);
-		index_y = calcIndex((currentVertex[1] - v_min[1]) / m_voxelsize);
-		index_z = calcIndex((currentVertex[2] - v_min[2]) / m_voxelsize);
+		index_x = calcIndex((points[i][0] - v_min[0]) / m_voxelsize);
+		index_y = calcIndex((points[i][1] - v_min[1]) / m_voxelsize);
+		index_z = calcIndex((points[i][2] - v_min[2]) / m_voxelsize);
 		//index_x = calcIndex((this->m_manager[i][0] - v_min[0]) / m_voxelsize);
 		//index_y = calcIndex((this->m_manager[i][1] - v_min[1]) / m_voxelsize);
 		//index_z = calcIndex((this->m_manager[i][2] - v_min[2]) / m_voxelsize);

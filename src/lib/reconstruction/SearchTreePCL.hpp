@@ -100,8 +100,8 @@ public:
 protected:
 
     /// Store the pcl kd-tree
-    pcl::PointCloud< pcl::PointXYZ >::Ptr m_pointCloud;
-    pcl::KdTreeFLANN< pcl::PointXYZ >::Ptr m_kdTree;
+    pcl::PointCloud< pcl::PointXYZ >::Ptr       m_pointCloud;
+    pcl::KdTreeFLANN< pcl::PointXYZ >::Ptr      m_kdTree;
 
 }; // SearchTreePCL
 

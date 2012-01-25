@@ -482,12 +482,6 @@ Plane<VertexT, NormalT> AdaptiveKSearchSurface<VertexT, NormalT>::calcPlane(cons
     return p;
 }
 
-   template<typename VertexT, typename NormalT>
-VertexT AdaptiveKSearchSurface<VertexT, NormalT>::getPoint( size_t index )
-{
-    return VertexTraits< VertexT >::vertex( m_points, m_colors, index );
-}
-
 template<typename VertexT, typename NormalT>
 const VertexT AdaptiveKSearchSurface<VertexT, NormalT>::operator[]( const size_t& index ) const
 {
@@ -499,15 +493,6 @@ size_t AdaptiveKSearchSurface<VertexT, NormalT>::getNumPoints()
 {
     return m_numPoints;
 }
-
-
-   
-   template<typename VertexT, typename NormalT>
-BoundingBox<VertexT>& AdaptiveKSearchSurface<VertexT, NormalT>::getBoundingBox()
-{
-    return m_boundingBox;
-}
-
 
 template<typename VertexT, typename NormalT>
 Plane<VertexT, NormalT> AdaptiveKSearchSurface<VertexT, NormalT>::calcPlaneRANSAC(const VertexT &queryPoint,
@@ -616,34 +601,34 @@ void AdaptiveKSearchSurface<VertexT, NormalT>::colorizePointCloud(
       AdaptiveKSearchSurface<VertexT, NormalT>::Ptr pcm, const float& sqrtMaxDist,
       const uchar* blankColor)
 {
-   if( !m_colors )
-   {
-      m_colors = color3bArr( new color<uchar>[ m_numPoints ] );
-   }
-
-    #pragma omp parallel for
-   for( size_t i = 0; i < m_numPoints; i++ )
-   {
-      std::vector< VertexT > nearestPoint( 1 );
-
-      VertexT p( this->getPoint( i ) );
-      pcm->getkClosestVertices( p, 1, nearestPoint );
-      if(nearestPoint.size() )
-      {
-         if( p.sqrDistance( nearestPoint[0] ) < sqrtMaxDist )
-         {
-            m_colors[i][0] = nearestPoint[0].r;
-            m_colors[i][1] = nearestPoint[0].g;
-            m_colors[i][2] = nearestPoint[0].b;
-         }
-         else if( blankColor )
-         {
-            m_colors[i][0] = blankColor[0]; 
-            m_colors[i][1] = blankColor[1];
-            m_colors[i][2] = blankColor[2];
-         }
-      }
-   }
+//    if( !m_colors )
+//    {
+//        m_colors = color3bArr( new color<uchar>[ m_numPoints ] );
+//    }
+//
+//#pragma omp parallel for
+//    for( size_t i = 0; i < m_numPoints; i++ )
+//    {
+//        std::vector< VertexT > nearestPoint( 1 );
+//
+//        VertexT p( this->getPoint( i ) );
+//        pcm->getkClosestVertices( p, 1, nearestPoint );
+//        if(nearestPoint.size() )
+//        {
+//            if( p.sqrDistance( nearestPoint[0] ) < sqrtMaxDist )
+//            {
+//                m_colors[i][0] = nearestPoint[0].r;
+//                m_colors[i][1] = nearestPoint[0].g;
+//                m_colors[i][2] = nearestPoint[0].b;
+//            }
+//            else if( blankColor )
+//            {
+//                m_colors[i][0] = blankColor[0];
+//                m_colors[i][1] = blankColor[1];
+//                m_colors[i][2] = blankColor[2];
+//            }
+//        }
+//    }
 }
 
 

@@ -134,14 +134,24 @@
 * A set of tutorials how to use LSSR will be made available soon.
 */
 
+
+// Program options for this tool
 #include "Options.hpp"
 
+// Local includes
 #include "reconstruction/AdaptiveKSearchSurface.hpp"
 #include "reconstruction/FastReconstruction.hpp"
 #include "io/PLYIO.hpp"
 #include "geometry/Matrix4.hpp"
 #include "geometry/HalfEdgeMesh.hpp"
 #include "geometry/Texture.hpp"
+
+// PCL related includes
+#ifdef _USE_PCL_
+#include "reconstruction/PCLKSurface.hpp"
+#endif
+
+
 #include <iostream>
 
 using namespace lssr;
@@ -149,7 +159,12 @@ using namespace lssr;
 
 typedef ColorVertex<float, unsigned char>               cVertex;
 typedef Normal<float>                                   cNormal;
-typedef AdaptiveKSearchSurface<cVertex, cNormal>             PCM;
+typedef PointsetSurface<cVertex>                        psSurface;
+typedef AdaptiveKSearchSurface<cVertex, cNormal>        akSurface;
+
+#ifdef _USE_PCL_
+typedef PCLKSurface<cVertex, cNormal>                   pclSurface;
+#endif
 
 /**
  * @brief   Main entry point for the LSSR surface executable
@@ -184,12 +199,24 @@ int main(int argc, char** argv)
 
     // Create a point cloud manager
     string pcm_name = options.getPCM();
-    PCM::Ptr pcm;
-    pcm = PCM::Ptr( new PCM( p_loader, pcm_name ) );
+    psSurface::Ptr surface;
 
-    // Check if a point cloud manager object was created. Exit if not and display
-    // available objects
-    if ( !pcm )
+    // Create point set surface object
+    if(pcm_name == "PCL")
+    {
+        surface = psSurface::Ptr( new pclSurface(p_loader));
+    }
+    else if(pcm_name == "STANN" || pcm_name == "FLANN" || pcm_name == "NABO")
+    {
+        akSurface* aks = new akSurface(p_loader, pcm_name);
+        surface = psSurface::Ptr(aks);
+        // Set RANSAC flag
+        if(options.useRansac())
+        {
+            aks->useRansac(true);
+        }
+    }
+    else
     {
         cout << timestamp << "Unable to create PointCloudMansger." << endl;
         cout << timestamp << "Unknown option '" << pcm_name << "'." << endl;
@@ -206,20 +233,17 @@ int main(int argc, char** argv)
     }
 
     // Set search options for normal estimation and distance evaluation
-    pcm->setKD(options.getKd());
-    pcm->setKI(options.getKi());
-    pcm->setKN(options.getKn());
+    surface->setKd(options.getKd());
+    surface->setKi(options.getKi());
+    surface->setKn(options.getKn());
 
-    // Set RANSAC flag
-    if(options.useRansac())
-    {
-        pcm->useRansac(true);
-    }
+
 
     // Calculate normals if necessary
-    if(!pcm->haveNormals() || (pcm->haveNormals() && options.recalcNormals()))
+    if(!surface->pointBuffer()->hasPointNormals()
+            || (surface->pointBuffer()->hasPointNormals() && options.recalcNormals()))
     {
-        pcm->calculateSurfaceNormals();
+        surface->calculateSurfaceNormals();
     }
     else
     {
@@ -230,13 +254,13 @@ int main(int argc, char** argv)
     if(options.savePointNormals())
     {
         ModelPtr pn( new Model);
-        pn->m_pointCloud = pcm->pointBuffer();
+        pn->m_pointCloud = surface->pointBuffer();
         ModelFactory::saveModel(pn, "pointnormals.ply");
     }
 
 
     // Create an empty mesh
-    HalfEdgeMesh<cVertex, cNormal> mesh( pcm );
+    HalfEdgeMesh<cVertex, cNormal> mesh( surface );
 
     // Set recursion depth for region growing
     if(options.getDepth())
@@ -272,7 +296,7 @@ int main(int argc, char** argv)
 
     // Create a new reconstruction object
     FastReconstruction<cVertex, cNormal > reconstruction(
-			pcm,
+			surface,
 			resolution,
 			useVoxelsize,
 			useMT);
@@ -336,7 +360,7 @@ int main(int argc, char** argv)
                 "Created with las-vegas-reconstruction: http://las-vegas.uos.de/" ) );
 
 	// Create output model and save to file
-	ModelPtr m( new Model( mesh.meshBuffer(), pcm->pointBuffer() ) );
+	ModelPtr m( new Model( mesh.meshBuffer(), surface->pointBuffer() ) );
 	ModelFactory::saveModel( m, "triangle_mesh.ply", save_opts );
 
 	// Save obj model if textures were generated

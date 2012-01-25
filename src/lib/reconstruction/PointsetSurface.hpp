@@ -79,6 +79,39 @@ public:
      */
     typename SearchTree<VertexT>::Ptr searchTree() { return  m_searchTree;}
 
+    /**
+     * @brief   If k is > 0, each normal will be averaged with its k
+     *          neighbors.
+     */
+    void setKi(int k) { m_ki = k;}
+
+    /**
+     * @brief   Sets the size of the k-neighborhood that is used for
+     *          normal estimation.
+     */
+    void setKn(int k) { m_kn = k;}
+
+    /**
+     * @brief   Sets the number of points that is used for distance
+     *          evaluation, i.e. an average of the distance to the
+     *          k nearest data points is given (useful in noisy
+     *          data sets).
+     */
+    void setKd(int k) { m_kd = k;}
+
+    /**
+     * @brief   Returns the bounding box of the point set
+     */
+    BoundingBox<VertexT>& getBoundingBox() { return m_boundingBox;}
+
+    /**
+     * @brief Returns the points at index \ref{index} in the point array.
+     *
+     * @param index
+     * @return
+     */
+
+
 protected:
 
     /**
@@ -86,16 +119,29 @@ protected:
      *          buffer does not contain surface normals, you will have to call
      *          @ref calculateSurfaceNormals before the first call @distance.
      */
-    PointsetSurface(PointBufferPtr pointcloud)
-        : m_pointBuffer(pointcloud) {}
+    PointsetSurface(PointBufferPtr pointcloud);
 
     /// The point cloud used for surface approximation
-    PointBufferPtr                      m_pointBuffer;
+    PointBufferPtr                          m_pointBuffer;
 
     /// The search tree that is build from the point cloud data
-    typename SearchTree<VertexT>::Ptr   m_searchTree;
+    typename SearchTree<VertexT>::Ptr       m_searchTree;
+
+    /// The number of points used for normal estimation
+    int                                     m_kn;
+
+    /// The number of points used for normal interpolation
+    int                                     m_ki;
+
+    /// The number of points used for distance function evaluation
+    int                                     m_kd;
+
+    /// The bounding box of the point cloud
+    BoundingBox<VertexT>                    m_boundingBox;
 };
 
 } // namespace lssr
+
+#include "PointsetSurface.tcc"
 
 #endif /* POINTSETSURFACE_HPP_ */
