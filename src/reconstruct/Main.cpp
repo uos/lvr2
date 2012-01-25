@@ -237,8 +237,6 @@ int main(int argc, char** argv)
     surface->setKi(options.getKi());
     surface->setKn(options.getKn());
 
-
-
     // Calculate normals if necessary
     if(!surface->pointBuffer()->hasPointNormals()
             || (surface->pointBuffer()->hasPointNormals() && options.recalcNormals()))

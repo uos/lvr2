@@ -16,28 +16,38 @@
  * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA
  */
 
-/**
- * MeshGenerator.hpp
+
+ /*
+ * Reconstructor.h
  *
- *  @date 25.01.2012
- *  @author Thomas Wiemann
+ *  Created on: 16.02.2011
+ *      Author: Thomas Wiemann
  */
 
-#ifndef MESHGENERATOR_HPP_
-#define MESHGENERATOR_HPP_
+#ifndef MESH_GENERATOR_HPP
+#define MESH_GENERATOR_HPP
 
 #include "geometry/BaseMesh.hpp"
+#include "reconstruction/MeshGenerator.hpp"
+#include "reconstruction/PointsetSurface.hpp"
 
 namespace lssr
 {
 
 /**
- * @brief Interface class for mesh based reconstruction algorithms
+ * @brief Interface class for surface reconstruction algorithms
+ *        that generate triangle meshes from point set surfaces.
  */
 template<typename VertexT, typename NormalT>
-class MeshGenerator
+class PointsetMeshGenerator : public MeshGenerator<VertexT, NormalT>
 {
 public:
+
+    /**
+     * @brief Constructs a Reconstructor object using the given point
+     *        set surface
+     */
+    PointsetMeshGenerator( typename PointsetSurface<VertexT>::Ptr surface) : m_surface(surface) {}
 
     /**
      * @brief Generates a triangle mesh representation of the current
@@ -48,9 +58,12 @@ public:
      */
     virtual void getMesh(BaseMesh<VertexT, NormalT>& mesh) = 0;
 
+protected:
+
+    /// The point cloud manager that handles the loaded point cloud data.
+    typename PointsetSurface<VertexT>::Ptr      m_surface;
 };
 
+} //namespace lssr
 
-} // namepsace lssr
-
-#endif /* MESHGENERATOR_HPP_ */
+#endif /* MESH_GENERATOR_HPP */
