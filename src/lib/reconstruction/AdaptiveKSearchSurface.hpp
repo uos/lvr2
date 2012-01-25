@@ -51,7 +51,7 @@
 
 // SearchTreePCL
 #ifdef _USE_PCL_
-    #include "SearchTreePCL.hpp"
+    #include "SearchTreeFlann.hpp"
 #endif
 
 // SearchTreeNabo
