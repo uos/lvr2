@@ -36,7 +36,7 @@ namespace lssr
  *        implementation.
  */
 template<typename VertexT, typename NormalT>
-class PlanarFastBox : public FastBox<VertexT, NormalT>
+class PlanarFastBox : public TetraederBox<VertexT, NormalT>
 {
 public:
 
