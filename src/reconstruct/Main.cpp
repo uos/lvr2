@@ -290,19 +290,12 @@ int main(int argc, char** argv)
         useVoxelsize = true;
     }
 
-    // Determine whether to use MC decomposition
-    bool useMT = false;
-    if(options.getDecomposition() == "MT")
-    {
-        useMT = true;
-    }
-
     // Create a new reconstruction object
     FastReconstruction<cVertex, cNormal > reconstruction(
 			surface,
 			resolution,
 			useVoxelsize,
-			useMT);
+			options.getDecomposition());
 
     // Create mesh
     reconstruction.getMesh(mesh);
