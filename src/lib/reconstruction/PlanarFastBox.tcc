@@ -54,11 +54,55 @@ PlanarFastBox<VertexT, NormalT>::PlanarFastBox(VertexT &center)
 }
 
 template<typename VertexT, typename NormalT>
+void PlanarFastBox<VertexT, NormalT>::getPlanarIntersections(
+        VertexT corners[],
+        float distance[],
+        VertexT positions[])
+{
+    float intersection;
+
+    intersection = calcIntersection(corners)
+}
+
+template<typename VertexT, typename NormalT>
 void PlanarFastBox<VertexT, NormalT>::getSurface(
         BaseMesh<VertexT, NormalT> &mesh,
-        vector<QueryPoint<VertexT> > &query_points,
+        vector<QueryPoint<VertexT> > &qp,
         uint &globalIndex)
 {
+    // Positions and distances of the four box corners
+    VertexT corners[8];
+    VertexT vertexPositions[18];
+    float distances[8];
+
+    // Get them all...
+    int mc_index = getIndex(qp);
+    getCorners(corners, qp);
+    getDistances(distances, qp);
+    getIntersections(corners, distances, vertexPositions);
+
+
+    // Check for corners that are too far away from the
+    // iso surface, calc index for that pattern
+    int distance_index = 0;
+    float planarDistances[8];
+    for (int i = 0; i < 8; i++)
+    {
+        planarDistances[i] = fabs(qp[this->m_vertices[i]].m_distance);
+        if (qp[this->m_vertices[i]].m_invalid)
+        {
+            distance_index |= (1 << i);
+            planarDistances[i] *= -1;
+        }
+    }
+    getPlanarIntersections(corners, planarDistances, vertexPositions);
+
+    // Do not create surfaces if all corner vertices are
+    // too far away.
+    if(distance_index == 15) return;
+
+    // Check pattern index for special cases
+
 
 }
 
