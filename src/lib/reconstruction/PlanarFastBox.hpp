@@ -57,7 +57,17 @@ public:
             vector<QueryPoint<VertexT> > &query_points,
             uint &globalIndex);
 
+private:
+    void getPlanarSurface(
+            int** table,
+            BaseMesh<VertexT, NormalT> &mesh,
+            vector<QueryPoint<VertexT> > &query_points,
+            uint &globalIndex);
 
+    void getPlanarIntersections(
+            VertexT corners[],
+            float distance[],
+            VertexT positions[]);
 };
 
 
