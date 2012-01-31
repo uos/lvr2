@@ -27,6 +27,7 @@
 #define PLANARFASTBOX_HPP_
 
 #include "FastBox.hpp"
+#include "TetraederBox.hpp"
 
 namespace lssr
 {
