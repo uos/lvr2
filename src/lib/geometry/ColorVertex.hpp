@@ -103,6 +103,40 @@ public:
 		this->b = 0;
 	}
 
+
+    CoordType operator[](const int &index) const
+    {
+
+        switch ( index )
+        {
+            case 0: return this->x;
+            case 1: return this->y;
+            case 2: return this->z;
+            case 3: return *((CoordType*) &r);
+            case 4: return *((CoordType*) &g);
+            case 5: return *((CoordType*) &b);
+            default:
+                throw std::overflow_error( "Access index out of range." );
+        }
+    }
+
+
+    CoordType& operator[](const int &index)
+    {
+        switch ( index )
+        {
+            case 0: return this->x;
+            case 1: return this->y;
+            case 2: return this->z;
+            case 3: return *((CoordType*) &r);
+            case 4: return *((CoordType*) &g);
+            case 5: return *((CoordType*) &b);
+            default:
+                throw std::overflow_error("Access index out of range.");
+        }
+    }
+
+
 	ColorT r, g, b;
 
 };
