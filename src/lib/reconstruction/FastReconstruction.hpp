@@ -33,6 +33,7 @@
 #include "reconstruction/LocalApproximation.hpp"
 #include "reconstruction/FastBox.hpp"
 #include "reconstruction/TetraederBox.hpp"
+#include "reconstruction/SharpBox.hpp"
 #include "reconstruction/QueryPoint.hpp"
 #include "reconstruction/PointsetSurface.hpp"
 
@@ -66,7 +67,8 @@ public:
             typename PointsetSurface<VertexT>::Ptr surface,
             float resolution,
             bool isVoxelsize = false,
-            bool use_mt = false);
+            bool use_mt = false,
+            bool use_sf = false);
 
 
     /**
@@ -163,6 +165,9 @@ private:
 
     /// True if a local tetraeder decomposition is used for reconstruction
     bool                        m_useTetraeder;
+
+    /// True if sharp features detection is used for reconstruction
+    bool                        m_useSharpFeatures;
 };
 
 

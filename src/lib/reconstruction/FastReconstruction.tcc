@@ -35,8 +35,9 @@ FastReconstruction<VertexT, NormalT>::FastReconstruction(
         typename PointsetSurface<VertexT>::Ptr surface,
         float resolution,
         bool isVoxelsize,
-        bool useTetraeder)
-    : PointsetMeshGenerator<VertexT, NormalT>(surface), m_useTetraeder(useTetraeder)
+        bool useTetraeder,
+        bool useSharpfeatures)
+    : PointsetMeshGenerator<VertexT, NormalT>(surface), m_useTetraeder(useTetraeder), m_useSharpFeatures(useSharpfeatures)
 {
     // Determine m_voxelsize
     assert(resolution > 0);
@@ -176,7 +177,14 @@ void FastReconstruction<VertexT, NormalT>::createGrid()
 				FastBox<VertexT, NormalT>* box = 0;
 				if(!m_useTetraeder)
 				{
-				    box = new FastBox<VertexT, NormalT>(box_center);
+					if (!m_useSharpFeatures)
+					{
+						box = new FastBox<VertexT, NormalT>(box_center);
+					}
+					else
+					{
+						box = new SharpBox<VertexT, NormalT>(box_center);
+					}
 				}
 				else
 				{
