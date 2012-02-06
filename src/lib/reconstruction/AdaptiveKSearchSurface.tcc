@@ -484,7 +484,13 @@ Plane<VertexT, NormalT> AdaptiveKSearchSurface<VertexT, NormalT>::calcPlane(cons
 template<typename VertexT, typename NormalT>
 const VertexT AdaptiveKSearchSurface<VertexT, NormalT>::operator[]( const size_t& index ) const
 {
-    return VertexTraits< VertexT >::vertex( m_points, m_colors, index );
+    if ( VertexTraits<VertexT>::has_color() )
+    {
+        return VertexTraits< VertexT >::vertex( 
+                m_points[index].x, m_points[index].y, m_points[index].z, 
+                m_colors[index].r, m_colors[index].g, m_colors[index].b );
+    }
+    return VertexTraits< VertexT >::vertex( m_points[index].x, m_points[index].y, m_points[index].z );
 }
 
    template<typename VertexT, typename NormalT>

@@ -28,14 +28,39 @@
 #define VERTEXTRAITS_HPP_
 
 #include "ColorVertex.hpp"
+#include <stdarg.h>
 
 namespace lssr
 {
 
-template<typename VertexT>
+template< typename VertexT >
 struct VertexTraits
 {
-    static bool HAS_COLOR;
+    static inline bool has_color()
+    {
+        return false;
+    }
+
+    static inline VertexT vertex( ... )
+    {
+        return VertexT();
+    }
+};
+
+
+template< typename CoordType >
+struct VertexTraits< Vertex< CoordType > > 
+{
+    static inline bool has_color()
+    {
+        return false;
+    }
+
+    static inline Vertex< CoordType > vertex( 
+            const CoordType x, const CoordType y, const CoordType z, ... )
+    {
+        return Vertex< CoordType >( x, y, z );
+    }
 };
 
 
@@ -43,8 +68,25 @@ template < >
 template<typename CoordType, typename ColorT>
 struct VertexTraits<ColorVertex<CoordType, ColorT> >
 {
-    static bool HAS_COLOR;
+    static inline bool has_color()
+    {
+        return false;
+    }
+
+    static inline ColorVertex< CoordType, ColorT > vertex(
+            const CoordType x, const CoordType y, const CoordType z )
+    {
+        return ColorVertex< CoordType, ColorT >( x, y, z );
+    }
+
+    static inline ColorVertex< CoordType, ColorT > vertex(
+            const CoordType x, const CoordType y, const CoordType z,
+            const ColorT r, const ColorT g, const ColorT b, ... )
+    {
+        return ColorVertex< CoordType, ColorT >( x, y, z, r, g, b );
+    }
 };
+
 
 }
 #include "VertexTraits.tcc"
