@@ -292,12 +292,20 @@ int main(int argc, char** argv)
         useMT = true;
     }
 
+    // Determine whether to use SF detection
+    bool useSF = false;
+    if(options.getDecomposition() == "SF")
+    {
+        useSF = true;
+    }
+
     // Create a new reconstruction object
     FastReconstruction<cVertex, cNormal > reconstruction(
 			surface,
 			resolution,
 			useVoxelsize,
-			useMT);
+			useMT,
+			useSF);
 
     // Create mesh
     reconstruction.getMesh(mesh);
