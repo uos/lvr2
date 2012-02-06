@@ -35,9 +35,8 @@ FastReconstruction<VertexT, NormalT>::FastReconstruction(
         typename PointsetSurface<VertexT>::Ptr surface,
         float resolution,
         bool isVoxelsize,
-        bool useTetraeder,
-        bool useSharpfeatures)
-    : PointsetMeshGenerator<VertexT, NormalT>(surface), m_useTetraeder(useTetraeder), m_useSharpFeatures(useSharpfeatures)
+        string boxtype)
+    : PointsetMeshGenerator<VertexT, NormalT>(surface), m_boxType(boxtype)
 {
     // Determine m_voxelsize
     assert(resolution > 0);
@@ -175,20 +174,21 @@ void FastReconstruction<VertexT, NormalT>::createGrid()
 
 				//Create new box
 				FastBox<VertexT, NormalT>* box = 0;
-				if(!m_useTetraeder)
+				if(m_boxType == "MC")
 				{
-					if (!m_useSharpFeatures)
-					{
-						box = new FastBox<VertexT, NormalT>(box_center);
-					}
-					else
-					{
-						box = new SharpBox<VertexT, NormalT>(box_center);
-					}
+					box = new FastBox<VertexT, NormalT>(box_center);
+				}
+				else if(m_boxType == "MT")
+				{
+				    box = new TetraederBox<VertexT, NormalT>(box_center);
+				}
+				else if(m_boxType == "SF")
+				{
+					box = new SharpBox<VertexT, NormalT>(box_center);
 				}
 				else
 				{
-				    box = new TetraederBox<VertexT, NormalT>(box_center);
+			//	    box = new PlanarFastBox<VertexT, NormalT>(box_center);
 				}
 
 				//Setup the box itself
@@ -287,7 +287,7 @@ void FastReconstruction<VertexT, NormalT>::calcQueryPointValues(){
     Timestamp ts;
 
     // Calculate a distance value for each query point
-    #pragma omp parallel for
+    //#pragma omp parallel for
     for(size_t i = 0; i < m_queryPoints.size(); i++){
         float projectedDistance;
         float euklideanDistance;
@@ -295,12 +295,16 @@ void FastReconstruction<VertexT, NormalT>::calcQueryPointValues(){
         //cout << euklideanDistance << " " << projectedDistance << endl;
 
         this->m_surface->distance(m_queryPoints[i].m_position, projectedDistance, euklideanDistance);
-        if (euklideanDistance > 1.7320 * m_voxelsize)
+        if (euklideanDistance > 1.4120 * 0.5 * m_voxelsize)
         {
-        	m_queryPoints[i].m_invalid = true;
+        	//m_queryPoints[i].m_invalid = true;
+        	cout << m_queryPoints[i].m_position[0] << " " << m_queryPoints[i].m_position[1] << " " <<  m_queryPoints[i].m_position[2] << endl;
         }
-        m_queryPoints[i].m_distance = projectedDistance;
-        ++progress;
+        else
+        {
+            m_queryPoints[i].m_distance = projectedDistance;
+        }
+        //++progress;
     }
 
     cout << endl;
