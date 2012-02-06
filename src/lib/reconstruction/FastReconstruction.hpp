@@ -32,6 +32,7 @@
 #include "reconstruction/PointsetMeshGenerator.hpp"
 #include "reconstruction/LocalApproximation.hpp"
 #include "reconstruction/FastBox.hpp"
+//#include "reconstruction/PlanarFastBox.hpp"
 #include "reconstruction/TetraederBox.hpp"
 #include "reconstruction/SharpBox.hpp"
 #include "reconstruction/QueryPoint.hpp"
@@ -67,8 +68,7 @@ public:
             typename PointsetSurface<VertexT>::Ptr surface,
             float resolution,
             bool isVoxelsize = false,
-            bool use_mt = false,
-            bool use_sf = false);
+            string boxType = "MC");
 
 
     /**
@@ -164,10 +164,8 @@ private:
     vector<QueryPoint<VertexT> > m_queryPoints;
 
     /// True if a local tetraeder decomposition is used for reconstruction
-    bool                        m_useTetraeder;
+    string                        m_boxType;
 
-    /// True if sharp features detection is used for reconstruction
-    bool                        m_useSharpFeatures;
 };
 
 
