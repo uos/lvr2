@@ -61,7 +61,7 @@ class Vertex{
         /**
          * @brief    Builds a Vertex with the given coordinates.
          */
-        Vertex(const CoordType &_x, const CoordType &_y, const CoordType &_z)
+        Vertex(const CoordType &_x, const CoordType &_y, const CoordType &_z, ...)
         {
             x = _x;
             y = _y;
