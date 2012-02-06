@@ -61,6 +61,8 @@ SearchTreeFlann< VertexT >::SearchTreeFlann( PointBufferPtr buffer, long unsigne
     m_pointCloud = pcl::PointCloud< pcl::PointXYZRGB >::Ptr( new pcl::PointCloud< pcl::PointXYZRGB >() );
     m_pointCloud->resize( n_points );
 
+    cout << n_colors << endl;
+
     // Store points in pclCloud
     for( int i(0); i < n_points; ++i )
     {
