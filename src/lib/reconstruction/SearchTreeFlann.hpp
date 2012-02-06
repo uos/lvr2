@@ -65,7 +65,7 @@ public:
      *  @param ki      The number of neighbour points used for normal interpolation.
      *  @param kd      The number of neighbour points esed for distance value calculation.
      */
-    SearchTreeFlann( coord3fArr points,
+    SearchTreeFlann( PointBufferPtr points,
             long unsigned int &n_points,
             const int &kn = 10,
             const int &ki = 10,
@@ -100,8 +100,8 @@ public:
 protected:
 
     /// Store the pcl kd-tree
-    pcl::PointCloud< pcl::PointXYZ >::Ptr       m_pointCloud;
-    pcl::KdTreeFLANN< pcl::PointXYZ >::Ptr      m_kdTree;
+    pcl::PointCloud< pcl::PointXYZRGB >::Ptr       m_pointCloud;
+    pcl::KdTreeFLANN< pcl::PointXYZRGB >::Ptr      m_kdTree;
 
 }; // SearchTreePCL
 

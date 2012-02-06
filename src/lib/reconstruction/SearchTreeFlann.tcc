@@ -46,15 +46,19 @@ using pcl::KdTreeFLANN;
 namespace lssr {
 
 template<typename VertexT>
-SearchTreeFlann< VertexT >::SearchTreeFlann( coord3fArr points, long unsigned int &n_points, const int &kn, const int &ki, const int &kd )
+SearchTreeFlann< VertexT >::SearchTreeFlann( PointBufferPtr buffer, long unsigned int &n_points, const int &kn, const int &ki, const int &kd )
 {
     // Store parameters
     this->m_ki = ki;
     this->m_kn = kn;
     this->m_kd = kd;
 
+    size_t n_colors;
+    coord3fArr points = buffer->getIndexedPointArray(n_points);
+    color3bArr colors = buffer->getIndexedPointColorArray(n_colors);
+
     // initialize pointCloud for pcl.
-    m_pointCloud = pcl::PointCloud< PointXYZ >::Ptr( new pcl::PointCloud< PointXYZ >() );
+    m_pointCloud = pcl::PointCloud< pcl::PointXYZRGB >::Ptr( new pcl::PointCloud< pcl::PointXYZRGB >() );
     m_pointCloud->resize( n_points );
 
     // Store points in pclCloud
@@ -63,6 +67,20 @@ SearchTreeFlann< VertexT >::SearchTreeFlann( coord3fArr points, long unsigned in
         m_pointCloud->points[i].x = points[i].x;
         m_pointCloud->points[i].y = points[i].y;
         m_pointCloud->points[i].z = points[i].z;
+
+        // Assign color data
+        if(n_colors)
+        {
+            m_pointCloud->points[i].r = colors[i].r;
+            m_pointCloud->points[i].g = colors[i].g;
+            m_pointCloud->points[i].b = colors[i].b;
+        }
+        else
+        {
+            m_pointCloud->points[i].r = 0.0;
+            m_pointCloud->points[i].g = 1.0;
+            m_pointCloud->points[i].b = 0.0;
+        }
     }
 
     // Set pointCloud dimensions
@@ -71,7 +89,7 @@ SearchTreeFlann< VertexT >::SearchTreeFlann( coord3fArr points, long unsigned in
 
     // initialize kd-Tree
     cout << timestamp << "Initialising PCL<Flann> Kd-Tree" << endl;
-    m_kdTree = KdTreeFLANN< PointXYZ >::Ptr( new KdTreeFLANN< PointXYZ >() );
+    m_kdTree = KdTreeFLANN< pcl::PointXYZRGB >::Ptr( new KdTreeFLANN< pcl::PointXYZRGB >() );
     m_kdTree->setInputCloud(m_pointCloud);
 }
 
@@ -85,7 +103,7 @@ template<typename VertexT>
 void SearchTreeFlann< VertexT >::kSearch( coord< float > &qp, int neighbours, vector< ulong > &indices, vector< double > &distances )
 {
     // get pcl compatible point.
-    PointXYZ pcl_qp;
+    pcl::PointXYZRGB pcl_qp;
     pcl_qp.x = qp[0];
     pcl_qp.y = qp[1];
     pcl_qp.z = qp[2];
@@ -115,7 +133,10 @@ void SearchTreeFlann< VertexT >::kSearch(VertexT qp, int k, vector< VertexT > &n
         neighbors.push_back(
                 VertexT(m_pointCloud->points[indices[i]].x,
                         m_pointCloud->points[indices[i]].y,
-                        m_pointCloud->points[indices[i]].z));
+                        m_pointCloud->points[indices[i]].z,
+                        m_pointCloud->points[indices[i]].r,
+                        m_pointCloud->points[indices[i]].g,
+                        m_pointCloud->points[indices[i]].b));
     }
 }
 
