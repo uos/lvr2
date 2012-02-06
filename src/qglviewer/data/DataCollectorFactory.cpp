@@ -153,9 +153,13 @@ void DataCollectorFactory::create(string filename)
 	    if(extension == ".grid")
 	    {
 	        GridIO io;
-	        Grid* grid = io.read(filename);
-	        if(grid)
+	        io.read( filename );
+            size_t n_points, n_boxes;
+            floatArr points = io->getPoints( n_points );
+            uintArr  boxes  = io->getBoxes(  n_boxes );
+	        if( points && boxes )
 	        {
+                Grid* grid = new Grid( points, boxes, n_points, n_cells );
 	            int modes = 0;
 	            PointCloudTreeWidgetItem* item = new PointCloudTreeWidgetItem(PointCloudItem);
 	            item->setSupportedRenderModes(modes);
