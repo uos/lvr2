@@ -71,7 +71,7 @@ AdaptiveKSearchSurface<VertexT, NormalT>::AdaptiveKSearchSurface(
 
     if( searchTreeName == "flann"  || searchTreeName == "FLANN" )
     {
-        this->m_searchTree = search_tree::Ptr( new SearchTreeFlann<VertexT>(this->m_points, this->m_numPoints, kn, ki, kd) );
+        this->m_searchTree = search_tree::Ptr( new SearchTreeFlann<VertexT>(loader, this->m_numPoints, kn, ki, kd) );
     }
     else if( searchTreeName == "stann" || searchTreeName == "STANN" )
     {
