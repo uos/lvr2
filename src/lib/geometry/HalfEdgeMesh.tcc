@@ -1231,14 +1231,14 @@ void HalfEdgeMesh<VertexT, NormalT>::finalizeAndRetesselate( bool genTextures, f
                 textureIndexBuffer.push_back( UINT_MAX );
             }
 
-            if (genTextures)
+            if ( genTextures && VertexTraits<VertexT>::has_color() )
             {
             	int one = 1;
             	vector<VertexT> cv;
             	this->m_pointCloudManager->searchTree()->kSearch((*m_regions[iRegion]->m_faces[iFace]).getCentroid(), one, cv);
-            	r = cv[0].r;
-            	g = cv[0].g;
-            	b = cv[0].b;
+            	r = *((uchar*) &(cv[0][3])); /* red */
+            	g = *((uchar*) &(cv[0][4])); /* green */
+            	b = *((uchar*) &(cv[0][5])); /* blue */
             }
 
             faceColorBuffer.push_back( r );
