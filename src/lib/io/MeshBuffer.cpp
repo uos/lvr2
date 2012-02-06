@@ -49,6 +49,7 @@ MeshBuffer::MeshBuffer() :
      * vice versa. */
 	assert( 3 * sizeof(float) == sizeof(coord<float>) );
 	assert( 3 * sizeof(uchar) == sizeof(color<uchar>) );
+	assert( 3 * sizeof(unsigned int) == sizeof(coord<unsigned int>) );
 	assert( sizeof(float) == sizeof(idxVal<float>) );
 
     /* Reset all internal buffer. */
@@ -174,11 +175,11 @@ color3bArr MeshBuffer::getIndexedVertexColorArray( size_t &n )
 }
 
 
-idx1uArr MeshBuffer::getIndexedFaceArray( size_t &n )
+idx3uArr MeshBuffer::getIndexedFaceArray( size_t &n )
 {
 
     n = m_numFaces;
-    idx1uArr p = *((idx1uArr*) &m_faceIndices);
+    idx3uArr p = *((idx3uArr*) &m_faceIndices);
     return p;
 
 }
@@ -352,6 +353,15 @@ void MeshBuffer::setIndexedVertexTextureCoordinateArray( coord3fArr arr, size_t 
 
     m_vertexTextureCoordinates = *((floatArr*) &arr);
     m_numVertexTextureCoordinates = size;
+
+}
+
+
+void MeshBuffer::setIndexedFaceArray( idx3uArr arr, size_t size )
+{
+
+    m_faceIndices = *((uintArr*) &arr);
+    m_numFaces    = size;
 
 }
 
