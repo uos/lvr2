@@ -132,6 +132,7 @@ else ( GLUT_FOUND )
     message( SEND_ERROR "-- could not find OpenGL Utility Toolkit" )
 endif ( GLUT_FOUND )
 
+if(LINUX)
 if ( GLUT_Xmu_LIBRARY )
     message( "-- Found X.Org X11 libXmu/libXmuu runtime libraries" )
 else ( GLUT_Xmu_LIBRARY )
@@ -143,6 +144,7 @@ if ( GLUT_Xi_LIBRARY )
 else ( GLUT_Xi_LIBRARY )
     message( SEND_ERROR "-- Could not find X.Org X11 libXi runtime library" )
 endif ( GLUT_Xi_LIBRARY )
+endif(LINUX)
 
 ##############################################################
 # USED THIRD PARTY STUFF
