@@ -27,6 +27,7 @@
 namespace lssr
 {
 
+//TODO: set in main()
 template<typename VertexT, typename NormalT>
 float SharpBox<VertexT, NormalT>::m_theta_sharp = 0.9;
 
@@ -34,8 +35,9 @@ template<typename VertexT, typename NormalT>
 float SharpBox<VertexT, NormalT>::m_phi_corner = 0.7;
 
 template<typename VertexT, typename NormalT>
-SharpBox<VertexT, NormalT>::SharpBox(VertexT v) : FastBox<VertexT, NormalT>(v)
+SharpBox<VertexT, NormalT>::SharpBox(VertexT v, typename PointsetSurface<VertexT>::Ptr surface) : FastBox<VertexT, NormalT>(v)
 {
+	m_surface = surface;
 }
 
 template<typename VertexT, typename NormalT>
@@ -47,7 +49,10 @@ SharpBox<VertexT, NormalT>::~SharpBox()
 template<typename VertexT, typename NormalT>
 void SharpBox<VertexT, NormalT>::getNormals(VertexT vertex_positions[], NormalT vertex_normals[])
 {
-//TODO:
+	for (int i = 0; i < 12; i++)
+	{
+		vertex_normals[i] = (NormalT) m_surface->getInterpolatedNormal(vertex_positions[i]);
+	}
 }
 
 template<typename VertexT, typename NormalT>
@@ -87,6 +92,7 @@ void SharpBox<VertexT, NormalT>::getSurface(
     //TODO: was passiert für ungültige indizes?
     for (int i = 0; i < 12; i++)
     {
+    	cout<<vertex_normals[i];
     	for (int j = 0; j < 12; j++)
     	{
     		if (i != j)
@@ -104,6 +110,7 @@ void SharpBox<VertexT, NormalT>::getSurface(
     		}
     	}
     }
+    cout<<endl;
     // Check for presence of sharp corners
     if (containsSharpFeature)
     {
@@ -119,7 +126,8 @@ void SharpBox<VertexT, NormalT>::getSurface(
     // Sharp feature detected -> use extended marching cubes
     if (containsSharpFeature)
     {
-    	//TODO
+    	//TODO: Solve LGS
+    	//Insert point and triangle fan
     }
     else     // No sharp features present -> use standard marching cubes
     {
