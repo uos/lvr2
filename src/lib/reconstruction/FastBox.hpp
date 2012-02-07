@@ -114,6 +114,9 @@ public:
     /// An index value that is used to reference vertices that are not in the grid
     static uint		   		INVALID_INDEX;
 
+    /// The twelve intersection between box and surface
+    uint                   		m_intersections[12];
+
 protected:
 
     /**
@@ -165,9 +168,6 @@ protected:
 
     /// The eight box corners
     uint                  		m_vertices[8];
-
-    /// The twelve intersection between box and surface
-    uint                   		m_intersections[12];
 
     /// Pointer to all adjacent cells
     FastBox<VertexT, NormalT>*  m_neighbors[27];
