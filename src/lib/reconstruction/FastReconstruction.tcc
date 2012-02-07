@@ -287,7 +287,7 @@ void FastReconstruction<VertexT, NormalT>::calcQueryPointValues(){
     Timestamp ts;
 
     // Calculate a distance value for each query point
-    //#pragma omp parallel for
+    #pragma omp parallel for
     for(size_t i = 0; i < m_queryPoints.size(); i++){
         float projectedDistance;
         float euklideanDistance;
@@ -295,16 +295,12 @@ void FastReconstruction<VertexT, NormalT>::calcQueryPointValues(){
         //cout << euklideanDistance << " " << projectedDistance << endl;
 
         this->m_surface->distance(m_queryPoints[i].m_position, projectedDistance, euklideanDistance);
-        if (euklideanDistance > 1.4120 * 0.5 * m_voxelsize)
+        if (euklideanDistance > 1.7320 * m_voxelsize)
         {
-        	//m_queryPoints[i].m_invalid = true;
-        	cout << m_queryPoints[i].m_position[0] << " " << m_queryPoints[i].m_position[1] << " " <<  m_queryPoints[i].m_position[2] << endl;
+        	m_queryPoints[i].m_invalid = true;
         }
-        else
-        {
-            m_queryPoints[i].m_distance = projectedDistance;
-        }
-        //++progress;
+        m_queryPoints[i].m_distance = projectedDistance;
+        ++progress;
     }
 
     cout << endl;

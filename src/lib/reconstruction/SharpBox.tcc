@@ -92,7 +92,6 @@ void SharpBox<VertexT, NormalT>::getSurface(
     //TODO: was passiert für ungültige indizes?
     for (int i = 0; i < 12; i++)
     {
-    	cout<<vertex_normals[i];
     	for (int j = 0; j < 12; j++)
     	{
     		if (i != j)
@@ -110,7 +109,6 @@ void SharpBox<VertexT, NormalT>::getSurface(
     		}
     	}
     }
-    cout<<endl;
     // Check for presence of sharp corners
     if (containsSharpFeature)
     {
