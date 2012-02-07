@@ -61,7 +61,6 @@ void SharpBox<VertexT, NormalT>::getSurface(
         vector<QueryPoint<VertexT> > &query_points,
         uint &globalIndex)
 {
-    typedef SharpBox<VertexT, NormalT>*  p_sBox;
     VertexT corners[8];
     VertexT vertex_positions[12];
     NormalT vertex_normals[12];
