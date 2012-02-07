@@ -184,7 +184,7 @@ void FastReconstruction<VertexT, NormalT>::createGrid()
 				}
 				else if(m_boxType == "SF")
 				{
-					box = new SharpBox<VertexT, NormalT>(box_center);
+					box = new SharpBox<VertexT, NormalT>(box_center, this->m_surface);
 				}
 				else
 				{

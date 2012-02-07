@@ -41,7 +41,7 @@ template<typename VertexT, typename NormalT>
 class SharpBox : public FastBox<VertexT, NormalT>
 {
 public:
-    SharpBox(VertexT);
+    SharpBox(VertexT, typename PointsetSurface<VertexT>::Ptr surface);
     virtual ~SharpBox();
 
     /**
@@ -75,6 +75,9 @@ private:
      * 							after calling the method.
      */
     void getNormals(VertexT vertex_positions[], NormalT vertex_normals[]);
+
+    // the point set surface
+    typename PointsetSurface<VertexT>::Ptr m_surface;
 };
 
 } /* namespace lssr */
