@@ -40,6 +40,7 @@
 #include "../widgets/MultiPointCloudTreeWidgetItem.h"
 
 #include "io/ModelFactory.hpp"
+#include "io/DataStruct.hpp"
 
 #include <boost/filesystem.hpp>
 #include <boost/version.hpp>
@@ -153,9 +154,13 @@ void DataCollectorFactory::create(string filename)
 	    if(extension == ".grid")
 	    {
 	        GridIO io;
-	        Grid* grid = io.read(filename);
-	        if(grid)
+	        io.read( filename );
+            size_t n_points, n_boxes;
+            lssr::floatArr points = io.getPoints( n_points );
+            lssr::uintArr  boxes  = io.getBoxes(  n_boxes );
+	        if( points && boxes )
 	        {
+                Grid* grid = new Grid( points, boxes, n_points, n_boxes );
 	            int modes = 0;
 	            PointCloudTreeWidgetItem* item = new PointCloudTreeWidgetItem(PointCloudItem);
 	            item->setSupportedRenderModes(modes);
