@@ -26,7 +26,9 @@
 #ifndef GRIDIO_HPP_
 #define GRIDIO_HPP_
 
-#include "display/Grid.hpp"
+#include "DataStruct.hpp"
+
+#include <string>
 
 namespace lssr
 {
@@ -35,8 +37,17 @@ class GridIO
 {
 public:
     GridIO();
-    Grid* read(string filename);
+    void read( std::string filename );
     virtual ~GridIO();
+
+    floatArr getPoints( size_t &n );
+    uintArr  getBoxes(  size_t &n );
+
+private:
+    floatArr m_points;
+    uintArr  m_boxes;
+    size_t   m_numPoints;
+    size_t   m_numBoxes;
 };
 
 } /* namespace lssr */

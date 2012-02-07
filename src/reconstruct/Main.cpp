@@ -204,7 +204,11 @@ int main(int argc, char** argv)
     // Create point set surface object
     if(pcm_name == "PCL")
     {
+#ifdef _USE_PCL
         surface = psSurface::Ptr( new pclSurface(p_loader));
+        cout << timestamp << "Can't create a PCL point set surface without PCL installed." << endl;
+        exit(-1);
+#endif
     }
     else if(pcm_name == "STANN" || pcm_name == "FLANN" || pcm_name == "NABO")
     {

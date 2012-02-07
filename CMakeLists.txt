@@ -20,6 +20,11 @@ set( CMAKE_CXX_FLAGS_DEBUG   "-g -Wall" )
 # EXTERNAL LIBRARIES
 ###############################################################
 
+
+####
+## Searching for NABO 
+##############################
+
 SET(NABO_INCLUDE_DIRS "")
 SET(NABO_LIBRARIES "")
 find_package(Nabo)
@@ -28,6 +33,11 @@ if(NABO_FOUND)
    link_directories(${NABO_LIBRARIES})
    add_definitions(-D_USE_NABO)
 endif(NABO_FOUND)
+
+
+####
+## Searching for PCL
+##############################
 
 # We intentionally do this twice as there seems to be a bug in PCL 1.4 which
 # leads to a non set PCL_VERSION variable if you call it only once.
@@ -56,6 +66,11 @@ else(PCL_FOUND)
         message( "-- PCL related stuff will be disabled." )
 endif(PCL_FOUND)
 
+
+####
+## Searching for Boost
+##############################
+
 find_package( Boost 
     COMPONENTS 
     program_options 
@@ -68,18 +83,31 @@ if(Boost_FOUND)
     add_definitions(${Boost_LIB_DIAGNOSTIC_DEFINITIONS})
 endif()
 
+
+####
+## Searching for OpenMP
+##############################
+
 find_package(OpenMP)
 if(OpenMP_FOUND)
     link_directories(${OpenMP_LIBRARY_DIRS})
     include_directories(${OpenMP_INCLUDE_DIRS})
 endif(OpenMP_FOUND)
 
+set( CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${OpenMP_CXX_FLAGS}" )
+set( CMAKE_CXX_FLAGS_RELEASE "${CMAKE_CXX_FLAGS_RELEASE} ${OpenMP_CXX_FLAGS}" )
+set( CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} ${OpenMP_CXX_FLAGS}" )
+
+
+####
+## Searching for OpenGL
+##############################
+
 find_package(OpenGL REQUIRED)
 if(OpenGL_FOUND)
     link_directories(${OpenGL_INCLUDE_DIRS})
     include_directories(${OpenGL_LIBRARY_DIRS})
 endif(OpenGL_FOUND)
-
 
 IF(APPLE)
     link_directories(/opt/local/lib)
@@ -92,11 +120,31 @@ if(UNIX)
     include_directories(${OPENGL_INC})
 endif(UNIX)
 
-find_package(GLUT REQUIRED)
 
-set( CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${OpenMP_CXX_FLAGS}" )
-set( CMAKE_CXX_FLAGS_RELEASE "${CMAKE_CXX_FLAGS_RELEASE} ${OpenMP_CXX_FLAGS}" )
-set( CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} ${OpenMP_CXX_FLAGS}" )
+####
+## Searching for glut and it's additional runtime libraries.
+##############################
+
+find_package(GLUT REQUIRED)
+if ( GLUT_FOUND )
+    message( "-- Found OpenGL Utility Toolkit" )
+else ( GLUT_FOUND )
+    message( SEND_ERROR "-- could not find OpenGL Utility Toolkit" )
+endif ( GLUT_FOUND )
+
+if(LINUX)
+if ( GLUT_Xmu_LIBRARY )
+    message( "-- Found X.Org X11 libXmu/libXmuu runtime libraries" )
+else ( GLUT_Xmu_LIBRARY )
+    message( SEND_ERROR "-- Could not find X.Org X11 libXmu/libXmuu runtime libraries" )
+endif ( GLUT_Xmu_LIBRARY )
+
+if ( GLUT_Xi_LIBRARY )
+    message( "-- Found X.Org X11 libXi runtime library" )
+else ( GLUT_Xi_LIBRARY )
+    message( SEND_ERROR "-- Could not find X.Org X11 libXi runtime library" )
+endif ( GLUT_Xi_LIBRARY )
+endif(LINUX)
 
 ##############################################################
 # USED THIRD PARTY STUFF
