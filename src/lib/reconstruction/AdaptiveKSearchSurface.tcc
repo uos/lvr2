@@ -71,7 +71,7 @@ AdaptiveKSearchSurface<VertexT, NormalT>::AdaptiveKSearchSurface(
 
     if( searchTreeName == "flann"  || searchTreeName == "FLANN" )
     {
-#ifdef _USE_PCL
+#ifdef _USE_PCL_
         this->m_searchTree = search_tree::Ptr( new SearchTreeFlann<VertexT>(loader, this->m_numPoints, kn, ki, kd) );
 #else
         cout << timestamp << "Warning: PCL is not installed. Using STANN search tree in AdaptiveKSearchSurface." << endl;
