@@ -179,11 +179,30 @@ ModelPtr AsciiIO::read(string filename)
     }
 
     // Assign buffers
+    size_t numColors = 0;
+    size_t numIntensities = 0;
+    size_t numConfidences = 0;
+
+    if(has_color)
+    {
+        numColors = numPoints;
+    }
+
+    if(has_intensity)
+    {
+        numIntensities = numPoints;
+    }
+
+    if(has_accuracy)
+    {
+        numConfidences = numPoints;
+    }
+
     ModelPtr model( new Model( PointBufferPtr( new PointBuffer)));
     model->m_pointCloud->setPointArray(           points,           numPoints );
-    model->m_pointCloud->setPointColorArray(      pointColors,      numPoints );
-    model->m_pointCloud->setPointIntensityArray(  pointIntensities, numPoints );
-    model->m_pointCloud->setPointConfidenceArray( pointConfidences, numPoints );
+    model->m_pointCloud->setPointColorArray(      pointColors,      numColors );
+    model->m_pointCloud->setPointIntensityArray(  pointIntensities, numIntensities );
+    model->m_pointCloud->setPointConfidenceArray( pointConfidences, numConfidences );
     m_model = model;
 
     return model;

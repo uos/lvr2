@@ -28,6 +28,8 @@
 
 #include "DataStruct.hpp"
 
+#include <string>
+
 namespace lssr
 {
 
