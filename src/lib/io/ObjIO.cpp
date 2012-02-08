@@ -25,10 +25,16 @@
  *  @author Kim Rinnewitz (krinnewitz@uos.de)
  *  @author Sven Schalk (sschalk@uos.de)
  *  @author Lars Kiesow (lkiesow@uos.de)
+ *  @author Denis Meyer (denmeyer@uos.de)
  */
 
 #include "ObjIO.hpp"
+#include "objLoader.h"
+
 #include <climits>
+#include <iostream>
+#include <fstream>
+#include "Timestamp.hpp"
 #include "boost/tuple/tuple.hpp"
 #include "../geometry/Vertex.hpp"
 
@@ -37,6 +43,112 @@ namespace lssr
 using namespace std; // Bitte vergebt mir....
 // Meinst du wirklich, dass ich dir so etwas durchgehen lassen kann?
 
+ModelPtr ObjIO::read( string filename ) // TODO: Format correctly
+{
+	/*
+	cout << timestamp << "ObjIO::read" << endl; // TODO: Remove
+
+	ifstream f (filename.c_str());
+	if (!f.is_open())
+	{
+		cerr << timestamp << "File '" << filename << "' could not be opened." << endl;
+		return ModelPtr( new Model );
+  	}
+    	f.close();
+
+	char *fn = const_cast<char *>(filename.c_str());
+	objLoader *objData = new objLoader();
+	objData->load(fn);
+
+	// Buffer count variables
+	size_t numVertices              = objData->vertexCount;
+	size_t numVertexNormals         = objData->normalCount;
+	size_t numFaces                 = objData->faceCount;
+	size_t numTextures		= objData->textureCount;
+	size_t numSpheres		= objData->sphereCount;
+	size_t numPlanes		= objData->planeCount;
+	size_t numPointLights		= objData->lightPointCount;
+	size_t numDiscLights		= objData->lightDiscCount;
+	size_t numQuadLights		= objData->lightQuadCount;
+	size_t numMaterials		= objData->materialCount;
+
+	size_t numVertexColors		= 0;
+	size_t numVertexIntensities	= 0;
+	size_t numVertexConfidences	= 0;
+
+	// Some output
+	cout << timestamp << "Number of vertices: " 		<< numVertices 		<< endl;
+	cout << timestamp << "Number of vertex normals: " 	<< numVertexNormals 	<< endl;
+	cout << timestamp << "Number of faces: " 		<< numFaces 		<< endl;
+	cout << timestamp << "Number of texture coordinates: " 	<< numTextures 		<< endl;
+	cout << timestamp << "Number of spheres: " 		<< numSpheres 		<< endl;
+	cout << timestamp << "Number of planes: " 		<< numPlanes 		<< endl;
+	cout << timestamp << "Number of point lights: " 	<< numPointLights 	<< endl;
+	cout << timestamp << "Number of disc lights: " 		<< numDiscLights 	<< endl;
+	cout << timestamp << "Number of quad lights: " 		<< numQuadLights 	<< endl;
+	cout << timestamp << "Number of materials: " 		<< numMaterials 	<< endl;
+	if(objData->camera != NULL)
+	{
+		cout << timestamp << "Found a camera" << endl;
+	}
+	cout << endl;
+
+	// Buffers
+	floatArr vertices;
+	floatArr vertexConfidence;
+	floatArr vertexIntensity;
+	floatArr vertexNormals;
+	ucharArr vertexColors;
+	uintArr  faceIndices;
+
+	// Allocate memory
+	if ( numVertices )
+    	{
+        	vertices = floatArr( new float[ numVertices * 3 ] );
+    	}
+    	if ( numVertexColors )
+    	{
+    	    	vertexColors = ucharArr( new uchar[ numVertices * 3 ] );
+    	}
+    	if ( numVertexConfidences )
+    	{
+    	    	vertexConfidence = floatArr( new float[ numVertices ] );
+    	}
+    	if ( numVertexIntensities )
+	{
+   	    	vertexIntensity = floatArr( new float[ numVertices ] );
+   	}
+   	if ( numVertexNormals )
+   	{
+   	    	vertexNormals = floatArr( new float[ 3 * numVertices ] );
+   	}
+   	if ( numFaces )
+   	{
+   	    	faceIndices = uintArr( new unsigned int[ numFaces * 3 ] );
+   	}
+
+	delete(objData);
+
+    	// Save buffers in model
+    	MeshBufferPtr mesh;
+    	if(vertices)
+    	{
+        	mesh = MeshBufferPtr( new MeshBuffer );
+        	mesh->setVertexArray(           vertices,         numVertices );
+        	mesh->setVertexColorArray(      vertexColors,     numVertexColors );
+        	mesh->setVertexIntensityArray(  vertexIntensity,  numVertexIntensities );
+        	mesh->setVertexNormalArray(     vertexNormals,    numVertexNormals );
+        	mesh->setVertexConfidenceArray(	vertexConfidence, numVertexConfidences );
+        	mesh->setFaceArray(             faceIndices,      numFaces );
+    	}
+
+    	ModelPtr m( new Model( mesh ) );
+    	m_model = m;
+	return m;
+	*/
+
+	return ModelPtr( new Model );
+};
 
 void ObjIO::save( string filename )
 {

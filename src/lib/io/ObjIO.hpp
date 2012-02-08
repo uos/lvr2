@@ -24,6 +24,7 @@
  *  @author Florian Otte (fotte@uos.de)
  *  @author Kim Rinnewitz (krinnewitz@uos.de)
  *  @author Sven Schalk (sschalk@uos.de)
+ *  @author Denis Meyer (denmeyer@uos.de)
  */
 
 #ifndef OBJIO_HPP_
@@ -54,16 +55,10 @@ class ObjIO : public BaseIO
 
         /**
          * \brief   Parse the given file and load supported elements.
-         * \warning This function is yet to be implemented.
-         * \todo    Implement this function propperly.
          *
          * @param filename  The file to read.
          */
-        ModelPtr read( string filename )
-        {
-            ModelPtr m( new Model );
-            return m;
-        };
+        ModelPtr read( string filename );
 
         /**
          * @brief     Writes the mesh to an obj file.

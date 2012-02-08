@@ -153,9 +153,12 @@ include_directories( ${CMAKE_CURRENT_SOURCE_DIR}/ext/rply/ )
 add_subdirectory(ext/rply)
 
 # LASLIB
-
 include_directories( ${CMAKE_CURRENT_SOURCE_DIR}/ext/laslib/inc )
 add_subdirectory(ext/laslib)
+
+# OBJ
+include_directories( ${CMAKE_CURRENT_SOURCE_DIR}/ext/obj/ )
+add_subdirectory(ext/obj)
 
 ##############################################################
 # LIBRARIES
