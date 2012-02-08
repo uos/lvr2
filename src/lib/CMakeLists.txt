@@ -34,6 +34,7 @@ target_link_libraries(staticlssr ${Boost_PROGRAM_OPTIONS_LIBRARY}
     ${Boost_SYSTEM_LIBRARY} ${Boost_THREAD_LIBRARY} ${Boost_FILESYSTEM_LIBRARY}
     ${OpenMP_CXX_FLAGS} ${OPENGL_LIBRARY} )
 target_link_libraries(staticlssr laslib)
+target_link_libraries(staticlssr obj)
 
 if ( rply_shared ) 
     target_link_libraries(staticlssr ${rply_shared})
