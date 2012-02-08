@@ -88,37 +88,52 @@ void SharpBox<VertexT, NormalT>::getSurface(
     bool containsSharpCorner = false;
     NormalT n_asterisk;
     float phi = -FLT_MAX;
-    //TODO: was passiert für ungültige indizes?
-    for (int i = 0; i < 12; i++)
+
+    int edge_index1, edge_index2;
+    for(int a = 0; MCTable[index][a] != -1; a+= 3)
     {
-    	for (int j = 0; j < 12; j++)
+    	for(int b = 0; b < 3; b++)
     	{
-    		if (i != j)
+    		edge_index1 = MCTable[index][a + b];
+    		for(int c = 0; MCTable[index][c] != -1; c+= 3)
     		{
-    			//save n_i x n_j if they enclose the largest angle
-    			if(vertex_normals[i] * vertex_normals[j] > phi)
+    			for(int d = 0; d < 3; d++)
     			{
-    				phi = vertex_normals[i] * vertex_normals[j];
-    				n_asterisk = vertex_normals[i].cross(vertex_normals[j]);
-    			}
-    			if (vertex_normals[i] * vertex_normals[j] < m_theta_sharp)
-    			{
-    				containsSharpFeature = true;
+    				edge_index2 = MCTable[index][c + d];
+    				if (edge_index1 != edge_index2)
+    				{
+    					//save n_i x n_j if they enclose the largest angle
+    					if(vertex_normals[edge_index1] * vertex_normals[edge_index2] > phi)
+    					{
+    						phi = vertex_normals[edge_index1] * vertex_normals[edge_index2];
+    						n_asterisk = vertex_normals[edge_index1].cross(vertex_normals[edge_index2]);
+    					}
+    					if (vertex_normals[edge_index1] * vertex_normals[edge_index2] < m_theta_sharp)
+    					{
+    						containsSharpFeature = true;
+    					}
+    				}
     			}
     		}
     	}
     }
+
     // Check for presence of sharp corners
     if (containsSharpFeature)
     {
-    	for (int i = 0; i < 12; i++)
+    	for(int a = 0; MCTable[index][a] != -1; a+= 3)
     	{
-    		if (fabs(vertex_normals[i] * n_asterisk) > m_phi_corner)
+    		for(int b = 0; b < 3; b++)
     		{
-    			containsSharpCorner = true;
+    			edge_index1 = MCTable[index][a + b];
+    			if (fabs(vertex_normals[edge_index1] * n_asterisk) > m_phi_corner)
+    			{
+    				containsSharpCorner = true;
+    			}
     		}
     	}
     }
+
 
     // Sharp feature detected -> use extended marching cubes
     if (containsSharpFeature)
