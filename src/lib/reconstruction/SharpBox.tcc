@@ -87,7 +87,7 @@ void SharpBox<VertexT, NormalT>::getSurface(
     bool containsSharpFeature = false;
     bool containsSharpCorner = false;
     NormalT n_asterisk;
-    float phi = -FLT_MAX;
+    float phi = FLT_MAX;
 
     int edge_index1, edge_index2;
     for(int a = 0; MCTable[index][a] != -1; a+= 3)
@@ -103,7 +103,7 @@ void SharpBox<VertexT, NormalT>::getSurface(
     				if (edge_index1 != edge_index2)
     				{
     					//save n_i x n_j if they enclose the largest angle
-    					if(vertex_normals[edge_index1] * vertex_normals[edge_index2] > phi)
+    					if(vertex_normals[edge_index1] * vertex_normals[edge_index2] < phi)
     					{
     						phi = vertex_normals[edge_index1] * vertex_normals[edge_index2];
     						n_asterisk = vertex_normals[edge_index1].cross(vertex_normals[edge_index2]);
