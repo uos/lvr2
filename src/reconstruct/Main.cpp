@@ -206,8 +206,7 @@ int main(int argc, char** argv)
     {
 #ifdef _USE_PCL_
         surface = psSurface::Ptr( new pclSurface(p_loader));
-        exit(-1);
-#else
+#else 
         cout << timestamp << "Can't create a PCL point set surface without PCL installed." << endl;
         exit(-1);
 #endif

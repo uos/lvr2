@@ -21,9 +21,9 @@ void lssr::PCDIO::save( string filename,
 #ifdef _USE_PCL_
 lssr::ModelPtr lssr::PCDIO::read( string filename )
 {
-    pcl::PointCloud<pcl::PointXYZ>::Ptr cloud( new pcl::PointCloud<pcl::PointXYZ> );
+    pcl::PointCloud<pcl::PointXYZRGB>::Ptr cloud( new pcl::PointCloud<pcl::PointXYZRGB> );
 
-    if ( pcl::io::loadPCDFile<pcl::PointXYZ>( filename, *cloud ) == -1)
+    if ( pcl::io::loadPCDFile<pcl::PointXYZRGB>( filename, *cloud ) == -1)
     {
         std::cerr << "Couldn't read file “" << filename << "”." << std::endl;
         lssr::ModelPtr m;
@@ -31,17 +31,33 @@ lssr::ModelPtr lssr::PCDIO::read( string filename )
     }
 
     coord3fArr points = coord3fArr( new coord<float>[ cloud->points.size() ] );
+    color3bArr colors = color3bArr( new color<uchar>[ cloud->points.size() ] );
     /* model->m_pointCloud->setPointColorArray( pointColors, numPoints ); */
-    
     for ( size_t i(0); i < cloud->points.size(); i++ )
     {
-        points[i].x = cloud->points[i].x;
-        points[i].y = cloud->points[i].y;
-        points[i].z = cloud->points[i].z;
+        if(!isnan(cloud->points[i].x) && !isnan(cloud->points[i].y) && !isnan(cloud->points[i].z)  )
+        {
+            points[i].x = cloud->points[i].x;
+            points[i].y = cloud->points[i].y;
+            points[i].z = cloud->points[i].z;
+            colors[i].r = cloud->points[i].r;
+            colors[i].g = cloud->points[i].g;
+            colors[i].b = cloud->points[i].b;
+        }
+        else
+        {
+            points[i].x = 0.0;
+            points[i].y = 0.0;
+            points[i].z = 0.0;
+            colors[i].r = 0;
+            colors[i].g = 255;
+            colors[i].b = 0;
+        }
     }
 
     lssr::ModelPtr model( new Model( lssr::PointBufferPtr( new lssr::PointBuffer )));
     model->m_pointCloud->setIndexedPointArray( points, cloud->points.size() );
+    model->m_pointCloud->setIndexedPointColorArray( colors, cloud->points.size() );
     m_model = model;
     return model;
 
