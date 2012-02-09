@@ -72,7 +72,7 @@ public:
      *
      * @return 	The normal
      */
-    VertexT getInterpolatedNormal(VertexT position);
+    virtual VertexT getInterpolatedNormal(VertexT position);
 
     /**
      * @brief   Returns the internal point buffer. After a call of
