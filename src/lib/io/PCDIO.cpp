@@ -40,15 +40,22 @@ lssr::ModelPtr lssr::PCDIO::read( string filename )
             points[i].x = cloud->points[i].x;
             points[i].y = cloud->points[i].y;
             points[i].z = cloud->points[i].z;
-            colors[i].r = cloud->points[i].r;
-            colors[i].g = cloud->points[i].g;
-            colors[i].b = cloud->points[i].b;
         }
         else
         {
             points[i].x = 0.0;
             points[i].y = 0.0;
             points[i].z = 0.0;
+        }
+
+        if(!isnan(cloud->points[i].r) && !isnan(cloud->points[i].g) && !isnan(cloud->points[i].b)  )
+        {
+            colors[i].r = cloud->points[i].r;
+            colors[i].g = cloud->points[i].g;
+            colors[i].b = cloud->points[i].b;
+        }
+        else
+        {
             colors[i].r = 0;
             colors[i].g = 255;
             colors[i].b = 0;
