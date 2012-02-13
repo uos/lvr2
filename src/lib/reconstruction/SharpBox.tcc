@@ -138,8 +138,61 @@ void SharpBox<VertexT, NormalT>::getSurface(
     // Sharp feature detected -> use extended marching cubes
     if (containsSharpFeature)
     {
-    	//TODO: Solve LGS
-    	//Insert point and triangle fan
+    	uint edge_index = 0;
+
+    	int triangle_indices[3];
+
+    	// Generate the local approximation sirface according to the marching
+    	// cubes table for Paul Burke.
+    	for(int a = 0; MCTable[index][a] != -1; a+= 3){
+    		for(int b = 0; b < 3; b++){
+    			edge_index = MCTable[index][a + b];
+
+    			//If no index was found generate new index and vertex
+    			//and update all neighbor boxes
+    			if(this->m_intersections[edge_index] == this->INVALID_INDEX)
+    			{
+    				this->m_intersections[edge_index] = globalIndex;
+    				VertexT v = vertex_positions[edge_index];
+
+    				// Insert vertex and a new temp normal into mesh.
+    				// The normal is inserted to assure that vertex
+    				// and normal array always have the same size.
+    				// The actual normal is interpolated later.
+    				mesh.addVertex(v);
+    				mesh.addNormal(NormalT());
+    				for(int i = 0; i < 3; i++)
+    				{
+    					FastBox<VertexT, NormalT>* current_neighbor = this->m_neighbors[neighbor_table[edge_index][i]];
+    					if(current_neighbor != 0)
+    					{
+    						current_neighbor->m_intersections[neighbor_vertex_table[edge_index][i]] = globalIndex;
+    					}
+    				}
+    				// Increase the global vertex counter to save the buffer
+    				// position were the next new vertex has to be inserted
+    				globalIndex++;
+    			}
+
+    			//Save vertex index in mesh
+    			triangle_indices[b] = this->m_intersections[edge_index];
+    		}
+    	}
+    	//------------------------------
+    	VertexT v = this->m_center;
+    	mesh.addVertex(v);
+    	mesh.addNormal(NormalT());
+    	uint index_center = globalIndex++;
+
+    	// Add triangle actually does the normal interpolation for us.
+    	for(int a = 0; ExtendedMCTable[index][a] != -1; a+= 2)
+    	{
+    		if(this->m_intersections[ExtendedMCTable[index][a]] == this->INVALID_INDEX) cout<<"PROBLEM a "<<index<<endl;
+    		if(this->m_intersections[ExtendedMCTable[index][a+1]] == this->INVALID_INDEX) cout<<"PROBLEM a+1 "<<index<<endl;
+    		mesh.addTriangle(this->m_intersections[ExtendedMCTable[index][a]], index_center, this->m_intersections[ExtendedMCTable[index][a+1]]);
+    	}
+//    	cerr<<index<<endl;
+    	//------------------------------
     }
     else     // No sharp features present -> use standard marching cubes
     {
