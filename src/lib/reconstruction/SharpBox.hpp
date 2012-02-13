@@ -30,6 +30,7 @@
 
 #include "FastBox.hpp"
 #include <float.h>
+#include "ExtendedMCTable.hpp"
 
 namespace lssr
 {
