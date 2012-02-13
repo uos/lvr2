@@ -357,7 +357,12 @@ int main(int argc, char** argv)
                 "Created with las-vegas-reconstruction: http://las-vegas.uos.de/" ) );
 
 	// Create output model and save to file
-	ModelPtr m( new Model( mesh.meshBuffer(), surface->pointBuffer() ) );
+	ModelPtr m( new Model( mesh.meshBuffer() ) );
+
+	if(options.saveOriginalData())
+	{
+	    m->m_pointCloud = model->m_pointCloud;
+	}
 	ModelFactory::saveModel( m, "triangle_mesh.ply", save_opts );
 
 	// Save obj model if textures were generated
