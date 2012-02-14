@@ -204,7 +204,12 @@ int main(int argc, char** argv)
     // Create point set surface object
     if(pcm_name == "PCL")
     {
+#ifdef _USE_PCL_
         surface = psSurface::Ptr( new pclSurface(p_loader));
+#else 
+        cout << timestamp << "Can't create a PCL point set surface without PCL installed." << endl;
+        exit(-1);
+#endif
     }
     else if(pcm_name == "STANN" || pcm_name == "FLANN" || pcm_name == "NABO")
     {
@@ -358,7 +363,12 @@ int main(int argc, char** argv)
                 "Created with las-vegas-reconstruction: http://las-vegas.uos.de/" ) );
 
 	// Create output model and save to file
-	ModelPtr m( new Model( mesh.meshBuffer(), surface->pointBuffer() ) );
+	ModelPtr m( new Model( mesh.meshBuffer() ) );
+
+	if(options.saveOriginalData())
+	{
+	    m->m_pointCloud = model->m_pointCloud;
+	}
 	ModelFactory::saveModel( m, "triangle_mesh.ply", save_opts );
 
 	// Save obj model if textures were generated
