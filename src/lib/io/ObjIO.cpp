@@ -71,7 +71,6 @@ namespace lssr
     size_t numVertexColors  = 0; // TODO: Set
 
     // Some output
-    /*
     cout << timestamp << "Number of vertices: "            << numVertices      << endl;
     cout << timestamp << "Number of vertex normals: "      << numVertexNormals << endl;
     cout << timestamp << "Number of vertex colors: "       << numVertexColors  << endl;
@@ -88,7 +87,6 @@ namespace lssr
 	cout << timestamp << "Found a camera" << endl;
       }
     cout << endl;
-    */
 
     // Buffers
     floatArr vertices;
