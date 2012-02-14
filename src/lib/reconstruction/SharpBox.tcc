@@ -136,7 +136,7 @@ void SharpBox<VertexT, NormalT>::getSurface(
 
 
     // Sharp feature detected -> use extended marching cubes
-    if (containsSharpFeature)
+    if (containsSharpFeature && ExtendedMCTable[index][0] != -1)
     {
     	uint edge_index = 0;
 
@@ -187,11 +187,8 @@ void SharpBox<VertexT, NormalT>::getSurface(
     	// Add triangle actually does the normal interpolation for us.
     	for(int a = 0; ExtendedMCTable[index][a] != -1; a+= 2)
     	{
-    		if(this->m_intersections[ExtendedMCTable[index][a]] == this->INVALID_INDEX) cout<<"PROBLEM a "<<index<<endl;
-    		if(this->m_intersections[ExtendedMCTable[index][a+1]] == this->INVALID_INDEX) cout<<"PROBLEM a+1 "<<index<<endl;
     		mesh.addTriangle(this->m_intersections[ExtendedMCTable[index][a]], index_center, this->m_intersections[ExtendedMCTable[index][a+1]]);
     	}
-//    	cerr<<index<<endl;
     	//------------------------------
     }
     else     // No sharp features present -> use standard marching cubes
