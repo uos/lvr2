@@ -187,6 +187,7 @@ int obj_parse_mtl_file(char *filename, list *material_list)
 	FILE *mtl_file_stream;
 	
 	// open scene
+	
 	mtl_file_stream = fopen( filename, "r");
 	if(mtl_file_stream == 0)
 	{
@@ -403,6 +404,14 @@ int obj_parse_obj_file(obj_growable_scene_data *growable_data, char *filename)
 		else if( strequal(current_token, "mtllib") ) // mtllib
 		{
 			strncpy(growable_data->material_filename, strtok(NULL, WHITESPACE), OBJ_FILENAME_LENGTH);
+			
+			// add path to .mtl file
+			string path = getPathOf(filename);
+			string matFileName(growable_data->material_filename);
+			string f = path + "/" + matFileName;
+			strncpy(growable_data->material_filename, f.c_str(), f.length() + 1);
+			fprintf(stdout, "Reading material information from '%s'", growable_data->material_filename);
+
 			obj_parse_mtl_file(growable_data->material_filename, &growable_data->material_list);
 			continue;
 		}
@@ -545,6 +554,7 @@ int parse_obj_scene(obj_scene_data *data_out, char *filename)
 	if( obj_parse_obj_file(&growable_data, filename) == 0)
 		return 0;
 	
+
 	//print_vector(NORMAL, "Max bounds are: ", &growable_data->extreme_dimensions[1]);
 	//print_vector(NORMAL, "Min bounds are: ", &growable_data->extreme_dimensions[0]);
 
