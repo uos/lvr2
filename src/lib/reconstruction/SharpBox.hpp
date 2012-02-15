@@ -88,7 +88,7 @@ private:
      */
     void getNormals(VertexT vertex_positions[], NormalT vertex_normals[]);
 
-    void detectSharpFeatures(NormalT vertex_normals[], uint index);
+    void detectSharpFeatures(VertexT vertex_positions[], NormalT vertex_normals[], uint index);
 
     // the point set surface
     typename PointsetSurface<VertexT>::Ptr m_surface;
