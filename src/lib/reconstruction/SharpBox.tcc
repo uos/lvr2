@@ -27,7 +27,6 @@
 namespace lssr
 {
 
-//TODO: set in main()
 template<typename VertexT, typename NormalT>
 float SharpBox<VertexT, NormalT>::m_theta_sharp = 0.9;
 
