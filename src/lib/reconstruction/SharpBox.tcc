@@ -58,8 +58,17 @@ void SharpBox<VertexT, NormalT>::getNormals(VertexT vertex_positions[], NormalT 
 }
 
 template<typename VertexT, typename NormalT>
-void SharpBox<VertexT, NormalT>::detectSharpFeatures(NormalT vertex_normals[], uint index)
+void SharpBox<VertexT, NormalT>::detectSharpFeatures(VertexT vertex_positions[], NormalT vertex_normals[], uint index)
 {
+	//  skip unhandled configurations
+	if (ExtendedMCTable[index][0] == -1)
+	{
+		m_containsSharpCorner = m_containsSharpFeature = false;
+		return;
+	}
+
+	getNormals(vertex_positions, vertex_normals);
+
 	NormalT n_asterisk;
 	float phi = FLT_MAX;
 
@@ -108,12 +117,13 @@ void SharpBox<VertexT, NormalT>::detectSharpFeatures(NormalT vertex_normals[], u
 		}
 	}
 
-	if(        index == 1   || index == 2   || index == 4   || index == 8
+	// Check for inconsistencies
+	if(        index == 1   || index == 2   || index == 4   || index == 8		//corners
 			|| index == 16  || index == 32  || index == 64  || index == 128
 			|| index == 254 || index == 253 || index == 251 || index == 247
 			|| index == 239 || index == 223 || index == 191 || index == 127 )
 	{
-		if (m_containsSharpCorner == false)
+		if (m_containsSharpCorner == false) // contradiction -> use standard marching cubes
 		{
 			m_containsSharpCorner = m_containsSharpFeature = false;
 		}
@@ -121,11 +131,6 @@ void SharpBox<VertexT, NormalT>::detectSharpFeatures(NormalT vertex_normals[], u
 	else
 	{
 		m_containsSharpCorner = false;
-	}
-
-	if (ExtendedMCTable[index][0] == -1)
-	{
-		m_containsSharpCorner = m_containsSharpFeature = false;
 	}
 }
 
@@ -145,7 +150,6 @@ void SharpBox<VertexT, NormalT>::getSurface(
 	getCorners(corners, query_points);
 	getDistances(distances, query_points);
 	getIntersections(corners, distances, vertex_positions);
-	getNormals(vertex_positions, vertex_normals);
 
 	int index = getIndex(query_points);
 
@@ -159,7 +163,7 @@ void SharpBox<VertexT, NormalT>::getSurface(
 	}
 
 	// Check for presence of sharp features in the box
-	this->detectSharpFeatures(vertex_normals, index);
+	this->detectSharpFeatures(vertex_positions, vertex_normals, index);
 
 	uint edge_index = 0;
 	int triangle_indices[3];
