@@ -39,6 +39,7 @@ SharpBox<VertexT, NormalT>::SharpBox(VertexT v, typename PointsetSurface<VertexT
 {
 	m_surface = surface;
 	m_containsSharpFeature = false;
+	m_containsSharpCorner = false;
 }
 
 template<typename VertexT, typename NormalT>
@@ -85,8 +86,6 @@ void SharpBox<VertexT, NormalT>::getSurface(
     }
 
     // Check for presence of sharp features in the box
-    bool containsSharpFeature = false;
-    bool containsSharpCorner = false;
     NormalT n_asterisk;
     float phi = FLT_MAX;
 
@@ -111,7 +110,7 @@ void SharpBox<VertexT, NormalT>::getSurface(
     					}
     					if (vertex_normals[edge_index1] * vertex_normals[edge_index2] < m_theta_sharp)
     					{
-    						containsSharpFeature = true;
+    						m_containsSharpFeature = true;
     					}
     				}
     			}
@@ -120,7 +119,7 @@ void SharpBox<VertexT, NormalT>::getSurface(
     }
 
     // Check for presence of sharp corners
-    if (containsSharpFeature)
+    if (m_containsSharpFeature)
     {
     	for(int a = 0; MCTable[index][a] != -1; a+= 3)
     	{
@@ -129,7 +128,7 @@ void SharpBox<VertexT, NormalT>::getSurface(
     			edge_index1 = MCTable[index][a + b];
     			if (fabs(vertex_normals[edge_index1] * n_asterisk) > m_phi_corner)
     			{
-    				containsSharpCorner = true;
+    				m_containsSharpCorner = true;
     			}
     		}
     	}
@@ -137,10 +136,9 @@ void SharpBox<VertexT, NormalT>::getSurface(
 
 
     // Sharp feature detected -> use extended marching cubes
-    if (containsSharpFeature && ExtendedMCTable[index][0] != -1)
+    if (m_containsSharpFeature && ExtendedMCTable[index][0] != -1)
     {
     	// save for edge flipping
-    	m_containsSharpFeature = true;
     	m_extendedMCIndex = index;
 
     	uint edge_index = 0;
@@ -198,6 +196,7 @@ void SharpBox<VertexT, NormalT>::getSurface(
     }
     else     // No sharp features present -> use standard marching cubes
     {
+    	m_containsSharpFeature = false;
     	uint edge_index = 0;
 
     	int triangle_indices[3];
