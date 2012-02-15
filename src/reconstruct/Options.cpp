@@ -63,6 +63,8 @@ Options::Options(int argc, char** argv) : m_descr("Supported options")
 		        ("depth", value<int>(&m_depth)->default_value(100), "Maximum recursion depth for region growing.")
 		        ("recalcNormals,r", "Always estimate normals, even if given in .ply file.")
 		        ("threads", value<int>(&m_numThreads)->default_value( omp_get_num_procs() ), "Number of threads")
+		        ("sft", value<float>(&m_sft)->default_value(0.9), "Sharp feature threshold when using sharp feature decomposition")
+		        ("sct", value<float>(&m_sct)->default_value(0.7), "Sharp corner threshold when using sharp feature decomposition")
         ;
 
 	m_pdescr.add("inputFile", -1);
@@ -81,6 +83,17 @@ float Options::getVoxelsize() const
 {
 	return m_variables["voxelsize"].as<float>();
 }
+
+float Options::getSharpFeatureThreshold() const
+{
+	return m_variables["sft"].as<float>();
+}
+
+float Options::getSharpCornerThreshold() const
+{
+	return m_variables["sct"].as<float>();
+}
+
 
 int Options::getNumThreads() const
 {
