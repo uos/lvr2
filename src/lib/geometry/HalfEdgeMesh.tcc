@@ -450,6 +450,16 @@ void HalfEdgeMesh<VertexT, NormalT>::flipEdge(HEdge* edge)
 }
 
     template<typename VertexT, typename NormalT>
+void HalfEdgeMesh<VertexT, NormalT>::flipEdge(uint v1, uint v2)
+{
+	HEdge* edge = halfEdgeToVertex(m_vertices[v1], m_vertices[v2]);
+	if(edge)
+	{
+		flipEdge(edge);
+	}
+}
+
+    template<typename VertexT, typename NormalT>
 int HalfEdgeMesh<VertexT, NormalT>::stackSafeRegionGrowing(HFace* start_face, NormalT &normal, float &angle, Region<VertexT, NormalT>* region)
 {
     // stores the faces where we need to continue

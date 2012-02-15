@@ -70,6 +70,10 @@ public:
     // used for Edge Flipping
     bool m_containsSharpFeature;
 
+    // Indicates if the Box contains a Sharp Corner
+    // used for Edge Flipping
+    bool m_containsSharpCorner;
+
     // The surface index of the Extended MC-Table
     // used for Edge Flipping
     uint m_extendedMCIndex;
