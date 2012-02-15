@@ -28,3 +28,11 @@ string getPathOf(const char *filename)
     }
   return "";
 }
+
+void addPathTo(char *cpTo, char *filenameWithPath, char *filenameWithoutPath)
+{
+  string path = getPathOf(filenameWithPath);
+  string matFileName(filenameWithoutPath);
+  string f = path + "/" + matFileName;
+  strncpy(cpTo, f.c_str(), f.length() + 1);
+}
