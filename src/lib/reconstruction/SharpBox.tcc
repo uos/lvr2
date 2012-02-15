@@ -38,6 +38,7 @@ template<typename VertexT, typename NormalT>
 SharpBox<VertexT, NormalT>::SharpBox(VertexT v, typename PointsetSurface<VertexT>::Ptr surface) : FastBox<VertexT, NormalT>(v)
 {
 	m_surface = surface;
+	m_containsSharpFeature = false;
 }
 
 template<typename VertexT, typename NormalT>
@@ -138,6 +139,10 @@ void SharpBox<VertexT, NormalT>::getSurface(
     // Sharp feature detected -> use extended marching cubes
     if (containsSharpFeature && ExtendedMCTable[index][0] != -1)
     {
+    	// save for edge flipping
+    	m_containsSharpFeature = true;
+    	m_extendedMCIndex = index;
+
     	uint edge_index = 0;
 
     	int triangle_indices[3];
@@ -179,11 +184,11 @@ void SharpBox<VertexT, NormalT>::getSurface(
     		}
     	}
     	//------------------------------
+    	//TODO calculate intsrsection for the new vertex position
     	VertexT v = this->m_center;
     	mesh.addVertex(v);
     	mesh.addNormal(NormalT());
     	uint index_center = globalIndex++;
-
     	// Add triangle actually does the normal interpolation for us.
     	for(int a = 0; ExtendedMCTable[index][a] != -1; a+= 2)
     	{

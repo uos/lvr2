@@ -66,6 +66,13 @@ public:
     // Threshold angle for corner detection
     static float m_phi_corner;
 
+    // Indicates if the Box contains a Sharp Feature
+    // used for Edge Flipping
+    bool m_containsSharpFeature;
+
+    // The surface index of the Extended MC-Table
+    // used for Edge Flipping
+    uint m_extendedMCIndex;
 
 private:
     /**
