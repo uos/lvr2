@@ -33,6 +33,7 @@
 #include "reconstruction/LocalApproximation.hpp"
 #include "reconstruction/FastBox.hpp"
 #include "reconstruction/TetraederBox.hpp"
+#include "reconstruction/BilinearFastBox.hpp"
 #include "reconstruction/QueryPoint.hpp"
 #include "reconstruction/PointsetSurface.hpp"
 
