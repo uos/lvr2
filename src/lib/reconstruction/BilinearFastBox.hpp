@@ -27,6 +27,7 @@
 #define BILINEARFASTBOX_HPP_
 
 #include "FastBox.hpp"
+#include "PointsetSurface.hpp"
 #include "geometry/HalfEdgeMesh.hpp"
 #include "geometry/HalfEdgeFace.hpp"
 
@@ -56,10 +57,12 @@ public:
             vector<QueryPoint<VertexT> > &query_points,
             uint &globalIndex);
 
-    void optimizePlanarVertices();
+    void optimizePlanarFaces(typename PointsetSurface<VertexT>::Ptr surface);
 
 private:
     vector<HalfEdgeFace<VertexT, NormalT>* > m_faces;
+    int                                      m_mcIndex;
+
 };
 
 } /* namespace lssr */

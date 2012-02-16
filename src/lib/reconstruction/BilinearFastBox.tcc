@@ -49,6 +49,7 @@ void BilinearFastBox<VertexT, NormalT>::getSurface(
     getIntersections(corners, distances, vertex_positions);
 
     int index = getIndex(qp);
+    m_mcIndex = index;
 
     // Do not create traingles for invalid boxes
     for (int i = 0; i < 8; i++)
@@ -103,6 +104,22 @@ void BilinearFastBox<VertexT, NormalT>::getSurface(
         HalfEdgeFace* f;
         mesh.addTriangle(triangle_indices[0], triangle_indices[1], triangle_indices[2], f);
         m_faces.push_back(f);
+    }
+}
+
+template<typename VertexT, typename NormalT>
+void BilinearFastBox<VertexT, NormalT>::optimizePlanarFaces(typename PointsetSurface<VertexT>::Ptr surface)
+{
+    // Check MC case
+    if(m_mcIndex == 51 || m_mcIndex == 204)
+    {
+        typename SearchTree<VertexT>::Ptr tree = surface::searchTree();
+
+        HalfEdgeFace* edgeFaces[4];
+        for(int i = 0; i < m_hFaces.size(); i++)
+        {
+
+        }
     }
 }
 
