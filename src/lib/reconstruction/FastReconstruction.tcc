@@ -280,8 +280,9 @@ void FastReconstruction<VertexT, NormalT>::getMesh(BaseMesh<VertexT, NormalT> &m
 	    {
 	        BilinearFastBox<VertexT, NormalT>* box = static_cast<BilinearFastBox<VertexT, NormalT>*> (it->second);
 	        box->optimizePlanarFaces(this->m_surface);
+	        ++progress;
 	    }
-	    ++progress;
+
 	}
 }
 

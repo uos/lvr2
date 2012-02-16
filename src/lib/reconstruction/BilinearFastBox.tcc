@@ -28,6 +28,12 @@
 namespace lssr
 {
 
+static int PlaneTable[28] =
+{
+        204, 51, 153, 102, 240, 15,
+        192, 63, 48, 207, 12, 243, 3, 252, 96, 144, 6, 9, 159, 111, 249, 246, 136, 119, 17, 238, 34, 221
+};
+
 template<typename VertexT, typename NormalT>
 BilinearFastBox<VertexT, NormalT>::BilinearFastBox(VertexT &center)
     : FastBox<VertexT, NormalT>(center)
@@ -37,10 +43,14 @@ BilinearFastBox<VertexT, NormalT>::BilinearFastBox(VertexT &center)
 
 template<typename VertexT, typename NormalT>
 void BilinearFastBox<VertexT, NormalT>::getSurface(
-        HalfEdgeMesh<VertexT, NormalT> &mesh,
+        BaseMesh<VertexT, NormalT> &m,
         vector<QueryPoint<VertexT> > &qp,
         uint &globalIndex)
 {
+    // Cast mesh type
+    HalfEdgeMesh<VertexT, NormalT> *mesh;
+    mesh = static_cast<HalfEdgeMesh<VertexT, NormalT>* >(&m);
+
     VertexT corners[8];
     VertexT vertex_positions[12];
 
@@ -83,8 +93,8 @@ void BilinearFastBox<VertexT, NormalT>::getSurface(
                 // The normal is inserted to assure that vertex
                 // and normal array always have the same size.
                 // The actual normal is interpolated later.
-                mesh.addVertex(v);
-                mesh.addNormal(NormalT());
+                mesh->addVertex(v);
+                mesh->addNormal(NormalT());
                 for(int i = 0; i < 3; i++)
                 {
                     FastBox<VertexT, NormalT>* current_neighbor = this->m_neighbors[neighbor_table[edge_index][i]];
@@ -104,7 +114,7 @@ void BilinearFastBox<VertexT, NormalT>::getSurface(
 
         // Add triangle actually does the normal interpolation for us.
         HalfEdgeFace<VertexT, NormalT>* f;
-        mesh.addTriangle(triangle_indices[0], triangle_indices[1], triangle_indices[2], f);
+        mesh->addTriangle(triangle_indices[0], triangle_indices[1], triangle_indices[2], f);
         m_faces.push_back(f);
     }
 }
@@ -112,15 +122,45 @@ void BilinearFastBox<VertexT, NormalT>::getSurface(
 template<typename VertexT, typename NormalT>
 void BilinearFastBox<VertexT, NormalT>::optimizePlanarFaces(typename PointsetSurface<VertexT>::Ptr surface)
 {
-    // Check MC case
-    if(this->m_mcIndex == 51 || this->m_mcIndex == 204)
-    {
-        typename SearchTree<VertexT>::Ptr tree = surface->searchTree();
+    typedef HalfEdge<HalfEdgeVertex<VertexT, NormalT>, HalfEdgeFace<VertexT, NormalT> > HEdge;
 
-        HalfEdgeFace<VertexT, NormalT>* edgeFaces[4];
-        for(int i = 0; i < m_faces.size(); i++)
+    // Check MC case
+    for(int a = 0; a < 28; a++)
+    {
+
+        if(this->m_mcIndex == PlaneTable[a])
         {
-            // do something...
+            typename SearchTree<VertexT>::Ptr tree = surface->searchTree();
+
+            // Detect triangles that are on the border of the mesh
+            vector<HEdge*> out_edges;
+            for(int i = 0; i < m_faces.size(); i++)
+            {
+                HalfEdgeFace<VertexT, NormalT>* face = m_faces[i];
+
+                HEdge* e = face->m_edge;
+                HEdge* f = face->m_edge->next;
+                HEdge* g = face->m_edge->next->next;
+                if(e->pair->face == 0) out_edges.push_back(e);
+                if(f->pair->face == 0) out_edges.push_back(f);
+                if(g->pair->face == 0) out_edges.push_back(g);
+
+            }
+
+            // Handle different cases
+            if(out_edges.size() == 1 || out_edges.size() == 2 )
+            {
+                // Get nearest points
+                for(int i = 0; i < out_edges.size(); i++)
+                {
+                    vector<VertexT> nearest1, nearest2;
+                    tree->kSearch( out_edges[0]->start->m_position, 1, nearest1);
+                    tree->kSearch( out_edges[0]->end->m_position, 1, nearest2);
+
+                    out_edges[i]->start->m_position = nearest1[0];
+                    out_edges[i]->end->m_position = nearest2[0];
+                }
+            }
         }
     }
 }
