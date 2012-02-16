@@ -53,7 +53,7 @@ public:
      *                      globalIndex + 1.
      */
     virtual void getSurface(
-            HalfEdgeMesh<VertexT, NormalT> &mesh,
+            BaseMesh<VertexT, NormalT> &mesh,
             vector<QueryPoint<VertexT> > &query_points,
             uint &globalIndex);
 
