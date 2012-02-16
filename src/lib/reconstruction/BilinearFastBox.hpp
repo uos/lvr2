@@ -28,6 +28,7 @@
 
 #include "FastBox.hpp"
 #include "geometry/HalfEdgeMesh.hpp"
+#include "geometry/HalfEdgeFace.hpp"
 
 namespace lssr
 {
@@ -54,6 +55,11 @@ public:
             HalfEdgeMesh<VertexT, NormalT> &mesh,
             vector<QueryPoint<VertexT> > &query_points,
             uint &globalIndex);
+
+    void optimizePlanarVertices();
+
+private:
+    vector<HalfEdgeFace<VertexT, NormalT>* > m_faces;
 };
 
 } /* namespace lssr */
