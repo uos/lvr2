@@ -271,6 +271,18 @@ void FastReconstruction<VertexT, NormalT>::getMesh(BaseMesh<VertexT, NormalT> &m
 		++progress;
 	}
 	cout << endl;
+
+	if(this->m_boxType == "PMC")
+	{
+	    string comment = timestamp.getElapsedTime() + "Optimizing plane contours  ";
+	    ProgressBar progress(m_cells.size(), comment);
+	    for(it = m_cells.begin(); it != m_cells.end(); it++)
+	    {
+	        BilinearFastBox<VertexT, NormalT>* box = static_cast<BilinearFastBox<VertexT, NormalT>*> (it->second);
+	        box->optimizePlanarFaces(this->m_surface);
+	    }
+	    ++progress;
+	}
 }
 
 template<typename VertexT, typename NormalT>
