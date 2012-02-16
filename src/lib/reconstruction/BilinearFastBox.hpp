@@ -35,7 +35,7 @@ namespace lssr
 {
 
 template<typename VertexT, typename NormalT>
-class BilinearFastBox
+class BilinearFastBox : public FastBox<VertexT, NormalT>
 {
 public:
     BilinearFastBox(VertexT &center);
@@ -65,5 +65,8 @@ private:
 
 };
 
+
 } /* namespace lssr */
+#include "BilinearFastBox.tcc"
+
 #endif /* BILINEARFASTBOX_HPP_ */

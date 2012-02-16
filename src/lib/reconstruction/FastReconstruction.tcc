@@ -182,9 +182,9 @@ void FastReconstruction<VertexT, NormalT>::createGrid()
 				{
 				    box = new TetraederBox<VertexT, NormalT>(box_center);
 				}
-				else
+				else if(m_boxType == "PMC")
 				{
-				    box = new PlanarFastBox<VertexT, NormalT>(box_center);
+				    box = new BilinearFastBox<VertexT, NormalT>(box_center);
 				}
 
 				//Setup the box itself
@@ -291,11 +291,10 @@ void FastReconstruction<VertexT, NormalT>::calcQueryPointValues(){
         //cout << euklideanDistance << " " << projectedDistance << endl;
 
         this->m_surface->distance(m_queryPoints[i].m_position, projectedDistance, euklideanDistance);
-        if (euklideanDistance > 1.4120 * 0.5 * m_voxelsize)
+        if (euklideanDistance > 1.4120 * m_voxelsize)
         {
-        	//m_queryPoints[i].m_invalid = true;
-        	cout << m_queryPoints[i].m_position[0] << " " << m_queryPoints[i].m_position[1] << " " <<  m_queryPoints[i].m_position[2] << endl;
-        }
+        	m_queryPoints[i].m_invalid = true;
+         }
         else
         {
             m_queryPoints[i].m_distance = projectedDistance;
