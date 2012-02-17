@@ -33,12 +33,12 @@ namespace lssr
 template<typename VertexT, typename NormalT>
 HalfEdgeMesh<VertexT, NormalT>::HalfEdgeMesh( 
         typename PointsetSurface<VertexT>::Ptr pm )
-        {
+{
     m_globalIndex = 0;
     m_colorRegions = false;
     m_pointCloudManager = pm;
     m_depth = 100;
-        }
+}
 
 
 template<typename VertexT, typename NormalT>
@@ -375,6 +375,17 @@ void HalfEdgeMesh<VertexT, NormalT>::flipEdge(HFace* f1, HFace* f2)
 }
 
 template<typename VertexT, typename NormalT>
+void HalfEdgeMesh<VertexT, NormalT>::flipEdge(uint v1, uint v2)
+{
+    HEdge* edge = halfEdgeToVertex(m_vertices[v1], m_vertices[v2]);
+    if(edge)
+    {
+        flipEdge(edge);
+    }
+}
+
+
+template<typename VertexT, typename NormalT>
 void HalfEdgeMesh<VertexT, NormalT>::flipEdge(HEdge* edge)
 {
     // This can only be done if there are two faces on both sides of the edge
@@ -516,7 +527,7 @@ void HalfEdgeMesh<VertexT, NormalT>::optimizePlanes(
         int min_region_size,
         int small_region_size,
         bool remove_flickering)
-        {
+{
     cout << timestamp << "Starting plane optimization with threshold " << angle << endl;
 
     // Magic numbers
@@ -598,7 +609,7 @@ void HalfEdgeMesh<VertexT, NormalT>::optimizePlanes(
         }
     }
 
-        }
+}
 
 template<typename VertexT, typename NormalT>
 void HalfEdgeMesh<VertexT, NormalT>::deleteRegions()

@@ -135,6 +135,14 @@ public:
 	virtual void addTriangle(uint a, uint b, uint c, HFace* &f);
 
 	/**
+	 * @brief	Flip the edge between vertex index v1 and v2
+	 *
+	 * @param	v1	The index of the first vertex
+	 * @param	v2	The index of the second vertex
+	 */
+	virtual void flipEdge(uint v1, uint v2);
+
+	/**
 	 * @brief	Applies region growing and regression plane algorithms and deletes small
 	 * 			regions
 	 *

@@ -224,6 +224,16 @@ public:
 	 */
 	float getTexelSize() const;
 
+	/**
+	 * @brief   Returns the sharp feature threshold when using sharp feature decomposition
+	 */
+	float getSharpFeatureThreshold() const;
+
+	/**
+		 * @brief   Returns the sharp corner threshold when using sharp feature decomposition
+		 */
+	float getSharpCornerThreshold() const;
+
     /**
      * @brief   Returns the fusion threshold for tesselation
      */
@@ -299,6 +309,12 @@ private:
 
 	/// Threshold for line fusing when tesselating
 	float                           m_lineFusionThreshold;
+
+	/// Sharp feature threshold when using sharp feature decomposition
+	float 							m_sft;
+
+	/// Sharp corner threshold when using sharp feature decomposition
+	float 							m_sct;
 };
 
 
@@ -329,6 +345,11 @@ inline ostream& operator<<(ostream& os, const Options &o)
 	cout << "##### k_n \t\t\t: "              << o.getKn()              << endl;
 	cout << "##### k_i \t\t\t: "              << o.getKi()              << endl;
 	cout << "##### k_d \t\t\t: "              << o.getKd()              << endl;
+	if(o.getDecomposition() == "SF")
+	{
+		cout << "##### Sharp feature threshold \t: " << o.getSharpFeatureThreshold() << endl;
+		cout << "##### Sharp corner threshold \t: " << o.getSharpCornerThreshold() << endl;
+	}
 	if(o.retesselate())
 	{
 		cout << "##### Retesselate \t\t: YES"     << endl;

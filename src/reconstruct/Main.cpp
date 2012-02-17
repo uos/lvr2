@@ -145,6 +145,7 @@
 #include "geometry/Matrix4.hpp"
 #include "geometry/HalfEdgeMesh.hpp"
 #include "geometry/Texture.hpp"
+#include "reconstruction/SharpBox.hpp"
 
 // PCL related includes
 #ifdef _USE_PCL_
@@ -274,6 +275,15 @@ int main(int argc, char** argv)
     if(options.getTexelSize())
     {
     	Texture<cVertex, cNormal>::m_texelSize = options.getTexelSize();
+    }
+
+    if(options.getSharpFeatureThreshold())
+    {
+    	SharpBox<cVertex, cNormal>::m_theta_sharp = options.getSharpFeatureThreshold();
+    }
+    if(options.getSharpCornerThreshold())
+    {
+    	SharpBox<cVertex, cNormal>::m_phi_corner = options.getSharpCornerThreshold();
     }
 
     // Determine whether to use intersections or voxelsize

@@ -69,6 +69,14 @@ public:
     virtual void distance(VertexT v, float &projectedDistance, float &euklideanDistance);
 
     /**
+     * @brief 	Interpolates a surface normal at the given position
+     * @param	position the position to calculate a normal for
+     *
+     * @return 	The normal
+     */
+    virtual VertexT getInterpolatedNormal(VertexT position);
+
+    /**
      * @brief   Calculates surface normals for each data point in the given
      *          PointBuffeer. If the buffer alreay contains normal information
      *          it will be overwritten with the new normals.
