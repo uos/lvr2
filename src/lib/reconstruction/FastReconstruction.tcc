@@ -313,9 +313,8 @@ void FastReconstruction<VertexT, NormalT>::calcQueryPointValues(){
         {
             m_queryPoints[i].m_distance = projectedDistance;
         }
-        //++progress;
+        ++progress;
     }
-
     cout << endl;
     cout << timestamp << "Elapsed time: " << ts << endl;
 }

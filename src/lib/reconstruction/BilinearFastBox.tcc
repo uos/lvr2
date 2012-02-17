@@ -124,56 +124,49 @@ void BilinearFastBox<VertexT, NormalT>::optimizePlanarFaces(typename PointsetSur
 {
     typedef HalfEdge<HalfEdgeVertex<VertexT, NormalT>, HalfEdgeFace<VertexT, NormalT> > HEdge;
 
-    // Check MC case
-    for(int a = 0; a < 28; a++)
+    typename SearchTree<VertexT>::Ptr tree = surface->searchTree();
+
+    // Detect triangles that are on the border of the mesh
+    vector<HEdge*> out_edges;
+    for(int i = 0; i < m_faces.size(); i++)
     {
+        HalfEdgeFace<VertexT, NormalT>* face = m_faces[i];
 
-        if(this->m_mcIndex == PlaneTable[a])
+        HEdge* e = face->m_edge;
+        HEdge* f = face->m_edge->next;
+        HEdge* g = face->m_edge->next->next;
+        if(e->pair->face == 0) out_edges.push_back(e);
+        if(f->pair->face == 0) out_edges.push_back(f);
+        if(g->pair->face == 0) out_edges.push_back(g);
+
+    }
+
+    // Handle different cases
+    if(out_edges.size() == 1 || out_edges.size() == 2 )
+    {
+        // Get nearest points
+        for(int i = 0; i < out_edges.size(); i++)
         {
-            typename SearchTree<VertexT>::Ptr tree = surface->searchTree();
 
-            // Detect triangles that are on the border of the mesh
-            vector<HEdge*> out_edges;
-            for(int i = 0; i < m_faces.size(); i++)
+            vector<VertexT> nearest1, nearest2;
+            tree->kSearch( out_edges[i]->start->m_position, 1, nearest1);
+
+            // Hmmm, sometimes the k-search seems to fail...
+            if(nearest1.size() > 0)
             {
-                HalfEdgeFace<VertexT, NormalT>* face = m_faces[i];
-
-                HEdge* e = face->m_edge;
-                HEdge* f = face->m_edge->next;
-                HEdge* g = face->m_edge->next->next;
-                if(e->pair->face == 0) out_edges.push_back(e);
-                if(f->pair->face == 0) out_edges.push_back(f);
-                if(g->pair->face == 0) out_edges.push_back(g);
-
+                out_edges[i]->start->m_position = nearest1[0];
             }
 
-            // Handle different cases
-            if(out_edges.size() == 1 || out_edges.size() == 2 )
+            tree->kSearch( out_edges[i]->end->m_position, 1, nearest2);
+
+            if(nearest2.size() > 0)
             {
-                // Get nearest points
-                for(int i = 0; i < out_edges.size(); i++)
-                {
-
-                    vector<VertexT> nearest1, nearest2;
-                    tree->kSearch( out_edges[i]->start->m_position, 1, nearest1);
-
-                    // Hmmm, sometimes the k-search seems to fail...
-                    if(nearest1.size() > 0)
-                    {
-                        out_edges[i]->start->m_position = nearest1[0];
-                    }
-
-                    tree->kSearch( out_edges[i]->end->m_position, 1, nearest2);
-
-                    if(nearest2.size() > 0)
-                    {
-                        out_edges[i]->end->m_position = nearest2[0];
-                    }
-
-                }
+                out_edges[i]->end->m_position = nearest2[0];
             }
+
         }
     }
+
 }
 
 template<typename VertexT, typename NormalT>
