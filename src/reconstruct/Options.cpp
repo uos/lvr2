@@ -41,7 +41,7 @@ Options::Options(int argc, char** argv) : m_descr("Supported options")
 		        ("intersections,i", value<int>(&m_intersections)->default_value(-1), "Number of intersections used for reconstruction. If other than -1, voxelsize will calculated automatically.")
 		        ("pcm,p", value<string>(&m_pcm)->default_value("FLANN"), "Point cloud manager used for point handling and normal estimation. Choose from {STANN, PCL, NABO}.")
                 ("ransac", "Set this flag for RANSAC based normal estimation.")
-		        ("decomposition,d", value<string>(&m_pcm)->default_value("MC"), "Defines the type of decomposition that ist used for the voxels (Standard Marching Cubes (MC) or Tetraeder (MT) decomposition. Choose from {MC, MT}")
+		        ("decomposition,d", value<string>(&m_pcm)->default_value("MC"), "Defines the type of decomposition that is used for the voxels (Standard Marching Cubes (MC), Standard Marching Cubes with sharp feature detection (SF) or Tetraeder (MT) decomposition. Choose from {MC, MT, SF}")
 		        ("optimizePlanes,o", "Shift all triangle vertices of a cluster onto their shared plane")
                 ("planeIterations", value<int>(&m_planeIterations)->default_value(3), "Number of iterations for plane optimization")
                 ("fillHoles,f", value<int>(&m_fillHoles)->default_value(30), "Maximum size for hole filling")
@@ -63,6 +63,8 @@ Options::Options(int argc, char** argv) : m_descr("Supported options")
 		        ("depth", value<int>(&m_depth)->default_value(100), "Maximum recursion depth for region growing.")
 		        ("recalcNormals,r", "Always estimate normals, even if given in .ply file.")
 		        ("threads", value<int>(&m_numThreads)->default_value( omp_get_num_procs() ), "Number of threads")
+		        ("sft", value<float>(&m_sft)->default_value(0.9), "Sharp feature threshold when using sharp feature decomposition")
+		        ("sct", value<float>(&m_sct)->default_value(0.7), "Sharp corner threshold when using sharp feature decomposition")
         ;
 
 	m_pdescr.add("inputFile", -1);
@@ -81,6 +83,17 @@ float Options::getVoxelsize() const
 {
 	return m_variables["voxelsize"].as<float>();
 }
+
+float Options::getSharpFeatureThreshold() const
+{
+	return m_variables["sft"].as<float>();
+}
+
+float Options::getSharpCornerThreshold() const
+{
+	return m_variables["sct"].as<float>();
+}
+
 
 int Options::getNumThreads() const
 {

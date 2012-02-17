@@ -66,6 +66,13 @@ public:
      */
     virtual void calculateSurfaceNormals() = 0;
 
+    /**
+     * @brief 	Interpolates a surface normal at the given position
+     * @param	position the position to calculate a normal for
+     *
+     * @return 	The normal
+     */
+    virtual VertexT getInterpolatedNormal(VertexT position);
 
     /**
      * @brief   Returns the internal point buffer. After a call of

@@ -102,6 +102,33 @@ void PCLKSurface<VertexT, NormalT>::calculateSurfaceNormals()
 }
 
 template<typename VertexT, typename NormalT>
+VertexT PCLKSurface<VertexT, NormalT>::getInterpolatedNormal(VertexT position)
+{
+
+    std::vector< int > k_indices;
+    std::vector< float > k_distances;
+
+    pcl::PointXYZ qp;
+    qp.x = position.x;
+    qp.y = position.y;
+    qp.z = position.z;
+
+    // Query tree
+    int res = m_kdTree->nearestKSearch(qp, this->m_kn, k_indices, k_distances);
+
+	VertexT result(0,0,0);
+	for (int i = 0; i < res; i++)
+	{
+	    int ind = k_indices[i];
+		result[0] += m_pointNormals->points[ind].normal[0];
+		result[1] += m_pointNormals->points[ind].normal[1];
+		result[2] += m_pointNormals->points[ind].normal[2];
+	}
+	result /= res;
+	return result;
+}
+
+template<typename VertexT, typename NormalT>
 void PCLKSurface<VertexT, NormalT>::distance(VertexT v, float &projectedDistance, float &euklideanDistance)
 {
     std::vector< int > k_indices;

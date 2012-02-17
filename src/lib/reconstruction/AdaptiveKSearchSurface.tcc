@@ -418,8 +418,6 @@ void AdaptiveKSearchSurface<VertexT, NormalT>::distance(VertexT v, float &projec
     nearest /= k;
     normal.normalize();
 
-    //cout << "MEAN: " << normal << endl;
-
     //Calculate distance
     projectedDistance = (v - nearest) * normal;
     euklideanDistance = (v - nearest).length();
