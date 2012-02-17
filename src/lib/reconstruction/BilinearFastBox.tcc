@@ -153,12 +153,23 @@ void BilinearFastBox<VertexT, NormalT>::optimizePlanarFaces(typename PointsetSur
                 // Get nearest points
                 for(int i = 0; i < out_edges.size(); i++)
                 {
-                    vector<VertexT> nearest1, nearest2;
-                    tree->kSearch( out_edges[0]->start->m_position, 1, nearest1);
-                    tree->kSearch( out_edges[0]->end->m_position, 1, nearest2);
 
-                    out_edges[i]->start->m_position = nearest1[0];
-                    out_edges[i]->end->m_position = nearest2[0];
+                    vector<VertexT> nearest1, nearest2;
+                    tree->kSearch( out_edges[i]->start->m_position, 1, nearest1);
+
+                    // Hmmm, sometimes the k-search seems to fail...
+                    if(nearest1.size() > 0)
+                    {
+                        out_edges[i]->start->m_position = nearest1[0];
+                    }
+
+                    tree->kSearch( out_edges[i]->end->m_position, 1, nearest2);
+
+                    if(nearest2.size() > 0)
+                    {
+                        out_edges[i]->end->m_position = nearest2[0];
+                    }
+
                 }
             }
         }

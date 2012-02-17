@@ -282,6 +282,7 @@ void FastReconstruction<VertexT, NormalT>::getMesh(BaseMesh<VertexT, NormalT> &m
 	        box->optimizePlanarFaces(this->m_surface);
 	        ++progress;
 	    }
+	    cout << endl;
 
 	}
 }
@@ -296,7 +297,7 @@ void FastReconstruction<VertexT, NormalT>::calcQueryPointValues(){
     Timestamp ts;
 
     // Calculate a distance value for each query point
-    //#pragma omp parallel for
+    #pragma omp parallel for
     for(size_t i = 0; i < m_queryPoints.size(); i++){
         float projectedDistance;
         float euklideanDistance;
