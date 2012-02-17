@@ -294,28 +294,28 @@ void FastReconstruction<VertexT, NormalT>::getMesh(BaseMesh<VertexT, NormalT> &m
 
 	}
 
-	if(this->m_boxType == "PMC")
-{
-	for(it = m_cells.begin(); it != m_cells.end(); it++)
+	if(this->m_boxType == "SF")
 	{
-		SharpBox<VertexT, NormalT>* sb;
-		sb = (SharpBox<VertexT, NormalT>*) it->second;
-		if(sb->m_containsSharpFeature)
-		{
-			if(sb->m_containsSharpCorner)
-			{
-				mesh.flipEdge(sb->m_intersections[ExtendedMCTable[sb->m_extendedMCIndex][0]], sb->m_intersections[ExtendedMCTable[sb->m_extendedMCIndex][1]]);
-				mesh.flipEdge(sb->m_intersections[ExtendedMCTable[sb->m_extendedMCIndex][2]], sb->m_intersections[ExtendedMCTable[sb->m_extendedMCIndex][3]]);
-				mesh.flipEdge(sb->m_intersections[ExtendedMCTable[sb->m_extendedMCIndex][4]], sb->m_intersections[ExtendedMCTable[sb->m_extendedMCIndex][5]]);
-			}
-			else
-			{
-				mesh.flipEdge(sb->m_intersections[ExtendedMCTable[sb->m_extendedMCIndex][0]], sb->m_intersections[ExtendedMCTable[sb->m_extendedMCIndex][1]]);
-				mesh.flipEdge(sb->m_intersections[ExtendedMCTable[sb->m_extendedMCIndex][4]], sb->m_intersections[ExtendedMCTable[sb->m_extendedMCIndex][5]]);
-			}
-		}
+	    for(it = m_cells.begin(); it != m_cells.end(); it++)
+	    {
+	        SharpBox<VertexT, NormalT>* sb;
+	        sb = (SharpBox<VertexT, NormalT>*) it->second;
+	        if(sb->m_containsSharpFeature)
+	        {
+	            if(sb->m_containsSharpCorner)
+	            {
+	                mesh.flipEdge(sb->m_intersections[ExtendedMCTable[sb->m_extendedMCIndex][0]], sb->m_intersections[ExtendedMCTable[sb->m_extendedMCIndex][1]]);
+	                mesh.flipEdge(sb->m_intersections[ExtendedMCTable[sb->m_extendedMCIndex][2]], sb->m_intersections[ExtendedMCTable[sb->m_extendedMCIndex][3]]);
+	                mesh.flipEdge(sb->m_intersections[ExtendedMCTable[sb->m_extendedMCIndex][4]], sb->m_intersections[ExtendedMCTable[sb->m_extendedMCIndex][5]]);
+	            }
+	            else
+	            {
+	                mesh.flipEdge(sb->m_intersections[ExtendedMCTable[sb->m_extendedMCIndex][0]], sb->m_intersections[ExtendedMCTable[sb->m_extendedMCIndex][1]]);
+	                mesh.flipEdge(sb->m_intersections[ExtendedMCTable[sb->m_extendedMCIndex][4]], sb->m_intersections[ExtendedMCTable[sb->m_extendedMCIndex][5]]);
+	            }
+	        }
+	    }
 	}
-}
 }
 
 template<typename VertexT, typename NormalT>
