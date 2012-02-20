@@ -682,7 +682,7 @@ ModelPtr PLYIO::read( string filename, bool readColor, bool readConfidence,
     if ( vertices && !points && !faceIndices )
     {
         std::cout << timestamp << "PLY contains neither faces nor points. "
-            << "Assuming that vertices are ment to be points." << std::endl;
+            << "Assuming that vertices are meant to be points." << std::endl;
         points               = vertices;
         pointColors          = vertexColors;
         pointConfidences     = vertexConfidence;
