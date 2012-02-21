@@ -24,6 +24,7 @@
  *  @author Florian Otte (fotte@uos.de)
  *  @author Kim Rinnewitz (krinnewitz@uos.de)
  *  @author Sven Schalk (sschalk@uos.de)
+ *  @author Denis Meyer (denmeyer@uos.de)
  */
 
 #ifndef OBJIO_HPP_
@@ -35,45 +36,39 @@
 namespace lssr
 {
 
-/**
- * @brief A basic implementation of the obj file format.
- */
-class ObjIO : public BaseIO
-{
-    public:
+  /**
+   * @brief A basic implementation of the obj file format.
+   */
+  class ObjIO : public BaseIO
+  {
+  public:
 
-        /**
-         * @brief Constructor.
-         **/
-        ObjIO()
-        {
-            m_model.reset();
-        }
+    /**
+     * @brief Constructor.
+     **/
+    ObjIO()
+    {
+      m_model.reset();
+    }
 
-        ~ObjIO() { };
+    ~ObjIO() { };
 
-        /**
-         * \brief   Parse the given file and load supported elements.
-         * \warning This function is yet to be implemented.
-         * \todo    Implement this function propperly.
-         *
-         * @param filename  The file to read.
-         */
-        ModelPtr read( string filename )
-        {
-            ModelPtr m( new Model );
-            return m;
-        };
+    /**
+     * \brief   Parse the given file and load supported elements.
+     *
+     * @param filename  The file to read.
+     */
+    ModelPtr read( string filename );
 
-        /**
-         * @brief     Writes the mesh to an obj file.
-         *
-         * @param  model     The model containing all mesh data
-         * @param  filename  The file name to use
-         */
-        void save( string filename );
+    /**
+     * @brief     Writes the mesh to an obj file.
+     *
+     * @param  model     The model containing all mesh data
+     * @param  filename  The file name to use
+     */
+    void save( string filename );
 
-};
+  };
 
 }
 
