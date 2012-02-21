@@ -39,4 +39,21 @@ PointsetSurface<VertexT>::PointsetSurface(PointBufferPtr pointcloud)
     }
 }
 
+template<typename VertexT>
+VertexT PointsetSurface<VertexT>::getInterpolatedNormal(VertexT position)
+{
+	vector< ulong > indices;
+	VertexT result(0,0,0);
+	size_t n;
+	this->searchTree()->kSearch(position, this->m_kn, indices);
+	for (int i = 0; i < this->m_kn; i++)
+	{
+		result[0] += this->pointBuffer()->getIndexedPointNormalArray(n)[indices[i]][0];
+		result[1] += this->pointBuffer()->getIndexedPointNormalArray(n)[indices[i]][1];
+		result[2] += this->pointBuffer()->getIndexedPointNormalArray(n)[indices[i]][2];
+	}
+	result /= this->m_kn;
+	return result;
+}
+
 } // namespace lssr

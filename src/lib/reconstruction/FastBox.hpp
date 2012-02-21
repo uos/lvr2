@@ -113,7 +113,11 @@ public:
 
     /// An index value that is used to reference vertices that are not in the grid
     static uint		   		INVALID_INDEX;
-private:
+
+    /// The twelve intersection between box and surface
+    uint                   		m_intersections[12];
+
+protected:
 
     /**
      * @brief Calculated the index for the MC table
@@ -121,32 +125,32 @@ private:
     int  getIndex(vector<QueryPoint<VertexT> > &query_points);
 
     /**
+     * @brief Calculated the 12 possible intersections between
+     *        the cell and the surface to interpolate
+     *
+     * @param corners       The eight corners of the current cell
+     * @param distance      The corresponding distance value
+     * @param positions     The interpolated intersections.
+     */
+    void getIntersections(VertexT corners[], float distance[], VertexT positions[]);
+
+    /**
      * @brief Calculates the position of the eight cell corners
      *
-     * @param corners		The cell corners
-     * @param query_points	The query points of the grid
+     * @param corners       The cell corners
+     * @param query_points  The query points of the grid
      */
     void getCorners(VertexT corners[], vector<QueryPoint<VertexT> > &query_points);
 
     /**
      * @brief Calculates the distance value for the eight cell corners.
      *
-     * @param distances		The distance values
+     * @param distances     The distance values
      * @param query_points  The query points of the grid
      */
     void getDistances(float distances[], vector<QueryPoint<VertexT> > &query_points);
 
-    /**
-     * @brief Calculated the 12 possible intersections between
-     * 		  the cell and the surface to interpolate
-     *
-     * @param corners		The eight corners of the current cell
-     * @param distance		The corresponding distance value
-     * @param positions		The interpolated intersections.
-     */
-    void getIntersections(VertexT corners[], float distance[], VertexT positions[]);
 
-protected:
 
     /***
      * @brief Interpolates the intersection between x1 and x1.
@@ -165,12 +169,10 @@ protected:
     /// The eight box corners
     uint                  		m_vertices[8];
 
-    /// The twelve intersection between box and surface
-    uint                   		m_intersections[12];
-
     /// Pointer to all adjacent cells
     FastBox<VertexT, NormalT>*  m_neighbors[27];
 
+    template<typename Q, typename V> friend class BilinearFastBox;
 };
 
 } // namespace lssr
