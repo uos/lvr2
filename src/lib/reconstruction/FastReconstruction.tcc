@@ -36,9 +36,11 @@ FastReconstruction<VertexT, NormalT>::FastReconstruction(
         typename PointsetSurface<VertexT>::Ptr surface,
         float resolution,
         bool isVoxelsize,
-        string boxtype)
-    : PointsetMeshGenerator<VertexT, NormalT>(surface), m_boxType(boxtype)
+        string boxtype,
+        bool extrude)
+    : PointsetMeshGenerator<VertexT, NormalT>(surface), m_boxType(boxtype), m_extrude(extrude)
 {
+
     // Determine m_voxelsize
     assert(resolution > 0);
     BoundingBox<VertexT> bb = this->m_surface->getBoundingBox();
@@ -51,6 +53,12 @@ FastReconstruction<VertexT, NormalT>::FastReconstruction(
     else
     {
         m_voxelsize = resolution;
+    }
+
+    cout << timestamp << "Used voxelsize is " << m_voxelsize << endl;
+    if(!m_extrude)
+    {
+        cout << timestamp << "Grid is not extruded." << endl;
     }
 
     FastBox<VertexT, NormalT>::m_voxelsize = m_voxelsize;
@@ -155,7 +163,9 @@ void FastReconstruction<VertexT, NormalT>::createGrid()
 		//index_z = calcIndex((this->m_surface[i][2] - v_min[2]) / m_voxelsize);
 
 
-		for(int j = 0; j < 8; j++){
+		int e;
+		m_extrude ? e = 1 : e = 8;
+		for(int j = 0; j < e; j++){
 
 			// Get the grid offsets for the neighboring grid position
 			// for the given box corner

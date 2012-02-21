@@ -67,7 +67,8 @@ public:
             typename PointsetSurface<VertexT>::Ptr surface,
             float resolution,
             bool isVoxelsize = false,
-            string boxType = "MC");
+            string boxType = "MC",
+            bool extrude = true);
 
 
     /**
@@ -89,6 +90,12 @@ public:
      *        indices per line define the grid cells.
      */
     void saveGrid(string filename);
+
+    /**
+     * @brief   If set to true, the grid will be extruded by one box
+     *          to close sparse data sets.
+     */
+    void setExtrusion(bool do_it) { m_extrude = do_it;}
 
 private:
 
@@ -164,6 +171,9 @@ private:
 
     /// True if a local tetraeder decomposition is used for reconstruction
     string                        m_boxType;
+
+    /// True if we want to create extra boxes at the end of the grid
+    bool                        m_extrude;
 };
 
 
