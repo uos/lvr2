@@ -30,7 +30,7 @@
 namespace lssr
 {
 
-    template<typename VertexT, typename NormalT>
+template<typename VertexT, typename NormalT>
 HalfEdgeMesh<VertexT, NormalT>::HalfEdgeMesh( 
         typename PointsetSurface<VertexT>::Ptr pm )
 {
@@ -41,7 +41,7 @@ HalfEdgeMesh<VertexT, NormalT>::HalfEdgeMesh(
 }
 
 
-    template<typename VertexT, typename NormalT>
+template<typename VertexT, typename NormalT>
 void HalfEdgeMesh<VertexT, NormalT>::addVertex(VertexT v)
 {
     // Create new HalfEdgeVertex and increase vertex counter
@@ -51,7 +51,7 @@ void HalfEdgeMesh<VertexT, NormalT>::addVertex(VertexT v)
 
 
 
-    template<typename VertexT, typename NormalT>
+template<typename VertexT, typename NormalT>
 void HalfEdgeMesh<VertexT, NormalT>::deleteVertex(HVertex* v)
 {
     // Delete HalfEdgeVertex and decrease vertex counter
@@ -60,7 +60,7 @@ void HalfEdgeMesh<VertexT, NormalT>::deleteVertex(HVertex* v)
     delete v;
 }
 
-    template<typename VertexT, typename NormalT>
+template<typename VertexT, typename NormalT>
 void HalfEdgeMesh<VertexT, NormalT>::addNormal(NormalT n)
 {
     // Is a vertex exists at globalIndex, save normal
@@ -68,7 +68,7 @@ void HalfEdgeMesh<VertexT, NormalT>::addNormal(NormalT n)
     m_vertices[m_globalIndex - 1]->m_normal = n;
 }
 
-    template<typename VertexT, typename NormalT>
+template<typename VertexT, typename NormalT>
 HalfEdge<HalfEdgeVertex<VertexT, NormalT>, HalfEdgeFace<VertexT, NormalT> >* HalfEdgeMesh<VertexT, NormalT>::halfEdgeToVertex(HVertex *v, HVertex* next)
 {
     HEdge* edge = 0;
@@ -90,11 +90,11 @@ HalfEdge<HalfEdgeVertex<VertexT, NormalT>, HalfEdgeFace<VertexT, NormalT> >* Hal
     return edge;
 }
 
-    template<typename VertexT, typename NormalT>
-void HalfEdgeMesh<VertexT, NormalT>::addTriangle(uint a, uint b, uint c)
+template<typename VertexT, typename NormalT>
+void HalfEdgeMesh<VertexT, NormalT>::addTriangle(uint a, uint b, uint c, HFace* &face)
 {
     // Create a new face
-    HFace* face = new HFace;
+    face = new HFace;
 
     // Create a list of HalfEdges that will be connected
     // with this here. Here we need only to alloc space for
@@ -113,18 +113,18 @@ void HalfEdgeMesh<VertexT, NormalT>::addTriangle(uint a, uint b, uint c)
         // Map k values to parameters
         switch(k)
         {
-            case 0:
-                current = m_vertices[a];
-                next 	= m_vertices[b];
-                break;
-            case 1:
-                current = m_vertices[b];
-                next 	= m_vertices[c];
-                break;
-            case 2:
-                current = m_vertices[c];
-                next 	= m_vertices[a];
-                break;
+        case 0:
+            current = m_vertices[a];
+            next    = m_vertices[b];
+            break;
+        case 1:
+            current = m_vertices[b];
+            next    = m_vertices[c];
+            break;
+        case 2:
+            current = m_vertices[c];
+            next    = m_vertices[a];
+            break;
         }
 
         // Try to find an pair edges of an existing face,
@@ -185,17 +185,23 @@ void HalfEdgeMesh<VertexT, NormalT>::addTriangle(uint a, uint b, uint c)
     //face->m_index[1] = b;
     //face->m_index[2] = c;
 
-    //	if(a == 0) {
-    //		last_normal = face->normal;
-    //	} else {
-    //		if(last_normal * face->normal < 0){
-    //			face->normal = face->normal * -1;
-    //		}
-    //	}
-
+    //  if(a == 0) {
+    //      last_normal = face->normal;
+    //  } else {
+    //      if(last_normal * face->normal < 0){
+    //          face->normal = face->normal * -1;
+    //      }
+    //  }
 }
 
-    template<typename VertexT, typename NormalT>
+template<typename VertexT, typename NormalT>
+void HalfEdgeMesh<VertexT, NormalT>::addTriangle(uint a, uint b, uint c)
+{
+    HFace* face;
+    addTriangle(a, b, c, face);
+}
+
+template<typename VertexT, typename NormalT>
 void HalfEdgeMesh<VertexT, NormalT>::deleteFace(HFace* f, bool erase)
 {
     //save references to edges and vertices
@@ -243,12 +249,12 @@ void HalfEdgeMesh<VertexT, NormalT>::deleteFace(HFace* f, bool erase)
     //delete face
     if(erase)
     {
-    	m_faces.erase(find(m_faces.begin(), m_faces.end(), f));
-    	delete f;
+        m_faces.erase(find(m_faces.begin(), m_faces.end(), f));
+        delete f;
     }
 }
 
-    template<typename VertexT, typename NormalT>
+template<typename VertexT, typename NormalT>
 void HalfEdgeMesh<VertexT, NormalT>::deleteEdge(HEdge* edge, bool deletePair)
 {
     //delete references from start point to outgoing edge
@@ -271,7 +277,7 @@ void HalfEdgeMesh<VertexT, NormalT>::deleteEdge(HEdge* edge, bool deletePair)
     delete edge;
 }
 
-    template<typename VertexT, typename NormalT>
+template<typename VertexT, typename NormalT>
 void HalfEdgeMesh<VertexT, NormalT>::collapseEdge(HEdge* edge)
 {
     // Save start and end vertex
@@ -286,7 +292,7 @@ void HalfEdgeMesh<VertexT, NormalT>::collapseEdge(HEdge* edge)
     // have to be reseted.
     if (edge->face != 0)
     {
-    	// reorganize pair pointers
+        // reorganize pair pointers
         edge->next->next->pair->pair = edge->next->pair;
         edge->next->pair->pair = edge->next->next->pair;
         //delete old edges
@@ -295,7 +301,7 @@ void HalfEdgeMesh<VertexT, NormalT>::collapseEdge(HEdge* edge)
     }
     if (edge->pair->face != 0)
     {
-    	// reorganize pair pointers
+        // reorganize pair pointers
         edge->pair->next->next->pair->pair = edge->pair->next->pair;
         edge->pair->next->pair->pair = edge->pair->next->next->pair;
         //delete old edges
@@ -342,7 +348,7 @@ void HalfEdgeMesh<VertexT, NormalT>::collapseEdge(HEdge* edge)
 }
 
 
-    template<typename VertexT, typename NormalT>
+template<typename VertexT, typename NormalT>
 void HalfEdgeMesh<VertexT, NormalT>::flipEdge(HFace* f1, HFace* f2)
 {
     HEdge* commonEdge = 0;
@@ -353,7 +359,7 @@ void HalfEdgeMesh<VertexT, NormalT>::flipEdge(HFace* f1, HFace* f2)
     {
         if (current->pair->face == f2)
         {
-        	commonEdge = current;
+            commonEdge = current;
         }
         current = current->next;
     }
@@ -368,15 +374,26 @@ void HalfEdgeMesh<VertexT, NormalT>::flipEdge(HFace* f1, HFace* f2)
     this->flipEdge(commonEdge);
 }
 
-    template<typename VertexT, typename NormalT>
+template<typename VertexT, typename NormalT>
+void HalfEdgeMesh<VertexT, NormalT>::flipEdge(uint v1, uint v2)
+{
+    HEdge* edge = halfEdgeToVertex(m_vertices[v1], m_vertices[v2]);
+    if(edge)
+    {
+        flipEdge(edge);
+    }
+}
+
+
+template<typename VertexT, typename NormalT>
 void HalfEdgeMesh<VertexT, NormalT>::flipEdge(HEdge* edge)
 {
     // This can only be done if there are two faces on both sides of the edge
     if (edge->pair->face != 0 && edge->face != 0)
     {
-    	//The old egde will be deleted while a new edge is created
+        //The old egde will be deleted while a new edge is created
 
-    	//save the start and end vertex of the new edge
+        //save the start and end vertex of the new edge
         HVertex* newEdgeStart = edge->next->end;
         HVertex* newEdgeEnd   = edge->pair->next->end;
 
@@ -449,7 +466,7 @@ void HalfEdgeMesh<VertexT, NormalT>::flipEdge(HEdge* edge)
     }
 }
 
-    template<typename VertexT, typename NormalT>
+template<typename VertexT, typename NormalT>
 int HalfEdgeMesh<VertexT, NormalT>::stackSafeRegionGrowing(HFace* start_face, NormalT &normal, float &angle, Region<VertexT, NormalT>* region)
 {
     // stores the faces where we need to continue
@@ -458,18 +475,18 @@ int HalfEdgeMesh<VertexT, NormalT>::stackSafeRegionGrowing(HFace* start_face, No
     leafs.push_back(start_face);
     do
     {
-    	if(leafs.front()->m_used == false)
-    	{
-    		regionSize += regionGrowing(leafs.front(), normal, angle, region, leafs, m_depth);
-    	}
-    	leafs.erase(leafs.begin());
+        if(leafs.front()->m_used == false)
+        {
+            regionSize += regionGrowing(leafs.front(), normal, angle, region, leafs, m_depth);
+        }
+        leafs.erase(leafs.begin());
     }
     while(!leafs.empty());
 
     return regionSize;
 }
 
-    template<typename VertexT, typename NormalT>
+template<typename VertexT, typename NormalT>
 int HalfEdgeMesh<VertexT, NormalT>::regionGrowing(HFace* start_face, NormalT &normal, float &angle, Region<VertexT, NormalT>* region, vector<HFace*> &leafs, unsigned int depth)
 {
     //Mark face as used
@@ -486,16 +503,16 @@ int HalfEdgeMesh<VertexT, NormalT>::regionGrowing(HFace* start_face, NormalT &no
         if((*start_face)[k]->pair->face != 0 && (*start_face)[k]->pair->face->m_used == false
                 && fabs((*start_face)[k]->pair->face->getFaceNormal() * normal) > angle )
         {
-        	if(depth == 0)
-        	{
-        		// if the maximum recursion depth is reached save the child faces to restart the recursion from
-        		leafs.push_back((*start_face)[k]->pair->face);
-        	}
-        	else
-        	{
-        		// start the recursion
-        		++neighbor_cnt += regionGrowing((*start_face)[k]->pair->face, normal, angle, region, leafs, depth - 1);
-        	}
+            if(depth == 0)
+            {
+                // if the maximum recursion depth is reached save the child faces to restart the recursion from
+                leafs.push_back((*start_face)[k]->pair->face);
+            }
+            else
+            {
+                // start the recursion
+                ++neighbor_cnt += regionGrowing((*start_face)[k]->pair->face, normal, angle, region, leafs, depth - 1);
+            }
         }
     }
 
@@ -571,8 +588,8 @@ void HalfEdgeMesh<VertexT, NormalT>::optimizePlanes(
     // Delete too small regions
     if(small_region_size)
     {
-    	cout << timestamp << "Deleting small regions" << endl;
-    	deleteRegions();
+        cout << timestamp << "Deleting small regions" << endl;
+        deleteRegions();
     }
 
     //Delete flickering faces
@@ -599,29 +616,29 @@ void HalfEdgeMesh<VertexT, NormalT>::deleteRegions()
 {
     for(int i = 0; i < m_faces.size(); i++)
     {
-    	if(m_faces[i]->m_region && m_faces[i]->m_region->m_toDelete)
-    	{
-    		deleteFace(m_faces[i], false);
-    		delete m_faces[i];
-    		m_faces[i] = 0;
-    	}
+        if(m_faces[i]->m_region && m_faces[i]->m_region->m_toDelete)
+        {
+            deleteFace(m_faces[i], false);
+            delete m_faces[i];
+            m_faces[i] = 0;
+        }
     }
     typename vector<HFace*>::iterator newEnd = remove_if(m_faces.begin(), m_faces.end(), bind1st(mem_fun(&HalfEdgeMesh<VertexT, NormalT>::isNull), this));
     m_faces.erase(newEnd, m_faces.end());
 
     for (int i = 0; i < m_regions.size(); i++)
     {
-    	if(m_regions[i]->m_toDelete)
-    	{
-    		delete m_regions[i];
-    		m_regions[i] = 0;
-    	}
+        if(m_regions[i]->m_toDelete)
+        {
+            delete m_regions[i];
+            m_regions[i] = 0;
+        }
     }
     typename vector<Region<VertexT, NormalT>*>::iterator newRegionsEnd = remove_if(m_regions.begin(), m_regions.end(), bind1st(mem_fun(&HalfEdgeMesh<VertexT, NormalT>::isNull), this));
     m_regions.erase(newRegionsEnd, m_regions.end());
 }
 
-     template<typename VertexT, typename NormalT>
+template<typename VertexT, typename NormalT>
 void HalfEdgeMesh<VertexT, NormalT>::removeDanglingArtifacts(int threshold)
 {
     for(size_t i = 0; i < m_faces.size(); i++)
@@ -658,7 +675,7 @@ template<typename VertexT, typename NormalT>
 bool HalfEdgeMesh<VertexT, NormalT>::safeCollapseEdge(HEdge* edge)
 {
     //try to reject all huetchen
-	//A huetchen geometry must not be present at the edge or it's pair
+    //A huetchen geometry must not be present at the edge or it's pair
     if(edge->face != 0 && edge->next->pair->face != 0 && edge->next->next->pair->face != 0)
     {
         if(edge->next->pair->next->next == edge->next->next->pair->next->pair)
@@ -746,7 +763,7 @@ bool HalfEdgeMesh<VertexT, NormalT>::safeCollapseEdge(HEdge* edge)
     return true;
 }
 
-    template<typename VertexT, typename NormalT>
+template<typename VertexT, typename NormalT>
 void HalfEdgeMesh<VertexT, NormalT>::fillHoles(size_t max_size)
 {
     //holds all holes to close
@@ -868,7 +885,7 @@ void HalfEdgeMesh<VertexT, NormalT>::fillHoles(size_t max_size)
 }
 
 
-    template<typename VertexT, typename NormalT>
+template<typename VertexT, typename NormalT>
 void HalfEdgeMesh<VertexT, NormalT>::dragOntoIntersection(Region<VertexT, NormalT>* plane, Region<VertexT, NormalT>* neighbor_region, VertexT& x, VertexT& direction)
 {
     for (size_t i = 0; i < plane->m_faces.size(); i++)
@@ -884,7 +901,7 @@ void HalfEdgeMesh<VertexT, NormalT>::dragOntoIntersection(Region<VertexT, Normal
     }
 }
 
-    template<typename VertexT, typename NormalT>
+template<typename VertexT, typename NormalT>
 void HalfEdgeMesh<VertexT, NormalT>::optimizePlaneIntersections()
 {
     string msg = timestamp.getElapsedTime() + "Optimizing plane intersections ";
@@ -927,7 +944,7 @@ void HalfEdgeMesh<VertexT, NormalT>::optimizePlaneIntersections()
     cout << endl;
 }
 
-    template<typename VertexT, typename NormalT>
+template<typename VertexT, typename NormalT>
 vector<vector<HalfEdgeVertex<VertexT, NormalT>* > > HalfEdgeMesh<VertexT, NormalT>::findAllContours(float epsilon)
 {
     vector<vector<HalfEdgeVertex<VertexT, NormalT>* > > contours;
@@ -942,7 +959,7 @@ vector<vector<HalfEdgeVertex<VertexT, NormalT>* > > HalfEdgeMesh<VertexT, Normal
     return  contours;
 }
 
-    template<typename VertexT, typename NormalT>
+template<typename VertexT, typename NormalT>
 void HalfEdgeMesh<VertexT, NormalT>::restorePlanes(int min_region_size)
 {
     for(size_t r = 0; r < m_regions.size(); r++)
@@ -973,33 +990,33 @@ void HalfEdgeMesh<VertexT, NormalT>::restorePlanes(int min_region_size)
     // Reset all used variables
     for(size_t i = 0; i < m_faces.size(); i++)
     {
-    	m_faces[i]->m_used = false;
+        m_faces[i]->m_used = false;
     }
 
     // Find all regions by regionGrowing with normal criteria
     for(size_t i = 0; i < m_faces.size(); i++)
     {
-    	if(m_faces[i]->m_used == false)
-    	{
-    		NormalT n = m_faces[i]->getFaceNormal();
+        if(m_faces[i]->m_used == false)
+        {
+            NormalT n = m_faces[i]->getFaceNormal();
 
-    		Region<VertexT, NormalT>* region = new Region<VertexT, NormalT>(region_number);
-    		float almostOne = 0.999;
-    		region_size = stackSafeRegionGrowing(m_faces[i], n, almostOne, region) + 1;
+            Region<VertexT, NormalT>* region = new Region<VertexT, NormalT>(region_number);
+            float almostOne = 0.999;
+            region_size = stackSafeRegionGrowing(m_faces[i], n, almostOne, region) + 1;
 
-    		if(region_size > max(min_region_size, default_region_threshold))
+            if(region_size > max(min_region_size, default_region_threshold))
             {
-            	region->regressionPlane();
+                region->regressionPlane();
             }
 
-			// Save pointer to the region
-    		m_regions.push_back(region);
-    		region_number++;
-    	}
+            // Save pointer to the region
+            m_regions.push_back(region);
+            region_number++;
+        }
     }
 }
 
-    template<typename VertexT, typename NormalT>
+template<typename VertexT, typename NormalT>
 void HalfEdgeMesh<VertexT, NormalT>::tester()
 {
     cout << "--------------------------------TESTER" << endl;
@@ -1197,35 +1214,35 @@ void HalfEdgeMesh<VertexT, NormalT>::finalizeAndRetesselate( bool genTextures, f
             // loop over each vertex for this face
             for( int j=0; j < 3; j++ )
             {
-               int iVertex = j;
-               current = (*m_regions[iRegion]->m_faces[iFace])(iVertex)->m_position;
+                int iVertex = j;
+                current = (*m_regions[iRegion]->m_faces[iFace])(iVertex)->m_position;
 
-               // look up the current vertex. If it was used before get the position for the indexBuffer.
-               if( vertexMap.find(current) != vertexMap.end() )
-               {
-                  pos = vertexMap[current];
-               } 
-               else
-               {
-                  pos = vertexBuffer.size() / 3;
-                  vertexMap.insert(make_pair<Vertex<float>, unsigned int>(current, pos));
-                  vertexBuffer.push_back( (*m_regions[iRegion]->m_faces[iFace])(iVertex)->m_position.x );
-                  vertexBuffer.push_back( (*m_regions[iRegion]->m_faces[iFace])(iVertex)->m_position.y );
-                  vertexBuffer.push_back( (*m_regions[iRegion]->m_faces[iFace])(iVertex)->m_position.z );
+                // look up the current vertex. If it was used before get the position for the indexBuffer.
+                if( vertexMap.find(current) != vertexMap.end() )
+                {
+                    pos = vertexMap[current];
+                }
+                else
+                {
+                    pos = vertexBuffer.size() / 3;
+                    vertexMap.insert(make_pair<Vertex<float>, unsigned int>(current, pos));
+                    vertexBuffer.push_back( (*m_regions[iRegion]->m_faces[iFace])(iVertex)->m_position.x );
+                    vertexBuffer.push_back( (*m_regions[iRegion]->m_faces[iFace])(iVertex)->m_position.y );
+                    vertexBuffer.push_back( (*m_regions[iRegion]->m_faces[iFace])(iVertex)->m_position.z );
 
-                  normalBuffer.push_back( (*m_regions[iRegion]->m_faces[iFace])(iVertex)->m_normal[0] );
-                  normalBuffer.push_back( (*m_regions[iRegion]->m_faces[iFace])(iVertex)->m_normal[1] );
-                  normalBuffer.push_back( (*m_regions[iRegion]->m_faces[iFace])(iVertex)->m_normal[2] );
+                    normalBuffer.push_back( (*m_regions[iRegion]->m_faces[iFace])(iVertex)->m_normal[0] );
+                    normalBuffer.push_back( (*m_regions[iRegion]->m_faces[iFace])(iVertex)->m_normal[1] );
+                    normalBuffer.push_back( (*m_regions[iRegion]->m_faces[iFace])(iVertex)->m_normal[2] );
 
-                  //TODO: Color Vertex Traits stuff?
-                  colorBuffer.push_back( r );
-                  colorBuffer.push_back( g );
-                  colorBuffer.push_back( b );
+                    //TODO: Color Vertex Traits stuff?
+                    colorBuffer.push_back( r );
+                    colorBuffer.push_back( g );
+                    colorBuffer.push_back( b );
 
-                  textureCoordBuffer.push_back( 0.0 );
-                  textureCoordBuffer.push_back( 0.0 );
-                  textureCoordBuffer.push_back( 0.0 );
-               }
+                    textureCoordBuffer.push_back( 0.0 );
+                    textureCoordBuffer.push_back( 0.0 );
+                    textureCoordBuffer.push_back( 0.0 );
+                }
 
                 indexBuffer.push_back( pos );
                 textureIndexBuffer.push_back( UINT_MAX );
@@ -1233,12 +1250,12 @@ void HalfEdgeMesh<VertexT, NormalT>::finalizeAndRetesselate( bool genTextures, f
 
             if ( genTextures && VertexTraits<VertexT>::has_color() )
             {
-            	int one = 1;
-            	vector<VertexT> cv;
-            	this->m_pointCloudManager->searchTree()->kSearch((*m_regions[iRegion]->m_faces[iFace]).getCentroid(), one, cv);
-            	r = *((uchar*) &(cv[0][3])); /* red */
-            	g = *((uchar*) &(cv[0][4])); /* green */
-            	b = *((uchar*) &(cv[0][5])); /* blue */
+                int one = 1;
+                vector<VertexT> cv;
+                this->m_pointCloudManager->searchTree()->kSearch((*m_regions[iRegion]->m_faces[iFace]).getCentroid(), one, cv);
+                r = *((uchar*) &(cv[0][3])); /* red */
+                g = *((uchar*) &(cv[0][4])); /* green */
+                b = *((uchar*) &(cv[0][5])); /* blue */
             }
 
             faceColorBuffer.push_back( r );
@@ -1249,10 +1266,10 @@ void HalfEdgeMesh<VertexT, NormalT>::finalizeAndRetesselate( bool genTextures, f
     cout << timestamp << "Done copying non planar regions." << endl;
 
 
-   /*
+    /*
          Done copying the simple stuff. Now the planes are going to be retesselated
          and the textures are generated if there are textures to generate at all.!
-      */
+     */
 
     // for every plane region there is
     string msg = timestamp.getElapsedTime() + "Optimizing plane intersections ";
@@ -1322,9 +1339,9 @@ void HalfEdgeMesh<VertexT, NormalT>::finalizeAndRetesselate( bool genTextures, f
             // store the indices with the correct offset to the indices buffer.
             indexBuffer.push_back( indices[j] + offset );
             if( genTextures )
-            	textureIndexBuffer.push_back( m_regions[iRegion]->m_regionNumber );
+                textureIndexBuffer.push_back( m_regions[iRegion]->m_regionNumber );
             else
-            	textureIndexBuffer.push_back( UINT_MAX );
+                textureIndexBuffer.push_back( UINT_MAX );
         }
         for( int j = 0; j < indices.size() / 3; j++ )
         {

@@ -74,6 +74,14 @@ class BaseMesh
          */
         virtual void addTriangle(uint a, uint b, uint c) = 0;
 
+    	/**
+    	 * @brief	Flip the edge between vertex index v1 and v2
+    	 *
+    	 * @param	v1	The index of the first vertex
+    	 * @param	v2	The index of the second vertex
+    	 */
+    	virtual void flipEdge(uint v1, uint v2) = 0;
+
         /**
          * @brief    Finalizes a mesh, i.e. converts the template based buffers
          *           to OpenGL compatible buffers

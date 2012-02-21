@@ -145,6 +145,7 @@
 #include "geometry/Matrix4.hpp"
 #include "geometry/HalfEdgeMesh.hpp"
 #include "geometry/Texture.hpp"
+#include "reconstruction/SharpBox.hpp"
 
 // PCL related includes
 #ifdef _USE_PCL_
@@ -204,7 +205,12 @@ int main(int argc, char** argv)
     // Create point set surface object
     if(pcm_name == "PCL")
     {
+#ifdef _USE_PCL_
         surface = psSurface::Ptr( new pclSurface(p_loader));
+#else 
+        cout << timestamp << "Can't create a PCL point set surface without PCL installed." << endl;
+        exit(-1);
+#endif
     }
     else if(pcm_name == "STANN" || pcm_name == "FLANN" || pcm_name == "NABO")
     {
@@ -271,6 +277,15 @@ int main(int argc, char** argv)
     	Texture<cVertex, cNormal>::m_texelSize = options.getTexelSize();
     }
 
+    if(options.getSharpFeatureThreshold())
+    {
+    	SharpBox<cVertex, cNormal>::m_theta_sharp = options.getSharpFeatureThreshold();
+    }
+    if(options.getSharpCornerThreshold())
+    {
+    	SharpBox<cVertex, cNormal>::m_phi_corner = options.getSharpCornerThreshold();
+    }
+
     // Determine whether to use intersections or voxelsize
     float resolution;
     bool useVoxelsize;
@@ -285,20 +300,14 @@ int main(int argc, char** argv)
         useVoxelsize = true;
     }
 
-    // Determine whether to use MC decomposition
-    bool useMT = false;
-    if(options.getDecomposition() == "MT")
-    {
-        useMT = true;
-    }
 
     // Create a new reconstruction object
     FastReconstruction<cVertex, cNormal > reconstruction(
 			surface,
 			resolution,
 			useVoxelsize,
-			useMT);
-
+			options.getDecomposition(),
+			options.extrude());
     // Create mesh
     reconstruction.getMesh(mesh);
 
@@ -358,7 +367,12 @@ int main(int argc, char** argv)
                 "Created with las-vegas-reconstruction: http://las-vegas.uos.de/" ) );
 
 	// Create output model and save to file
-	ModelPtr m( new Model( mesh.meshBuffer(), surface->pointBuffer() ) );
+	ModelPtr m( new Model( mesh.meshBuffer() ) );
+
+	if(options.saveOriginalData())
+	{
+	    m->m_pointCloud = model->m_pointCloud;
+	}
 	ModelFactory::saveModel( m, "triangle_mesh.ply", save_opts );
 
 	// Save obj model if textures were generated

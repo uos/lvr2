@@ -24,7 +24,8 @@
  *      Author: Thomas Wiemann
  */
 #include "../geometry/BaseMesh.hpp"
-#include "../reconstruction/FastReconstructionTables.hpp"
+#include "FastReconstructionTables.hpp"
+#include "SharpBox.hpp"
 #include "io/Progress.hpp"
 
 namespace lssr
@@ -35,9 +36,11 @@ FastReconstruction<VertexT, NormalT>::FastReconstruction(
         typename PointsetSurface<VertexT>::Ptr surface,
         float resolution,
         bool isVoxelsize,
-        bool useTetraeder)
-    : PointsetMeshGenerator<VertexT, NormalT>(surface), m_useTetraeder(useTetraeder)
+        string boxtype,
+        bool extrude)
+    : PointsetMeshGenerator<VertexT, NormalT>(surface), m_boxType(boxtype), m_extrude(extrude)
 {
+
     // Determine m_voxelsize
     assert(resolution > 0);
     BoundingBox<VertexT> bb = this->m_surface->getBoundingBox();
@@ -50,6 +53,12 @@ FastReconstruction<VertexT, NormalT>::FastReconstruction(
     else
     {
         m_voxelsize = resolution;
+    }
+
+    cout << timestamp << "Used voxelsize is " << m_voxelsize << endl;
+    if(!m_extrude)
+    {
+        cout << timestamp << "Grid is not extruded." << endl;
     }
 
     FastBox<VertexT, NormalT>::m_voxelsize = m_voxelsize;
@@ -154,7 +163,9 @@ void FastReconstruction<VertexT, NormalT>::createGrid()
 		//index_z = calcIndex((this->m_surface[i][2] - v_min[2]) / m_voxelsize);
 
 
-		for(int j = 0; j < 8; j++){
+		int e;
+		m_extrude ? e = 1 : e = 8;
+		for(int j = 0; j < e; j++){
 
 			// Get the grid offsets for the neighboring grid position
 			// for the given box corner
@@ -166,30 +177,40 @@ void FastReconstruction<VertexT, NormalT>::createGrid()
 
 
 			it = m_cells.find(hash_value);
-			if(it == m_cells.end()){
-				//Calculate box center
-				VertexT box_center((index_x + dx) * m_voxelsize + v_min[0],
-						(index_y + dy) * m_voxelsize + v_min[1],
-						(index_z + dz) * m_voxelsize + v_min[2]);
+			if(it == m_cells.end())
+			{
+			    //Calculate box center
+			    VertexT box_center(
+			            (index_x + dx) * m_voxelsize + v_min[0],
+			            (index_y + dy) * m_voxelsize + v_min[1],
+			            (index_z + dz) * m_voxelsize + v_min[2]);
 
-				//Create new box
-				FastBox<VertexT, NormalT>* box = 0;
-				if(!m_useTetraeder)
-				{
-				    box = new FastBox<VertexT, NormalT>(box_center);
-				}
-				else
-				{
-				    box = new TetraederBox<VertexT, NormalT>(box_center);
-				}
+			    //Create new box
+			    FastBox<VertexT, NormalT>* box = 0;
+			    if(m_boxType == "MC")
+			    {
+			        box = new FastBox<VertexT, NormalT>(box_center);
+			    }
+			    else if(m_boxType == "MT")
+			    {
+			        box = new TetraederBox<VertexT, NormalT>(box_center);
+			    }
+			    else if(m_boxType == "PMC")
+			    {
+			        box = new BilinearFastBox<VertexT, NormalT>(box_center);
+			    }
+			    else if(m_boxType == "SF")
+			    {
+			        box = new SharpBox<VertexT, NormalT>(box_center, this->m_surface);
+			    }
 
-				//Setup the box itself
-				for(int k = 0; k < 8; k++){
+			    //Setup the box itself
+			    for(int k = 0; k < 8; k++){
 
-					//Find point in Grid
-					current_index = findQueryPoint(k, index_x + dx, index_y + dy, index_z + dz);
+			        //Find point in Grid
+			        current_index = findQueryPoint(k, index_x + dx, index_y + dy, index_z + dz);
 
-					//If point exist, save index in box
+			        //If point exist, save index in box
 					if(current_index != INVALID) box->setVertex(k, current_index);
 
 					//Otherwise create new grid point and associate it with the current box
@@ -261,12 +282,50 @@ void FastReconstruction<VertexT, NormalT>::getMesh(BaseMesh<VertexT, NormalT> &m
 
 	// Iterate through cells and calculate local approximations
 	typename hash_map<size_t, FastBox<VertexT, NormalT>* >::iterator it;
-	for(it = m_cells.begin(); it != m_cells.end(); it++){
+	for(it = m_cells.begin(); it != m_cells.end(); it++)
+	{
 		b = it->second;
 		b->getSurface(mesh, m_queryPoints, global_index);
 		++progress;
 	}
 	cout << endl;
+
+	if(this->m_boxType == "PMC")
+	{
+	    string comment = timestamp.getElapsedTime() + "Optimizing plane contours  ";
+	    ProgressBar progress(m_cells.size(), comment);
+	    for(it = m_cells.begin(); it != m_cells.end(); it++)
+	    {
+	        BilinearFastBox<VertexT, NormalT>* box = static_cast<BilinearFastBox<VertexT, NormalT>*> (it->second);
+	        box->optimizePlanarFaces(this->m_surface);
+	        ++progress;
+	    }
+	    cout << endl;
+
+	}
+
+	if(this->m_boxType == "SF")
+	{
+	    for(it = m_cells.begin(); it != m_cells.end(); it++)
+	    {
+	        SharpBox<VertexT, NormalT>* sb;
+	        sb = (SharpBox<VertexT, NormalT>*) it->second;
+	        if(sb->m_containsSharpFeature)
+	        {
+	            if(sb->m_containsSharpCorner)
+	            {
+	                mesh.flipEdge(sb->m_intersections[ExtendedMCTable[sb->m_extendedMCIndex][0]], sb->m_intersections[ExtendedMCTable[sb->m_extendedMCIndex][1]]);
+	                mesh.flipEdge(sb->m_intersections[ExtendedMCTable[sb->m_extendedMCIndex][2]], sb->m_intersections[ExtendedMCTable[sb->m_extendedMCIndex][3]]);
+	                mesh.flipEdge(sb->m_intersections[ExtendedMCTable[sb->m_extendedMCIndex][4]], sb->m_intersections[ExtendedMCTable[sb->m_extendedMCIndex][5]]);
+	            }
+	            else
+	            {
+	                mesh.flipEdge(sb->m_intersections[ExtendedMCTable[sb->m_extendedMCIndex][0]], sb->m_intersections[ExtendedMCTable[sb->m_extendedMCIndex][1]]);
+	                mesh.flipEdge(sb->m_intersections[ExtendedMCTable[sb->m_extendedMCIndex][4]], sb->m_intersections[ExtendedMCTable[sb->m_extendedMCIndex][5]]);
+	            }
+	        }
+	    }
+	}
 }
 
 template<typename VertexT, typename NormalT>
@@ -291,10 +350,9 @@ void FastReconstruction<VertexT, NormalT>::calcQueryPointValues(){
         {
         	m_queryPoints[i].m_invalid = true;
         }
-        m_queryPoints[i].m_distance = projectedDistance;
+ 	m_queryPoints[i].m_distance = projectedDistance;
         ++progress;
     }
-
     cout << endl;
     cout << timestamp << "Elapsed time: " << ts << endl;
 }

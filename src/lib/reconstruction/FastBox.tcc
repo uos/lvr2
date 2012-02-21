@@ -121,8 +121,19 @@ int  FastBox<VertexT, NormalT>::getIndex(vector<QueryPoint<VertexT> > &qp)
 template<typename VertexT, typename NormalT>
 float FastBox<VertexT, NormalT>::calcIntersection(float x1, float x2, float d1, float d2)
 {
+
     // Calculate the surface intersection using linear interpolation
-    return  x2 - d2 * (x1 - x2) / (d1 - d2);
+      // and check for different signs of the given distance values.
+      // If for some reason there was no sign change, return the
+      // middle point
+      if( (d1 < 0 && d2 >= 0) || (d2 < 0 && d1 >= 0) )
+      {
+          return  x2 - d2 * (x1 - x2) / (d1 - d2);
+      }
+      else
+      {
+          return  (x2 + x1) / 2.0;
+      }
 }
 
 template<typename VertexT, typename NormalT>

@@ -78,6 +78,7 @@ StaticMesh::StaticMesh( MeshBufferPtr mesh, string name )
 
 void StaticMesh::init( MeshBufferPtr mesh )
 {
+    size_t n_colors;
     m_lineWidth = 2.0;
     if(mesh)
     {
@@ -85,7 +86,7 @@ void StaticMesh::init( MeshBufferPtr mesh )
         m_faceNormals = 0;
 
         m_vertexNormals = mesh->getVertexNormalArray(m_numVertices);
-        m_colors        = mesh->getVertexColorArray(m_numVertices);
+        m_colors        = mesh->getVertexColorArray(n_colors);
         m_vertices      = mesh->getVertexArray(m_numVertices);
         m_indices       = mesh->getFaceArray(m_numFaces);
 
@@ -125,7 +126,16 @@ void StaticMesh::init( MeshBufferPtr mesh )
         //
         //  }
 
-        /// TODO: Standard colors if missing!
+        if(n_colors == 0)
+        {
+            m_colors = ucharArr(new uchar[3 * m_numVertices]);
+            for(int i = 0; i < m_numVertices; i++)
+            {
+                m_colors[3 * i] = 0;
+                m_colors[3 * i + 1] = 255;
+                m_colors[3 * i + 2] = 0;
+            }
+        }
     }
 }
 
