@@ -239,6 +239,11 @@ public:
      */
     float getLineFusionThreshold() const;
 
+    /**
+     * @brief   Wheter to extend the grid. Enable by default.
+     */
+    bool extrude() const;
+
 private:
 
 	/// The set voxelsize
