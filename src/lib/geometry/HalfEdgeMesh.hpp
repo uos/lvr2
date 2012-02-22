@@ -47,6 +47,7 @@
 using namespace std;
 
 #include "Vertex.hpp"
+#include "VertexTraits.hpp"
 #include "Normal.hpp"
 #include "BaseMesh.hpp"
 

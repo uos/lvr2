@@ -28,14 +28,33 @@
 #define VERTEXTRAITS_HPP_
 
 #include "ColorVertex.hpp"
+#include <stdarg.h>
 
 namespace lssr
 {
 
-template<typename VertexT>
+template< typename VertexT >
 struct VertexTraits
 {
-    static bool HAS_COLOR;
+    static inline bool has_color()
+    {
+        return false;
+    }
+
+    static inline VertexT vertex( ... )
+    {
+        return VertexT();
+    }
+};
+
+
+template< typename CoordType >
+struct VertexTraits< Vertex< CoordType > > 
+{
+    static inline bool has_color()
+    {
+        return false;
+    }
 };
 
 
@@ -43,8 +62,12 @@ template < >
 template<typename CoordType, typename ColorT>
 struct VertexTraits<ColorVertex<CoordType, ColorT> >
 {
-    static bool HAS_COLOR;
+    static inline bool has_color()
+    {
+        return true;
+    }
 };
+
 
 }
 #include "VertexTraits.tcc"
