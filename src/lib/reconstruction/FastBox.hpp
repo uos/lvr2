@@ -172,6 +172,7 @@ protected:
     /// Pointer to all adjacent cells
     FastBox<VertexT, NormalT>*  m_neighbors[27];
 
+    template<typename Q, typename V> friend class BilinearFastBox;
 };
 
 } // namespace lssr
