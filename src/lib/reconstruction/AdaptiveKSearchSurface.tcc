@@ -26,7 +26,7 @@
 
 
 // External libraries in lssr source tree
-#include "../Eigen/Dense"
+#include "../../ext/Eigen/Dense"
 
 // boost libraries
 #include <boost/filesystem.hpp>
@@ -104,6 +104,7 @@ void AdaptiveKSearchSurface<VertexT, NormalT>::init()
                                    this->m_points[i][2]);
     }
 
+    this->m_centroid = this->m_boundingBox.getCentroid();
     // Create kd tree
     //cout << timestamp << "Creating STANN Kd-Tree..." << endl;
     //m_pointTree = sfcnn< coord<float>, 3, float>( this->m_points.get(),
@@ -278,7 +279,7 @@ void AdaptiveKSearchSurface<VertexT, NormalT>::interpolateSurfaceNormals()
 
             // Only override existing normals if the interpolated
             // normals is significantly different from the initial
-            // estimation. This helps to avoid a to smooth normal
+            // estimation. This helps to avoid a too smooth normal
             // field
             if(fabs(n * mean_normal) > 0.2 )
             {
@@ -352,9 +353,9 @@ void AdaptiveKSearchSurface<VertexT, NormalT>::getkClosestVertices(const VertexT
 	{
 		for ( size_t i = 0; i < k; i++ )
 		{
-			VertexT tmp( this->m_points[id[i]][0], this->m_points[id[i]][1],
-					this->m_points[id[i]][2] );
-    		nb.push_back( tmp );
+		    VertexT tmp( this->m_points[id[i]][0], this->m_points[id[i]][1],
+		            this->m_points[id[i]][2] );
+		    nb.push_back( tmp );
     	}
     }
 }
@@ -459,12 +460,7 @@ Plane<VertexT, NormalT> AdaptiveKSearchSurface<VertexT, NormalT>::calcPlane(cons
         B(j, 2) = this->m_points[id[j]][2];
     }
 
-    Eigen::MatrixXf Bt = B.transpose();
-    Eigen::MatrixXf BtB = Bt * B;
-    Eigen::MatrixXf BtBinv = BtB.inverse();
-
-    Eigen::MatrixXf M = BtBinv * Bt;
-    C = M * F;
+    C = B.jacobiSvd(Eigen::ComputeThinU | Eigen::ComputeThinV).solve(F);
 
     // Calculate to vectors in the fitted plane
     z1 = C(0) + C(1) * (queryPoint[0] + epsilon) + C(2) * queryPoint[2];
@@ -475,6 +471,11 @@ Plane<VertexT, NormalT> AdaptiveKSearchSurface<VertexT, NormalT>::calcPlane(cons
     diff2 = VertexT(queryPoint[0], z2, queryPoint[2] + epsilon) - queryPoint;
 
     normal = diff1.cross(diff2);
+
+    if(isnan(normal[0]) || isnan(normal[1]) || isnan(normal[2]))
+    {
+        cout << "Warning: Nan-coordinate in plane normal." << endl;
+    }
 
     // Create a plane representation and return the result
     Plane<VertexT, NormalT> p;

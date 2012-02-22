@@ -60,7 +60,7 @@ ModelPtr ModelFactory::readModel( std::string filename )
     }
     else if (extension == ".obj")
     {
-        /// TODO: Integrate ObJIO in factory
+        io = new ObjIO;
     }
     else if (extension == ".las")
     {

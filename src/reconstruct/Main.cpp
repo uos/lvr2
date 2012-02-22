@@ -300,14 +300,14 @@ int main(int argc, char** argv)
         useVoxelsize = true;
     }
 
+
     // Create a new reconstruction object
     FastReconstruction<cVertex, cNormal > reconstruction(
 			surface,
 			resolution,
 			useVoxelsize,
-			options.getDecomposition());
-
-
+			options.getDecomposition(),
+			options.extrude());
     // Create mesh
     reconstruction.getMesh(mesh);
 

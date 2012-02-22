@@ -38,10 +38,11 @@ Options::Options(int argc, char** argv) : m_descr("Supported options")
 		        ("help", "Produce help message")
 		        ("inputFile", value< vector<string> >(), "Input file name. Supported formats are ASCII (.pts, .xyz) and .ply")
 		        ("voxelsize,v", value<float>(&m_voxelsize)->default_value(10), "Voxelsize of grid used for reconstruction.")
+		        ("noExtrusion", "Do not extend grid. Can be used  to avoid artefacts in dense data sets but. Disabling will possibly create additional holes in sparse data sets.")
 		        ("intersections,i", value<int>(&m_intersections)->default_value(-1), "Number of intersections used for reconstruction. If other than -1, voxelsize will calculated automatically.")
 		        ("pcm,p", value<string>(&m_pcm)->default_value("FLANN"), "Point cloud manager used for point handling and normal estimation. Choose from {STANN, PCL, NABO}.")
                 ("ransac", "Set this flag for RANSAC based normal estimation.")
-		        ("decomposition,d", value<string>(&m_pcm)->default_value("MC"), "Defines the type of decomposition that is used for the voxels (Standard Marching Cubes (MC), Standard Marching Cubes with sharp feature detection (SF) or Tetraeder (MT) decomposition. Choose from {MC, MT, SF}")
+		        ("decomposition,d", value<string>(&m_pcm)->default_value("PMC"), "Defines the type of decomposition that is used for the voxels (Standard Marching Cubes (MC), Planar Marching Cubes (PMC), Standard Marching Cubes with sharp feature detection (SF) or Tetraeder (MT) decomposition. Choose from {MC, PMC, MT, SF}")
 		        ("optimizePlanes,o", "Shift all triangle vertices of a cluster onto their shared plane")
                 ("planeIterations", value<int>(&m_planeIterations)->default_value(3), "Number of iterations for plane optimization")
                 ("fillHoles,f", value<int>(&m_fillHoles)->default_value(30), "Maximum size for hole filling")
@@ -219,6 +220,18 @@ bool Options::optimizePlanes() const
 {
 	return m_variables.count("optimizePlanes")
         || m_variables.count("retesselate");
+}
+
+bool Options::extrude() const
+{
+    if(m_variables.count("noExtrusion"))
+    {
+        return false;
+    }
+    else
+    {
+        return true;
+    }
 }
 
 bool  Options::colorRegions() const

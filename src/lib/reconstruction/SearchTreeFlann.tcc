@@ -83,7 +83,13 @@ SearchTreeFlann< VertexT >::SearchTreeFlann( PointBufferPtr buffer, long unsigne
             m_pointCloud->points[i].g = 1.0;
             m_pointCloud->points[i].b = 0.0;
         }
+
+//        cout << m_pointCloud->points[i].x << " " << m_pointCloud->points[i].y << " " << m_pointCloud->points[i].z << " "
+//             << m_pointCloud->points[i].r << " " << m_pointCloud->points[i].g << " " << m_pointCloud->points[i].b << " " << endl;
+
     }
+
+
 
     // Set pointCloud dimensions
     m_pointCloud->width  = n_points;
