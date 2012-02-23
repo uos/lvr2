@@ -41,6 +41,8 @@
 using std::cout;
 using std::endl;
 
+typedef unsigned long ulong;
+
 namespace lssr
 {
 
