@@ -258,7 +258,7 @@ class Vertex{
     private:
 
         /// Epsilon value for vertex comparism
-        static constexpr float epsilon = 0.00001;
+        static float epsilon;
 };
 
 
