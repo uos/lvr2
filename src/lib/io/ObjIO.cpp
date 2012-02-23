@@ -251,7 +251,7 @@ namespace lssr
 			       faceColors[ i * 3 + 1 ],
 			       faceColors[ i * 3 + 2 ] );
                 pair<std::map<Vertex<uchar>, unsigned int>::iterator, bool> pommes 
-		  = colorMap.insert( make_pair<ObjColor, unsigned int>( color, i ) );
+		  = colorMap.insert( pair<ObjColor, unsigned int>( color, i ) );
                 if( pommes.second == false )
 		  {
                     out << "usemtl color_" << colorMap[color] << endl;

@@ -1225,7 +1225,7 @@ void HalfEdgeMesh<VertexT, NormalT>::finalizeAndRetesselate( bool genTextures, f
                 else
                 {
                     pos = vertexBuffer.size() / 3;
-                    vertexMap.insert(make_pair<Vertex<float>, unsigned int>(current, pos));
+                    vertexMap.insert(pair<Vertex<float>, unsigned int>(current, pos));
                     vertexBuffer.push_back( (*m_regions[iRegion]->m_faces[iFace])(iVertex)->m_position.x );
                     vertexBuffer.push_back( (*m_regions[iRegion]->m_faces[iFace])(iVertex)->m_position.y );
                     vertexBuffer.push_back( (*m_regions[iRegion]->m_faces[iFace])(iVertex)->m_position.z );
