@@ -88,12 +88,6 @@ class BaseMesh
          */
         virtual void finalize() = 0;
 
-        /**
-         * @brief    Save the mesh to the given file
-         */
-        virtual void save( string filename,
-                std::multimap< std::string, std::string > options
-                = std::multimap< std::string, std::string >() );
 
         /**
          * @brief    Creates a buffered mesh from the given file.
