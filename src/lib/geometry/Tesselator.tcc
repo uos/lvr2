@@ -137,7 +137,7 @@ void Tesselator<VertexT, NormalT>::getFinalizedTriangles(vector<float> &vertexBu
             vertexBuffer.push_back((*triangles)[0]);
             vertexBuffer.push_back((*triangles)[1]);
             vertexBuffer.push_back((*triangles)[2]);
-            vertexMap.insert( make_pair<Vertex<float>, unsigned int>( *triangles, pos ) ); 
+            vertexMap.insert( pair<Vertex<float>, unsigned int>( *triangles, pos ) );
         }
         indexBuffer.push_back( pos );
     }
