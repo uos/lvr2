@@ -67,7 +67,7 @@ public:
 	 * @brief	Builds a Vertex with the given coordinates.
 	 */
 	ColorVertex(const CoordType &_x, const CoordType &_y, const CoordType &_z,
-			const unsigned char _r, const unsigned char _g, const unsigned char _b)
+			const unsigned char _r, const unsigned char _g, const unsigned char _b, ...)
 	{
 		this->x = _x;
 		this->y = _y;
@@ -102,6 +102,40 @@ public:
 		this->g = 0;
 		this->b = 0;
 	}
+
+
+    CoordType operator[](const int &index) const
+    {
+
+        switch ( index )
+        {
+            case 0: return this->x;
+            case 1: return this->y;
+            case 2: return this->z;
+            case 3: return *((CoordType*) &r);
+            case 4: return *((CoordType*) &g);
+            case 5: return *((CoordType*) &b);
+            default:
+                throw std::overflow_error( "Access index out of range." );
+        }
+    }
+
+
+    CoordType& operator[](const int &index)
+    {
+        switch ( index )
+        {
+            case 0: return this->x;
+            case 1: return this->y;
+            case 2: return this->z;
+            case 3: return *((CoordType*) &r);
+            case 4: return *((CoordType*) &g);
+            case 5: return *((CoordType*) &b);
+            default:
+                throw std::overflow_error("Access index out of range.");
+        }
+    }
+
 
 	ColorT r, g, b;
 

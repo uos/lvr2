@@ -34,6 +34,7 @@
 #include "io/AsciiIO.hpp"
 #include "io/UosIO.hpp"
 
+#include "geometry/VertexTraits.hpp"
 #include "geometry/Vertex.hpp"
 #include "geometry/Normal.hpp"
 #include "geometry/ColorVertex.hpp"
@@ -291,39 +292,6 @@ private:
     int                         m_kd;
 };
 
-
-template< typename VertexT >
-struct VertexTraits { };
-
-
-template< typename CoordType, typename ColorT >
-struct VertexTraits< ColorVertex< CoordType, ColorT > > 
-{
-    static inline ColorVertex< CoordType, ColorT > vertex(
-            const coord3fArr &p, color3bArr c, const unsigned int idx )
-    {
-        return c
-            ? ColorVertex< CoordType, ColorT >(
-                p[idx][0], p[idx][1], p[idx][2],
-                c[idx][0], c[idx][1], c[idx][2] )
-            : ColorVertex< CoordType, ColorT >(
-                p[idx][0], p[idx][1], p[idx][2] );
-        /* TODO: Make sure we always have color information if we have
-         *       ColorVertex! */
-    }
-};
-
-
-template< typename CoordType >
-struct VertexTraits< Vertex< CoordType > > 
-{
-    static inline Vertex< CoordType > vertex(
-            const coord3fArr &p, color3bArr c, const unsigned int idx )
-    {
-        return Vertex< CoordType >(
-                p[idx][0], p[idx][1], p[idx][2] );
-    }
-};
 
 }
 
