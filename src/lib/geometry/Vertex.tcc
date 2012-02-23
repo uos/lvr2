@@ -32,6 +32,9 @@ namespace lssr
 {
 
 template<typename CoordType>
+float Vertex<CoordType>::epsilon = 0.00001;
+
+template<typename CoordType>
 CoordType Vertex<CoordType>::operator[](const int &index) const
 {
 
