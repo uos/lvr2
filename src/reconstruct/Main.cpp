@@ -214,7 +214,13 @@ int main(int argc, char** argv)
     }
     else if(pcm_name == "STANN" || pcm_name == "FLANN" || pcm_name == "NABO")
     {
-        akSurface* aks = new akSurface(p_loader, pcm_name);
+        akSurface* aks = new akSurface(
+                p_loader, pcm_name,
+                options.getKn(),
+                options.getKi(),
+                options.getKd()
+                );
+
         surface = psSurface::Ptr(aks);
         // Set RANSAC flag
         if(options.useRansac())

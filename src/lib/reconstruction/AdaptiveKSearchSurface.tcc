@@ -104,7 +104,9 @@ void AdaptiveKSearchSurface<VertexT, NormalT>::init()
                                    this->m_points[i][2]);
     }
 
-    this->m_centroid = this->m_boundingBox.getCentroid();
+    this->m_centroid = VertexT(0.0, 0.0, 0.0);
+    //this->m_boundingBox.getCentroid();
+    cout << m_centroid;
     // Create kd tree
     //cout << timestamp << "Creating STANN Kd-Tree..." << endl;
     //m_pointTree = sfcnn< coord<float>, 3, float>( this->m_points.get(),

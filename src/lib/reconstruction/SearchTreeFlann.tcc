@@ -135,7 +135,15 @@ template<typename VertexT>
 void SearchTreeFlann< VertexT >::kSearch(VertexT qp, int k, vector< VertexT > &neighbors)
 {
     vector<ulong> indices;
-    SearchTree<VertexT>::kSearch(qp, k, indices);
+    vector<double> dist;
+
+    coord<float> p;
+    p[0] = qp[0];
+    p[1] = qp[1];
+    p[2] = qp[2];
+
+    this->kSearch(p, k, indices, dist);
+
     for(size_t i = 0; i < indices.size(); i++)
     {
         neighbors.push_back(
