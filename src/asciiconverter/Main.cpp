@@ -71,8 +71,8 @@ int main(int argc, char** argv)
 
     // Print stats
     std::cout << timestamp << "Read colors\t\t: " << readColor << std::endl;
-    std::cout << timestamp << "Read intensities\t\t: " << readColor << std::endl;
-    std::cout << timestamp << "Convert intensities\t: " << readColor << std::endl;
+    std::cout << timestamp << "Read intensities\t\t: " << readIntensity << std::endl;
+    std::cout << timestamp << "Convert intensities\t: " << convert << std::endl;
 
     // Alloc buffers
     floatArr points(new float[3 * numPoints]);
