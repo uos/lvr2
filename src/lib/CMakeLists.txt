@@ -36,6 +36,7 @@ target_link_libraries(staticlssr ${Boost_PROGRAM_OPTIONS_LIBRARY}
 target_link_libraries(staticlssr laslib)
 target_link_libraries(staticlssr obj)
 target_link_libraries(staticlssr pthread)
+target_link_libraries(staticlssr ${PCL_LIBRARIES})
 
 if ( rply_shared ) 
     target_link_libraries(staticlssr ${rply_shared})
