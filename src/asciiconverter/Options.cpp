@@ -67,7 +67,7 @@ Options::Options(int argc, char** argv) : m_descr("Supported options")
 
 bool  Options::convertRemission() const
 {
-    return m_variables.count("c");
+    return m_variables.count("convert");
 }
 
 string Options::inputFile() const
