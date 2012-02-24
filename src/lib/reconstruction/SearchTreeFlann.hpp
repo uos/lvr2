@@ -85,7 +85,7 @@ public:
      * @param qp          A float array which contains the query point for which the neighbours are searched.
      * @param neighbours  The number of neighbours that should be searched.
      * @param indices     A vector that stores the indices for the neighbours whithin the dataset.
-     * @param distances   A vector that sotres the distances for the neighbours that are found.
+     * @param distances   A vector that stores the distances for the neighbours that are found.
      */
     virtual void kSearch( coord < float >& qp, int neighbours, vector< ulong > &indices, vector< double > &distances );
 
