@@ -72,6 +72,13 @@ public:
 
 public Q_SLOTS:
 	virtual void resetCamera();
+
+	void zoomChanged(double z)
+	{
+	    m_zoom = z;
+	    updateGL();
+	}
+
 	void createSnapshot();
 
 
@@ -82,6 +89,10 @@ protected:
 	BoundingBox<Vertex<float> > m_boundingBox;
 	KeyFrameInterpolator*       m_kfi;
 
+	double                      m_zoom;
+
+	double                      m_near;
+	double                      m_far;
 
 private:
 	QWidget*				    m_parent;

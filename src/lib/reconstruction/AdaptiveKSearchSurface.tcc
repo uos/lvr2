@@ -49,6 +49,8 @@ AdaptiveKSearchSurface<VertexT, NormalT>::AdaptiveKSearchSurface(
 : PointsetSurface<VertexT>( loader )
 {
    // Init:
+    srand(time(NULL));
+
    size_t n_points, n_normals;
    this->m_points = loader->getIndexedPointArray(n_points);
    this->m_normals = loader->getIndexedPointNormalArray(n_normals);
@@ -131,7 +133,7 @@ void AdaptiveKSearchSurface<VertexT, NormalT>::calculateSurfaceNormals()
     string comment = timestamp.getElapsedTime() + "Estimating normals ";
     ProgressBar progress(this->m_numPoints, comment);
 
-    #pragma omp parallel for
+    //#pragma omp parallel for
     for(size_t i = 0; i < this->m_numPoints; i++){
 
         Vertexf query_point;
@@ -537,11 +539,13 @@ Plane<VertexT, NormalT> AdaptiveKSearchSurface<VertexT, NormalT>::calcPlaneRANSA
         //randomly choose 3 disjoint points
         int c = 0;
         do{
-
+            //cout << "AAA" << endl;
             int index[3];
             for(int i = 0; i < 3; i++)
             {
-                index[i] = id[rand() % k];
+                int r = rand() % id.size();
+                index[i] = id[r];
+               // cout << "R: " << r << endl;
             }
 
             point1 = VertexT(this->m_points[index[0]][0],this->m_points[index[0]][1], this->m_points[index[0]][2]);
@@ -558,9 +562,16 @@ Plane<VertexT, NormalT> AdaptiveKSearchSurface<VertexT, NormalT>::calcPlaneRANSA
             }
             c++;
 
+//            cout << index[0] << " " << index[1] << " " << index[2] << " " << id.size() << endl;
+//            cout << point1;
+//            cout << point2;
+//            cout << point3;
+//            cout << endl;
+
             // Check for deadlock
             if(c > 50)
             {
+                cout << "DL " << k << endl;
                 ok = false;
                 return p;
             }
@@ -569,12 +580,14 @@ Plane<VertexT, NormalT> AdaptiveKSearchSurface<VertexT, NormalT>::calcPlaneRANSA
 
         //compute error to at most 50 other randomly chosen points
         dist = 0;
-        for(int i = 0; i < min(50, k); i++)
+        int n = min(50,k);
+        for(int i = 0; i < n; i++)
         {
             int index = id[rand() % k];
             VertexT refpoint = VertexT(this->m_points[index][0], this->m_points[index][1] ,this->m_points[index][2]);
-            dist += fabs(refpoint * n0 - point1 * n0) / min(50, k);
+            dist += fabs(refpoint * n0 - point1 * n0);
         }
+        if(n != 0) dist /= n;
 
         //a new optimum is found
         if(dist < bestdist)

@@ -107,8 +107,7 @@ public Q_SLOTS:
 	void createMeshFromPointcloud();
 	void centerOnSelection();
 
-
-
+	void zoomChanged();
 private:
 
 	void updateToolbarActions(CustomTreeWidgetItem* item);
@@ -125,6 +124,10 @@ private:
 
 	QDockWidget*				m_sceneDockWidget;
 	QDockWidget*                m_actionDockWidget;
+
+	QDoubleSpinBox*             m_zoomSpinBox;
+	QAction*                    m_zoomAction;
+	QAction*                    m_zoomBoxAction;
 
 	Fogsettings*				m_fogSettingsUI;
 	ViewerManager*				m_viewerManager;
