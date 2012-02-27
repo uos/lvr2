@@ -27,7 +27,7 @@
 #include "Viewer.h"
 
 Viewer::Viewer(QWidget* parent, const QGLWidget* shared)
-	: QGLViewer(parent, shared),  m_parent(parent)
+	: QGLViewer(parent, shared),  m_parent(parent), m_zoom(1.0)
 {
     m_kfi = new qglviewer::KeyFrameInterpolator(new qglviewer::Frame());
 
@@ -51,6 +51,7 @@ void Viewer::draw()
         camera()->setOrientation(m_kfi->frame()->orientation());
     }
 
+    glScalef(m_zoom, m_zoom, m_zoom);
     list<DataCollector*>::iterator it;
     for(it = m_dataObjects.begin(); it != m_dataObjects.end(); it++)
     {
@@ -77,6 +78,8 @@ void Viewer::resetCamera()
 	qglviewer::Vec v2(v_max.x, v_max.y, v_max.z);
 
 	setSceneBoundingBox(v1, v2);
+	m_zoom = 1.0;
+
 	showEntireScene();
 }
 
@@ -97,6 +100,10 @@ void Viewer::centerViewOnObject(Renderable* renderable)
     qglviewer::Vec v2(v_max.x, v_max.y, v_max.z);
 
     setSceneBoundingBox(v1, v2);
+
+    m_near = camera()->zNear();
+    m_far  = camera()->zFar();
+    m_zoom = 1.0;
     showEntireScene();
     updateGL();
 }

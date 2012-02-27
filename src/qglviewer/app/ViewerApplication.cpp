@@ -34,7 +34,34 @@ ViewerApplication::ViewerApplication( int argc, char ** argv )
 	// Setup main window
 	m_qMainWindow = new QMainWindow;
 	m_mainWindowUi = new MainWindow;
+
+
 	m_mainWindowUi->setupUi(m_qMainWindow);
+
+	// Add a spinbox for scene zoom to toolbar (cool ;-)
+	QLabel* label = new QLabel(m_mainWindowUi->toolBar);
+	label->setText("Zoom Scene: ");
+	QAction* label_action = m_mainWindowUi->toolBar->addWidget(label);
+	label_action->setVisible(true);
+
+    QDoubleSpinBox* m_zoomSpinBox = new QDoubleSpinBox(m_mainWindowUi->toolBar);
+    m_zoomSpinBox->setMinimum(0.01);
+    m_zoomSpinBox->setMaximum(10000);
+    m_zoomSpinBox->setSingleStep(0.5);
+    m_zoomSpinBox->setDecimals(2);
+    m_zoomSpinBox->setValue(1.00);
+
+    m_zoomBoxAction = m_mainWindowUi->toolBar->addWidget(m_zoomSpinBox);
+    m_zoomBoxAction->setVisible(true);
+
+    m_zoomAction = new QAction(m_qMainWindow);
+    QIcon icon;
+    icon.addFile(QString::fromUtf8(":/qv_zoom.png"), QSize(), QIcon::Normal, QIcon::Off);
+    m_zoomAction->setIcon(icon);
+    m_zoomAction->setObjectName(QString::fromUtf8("actionZoom"));
+    m_zoomAction->setCheckable(false);
+    m_zoomAction->setEnabled(true);
+    m_mainWindowUi->toolBar->addAction(m_zoomAction);
 
 	// Add dock widget for currently active objects in viewer
 	m_sceneDockWidget = new QDockWidget(m_qMainWindow);
@@ -52,13 +79,12 @@ ViewerApplication::ViewerApplication( int argc, char ** argv )
 	m_viewerManager = new ViewerManager(m_qMainWindow);
 	m_viewer = m_viewerManager->current();
 
-
 	m_factory = new DataCollectorFactory;
-
 
 
 	// Show window
 	m_qMainWindow->show();
+
 
 	connectEvents();
 
@@ -79,6 +105,8 @@ ViewerApplication::ViewerApplication( int argc, char ** argv )
 	m_fogSettingsDialog = 0;
 
 	m_playerDialog = new AnimationDialog(m_viewer);
+
+
 }
 
 void ViewerApplication::connectEvents()
@@ -133,6 +161,13 @@ void ViewerApplication::connectEvents()
     connect(m_actionDockWidgetUi->buttonExport,     SIGNAL(clicked()), this, SLOT(saveSelectedObject()));
     connect(m_actionDockWidgetUi->buttonAnimation,  SIGNAL(clicked()), this, SLOT(createAnimation()));
 
+    connect(m_zoomAction, SIGNAL(activated()), this, SLOT(zoomChanged()));
+}
+
+void ViewerApplication::zoomChanged()
+{
+    QDoubleSpinBox* s = static_cast<QDoubleSpinBox*>(m_mainWindowUi->toolBar->widgetForAction(m_zoomBoxAction));
+    m_viewer->zoomChanged(s->value());
 }
 
 void ViewerApplication::displayRenderingSettings()
