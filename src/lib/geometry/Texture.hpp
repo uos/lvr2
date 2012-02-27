@@ -84,15 +84,11 @@ public:
 	static float m_texelSize;
 
 private:
-	struct ColorT{
-		unsigned char r, g, b;
-	};
-
 	///The region belonging to the texture
 	Region<VertexT, NormalT>* m_region;
 
 	///The texture data
-	ColorT** m_data;
+	PPMIO::ColorT** m_data;
 
 	///The coordinate system of the texture plane
 	NormalT best_v1, best_v2;

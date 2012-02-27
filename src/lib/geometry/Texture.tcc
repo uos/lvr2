@@ -111,13 +111,13 @@ Texture<VertexT, NormalT>::Texture(
 			this->m_sizeY = ceil((best_b_max - best_b_min) / m_texelSize);
 			this->m_sizeY = pow(2, ceil(log(this->m_sizeY) / log(2)));
 
-			m_data = new ColorT*[this->m_sizeY];
+			m_data = new PPMIO::ColorT*[this->m_sizeY];
 
 			//walk through the bounding box and collect color information for each texel
             #pragma omp parallel for
 			for(int y = 0; y < this->m_sizeY; y++)
 			{
-				m_data[m_sizeY-y-1] = new ColorT[this->m_sizeX];
+				m_data[m_sizeY-y-1] = new PPMIO::ColorT[this->m_sizeX];
 				for(int x = 0; x < this->m_sizeX; x++)
 				{
 					if (y <= (best_b_max - best_b_min) / m_texelSize  && x <= (best_a_max - best_a_min) / m_texelSize)
@@ -132,7 +132,7 @@ Texture<VertexT, NormalT>::Texture(
 						int one = 1;
 						pm->searchTree()->kSearch(current_position, one, cv);
 
-						ColorT currCol;
+						PPMIO::ColorT currCol;
 						currCol.r = cv[0].r;
 						currCol.g = cv[0].g;
 						currCol.b = cv[0].b;
@@ -140,7 +140,7 @@ Texture<VertexT, NormalT>::Texture(
 					}
 					else
 					{
-						ColorT currCol;
+						PPMIO::ColorT currCol;
 						currCol.r = 0;
 						currCol.g = 0;
 						currCol.b = 255;
@@ -157,11 +157,11 @@ Texture<VertexT, NormalT>::Texture(
 	{
 		this->m_sizeX = 1;
 		this->m_sizeY = 1;
-		m_data = new ColorT*[this->m_sizeY];
+		m_data = new PPMIO::ColorT*[this->m_sizeY];
 		for (int y = 0; y < this->m_sizeY; y++)
 		{
-			m_data[y] = new ColorT[this->m_sizeX];
-			memset(m_data[y], 200, this->m_sizeX * sizeof(ColorT));
+			m_data[y] = new PPMIO::ColorT[this->m_sizeX];
+			memset(m_data[y], 200, this->m_sizeX * sizeof(PPMIO::ColorT));
 		}
 	}
 }
@@ -182,7 +182,7 @@ void Texture<VertexT, NormalT>::textureCoords(VertexT v, float &x, float &y)
 template<typename VertexT, typename NormalT>
 void Texture<VertexT, NormalT>::save()
 {
-	PPMIO<ColorT> ppm;
+	PPMIO ppm;
 	ppm.setDataArray(this->m_data,this->m_sizeX, this->m_sizeY);
 	ppm.write("texture_"+boost::lexical_cast<std::string>(this->m_region->m_regionNumber)+".ppm");
 }
