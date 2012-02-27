@@ -8,7 +8,7 @@
 #define OBJ_LINE_SIZE 500
 #define MAX_VERTEX_COUNT 4 //can only handle quads or triangles
 
-typedef struct obj_face
+struct obj_face
 {
 	int vertex_index[MAX_VERTEX_COUNT];
 	int normal_index[MAX_VERTEX_COUNT];
@@ -17,7 +17,7 @@ typedef struct obj_face
 	int material_index;
 };
 
-typedef struct obj_sphere
+struct obj_sphere
 {
 	int pos_index;
 	int up_normal_index;
@@ -26,7 +26,7 @@ typedef struct obj_sphere
 	int material_index;
 };
 
-typedef struct obj_plane
+struct obj_plane
 {
 	int pos_index;
 	int normal_index;
@@ -35,12 +35,12 @@ typedef struct obj_plane
 	int material_index;
 };
 
-typedef struct obj_vector
+struct obj_vector
 {
 	double e[3];
 };
 
-typedef struct obj_material
+struct obj_material
 {
 	char name[MATERIAL_NAME_SIZE];
 	char texture_filename[OBJ_FILENAME_LENGTH];
@@ -55,33 +55,33 @@ typedef struct obj_material
 	double refract_index;
 };
 
-typedef struct obj_camera
+struct obj_camera
 {
 	int camera_pos_index;
 	int camera_look_point_index;
 	int camera_up_norm_index;
 };
 
-typedef struct obj_light_point
+struct obj_light_point
 {
 	int pos_index;
 	int material_index;
 };
 
-typedef struct obj_light_disc
+struct obj_light_disc
 {
 	int pos_index;
 	int normal_index;
 	int material_index;
 };
 
-typedef struct obj_light_quad
+struct obj_light_quad
 {
 	int vertex_index[MAX_VERTEX_COUNT];
 	int material_index;
 };
 
-typedef struct obj_growable_scene_data
+struct obj_growable_scene_data
 {
 //	vector extreme_dimensions[2];
 	char scene_filename[OBJ_FILENAME_LENGTH];
@@ -104,7 +104,7 @@ typedef struct obj_growable_scene_data
 	obj_camera *camera;
 };
 
-typedef struct obj_scene_data
+struct obj_scene_data
 {
 	obj_vector **vertex_list;
 	obj_vector **vertex_normal_list;
