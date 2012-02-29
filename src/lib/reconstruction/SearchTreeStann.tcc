@@ -69,19 +69,32 @@ void SearchTreeStann< VertexT >::kSearch( coord< float > &qp, int neighbours, ve
     m_pointTree.ksearch( qp, neighbours, indices, distances, 0);
 }
 
-template<typename VertexT>
+	template<typename VertexT>
 void SearchTreeStann< VertexT >::kSearch(VertexT qp, int k, vector< VertexT > &neighbors)
 {
-    vector<ulong> indices;
-    float f_qp[3] = {qp.x, qp.y, qp.z};
-    SearchTree<VertexT>::kSearch(f_qp, k, indices);
-    for(size_t i = 0; i < indices.size(); i++)
-    {
-        neighbors.push_back(
-                VertexT(m_points[indices[i]][0],
-                        m_points[indices[i]][1],
-                        m_points[indices[i]][2]));
-    }
+	vector<ulong> indices;
+	float f_qp[3] = {qp.x, qp.y, qp.z};
+	SearchTree<VertexT>::kSearch(f_qp, k, indices);
+	for(size_t i = 0; i < indices.size(); i++)
+	{
+		if(VertexTraits<VertexT>::has_color() )
+		{
+			neighbors.push_back(
+					VertexT(m_points[indices[i]][0],
+						m_points[indices[i]][1],
+						m_points[indices[i]][2], 
+						m_points[indices[i]][3],
+						m_points[indices[i]][4], 
+						m_points[indices[i]][5]));
+		} else
+		{
+			neighbors.push_back(
+					VertexT(m_points[indices[i]][0],
+						m_points[indices[i]][1],
+						m_points[indices[i]][2]));
+		}
+
+	}
 }
 
 
