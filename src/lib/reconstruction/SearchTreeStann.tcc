@@ -42,7 +42,7 @@ using std::numeric_limits;
 namespace lssr {
 
 template<typename VertexT>
-SearchTreeStann< VertexT >::SearchTreeStann( coord3fArr points, long unsigned int &n_points, const int &kn, const int &ki, const int &kd, const bool &useRansac )
+SearchTreeStann< VertexT >::SearchTreeStann( coord3fArr points, size_t &n_points, const int &kn, const int &ki, const int &kd, const bool &useRansac )
     : m_points(points)
 {
     // Store parameters
