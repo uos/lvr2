@@ -42,6 +42,8 @@ Texture* TextureFactory::getTexture(string filename) const
     int height = 0;
     unsigned char* data = 0;
 
+    cout << "TextureFactory -- texture file: " << filename << endl;
+
     // Get file extension
     if(filename.substr(filename.find_last_of(".") + 1) == "ppm")
     {
