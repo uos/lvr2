@@ -99,6 +99,10 @@ protected:
 	ucharArr        m_colors;
 	unsigned char*  m_blackColors;
 
+	uintArr 	m_textureIndexBuffer;
+	floatArr 	m_textureCoordBuffer;
+	ucharArr 	m_faceColorBuffer;
+
 	uintArr         m_indices;
 
 	bool            m_finalized;
