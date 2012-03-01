@@ -85,10 +85,13 @@ void StaticMesh::init( MeshBufferPtr mesh )
 
         m_faceNormals = 0;
 
-        m_vertexNormals = mesh->getVertexNormalArray(m_numVertices);
-        m_colors        = mesh->getVertexColorArray(n_colors);
-        m_vertices      = mesh->getVertexArray(m_numVertices);
-        m_indices       = mesh->getFaceArray(m_numFaces);
+        m_vertexNormals 	= mesh->getVertexNormalArray(m_numVertices);
+        m_colors        	= mesh->getVertexColorArray(n_colors);
+        m_vertices      	= mesh->getVertexArray(m_numVertices);
+        m_indices       	= mesh->getFaceArray(m_numFaces);
+	m_textureIndexBuffer 	= mesh->getFaceArray(m_numFaces);
+	m_textureCoordBuffer 	= mesh->getFaceArray(m_numVertices);
+	m_faceColorBuffer 	= mesh->getFaceArray(m_numMaterials);
 
         m_blackColors   = new unsigned char[3 * m_numVertices];
         for ( size_t i = 0; i < 3 * m_numVertices; i++ ) {

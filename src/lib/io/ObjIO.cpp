@@ -116,7 +116,7 @@ namespace lssr
 	faceIndices = uintArr( new unsigned int[ numFaces * 3 ] );
 	textureIndexBuffer = uintArr( new unsigned int[ numFaces * 3 ] );
       }
-    if( numTextures )
+    if( numVertices )
       {
 	textureCoordBuffer = floatArr( new float[ numTextures * 3 ] );
       }
@@ -165,7 +165,7 @@ namespace lssr
       }
 
     // texture coordinates
-    for(int i = 0; i < numTextures; ++i)
+    for(int i = 0; i < numMaterials; ++i)
       {
 	obj_vector *o = objData->textureList[i];
 	textureCoordBuffer[ i * 3 ]     = o->e[ 0 ];
