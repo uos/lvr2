@@ -118,7 +118,7 @@ namespace lssr
       }
     if( numVertices )
       {
-	textureCoordBuffer = floatArr( new float[ numTextures * 3 ] );
+	textureCoordBuffer = floatArr( new float[ numVertices * 3 ] );
       }
     if( numMaterials )
       {
@@ -165,7 +165,7 @@ namespace lssr
       }
 
     // texture coordinates
-    for(int i = 0; i < numMaterials; ++i)
+    for(int i = 0; i < numVertices; ++i)
       {
 	obj_vector *o = objData->textureList[i];
 	textureCoordBuffer[ i * 3 ]     = o->e[ 0 ];
