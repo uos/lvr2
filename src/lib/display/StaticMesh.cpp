@@ -276,6 +276,7 @@ void StaticMesh::interpolateNormals()
 		Vertex<float> d2 = v2 - v1;
 
 		Normal<float> p(d1.cross(d2));
+		p = p * -1;
 
 		// Sum up coordinate values in normal array
 		m_faceNormals[a    ] = p.x;
