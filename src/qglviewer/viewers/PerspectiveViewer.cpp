@@ -80,8 +80,8 @@ void PerspectiveViewer::init()
 	glFogf(GL_FOG_DENSITY, 1.0f);  // Thin the fog out a little
 	glFogi(GL_FOG_MODE, GL_LINEAR);
 
-	float double_sided = 1.0;
-	glLightModelfv(GL_LIGHT_MODEL_TWO_SIDE, &double_sided);
+	//float double_sided = 1.0;
+	//glLightModelfv(GL_LIGHT_MODEL_TWO_SIDE, &double_sided);
 
 	glEnable(GL_DEPTH_TEST);
 

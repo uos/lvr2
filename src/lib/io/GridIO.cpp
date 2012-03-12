@@ -24,6 +24,7 @@
  */
 
 #include "GridIO.hpp"
+#include "DataStruct.hpp"
 
 #include <fstream>
 using std::ifstream;
@@ -59,7 +60,7 @@ void GridIO::read( std::string filename )
         }
 
         // Alloc and read box indices
-        m_boxes = uintArr( new uint[8 * n_cells] );
+        m_boxes = uintArr( new unsigned int[8 * n_cells] );
         m_numBoxes = n_cells;
         for(size_t i = 0; i < n_cells; i++)
         {
