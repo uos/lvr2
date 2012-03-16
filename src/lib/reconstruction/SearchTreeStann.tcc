@@ -18,7 +18,7 @@
 
 
  /*
- * SearchTreeStann.tcc 
+ * SearchTreeStann.tcc
  *
  *  Created on: 02.01.2012
  *      Author: Florian Otte
@@ -42,8 +42,14 @@ using std::numeric_limits;
 namespace lssr {
 
 template<typename VertexT>
-SearchTreeStann< VertexT >::SearchTreeStann( coord3fArr points, size_t &n_points, const int &kn, const int &ki, const int &kd, const bool &useRansac )
-    : m_points(points)
+SearchTreeStann< VertexT >::SearchTreeStann(
+		PointBufferPtr buffer,
+		size_t &n_points,
+		const int &kn,
+		const int &ki,
+		const int &kd,
+		const bool &useRansac )
+
 {
     // Store parameters
     this->m_ki = ki;
@@ -51,10 +57,14 @@ SearchTreeStann< VertexT >::SearchTreeStann( coord3fArr points, size_t &n_points
     this->m_kd = kd;
     m_useRansac = useRansac;
 
+    size_t n_colors;
+    m_points = buffer->getIndexedPointArray(n_points);
+    m_colors = buffer->getIndexedPointColorArray(n_colors);
+
 
     // Create Stann Kd-tree
     cout << timestamp << "Creating STANN Kd-Tree" << endl;
-    m_pointTree = sfcnn< coord< float >, 3, float >( points.get(), n_points, omp_get_num_procs() );
+    m_pointTree = sfcnn< coord< float >, 3, float >( m_points.get(), n_points, omp_get_num_procs() );
 }
 
 
@@ -77,21 +87,23 @@ void SearchTreeStann< VertexT >::kSearch(VertexT qp, int k, vector< VertexT > &n
 	SearchTree<VertexT>::kSearch(f_qp, k, indices);
 	for(size_t i = 0; i < indices.size(); i++)
 	{
-		if(VertexTraits<VertexT>::has_color() )
+		if(VertexTraits<VertexT>::has_color() && m_colors)
 		{
 			neighbors.push_back(
 					VertexT(m_points[indices[i]][0],
-						m_points[indices[i]][1],
-						m_points[indices[i]][2], 
-						m_points[indices[i]][3],
-						m_points[indices[i]][4], 
-						m_points[indices[i]][5]));
+							m_points[indices[i]][1],
+							m_points[indices[i]][2],
+							m_colors[indices[i]][0],
+							m_colors[indices[i]][1],
+							m_colors[indices[i]][2])
+							);
 		} else
 		{
 			neighbors.push_back(
 					VertexT(m_points[indices[i]][0],
-						m_points[indices[i]][1],
-						m_points[indices[i]][2]));
+							m_points[indices[i]][1],
+							m_points[indices[i]][2])
+							);
 		}
 
 	}
