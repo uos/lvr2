@@ -61,7 +61,7 @@ public:
      *  @param ki      The number of neighbour points used for normal interpolation.
      *  @param kd      The number of neighbour points esed for distance value calculation.
      */
-    SearchTreeStann( coord3fArr points,
+    SearchTreeStann( PointBufferPtr points,
             size_t &n_points,
             const int &kn = 10,
             const int &ki = 10,
@@ -102,6 +102,9 @@ protected:
 
     /// The points
     coord3fArr                          m_points;
+
+    /// The colors
+    color3bArr							m_colors;
 }; // SearchTreeStann
 
 

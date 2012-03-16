@@ -33,7 +33,7 @@
 
 namespace lssr
 {
-    
+
 typedef ColorVertex<float, unsigned char>               cVertex;
 typedef Normal<float>                                   cNormal;
 typedef SearchTree<cVertex> search_tree;
@@ -77,12 +77,12 @@ AdaptiveKSearchSurface<VertexT, NormalT>::AdaptiveKSearchSurface(
         this->m_searchTree = search_tree::Ptr( new SearchTreeFlann<VertexT>(loader, this->m_numPoints, kn, ki, kd) );
 #else
         cout << timestamp << "Warning: PCL is not installed. Using STANN search tree in AdaptiveKSearchSurface." << endl;
-        this->m_searchTree = search_tree::Ptr( new SearchTreeStann<VertexT>(this->m_points, this->m_numPoints, kn, ki, kd) );
+        this->m_searchTree = search_tree::Ptr( new SearchTreeStann<VertexT>(loader, this->m_numPoints, kn, ki, kd) );
 #endif
     }
     else if( searchTreeName == "stann" || searchTreeName == "STANN" )
     {
-        this->m_searchTree = search_tree::Ptr( new SearchTreeStann<VertexT>(this->m_points, this->m_numPoints, kn, ki, kd) );
+        this->m_searchTree = search_tree::Ptr( new SearchTreeStann<VertexT>(loader, this->m_numPoints, kn, ki, kd) );
     }
     else
     {
@@ -133,7 +133,7 @@ void AdaptiveKSearchSurface<VertexT, NormalT>::calculateSurfaceNormals()
     string comment = timestamp.getElapsedTime() + "Estimating normals ";
     ProgressBar progress(this->m_numPoints, comment);
 
-    //#pragma omp parallel for
+    #pragma omp parallel for
     for(size_t i = 0; i < this->m_numPoints; i++){
 
         Vertexf query_point;
@@ -160,7 +160,7 @@ void AdaptiveKSearchSurface<VertexT, NormalT>::calculateSurfaceNormals()
 
             //T* point = this->m_points[i];
             this->m_searchTree->kSearch(this->m_points[i], k, id, di);
-            
+
             float min_x = 1e15;
             float min_y = 1e15;
             float min_z = 1e15;
@@ -184,7 +184,7 @@ void AdaptiveKSearchSurface<VertexT, NormalT>::calculateSurfaceNormals()
                 max_x = max(max_x, this->m_points[id[j]][0]);
                 max_y = max(max_y, this->m_points[id[j]][1]);
                 max_z = max(max_z, this->m_points[id[j]][2]);
-                
+
 //                cout << "Points: " << this->m_numPoints << "Point[" << id[j] << "].x: " <<  this->m_points[id[j]][0] << endl ;
 //                cout << "Points: " << this->m_numPoints << "Point[" << id[j] << "].y: " <<  this->m_points[id[j]][1] << endl ;
 //                cout << "Points: " << this->m_numPoints << "Point[" << id[j] << "].z: " <<  this->m_points[id[j]][2] << endl ;
@@ -496,7 +496,7 @@ template<typename VertexT, typename NormalT>
 const VertexT AdaptiveKSearchSurface<VertexT, NormalT>::operator[]( const size_t& index ) const
 {
     return VertexT(
-            m_points[index].x, m_points[index].y, m_points[index].z, 
+            m_points[index].x, m_points[index].y, m_points[index].z,
             m_colors[index].r, m_colors[index].g, m_colors[index].b );
 }
 

@@ -91,7 +91,7 @@ PointCloud::PointCloud( ModelPtr model, string name) : Renderable(name)
             else
             {
                 r = 0;
-                g = 255;
+                g = 0;
                 b = 0;
             }
 
