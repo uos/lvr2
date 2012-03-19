@@ -6,6 +6,8 @@
 #include <pcl/point_types.h>
 #endif /* _USE_PCL_ */
 
+#define isnan(x) ((x) != (x))
+
 void lssr::PCDIO::save( string filename,
         std::multimap< std::string, std::string > options, lssr::ModelPtr m )
 {
