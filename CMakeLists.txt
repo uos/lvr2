@@ -181,6 +181,7 @@ add_subdirectory(src/asciiconverter)
 
 if(PCL_FOUND)
     add_subdirectory(src/scanfilter)
+    add_subdirectory(src/kinectgrabber)
 endif(PCL_FOUND)
 
 ##############################################################
