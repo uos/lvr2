@@ -24,7 +24,7 @@
  * @details   The PointLoader class specifies storage and access to all
  *            available point data by implementing the appropriate  get and set
  *            methods for these data.
- * 
+ *
  * @author    Lars Kiesow (lkiesow), lkiesow@uos.de, Universität Osnabrück
  * @author    Thomas Wiemann, twiemann@uos.de, Universität Osnabrück
  * @version   111001
@@ -44,6 +44,9 @@
 #include <algorithm>
 #include "DataStruct.hpp"
 
+#ifdef _USE_PCL_
+#include <pcl/point_types.h>
+#endif
 
 namespace lssr
 {
@@ -370,6 +373,10 @@ public:
      *          information
      */
     bool hasPointNormals() { return m_numPointNormals != 0;}
+
+#ifdef _USE_PCL_
+    boost::shared_ptr<PointBuffer> operator()(const pcl::PointCloud<pcl::PointXYZ>::ConstPtr  &buffer);
+#endif
 
 protected:
 
