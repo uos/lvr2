@@ -27,6 +27,7 @@
 #define POINTSETSURFACE_HPP_
 
 #include "io/PointBuffer.hpp"
+#include "geometry/BoundingBox.hpp"
 #include "SearchTree.hpp"
 
 namespace lssr
