@@ -26,43 +26,49 @@
 #ifndef KINECGRABBER_H_
 #define KINECGRABBER_H_
 
-#include <pcl/io/openni_grabber.h>
-#include <pcl/point_types.h>
-#include <boost/thread.hpp>
-
 #include "io/PointBuffer.hpp"
+#include "libfreenect.hpp"
+
+#include <boost/thread.hpp>
+#include <vector>
 
 namespace lssr
 {
 
-class KinectGrabber
+class KinectGrabber : public Freenect::FreenectDevice
 {
 public:
-	KinectGrabber(bool autostart = false);
+	KinectGrabber(freenect_context *_ctx, int _index);
 	virtual ~KinectGrabber();
 
-	/// Starts grabbing data
-	void start();
-
-	/// Stops grabbing data
-	void stop();
-
 	/// Returns the currently present point cloud data
-	PointBufferPtr getBuffer();
+	void getDepthImage(std::vector<short> &img);
+	void getColorImage(std::vector<uint8_t> &img);
+
+protected:
+	void VideoCallback(void* data, uint32_t timestamp);
+	void DepthCallback(void* data, uint32_t timestamp);
 
 private:
 
-	/// Kinect update callback
-	void update(const pcl::PointCloud<pcl::PointXYZ>::ConstPtr &cloud);
-
-	/// Mutex for save data access
-	boost::mutex 	m_mutex;
-
 	/// PointBufferPtr with current data
-	PointBufferPtr	m_buffer;
+	PointBufferPtr			m_buffer;
 
-	/// PCL OpenNI grabber
-	pcl::Grabber*	m_grabber;
+	/// Mutex for save depth buffer access
+	boost::mutex			m_depthMutex;
+
+	/// Mutex for save color buffer access
+	boost::mutex			m_colorMutex;
+
+	/// The raw depth image
+	std::vector<short>		m_depthImage;
+
+	/// The raw color image
+	std::vector<uint8_t>	m_colorImage;
+
+	std::vector<uint16_t>	m_gamma;
+
+	bool					m_haveData;
 
 };
 
