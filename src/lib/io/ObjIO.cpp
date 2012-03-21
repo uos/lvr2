@@ -37,6 +37,8 @@
 #include "Timestamp.hpp"
 #include "boost/tuple/tuple.hpp"
 #include "../geometry/Vertex.hpp"
+#include "../display/Texture.hpp"
+#include "../display/TextureFactory.hpp"
 #include <string.h>
 
 namespace lssr
@@ -72,20 +74,21 @@ namespace lssr
     size_t numVertexColors  = 0; // TODO: Set
 
     // Some output
-    cout << timestamp << "Number of vertices: "            << numVertices      << endl;
-    cout << timestamp << "Number of vertex normals: "      << numVertexNormals << endl;
-    cout << timestamp << "Number of vertex colors: "       << numVertexColors  << endl;
-    cout << timestamp << "Number of faces: "               << numFaces         << endl;
-    cout << timestamp << "Number of texture coordinates: " << numTextures      << endl;
-    cout << timestamp << "Number of spheres: "             << numSpheres       << endl;
-    cout << timestamp << "Number of planes: "              << numPlanes        << endl;
-    cout << timestamp << "Number of point lights: "        << numPointLights   << endl;
-    cout << timestamp << "Number of disc lights: "         << numDiscLights    << endl;
-    cout << timestamp << "Number of quad lights: "         << numQuadLights    << endl;
-    cout << timestamp << "Number of materials: "           << numMaterials     << endl;
+    cout << timestamp << endl;
+    cout << "[obj_io]" << "Number of vertices: "            << numVertices      << endl;
+    cout << "[obj_io]" << "Number of vertex normals: "      << numVertexNormals << endl;
+    cout << "[obj_io]" << "Number of vertex colors: "       << numVertexColors  << endl;
+    cout << "[obj_io]" << "Number of faces: "               << numFaces         << endl;
+    cout << "[obj_io]" << "Number of texture coordinates: " << numTextures      << endl;
+    cout << "[obj_io]" << "Number of spheres: "             << numSpheres       << endl;
+    cout << "[obj_io]" << "Number of planes: "              << numPlanes        << endl;
+    cout << "[obj_io]" << "Number of point lights: "        << numPointLights   << endl;
+    cout << "[obj_io]" << "Number of disc lights: "         << numDiscLights    << endl;
+    cout << "[obj_io]" << "Number of quad lights: "         << numQuadLights    << endl;
+    cout << "[obj_io]" << "Number of materials: "           << numMaterials     << endl;
     if(objData->camera != NULL)
       {
-	cout << timestamp << "Found a camera" << endl;
+	cout << "[obj_io]" << "Found a camera" << endl;
       }
     cout << endl;
 
@@ -180,6 +183,8 @@ namespace lssr
 	faceColorBuffer[ i * 3 ]     = o->amb[0] * 255;
 	faceColorBuffer[ i * 3 + 1]  = o->amb[1] * 255;
 	faceColorBuffer[ i * 3 + 2 ] = o->amb[2] * 255;
+
+	TextureFactory::instance().getTexture(o->texture_filename);
       }
     
     // delete obj data object

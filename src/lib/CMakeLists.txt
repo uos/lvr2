@@ -22,6 +22,7 @@ set(LSSR_SOURCES
     display/GroundPlane.cpp
     display/Grid.cpp
     display/Texture.cpp
+    display/TextureFactory.cpp
     reconstruction/PCLFiltering.cpp
 )
 

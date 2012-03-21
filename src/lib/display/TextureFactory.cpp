@@ -8,7 +8,7 @@
  */
 
 #include "TextureFactory.hpp"
-#include "ReadPPM.hpp"
+#include "../io/PPMIO.hpp"
 
 #include <iostream>
 using std::cout;
@@ -41,17 +41,14 @@ Texture* TextureFactory::getTexture(string filename) const
     int width = 0;
     int height = 0;
     unsigned char* data = 0;
-
-    cout << "TextureFactory -- texture file: " << filename << endl;
-
     // Get file extension
-    if(filename.substr(filename.find_last_of(".") + 1) == "ppm")
-    {
-        ReadPPM reader(filename);
+    if(filename.substr(filename.find_last_of(".") + 1, 3) == "ppm")
+      {
+	lssr::PPMIO reader(filename.substr(0, filename.find_last_of(".") + 4));
         data    = reader.getPixels();
         width   = reader.getWidth();
         height  = reader.getHeight();
-    }
+      }
 
     // Check data and create new texture if possible
     if(data != 0 && width != 0 && height != 0)
@@ -60,7 +57,7 @@ Texture* TextureFactory::getTexture(string filename) const
     }
     else
     {
-        cout << "TextureFactory: Unable to read file " << filename << "." << endl;
+      // cout << "TextureFactory: Unable to read file " << filename << "." << endl;
     }
 
     return tex;

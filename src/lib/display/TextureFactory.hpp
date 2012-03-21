@@ -10,7 +10,7 @@
 #ifndef TEXTUREFACTORY_H_
 #define TEXTUREFACTORY_H_
 
-#include "rendering/Texture.hpp"
+#include "Texture.hpp"
 
 class TextureFactory
 {

@@ -109,6 +109,7 @@ protected:
 
 	size_t          m_numVertices;
 	size_t          m_numFaces;
+	size_t          m_numMaterials;
 
 	int             m_renderMode;
 
