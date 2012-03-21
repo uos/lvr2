@@ -29,8 +29,11 @@
  */
 
 #include "PPMIO.hpp"
+#include <iostream>
+#include <fstream>
+#include <string.h>
 
-using std::ofstream;
+using namespace std;
 
 namespace lssr
 {
@@ -46,7 +49,7 @@ PPMIO::PPMIO( string filename ) : m_width(0), m_height(0), m_pixels(0)
 {
     // Try to open file
     ifstream in(filename.c_str());
-
+    
     // Parse file
     if(in.good())
     {
@@ -58,32 +61,45 @@ PPMIO::PPMIO( string filename ) : m_width(0), m_height(0), m_pixels(0)
 
         // Check tag
         string tag(buffer);
-        if(tag != "P3")
-        {
-            cout << "ReadPPM: Format " << tag << " is unsupported" << endl;
-            return;
-        }
-
-        // Read width, height and color information
-        stringstream ss;
-        readLine(in, buffer);
-        ss << buffer << " ";
-        readLine(in, buffer);
-        ss << buffer << " ";
-
-        // Read formatted data
-        ss >> m_width >> m_height;
-
-        // Alloc data
-        m_pixels = new unsigned char[m_width * m_height * 3];
-
-        // Read pixels
-        int p;
-        for(int i = 0; i < m_width * m_height * 3; i++)
-        {
-            in >> p;
-            m_pixels[i] = (unsigned char)p;
-        }
+        if(tag == "P3")
+	  {
+	    // Read width, height and color information
+	    stringstream ss;
+	    readLine(in, buffer);
+	    ss << buffer << " ";
+	    readLine(in, buffer);
+	    ss << buffer << " ";
+	    
+	    // Read formatted data
+	    ss >> m_width >> m_height;
+	    
+	    // Alloc data
+	    m_pixels = new unsigned char[m_width * m_height * 3];
+	    
+	    // Read pixels
+	    int p;
+	    for(int i = 0; i < m_width * m_height * 3; i++)
+	      {
+		in >> p;
+		m_pixels[i] = (unsigned char)p;
+	      }
+	  }
+	else
+	  {
+	    in.close();
+	    in.open(filename.c_str(), ios::binary);
+	    readLine(in, buffer);
+	    char tmp[3];
+	    sscanf(buffer, "%s %d %d 255", tmp, &m_width, &m_height);
+	    if(string(tmp) == "P6") // TODO: hacked in for our output
+	      {
+		m_pixels = new unsigned char[m_width * m_height * 3];
+		in.read((char *)m_pixels, m_width * m_height * 3);
+	      } else
+	      {
+		cerr << "Unsupported tag, only P3 or P6 possible." << endl;
+	      }
+	  }
     }
     else
     {
