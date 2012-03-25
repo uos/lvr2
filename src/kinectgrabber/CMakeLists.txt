@@ -2,6 +2,7 @@ set(GRABBER_SOURCES
     Main.cpp
     KinectGrabber.cpp
     KinectIO.cpp
+    Options.cpp
 )
 
 add_executable(kingrab ${GRABBER_SOURCES})

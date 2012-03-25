@@ -357,21 +357,6 @@ int main(int argc, char** argv)
 		mesh.finalize();
 	}
 
-
-    std::multimap< std::string, std::string > save_opts;
-    /* Build call string */
-    {
-        std::string s("");
-        for ( size_t i(0); i < argc-1; i++ )
-        {
-            s += std::string( argv[i] ) + " ";
-        }
-        s += argv[ argc-1 ];
-        save_opts.insert( pair< std::string, std::string >( "comment", s ) );
-    }
-    save_opts.insert( pair< std::string, std::string >( "comment",
-                "Created with las-vegas-reconstruction: http://las-vegas.uos.de/" ) );
-
 	// Create output model and save to file
 	ModelPtr m( new Model( mesh.meshBuffer() ) );
 
@@ -379,12 +364,12 @@ int main(int argc, char** argv)
 	{
 	    m->m_pointCloud = model->m_pointCloud;
 	}
-	ModelFactory::saveModel( m, "triangle_mesh.ply", save_opts );
+	ModelFactory::saveModel( m, "triangle_mesh.ply");
 
 	// Save obj model if textures were generated
 	if(options.generateTextures())
 	{
-	    ModelFactory::saveModel( m, "triangle_mesh.obj", save_opts );
+	    ModelFactory::saveModel( m, "triangle_mesh.obj");
 	}
     cout << timestamp << "Program end." << endl;
 

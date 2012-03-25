@@ -53,21 +53,7 @@ void PLYIO::save( string filename )
     }
 
     /* Handle options. */
-    std::vector<std::string> comment  = getOption( "comment" );
-    std::vector<std::string> obj_info = getOption( "obj_info" );
-
     e_ply_storage_mode mode( PLY_LITTLE_ENDIAN );
-    {
-        std::vector<std::string>  m( getOption( "ply_mode" ) );
-        if ( m.size() && m[0] == "PLY_ASCII" )
-        {
-            mode = PLY_ASCII;
-        }
-        else if ( m.size() && m[0] == "PLY_BIG_ENDIAN" )
-        {
-            mode = PLY_BIG_ENDIAN;
-        }
-    }
 
     // Local buffer shortcuts
     floatArr m_vertices;
@@ -127,23 +113,6 @@ void PLYIO::save( string filename )
     {
         std::cerr << timestamp << "Could not create »" << filename << "«" << std::endl;
         return;
-    }
-
-    /* Add object infos and comments */
-    std::vector<string>::iterator it; 
-    for ( it = obj_info.begin(); it < obj_info.end(); it++ )
-    {
-        if ( !ply_add_obj_info( oply, it->c_str() ) )
-        {
-            std::cerr << timestamp << "Could not add object info." << std::endl;
-        }
-    }
-    for ( it = comment.begin(); it < comment.end(); it++ )
-    {
-        if ( !ply_add_comment( oply, it->c_str() ) )
-        {
-            std::cerr << timestamp << "Could not add comment." << std::endl;
-        }
     }
 
     /* Check if we have vertex information. */

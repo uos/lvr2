@@ -46,15 +46,11 @@ namespace lssr
  */
 class ModelFactory
 {
-    typedef std::multimap< std::string, std::string >  optionMap;
-
     public:
 
         static ModelPtr readModel( std::string filename );
 
-        static void saveModel( ModelPtr m, std::string file,
-                std::multimap< std::string, std::string > options
-                = optionMap() );
+        static void saveModel( ModelPtr m, std::string file);
 
 };
 

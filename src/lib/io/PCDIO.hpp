@@ -69,19 +69,6 @@ class PCDIO : public BaseIO
         virtual void save( string filename );
 
 
-        /**
-         * \brief Save model to file.
-         *
-         * Save a model. Additional options can be set via option multimap.
-         *
-         * \param filename  Filename of the output file.
-         * \param options   Additional options.
-         * \param m         Model to save.
-         **/
-        void save( string filename,
-                std::multimap< std::string, std::string > options, 
-                ModelPtr m = ModelPtr() );
-
 };
 
 

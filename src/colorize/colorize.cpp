@@ -205,7 +205,7 @@ int main( int argc, char ** argv )
                 "http://las-vegas.uos.de/" ) );
     save_opts.insert( pair<std::string, std::string>( "ply_mode", ply_mode ));
 
-    io_factory.saveModel( model, argv[ optind + 2 ], save_opts );
+    io_factory.saveModel( model, argv[ optind + 2 ] );
 
     return EXIT_SUCCESS;
 

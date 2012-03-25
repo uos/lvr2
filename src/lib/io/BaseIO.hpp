@@ -77,32 +77,6 @@ class BaseIO
         virtual void save( ModelPtr model, string filename );
 
 
-        /**
-         * \brief Save model to file.
-         *
-         * Save a model. Additional options can be set via option multimap.
-         *
-         * \param filename  Filename of the output file.
-         * \param m         Model to save.
-         * \param options   Additional options.
-         **/
-        virtual void save( string filename, ModelPtr m,
-                std::multimap< std::string, std::string > options );
-
-
-        /**
-         * \brief Save model to file.
-         *
-         * Save a model. Additional options can be set via option multimap.
-         *
-         * \param filename  Filename of the output file.
-         * \param options   Additional options.
-         * \param m         Model to save.
-         **/
-        virtual void save( string filename,
-                std::multimap< std::string, std::string > options, 
-                ModelPtr m = ModelPtr() );
-
 
         /**
          * \brief  Set the model for io operations to use.
@@ -118,19 +92,8 @@ class BaseIO
         virtual ModelPtr getModel();
 
 
-        virtual void addOption( std::string key, std::string val );
-
-
-        virtual std::vector< std::string > getOption( std::string key );
-
-
-        virtual void clearOption();
-
-
     protected:
         ModelPtr m_model;
-
-        std::map< std::string, std::vector< std::string > > m_options;
 
 };
 
