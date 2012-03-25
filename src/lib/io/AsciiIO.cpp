@@ -253,12 +253,6 @@ void AsciiIO::save( std::string filename )
         return;
     }
 
-    /* Write comment. */
-    {
-        std::vector< std::string > c( getOption( "comment" ) );
-        out << "# " << ( c.size() ? c[0] : "" ) << std::endl;
-    }
-
     for ( size_t i(0); i < pointcount; i++ )
     {
         out << points[i].x << " " 

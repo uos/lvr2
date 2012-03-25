@@ -18,6 +18,7 @@
 #include <iostream>
 
 #include "KinectIO.hpp"
+#include "Options.hpp"
 
 #include "geometry/HalfEdgeMesh.hpp"
 #include "reconstruction/AdaptiveKSearchSurface.hpp"
@@ -34,20 +35,24 @@ typedef PCLKSurface<cVertex, cNormal>                   pclSurface;
 
 int main(int argc, char** argv)
 {
+	// Parse command line arguments
+	reconstruct::Options options(argc, argv);
+
+	::std::cout << options << ::std::endl;
+
+
 	// Parameters
-	int kn = 10;
-	int ki = 10;
-	int kd = 10;
-	int depth = 100;
+	int kn = options.getKn();
+	int ki = options.getKd();
+	int kd = options.getKi();
+	int depth = options.getDepth();
 	int   planeIterations = 3;
-	int	  minPlaneSize = 30;
-	int   smallRegionThreshold = 0;
-	int   fillHoles = 50;
-	float planeNormalThreshold = 0.85;
-
-	int  rda = 5;
-
-	float voxelsize = 0.05;
+	int	  minPlaneSize = options.getMinPlaneSize();
+	int   smallRegionThreshold = options.getSmallRegionThreshold();
+	int   fillHoles = options.getFillHoles();
+	float planeNormalThreshold = options.getNormalThreshold();
+	int  rda = options.getDanglingArtifacts();
+	float voxelsize = options.getVoxelsize();
 
 	// Try to connect
 	try
@@ -68,16 +73,16 @@ int main(int argc, char** argv)
 				// Save data
 				ModelFactory::saveModel(ModelPtr(new Model(buffer)), "pointcloud.ply");
 
-			    //pclSurface* s = new pclSurface( buffer, kn, kd );
+			    pclSurface* s = new pclSurface( buffer, kn, kd );
 
 
 
 				// Create surface object and calculate normals
-				akSurface* s = new akSurface(
-						buffer, "FLANN",
-						kn,
-						ki,
-						kd);
+//				akSurface* s = new akSurface(
+//						buffer, "FLANN",
+//						kn,
+//						ki,
+//						kd);
 
 				psSurface::Ptr surface(s);
 
@@ -96,7 +101,7 @@ int main(int argc, char** argv)
 						surface,
 						voxelsize,
 						true,
-						"PMC",
+						"SF",
 						true);
 
 				reconstruction.getMesh(mesh);
@@ -107,6 +112,7 @@ int main(int argc, char** argv)
 		                            minPlaneSize,
 		                            smallRegionThreshold,
 		                            true);
+
 				mesh.fillHoles(fillHoles);
 				mesh.optimizePlaneIntersections();
 				mesh.restorePlanes(minPlaneSize);

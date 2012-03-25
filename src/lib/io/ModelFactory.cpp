@@ -88,8 +88,7 @@ ModelPtr ModelFactory::readModel( std::string filename )
 
 }
 
-void ModelFactory::saveModel( ModelPtr m, std::string filename,
-        std::multimap< std::string, std::string > options )
+void ModelFactory::saveModel( ModelPtr m, std::string filename)
 {
     // Get file exptension
     boost::filesystem::path selectedFile(filename);
@@ -118,13 +117,13 @@ void ModelFactory::saveModel( ModelPtr m, std::string filename,
     // Save model
     if(io)
     {
-        io->save( filename, options, m );
+        io->save( m, filename );
         delete io;
     }
     else
     {
         cout << timestamp << "File format " << extension
-            << " is currrently not supported." << endl;
+            << " is currently not supported." << endl;
     }
 
 

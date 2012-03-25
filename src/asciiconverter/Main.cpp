@@ -156,6 +156,8 @@ int main(int argc, char** argv)
         std::cout << "Unable to open file for output: " << inputFile << std::endl;
     }
 
+    std::cout << std::endl;
+
 	return 0;
 }
 

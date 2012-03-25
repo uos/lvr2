@@ -8,18 +8,6 @@
 
 #define isnan(x) ((x) != (x))
 
-void lssr::PCDIO::save( string filename,
-        std::multimap< std::string, std::string > options, lssr::ModelPtr m )
-{
-    if ( m )
-    {
-        m_model = m;
-    }
-
-    save( filename );
-}
-
-
 #ifdef _USE_PCL_
 lssr::ModelPtr lssr::PCDIO::read( string filename )
 {
