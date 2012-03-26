@@ -44,7 +44,8 @@ Options::Options(int argc, char** argv) : m_descr("Supported options")
                 ("ransac", "Set this flag for RANSAC based normal estimation.")
 		        ("decomposition,d", value<string>(&m_pcm)->default_value("PMC"), "Defines the type of decomposition that is used for the voxels (Standard Marching Cubes (MC), Planar Marching Cubes (PMC), Standard Marching Cubes with sharp feature detection (SF) or Tetraeder (MT) decomposition. Choose from {MC, PMC, MT, SF}")
 		        ("optimizePlanes,o", "Shift all triangle vertices of a cluster onto their shared plane")
-                ("planeIterations", value<int>(&m_planeIterations)->default_value(3), "Number of iterations for plane optimization")
+                ("clusterPlanes,c", "Cluster planear regions based on normal threshold, do not shift vertices into regression plane.")
+		        ("planeIterations", value<int>(&m_planeIterations)->default_value(3), "Number of iterations for plane optimization")
                 ("fillHoles,f", value<int>(&m_fillHoles)->default_value(30), "Maximum size for hole filling")
                 ("rda", value<int>(&m_rda)->default_value(0), "Remove dangling artifacts, i.e. remove the n smallest not connected surfaces")
 		        ("pnt", value<float>(&m_planeNormalThreshold)->default_value(0.85), "(Plane Normal Threshold) Normal threshold for plane optimization. Default 0.85 equals about 3 degrees.")
@@ -220,6 +221,11 @@ bool Options::optimizePlanes() const
 {
 	return m_variables.count("optimizePlanes")
         || m_variables.count("retesselate");
+}
+
+bool Options::clusterPlanes() const
+{
+	return m_variables.count("clusterPlanes");
 }
 
 bool Options::extrude() const

@@ -207,6 +207,9 @@ public:
 
 	void tester();
 
+
+	void clusterRegions(float normalThreshold, int minRegionSize = 50);
+
 private:
 
 	/// The faces in the half edge mesh
@@ -366,6 +369,7 @@ private:
 	 * @return	true if the edge was collapsed, false otherwise
 	 */
 	virtual bool safeCollapseEdge(HEdge* edge);
+
 
 
 };
