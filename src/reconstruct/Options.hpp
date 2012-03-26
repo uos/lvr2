@@ -159,6 +159,11 @@ public:
 	bool	  retesselate() const;
 
 	/**
+	 * @brief  True if region clustering without plane optimization is required.
+	 */
+	bool 	clusterPlanes() const;
+
+	/**
 	 * @brief	Returns the output file name
 	 */
 	string 	getInputFileName() const;

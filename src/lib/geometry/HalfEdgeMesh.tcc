@@ -519,6 +519,33 @@ int HalfEdgeMesh<VertexT, NormalT>::regionGrowing(HFace* start_face, NormalT &no
     return neighbor_cnt;
 }
 
+template<typename VertexT, typename NormalT>
+void HalfEdgeMesh<VertexT, NormalT>::clusterRegions(float angle, int minRegionSize)
+{
+	// Reset all used variables
+	for(size_t i = 0; i < m_faces.size(); i++)
+	{
+		m_faces[i]->m_used = false;
+	}
+	m_regions.clear();
+
+	int region_number = 0;
+	int region_size = 0;
+	// Find all regions by regionGrowing with normal criteria
+	for(size_t i = 0; i < m_faces.size(); i++)
+	{
+		if(m_faces[i]->m_used == false)
+		{
+			NormalT n = m_faces[i]->getFaceNormal();
+
+			Region<VertexT, NormalT>* region = new Region<VertexT, NormalT>(m_regions.size());
+			stackSafeRegionGrowing(m_faces[i], n, angle, region);
+
+			// Save pointer to the region
+			m_regions.push_back(region);
+		}
+	}
+}
 
 template<typename VertexT, typename NormalT>
 void HalfEdgeMesh<VertexT, NormalT>::optimizePlanes(

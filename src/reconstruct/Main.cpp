@@ -327,23 +327,29 @@ int main(int argc, char** argv)
     mesh.removeDanglingArtifacts(options.getDanglingArtifacts());
 
     // Optimize mesh
+
+    if ( options.colorRegions() )
+    {
+    	mesh.enableRegionColoring();
+    }
+
     if(options.optimizePlanes())
     {
-        if ( options.colorRegions() )
-		{
-			mesh.enableRegionColoring();
-		}
-        mesh.optimizePlanes(options.getPlaneIterations(),
-                            options.getNormalThreshold(),
-                            options.getMinPlaneSize(),
-                            options.getSmallRegionThreshold(),
-                            true);
+    	mesh.optimizePlanes(options.getPlaneIterations(),
+    			options.getNormalThreshold(),
+    			options.getMinPlaneSize(),
+    			options.getSmallRegionThreshold(),
+    			true);
 
-        mesh.fillHoles(options.getFillHoles());
+    	mesh.fillHoles(options.getFillHoles());
 
-        mesh.optimizePlaneIntersections();
+    	mesh.optimizePlaneIntersections();
 
-        mesh.restorePlanes(options.getMinPlaneSize());
+    	mesh.restorePlanes(options.getMinPlaneSize());
+    }
+    else if(options.clusterPlanes())
+    {
+    	mesh.clusterRegions(options.getNormalThreshold(), options.getMinPlaneSize());
     }
 
     // Save triangle mesh
