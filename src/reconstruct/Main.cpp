@@ -350,6 +350,7 @@ int main(int argc, char** argv)
     else if(options.clusterPlanes())
     {
     	mesh.clusterRegions(options.getNormalThreshold(), options.getMinPlaneSize());
+    	mesh.fillHoles(options.getFillHoles());
     }
 
     // Save triangle mesh
