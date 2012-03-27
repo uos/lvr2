@@ -209,6 +209,11 @@ public:
 	int   getMinPlaneSize() const;
 
 	/**
+	 * @brief	Number of iterations for contour cleanup
+	 */
+	int   getCleanContourIterations() const;
+
+	/**
 	 * @brief   Returns the number of dangling artifacts to remove from
 	 *          a created mesh.
 	 */
@@ -313,6 +318,8 @@ private:
 
 	/// Maximum recursion depth for region growing
 	int								m_depth;
+
+	int								m_cleanContourIterations;
 
 	/// Texel size
 	float                           m_texelSize;
