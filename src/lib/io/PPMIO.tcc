@@ -24,6 +24,8 @@
  *      Author: pg2011
  */
 
+#include <fstream>
+
 namespace lssr
 {
 
