@@ -134,7 +134,7 @@ void AdaptiveKSearchSurface<VertexT, NormalT>::calculateSurfaceNormals()
     ProgressBar progress(this->m_numPoints, comment);
 
     #pragma omp parallel for
-    for(size_t i = 0; i < this->m_numPoints; i++){
+    for( int i = 0; i < (int)this->m_numPoints; i++){
 
         Vertexf query_point;
         Normalf normal;
@@ -253,7 +253,7 @@ void AdaptiveKSearchSurface<VertexT, NormalT>::interpolateSurfaceNormals()
 
     // Interpolate normals
     #pragma omp parallel for
-    for(size_t i = 0; i < this->m_numPoints; i++){
+    for( int i = 0; i < (int)this->m_numPoints; i++){
 
         vector<unsigned long> id;
         vector<double> di;
