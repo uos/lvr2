@@ -324,9 +324,13 @@ int main(int argc, char** argv)
     }
 
 
-    mesh.removeDanglingArtifacts(options.getDanglingArtifacts());
-
+    if(options.getDanglingArtifacts())
+    {
+    	mesh.removeDanglingArtifacts(options.getDanglingArtifacts());
+    }
     // Optimize mesh
+
+    mesh.cleanContours(options.getCleanContourIterations());
 
     if ( options.colorRegions() )
     {

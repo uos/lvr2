@@ -202,6 +202,61 @@ void HalfEdgeMesh<VertexT, NormalT>::addTriangle(uint a, uint b, uint c)
 }
 
 template<typename VertexT, typename NormalT>
+void HalfEdgeMesh<VertexT, NormalT>::cleanContours(int iterations)
+{
+	for(int a = 0; a < iterations; a++)
+	{
+		vector<HFace*> toDelete;
+		toDelete.clear();
+		for(int i = 0; i < m_faces.size(); i++)
+		{
+
+
+			// Get current face
+			HFace* f = m_faces[i];
+
+			// Count border edges
+			int bf = 0;
+
+			HEdge* e1 = f->m_edge;
+			HEdge* e2 = e1->next;
+			HEdge* e3 = e2->next;
+
+			HEdge* s = f->m_edge;
+			HEdge* e = s;
+			do
+			{
+				if(e->pair)
+				{
+					HEdge* p = e->pair;
+					if(p->face == 0) bf++;
+				}
+				e = e->next;
+			}
+			while(s != e);
+
+			// Mark face if is an artifact and store in removal list
+			if(bf >= 2)
+			{
+				toDelete.push_back(f);
+			}
+
+			if(bf == 1)
+			{
+				if(f->getArea() < 0.0001) toDelete.push_back(f);
+			}
+
+		}
+
+		// Delete all artifact faces
+		for(int i = 0; i < (int)toDelete.size(); i++)
+		{
+			deleteFace(toDelete[i]);
+		}
+	}
+}
+
+template<typename VertexT, typename NormalT>
 void HalfEdgeMesh<VertexT, NormalT>::deleteFace(HFace* f, bool erase)
 {
     //save references to edges and vertices

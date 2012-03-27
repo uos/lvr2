@@ -210,6 +210,8 @@ public:
 
 	void clusterRegions(float normalThreshold, int minRegionSize = 50);
 
+	void cleanContours(int iterations);
+
 private:
 
 	/// The faces in the half edge mesh
