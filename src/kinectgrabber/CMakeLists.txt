@@ -1,7 +1,5 @@
 set(GRABBER_SOURCES   
     Main.cpp
-    KinectGrabber.cpp
-    KinectIO.cpp
     Options.cpp
 )
 

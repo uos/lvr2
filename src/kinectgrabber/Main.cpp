@@ -17,8 +17,7 @@
  */
 #include <iostream>
 
-#include "KinectIO.hpp"
-#include "Options.hpp"
+
 
 #include "geometry/HalfEdgeMesh.hpp"
 #include "reconstruction/AdaptiveKSearchSurface.hpp"
@@ -26,6 +25,8 @@
 #include "reconstruction/FastReconstruction.hpp"
 #include "io/ModelFactory.hpp"
 #include "io/Timestamp.hpp"
+#include "io/KinectIO.hpp"
+#include "Options.hpp"
 
 using namespace lssr;
 
