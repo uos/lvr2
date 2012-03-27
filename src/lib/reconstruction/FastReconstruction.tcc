@@ -345,7 +345,7 @@ void FastReconstruction<VertexT, NormalT>::calcQueryPointValues(){
 
     // Calculate a distance value for each query point
     #pragma omp parallel for
-    for(size_t i = 0; i < m_queryPoints.size(); i++){
+    for( int i = 0; i < (int)m_queryPoints.size(); i++){
         float projectedDistance;
         float euklideanDistance;
 
