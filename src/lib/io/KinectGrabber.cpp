@@ -21,10 +21,8 @@ KinectGrabber::KinectGrabber(freenect_context *_ctx, int _index)
 	: Freenect::FreenectDevice(_ctx, _index),
 	m_haveData(false)
 {
-	cout << "OK" << endl;
 	m_depthImage = std::vector<short>( 640 * 480, 0 );
 	m_colorImage = std::vector<uint8_t>(freenect_find_video_mode(FREENECT_RESOLUTION_MEDIUM, FREENECT_VIDEO_RGB).bytes,0 );
-	cout << "Size" << m_depthImage.size() << " " << m_colorImage.size() << endl;
 	for( unsigned int i = 0 ; i < 2048 ; i++) {
 		float v = i/2048.0;
 		v = std::pow(v, 3)* 6;
@@ -46,7 +44,6 @@ void KinectGrabber::getDepthImage(std::vector<short> &img)
 	if(m_haveData)
 	{
 		m_depthMutex.lock();
-		cout << "SWAP" << endl;
 		img.swap(m_depthImage);
 		m_depthMutex.unlock();
 		m_haveData = false;
