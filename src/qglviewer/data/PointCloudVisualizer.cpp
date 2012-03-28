@@ -17,39 +17,40 @@
  */
 
 
- /*
- * DataCollectorFactory.h
+
+/*
+ * PointCloudVisualizer.cpp
  *
- *  Created on: 07.10.2010
+ *  Created on: 28.03.2012
  *      Author: Thomas Wiemann
  */
 
-#ifndef DATACOLLECTORFACTORY_H_
-#define DATACOLLECTORFACTORY_H_
+#include "PointCloudVisualizer.hpp"
+#include "../widgets/PointCloudTreeWidgetItem.h"
 
-#include <string>
-#include <QtGui>
-
-using std::string;
-
-#include "DataCollector.h"
-
-class DataManager;
-
-class DataCollectorFactory : public QObject
+PointCloudVisualizer::PointCloudVisualizer(PointBufferPtr buffer, string name)
 {
-    Q_OBJECT
-public:
-    DataCollectorFactory();
+	PointCloud* pc = new PointCloud( buffer );
+	pc->setActive(true);
+	m_renderable = pc;
 
-	virtual ~DataCollectorFactory() {};
-	void create(string filename);
+	PointCloudTreeWidgetItem* item = new PointCloudTreeWidgetItem(PointCloudItem);
+	m_treeItem = item;
 
-Q_SIGNALS:
-    void dataCollectorCreated(DataCollector*);
+	// Setup supported render modes
+	int modes = 0;
+	size_t n_pn;
+	modes |= Points;
+	if(buffer->getPointNormalArray(n_pn))
+	{
+		modes |= PointNormals;
+	}
 
+	item->setSupportedRenderModes(modes);
+	item->setViewCentering(false);
+	item->setName(name);
+	item->setNumPoints(pc->m_points.size());
+	item->setRenderable(pc);
 
+}
 
-};
-
-#endif /* DATACOLLECTORFACTORY_H_ */

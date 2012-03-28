@@ -17,19 +17,26 @@
  */
 
 
- /*
- * Static3DDataCollector.cpp
+
+/*
+ * PointCloudVisualizer.hpp
  *
- *  Created on: 08.10.2010
+ *  Created on: 28.03.2012
  *      Author: Thomas Wiemann
  */
 
-#include "Static3DDataCollector.h"
+#ifndef POINTCLOUDVISUALIZER_HPP_
+#define POINTCLOUDVISUALIZER_HPP_
 
-Static3DDataCollector::Static3DDataCollector(Renderable* renderable, string name, CustomTreeWidgetItem* item)
-	: DataCollector(renderable, name, item) { m_renderable->setActive(true);}
+#include "Visualizer.hpp"
 
-ViewerType Static3DDataCollector::supportedViewerType()
+using namespace lssr;
+
+class PointCloudVisualizer : public Visualizer
 {
-	return PERSPECTIVE_VIEWER;
-}
+public:
+	PointCloudVisualizer(PointBufferPtr buffer, string name);
+	virtual ~PointCloudVisualizer() {};
+};
+
+#endif /* POINTCLOUDVISUALIZER_HPP_ */

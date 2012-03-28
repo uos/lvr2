@@ -28,7 +28,7 @@
 #define VIEWER_H_
 
 #include "../app/Types.h"
-#include "../data/DataCollector.h"
+#include "../data/Visualizer.hpp"
 #include "../widgets/CustomTreeWidgetItem.h"
 
 #include "geometry/BoundingBox.hpp"
@@ -42,7 +42,7 @@
 #include <iostream>
 using std::list;
 
-class DataCollector;
+class Visualizer;
 
 enum ProjectionMode { PERSPECTIVE, ORTHOXY, ORTHOXZ, ORTHOYZ};
 
@@ -59,10 +59,10 @@ class Viewer : public QGLViewer
 public:
 	Viewer(QWidget* parent, const QGLWidget* shared = 0);
 	virtual ~Viewer();
-	virtual void addDataObject(DataCollector* obj);
-	virtual void removeDataObject(DataCollector* obj);
+	virtual void addDataObject(Visualizer* obj);
+	virtual void removeDataObject(Visualizer* obj);
 	void removeDataObject(CustomTreeWidgetItem* item);
-	virtual void updateDataObject(DataCollector* obj);
+	virtual void updateDataObject(Visualizer* obj);
 
 	virtual ViewerType type() = 0;
 	virtual void centerViewOnObject(Renderable* renderable);
@@ -85,7 +85,7 @@ public Q_SLOTS:
 protected:
 	virtual void draw();
 
-	list<DataCollector*>	    m_dataObjects;
+	list<Visualizer*>	    m_dataObjects;
 	BoundingBox<Vertex<float> > m_boundingBox;
 	KeyFrameInterpolator*       m_kfi;
 

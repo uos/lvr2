@@ -17,33 +17,25 @@
  */
 
 
- /*
- * DataCollector.cpp
+/*
+ * TriangleMeshVisualizer.h
  *
- *  Created on: 07.10.2010
+ *  Created on: 28.03.2012
  *      Author: Thomas Wiemann
  */
 
-#include "DataCollector.h"
+#ifndef TRIANGLEMESHVISUALIZER_H_
+#define TRIANGLEMESHVISUALIZER_H_
 
-DataCollector::DataCollector(Renderable* renderable, string name, CustomTreeWidgetItem* item)
-{
-	m_renderable = renderable;
-	m_name = name;
-	m_treeItem = item;
-}
+#include "Visualizer.hpp"
 
-DataCollector::~DataCollector()
-{
-	delete m_renderable;
-}
+using namespace lssr;
 
-Renderable* DataCollector::renderable()
+class TriangleMeshVisualizer : public Visualizer
 {
-	return m_renderable;
-}
+public:
+	TriangleMeshVisualizer(MeshBufferPtr buffer, string name);
+	virtual ~TriangleMeshVisualizer() {};
+};
 
-string DataCollector::name()
-{
-	return m_name;
-}
+#endif /* TRIANGLEMESHVISUALIZER_H_ */

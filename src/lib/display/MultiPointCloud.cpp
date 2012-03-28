@@ -40,50 +40,54 @@ namespace lssr
 MultiPointCloud::MultiPointCloud(ModelPtr model, string name)
 {
 
-    PointBufferPtr p_buffer = model->m_pointCloud;
-
-    if(p_buffer)
-    {
-        vector<indexPair> pairs = p_buffer->getSubClouds();
-        vector<indexPair>::iterator it;
-
-        int c(1);
-        size_t n;
-        coord3fArr points = model->m_pointCloud->getIndexedPointArray( n );
-        color3bArr colors = model->m_pointCloud->getIndexedPointColorArray( n );
-
-        for(it = pairs.begin(); it != pairs.end(); it ++)
-        {
-            indexPair p = *it;
-
-            // Create new point cloud from scan
-            PointCloud* pc = new PointCloud;
-            for(size_t a = p.first; a <= p.second; a++)
-            {
-                if(colors)
-                {
-                    pc->addPoint(points[a][0], points[a][1], points[a][2], colors[a][0], colors[a][1], colors[a][2]);
-                }
-                else
-                {
-                    pc->addPoint(points[a][0], points[a][1], points[a][2], 255, 0, 0);
-                }
-            }
-            stringstream ss;
-
-            pc->updateDisplayLists();
-            pc->setName(ss.str());
-            addCloud(pc);
-            c++;
-        }
-    }
-
+    PointBufferPtr buffer = model->m_pointCloud;
+    init(buffer);
     m_model = model;
 }
 
-MultiPointCloud::~MultiPointCloud()
+MultiPointCloud::MultiPointCloud(PointBufferPtr buffer, string name)
 {
-    // TODO Auto-generated destructor stub
+	m_model = ModelPtr(new Model(buffer));
+	init(buffer);
+}
+
+void MultiPointCloud::init(PointBufferPtr buffer)
+{
+	if(buffer)
+	{
+		vector<indexPair> pairs = buffer->getSubClouds();
+		vector<indexPair>::iterator it;
+
+		int c(1);
+		size_t n;
+		coord3fArr points = buffer->getIndexedPointArray( n );
+		color3bArr colors = buffer->getIndexedPointColorArray( n );
+
+		for(it = pairs.begin(); it != pairs.end(); it ++)
+		{
+			indexPair p = *it;
+
+			// Create new point cloud from scan
+			PointCloud* pc = new PointCloud;
+			for(size_t a = p.first; a <= p.second; a++)
+			{
+				if(colors)
+				{
+					pc->addPoint(points[a][0], points[a][1], points[a][2], colors[a][0], colors[a][1], colors[a][2]);
+				}
+				else
+				{
+					pc->addPoint(points[a][0], points[a][1], points[a][2], 255, 0, 0);
+				}
+			}
+			stringstream ss;
+
+			pc->updateDisplayLists();
+			pc->setName(ss.str());
+			addCloud(pc);
+			c++;
+		}
+	}
 }
 
 void MultiPointCloud::addCloud(PointCloud* pc)

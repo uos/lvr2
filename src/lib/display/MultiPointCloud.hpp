@@ -55,8 +55,9 @@ class MultiPointCloud : public Renderable
 {
 public:
     MultiPointCloud(ModelPtr model, string name = "<unnamed point cloud>");
+    MultiPointCloud(PointBufferPtr buffer, string name = "<unnamed point cloud>");
 
-    virtual ~MultiPointCloud();
+    virtual ~MultiPointCloud() {};
     virtual inline void render();
 
     void addCloud(PointCloud* pc);
@@ -69,6 +70,8 @@ public:
 
     virtual ModelPtr model();
 private:
+
+    void init(PointBufferPtr buffer);
 
     map<PointCloud*, PointCloudAttribute*>    m_clouds;
 };

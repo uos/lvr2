@@ -17,24 +17,40 @@
  */
 
 
- /*
- * Static3DDataCollector.h
+/*
+ * TriangleMeshVisualizer.cpp
  *
- *  Created on: 08.10.2010
+ *  Created on: 28.03.2012
  *      Author: Thomas Wiemann
  */
 
-#ifndef STATIC3DDATACOLLECTOR_H_
-#define STATIC3DDATACOLLECTOR_H_
+#include "TriangleMeshVisualizer.hpp"
 
-#include "DataCollector.h"
+#include "display/StaticMesh.hpp"
+#include "../widgets/TriangleMeshTreeWidgetItem.h"
 
-class Static3DDataCollector : public DataCollector
+TriangleMeshVisualizer::TriangleMeshVisualizer(MeshBufferPtr buffer, string name)
 {
-public:
+	StaticMesh* mesh = new StaticMesh( buffer );
+	m_renderable = mesh;
 
-	Static3DDataCollector(Renderable* renderable, string name, CustomTreeWidgetItem* item = 0);
-	virtual ViewerType supportedViewerType();
-};
+	TriangleMeshTreeWidgetItem* item = new TriangleMeshTreeWidgetItem(TriangleMeshItem);
+	m_treeItem = item;
 
-#endif /* STATIC3DDATACOLLECTOR_H_ */
+	int modes = 0;
+	modes |= Mesh;
+
+	if(mesh->getNormals())
+	{
+		modes |= VertexNormals;
+	}
+
+	item->setSupportedRenderModes(modes);
+	item->setViewCentering(false);
+	item->setName(name);
+	item->setRenderable(mesh);
+	item->setNumFaces(mesh->getNumberOfFaces());
+}
+
+
+

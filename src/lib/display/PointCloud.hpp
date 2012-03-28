@@ -53,6 +53,7 @@ public:
 
     PointCloud();
     PointCloud(ModelPtr loader, string name = "<unamed cloud>");
+    PointCloud(PointBufferPtr buffer, string name = "<unamed cloud>");
 
     virtual ~PointCloud();
     virtual inline void render();
@@ -85,6 +86,7 @@ public:
 
 private:
     int getFieldsPerLine(string filename);
+    void init(PointBufferPtr buffer);
 
     int                        m_renderMode;
     GLuint                     m_normalListIndex;

@@ -52,7 +52,7 @@ void Viewer::draw()
     }
 
     glScalef(m_zoom, m_zoom, m_zoom);
-    list<DataCollector*>::iterator it;
+    list<Visualizer*>::iterator it;
     for(it = m_dataObjects.begin(); it != m_dataObjects.end(); it++)
     {
         glPushAttrib(GL_ALL_ATTRIB_BITS);
@@ -108,7 +108,7 @@ void Viewer::centerViewOnObject(Renderable* renderable)
     updateGL();
 }
 
-void Viewer::addDataObject(DataCollector* obj)
+void Viewer::addDataObject(Visualizer* obj)
 {
 	BoundingBox<Vertex<float> >* bb = (obj->renderable()->boundingBox());
 	if(bb->isValid())
@@ -119,18 +119,18 @@ void Viewer::addDataObject(DataCollector* obj)
 	m_dataObjects.push_back(obj);
 }
 
-void Viewer::removeDataObject(DataCollector* obj)
+void Viewer::removeDataObject(Visualizer* obj)
 {
     m_dataObjects.remove(obj);
 }
 
 void Viewer::removeDataObject(CustomTreeWidgetItem* item)
 {
-    list<DataCollector*>::iterator it = m_dataObjects.begin();
+    list<Visualizer*>::iterator it = m_dataObjects.begin();
 
     while(it != m_dataObjects.end())
     {
-        DataCollector* d = *it;
+        Visualizer* d = *it;
         if(d->renderable() == item->renderable())
         {
             break;
@@ -141,7 +141,7 @@ void Viewer::removeDataObject(CustomTreeWidgetItem* item)
     updateGL();
 }
 
-void Viewer::updateDataObject(DataCollector* obj)
+void Viewer::updateDataObject(Visualizer* obj)
 {
 	updateGL();
 }
