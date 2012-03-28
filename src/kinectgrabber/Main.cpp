@@ -58,11 +58,11 @@ int main(int argc, char** argv)
 	// Try to connect
 	try
 	{
-		KinectIO io;
+		KinectIO* io = KinectIO::instance();
 		while(true)
 		{
 
-			PointBufferPtr buffer = io.getBuffer();
+			PointBufferPtr buffer = io->getBuffer();
 			if(buffer == 0)
 			{
 				cout << timestamp << "No data yet..." << endl;

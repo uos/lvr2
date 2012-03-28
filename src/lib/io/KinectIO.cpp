@@ -16,6 +16,18 @@
 namespace lssr
 {
 
+KinectIO* KinectIO::m_instance = 0;
+
+KinectIO* KinectIO::instance()
+{
+	if(KinectIO::m_instance == 0)
+	{
+		KinectIO::m_instance = new KinectIO;
+	}
+
+	return KinectIO::m_instance;
+
+}
 
 KinectIO::KinectIO()
 {
