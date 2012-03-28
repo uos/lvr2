@@ -39,6 +39,8 @@ set(QVIEWER_SOURCES
     data/TriangleMeshVisualizer.cpp
     data/Visualizer.cpp
     data/VisualizerFactory.cpp
+    data/ThreadedVisualizer.cpp
+    data/KinectPointCloudVisualizer.cpp
     viewers/OrthoCamera.cpp
     viewers/PerspectiveViewer.cpp
     viewers/Viewer.cpp
