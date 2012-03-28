@@ -16,20 +16,22 @@ namespace lssr
 
 class KinectIO
 {
-public:
+protected:
 	KinectIO();
+
+public:
+	static KinectIO* instance();
+
 	virtual ~KinectIO();
 
 	PointBufferPtr getBuffer();
 
 private:
 	KinectGrabber* 			m_grabber;
-
 	Freenect::Freenect*		m_freenect;
-
 	Eigen::Matrix4f			m_depthMatrix;
 
-
+	static KinectIO*		m_instance;
 };
 
 } // namespace lssr
