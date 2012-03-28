@@ -18,45 +18,32 @@
 
 
  /*
- * ViewerManager.cpp
+ * DataCollector.cpp
  *
  *  Created on: 07.10.2010
  *      Author: Thomas Wiemann
  */
 
-#include "ViewerManager.h"
-#include "PerspectiveViewer.h"
+#include "Visualizer.hpp"
 
-
-ViewerManager::ViewerManager(QWidget* parent, const QGLWidget* shared)
+Visualizer::Visualizer()
 {
-	m_currentViewer = new PerspectiveViewer(parent, shared);
-	m_parentWidget = parent;
+	m_renderable = 0;
+	m_name = "";
+	m_treeItem = 0;
 }
 
-ViewerManager::~ViewerManager()
+Visualizer::~Visualizer()
 {
-
+	delete m_renderable;
 }
 
-Viewer* ViewerManager::current()
+Renderable* Visualizer::renderable()
 {
-	return m_currentViewer;
+	return m_renderable;
 }
 
-void ViewerManager::addDataCollector(Visualizer* c)
+string Visualizer::name()
 {
-	// Stub, currently support only one single viewer instance
-	m_currentViewer->addDataObject(c);
-}
-
-void ViewerManager::removeDataCollector(Visualizer* c)
-{
-    // Stub, currently support only one single viewer instance
-    m_currentViewer->removeDataObject(c);
-}
-
-void ViewerManager::updateDataObject(Visualizer* obj)
-{
-	m_currentViewer->updateDataObject(obj);
+	return m_name;
 }

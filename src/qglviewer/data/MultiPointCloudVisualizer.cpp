@@ -16,47 +16,40 @@
  * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA
  */
 
-
- /*
- * ViewerManager.cpp
+/*
+ * MultiPointCloudVisualizer.cpp
  *
- *  Created on: 07.10.2010
+ *  Created on: 28.03.2012
  *      Author: Thomas Wiemann
  */
 
-#include "ViewerManager.h"
-#include "PerspectiveViewer.h"
+#include "MultiPointCloudVisualizer.hpp"
 
+#include "display/MultiPointCloud.hpp"
+#include "../widgets/MultiPointCloudTreeWidgetItem.h"
 
-ViewerManager::ViewerManager(QWidget* parent, const QGLWidget* shared)
+using namespace lssr;
+
+MultiPointCloudVisualizer::MultiPointCloudVisualizer(PointBufferPtr buffer, string name = "<unnamed poind cloud>")
 {
-	m_currentViewer = new PerspectiveViewer(parent, shared);
-	m_parentWidget = parent;
+	MultiPointCloud* pc = new MultiPointCloud(buffer, name);
+	m_renderable = pc;
+
+	MultiPointCloudTreeWidgetItem* item = new MultiPointCloudTreeWidgetItem(MultiPointCloudItem);
+	m_treeItem = item;
+
+	// Setup supported render modes
+	int modes = 0;
+	size_t n_pn;
+	modes |= Points;
+	if(buffer->getPointNormalArray(n_pn))
+	{
+		modes |= PointNormals;
+	}
+
+	item->setSupportedRenderModes(modes);
+	item->setViewCentering(false);
+	item->setName(name);
+	item->setRenderable(pc);
 }
 
-ViewerManager::~ViewerManager()
-{
-
-}
-
-Viewer* ViewerManager::current()
-{
-	return m_currentViewer;
-}
-
-void ViewerManager::addDataCollector(Visualizer* c)
-{
-	// Stub, currently support only one single viewer instance
-	m_currentViewer->addDataObject(c);
-}
-
-void ViewerManager::removeDataCollector(Visualizer* c)
-{
-    // Stub, currently support only one single viewer instance
-    m_currentViewer->removeDataObject(c);
-}
-
-void ViewerManager::updateDataObject(Visualizer* obj)
-{
-	m_currentViewer->updateDataObject(obj);
-}

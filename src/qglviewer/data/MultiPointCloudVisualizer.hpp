@@ -17,46 +17,27 @@
  */
 
 
- /*
- * ViewerManager.cpp
+
+/*
+ * MultiPointCloudVisualizer.hpp
  *
- *  Created on: 07.10.2010
+ *  Created on: 28.03.2012
  *      Author: Thomas Wiemann
  */
 
-#include "ViewerManager.h"
-#include "PerspectiveViewer.h"
+#ifndef MULTIPOINTCLOUDVISUALIZER_HPP_
+#define MULTIPOINTCLOUDVISUALIZER_HPP_
 
+#include "io/PointBuffer.hpp"
+#include "Visualizer.hpp"
 
-ViewerManager::ViewerManager(QWidget* parent, const QGLWidget* shared)
+using namespace lssr;
+
+class MultiPointCloudVisualizer : public Visualizer
 {
-	m_currentViewer = new PerspectiveViewer(parent, shared);
-	m_parentWidget = parent;
-}
+public:
+	MultiPointCloudVisualizer(PointBufferPtr buffer, string name);
+	virtual ~MultiPointCloudVisualizer() {};
+};
 
-ViewerManager::~ViewerManager()
-{
-
-}
-
-Viewer* ViewerManager::current()
-{
-	return m_currentViewer;
-}
-
-void ViewerManager::addDataCollector(Visualizer* c)
-{
-	// Stub, currently support only one single viewer instance
-	m_currentViewer->addDataObject(c);
-}
-
-void ViewerManager::removeDataCollector(Visualizer* c)
-{
-    // Stub, currently support only one single viewer instance
-    m_currentViewer->removeDataObject(c);
-}
-
-void ViewerManager::updateDataObject(Visualizer* obj)
-{
-	m_currentViewer->updateDataObject(obj);
-}
+#endif /* MULTIPOINTCLOUDVISUALIZER_HPP_ */

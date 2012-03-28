@@ -16,47 +16,38 @@
  * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA
  */
 
-
- /*
- * ViewerManager.cpp
+/*
+ * GridVisualizer.cpp
  *
- *  Created on: 07.10.2010
+ *  Created on: 28.03.2012
  *      Author: Thomas Wiemann
  */
 
-#include "ViewerManager.h"
-#include "PerspectiveViewer.h"
+#include "display/Grid.hpp"
+#include "io/GridIO.hpp"
+#include "GridVisualizer.hpp"
 
+#include "../widgets/PointCloudTreeWidgetItem.h"
 
-ViewerManager::ViewerManager(QWidget* parent, const QGLWidget* shared)
+GridVisualizer::GridVisualizer(string filename)
 {
-	m_currentViewer = new PerspectiveViewer(parent, shared);
-	m_parentWidget = parent;
+	lssr::GridIO io;
+	io.read( filename );
+	size_t n_points, n_boxes;
+	lssr::floatArr points = io.getPoints( n_points );
+	lssr::uintArr  boxes  = io.getBoxes(  n_boxes );
+	if( points && boxes )
+	{
+		lssr::Grid* grid = new lssr::Grid( points, boxes, n_points, n_boxes );
+		m_renderable = grid;
+
+		int modes = 0;
+		PointCloudTreeWidgetItem* item = new PointCloudTreeWidgetItem(PointCloudItem);
+		item->setSupportedRenderModes(modes);
+		item->setViewCentering(false);
+		item->setName("Grid");
+		item->setRenderable(grid);
+		m_treeItem = item;
+	}
 }
 
-ViewerManager::~ViewerManager()
-{
-
-}
-
-Viewer* ViewerManager::current()
-{
-	return m_currentViewer;
-}
-
-void ViewerManager::addDataCollector(Visualizer* c)
-{
-	// Stub, currently support only one single viewer instance
-	m_currentViewer->addDataObject(c);
-}
-
-void ViewerManager::removeDataCollector(Visualizer* c)
-{
-    // Stub, currently support only one single viewer instance
-    m_currentViewer->removeDataObject(c);
-}
-
-void ViewerManager::updateDataObject(Visualizer* obj)
-{
-	m_currentViewer->updateDataObject(obj);
-}

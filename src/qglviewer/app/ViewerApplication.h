@@ -36,7 +36,7 @@
 #include "MeshingOptionsDialogUI.h"
 #include "RenderingDialogUI.h"
 
-#include "../data/DataCollectorFactory.h"
+#include "../data/VisualizerFactory.hpp"
 
 #include "../viewers/Viewer.h"
 #include "../viewers/PerspectiveViewer.h"
@@ -88,7 +88,7 @@ public Q_SLOTS:
 
 	void displayRenderingSettings();
 
-	void dataCollectorAdded(DataCollector* d);
+	void dataCollectorAdded(Visualizer* d);
 	void treeItemClicked(QTreeWidgetItem* item, int n);
 	void treeItemChanged(QTreeWidgetItem*, int);
 	void treeSelectionChanged();
@@ -131,7 +131,7 @@ private:
 
 	Fogsettings*				m_fogSettingsUI;
 	ViewerManager*				m_viewerManager;
-	DataCollectorFactory*       m_factory;
+	VisualizerFactory*       m_factory;
 
 	AnimationDialog*            m_playerDialog;
 

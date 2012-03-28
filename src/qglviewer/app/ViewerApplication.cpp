@@ -25,7 +25,6 @@
  */
 
 #include "ViewerApplication.h"
-#include "../data/Static3DDataCollector.h"
 
 #define RC_PCM_TYPE lssr::ColorVertex<float, unsigned char>, lssr::Normal<float>
 
@@ -79,7 +78,7 @@ ViewerApplication::ViewerApplication( int argc, char ** argv )
 	m_viewerManager = new ViewerManager(m_qMainWindow);
 	m_viewer = m_viewerManager->current();
 
-	m_factory = new DataCollectorFactory;
+	m_factory = new VisualizerFactory;
 
 
 	// Show window
@@ -141,8 +140,8 @@ void ViewerApplication::connectEvents()
 	connect(m_mainWindowUi->actionFog_settings, SIGNAL(activated()),this, SLOT(displayFogSettingsDialog()));
 
 	// Communication between the manager objects
-    connect(m_factory, SIGNAL(dataCollectorCreated(DataCollector*)), m_viewerManager, SLOT(addDataCollector(DataCollector*)));
-    connect(m_factory, SIGNAL(dataCollectorCreated(DataCollector*)), this,            SLOT(dataCollectorAdded(DataCollector*)));
+    connect(m_factory, SIGNAL(visualizerCreated(Visualizer*)), m_viewerManager, SLOT(addDataCollector(Visualizer*)));
+    connect(m_factory, SIGNAL(visualizerCreated(Visualizer*)), this,            SLOT(dataCollectorAdded(Visualizer*)));
 
 	// Communication between tree widget items
 	connect(treeWidget, SIGNAL(itemClicked(QTreeWidgetItem*, int)),         this, SLOT(treeItemClicked(QTreeWidgetItem*, int)));
@@ -206,151 +205,151 @@ void ViewerApplication::displayRenderingSettings()
 
 void ViewerApplication::createMeshFromPointcloud()
 {
-    // Some usings
-    using namespace lssr;
-
-    // Display mesh generation dialog
-    QTreeWidgetItem* item = m_sceneDockWidgetUi->treeWidget->currentItem();
-    if(item)
-    {
-        if(item->type() == PointCloudItem || item->type() == MultiPointCloudItem)
-        {
-            CustomTreeWidgetItem* c_item = static_cast<CustomTreeWidgetItem*>(item);
-
-            // Create a dialog to parse options
-            QDialog* mesh_dialog = new QDialog(m_qMainWindow);
-            Ui::MeshingOptionsDialogUI* mesh_ui = new Ui::MeshingOptionsDialogUI;
-            mesh_ui->setupUi(mesh_dialog);
-            int result = mesh_dialog->exec();
-
-            // Check dialog result and create mesh
-            if(result == QDialog::Accepted)
-            {
-                // Get point cloud data
-                lssr::PointCloud* pc = static_cast<lssr::PointCloud*>(c_item->renderable());
-                PointBufferPtr loader = pc->model()->m_pointCloud;
-
-                if(loader)
-                {
-                    // Create a point cloud manager object
-                    lssr::AdaptiveKSearchSurface< RC_PCM_TYPE >::Ptr pcm;
-//                    PointCloudManager<ColorVertex<float, unsigned char>, Normal<float> >* pcm;
-                    std::string pcm_name = mesh_ui->comboBoxPCM->currentText().toAscii().data();
-
-                    pcm = AdaptiveKSearchSurface< RC_PCM_TYPE >::Ptr(
-                          new AdaptiveKSearchSurface<ColorVertex<float, unsigned char>, Normal<float> > ( loader, pcm_name ));
-
-                    // Set pcm parameters
-                    pcm->setKD(mesh_ui->spinBoxKd->value());
-                    pcm->setKI(mesh_ui->spinBoxKi->value());
-                    pcm->setKN(mesh_ui->spinBoxKn->value());
-                    pcm->calculateSurfaceNormals();
-
-                    // Create an empty mesh
-                    HalfEdgeMesh<ColorVertex<float, unsigned char>, Normal<float> > mesh(pcm);
-
-                    // Get reconstruction mesh
-                    float voxelsize = mesh_ui->spinBoxVoxelsize->value();
-
-                    FastReconstruction<ColorVertex<float, unsigned char>, Normal<float> > reconstruction(pcm, voxelsize, true);
-                    reconstruction.getMesh(mesh);
-
-                    // Get optimization parameters
-                    bool optimize_planes = mesh_ui->checkBoxOptimizePlanes->isChecked();
-                    bool fill_holes      = mesh_ui->checkBoxFillHoles->isChecked();
-                    bool rda             = mesh_ui->checkBoxRDA->isChecked();
-                    bool small_regions   = mesh_ui->checkBoxRemoveRegions->isChecked();
-                    bool retesselate     = mesh_ui->checkBoxRetesselate->isChecked();
-                    bool texture         = mesh_ui->checkBoxGenerateTextures->isChecked();
-                    bool color_regions   = mesh_ui->checkBoxColorRegions->isChecked();
-
-                    int  num_plane_its   = mesh_ui->spinBoxPlaneIterations->value();
-                    int  num_rda         = mesh_ui->spinBoxRDA->value();
-                    int  num_rm_regions  = mesh_ui->spinBoxRemoveRegions->value();
-
-                    float min_plane_size = mesh_ui->spinBoxMinPlaneSize->value();
-                    float normal_thresh  = mesh_ui->spinBoxNormalThr->value();
-                    float max_hole_size  = mesh_ui->spinBoxHoleSize->value();
-
-                    if(rda)
-                    {
-                        mesh.removeDanglingArtifacts(num_rda);
-                    }
-
-                    if(!small_regions)
-                    {
-                        num_rm_regions = 0;
-                    }
-
-                    // Perform optimizations
-                    if(optimize_planes)
-                    {
-                        if(color_regions)
-                        {
-                            mesh.enableRegionColoring();
-                        }
-
-                        mesh.optimizePlanes(num_plane_its,
-                                normal_thresh,
-                                min_plane_size,
-                                num_rm_regions,
-                                true);
-
-                        mesh.fillHoles(max_hole_size);
-                        mesh.optimizePlaneIntersections();
-                        mesh.restorePlanes(min_plane_size);
-                    }
-
-                    if(retesselate)
-                    {
-                        mesh.finalizeAndRetesselate(texture);
-                    }
-                    else
-                    {
-                        mesh.finalize();
-                    }
-
-
-                    // Create and add mesh to loaded objects
-                    MeshBufferPtr l = mesh.meshBuffer();
-
-                    lssr::StaticMesh* static_mesh = new lssr::StaticMesh(l);
-                    TriangleMeshTreeWidgetItem* mesh_item = new TriangleMeshTreeWidgetItem(TriangleMeshItem);
-
-                    int modes = 0;
-                    modes |= Mesh;
-
-                    string name = "Mesh: " + c_item->name();
-
-                    cout << static_mesh->getNumberOfFaces() << endl;
-                    cout << static_mesh->getNumberOfVertices() << endl;
-
-                    if(static_mesh->getNormals())
-                    {
-                        modes |= VertexNormals;
-                    }
-                    mesh_item->setSupportedRenderModes(modes);
-                    mesh_item->setViewCentering(false);
-                    mesh_item->setName(name);
-                    mesh_item->setRenderable(static_mesh);
-                    mesh_item->setNumFaces(static_mesh->getNumberOfFaces());
-
-                    Static3DDataCollector* dc = new Static3DDataCollector(static_mesh, name, mesh_item);
-
-                    dataCollectorAdded(dc);
-                    m_viewerManager->addDataCollector(dc);
-                }
-                else
-                {
-                    QMessageBox msgBox;
-                    msgBox.setText("Action not supported.");
-                    msgBox.setStandardButtons(QMessageBox::Ok  );
-                    int ret = msgBox.exec();
-                }
-
-            }
-        }
-    }
+//    // Some usings
+//    using namespace lssr;
+//
+//    // Display mesh generation dialog
+//    QTreeWidgetItem* item = m_sceneDockWidgetUi->treeWidget->currentItem();
+//    if(item)
+//    {
+//        if(item->type() == PointCloudItem || item->type() == MultiPointCloudItem)
+//        {
+//            CustomTreeWidgetItem* c_item = static_cast<CustomTreeWidgetItem*>(item);
+//
+//            // Create a dialog to parse options
+//            QDialog* mesh_dialog = new QDialog(m_qMainWindow);
+//            Ui::MeshingOptionsDialogUI* mesh_ui = new Ui::MeshingOptionsDialogUI;
+//            mesh_ui->setupUi(mesh_dialog);
+//            int result = mesh_dialog->exec();
+//
+//            // Check dialog result and create mesh
+//            if(result == QDialog::Accepted)
+//            {
+//                // Get point cloud data
+//                lssr::PointCloud* pc = static_cast<lssr::PointCloud*>(c_item->renderable());
+//                PointBufferPtr loader = pc->model()->m_pointCloud;
+//
+//                if(loader)
+//                {
+//                    // Create a point cloud manager object
+//                    lssr::AdaptiveKSearchSurface< RC_PCM_TYPE >::Ptr pcm;
+////                    PointCloudManager<ColorVertex<float, unsigned char>, Normal<float> >* pcm;
+//                    std::string pcm_name = mesh_ui->comboBoxPCM->currentText().toAscii().data();
+//
+//                    pcm = AdaptiveKSearchSurface< RC_PCM_TYPE >::Ptr(
+//                          new AdaptiveKSearchSurface<ColorVertex<float, unsigned char>, Normal<float> > ( loader, pcm_name ));
+//
+//                    // Set pcm parameters
+//                    pcm->setKD(mesh_ui->spinBoxKd->value());
+//                    pcm->setKI(mesh_ui->spinBoxKi->value());
+//                    pcm->setKN(mesh_ui->spinBoxKn->value());
+//                    pcm->calculateSurfaceNormals();
+//
+//                    // Create an empty mesh
+//                    HalfEdgeMesh<ColorVertex<float, unsigned char>, Normal<float> > mesh(pcm);
+//
+//                    // Get reconstruction mesh
+//                    float voxelsize = mesh_ui->spinBoxVoxelsize->value();
+//
+//                    FastReconstruction<ColorVertex<float, unsigned char>, Normal<float> > reconstruction(pcm, voxelsize, true);
+//                    reconstruction.getMesh(mesh);
+//
+//                    // Get optimization parameters
+//                    bool optimize_planes = mesh_ui->checkBoxOptimizePlanes->isChecked();
+//                    bool fill_holes      = mesh_ui->checkBoxFillHoles->isChecked();
+//                    bool rda             = mesh_ui->checkBoxRDA->isChecked();
+//                    bool small_regions   = mesh_ui->checkBoxRemoveRegions->isChecked();
+//                    bool retesselate     = mesh_ui->checkBoxRetesselate->isChecked();
+//                    bool texture         = mesh_ui->checkBoxGenerateTextures->isChecked();
+//                    bool color_regions   = mesh_ui->checkBoxColorRegions->isChecked();
+//
+//                    int  num_plane_its   = mesh_ui->spinBoxPlaneIterations->value();
+//                    int  num_rda         = mesh_ui->spinBoxRDA->value();
+//                    int  num_rm_regions  = mesh_ui->spinBoxRemoveRegions->value();
+//
+//                    float min_plane_size = mesh_ui->spinBoxMinPlaneSize->value();
+//                    float normal_thresh  = mesh_ui->spinBoxNormalThr->value();
+//                    float max_hole_size  = mesh_ui->spinBoxHoleSize->value();
+//
+//                    if(rda)
+//                    {
+//                        mesh.removeDanglingArtifacts(num_rda);
+//                    }
+//
+//                    if(!small_regions)
+//                    {
+//                        num_rm_regions = 0;
+//                    }
+//
+//                    // Perform optimizations
+//                    if(optimize_planes)
+//                    {
+//                        if(color_regions)
+//                        {
+//                            mesh.enableRegionColoring();
+//                        }
+//
+//                        mesh.optimizePlanes(num_plane_its,
+//                                normal_thresh,
+//                                min_plane_size,
+//                                num_rm_regions,
+//                                true);
+//
+//                        mesh.fillHoles(max_hole_size);
+//                        mesh.optimizePlaneIntersections();
+//                        mesh.restorePlanes(min_plane_size);
+//                    }
+//
+//                    if(retesselate)
+//                    {
+//                        mesh.finalizeAndRetesselate(texture);
+//                    }
+//                    else
+//                    {
+//                        mesh.finalize();
+//                    }
+//
+//
+//                    // Create and add mesh to loaded objects
+//                    MeshBufferPtr l = mesh.meshBuffer();
+//
+//                    lssr::StaticMesh* static_mesh = new lssr::StaticMesh(l);
+//                    TriangleMeshTreeWidgetItem* mesh_item = new TriangleMeshTreeWidgetItem(TriangleMeshItem);
+//
+//                    int modes = 0;
+//                    modes |= Mesh;
+//
+//                    string name = "Mesh: " + c_item->name();
+//
+//                    cout << static_mesh->getNumberOfFaces() << endl;
+//                    cout << static_mesh->getNumberOfVertices() << endl;
+//
+//                    if(static_mesh->getNormals())
+//                    {
+//                        modes |= VertexNormals;
+//                    }
+//                    mesh_item->setSupportedRenderModes(modes);
+//                    mesh_item->setViewCentering(false);
+//                    mesh_item->setName(name);
+//                    mesh_item->setRenderable(static_mesh);
+//                    mesh_item->setNumFaces(static_mesh->getNumberOfFaces());
+//
+//                    Static3DDataCollector* dc = new Static3DDataCollector(static_mesh, name, mesh_item);
+//
+//                    dataCollectorAdded(dc);
+//                    m_viewerManager->addDataCollector(dc);
+//                }
+//                else
+//                {
+//                    QMessageBox msgBox;
+//                    msgBox.setText("Action not supported.");
+//                    msgBox.setStandardButtons(QMessageBox::Ok  );
+//                    int ret = msgBox.exec();
+//                }
+//
+//            }
+//        }
+//    }
 
 }
 
@@ -586,7 +585,7 @@ void ViewerApplication::saveSelectedObject()
     }
 }
 
-void ViewerApplication::dataCollectorAdded(DataCollector* d)
+void ViewerApplication::dataCollectorAdded(Visualizer* d)
 {
     if(d->treeItem())
     {

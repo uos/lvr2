@@ -4,7 +4,7 @@ ADD_DEFINITIONS(-DQT_NO_KEYWORDS )
 
 set(QVIEWER_MOCS 
     app/ViewerApplication.h
-    data/DataCollectorFactory.h
+    data/VisualizerFactory.hpp
     viewers/Viewer.h
     viewers/ViewerManager.h
     widgets/TransformationDialog.h
@@ -33,9 +33,12 @@ set(QVIEWER_UIS
 set(QVIEWER_SOURCES
     app/Main.cpp
     app/ViewerApplication.cpp
-    data/DataCollector.cpp
-    data/DataCollectorFactory.cpp
-    data/Static3DDataCollector.cpp
+    data/GridVisualizer.cpp
+    data/MultiPointCloudVisualizer.cpp
+    data/PointCloudVisualizer.cpp
+    data/TriangleMeshVisualizer.cpp
+    data/Visualizer.cpp
+    data/VisualizerFactory.cpp
     viewers/OrthoCamera.cpp
     viewers/PerspectiveViewer.cpp
     viewers/Viewer.cpp

@@ -40,23 +40,19 @@ using std::string;
 
 using lssr::Renderable;
 using lssr::Vertex;
-
-class DataManager;
-
 using lssr::Renderable;
 using lssr::BoundingBox;
 
-class DataCollector
+class Visualizer
 {
 public:
-	DataCollector(Renderable* renderable, string name, CustomTreeWidgetItem* item = 0);
-	virtual ~DataCollector();
-	Renderable* renderable();
-	string	name();
-	BoundingBox<Vertex<float> >* boundingBox() { return m_renderable->boundingBox();}
-
+	Visualizer();
+	virtual ~Visualizer();
+	virtual Renderable* renderable();
+	virtual string	name();
+	virtual BoundingBox<Vertex<float> >* boundingBox() { return m_renderable->boundingBox();}
 	virtual CustomTreeWidgetItem* treeItem() { return m_treeItem;}
-	virtual ViewerType supportedViewerType() = 0;
+	virtual ViewerType supportedViewerType() {return PERSPECTIVE_VIEWER;}
 
 protected:
 

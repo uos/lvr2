@@ -18,45 +18,36 @@
 
 
  /*
- * ViewerManager.cpp
+ * DataCollectorFactory.h
  *
  *  Created on: 07.10.2010
  *      Author: Thomas Wiemann
  */
 
-#include "ViewerManager.h"
-#include "PerspectiveViewer.h"
+#ifndef DATACOLLECTORFACTORY_H_
+#define DATACOLLECTORFACTORY_H_
 
+#include <string>
+#include <QtGui>
 
-ViewerManager::ViewerManager(QWidget* parent, const QGLWidget* shared)
+using std::string;
+
+#include "Visualizer.hpp"
+
+class VisualizerFactory : public QObject
 {
-	m_currentViewer = new PerspectiveViewer(parent, shared);
-	m_parentWidget = parent;
-}
+    Q_OBJECT
+public:
+    VisualizerFactory();
 
-ViewerManager::~ViewerManager()
-{
+	virtual ~VisualizerFactory() {};
+	void create(string filename);
 
-}
+Q_SIGNALS:
+    void visualizerCreated(Visualizer *);
 
-Viewer* ViewerManager::current()
-{
-	return m_currentViewer;
-}
 
-void ViewerManager::addDataCollector(Visualizer* c)
-{
-	// Stub, currently support only one single viewer instance
-	m_currentViewer->addDataObject(c);
-}
 
-void ViewerManager::removeDataCollector(Visualizer* c)
-{
-    // Stub, currently support only one single viewer instance
-    m_currentViewer->removeDataObject(c);
-}
+};
 
-void ViewerManager::updateDataObject(Visualizer* obj)
-{
-	m_currentViewer->updateDataObject(obj);
-}
+#endif /* DATACOLLECTORFACTORY_H_ */
