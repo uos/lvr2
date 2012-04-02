@@ -77,6 +77,9 @@ void Viewer::resetCamera()
 	qglviewer::Vec v1(v_min.x, v_min.y, v_min.z);
 	qglviewer::Vec v2(v_max.x, v_max.y, v_max.z);
 
+	cout << v_min;
+	cout << v_max;
+
 	setSceneBoundingBox(v1, v2);
 	m_zoom = 1.0;
 
@@ -110,13 +113,16 @@ void Viewer::centerViewOnObject(Renderable* renderable)
 
 void Viewer::addDataObject(Visualizer* obj)
 {
-	BoundingBox<Vertex<float> >* bb = (obj->renderable()->boundingBox());
-	if(bb->isValid())
+	if(obj->renderable())
 	{
-	  m_boundingBox.expand(*bb);
-	  resetCamera();
+		BoundingBox<Vertex<float> >* bb = (obj->renderable()->boundingBox());
+		if(bb->isValid())
+		{
+			m_boundingBox.expand(*bb);
+			resetCamera();
+		}
+		m_dataObjects.push_back(obj);
 	}
-	m_dataObjects.push_back(obj);
 }
 
 void Viewer::removeDataObject(Visualizer* obj)

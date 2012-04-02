@@ -23,11 +23,7 @@ KinectGrabber::KinectGrabber(freenect_context *_ctx, int _index)
 {
 	m_depthImage = std::vector<short>( 640 * 480, 0 );
 	m_colorImage = std::vector<uint8_t>(freenect_find_video_mode(FREENECT_RESOLUTION_MEDIUM, FREENECT_VIDEO_RGB).bytes,0 );
-	for( unsigned int i = 0 ; i < 2048 ; i++) {
-		float v = i/2048.0;
-		v = std::pow(v, 3)* 6;
-		m_gamma.push_back(v*6*256);
-	}
+
 }
 
 void KinectGrabber::VideoCallback(void* data, uint32_t timestamp)

@@ -52,26 +52,31 @@ PointCloud::PointCloud( ModelPtr model, string name) : Renderable(name)
     init(m_model->m_pointCloud);
 }
 
+void PointCloud::updateBuffer(PointBufferPtr buffer)
+{
+	init(buffer);
+
+}
+
 void PointCloud::init(PointBufferPtr buffer)
 {
 	int maxColors = 255;
 	m_numNormals = 0;
+
 	m_boundingBox = new BoundingBox<Vertex<float> >;
 	m_renderMode = RenderPoints;
-	PointBufferPtr pc = m_model->m_pointCloud;
-	m_normals = pc->getIndexedPointNormalArray(m_numNormals);
 
-	if(pc)
+	if(buffer)
 	{
-
+		m_normals = buffer->getIndexedPointNormalArray(m_numNormals);
 		size_t n_points;
-		coord3fArr points     = pc->getIndexedPointArray(n_points);
-		color3bArr colors     = pc->getIndexedPointColorArray(n_points);
-		floatArr intensities = pc->getPointIntensityArray(n_points);
+		coord3fArr points     = buffer->getIndexedPointArray(n_points);
+		color3bArr colors     = buffer->getIndexedPointColorArray(n_points);
+		floatArr intensities  = buffer->getPointIntensityArray(n_points);
 
 		ColorMap c_map(maxColors);
 
-		for(size_t i = 0; i < pc->getNumPoints(); i++)
+		for(size_t i = 0; i < buffer->getNumPoints(); i++)
 		{
 			float x = points[i][0];
 			float y = points[i][1];

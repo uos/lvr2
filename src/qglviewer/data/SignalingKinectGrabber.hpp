@@ -16,43 +16,37 @@
  * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA
  */
 
-
-
 /*
- * PointCloudVisualizer.cpp
+ * SignalingKinectGrabber.hpp
  *
- *  Created on: 28.03.2012
+ *  Created on: 02.04.2012
  *      Author: Thomas Wiemann
  */
 
-#include "PointCloudVisualizer.hpp"
-#include "../widgets/PointCloudTreeWidgetItem.h"
+#ifndef SIGNALINGKINECTGRABBER_HPP_
+#define SIGNALINGKINECTGRABBER_HPP_
 
-PointCloudVisualizer::PointCloudVisualizer(PointBufferPtr buffer, string name)
+#include <QtGui>
+#include "io/KinectGrabber.hpp"
+#include "io/PointBuffer.hpp"
+
+using namespace lssr;
+
+class SignalingKinectGrabber: public QObject, public lssr::KinectGrabber
 {
-	PointCloud* pc = new PointCloud( buffer );
-	pc->setActive(true);
-	m_renderable = pc;
+	Q_OBJECT
+public:
+	SignalingKinectGrabber(freenect_context *_ctx, int _index);
+	virtual ~SignalingKinectGrabber();
 
-	PointCloudTreeWidgetItem* item = new PointCloudTreeWidgetItem(PointCloudItem);
-	m_treeItem = item;
+	void VideoCallback(void* data, uint32_t timestamp);
+	void DepthCallback(void* data, uint32_t timestamp);
 
-	// Setup supported render modes
-	int modes = 0;
-	size_t n_pn;
-	modes |= Points;
-	if(buffer->getPointNormalArray(n_pn))
-	{
-		modes |= PointNormals;
-	}
+Q_SIGNALS:
+	void newPointBuffer(PointBufferPtr* buffer);
 
-	item->setSupportedRenderModes(modes);
-	item->setViewCentering(false);
-	item->setName(name);
-	item->setNumPoints(pc->m_points.size());
-	item->setRenderable(pc);
+private:
+	Eigen::Matrix4f			m_depthMatrix;
+};
 
-}
-
-
-
+#endif /* SIGNALINGKINECTGRABBER_HPP_ */

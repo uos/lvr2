@@ -46,10 +46,8 @@ public:
 	void getColorImage(std::vector<uint8_t> &img);
 
 protected:
-	void VideoCallback(void* data, uint32_t timestamp);
-	void DepthCallback(void* data, uint32_t timestamp);
-
-private:
+	virtual void VideoCallback(void* data, uint32_t timestamp);
+	virtual void DepthCallback(void* data, uint32_t timestamp);
 
 	/// PointBufferPtr with current data
 	PointBufferPtr			m_buffer;
@@ -65,8 +63,6 @@ private:
 
 	/// The raw color image
 	std::vector<uint8_t>	m_colorImage;
-
-	std::vector<uint16_t>	m_gamma;
 
 	bool					m_haveData;
 

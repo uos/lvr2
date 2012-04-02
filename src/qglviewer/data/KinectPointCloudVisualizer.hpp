@@ -16,43 +16,35 @@
  * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA
  */
 
-
-
 /*
- * PointCloudVisualizer.cpp
+ * KinectPointCloudVisualizer.h
  *
  *  Created on: 28.03.2012
  *      Author: Thomas Wiemann
  */
 
-#include "PointCloudVisualizer.hpp"
-#include "../widgets/PointCloudTreeWidgetItem.h"
+#ifndef KINECTPOINTCLOUDVISUALIZER_H_
+#define KINECTPOINTCLOUDVISUALIZER_H_
 
-PointCloudVisualizer::PointCloudVisualizer(PointBufferPtr buffer, string name)
+#include <QtGui>
+#include "Visualizer.hpp"
+#include "display/InteractivePointCloud.hpp"
+
+using namespace lssr;
+
+class KinectPointCloudVisualizer : public QObject, public Visualizer
 {
-	PointCloud* pc = new PointCloud( buffer );
-	pc->setActive(true);
-	m_renderable = pc;
+	Q_OBJECT
+public:
+	KinectPointCloudVisualizer();
+	virtual ~KinectPointCloudVisualizer() {};
 
-	PointCloudTreeWidgetItem* item = new PointCloudTreeWidgetItem(PointCloudItem);
-	m_treeItem = item;
+public Q_SLOTS:
+	void updateBuffer(PointBufferPtr* buffer);
 
-	// Setup supported render modes
-	int modes = 0;
-	size_t n_pn;
-	modes |= Points;
-	if(buffer->getPointNormalArray(n_pn))
-	{
-		modes |= PointNormals;
-	}
+private:
+	InteractivePointCloud*			m_pointCloud;
 
-	item->setSupportedRenderModes(modes);
-	item->setViewCentering(false);
-	item->setName(name);
-	item->setNumPoints(pc->m_points.size());
-	item->setRenderable(pc);
+};
 
-}
-
-
-
+#endif /* KINECTPOINTCLOUDVISUALIZER_H_ */

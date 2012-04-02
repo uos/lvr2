@@ -82,7 +82,7 @@ void PerspectiveViewer::init()
 
 	//float double_sided = 1.0;
 	//glLightModelfv(GL_LIGHT_MODEL_TWO_SIDE, &double_sided);
-
+	glEnableClientState(GL_VERTEX_ARRAY);
 	glEnable(GL_DEPTH_TEST);
 
 	createBackgroundDisplayList();

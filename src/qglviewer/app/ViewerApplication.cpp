@@ -114,6 +114,7 @@ void ViewerApplication::connectEvents()
 
 	// File operations
 	QObject::connect(m_mainWindowUi->action_Open , SIGNAL(activated()), this, SLOT(openFile()));
+	QObject::connect(m_mainWindowUi->action_Kinect , SIGNAL(activated()), this, SLOT(connectKinect()));
 
 	// Scene views
     connect(m_mainWindowUi->actionShow_entire_scene, SIGNAL(activated()), m_viewer, SLOT(resetCamera()));
@@ -444,6 +445,26 @@ void ViewerApplication::pointRenderModeChanged()
 void ViewerApplication::openFile(string filename)
 {
     m_factory->create(filename);
+}
+
+void ViewerApplication::connectKinect()
+{
+	// Init freenect stuff
+	m_freenect = new Freenect::Freenect;
+
+	m_grabber = &m_freenect->createDevice<SignalingKinectGrabber>(0);
+	m_grabber->setDepthFormat(FREENECT_DEPTH_11BIT);
+	m_grabber->startVideo();
+	m_grabber->startDepth();
+
+	KinectPointCloudVisualizer* v = new KinectPointCloudVisualizer;
+	connect(m_grabber, SIGNAL(newPointBuffer(PointBufferPtr*)), v, SLOT(updateBuffer(PointBufferPtr*)));
+	connect(m_grabber, SIGNAL(newPointBuffer(PointBufferPtr*)), m_viewer, SLOT(updateGL()));
+
+	dataCollectorAdded(v);
+	m_viewerManager->addDataCollector(v);
+
+
 }
 
 void ViewerApplication::transformObject()
