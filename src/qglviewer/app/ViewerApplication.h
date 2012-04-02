@@ -37,6 +37,8 @@
 #include "RenderingDialogUI.h"
 
 #include "../data/VisualizerFactory.hpp"
+#include "../data/KinectPointCloudVisualizer.hpp"
+#include "../data/SignalingKinectGrabber.hpp"
 
 #include "../viewers/Viewer.h"
 #include "../viewers/PerspectiveViewer.h"
@@ -57,6 +59,7 @@
 
 #include "io/Model.hpp"
 #include "io/ModelFactory.hpp"
+#include "io/KinectIO.hpp"
 
 using Ui::MainWindow;
 using Ui::Fogsettings;
@@ -101,6 +104,7 @@ public Q_SLOTS:
 	void deleteObject();
 
 	void openFile();
+	void connectKinect();
 
 	void meshRenderModeChanged();
 	void pointRenderModeChanged();
@@ -131,9 +135,12 @@ private:
 
 	Fogsettings*				m_fogSettingsUI;
 	ViewerManager*				m_viewerManager;
-	VisualizerFactory*       m_factory;
+	VisualizerFactory*       	m_factory;
 
 	AnimationDialog*            m_playerDialog;
+
+	SignalingKinectGrabber* 	m_grabber;
+	Freenect::Freenect*			m_freenect;
 
 public:
     Viewer*                     m_viewer;

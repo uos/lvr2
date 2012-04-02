@@ -16,43 +16,39 @@
  * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA
  */
 
-
-
 /*
- * PointCloudVisualizer.cpp
+ * InteractivePointCloud.hpp
  *
- *  Created on: 28.03.2012
+ *  Created on: 02.04.2012
  *      Author: Thomas Wiemann
  */
 
-#include "PointCloudVisualizer.hpp"
-#include "../widgets/PointCloudTreeWidgetItem.h"
+#ifndef INTERACTIVEPOINTCLOUD_HPP_
+#define INTERACTIVEPOINTCLOUD_HPP_
 
-PointCloudVisualizer::PointCloudVisualizer(PointBufferPtr buffer, string name)
+#include "Renderable.hpp"
+
+#include "io/model.hpp"
+
+namespace lssr
 {
-	PointCloud* pc = new PointCloud( buffer );
-	pc->setActive(true);
-	m_renderable = pc;
 
-	PointCloudTreeWidgetItem* item = new PointCloudTreeWidgetItem(PointCloudItem);
-	m_treeItem = item;
+class InteractivePointCloud: public lssr::Renderable
+{
+public:
+	InteractivePointCloud();
+	InteractivePointCloud(PointBufferPtr buffer);
+	virtual ~InteractivePointCloud();
 
-	// Setup supported render modes
-	int modes = 0;
-	size_t n_pn;
-	modes |= Points;
-	if(buffer->getPointNormalArray(n_pn))
-	{
-		modes |= PointNormals;
-	}
+	virtual void render();
 
-	item->setSupportedRenderModes(modes);
-	item->setViewCentering(false);
-	item->setName(name);
-	item->setNumPoints(pc->m_points.size());
-	item->setRenderable(pc);
-
-}
+	void updateBuffer(PointBufferPtr buffer);
 
 
+private:
 
+	PointBufferPtr			m_buffer;
+};
+
+} /* namespace lssr */
+#endif /* INTERACTIVEPOINTCLOUD_HPP_ */

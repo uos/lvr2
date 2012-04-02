@@ -144,7 +144,7 @@ Renderable::Renderable(string n)
 	m_model.reset();
 
 	computeMatrix();
-	compileAxesList();
+	//compileAxesList();
 
 }
 

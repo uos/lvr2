@@ -38,7 +38,7 @@
      <x>0</x>
      <y>0</y>
      <width>1044</width>
-     <height>25</height>
+     <height>22</height>
     </rect>
    </property>
    <widget class="QMenu" name="menu_File">
@@ -88,7 +88,14 @@
     <addaction name="actionToggle_fog"/>
     <addaction name="actionFog_settings"/>
    </widget>
+   <widget class="QMenu" name="menuData_Sources">
+    <property name="title">
+     <string>Data Sources</string>
+    </property>
+    <addaction name="action_Kinect"/>
+   </widget>
    <addaction name="menu_File"/>
+   <addaction name="menuData_Sources"/>
    <addaction name="menu_Tools"/>
    <addaction name="menuView"/>
    <addaction name="menu_View"/>
@@ -469,6 +476,11 @@
    </property>
    <property name="text">
     <string>Rendering Settings</string>
+   </property>
+  </action>
+  <action name="action_Kinect">
+   <property name="text">
+    <string>Kinect...</string>
    </property>
   </action>
  </widget>

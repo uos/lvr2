@@ -5,6 +5,8 @@ ADD_DEFINITIONS(-DQT_NO_KEYWORDS )
 set(QVIEWER_MOCS 
     app/ViewerApplication.h
     data/VisualizerFactory.hpp
+    data/KinectPointCloudVisualizer.hpp
+    data/SignalingKinectGrabber.hpp
     viewers/Viewer.h
     viewers/ViewerManager.h
     widgets/TransformationDialog.h
@@ -41,6 +43,7 @@ set(QVIEWER_SOURCES
     data/VisualizerFactory.cpp
     data/ThreadedVisualizer.cpp
     data/KinectPointCloudVisualizer.cpp
+    data/SignalingKinectGrabber.cpp
     viewers/OrthoCamera.cpp
     viewers/PerspectiveViewer.cpp
     viewers/Viewer.cpp
@@ -90,3 +93,4 @@ target_link_libraries(qviewer ${Boost_FILESYSTEM_LIBRARY}
     ${Boost_PROGRAM_OPTIONS_LIBRARY})
 target_link_libraries(qviewer pthread)
 target_link_libraries(qviewer ${PCL_LIBRARIES})
+target_link_libraries(qviewer freenect)

@@ -35,6 +35,7 @@
 #include <string>
 #include <fstream>
 
+
 using namespace std;
 
 
@@ -76,6 +77,8 @@ public:
         m_boundingBox = new BoundingBox<Vertex<float> >;
         m_points.clear();
     };
+
+    void updateBuffer(PointBufferPtr buffer);
 
     void updateDisplayLists();
 //private:
