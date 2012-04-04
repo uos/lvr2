@@ -17,48 +17,43 @@
  */
 
 /*
- * KinectPointCloudVisualizer.cpp
+ * SignalingMeshGenerator.hpp
  *
- *  Created on: 28.03.2012
+ *  Created on: 03.04.2012
  *      Author: Thomas Wiemann
  */
 
-#include "KinectPointCloudVisualizer.hpp"
+#ifndef SIGNALINGMESHGENERATOR_HPP_
+#define SIGNALINGMESHGENERATOR_HPP_
 
-#include "../widgets/PointCloudTreeWidgetItem.h"
+#include <QtGui>
+#include "io/Pointbuffer.hpp"
+#include "reconstruction/AdaptiveKSearchSurface.hpp"
+#include "reconstruction/PCLKSurface.hpp"
+#include "reconstruction/FastReconstruction.hpp"
 
+using namespace lssr;
 
-KinectPointCloudVisualizer::KinectPointCloudVisualizer()
+typedef AdaptiveKSearchSurface<cVertex, cNormal>        akSurface;
+typedef PointsetSurface<cVertex>                        psSurface;
+
+class SignalingMeshGenerator : public QThread
 {
-	PointCloudTreeWidgetItem* item = new PointCloudTreeWidgetItem(PointCloudItem);
+	Q_OBJECT
+public:
+	SignalingMeshGenerator();
+	virtual ~SignalingMeshGenerator();
 
-	// Setup supported render modes
-	int modes = 0;
-	modes |= Points;
+	virtual void run();
 
-	m_pointCloud = new InteractivePointCloud;
-	m_renderable = m_pointCloud;
+public Q_SLOTS:
+	void newPointCloud(PointBufferPtr *buffer);
 
-	item->setSupportedRenderModes(modes);
-	item->setViewCentering(false);
-	item->setName("Kinect Data");
-	item->setNumPoints(640 * 480);
-	item->setRenderable(m_pointCloud);
+private:
+	QMutex			m_mutex;
+	PointBufferPtr	m_pointBuffer;
 
-	m_treeItem = item;
+	bool			m_newData;
+};
 
-	start();
-}
-
-void KinectPointCloudVisualizer::run()
-{
-	while(true)
-	{
-		usleep(1000);
-	}
-}
-
-void KinectPointCloudVisualizer::updateBuffer(PointBufferPtr* buffer)
-{
-	m_pointCloud->updateBuffer(*buffer);
-}
+#endif /* SIGNALINGMESHGENERATOR_HPP_ */

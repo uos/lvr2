@@ -33,11 +33,11 @@ int main(int argc, char** argv)
 {
 
 	// Create application object
-	QApplication application(argc, argv);
+	//QApplication application(argc, argv);
 
 
 	ViewerApplication vapp(argc, argv);
 
 	// Run application
-	return application.exec();
+	return vapp.exec();
 }
