@@ -28,7 +28,7 @@
 
 #define RC_PCM_TYPE lssr::ColorVertex<float, unsigned char>, lssr::Normal<float>
 
-ViewerApplication::ViewerApplication( int argc, char ** argv )
+ViewerApplication::ViewerApplication( int argc, char ** argv ) : QApplication(argc, argv)
 {
 	// Setup main window
 	m_qMainWindow = new QMainWindow;
@@ -106,6 +106,21 @@ ViewerApplication::ViewerApplication( int argc, char ** argv )
 	m_playerDialog = new AnimationDialog(m_viewer);
 
 
+}
+
+bool ViewerApplication::notify(QObject* receiver, QEvent* e)
+{
+	// Reimplementation using the default version to catch
+	// thrown events from event handlers to prevent crashing.
+	try
+	{
+		return QApplication::notify(receiver, e);
+	}
+	catch(...)
+	{
+		return false;
+		cout << "Doh!" << endl;
+	}
 }
 
 void ViewerApplication::connectEvents()
@@ -449,6 +464,9 @@ void ViewerApplication::openFile(string filename)
 
 void ViewerApplication::connectKinect()
 {
+	// Init cont. meshing
+	m_mesher = new SignalingMeshGenerator;
+
 	// Init freenect stuff
 	m_freenect = new Freenect::Freenect;
 
@@ -458,7 +476,9 @@ void ViewerApplication::connectKinect()
 	m_grabber->startDepth();
 
 	KinectPointCloudVisualizer* v = new KinectPointCloudVisualizer;
+
 	connect(m_grabber, SIGNAL(newPointBuffer(PointBufferPtr*)), v, SLOT(updateBuffer(PointBufferPtr*)));
+	connect(m_grabber, SIGNAL(newPointBuffer(PointBufferPtr*)), m_mesher, SLOT(newPointCloud(PointBufferPtr*)));
 	connect(m_grabber, SIGNAL(newPointBuffer(PointBufferPtr*)), m_viewer, SLOT(updateGL()));
 
 	dataCollectorAdded(v);

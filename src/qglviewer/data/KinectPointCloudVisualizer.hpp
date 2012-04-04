@@ -32,12 +32,13 @@
 
 using namespace lssr;
 
-class KinectPointCloudVisualizer : public QObject, public Visualizer
+class KinectPointCloudVisualizer : public Visualizer, public QThread
 {
-	Q_OBJECT
 public:
 	KinectPointCloudVisualizer();
 	virtual ~KinectPointCloudVisualizer() {};
+
+	virtual void run();
 
 public Q_SLOTS:
 	void updateBuffer(PointBufferPtr* buffer);

@@ -5,8 +5,8 @@ ADD_DEFINITIONS(-DQT_NO_KEYWORDS )
 set(QVIEWER_MOCS 
     app/ViewerApplication.h
     data/VisualizerFactory.hpp
-    data/KinectPointCloudVisualizer.hpp
     data/SignalingKinectGrabber.hpp
+    data/SignalingMeshGenerator.hpp
     viewers/Viewer.h
     viewers/ViewerManager.h
     widgets/TransformationDialog.h
@@ -41,9 +41,9 @@ set(QVIEWER_SOURCES
     data/TriangleMeshVisualizer.cpp
     data/Visualizer.cpp
     data/VisualizerFactory.cpp
-    data/ThreadedVisualizer.cpp
     data/KinectPointCloudVisualizer.cpp
     data/SignalingKinectGrabber.cpp
+    data/SignalingMeshGenerator.cpp
     viewers/OrthoCamera.cpp
     viewers/PerspectiveViewer.cpp
     viewers/Viewer.cpp

@@ -39,6 +39,7 @@
 #include "../data/VisualizerFactory.hpp"
 #include "../data/KinectPointCloudVisualizer.hpp"
 #include "../data/SignalingKinectGrabber.hpp"
+#include "../data/SignalingMeshGenerator.hpp"
 
 #include "../viewers/Viewer.h"
 #include "../viewers/PerspectiveViewer.h"
@@ -69,7 +70,7 @@ using Ui::RenderingDialogUI;
 
 class EventManager;
 
-class ViewerApplication : public QObject
+class ViewerApplication : public QApplication
 {
 	Q_OBJECT
 
@@ -112,6 +113,8 @@ public Q_SLOTS:
 	void centerOnSelection();
 
 	void zoomChanged();
+
+	virtual bool notify(QObject* receiver, QEvent* e);
 private:
 
 	void updateToolbarActions(CustomTreeWidgetItem* item);
@@ -139,6 +142,7 @@ private:
 
 	AnimationDialog*            m_playerDialog;
 
+	SignalingMeshGenerator*		m_mesher;
 	SignalingKinectGrabber* 	m_grabber;
 	Freenect::Freenect*			m_freenect;
 
