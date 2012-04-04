@@ -65,7 +65,6 @@ void DataCollectorFactory::create(string filename)
 
 	if(model)
 	{
-
         lssr::MeshBufferPtr    mesh_buffer  = model->m_mesh;
 		lssr::PointBufferPtr   point_buffer = model->m_pointCloud;
 

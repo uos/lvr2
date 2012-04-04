@@ -41,6 +41,7 @@ StaticMesh::StaticMesh(){
 
 	m_numFaces      = 0;
 	m_numVertices   = 0;
+	m_numMaterials  = 0;
 
 	m_finalized = false;
 
@@ -82,15 +83,38 @@ void StaticMesh::init( MeshBufferPtr mesh )
     m_lineWidth = 2.0;
     if(mesh)
     {
-
         m_faceNormals = 0;
 
-        m_vertexNormals = mesh->getVertexNormalArray(m_numVertices);
-        m_colors        = mesh->getVertexColorArray(n_colors);
-        m_vertices      = mesh->getVertexArray(m_numVertices);
-        m_indices       = mesh->getFaceArray(m_numFaces);
+        m_vertexNormals 	= mesh->getVertexNormalArray(m_numVertices);
+        m_colors        	= mesh->getVertexColorArray(n_colors);
+        m_vertices      	= mesh->getVertexArray(m_numVertices);
+        m_indices       	= mesh->getFaceArray(m_numFaces);
+	m_textureCoordBuffer	= mesh->getVertexTextureCoordinateArray(m_numVertices);
+	m_textureIndexBuffer 	= mesh->getFaceTextureIndexArray(m_numFaces);
+	m_faceColorBuffer 	= mesh->getFaceColorArray(m_numMaterials);
 
-        m_blackColors   = new unsigned char[3 * m_numVertices];
+	/*
+	for(int i = 0; i < m_numVertices; ++i)
+	{
+		std::cout << m_textureCoordBuffer[ i * 3 ] << ", " << m_textureCoordBuffer[ i * 3 + 1 ] << ", " << m_textureCoordBuffer[ i * 3 + 2 ] << std::endl;
+	}
+	*/
+
+	/*
+	for(int i = 0; i < m_numFaces; ++i)
+	{
+	  std::cout << m_textureIndexBuffer[ i * 3 ] << ", " << m_textureIndexBuffer[ i * 3 + 1 ] << ", " << m_textureIndexBuffer[ i * 3 + 2 ] << std::endl;
+	}
+	*/
+
+	/*
+	for(int i = 0; i < m_numMaterials; ++i)
+	{
+	  std::cout << (int)m_faceColorBuffer[ i * 3 ] << ", " << (int)m_faceColorBuffer[ i * 3 + 1 ] << ", " << (int)m_faceColorBuffer[ i * 3 + 2 ] << std::endl;
+	}
+	*/
+
+        m_blackColors   = new unsigned char[ 3 * m_numVertices ];
         for ( size_t i = 0; i < 3 * m_numVertices; i++ ) {
             m_blackColors[i] = 0.0;
         }
@@ -106,30 +130,44 @@ void StaticMesh::init( MeshBufferPtr mesh )
 
         m_boundingBox = new BoundingBox<Vertex<float> >;
 
-        if(!m_faceNormals) interpolateNormals();
-        if(!m_colors) setDefaultColors();
+        if(!m_faceNormals)
+	  {
+	    interpolateNormals();
+	  } else
+	  {
+	    // cout << "Face normals: " << m_faceNormals << endl;
+	  }
+        if(!m_colors)
+	  {
+	    setDefaultColors();
+	  }
 
-        //  cout << m_faceNormals << endl;
-        //  cout << m_numFaces << " " << m_numVertices << endl;
-        //
-        //  for(int i = 0; i < m_numVertices; i++)
-        //  {
-        //      int index = 3 * i;
-        //      cout << m_vertices[index] << " ";
-        //      cout << m_vertices[index + 1] << " ";
-        //      cout << m_vertices[index + 2] << " ";
-        //      cout << endl;
-        //      cout << m_colors[index] << " ";
-        //      cout << m_colors[index + 1] << " ";
-        //      cout << m_colors[index + 2] << " ";
-        //      cout << endl;
-        //
-        //  }
+	/*
+	cout << "Faces: " << m_numFaces
+	     << " Vertices: " << m_numVertices
+	     << " Materials: " << m_numMaterials
+	     << endl;
+	*/
+        
+	/*
+	for(int i = 0; i < m_numVertices; i++)
+          {
+	    int index = 3 * i;
+	    cout << m_vertices[index] << " ";
+	    cout << m_vertices[index + 1] << " ";
+	    cout << m_vertices[index + 2] << " ";
+	    cout << endl;
+	    cout << m_colors[index] << " ";
+	    cout << m_colors[index + 1] << " ";
+	    cout << m_colors[index + 2] << " ";
+	    cout << endl;
+          }
+	*/
 
         if(n_colors == 0)
         {
-            m_colors = ucharArr(new uchar[3 * m_numVertices]);
-            for(int i = 0; i < m_numVertices; i++)
+            m_colors = ucharArr( new uchar[3 * m_numVertices] );
+            for( int i = 0; i < m_numVertices; ++i )
             {
                 m_colors[3 * i] = 0;
                 m_colors[3 * i + 1] = 255;
@@ -142,8 +180,10 @@ void StaticMesh::init( MeshBufferPtr mesh )
 
 StaticMesh::StaticMesh(const StaticMesh &o)
 {
-
-	if(m_faceNormals != 0) delete[] m_faceNormals;
+	if( m_faceNormals != 0 )
+	  {
+	    delete[] m_faceNormals;
+	  }
 
 	m_faceNormals = new float[3 * o.m_numVertices];
 	m_vertices    = floatArr( new float[3 * o.m_numVertices] );
@@ -157,7 +197,7 @@ StaticMesh::StaticMesh(const StaticMesh &o)
 		m_colors[i]      = o.m_colors[i];
 	}
 
-	for(size_t i = 0; i < 3 * o.m_numFaces; i++)
+	for( size_t i = 0; i < 3 * o.m_numFaces; ++i )
 	{
 		m_indices[i] = o.m_indices[i];
 	}
@@ -216,6 +256,7 @@ void StaticMesh::compileSurfaceList(){
 		glEnableClientState(GL_VERTEX_ARRAY);
 		glEnableClientState(GL_NORMAL_ARRAY);
 		glEnableClientState(GL_COLOR_ARRAY);
+		glEnableClientState(GL_TEXTURE_COORD_ARRAY);
 
 		// Start new display list
 		glNewList(m_surfaceList, GL_COMPILE);
@@ -226,6 +267,7 @@ void StaticMesh::compileSurfaceList(){
 		glVertexPointer( 3, GL_FLOAT, 0, m_vertices.get() );
 		glNormalPointer( GL_FLOAT, 0, m_faceNormals );
 		glColorPointer( 3, GL_UNSIGNED_BYTE, 0, m_colors.get() );
+		glTexCoordPointer( 3, GL_FLOAT, 0, m_textureCoordBuffer.get() );
 
 		// Draw elements
 		glDrawElements(GL_TRIANGLES, 3 * m_numFaces, GL_UNSIGNED_INT, m_indices.get());

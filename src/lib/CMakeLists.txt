@@ -7,6 +7,7 @@ set(LSSR_SOURCES
     io/ObjIO.cpp	
     io/LasIO.cpp
     io/PCDIO.cpp
+    io/PPMIO.cpp
     io/Progress.cpp
     io/Timestamp.cpp
     io/MeshBuffer.cpp
@@ -20,6 +21,8 @@ set(LSSR_SOURCES
     display/ColorMap.cpp
     display/GroundPlane.cpp
     display/Grid.cpp
+    display/Texture.cpp
+    display/TextureFactory.cpp
     reconstruction/PCLFiltering.cpp
 )
 
