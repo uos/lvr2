@@ -32,12 +32,12 @@ using Ui::MainWindow;
 int main(int argc, char** argv)
 {
 
-	// Create application object
-	//QApplication application(argc, argv);
+	//Create application object
+	QApplication application(argc, argv);
 
 
 	ViewerApplication vapp(argc, argv);
 
 	// Run application
-	return vapp.exec();
+	return application.exec();
 }

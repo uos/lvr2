@@ -28,7 +28,7 @@
 
 #define RC_PCM_TYPE lssr::ColorVertex<float, unsigned char>, lssr::Normal<float>
 
-ViewerApplication::ViewerApplication( int argc, char ** argv ) : QApplication(argc, argv)
+ViewerApplication::ViewerApplication( int argc, char ** argv )
 {
 	// Setup main window
 	m_qMainWindow = new QMainWindow;
@@ -106,21 +106,6 @@ ViewerApplication::ViewerApplication( int argc, char ** argv ) : QApplication(ar
 	m_playerDialog = new AnimationDialog(m_viewer);
 
 
-}
-
-bool ViewerApplication::notify(QObject* receiver, QEvent* e)
-{
-	// Reimplementation using the default version to catch
-	// thrown events from event handlers to prevent crashing.
-	try
-	{
-		return QApplication::notify(receiver, e);
-	}
-	catch(...)
-	{
-		return false;
-		cout << "Doh!" << endl;
-	}
 }
 
 void ViewerApplication::connectEvents()
