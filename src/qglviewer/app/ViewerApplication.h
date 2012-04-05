@@ -70,7 +70,7 @@ using Ui::RenderingDialogUI;
 
 class EventManager;
 
-class ViewerApplication : public QApplication
+class ViewerApplication : public QObject
 {
 	Q_OBJECT
 
@@ -114,7 +114,6 @@ public Q_SLOTS:
 
 	void zoomChanged();
 
-	virtual bool notify(QObject* receiver, QEvent* e);
 private:
 
 	void updateToolbarActions(CustomTreeWidgetItem* item);
