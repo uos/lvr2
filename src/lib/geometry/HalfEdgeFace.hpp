@@ -42,6 +42,8 @@ using namespace std;
 namespace lssr
 {
 
+template<typename VertexT, typename NormalT> class Region;
+
 template<typename VertexT, typename NormalT>
 class HalfEdgeVertex;
 
@@ -50,7 +52,7 @@ class HalfEdgeVertex;
  *
  * Besides the classical linking, this class stores
  * some additional information that becomes handy when
- * implementin optimization algorithms
+ * implementing optimization algorithms
  */
 template<typename VertexT, typename NormalT>
 class HalfEdgeFace
