@@ -1264,7 +1264,7 @@ void HalfEdgeMesh<VertexT, NormalT>::finalizeAndRetesselate( bool genTextures, f
 
     // Take all regions that are not in an intersection plane
     std::vector<int> nonPlaneRegions;
-    // Take all regions that were drawn into an intersection plan
+    // Take all regions that were drawn into an intersection plane
     std::vector<int> planeRegions;
     for( size_t i = 0; i < m_regions.size(); ++i )
         if( !m_regions[i]->m_inPlane )

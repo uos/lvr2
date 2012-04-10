@@ -25,6 +25,8 @@
  *  @author Sven Schalk (sschalk@uos.de)
  */
  
+#include <limits>
+
 namespace lssr
 {
 
@@ -159,9 +161,9 @@ vector<vector<HalfEdgeVertex<VertexT, NormalT>* > > Region<VertexT, NormalT>::ge
 	}
 
 	//move outer contour to the first position
-	float xmax = -FLT_MAX;
-	float ymax = -FLT_MAX;
-	float zmax = -FLT_MAX;
+	float xmax = std::numeric_limits<float>::min();
+	float ymax = std::numeric_limits<float>::min();
+	float zmax = std::numeric_limits<float>::min();
 
 	int outer = -1;
 	for(size_t c = 0; c < result.size(); c++)
@@ -263,7 +265,7 @@ void Region<VertexT, NormalT>::regressionPlane()
     VertexT bestpoint;
     NormalT bestNorm;
 
-    float bestdist = FLT_MAX;
+    float bestdist = std::numeric_limits<float>::max();
     float dist     = 0;
 
     int iterations              = 0;
