@@ -51,6 +51,11 @@ RegionClassifier<VertexT, NormalT>*  ClassifierFactory<VertexT, NormalT>::get(st
 	{
 		return new ColorGradientPlaneClassifier<VertexT, NormalT>(&mesh->m_regions, SIMPSONS);
 	}
+	else if(name == "IndoorNormals")
+	{
+		return new IndoorNormalClassifier<VertexT, NormalT>(&mesh->m_regions);
+		//return new RegionClassifier<VertexT, NormalT>(&mesh->m_regions);
+	}
 	else
 	{
 		return new RegionClassifier<VertexT, NormalT>(&mesh->m_regions);
