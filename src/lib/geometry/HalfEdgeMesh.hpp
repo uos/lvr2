@@ -65,7 +65,7 @@ using namespace std;
 
 #include "reconstruction/PointsetSurface.hpp"
 #include "classification/ClassifierFactory.hpp"
-#include "classification/RegionClassifier.hpp"
+
 
 namespace lssr
 {

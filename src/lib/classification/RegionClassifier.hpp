@@ -28,13 +28,11 @@
 
 #include <vector>
 #include "geometry/Region.hpp"
+using std::vector;
+
 
 namespace lssr
 {
-
-using std::vector;
-
-template<typename VertexT, typename NormalT> class Region;
 
 /**
  * @brief	Base class for cluster classification.
@@ -48,12 +46,12 @@ public:
 	 * @brief Constructs a classifier for the given set of clusters
 	 * @param region	A vector containing the region to classify
 	 */
-	RegionClassifier(vector<Region<VertexT, NormalT>* >* region);
+	RegionClassifier(vector<Region<VertexT, NormalT>* >* region) : m_regions(region) {};
 
 	/**
 	 * @brief Dtor.
 	 */
-	virtual ~RegionClassifier();
+	virtual ~RegionClassifier() {};
 
 	/**
 	 * @brief Accesses the given region by index
@@ -61,7 +59,17 @@ public:
 	 * @param region	The region to access
 	 * @return			The region or null of index out of range
 	 */
-	Region<VertexT, NormalT>* operator[](int region);
+	Region<VertexT, NormalT>* operator[](int i)
+	{
+		if(i <= m_regions->size())
+			{
+				return m_regions->at(i);
+			}
+			else
+			{
+				return 0;
+			}
+	}
 
 	/**
 	 * @brief Returns the r component for the given region
@@ -84,7 +92,8 @@ public:
 	 * 		   to a file
 	 */
 	virtual void writeMetaInfo() {};
-private:
+
+protected:
 
 	/// A pointer to a vector containing regions
 	vector<Region<VertexT, NormalT>* >*  m_regions;

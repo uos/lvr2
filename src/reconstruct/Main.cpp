@@ -332,10 +332,9 @@ int main(int argc, char** argv)
 
     mesh.cleanContours(options.getCleanContourIterations());
 
-    if ( options.colorRegions() )
-    {
-    	mesh.setClassifier(options.getClassifier());
-    }
+
+    mesh.setClassifier(options.getClassifier());
+
 
     if(options.optimizePlanes())
     {

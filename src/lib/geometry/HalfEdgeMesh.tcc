@@ -44,7 +44,20 @@ HalfEdgeMesh<VertexT, NormalT>::HalfEdgeMesh(
 template<typename VertexT, typename NormalT>
 void HalfEdgeMesh<VertexT, NormalT>::setClassifier(string name)
 {
+	// Delete old classifier if present
+	if(m_regionClassifier) delete m_regionClassifier;
 
+	// Create new one
+	m_regionClassifier = ClassifierFactory<VertexT, NormalT>::get(name, this);
+
+	// Check if successful
+	if(!m_regionClassifier)
+	{
+		cout << timestamp << "Warning: Unable to create classifier type '"
+			 << name << "'. Using default." << endl;
+
+		ClassifierFactory<VertexT, NormalT>::get("Default", this);
+	}
 }
 
 
