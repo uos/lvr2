@@ -27,6 +27,7 @@
 #define CLASSIFIERFACTORY_H_
 
 #include "classification/ColorGradientPlaneClassifier.hpp"
+#include "classification/IndoorNormalClassifier.hpp"
 
 namespace lssr
 {

@@ -23,6 +23,7 @@ set(LSSR_SOURCES
     display/ColorMap.cpp
     display/GroundPlane.cpp
     display/Grid.cpp
+    display/Color.cpp
     reconstruction/PCLFiltering.cpp
 )
 
