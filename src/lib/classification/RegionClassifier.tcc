@@ -28,12 +28,13 @@ namespace lssr
 {
 
 template<typename VertexT, typename NormalT>
-RegionClassifier::RegionClassifier(vector<Region<VertexT, NormalT>* >* region)
+RegionClassifier<VertexT, NormalT>::RegionClassifier(vector<Region<VertexT, NormalT>* >* r)
 {
 
 }
 
-RegionClassifier::~RegionClassifier()
+template<typename VertexT, typename NormalT>
+RegionClassifier<VertexT, NormalT>::~RegionClassifier()
 {
 	// TODO Auto-generated destructor stub
 }

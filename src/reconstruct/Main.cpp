@@ -334,7 +334,7 @@ int main(int argc, char** argv)
 
     if ( options.colorRegions() )
     {
-    	mesh.enableRegionColoring();
+    	mesh.setClassifier(options.getClassifier());
     }
 
     if(options.optimizePlanes())

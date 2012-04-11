@@ -106,7 +106,7 @@ int main(int argc, char** argv)
 						true);
 
 				reconstruction.getMesh(mesh);
-				mesh.enableRegionColoring();
+				mesh.setClassifier("Default");
 				mesh.removeDanglingArtifacts(rda);
 				mesh.optimizePlanes(planeIterations,
 		                            planeNormalThreshold,
