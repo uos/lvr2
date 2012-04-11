@@ -64,6 +64,8 @@ using namespace std;
 #include "ColorVertex.hpp"
 
 #include "reconstruction/PointsetSurface.hpp"
+#include "classification/ClassifierFactory.hpp"
+#include "classification/RegionClassifier.hpp"
 
 namespace lssr
 {
@@ -201,7 +203,7 @@ public:
 	 */
 	virtual void restorePlanes(int minRegionSize);
 
-	void enableRegionColoring() {m_colorRegions = true;}
+	void setClassifier(string name);
 
 	void setDepth(unsigned int depth) {m_depth = depth;};
 
@@ -229,8 +231,8 @@ private:
 	/// The indexed of the newest inserted vertex
 	size_t                                      m_globalIndex;
 
-	/// Indicates if regions will be colored in the ply format
-	bool                                        m_colorRegions;
+	/// Classification object
+	RegionClassifier<VertexT, NormalT>*          m_regionClassifier;
 
 	/// a pointer to the point cloud manager
 	typename PointsetSurface<VertexT>::Ptr        m_pointCloudManager;
@@ -373,7 +375,7 @@ private:
 	virtual bool safeCollapseEdge(HEdge* edge);
 
 
-
+	friend class ClassifierFactory<VertexT, NormalT>;
 };
 
 } // namespace lssr

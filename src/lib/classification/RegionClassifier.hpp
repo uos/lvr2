@@ -34,10 +34,11 @@ namespace lssr
 
 using std::vector;
 
+template<typename VertexT, typename NormalT> class Region;
+
 /**
  * @brief	Base class for cluster classification.
  */
-
 template<typename VertexT, typename NormalT>
 class RegionClassifier
 {
@@ -60,7 +61,7 @@ public:
 	 * @param region	The region to access
 	 * @return			The region or null of index out of range
 	 */
-	Region* operator[](int region);
+	Region<VertexT, NormalT>* operator[](int region);
 
 	/**
 	 * @brief Returns the r component for the given region
@@ -91,6 +92,6 @@ private:
 
 } /* namespace lssr */
 
-#include "RegionClissifier.tcc"
+#include "RegionClassifier.tcc"
 
 #endif /* REGIONCLASSIFIER_H_ */

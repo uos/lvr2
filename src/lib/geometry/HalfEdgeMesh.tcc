@@ -27,6 +27,7 @@
  *  @author Thomas Wiemann (twiemann@uos.de)
  */
 
+
 namespace lssr
 {
 
@@ -35,9 +36,15 @@ HalfEdgeMesh<VertexT, NormalT>::HalfEdgeMesh(
         typename PointsetSurface<VertexT>::Ptr pm )
 {
     m_globalIndex = 0;
-    m_colorRegions = false;
+    m_regionClassifier = ClassifierFactory<VertexT, NormalT>::get("Default", this);
     m_pointCloudManager = pm;
     m_depth = 100;
+}
+
+template<typename VertexT, typename NormalT>
+void HalfEdgeMesh<VertexT, NormalT>::setClassifier(string name)
+{
+
 }
 
 
@@ -1198,12 +1205,9 @@ void HalfEdgeMesh<VertexT, NormalT>::finalize()
             surface_class = (*face_iter)->m_region->m_regionNumber;
         }
 
-        if( m_colorRegions )
-        {
-            r = (uchar) (255 * fabs(cos(surface_class)));
-            g = (uchar) (255 * fabs(sin(surface_class * 30)));
-            b = (uchar) (255 * fabs(sin(surface_class * 2)));
-        }
+        r = m_regionClassifier->r(surface_class);
+        g = m_regionClassifier->g(surface_class);
+        b = m_regionClassifier->b(surface_class);
 
         colorBuffer[indexBuffer[3 * i]  * 3 + 0] = r;
         colorBuffer[indexBuffer[3 * i]  * 3 + 1] = g;
@@ -1280,13 +1284,9 @@ void HalfEdgeMesh<VertexT, NormalT>::finalizeAndRetesselate( bool genTextures, f
     for( intIterator nonPlane = nonPlaneRegions.begin(); nonPlane != nonPlaneRegions.end(); ++nonPlane )
     {
         int iRegion = *nonPlane;
-        if( this->m_colorRegions )
-        {
-            int surfaceClass = m_regions[iRegion]->m_regionNumber;
-            r = (uchar)( 255 * fabs( cos( surfaceClass ) ) );
-            g = (uchar)( 255 * fabs( sin( surfaceClass * 30 ) ) );
-            b = (uchar)( 255 * fabs( sin( surfaceClass * 2 ) ) ) ;
-        }
+        int surfaceClass = m_regions[iRegion]->m_regionNumber;
+
+
 
         // iterate over every face for the region number '*nonPlaneBegin'
         for( size_t i=0; i < m_regions[iRegion]->m_faces.size(); i++ )
@@ -1358,14 +1358,17 @@ void HalfEdgeMesh<VertexT, NormalT>::finalizeAndRetesselate( bool genTextures, f
     ProgressBar progress(m_regions.size(), msg);
     for(intIterator planeNr = planeRegions.begin(); planeNr != planeRegions.end(); ++planeNr )
     {
-        int iRegion = *planeNr;
-        if( this->m_colorRegions )
-        {
-            int surfaceClass = m_regions[iRegion]->m_regionNumber;
-            r = (uchar)( 255 * fabs( cos( surfaceClass ) ) );
-            g = (uchar)( 255 * fabs( sin( surfaceClass * 30 ) ) );
-            b = (uchar)( 255 * fabs( sin( surfaceClass * 2 ) ) ) ;
-        }
+    	int iRegion = *planeNr;
+
+    	int surface_class = m_regions[iRegion]->m_regionNumber;
+    	//            r = (uchar)( 255 * fabs( cos( surfaceClass ) ) );
+    	//            g = (uchar)( 255 * fabs( sin( surfaceClass * 30 ) ) );
+    	//            b = (uchar)( 255 * fabs( sin( surfaceClass * 2 ) ) ) ;
+
+    	r = m_regionClassifier->r(surface_class);
+    	g = m_regionClassifier->g(surface_class);
+    	b = m_regionClassifier->b(surface_class);
+
         //textureBuffer.push_back( m_regions[iRegion]->m_regionNumber );
 
         // get the contours for this region

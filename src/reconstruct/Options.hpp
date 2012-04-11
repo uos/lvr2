@@ -169,6 +169,11 @@ public:
 	string 	getInputFileName() const;
 
 	/**
+	 * @brief	Returns the name of the classifier used to color the mesh
+	 */
+	string 	getClassifier() const;
+
+	/**
 	 * @brief   Returns the number of intersections. If the return value
 	 *          is positive it will be used for reconstruction instead of
 	 *          absolute voxelsize.
@@ -332,6 +337,9 @@ private:
 
 	/// Sharp corner threshold when using sharp feature decomposition
 	float 							m_sct;
+
+	/// Name of the classifier object to color the mesh
+	string							m_classifier;
 };
 
 
@@ -357,7 +365,9 @@ inline ostream& operator<<(ostream& os, const Options &o)
 	{
 	    cout << "##### Use RANSAC\t\t: NO" << endl;
 	}
+
 	cout << "##### Voxel decomposition: \t: " << o.getDecomposition()   << endl;
+	cout << "##### Classifier:\t\t: "         << o.getClassifier()      << endl;
 	cout << "##### k_n \t\t\t: "              << o.getKn()              << endl;
 	cout << "##### k_i \t\t\t: "              << o.getKi()              << endl;
 	cout << "##### k_d \t\t\t: "              << o.getKd()              << endl;
@@ -409,10 +419,7 @@ inline ostream& operator<<(ostream& os, const Options &o)
 	{
 	    cout << "##### Save input data \t\t: YES" << endl;
 	}
-	if(o.colorRegions())
-	{
-	    cout << "##### Color regions \t\t: YES" << endl;
-	}
+
 	if(o.recalcNormals())
 	{
 		cout << "##### Recalc normals \t\t: YES" << endl;

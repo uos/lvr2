@@ -83,7 +83,7 @@ void SignalingMeshGenerator::run()
 				true);
 
 		reconstruction.getMesh(mesh);
-		mesh.enableRegionColoring();
+		mesh.setClassifier("Default");
 		mesh.removeDanglingArtifacts(100);
 		mesh.optimizePlanes(3,
 				0.73,

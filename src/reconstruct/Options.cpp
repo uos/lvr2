@@ -62,7 +62,7 @@ Options::Options(int argc, char** argv) : m_descr("Supported options")
 		        ("lft", value<float>(&m_lineFusionThreshold)->default_value(0.01), "(Line Fusion Threshold) Threshold for fusing line segments while tesselating.")
 		        ("generateTextures", "Generate textures during finalization.")
 		        ("texelSize", value<float>(&m_texelSize)->default_value(1), "Texel size that determines texture resolution.")
-		        ("colorRegions", "Color detected regions with color gradient.")
+		        ("classifier", value<string>(&m_classifier)->default_value("Default"),"Classfier object used to color the mesh.")
 		        ("depth", value<int>(&m_depth)->default_value(100), "Maximum recursion depth for region growing.")
 		        ("recalcNormals,r", "Always estimate normals, even if given in .ply file.")
 		        ("threads", value<int>(&m_numThreads)->default_value( omp_get_num_procs() ), "Number of threads")
@@ -137,6 +137,12 @@ string Options::getPCM() const
 {
     return (m_variables["pcm"].as< string >());
 }
+
+string Options::getClassifier() const
+{
+    return (m_variables["classifier"].as< string >());
+}
+
 
 string Options::getDecomposition() const
 {
