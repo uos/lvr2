@@ -17,9 +17,32 @@
  */
 
 /*
- * RegionClassifier.cpp
+ * ClassifierFactory.h
  *
  *  Created on: 11.04.2012
  *      Author: Thomas Wiemann
  */
 
+#ifndef CLASSIFIERFACTORY_H_
+#define CLASSIFIERFACTORY_H_
+
+#include "classification/ColorGradientPlaneClassifier.hpp"
+
+namespace lssr
+{
+
+//template<typename VertexT, typename NormalT> class RegionClassifier;
+
+template<typename VertexT, typename NormalT>
+class ClassifierFactory
+{
+	typedef HalfEdgeMesh<VertexT, NormalT> HMesh;
+public:
+	static RegionClassifier<VertexT, NormalT>*  get(string name, HMesh* mesh);
+};
+
+} /* namespace lssr */
+
+#include "ClassifierFactory.tcc"
+
+#endif /* CLASSIFIERFACTORY_H_ */

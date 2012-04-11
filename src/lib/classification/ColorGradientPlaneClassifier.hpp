@@ -17,9 +17,43 @@
  */
 
 /*
- * RegionClassifier.cpp
+ * ColorGradientPlaneClassifier.h
  *
  *  Created on: 11.04.2012
  *      Author: Thomas Wiemann
  */
 
+#ifndef COLORGRADIENTPLANECLASSIFIER_H_
+#define COLORGRADIENTPLANECLASSIFIER_H_
+
+#include "display/ColorMap.hpp"
+#include "RegionClassifier.hpp"
+
+namespace lssr
+{
+
+template<typename VertexT, typename NormalT>
+class ColorGradientPlaneClassifier : public RegionClassifier<VertexT, NormalT>
+{
+
+public:
+	ColorGradientPlaneClassifier(vector<Region<VertexT, NormalT>* >* region, GradientType t);
+	virtual ~ColorGradientPlaneClassifier() { delete m_colorMap;};
+
+	virtual uchar r(int i) { return getColor(i)[0]; }
+	virtual uchar g(int i) { return getColor(i)[1]; }
+	virtual uchar b(int i) { return getColor(i)[2]; }
+
+private:
+
+	uchar* getColor(int region);
+
+	GradientType			m_gradientType;
+	ColorMap*				m_colorMap;
+
+};
+
+} /* namespace lssr */
+
+#include "ColorGradientPlaneClassifier.tcc"
+#endif /* COLORGRADIENTPLANECLASSIFIER_H_ */

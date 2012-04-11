@@ -46,7 +46,8 @@ enum GradientType
     HSV = 2,
     JET = 3,
     HOT = 4,
-    SHSV = 5
+    SHSV = 5,
+    SIMPSONS = 6
 };
 
 class ColorMap
@@ -129,6 +130,13 @@ private:
      */
     void calcColorSHSV(float* color, size_t bucket);
 
+    /**
+         * @brief Returns a color from a Simpsons gradient
+         *
+         * @param color     The three color components
+         * @param bucket    The bucket index
+         */
+    void calcColorSimpsons(float* color, size_t bucket);
 
     /// Number of colors in the color gradient
     size_t      m_numBuckets;
