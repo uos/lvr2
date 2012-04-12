@@ -29,6 +29,7 @@
 #include "PointCloudVisualizer.hpp"
 #include "MultiPointCloudVisualizer.hpp"
 #include "GridVisualizer.hpp"
+#include "ClusterVisualizer.hpp"
 
 #include "display/Grid.hpp"
 #include "display/StaticMesh.hpp"
@@ -112,6 +113,19 @@ void VisualizerFactory::create(string filename)
 	           	{
 	           		delete v;
 	           	}
+	    }
+
+	    if(extension == ".clu")
+	    {
+	    	Visualizer* v = new ClusterVisualizer(filename);
+	    	if(v->renderable())
+	    	{
+	    		Q_EMIT visualizerCreated( v );
+	    	}
+	    	else
+	    	{
+	    		delete v;
+	    	}
 	    }
 	}
 

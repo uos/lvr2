@@ -82,6 +82,24 @@ private:
 	RegionLabel classifyRegion(int region);
 	uchar* getColor(int region);
 
+	void createRegionBuffer(
+					int region_id,
+					map<VertexT, int> &map,
+					vector<int> &indices,
+					vector<float> &vertices,
+					vector<float> &normals,
+					vector<uint> &colors
+					);
+
+	void writeBuffers(
+			ofstream &out,
+			RegionLabel label,
+			vector<int> &indices,
+			vector<float> &vertices,
+			vector<float> &normals,
+			vector<uint> &colors);
+
+
 };
 
 } /* namespace lssr */

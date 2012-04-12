@@ -45,6 +45,9 @@ Viewer::~Viewer()
 
 void Viewer::draw()
 {
+	setTextIsEnabled(true);
+	float pos[3];
+
     if(m_kfi->interpolationIsStarted())
     {
         camera()->setPosition(m_kfi->frame()->position());

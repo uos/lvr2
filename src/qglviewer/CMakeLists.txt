@@ -44,6 +44,7 @@ set(QVIEWER_SOURCES
     data/KinectPointCloudVisualizer.cpp
     data/SignalingKinectGrabber.cpp
     data/SignalingMeshGenerator.cpp
+    data/ClusterVisualizer.cpp
     viewers/OrthoCamera.cpp
     viewers/PerspectiveViewer.cpp
     viewers/Viewer.cpp
