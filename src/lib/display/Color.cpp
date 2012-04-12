@@ -45,13 +45,19 @@ void Colors::getColor(float* c, Color name, ColorTable table)
 	{
 	default:
 	case BASIC:
-		c = PrimeColorTable[name];
+		c[0] = PrimeColorTable[name][0];
+		c[1] = PrimeColorTable[name][1];
+		c[2] = PrimeColorTable[name][2];
 		break;
 	case LIGHT:
-		c = LightColorTable[name];
+		c[0] = LightColorTable[name][0];
+		c[1] = LightColorTable[name][1];
+		c[2] = LightColorTable[name][2];
 		break;
 	case HIGHLIGHT:
-		c = HighlightColorTable[name];
+		c[0] = HighlightColorTable[name][0];
+		c[1] = HighlightColorTable[name][1];
+		c[2] = HighlightColorTable[name][2];
 		break;
 	}
 }

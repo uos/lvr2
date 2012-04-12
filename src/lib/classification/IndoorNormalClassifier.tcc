@@ -28,11 +28,12 @@ namespace lssr
 
 
 template<typename VertexT, typename NormalT>
-uchar* IndoorNormalClassifier<VertexT, NormalT>::getColor(int i)
+uchar* IndoorNormalClassifier<VertexT, NormalT>::getColor(int index)
 {
-	float* fc;
+	float fc[3];
+	uchar* c = new uchar[3];
 
-	RegionLabel label = classifyRegion(i);
+	RegionLabel label = classifyRegion(index);
 	switch(label)
 	{
 	case Ceiling:
@@ -48,7 +49,7 @@ uchar* IndoorNormalClassifier<VertexT, NormalT>::getColor(int i)
 		Colors::getColor(fc, LIGHTGREY);
 	}
 
-	uchar* c = new uchar[3];
+
 	for(int i = 0; i < 3; i++)
 	{
 		c[i] = (uchar)(fc[i] * 255);
