@@ -75,6 +75,8 @@ public:
 	 */
 	virtual uchar b(int region);
 
+	virtual void writeMetaInfo();
+
 private:
 
 	RegionLabel classifyRegion(int region);

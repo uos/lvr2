@@ -114,6 +114,105 @@ RegionLabel IndoorNormalClassifier<VertexT, NormalT>::classifyRegion(int index)
 	return Unknown;
 }
 
+template<typename VertexT, typename NormalT>
+void IndoorNormalClassifier<VertexT, NormalT>::writeMetaInfo()
+{
+	ofstream out("clusters.clu");
+
+	if(!out.good())
+	{
+		cout << "Unable to open cluster file." << endl;
+		return;
+	}
+
+	for(int i = 0; i < this-> m_regions-> size(); i++)
+	{
+		// Get current region and label
+		Region<VertexT, NormalT>* region = this->m_regions->at(i);
+		RegionLabel label = classifyRegion(i);
+
+		cout << "LABEL: " << label << endl;
+
+		// Buffer vectors
+		vector<int> 	indices;
+		vector<float> 	vertices;
+		vector<float> 	normals;
+		vector<uint>	colors;
+
+		map<VertexT, int> vertex_map;
+
+		int index_counter = 0;
+		int	vertex_position = 0;
+
+		// Check if region is a planar cluster
+		VertexT current;
+		NormalT normal;
+		for(int a = 0; a < region->m_faces.size(); a++)
+		{
+			for(int d = 0; d < 3; d++)
+			{
+				HalfEdgeFace<VertexT, NormalT>* f = region->m_faces[a];
+
+				current = (*f)(d)->m_position;
+				normal =  (*f)(d)->m_normal;
+
+				if(vertex_map.find(current) != vertex_map.end())
+				{
+					// Use already present vertex
+					vertex_position = vertex_map[current];
+				}
+				else
+				{
+					// Create new index
+					vertex_position = vertices.size() / 3;
+
+					// Insert new vertex to vertex map and save relevant information
+					vertex_map.insert(pair<VertexT, int>(current, vertex_position));
+
+					vertices.push_back(current.x);
+					vertices.push_back(current.y);
+					vertices.push_back(current.z);
+
+					normals.push_back(normal.x);
+					normals.push_back(normal.y);
+					normals.push_back(normal.z);
+
+					colors.push_back(r(i));
+					colors.push_back(g(i));
+					colors.push_back(b(i));
+				}
+
+				indices.push_back(vertex_position);
+			}
+		}
+
+		string str_label = "Unclassified";
+		switch(label)
+		{
+		case Ceiling 	: str_label = "Ceiling"; 	break;
+		case Floor		: str_label = "Floor";		break;
+		case Wall		: str_label = "Wall";		break;
+		}
+
+		out << str_label << endl;
+		out << indices.size() / 3 << " " << vertices.size() / 3 << endl;
+		for(size_t c = 0; c < indices.size() / 3; c++)
+		{
+			int buff_pos = 3 * c;
+			out << indices[buff_pos] << " " << indices[buff_pos + 1] << " " << indices[buff_pos + 2] << endl;
+		}
+
+		for(size_t c = 0; c < vertices.size() / 3; c++)
+		{
+			int buff_pos = 3 * c;
+			out << vertices[buff_pos] << " " << vertices[buff_pos + 1] << " " << vertices[buff_pos + 2] << " ";
+			out << normals [buff_pos] << " " << normals [buff_pos + 1] << " " <<  normals[buff_pos + 2] << " ";
+			out << colors  [buff_pos] << " " << colors  [buff_pos + 1] << " " <<   colors[buff_pos + 2] << endl;
+		}
+
+	}
+	out.close();
+}
 
 
 } /* namespace lssr */

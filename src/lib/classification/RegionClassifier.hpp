@@ -93,6 +93,8 @@ public:
 	 */
 	virtual void writeMetaInfo() {};
 
+
+
 protected:
 
 	/// A pointer to a vector containing regions
