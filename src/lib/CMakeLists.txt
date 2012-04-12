@@ -24,6 +24,7 @@ set(LSSR_SOURCES
     display/GroundPlane.cpp
     display/Grid.cpp
     display/Color.cpp
+    display/MeshCluster.cpp
     reconstruction/PCLFiltering.cpp
 )
 
