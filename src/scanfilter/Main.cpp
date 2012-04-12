@@ -33,46 +33,53 @@ using namespace lssr;
 int main(int argc, char** argv)
 {
     // Parse command line arguments
-    filter::Options options(argc, argv);
-
-    // Exit if options had to generate a usage message
-    // (this means required parameters are missing)
-    if (options.printUsage()) return 0;
-
-    ::std::cout<< options<<::std::endl;
-
-    ModelPtr m = ModelFactory::readModel(options.inputFile());
-
-    // Check if Reading was successful
-    if(m)
-    {
-        if(m->m_pointCloud)
-        {
-            PCLFiltering filter(m->m_pointCloud);
-
-            // Apply filters
-            if(options.removeOutliers())
-            {
-                filter.applyOutlierRemoval(options. sorMeanK(), options.sorDevThreshold());
-            }
+	try
+	{
+		filter::Options options(argc, argv);
 
 
-            if(options.mlsDistance() > 0)
-            {
-                filter.applyMLSProjection(options.mlsDistance());
-            }
+		// Exit if options had to generate a usage message
+		// (this means required parameters are missing)
+		if (options.printUsage()) return 0;
 
-            PointBufferPtr pb( filter.getPointBuffer() );
-            ModelPtr out_model( new Model( pb ) );
+		::std::cout<< options<<::std::endl;
 
-            ModelFactory::saveModel(out_model, options.outputFile());
-        }
-    }
-    else
-    {
-        cout << timestamp << "Failed to read " << options.inputFile() << endl;
-    }
+		ModelPtr m = ModelFactory::readModel(options.inputFile());
 
+		// Check if Reading was successful
+		if(m)
+		{
+			if(m->m_pointCloud)
+			{
+				PCLFiltering filter(m->m_pointCloud);
+
+				// Apply filters
+				if(options.removeOutliers())
+				{
+					filter.applyOutlierRemoval(options. sorMeanK(), options.sorDevThreshold());
+				}
+
+
+				if(options.mlsDistance() > 0)
+				{
+					filter.applyMLSProjection(options.mlsDistance());
+				}
+
+				PointBufferPtr pb( filter.getPointBuffer() );
+				ModelPtr out_model( new Model( pb ) );
+
+				ModelFactory::saveModel(out_model, options.outputFile());
+			}
+		}
+		else
+		{
+			cout << timestamp << "Failed to read " << options.inputFile() << endl;
+		}
+	}
+	catch(...)
+	{
+		std::cout << "Unable to parse options. Call 'filter --help' for more information." << std::endl;
+	}
 	return 0;
 }
 

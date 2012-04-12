@@ -172,217 +172,223 @@ typedef PCLKSurface<cVertex, cNormal>                   pclSurface;
  */
 int main(int argc, char** argv)
 {
-    // Parse command line arguments
-    reconstruct::Options options(argc, argv);
-
-    // Exit if options had to generate a usage message
-    // (this means required parameters are missing)
-    if ( options.printUsage() )
+	try
 	{
-		return 0;
-	}
+		// Parse command line arguments
+		reconstruct::Options options(argc, argv);
 
-    ::std::cout << options << ::std::endl;
+		// Exit if options had to generate a usage message
+		// (this means required parameters are missing)
+		if ( options.printUsage() )
+		{
+			return 0;
+		}
+
+		::std::cout << options << ::std::endl;
 
 
-    // Create a point loader object
-    ModelFactory io_factory;
-    ModelPtr model = io_factory.readModel( options.getInputFileName() );
-    PointBufferPtr p_loader;
+		// Create a point loader object
+		ModelFactory io_factory;
+		ModelPtr model = io_factory.readModel( options.getInputFileName() );
+		PointBufferPtr p_loader;
 
-    // Parse loaded data
-    if ( !model )
-    {
-        cout << timestamp << "IO Error: Unable to parse " << options.getInputFileName() << endl;
-        exit(-1);
-    }
-	p_loader = model->m_pointCloud;
+		// Parse loaded data
+		if ( !model )
+		{
+			cout << timestamp << "IO Error: Unable to parse " << options.getInputFileName() << endl;
+			exit(-1);
+		}
+		p_loader = model->m_pointCloud;
 
-    // Create a point cloud manager
-    string pcm_name = options.getPCM();
-    psSurface::Ptr surface;
+		// Create a point cloud manager
+		string pcm_name = options.getPCM();
+		psSurface::Ptr surface;
 
-    // Create point set surface object
-    if(pcm_name == "PCL")
-    {
+		// Create point set surface object
+		if(pcm_name == "PCL")
+		{
 #ifdef _USE_PCL_
-        surface = psSurface::Ptr( new pclSurface(p_loader));
+			surface = psSurface::Ptr( new pclSurface(p_loader));
 #else 
-        cout << timestamp << "Can't create a PCL point set surface without PCL installed." << endl;
-        exit(-1);
+			cout << timestamp << "Can't create a PCL point set surface without PCL installed." << endl;
+			exit(-1);
 #endif
-    }
-    else if(pcm_name == "STANN" || pcm_name == "FLANN" || pcm_name == "NABO")
-    {
-        akSurface* aks = new akSurface(
-                p_loader, pcm_name,
-                options.getKn(),
-                options.getKi(),
-                options.getKd()
-                );
+		}
+		else if(pcm_name == "STANN" || pcm_name == "FLANN" || pcm_name == "NABO")
+		{
+			akSurface* aks = new akSurface(
+					p_loader, pcm_name,
+					options.getKn(),
+					options.getKi(),
+					options.getKd()
+			);
 
-        surface = psSurface::Ptr(aks);
-        // Set RANSAC flag
-        if(options.useRansac())
-        {
-            aks->useRansac(true);
-        }
-    }
-    else
-    {
-        cout << timestamp << "Unable to create PointCloudMansger." << endl;
-        cout << timestamp << "Unknown option '" << pcm_name << "'." << endl;
-        cout << timestamp << "Available PCMs are: " << endl;
-        cout << timestamp << "STANN, STANN_RANSAC";
+			surface = psSurface::Ptr(aks);
+			// Set RANSAC flag
+			if(options.useRansac())
+			{
+				aks->useRansac(true);
+			}
+		}
+		else
+		{
+			cout << timestamp << "Unable to create PointCloudMansger." << endl;
+			cout << timestamp << "Unknown option '" << pcm_name << "'." << endl;
+			cout << timestamp << "Available PCMs are: " << endl;
+			cout << timestamp << "STANN, STANN_RANSAC";
 #ifdef _USE_PCL_
-        cout << ", PCL";
+			cout << ", PCL";
 #endif
 #ifdef _USE_NABO
-        cout << ", Nabo";
+			cout << ", Nabo";
 #endif
-        cout << endl;
-        return 0;
-    }
+			cout << endl;
+			return 0;
+		}
 
-    // Set search options for normal estimation and distance evaluation
-    surface->setKd(options.getKd());
-    surface->setKi(options.getKi());
-    surface->setKn(options.getKn());
+		// Set search options for normal estimation and distance evaluation
+		surface->setKd(options.getKd());
+		surface->setKi(options.getKi());
+		surface->setKn(options.getKn());
 
-    // Calculate normals if necessary
-    if(!surface->pointBuffer()->hasPointNormals()
-            || (surface->pointBuffer()->hasPointNormals() && options.recalcNormals()))
-    {
-        surface->calculateSurfaceNormals();
-    }
-    else
-    {
-        cout << timestamp << "Using given normals." << endl;
-    }
+		// Calculate normals if necessary
+		if(!surface->pointBuffer()->hasPointNormals()
+				|| (surface->pointBuffer()->hasPointNormals() && options.recalcNormals()))
+		{
+			surface->calculateSurfaceNormals();
+		}
+		else
+		{
+			cout << timestamp << "Using given normals." << endl;
+		}
 
-    // Save points and normals only
-    if(options.savePointNormals())
-    {
-        ModelPtr pn( new Model);
-        pn->m_pointCloud = surface->pointBuffer();
-        ModelFactory::saveModel(pn, "pointnormals.ply");
-    }
-
-
-    // Create an empty mesh
-    HalfEdgeMesh<cVertex, cNormal> mesh( surface );
-
-    // Set recursion depth for region growing
-    if(options.getDepth())
-    {
-        mesh.setDepth(options.getDepth());
-    }
-
-    if(options.getTexelSize())
-    {
-    	Texture<cVertex, cNormal>::m_texelSize = options.getTexelSize();
-    }
-
-    if(options.getSharpFeatureThreshold())
-    {
-    	SharpBox<cVertex, cNormal>::m_theta_sharp = options.getSharpFeatureThreshold();
-    }
-    if(options.getSharpCornerThreshold())
-    {
-    	SharpBox<cVertex, cNormal>::m_phi_corner = options.getSharpCornerThreshold();
-    }
-
-    // Determine whether to use intersections or voxelsize
-    float resolution;
-    bool useVoxelsize;
-    if(options.getIntersections() > 0)
-    {
-        resolution = options.getIntersections();
-        useVoxelsize = false;
-    }
-    else
-    {
-        resolution = options.getVoxelsize();
-        useVoxelsize = true;
-    }
+		// Save points and normals only
+		if(options.savePointNormals())
+		{
+			ModelPtr pn( new Model);
+			pn->m_pointCloud = surface->pointBuffer();
+			ModelFactory::saveModel(pn, "pointnormals.ply");
+		}
 
 
-    // Create a new reconstruction object
-    FastReconstruction<cVertex, cNormal > reconstruction(
-			surface,
-			resolution,
-			useVoxelsize,
-			options.getDecomposition(),
-			options.extrude());
-    // Create mesh
-    reconstruction.getMesh(mesh);
+		// Create an empty mesh
+		HalfEdgeMesh<cVertex, cNormal> mesh( surface );
 
-    // Save grid to file
-    if(options.saveGrid())
-    {
-        reconstruction.saveGrid("fastgrid.grid");
-    }
+		// Set recursion depth for region growing
+		if(options.getDepth())
+		{
+			mesh.setDepth(options.getDepth());
+		}
+
+		if(options.getTexelSize())
+		{
+			Texture<cVertex, cNormal>::m_texelSize = options.getTexelSize();
+		}
+
+		if(options.getSharpFeatureThreshold())
+		{
+			SharpBox<cVertex, cNormal>::m_theta_sharp = options.getSharpFeatureThreshold();
+		}
+		if(options.getSharpCornerThreshold())
+		{
+			SharpBox<cVertex, cNormal>::m_phi_corner = options.getSharpCornerThreshold();
+		}
+
+		// Determine whether to use intersections or voxelsize
+		float resolution;
+		bool useVoxelsize;
+		if(options.getIntersections() > 0)
+		{
+			resolution = options.getIntersections();
+			useVoxelsize = false;
+		}
+		else
+		{
+			resolution = options.getVoxelsize();
+			useVoxelsize = true;
+		}
 
 
-    if(options.getDanglingArtifacts())
-    {
-    	mesh.removeDanglingArtifacts(options.getDanglingArtifacts());
-    }
-    // Optimize mesh
+		// Create a new reconstruction object
+		FastReconstruction<cVertex, cNormal > reconstruction(
+				surface,
+				resolution,
+				useVoxelsize,
+				options.getDecomposition(),
+				options.extrude());
+		// Create mesh
+		reconstruction.getMesh(mesh);
 
-    mesh.cleanContours(options.getCleanContourIterations());
+		// Save grid to file
+		if(options.saveGrid())
+		{
+			reconstruction.saveGrid("fastgrid.grid");
+		}
 
 
-    mesh.setClassifier(options.getClassifier());
+		if(options.getDanglingArtifacts())
+		{
+			mesh.removeDanglingArtifacts(options.getDanglingArtifacts());
+		}
+		// Optimize mesh
+
+		mesh.cleanContours(options.getCleanContourIterations());
 
 
-    if(options.optimizePlanes())
-    {
-    	mesh.optimizePlanes(options.getPlaneIterations(),
-    			options.getNormalThreshold(),
-    			options.getMinPlaneSize(),
-    			options.getSmallRegionThreshold(),
-    			true);
+		mesh.setClassifier(options.getClassifier());
 
-    	mesh.fillHoles(options.getFillHoles());
 
-    	mesh.optimizePlaneIntersections();
+		if(options.optimizePlanes())
+		{
+			mesh.optimizePlanes(options.getPlaneIterations(),
+					options.getNormalThreshold(),
+					options.getMinPlaneSize(),
+					options.getSmallRegionThreshold(),
+					true);
 
-    	mesh.restorePlanes(options.getMinPlaneSize());
-    }
-    else if(options.clusterPlanes())
-    {
-    	mesh.clusterRegions(options.getNormalThreshold(), options.getMinPlaneSize());
-    	mesh.fillHoles(options.getFillHoles());
-    }
+			mesh.fillHoles(options.getFillHoles());
 
-    // Save triangle mesh
-	if ( options.retesselate() )
-	{
-		mesh.finalizeAndRetesselate(options.generateTextures(),
-		                            options.getLineFusionThreshold());
+			mesh.optimizePlaneIntersections();
+
+			mesh.restorePlanes(options.getMinPlaneSize());
+		}
+		else if(options.clusterPlanes())
+		{
+			mesh.clusterRegions(options.getNormalThreshold(), options.getMinPlaneSize());
+			mesh.fillHoles(options.getFillHoles());
+		}
+
+		// Save triangle mesh
+		if ( options.retesselate() )
+		{
+			mesh.finalizeAndRetesselate(options.generateTextures(),
+					options.getLineFusionThreshold());
+		}
+		else
+		{
+			mesh.finalize();
+		}
+
+		// Create output model and save to file
+		ModelPtr m( new Model( mesh.meshBuffer() ) );
+
+		if(options.saveOriginalData())
+		{
+			m->m_pointCloud = model->m_pointCloud;
+		}
+		ModelFactory::saveModel( m, "triangle_mesh.ply");
+
+		// Save obj model if textures were generated
+		if(options.generateTextures())
+		{
+			ModelFactory::saveModel( m, "triangle_mesh.obj");
+		}
+		cout << timestamp << "Program end." << endl;
 	}
-	else
+	catch(...)
 	{
-		mesh.finalize();
+		std::cout << "Unable to parse options. Call 'reconstruct --help' for more information." << std::endl;
 	}
-
-	// Create output model and save to file
-	ModelPtr m( new Model( mesh.meshBuffer() ) );
-
-	if(options.saveOriginalData())
-	{
-	    m->m_pointCloud = model->m_pointCloud;
-	}
-	ModelFactory::saveModel( m, "triangle_mesh.ply");
-
-	// Save obj model if textures were generated
-	if(options.generateTextures())
-	{
-	    ModelFactory::saveModel( m, "triangle_mesh.obj");
-	}
-    cout << timestamp << "Program end." << endl;
-
 	return 0;
 }
 
