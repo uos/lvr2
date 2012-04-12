@@ -1248,6 +1248,8 @@ void HalfEdgeMesh<VertexT, NormalT>::finalize()
     this->m_meshBuffer->setFaceArray( indexBuffer, numFaces );
     this->m_meshBuffer->setFaceColorArray( faceColorBuffer );
     this->m_finalized = true;
+
+    m_regionClassifier->writeMetaInfo();
 }
 
 template<typename VertexT, typename NormalT>
@@ -1465,7 +1467,7 @@ void HalfEdgeMesh<VertexT, NormalT>::finalizeAndRetesselate( bool genTextures, f
     this->m_finalized = true;
 
     cout << timestamp << "Done retesselating." << endl;
-
+    m_regionClassifier->writeMetaInfo();
 } 
 
 } // namespace lssr
