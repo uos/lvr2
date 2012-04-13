@@ -238,7 +238,7 @@ void StaticMesh::compileSurfaceList(){
 		for(int i = 0; i < Name().size(); i++)
 		{
 
-			glutBitmapCharacter(GLUT_BITMAP_HELVETICA_18, Name()[i]);
+			glutBitmapCharacter(GLUT_BITMAP_HELVETICA_12, Name()[i]);
 		}
 		glEnable(GL_LIGHTING);
 		glEndList();

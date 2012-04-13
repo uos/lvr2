@@ -164,7 +164,7 @@ void FastReconstruction<VertexT, NormalT>::createGrid()
 
 
 		int e;
-		m_extrude ? e = 1 : e = 8;
+		m_extrude ? e = 8 : e = 1;
 		for(int j = 0; j < e; j++){
 
 			// Get the grid offsets for the neighboring grid position
@@ -356,7 +356,7 @@ void FastReconstruction<VertexT, NormalT>::calcQueryPointValues(){
         {
         	m_queryPoints[i].m_invalid = true;
         }
- 	m_queryPoints[i].m_distance = projectedDistance;
+        m_queryPoints[i].m_distance = projectedDistance;
         ++progress;
     }
     cout << endl;
