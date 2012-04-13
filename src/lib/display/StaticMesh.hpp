@@ -101,12 +101,17 @@ protected:
 	ucharArr        m_colors;
 	unsigned char*  m_blackColors;
 
+	uintArr 	m_textureIndexBuffer;
+	floatArr 	m_textureCoordBuffer;
+	ucharArr 	m_faceColorBuffer;
+
 	uintArr         m_indices;
 
 	bool            m_finalized;
 
 	size_t          m_numVertices;
 	size_t          m_numFaces;
+	size_t          m_numMaterials;
 
 	int             m_renderMode;
 

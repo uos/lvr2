@@ -360,12 +360,13 @@ void ViewerApplication::openFile()
     QStringList file_names;
     QStringList file_types;
 
-    file_types << "Point Clouds (*.pts)"
-            //             << "Points and Normals (*.nor)"
-            << "PLY Models (*.ply)"
-            //             << "Polygonal Meshes (*.bor)"
-            << "All Files (*.*)";
-
+    file_types
+      << "OBJ Files + Material (*.obj)"
+      << "PLY Models (*.ply)"
+      << "Point Clouds (*.pts)"
+      // << "Points and Normals (*.nor)"
+      // << "Polygonal Meshes (*.bor)"
+      << "All Files (*.*)";
 
     //Set Title
     file_dialog.setWindowTitle("Open File");
@@ -381,9 +382,6 @@ void ViewerApplication::openFile()
     //Get filename from list
     string file_name = file_names.constBegin()->toStdString();
     m_factory->create(file_name);
-
-
-
 }
 
 void ViewerApplication::meshRenderModeChanged()
@@ -480,8 +478,7 @@ void ViewerApplication::transformObject()
         if(item->type() > 1000)
         {
             CustomTreeWidgetItem* c_item = static_cast<CustomTreeWidgetItem*>(item);
-//            TransformationDialog* d = 
-			new TransformationDialog(m_viewer, c_item->renderable());
+	    // TransformationDialog* d = new TransformationDialog(m_viewer, c_item->renderable());
         }
     }
 }
@@ -568,15 +565,17 @@ void ViewerApplication::saveSelectedObject()
         // Parse extensions by file type
         if(item->type() == PointCloudItem || item->type() == MultiPointCloudItem)
         {
-            file_types << "Point Clouds (*.pts)"
-                       << "PLY Models (*.ply)"
-                       << "All Files (*.*)";
+            file_types
+	      << "PLY Models (*.ply)"
+	      << "Point Clouds (*.pts)"
+	      << "All Files (*.*)";
         }
         else if (item->type() == TriangleMeshItem)
         {
-            file_types << "PLY Models (*.ply)"
-                       << "OBJ Models (*.obj)"
-                       << "All Files (*.*)";
+            file_types
+	      << "OBJ Models (*.obj)"
+	      << "PLY Models (*.ply)"
+	      << "All Files (*.*)";
         }
         else
         {
