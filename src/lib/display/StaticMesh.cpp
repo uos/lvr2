@@ -80,17 +80,20 @@ StaticMesh::StaticMesh( MeshBufferPtr mesh, string name )
 void StaticMesh::init( MeshBufferPtr mesh )
 {
 	size_t n_colors;
+	size_t n_textures;
+	size_t n_normals;
+	size_t n_textureIndices;
 	m_lineWidth = 2.0;
 	if(mesh)
 	{
 		m_faceNormals = 0;
 
-		m_vertexNormals 	= mesh->getVertexNormalArray(m_numVertices);
+		m_vertexNormals 	= mesh->getVertexNormalArray(n_normals);
 		m_colors        	= mesh->getVertexColorArray(n_colors);
 		m_vertices      	= mesh->getVertexArray(m_numVertices);
 		m_indices       	= mesh->getFaceArray(m_numFaces);
-		m_textureCoordBuffer	= mesh->getVertexTextureCoordinateArray(m_numVertices);
-		m_textureIndexBuffer 	= mesh->getFaceTextureIndexArray(m_numFaces);
+		m_textureCoordBuffer	= mesh->getVertexTextureCoordinateArray(n_textures);
+		m_textureIndexBuffer 	= mesh->getFaceTextureIndexArray(n_textureIndices);
 		m_faceColorBuffer 	= mesh->getFaceColorArray(m_numMaterials);
 
 		m_blackColors   = new unsigned char[ 3 * m_numVertices ];
@@ -214,7 +217,6 @@ void StaticMesh::compileSurfaceList(){
 		glEnableClientState(GL_VERTEX_ARRAY);
 		glEnableClientState(GL_NORMAL_ARRAY);
 		glEnableClientState(GL_COLOR_ARRAY);
-		glEnableClientState(GL_TEXTURE_COORD_ARRAY);
 
 		// Start new display list
 		glNewList(m_surfaceList, GL_COMPILE);
@@ -225,7 +227,6 @@ void StaticMesh::compileSurfaceList(){
 		glVertexPointer( 3, GL_FLOAT, 0, m_vertices.get() );
 		glNormalPointer( GL_FLOAT, 0, m_faceNormals );
 		glColorPointer( 3, GL_UNSIGNED_BYTE, 0, m_colors.get() );
-		glTexCoordPointer( 3, GL_FLOAT, 0, m_textureCoordBuffer.get() );
 
 		// Draw elements
 		glDrawElements(GL_TRIANGLES, 3 * m_numFaces, GL_UNSIGNED_INT, m_indices.get());
