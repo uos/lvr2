@@ -36,6 +36,8 @@
 #include <string.h>
 #include <sstream>
 
+#include <GL/glut.h>
+
 using namespace std;
 
 #include "Renderable.hpp"
@@ -137,6 +139,7 @@ void StaticMesh::render(){
 		        glEnable(GL_LIGHTING);
 		    }
 		    glPopMatrix();
+
  		}
 	}
 }

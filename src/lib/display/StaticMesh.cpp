@@ -230,6 +230,17 @@ void StaticMesh::compileSurfaceList(){
 		// Draw elements
 		glDrawElements(GL_TRIANGLES, 3 * m_numFaces, GL_UNSIGNED_INT, m_indices.get());
 
+		Vertex<float> v = m_boundingBox->getCentroid();
+
+		glDisable(GL_LIGHTING);
+		glColor3f(1.0, 1.0, 0.0);
+		glRasterPos3f(v.x, v.y, v.z);
+		for(int i = 0; i < Name().size(); i++)
+		{
+
+			glutBitmapCharacter(GLUT_BITMAP_HELVETICA_18, Name()[i]);
+		}
+		glEnable(GL_LIGHTING);
 		glEndList();
 
 	}

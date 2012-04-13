@@ -121,12 +121,15 @@ Grid::Grid(floatArr vertices, uintArr boxes, uint numPoints, uint numBoxes)
 
 void Grid::render()
 {
-    glLineWidth(m_lineWidth);
-    glCallList(m_gridDisplayList);
-    glPointSize(m_pointSize);
-    glCallList(m_pointDisplayList);
-    glPointSize(1.0);
-    glLineWidth(1.0);
+	if(m_active)
+	{
+		glLineWidth(m_lineWidth);
+		glCallList(m_gridDisplayList);
+		glPointSize(m_pointSize);
+		glCallList(m_pointDisplayList);
+		glPointSize(1.0);
+		glLineWidth(1.0);
+	}
 }
 
 Grid::~Grid()
