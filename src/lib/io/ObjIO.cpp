@@ -37,6 +37,9 @@
 #include "Timestamp.hpp"
 #include "boost/tuple/tuple.hpp"
 #include "../geometry/Vertex.hpp"
+#include "../display/Texture.hpp"
+#include "../display/TextureFactory.hpp"
+#include <string.h>
 
 namespace lssr
 {
@@ -71,20 +74,21 @@ namespace lssr
     size_t numVertexColors  = 0; // TODO: Set
 
     // Some output
-    cout << timestamp << "Number of vertices: "            << numVertices      << endl;
-    cout << timestamp << "Number of vertex normals: "      << numVertexNormals << endl;
-    cout << timestamp << "Number of vertex colors: "       << numVertexColors  << endl;
-    cout << timestamp << "Number of faces: "               << numFaces         << endl;
-    cout << timestamp << "Number of texture coordinates: " << numTextures      << endl;
-    cout << timestamp << "Number of spheres: "             << numSpheres       << endl;
-    cout << timestamp << "Number of planes: "              << numPlanes        << endl;
-    cout << timestamp << "Number of point lights: "        << numPointLights   << endl;
-    cout << timestamp << "Number of disc lights: "         << numDiscLights    << endl;
-    cout << timestamp << "Number of quad lights: "         << numQuadLights    << endl;
-    cout << timestamp << "Number of materials: "           << numMaterials     << endl;
+    cout << timestamp << endl;
+    cout << "[obj_io]" << "Number of vertices: "            << numVertices      << endl;
+    cout << "[obj_io]" << "Number of vertex normals: "      << numVertexNormals << endl;
+    cout << "[obj_io]" << "Number of vertex colors: "       << numVertexColors  << endl;
+    cout << "[obj_io]" << "Number of faces: "               << numFaces         << endl;
+    cout << "[obj_io]" << "Number of texture coordinates: " << numTextures      << endl;
+    cout << "[obj_io]" << "Number of spheres: "             << numSpheres       << endl;
+    cout << "[obj_io]" << "Number of planes: "              << numPlanes        << endl;
+    cout << "[obj_io]" << "Number of point lights: "        << numPointLights   << endl;
+    cout << "[obj_io]" << "Number of disc lights: "         << numDiscLights    << endl;
+    cout << "[obj_io]" << "Number of quad lights: "         << numQuadLights    << endl;
+    cout << "[obj_io]" << "Number of materials: "           << numMaterials     << endl;
     if(objData->camera != NULL)
       {
-	cout << timestamp << "Found a camera" << endl;
+	cout << "[obj_io]" << "Found a camera" << endl;
       }
     cout << endl;
 
@@ -92,7 +96,10 @@ namespace lssr
     floatArr vertices;
     floatArr vertexNormals;
     ucharArr vertexColors;
-    uintArr  faceIndices;
+    uintArr faceIndices;
+    uintArr textureIndexBuffer;
+    floatArr textureCoordBuffer;
+    ucharArr faceColorBuffer;
 
     // Allocate memory
     if ( numVertices )
@@ -101,7 +108,7 @@ namespace lssr
       }
     if ( numVertexNormals )
       {
-	vertexNormals = floatArr( new float[ numVertices * 3 ] );
+	vertexNormals = floatArr( new float[ numVertexNormals * 3 ] );
       }
     if ( numVertexColors )
       {
@@ -110,6 +117,15 @@ namespace lssr
     if ( numFaces )
       {
 	faceIndices = uintArr( new unsigned int[ numFaces * 3 ] );
+	textureIndexBuffer = uintArr( new unsigned int[ numFaces * 3 ] );
+      }
+    if( numVertices )
+      {
+	textureCoordBuffer = floatArr( new float[ numVertices * 3 ] );
+      }
+    if( numMaterials )
+      {
+	faceColorBuffer = ucharArr( new uchar[ numMaterials * 3 ] );
       }
 
     // vertices
@@ -121,7 +137,7 @@ namespace lssr
 	vertices[ i * 3 + 2 ] = o->e[ 2 ];
       }
     
-    // normals
+    // vertex normals
     for(int i = 0; i < numVertexNormals; ++i)
       {
         obj_vector *o = objData->normalList[i];
@@ -130,7 +146,7 @@ namespace lssr
 	vertexNormals[ i * 3 + 2 ] = o->e[ 2 ];
       }
 
-    // colors
+    // vertex colors
     for(int i = 0; i < numVertexColors; ++i)
       {
 	vertexColors[ i * 3 ]    = 255;
@@ -145,8 +161,32 @@ namespace lssr
 	faceIndices[ i * 3 ]     = o->vertex_index[ 0 ];
 	faceIndices[ i * 3 + 1 ] = o->vertex_index[ 1 ];
 	faceIndices[ i * 3 + 2 ] = o->vertex_index[ 2 ];
+	
+	textureIndexBuffer[ i * 3 ]     = o->material_index;
+	textureIndexBuffer[ i * 3 + 1 ] = o->material_index;
+	textureIndexBuffer[ i * 3 + 2 ] = o->material_index;
       }
 
+    // texture coordinates
+    for(int i = 0; i < numVertices; ++i)
+      {
+	obj_vector *o = objData->textureList[i];
+	textureCoordBuffer[ i * 3 ]     = o->e[ 0 ];
+	textureCoordBuffer[ i * 3 + 1 ] = o->e[ 1 ];
+	textureCoordBuffer[ i * 3 + 2 ] = o->e[ 2 ];
+      }
+
+    // face colors
+    for(int i = 0; i < numMaterials; ++i)
+      {
+	obj_material *o = objData->materialList[i];
+	faceColorBuffer[ i * 3 ]     = o->amb[0] * 255;
+	faceColorBuffer[ i * 3 + 1]  = o->amb[1] * 255;
+	faceColorBuffer[ i * 3 + 2 ] = o->amb[2] * 255;
+
+	TextureFactory::instance().getTexture(o->texture_filename);
+      }
+    
     // delete obj data object
     delete(objData);
 
@@ -155,10 +195,13 @@ namespace lssr
     if(vertices)
       {
 	mesh = MeshBufferPtr( new MeshBuffer );
-	mesh->setVertexArray(           vertices,         numVertices );
-	mesh->setVertexNormalArray(     vertexNormals,    numVertexNormals );
-	mesh->setVertexColorArray(      vertexColors,     numVertexColors );
-	mesh->setFaceArray(             faceIndices,      numFaces );
+	mesh->setVertexArray(                  vertices,           numVertices );
+	mesh->setVertexColorArray(             vertexColors,       numVertexColors );
+	mesh->setVertexNormalArray(            vertexNormals,      numVertexNormals );
+	mesh->setFaceArray(                    faceIndices,        numFaces );
+	mesh->setFaceTextureIndexArray(        textureIndexBuffer, numFaces );
+	mesh->setVertexTextureCoordinateArray( textureCoordBuffer, numTextures );
+	mesh->setFaceColorArray(               faceColorBuffer,    numMaterials );
       }
 
     ModelPtr m( new Model( mesh ) );

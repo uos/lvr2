@@ -17,15 +17,30 @@
  */
 
 
- /*
+/*
  * PPMIO.h
  *
- *  Created on: 08.09.2011
- *      Author: pg2011
+ *  Created on:  08.09.2011
+ *      Author:  Kim Rinnewitz  ( krinnewitz@uos.de )
+ *  Modified on: 11.12.2011
+ *      Author:  Thomas Wiemann ( twiemann@uos.de )
+ *  Modified on: 15.02.2011
+ *      Author:  Denis Meyer    ( denmeyer@uos.de )
  */
 
 #ifndef PPMIO_HPP_
 #define PPMIO_HPP_
+
+#include <string>
+#include <fstream>
+#include <iostream>
+#include <sstream>
+
+using std::string;
+using std::ifstream;
+using std::stringstream;
+using std::cout;
+using std::endl;
 
 namespace lssr
 {
@@ -33,25 +48,40 @@ namespace lssr
 /**
  * @brief An implementation of the PPM file format.
  */
-template<typename ColorType>
 class PPMIO
 {
 public:
-    PPMIO();
+    struct ColorT{
+        unsigned char r, g, b;
+    };
 
-    void write(string filename);
-    void setDataArray(ColorType** array, size_t sizeX, size_t sizeY);
+    PPMIO();
+    PPMIO( string filename );
+    virtual ~PPMIO() {};
+
+    void write( string filename );
+    void setDataArray( ColorT** array, size_t sizeX, size_t sizeY );
+
+    int            getHeight() const { return m_height; }
+    int            getWidth()  const { return m_width;  }
+    unsigned char* getPixels() const { return m_pixels; }
 
 private:
-    ColorType**              m_data;
+    ColorT**       m_data;
+    size_t         m_sizeX;
+    size_t         m_sizeY;
+    int            m_width;  // The width of the image
+    int            m_height; // The height of the image
+    unsigned char* m_pixels; // The image/pixel data
 
-    size_t                  m_sizeX;
-    size_t                  m_sizeY;
-
+    /**
+     * Reads a new line from the given stream that is no comment
+     * @param   in      The stream to read from
+     * @param   buffer  The extracted information
+     */
+    void readLine( ifstream & in, char* buffer );
 };
 
 }
-
-#include "PPMIO.tcc"
 
 #endif /* PPMIO_H_ */
