@@ -42,6 +42,15 @@ namespace lssr
 typedef unsigned char uchar;
 
 
+struct Material
+{
+	uchar r;
+	uchar g;
+	uchar b;
+	int texture_index;
+};
+
+
 template<typename CoordT>
 struct coord
 {
@@ -109,6 +118,7 @@ typedef boost::shared_array< coord<unsigned int> > idx3uArr;
 
 typedef boost::shared_array< idxVal<unsigned int> > idx1uArr;
 
+typedef boost::shared_array< Material* > materialArr;
 
 typedef std::pair<size_t, size_t> indexPair;
 

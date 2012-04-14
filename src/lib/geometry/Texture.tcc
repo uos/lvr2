@@ -180,11 +180,11 @@ void Texture<VertexT, NormalT>::textureCoords(VertexT v, float &x, float &y)
 }
 
 template<typename VertexT, typename NormalT>
-void Texture<VertexT, NormalT>::save()
+void Texture<VertexT, NormalT>::save(int i)
 {
 	PPMIO ppm;
 	ppm.setDataArray(this->m_data,this->m_sizeX, this->m_sizeY);
-	ppm.write("texture_"+boost::lexical_cast<std::string>(this->m_region->m_regionNumber)+".ppm");
+	ppm.write("texture_"+boost::lexical_cast<std::string>(i)+".ppm");
 }
 
 template<typename VertexT, typename NormalT>
