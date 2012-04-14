@@ -73,7 +73,7 @@ public:
 	/**
 	 *	@brief	Writes the texture to a file
 	 */
-	void save();
+	void save(int i);
 
 	/**
 	 * Destructor.

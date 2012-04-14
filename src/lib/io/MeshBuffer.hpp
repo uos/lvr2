@@ -45,6 +45,7 @@ namespace lssr
 {
 
 
+
 /**
  * \class MeshLoader MeshLoader.hpp "io/MeshLoader.hpp"
  * \brief Interface for all mesh loading classes.
@@ -164,14 +165,11 @@ class MeshBuffer
         uintArr getFaceArray( size_t &n );
 
 
-        ucharArr getFaceColorArray( size_t &n );
-
-
-        uintArr getFaceTextureIndexArray( size_t &n );
-
-
         floatArr getVertexTextureCoordinateArray( size_t &n );
 
+        materialArr getMaterialArray(size_t &n);
+
+        uintArr	getFaceMaterialIndexArray(size_t &n);
 
 
 #define SECTION_INDEXED_GETTER
@@ -267,12 +265,6 @@ class MeshBuffer
         idx3uArr getIndexedFaceArray( size_t &n );
 
 
-        color3bArr getIndexedFaceColorArray( size_t &n );
-
-
-        idx1uArr getIndexedFaceTextureIndexArray( size_t &n );
-
-
 #define SECTION_SETTER
         /**********************************************************************
          * SETTER
@@ -364,10 +356,10 @@ class MeshBuffer
         void setVertexTextureCoordinateArray( floatArr array, size_t n );
 
 
-        void setFaceColorArray( ucharArr array, size_t n );
+        void setMaterialArray( materialArr array, size_t n );
 
+        void setFaceMaterialIndexArray( uintArr array, size_t n);
 
-        void setFaceTextureIndexArray( uintArr array, size_t n );
 
 
 #define SECTION_VECTOR_SETTER
@@ -463,13 +455,6 @@ class MeshBuffer
         void setVertexTextureCoordinateArray( std::vector<float>& array );
 
 
-        void setFaceTextureIndexArray( std::vector<unsigned int> &array );
-
-
-        void setFaceColorArray( std::vector<uchar> &array );
-
-
-
 #define SECTION_INDEXED_SETTER
         /**********************************************************************
          * INDEXED SETTER
@@ -513,9 +498,6 @@ class MeshBuffer
         void setIndexedVertexTextureCoordinateArray( coord3fArr arr, size_t size );
 
 
-        void setIndexedFaceColorArray( color3bArr arr, size_t size );
-
-
         void setIndexedFaceArray( idx3uArr arr, size_t size );
 
 
@@ -556,6 +538,10 @@ class MeshBuffer
          **/
         void setIndexedVertexNormalArray( std::vector< coord<float> >&array);
 
+        void setMaterialArray( std::vector<Material*> &array);
+
+        void setFaceMaterialIndexArray(std::vector<unsigned int> &array);
+
 
 
 #define SECTION_ADDITIONAL_STUFF
@@ -579,42 +565,56 @@ class MeshBuffer
 
         /// %Vertex buffer.
         floatArr    m_vertices;
+
         /// %Vertex color buffer.
         ucharArr    m_vertexColors;
+
         /// %Vertex confidence buffer.
         floatArr    m_vertexConfidence;
+
         /// %Vertex intensity buffer.
         floatArr    m_vertexIntensity;
+
         /// %Vertex normal buffer.
         floatArr    m_vertexNormals;
+
         /// %Vertex texture-coordinate buffer.
         floatArr    m_vertexTextureCoordinates;
 
         /// Buffer of face indices
         uintArr     m_faceIndices;
-        /// List of Colors for every face
-        ucharArr    m_faceColors;
+
         /// Buffer of FaceTexture indices
-        uintArr     m_faceTextureIndices;
+        uintArr     m_faceMaterialIndices;
 
         /// Number of vertices in internal buffer.
         size_t      m_numVertices;
+
         /// Number of vertex normals in internal buffer.
         size_t      m_numVertexNormals;
+
         /// Number of vertex colors sets in internal buffer.
         size_t      m_numVertexColors;
+
         /// Number of vertex confidence values in internal buffer.
         size_t      m_numVertexConfidences;
+
         /// Number of vertex intensities in internal buffer.
         size_t      m_numVertexIntensities;
+
         /// Number of faces in internal buffer.
         size_t      m_numFaces;
+
         /// Number of vertex texture coordinates
         size_t      m_numVertexTextureCoordinates;
-        /// Number of FaceTexture indices
-        size_t      m_numFaceTextureIndices;
-        /// Numer of face colors
-        size_t      m_numFaceColors;
+
+        size_t		m_numMaterials;
+
+        size_t		m_numFaceMaterialIndices;
+
+        materialArr m_faceMaterials;
+
+
 
 };
 

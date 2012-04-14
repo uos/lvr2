@@ -1231,9 +1231,11 @@ void HalfEdgeMesh<VertexT, NormalT>::finalize()
         colorBuffer[indexBuffer[3 * i + 2] * 3 + 0] = r;
         colorBuffer[indexBuffer[3 * i + 2] * 3 + 1] = g;
         colorBuffer[indexBuffer[3 * i + 2] * 3 + 2] = b;
-        faceColorBuffer.push_back( r );
+
+        /// TODO: Implement materials
+        /*faceColorBuffer.push_back( r );
         faceColorBuffer.push_back( g );
-        faceColorBuffer.push_back( b );
+        faceColorBuffer.push_back( b );*/
     }
 
     // Hand the buffers over to the Model class for IO operations.
@@ -1246,7 +1248,7 @@ void HalfEdgeMesh<VertexT, NormalT>::finalize()
     this->m_meshBuffer->setVertexColorArray( colorBuffer, numVertices );
     this->m_meshBuffer->setVertexNormalArray( normalBuffer, numVertices  );
     this->m_meshBuffer->setFaceArray( indexBuffer, numFaces );
-    this->m_meshBuffer->setFaceColorArray( faceColorBuffer );
+    //this->m_meshBuffer->setFaceColorArray( faceColorBuffer );
     this->m_finalized = true;
 
     m_regionClassifier->writeMetaInfo();
@@ -1255,21 +1257,27 @@ void HalfEdgeMesh<VertexT, NormalT>::finalize()
 template<typename VertexT, typename NormalT>
 void HalfEdgeMesh<VertexT, NormalT>::finalizeAndRetesselate( bool genTextures, float fusionThreshold )
 {
+	// TODO: This implementation will create a material for each face. To seperate
+	// testured materials and color materials, every color-only mat. is marked with
+	// UINT_MAX. The objio implementation will seperate the buffers. The seperation
+	// should be done here...
+
     // used Typedef's
     typedef std::vector<int>::iterator   intIterator;
 
     // default colors
     float r=0, g=200, b=0;
 
+    map<Vertex<uchar>, unsigned int> materialMap;
+
     // Since all buffer sizes are unknown when retesselating
     // all buffers are instantiated as vectors, to avoid manual reallocation
     std::vector<float> vertexBuffer;
     std::vector<float> normalBuffer;
     std::vector<uchar> colorBuffer;
-    std::vector<uchar> faceColorBuffer;
-    std::vector<unsigned int> textureBuffer;
     std::vector<unsigned int> indexBuffer;
-    std::vector<unsigned int> textureIndexBuffer;
+    std::vector<unsigned int> materialIndexBuffer;
+    std::vector<Material*> materialBuffer;
     std::vector<float> textureCoordBuffer;
 
     // Reset used variables. Otherwise the getContours() function might not work quite as expected.
@@ -1294,6 +1302,8 @@ void HalfEdgeMesh<VertexT, NormalT>::finalizeAndRetesselate( bool genTextures, f
     // keep track of used vertices to avoid doubles.
     map<Vertex<float>, unsigned int> vertexMap;
     Vertex<float> current;
+
+    int globalMaterialIndex = 0;
 
     // Copy all regions that are non in an intersection plane directly to the buffers.
     for( intIterator nonPlane = nonPlaneRegions.begin(); nonPlane != nonPlaneRegions.end(); ++nonPlane )
@@ -1342,7 +1352,6 @@ void HalfEdgeMesh<VertexT, NormalT>::finalizeAndRetesselate( bool genTextures, f
                 }
 
                 indexBuffer.push_back( pos );
-                textureIndexBuffer.push_back( UINT_MAX );
             }
 
             if ( genTextures && VertexTraits<VertexT>::has_color() )
@@ -1355,9 +1364,29 @@ void HalfEdgeMesh<VertexT, NormalT>::finalizeAndRetesselate( bool genTextures, f
                 b = *((uchar*) &(cv[0][5])); /* blue */
             }
 
-            faceColorBuffer.push_back( r );
-            faceColorBuffer.push_back( g );
-            faceColorBuffer.push_back( b );
+            // Try to find a material with the same color
+            map<Vertex<uchar>, unsigned int >::iterator it = materialMap.find(Vertex<uchar>(r, g, b));
+            if(it != materialMap.end())
+            {
+            	// If found, put material index into buffer
+            	unsigned int position = it->second;
+            	materialIndexBuffer.push_back(position);
+            }
+            else
+            {
+            	Material* m = new Material;
+            	m->r = r;
+            	m->g = g;
+            	m->b = b;
+            	m->texture_index = -1;
+
+            	// Save material index
+            	materialBuffer.push_back(m);
+            	materialIndexBuffer.push_back(globalMaterialIndex);
+            	globalMaterialIndex++;
+            }
+
+
         }
     }
     cout << timestamp << "Done copying non planar regions." << endl;
@@ -1369,6 +1398,8 @@ void HalfEdgeMesh<VertexT, NormalT>::finalizeAndRetesselate( bool genTextures, f
      */
 
     // for every plane region there is
+    int globalTextureIndex = 0;
+
     string msg = timestamp.getElapsedTime() + "Optimizing plane intersections ";
     ProgressBar progress(m_regions.size(), msg);
     for(intIterator planeNr = planeRegions.begin(); planeNr != planeRegions.end(); ++planeNr )
@@ -1401,7 +1432,7 @@ void HalfEdgeMesh<VertexT, NormalT>::finalizeAndRetesselate( bool genTextures, f
         if( genTextures )
         {
             t = new Texture<VertexT, NormalT>( m_pointCloudManager, m_regions[iRegion], contours );
-            t->save();
+            t->save(globalTextureIndex);
         }
 
         // copy new vertex data:
@@ -1438,19 +1469,36 @@ void HalfEdgeMesh<VertexT, NormalT>::finalizeAndRetesselate( bool genTextures, f
 
             // store the indices with the correct offset to the indices buffer.
             indexBuffer.push_back( indices[j] + offset );
-            if( genTextures )
+
+            // Store material information for each new face
+           /* if( genTextures )
+            {
+
                 textureIndexBuffer.push_back( m_regions[iRegion]->m_regionNumber );
+            }
             else
+            {
                 textureIndexBuffer.push_back( UINT_MAX );
+            }*/
         }
+
+        // Create material and update buffer
+        Material* m = new Material;
+        m->r = r;
+        m->g = g;
+        m->b = b;
+        m->texture_index = globalTextureIndex;
+        materialBuffer.push_back(m);
+
         for( int j = 0; j < indices.size() / 3; j++ )
         {
-            faceColorBuffer.push_back( r );
-            faceColorBuffer.push_back( g );
-            faceColorBuffer.push_back( b );
+        	materialIndexBuffer.push_back(globalMaterialIndex + globalTextureIndex);
         }
         if(t) delete t;
+
+        // Update counters
         ++progress;
+        globalTextureIndex++;
     }
 
     if ( !this->m_meshBuffer )
@@ -1462,8 +1510,8 @@ void HalfEdgeMesh<VertexT, NormalT>::finalizeAndRetesselate( bool genTextures, f
     this->m_meshBuffer->setVertexNormalArray( normalBuffer );
     this->m_meshBuffer->setFaceArray( indexBuffer );
     this->m_meshBuffer->setVertexTextureCoordinateArray( textureCoordBuffer );
-    this->m_meshBuffer->setFaceTextureIndexArray( textureIndexBuffer );
-    this->m_meshBuffer->setFaceColorArray( faceColorBuffer );
+    this->m_meshBuffer->setMaterialArray( materialBuffer );
+    this->m_meshBuffer->setFaceMaterialIndexArray( materialIndexBuffer );
     this->m_finalized = true;
 
     cout << timestamp << "Done retesselating." << endl;

@@ -101,9 +101,9 @@ protected:
 	ucharArr        m_colors;
 	unsigned char*  m_blackColors;
 
-	uintArr 	m_textureIndexBuffer;
-	floatArr 	m_textureCoordBuffer;
-	ucharArr 	m_faceColorBuffer;
+	uintArr 		m_materialIndexBuffer;
+	floatArr 		m_textureCoordBuffer;
+	materialArr		m_materials;
 
 	uintArr         m_indices;
 
