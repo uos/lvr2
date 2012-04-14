@@ -1257,11 +1257,6 @@ void HalfEdgeMesh<VertexT, NormalT>::finalize()
 template<typename VertexT, typename NormalT>
 void HalfEdgeMesh<VertexT, NormalT>::finalizeAndRetesselate( bool genTextures, float fusionThreshold )
 {
-	// TODO: This implementation will create a material for each face. To seperate
-	// testured materials and color materials, every color-only mat. is marked with
-	// UINT_MAX. The objio implementation will seperate the buffers. The seperation
-	// should be done here...
-
     // used Typedef's
     typedef std::vector<int>::iterator   intIterator;
 
