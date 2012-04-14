@@ -1,16 +1,16 @@
 /**
- * Texture.cpp
+ * GlTexture.cpp
  *
  *  @date 11.12.2011
  *  @author Thomas Wiemann
  */
 
-#include "Texture.hpp"
+#include "GlTexture.hpp"
 #include <iostream>
 
 using namespace std;
 
-Texture::Texture(unsigned char* pixels, int width, int height)
+GlTexture::GlTexture(unsigned char* pixels, int width, int height)
     : m_width(width), m_height(height),  m_pixels(pixels)
 {
     m_texIndex = 0;
@@ -18,7 +18,7 @@ Texture::Texture(unsigned char* pixels, int width, int height)
     upload();
 }
 
-Texture::Texture(const Texture &other)
+GlTexture::GlTexture(const GlTexture &other)
 {
     // Copy data
     m_width = other.m_width;
@@ -34,7 +34,7 @@ Texture::Texture(const Texture &other)
     upload();
 }
 
-Texture::~Texture()
+GlTexture::~GlTexture()
 {
     if(m_pixels)
     {
@@ -42,7 +42,7 @@ Texture::~Texture()
     }
 }
 
-void Texture::upload()
+void GlTexture::upload()
 {
     glEnable(GL_TEXTURE_2D);
     // Create new texure list
@@ -58,7 +58,7 @@ void Texture::upload()
 	      cout << endl;
 	  }
 	if((int)m_pixels[i] != 0 && (int)m_pixels[i] != 255)
-	  cout << "Texture::upload -- " << (int)m_pixels[i] << " ";
+	  cout << "GlTexture::upload -- " << (int)m_pixels[i] << " ";
       }
     */
     

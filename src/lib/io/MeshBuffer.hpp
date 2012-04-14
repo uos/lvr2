@@ -171,6 +171,8 @@ class MeshBuffer
 
         uintArr	getFaceMaterialIndexArray(size_t &n);
 
+        textureArr getTextureArray(size_t &n);
+
 
 #define SECTION_INDEXED_GETTER
         /**********************************************************************
@@ -360,6 +362,7 @@ class MeshBuffer
 
         void setFaceMaterialIndexArray( uintArr array, size_t n);
 
+        void setTextureArray( textureArr array, size_t n);
 
 
 #define SECTION_VECTOR_SETTER
@@ -542,7 +545,7 @@ class MeshBuffer
 
         void setFaceMaterialIndexArray(std::vector<unsigned int> &array);
 
-
+        void setTextureArray(std::vector<GlTexture*> &array);
 
 #define SECTION_ADDITIONAL_STUFF
         /**********************************************************************
@@ -612,8 +615,11 @@ class MeshBuffer
 
         size_t		m_numFaceMaterialIndices;
 
+        size_t		m_numTextures;
+
         materialArr m_faceMaterials;
 
+        textureArr	m_textures;
 
 
 };

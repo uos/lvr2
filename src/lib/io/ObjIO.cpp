@@ -37,7 +37,7 @@
 #include "Timestamp.hpp"
 #include "boost/tuple/tuple.hpp"
 #include "../geometry/Vertex.hpp"
-#include "../display/Texture.hpp"
+#include "../display/GlTexture.hpp"
 #include "../display/TextureFactory.hpp"
 #include <string.h>
 
@@ -93,12 +93,15 @@ ModelPtr ObjIO::read( string filename ) // TODO: Format correctly
 	cout << endl;
 
 	// Buffers
-	floatArr vertices;
-	floatArr vertexNormals;
-	ucharArr vertexColors;
-	uintArr faceIndices;
-	uintArr materialIndexBuffer;
-	floatArr textureCoordBuffer;
+	floatArr 	vertices;
+	floatArr 	vertexNormals;
+	ucharArr 	vertexColors;
+	uintArr 	faceIndices;
+	uintArr 	materialIndexBuffer;
+	materialArr materialBuffer;
+	floatArr 	textureCoordBuffer;
+
+	vector<GlTexture*> textures;
 
 	// Allocate memory
 	if ( numVertices )
@@ -121,6 +124,11 @@ ModelPtr ObjIO::read( string filename ) // TODO: Format correctly
 	if( numVertices )
 	{
 		textureCoordBuffer = floatArr( new float[ numVertices * 3 ] );
+	}
+
+	if(numMaterials)
+	{
+		materialBuffer = materialArr( new Material*[numMaterials]);
 	}
 
 
@@ -170,14 +178,49 @@ ModelPtr ObjIO::read( string filename ) // TODO: Format correctly
 		textureCoordBuffer[ i * 3 + 2 ] = o->e[ 2 ];
 	}
 
-	// face colors
+	// Parse materials...
+	map<string, int> textureNameMap;
+	map<string, int>::iterator it;
+	int textureIndex = 0;
 	for(int i = 0; i < numMaterials; ++i)
 	{
 		obj_material *o = objData->materialList[i];
 
+		materialBuffer[i] = new Material;
+		materialBuffer[i]->r = o->amb[0];
+		materialBuffer[i]->g = o->amb[1];
+		materialBuffer[i]->b = o->amb[2];
 
-		cout << "FILENAME: " << o->texture_filename << endl;
-		TextureFactory::instance().getTexture(o->texture_filename);
+		string fileanme(o->texture_filename);
+
+		if(filename == "")
+		{
+			materialBuffer[i]->texture_index = -1;
+		}
+		else
+		{
+			// Test if texture is already loaded
+			it = textureNameMap.find(filename);
+
+			if(it != textureNameMap.end())
+			{
+				materialBuffer[i]->texture_index = it->second;
+			}
+			else
+			{
+				GlTexture* texture = TextureFactory::instance().getTexture(filename);
+				if(texture == 0)
+				{
+					materialBuffer[i]->texture_index = -1;
+				}
+				else
+				{
+					materialBuffer[i]->texture_index = textureIndex;
+					textures.push_back(texture);
+					textureIndex++;
+				}
+			}
+		}
 
 	}
 
@@ -194,7 +237,9 @@ ModelPtr ObjIO::read( string filename ) // TODO: Format correctly
 		mesh->setVertexNormalArray(            vertexNormals,      numVertexNormals );
 		mesh->setFaceArray(                    faceIndices,        numFaces );
 		mesh->setFaceMaterialIndexArray(        materialIndexBuffer, numFaces );
+		mesh->setMaterialArray ( materialBuffer, numMaterials);
 		mesh->setVertexTextureCoordinateArray( textureCoordBuffer, numTextures );
+		mesh->setTextureArray(textures);
 	}
 
 	ModelPtr m( new Model( mesh ) );

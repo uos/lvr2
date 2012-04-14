@@ -35,6 +35,7 @@
 
 
 #include "boost/shared_array.hpp"
+#include "display/GlTexture.hpp"
 
 namespace lssr
 {
@@ -119,6 +120,8 @@ typedef boost::shared_array< coord<unsigned int> > idx3uArr;
 typedef boost::shared_array< idxVal<unsigned int> > idx1uArr;
 
 typedef boost::shared_array< Material* > materialArr;
+
+typedef boost::shared_array< GlTexture* > textureArr;
 
 typedef std::pair<size_t, size_t> indexPair;
 

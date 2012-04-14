@@ -90,8 +90,9 @@ private:
 protected:
 
 	//void compileDisplayLists();
-	void compileSurfaceList();
+	void compileColoredMeshList();
 	void compileWireframeList();
+	void compileTexturedMeshList();
 
 	void readPly(string filename);
 
@@ -104,10 +105,12 @@ protected:
 	uintArr 		m_materialIndexBuffer;
 	floatArr 		m_textureCoordBuffer;
 	materialArr		m_materials;
+	textureArr		m_textures;
 
 	uintArr         m_indices;
 
 	bool            m_finalized;
+	bool			m_haveMaterials;
 
 	size_t          m_numVertices;
 	size_t          m_numFaces;
@@ -115,8 +118,10 @@ protected:
 
 	int             m_renderMode;
 
-	int             m_surfaceList;
+
+	int             m_coloredMeshList;
 	int             m_wireframeList;
+	int 			m_textureDisplayList;
 
 };
 
@@ -131,7 +136,7 @@ void StaticMesh::render(){
 		    {
 		        glEnable(GL_LIGHTING);
 		        glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
-		        glCallList(m_surfaceList);
+		        glCallList(m_coloredMeshList);
 		    }
 
 		    if(m_renderMode & RenderTriangles)

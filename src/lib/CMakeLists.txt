@@ -26,7 +26,7 @@ set(LSSR_SOURCES
     display/Grid.cpp
     display/Color.cpp
     display/MeshCluster.cpp
-    display/Texture.cpp
+    display/GlTexture.cpp
     display/TextureFactory.cpp
     reconstruction/PCLFiltering.cpp
 )
