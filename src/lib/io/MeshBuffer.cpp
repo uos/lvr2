@@ -334,16 +334,7 @@ void MeshBuffer::setMaterialArray(std::vector<Material*>& array)
 	m_numMaterials = array.size();
 	for(size_t i = 0; i < array.size(); i++)
 	{
-		//m_faceMaterials[i] = array[i];
-		//std::cout << m_faceMaterials[i]->texture_index << std::endl;
-		Material* m = array[i];
-		m_faceMaterials[i] = new Material;
-		m_faceMaterials[i]->r = m->r;
-		m_faceMaterials[i]->g = m->g;
-		m_faceMaterials[i]->b = m->b;
-		m_faceMaterials[i]->texture_index = m->texture_index;
-
-
+		m_faceMaterials[i] = array[i];
 	}
 }
 

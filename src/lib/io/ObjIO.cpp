@@ -272,32 +272,6 @@ void ObjIO::save( string filename )
 		// format of a face: f v/vt/vn
 		for( size_t i = 0; i < lenFaces; ++i )
 		{
-		/*if( lenFaceIndices > 0 && faceMaterialIndices[ i ] != UINT_MAX )
-			{
-				if( faceMaterialIndices[ i ] != prevMaterialIndex )
-				{
-					out << "usemtl texture_"<<faceMaterialIndices[ i ]<<endl;
-					prevMaterialIndex = faceMaterialIndices[ i ];
-					materialIndexSet.insert(faceMaterialIndices[ i ]);
-				}
-			}
-			else if( lenFaceMaterialIndices > 0 )
-			{
-				Material* m = materials[i];
-				ObjColor color(m->r, m->g, m->b);
-
-				pair<std::map<Vertex<uchar>, unsigned int>::iterator, bool> pommes
-				= colorMap.insert( pair<ObjColor, unsigned int>( color, i ) );
-				if( pommes.second == false )
-				{
-					out << "usemtl color_" << colorMap[color] << endl;
-				}
-				else
-				{
-					out << "usemtl color_" << i << endl;
-				}
-
-			}*/
 
 			Material* m = materials[faceMaterialIndices[i]];
 			if(m->texture_index >= 0)
@@ -336,36 +310,6 @@ void ObjIO::save( string filename )
 
 
 	if( mtlFile.good() )
-	/*{
-		if( materialIndexSet.size() > 0 )
-		{
-			std::set<unsigned int>::iterator index;
-			for ( index = materialIndexSet.begin(); index != materialIndexSet.end(); index++ )
-			{
-				mtlFile << "newmtl texture_"      << *index << endl;
-				mtlFile << "Ka 1.000 1.000 1.000" << endl;
-				mtlFile << "Kd 1.000 1.000 1.000" << endl;
-				mtlFile << "map_Kd texture_"      << *index << ".ppm" << endl << endl;
-			}
-		}
-		if( colorMap.size() > 0 )
-		{
-			std::map<ObjColor, unsigned int>::iterator mapIter = colorMap.begin();
-			for( ; mapIter != colorMap.end(); mapIter++ )
-			{
-				mtlFile << "newmtl color_" << mapIter->second << endl;
-				mtlFile << "Ka "
-						<< mapIter->first[0] / 255.0f << " "
-						<< mapIter->first[1] / 255.0f << " "
-						<< mapIter->first[2] / 255.0f << endl;
-				mtlFile << "Kd "
-						<< mapIter->first[0] / 255.0f << " "
-						<< mapIter->first[1] / 255.0f << " "
-						<< mapIter->first[2] / 255.0f << endl;
-			}
-		}
-	}*/
-
 	{
 		for(int i = 0; i < lenFaceMaterials; i++)
 		{
