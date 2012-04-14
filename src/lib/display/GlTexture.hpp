@@ -5,15 +5,15 @@
  *  @author Thomas Wiemann
  */
 
-#ifndef TEXTURE_HPP_
-#define TEXTURE_HPP_
+#ifndef GLTEXTURE_HPP_
+#define GLTEXTURE_HPP_
 
 #include <string>
 using std::string;
 
 #include <GL/gl.h>
 
-class Texture
+class GlTexture
 {
 public:
 
@@ -26,17 +26,17 @@ public:
      * @param   width   The image width
      * @param   height  The image height
      */
-    Texture(unsigned char* pixels, int width, int height);
+    GlTexture(unsigned char* pixels, int width, int height);
 
     /**
      * @brief   Copy ctor.
      */
-    Texture(const Texture &other);
+    GlTexture(const GlTexture &other);
 
     /**
      * @brief   Dtor.
      */
-    virtual ~Texture();
+    virtual ~GlTexture();
 
     /**
      * @brief   Bind the texture to the current OpenGL context

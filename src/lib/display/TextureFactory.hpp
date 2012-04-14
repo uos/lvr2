@@ -10,7 +10,7 @@
 #ifndef TEXTUREFACTORY_H_
 #define TEXTUREFACTORY_H_
 
-#include "Texture.hpp"
+#include "GlTexture.hpp"
 
 class TextureFactory
 {
@@ -32,7 +32,7 @@ public:
      * @brief   Returns a new texture if the file contains readable
      *          image data or a null point if the file couldn't be parsed
      */
-    Texture* getTexture(string filename) const;
+    GlTexture* getTexture(string filename) const;
 
     /**
      * @brief   Returns the singleton instance

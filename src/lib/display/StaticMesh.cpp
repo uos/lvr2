@@ -38,12 +38,17 @@ StaticMesh::StaticMesh(){
 	m_vertices.reset();
 	m_colors.reset();
 	m_indices.reset();
+	m_textures.reset();
+	m_materials.reset();
+	m_materialIndexBuffer.reset();
+
 
 	m_numFaces      = 0;
 	m_numVertices   = 0;
 	m_numMaterials  = 0;
 
 	m_finalized = false;
+	m_haveMaterials = false;
 
 	m_renderMode    = 0;
 
@@ -58,7 +63,7 @@ StaticMesh::StaticMesh( ModelPtr model, string name )
     init( model->m_mesh );
 
 	calcBoundingBox();
-	compileSurfaceList();
+	compileColoredMeshList();
 	compileWireframeList();
 
 }
@@ -72,7 +77,7 @@ StaticMesh::StaticMesh( MeshBufferPtr mesh, string name )
     init( mesh );
 
     calcBoundingBox();
-    compileSurfaceList();
+    compileColoredMeshList();
     compileWireframeList();
 
 }
@@ -104,6 +109,8 @@ void StaticMesh::init( MeshBufferPtr mesh )
 		m_finalized     = true;
 		m_visible       = true;
 		m_active        = true;
+
+		if(m_materials) m_haveMaterials = true;
 
 		m_renderMode = 0;
 		m_renderMode    |= RenderSurfaces;
@@ -207,11 +214,11 @@ void StaticMesh::compileWireframeList()
 }
 
 
-void StaticMesh::compileSurfaceList(){
+void StaticMesh::compileColoredMeshList(){
 
 	if(m_finalized){
 
-		m_surfaceList = glGenLists(1);
+		m_coloredMeshList = glGenLists(1);
 
 		// Enable vertex / normal / color arrays
 		glEnableClientState(GL_VERTEX_ARRAY);
@@ -219,7 +226,7 @@ void StaticMesh::compileSurfaceList(){
 		glEnableClientState(GL_COLOR_ARRAY);
 
 		// Start new display list
-		glNewList(m_surfaceList, GL_COMPILE);
+		glNewList(m_coloredMeshList, GL_COMPILE);
 
 		glEnable(GL_LIGHTING);
 
@@ -371,30 +378,13 @@ size_t StaticMesh::getNumberOfFaces()
 
 void StaticMesh::savePLY(string filename)
 {
-//	// Test if mesh is finalized
-//	if(finalized)
-//	{
-//		PLYWriter writer(filename);
-//
-//		// Generate vertex element description in .ply header section
-//
-//		// Add properties depending on the available buffers
-//		if(m_vertices != 0)
-//		{
-//
-//		}
-//
-//		if(m_normals != 0)
-//		{
-//
-//		}
-//
-//	}
-//	else
-//	{
-//		cout << "#### Warning: Static Mesh: Buffers empty." << endl;
-// 	}
 
 }
 
-} // namespace lssr
+void StaticMesh::compileTexturedMeshList()
+{
+
+}
+
+}
+ // namespace lssr
