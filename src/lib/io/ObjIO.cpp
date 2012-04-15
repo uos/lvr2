@@ -40,6 +40,7 @@
 #include "../display/GlTexture.hpp"
 #include "../display/TextureFactory.hpp"
 #include <string.h>
+#include <locale.h>
 
 namespace lssr
 {
@@ -48,6 +49,7 @@ using namespace std; // Bitte vergebt mir....
 
 ModelPtr ObjIO::read( string filename ) // TODO: Format correctly
 {
+	setlocale(LC_NUMERIC, "en_US");
 	ifstream f (filename.c_str());
 	if (!f.is_open())
 	{
@@ -174,9 +176,9 @@ ModelPtr ObjIO::read( string filename ) // TODO: Format correctly
 	{
 		obj_vector *o = objData->textureList[i];
 		textureCoordBuffer[ i * 3 ]     = o->e[ 0 ];
-		textureCoordBuffer[ i * 3 + 1 ] = o->e[ 1 ];
+		textureCoordBuffer[ i * 3 + 1 ] = 1 - o->e[ 1 ];
 		textureCoordBuffer[ i * 3 + 2 ] = o->e[ 2 ];
-	}
+ 	}
 
 	// Parse materials...
 	map<string, int> textureNameMap;
@@ -191,16 +193,16 @@ ModelPtr ObjIO::read( string filename ) // TODO: Format correctly
 		materialBuffer[i]->g = o->amb[1];
 		materialBuffer[i]->b = o->amb[2];
 
-		string fileanme(o->texture_filename);
+		string texname(o->texture_filename);
 
-		if(filename == "")
+		if(texname == "")
 		{
 			materialBuffer[i]->texture_index = -1;
 		}
 		else
 		{
 			// Test if texture is already loaded
-			it = textureNameMap.find(filename);
+			it = textureNameMap.find(texname);
 
 			if(it != textureNameMap.end())
 			{
@@ -208,7 +210,7 @@ ModelPtr ObjIO::read( string filename ) // TODO: Format correctly
 			}
 			else
 			{
-				GlTexture* texture = TextureFactory::instance().getTexture(filename);
+ 				GlTexture* texture = TextureFactory::instance().getTexture(texname);
 				if(texture == 0)
 				{
 					materialBuffer[i]->texture_index = -1;
@@ -217,6 +219,7 @@ ModelPtr ObjIO::read( string filename ) // TODO: Format correctly
 				{
 					materialBuffer[i]->texture_index = textureIndex;
 					textures.push_back(texture);
+					textureNameMap[texname] = textureIndex;
 					textureIndex++;
 				}
 			}

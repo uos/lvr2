@@ -38,8 +38,6 @@ StaticMesh::StaticMesh(){
 	m_vertices.reset();
 	m_colors.reset();
 	m_indices.reset();
-	m_textures.reset();
-	m_materials.reset();
 	m_materialIndexBuffer.reset();
 
 
@@ -97,11 +95,8 @@ void StaticMesh::init( MeshBufferPtr mesh )
 		m_colors        		= mesh->getVertexColorArray(n_colors);
 		m_vertices      		= mesh->getVertexArray(m_numVertices);
 		m_indices       		= mesh->getFaceArray(m_numFaces);
-		m_textureCoordBuffer	= mesh->getVertexTextureCoordinateArray(n_textures);
-		m_materialIndexBuffer 	= mesh->getFaceMaterialIndexArray(n_textureIndices);
-		m_materials 			= mesh->getMaterialArray(m_numMaterials);
-
 		m_blackColors   = new unsigned char[ 3 * m_numVertices ];
+
 		for ( size_t i = 0; i < 3 * m_numVertices; i++ ) {
 			m_blackColors[i] = 0.0;
 		}
@@ -109,8 +104,6 @@ void StaticMesh::init( MeshBufferPtr mesh )
 		m_finalized     = true;
 		m_visible       = true;
 		m_active        = true;
-
-		if(m_materials) m_haveMaterials = true;
 
 		m_renderMode = 0;
 		m_renderMode    |= RenderSurfaces;

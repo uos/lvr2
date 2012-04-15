@@ -27,29 +27,57 @@
 #include "TriangleMeshVisualizer.hpp"
 
 #include "display/StaticMesh.hpp"
+#include "display/TexturedMesh.hpp"
+
 #include "../widgets/TriangleMeshTreeWidgetItem.h"
 
 TriangleMeshVisualizer::TriangleMeshVisualizer(MeshBufferPtr buffer, string name)
 {
-	StaticMesh* mesh = new StaticMesh( buffer );
-	m_renderable = mesh;
-
-	TriangleMeshTreeWidgetItem* item = new TriangleMeshTreeWidgetItem(TriangleMeshItem);
-	m_treeItem = item;
-
-	int modes = 0;
-	modes |= Mesh;
-
-	if(mesh->getNormals())
+	// Test for material information
+	size_t num_mat;
+	buffer->getMaterialArray(num_mat);
+	cout << "NUM MAT: " << num_mat << endl;
+	if(!num_mat)
 	{
-		modes |= VertexNormals;
+		StaticMesh* mesh = new StaticMesh( buffer );
+		m_renderable = mesh;
+
+		TriangleMeshTreeWidgetItem* item = new TriangleMeshTreeWidgetItem(TriangleMeshItem);
+		m_treeItem = item;
+
+		int modes = 0;
+		modes |= Mesh;
+
+		if(mesh->getNormals())
+		{
+			modes |= VertexNormals;
+		}
+
+		item->setSupportedRenderModes(modes);
+		item->setViewCentering(false);
+		item->setName(name);
+		item->setRenderable(mesh);
+		item->setNumFaces(mesh->getNumberOfFaces());
+	}
+	else
+	{
+		TexturedMesh* mesh = new TexturedMesh( buffer);
+		m_renderable = mesh;
+
+		TriangleMeshTreeWidgetItem* item = new TriangleMeshTreeWidgetItem(TriangleMeshItem);
+		m_treeItem = item;
+
+		int modes = 0;
+		modes |= Mesh;
+
+		item->setSupportedRenderModes(modes);
+		item->setViewCentering(false);
+		item->setName(name);
+		item->setRenderable(mesh);
+		item->setNumFaces(0);
 	}
 
-	item->setSupportedRenderModes(modes);
-	item->setViewCentering(false);
-	item->setName(name);
-	item->setRenderable(mesh);
-	item->setNumFaces(mesh->getNumberOfFaces());
+
 }
 
 

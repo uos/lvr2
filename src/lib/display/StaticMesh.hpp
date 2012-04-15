@@ -103,10 +103,6 @@ protected:
 	unsigned char*  m_blackColors;
 
 	uintArr 		m_materialIndexBuffer;
-	floatArr 		m_textureCoordBuffer;
-	materialArr		m_materials;
-	textureArr		m_textures;
-
 	uintArr         m_indices;
 
 	bool            m_finalized;
@@ -121,7 +117,6 @@ protected:
 
 	int             m_coloredMeshList;
 	int             m_wireframeList;
-	int 			m_textureDisplayList;
 
 };
 
