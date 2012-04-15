@@ -28,6 +28,7 @@ set(LSSR_SOURCES
     display/MeshCluster.cpp
     display/GlTexture.cpp
     display/TextureFactory.cpp
+    display/TexturedMesh.cpp
     reconstruction/PCLFiltering.cpp
 )
 
