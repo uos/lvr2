@@ -50,209 +50,7 @@ namespace lssr
 using namespace std; // Bitte vergebt mir....
 // Meinst du wirklich, dass ich dir so etwas durchgehen lassen kann?
 
-/*ModelPtr ObjIO::read( string filename ) // TODO: Format correctly
-{
-	setlocale(LC_NUMERIC, "en_US");
-	ifstream f (filename.c_str());
-	if (!f.is_open())
-	{
-		cerr << timestamp << "File '" << filename << "' could not be opened." << endl;
-		return ModelPtr( new Model );
-	}
-	f.close();
 
-	char *fn = const_cast<char *>(filename.c_str());
-	objLoader *objData = new objLoader();
-	objData->load(fn);
-
-	// Buffer count variables
-	size_t numVertices      = objData->vertexCount;
-	size_t numVertexNormals = objData->normalCount;
-	size_t numFaces         = objData->faceCount;
-	size_t numTextures      = objData->textureCount;
-	size_t numSpheres       = objData->sphereCount;
-	size_t numPlanes        = objData->planeCount;
-	size_t numPointLights   = objData->lightPointCount;
-	size_t numDiscLights    = objData->lightDiscCount;
-	size_t numQuadLights    = objData->lightQuadCount;
-	size_t numMaterials     = objData->materialCount;
-	size_t numVertexColors  = 0; // TODO: Set
-
-	// Some output
-	cout << timestamp << endl;
-	cout << "[obj_io]" << "Number of vertices: "            << numVertices      << endl;
-	cout << "[obj_io]" << "Number of vertex normals: "      << numVertexNormals << endl;
-	cout << "[obj_io]" << "Number of vertex colors: "       << numVertexColors  << endl;
-	cout << "[obj_io]" << "Number of faces: "               << numFaces         << endl;
-	cout << "[obj_io]" << "Number of texture coordinates: " << numTextures      << endl;
-	cout << "[obj_io]" << "Number of spheres: "             << numSpheres       << endl;
-	cout << "[obj_io]" << "Number of planes: "              << numPlanes        << endl;
-	cout << "[obj_io]" << "Number of point lights: "        << numPointLights   << endl;
-	cout << "[obj_io]" << "Number of disc lights: "         << numDiscLights    << endl;
-	cout << "[obj_io]" << "Number of quad lights: "         << numQuadLights    << endl;
-	cout << "[obj_io]" << "Number of materials: "           << numMaterials     << endl;
-	if(objData->camera != NULL)
-	{
-		cout << "[obj_io]" << "Found a camera" << endl;
-	}
-	cout << endl;
-
-	// Buffers
-	floatArr 	vertices;
-	floatArr 	vertexNormals;
-	ucharArr 	vertexColors;
-	uintArr 	faceIndices;
-	uintArr 	materialIndexBuffer;
-	materialArr materialBuffer;
-	floatArr 	textureCoordBuffer;
-
-	vector<GlTexture*> textures;
-
-	// Allocate memory
-	if ( numVertices )
-	{
-		vertices = floatArr( new float[ numVertices * 3 ] );
-	}
-	if ( numVertexNormals )
-	{
-		vertexNormals = floatArr( new float[ numVertexNormals * 3 ] );
-	}
-	if ( numVertexColors )
-	{
-		vertexColors = ucharArr( new uchar[ numVertexColors * 3 ] );
-	}
-	if ( numFaces )
-	{
-		faceIndices = uintArr( new unsigned int[ numFaces * 3 ] );
-		materialIndexBuffer = uintArr( new unsigned int[ numFaces ] );
-	}
-	if( numVertices )
-	{
-		textureCoordBuffer = floatArr( new float[ numVertices * 3 ] );
-	}
-
-	if(numMaterials)
-	{
-		materialBuffer = materialArr( new Material*[numMaterials]);
-	}
-
-
-	// vertices
-	for(int i = 0; i < numVertices; ++i)
-	{
-		obj_vector *o = objData->vertexList[i];
-		vertices[ i * 3 ]     = o->e[ 0 ];
-		vertices[ i * 3 + 1 ] = o->e[ 1 ];
-		vertices[ i * 3 + 2 ] = o->e[ 2 ];
-	}
-
-	// vertex normals
-	for(int i = 0; i < numVertexNormals; ++i)
-	{
-		obj_vector *o = objData->normalList[i];
-		vertexNormals[ i * 3 ]     = o->e[ 0 ];
-		vertexNormals[ i * 3 + 1 ] = o->e[ 1 ];
-		vertexNormals[ i * 3 + 2 ] = o->e[ 2 ];
-	}
-
-	// vertex colors
-	for(int i = 0; i < numVertexColors; ++i)
-	{
-		vertexColors[ i * 3 ]    = 255;
-		vertexColors[ i * 3 + 1] = 0;
-		vertexColors[ i * 3 + 2] = 0;
-	}
-
-	// faces
-	for(int i = 0; i < numFaces; ++i)
-	{
-		obj_face *o              = objData->faceList[ i ];
-		faceIndices[ i * 3 ]     = o->vertex_index[ 0 ];
-		faceIndices[ i * 3 + 1 ] = o->vertex_index[ 1 ];
-		faceIndices[ i * 3 + 2 ] = o->vertex_index[ 2 ];
-
-		materialIndexBuffer[ i ]     = o->material_index;
-	}
-
-	// texture coordinates
-	for(int i = 0; i < numVertices; ++i)
-	{
-		obj_vector *o = objData->textureList[i];
-		textureCoordBuffer[ i * 3 ]     = o->e[ 0 ];
-		textureCoordBuffer[ i * 3 + 1 ] = 1 - o->e[ 1 ];
-		textureCoordBuffer[ i * 3 + 2 ] = o->e[ 2 ];
- 	}
-
-	// Parse materials...
-	map<string, int> textureNameMap;
-	map<string, int>::iterator it;
-	int textureIndex = 0;
-	for(int i = 0; i < numMaterials; ++i)
-	{
-		obj_material *o = objData->materialList[i];
-
-		materialBuffer[i] = new Material;
-		materialBuffer[i]->r = o->amb[0];
-		materialBuffer[i]->g = o->amb[1];
-		materialBuffer[i]->b = o->amb[2];
-
-		string texname(o->texture_filename);
-
-		if(texname == "")
-		{
-			materialBuffer[i]->texture_index = -1;
-		}
-		else
-		{
-			// Test if texture is already loaded
-			it = textureNameMap.find(texname);
-
-			if(it != textureNameMap.end())
-			{
-				materialBuffer[i]->texture_index = it->second;
-			}
-			else
-			{
- 				GlTexture* texture = TextureFactory::instance().getTexture(texname);
-				if(texture == 0)
-				{
-					materialBuffer[i]->texture_index = -1;
-				}
-				else
-				{
-					materialBuffer[i]->texture_index = textureIndex;
-					textures.push_back(texture);
-					textureNameMap[texname] = textureIndex;
-					textureIndex++;
-				}
-			}
-		}
-
-	}
-
-	// delete obj data object
-	delete(objData);
-
-	// Save buffers in model
-	MeshBufferPtr mesh;
-	if(vertices)
-	{
-		mesh = MeshBufferPtr( new MeshBuffer );
-		mesh->setVertexArray(                  vertices,           numVertices );
-		mesh->setVertexColorArray(             vertexColors,       numVertexColors );
-		mesh->setVertexNormalArray(            vertexNormals,      numVertexNormals );
-		mesh->setFaceArray(                    faceIndices,        numFaces );
-		mesh->setFaceMaterialIndexArray(        materialIndexBuffer, numFaces );
-		mesh->setMaterialArray ( materialBuffer, numMaterials);
-		mesh->setVertexTextureCoordinateArray( textureCoordBuffer, numTextures );
-		mesh->setTextureArray(textures);
-	}
-
-	ModelPtr m( new Model( mesh ) );
-	m_model = m;
-	return m;
-};
-*/
 void tokenize(const string& str,
                       vector<string>& tokens,
                       const string& delimiters = " ")
@@ -325,9 +123,9 @@ void ObjIO::parseMtlFile(
 			{
 				float r, g, b;
 				ss >> r >> g >> b;
-				m->r = (uchar)r * 255;
-				m->g = (uchar)g * 255;
-				m->b = (uchar)b * 255;
+				m->r = (uchar)(r * 255);
+				m->g = (uchar)(g * 255);
+				m->b = (uchar)(b * 255);
 			}
 			else if(keyword == "map_Kd")
 			{
@@ -351,6 +149,8 @@ void ObjIO::parseMtlFile(
 
 ModelPtr ObjIO::read(string filename)
 {
+
+
 	ifstream in(filename.c_str());
 
 	vector<float> 		vertices;
@@ -457,22 +257,6 @@ ModelPtr ObjIO::read(string filename)
 		cout << timestamp << "ObjIO::read(): Unable to open file'" << filename << "'." << endl;
 	}
 
-/*	cout << "OBJ INFO:" << endl;
-	cout << vertices.size() / 3<< endl;
-	cout << normals.size() / 3<< endl;
-	cout << faces.size() / 3 << endl;
-	cout << faceMaterials.size() << endl;
-
-	cout << "Mat info: " << endl;
-	cout << textures.size() << endl;
-	cout << materials.size() << endl;
-*/
-
-/*	for(int i = 0; i < materials.size(); i++)
-	{
-		if(materials[i]->texture_index != -1) cout << materials[i]->texture_index << endl;
-	}*/
-
 	MeshBufferPtr mesh = MeshBufferPtr(new MeshBuffer);
 
 	if(materials.size())
@@ -498,21 +282,6 @@ ModelPtr ObjIO::read(string filename)
 	mesh->setVertexArray(vertices);
 	mesh->setVertexNormalArray(normals);
 	mesh->setFaceArray(faces);
-
-/*	for(int i = 0; i < vertices.size() / 3; i++)
-	{
-		cout << vertices[3 * i + 0] << " " << vertices[3 * i + 1] << " " << vertices[3 * i + 2] << endl;
-		cout << normals[3 * i + 0] << " " << normals[3 * i + 1] << " " << normals[3 * i + 2] << endl;
-		cout << texcoords[3 * i + 0] << " " << texcoords[3 * i + 1] << " " << texcoords[3 * i + 2] << endl;
-		cout << endl;
-	}
-
-	for(int i = 0; i < faces.size() / 3; i++)
-	{
-		cout << faces[3 * i + 0] << " " << faces[3 * i + 1] << " " << faces[3 * i + 2] << endl;
-		cout << endl;
-	}
-*/
 
 	ModelPtr m(new Model(mesh));
 	m_model = m;

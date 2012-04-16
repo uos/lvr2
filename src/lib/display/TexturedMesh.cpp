@@ -101,6 +101,7 @@ void TexturedMesh::generateMaterialGroups()
 		// group if none was found. For efficient rendering we have to
 		// create groups by color and texture index,
 		Material* m = m_materials[m_faceMaterials[i]];
+
 		if(m->texture_index != -1)
 		{
 
@@ -174,6 +175,7 @@ void TexturedMesh::compileDisplayList()
 
 	// Draw colored materials
 
+	glDisable(GL_TEXTURE_2D);
 	glBegin(GL_TRIANGLES);
 	for(size_t i = 0; i < m_colorMaterials.size(); i++)
 	{
@@ -199,7 +201,7 @@ void TexturedMesh::compileDisplayList()
 
 	}
 	glEnd();
-
+	glEnable(GL_TEXTURE_2D);
 	glEndList();
 
 }
