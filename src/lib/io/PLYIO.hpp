@@ -111,6 +111,12 @@ class PLYIO : public BaseIO
          **/
         void save( string filename );
 
+        void save(ModelPtr model, string filename)
+        {
+        	m_model = model;
+        	save(filename);
+        }
+
 
         /**
          * \brief Read specified PLY file.
