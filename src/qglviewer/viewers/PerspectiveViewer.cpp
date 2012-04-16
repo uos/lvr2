@@ -158,7 +158,9 @@ void PerspectiveViewer::draw()
 {
 //	// Render background
 	glDisable(GL_DEPTH_TEST);
+	glDisable(GL_TEXTURE_2D);
 	glCallList(m_backgroundDisplayList);
+	glEnable(GL_TEXTURE_2D);
 	glEnable(GL_DEPTH_TEST);
 
 	// Draw contends

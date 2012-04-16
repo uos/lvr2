@@ -36,7 +36,7 @@ TriangleMeshVisualizer::TriangleMeshVisualizer(MeshBufferPtr buffer, string name
 	// Test for material information
 	size_t num_mat;
 	buffer->getMaterialArray(num_mat);
-	cout << "NUM MAT: " << num_mat << endl;
+
 	if(!num_mat)
 	{
 		StaticMesh* mesh = new StaticMesh( buffer );

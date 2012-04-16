@@ -41,13 +41,16 @@
 #include "../display/TextureFactory.hpp"
 #include <string.h>
 #include <locale.h>
+#include <sstream>
+
+#include "PLYIO.hpp"
 
 namespace lssr
 {
 using namespace std; // Bitte vergebt mir....
 // Meinst du wirklich, dass ich dir so etwas durchgehen lassen kann?
 
-ModelPtr ObjIO::read( string filename ) // TODO: Format correctly
+/*ModelPtr ObjIO::read( string filename ) // TODO: Format correctly
 {
 	setlocale(LC_NUMERIC, "en_US");
 	ifstream f (filename.c_str());
@@ -249,6 +252,272 @@ ModelPtr ObjIO::read( string filename ) // TODO: Format correctly
 	m_model = m;
 	return m;
 };
+*/
+void tokenize(const string& str,
+                      vector<string>& tokens,
+                      const string& delimiters = " ")
+{
+    // Skip delimiters at beginning.
+    string::size_type lastPos = str.find_first_not_of(delimiters, 0);
+    // Find first "non-delimiter".
+    string::size_type pos     = str.find_first_of(delimiters, lastPos);
+
+    while (string::npos != pos || string::npos != lastPos)
+    {
+        // Found a token, add it to the vector.
+        tokens.push_back(str.substr(lastPos, pos - lastPos));
+        // Skip delimiters.  Note the "not_of"
+        lastPos = str.find_first_not_of(delimiters, pos);
+        // Find next "non-delimiter"
+        pos = str.find_first_of(delimiters, lastPos);
+    }
+}
+
+void ObjIO::parseMtlFile(
+		map<string, int>& matNames,
+		vector<Material*>& materials,
+		vector<GlTexture*>& textures,
+		string mtlname)
+{
+	cout << "Parsing " << mtlname << endl;
+
+	ifstream in(mtlname.c_str());
+	if(in.good())
+	{
+		char buffer[1024];
+		Material* m = 0;
+		int matIndex = 0;
+		while(in.good())
+		{
+			in.getline(buffer, 1024);
+
+			// Skip comments
+			if(buffer[0] == '#') continue;
+
+			stringstream ss(buffer);
+			string keyword;
+			ss >> keyword;
+
+			if(keyword == "newmtl")
+			{
+				string matName;
+				ss >> matName;
+				map<string, int>::iterator it = matNames.find(matName);
+				if(it == matNames.end())
+				{
+					m = new Material;
+					m->r = 128;
+					m->g = 128;
+					m->b = 128;
+					m->texture_index = -1;
+					materials.push_back(m);
+					matNames[matName] = matIndex;
+					matIndex++;
+
+				}
+				else
+				{
+					//m = materials[matNames[matName]];
+					cout << "ObjIO::parseMtlFile(): Warning: Duplicate material: " << matName << endl;
+				}
+			}
+			else if(keyword == "Ka")
+			{
+				float r, g, b;
+				ss >> r >> g >> b;
+				m->r = (uchar)r * 255;
+				m->g = (uchar)g * 255;
+				m->b = (uchar)b * 255;
+			}
+			else if(keyword == "map_Kd")
+			{
+				string texname;
+				ss >> texname;
+				GlTexture* texture = TextureFactory::instance().getTexture(texname);
+				textures.push_back(texture);
+				m->texture_index = textures.size() - 1;
+			}
+			else
+			{
+				continue;
+			}
+		}
+	}
+	else
+	{
+		cout << "ObjIO::parseMtlFile(): Error opening '" << mtlname << "'." << endl;
+	}
+}
+
+ModelPtr ObjIO::read(string filename)
+{
+	ifstream in(filename.c_str());
+
+	vector<float> 		vertices;
+	vector<float> 		normals;
+	vector<float> 		texcoords;
+	vector<uint>		faceMaterials;
+	vector<uint>  		faces;
+	vector<Material*> 	materials;
+	vector<GlTexture*>	textures;
+
+	map<string, int> matNames;
+
+	int currentMat = 0;
+
+	if(in.good())
+	{
+		char buffer[1024];
+		while(in.good())
+		{
+			in.getline(buffer, 1024);
+
+			// Skip comments
+			if(buffer[0] == '#') continue;
+
+			stringstream ss(buffer);
+			string keyword;
+			ss >> keyword;
+			float x, y, z;
+			if(keyword == "v")
+			{
+				ss >> x >> y >> z;
+				vertices.push_back(x);
+				vertices.push_back(y);
+				vertices.push_back(z);
+			}
+			else if(keyword == "vt")
+			{
+				ss >> x >> y >> z;
+				texcoords.push_back(x);
+				texcoords.push_back(1 - y);
+				texcoords.push_back(z);
+			}
+			else if(keyword == "vn")
+			{
+				ss >> x >> y >> z;
+				normals.push_back(x);
+				normals.push_back(y);
+				normals.push_back(z);
+			}
+			else if(keyword == "f")
+			{
+				vector<string> tokens;
+				tokenize(buffer, tokens);
+
+				if(tokens.size() < 4)
+					continue;
+
+				vector<string> tokens2;
+				tokenize(tokens.at(1),tokens2,"/");
+				int a = atoi(tokens2.at(0).c_str());
+				tokens2.clear();
+
+				tokenize(tokens.at(2),tokens2,"/");
+				int b = atoi(tokens2.at(0).c_str());
+				tokens2.clear();
+
+				tokenize(tokens.at(3),tokens2,"/");
+				int c = atoi(tokens2.at(0).c_str());
+				tokens2.clear();
+
+				faces.push_back(a - 1);
+				faces.push_back(b - 1);
+				faces.push_back(c - 1);
+
+				// Use current material
+				faceMaterials.push_back(currentMat);
+			}
+			else if(keyword == "usemtl")
+			{
+				string mtlname;
+				ss >> mtlname;
+				// Find name and set current material
+				map<string, int>::iterator it = matNames.find(mtlname);
+				if(it == matNames.end())
+				{
+					cout << "ObjIO:read(): Warning material '" << mtlname << "' is undefined." << endl;
+				}
+				else
+				{
+					currentMat = it->second;
+				}
+			}
+			else if(keyword == "mtllib")
+			{
+				string mtlfile;
+				ss >> mtlfile;
+				parseMtlFile(matNames, materials, textures, mtlfile);
+			}
+		}
+
+	}
+	else
+	{
+		cout << timestamp << "ObjIO::read(): Unable to open file'" << filename << "'." << endl;
+	}
+
+/*	cout << "OBJ INFO:" << endl;
+	cout << vertices.size() / 3<< endl;
+	cout << normals.size() / 3<< endl;
+	cout << faces.size() / 3 << endl;
+	cout << faceMaterials.size() << endl;
+
+	cout << "Mat info: " << endl;
+	cout << textures.size() << endl;
+	cout << materials.size() << endl;
+*/
+
+/*	for(int i = 0; i < materials.size(); i++)
+	{
+		if(materials[i]->texture_index != -1) cout << materials[i]->texture_index << endl;
+	}*/
+
+	MeshBufferPtr mesh = MeshBufferPtr(new MeshBuffer);
+
+	if(materials.size())
+	{
+		mesh->setMaterialArray(materials);
+	}
+
+	if(faceMaterials.size() == faces.size() / 3)
+	{
+		mesh->setFaceMaterialIndexArray(faceMaterials);
+	}
+	else
+	{
+		cout << "ObjIO::read(): Warning: Face material index buffer does not match face number." << endl;
+	}
+
+	if(textures.size())
+	{
+		mesh->setTextureArray(textures);
+	}
+
+	mesh->setVertexTextureCoordinateArray(texcoords);
+	mesh->setVertexArray(vertices);
+	mesh->setVertexNormalArray(normals);
+	mesh->setFaceArray(faces);
+
+/*	for(int i = 0; i < vertices.size() / 3; i++)
+	{
+		cout << vertices[3 * i + 0] << " " << vertices[3 * i + 1] << " " << vertices[3 * i + 2] << endl;
+		cout << normals[3 * i + 0] << " " << normals[3 * i + 1] << " " << normals[3 * i + 2] << endl;
+		cout << texcoords[3 * i + 0] << " " << texcoords[3 * i + 1] << " " << texcoords[3 * i + 2] << endl;
+		cout << endl;
+	}
+
+	for(int i = 0; i < faces.size() / 3; i++)
+	{
+		cout << faces[3 * i + 0] << " " << faces[3 * i + 1] << " " << faces[3 * i + 2] << endl;
+		cout << endl;
+	}
+*/
+
+	ModelPtr m(new Model(mesh));
+	m_model = m;
+	return m;
+}
 
 void ObjIO::save( string filename )
 {

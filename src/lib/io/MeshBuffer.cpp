@@ -24,8 +24,7 @@
  * @details   
  * 
  * @author    Lars Kiesow (lkiesow), lkiesow@uos.de, Universität Osnabrück
- * @version   110928
- * @date      09/22/2011 09:16:36 PM
+ * @author	  Thomas Wiemann (twiemann), twiemann@uos.de
  *
  **/
 #include "MeshBuffer.hpp"
