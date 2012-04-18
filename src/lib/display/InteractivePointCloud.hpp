@@ -28,7 +28,7 @@
 
 #include "Renderable.hpp"
 
-#include "io/model.hpp"
+#include "io/Model.hpp"
 
 namespace lssr
 {
