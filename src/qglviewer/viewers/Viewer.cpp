@@ -30,7 +30,7 @@ Viewer::Viewer(QWidget* parent, const QGLWidget* shared)
 	: QGLViewer(parent, shared),  m_parent(parent), m_zoom(1.0)
 {
     m_kfi = new qglviewer::KeyFrameInterpolator(new qglviewer::Frame());
-
+    m_saveToDisk = false;
 
     connect(m_kfi, SIGNAL(interpolated()), this, SLOT(updateGL()));
     connect(m_kfi, SIGNAL(interpolated()), this, SLOT(createSnapshot()));
@@ -66,6 +66,7 @@ void Viewer::draw()
 
 void Viewer::createSnapshot()
 {
+	if(m_saveToDisk)
     saveSnapshot(true);
 }
 

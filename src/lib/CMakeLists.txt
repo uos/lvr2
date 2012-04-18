@@ -15,6 +15,7 @@ set(LSSR_SOURCES
     io/GridIO.cpp
     io/KinectGrabber.cpp
     io/KinectIO.cpp
+    io/CoordinateTransform.cpp
     display/InteractivePointCloud.cpp
     display/CoordinateAxes.cpp
     display/Renderable.cpp

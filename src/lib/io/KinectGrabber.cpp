@@ -12,8 +12,6 @@ using std::endl;
 #include "KinectGrabber.hpp"
 #include "io/Timestamp.hpp"
 
-
-
 namespace lssr
 {
 

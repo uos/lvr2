@@ -39,7 +39,7 @@ using std::string;
 using std::vector;
 
 
-namespace reconstruct{
+namespace kingrab{
 
 using namespace boost::program_options;
 

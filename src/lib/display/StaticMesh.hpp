@@ -92,18 +92,19 @@ protected:
 	//void compileDisplayLists();
 	void compileColoredMeshList();
 	void compileWireframeList();
-	void compileTexturedMeshList();
+
+	void setColorMaterial(float r, float g, float b);
+
 
 	void readPly(string filename);
 
-	floatArr        m_vertexNormals;
+	floatArr        m_normals;
 	float*          m_faceNormals;
 	floatArr        m_vertices;
 	ucharArr        m_colors;
 	unsigned char*  m_blackColors;
 
-	uintArr 		m_materialIndexBuffer;
-	uintArr         m_indices;
+	uintArr         m_faces;
 
 	bool            m_finalized;
 	bool			m_haveMaterials;

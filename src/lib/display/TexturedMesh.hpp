@@ -26,7 +26,7 @@
 #ifndef TEXTUREDMESH_HPP_
 #define TEXTUREDMESH_HPP_
 
-#include "Renderable.hpp"
+#include "StaticMesh.hpp"
 
 namespace lssr
 {
@@ -39,32 +39,52 @@ struct MaterialGroup
 	vector<unsigned int> faceBuffer;
 };
 
-class TexturedMesh: public lssr::Renderable
+class TexturedMesh: public StaticMesh
 {
 public:
 	TexturedMesh(MeshBufferPtr mesh);
 	virtual ~TexturedMesh() {};
+
+
 	virtual void render()
 	{
 		if(m_active)
 		{
-			glCallList(m_displayList);
+			if(m_finalized){
+				glPushMatrix();
+				glMultMatrixf(m_transformation.getData());
+				if(m_renderMode & RenderSurfaces)
+				{
+					//glEnable(GL_LIGHTING);
+					//glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
+					glCallList(m_textureDisplayList);
+				}
+
+				if(m_renderMode & RenderTriangles)
+				{
+					glDisable(GL_LIGHTING);
+					glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
+					glLineWidth(m_lineWidth);
+					glColor3f(0.0, 0.0, 0.0);
+					glCallList(m_wireframeList);
+					glEnable(GL_LIGHTING);
+				}
+				glPopMatrix();
+
+			}
+
 		}
 	}
 
 
 private:
 
-	void setColorMaterial(float r, float g, float b);
 	void generateMaterialGroups();
-	void compileDisplayList();
+	void compileTexureDisplayList();
 	void getBufferArray(unsigned int*, MaterialGroup* g);
 
-	uintArr					m_faces;
 	uintArr					m_faceMaterials;
 	floatArr				m_texcoords;
-	floatArr				m_normals;
-	floatArr				m_vertices;
 	materialArr				m_materials;
 	textureArr 				m_textures;
 
@@ -77,7 +97,7 @@ private:
 	size_t					m_numTextures;
 	size_t					m_numVertices;
 
-	int						m_displayList;
+	int						m_textureDisplayList;
 };
 
 } /* namespace lssr */
