@@ -39,9 +39,9 @@ template<typename VertexT, typename NormalT>
 uchar* ColorGradientPlaneClassifier<VertexT, NormalT>::getColor(int i)
 {
 	uchar* c = new uchar[3];
-	c[0] = 128;
-	c[1] = 128;
-	c[2] = 128;
+	c[0] = 0;
+	c[1] = 200;
+	c[2] = 0;
 
 	Region<VertexT, NormalT>* r = 0;
 	if(i < this->m_regions->size())

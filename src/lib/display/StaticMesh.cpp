@@ -33,13 +33,11 @@ namespace lssr
 
 StaticMesh::StaticMesh(){
 
-	m_vertexNormals.reset();
+	m_normals.reset();
 	m_faceNormals   = 0;
 	m_vertices.reset();
 	m_colors.reset();
-	m_indices.reset();
-	m_materialIndexBuffer.reset();
-
+	m_faces.reset();
 
 	m_numFaces      = 0;
 	m_numVertices   = 0;
@@ -91,10 +89,10 @@ void StaticMesh::init( MeshBufferPtr mesh )
 	{
 		m_faceNormals = 0;
 
-		m_vertexNormals 		= mesh->getVertexNormalArray(n_normals);
+		m_normals 		= mesh->getVertexNormalArray(n_normals);
 		m_colors        		= mesh->getVertexColorArray(n_colors);
 		m_vertices      		= mesh->getVertexArray(m_numVertices);
-		m_indices       		= mesh->getFaceArray(m_numFaces);
+		m_faces       		= mesh->getFaceArray(m_numFaces);
 		m_blackColors   = new unsigned char[ 3 * m_numVertices ];
 
 		for ( size_t i = 0; i < 3 * m_numVertices; i++ ) {
@@ -149,7 +147,7 @@ StaticMesh::StaticMesh(const StaticMesh &o)
 	m_faceNormals = new float[3 * o.m_numVertices];
 	m_vertices    = floatArr( new float[3 * o.m_numVertices] );
 	m_colors      = ucharArr( new unsigned char[3 * o.m_numVertices] );
-	m_indices     = uintArr(  new unsigned int[3 * o.m_numFaces] );
+	m_faces     = uintArr(  new unsigned int[3 * o.m_numFaces] );
 
 	for ( size_t i(0); i < 3 * o.m_numVertices; i++ )
 	{
@@ -160,12 +158,27 @@ StaticMesh::StaticMesh(const StaticMesh &o)
 
 	for( size_t i = 0; i < 3 * o.m_numFaces; ++i )
 	{
-		m_indices[i] = o.m_indices[i];
+		m_faces[i] = o.m_faces[i];
 	}
 
 	m_boundingBox = o.m_boundingBox;
 
 }
+
+void StaticMesh::setColorMaterial(float r, float g, float b)
+{
+	float ambient_color[] = {r, g, b};
+	float diffuse_color[] = {0.45 * r, 0.5 * g, 0.55 * b};
+
+	float specular_color[] = {0.1, 0.15, 0.1};
+	float shine[] = {0.1};
+
+	glMaterialfv(GL_FRONT_AND_BACK, GL_AMBIENT, ambient_color);
+	glMaterialfv(GL_FRONT_AND_BACK, GL_DIFFUSE, diffuse_color);
+	glMaterialfv(GL_FRONT_AND_BACK, GL_SPECULAR, specular_color);
+	glMaterialfv(GL_FRONT_AND_BACK, GL_SHININESS, shine);
+}
+
 
 StaticMesh::~StaticMesh(){
 
@@ -185,14 +198,15 @@ void StaticMesh::compileWireframeList()
         glNewList(m_wireframeList, GL_COMPILE);
 
         glDisable(GL_LIGHTING);
+        glDisable(GL_TEXTURE_2D);
         glColor3f(0.0, 0.0, 0.0);
 
         for(size_t i = 0; i < m_numFaces; i++)
         {
             int index = 3 * i;
-            int a = 3 * m_indices[index];
-            int b = 3 * m_indices[index + 1];
-            int c = 3 * m_indices[index + 2];
+            int a = 3 * m_faces[index];
+            int b = 3 * m_faces[index + 1];
+            int c = 3 * m_faces[index + 2];
             glBegin(GL_TRIANGLES);
             glVertex3f(m_vertices[a], m_vertices[a + 1], m_vertices[a + 2]);
             glVertex3f(m_vertices[b], m_vertices[b + 1], m_vertices[b + 2]);
@@ -201,6 +215,7 @@ void StaticMesh::compileWireframeList()
 
         }
         glEnable(GL_LIGHTING);
+        glEnable(GL_TEXTURE_2D);
         glEndList();
 
     }
@@ -222,6 +237,9 @@ void StaticMesh::compileColoredMeshList(){
 		glNewList(m_coloredMeshList, GL_COMPILE);
 
 		glEnable(GL_LIGHTING);
+		glEnable(GL_COLOR_MATERIAL);
+
+		setColorMaterial(0.1, 0.1, 0.1);
 
 		// Assign element pointers
 		glVertexPointer( 3, GL_FLOAT, 0, m_vertices.get() );
@@ -229,10 +247,12 @@ void StaticMesh::compileColoredMeshList(){
 		glColorPointer( 3, GL_UNSIGNED_BYTE, 0, m_colors.get() );
 
 		// Draw elements
-		glDrawElements(GL_TRIANGLES, 3 * m_numFaces, GL_UNSIGNED_INT, m_indices.get());
+		glDrawElements(GL_TRIANGLES, 3 * m_numFaces, GL_UNSIGNED_INT, m_faces.get());
 
-		Vertex<float> v = m_boundingBox->getCentroid();
 
+		// Draw mesh descriptions
+
+/*		Vertex<float> v = m_boundingBox->getCentroid();
 		glDisable(GL_LIGHTING);
 		glColor3f(1.0, 1.0, 0.0);
 		glRasterPos3f(v.x, v.y, v.z);
@@ -241,7 +261,7 @@ void StaticMesh::compileColoredMeshList(){
 
 			glutBitmapCharacter(GLUT_BITMAP_HELVETICA_12, Name()[i]);
 		}
-		glEnable(GL_LIGHTING);
+		glEnable(GL_LIGHTING);*/
 		glEndList();
 
 	}
@@ -253,7 +273,7 @@ void StaticMesh::interpolateNormals()
 
 	// Be sure that vertex and indexbuffer exist
 	assert(m_vertices);
-	assert(m_indices);
+	assert(m_faces);
 
 	// Alloc new normal array
 	m_faceNormals = new float[3 * m_numVertices];
@@ -276,9 +296,9 @@ void StaticMesh::interpolateNormals()
 		// to get real position of the vertex in the buffer
 		// we have to remember, that each vertex has three
 		// coordinates!		cout << 1 << endl;
-		a = m_indices[buffer_pos]     * 3;
-		b = m_indices[buffer_pos + 1] * 3;
-		c = m_indices[buffer_pos + 2] * 3;
+		a = m_faces[buffer_pos]     * 3;
+		b = m_faces[buffer_pos + 1] * 3;
+		c = m_faces[buffer_pos + 2] * 3;
 
 		Vertex<float> v0(m_vertices[a], m_vertices[a + 1], m_vertices[a + 2]);
 		Vertex<float> v1(m_vertices[b], m_vertices[b + 1], m_vertices[b + 2]);
@@ -342,7 +362,7 @@ void StaticMesh::calcBoundingBox()
 uintArr StaticMesh::getIndices()
 {
 
-    return m_finalized ? m_indices : uintArr();
+    return m_finalized ? m_faces : uintArr();
 
 }
 
@@ -374,10 +394,6 @@ void StaticMesh::savePLY(string filename)
 
 }
 
-void StaticMesh::compileTexturedMeshList()
-{
-
-}
 
 }
  // namespace lssr

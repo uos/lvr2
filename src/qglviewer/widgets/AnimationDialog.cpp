@@ -324,7 +324,7 @@ void AnimationDialog::createVideo()
     // Get directory and save
     string outputDir = fileNames.constBegin()->toStdString() + "frame";
     m_parent->setSnapshotFileName(QString(outputDir.c_str()));
-
+    m_parent->saveToDisk(true);
     // Open settingsdialog
     if(m_parent->openSnapshotFormatDialog())
     {

@@ -65,12 +65,16 @@ PointBufferPtr KinectIO::getBuffer()
 	std::vector<short> depthImage(480 * 680, 0);
 	m_grabber->getDepthImage(depthImage);
 
+	std::vector<uint8_t> colorImage(480 * 680 * 3, 0);
+	m_grabber->getColorImage(colorImage);
+
 	// Return null pointer if no image was grabbed
 	if(depthImage.size() == 0) return PointBufferPtr();
 
 	// Convert depth image into point cloud
 	PointBufferPtr buffer(new PointBuffer);
 	floatArr points(new float[depthImage.size() * 3]);
+	ucharArr colors(new uchar[colorImage.size() * 3]);
 
 	int i,j;
 	int c = 0;
@@ -84,12 +88,17 @@ PointBufferPtr KinectIO::getBuffer()
 			points[3 * c    ] = v(0) / v(3);
 			points[3 * c + 1] = v(1) / v(3);
 			points[3 * c + 2] = v(2) / v(3);
+
+			colors[3 * c    ] = colorImage[3 * c    ];
+			colors[3 * c + 1] = colorImage[3 * c + 1];
+			colors[3 * c + 2] = colorImage[3 * c + 2];
 			c++;
 
 		}
 	}
 
 	buffer->setPointArray(points, 640 * 480);
+	buffer->setPointColorArray(colors, 640 * 480);
 	return buffer;
 }
 

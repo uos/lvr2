@@ -25,9 +25,8 @@
  */
 
 #include "Options.hpp"
-#include <omp.h>
 
-namespace reconstruct{
+namespace kingrab{
 
 Options::Options(int argc, char** argv) : m_descr("Supported options")
 {
@@ -63,7 +62,6 @@ Options::Options(int argc, char** argv) : m_descr("Supported options")
 		        ("colorRegions", "Color detected regions with color gradient.")
 		        ("depth", value<int>(&m_depth)->default_value(100), "Maximum recursion depth for region growing.")
 		        ("recalcNormals,r", "Always estimate normals, even if given in .ply file.")
-		        ("threads", value<int>(&m_numThreads)->default_value( omp_get_num_procs() ), "Number of threads")
 		        ("sft", value<float>(&m_sft)->default_value(0.9), "Sharp feature threshold when using sharp feature decomposition")
 		        ("sct", value<float>(&m_sct)->default_value(0.7), "Sharp corner threshold when using sharp feature decomposition")
         ;
