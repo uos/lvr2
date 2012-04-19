@@ -39,7 +39,8 @@ enum
     InterfaceItem,
     PointCloudItem,
     TriangleMeshItem,
-    MultiPointCloudItem
+    MultiPointCloudItem,
+    ClusterItem
 };
 
 enum

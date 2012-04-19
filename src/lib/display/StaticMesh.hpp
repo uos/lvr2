@@ -70,7 +70,7 @@ public:
 	virtual void savePLY(string filename);
 
 	floatArr		getVertices();
-	uintArr 	getIndices();
+	uintArr 		getIndices();
 	float*          getNormals();
 
 	size_t			getNumberOfVertices();

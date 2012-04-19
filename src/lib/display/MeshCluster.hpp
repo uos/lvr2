@@ -53,6 +53,7 @@ public:
 		}
 	}
 
+	list<StaticMesh*> getMeshes() { return m_meshes;}
 
 private:
 	list<StaticMesh*> m_meshes;
