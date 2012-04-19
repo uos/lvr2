@@ -47,7 +47,7 @@ KinectPointCloudVisualizer::KinectPointCloudVisualizer()
 
 	m_treeItem = item;
 
-	start();
+	//start();
 }
 
 void KinectPointCloudVisualizer::run()

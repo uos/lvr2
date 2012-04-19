@@ -141,7 +141,6 @@ private:
 
 	AnimationDialog*            m_playerDialog;
 
-	SignalingMeshGenerator*		m_mesher;
 	SignalingKinectGrabber* 	m_grabber;
 	Freenect::Freenect*			m_freenect;
 
