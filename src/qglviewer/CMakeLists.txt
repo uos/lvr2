@@ -58,6 +58,7 @@ set(QVIEWER_SOURCES
     widgets/AnimationDialog.cpp
     widgets/AnimationListItem.cpp
     widgets/VideoExportDialog.cpp
+    widgets/ClusterTreeWidgetItem.cpp
 )
 
 set(QVIEWER_RESOURCES
