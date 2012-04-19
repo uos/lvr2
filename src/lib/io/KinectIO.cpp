@@ -12,6 +12,7 @@
 #include "../../ext/Eigen/Dense"
 
 #include <vector>
+#include <set>
 
 namespace lssr
 {
@@ -68,37 +69,49 @@ PointBufferPtr KinectIO::getBuffer()
 	std::vector<uint8_t> colorImage(480 * 680 * 3, 0);
 	m_grabber->getColorImage(colorImage);
 
+	std::set<int> nans;
+	for(size_t i = 0; i < depthImage.size(); i++)
+	{
+		if(isnan(depthImage[i])) nans.insert(i);
+	}
+
 	// Return null pointer if no image was grabbed
 	if(depthImage.size() == 0) return PointBufferPtr();
 
+	size_t numPoints = depthImage.size() - nans.size();
+
 	// Convert depth image into point cloud
 	PointBufferPtr buffer(new PointBuffer);
-	floatArr points(new float[depthImage.size() * 3]);
-	ucharArr colors(new uchar[colorImage.size() * 3]);
+	floatArr points(new float[numPoints * 3]);
+	ucharArr colors(new uchar[numPoints * 3]);
 
 	int i,j;
+	int index = 0;
 	int c = 0;
 	for (i = 0; i < 480; i++) {
 		for (j = 0; j < 640; j++) {
 
-			Eigen::Vector4f v;
-			v << j, i, (float)(depthImage[i * 640 + j]), 1.0f;
-			v = m_depthMatrix.transpose() * v;
+			if(nans.find(c) == nans.end())
+			{
+				Eigen::Vector4f v;
+				v << j, i, (float)(depthImage[i * 640 + j]), 1.0f;
+				v = m_depthMatrix.transpose() * v;
 
-			points[3 * c    ] = v(0) / v(3);
-			points[3 * c + 1] = v(1) / v(3);
-			points[3 * c + 2] = v(2) / v(3);
+				points[3 * index    ] = v(0) / v(3);
+				points[3 * index + 1] = v(1) / v(3);
+				points[3 * index + 2] = v(2) / v(3);
 
-			colors[3 * c    ] = colorImage[3 * c    ];
-			colors[3 * c + 1] = colorImage[3 * c + 1];
-			colors[3 * c + 2] = colorImage[3 * c + 2];
+				colors[3 * index    ] = colorImage[3 * c    ];
+				colors[3 * index + 1] = colorImage[3 * c + 1];
+				colors[3 * index + 2] = colorImage[3 * c + 2];
+				index++;
+			}
 			c++;
-
 		}
 	}
 
-	buffer->setPointArray(points, 640 * 480);
-	buffer->setPointColorArray(colors, 640 * 480);
+	buffer->setPointArray(points, numPoints);
+	buffer->setPointColorArray(colors, numPoints);
 	return buffer;
 }
 
