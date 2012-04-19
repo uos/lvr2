@@ -7,6 +7,7 @@ set( CMAKE_MODULE_PATH ${LSSR_SOURCE_DIR}/CMakeModules )
 link_directories("${CMAKE_SOURCE_DIR}/lib")
 link_directories("$ENV{HOME}/local/lib")
 
+include_directories(/usr/include/libusb-1.0/)
 include_directories(${LSSR_SOURCE_DIR}/ext/Eigen)
 include_directories(${LSSR_SOURCE_DIR}/ext/stann)
 include_directories(${LSSR_SOURCE_DIR})
