@@ -18,9 +18,11 @@
 #include <iostream>
 
 #include "io/ModelFactory.hpp"
-#include "io/Timestamp.hpp"
 #include "io/KinectIO.hpp"
 #include "io/CoordinateTransform.hpp"
+
+#include "reconstruction/SearchTreeFlann.hpp"
+
 #include "Options.hpp"
 
 #include <vector>
@@ -28,124 +30,65 @@
 
 using namespace lssr;
 
+#define MEDIAN_COUNT 5
+
 int main(int argc, char** argv)
 {
-	// Parse command line arguments
-	//kingrab::Options options(argc, argv);
-
-	//::std::cout << options << ::std::endl;
-
 
 	// Try to connect
 
+	KinectIO* io;
 	try
 	{
-		KinectIO* io = KinectIO::instance();
-		int c = 0;
-		vector<PointBufferPtr> scans;
-		while(true && c < 20)
-		{
-
-			PointBufferPtr buffer = io->getBuffer();
-			if(buffer == 0)
-			{
-				cout << timestamp << "No data yet..." << endl;
-				// Give it some time
-				usleep(100000);
-			}
-			else
-			{
-
-				convert(OPENGL_METERS, SLAM6D, buffer);
-
-				//char fout[256];
-				//sprintf(fout, "scan%03d.3d", c);
-				//ModelFactory::saveModel(ModelPtr(new Model(buffer)), string(fout));
-
-				//char pout[256];
-				//sprintf(pout, "scan%03d.pose", c);
-				//ofstream out(pout);
-				//out << "0 0 0 0 0 0" << endl;
-
-				scans.push_back(buffer);
-				cout << "Buffered scan " << c << endl;
-				usleep(100000);
-				c++;
-				// Save data
-				//ModelFactory::saveModel(ModelPtr(new Model(buffer)), "pointcloud.ply");
-
-				//			    pclSurface* s = new pclSurface( buffer, kn, kd );
-				//
-				//
-				//
-				//				// Create surface object and calculate normals
-				////				akSurface* s = new akSurface(
-				////						buffer, "FLANN",
-				////						kn,
-				////						ki,
-				////						kd);
-				//
-				//				psSurface::Ptr surface(s);
-				//
-				//			    surface->setKd(kd);
-				//			    surface->setKi(ki);
-				//			    surface->setKn(kn);
-				//				surface->calculateSurfaceNormals();
-				//
-				//				// Create an empty mesh and set parameters
-				//				HalfEdgeMesh<cVertex, cNormal> mesh( surface );
-				//				mesh.setDepth(100);
-				//
-				//
-				//				// Create a new reconstruction object
-				//				FastReconstruction<cVertex, cNormal > reconstruction(
-				//						surface,
-				//						voxelsize,
-				//						true,
-				//						"SF",
-				//						true);
-				//
-				//				reconstruction.getMesh(mesh);
-				//				mesh.setClassifier("Default");
-				//				mesh.removeDanglingArtifacts(rda);
-				//				mesh.optimizePlanes(planeIterations,
-				//		                            planeNormalThreshold,
-				//		                            minPlaneSize,
-				//		                            smallRegionThreshold,
-				//		                            true);
-				//
-				//				mesh.fillHoles(fillHoles);
-				//				mesh.optimizePlaneIntersections();
-				//				mesh.restorePlanes(minPlaneSize);
-				//				mesh.finalize();
-				//
-				//				ModelPtr m( new Model( mesh.meshBuffer() ) );
-				//				ModelFactory::saveModel( m, "triangle_mesh.ply" );
-				//				return 0;
-			}
-
-		}
-
-		for(size_t i = 0; i < scans.size(); i++)
-		{
-			char fout[256];
-			sprintf(fout, "scan%03d.3d", i);
-			ModelFactory::saveModel(ModelPtr(new Model(scans[i])), string(fout));
-			cout << "Saving " << string(fout) << endl;
-			char pout[256];
-
-			sprintf(pout, "scan%03d.pose", i);
-			ofstream out(pout);
-			out << "0 0 0 0 0 0" << endl;
-			out.close();
-		}
-
+		cout << 1 << endl;
+		io = KinectIO::instance();
 	}
 	catch(...)
 	{
-		cout << timestamp << "Kinect connection failed. Try again..." << endl;
+		cout << "Kinect connection failed. Try again..." << endl;
+		return -1;
 	}
 
+	int c = 0;
+
+	vector<PointBufferPtr> scans;
+	while(true && c < 20)
+	{
+		PointBufferPtr buffer = io->getBuffer();
+		if(buffer == 0)
+		{
+			cout << "No data yet..." << endl;
+			// Give it some time
+			usleep(100000);
+		}
+		else
+		{
+
+			convert(OPENGL_METERS, SLAM6D, buffer);
+			usleep(100000);
+
+		}
+
+		c++;
+		scans.push_back(buffer);
+	}
+
+
+
+	for(size_t i = 0; i < scans.size(); i++)
+	{
+		char fout[256];
+		sprintf(fout, "scan%03d.3d", (int)i);
+		ModelFactory::saveModel(ModelPtr(new Model(scans[i])), string(fout));
+
+		cout << "Saving " << string(fout) << " with " << scans[i]->getNumPoints() << " points." << endl;
+		char pout[256];
+
+		sprintf(pout, "scan%03d.pose", (int)i);
+		ofstream out(pout);
+		out << "0 0 0 0 0 0" << endl;
+		out.close();
+	}
 
 
 	return 0;
