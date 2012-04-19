@@ -447,8 +447,6 @@ void ViewerApplication::openFile(string filename)
 
 void ViewerApplication::connectKinect()
 {
-	// Init cont. meshing
-	m_mesher = new SignalingMeshGenerator;
 
 	// Init freenect stuff
 	m_freenect = new Freenect::Freenect;
@@ -461,7 +459,6 @@ void ViewerApplication::connectKinect()
 	KinectPointCloudVisualizer* v = new KinectPointCloudVisualizer;
 
 	connect(m_grabber, SIGNAL(newPointBuffer(PointBufferPtr*)), v, SLOT(updateBuffer(PointBufferPtr*)));
-	connect(m_grabber, SIGNAL(newPointBuffer(PointBufferPtr*)), m_mesher, SLOT(newPointCloud(PointBufferPtr*)));
 	connect(m_grabber, SIGNAL(newPointBuffer(PointBufferPtr*)), m_viewer, SLOT(updateGL()));
 
 	dataCollectorAdded(v);

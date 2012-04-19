@@ -43,8 +43,9 @@ using lssr::Vertex;
 using lssr::Renderable;
 using lssr::BoundingBox;
 
-class Visualizer
+class Visualizer : public virtual QObject
 {
+	Q_OBJECT
 public:
 	Visualizer();
 	virtual ~Visualizer();
