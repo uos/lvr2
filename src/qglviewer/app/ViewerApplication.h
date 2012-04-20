@@ -99,6 +99,7 @@ public Q_SLOTS:
 	void treeContextMenuRequested(const QPoint &);
 
 	void saveSelectedObject();
+	void changeSelectedName();
 
 	void transformObject();
 	void createAnimation();

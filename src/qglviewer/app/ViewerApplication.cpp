@@ -152,6 +152,9 @@ void ViewerApplication::connectEvents()
 
 	// Actions
 	connect(m_sceneDockWidgetUi->actionExport, SIGNAL(triggered()), this, SLOT(saveSelectedObject()));
+	connect(m_sceneDockWidgetUi->actionChangeName, SIGNAL(triggered()), this, SLOT(changeSelectedName()));
+
+
 	connect(m_mainWindowUi->actionGenerateMesh,               SIGNAL(triggered()), this, SLOT(createMeshFromPointcloud()));
 
 	// Action dock functions
@@ -536,9 +539,11 @@ void ViewerApplication::treeContextMenuRequested(const QPoint &position)
             actions.append(mesh_action);
         }
 
+
         // Add standard action to context menu
         actions.append(m_mainWindowUi->actionShowSelection);
         actions.append(m_sceneDockWidgetUi->actionExport);
+        actions.append(m_sceneDockWidgetUi->actionChangeName);
     }
 
     // Display menu if actions are present
@@ -606,6 +611,33 @@ void ViewerApplication::saveSelectedObject()
 
     }
 }
+
+
+void ViewerApplication::changeSelectedName()
+{
+    QTreeWidgetItem* item = m_sceneDockWidgetUi->treeWidget->currentItem();
+    if(item)
+    {
+        // Test for custom item
+        if(item->type() > 1000)
+        {
+        	CustomTreeWidgetItem* c_item = static_cast<CustomTreeWidgetItem*>(item);
+        	QString new_name = QInputDialog::getText(
+        			0,
+        			QString("Input new label"),
+        			QString("Name:"),
+        			QLineEdit::Normal,
+        			QString(c_item->name().c_str()), 0, 0);
+        	c_item->setName(new_name.toStdString());
+
+
+
+        }
+
+    }
+}
+
+
 
 void ViewerApplication::dataCollectorAdded(Visualizer* d)
 {
