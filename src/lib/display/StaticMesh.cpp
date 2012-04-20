@@ -48,6 +48,8 @@ StaticMesh::StaticMesh(){
 
 	m_renderMode    = 0;
 
+	m_nameList = -1;
+
 }
 
 StaticMesh::StaticMesh( ModelPtr model, string name )
@@ -55,12 +57,13 @@ StaticMesh::StaticMesh( ModelPtr model, string name )
 {
 
     m_model = model;
+    m_nameList = -1;
 
     init( model->m_mesh );
-
 	calcBoundingBox();
 	compileColoredMeshList();
 	compileWireframeList();
+	compileNameList();
 
 }
 
@@ -69,12 +72,13 @@ StaticMesh::StaticMesh( MeshBufferPtr mesh, string name )
 {
 
     m_model = ModelPtr( new Model( mesh ) );
-
+    m_nameList = -1;
     init( mesh );
 
     calcBoundingBox();
     compileColoredMeshList();
     compileWireframeList();
+    compileNameList();
 
 }
 
@@ -252,20 +256,39 @@ void StaticMesh::compileColoredMeshList(){
 
 		// Draw mesh descriptions
 
-/*		Vertex<float> v = m_boundingBox->getCentroid();
-		glDisable(GL_LIGHTING);
-		glColor3f(1.0, 1.0, 0.0);
-		glRasterPos3f(v.x, v.y, v.z);
-		for(int i = 0; i < Name().size(); i++)
-		{
 
-			glutBitmapCharacter(GLUT_BITMAP_HELVETICA_12, Name()[i]);
-		}
-		glEnable(GL_LIGHTING);*/
 		glEndList();
 
 	}
+}
 
+void StaticMesh::setName(string name)
+{
+	m_name = name;
+	compileNameList();
+}
+
+void StaticMesh::compileNameList()
+{
+	// Release old name list
+	if(m_nameList != -1)
+	{
+		glDeleteLists(m_nameList, 1);
+	}
+
+	// Compile a new one
+	m_nameList = glGenLists(1);
+	glNewList(m_nameList, GL_COMPILE);
+	Vertex<float> v = m_boundingBox->getCentroid();
+	glDisable(GL_LIGHTING);
+	glColor3f(1.0, 1.0, 0.0);
+	glRasterPos3f(v.x, v.y, v.z);
+	for(int i = 0; i < Name().size(); i++)
+	{
+		glutBitmapCharacter(GLUT_BITMAP_HELVETICA_12, Name()[i]);
+	}
+	glEnable(GL_LIGHTING);
+	glEndList();
 }
 
 void StaticMesh::interpolateNormals()
