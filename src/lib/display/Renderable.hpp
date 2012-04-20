@@ -55,7 +55,7 @@ public:
 
 	void setTransformationMatrix(Matrix4<float> m);
 
-	void setName(string s){m_name = s;};
+	virtual void setName(string s){m_name = s;};
 	void setVisible(bool s){m_visible = s;};
 	void setRotationSpeed(float s){m_rotationSpeed = s;};
 	void setTranslationSpeed(float s){m_translationSpeed = s;};

@@ -629,9 +629,9 @@ void ViewerApplication::changeSelectedName()
         			QLineEdit::Normal,
         			QString(c_item->name().c_str()), 0, 0);
         	c_item->setName(new_name.toStdString());
+        	c_item->renderable()->setName(new_name.toStdString());
 
-
-
+        	m_viewer->updateGL();
         }
 
     }

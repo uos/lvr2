@@ -68,6 +68,7 @@ public:
 
 	virtual void finalize();
 	virtual void savePLY(string filename);
+	virtual void setName(string name);
 
 	floatArr		getVertices();
 	uintArr 		getIndices();
@@ -92,6 +93,7 @@ protected:
 	//void compileDisplayLists();
 	void compileColoredMeshList();
 	void compileWireframeList();
+	void compileNameList();
 
 	void setColorMaterial(float r, float g, float b);
 
@@ -118,6 +120,7 @@ protected:
 
 	int             m_coloredMeshList;
 	int             m_wireframeList;
+	int				m_nameList;
 
 };
 
@@ -133,6 +136,7 @@ void StaticMesh::render(){
 		        glEnable(GL_LIGHTING);
 		        glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
 		        glCallList(m_coloredMeshList);
+		        glCallList(m_nameList);
 		    }
 
 		    if(m_renderMode & RenderTriangles)
