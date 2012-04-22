@@ -172,9 +172,9 @@ StaticMesh::StaticMesh(const StaticMesh &o)
 void StaticMesh::setColorMaterial(float r, float g, float b)
 {
 	float ambient_color[] = {r, g, b};
-	float diffuse_color[] = {0.45 * r, 0.5 * g, 0.55 * b};
+	float diffuse_color[] = {0.45f * r, 0.5f * g, 0.55f * b};
 
-	float specular_color[] = {0.1, 0.15, 0.1};
+	float specular_color[] = {0.1f, 0.15f, 0.1f};
 	float shine[] = {0.1};
 
 	glMaterialfv(GL_FRONT_AND_BACK, GL_AMBIENT, ambient_color);
