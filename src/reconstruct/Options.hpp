@@ -255,9 +255,19 @@ public:
     float getLineFusionThreshold() const;
 
     /**
-     * @brief   Wheter to extend the grid. Enable by default.
+     * @brief   Whether to extend the grid. Enable by default.
      */
     bool extrude() const;
+
+    /**
+     * @brief 	Number of edge collapses
+     */
+    int getNumEdgeCollapses() const;
+
+    /**
+     * @brief	Edge collapse method
+     */
+    string getEdgeCollapseMethod() const;
 
 private:
 
@@ -340,6 +350,12 @@ private:
 
 	/// Name of the classifier object to color the mesh
 	string							m_classifier;
+
+	/// Edge collapse method
+	string							m_ecm;
+
+	/// Number of edge collapses
+	int								m_numEdgeCollapses;
 };
 
 
@@ -437,6 +453,13 @@ inline ostream& operator<<(ostream& os, const Options &o)
 	{
 	    cout << "##### Recursion depth \t\t: " << o.getDepth() << endl;
 	}
+	if(o.getNumEdgeCollapses())
+	{
+		cout << "##### Edge collapse method: \t\t: " << o.getEdgeCollapseMethod() << endl;
+		cout << "##### Number of edge collapses\t: " << o.getNumEdgeCollapses() << endl;
+	}
+
+
 	return os;
 }
 

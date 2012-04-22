@@ -1534,7 +1534,7 @@ void HalfEdgeMesh<VertexT, NormalT>::reduceMeshByCollapse(int n_collapses, Verte
 
     for(size_t i = 0; i < m_vertices.size(); i++)
 	{
-    	p.push(vertexCost_p(m_vertices[i], c(m_vertices[i])));
+    	q.push(vertexCost_p(m_vertices[i], c(m_vertices[i])));
 		++progress;
 	}
 

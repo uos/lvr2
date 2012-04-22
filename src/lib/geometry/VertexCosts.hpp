@@ -46,12 +46,14 @@ public:
 	/**
 	 * @brief	Implementation of the vertex cost function. The default implementation
 	 * 			returns the maximum float number. Using this method, no vertices
-	 * 			shpuld be removed from the mesh.
+	 * 			should be removed from the mesh.
 	 */
 	virtual float operator()(HalfEdgeVertex<VertexT, NormalT> &v) { return std::numeric_limits<float>::max(); }
 };
 
-typedef std::pair<HalfEdgeVertex<VertexT, NormalT>, float> vertexCost_p;
+
+
+typedef std::pair<HalfEdgeVertex<Vertex<float>, Normal<float> >, float> vertexCost_p;
 
 struct cVertexCost
 {
