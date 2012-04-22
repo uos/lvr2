@@ -241,6 +241,14 @@ HalfEdgeFace<VertexT, NormalT>::operator()(const int &index) const{
 	}
     return 0;
 }
+template<typename VertexT, typename NormalT>
+float HalfEdgeFace<VertexT, NormalT>::getD()
+{
+	NormalT normal = getFaceNormal();
+	VertexT vertex = this->m_edge->end->m_position;
+
+	return -(normal * vertex);
+}
 
 
 } // namespace lssr
