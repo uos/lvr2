@@ -1522,4 +1522,10 @@ void HalfEdgeMesh<VertexT, NormalT>::finalizeAndRetesselate( bool genTextures, f
     m_regionClassifier->writeMetaInfo();
 } 
 
+template<typename VertexT, typename NormalT>
+void HalfEdgeMesh<VertexT, NormalT>::reduceMeshByCollapse(int n_collapses, VertexCosts<VertexT, NormalT>& c)
+{
+
+}
+
 } // namespace lssr

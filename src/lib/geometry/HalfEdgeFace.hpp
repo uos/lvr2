@@ -136,6 +136,11 @@ public:
 	 */
 	float getArea();
 
+	/**
+	 * @brief Returns the "d" from the pane equation "ax + by + cx + d = 0"
+	 */
+	float getD();
+
 	/// A pointer to a surrounding half edge
 	HalfEdge<HalfEdgeVertex<VertexT, NormalT>, HalfEdgeFace<VertexT, NormalT> >* m_edge;
 

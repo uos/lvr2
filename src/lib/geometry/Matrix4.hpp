@@ -403,12 +403,21 @@ public:
 	ValueType at(const int i) const;
 
 	/**
-	 * @brief	Indexed element access.
+	 * @brief	Indexed element (reading) access.
 	 */
 	ValueType operator[](const int index) const
 	{
 	    /// TODO: Boundary check
 	    return m[index];
+	}
+
+
+	/**
+	 * @brief  	Writeable index access
+	 */
+	ValueType& operator[](const int index)
+	{
+		return m[index];
 	}
 
 private:
