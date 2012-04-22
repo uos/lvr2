@@ -68,6 +68,8 @@ Options::Options(int argc, char** argv) : m_descr("Supported options")
 		        ("threads", value<int>(&m_numThreads)->default_value( omp_get_num_procs() ), "Number of threads")
 		        ("sft", value<float>(&m_sft)->default_value(0.9), "Sharp feature threshold when using sharp feature decomposition")
 		        ("sct", value<float>(&m_sct)->default_value(0.7), "Sharp corner threshold when using sharp feature decomposition")
+		        ("ecm", value<string>(&m_ecm)->default_value("QUADRIC"), "Edge collapse method for mesh reduction. Choose from QUADRIC, QUADRIC_TRI, MELAX, SHORTEST")
+				("ecc", value<int>(&m_numEdgeCollapses)->default_value(0), "Edge collapse count. Number of edges to collapse for mesh reduction.")
         ;
 
 	m_pdescr.add("inputFile", -1);
@@ -143,10 +145,20 @@ string Options::getClassifier() const
     return (m_variables["classifier"].as< string >());
 }
 
+string Options::getEdgeCollapseMethod() const
+{
+	return (m_variables["ecm"].as<string>());
+}
+
 
 string Options::getDecomposition() const
 {
     return (m_variables["decomposition"].as< string >());
+}
+
+int Options::getNumEdgeCollapses() const
+{
+	return (m_variables["ecc"].as<int>());
 }
 
 int    Options::getDanglingArtifacts() const
@@ -298,3 +310,4 @@ Options::~Options() {
 }
 
 } // namespace reconstruct
+
