@@ -99,6 +99,7 @@ public Q_SLOTS:
 	void treeContextMenuRequested(const QPoint &);
 
 	void saveSelectedObject();
+	void changeSelectedName();
 
 	void transformObject();
 	void createAnimation();
@@ -141,7 +142,6 @@ private:
 
 	AnimationDialog*            m_playerDialog;
 
-	SignalingMeshGenerator*		m_mesher;
 	SignalingKinectGrabber* 	m_grabber;
 	Freenect::Freenect*			m_freenect;
 

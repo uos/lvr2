@@ -6,7 +6,8 @@ set(QVIEWER_MOCS
     app/ViewerApplication.h
     data/VisualizerFactory.hpp
     data/SignalingKinectGrabber.hpp
-    data/SignalingMeshGenerator.hpp
+    data/Visualizer.hpp
+    data/KinectPointCloudVisualizer.hpp
     viewers/Viewer.h
     viewers/ViewerManager.h
     widgets/TransformationDialog.h
@@ -43,7 +44,6 @@ set(QVIEWER_SOURCES
     data/VisualizerFactory.cpp
     data/KinectPointCloudVisualizer.cpp
     data/SignalingKinectGrabber.cpp
-    data/SignalingMeshGenerator.cpp
     data/ClusterVisualizer.cpp
     viewers/OrthoCamera.cpp
     viewers/PerspectiveViewer.cpp
@@ -58,6 +58,7 @@ set(QVIEWER_SOURCES
     widgets/AnimationDialog.cpp
     widgets/AnimationListItem.cpp
     widgets/VideoExportDialog.cpp
+    widgets/ClusterTreeWidgetItem.cpp
 )
 
 set(QVIEWER_RESOURCES

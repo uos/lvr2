@@ -16,51 +16,61 @@
  * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA
  */
 
+
 /*
- * ColorGradientPlaneClassifier.cpp
+ * CoordinateTransform.cpp
  *
- *  Created on: 11.04.2012
+ *  Created on: 17.04.2012
  *      Author: Thomas Wiemann
  */
+
+#include "CoordinateTransform.hpp"
+
+#include "Timestamp.hpp"
+
+#include <boost/shared_ptr.hpp>
+#include <iostream>
+using std::cout;
+using std::endl;
 
 namespace lssr
 {
 
-template<typename VertexT, typename NormalT>
-ColorGradientPlaneClassifier<VertexT, NormalT>::ColorGradientPlaneClassifier(vector<Region<VertexT, NormalT>* >* region, GradientType t)
-	: RegionClassifier<VertexT, NormalT>(region)
+void convert(COORD_SYSTEM from, COORD_SYSTEM to, float* point)
 {
-	m_colorMap = new ColorMap(256);
-	m_gradientType = t;
-}
-
-
-template<typename VertexT, typename NormalT>
-uchar* ColorGradientPlaneClassifier<VertexT, NormalT>::getColor(int i)
-{
-	uchar* c = new uchar[3];
-	c[0] = 0;
-	c[1] = 200;
-	c[2] = 0;
-
-	Region<VertexT, NormalT>* r = 0;
-	if(i < this->m_regions->size())
+	if(from == OPENGL_METERS)
 	{
-		r = this->m_regions->at(i);
-	}
-
-	if(r)
-	{
-		float fc[3];
-		m_colorMap->getColor(fc, i, m_gradientType);
-		for(int i = 0; i < 3; i++)
+		if(to == SLAM6D)
 		{
-			c[i] = (uchar)(fc[i] * 255);
+			float x = point[0];
+			float y = point[1];
+			float z = point[2];
+
+			point[0] = 100 * x;
+			point[1] = 100 * y;
+			point[2] = -100 * z;
+		}
+		else
+		{
+			cout << timestamp << "Target coordinate system not supported." << endl;
 		}
 	}
+	else
+	{
+		cout << timestamp << "Source coordinate system not supported." << endl;
+	}
+}
 
-
-	return c;
+void convert(COORD_SYSTEM from, COORD_SYSTEM to, PointBufferPtr& buffer)
+{
+	size_t n;
+	floatArr p = buffer->getPointArray(n);
+	for(int i = 0; i < n; i++)
+	{
+		int pos = 3 * i;
+		float* point = &p[pos];
+		convert(OPENGL_METERS, SLAM6D, point);
+	}
 }
 
 } // namespace lssr
