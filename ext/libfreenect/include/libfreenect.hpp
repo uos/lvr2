@@ -1,4 +1,4 @@
-/*
+ /*
  * This file is part of the OpenKinect Project. http://www.openkinect.org
  *
  * Copyright (c) 2010 individual OpenKinect contributors. See the CONTRIB file
@@ -194,7 +194,7 @@ namespace Freenect {
 			DeviceMap::iterator it = m_devices.find(_index);
 			if (it != m_devices.end()) delete it->second;
 			ConcreteDevice * device = new ConcreteDevice(m_ctx, _index);
-			m_devices.insert(std::make_pair<int, FreenectDevice*>(_index, device));
+			m_devices.insert(std::pair<int, FreenectDevice*>(_index, device));
 			return *device;
 		}
 		void deleteDevice(int _index) {
