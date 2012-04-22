@@ -68,9 +68,10 @@ public:
 
 	virtual void finalize();
 	virtual void savePLY(string filename);
+	virtual void setName(string name);
 
 	floatArr		getVertices();
-	uintArr 	getIndices();
+	uintArr 		getIndices();
 	float*          getNormals();
 
 	size_t			getNumberOfVertices();
@@ -92,18 +93,20 @@ protected:
 	//void compileDisplayLists();
 	void compileColoredMeshList();
 	void compileWireframeList();
-	void compileTexturedMeshList();
+	void compileNameList();
+
+	void setColorMaterial(float r, float g, float b);
+
 
 	void readPly(string filename);
 
-	floatArr        m_vertexNormals;
+	floatArr        m_normals;
 	float*          m_faceNormals;
 	floatArr        m_vertices;
 	ucharArr        m_colors;
 	unsigned char*  m_blackColors;
 
-	uintArr 		m_materialIndexBuffer;
-	uintArr         m_indices;
+	uintArr         m_faces;
 
 	bool            m_finalized;
 	bool			m_haveMaterials;
@@ -117,6 +120,7 @@ protected:
 
 	int             m_coloredMeshList;
 	int             m_wireframeList;
+	int				m_nameList;
 
 };
 
@@ -132,6 +136,7 @@ void StaticMesh::render(){
 		        glEnable(GL_LIGHTING);
 		        glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
 		        glCallList(m_coloredMeshList);
+		        glCallList(m_nameList);
 		    }
 
 		    if(m_renderMode & RenderTriangles)

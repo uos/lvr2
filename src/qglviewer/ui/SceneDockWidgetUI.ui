@@ -7,7 +7,7 @@
     <x>0</x>
     <y>0</y>
     <width>180</width>
-    <height>206</height>
+    <height>207</height>
    </rect>
   </property>
   <property name="minimumSize">
@@ -75,6 +75,11 @@
   <action name="actionExport">
    <property name="text">
     <string>Export selection</string>
+   </property>
+  </action>
+  <action name="actionChangeName">
+   <property name="text">
+    <string>Change Label</string>
    </property>
   </action>
  </widget>

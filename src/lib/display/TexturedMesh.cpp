@@ -71,17 +71,16 @@ TexturedMesh::TexturedMesh(MeshBufferPtr mesh)
 	generateMaterialGroups();
 
 	// Compile display list
-	compileDisplayList();
+	compileTexureDisplayList();
+	compileWireframeList();
+
+	m_finalized = true;
+
+	m_renderMode = 0;
+	m_renderMode    |= RenderSurfaces;
+	m_renderMode    |= RenderTriangles;
 }
 
-void TexturedMesh::setColorMaterial(float r, float g, float b)
-{
-	float ambient_color[] = {r, g, b};
-	float diffuse_color[] = {r, g, b};
-
-	glMaterialfv(GL_FRONT_AND_BACK, GL_AMBIENT, ambient_color);
-	glMaterialfv(GL_FRONT_AND_BACK, GL_DIFFUSE, diffuse_color);
-}
 
 void TexturedMesh::generateMaterialGroups()
 {
@@ -139,7 +138,7 @@ void TexturedMesh::generateMaterialGroups()
 	}
 }
 
-void TexturedMesh::compileDisplayList()
+void TexturedMesh::compileTexureDisplayList()
 {
 
 	// Enable vertex arrays
@@ -149,10 +148,10 @@ void TexturedMesh::compileDisplayList()
 
 
 	// Get display list index and compile display list
-	m_displayList = glGenLists(1);
+	m_textureDisplayList = glGenLists(1);
 
 
-	glNewList(m_displayList, GL_COMPILE);
+	glNewList(m_textureDisplayList, GL_COMPILE);
 
 	// Bind arrays
 	glVertexPointer( 3, GL_FLOAT, 0, m_vertices.get() );

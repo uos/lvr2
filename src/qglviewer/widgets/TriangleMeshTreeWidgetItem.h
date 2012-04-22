@@ -39,9 +39,11 @@ public:
     void setNumFaces(size_t n);
     void setNumVertices(size_t n);
 
+
 private:
     size_t      m_numFaces;
     size_t      m_numVertices;
+
 };
 
 #endif /* TRIANGLEMESHTREEWIDGETITEM_H_ */

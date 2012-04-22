@@ -23,7 +23,7 @@
  *      Author: Thomas Wiemann
  */
 
-#include "../widgets/TriangleMeshTreeWidgetItem.h"
+#include "../widgets/ClusterTreeWidgetItem.h"
 
 #include "ClusterVisualizer.hpp"
 #include "display/MeshCluster.hpp"
@@ -116,7 +116,7 @@ ClusterVisualizer::ClusterVisualizer(string filename)
 	// Create item stuff etc...
 	m_renderable = cluster;
 
-	TriangleMeshTreeWidgetItem* item = new TriangleMeshTreeWidgetItem(TriangleMeshItem);
+	ClusterTreeWidgetItem* item = new ClusterTreeWidgetItem(ClusterItem);
 	m_treeItem = item;
 
 	int modes = 0;
@@ -126,7 +126,7 @@ ClusterVisualizer::ClusterVisualizer(string filename)
 	item->setViewCentering(false);
 	item->setName("Cluster Set");
 	item->setRenderable(cluster);
-	item->setNumFaces(0);
+
 }
 
 

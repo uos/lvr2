@@ -16,51 +16,26 @@
  * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA
  */
 
+
 /*
- * ColorGradientPlaneClassifier.cpp
+ * CoordinateTransform.hpp
  *
- *  Created on: 11.04.2012
+ *  Created on: 17.04.2012
  *      Author: Thomas Wiemann
  */
+
+#ifndef COORDINATETRANSFORM_HPP_
+#define COORDINATETRANSFORM_HPP_
+
+#include "PointBuffer.hpp"
 
 namespace lssr
 {
 
-template<typename VertexT, typename NormalT>
-ColorGradientPlaneClassifier<VertexT, NormalT>::ColorGradientPlaneClassifier(vector<Region<VertexT, NormalT>* >* region, GradientType t)
-	: RegionClassifier<VertexT, NormalT>(region)
-{
-	m_colorMap = new ColorMap(256);
-	m_gradientType = t;
+	enum COORD_SYSTEM {SLAM6D, OPENGL_METERS, OPENGL_MM};
+
+	void convert(COORD_SYSTEM from, COORD_SYSTEM to, float* point);
+	void convert(COORD_SYSTEM from, COORD_SYSTEM to, PointBufferPtr &buffer);
 }
 
-
-template<typename VertexT, typename NormalT>
-uchar* ColorGradientPlaneClassifier<VertexT, NormalT>::getColor(int i)
-{
-	uchar* c = new uchar[3];
-	c[0] = 0;
-	c[1] = 200;
-	c[2] = 0;
-
-	Region<VertexT, NormalT>* r = 0;
-	if(i < this->m_regions->size())
-	{
-		r = this->m_regions->at(i);
-	}
-
-	if(r)
-	{
-		float fc[3];
-		m_colorMap->getColor(fc, i, m_gradientType);
-		for(int i = 0; i < 3; i++)
-		{
-			c[i] = (uchar)(fc[i] * 255);
-		}
-	}
-
-
-	return c;
-}
-
-} // namespace lssr
+#endif /* COORDINATETRANSFORM_HPP_ */

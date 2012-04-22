@@ -70,6 +70,8 @@ public:
 
 	KeyFrameInterpolator* kfi() { return m_kfi;}
 
+	void saveToDisk(bool b) {m_saveToDisk = b;}
+
 public Q_SLOTS:
 	virtual void resetCamera();
 
@@ -93,6 +95,8 @@ protected:
 
 	double                      m_near;
 	double                      m_far;
+
+	bool 						m_saveToDisk;
 
 private:
 	QWidget*				    m_parent;

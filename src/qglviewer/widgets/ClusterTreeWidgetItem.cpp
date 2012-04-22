@@ -17,50 +17,47 @@
  */
 
 /*
- * ColorGradientPlaneClassifier.cpp
+ * ClusterTreeWidgetItem.cpp
  *
- *  Created on: 11.04.2012
+ *  Created on: 19.04.2012
  *      Author: Thomas Wiemann
  */
 
-namespace lssr
+
+#include "ClusterTreeWidgetItem.h"
+#include "TriangleMeshTreeWidgetItem.h"
+
+#include "display/StaticMesh.hpp"
+
+using lssr::StaticMesh;
+
+void ClusterTreeWidgetItem::setRenderable(MeshCluster* c)
 {
 
-template<typename VertexT, typename NormalT>
-ColorGradientPlaneClassifier<VertexT, NormalT>::ColorGradientPlaneClassifier(vector<Region<VertexT, NormalT>* >* region, GradientType t)
-	: RegionClassifier<VertexT, NormalT>(region)
-{
-	m_colorMap = new ColorMap(256);
-	m_gradientType = t;
+	list<StaticMesh*> meshes = c->getMeshes();
+	list<StaticMesh*>::iterator it;
+
+	for(it = meshes.begin(); it != meshes.end(); it++)
+	{
+		StaticMesh* m = *it;
+		TriangleMeshTreeWidgetItem* item = new TriangleMeshTreeWidgetItem(TriangleMeshItem);
+
+		// Setup supported render modes
+		int modes = 0;
+		size_t n_pn;
+		modes |= Mesh;
+		modes |= Wireframe;
+
+		item->setName(m->Name());
+		item->setNumFaces(m->getNumberOfFaces());
+		item->setNumVertices(m->getNumberOfVertices());
+		item->setRenderable(m);
+
+		addChild(item);
+	}
+
+	m_renderable = c;
+
 }
 
 
-template<typename VertexT, typename NormalT>
-uchar* ColorGradientPlaneClassifier<VertexT, NormalT>::getColor(int i)
-{
-	uchar* c = new uchar[3];
-	c[0] = 0;
-	c[1] = 200;
-	c[2] = 0;
-
-	Region<VertexT, NormalT>* r = 0;
-	if(i < this->m_regions->size())
-	{
-		r = this->m_regions->at(i);
-	}
-
-	if(r)
-	{
-		float fc[3];
-		m_colorMap->getColor(fc, i, m_gradientType);
-		for(int i = 0; i < 3; i++)
-		{
-			c[i] = (uchar)(fc[i] * 255);
-		}
-	}
-
-
-	return c;
-}
-
-} // namespace lssr

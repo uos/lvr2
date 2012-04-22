@@ -152,6 +152,9 @@ void ViewerApplication::connectEvents()
 
 	// Actions
 	connect(m_sceneDockWidgetUi->actionExport, SIGNAL(triggered()), this, SLOT(saveSelectedObject()));
+	connect(m_sceneDockWidgetUi->actionChangeName, SIGNAL(triggered()), this, SLOT(changeSelectedName()));
+
+
 	connect(m_mainWindowUi->actionGenerateMesh,               SIGNAL(triggered()), this, SLOT(createMeshFromPointcloud()));
 
 	// Action dock functions
@@ -447,8 +450,6 @@ void ViewerApplication::openFile(string filename)
 
 void ViewerApplication::connectKinect()
 {
-	// Init cont. meshing
-	m_mesher = new SignalingMeshGenerator;
 
 	// Init freenect stuff
 	m_freenect = new Freenect::Freenect;
@@ -461,7 +462,6 @@ void ViewerApplication::connectKinect()
 	KinectPointCloudVisualizer* v = new KinectPointCloudVisualizer;
 
 	connect(m_grabber, SIGNAL(newPointBuffer(PointBufferPtr*)), v, SLOT(updateBuffer(PointBufferPtr*)));
-	connect(m_grabber, SIGNAL(newPointBuffer(PointBufferPtr*)), m_mesher, SLOT(newPointCloud(PointBufferPtr*)));
 	connect(m_grabber, SIGNAL(newPointBuffer(PointBufferPtr*)), m_viewer, SLOT(updateGL()));
 
 	dataCollectorAdded(v);
@@ -539,9 +539,11 @@ void ViewerApplication::treeContextMenuRequested(const QPoint &position)
             actions.append(mesh_action);
         }
 
+
         // Add standard action to context menu
         actions.append(m_mainWindowUi->actionShowSelection);
         actions.append(m_sceneDockWidgetUi->actionExport);
+        actions.append(m_sceneDockWidgetUi->actionChangeName);
     }
 
     // Display menu if actions are present
@@ -609,6 +611,33 @@ void ViewerApplication::saveSelectedObject()
 
     }
 }
+
+
+void ViewerApplication::changeSelectedName()
+{
+    QTreeWidgetItem* item = m_sceneDockWidgetUi->treeWidget->currentItem();
+    if(item)
+    {
+        // Test for custom item
+        if(item->type() > 1000)
+        {
+        	CustomTreeWidgetItem* c_item = static_cast<CustomTreeWidgetItem*>(item);
+        	QString new_name = QInputDialog::getText(
+        			0,
+        			QString("Input new label"),
+        			QString("Name:"),
+        			QLineEdit::Normal,
+        			QString(c_item->name().c_str()), 0, 0);
+        	c_item->setName(new_name.toStdString());
+        	c_item->renderable()->setName(new_name.toStdString());
+
+        	m_viewer->updateGL();
+        }
+
+    }
+}
+
+
 
 void ViewerApplication::dataCollectorAdded(Visualizer* d)
 {

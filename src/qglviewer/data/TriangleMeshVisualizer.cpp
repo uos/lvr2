@@ -37,45 +37,37 @@ TriangleMeshVisualizer::TriangleMeshVisualizer(MeshBufferPtr buffer, string name
 	size_t num_mat;
 	buffer->getMaterialArray(num_mat);
 
+	StaticMesh* mesh = 0;
+
 	if(!num_mat)
 	{
-		StaticMesh* mesh = new StaticMesh( buffer );
-		m_renderable = mesh;
+		mesh = new StaticMesh( buffer );
 
-		TriangleMeshTreeWidgetItem* item = new TriangleMeshTreeWidgetItem(TriangleMeshItem);
-		m_treeItem = item;
 
-		int modes = 0;
-		modes |= Mesh;
-
-		if(mesh->getNormals())
-		{
-			modes |= VertexNormals;
-		}
-
-		item->setSupportedRenderModes(modes);
-		item->setViewCentering(false);
-		item->setName(name);
-		item->setRenderable(mesh);
-		item->setNumFaces(mesh->getNumberOfFaces());
 	}
 	else
 	{
-		TexturedMesh* mesh = new TexturedMesh( buffer);
-		m_renderable = mesh;
-
-		TriangleMeshTreeWidgetItem* item = new TriangleMeshTreeWidgetItem(TriangleMeshItem);
-		m_treeItem = item;
-
-		int modes = 0;
-		modes |= Mesh;
-
-		item->setSupportedRenderModes(modes);
-		item->setViewCentering(false);
-		item->setName(name);
-		item->setRenderable(mesh);
-		item->setNumFaces(0);
+		mesh = new TexturedMesh( buffer);
 	}
+
+
+	m_renderable = mesh;
+	TriangleMeshTreeWidgetItem* item = new TriangleMeshTreeWidgetItem(TriangleMeshItem);
+	m_treeItem = item;
+
+	int modes = 0;
+	modes |= Mesh;
+
+	if(mesh->getNormals())
+	{
+		modes |= VertexNormals;
+	}
+
+	item->setSupportedRenderModes(modes);
+	item->setViewCentering(false);
+	item->setName(name);
+	item->setRenderable(mesh);
+	item->setNumFaces(mesh->getNumberOfFaces());
 
 
 }
