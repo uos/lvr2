@@ -40,6 +40,7 @@
 #include <float.h>
 #include <math.h>
 #include <algorithm>
+#include <queue>
 
 #include <glu.h>
 #include <glut.h>

@@ -51,5 +51,16 @@ public:
 	virtual float operator()(HalfEdgeVertex<VertexT, NormalT> &v) { return std::numeric_limits<float>::max(); }
 };
 
+typedef std::pair<HalfEdgeVertex<VertexT, NormalT>, float> vertexCost_p;
+
+struct cVertexCost
+{
+	bool operator()(vertexCost_p &p1, vertexCost_p &p2)
+	{
+		return p1.second < p2.second;
+	}
+};
+
+
 } /* namespace lssr */
 #endif /* VERTEXCOSTS_H_ */
