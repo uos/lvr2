@@ -32,7 +32,7 @@ namespace lssr
 {
 
 /**
- * @brief	Implements Garland & Heckberts quadric based vertex
+ * @brief	Implements Garland & Heckbert's quadric based vertex
  * 			removal cost function. Implementation is based on Jeff
  * 			Somers source code
  */
@@ -40,7 +40,7 @@ template<typename VertexT, typename NormalT>
 class QuadricVertexCosts : public VertexCosts<VertexT, NormalT>
 {
 	typedef HalfEdgeVertex<VertexT, NormalT> HVertex;
-	typedef HelfEdge<HVertex, HalfEdgeFace<VertexT, NormalT> > HEdge;
+	typedef HalfEdge<HVertex, HalfEdgeFace<VertexT, NormalT> > HEdge;
 
 public:
 
@@ -50,18 +50,18 @@ public:
 	 * @param useTriangleArea 	If true, the areas of the surrounding triangles
 	 *    						will be taken into account for error calculation
 	 */
-	QuadricVertexCosts(bool useTriangleArea);
+	QuadricVertexCosts(bool useTriangleArea) : m_useTri(useTriangleArea) {};
 
 	/**
 	 * @brief 	Implementation of Garland and Heckberts cost function. If the object
 	 * 			was created with the useTriangleArea flag, the weighted costs function
 	 * 			will be used.
 	 */
-	float operator()(HVertex& v);
+	virtual float operator()(HalfEdgeVertex<VertexT, NormalT> &v);
 
 private:
 
-	float getQuadricError(Matrix4<float> &quadric, HVertex* v, float area);
+	float calcQuadricError(Matrix4<float> &quadric, HVertex* v, float area);
 
 	bool m_useTri;
 
@@ -69,6 +69,6 @@ private:
 
 } /* namespace lssr */
 
-#include "QuadircVertexCosts.tcc"
+#include "QuadricVertexCosts.tcc"
 
 #endif /* QUADRICVERTEXCOSTS_H_ */

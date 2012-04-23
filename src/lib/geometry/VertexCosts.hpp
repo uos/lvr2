@@ -53,7 +53,7 @@ public:
 
 
 
-typedef std::pair<HalfEdgeVertex<Vertex<float>, Normal<float> >, float> vertexCost_p;
+typedef std::pair<HalfEdgeVertex<ColorVertex<float, uchar>, Normal<float> >, float> vertexCost_p;
 
 struct cVertexCost
 {

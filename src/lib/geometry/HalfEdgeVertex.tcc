@@ -46,7 +46,8 @@ void HalfEdgeVertex<VertexT, NormalT>::calcQuadric(Matrix4<float> &q, bool use_t
 			triangle_area = f->getArea();
 		}
 
-		NormalT n = f->getNormal();
+		NormalT n = f->getFaceNormal();
+
 		float a = n[0];
 		float b = n[1];
 		float c = n[2];
@@ -85,7 +86,8 @@ void HalfEdgeVertex<VertexT, NormalT>::getAdjacentFaces(list<HalfEdgeFace<Vertex
 	// Iterate over incoming edges and get all surrounding faces.
 	// In a correctly linked  mesh it shouldn't be necessary to
 	// iterate over the outgoint edges as well.
-	for(it = in.begin(); it != in.end(); it++)
+
+	for(it = out.begin(); it != out.end(); it++)
 	{
 		HEdge* e = *it;
 		if(e->face)
@@ -103,5 +105,9 @@ void HalfEdgeVertex<VertexT, NormalT>::getAdjacentFaces(list<HalfEdgeFace<Vertex
 	}
 
 	// Copy pointers to out list
-	copy(adj_faces.begin(), adj_faces.end(), adj.begin());
+	typename set<HFace*>::iterator sit;
+	for(sit = adj_faces.begin(); sit != adj_faces.end(); sit++)
+	{
+		adj.push_back(*sit);
+	}
 }
