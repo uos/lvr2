@@ -244,7 +244,7 @@ public:
 	 * @param n_collapses		Number of edges to collapse
 	 * @param c					The costs function for edge removal
 	 */
-	void reduceMeshByCollapse(int n_collapses, VertexCosts<VertexT, NormalT>& c);
+	void reduceMeshByCollapse(int n_collapses, VertexCosts<VertexT, NormalT> &c);
 
 private:
 

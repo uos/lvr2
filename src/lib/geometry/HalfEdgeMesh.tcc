@@ -1523,7 +1523,7 @@ void HalfEdgeMesh<VertexT, NormalT>::finalizeAndRetesselate( bool genTextures, f
 } 
 
 template<typename VertexT, typename NormalT>
-void HalfEdgeMesh<VertexT, NormalT>::reduceMeshByCollapse(int n_collapses, VertexCosts<VertexT, NormalT>& c)
+void HalfEdgeMesh<VertexT, NormalT>::reduceMeshByCollapse(int n_collapses, VertexCosts<VertexT, NormalT> &c)
 {
     string msg = timestamp.getElapsedTime() + "Creating priority queue...";
     ProgressBar progress(m_vertices.size(), msg);
@@ -1534,9 +1534,12 @@ void HalfEdgeMesh<VertexT, NormalT>::reduceMeshByCollapse(int n_collapses, Verte
 
     for(size_t i = 0; i < m_vertices.size(); i++)
 	{
-    	q.push(vertexCost_p(m_vertices[i], c(m_vertices[i])));
-		++progress;
+    	float cost = c(*m_vertices[i]);
+    	q.push(vertexCost_p(*m_vertices[i], cost));
+    	cout << "COST: " << cost << endl;
+		//++progress;
 	}
+    cout << endl;
 
 }
 

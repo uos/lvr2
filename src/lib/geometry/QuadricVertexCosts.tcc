@@ -28,55 +28,53 @@ namespace lssr
 {
 
 template<typename VertexT, typename NormalT>
-float QuadricVertexCosts<VertexT, NormalT>::operator()(HVertex &v)
+float QuadricVertexCosts<VertexT, NormalT>::operator()(HalfEdgeVertex<VertexT, NormalT> &v)
 {
-		float mincost = std::numeric_limits<float>::max();
-		bool hasNeighbors = false;
+	float mincost = std::numeric_limits<float>::max();
+	bool hasNeighbors = false;
 
-		Matrix4<float> q1;
-		v.getQuadric(q1);
+	Matrix4<float> q1;
+	v.calcQuadric(q1, false);
 
-		// Iterator over all neighbour vertices
-		typename list<HEdge*>::iterator it;
-		for (it = v.out.begin(); v != out.end(); it++)
-		{
+	// Iterator over all neighbour vertices
+	typename vector<HEdge*>::iterator it;
+	for (it = v.out.begin(); it != v.out.end(); it++)
+	{
 
-			HVertex* n = it->end;
+		HVertex* n = (*it)->end;
 
-			double Q2[4][4];
-			double Qsum[4][4];
+		Matrix4<float> q2;
 
-			Matrix4<float> q2;
+		// Add two 4x4 Q matrices
+		n->calcQuadric(q2, false);
 
-			// Add two 4x4 Q matrices
-			n->calcQuadric(q2);
-			Matrix4<float> qsum = q1 + q2;
+		Matrix4<float> qsum = q1 + q2;
 
-			/*double triArea = 0;
+		/*double triArea = 0;
 			if (QUADRICTRI == _cost)
 			{
 				triArea = v.getQuadricSummedTriArea() + n.getQuadricSummedTriArea();
 			}*/
 
-			float triArea = 0;
-			// calc cost
-			float cost = calcQuadricError(Qsum, n, triArea);
+		float triArea = 0;
+		// calc cost
+		float cost = calcQuadricError(qsum, n, triArea);
 
-			if (cost < mincost)
-			{
-				bNeighborFound = true;
-				mincost = cost;
-			}
+		if (cost < mincost)
+		{
+			hasNeighbors = true;
+			mincost = cost;
 		}
+	}
 
-		if (bNeighborFound)
-		{
-			return mincost;
-		}
-		else
-		{
-			return FLT_MAX; // vertex not connected to an edge
-		}
+	if (hasNeighbors)
+	{
+		return mincost;
+	}
+	else
+	{
+		return FLT_MAX; // vertex not connected to an edge
+	}
 }
 
 template<typename VertexT, typename NormalT>
