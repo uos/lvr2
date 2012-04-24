@@ -24,6 +24,9 @@
  *      Author: Thomas Wiemann
  */
 
+namespace lssr
+{
+
 template<typename VertexT, typename NormalT>
 void HalfEdgeVertex<VertexT, NormalT>::calcQuadric(Matrix4<float> &q, bool use_tri)
 {
@@ -40,6 +43,7 @@ void HalfEdgeVertex<VertexT, NormalT>::calcQuadric(Matrix4<float> &q, bool use_t
 	for(it = adj_faces.begin(); it != adj_faces.end(); it++)
 	{
 		HFace* f = *it;
+
 		float triangle_area = 1;
 		if(use_tri)
 		{
@@ -111,3 +115,46 @@ void HalfEdgeVertex<VertexT, NormalT>::getAdjacentFaces(list<HalfEdgeFace<Vertex
 		adj.push_back(*sit);
 	}
 }
+
+template<typename VertexT, typename NormalT>
+bool HalfEdgeVertex<VertexT, NormalT>::isBorderVertex()
+{
+	list<HalfEdgeFace<VertexT, NormalT>* > adj;
+	typename list<HalfEdgeFace<VertexT, NormalT>* >::iterator it;
+	getAdjacentFaces(adj);
+
+	for(it = adj.begin(); it != adj.end(); it++)
+	{
+		HalfEdgeFace<VertexT, NormalT>* f = *it;
+		if(f->isBorderFace())
+		{
+			return false;
+		}
+	}
+	return true;
+}
+
+template<typename VertexT, typename NormalT>
+HalfEdge< HalfEdgeVertex<VertexT, NormalT>, HalfEdgeFace<VertexT, NormalT> >*  HalfEdgeVertex<VertexT, NormalT>::getShortestEdge()
+{
+	HEdge* shortest = 0;
+	float s_length = numeric_limits<float>::max();
+
+	typename vector<HEdge*>::iterator it;
+	for(it = in.begin(); it != in.end(); it++)
+	{
+		HEdge* e = *it;
+		VertexT v1 = e->start->m_position;
+		VertexT v2 = e->end->m_position;
+		float length = (v1 - v2).length();
+
+		if(shortest == 0 || length < s_length )
+		{
+			s_length = length;
+			shortest = e;
+		}
+	}
+	return shortest;
+}
+
+} // namespace lssr

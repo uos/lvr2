@@ -92,10 +92,16 @@ public:
 	vector<HEdge*> out;
 
 	void getAdjacentFaces(list<HalfEdgeFace<VertexT, NormalT>* > &adj);
+
+	bool isBorderVertex();
+
+	HEdge* getShortestEdge();
 };
 
-#include "HalfEdgeVertex.tcc"
+
 
 } // namespace lssr
+
+#include "HalfEdgeVertex.tcc"
 
 #endif /* HALFEDGEVERTEX_H_ */

@@ -36,6 +36,7 @@
 #include <stack>
 #include <set>
 #include <list>
+#include <map>
 #include <sstream>
 #include <float.h>
 #include <math.h>
@@ -405,6 +406,12 @@ private:
 	 * @return	true if the edge was collapsed, false otherwise
 	 */
 	virtual bool safeCollapseEdge(HEdge* edge);
+
+
+	/**
+	 * @brief	Calculates costs for every vertex in the mesh
+	 */
+	void getCostMap(std::map<HVertex*, float> &costs, VertexCosts<VertexT, NormalT> &c);
 
 
 	friend class ClassifierFactory<VertexT, NormalT>;
