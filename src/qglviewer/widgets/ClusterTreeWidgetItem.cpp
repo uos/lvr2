@@ -27,9 +27,10 @@
 #include "ClusterTreeWidgetItem.h"
 #include "TriangleMeshTreeWidgetItem.h"
 
+#include "io/Model.hpp"
 #include "display/StaticMesh.hpp"
 
-using lssr::StaticMesh;
+using namespace lssr;
 
 void ClusterTreeWidgetItem::setRenderable(MeshCluster* c)
 {
@@ -57,6 +58,60 @@ void ClusterTreeWidgetItem::setRenderable(MeshCluster* c)
 	}
 
 	m_renderable = c;
+
+}
+
+void ClusterTreeWidgetItem::saveCluster(string filename)
+{
+	// Open output file
+	ofstream out(filename.c_str());
+
+	// Iterate over all sub-items
+    QTreeWidgetItemIterator w_it( this);
+    while (*w_it)
+    {
+    	if( (*w_it)->type() >= TriangleMeshItem)
+    	{
+    		TriangleMeshTreeWidgetItem* item = static_cast<TriangleMeshTreeWidgetItem*>(*w_it);
+    		if(item->isSelected())
+    		{
+    			// Get buffer
+    			lssr::ModelPtr model = item->renderable()->model();
+    			if(model)
+    			{
+    				lssr::MeshBufferPtr mesh = model->m_mesh;
+
+    				if(mesh)
+    				{
+    					size_t nFaces;
+    					size_t nVertices;
+    					size_t nColors;
+
+    					floatArr vertices = mesh->getVertexArray(nVertices);
+    					ucharArr colors = mesh->getVertexColorArray(nColors);
+    					uintArr indices = mesh->getFaceArray(nFaces);
+
+    					// Write mesh info
+    					out << item->renderable()->Name();
+    					out << nFaces << " " << nColors << endl;
+    					for(size_t i = 0; i < nFaces; i++)
+    					{
+    						out << indices[3 * i] << " " << indices[3 * 1 + 1] << " " << indices[3 * i + 2] << endl;
+    					}
+
+    					for(size_t i = 0; i < nVertices; i++)
+    					{
+    						out << vertices[3 * i] << " " << vertices[3 * 1 + 1] << " " << vertices[3 * i + 2] << " ";
+    						out << (int)colors[3 * i] << " " << (int)colors[3 * 1 + 1] << " " << (int)colors[3 * i + 2] << endl;
+    					}
+    				}
+    			}
+    		}
+    	}
+        ++w_it;
+    }
+
+    out.close();
 
 }
 

@@ -39,6 +39,8 @@ public:
 	virtual ~ClusterTreeWidgetItem() {};
 
 	virtual void setRenderable(MeshCluster* c);
+
+	void saveCluster(string filename);
 };
 
 #endif /* CLUSTERTREEWIDGETITEM_H_ */

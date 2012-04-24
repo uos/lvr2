@@ -579,11 +579,18 @@ void ViewerApplication::saveSelectedObject()
 	      << "PLY Models (*.ply)"
 	      << "All Files (*.*)";
         }
+        else if (item->type() == ClusterItem)
+        {
+        	cout << "CLUSTER" << endl;
+        	ClusterTreeWidgetItem* c_item = static_cast<ClusterTreeWidgetItem*>(item);
+        	c_item->saveCluster("export.clu");
+        }
         else
         {
             QMessageBox msgBox;
             msgBox.setText("Object type not supported");
             msgBox.setStandardButtons(QMessageBox::Ok);
+            msgBox.exec();
             return;
         }
 
