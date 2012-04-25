@@ -1535,52 +1535,70 @@ void HalfEdgeMesh<VertexT, NormalT>::reduceMeshByCollapse(int n_collapses, Verte
     {
     	n_collapses = (int)m_vertices.size();
     }
-    cout << "Collapsing " << n_collapses << endl;
-    for(int n = 0; n < n_collapses; n++)
+//    cout << "Collapsing " << n_collapses << endl;
+//    for(int n = 0; n < n_collapses; n++)
+//    {
+//
+//    	priority_queue<vertexCost_p, vector<vertexCost_p>, cVertexCost> q;
+//    	for(size_t i = 0; i < this->m_vertices.size(); i++)
+//    	{
+//    		q.push(vertexCost_p(m_vertices[i], c(*m_vertices[i])));
+//    	}
+//
+//    	cout << q.size() << endl;
+//
+//    	// Try to collapse until a non-border-edges is found. If there are only
+//    	// borders left, collapse border edge with minimum cost
+//    	if(!q.empty())
+//    	{
+//    		// Save vertex with lowest costs
+//    		HVertex* topVertex = q.top().first;
+//    		HVertex* toCollapse = topVertex;
+//
+//    		// Check for border vertices
+//    		while(toCollapse->isBorderVertex() && !q.empty())
+//    		{
+//    			q.pop();
+//    			toCollapse = q.top().first;
+//    		}
+//
+//    		// If q is empty, no non-border vertex was found, collapse
+//    		// first border vertex
+//    		if(q.empty())
+//    		{
+//    			HEdge* e = topVertex->getShortestEdge();
+//    			cout << "E: " << e << endl;
+//    			collapseEdge(e);
+//    		}
+//    		else
+//    		{
+//    			HEdge* e = toCollapse->getShortestEdge();
+//    			cout << "F: " << e << endl;
+//    			collapseEdge(e);
+//    		}
+//    	}
+//
+//    	++progress;
+//    }
+
+
+    priority_queue<vertexCost_p, vector<vertexCost_p>, cVertexCost> q;
+    for(size_t i = 0; i < this->m_vertices.size(); i++)
     {
-
-    	priority_queue<vertexCost_p, vector<vertexCost_p>, cVertexCost> q;
-    	for(size_t i = 0; i < this->m_vertices.size(); i++)
-    	{
-    		q.push(vertexCost_p(m_vertices[i], c(*m_vertices[i])));
-    	}
-
-    	cout << q.size() << endl;
-
-    	// Try to collapse until a non-border-edges is found. If there are only
-    	// borders left, collapse border edge with minimum cost
-    	if(!q.empty())
-    	{
-    		// Save vertex with lowest costs
-    		HVertex* topVertex = q.top().first;
-    		HVertex* toCollapse = topVertex;
-
-    		// Check for border vertices
-    		while(toCollapse->isBorderVertex() && !q.empty())
-    		{
-    			q.pop();
-    			toCollapse = q.top().first;
-    		}
-
-    		// If q is empty, no non-border vertex was found, collapse
-    		// first border vertex
-    		if(q.empty())
-    		{
-    			HEdge* e = topVertex->getShortestEdge();
-    			cout << "E: " << e << endl;
-    			collapseEdge(e);
-    		}
-    		else
-    		{
-    			HEdge* e = toCollapse->getShortestEdge();
-    			cout << "F: " << e << endl;
-    			collapseEdge(e);
-    		}
-    	}
-
-    	++progress;
+    	q.push(vertexCost_p(m_vertices[i], c(*m_vertices[i])));
     }
 
+    for(int i = 0; i < n_collapses && !q.empty(); i++)
+    {
+    	HVertex* v = q.top().first;
+    	while(v->isBorderVertex() && !q.empty())
+    	{
+    		q.pop();
+    		v = q.top().first;
+    	}
+    	HEdge* e = v->getShortestEdge();
+    	collapseEdge(e);
+    }
 
 }
 

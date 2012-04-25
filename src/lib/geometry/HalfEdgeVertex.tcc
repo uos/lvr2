@@ -94,16 +94,19 @@ void HalfEdgeVertex<VertexT, NormalT>::getAdjacentFaces(list<HalfEdgeFace<Vertex
 	for(it = out.begin(); it != out.end(); it++)
 	{
 		HEdge* e = *it;
-		if(e->face)
+		if(e)
 		{
-			adj_faces.insert(e->face);
-		}
-
-		if(e->pair)
-		{
-			if(e->pair->face)
+			if(e->face)
 			{
-				adj_faces.insert(e->pair->face);
+				adj_faces.insert(e->face);
+			}
+
+			if(e->pair)
+			{
+				if(e->pair->face)
+				{
+					adj_faces.insert(e->pair->face);
+				}
 			}
 		}
 	}
