@@ -73,6 +73,10 @@ endif(PCL_FOUND)
 ##############################
 
 find_package(CGAL)
+if(CGAL_FOUND)
+add_definitions(${CGAL_CXX_FLAGS_INIT})
+message(STATUS "CGAL CXX_FLAGS: " ${CGAL_CXX_FLAGS_INIT})
+endif(CGAL_FOUND)
 
 
 ####
