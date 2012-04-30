@@ -105,9 +105,9 @@ class TextureIO : public BaseIO
 	
 
     private:
-	vector<Texture> m_textures;
-	string m_filename;
-	size_t m_currentIndex;
+	vector<Texture> 	m_textures;
+	string 			m_filename;
+	size_t 			m_currentIndex;
 
 
 };
