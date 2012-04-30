@@ -40,8 +40,9 @@ namespace lssr
 
 TextureIO::TextureIO(string filename)
 {
-	m_currentIndex = 0;
-	m_filename = filename;
+	m_currentIndex 	= 0;
+	m_filename 	= filename;
+
 	ifstream in(m_filename.c_str());
 	
 	//test if file exists
@@ -62,7 +63,7 @@ TextureIO::TextureIO(string filename)
 
 size_t TextureIO::add(Texture* t)
 {
-	m_textures.add(t);	
+	m_textures.push_back(t);	
 	return m_textures.size() - 1;
 }
 
@@ -107,7 +108,14 @@ void TextureIO::write()
 			<< m_textures[i]->m_height 
 			<< m_textures[i]->m_numChannels
 			<< m_textures[i]->m_numBytesPerChan;
-		out	<< m_textures[i]->m_data;
+		for (int y = 0; y < m_textures[i]->m_height; y++)
+		{
+			for (int x = 0; x < m_textures[i]->m_width; x++)
+			{	
+				out	<< m_textures[i]->m_data[y][x];
+			}
+		}
+	
 	}
 	
 	out.close();
