@@ -28,15 +28,11 @@
 #ifndef TEXTURE_HPP_
 #define TEXTURE_HPP_
 
-#include "Region.hpp"
-#include "reconstruction/PointsetSurface.hpp"
 #include "io/PPMIO.hpp"
 #include <boost/lexical_cast.hpp>
 
 namespace lssr {
 
-template<typename VertexT, typename NormalT>
-class HalfEdgeVertex;
 
 /**
  * @brief	This class represents a texture.
@@ -45,35 +41,18 @@ template<typename VertexT, typename NormalT>
 class Texture {
 public:
 
-	typedef HalfEdgeVertex<VertexT, NormalT> HVertex;
 
 	/**
 	 * @brief 	Constructor.
 	 *
-	 * @param 	pm	a PointCloudManager containing a colored PointCloud
-	 *
-	 * @param	region	a region to generate a texture for.
-	 *
-	 * @param	contours	All contours of the region.
-	 *
 	 */
-	Texture( typename PointsetSurface<VertexT>::Ptr pm,   Region<VertexT, NormalT>* region,  vector<vector<HVertex*> > contours);
+	Texture( );
 
-	/**
-	 * @brief	computes texture coordinates corresponding to the give Vertex
-	 *
-	 * @param	v	the vertex to generate texture coordinates for
-	 *
-	 * @param	x	returns texture coordinates in x direction
-	 *
-	 * @param	y	returns texture coordinates in y direction
-	 */
-	void textureCoords(VertexT v, float &x, float &y);
 
 	/**
 	 *	@brief	Writes the texture to a file
 	 */
-	void save(int i);
+	void save();
 
 	/**
 	 * Destructor.
@@ -83,24 +62,14 @@ public:
 	///The pixel size determines the resolution
 	static float m_texelSize;
 
-private:
-	///The region belonging to the texture
-	Region<VertexT, NormalT>* m_region;
-
+	///The dimensions of the texture
+	size_t m_width, m_height;
+	
 	///The texture data
 	PPMIO::ColorT** m_data;
 
-	///The coordinate system of the texture plane
-	NormalT best_v1, best_v2;
-
-	///A point in the texture plane
-	VertexT p;
-
-	///The bounding box of the texture plane
-	float best_a_min, best_b_min, best_a_max, best_b_max;
-
-	///The dimensions of the texture
-	int m_sizeX, m_sizeY;
+	///The class of the texture
+	unsigned short int m_textureClass;
 
 };
 
