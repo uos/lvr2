@@ -29,7 +29,6 @@
 #define TEXTURE_HPP_
 
 #include "io/PPMIO.hpp"
-#include <boost/lexical_cast.hpp>
 
 namespace lssr {
 
@@ -37,7 +36,6 @@ namespace lssr {
 /**
  * @brief	This class represents a texture.
  */
-template<typename VertexT, typename NormalT>
 class Texture {
 public:
 
@@ -48,11 +46,6 @@ public:
 	 */
 	Texture( );
 
-
-	/**
-	 *	@brief	Writes the texture to a file
-	 */
-	void save();
 
 	/**
 	 * Destructor.
@@ -67,6 +60,12 @@ public:
 	
 	///The texture data
 	PPMIO::ColorT** m_data;
+
+	///The number of color channels
+	unsigned char m_numChannels;
+
+	///The number of bytes per channel
+	unsigned char m_numBytesPerChan;
 
 	///The class of the texture
 	unsigned short int m_textureClass;

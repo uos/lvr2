@@ -27,35 +27,14 @@
 
 namespace lssr {
 
-template<typename VertexT, typename NormalT>
-Texture<VertexT, NormalT>::Texture()
+Texture::Texture()
 {
 	this->m_data   = 0;
 
-	if(m_data == 0)
-	{
-		this->m_width = 1;
-		this->m_height = 1;
-		m_data = new PPMIO::ColorT*[this->m_height];
-		for (int y = 0; y < this->m_height; y++)
-		{
-			m_data[y] = new PPMIO::ColorT[this->m_width];
-			memset(m_data[y], 200, this->m_width * sizeof(PPMIO::ColorT));
-		}
-	}
 }
 
 
-template<typename VertexT, typename NormalT>
-void Texture<VertexT, NormalT>::save()
-{
-	PPMIO ppm;
-	ppm.setDataArray(this->m_data,this->m_width, this->m_height);
-	ppm.write("texture_"+boost::lexical_cast<std::string>(0)+".ppm");
-}
-
-template<typename VertexT, typename NormalT>
-Texture<VertexT, NormalT>::~Texture() {
+Texture::~Texture() {
 	for(int y = 0; y < m_height; y++)
 	{
 		delete m_data[y];
