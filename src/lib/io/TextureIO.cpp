@@ -43,19 +43,53 @@ TextureIO::TextureIO(string filename)
 	m_currentIndex 	= 0;
 	m_filename 	= filename;
 
-	ifstream in(m_filename.c_str());
+	ifstream in(m_filename.c_str(), ios::in|ios::binary);
 	
-	//test if file exists
-	if()
+	if(in.good())
 	{	
-		//file exists -> read all textures from the file
+		//read all textures from the file
 		
-		//read number of textures
+		//buffers for system independent I/O
+		uint16_t ui16buf;
+		uint8_t  ui8buf;
+
+		//read number of textures: 2 Bytes
 		size_t numTextures = 0;
-		
+		in.read(&numTextures, 2);
+	
+		//read all textures from the file	
 		for (int i = 0; i < numTextures; i++)
 		{
+			Texture* t = new Texture();
+		
+			//read texture class: 2 Bytes
+			in.read(&ui16buf, 2);	
+			t->m_textureClass = ui16buf;
 			
+			//read texture width: 2 Bytes
+			in.read(&ui16buf, 2);	
+			t->width = ui16buf;
+			
+			//read texture height: 2 Bytes
+			in.read(&ui16buf, 2);	
+			t->height = ui16buf;
+
+			//read number of channels and number of bytes per channel: 1 Byte
+			in.read(&ui8buf, 1);	
+			t->m_numChannels = (ui8buf & 0xf0) >> 4;
+			t->m_numBytesPerChan = ui8buf & 0x0f;
+			
+			//allocate memory for the image data
+			t->m_data = malloc(t->m_width * t->m_height * t->m_numChannels * t->m_numBytesPerChan);			
+
+			//read image data line by line
+			for (size_t y = 0; y < t->m_height; y++)
+			{
+				in.read(t->m_data[y], t->m_width * t->m_numChannels * t->m_numBytesPerChan);
+			}
+	
+
+			m_textures.push_back(t);
 		}	
 	}
 	in.close();
@@ -96,24 +130,40 @@ Texture* TextureIO::getNext()
 }
 
 void TextureIO::write()
-{
-	ofstream out(m_filename.c_str());
+{ 
+	ofstream out(m_filename.c_str(), ios::out|ios::binary);
 
-	out<<m_textures.size();
-	
+	//buffers for system independent I/O
+	uint16_t ui16buf;
+	uint8_t  ui8buf;
+
+	//Write number of textures in package: 2 Bytes
+	ui16buf = m_textures.sze();
+	out.write(&ui16buf, 2);
+
+	//write all textures to the file	
 	for (int i = 0; i < m_textures.size(); i++)
 	{
-		out 	<< m_textures[i]->m_textureClass 
-			<< m_textures[i]->m_width 
-			<< m_textures[i]->m_height 
-			<< m_textures[i]->m_numChannels
-			<< m_textures[i]->m_numBytesPerChan;
+		//write texture class: 2 Bytes
+	        ui16buf = m_textures[i]->m_textureClass;	
+		out.write(&ui16buf, 2);
+		
+		//write texture width: 2 Bytes
+		ui16buf = m_textures[i]->m_width;
+		out.write(&ui16buf, 2);
+
+		//write texture height: 2 Bytes
+		ui16buf = m_textures[i]->m_height;
+		out.write(&ui16buf, 2);
+
+		//write number of channels and number of bytes per channel 1 Byte
+		ui8buf = (m_textures[i]->m_numChannels << 4) | m_textures[i]->m_numBytesPerChan;
+		out.write(&ui8buf, 1);
+
+		//write image data line by line
 		for (int y = 0; y < m_textures[i]->m_height; y++)
 		{
-			for (int x = 0; x < m_textures[i]->m_width; x++)
-			{	
-				out	<< m_textures[i]->m_data[y][x];
-			}
+			out.write(m_textures[i]->m_data[y], m_textures[i]->m_width * m_textures[i]->m_numChannels * m_textures[i]->m_numBytesPerChan);
 		}
 	
 	}
