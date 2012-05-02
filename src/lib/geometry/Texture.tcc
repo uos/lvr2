@@ -29,14 +29,39 @@ namespace lssr {
 
 Texture::Texture()
 {
-	this->m_data   = 0;
+	this->m_data   		= 0;
+	this->m_textureClass 	= 0;
 
 }
 
+Texture::Texture(unsigned short int width, unsigned short int height, unsigned char numChannels,
+		 unsigned char numBytesPerChan, unsigned short int textureClass)
+{
+	this->m_width 		= width;
+	this->m_height 		= height;
+	this->m_numChannels 	= numChannels;
+	this->m_numBytesPerChan = numBytesPerChan;
+
+	m_data = new char**[height];
+	for (int y = 0; y < height; y++)
+	{
+		m_data[y] = new char*[width];
+		for(int x = 0; x < width; x++)
+		{
+			m_data[y][x] = new char[numChannels * numBytesPerChan];
+		}
+	}
+
+	this->m_textureClass	= textureClass;
+}
 
 Texture::~Texture() {
 	for(int y = 0; y < m_height; y++)
 	{
+		for (int x = 0; x < m_width; x++)
+		{
+			delete m_data[y][x];
+		}
 		delete m_data[y];
 	}
 	delete m_data;

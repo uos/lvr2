@@ -30,11 +30,12 @@
 #ifndef __TEXTURE_IO_H__
 #define __TEXTURE_IO_H__
 
-#include "BaseIO.hpp"
 #include "geometry/Texture.hpp"
 
 #include <stdint.h>
 #include <cstdio>
+#include <vector>
+#include <fstream>
 
 namespace lssr
 {
@@ -54,7 +55,7 @@ namespace lssr
  *
  */
 
-class TextureIO : public BaseIO
+class TextureIO
 {
     public:
         /**
@@ -62,56 +63,62 @@ class TextureIO : public BaseIO
          **/
         TextureIO(string filename);
         
-	~TextureIO() {/*TODO*/}
+	virtual ~TextureIO() {/*TODO*/}
 
 	/**
 	 * \brief Add the given texture to the texture package
 	 * \param 	t	The texture to add
 	 * \return 		The index of the texture in the texture package	
 	**/
-	size_t add(Texture* t);
+	virtual size_t add(Texture* t);
 		
 	/**
 	 * \brief 	Remove the texture with the given index from the texture package
 	 * \param	index	The index of the texture to remove
 	**/
-	void remove (size_t index);
+	virtual void remove (size_t index);
 
 	/**
 	 * \brief 	Update the texture with the given index in the texture package
 	 * \param	index	The index of the texture to update
 	 * \param	t	The new texture to replace the old one with
 	**/
-	void update (size_t index, Texture* t);
+	virtual void update (size_t index, Texture* t);
 
 	/**
 	 * \brief 	Get the texture with the given index from the texture package
 	 * \param	index	The index of the texture to get
 	 * \return	The read texture 
 	**/
-	Texture* get(size_t index);
+	virtual Texture* get(size_t index);
 	
 	/**
 	 * \brief 	Get the subsequent texture from the texture package
 	 * \return	The read texture 
 	**/
-	Texture* getNext();
+	virtual Texture* getNext();
 
 	/**
 	 * \brief (re-)write the file
 	 *
 	**/
-	void write();
-	
+	virtual void write();
 
-    private:
-	vector<Texture> 	m_textures;
+
+	/**
+	 * \brief resets the internal index
+	 *
+ 	**/
+	virtual void resetIndex(){m_currentIndex = 0;};	
+
+	std::vector<Texture*> 	m_textures;
 	string 			m_filename;
+    private:
 	size_t 			m_currentIndex;
 
 
 };
 
 }
-
+#include "TextureIO.cpp"
 #endif
