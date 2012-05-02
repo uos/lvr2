@@ -19,8 +19,8 @@
 
 
 /**
- * @file       textest.cpp
- * @brief      test program for TextureIO class
+ * @file       texman.cpp
+ * @brief      Program to manage texture packages.
  * @details    
  * @author     Kim Oliver Rinnewitz (krinnewitz), krinnewitz@uos.de
  * @version    120108
@@ -34,9 +34,35 @@
 #include <cstdlib>
 #include <iomanip>
 #include <sstream>
+#include <opencv/cv.h>
+#include <opencv/highgui.h>
 
 using namespace std;
 
+/**
+ *i \brief Create and add a new texture
+**/
+void a(lssr::TextureIO* tio)
+{
+	cout<<"\t(a)dd: Enter path to texture image: ";
+	string fn;
+	cin>>fn;
+	IplImage* img = cvLoadImage(fn.c_str(), CV_LOAD_IMAGE_UNCHANGED);
+	if (img)
+	{	
+		cout<<"\t(a)dd: Enter texture class: ";
+		unsigned short int tc = 0;
+		cin>>tc;
+		lssr::Texture* t = new lssr::Texture(img->width, img->height, img->nChannels, img->depth/8, tc);
+		t->m_data = img->imageDataOrigin;
+		cout<<"\t(a)dded new texture."<<endl;
+		tio->add(t);
+	}
+	else
+	{
+		cout<<"\t(a)dd failed: Could not load texture."<<endl;
+	}
+}
 
 /**
  * \brief delete the texture with the given index
@@ -61,15 +87,15 @@ void d(lssr::TextureIO* tio, int &sel)
 **/
 void h()
 {
-	cout<<"\ta: Add a new texture to the file"<<endl;
+	cout<<"\ta: Add a new texture to the file"<<endl;		//TODO
 	cout<<"\td: Delete the selected texture"<<endl;
 	cout<<"\th: Show this help"<<endl;
 	cout<<"\ti: Show file information"<<endl;
 	cout<<"\tl: List all textures in the file"<<endl;
 	cout<<"\ts: Select a texture" <<endl;
-	cout<<"\tu: Update the selected texture"<<endl;
-	cout<<"\tv: View the selected texture"<<endl;
-	cout<<"\tw: Write changes to disk"<<endl;
+	cout<<"\tu: Update the selected texture"<<endl;			//TODO
+	cout<<"\tv: View the selected texture"<<endl;			
+	cout<<"\tw: Write changes to disk"<<endl;		
 	cout<<"\tx: Exit"<<endl;
 }
 
@@ -126,6 +152,85 @@ void s(lssr::TextureIO* tio, int &sel)
 	}
 }
 
+/**
+ * \brief Update the texture with the given index
+ *
+**/
+void u(lssr::TextureIO* tio, int &sel)
+{
+	if(sel != -1)
+	{
+		cout<<"\t(u)pdate: Enter path to texture image (<Return> to skip): ";
+		char fn[256] = "";
+		cin.getline(fn, 256);
+		cin.getline(fn, 256);
+		if (strlen(fn))
+		{
+			IplImage* img = cvLoadImage(fn, CV_LOAD_IMAGE_UNCHANGED);
+			if (img)
+			{
+				cout<<"\t(u)pdate: Enter texture class (old: "<<tio->m_textures[sel]->m_textureClass<<"):";
+				unsigned short int tc = 0;
+				cin>>tc;
+				lssr::Texture* t = new lssr::Texture(img->width, img->height, img->nChannels, img->depth/8, tc);
+				t->m_data = img->imageDataOrigin;
+				tio->update(sel, t);
+				cout<<"\t(u)dated texture #"<<sel<<"."<<endl; 
+			}
+			else
+			{
+				cout<<"\t(u)pdate failed: Could not load new texture."<<endl;
+			}
+		}
+		else
+		{
+				cout<<"\t(u)pdate: Enter texture class (old: "<<tio->m_textures[sel]->m_textureClass<<"):";
+				unsigned short int tc = 0;
+				cin>>tc;
+				lssr::Texture* t = new lssr::Texture(*(tio->m_textures[sel]));
+				t->m_textureClass = tc;
+				tio->update(sel, t);
+				cout<<"\t(u)dated texture #"<<sel<<"."<<endl; 
+		}
+	
+
+	}
+	else
+	{
+		cout<<"\t(u)pdate failed: Nothing selected."<<endl;
+	}
+}
+/**
+ * \brief View selected texture
+**/
+void v(lssr::TextureIO* tio, int sel)
+{
+	if (sel != -1)
+	{
+		IplImage* img = cvCreateImage(	cvSize(tio->get(sel)->m_width, tio->get(sel)->m_height),
+						tio->get(sel)->m_numBytesPerChan * 8, tio->get(sel)->m_numChannels);
+		cvSetData(img, tio->get(sel)->m_data, tio->get(sel)->m_width * tio->get(sel)->m_numChannels * tio->get(sel)->m_numBytesPerChan);
+		cvNamedWindow("MyWindow", 1);
+		cvShowImage("MyWindow", img);
+		cvWaitKey();
+		cvDestroyAllWindows();
+		cvReleaseImage(&img);
+	}
+	else
+	{
+		cout<<"\t(v)iewing the texture failed: Nothing selected."<<endl;
+	}
+}
+
+/**
+ * \brief Write changes to disk
+**/
+void w(lssr::TextureIO* tio)
+{
+	tio->write();
+	cout<<"\t(w)rote file."<<endl;
+}
+
 int main( int argc, char ** argv )
 {
 
@@ -145,6 +250,8 @@ int main( int argc, char ** argv )
 	{
 		switch(cmd)
 		{
+			case 'a':	a(tio);		//add
+					break;
 			case 'd':	d(tio, sel);	//delete
 					break;
 			case 'h':	h();		//help
@@ -155,11 +262,17 @@ int main( int argc, char ** argv )
 					break;
 			case 's':	s(tio, sel);	//select
 					break;
+			case 'u':	u(tio, sel);	//update
+					break;
+			case 'v':	v(tio, sel);	//view
+					break;
+			case 'w':	w(tio);		//write
+					break;
 		}
 		cout<<"Enter command: ";
 		cin>>cmd;
 	}
-	cout<<"Exiting. Good bye."<<endl;
+	cout<<"\tExiting. Good bye."<<endl;
 
 	delete tio;
 	return EXIT_SUCCESS;
