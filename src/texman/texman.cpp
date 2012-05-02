@@ -57,6 +57,7 @@ void a(lssr::TextureIO* tio)
 		t->m_data = img->imageDataOrigin;
 		cout<<"\t(a)dded new texture."<<endl;
 		tio->add(t);
+		cvReleaseImageHeader(&img);
 	}
 	else
 	{
@@ -176,6 +177,7 @@ void u(lssr::TextureIO* tio, int &sel)
 				t->m_data = img->imageDataOrigin;
 				tio->update(sel, t);
 				cout<<"\t(u)dated texture #"<<sel<<"."<<endl; 
+				cvReleaseImageHeader(&img);
 			}
 			else
 			{
@@ -207,14 +209,15 @@ void v(lssr::TextureIO* tio, int sel)
 {
 	if (sel != -1)
 	{
-		IplImage* img = cvCreateImage(	cvSize(tio->get(sel)->m_width, tio->get(sel)->m_height),
+		cvStartWindowThread();
+		IplImage* img = cvCreateImageHeader(	cvSize(tio->get(sel)->m_width, tio->get(sel)->m_height),
 						tio->get(sel)->m_numBytesPerChan * 8, tio->get(sel)->m_numChannels);
 		cvSetData(img, tio->get(sel)->m_data, tio->get(sel)->m_width * tio->get(sel)->m_numChannels * tio->get(sel)->m_numBytesPerChan);
 		cvNamedWindow("MyWindow", 1);
 		cvShowImage("MyWindow", img);
 		cvWaitKey();
 		cvDestroyAllWindows();
-		cvReleaseImage(&img);
+		cvReleaseImageHeader(&img);
 	}
 	else
 	{
