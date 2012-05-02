@@ -48,6 +48,14 @@ public:
 
 
 	/**
+	 * @brief 	Constructor.
+	 *
+	 */
+	Texture(unsigned short int width, unsigned short int height, unsigned char numChannels,
+		unsigned char numBytesPerChan, unsigned short int textureClass = 0);
+
+
+	/**
 	 * Destructor.
 	 */
 	virtual ~Texture();
@@ -56,10 +64,10 @@ public:
 	static float m_texelSize;
 
 	///The dimensions of the texture
-	size_t m_width, m_height;
+	unsigned short int m_width, m_height;
 	
 	///The texture data
-	PPMIO::ColorT** m_data;
+	char*** m_data;
 
 	///The number of color channels
 	unsigned char m_numChannels;

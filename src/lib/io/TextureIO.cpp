@@ -43,7 +43,7 @@ TextureIO::TextureIO(string filename)
 	m_currentIndex 	= 0;
 	m_filename 	= filename;
 
-	ifstream in(m_filename.c_str(), ios::in|ios::binary);
+	ifstream in(m_filename.c_str(), std::ios::in|std::ios::binary);
 	
 	if(in.good())
 	{	
@@ -55,7 +55,7 @@ TextureIO::TextureIO(string filename)
 
 		//read number of textures: 2 Bytes
 		size_t numTextures = 0;
-		in.read(&numTextures, 2);
+		in.read((char*)&numTextures, 2);
 	
 		//read all textures from the file	
 		for (int i = 0; i < numTextures; i++)
@@ -63,29 +63,41 @@ TextureIO::TextureIO(string filename)
 			Texture* t = new Texture();
 		
 			//read texture class: 2 Bytes
-			in.read(&ui16buf, 2);	
+			in.read((char*)&ui16buf, 2);	
 			t->m_textureClass = ui16buf;
 			
 			//read texture width: 2 Bytes
-			in.read(&ui16buf, 2);	
-			t->width = ui16buf;
+			in.read((char*)&ui16buf, 2);	
+			t->m_width = ui16buf;
 			
 			//read texture height: 2 Bytes
-			in.read(&ui16buf, 2);	
-			t->height = ui16buf;
+			in.read((char*)&ui16buf, 2);	
+			t->m_height = ui16buf;
 
 			//read number of channels and number of bytes per channel: 1 Byte
-			in.read(&ui8buf, 1);	
+			in.read((char*)&ui8buf, 1);	
 			t->m_numChannels = (ui8buf & 0xf0) >> 4;
 			t->m_numBytesPerChan = ui8buf & 0x0f;
 			
 			//allocate memory for the image data
-			t->m_data = malloc(t->m_width * t->m_height * t->m_numChannels * t->m_numBytesPerChan);			
+			t->m_data = new char**[t->m_height];
+			for (int y = 0; y < t->m_height; y++)
+			{
+				t->m_data[y] = new char*[t->m_width];
+				for (int x = 0; x < t->m_width; x++)
+				{
+					t->m_data[y][x] = new char[t->m_numChannels * t->m_numBytesPerChan];
+				}
+			}
+			
 
 			//read image data line by line
 			for (size_t y = 0; y < t->m_height; y++)
 			{
-				in.read(t->m_data[y], t->m_width * t->m_numChannels * t->m_numBytesPerChan);
+				for (int x = 0; x < t->m_width; x++)
+				{
+					in.read((char*)t->m_data[y][x], t->m_numChannels * t->m_numBytesPerChan);
+				}
 			}
 	
 
@@ -108,8 +120,8 @@ void TextureIO::remove (size_t index)
 
 void TextureIO::update (size_t index, Texture* t)
 {
-	delete m_textures[i];  //TODO: copy instead of changing the pointer?
-	m_textures[i] = t;
+	delete m_textures[index];  //TODO: copy instead of changing the pointer?
+	m_textures[index] = t;
 }
 
 Texture* TextureIO::get(size_t index)
@@ -125,45 +137,48 @@ Texture* TextureIO::getNext()
 	}
 	else
 	{
-		return m_textures[m_curentIndex++];
+		return m_textures[m_currentIndex++];
 	}
 }
 
 void TextureIO::write()
 { 
-	ofstream out(m_filename.c_str(), ios::out|ios::binary);
+	std::ofstream out(m_filename.c_str(), std::ios::out|std::ios::binary);
 
 	//buffers for system independent I/O
 	uint16_t ui16buf;
 	uint8_t  ui8buf;
 
 	//Write number of textures in package: 2 Bytes
-	ui16buf = m_textures.sze();
-	out.write(&ui16buf, 2);
+	ui16buf = m_textures.size();
+	out.write((char*)&ui16buf, 2);
 
 	//write all textures to the file	
 	for (int i = 0; i < m_textures.size(); i++)
 	{
 		//write texture class: 2 Bytes
 	        ui16buf = m_textures[i]->m_textureClass;	
-		out.write(&ui16buf, 2);
+		out.write((char*)&ui16buf, 2);
 		
 		//write texture width: 2 Bytes
 		ui16buf = m_textures[i]->m_width;
-		out.write(&ui16buf, 2);
+		out.write((char*)&ui16buf, 2);
 
 		//write texture height: 2 Bytes
 		ui16buf = m_textures[i]->m_height;
-		out.write(&ui16buf, 2);
+		out.write((char*)&ui16buf, 2);
 
 		//write number of channels and number of bytes per channel 1 Byte
 		ui8buf = (m_textures[i]->m_numChannels << 4) | m_textures[i]->m_numBytesPerChan;
-		out.write(&ui8buf, 1);
+		out.write((char*)&ui8buf, 1);
 
 		//write image data line by line
 		for (int y = 0; y < m_textures[i]->m_height; y++)
 		{
-			out.write(m_textures[i]->m_data[y], m_textures[i]->m_width * m_textures[i]->m_numChannels * m_textures[i]->m_numBytesPerChan);
+			for (int x = 0; x < m_textures[i]->m_width; x++)
+			{
+				out.write((char*)m_textures[i]->m_data[y][x], m_textures[i]->m_numChannels * m_textures[i]->m_numBytesPerChan);
+			}
 		}
 	
 	}
