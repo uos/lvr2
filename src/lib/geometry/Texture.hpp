@@ -29,6 +29,7 @@
 #define TEXTURE_HPP_
 
 #include "io/PPMIO.hpp"
+#include <cstring>
 
 namespace lssr {
 
@@ -54,6 +55,11 @@ public:
 	Texture(unsigned short int width, unsigned short int height, unsigned char numChannels,
 		unsigned char numBytesPerChan, unsigned short int textureClass = 0);
 
+	/**
+	 * @brief 	Constructor.
+	 *
+	 */
+	Texture(Texture &other);
 
 	/**
 	 * Destructor.
@@ -67,7 +73,7 @@ public:
 	unsigned short int m_width, m_height;
 	
 	///The texture data
-	char*** m_data;
+	char* m_data;
 
 	///The number of color channels
 	unsigned char m_numChannels;

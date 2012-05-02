@@ -41,29 +41,22 @@ Texture::Texture(unsigned short int width, unsigned short int height, unsigned c
 	this->m_height 		= height;
 	this->m_numChannels 	= numChannels;
 	this->m_numBytesPerChan = numBytesPerChan;
-
-	m_data = new char**[height];
-	for (int y = 0; y < height; y++)
-	{
-		m_data[y] = new char*[width];
-		for(int x = 0; x < width; x++)
-		{
-			m_data[y][x] = new char[numChannels * numBytesPerChan];
-		}
-	}
-
+	m_data = new char[width * height * numChannels * numBytesPerChan];
 	this->m_textureClass	= textureClass;
 }
 
+Texture::Texture(Texture &other)
+{
+	this->m_width 		= other.m_width;
+	this->m_height 		= other.m_height;
+	this->m_numChannels 	= other.m_numChannels;
+	this->m_numBytesPerChan = other.m_numBytesPerChan;
+	m_data = new char[m_width * m_height * m_numChannels * m_numBytesPerChan];
+	memcpy(m_data, other.m_data, m_width * m_height * m_numChannels * m_numBytesPerChan);
+	this->m_textureClass	= other.m_textureClass;
+}
+
 Texture::~Texture() {
-	for(int y = 0; y < m_height; y++)
-	{
-		for (int x = 0; x < m_width; x++)
-		{
-			delete m_data[y][x];
-		}
-		delete m_data[y];
-	}
 	delete m_data;
 }
 
