@@ -105,7 +105,7 @@ void TextureIO::remove (size_t index)
 
 void TextureIO::update (size_t index, Texture* t)
 {
-	delete m_textures[index];  //TODO: copy instead of changing the pointer?
+	delete m_textures[index]; 
 	m_textures[index] = t;
 }
 
@@ -157,7 +157,7 @@ void TextureIO::write()
 		ui8buf = (m_textures[i]->m_numChannels << 4) | m_textures[i]->m_numBytesPerChan;
 		out.write((char*)&ui8buf, 1);
 
-		//write image data line by line
+		//write image data
 		out.write(m_textures[i]->m_data, m_textures[i]->m_width *  m_textures[i]->m_height * 
 							m_textures[i]->m_numChannels *  m_textures[i]->m_numBytesPerChan);
 	}
