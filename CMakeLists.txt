@@ -187,6 +187,7 @@ add_subdirectory(src/colorize)
 add_subdirectory(src/scanreduce)
 add_subdirectory(src/convert)
 add_subdirectory(src/asciiconverter)
+add_subdirectory(src/texman)
 
 if(PCL_FOUND)
     add_subdirectory(src/scanfilter)
