@@ -1376,7 +1376,7 @@ void HalfEdgeMesh<VertexT, NormalT>::finalizeAndRetesselate( bool genTextures, f
 
         if( genTextures )
         {
-            t = texturizer.texturizePlane( contours[0] );
+            t = texturizer->texturizePlane( contours[0] );
             t->m_texture->save(globalTextureIndex);
         }
 

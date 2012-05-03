@@ -72,7 +72,7 @@ public:
 	 * @param	i	The number to use in the filename
 	 *
 	 */
-	void save(int i){};
+	void save(int i){/*TODO*/};
 
 	///The dimensions of the texture
 	unsigned short int m_width, m_height;
@@ -94,7 +94,5 @@ public:
 };
 
 }
-
-#include "Texture.cpp"
 
 #endif /* TEXTURE_HPP_ */
