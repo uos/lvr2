@@ -60,7 +60,7 @@ using namespace std;
 
 #include "Region.hpp"
 #include "Tesselator.hpp"
-#include "Texture.hpp"
+#include "Texturizer.hpp"
 #include "ColorVertex.hpp"
 
 #include "reconstruction/PointsetSurface.hpp"
@@ -206,8 +206,6 @@ public:
 	void setClassifier(string name);
 
 	void setDepth(unsigned int depth) {m_depth = depth;};
-
-	void tester();
 
 
 	void clusterRegions(float normalThreshold, int minRegionSize = 50);
@@ -355,15 +353,6 @@ private:
 	 *	@param	direction		the direction of the intersection line
 	 */
 	virtual void dragOntoIntersection(Region<VertexT, NormalT>* plane, Region<VertexT, NormalT>* neighbor_region, VertexT& x, VertexT& direction);
-
-	/**
-	 * @brief	finds all contours in the mesh
-	 *
-	 * @param	epsilon	controls the number of points used for a contour
-	 *
-	 * @return 	a list of all contours
-	 */
-	virtual vector<vector<HVertex*> > findAllContours(float epsilon);
 
 	/**
 	 * @brief	Collapse the given edge safely

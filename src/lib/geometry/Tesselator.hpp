@@ -36,15 +36,12 @@ using namespace std;
 
 #include "Vertex.hpp"
 #include "Normal.hpp"
-#include "HalfEdgeVertex.hpp"
 #include "HalfEdge.hpp"
 #include "Region.hpp"
 
 namespace lssr
 {
 
-/* Forward Declarations */
-template<typename VertexT, typename NormalT> class HalfEdgeVertex;
 
 
 /**
@@ -58,7 +55,6 @@ template<typename VertexT, typename NormalT>
 class Tesselator
 {
 public:
-	typedef HalfEdgeVertex<VertexT, NormalT> HVertex;
 
     /**
      * @brief Initializes the Tesselator
@@ -70,14 +66,14 @@ public:
     /**
      * @brief Takes a list of contours and retesselates the area.
      *
-     * @param borderVertices A vector of vectos containing the contours.
+     * @param borderVertices A vector of vectors containing the contours.
      *                       The first stack is handled as the outer contour,
      *                       the rest are inner contours.
      *
-     * @return Returns a list of HalfEdgeVertices. Every 3-points represent a triangle.
+     * @return Returns a list of Vertices. Every 3-points represent a triangle.
      *         
      */
-    static void tesselate(vector<vector<HVertex*> > borderVertices);
+    static void tesselate(vector<vector<VertexT> > borderVertices);
     
     /**
      * @brief Takes a list of contours and retesselates the area.
@@ -85,7 +81,7 @@ public:
      * @param region An object of the Region class. 
      *               This represents the region which should be retesselated
      *
-     * @return Returns a list of HalfEdgeVertices. Every 3-points represent a triangle.
+     * @return Returns a list of Vertices. Every 3-points represent a triangle.
      *         
      */
     static void tesselate(Region<VertexT, NormalT> *region);
@@ -102,7 +98,7 @@ public:
      *
      *
      */
-    static void getFinalizedTriangles(vector<float> &vertexBuffer, vector<unsigned int> &indexBuffer, vector<vector<HVertex*> > &vectorBorderPoints);
+    static void getFinalizedTriangles(vector<float> &vertexBuffer, vector<unsigned int> &indexBuffer, vector<vector<VertexT> > &vectorBorderPoints);
 
 
 private:
@@ -116,7 +112,7 @@ private:
      * @param userData A pointer to user defined Data. These userData are result from the use
      *                 of gluTessVertex(tessObject, pointData, userData);
      */
-    static void tesselatorBegin(GLenum which, HVertex* userData);
+    static void tesselatorBegin(GLenum which, void* userData);
 
     /**
      * @Brief Callback function
@@ -133,7 +129,7 @@ private:
     /**
      * @Brief Callback function
      */
-    static void tesselatorAddVertex(const GLvoid *data, HVertex* userData);
+    static void tesselatorAddVertex(const GLvoid *data, void* userData);
 
     /**
      * @Brief Callback function
@@ -142,7 +138,7 @@ private:
 							 GLdouble *vertex_data[4],
 							 GLdouble weight[4],
 							 GLdouble **dataOut,
-                             HVertex* userData);
+                             void* userData);
     /* All Constructors shall be private since
        this class is just a collection of functions. */
     Tesselator();
@@ -158,7 +154,7 @@ private:
     static GLUtesselator* m_tesselator;
 
     /* List of vertices. used to keep track until tesselation ends */
-    static vector<HVertex> m_vertices;
+    static vector<VertexT> m_vertices;
 
     /* List of triangles. used to keep track of triangles until tesselation ends */
     static vector<Vertex<float> > m_triangles;

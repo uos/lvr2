@@ -27,6 +27,8 @@
 #ifndef TEXTURETOKEN_HPP_
 #define TEXTURETOKEN_HPP_
 
+#include "Texture.hpp"
+
 namespace lssr {
 
 /**
@@ -69,11 +71,8 @@ public:
 	 */
 	void textureCoords(VertexT v, float &x, float &y);
 
-	///The pixel size determines the resolution
-	static float m_texelSize;
-
 	///The associated texture	
-	Texture* texture;
+	Texture* m_texture;
 
 private:
 	///The coordinate system of the texture plane

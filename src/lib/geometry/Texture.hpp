@@ -66,8 +66,13 @@ public:
 	 */
 	virtual ~Texture();
 
-	///The pixel size determines the resolution
-	static float m_texelSize;	//TODO: remove
+	/**
+	 * @brief	write the texture to an image file
+	 *
+	 * @param	i	The number to use in the filename
+	 *
+	 */
+	void save(int i){};
 
 	///The dimensions of the texture
 	unsigned short int m_width, m_height;
@@ -84,6 +89,8 @@ public:
 	///The class of the texture
 	unsigned short int m_textureClass;
 
+	///The pixel size determines the resolution
+	static float m_texelSize;
 };
 
 }

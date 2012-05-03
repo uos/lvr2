@@ -28,6 +28,8 @@
 #define TEXTURIZER_HPP_
 
 #include "reconstruction/PointsetSurface.hpp"
+#include "TextureToken.hpp"
+#include <string>
 
 namespace lssr {
 
@@ -46,7 +48,7 @@ public:
 	 *
 	 * @param	filename A texture package
 	 */
-	Texturizer( typename PointsetSurface<VertexT>::Ptr pm, String filename = "");
+	Texturizer( typename PointsetSurface<VertexT>::Ptr pm, string filename = "");
 
 	/**
 	 * @brief 	Creates or searches a texture for the region given by its' contour
@@ -71,7 +73,7 @@ private:
 	TextureToken<VertexT, NormalT>* createInitialTexture(vector<VertexT> contour);
 	
 	///The point set surface used to generate textures from the point cloud
-	typename PointsetSurface<VertexT>::Ptr m_pm
+	typename PointsetSurface<VertexT>::Ptr m_pm;
 };
 
 }

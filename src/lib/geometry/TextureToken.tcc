@@ -27,10 +27,6 @@
 namespace lssr {
 
 template<typename VertexT, typename NormalT>
-float Texture<VertexT, NormalT>::m_texelSize = 1;
-
-
-template<typename VertexT, typename NormalT>
 TextureToken<VertexT, NormalT>::TextureToken(NormalT v1, NormalT v2, VertexT p, float a_min, float b_min, float a_max, float b_max, Texture* t)
 {
 	this->v1 	= v1;
@@ -40,15 +36,15 @@ TextureToken<VertexT, NormalT>::TextureToken(NormalT v1, NormalT v2, VertexT p, 
 	this->b_min	= b_min;
 	this->a_max 	= a_max;
 	this->b_max	= b_max;
-	this->texture	= t;
+	this->m_texture	= t;
 }
 
 template<typename VertexT, typename NormalT>
 void TextureToken<VertexT, NormalT>::textureCoords(VertexT v, float &x, float &y)
 {
 	 VertexT w =  v - ((v1 * a_min) + (v2 * b_min) + p);
-	 x = (v1 * (w * v1)).length() / m_texelSize / texture->width;
-	 y = (v2 * (w * v2)).length() / m_texelSize / texture->height;
+	 x = (v1 * (w * v1)).length() / Texture::m_texelSize / m_texture->m_width;
+	 y = (v2 * (w * v2)).length() / Texture::m_texelSize / m_texture->m_height;
 
 	 x = x > 1 ? 1 : x;
 	 x = x < 0 ? 0 : x;
