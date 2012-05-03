@@ -67,7 +67,7 @@ public:
 	virtual ~Texture();
 
 	///The pixel size determines the resolution
-	static float m_texelSize;
+	static float m_texelSize;	//TODO: remove
 
 	///The dimensions of the texture
 	unsigned short int m_width, m_height;
@@ -88,6 +88,6 @@ public:
 
 }
 
-#include "Texture.tcc"
+#include "Texture.cpp"
 
 #endif /* TEXTURE_HPP_ */
