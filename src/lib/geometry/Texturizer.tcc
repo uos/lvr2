@@ -26,9 +26,8 @@
 
 namespace lssr {
 
-
 template<typename VertexT, typename NormalT>
-Texturizer<VertexT, NormalT>::Texturizer(typename PointsetSurface<VertexT>::Ptr pm)
+Texturizer<VertexT, NormalT>::Texturizer(typename PointsetSurface<VertexT>::Ptr pm, string filename)
 {
 	this->m_pm = pm;
 }
@@ -84,8 +83,8 @@ TextureToken<VertexT, NormalT>* Texturizer<VertexT, NormalT>::createInitialTextu
 			if (b > b_max) b_max = b;
 			if (b < b_min) b_min = b;
 		}
-		int x = ceil((a_max - a_min) / m_texelSize);
-		int y = ceil((b_max - b_min) / m_texelSize);
+		int x = ceil((a_max - a_min) / Texture::m_texelSize);
+		int y = ceil((b_max - b_min) / Texture::m_texelSize);
 
 		//iterative improvement of the area
 		if(x * y < minArea)
@@ -102,16 +101,16 @@ TextureToken<VertexT, NormalT>* Texturizer<VertexT, NormalT>::createInitialTextu
 
 
 	//calculate the texture size and round up to a size to base 2
-	unsigned short int sizeX = ceil((best_a_max - best_a_min) / m_texelSize);
+	unsigned short int sizeX = ceil((best_a_max - best_a_min) / Texture::m_texelSize);
 	sizeX = pow(2, ceil(log(sizeX) / log(2)));
-	unsigned short int sizeY = ceil((best_b_max - best_b_min) / m_texelSize);
+	unsigned short int sizeY = ceil((best_b_max - best_b_min) / Texture::m_texelSize);
 	sizeY = pow(2, ceil(log(sizeY) / log(2)));
 
 	//create the texture
 	Texture* texture = new Texture(sizeX, sizeY, 3, 1, 0);
 
 	//create TextureToken
-	TextureToken<VertexT, NormalT>* result = new TextureToken(best_v1, best_v2, p, best_a_min, best_b_min, best_a_max, best_b_max, texture);
+	TextureToken<VertexT, NormalT>* result = new TextureToken<VertexT, NormalT>(best_v1, best_v2, p, best_a_min, best_b_min, best_a_max, best_b_max, texture);
  
 
 	//walk through the bounding box and collect color information for each texel
@@ -120,17 +119,17 @@ TextureToken<VertexT, NormalT>* Texturizer<VertexT, NormalT>::createInitialTextu
 	{
 		for(int x = 0; x < sizeX; x++)
 		{
-			if (y <= (best_b_max - best_b_min) / m_texelSize  && x <= (best_a_max - best_a_min) / m_texelSize)
+			if (y <= (best_b_max - best_b_min) / Texture::m_texelSize  && x <= (best_a_max - best_a_min) / Texture::m_texelSize)
 			{
 				vector<VertexT> cv;
 
 				VertexT current_position = p + best_v1
-					* (x * m_texelSize + best_a_min - m_texelSize / 2.0)
+					* (x * Texture::m_texelSize + best_a_min - Texture::m_texelSize / 2.0)
 					+ best_v2
-					* (y * m_texelSize + best_b_min - m_texelSize / 2.0);
+					* (y * Texture::m_texelSize + best_b_min - Texture::m_texelSize / 2.0);
 
 				int one = 1;
-				pm->searchTree()->kSearch(current_position, one, cv);
+				m_pm->searchTree()->kSearch(current_position, one, cv);
 
 				texture->m_data[(sizeY - y - 1) * (sizeX * 3) + 3 * x + 0] = cv[0].r;
 				texture->m_data[(sizeY - y - 1) * (sizeX * 3) + 3 * x + 1] = cv[0].g;

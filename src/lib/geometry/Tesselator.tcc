@@ -33,7 +33,7 @@ namespace lssr
 {
 
 /* Deklaration of all static data */
-template<typename VertexT, typename NormalT> vector<HalfEdgeVertex<VertexT, NormalT> > Tesselator<VertexT, NormalT>::m_vertices;
+template<typename VertexT, typename NormalT> vector<VertexT>  Tesselator<VertexT, NormalT>::m_vertices;
 template<typename VertexT, typename NormalT> vector<Vertex<float> > Tesselator<VertexT, NormalT>::m_triangles;
 template<typename VertexT, typename NormalT> GLUtesselator* Tesselator<VertexT, NormalT>::m_tesselator;
 template<typename VertexT, typename NormalT> GLenum  Tesselator<VertexT, NormalT>::m_primitive;
@@ -41,7 +41,7 @@ template<typename VertexT, typename NormalT> int     Tesselator<VertexT, NormalT
 
 
 template<typename VertexT, typename NormalT>
-void Tesselator<VertexT, NormalT>::tesselatorBegin(GLenum which, HVertex* userData)
+void Tesselator<VertexT, NormalT>::tesselatorBegin(GLenum which, void* userData)
 {
     m_primitive = which;
     m_vertices.clear();
@@ -61,17 +61,17 @@ void Tesselator<VertexT, NormalT>::tesselatorEnd()
     {
         for(size_t i=0; i<m_vertices.size() / 3; ++i)
         {
-            m_triangles.push_back((m_vertices[i*3+2]).m_position);
-            m_triangles.push_back((m_vertices[i*3+1]).m_position);
-            m_triangles.push_back((m_vertices[i*3+0]).m_position);
+            m_triangles.push_back(m_vertices[i*3+2]);
+            m_triangles.push_back(m_vertices[i*3+1]);
+            m_triangles.push_back(m_vertices[i*3+0]);
         } 
     } else if(m_primitive == GL_TRIANGLE_FAN ) 
     {
         for(size_t i=0; i<m_vertices.size()-2; ++i)
         {
-            m_triangles.push_back((m_vertices[i+2]).m_position);
-            m_triangles.push_back((m_vertices[i+1]).m_position);
-            m_triangles.push_back((m_vertices[0]).m_position);
+            m_triangles.push_back(m_vertices[i+2]);
+            m_triangles.push_back(m_vertices[i+1]);
+            m_triangles.push_back(m_vertices[0]);
         }
     } else if(m_primitive == GL_TRIANGLE_STRIP )
     {
@@ -79,14 +79,14 @@ void Tesselator<VertexT, NormalT>::tesselatorEnd()
         {
             if(i%2 ==  0)
             {
-                m_triangles.push_back((m_vertices[i+2]).m_position);
-                m_triangles.push_back((m_vertices[i+1]).m_position);
-                m_triangles.push_back((m_vertices[i]).m_position);
+                m_triangles.push_back(m_vertices[i+2]);
+                m_triangles.push_back(m_vertices[i+1]);
+                m_triangles.push_back(m_vertices[i]);
             } else
             {
-                m_triangles.push_back((m_vertices[i]).m_position);
-                m_triangles.push_back((m_vertices[i+1]).m_position);
-                m_triangles.push_back((m_vertices[i+2]).m_position);
+                m_triangles.push_back(m_vertices[i]);
+                m_triangles.push_back(m_vertices[i+1]);
+                m_triangles.push_back(m_vertices[i+2]);
             }
         }
     }
@@ -101,17 +101,16 @@ void Tesselator<VertexT, NormalT>::tesselatorError(GLenum errorCode)
 
 
 template<typename VertexT, typename NormalT>
-void Tesselator<VertexT, NormalT>::tesselatorAddVertex(const GLvoid *data, HVertex* userData)
+void Tesselator<VertexT, NormalT>::tesselatorAddVertex(const GLvoid *data, void* userData)
 {
     const GLdouble *ptr = (const GLdouble*)data;
     Vertex<float> v(*ptr, *(ptr+1), *(ptr+2));
-    HVertex newVertex(v);
-    m_vertices.push_back(newVertex);
+    m_vertices.push_back(v);
 }
 
 
 template<typename VertexT, typename NormalT>
-void Tesselator<VertexT, NormalT>::getFinalizedTriangles(vector<float> &vertexBuffer, vector<unsigned int> &indexBuffer, vector<vector<HVertex*> > &vectorBorderPoints)
+void Tesselator<VertexT, NormalT>::getFinalizedTriangles(vector<float> &vertexBuffer, vector<unsigned int> &indexBuffer, vector<vector<VertexT> > &vectorBorderPoints)
 {
     // initialize tesselator. make sure datastructures are empty.
     init();
@@ -149,7 +148,7 @@ void Tesselator<VertexT, NormalT>::tesselatorCombineVertices(GLdouble coords[3],
         GLdouble *vertex_data[4],
         GLdouble weight[4],
         GLdouble **dataOut,
-        HVertex* userData)
+        void* userData)
 {
     GLdouble *vertex = new GLdouble[6]; 
     if(!vertex)
@@ -161,7 +160,7 @@ void Tesselator<VertexT, NormalT>::tesselatorCombineVertices(GLdouble coords[3],
     vertex[1] = coords[1];
     vertex[2] = coords[2];
     Vertex<float> v(vertex[0], vertex[1], vertex[2]);
-    m_vertices.push_back(HVertex(v));
+    m_vertices.push_back(v);
     *dataOut = vertex;
 }
 
@@ -210,7 +209,7 @@ void Tesselator<VertexT, NormalT>::init(void)
 
 
 template<typename VertexT, typename NormalT>
-void Tesselator<VertexT, NormalT>::tesselate(vector<vector<HVertex*> > vectorBorderPoints)
+void Tesselator<VertexT, NormalT>::tesselate(vector<vector<VertexT> > vectorBorderPoints)
 {
     if(!m_tesselator)
     {
@@ -229,7 +228,7 @@ void Tesselator<VertexT, NormalT>::tesselate(vector<vector<HVertex*> > vectorBor
 
     for(size_t i=0; i<vectorBorderPoints.size(); ++i)
     {
-        vector<HVertex*> borderPoints = vectorBorderPoints[i];
+        vector<VertexT> borderPoints = vectorBorderPoints[i];
 
         if(borderPoints.size() <3 )
         {
@@ -243,9 +242,9 @@ void Tesselator<VertexT, NormalT>::tesselate(vector<vector<HVertex*> > vectorBor
         while(borderPoints.size() > 0)
         {
             GLdouble* vertex = new GLdouble[3];
-            vertex[0] = (borderPoints.back())->m_position[0];
-            vertex[1] = (borderPoints.back())->m_position[1];
-            vertex[2] = (borderPoints.back())->m_position[2];
+            vertex[0] = (borderPoints.back())[0];
+            vertex[1] = (borderPoints.back())[1];
+            vertex[2] = (borderPoints.back())[2];
             borderPoints.pop_back();
             gluTessVertex(m_tesselator, vertex, vertex);
         }

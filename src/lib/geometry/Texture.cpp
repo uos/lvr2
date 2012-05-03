@@ -27,6 +27,8 @@
 
 namespace lssr {
 
+float Texture::m_texelSize = 1;
+
 Texture::Texture()
 {
 	this->m_data   		= 0;
