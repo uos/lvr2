@@ -18,7 +18,7 @@
 
 
 /*
- * Texture.tcc
+ * Texture.cpp
  *
  *  @date 08.09.2011
  *  @author Kim Rinnewitz (krinnewitz@uos.de)
