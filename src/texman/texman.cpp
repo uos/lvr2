@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright © 2011 Universität Osnabrück
+ * Copyright © 2012 Universität Osnabrück
  * This file is part of the LAS VEGAS Reconstruction Toolkit,
  *
  * LAS VEGAS is free software; you can redistribute it and/or modify it under
@@ -40,7 +40,9 @@
 using namespace std;
 
 /**
- *i \brief Create and add a new texture
+ * \brief Create and add a new texture
+ *
+ * \param tio	A TextureIO object
 **/
 void a(lssr::TextureIO* tio)
 {
@@ -68,6 +70,9 @@ void a(lssr::TextureIO* tio)
 /**
  * \brief delete the texture with the given index
  *
+ * \param tio	A TextureIO object
+ *
+ * \param sel 	The index of the selected texture
 **/
 void d(lssr::TextureIO* tio, int &sel)
 {
@@ -88,13 +93,13 @@ void d(lssr::TextureIO* tio, int &sel)
 **/
 void h()
 {
-	cout<<"\ta: Add a new texture to the file"<<endl;		//TODO
+	cout<<"\ta: Add a new texture to the file"<<endl;
 	cout<<"\td: Delete the selected texture"<<endl;
 	cout<<"\th: Show this help"<<endl;
 	cout<<"\ti: Show file information"<<endl;
 	cout<<"\tl: List all textures in the file"<<endl;
 	cout<<"\ts: Select a texture" <<endl;
-	cout<<"\tu: Update the selected texture"<<endl;			//TODO
+	cout<<"\tu: Update the selected texture"<<endl;
 	cout<<"\tv: View the selected texture"<<endl;			
 	cout<<"\tw: Write changes to disk"<<endl;		
 	cout<<"\tx: Exit"<<endl;
@@ -102,6 +107,8 @@ void h()
 
 /**
  * \brief Show file info
+ *
+ * \param tio	A TextureIO object
 **/
 void i(lssr::TextureIO* tio)
 {	
@@ -112,6 +119,9 @@ void i(lssr::TextureIO* tio)
 /**
  * \brief List all textures
  *
+ * \param tio	A TextureIO object
+ *
+ * \param sel 	The index of the selected texture
 **/
 void l(lssr::TextureIO* tio, int sel)
 {
@@ -135,6 +145,10 @@ void l(lssr::TextureIO* tio, int sel)
 
 /**
  * \brief select a texture
+ *
+ * \param tio	A TextureIO object
+ *
+ * \param sel 	The variable to hold the index of the selected texture
 **/
 void s(lssr::TextureIO* tio, int &sel)
 {
@@ -156,6 +170,9 @@ void s(lssr::TextureIO* tio, int &sel)
 /**
  * \brief Update the texture with the given index
  *
+ * \param tio	A TextureIO object
+ *
+ * \param sel 	The index of the selected texture
 **/
 void u(lssr::TextureIO* tio, int &sel)
 {
@@ -204,6 +221,10 @@ void u(lssr::TextureIO* tio, int &sel)
 }
 /**
  * \brief View selected texture
+ *
+ * \param tio	A TextureIO object
+ *
+ * \param sel 	The index of the selected texture
 **/
 void v(lssr::TextureIO* tio, int sel)
 {
@@ -227,6 +248,8 @@ void v(lssr::TextureIO* tio, int sel)
 
 /**
  * \brief Write changes to disk
+ *
+ * \param tio	A TextureIO object
 **/
 void w(lssr::TextureIO* tio)
 {
@@ -234,6 +257,10 @@ void w(lssr::TextureIO* tio)
 	cout<<"\t(w)rote file."<<endl;
 }
 
+
+/**
+ * \brief Main entry point of the program.
+**/
 int main( int argc, char ** argv )
 {
 
