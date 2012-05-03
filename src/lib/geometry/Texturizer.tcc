@@ -155,3 +155,5 @@ TextureToken<VertexT, NormalT>* Texturizer<VertexT, NormalT>::texturizePlane(vec
 	//TODO: impelement all the stuff	
 	return initialTexture;
 }
+
+}

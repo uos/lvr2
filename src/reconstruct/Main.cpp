@@ -282,7 +282,7 @@ int main(int argc, char** argv)
 
 		if(options.getTexelSize())
 		{
-			Texture<cVertex, cNormal>::m_texelSize = options.getTexelSize();
+			Texture::m_texelSize = options.getTexelSize();
 		}
 
 		if(options.getSharpFeatureThreshold())

@@ -104,7 +104,7 @@ vector<vector<VertexT> > Region<VertexT, NormalT>::getContours(float epsilon)
 				bool didSomething = true;
 				while(didSomething)
 				{
-					vector<HalfEdgeVertex<VertexT, NormalT>*> toDelete;
+					vector<VertexT> toDelete;
 					for(int c = 1; c < contour.size()-1; c++)
 					{
 						//calculate direction of the current edge

@@ -25,6 +25,8 @@
  *  @author Sven Schalk (sschalk@uos.de)
  */
 
+#include "Texture.hpp"
+
 namespace lssr {
 
 float Texture::m_texelSize = 1;

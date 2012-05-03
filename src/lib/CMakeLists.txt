@@ -31,6 +31,7 @@ set(LSSR_SOURCES
     display/TextureFactory.cpp
     display/TexturedMesh.cpp
     reconstruction/PCLFiltering.cpp
+    geometry/Texture.cpp
 )
 
 
