@@ -43,7 +43,7 @@ set_target_properties(staticlssr PROPERTIES LIBRARY_OUTPUT_DIRECTORY
 
 target_link_libraries(staticlssr ${Boost_PROGRAM_OPTIONS_LIBRARY}
     ${Boost_SYSTEM_LIBRARY} ${Boost_THREAD_LIBRARY} ${Boost_FILESYSTEM_LIBRARY}
-    ${OpenMP_CXX_FLAGS} ${OPENGL_LIBRARY} )
+    ${OpenMP_CXX_FLAGS} ${OPENGL_LIBRARY} ${OpenCV_LIBS})
 target_link_libraries(staticlssr laslib)
 target_link_libraries(staticlssr obj)
 target_link_libraries(staticlssr pthread)
@@ -62,7 +62,7 @@ if ( "${CMAKE_BUILD_TYPE}" STREQUAL "Release" )
          ${CMAKE_SOURCE_DIR}/lib)
     target_link_libraries(lssr ${Boost_PROGRAM_OPTIONS_LIBRARY}
          ${Boost_SYSTEM_LIBRARY} ${Boost_THREAD_LIBRARY} ${Boost_FILESYSTEM_LIBRARY}
-         ${OpenMP_CXX_FLAGS} ${OPENGL_LIBRARY} )
+         ${OpenMP_CXX_FLAGS} ${OPENGL_LIBRARY} ${OpenCV_LIBS} )
     target_link_libraries(lssr laslib)
     if ( rply_shared ) 
          target_link_libraries(lssr ${rply_shared})
