@@ -60,6 +60,16 @@ Texture::Texture(Texture &other)
 	this->m_textureClass	= other.m_textureClass;
 }
 
+void Texture::save(int i)
+{
+	IplImage* img = cvCreateImageHeader(    cvSize(m_width, m_height),m_numBytesPerChan * 8, m_numChannels);
+	cvSetData(img, m_data, m_width * m_numChannels * m_numBytesPerChan);
+	char fn[255];
+	sprintf(fn, "texture_%d.ppm", i);
+	cvSaveImage(fn, img);
+	cvReleaseImageHeader(&img);
+}
+
 Texture::~Texture() {
 	delete m_data;
 }

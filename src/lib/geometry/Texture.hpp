@@ -28,8 +28,9 @@
 #ifndef TEXTURE_HPP_
 #define TEXTURE_HPP_
 
-#include "io/PPMIO.hpp"
 #include <cstring>
+#include <opencv/highgui.h>
+#include <cstdio>
 
 namespace lssr {
 
@@ -72,7 +73,7 @@ public:
 	 * @param	i	The number to use in the filename
 	 *
 	 */
-	void save(int i){/*TODO*/};
+	void save(int i);
 
 	///The dimensions of the texture
 	unsigned short int m_width, m_height;
