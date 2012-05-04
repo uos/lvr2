@@ -68,7 +68,7 @@ public:
      *  @param kd      The number of neighbour points esed for distance value calculation.
      */
     SearchTreeFlann( PointBufferPtr points,
-            long unsigned int &n_points,
+            size_t &n_points,
             const int &kn = 10,
             const int &ki = 10,
             const int &kd = 10 );
