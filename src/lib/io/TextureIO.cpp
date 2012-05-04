@@ -43,7 +43,7 @@ TextureIO::TextureIO(string filename)
 	m_currentIndex 	= 0;
 	m_filename 	= filename;
 
-	ifstream in(m_filename.c_str(), std::ios::in|std::ios::binary);
+	std::ifstream in(m_filename.c_str(), std::ios::in|std::ios::binary);
 	
 	if(in.good())
 	{	
