@@ -71,6 +71,12 @@ public:
 	 */
 	void textureCoords(VertexT v, float &x, float &y);
 
+	/**
+	 * @brief 	Destructor.
+	 *
+         */
+	~TextureToken(){delete m_texture;};
+
 	///The associated texture	
 	Texture* m_texture;
 
