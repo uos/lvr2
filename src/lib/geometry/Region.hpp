@@ -35,7 +35,6 @@
 #include <vector>
 #include <stack>
 
-#include "psimpl.h"
 
 namespace lssr {
 
