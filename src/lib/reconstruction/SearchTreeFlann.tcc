@@ -46,7 +46,7 @@ using pcl::KdTreeFLANN;
 namespace lssr {
 
 template<typename VertexT>
-SearchTreeFlann< VertexT >::SearchTreeFlann( PointBufferPtr buffer, long unsigned int &n_points, const int &kn, const int &ki, const int &kd )
+SearchTreeFlann< VertexT >::SearchTreeFlann( PointBufferPtr buffer, size_t &n_points, const int &kn, const int &ki, const int &kd )
 {
     // Store parameters
     this->m_ki = ki;
