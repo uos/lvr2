@@ -1047,14 +1047,14 @@ void HalfEdgeMesh<VertexT, NormalT>::optimizePlaneIntersections()
 }
 
 template<typename VertexT, typename NormalT>
-vector<vector<HalfEdgeVertex<VertexT, NormalT>* > > HalfEdgeMesh<VertexT, NormalT>::findAllContours(float epsilon)
+vector<vector<VertexT> > HalfEdgeMesh<VertexT, NormalT>::findAllContours(float epsilon)
 {
-    vector<vector<HalfEdgeVertex<VertexT, NormalT>* > > contours;
+    vector<vector<VertexT> > contours;
     for (size_t i = 0; i < m_regions.size(); i++)
     {
         if(m_regions[i]->m_inPlane)
         {
-            vector<vector<HalfEdgeVertex<VertexT, NormalT>* > > current_contours = m_regions[i]->getContours(epsilon);
+            vector<vector<VertexT> > current_contours = m_regions[i]->getContours(epsilon);
             contours.insert(contours.end(), current_contours.begin(), current_contours.end());
         }
     }
@@ -1422,7 +1422,7 @@ void HalfEdgeMesh<VertexT, NormalT>::finalizeAndRetesselate( bool genTextures, f
         //textureBuffer.push_back( m_regions[iRegion]->m_regionNumber );
 
         // get the contours for this region
-        vector<vector<HVertex*> > contours = m_regions[iRegion]->getContours(fusionThreshold);
+        vector<vector<VertexT> >contours = m_regions[iRegion]->getContours(fusionThreshold);
 
         // alocate a new texture
         Texture<VertexT, NormalT>* t=NULL;

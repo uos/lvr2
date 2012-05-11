@@ -57,7 +57,7 @@ public:
             vector<QueryPoint<VertexT> > &query_points,
             uint &globalIndex);
 
-    void optimizePlanarFaces(typename PointsetSurface<VertexT>::Ptr surface);
+    void optimizePlanarFaces(typename PointsetSurface<VertexT>::Ptr surface, size_t kc);
 
 private:
     vector<HalfEdgeFace<VertexT, NormalT>* > m_faces;

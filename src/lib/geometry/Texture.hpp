@@ -57,7 +57,7 @@ public:
 	 * @param	contours	All contours of the region.
 	 *
 	 */
-	Texture( typename PointsetSurface<VertexT>::Ptr pm,   Region<VertexT, NormalT>* region,  vector<vector<HVertex*> > contours);
+	Texture( typename PointsetSurface<VertexT>::Ptr pm,   Region<VertexT, NormalT>* region,  vector<vector<VertexT> > &contours);
 
 	/**
 	 * @brief	computes texture coordinates corresponding to the give Vertex
