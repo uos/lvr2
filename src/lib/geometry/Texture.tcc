@@ -34,7 +34,7 @@ float Texture<VertexT, NormalT>::m_texelSize = 1;
 template<typename VertexT, typename NormalT>
 Texture<VertexT, NormalT>::Texture(
 		typename PointsetSurface<VertexT>::Ptr pm,
-		Region<VertexT, NormalT>* region, vector<vector<HVertex*> > contours)
+		Region<VertexT, NormalT>* region, vector<vector<VertexT> > &contours)
 {
 	this->m_region = region;
 	this->m_data   = 0;
@@ -45,14 +45,14 @@ Texture<VertexT, NormalT>::Texture(
 	{
 		if(contours.size() > 0 && contours[0].size() > 2)
 		{
-			vector<HVertex*> HOuter_contour = contours[0];
+			vector<VertexT> HOuter_contour = contours[0];
 			NormalT n = m_region->m_normal;
 
 			//store a stuetzvector for the bounding box
-			p = HOuter_contour[0]->m_position;
+			p = HOuter_contour[0];
 
 			//calculate a vector in the plane of the bounding box
-			NormalT v1 = HOuter_contour[1]->m_position - HOuter_contour[0]->m_position, v2;
+			NormalT v1 = HOuter_contour[1] - HOuter_contour[0], v2;
 
 			//determines the resolution of iterative improvement steps
 			float delta = M_PI / 2 / 90;
@@ -82,8 +82,8 @@ Texture<VertexT, NormalT>::Texture(
 							}
 						}
 					}
-					float a = ((HOuter_contour[c]->m_position[r] - p[r]) * v2[s] - (HOuter_contour[c]->m_position[s] - p[s]) * v2[r]) / denom;
-					float b = ((HOuter_contour[c]->m_position[s] - p[s]) * v1[r] - (HOuter_contour[c]->m_position[r] - p[r]) * v1[s]) / denom;
+					float a = ((HOuter_contour[c][r] - p[r]) * v2[s] - (HOuter_contour[c][r] - p[s]) * v2[r]) / denom;
+					float b = ((HOuter_contour[c][s] - p[s]) * v1[r] - (HOuter_contour[c][s] - p[r]) * v1[s]) / denom;
 					if (a > a_max) a_max = a;
 					if (a < a_min) a_min = a;
 					if (b > b_max) b_max = b;

@@ -77,15 +77,13 @@ public:
      * @return Returns a list of HalfEdgeVertices. Every 3-points represent a triangle.
      *         
      */
-    static void tesselate(vector<vector<HVertex*> > borderVertices);
+    static void tesselate(vector<vector<VertexT> > &borderVertices);
     
     /**
      * @brief Takes a list of contours and retesselates the area.
      *
      * @param region An object of the Region class. 
      *               This represents the region which should be retesselated
-     *
-     * @return Returns a list of HalfEdgeVertices. Every 3-points represent a triangle.
      *         
      */
     static void tesselate(Region<VertexT, NormalT> *region);
@@ -102,7 +100,7 @@ public:
      *
      *
      */
-    static void getFinalizedTriangles(vector<float> &vertexBuffer, vector<unsigned int> &indexBuffer, vector<vector<HVertex*> > &vectorBorderPoints);
+    static void getFinalizedTriangles(vector<float> &vertexBuffer, vector<unsigned int> &indexBuffer, vector<vector<VertexT> > &vectorBorderPoints);
 
 
 private:
@@ -116,7 +114,7 @@ private:
      * @param userData A pointer to user defined Data. These userData are result from the use
      *                 of gluTessVertex(tessObject, pointData, userData);
      */
-    static void tesselatorBegin(GLenum which, HVertex* userData);
+    static void tesselatorBegin(GLenum which, VertexT* userData);
 
     /**
      * @Brief Callback function
@@ -133,7 +131,7 @@ private:
     /**
      * @Brief Callback function
      */
-    static void tesselatorAddVertex(const GLvoid *data, HVertex* userData);
+    static void tesselatorAddVertex(const GLvoid *data, VertexT* userData);
 
     /**
      * @Brief Callback function
@@ -142,7 +140,7 @@ private:
 							 GLdouble *vertex_data[4],
 							 GLdouble weight[4],
 							 GLdouble **dataOut,
-                             HVertex* userData);
+                             VertexT* userData);
     /* All Constructors shall be private since
        this class is just a collection of functions. */
     Tesselator();
@@ -158,7 +156,7 @@ private:
     static GLUtesselator* m_tesselator;
 
     /* List of vertices. used to keep track until tesselation ends */
-    static vector<HVertex> m_vertices;
+    static vector<VertexT> m_vertices;
 
     /* List of triangles. used to keep track of triangles until tesselation ends */
     static vector<Vertex<float> > m_triangles;

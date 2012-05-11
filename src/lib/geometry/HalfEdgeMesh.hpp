@@ -396,7 +396,7 @@ private:
 	 *
 	 * @return 	a list of all contours
 	 */
-	virtual vector<vector<HVertex*> > findAllContours(float epsilon);
+	virtual vector<vector<VertexT> > findAllContours(float epsilon);
 
 	/**
 	 * @brief	Collapse the given edge safely

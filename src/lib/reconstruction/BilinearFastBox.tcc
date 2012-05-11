@@ -120,7 +120,7 @@ void BilinearFastBox<VertexT, NormalT>::getSurface(
 }
 
 template<typename VertexT, typename NormalT>
-void BilinearFastBox<VertexT, NormalT>::optimizePlanarFaces(typename PointsetSurface<VertexT>::Ptr surface)
+void BilinearFastBox<VertexT, NormalT>::optimizePlanarFaces(typename PointsetSurface<VertexT>::Ptr surface, size_t kc)
 {
     typedef HalfEdge<HalfEdgeVertex<VertexT, NormalT>, HalfEdgeFace<VertexT, NormalT> > HEdge;
 
@@ -149,19 +149,35 @@ void BilinearFastBox<VertexT, NormalT>::optimizePlanarFaces(typename PointsetSur
         {
 
             vector<VertexT> nearest1, nearest2;
-            tree->kSearch( out_edges[i]->start->m_position, 1, nearest1);
+            tree->kSearch( out_edges[i]->start->m_position, kc, nearest1);
+
+            size_t nk = min(kc, nearest1.size());
+
 
             // Hmmm, sometimes the k-search seems to fail...
-            if(nearest1.size() > 0)
+            if(nk > 0)
             {
-                out_edges[i]->start->m_position = nearest1[0];
+                VertexT centroid1;
+                for(int a = 0; a < nk; a++)
+                {
+                	centroid1 += nearest1[a];
+                }
+                centroid1 /= nk;
+                out_edges[i]->start->m_position = centroid1;
             }
 
-            tree->kSearch( out_edges[i]->end->m_position, 1, nearest2);
+            tree->kSearch( out_edges[i]->end->m_position, kc, nearest2);
+            nk = min(kc, nearest2.size());
 
-            if(nearest2.size() > 0)
+            if(nk > 0)
             {
-                out_edges[i]->end->m_position = nearest2[0];
+            	VertexT centroid2;
+            	for(int a = 0; a < nk; a++)
+            	{
+            		centroid2 += nearest2[a];
+            	}
+            	centroid2 /= nk;
+                out_edges[i]->end->m_position = centroid2;
             }
 
         }
