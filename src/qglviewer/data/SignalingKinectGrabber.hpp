@@ -27,6 +27,9 @@
 #define SIGNALINGKINECTGRABBER_HPP_
 
 #include <QtGui>
+
+#include "../../ext/Eigen/Dense"
+
 #include "io/KinectGrabber.hpp"
 #include "io/PointBuffer.hpp"
 
