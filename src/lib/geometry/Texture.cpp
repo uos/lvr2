@@ -62,12 +62,10 @@ Texture::Texture(Texture &other)
 
 void Texture::save(int i)
 {
-	IplImage* img = cvCreateImageHeader(    cvSize(m_width, m_height),m_numBytesPerChan * 8, m_numChannels);
-	cvSetData(img, m_data, m_width * m_numChannels * m_numBytesPerChan);
+	cv::Mat img(cv::Size(m_width, m_height), CV_MAKETYPE(m_numBytesPerChan * 8, m_numChannels), m_data);
 	char fn[255];
 	sprintf(fn, "texture_%d.ppm", i);
-	cvSaveImage(fn, img);
-	cvReleaseImageHeader(&img);
+	cv::imwrite(fn, img);
 }
 
 Texture::~Texture() {
