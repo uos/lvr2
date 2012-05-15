@@ -79,7 +79,7 @@ public:
 	unsigned short int m_width, m_height;
 	
 	///The texture data
-	char* m_data;
+	unsigned char* m_data;
 
 	///The number of color channels
 	unsigned char m_numChannels;

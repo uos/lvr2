@@ -45,7 +45,7 @@ Texture::Texture(unsigned short int width, unsigned short int height, unsigned c
 	this->m_height 		= height;
 	this->m_numChannels 	= numChannels;
 	this->m_numBytesPerChan = numBytesPerChan;
-	m_data = new char[width * height * numChannels * numBytesPerChan];
+	m_data = new unsigned char[width * height * numChannels * numBytesPerChan];
 	this->m_textureClass	= textureClass;
 }
 
@@ -55,7 +55,7 @@ Texture::Texture(Texture &other)
 	this->m_height 		= other.m_height;
 	this->m_numChannels 	= other.m_numChannels;
 	this->m_numBytesPerChan = other.m_numBytesPerChan;
-	m_data = new char[m_width * m_height * m_numChannels * m_numBytesPerChan];
+	m_data = new unsigned char[m_width * m_height * m_numChannels * m_numBytesPerChan];
 	memcpy(m_data, other.m_data, m_width * m_height * m_numChannels * m_numBytesPerChan);
 	this->m_textureClass	= other.m_textureClass;
 }
