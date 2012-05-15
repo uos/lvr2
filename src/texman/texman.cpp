@@ -49,17 +49,16 @@ void a(lssr::TextureIO* tio)
 	cout<<"\t(a)dd: Enter path to texture image: ";
 	string fn;
 	cin>>fn;
-	IplImage* img = cvLoadImage(fn.c_str(), CV_LOAD_IMAGE_UNCHANGED);
-	if (img)
+	cv::Mat img = cv::imread(fn.c_str());
+	if (img.data)
 	{	
 		cout<<"\t(a)dd: Enter texture class: ";
 		unsigned short int tc = 0;
 		cin>>tc;
-		lssr::Texture* t = new lssr::Texture(img->width, img->height, img->nChannels, img->depth/8, tc);
-		t->m_data = img->imageDataOrigin;
+		lssr::Texture* t = new lssr::Texture(img.size().width, img.size().height, img.channels(), img.depth()/8, tc);
+		t->m_data = img.data;
 		cout<<"\t(a)dded new texture."<<endl;
 		tio->add(t);
-		cvReleaseImageHeader(&img);
 	}
 	else
 	{
@@ -184,17 +183,16 @@ void u(lssr::TextureIO* tio, int &sel)
 		cin.getline(fn, 256);
 		if (strlen(fn))
 		{
-			IplImage* img = cvLoadImage(fn, CV_LOAD_IMAGE_UNCHANGED);
-			if (img)
+			cv::Mat img = cv::imread(fn);
+			if (img.data)
 			{
 				cout<<"\t(u)pdate: Enter texture class (old: "<<tio->m_textures[sel]->m_textureClass<<"):";
 				unsigned short int tc = 0;
 				cin>>tc;
-				lssr::Texture* t = new lssr::Texture(img->width, img->height, img->nChannels, img->depth/8, tc);
-				t->m_data = img->imageDataOrigin;
+				lssr::Texture* t = new lssr::Texture(img.size().width, img.size().height, img.channels(), img.depth()/8, tc);
+				t->m_data = img.data;
 				tio->update(sel, t);
 				cout<<"\t(u)dated texture #"<<sel<<"."<<endl; 
-				cvReleaseImageHeader(&img);
 			}
 			else
 			{
@@ -230,15 +228,14 @@ void v(lssr::TextureIO* tio, int sel)
 {
 	if (sel != -1)
 	{
-		cvStartWindowThread();
-		IplImage* img = cvCreateImageHeader(	cvSize(tio->get(sel)->m_width, tio->get(sel)->m_height),
-						tio->get(sel)->m_numBytesPerChan * 8, tio->get(sel)->m_numChannels);
-		cvSetData(img, tio->get(sel)->m_data, tio->get(sel)->m_width * tio->get(sel)->m_numChannels * tio->get(sel)->m_numBytesPerChan);
-		cvNamedWindow("MyWindow", 1);
-		cvShowImage("MyWindow", img);
-		cvWaitKey();
-		cvDestroyAllWindows();
-		cvReleaseImageHeader(&img);
+		cv::startWindowThread();
+		cv::Mat img(cv::Size(tio->get(sel)->m_width, tio->get(sel)->m_height),
+			    CV_MAKETYPE(tio->get(sel)->m_numBytesPerChan * 8,
+			    tio->get(sel)->m_numChannels), tio->get(sel)->m_data);
+		cv::namedWindow("MyWindow", CV_WINDOW_AUTOSIZE);
+		cv::imshow("MyWindow", img);
+		cv::waitKey();
+		cv::destroyAllWindows();
 	}
 	else
 	{
