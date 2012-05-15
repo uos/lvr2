@@ -80,10 +80,10 @@ TextureIO::TextureIO(string filename)
 			t->m_numBytesPerChan = ui8buf & 0x0f;
 			
 			//allocate memory for the image data
-			t->m_data = new char[t->m_width * t->m_height * t->m_numChannels * t->m_numBytesPerChan];
+			t->m_data = new unsigned char[t->m_width * t->m_height * t->m_numChannels * t->m_numBytesPerChan];
 
 			//read image data
-			in.read(t->m_data, t->m_width * t->m_height *t->m_numChannels * t->m_numBytesPerChan);
+			in.read((char*)t->m_data, t->m_width * t->m_height *t->m_numChannels * t->m_numBytesPerChan);
 	
 
 			m_textures.push_back(t);
@@ -158,7 +158,7 @@ void TextureIO::write()
 		out.write((char*)&ui8buf, 1);
 
 		//write image data
-		out.write(m_textures[i]->m_data, m_textures[i]->m_width *  m_textures[i]->m_height * 
+		out.write((char*)m_textures[i]->m_data, m_textures[i]->m_width *  m_textures[i]->m_height * 
 							m_textures[i]->m_numChannels *  m_textures[i]->m_numBytesPerChan);
 	}
 	
