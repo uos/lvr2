@@ -46,6 +46,9 @@ class HalfEdgeVertex
 {
 public:
 
+	typedef HalfEdge< HalfEdgeVertex<VertexT, NormalT>, HalfEdgeFace<VertexT, NormalT> > HEdge;
+	typedef HalfEdgeFace<VertexT, NormalT> HFace;
+
 	/**
 	 * @brief	Default ctor. Position is (0, 0, 0), normal is undefined
 	 */
@@ -71,6 +74,8 @@ public:
 		m_index = o.m_index;
 	}
 
+	void calcQuadric(Matrix4<float>& q, bool use_tri);
+
 	/// The vertex's position
 	VertexT 			m_position;
 
@@ -81,12 +86,22 @@ public:
 	size_t 				m_index;
 
 	/// The list incoming edges
-	vector<HalfEdge< HalfEdgeVertex<VertexT, NormalT>, HalfEdgeFace<VertexT, NormalT> > *> in;
+	vector<HEdge*> in;
 
 	/// The list of outgoing edges
-	vector<HalfEdge< HalfEdgeVertex<VertexT, NormalT>, HalfEdgeFace<VertexT, NormalT> > *> out;
+	vector<HEdge*> out;
+
+	void getAdjacentFaces(list<HalfEdgeFace<VertexT, NormalT>* > &adj);
+
+	bool isBorderVertex();
+
+	HEdge* getShortestEdge();
 };
 
+
+
 } // namespace lssr
+
+#include "HalfEdgeVertex.tcc"
 
 #endif /* HALFEDGEVERTEX_H_ */

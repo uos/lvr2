@@ -166,6 +166,7 @@ StaticMesh::StaticMesh(const StaticMesh &o)
 	}
 
 	m_boundingBox = o.m_boundingBox;
+	m_model = o.m_model;
 
 }
 

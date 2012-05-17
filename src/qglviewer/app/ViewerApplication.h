@@ -46,6 +46,7 @@
 #include "../viewers/ViewerManager.h"
 
 #include "../widgets/CustomTreeWidgetItem.h"
+#include "../widgets/ClusterTreeWidgetItem.h"
 #include "../widgets/PointCloudTreeWidgetItem.h"
 #include "../widgets/TriangleMeshTreeWidgetItem.h"
 #include "../widgets/TransformationDialog.h"

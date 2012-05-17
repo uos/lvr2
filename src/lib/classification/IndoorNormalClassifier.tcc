@@ -182,6 +182,7 @@ void IndoorNormalClassifier<VertexT, NormalT>::writeBuffers(
 		vector<float> &normals,
 		vector<uint> &colors)
 {
+	static int c;
 	string str_label = "Unclassified";
 	switch(label)
 	{
@@ -190,7 +191,8 @@ void IndoorNormalClassifier<VertexT, NormalT>::writeBuffers(
 	case Wall		: str_label = "Wall";		break;
 	}
 
-	out << str_label << endl;
+	out << str_label << c << endl;
+	c++;
 	out << indices.size() / 3 << " " << vertices.size() / 3 << endl;
 	for(size_t c = 0; c < indices.size() / 3; c++)
 	{

@@ -136,6 +136,16 @@ public:
 	 */
 	float getArea();
 
+	/**
+	 * @brief Returns the "d" from the pane equation "ax + by + cx + d = 0"
+	 */
+	float getD();
+
+	/**
+	 * @brief Returns true, if one of the face's edges has no adjacent face
+	 */
+	bool isBorderFace();
+
 	/// A pointer to a surrounding half edge
 	HalfEdge<HalfEdgeVertex<VertexT, NormalT>, HalfEdgeFace<VertexT, NormalT> >* m_edge;
 

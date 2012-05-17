@@ -14,7 +14,7 @@ include_directories(${LSSR_SOURCE_DIR})
 include_directories(${LSSR_SOURCE_DIR}/src/lib)
 
 
-set( CMAKE_CXX_FLAGS         "-O3 -g")
+set( CMAKE_CXX_FLAGS         "-O3 -g ")
 set( CMAKE_CXX_FLAGS_RELEASE "-O3 -msse3 -Wno-deprecated-declarations -Wno-unused -Wcpp" )
 set( CMAKE_CXX_FLAGS_DEBUG   "-g -Wall" )
 
@@ -71,6 +71,17 @@ else(PCL_FOUND)
         message( "-- No PCL found." )
         message( "-- PCL related stuff will be disabled." )
 endif(PCL_FOUND)
+
+
+####
+## Searching CGAL
+##############################
+
+find_package(CGAL)
+if(CGAL_FOUND)
+add_definitions(${CGAL_CXX_FLAGS_INIT})
+message(STATUS "CGAL CXX_FLAGS: " ${CGAL_CXX_FLAGS_INIT})
+endif(CGAL_FOUND)
 
 
 ####
@@ -192,6 +203,10 @@ add_subdirectory(src/scanreduce)
 add_subdirectory(src/convert)
 add_subdirectory(src/asciiconverter)
 add_subdirectory(src/texman)
+
+if(CGAL_FOUND)
+add_subdirectory(src/cgal_reconstruction)
+endif(CGAL_FOUND)
 
 if(PCL_FOUND)
     add_subdirectory(src/scanfilter)

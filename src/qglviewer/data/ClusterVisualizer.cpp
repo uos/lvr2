@@ -127,6 +127,7 @@ ClusterVisualizer::ClusterVisualizer(string filename)
 	item->setName("Cluster Set");
 	item->setRenderable(cluster);
 
+
 }
 
 
