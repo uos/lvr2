@@ -44,9 +44,6 @@
 #include <algorithm>
 #include "DataStruct.hpp"
 
-#ifdef _USE_PCL_
-#include <pcl/point_types.h>
-#endif
 
 namespace lssr
 {
@@ -374,9 +371,6 @@ public:
      */
     bool hasPointNormals() { return m_numPointNormals != 0;}
 
-#ifdef _USE_PCL_
-    boost::shared_ptr<PointBuffer> operator()(const pcl::PointCloud<pcl::PointXYZ>::ConstPtr  &buffer);
-#endif
 
 protected:
 

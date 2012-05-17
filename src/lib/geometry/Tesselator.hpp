@@ -73,15 +73,13 @@ public:
      * @return Returns a list of Vertices. Every 3-points represent a triangle.
      *         
      */
-    static void tesselate(vector<vector<VertexT> > borderVertices);
+    static void tesselate(vector<vector<VertexT> > &borderVertices);
     
     /**
      * @brief Takes a list of contours and retesselates the area.
      *
      * @param region An object of the Region class. 
      *               This represents the region which should be retesselated
-     *
-     * @return Returns a list of Vertices. Every 3-points represent a triangle.
      *         
      */
     static void tesselate(Region<VertexT, NormalT> *region);
@@ -112,7 +110,7 @@ private:
      * @param userData A pointer to user defined Data. These userData are result from the use
      *                 of gluTessVertex(tessObject, pointData, userData);
      */
-    static void tesselatorBegin(GLenum which, void* userData);
+    static void tesselatorBegin(GLenum which, VertexT* userData);
 
     /**
      * @Brief Callback function
@@ -129,7 +127,7 @@ private:
     /**
      * @Brief Callback function
      */
-    static void tesselatorAddVertex(const GLvoid *data, void* userData);
+    static void tesselatorAddVertex(const GLvoid *data, VertexT* userData);
 
     /**
      * @Brief Callback function
@@ -138,7 +136,7 @@ private:
 							 GLdouble *vertex_data[4],
 							 GLdouble weight[4],
 							 GLdouble **dataOut,
-                             void* userData);
+                             VertexT* userData);
     /* All Constructors shall be private since
        this class is just a collection of functions. */
     Tesselator();

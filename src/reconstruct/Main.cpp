@@ -145,6 +145,7 @@
 #include "geometry/Matrix4.hpp"
 #include "geometry/HalfEdgeMesh.hpp"
 #include "geometry/Texture.hpp"
+#include "geometry/QuadricVertexCosts.hpp"
 #include "reconstruction/SharpBox.hpp"
 
 // PCL related includes
@@ -332,6 +333,9 @@ int main(int argc, char** argv)
 		}
 		// Optimize mesh
 
+
+
+
 		mesh.cleanContours(options.getCleanContourIterations());
 
 
@@ -351,6 +355,14 @@ int main(int argc, char** argv)
 			mesh.optimizePlaneIntersections();
 
 			mesh.restorePlanes(options.getMinPlaneSize());
+
+			if(options.getNumEdgeCollapses())
+			{
+				QuadricVertexCosts<cVertex, cNormal> c = QuadricVertexCosts<cVertex, cNormal>(true);
+				mesh.reduceMeshByCollapse(options.getNumEdgeCollapses(), c);
+			}
+
+
 		}
 		else if(options.clusterPlanes())
 		{

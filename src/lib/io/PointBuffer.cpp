@@ -245,23 +245,6 @@ void PointBuffer::defineSubCloud(indexPair& range)
     m_subClouds.push_back(range);
 }
 
-#ifdef _USE_PCL_
-boost::shared_ptr<PointBuffer> PointBuffer::operator()(const pcl::PointCloud<pcl::PointXYZ>::ConstPtr  &cloud)
-{
-	// Parse data
-	m_points = floatArr(new float[3 * cloud->points.size()]);
-	for(size_t i = 0; i < cloud->points.size(); i++)
-	{
-		size_t pos = 3 * i;
-		m_points[pos    ] = cloud->points[i].x;
-		m_points[pos + 1] = cloud->points[i].y;
-		m_points[pos + 2] = cloud->points[i].z;
-	}
 
-	PointBufferPtr buffer(new PointBuffer);
-	buffer->setPointArray(m_points, cloud->points.size());
-	return buffer;
-}
-#endif
 
 } /* namespace lssr */

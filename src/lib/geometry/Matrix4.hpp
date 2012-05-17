@@ -233,6 +233,37 @@ public:
 	}
 
 	/**
+	 * @brief 	Matrix addition operator. Returns a new matrix
+	 *
+	 */
+	template<typename T>
+	Matrix4 operator+(const Matrix4<T> &other) const
+	{
+		ValueType new_matrix[16];
+		for(int i = 0; i < 16; i++)
+		{
+			new_matrix[i] = m[i] + other[i];
+		}
+		return Matrix4<ValueType>(new_matrix);
+	}
+
+	/**
+	 * @brief 	Matrix addition operator
+	 */
+	template<typename T>
+	Matrix4 operator+=(const Matrix4<T> &other)
+	{
+		if(other != *this)
+		{
+			return *this + other;
+		}
+		else
+		{
+			return *this;
+		}
+	}
+
+	/**
 	 * @brief	Matrix-Matrix multiplication (array based). Mainly
 	 * 			implemented for compatibility with other math libs.
 	 * 			ensure that the used array has at least 16 elements
@@ -403,12 +434,21 @@ public:
 	ValueType at(const int i) const;
 
 	/**
-	 * @brief	Indexed element access.
+	 * @brief	Indexed element (reading) access.
 	 */
 	ValueType operator[](const int index) const
 	{
 	    /// TODO: Boundary check
 	    return m[index];
+	}
+
+
+	/**
+	 * @brief  	Writeable index access
+	 */
+	ValueType& operator[](const int index)
+	{
+		return m[index];
 	}
 
 private:

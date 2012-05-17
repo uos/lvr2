@@ -10,6 +10,7 @@
 
 #include "KinectGrabber.hpp"
 #include "geometry/Matrix4.hpp"
+#include "../../ext/Eigen/Dense"
 
 namespace lssr
 {

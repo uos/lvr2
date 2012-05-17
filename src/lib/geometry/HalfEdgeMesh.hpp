@@ -36,10 +36,12 @@
 #include <stack>
 #include <set>
 #include <list>
+#include <map>
 #include <sstream>
 #include <float.h>
 #include <math.h>
 #include <algorithm>
+#include <queue>
 
 #include <glu.h>
 #include <glut.h>
@@ -62,6 +64,8 @@ using namespace std;
 #include "Tesselator.hpp"
 #include "Texturizer.hpp"
 #include "ColorVertex.hpp"
+
+#include "VertexCosts.hpp"
 
 #include "reconstruction/PointsetSurface.hpp"
 #include "classification/ClassifierFactory.hpp"
@@ -205,12 +209,41 @@ public:
 
 	void setClassifier(string name);
 
+	/**
+	 * Sets the maximum recursion depth for region growing
+	 *
+	 * @param depth
+	 */
 	void setDepth(unsigned int depth) {m_depth = depth;};
 
 
+	/**
+	 * Clusters regions without dragging the region vertices into the common plane
+	 *
+	 * @param normalThreshold 	Threshold for normal differences in region growing
+	 * @param minRegionSize		Minmal region size, i.e. regions smaller than this value
+	 * 							will not be treated as a cluster
+	 */
 	void clusterRegions(float normalThreshold, int minRegionSize = 50);
 
+	/**
+	 * Iteratively removes "spikes" in region contours. Good to remove artifacts
+	 * arising from sensor noise.
+	 *
+	 * @param iterations		The artifacts will be removed iteratively. Sane
+	 * 							values are between 1 and 4
+	 */
 	void cleanContours(int iterations);
+
+
+	/**
+	 * Simplyfys the mesh by collapsing the @ref n_collapses edges with the
+	 * lowest costs according to the given costs function
+	 *
+	 * @param n_collapses		Number of edges to collapse
+	 * @param c					The costs function for edge removal
+	 */
+	void reduceMeshByCollapse(int n_collapses, VertexCosts<VertexT, NormalT> &c);
 
 private:
 
@@ -230,10 +263,10 @@ private:
 	size_t                                      m_globalIndex;
 
 	/// Classification object
-	RegionClassifier<VertexT, NormalT>*          m_regionClassifier;
+	RegionClassifier<VertexT, NormalT>*         m_regionClassifier;
 
 	/// a pointer to the point cloud manager
-	typename PointsetSurface<VertexT>::Ptr        m_pointCloudManager;
+	typename PointsetSurface<VertexT>::Ptr      m_pointCloudManager;
 
 	/**
 	 * @brief   Returns an edge that point to the edge defined
@@ -362,6 +395,12 @@ private:
 	 * @return	true if the edge was collapsed, false otherwise
 	 */
 	virtual bool safeCollapseEdge(HEdge* edge);
+
+
+	/**
+	 * @brief	Calculates costs for every vertex in the mesh
+	 */
+	void getCostMap(std::map<HVertex*, float> &costs, VertexCosts<VertexT, NormalT> &c);
 
 
 	friend class ClassifierFactory<VertexT, NormalT>;
