@@ -55,8 +55,10 @@ void a(lssr::TextureIO* tio)
 		cout<<"\t(a)dd: Enter texture class: ";
 		unsigned short int tc = 0;
 		cin>>tc;
-		lssr::Texture* t = new lssr::Texture(img.size().width, img.size().height, img.channels(), img.depth()/8, tc);
-		t->m_data = img.data;
+		unsigned char depth = img.depth() == CV_8U ? 1 : 2;
+		//TODO: calculate features
+		lssr::Texture* t = new lssr::Texture(img.size().width, img.size().height, img.channels(), depth, tc, 0, 0, 0);
+		memcpy(t->m_data, img.data, img.size().width * img.size().height * img.channels() * depth);
 		cout<<"\t(a)dded new texture."<<endl;
 		tio->add(t);
 	}
@@ -125,7 +127,7 @@ void i(lssr::TextureIO* tio)
 void l(lssr::TextureIO* tio, int sel)
 {
 	cout<<"\t(l)ist of textures:"<<endl;
-	cout<<"\t"<<setw(8)<<"index"<<setw(16)<<"WxH"<<setw(10)<<"channels"<<setw(8)<<"depth"<<setw(8)<<"class"<<setw(10)<<"selected"<<endl;
+	cout<<"\t"<<setw(8)<<"index"<<setw(16)<<"WxH"<<setw(10)<<"channels"<<setw(8)<<"depth"<<setw(8)<<"class"<<setw(10)<<"features"<<setw(10)<<"selected"<<endl;
 
 	tio->resetIndex();
 	lssr::Texture* t = tio->getNext();
@@ -136,6 +138,7 @@ void l(lssr::TextureIO* tio, int sel)
 		cout<<"\t"<<setw(8)<<i++<<setw(16)<< wxh.str();
 		cout<<setw(10)<<(unsigned short)t->m_numChannels<<setw(8)<<(unsigned short)t->m_numBytesPerChan;
 		cout<<setw(8)<<t->m_textureClass;
+		cout<<setw(10)<<t->m_numFeatures;
 		if (sel == i-1) cout<<setw(10)<<"*";
 		cout<<endl;
 		t = tio->getNext();
@@ -189,8 +192,10 @@ void u(lssr::TextureIO* tio, int &sel)
 				cout<<"\t(u)pdate: Enter texture class (old: "<<tio->m_textures[sel]->m_textureClass<<"):";
 				unsigned short int tc = 0;
 				cin>>tc;
-				lssr::Texture* t = new lssr::Texture(img.size().width, img.size().height, img.channels(), img.depth()/8, tc);
-				t->m_data = img.data;
+				unsigned char depth = img.depth() == CV_8U ? 1 : 2;
+				//TODO: calculate features
+				lssr::Texture* t = new lssr::Texture(img.size().width, img.size().height, img.channels(), depth, tc, 0, 0, 0);
+				memcpy(t->m_data, img.data, img.size().width * img.size().height * img.channels() * depth);
 				tio->update(sel, t);
 				cout<<"\t(u)dated texture #"<<sel<<"."<<endl; 
 			}

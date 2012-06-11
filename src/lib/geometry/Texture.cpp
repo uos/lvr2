@@ -33,31 +33,45 @@ float Texture::m_texelSize = 1;
 
 Texture::Texture()
 {
-	this->m_data   		= 0;
-	this->m_textureClass 	= 0;
-
+	this->m_data   		   	= 0;
+	this->m_textureClass 	   	= 0;
+	this->m_featureDescriptors 	= 0;
+	this->m_width		   	= 0;
+	this->m_height		   	= 0;
+	this->m_numChannels	   	= 0;
+	this->m_numBytesPerChan	   	= 0;
+	this->m_numFeatures	   	= 0;
+	this->m_numFeatureComponents	= 0;
 }
 
 Texture::Texture(unsigned short int width, unsigned short int height, unsigned char numChannels,
-		 unsigned char numBytesPerChan, unsigned short int textureClass)
+		 unsigned char numBytesPerChan, unsigned short int textureClass, unsigned short int numFeatures,
+		 unsigned char numFeatureComponents, float* features)
 {
-	this->m_width 		= width;
-	this->m_height 		= height;
-	this->m_numChannels 	= numChannels;
-	this->m_numBytesPerChan = numBytesPerChan;
+	this->m_width 			= width;
+	this->m_height 			= height;
+	this->m_numChannels 		= numChannels;
+	this->m_numBytesPerChan 	= numBytesPerChan;
 	m_data = new unsigned char[width * height * numChannels * numBytesPerChan];
-	this->m_textureClass	= textureClass;
+	this->m_textureClass		= textureClass;
+	this->m_numFeatures	   	= numFeatureComponents;
+	this->m_numFeatureComponents	= numFeatures;
+	this->m_featureDescriptors 	= features; 
 }
 
 Texture::Texture(Texture &other)
 {
-	this->m_width 		= other.m_width;
-	this->m_height 		= other.m_height;
-	this->m_numChannels 	= other.m_numChannels;
-	this->m_numBytesPerChan = other.m_numBytesPerChan;
+	this->m_width 			= other.m_width;
+	this->m_height 			= other.m_height;
+	this->m_numChannels 		= other.m_numChannels;
+	this->m_numBytesPerChan 	= other.m_numBytesPerChan;
 	m_data = new unsigned char[m_width * m_height * m_numChannels * m_numBytesPerChan];
 	memcpy(m_data, other.m_data, m_width * m_height * m_numChannels * m_numBytesPerChan);
-	this->m_textureClass	= other.m_textureClass;
+	this->m_textureClass		= other.m_textureClass;
+	this->m_numFeatures 		= other.m_numFeatures;
+	this->m_numFeatureComponents	= other.m_numFeatureComponents;
+	this->m_featureDescriptors 	= new float[m_numFeatures * m_numFeatureComponents];
+	memcpy(m_featureDescriptors, other.m_featureDescriptors, m_numFeatures * m_numFeatureComponents);
 }
 
 void Texture::save(int i)

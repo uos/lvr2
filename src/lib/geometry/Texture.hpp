@@ -53,7 +53,8 @@ public:
 	 *
 	 */
 	Texture(unsigned short int width, unsigned short int height, unsigned char numChannels,
-		unsigned char numBytesPerChan, unsigned short int textureClass = 0);
+		unsigned char numBytesPerChan, unsigned short int textureClass, unsigned short int numFeatures,
+		unsigned char numFeatureComponents, float* features);
 
 	/**
 	 * @brief 	Constructor.
@@ -91,6 +92,15 @@ public:
 
 	///The pixel size determines the resolution
 	static float m_texelSize;
+
+	///The precalculated feature descriptors (SIFT/SURF/...)
+	float* m_featureDescriptors;
+	
+	///The number of entries of each feature descriptor
+	unsigned char m_numFeatureComponents;
+
+	//The number of feature descriptors
+	unsigned short int m_numFeatures;
 };
 
 }
