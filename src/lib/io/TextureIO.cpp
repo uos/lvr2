@@ -85,6 +85,17 @@ TextureIO::TextureIO(string filename)
 			//read image data
 			in.read((char*)t->m_data, t->m_width * t->m_height *t->m_numChannels * t->m_numBytesPerChan);
 	
+			//read number of features: 2 Bytes
+			in.read((char*)&ui16buf, 2);	
+			t->m_numFeatures = ui16buf;
+
+			//read number of components	
+			in.read((char*)&ui8buf, 1);
+			t->m_numFeatureComponents = ui8buf;	
+
+			//read feature descriptors
+			in.read((char*)t->m_featureDescriptors, t->m_numFeatures * t->m_numFeatureComponents * sizeof(float));
+			
 
 			m_textures.push_back(t);
 		}	
@@ -160,6 +171,17 @@ void TextureIO::write()
 		//write image data
 		out.write((char*)m_textures[i]->m_data, m_textures[i]->m_width *  m_textures[i]->m_height * 
 							m_textures[i]->m_numChannels *  m_textures[i]->m_numBytesPerChan);
+
+		//write number of features: 2 Bytes
+		ui16buf = m_textures[i]->m_numFeatures;
+		out.write((char*)&ui16buf, 2);
+
+		//write number of components per feature descriptor
+		ui8buf =  m_textures[i]->m_numFeatureComponents;
+		out.write((char*)&ui8buf, 1);
+
+		//write feature descriptors
+		out.write((char*)m_textures[i]->m_featureDescriptors, m_textures[i]->m_numFeatures *  m_textures[i]->m_numFeatureComponents * sizeof(float));
 	}
 	
 	out.close();
