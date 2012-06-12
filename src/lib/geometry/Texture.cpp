@@ -54,8 +54,8 @@ Texture::Texture(unsigned short int width, unsigned short int height, unsigned c
 	this->m_numBytesPerChan 	= numBytesPerChan;
 	m_data = new unsigned char[width * height * numChannels * numBytesPerChan];
 	this->m_textureClass		= textureClass;
-	this->m_numFeatures	   	= numFeatureComponents;
-	this->m_numFeatureComponents	= numFeatures;
+	this->m_numFeatures	   	= numFeatures;
+	this->m_numFeatureComponents	= numFeatureComponents;
 	this->m_featureDescriptors 	= features; 
 }
 
