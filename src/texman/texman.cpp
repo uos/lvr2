@@ -36,6 +36,7 @@
 #include <sstream>
 #include <opencv/cv.h>
 #include <opencv/highgui.h>
+#include <geometry/ImageProcessor.hpp>
 
 using namespace std;
 
@@ -56,8 +57,12 @@ void a(lssr::TextureIO* tio)
 		unsigned short int tc = 0;
 		cin>>tc;
 		unsigned char depth = img.depth() == CV_8U ? 1 : 2;
-		//TODO: calculate features
-		lssr::Texture* t = new lssr::Texture(img.size().width, img.size().height, img.channels(), depth, tc, 0, 0, 0);
+		// calculate features
+		unsigned short numFeatures = 0;
+		unsigned char numComps = 0;
+		float* features = lssr::ImageProcessor::calcSURF(img, numFeatures, numComps);
+		//create Texture
+		lssr::Texture* t = new lssr::Texture(img.size().width, img.size().height, img.channels(), depth, tc, numFeatures, numComps, features);
 		memcpy(t->m_data, img.data, img.size().width * img.size().height * img.channels() * depth);
 		cout<<"\t(a)dded new texture."<<endl;
 		tio->add(t);
@@ -193,8 +198,12 @@ void u(lssr::TextureIO* tio, int &sel)
 				unsigned short int tc = 0;
 				cin>>tc;
 				unsigned char depth = img.depth() == CV_8U ? 1 : 2;
-				//TODO: calculate features
-				lssr::Texture* t = new lssr::Texture(img.size().width, img.size().height, img.channels(), depth, tc, 0, 0, 0);
+				// calculate features
+				unsigned short numFeatures = 0;
+				unsigned char numComps = 0;
+				float* features = lssr::ImageProcessor::calcSURF(img, numFeatures, numComps);
+				//create Texture
+				lssr::Texture* t = new lssr::Texture(img.size().width, img.size().height, img.channels(), depth, tc, numFeatures, numComps, features);
 				memcpy(t->m_data, img.data, img.size().width * img.size().height * img.channels() * depth);
 				tio->update(sel, t);
 				cout<<"\t(u)dated texture #"<<sel<<"."<<endl; 
