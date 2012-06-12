@@ -35,7 +35,7 @@ float* ImageProcessor::calcSURF(cv::Mat &img, unsigned short &numFeatures, unsig
 	cv::cvtColor(img, img1, CV_RGB2GRAY);
 	
 	//initialize SURF objects
-	cv::SurfFeatureDetector detector(1000); //TODO: calculate ht
+	cv::SurfFeatureDetector detector(100);
 	cv::SurfDescriptorExtractor extractor;
 
 	std::vector<cv::KeyPoint> keyPoints;
