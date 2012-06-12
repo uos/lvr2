@@ -93,10 +93,11 @@ TextureIO::TextureIO(string filename)
 			in.read((char*)&ui8buf, 1);
 			t->m_numFeatureComponents = ui8buf;	
 
+			//allocate memory for the feature descriptors
+			t->m_featureDescriptors = new float[t->m_numFeatures * t->m_numFeatureComponents];
 			//read feature descriptors
 			in.read((char*)t->m_featureDescriptors, t->m_numFeatures * t->m_numFeatureComponents * sizeof(float));
 			
-
 			m_textures.push_back(t);
 		}	
 	}
