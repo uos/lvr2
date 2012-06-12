@@ -23,9 +23,12 @@
  *  @date 18.08.2011
  *  @author Kim Rinnewitz (krinnewitz@uos.de)
  *  @author Sven Schalk (sschalk@uos.de)
+ *  @author Thomas Wiemann (twiemann@uos.de)
  */
  
 #include <limits>
+
+#include "ext/psimpl/psimpl.h"
 
 namespace lssr
 {
@@ -57,12 +60,6 @@ vector<vector<VertexT> > Region<VertexT, NormalT>::getContours(float epsilon)
 {
 	vector<vector<VertexT> > result;
 
-	//don't try to find contours of a region which wasn't dragged into a plane
-	if (!this->m_inPlane) 
-    {
-        return result;
-    }
-
 	for (size_t i = 0; i < this->m_faces.size(); i++)
 	{
 		for (int k = 0; k < 3; k++)
@@ -70,7 +67,7 @@ vector<vector<VertexT> > Region<VertexT, NormalT>::getContours(float epsilon)
 			HEdge* current = (*m_faces[i])[k];
 			if(!current->used && (current->pair->face == 0 || current->pair->face->m_region != current->face->m_region))
 			{
-				vector<VertexT> contour;
+				std::deque<float> contour;
 				//Region<VertexT, NormalT>* region = this;
 
 				HEdge* next = 0;
@@ -80,7 +77,9 @@ vector<vector<VertexT> > Region<VertexT, NormalT>::getContours(float epsilon)
 					current->used = true;
 					next = 0;
 					//push the next vertex
-					contour.push_back(current->end->m_position);
+					contour.push_back(current->end->m_position[0]);
+					contour.push_back(current->end->m_position[1]);
+					contour.push_back(current->end->m_position[2]);
 
 					//find next edge
 					for(size_t i = 0; i<current->end->out.size(); i++)
@@ -100,69 +99,132 @@ vector<vector<VertexT> > Region<VertexT, NormalT>::getContours(float epsilon)
 					}
 				}
 
-				for(int kk = 0; kk < 1; kk++)
+				// Simplify contour
+				vector<float> simple_contour;
+				psimpl::simplify_reumann_witkam <3> (
+				    contour.begin (), contour.end (),
+				    epsilon, std::back_inserter(simple_contour));
+
+				// Convert to VertexT
+				vector<VertexT> tmp;
+				for(int i = 0; i < simple_contour.size() / 3; i++)
 				{
-					// delete vertices due to direction
-					bool didSomething = true;
-					while(didSomething)
-					{
-						vector<VertexT> toDelete;
-						for(int c = 1; c < contour.size()-1; c++)
-						{
-							//calculate direction of the current edge
-							NormalT nextDirection(contour[c+1] - contour[c]);
-
-							//calculate direction of the next edge
-							NormalT previousDirection(contour[c] - contour[c-1]);
-
-							if
-							(
-									fabs(fabs(previousDirection[0]) - fabs(nextDirection[0])) <= epsilon
-							     && fabs(fabs(previousDirection[1]) - fabs(nextDirection[1])) <= epsilon
-							     && fabs(fabs(previousDirection[2]) - fabs(nextDirection[2])) <= epsilon
-							)
-							{
-								toDelete.push_back(contour[c]);
-							}
-						}
-						didSomething = false;
-						for(int d = 0; d < toDelete.size(); d++)
-						{
-							contour.erase(find(contour.begin(), contour.end(), toDelete[d]));
-							didSomething = true;
-						}
-					}
-					// delete vertices due to distance
-					didSomething = true;
-					while(didSomething)
-					{
-						vector<VertexT> toDelete;
-						for(int c = 0; c < contour.size()-1; c++)
-						{
-							if
-							(
-									fabs(contour[c+1][0] - contour[c][0]) <= epsilon
-							     && fabs(contour[c+1][1] - contour[c][1]) <= epsilon
-							     && fabs(contour[c+1][2] - contour[c][2]) <= epsilon
-							)
-							{
-
-								toDelete.push_back(contour[c]);
-							}
-						}
-						didSomething = false;
-						for(int d = 0; d < toDelete.size(); d++)
-						{
-							contour.erase(find(contour.begin(), contour.end(), toDelete[d]));
-							didSomething = true;
-						}
-					}
-
+					tmp.push_back(VertexT(simple_contour[i * 3], simple_contour[i * 3 + 1], simple_contour[i * 3 + 2]));
 				}
-				result.push_back(contour);
+
+				// Add contour
+				result.push_back(tmp);
 			}
 		}
 	}
+
+
+//	//don't try to find contours of a region which wasn't dragged into a plane
+//	if (!this->m_inPlane)
+//    {
+//        return result;
+//    }
+//
+//	for (size_t i = 0; i < this->m_faces.size(); i++)
+//	{
+//		for (int k = 0; k < 3; k++)
+//		{
+//			HEdge* current = (*m_faces[i])[k];
+//			if(!current->used && (current->pair->face == 0 || current->pair->face->m_region != current->face->m_region))
+//			{
+//				vector<VertexT> contour;
+//				//Region<VertexT, NormalT>* region = this;
+//
+//				HEdge* next = 0;
+//				while(current->used == false)
+//				{
+//					//mark edge as used
+//					current->used = true;
+//					next = 0;
+//					//push the next vertex
+//					contour.push_back(current->end->m_position);
+//
+//					//find next edge
+//					for(size_t i = 0; i<current->end->out.size(); i++)
+//					{
+//						if( !current->end->out[i]->used
+//								&& current->end->out[i]->face && current->end->out[i]->face->m_region == this
+//								&& (current->end->out[i]->pair->face == 0
+//										|| ( current->end->out[i]->pair->face  && current->end->out[i]->pair->face->m_region != this )))
+//						{
+//							next = current->end->out[i];
+//						}
+//					}
+//
+//					if(next)
+//					{
+//						current = next;
+//					}
+//				}
+//
+//				for(int kk = 0; kk < 1; kk++)
+//				{
+//					// delete vertices due to direction
+//					bool didSomething = true;
+//					while(didSomething)
+//					{
+//						vector<VertexT> toDelete;
+//						for(int c = 1; c < contour.size()-1; c++)
+//						{
+//							//calculate direction of the current edge
+//							NormalT nextDirection(contour[c+1] - contour[c]);
+//
+//							//calculate direction of the next edge
+//							NormalT previousDirection(contour[c] - contour[c-1]);
+//
+//							if
+//							(
+//									fabs(fabs(previousDirection[0]) - fabs(nextDirection[0])) <= epsilon
+//							     && fabs(fabs(previousDirection[1]) - fabs(nextDirection[1])) <= epsilon
+//							     && fabs(fabs(previousDirection[2]) - fabs(nextDirection[2])) <= epsilon
+//							)
+//							{
+//								toDelete.push_back(contour[c]);
+//							}
+//						}
+//						didSomething = false;
+//						for(int d = 0; d < toDelete.size(); d++)
+//						{
+//							contour.erase(find(contour.begin(), contour.end(), toDelete[d]));
+//							didSomething = true;
+//						}
+//					}
+//					// delete vertices due to distance
+//					didSomething = true;
+//					while(didSomething)
+//					{
+//						vector<VertexT> toDelete;
+//						for(int c = 0; c < contour.size()-1; c++)
+//						{
+//							if
+//							(
+//									fabs(contour[c+1][0] - contour[c][0]) <= epsilon
+//							     && fabs(contour[c+1][1] - contour[c][1]) <= epsilon
+//							     && fabs(contour[c+1][2] - contour[c][2]) <= epsilon
+//							)
+//							{
+//
+//								toDelete.push_back(contour[c]);
+//							}
+//						}
+//						didSomething = false;
+//						for(int d = 0; d < toDelete.size(); d++)
+//						{
+//							contour.erase(find(contour.begin(), contour.end(), toDelete[d]));
+//							didSomething = true;
+//						}
+//					}
+//
+//				}
+//				result.push_back(contour);
+//			}
+//		}
+//	}
 
 	//move outer contour to the first position
 	float xmax = std::numeric_limits<float>::min();
