@@ -29,6 +29,9 @@ namespace lssr {
 template<typename VertexT, typename NormalT>
 Texturizer<VertexT, NormalT>::Texturizer(typename PointsetSurface<VertexT>::Ptr pm, string filename)
 {
+	//Load texture package
+	this->m_tio = new TextureIO(filename);
+	
 	this->m_pm = pm;
 }
 
@@ -144,6 +147,10 @@ TextureToken<VertexT, NormalT>* Texturizer<VertexT, NormalT>::createInitialTextu
 
 		}
 	}
+
+	//calculate SURF features of  texture
+	ImageProcessor::calcSURF(texture);
+
 	return result;
 }
 
@@ -152,7 +159,25 @@ TextureToken<VertexT, NormalT>* Texturizer<VertexT, NormalT>::texturizePlane(vec
 {
 	TextureToken<VertexT, NormalT>* initialTexture = createInitialTexture(contour);
 
-	//TODO: impelement all the stuff	
+	//Check all textures of the texture package 
+	for(int i = 0; i < this->m_tio->m_textures.size(); i++)
+	{
+		//SURF
+		cout<<ImageProcessor::compareTexturesSURF(initialTexture->m_texture, this->m_tio->m_textures[i])<<endl;
+//		if(gut genug)
+//		{
+//			return m_textures[i];
+//		}
+		 
+	}
+
+	//No texture found -> try to extract a pattern
+//	if (tryPattern() > gut)
+//	{
+//		return pattern;
+//	}
+	
+	//Pattern extraction failed -> use initial texture
 	return initialTexture;
 }
 

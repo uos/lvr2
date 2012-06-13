@@ -30,6 +30,8 @@
 #include "reconstruction/PointsetSurface.hpp"
 #include "TextureToken.hpp"
 #include <string>
+#include <io/TextureIO.hpp>
+#include <geometry/ImageProcessor.hpp>
 
 namespace lssr {
 
@@ -74,6 +76,9 @@ private:
 	
 	///The point set surface used to generate textures from the point cloud
 	typename PointsetSurface<VertexT>::Ptr m_pm;
+
+	///A reference to the texture package
+	TextureIO* m_tio;
 };
 
 }
