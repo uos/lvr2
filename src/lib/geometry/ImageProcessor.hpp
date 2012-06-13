@@ -28,9 +28,8 @@
 #define IMAGEPROCESSOR_HPP_
 
 #include <cstring>
-#include <opencv/cv.h>
-#include <opencv/highgui.h>
 #include <cstdio>
+#include <geometry/Texture.hpp>
 
 namespace lssr {
 
@@ -42,16 +41,21 @@ class ImageProcessor {
 public:
 
 /**
- * \brief 	Calculates the SURF features for the given image
+ * \brief 	Calculates the SURF features for the given texture
  *
- * \param	img		The image to calculate the feature for
- * \param	numFeatures	A variable to store the number of features
- * \param	numComps	A variable to store the number of components
- *				per feature descriptor
- *
- * \return	A pointer to an array of feature descriptors
+ * \param	tex		The texture to calculate the feature for
  */
-static float* calcSURF(cv::Mat &img, unsigned short &numFeatures, unsigned char &numComps);
+static void calcSURF( Texture* tex);
+
+/**
+ * \brief 	Compares the given textures wrt to their SURF descriptors
+ *
+ * \param	tex1	The first texture
+ * \param	tex2	The second texture
+ *
+ * \return 	The distance between the textures
+ */
+static float compareTexturesSURF(Texture* tex1, Texture* tex2);
 
 };
 
