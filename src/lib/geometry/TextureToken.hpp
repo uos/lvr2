@@ -80,7 +80,6 @@ public:
 	///The associated texture	
 	Texture* m_texture;
 
-private:
 	///The coordinate system of the texture plane
 	NormalT v1, v2;
 

@@ -31,8 +31,8 @@ namespace lssr {
 
 void ImageProcessor::calcSURF(Texture* tex)
 {
-	cv::Mat img1(cv::Size(tex->m_width, tex->m_height), CV_MAKETYPE(tex->m_numBytesPerChan * 8,
-			tex->m_numChannels), tex->m_data);
+	//convert texture to cv::Mat
+	cv::Mat img1(cv::Size(tex->m_width, tex->m_height), CV_MAKETYPE(tex->m_numBytesPerChan * 8, tex->m_numChannels), tex->m_data);
 	//convert image to gray scale
 	cv::cvtColor(img1, img1, CV_RGB2GRAY);
 	
@@ -100,4 +100,103 @@ float ImageProcessor::compareTexturesSURF(Texture* tex1, Texture* tex2)
 	return result;
 
 }
+
+void ImageProcessor::autocorrDFT(const cv::Mat &img, cv::Mat &dst)
+{
+	//Convert image from unsigned char to float matrix
+	cv::Mat fImg;
+	img.convertTo(fImg, CV_32FC1);
+	//Subtract the mean
+	cv::Mat mean(fImg.size(), fImg.type(), cv::mean(fImg));
+	cv::subtract(fImg, mean, fImg);
+	
+	//Calculate the optimal size for the dft output.
+	//This increases speed.
+	cv::Size dftSize;
+	dftSize.width = cv::getOptimalDFTSize(2 * img.cols +1 );
+	dftSize.height = cv::getOptimalDFTSize(2 * img.rows +1);
+	
+	//prepare the destination for the dft
+	dst = cv::Mat(dftSize, CV_32FC1, cv::Scalar::all(0));
+	
+	//transform the image into the frequency domain
+	cv::dft(fImg, dst);
+	//calculate DST * DST* (don't mind the fourth parameter. It is ignored)
+	cv::mulSpectrums(dst, dst, dst, cv::DFT_INVERSE, true);
+	//transform the result back to the image domain 
+	cv::dft(dst, dst, cv::DFT_INVERSE | cv::DFT_SCALE);
+
+	//norm the result
+	cv::multiply(fImg,fImg,fImg);
+	float denom = cv::sum(fImg)[0];
+	dst = dst * (1/denom);
+
+}
+
+
+double ImageProcessor::getMinimalPattern(const cv::Mat &input, unsigned int &sizeX, unsigned int &sizeY, const int minimalPatternSize)
+{
+	const float epsilon = 0.00005;
+
+	//make input gray scale 
+	cv::Mat img;	
+	cv::cvtColor(input, img, CV_RGB2GRAY);
+
+	//calculate auto correlation
+	cv::Mat ac;
+	ImageProcessor::autocorrDFT(img, ac);
+	cv::Mat_<float>& ptrAc = (cv::Mat_<float>&)ac;
+
+	//search minimal pattern i.e. search the highest correlation in x and y direction
+	sizeX = 0;
+	sizeY = 0;
+
+	//y direction
+	for (int y = minimalPatternSize; y < ac.size().height / 2; y++)
+	{
+		for(int x = 1; x < ac.cols / 2; x++)
+		{
+			if (ptrAc(y, x) > ptrAc(sizeY, sizeX) + epsilon || sizeY == 0)
+			{
+				sizeY = y;	
+				sizeX = x;
+			}
+		}
+	}
+/*
+	sizeX = 0;
+	
+	//x direction
+	for (int x = minimalPatternSize; x < ac.size().width / 2; x++)
+	{
+		if (ptrAc(sizeY, x) > ptrAc(sizeY, sizeX) + epsilon || sizeX == 0)
+		{
+			sizeX = x;	
+		}
+	}*/
+	
+	return ptrAc(sizeY, sizeX);
+} 
+
+float ImageProcessor::extractPattern(Texture* tex, Texture** dst)
+{
+	//convert texture to cv::Mat
+	cv::Mat src(cv::Size(tex->m_width, tex->m_height), CV_MAKETYPE(tex->m_numBytesPerChan * 8, tex->m_numChannels), tex->m_data);
+	//convert image to gray scale
+	cv::cvtColor(src, src, CV_RGB2GRAY);
+
+	//try to extract pattern
+	unsigned int sizeX, sizeY;
+	float result = ImageProcessor::getMinimalPattern(src, sizeX, sizeY, 10); //TODO Param
+	
+	//save the pattern
+	cv::Mat pattern = cv::Mat(src, cv::Rect(0, 0, sizeX, sizeY));
+	
+	//convert the pattern to Texture
+	*dst = new Texture(pattern.size().width, pattern.size().height, pattern.channels(), tex->m_numBytesPerChan, tex->m_textureClass, 0, 0 ,0);
+	memcpy((*dst)->m_data, pattern.data, pattern.size().width * pattern.size().height * pattern.channels() * tex->m_numBytesPerChan);
+
+	return result;
+}
+
 }
