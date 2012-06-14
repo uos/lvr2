@@ -157,26 +157,50 @@ TextureToken<VertexT, NormalT>* Texturizer<VertexT, NormalT>::createInitialTextu
 template<typename VertexT, typename NormalT>
 TextureToken<VertexT, NormalT>* Texturizer<VertexT, NormalT>::texturizePlane(vector<VertexT> contour)
 {
+	//create an initial texture from the point cloud
 	TextureToken<VertexT, NormalT>* initialTexture = createInitialTexture(contour);
 
 	//Check all textures of the texture package 
 	for(int i = 0; i < this->m_tio->m_textures.size(); i++)
 	{
+		//TODO: other methods for texture matching
 		//SURF
-		cout<<ImageProcessor::compareTexturesSURF(initialTexture->m_texture, this->m_tio->m_textures[i])<<endl;
-//		if(gut genug)
-//		{
-//			return m_textures[i];
-//		}
-		 
+		float surfDistance = ImageProcessor::compareTexturesSURF(initialTexture->m_texture, this->m_tio->m_textures[i]);
+		if(surfDistance < 0.001) //TODO: Param
+		{
+			//Found a matching texture
+			return new TextureToken<VertexT, NormalT>(	initialTexture->v1, initialTexture->v2,
+									initialTexture->p, 
+									initialTexture->a_min, initialTexture->b_min,
+									initialTexture->a_max, initialTexture->b_max,
+									this->m_tio->m_textures[i]);
+		}
 	}
 
 	//No texture found -> try to extract a pattern
-//	if (tryPattern() > gut)
-//	{
-//		return pattern;
-//	}
+	Texture* pattern = 0;
+	if (ImageProcessor::extractPattern(initialTexture->m_texture, &pattern) > 0.95) //TODO: Param
+	{
+		//calculate surf features for pattern
+		ImageProcessor::calcSURF(pattern);
+
+		//TODO: Add pattern to texture package
+
+		//return a texture token
+		return new TextureToken<VertexT, NormalT>(	initialTexture->v1, initialTexture->v2,
+								initialTexture->p, 
+								initialTexture->a_min, initialTexture->b_min,
+								initialTexture->a_max, initialTexture->b_max,
+								pattern);
+	}
+	else
+	{
+		delete pattern;
+	}
+	//TODO: other methods for pattern extraction
 	
+
+	//TODO: Add initial texture to texture pack
 	//Pattern extraction failed -> use initial texture
 	return initialTexture;
 }

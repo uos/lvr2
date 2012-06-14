@@ -57,8 +57,55 @@ static void calcSURF( Texture* tex);
  */
 static float compareTexturesSURF(Texture* tex1, Texture* tex2);
 
-};
+/**
+ * \brief	Tries to extract a pattern from the given texture
+ *
+ * \param 	tex	The texture to extract a pattern from
+ * \param 	dst	The destination to store the pattern
+ *
+ * \return	A value indicating how "good" the pattern is.
+ *		The higher the value, the "better" the pattern.
+ */
+static float extractPattern(Texture* tex, Texture** dst);
 
+
+private:
+
+/**
+ * \brief 	Implementation of the auto correlation function using fourier transformation.
+ *		This implementation is quite fast and may be used for productive jobs. Auto
+ *		correlation can be calculated by transforming the image img into the frequency
+ *		domain (getting the fourier transformation IMG of img), calculating
+ *		IMG * IMG* (where IMG* is the conjugated complex of IMG) and transforming the
+ *		result back to the image domain. 
+ *
+ * \param 	img	The image to calculate the auto correlation for. Must be one channel
+ *			gray scale.
+ * \param	dst	The destination to store the correlation values in. The result is NOT
+			normed.
+ */
+static void autocorrDFT(const cv::Mat &img, cv::Mat &dst);
+
+/**
+ * \brief	Tries to find a pattern in an Image using the auto correlation
+ *		function. The result can be interpreted as a rectangle at the
+ *		origin (0,0) of the input image with the width of sizeX and the
+ * 		height of sizeY.
+ *
+ * \param	input			The image to find a pattern in. Has to be
+					a three channel	color (RGB) image.
+ * \param	sizeX			The resulting x size of the found pattern
+ * \param	sizeY			The resulting y size of the found pattern
+ * \param	minimalPatternSize	The minimum acceptable x and y size of a
+ *					pattern 
+ *
+ * \return	A confidence between 0 and 1 indicating the degree of success in
+ *		extracting a pattern from the given image
+ */
+static double getMinimalPattern(const cv::Mat &input, unsigned int &sizeX, unsigned int &sizeY, const int minimalPatternSize = 10);
+
+
+};
 }
 
 #endif /* IMAGEPROCESSOR_HPP_ */
