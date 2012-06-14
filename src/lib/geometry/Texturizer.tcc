@@ -184,7 +184,9 @@ TextureToken<VertexT, NormalT>* Texturizer<VertexT, NormalT>::texturizePlane(vec
 		//calculate surf features for pattern
 		ImageProcessor::calcSURF(pattern);
 
-		//TODO: Add pattern to texture package
+		//Add pattern to texture package
+		this->m_tio->add(pattern);
+		this->m_tio->write();
 
 		//return a texture token
 		return new TextureToken<VertexT, NormalT>(	initialTexture->v1, initialTexture->v2,
@@ -200,8 +202,10 @@ TextureToken<VertexT, NormalT>* Texturizer<VertexT, NormalT>::texturizePlane(vec
 	//TODO: other methods for pattern extraction
 	
 
-	//TODO: Add initial texture to texture pack
 	//Pattern extraction failed -> use initial texture
+	//Add initial texture to texture pack
+	this->m_tio->add(initialTexture->m_texture);
+	this->m_tio->write();
 	return initialTexture;
 }
 
