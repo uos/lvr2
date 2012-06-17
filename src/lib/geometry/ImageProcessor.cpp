@@ -66,7 +66,21 @@ float ImageProcessor::compareTexturesSURF(Texture* tex1, Texture* tex2)
 
 	//convert float arrays to cv::Mat
 	cv::Mat descriptors1(tex1->m_numFeatures, tex1->m_numFeatureComponents, CV_32FC1);
+	for (int r = 0; r < descriptors1.rows; r++)
+	{
+		for (int c = 0; c < descriptors1.cols; c++)
+		{
+			descriptors1.at<float>(r, c) = tex1->m_featureDescriptors[r * descriptors1.cols + c];
+		}
+	}
 	cv::Mat descriptors2(tex2->m_numFeatures, tex2->m_numFeatureComponents, CV_32FC1);
+	for (int r = 0; r < descriptors2.rows; r++)
+	{
+		for (int c = 0; c < descriptors2.cols; c++)
+		{
+			descriptors2.at<float>(r, c) = tex2->m_featureDescriptors[r * descriptors2.cols + c];
+		}
+	}
 	
 	if(tex1->m_numFeatures != 0 && tex2->m_numFeatures != 0)
 	{
