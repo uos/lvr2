@@ -86,36 +86,14 @@ class TextureIO
 	virtual void update (size_t index, Texture* t);
 
 	/**
-	 * \brief 	Get the texture with the given index from the texture package
-	 * \param	index	The index of the texture to get
-	 * \return	The read texture 
-	**/
-	virtual Texture* get(size_t index);
-	
-	/**
-	 * \brief 	Get the subsequent texture from the texture package
-	 * \return	The read texture 
-	**/
-	virtual Texture* getNext();
-
-	/**
 	 * \brief (re-)write the file
 	 *
 	**/
 	virtual void write();
 
 
-	/**
-	 * \brief resets the internal index
-	 *
- 	**/
-	virtual void resetIndex(){m_currentIndex = 0;};	
-
 	std::vector<Texture*> 	m_textures;
 	string 			m_filename;
-    private:
-	size_t 			m_currentIndex;
-
 
 };
 
