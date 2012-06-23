@@ -40,7 +40,6 @@ namespace lssr
 
 TextureIO::TextureIO(string filename)
 {
-	m_currentIndex 	= 0;
 	m_filename 	= filename;
 
 	std::ifstream in(m_filename.c_str(), std::ios::in|std::ios::binary);
@@ -119,23 +118,6 @@ void TextureIO::update (size_t index, Texture* t)
 {
 	delete m_textures[index]; 
 	m_textures[index] = t;
-}
-
-Texture* TextureIO::get(size_t index)
-{
-	return m_textures[index];
-}
-
-Texture* TextureIO::getNext()
-{	
-	if (m_currentIndex >= m_textures.size())
-	{
-		return 0;
-	}
-	else
-	{
-		return m_textures[m_currentIndex++];
-	}
 }
 
 void TextureIO::write()
