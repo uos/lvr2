@@ -135,19 +135,16 @@ void l(lssr::TextureIO* tio, int sel)
 	cout<<"\t(l)ist of textures:"<<endl;
 	cout<<"\t"<<setw(8)<<"index"<<setw(16)<<"WxH"<<setw(10)<<"channels"<<setw(8)<<"depth"<<setw(8)<<"class"<<setw(10)<<"features"<<setw(10)<<"selected"<<endl;
 
-	tio->resetIndex();
-	lssr::Texture* t = tio->getNext();
-	int i = 0;
-	while(t != 0)
+	for(int i = 0; i<tio->m_textures.size(); i++)
 	{
+		lssr::Texture* t = tio->m_textures[i];
 		ostringstream wxh; wxh << t->m_width<<"x"<<t->m_height;
-		cout<<"\t"<<setw(8)<<i++<<setw(16)<< wxh.str();
+		cout<<"\t"<<setw(8)<<i<<setw(16)<< wxh.str();
 		cout<<setw(10)<<(unsigned short)t->m_numChannels<<setw(8)<<(unsigned short)t->m_numBytesPerChan;
 		cout<<setw(8)<<t->m_textureClass;
 		cout<<setw(10)<<t->m_numFeatures;
 		if (sel == i-1) cout<<setw(10)<<"*";
 		cout<<endl;
-		t = tio->getNext();
 	}
 }
 
@@ -245,9 +242,9 @@ void v(lssr::TextureIO* tio, int sel)
 	if (sel != -1)
 	{
 		cv::startWindowThread();
-		cv::Mat img(cv::Size(tio->get(sel)->m_width, tio->get(sel)->m_height),
-			    CV_MAKETYPE(tio->get(sel)->m_numBytesPerChan * 8,
-			    tio->get(sel)->m_numChannels), tio->get(sel)->m_data);
+		cv::Mat img(cv::Size(tio->m_textures[sel]->m_width, tio->m_textures[sel]->m_height),
+			    CV_MAKETYPE(tio->m_textures[sel]->m_numBytesPerChan * 8,
+			    tio->m_textures[sel]->m_numChannels), tio->m_textures[sel]->m_data);
 		cv::namedWindow("MyWindow", CV_WINDOW_AUTOSIZE);
 		cv::imshow("MyWindow", img);
 		cv::waitKey();
