@@ -51,14 +51,10 @@ public:
 	 *
 	 * @param 	b_min	This value defines the bounding box of the texture
 	 *
-	 * @param 	a_max	This value defines the bounding box of the texture
-	 *
-	 * @param 	b_max	This value defines the bounding box of the texture
-	 *
 	 * @param 	t	The associated texture
 	 *
 	**/
-	TextureToken(NormalT v1, NormalT v2, VertexT p, float a_min, float b_min, float a_max, float b_max, Texture* t = 0);
+	TextureToken(NormalT v1, NormalT v2, VertexT p, float a_min, float b_min, Texture* t = 0);
 
 	/**
 	 * @brief	computes texture coordinates corresponding to the give Vertex
@@ -88,7 +84,7 @@ private:
 	VertexT p;
 
 	///The bounding box of the texture plane
-	float a_min, b_min, a_max, b_max;
+	float a_min, b_min;
 };
 
 }
