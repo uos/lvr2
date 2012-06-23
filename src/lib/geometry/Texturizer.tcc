@@ -113,7 +113,7 @@ TextureToken<VertexT, NormalT>* Texturizer<VertexT, NormalT>::createInitialTextu
 	Texture* texture = new Texture(sizeX, sizeY, 3, 1, 0, 0, 0, 0);
 
 	//create TextureToken
-	TextureToken<VertexT, NormalT>* result = new TextureToken<VertexT, NormalT>(best_v1, best_v2, p, best_a_min, best_b_min, best_a_max, best_b_max, texture);
+	TextureToken<VertexT, NormalT>* result = new TextureToken<VertexT, NormalT>(best_v1, best_v2, p, best_a_min, best_b_min, texture);
  
 
 	//walk through the bounding box and collect color information for each texel
