@@ -41,6 +41,21 @@ class ImageProcessor {
 public:
 
 /**
+ * \brief Reduces the number of colors in the given image
+ * 
+ * \param input		The input image to reduce the colors in.
+			This must be a 3 channel image with 8 bit
+			per channel.
+ * \param output 	The destination to store the result in.
+			This will be an 8 bit one channel image.
+ * \param numColors	The maximum number of colors in the 
+ *			output image. Note, that this value must
+ *			be less than or equal to 256 since the 
+ *			output image has only one 8 bit channel.
+ */
+static void reduceColors(cv::Mat input, cv::Mat &output, int numColors);
+
+/**
  * \brief 	Calculates the SURF features for the given texture
  *
  * \param	tex		The texture to calculate the feature for

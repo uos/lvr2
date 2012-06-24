@@ -29,6 +29,28 @@
 
 namespace lssr {
 
+void ImageProcessor::reduceColors(cv::Mat input, cv::Mat &output, int numColors)
+{
+	//allocate output
+	output = cv::Mat(input.size(), CV_8U);
+	//3 channel pointer to input image
+	cv::Mat_<cv::Vec3b>& ptrInput = (cv::Mat_<cv::Vec3b>&)input; 
+	//1 channel pointer to output image
+	cv::Mat_<uchar>& ptrOutput = (cv::Mat_<uchar>&)output;
+
+	for (int y = 0; y < input.size().height; y++)
+	{
+		for(int x = 0; x < input.size().width; x++)
+		{
+			unsigned long int currCol = 0;
+			currCol |= (ptrInput(y, x)[0]) << 16;
+			currCol |= (ptrInput(y, x)[1]) <<  8;
+			currCol |= (ptrInput(y, x)[2]) <<  0;
+			ptrOutput(y,x) = currCol / (pow(2, 24) / numColors);
+		}
+	}
+}
+
 void ImageProcessor::calcSURF(Texture* tex)
 {
 	//convert texture to cv::Mat
