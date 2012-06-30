@@ -91,8 +91,7 @@ private:
  *		This implementation is quite fast and may be used for productive jobs. Auto
  *		correlation can be calculated by transforming the image img into the frequency
  *		domain (getting the fourier transformation IMG of img), calculating
- *		IMG * IMG* (where IMG* is the conjugated complex of IMG) and transforming the
- *		result back to the image domain. 
+ *		IMG * IMG and transforming the result back to the image domain. 
  *
  * \param 	img	The image to calculate the auto correlation for. Must be one channel
  *			gray scale.
