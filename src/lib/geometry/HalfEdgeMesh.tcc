@@ -1342,7 +1342,7 @@ void HalfEdgeMesh<VertexT, NormalT>::finalizeAndRetesselate( bool genTextures, f
     // for every plane region there is
     int globalTextureIndex = 0;
     
-    Texturizer<VertexT, NormalT>* texturizer = new Texturizer<VertexT, NormalT>(this->m_pointCloudManager);
+    Texturizer<VertexT, NormalT>* texturizer = new Texturizer<VertexT, NormalT>(this->m_pointCloudManager, "test.tio"); //TODO: Param
   
 
     string msg = timestamp.getElapsedTime() + "Optimizing plane intersections ";
@@ -1439,7 +1439,7 @@ void HalfEdgeMesh<VertexT, NormalT>::finalizeAndRetesselate( bool genTextures, f
         {
         	materialIndexBuffer.push_back(globalMaterialIndex + globalTextureIndex);
         }
-        if(t) delete t;
+    //    if(t) delete t;
 
         // Update counters
         ++progress;
