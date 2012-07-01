@@ -158,7 +158,7 @@ void ImageProcessor::autocorrDFT(const cv::Mat &img, cv::Mat &dst)
 	//transform the image into the frequency domain
 	cv::dft(fImg, dst);
 	//calculate DST * DST (don't mind the fourth parameter. It is ignored)
-	cv::mulSpectrums(dst, dst, dst, cv::DFT_INVERSE, false);
+	cv::mulSpectrums(dst, dst, dst, cv::DFT_INVERSE, true);
 	//transform the result back to the image domain 
 	cv::dft(dst, dst, cv::DFT_INVERSE | cv::DFT_SCALE);
 
