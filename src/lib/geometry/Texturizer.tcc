@@ -29,6 +29,9 @@ namespace lssr {
 template<typename VertexT, typename NormalT>
 Texturizer<VertexT, NormalT>::Texturizer(typename PointsetSurface<VertexT>::Ptr pm, string filename)
 {
+	//Load texture package
+	this->m_tio = new TextureIO(filename);
+	
 	this->m_pm = pm;
 }
 
@@ -102,9 +105,9 @@ TextureToken<VertexT, NormalT>* Texturizer<VertexT, NormalT>::createInitialTextu
 
 	//calculate the texture size and round up to a size to base 2
 	unsigned short int sizeX = ceil((best_a_max - best_a_min) / Texture::m_texelSize);
-	sizeX = pow(2, ceil(log(sizeX) / log(2)));
+	sizeX = max(8.0, pow(2, ceil(log(sizeX) / log(2))));
 	unsigned short int sizeY = ceil((best_b_max - best_b_min) / Texture::m_texelSize);
-	sizeY = pow(2, ceil(log(sizeY) / log(2)));
+	sizeY = max(8.0, pow(2, ceil(log(sizeY) / log(2))));
 
 	//create the texture
 	Texture* texture = new Texture(sizeX, sizeY, 3, 1, 0, 0, 0, 0);
@@ -144,15 +147,74 @@ TextureToken<VertexT, NormalT>* Texturizer<VertexT, NormalT>::createInitialTextu
 
 		}
 	}
+
+	//calculate SURF features of  texture
+	ImageProcessor::calcSURF(texture);
+
 	return result;
 }
 
 template<typename VertexT, typename NormalT>
 TextureToken<VertexT, NormalT>* Texturizer<VertexT, NormalT>::texturizePlane(vector<VertexT> contour)
 {
+	//create an initial texture from the point cloud
 	TextureToken<VertexT, NormalT>* initialTexture = createInitialTexture(contour);
+	std::cout<<"==================================================================="<<std::endl;
+	float minSurfDist = FLT_MAX;
+	int minIndex = -1;
+	//Check all textures of the texture package 
+	for(int i = 0; i < this->m_tio->m_textures.size(); i++)
+	{
+		//TODO: other methods for texture matching
+		//SURF
+		float surfDistance = ImageProcessor::compareTexturesSURF(initialTexture->m_texture, this->m_tio->m_textures[i]);
+		if(surfDistance < minSurfDist)
+		{
+			minSurfDist = surfDistance;
+			minIndex = i;
+		}
+	}
+	std::cout<<minSurfDist<<std::endl;
+	if (minSurfDist < 0.02) //TODO: Param
+	{
+		cout<<"Using Texture from texture package!!!"<<endl;
+		//Found a matching texture
+		return new TextureToken<VertexT, NormalT>(	initialTexture->v1, initialTexture->v2,
+								initialTexture->p, 
+								initialTexture->a_min, initialTexture->b_min,
+								this->m_tio->m_textures[minIndex]);
+	}
 
-	//TODO: impelement all the stuff	
+/*
+	//No texture found -> try to extract a pattern
+	Texture* pattern = 0;
+	if (ImageProcessor::extractPattern(initialTexture->m_texture, &pattern) > 0.95) //TODO: Param
+	{
+		//calculate surf features for pattern
+		ImageProcessor::calcSURF(pattern);
+
+		//Add pattern to texture package
+		this->m_tio->add(pattern);
+		this->m_tio->write();
+
+		//return a texture token
+		return new TextureToken<VertexT, NormalT>(	initialTexture->v1, initialTexture->v2,
+								initialTexture->p, 
+								initialTexture->a_min, initialTexture->b_min,
+								initialTexture->a_max, initialTexture->b_max,
+								pattern);
+	}
+	else
+	{
+		delete pattern;
+	}
+	//TODO: other methods for pattern extraction
+*/	
+
+	//Pattern extraction failed -> use initial texture
+	//Add initial texture to texture pack
+	this->m_tio->add(initialTexture->m_texture);
+	this->m_tio->write();
 	return initialTexture;
 }
 

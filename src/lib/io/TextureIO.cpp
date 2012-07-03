@@ -88,10 +88,12 @@ TextureIO::TextureIO(string filename)
 			in.read((char*)&ui16buf, 2);	
 			t->m_numFeatures = ui16buf;
 
-			//read number of components	
+			//read number of components: 1 Byte
 			in.read((char*)&ui8buf, 1);
 			t->m_numFeatureComponents = ui8buf;	
 
+			//allocate memory for the feature descriptors
+			t->m_featureDescriptors = new float[t->m_numFeatures * t->m_numFeatureComponents];
 			//read feature descriptors
 			in.read((char*)t->m_featureDescriptors, t->m_numFeatures * t->m_numFeatureComponents * sizeof(float));
 			
@@ -160,7 +162,7 @@ void TextureIO::write()
 		ui16buf = m_textures[i]->m_numFeatures;
 		out.write((char*)&ui16buf, 2);
 
-		//write number of components per feature descriptor
+		//write number of components per feature descriptor: 1 Byte
 		ui8buf =  m_textures[i]->m_numFeatureComponents;
 		out.write((char*)&ui8buf, 1);
 
