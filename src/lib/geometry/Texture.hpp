@@ -54,7 +54,7 @@ public:
 	 */
 	Texture(unsigned short int width, unsigned short int height, unsigned char numChannels,
 		unsigned char numBytesPerChan, unsigned short int textureClass, unsigned short int numFeatures,
-		unsigned char numFeatureComponents, float* features);
+		unsigned char numFeatureComponents, float* features, float* stats);
 
 	/**
 	 * @brief 	Constructor.
@@ -101,6 +101,9 @@ public:
 
 	//The number of feature descriptors
 	unsigned short int m_numFeatures;
+	
+	//14 statistical values characterizing the texture
+	float* m_stats;
 };
 
 }

@@ -95,6 +95,8 @@ TextureIO::TextureIO(string filename)
 			//read feature descriptors
 			in.read((char*)t->m_featureDescriptors, t->m_numFeatures * t->m_numFeatureComponents * sizeof(float));
 			
+			//read statistics
+			in.read((char*)t->m_stats, 14 * sizeof(float));
 
 			m_textures.push_back(t);
 		}	
@@ -164,6 +166,9 @@ void TextureIO::write()
 
 		//write feature descriptors
 		out.write((char*)m_textures[i]->m_featureDescriptors, m_textures[i]->m_numFeatures *  m_textures[i]->m_numFeatureComponents * sizeof(float));
+
+		//write statistical values
+		out.write((char*)m_textures[i]->m_stats, 14 * sizeof(float));
 	}
 	
 	out.close();
