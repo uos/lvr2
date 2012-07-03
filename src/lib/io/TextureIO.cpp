@@ -98,6 +98,7 @@ TextureIO::TextureIO(string filename)
 			in.read((char*)t->m_featureDescriptors, t->m_numFeatures * t->m_numFeatureComponents * sizeof(float));
 			
 			//read statistics
+			t->m_stats = new float[14];
 			in.read((char*)t->m_stats, 14 * sizeof(float));
 
 			m_textures.push_back(t);
