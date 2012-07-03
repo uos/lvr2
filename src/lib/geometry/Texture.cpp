@@ -42,11 +42,12 @@ Texture::Texture()
 	this->m_numBytesPerChan	   	= 0;
 	this->m_numFeatures	   	= 0;
 	this->m_numFeatureComponents	= 0;
+	this->m_stats			= 0;
 }
 
 Texture::Texture(unsigned short int width, unsigned short int height, unsigned char numChannels,
 		 unsigned char numBytesPerChan, unsigned short int textureClass, unsigned short int numFeatures,
-		 unsigned char numFeatureComponents, float* features)
+		 unsigned char numFeatureComponents, float* features, float* stats)
 {
 	this->m_width 			= width;
 	this->m_height 			= height;
@@ -57,6 +58,7 @@ Texture::Texture(unsigned short int width, unsigned short int height, unsigned c
 	this->m_numFeatures	   	= numFeatureComponents;
 	this->m_numFeatureComponents	= numFeatures;
 	this->m_featureDescriptors 	= features; 
+	this->m_stats			= stats;
 }
 
 Texture::Texture(Texture &other)
@@ -71,7 +73,9 @@ Texture::Texture(Texture &other)
 	this->m_numFeatures 		= other.m_numFeatures;
 	this->m_numFeatureComponents	= other.m_numFeatureComponents;
 	this->m_featureDescriptors 	= new float[m_numFeatures * m_numFeatureComponents];
-	memcpy(m_featureDescriptors, other.m_featureDescriptors, m_numFeatures * m_numFeatureComponents);
+	memcpy(m_featureDescriptors, other.m_featureDescriptors, m_numFeatures * m_numFeatureComponents * sizeof(float));
+	this->m_stats 			= new float[14];
+	memcpy(m_stats, other.m_stats, 14 * sizeof(float));
 }
 
 void Texture::save(int i)

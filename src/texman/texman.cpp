@@ -57,7 +57,7 @@ void a(lssr::TextureIO* tio)
 		cin>>tc;
 		unsigned char depth = img.depth() == CV_8U ? 1 : 2;
 		//TODO: calculate features
-		lssr::Texture* t = new lssr::Texture(img.size().width, img.size().height, img.channels(), depth, tc, 0, 0, 0);
+		lssr::Texture* t = new lssr::Texture(img.size().width, img.size().height, img.channels(), depth, tc, 0, 0, 0, 0);
 		memcpy(t->m_data, img.data, img.size().width * img.size().height * img.channels() * depth);
 		cout<<"\t(a)dded new texture."<<endl;
 		tio->add(t);
@@ -191,7 +191,7 @@ void u(lssr::TextureIO* tio, int &sel)
 				cin>>tc;
 				unsigned char depth = img.depth() == CV_8U ? 1 : 2;
 				//TODO: calculate features
-				lssr::Texture* t = new lssr::Texture(img.size().width, img.size().height, img.channels(), depth, tc, 0, 0, 0);
+				lssr::Texture* t = new lssr::Texture(img.size().width, img.size().height, img.channels(), depth, tc, 0, 0, 0, 0);
 				memcpy(t->m_data, img.data, img.size().width * img.size().height * img.channels() * depth);
 				tio->update(sel, t);
 				cout<<"\t(u)dated texture #"<<sel<<"."<<endl; 
