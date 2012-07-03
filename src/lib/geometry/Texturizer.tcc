@@ -110,7 +110,7 @@ TextureToken<VertexT, NormalT>* Texturizer<VertexT, NormalT>::createInitialTextu
 	sizeY = max(8.0, pow(2, ceil(log(sizeY) / log(2))));
 
 	//create the texture
-	Texture* texture = new Texture(sizeX, sizeY, 3, 1, 0, 0, 0, 0);
+	Texture* texture = new Texture(sizeX, sizeY, 3, 1, 0, 0, 0, 0, 0);
 
 	//create TextureToken
 	TextureToken<VertexT, NormalT>* result = new TextureToken<VertexT, NormalT>(best_v1, best_v2, p, best_a_min, best_b_min, texture);

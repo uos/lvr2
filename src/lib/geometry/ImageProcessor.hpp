@@ -83,6 +83,13 @@ static float compareTexturesSURF(Texture* tex1, Texture* tex2);
  */
 static float extractPattern(Texture* tex, Texture** dst);
 
+/**
+ * \brief 	Calculates 14 statistical values for the given texture
+ *
+ * \param	The texture to calculate the stats for
+ */
+static void calcStats(Texture* t);
+
 
 private:
 
@@ -117,7 +124,6 @@ static void autocorrDFT(const cv::Mat &img, cv::Mat &dst);
  *		extracting a pattern from the given image
  */
 static double getMinimalPattern(const cv::Mat &input, unsigned int &sizeX, unsigned int &sizeY, const int minimalPatternSize = 10);
-
 
 };
 }
