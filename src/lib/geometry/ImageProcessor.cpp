@@ -229,10 +229,15 @@ float ImageProcessor::extractPattern(Texture* tex, Texture** dst)
 	cv::Mat pattern = cv::Mat(src, cv::Rect(0, 0, sizeX, sizeY));
 	
 	//convert the pattern to Texture
-	*dst = new Texture(pattern.size().width, pattern.size().height, pattern.channels(), tex->m_numBytesPerChan, tex->m_textureClass, 0, 0 ,0);
+	*dst = new Texture(pattern.size().width, pattern.size().height, pattern.channels(), tex->m_numBytesPerChan, tex->m_textureClass, 0, 0 ,0, 0);
 	memcpy((*dst)->m_data, pattern.data, pattern.size().width * pattern.size().height * pattern.channels() * tex->m_numBytesPerChan);
 
 	return result;
+}
+
+void ImageProcessor::calcStats(Texture* t)
+{
+	//TODO
 }
 
 }
