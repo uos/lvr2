@@ -151,6 +151,9 @@ TextureToken<VertexT, NormalT>* Texturizer<VertexT, NormalT>::createInitialTextu
 	//calculate SURF features of  texture
 	ImageProcessor::calcSURF(texture);
 
+	//calculate statistics
+	ImageProcessor::calcStats(texture, 16); //TODO: Param?!
+
 	return result;
 }
 

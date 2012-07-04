@@ -235,9 +235,26 @@ float ImageProcessor::extractPattern(Texture* tex, Texture** dst)
 	return result;
 }
 
-void ImageProcessor::calcStats(Texture* t)
+void ImageProcessor::calcStats(Texture* t, int numColors)
 {
-	//TODO
+	Statistics* stat = new Statistics(t, numColors);
+	t->m_stats = new float[14];
+	t->m_stats[0]  = stat->calcASM();
+	t->m_stats[1]  = stat->calcContrast();
+	t->m_stats[2]  = stat->calcCorrelation();
+	t->m_stats[3]  = stat->calcSumOfSquares();
+	t->m_stats[4]  = stat->calcInverseDifference();
+	t->m_stats[5]  = stat->calcSumAvg();
+	t->m_stats[6]  = stat->calcSumEntropy();
+	t->m_stats[7]  = stat->calcSumVariance();
+	t->m_stats[8]  = stat->calcEntropy();
+	t->m_stats[9]  = stat->calcDifferenceVariance();
+	t->m_stats[10] = stat->calcDifferenceEntropy();
+	t->m_stats[11] = stat->calcInformationMeasures1();
+	t->m_stats[12] = stat->calcInformationMeasures2();
+	t->m_stats[13] = stat->calcMaxCorrelationCoefficient();
+	delete stat;
 }
+
 
 }

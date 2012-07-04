@@ -33,6 +33,7 @@ set(LSSR_SOURCES
     reconstruction/PCLFiltering.cpp
     geometry/Texture.cpp
     geometry/ImageProcessor.cpp
+    geometry/Statistics.cpp
 )
 
 
