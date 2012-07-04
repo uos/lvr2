@@ -30,6 +30,7 @@
 #include <cstring>
 #include <cstdio>
 #include <geometry/Texture.hpp>
+#include <geometry/Statistics.hpp>
 
 namespace lssr {
 
@@ -86,9 +87,10 @@ static float extractPattern(Texture* tex, Texture** dst);
 /**
  * \brief 	Calculates 14 statistical values for the given texture
  *
- * \param	The texture to calculate the stats for
+ * \param	t		The texture to calculate the stats for
+ * \param	numColors	The number of gray levels to use
  */
-static void calcStats(Texture* t);
+static void calcStats(Texture* t, int numColors);
 
 
 private:

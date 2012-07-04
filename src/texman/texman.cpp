@@ -66,7 +66,7 @@ void a(lssr::TextureIO* tio)
 		lssr::ImageProcessor::calcSURF(t);
 
 		// calculate stats
-		lssr::ImageProcessor::calcStats(t);
+		lssr::ImageProcessor::calcStats(t, 16);
 
 		cout<<"\t(a)dded new texture."<<endl;
 		tio->add(t);
@@ -208,7 +208,7 @@ void u(lssr::TextureIO* tio, int &sel)
 				lssr::ImageProcessor::calcSURF(t);
 
 				//calculate stats
-				lssr::ImageProcessor::calcStats(t);
+				lssr::ImageProcessor::calcStats(t, 16);
 		
 				tio->update(sel, t);
 				cout<<"\t(u)dated texture #"<<sel<<"."<<endl; 
