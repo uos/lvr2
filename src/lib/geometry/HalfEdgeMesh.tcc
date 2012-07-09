@@ -1046,20 +1046,6 @@ void HalfEdgeMesh<VertexT, NormalT>::optimizePlaneIntersections()
     cout << endl;
 }
 
-template<typename VertexT, typename NormalT>
-vector<vector<VertexT> > HalfEdgeMesh<VertexT, NormalT>::findAllContours(float epsilon)
-{
-    vector<vector<VertexT> > contours;
-    for (size_t i = 0; i < m_regions.size(); i++)
-    {
-        if(m_regions[i]->m_inPlane)
-        {
-            vector<vector<VertexT> > current_contours = m_regions[i]->getContours(epsilon);
-            contours.insert(contours.end(), current_contours.begin(), current_contours.end());
-        }
-    }
-    return  contours;
-}
 
 template<typename VertexT, typename NormalT>
 void HalfEdgeMesh<VertexT, NormalT>::restorePlanes(int min_region_size)
@@ -1118,54 +1104,6 @@ void HalfEdgeMesh<VertexT, NormalT>::restorePlanes(int min_region_size)
     }
 }
 
-template<typename VertexT, typename NormalT>
-void HalfEdgeMesh<VertexT, NormalT>::tester()
-{
-    cout << "--------------------------------TESTER" << endl;
-    //	for(int r=0; r<m_regions.size(); r++)
-    //	//		if( m_regions[r]->detectFlicker()) cout << "still flickering" << endl;
-    //	for(int r=0; r<m_regions.size(); r++)
-    //		if( m_regions[r]->m_inPlane) cout << r << ": " << m_regions[r]->m_regionNumber << endl;
-    cout << "----------------------------END TESTER" << endl;
-
-    //    Reset all used variables
-    for(int i=0; i<m_faces.size(); i++)
-        for(int k=0; k<3; k++)
-            (*m_faces[i])[k]->used=false;
-
-    vector<vector<HalfEdgeVertex<VertexT, NormalT>* > > contours = findAllContours(0.01);
-    fstream filestr;
-    filestr.open ("contours.pts", fstream::out);
-    filestr<<"#X Y Z"<<endl;
-    for (int i = 0; i<contours.size(); i++)
-    {
-        vector<HalfEdgeVertex<VertexT, NormalT>* > contour = contours[i];
-
-        HalfEdgeVertex<VertexT, NormalT> first = *(contour.back());
-
-        while (!contour.empty())
-        {
-            filestr << contour.back()->m_position[0] << " " << contour.back()->m_position[1] << " " << contour.back()->m_position[2] << endl;
-            contour.pop_back();
-        }
-
-        filestr << first.m_position[0] << " " << first.m_position[1] << " " << first.m_position[2] << endl;
-
-        filestr<<endl<<endl;
-
-    }
-    filestr.close();
-
-
-    //    Reset all used variables
-    for(int i = 0; i < m_faces.size(); i++)
-    {
-        for(int k = 0; k < 3; k++)
-        {
-            (*m_faces[i])[k]->used = false;
-        }
-    }
-}
 
 template<typename VertexT, typename NormalT>
 void HalfEdgeMesh<VertexT, NormalT>::finalize()
@@ -1403,6 +1341,9 @@ void HalfEdgeMesh<VertexT, NormalT>::finalizeAndRetesselate( bool genTextures, f
 
     // for every plane region there is
     int globalTextureIndex = 0;
+    
+    Texturizer<VertexT, NormalT>* texturizer = new Texturizer<VertexT, NormalT>(this->m_pointCloudManager);
+  
 
     string msg = timestamp.getElapsedTime() + "Optimizing plane intersections ";
     ProgressBar progress(m_regions.size(), msg);
@@ -1422,10 +1363,10 @@ void HalfEdgeMesh<VertexT, NormalT>::finalizeAndRetesselate( bool genTextures, f
         //textureBuffer.push_back( m_regions[iRegion]->m_regionNumber );
 
         // get the contours for this region
-        vector<vector<VertexT> >contours = m_regions[iRegion]->getContours(fusionThreshold);
+        vector<vector<VertexT> > contours = m_regions[iRegion]->getContours(fusionThreshold);
 
         // alocate a new texture
-        Texture<VertexT, NormalT>* t=NULL;
+        TextureToken<VertexT, NormalT>* t=NULL;
 
         //retesselate these contours.
         std::vector<float> points;
@@ -1435,8 +1376,8 @@ void HalfEdgeMesh<VertexT, NormalT>::finalizeAndRetesselate( bool genTextures, f
 
         if( genTextures )
         {
-            t = new Texture<VertexT, NormalT>( m_pointCloudManager, m_regions[iRegion], contours );
-            t->save(globalTextureIndex);
+            t = texturizer->texturizePlane( contours[0] );
+            t->m_texture->save(globalTextureIndex);
         }
 
         // copy new vertex data:

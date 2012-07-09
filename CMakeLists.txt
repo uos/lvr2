@@ -24,6 +24,11 @@ set( CMAKE_CXX_FLAGS_DEBUG   "-g -Wall" )
 
 
 ####
+## Searching for OpenCV
+##############################
+FIND_PACKAGE( OpenCV REQUIRED )
+
+####
 ## Searching for NABO 
 ##############################
 
