@@ -30,6 +30,7 @@ set(LSSR_SOURCES
     display/GlTexture.cpp
     display/TextureFactory.cpp
     display/TexturedMesh.cpp
+    geometry/Texture.cpp
     reconstruction/PCLFiltering.cpp
     geometry/Texture.cpp
 )
