@@ -153,9 +153,9 @@ TextureToken<VertexT, NormalT>* Texturizer<VertexT, NormalT>::texturizePlane(vec
 {
 	TextureToken<VertexT, NormalT>* initialTexture = 0;
 
-	if(contour.size())
+	if(contour.size() >= 3)
 	{
-	    createInitialTexture(contour);
+	    initialTexture = createInitialTexture(contour);
 	}
 
 	//TODO: impelement all the stuff	
