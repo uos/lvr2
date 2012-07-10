@@ -1439,22 +1439,44 @@ void HalfEdgeMesh<VertexT, NormalT>::finalizeAndRetesselate( bool genTextures, f
         }
 
         // Create material and update buffer
-        Material* m = new Material;
-        m->r = r;
-        m->g = g;
-        m->b = b;
-        m->texture_index = globalTextureIndex;
-        materialBuffer.push_back(m);
+        if(t)
+        {
+            Material* m = new Material;
+            m->r = r;
+            m->g = g;
+            m->b = b;
+            m->texture_index = globalTextureIndex;
+            materialBuffer.push_back(m);
+        }
+        else
+        {
+            Material* m = new Material;
+            m->r = r;
+            m->g = g;
+            m->b = b;
+            cout << r << " " << g << " " << b << endl;
+            m->texture_index = -1;
+            materialBuffer.push_back(m);
+        }
 
         for( int j = 0; j < indices.size() / 3; j++ )
         {
-        	materialIndexBuffer.push_back(globalMaterialIndex + globalTextureIndex);
+            materialIndexBuffer.push_back(globalMaterialIndex + globalTextureIndex);
         }
-        if(t) delete t;
+
+        if(t)
+        {
+            delete t;
+            globalTextureIndex++;
+        }
+        else
+        {
+            globalMaterialIndex++;
+        }
 
         // Update counters
         ++progress;
-        globalTextureIndex++;
+
     }
 
     if ( !this->m_meshBuffer )
