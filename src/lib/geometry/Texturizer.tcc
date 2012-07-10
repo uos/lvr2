@@ -35,6 +35,7 @@ Texturizer<VertexT, NormalT>::Texturizer(typename PointsetSurface<VertexT>::Ptr 
 template<typename VertexT, typename NormalT>
 TextureToken<VertexT, NormalT>* Texturizer<VertexT, NormalT>::createInitialTexture(vector<VertexT> contour)
 {
+
 	int minArea = INT_MAX;
 
 	float best_a_min, best_a_max, best_b_min, best_b_max;
@@ -150,7 +151,12 @@ TextureToken<VertexT, NormalT>* Texturizer<VertexT, NormalT>::createInitialTextu
 template<typename VertexT, typename NormalT>
 TextureToken<VertexT, NormalT>* Texturizer<VertexT, NormalT>::texturizePlane(vector<VertexT> contour)
 {
-	TextureToken<VertexT, NormalT>* initialTexture = createInitialTexture(contour);
+	TextureToken<VertexT, NormalT>* initialTexture = 0;
+
+	if(contour.size())
+	{
+	    createInitialTexture(contour);
+	}
 
 	//TODO: impelement all the stuff	
 	return initialTexture;
