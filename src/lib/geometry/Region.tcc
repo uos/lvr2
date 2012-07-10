@@ -107,9 +107,13 @@ vector<vector<VertexT> > Region<VertexT, NormalT>::getContours(float epsilon)
 
 				// Convert to VertexT
 				vector<VertexT> tmp;
+
 				for(int i = 0; i < simple_contour.size() / 3; i++)
 				{
-					tmp.push_back(VertexT(simple_contour[i * 3], simple_contour[i * 3 + 1], simple_contour[i * 3 + 2]));
+				    if(!tmp.size() || ! (tmp.back() == VertexT(simple_contour[i * 3], simple_contour[i * 3 + 1], simple_contour[i * 3 + 2])))
+				    {
+				        tmp.push_back(VertexT(simple_contour[i * 3], simple_contour[i * 3 + 1], simple_contour[i * 3 + 2]));
+				    }
 				}
 
 				// Add contour

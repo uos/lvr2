@@ -1346,7 +1346,7 @@ void HalfEdgeMesh<VertexT, NormalT>::finalizeAndRetesselate( bool genTextures, f
   
 
     string msg = timestamp.getElapsedTime() + "Optimizing plane intersections ";
-    ProgressBar progress(m_regions.size(), msg);
+    ProgressBar progress(planeRegions.size(), msg);
     for(intIterator planeNr = planeRegions.begin(); planeNr != planeRegions.end(); ++planeNr )
     {
     	int iRegion = *planeNr;
@@ -1377,7 +1377,10 @@ void HalfEdgeMesh<VertexT, NormalT>::finalizeAndRetesselate( bool genTextures, f
         if( genTextures )
         {
             t = texturizer->texturizePlane( contours[0] );
-            t->m_texture->save(globalTextureIndex);
+            if(t)
+            {
+                t->m_texture->save(globalTextureIndex);
+            }
         }
 
         // copy new vertex data:
@@ -1404,17 +1407,25 @@ void HalfEdgeMesh<VertexT, NormalT>::finalizeAndRetesselate( bool genTextures, f
         }
 
         // copy indices...
-        for(int j=0; j < indices.size(); ++j)
+        // get the old end of the vertexbuffer.
+        int offset = vertexBuffer.size() - points.size();
+
+        // calculate the index value for the old end of the vertexbuffer.
+        offset = ( offset / 3 );
+
+        for(int j=0; j < indices.size(); j+=3)
         {
-            // get the old end of the vertexbuffer.
-            int offset = vertexBuffer.size() - points.size();
-
-            // calculate the index value for the old end of the vertexbuffer.
-            offset = ( offset / 3 );
-
             // store the indices with the correct offset to the indices buffer.
-            indexBuffer.push_back( indices[j] + offset );
+            int a =  indices[j + 0] + offset;
+            int b =  indices[j + 1] + offset;
+            int c =  indices[j + 2] + offset;
 
+            if(a != b && b != c && a != c)
+            {
+                indexBuffer.push_back( a );
+                indexBuffer.push_back( b );
+                indexBuffer.push_back( c );
+            }
             // Store material information for each new face
            /* if( genTextures )
             {
