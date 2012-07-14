@@ -37,6 +37,11 @@
 #include <vector>
 #include <fstream>
 
+#include <cstring>
+#include <ctime>
+#include <sstream>
+#include <fstream>
+#include "Timestamp.hpp"
 namespace lssr
 {
 
@@ -98,5 +103,4 @@ class TextureIO
 };
 
 }
-#include "TextureIO.cpp"
 #endif

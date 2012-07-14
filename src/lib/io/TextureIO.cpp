@@ -27,11 +27,6 @@
 
 #include "TextureIO.hpp"
 
-#include <cstring>
-#include <ctime>
-#include <sstream>
-#include <fstream>
-#include "Timestamp.hpp"
 
 
 namespace lssr

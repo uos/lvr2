@@ -16,6 +16,7 @@ set(LSSR_SOURCES
     io/KinectGrabber.cpp
     io/KinectIO.cpp
     io/CoordinateTransform.cpp
+    io/TextureIO.cpp
     display/InteractivePointCloud.cpp
     display/CoordinateAxes.cpp
     display/Renderable.cpp
@@ -30,6 +31,7 @@ set(LSSR_SOURCES
     display/GlTexture.cpp
     display/TextureFactory.cpp
     display/TexturedMesh.cpp
+    geometry/Texture.cpp
     reconstruction/PCLFiltering.cpp
     geometry/Texture.cpp
     geometry/ImageProcessor.cpp
