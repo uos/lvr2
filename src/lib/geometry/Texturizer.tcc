@@ -38,6 +38,7 @@ Texturizer<VertexT, NormalT>::Texturizer(typename PointsetSurface<VertexT>::Ptr 
 template<typename VertexT, typename NormalT>
 TextureToken<VertexT, NormalT>* Texturizer<VertexT, NormalT>::createInitialTexture(vector<VertexT> contour)
 {
+
 	int minArea = INT_MAX;
 
 	float best_a_min, best_a_max, best_b_min, best_b_max;
@@ -134,15 +135,15 @@ TextureToken<VertexT, NormalT>* Texturizer<VertexT, NormalT>::createInitialTextu
 				int one = 1;
 				m_pm->searchTree()->kSearch(current_position, one, cv);
 
-				texture->m_data[(sizeY - y - 1) * (sizeX * 3) + 3 * x + 0] = cv[0].r;
+				texture->m_data[(sizeY - y - 1) * (sizeX * 3) + 3 * x + 0] = cv[0].b;
 				texture->m_data[(sizeY - y - 1) * (sizeX * 3) + 3 * x + 1] = cv[0].g;
-				texture->m_data[(sizeY - y - 1) * (sizeX * 3) + 3 * x + 2] = cv[0].b;
+				texture->m_data[(sizeY - y - 1) * (sizeX * 3) + 3 * x + 2] = cv[0].r;
 			}
 			else
 			{
-				texture->m_data[(sizeY - y - 1) * (sizeX * 3) + 3 * x + 0] = 0;
+				texture->m_data[(sizeY - y - 1) * (sizeX * 3) + 3 * x + 0] = 255;
 				texture->m_data[(sizeY - y - 1) * (sizeX * 3) + 3 * x + 1] = 0;
-				texture->m_data[(sizeY - y - 1) * (sizeX * 3) + 3 * x + 2] = 255;
+				texture->m_data[(sizeY - y - 1) * (sizeX * 3) + 3 * x + 2] = 0;
 			}
 
 		}
@@ -161,8 +162,13 @@ template<typename VertexT, typename NormalT>
 TextureToken<VertexT, NormalT>* Texturizer<VertexT, NormalT>::texturizePlane(vector<VertexT> contour)
 {
 	//create an initial texture from the point cloud
-	TextureToken<VertexT, NormalT>* initialTexture = createInitialTexture(contour);
-	std::cout<<"==================================================================="<<std::endl;
+	TextureToken<VertexT, NormalT>* initialTexture = 0;
+
+	if(contour.size() >= 3)
+	{
+	    initialTexture = createInitialTexture(contour);
+	}
+/*	std::cout<<"==================================================================="<<std::endl;
 	float minSurfDist = FLT_MAX;
 	int minIndex = -1;
 	//Check all textures of the texture package 
@@ -216,8 +222,8 @@ TextureToken<VertexT, NormalT>* Texturizer<VertexT, NormalT>::texturizePlane(vec
 
 	//Pattern extraction failed -> use initial texture
 	//Add initial texture to texture pack
-	this->m_tio->add(initialTexture->m_texture);
-	this->m_tio->write();
+//	this->m_tio->add(initialTexture->m_texture);
+//	this->m_tio->write();
 	return initialTexture;
 }
 
