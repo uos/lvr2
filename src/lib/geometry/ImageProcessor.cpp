@@ -137,142 +137,6 @@ float ImageProcessor::compareTexturesSURF(Texture* tex1, Texture* tex2)
 
 }
 
-void ImageProcessor::autocorrDFT(const cv::Mat &img, cv::Mat &dst)
-{
-	//Convert image from unsigned char to float matrix
-	cv::Mat fImg;
-	img.convertTo(fImg, CV_32FC1);
-	//Subtract the mean
-	cv::Mat mean(fImg.size(), fImg.type(), cv::mean(fImg));
-	cv::subtract(fImg, mean, fImg);
-	
-	//Calculate the optimal size for the dft output.
-	//This increases speed.
-	cv::Size dftSize;
-	dftSize.width = cv::getOptimalDFTSize(2 * img.cols +1 );
-	dftSize.height = cv::getOptimalDFTSize(2 * img.rows +1);
-	
-	//prepare the destination for the dft
-	dst = cv::Mat(dftSize, CV_32FC1, cv::Scalar::all(0));
-	
-	//transform the image into the frequency domain
-	cv::dft(fImg, dst);
-	//calculate DST * DST (don't mind the fourth parameter. It is ignored)
-	cv::mulSpectrums(dst, dst, dst, cv::DFT_INVERSE, true);
-	//transform the result back to the image domain 
-	cv::dft(dst, dst, cv::DFT_INVERSE | cv::DFT_SCALE);
-
-	//norm the result
-	cv::multiply(fImg,fImg,fImg);
-	float denom = cv::sum(fImg)[0];
-	dst = dst * (1/denom);
-
-}
-
-
-void ImageProcessor::crosscorrDFT(const cv::Mat& img1, const cv::Mat& img2, cv::Mat& C)
-{
-	//Convert image1 from unsigned char to float matrix
-	cv::Mat A;
-	img1.convertTo(A, CV_32FC1);
-	//Subtract the mean
-	cv::Mat meanA(A.size(), A.type(), cv::mean(A));
-	cv::subtract(A, meanA, A);
-	
-
-	//Convert image2 from unsigned char to float matrix
-	cv::Mat B;
-	img2.convertTo(B, CV_32FC1);
-	//Subtract the mean
-	cv::Mat meanB(B.size(), B.type(), cv::mean(B));
-	cv::subtract(B, meanB, B);
-
-	// reallocate the output array if needed
-	C.create(abs(A.rows - B.rows)+1, abs(A.cols - B.cols)+1, A.type());
-
-	// compute the size of DFT transform
-	cv::Size dftSize;
-	dftSize.width = cv::getOptimalDFTSize(A.cols + B.cols - 1);
-	dftSize.height = cv::getOptimalDFTSize(A.rows + B.rows - 1);
-
-	// allocate temporary buffers and initialize them with 0’s
-	cv::Mat tempA(dftSize, A.type(), cv::Scalar::all(0));
-	cv::Mat tempB(dftSize, B.type(), cv::Scalar::all(0));
-
-	// copy A and B to the top-left corners of tempA and tempB, respectively
-	cv::Mat roiA(tempA, cv::Rect(0,0,A.cols,A.rows));
-	A.copyTo(roiA);
-	cv::Mat roiB(tempB, cv::Rect(0,0,B.cols,B.rows));
-	B.copyTo(roiB);
-
-	// now transform the padded A & B in-place;
-	// use "nonzeroRows" hint for faster processing
-	cv::dft(tempA, tempA, 0, A.rows);
-	cv::dft(tempB, tempB, 0, B.rows);
-
-	//calculate DFT1 * DFT2 (don't mind the fourth parameter. It is ignored)
-	cv::mulSpectrums(tempA, tempB, tempA, cv::DFT_INVERSE, true);
-
-	// transform the product back from the frequency domain.
-	// Even though all the result rows will be non-zero,
-	// we need only the first C.rows of them, and thus we
-	// pass nonzeroRows == C.rows
-	cv::dft(tempA, tempA, cv::DFT_INVERSE + cv::DFT_SCALE, C.rows);
-
-	// now copy the result back to C.
-	tempA(cv::Rect(0, 0, C.cols, C.rows)).copyTo(C);
-
-	//norm the result
-	cv::multiply(A,A,A);
-	cv::multiply(B,B,B);
-	float denom = sqrt(cv::sum(A)[0]) * sqrt(cv::sum(B)[0]);	
-	C = C * (1/denom);
-}
-
-double ImageProcessor::getMinimalPattern(const cv::Mat &input, unsigned int &sizeX, unsigned int &sizeY, const int minimalPatternSize)
-{
-	const float epsilon = 0.00005;
-
-	//make input gray scale 
-	cv::Mat img;	
-	cv::cvtColor(input, img, CV_RGB2GRAY);
-
-	//calculate auto correlation
-	cv::Mat ac;
-	ImageProcessor::autocorrDFT(img, ac);
-	cv::Mat_<float>& ptrAc = (cv::Mat_<float>&)ac;
-
-	//search minimal pattern i.e. search the highest correlation in x and y direction
-	sizeX = 0;
-	sizeY = 0;
-
-	//y direction
-	for (int y = minimalPatternSize; y < ac.size().height / 2; y++)
-	{
-		for(int x = 1; x < ac.cols / 2; x++)
-		{
-			if (ptrAc(y, x) > ptrAc(sizeY, sizeX) + epsilon || sizeY == 0)
-			{
-				sizeY = y;	
-				sizeX = x;
-			}
-		}
-	}
-/*
-	sizeX = 0;
-	
-	//x direction
-	for (int x = minimalPatternSize; x < ac.size().width / 2; x++)
-	{
-		if (ptrAc(sizeY, x) > ptrAc(sizeY, sizeX) + epsilon || sizeX == 0)
-		{
-			sizeX = x;	
-		}
-	}*/
-	
-	return ptrAc(sizeY, sizeX);
-} 
-
 float ImageProcessor::extractPattern(Texture* tex, Texture** dst)
 {
 	//convert texture to cv::Mat
@@ -282,7 +146,8 @@ float ImageProcessor::extractPattern(Texture* tex, Texture** dst)
 
 	//try to extract pattern
 	unsigned int sizeX, sizeY;
-	float result = ImageProcessor::getMinimalPattern(src, sizeX, sizeY, 10); //TODO Param
+	AutoCorr* ac = new AutoCorr(src);
+	float result = ac->getMinimalPattern(sizeX, sizeY, 10); //TODO Param
 	
 	//save the pattern
 	cv::Mat pattern = cv::Mat(src, cv::Rect(0, 0, sizeX, sizeY));
