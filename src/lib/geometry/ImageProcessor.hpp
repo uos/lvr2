@@ -127,6 +127,21 @@ static void autocorrDFT(const cv::Mat &img, cv::Mat &dst);
  */
 static double getMinimalPattern(const cv::Mat &input, unsigned int &sizeX, unsigned int &sizeY, const int minimalPatternSize = 10);
 
+/**
+ * \brief 	Implementation of the cross correlation function using fourier transformation.
+ *		This implementation is quite fast and may be used for productive jobs. Cross
+ *		correlation can be calculated by transforming the input images the frequency
+ *		domain (getting the fourier transformations of the images), multiplying the
+ *		first spectrum with the second spectrum  and
+ *		transforming the result back to the image domain. 
+ *
+ * \param 	img1	The first image. Must be one channel gray scale.
+ * \param 	img2	The second image. Must be one channel gray scale.
+ * \param	dst	The destination to store the correlation values in. The result is NOT
+			normed.
+ */
+static void crosscorrDFT(const cv::Mat& img1, const cv::Mat& img2, cv::Mat& C);
+
 };
 }
 

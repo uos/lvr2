@@ -170,6 +170,65 @@ void ImageProcessor::autocorrDFT(const cv::Mat &img, cv::Mat &dst)
 }
 
 
+void ImageProcessor::crosscorrDFT(const cv::Mat& img1, const cv::Mat& img2, cv::Mat& C)
+{
+	//Convert image1 from unsigned char to float matrix
+	cv::Mat A;
+	img1.convertTo(A, CV_32FC1);
+	//Subtract the mean
+	cv::Mat meanA(A.size(), A.type(), cv::mean(A));
+	cv::subtract(A, meanA, A);
+	
+
+	//Convert image2 from unsigned char to float matrix
+	cv::Mat B;
+	img2.convertTo(B, CV_32FC1);
+	//Subtract the mean
+	cv::Mat meanB(B.size(), B.type(), cv::mean(B));
+	cv::subtract(B, meanB, B);
+
+	// reallocate the output array if needed
+	C.create(abs(A.rows - B.rows)+1, abs(A.cols - B.cols)+1, A.type());
+
+	// compute the size of DFT transform
+	cv::Size dftSize;
+	dftSize.width = cv::getOptimalDFTSize(A.cols + B.cols - 1);
+	dftSize.height = cv::getOptimalDFTSize(A.rows + B.rows - 1);
+
+	// allocate temporary buffers and initialize them with 0’s
+	cv::Mat tempA(dftSize, A.type(), cv::Scalar::all(0));
+	cv::Mat tempB(dftSize, B.type(), cv::Scalar::all(0));
+
+	// copy A and B to the top-left corners of tempA and tempB, respectively
+	cv::Mat roiA(tempA, cv::Rect(0,0,A.cols,A.rows));
+	A.copyTo(roiA);
+	cv::Mat roiB(tempB, cv::Rect(0,0,B.cols,B.rows));
+	B.copyTo(roiB);
+
+	// now transform the padded A & B in-place;
+	// use "nonzeroRows" hint for faster processing
+	cv::dft(tempA, tempA, 0, A.rows);
+	cv::dft(tempB, tempB, 0, B.rows);
+
+	//calculate DFT1 * DFT2 (don't mind the fourth parameter. It is ignored)
+	cv::mulSpectrums(tempA, tempB, tempA, cv::DFT_INVERSE, true);
+
+	// transform the product back from the frequency domain.
+	// Even though all the result rows will be non-zero,
+	// we need only the first C.rows of them, and thus we
+	// pass nonzeroRows == C.rows
+	cv::dft(tempA, tempA, cv::DFT_INVERSE + cv::DFT_SCALE, C.rows);
+
+	// now copy the result back to C.
+	tempA(cv::Rect(0, 0, C.cols, C.rows)).copyTo(C);
+
+	//norm the result
+	cv::multiply(A,A,A);
+	cv::multiply(B,B,B);
+	float denom = sqrt(cv::sum(A)[0]) * sqrt(cv::sum(B)[0]);	
+	C = C * (1/denom);
+}
+
 double ImageProcessor::getMinimalPattern(const cv::Mat &input, unsigned int &sizeX, unsigned int &sizeY, const int minimalPatternSize)
 {
 	const float epsilon = 0.00005;
