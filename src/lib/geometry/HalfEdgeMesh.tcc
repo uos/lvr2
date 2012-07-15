@@ -1466,7 +1466,7 @@ void HalfEdgeMesh<VertexT, NormalT>::finalizeAndRetesselate( bool genTextures, f
 
         if(t)
         {
-            delete t;
+        //    delete t;
             globalTextureIndex++;
         }
         else

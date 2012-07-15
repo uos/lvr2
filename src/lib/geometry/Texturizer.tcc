@@ -159,72 +159,120 @@ TextureToken<VertexT, NormalT>* Texturizer<VertexT, NormalT>::createInitialTextu
 }
 
 template<typename VertexT, typename NormalT>
+void Texturizer<VertexT, NormalT>::filterByColor(vector<Texture*> &textures, Texture* refTexture, float threshold)
+{
+//TODO
+}
+template<typename VertexT, typename NormalT>
+void Texturizer<VertexT, NormalT>::filterByCrossCorr(vector<Texture*> &textures, Texture* refTexture, float threshold)
+{
+//TODO
+}
+template<typename VertexT, typename NormalT>
+void Texturizer<VertexT, NormalT>::filterByStats(vector<Texture*> &textures, Texture* refTexture, float threshold)
+{
+//TODO
+}
+template<typename VertexT, typename NormalT>
+void Texturizer<VertexT, NormalT>::filterByFeatures(vector<Texture*> &textures, Texture* refTexture, float threshold)
+{
+//TODO
+}
+
+template<typename VertexT, typename NormalT>
 TextureToken<VertexT, NormalT>* Texturizer<VertexT, NormalT>::texturizePlane(vector<VertexT> contour)
 {
-	//create an initial texture from the point cloud
+	std::cout<<"==================================================================="<<std::endl;
 	TextureToken<VertexT, NormalT>* initialTexture = 0;
+
+	float colorThreshold 		= 0.5; //TODO: param
+	float crossCorrThreshold 	= 0.5; //TODO: param
+	float statsThreshold 		= 0.5; //TODO: param
+	float featureThreshold 		= 0.5; //TODO: param
+	float patternThreshold 		= 0.5; //TODO: param
+
 
 	if(contour.size() >= 3)
 	{
-	    initialTexture = createInitialTexture(contour);
-	}
-/*	std::cout<<"==================================================================="<<std::endl;
-	float minSurfDist = FLT_MAX;
-	int minIndex = -1;
-	//Check all textures of the texture package 
-	for(int i = 0; i < this->m_tio->m_textures.size(); i++)
-	{
-		//TODO: other methods for texture matching
-		//SURF
-		float surfDistance = ImageProcessor::compareTexturesSURF(initialTexture->m_texture, this->m_tio->m_textures[i]);
-		if(surfDistance < minSurfDist)
+		//create an initial texture from the point cloud
+		initialTexture = createInitialTexture(contour);
+
+		//reduce number of matching textures from the texture pack step by step
+		std::vector<Texture*> textures = this->m_tio->m_textures;
+		filterByColor		(textures, initialTexture->m_texture, colorThreshold);
+		filterByCrossCorr	(textures, initialTexture->m_texture, crossCorrThreshold);
+		filterByStats		(textures, initialTexture->m_texture, statsThreshold);
+		filterByFeatures	(textures, initialTexture->m_texture, featureThreshold);
+		
+		if (textures.size() > 0)
 		{
-			minSurfDist = surfDistance;
-			minIndex = i;
+			cout<<"Using Texture from texture package!!!"<<endl;
+			//Found matching textures in texture package -> use best match
+			return new TextureToken<VertexT, NormalT>(	initialTexture->v1, initialTexture->v2,
+									initialTexture->p, 
+									initialTexture->a_min, initialTexture->b_min,
+									textures[0]);
+		}
+		else
+		{
+			//Try to extract pattern
+			Texture* pattern = 0;
+			if (ImageProcessor::extractPattern(initialTexture->m_texture, &pattern) > patternThreshold)
+			{
+				cout<<"Using pattern texture!!!"<<endl;
+				//calculate surf features for pattern
+				ImageProcessor::calcSURF(pattern);
+				//calculate statistics for pattern
+				ImageProcessor::calcStats(pattern, 16); //TODO: Param?!
+
+				//Add pattern to texture package
+				this->m_tio->add(pattern);
+				this->m_tio->write();
+
+				//return a texture token
+				return new TextureToken<VertexT, NormalT>(	initialTexture->v1, initialTexture->v2,
+										initialTexture->p, 
+										initialTexture->a_min, initialTexture->b_min,
+										pattern);
+			}
+			else
+			{
+				cout<<"Using initial texture"<<endl;
+				//Pattern extraction failed -> use initial texture
+				delete pattern;
+				//Add initial texture to texture pack
+				this->m_tio->add(initialTexture->m_texture);
+				this->m_tio->write();
+			}
 		}
 	}
-	std::cout<<minSurfDist<<std::endl;
-	if (minSurfDist < 0.02) //TODO: Param
-	{
-		cout<<"Using Texture from texture package!!!"<<endl;
-		//Found a matching texture
-		return new TextureToken<VertexT, NormalT>(	initialTexture->v1, initialTexture->v2,
-								initialTexture->p, 
-								initialTexture->a_min, initialTexture->b_min,
-								this->m_tio->m_textures[minIndex]);
-	}
-
-/*
-	//No texture found -> try to extract a pattern
-	Texture* pattern = 0;
-	if (ImageProcessor::extractPattern(initialTexture->m_texture, &pattern) > 0.95) //TODO: Param
-	{
-		//calculate surf features for pattern
-		ImageProcessor::calcSURF(pattern);
-
-		//Add pattern to texture package
-		this->m_tio->add(pattern);
-		this->m_tio->write();
-
-		//return a texture token
-		return new TextureToken<VertexT, NormalT>(	initialTexture->v1, initialTexture->v2,
-								initialTexture->p, 
-								initialTexture->a_min, initialTexture->b_min,
-								initialTexture->a_max, initialTexture->b_max,
-								pattern);
-	}
-	else
-	{
-		delete pattern;
-	}
-	//TODO: other methods for pattern extraction
-*/	
-
-	//Pattern extraction failed -> use initial texture
-	//Add initial texture to texture pack
-//	this->m_tio->add(initialTexture->m_texture);
-//	this->m_tio->write();
 	return initialTexture;
+		
+/*
+		float minSurfDist = FLT_MAX;
+		int minIndex = -1;
+		//Check all textures of the texture package 
+		for(int i = 0; i < this->m_tio->m_textures.size(); i++)
+		{
+			//TODO: other methods for texture matching
+			//SURF
+			float surfDistance = ImageProcessor::compareTexturesSURF(initialTexture->m_texture, this->m_tio->m_textures[i]);
+			if(surfDistance < minSurfDist)
+			{
+				minSurfDist = surfDistance;
+				minIndex = i;
+			}
+		}
+		std::cout<<minSurfDist<<std::endl;
+		if (minSurfDist < 0.02) //TODO: Param
+		{
+			//Found a matching texture
+			return new TextureToken<VertexT, NormalT>(	initialTexture->v1, initialTexture->v2,
+									initialTexture->p, 
+									initialTexture->a_min, initialTexture->b_min,
+									this->m_tio->m_textures[minIndex]);
+		}
+*/
 }
 
 }
