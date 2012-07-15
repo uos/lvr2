@@ -73,6 +73,11 @@ private:
 	 *
 	**/
 	TextureToken<VertexT, NormalT>* createInitialTexture(vector<VertexT> contour);
+
+	void filterByColor(std::vector<Texture*> &textures, Texture* refTexture, float threshold);
+	void filterByCrossCorr(std::vector<Texture*> &textures, Texture* refTexture, float threshold);
+	void filterByStats(std::vector<Texture*> &textures, Texture* refTexture, float threshold);
+	void filterByFeatures(std::vector<Texture*> &textures, Texture* refTexture, float threshold);
 	
 	///The point set surface used to generate textures from the point cloud
 	typename PointsetSurface<VertexT>::Ptr m_pm;
