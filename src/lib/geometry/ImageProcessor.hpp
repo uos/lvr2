@@ -31,6 +31,8 @@
 #include <cstdio>
 #include <geometry/Texture.hpp>
 #include <geometry/Statistics.hpp>
+#include <geometry/AutoCorr.hpp>
+#include <geometry/CrossCorr.hpp>
 
 namespace lssr {
 
@@ -94,53 +96,6 @@ static void calcStats(Texture* t, int numColors);
 
 
 private:
-
-/**
- * \brief 	Implementation of the auto correlation function using fourier transformation.
- *		This implementation is quite fast and may be used for productive jobs. Auto
- *		correlation can be calculated by transforming the image img into the frequency
- *		domain (getting the fourier transformation IMG of img), calculating
- *		IMG * IMG and transforming the result back to the image domain. 
- *
- * \param 	img	The image to calculate the auto correlation for. Must be one channel
- *			gray scale.
- * \param	dst	The destination to store the correlation values in. The result is NOT
-			normed.
- */
-static void autocorrDFT(const cv::Mat &img, cv::Mat &dst);
-
-/**
- * \brief	Tries to find a pattern in an Image using the auto correlation
- *		function. The result can be interpreted as a rectangle at the
- *		origin (0,0) of the input image with the width of sizeX and the
- * 		height of sizeY.
- *
- * \param	input			The image to find a pattern in. Has to be
-					a three channel	color (RGB) image.
- * \param	sizeX			The resulting x size of the found pattern
- * \param	sizeY			The resulting y size of the found pattern
- * \param	minimalPatternSize	The minimum acceptable x and y size of a
- *					pattern 
- *
- * \return	A confidence between 0 and 1 indicating the degree of success in
- *		extracting a pattern from the given image
- */
-static double getMinimalPattern(const cv::Mat &input, unsigned int &sizeX, unsigned int &sizeY, const int minimalPatternSize = 10);
-
-/**
- * \brief 	Implementation of the cross correlation function using fourier transformation.
- *		This implementation is quite fast and may be used for productive jobs. Cross
- *		correlation can be calculated by transforming the input images the frequency
- *		domain (getting the fourier transformations of the images), multiplying the
- *		first spectrum with the second spectrum  and
- *		transforming the result back to the image domain. 
- *
- * \param 	img1	The first image. Must be one channel gray scale.
- * \param 	img2	The second image. Must be one channel gray scale.
- * \param	dst	The destination to store the correlation values in. The result is NOT
-			normed.
- */
-static void crosscorrDFT(const cv::Mat& img1, const cv::Mat& img2, cv::Mat& C);
 
 };
 }

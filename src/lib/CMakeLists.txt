@@ -36,6 +36,8 @@ set(LSSR_SOURCES
     geometry/Texture.cpp
     geometry/ImageProcessor.cpp
     geometry/Statistics.cpp
+    geometry/AutoCorr.cpp
+    geometry/CrossCorr.cpp
 )
 
 
