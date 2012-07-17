@@ -38,6 +38,7 @@ set(LSSR_SOURCES
     geometry/Statistics.cpp
     geometry/AutoCorr.cpp
     geometry/CrossCorr.cpp
+    geometry/CCV.cpp
 )
 
 
