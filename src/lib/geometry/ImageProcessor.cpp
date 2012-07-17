@@ -51,6 +51,153 @@ void ImageProcessor::reduceColors(cv::Mat input, cv::Mat &output, int numColors)
 	}
 }
 
+
+void ImageProcessor::reduceColorsG(cv::Mat input, cv::Mat &output, int numColors)
+{
+	//allocate output
+	output = cv::Mat(input.size(), CV_8U);
+
+	for (int y = 0; y < input.size().height; y++)
+	{
+		for(int x = 0; x < input.size().width; x++)
+		{
+			output.at<uchar>(y,x) = input.at<uchar>(y,x) / (256.0f / numColors);
+		}
+	}
+}
+
+unsigned long int ImageProcessor::find(unsigned long int x, unsigned long int parent[])
+{
+	while(parent[x] != x)
+	{
+		parent[x] = parent[parent[x]]; //path halving
+		x = parent[x];
+	}
+	return x;
+}
+
+void ImageProcessor::unite(unsigned long int x, unsigned long int y, unsigned long int parent[])
+{
+	parent[ImageProcessor::find(x, parent)] = ImageProcessor::find(y, parent);
+}
+
+void ImageProcessor::connectedCompLabeling(cv::Mat input, cv::Mat &output)
+{
+	//Allocate output and set it to zero
+	output = cv::Mat(input.size(), CV_16U);
+	output.setTo(cv::Scalar(0));
+	
+	//1 channel pointer to input image
+	cv::Mat_<uchar>& ptrInput = (cv::Mat_<uchar>&)input;
+	//1 channel pointer to output image
+	cv::Mat_<ushort>& ptrOutput = (cv::Mat_<ushort>&)output; 
+
+	//disjoint set data structure to manage the labels 
+	unsigned long int* parent = new unsigned long int[output.size().height * output.size().width];
+	for(unsigned long int i = 0; i < output.size().height * output.size().width; i++) parent[i] = i;
+
+	std::vector<int>  rank (output.size().height * output.size().width);
+//	std::vector<int>  parent (output.size().height * output.size().width);
+//	boost::disjoint_sets<int*,int*> ds(&rank[0], &parent[0]);
+//	for(unsigned long int i = 0; i < output.size().height * output.size().width; i++) {ds.make_set(i);}
+
+	//first pass: Initial labeling
+	unsigned short int currentLabel = 0;
+	for (int y = 0; y < input.size().height; y++)
+	{
+		for(int x = 0; x < input.size().width; x++)
+		{
+			if (y == 0)
+			{
+				if(x == 0)
+				{
+					//First pixel. Create first label.
+					ptrOutput(y,x) = ++currentLabel;
+				}
+				else
+				{
+					//First row. Only check left pixel	
+					if (ptrInput(y,x) == ptrInput(y, x - 1))
+					{
+						//same region as left pixel -> assign same label
+						ptrOutput(y,x) = ptrOutput(y, x - 1);
+					}
+					else
+					{
+						//different region -> create new label
+						ptrOutput(y,x) = ++currentLabel;
+					}
+				}
+			}
+			else
+			{
+				if(x == 0)
+				{
+					//First column. Only check top pixel	
+					if (ptrInput(y,x) == ptrInput(y - 1, x))
+					{
+						//same region as top pixel -> assign same label
+						ptrOutput(y,x) = ptrOutput(y - 1, x);
+					}
+					else
+					{
+						//different region -> create new label
+						ptrOutput(y,x) = ++currentLabel;
+					}
+				}
+				else
+				{
+					//Regular column. Check top and left pixel
+					if (ptrInput(y,x) == ptrInput(y, x - 1) && ptrInput(y,x) == ptrInput(y - 1, x))
+					{
+						//same region as left and top pixel -> assign minimum label of both
+						ptrOutput(y,x) = std::min(ptrOutput(y, x - 1), ptrOutput(y - 1, x));
+						if (ptrOutput(y, x - 1) != ptrOutput(y - 1, x))
+						{
+							//mark labels as equivalent
+							//we are using the union/find algorithm for disjoint sets
+							ImageProcessor::unite(ImageProcessor::find(ptrOutput(y, x - 1), parent),
+									      ImageProcessor::find(ptrOutput(y - 1, x), parent), parent);
+//							ds.union_set(ptrOutput(y, x - 1), ptrOutput(y - 1, x));
+						}
+					}
+					else
+					if (ptrInput(y,x) == ptrInput(y, x - 1))
+					{
+						//same region as left pixel -> assign same label
+						ptrOutput(y,x) = ptrOutput(y, x - 1);
+					}
+					else
+					if (ptrInput(y,x) == ptrInput(y - 1, x))
+					{
+						//same region as top pixel -> assign same label
+						ptrOutput(y,x) = ptrOutput(y - 1, x);
+					}
+					else
+					{
+						//different region -> create new label
+						ptrOutput(y,x) = ++currentLabel;
+					}
+				}
+			}
+		}
+	}
+
+	//second pass: Merge equivalent labels
+	for (int y = 0; y < output.size().height; y++)
+	{
+		for(int x = 0; x < output.size().width; x++)
+		{
+			//we are using the union/find algorithm for disjoint sets
+			ptrOutput(y,x) = (unsigned short int) ImageProcessor::find(ptrOutput(y, x), parent);
+//			ptrOutput(y,x) = ds.find_set(ptrOutput(y, x));
+		}
+	}
+
+	delete[] parent;
+}
+
+
 void ImageProcessor::calcSURF(Texture* tex)
 {
 	//convert texture to cv::Mat
@@ -179,6 +326,5 @@ void ImageProcessor::calcStats(Texture* t, int numColors)
 	t->m_stats[13] = stat->calcMaxCorrelationCoefficient();
 	delete stat;
 }
-
 
 }

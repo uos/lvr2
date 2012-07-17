@@ -29,6 +29,8 @@
 
 #include <cstring>
 #include <cstdio>
+#include <math.h>
+//#include <boost/pending/disjoint_sets.hpp>
 #include <geometry/Texture.hpp>
 #include <geometry/Statistics.hpp>
 #include <geometry/AutoCorr.hpp>
@@ -43,59 +45,102 @@ namespace lssr {
 class ImageProcessor {
 public:
 
-/**
- * \brief Reduces the number of colors in the given image
- * 
- * \param input		The input image to reduce the colors in.
-			This must be a 3 channel image with 8 bit
-			per channel.
- * \param output 	The destination to store the result in.
-			This will be an 8 bit one channel image.
- * \param numColors	The maximum number of colors in the 
- *			output image. Note, that this value must
- *			be less than or equal to 256 since the 
- *			output image has only one 8 bit channel.
- */
-static void reduceColors(cv::Mat input, cv::Mat &output, int numColors);
+	/**
+	 * \brief Reduces the number of colors in the given image
+	 * 
+	 * \param input		The input image to reduce the colors in.
+				This must be a 3 channel image with 8 bit
+				per channel.
+	 * \param output 	The destination to store the result in.
+				This will be an 8 bit one channel image.
+	 * \param numColors	The maximum number of colors in the 
+	 *			output image. Note, that this value must
+	 *			be less than or equal to 256 since the 
+	 *			output image has only one 8 bit channel.
+	 */
+	static void reduceColors(cv::Mat input, cv::Mat &output, int numColors);
 
-/**
- * \brief 	Calculates the SURF features for the given texture
- *
- * \param	tex		The texture to calculate the feature for
- */
-static void calcSURF( Texture* tex);
+	/**
+	 * \brief Reduces the number of colors in the given gray scale image
+	 * 
+	 * \param input		The input image to reduce the colors in.
+				This must be a 1 channel image with 8 bit
+				per channel.
+	 * \param output 	The destination to store the result in.
+				This will be an 8 bit one channel image.
+	 * \param numColors	The maximum number of colors in the 
+	 *			output image. Note, that this value must
+	 *			be less than or equal to 256 since the 
+	 *			output image has only one 8 bit channel.
+	 */
+	static void reduceColorsG(cv::Mat input, cv::Mat &output, int numColors);
 
-/**
- * \brief 	Compares the given textures wrt to their SURF descriptors
- *
- * \param	tex1	The first texture
- * \param	tex2	The second texture
- *
- * \return 	The distance between the textures
- */
-static float compareTexturesSURF(Texture* tex1, Texture* tex2);
+	/**
+	 * \brief 	Calculates the SURF features for the given texture
+	 *
+	 * \param	tex		The texture to calculate the feature for
+	 */
+	static void calcSURF( Texture* tex);
 
-/**
- * \brief	Tries to extract a pattern from the given texture
- *
- * \param 	tex	The texture to extract a pattern from
- * \param 	dst	The destination to store the pattern
- *
- * \return	A value indicating how "good" the pattern is.
- *		The higher the value, the "better" the pattern.
- */
-static float extractPattern(Texture* tex, Texture** dst);
+	/**
+	 * \brief 	Compares the given textures wrt to their SURF descriptors
+	 *
+	 * \param	tex1	The first texture
+	 * \param	tex2	The second texture
+	 *
+	 * \return 	The distance between the textures
+	 */
+	static float compareTexturesSURF(Texture* tex1, Texture* tex2);
 
-/**
- * \brief 	Calculates 14 statistical values for the given texture
- *
- * \param	t		The texture to calculate the stats for
- * \param	numColors	The number of gray levels to use
- */
-static void calcStats(Texture* t, int numColors);
+	/**
+	 * \brief	Tries to extract a pattern from the given texture
+	 *
+	 * \param 	tex	The texture to extract a pattern from
+	 * \param 	dst	The destination to store the pattern
+	 *
+	 * \return	A value indicating how "good" the pattern is.
+	 *		The higher the value, the "better" the pattern.
+	 */
+	static float extractPattern(Texture* tex, Texture** dst);
 
+	/**
+	 * \brief 	Calculates 14 statistical values for the given texture
+	 *
+	 * \param	t		The texture to calculate the stats for
+	 * \param	numColors	The number of gray levels to use
+	 */
+	static void calcStats(Texture* t, int numColors);
+
+	/**
+	 * \brief 	Labels connected components in the given image.
+	 *		This is an implementation of the algorithm of
+	 *		Rosenfeld et al
+	 * 
+	 * \param	input	The image to label connected components in
+	 * \param	output	The destination to hold the labels
+	 */
+	static void connectedCompLabeling(cv::Mat input, cv::Mat &output);
 
 private:
+
+	/**
+	* \brief 	Implementation of the find algorithm for disjoint sets.
+	* 
+	* \param 	x	The element to find
+	* \param	parent	The disjoint set data structure to work on (tree)
+	*
+	* \return 	The number of the set which contains the given element
+	*/
+	static unsigned long int find(unsigned long int x, unsigned long int parent[]);
+
+	/**
+	* \brief	Implementation of the union algorithm for disjoint sets.
+	*
+	* \param	x	The first set for the two sets to unite 
+	* \param	y	The second set for the two sets to unite 
+	* \param	parent	The disjoint set data structure to work on (tree)
+	*/
+	static void unite(unsigned long int x, unsigned long int y, unsigned long int parent[]);
 
 };
 }
