@@ -51,7 +51,7 @@ HalfEdgeMesh<VertexT, NormalT>::HalfEdgeMesh(
     // Add all vertices
     for(size_t i = 0; i < num_verts; i++)
     {
-        addVertex(vertices[3 * i], vertices[3 * 1 + 1], vertices[3 * i + 2]);
+        addVertex(VertexT(vertices[3 * i], vertices[3 * i + 1], vertices[3 * i + 2]));
     }
 
     // Add all faces
