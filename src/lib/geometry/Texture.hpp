@@ -54,7 +54,8 @@ public:
 	 */
 	Texture(unsigned short int width, unsigned short int height, unsigned char numChannels,
 		unsigned char numBytesPerChan, unsigned short int textureClass, unsigned short int numFeatures,
-		unsigned char numFeatureComponents, float* features, float* stats);
+		unsigned char numFeatureComponents, float* features, float* stats, bool isPattern,
+		unsigned char numCCVColors, unsigned long* CCV);
 
 	/**
 	 * @brief 	Constructor.
@@ -99,11 +100,22 @@ public:
 	///The number of entries of each feature descriptor
 	unsigned char m_numFeatureComponents;
 
-	//The number of feature descriptors
+	///The number of feature descriptors
 	unsigned short int m_numFeatures;
 	
-	//14 statistical values characterizing the texture
+	///14 statistical values characterizing the texture
 	float* m_stats;
+
+	///Determines whether this texture is a pattern texture or not
+	bool m_isPattern;
+
+	///Holds the number of colors used for CCV calculation
+	unsigned char m_numCCVColors;
+
+	///CCV
+	unsigned long* m_CCV;
+
+	
 };
 
 }

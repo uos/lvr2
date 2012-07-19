@@ -35,6 +35,7 @@
 #include <geometry/Statistics.hpp>
 #include <geometry/AutoCorr.hpp>
 #include <geometry/CrossCorr.hpp>
+#include <geometry/CCV.hpp>
 
 namespace lssr {
 
@@ -121,6 +122,15 @@ public:
 	 */
 	static void connectedCompLabeling(cv::Mat input, cv::Mat &output);
 
+	/**
+	 * \brief 	Calculates the CCV for the given texture.
+	 * 
+   	 * \param	t			The texture
+	 * \param	numColors		The number of colors to use
+	 * \param	coherenceThreshold	The coherence threshold to use
+	 *
+	 */
+	static void calcCCV(Texture* t, int numColors, int coherenceThreshold);
 private:
 
 	/**

@@ -111,7 +111,7 @@ TextureToken<VertexT, NormalT>* Texturizer<VertexT, NormalT>::createInitialTextu
 	sizeY = max(8.0, pow(2, ceil(log(sizeY) / log(2))));
 
 	//create the texture
-	Texture* texture = new Texture(sizeX, sizeY, 3, 1, 0, 0, 0, 0, 0);
+	Texture* texture = new Texture(sizeX, sizeY, 3, 1, 0, 0, 0, 0, 0, false, 0, 0);
 
 	//create TextureToken
 	TextureToken<VertexT, NormalT>* result = new TextureToken<VertexT, NormalT>(best_v1, best_v2, p, best_a_min, best_b_min, texture);
@@ -155,6 +155,9 @@ TextureToken<VertexT, NormalT>* Texturizer<VertexT, NormalT>::createInitialTextu
 	//calculate statistics
 	ImageProcessor::calcStats(texture, 16); //TODO: Param?!
 
+	//calculate CCV
+	ImageProcessor::calcCCV(texture, 64, 20); //TODO: Param?!
+
 	return result;
 }
 
@@ -196,7 +199,7 @@ TextureToken<VertexT, NormalT>* Texturizer<VertexT, NormalT>::texturizePlane(vec
 	{
 		//create an initial texture from the point cloud
 		initialTexture = createInitialTexture(contour);
-
+/*
 		//reduce number of matching textures from the texture pack step by step
 		std::vector<Texture*> textures = this->m_tio->m_textures;
 		filterByColor		(textures, initialTexture->m_texture, colorThreshold);
@@ -239,13 +242,13 @@ TextureToken<VertexT, NormalT>* Texturizer<VertexT, NormalT>::texturizePlane(vec
 			{
 				cout<<"Using initial texture"<<endl;
 				//Pattern extraction failed -> use initial texture
-				delete pattern;
+				delete pattern; */
 				//Add initial texture to texture pack
 				this->m_tio->add(initialTexture->m_texture);
 				this->m_tio->write();
-			}
-		}
-	}
+	//		}
+	//	}
+	} 
 	return initialTexture;
 		
 /*

@@ -43,11 +43,15 @@ Texture::Texture()
 	this->m_numFeatures	   	= 0;
 	this->m_numFeatureComponents	= 0;
 	this->m_stats			= 0;
+	this->m_isPattern		= false;
+	this->m_numCCVColors		= 0;
+	this->m_CCV			= 0;
 }
 
 Texture::Texture(unsigned short int width, unsigned short int height, unsigned char numChannels,
 		 unsigned char numBytesPerChan, unsigned short int textureClass, unsigned short int numFeatures,
-		 unsigned char numFeatureComponents, float* features, float* stats)
+		 unsigned char numFeatureComponents, float* features, float* stats, bool isPattern, 
+		 unsigned char numCCVColors, unsigned long* CCV)
 {
 	this->m_width 			= width;
 	this->m_height 			= height;
@@ -59,6 +63,9 @@ Texture::Texture(unsigned short int width, unsigned short int height, unsigned c
 	this->m_numFeatureComponents	= numFeatureComponents;
 	this->m_featureDescriptors 	= features; 
 	this->m_stats			= stats;
+	this->m_isPattern		= isPattern;
+	this->m_numCCVColors 		= numCCVColors;
+	this->m_CCV			= CCV;
 }
 
 Texture::Texture(Texture &other)
@@ -76,6 +83,10 @@ Texture::Texture(Texture &other)
 	memcpy(m_featureDescriptors, other.m_featureDescriptors, m_numFeatures * m_numFeatureComponents * sizeof(float));
 	this->m_stats 			= new float[14];
 	memcpy(m_stats, other.m_stats, 14 * sizeof(float));
+	this->m_isPattern		= other.m_isPattern;
+	this->m_numCCVColors		= other.m_numCCVColors;
+	this->m_CCV			= new unsigned long[3 * m_numCCVColors * 2];
+	memcpy(m_CCV, other.m_CCV, 3 * m_numCCVColors * 2 * sizeof(unsigned long));
 }
 
 void Texture::save(int i)
@@ -88,6 +99,9 @@ void Texture::save(int i)
 
 Texture::~Texture() {
 	delete m_data;
+	delete m_featureDescriptors;
+	delete m_stats;
+	delete m_CCV;
 }
 
 }

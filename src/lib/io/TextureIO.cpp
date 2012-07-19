@@ -68,10 +68,11 @@ TextureIO::TextureIO(string filename)
 			in.read((char*)&ui16buf, 2);	
 			t->m_height = ui16buf;
 
-			//read number of channels and number of bytes per channel: 1 Byte
+			//read number of channels, number of bytes per channel and whether this texture is a pattern: 1 Byte
 			in.read((char*)&ui8buf, 1);	
 			t->m_numChannels = (ui8buf & 0xf0) >> 4;
-			t->m_numBytesPerChan = ui8buf & 0x0f;
+			t->m_numBytesPerChan = (ui8buf & 0x0e) >> 1;
+			t->m_isPattern = ui8buf & 0x01 == 1;
 			
 			//allocate memory for the image data
 			t->m_data = new unsigned char[t->m_width * t->m_height * t->m_numChannels * t->m_numBytesPerChan];
@@ -95,6 +96,14 @@ TextureIO::TextureIO(string filename)
 			//read statistics
 			t->m_stats = new float[14];
 			in.read((char*)t->m_stats, 14 * sizeof(float));
+
+			//read number of CCV colors: 1 Byte
+			in.read((char*)&ui8buf, 1);
+			t->m_numCCVColors = ui8buf;
+		
+			//read CCV
+			t->m_CCV = new unsigned long[t->m_numCCVColors * 2 * 3];
+			in.read((char*)t->m_CCV, t->m_numCCVColors * 2 * 3 * sizeof(unsigned long));
 
 			m_textures.push_back(t);
 		}	
@@ -146,8 +155,8 @@ void TextureIO::write()
 		ui16buf = m_textures[i]->m_height;
 		out.write((char*)&ui16buf, 2);
 
-		//write number of channels and number of bytes per channel 1 Byte
-		ui8buf = (m_textures[i]->m_numChannels << 4) | m_textures[i]->m_numBytesPerChan;
+		//write number of channels, number of bytes per channel and whether pattern or not: 1 Byte
+		ui8buf = (m_textures[i]->m_numChannels << 4) | (m_textures[i]->m_numBytesPerChan << 1) | (m_textures[i]->m_isPattern ? 0x01 : 0x00);
 		out.write((char*)&ui8buf, 1);
 
 		//write image data
@@ -167,6 +176,14 @@ void TextureIO::write()
 
 		//write statistical values
 		out.write((char*)m_textures[i]->m_stats, 14 * sizeof(float));
+
+		//write number of CCV colors: 1 Byte
+		ui8buf = m_textures[i]->m_numCCVColors;
+		out.write((char*)&ui8buf, 1);
+
+		//write CCV
+		out.write((char*)m_textures[i]->m_CCV, m_textures[i]->m_numCCVColors * 2 * sizeof(unsigned long) * 3);
+
 	}
 	
 	out.close();
