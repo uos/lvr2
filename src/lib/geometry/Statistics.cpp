@@ -181,7 +181,6 @@ float Statistics::calcCorrelation()
 		}
 		sx = sqrt(sx);
 		sy = sqrt(sy);
-		cout<<"SX: "<<sx<<" SY: "<<sy<<" ux "<<ux<<" uy "<<uy<<endl;	
 		//calculate correlation
 		for (int i = 0; i < this->m_numColors; i++)
 		{
