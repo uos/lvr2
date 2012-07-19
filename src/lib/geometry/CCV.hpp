@@ -74,6 +74,30 @@ public:
 	float compareTo(CCV* other);
 
 	/**
+  	 * \brief	Exports the CCV to an array (R)
+	 * 
+	 * \param	arr	The allocated destination array
+	 *
+	 */
+	void toArray_r(unsigned long* arr);
+
+	/**
+  	 * \brief	Exports the CCV to an array (G)
+	 * 
+	 * \param	arr	The allocated destination array
+	 *
+	 */
+	void toArray_g(unsigned long* arr);
+
+	/**
+  	 * \brief	Exports the CCV to an array (B)
+	 * 
+	 * \param	arr	The allocated destination array
+	 *
+	 */
+	void toArray_b(unsigned long* arr);
+
+	/**
 	 * Destructor.
 	 */
 	virtual ~CCV();

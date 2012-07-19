@@ -69,6 +69,51 @@ CCV::CCV(const cv::Mat &t, int numColors, int coherenceThreshold)
 	m_CCV_b = calculateCCV(img_planes[2]);
 }
 
+void CCV::toArray_r(unsigned long int* arr)
+{
+	for (int i = 0; i < 2 * m_numColors; i++)
+	{	
+		arr[i] = 0;
+	}
+	std::map< uchar, std::pair<ulong, ulong> >::iterator ccvit;
+	//r
+	for(ccvit = this->m_CCV_r.begin(); ccvit != this->m_CCV_r.end(); ccvit++)
+	{
+		arr[ccvit->first * 2 + 0] = ccvit->second.first;
+		arr[ccvit->first * 2 + 1] = ccvit->second.second;
+	}
+}
+
+void CCV::toArray_g(unsigned long int* arr)
+{
+	for (int i = 0; i < 2 * m_numColors; i++)
+	{	
+		arr[i] = 0;
+	}
+	std::map< uchar, std::pair<ulong, ulong> >::iterator ccvit;
+	//g
+	for(ccvit = this->m_CCV_g.begin(); ccvit != this->m_CCV_g.end(); ccvit++)
+	{
+		arr[ccvit->first * 2 + 0] = ccvit->second.first;
+		arr[ccvit->first * 2 + 1] = ccvit->second.second;
+	}
+}
+
+void CCV::toArray_b(unsigned long int* arr)
+{
+	for (int i = 0; i < 2 * m_numColors; i++)
+	{	
+		arr[i] = 0;
+	}
+	std::map< uchar, std::pair<ulong, ulong> >::iterator ccvit;
+	//b
+	for(ccvit = this->m_CCV_b.begin(); ccvit != this->m_CCV_b.end(); ccvit++)
+	{
+		arr[ccvit->first * 2 + 0] = ccvit->second.first;
+		arr[ccvit->first * 2 + 1] = ccvit->second.second;
+	}
+}
+
 CCV::~CCV() {
 	//TODO
 }

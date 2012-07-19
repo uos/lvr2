@@ -56,17 +56,25 @@ void a(lssr::TextureIO* tio)
 		cout<<"\t(a)dd: Enter texture class: ";
 		unsigned short int tc = 0;
 		cin>>tc;
+		cout<<"\t(a)dd: Is this texture a pattern texture? (y/n): ";
+		char in;
+		cin>>in;
+		bool isPattern = in == 'y' || in == 'Y';
 		unsigned char depth = img.depth() == CV_8U ? 1 : 2;
 
 		//create Texture
-		lssr::Texture* t = new lssr::Texture(img.size().width, img.size().height, img.channels(), depth, tc, 0, 0 ,0, 0);
+		lssr::Texture* t = new lssr::Texture(img.size().width, img.size().height, img.channels(), depth, tc, 0, 0 ,0, 0, isPattern, 0, 0);
 		memcpy(t->m_data, img.data, img.size().width * img.size().height * img.channels() * depth);
 
 		// calculate features
 		lssr::ImageProcessor::calcSURF(t);
 
 		// calculate stats
-		lssr::ImageProcessor::calcStats(t, 16);
+		lssr::ImageProcessor::calcStats(t, 16); //TODO: PARAM
+
+		//calculate CCV
+		lssr::ImageProcessor::calcCCV(t, 64, 20); //TODO: PARAM
+		
 
 		cout<<"\t(a)dded new texture."<<endl;
 		tio->add(t);
@@ -136,7 +144,8 @@ void i(lssr::TextureIO* tio)
 void l(lssr::TextureIO* tio, int sel)
 {
 	cout<<"\t(l)ist of textures:"<<endl;
-	cout<<"\t"<<setw(8)<<"index"<<setw(16)<<"WxH"<<setw(10)<<"channels"<<setw(8)<<"depth"<<setw(8)<<"class"<<setw(10)<<"features"<<setw(10)<<"selected"<<endl;
+	cout<<"\t"<<setw(8)<<"index"<<setw(16)<<"WxH"<<setw(10)<<"channels"<<setw(8)<<"depth"<<setw(8)<<"class"<<setw(10)<<"features"<<setw(11)<<"CCVColors";
+	cout<<setw(10)<<"selected"<<endl;
 
 	for(int i = 0; i<tio->m_textures.size(); i++)
 	{
@@ -146,7 +155,42 @@ void l(lssr::TextureIO* tio, int sel)
 		cout<<setw(10)<<(unsigned short)t->m_numChannels<<setw(8)<<(unsigned short)t->m_numBytesPerChan;
 		cout<<setw(8)<<t->m_textureClass;
 		cout<<setw(10)<<t->m_numFeatures;
-		if (sel == i-1) cout<<setw(10)<<"*";
+		cout<<setw(11)<<(unsigned int)t->m_numCCVColors;
+		if (sel == i) cout<<setw(10)<<"*";
+		cout<<endl;
+	}
+}
+
+/**
+ * \brief View stats for all textures
+ *
+ * \param tio	A TextureIO object
+**/
+void e1(lssr::TextureIO* tio)
+{
+	cout<<"\t(l)ist of textures:"<<endl;
+	cout<<"\t"<<setw(8)<<"index";
+	for (int i = 0; i < 14; i++)
+	{
+		if (i < 10)
+		{
+			cout<<setw(9)<<"S"<<i;
+		}
+		else 
+		{
+			cout<<setw(8)<<"S"<<i;
+		}
+	}
+	cout<<endl;
+
+	for(int i = 0; i<tio->m_textures.size(); i++)
+	{
+		lssr::Texture* t = tio->m_textures[i];
+		cout<<"\t"<<setw(8)<<i;
+		for (int j = 0; j < 14; j++)
+		{
+			cout<<setw(10)<<t->m_stats[j];
+		}
 		cout<<endl;
 	}
 }
@@ -200,15 +244,23 @@ void u(lssr::TextureIO* tio, int &sel)
 				cin>>tc;
 				unsigned char depth = img.depth() == CV_8U ? 1 : 2;
 
+				cout<<"\t(a)dd: Is this texture a pattern texture? (y/n): ";
+				char in;
+				cin>>in;
+				bool isPattern = in == 'y' || in == 'Y';
+
 				//create Texture
-				lssr::Texture* t = new lssr::Texture(img.size().width, img.size().height, img.channels(), depth, tc, 0, 0 ,0, 0);
+				lssr::Texture* t = new lssr::Texture(img.size().width, img.size().height, img.channels(), depth, tc, 0, 0 ,0, 0, isPattern, 0, 0);
 				memcpy(t->m_data, img.data, img.size().width * img.size().height * img.channels() * depth);
 
 				// calculate features
 				lssr::ImageProcessor::calcSURF(t);
 
 				//calculate stats
-				lssr::ImageProcessor::calcStats(t, 16);
+				lssr::ImageProcessor::calcStats(t, 16); //TODO: PRAM
+
+				//calculate CCV
+				lssr::ImageProcessor::calcCCV(t, 64, 20); //TODO: PARAM
 		
 				tio->update(sel, t);
 				cout<<"\t(u)dated texture #"<<sel<<"."<<endl; 
@@ -296,6 +348,8 @@ int main( int argc, char ** argv )
 	{
 		switch(cmd)
 		{
+			case '1':	e1(tio);	//stats
+					break;
 			case 'a':	a(tio);		//add
 					break;
 			case 'd':	d(tio, sel);	//delete
