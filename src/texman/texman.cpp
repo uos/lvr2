@@ -196,6 +196,41 @@ void e1(lssr::TextureIO* tio)
 }
 
 /**
+ * \brief View CCVs for all textures
+ *
+ * \param tio	A TextureIO object
+**/
+void e2(lssr::TextureIO* tio)
+{
+	cout<<"\t(l)ist of textures:"<<endl;
+
+	for(int i = 0; i<tio->m_textures.size(); i++)
+	{
+		cout<<"==============================================="<<"Texture "<<i<<"==============================================="<<endl;
+		lssr::Texture* t = tio->m_textures[i];
+
+		cout<<"r:"<<endl;	
+		for (int j = 0; j < t->m_numCCVColors; j++)
+		{
+			cout<<j<<":<"<<t->m_CCV[j * 2 + 0]<<","<<t->m_CCV[j * 2 + 1]<<">,   ";
+		}
+		cout<<endl;
+		cout<<"g:"<<endl;	
+		for (int j = t->m_numCCVColors; j < 2 * t->m_numCCVColors; j++)
+		{
+			cout<<j - t->m_numCCVColors<<":<"<<t->m_CCV[j * 2 + 0]<<","<<t->m_CCV[j * 2 + 1]<<">,   ";
+		}
+		cout<<endl;
+		cout<<"b:"<<endl;	
+		for (int j = 2 * t->m_numCCVColors; j < 3 * t->m_numCCVColors; j++)
+		{
+			cout<<j - 2 * t->m_numCCVColors<<":<"<<t->m_CCV[j * 2 + 0]<<","<<t->m_CCV[j * 2 + 1]<<">,   ";
+		}
+		cout<<endl;
+	}
+}
+
+/**
  * \brief select a texture
  *
  * \param tio	A TextureIO object
@@ -349,6 +384,8 @@ int main( int argc, char ** argv )
 		switch(cmd)
 		{
 			case '1':	e1(tio);	//stats
+					break;
+			case '2':	e2(tio);	//CCVs
 					break;
 			case 'a':	a(tio);		//add
 					break;
