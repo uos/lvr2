@@ -59,6 +59,7 @@ using namespace std;
 
 #include "io/Timestamp.hpp"
 #include "io/Progress.hpp"
+#include "io/Model.hpp"
 
 #include "Region.hpp"
 #include "Tesselator.hpp"
@@ -97,6 +98,11 @@ public:
 	 * @param	pm	a pointer to the point cloud manager
 	 */
 	HalfEdgeMesh( typename PointsetSurface<VertexT>::Ptr pm );
+
+	/**
+	 * @brief   Creates a HalfEdgeMesh from the given mesh buffer
+	 */
+	HalfEdgeMesh( MeshBufferPtr model);
 
 	/**
 	 * @brief   Dtor.

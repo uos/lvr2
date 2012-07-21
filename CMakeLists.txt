@@ -203,6 +203,7 @@ add_subdirectory(src/scanreduce)
 add_subdirectory(src/convert)
 add_subdirectory(src/asciiconverter)
 add_subdirectory(src/texman)
+#add_subdirectory(src/meshoptimizer)
 
 if(CGAL_FOUND)
 add_subdirectory(src/cgal_reconstruction)
