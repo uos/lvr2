@@ -31,6 +31,8 @@
 #include <iostream>
 #include <io/Timestamp.hpp>
 #include <io/TextureIO.hpp>
+#include <geometry/Texture.hpp>
+#include <geometry/ImageProcessor.hpp>
 #include <cstdlib>
 #include <iomanip>
 #include <sstream>
@@ -52,6 +54,50 @@ int main( int argc, char ** argv )
 	cout<<"Welcome to statstrain - matching textures with a passion!"<<endl;
 	cout<<"------------------------------------------------"<<endl;
 	lssr::TextureIO* tio = new lssr::TextureIO(argv[1]);
+
+	//Generate training data randomly
+	vector<Texture*> tData;
+	for (int i = 0; i < tio->m_textures.size(); i++)
+	{
+		Texture* t = 0; //TODO
+	
+		//calculate stats for training data
+		ImageProcessor::calcStats(t, 16); //TODO: Param oder member
+		tData.push_back(t);
+	}	
+
+	//calculate stat diffs
+	float*** x = new float**[tio->m_textures.size()];
+	for (int i = 0; i < tio->m_textures.size(); i++)
+	{
+		x[i] = new float*[tio->m_textures.size()]; 
+		for (int j = 0; j < tio->m_textures.size(); j++)
+		{
+			x[i][j] = new float[14];
+			for (int k = 0; k < 14; ++)
+			{
+				x[j][j][k] = fabs(tio->m_textures[i]->m_stats[k] - tData[j]->m_stats[k]);
+			}
+		}
+	}
+
+
+	float coeffs[14];
+	//Write zimpl file
+
+	//Solve LP
+
+	//write sc.co
+	ofstream out("sc.co");
+	for (int i = 0; i < 14; i++)
+	{
+		out<<coeffs[i];
+		if (i < 13) 
+		{
+			<<" ";
+		}
+	}
+	out.close();
 
 	delete tio;
 	return EXIT_SUCCESS;
