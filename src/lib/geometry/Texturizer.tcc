@@ -242,12 +242,12 @@ TextureToken<VertexT, NormalT>* Texturizer<VertexT, NormalT>::texturizePlane(vec
 			{
 				cout<<"Using initial texture"<<endl;
 				//Pattern extraction failed -> use initial texture
-				delete pattern; */
+				delete pattern; 
 				//Add initial texture to texture pack
 				this->m_tio->add(initialTexture->m_texture);
 				this->m_tio->write();
-	//		}
-	//	}
+			}
+		}*/
 	} 
 	return initialTexture;
 		
