@@ -42,6 +42,32 @@ HalfEdgeMesh<VertexT, NormalT>::HalfEdgeMesh(
 }
 
 template<typename VertexT, typename NormalT>
+HalfEdgeMesh<VertexT, NormalT>::HalfEdgeMesh(
+        MeshBufferPtr mesh)
+{
+    size_t num_verts, num_faces;
+    floatArr vertices = mesh->getVertexArray(num_verts);
+
+    // Add all vertices
+    for(size_t i = 0; i < num_verts; i++)
+    {
+        addVertex(VertexT(vertices[3 * i], vertices[3 * i + 1], vertices[3 * i + 2]));
+    }
+
+    // Add all faces
+    uintArr faces = mesh->getFaceArray(num_faces);
+    for(size_t i = 0; i < num_faces; i++)
+    {
+        addTriangle(faces[3 * i], faces[3 * i + 1], faces[3 * i + 2]);
+    }
+
+    // Initial remaing stuff
+    m_globalIndex = 0;
+    m_regionClassifier = ClassifierFactory<VertexT, NormalT>::get("Default", this);
+    m_depth = 100;
+}
+
+template<typename VertexT, typename NormalT>
 void HalfEdgeMesh<VertexT, NormalT>::setClassifier(string name)
 {
 	// Delete old classifier if present
