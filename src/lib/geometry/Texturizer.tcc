@@ -104,11 +104,9 @@ TextureToken<VertexT, NormalT>* Texturizer<VertexT, NormalT>::createInitialTextu
 	}
 
 
-	//calculate the texture size and round up to a size to base 2
+	//calculate the texture size
 	unsigned short int sizeX = ceil((best_a_max - best_a_min) / Texture::m_texelSize);
-	sizeX = max(8.0, pow(2, ceil(log(sizeX) / log(2))));
 	unsigned short int sizeY = ceil((best_b_max - best_b_min) / Texture::m_texelSize);
-	sizeY = max(8.0, pow(2, ceil(log(sizeY) / log(2))));
 
 	//create the texture
 	Texture* texture = new Texture(sizeX, sizeY, 3, 1, 0, 0, 0, 0, 0, false, 0, 0);
@@ -123,29 +121,19 @@ TextureToken<VertexT, NormalT>* Texturizer<VertexT, NormalT>::createInitialTextu
 	{
 		for(int x = 0; x < sizeX; x++)
 		{
-			if (y <= (best_b_max - best_b_min) / Texture::m_texelSize  && x <= (best_a_max - best_a_min) / Texture::m_texelSize)
-			{
-				vector<VertexT> cv;
+			vector<VertexT> cv;
 
-				VertexT current_position = p + best_v1
-					* (x * Texture::m_texelSize + best_a_min - Texture::m_texelSize / 2.0)
-					+ best_v2
-					* (y * Texture::m_texelSize + best_b_min - Texture::m_texelSize / 2.0);
+			VertexT current_position = p + best_v1
+				* (x * Texture::m_texelSize + best_a_min - Texture::m_texelSize / 2.0)
+				+ best_v2
+				* (y * Texture::m_texelSize + best_b_min - Texture::m_texelSize / 2.0);
 
-				int one = 1;
-				m_pm->searchTree()->kSearch(current_position, one, cv);
+			int one = 1;
+			m_pm->searchTree()->kSearch(current_position, one, cv);
 
-				texture->m_data[(sizeY - y - 1) * (sizeX * 3) + 3 * x + 0] = cv[0].b;
-				texture->m_data[(sizeY - y - 1) * (sizeX * 3) + 3 * x + 1] = cv[0].g;
-				texture->m_data[(sizeY - y - 1) * (sizeX * 3) + 3 * x + 2] = cv[0].r;
-			}
-			else
-			{
-				texture->m_data[(sizeY - y - 1) * (sizeX * 3) + 3 * x + 0] = 255;
-				texture->m_data[(sizeY - y - 1) * (sizeX * 3) + 3 * x + 1] = 0;
-				texture->m_data[(sizeY - y - 1) * (sizeX * 3) + 3 * x + 2] = 0;
-			}
-
+			texture->m_data[(sizeY - y - 1) * (sizeX * 3) + 3 * x + 0] = cv[0].b;
+			texture->m_data[(sizeY - y - 1) * (sizeX * 3) + 3 * x + 1] = cv[0].g;
+			texture->m_data[(sizeY - y - 1) * (sizeX * 3) + 3 * x + 2] = cv[0].r;
 		}
 	}
 
@@ -185,7 +173,7 @@ void Texturizer<VertexT, NormalT>::filterByFeatures(vector<Texture*> &textures, 
 template<typename VertexT, typename NormalT>
 TextureToken<VertexT, NormalT>* Texturizer<VertexT, NormalT>::texturizePlane(vector<VertexT> contour)
 {
-	std::cout<<"==================================================================="<<std::endl;
+//	std::cout<<"==================================================================="<<std::endl;
 	TextureToken<VertexT, NormalT>* initialTexture = 0;
 
 	float colorThreshold 		= 0.5; //TODO: param
@@ -243,11 +231,11 @@ TextureToken<VertexT, NormalT>* Texturizer<VertexT, NormalT>::texturizePlane(vec
 				cout<<"Using initial texture"<<endl;
 				//Pattern extraction failed -> use initial texture
 				delete pattern; 
-				//Add initial texture to texture pack
+				//Add initial texture to texture pack */
 				this->m_tio->add(initialTexture->m_texture);
 				this->m_tio->write();
-			}
-		}*/
+//			}
+//		}
 	} 
 	return initialTexture;
 		
