@@ -81,8 +81,8 @@ int main( int argc, char ** argv )
 		//calculate stats for training data
 		lssr::ImageProcessor::calcStats(t, 16); //TODO: Param oder member
 		tData.push_back(t);
-
-/*		cv::startWindowThread();
+/*
+		cv::startWindowThread();
 		cv::Mat img2(cv::Size(t->m_width, t->m_height),
 			    CV_MAKETYPE(t->m_numBytesPerChan * 8,
 			    t->m_numChannels), t->m_data);
