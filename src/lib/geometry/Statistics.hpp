@@ -66,12 +66,11 @@ public:
 	*
 	* \param	v1	The first texture vector
 	* \param	v2	The second texture vector
-	* \param	nComps	The number of components of the texture
-	*			vectors
+	* \param	coeffs	The coefficients to use for texter comparison
 	*
 	* \return	The distance of the given texture vectors
 	*/
-	static float textureVectorDistance(float* v1, float* v2, int nComps);
+	static float textureVectorDistance(float* v1, float* v2, float* coeffs);
 
 	/**
 	 * Destructor.
