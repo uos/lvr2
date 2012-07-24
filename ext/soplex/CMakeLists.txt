@@ -1,0 +1,78 @@
+cmake_minimum_required(VERSION 2.8)
+
+PROJECT(soplex_static)
+
+set(SOPLEX_SOURCES 
+	src/changesoplex.cpp
+	src/spxharrisrt.cpp
+	src/didxset.cpp	
+	src/spxhybridpr.cpp
+	src/dsvector.cpp	
+	src/spxid.cpp
+	src/dvector.cpp	
+	src/spxio.cpp
+	src/enter.cpp	
+	src/spxlp.cpp
+	src/factor.cpp	
+	src/spxlpfread.cpp
+	src/forest.cpp	
+	src/spxlpfwrite.cpp
+	src/githash.cpp	
+	src/spxmainsm.cpp
+	src/gzstream.cpp	
+	src/spxmpsread.cpp
+	src/idxset.cpp	
+	src/spxmpswrite.cpp
+	src/leave.cpp	
+	src/spxout.cpp
+	src/lpcolset.cpp	
+	src/spxparmultpr.cpp
+	src/lprow.cpp	
+	src/spxproof.cpp
+	src/lprowset.cpp	
+	src/spxquality.cpp
+	src/message.cpp	
+	src/spxscaler.cpp
+	src/mpsinput.cpp	
+	src/spxshift.cpp
+	src/nameset.cpp	
+	src/spxsolve.cpp
+	src/spxsolver.cpp
+	src/slufactor.cpp	
+	src/spxstarter.cpp
+	src/solve.cpp	
+	src/spxsteeppr.cpp
+	src/soplex.cpp
+	src/spxsumst.cpp
+	src/spxvecs.cpp
+	src/spxbasis.cpp	
+	src/spxvectorst.cpp
+	src/spxboundflippingrt.cpp
+	src/spxweightpr.cpp
+	src/spxbounds.cpp	
+	src/spxweightst.cpp
+	src/spxchangebasis.cpp
+	src/spxwritestate.cpp
+	src/spxdantzigpr.cpp
+	src/ssvector.cpp
+	src/spxdefaultrt.cpp
+	src/svector.cpp
+	src/spxdefines.cpp	
+	src/svset.cpp
+	src/spxdesc.cpp	
+	src/timer.cpp
+	src/spxdevexpr.cpp	
+	src/tracemethod.cpp
+	src/spxequilisc.cpp	
+	src/unitvector.cpp
+	src/spxfastrt.cpp	
+	src/update.cpp
+	src/spxfileio.cpp	
+	src/updatevector.cpp
+	src/spxgeometsc.cpp	
+	src/vector.cpp
+	src/spxgithash.cpp	
+	src/vsolve.cpp)
+
+ADD_LIBRARY(soplex_static STATIC ${SOPLEX_SOURCES})
+set_target_properties(soplex_static PROPERTIES LIBRARY_OUTPUT_DIRECTORY ${CMAKE_SOURCE_DIR}/lib)
