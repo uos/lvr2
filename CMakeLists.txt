@@ -186,6 +186,9 @@ endif(APPLE)
 include_directories(ext/libfreenect/include/)
 add_subdirectory(ext/libfreenect)
 
+# soplex
+include_directories( ${CMAKE_CURRENT_SOURCE_DIR}/ext/soplex/ )
+add_subdirectory(ext/soplex)
 
 ##############################################################
 # LIBRARIES

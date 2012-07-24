@@ -33,13 +33,16 @@
 #include <io/TextureIO.hpp>
 #include <geometry/Texture.hpp>
 #include <geometry/ImageProcessor.hpp>
+#include <geometry/Statistics.hpp>
 #include <cstdlib>
 #include <iomanip>
 #include <sstream>
 #include <opencv/cv.h>
 #include <opencv/highgui.h>
+#include <ext/soplex/src/soplex.h>
 
 using namespace std;
+using namespace soplex;
 
 /**
  * \brief Main entry point of the program.
@@ -47,11 +50,16 @@ using namespace std;
 int main( int argc, char ** argv )
 {
 
-	if (argc != 2)
+	float S1 = 15000; 
+	float S2 = 15;
+
+	if (argc != 4)
 	{
-		cout<<"Usage: "<<argv[0]<<" <filename>"<<endl;
+		cout<<"Usage: "<<argv[0]<<" <filename> S1 S2"<<endl;
 		return EXIT_FAILURE;
 	}
+	S1 = atof(argv[2]);
+	S2 = atof(argv[3]);
 
 	cout<<"Welcome to statstrain - matching textures with a passion!"<<endl;
 	cout<<"------------------------------------------------"<<endl;
@@ -109,11 +117,61 @@ int main( int argc, char ** argv )
 	}
 
 
-	float coeffs[14];
-	//Write zimpl file
-//TODO
+	
+
+	//Formulate the LP
+	SoPlex mysoplex;
+
+	//set the objective sense
+	mysoplex.changeSense(SPxLP::MAXIMIZE);
+
+	// we first add the 14 variables
+	DSVector dummycol(0);
+	for (int k = 0; k < 14; k++)
+	{
+		float v = 0;
+		for (int i = 0; i < tio->m_textures.size(); i++)
+		{
+			for (int j = 0; j < tio->m_textures.size(); j++)
+			{
+				v += x[i][j][k];
+			}
+		}
+		//Add variable
+		mysoplex.addCol(LPCol(v, dummycol, S2, 0));
+	}
+
+	/* then constraints one by one */
+	DSVector row1(14);
+	for (int k = 0; k < 14; k++)
+	{
+		float v = 0;
+		for (int i = 0; i < tio->m_textures.size(); i++)
+		{
+			v += x[i][i][k];
+		}
+		row1.add(k, v);
+	}
+	mysoplex.addRow(LPRow(0, row1, S1));
+
 	//Solve LP
-//TODO
+	DVector prim(14);
+	SPxSolver::Status stat = mysoplex.solve();
+
+	//get solution
+	float coeffs[14];
+	if( stat == SPxSolver::OPTIMAL )
+	{
+		mysoplex.getPrimal(prim);
+		cout << "LP solved to optimality."<<endl;
+		cout << "Primal solution is [";
+		for (int k = 0; k < 14; k++)
+		{	coeffs[k] = prim[k];
+			cout << prim[k] << ", ";
+		}
+		cout<<"]"<<endl;
+	}
+
 	//write sc.co
 	ofstream out("sc.co");
 	for (int i = 0; i < 14; i++)
@@ -127,7 +185,31 @@ int main( int argc, char ** argv )
 	}
 	out.close();
 
+
+	//calculate accuracy 
+	int hits = 0;
+	for (int i = 0; i < tData.size(); i++)
+	{
+		float min = FLT_MAX;
+		int min_index = -1;
+		for (int j = 0; j < tio->m_textures.size(); j++)
+		{
+			float curr = lssr::Statistics::textureVectorDistance(tData[i]->m_stats, tio->m_textures[j]->m_stats, coeffs);
+			if (curr < min)
+			{
+				min = curr;
+				min_index = j;
+			}
+		}
+		if (min_index == i)
+		{
+			hits++;
+		}
+	}
+	cout<<"Accuracy: "<<hits *1.0f /tData.size() * 100 <<"%"<<"     "<<hits<<endl;
+
 	delete tio;
+
 	return EXIT_SUCCESS;
 
 }
