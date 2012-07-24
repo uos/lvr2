@@ -1,0 +1,74 @@
+* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
+*                                                                           *
+*                  This file is part of the class library                   *
+*       SoPlex --- the Sequential object-oriented simPlex.                  *
+*                                                                           *
+*    Copyright (C) 1996      Roland Wunderling                              *
+*                  1996-2011 Konrad-Zuse-Zentrum                            *
+*                            fuer Informationstechnik Berlin                *
+*                                                                           *
+*  SoPlex is distributed under the terms of the ZIB Academic Licence.       *
+*                                                                           *
+*  You should have received a copy of the ZIB Academic License              *
+*  along with SoPlex; see the file COPYING. If not email to soplex@zib.de.  *
+*                                                                           *
+* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
+
+
+1.	All the documentation is available online at 
+
+        http://soplex.zib.de
+
+	You can also generate it, if you have doxgen installed by 
+        typing 'make doc'. It will then be in doc/html/index.html.
+        On some systems, it might be necessary to use 'gmake' instead
+        of 'make'.
+
+2.	Compiling
+
+	Read the documentation!
+
+        For the impatient:
+        
+	On systems with GNU gcc4.2
+	and greater               :  make COMP=gnu OPT=opt-gcc42
+	On systems with GNU g++   :  make COMP=gnu OPT=opt
+	Linux/x86 with Intel C++  :  make COMP=intel OPT=opt
+        Tru64 with Compaq C++     :  make COMP=compaq OPT=opt
+        Solaris with SUN Forte C++:  make COMP=sun OPT=opt
+        IRIX with SGI Mips Pro C++:  make COMP=sgi OPT=opt
+	HP-UX with HP aCC         :  make COMP=hp OPT=opt
+        AIX with VisualAge C++    :  make COMP=ibm OPT=opt
+
+        Then get and unpack in the check directory the Netlib testset from 
+        http://soplex.zib.de/download.shtml
+        and say make COMP=<as before> OPT=<as before> check
+        This should report no fails.
+
+        Now read the documentation!
+
+3.1	Using SoPlex
+
+	Start one of the binaries in the bin directory with the -h flag.
+
+3.2	Using the library
+
+    	Examples on how to use the SoPlex library is provided in the files
+	'src/soplexmain.cpp' and 'src/simpleexample.cpp'.
+
+4.	Bug report
+
+	If you find any bugs, or LP-files were SoPlex fails to find the
+	optimal solution, please report to koch@zib.de.
+
+5.	Publications
+
+	Any publication for which SoPlex has been used must include an
+	aknowledge ment and a reference to the Ph.D. thesis:
+
+	Roland Wunderling,
+	"Paralleler und Objekt-orientierter Simplex-Algorithmus",
+	ZIB technical report TR 96-09, Berlin 1996
+
+	A copy of the thesis can be retreived from
+	www.zib.de/Publications/abstracts/TR-96-09/
