@@ -338,4 +338,36 @@ void ImageProcessor::calcCCV(Texture* t, int numColors, int coherenceThreshold)
 	delete ccv;
 }
 
+float ImageProcessor::compareTexturesHist(Texture* tex1, Texture* tex2)
+{
+	if (tex1->m_numCCVColors == tex2->m_numCCVColors)
+	{
+		float result = 0;
+
+		//r, g and b
+		for (int i = 0; i < tex1->m_numCCVColors * 2 * 3; i += 2)
+		{
+			//calculate histogram entries from the CCVs
+			int col1 = tex1->m_CCV[i + 0] + tex1->m_CCV[i + 1];
+			int col2 = tex2->m_CCV[i + 0] + tex2->m_CCV[i + 1];
+			
+			//distance between relative values
+			result += fabs( col1 * 1.0f / (tex1->m_width*tex1->m_height) - col2 * 1.0f / (tex2->m_width*tex2->m_height)); 
+		}
+
+		return result;
+	}
+	else
+	{
+		return FLT_MAX;	
+	}
+	
+}
+
+float ImageProcessor::compareTexturesCCV(Texture* tex1, Texture* tex2)
+{
+	CCV* ccv1 = new CCV(tex1);
+	CCV* ccv2 = new CCV(tex2);
+	return ccv1->compareTo(ccv2);
+}
 }

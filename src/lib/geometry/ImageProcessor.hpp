@@ -131,6 +131,26 @@ public:
 	 *
 	 */
 	static void calcCCV(Texture* t, int numColors, int coherenceThreshold);
+
+	/**
+	 * \brief 	Compares the given textures wrt to their CCVs
+	 *
+	 * \param	tex1	The first texture
+	 * \param	tex2	The second texture
+	 *
+	 * \return 	The distance between the textures
+	 */
+	static float compareTexturesCCV(Texture* tex1, Texture* tex2);
+
+	/**
+	 * \brief 	Compares the given textures wrt to their histograms
+	 *
+	 * \param	tex1	The first texture
+	 * \param	tex2	The second texture
+	 *
+	 * \return 	The distance between the textures
+	 */
+	static float compareTexturesHist(Texture* tex1, Texture* tex2);
 private:
 
 	/**

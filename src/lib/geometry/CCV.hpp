@@ -65,6 +65,14 @@ public:
 	CCV(const cv::Mat &t, int numColors, int coherenceThreshold);
 
 	/**
+	* \brief Constructor. Loads the CCVs from the given Texture.
+	*
+	* \param	t		The texture
+	*
+	*/
+	CCV(Texture* t);
+
+	/**
 	 * \brief	Calculates the distance to the given CCV.
 	 *
 	 * \param	other	The other CCV
@@ -97,6 +105,15 @@ public:
 	 */
 	void toArray_b(unsigned long* arr);
 
+	/**
+  	 * \brief	Imports a CCV to an array
+	 * 
+	 * \param	arr	The CCV array
+	 *
+	 * \return	The imported CCV map
+	 */
+	std::map< uchar, std::pair<ulong, ulong> > fromArray(unsigned long int* arr);
+	
 	/**
 	 * Destructor.
 	 */

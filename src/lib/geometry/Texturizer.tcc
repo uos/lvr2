@@ -152,22 +152,91 @@ TextureToken<VertexT, NormalT>* Texturizer<VertexT, NormalT>::createInitialTextu
 template<typename VertexT, typename NormalT>
 void Texturizer<VertexT, NormalT>::filterByColor(vector<Texture*> &textures, Texture* refTexture, float threshold)
 {
-//TODO
+	vector<Texture*> toDelete;
+
+	//Filter by histogram
+	for (int i = 0; i < textures.size(); i++)
+	{
+		if(ImageProcessor::compareTexturesHist(textures[i], refTexture) > threshold)
+		{
+			toDelete.push_back(textures[i]);
+		}
+	}	
+	//filter by CCV
+	for (int i = 0; i < textures.size(); i++)
+	{
+		if(ImageProcessor::compareTexturesCCV(textures[i], refTexture) > threshold)
+		{
+			toDelete.push_back(textures[i]);
+		}
+	}	
+	
+	//delete bad matches
+	for (int d = 0; d < toDelete.size(); d++)
+	{
+		textures.erase(find(textures.begin(), textures.end(), toDelete[d]));
+	}	
+	
 }
 template<typename VertexT, typename NormalT>
 void Texturizer<VertexT, NormalT>::filterByCrossCorr(vector<Texture*> &textures, Texture* refTexture, float threshold)
 {
-//TODO
+	vector<Texture*> toDelete;
+
+	//filter by CC
+	for (int i = 0; i < textures.size(); i++)
+	{
+//		if(/*TODO*/ > threshold)
+//		{
+//			toDelete.push_back(textures[i]);
+//		}
+	}	
+	
+	//delete bad matches
+	for (int d = 0; d < toDelete.size(); d++)
+	{
+		textures.erase(find(textures.begin(), textures.end(), toDelete[d]));
+	}	
 }
 template<typename VertexT, typename NormalT>
 void Texturizer<VertexT, NormalT>::filterByStats(vector<Texture*> &textures, Texture* refTexture, float threshold)
 {
-//TODO
+	vector<Texture*> toDelete;
+
+	//filter by stats
+	for (int i = 0; i < textures.size(); i++)
+	{
+//		if(/*TODO*/ > threshold)
+//		{
+//			toDelete.push_back(textures[i]);
+//		}
+	}	
+	
+	//delete bad matches
+	for (int d = 0; d < toDelete.size(); d++)
+	{
+		textures.erase(find(textures.begin(), textures.end(), toDelete[d]));
+	}	
 }
 template<typename VertexT, typename NormalT>
 void Texturizer<VertexT, NormalT>::filterByFeatures(vector<Texture*> &textures, Texture* refTexture, float threshold)
 {
-//TODO
+	vector<Texture*> toDelete;
+
+	//filter by features
+	for (int i = 0; i < textures.size(); i++)
+	{
+//		if(/*TODO*/ > threshold)
+//		{
+//			toDelete.push_back(textures[i]);
+//		}
+	}	
+	
+	//delete bad matches
+	for (int d = 0; d < toDelete.size(); d++)
+	{
+		textures.erase(find(textures.begin(), textures.end(), toDelete[d]));
+	}	
 }
 
 template<typename VertexT, typename NormalT>
@@ -180,14 +249,14 @@ TextureToken<VertexT, NormalT>* Texturizer<VertexT, NormalT>::texturizePlane(vec
 	float crossCorrThreshold 	= 0.5; //TODO: param
 	float statsThreshold 		= 0.5; //TODO: param
 	float featureThreshold 		= 0.5; //TODO: param
-	float patternThreshold 		= 0.5; //TODO: param
+	float patternThreshold 		= FLT_MAX; //TODO: param
 
 
 	if(contour.size() >= 3)
 	{
 		//create an initial texture from the point cloud
 		initialTexture = createInitialTexture(contour);
-/*
+
 		//reduce number of matching textures from the texture pack step by step
 		std::vector<Texture*> textures = this->m_tio->m_textures;
 		filterByColor		(textures, initialTexture->m_texture, colorThreshold);
@@ -234,8 +303,8 @@ TextureToken<VertexT, NormalT>* Texturizer<VertexT, NormalT>::texturizePlane(vec
 				//Add initial texture to texture pack */
 				this->m_tio->add(initialTexture->m_texture);
 				this->m_tio->write();
-//			}
-//		}
+			}
+		}
 	} 
 	return initialTexture;
 		
