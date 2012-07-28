@@ -69,6 +69,30 @@ CCV::CCV(const cv::Mat &t, int numColors, int coherenceThreshold)
 	m_CCV_b = calculateCCV(img_planes[2]);
 }
 
+
+CCV::CCV(Texture* t)
+{
+	this->m_numColors 		= t->m_numCCVColors;
+	this->m_numPix 			= t->m_width * t->m_height;
+
+	//set the CCVs
+	m_CCV_r = fromArray(t->m_CCV);
+	m_CCV_g = fromArray(&t->m_CCV[m_numColors * 2]);
+	m_CCV_b = fromArray(&t->m_CCV[m_numColors * 2 * 2]);
+}
+
+std::map< uchar, std::pair<ulong, ulong> > CCV::fromArray(unsigned long int* arr)
+{
+	std::map< uchar, std::pair<ulong, ulong> > ccv;
+	for (int i = 0; i < 2 * m_numColors; i += 2)
+	{	
+		ccv[i / 2 + 0].first  = arr[i + 0];
+		ccv[i / 2 + 1].second = arr[i + 1];
+	}
+	return ccv;
+
+}
+
 void CCV::toArray_r(unsigned long int* arr)
 {
 	for (int i = 0; i < 2 * m_numColors; i++)
