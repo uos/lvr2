@@ -379,6 +379,41 @@ private:
 
 	/// Number of edge collapses
 	int								m_numEdgeCollapses;
+
+	
+	///Path to texture pack
+	string m_texturePack;
+
+	///Minimum width or height for pattern textures
+	unsigned int m_minimalPatternSize;
+
+	///Coefficents file for texture matching based on statistics
+	string m_statsCoeffs;
+
+	///Number of colors for texture statistics
+	unsigned int m_numStatsColors;
+
+	///Number of colors for texture matching based on color information
+	unsigned int m_numCCVColors;
+
+	///Coherence threshold for texture matching based on color information
+	unsigned int m_coherenceThreshold;
+
+	///Threshold for texture matching based on colors
+	float m_colorThreshold;
+	
+	///Threshold for texture matching based on statistics
+	float m_statsThreshold;
+
+	///Threshold for texture matching based on features
+	float m_featuresThreshold;
+	
+	///Threshold for texture matching based on cross correlation
+	float m_crosscorrThreshold;
+
+	///Threshold for pattern extraction from textures
+	float m_patternThreshold;
+
 };
 
 
