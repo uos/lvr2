@@ -269,6 +269,29 @@ public:
      */
     string getEdgeCollapseMethod() const;
 
+    int getNumStatsColors() const;
+
+    int getNumCCVColors() const;
+
+    int getCoherenceThreshold() const;
+
+    float getColorThreshold() const;
+    
+    float getStatsThreshold() const;
+    
+    float getFeatureThreshold() const;
+    
+    float getCrossCorrThreshold() const;
+    
+    float getPatternThreshold() const;
+
+    float* getStatsCoeffs()const;
+
+    string getTexturePack() const;
+
+    int getMinPatternSize() const;
+
+
 private:
 
 	/// The set voxelsize

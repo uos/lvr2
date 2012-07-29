@@ -26,6 +26,7 @@
 
 #include "Options.hpp"
 #include <omp.h>
+#include <fstream>
 
 namespace reconstruct{
 
@@ -303,6 +304,69 @@ float Options::getTexelSize() const
 float Options::getLineFusionThreshold() const
 {
     return m_variables["lft"].as<float>();
+}
+
+string   Options::getTexturePack() const
+{
+    return m_variables["tp"].as<string>();
+}
+
+int   Options::getMinPatternSize() const
+{
+    return m_variables["mps"].as<int>();
+}
+
+int   Options::getNumStatsColors() const
+{
+    return m_variables["nsc"].as<int>();
+}
+
+int   Options::getNumCCVColors() const
+{
+    return m_variables["nccv"].as<int>();
+}
+
+int   Options::getCoherenceThreshold() const
+{
+    return m_variables["ct"].as<int>();
+}
+
+float Options::getColorThreshold() const
+{
+    return m_variables["colt"].as<float>();
+}
+
+float Options::getStatsThreshold() const
+{
+    return m_variables["stat"].as<float>();
+}
+
+float Options::getFeatureThreshold() const
+{
+    return m_variables["feat"].as<float>();
+}
+
+float Options::getCrossCorrThreshold() const
+{
+    return m_variables["crot"].as<float>();
+}
+
+float Options::getPatternThreshold() const
+{
+    return m_variables["patt"].as<float>();
+}
+
+float* Options::getStatsCoeffs()const
+{
+	float* result = new float[14];
+    	std::ifstream in (m_variables["tp"].as<string>().c_str());
+	for(int i = 0; i < 14; i++)
+	{
+		in >> result[i];
+	}
+	in.close();
+	
+	return result;
 }
 
 Options::~Options() {

@@ -48,9 +48,8 @@ public:
 	 *
 	 * @param 	pm	 A PointCloudManager containing a colored PointCloud
 	 *
-	 * @param	filename A texture package
 	 */
-	Texturizer( typename PointsetSurface<VertexT>::Ptr pm, string filename = "");
+	Texturizer( typename PointsetSurface<VertexT>::Ptr pm);
 
 	/**
 	 * @brief 	Creates or searches a texture for the region given by its' contour
@@ -61,6 +60,36 @@ public:
 	 *
 	**/
 	TextureToken<VertexT, NormalT>* texturizePlane(vector<VertexT> contour);
+
+	///File name of texture pack
+	static string m_filename;
+
+	///Minimal pattern width or height for pattern extraction
+	static unsigned int m_minimalPatternSize;
+	
+	///Number of colors to use for stats calculations
+	static unsigned int m_numStatsColors;
+
+	///Number of colors to use for CCV calculation
+	static unsigned int m_numCCVColors;
+
+	///coherence threshold for CCV calculation
+	static unsigned int m_coherenceThreshold;
+
+	///Threshold for color based texture filtering
+	static float m_colorThreshold;
+
+	///Threshold for cross correlation based texture filtering
+	static float m_crossCorrThreshold;
+
+	///Threshold for statistics based texture filtering
+	static float m_statsThreshold;
+
+	///Threshold for feature based texture filtering
+	static float m_featureThreshold;
+
+	///Threshold for pattern extraction
+	static float m_patternThreshold;
 
 private:
 

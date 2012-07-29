@@ -32,6 +32,8 @@ using namespace std;
 namespace lssr {
 
 float Statistics::epsilon = 0.0000001;
+float Statistics::m_coeffs[14] = {0.5, 0.5, 0.5, 0.5, 0.5, 0.5, 0.5, 0.5, 0.5, 0.5, 0.5, 0.5, 0.5, 0.5};
+
 
 Statistics::Statistics(Texture* t, int numColors)
 {
@@ -47,6 +49,16 @@ Statistics::Statistics(const cv::Mat &t, int numColors)
 {
 	this->m_numColors = numColors;
 	calcCooc(t);
+}
+
+float Statistics::textureVectorDistance(float* v1, float* v2)
+{
+	float result = 0;
+	for (int i = 0; i < 14; i++)
+	{
+		result += Statistics::m_coeffs[i] * fabs(v1[i] - v2[i]);// / max(1.0f, max(v1[i], v2[i]));	
+	}
+	return result;
 }
 
 float Statistics::textureVectorDistance(float* v1, float* v2, float* coeffs)

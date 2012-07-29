@@ -26,11 +26,52 @@
 
 namespace lssr {
 
+        ///File name of texture pack
+	template<typename VertexT, typename NormalT>
+        string Texturizer<VertexT, NormalT>::m_filename = "";
+
+        ///Minimal pattern width or height for pattern extraction
+	template<typename VertexT, typename NormalT>
+        unsigned int Texturizer<VertexT, NormalT>::m_minimalPatternSize = 0;
+        
+        ///Number of colors to use for stats calculations
+	template<typename VertexT, typename NormalT>
+        unsigned int Texturizer<VertexT, NormalT>::m_numStatsColors = 0;
+
+        ///Number of colors to use for CCV calculation
+	template<typename VertexT, typename NormalT>
+        unsigned int Texturizer<VertexT, NormalT>::m_numCCVColors = 0;
+
+        ///coherence threshold for CCV calculation
+	template<typename VertexT, typename NormalT>
+        unsigned int Texturizer<VertexT, NormalT>::m_coherenceThreshold = 0;
+
+        ///Threshold for color based texture filtering
+	template<typename VertexT, typename NormalT>
+        float Texturizer<VertexT, NormalT>::m_colorThreshold = 0;
+
+        ///Threshold for cross correlation based texture filtering
+	template<typename VertexT, typename NormalT>
+        float Texturizer<VertexT, NormalT>::m_crossCorrThreshold = 0;
+
+        ///Threshold for statistics based texture filtering
+	template<typename VertexT, typename NormalT>
+        float Texturizer<VertexT, NormalT>::m_statsThreshold = 0;
+
+        ///Threshold for feature based texture filtering
+	template<typename VertexT, typename NormalT>
+        float Texturizer<VertexT, NormalT>::m_featureThreshold = 0;
+
+        ///Threshold for pattern extraction
+	template<typename VertexT, typename NormalT>
+        float Texturizer<VertexT, NormalT>::m_patternThreshold = 0;
+
+
 template<typename VertexT, typename NormalT>
-Texturizer<VertexT, NormalT>::Texturizer(typename PointsetSurface<VertexT>::Ptr pm, string filename)
+Texturizer<VertexT, NormalT>::Texturizer(typename PointsetSurface<VertexT>::Ptr pm)
 {
 	//Load texture package
-	this->m_tio = new TextureIO(filename);
+	this->m_tio = new TextureIO(Texturizer::m_filename);
 	
 	this->m_pm = pm;
 }
@@ -141,10 +182,10 @@ TextureToken<VertexT, NormalT>* Texturizer<VertexT, NormalT>::createInitialTextu
 	ImageProcessor::calcSURF(texture);
 
 	//calculate statistics
-	ImageProcessor::calcStats(texture, 16); //TODO: Param?!
+	ImageProcessor::calcStats(texture, Texturizer<VertexT, NormalT>::m_numStatsColors); 
 
 	//calculate CCV
-	ImageProcessor::calcCCV(texture, 64, 20); //TODO: Param?!
+	ImageProcessor::calcCCV(texture, Texturizer<VertexT, NormalT>::m_numCCVColors, Texturizer<VertexT, NormalT>::m_coherenceThreshold);
 
 	return result;
 }
@@ -206,10 +247,10 @@ void Texturizer<VertexT, NormalT>::filterByStats(vector<Texture*> &textures, Tex
 	//filter by stats
 	for (int i = 0; i < textures.size(); i++)
 	{
-//		if(/*TODO*/ > threshold)
-//		{
-//			toDelete.push_back(textures[i]);
-//		}
+		if(ImageProcessor::compareTexturesStats(textures[i], refTexture) > threshold)
+		{
+			toDelete.push_back(textures[i]);
+		}
 	}	
 	
 	//delete bad matches
@@ -226,10 +267,10 @@ void Texturizer<VertexT, NormalT>::filterByFeatures(vector<Texture*> &textures, 
 	//filter by features
 	for (int i = 0; i < textures.size(); i++)
 	{
-//		if(/*TODO*/ > threshold)
-//		{
-//			toDelete.push_back(textures[i]);
-//		}
+		if(ImageProcessor::compareTexturesSURF(textures[i], refTexture) > threshold)
+		{
+			toDelete.push_back(textures[i]);
+		}
 	}	
 	
 	//delete bad matches
@@ -245,11 +286,11 @@ TextureToken<VertexT, NormalT>* Texturizer<VertexT, NormalT>::texturizePlane(vec
 //	std::cout<<"==================================================================="<<std::endl;
 	TextureToken<VertexT, NormalT>* initialTexture = 0;
 
-	float colorThreshold 		= 0.5; //TODO: param
-	float crossCorrThreshold 	= 0.5; //TODO: param
-	float statsThreshold 		= 0.5; //TODO: param
-	float featureThreshold 		= 0.5; //TODO: param
-	float patternThreshold 		= FLT_MAX; //TODO: param
+	float colorThreshold 		= Texturizer<VertexT, NormalT>::m_colorThreshold;
+	float crossCorrThreshold 	= Texturizer<VertexT, NormalT>::m_crossCorrThreshold;
+	float statsThreshold 		= Texturizer<VertexT, NormalT>::m_statsThreshold;
+	float featureThreshold 		= Texturizer<VertexT, NormalT>::m_featureThreshold;
+	float patternThreshold 		= FLT_MAX;//Texturizer<VertexT, NormalT>::m_patternThreshold; //TODO: uncomment
 
 
 	if(contour.size() >= 3)
@@ -277,13 +318,15 @@ TextureToken<VertexT, NormalT>* Texturizer<VertexT, NormalT>::texturizePlane(vec
 		{
 			//Try to extract pattern
 			Texture* pattern = 0;
-			if (ImageProcessor::extractPattern(initialTexture->m_texture, &pattern) > patternThreshold)
+			if (ImageProcessor::extractPattern(initialTexture->m_texture, &pattern, Texturizer<VertexT, NormalT>::m_minimalPatternSize) > patternThreshold)
 			{
 				cout<<"Using pattern texture!!!"<<endl;
 				//calculate surf features for pattern
 				ImageProcessor::calcSURF(pattern);
 				//calculate statistics for pattern
-				ImageProcessor::calcStats(pattern, 16); //TODO: Param?!
+				ImageProcessor::calcStats(pattern, Texturizer<VertexT, NormalT>::m_numStatsColors); 
+				//calculate CCV for pattern
+				ImageProcessor::calcCCV(pattern, Texturizer<VertexT, NormalT>::m_numCCVColors, Texturizer<VertexT, NormalT>::m_coherenceThreshold);
 
 				//Add pattern to texture package
 				this->m_tio->add(pattern);
@@ -307,32 +350,6 @@ TextureToken<VertexT, NormalT>* Texturizer<VertexT, NormalT>::texturizePlane(vec
 		}
 	} 
 	return initialTexture;
-		
-/*
-		float minSurfDist = FLT_MAX;
-		int minIndex = -1;
-		//Check all textures of the texture package 
-		for(int i = 0; i < this->m_tio->m_textures.size(); i++)
-		{
-			//TODO: other methods for texture matching
-			//SURF
-			float surfDistance = ImageProcessor::compareTexturesSURF(initialTexture->m_texture, this->m_tio->m_textures[i]);
-			if(surfDistance < minSurfDist)
-			{
-				minSurfDist = surfDistance;
-				minIndex = i;
-			}
-		}
-		std::cout<<minSurfDist<<std::endl;
-		if (minSurfDist < 0.02) //TODO: Param
-		{
-			//Found a matching texture
-			return new TextureToken<VertexT, NormalT>(	initialTexture->v1, initialTexture->v2,
-									initialTexture->p, 
-									initialTexture->a_min, initialTexture->b_min,
-									this->m_tio->m_textures[minIndex]);
-		}
-*/
 }
 
 }
