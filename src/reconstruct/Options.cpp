@@ -71,6 +71,17 @@ Options::Options(int argc, char** argv) : m_descr("Supported options")
 		        ("sct", value<float>(&m_sct)->default_value(0.7), "Sharp corner threshold when using sharp feature decomposition")
 		        ("ecm", value<string>(&m_ecm)->default_value("QUADRIC"), "Edge collapse method for mesh reduction. Choose from QUADRIC, QUADRIC_TRI, MELAX, SHORTEST")
 				("ecc", value<int>(&m_numEdgeCollapses)->default_value(0), "Edge collapse count. Number of edges to collapse for mesh reduction.")
+		        ("tp", value<string>(&m_texturePack)->default_value(""), "Path to texture pack")
+		        ("mps", value<unsigned int>(&m_minimalPatternSize)->default_value(20), "Minimum width or height for pattern textures")
+		        ("co", value<string>(&m_statsCoeffs)->default_value(""), "Coefficents file for texture matching based on statistics")
+		        ("nsc", value<unsigned int>(&m_numStatsColors)->default_value(16), "Number of colors for texture statistics")
+		        ("nccv", value<unsigned int>(&m_numCCVColors)->default_value(64), "Number of colors for texture matching based on color information")
+		        ("ct", value<unsigned int>(&m_coherenceThreshold)->default_value(50), "Coherence threshold for texture matching based on color information")
+		        ("colt", value<float>(&m_colorThreshold)->default_value(100), "Threshold for texture matching based on colors")
+		        ("stat", value<float>(&m_statsThreshold)->default_value(100), "Threshold for texture matching based on statistics")
+		        ("feat", value<float>(&m_featuresThreshold)->default_value(100), "Threshold for texture matching based on features")
+		        ("crot", value<float>(&m_crosscorrThreshold)->default_value(100), "Threshold for texture matching based on cross correlation")
+		        ("patt", value<float>(&m_patternThreshold)->default_value(100), "Threshold for pattern extraction from textures")
         ;
 
 	m_pdescr.add("inputFile", -1);
