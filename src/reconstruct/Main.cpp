@@ -145,6 +145,8 @@
 #include "geometry/Matrix4.hpp"
 #include "geometry/HalfEdgeMesh.hpp"
 #include "geometry/Texture.hpp"
+#include "geometry/Texturizer.hpp"
+#include "geometry/Statistics.hpp"
 #include "geometry/QuadricVertexCosts.hpp"
 #include "reconstruction/SharpBox.hpp"
 
@@ -285,6 +287,58 @@ int main(int argc, char** argv)
 		{
 			Texture::m_texelSize = options.getTexelSize();
 		}
+		
+		if(options.getTexturePack() != "")
+		{
+			Texturizer<cVertex, cNormal>::m_filename = options.getTexturePack();
+			if(options.getMinPatternSize())
+			{
+				Texturizer<cVertex, cNormal>::m_minimalPatternSize = options.getMinPatternSize();
+			}
+			if(options.getStatsCoeffs())
+			{	
+				float* sc = options.getStatsCoeffs();
+				for (int i = 0; i < 14; i++)
+				{
+					Statistics::m_coeffs[i] = sc[i];
+				}
+				delete sc;
+			}
+			if(options.getNumStatsColors())
+			{
+				Texturizer<cVertex, cNormal>::m_numStatsColors = options.getNumStatsColors();
+			}
+			if(options.getNumCCVColors())
+			{
+				Texturizer<cVertex, cNormal>::m_numCCVColors = options.getNumCCVColors();
+			}
+			if(options.getCoherenceThreshold())
+			{
+				Texturizer<cVertex, cNormal>::m_coherenceThreshold = options.getCoherenceThreshold();
+			}
+
+			if(options.getColorThreshold())
+			{
+				Texturizer<cVertex, cNormal>::m_colorThreshold = options.getColorThreshold();
+			}
+			if(options.getStatsThreshold())
+			{
+				Texturizer<cVertex, cNormal>::m_statsThreshold = options.getStatsThreshold();
+			}
+			if(options.getCrossCorrThreshold())
+			{
+				Texturizer<cVertex, cNormal>::m_crossCorrThreshold = options.getCrossCorrThreshold();
+			}
+			if(options.getFeatureThreshold())
+			{
+				Texturizer<cVertex, cNormal>::m_featureThreshold = options.getFeatureThreshold();
+			}
+			if(options.getPatternThreshold())
+			{
+				Texturizer<cVertex, cNormal>::m_patternThreshold = options.getPatternThreshold();
+			}
+		}
+
 
 		if(options.getSharpFeatureThreshold())
 		{

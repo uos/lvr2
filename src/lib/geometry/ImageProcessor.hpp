@@ -96,13 +96,14 @@ public:
 	/**
 	 * \brief	Tries to extract a pattern from the given texture
 	 *
-	 * \param 	tex	The texture to extract a pattern from
-	 * \param 	dst	The destination to store the pattern
+	 * \param 	tex			The texture to extract a pattern from
+	 * \param 	dst			The destination to store the pattern
+	 * \param	minimalPatternSize	The minimum width or height of a pattern Texture
 	 *
 	 * \return	A value indicating how "good" the pattern is.
 	 *		The higher the value, the "better" the pattern.
 	 */
-	static float extractPattern(Texture* tex, Texture** dst);
+	static float extractPattern(Texture* tex, Texture** dst, unsigned int minimalPatternSize);
 
 	/**
 	 * \brief 	Calculates 14 statistical values for the given texture
@@ -151,6 +152,16 @@ public:
 	 * \return 	The distance between the textures
 	 */
 	static float compareTexturesHist(Texture* tex1, Texture* tex2);
+
+	/**
+	 * \brief 	Compares the given textures wrt to their statistics
+	 *
+	 * \param	tex1	The first texture
+	 * \param	tex2	The second texture
+	 *
+	 * \return 	The distance between the textures
+	 */
+	static float compareTexturesStats(Texture* tex1, Texture* tex2);
 private:
 
 	/**

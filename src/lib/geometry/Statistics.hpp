@@ -66,7 +66,17 @@ public:
 	*
 	* \param	v1	The first texture vector
 	* \param	v2	The second texture vector
-	* \param	coeffs	The coefficients to use for texter comparison
+	*
+	* \return	The distance of the given texture vectors
+	*/
+	static float textureVectorDistance(float* v1, float* v2);
+
+	/**
+	* \brief	Calculates the distance of two texture vectors
+	*
+	* \param	v1	The first texture vector
+	* \param	v2	The second texture vector
+	* \param	coeffs	The coefficients to use for comparison
 	*
 	* \return	The distance of the given texture vectors
 	*/
@@ -175,6 +185,9 @@ public:
 	 * \return 	The maximal correlation coefficient of the texture
 	 */
 	float calcMaxCorrelationCoefficient();
+
+	///The 14 coefficients for texture comparison
+	static float m_coeffs[14];
 
 private:
 
