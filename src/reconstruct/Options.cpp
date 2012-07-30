@@ -322,24 +322,24 @@ string   Options::getTexturePack() const
     return m_variables["tp"].as<string>();
 }
 
-int   Options::getMinPatternSize() const
+unsigned int   Options::getMinPatternSize() const
 {
-    return m_variables["mps"].as<int>();
+    return m_variables["mps"].as<unsigned int>();
 }
 
-int   Options::getNumStatsColors() const
+unsigned int   Options::getNumStatsColors() const
 {
-    return m_variables["nsc"].as<int>();
+    return m_variables["nsc"].as<unsigned int>();
 }
 
-int   Options::getNumCCVColors() const
+unsigned int   Options::getNumCCVColors() const
 {
-    return m_variables["nccv"].as<int>();
+    return m_variables["nccv"].as<unsigned int>();
 }
 
-int   Options::getCoherenceThreshold() const
+unsigned int   Options::getCoherenceThreshold() const
 {
-    return m_variables["ct"].as<int>();
+    return m_variables["ct"].as<unsigned int>();
 }
 
 float Options::getColorThreshold() const

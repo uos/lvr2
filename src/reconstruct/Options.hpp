@@ -269,11 +269,11 @@ public:
      */
     string getEdgeCollapseMethod() const;
 
-    int getNumStatsColors() const;
+    unsigned int getNumStatsColors() const;
 
-    int getNumCCVColors() const;
+    unsigned int getNumCCVColors() const;
 
-    int getCoherenceThreshold() const;
+    unsigned int getCoherenceThreshold() const;
 
     float getColorThreshold() const;
     
@@ -289,7 +289,7 @@ public:
 
     string getTexturePack() const;
 
-    int getMinPatternSize() const;
+    unsigned int getMinPatternSize() const;
 
 
 private:
