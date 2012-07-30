@@ -53,8 +53,10 @@ public:
 	 *
 	 * @param 	t	The associated texture
 	 *
+	 * @param 	index	The index of the texture in the texture package
+	 *
 	**/
-	TextureToken(NormalT v1, NormalT v2, VertexT p, float a_min, float b_min, Texture* t = 0);
+	TextureToken(NormalT v1, NormalT v2, VertexT p, float a_min, float b_min, Texture* t = 0, int index = -1);
 
 	/**
 	 * @brief	computes texture coordinates corresponding to the give Vertex
@@ -84,6 +86,9 @@ public:
 
 	///The bounding box of the texture plane
 	float a_min, b_min;
+
+	///index of the texture in the texture pack
+	int m_textureIndex;
 };
 
 }
