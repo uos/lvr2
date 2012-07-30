@@ -27,7 +27,7 @@
 namespace lssr {
 
 template<typename VertexT, typename NormalT>
-TextureToken<VertexT, NormalT>::TextureToken(NormalT v1, NormalT v2, VertexT p, float a_min, float b_min, Texture* t)
+TextureToken<VertexT, NormalT>::TextureToken(NormalT v1, NormalT v2, VertexT p, float a_min, float b_min, Texture* t, int index)
 {
 	this->v1 	= v1;
 	this->v2 	= v2;
@@ -35,6 +35,7 @@ TextureToken<VertexT, NormalT>::TextureToken(NormalT v1, NormalT v2, VertexT p, 
 	this->a_min	= a_min;
 	this->b_min	= b_min;
 	this->m_texture	= t;
+	this->m_textureIndex = index;
 }
 
 template<typename VertexT, typename NormalT>

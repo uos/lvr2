@@ -312,7 +312,7 @@ TextureToken<VertexT, NormalT>* Texturizer<VertexT, NormalT>::texturizePlane(vec
 			return new TextureToken<VertexT, NormalT>(	initialTexture->v1, initialTexture->v2,
 									initialTexture->p, 
 									initialTexture->a_min, initialTexture->b_min,
-									textures[0]);
+									textures[0], find(this->m_tio->m_textures.begin(), this->m_tio->m_textures.end(), textures[0]) - this->m_tio->m_textures.begin());
 		}
 		else
 		{
@@ -329,14 +329,14 @@ TextureToken<VertexT, NormalT>* Texturizer<VertexT, NormalT>::texturizePlane(vec
 				ImageProcessor::calcCCV(pattern, Texturizer<VertexT, NormalT>::m_numCCVColors, Texturizer<VertexT, NormalT>::m_coherenceThreshold);
 
 				//Add pattern to texture package
-				this->m_tio->add(pattern);
+				int index = this->m_tio->add(pattern);
 				this->m_tio->write();
 
 				//return a texture token
 				return new TextureToken<VertexT, NormalT>(	initialTexture->v1, initialTexture->v2,
 										initialTexture->p, 
 										initialTexture->a_min, initialTexture->b_min,
-										pattern);
+										pattern, index);
 			}
 			else
 			{
@@ -344,7 +344,7 @@ TextureToken<VertexT, NormalT>* Texturizer<VertexT, NormalT>::texturizePlane(vec
 				//Pattern extraction failed -> use initial texture
 				delete pattern; 
 				//Add initial texture to texture pack */
-				this->m_tio->add(initialTexture->m_texture);
+				initialTexture->m_textureIndex = this->m_tio->add(initialTexture->m_texture);
 				this->m_tio->write();
 			}
 		}
