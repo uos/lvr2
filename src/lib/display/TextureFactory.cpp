@@ -14,6 +14,8 @@
 using std::cout;
 using std::endl;
 
+#include <opencv/highgui.h>
+
 TextureFactory::TextureFactory()
 {
     // TODO Auto-generated constructor stub
@@ -45,7 +47,10 @@ GlTexture* TextureFactory::getTexture(string filename) const
 	if(filename.substr(filename.find_last_of(".") + 1, 3) == "ppm")
 	{
 		lssr::PPMIO reader(filename.substr(0, filename.find_last_of(".") + 4));
-		data    = reader.getPixels();
+		//data    = reader.getPixels();
+
+		cv::Mat mat = cv::imread(filename.substr(0, filename.find_last_of(".") + 4));
+		data    = mat.data;
 		width   = reader.getWidth();
 		height  = reader.getHeight();
 	}
