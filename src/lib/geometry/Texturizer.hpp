@@ -64,9 +64,6 @@ public:
 	///File name of texture pack
 	static string m_filename;
 
-	///Minimal pattern width or height for pattern extraction
-	static unsigned int m_minimalPatternSize;
-	
 	///Number of colors to use for stats calculations
 	static unsigned int m_numStatsColors;
 

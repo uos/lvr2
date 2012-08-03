@@ -98,12 +98,11 @@ public:
 	 *
 	 * \param 	tex			The texture to extract a pattern from
 	 * \param 	dst			The destination to store the pattern
-	 * \param	minimalPatternSize	The minimum width or height of a pattern Texture
 	 *
 	 * \return	A value indicating how "good" the pattern is.
 	 *		The higher the value, the "better" the pattern.
 	 */
-	static float extractPattern(Texture* tex, Texture** dst, unsigned int minimalPatternSize);
+	static float extractPattern(Texture* tex, Texture** dst);
 
 	/**
 	 * \brief 	Calculates 14 statistical values for the given texture

@@ -284,7 +284,7 @@ float ImageProcessor::compareTexturesSURF(Texture* tex1, Texture* tex2)
 
 }
 
-float ImageProcessor::extractPattern(Texture* tex, Texture** dst, unsigned int minimalPatternSize)
+float ImageProcessor::extractPattern(Texture* tex, Texture** dst)
 {
 	//convert texture to cv::Mat
 	cv::Mat src(cv::Size(tex->m_width, tex->m_height), CV_MAKETYPE(tex->m_numBytesPerChan * 8, tex->m_numChannels), tex->m_data);
@@ -292,12 +292,12 @@ float ImageProcessor::extractPattern(Texture* tex, Texture** dst, unsigned int m
 	cv::cvtColor(src, src, CV_RGB2GRAY);
 
 	//try to extract pattern
-	unsigned int sizeX, sizeY;
+	unsigned int sizeX, sizeY, sX, sY;
 	AutoCorr* ac = new AutoCorr(src);
-	float result = ac->getMinimalPattern(sizeX, sizeY, minimalPatternSize);
+	float result = ac->getMinimalPattern(sX, sY, sizeX, sizeY);
 	
 	//save the pattern
-	cv::Mat pattern = cv::Mat(src, cv::Rect(0, 0, sizeX, sizeY));
+	cv::Mat pattern = cv::Mat(src, cv::Rect(sX, sY, sizeX, sizeY));
 	
 	//convert the pattern to Texture
 	*dst = new Texture(pattern.size().width, pattern.size().height, pattern.channels(), tex->m_numBytesPerChan, tex->m_textureClass, 0, 0 ,0, 0, true, 0, 0);
