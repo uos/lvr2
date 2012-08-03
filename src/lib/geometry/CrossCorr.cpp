@@ -138,6 +138,11 @@ double CrossCorr::getMax(unsigned int &resX, unsigned int &resY)
 	return ptrCC(resY, resX);
 } 
 
+float CrossCorr::at(unsigned int x, unsigned int y)
+{
+	return m_crosscorr.at<float>(y, x);
+}
+
 void CrossCorr::getCCX(float* &output)
 {
 	//Allocate output

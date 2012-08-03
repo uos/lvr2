@@ -30,10 +30,6 @@ namespace lssr {
 	template<typename VertexT, typename NormalT>
         string Texturizer<VertexT, NormalT>::m_filename = "";
 
-        ///Minimal pattern width or height for pattern extraction
-	template<typename VertexT, typename NormalT>
-        unsigned int Texturizer<VertexT, NormalT>::m_minimalPatternSize = 0;
-        
         ///Number of colors to use for stats calculations
 	template<typename VertexT, typename NormalT>
         unsigned int Texturizer<VertexT, NormalT>::m_numStatsColors = 0;
@@ -318,7 +314,7 @@ TextureToken<VertexT, NormalT>* Texturizer<VertexT, NormalT>::texturizePlane(vec
 		{
 			//Try to extract pattern
 			Texture* pattern = 0;
-			if (ImageProcessor::extractPattern(initialTexture->m_texture, &pattern, Texturizer<VertexT, NormalT>::m_minimalPatternSize) > patternThreshold)
+			if (ImageProcessor::extractPattern(initialTexture->m_texture, &pattern) > patternThreshold)
 			{
 				cout<<"Using pattern texture!!!"<<endl;
 				//calculate surf features for pattern

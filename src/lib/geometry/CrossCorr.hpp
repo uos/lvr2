@@ -72,6 +72,16 @@ public:
 	double getMax(unsigned int &resX, unsigned int &resY);
 
 	/**
+	 * \brief Returns the cross correlation for the given lag
+	 *
+	 * \param	x 	The x coordinate of the lag
+	 * \param	y 	The y coordinate of the lag
+	 *
+	 * \return	The cross correlation for the given lag
+	 */
+	float at(unsigned int x, unsigned int y);
+
+	/**
 	 * Destructor.
 	 */
 	virtual ~CrossCorr();

@@ -289,9 +289,6 @@ public:
 
     string getTexturePack() const;
 
-    unsigned int getMinPatternSize() const;
-
-
 private:
 
 	/// The set voxelsize
@@ -383,9 +380,6 @@ private:
 	
 	///Path to texture pack
 	string m_texturePack;
-
-	///Minimum width or height for pattern textures
-	unsigned int m_minimalPatternSize;
 
 	///Coefficents file for texture matching based on statistics
 	string m_statsCoeffs;

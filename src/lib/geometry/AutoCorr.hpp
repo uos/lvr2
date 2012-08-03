@@ -31,6 +31,7 @@
 #include <math.h>
 #include <cstdio>
 #include "Texture.hpp"
+#include "CrossCorr.hpp"
 
 namespace lssr {
 
@@ -61,19 +62,19 @@ public:
 	/**
 	 * \brief	Tries to find a pattern in an Image using the auto correlation
 	 *		function. The result can be interpreted as a rectangle at the
-	 *		origin (0,0) of the input image with the width of sizeX and the
+	 *		position (sX,sY) of the input image with the width of sizeX and the
 	 * 		height of sizeY.
 	 *
+	 * \param	sX			The starting x position of the found pattern
+	 * \param	sY			The starting y position of the found pattern
 	 * \param	sizeX			The resulting x size of the found pattern
 	 * \param	sizeY			The resulting y size of the found pattern
-	 * \param	minimalPatternSize	The minimum acceptable x and y size of a
-	 *					pattern 
 	 *
-	 * \return	A confidence between 0 and 1 indicating the degree of success in
-	 *		extracting a pattern from the given image
+	 * \return	A confidence  indicating the degree of success in extracting a 
+	 *		pattern from the given image
 	 */
-	double getMinimalPattern(unsigned int &sizeX, unsigned int &sizeY, const int minimalPatternSize);
-
+	double getMinimalPattern(unsigned int &sX, unsigned int &sY, unsigned int &sizeX, unsigned int &sizeY);
+	
 	/**
 	 * Destructor.
 	 */
@@ -132,12 +133,28 @@ private:
 	 * \param	stdDev		The standard deviation of the distances
 	 *				between the peaks
 	 * \param	len		The length of the array
+	 * \param	peaks		Array to hold the positions of all peaks
 	 *
 	 * \return	The number of peaks in the data array
 	 */
-	int countPeaks(const float* data, float &stdDev, int len);
+	int countPeaks(const float* data, float &stdDev, int len, int peaks[]);
 
+	/**
+	 * \brief Calculates the "relative" height of a peak in the given data
+	 *
+	 * \param	peak	The position of the peak
+	 * \param	data	The data
+	 * \param	len	The length of the data
+ 	 *
+	 * \return The "relative" height of the given peak in the data
+	 */
+	float calcPeakHeight(int peak, float* data, int len);
+
+	/// Auto correlation	
 	cv::Mat m_autocorr;
+	
+	/// The input image
+	cv::Mat m_image;
 };
 
 }

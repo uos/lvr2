@@ -72,7 +72,6 @@ Options::Options(int argc, char** argv) : m_descr("Supported options")
 		        ("ecm", value<string>(&m_ecm)->default_value("QUADRIC"), "Edge collapse method for mesh reduction. Choose from QUADRIC, QUADRIC_TRI, MELAX, SHORTEST")
 				("ecc", value<int>(&m_numEdgeCollapses)->default_value(0), "Edge collapse count. Number of edges to collapse for mesh reduction.")
 		        ("tp", value<string>(&m_texturePack)->default_value(""), "Path to texture pack")
-		        ("mps", value<unsigned int>(&m_minimalPatternSize)->default_value(20), "Minimum width or height for pattern textures")
 		        ("co", value<string>(&m_statsCoeffs)->default_value(""), "Coefficents file for texture matching based on statistics")
 		        ("nsc", value<unsigned int>(&m_numStatsColors)->default_value(16), "Number of colors for texture statistics")
 		        ("nccv", value<unsigned int>(&m_numCCVColors)->default_value(64), "Number of colors for texture matching based on color information")
@@ -320,11 +319,6 @@ float Options::getLineFusionThreshold() const
 string   Options::getTexturePack() const
 {
     return m_variables["tp"].as<string>();
-}
-
-unsigned int   Options::getMinPatternSize() const
-{
-    return m_variables["mps"].as<unsigned int>();
 }
 
 unsigned int   Options::getNumStatsColors() const

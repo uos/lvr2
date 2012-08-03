@@ -291,10 +291,6 @@ int main(int argc, char** argv)
 		if(options.getTexturePack() != "")
 		{
 			Texturizer<cVertex, cNormal>::m_filename = options.getTexturePack();
-			if(options.getMinPatternSize())
-			{
-				Texturizer<cVertex, cNormal>::m_minimalPatternSize = options.getMinPatternSize();
-			}
 			if(options.getStatsCoeffs())
 			{	
 				float* sc = options.getStatsCoeffs();
