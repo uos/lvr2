@@ -194,7 +194,9 @@ void Texturizer<VertexT, NormalT>::filterByColor(vector<Texture*> &textures, Tex
 	//Filter by histogram
 	for (int i = 0; i < textures.size(); i++)
 	{
-		if(ImageProcessor::compareTexturesHist(textures[i], refTexture) > threshold)
+		float dist = ImageProcessor::compareTexturesHist(textures[i], refTexture);
+		textures[i]->m_distance += dist;
+		if(dist > threshold)
 		{
 			toDelete.push_back(textures[i]);
 		}
@@ -202,7 +204,9 @@ void Texturizer<VertexT, NormalT>::filterByColor(vector<Texture*> &textures, Tex
 	//filter by CCV
 	for (int i = 0; i < textures.size(); i++)
 	{
-		if(ImageProcessor::compareTexturesCCV(textures[i], refTexture) > threshold)
+		float dist = ImageProcessor::compareTexturesCCV(textures[i], refTexture);
+		textures[i]->m_distance += dist;
+		if(dist > threshold)
 		{
 			toDelete.push_back(textures[i]);
 		}
@@ -223,10 +227,12 @@ void Texturizer<VertexT, NormalT>::filterByCrossCorr(vector<Texture*> &textures,
 	//filter by CC
 	for (int i = 0; i < textures.size(); i++)
 	{
-//		if(/*TODO*/ > threshold)
-//		{
-//			toDelete.push_back(textures[i]);
-//		}
+		float dist = 0;//TODO
+		textures[i]->m_distance += dist;
+		if(dist > threshold)
+		{
+			toDelete.push_back(textures[i]);
+		}
 	}	
 	
 	//delete bad matches
@@ -243,7 +249,9 @@ void Texturizer<VertexT, NormalT>::filterByStats(vector<Texture*> &textures, Tex
 	//filter by stats
 	for (int i = 0; i < textures.size(); i++)
 	{
-		if(ImageProcessor::compareTexturesStats(textures[i], refTexture) > threshold)
+		float dist = ImageProcessor::compareTexturesStats(textures[i], refTexture);
+		textures[i]->m_distance += dist;
+		if(dist > threshold)
 		{
 			toDelete.push_back(textures[i]);
 		}
@@ -263,7 +271,9 @@ void Texturizer<VertexT, NormalT>::filterByFeatures(vector<Texture*> &textures, 
 	//filter by features
 	for (int i = 0; i < textures.size(); i++)
 	{
-		if(ImageProcessor::compareTexturesSURF(textures[i], refTexture) > threshold)
+		float dist = ImageProcessor::compareTexturesSURF(textures[i], refTexture);
+		textures[i]->m_distance += dist;
+		if(dist > threshold)
 		{
 			toDelete.push_back(textures[i]);
 		}
@@ -294,16 +304,24 @@ TextureToken<VertexT, NormalT>* Texturizer<VertexT, NormalT>::texturizePlane(vec
 		//create an initial texture from the point cloud
 		initialTexture = createInitialTexture(contour);
 
+		//reset distance values
+		for (int i = 0; i < this->m_tio->m_textures.size(); i++)
+		{
+			this->m_tio->m_textures[i]->m_distance = 0;
+		}
 		//reduce number of matching textures from the texture pack step by step
 		std::vector<Texture*> textures = this->m_tio->m_textures;
 		filterByColor		(textures, initialTexture->m_texture, colorThreshold);
-		filterByCrossCorr	(textures, initialTexture->m_texture, crossCorrThreshold);
 		filterByStats		(textures, initialTexture->m_texture, statsThreshold);
 		filterByFeatures	(textures, initialTexture->m_texture, featureThreshold);
-		
+//		filterByCrossCorr	(textures, initialTexture->m_texture, crossCorrThreshold); //TODO
+		sort(textures.begin(), textures.end(), Texture::cmpTextures);		
+
 		if (textures.size() > 0)
 		{
 			cout<<"Using Texture from texture package!!!"<<endl;
+
+			//TODO: Transform parameters for texture coordinate calculation
 			//Found matching textures in texture package -> use best match
 			return new TextureToken<VertexT, NormalT>(	initialTexture->v1, initialTexture->v2,
 									initialTexture->p, 

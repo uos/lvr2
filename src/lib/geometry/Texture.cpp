@@ -46,6 +46,7 @@ Texture::Texture()
 	this->m_isPattern		= false;
 	this->m_numCCVColors		= 0;
 	this->m_CCV			= 0;
+	this->m_distance 		= 0;
 }
 
 Texture::Texture(unsigned short int width, unsigned short int height, unsigned char numChannels,
@@ -87,6 +88,7 @@ Texture::Texture(Texture &other)
 	this->m_numCCVColors		= other.m_numCCVColors;
 	this->m_CCV			= new unsigned long[3 * m_numCCVColors * 2];
 	memcpy(m_CCV, other.m_CCV, 3 * m_numCCVColors * 2 * sizeof(unsigned long));
+	this->m_distance 		= other.m_distance;
 }
 
 void Texture::save(int i)
@@ -103,6 +105,11 @@ void Texture::save(int i)
 	char fn[255];
 	sprintf(fn, "texture_%d.ppm", i);
 	cv::imwrite(fn, img);
+}
+
+bool Texture::cmpTextures(Texture* t1, Texture* t2)
+{
+	return t1->m_distance < t2->m_distance;
 }
 
 Texture::~Texture() {
