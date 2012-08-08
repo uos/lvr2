@@ -65,10 +65,12 @@ public:
 
 
 	/**
-	 * \brief
+	 * \brief	Compares two textures based on their distance values
 	 *
-	 *
+	 * \param	t1	The first texture
+	 * \param	t2	The second texture
  	 *
+	 * \return	true if t1->m_distance < t2->m_distance
 	 */
 	static bool cmpTextures(Texture* t1, Texture* t2);
 
