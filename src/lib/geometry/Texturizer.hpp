@@ -32,6 +32,7 @@
 #include <string>
 #include <io/TextureIO.hpp>
 #include <geometry/ImageProcessor.hpp>
+#include <geometry/Transform.hpp>
 
 namespace lssr {
 

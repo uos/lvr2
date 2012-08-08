@@ -39,6 +39,7 @@ set(LSSR_SOURCES
     geometry/AutoCorr.cpp
     geometry/CrossCorr.cpp
     geometry/CCV.cpp
+    geometry/Transform.cpp
 )
 
 

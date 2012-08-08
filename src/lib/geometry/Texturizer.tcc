@@ -322,6 +322,7 @@ TextureToken<VertexT, NormalT>* Texturizer<VertexT, NormalT>::texturizePlane(vec
 			cout<<"Using Texture from texture package!!!"<<endl;
 
 			//TODO: Transform parameters for texture coordinate calculation
+			Transform* tans = new Transform(initialTexture->m_texture, textures[0]);
 			//Found matching textures in texture package -> use best match
 			return new TextureToken<VertexT, NormalT>(	initialTexture->v1, initialTexture->v2,
 									initialTexture->p, 
