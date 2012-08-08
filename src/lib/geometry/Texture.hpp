@@ -63,6 +63,15 @@ public:
 	 */
 	Texture(Texture &other);
 
+
+	/**
+	 * \brief
+	 *
+	 *
+ 	 *
+	 */
+	static bool cmpTextures(Texture* t1, Texture* t2);
+
 	/**
 	 * Destructor.
 	 */
@@ -114,6 +123,9 @@ public:
 
 	///CCV
 	unsigned long* m_CCV;
+
+	///value indicating how well this texture fits the reference texture
+	float m_distance;
 
 	
 };
