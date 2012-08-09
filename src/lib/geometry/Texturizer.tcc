@@ -322,12 +322,18 @@ TextureToken<VertexT, NormalT>* Texturizer<VertexT, NormalT>::texturizePlane(vec
 			cout<<"Using Texture from texture package!!!"<<endl;
 
 			//Transform parameters for texture coordinate calculation
-			Transform* tans = new Transform(initialTexture->m_texture, textures[0]);
-			VertexT p 	= initialTexture->p;	//TODO: Transform	
-			NormalT v1 	= initialTexture->v1;	//TODO: Transform
-			NormalT V2	= initialTexture->v2;	//TODO: Transform
+			Transform* trans = new Transform(initialTexture->m_texture, textures[0]);
+			VertexT p(	trans->apply((float)initialTexture->p.x,  (float)initialTexture->p.y,  (float)initialTexture->p.z).at<float>(0,0),
+					trans->apply((float)initialTexture->p.x,  (float)initialTexture->p.y,  (float)initialTexture->p.z).at<float>(1,0),
+					trans->apply((float)initialTexture->p.x,  (float)initialTexture->p.y,  (float)initialTexture->p.z).at<float>(2,0));	
+			NormalT v1(	trans->apply((float)initialTexture->v1.x, (float)initialTexture->v1.y, (float)initialTexture->v1.z).at<float>(0,0),
+					trans->apply((float)initialTexture->v1.x, (float)initialTexture->v1.y, (float)initialTexture->v1.z).at<float>(1,0),
+					trans->apply((float)initialTexture->v1.x, (float)initialTexture->v1.y, (float)initialTexture->v1.z).at<float>(2,0));	
+			NormalT v2(	trans->apply((float)initialTexture->v2.x, (float)initialTexture->v2.y, (float)initialTexture->v2.z).at<float>(0,0),
+					trans->apply((float)initialTexture->v2.x, (float)initialTexture->v2.y, (float)initialTexture->v2.z).at<float>(1,0),
+					trans->apply((float)initialTexture->v2.x, (float)initialTexture->v2.y, (float)initialTexture->v2.z).at<float>(2,0));	
 			float a_min	= initialTexture->a_min;//TODO: Scale?
-			float b_min;	= initialTexture->b_min;//TODO: Scale?
+			float b_min	= initialTexture->b_min;//TODO: Scale?
 			//Found matching textures in texture package -> use best match
 			return new TextureToken<VertexT, NormalT>(v1, v2, p, a_min, b_min, textures[0], find(this->m_tio->m_textures.begin(), this->m_tio->m_textures.end(), textures[0]) - this->m_tio->m_textures.begin());
 		}
@@ -360,7 +366,7 @@ TextureToken<VertexT, NormalT>* Texturizer<VertexT, NormalT>::texturizePlane(vec
 				cout<<"Using initial texture"<<endl;
 				//Pattern extraction failed -> use initial texture
 				delete pattern; 
-				//Add initial texture to texture pack */
+				//Add initial texture to texture pack
 				initialTexture->m_textureIndex = this->m_tio->add(initialTexture->m_texture);
 				this->m_tio->write();
 			}
