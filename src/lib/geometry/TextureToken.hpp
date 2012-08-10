@@ -89,6 +89,9 @@ public:
 
 	///index of the texture in the texture pack
 	int m_textureIndex;
+
+	///Matrix that stores an affine transform that will be applied to the texture coordinates
+	float m_transformationMatrix[6];
 };
 
 }
