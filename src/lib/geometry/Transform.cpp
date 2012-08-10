@@ -119,11 +119,26 @@ void Transform::calcTransform(const cv::Mat &t1, const cv::Mat &t2)
 		}
 	}
 
-	cv::Point2f p1[3] = {keyPoints1[matches[best1].queryIdx].pt, keyPoints1[matches[best2].queryIdx].pt, keyPoints1[matches[best3].queryIdx].pt};
-	cv::Point2f p2[3] = {keyPoints2[matches[best1].trainIdx].pt, keyPoints2[matches[best2].trainIdx].pt, keyPoints2[matches[best3].trainIdx].pt};
+	//we need at least three corresponding points!
+	if (matches.size() > 2)
+	{
+		cv::Point2f p1[3] = {keyPoints1[matches[best1].queryIdx].pt, keyPoints1[matches[best2].queryIdx].pt, keyPoints1[matches[best3].queryIdx].pt};
+		cv::Point2f p2[3] = {keyPoints2[matches[best1].trainIdx].pt, keyPoints2[matches[best2].trainIdx].pt, keyPoints2[matches[best3].trainIdx].pt};
 
-	//calculate rotation, translation and scaling
-	m_trans = cv::getAffineTransform(p1, p2);
+		//calculate rotation, translation and scaling
+		m_trans = cv::getAffineTransform(p1, p2);
+	}
+	else
+	{
+		//Not enough corresponding points. Return identity matrix.
+		m_trans = cv::Mat(2, 3, CV_32FC1);
+		m_trans.at<float>(0,0) = 1;
+		m_trans.at<float>(0,1) = 0;
+		m_trans.at<float>(0,2) = 0;
+		m_trans.at<float>(1,0) = 0;
+		m_trans.at<float>(1,1) = 1;
+		m_trans.at<float>(1,2) = 0;
+	}
 }
 
 

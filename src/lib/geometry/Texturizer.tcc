@@ -196,6 +196,7 @@ void Texturizer<VertexT, NormalT>::filterByColor(vector<Texture*> &textures, Tex
 	{
 		float dist = ImageProcessor::compareTexturesHist(textures[i], refTexture);
 		textures[i]->m_distance += dist;
+//		cout<<"                              "<<dist<<endl;
 		if(dist > threshold)
 		{
 			toDelete.push_back(textures[i]);
@@ -215,7 +216,10 @@ void Texturizer<VertexT, NormalT>::filterByColor(vector<Texture*> &textures, Tex
 	//delete bad matches
 	for (int d = 0; d < toDelete.size(); d++)
 	{
-		textures.erase(find(textures.begin(), textures.end(), toDelete[d]));
+		if(find(textures.begin(), textures.end(), toDelete[d]) != textures.end())
+		{
+			textures.erase(find(textures.begin(), textures.end(), toDelete[d]));
+		}
 	}	
 	
 }
@@ -251,6 +255,7 @@ void Texturizer<VertexT, NormalT>::filterByStats(vector<Texture*> &textures, Tex
 	{
 		float dist = ImageProcessor::compareTexturesStats(textures[i], refTexture);
 		textures[i]->m_distance += dist;
+		cout<<"                              "<<dist<<endl;
 		if(dist > threshold)
 		{
 			toDelete.push_back(textures[i]);
@@ -273,6 +278,7 @@ void Texturizer<VertexT, NormalT>::filterByFeatures(vector<Texture*> &textures, 
 	{
 		float dist = ImageProcessor::compareTexturesSURF(textures[i], refTexture);
 		textures[i]->m_distance += dist;
+		cout<<"                              "<<dist<<endl;
 		if(dist > threshold)
 		{
 			toDelete.push_back(textures[i]);
@@ -312,7 +318,7 @@ TextureToken<VertexT, NormalT>* Texturizer<VertexT, NormalT>::texturizePlane(vec
 		//reduce number of matching textures from the texture pack step by step
 		std::vector<Texture*> textures = this->m_tio->m_textures;
 		filterByColor		(textures, initialTexture->m_texture, colorThreshold);
-		filterByStats		(textures, initialTexture->m_texture, statsThreshold);
+//		filterByStats		(textures, initialTexture->m_texture, statsThreshold);		//TODO
 		filterByFeatures	(textures, initialTexture->m_texture, featureThreshold);
 //		filterByCrossCorr	(textures, initialTexture->m_texture, crossCorrThreshold); //TODO
 		sort(textures.begin(), textures.end(), Texture::cmpTextures);		
@@ -340,7 +346,7 @@ TextureToken<VertexT, NormalT>* Texturizer<VertexT, NormalT>::texturizePlane(vec
 		{
 			//Try to extract pattern
 			Texture* pattern = 0;
-			if (ImageProcessor::extractPattern(initialTexture->m_texture, &pattern) > patternThreshold)
+			if (false)//ImageProcessor::extractPattern(initialTexture->m_texture, &pattern) > patternThreshold)//TODO
 			{
 				cout<<"Using pattern texture!!!"<<endl;
 				//calculate surf features for pattern
