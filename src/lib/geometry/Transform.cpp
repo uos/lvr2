@@ -138,11 +138,13 @@ cv::Mat Transform::apply()
 	return result;
 }
 
-
-cv::Mat Transform::apply(float x, float y, float z)
+float* Transform::getTransArr()
 {
-	cv::Mat result(3, 1, CV_32FC1);
-	//TODO
+	float* result = new float[6];
+	for (int i = 0; i < 6; i++)
+	{
+		result[i] = m_trans.reshape(0,1).at<float>(0,i);
+	}	
 	return result;
 }
 

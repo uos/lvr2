@@ -68,20 +68,17 @@ public:
 	cv::Mat apply();
 
 	/**
-	 * \brief Applies the transformation to the given point/vector
- 	 *
-	 * \param	x	The x coordinate of the point/vector
-	 * \param	y	The y coordinate of the point/vector
-	 * \param	z	The z coordinate of the point/vector
+	 * \brief Returns the transformation matrix as a float array
 	 *
-	 * \return	The transformed point/vector as a one column matrix
+	 * \return The transformation matrix
 	 */
-	cv::Mat apply(float x, float y, float z);
+	float* getTransArr();
 
 	/**
 	 * Destructor.
 	 */
 	virtual ~Transform();
+	
 
 private:
 	
