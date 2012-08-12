@@ -255,7 +255,7 @@ void Texturizer<VertexT, NormalT>::filterByStats(vector<Texture*> &textures, Tex
 	{
 		float dist = ImageProcessor::compareTexturesStats(textures[i], refTexture);
 		textures[i]->m_distance += dist;
-		cout<<"                              "<<dist<<endl;
+//		cout<<"                              "<<dist<<endl;
 		if(dist > threshold)
 		{
 			toDelete.push_back(textures[i]);
@@ -278,7 +278,7 @@ void Texturizer<VertexT, NormalT>::filterByFeatures(vector<Texture*> &textures, 
 	{
 		float dist = ImageProcessor::compareTexturesSURF(textures[i], refTexture);
 		textures[i]->m_distance += dist;
-		cout<<"                              "<<dist<<endl;
+//		cout<<"                              "<<dist<<endl;
 		if(dist > threshold)
 		{
 			toDelete.push_back(textures[i]);
@@ -318,7 +318,7 @@ TextureToken<VertexT, NormalT>* Texturizer<VertexT, NormalT>::texturizePlane(vec
 		//reduce number of matching textures from the texture pack step by step
 		std::vector<Texture*> textures = this->m_tio->m_textures;
 		filterByColor		(textures, initialTexture->m_texture, colorThreshold);
-//		filterByStats		(textures, initialTexture->m_texture, statsThreshold);		//TODO
+		filterByStats		(textures, initialTexture->m_texture, statsThreshold);
 		filterByFeatures	(textures, initialTexture->m_texture, featureThreshold);
 //		filterByCrossCorr	(textures, initialTexture->m_texture, crossCorrThreshold); //TODO
 		sort(textures.begin(), textures.end(), Texture::cmpTextures);		
@@ -326,6 +326,13 @@ TextureToken<VertexT, NormalT>* Texturizer<VertexT, NormalT>::texturizePlane(vec
 		if (textures.size() > 0)
 		{
 			cout<<"Using Texture from texture package!!!"<<endl;
+			showTexture(initialTexture, "Reference Texture");
+//			for (int i = 0; i < textures.size(); i++)
+//			{
+//				char st[20];
+//				sprintf(st, "%f", textures[i]->m_distance);
+//				showTexture(textures[i], string(st));
+//			}
 			//Found matching textures in texture package -> use best match
 			TextureToken<VertexT, NormalT>* result = new TextureToken<VertexT, NormalT>(
 									initialTexture->v1, initialTexture->v2, initialTexture->p,
@@ -339,6 +346,9 @@ TextureToken<VertexT, NormalT>* Texturizer<VertexT, NormalT>::texturizePlane(vec
 			{
 				result->m_transformationMatrix[i] = mat[i];
 			}
+				char st[30];
+				sprintf(st, "%f", result->m_texture->m_distance);
+				showTexture(result, string(st));
 			delete mat;
 			return result;
 		}
@@ -378,6 +388,30 @@ TextureToken<VertexT, NormalT>* Texturizer<VertexT, NormalT>::texturizePlane(vec
 		}
 	} 
 	return initialTexture;
+}
+
+template<typename VertexT, typename NormalT>
+void Texturizer<VertexT, NormalT>::showTexture(TextureToken<VertexT, NormalT>* tt, string caption)
+{
+	Texture* t = tt->m_texture;
+
+	for (int i = 0; i < 6; i++)
+	{
+		std::cout<<std::setw(10)<<tt->m_transformationMatrix[i];
+	}
+	std::cout<<std::endl;
+	cv::Mat img(cv::Size(t->m_width, t->m_height), CV_MAKETYPE(t->m_numBytesPerChan * 8, t->m_numChannels), t->m_data);
+
+	cv::putText(img, caption, cv::Point2f(0,img.rows/2), cv::FONT_HERSHEY_SIMPLEX, 0.4, cv::Scalar(255,0,0), 2);
+
+	cv::startWindowThread();
+	
+	//show the reference image
+	cv::namedWindow("Window", CV_WINDOW_AUTOSIZE);
+	cv::imshow("Window", img);
+	cv::waitKey();
+
+	cv::destroyAllWindows();
 }
 
 }

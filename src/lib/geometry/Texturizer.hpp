@@ -111,6 +111,9 @@ private:
 
 	///A reference to the texture package
 	TextureIO* m_tio;
+
+	//TODO: remove
+	void showTexture(TextureToken<VertexT, NormalT>* tt, string caption);
 };
 
 }
