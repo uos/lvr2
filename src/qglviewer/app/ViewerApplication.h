@@ -37,8 +37,6 @@
 #include "RenderingDialogUI.h"
 
 #include "../data/VisualizerFactory.hpp"
-#include "../data/KinectPointCloudVisualizer.hpp"
-#include "../data/SignalingKinectGrabber.hpp"
 #include "../data/SignalingMeshGenerator.hpp"
 
 #include "../viewers/Viewer.h"
@@ -61,7 +59,6 @@
 
 #include "io/Model.hpp"
 #include "io/ModelFactory.hpp"
-#include "io/KinectIO.hpp"
 
 using Ui::MainWindow;
 using Ui::Fogsettings;
@@ -107,7 +104,6 @@ public Q_SLOTS:
 	void deleteObject();
 
 	void openFile();
-	void connectKinect();
 
 	void meshRenderModeChanged();
 	void pointRenderModeChanged();
@@ -143,8 +139,6 @@ private:
 
 	AnimationDialog*            m_playerDialog;
 
-	SignalingKinectGrabber* 	m_grabber;
-	Freenect::Freenect*			m_freenect;
 
 public:
     Viewer*                     m_viewer;
