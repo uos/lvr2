@@ -94,15 +94,33 @@ void Texture::save(int i)
 	//round the texture size up to a size to base 2
 	int sizeX = std::max(8.0, pow(2, ceil(log(m_width) / log(2))));
 	int sizeY = std::max(8.0, pow(2, ceil(log(m_height) / log(2))));
-	cv::Mat img(cv::Size(sizeX, sizeY), CV_MAKETYPE(m_numBytesPerChan * 8, m_numChannels), cv::Scalar(255,0,0));
-	cv::Rect roi(0,sizeY-m_height, m_width, m_height);
-	cv::Mat t = img(roi);
-	cv::Mat data(cv::Size(m_width, m_height), CV_MAKETYPE(m_numBytesPerChan * 8, m_numChannels), m_data);
-	data.copyTo(t);
-	
+	unsigned char* data = new unsigned char[sizeX * sizeY * m_numChannels];
+	for (int p = 0; p < (sizeY-m_height) * sizeX * m_numChannels; p += 3)
+	{
+		data[p + 0] = 0;		
+		data[p + 1] = 0;		
+		data[p + 2] = 255;		
+	}	
+	for (int y = 0; y < m_height; y++)
+	{
+		memcpy(&data[sizeX * m_numChannels * (sizeY-m_height + y)], &m_data[y * m_width * m_numChannels], m_width * m_numChannels);
+		for (int x = m_width * m_numChannels; x < sizeX * m_numChannels; x += m_numChannels)
+		{
+			data[sizeX * m_numChannels * (sizeY-m_height + y) + x + 0] = 0;
+			data[sizeX * m_numChannels * (sizeY-m_height + y) + x + 1] = 0;
+			data[sizeX * m_numChannels * (sizeY-m_height + y) + x + 2] = 255;
+		}
+	}
+
+	//write image file
 	char fn[255];
 	sprintf(fn, "texture_%d.ppm", i);
-	cv::imwrite(fn, img);
+	PPMIO* pio = new PPMIO();
+	pio->setDataArray(data, sizeX, sizeY);
+	pio->write(string(fn));
+	delete pio;
+	delete data;
+	
 }
 
 Texture::~Texture() {
