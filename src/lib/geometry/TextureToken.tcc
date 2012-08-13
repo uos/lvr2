@@ -40,9 +40,12 @@ TextureToken<VertexT, NormalT>::TextureToken(NormalT v1, NormalT v2, VertexT p, 
 template<typename VertexT, typename NormalT>
 void TextureToken<VertexT, NormalT>::textureCoords(VertexT v, float &x, float &y)
 {
+	int sizeX = std::max(8.0, pow(2, ceil(log(m_texture->m_width) / log(2))));
+	int sizeY = std::max(8.0, pow(2, ceil(log(m_texture->m_height) / log(2))));
+
 	 VertexT w =  v - ((v1 * a_min) + (v2 * b_min) + p);
-	 x = (v1 * (w * v1)).length() / Texture::m_texelSize / m_texture->m_width;
-	 y = (v2 * (w * v2)).length() / Texture::m_texelSize / m_texture->m_height;
+	 x = (v1 * (w * v1)).length() / Texture::m_texelSize / sizeX;
+	 y = (v2 * (w * v2)).length() / Texture::m_texelSize / sizeY;
 
 	 x = x > 1 ? 1 : x;
 	 x = x < 0 ? 0 : x;

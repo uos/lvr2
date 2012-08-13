@@ -30,6 +30,7 @@
 
 #include <cstring>
 #include <opencv/highgui.h>
+#include <io/PPMIO.hpp>
 #include <cstdio>
 
 namespace lssr {

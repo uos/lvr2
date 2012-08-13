@@ -80,7 +80,7 @@ void GlTexture::upload()
 		 m_width,
 		 m_height,
 		 0,
-		 GL_BGR,
+		 GL_RGB,
 		 GL_UNSIGNED_BYTE,
 		 m_pixels
 		 );

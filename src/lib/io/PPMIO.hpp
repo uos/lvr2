@@ -51,25 +51,18 @@ namespace lssr
 class PPMIO
 {
 public:
-    struct ColorT{
-        unsigned char r, g, b;
-    };
-
     PPMIO();
     PPMIO( string filename );
     virtual ~PPMIO() {};
 
     void write( string filename );
-    void setDataArray( ColorT** array, size_t sizeX, size_t sizeY );
+    void setDataArray( unsigned char* array, int width, int height );
 
     int            getHeight() const { return m_height; }
     int            getWidth()  const { return m_width;  }
     unsigned char* getPixels() const { return m_pixels; }
 
 private:
-    ColorT**       m_data;
-    size_t         m_sizeX;
-    size_t         m_sizeY;
     int            m_width;  // The width of the image
     int            m_height; // The height of the image
     unsigned char* m_pixels; // The image/pixel data
