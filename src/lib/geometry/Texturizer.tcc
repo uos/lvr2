@@ -175,9 +175,9 @@ TextureToken<VertexT, NormalT>* Texturizer<VertexT, NormalT>::createInitialTextu
 			int one = 1;
 			m_pm->searchTree()->kSearch(current_position, one, cv);
 
-			texture->m_data[(sizeY - y - 1) * (sizeX * 3) + 3 * x + 0] = cv[0].b;
+			texture->m_data[(sizeY - y - 1) * (sizeX * 3) + 3 * x + 0] = cv[0].r;
 			texture->m_data[(sizeY - y - 1) * (sizeX * 3) + 3 * x + 1] = cv[0].g;
-			texture->m_data[(sizeY - y - 1) * (sizeX * 3) + 3 * x + 2] = cv[0].r;
+			texture->m_data[(sizeY - y - 1) * (sizeX * 3) + 3 * x + 2] = cv[0].b;
 		}
 	}
 

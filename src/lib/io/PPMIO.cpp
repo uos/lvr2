@@ -40,9 +40,9 @@ namespace lssr
 
 PPMIO::PPMIO()
 {
-    m_data    = 0;
-    m_sizeX   = 0;
-    m_sizeY   = 0;
+    m_pixels    = 0;
+    m_width   = 0;
+    m_height   = 0;
 }
 
 PPMIO::PPMIO( string filename ) : m_width(0), m_height(0), m_pixels(0)
@@ -100,6 +100,7 @@ PPMIO::PPMIO( string filename ) : m_width(0), m_height(0), m_pixels(0)
             {
                 int n_colors;
                 in >> m_width >> m_height >> n_colors;
+		in.getline(0,0);
                 m_pixels = new unsigned char[m_width * m_height * 3];
                 in.read((char *)m_pixels, m_width * m_height * 3);
             }
@@ -121,21 +122,19 @@ void PPMIO::write( string filename )
 
     if(out.good())
     {
-    	out<<"P6"<<" "<<m_sizeX<<" "<<m_sizeY<<" "<<"255"<<endl;
-    	for(size_t y = 0; y<m_sizeY; y++)
-    		for(size_t x = 0; x<m_sizeX; x++)
-    			out<<m_data[y][x].r<<m_data[y][x].g<<m_data[y][x].b;
+    	out<<"P6"<<" "<<m_width<<" "<<m_height<<" "<<"255"<<endl;
+	out.write((char*) m_pixels, m_width * m_height * 3);
     }
 
     out.close();
 
 }
 
-void PPMIO::setDataArray( ColorT** array, size_t sizeX, size_t sizeY )
+void PPMIO::setDataArray( unsigned char* array, int width, int height )
 {
-    m_data = array;
-    m_sizeX = sizeX;
-    m_sizeY = sizeY;
+    m_pixels = array;
+    m_width = width;
+    m_height = height;
 }
 
 void PPMIO::readLine( ifstream & in, char* buffer )
