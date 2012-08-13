@@ -66,7 +66,7 @@ void GlTexture::upload()
     // to video memory
     glBindTexture(GL_TEXTURE_2D, m_texIndex);                           // Bind texture
 
-    glTexParameteri (GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);      // Set repeating and filetering
+    glTexParameteri (GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);      // Set repeating and filtering
     glTexParameteri (GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
     glTexParameteri (GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
     glTexParameteri (GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
@@ -80,7 +80,7 @@ void GlTexture::upload()
 		 m_width,
 		 m_height,
 		 0,
-		 GL_RGB,
+		 GL_BGR,
 		 GL_UNSIGNED_BYTE,
 		 m_pixels
 		 );
