@@ -31,6 +31,7 @@
 #include <cstring>
 #include <opencv/highgui.h>
 #include <cstdio>
+#include <io/PPMIO.hpp>
 
 namespace lssr {
 
