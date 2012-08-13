@@ -100,6 +100,7 @@ PPMIO::PPMIO( string filename ) : m_width(0), m_height(0), m_pixels(0)
             {
                 int n_colors;
                 in >> m_width >> m_height >> n_colors;
+		in.getline(0,0);
                 m_pixels = new unsigned char[m_width * m_height * 3];
                 in.read((char *)m_pixels, m_width * m_height * 3);
             }
