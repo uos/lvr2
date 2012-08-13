@@ -42,7 +42,6 @@ Transform::Transform(Texture *t1, Texture* t2)
 	cv::cvtColor(img1, img1g, CV_RGB2GRAY);
 	cv::Mat img2g;	
 	cv::cvtColor(img2, img2g, CV_RGB2GRAY);
-
 	//calculate rotation, translation and scaling
 	calcTransform(img1g, img2g);
 }
@@ -75,58 +74,75 @@ void Transform::calcTransform(const cv::Mat &t1, const cv::Mat &t2)
 	detector.detect( t2, keyPoints2 );
 	extractor.compute( t2, keyPoints2, descriptors2 );
 
-	//calculate matching
-	cv::FlannBasedMatcher matcher;
-	std::vector< cv::DMatch > matches;
-	matcher.match( descriptors1, descriptors2, matches);
+	//we need at least three corresponding points!
+	if (keyPoints1.size() > 2 && keyPoints2.size() > 2)
+	{
+		//calculate matching
+		cv::FlannBasedMatcher matcher;
+		std::vector< cv::DMatch > matches;
+		matcher.match( descriptors1, descriptors2, matches);
+		//search 3 best matches
+		double minDist1 = FLT_MAX;
+		double minDist2 = FLT_MAX;
+		double minDist3 = FLT_MAX;
+		int best1 = -1;
+		int best2 = -1;
+		int best3 = -1;
 
-	//search 3 best matches
-	double minDist1 = FLT_MAX;
-	double minDist2 = FLT_MAX;
-	double minDist3 = FLT_MAX;
-	int best1 = -1;
-	int best2 = -1;
-	int best3 = -1;
-
-	for (int i = 0; i < matches.size(); i++)
-	{ 
-		if(matches[i].distance < minDist3)
-		{
-			if(matches[i].distance < minDist2)
+		for (int i = 0; i < matches.size(); i++)
+		{ 
+			if(matches[i].distance < minDist3)
 			{
-				if(matches[i].distance < minDist1)
+				if(matches[i].distance < minDist2)
 				{
-					minDist3 = minDist2;
-					best3 = best2;
-					minDist2 = minDist1;
-					best2 = best1;
-					minDist1 = matches[i].distance;
-					best1 = i;
+					if(matches[i].distance < minDist1)
+					{
+						minDist3 = minDist2;
+						best3 = best2;
+						minDist2 = minDist1;
+						best2 = best1;
+						minDist1 = matches[i].distance;
+						best1 = i;
+					}
+					else
+					{
+						minDist3 = minDist2;
+						best3 = best2;
+						minDist2 = matches[i].distance;
+						best2 = i;
+					}
 				}
 				else
 				{
-					minDist3 = minDist2;
-					best3 = best2;
-					minDist2 = matches[i].distance;
-					best2 = i;
+					minDist3 = matches[i].distance;
+					best3 = i;
 				}
 			}
-			else
-			{
-				minDist3 = matches[i].distance;
-				best3 = i;
-			}
 		}
-	}
 
-	//we need at least three corresponding points!
-	if (matches.size() > 2)
-	{
 		cv::Point2f p1[3] = {keyPoints1[matches[best1].queryIdx].pt, keyPoints1[matches[best2].queryIdx].pt, keyPoints1[matches[best3].queryIdx].pt};
 		cv::Point2f p2[3] = {keyPoints2[matches[best1].trainIdx].pt, keyPoints2[matches[best2].trainIdx].pt, keyPoints2[matches[best3].trainIdx].pt};
 
 		//calculate rotation, translation and scaling
 		m_trans = cv::getAffineTransform(p1, p2);
+
+/*	std::cout<<m_trans<<std::endl;
+	cv::Mat img1;m_img1.copyTo(img1);
+	cv::Mat img2;m_img2.copyTo(img2);
+	cv::circle(img1, p1[0], 3, cv::Scalar(255,0,0), 2);
+	cv::circle(img1, p1[1], 3, cv::Scalar(0,255,0), 2);
+	cv::circle(img1, p1[2], 3, cv::Scalar(0,0,255), 2);
+	cv::circle(img2, p2[0], 3, cv::Scalar(255,0,0), 2);
+	cv::circle(img2, p2[1], 3, cv::Scalar(0,255,0), 2);
+	cv::circle(img2, p2[2], 3, cv::Scalar(0,0,255), 2);
+	cv::startWindowThread();
+	cv::namedWindow("Window", CV_WINDOW_AUTOSIZE);
+	cv::namedWindow("Window2", CV_WINDOW_AUTOSIZE);
+	cv::imshow("Window", img1);
+	cv::imshow("Window2", img2);
+	cv::waitKey();
+	cv::destroyAllWindows();
+	*/
 	}
 	else
 	{
