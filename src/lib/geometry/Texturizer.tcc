@@ -82,12 +82,20 @@ TextureToken<VertexT, NormalT>* Texturizer<VertexT, NormalT>::createInitialTextu
 	VertexT best_v1, best_v2;
 
 	NormalT n = (contour[1] - contour[0]).cross(contour[2] - contour[0]);
+	if (n.x < 0)
+	{
+		n *= -1;
+	}
 
 	//store a stuetzvector for the bounding box
 	VertexT p = contour[0];
 
 	//calculate a vector in the plane of the bounding box
 	NormalT v1 = contour[1] - contour[0], v2;
+	if (v1.x < 0)
+	{
+		v1 *= -1;
+	}
 
 	//determines the resolution of iterative improvement steps
 	float delta = M_PI / 2 / 90;
@@ -150,7 +158,6 @@ TextureToken<VertexT, NormalT>* Texturizer<VertexT, NormalT>::createInitialTextu
 
 	//create TextureToken
 	TextureToken<VertexT, NormalT>* result = new TextureToken<VertexT, NormalT>(best_v1, best_v2, p, best_a_min, best_b_min, texture);
- 
 
 	//walk through the bounding box and collect color information for each texel
 	#pragma omp parallel for
@@ -196,7 +203,7 @@ void Texturizer<VertexT, NormalT>::filterByColor(vector<Texture*> &textures, Tex
 	{
 		float dist = ImageProcessor::compareTexturesHist(textures[i], refTexture);
 		textures[i]->m_distance += dist;
-//		cout<<"                              "<<dist<<endl;
+//		cerr<<dist<<endl;
 		if(dist > threshold)
 		{
 			toDelete.push_back(textures[i]);
@@ -206,6 +213,7 @@ void Texturizer<VertexT, NormalT>::filterByColor(vector<Texture*> &textures, Tex
 	for (int i = 0; i < textures.size(); i++)
 	{
 		float dist = ImageProcessor::compareTexturesCCV(textures[i], refTexture);
+//		cerr<<dist<<endl;
 		textures[i]->m_distance += dist;
 		if(dist > threshold)
 		{
@@ -255,7 +263,7 @@ void Texturizer<VertexT, NormalT>::filterByStats(vector<Texture*> &textures, Tex
 	{
 		float dist = ImageProcessor::compareTexturesStats(textures[i], refTexture);
 		textures[i]->m_distance += dist;
-//		cout<<"                              "<<dist<<endl;
+//		cerr<<dist<<endl;
 		if(dist > threshold)
 		{
 			toDelete.push_back(textures[i]);
@@ -278,7 +286,7 @@ void Texturizer<VertexT, NormalT>::filterByFeatures(vector<Texture*> &textures, 
 	{
 		float dist = ImageProcessor::compareTexturesSURF(textures[i], refTexture);
 		textures[i]->m_distance += dist;
-//		cout<<"                              "<<dist<<endl;
+//		cerr<<dist<<endl;
 		if(dist > threshold)
 		{
 			toDelete.push_back(textures[i]);
@@ -326,13 +334,6 @@ TextureToken<VertexT, NormalT>* Texturizer<VertexT, NormalT>::texturizePlane(vec
 		if (textures.size() > 0)
 		{
 			cout<<"Using Texture from texture package!!!"<<endl;
-			showTexture(initialTexture, "Reference Texture");
-//			for (int i = 0; i < textures.size(); i++)
-//			{
-//				char st[20];
-//				sprintf(st, "%f", textures[i]->m_distance);
-//				showTexture(textures[i], string(st));
-//			}
 			//Found matching textures in texture package -> use best match
 			TextureToken<VertexT, NormalT>* result = new TextureToken<VertexT, NormalT>(
 									initialTexture->v1, initialTexture->v2, initialTexture->p,
@@ -346,9 +347,6 @@ TextureToken<VertexT, NormalT>* Texturizer<VertexT, NormalT>::texturizePlane(vec
 			{
 				result->m_transformationMatrix[i] = mat[i];
 			}
-				char st[30];
-				sprintf(st, "%f", result->m_texture->m_distance);
-				showTexture(result, string(st));
 			delete mat;
 			return result;
 		}
@@ -376,7 +374,7 @@ TextureToken<VertexT, NormalT>* Texturizer<VertexT, NormalT>::texturizePlane(vec
 										initialTexture->a_min, initialTexture->b_min,
 										pattern, index);
 			}
-			else
+			else 
 			{
 				cout<<"Using initial texture"<<endl;
 				//Pattern extraction failed -> use initial texture
