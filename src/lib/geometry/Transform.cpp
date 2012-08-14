@@ -125,8 +125,8 @@ void Transform::calcTransform(const cv::Mat &t1, const cv::Mat &t2)
 
 		//calculate rotation, translation and scaling
 		m_trans = cv::getAffineTransform(p1, p2);
-
-/*	std::cout<<m_trans<<std::endl;
+/*	TODO: REMOVE Debug stuff
+	std::cout<<m_trans<<std::endl;
 	cv::Mat img1;m_img1.copyTo(img1);
 	cv::Mat img2;m_img2.copyTo(img2);
 	cv::circle(img1, p1[0], 3, cv::Scalar(255,0,0), 2);
@@ -142,7 +142,7 @@ void Transform::calcTransform(const cv::Mat &t1, const cv::Mat &t2)
 	cv::imshow("Window2", img2);
 	cv::waitKey();
 	cv::destroyAllWindows();
-	*/
+*/
 	}
 	else
 	{
@@ -174,7 +174,7 @@ float* Transform::getTransArr()
 	float* result = new float[6];
 	for (int i = 0; i < 6; i++)
 	{
-		result[i] = m_trans.reshape(0,1).at<float>(0,i);
+		result[i] = m_trans.reshape(0,1).at<double>(0,i);
 	}	
 	return result;
 }
