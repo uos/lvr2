@@ -200,32 +200,39 @@ void ImageProcessor::connectedCompLabeling(cv::Mat input, cv::Mat &output)
 
 void ImageProcessor::calcSURF(Texture* tex)
 {
-	//convert texture to cv::Mat
-	cv::Mat img1(cv::Size(tex->m_width, tex->m_height), CV_MAKETYPE(tex->m_numBytesPerChan * 8, tex->m_numChannels), tex->m_data);
-	//convert image to gray scale
-	cv::cvtColor(img1, img1, CV_RGB2GRAY);
-	
-	//initialize SURF objects
-	cv::SurfFeatureDetector detector(100);
-	cv::SurfDescriptorExtractor extractor;
-
-	std::vector<cv::KeyPoint> keyPoints;
-	cv::Mat descriptors;
-
-	//calculate SURF features for the image
-	detector.detect( img1, keyPoints );
-	extractor.compute( img1, keyPoints, descriptors );
-
-	//return the results
-	tex->m_numFeatures 		= descriptors.rows;
-	tex->m_numFeatureComponents	= descriptors.cols;
-	tex->m_featureDescriptors = new float[descriptors.rows * descriptors.cols];
-	for (int r = 0; r < descriptors.rows; r++)
+	if (tex->m_width >= 8 && tex->m_height >= 8)
 	{
-		for (int c = 0; c < descriptors.cols; c++)
+		//convert texture to cv::Mat
+		cv::Mat img1(cv::Size(tex->m_width, tex->m_height), CV_MAKETYPE(tex->m_numBytesPerChan * 8, tex->m_numChannels), tex->m_data);
+		//convert image to gray scale
+		cv::cvtColor(img1, img1, CV_RGB2GRAY);
+		
+		//initialize SURF objects
+		cv::SurfFeatureDetector detector(100);
+		cv::SurfDescriptorExtractor extractor;
+
+		std::vector<cv::KeyPoint> keyPoints;
+		cv::Mat descriptors;
+
+		//calculate SURF features for the image
+		detector.detect( img1, keyPoints );
+		extractor.compute( img1, keyPoints, descriptors );
+
+		//return the results
+		tex->m_numFeatures 		= descriptors.rows;
+		tex->m_numFeatureComponents	= descriptors.cols;
+		tex->m_featureDescriptors = new float[descriptors.rows * descriptors.cols];
+		for (int r = 0; r < descriptors.rows; r++)
 		{
-			tex->m_featureDescriptors[r * descriptors.cols + c] = descriptors.at<float>(r, c);
+			for (int c = 0; c < descriptors.cols; c++)
+			{
+				tex->m_featureDescriptors[r * descriptors.cols + c] = descriptors.at<float>(r, c);
+			}
 		}
+	}
+	else
+	{
+		tex->m_numFeatures = 0;
 	}
 }
 
@@ -329,13 +336,16 @@ void ImageProcessor::calcStats(Texture* t, int numColors)
 
 void ImageProcessor::calcCCV(Texture* t, int numColors, int coherenceThreshold)
 {
-	CCV* ccv = new CCV(t, numColors, coherenceThreshold);
-	t->m_numCCVColors = numColors;
-	t->m_CCV = new unsigned long [numColors * 3 * 2];
-	ccv->toArray_r(t->m_CCV);
-	ccv->toArray_g(&(t->m_CCV[numColors * 2]));
-	ccv->toArray_b(&(t->m_CCV[numColors * 2 * 2]));
-	delete ccv;
+	if (t->m_width >= 8 && t->m_height >= 8)
+	{
+		CCV* ccv = new CCV(t, numColors, coherenceThreshold);
+		t->m_numCCVColors = numColors;
+		t->m_CCV = new unsigned long [numColors * 3 * 2];
+		ccv->toArray_r(t->m_CCV);
+		ccv->toArray_g(&(t->m_CCV[numColors * 2]));
+		ccv->toArray_b(&(t->m_CCV[numColors * 2 * 2]));
+		delete ccv;
+	}
 }
 
 float ImageProcessor::compareTexturesHist(Texture* tex1, Texture* tex2)
