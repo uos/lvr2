@@ -91,7 +91,7 @@ public:
 	int m_textureIndex;
 
 	///Matrix that stores an affine transform that will be applied to the texture coordinates
-	float m_transformationMatrix[6];
+	double m_transformationMatrix[6];
 };
 
 }

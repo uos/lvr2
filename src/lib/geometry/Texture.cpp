@@ -91,11 +91,11 @@ Texture::Texture(Texture &other)
 	this->m_distance 		= other.m_distance;
 }
 
-void Texture::save(int i)
+unsigned char* Texture::expand(int &sizeX, int &sizeY)
 {
 	//round the texture size up to a size to base 2
-	int sizeX = std::max(8.0, pow(2, ceil(log(m_width) / log(2))));
-	int sizeY = std::max(8.0, pow(2, ceil(log(m_height) / log(2))));
+	sizeX = std::max(8.0, pow(2, ceil(log(m_width) / log(2))));
+	sizeY = std::max(8.0, pow(2, ceil(log(m_height) / log(2))));
 	unsigned char* data = new unsigned char[sizeX * sizeY * m_numChannels];
 	for (int p = 0; p < (sizeY-m_height) * sizeX * m_numChannels; p += 3)
 	{
@@ -113,6 +113,14 @@ void Texture::save(int i)
 			data[sizeX * m_numChannels * (sizeY-m_height + y) + x + 2] = 255;
 		}
 	}
+	return data;
+
+}
+
+void Texture::save(int i)
+{	
+	int sizeX, sizeY;
+	unsigned char* data = this->expand(sizeX, sizeY);
 
 	//write image file
 	char fn[255];

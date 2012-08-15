@@ -72,7 +72,7 @@ public:
 	 *
 	 * \return The transformation matrix
 	 */
-	float* getTransArr();
+	double* getTransArr();
 
 	/**
 	 * Destructor.

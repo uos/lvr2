@@ -51,14 +51,15 @@ void TextureToken<VertexT, NormalT>::textureCoords(VertexT v, float &x, float &y
 	int sizeY = std::max(8.0, pow(2, ceil(log(m_texture->m_height) / log(2))));
 
 	VertexT w =  v - ((v1 * a_min) + (v2 * b_min) + p);
-	x = (v1 * (w * v1)).length();
-	y = (v2 * (w * v2)).length();
+	x = (v1 * (w * v1)).length() / Texture::m_texelSize;
+	y = (v2 * (w * v2)).length() / Texture::m_texelSize;
 
 	//apply transformation
-	int tmp_x = m_transformationMatrix[0] * x + m_transformationMatrix[1] * y + m_transformationMatrix[2];
-	int tmp_y = m_transformationMatrix[3] * x + m_transformationMatrix[4] * y + m_transformationMatrix[5];
-	x = tmp_x  / Texture::m_texelSize / sizeX;
-	y = tmp_y  / Texture::m_texelSize / sizeY;
+	double tmp_x = m_transformationMatrix[0] * x + m_transformationMatrix[1] * y + m_transformationMatrix[2];
+	double tmp_y = m_transformationMatrix[3] * x + m_transformationMatrix[4] * y + m_transformationMatrix[5];
+
+	x = tmp_x / sizeX;
+	y = tmp_y / sizeY;
 
 	x = x > 1 ? 1 : x;
 	x = x < 0 ? 0 : x;

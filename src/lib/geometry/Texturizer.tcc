@@ -342,7 +342,7 @@ TextureToken<VertexT, NormalT>* Texturizer<VertexT, NormalT>::texturizePlane(vec
 									- this->m_tio->m_textures.begin());
 			//Calculate transformation for texture coordinate calculation
 			Transform* trans = new Transform(initialTexture->m_texture, textures[0]);
-			float* mat = trans->getTransArr();
+			double* mat = trans->getTransArr();
 			for (int i = 0; i < 6; i++)
 			{	
 				result->m_transformationMatrix[i] = mat[i];
