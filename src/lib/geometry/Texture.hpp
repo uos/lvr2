@@ -88,6 +88,16 @@ public:
 	 */
 	void save(int i);
 
+	/**
+	 * \brief Expands the texture to a width and height of base 2.
+	 *
+	 * \param	sizeX 	Will hold the width of the expanded texture
+	 * \param	sizeY 	Will hold the height of the expanded texture
+	 *
+	 * \return	The expanded texture data
+	 */
+	unsigned char* expand(int &sizeX, int &sizeY);
+
 	///The dimensions of the texture
 	unsigned short int m_width, m_height;
 	

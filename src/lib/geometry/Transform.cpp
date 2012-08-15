@@ -31,9 +31,12 @@
 namespace lssr {
 Transform::Transform(Texture *t1, Texture* t2)
 {
+	int sizeX1, sizeX2, sizeY1, sizeY2;
+	unsigned char* data1 = t1->expand(sizeX1, sizeY1);
+	unsigned char* data2 = t2->expand(sizeX2, sizeY2);
 	//convert textures to cv::Mat
-	cv::Mat img1(cv::Size(t1->m_width, t1->m_height), CV_MAKETYPE(t1->m_numBytesPerChan * 8, t1->m_numChannels), t1->m_data);
-	cv::Mat img2(cv::Size(t2->m_width, t2->m_height), CV_MAKETYPE(t2->m_numBytesPerChan * 8, t2->m_numChannels), t2->m_data);
+	cv::Mat img1(cv::Size(sizeX1, sizeY1), CV_MAKETYPE(t1->m_numBytesPerChan * 8, t1->m_numChannels), data1);
+	cv::Mat img2(cv::Size(sizeX2, sizeY2), CV_MAKETYPE(t2->m_numBytesPerChan * 8, t2->m_numChannels), data2);
 	m_img1 = img1;
 	m_img2 = img2;
 
@@ -44,6 +47,8 @@ Transform::Transform(Texture *t1, Texture* t2)
 	cv::cvtColor(img2, img2g, CV_RGB2GRAY);
 	//calculate rotation, translation and scaling
 	calcTransform(img1g, img2g);
+	delete data1;
+	delete data2;
 }
 
 Transform::Transform(const cv::Mat &t1, const cv::Mat &t2)
@@ -125,35 +130,17 @@ void Transform::calcTransform(const cv::Mat &t1, const cv::Mat &t2)
 
 		//calculate rotation, translation and scaling
 		m_trans = cv::getAffineTransform(p1, p2);
-/*	TODO: REMOVE Debug stuff
-	std::cout<<m_trans<<std::endl;
-	cv::Mat img1;m_img1.copyTo(img1);
-	cv::Mat img2;m_img2.copyTo(img2);
-	cv::circle(img1, p1[0], 3, cv::Scalar(255,0,0), 2);
-	cv::circle(img1, p1[1], 3, cv::Scalar(0,255,0), 2);
-	cv::circle(img1, p1[2], 3, cv::Scalar(0,0,255), 2);
-	cv::circle(img2, p2[0], 3, cv::Scalar(255,0,0), 2);
-	cv::circle(img2, p2[1], 3, cv::Scalar(0,255,0), 2);
-	cv::circle(img2, p2[2], 3, cv::Scalar(0,0,255), 2);
-	cv::startWindowThread();
-	cv::namedWindow("Window", CV_WINDOW_AUTOSIZE);
-	cv::namedWindow("Window2", CV_WINDOW_AUTOSIZE);
-	cv::imshow("Window", img1);
-	cv::imshow("Window2", img2);
-	cv::waitKey();
-	cv::destroyAllWindows();
-*/
 	}
 	else
 	{
 		//Not enough corresponding points. Return identity matrix.
-		m_trans = cv::Mat(2, 3, CV_32FC1);
-		m_trans.at<float>(0,0) = 1;
-		m_trans.at<float>(0,1) = 0;
-		m_trans.at<float>(0,2) = 0;
-		m_trans.at<float>(1,0) = 0;
-		m_trans.at<float>(1,1) = 1;
-		m_trans.at<float>(1,2) = 0;
+		m_trans = cv::Mat(2, 3, CV_64FC1);
+		m_trans.at<double>(0,0) = 1;
+		m_trans.at<double>(0,1) = 0;
+		m_trans.at<double>(0,2) = 0;
+		m_trans.at<double>(1,0) = 0;
+		m_trans.at<double>(1,1) = 1;
+		m_trans.at<double>(1,2) = 0;
 	}
 }
 
@@ -169,9 +156,9 @@ cv::Mat Transform::apply()
 	return result;
 }
 
-float* Transform::getTransArr()
+double* Transform::getTransArr()
 {
-	float* result = new float[6];
+	double* result = new double[6];
 	for (int i = 0; i < 6; i++)
 	{
 		result[i] = m_trans.reshape(0,1).at<double>(0,i);
