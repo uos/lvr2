@@ -33,7 +33,6 @@ AutoCorr::AutoCorr(Texture *t)
 {
 	//convert texture to cv::Mat
 	cv::Mat img1(cv::Size(t->m_width, t->m_height), CV_MAKETYPE(t->m_numBytesPerChan * 8, t->m_numChannels), t->m_data);
-
 	//make input gray scale 
 	cv::Mat img;	
 	cv::cvtColor(img1, img, CV_RGB2GRAY);
@@ -46,7 +45,11 @@ AutoCorr::AutoCorr(Texture *t)
 AutoCorr::AutoCorr(const cv::Mat &t)
 {
 	m_image = t;
-	autocorrDFT(t, m_autocorr);
+
+	cv::Mat img;	
+	cv::cvtColor(t, img, CV_RGB2GRAY);
+
+	autocorrDFT(img, m_autocorr);
 }
 
 void AutoCorr::autocorrDFT(const cv::Mat &img, cv::Mat &dst)
@@ -57,7 +60,7 @@ void AutoCorr::autocorrDFT(const cv::Mat &img, cv::Mat &dst)
 	//Subtract the mean
 	cv::Mat mean(fImg.size(), fImg.type(), cv::mean(fImg));
 	cv::subtract(fImg, mean, fImg);
-	
+
 	//Calculate the optimal size for the dft output.
 	//This increases speed.
 	cv::Size dftSize;
@@ -348,7 +351,7 @@ double AutoCorr::getMinimalPattern(unsigned int &sX, unsigned int &sY, unsigned 
 		sY	= 0;
 	}
 	
-	if (y_highest_correlation == -FLT_MAX == x_highest_correlation)
+	if (y_highest_correlation == -FLT_MAX == x_highest_correlation || stdDevX < 0.00001 && stdDevY < 0.00001 || peaksX < 0.00001 || peaksY < 0.00001)
 	{
 		//Texture is aperiodic
 		return 0;

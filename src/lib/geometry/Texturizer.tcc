@@ -310,7 +310,7 @@ TextureToken<VertexT, NormalT>* Texturizer<VertexT, NormalT>::texturizePlane(vec
 	float crossCorrThreshold 	= Texturizer<VertexT, NormalT>::m_crossCorrThreshold;
 	float statsThreshold 		= Texturizer<VertexT, NormalT>::m_statsThreshold;
 	float featureThreshold 		= Texturizer<VertexT, NormalT>::m_featureThreshold;
-	float patternThreshold 		= FLT_MAX;//Texturizer<VertexT, NormalT>::m_patternThreshold; //TODO: uncomment
+	float patternThreshold 		= Texturizer<VertexT, NormalT>::m_patternThreshold;
 
 
 	if(contour.size() >= 3)
@@ -354,9 +354,10 @@ TextureToken<VertexT, NormalT>* Texturizer<VertexT, NormalT>::texturizePlane(vec
 		{
 			//Try to extract pattern
 			Texture* pattern = 0;
-			if (false)//ImageProcessor::extractPattern(initialTexture->m_texture, &pattern) > patternThreshold)//TODO
+			float pattern_quality = ImageProcessor::extractPattern(initialTexture->m_texture, &pattern);
+			if (pattern_quality > patternThreshold)
 			{
-				cout<<"Using pattern texture!!!"<<endl;
+				cout<<"Using pattern texture!!! "<<pattern_quality<<endl;
 				//calculate surf features for pattern
 				ImageProcessor::calcSURF(pattern);
 				//calculate statistics for pattern

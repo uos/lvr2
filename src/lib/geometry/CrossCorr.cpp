@@ -51,8 +51,15 @@ CrossCorr::CrossCorr(Texture *t1, Texture* t2)
 
 CrossCorr::CrossCorr(const cv::Mat &t1, const cv::Mat &t2)
 {
+	cv::Mat img1g;	
+	cv::cvtColor(t1, img1g, CV_RGB2GRAY);
+
+	//make input gray scale 
+	cv::Mat img2g;	
+	cv::cvtColor(t2, img2g, CV_RGB2GRAY);
+
 	//calculate cross correlation
-	crosscorrDFT(t1, t2, m_crosscorr);
+	crosscorrDFT(img1g, img2g, m_crosscorr);
 }
 
 void CrossCorr::crosscorrDFT(const cv::Mat& img1, const cv::Mat& img2, cv::Mat& dst)
