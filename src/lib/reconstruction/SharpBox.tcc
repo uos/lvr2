@@ -146,11 +146,11 @@ void SharpBox<VertexT, NormalT>::getSurface(
 
 	float distances[8];
 
-	getCorners(corners, query_points);
-	getDistances(distances, query_points);
-	getIntersections(corners, distances, vertex_positions);
+	this->getCorners(corners, query_points);
+	this->getDistances(distances, query_points);
+	this->getIntersections(corners, distances, vertex_positions);
 
-	int index = getIndex(query_points);
+	int index = this->getIndex(query_points);
 
 	// Do not create traingles for invalid boxes
 	for (int i = 0; i < 8; i++)
