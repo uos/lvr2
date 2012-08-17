@@ -47,6 +47,7 @@ TextureToken<VertexT, NormalT>::TextureToken(NormalT v1, NormalT v2, VertexT p, 
 template<typename VertexT, typename NormalT>
 void TextureToken<VertexT, NormalT>::textureCoords(VertexT v, float &x, float &y)
 {
+
 	int sizeX = std::max(8.0, pow(2, ceil(log(m_texture->m_width) / log(2))));
 	int sizeY = std::max(8.0, pow(2, ceil(log(m_texture->m_height) / log(2))));
 
@@ -54,17 +55,27 @@ void TextureToken<VertexT, NormalT>::textureCoords(VertexT v, float &x, float &y
 	x = (v1 * (w * v1)).length() / Texture::m_texelSize;
 	y = (v2 * (w * v2)).length() / Texture::m_texelSize;
 
-	//apply transformation
-	double tmp_x = m_transformationMatrix[0] * x + m_transformationMatrix[1] * y + m_transformationMatrix[2];
-	double tmp_y = m_transformationMatrix[3] * x + m_transformationMatrix[4] * y + m_transformationMatrix[5];
+	if (!this->m_texture->isPattern)
+	{
+		//apply transformation
+		double tmp_x = m_transformationMatrix[0] * x + m_transformationMatrix[1] * y + m_transformationMatrix[2];
+		double tmp_y = m_transformationMatrix[3] * x + m_transformationMatrix[4] * y + m_transformationMatrix[5];
 
-	x = tmp_x / sizeX;
-	y = tmp_y / sizeY;
+		x = tmp_x / sizeX;
+		y = tmp_y / sizeY;
 
-	x = x > 1 ? 1 : x;
-	x = x < 0 ? 0 : x;
-	y = y > 1 ? 1 : y;
-	y = y < 0 ? 0 : y;
+		x = x > 1 ? 1 : x;
+		x = x < 0 ? 0 : x;
+		y = y > 1 ? 1 : y;
+		y = y < 0 ? 0 : y;
+	}
+	else
+	{
+		//pattern Texture: no transformation is needed
+		x = x / m_texture->m_width;
+		y = y / m_texture->m_height;
+
+	}
 }
 
 }
