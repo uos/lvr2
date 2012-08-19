@@ -303,10 +303,18 @@ float ImageProcessor::extractPattern(Texture* tex, Texture** dst)
 	
 	//save the pattern
 	cv::Mat pattern = cv::Mat(src, cv::Rect(sX, sY, sizeX, sizeY));
-	
+
 	//convert the pattern to Texture
-	*dst = new Texture(pattern.size().width, pattern.size().height, pattern.channels(), tex->m_numBytesPerChan, tex->m_textureClass, 0, 0 ,0, 0, true, 0, 0);
-	memcpy((*dst)->m_data, pattern.data, pattern.size().width * pattern.size().height * pattern.channels() * tex->m_numBytesPerChan);
+	*dst = new Texture(sizeX, sizeY, tex->m_numChannels, tex->m_numBytesPerChan, tex->m_textureClass, 0, 0 ,0, 0, true, 0, 0);
+	for (int x = 0; x < sizeX * 3; x+= 3)
+	{
+		for (int y = 0; y < sizeY; y++)
+		{
+			(*dst)->m_data[y * sizeX * 3 + x + 0] = pattern.at<cv::Vec3b>(y,x/3)[0];
+			(*dst)->m_data[y * sizeX * 3 + x + 1] = pattern.at<cv::Vec3b>(y,x/3)[1];
+			(*dst)->m_data[y * sizeX * 3 + x + 2] = pattern.at<cv::Vec3b>(y,x/3)[2];
+		}
+	}	
 
 	return result;
 }
