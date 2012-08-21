@@ -37,13 +37,13 @@ uchar* IndoorNormalClassifier<VertexT, NormalT>::getColor(int index)
 	switch(label)
 	{
 	case Ceiling:
-		Colors::getColor(fc, GREEN);
+		Colors::getColor(fc, BLUE);
 		break;
 	case Floor:
 		Colors::getColor(fc, RED);
 		break;
 	case Wall:
-		Colors::getColor(fc, BLUE);
+		Colors::getColor(fc, GREEN);
 		break;
 	default:
 		Colors::getColor(fc, LIGHTGREY);
