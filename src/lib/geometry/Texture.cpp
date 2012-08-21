@@ -119,18 +119,13 @@ unsigned char* Texture::expand(int &sizeX, int &sizeY)
 
 void Texture::save(int i)
 {	
-	int sizeX, sizeY;
-	unsigned char* data = this->expand(sizeX, sizeY);
-
 	//write image file
 	char fn[255];
 	sprintf(fn, "texture_%d.ppm", i);
 	PPMIO* pio = new PPMIO();
-	pio->setDataArray(data, sizeX, sizeY);
+	pio->setDataArray(this->m_data, m_width, m_height);
 	pio->write(string(fn));
 	delete pio;
-	delete data;
-	
 }
 
 bool Texture::cmpTextures(Texture* t1, Texture* t2)
