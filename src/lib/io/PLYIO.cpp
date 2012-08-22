@@ -710,7 +710,6 @@ ModelPtr PLYIO::read( string filename, bool readColor, bool readConfidence,
 
 int PLYIO::readVertexCb( p_ply_argument argument )
 {
-
     float ** ptr;
     ply_get_argument_user_data( argument, (void **) &ptr, NULL );
     **ptr = ply_get_argument_value( argument );

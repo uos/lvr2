@@ -40,6 +40,8 @@
 #include <cstdio>
 #include <vector>
 
+#include <locale.h>
+
 namespace lssr
 {
 
@@ -95,6 +97,7 @@ class PLYIO : public BaseIO
          **/
         PLYIO()
         {
+            setlocale (LC_ALL, "C");
             m_model.reset();
         }
 
