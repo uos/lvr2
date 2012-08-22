@@ -51,44 +51,44 @@ void TetraederBox<VertexT, NormalT>::interpolateIntersections(
     // Calc intersections for tetraeders
     v1 = 0;
     v2 = 1;
-    x = calcIntersection(positions[v1].x, positions[v2].x, distances[v1], distances[v2]);
-    y = calcIntersection(positions[v1].y, positions[v2].y, distances[v1], distances[v2]);
-    z = calcIntersection(positions[v1].z, positions[v2].z, distances[v1], distances[v2]);
+    x = this->calcIntersection(positions[v1].x, positions[v2].x, distances[v1], distances[v2]);
+    y = this->calcIntersection(positions[v1].y, positions[v2].y, distances[v1], distances[v2]);
+    z = this->calcIntersection(positions[v1].z, positions[v2].z, distances[v1], distances[v2]);
     m_intersectionPositionsTetraeder[0] = VertexT(x, y, z);
 
     v1 = 1;
     v2 = 3;
-    x = calcIntersection(positions[v1].x, positions[v2].x, distances[v1], distances[v2]);
-    y = calcIntersection(positions[v1].y, positions[v2].y, distances[v1], distances[v2]);
-    z = calcIntersection(positions[v1].z, positions[v2].z, distances[v1], distances[v2]);
+    x = this->calcIntersection(positions[v1].x, positions[v2].x, distances[v1], distances[v2]);
+    y = this->calcIntersection(positions[v1].y, positions[v2].y, distances[v1], distances[v2]);
+    z = this->calcIntersection(positions[v1].z, positions[v2].z, distances[v1], distances[v2]);
     m_intersectionPositionsTetraeder[1] = VertexT(x, y, z);
 
     v1 = 3;
     v2 = 0;
-    x = calcIntersection(positions[v1].x, positions[v2].x, distances[v1], distances[v2]);
-    y = calcIntersection(positions[v1].y, positions[v2].y, distances[v1], distances[v2]);
-    z = calcIntersection(positions[v1].z, positions[v2].z, distances[v1], distances[v2]);
+    x = this->calcIntersection(positions[v1].x, positions[v2].x, distances[v1], distances[v2]);
+    y = this->calcIntersection(positions[v1].y, positions[v2].y, distances[v1], distances[v2]);
+    z = this->calcIntersection(positions[v1].z, positions[v2].z, distances[v1], distances[v2]);
     m_intersectionPositionsTetraeder[2] = VertexT(x, y, z);
 
     v1 = 0;
     v2 = 2;
-    x = calcIntersection(positions[v1].x, positions[v2].x, distances[v1], distances[v2]);
-    y = calcIntersection(positions[v1].y, positions[v2].y, distances[v1], distances[v2]);
-    z = calcIntersection(positions[v1].z, positions[v2].z, distances[v1], distances[v2]);
+    x = this->calcIntersection(positions[v1].x, positions[v2].x, distances[v1], distances[v2]);
+    y = this->calcIntersection(positions[v1].y, positions[v2].y, distances[v1], distances[v2]);
+    z = this->calcIntersection(positions[v1].z, positions[v2].z, distances[v1], distances[v2]);
     m_intersectionPositionsTetraeder[3] = VertexT(x, y, z);
 
     v1 = 1;
     v2 = 2;
-    x = calcIntersection(positions[v1].x, positions[v2].x, distances[v1], distances[v2]);
-    y = calcIntersection(positions[v1].y, positions[v2].y, distances[v1], distances[v2]);
-    z = calcIntersection(positions[v1].z, positions[v2].z, distances[v1], distances[v2]);
+    x = this->calcIntersection(positions[v1].x, positions[v2].x, distances[v1], distances[v2]);
+    y = this->calcIntersection(positions[v1].y, positions[v2].y, distances[v1], distances[v2]);
+    z = this->calcIntersection(positions[v1].z, positions[v2].z, distances[v1], distances[v2]);
     m_intersectionPositionsTetraeder[4] = VertexT(x, y, z);
 
     v1 = 3;
     v2 = 2;
-    x = calcIntersection(positions[v1].x, positions[v2].x, distances[v1], distances[v2]);
-    y = calcIntersection(positions[v1].y, positions[v2].y, distances[v1], distances[v2]);
-    z = calcIntersection(positions[v1].z, positions[v2].z, distances[v1], distances[v2]);
+    x = this->calcIntersection(positions[v1].x, positions[v2].x, distances[v1], distances[v2]);
+    y = this->calcIntersection(positions[v1].y, positions[v2].y, distances[v1], distances[v2]);
+    z = this->calcIntersection(positions[v1].z, positions[v2].z, distances[v1], distances[v2]);
     m_intersectionPositionsTetraeder[5] = VertexT(x, y, z);
 
 }
@@ -135,7 +135,7 @@ void TetraederBox<VertexT, NormalT>::getSurface(
         }
 
         // Interpolate the intersection vertices
-        interpolateIntersections(t_number, t_vertices, distances);
+        this->interpolateIntersections(t_number, t_vertices, distances);
 
         // Calculate the index for the surface generation look
         // up table

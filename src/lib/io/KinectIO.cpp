@@ -9,7 +9,7 @@
 #include "io/PointBuffer.hpp"
 #include "io/DataStruct.hpp"
 
-#include "../../ext/Eigen/Dense"
+#include <Eigen/Dense>
 
 #include <vector>
 #include <set>
