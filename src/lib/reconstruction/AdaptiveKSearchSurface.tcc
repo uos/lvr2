@@ -26,7 +26,7 @@
 
 
 // External libraries in lssr source tree
-#include "../../ext/Eigen/Dense"
+#include <Eigen/Dense>
 
 // boost libraries
 #include <boost/filesystem.hpp>

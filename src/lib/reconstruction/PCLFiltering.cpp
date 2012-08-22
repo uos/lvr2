@@ -100,8 +100,13 @@ PCLFiltering::PCLFiltering( PointBufferPtr loader )
 
 void PCLFiltering::applyMLSProjection(float searchRadius)
 {
+#if defined PCL_MAJOR_VERSION && defined PCL_MINOR_VERSION && PCL_MAJOR_VERSION == 1 && PCL_MINOR_VERSION >= 6
+    pcl::MovingLeastSquares<pcl::PointXYZRGB, pcl::PointNormal> mls;
+    pcl::PointCloud<pcl::PointNormal> mls_points;
+#else
     pcl::MovingLeastSquares<pcl::PointXYZRGB, pcl::Normal> mls;
     pcl::PointCloud<pcl::PointXYZRGB> mls_points;
+#endif
 
     // Set Parameters
     mls.setInputCloud(m_pointCloud);
@@ -112,7 +117,11 @@ void PCLFiltering::applyMLSProjection(float searchRadius)
     std::cout << timestamp << "Applying MSL projection" << std::endl;
 
     // Reconstruct
+#if defined PCL_MAJOR_VERSION && defined PCL_MINOR_VERSION && PCL_MAJOR_VERSION == 1 && PCL_MINOR_VERSION >= 6
+    mls.process(mls_points);
+#else
     mls.reconstruct(mls_points);
+#endif
 
     std::cout << timestamp << "Filtered cloud has " << mls_points.size() << " points" << std::endl;
     std::cout << timestamp << "Saving result" << std::endl;

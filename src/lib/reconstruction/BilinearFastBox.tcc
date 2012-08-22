@@ -56,11 +56,11 @@ void BilinearFastBox<VertexT, NormalT>::getSurface(
 
     float distances[8];
 
-    getCorners(corners, qp);
-    getDistances(distances, qp);
-    getIntersections(corners, distances, vertex_positions);
+    this->getCorners(corners, qp);
+    this->getDistances(distances, qp);
+    this->getIntersections(corners, distances, vertex_positions);
 
-    int index = getIndex(qp);
+    int index = this->getIndex(qp);
     m_mcIndex = index;
 
     // Do not create traingles for invalid boxes
