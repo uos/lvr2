@@ -110,6 +110,7 @@ ModelPtr ModelFactory::readModel( std::string filename )
 
         }
 
+        // Check and create io
         if(!found_boctree && found_3d)
         {
             io = new UosIO;
@@ -117,6 +118,7 @@ ModelPtr ModelFactory::readModel( std::string filename )
         else if(found_boctree && found_3d)
         {
             cout << timestamp << "Found 3d files and octrees. Loading octrees per default." << endl;
+            io = new BoctreeIO;
         }
         else if(found_boctree && !found_3d)
         {

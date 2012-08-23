@@ -26,8 +26,12 @@
 #ifndef BOCTREEIO_HPP_
 #define BOCTREEIO_HPP_
 
+#include <boost/filesystem.hpp>
 #include "slam6d/scan_io_oct.h"
 #include "BaseIO.hpp"
+#include "geometry/Matrix4.hpp"
+
+
 namespace lssr
 {
 
@@ -55,6 +59,9 @@ public:
      * @param filename Filename of the file to write.
      */
     virtual void save( string filename );
+
+private:
+    Matrix4<float> parseFrameFile(ifstream& frameFile);
 };
 
 } /* namespace lssr */
