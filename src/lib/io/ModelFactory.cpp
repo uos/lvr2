@@ -30,6 +30,7 @@
 #include "ObjIO.hpp"
 #include "LasIO.hpp"
 #include "PCDIO.hpp"
+#include "BoctreeIO.hpp"
 #include "ModelFactory.hpp"
 
 #include "Timestamp.hpp"
@@ -74,7 +75,57 @@ ModelPtr ModelFactory::readModel( std::string filename )
 #endif /* _USE_PCL_ */
     else if (extension == "")
     {
-        io = new UosIO;
+        bool found_3d = false;
+        bool found_boctree = false;
+
+        // Check for supported data in directory.
+        boost::filesystem::directory_iterator lastFile;
+
+        for(boost::filesystem::directory_iterator it(filename); it != lastFile; it++ )
+        {
+            boost::filesystem::path p = it->path();
+
+            // Check for 3d files
+            if(string(p.extension().c_str()) == ".3d")
+            {
+                // Check for naming convention "scanxxx.3d"
+                int num = 0;
+                if(sscanf(p.filename().c_str(), "scan%3d", &num))
+                {
+                    found_3d = true;
+                }
+            }
+
+            // Check for .oct files
+            if(string(p.extension().c_str()) == ".oct")
+            {
+                // Check for naming convention "scanxxx.3d"
+                int num = 0;
+                if(sscanf(p.filename().c_str(), "scan%3d", &num))
+                {
+                    found_boctree = true;
+                }
+            }
+
+
+        }
+
+        if(!found_boctree && found_3d)
+        {
+            io = new UosIO;
+        }
+        else if(found_boctree && found_3d)
+        {
+            cout << timestamp << "Found 3d files and octrees. Loading octrees per default." << endl;
+        }
+        else if(found_boctree && !found_3d)
+        {
+            io = new BoctreeIO;
+        }
+        else
+        {
+            cout << timestamp << "Given directory does not contain " << endl;
+        }
     }
 
     // Return data model

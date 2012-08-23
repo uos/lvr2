@@ -13,6 +13,7 @@ using std::string;
 using std::vector;
 
 #include "scan_io.h"
+#include "point.h"
 
 /**
  * @brief 3D scan loader for from binary octree files
