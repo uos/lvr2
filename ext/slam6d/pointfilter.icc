@@ -1,0 +1,22 @@
+bool PointFilter::check(double* point)
+{
+  // create a new checker chain
+  if(m_changed) {
+    createCheckers();
+    // mark as unchanged to avoid recreation on further calls
+    m_changed = false;
+  }
+  
+  // apply all tests to the point
+  Checker* checker = m_checker;
+  while(checker) {
+    if(checker->test(point)) {
+      checker = checker->m_next;
+    } else {
+      // if even one test fails the point is discarded
+      return false;
+    }
+  }
+  // point has passed if all tests returned true
+  return true;
+}
