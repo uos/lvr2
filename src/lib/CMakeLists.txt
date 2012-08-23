@@ -49,6 +49,7 @@ target_link_libraries(staticlssr laslib)
 target_link_libraries(staticlssr obj)
 target_link_libraries(staticlssr pthread)
 target_link_libraries(staticlssr ${PCL_LIBRARIES})
+target_link_libraries(staticlssr slam6d)
 
 if ( rply_shared ) 
     target_link_libraries(staticlssr ${rply_shared})
