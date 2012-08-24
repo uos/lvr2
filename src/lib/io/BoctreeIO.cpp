@@ -185,21 +185,21 @@ ModelPtr BoctreeIO::read(string directory )
             i++;
         }
 
-        // Map reflectances to 0..255
-        float r_diff = max_r - min_r;
-        if(r_diff > 0)
-        {
-            size_t np = allPoints.size();
-            float b_size = r_diff / 255.0;
-            for(int a = 0; a < np; a++)
-            {
-                float value = intensities[a];
-                value -= min_r;
-                value /= b_size;
-                //cout << value << endl;
-                intensities[a] = value;
-            }
-        }
+//        // Map reflectances to 0..255
+//        float r_diff = max_r - min_r;
+//        if(r_diff > 0)
+//        {
+//            size_t np = allPoints.size();
+//            float b_size = r_diff / 255.0;
+//            for(int a = 0; a < np; a++)
+//            {
+//                float value = intensities[a];
+//                value -= min_r;
+//                value /= b_size;
+//                //cout << value << endl;
+//                intensities[a] = value;
+//            }
+//        }
 
         model->m_pointCloud = PointBufferPtr( new PointBuffer );
         model->m_pointCloud->setPointArray(points, allPoints.size());
