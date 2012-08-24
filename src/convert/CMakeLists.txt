@@ -1,6 +1,4 @@
-
-message( STATUS "Creating target convert…" )
-add_executable( convertmodel convert.cpp )
+add_executable( convertmodel Convert.cpp Options.cpp )
 target_link_libraries( convertmodel staticlssr )
 
 if(PCL_FOUND)
