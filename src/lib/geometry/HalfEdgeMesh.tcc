@@ -1480,7 +1480,6 @@ void HalfEdgeMesh<VertexT, NormalT>::finalizeAndRetesselate( bool genTextures, f
             m->r = r;
             m->g = g;
             m->b = b;
-            cout << r << " " << g << " " << b << endl;
             m->texture_index = -1;
             materialBuffer.push_back(m);
         }
