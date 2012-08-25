@@ -47,11 +47,12 @@ Texture::Texture()
 	this->m_numCCVColors		= 0;
 	this->m_CCV			= 0;
 	this->m_distance 		= 0;
+	this->m_keyPoints 		= 0;
 }
 
 Texture::Texture(unsigned short int width, unsigned short int height, unsigned char numChannels,
 		 unsigned char numBytesPerChan, unsigned short int textureClass, unsigned short int numFeatures,
-		 unsigned char numFeatureComponents, float* features, float* stats, bool isPattern, 
+		 unsigned char numFeatureComponents, float* features, float* keyPoints, float* stats, bool isPattern, 
 		 unsigned char numCCVColors, unsigned long* CCV)
 {
 	this->m_width 			= width;
@@ -67,6 +68,7 @@ Texture::Texture(unsigned short int width, unsigned short int height, unsigned c
 	this->m_isPattern		= isPattern;
 	this->m_numCCVColors 		= numCCVColors;
 	this->m_CCV			= CCV;
+	this->m_keyPoints 		= keyPoints;
 }
 
 Texture::Texture(Texture &other)
@@ -89,6 +91,8 @@ Texture::Texture(Texture &other)
 	this->m_CCV			= new unsigned long[3 * m_numCCVColors * 2];
 	memcpy(m_CCV, other.m_CCV, 3 * m_numCCVColors * 2 * sizeof(unsigned long));
 	this->m_distance 		= other.m_distance;
+	this->m_keyPoints 		= new float[m_numFeatures * 2];
+	memcpy(m_keyPoints, other.m_keyPoints, m_numFeatures * 2 * sizeof(float));
 }
 
 unsigned char* Texture::expand(int &sizeX, int &sizeY)
@@ -138,6 +142,7 @@ Texture::~Texture() {
 	delete m_featureDescriptors;
 	delete m_stats;
 	delete m_CCV;
+	delete m_keyPoints;
 }
 
 }

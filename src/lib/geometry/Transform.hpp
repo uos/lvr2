@@ -31,6 +31,7 @@
 #include <math.h>
 #include <cstdio>
 #include <geometry/Texture.hpp>
+#include <geometry/ImageProcessor.hpp>
 
 namespace lssr {
 
@@ -89,7 +90,7 @@ private:
 	 * \param	t2	The second image
 	 *
 	 */
-	void calcTransform(const cv::Mat &t1, const cv::Mat &t2);
+	void calcTransform(const cv::Mat &t1, const cv::Mat &t2, std::vector<cv::KeyPoint> kp1, std::vector<cv::KeyPoint> kp2, cv::Mat desc1, cv::Mat desc2);
 	
 	///The first image
 	cv::Mat m_img1;

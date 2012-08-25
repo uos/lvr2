@@ -208,31 +208,48 @@ void ImageProcessor::calcSURF(Texture* tex)
 		cv::cvtColor(img1, img1, CV_RGB2GRAY);
 		
 		//initialize SURF objects
-		cv::SurfFeatureDetector detector(100);
+//		cv::SurfFeatureDetector detector(100);
+		cv::Ptr<cv::FeatureDetector> detector(new cv::DynamicAdaptedFeatureDetector (new cv::SurfAdjuster(), 100, 110, 30));
 		cv::SurfDescriptorExtractor extractor;
 
 		std::vector<cv::KeyPoint> keyPoints;
 		cv::Mat descriptors;
 
 		//calculate SURF features for the image
-		detector.detect( img1, keyPoints );
+		detector->detect( img1, keyPoints );
 		extractor.compute( img1, keyPoints, descriptors );
 
 		//return the results
 		tex->m_numFeatures 		= descriptors.rows;
 		tex->m_numFeatureComponents	= descriptors.cols;
 		tex->m_featureDescriptors = new float[descriptors.rows * descriptors.cols];
+		tex->m_keyPoints 		= new float[tex->m_numFeatures * 2];
 		for (int r = 0; r < descriptors.rows; r++)
 		{
 			for (int c = 0; c < descriptors.cols; c++)
 			{
 				tex->m_featureDescriptors[r * descriptors.cols + c] = descriptors.at<float>(r, c);
 			}
+			tex->m_keyPoints[r * 2 + 0] 	= 	keyPoints[r].pt.x;
+			tex->m_keyPoints[r * 2 + 1] 	= 	keyPoints[r].pt.y;
 		}
 	}
 	else
 	{
 		tex->m_numFeatures = 0;
+	}
+}
+
+void ImageProcessor::floatArrToSURF(Texture* t, std::vector<cv::KeyPoint> &kp, cv::Mat &desc)
+{
+	desc = cv::Mat(t->m_numFeatures, t->m_numFeatureComponents, CV_32FC1);
+	for (int r = 0; r < desc.rows; r++)
+	{
+		for (int c = 0; c < desc.cols; c++)
+		{
+			desc.at<float>(r, c) = t->m_featureDescriptors[r * desc.cols + c];
+		}
+		kp.push_back( *(new cv::KeyPoint(t->m_keyPoints[r * 2 + 0], t->m_keyPoints[r * 2 + 1], 0)));
 	}
 }
 
@@ -264,7 +281,8 @@ float ImageProcessor::compareTexturesSURF(Texture* tex1, Texture* tex2)
 		result = 0;
 
 		//calculate matching
-		cv::FlannBasedMatcher matcher;
+		cv::BruteForceMatcher<cv::L2<float> > matcher;
+		//cv::FlannBasedMatcher matcher;
 		std::vector< cv::DMatch > matches;
 		matcher.match( descriptors1, descriptors2, matches);
 
@@ -305,7 +323,7 @@ float ImageProcessor::extractPattern(Texture* tex, Texture** dst)
 	cv::Mat pattern = cv::Mat(src, cv::Rect(sX, sY, sizeX, sizeY));
 
 	//convert the pattern to Texture
-	*dst = new Texture(sizeX, sizeY, tex->m_numChannels, tex->m_numBytesPerChan, tex->m_textureClass, 0, 0 ,0, 0, true, 0, 0);
+	*dst = new Texture(sizeX, sizeY, tex->m_numChannels, tex->m_numBytesPerChan, tex->m_textureClass, 0, 0 ,0, 0, 0, true, 0, 0);
 	for (int x = 0; x < sizeX * 3; x+= 3)
 	{
 		for (int y = 0; y < sizeY; y++)
@@ -315,6 +333,8 @@ float ImageProcessor::extractPattern(Texture* tex, Texture** dst)
 			(*dst)->m_data[y * sizeX * 3 + x + 2] = pattern.at<cv::Vec3b>(y,x/3)[2];
 		}
 	}	
+
+	ImageProcessor::showTexture(*dst, "POIMMES");
 
 	return result;
 }
@@ -390,5 +410,37 @@ float ImageProcessor::compareTexturesCCV(Texture* tex1, Texture* tex2)
 float ImageProcessor::compareTexturesStats(Texture* tex1, Texture* tex2)
 {
 	return Statistics::textureVectorDistance(tex1->m_stats, tex2->m_stats);
+}
+
+
+void ImageProcessor::showTexture(Texture* t, string caption)
+{
+	cv::Mat img(cv::Size(t->m_width, t->m_height), CV_MAKETYPE(t->m_numBytesPerChan * 8, t->m_numChannels), t->m_data);
+
+	//cv::putText(img, caption, cv::Point2f(0,img.rows/2), cv::FONT_HERSHEY_SIMPLEX, 0.4, cv::Scalar(255,0,0), 2);
+
+	cv::startWindowThread();
+	
+	//show the reference image
+	cv::namedWindow(caption, CV_WINDOW_AUTOSIZE);
+	cv::imshow(caption, img);
+	cv::waitKey();
+
+	cv::destroyAllWindows();
+}
+
+void ImageProcessor::showTexture(cv::Mat img, string caption)
+{
+
+	//cv::putText(img, caption, cv::Point2f(0,img.rows/2), cv::FONT_HERSHEY_SIMPLEX, 0.4, cv::Scalar(255,0,0), 2);
+
+	cv::startWindowThread();
+	
+	//show the reference image
+	cv::namedWindow(caption, CV_WINDOW_AUTOSIZE);
+	cv::imshow(caption, img);
+	cv::waitKey();
+
+	cv::destroyAllWindows();
 }
 }
