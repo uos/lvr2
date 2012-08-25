@@ -112,7 +112,17 @@ Transform::Transform(const cv::Mat &t1, const cv::Mat &t2)
 
 void Transform::calcTransform(const cv::Mat &t1, const cv::Mat &t2, std::vector<cv::KeyPoint> kp1, std::vector<cv::KeyPoint> kp2, cv::Mat desc1, cv::Mat desc2)
 {
-	//we need at least three corresponding points!
+	//initialize with identity matrix for the case we don't get
+	//enough key points or "good" matches.
+	m_trans = cv::Mat(2, 3, CV_64FC1);
+	m_trans.at<double>(0,0) = 1;
+	m_trans.at<double>(0,1) = 0;
+	m_trans.at<double>(0,2) = 0;
+	m_trans.at<double>(1,0) = 0;
+	m_trans.at<double>(1,1) = 1;
+	m_trans.at<double>(1,2) = 0;
+
+	//we need at least three corresponding point pairs!
 	if (kp1.size() > 2 && kp2.size() > 2)
 	{
 		//calculate matching
@@ -131,7 +141,7 @@ void Transform::calcTransform(const cv::Mat &t1, const cv::Mat &t2, std::vector<
 			}
 		}
 
-		//search "good" matches i.e. matches with a distance smaller than 3 times of the minimum distance
+		//search "good" matches i.e. matches with a distance smaller than 2 times the minimum distance
 		std::vector< cv::DMatch > goodMatches;
 		for (int i = 0; i < matches.size(); i++)
 		{ 
@@ -141,65 +151,60 @@ void Transform::calcTransform(const cv::Mat &t1, const cv::Mat &t2, std::vector<
 			}
 		}
 
-		std::vector<Trans> transformations;
-		//calculate transformation from 3 randomly chosen matchings
-		for (int i = 0; i < 100; i++)	//100 iterations
+		//iteratively, choose random matches to calculate the transformation
+		//and search for the transformation that has been calculated most times
+		if (goodMatches.size() > 2)
 		{
-		
-			int match1 = -1;
-			int match2 = -1;
-			int match3 = -1;
-			while (match1 == match2 || match1 == match3 || match2 == match3)
+			std::vector<Trans> transformations;
+			for (int i = 0; i < 100; i++)	//100 iterations
 			{
-				match1 = rand() % goodMatches.size();
-				match2 = rand() % goodMatches.size();
-				match3 = rand() % goodMatches.size();
-			}
-			cv::Point2f p1[3] = {kp1[matches[match1].queryIdx].pt, kp1[matches[match2].queryIdx].pt, kp1[matches[match3].queryIdx].pt};
-			cv::Point2f p2[3] = {kp2[matches[match1].trainIdx].pt, kp2[matches[match2].trainIdx].pt, kp2[matches[match3].trainIdx].pt};
-			cv::Mat currentTransformation = cv::getAffineTransform(p1, p2);
-			Trans currentTrans(currentTransformation);
-			bool exists_already = false;
-			//check if this transformation already has been calculated. If yes -> +1
-			for (int t = 0; t < transformations.size(); t++)
-			{
-				if (transformations[t] == currentTrans)
+			
+				//calculate transformation from 3 randomly chosen matchings
+				int match1 = -1;
+				int match2 = -1;
+				int match3 = -1;
+				while (match1 == match2 || match1 == match3 || match2 == match3)
 				{
-					transformations[t].m_votes++;
-					exists_already = true;
+					match1 = rand() % goodMatches.size();
+					match2 = rand() % goodMatches.size();
+					match3 = rand() % goodMatches.size();
+				}
+				cv::Point2f p1[3] = {kp1[goodMatches[match1].queryIdx].pt, kp1[goodMatches[match2].queryIdx].pt, kp1[goodMatches[match3].queryIdx].pt};
+				cv::Point2f p2[3] = {kp2[goodMatches[match1].trainIdx].pt, kp2[goodMatches[match2].trainIdx].pt, kp2[goodMatches[match3].trainIdx].pt};
+				cv::Mat currentTransformation = cv::getAffineTransform(p1, p2);
+				Trans currentTrans(currentTransformation);
+			
+				//check if this transformation already has been calculated. If yes -> +1
+				bool exists_already = false;
+				for (int t = 0; t < transformations.size(); t++)
+				{
+					if (transformations[t] == currentTrans)
+					{
+						transformations[t].m_votes++;
+						exists_already = true;
+					}
+				}
+				//if not -> store transformation		
+				if (!exists_already)
+				{
+					transformations.push_back(currentTrans);
 				}
 			}
-			//if not -> store transformation		
-			if (!exists_already)
-			{
-				transformations.push_back(currentTrans);
-			}
-		}
 
-		//choose transformation with most votes
-		int bestVotes = 0;
-		int bestTrans = -1;
-		for (int t = 0; t < transformations.size(); t++)
-		{
-			if (transformations[t].m_votes > bestVotes)
+			//choose transformation with most votes
+			int bestVotes = 0;
+			int bestTrans = -1;
+			for (int t = 0; t < transformations.size(); t++)
 			{
-				bestVotes = transformations[t].m_votes;
-				bestTrans = t;
+				if (transformations[t].m_votes > bestVotes)
+				{
+					bestVotes = transformations[t].m_votes;
+					bestTrans = t;
+				}
 			}
+			m_trans = transformations[bestTrans].m_trans;
+			std::cout<<"BESTVOTES::::: "<<bestVotes<<std::endl;
 		}
-		m_trans = transformations[bestTrans].m_trans;
-		std::cout<<"BESTVOTES::::: "<<bestVotes<<" total transformations::: "<<transformations.size()<<std::endl;
-	}
-	else
-	{
-		//Not enough corresponding points. Return identity matrix.
-		m_trans = cv::Mat(2, 3, CV_64FC1);
-		m_trans.at<double>(0,0) = 1;
-		m_trans.at<double>(0,1) = 0;
-		m_trans.at<double>(0,2) = 0;
-		m_trans.at<double>(1,0) = 0;
-		m_trans.at<double>(1,1) = 1;
-		m_trans.at<double>(1,2) = 0;
 	}
 }
 
