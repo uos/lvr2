@@ -32,6 +32,7 @@
 #include <cstdio>
 #include <geometry/Texture.hpp>
 #include <geometry/ImageProcessor.hpp>
+#include <opencv2/imgproc/imgproc.hpp>
 
 namespace lssr {
 
@@ -82,14 +83,14 @@ public:
 	
 
 private:
-
 	class Trans
 	{
 	public:
-		Trans(cv::Mat transformation)
+		Trans(cv::Point2f* p1, cv::Point2f* p2)
 		{
 			m_votes = 1;
-			m_trans = transformation;
+			m_trans = cv::getAffineTransform(p1, p2);
+			m_mirrored = false; //TODO: check if mirrored
 		}
 		
 		bool operator==(Trans other)
@@ -115,6 +116,7 @@ private:
 		
 		int m_votes;	
 		cv::Mat m_trans;
+		bool m_mirrored;
 		
 	};
 	

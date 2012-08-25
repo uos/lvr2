@@ -156,7 +156,7 @@ void Transform::calcTransform(const cv::Mat &t1, const cv::Mat &t2, std::vector<
 		if (goodMatches.size() > 2)
 		{
 			std::vector<Trans> transformations;
-			for (int i = 0; i < 100; i++)	//100 iterations
+			for (int i = 0; i < 1000; i++)	//100 iterations
 			{
 			
 				//calculate transformation from 3 randomly chosen matchings
@@ -171,8 +171,7 @@ void Transform::calcTransform(const cv::Mat &t1, const cv::Mat &t2, std::vector<
 				}
 				cv::Point2f p1[3] = {kp1[goodMatches[match1].queryIdx].pt, kp1[goodMatches[match2].queryIdx].pt, kp1[goodMatches[match3].queryIdx].pt};
 				cv::Point2f p2[3] = {kp2[goodMatches[match1].trainIdx].pt, kp2[goodMatches[match2].trainIdx].pt, kp2[goodMatches[match3].trainIdx].pt};
-				cv::Mat currentTransformation = cv::getAffineTransform(p1, p2);
-				Trans currentTrans(currentTransformation);
+				Trans currentTrans(p1, p2);
 			
 				//check if this transformation already has been calculated. If yes -> +1
 				bool exists_already = false;
