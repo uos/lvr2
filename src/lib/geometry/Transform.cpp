@@ -111,7 +111,6 @@ Transform::Transform(const cv::Mat &t1, const cv::Mat &t2)
 }
 
 void Transform::calcTransform(const cv::Mat &t1, const cv::Mat &t2, std::vector<cv::KeyPoint> kp1, std::vector<cv::KeyPoint> kp2, cv::Mat desc1, cv::Mat desc2)
-
 {
 	//we need at least three corresponding points!
 	if (kp1.size() > 2 && kp2.size() > 2)
@@ -122,50 +121,74 @@ void Transform::calcTransform(const cv::Mat &t1, const cv::Mat &t2, std::vector<
 		std::vector< cv::DMatch > matches;
 		matcher.match( desc1, desc2, matches);
 
-		//search 3 best matches
-		double minDist1 = FLT_MAX;
-		double minDist2 = FLT_MAX;
-		double minDist3 = FLT_MAX;
-		int best1 = -1;
-		int best2 = -1;
-		int best3 = -1;
-		showMatchings(t1, t2, kp1, kp2, matches); //TODO: remove
+		//search best match
+		double minDist = FLT_MAX;
 		for (int i = 0; i < matches.size(); i++)
 		{ 
-			if(matches[i].distance < minDist3)
+			if(matches[i].distance < minDist)
 			{
-				if(matches[i].distance < minDist2)
-				{
-					if(matches[i].distance < minDist1)
-					{
-						minDist3 = minDist2;
-						best3 = best2;
-						minDist2 = minDist1;
-						best2 = best1;
-						minDist1 = matches[i].distance;
-						best1 = i;
-					}
-					else
-					{
-						minDist3 = minDist2;
-						best3 = best2;
-						minDist2 = matches[i].distance;
-						best2 = i;
-					}
-				}
-				else
-				{
-					minDist3 = matches[i].distance;
-					best3 = i;
-				}
+				minDist = matches[i].distance;
 			}
 		}
 
-		cv::Point2f p1[3] = {kp1[matches[best1].queryIdx].pt, kp1[matches[best2].queryIdx].pt, kp1[matches[best3].queryIdx].pt};
-		cv::Point2f p2[3] = {kp2[matches[best1].trainIdx].pt, kp2[matches[best2].trainIdx].pt, kp2[matches[best3].trainIdx].pt};
+		//search "good" matches i.e. matches with a distance smaller than 3 times of the minimum distance
+		std::vector< cv::DMatch > goodMatches;
+		for (int i = 0; i < matches.size(); i++)
+		{ 
+			if(matches[i].distance < 2 * minDist)
+			{
+				goodMatches.push_back(matches[i]);
+			}
+		}
 
-		//calculate rotation, translation and scaling
-		m_trans = cv::getAffineTransform(p1, p2);
+		std::vector<Trans> transformations;
+		//calculate transformation from 3 randomly chosen matchings
+		for (int i = 0; i < 100; i++)	//100 iterations
+		{
+		
+			int match1 = -1;
+			int match2 = -1;
+			int match3 = -1;
+			while (match1 == match2 || match1 == match3 || match2 == match3)
+			{
+				match1 = rand() % goodMatches.size();
+				match2 = rand() % goodMatches.size();
+				match3 = rand() % goodMatches.size();
+			}
+			cv::Point2f p1[3] = {kp1[matches[match1].queryIdx].pt, kp1[matches[match2].queryIdx].pt, kp1[matches[match3].queryIdx].pt};
+			cv::Point2f p2[3] = {kp2[matches[match1].trainIdx].pt, kp2[matches[match2].trainIdx].pt, kp2[matches[match3].trainIdx].pt};
+			cv::Mat currentTransformation = cv::getAffineTransform(p1, p2);
+			Trans currentTrans(currentTransformation);
+			bool exists_already = false;
+			//check if this transformation already has been calculated. If yes -> +1
+			for (int t = 0; t < transformations.size(); t++)
+			{
+				if (transformations[t] == currentTrans)
+				{
+					transformations[t].m_votes++;
+					exists_already = true;
+				}
+			}
+			//if not -> store transformation		
+			if (!exists_already)
+			{
+				transformations.push_back(currentTrans);
+			}
+		}
+
+		//choose transformation with most votes
+		int bestVotes = 0;
+		int bestTrans = -1;
+		for (int t = 0; t < transformations.size(); t++)
+		{
+			if (transformations[t].m_votes > bestVotes)
+			{
+				bestVotes = transformations[t].m_votes;
+				bestTrans = t;
+			}
+		}
+		m_trans = transformations[bestTrans].m_trans;
+		std::cout<<"BESTVOTES::::: "<<bestVotes<<" total transformations::: "<<transformations.size()<<std::endl;
 	}
 	else
 	{
