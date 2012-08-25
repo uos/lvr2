@@ -29,14 +29,40 @@
 #include <opencv/cv.h>
 
 namespace lssr {
+
+//DEBUG
+void showMatchings(cv::Mat t1, cv::Mat t2, std::vector<cv::KeyPoint> keyPoints1, std::vector<cv::KeyPoint> keyPoints2, std::vector< cv::DMatch > matches)
+{
+//	std::vector< cv::DMatch > goodMatches;
+//	for (int i = 0; i < matches.size(); i++)
+//	{
+//		if (matches[i].distance < 0.1)
+//		{
+//			std::cout<<"POMMES PIMMES PIMMES " << matches[i].distance<<std::endl;
+//			goodMatches.push_back(matches[i]);
+//		}
+//	}
+	
+	cv::Mat result;
+	cv::drawMatches(t1, keyPoints1, t2, keyPoints2, matches, result);
+	std::cout<<keyPoints1.size()<<" "<<keyPoints2.size()<<std::endl;
+	
+	cv::startWindowThread();
+	
+	//show the reference image
+	cv::namedWindow("MATCHES", CV_WINDOW_AUTOSIZE);
+	cv::imshow("MATCHES", result);
+	cv::waitKey();
+
+	cv::destroyAllWindows();
+	
+}
+
 Transform::Transform(Texture *t1, Texture* t2)
 {
-	int sizeX1, sizeX2, sizeY1, sizeY2;
-	unsigned char* data1 = t1->expand(sizeX1, sizeY1);
-	unsigned char* data2 = t2->expand(sizeX2, sizeY2);
 	//convert textures to cv::Mat
-	cv::Mat img1(cv::Size(sizeX1, sizeY1), CV_MAKETYPE(t1->m_numBytesPerChan * 8, t1->m_numChannels), data1);
-	cv::Mat img2(cv::Size(sizeX2, sizeY2), CV_MAKETYPE(t2->m_numBytesPerChan * 8, t2->m_numChannels), data2);
+	cv::Mat img1(cv::Size(t1->m_width, t1->m_height), CV_MAKETYPE(t1->m_numBytesPerChan * 8, t1->m_numChannels), t1->m_data);
+	cv::Mat img2(cv::Size(t2->m_width, t2->m_height), CV_MAKETYPE(t2->m_numBytesPerChan * 8, t2->m_numChannels), t2->m_data);
 	m_img1 = img1;
 	m_img2 = img2;
 
@@ -45,10 +71,16 @@ Transform::Transform(Texture *t1, Texture* t2)
 	cv::cvtColor(img1, img1g, CV_RGB2GRAY);
 	cv::Mat img2g;	
 	cv::cvtColor(img2, img2g, CV_RGB2GRAY);
+
 	//calculate rotation, translation and scaling
-	calcTransform(img1g, img2g);
-	delete data1;
-	delete data2;
+	std::vector<cv::KeyPoint> keyPoints1;
+	cv::Mat descriptors1;
+	ImageProcessor::floatArrToSURF(t1, keyPoints1, descriptors1);
+	std::vector<cv::KeyPoint> keyPoints2;
+	cv::Mat descriptors2;
+	ImageProcessor::floatArrToSURF(t2, keyPoints2, descriptors2);
+
+	calcTransform(img1g, img2g, keyPoints1, keyPoints2, descriptors1, descriptors2);
 }
 
 Transform::Transform(const cv::Mat &t1, const cv::Mat &t2)
@@ -56,14 +88,9 @@ Transform::Transform(const cv::Mat &t1, const cv::Mat &t2)
 	m_img1 = t1;
 	m_img2 = t2;
 
-	//calculate rotation, translation and scaling
-	calcTransform(t1, t2);
-}
-
-void Transform::calcTransform(const cv::Mat &t1, const cv::Mat &t2)
-{
-	//calculate surf features and choose the 3 best matches
-	cv::SurfFeatureDetector detector(100);
+	//calculate surf features
+//	cv::SurfFeatureDetector detector(1);
+	cv::Ptr<cv::FeatureDetector> detector(new cv::DynamicAdaptedFeatureDetector (new cv::SurfAdjuster(), 100, 110, 10));
 	cv::SurfDescriptorExtractor extractor;
 
 	std::vector<cv::KeyPoint> keyPoints1;
@@ -72,20 +99,29 @@ void Transform::calcTransform(const cv::Mat &t1, const cv::Mat &t2)
 	cv::Mat descriptors2;
 
 	//calculate SURF features for the first image
-	detector.detect( t1, keyPoints1 );
+	detector->detect( t1, keyPoints1 );
 	extractor.compute( t1, keyPoints1, descriptors1 );
 
 	//calculate SURF features for the second image
-	detector.detect( t2, keyPoints2 );
+	detector->detect( t2, keyPoints2 );
 	extractor.compute( t2, keyPoints2, descriptors2 );
 
+	//calculate rotation, translation and scaling
+	calcTransform(t1, t2, keyPoints1, keyPoints2, descriptors1, descriptors2);
+}
+
+void Transform::calcTransform(const cv::Mat &t1, const cv::Mat &t2, std::vector<cv::KeyPoint> kp1, std::vector<cv::KeyPoint> kp2, cv::Mat desc1, cv::Mat desc2)
+
+{
 	//we need at least three corresponding points!
-	if (keyPoints1.size() > 2 && keyPoints2.size() > 2)
+	if (kp1.size() > 2 && kp2.size() > 2)
 	{
 		//calculate matching
-		cv::FlannBasedMatcher matcher;
+		cv::BruteForceMatcher<cv::L2<float> > matcher;
+//		cv::FlannBasedMatcher matcher;
 		std::vector< cv::DMatch > matches;
-		matcher.match( descriptors1, descriptors2, matches);
+		matcher.match( desc1, desc2, matches);
+
 		//search 3 best matches
 		double minDist1 = FLT_MAX;
 		double minDist2 = FLT_MAX;
@@ -93,7 +129,7 @@ void Transform::calcTransform(const cv::Mat &t1, const cv::Mat &t2)
 		int best1 = -1;
 		int best2 = -1;
 		int best3 = -1;
-
+		showMatchings(t1, t2, kp1, kp2, matches); //TODO: remove
 		for (int i = 0; i < matches.size(); i++)
 		{ 
 			if(matches[i].distance < minDist3)
@@ -125,8 +161,8 @@ void Transform::calcTransform(const cv::Mat &t1, const cv::Mat &t2)
 			}
 		}
 
-		cv::Point2f p1[3] = {keyPoints1[matches[best1].queryIdx].pt, keyPoints1[matches[best2].queryIdx].pt, keyPoints1[matches[best3].queryIdx].pt};
-		cv::Point2f p2[3] = {keyPoints2[matches[best1].trainIdx].pt, keyPoints2[matches[best2].trainIdx].pt, keyPoints2[matches[best3].trainIdx].pt};
+		cv::Point2f p1[3] = {kp1[matches[best1].queryIdx].pt, kp1[matches[best2].queryIdx].pt, kp1[matches[best3].queryIdx].pt};
+		cv::Point2f p2[3] = {kp2[matches[best1].trainIdx].pt, kp2[matches[best2].trainIdx].pt, kp2[matches[best3].trainIdx].pt};
 
 		//calculate rotation, translation and scaling
 		m_trans = cv::getAffineTransform(p1, p2);

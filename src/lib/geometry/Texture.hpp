@@ -29,6 +29,7 @@
 #define TEXTURE_HPP_
 
 #include <cstring>
+#include <math.h>
 #include <opencv/highgui.h>
 #include <cstdio>
 #include <io/PPMIO.hpp>
@@ -55,7 +56,7 @@ public:
 	 */
 	Texture(unsigned short int width, unsigned short int height, unsigned char numChannels,
 		unsigned char numBytesPerChan, unsigned short int textureClass, unsigned short int numFeatures,
-		unsigned char numFeatureComponents, float* features, float* stats, bool isPattern,
+		unsigned char numFeatureComponents, float* features, float* keyPoints, float* stats, bool isPattern,
 		unsigned char numCCVColors, unsigned long* CCV);
 
 	/**
@@ -118,6 +119,9 @@ public:
 
 	///The precalculated feature descriptors (SIFT/SURF/...)
 	float* m_featureDescriptors;
+
+	///The positions of the precalculated features
+	float* m_keyPoints;
 	
 	///The number of entries of each feature descriptor
 	unsigned char m_numFeatureComponents;

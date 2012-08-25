@@ -154,7 +154,7 @@ TextureToken<VertexT, NormalT>* Texturizer<VertexT, NormalT>::createInitialTextu
 	unsigned short int sizeY = ceil((best_b_max - best_b_min) / Texture::m_texelSize);
 
 	//create the texture
-	Texture* texture = new Texture(sizeX, sizeY, 3, 1, 0, 0, 0, 0, 0, false, 0, 0);
+	Texture* texture = new Texture(sizeX, sizeY, 3, 1, 0, 0, 0, 0, 0, 0, false, 0, 0);
 
 	//create TextureToken
 	TextureToken<VertexT, NormalT>* result = new TextureToken<VertexT, NormalT>(best_v1, best_v2, p, best_a_min, best_b_min, texture);
@@ -263,7 +263,7 @@ void Texturizer<VertexT, NormalT>::filterByStats(vector<Texture*> &textures, Tex
 	{
 		float dist = ImageProcessor::compareTexturesStats(textures[i], refTexture);
 		textures[i]->m_distance += dist;
-//		cerr<<dist<<endl;
+		cerr<<dist<<endl;
 		if(dist > threshold)
 		{
 			toDelete.push_back(textures[i]);
@@ -333,7 +333,14 @@ TextureToken<VertexT, NormalT>* Texturizer<VertexT, NormalT>::texturizePlane(vec
 
 		if (textures.size() > 0)
 		{
-			cout<<"Using Texture from texture package!!!"<<endl;
+			if(textures[0]->m_isPattern)
+			{
+				cout<<"Using Pattern Texture from texture package!!!"<<endl;
+			}
+			else
+			{
+				cout<<"Using Texture from texture package!!!"<<endl;
+			}
 			//Found matching textures in texture package -> use best match
 			TextureToken<VertexT, NormalT>* result = new TextureToken<VertexT, NormalT>(
 									initialTexture->v1, initialTexture->v2, initialTexture->p,
@@ -355,6 +362,7 @@ TextureToken<VertexT, NormalT>* Texturizer<VertexT, NormalT>::texturizePlane(vec
 			//Try to extract pattern
 			Texture* pattern = 0;
 			float pattern_quality = ImageProcessor::extractPattern(initialTexture->m_texture, &pattern);
+		//	cout<<pattern_quality<<" ";
 			if (pattern_quality > patternThreshold)
 			{
 				cout<<"Using pattern texture!!! "<<pattern_quality<<endl;
@@ -370,19 +378,21 @@ TextureToken<VertexT, NormalT>* Texturizer<VertexT, NormalT>::texturizePlane(vec
 				this->m_tio->write();
 
 				//return a texture token
-				return new TextureToken<VertexT, NormalT>(	initialTexture->v1, initialTexture->v2,
+				TextureToken<VertexT, NormalT>* result = new TextureToken<VertexT, NormalT>(	initialTexture->v1, initialTexture->v2,
 										initialTexture->p, 
 										initialTexture->a_min, initialTexture->b_min,
 										pattern, index);
+				return result;
 			}
 			else 
 			{
-				cout<<"Using initial texture"<<endl;
+				cout<<"Using initial texture";
 				//Pattern extraction failed -> use initial texture
 				delete pattern; 
 				//Add initial texture to texture pack
 				initialTexture->m_textureIndex = this->m_tio->add(initialTexture->m_texture);
 				this->m_tio->write();
+				cout<<initialTexture->m_textureIndex<<endl;
 			}
 		}
 	} 

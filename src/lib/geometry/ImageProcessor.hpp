@@ -36,6 +36,7 @@
 #include <geometry/AutoCorr.hpp>
 #include <geometry/CrossCorr.hpp>
 #include <geometry/CCV.hpp>
+#include <opencv2/features2d/features2d.hpp>
 
 namespace lssr {
 
@@ -161,6 +162,19 @@ public:
 	 * \return 	The distance between the textures
 	 */
 	static float compareTexturesStats(Texture* tex1, Texture* tex2);
+	
+	/**
+	 * \brief	Converts the float values stored with each texture back to 
+	 *		OpenCV usable data structures.
+	 *
+         * \param	t	The texture to convert the values from
+	 * \param	kp	The destination vector to hold the key points
+	 * \param	desc	The destination matrix to hold the feature descriptors
+         */
+	static void floatArrToSURF(Texture* t, std::vector<cv::KeyPoint> &kp, cv::Mat &desc);
+
+	static void showTexture(Texture* t, string caption);
+	static void showTexture(cv::Mat img, string caption);
 private:
 
 	/**

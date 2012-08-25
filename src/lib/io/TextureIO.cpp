@@ -92,6 +92,11 @@ TextureIO::TextureIO(string filename)
 			t->m_featureDescriptors = new float[t->m_numFeatures * t->m_numFeatureComponents];
 			//read feature descriptors
 			in.read((char*)t->m_featureDescriptors, t->m_numFeatures * t->m_numFeatureComponents * sizeof(float));
+
+			//allocate memory for the feature positions
+			t->m_keyPoints = new float[t->m_numFeatures * 2];
+			//read feature positions
+			in.read((char*)t->m_keyPoints, t->m_numFeatures * 2 * sizeof(float));
 			
 			//read statistics
 			t->m_stats = new float[14];
@@ -173,6 +178,9 @@ void TextureIO::write()
 
 		//write feature descriptors
 		out.write((char*)m_textures[i]->m_featureDescriptors, m_textures[i]->m_numFeatures *  m_textures[i]->m_numFeatureComponents * sizeof(float));
+
+		//write feature positions
+		out.write((char*)m_textures[i]->m_keyPoints, m_textures[i]->m_numFeatures *  2 * sizeof(float));
 
 		//write statistical values
 		out.write((char*)m_textures[i]->m_stats, 14 * sizeof(float));
