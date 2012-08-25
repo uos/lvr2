@@ -82,6 +82,41 @@ public:
 	
 
 private:
+
+	class Trans
+	{
+	public:
+		Trans(cv::Mat transformation)
+		{
+			m_votes = 1;
+			m_trans = transformation;
+		}
+		
+		bool operator==(Trans other)
+		{
+			int epsilon = 10;
+			bool result = true;
+			//check what happens to some random points when applying the transformation
+			for (int i = 0; i < 5; i++)
+			{
+				int x = rand() % 3000;
+				int y = rand() % 3000;
+				int x_transformed_by_this  = this->m_trans.at<double>(0,0) * x + this->m_trans.at<double>(0,1) * y + this->m_trans.at<double>(0,2);
+				int y_transformed_by_this  = this->m_trans.at<double>(1,0) * x + this->m_trans.at<double>(1,1) * y + this->m_trans.at<double>(1,2);
+				int x_transformed_by_other = other.m_trans.at<double>(0,0) * x + other.m_trans.at<double>(0,1) * y + other.m_trans.at<double>(0,2);
+				int y_transformed_by_other = other.m_trans.at<double>(1,0) * x + other.m_trans.at<double>(1,1) * y + other.m_trans.at<double>(1,2);
+				if (abs(x_transformed_by_this - x_transformed_by_other) > epsilon || abs(y_transformed_by_this - y_transformed_by_other) > epsilon)
+				{
+					result = false;
+				}
+			}
+			return result;
+		}
+		
+		int m_votes;	
+		cv::Mat m_trans;
+		
+	};
 	
 	/**
 	 * \brief calculates the rotation, translation and scaling between the two given images

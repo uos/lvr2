@@ -334,7 +334,7 @@ float ImageProcessor::extractPattern(Texture* tex, Texture** dst)
 		}
 	}	
 
-	ImageProcessor::showTexture(*dst, "POIMMES");
+	//ImageProcessor::showTexture(*dst, "POIMMES");
 
 	return result;
 }
