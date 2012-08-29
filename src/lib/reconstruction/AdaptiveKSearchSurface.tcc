@@ -88,6 +88,12 @@ AdaptiveKSearchSurface<VertexT, NormalT>::AdaptiveKSearchSurface(
     {
         this->m_searchTree = search_tree::Ptr( new SearchTreeNanoflann<VertexT>(loader, this->m_numPoints, kn, ki, kd));
     }
+#ifdef _USE_NABO
+    else if( searchTreeName == "nabo" || searchTreeName == "NABO" )
+    {
+        this->m_searchTree = search_tree::Ptr( new SearchTreeNabo<VertexT>(loader, this->m_numPoints, kn, ki, kd));
+    }
+#endif
     else
     {
        cout << timestamp << "No Valid Searchtree class specified!" << endl;

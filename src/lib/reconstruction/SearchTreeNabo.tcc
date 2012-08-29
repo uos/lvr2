@@ -42,12 +42,15 @@ using std::numeric_limits;
 namespace lssr {
 
 template<typename VertexT>
-SearchTreeNabo< VertexT >::SearchTreeNabo( coord3fArr points, long unsigned int &n_points, const int &kn, const int &ki, const int &kd, const bool &useRansac )
+SearchTreeNabo< VertexT >::SearchTreeNabo(PointBufferPtr buffer , long unsigned int &n_points, const int &kn, const int &ki, const int &kd, const bool &useRansac )
 {
     // Store parameters
     this->m_ki = ki;
     this->m_kn = kn;
     this->m_kd = kd;
+
+    size_t n;
+    coord3fArr points = buffer->getIndexedPointArray(n);
 
     m_points = Eigen::MatrixXf(n_points, 3);
     for( size_t i(0); i < n_points; ++i )

@@ -61,7 +61,7 @@ public:
      *  @param ki      The number of neighbour points used for normal interpolation.
      *  @param kd      The number of neighbour points esed for distance value calculation.
      */
-    SearchTreeNabo( coord3fArr points,
+    SearchTreeNabo( PointBufferPtr points,
             long unsigned int &n_points,
             const int &kn = 10,
             const int &ki = 10,
@@ -90,7 +90,7 @@ public:
     virtual void radiusSearch( const VertexT&        qp, double r, vector< ulong > &indices );
     virtual void radiusSearch( coord< float >&       qp, double r, vector< ulong > &indices );
     virtual void radiusSearch( const coord< float >& qp, double r, vector< ulong > &indices );
-
+    virtual void kSearch( VertexT      qp, int k, vector< VertexT > &neighbors ) {};
 protected:
 
     // Store the EigenMatrix containing the points
