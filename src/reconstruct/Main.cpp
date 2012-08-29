@@ -187,7 +187,6 @@ int main(int argc, char** argv)
 
 		::std::cout << options << ::std::endl;
 
-
 		// Create a point loader object
 		ModelFactory io_factory;
 		ModelPtr model = io_factory.readModel( options.getInputFileName() );
@@ -215,7 +214,7 @@ int main(int argc, char** argv)
 			exit(-1);
 #endif
 		}
-		else if(pcm_name == "STANN" || pcm_name == "FLANN" || pcm_name == "NABO")
+		else if(pcm_name == "STANN" || pcm_name == "FLANN" || pcm_name == "NABO" || pcm_name == "NANOFLANN")
 		{
 			akSurface* aks = new akSurface(
 					p_loader, pcm_name,
@@ -233,7 +232,7 @@ int main(int argc, char** argv)
 		}
 		else
 		{
-			cout << timestamp << "Unable to create PointCloudMansger." << endl;
+			cout << timestamp << "Unable to create PointCloudManager." << endl;
 			cout << timestamp << "Unknown option '" << pcm_name << "'." << endl;
 			cout << timestamp << "Available PCMs are: " << endl;
 			cout << timestamp << "STANN, STANN_RANSAC";
