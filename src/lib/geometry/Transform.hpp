@@ -86,11 +86,62 @@ private:
 	class Trans
 	{
 	public:
-		Trans(cv::Point2f* p1, cv::Point2f* p2)
+		Trans(cv::Point2f* p1, cv::Point2f* p2, int w1, int h1, int w2, int h2)
 		{
 			m_votes = 1;
+
+			//define 4 tiles of the first picture
+			cv::Rect rect11(0	, 0	, w1/2, h1/2);
+			cv::Rect rect12(w1/2	, 0	, w1/2, h1/2);
+			cv::Rect rect13(0	, h1/2	, w1/2, h1/2);
+			cv::Rect rect14(w1/2	, h1/2	, w1/2, h1/2);
+			//define 4 tiles of the second picture
+			cv::Rect rect21(0	, 0	, w2/2, h2/2);
+			cv::Rect rect22(w2/2	, 0	, w2/2, h2/2);
+			cv::Rect rect23(0	, h2/2	, w2/2, h2/2);
+			cv::Rect rect24(w2/2	, h2/2	, w2/2, h2/2);
+
+			int mirr0 = 0;
+			int mirr1 = 0;
+			int mirr2 = 0;
+			
+			for (int i = 0; i < 3; i++)
+			{
+				if (p1[i].inside(rect11) &&  p2[i].inside(rect23) || p1[i].inside(rect12) && p2[i].inside(rect24))
+				{
+					//TODO: Check if not rotated
+					mirr1++;
+				}
+				else if (p1[i].inside(rect11) &&  p2[i].inside(rect22) || p1[i].inside(rect13) && p2[i].inside(rect24))
+				{
+					//TODO: Check if not rotated
+					mirr2++;
+				}
+				else
+				{
+					mirr0++;
+				}
+			}
+			m_mirrored = std::max(mirr0, std::max(mirr1, mirr2)) == mirr0 ? 0 : std::max(mirr1, mirr2) == mirr1 ? 1 : 2;
+			if (m_mirrored == 1)
+			{
+				//flip key points of second texture at horizontal axis
+				p2[0].y = h2 - p2[0].y;
+				p2[1].y = h2 - p2[1].y;
+				p2[2].y = h2 - p2[2].y;
+			}
+			else if (m_mirrored == 2)
+			{
+				//flip key points of second texture at vertical axis
+				p2[0].x = w2 - p2[0].x;
+				p2[1].x = w2 - p2[1].x;
+				p2[2].x = w2 - p2[2].x;
+			}
+			else
+			{
+				
+			}
 			m_trans = cv::getAffineTransform(p1, p2);
-			m_mirrored = false; //TODO: check if mirrored
 		}
 		
 		bool operator==(Trans other)
@@ -110,13 +161,18 @@ private:
 				{
 					result = false;
 				}
-			}
+			}	
 			return result;
 		}
 		
-		int m_votes;	
+		///The number of votes this transformation has
+		int m_votes;
+	
+		///The transformation matrix	
 		cv::Mat m_trans;
-		bool m_mirrored;
+
+		///0 = not mirrored, 1 = mirrored at horizontal axis, 2 = mirrored at vertical axis
+		unsigned char m_mirrored;
 		
 	};
 	

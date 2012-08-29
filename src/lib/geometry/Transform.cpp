@@ -33,16 +33,6 @@ namespace lssr {
 //DEBUG
 void showMatchings(cv::Mat t1, cv::Mat t2, std::vector<cv::KeyPoint> keyPoints1, std::vector<cv::KeyPoint> keyPoints2, std::vector< cv::DMatch > matches)
 {
-//	std::vector< cv::DMatch > goodMatches;
-//	for (int i = 0; i < matches.size(); i++)
-//	{
-//		if (matches[i].distance < 0.1)
-//		{
-//			std::cout<<"POMMES PIMMES PIMMES " << matches[i].distance<<std::endl;
-//			goodMatches.push_back(matches[i]);
-//		}
-//	}
-	
 	cv::Mat result;
 	cv::drawMatches(t1, keyPoints1, t2, keyPoints2, matches, result);
 	std::cout<<keyPoints1.size()<<" "<<keyPoints2.size()<<std::endl;
@@ -89,8 +79,8 @@ Transform::Transform(const cv::Mat &t1, const cv::Mat &t2)
 	m_img2 = t2;
 
 	//calculate surf features
-//	cv::SurfFeatureDetector detector(1);
-	cv::Ptr<cv::FeatureDetector> detector(new cv::DynamicAdaptedFeatureDetector (new cv::SurfAdjuster(), 100, 110, 10));
+	cv::SurfFeatureDetector* detector = new cv::SurfFeatureDetector(100);
+//	cv::Ptr<cv::FeatureDetector> detector(new cv::DynamicAdaptedFeatureDetector (new cv::SurfAdjuster(), 100, 110, 10));
 	cv::SurfDescriptorExtractor extractor;
 
 	std::vector<cv::KeyPoint> keyPoints1;
@@ -108,6 +98,8 @@ Transform::Transform(const cv::Mat &t1, const cv::Mat &t2)
 
 	//calculate rotation, translation and scaling
 	calcTransform(t1, t2, keyPoints1, keyPoints2, descriptors1, descriptors2);
+
+	delete detector;
 }
 
 void Transform::calcTransform(const cv::Mat &t1, const cv::Mat &t2, std::vector<cv::KeyPoint> kp1, std::vector<cv::KeyPoint> kp2, cv::Mat desc1, cv::Mat desc2)
@@ -145,7 +137,7 @@ void Transform::calcTransform(const cv::Mat &t1, const cv::Mat &t2, std::vector<
 		std::vector< cv::DMatch > goodMatches;
 		for (int i = 0; i < matches.size(); i++)
 		{ 
-			if(matches[i].distance < 2 * minDist)
+			if(matches[i].distance <= 2 * minDist)
 			{
 				goodMatches.push_back(matches[i]);
 			}
@@ -156,7 +148,7 @@ void Transform::calcTransform(const cv::Mat &t1, const cv::Mat &t2, std::vector<
 		if (goodMatches.size() > 2)
 		{
 			std::vector<Trans> transformations;
-			for (int i = 0; i < 1000; i++)	//100 iterations
+			for (int i = 0; i < 100; i++)	//100 iterations
 			{
 			
 				//calculate transformation from 3 randomly chosen matchings
@@ -171,7 +163,7 @@ void Transform::calcTransform(const cv::Mat &t1, const cv::Mat &t2, std::vector<
 				}
 				cv::Point2f p1[3] = {kp1[goodMatches[match1].queryIdx].pt, kp1[goodMatches[match2].queryIdx].pt, kp1[goodMatches[match3].queryIdx].pt};
 				cv::Point2f p2[3] = {kp2[goodMatches[match1].trainIdx].pt, kp2[goodMatches[match2].trainIdx].pt, kp2[goodMatches[match3].trainIdx].pt};
-				Trans currentTrans(p1, p2);
+				Trans currentTrans(p1, p2, t1.cols, t1.rows, t2.cols, t2.rows);
 			
 				//check if this transformation already has been calculated. If yes -> +1
 				bool exists_already = false;
@@ -202,7 +194,6 @@ void Transform::calcTransform(const cv::Mat &t1, const cv::Mat &t2, std::vector<
 				}
 			}
 			m_trans = transformations[bestTrans].m_trans;
-			std::cout<<"BESTVOTES::::: "<<bestVotes<<std::endl;
 		}
 	}
 }
