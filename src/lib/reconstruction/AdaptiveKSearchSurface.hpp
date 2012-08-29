@@ -57,7 +57,7 @@
 #endif
 
 // SearchTreeNabo
-#ifdef _USE_NABO_
+#ifdef _USE_NABO
     #include "SearchTreeNabo.hpp"
 #endif
 
