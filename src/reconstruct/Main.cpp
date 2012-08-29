@@ -255,7 +255,9 @@ int main(int argc, char** argv)
 		if(!surface->pointBuffer()->hasPointNormals()
 				|| (surface->pointBuffer()->hasPointNormals() && options.recalcNormals()))
 		{
+		    Timestamp ts;
 			surface->calculateSurfaceNormals();
+			cerr << ts.getElapsedTimeInMs() << endl;
 		}
 		else
 		{
