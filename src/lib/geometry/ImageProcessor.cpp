@@ -208,8 +208,8 @@ void ImageProcessor::calcSURF(Texture* tex)
 		cv::cvtColor(img1, img1, CV_RGB2GRAY);
 		
 		//initialize SURF objects
-//		cv::SurfFeatureDetector detector(100);
-		cv::Ptr<cv::FeatureDetector> detector(new cv::DynamicAdaptedFeatureDetector (new cv::SurfAdjuster(), 100, 110, 30));
+		cv::SurfFeatureDetector* detector = new cv::SurfFeatureDetector(100);
+//		cv::Ptr<cv::FeatureDetector> detector(new cv::DynamicAdaptedFeatureDetector (new cv::SurfAdjuster(), 100, 110, 30));
 		cv::SurfDescriptorExtractor extractor;
 
 		std::vector<cv::KeyPoint> keyPoints;
@@ -233,6 +233,7 @@ void ImageProcessor::calcSURF(Texture* tex)
 			tex->m_keyPoints[r * 2 + 0] 	= 	keyPoints[r].pt.x;
 			tex->m_keyPoints[r * 2 + 1] 	= 	keyPoints[r].pt.y;
 		}
+		delete detector;
 	}
 	else
 	{
