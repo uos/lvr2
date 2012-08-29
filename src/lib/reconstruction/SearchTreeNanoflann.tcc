@@ -39,7 +39,7 @@ SearchTreeNanoflann<VertexT>::SearchTreeNanoflann(
     m_pointCloud = new SearchTreeNanoflann<VertexT>::NFPointCloud<float>(points);
 
     // Build kd-tree
-    m_tree = new kd_tree_t(3, *m_pointCloud, nanoflann::KDTreeSingleIndexAdaptorParams(100));
+    m_tree = new kd_tree_t(3, *m_pointCloud, nanoflann::KDTreeSingleIndexAdaptorParams(5));
     m_tree->buildIndex();
 }
 
