@@ -49,6 +49,7 @@
 
 // SearchTreeStann
 #include "SearchTreeStann.hpp"
+#include "SearchTreeNanoflann.hpp"
 
 // SearchTreePCL
 #ifdef _USE_PCL_
