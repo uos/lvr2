@@ -333,6 +333,12 @@ TextureToken<VertexT, NormalT>* Texturizer<VertexT, NormalT>::texturizePlane(vec
 
 		if (textures.size() > 0)
 		{
+			//Found matching textures in texture package -> use best match
+			TextureToken<VertexT, NormalT>* result = new TextureToken<VertexT, NormalT>(
+									initialTexture->v1, initialTexture->v2, initialTexture->p,
+									initialTexture->a_min, initialTexture->b_min, textures[0],
+									find(this->m_tio->m_textures.begin(), this->m_tio->m_textures.end(), textures[0])
+									- this->m_tio->m_textures.begin());
 			if(textures[0]->m_isPattern)
 			{
 				cout<<"Using Pattern Texture from texture package!!!"<<endl;
@@ -340,21 +346,15 @@ TextureToken<VertexT, NormalT>* Texturizer<VertexT, NormalT>::texturizePlane(vec
 			else
 			{
 				cout<<"Using Texture from texture package!!!"<<endl;
+				//Calculate transformation for texture coordinate calculation
+				Transform* trans = new Transform(initialTexture->m_texture, textures[0]);
+				double* mat = trans->getTransArr();
+				for (int i = 0; i < 6; i++)
+				{	
+					result->m_transformationMatrix[i] = mat[i];
+				}
+				delete mat;
 			}
-			//Found matching textures in texture package -> use best match
-			TextureToken<VertexT, NormalT>* result = new TextureToken<VertexT, NormalT>(
-									initialTexture->v1, initialTexture->v2, initialTexture->p,
-									initialTexture->a_min, initialTexture->b_min, textures[0],
-									find(this->m_tio->m_textures.begin(), this->m_tio->m_textures.end(), textures[0])
-									- this->m_tio->m_textures.begin());
-			//Calculate transformation for texture coordinate calculation
-			Transform* trans = new Transform(initialTexture->m_texture, textures[0]);
-			double* mat = trans->getTransArr();
-			for (int i = 0; i < 6; i++)
-			{	
-				result->m_transformationMatrix[i] = mat[i];
-			}
-			delete mat;
 			return result;
 		}
 		else
