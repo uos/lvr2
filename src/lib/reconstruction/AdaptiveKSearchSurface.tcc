@@ -142,7 +142,7 @@ void AdaptiveKSearchSurface<VertexT, NormalT>::calculateSurfaceNormals()
     string comment = timestamp.getElapsedTime() + "Estimating normals ";
     ProgressBar progress(this->m_numPoints, comment);
 
-    #pragma omp parallel for
+    #pragma omp parallel for schedule(dynamic)
     for( int i = 0; i < (int)this->m_numPoints; i++){
 
         Vertexf query_point;
@@ -261,7 +261,7 @@ void AdaptiveKSearchSurface<VertexT, NormalT>::interpolateSurfaceNormals()
     ProgressBar progress(this->m_numPoints, comment);
 
     // Interpolate normals
-    #pragma omp parallel for
+    #pragma omp parallel for schedule(dynamic)
     for( int i = 0; i < (int)this->m_numPoints; i++){
 
         vector<unsigned long> id;
@@ -638,7 +638,7 @@ void AdaptiveKSearchSurface<VertexT, NormalT>::colorizePointCloud(
 //        m_colors = color3bArr( new color<uchar>[ m_numPoints ] );
 //    }
 //
-//#pragma omp parallel for
+//#pragma omp parallel for schedule(dynamic)
 //    for( size_t i = 0; i < m_numPoints; i++ )
 //    {
 //        std::vector< VertexT > nearestPoint( 1 );
