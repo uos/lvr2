@@ -154,7 +154,7 @@ TextureToken<VertexT, NormalT>* Texturizer<VertexT, NormalT>::createInitialTextu
 	unsigned short int sizeY = ceil((best_b_max - best_b_min) / Texture::m_texelSize);
 
 	//create the texture
-	Texture* texture = new Texture(sizeX, sizeY, 3, 1, 0, 0, 0, 0, 0, 0, false, 0, 0);
+	Texture* texture = new Texture(sizeX, sizeY, 3, 1, Texturizer<VertexT, NormalT>::classifyNormal(n), 0, 0, 0, 0, 0, false, 0, 0);
 
 	//create TextureToken
 	TextureToken<VertexT, NormalT>* result = new TextureToken<VertexT, NormalT>(best_v1, best_v2, p, best_a_min, best_b_min, texture);
@@ -263,7 +263,7 @@ void Texturizer<VertexT, NormalT>::filterByStats(vector<Texture*> &textures, Tex
 	{
 		float dist = ImageProcessor::compareTexturesStats(textures[i], refTexture);
 		textures[i]->m_distance += dist;
-		cerr<<dist<<endl;
+//		cerr<<dist<<endl;
 		if(dist > threshold)
 		{
 			toDelete.push_back(textures[i]);
@@ -288,6 +288,29 @@ void Texturizer<VertexT, NormalT>::filterByFeatures(vector<Texture*> &textures, 
 		textures[i]->m_distance += dist;
 //		cerr<<dist<<endl;
 		if(dist > threshold)
+		{
+			toDelete.push_back(textures[i]);
+		}
+	}	
+	
+	//delete bad matches
+	for (int d = 0; d < toDelete.size(); d++)
+	{
+		textures.erase(find(textures.begin(), textures.end(), toDelete[d]));
+	}	
+}
+template<typename VertexT, typename NormalT>
+void Texturizer<VertexT, NormalT>::filterByNormal(vector<Texture*> &textures, vector<VertexT> contour)
+{
+	vector<Texture*> toDelete;
+
+	//calculate normal of plane
+	NormalT n = (contour[1] - contour[0]).cross(contour[2]-contour[0]);
+	
+	//filter by normal
+	for (int i = 0; i < textures.size(); i++)
+	{
+		if(Texturizer<VertexT, NormalT>::classifyNormal(n) != textures[i]->m_textureClass)
 		{
 			toDelete.push_back(textures[i]);
 		}
@@ -325,6 +348,7 @@ TextureToken<VertexT, NormalT>* Texturizer<VertexT, NormalT>::texturizePlane(vec
 		}
 		//reduce number of matching textures from the texture pack step by step
 		std::vector<Texture*> textures = this->m_tio->m_textures;
+		filterByNormal		(textures, contour);
 		filterByColor		(textures, initialTexture->m_texture, colorThreshold);
 		filterByStats		(textures, initialTexture->m_texture, statsThreshold);
 		filterByFeatures	(textures, initialTexture->m_texture, featureThreshold);
@@ -398,6 +422,28 @@ TextureToken<VertexT, NormalT>* Texturizer<VertexT, NormalT>::texturizePlane(vec
 	} 
 	return initialTexture;
 }
+
+template<typename VertexT, typename NormalT>
+unsigned short int Texturizer<VertexT, NormalT>::classifyNormal(NormalT n)
+{
+	float epsilon = 0.1;
+	
+	//wall
+	if (fabs(n * NormalT(0,0,1)) < epsilon)
+	{
+		return 1;
+	}
+
+	//ceiling or floor
+	if (fabs(fabs(n * NormalT(0,0,1)) - 1) < epsilon)
+	{
+		return 2;
+	}
+
+	//other
+	return 0;
+}
+
 
 template<typename VertexT, typename NormalT>
 void Texturizer<VertexT, NormalT>::showTexture(TextureToken<VertexT, NormalT>* tt, string caption)

@@ -101,10 +101,21 @@ private:
 	**/
 	TextureToken<VertexT, NormalT>* createInitialTexture(vector<VertexT> contour);
 
+	//TODO: Doxygen
 	void filterByColor(std::vector<Texture*> &textures, Texture* refTexture, float threshold);
 	void filterByCrossCorr(std::vector<Texture*> &textures, Texture* refTexture, float threshold);
 	void filterByStats(std::vector<Texture*> &textures, Texture* refTexture, float threshold);
 	void filterByFeatures(std::vector<Texture*> &textures, Texture* refTexture, float threshold);
+	void filterByNormal(std::vector<Texture*> &textures, vector<VertexT> contour);
+
+	/**
+	 * \brief 	Holds the classification for different normal directions.
+	 *
+	 * \param	n	A normal to get the texture class for
+	 *
+	 * \return	The texture class for the given normal
+	 */
+	static unsigned short int classifyNormal(NormalT n);
 	
 	///The point set surface used to generate textures from the point cloud
 	typename PointsetSurface<VertexT>::Ptr m_pm;
