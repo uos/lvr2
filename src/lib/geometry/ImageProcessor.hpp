@@ -164,6 +164,16 @@ public:
 	static float compareTexturesStats(Texture* tex1, Texture* tex2);
 	
 	/**
+	 * \brief 	Compares the given textures wrt to the cross correlation
+	 *
+	 * \param	tex1	The first texture
+	 * \param	tex2	The second texture
+	 *
+	 * \return 	The distance between the textures
+	 */
+	static float compareTexturesCrossCorr(Texture* tex1, Texture* tex2);
+
+	/**
 	 * \brief	Converts the float values stored with each texture back to 
 	 *		OpenCV usable data structures.
 	 *

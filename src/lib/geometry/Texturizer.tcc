@@ -44,19 +44,19 @@ namespace lssr {
 
         ///Threshold for color based texture filtering
 	template<typename VertexT, typename NormalT>
-        float Texturizer<VertexT, NormalT>::m_colorThreshold = 0;
+        float Texturizer<VertexT, NormalT>::m_colorThreshold = FLT_MAX;
 
         ///Threshold for cross correlation based texture filtering
 	template<typename VertexT, typename NormalT>
-        float Texturizer<VertexT, NormalT>::m_crossCorrThreshold = 0;
+        float Texturizer<VertexT, NormalT>::m_crossCorrThreshold = FLT_MAX;
 
         ///Threshold for statistics based texture filtering
 	template<typename VertexT, typename NormalT>
-        float Texturizer<VertexT, NormalT>::m_statsThreshold = 0;
+        float Texturizer<VertexT, NormalT>::m_statsThreshold = FLT_MAX;
 
         ///Threshold for feature based texture filtering
 	template<typename VertexT, typename NormalT>
-        float Texturizer<VertexT, NormalT>::m_featureThreshold = 0;
+        float Texturizer<VertexT, NormalT>::m_featureThreshold = FLT_MAX;
 
         ///Threshold for pattern extraction
 	template<typename VertexT, typename NormalT>
@@ -239,8 +239,9 @@ void Texturizer<VertexT, NormalT>::filterByCrossCorr(vector<Texture*> &textures,
 	//filter by CC
 	for (int i = 0; i < textures.size(); i++)
 	{
-		float dist = 0;//TODO
+		float dist = ImageProcessor::compareTexturesCrossCorr(textures[i], refTexture);
 		textures[i]->m_distance += dist;
+//		cerr<<dist<<endl;
 		if(dist > threshold)
 		{
 			toDelete.push_back(textures[i]);
@@ -263,7 +264,7 @@ void Texturizer<VertexT, NormalT>::filterByStats(vector<Texture*> &textures, Tex
 	{
 		float dist = ImageProcessor::compareTexturesStats(textures[i], refTexture);
 		textures[i]->m_distance += dist;
-//		cerr<<dist<<endl;
+//		cerr<<dist<<" "<<threshold<<endl;
 		if(dist > threshold)
 		{
 			toDelete.push_back(textures[i]);
@@ -348,11 +349,17 @@ TextureToken<VertexT, NormalT>* Texturizer<VertexT, NormalT>::texturizePlane(vec
 		}
 		//reduce number of matching textures from the texture pack step by step
 		std::vector<Texture*> textures = this->m_tio->m_textures;
+//		std::cout<<textures.size()<<std::endl;
 		filterByNormal		(textures, contour);
+//		std::cout<<textures.size()<<std::endl;
 		filterByColor		(textures, initialTexture->m_texture, colorThreshold);
-		filterByStats		(textures, initialTexture->m_texture, statsThreshold);
+//		std::cout<<textures.size()<<std::endl;
+//		filterByStats		(textures, initialTexture->m_texture, statsThreshold);
+//		std::cout<<textures.size()<<std::endl;
 		filterByFeatures	(textures, initialTexture->m_texture, featureThreshold);
-//		filterByCrossCorr	(textures, initialTexture->m_texture, crossCorrThreshold); //TODO
+//		std::cout<<textures.size()<<std::endl;
+		filterByCrossCorr	(textures, initialTexture->m_texture, crossCorrThreshold); 
+//		std::cout<<textures.size()<<std::endl;
 		sort(textures.begin(), textures.end(), Texture::cmpTextures);		
 
 		if (textures.size() > 0)

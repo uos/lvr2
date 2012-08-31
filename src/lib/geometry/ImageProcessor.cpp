@@ -396,7 +396,7 @@ float ImageProcessor::compareTexturesHist(Texture* tex1, Texture* tex2)
 	}
 	else
 	{
-		return FLT_MAX;	
+		return FLT_MAX - 1;	
 	}
 	
 }
@@ -413,6 +413,15 @@ float ImageProcessor::compareTexturesStats(Texture* tex1, Texture* tex2)
 	return Statistics::textureVectorDistance(tex1->m_stats, tex2->m_stats);
 }
 
+
+float ImageProcessor::compareTexturesCrossCorr(Texture* tex1, Texture* tex2)
+{
+	unsigned int x, y;
+	CrossCorr* cc = new CrossCorr(tex1, tex2);
+	double result = cc->getMax(x, y);
+	delete cc;
+	return 1.0f / result;
+}
 
 void ImageProcessor::showTexture(Texture* t, string caption)
 {
