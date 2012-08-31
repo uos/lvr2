@@ -117,7 +117,7 @@ public:
 	/**
 	 * Destructor.
 	 */
-	virtual ~CCV();
+	virtual ~CCV(){};
 	
 	//The number of pixels of the associated image
 	int m_numPix;

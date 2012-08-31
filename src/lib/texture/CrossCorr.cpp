@@ -179,8 +179,4 @@ void CrossCorr::getCCY(float* &output)
 		output[y] = rho_y;
 	}
 }
-CrossCorr::~CrossCorr()
-{
-	//TODO?!
-}
 }

@@ -84,7 +84,7 @@ public:
 	/**
 	 * Destructor.
 	 */
-	virtual ~CrossCorr();
+	virtual ~CrossCorr(){};
 
 private:
 	/**

@@ -101,11 +101,50 @@ private:
 	**/
 	TextureToken<VertexT, NormalT>* createInitialTexture(vector<VertexT> contour);
 
-	//TODO: Doxygen
+	/**
+	 * \brief 	Filters the given set of textures with the help of histograms and 
+	 *		color coherence vectors (CCVs)
+	 *
+	 * \param	textures	The set of textures to filter
+	 * \param	refTexture	The texture to compare the textures from the set with
+	 * \param	threshold	The threshold to determine if a texture is to be kept or deleted
+	 */
 	void filterByColor(std::vector<Texture*> &textures, Texture* refTexture, float threshold);
+
+	/**
+	 * \brief 	Filters the given set of textures with the help of cross correlation
+	 *
+	 * \param	textures	The set of textures to filter
+	 * \param	refTexture	The texture to compare the textures from the set with
+	 * \param	threshold	The threshold to determine if a texture is to be kept or deleted
+	 */
 	void filterByCrossCorr(std::vector<Texture*> &textures, Texture* refTexture, float threshold);
+
+	/**
+	 * \brief 	Filters the given set of textures with the help of statistics
+	 *
+	 * \param	textures	The set of textures to filter
+	 * \param	refTexture	The texture to compare the textures from the set with
+	 * \param	threshold	The threshold to determine if a texture is to be kept or deleted
+	 */
 	void filterByStats(std::vector<Texture*> &textures, Texture* refTexture, float threshold);
+
+	/**
+	 * \brief 	Filters the given set of textures with the help of image features
+	 *
+	 * \param	textures	The set of textures to filter
+	 * \param	refTexture	The texture to compare the textures from the set with
+	 * \param	threshold	The threshold to determine if a texture is to be kept or deleted
+	 */
 	void filterByFeatures(std::vector<Texture*> &textures, Texture* refTexture, float threshold);
+
+	/**
+	 * \brief 	Filters the given set of textures with the help of the texture class and 
+	 *		the normal of the plane that needs to be textured
+	 *
+	 * \param	textures	The set of textures to filter
+	 * \param	contour		The contour of the plane to be textured
+	 */
 	void filterByNormal(std::vector<Texture*> &textures, vector<VertexT> contour);
 
 	/**

@@ -362,8 +362,4 @@ double AutoCorr::getMinimalPattern(unsigned int &sX, unsigned int &sY, unsigned 
 	}
 } 
 
-AutoCorr::~AutoCorr()
-{
-	//TODO?!
-}
 }
