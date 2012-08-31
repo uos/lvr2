@@ -30,10 +30,10 @@
 #include <cstring>
 #include <math.h>
 #include <cstdio>
-#include <geometry/Texture.hpp>
-#include <geometry/ImageProcessor.hpp>
+#include <texture/Texture.hpp>
+#include <texture/ImageProcessor.hpp>
 #include <opencv2/imgproc/imgproc.hpp>
-#include <geometry/Trans.hpp>
+#include <texture/Trans.hpp>
 
 namespace lssr {
 

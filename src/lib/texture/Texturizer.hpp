@@ -31,8 +31,8 @@
 #include "TextureToken.hpp"
 #include <string>
 #include <io/TextureIO.hpp>
-#include <geometry/ImageProcessor.hpp>
-#include <geometry/Transform.hpp>
+#include <texture/ImageProcessor.hpp>
+#include <texture/Transform.hpp>
 
 namespace lssr {
 

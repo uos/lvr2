@@ -144,9 +144,9 @@
 #include "io/PLYIO.hpp"
 #include "geometry/Matrix4.hpp"
 #include "geometry/HalfEdgeMesh.hpp"
-#include "geometry/Texture.hpp"
-#include "geometry/Texturizer.hpp"
-#include "geometry/Statistics.hpp"
+#include "texture/Texture.hpp"
+#include "texture/Texturizer.hpp"
+#include "texture/Statistics.hpp"
 #include "geometry/QuadricVertexCosts.hpp"
 #include "reconstruction/SharpBox.hpp"
 

@@ -31,16 +31,15 @@ set(LSSR_SOURCES
     display/GlTexture.cpp
     display/TextureFactory.cpp
     display/TexturedMesh.cpp
-    geometry/Texture.cpp
     reconstruction/PCLFiltering.cpp
-    geometry/Texture.cpp
-    geometry/ImageProcessor.cpp
-    geometry/Statistics.cpp
-    geometry/AutoCorr.cpp
-    geometry/CrossCorr.cpp
-    geometry/CCV.cpp
-    geometry/Transform.cpp
-    geometry/Trans.cpp
+    texture/Texture.cpp
+    texture/ImageProcessor.cpp
+    texture/Statistics.cpp
+    texture/AutoCorr.cpp
+    texture/CrossCorr.cpp
+    texture/CCV.cpp
+    texture/Transform.cpp
+    texture/Trans.cpp
 )
 
 
