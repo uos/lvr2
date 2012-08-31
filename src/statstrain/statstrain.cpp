@@ -31,9 +31,9 @@
 #include <iostream>
 #include <io/Timestamp.hpp>
 #include <io/TextureIO.hpp>
-#include <geometry/Texture.hpp>
-#include <geometry/ImageProcessor.hpp>
-#include <geometry/Statistics.hpp>
+#include <texture/Texture.hpp>
+#include <texture/ImageProcessor.hpp>
+#include <texture/Statistics.hpp>
 #include <cstdlib>
 #include <iomanip>
 #include <sstream>
@@ -84,7 +84,7 @@ int main( int argc, char ** argv )
 		cv::Point2f center(cx, cy);
 		cv::getRectSubPix(img, size, center, dst);
 		unsigned char depth = dst.depth() == CV_8U ? 1 : 2;
-		lssr::Texture* t = new lssr::Texture(dst.size().width, dst.size().height, dst.channels(), depth, 0, 0, 0 ,0, 0, true, 0, 0);
+		lssr::Texture* t = new lssr::Texture(dst.size().width, dst.size().height, dst.channels(), depth, 0, 0, 0 ,0, 0, 0, true, 0, 0);
 		memcpy(t->m_data, dst.data, dst.size().width * dst.size().height * dst.channels() * depth);
 		//calculate stats for training data
 		lssr::ImageProcessor::calcStats(t, 16); //TODO: Param oder member

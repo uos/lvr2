@@ -36,7 +36,7 @@
 #include <sstream>
 #include <opencv/cv.h>
 #include <opencv/highgui.h>
-#include <geometry/ImageProcessor.hpp>
+#include <texture/ImageProcessor.hpp>
 
 using namespace std;
 
@@ -63,7 +63,7 @@ void a(lssr::TextureIO* tio)
 		unsigned char depth = img.depth() == CV_8U ? 1 : 2;
 
 		//create Texture
-		lssr::Texture* t = new lssr::Texture(img.size().width, img.size().height, img.channels(), depth, tc, 0, 0 ,0, 0, isPattern, 0, 0);
+		lssr::Texture* t = new lssr::Texture(img.size().width, img.size().height, img.channels(), depth, tc, 0, 0 ,0, 0, 0, isPattern, 0, 0);
 		memcpy(t->m_data, img.data, img.size().width * img.size().height * img.channels() * depth);
 
 		// calculate features
@@ -73,7 +73,7 @@ void a(lssr::TextureIO* tio)
 		lssr::ImageProcessor::calcStats(t, 16); //TODO: PARAM
 
 		//calculate CCV
-		lssr::ImageProcessor::calcCCV(t, 64, 20); //TODO: PARAM
+		lssr::ImageProcessor::calcCCV(t, 64, 50); //TODO: PARAM
 		
 
 		cout<<"\t(a)dded new texture."<<endl;
@@ -285,7 +285,7 @@ void u(lssr::TextureIO* tio, int &sel)
 				bool isPattern = in == 'y' || in == 'Y';
 
 				//create Texture
-				lssr::Texture* t = new lssr::Texture(img.size().width, img.size().height, img.channels(), depth, tc, 0, 0 ,0, 0, isPattern, 0, 0);
+				lssr::Texture* t = new lssr::Texture(img.size().width, img.size().height, img.channels(), depth, tc, 0, 0 ,0, 0, 0, isPattern, 0, 0);
 				memcpy(t->m_data, img.data, img.size().width * img.size().height * img.channels() * depth);
 
 				// calculate features
@@ -295,7 +295,7 @@ void u(lssr::TextureIO* tio, int &sel)
 				lssr::ImageProcessor::calcStats(t, 16); //TODO: PRAM
 
 				//calculate CCV
-				lssr::ImageProcessor::calcCCV(t, 64, 20); //TODO: PARAM
+				lssr::ImageProcessor::calcCCV(t, 64, 50); //TODO: PARAM
 		
 				tio->update(sel, t);
 				cout<<"\t(u)dated texture #"<<sel<<"."<<endl; 
