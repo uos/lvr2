@@ -31,11 +31,11 @@
 #include <cstdio>
 #include <math.h>
 //#include <boost/pending/disjoint_sets.hpp>
-#include <geometry/Texture.hpp>
-#include <geometry/Statistics.hpp>
-#include <geometry/AutoCorr.hpp>
-#include <geometry/CrossCorr.hpp>
-#include <geometry/CCV.hpp>
+#include <texture/Texture.hpp>
+#include <texture/Statistics.hpp>
+#include <texture/AutoCorr.hpp>
+#include <texture/CrossCorr.hpp>
+#include <texture/CCV.hpp>
 #include <opencv2/features2d/features2d.hpp>
 
 namespace lssr {

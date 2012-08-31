@@ -30,7 +30,7 @@
 #ifndef __TEXTURE_IO_H__
 #define __TEXTURE_IO_H__
 
-#include "geometry/Texture.hpp"
+#include "texture/Texture.hpp"
 
 #include <stdint.h>
 #include <cstdio>
