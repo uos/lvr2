@@ -80,7 +80,7 @@ public:
 	/**
 	 * Destructor.
 	 */
-	virtual ~Transform();
+	virtual ~Transform(){};
 	
 
 private:

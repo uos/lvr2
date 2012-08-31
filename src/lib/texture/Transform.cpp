@@ -220,8 +220,4 @@ double* Transform::getTransArr()
 	return result;
 }
 
-Transform::~Transform()
-{
-	//TODO?!
-}
 }

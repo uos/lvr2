@@ -138,10 +138,6 @@ void CCV::toArray_b(unsigned long int* arr)
 	}
 }
 
-CCV::~CCV() {
-	//TODO
-}
-
 
 std::map<ushort, std::pair<uchar, ulong> >CCV::calcCoherence(cv::Mat inputColors, cv::Mat inputLabels)
 {
