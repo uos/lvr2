@@ -365,12 +365,21 @@ float* Options::getStatsCoeffs()const
 {
 	float* result = new float[14];
     	std::ifstream in (m_variables["tp"].as<string>().c_str());
-	for(int i = 0; i < 14; i++)
+	if (in.good())
 	{
-		in >> result[i];
+		for(int i = 0; i < 14; i++)
+		{
+			in >> result[i];
+		}
+		in.close();
 	}
-	in.close();
-	
+	else
+	{
+		for(int i = 0; i < 14; i++)
+		{
+			result[i] = 0.5;
+		}
+	}
 	return result;
 }
 
