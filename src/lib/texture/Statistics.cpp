@@ -57,8 +57,8 @@ float Statistics::textureVectorDistance(float* v1, float* v2)
 	for (int i = 0; i < 14; i++)
 	{	
 //		std::cerr<<v1[i]<<" "<<v2[i]<<std::endl;
-//		result += Statistics::m_coeffs[i] * fabs(v1[i] - v2[i]);// / max(1.0f, max(v1[i], v2[i]));	//TODO
-		result += fabs(v1[i] - v2[i]);// / max(1.0f, max(v1[i], v2[i]));	
+		result += Statistics::m_coeffs[i] * fabs(v1[i] - v2[i]);// / max(1.0f, max(v1[i], v2[i]));	
+//		result += fabs(v1[i] - v2[i]);// / max(1.0f, max(v1[i], v2[i]));	
 	}
 	return result;
 }

@@ -52,17 +52,34 @@ namespace lssr {
 		{
 			if (p1[i].inside(rect11) &&  p2[i].inside(rect23) || p1[i].inside(rect12) && p2[i].inside(rect24))
 			{
-				//TODO: Check if not rotated
-				mirr1++;
+				//Check if not rotated
+				//TODO: x oder y??
+				if (abs(p1[0].x - p2[0].x) < 2 && abs(p1[1].x - p2[1].x) < 2 && abs(p1[2].x - p2[2].x) < 2)
+				{
+					mirr1++;
+				}
+				else
+				{
+					std::cout<<"Rotation detected (1)"<<std::endl;
+				}
 			}
 			else if (p1[i].inside(rect11) &&  p2[i].inside(rect22) || p1[i].inside(rect13) && p2[i].inside(rect24))
 			{
-				//TODO: Check if not rotated
-				mirr2++;
+				//Check if not rotated
+				//TODO: x oder y??
+				if (abs(p1[0].y - p2[0].y) < 2 && abs(p1[1].y - p2[1].y) < 2 && abs(p1[2].y - p2[2].y) < 2)
+				{
+					mirr2++;
+				}
+				else
+				{
+					std::cout<<"Rotation detected (2)"<<std::endl;
+				}
 			}
 			else
 			{
 				mirr0++;
+				std::cout<<"No Rotation detected"<<std::endl;
 			}
 		}
 		m_mirrored = std::max(mirr0, std::max(mirr1, mirr2)) == mirr0 ? 0 : std::max(mirr1, mirr2) == mirr1 ? 1 : 2;
