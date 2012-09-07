@@ -92,6 +92,9 @@ public:
 
 	///Matrix that stores an affine transform that will be applied to the texture coordinates
 	double m_transformationMatrix[6];
+
+	///Indicates if the texture coordinates have to be mirrored or not
+	unsigned char m_mirrored;
 };
 
 }

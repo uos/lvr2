@@ -81,6 +81,7 @@ Options::Options(int argc, char** argv) : m_descr("Supported options")
 		        ("feat", value<float>(&m_featuresThreshold)->default_value(100), "Threshold for texture matching based on features")
 		        ("crot", value<float>(&m_crosscorrThreshold)->default_value(100), "Threshold for texture matching based on cross correlation")
 		        ("patt", value<float>(&m_patternThreshold)->default_value(100), "Threshold for pattern extraction from textures")
+		        ("mtv", value<int>(&m_minimumTransformationVotes)->default_value(3), "Minimum number of votes to consider a texture transformation as correct")
         ;
 
 	m_pdescr.add("inputFile", -1);
@@ -361,6 +362,10 @@ float Options::getPatternThreshold() const
     return m_variables["patt"].as<float>();
 }
 
+int Options::getMinimumTransformationVotes() const
+{
+    return m_variables["mtv"].as<int>();
+}
 float* Options::getStatsCoeffs()const
 {
 	float* result = new float[14];

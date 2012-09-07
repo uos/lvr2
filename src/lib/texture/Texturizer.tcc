@@ -354,7 +354,7 @@ TextureToken<VertexT, NormalT>* Texturizer<VertexT, NormalT>::texturizePlane(vec
 //		std::cout<<textures.size()<<std::endl;
 		filterByColor		(textures, initialTexture->m_texture, colorThreshold);
 //		std::cout<<textures.size()<<std::endl;
-//		filterByStats		(textures, initialTexture->m_texture, statsThreshold);
+		filterByStats		(textures, initialTexture->m_texture, statsThreshold);
 //		std::cout<<textures.size()<<std::endl;
 		filterByFeatures	(textures, initialTexture->m_texture, featureThreshold);
 //		std::cout<<textures.size()<<std::endl;
@@ -384,7 +384,9 @@ TextureToken<VertexT, NormalT>* Texturizer<VertexT, NormalT>::texturizePlane(vec
 				{	
 					result->m_transformationMatrix[i] = mat[i];
 				}
+				result->m_mirrored = trans->m_mirrored;
 				delete mat;
+				delete trans;
 			}
 			return result;
 		}

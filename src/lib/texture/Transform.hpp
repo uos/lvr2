@@ -82,6 +82,11 @@ public:
 	 */
 	virtual ~Transform(){};
 	
+	///The mirroring state
+	unsigned char m_mirrored;
+
+	///The minimum number of votes to consider a transformation as "correct"
+	static int m_minimumVotes;
 
 private:
 	/**
