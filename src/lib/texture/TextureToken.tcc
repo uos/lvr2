@@ -42,14 +42,26 @@ TextureToken<VertexT, NormalT>::TextureToken(NormalT v1, NormalT v2, VertexT p, 
 	this->m_transformationMatrix[3] = 0;
 	this->m_transformationMatrix[4] = 1;
 	this->m_transformationMatrix[5] = 0;
+	this->m_mirrored 		= 0;
 }
 
 template<typename VertexT, typename NormalT>
 void TextureToken<VertexT, NormalT>::textureCoords(VertexT v, float &x, float &y)
 {
 	VertexT w =  v - ((v1 * a_min) + (v2 * b_min) + p);
-	x = (v1 * (w * v1)).length() / Texture::m_texelSize;
-	y = (v2 * (w * v2)).length() / Texture::m_texelSize;
+	x = (v1 * (w * v1)).length() / Texture::m_texelSize / m_texture->m_width;
+	y = (v2 * (w * v2)).length() / Texture::m_texelSize / m_texture->m_height;
+
+	//Mirror y or x according to detected mirroring
+	if (this->m_mirrored == 1)
+	{
+		y = m_texture->m_height - y;
+	}
+	else if (this->m_mirrored == 2)
+	{
+		x = m_texture->m_width - x;
+	}
+
 	double tmp_x = x;
 	double tmp_y = y;
 
@@ -59,9 +71,6 @@ void TextureToken<VertexT, NormalT>::textureCoords(VertexT v, float &x, float &y
 		tmp_x = m_transformationMatrix[0] * x + m_transformationMatrix[1] * y + m_transformationMatrix[2];
 		tmp_y = m_transformationMatrix[3] * x + m_transformationMatrix[4] * y + m_transformationMatrix[5];
 	}
-
-	x = tmp_x / m_texture->m_width;
-	y = tmp_y / m_texture->m_height;
 }
 
 }

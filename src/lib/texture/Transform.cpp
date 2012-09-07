@@ -30,6 +30,9 @@
 
 namespace lssr {
 
+
+int Transform::m_minimumVotes = 3;
+
 //DEBUG
 void showMatchings(cv::Mat t1, cv::Mat t2, std::vector<cv::KeyPoint> keyPoints1, std::vector<cv::KeyPoint> keyPoints2, std::vector< cv::DMatch > matches)
 {
@@ -113,6 +116,7 @@ void Transform::calcTransform(const cv::Mat &t1, const cv::Mat &t2, std::vector<
 	m_trans.at<double>(1,0) = 0;
 	m_trans.at<double>(1,1) = 1;
 	m_trans.at<double>(1,2) = 0;
+	m_mirrored 		= 0;
 
 	//we need at least three corresponding point pairs!
 	if (kp1.size() > 2 && kp2.size() > 2)
@@ -193,7 +197,17 @@ void Transform::calcTransform(const cv::Mat &t1, const cv::Mat &t2, std::vector<
 					bestTrans = t;
 				}
 			}
-			m_trans = transformations[bestTrans].m_trans;
+			if (bestVotes >= Transform::m_minimumVotes)
+			{
+				//Enough votes. Use calculated transformation matrix and mirrored state.
+				m_trans 	= transformations[bestTrans].m_trans;
+				m_mirrored 	= transformations[bestTrans].m_mirrored;
+			}
+			else
+			{
+				//Too few votes. Use preset identity matrix and mirrored state 0.
+//				std::cout<<std::endl<<std::endl<<"(((((((((((((((((( too few votes: "<<bestVotes<<std::endl; 
+			}
 		}
 	}
 }

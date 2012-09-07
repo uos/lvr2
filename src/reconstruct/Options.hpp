@@ -289,6 +289,8 @@ public:
 
     string getTexturePack() const;
 
+    int getMinimumTransformationVotes() const;
+
 private:
 
 	/// The set voxelsize
@@ -407,6 +409,9 @@ private:
 
 	///Threshold for pattern extraction from textures
 	float m_patternThreshold;
+
+	///Minimum number of vote to consider a texture transformation as "correct"
+	int m_minimumTransformationVotes;
 
 };
 

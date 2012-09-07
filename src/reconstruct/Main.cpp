@@ -145,6 +145,7 @@
 #include "geometry/Matrix4.hpp"
 #include "geometry/HalfEdgeMesh.hpp"
 #include "texture/Texture.hpp"
+#include "texture/Transform.hpp"
 #include "texture/Texturizer.hpp"
 #include "texture/Statistics.hpp"
 #include "geometry/QuadricVertexCosts.hpp"
@@ -332,6 +333,10 @@ int main(int argc, char** argv)
 			if(options.getPatternThreshold())
 			{
 				Texturizer<cVertex, cNormal>::m_patternThreshold = options.getPatternThreshold();
+			}
+			if(options.getMinimumTransformationVotes())
+			{
+				Transform::m_minimumVotes = options.getMinimumTransformationVotes();
 			}
 		}
 
