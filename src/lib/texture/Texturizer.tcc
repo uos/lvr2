@@ -251,7 +251,8 @@ void Texturizer<VertexT, NormalT>::filterByCrossCorr(vector<Texture*> &textures,
 	//delete bad matches
 	for (int d = 0; d < toDelete.size(); d++)
 	{
-		textures.erase(find(textures.begin(), textures.end(), toDelete[d]));
+//		textures.erase(find(textures.begin(), textures.end(), toDelete[d]));
+//we should not delete without taking the transformation between the given textures into account
 	}	
 }
 template<typename VertexT, typename NormalT>
