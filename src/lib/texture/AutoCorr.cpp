@@ -358,7 +358,7 @@ double AutoCorr::getMinimalPattern(unsigned int &sX, unsigned int &sY, unsigned 
 	}
 	else
 	{
-		return	1.0f / (stdDevX/(m_autocorr.cols / peaksX) + stdDevY/(m_autocorr.rows / peaksY));
+		return	1.0f / std::min(stdDevX/(m_autocorr.cols / peaksX), stdDevY/(m_autocorr.rows / peaksY));
 	}
 } 
 
