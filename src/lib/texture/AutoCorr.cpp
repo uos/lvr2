@@ -275,7 +275,7 @@ double AutoCorr::getMinimalPattern(unsigned int &sX, unsigned int &sY, unsigned 
 		for (int x2 = x + 1; x2 < high_xPeaks.size(); x2++)
 		{
 			//choose size for subrect
-			int width  = high_xPeaks[x2] - high_xPeaks[x];
+			int width  = high_xPeaks[x2] - high_xPeaks[x] + 1;
 			int height = m_image.rows;
 
 			//choose center for the subrect
@@ -312,11 +312,11 @@ double AutoCorr::getMinimalPattern(unsigned int &sX, unsigned int &sY, unsigned 
 	float y_highest_correlation = -FLT_MAX;
 	for (int y = 0; y < high_yPeaks.size(); y++)
 	{
-		for (int y2 = y + 1; y2 < high_yPeaks.size() / 2; y2++)
+		for (int y2 = y + 1; y2 < high_yPeaks.size(); y2++)
 		{
 			//choose size for subrect
 			int width = sizeX;
-			int height  = high_yPeaks[y2] - high_yPeaks[y];
+			int height  = high_yPeaks[y2] - high_yPeaks[y] + 1;
 
 			//choose center for the subrect
 			int cx = sX;
