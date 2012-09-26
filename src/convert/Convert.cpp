@@ -152,7 +152,6 @@ int main( int argc, char ** argv )
                 }
             }
         }
-
         ModelFactory::saveModel(model, options.getOutputFile());
 
     }
