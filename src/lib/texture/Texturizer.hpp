@@ -164,6 +164,8 @@ private:
 
 	//TODO: remove
 	void showTexture(TextureToken<VertexT, NormalT>* tt, string caption);
+	//TODO: remove
+	void markTexture(TextureToken<VertexT, NormalT>* tt, char color);
 };
 
 }

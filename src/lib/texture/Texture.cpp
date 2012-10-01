@@ -69,6 +69,7 @@ Texture::Texture(unsigned short int width, unsigned short int height, unsigned c
 	this->m_numCCVColors 		= numCCVColors;
 	this->m_CCV			= CCV;
 	this->m_keyPoints 		= keyPoints;
+	this->m_distance		= 0;
 }
 
 Texture::Texture(Texture &other)

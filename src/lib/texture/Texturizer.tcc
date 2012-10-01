@@ -202,11 +202,17 @@ void Texturizer<VertexT, NormalT>::filterByColor(vector<Texture*> &textures, Tex
 	for (int i = 0; i < textures.size(); i++)
 	{
 		float dist = ImageProcessor::compareTexturesHist(textures[i], refTexture);
-		textures[i]->m_distance += dist;
 //		cerr<<dist<<endl;
 		if(dist > threshold)
 		{
 			toDelete.push_back(textures[i]);
+		}
+		else
+		{
+			if (threshold != FLT_MAX)
+			{
+				textures[i]->m_distance += dist;
+			}
 		}
 	}	
 	//filter by CCV
@@ -214,10 +220,16 @@ void Texturizer<VertexT, NormalT>::filterByColor(vector<Texture*> &textures, Tex
 	{
 		float dist = ImageProcessor::compareTexturesCCV(textures[i], refTexture);
 //		cerr<<dist<<endl;
-		textures[i]->m_distance += dist;
 		if(dist > threshold)
 		{
 			toDelete.push_back(textures[i]);
+		}
+		else
+		{
+			if (threshold != FLT_MAX)
+			{
+				textures[i]->m_distance += dist;
+			}
 		}
 	}	
 	
@@ -240,11 +252,17 @@ void Texturizer<VertexT, NormalT>::filterByCrossCorr(vector<Texture*> &textures,
 	for (int i = 0; i < textures.size(); i++)
 	{
 		float dist = ImageProcessor::compareTexturesCrossCorr(textures[i], refTexture);
-		textures[i]->m_distance += dist;
 //		cerr<<dist<<endl;
 		if(dist > threshold)
 		{
 			toDelete.push_back(textures[i]);
+		}
+		else
+		{
+			if (threshold != FLT_MAX)
+			{
+				textures[i]->m_distance += dist;
+			}
 		}
 	}	
 	
@@ -264,11 +282,17 @@ void Texturizer<VertexT, NormalT>::filterByStats(vector<Texture*> &textures, Tex
 	for (int i = 0; i < textures.size(); i++)
 	{
 		float dist = ImageProcessor::compareTexturesStats(textures[i], refTexture);
-		textures[i]->m_distance += dist;
 //		cerr<<dist<<" "<<threshold<<endl;
 		if(dist > threshold)
 		{
 			toDelete.push_back(textures[i]);
+		}
+		else
+		{
+			if (threshold != FLT_MAX)
+			{
+				textures[i]->m_distance += dist;
+			}
 		}
 	}	
 	
@@ -287,11 +311,17 @@ void Texturizer<VertexT, NormalT>::filterByFeatures(vector<Texture*> &textures, 
 	for (int i = 0; i < textures.size(); i++)
 	{
 		float dist = ImageProcessor::compareTexturesSURF(textures[i], refTexture);
-		textures[i]->m_distance += dist;
 //		cerr<<dist<<endl;
 		if(dist > threshold)
 		{
 			toDelete.push_back(textures[i]);
+		}
+		else
+		{
+			if (threshold != FLT_MAX)
+			{
+				textures[i]->m_distance += dist;
+			}
 		}
 	}	
 	
@@ -373,11 +403,12 @@ TextureToken<VertexT, NormalT>* Texturizer<VertexT, NormalT>::texturizePlane(vec
 									- this->m_tio->m_textures.begin());
 			if(textures[0]->m_isPattern)
 			{
-				cout<<"Using Pattern Texture from texture package!!!"<<endl;
+			//	cout<<"Using Pattern Texture from texture package!!!"<<endl;
 			}
 			else
 			{
-				cout<<"Using Texture from texture package!!!"<<endl;
+			//	cout<<"Using Texture from texture package!!!"<<endl;
+			//	cerr<<"Distance: "<<textures[0]->m_distance <<endl;
 				//Calculate transformation for texture coordinate calculation
 				Transform* trans = new Transform(initialTexture->m_texture, textures[0]);
 				double* mat = trans->getTransArr();
@@ -399,7 +430,7 @@ TextureToken<VertexT, NormalT>* Texturizer<VertexT, NormalT>::texturizePlane(vec
 		//	cout<<pattern_quality<<" ";
 			if (pattern_quality > patternThreshold)
 			{
-				cout<<"Using pattern texture!!! "<<pattern_quality<<endl;
+			//	cout<<"Using pattern texture!!! "<<pattern_quality<<endl;
 				//calculate surf features for pattern
 				ImageProcessor::calcSURF(pattern);
 				//calculate statistics for pattern
@@ -420,13 +451,13 @@ TextureToken<VertexT, NormalT>* Texturizer<VertexT, NormalT>::texturizePlane(vec
 			}
 			else 
 			{
-				cout<<"Using initial texture";
+			//	cout<<"Using initial texture";
 				//Pattern extraction failed -> use initial texture
 				delete pattern; 
 				//Add initial texture to texture pack
 				initialTexture->m_textureIndex = this->m_tio->add(initialTexture->m_texture);
 				this->m_tio->write();
-				cout<<initialTexture->m_textureIndex<<endl;
+			//	cout<<initialTexture->m_textureIndex<<endl;
 			}
 		}
 	} 
@@ -454,6 +485,22 @@ unsigned short int Texturizer<VertexT, NormalT>::classifyNormal(NormalT n)
 	return 0;
 }
 
+
+template<typename VertexT, typename NormalT>
+void Texturizer<VertexT, NormalT>::markTexture(TextureToken<VertexT, NormalT>* tt, char color)
+{
+	Texture* t = tt->m_texture;
+	cv::Mat img(cv::Size(t->m_width, t->m_height), CV_MAKETYPE(t->m_numBytesPerChan * 8, t->m_numChannels), t->m_data);
+	switch (color)
+	{
+		case 'r':
+				cv::putText(img, "#########", cv::Point2f(0,img.rows/2), cv::FONT_HERSHEY_SIMPLEX, 0.4, cv::Scalar(255,0,0), 2);
+				break;
+		case 'g':	
+				cv::putText(img, "#########", cv::Point2f(0,img.rows/2), cv::FONT_HERSHEY_SIMPLEX, 0.4, cv::Scalar(0,255,0), 2);
+				break;
+	}
+}
 
 template<typename VertexT, typename NormalT>
 void Texturizer<VertexT, NormalT>::showTexture(TextureToken<VertexT, NormalT>* tt, string caption)
