@@ -282,7 +282,7 @@ public:
     
     float getFeatureThreshold() const;
     
-    float getCrossCorrThreshold() const;
+    bool getUseCrossCorr() const;
     
     float getPatternThreshold() const;
 
@@ -405,8 +405,8 @@ private:
 	///Threshold for texture matching based on features
 	float m_featuresThreshold;
 	
-	///Threshold for texture matching based on cross correlation
-	float m_crosscorrThreshold;
+	///Whether to use texture matching based on cross correlation
+	bool m_useCrossCorr;
 
 	///Threshold for pattern extraction from textures
 	float m_patternThreshold;

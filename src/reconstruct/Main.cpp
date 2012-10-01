@@ -322,9 +322,9 @@ int main(int argc, char** argv)
 			{
 				Texturizer<cVertex, cNormal>::m_statsThreshold = options.getStatsThreshold();
 			}
-			if(options.getCrossCorrThreshold())
+			if(options.getUseCrossCorr())
 			{
-				Texturizer<cVertex, cNormal>::m_crossCorrThreshold = options.getCrossCorrThreshold();
+				Texturizer<cVertex, cNormal>::m_useCrossCorr = options.getUseCrossCorr();
 			}
 			if(options.getFeatureThreshold())
 			{

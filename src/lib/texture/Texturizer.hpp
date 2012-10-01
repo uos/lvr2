@@ -78,7 +78,7 @@ public:
 	static float m_colorThreshold;
 
 	///Threshold for cross correlation based texture filtering
-	static float m_crossCorrThreshold;
+	static bool m_useCrossCorr;
 
 	///Threshold for statistics based texture filtering
 	static float m_statsThreshold;
@@ -116,9 +116,8 @@ private:
 	 *
 	 * \param	textures	The set of textures to filter
 	 * \param	refTexture	The texture to compare the textures from the set with
-	 * \param	threshold	The threshold to determine if a texture is to be kept or deleted
 	 */
-	void filterByCrossCorr(std::vector<Texture*> &textures, Texture* refTexture, float threshold);
+	void filterByCrossCorr(std::vector<Texture*> &textures, Texture* refTexture);
 
 	/**
 	 * \brief 	Filters the given set of textures with the help of statistics

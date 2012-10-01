@@ -48,7 +48,7 @@ namespace lssr {
 
         ///Threshold for cross correlation based texture filtering
 	template<typename VertexT, typename NormalT>
-        float Texturizer<VertexT, NormalT>::m_crossCorrThreshold = FLT_MAX;
+        bool Texturizer<VertexT, NormalT>::m_useCrossCorr = false;
 
         ///Threshold for statistics based texture filtering
 	template<typename VertexT, typename NormalT>
@@ -202,35 +202,21 @@ void Texturizer<VertexT, NormalT>::filterByColor(vector<Texture*> &textures, Tex
 	for (int i = 0; i < textures.size(); i++)
 	{
 		float dist = ImageProcessor::compareTexturesHist(textures[i], refTexture);
-//		cerr<<dist<<endl;
 		if(dist > threshold)
 		{
 			toDelete.push_back(textures[i]);
 		}
-		else
-		{
-			if (threshold != FLT_MAX)
-			{
-				textures[i]->m_distance += dist;
-			}
-		}
+		textures[i]->m_distance += dist;
 	}	
 	//filter by CCV
 	for (int i = 0; i < textures.size(); i++)
 	{
 		float dist = ImageProcessor::compareTexturesCCV(textures[i], refTexture);
-//		cerr<<dist<<endl;
 		if(dist > threshold)
 		{
 			toDelete.push_back(textures[i]);
 		}
-		else
-		{
-			if (threshold != FLT_MAX)
-			{
-				textures[i]->m_distance += dist;
-			}
-		}
+		textures[i]->m_distance += dist;
 	}	
 	
 	//delete bad matches
@@ -244,33 +230,13 @@ void Texturizer<VertexT, NormalT>::filterByColor(vector<Texture*> &textures, Tex
 	
 }
 template<typename VertexT, typename NormalT>
-void Texturizer<VertexT, NormalT>::filterByCrossCorr(vector<Texture*> &textures, Texture* refTexture, float threshold)
+void Texturizer<VertexT, NormalT>::filterByCrossCorr(vector<Texture*> &textures, Texture* refTexture)
 {
-	vector<Texture*> toDelete;
-
 	//filter by CC
 	for (int i = 0; i < textures.size(); i++)
 	{
 		float dist = ImageProcessor::compareTexturesCrossCorr(textures[i], refTexture);
-//		cerr<<dist<<endl;
-		if(dist > threshold)
-		{
-			toDelete.push_back(textures[i]);
-		}
-		else
-		{
-			if (threshold != FLT_MAX)
-			{
-				textures[i]->m_distance += dist;
-			}
-		}
-	}	
-	
-	//delete bad matches
-	for (int d = 0; d < toDelete.size(); d++)
-	{
-//		textures.erase(find(textures.begin(), textures.end(), toDelete[d]));
-//we should not delete without taking the transformation between the given textures into account
+		textures[i]->m_distance += dist;
 	}	
 }
 template<typename VertexT, typename NormalT>
@@ -282,18 +248,11 @@ void Texturizer<VertexT, NormalT>::filterByStats(vector<Texture*> &textures, Tex
 	for (int i = 0; i < textures.size(); i++)
 	{
 		float dist = ImageProcessor::compareTexturesStats(textures[i], refTexture);
-//		cerr<<dist<<" "<<threshold<<endl;
 		if(dist > threshold)
 		{
 			toDelete.push_back(textures[i]);
 		}
-		else
-		{
-			if (threshold != FLT_MAX)
-			{
-				textures[i]->m_distance += dist;
-			}
-		}
+		textures[i]->m_distance += dist;
 	}	
 	
 	//delete bad matches
@@ -311,18 +270,11 @@ void Texturizer<VertexT, NormalT>::filterByFeatures(vector<Texture*> &textures, 
 	for (int i = 0; i < textures.size(); i++)
 	{
 		float dist = ImageProcessor::compareTexturesSURF(textures[i], refTexture);
-//		cerr<<dist<<endl;
 		if(dist > threshold)
 		{
 			toDelete.push_back(textures[i]);
 		}
-		else
-		{
-			if (threshold != FLT_MAX)
-			{
-				textures[i]->m_distance += dist;
-			}
-		}
+		textures[i]->m_distance += dist;
 	}	
 	
 	//delete bad matches
@@ -362,7 +314,7 @@ TextureToken<VertexT, NormalT>* Texturizer<VertexT, NormalT>::texturizePlane(vec
 	TextureToken<VertexT, NormalT>* initialTexture = 0;
 
 	float colorThreshold 		= Texturizer<VertexT, NormalT>::m_colorThreshold;
-	float crossCorrThreshold 	= Texturizer<VertexT, NormalT>::m_crossCorrThreshold;
+	bool  useCrossCorr 		= Texturizer<VertexT, NormalT>::m_useCrossCorr;
 	float statsThreshold 		= Texturizer<VertexT, NormalT>::m_statsThreshold;
 	float featureThreshold 		= Texturizer<VertexT, NormalT>::m_featureThreshold;
 	float patternThreshold 		= Texturizer<VertexT, NormalT>::m_patternThreshold;
@@ -380,17 +332,25 @@ TextureToken<VertexT, NormalT>* Texturizer<VertexT, NormalT>::texturizePlane(vec
 		}
 		//reduce number of matching textures from the texture pack step by step
 		std::vector<Texture*> textures = this->m_tio->m_textures;
-//		std::cout<<textures.size()<<std::endl;
 		filterByNormal		(textures, contour);
-//		std::cout<<textures.size()<<std::endl;
-		filterByColor		(textures, initialTexture->m_texture, colorThreshold);
-//		std::cout<<textures.size()<<std::endl;
-		filterByStats		(textures, initialTexture->m_texture, statsThreshold);
-//		std::cout<<textures.size()<<std::endl;
-		filterByFeatures	(textures, initialTexture->m_texture, featureThreshold);
-//		std::cout<<textures.size()<<std::endl;
-		filterByCrossCorr	(textures, initialTexture->m_texture, crossCorrThreshold); 
-//		std::cout<<textures.size()<<std::endl;
+
+		if (colorThreshold != FLT_MAX)
+		{
+			filterByColor		(textures, initialTexture->m_texture, colorThreshold);
+		}
+		if (statsThreshold != FLT_MAX)
+		{
+			filterByStats		(textures, initialTexture->m_texture, statsThreshold);
+		}
+		if (featureThreshold != FLT_MAX)
+		{
+			filterByFeatures	(textures, initialTexture->m_texture, featureThreshold);
+		}
+		if (useCrossCorr != FLT_MAX)
+		{
+			filterByCrossCorr	(textures, initialTexture->m_texture); 
+		}
+
 		sort(textures.begin(), textures.end(), Texture::cmpTextures);		
 
 		if (textures.size() > 0)
