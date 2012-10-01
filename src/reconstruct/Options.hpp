@@ -31,6 +31,7 @@
 #include <string>
 #include <vector>
 #include <boost/program_options.hpp>
+#include <float.h>
 
 using std::ostream;
 using std::cout;
