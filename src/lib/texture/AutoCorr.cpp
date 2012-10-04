@@ -208,12 +208,12 @@ float AutoCorr::calcPeakHeight(int peak, float* data, int len)
 
 	//find deeps before and after peak
 	int d1 = peak;
-	while(data[d1] >= data[d1 - 1] && d1 > 0)
+	while(d1 > 0 && data[d1] >= data[d1 - 1])
 	{
 		d1--;
 	}
 	int d2 = peak;
-	while(data[d2] >= data[d2 + 1] && d2 < len - 1)
+	while(d2 < len -1 && data[d2] >= data[d2 + 1])
 	{
 		d2++;
 	}
