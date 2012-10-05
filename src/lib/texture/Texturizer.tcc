@@ -70,6 +70,11 @@ Texturizer<VertexT, NormalT>::Texturizer(typename PointsetSurface<VertexT>::Ptr 
 	this->m_tio = new TextureIO(Texturizer::m_filename);
 	
 	this->m_pm = pm;
+
+        m_stats_texturizedPlanes = 0;
+        m_stats_matchedIndTextures = 0;
+        m_stats_matchedPatTextures = 0;
+        m_stats_extractedPatterns = 0;
 }
 
 template<typename VertexT, typename NormalT>
@@ -310,7 +315,6 @@ void Texturizer<VertexT, NormalT>::filterByNormal(vector<Texture*> &textures, ve
 template<typename VertexT, typename NormalT>
 TextureToken<VertexT, NormalT>* Texturizer<VertexT, NormalT>::texturizePlane(vector<VertexT> contour)
 {
-//	std::cout<<"==================================================================="<<std::endl;
 	TextureToken<VertexT, NormalT>* initialTexture = 0;
 
 	float colorThreshold 		= Texturizer<VertexT, NormalT>::m_colorThreshold;
@@ -322,6 +326,7 @@ TextureToken<VertexT, NormalT>* Texturizer<VertexT, NormalT>::texturizePlane(vec
 
 	if(contour.size() >= 3)
 	{
+		m_stats_texturizedPlanes++;
 		//create an initial texture from the point cloud
 		initialTexture = createInitialTexture(contour);
 
@@ -363,10 +368,12 @@ TextureToken<VertexT, NormalT>* Texturizer<VertexT, NormalT>::texturizePlane(vec
 									- this->m_tio->m_textures.begin());
 			if(textures[0]->m_isPattern)
 			{
+				m_stats_matchedPatTextures++;
 			//	cout<<"Using Pattern Texture from texture package!!!"<<endl;
 			}
 			else
 			{
+				m_stats_matchedIndTextures++;
 			//	cout<<"Using Texture from texture package!!!"<<endl;
 			//	cerr<<"Distance: "<<textures[0]->m_distance <<endl;
 				//Calculate transformation for texture coordinate calculation
@@ -391,6 +398,7 @@ TextureToken<VertexT, NormalT>* Texturizer<VertexT, NormalT>::texturizePlane(vec
 			if (pattern_quality > patternThreshold)
 			{
 			//	cout<<"Using pattern texture!!! "<<pattern_quality<<endl;
+				m_stats_extractedPatterns++;
 				//calculate surf features for pattern
 				ImageProcessor::calcSURF(pattern);
 				//calculate statistics for pattern

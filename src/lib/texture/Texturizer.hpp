@@ -62,6 +62,13 @@ public:
 	**/
 	TextureToken<VertexT, NormalT>* texturizePlane(vector<VertexT> contour);
 
+	
+	int m_stats_texturizedPlanes;
+	int m_stats_matchedIndTextures;
+	int m_stats_matchedPatTextures;
+	int m_stats_extractedPatterns;
+
+
 	///File name of texture pack
 	static string m_filename;
 
@@ -166,6 +173,18 @@ private:
 	//TODO: remove
 	void markTexture(TextureToken<VertexT, NormalT>* tt, char color);
 };
+	
+template<typename VertexT, typename NormalT>
+inline ostream& operator<<(ostream& os, const Texturizer<VertexT, NormalT> t)
+{
+	os<<"-----------Texturizer statistiscs-----------"<<endl;	
+	os << "Texturized Planes: " <<t.m_stats_texturizedPlanes<<endl;
+	os << "Matched individual textures: "<<t.m_stats_matchedIndTextures<<endl;
+	os << "Matched pattern textures: "<<t.m_stats_matchedPatTextures<<endl;
+	os << "Extracted Patterns: "<<t.m_stats_extractedPatterns<<endl;
+	os<<"--------------------------------------------"<<endl;	
+    return os;
+}
 
 }
 
