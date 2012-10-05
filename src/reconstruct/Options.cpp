@@ -79,7 +79,7 @@ Options::Options(int argc, char** argv) : m_descr("Supported options")
 		        ("colt", value<float>(&m_colorThreshold)->default_value(FLT_MAX), "Threshold for texture matching based on colors")
 		        ("stat", value<float>(&m_statsThreshold)->default_value(FLT_MAX), "Threshold for texture matching based on statistics")
 		        ("feat", value<float>(&m_featuresThreshold)->default_value(FLT_MAX), "Threshold for texture matching based on features")
-		        ("cro", value<bool>(&m_useCrossCorr)->default_value(false), "Whether to use texture matching based on cross correlation")
+		        ("cro", "Use texture matching based on cross correlation.")
 		        ("patt", value<float>(&m_patternThreshold)->default_value(100), "Threshold for pattern extraction from textures")
 		        ("mtv", value<int>(&m_minimumTransformationVotes)->default_value(3), "Minimum number of votes to consider a texture transformation as correct")
         ;
@@ -354,7 +354,7 @@ float Options::getFeatureThreshold() const
 
 bool Options::getUseCrossCorr() const
 {
-    return m_variables["cro"].as<bool>();
+    return m_variables.count("cro");
 }
 
 float Options::getPatternThreshold() const
