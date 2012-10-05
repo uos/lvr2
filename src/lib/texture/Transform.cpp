@@ -199,7 +199,7 @@ void Transform::calcTransform(const cv::Mat &t1, const cv::Mat &t2, std::vector<
 			}
 			if (bestVotes >= Transform::m_minimumVotes)
 			{
-				//std::cout<<"Enough votes!!!"<<std::endl;
+				//std::cerr<<"Enough votes: "<<bestVotes<<std::endl;
 				//Enough votes. Use calculated transformation matrix and mirrored state.
 				m_trans 	= transformations[bestTrans].m_trans;
 				m_mirrored 	= transformations[bestTrans].m_mirrored;
@@ -207,7 +207,7 @@ void Transform::calcTransform(const cv::Mat &t1, const cv::Mat &t2, std::vector<
 			else
 			{
 				//Too few votes. Use preset identity matrix and mirrored state 0.
-			//	std::cout<<std::endl<<std::endl<<"(((((((((((((((((( too few votes: "<<bestVotes<<std::endl; 
+			//	std::cerr<<std::endl<<std::endl<<"Too few votes: "<<bestVotes<<std::endl; 
 			}
 		}
 	}
