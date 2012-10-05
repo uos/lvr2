@@ -1519,7 +1519,7 @@ void HalfEdgeMesh<VertexT, NormalT>::finalizeAndRetesselate( bool genTextures, f
     this->m_meshBuffer->setMaterialArray( materialBuffer );
     this->m_meshBuffer->setFaceMaterialIndexArray( materialIndexBuffer );
     this->m_finalized = true;
-
+    cout<<endl<<*texturizer;
     cout << endl << timestamp << "Done retesselating." << endl;
     m_regionClassifier->writeMetaInfo();
 } 
