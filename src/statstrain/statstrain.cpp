@@ -53,13 +53,14 @@ int main( int argc, char ** argv )
 	float S1 = 15000; 
 	float S2 = 15;
 
-	if (argc != 4)
+	if (argc != 5)
 	{
-		cout<<"Usage: "<<argv[0]<<" <filename> S1 S2"<<endl;
+		cout<<"Usage: "<<argv[0]<<" <filename> <S1> <S2> <number of colors>"<<endl;
 		return EXIT_FAILURE;
 	}
 	S1 = atof(argv[2]);
 	S2 = atof(argv[3]);
+	int numStatsColors = atoi(argv[4]);
 
 	cout<<"Welcome to statstrain - matching textures with a passion!"<<endl;
 	cout<<"------------------------------------------------"<<endl;
@@ -87,7 +88,7 @@ int main( int argc, char ** argv )
 		lssr::Texture* t = new lssr::Texture(dst.size().width, dst.size().height, dst.channels(), depth, 0, 0, 0 ,0, 0, 0, true, 0, 0);
 		memcpy(t->m_data, dst.data, dst.size().width * dst.size().height * dst.channels() * depth);
 		//calculate stats for training data
-		lssr::ImageProcessor::calcStats(t, 16); //TODO: Param oder member
+		lssr::ImageProcessor::calcStats(t, numStatsColors);
 		tData.push_back(t);
 	}	
 
