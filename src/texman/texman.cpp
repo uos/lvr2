@@ -45,7 +45,7 @@ using namespace std;
  *
  * \param tio	A TextureIO object
 **/
-void a(lssr::TextureIO* tio)
+void a(lssr::TextureIO* tio, int numStatsColors, int numCCVColors, int coherenceThreshold)
 {
 	cout<<"\t(a)dd: Enter path to texture image: ";
 	string fn;
@@ -70,10 +70,10 @@ void a(lssr::TextureIO* tio)
 		lssr::ImageProcessor::calcSURF(t);
 
 		// calculate stats
-		lssr::ImageProcessor::calcStats(t, 16); //TODO: PARAM
+		lssr::ImageProcessor::calcStats(t, numStatsColors);
 
 		//calculate CCV
-		lssr::ImageProcessor::calcCCV(t, 64, 50); //TODO: PARAM
+		lssr::ImageProcessor::calcCCV(t, numCCVColors, coherenceThreshold);
 		
 
 		cout<<"\t(a)dded new texture."<<endl;
@@ -82,6 +82,50 @@ void a(lssr::TextureIO* tio)
 	else
 	{
 		cout<<"\t(a)dd failed: Could not load texture."<<endl;
+	}
+}
+
+/**
+ * \brief Configure number of colors for statistics and CCV and coherence threshold
+ *
+ * \param numStatsColors 	The variable to hold the number of colors to use in statistics
+ * \param numCCVColors 		The variable to hold the number of colors to use in CCV calculation
+ * \param coherenceThreshold 	The variable to hold the coherence threshold to use in CCV calculation
+**/
+void c(int &numStatsColors, int &numCCVColors, int &coherenceThreshold)
+{
+	int i= -1;
+	cout<<"\tEnter number of colors for statistics (current value: "<<numStatsColors<<"): ";
+	cin>>i;
+	if (i < 1 || i > 255)
+	{
+		cout<<"\tInvalid value. Did not change anything."<<endl;
+	}
+	else
+	{
+		numStatsColors = i;
+	}
+
+	cout<<"\tEnter number of colors for CCVs  (current value: "<<numCCVColors<<"): ";
+	cin>>i;
+	if (i < 1 || i > 255)
+	{
+		cout<<"\tInvalid value. Did not change anything."<<endl;
+	}
+	else
+	{
+		numCCVColors = i;
+	}
+
+	cout<<"\tEnter coherence Threshold for CCV (current value: "<<coherenceThreshold<<"): ";
+	cin>>i;
+	if (i < 1)
+	{
+		cout<<"\tInvalid value. Did not change anything."<<endl;
+	}
+	else
+	{
+		coherenceThreshold = i;
 	}
 }
 
@@ -112,6 +156,7 @@ void d(lssr::TextureIO* tio, int &sel)
 void h()
 {
 	cout<<"\ta: Add a new texture to the file"<<endl;
+	cout<<"\tc: Configure parameters for statistics and CCVs"<<endl;
 	cout<<"\td: Delete the selected texture"<<endl;
 	cout<<"\th: Show this help"<<endl;
 	cout<<"\ti: Show file information"<<endl;
@@ -261,7 +306,7 @@ void s(lssr::TextureIO* tio, int &sel)
  *
  * \param sel 	The index of the selected texture
 **/
-void u(lssr::TextureIO* tio, int &sel)
+void u(lssr::TextureIO* tio, int &sel, int numStatsColors, int numCCVColors, int coherenceThreshold)
 {
 	if(sel != -1)
 	{
@@ -292,10 +337,10 @@ void u(lssr::TextureIO* tio, int &sel)
 				lssr::ImageProcessor::calcSURF(t);
 
 				//calculate stats
-				lssr::ImageProcessor::calcStats(t, 16); //TODO: PRAM
+				lssr::ImageProcessor::calcStats(t, numStatsColors);
 
 				//calculate CCV
-				lssr::ImageProcessor::calcCCV(t, 64, 50); //TODO: PARAM
+				lssr::ImageProcessor::calcCCV(t, numCCVColors, coherenceThreshold);
 		
 				tio->update(sel, t);
 				cout<<"\t(u)dated texture #"<<sel<<"."<<endl; 
@@ -377,6 +422,10 @@ int main( int argc, char ** argv )
 	cout<<"------------------------------------------------"<<endl;
 	lssr::TextureIO* tio = new lssr::TextureIO(argv[1]);
 
+	int numStatsColors = 16;
+	int numCCVColors   = 64;
+	int coherenceThreshold = 50;
+
 	int sel = -1;
 	char cmd = 'h';
 	while (cmd != 'x')
@@ -387,7 +436,9 @@ int main( int argc, char ** argv )
 					break;
 			case '2':	e2(tio);	//CCVs
 					break;
-			case 'a':	a(tio);		//add
+			case 'a':	a(tio, numStatsColors, numCCVColors, coherenceThreshold);		//add
+					break;
+			case 'c':	c(numStatsColors, numCCVColors, coherenceThreshold);	//configure
 					break;
 			case 'd':	d(tio, sel);	//delete
 					break;
@@ -399,7 +450,7 @@ int main( int argc, char ** argv )
 					break;
 			case 's':	s(tio, sel);	//select
 					break;
-			case 'u':	u(tio, sel);	//update
+			case 'u':	u(tio, sel, numStatsColors, numCCVColors, coherenceThreshold);	//update
 					break;
 			case 'v':	v(tio, sel);	//view
 					break;
