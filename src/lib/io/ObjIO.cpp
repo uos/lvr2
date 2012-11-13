@@ -82,6 +82,10 @@ void ObjIO::parseMtlFile(
 {
 	cout << "Parsing " << mtlname << endl;
 
+	// Get path object
+	boost::filesystem::path p(mtlname);
+	p = p.remove_filename();
+
 	ifstream in(mtlname.c_str());
 	if(in.good())
 	{
@@ -134,7 +138,11 @@ void ObjIO::parseMtlFile(
 			{
 				string texname;
 				ss >> texname;
-				GlTexture* texture = TextureFactory::instance().getTexture(texname);
+
+				// Add full path to texture file name
+				boost::filesystem::path tex_file = p / texname;
+
+				GlTexture* texture = TextureFactory::instance().getTexture(tex_file.string());
 				textures.push_back(texture);
 				m->texture_index = textures.size() - 1;
 			}

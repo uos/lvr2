@@ -47,6 +47,7 @@ PPMIO::PPMIO()
 
 PPMIO::PPMIO( string filename ) : m_width(0), m_height(0), m_pixels(0)
 {
+
     // Try to open file
     ifstream in(filename.c_str());
 
