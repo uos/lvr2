@@ -170,6 +170,16 @@ private:
 	float               m_zSize;
 };
 
+template<typename T>
+std::ostream& operator<<(std::ostream& os, BoundingBox<T>&bb)
+{
+    os << "Bounding Box: " << endl;
+    os << "Min \t\t: " << bb.getMin();
+    os << "Max \t\t: " << bb.getMax();
+    os << "Dimensions \t: " << bb.getXSize() << " " << bb.getYSize() << " " << bb.getZSize() << endl;
+    return os;
+}
+
 } // namespace lssr
 
 #include "BoundingBox.tcc"

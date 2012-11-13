@@ -74,17 +74,17 @@ public:
 	/**
 	 * @brief Returns the r component for the given region
 	 */
-	virtual uchar r(int region) { return 125;  }
+	virtual uchar r(int region) { return 0;  }
 
 	/**
 	 * @brief Returns the g component for the given region
 	 */
-	virtual uchar g(int region) { return 125;}
+	virtual uchar g(int region) { return 255;}
 
 	/**
 	 * @brief Returns the b component for the given region
 	 */
-	virtual uchar b(int region) { return 125;  }
+	virtual uchar b(int region) { return 0;  }
 
 
 	/**

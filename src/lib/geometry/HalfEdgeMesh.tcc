@@ -657,6 +657,7 @@ void HalfEdgeMesh<VertexT, NormalT>::optimizePlanes(
         bool remove_flickering)
 {
     cout << timestamp << "Starting plane optimization with threshold " << angle << endl;
+    cout << timestamp << "Number of faces before optimization: " << m_faces.size() << endl;
 
     // Magic numbers
     int default_region_threshold = (int) 10 * log(m_faces.size());
@@ -1519,6 +1520,8 @@ void HalfEdgeMesh<VertexT, NormalT>::finalizeAndRetesselate( bool genTextures, f
 
     cout << timestamp << "Done retesselating." << endl;
     m_regionClassifier->writeMetaInfo();
+
+    cout << "Faces: " << indexBuffer.size() / 3 << endl;
 } 
 
 
