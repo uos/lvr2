@@ -144,7 +144,10 @@
 #include "io/PLYIO.hpp"
 #include "geometry/Matrix4.hpp"
 #include "geometry/HalfEdgeMesh.hpp"
-#include "geometry/Texture.hpp"
+#include "texture/Texture.hpp"
+#include "texture/Transform.hpp"
+#include "texture/Texturizer.hpp"
+#include "texture/Statistics.hpp"
 #include "geometry/QuadricVertexCosts.hpp"
 #include "reconstruction/SharpBox.hpp"
 
@@ -288,6 +291,58 @@ int main(int argc, char** argv)
 		{
 			Texture::m_texelSize = options.getTexelSize();
 		}
+		
+		if(options.getTexturePack() != "")
+		{
+			Texturizer<cVertex, cNormal>::m_filename = options.getTexturePack();
+			if(options.getStatsCoeffs())
+			{	
+				float* sc = options.getStatsCoeffs();
+				for (int i = 0; i < 14; i++)
+				{
+					Statistics::m_coeffs[i] = sc[i];
+				}
+				delete sc;
+			}
+			if(options.getNumStatsColors())
+			{
+				Texturizer<cVertex, cNormal>::m_numStatsColors = options.getNumStatsColors();
+			}
+			if(options.getNumCCVColors())
+			{
+				Texturizer<cVertex, cNormal>::m_numCCVColors = options.getNumCCVColors();
+			}
+			if(options.getCoherenceThreshold())
+			{
+				Texturizer<cVertex, cNormal>::m_coherenceThreshold = options.getCoherenceThreshold();
+			}
+
+			if(options.getColorThreshold())
+			{
+				Texturizer<cVertex, cNormal>::m_colorThreshold = options.getColorThreshold();
+			}
+			if(options.getStatsThreshold())
+			{
+				Texturizer<cVertex, cNormal>::m_statsThreshold = options.getStatsThreshold();
+			}
+			if(options.getUseCrossCorr())
+			{
+				Texturizer<cVertex, cNormal>::m_useCrossCorr = options.getUseCrossCorr();
+			}
+			if(options.getFeatureThreshold())
+			{
+				Texturizer<cVertex, cNormal>::m_featureThreshold = options.getFeatureThreshold();
+			}
+			if(options.getPatternThreshold())
+			{
+				Texturizer<cVertex, cNormal>::m_patternThreshold = options.getPatternThreshold();
+			}
+			if(options.getMinimumTransformationVotes())
+			{
+				Transform::m_minimumVotes = options.getMinimumTransformationVotes();
+			}
+		}
+
 
 		if(options.getSharpFeatureThreshold())
 		{

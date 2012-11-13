@@ -29,9 +29,10 @@
 #define TEXTURE_HPP_
 
 #include <cstring>
+#include <math.h>
 #include <opencv/highgui.h>
-#include <io/PPMIO.hpp>
 #include <cstdio>
+#include <io/PPMIO.hpp>
 
 namespace lssr {
 
@@ -55,13 +56,25 @@ public:
 	 */
 	Texture(unsigned short int width, unsigned short int height, unsigned char numChannels,
 		unsigned char numBytesPerChan, unsigned short int textureClass, unsigned short int numFeatures,
-		unsigned char numFeatureComponents, float* features);
+		unsigned char numFeatureComponents, float* features, float* keyPoints, float* stats, bool isPattern,
+		unsigned char numCCVColors, unsigned long* CCV);
 
 	/**
 	 * @brief 	Constructor.
 	 *
 	 */
 	Texture(Texture &other);
+
+
+	/**
+	 * \brief	Compares two textures based on their distance values
+	 *
+	 * \param	t1	The first texture
+	 * \param	t2	The second texture
+ 	 *
+	 * \return	true if t1->m_distance < t2->m_distance
+	 */
+	static bool cmpTextures(Texture* t1, Texture* t2);
 
 	/**
 	 * Destructor.
@@ -96,12 +109,32 @@ public:
 
 	///The precalculated feature descriptors (SIFT/SURF/...)
 	float* m_featureDescriptors;
+
+	///The positions of the precalculated features
+	float* m_keyPoints;
 	
 	///The number of entries of each feature descriptor
 	unsigned char m_numFeatureComponents;
 
-	//The number of feature descriptors
+	///The number of feature descriptors
 	unsigned short int m_numFeatures;
+	
+	///14 statistical values characterizing the texture
+	float* m_stats;
+
+	///Determines whether this texture is a pattern texture or not
+	bool m_isPattern;
+
+	///Holds the number of colors used for CCV calculation
+	unsigned char m_numCCVColors;
+
+	///CCV
+	unsigned long* m_CCV;
+
+	///value indicating how well this texture fits the reference texture
+	float m_distance;
+
+	
 };
 
 }

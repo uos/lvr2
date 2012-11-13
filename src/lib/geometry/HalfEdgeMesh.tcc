@@ -1366,13 +1366,12 @@ void HalfEdgeMesh<VertexT, NormalT>::finalizeAndRetesselate( bool genTextures, f
          and the textures are generated if there are textures to generate at all.!
      */
 
-    // for every plane region there is
-    int globalTextureIndex = 0;
-    
     Texturizer<VertexT, NormalT>* texturizer = new Texturizer<VertexT, NormalT>(this->m_pointCloudManager);
-  
+    
+    ///Tells which texture belongs to which material
+    map<unsigned int, unsigned int > textureMap;
 
-    string msg = timestamp.getElapsedTime() + "Optimizing plane intersections ";
+    string msg = timestamp.getElapsedTime() + "Applying textures to planes ";
     ProgressBar progress(planeRegions.size(), msg);
     for(intIterator planeNr = planeRegions.begin(); planeNr != planeRegions.end(); ++planeNr )
     {
@@ -1406,7 +1405,7 @@ void HalfEdgeMesh<VertexT, NormalT>::finalizeAndRetesselate( bool genTextures, f
             t = texturizer->texturizePlane( contours[0] );
             if(t)
             {
-                t->m_texture->save(globalTextureIndex);
+                t->m_texture->save(t->m_textureIndex);
             }
         }
 
@@ -1439,7 +1438,7 @@ void HalfEdgeMesh<VertexT, NormalT>::finalizeAndRetesselate( bool genTextures, f
 
         // calculate the index value for the old end of the vertexbuffer.
         offset = ( offset / 3 );
-
+	
         for(int j=0; j < indices.size(); j+=3)
         {
             // store the indices with the correct offset to the indices buffer.
@@ -1453,27 +1452,36 @@ void HalfEdgeMesh<VertexT, NormalT>::finalizeAndRetesselate( bool genTextures, f
                 indexBuffer.push_back( b );
                 indexBuffer.push_back( c );
             }
-            // Store material information for each new face
-           /* if( genTextures )
-            {
-
-                textureIndexBuffer.push_back( m_regions[iRegion]->m_regionNumber );
-            }
-            else
-            {
-                textureIndexBuffer.push_back( UINT_MAX );
-            }*/
         }
 
         // Create material and update buffer
         if(t)
         {
-            Material* m = new Material;
-            m->r = r;
-            m->g = g;
-            m->b = b;
-            m->texture_index = globalTextureIndex;
-            materialBuffer.push_back(m);
+            map<unsigned int, unsigned int >::iterator it = textureMap.find(t->m_textureIndex);
+	    if(it == textureMap.end())
+	    {
+		//new texture -> create new material
+                Material* m = new Material;
+                m->r = r;
+                m->g = g;
+                m->b = b;
+                m->texture_index = t->m_textureIndex;
+                materialBuffer.push_back(m);
+	        for( int j = 0; j < indices.size() / 3; j++ )
+	        {
+	            materialIndexBuffer.push_back(globalMaterialIndex);
+	        }
+		textureMap[t->m_textureIndex] = globalMaterialIndex;
+                globalMaterialIndex++;
+	    }
+	    else
+	    {
+		//Texture already exists -> use old material
+	        for( int j = 0; j < indices.size() / 3; j++ )
+	        {
+	            materialIndexBuffer.push_back(it->second);
+	        }
+	    }
         }
         else
         {
@@ -1485,19 +1493,13 @@ void HalfEdgeMesh<VertexT, NormalT>::finalizeAndRetesselate( bool genTextures, f
             materialBuffer.push_back(m);
         }
 
-        for( int j = 0; j < indices.size() / 3; j++ )
-        {
-            materialIndexBuffer.push_back(globalMaterialIndex + globalTextureIndex);
-        }
 
         if(t)
         {
-            delete t;
-            globalTextureIndex++;
+        //    delete t;
         }
         else
         {
-            globalMaterialIndex++;
         }
 
         // Update counters
@@ -1517,8 +1519,8 @@ void HalfEdgeMesh<VertexT, NormalT>::finalizeAndRetesselate( bool genTextures, f
     this->m_meshBuffer->setMaterialArray( materialBuffer );
     this->m_meshBuffer->setFaceMaterialIndexArray( materialIndexBuffer );
     this->m_finalized = true;
-
-    cout << timestamp << "Done retesselating." << endl;
+    cout<<endl<<*texturizer;
+    cout << endl << timestamp << "Done retesselating." << endl;
     m_regionClassifier->writeMetaInfo();
 
     cout << "Faces: " << indexBuffer.size() / 3 << endl;
