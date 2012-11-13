@@ -116,7 +116,12 @@ void AdaptiveKSearchSurface<VertexT, NormalT>::init()
                                    this->m_points[i][2]);
     }
 
+    cout << timestamp << "##### Dataset statatistics: ##### " << endl << endl;
+    cout << "Num points \t: " << this->m_numPoints << endl;
+    cout <<  this->m_boundingBox << endl;
+    cout << endl;
     this->m_centroid = VertexT(0.0, 0.0, 0.0);
+
     //this->m_boundingBox.getCentroid();
     // Create kd tree
     //cout << timestamp << "Creating STANN Kd-Tree..." << endl;

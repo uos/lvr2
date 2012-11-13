@@ -34,16 +34,19 @@
 #include <climits>
 #include <iostream>
 #include <fstream>
-#include "Timestamp.hpp"
-#include "boost/tuple/tuple.hpp"
-#include "../geometry/Vertex.hpp"
-#include "../display/GlTexture.hpp"
-#include "../display/TextureFactory.hpp"
 #include <string.h>
 #include <locale.h>
 #include <sstream>
 
+#include <boost/filesystem.hpp>
+#include "boost/tuple/tuple.hpp"
+
 #include "PLYIO.hpp"
+#include "Timestamp.hpp"
+#include "../geometry/Vertex.hpp"
+#include "../display/GlTexture.hpp"
+#include "../display/TextureFactory.hpp"
+
 
 namespace lssr
 {
@@ -149,7 +152,8 @@ void ObjIO::parseMtlFile(
 
 ModelPtr ObjIO::read(string filename)
 {
-
+    // Get path from filename
+    boost::filesystem::path p(filename);
 
 	ifstream in(filename.c_str());
 
@@ -245,9 +249,17 @@ ModelPtr ObjIO::read(string filename)
 			}
 			else if(keyword == "mtllib")
 			{
+			    // Get current path
+			    p = p.remove_filename();
+
+			    // Append .mtl file name
 				string mtlfile;
 				ss >> mtlfile;
-				parseMtlFile(matNames, materials, textures, mtlfile);
+				p = p / mtlfile;
+
+				// Get path as string and parse mtl
+				string mtl_path = p.string();
+				parseMtlFile(matNames, materials, textures, mtl_path);
 			}
 		}
 

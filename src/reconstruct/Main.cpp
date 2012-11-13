@@ -185,6 +185,8 @@ int main(int argc, char** argv)
 			return 0;
 		}
 
+		omp_set_num_threads(options.getNumThreads());
+
 		::std::cout << options << ::std::endl;
 
 		// Create a point loader object
@@ -342,7 +344,6 @@ int main(int argc, char** argv)
 
 		mesh.setClassifier(options.getClassifier());
 
-
 		if(options.optimizePlanes())
 		{
 			mesh.optimizePlanes(options.getPlaneIterations(),
@@ -389,6 +390,7 @@ int main(int argc, char** argv)
 		{
 			m->m_pointCloud = model->m_pointCloud;
 		}
+		cout << timestamp << "Saving mesh." << endl;
 		ModelFactory::saveModel( m, "triangle_mesh.ply");
 
 		// Save obj model if textures were generated
