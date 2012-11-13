@@ -147,7 +147,15 @@ double CrossCorr::getMax(unsigned int &resX, unsigned int &resY)
 
 float CrossCorr::at(unsigned int x, unsigned int y)
 {
+	//cout << m_crosscorr.rows << " " << m_crosscorr.cols << " " << x << " " << y << endl; 
+if(x < m_crosscorr.cols && y < m_crosscorr.rows)
+{
 	return m_crosscorr.at<float>(y, x);
+}
+	else
+{
+	return 0;
+}
 }
 
 void CrossCorr::getCCX(float* &output)
