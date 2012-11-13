@@ -17,6 +17,7 @@ set(LSSR_SOURCES
     io/KinectIO.cpp
     io/CoordinateTransform.cpp
     io/BoctreeIO.cpp
+    io/TextureIO.cpp
     display/InteractivePointCloud.cpp
     display/CoordinateAxes.cpp
     display/Renderable.cpp
@@ -31,8 +32,15 @@ set(LSSR_SOURCES
     display/GlTexture.cpp
     display/TextureFactory.cpp
     display/TexturedMesh.cpp
-    geometry/Texture.cpp
     reconstruction/PCLFiltering.cpp
+    texture/Texture.cpp
+    texture/ImageProcessor.cpp
+    texture/Statistics.cpp
+    texture/AutoCorr.cpp
+    texture/CrossCorr.cpp
+    texture/CCV.cpp
+    texture/Transform.cpp
+    texture/Trans.cpp
 )
 
 
@@ -44,7 +52,7 @@ set_target_properties(staticlssr PROPERTIES LIBRARY_OUTPUT_DIRECTORY
 
 target_link_libraries(staticlssr ${Boost_PROGRAM_OPTIONS_LIBRARY}
     ${Boost_SYSTEM_LIBRARY} ${Boost_THREAD_LIBRARY} ${Boost_FILESYSTEM_LIBRARY}
-    ${OpenMP_CXX_FLAGS} ${OPENGL_LIBRARY}  ${OpenCV_LIBS} )
+    ${OpenMP_CXX_FLAGS} ${OPENGL_LIBRARY} ${OpenCV_LIBS})
 target_link_libraries(staticlssr laslib)
 target_link_libraries(staticlssr obj)
 target_link_libraries(staticlssr pthread)
@@ -64,7 +72,7 @@ if ( "${CMAKE_BUILD_TYPE}" STREQUAL "Release" )
          ${CMAKE_SOURCE_DIR}/lib)
     target_link_libraries(lssr ${Boost_PROGRAM_OPTIONS_LIBRARY}
          ${Boost_SYSTEM_LIBRARY} ${Boost_THREAD_LIBRARY} ${Boost_FILESYSTEM_LIBRARY}
-         ${OpenMP_CXX_FLAGS} ${OPENGL_LIBRARY} ${OpenCV_LIBS}  )
+         ${OpenMP_CXX_FLAGS} ${OPENGL_LIBRARY} ${OpenCV_LIBS} )
     target_link_libraries(lssr laslib)
     if ( rply_shared ) 
          target_link_libraries(lssr ${rply_shared})

@@ -49,7 +49,7 @@ AdaptiveKSearchSurface<VertexT, NormalT>::AdaptiveKSearchSurface(
 : PointsetSurface<VertexT>( loader )
 {
    // Init:
-    srand(time(NULL));
+//    srand(time(NULL));
 
    size_t n_points, n_normals;
    this->m_points = loader->getIndexedPointArray(n_points);

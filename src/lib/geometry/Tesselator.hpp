@@ -36,15 +36,12 @@ using namespace std;
 
 #include "Vertex.hpp"
 #include "Normal.hpp"
-#include "HalfEdgeVertex.hpp"
 #include "HalfEdge.hpp"
 #include "Region.hpp"
 
 namespace lssr
 {
 
-/* Forward Declarations */
-template<typename VertexT, typename NormalT> class HalfEdgeVertex;
 
 
 /**
@@ -58,7 +55,6 @@ template<typename VertexT, typename NormalT>
 class Tesselator
 {
 public:
-	typedef HalfEdgeVertex<VertexT, NormalT> HVertex;
 
     /**
      * @brief Initializes the Tesselator
@@ -70,11 +66,11 @@ public:
     /**
      * @brief Takes a list of contours and retesselates the area.
      *
-     * @param borderVertices A vector of vectos containing the contours.
+     * @param borderVertices A vector of vectors containing the contours.
      *                       The first stack is handled as the outer contour,
      *                       the rest are inner contours.
      *
-     * @return Returns a list of HalfEdgeVertices. Every 3-points represent a triangle.
+     * @return Returns a list of Vertices. Every 3-points represent a triangle.
      *         
      */
     static void tesselate(vector<vector<VertexT> > &borderVertices);

@@ -26,6 +26,7 @@
 
 #include "Options.hpp"
 #include <omp.h>
+#include <fstream>
 
 namespace reconstruct{
 
@@ -70,6 +71,17 @@ Options::Options(int argc, char** argv) : m_descr("Supported options")
 		        ("sct", value<float>(&m_sct)->default_value(0.7), "Sharp corner threshold when using sharp feature decomposition")
 		        ("ecm", value<string>(&m_ecm)->default_value("QUADRIC"), "Edge collapse method for mesh reduction. Choose from QUADRIC, QUADRIC_TRI, MELAX, SHORTEST")
 				("ecc", value<int>(&m_numEdgeCollapses)->default_value(0), "Edge collapse count. Number of edges to collapse for mesh reduction.")
+		        ("tp", value<string>(&m_texturePack)->default_value(""), "Path to texture pack")
+		        ("co", value<string>(&m_statsCoeffs)->default_value(""), "Coefficents file for texture matching based on statistics")
+		        ("nsc", value<unsigned int>(&m_numStatsColors)->default_value(16), "Number of colors for texture statistics")
+		        ("nccv", value<unsigned int>(&m_numCCVColors)->default_value(64), "Number of colors for texture matching based on color information")
+		        ("ct", value<unsigned int>(&m_coherenceThreshold)->default_value(50), "Coherence threshold for texture matching based on color information")
+		        ("colt", value<float>(&m_colorThreshold)->default_value(FLT_MAX), "Threshold for texture matching based on colors")
+		        ("stat", value<float>(&m_statsThreshold)->default_value(FLT_MAX), "Threshold for texture matching based on statistics")
+		        ("feat", value<float>(&m_featuresThreshold)->default_value(FLT_MAX), "Threshold for texture matching based on features")
+		        ("cro", "Use texture matching based on cross correlation.")
+		        ("patt", value<float>(&m_patternThreshold)->default_value(100), "Threshold for pattern extraction from textures")
+		        ("mtv", value<int>(&m_minimumTransformationVotes)->default_value(3), "Minimum number of votes to consider a texture transformation as correct")
         ;
 
 	m_pdescr.add("inputFile", -1);
@@ -303,6 +315,77 @@ float Options::getTexelSize() const
 float Options::getLineFusionThreshold() const
 {
     return m_variables["lft"].as<float>();
+}
+
+string   Options::getTexturePack() const
+{
+    return m_variables["tp"].as<string>();
+}
+
+unsigned int   Options::getNumStatsColors() const
+{
+    return m_variables["nsc"].as<unsigned int>();
+}
+
+unsigned int   Options::getNumCCVColors() const
+{
+    return m_variables["nccv"].as<unsigned int>();
+}
+
+unsigned int   Options::getCoherenceThreshold() const
+{
+    return m_variables["ct"].as<unsigned int>();
+}
+
+float Options::getColorThreshold() const
+{
+    return m_variables["colt"].as<float>();
+}
+
+float Options::getStatsThreshold() const
+{
+    return m_variables["stat"].as<float>();
+}
+
+float Options::getFeatureThreshold() const
+{
+    return m_variables["feat"].as<float>();
+}
+
+bool Options::getUseCrossCorr() const
+{
+    return m_variables.count("cro");
+}
+
+float Options::getPatternThreshold() const
+{
+    return m_variables["patt"].as<float>();
+}
+
+int Options::getMinimumTransformationVotes() const
+{
+    return m_variables["mtv"].as<int>();
+}
+float* Options::getStatsCoeffs()const
+{
+	float* result = new float[14];
+    	std::ifstream in (m_variables["tp"].as<string>().c_str());
+	if (in.good())
+	{
+		for(int i = 0; i < 14; i++)
+		{
+			in >> result[i];
+		}
+		in.close();
+	}
+	else
+	{
+		for(int i = 0; i < 14; i++)
+		{
+			result[i] = 0.5;
+		}
+	}
+	return result;
 }
 
 Options::~Options() {

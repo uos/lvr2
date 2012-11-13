@@ -22,7 +22,6 @@ set( CMAKE_CXX_FLAGS_DEBUG   "-g -Wall -std=gnu++0x " )
 # EXTERNAL LIBRARIES
 ###############################################################
 
-
 ####
 ## Searching for OpenCV
 ##############################
@@ -208,6 +207,7 @@ add_subdirectory(src/colorize)
 add_subdirectory(src/scanreduce)
 add_subdirectory(src/convert)
 add_subdirectory(src/asciiconverter)
+add_subdirectory(src/texman)
 add_subdirectory(src/meshoptimizer)
 
 if(CGAL_FOUND)

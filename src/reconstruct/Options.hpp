@@ -31,6 +31,7 @@
 #include <string>
 #include <vector>
 #include <boost/program_options.hpp>
+#include <float.h>
 
 using std::ostream;
 using std::cout;
@@ -269,6 +270,28 @@ public:
      */
     string getEdgeCollapseMethod() const;
 
+    unsigned int getNumStatsColors() const;
+
+    unsigned int getNumCCVColors() const;
+
+    unsigned int getCoherenceThreshold() const;
+
+    float getColorThreshold() const;
+    
+    float getStatsThreshold() const;
+    
+    float getFeatureThreshold() const;
+    
+    bool getUseCrossCorr() const;
+    
+    float getPatternThreshold() const;
+
+    float* getStatsCoeffs()const;
+
+    string getTexturePack() const;
+
+    int getMinimumTransformationVotes() const;
+
 private:
 
 	/// The set voxelsize
@@ -356,6 +379,41 @@ private:
 
 	/// Number of edge collapses
 	int								m_numEdgeCollapses;
+
+	
+	///Path to texture pack
+	string m_texturePack;
+
+	///Coefficents file for texture matching based on statistics
+	string m_statsCoeffs;
+
+	///Number of colors for texture statistics
+	unsigned int m_numStatsColors;
+
+	///Number of colors for texture matching based on color information
+	unsigned int m_numCCVColors;
+
+	///Coherence threshold for texture matching based on color information
+	unsigned int m_coherenceThreshold;
+
+	///Threshold for texture matching based on colors
+	float m_colorThreshold;
+	
+	///Threshold for texture matching based on statistics
+	float m_statsThreshold;
+
+	///Threshold for texture matching based on features
+	float m_featuresThreshold;
+	
+	///Whether to use texture matching based on cross correlation
+	bool m_useCrossCorr;
+
+	///Threshold for pattern extraction from textures
+	float m_patternThreshold;
+
+	///Minimum number of vote to consider a texture transformation as "correct"
+	int m_minimumTransformationVotes;
+
 };
 
 

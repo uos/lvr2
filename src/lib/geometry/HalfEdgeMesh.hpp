@@ -63,7 +63,7 @@ using namespace std;
 
 #include "Region.hpp"
 #include "Tesselator.hpp"
-#include "Texturizer.hpp"
+#include "texture/Texturizer.hpp"
 #include "ColorVertex.hpp"
 
 #include "VertexCosts.hpp"

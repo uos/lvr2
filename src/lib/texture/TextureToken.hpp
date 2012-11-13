@@ -53,8 +53,10 @@ public:
 	 *
 	 * @param 	t	The associated texture
 	 *
+	 * @param 	index	The index of the texture in the texture package
+	 *
 	**/
-	TextureToken(NormalT v1, NormalT v2, VertexT p, float a_min, float b_min, Texture* t = 0);
+	TextureToken(NormalT v1, NormalT v2, VertexT p, float a_min, float b_min, Texture* t = 0, int index = -1);
 
 	/**
 	 * @brief	computes texture coordinates corresponding to the give Vertex
@@ -76,7 +78,6 @@ public:
 	///The associated texture	
 	Texture* m_texture;
 
-private:
 	///The coordinate system of the texture plane
 	NormalT v1, v2;
 
@@ -85,6 +86,15 @@ private:
 
 	///The bounding box of the texture plane
 	float a_min, b_min;
+
+	///index of the texture in the texture pack
+	int m_textureIndex;
+
+	///Matrix that stores an affine transform that will be applied to the texture coordinates
+	double m_transformationMatrix[6];
+
+	///Indicates if the texture coordinates have to be mirrored or not
+	unsigned char m_mirrored;
 };
 
 }

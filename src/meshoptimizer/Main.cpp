@@ -26,9 +26,9 @@
 #include "io/PLYIO.hpp"
 #include "geometry/Matrix4.hpp"
 #include "geometry/HalfEdgeMesh.hpp"
-#include "geometry/Texture.hpp"
 #include "geometry/QuadricVertexCosts.hpp"
 #include "reconstruction/SharpBox.hpp"
+#include "texture/Texture.hpp"
 
 // PCL related includes
 #ifdef _USE_PCL_
