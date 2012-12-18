@@ -1,0 +1,62 @@
+#include <cmath>
+/**
+ *  @file
+ *  @brief Implementation of a 3D point.      
+ *
+ *  Representation of a 3D point.
+ *  Only inline functions are used, therefore no .cc file.
+ *
+ *  @author Kai Lingemann. Institute of Computer Science, University of Osnabrueck, Germany.
+ *  @author Andreas Nuechter. Institute of Computer Science, University of Osnabrueck, Germany.
+ **/
+
+
+/**
+ *  Overridden "<<" operator for sending a point to a stream
+ */
+inline ostream& operator<<(ostream& os, const Point& p) {
+  os << p.x << " " << p.y << " " << p.z;
+  return os;
+}
+
+/**
+ *  Overridden ">>" operator for reading a point from a stream.
+ *  Throws a runtime error if not enough data in the stream.
+ */
+inline istream& operator>>(istream& is, Point& p) {
+  if (!is.good()) throw runtime_error("Not enough elements to read for >>(istream&, Point).1");
+  is >> p.x;
+  if (!is.good()) throw runtime_error("Not enough elements to read for >>(istream&, Point).2");
+  is >> p.y;
+  if (!is.good()) throw runtime_error("Not enough elements to read for >>(istream&, Point).3");
+  is >> p.z;
+  return is;
+}
+
+/**
+  * Transforms a point by the given transformation.
+  * @param *alignxf The transformation (4x4 matrix)
+  */
+inline void Point::transform(const double *alignxf)
+{
+  double x_neu, y_neu, z_neu;
+  x_neu = x * alignxf[0] + y * alignxf[4] + z * alignxf[8];
+  y_neu = x * alignxf[1] + y * alignxf[5] + z * alignxf[9];
+  z_neu = x * alignxf[2] + y * alignxf[6] + z * alignxf[10];
+  x = x_neu + alignxf[12];
+  y = y_neu + alignxf[13];
+  z = z_neu + alignxf[14];
+}
+
+/**
+  * Calculates the difference between two points.
+  * @param p The second point
+  */
+
+inline double Point::distance(const Point &p)
+{
+  double distance;
+  distance = (p.x - x)*(p.x - x) + (p.y - y)*(p.y - y) + (p.z - z)*(p.z - z);
+  return sqrt(distance);
+}
+

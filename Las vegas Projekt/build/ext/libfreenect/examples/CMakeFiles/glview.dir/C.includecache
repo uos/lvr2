@@ -1,0 +1,44 @@
+#IncludeRegexLine: ^[ 	]*#[ 	]*(include|import)[ 	]*[<"]([^">]+)([">])
+
+#IncludeRegexScan: ^.*$
+
+#IncludeRegexComplain: ^$
+
+#IncludeRegexTransform: 
+
+../ext/libfreenect/include/libfreenect.h
+stdint.h
+-
+winsock.h
+-
+sys/time.h
+-
+
+/home/student/d/dofeldsc/Arbeitsfläche/meshing.dofeldsc/ext/libfreenect/examples/glview.c
+stdio.h
+-
+stdlib.h
+-
+string.h
+-
+assert.h
+-
+libfreenect.h
+/home/student/d/dofeldsc/Arbeitsfläche/meshing.dofeldsc/ext/libfreenect/examples/libfreenect.h
+pthread.h
+-
+GLUT/glut.h
+-
+OpenGL/gl.h
+-
+OpenGL/glu.h
+-
+GL/glut.h
+-
+GL/gl.h
+-
+GL/glu.h
+-
+math.h
+-
+
