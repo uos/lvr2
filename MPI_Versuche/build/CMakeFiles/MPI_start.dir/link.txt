@@ -1,0 +1,1 @@
+/usr/bin/mpiCC       CMakeFiles/MPI_start.dir/src/MPI_start.cpp.o  -o MPI_start -rdynamic -lboost_mpi-mt -lboost_serialization-mt 

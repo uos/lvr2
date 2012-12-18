@@ -1,0 +1,53 @@
+#include <boost/mpi/environment.hpp>
+#include <boost/mpi/communicator.hpp>
+#include <iostream>
+#include <boost/serialization/string.hpp>
+namespace mpi = boost::mpi;
+
+int main(int argc, char* argv[])
+{
+  mpi::environment env(argc,argv)
+  mpi::communicator world;
+  
+  if(world.rank() == 0)
+  {
+    world.send(1,0, std__string("ey du! Ja genau du...sagt mal was machste hier?");
+    std::string msg;
+    world.recv( 1, 1, msg);
+	       std::cout << msg << " <-- Nachricht vom ersten Prozess." std::endl;
+  }
+  else 
+  {
+    std::string msg;
+    world.recv
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+/* erstes Programm, funktioniert
+#include <boost/mpi/environment.hpp>
+#include <boost/mpi/communicator.hpp>
+#include <iostream>
+int main (int argc, char* argv[])
+{
+  std::cout << " neue Version " << std::endl;
+  mpi::environment env(argc, argv);
+  mpi::communicator world;
+  std::cout << "I am process number " << world.rank() << " of " << world.size()
+            << "." << std::endl;
+  return 0;
+}
+*/
