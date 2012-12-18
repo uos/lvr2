@@ -88,6 +88,7 @@ endif(CGAL_FOUND)
 ####
 ## Searching for Boost
 ##############################
+# unten mpi und serialization
 
 find_package( Boost 1.42
     COMPONENTS 
