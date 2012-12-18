@@ -1,0 +1,34 @@
+#IncludeRegexLine: ^[ 	]*#[ 	]*(include|import)[ 	]*[<"]([^">]+)([">])
+
+#IncludeRegexScan: ^.*$
+
+#IncludeRegexComplain: ^$
+
+#IncludeRegexTransform: 
+
+../ext/libfreenect/include/libfreenect.h
+stdint.h
+-
+winsock.h
+-
+sys/time.h
+-
+
+/home/student/d/dofeldsc/Arbeitsfläche/meshing.dofeldsc/ext/libfreenect/fakenect/record.c
+sys/stat.h
+-
+sys/types.h
+-
+libfreenect.h
+-
+stdio.h
+-
+signal.h
+-
+string.h
+-
+stdlib.h
+-
+sys/time.h
+-
+

@@ -1,0 +1,78 @@
+ABOUT
+=====
+
+This software delivers tools to build surface reconstructions from point cloud
+data and a simple viewer to display the results. Additionally, the found
+surfaces will be classified into predefined categories. The main aim of this
+project is to deliver fast and accurate surface extraction algorithms for
+robotic applications such as tele operation in unknown environments and
+localization.
+
+This software is under permanent development and runs under Linux and MacOS. A
+Windows version will be made avialable soon.
+
+
+COMPILATION
+===========
+
+The software is built using cmake. To compile create a build subdirectory.
+Switch to this directory and call:
+
+% cmake -DCMAKE_BUILD_TYPE=Release ..
+% make
+
+The binaries are compiled to the ./bin directory in the base dir.
+
+You may simply copy this:
+% mkdir build; cd build; cmake -DCMAKE_BUILD_TYPE=Release ..; make; cd ../bin 
+
+
+REQUIRED LIBRARIES
+==================
+
+  + OpenGL
+  + glut
+  + BOOST
+    - Filesystem
+    - Program Option
+    - System
+    - Thread
+  + Qt 4.6 or newer (for qviewer)
+  + libQGLViewer 2.3.9 or newer (for qviewer)
+  + libXi
+  + libXmu
+  + Optional: librply [https://github.com/lkiesow/librply]
+
+You need to compile libQGLViewer with CONFIG += no_keywords to be compatible 
+with Boost. If the version that comes with your Linux distrubution is not
+build this way, you have to compile and install the library manually with these 
+flags. The sources can be found on the project website: http://www.libqglviewer.com/
+
+USAGE
+=====
+
+Your can experiment with the software using the provided dataset. For a simple
+reconstruction call:
+
+% ./bin/reconstruct -v 100 dat/scan.pts
+
+in the root directory of the project. This will create a file called
+“traingle_mesh.ply” which can be displayed using the viewer application:
+
+% ./bin/qviewer 
+
+If you want to use the example data, call for colorizing a point cloud without
+color informaion call:
+
+% ./colorize -d 100 -c ff0000 example-data/scan-no-color.3d \
+     example-data/scan-with-color.pts colored-scan.pts
+
+For file conversion of point clouds and meshes use the convertmodel
+application:
+
+% ./convertmodel examplefile.pts examplefile.ply
+
+
+For more information, build the Doxygen documentation by calling
+% make doc
+in the build directory.

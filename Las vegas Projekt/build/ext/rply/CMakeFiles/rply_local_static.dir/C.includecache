@@ -1,0 +1,34 @@
+#IncludeRegexLine: ^[ 	]*#[ 	]*(include|import)[ 	]*[<"]([^">]+)([">])
+
+#IncludeRegexScan: ^.*$
+
+#IncludeRegexComplain: ^$
+
+#IncludeRegexTransform: 
+
+/home/student/d/dofeldsc/Arbeitsfläche/meshing.dofeldsc/ext/rply/rply.c
+stdio.h
+-
+ctype.h
+-
+assert.h
+-
+string.h
+-
+limits.h
+-
+float.h
+-
+stdarg.h
+-
+stdlib.h
+-
+stddef.h
+-
+rply.h
+/home/student/d/dofeldsc/Arbeitsfläche/meshing.dofeldsc/ext/rply/rply.h
+stdint.h
+-
+
+/home/student/d/dofeldsc/Arbeitsfläche/meshing.dofeldsc/ext/rply/rply.h
+

@@ -1,0 +1,2 @@
+/usr/bin/ar cr libobj.a  CMakeFiles/obj.dir/objLoader.cpp.o CMakeFiles/obj.dir/list.cpp.o CMakeFiles/obj.dir/obj_parser.cpp.o CMakeFiles/obj.dir/string_extra.cpp.o
+/usr/bin/ranlib libobj.a
