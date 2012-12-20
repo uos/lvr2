@@ -557,9 +557,14 @@ Plane<VertexT, NormalT> AdaptiveKSearchSurface<VertexT, NormalT>::calcPlaneRANSA
             int index[3];
             for(int i = 0; i < 3; i++)
             {
-                int r = rand() % id.size();
+                float f = 1.0 * rand() / RAND_MAX;
+                int r = (int)(f * id.size());
                 index[i] = id[r];
-               // cout << "R: " << r << endl;
+            }
+
+            if(id[0] != id[1] && id[1] != id[2] && id[2] != id[0])
+            {
+                break;
             }
 
             point1 = VertexT(this->m_points[index[0]][0],this->m_points[index[0]][1], this->m_points[index[0]][2]);
@@ -570,10 +575,10 @@ Plane<VertexT, NormalT> AdaptiveKSearchSurface<VertexT, NormalT>::calcPlaneRANSA
             n0 = (point1 - point2).cross(point1 - point3);
             n0.normalize();
 
-            if( (point1 != point2) && (point2 != point3) && (point3 != point1) )
-            {
-                break;
-            }
+//            if( (point1 != point2) && (point2 != point3) && (point3 != point1) )
+//            {
+//                break;
+//            }
             c++;
 
 //            cout << index[0] << " " << index[1] << " " << index[2] << " " << id.size() << endl;

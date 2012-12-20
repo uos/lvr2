@@ -222,6 +222,11 @@ HalfEdgeFace<VertexT, NormalT>::operator[](const int &index) const{
 	case 1:
 		return this->m_edge->next;
 	case 2:
+	    if(!this->m_edge->next)
+	    {
+	        cout << timestamp << "Degerated Face!" << endl;
+	        return 0;
+	    }
 		return this->m_edge->next->next;
 	}
     return 0;
@@ -235,8 +240,24 @@ HalfEdgeFace<VertexT, NormalT>::operator()(const int &index) const{
 	case 0:
 		return this->m_edge->end;
 	case 1:
+        if(!this->m_edge->next)
+        {
+            cout << timestamp << "Degerated Face!" << endl;
+            return 0;
+        }
 		return this->m_edge->next->end;
 	case 2:
+
+        if(!this->m_edge->next)
+        {
+            cout << timestamp << "Degerated Face!" << endl;
+            return 0;
+        }
+        if(!this->m_edge->next->next)
+        {
+            cout << timestamp << "Degerated Face!" << endl;
+            return 0;
+        }
 		return this->m_edge->next->next->end;
 	}
     return 0;
