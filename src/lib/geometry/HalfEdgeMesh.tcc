@@ -313,38 +313,52 @@ void HalfEdgeMesh<VertexT, NormalT>::deleteFace(HFace* f, bool erase)
     HVertex* p2 = (*f)(1);
     HVertex* p3 = (*f)(2);
 
-    startEdge->face = 0;
-    startEdge->next = 0;
-    nextEdge->face  = 0;
-    nextEdge->next  = 0;
-    lastEdge->face  = 0;
-    lastEdge->next  = 0;
-
-    if(startEdge->pair->face == 0)
+    if(startEdge)
     {
-        //delete edge and pair
-        deleteEdge(startEdge);
+        startEdge->face = 0;
+        startEdge->next = 0;
 
-        if(p1->out.size() == 0) deleteVertex(p1);
-        if(p3->out.size() == 0) deleteVertex(p3);
+        if(startEdge->pair->face == 0)
+        {
+            //delete edge and pair
+            deleteEdge(startEdge);
+
+            if(p1->out.size() == 0) deleteVertex(p1);
+            if(p3->out.size() == 0) deleteVertex(p3);
+        }
+
     }
 
-    if(nextEdge->pair->face == 0)
-    {
-        //delete edge and pair
-        deleteEdge(nextEdge);
 
-        if(p1->out.size() == 0) deleteVertex(p1);
-        if(p2->out.size() == 0) deleteVertex(p2);
+
+
+    if(nextEdge)
+    {
+        nextEdge->face  = 0;
+        nextEdge->next  = 0;
+        if(nextEdge->pair->face == 0)
+        {
+            //delete edge and pair
+            deleteEdge(nextEdge);
+
+            if(p1->out.size() == 0) deleteVertex(p1);
+            if(p2->out.size() == 0) deleteVertex(p2);
+        }
     }
 
-    if(lastEdge->pair->face == 0)
-    {
-        //delete edge and pair
-        deleteEdge(lastEdge);
 
-        if(p3->out.size() == 0) deleteVertex(p3);
-        if(p2->out.size() == 0) deleteVertex(p2);
+    if(lastEdge)
+    {
+        lastEdge->face  = 0;
+        lastEdge->next  = 0;
+        if(lastEdge->pair->face == 0)
+        {
+            //delete edge and pair
+            deleteEdge(lastEdge);
+
+            if(p3->out.size() == 0) deleteVertex(p3);
+            if(p2->out.size() == 0) deleteVertex(p2);
+        }
     }
 
     //delete face
