@@ -33,6 +33,10 @@ set(LSSR_SOURCES
     display/TexturedMesh.cpp
     geometry/Texture.cpp
     reconstruction/PCLFiltering.cpp
+    mpi/KdNode.tcc
+    mpi/KdTree.tcc
+    mpi/tmpmain.cpp
+    
 )
 
 
