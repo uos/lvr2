@@ -15,7 +15,7 @@ int main(int argc, char** argv)
 	std::cout << "!!!!!!!!!!!!!!Eigene Main gestartet!!!!!!!!!!!!!!!!!!!!" << endl;
 	//lssr::KdTree<std::vector> tmp();
 
-	kd tmp();
+	kd tmp;
 
 	std::cout << "!!!!!!!!!!!!!!Programm ist durchgelaufen, scan1 bis n müssten zur Verfuegung stehen!!!!!!!!!!!!!!!!!!!!" << endl;
 }
