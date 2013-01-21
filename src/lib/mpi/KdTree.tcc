@@ -6,6 +6,9 @@
  */
 
 //#include "KdTree.h"
+
+#include <cstdlib>
+
 namespace lssr{
 template<typename VertexT>
 KdTree<VertexT>::KdTree()
@@ -20,15 +23,11 @@ KdTree<VertexT>::KdTree()
 
 	m_loader = m_model->m_pointCloud;
 
-	// hole Anzahl der Punkte in der Punktwolke
-	m_pointnumber = m_loader.getNumPoints();
-
-	  // Calculate bounding box
-	size_t numPoints;
-	m_points = m_loader->getIndexedPointArray(numPoints);
+    // Calculate bounding box
+	m_points = m_loader->getIndexedPointArray(m_pointnumber);
 
 	// Anpassen der Bounding Box, damit max und min x,y und z Werte ausgelesen werden können
-	for(size_t i = 0; i < numPoints; i++)
+	for(size_t i = 0; i < m_pointnumber; i++)
 	{
 	    this->m_boundingBox.expand(m_points[i][0], m_points[i][1], m_points[i][2]);
 
@@ -53,15 +52,14 @@ void KdTree<VertexT>::Rekursion(KdNode<VertexT> * first){
 	int count = 1;
 	char number [1];
 
-	for (std::list<KdNode*>::iterator it=nodelist.begin() ; it != nodelist.end() ; ++it)
+	for (typename std::list<KdNode<VertexT>*>::iterator it=nodelist.begin() ; it != nodelist.end() ; ++it)
 	{
-		std::string filename ("scan");
-		itoa(count, number, 1);
-		std::strcat(filename, number);
+	    std::string filename = "scan" + std::string(count) + ".3d";
 		count++;
 
 		ModelFactory io_factory;
-		io_factory.save(*it->node_points, filename);
+		ModelPtr m = new Model(PointBufferPtr(it->node_points));
+		io_factory.saveModel(m, filename);
 	}
 
 }
@@ -69,11 +67,10 @@ void KdTree<VertexT>::Rekursion(KdNode<VertexT> * first){
 
 //void splitPointcloud(coord3fArr points , VertexT min , VertexT max)
 template<typename VertexT>
-void KdTree<vertexT>::splitPointcloud(KdNode<VertexT> * child)
+void KdTree<VertexT>::splitPointcloud(KdNode<VertexT> * child)
 {
 	if ( child->node_points.getNumPoints() < MAX_POINTS)
 	{
-
 		//hier fertig -> reaktion
 		nodelist.push_back(child);
 	}
@@ -169,6 +166,7 @@ void KdTree<vertexT>::splitPointcloud(KdNode<VertexT> * child)
 	}// Ende else fall
 }
 
+template<typename VertexT>
 KdTree<VertexT>::~KdTree() {
 	// TODO Auto-generated destructor stub
 }

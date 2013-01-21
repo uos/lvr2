@@ -19,7 +19,7 @@
 #include "io/UosIO.hpp"
 
 // vorerst
-#inlcude <vector>
+#include <vector>
 #include <iostream>
 #include <list>
 #include "KdNode.h"
