@@ -26,7 +26,7 @@ KdTree<VertexT>::KdTree()
 
     // Calculate bounding box
 	m_points = m_loader->getIndexedPointArray(m_numpoint);
-
+	cout << m_numpoint << endl;
 	// Anpassen der Bounding Box, damit max und min x,y und z Werte ausgelesen werden können
 	for(size_t i = 0; i < m_numpoint; i++)
 	{
@@ -55,12 +55,14 @@ void KdTree<VertexT>::Rekursion(KdNode<VertexT> * first){
 
 	for (typename std::list<KdNode<VertexT>*>::iterator it=nodelist.begin() ; it != nodelist.end() ; ++it)
 	{
-	    std::string filename = "scan" + std::string(count) + ".3d";
+	   // std::string filename = "scan" + std::string(count) + ".3d";
+	    string filename = "test";
 		count++;
 
 		ModelFactory io_factory;
-		ModelPtr m = new Model(PointBufferPtr(it->node_points));
-		io_factory.saveModel(m, filename);
+	    ModelPtr model( new Model( PointBufferPtr( new PointBuffer)));
+
+		io_factory.saveModel(model, filename);
 	}
 
 }
