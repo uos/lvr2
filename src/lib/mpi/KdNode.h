@@ -21,7 +21,14 @@ public:
 	KdNode(coord3fArr points, VertexT min, VertexT max);
 	virtual ~KdNode();
 
+	double getnumpoints();
+
+	void setnumpoints(double num);
+
 	coord3fArr node_points;
+
+	// Anzahl Punkte im Node
+	double m_numpoints;
 
 	/* The Bounce of the BoundingBox */
 	VertexT m_maxvertex;
