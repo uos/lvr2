@@ -77,7 +77,7 @@ public:
 	float split;
 
 	/* Anzahl der Punkte in der Punktwolke */
-	size_t m_pointnumber;
+	size_t m_numpoint;
 
 /* Anzahl der Buckets pro Datenpaket */
 	double m_bucketsize;

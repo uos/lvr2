@@ -9,6 +9,7 @@
 
 #include <cstdlib>
 
+#define MAX_POINTS 1000
 namespace lssr{
 template<typename VertexT>
 KdTree<VertexT>::KdTree()
@@ -24,10 +25,10 @@ KdTree<VertexT>::KdTree()
 	m_loader = m_model->m_pointCloud;
 
     // Calculate bounding box
-	m_points = m_loader->getIndexedPointArray(m_pointnumber);
+	m_points = m_loader->getIndexedPointArray(m_numpoint);
 
 	// Anpassen der Bounding Box, damit max und min x,y und z Werte ausgelesen werden können
-	for(size_t i = 0; i < m_pointnumber; i++)
+	for(size_t i = 0; i < m_numpoint; i++)
 	{
 	    this->m_boundingBox.expand(m_points[i][0], m_points[i][1], m_points[i][2]);
 
@@ -128,13 +129,13 @@ void KdTree<VertexT>::splitPointcloud(KdNode<VertexT> * child)
 			}
 		}
 
-		VertexT child_left = max;
-		VertexT child_right = min;
-		child_left[splitaxis] = split;
-		child_right[splitaxis] = split;
+		VertexT child2_min = max;
+		VertexT child1_max = min;
+		child2_min[splitaxis] = split;
+		child1_max[splitaxis] = split;
 
 		/* Bestimmung des Medians / Mittelwerts der Achse an der geslittet werden soll*/
-		for (size_t j = 0 ; j < points.getNumPoints(); j++)
+		for (size_t j = 0 ; j < m_numpoint; j++)
 		{
 
 			// vllt anderer Datentyp?!
@@ -144,20 +145,20 @@ void KdTree<VertexT>::splitPointcloud(KdNode<VertexT> * child)
 			if (m_points[j][splitaxis] <= split)
 			{
 				//richtig kopiert????
-				left[countleft] = points[j];
+				left[countleft] = m_points[j];
 				countleft++;
 			}
 			else
 			{
-				right[countright] = points[j];
+				right[countright] = m_points[j];
 				countright++;
 			}
 
 		}
 
 		// nach Aufteilung Nodes initialisieren und Rekursiver aufruf
-		KdNode * child1 = new KdNode(left, min , child_max);
-		KdNode * child2 = new KdNode(right, child_min, max);
+		KdNode<VertexT> * child1 = new KdNode<VertexT>(left, min , child1_max);
+		KdNode<VertexT> * child2 = new KdNode<VertexT>(right, child2_min, max);
 
 		//Rekursion
 		splitPointcloud(child1);
