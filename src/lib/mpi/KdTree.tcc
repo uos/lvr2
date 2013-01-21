@@ -72,7 +72,7 @@ void KdTree<VertexT>::Rekursion(KdNode<VertexT> * first){
 template<typename VertexT>
 void KdTree<VertexT>::splitPointcloud(KdNode<VertexT> * child)
 {
-	if ( child->node_points.getNumPoints() < MAX_POINTS)
+	if ( child->node_points.getnumpoints() < MAX_POINTS)
 	{
 		//hier fertig -> reaktion
 		nodelist.push_back(child);
@@ -136,14 +136,16 @@ void KdTree<VertexT>::splitPointcloud(KdNode<VertexT> * child)
 		child2_min[splitaxis] = split;
 		child1_max[splitaxis] = split;
 
+		double countleft = 0;
+		double countright = 0;
+
 		/* Bestimmung des Medians / Mittelwerts der Achse an der geslittet werden soll*/
 		for (size_t j = 0 ; j < m_numpoint; j++)
 		{
 
 			// vllt anderer Datentyp?!
 			coord3fArr left, right;
-			double countleft = 0;
-			double countright = 0;
+
 			if (m_points[j][splitaxis] <= split)
 			{
 				//richtig kopiert????
@@ -158,9 +160,12 @@ void KdTree<VertexT>::splitPointcloud(KdNode<VertexT> * child)
 
 		}
 
+
 		// nach Aufteilung Nodes initialisieren und Rekursiver aufruf
 		KdNode<VertexT> * child1 = new KdNode<VertexT>(left, min , child1_max);
 		KdNode<VertexT> * child2 = new KdNode<VertexT>(right, child2_min, max);
+		child1->setnumpoints(countleft);
+		child2->setnumpoints(countright);
 
 		//Rekursion
 		splitPointcloud(child1);
