@@ -1,1 +1,0 @@
-/home/student/d/dofeldsc/Projekt_MPI/MPI_Versuche/build/CMakeFiles/MPI_start.dir
