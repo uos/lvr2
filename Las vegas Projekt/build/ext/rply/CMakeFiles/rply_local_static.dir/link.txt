@@ -1,2 +1,0 @@
-/usr/bin/ar cr librply_local_static.a  CMakeFiles/rply_local_static.dir/rply.c.o
-/usr/bin/ranlib librply_local_static.a

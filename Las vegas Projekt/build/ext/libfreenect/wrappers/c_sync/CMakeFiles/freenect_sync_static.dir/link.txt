@@ -1,2 +1,0 @@
-/usr/bin/ar cr ../../../../lib/libfreenect_sync.a  CMakeFiles/freenect_sync_static.dir/libfreenect_sync.c.o
-/usr/bin/ranlib ../../../../lib/libfreenect_sync.a
