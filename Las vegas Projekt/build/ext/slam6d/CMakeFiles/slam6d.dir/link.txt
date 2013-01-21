@@ -1,2 +1,0 @@
-/usr/bin/ar cr libslam6d.a  CMakeFiles/slam6d.dir/Boctree.cc.o CMakeFiles/slam6d.dir/allocator.cc.o CMakeFiles/slam6d.dir/point_type.cc.o CMakeFiles/slam6d.dir/searchTree.cc.o CMakeFiles/slam6d.dir/scan_io_oct.cc.o
-/usr/bin/ranlib libslam6d.a

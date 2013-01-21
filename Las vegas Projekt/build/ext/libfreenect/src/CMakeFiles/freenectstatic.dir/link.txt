@@ -1,2 +1,0 @@
-/usr/bin/ar cr ../../../lib/libfreenect.a  CMakeFiles/freenectstatic.dir/core.c.o CMakeFiles/freenectstatic.dir/tilt.c.o CMakeFiles/freenectstatic.dir/cameras.c.o CMakeFiles/freenectstatic.dir/usb_libusb10.c.o CMakeFiles/freenectstatic.dir/registration.c.o
-/usr/bin/ranlib ../../../lib/libfreenect.a
