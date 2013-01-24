@@ -19,6 +19,7 @@
 #include "io/UosIO.hpp"
 
 // vorerst
+#include <cstring>
 #include <vector>
 #include <iostream>
 #include <list>
@@ -39,15 +40,27 @@ public:
 	KdTree(PointBufferPtr pointcloud);
 
 	//Funktion, welche die Rekursion startet
+	/**
+	 * @brief Diese Funktion startet die Rekursion
+	 *
+	 * @param first Die Punktwolke, welche aufgeteilt werden soll
+	 */
 	void Rekursion(KdNode<VertexT> * first);
 
+
+	/**
+	 * @brief Diese Funktion teilt die Punktwolke an ihrer laengsten Achse in zwei Teilpunktwolken auf.
+	 *
+	 *        Wenn eine Teilpunktwolke weniger als die maximale Anzahl an Punkten enthält wird diese also 3d-Datei abgespeichert.
+	 */
 	void splitPointcloud(KdNode<VertexT> * child);
 
-	/* Membervariable für die Punktwolke */
+
+	/* Membervariable für die gesamte Punktwolke */
 	PointBufferPtr         m_loader;
 
 	/* Membervariable für die Indices der Punktwolke */
-	coord3fArr m_points;
+	coord3fArr   			m_points;
 
     /// The bounding box of the point cloud
     BoundingBox<VertexT>   m_boundingBox;
@@ -55,26 +68,9 @@ public:
     /* Liste zum verwalten der Nodes */
     std::list<KdNode<VertexT>*> nodelist;
 
-/* The Bounce of the BoundingBox */
-	float m_xmin;
 
-	float m_xmax;
 
-	float m_ymin;
 
-	float m_ymax;
-
-	float m_zmin;
-
-	float m_zmax;
-
-	/*
-	 * x = 0
-	 * y = 1
-	 * z = 2
-	 */
-	int splitaxis;
-	float split;
 
 	/* Anzahl der Punkte in der Punktwolke */
 	size_t m_numpoint;
@@ -83,7 +79,6 @@ public:
 	double m_bucketsize;
 
 /* Ein shared-Pointer für das Model, indem die Punktwolke steckt */
-	//boost::shared_ptr<ModelPtr>    m_model;
 	ModelPtr m_model;
 };
 }
