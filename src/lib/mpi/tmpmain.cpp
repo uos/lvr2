@@ -10,6 +10,7 @@ using namespace lssr;
 
 typedef ColorVertex<float, unsigned char>      cVertex;
 typedef KdTree<cVertex>                        kd;
+//typedef KdTree<std::vector<int> >                         kd;
 int main(int argc, char** argv)
 {
 	std::cout << "!!!!!!!!!!!!!!Eigene Main gestartet!!!!!!!!!!!!!!!!!!!!" << endl;
