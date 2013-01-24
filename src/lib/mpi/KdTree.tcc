@@ -67,14 +67,9 @@ void KdTree<VertexT>::Rekursion(KdNode<VertexT> * first){
 	for (typename std::list<KdNode<VertexT>*>::iterator it=nodelist.begin() ; it != nodelist.end() ; ++it)
 	{
 	   // std::string filename = "scan" + std::string(count) + ".3d";
-	    string filename;
-	    string name = "scan";
-	    string file = ".3d";
-	    //filename = name + boost::lexical_cast<std::string>(count) + file;
-	    std::stringstream sstm;
-	    sstm << name << count << file;
-	    filename = sstm.str();
-
+	    char name[256];
+	    sprintf(name, "scan%03d.3d", count);
+	    string filename(name);
 
 
 		ModelFactory io_factory;
@@ -84,7 +79,7 @@ void KdTree<VertexT>::Rekursion(KdNode<VertexT> * first){
 		 */
 		PointBufferPtr pointcloud(new PointBuffer());
 
-		size_t num = sizeof((*it)->node_points);
+		size_t num = (*it)->getnumpoints();
 		pointcloud->setIndexedPointArray((*it)->node_points, num );
 
 		std::cout << "Ich bin Nummer: " << count << "und habe soviele Einträge: " << (*it)->getnumpoints() << endl;
