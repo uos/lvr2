@@ -1,6 +1,6 @@
 #include <iostream>
 #include <vector>
-#include "KdTree.h"
+#include "KdTree.hpp"
 /**
  * @brief   Main entry point for the LSSR surface executable
  */
@@ -10,11 +10,11 @@ using namespace lssr;
 
 typedef ColorVertex<float, unsigned char>      cVertex;
 typedef KdTree<cVertex>                        kd;
-//typedef KdTree<std::vector<int> >                         kd;
+
+
 int main(int argc, char** argv)
 {
 	std::cout << "!!!!!!!!!!!!!!Eigene Main gestartet!!!!!!!!!!!!!!!!!!!!" << endl;
-	//lssr::KdTree<std::vector> tmp();
 
 	kd tmp;
 
