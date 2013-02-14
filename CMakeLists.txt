@@ -95,6 +95,7 @@ find_package( Boost 1.42
     program_options 
     filesystem system 
     thread 
+    mpi
     REQUIRED )
 if(Boost_FOUND)
     link_directories(${BOOST_LIBRARY_DIRS})
@@ -194,6 +195,8 @@ add_subdirectory(ext/libfreenect)
 include_directories( ${CMAKE_CURRENT_SOURCE_DIR}/ext/slam6d )
 add_subdirectory(ext/slam6d)
 
+
+
 ##############################################################
 # LIBRARIES
 ##############################################################
@@ -210,6 +213,7 @@ add_subdirectory(src/scanreduce)
 add_subdirectory(src/convert)
 add_subdirectory(src/asciiconverter)
 add_subdirectory(src/meshoptimizer)
+add_subdirectory(src/mpi)
 
 if(CGAL_FOUND)
 add_subdirectory(src/cgal_reconstruction)

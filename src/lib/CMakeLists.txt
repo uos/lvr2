@@ -33,6 +33,7 @@ set(LSSR_SOURCES
     display/TexturedMesh.cpp
     geometry/Texture.cpp
     reconstruction/PCLFiltering.cpp
+    mpi/ownmpi2.cpp
 )
 
 
@@ -75,5 +76,5 @@ if ( "${CMAKE_BUILD_TYPE}" STREQUAL "Release" )
     endif ( rply_shared )
 endif ( "${CMAKE_BUILD_TYPE}" STREQUAL "Release" ) 
 
-add_executable( mpi_test mpi/tmpmain.cpp )
-target_link_libraries(mpi_test staticlssr)
+add_executable( kd_test mpi/tmpmain.cpp )
+target_link_libraries(kd_test staticlssr)
