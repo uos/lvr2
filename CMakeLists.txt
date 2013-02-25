@@ -90,7 +90,7 @@ endif(CGAL_FOUND)
 ##############################
 # unten mpi und serialization
 
-find_package( Boost 1.42
+find_package( Boost 1.48
     COMPONENTS 
     program_options 
     filesystem system 

@@ -192,17 +192,19 @@ int main (int argc , char *argv[]) {
 			boost::shared_array<float> norm (normals);
 
 			std::cout << "Neuer Test läuft an" << std::endl;
+
 			// The factory requires a model to save.
 			// The model in turn requires a Pointbuffer and a Meshbuffer (can be emtpy).
 			// The Pointbuffer contains the Indexlist.
-			PointBufferPtr m_pointcloud(new PointBuffer());
-			m_pointcloud->setPointNormalArray(norm, m_pointcloud->getNumPoints());
-			m_pointcloud->setIndexedPointArray(m_points, m_pointcloud->getNumPoints());
+			PointBufferPtr pointcloud(new PointBuffer());
+			pointcloud->setPointNormalArray(norm, (*it)->getnumpoints() );
+			pointcloud->setIndexedPointArray((*it)->getPoints(), (*it)->getnumpoints());
 
 			std::cout << "paar Punkte:" << norm[2] << " und " << m_points[2][0] << std::endl;
 			ModelPtr test_model( new Model);
-			test_model->m_pointCloud = m_pointcloud;
+			test_model->m_pointCloud = pointcloud;
 
+			
 			char data_name[32];
 			sprintf(data_name, "Normals%03d.ply",count );
 
