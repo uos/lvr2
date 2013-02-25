@@ -43,6 +43,8 @@ int main (int argc , char *argv[]) {
 	/// The currently stored points
 	coord3fArr   			m_points;
 
+	coord3fArr               c_normals;
+
 	// Create a point loader object - Aus der Main (reconstruct)
 	ModelFactory 			io_factory;
 
@@ -113,13 +115,16 @@ int main (int argc , char *argv[]) {
 		int data_num = 1;
 		int client_serv_data = 1;
 		char file_name[256];
+		MPI::Request status[numprocs-1];
+
+
 	    sprintf(file_name, "scan%03d.3d", data_num);
 	    string filename(file_name);
 
 		m_model = io_factory.readModel( file_name );
 
-		typename std::list<KdNode<cVertex>*>::iterator it= m_nodelist.begin();
-
+		typename std::list<KdNode<cVertex>*>::	iterator it= m_nodelist.begin();
+		int count = 1;
 		// verschicken aller Datenpakete
 		while ( m_model != NULL)
 		{
@@ -165,15 +170,51 @@ int main (int argc , char *argv[]) {
 
 
 			// sende Daten aus Scandatei
-			MPI::Request req2 = MPI::COMM_WORLD.Isend(m_points.get(), 3 *  int_numpoint[0], MPI::FLOAT, client_serv_data,1);
+			MPI::Request req2 = MPI::COMM_WORLD.Isend(m_points.get(), 3 *  int_numpoint[0], MPI::FLOAT, client_serv_data, 1);
+			req2.Wait();
+			float * normals = new float[3 * int_numpoint[0]];
+			// empfange Normalen zurück
+			//status[client_serv_data] =
+			MPI::COMM_WORLD.Recv(normals, 3 * int_numpoint[0], MPI::FLOAT, client_serv_data, 4);
 
+			// go on to next datafile
 			data_num++;
 			sprintf(file_name, "scan%03d.3d", data_num);
 			m_model = io_factory.readModel( file_name );
 
 			// wait till message is send
-			req2.Wait();
+			//req2.Wait();
 
+//für den test
+			std::cout << "Neuer Test läuft an" << std::endl;
+			//status[client_serv_data].Wait();
+			// Punkte wieder in richtige Form fpr Pointbuffer bringen
+			boost::shared_array<float> norm (normals);
+
+			std::cout << "Neuer Test läuft an" << std::endl;
+			// The factory requires a model to save.
+			// The model in turn requires a Pointbuffer and a Meshbuffer (can be emtpy).
+			// The Pointbuffer contains the Indexlist.
+			PointBufferPtr m_pointcloud(new PointBuffer());
+			m_pointcloud->setPointNormalArray(norm, m_pointcloud->getNumPoints());
+			m_pointcloud->setIndexedPointArray(m_points, m_pointcloud->getNumPoints());
+
+			std::cout << "paar Punkte:" << norm[2] << " und " << m_points[2][0] << std::endl;
+			ModelPtr test_model( new Model);
+			test_model->m_pointCloud = m_pointcloud;
+
+			char data_name[32];
+			sprintf(data_name, "Normals%03d.ply",count );
+
+
+			io_factory.saveModel(test_model, data_name);
+
+
+			count++;
+// ende test
+
+			std::cout << "Neuer Test ist fertig" << std::endl;
+			// who is next and with witch file
 			it++;
 			client_serv_data++;
 			client_serv_data = (client_serv_data % numprocs);
@@ -279,6 +320,12 @@ int main (int argc , char *argv[]) {
 
 
 				ModelFactory::saveModel(pn, pointnormals);
+
+				pointcloud = surface->pointBuffer();
+				size_t size_normal;
+				c_normals = pointcloud->getIndexedPointNormalArray(size_normal);
+
+				MPI::COMM_WORLD.Send(c_normals.get(), 3 * c_sizepackage, MPI::FLOAT, 0, 4);
 
 				//std::cout << "ist das: " << surface->pointBuffer()->m_points[] << "gleich dem:" << << "oder dem: " << << "oder dem: " << << std::endl;
 
