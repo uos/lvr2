@@ -1,0 +1,8 @@
+
+
+set(CMAKE_CXX_COMPILER "mpic++")
+
+
+add_executable(MPI_test ../lib/mpi/ownmpi2.cpp)
+
+target_link_libraries(MPI_test staticlssr)
