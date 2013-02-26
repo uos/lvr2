@@ -337,6 +337,10 @@ int main(int argc, char** argv)
 			{
 				Texturizer<cVertex, cNormal>::m_patternThreshold = options.getPatternThreshold();
 			}
+			if(options.doTextureAnalysis())
+			{
+			    Texturizer<cVertex, cNormal>::m_doAnalysis = true;
+			}
 			if(options.getMinimumTransformationVotes())
 			{
 				Transform::m_minimumVotes = options.getMinimumTransformationVotes();

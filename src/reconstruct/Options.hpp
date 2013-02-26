@@ -130,6 +130,11 @@ public:
      */
     bool    useRansac() const;
 
+    /**
+     * @brief   True if texture analysis is enabled
+     */
+    bool    doTextureAnalysis() const;
+
 	/**
 	 * @brief	If true, textures will be generated during
      *          finalization of mesh.
@@ -506,6 +511,14 @@ inline ostream& operator<<(ostream& os, const Options &o)
 	{
 	    cout << "##### Generate Textures \t: YES" << endl;
 	    cout << "##### Texel size \t\t: " << o.getTexelSize() << endl;
+	    if(o.doTextureAnalysis())
+	    {
+	        cout << "##### Texture Analysis \t: OFF" << endl;
+	    }
+	    else
+	    {
+	        cout << "##### Texture Analysis \t\t: OFF" << endl;
+	    }
 	}
 	if(o.getDepth())
 	{

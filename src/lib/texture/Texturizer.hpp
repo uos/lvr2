@@ -96,6 +96,9 @@ public:
 	///Threshold for pattern extraction
 	static float m_patternThreshold;
 
+	/// Flag for texture analysis
+	static bool  m_doAnalysis;
+
 private:
 
 	/**
