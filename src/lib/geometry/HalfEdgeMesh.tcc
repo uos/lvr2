@@ -1343,16 +1343,16 @@ void HalfEdgeMesh<VertexT, NormalT>::finalizeAndRetesselate( bool genTextures, f
             }
             else
             {
-            	Material* m = new Material;
-            	m->r = r;
-            	m->g = g;
-            	m->b = b;
-            	m->texture_index = -1;
+                Material* m = new Material;
+                m->r = r;
+                m->g = g;
+                m->b = b;
+                m->texture_index = -1;
 
-            	// Save material index
-            	materialBuffer.push_back(m);
-            	materialIndexBuffer.push_back(globalMaterialIndex);
-            	globalMaterialIndex++;
+                // Save material index
+                materialBuffer.push_back(m);
+                materialIndexBuffer.push_back(globalMaterialIndex);
+                globalMaterialIndex++;
             }
 
 
@@ -1367,7 +1367,7 @@ void HalfEdgeMesh<VertexT, NormalT>::finalizeAndRetesselate( bool genTextures, f
      */
 
     Texturizer<VertexT, NormalT>* texturizer = new Texturizer<VertexT, NormalT>(this->m_pointCloudManager);
-    
+
     ///Tells which texture belongs to which material
     map<unsigned int, unsigned int > textureMap;
 
@@ -1375,16 +1375,16 @@ void HalfEdgeMesh<VertexT, NormalT>::finalizeAndRetesselate( bool genTextures, f
     ProgressBar progress(planeRegions.size(), msg);
     for(intIterator planeNr = planeRegions.begin(); planeNr != planeRegions.end(); ++planeNr )
     {
-    	int iRegion = *planeNr;
+        int iRegion = *planeNr;
 
-    	int surface_class = m_regions[iRegion]->m_regionNumber;
-    	//            r = (uchar)( 255 * fabs( cos( surfaceClass ) ) );
-    	//            g = (uchar)( 255 * fabs( sin( surfaceClass * 30 ) ) );
-    	//            b = (uchar)( 255 * fabs( sin( surfaceClass * 2 ) ) ) ;
+        int surface_class = m_regions[iRegion]->m_regionNumber;
+        //            r = (uchar)( 255 * fabs( cos( surfaceClass ) ) );
+        //            g = (uchar)( 255 * fabs( sin( surfaceClass * 30 ) ) );
+        //            b = (uchar)( 255 * fabs( sin( surfaceClass * 2 ) ) ) ;
 
-    	r = m_regionClassifier->r(surface_class);
-    	g = m_regionClassifier->g(surface_class);
-    	b = m_regionClassifier->b(surface_class);
+        r = m_regionClassifier->r(surface_class);
+        g = m_regionClassifier->g(surface_class);
+        b = m_regionClassifier->b(surface_class);
 
         //textureBuffer.push_back( m_regions[iRegion]->m_regionNumber );
 
@@ -1438,7 +1438,7 @@ void HalfEdgeMesh<VertexT, NormalT>::finalizeAndRetesselate( bool genTextures, f
 
         // calculate the index value for the old end of the vertexbuffer.
         offset = ( offset / 3 );
-	
+
         for(int j=0; j < indices.size(); j+=3)
         {
             // store the indices with the correct offset to the indices buffer.
@@ -1458,30 +1458,30 @@ void HalfEdgeMesh<VertexT, NormalT>::finalizeAndRetesselate( bool genTextures, f
         if(t)
         {
             map<unsigned int, unsigned int >::iterator it = textureMap.find(t->m_textureIndex);
-	    if(it == textureMap.end())
-	    {
-		//new texture -> create new material
+            if(it == textureMap.end())
+            {
+                //new texture -> create new material
                 Material* m = new Material;
                 m->r = r;
                 m->g = g;
                 m->b = b;
                 m->texture_index = t->m_textureIndex;
                 materialBuffer.push_back(m);
-	        for( int j = 0; j < indices.size() / 3; j++ )
-	        {
-	            materialIndexBuffer.push_back(globalMaterialIndex);
-	        }
-		textureMap[t->m_textureIndex] = globalMaterialIndex;
+                for( int j = 0; j < indices.size() / 3; j++ )
+                {
+                    materialIndexBuffer.push_back(globalMaterialIndex);
+                }
+                textureMap[t->m_textureIndex] = globalMaterialIndex;
                 globalMaterialIndex++;
-	    }
-	    else
-	    {
-		//Texture already exists -> use old material
-	        for( int j = 0; j < indices.size() / 3; j++ )
-	        {
-	            materialIndexBuffer.push_back(it->second);
-	        }
-	    }
+            }
+            else
+            {
+                //Texture already exists -> use old material
+                for( int j = 0; j < indices.size() / 3; j++ )
+                {
+                    materialIndexBuffer.push_back(it->second);
+                }
+            }
         }
         else
         {
@@ -1496,7 +1496,7 @@ void HalfEdgeMesh<VertexT, NormalT>::finalizeAndRetesselate( bool genTextures, f
 
         if(t)
         {
-        //    delete t;
+            //    delete t;
         }
         else
         {

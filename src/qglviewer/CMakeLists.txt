@@ -91,3 +91,4 @@ target_link_libraries(qviewer ${Boost_FILESYSTEM_LIBRARY}
     ${Boost_PROGRAM_OPTIONS_LIBRARY})
 target_link_libraries(qviewer pthread)
 target_link_libraries(qviewer ${PCL_LIBRARIES})
+target_link_libraries(qviewer GLU)
