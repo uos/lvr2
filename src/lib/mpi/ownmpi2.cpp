@@ -181,61 +181,72 @@ int main (int argc , char *argv[]) {
 			MPI::Request req2 = MPI::COMM_WORLD.Isend(m_points.get(), 3 *  int_numpoint[0], MPI::FLOAT, client_serv_data, 1);
 			req2.Wait();
 
-			//normals = new float[3 * int_numpoint[0]];
 
+			std::cout << "vorher" << std::endl;
 			// empfange Normalen zurück
-			//status[client_serv_data] =
-			MPI::COMM_WORLD.Recv(normals[client_serv_data], 3 * int_numpoint[0], MPI::FLOAT, client_serv_data, 4);
+			MPI::Request tmp;
+			 tmp = MPI::COMM_WORLD.Irecv(normals[client_serv_data], 3 * int_numpoint[0], MPI::FLOAT, client_serv_data, 4);
+			 status[client_serv_data - 1] = tmp;
+			std::cout << "danach" << std::endl;
+	//		status[client_serv_data - 1].Wait();
 
-//kann raus
-			// go on to next datafile
-			data_num++;
-			sprintf(file_name, "scan%03d.3d", data_num);
-			m_model = io_factory.readModel( file_name );
+/*******************************abspeichern  **************/
 
-			// wait till message is send
-			//req2.Wait();
+			if (count >= numprocs - 1)
+			{
+				client_serv_data = MPI::Request::Waitany( numprocs - 1, status);
+				std::cout << "Der Process ist fertig und kann siene sachen abspeichern: " << client_serv_data << std::endl;
+				client_serv_data++;
+
 
 //für den test
-			std::cout << "Neuer Test läuft an" << std::endl;
-			//status[client_serv_data].Wait();
-			// Punkte wieder in richtige Form fpr Pointbuffer bringen
-			boost::shared_array<float> norm (normals[client_serv_data]);
+				std::cout << "Neuer Test läuft an" << std::endl;
+				//status[client_serv_data].Wait();
+				// Punkte wieder in richtige Form fpr Pointbuffer bringen
+				boost::shared_array<float> norm (normals[client_serv_data]);
 
-			std::cout << "Neuer Test läuft an" << std::endl;
+				std::cout << "Neuer Test läuft an" << std::endl;
 
-			// The factory requires a model to save.
-			// The model in turn requires a Pointbuffer and a Meshbuffer (can be emtpy).
-			// The Pointbuffer contains the Indexlist.
-			PointBufferPtr pointcloud(new PointBuffer());
-			pointcloud->setPointNormalArray(norm, (*it)->getnumpoints() );
-			pointcloud->setIndexedPointArray((*it)->getPoints(), (*it)->getnumpoints());
+				// The factory requires a model to save.
+				// The model in turn requires a Pointbuffer and a Meshbuffer (can be emtpy).
+				// The Pointbuffer contains the Indexlist.
+				PointBufferPtr pointcloud(new PointBuffer());
+				pointcloud->setPointNormalArray(norm, (*it)->getnumpoints() );
+				pointcloud->setIndexedPointArray((*it)->getPoints(), (*it)->getnumpoints());
 
-			std::cout << "paar Punkte:" << norm[2] << " und " << m_points[2][0] << std::endl;
-			ModelPtr test_model( new Model);
-			test_model->m_pointCloud = pointcloud;
-
-			
-			char data_name[32];
-			sprintf(data_name, "Normals%03d.ply",count );
+				std::cout << "paar Punkte:" << norm[2] << " und " << m_points[2][0] << std::endl;
+				ModelPtr test_model( new Model);
+				test_model->m_pointCloud = pointcloud;
 
 
-			io_factory.saveModel(test_model, data_name);
+				char data_name[32];
+				sprintf(data_name, "Normals%03d.ply",count );
 
 
-			count++;
+				io_factory.saveModel(test_model, data_name);
+
+
+				count++;
 // ende test
-// dynamisch freigaben hinzufügen
-			//free(normals[client_serv_data]);
-			std::cout << "Neuer Test ist fertig" << std::endl;
-			// who is next and with witch file
-			it++;
-			client_serv_data++;
-			client_serv_data = (client_serv_data % numprocs);
-			if (client_serv_data == 0) client_serv_data++;
 
+				it++;
+				client_serv_data++;
+				client_serv_data = (client_serv_data % numprocs);
+				if (client_serv_data == 0) client_serv_data++;
 
-		}
+				std::cout << "Ende der Abfrage am Ende des Abspeicherfalls" << std::endl;
+
+			}// ende if
+			else
+			{
+				count++;
+				it++;
+				client_serv_data++;
+				client_serv_data = (client_serv_data % numprocs);
+				std::cout << "Ende der Abfrage am Ende" << std::endl;
+			}
+		}// Ende Dauerschleife
+
 
 		// Beende Verbindung
 		int end[1] = {-1};
@@ -360,9 +371,9 @@ int main (int argc , char *argv[]) {
 				//Testweises speichern der übertragenen Datei auf dem lokalen Speichers des benutzten Rechners
 				sprintf(c_file_name, "/mpitest/savedscan%03d.3d", c_data_num);
 
-				io_factory.saveModel(model, c_file_name);
+			//	io_factory.saveModel(model, c_file_name);
 
-				std::cout << "In der Punktwolke sind es so viele Punkte: " << pointcloud->getNumPoints() << std::endl;
+			//	std::cout << "In der Punktwolke sind es so viele Punkte: " << pointcloud->getNumPoints() << std::endl;
 				//count++;
 			}
 		}
