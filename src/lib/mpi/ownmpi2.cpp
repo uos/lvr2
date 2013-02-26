@@ -116,6 +116,10 @@ int main (int argc , char *argv[]) {
 		int client_serv_data = 1;
 		char file_name[256];
 		MPI::Request status[numprocs-1];
+		int count = 1;
+
+		//dynamisches array für die Normalen anlegen
+		float ** normals = new float*[numprocs - 1];
 
 
 	    sprintf(file_name, "scan%03d.3d", data_num);
@@ -124,11 +128,12 @@ int main (int argc , char *argv[]) {
 		m_model = io_factory.readModel( file_name );
 
 		typename std::list<KdNode<cVertex>*>::	iterator it= m_nodelist.begin();
-		int count = 1;
-		// verschicken aller Datenpakete
-		while ( m_model != NULL)
-		{
 
+		// verschicken aller Datenpakete
+		while ( it  != m_nodelist.end() )
+		{
+// kann raus
+			std::cout << "Anzahl Durchlaeufe: " << count << std::endl;
 			if (m_model != NULL)
 			{
 				m_loader = m_model->m_pointCloud;
@@ -157,6 +162,9 @@ int main (int argc , char *argv[]) {
 			//sprintf(name, "scan%03d.3d", "Platzhalter");
 			//string filename(name);
 
+			// allokiere Normalenarray dynamisch
+			normals[client_serv_data] = new float [3 * int_numpoint[0]];
+
 
 			std::cout << "Beim Host sind so viele Punkte drin: " << int_numpoint[0] << std::endl;
 
@@ -172,11 +180,14 @@ int main (int argc , char *argv[]) {
 			// sende Daten aus Scandatei
 			MPI::Request req2 = MPI::COMM_WORLD.Isend(m_points.get(), 3 *  int_numpoint[0], MPI::FLOAT, client_serv_data, 1);
 			req2.Wait();
-			float * normals = new float[3 * int_numpoint[0]];
+
+			//normals = new float[3 * int_numpoint[0]];
+
 			// empfange Normalen zurück
 			//status[client_serv_data] =
-			MPI::COMM_WORLD.Recv(normals, 3 * int_numpoint[0], MPI::FLOAT, client_serv_data, 4);
+			MPI::COMM_WORLD.Recv(normals[client_serv_data], 3 * int_numpoint[0], MPI::FLOAT, client_serv_data, 4);
 
+//kann raus
 			// go on to next datafile
 			data_num++;
 			sprintf(file_name, "scan%03d.3d", data_num);
@@ -189,7 +200,7 @@ int main (int argc , char *argv[]) {
 			std::cout << "Neuer Test läuft an" << std::endl;
 			//status[client_serv_data].Wait();
 			// Punkte wieder in richtige Form fpr Pointbuffer bringen
-			boost::shared_array<float> norm (normals);
+			boost::shared_array<float> norm (normals[client_serv_data]);
 
 			std::cout << "Neuer Test läuft an" << std::endl;
 
@@ -214,13 +225,16 @@ int main (int argc , char *argv[]) {
 
 			count++;
 // ende test
-
+// dynamisch freigaben hinzufügen
+			//free(normals[client_serv_data]);
 			std::cout << "Neuer Test ist fertig" << std::endl;
 			// who is next and with witch file
 			it++;
 			client_serv_data++;
 			client_serv_data = (client_serv_data % numprocs);
 			if (client_serv_data == 0) client_serv_data++;
+
+
 		}
 
 		// Beende Verbindung
@@ -232,6 +246,13 @@ int main (int argc , char *argv[]) {
 			MPI::COMM_WORLD.Send(end , 1, MPI::INT, j, 2);
 		}
 		std::cout << "Daten wurden gesendet" << std::endl;
+
+//		for (int i = 0 ; i < (numprocs -1) ; i++)
+//		{
+//			delete [] normals[i];
+//		}
+
+		delete [] normals;
 
 	}// Ende If
 /**********************************************************************************************************/
