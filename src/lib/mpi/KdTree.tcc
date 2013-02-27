@@ -87,6 +87,7 @@ KdTree<VertexT>::KdTree(PointBufferPtr pointcloud)
 
 
 template<typename VertexT>
+
 void KdTree<VertexT>::Rekursion(KdNode<VertexT> * first){
 
 
@@ -94,7 +95,8 @@ void KdTree<VertexT>::Rekursion(KdNode<VertexT> * first){
 	//fülle Indize Buffer mit Initialen Werten
 	for (size_t j = 0 ; j < first->getnumpoints(); j++)
 	{
-		tmp[static_cast<unsigned int>(j)] = static_cast<unsigned int>(j);
+		// das zweite j wurd vorher auch gecastet
+		tmp[static_cast<unsigned int>(j)] = j;
 	}
 	first->setIndizes(tmp);
 	// start the recursion
@@ -224,6 +226,11 @@ void KdTree<VertexT>::splitPointcloud(KdNode<VertexT> * child)
 		//double * right_indizes = (double*) calloc (m_numpoint, sizeof(double));
 		boost::shared_array<size_t> left_indizes(new size_t [static_cast<unsigned int>(m_numpoint)]);
 		boost::shared_array<size_t> right_indizes(new size_t [static_cast<unsigned int>(m_numpoint)]);
+		for (int y = 0 ; y < static_cast<unsigned int>(m_numpoint) ; y++)
+		{
+			left_indizes[y] = 0;
+			right_indizes[y] = 0;
+		}
 
 		boost::shared_array<size_t> child_indizes = child->getIndizes();
 
