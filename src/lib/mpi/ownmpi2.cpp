@@ -43,6 +43,8 @@ int main (int argc , char *argv[]) {
 	/// The currently stored points
 	coord3fArr   			m_points;
 
+	coord3fArr   			test_points;
+
 	coord3fArr               c_normals;
 
 	// Create a point loader object - Aus der Main (reconstruct)
@@ -70,11 +72,8 @@ int main (int argc , char *argv[]) {
 	char c_file_name[128];
 	char c_end[1];
 	int c_data_num;
-	
-	// Aufbauen des Kd-Baums
-	kd KDTree;
-
-	m_nodelist = KDTree.GetList();
+	long int num_all_points;
+	long int count_test = 0;
 
 	// MPI-Typ zum Abfragen des Status der Übertragung
 	MPI::Status stat;
@@ -92,6 +91,15 @@ int main (int argc , char *argv[]) {
 
 	// Ausgabe welche Processe aktiv sind
 	printf("Process %d on %s out of %d \n", rank, processor_name, numprocs);
+
+
+	//auslesen der Datei
+	m_model = io_factory.readModel( "flur3.pts" );
+
+	// Aufbauen des Kd-Baums
+	kd KDTree;
+
+	m_nodelist = KDTree.GetList();
 
 
 	// VaterProcess oder spaeter Master-Process
@@ -121,18 +129,36 @@ int main (int argc , char *argv[]) {
 		//dynamisches array für die Normalen anlegen
 		float ** normals = new float*[numprocs - 1];
 
+		//dynamisches array für die Indices anlegen
+		long unsigned int ** Indizes = new long unsigned int*[numprocs - 1];
+
+		// für laufvariable beim zusammenfügen
+		int laufvariable[numprocs - 1];
+
 
 	    sprintf(file_name, "scan%03d.3d", data_num);
 	    string filename(file_name);
 
-		m_model = io_factory.readModel( file_name );
+		//m_model = io_factory.readModel( file_name );
 
 		typename std::list<KdNode<cVertex>*>::	iterator it= m_nodelist.begin();
+
+		std::cout << "Init fertig, jetzt wird angefangen" << std::endl;
+		// Anzahl aller Punkte zählen oder mit getNumPoints() von Pointbuffer aber das ist size_t
+		num_all_points = 0;
+		for ( it = m_nodelist.begin() ; it != m_nodelist.end(); ++it)
+		{
+			num_all_points += (*it)->getnumpoints();
+		}
+
+		it = m_nodelist.begin();
+		//
+		float * m_normal = new float[3 * num_all_points];
 
 		// verschicken aller Datenpakete
 		while ( it  != m_nodelist.end() )
 		{
-// kann raus
+
 			std::cout << "Anzahl Durchlaeufe: " << count << std::endl;
 			if (m_model != NULL)
 			{
@@ -140,10 +166,13 @@ int main (int argc , char *argv[]) {
 			}
 			else std::cout << " Model not existent" << std::endl;
 
+			test_points = m_loader->getIndexedPointArray(m_numpoint);
 
 			// Calculate bounding box
 			//m_points = m_loader->getIndexedPointArray(m_numpoint);
 			m_points = (*it)->getPoints();
+
+
 
 			boost::shared_array<size_t> test = (*it)->getIndizes();
 			std::cout << "jetzt" <<std::endl;
@@ -165,12 +194,18 @@ int main (int argc , char *argv[]) {
 			// allokiere Normalenarray dynamisch
 			normals[client_serv_data] = new float [3 * int_numpoint[0]];
 
+			Indizes[client_serv_data] = (*it)->indizes.get();
+
+			laufvariable[client_serv_data] = (*it)->getnumpoints();
+
+			std::cout << "Punkt 1: " << m_points[1][0] << " Punkte aus Indizes: " << test_points[Indizes[client_serv_data][1]][0] << std::endl;
+
 
 			std::cout << "Beim Host sind so viele Punkte drin: " << int_numpoint[0] << std::endl;
 
 			std::cout << "Der Punkt an der stelle 1000: " << m_points[1000][0] << std::endl;
 
-
+			data_num++;
 			// sende dem Client, die Nummer der Datei, welche bearbeitet wird
 			int int_datanum[1];
 			int_datanum[0] = data_num;
@@ -203,27 +238,44 @@ int main (int argc , char *argv[]) {
 				std::cout << "Neuer Test läuft an" << std::endl;
 				//status[client_serv_data].Wait();
 				// Punkte wieder in richtige Form fpr Pointbuffer bringen
-				boost::shared_array<float> norm (normals[client_serv_data]);
+//				boost::shared_array<float> norm (normals[client_serv_data]);
 
 				std::cout << "Neuer Test läuft an" << std::endl;
 
 				// The factory requires a model to save.
 				// The model in turn requires a Pointbuffer and a Meshbuffer (can be emtpy).
 				// The Pointbuffer contains the Indexlist.
-				PointBufferPtr pointcloud(new PointBuffer());
-				pointcloud->setPointNormalArray(norm, (*it)->getnumpoints() );
-				pointcloud->setIndexedPointArray((*it)->getPoints(), (*it)->getnumpoints());
+//				PointBufferPtr pointcloud(new PointBuffer());
+//				pointcloud->setPointNormalArray(norm, (*it)->getnumpoints() );
+//				pointcloud->setIndexedPointArray((*it)->getPoints(), (*it)->getnumpoints());
 
-				std::cout << "paar Punkte:" << norm[2] << " und " << m_points[2][0] << std::endl;
-				ModelPtr test_model( new Model);
-				test_model->m_pointCloud = pointcloud;
+				for (int x = 0; x < laufvariable[client_serv_data] ; x ++)
+				{
+					int n_buffer_pos = 3 * Indizes[client_serv_data][x];
+
+					m_normal[n_buffer_pos]     = normals[client_serv_data][3 * x];
+					m_normal[n_buffer_pos + 1] = normals[client_serv_data][ (3 * x) + 1];
+					m_normal[n_buffer_pos + 2] = normals[client_serv_data][ (3 * x) + 2];
+
+				}
+
+//				boost::shared_array<float> norm (normal);
+//
+//				m_loader->setPointNormalArray(norm, num_all_points );
 
 
-				char data_name[32];
-				sprintf(data_name, "Normals%03d.ply",count );
 
 
-				io_factory.saveModel(test_model, data_name);
+//				std::cout << "paar Punkte:" << norm[2] << " und " << m_points[2][0] << std::endl;
+				//ModelPtr test_model( new Model);
+//				m_model->m_pointCloud = m_loader;
+
+
+//				char data_name[32];
+//				sprintf(data_name, "Normals%03d.ply",count );
+
+
+//				io_factory.saveModel(m_model, data_name);
 
 
 				count++;
@@ -247,6 +299,24 @@ int main (int argc , char *argv[]) {
 			}
 		}// Ende Dauerschleife
 
+//test
+
+
+		std::cout << "Stunde der Wahrheit, es wird abgespeichert" << std::endl;
+		boost::shared_array<float> norm (m_normal);
+		std::cout << "paar Punkte:" << norm[2] << " und " << norm[2000] << std::endl;
+
+		long unsigned int tmp = static_cast<unsigned int>(m_loader->getNumPoints());
+
+		std::cout << "groesse gerechnet:" << num_all_points << " und aus dem Pointbuffer " << tmp << std::endl;
+
+		std::cout << "1" << std::endl;
+		m_loader->setPointNormalArray(norm, m_loader->getNumPoints() );
+		std::cout << "2" << std::endl;
+		m_model->m_pointCloud = m_loader;
+		std::cout << "3" << std::endl;
+		io_factory.saveModel(m_model, "Normal.ply");
+		std::cout << "4" << std::endl;
 
 		// Beende Verbindung
 		int end[1] = {-1};
@@ -258,10 +328,11 @@ int main (int argc , char *argv[]) {
 		}
 		std::cout << "Daten wurden gesendet" << std::endl;
 
-//		for (int i = 0 ; i < (numprocs -1) ; i++)
-//		{
-//			delete [] normals[i];
-//		}
+// ist das so richtig, wirft manchmal fehler
+		for (int i = 0 ; i < (numprocs -1) ; i++)
+		{
+			delete [] normals[i];
+		}
 
 		delete [] normals;
 
@@ -299,7 +370,7 @@ int main (int argc , char *argv[]) {
 		{
 			MPI::COMM_WORLD.Recv( &c_sizepackage, 1, MPI::INT , 0,2);
 
-			std::cout << "sizepackage:" << c_sizepackage << std::endl;
+			std::cout << "Abbruchssignal wenn gleich -1, sonst groesse der Punktwolke:" << c_sizepackage << std::endl;
 			//Abbruchbedingung
 			if (c_sizepackage == -1)
 			{
