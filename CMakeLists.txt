@@ -1,17 +1,17 @@
 cmake_minimum_required(VERSION 2.8)
-project(LSSR)
+project(LAS_VEGAS)
 
 set( CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_SOURCE_DIR}/bin )
-set( CMAKE_MODULE_PATH ${LSSR_SOURCE_DIR}/CMakeModules )
+set( CMAKE_MODULE_PATH ${LAS_VEGAS_SOURCE_DIR}/CMakeModules )
 
 link_directories("${CMAKE_SOURCE_DIR}/lib")
 link_directories("$ENV{HOME}/local/lib")
 
 include_directories(/usr/include/libusb-1.0/)
-include_directories(${LSSR_SOURCE_DIR}/ext/Eigen)
-include_directories(${LSSR_SOURCE_DIR}/ext/stann)
-include_directories(${LSSR_SOURCE_DIR})
-include_directories(${LSSR_SOURCE_DIR}/src/lib)
+include_directories(${LAS_VEGAS_SOURCE_DIR}/ext/Eigen)
+include_directories(${LAS_VEGAS_SOURCE_DIR}/ext/stann)
+include_directories(${LAS_VEGAS_SOURCE_DIR})
+include_directories(${LAS_VEGAS_SOURCE_DIR}/src/lib)
 
 
 set( CMAKE_CXX_FLAGS         "-O3 -g -std=gnu++0x ")
@@ -124,6 +124,8 @@ find_package(OpenGL REQUIRED)
 if(OpenGL_FOUND)
     link_directories(${OpenGL_INCLUDE_DIRS})
     include_directories(${OpenGL_LIBRARY_DIRS})
+    message( "OPEN GL LIBS 1 : " ${OPENGL_LIBRARIES}) 
+    message( "OPEN GL LIBS 2 : " ${OPENGL_LIBRARY}) 
 endif(OpenGL_FOUND)
 
 IF(APPLE)
@@ -138,9 +140,9 @@ if(UNIX)
 endif(UNIX)
 
 
-####
+##############################################################
 ## Searching for glut and it's additional runtime libraries.
-##############################
+##############################################################
 
 find_package(GLUT REQUIRED)
 if ( GLUT_FOUND )
@@ -161,6 +163,13 @@ if ( GLUT_Xi_LIBRARY )
 else ( GLUT_Xi_LIBRARY )
     message( SEND_ERROR "-- Could not find X.Org X11 libXi runtime library" )
 endif ( GLUT_Xi_LIBRARY )
+
+if ( OPENGL_glu_LIBRARY ) 
+    message( "-- Found GLU library" )
+else ( OPENGL_glu_LIBRARY ) 
+    message( SEND_ERROR "-- Could not find GLU library" )
+endif ( OPENGL_glu_LIBRARY ) 
+
 endif(LINUX)
 
 ##############################################################
