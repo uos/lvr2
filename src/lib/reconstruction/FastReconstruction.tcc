@@ -45,7 +45,11 @@ FastReconstruction<VertexT, NormalT>::FastReconstruction(
     assert(resolution > 0);
     BoundingBox<VertexT> bb = this->m_surface->getBoundingBox();
 
-    assert(bb.isValid());
+    if(!bb.isValid())
+    {
+        cout << timestamp << "Waring: Malformed BoundingBox." << endl;
+    }
+
     if(!isVoxelsize)
     {
         m_voxelsize = (float) bb.getLongestSide() / resolution;
