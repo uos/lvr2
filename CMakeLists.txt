@@ -29,6 +29,12 @@ set( CMAKE_CXX_FLAGS_DEBUG   "-g -Wall -std=gnu++0x " )
 FIND_PACKAGE( OpenCV REQUIRED )
 
 ####
+## Searching for MPI
+##############################
+FIND_PACKAGE( MPI REQUIRED )
+include_directories(SYSTEM ${MPI_INCLUDE_PATH})
+
+####
 ## Searching for NABO 
 ##############################
 
@@ -88,14 +94,13 @@ endif(CGAL_FOUND)
 ####
 ## Searching for Boost
 ##############################
-# unten mpi und serialization
+#
 
-find_package( Boost 1.48
+find_package( Boost 1.42
     COMPONENTS 
     program_options 
     filesystem system 
-    thread 
-    mpi
+    thread
     REQUIRED )
 if(Boost_FOUND)
     link_directories(${BOOST_LIBRARY_DIRS})
