@@ -84,6 +84,9 @@ public:
     // A list for all Nodes with less than MAX_POINTS
     std::list<KdNode<VertexT>*> nodelist;
 
+    // number of max Points in one packete
+    long int max_points;
+
 
 
 	// Number of points in the point cloud
