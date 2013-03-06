@@ -22,19 +22,20 @@
 #include "io/Model.hpp"
 #include "io/ModelFactory.hpp"
 #include "mpi/KdTree.hpp"
+#include "geometry/ColorVertex.hpp"
 
-//Normals
 #include "reconstruction/AdaptiveKSearchSurface.hpp"
 #include "reconstruction/PCLKSurface.hpp"
 
 using namespace lssr;
 
-#include "geometry/ColorVertex.hpp"
-
+// some easy typedefs
 typedef ColorVertex<float, unsigned char>      cVertex;
 typedef KdTree<cVertex>                        kd;
+//später noch Unterscheidung machen, welches benutzt wird
 typedef PointsetSurface<cVertex>                        psSurface;
 typedef PCLKSurface<cVertex, cNormal>                   pclSurface;
+
 
 int main (int argc , char *argv[]) {
 	// Kd Tree
@@ -42,6 +43,8 @@ int main (int argc , char *argv[]) {
     std::list<KdNode<cVertex>*> m_nodelist;
 
 	//Las Vegas Toolkit
+    // m_ for Master
+    // s_ for Slave
 
 	// A shared-Pointer for the model, with the pointcloud in it
 	ModelPtr 				m_model;
@@ -51,8 +54,6 @@ int main (int argc , char *argv[]) {
 
 	/// The currently stored points
 	coord3fArr   			m_points;
-
-	coord3fArr   			test_points;
 
 	coord3fArr               c_normals;
 
@@ -65,8 +66,15 @@ int main (int argc , char *argv[]) {
 	// Number of points in the point cloud (Child)
 	int c_sizepackage;
 
+	long int max_points = 10000;
+	// for calculate normals
+	int kd, kn, ki;
+	kd = 40;
+	kn = 40;
+	ki = 40;
+
+
 	// MPI
-	std::ofstream f;
 
 	// Anzahl an Processen
 	int numprocs;
@@ -121,7 +129,7 @@ int main (int argc , char *argv[]) {
 
 		}
 
-		// dann blockierend darauf warten
+		// wait for their answer
 		for ( i = 1; i < numprocs; i++)
 		{
 			MPI::COMM_WORLD.Recv(con_msg, 128, MPI::CHAR, i, 0);
@@ -129,11 +137,7 @@ int main (int argc , char *argv[]) {
 		}
 
 /*************************************** Connection is successful *****************/
-		int data_num = 1;
-		int client_serv_data = 1;
-		char file_name[256];
-		MPI::Request status[numprocs-1];
-		int count = 1;
+
 
 		//dynamisches array für die Normalen anlegen
 		float ** normals = new float*[numprocs - 1];
@@ -411,17 +415,16 @@ int main (int argc , char *argv[]) {
 				PointBufferPtr pointcloud(new PointBuffer());
 				pointcloud->setPointArray(punkte, c_sizepackage);
 
-// Normalentest
 				psSurface::Ptr surface;
 				surface = psSurface::Ptr( new pclSurface(pointcloud));
 
 				// Set search options for normal estimation and distance evaluation
 				//willkürliche Werte, eigentlich mnit option
-				surface->setKd(40);
-				surface->setKi(40);
-				surface->setKn(40);
+				surface->setKd(kd);
+				surface->setKi(ki);
+				surface->setKn(kn);
 
-				// berechnen der Normalen mit Zeit
+				// calculate the normals
 			    Timestamp ts;
 				surface->calculateSurfaceNormals();
 				cerr << ts.getElapsedTimeInMs() << endl;
@@ -429,40 +432,19 @@ int main (int argc , char *argv[]) {
 				ModelPtr pn( new Model);
 				pn->m_pointCloud = surface->pointBuffer();
 
-				char pointnormals[32];
-				sprintf(pointnormals, "pointnormals%03d%02d.ply",c_data_num, rank );
-
-
-				ModelFactory::saveModel(pn, pointnormals);
 
 				pointcloud = surface->pointBuffer();
 				size_t size_normal;
 				c_normals = pointcloud->getIndexedPointNormalArray(size_normal);
 
+				// send the normals back to the Masterprocess
 				MPI::COMM_WORLD.Send(c_normals.get(), 3 * c_sizepackage, MPI::FLOAT, 0, 4);
 
-				//std::cout << "ist das: " << surface->pointBuffer()->m_points[] << "gleich dem:" << << "oder dem: " << << "oder dem: " << << std::endl;
-
-
-//ende test
-				MeshBufferPtr mesh;
-				ModelPtr model( new Model( pointcloud, mesh ) );
-
-				//Testweises speichern der übertragenen Datei auf dem lokalen Speichers des benutzten Rechners
-				sprintf(c_file_name, "/mpitest/savedscan%03d.3d", c_data_num);
-
-			//	io_factory.saveModel(model, c_file_name);
-
-			//	std::cout << "In der Punktwolke sind es so viele Punkte: " << pointcloud->getNumPoints() << std::endl;
-				//count++;
 			}
 		}
 
-	}// Ende else fall
+	}// End else
 
-	std::cout << "Process Nr." << rank << " beendet jetzt seine Arbeit!" << std::endl;
 	MPI_Finalize();
 
 }
-
-//namespace
