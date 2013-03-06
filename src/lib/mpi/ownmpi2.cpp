@@ -86,42 +86,44 @@ int main (int argc , char *argv[]) {
 	char processor_name[MPI_MAX_PROCESSOR_NAME];
 	char idstring[32];
 	char con_msg[128];
-	char c_file_name[128];
-	char c_end[1];
-	int c_data_num;
-	long int num_all_points;
-	long int count_test = 0;
+	long int num_all_points = 0;
 
-	// MPI-Typ zum Abfragen des Status der Übertragung
-	MPI::Status stat;
-	// Initialisiert die verbindung
+	int client_serv_data = 1;
+	MPI::Request status[numprocs-1];
+	int count = 1;
+
+
+	// Initializes the connection
 	MPI::Init(argc, argv);
 
-	//liefer die Anzahl an Prozessen
+	// gives the number of processes
 	numprocs = MPI::COMM_WORLD.Get_size();
 
-	// liefert die Id / Rang des Prozesses
+	// gives the Id / Rang of the processes
 	rank = MPI::COMM_WORLD.Get_rank();
 
-	// liefert den namen des Processors (Rechner auf dem es ausgeführt wird)
+	// returns the name of the processor (computer on which it runs)
 	MPI::Get_processor_name(processor_name, namelen);
 
-	// Ausgabe welche Processe aktiv sind
-	printf("Process %d on %s out of %d \n", rank, processor_name, numprocs);
-
-
-	//auslesen der Datei
+/*temporär wird noch ausgelesen, später Übergabe durch das Programm */
+	//Read the file and get the pointcloud
 	m_model = io_factory.readModel( "flur3.pts" );
 
-	// Aufbauen des Kd-Baums
-	kd KDTree;
+	if (m_model != NULL)
+	{
+		m_loader = m_model->m_pointCloud;
+	}
 
+	// Building the Kd tree with max max_points in every packete
+	KdTree<cVertex> KDTree(m_loader, max_points);
+
+	// get the list with all Nodes with less than MAX_POINTS
 	m_nodelist = KDTree.GetList();
 
 
-	// VaterProcess oder spaeter Master-Process
+	// Master-Process
 	if (rank == 0){
-		// An alle eine Nachricht schicken zum Verbindungsaufbau
+		// Send an announcement to all other processes
 		for (i = 1; i < numprocs; i++)
 		{
 			sprintf(con_msg, "Hey Nummer %d...", i);
@@ -149,119 +151,64 @@ int main (int argc , char *argv[]) {
 		int laufvariable[numprocs - 1];
 
 
-	    sprintf(file_name, "scan%03d.3d", data_num);
-	    string filename(file_name);
-
-		//m_model = io_factory.readModel( file_name );
-
 		typename std::list<KdNode<cVertex>*>::	iterator it= m_nodelist.begin();
 
-		std::cout << "Init fertig, jetzt wird angefangen" << std::endl;
-		// Anzahl aller Punkte zählen oder mit getNumPoints() von Pointbuffer aber das ist size_t
-		num_all_points = 0;
+
+		// get number of all points
 		for ( it = m_nodelist.begin() ; it != m_nodelist.end(); ++it)
 		{
 			num_all_points += (*it)->getnumpoints();
 		}
 
 		it = m_nodelist.begin();
-		//
+
+		// a buffer to store all the normals
 		float * m_normal = new float[3 * num_all_points];
 
-		// verschicken aller Datenpakete
+		// Send all data packets
 		while ( it  != m_nodelist.end() )
 		{
-
-			std::cout << "Anzahl Durchlaeufe: " << count << std::endl;
-			if (m_model != NULL)
-			{
-				m_loader = m_model->m_pointCloud;
-			}
-			else std::cout << " Model not existent" << std::endl;
-
-			test_points = m_loader->getIndexedPointArray(m_numpoint);
-
-			// Calculate bounding box
-			//m_points = m_loader->getIndexedPointArray(m_numpoint);
+			// get the next points in row
 			m_points = (*it)->getPoints();
 
-
-
-			boost::shared_array<size_t> test = (*it)->getIndizes();
-			std::cout << "jetzt" <<std::endl;
-			std::cout << "Erster Wert des indexarray: " << test[0] << " zweiter: "<< test[1] << std::endl;
-
-
-
-
-	// senden der Anzahl an Punkten die Folgen
+			// send the number of points that will follow
 			int * int_numpoint = new int[1];
-			//int_numpoint[0] = static_cast<unsigned int>(m_numpoint);
+
 			int_numpoint[0] = (*it)->getnumpoints();
 			MPI::COMM_WORLD.Send(int_numpoint, 1, MPI::INT, client_serv_data, 2);
-			// composed of the file name
-			//char name[256];
-			//sprintf(name, "scan%03d.3d", "Platzhalter");
-			//string filename(name);
 
-			// allokiere Normalenarray dynamisch
+
+			// allokiere normal array dynamically
 			normals[client_serv_data] = new float [3 * int_numpoint[0]];
 
+			// get the indices for the original sequence
 			Indizes[client_serv_data] = (*it)->indizes.get();
 
 			laufvariable[client_serv_data] = (*it)->getnumpoints();
 
-			std::cout << "Punkt 1: " << m_points[1][0] << " Punkte aus Indizes: " << test_points[Indizes[client_serv_data][1]][0] << std::endl;
 
-
-			std::cout << "Beim Host sind so viele Punkte drin: " << int_numpoint[0] << std::endl;
-
-			std::cout << "Der Punkt an der stelle 1000: " << m_points[1000][0] << std::endl;
-
-			data_num++;
-			// sende dem Client, die Nummer der Datei, welche bearbeitet wird
-			int int_datanum[1];
-			int_datanum[0] = data_num;
-			MPI::COMM_WORLD.Send(int_datanum, 1, MPI::INT, client_serv_data, 3);
-
-
-			// sende Daten aus Scandatei
+			// send Data
 			MPI::Request req2 = MPI::COMM_WORLD.Isend(m_points.get(), 3 *  int_numpoint[0], MPI::FLOAT, client_serv_data, 1);
-			req2.Wait();
 
 
-			std::cout << "vorher" << std::endl;
-			// empfange Normalen zurück
+			// Reciev Normals
 			MPI::Request tmp;
-			 tmp = MPI::COMM_WORLD.Irecv(normals[client_serv_data], 3 * int_numpoint[0], MPI::FLOAT, client_serv_data, 4);
-			 status[client_serv_data - 1] = tmp;
-			std::cout << "danach" << std::endl;
-	//		status[client_serv_data - 1].Wait();
+			tmp = MPI::COMM_WORLD.Irecv(normals[client_serv_data], 3 * int_numpoint[0], MPI::FLOAT, client_serv_data, 4);
+			status[client_serv_data - 1] = tmp;
+
+
+			req2.Wait();
 
 /*******************************abspeichern  **************/
 
 			if (count >= numprocs - 1)
 			{
 				client_serv_data = MPI::Request::Waitany( numprocs - 1, status);
-				std::cout << "Der Process ist fertig und kann siene sachen abspeichern: " << client_serv_data << std::endl;
+
 				client_serv_data++;
 
 
-//für den test
-				std::cout << "Neuer Test läuft an" << std::endl;
-				//status[client_serv_data].Wait();
-				// Punkte wieder in richtige Form fpr Pointbuffer bringen
-//				boost::shared_array<float> norm (normals[client_serv_data]);
-
-				std::cout << "Neuer Test läuft an" << std::endl;
-
-				// The factory requires a model to save.
-				// The model in turn requires a Pointbuffer and a Meshbuffer (can be emtpy).
-				// The Pointbuffer contains the Indexlist.
-//				PointBufferPtr pointcloud(new PointBuffer());
-//				pointcloud->setPointNormalArray(norm, (*it)->getnumpoints() );
-//				pointcloud->setIndexedPointArray((*it)->getPoints(), (*it)->getnumpoints());
-
+				// store normals on correct position
 				for (int x = 0; x < laufvariable[client_serv_data] ; x ++)
 				{
 					int n_buffer_pos = 3 * Indizes[client_serv_data][x];
@@ -271,77 +218,77 @@ int main (int argc , char *argv[]) {
 					m_normal[n_buffer_pos + 2] = normals[client_serv_data][ (3 * x) + 2];
 
 				}
-
-//				boost::shared_array<float> norm (normal);
-//
-//				m_loader->setPointNormalArray(norm, num_all_points );
+				normals[client_serv_data][0] = 0;
 
 
 
-
-//				std::cout << "paar Punkte:" << norm[2] << " und " << m_points[2][0] << std::endl;
-				//ModelPtr test_model( new Model);
-//				m_model->m_pointCloud = m_loader;
-
-
-//				char data_name[32];
-//				sprintf(data_name, "Normals%03d.ply",count );
-
-
-//				io_factory.saveModel(m_model, data_name);
 
 
 				count++;
-// ende test
-
 				it++;
 				client_serv_data++;
 				client_serv_data = (client_serv_data % numprocs);
 				if (client_serv_data == 0) client_serv_data++;
 
-				std::cout << "Ende der Abfrage am Ende des Abspeicherfalls" << std::endl;
 
-			}// ende if
+			}// end if
 			else
 			{
 				count++;
 				it++;
 				client_serv_data++;
 				client_serv_data = (client_serv_data % numprocs);
-				std::cout << "Ende der Abfrage am Ende" << std::endl;
+				if (client_serv_data == 0) client_serv_data++;
 			}
-		}// Ende Dauerschleife
+		}// End while
 
-//test
+		//store all data which is still not stored
+		MPI::Request::Waitall( numprocs - 1, status);
+		client_serv_data = 1;
+		for (int y = 0 ; y < numprocs ; y++)
+		{
+			// check if some data is in there
+			if (normals[client_serv_data][0] != 0)
+			{
+				// store normals on correct position
+				for (int x = 0; x < laufvariable[client_serv_data] ; x ++)
+				{
+					int n_buffer_pos = 3 * Indizes[client_serv_data][x];
+
+					m_normal[n_buffer_pos]     = normals[client_serv_data][3 * x];
+					m_normal[n_buffer_pos + 1] = normals[client_serv_data][ (3 * x) + 1];
+					m_normal[n_buffer_pos + 2] = normals[client_serv_data][ (3 * x) + 2];
+
+				}
+			}
+			client_serv_data++;
+		}
 
 
-		std::cout << "Stunde der Wahrheit, es wird abgespeichert" << std::endl;
+		//Points put back into proper shape for PointBufferPtr
 		boost::shared_array<float> norm (m_normal);
-		std::cout << "paar Punkte:" << norm[2] << " und " << norm[2000] << std::endl;
 
 		long unsigned int tmp = static_cast<unsigned int>(m_loader->getNumPoints());
 
-		std::cout << "groesse gerechnet:" << num_all_points << " und aus dem Pointbuffer " << tmp << std::endl;
 
-		std::cout << "1" << std::endl;
+		// set normals
 		m_loader->setPointNormalArray(norm, m_loader->getNumPoints() );
-		std::cout << "2" << std::endl;
-		m_model->m_pointCloud = m_loader;
-		std::cout << "3" << std::endl;
-		io_factory.saveModel(m_model, "Normal.ply");
-		std::cout << "4" << std::endl;
 
-		// Beende Verbindung
+		m_model->m_pointCloud = m_loader;
+
+		// save data
+		io_factory.saveModel(m_model, "Normal.ply");
+
+
+		// Complete connection
 		int end[1] = {-1};
 		int j = 1;
 		for (j = 1 ; j < numprocs ; j++)
 		{
-			std::cout << "Master schreibt das es zuende ist an: " << j << std::endl;
 			MPI::COMM_WORLD.Send(end , 1, MPI::INT, j, 2);
 		}
-		std::cout << "Daten wurden gesendet" << std::endl;
 
-// ist das so richtig, wirft manchmal fehler
+
 		for (int i = 0 ; i < (numprocs -1) ; i++)
 		{
 			delete [] normals[i];
@@ -351,61 +298,44 @@ int main (int argc , char *argv[]) {
 
 	}// Ende If
 /**********************************************************************************************************/
-	// Kinderprocesse
+	// Slave-Process
 	else
 	{
-		//Abbruch Bedingung
-		c_end[0] = 0;
-		//MPI::COMM_WORLD.Irecv(c_end, 1, MPI::CHAR, 0, 3);
 
-
-		// Warte im blockierendem Modus...
+		// Wait for the first Message (INIT)
 		MPI::COMM_WORLD.Recv(con_msg, 128, MPI::CHAR, 0,0);
 
-		//erstelle Antwort
+		// create answer
 		sprintf(idstring, "Processor %d ", rank);
 		strcat(con_msg,idstring);
-		strcat(con_msg, "hat verstanden und hält sich bereit!");
-
-		// Datei welche zeigt, ob der angesprochene Rechner auch richtig geantwortet hat. Liegt im gemeinsamen Speicher
-		f.open("testclient.dat");
-		f << con_msg << std::endl;
-
+		strcat(con_msg, "roger roger, we can go on!");
 
 		MPI::COMM_WORLD.Send(con_msg, 128, MPI::CHAR, 0, 0);
 
 /************************************ Connection is successful *******************/
-		//int count = 1;
 
-
-		// Schleife zum Empfangen der daten, -1 bricht Vorgang ab
+		// Loop for receiving the data, -1 cancels operation
 		while(true)
 		{
 			MPI::COMM_WORLD.Recv( &c_sizepackage, 1, MPI::INT , 0,2);
 
-			std::cout << "Abbruchssignal wenn gleich -1, sonst groesse der Punktwolke:" << c_sizepackage << std::endl;
-			//Abbruchbedingung
+			//termination condition
 			if (c_sizepackage == -1)
 			{
-				std::cout << "Abbruch hat gezuendet!!!!" << std::endl;
 				break;
 			}
 			else
 			{
-				std::cout << "Die Datei ist so groß: " << c_sizepackage << std::endl;
-		/**** Hier vorher noch schicken wie groß das Paket ist, in size_package speichern ***/
 
 
-				MPI::COMM_WORLD.Recv(&c_data_num, 1, MPI::INT, 0, 3);
-
-				// empfangen der scan-Dateien
+				// Recv the data
 				float * tmp = new float[3 * c_sizepackage];
 				MPI::Request client_req2 = MPI::COMM_WORLD.Irecv(tmp, 3 * c_sizepackage, MPI::FLOAT, 0, 1);
 
-				// warten bis Übertragung komplett ist
+				// wait till transmission complete
 				client_req2.Wait();
 
-				// Punkte wieder in richtige Form fpr Pointbuffer bringen
+				// Points put back into proper shape for PointBufferPtr
 				boost::shared_array<float> punkte (tmp);
 
 
