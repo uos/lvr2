@@ -48,7 +48,7 @@ public:
 	 *
 	 * @param pointcloud The point cloud, which is to be divided
 	 */
-	KdTree(PointBufferPtr pointcloud);
+	KdTree(PointBufferPtr pointcloud, long int max);
 
 	/**
 	 * @brief starts the recursion and saves the packages in files (scan*.3d)
