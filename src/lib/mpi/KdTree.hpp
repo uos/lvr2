@@ -35,21 +35,20 @@ template<typename VertexT>
 class KdTree {
 public:
 
+	/**
+	 * @brief Test Construktor
+	 */
+	KdTree();
+
 
 	virtual ~KdTree();
 
 	/**
 	 * @brief Constructor.
 	 *
-	*/
-	KdTree();
-
-	/**
-	 * @brief Constructor.
-	 *
 	 * @param pointcloud The point cloud, which is to be divided
 	 */
-	KdTree(PointBufferPtr loader, long int max_p);
+	KdTree(PointBufferPtr pointcloud);
 
 	/**
 	 * @brief starts the recursion and saves the packages in files (scan*.3d)
@@ -95,9 +94,6 @@ public:
 
 	// A shared-Pointer for the model, with the pointcloud in it  */
 	ModelPtr m_model;
-
-	// Number of max Points in one Packete
-	long int max_points;
 };
 }
 
