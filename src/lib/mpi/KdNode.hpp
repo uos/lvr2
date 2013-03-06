@@ -1,8 +1,8 @@
 /*
- * KdNode.h
+ * KdNode.hpp
  *
  *  Created on: 17.01.2013
- *      Author: dofeldsc
+ *      Author: Dominik Feldschnieders
  */
 
 #ifndef KDNODE_HPP_
