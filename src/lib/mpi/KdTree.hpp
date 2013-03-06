@@ -1,5 +1,5 @@
 /*
- * KdTree.h
+ * KdTree.hpp
  *
  *  Created on: 15.01.2013
  *      Author: Dominik Feldschnieders

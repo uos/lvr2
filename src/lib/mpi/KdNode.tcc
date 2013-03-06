@@ -1,8 +1,8 @@
 /*
- * KdNode.cpp
+ * KdNode.tcc
  *
  *  Created on: 17.01.2013
- *      Author: dofeldsc
+ *      Author: Dominik Feldschnieders
  */
 
 
