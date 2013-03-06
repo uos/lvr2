@@ -38,9 +38,10 @@ typedef PCLKSurface<cVertex, cNormal>                   pclSurface;
 
 
 int main (int argc , char *argv[]) {
+	std::cout << "es fängt an" << std::endl;
 	// Kd Tree
     // A list for all Nodes with less than MAX_POINTS
-    std::list<KdNode<cVertex>*> m_nodelist;
+    std::list<KdNode<ColorVertex<float, unsigned char>>*> m_nodelist;
 
 	//Las Vegas Toolkit
     // m_ for Master
@@ -52,7 +53,7 @@ int main (int argc , char *argv[]) {
 	// The pointcloud
 	PointBufferPtr          m_loader;
 
-	/// The currently stored points
+	// The currently stored points
 	coord3fArr   			m_points;
 
 	coord3fArr               c_normals;
@@ -89,7 +90,7 @@ int main (int argc , char *argv[]) {
 	long int num_all_points = 0;
 
 	int client_serv_data = 1;
-	MPI::Request status[numprocs-1];
+
 	int count = 1;
 
 
@@ -105,24 +106,28 @@ int main (int argc , char *argv[]) {
 	// returns the name of the processor (computer on which it runs)
 	MPI::Get_processor_name(processor_name, namelen);
 
-/*temporär wird noch ausgelesen, später Übergabe durch das Programm */
-	//Read the file and get the pointcloud
-	m_model = io_factory.readModel( "flur3.pts" );
 
-	if (m_model != NULL)
-	{
-		m_loader = m_model->m_pointCloud;
-	}
-
-	// Building the Kd tree with max max_points in every packete
-	KdTree<cVertex> KDTree(m_loader, max_points);
-
-	// get the list with all Nodes with less than MAX_POINTS
-	m_nodelist = KDTree.GetList();
-
-
+	MPI::Request status[numprocs-1];
 	// Master-Process
 	if (rank == 0){
+	/*temporär wird noch ausgelesen, später Übergabe durch das Programm */
+		//Read the file and get the pointcloud
+		m_model = io_factory.readModel( "flur3.pts" );
+
+		if (m_model != NULL)
+		{
+			m_loader = m_model->m_pointCloud;
+		}
+
+		// Building the Kd tree with max max_points in every packete
+		KdTree<cVertex> KDTree(m_loader, max_points);
+
+		// get the list with all Nodes with less than MAX_POINTS
+		m_nodelist = KDTree.GetList();
+
+
+
+
 		// Send an announcement to all other processes
 		for (i = 1; i < numprocs; i++)
 		{
@@ -241,12 +246,14 @@ int main (int argc , char *argv[]) {
 				if (client_serv_data == 0) client_serv_data++;
 			}
 		}// End while
-
+		std::cout << "vor dem waitall" << std::endl;
 		//store all data which is still not stored
 		MPI::Request::Waitall( numprocs - 1, status);
+		std::cout << "dahinter" << std::endl;
 		client_serv_data = 1;
-		for (int y = 0 ; y < numprocs ; y++)
+		for (int y = 0 ; y < numprocs - 1 ; y++)
 		{
+			std::cout << "ein Durchlauf" << std::endl;
 			// check if some data is in there
 			if (normals[client_serv_data][0] != 0)
 			{
@@ -263,6 +270,7 @@ int main (int argc , char *argv[]) {
 			}
 			client_serv_data++;
 		}
+		std::cout << "dahinter" << std::endl;
 
 
 		//Points put back into proper shape for PointBufferPtr
@@ -279,7 +287,7 @@ int main (int argc , char *argv[]) {
 		// save data
 		io_factory.saveModel(m_model, "Normal.ply");
 
-
+		std::cout << "Verbindung wird beendet" << std::endl;
 		// Complete connection
 		int end[1] = {-1};
 		int j = 1;
