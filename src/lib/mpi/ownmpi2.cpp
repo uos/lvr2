@@ -1,7 +1,16 @@
 /*
+ * mpi.cpp
+ *
+ *  Created on: 1.02.2013
+ *      Author: Dominik Feldschnieders
+ */
+
+/*
+ *
  * Programmierbeispiel der Stanfort Universität.
  *  http://www.slac.stanford.edu/comp/unix/farm/mpi.html
  */
+
 #include <iostream>
 #include <fstream>
 #include <stdio.h>
