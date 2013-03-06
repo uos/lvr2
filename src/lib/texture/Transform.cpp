@@ -27,8 +27,10 @@
 #include "Transform.hpp"
 #include <opencv/highgui.h>
 #include <opencv/cv.h>
-#include <opencv2/nonfree/features2d.hpp>
-#include <opencv2/legacy/legacy.hpp>
+#if CV_MAJOR_VERSION >= 2 && CV_MINOR_VERSION >= 4
+  #include <opencv2/nonfree/features2d.hpp>
+  #include <opencv2/legacy/legacy.hpp>
+#endif
 
 namespace lssr {
 
