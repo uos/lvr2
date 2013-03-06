@@ -51,32 +51,32 @@ KdTree<VertexT>::KdTree()
 
 }
 
+
 template<typename VertexT>
-KdTree<VertexT>::KdTree(PointBufferPtr loader, long int max_p)
+KdTree<VertexT>::KdTree(PointBufferPtr pointcloud)
 {
 
-	max_points = max_p;
-
-	if (loader != NULL)
+	if (pointcloud != NULL)
 	{
-		m_loader = loader;
+		m_loader = pointcloud;
 	}
-	else std::cout << " Model == Null" << endl;
+	else std::cout << " Model not existent" << endl;
 
-    // Calculate bounding box
+
+	// Calculate bounding box
 	m_points = m_loader->getIndexedPointArray(m_numpoint);
 
-	// Resize the bounding box to be read out max and min values
+
+	// resize Boundingbox
 	for(size_t i = 0; i < m_numpoint; i++)
 	{
 	    this->m_boundingBox.expand(m_points[i][0], m_points[i][1], m_points[i][2]);
 
 	}
 
-	// read Min(lower left corner) and Max(upper right Corner)
+	// store the border of the boundingbox
 	VertexT max = m_boundingBox.getMax();
 	VertexT min = m_boundingBox.getMin();
-
 
 	KdNode<VertexT> * child = new KdNode<VertexT>(m_points, min , max);
 	child->setnumpoints(m_numpoint);

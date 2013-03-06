@@ -22,20 +22,19 @@
 #include "io/Model.hpp"
 #include "io/ModelFactory.hpp"
 #include "mpi/KdTree.hpp"
-#include "geometry/ColorVertex.hpp"
 
+//Normals
 #include "reconstruction/AdaptiveKSearchSurface.hpp"
 #include "reconstruction/PCLKSurface.hpp"
 
 using namespace lssr;
 
-// some easy typedefs
+#include "geometry/ColorVertex.hpp"
+
 typedef ColorVertex<float, unsigned char>      cVertex;
 typedef KdTree<cVertex>                        kd;
-//später noch Unterscheidung machen, welches benutzt wird
 typedef PointsetSurface<cVertex>                        psSurface;
 typedef PCLKSurface<cVertex, cNormal>                   pclSurface;
-
 
 int main (int argc , char *argv[]) {
 	// Kd Tree
@@ -43,8 +42,6 @@ int main (int argc , char *argv[]) {
     std::list<KdNode<cVertex>*> m_nodelist;
 
 	//Las Vegas Toolkit
-    // m_ for Master
-    // s_ for Slave
 
 	// A shared-Pointer for the model, with the pointcloud in it
 	ModelPtr 				m_model;
@@ -54,6 +51,8 @@ int main (int argc , char *argv[]) {
 
 	/// The currently stored points
 	coord3fArr   			m_points;
+
+	coord3fArr   			test_points;
 
 	coord3fArr               c_normals;
 
@@ -66,15 +65,8 @@ int main (int argc , char *argv[]) {
 	// Number of points in the point cloud (Child)
 	int c_sizepackage;
 
-	long int max_points = 10000;
-	// for calculate normals
-	int kd, kn, ki;
-	kd = 40;
-	kn = 40;
-	ki = 40;
-
-
 	// MPI
+	std::ofstream f;
 
 	// Anzahl an Processen
 	int numprocs;
@@ -129,7 +121,7 @@ int main (int argc , char *argv[]) {
 
 		}
 
-		// wait for their answer
+		// dann blockierend darauf warten
 		for ( i = 1; i < numprocs; i++)
 		{
 			MPI::COMM_WORLD.Recv(con_msg, 128, MPI::CHAR, i, 0);
@@ -137,7 +129,11 @@ int main (int argc , char *argv[]) {
 		}
 
 /*************************************** Connection is successful *****************/
-
+		int data_num = 1;
+		int client_serv_data = 1;
+		char file_name[256];
+		MPI::Request status[numprocs-1];
+		int count = 1;
 
 		//dynamisches array für die Normalen anlegen
 		float ** normals = new float*[numprocs - 1];
@@ -271,77 +267,77 @@ int main (int argc , char *argv[]) {
 					m_normal[n_buffer_pos + 2] = normals[client_serv_data][ (3 * x) + 2];
 
 				}
-				normals[client_serv_data][0] = 0;
+
+//				boost::shared_array<float> norm (normal);
+//
+//				m_loader->setPointNormalArray(norm, num_all_points );
 
 
 
+
+//				std::cout << "paar Punkte:" << norm[2] << " und " << m_points[2][0] << std::endl;
+				//ModelPtr test_model( new Model);
+//				m_model->m_pointCloud = m_loader;
+
+
+//				char data_name[32];
+//				sprintf(data_name, "Normals%03d.ply",count );
+
+
+//				io_factory.saveModel(m_model, data_name);
 
 
 				count++;
+// ende test
+
 				it++;
 				client_serv_data++;
 				client_serv_data = (client_serv_data % numprocs);
 				if (client_serv_data == 0) client_serv_data++;
 
+				std::cout << "Ende der Abfrage am Ende des Abspeicherfalls" << std::endl;
 
-			}// end if
+			}// ende if
 			else
 			{
 				count++;
 				it++;
 				client_serv_data++;
 				client_serv_data = (client_serv_data % numprocs);
-				if (client_serv_data == 0) client_serv_data++;
+				std::cout << "Ende der Abfrage am Ende" << std::endl;
 			}
-		}// End while
+		}// Ende Dauerschleife
 
-		//store all data which is still not stored
-		MPI::Request::Waitall( numprocs - 1, status);
-		client_serv_data = 1;
-		for (int y = 0 ; y < numprocs ; y++)
-		{
-			// check if some data is in there
-			if (normals[client_serv_data][0] != 0)
-			{
-				// store normals on correct position
-				for (int x = 0; x < laufvariable[client_serv_data] ; x ++)
-				{
-					int n_buffer_pos = 3 * Indizes[client_serv_data][x];
-
-					m_normal[n_buffer_pos]     = normals[client_serv_data][3 * x];
-					m_normal[n_buffer_pos + 1] = normals[client_serv_data][ (3 * x) + 1];
-					m_normal[n_buffer_pos + 2] = normals[client_serv_data][ (3 * x) + 2];
-
-				}
-			}
-			client_serv_data++;
-		}
+//test
 
 
-		//Points put back into proper shape for PointBufferPtr
+		std::cout << "Stunde der Wahrheit, es wird abgespeichert" << std::endl;
 		boost::shared_array<float> norm (m_normal);
+		std::cout << "paar Punkte:" << norm[2] << " und " << norm[2000] << std::endl;
 
 		long unsigned int tmp = static_cast<unsigned int>(m_loader->getNumPoints());
 
+		std::cout << "groesse gerechnet:" << num_all_points << " und aus dem Pointbuffer " << tmp << std::endl;
 
-		// set normals
+		std::cout << "1" << std::endl;
 		m_loader->setPointNormalArray(norm, m_loader->getNumPoints() );
-
+		std::cout << "2" << std::endl;
 		m_model->m_pointCloud = m_loader;
-
-		// save data
+		std::cout << "3" << std::endl;
 		io_factory.saveModel(m_model, "Normal.ply");
+		std::cout << "4" << std::endl;
 
-
-		// Complete connection
+		// Beende Verbindung
 		int end[1] = {-1};
 		int j = 1;
 		for (j = 1 ; j < numprocs ; j++)
 		{
+			std::cout << "Master schreibt das es zuende ist an: " << j << std::endl;
 			MPI::COMM_WORLD.Send(end , 1, MPI::INT, j, 2);
 		}
+		std::cout << "Daten wurden gesendet" << std::endl;
 
-
+// ist das so richtig, wirft manchmal fehler
 		for (int i = 0 ; i < (numprocs -1) ; i++)
 		{
 			delete [] normals[i];
@@ -351,44 +347,61 @@ int main (int argc , char *argv[]) {
 
 	}// Ende If
 /**********************************************************************************************************/
-	// Slave-Process
+	// Kinderprocesse
 	else
 	{
+		//Abbruch Bedingung
+		c_end[0] = 0;
+		//MPI::COMM_WORLD.Irecv(c_end, 1, MPI::CHAR, 0, 3);
 
-		// Wait for the first Message (INIT)
+
+		// Warte im blockierendem Modus...
 		MPI::COMM_WORLD.Recv(con_msg, 128, MPI::CHAR, 0,0);
 
-		// create answer
+		//erstelle Antwort
 		sprintf(idstring, "Processor %d ", rank);
 		strcat(con_msg,idstring);
-		strcat(con_msg, "roger roger, we can go on!");
+		strcat(con_msg, "hat verstanden und hält sich bereit!");
+
+		// Datei welche zeigt, ob der angesprochene Rechner auch richtig geantwortet hat. Liegt im gemeinsamen Speicher
+		f.open("testclient.dat");
+		f << con_msg << std::endl;
+
 
 		MPI::COMM_WORLD.Send(con_msg, 128, MPI::CHAR, 0, 0);
 
 /************************************ Connection is successful *******************/
+		//int count = 1;
 
-		// Loop for receiving the data, -1 cancels operation
+
+		// Schleife zum Empfangen der daten, -1 bricht Vorgang ab
 		while(true)
 		{
 			MPI::COMM_WORLD.Recv( &c_sizepackage, 1, MPI::INT , 0,2);
 
-			//termination condition
+			std::cout << "Abbruchssignal wenn gleich -1, sonst groesse der Punktwolke:" << c_sizepackage << std::endl;
+			//Abbruchbedingung
 			if (c_sizepackage == -1)
 			{
+				std::cout << "Abbruch hat gezuendet!!!!" << std::endl;
 				break;
 			}
 			else
 			{
+				std::cout << "Die Datei ist so groß: " << c_sizepackage << std::endl;
+		/**** Hier vorher noch schicken wie groß das Paket ist, in size_package speichern ***/
 
 
-				// Recv the data
+				MPI::COMM_WORLD.Recv(&c_data_num, 1, MPI::INT, 0, 3);
+
+				// empfangen der scan-Dateien
 				float * tmp = new float[3 * c_sizepackage];
 				MPI::Request client_req2 = MPI::COMM_WORLD.Irecv(tmp, 3 * c_sizepackage, MPI::FLOAT, 0, 1);
 
-				// wait till transmission complete
+				// warten bis Übertragung komplett ist
 				client_req2.Wait();
 
-				// Points put back into proper shape for PointBufferPtr
+				// Punkte wieder in richtige Form fpr Pointbuffer bringen
 				boost::shared_array<float> punkte (tmp);
 
 
@@ -398,16 +411,17 @@ int main (int argc , char *argv[]) {
 				PointBufferPtr pointcloud(new PointBuffer());
 				pointcloud->setPointArray(punkte, c_sizepackage);
 
+// Normalentest
 				psSurface::Ptr surface;
 				surface = psSurface::Ptr( new pclSurface(pointcloud));
 
 				// Set search options for normal estimation and distance evaluation
 				//willkürliche Werte, eigentlich mnit option
-				surface->setKd(kd);
-				surface->setKi(ki);
-				surface->setKn(kn);
+				surface->setKd(40);
+				surface->setKi(40);
+				surface->setKn(40);
 
-				// calculate the normals
+				// berechnen der Normalen mit Zeit
 			    Timestamp ts;
 				surface->calculateSurfaceNormals();
 				cerr << ts.getElapsedTimeInMs() << endl;
