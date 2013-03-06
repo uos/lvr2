@@ -43,9 +43,11 @@ set(LSSR_SOURCES
     texture/Trans.cpp
 )
 
+message(STATUS "Building shared library")
+add_library(lssr SHARED ${LSSR_SOURCES})
 
-add_library(staticlssr STATIC ${LSSR_SOURCES})
 message(STATUS "Building static library")
+add_library(staticlssr STATIC ${LSSR_SOURCES})
 
 set_target_properties(staticlssr PROPERTIES LIBRARY_OUTPUT_DIRECTORY
     ${CMAKE_SOURCE_DIR}/lib)
@@ -66,8 +68,7 @@ else ( rply_shared )
 endif ( rply_shared )
 
 if ( "${CMAKE_BUILD_TYPE}" STREQUAL "Release" ) 
-    message(STATUS "Building shared library")
-    add_library(lssr SHARED ${LSSR_SOURCES})
+
     set_target_properties(lssr PROPERTIES LIBRARY_OUTPUT_DIRECTORY
          ${CMAKE_SOURCE_DIR}/lib)
     target_link_libraries(lssr ${Boost_PROGRAM_OPTIONS_LIBRARY}
