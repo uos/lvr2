@@ -27,6 +27,8 @@
 #include "Transform.hpp"
 #include <opencv/highgui.h>
 #include <opencv/cv.h>
+#include <opencv2/nonfree/features2d.hpp>
+#include <opencv2/legacy/legacy.hpp>
 
 namespace lssr {
 
