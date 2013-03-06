@@ -26,6 +26,7 @@
 
 // stl includes
 #include <limits>
+#include <omp.h>
 
 // External libraries in lssr source tree
 #include <Eigen/Dense>
