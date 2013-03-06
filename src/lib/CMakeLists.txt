@@ -55,7 +55,7 @@ set_target_properties(staticlssr PROPERTIES LIBRARY_OUTPUT_DIRECTORY
 target_link_libraries(staticlssr ${Boost_PROGRAM_OPTIONS_LIBRARY}
     ${Boost_SYSTEM_LIBRARY} ${Boost_THREAD_LIBRARY} ${Boost_FILESYSTEM_LIBRARY}
     ${OpenMP_CXX_FLAGS} ${OPENGL_LIBRARY} ${OpenCV_LIBS})
-target_link_libraries(staticlssr laslib)
+target_link_libraries(staticlssr laslib_static)
 target_link_libraries(staticlssr obj)
 target_link_libraries(staticlssr pthread)
 target_link_libraries(staticlssr ${PCL_LIBRARIES})
