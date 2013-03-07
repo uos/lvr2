@@ -14,7 +14,7 @@ include_directories(${LAS_VEGAS_SOURCE_DIR})
 include_directories(${LAS_VEGAS_SOURCE_DIR}/src/lib)
 
 
-set( CMAKE_CXX_FLAGS         ${CMAKE_CXX_FLAGS}"-std=gnu++0x")
+set( CMAKE_CXX_FLAGS         ${CMAKE_CXX_FLAGS})
 
 ###############################################################
 # EXTERNAL LIBRARIES
