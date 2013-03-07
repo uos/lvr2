@@ -42,6 +42,7 @@ set(LSSR_SOURCES
     texture/Transform.cpp
     texture/Trans.cpp
 )
+SET_SOURCE_FILES_PROPERTIES(io/BoctreeIO.cpp PROPERTIES COMPILE_FLAGS "-std=gnu++0x")
 
 message(STATUS "Building static library")
 add_library(staticlssr STATIC ${LSSR_SOURCES})
