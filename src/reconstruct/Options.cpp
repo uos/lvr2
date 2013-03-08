@@ -62,6 +62,7 @@ Options::Options(int argc, char** argv) : m_descr("Supported options")
 		        ("retesselate,t", "Retesselate regions that are in a regression plane. Implies --optimizePlanes.")
 		        ("lft", value<float>(&m_lineFusionThreshold)->default_value(0.01), "(Line Fusion Threshold) Threshold for fusing line segments while tesselating.")
 		        ("generateTextures", "Generate textures during finalization.")
+		        ("textureAnalysis", "Enable texture analysis features for texture matchung.")
 		        ("texelSize", value<float>(&m_texelSize)->default_value(1), "Texel size that determines texture resolution.")
 		        ("classifier", value<string>(&m_classifier)->default_value("PlaneSimpsons"),"Classfier object used to color the mesh.")
 		        ("depth", value<int>(&m_depth)->default_value(100), "Maximum recursion depth for region growing.")
@@ -211,6 +212,11 @@ bool Options::printUsage() const
 bool Options::saveFaceNormals() const
 {
 	return m_variables.count("saveFaceNormals");
+}
+
+bool Options::doTextureAnalysis() const
+{
+    return m_variables.count("textureAnalyis");
 }
 
 bool Options::filenameSet() const

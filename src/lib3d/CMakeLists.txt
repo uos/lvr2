@@ -1,0 +1,39 @@
+set(LIB_3D_SOURCES 
+Arrow.cpp
+BaseVertex.cpp
+BoundingBox.cpp
+ColorVertex.cpp
+CoordinateAxes.cpp
+GroundPlane.cpp
+HalfEdge.cpp
+HalfEdgeFace.cpp
+HalfEdgeMesh.cpp
+HalfEdgePolygon.cpp
+HalfEdgeVertex.cpp
+LinkedTriangle.cpp
+LinkedTriangleMesh.cpp
+LinkedVertex.cpp
+Matrix4.cpp
+NormalCloud.cpp
+Normal.cpp
+OBJReader.cpp
+PLYElement.cpp
+PLYElements.cpp
+PLYProperty.cpp
+PLYWriter.cpp
+PointCloud.cpp
+PointCloud.cpp
+Polygon.cpp
+PolygonMesh.cpp
+ProgressiveMesh.cpp
+Quaternion.cpp 
+Renderable.cpp   
+StaticMesh.cpp
+Triangle.cpp
+TriangleMesh.cpp
+Tube.cpp)
+
+add_library(3d SHARED ${LIB_3D_SOURCES})
+set_target_properties(3d PROPERTIES LIBRARY_OUTPUT_DIRECTORY ${CMAKE_SOURCE_DIR}/lib)
+
+target_link_libraries(3d ${OPENGL_LIBRARY})

@@ -1,22 +1,20 @@
 cmake_minimum_required(VERSION 2.8)
-project(LSSR)
+project(LAS_VEGAS)
 
 set( CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_SOURCE_DIR}/bin )
-set( CMAKE_MODULE_PATH ${LSSR_SOURCE_DIR}/CMakeModules )
+set( CMAKE_MODULE_PATH ${LAS_VEGAS_SOURCE_DIR}/CMakeModules )
 
 link_directories("${CMAKE_SOURCE_DIR}/lib")
 link_directories("$ENV{HOME}/local/lib")
 
 include_directories(/usr/include/libusb-1.0/)
-include_directories(${LSSR_SOURCE_DIR}/ext/Eigen)
-include_directories(${LSSR_SOURCE_DIR}/ext/stann)
-include_directories(${LSSR_SOURCE_DIR})
-include_directories(${LSSR_SOURCE_DIR}/src/lib)
+include_directories(${LAS_VEGAS_SOURCE_DIR}/ext/Eigen)
+include_directories(${LAS_VEGAS_SOURCE_DIR}/ext/stann)
+include_directories(${LAS_VEGAS_SOURCE_DIR})
+include_directories(${LAS_VEGAS_SOURCE_DIR}/src/lib)
 
 
-set( CMAKE_CXX_FLAGS         "-O3 -g -std=gnu++0x ")
-set( CMAKE_CXX_FLAGS_RELEASE "-O3 -msse3 -Wno-deprecated-declarations -Wno-unused -Wcpp -std=gnu++0x " )
-set( CMAKE_CXX_FLAGS_DEBUG   "-g -Wall -std=gnu++0x " )
+set( CMAKE_CXX_FLAGS         ${CMAKE_CXX_FLAGS})
 
 ###############################################################
 # EXTERNAL LIBRARIES
@@ -112,8 +110,6 @@ if(OpenMP_FOUND)
 endif(OpenMP_FOUND)
 
 set( CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${OpenMP_CXX_FLAGS}" )
-set( CMAKE_CXX_FLAGS_RELEASE "${CMAKE_CXX_FLAGS_RELEASE} ${OpenMP_CXX_FLAGS}" )
-set( CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} ${OpenMP_CXX_FLAGS}" )
 
 
 ####
@@ -124,6 +120,8 @@ find_package(OpenGL REQUIRED)
 if(OpenGL_FOUND)
     link_directories(${OpenGL_INCLUDE_DIRS})
     include_directories(${OpenGL_LIBRARY_DIRS})
+    message( "OPEN GL LIBS 1 : " ${OPENGL_LIBRARIES}) 
+    message( "OPEN GL LIBS 2 : " ${OPENGL_LIBRARY}) 
 endif(OpenGL_FOUND)
 
 IF(APPLE)
@@ -138,9 +136,9 @@ if(UNIX)
 endif(UNIX)
 
 
-####
+##############################################################
 ## Searching for glut and it's additional runtime libraries.
-##############################
+##############################################################
 
 find_package(GLUT REQUIRED)
 if ( GLUT_FOUND )
@@ -161,6 +159,13 @@ if ( GLUT_Xi_LIBRARY )
 else ( GLUT_Xi_LIBRARY )
     message( SEND_ERROR "-- Could not find X.Org X11 libXi runtime library" )
 endif ( GLUT_Xi_LIBRARY )
+
+if ( OPENGL_glu_LIBRARY ) 
+    message( "-- Found GLU library" )
+else ( OPENGL_glu_LIBRARY ) 
+    message( SEND_ERROR "-- Could not find GLU library" )
+endif ( OPENGL_glu_LIBRARY ) 
+
 endif(LINUX)
 
 ##############################################################
@@ -208,6 +213,7 @@ add_subdirectory(src/scanreduce)
 add_subdirectory(src/convert)
 add_subdirectory(src/asciiconverter)
 add_subdirectory(src/texman)
+add_subdirectory(src/tiogen)
 add_subdirectory(src/meshoptimizer)
 
 if(CGAL_FOUND)
