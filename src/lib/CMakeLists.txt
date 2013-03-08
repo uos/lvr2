@@ -13,8 +13,8 @@ set(LSSR_SOURCES
     io/MeshBuffer.cpp
     io/PointBuffer.cpp
     io/GridIO.cpp
-    io/KinectGrabber.cpp
-    io/KinectIO.cpp
+    #io/KinectGrabber.cpp
+    #io/KinectIO.cpp
     io/CoordinateTransform.cpp
     io/BoctreeIO.cpp
     display/InteractivePointCloud.cpp
@@ -32,8 +32,8 @@ set(LSSR_SOURCES
     display/TextureFactory.cpp
     display/TexturedMesh.cpp
     geometry/Texture.cpp
-    reconstruction/PCLFiltering.cpp
-    mpi/ownmpi2.cpp
+#    reconstruction/PCLFiltering.cpp
+#    mpi/ownmpi2.cpp
 )
 
 
@@ -76,5 +76,4 @@ if ( "${CMAKE_BUILD_TYPE}" STREQUAL "Release" )
     endif ( rply_shared )
 endif ( "${CMAKE_BUILD_TYPE}" STREQUAL "Release" ) 
 
-add_executable( kd_test mpi/tmpmain.cpp )
-target_link_libraries(kd_test staticlssr)
+
