@@ -212,12 +212,12 @@ add_subdirectory(src/lib)
 # BINARIES
 ##############################################################
 
-add_subdirectory(src/reconstruct)
+#add_subdirectory(src/reconstruct)
 add_subdirectory(src/colorize)
 add_subdirectory(src/scanreduce)
 add_subdirectory(src/convert)
-add_subdirectory(src/asciiconverter)
-add_subdirectory(src/meshoptimizer)
+#add_subdirectory(src/asciiconverter)
+#add_subdirectory(src/meshoptimizer)
 add_subdirectory(src/mpi)
 
 if(CGAL_FOUND)
