@@ -624,8 +624,11 @@ float Statistics::calcMaxCorrelationCoefficient()
 		
 		//get the second largest eigenvalue of Q
 		cv::Mat E, V;
-		cv::eigen(Q, E, V);
-		result += sqrt(E.at<double>(1,0));
+		bool ok = cv::eigen(Q, E, V);
+		if(ok)
+		{
+		    result += sqrt(E.at<double>(1,0));
+		}
 	}
 	return result / 4;
 }

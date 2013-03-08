@@ -42,10 +42,10 @@ set(LSSR_SOURCES
     texture/Transform.cpp
     texture/Trans.cpp
 )
+SET_SOURCE_FILES_PROPERTIES(io/BoctreeIO.cpp PROPERTIES COMPILE_FLAGS "-std=gnu++0x")
 
-
-add_library(staticlssr STATIC ${LSSR_SOURCES})
 message(STATUS "Building static library")
+add_library(staticlssr STATIC ${LSSR_SOURCES})
 
 set_target_properties(staticlssr PROPERTIES LIBRARY_OUTPUT_DIRECTORY
     ${CMAKE_SOURCE_DIR}/lib)
@@ -53,11 +53,11 @@ set_target_properties(staticlssr PROPERTIES LIBRARY_OUTPUT_DIRECTORY
 target_link_libraries(staticlssr ${Boost_PROGRAM_OPTIONS_LIBRARY}
     ${Boost_SYSTEM_LIBRARY} ${Boost_THREAD_LIBRARY} ${Boost_FILESYSTEM_LIBRARY}
     ${OpenMP_CXX_FLAGS} ${OPENGL_LIBRARY} ${OpenCV_LIBS})
-target_link_libraries(staticlssr laslib)
+target_link_libraries(staticlssr laslib_static)
 target_link_libraries(staticlssr obj)
 target_link_libraries(staticlssr pthread)
 target_link_libraries(staticlssr ${PCL_LIBRARIES})
-target_link_libraries(staticlssr slam6d)
+target_link_libraries(staticlssr slam6d_static)
 
 if ( rply_shared ) 
     target_link_libraries(staticlssr ${rply_shared})
@@ -65,20 +65,21 @@ else ( rply_shared )
     target_link_libraries(staticlssr rply_local_static)
 endif ( rply_shared )
 
-if ( "${CMAKE_BUILD_TYPE}" STREQUAL "Release" ) 
-    message(STATUS "Building shared library")
-    add_library(lssr SHARED ${LSSR_SOURCES})
-    set_target_properties(lssr PROPERTIES LIBRARY_OUTPUT_DIRECTORY
-         ${CMAKE_SOURCE_DIR}/lib)
-    target_link_libraries(lssr ${Boost_PROGRAM_OPTIONS_LIBRARY}
-         ${Boost_SYSTEM_LIBRARY} ${Boost_THREAD_LIBRARY} ${Boost_FILESYSTEM_LIBRARY}
-         ${OpenMP_CXX_FLAGS} ${OPENGL_LIBRARY} ${OpenCV_LIBS} )
-    target_link_libraries(lssr laslib)
-    if ( rply_shared ) 
-         target_link_libraries(lssr ${rply_shared})
-         target_link_libraries(staticlssr ${rply_shared})
-    else ( rply_shared )
-         target_link_libraries(lssr rply_local_static)
-         target_link_libraries(staticlssr rply_local_static)
-    endif ( rply_shared )
-endif ( "${CMAKE_BUILD_TYPE}" STREQUAL "Release" ) 
+message(STATUS "Building shared library")
+add_library(lssr SHARED ${LSSR_SOURCES})
+
+set_target_properties(lssr PROPERTIES LIBRARY_OUTPUT_DIRECTORY
+     ${CMAKE_SOURCE_DIR}/lib)
+target_link_libraries(lssr ${Boost_PROGRAM_OPTIONS_LIBRARY}
+     ${Boost_SYSTEM_LIBRARY} ${Boost_THREAD_LIBRARY} ${Boost_FILESYSTEM_LIBRARY}
+     ${OpenMP_CXX_FLAGS} ${OPENGL_LIBRARY} ${OpenCV_LIBS} )
+target_link_libraries(lssr laslib)
+target_link_libraries(lssr obj)
+target_link_libraries(lssr pthread)
+target_link_libraries(lssr ${PCL_LIBRARIES})
+target_link_libraries(lssr slam6d)
+if ( rply_shared )
+     target_link_libraries(lssr ${rply_shared})
+else ( rply_shared )
+     target_link_libraries(lssr rply_local)
+endif ( rply_shared )

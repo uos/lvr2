@@ -29,7 +29,6 @@
 #include <QtGui>
 #include "io/PointBuffer.hpp"
 #include "reconstruction/AdaptiveKSearchSurface.hpp"
-#include "reconstruction/PCLKSurface.hpp"
 #include "reconstruction/FastReconstruction.hpp"
 
 using namespace lssr;

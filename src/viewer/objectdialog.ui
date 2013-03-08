@@ -1,0 +1,74 @@
+<ui version="4.0" >
+ <class>ObjectDialog</class>
+ <widget class="QDockWidget" name="ObjectDialog" >
+  <property name="geometry" >
+   <rect>
+    <x>0</x>
+    <y>0</y>
+    <width>200</width>
+    <height>137</height>
+   </rect>
+  </property>
+  <property name="minimumSize" >
+   <size>
+    <width>200</width>
+    <height>130</height>
+   </size>
+  </property>
+  <property name="maximumSize" >
+   <size>
+    <width>16777215</width>
+    <height>150</height>
+   </size>
+  </property>
+  <property name="layoutDirection" >
+   <enum>Qt::LeftToRight</enum>
+  </property>
+  <property name="floating" >
+   <bool>false</bool>
+  </property>
+  <property name="features" >
+   <set>QDockWidget::DockWidgetClosable|QDockWidget::DockWidgetVerticalTitleBar</set>
+  </property>
+  <property name="allowedAreas" >
+   <set>Qt::LeftDockWidgetArea</set>
+  </property>
+  <property name="windowTitle" >
+   <string>Loaded Objects</string>
+  </property>
+  <widget class="QWidget" name="dockWidgetContents" >
+   <property name="geometry" >
+    <rect>
+     <x>20</x>
+     <y>0</y>
+     <width>180</width>
+     <height>137</height>
+    </rect>
+   </property>
+   <widget class="QListWidget" name="listWidget" >
+    <property name="geometry" >
+     <rect>
+      <x>0</x>
+      <y>10</y>
+      <width>171</width>
+      <height>121</height>
+     </rect>
+    </property>
+    <property name="minimumSize" >
+     <size>
+      <width>0</width>
+      <height>0</height>
+     </size>
+    </property>
+    <property name="maximumSize" >
+     <size>
+      <width>16777215</width>
+      <height>16777215</height>
+     </size>
+    </property>
+   </widget>
+  </widget>
+ </widget>
+ <resources/>
+ <connections/>
+</ui>

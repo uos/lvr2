@@ -26,12 +26,15 @@ The binaries are compiled to the ./bin directory in the base dir.
 You may simply copy this:
 % mkdir build; cd build; cmake -DCMAKE_BUILD_TYPE=Release ..; make; cd ../bin 
 
-
 REQUIRED LIBRARIES
 ==================
 
   + OpenGL
   + glut
+  + BOOST Filesystem
+  + BOOST Program Option
+  + BOOST System
+  + Qt 4.8 or higher for viewer
   + BOOST
     - Filesystem
     - Program Option
@@ -42,6 +45,7 @@ REQUIRED LIBRARIES
   + libXi
   + libXmu
   + Optional: librply [https://github.com/lkiesow/librply]
+  + OpenCV
 
 You need to compile libQGLViewer with CONFIG += no_keywords to be compatible 
 with Boost. If the version that comes with your Linux distrubution is not
