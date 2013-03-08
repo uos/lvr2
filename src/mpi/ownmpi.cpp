@@ -33,7 +33,6 @@ using namespace lssr;
 
 
 int main (int argc , char *argv[]) {
-	std::cout << "es fängt an" << std::endl;
 	// Kd Tree
     // A list for all Nodes with less than MAX_POINTS
     std::list<KdNode<ColorVertex<float, unsigned char>>*> m_nodelist;
@@ -238,14 +237,14 @@ int main (int argc , char *argv[]) {
 				client_serv_data = (client_serv_data % numprocs);
 			}
 		}// End while
-		std::cout << "vor dem waitall" << std::endl;
+
 		//store all data which is still not stored
 		MPI::Request::Waitall( numprocs - 1, status);
-		std::cout << "dahinter" << std::endl;
+
 		client_serv_data = 0;
 		for (int y = 0 ; y < numprocs - 1 ; y++)
 		{
-			std::cout << "ein Durchlauf" << std::endl;
+
 			// check if some data is in there
 			if (normals[client_serv_data][0] != 0)
 			{
@@ -262,7 +261,7 @@ int main (int argc , char *argv[]) {
 			}
 			client_serv_data++;
 		}
-		std::cout << "dahinter" << std::endl;
+
 
 
 		//Points put back into proper shape for PointBufferPtr
@@ -279,7 +278,7 @@ int main (int argc , char *argv[]) {
 		// save data
 		io_factory.saveModel(m_model, "Normal.ply");
 
-		std::cout << "Verbindung wird beendet" << std::endl;
+		
 		// Complete connection
 		int end[1] = {-1};
 		int j = 1;
@@ -289,16 +288,13 @@ int main (int argc , char *argv[]) {
 		}
 
 
-		std::cout << "Hier kommt gleich der Fehler" << std::endl;
+		
 		for (int i = 0 ; i < (numprocs -1) ; i++)
 		{
-			std::cout << "Durchlauf: " << i << std::endl;
 			delete [] normals[i];
-			std::cout << "ende Durchlauf: " << i << std::endl;
 		}
 
 		delete [] normals;
-		std::cout << "nach dem letzten, der fehler leigt hier wohl doch nicht" << std::endl;
 
 	}// Ende If
 /**********************************************************************************************************/
@@ -378,7 +374,7 @@ int main (int argc , char *argv[]) {
 		}
 
 	}// End else
-	std::cout << "Beende jetzt wirklich - Der Prozess: " << rank << std::endl; 
+	std::cout << "Beende den Prozess: " << rank << std::endl; 
 	MPI_Finalize();
 
 }
