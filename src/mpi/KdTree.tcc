@@ -13,46 +13,6 @@
 namespace lssr{
 
 template<typename VertexT>
-KdTree<VertexT>::KdTree()
-{
-	// Create a point loader object - Aus der Main (reconstruct)
-	ModelFactory io_factory;
-
-	// Übergabe noch variabel machen
-	m_model = io_factory.readModel( "flur3.pts" );
-
-
-	if (m_model != NULL)
-	{
-		m_loader = m_model->m_pointCloud;
-	}
-	else std::cout << " Model not existent" << endl;
-
-
-	// Calculate bounding box
-	m_points = m_loader->getIndexedPointArray(m_numpoint);
-
-
-	// resize Boundingbox
-	for(size_t i = 0; i < m_numpoint; i++)
-	{
-	    this->m_boundingBox.expand(m_points[i][0], m_points[i][1], m_points[i][2]);
-
-	}
-
-	// store the border of the boundingbox
-	VertexT max = m_boundingBox.getMax();
-	VertexT min = m_boundingBox.getMin();
-
-	KdNode<VertexT> * child = new KdNode<VertexT>(m_points, min , max);
-	child->setnumpoints(m_numpoint);
-
-	this->Rekursion(child);
-
-}
-
-
-template<typename VertexT>
 KdTree<VertexT>::KdTree(PointBufferPtr loader, long int max_p)
 {
 
@@ -102,38 +62,6 @@ void KdTree<VertexT>::Rekursion(KdNode<VertexT> * first){
 	first->setIndizes(tmp);
 	// start the recursion
 	splitPointcloud(first);
-
-	// store list of nodes in files
-	int count = 1;
-	char number [1];
-
-	for (typename std::list<KdNode<VertexT>*>::iterator it=nodelist.begin() ; it != nodelist.end() ; ++it)
-	{
-		// composed of the file name
-	    char name[256];
-	    sprintf(name, "scan%03d.3d", count);
-	    string filename(name);
-
-
-		ModelFactory io_factory;
-		// The factory requires a model to save.
-		// The model in turn requires a Pointbuffer and a Meshbuffer (can be emtpy).
-		// The Pointbuffer contains the Indexlist.
-
-		PointBufferPtr pointcloud(new PointBuffer());
-
-
-		size_t num = (*it)->getnumpoints();
-		pointcloud->setIndexedPointArray((*it)->node_points, num );
-
-
-		MeshBufferPtr mesh;
-	    ModelPtr model( new Model( pointcloud, mesh ) );
-
-		io_factory.saveModel(model, filename);
-
-	    count++;
-	}
 
 }
 

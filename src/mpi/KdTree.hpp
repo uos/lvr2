@@ -35,12 +35,6 @@ template<typename VertexT>
 class KdTree {
 public:
 
-	/**
-	 * @brief Test Construktor
-	 */
-	KdTree();
-
-
 	virtual ~KdTree();
 
 	/**
