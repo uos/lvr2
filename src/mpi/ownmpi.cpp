@@ -21,20 +21,15 @@
 #include "io/PointBuffer.hpp"
 #include "io/Model.hpp"
 #include "io/ModelFactory.hpp"
-#include "mpi/KdTree.hpp"
+#include "src/mpi/KdTree.hpp"
 #include "geometry/ColorVertex.hpp"
+#include "geometry/Normal.hpp"
 
 #include "reconstruction/AdaptiveKSearchSurface.hpp"
-#include "reconstruction/PCLKSurface.hpp"
+
 
 using namespace lssr;
 
-// some easy typedefs
-typedef ColorVertex<float, unsigned char>      cVertex;
-typedef KdTree<cVertex>                        kd;
-//später noch Unterscheidung machen, welches benutzt wird
-typedef PointsetSurface<cVertex>                        psSurface;
-typedef PCLKSurface<cVertex, cNormal>                   pclSurface;
 
 
 int main (int argc , char *argv[]) {
@@ -89,7 +84,8 @@ int main (int argc , char *argv[]) {
 	char con_msg[128];
 	long int num_all_points = 0;
 
-	int client_serv_data = 1;
+	//if send this, +1 because this the Master in MPI has the rank 0 but for all Indizes this is more pleasant
+	int client_serv_data = 0;
 
 	int count = 1;
 
@@ -180,7 +176,7 @@ int main (int argc , char *argv[]) {
 			int * int_numpoint = new int[1];
 
 			int_numpoint[0] = (*it)->getnumpoints();
-			MPI::COMM_WORLD.Send(int_numpoint, 1, MPI::INT, client_serv_data, 2);
+			MPI::COMM_WORLD.Send(int_numpoint, 1, MPI::INT, client_serv_data + 1, 2);
 
 
 			// allokiere normal array dynamically
@@ -193,12 +189,12 @@ int main (int argc , char *argv[]) {
 
 
 			// send Data
-			MPI::Request req2 = MPI::COMM_WORLD.Isend(m_points.get(), 3 *  int_numpoint[0], MPI::FLOAT, client_serv_data, 1);
+			MPI::Request req2 = MPI::COMM_WORLD.Isend(m_points.get(), 3 *  int_numpoint[0], MPI::FLOAT, client_serv_data + 1, 1);
 
 
 			// Reciev Normals
 			MPI::Request tmp;
-			tmp = MPI::COMM_WORLD.Irecv(normals[client_serv_data], 3 * int_numpoint[0], MPI::FLOAT, client_serv_data, 4);
+			tmp = MPI::COMM_WORLD.Irecv(normals[client_serv_data], 3 * int_numpoint[0], MPI::FLOAT, client_serv_data + 1, 4);
 			status[client_serv_data - 1] = tmp;
 
 
@@ -209,8 +205,6 @@ int main (int argc , char *argv[]) {
 			if (count >= numprocs - 1)
 			{
 				client_serv_data = MPI::Request::Waitany( numprocs - 1, status);
-
-				client_serv_data++;
 
 
 				// store normals on correct position
@@ -233,7 +227,6 @@ int main (int argc , char *argv[]) {
 				it++;
 				client_serv_data++;
 				client_serv_data = (client_serv_data % numprocs);
-				if (client_serv_data == 0) client_serv_data++;
 
 
 			}// end if
@@ -243,14 +236,13 @@ int main (int argc , char *argv[]) {
 				it++;
 				client_serv_data++;
 				client_serv_data = (client_serv_data % numprocs);
-				if (client_serv_data == 0) client_serv_data++;
 			}
 		}// End while
 		std::cout << "vor dem waitall" << std::endl;
 		//store all data which is still not stored
 		MPI::Request::Waitall( numprocs - 1, status);
 		std::cout << "dahinter" << std::endl;
-		client_serv_data = 1;
+		client_serv_data = 0;
 		for (int y = 0 ; y < numprocs - 1 ; y++)
 		{
 			std::cout << "ein Durchlauf" << std::endl;
@@ -297,12 +289,16 @@ int main (int argc , char *argv[]) {
 		}
 
 
+		std::cout << "Hier kommt gleich der Fehler" << std::endl;
 		for (int i = 0 ; i < (numprocs -1) ; i++)
 		{
+			std::cout << "Durchlauf: " << i << std::endl;
 			delete [] normals[i];
+			std::cout << "ende Durchlauf: " << i << std::endl;
 		}
 
 		delete [] normals;
+		std::cout << "nach dem letzten, der fehler leigt hier wohl doch nicht" << std::endl;
 
 	}// Ende If
 /**********************************************************************************************************/
@@ -353,8 +349,8 @@ int main (int argc , char *argv[]) {
 				PointBufferPtr pointcloud(new PointBuffer());
 				pointcloud->setPointArray(punkte, c_sizepackage);
 
-				psSurface::Ptr surface;
-				surface = psSurface::Ptr( new pclSurface(pointcloud));
+				PointsetSurface<ColorVertex<float, unsigned char> >* surface;
+				surface = new AdaptiveKSearchSurface<ColorVertex<float, unsigned char>, Normal<float> >(pointcloud, "FLANN");
 
 				// Set search options for normal estimation and distance evaluation
 				//willkürliche Werte, eigentlich mnit option
@@ -382,7 +378,7 @@ int main (int argc , char *argv[]) {
 		}
 
 	}// End else
-
+	std::cout << "Beende jetzt wirklich - Der Prozess: " << rank << std::endl; 
 	MPI_Finalize();
 
 }
