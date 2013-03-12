@@ -27,52 +27,38 @@
 
 #include "reconstruction/AdaptiveKSearchSurface.hpp"
 
+#include <boost/program_options.hpp>
 
 using namespace lssr;
-
+namespace po = boost::program_options;
 
 
 int main (int argc , char *argv[]) {
   
     
     int kd, kn, ki; 
-    char filename[128];
-    char tmp_kd[1];
-    char tmp_ki[1];
-    char tmp_kn[1];
-    int argc_count = 0;
+    long int max_points;
     
-    for (int y = 0 ; y < argc ; y++)
-    {
-	if (strcmp(argv[y], "-kd") == 0) 
-	{
-	  y++;
-	  strcpy(tmp_kd, argv[y]);
-	  kd = atoi(tmp_kd);
-	  argc_count++;
-	}
-	else if (strcmp(argv[y], "-ki") == 0)
-	{	  
-	  y++;
-	  strcpy(tmp_ki, argv[y]);
-	  ki = atoi(tmp_ki);
-	  argc_count++;
-	}
-	else if (strcmp(argv[y], "-kn") == 0)
-	{
-	  y++;
-	  strcpy(tmp_kn, argv[y]);
-	  kn = atoi(tmp_kn);
-	  argc_count++;
-	}
-	else if (strstr(argv[y], ".pts"))
-	{
-	  strcpy(filename, argv[y]);
-	  y++;
-	}
+    
+    po::options_description desc("Allowed options");
+    desc.add_options()
+      ("help"      , "produce help message")
+      ("kd"        , po::value<int>(&kd)->default_value(40), "set kd")
+      ("ki"        , po::value<int>(&ki)->default_value(40), "set ki")
+      ("kn"        , po::value<int>(&kn)->default_value(40), "set kn")
+      ("maxpoints" , po::value<long int>(&max_points)->default_value(10000), "set maxpoints")
+      ("file"      , po::value<string>(), "Inputfile")
+    ;
+    
+    po::variables_map vm;
+    po::store(po::parse_command_line(argc, argv, desc), vm);
+    po::notify(vm);    
+  
+    if (vm.count("help")) {
+      cout << desc << "\n";
+      return 1;
     }
-    //argc = argc - ( 2 * argc_count);
-    
+        
 
 	// Kd Tree
     // A list for all Nodes with less than MAX_POINTS
@@ -102,14 +88,8 @@ int main (int argc , char *argv[]) {
 	// Number of points in the point cloud (Child)
 	int c_sizepackage;
 
-	long int max_points = 10000;
+
 	// for calculate normals
-
-
-	kd = 40;
-	kn = 40;
-	ki = 40;
-
 
 	// MPI
 
@@ -149,7 +129,7 @@ int main (int argc , char *argv[]) {
 	if (rank == 0){
 	/*temporär wird noch ausgelesen, später Übergabe durch das Programm */
 		//Read the file and get the pointcloud
-		m_model = io_factory.readModel( filename );
+		m_model = io_factory.readModel( vm["file"].as<string>() );
 
 		if (m_model != NULL)
 		{
