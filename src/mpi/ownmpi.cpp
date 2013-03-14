@@ -34,8 +34,13 @@ namespace po = boost::program_options;
 
 
 int main (int argc , char *argv[]) {
+  int count_serv = 0;  
+  fstream f;
+  char test_aufgabe_name[64];
   
-    
+  
+  Timestamp start;
+
     int kd, kn, ki; 
     long int max_points;
     
@@ -323,14 +328,16 @@ int main (int argc , char *argv[]) {
 	// Slave-Process
 	else
 	{
+//für die tests zum Zeitmessen
 
 		// Wait for the first Message (INIT)
 		MPI::COMM_WORLD.Recv(con_msg, 128, MPI::CHAR, 0,0);
 
 		// create answer
-		sprintf(idstring, "Processor %d ", rank);
+		sprintf(idstring, "Processor %d on ", rank);
+		strcat(idstring, processor_name);
 		strcat(con_msg,idstring);
-		strcat(con_msg, "roger roger, we can go on!");
+		strcat(con_msg, "...roger roger, we can go on!");
 
 		MPI::COMM_WORLD.Send(con_msg, 128, MPI::CHAR, 0, 0);
 
@@ -348,6 +355,7 @@ int main (int argc , char *argv[]) {
 			}
 			else
 			{
+count_serv++;
 
 
 				// Recv the data
@@ -377,9 +385,9 @@ int main (int argc , char *argv[]) {
 				surface->setKn(kn);
 
 				// calculate the normals
-			    Timestamp ts;
+				//Timestamp ts;
 				surface->calculateSurfaceNormals();
-				cerr << ts.getElapsedTimeInMs() << endl;
+				//cerr << ts.getElapsedTimeInMs() << endl;
 
 				ModelPtr pn( new Model);
 				pn->m_pointCloud = surface->pointBuffer();
@@ -396,7 +404,14 @@ int main (int argc , char *argv[]) {
 		}
 
 	}// End else
-	std::cout << "Beende den Prozess: " << rank << std::endl; 
+	if (rank == 0)
+	{  
+	  std::cout << "so lange hat es gebraucht: " << start.getElapsedTimeInMs() << std::endl;
+	}
+	sprintf(test_aufgabe_name, "Ausgabe%00d.dat" , rank);
+	f.open(test_aufgabe_name, ios::out);
+	f << "Beende den Prozess: " << rank << ", dieser hat " << count_serv << " Pakete bearbeiet." << endl; 
+	f.close();
 	MPI_Finalize();
 
 }
