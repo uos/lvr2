@@ -57,8 +57,11 @@ public:
 	 *
 	 * 	The classification criterion is to halve the longest axis.
 	 *	When a partial pointcloud has less than the maximum number of points is thus, it will be stored in a 3D file.
+	 *
+	 *@param child Instance KdNode 
+	 *@param again count if this is the second call with the same KdNode, if it is take another axis
 	 */
-	void splitPointcloud(KdNode<VertexT> * child);
+	void splitPointcloud(KdNode<VertexT> * child, int again);
 
 	/**
 	 * @brief returns the list of kdNodes
