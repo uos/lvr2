@@ -16,6 +16,7 @@ KdNode<VertexT>::KdNode(coord3fArr points, VertexT min, VertexT max)
 	m_maxvertex = max;
 	node_points = points;
 	m_numpoints = 0;
+	again = 0;
 
 
 }
@@ -49,6 +50,8 @@ boost::shared_array<size_t>  KdNode<VertexT>::getIndizes(){
 
 template<typename VertexT>
 KdNode<VertexT>::~KdNode() {
+	delete [] &indizes;
+	delete [] &node_points;
 	// TODO Auto-generated destructor stub
 }
 
