@@ -51,7 +51,7 @@ public:
 	boost::shared_array<size_t> getIndizes();
 
 	void setIndizes(boost::shared_array<size_t> indi);
-
+	
 	/**
 	 * @brief Get the node points
 	 */
@@ -68,6 +68,8 @@ public:
 	VertexT m_maxvertex;
 	//This vector represents the "top" of the scene (maximum x, y and z value)
 	VertexT m_minvertex;
+//Notlösung
+	int again;
 
 };
 }
