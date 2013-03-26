@@ -9,14 +9,15 @@
 
 #include <cstdlib>
 
-#define MAX_POINTS 10000
+
 namespace lssr{
 
 template<typename VertexT>
-KdTree<VertexT>::KdTree(PointBufferPtr loader, long int max_p)
+KdTree<VertexT>::KdTree(PointBufferPtr loader, long int max_p , long int min_p)
 {
 
 	max_points = max_p;
+	min_points = min_p;
 
 	if (loader != NULL)
 	{
@@ -33,7 +34,7 @@ KdTree<VertexT>::KdTree(PointBufferPtr loader, long int max_p)
 	    this->m_boundingBox.expand(m_points[i][0], m_points[i][1], m_points[i][2]);
 
 	}
-
+	
 	// read Min(lower left corner) and Max(upper right Corner)
 	VertexT max = m_boundingBox.getMax();
 	VertexT min = m_boundingBox.getMin();
@@ -48,7 +49,6 @@ KdTree<VertexT>::KdTree(PointBufferPtr loader, long int max_p)
 
 
 template<typename VertexT>
-
 void KdTree<VertexT>::Rekursion(KdNode<VertexT> * first){
 
 
@@ -61,29 +61,36 @@ void KdTree<VertexT>::Rekursion(KdNode<VertexT> * first){
 	}
 	first->setIndizes(tmp);
 	// start the recursion
-	splitPointcloud(first);
+	splitPointcloud(first, 0);
 
 }
 
 
 
 template<typename VertexT>
-void KdTree<VertexT>::splitPointcloud(KdNode<VertexT> * child)
+void KdTree<VertexT>::splitPointcloud(KdNode<VertexT> * child , int again)
 {
+  
 	//std::cout << "start vom split" << std::endl;
 	// recursion rule
-	if (child->getnumpoints() == 0)
+	if (child->getnumpoints() == 0 || child->again == 6)
 	{
+
+		child->node_points.reset();
+		child->indizes.reset();
+		delete child;
 		// nothing to do
 	}
-	else if ( child->getnumpoints() < MAX_POINTS)
+	else if ( child->getnumpoints() < max_points)
 	{
+
 		// Node has less than MAX_POINTS in it, so store it in the list
 		nodelist.push_back(child);
 	}
 	// weiter aufteilen
 	else
 	{
+
 		VertexT min = child->m_minvertex;
 		VertexT max = child->m_maxvertex;
 
@@ -110,17 +117,21 @@ void KdTree<VertexT>::splitPointcloud(KdNode<VertexT> * child)
 		int splitaxis;
 		float split;
 
-		if ( dx > dy)
+		if ( dx > dy )
 		{
 			if ( dx > dz)
 			{
 				splitaxis = 0;
-				split = ( xmin + xmax ) / 2.0f;
+				if      (again == 0) split = ( xmin + xmax ) / 2.0f;
+				else if (again == 1) split = ( ( xmin + xmax ) / 2.0f ) + ( ( (child->again * 2) * ( xmax - xmin)) / 11 );
+				else if (again == 2) split = ( ( xmin + xmax ) / 2.0f ) - ( ( (child->again * 2) * ( xmax - xmin)) / 11 );
 			}
 			else
 			{
 				splitaxis = 2;
-				split = ( zmin + zmax ) / 2.0f;
+				if      (again == 0) split = ( zmin + zmax ) / 2.0f;
+				else if (again == 1) split = ( ( zmin + zmax ) / 2.0f ) + ( ( (child->again * 2) * ( zmax - zmin)) / 11 );
+				else if (again == 2) split = ( ( zmin + zmax ) / 2.0f ) - ( ( (child->again * 2) * ( zmax - zmin)) / 11 );
 			}
 		}
 		else
@@ -128,15 +139,22 @@ void KdTree<VertexT>::splitPointcloud(KdNode<VertexT> * child)
 			if ( dy > dz)
 			{
 				splitaxis = 1;
-				split = ( ymin + ymax ) / 2.0f;
+				if      (again == 0) split = ( ymin + ymax ) / 2.0f;
+				else if (again == 1) split = ( ( ymin + ymax ) / 2.0f ) + ( ( (child->again * 2 ) * ( ymax - ymin)) / 11 );
+				else if (again == 2) split = ( ( ymin + ymax ) / 2.0f ) - ( ( (child->again * 2 ) * ( ymax - ymin)) / 11 );
 			}
 			else
 			{
 				splitaxis = 2;
-				split = ( zmin + zmax ) / 2.0f;
+				if      (again == 0) split = ( zmin + zmax ) / 2.0f;
+				else if (again == 1) split = ( ( zmin + zmax ) / 2.0f ) + ( ( (child->again * 2) * ( zmax - zmin)) / 11 );
+				else if (again == 2) split = ( ( zmin + zmax ) / 2.0f ) - ( ( (child->again * 2) * ( zmax - zmin)) / 11 );
 			}
 		}
-
+		
+		// count the loops with the same pointcloud
+		if ( again != 0) child->again++;
+  
 		// termination criterion for the case that something went wrong
 		if (xmin == xmax && ymin == ymax && zmin == zmax) return;
 
@@ -144,88 +162,145 @@ void KdTree<VertexT>::splitPointcloud(KdNode<VertexT> * child)
 		VertexT child1_max = max;
 		child2_min[splitaxis] = split;
 		child1_max[splitaxis] = split;
-
-
-		int countleft = 0;
-		int countright = 0;
-
-		coord3fArr left(new coord<float>[m_numpoint]);
-		coord3fArr right(new coord<float>[m_numpoint]);
-		//double * left_indizes = (double*) calloc (m_numpoint, sizeof(double));
-		//double * right_indizes = (double*) calloc (m_numpoint, sizeof(double));
-		boost::shared_array<size_t> left_indizes(new size_t [static_cast<unsigned int>(m_numpoint)]);
-		boost::shared_array<size_t> right_indizes(new size_t [static_cast<unsigned int>(m_numpoint)]);
-		for (int y = 0 ; y < static_cast<unsigned int>(m_numpoint) ; y++)
+		
+//NOTLÖSUNG
+	    int not_count_left  = 0;
+	    int not_count_right = 0;
+	    for (size_t j = 0 ; j < child->getnumpoints(); j++)
+	    {
+		if (child->node_points[j][splitaxis] <= split)
 		{
-			left_indizes[y] = 0;
-			right_indizes[y] = 0;
+		    not_count_left++;
 		}
-
-		boost::shared_array<size_t> child_indizes = child->getIndizes();
-
-
-		// divide the pointcloud (still on th axle average)
-		for (size_t j = 0 ; j < child->getnumpoints(); j++)
+		else
 		{
-			//std::cout << "for-SChleife" << std::endl;
-			if (child->node_points[j][splitaxis] <= split)
-			{
-				//std::cout << "if" << std::endl;
-				left[countleft] = child->node_points[j];
+		    not_count_right++;
+		} 
+	    }		
+		
+		
+	    if ( not_count_left > ( 1500 + min_points ) && not_count_right > ( 1500 + min_points ) )
+	    {
+		    int countleft = 0;
+		    int countright = 0;
 
-				//std::cout << "bis hier tut alles" << std::endl;
-				//abspeichern einer liste der Indizes aus der Anfangsmenge
-				if (child_indizes[static_cast<unsigned int>(j)] == 0)
-				{
-					//std::cout << " hier ist der fehler, wahrscheinlich 2" << std::endl;
-					left_indizes[countleft] = j;
-				}
-				else
-				{
-					//std::cout << " hier ist der fehler, wahrscheinlich" << std::endl;
-					left_indizes[countleft] =  child->indizes[static_cast<unsigned int>(j)];
-				}
-				countleft++;
-				//std::cout << "nach dem fehler" << std::endl;
-			}
-			else if (child->node_points[j][splitaxis] > split)
-			{
-				//std::cout << "else" << std::endl;
-				right[countright] = child->node_points[j];
-
-				//abspeichern einer liste der Indizes aus der Anfangsmenge
-				if (child_indizes[static_cast<unsigned int>(j)] == 0)
-				{
-					//std::cout << " hier ist der fehler, wahrscheinlich 2" << std::endl;
-					right_indizes[countright] = j;
-				}
-				else
-				{
-					//std::cout << " hier ist der fehler, wahrscheinlich" << std::endl;
-					right_indizes[countright] =  child->indizes[static_cast<unsigned int>(j)];
-				}
-				//std::cout << "nach dem fehler" << std::endl;
-				countright++;
-			}
-			else
-			{
-				std::cout << "!!!!!!!!!!!!!!Should never happen! Point is not considered in the interval!!!!!!!!!" << endl;
-			}
-
-		}// ende For
+//jetzt not_count, vorher Child->m_numpoints
+		    coord3fArr left(new coord<float>[static_cast<unsigned int>(not_count_left)]);
+		    coord3fArr right(new coord<float>[static_cast<unsigned int>(not_count_right)]);
+//new coord<float>[static_cast<unsigned int>(child->m_numpoints)]
 
 
-		// after splitting, initialize  nodes and recursive call
-		KdNode<VertexT> * child1 = new KdNode<VertexT>(left, min , child1_max);
-		KdNode<VertexT> * child2 = new KdNode<VertexT>(right, child2_min, max);
-		child1->setnumpoints(countleft);
-		child1->setIndizes(left_indizes);
-		child2->setnumpoints(countright);
-		child2->setIndizes(right_indizes);
+		    boost::shared_array<size_t> left_indizes(new size_t [static_cast<unsigned int>(not_count_left)]);
+		    boost::shared_array<size_t> right_indizes(new size_t [static_cast<unsigned int>(not_count_right)]);
 
-		//recursion
-		splitPointcloud(child1);
-		splitPointcloud(child2);
+		    for (int y = 0 ; y < static_cast<unsigned int>(not_count_left) ; y++)
+		    {
+			    left_indizes[y] = 0;
+		    }
+		    for (int y = 0 ; y < static_cast<unsigned int>(not_count_right) ; y++)
+		    {
+			  right_indizes[y] = 0;
+		    }
+    
+		    boost::shared_array<size_t> child_indizes = child->getIndizes();
+
+		    // divide the pointcloud (still on th axle average)
+		    for (size_t j = 0 ; j < child->getnumpoints(); j++)
+		    {		  
+			    if (child->node_points[j][splitaxis] <= split)
+			    {
+				    left[countleft] = child->node_points[j];
+				
+				    //abspeichern einer liste der Indizes aus der Anfangsmenge
+				    if (child_indizes[static_cast<unsigned int>(j)] == 0)
+				    {					  
+					    left_indizes[countleft] = j;
+				    }
+				    else
+				    {
+					
+					    left_indizes[countleft] =  child->indizes[static_cast<unsigned int>(j)];
+				    }
+				    countleft++;
+				
+			    }
+			    else if (child->node_points[j][splitaxis] > split)
+			    {
+				    //std::cout << "else" << std::endl;
+				    right[countright] = child->node_points[j];
+    
+				    //abspeichern einer liste der Indizes aus der Anfangsmenge
+				    if (child_indizes[static_cast<unsigned int>(j)] == 0)
+				    {
+					    //std::cout << " hier ist der fehler, wahrscheinlich 2" << std::endl;
+					    right_indizes[countright] = j;
+				    }
+				    else
+				    {
+					    //std::cout << " hier ist der fehler, wahrscheinlich" << std::endl;
+					    right_indizes[countright] =  child->indizes[static_cast<unsigned int>(j)];
+				    }
+				    //std::cout << "nach dem fehler" << std::endl;
+				    countright++;
+			    }
+			    else
+			    {
+				   std::cout << "!!!!!!!!!!!!!!Should never happen! Point is not considered in the interval!!!!!!!!!" << endl;
+			    }
+//std::cout << "Erstes Abspeichern ist fertig!" << std::endl;
+		    }// ende For
+
+
+		    // after splitting, initialize  nodes and recursive call
+		    KdNode<VertexT> * child1 = new KdNode<VertexT>(left, min , child1_max);
+		    KdNode<VertexT> * child2 = new KdNode<VertexT>(right, child2_min, max);
+		    child1->setnumpoints(countleft);
+		    child1->setIndizes(left_indizes);
+		    child2->setnumpoints(countright);
+		    child2->setIndizes(right_indizes);
+
+		    // free Memory
+		    child_indizes.reset();
+		    child->node_points.reset();
+		    delete child;
+		    //recursion
+
+		    splitPointcloud(child1, 0);
+		    splitPointcloud(child2, 0);
+		}
+		else
+		{
+		  
+
+		    if ( not_count_left == 0 )
+		    {	
+//			left_indizes.reset();
+//			left.reset();
+			KdNode<VertexT> * child2 = new KdNode<VertexT>(child->node_points, child2_min, max);
+			child2->setnumpoints(not_count_right);
+			child2->setIndizes(child->indizes);
+			splitPointcloud(child2, 0);
+		    }
+		    else if (not_count_right == 0 )
+		    {
+//			right_indizes.reset();
+//			right.reset();
+			KdNode<VertexT> * child1 = new KdNode<VertexT>(child->node_points, min , child1_max);
+			child1->setnumpoints(not_count_left);
+			child1->setIndizes(child->indizes);
+			splitPointcloud(child1, 0);
+		    }
+		    else
+		    {
+
+//			left.reset();
+//			right.reset();
+//			right_indizes.reset();
+//			left_indizes.reset();
+			if ( not_count_left < not_count_right) splitPointcloud(child, 1);
+			else splitPointcloud(child, 2);
+		    }
+		}
 
 	}// End else
 }

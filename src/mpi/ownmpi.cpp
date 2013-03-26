@@ -42,7 +42,8 @@ int main (int argc , char *argv[]) {
   Timestamp start;
 
     int kd, kn, ki; 
-    long int max_points;
+    long int max_points, min_points;
+    bool ransac;
     
     
     po::options_description desc("Allowed options");
@@ -51,8 +52,9 @@ int main (int argc , char *argv[]) {
       ("kd"        , po::value<int>(&kd)->default_value(40), "set kd")
       ("ki"        , po::value<int>(&ki)->default_value(40), "set ki")
       ("kn"        , po::value<int>(&kn)->default_value(40), "set kn")
-      ("maxpoints" , po::value<long int>(&max_points)->default_value(10000), "set maxpoints")
-      ("file"      , po::value<string>(), "Inputfile")
+      ("maxpoints" , po::value<long int>(&max_points)->default_value(100000), "set maxpoints, min 1000")
+      ("file"      , po::value<string>()->default_value("noinput"), "Inputfile")
+      ("ransac"    , "Use RANSAC based normal estimation")
     ;
     
     po::variables_map vm;
@@ -64,6 +66,14 @@ int main (int argc , char *argv[]) {
       return 1;
     }
         
+        if(vm.count("ransac")) 
+	{
+	  ransac = true;
+	} 
+	else
+	{
+	  ransac = false;
+	}
 
 	// Kd Tree
     // A list for all Nodes with less than MAX_POINTS
@@ -108,12 +118,14 @@ int main (int argc , char *argv[]) {
 	char processor_name[MPI_MAX_PROCESSOR_NAME];
 	char idstring[32];
 	char con_msg[128];
-	long int num_all_points = 0;
+
+				
 
 	//if send this, +1 because this the Master in MPI has the rank 0 but for all Indizes this is more pleasant
 	int client_serv_data = 0;
 
 	int count = 1;
+	int progress = 0;
 
 
 	// Initializes the connection
@@ -132,17 +144,33 @@ int main (int argc , char *argv[]) {
 	MPI::Request status[numprocs-1];
 	// Master-Process
 	if (rank == 0){
+		int * int_numpoint = new int[numprocs - 1];
+		int * tmp_int = new int[1];
+	  
 	/*temporär wird noch ausgelesen, später Übergabe durch das Programm */
 		//Read the file and get the pointcloud
-		m_model = io_factory.readModel( vm["file"].as<string>() );
+		
+		if (  vm["file"].as<string>() != "noinput" ) m_model = io_factory.readModel( vm["file"].as<string>() );
 
 		if (m_model != NULL)
 		{
 			m_loader = m_model->m_pointCloud;
 		}
-
+		else
+		{
+		  std::cout << "Model can´t be load!!!!" << std::endl;
+		  MPI_Finalize();
+		  return 1;
+		  
+		}
+		
+		//calc min_points
+		if ( kd >= ki && kd >= kn) min_points = kd;
+		else if ( ki >= kd && ki >= kn) min_points = ki;
+		else min_points = kn;
+		
 		// Building the Kd tree with max max_points in every packete
-		KdTree<cVertex> KDTree(m_loader, max_points);
+		KdTree<cVertex> KDTree(m_loader, max_points, min_points);
 
 		// get the list with all Nodes with less than MAX_POINTS
 		m_nodelist = KDTree.GetList();
@@ -180,33 +208,26 @@ int main (int argc , char *argv[]) {
 		typename std::list<KdNode<cVertex>*>::	iterator it= m_nodelist.begin();
 
 
-		// get number of all points
-		for ( it = m_nodelist.begin() ; it != m_nodelist.end(); ++it)
-		{
-			num_all_points += (*it)->getnumpoints();
-		}
-
-		it = m_nodelist.begin();
-
 		// a buffer to store all the normals
-		float * m_normal = new float[3 * num_all_points];
+		float * m_normal = new float[3 * static_cast<unsigned int>(m_loader->getNumPoints())];
+
 
 		// Send all data packets
 		while ( it  != m_nodelist.end() )
 		{
-			// get the next points in row
+
+		  // get the next points in row
 			m_points = (*it)->getPoints();
 
 			// send the number of points that will follow
-			int * int_numpoint = new int[1];
-
-			int_numpoint[0] = (*it)->getnumpoints();
-
-			MPI::COMM_WORLD.Send(int_numpoint, 1, MPI::INT, client_serv_data + 1, 2);
+			int_numpoint[client_serv_data] = (*it)->getnumpoints();
+			tmp_int[0] = int_numpoint[client_serv_data];
+			
+			MPI::COMM_WORLD.Send(tmp_int, 1, MPI::INT, client_serv_data + 1, 2);
 
 
 			// allokiere normal array dynamically
-			normals[client_serv_data] = new float [3 * int_numpoint[0]];
+			normals[client_serv_data] = new float [3 * int_numpoint[client_serv_data]];
 
 			// get the indices for the original sequence
 			Indizes[client_serv_data] = (*it)->indizes.get();
@@ -215,24 +236,27 @@ int main (int argc , char *argv[]) {
 
 
 			// send Data
-			MPI::Request req2 = MPI::COMM_WORLD.Isend(m_points.get(), 3 *  int_numpoint[0], MPI::FLOAT, client_serv_data + 1, 1);
+			MPI::Request req2 = MPI::COMM_WORLD.Isend(m_points.get(), 3 *  int_numpoint[client_serv_data], MPI::FLOAT, client_serv_data + 1, 1);
 
 
 			// Reciev Normals
 			MPI::Request tmp;
-			tmp = MPI::COMM_WORLD.Irecv(normals[client_serv_data], 3 * int_numpoint[0], MPI::FLOAT, client_serv_data + 1, 4);
+			tmp = MPI::COMM_WORLD.Irecv(normals[client_serv_data], 3 * int_numpoint[client_serv_data], MPI::FLOAT, client_serv_data + 1, 4);
 			status[client_serv_data] = tmp;
 
 
 			req2.Wait();
 
+
 /*******************************abspeichern  **************/
+
 
 			if (count >= numprocs - 1)
 			{
-				client_serv_data = MPI::Request::Waitany( numprocs - 1, status);
-
-
+std::cout << "\n -------------Warten, bis wieder ein prozess bereit ist!" << std::endl;
+			      client_serv_data = MPI::Request::Waitany( numprocs - 1, status);
+std::cout << "\n -------------Abspeichern der Normalen eine Paketes mit so viel Inhalt: " << laufvariable[client_serv_data] << std::endl;
+				progress++;
 				// store normals on correct position
 				for (int x = 0; x < laufvariable[client_serv_data] ; x ++)
 				{
@@ -246,13 +270,10 @@ int main (int argc , char *argv[]) {
 				normals[client_serv_data][0] = 0;
 
 
-
-
-
 				count++;
 				it++;
-				client_serv_data++;
-				client_serv_data = (client_serv_data % (numprocs - 1));
+				
+				std::cout << "\n------------" << progress << " von " << m_nodelist.size() << " Paketen erledigt!\n" << std::endl; 
 
 
 			}// end if
@@ -268,6 +289,8 @@ int main (int argc , char *argv[]) {
 		//store all data which is still not stored
 		MPI::Request::Waitall( numprocs - 1, status);
 
+		std::cout << "\n----------- Alle Pakete erledigt! Brechnungen abgeschlossen! \n" << std::endl;
+		
 		client_serv_data = 0;
 		for (int y = 0 ; y < numprocs - 1 ; y++)
 		{
@@ -289,7 +312,7 @@ int main (int argc , char *argv[]) {
 			client_serv_data++;
 		}
 
-
+		
 
 		//Points put back into proper shape for PointBufferPtr
 		boost::shared_array<float> norm (m_normal);
@@ -357,7 +380,7 @@ int main (int argc , char *argv[]) {
 			{
 count_serv++;
 
-
+			
 				// Recv the data
 				float * tmp = new float[3 * c_sizepackage];
 				MPI::Request client_req2 = MPI::COMM_WORLD.Irecv(tmp, 3 * c_sizepackage, MPI::FLOAT, 0, 1);
@@ -376,27 +399,25 @@ count_serv++;
 				pointcloud->setPointArray(punkte, c_sizepackage);
 
 				PointsetSurface<ColorVertex<float, unsigned char> >* surface;
-				surface = new AdaptiveKSearchSurface<ColorVertex<float, unsigned char>, Normal<float> >(pointcloud, "FLANN");
+				surface = new AdaptiveKSearchSurface<ColorVertex<float, unsigned char>, Normal<float> >(pointcloud, "STANN", kn, ki, kd, ransac);
 
 				// Set search options for normal estimation and distance evaluation
-				//willkürliche Werte, eigentlich mnit option
-				surface->setKd(kd);
-				surface->setKi(ki);
-				surface->setKn(kn);
 
+				
 				// calculate the normals
 				//Timestamp ts;
+std::cout << "\n++++++++++Client " << rank << " berechnet Normale mit so vielen Punkten: " << c_sizepackage << std::endl;
 				surface->calculateSurfaceNormals();
 				//cerr << ts.getElapsedTimeInMs() << endl;
 
-				ModelPtr pn( new Model);
-				pn->m_pointCloud = surface->pointBuffer();
+//				ModelPtr pn( new Model);
+//				pn->m_pointCloud = surface->pointBuffer();
 
 
 				pointcloud = surface->pointBuffer();
 				size_t size_normal;
 				c_normals = pointcloud->getIndexedPointNormalArray(size_normal);
-
+std::cout << "\n++++++++++Client " << rank << " hat seine Brechnung abgeschlossen!" << std::endl;
 				// send the normals back to the Masterprocess
 				MPI::COMM_WORLD.Send(c_normals.get(), 3 * c_sizepackage, MPI::FLOAT, 0, 4);
 
@@ -410,7 +431,7 @@ count_serv++;
 	}
 	sprintf(test_aufgabe_name, "Ausgabe%00d.dat" , rank);
 	f.open(test_aufgabe_name, ios::out);
-	f << "Beende den Prozess: " << rank << ", dieser hat " << count_serv << " Pakete bearbeiet." << endl; 
+	f << "Beende den Prozess: " << rank << ", dieser hat " << count_serv << " Pakete bearbeiet. Und hat mit kd, kn und ki gearbeitet:" << kd << kn << ki << endl; 
 	f.close();
 	MPI_Finalize();
 
