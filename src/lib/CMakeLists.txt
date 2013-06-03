@@ -33,7 +33,7 @@ set(LSSR_SOURCES
     display/TexturedMesh.cpp
     geometry/Texture.cpp
 #    reconstruction/PCLFiltering.cpp
-#    mpi/ownmpi2.cpp
+#    mpi/tmpmain.cpp
 )
 
 

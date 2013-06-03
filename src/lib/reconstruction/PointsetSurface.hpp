@@ -118,6 +118,14 @@ public:
      * @param index
      * @return
      */
+    
+    
+    /**
+     * @brief expand the BoundingBox
+     */
+    virtual void expand_bounding( 
+	  float xmin, float ymin, float zmin,
+	  float xmax, float ymax, float zmax) = 0;
 
 
 protected:
