@@ -456,7 +456,9 @@ std::cout << "\n++++++++++Client " << rank << " hat seine Brechnung abgeschlosse
 		if (rank == 0)
 	{  
 	  std::cout << "so lange hat es gebraucht: " << start.getElapsedTimeInMs() << std::endl;
-	  f << "Beende den Durchlauf mit " << numprocs << " Prozessen, Mit den k-Werten: " << ki << " " << kn << " dieser hat " << start.getElapsedTimeInMs() << " Millisekunden gedauert." << std::endl;
+	  
+	  f << "Beende den Prozess: " << rank << ", dieser hat " << start.getElapsedTimeInMs() << " Millisekunden gedauert." << std::endl;
+
 	}
 	else f << "Beende den Prozess: " << rank << ", dieser hat " << count_serv << " Pakete bearbeiet. Und hat mit kd, kn und ki gearbeitet:" << kd << kn << ki << endl; 
 	f.close();
