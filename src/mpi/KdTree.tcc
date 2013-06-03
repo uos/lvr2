@@ -11,6 +11,12 @@
 
 
 namespace lssr{
+template<typename VertexT>
+bool KdTree<VertexT>::compare_nocase (KdNode<VertexT> * first, KdNode<VertexT> * second)
+{
+    if ( first->getnumpoints() > second->getnumpoints() ) return true;
+    else return false;
+}
 
 template<typename VertexT>
 KdTree<VertexT>::KdTree(PointBufferPtr loader, long int max_p , long int min_p)
@@ -44,6 +50,8 @@ KdTree<VertexT>::KdTree(PointBufferPtr loader, long int max_p , long int min_p)
 	child->setnumpoints(m_numpoint);
 
 	this->Rekursion(child);
+
+	nodelist.sort(compare_nocase);
 
 }
 
@@ -179,7 +187,7 @@ void KdTree<VertexT>::splitPointcloud(KdNode<VertexT> * child , int again)
 	    }		
 		
 		
-	    if ( not_count_left > ( 1500 + min_points ) && not_count_right > ( 1500 + min_points ) )
+	    if ( not_count_left > ( min_points ) && not_count_right > ( min_points ) )
 	    {
 		    int countleft = 0;
 		    int countright = 0;
@@ -311,7 +319,13 @@ KdTree<VertexT>::~KdTree() {
 }
 
 template<typename VertexT>
+BoundingBox<VertexT> KdTree<VertexT>::GetBoundingBox() {
+    return m_boundingBox;
+} 
+
+template<typename VertexT>
 std::list<KdNode<VertexT>*> KdTree<VertexT>::GetList(){
 	return nodelist;
 }
+
 }
