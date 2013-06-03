@@ -22,6 +22,7 @@
 #include <cstring>
 #include <iostream>
 #include <list>
+#include <cctype>
 #include "KdNode.hpp"
 #include "boost/shared_array.hpp"
 
@@ -69,6 +70,17 @@ public:
 	 * @brief returns the list of kdNodes
 	 */
 	list<KdNode<VertexT>*> GetList();
+	
+
+	/**
+	 *@brief function to sort list
+	 */
+	bool static compare_nocase (KdNode<VertexT> * first, KdNode<VertexT> * second);	
+
+	/**
+	 * @brief return the BoundingBox
+	 */
+	BoundingBox<VertexT> GetBoundingBox();
 
 
 	// The pointcloud
