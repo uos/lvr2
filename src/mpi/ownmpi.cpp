@@ -42,7 +42,8 @@ int main (int argc , char *argv[]) {
   Timestamp start;
 
     int kd, kn, ki; 
-    long int max_points;
+    long int max_points, min_points;
+    bool ransac;
     
     
     po::options_description desc("Allowed options");
@@ -51,8 +52,9 @@ int main (int argc , char *argv[]) {
       ("kd"        , po::value<int>(&kd)->default_value(40), "set kd")
       ("ki"        , po::value<int>(&ki)->default_value(40), "set ki")
       ("kn"        , po::value<int>(&kn)->default_value(40), "set kn")
-      ("maxpoints" , po::value<long int>(&max_points)->default_value(100000), "set maxpoints, min 1000")
-      ("file"      , po::value<string>(), "Inputfile")
+      ("maxpoints" , po::value<long int>(&max_points)->default_value(100000), "set maxpoints, min 5000 and min 32 * kn bzw. ki")
+      ("file"      , po::value<string>()->default_value("noinput"), "Inputfile")
+      ("ransac"    , "Use RANSAC based normal estimation")
     ;
     
     po::variables_map vm;
@@ -64,6 +66,14 @@ int main (int argc , char *argv[]) {
       return 1;
     }
         
+        if(vm.count("ransac")) 
+	{
+	  ransac = true;
+	} 
+	else
+	{
+	  ransac = false;
+	}
 
 	// Kd Tree
     // A list for all Nodes with less than MAX_POINTS
@@ -108,13 +118,15 @@ int main (int argc , char *argv[]) {
 	char processor_name[MPI_MAX_PROCESSOR_NAME];
 	char idstring[32];
 	char con_msg[128];
-	long int num_all_points = 0;
+	float expansion_bounding[6];
+
 				
 
 	//if send this, +1 because this the Master in MPI has the rank 0 but for all Indizes this is more pleasant
 	int client_serv_data = 0;
 
 	int count = 1;
+	int progress = 0;
 
 
 	// Initializes the connection
@@ -138,21 +150,44 @@ int main (int argc , char *argv[]) {
 	  
 	/*temporär wird noch ausgelesen, später Übergabe durch das Programm */
 		//Read the file and get the pointcloud
-		m_model = io_factory.readModel( vm["file"].as<string>() );
+		
+		if (  vm["file"].as<string>() != "noinput" ) m_model = io_factory.readModel( vm["file"].as<string>() );
 
 		if (m_model != NULL)
 		{
 			m_loader = m_model->m_pointCloud;
 		}
-std::cout << "k-d tree wird erstellt." << std::endl;
+		else
+		{
+		  std::cout << "Model can´t be load!!!!" << std::endl;
+		  MPI_Finalize();
+		  return 1;
+		  
+		}
+		
+		//calc min_points
+		if ( kd >= ki && kd >= kn) min_points = 50 + ( 32 * kd );
+		else if ( ki >= kd && ki >= kn) min_points = 50 + ( 32 * ki );
+		else min_points = 50 + ( 32 * kn );
+		
+		if (max_points < (  min_points )  ) max_points = ( 2 * min_points );
 		// Building the Kd tree with max max_points in every packete
-		KdTree<cVertex> KDTree(m_loader, max_points);
-std::cout << "k-d tree wurde erstellt. YEAH!!!!" << std::endl;
+		KdTree<cVertex> KDTree(m_loader, max_points, min_points);
+
 		// get the list with all Nodes with less than MAX_POINTS
-		m_nodelist = KDTree.GetList();
+		m_nodelist = KDTree.GetList();	
 
+		BoundingBox<cVertex> tmp_BoundingBox = KDTree.GetBoundingBox();
+		cVertex tmp_min = tmp_BoundingBox.getMin();
+		cVertex tmp_max = tmp_BoundingBox.getMax();
 
-
+		expansion_bounding[0] = tmp_min[0];
+		expansion_bounding[1] = tmp_min[1];
+		expansion_bounding[2] = tmp_min[2];
+		expansion_bounding[3] = tmp_max[0];
+		expansion_bounding[4] = tmp_max[1];
+		expansion_bounding[5] = tmp_max[2];
+		
 		// Send an announcement to all other processes
 		for (i = 1; i < numprocs; i++)
 		{
@@ -167,6 +202,13 @@ std::cout << "k-d tree wurde erstellt. YEAH!!!!" << std::endl;
 			MPI::COMM_WORLD.Recv(con_msg, 128, MPI::CHAR, i, 0);
 			printf("%s\n", con_msg);
 		}
+		
+		//send min and max of the Boundingbox to all other processes
+		for ( i = 1; i < numprocs; i++)
+		{
+		    MPI::COMM_WORLD.Send(expansion_bounding, 6, MPI::FLOAT, i, 5);
+		}
+			
 
 /*************************************** Connection is successful *****************/
 
@@ -184,21 +226,14 @@ std::cout << "k-d tree wurde erstellt. YEAH!!!!" << std::endl;
 		typename std::list<KdNode<cVertex>*>::	iterator it= m_nodelist.begin();
 
 
-		// get number of all points
-		for ( it = m_nodelist.begin() ; it != m_nodelist.end(); ++it)
-		{
-			num_all_points += (*it)->getnumpoints();
-		}
-
-		it = m_nodelist.begin();
-
 		// a buffer to store all the normals
-		float * m_normal = new float[3 * num_all_points];
+		float * m_normal = new float[3 * static_cast<unsigned int>(m_loader->getNumPoints())];
+
 
 		// Send all data packets
 		while ( it  != m_nodelist.end() )
 		{
-std::cout << "\n ------------------Anfang der while-Schleife mit dem Process: " << client_serv_data + 1 << std::endl;
+
 		  // get the next points in row
 			m_points = (*it)->getPoints();
 
@@ -207,17 +242,16 @@ std::cout << "\n ------------------Anfang der while-Schleife mit dem Process: " 
 			tmp_int[0] = int_numpoint[client_serv_data];
 			
 			MPI::COMM_WORLD.Send(tmp_int, 1, MPI::INT, client_serv_data + 1, 2);
-
-std::cout << "Übertragen der größe erfolgreich mit: " << tmp_int[0] << std::endl;
+			
 			// allokiere normal array dynamically
 			normals[client_serv_data] = new float [3 * int_numpoint[client_serv_data]];
-std::cout << "Normalen wurden alokiert" << std::endl;
+
 			// get the indices for the original sequence
 			Indizes[client_serv_data] = (*it)->indizes.get();
 
 			laufvariable[client_serv_data] = (*it)->getnumpoints();
 
-std::cout << "senden wird gestartet" << std::endl;
+
 			// send Data
 			MPI::Request req2 = MPI::COMM_WORLD.Isend(m_points.get(), 3 *  int_numpoint[client_serv_data], MPI::FLOAT, client_serv_data + 1, 1);
 
@@ -230,15 +264,16 @@ std::cout << "senden wird gestartet" << std::endl;
 
 			req2.Wait();
 
-std::cout << "Senden ist fertig, jetzt gehts zum warten auf den nächsten Process" << std::endl;
+
 /*******************************abspeichern  **************/
 
 
 			if (count >= numprocs - 1)
 			{
-				client_serv_data = MPI::Request::Waitany( numprocs - 1, status);
-std::cout << "\n*****************Normalen empfangen vom Process: " << client_serv_data + 1 << std::endl;
-
+std::cout << "\n -------------Warten, bis wieder ein prozess bereit ist!\n" << std::endl;
+			      client_serv_data = MPI::Request::Waitany( numprocs - 1, status);
+std::cout << "\n -------------Abspeichern der Normalen eine Paketes mit so viel Inhalt: " << laufvariable[client_serv_data] << "\n" << std::endl;
+				progress++;
 				// store normals on correct position
 				for (int x = 0; x < laufvariable[client_serv_data] ; x ++)
 				{
@@ -250,15 +285,12 @@ std::cout << "\n*****************Normalen empfangen vom Process: " << client_ser
 
 				}
 				normals[client_serv_data][0] = 0;
+std::cout << "Abspeichern der Normalen abgeschlossen!" << std::endl;
 
-
-
-
-std::cout << "\n+++++++++++++++ Das abspeichern der Normalen gerade ist beendet!" << std::endl;
 				count++;
 				it++;
-				//client_serv_data++;
-				//client_serv_data = (client_serv_data % (numprocs - 1));
+				
+				std::cout << "\n------------" << progress << " von " << m_nodelist.size() << " Paketen erledigt!\n" << std::endl; 
 
 
 			}// end if
@@ -270,10 +302,13 @@ std::cout << "\n+++++++++++++++ Das abspeichern der Normalen gerade ist beendet!
 				client_serv_data = (client_serv_data % (numprocs - 1));
 			}
 		}// End while
-std::cout << " Alle Daten wurden übertragen, jetzt auf die letzten Normalen warten" << std::endl;
+
+std::cout << "\n ES wird noch auf die letzten Ergebnisse gewartet" << std::endl;
 		//store all data which is still not stored
 		MPI::Request::Waitall( numprocs - 1, status);
-std::cout << "Alle sind da!" << std::endl;
+
+		std::cout << "\n----------- Alle Pakete erledigt! Brechnungen abgeschlossen! \n" << std::endl;
+		
 		client_serv_data = 0;
 		for (int y = 0 ; y < numprocs - 1 ; y++)
 		{
@@ -295,7 +330,7 @@ std::cout << "Alle sind da!" << std::endl;
 			client_serv_data++;
 		}
 
-
+		
 
 		//Points put back into proper shape for PointBufferPtr
 		boost::shared_array<float> norm (m_normal);
@@ -335,6 +370,8 @@ std::cout << "Alle sind da!" << std::endl;
 	else
 	{
 //für die tests zum Zeitmessen
+		
+
 
 		// Wait for the first Message (INIT)
 		MPI::COMM_WORLD.Recv(con_msg, 128, MPI::CHAR, 0,0);
@@ -347,6 +384,9 @@ std::cout << "Alle sind da!" << std::endl;
 
 		MPI::COMM_WORLD.Send(con_msg, 128, MPI::CHAR, 0, 0);
 
+		
+		// Wait for the Boundingbox
+		MPI::COMM_WORLD.Recv(expansion_bounding, 6, MPI::FLOAT, 0, 5);
 /************************************ Connection is successful *******************/
 
 		// Loop for receiving the data, -1 cancels operation
@@ -370,7 +410,7 @@ count_serv++;
 
 				// wait till transmission complete
 				client_req2.Wait();
-std::cout << "Ich Process: " << rank << " soll jetzt Normalen berechnen und zwar so viele: " << c_sizepackage << std::endl;
+
 				// Points put back into proper shape for PointBufferPtr
 				boost::shared_array<float> punkte (tmp);
 
@@ -382,27 +422,16 @@ std::cout << "Ich Process: " << rank << " soll jetzt Normalen berechnen und zwar
 				pointcloud->setPointArray(punkte, c_sizepackage);
 
 				PointsetSurface<ColorVertex<float, unsigned char> >* surface;
-				surface = new AdaptiveKSearchSurface<ColorVertex<float, unsigned char>, Normal<float> >(pointcloud, "FLANN");
-
+				surface = new AdaptiveKSearchSurface<ColorVertex<float, unsigned char>, Normal<float> >(pointcloud, "STANN", kn, ki, kd, ransac);
+				surface->expand_bounding(expansion_bounding[0], expansion_bounding[1], expansion_bounding[2],
+							      expansion_bounding[3], expansion_bounding[4], expansion_bounding[5]);
+				
 				// Set search options for normal estimation and distance evaluation
-// Nur vorübergehend, da wenn die Anzahl der Punkte kleiner ist als einer derr Werte, seg-fault
-// muss noch in kdtree.tcc gelöst werden, dass der fall nicht eintreten kann
-				if (c_sizepackage > kd || c_sizepackage > ki || c_sizepackage > kn)
-				{
-				  surface->setKd(kd);
-				  surface->setKi(ki);
-				  surface->setKn(kn);
-				}
-				else
-				{
-std::cout << "\nFall ist eingetreten, es sind weniger Punkte als kd, ki oder kn!" << std::endl;			
-				  surface->setKd(c_sizepackage - 1);
-				  surface->setKi(c_sizepackage - 1);
-				  surface->setKn(c_sizepackage - 1);
-				}
+
 				
 				// calculate the normals
 				//Timestamp ts;
+std::cout << "\n++++++++++Client " << rank << " berechnet Normale mit so vielen Punkten: " << c_sizepackage << std::endl;
 				surface->calculateSurfaceNormals();
 				//cerr << ts.getElapsedTimeInMs() << endl;
 
@@ -413,21 +442,23 @@ std::cout << "\nFall ist eingetreten, es sind weniger Punkte als kd, ki oder kn!
 				pointcloud = surface->pointBuffer();
 				size_t size_normal;
 				c_normals = pointcloud->getIndexedPointNormalArray(size_normal);
-
+std::cout << "\n++++++++++Client " << rank << " hat seine Brechnung abgeschlossen!" << std::endl;
 				// send the normals back to the Masterprocess
 				MPI::COMM_WORLD.Send(c_normals.get(), 3 * c_sizepackage, MPI::FLOAT, 0, 4);
-std::cout << "\n Berechnen der Normalen ist abgeschlossen!" << std::endl;
+
 			}
 		}
 
 	}// End else
-	if (rank == 0)
-	{  
-	  std::cout << "so lange hat es gebraucht: " << start.getElapsedTimeInMs() << std::endl;
-	}
+
 	sprintf(test_aufgabe_name, "Ausgabe%00d.dat" , rank);
 	f.open(test_aufgabe_name, ios::out);
-	f << "Beende den Prozess: " << rank << ", dieser hat " << count_serv << " Pakete bearbeiet. Und hat mit kd, kn und ki gearbeitet:" << kd << kn << ki << endl; 
+		if (rank == 0)
+	{  
+	  std::cout << "so lange hat es gebraucht: " << start.getElapsedTimeInMs() << std::endl;
+	  f << "Beende den Durchlauf mit " << numprocs << " Prozessen, Mit den k-Werten: " << ki << " " << kn << " dieser hat " << start.getElapsedTimeInMs() << " Millisekunden gedauert." << std::endl;
+	}
+	else f << "Beende den Prozess: " << rank << ", dieser hat " << count_serv << " Pakete bearbeiet. Und hat mit kd, kn und ki gearbeitet:" << kd << kn << ki << endl; 
 	f.close();
 	MPI_Finalize();
 

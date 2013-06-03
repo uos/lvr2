@@ -11,12 +11,19 @@
 
 
 namespace lssr{
+template<typename VertexT>
+bool KdTree<VertexT>::compare_nocase (KdNode<VertexT> * first, KdNode<VertexT> * second)
+{
+    if ( first->getnumpoints() > second->getnumpoints() ) return true;
+    else return false;
+}
 
 template<typename VertexT>
-KdTree<VertexT>::KdTree(PointBufferPtr loader, long int max_p)
+KdTree<VertexT>::KdTree(PointBufferPtr loader, long int max_p , long int min_p)
 {
 
 	max_points = max_p;
+	min_points = min_p;
 
 	if (loader != NULL)
 	{
@@ -33,7 +40,7 @@ KdTree<VertexT>::KdTree(PointBufferPtr loader, long int max_p)
 	    this->m_boundingBox.expand(m_points[i][0], m_points[i][1], m_points[i][2]);
 
 	}
-
+	
 	// read Min(lower left corner) and Max(upper right Corner)
 	VertexT max = m_boundingBox.getMax();
 	VertexT min = m_boundingBox.getMin();
@@ -43,6 +50,8 @@ KdTree<VertexT>::KdTree(PointBufferPtr loader, long int max_p)
 	child->setnumpoints(m_numpoint);
 
 	this->Rekursion(child);
+
+	nodelist.sort(compare_nocase);
 
 }
 
@@ -69,12 +78,12 @@ void KdTree<VertexT>::Rekursion(KdNode<VertexT> * first){
 template<typename VertexT>
 void KdTree<VertexT>::splitPointcloud(KdNode<VertexT> * child , int again)
 {
-  std::cout << "Aufruf von splitpointcloud." << std::endl;
+  
 	//std::cout << "start vom split" << std::endl;
 	// recursion rule
 	if (child->getnumpoints() == 0 || child->again == 6)
 	{
-std::cout << "############KdNode wurde gelöscht, es waren so viele Punkte drin: " << child->getnumpoints() << std::endl;
+
 		child->node_points.reset();
 		child->indizes.reset();
 		delete child;
@@ -82,12 +91,14 @@ std::cout << "############KdNode wurde gelöscht, es waren so viele Punkte drin:
 	}
 	else if ( child->getnumpoints() < max_points)
 	{
+
 		// Node has less than MAX_POINTS in it, so store it in the list
 		nodelist.push_back(child);
 	}
 	// weiter aufteilen
 	else
 	{
+
 		VertexT min = child->m_minvertex;
 		VertexT max = child->m_maxvertex;
 
@@ -176,18 +187,20 @@ std::cout << "############KdNode wurde gelöscht, es waren so viele Punkte drin:
 	    }		
 		
 		
-	    if ( not_count_left > 500 && not_count_right > 500 )
+	    if ( not_count_left > ( min_points ) && not_count_right > ( min_points ) )
 	    {
 		    int countleft = 0;
 		    int countright = 0;
-//std::cout << "Shared Arrays werden für die Normalen erzeugt. " << std::endl;
+
 //jetzt not_count, vorher Child->m_numpoints
 		    coord3fArr left(new coord<float>[static_cast<unsigned int>(not_count_left)]);
 		    coord3fArr right(new coord<float>[static_cast<unsigned int>(not_count_right)]);
 //new coord<float>[static_cast<unsigned int>(child->m_numpoints)]
-	
+
+
 		    boost::shared_array<size_t> left_indizes(new size_t [static_cast<unsigned int>(not_count_left)]);
 		    boost::shared_array<size_t> right_indizes(new size_t [static_cast<unsigned int>(not_count_right)]);
+
 		    for (int y = 0 ; y < static_cast<unsigned int>(not_count_left) ; y++)
 		    {
 			    left_indizes[y] = 0;
@@ -245,7 +258,7 @@ std::cout << "############KdNode wurde gelöscht, es waren so viele Punkte drin:
 //std::cout << "Erstes Abspeichern ist fertig!" << std::endl;
 		    }// ende For
 
-		
+
 		    // after splitting, initialize  nodes and recursive call
 		    KdNode<VertexT> * child1 = new KdNode<VertexT>(left, min , child1_max);
 		    KdNode<VertexT> * child2 = new KdNode<VertexT>(right, child2_min, max);
@@ -266,7 +279,7 @@ std::cout << "############KdNode wurde gelöscht, es waren so viele Punkte drin:
 		else
 		{
 		  
-std::cout << "Der Fall weniger als 500 ist eingestreten mit " << not_count_left << " und " << not_count_right << ". Die Splitachse ist: " << splitaxis << " und reicht von " << min[splitaxis] << " bis " << max[splitaxis] << " split an: " << split << std::endl;
+
 		    if ( not_count_left == 0 )
 		    {	
 //			left_indizes.reset();
@@ -287,7 +300,7 @@ std::cout << "Der Fall weniger als 500 ist eingestreten mit " << not_count_left 
 		    }
 		    else
 		    {
-std::cout << " Aber ist keiner rausgeflogen!" << std::endl;
+
 //			left.reset();
 //			right.reset();
 //			right_indizes.reset();
@@ -306,7 +319,13 @@ KdTree<VertexT>::~KdTree() {
 }
 
 template<typename VertexT>
+BoundingBox<VertexT> KdTree<VertexT>::GetBoundingBox() {
+    return m_boundingBox;
+} 
+
+template<typename VertexT>
 std::list<KdNode<VertexT>*> KdTree<VertexT>::GetList(){
 	return nodelist;
 }
+
 }
