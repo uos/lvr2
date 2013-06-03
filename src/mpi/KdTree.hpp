@@ -22,6 +22,7 @@
 #include <cstring>
 #include <iostream>
 #include <list>
+#include <cctype>
 #include "KdNode.hpp"
 #include "boost/shared_array.hpp"
 
@@ -41,8 +42,10 @@ public:
 	 * @brief Constructor.
 	 *
 	 * @param pointcloud The point cloud, which is to be divided
+	 * @param max        Max number of Points
+	 * @param min        Min number of Points
 	 */
-	KdTree(PointBufferPtr pointcloud, long int max);
+	KdTree(PointBufferPtr pointcloud, long int max, long int min);
 
 	/**
 	 * @brief starts the recursion and saves the packages in files (scan*.3d)
@@ -67,6 +70,17 @@ public:
 	 * @brief returns the list of kdNodes
 	 */
 	list<KdNode<VertexT>*> GetList();
+	
+
+	/**
+	 *@brief function to sort list
+	 */
+	bool static compare_nocase (KdNode<VertexT> * first, KdNode<VertexT> * second);	
+
+	/**
+	 * @brief return the BoundingBox
+	 */
+	BoundingBox<VertexT> GetBoundingBox();
 
 
 	// The pointcloud
@@ -83,7 +97,9 @@ public:
 
     // number of max Points in one packete
     long int max_points;
-
+  
+    // number of min Points in one packete
+    long int min_points;
 
 
 	// Number of points in the point cloud

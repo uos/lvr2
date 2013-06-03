@@ -126,6 +126,8 @@ void AdaptiveKSearchSurface<VertexT, NormalT>::init()
 
 }
 
+
+
 template<typename VertexT, typename NormalT>
 void AdaptiveKSearchSurface<VertexT, NormalT>::calculateSurfaceNormals()
 {
@@ -625,6 +627,16 @@ Plane<VertexT, NormalT> AdaptiveKSearchSurface<VertexT, NormalT>::calcPlaneRANSA
 
 
     return p;
+}
+
+
+template<typename VertexT, typename NormalT>
+void AdaptiveKSearchSurface<VertexT, NormalT>::expand_bounding( 
+	  float xmin, float ymin, float zmin,
+	  float xmax, float ymax, float zmax)
+{
+    this->m_boundingBox.expand(xmin, ymin, zmin);
+    this->m_boundingBox.expand(xmax, ymax, zmax);
 }
 
 
