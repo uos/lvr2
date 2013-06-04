@@ -41,13 +41,58 @@ HalfEdgeFace<VertexT, NormalT>::HalfEdgeFace(const HalfEdgeFace<VertexT, NormalT
 	m_edge = o.m_edge;
 }
 
+
+
+template<typename VertexT, typename NormalT>
+void HalfEdgeFace<VertexT, NormalT>::deletePointsFromEdge(HalfEdge<HalfEdgeVertex<VertexT, NormalT>, HalfEdgeFace<VertexT, NormalT> > *ptr)
+{
+    if (ptr->start)
+    {
+	delete ptr->start;
+    	ptr->start = 0;
+    }
+    if (ptr->end)
+    {
+    	delete ptr->end;
+    	ptr->end = 0;
+    }
+
+
+}
+
 template<typename VertexT, typename NormalT>
 HalfEdgeFace<VertexT, NormalT>::~HalfEdgeFace()
 {
+std::cout << "\nDekonstructor von HalfEdgeFACE wurde aufgerufen!!! " << std::endl;
+
+	HalfEdge< HalfEdgeVertex<VertexT, NormalT>, HalfEdgeFace<VertexT, NormalT> > *p1;
+	HalfEdge< HalfEdgeVertex<VertexT, NormalT>, HalfEdgeFace<VertexT, NormalT> > *p2;
+	HalfEdge< HalfEdgeVertex<VertexT, NormalT>, HalfEdgeFace<VertexT, NormalT> > *p3;
+
+	p1 = m_edge;
+	if (p1) 
+	{
+	    p2 = p1->next;
+	    deletePointsFromEdge(p1);
+	    if (p2)
+	    {
+		p3 = p2->next;
+		deletePointsFromEdge(p2);
+		if (p3)
+		{
+		    deletePointsFromEdge(p3);   
+		} 
+	    }
+	}
+	p1 = p2 = p3 = 0;
+	
+
 	if(m_region != 0)
 	{
 		m_region->removeFace(this);
+		m_region = 0;
 	}
+	delete this;
 }
 
 template<typename VertexT, typename NormalT>

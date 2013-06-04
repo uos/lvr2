@@ -74,7 +74,14 @@ public:
     /**
      * @brief Destructor.
      */
-    virtual ~FastReconstruction() {};
+    virtual ~FastReconstruction() {
+	typename hash_map<size_t, FastBox<VertexT, NormalT>* >::iterator iter;
+	for(iter = m_cells.begin(); iter != m_cells.end(); iter++)
+	{
+		delete ((*iter).second);	
+	}
+
+    };
 
     /**
      * @brief Returns the surface reconstruction of the given point set.
