@@ -1,3 +1,138 @@
+/* Copyright (C) 2011 Uni Osnabrück
+ * This file is part of the LAS VEGAS Reconstruction Toolkit,
+ *
+ * LAS VEGAS is free software; you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation; either version 2 of the License, or
+ * (at your option) any later version.
+ *
+ * LAS VEGAS is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program; if not, write to the Free Software
+ * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA
+ */
+
+
+ /**
+ * @mainpage LSSR Toolkit Documentation
+ *
+ * @section Intro Introduction
+ *
+ * This software delivers tools to build surface reconstructions from
+ * point cloud data and a simple viewer to display the results.
+ * Additionally, the found surfaces can be classified into
+ * categories in terms of floor, ceiling walls etc.. The main aim of this
+ * project is to deliver fast and accurate surface extraction algorithms
+ * for robotic applications such as teleoperation in unknown environments
+ * and localization.
+ *
+ * LSSR is under permanent development and runs under Linux and MacOS.
+ * A Windows version will be made available soon. The software is currently
+ * under heavy reorganization, so it may happen that some interfaces change.
+ * Additionally, not all features have been ported to the new structure,
+ * so some functionalities may not be available at all times.
+ *
+ * In the current version the previously available plane clustering and
+ * classification algorithms are not available. Please use the previous
+ * release (0.1) if your are interested in these functionalities. The
+ * missing features will be re-integrated in the next release.
+ *
+ * @section Compiling Compiling the software
+ *
+ * This software uses cmake \ref [http://www.cmake.org]. The easiest way
+ * to build LSSR is to perform an out of source build:
+ * \verbatim
+ * mkdir build
+ * cd build
+ * cmake .. && make
+ * cd ../bin
+ * \endverbatim
+ *
+ * External library dependencies:
+ *
+ * <ul>
+ * <li>OpenGL</li>
+ * <li>OpenGL Utility Toolkit (glut)</li>
+ * <li>OpenGL Utility Library (glu)</li>
+ * <li>OpenMP</li>
+ * <li>Boost
+ *   <ul>
+ *     <li>Thread</li>
+ *     <li>Filesystem</li>
+ *     <li>Program Options</li>
+ *     <li>System</li>
+ *   </ul>
+ * </li>
+ * <li>Qt 4.7 or above (for viewer and qviewer)</li>
+ * <li>libQGLViewer 2.3.9 or newer (for qviewer)</li>
+ * <li>X.Org X11 libXi runtime library</li>
+ * <li>X.Org X11 libXmu/libXmuu runtime libraries</li>
+ * </ul>
+ *
+ *
+ * @section Usage Software Usage
+ *
+ * LSSR comes with a tool to reconstruct surfaces from unorganized
+ * points and two viewer applications. To build a surface from the
+ * provided example data set, just call from the program directory
+ *
+ * \verbatim
+ * bin/reconstruct dat/points.pts -v5
+ * \endverbatim
+ *
+ * This command will produce a triangle mesh of the data points stored in
+ * a file called "triangle_mesh.ply". The data set and the reconstruction
+ * can be displayed with one of the provided viewers. Important
+ * parameters for "reconstruct" are
+ *
+ * <table border="0">
+ * <tr>
+ * <td width = 10%>
+ * --help
+ * </td>
+ * <td>
+ * Prints a short description of all relevant parameters.
+ * </td>
+ * </tr>
+ * <tr>
+ * <td>-v or -i</td>
+* <td>
+* <p>These parameters affect the accuracy of the reconstruction.
+* <i>-i</i> defines the number of intersections on the longest side
+* of the scanned scene and determines the corresponding voxelsize.
+* Using this parameter is useful if the scaling of a scene is
+* unknown. A value of about 100 will usually generate coarse surface.
+* Experiment with this value to get a tradeoff between accuracy and
+* mesh size. If you know the scaling of the objects, you can set a
+* fixed voxelsize by using the <i>-v</i> parameter.
+* </p>
+* </td>
+* </tr>
+* <tr>
+* <td>--ki, --kn, --kd</td>
+* <td>These parameters determine the number of nearest neighbors used
+* for initial normal estimation (<i>--kn</i>), normal interpolation
+* (<i>--ki</i>) and distance value evaluation (<i>--kd</i>). In data
+* sets with a lot of noise, increasing these values can lead to better
+* approximations at the cost of running time. Increasing <i>--kd</i>
+* usually helps to generate more continuous surfaces in sparse
+* scans, but yields in a lot of smoothing, i.e. in the
+* reconstuctions, sharp features will be smoothed out.</td>
+* </tr>
+* </table>
+*
+* @section API API Description
+*
+* A detailed API documentation will be made available soon.
+*
+* @section Tutorials Tutorials
+*
+* A set of tutorials how to use LSSR will be made available soon.
+*/
 
 
 // Program options for this tool
@@ -40,7 +175,6 @@ typedef PCLKSurface<cVertex, cNormal>                   pclSurface;
  */
 int main(int argc, char** argv)
 {
-
 	try
 	{
 		// Parse command line arguments
@@ -53,21 +187,19 @@ int main(int argc, char** argv)
 			return 0;
 		}
 
-		omp_set_num_threads(4);
+		omp_set_num_threads(options.getNumThreads());
 
 		::std::cout << options << ::std::endl;
 
-
-
 		// Create a point loader object
 		ModelFactory io_factory;
-		ModelPtr model = io_factory.readModel( options.getInputFileName());
+		ModelPtr model = io_factory.readModel( options.getInputFileName() );
 		PointBufferPtr p_loader;
 
 		// Parse loaded data
 		if ( !model )
 		{
-			cout << timestamp << "IO Error: Unable to parse die Flur-kacke" << endl;
+			cout << timestamp << "IO Error: Unable to parse " << options.getInputFileName() << endl;
 			exit(-1);
 		}
 		p_loader = model->m_pointCloud;
@@ -144,7 +276,6 @@ int main(int argc, char** argv)
 			ModelFactory::saveModel(pn, "pointnormals.ply");
 		}
 
-// <--------------------------------------------------------------
 		// Create an empty mesh
 		HalfEdgeMesh<cVertex, cNormal> mesh( surface );
 
@@ -214,7 +345,6 @@ int main(int argc, char** argv)
 			}
 		}
 
-// <-----------------------pos2
 		if(options.getSharpFeatureThreshold())
 		{
 			SharpBox<cVertex, cNormal>::m_theta_sharp = options.getSharpFeatureThreshold();
@@ -237,12 +367,8 @@ int main(int argc, char** argv)
 			resolution = options.getVoxelsize();
 			useVoxelsize = true;
 		}
-		// <---- pos 3
-		// ------------------------------- SPEICHER LECK HIER ---------------------------
+
 		// Create a new reconstruction object
-		
-
-
 		FastReconstruction<cVertex, cNormal > reconstruction(
 				surface,
 				resolution,
@@ -250,38 +376,24 @@ int main(int argc, char** argv)
 				options.getDecomposition(),
 				options.extrude());
 		
-		
-		// ------------------------------- SPEICHER LECK HIER ENDE ---------------------------
-
-		
-		//<-------- pos 4 zweites Speicherleck
 		// Create mesh
 		reconstruction.getMesh(mesh);
 		
-
-
 		// Save grid to file
-		if( options.saveGrid())
+		if(options.saveGrid())
 		{
 			reconstruction.saveGrid("fastgrid.grid");
 		}
-
-
 
 		if(options.getDanglingArtifacts())
 		{
 			mesh.removeDanglingArtifacts(options.getDanglingArtifacts());
 		}
+
 		// Optimize mesh
-
-
-
-
 		mesh.cleanContours(options.getCleanContourIterations());
-
-
 		mesh.setClassifier(options.getClassifier());
-		// <---------------------------------------pos 1
+
 		if(options.optimizePlanes())
 		{
 			mesh.optimizePlanes(options.getPlaneIterations(),
@@ -301,8 +413,6 @@ int main(int argc, char** argv)
 				QuadricVertexCosts<cVertex, cNormal> c = QuadricVertexCosts<cVertex, cNormal>(true);
 				mesh.reduceMeshByCollapse(options.getNumEdgeCollapses(), c);
 			}
-
-
 		}
 		else if(options.clusterPlanes())
 		{
@@ -335,17 +445,13 @@ int main(int argc, char** argv)
 		if(options.generateTextures())
 		{
 			ModelFactory::saveModel( m, "triangle_mesh.obj");
-		}
-
-		
+		}		
 		cout << timestamp << "Program end." << endl;
-
 	}
 	catch(...)
 	{
 		std::cout << "Unable to parse options. Call 'reconstruct --help' for more information." << std::endl;
 	}
-
 	return 0;
 }
 
