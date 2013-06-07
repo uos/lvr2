@@ -90,7 +90,6 @@ void HalfEdgeMesh<VertexT, NormalT>::setClassifier(string name)
 template<typename VertexT, typename NormalT>
 void HalfEdgeMesh<VertexT, NormalT>::addVertex(VertexT v)
 {
-std::cout << "\n addVertex von HalfEdgeMesh aufgerufen" << std::endl;
     // Create new HalfEdgeVertex and increase vertex counter
     m_vertices.push_back(new HalfEdgeVertex<VertexT, NormalT>(v));
     m_globalIndex++;
@@ -110,7 +109,6 @@ void HalfEdgeMesh<VertexT, NormalT>::deleteVertex(HVertex* v)
 template<typename VertexT, typename NormalT>
 void HalfEdgeMesh<VertexT, NormalT>::addNormal(NormalT n)
 {
-std::cout << "\n addNormal von HalfEdgeMesh aufgerufen" << std::endl;
     // Is a vertex exists at globalIndex, save normal
     assert(m_globalIndex == m_vertices.size());
     m_vertices[m_globalIndex - 1]->m_normal = n;
@@ -141,7 +139,6 @@ HalfEdge<HalfEdgeVertex<VertexT, NormalT>, HalfEdgeFace<VertexT, NormalT> >* Hal
 template<typename VertexT, typename NormalT>
 void HalfEdgeMesh<VertexT, NormalT>::addTriangle(uint a, uint b, uint c, HFace* &face)
 {
-std::cout << "\n addTriangle von HalfEdgeMesh aufgerufen" << std::endl;
     // Create a new face
     face = new HFace;
 

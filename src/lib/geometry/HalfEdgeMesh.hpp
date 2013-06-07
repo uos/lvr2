@@ -108,7 +108,6 @@ public:
 	 * @brief   Dtor.
 	 */
 	virtual ~HalfEdgeMesh() {
-std::cout << "\n Destructor von HalfedgeMesh wurde aufgerufen" << std::endl;
 		this->m_meshBuffer.reset();
 		this->m_pointCloudManager.reset();
 	for (int i = 0 ; i < m_vertices.size() ; i++)

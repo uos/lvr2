@@ -194,7 +194,6 @@ void FastBox<VertexT, NormalT>::getSurface(BaseMesh<VertexT, NormalT> &mesh,
                                                vector<QueryPoint<VertexT> > &qp,
                                                uint &globalIndex)
 {
-std::cout << "\n Jetzt in GetSurface " << std::endl;
     VertexT corners[8];
     VertexT vertex_positions[12];
 
@@ -218,8 +217,6 @@ std::cout << "\n Jetzt in GetSurface " << std::endl;
     uint edge_index = 0;
 
     int triangle_indices[3];
-std::cout << "\n Vor der For-Schleife in Fastbox - Start in fünf Sekunden!\n" << std::endl;
-sleep(5);
     // Generate the local approximation sirface according to the marching
     // cubes table for Paul Burke.
     for(int a = 0; MCTable[index][a] != -1; a+= 3){
@@ -241,7 +238,6 @@ sleep(5);
                 mesh.addNormal(NormalT());
                 for(int i = 0; i < 3; i++)
                 {
-//warum wird hier eine fastBox erstellt
                     FastBox<VertexT, NormalT>* current_neighbor = m_neighbors[neighbor_table[edge_index][i]];
                     if(current_neighbor != 0)
                     {
@@ -261,9 +257,6 @@ sleep(5);
         // Add triangle actually does the normal interpolation for us.
         mesh.addTriangle(triangle_indices[0], triangle_indices[1], triangle_indices[2]);
     }
-std::cout << "\n Ende der For-Schleife in Fastbox - In 10 Sekunden gehts weiter!\n" << std::endl;
-sleep(10);
-
 }
 
 } // namespace lssr

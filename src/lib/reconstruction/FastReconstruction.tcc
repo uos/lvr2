@@ -154,7 +154,7 @@ void FastReconstruction<VertexT, NormalT>::createGrid()
 	size_t num_points;
 	coord3fArr points = this->m_surface->pointBuffer()->getIndexedPointArray(num_points);
 
-	for(size_t i = 0; i <  num_points; i++)
+	for(size_t i = 0; i < num_points; i++)
 	{
 
 
@@ -230,7 +230,7 @@ void FastReconstruction<VertexT, NormalT>::createGrid()
 
 					}
 				}
-//
+
 				//Set pointers to the neighbors of the current box
 				int neighbor_index = 0;
 				int neighbor_hash = 0;
@@ -285,21 +285,16 @@ void FastReconstruction<VertexT, NormalT>::getMesh(BaseMesh<VertexT, NormalT> &m
 	FastBox<VertexT, NormalT>* b;
 	uint global_index = 0;
 
-//std::cout << "\nVor dem getSurface!!!!!!!!!!!!!!!!!!!!" << std::endl;
-//sleep(5);
 	// Iterate through cells and calculate local approximations
 	typename hash_map<size_t, FastBox<VertexT, NormalT>* >::iterator it;
 	for(it = m_cells.begin(); it != m_cells.end(); it++)
 	{
 		b = it->second;
-std::cout << "\nMethode getSurface wird aufgerufen" << std::endl;
-//möglicher fehler unter getSurface der Befehl addtriangle
 		b->getSurface(mesh, m_queryPoints, global_index);
 		++progress;
 	}
 b = NULL;
-//std::cout << "\nNach dem getSurface!!!!!!!!!!!!!!!!!!!!!!!!!!!!" << std::endl;
-//sleep(10);
+
 	cout << endl;
 
 /*	if(m_boxType == "SF")  // Perform edge flipping for extended marching cubes
@@ -421,8 +416,6 @@ void FastReconstruction<VertexT, NormalT>::saveGrid(string filename)
             out << endl;
         }
     }
-
-
 }
 
 } //namespace lssr
