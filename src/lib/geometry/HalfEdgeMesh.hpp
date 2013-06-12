@@ -107,28 +107,7 @@ public:
 	/**
 	 * @brief   Dtor.
 	 */
-	virtual ~HalfEdgeMesh() {
-std::cout << "\n Destructor von HalfedgeMesh wurde aufgerufen" << std::endl;
-		this->m_meshBuffer.reset();
-		this->m_pointCloudManager.reset();
-	for (int i = 0 ; i < m_vertices.size() ; i++)
-	{
-		delete m_vertices[i];
-	}		
-	this->m_vertices.clear();
-
-	for (int j = 0 ; j < m_faces.size() ; j++)
-	{
-		delete m_faces[j];
-	}
-	this->m_faces.clear();
-
-	for (int k = 0 ; k < m_regions.size() ; k++)
-	{
-		delete m_regions[k];
-	}	
-	this->m_regions.clear();;
-	};
+	virtual ~HalfEdgeMesh();
 
 	/**
 	 * @brief 	This method should be called every time

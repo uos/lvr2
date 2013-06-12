@@ -75,6 +75,20 @@ FastReconstruction<VertexT, NormalT>::FastReconstruction(
 
 }
 
+
+template<typename VertexT, typename NormalT>
+FastReconstruction<VertexT, NormalT>::~FastReconstruction()
+{
+    typename hash_map<size_t, FastBox<VertexT, NormalT>* >::iterator iter;
+    for(iter = m_cells.begin(); iter != m_cells.end(); iter++)
+    {
+	delete ((*iter).second);
+    }
+
+    m_cells.clear();
+};
+
+
 template<typename VertexT, typename NormalT>
 void FastReconstruction<VertexT, NormalT>::calcIndices()
 {
@@ -285,24 +299,20 @@ void FastReconstruction<VertexT, NormalT>::getMesh(BaseMesh<VertexT, NormalT> &m
 	FastBox<VertexT, NormalT>* b;
 	uint global_index = 0;
 
-//std::cout << "\nVor dem getSurface!!!!!!!!!!!!!!!!!!!!" << std::endl;
-//sleep(5);
+
 	// Iterate through cells and calculate local approximations
 	typename hash_map<size_t, FastBox<VertexT, NormalT>* >::iterator it;
 	for(it = m_cells.begin(); it != m_cells.end(); it++)
 	{
 		b = it->second;
-std::cout << "\nMethode getSurface wird aufgerufen" << std::endl;
-//möglicher fehler unter getSurface der Befehl addtriangle
-		b->getSurface(mesh, m_queryPoints, global_index);
+
+		b->getSurface(mesh, m_queryPoints, global_index); // >>>>> Hier ist noch ein kleines Speicherleck vorhanden. <<<<<
 		++progress;
 	}
-b = NULL;
-//std::cout << "\nNach dem getSurface!!!!!!!!!!!!!!!!!!!!!!!!!!!!" << std::endl;
-//sleep(10);
+
 	cout << endl;
 
-/*	if(m_boxType == "SF")  // Perform edge flipping for extended marching cubes
+	if(m_boxType == "SF")  // Perform edge flipping for extended marching cubes
 	{
 		string SFComment = timestamp.getElapsedTime() + "Flipping edges  ";
 		ProgressBar SFProgress(m_cells.size(), SFComment);
@@ -343,7 +353,7 @@ b = NULL;
 	    cout << endl;
 	}
 
-*/
+
 
 }
 

@@ -1,7 +1,10 @@
 
 
 // Program options for this tool
-#include "Options.hpp"
+
+#ifndef DEBUG
+  #include "Options.hpp"
+#endif
 
 // Local includes
 #include "reconstruction/AdaptiveKSearchSurface.hpp"
@@ -144,7 +147,6 @@ int main(int argc, char** argv)
 			ModelFactory::saveModel(pn, "pointnormals.ply");
 		}
 
-// <--------------------------------------------------------------
 		// Create an empty mesh
 		HalfEdgeMesh<cVertex, cNormal> mesh( surface );
 
@@ -214,7 +216,6 @@ int main(int argc, char** argv)
 			}
 		}
 
-// <-----------------------pos2
 		if(options.getSharpFeatureThreshold())
 		{
 			SharpBox<cVertex, cNormal>::m_theta_sharp = options.getSharpFeatureThreshold();
@@ -237,12 +238,8 @@ int main(int argc, char** argv)
 			resolution = options.getVoxelsize();
 			useVoxelsize = true;
 		}
-		// <---- pos 3
-		// ------------------------------- SPEICHER LECK HIER ---------------------------
 		// Create a new reconstruction object
 		
-
-
 		FastReconstruction<cVertex, cNormal > reconstruction(
 				surface,
 				resolution,
@@ -251,37 +248,22 @@ int main(int argc, char** argv)
 				options.extrude());
 		
 		
-		// ------------------------------- SPEICHER LECK HIER ENDE ---------------------------
-
 		
-		//<-------- pos 4 zweites Speicherleck
 		// Create mesh
-		reconstruction.getMesh(mesh);
+		 reconstruction.getMesh(mesh); // kleines Speicherleck noch vorhanden
 		
-
-
 		// Save grid to file
 		if( options.saveGrid())
 		{
 			reconstruction.saveGrid("fastgrid.grid");
 		}
-
-
-
 		if(options.getDanglingArtifacts())
 		{
 			mesh.removeDanglingArtifacts(options.getDanglingArtifacts());
 		}
 		// Optimize mesh
-
-
-
-
 		mesh.cleanContours(options.getCleanContourIterations());
-
-
 		mesh.setClassifier(options.getClassifier());
-		// <---------------------------------------pos 1
 		if(options.optimizePlanes())
 		{
 			mesh.optimizePlanes(options.getPlaneIterations(),
@@ -339,6 +321,7 @@ int main(int argc, char** argv)
 
 		
 		cout << timestamp << "Program end." << endl;
+
 
 	}
 	catch(...)
