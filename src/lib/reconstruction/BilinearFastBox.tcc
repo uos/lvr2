@@ -47,7 +47,6 @@ void BilinearFastBox<VertexT, NormalT>::getSurface(
         vector<QueryPoint<VertexT> > &qp,
         uint &globalIndex)
 {
-//std::cout << "\n Getsurface von Bilinearfastbox wurde aufgerufen" << std::endl;
     // Cast mesh type
     HalfEdgeMesh<VertexT, NormalT> *mesh;
     mesh = static_cast<HalfEdgeMesh<VertexT, NormalT>* >(&m);
@@ -76,8 +75,7 @@ void BilinearFastBox<VertexT, NormalT>::getSurface(
     uint edge_index = 0;
 
     int triangle_indices[3];
-//std::cout << "\n For-Schleife in Bilinearfastbox - startet in einer Sekunde" << std::endl;
-//sleep(1);
+
     // Generate the local approximation sirface according to the marching
     // cubes table for Paul Burke.
     for(int a = 0; MCTable[index][a] != -1; a+= 3){
@@ -119,8 +117,6 @@ void BilinearFastBox<VertexT, NormalT>::getSurface(
         mesh->addTriangle(triangle_indices[0], triangle_indices[1], triangle_indices[2], f);
         m_faces.push_back(f);
     }
-//std::cout << "Ende der For-Schleife - in 1 Sekunden gehts weiter" << std::endl;
-//sleep(1);
 }
 
 template<typename VertexT, typename NormalT>
