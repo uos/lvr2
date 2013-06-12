@@ -168,7 +168,7 @@ void FastReconstruction<VertexT, NormalT>::createGrid()
 	size_t num_points;
 	coord3fArr points = this->m_surface->pointBuffer()->getIndexedPointArray(num_points);
 
-	for(size_t i = 0; i <  num_points; i++)
+	for(size_t i = 0; i < num_points; i++)
 	{
 
 
@@ -244,7 +244,7 @@ void FastReconstruction<VertexT, NormalT>::createGrid()
 
 					}
 				}
-//
+
 				//Set pointers to the neighbors of the current box
 				int neighbor_index = 0;
 				int neighbor_hash = 0;
@@ -299,13 +299,11 @@ void FastReconstruction<VertexT, NormalT>::getMesh(BaseMesh<VertexT, NormalT> &m
 	FastBox<VertexT, NormalT>* b;
 	uint global_index = 0;
 
-
 	// Iterate through cells and calculate local approximations
 	typename hash_map<size_t, FastBox<VertexT, NormalT>* >::iterator it;
 	for(it = m_cells.begin(); it != m_cells.end(); it++)
 	{
 		b = it->second;
-
 		b->getSurface(mesh, m_queryPoints, global_index); // >>>>> Hier ist noch ein kleines Speicherleck vorhanden. <<<<<
 		++progress;
 	}
@@ -431,8 +429,6 @@ void FastReconstruction<VertexT, NormalT>::saveGrid(string filename)
             out << endl;
         }
     }
-
-
 }
 
 } //namespace lssr
