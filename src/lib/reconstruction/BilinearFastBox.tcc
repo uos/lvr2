@@ -115,6 +115,7 @@ void BilinearFastBox<VertexT, NormalT>::getSurface(
         // Add triangle actually does the normal interpolation for us.
         HalfEdgeFace<VertexT, NormalT>* f;
         mesh->addTriangle(triangle_indices[0], triangle_indices[1], triangle_indices[2], f);
+
         m_faces.push_back(f);
     }
 }
