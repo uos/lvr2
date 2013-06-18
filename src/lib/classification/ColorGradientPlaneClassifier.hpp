@@ -40,9 +40,9 @@ public:
 	ColorGradientPlaneClassifier(vector<Region<VertexT, NormalT>* >* region, GradientType t);
 	virtual ~ColorGradientPlaneClassifier() { delete m_colorMap;};
 
-	virtual uchar r(int i) { return getColor(i)[0]; }
-	virtual uchar g(int i) { return getColor(i)[1]; }
-	virtual uchar b(int i) { return getColor(i)[2]; }
+	virtual uchar r(int i);
+	virtual uchar g(int i);
+	virtual uchar b(int i);
 
 private:
 

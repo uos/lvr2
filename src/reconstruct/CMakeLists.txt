@@ -2,7 +2,7 @@
 
 set(RECONSTRUCT_SOURCES
     Options.cpp     
-    MainoriginalKopie.cpp
+    Main.cpp
 )
 
 message(STATUS "BOOST_FLAG: " ${Boost_SYSTEM_LIBRARY} )
