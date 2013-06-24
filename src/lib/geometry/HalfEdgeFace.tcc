@@ -48,35 +48,48 @@ HalfEdgeFace<VertexT, NormalT>::~HalfEdgeFace()
 	{
 		if(m_edge->next->next->pair->face == 0)
 		{
-			delete m_edge->next->next->pair;
+                        delete m_edge->next->next->pair;
 			m_edge->next->next->pair = 0;
 		}
+
+                else
+                {
+                       m_edge->next->next->pair->pair = 0;
+                }
 	}
 
-	if(m_edge->next->pair)
-	{
-		if(m_edge->next->pair->face == 0)
+        if(m_edge->next->pair)
+        {
+	        if(m_edge->next->pair->face == 0)
 		{
-			delete m_edge->next->pair;
+                        delete m_edge->next->pair;
 			m_edge->next->pair = 0;
 		}
+
+                else
+                {
+                       m_edge->next->pair->pair = 0;
+                }
 	}
 
 	if(m_edge->pair)
 	{
 		if(m_edge->pair->face == 0)
 		{
-			delete m_edge->pair;
+                        delete m_edge->pair;
 			m_edge->pair = 0;
 		}
-	}
-	
 
+                else
+                {
+                       m_edge->pair->pair = 0;
+                }
+	}
 
 	delete m_edge->next->next;
 	delete m_edge->next;
 	delete m_edge;
-	
+
 	if(m_region != 0)
 	{
 		m_region->removeFace(this);
