@@ -191,6 +191,11 @@ public:
     /// Color information for points public: TODO: This is not the best idea!
     color3bArr                  m_colors;
 
+	/**
+         * @brief Interpolate the initial normals with the \ref m_ki neighbors
+         */
+        void interpolateSurfaceNormals();
+
 private:
 
     /**
@@ -208,12 +213,6 @@ private:
      * @brief Helper function for constructors
      */
     void init();
-
-
-	/**
-	 * @brief Interpolate the initial normals with the \ref m_ki neighbors
-	 */
-	void interpolateSurfaceNormals();
 
 	/**
 	 * @brief Checks if the bounding box of a point set is "well formed",

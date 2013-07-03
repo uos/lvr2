@@ -19,11 +19,12 @@ bool KdTree<VertexT>::compare_nocase (KdNode<VertexT> * first, KdNode<VertexT> *
 }
 
 template<typename VertexT>
-KdTree<VertexT>::KdTree(PointBufferPtr loader, long int max_p , long int min_p)
+KdTree<VertexT>::KdTree(PointBufferPtr loader, long int max_p , long int min_p, bool median)
 {
 
 	max_points = max_p;
 	min_points = min_p;
+	m_median   = median;
 
 	if (loader != NULL)
 	{
@@ -45,12 +46,14 @@ KdTree<VertexT>::KdTree(PointBufferPtr loader, long int max_p , long int min_p)
 	VertexT max = m_boundingBox.getMax();
 	VertexT min = m_boundingBox.getMin();
 
-
+	
 	KdNode<VertexT> * child = new KdNode<VertexT>(m_points, min , max);
 	child->setnumpoints(m_numpoint);
-
+	
+	// start the main-programm
 	this->Rekursion(child);
 
+	// sort the list
 	nodelist.sort(compare_nocase);
 
 }
@@ -61,13 +64,15 @@ void KdTree<VertexT>::Rekursion(KdNode<VertexT> * first){
 
 
 	boost::shared_array<size_t> tmp(new size_t [static_cast<unsigned int>(first->getnumpoints())]);
-	//fülle Indize Buffer mit Initialen Werten
+	
+	//fill indice Buffer initial values
 	for (size_t j = 0 ; j < first->getnumpoints(); j++)
 	{
 		// das zweite j wurd vorher auch gecastet
 		tmp[static_cast<unsigned int>(j)] = j;
 	}
 	first->setIndizes(tmp);
+	
 	// start the recursion
 	splitPointcloud(first, 0);
 
@@ -79,7 +84,8 @@ template<typename VertexT>
 void KdTree<VertexT>::splitPointcloud(KdNode<VertexT> * child , int again)
 {
   
-	//std::cout << "start vom split" << std::endl;
+	float median = 0.0f;
+	
 	// recursion rule
 	if (child->getnumpoints() == 0 || child->again == 6)
 	{
@@ -95,7 +101,7 @@ void KdTree<VertexT>::splitPointcloud(KdNode<VertexT> * child , int again)
 		// Node has less than MAX_POINTS in it, so store it in the list
 		nodelist.push_back(child);
 	}
-	// weiter aufteilen
+	// some splits are still necessary
 	else
 	{
 
@@ -112,6 +118,7 @@ void KdTree<VertexT>::splitPointcloud(KdNode<VertexT> * child , int again)
 		zmin = min[2];
 		zmax = max[2];
 
+		//get length of axis
 		float dx, dy ,dz;
 		dx = (xmax - xmin);
 		dy = (ymax - ymin);
@@ -124,83 +131,121 @@ void KdTree<VertexT>::splitPointcloud(KdNode<VertexT> * child , int again)
 		// z = 2
 		int splitaxis;
 		float split;
-
-		if ( dx > dy )
+		if (!m_median)
 		{
-			if ( dx > dz)
+		// determine the split axis and the location at center or some special case
+			if ( dx > dy )
 			{
-				splitaxis = 0;
-				if      (again == 0) split = ( xmin + xmax ) / 2.0f;
-				else if (again == 1) split = ( ( xmin + xmax ) / 2.0f ) + ( ( (child->again * 2) * ( xmax - xmin)) / 11 );
-				else if (again == 2) split = ( ( xmin + xmax ) / 2.0f ) - ( ( (child->again * 2) * ( xmax - xmin)) / 11 );
+				if ( dx > dz)
+				{
+					splitaxis = 0;
+					if      (again == 0) split = ( xmin + xmax ) / 2.0f;
+					else if (again == 1) split = ( ( xmin + xmax ) / 2.0f ) + ( ( (child->again * 2) * ( xmax - xmin)) / 11 );
+					else if (again == 2) split = ( ( xmin + xmax ) / 2.0f ) - ( ( (child->again * 2) * ( xmax - xmin)) / 11 );
+				}
+				else
+				{
+					splitaxis = 2;
+					if      (again == 0) split = ( zmin + zmax ) / 2.0f;
+					else if (again == 1) split = ( ( zmin + zmax ) / 2.0f ) + ( ( (child->again * 2) * ( zmax - zmin)) / 11 );
+					else if (again == 2) split = ( ( zmin + zmax ) / 2.0f ) - ( ( (child->again * 2) * ( zmax - zmin)) / 11 );
+				}
 			}
 			else
 			{
-				splitaxis = 2;
-				if      (again == 0) split = ( zmin + zmax ) / 2.0f;
-				else if (again == 1) split = ( ( zmin + zmax ) / 2.0f ) + ( ( (child->again * 2) * ( zmax - zmin)) / 11 );
-				else if (again == 2) split = ( ( zmin + zmax ) / 2.0f ) - ( ( (child->again * 2) * ( zmax - zmin)) / 11 );
+				if ( dy > dz)
+				{
+					splitaxis = 1;
+					if      (again == 0) split = ( ymin + ymax ) / 2.0f;
+					else if (again == 1) split = ( ( ymin + ymax ) / 2.0f ) + ( ( (child->again * 2 ) * ( ymax - ymin)) / 11 );
+					else if (again == 2) split = ( ( ymin + ymax ) / 2.0f ) - ( ( (child->again * 2 ) * ( ymax - ymin)) / 11 );
+				}
+				else
+				{
+					splitaxis = 2;
+					if      (again == 0) split = ( zmin + zmax ) / 2.0f;
+					else if (again == 1) split = ( ( zmin + zmax ) / 2.0f ) + ( ( (child->again * 2) * ( zmax - zmin)) / 11 );
+					else if (again == 2) split = ( ( zmin + zmax ) / 2.0f ) - ( ( (child->again * 2) * ( zmax - zmin)) / 11 );
+				}
 			}
 		}
 		else
 		{
-			if ( dy > dz)
+		// determine the split axis and the location with median
+			vector<float> med;
+		
+			if ( dx > dy )
 			{
-				splitaxis = 1;
-				if      (again == 0) split = ( ymin + ymax ) / 2.0f;
-				else if (again == 1) split = ( ( ymin + ymax ) / 2.0f ) + ( ( (child->again * 2 ) * ( ymax - ymin)) / 11 );
-				else if (again == 2) split = ( ( ymin + ymax ) / 2.0f ) - ( ( (child->again * 2 ) * ( ymax - ymin)) / 11 );
+				if ( dx > dz) splitaxis = 0;
+				else          splitaxis = 2;
 			}
 			else
 			{
-				splitaxis = 2;
-				if      (again == 0) split = ( zmin + zmax ) / 2.0f;
-				else if (again == 1) split = ( ( zmin + zmax ) / 2.0f ) + ( ( (child->again * 2) * ( zmax - zmin)) / 11 );
-				else if (again == 2) split = ( ( zmin + zmax ) / 2.0f ) - ( ( (child->again * 2) * ( zmax - zmin)) / 11 );
+				if ( dy > dz) splitaxis = 1;
+				else	      splitaxis = 2;
 			}
+	  	
+			for(size_t j = 0 ; j < child->getnumpoints(); j++)
+	  		{
+	    			med.push_back(child->node_points[j][splitaxis]);
+	  		}
+	  		std::sort(med.begin(), med.end());
+	
+		  	int tmp;
+		 	  
+		 	 tmp = child->getnumpoints() / 2;
+		  	
+			  median = med[tmp];
+			  split = median;
+		 
+			if(split == min[splitaxis]) split += (max[splitaxis] - min[splitaxis]) / 4.0f;
+			if(split == max[splitaxis]) split -= (max[splitaxis] - min[splitaxis]) / 4.0f;
+	
 		}
-		
+
 		// count the loops with the same pointcloud
 		if ( again != 0) child->again++;
   
 		// termination criterion for the case that something went wrong
 		if (xmin == xmax && ymin == ymax && zmin == zmax) return;
 
+		// set new range
 		VertexT child2_min = min;
 		VertexT child1_max = max;
 		child2_min[splitaxis] = split;
 		child1_max[splitaxis] = split;
+	
+		// count the points in both regions
+		int not_count_left  = 0;
+		int not_count_right = 0;
+		for (size_t j = 0 ; j < child->getnumpoints(); j++)
+		 {
+			if (child->node_points[j][splitaxis] <= split)
+			{
+			    not_count_left++;
+			}
+			else
+			{
+			    not_count_right++;
+			} 
+	    	}		
 		
-//NOTLÖSUNG
-	    int not_count_left  = 0;
-	    int not_count_right = 0;
-	    for (size_t j = 0 ; j < child->getnumpoints(); j++)
-	    {
-		if (child->node_points[j][splitaxis] <= split)
-		{
-		    not_count_left++;
-		}
-		else
-		{
-		    not_count_right++;
-		} 
-	    }		
 		
-		
-	    if ( not_count_left > ( min_points ) && not_count_right > ( min_points ) )
-	    {
+	   	 if ( not_count_left > ( min_points ) && not_count_right > ( min_points ) )
+	   	 {
 		    int countleft = 0;
 		    int countright = 0;
 
-//jetzt not_count, vorher Child->m_numpoints
+		    // Array for the new Regions
 		    coord3fArr left(new coord<float>[static_cast<unsigned int>(not_count_left)]);
 		    coord3fArr right(new coord<float>[static_cast<unsigned int>(not_count_right)]);
-//new coord<float>[static_cast<unsigned int>(child->m_numpoints)]
+
 
 
 		    boost::shared_array<size_t> left_indizes(new size_t [static_cast<unsigned int>(not_count_left)]);
 		    boost::shared_array<size_t> right_indizes(new size_t [static_cast<unsigned int>(not_count_right)]);
-
+		    
+		    // count points in both parts
 		    for (int y = 0 ; y < static_cast<unsigned int>(not_count_left) ; y++)
 		    {
 			    left_indizes[y] = 0;
@@ -219,7 +264,7 @@ void KdTree<VertexT>::splitPointcloud(KdNode<VertexT> * child , int again)
 			    {
 				    left[countleft] = child->node_points[j];
 				
-				    //abspeichern einer liste der Indizes aus der Anfangsmenge
+				    //save the global Indizes
 				    if (child_indizes[static_cast<unsigned int>(j)] == 0)
 				    {					  
 					    left_indizes[countleft] = j;
@@ -234,28 +279,23 @@ void KdTree<VertexT>::splitPointcloud(KdNode<VertexT> * child , int again)
 			    }
 			    else if (child->node_points[j][splitaxis] > split)
 			    {
-				    //std::cout << "else" << std::endl;
 				    right[countright] = child->node_points[j];
     
-				    //abspeichern einer liste der Indizes aus der Anfangsmenge
+				    //save the global Indizes
 				    if (child_indizes[static_cast<unsigned int>(j)] == 0)
 				    {
-					    //std::cout << " hier ist der fehler, wahrscheinlich 2" << std::endl;
 					    right_indizes[countright] = j;
 				    }
 				    else
 				    {
-					    //std::cout << " hier ist der fehler, wahrscheinlich" << std::endl;
 					    right_indizes[countright] =  child->indizes[static_cast<unsigned int>(j)];
 				    }
-				    //std::cout << "nach dem fehler" << std::endl;
 				    countright++;
 			    }
 			    else
 			    {
 				   std::cout << "!!!!!!!!!!!!!!Should never happen! Point is not considered in the interval!!!!!!!!!" << endl;
 			    }
-//std::cout << "Erstes Abspeichern ist fertig!" << std::endl;
 		    }// ende For
 
 
@@ -282,8 +322,6 @@ void KdTree<VertexT>::splitPointcloud(KdNode<VertexT> * child , int again)
 
 		    if ( not_count_left == 0 )
 		    {	
-//			left_indizes.reset();
-//			left.reset();
 			KdNode<VertexT> * child2 = new KdNode<VertexT>(child->node_points, child2_min, max);
 			child2->setnumpoints(not_count_right);
 			child2->setIndizes(child->indizes);
@@ -291,8 +329,6 @@ void KdTree<VertexT>::splitPointcloud(KdNode<VertexT> * child , int again)
 		    }
 		    else if (not_count_right == 0 )
 		    {
-//			right_indizes.reset();
-//			right.reset();
 			KdNode<VertexT> * child1 = new KdNode<VertexT>(child->node_points, min , child1_max);
 			child1->setnumpoints(not_count_left);
 			child1->setIndizes(child->indizes);
@@ -300,11 +336,6 @@ void KdTree<VertexT>::splitPointcloud(KdNode<VertexT> * child , int again)
 		    }
 		    else
 		    {
-
-//			left.reset();
-//			right.reset();
-//			right_indizes.reset();
-//			left_indizes.reset();
 			if ( not_count_left < not_count_right) splitPointcloud(child, 1);
 			else splitPointcloud(child, 2);
 		    }
