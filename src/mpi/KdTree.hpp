@@ -44,8 +44,9 @@ public:
 	 * @param pointcloud The point cloud, which is to be divided
 	 * @param max        Max number of Points
 	 * @param min        Min number of Points
+	 * @param median     is True, if the median is used for segmenting the pointcloud
 	 */
-	KdTree(PointBufferPtr pointcloud, long int max, long int min);
+	KdTree(PointBufferPtr pointcloud, long int max, long int min, bool median);
 
 	/**
 	 * @brief starts the recursion and saves the packages in files (scan*.3d)
@@ -104,6 +105,9 @@ public:
 
 	// Number of points in the point cloud
 	size_t m_numpoint;
+
+	//use median
+	bool m_median;
 
 	// Number of points per packet
 	double m_bucketsize;
