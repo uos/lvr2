@@ -1,15 +1,10 @@
 /*
- * mpi.cpp
+ * ownmpi.cpp
  *
  *  Created on: 1.02.2013
  *      Author: Dominik Feldschnieders
  */
 
-/*
- *
- * Programmierbeispiel der Stanfort Universität.
- *  http://www.slac.stanford.edu/comp/unix/farm/mpi.html
- */
 
 #include <iostream>
 #include <fstream>
@@ -34,54 +29,65 @@ namespace po = boost::program_options;
 
 
 int main (int argc , char *argv[]) {
-  int count_serv = 0;  
-  fstream f;
-  char test_aufgabe_name[64];
-  
-  
-  Timestamp start;
+      int count_serv = 0;  
+      fstream f;
 
-    int kd, kn, ki; 
-    long int max_points, min_points;
-    bool ransac;
     
+      // for runtime tests
+      //Timestamp start;
+
+      int kd, kn, ki; 
+      long int max_points, min_points;
+      bool ransac;
+      bool median;
+      
+      // get all options
+      po::options_description desc("Allowed options");
+      desc.add_options()
+	("help"      , "produce help message")
+	("kd"        , po::value<int>(&kd)->default_value(40), "set kd")
+	("ki"        , po::value<int>(&ki)->default_value(40), "set ki")
+	("kn"        , po::value<int>(&kn)->default_value(40), "set kn")
+	("maxpoints" , po::value<long int>(&max_points)->default_value(100000), "set maxpoints, min 5000 and min 32 * kn bzw. ki")
+	("file"      , po::value<string>()->default_value("noinput"), "Inputfile")
+	("median"    , "Use the Median for segmenting the pointcloud")
+	("ransac"    , "Use RANSAC based normal estimation")
+      ;
+      
+      po::variables_map vm;
+      po::store(po::parse_command_line(argc, argv, desc), vm);
+      po::notify(vm);    
     
-    po::options_description desc("Allowed options");
-    desc.add_options()
-      ("help"      , "produce help message")
-      ("kd"        , po::value<int>(&kd)->default_value(40), "set kd")
-      ("ki"        , po::value<int>(&ki)->default_value(40), "set ki")
-      ("kn"        , po::value<int>(&kn)->default_value(40), "set kn")
-      ("maxpoints" , po::value<long int>(&max_points)->default_value(100000), "set maxpoints, min 5000 and min 32 * kn bzw. ki")
-      ("file"      , po::value<string>()->default_value("noinput"), "Inputfile")
-      ("ransac"    , "Use RANSAC based normal estimation")
-    ;
-    
-    po::variables_map vm;
-    po::store(po::parse_command_line(argc, argv, desc), vm);
-    po::notify(vm);    
-  
-    if (vm.count("help")) {
-      cout << desc << "\n";
-      return 1;
-    }
-        
-        if(vm.count("ransac")) 
-	{
-	  ransac = true;
-	} 
-	else
-	{
-	  ransac = false;
-	}
+      if (vm.count("help")) {
+	cout << desc << "\n";
+	return 1;
+      }
+	  
+      if(vm.count("ransac")) 
+      {
+	ransac = true;
+      } 
+      else
+      {
+	ransac = false;
+      }
+
+      if(vm.count("median")) 
+      {
+	median = true;
+      } 
+      else
+      {
+	median = false;
+      }
 
 	// Kd Tree
-    // A list for all Nodes with less than MAX_POINTS
-    std::list<KdNode<ColorVertex<float, unsigned char>>*> m_nodelist;
+        // A list for all Nodes with less than MAX_POINTS
+        std::list<KdNode<ColorVertex<float, unsigned char>>*> m_nodelist;
 
 	//Las Vegas Toolkit
-    // m_ for Master
-    // s_ for Slave
+        // m_ for Master
+        // s_ for Slave
 
 	// A shared-Pointer for the model, with the pointcloud in it
 	ModelPtr 				m_model;
@@ -101,7 +107,7 @@ int main (int argc , char *argv[]) {
 	size_t 					m_numpoint;
 
 	// Number of points in the point cloud (Child)
-	int c_sizepackage;
+	int c_sizepackage = 0;
 
 
 	// for calculate normals
@@ -120,7 +126,6 @@ int main (int argc , char *argv[]) {
 	char con_msg[128];
 	float expansion_bounding[6];
 
-				
 
 	//if send this, +1 because this the Master in MPI has the rank 0 but for all Indizes this is more pleasant
 	int client_serv_data = 0;
@@ -148,9 +153,7 @@ int main (int argc , char *argv[]) {
 		int * int_numpoint = new int[numprocs - 1];
 		int * tmp_int = new int[1];
 	  
-	/*temporär wird noch ausgelesen, später Übergabe durch das Programm */
-		//Read the file and get the pointcloud
-		
+		// read the point cloud
 		if (  vm["file"].as<string>() != "noinput" ) m_model = io_factory.readModel( vm["file"].as<string>() );
 
 		if (m_model != NULL)
@@ -172,11 +175,13 @@ int main (int argc , char *argv[]) {
 		
 		if (max_points < (  min_points )  ) max_points = ( 2 * min_points );
 		// Building the Kd tree with max max_points in every packete
-		KdTree<cVertex> KDTree(m_loader, max_points, min_points);
+		std::cout << "Aufbauen des kd-Baums" << std::endl;
+		KdTree<cVertex> KDTree(m_loader, max_points, min_points, median);
 
 		// get the list with all Nodes with less than MAX_POINTS
 		m_nodelist = KDTree.GetList();	
 
+		// get global Bounding-Box
 		BoundingBox<cVertex> tmp_BoundingBox = KDTree.GetBoundingBox();
 		cVertex tmp_min = tmp_BoundingBox.getMin();
 		cVertex tmp_max = tmp_BoundingBox.getMax();
@@ -213,13 +218,13 @@ int main (int argc , char *argv[]) {
 /*************************************** Connection is successful *****************/
 
 
-		//dynamisches array für die Normalen anlegen
+		//allocate array for all normals dynamically
 		float ** normals = new float*[numprocs - 1];
 
-		//dynamisches array für die Indices anlegen
+		//allocate array for global indices dynamically
 		long unsigned int ** Indizes = new long unsigned int*[numprocs - 1];
 
-		// für laufvariable beim zusammenfügen
+		// array for which clients serv the data
 		int laufvariable[numprocs - 1];
 
 
@@ -234,7 +239,8 @@ int main (int argc , char *argv[]) {
 		while ( it  != m_nodelist.end() )
 		{
 
-		  // get the next points in row
+
+		        // get the next points in row
 			m_points = (*it)->getPoints();
 
 			// send the number of points that will follow
@@ -265,14 +271,14 @@ int main (int argc , char *argv[]) {
 			req2.Wait();
 
 
-/*******************************abspeichern  **************/
+/*******************************store Normals  **************/
 
 
 			if (count >= numprocs - 1)
 			{
-std::cout << "\n -------------Warten, bis wieder ein prozess bereit ist!\n" << std::endl;
+std::cout << "\n -------------Master wartet, bis wieder ein Prozess bereit ist!\n" << std::endl;
 			      client_serv_data = MPI::Request::Waitany( numprocs - 1, status);
-std::cout << "\n -------------Abspeichern der Normalen eine Paketes mit so viel Inhalt: " << laufvariable[client_serv_data] << "\n" << std::endl;
+
 				progress++;
 				// store normals on correct position
 				for (int x = 0; x < laufvariable[client_serv_data] ; x ++)
@@ -285,7 +291,7 @@ std::cout << "\n -------------Abspeichern der Normalen eine Paketes mit so viel 
 
 				}
 				normals[client_serv_data][0] = 0;
-std::cout << "Abspeichern der Normalen abgeschlossen!" << std::endl;
+
 
 				count++;
 				it++;
@@ -303,7 +309,7 @@ std::cout << "Abspeichern der Normalen abgeschlossen!" << std::endl;
 			}
 		}// End while
 
-std::cout << "\n ES wird noch auf die letzten Ergebnisse gewartet" << std::endl;
+		std::cout << "\n Es wird noch auf die letzten Ergebnisse gewartet" << std::endl;
 		//store all data which is still not stored
 		MPI::Request::Waitall( numprocs - 1, status);
 
@@ -336,16 +342,27 @@ std::cout << "\n ES wird noch auf die letzten Ergebnisse gewartet" << std::endl;
 		boost::shared_array<float> norm (m_normal);
 
 		long unsigned int tmp = static_cast<unsigned int>(m_loader->getNumPoints());
-
+		
+		std::cout << "\nInterpolieren der Daten" << std::endl;
 
 		// set normals
 		m_loader->setPointNormalArray(norm, m_loader->getNumPoints() );
+
+
+		AdaptiveKSearchSurface<ColorVertex<float, unsigned char>, Normal<float> >* tmp_surface;
+		tmp_surface = new AdaptiveKSearchSurface<ColorVertex<float, unsigned char>, Normal<float> >(m_loader, "STANN", kn, ki, kd, ransac);
+	
+		tmp_surface->interpolateSurfaceNormals();
+	
+		m_loader = tmp_surface->pointBuffer();
+
 
 		m_model->m_pointCloud = m_loader;
 
 		// save data
 		io_factory.saveModel(m_model, "Normal.ply");
-
+		
+		std::cout << "\nEnd of Programm" << std::endl;
 		
 		// Complete connection
 		int end[1] = {-1};
@@ -368,9 +385,7 @@ std::cout << "\n ES wird noch auf die letzten Ergebnisse gewartet" << std::endl;
 /**********************************************************************************************************/
 	// Slave-Process
 	else
-	{
-//für die tests zum Zeitmessen
-		
+	{		
 
 
 		// Wait for the first Message (INIT)
@@ -383,17 +398,14 @@ std::cout << "\n ES wird noch auf die letzten Ergebnisse gewartet" << std::endl;
 		strcat(con_msg, "...roger roger, we can go on!");
 
 		MPI::COMM_WORLD.Send(con_msg, 128, MPI::CHAR, 0, 0);
-
-		
-		// Wait for the Boundingbox
 		MPI::COMM_WORLD.Recv(expansion_bounding, 6, MPI::FLOAT, 0, 5);
 /************************************ Connection is successful *******************/
 
 		// Loop for receiving the data, -1 cancels operation
 		while(true)
 		{
-			MPI::COMM_WORLD.Recv( &c_sizepackage, 1, MPI::INT , 0,2);
-
+		  
+		  MPI::COMM_WORLD.Recv(&c_sizepackage, 1, MPI::INT, 0, 2);
 			//termination condition
 			if (c_sizepackage == -1)
 			{
@@ -401,7 +413,8 @@ std::cout << "\n ES wird noch auf die letzten Ergebnisse gewartet" << std::endl;
 			}
 			else
 			{
-count_serv++;
+	
+				count_serv++;
 
 			
 				// Recv the data
@@ -422,27 +435,27 @@ count_serv++;
 				pointcloud->setPointArray(punkte, c_sizepackage);
 
 				PointsetSurface<ColorVertex<float, unsigned char> >* surface;
+				
+				// Set search options for normal estimation and distance evaluation
 				surface = new AdaptiveKSearchSurface<ColorVertex<float, unsigned char>, Normal<float> >(pointcloud, "STANN", kn, ki, kd, ransac);
+			
+				// set global Bounding-Box
 				surface->expand_bounding(expansion_bounding[0], expansion_bounding[1], expansion_bounding[2],
 							      expansion_bounding[3], expansion_bounding[4], expansion_bounding[5]);
 				
-				// Set search options for normal estimation and distance evaluation
-
+				
 				
 				// calculate the normals
-				//Timestamp ts;
 std::cout << "\n++++++++++Client " << rank << " berechnet Normale mit so vielen Punkten: " << c_sizepackage << std::endl;
 				surface->calculateSurfaceNormals();
 				//cerr << ts.getElapsedTimeInMs() << endl;
-
-//				ModelPtr pn( new Model);
-//				pn->m_pointCloud = surface->pointBuffer();
 
 
 				pointcloud = surface->pointBuffer();
 				size_t size_normal;
 				c_normals = pointcloud->getIndexedPointNormalArray(size_normal);
 std::cout << "\n++++++++++Client " << rank << " hat seine Brechnung abgeschlossen!" << std::endl;
+
 				// send the normals back to the Masterprocess
 				MPI::COMM_WORLD.Send(c_normals.get(), 3 * c_sizepackage, MPI::FLOAT, 0, 4);
 
@@ -450,20 +463,22 @@ std::cout << "\n++++++++++Client " << rank << " hat seine Brechnung abgeschlosse
 		}
 
 	}// End else
-
+	
+// Some usefull Information for Debugging and tests
+/*
+        char test_aufgabe_name[64];
 	sprintf(test_aufgabe_name, "Ausgabe%00d.dat" , rank);
 	f.open(test_aufgabe_name, ios::out);
 		if (rank == 0)
 	{  
 	  std::cout << "so lange hat es gebraucht: " << start.getElapsedTimeInMs() << std::endl;
-<<<<<<< HEAD
-	  f << "Beende den Durchlauf mit " << numprocs << " Prozessen, Mit den k-Werten: " << ki << " " << kn << " dieser hat " << start.getElapsedTimeInMs() << " Millisekunden gedauert." << std::endl;
-=======
+	  
 	  f << "Beende den Prozess: " << rank << ", dieser hat " << start.getElapsedTimeInMs() << " Millisekunden gedauert." << std::endl;
->>>>>>> b3a5b8d8860b420a5b46c7b3c962d48e0ab125f4
+
 	}
 	else f << "Beende den Prozess: " << rank << ", dieser hat " << count_serv << " Pakete bearbeiet. Und hat mit kd, kn und ki gearbeitet:" << kd << kn << ki << endl; 
 	f.close();
+*/
 	MPI_Finalize();
 
 }
