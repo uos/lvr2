@@ -1,12 +1,12 @@
 /*
- * KdNode.hpp
+ * MPINode.hpp
  *
  *  Created on: 17.01.2013
  *      Author: Dominik Feldschnieders
  */
 
-#ifndef KDNODE_HPP_
-#define KDNODE_HPP_
+#ifndef MPINODE_HPP_
+#define MPINODE_HPP_
 
 #include "geometry/Vertex.hpp"
 #include "io/Model.hpp"
@@ -19,7 +19,7 @@
  */
 namespace lssr{
 template<typename VertexT>
-class KdNode {
+class MPINode {
 public:
 	/**
 	 * @brief Construktor
@@ -28,13 +28,13 @@ public:
 	 * @param min This vector represents the "bottom" of the scene (minimum x, y and z value)
 	 * @param max This vector represents the "top" of the scene (maximum x, y and z value)
 	 */
-	KdNode(coord3fArr points, VertexT min, VertexT max);
+	MPINode(coord3fArr points, VertexT min, VertexT max);
 
 
 	/**
 	 * @brief Destruktor
 	 */
-	virtual ~KdNode();
+	virtual ~MPINode();
 
 	/**
 	 * @brief Gives back the number of points contained in the node.
@@ -73,5 +73,5 @@ public:
 
 };
 }
-#include "KdNode.tcc"
-#endif /* KDNODE_HPP_ */
+#include "MPINode.tcc"
+#endif /* MPINODE_HPP_ */
