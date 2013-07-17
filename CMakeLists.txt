@@ -26,6 +26,12 @@ set( CMAKE_CXX_FLAGS         ${CMAKE_CXX_FLAGS})
 FIND_PACKAGE( OpenCV REQUIRED )
 
 ####
+## Searching for MPI
+##############################
+FIND_PACKAGE( MPI )
+include_directories(SYSTEM ${MPI_INCLUDE_PATH})
+
+####
 ## Searching for NABO 
 ##############################
 
@@ -85,12 +91,13 @@ endif(CGAL_FOUND)
 ####
 ## Searching for Boost
 ##############################
+#
 
 find_package( Boost 1.42
     COMPONENTS 
     program_options 
     filesystem system 
-    thread 
+    thread
     REQUIRED )
 if(Boost_FOUND)
     link_directories(${BOOST_LIBRARY_DIRS})
@@ -197,6 +204,8 @@ add_subdirectory(ext/libfreenect)
 include_directories( ${CMAKE_CURRENT_SOURCE_DIR}/ext/slam6d )
 add_subdirectory(ext/slam6d)
 
+
+
 ##############################################################
 # LIBRARIES
 ##############################################################
@@ -215,6 +224,10 @@ add_subdirectory(src/asciiconverter)
 add_subdirectory(src/texman)
 add_subdirectory(src/tiogen)
 add_subdirectory(src/meshoptimizer)
+
+if(MPI_FOUND)
+add_subdirectory(src/mpi)
+endif(MPI_FOUND)
 
 if(CGAL_FOUND)
 add_subdirectory(src/cgal_reconstruction)
