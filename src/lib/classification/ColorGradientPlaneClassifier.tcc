@@ -34,6 +34,32 @@ ColorGradientPlaneClassifier<VertexT, NormalT>::ColorGradientPlaneClassifier(vec
 	m_gradientType = t;
 }
 
+template<typename VertexT, typename NormalT>
+uchar ColorGradientPlaneClassifier<VertexT, NormalT>::r(int i)
+{
+	uchar* c = getColor(i);
+	uchar tmp = c[0];
+	delete[] c;
+	return tmp;
+}
+
+template<typename VertexT, typename NormalT>
+uchar ColorGradientPlaneClassifier<VertexT, NormalT>::g(int i)
+{
+	uchar* c = getColor(i);
+	uchar tmp = c[1];
+	delete[] c;
+	return tmp;
+}
+
+template<typename VertexT, typename NormalT>
+uchar ColorGradientPlaneClassifier<VertexT, NormalT>::b(int i)
+{
+	uchar* c = getColor(i);
+	uchar tmp = c[2];
+	delete[] c;
+	return tmp;
+}
 
 template<typename VertexT, typename NormalT>
 uchar* ColorGradientPlaneClassifier<VertexT, NormalT>::getColor(int i)
