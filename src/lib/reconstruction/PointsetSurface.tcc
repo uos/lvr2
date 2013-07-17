@@ -40,6 +40,15 @@ PointsetSurface<VertexT>::PointsetSurface(PointBufferPtr pointcloud)
 }
 
 template<typename VertexT>
+void PointsetSurface<VertexT>::expandBoundingBox( 
+	  float xmin, float ymin, float zmin,
+	  float xmax, float ymax, float zmax)
+{
+    this->m_boundingBox.expand(xmin, ymin, zmin);
+    this->m_boundingBox.expand(xmax, ymax, zmax);
+}
+
+template<typename VertexT>
 VertexT PointsetSurface<VertexT>::getInterpolatedNormal(VertexT position)
 {
 	vector< ulong > indices;
