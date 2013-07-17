@@ -1,12 +1,12 @@
 /*
- * KdTree.hpp
+ * MPITree.hpp
  *
  *  Created on: 15.01.2013
  *      Author: Dominik Feldschnieders
  */
 
-#ifndef KDTREE_HPP_
-#define KDTREE_HPP_
+#ifndef MPITREE_HPP_
+#define MPITREE_HPP_
 
 #include "geometry/BoundingBox.hpp"
 #include "io/ModelFactory.hpp"
@@ -23,7 +23,7 @@
 #include <iostream>
 #include <list>
 #include <cctype>
-#include "KdNode.hpp"
+#include "MPINode.hpp"
 #include "boost/shared_array.hpp"
 
 namespace lssr{
@@ -33,10 +33,10 @@ namespace lssr{
  * 	The classification criterion is to halve the longest axis.
  */
 template<typename VertexT>
-class KdTree {
+class MPITree {
 public:
 
-	virtual ~KdTree();
+	virtual ~MPITree();
 
 	/**
 	 * @brief Constructor.
@@ -46,14 +46,14 @@ public:
 	 * @param min        Min number of Points
 	 * @param median     is True, if the median is used for segmenting the pointcloud
 	 */
-	KdTree(PointBufferPtr pointcloud, long int max, long int min, bool median);
+	MPITree(PointBufferPtr pointcloud, long int max, long int min, bool median);
 
 	/**
 	 * @brief starts the recursion and saves the packages in files (scan*.3d)
 	 *
 	 * @param first The first Node with the whole pointcloud in it
 	 */
-	void Rekursion(KdNode<VertexT> * first);
+	void Rekursion(MPINode<VertexT> * first);
 
 
 	/**
@@ -62,21 +62,21 @@ public:
 	 * 	The classification criterion is to halve the longest axis.
 	 *	When a partial pointcloud has less than the maximum number of points is thus, it will be stored in a 3D file.
 	 *
-	 *@param child Instance KdNode 
-	 *@param again count if this is the second call with the same KdNode, if it is take another axis
+	 *@param child Instance MPINode 
+	 *@param again count if this is the second call with the same MPINode, if it is take another axis
 	 */
-	void splitPointcloud(KdNode<VertexT> * child, int again);
+	void splitPointcloud(MPINode<VertexT> * child, int again);
 
 	/**
-	 * @brief returns the list of kdNodes
+	 * @brief returns the list of MPINodes
 	 */
-	list<KdNode<VertexT>*> GetList();
+	list<MPINode<VertexT>*> GetList();
 	
 
 	/**
 	 *@brief function to sort list
 	 */
-	bool static compare_nocase (KdNode<VertexT> * first, KdNode<VertexT> * second);	
+	bool static compare_nocase (MPINode<VertexT> * first, MPINode<VertexT> * second);	
 
 	/**
 	 * @brief return the BoundingBox
@@ -94,7 +94,7 @@ public:
     BoundingBox<VertexT>   m_boundingBox;
 
     // A list for all Nodes with less than MAX_POINTS
-    std::list<KdNode<VertexT>*> nodelist;
+    std::list<MPINode<VertexT>*> nodelist;
 
     // number of max Points in one packete
     long int max_points;
@@ -117,5 +117,5 @@ public:
 };
 }
 
-#include "KdTree.tcc"
-#endif /* KDTREE_HPP_ */
+#include "MPITree.tcc"
+#endif /* MPITREE_HPP_ */

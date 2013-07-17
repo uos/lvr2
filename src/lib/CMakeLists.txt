@@ -13,8 +13,8 @@ set(LSSR_SOURCES
     io/MeshBuffer.cpp
     io/PointBuffer.cpp
     io/GridIO.cpp
-    #io/KinectGrabber.cpp
-    #io/KinectIO.cpp
+    io/KinectGrabber.cpp
+    io/KinectIO.cpp
     io/CoordinateTransform.cpp
     io/BoctreeIO.cpp
     display/InteractivePointCloud.cpp
@@ -32,8 +32,9 @@ set(LSSR_SOURCES
     display/TextureFactory.cpp
     display/TexturedMesh.cpp
     geometry/Texture.cpp
-#    reconstruction/PCLFiltering.cpp
-#    mpi/tmpmain.cpp
+    reconstruction/PCLFiltering.cpp
+    mpi/MPITree.tcc
+    mpi/MPINode.tcc
 )
 
 
