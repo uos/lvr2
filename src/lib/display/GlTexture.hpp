@@ -43,8 +43,6 @@ public:
      */
     void bind() const { glBindTexture(GL_TEXTURE_2D, m_texIndex);}
 
-private:
-
     /**
      * @brief   Does all the OpenGL stuff to make it avialable for
      *          rendering.

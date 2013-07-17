@@ -136,7 +136,10 @@
 
 
 // Program options for this tool
-#include "Options.hpp"
+
+#ifndef DEBUG
+  #include "Options.hpp"
+#endif
 
 // Local includes
 #include "reconstruction/AdaptiveKSearchSurface.hpp"
@@ -160,7 +163,6 @@
 #include <iostream>
 
 using namespace lssr;
-
 
 typedef ColorVertex<float, unsigned char>               cVertex;
 typedef Normal<float>                                   cNormal;
@@ -277,7 +279,6 @@ int main(int argc, char** argv)
 			ModelFactory::saveModel(pn, "pointnormals.ply");
 		}
 
-
 		// Create an empty mesh
 		HalfEdgeMesh<cVertex, cNormal> mesh( surface );
 
@@ -347,7 +348,6 @@ int main(int argc, char** argv)
 			}
 		}
 
-
 		if(options.getSharpFeatureThreshold())
 		{
 			SharpBox<cVertex, cNormal>::m_theta_sharp = options.getSharpFeatureThreshold();
@@ -371,36 +371,32 @@ int main(int argc, char** argv)
 			useVoxelsize = true;
 		}
 
-
 		// Create a new reconstruction object
+
 		FastReconstruction<cVertex, cNormal > reconstruction(
 				surface,
 				resolution,
 				useVoxelsize,
 				options.getDecomposition(),
 				options.extrude());
+		
+		
 		// Create mesh
-		reconstruction.getMesh(mesh);
-
+		 reconstruction.getMesh(mesh); // kleines Speicherleck noch vorhanden
+		
 		// Save grid to file
 		if(options.saveGrid())
 		{
 			reconstruction.saveGrid("fastgrid.grid");
 		}
 
-
 		if(options.getDanglingArtifacts())
 		{
 			mesh.removeDanglingArtifacts(options.getDanglingArtifacts());
 		}
+
 		// Optimize mesh
-
-
-
-
 		mesh.cleanContours(options.getCleanContourIterations());
-
-
 		mesh.setClassifier(options.getClassifier());
 
 		if(options.optimizePlanes())
@@ -422,8 +418,6 @@ int main(int argc, char** argv)
 				QuadricVertexCosts<cVertex, cNormal> c = QuadricVertexCosts<cVertex, cNormal>(true);
 				mesh.reduceMeshByCollapse(options.getNumEdgeCollapses(), c);
 			}
-
-
 		}
 		else if(options.clusterPlanes())
 		{
@@ -444,7 +438,7 @@ int main(int argc, char** argv)
 
 		// Create output model and save to file
 		ModelPtr m( new Model( mesh.meshBuffer() ) );
-
+		
 		if(options.saveOriginalData())
 		{
 			m->m_pointCloud = model->m_pointCloud;
@@ -456,8 +450,9 @@ int main(int argc, char** argv)
 		if(options.generateTextures())
 		{
 			ModelFactory::saveModel( m, "triangle_mesh.obj");
-		}
+		}		
 		cout << timestamp << "Program end." << endl;
+
 	}
 	catch(...)
 	{

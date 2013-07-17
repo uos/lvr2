@@ -146,6 +146,14 @@ public:
 	 */
 	bool isBorderFace();
 
+
+	typedef HalfEdgeVertex<VertexT, NormalT> HEV;
+	typedef HalfEdgeFace<VertexT, NormalT> HEF;
+	/**
+	 *
+	 */
+	void deletePointsFromEdge(HalfEdge< HEV, HEF> *ptr);
+
 	/// A pointer to a surrounding half edge
 	HalfEdge<HalfEdgeVertex<VertexT, NormalT>, HalfEdgeFace<VertexT, NormalT> >* m_edge;
 
