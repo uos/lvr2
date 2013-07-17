@@ -31,7 +31,7 @@ FIND_PACKAGE( OpenCV REQUIRED )
 ####
 ## Searching for MPI
 ##############################
-FIND_PACKAGE( MPI REQUIRED )
+FIND_PACKAGE( MPI )
 include_directories(SYSTEM ${MPI_INCLUDE_PATH})
 
 ####
@@ -212,13 +212,16 @@ add_subdirectory(src/lib)
 # BINARIES
 ##############################################################
 
-#add_subdirectory(src/reconstruct)
-#add_subdirectory(src/colorize)
-#add_subdirectory(src/scanreduce)
-#add_subdirectory(src/convert)
-#add_subdirectory(src/asciiconverter)
-#add_subdirectory(src/meshoptimizer)
+add_subdirectory(src/reconstruct)
+add_subdirectory(src/colorize)
+add_subdirectory(src/scanreduce)
+add_subdirectory(src/convert)
+add_subdirectory(src/asciiconverter)
+add_subdirectory(src/meshoptimizer)
+
+if(MPI_FOUND)
 add_subdirectory(src/mpi)
+endif(MPI_FOUND)
 
 if(CGAL_FOUND)
 add_subdirectory(src/cgal_reconstruction)

@@ -19,8 +19,8 @@
 #include "mpi/MPITree.hpp"
 #include "geometry/ColorVertex.hpp"
 #include "geometry/Normal.hpp"
-
 #include "reconstruction/AdaptiveKSearchSurface.hpp"
+#include "io/Progress.hpp"
 
 #include <boost/program_options.hpp>
 
@@ -162,7 +162,7 @@ int main (int argc , char *argv[]) {
 		}
 		else
 		{
-		  std::cout << "Model can´t be load!!!!" << std::endl;
+		  std::cout << timestamp << "Model can´t be loaded." << vm["file"].as<string>() << std::endl;
 		  MPI_Finalize();
 		  return 1;
 		  
@@ -175,7 +175,7 @@ int main (int argc , char *argv[]) {
 		
 		if (max_points < (  min_points )  ) max_points = ( 2 * min_points );
 		// Building the Kd tree with max max_points in every packete
-		std::cout << "Build the kd-Tree" << std::endl;
+		std::cout << timestamp << "Building the MPI kd-Tree..." << std::endl;
 		MPITree<cVertex> MPITree(m_loader, max_points, min_points, median);
 
 		// get the list with all Nodes with less than MAX_POINTS
@@ -276,8 +276,8 @@ int main (int argc , char *argv[]) {
 
 			if (count >= numprocs - 1)
 			{
-std::cout << "\n -------------Master is waiting, till another Process is ready\n" << std::endl;
-			      client_serv_data = MPI::Request::Waitany( numprocs - 1, status);
+				std::cout << timestamp << "Master is waiting until another Process is ready." << std::endl;
+				client_serv_data = MPI::Request::Waitany( numprocs - 1, status);
 
 				progress++;
 				// store normals on correct position
@@ -295,8 +295,8 @@ std::cout << "\n -------------Master is waiting, till another Process is ready\n
 
 				count++;
 				it++;
-				
-				std::cout << "\n------------" << progress << " / " << m_nodelist.size() << " packages done!\n" << std::endl; 
+
+				std::cout << timestamp << progress << " / " << m_nodelist.size() << " packages done." << std::endl;
 
 
 			}// end if
@@ -309,12 +309,12 @@ std::cout << "\n -------------Master is waiting, till another Process is ready\n
 			}
 		}// End while
 
-		std::cout << "\n Waiting for the last results!" << std::endl;
+		std::cout << timestamp << "Waiting for the last results..." << std::endl;
 		//store all data which is still not stored
 		MPI::Request::Waitall( numprocs - 1, status);
 
-		std::cout << "\n All Processes are done. \n" << std::endl;
-		
+		std::cout << timestamp << "All Processes are done." << std::endl;
+
 		client_serv_data = 0;
 		for (int y = 0 ; y < numprocs - 1 ; y++)
 		{
@@ -343,7 +343,7 @@ std::cout << "\n -------------Master is waiting, till another Process is ready\n
 
 		long unsigned int tmp = static_cast<unsigned int>(m_loader->getNumPoints());
 		
-		std::cout << "\n Interpolating normals..." << std::endl;
+		std::cout << timestamp << "Interpolating normals..." << std::endl;
 
 		// set normals
 		m_loader->setPointNormalArray(norm, m_loader->getNumPoints() );
@@ -360,9 +360,9 @@ std::cout << "\n -------------Master is waiting, till another Process is ready\n
 		m_model->m_pointCloud = m_loader;
 
 		// save data
-		io_factory.saveModel(m_model, "Normal.ply");
+		io_factory.saveModel(m_model, "normals.ply");
 		
-		std::cout << "\nEnd of Programm" << std::endl;
+		std::cout << timestamp << "End of Programm." << std::endl;
 		
 		// Complete connection
 		int end[1] = {-1};
@@ -440,13 +440,13 @@ std::cout << "\n -------------Master is waiting, till another Process is ready\n
 				surface = new AdaptiveKSearchSurface<ColorVertex<float, unsigned char>, Normal<float> >(pointcloud, "STANN", kn, ki, kd, ransac);
 			
 				// set global Bounding-Box
-				surface->expand_bounding(expansion_bounding[0], expansion_bounding[1], expansion_bounding[2],
+				surface->expandBoundingBox(expansion_bounding[0], expansion_bounding[1], expansion_bounding[2],
 							      expansion_bounding[3], expansion_bounding[4], expansion_bounding[5]);
 				
 				
 				
 				// calculate the normals
-std::cout << "\n++++++++++Client " << rank << " calculates surface normals with " << c_sizepackage << " points." <<  std::endl;
+				std::cout << timestamp << "Client " << rank << " calculates surface normals with " << c_sizepackage << " points." <<  std::endl;
 				surface->calculateSurfaceNormals();
 				//cerr << ts.getElapsedTimeInMs() << endl;
 
@@ -454,7 +454,7 @@ std::cout << "\n++++++++++Client " << rank << " calculates surface normals with 
 				pointcloud = surface->pointBuffer();
 				size_t size_normal;
 				c_normals = pointcloud->getIndexedPointNormalArray(size_normal);
-std::cout << "\n++++++++++Client " << rank << " finished the package!" << std::endl;
+				std::cout << timestamp << "Client " << rank << " finished the package." << std::endl;
 
 				// send the normals back to the Masterprocess
 				MPI::COMM_WORLD.Send(c_normals.get(), 3 * c_sizepackage, MPI::FLOAT, 0, 4);

@@ -631,16 +631,6 @@ Plane<VertexT, NormalT> AdaptiveKSearchSurface<VertexT, NormalT>::calcPlaneRANSA
 
 
 template<typename VertexT, typename NormalT>
-void AdaptiveKSearchSurface<VertexT, NormalT>::expand_bounding( 
-	  float xmin, float ymin, float zmin,
-	  float xmax, float ymax, float zmax)
-{
-    this->m_boundingBox.expand(xmin, ymin, zmin);
-    this->m_boundingBox.expand(xmax, ymax, zmax);
-}
-
-
-template<typename VertexT, typename NormalT>
 void AdaptiveKSearchSurface<VertexT, NormalT>::colorizePointCloud(
       AdaptiveKSearchSurface<VertexT, NormalT>::Ptr pcm, const float& sqrtMaxDist,
       const uchar* blankColor)
