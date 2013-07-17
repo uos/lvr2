@@ -41,6 +41,8 @@ set(LSSR_SOURCES
     texture/CCV.cpp
     texture/Transform.cpp
     texture/Trans.cpp
+    mpi/MPITree.tcc
+    mpi/MPINode.tcc
 )
 SET_SOURCE_FILES_PROPERTIES(io/BoctreeIO.cpp PROPERTIES COMPILE_FLAGS "-std=gnu++0x")
 
