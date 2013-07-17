@@ -217,7 +217,6 @@ void FastBox<VertexT, NormalT>::getSurface(BaseMesh<VertexT, NormalT> &mesh,
     uint edge_index = 0;
 
     int triangle_indices[3];
-
     // Generate the local approximation sirface according to the marching
     // cubes table for Paul Burke.
     for(int a = 0; MCTable[index][a] != -1; a+= 3){
@@ -244,6 +243,7 @@ void FastBox<VertexT, NormalT>::getSurface(BaseMesh<VertexT, NormalT> &mesh,
                     {
                         current_neighbor->m_intersections[neighbor_vertex_table[edge_index][i]] = globalIndex;
                     }
+
                 }
                 // Increase the global vertex counter to save the buffer
                 // position were the next new vertex has to be inserted

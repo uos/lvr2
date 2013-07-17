@@ -75,6 +75,20 @@ FastReconstruction<VertexT, NormalT>::FastReconstruction(
 
 }
 
+
+template<typename VertexT, typename NormalT>
+FastReconstruction<VertexT, NormalT>::~FastReconstruction()
+{
+    typename hash_map<size_t, FastBox<VertexT, NormalT>* >::iterator iter;
+    for(iter = m_cells.begin(); iter != m_cells.end(); iter++)
+    {
+	delete ((*iter).second);
+    }
+
+    m_cells.clear();
+};
+
+
 template<typename VertexT, typename NormalT>
 void FastReconstruction<VertexT, NormalT>::calcIndices()
 {
@@ -179,7 +193,6 @@ void FastReconstruction<VertexT, NormalT>::createGrid()
 
 			hash_value = hashValue(index_x + dx, index_y + dy, index_z +dz);
 
-
 			it = m_cells.find(hash_value);
 			if(it == m_cells.end())
 			{
@@ -264,11 +277,13 @@ void FastReconstruction<VertexT, NormalT>::createGrid()
 				}
 
 				m_cells[hash_value] = box;
+
 			}
 		}
 	}
 	cout << timestamp << "Finished Grid Creation. Number of generated cells:        " << m_cells.size() << endl;
 	cout << timestamp << "Finished Grid Creation. Number of generated query points: " << m_queryPoints.size() << endl;
+
 
 }
 
@@ -289,7 +304,7 @@ void FastReconstruction<VertexT, NormalT>::getMesh(BaseMesh<VertexT, NormalT> &m
 	for(it = m_cells.begin(); it != m_cells.end(); it++)
 	{
 		b = it->second;
-		b->getSurface(mesh, m_queryPoints, global_index);
+		b->getSurface(mesh, m_queryPoints, global_index); // >>>>> Hier ist noch ein kleines Speicherleck vorhanden. <<<<<
 		++progress;
 	}
 
@@ -335,6 +350,8 @@ void FastReconstruction<VertexT, NormalT>::getMesh(BaseMesh<VertexT, NormalT> &m
 	    }
 	    cout << endl;
 	}
+
+
 
 }
 
