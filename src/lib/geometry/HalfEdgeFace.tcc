@@ -44,11 +44,82 @@ HalfEdgeFace<VertexT, NormalT>::HalfEdgeFace(const HalfEdgeFace<VertexT, NormalT
 template<typename VertexT, typename NormalT>
 HalfEdgeFace<VertexT, NormalT>::~HalfEdgeFace()
 {
+	if(m_edge->next->next->pair)
+	{
+		if(m_edge->next->next->pair->face == 0)
+		{
+                        delete m_edge->next->next->pair;
+			m_edge->next->next->pair = 0;
+		}
+
+                else
+                {
+                       m_edge->next->next->pair->pair = 0;
+                }
+	}
+
+        if(m_edge->next->pair)
+        {
+	        if(m_edge->next->pair->face == 0)
+		{
+                        delete m_edge->next->pair;
+			m_edge->next->pair = 0;
+		}
+
+                else
+                {
+                       m_edge->next->pair->pair = 0;
+                }
+	}
+
+	if(m_edge->pair)
+	{
+		if(m_edge->pair->face == 0)
+		{
+                        delete m_edge->pair;
+			m_edge->pair = 0;
+		}
+
+                else
+                {
+                       m_edge->pair->pair = 0;
+                }
+	}
+
+	delete m_edge->next->next;
+	delete m_edge->next;
+	delete m_edge;
+
 	if(m_region != 0)
 	{
 		m_region->removeFace(this);
+		m_region = 0;
 	}
 }
+
+template<typename VertexT, typename NormalT>
+void HalfEdgeFace<VertexT, NormalT>::deletePointsFromEdge(HalfEdge<HalfEdgeVertex<VertexT, NormalT>, HalfEdgeFace<VertexT, NormalT> > *ptr)
+{
+	std::cout << "\n DeletePointsfromEdge wurde aufgerufen!!! " << std::endl;
+    if (ptr->start != 0)
+    {
+    	std::cout << " start" << std::endl;
+    	delete ptr->start;
+    	ptr->start = 0;
+    }
+/*    if (ptr->end != 0)
+    {
+    	std::cout << " end" << std::endl;
+    	delete ptr->end;
+    	ptr->end = 0;
+    }
+ */
+    std::cout << "deletePointsfromEdge ist durch" << std::endl;
+
+
+}
+
+
 
 template<typename VertexT, typename NormalT>
 float HalfEdgeFace<VertexT, NormalT>::getArea()

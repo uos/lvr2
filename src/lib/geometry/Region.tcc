@@ -417,7 +417,7 @@ Region<VertexT, NormalT>::~Region()
 {
 	for (size_t i = 0; i < m_faces.size(); i++)
 	{
-		m_faces[i]->m_region = 0;
+		delete m_faces[i];
 	}
 	m_faces.clear();
 }
