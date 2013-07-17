@@ -1,25 +1,25 @@
 /*
- * KdTree.cpp
+ * MPITree.cpp
  *
  *  Created on: 15.01.2013
  *      Author: Dominik Feldschnieders
  */
 
-//#include "KdTree.h"
+//#include "MPITree.h"
 
 #include <cstdlib>
 
 
 namespace lssr{
 template<typename VertexT>
-bool KdTree<VertexT>::compare_nocase (KdNode<VertexT> * first, KdNode<VertexT> * second)
+bool MPITree<VertexT>::compare_nocase (MPINode<VertexT> * first, MPINode<VertexT> * second)
 {
     if ( first->getnumpoints() > second->getnumpoints() ) return true;
     else return false;
 }
 
 template<typename VertexT>
-KdTree<VertexT>::KdTree(PointBufferPtr loader, long int max_p , long int min_p, bool median)
+MPITree<VertexT>::MPITree(PointBufferPtr loader, long int max_p , long int min_p, bool median)
 {
 
 	max_points = max_p;
@@ -47,7 +47,7 @@ KdTree<VertexT>::KdTree(PointBufferPtr loader, long int max_p , long int min_p, 
 	VertexT min = m_boundingBox.getMin();
 
 	
-	KdNode<VertexT> * child = new KdNode<VertexT>(m_points, min , max);
+	MPINode<VertexT> * child = new MPINode<VertexT>(m_points, min , max);
 	child->setnumpoints(m_numpoint);
 	
 	// start the main-programm
@@ -60,7 +60,7 @@ KdTree<VertexT>::KdTree(PointBufferPtr loader, long int max_p , long int min_p, 
 
 
 template<typename VertexT>
-void KdTree<VertexT>::Rekursion(KdNode<VertexT> * first){
+void MPITree<VertexT>::Rekursion(MPINode<VertexT> * first){
 
 
 	boost::shared_array<size_t> tmp(new size_t [static_cast<unsigned int>(first->getnumpoints())]);
@@ -81,7 +81,7 @@ void KdTree<VertexT>::Rekursion(KdNode<VertexT> * first){
 
 
 template<typename VertexT>
-void KdTree<VertexT>::splitPointcloud(KdNode<VertexT> * child , int again)
+void MPITree<VertexT>::splitPointcloud(MPINode<VertexT> * child , int again)
 {
   
 	float median = 0.0f;
@@ -300,8 +300,8 @@ void KdTree<VertexT>::splitPointcloud(KdNode<VertexT> * child , int again)
 
 
 		    // after splitting, initialize  nodes and recursive call
-		    KdNode<VertexT> * child1 = new KdNode<VertexT>(left, min , child1_max);
-		    KdNode<VertexT> * child2 = new KdNode<VertexT>(right, child2_min, max);
+		    MPINode<VertexT> * child1 = new MPINode<VertexT>(left, min , child1_max);
+		    MPINode<VertexT> * child2 = new MPINode<VertexT>(right, child2_min, max);
 		    child1->setnumpoints(countleft);
 		    child1->setIndizes(left_indizes);
 		    child2->setnumpoints(countright);
@@ -322,14 +322,14 @@ void KdTree<VertexT>::splitPointcloud(KdNode<VertexT> * child , int again)
 
 		    if ( not_count_left == 0 )
 		    {	
-			KdNode<VertexT> * child2 = new KdNode<VertexT>(child->node_points, child2_min, max);
+			MPINode<VertexT> * child2 = new MPINode<VertexT>(child->node_points, child2_min, max);
 			child2->setnumpoints(not_count_right);
 			child2->setIndizes(child->indizes);
 			splitPointcloud(child2, 0);
 		    }
 		    else if (not_count_right == 0 )
 		    {
-			KdNode<VertexT> * child1 = new KdNode<VertexT>(child->node_points, min , child1_max);
+			MPINode<VertexT> * child1 = new MPINode<VertexT>(child->node_points, min , child1_max);
 			child1->setnumpoints(not_count_left);
 			child1->setIndizes(child->indizes);
 			splitPointcloud(child1, 0);
@@ -345,17 +345,17 @@ void KdTree<VertexT>::splitPointcloud(KdNode<VertexT> * child , int again)
 }
 
 template<typename VertexT>
-KdTree<VertexT>::~KdTree() {
+MPITree<VertexT>::~MPITree() {
 	// TODO Auto-generated destructor stub
 }
 
 template<typename VertexT>
-BoundingBox<VertexT> KdTree<VertexT>::GetBoundingBox() {
+BoundingBox<VertexT> MPITree<VertexT>::GetBoundingBox() {
     return m_boundingBox;
 } 
 
 template<typename VertexT>
-std::list<KdNode<VertexT>*> KdTree<VertexT>::GetList(){
+std::list<MPINode<VertexT>*> MPITree<VertexT>::GetList(){
 	return nodelist;
 }
 

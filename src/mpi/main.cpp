@@ -1,5 +1,5 @@
 /*
- * ownmpi.cpp
+ * Main.cpp
  *
  *  Created on: 1.02.2013
  *      Author: Dominik Feldschnieders
@@ -16,7 +16,7 @@
 #include "io/PointBuffer.hpp"
 #include "io/Model.hpp"
 #include "io/ModelFactory.hpp"
-#include "src/mpi/KdTree.hpp"
+#include "mpi/MPITree.hpp"
 #include "geometry/ColorVertex.hpp"
 #include "geometry/Normal.hpp"
 
@@ -83,7 +83,7 @@ int main (int argc , char *argv[]) {
 
 	// Kd Tree
         // A list for all Nodes with less than MAX_POINTS
-        std::list<KdNode<ColorVertex<float, unsigned char>>*> m_nodelist;
+        std::list<MPINode<ColorVertex<float, unsigned char>>*> m_nodelist;
 
 	//Las Vegas Toolkit
         // m_ for Master
@@ -175,14 +175,14 @@ int main (int argc , char *argv[]) {
 		
 		if (max_points < (  min_points )  ) max_points = ( 2 * min_points );
 		// Building the Kd tree with max max_points in every packete
-		std::cout << "Aufbauen des kd-Baums" << std::endl;
-		KdTree<cVertex> KDTree(m_loader, max_points, min_points, median);
+		std::cout << "Build the kd-Tree" << std::endl;
+		MPITree<cVertex> MPITree(m_loader, max_points, min_points, median);
 
 		// get the list with all Nodes with less than MAX_POINTS
-		m_nodelist = KDTree.GetList();	
+		m_nodelist = MPITree.GetList();	
 
 		// get global Bounding-Box
-		BoundingBox<cVertex> tmp_BoundingBox = KDTree.GetBoundingBox();
+		BoundingBox<cVertex> tmp_BoundingBox = MPITree.GetBoundingBox();
 		cVertex tmp_min = tmp_BoundingBox.getMin();
 		cVertex tmp_max = tmp_BoundingBox.getMax();
 
@@ -196,7 +196,7 @@ int main (int argc , char *argv[]) {
 		// Send an announcement to all other processes
 		for (i = 1; i < numprocs; i++)
 		{
-			sprintf(con_msg, "Hey Nummer %d...", i);
+			sprintf(con_msg, "Hey Number %d...", i);
 			MPI::COMM_WORLD.Send(con_msg, 128, MPI::CHAR, i, 0);
 
 		}
@@ -228,7 +228,7 @@ int main (int argc , char *argv[]) {
 		int laufvariable[numprocs - 1];
 
 
-		typename std::list<KdNode<cVertex>*>::	iterator it= m_nodelist.begin();
+		typename std::list<MPINode<cVertex>*>::	iterator it= m_nodelist.begin();
 
 
 		// a buffer to store all the normals
@@ -276,7 +276,7 @@ int main (int argc , char *argv[]) {
 
 			if (count >= numprocs - 1)
 			{
-std::cout << "\n -------------Master wartet, bis wieder ein Prozess bereit ist!\n" << std::endl;
+std::cout << "\n -------------Master is waiting, till another Process is ready\n" << std::endl;
 			      client_serv_data = MPI::Request::Waitany( numprocs - 1, status);
 
 				progress++;
@@ -296,7 +296,7 @@ std::cout << "\n -------------Master wartet, bis wieder ein Prozess bereit ist!\
 				count++;
 				it++;
 				
-				std::cout << "\n------------" << progress << " von " << m_nodelist.size() << " Paketen erledigt!\n" << std::endl; 
+				std::cout << "\n------------" << progress << " / " << m_nodelist.size() << " packages done!\n" << std::endl; 
 
 
 			}// end if
@@ -309,11 +309,11 @@ std::cout << "\n -------------Master wartet, bis wieder ein Prozess bereit ist!\
 			}
 		}// End while
 
-		std::cout << "\n Es wird noch auf die letzten Ergebnisse gewartet" << std::endl;
+		std::cout << "\n Waiting for the last results!" << std::endl;
 		//store all data which is still not stored
 		MPI::Request::Waitall( numprocs - 1, status);
 
-		std::cout << "\n----------- Alle Pakete erledigt! Brechnungen abgeschlossen! \n" << std::endl;
+		std::cout << "\n All Processes are done. \n" << std::endl;
 		
 		client_serv_data = 0;
 		for (int y = 0 ; y < numprocs - 1 ; y++)
@@ -343,7 +343,7 @@ std::cout << "\n -------------Master wartet, bis wieder ein Prozess bereit ist!\
 
 		long unsigned int tmp = static_cast<unsigned int>(m_loader->getNumPoints());
 		
-		std::cout << "\nInterpolieren der Daten" << std::endl;
+		std::cout << "\n Interpolating normals..." << std::endl;
 
 		// set normals
 		m_loader->setPointNormalArray(norm, m_loader->getNumPoints() );
@@ -446,7 +446,7 @@ std::cout << "\n -------------Master wartet, bis wieder ein Prozess bereit ist!\
 				
 				
 				// calculate the normals
-std::cout << "\n++++++++++Client " << rank << " berechnet Normale mit so vielen Punkten: " << c_sizepackage << std::endl;
+std::cout << "\n++++++++++Client " << rank << " calculates surface normals with " << c_sizepackage << " points." <<  std::endl;
 				surface->calculateSurfaceNormals();
 				//cerr << ts.getElapsedTimeInMs() << endl;
 
@@ -454,7 +454,7 @@ std::cout << "\n++++++++++Client " << rank << " berechnet Normale mit so vielen 
 				pointcloud = surface->pointBuffer();
 				size_t size_normal;
 				c_normals = pointcloud->getIndexedPointNormalArray(size_normal);
-std::cout << "\n++++++++++Client " << rank << " hat seine Brechnung abgeschlossen!" << std::endl;
+std::cout << "\n++++++++++Client " << rank << " finished the package!" << std::endl;
 
 				// send the normals back to the Masterprocess
 				MPI::COMM_WORLD.Send(c_normals.get(), 3 * c_sizepackage, MPI::FLOAT, 0, 4);
@@ -471,12 +471,12 @@ std::cout << "\n++++++++++Client " << rank << " hat seine Brechnung abgeschlosse
 	f.open(test_aufgabe_name, ios::out);
 		if (rank == 0)
 	{  
-	  std::cout << "so lange hat es gebraucht: " << start.getElapsedTimeInMs() << std::endl;
+	  std::cout << "time: " << start.getElapsedTimeInMs() << std::endl;
 	  
-	  f << "Beende den Prozess: " << rank << ", dieser hat " << start.getElapsedTimeInMs() << " Millisekunden gedauert." << std::endl;
+	  f << "finish Process: " << rank << ", he did it in" << start.getElapsedTimeInMs() << std::endl;
 
 	}
-	else f << "Beende den Prozess: " << rank << ", dieser hat " << count_serv << " Pakete bearbeiet. Und hat mit kd, kn und ki gearbeitet:" << kd << kn << ki << endl; 
+	else f << "finish Process: " << rank << ", he did " << count_serv << " packeges. kd: " << kd << " kn: " << kn << " ki: " << ki << endl; 
 	f.close();
 */
 	MPI_Finalize();
