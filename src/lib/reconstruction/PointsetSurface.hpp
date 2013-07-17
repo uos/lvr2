@@ -121,11 +121,11 @@ public:
     
     
     /**
-     * @brief expand the BoundingBox
+     * @brief Expands the BoundingBox
      */
-    virtual void expand_bounding( 
+    virtual void expandBoundingBox( 
 	  float xmin, float ymin, float zmin,
-	  float xmax, float ymax, float zmax) = 0;
+	  float xmax, float ymax, float zmax);
 
 
 protected:

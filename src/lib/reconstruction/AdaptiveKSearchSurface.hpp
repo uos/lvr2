@@ -137,14 +137,7 @@ public:
      */
     virtual const VertexT operator[]( const size_t &index ) const;
     
-    /**
-     * @brief expand the BoundingBox
-     */
-    void expand_bounding( 
-	  float xmin, float ymin, float zmin,
-	  float xmax, float ymax, float zmax);
-    
-    
+
     /**
      * @brief Returns the distance of vertex v from the nearest tangent plane
      * @param v                     A grid point
