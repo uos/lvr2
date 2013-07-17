@@ -83,7 +83,7 @@ int main (int argc , char *argv[]) {
 
 	// Kd Tree
         // A list for all Nodes with less than MAX_POINTS
-        std::list<MPINode<ColorVertex<float, unsigned char>>*> m_nodelist;
+        std::list<MPINode<ColorVertex<float, unsigned char> > *> m_nodelist;
 
 	//Las Vegas Toolkit
         // m_ for Master
