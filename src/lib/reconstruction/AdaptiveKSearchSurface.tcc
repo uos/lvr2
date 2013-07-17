@@ -131,6 +131,8 @@ void AdaptiveKSearchSurface<VertexT, NormalT>::init()
 
 }
 
+
+
 template<typename VertexT, typename NormalT>
 void AdaptiveKSearchSurface<VertexT, NormalT>::calculateSurfaceNormals()
 {
