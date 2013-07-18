@@ -11,7 +11,7 @@ include_directories(/usr/include/libusb-1.0/)
 include_directories(${LAS_VEGAS_SOURCE_DIR}/ext/Eigen)
 include_directories(${LAS_VEGAS_SOURCE_DIR}/ext/stann)
 include_directories(${LAS_VEGAS_SOURCE_DIR})
-include_directories(${LAS_VEGAS_SOURCE_DIR}/src/lib)
+include_directories(${LAS_VEGAS_SOURCE_DIR}/include/liblvr)
 
 
 set( CMAKE_CXX_FLAGS         ${CMAKE_CXX_FLAGS})
@@ -99,6 +99,7 @@ find_package( Boost 1.42
     filesystem system 
     thread
     REQUIRED )
+
 if(Boost_FOUND)
     link_directories(${BOOST_LIBRARY_DIRS})
     include_directories(${Boost_INCLUDE_DIRS})
@@ -210,32 +211,32 @@ add_subdirectory(ext/slam6d)
 # LIBRARIES
 ##############################################################
 
-add_subdirectory(src/lib)
+add_subdirectory(src/liblvr)
 
 ##############################################################
 # BINARIES
 ##############################################################
 
-add_subdirectory(src/reconstruct)
-add_subdirectory(src/colorize)
-add_subdirectory(src/scanreduce)
-add_subdirectory(src/convert)
-add_subdirectory(src/asciiconverter)
-add_subdirectory(src/texman)
-add_subdirectory(src/tiogen)
-add_subdirectory(src/meshoptimizer)
+add_subdirectory(src/tools/reconstruct)
+add_subdirectory(src/tools/colorize)
+add_subdirectory(src/tools/scanreduce)
+add_subdirectory(src/tools/convert)
+add_subdirectory(src/tools/asciiconverter)
+add_subdirectory(src/tools/texman)
+add_subdirectory(src/tools/tiogen)
+add_subdirectory(src/tools/meshoptimizer)
 
 if(MPI_FOUND)
-add_subdirectory(src/mpi)
+add_subdirectory(src/tools/mpi)
 endif(MPI_FOUND)
 
 if(CGAL_FOUND)
-add_subdirectory(src/cgal_reconstruction)
+add_subdirectory(src/tools/cgal_reconstruction)
 endif(CGAL_FOUND)
 
 if(PCL_FOUND)
-    add_subdirectory(src/scanfilter)
-    add_subdirectory(src/kinectgrabber)
+    add_subdirectory(src/tools/scanfilter)
+    add_subdirectory(src/tools/kinectgrabber)
 endif(PCL_FOUND)
 
 ##############################################################

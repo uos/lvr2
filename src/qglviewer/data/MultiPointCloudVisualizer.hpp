@@ -31,7 +31,7 @@
 #include "io/PointBuffer.hpp"
 #include "Visualizer.hpp"
 
-using namespace lssr;
+using namespace lvr;
 
 class MultiPointCloudVisualizer : public Visualizer
 {
