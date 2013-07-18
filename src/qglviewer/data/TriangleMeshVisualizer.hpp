@@ -29,7 +29,7 @@
 
 #include "Visualizer.hpp"
 
-using namespace lssr;
+using namespace lvr;
 
 class TriangleMeshVisualizer : public Visualizer
 {

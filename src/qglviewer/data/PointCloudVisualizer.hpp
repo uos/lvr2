@@ -30,7 +30,7 @@
 
 #include "Visualizer.hpp"
 
-using namespace lssr;
+using namespace lvr;
 
 class PointCloudVisualizer : public Visualizer
 {

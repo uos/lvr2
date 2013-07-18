@@ -38,10 +38,10 @@ using std::string;
 #include "../viewers/Viewer.h"
 #include "../widgets/CustomTreeWidgetItem.h"
 
-using lssr::Renderable;
-using lssr::Vertex;
-using lssr::Renderable;
-using lssr::BoundingBox;
+using lvr::Renderable;
+using lvr::Vertex;
+using lvr::Renderable;
+using lvr::BoundingBox;
 
 class Visualizer : public virtual QObject
 {
