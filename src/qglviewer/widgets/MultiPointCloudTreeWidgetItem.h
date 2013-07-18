@@ -32,8 +32,8 @@
 
 #include "CustomTreeWidgetItem.h"
 
-using lssr::MultiPointCloud;
-using lssr::PointCloud;
+using lvr::MultiPointCloud;
+using lvr::PointCloud;
 
 class MultiPointCloudTreeWidgetItem: public CustomTreeWidgetItem
 {
