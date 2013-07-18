@@ -32,7 +32,7 @@
 #include <fstream>
 
 using namespace std;
-using namespace lssr;
+using namespace lvr;
 
 ClusterVisualizer::ClusterVisualizer(string filename)
 {

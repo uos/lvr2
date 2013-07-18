@@ -31,7 +31,7 @@
 #include "reconstruction/AdaptiveKSearchSurface.hpp"
 #include "reconstruction/FastReconstruction.hpp"
 
-using namespace lssr;
+using namespace lvr;
 
 typedef AdaptiveKSearchSurface<cVertex, cNormal>        akSurface;
 typedef PointsetSurface<cVertex>                        psSurface;

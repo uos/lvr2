@@ -28,7 +28,7 @@
 #include "display/MultiPointCloud.hpp"
 #include "../widgets/MultiPointCloudTreeWidgetItem.h"
 
-using namespace lssr;
+using namespace lvr;
 
 MultiPointCloudVisualizer::MultiPointCloudVisualizer(PointBufferPtr buffer, string name = "<unnamed poind cloud>")
 {
