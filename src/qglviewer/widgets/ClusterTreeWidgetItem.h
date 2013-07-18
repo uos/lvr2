@@ -29,7 +29,7 @@
 #include "CustomTreeWidgetItem.h"
 #include "display/MeshCluster.hpp"
 
-using lssr::MeshCluster;
+using lvr::MeshCluster;
 
 class ClusterTreeWidgetItem: public CustomTreeWidgetItem
 {
