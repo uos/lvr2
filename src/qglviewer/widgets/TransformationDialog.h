@@ -31,9 +31,9 @@
 
 #include "display/Renderable.hpp"
 
-using lssr::Renderable;
-using lssr::Vertex;
-using lssr::Matrix4;
+using lvr::Renderable;
+using lvr::Vertex;
+using lvr::Matrix4;
 
 using Ui::TransformationDialogUI;
 

@@ -31,14 +31,14 @@
 
 GridVisualizer::GridVisualizer(string filename)
 {
-	lssr::GridIO io;
+	lvr::GridIO io;
 	io.read( filename );
 	size_t n_points, n_boxes;
-	lssr::floatArr points = io.getPoints( n_points );
-	lssr::uintArr  boxes  = io.getBoxes(  n_boxes );
+	lvr::floatArr points = io.getPoints( n_points );
+	lvr::uintArr  boxes  = io.getBoxes(  n_boxes );
 	if( points && boxes )
 	{
-		lssr::Grid* grid = new lssr::Grid( points, boxes, n_points, n_boxes );
+		lvr::Grid* grid = new lvr::Grid( points, boxes, n_points, n_boxes );
 		m_renderable = grid;
 
 		int modes = 0;

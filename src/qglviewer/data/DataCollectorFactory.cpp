@@ -45,9 +45,9 @@
 #include <boost/filesystem.hpp>
 #include <boost/version.hpp>
 
-using lssr::Model;
-using lssr::GridIO;
-using lssr::Grid;
+using lvr::Model;
+using lvr::GridIO;
+using lvr::Grid;
 
 DataCollectorFactory::DataCollectorFactory() {}
 
@@ -60,17 +60,17 @@ void DataCollectorFactory::create(string filename)
 	string name = selectedFile.filename().c_str();
 
 	// Create a factory rto parse given file and extract loaders
-	lssr::ModelFactory io;
-    lssr::ModelPtr model = io.readModel( filename );
+	lvr::ModelFactory io;
+    lvr::ModelPtr model = io.readModel( filename );
 
 	if(model)
 	{
-        lssr::MeshBufferPtr    mesh_buffer  = model->m_mesh;
-		lssr::PointBufferPtr   point_buffer = model->m_pointCloud;
+        lvr::MeshBufferPtr    mesh_buffer  = model->m_mesh;
+		lvr::PointBufferPtr   point_buffer = model->m_pointCloud;
 
 	    if(mesh_buffer)
 	    {
-	        lssr::StaticMesh* mesh = new lssr::StaticMesh( model );
+	        lvr::StaticMesh* mesh = new lssr::StaticMesh( model );
 	        TriangleMeshTreeWidgetItem* item = new TriangleMeshTreeWidgetItem(TriangleMeshItem);
 
 	        int modes = 0;
@@ -99,7 +99,7 @@ void DataCollectorFactory::create(string filename)
 	            if(point_buffer->getSubClouds().size() > 1)
 	            {
 	                name = filename;
-	                MultiPointCloud* pc = new MultiPointCloud(lssr::ModelPtr(model), name);
+	                MultiPointCloud* pc = new MultiPointCloud(lvr::ModelPtr(model), name);
 	                MultiPointCloudTreeWidgetItem* item = new MultiPointCloudTreeWidgetItem(MultiPointCloudItem);
 
 	                // Setup supported render modes
@@ -155,8 +155,8 @@ void DataCollectorFactory::create(string filename)
 	        GridIO io;
 	        io.read( filename );
             size_t n_points, n_boxes;
-            lssr::floatArr points = io.getPoints( n_points );
-            lssr::uintArr  boxes  = io.getBoxes(  n_boxes );
+            lvr::floatArr points = io.getPoints( n_points );
+            lvr::uintArr  boxes  = io.getBoxes(  n_boxes );
 	        if( points && boxes )
 	        {
                 Grid* grid = new Grid( points, boxes, n_points, n_boxes );

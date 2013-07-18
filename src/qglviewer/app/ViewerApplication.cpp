@@ -26,7 +26,7 @@
 
 #include "ViewerApplication.h"
 
-#define RC_PCM_TYPE lssr::ColorVertex<float, unsigned char>, lssr::Normal<float>
+#define RC_PCM_TYPE lvr::ColorVertex<float, unsigned char>, lvr::Normal<float>
 
 ViewerApplication::ViewerApplication( int argc, char ** argv )
 {
@@ -209,7 +209,7 @@ void ViewerApplication::displayRenderingSettings()
 void ViewerApplication::createMeshFromPointcloud()
 {
 //    // Some usings
-//    using namespace lssr;
+//    using namespace lvr;
 //
 //    // Display mesh generation dialog
 //    QTreeWidgetItem* item = m_sceneDockWidgetUi->treeWidget->currentItem();
@@ -229,13 +229,13 @@ void ViewerApplication::createMeshFromPointcloud()
 //            if(result == QDialog::Accepted)
 //            {
 //                // Get point cloud data
-//                lssr::PointCloud* pc = static_cast<lssr::PointCloud*>(c_item->renderable());
+//                lvr::PointCloud* pc = static_cast<lvr::PointCloud*>(c_item->renderable());
 //                PointBufferPtr loader = pc->model()->m_pointCloud;
 //
 //                if(loader)
 //                {
 //                    // Create a point cloud manager object
-//                    lssr::AdaptiveKSearchSurface< RC_PCM_TYPE >::Ptr pcm;
+//                    lvr::AdaptiveKSearchSurface< RC_PCM_TYPE >::Ptr pcm;
 ////                    PointCloudManager<ColorVertex<float, unsigned char>, Normal<float> >* pcm;
 //                    std::string pcm_name = mesh_ui->comboBoxPCM->currentText().toAscii().data();
 //
@@ -316,7 +316,7 @@ void ViewerApplication::createMeshFromPointcloud()
 //                    // Create and add mesh to loaded objects
 //                    MeshBufferPtr l = mesh.meshBuffer();
 //
-//                    lssr::StaticMesh* static_mesh = new lssr::StaticMesh(l);
+//                    lvr::StaticMesh* static_mesh = new lvr::StaticMesh(l);
 //                    TriangleMeshTreeWidgetItem* mesh_item = new TriangleMeshTreeWidgetItem(TriangleMeshItem);
 //
 //                    int modes = 0;
@@ -396,13 +396,13 @@ void ViewerApplication::meshRenderModeChanged()
             TriangleMeshTreeWidgetItem* t_item = static_cast<TriangleMeshTreeWidgetItem*>(item);
 
             // Setup new render mode
-            lssr::StaticMesh* mesh = static_cast<lssr::StaticMesh*>(t_item->renderable());
+            lvr::StaticMesh* mesh = static_cast<lvr::StaticMesh*>(t_item->renderable());
 
             int renderMode = 0;
 
             // Check states of buttons
-            if(m_mainWindowUi->actionSurfaceView->isChecked()) renderMode |= lssr::RenderSurfaces;
-            if(m_mainWindowUi->actionWireframeView->isChecked()) renderMode |= lssr::RenderTriangles;
+            if(m_mainWindowUi->actionSurfaceView->isChecked()) renderMode |= lvr::RenderSurfaces;
+            if(m_mainWindowUi->actionWireframeView->isChecked()) renderMode |= lvr::RenderTriangles;
 
             // Set proper render mode and forbid nothing selected
             if(renderMode != 0)
@@ -411,8 +411,8 @@ void ViewerApplication::meshRenderModeChanged()
             }
 
             // Avoid inconsistencies in button toggle states
-            m_mainWindowUi->actionSurfaceView->setChecked(mesh->getRenderMode() & lssr::RenderSurfaces);
-            m_mainWindowUi->actionWireframeView->setChecked(mesh->getRenderMode() & lssr::RenderTriangles);
+            m_mainWindowUi->actionSurfaceView->setChecked(mesh->getRenderMode() & lvr::RenderSurfaces);
+            m_mainWindowUi->actionWireframeView->setChecked(mesh->getRenderMode() & lvr::RenderTriangles);
 
             // Force redisplay
             m_viewer->updateGL();
@@ -428,13 +428,13 @@ void ViewerApplication::pointRenderModeChanged()
         if(item->type() == PointCloudItem)
         {
             PointCloudTreeWidgetItem* t_item = static_cast<PointCloudTreeWidgetItem*>(item);
-            lssr::PointCloud* pc = static_cast<lssr::PointCloud*>(t_item->renderable());
+            lvr::PointCloud* pc = static_cast<lvr::PointCloud*>(t_item->renderable());
 
             int renderMode = 0;
-            renderMode |= lssr::RenderPoints;
+            renderMode |= lvr::RenderPoints;
             if(m_mainWindowUi->actionPointNormalView->isChecked())
             {
-                renderMode |= lssr::RenderNormals;
+                renderMode |= lvr::RenderNormals;
             }
             pc->setRenderMode(renderMode);
             m_viewer->updateGL();
@@ -588,8 +588,8 @@ void ViewerApplication::saveSelectedObject()
         {
             CustomTreeWidgetItem* c_item = static_cast<CustomTreeWidgetItem*>(item);
 
-            lssr::ModelPtr m = c_item->renderable()->model();
-            lssr::ModelFactory::saveModel( m, file_name );
+            lvr::ModelPtr m = c_item->renderable()->model();
+            lvr::ModelFactory::saveModel( m, file_name );
 
         }
 
