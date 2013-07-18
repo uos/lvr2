@@ -46,9 +46,9 @@ class Visualizer;
 
 enum ProjectionMode { PERSPECTIVE, ORTHOXY, ORTHOXZ, ORTHOYZ};
 
-using lssr::Renderable;
-using lssr::BoundingBox;
-using lssr::Vertex;
+using lvr::Renderable;
+using lvr::BoundingBox;
+using lvr::Vertex;
 
 using qglviewer::KeyFrameInterpolator;
 

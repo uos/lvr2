@@ -47,9 +47,9 @@
 #include <boost/filesystem.hpp>
 #include <boost/version.hpp>
 
-using lssr::Model;
-using lssr::GridIO;
-using lssr::Grid;
+using lvr::Model;
+using lvr::GridIO;
+using lvr::Grid;
 
 VisualizerFactory::VisualizerFactory() {}
 
@@ -62,14 +62,14 @@ void VisualizerFactory::create(string filename)
 	string name = selectedFile.filename().c_str();
 
 	// Create a factory rto parse given file and extract loaders
-	lssr::ModelFactory io;
-    lssr::ModelPtr model = io.readModel( filename );
+	lvr::ModelFactory io;
+    lvr::ModelPtr model = io.readModel( filename );
 
 	if(model)
 	{
 
-        lssr::MeshBufferPtr    mesh_buffer  = model->m_mesh;
-		lssr::PointBufferPtr   point_buffer = model->m_pointCloud;
+        lvr::MeshBufferPtr    mesh_buffer  = model->m_mesh;
+		lvr::PointBufferPtr   point_buffer = model->m_pointCloud;
 
 	    if(mesh_buffer)
 	    {

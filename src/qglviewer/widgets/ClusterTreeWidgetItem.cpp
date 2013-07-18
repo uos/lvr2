@@ -30,7 +30,7 @@
 #include "io/Model.hpp"
 #include "display/StaticMesh.hpp"
 
-using namespace lssr;
+using namespace lvr;
 
 void ClusterTreeWidgetItem::setRenderable(MeshCluster* c)
 {
@@ -76,10 +76,10 @@ void ClusterTreeWidgetItem::saveCluster(string filename)
     		if(item->isSelected())
     		{
     			// Get buffer
-    			lssr::ModelPtr model = item->renderable()->model();
+    			lvr::ModelPtr model = item->renderable()->model();
     			if(model)
     			{
-    				lssr::MeshBufferPtr mesh = model->m_mesh;
+    				lvr::MeshBufferPtr mesh = model->m_mesh;
 
     				if(mesh)
     				{

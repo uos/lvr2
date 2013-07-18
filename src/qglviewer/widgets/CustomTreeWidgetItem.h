@@ -31,7 +31,7 @@
 
 #include "display/Renderable.hpp"
 
-using lssr::Renderable;
+using lvr::Renderable;
 
 enum
 {
