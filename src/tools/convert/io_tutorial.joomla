@@ -1,0 +1,125 @@
+<p>
+This tutorial describes how to use the i/o functionalities of the
+las-vegas-reconstruction library to read and write point clouds and meshes from
+various file formats. 
+</p>
+
+<hr id="system-readmore" />
+<p>
+The following table shows which file formats are supported at the moment and
+for what kind of data they can be used:
+</p>
+
+<pre style="font-family: monospace">
+                       Points           Meshes
+                     read    write    read    write
+PLY   (.ply)          x       x        x       x
+Ascii (.pts, .3d)     x       x
+Obj   (.obj)                           x
+UOS                   x
+PCD   (.pcd)          x*      x
+</pre>
+
+<p style="font-size: xx-small; text-align: right;">
+ *) PCD files can only be read if the project was build with PCL.
+</p>
+
+<p>
+So let's say you want to read a PLY file (“test.ply”). The first thing you have
+to do is to include the specific header file. For reading PLY it is “PLYIO.hpp”
+from the directory “io”. Actually everything we use in this tutorial is in the
+“io” directory.
+</p>
+
+<pre style="font-family: monospace">
+    #include &lt;io/PLYIO.hpp&gt;
+</pre>
+
+<p>
+Next we have to create a PLYIO object and use it to read the file:
+</p>
+
+<pre style="font-family: monospace">
+    lvr::PLYIO io;
+    lvr::ModelPtr model;
+    model = io.read( "test.ply" );
+</pre>
+
+<p>
+This will do. With this three lines of code we can read a PLY file, regardless
+of the PLY format, into memory. To access the read data we can get them from
+the model. “model->m_pointCloud“ will let you access a read point cloud
+“model->m_mesh” a read mesh. <br />
+So if you for example want to print out the coordinates of all read points you
+can do it like this:
+</p>
+
+<pre style="font-family: monospace">
+    int i;
+    size_t npoints;
+    lvr::coord3fArr point_coords;
+
+    /* Make shure there were point data in the read file. */
+    if ( model->m_pointCloud ) {
+        /* Get coordinates. */
+        coords = model->m_pointCloud->getIndexedPointArray( npoints );
+        for ( i = 0; i < npoints; i++ ) {
+            printf( "%f %f %f\n", coords.x, coords.y, coords.z );
+        }
+    }
+</pre>
+
+<p>
+You do not need to free the memory allocated for the point and mesh buffer. For
+this purpose “boost::shared_ptr” is used. Thus the memory is freed
+automatically when there is no reference to the buffer.
+</p>
+
+
+<p>
+To make file handling even simpler you can use the “ModelFactory” to
+automatically determine which i/o class to use for reading a given file and
+getting a model out. For the determination of the appropriate i/o class the
+file extension is used. That means that files ending with “.ply” are
+automatically handled via the PLYIO class, files with the ending “.pts” are
+handles via the AsciiIO, and so forth.
+</p>
+
+<p>
+To use the ModelFactory you can simply create such an object call its
+“readModel” function like this:
+</p>
+
+<pre style="font-family: monospace">
+    lvr::ModelFactory io_factory;
+    lvr::ModelPtr model( io_factory.readModel( filename ) );
+</pre>
+
+
+<p>
+So it is really easy to handle files. Concluding I want to give a really simple
+example of a conversion application which reads a file and stores it as another
+format. This tool can be found in a slightly extended version in
+“src/convert/convert.cpp”.
+</p>
+
+<pre style="font-family: monospace">
+    #include &lt;cstdio&gt;
+    #include &lt;io/ModelFactory.hpp&gt;
+
+
+    int main( int argc, char ** argv )
+    {
+
+        lvr::ModelFactory io_factory;
+        
+        printf( "Loading point cloud from „%s“…\n", argv[1] );
+        lvr::ModelPtr model( io_factory.readModel( argv[1] ) );
+
+        printf( "Writing point cloud to „%s“…\n", argv[2] );
+        io_factory.saveModel( model, argv[2] );
+
+        return EXIT_SUCCESS;
+
+    }
+</pre>
