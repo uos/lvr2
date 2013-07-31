@@ -74,7 +74,7 @@ public:
     /**
      * @brief Destructor.
      */
-    virtual ~FastReconstruction() {};
+    virtual ~FastReconstruction();
 
     /**
      * @brief Returns the surface reconstruction of the given point set.

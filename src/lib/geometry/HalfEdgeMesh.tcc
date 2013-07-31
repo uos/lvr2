@@ -336,6 +336,7 @@ void HalfEdgeMesh<VertexT, NormalT>::cleanContours(int iterations)
 template<typename VertexT, typename NormalT>
 void HalfEdgeMesh<VertexT, NormalT>::deleteFace(HFace* f, bool erase)
 {
+
     //save references to edges and vertices
     HEdge* startEdge = (*f)[0];
     HEdge* nextEdge  = (*f)[1];
