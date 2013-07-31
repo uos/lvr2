@@ -107,7 +107,7 @@ public:
 	/**
 	 * @brief   Dtor.
 	 */
-	virtual ~HalfEdgeMesh() {};
+	virtual ~HalfEdgeMesh();
 
 	/**
 	 * @brief 	This method should be called every time
