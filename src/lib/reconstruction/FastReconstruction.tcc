@@ -76,6 +76,20 @@ FastReconstruction<VertexT, NormalT>::FastReconstruction(
 }
 
 template<typename VertexT, typename NormalT>
+FastReconstruction<VertexT, NormalT>::~FastReconstruction()
+{
+    typename hash_map<size_t, FastBox<VertexT, NormalT>* >::iterator iter;
+    for(iter = m_cells.begin(); iter != m_cells.end(); iter++)
+    {
+	delete ((*iter).second);
+    }
+
+    m_cells.clear();
+}
+
+
+
+template<typename VertexT, typename NormalT>
 void FastReconstruction<VertexT, NormalT>::calcIndices()
 {
     BoundingBox<VertexT> bb = this->m_surface->getBoundingBox();
