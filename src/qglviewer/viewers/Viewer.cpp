@@ -27,7 +27,15 @@
 #include "Viewer.h"
 
 Viewer::Viewer(QWidget* parent, const QGLWidget* shared)
-	: QGLViewer(parent, shared),  m_parent(parent) {}
+	: QGLViewer(parent, shared),  m_parent(parent), m_zoom(1.0)
+{
+    m_kfi = new qglviewer::KeyFrameInterpolator(new qglviewer::Frame());
+    m_saveToDisk = false;
+
+    connect(m_kfi, SIGNAL(interpolated()), this, SLOT(updateGL()));
+    connect(m_kfi, SIGNAL(interpolated()), this, SLOT(createSnapshot()));
+
+}
 
 
 Viewer::~Viewer()
@@ -37,13 +45,29 @@ Viewer::~Viewer()
 
 void Viewer::draw()
 {
-	list<DataCollector*>::iterator it;
-	for(it = m_dataObjects.begin(); it != m_dataObjects.end(); it++)
-	{
-		glPushAttrib(GL_ALL_ATTRIB_BITS);
-		(*it)->renderable()->render();
-		glPopAttrib();
-	}
+	setTextIsEnabled(true);
+	float pos[3];
+
+    if(m_kfi->interpolationIsStarted())
+    {
+        camera()->setPosition(m_kfi->frame()->position());
+        camera()->setOrientation(m_kfi->frame()->orientation());
+    }
+
+    glScalef(m_zoom, m_zoom, m_zoom);
+    list<Visualizer*>::iterator it;
+    for(it = m_dataObjects.begin(); it != m_dataObjects.end(); it++)
+    {
+        glPushAttrib(GL_ALL_ATTRIB_BITS);
+        (*it)->renderable()->render();
+        glPopAttrib();
+    }
+}
+
+void Viewer::createSnapshot()
+{
+	if(m_saveToDisk)
+    saveSnapshot(true);
 }
 
 void Viewer::resetCamera()
@@ -57,7 +81,12 @@ void Viewer::resetCamera()
 	qglviewer::Vec v1(v_min.x, v_min.y, v_min.z);
 	qglviewer::Vec v2(v_max.x, v_max.y, v_max.z);
 
+	cout << v_min;
+	cout << v_max;
+
 	setSceneBoundingBox(v1, v2);
+	m_zoom = 1.0;
+
 	showEntireScene();
 }
 
@@ -78,33 +107,40 @@ void Viewer::centerViewOnObject(Renderable* renderable)
     qglviewer::Vec v2(v_max.x, v_max.y, v_max.z);
 
     setSceneBoundingBox(v1, v2);
+
+    m_near = camera()->zNear();
+    m_far  = camera()->zFar();
+    m_zoom = 1.0;
     showEntireScene();
     updateGL();
 }
 
-void Viewer::addDataObject(DataCollector* obj)
+void Viewer::addDataObject(Visualizer* obj)
 {
-	BoundingBox<Vertex<float> >* bb = (obj->renderable()->boundingBox());
-	if(bb->isValid())
+	if(obj->renderable())
 	{
-	  m_boundingBox.expand(*bb);
-	  resetCamera();
+		BoundingBox<Vertex<float> >* bb = (obj->renderable()->boundingBox());
+		if(bb->isValid())
+		{
+			m_boundingBox.expand(*bb);
+			resetCamera();
+		}
+		m_dataObjects.push_back(obj);
 	}
-	m_dataObjects.push_back(obj);
 }
 
-void Viewer::removeDataObject(DataCollector* obj)
+void Viewer::removeDataObject(Visualizer* obj)
 {
     m_dataObjects.remove(obj);
 }
 
 void Viewer::removeDataObject(CustomTreeWidgetItem* item)
 {
-    list<DataCollector*>::iterator it = m_dataObjects.begin();
+    list<Visualizer*>::iterator it = m_dataObjects.begin();
 
     while(it != m_dataObjects.end())
     {
-        DataCollector* d = *it;
+        Visualizer* d = *it;
         if(d->renderable() == item->renderable())
         {
             break;
@@ -115,7 +151,7 @@ void Viewer::removeDataObject(CustomTreeWidgetItem* item)
     updateGL();
 }
 
-void Viewer::updateDataObject(DataCollector* obj)
+void Viewer::updateDataObject(Visualizer* obj)
 {
 	updateGL();
 }

@@ -44,19 +44,19 @@ Viewer* ViewerManager::current()
 	return m_currentViewer;
 }
 
-void ViewerManager::addDataCollector(DataCollector* c)
+void ViewerManager::addDataCollector(Visualizer* c)
 {
 	// Stub, currently support only one single viewer instance
 	m_currentViewer->addDataObject(c);
 }
 
-void ViewerManager::removeDataCollector(DataCollector* c)
+void ViewerManager::removeDataCollector(Visualizer* c)
 {
     // Stub, currently support only one single viewer instance
     m_currentViewer->removeDataObject(c);
 }
 
-void ViewerManager::updateDataObject(DataCollector* obj)
+void ViewerManager::updateDataObject(Visualizer* obj)
 {
 	m_currentViewer->updateDataObject(obj);
 }

@@ -1,44 +1,115 @@
 cmake_minimum_required(VERSION 2.8)
-project(LSSR)
+project(LAS_VEGAS)
 
 set( CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_SOURCE_DIR}/bin )
+set( CMAKE_MODULE_PATH ${LAS_VEGAS_SOURCE_DIR}/CMakeModules )
 
 link_directories("${CMAKE_SOURCE_DIR}/lib")
 link_directories("$ENV{HOME}/local/lib")
 
-include_directories(${LSSR_SOURCE_DIR}/ext/Eigen)
-include_directories(${LSSR_SOURCE_DIR}/ext/stann)
-include_directories(${LSSR_SOURCE_DIR})
-include_directories(${LSSR_SOURCE_DIR}/src/lib)
+include_directories(/usr/include/libusb-1.0/)
+include_directories(${LAS_VEGAS_SOURCE_DIR}/ext/Eigen)
+include_directories(${LAS_VEGAS_SOURCE_DIR}/ext/stann)
+include_directories(${LAS_VEGAS_SOURCE_DIR})
+include_directories(${LAS_VEGAS_SOURCE_DIR}/include/liblvr)
 
-set( CMAKE_CXX_FLAGS         "-O3 -g" )
-set( CMAKE_CXX_FLAGS_RELEASE "-O3 -msse3 -Wno-deprecated-declarations -Wno-unused" )
-set( CMAKE_CXX_FLAGS_DEBUG   "-g -Wall" )
+
+set( CMAKE_CXX_FLAGS         ${CMAKE_CXX_FLAGS})
 
 ###############################################################
 # EXTERNAL LIBRARIES
 ###############################################################
 
+####
+## Searching for OpenCV
+##############################
+FIND_PACKAGE( OpenCV REQUIRED )
+
+####
+## Searching for MPI
+##############################
+FIND_PACKAGE( MPI )
+include_directories(SYSTEM ${MPI_INCLUDE_PATH})
+
+####
+## Searching for NABO 
+##############################
+
+SET(NABO_INCLUDE_DIRS "")
+SET(NABO_LIBRARIES "")
+find_package(Nabo)
+if(NABO_FOUND)
+   include_directories(${NABO_INCLUDE_DIRS})
+   link_directories(${NABO_LIBRARIES})
+   add_definitions(-D_USE_NABO)
+endif(NABO_FOUND)
+
+
+####
+## Searching for PCL
+##############################
+
+# We intentionally do this twice as there seems to be a bug in PCL 1.4 which
+# leads to a non set PCL_VERSION variable if you call it only once.
 find_package(PCL 1.0)
+if ( "${PCL_VERSION}" STREQUAL "" )
+    find_package(PCL 1.0)
+endif ( "${PCL_VERSION}" STREQUAL "" )
 if(PCL_FOUND)
-  message(STATUS "Found PCL")
-  include_directories(${PCL_INCLUDE_DIRS})
-  link_directories(${PCL_LIBRARY_DIRS})
-  add_definitions(${PCL_DEFINITIONS})
-  add_definitions(-D_USE_PCL_)
+    message(STATUS "Found PCL ${PCL_VERSION}")
+	if ( "${PCL_VERSION}" VERSION_GREATER "1.0" )
+        include_directories(${PCL_INCLUDE_DIRS})
+        link_directories(${PCL_LIBRARY_DIRS})
+        add_definitions(${PCL_DEFINITIONS})
+        add_definitions(-D_USE_PCL_)
+		if ( "${PCL_VERSION}" VERSION_GREATER "1.2" )
+            add_definitions(-D_PCL_VERSION_GT_12_)
+		else ( "${PCL_VERSION}" VERSION_GREATER "1.2" )
+            add_definitions(-D_PCL_VERSION_12_)
+		endif ( "${PCL_VERSION}" VERSION_GREATER "1.2" )
+    else ( "${PCL_VERSION}" VERSION_GREATER "1.0" )
+        message( "-- Your PCL version is to old.." )
+        message( "-- PCL related stuff will be disabled." )
+	endif ( "${PCL_VERSION}" VERSION_GREATER "1.0" )
+else(PCL_FOUND)
+        message( "-- No PCL found." )
+        message( "-- PCL related stuff will be disabled." )
 endif(PCL_FOUND)
 
-find_package( Boost 
+
+####
+## Searching CGAL
+##############################
+
+find_package(CGAL)
+if(CGAL_FOUND)
+add_definitions(${CGAL_CXX_FLAGS_INIT})
+message(STATUS "CGAL CXX_FLAGS: " ${CGAL_CXX_FLAGS_INIT})
+endif(CGAL_FOUND)
+
+
+####
+## Searching for Boost
+##############################
+#
+
+find_package( Boost 1.42
     COMPONENTS 
     program_options 
     filesystem system 
-    thread 
+    thread
     REQUIRED )
+
 if(Boost_FOUND)
     link_directories(${BOOST_LIBRARY_DIRS})
     include_directories(${Boost_INCLUDE_DIRS})
     add_definitions(${Boost_LIB_DIAGNOSTIC_DEFINITIONS})
 endif()
+
+
+####
+## Searching for OpenMP
+##############################
 
 find_package(OpenMP)
 if(OpenMP_FOUND)
@@ -46,24 +117,20 @@ if(OpenMP_FOUND)
     include_directories(${OpenMP_INCLUDE_DIRS})
 endif(OpenMP_FOUND)
 
+set( CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${OpenMP_CXX_FLAGS}" )
+
+
+####
+## Searching for OpenGL
+##############################
+
 find_package(OpenGL REQUIRED)
 if(OpenGL_FOUND)
     link_directories(${OpenGL_INCLUDE_DIRS})
     include_directories(${OpenGL_LIBRARY_DIRS})
+    message( "OPEN GL LIBS 1 : " ${OPENGL_LIBRARIES}) 
+    message( "OPEN GL LIBS 2 : " ${OPENGL_LIBRARY}) 
 endif(OpenGL_FOUND)
-
-
-find_library( rply_shared
-    NAMES rply
-    PATHS /usr/lib /usr/local/lib /lib )
-if( rply_shared )
-    message(STATUS "Looking for rply - found")
-else( rply_shared )
-    message(STATUS "Looking for rply - not found")
-    message(STATUS "Building local rply")
-    include_directories( ${CMAKE_CURRENT_SOURCE_DIR}/ext/rply/ )
-    add_subdirectory(ext/rply)
-endif( rply_shared )
 
 IF(APPLE)
     link_directories(/opt/local/lib)
@@ -76,30 +143,108 @@ if(UNIX)
     include_directories(${OPENGL_INC})
 endif(UNIX)
 
-find_package(GLUT REQUIRED)
 
-set( CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${OpenMP_CXX_FLAGS}" )
-set( CMAKE_CXX_FLAGS_RELEASE "${CMAKE_CXX_FLAGS_RELEASE} ${OpenMP_CXX_FLAGS}" )
-set( CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} ${OpenMP_CXX_FLAGS}" )
+##############################################################
+## Searching for glut and it's additional runtime libraries.
+##############################################################
+
+find_package(GLUT REQUIRED)
+if ( GLUT_FOUND )
+    message( "-- Found OpenGL Utility Toolkit" )
+else ( GLUT_FOUND )
+    message( SEND_ERROR "-- could not find OpenGL Utility Toolkit" )
+endif ( GLUT_FOUND )
+
+if(LINUX)
+if ( GLUT_Xmu_LIBRARY )
+    message( "-- Found X.Org X11 libXmu/libXmuu runtime libraries" )
+else ( GLUT_Xmu_LIBRARY )
+    message( SEND_ERROR "-- Could not find X.Org X11 libXmu/libXmuu runtime libraries" )
+endif ( GLUT_Xmu_LIBRARY )
+
+if ( GLUT_Xi_LIBRARY )
+    message( "-- Found X.Org X11 libXi runtime library" )
+else ( GLUT_Xi_LIBRARY )
+    message( SEND_ERROR "-- Could not find X.Org X11 libXi runtime library" )
+endif ( GLUT_Xi_LIBRARY )
+
+if ( OPENGL_glu_LIBRARY ) 
+    message( "-- Found GLU library" )
+else ( OPENGL_glu_LIBRARY ) 
+    message( SEND_ERROR "-- Could not find GLU library" )
+endif ( OPENGL_glu_LIBRARY ) 
+
+endif(LINUX)
+
+##############################################################
+# USED THIRD PARTY STUFF
+##############################################################
+
+include_directories( ${CMAKE_CURRENT_SOURCE_DIR}/ext )
+
+# RPLY
+include_directories( ${CMAKE_CURRENT_SOURCE_DIR}/ext/rply/ )
+add_subdirectory(ext/rply)
+
+# LASLIB
+include_directories( ${CMAKE_CURRENT_SOURCE_DIR}/ext/laslib/inc )
+add_subdirectory(ext/laslib)
+
+# OBJ
+include_directories( ${CMAKE_CURRENT_SOURCE_DIR}/ext/obj/ )
+add_subdirectory(ext/obj)
+
+# Freenect
+if(APPLE)
+include_directories( /opt/local/include/libusb-1.0/)
+endif(APPLE)
+include_directories(ext/libfreenect/include/)
+add_subdirectory(ext/libfreenect)
+
+# SLAM6D stuff
+include_directories( ${CMAKE_CURRENT_SOURCE_DIR}/ext/slam6d )
+add_subdirectory(ext/slam6d)
+
+
 
 ##############################################################
 # LIBRARIES
 ##############################################################
 
-add_subdirectory(src/lib)
+add_subdirectory(src/liblvr)
 
 ##############################################################
 # BINARIES
 ##############################################################
 
-add_subdirectory(src/reconstruct)
-add_subdirectory(src/scanreduce)
+add_subdirectory(src/tools/reconstruct)
+add_subdirectory(src/tools/colorize)
+add_subdirectory(src/tools/scanreduce)
+add_subdirectory(src/tools/convert)
+add_subdirectory(src/tools/asciiconverter)
+add_subdirectory(src/tools/texman)
+add_subdirectory(src/tools/tiogen)
+add_subdirectory(src/tools/meshoptimizer)
+
+if(MPI_FOUND)
+add_subdirectory(src/tools/mpi)
+endif(MPI_FOUND)
+
+if(CGAL_FOUND)
+add_subdirectory(src/tools/cgal_reconstruction)
+endif(CGAL_FOUND)
+
+if(PCL_FOUND)
+    add_subdirectory(src/tools/scanfilter)
+    add_subdirectory(src/tools/kinectgrabber)
+endif(PCL_FOUND)
 
 ##############################################################
 # VIEWERS
 ##############################################################
 
 set( QT_USE_QTOPENGL TRUE )
+set( QT_USE_XML TRUE)
 find_package( Qt4 )
 if( QT4_FOUND )
     include_directories(${QT_INCLUDE_DIR})

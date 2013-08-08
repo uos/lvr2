@@ -28,7 +28,7 @@
 #define VIEWERMANAGER_H_
 
 #include "Viewer.h"
-#include "../data/DataCollector.h"
+#include "../data/Visualizer.hpp"
 
 #include <QtGui>
 #include <list>
@@ -45,9 +45,9 @@ public:
 	Viewer* current();
 
 public Q_SLOTS:
-	void addDataCollector(DataCollector* c);
-	void updateDataObject(DataCollector* obj);
-	void removeDataCollector(DataCollector* obj);
+	void addDataCollector(Visualizer* c);
+	void updateDataObject(Visualizer* obj);
+	void removeDataCollector(Visualizer* obj);
 
 private:
 	Viewer* 			m_currentViewer;
