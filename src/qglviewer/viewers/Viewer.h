@@ -28,7 +28,7 @@
 #define VIEWER_H_
 
 #include "../app/Types.h"
-#include "../data/DataCollector.h"
+#include "../data/Visualizer.hpp"
 #include "../widgets/CustomTreeWidgetItem.h"
 
 #include "geometry/BoundingBox.hpp"
@@ -42,13 +42,15 @@
 #include <iostream>
 using std::list;
 
-class DataCollector;
+class Visualizer;
 
 enum ProjectionMode { PERSPECTIVE, ORTHOXY, ORTHOXZ, ORTHOYZ};
 
-using lssr::Renderable;
-using lssr::BoundingBox;
-using lssr::Vertex;
+using lvr::Renderable;
+using lvr::BoundingBox;
+using lvr::Vertex;
+
+using qglviewer::KeyFrameInterpolator;
 
 class Viewer : public QGLViewer
 {
@@ -57,22 +59,44 @@ class Viewer : public QGLViewer
 public:
 	Viewer(QWidget* parent, const QGLWidget* shared = 0);
 	virtual ~Viewer();
-	virtual void addDataObject(DataCollector* obj);
-	virtual void removeDataObject(DataCollector* obj);
+	virtual void addDataObject(Visualizer* obj);
+	virtual void removeDataObject(Visualizer* obj);
 	void removeDataObject(CustomTreeWidgetItem* item);
-	virtual void updateDataObject(DataCollector* obj);
+	virtual void updateDataObject(Visualizer* obj);
 
 	virtual ViewerType type() = 0;
 	virtual void centerViewOnObject(Renderable* renderable);
 
+
+	KeyFrameInterpolator* kfi() { return m_kfi;}
+
+	void saveToDisk(bool b) {m_saveToDisk = b;}
+
 public Q_SLOTS:
 	virtual void resetCamera();
+
+	void zoomChanged(double z)
+	{
+	    m_zoom = z;
+	    updateGL();
+	}
+
+	void createSnapshot();
+
 
 protected:
 	virtual void draw();
 
-	list<DataCollector*>	    m_dataObjects;
+	list<Visualizer*>	    m_dataObjects;
 	BoundingBox<Vertex<float> > m_boundingBox;
+	KeyFrameInterpolator*       m_kfi;
+
+	double                      m_zoom;
+
+	double                      m_near;
+	double                      m_far;
+
+	bool 						m_saveToDisk;
 
 private:
 	QWidget*				    m_parent;

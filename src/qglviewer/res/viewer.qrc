@@ -4,6 +4,7 @@
 	<file>qv_fogsettings.png</file>
 	<file>qv_import.png</file>
 	<file>qv_points.png</file>
+	<file>qv_pointNormals.png</file>
 	<file>qv_screenshot.png</file>
 	<file>qv_showall.png</file>
 	<file>qv_showSelection.png</file>
@@ -14,6 +15,16 @@
 	<file>qv_transform.png</file>
 	<file>qv_export.png</file>
     <file>qv_delete.png</file>
+	<file>qv_play_add.png</file>
+	<file>qv_play_animate.png</file>
+	<file>qv_play_delete.png</file>
+	<file>qv_play_first.png</file>
+	<file>qv_play_last.png</file>	
+	<file>qv_play_next.png</file>	
+	<file>qv_play_prev.png</file>	
+	<file>qv_animation.png</file>	
+	<file>qv_rendering.png</file>	
+	<file>qv_zoom.png</file>
 	<file>tb_left.png</file>
 	<file>tb_right.png</file>
 	<file>tb_delete.png</file>

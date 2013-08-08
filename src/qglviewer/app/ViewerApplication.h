@@ -34,39 +34,37 @@
 #include "SceneDockWidgetUI.h"
 #include "ActionDockWidgetUI.h"
 #include "MeshingOptionsDialogUI.h"
+#include "RenderingDialogUI.h"
 
-#include "../data/DataCollectorFactory.h"
+#include "../data/VisualizerFactory.hpp"
+#include "../data/SignalingMeshGenerator.hpp"
 
 #include "../viewers/Viewer.h"
 #include "../viewers/PerspectiveViewer.h"
 #include "../viewers/ViewerManager.h"
 
 #include "../widgets/CustomTreeWidgetItem.h"
+#include "../widgets/ClusterTreeWidgetItem.h"
 #include "../widgets/PointCloudTreeWidgetItem.h"
 #include "../widgets/TriangleMeshTreeWidgetItem.h"
 #include "../widgets/TransformationDialog.h"
 #include "../widgets/DebugOutputDialog.hpp"
+#include "../widgets/AnimationDialog.hpp"
 
 #include "display/StaticMesh.hpp"
 #include "geometry/HalfEdgeMesh.hpp"
 
-#include "reconstruction/PointCloudManager.hpp"
-#include "reconstruction/StannPointCloudManager.hpp"
+#include "reconstruction/AdaptiveKSearchSurface.hpp"
 #include "reconstruction/FastReconstruction.hpp"
 
 #include "io/Model.hpp"
 #include "io/ModelFactory.hpp"
 
-// Optinal PCL bindings
-#ifdef _USE_PCL_
-#include "reconstruction/PCLPointCloudManager.hpp"
-#endif
-
-
 using Ui::MainWindow;
 using Ui::Fogsettings;
 using Ui::SceneDockWidgetUI;
 using Ui::ActionDockWidgetUI;
+using Ui::RenderingDialogUI;
 
 class EventManager;
 
@@ -90,15 +88,19 @@ public Q_SLOTS:
 	void fogExp2();
 	void fogExp();
 
-	void dataCollectorAdded(DataCollector* d);
+	void displayRenderingSettings();
+
+	void dataCollectorAdded(Visualizer* d);
 	void treeItemClicked(QTreeWidgetItem* item, int n);
 	void treeItemChanged(QTreeWidgetItem*, int);
 	void treeSelectionChanged();
 	void treeContextMenuRequested(const QPoint &);
 
 	void saveSelectedObject();
+	void changeSelectedName();
 
 	void transformObject();
+	void createAnimation();
 	void deleteObject();
 
 	void openFile();
@@ -107,6 +109,8 @@ public Q_SLOTS:
 	void pointRenderModeChanged();
 	void createMeshFromPointcloud();
 	void centerOnSelection();
+
+	void zoomChanged();
 
 private:
 
@@ -117,8 +121,6 @@ private:
 
 	MainWindow*					m_mainWindowUi;
 	QMainWindow*				m_qMainWindow;
-
-	Viewer*						m_viewer;
 	QDialog*					m_fogSettingsDialog;
 
 	SceneDockWidgetUI*			m_sceneDockWidgetUi;
@@ -127,9 +129,19 @@ private:
 	QDockWidget*				m_sceneDockWidget;
 	QDockWidget*                m_actionDockWidget;
 
+	QDoubleSpinBox*             m_zoomSpinBox;
+	QAction*                    m_zoomAction;
+	QAction*                    m_zoomBoxAction;
+
 	Fogsettings*				m_fogSettingsUI;
 	ViewerManager*				m_viewerManager;
-	DataCollectorFactory*       m_factory;
+	VisualizerFactory*       	m_factory;
+
+	AnimationDialog*            m_playerDialog;
+
+
+public:
+    Viewer*                     m_viewer;
 };
 
 #endif /* VIEWERAPPLICATION_H_ */

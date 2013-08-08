@@ -5,3 +5,6 @@ PROJECT(rply_local_static)
 
 ADD_LIBRARY(rply_local_static STATIC rply.c)
 set_target_properties(rply_local_static PROPERTIES LIBRARY_OUTPUT_DIRECTORY ${CMAKE_SOURCE_DIR}/lib)
+
+ADD_LIBRARY(rply_local SHARED rply.c)
+set_target_properties(rply_local PROPERTIES LIBRARY_OUTPUT_DIRECTORY ${CMAKE_SOURCE_DIR}/lib)
