@@ -31,9 +31,9 @@
 
 #include "display/Renderable.hpp"
 
-using lssr::Renderable;
-using lssr::Vertex;
-using lssr::Matrix4;
+using lvr::Renderable;
+using lvr::Vertex;
+using lvr::Matrix4;
 
 using Ui::TransformationDialogUI;
 
@@ -59,7 +59,10 @@ public Q_SLOTS:
     void translationYEntered(double value);
     void translationZEntered(double value);
 
+    void stepChanged(double value);
+
     void reset();
+    void save();
 private:
 
     void connectSignalsAndSlots();

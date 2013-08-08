@@ -1,0 +1,35 @@
+/**
+ *  @file
+ *   @brief Implemetnations of point pairs
+ *  @author Kai Lingemann. Institute of Computer Science, University of Osnabrueck, Germany.
+ *  @author Andreas Nuechter. Institute of Computer Science, University of Osnabrueck, Germany.
+ */
+
+/**
+ * Constructor, by two 'point' pointers
+ */
+inline PtPair::PtPair(double *_p1, double *_p2)
+{
+  p1 = Point(_p1);
+  p2 = Point(_p2);
+}
+
+inline PtPair::PtPair(Point &_p1, Point &_p2)
+{
+  p1 = Point(_p1);
+  p2 = Point(_p2);
+}
+
+inline PtPair::PtPair()
+{
+  p1 = Point();
+  p2 = Point();
+}
+
+/**
+ * Overridden "<<" operator for sending a pair to a stream
+ */
+inline ostream& operator<<(ostream& os, const PtPair& pair) {
+  os << pair.p1 << " - " << pair.p2 << endl;
+  return os;
+}

@@ -31,7 +31,7 @@
 
 #include "display/Renderable.hpp"
 
-using lssr::Renderable;
+using lvr::Renderable;
 
 enum
 {
@@ -39,7 +39,8 @@ enum
     InterfaceItem,
     PointCloudItem,
     TriangleMeshItem,
-    MultiPointCloudItem
+    MultiPointCloudItem,
+    ClusterItem
 };
 
 enum

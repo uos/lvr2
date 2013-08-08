@@ -27,24 +27,27 @@
 #include "DataCollectorFactory.h"
 #include "Static3DDataCollector.h"
 
+#include "display/Grid.hpp"
 #include "display/StaticMesh.hpp"
 #include "display/PointCloud.hpp"
 #include "display/MultiPointCloud.hpp"
 
 #include "io/Model.hpp"
+#include "io/GridIO.hpp"
 
 #include "../widgets/PointCloudTreeWidgetItem.h"
 #include "../widgets/TriangleMeshTreeWidgetItem.h"
 #include "../widgets/MultiPointCloudTreeWidgetItem.h"
 
 #include "io/ModelFactory.hpp"
+#include "io/DataStruct.hpp"
 
 #include <boost/filesystem.hpp>
 #include <boost/version.hpp>
 
-using lssr::Model;
-using lssr::MeshBuffer;
-using lssr::PointBuffer;
+using lvr::Model;
+using lvr::GridIO;
+using lvr::Grid;
 
 DataCollectorFactory::DataCollectorFactory() {}
 
@@ -57,18 +60,17 @@ void DataCollectorFactory::create(string filename)
 	string name = selectedFile.filename().c_str();
 
 	// Create a factory rto parse given file and extract loaders
-	lssr::ModelFactory io;
-	Model* model = io.readModel(filename);
+	lvr::ModelFactory io;
+    lvr::ModelPtr model = io.readModel( filename );
 
 	if(model)
 	{
-
-	    MeshBuffer*      mesh_buffer  = model->m_mesh;
-	    PointBuffer*     point_buffer = model->m_pointCloud;
+        lvr::MeshBufferPtr    mesh_buffer  = model->m_mesh;
+		lvr::PointBufferPtr   point_buffer = model->m_pointCloud;
 
 	    if(mesh_buffer)
 	    {
-	        lssr::StaticMesh* mesh = new lssr::StaticMesh(*model);
+	        lvr::StaticMesh* mesh = new lssr::StaticMesh( model );
 	        TriangleMeshTreeWidgetItem* item = new TriangleMeshTreeWidgetItem(TriangleMeshItem);
 
 	        int modes = 0;
@@ -96,7 +98,8 @@ void DataCollectorFactory::create(string filename)
 	            // Check for multi point object
 	            if(point_buffer->getSubClouds().size() > 1)
 	            {
-	                MultiPointCloud* pc = new MultiPointCloud(*model, name);
+	                name = filename;
+	                MultiPointCloud* pc = new MultiPointCloud(lvr::ModelPtr(model), name);
 	                MultiPointCloudTreeWidgetItem* item = new MultiPointCloudTreeWidgetItem(MultiPointCloudItem);
 
 	                // Setup supported render modes
@@ -119,7 +122,7 @@ void DataCollectorFactory::create(string filename)
 	            else
 	            {
 
-	                PointCloud* pc = new PointCloud(*model);
+	                PointCloud* pc = new PointCloud( model );
 	                PointCloudTreeWidgetItem* item = new PointCloudTreeWidgetItem(PointCloudItem);
 
 	                // Setup supported render modes
@@ -140,6 +143,32 @@ void DataCollectorFactory::create(string filename)
 	                Static3DDataCollector* dataCollector = new Static3DDataCollector(pc, name, item);
 	                Q_EMIT dataCollectorCreated( dataCollector );
 	            }
+
+	        }
+	    }
+	}
+	else
+	{
+	    // Try to load other objects
+	    if(extension == ".grid")
+	    {
+	        GridIO io;
+	        io.read( filename );
+            size_t n_points, n_boxes;
+            lvr::floatArr points = io.getPoints( n_points );
+            lvr::uintArr  boxes  = io.getBoxes(  n_boxes );
+	        if( points && boxes )
+	        {
+                Grid* grid = new Grid( points, boxes, n_points, n_boxes );
+	            int modes = 0;
+	            PointCloudTreeWidgetItem* item = new PointCloudTreeWidgetItem(PointCloudItem);
+	            item->setSupportedRenderModes(modes);
+	            item->setViewCentering(false);
+	            item->setName("Grid");
+	            item->setRenderable(grid);
+
+	            Static3DDataCollector* dataCollector = new Static3DDataCollector(grid, "Grid", item);
+	            Q_EMIT dataCollectorCreated( dataCollector );
 
 	        }
 	    }

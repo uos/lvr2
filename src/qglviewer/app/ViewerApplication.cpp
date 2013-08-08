@@ -25,14 +25,42 @@
  */
 
 #include "ViewerApplication.h"
-#include "../data/Static3DDataCollector.h"
+
+#define RC_PCM_TYPE lvr::ColorVertex<float, unsigned char>, lvr::Normal<float>
 
 ViewerApplication::ViewerApplication( int argc, char ** argv )
 {
 	// Setup main window
 	m_qMainWindow = new QMainWindow;
 	m_mainWindowUi = new MainWindow;
+
+
 	m_mainWindowUi->setupUi(m_qMainWindow);
+
+	// Add a spinbox for scene zoom to toolbar (cool ;-)
+	QLabel* label = new QLabel(m_mainWindowUi->toolBar);
+	label->setText("Zoom Scene: ");
+	QAction* label_action = m_mainWindowUi->toolBar->addWidget(label);
+	label_action->setVisible(true);
+
+    QDoubleSpinBox* m_zoomSpinBox = new QDoubleSpinBox(m_mainWindowUi->toolBar);
+    m_zoomSpinBox->setMinimum(0.01);
+    m_zoomSpinBox->setMaximum(10000);
+    m_zoomSpinBox->setSingleStep(0.5);
+    m_zoomSpinBox->setDecimals(2);
+    m_zoomSpinBox->setValue(1.00);
+
+    m_zoomBoxAction = m_mainWindowUi->toolBar->addWidget(m_zoomSpinBox);
+    m_zoomBoxAction->setVisible(true);
+
+    m_zoomAction = new QAction(m_qMainWindow);
+    QIcon icon;
+    icon.addFile(QString::fromUtf8(":/qv_zoom.png"), QSize(), QIcon::Normal, QIcon::Off);
+    m_zoomAction->setIcon(icon);
+    m_zoomAction->setObjectName(QString::fromUtf8("actionZoom"));
+    m_zoomAction->setCheckable(false);
+    m_zoomAction->setEnabled(true);
+    m_mainWindowUi->toolBar->addAction(m_zoomAction);
 
 	// Add dock widget for currently active objects in viewer
 	m_sceneDockWidget = new QDockWidget(m_qMainWindow);
@@ -40,21 +68,22 @@ ViewerApplication::ViewerApplication( int argc, char ** argv )
 	m_sceneDockWidgetUi->setupUi(m_sceneDockWidget);
 	m_qMainWindow->addDockWidget(Qt::LeftDockWidgetArea, m_sceneDockWidget);
 
-	// Add tool box widget to dock area
-	m_actionDockWidget = new QDockWidget(m_qMainWindow);
-	m_actionDockWidgetUi = new ActionDockWidgetUI;
-	m_actionDockWidgetUi->setupUi(m_actionDockWidget);
-	m_qMainWindow->addDockWidget(Qt::LeftDockWidgetArea, m_actionDockWidget);
+    // Add tool box widget to dock area
+    m_actionDockWidget = new QDockWidget(m_qMainWindow);
+    m_actionDockWidgetUi = new ActionDockWidgetUI;
+    m_actionDockWidgetUi->setupUi(m_actionDockWidget);
+    m_qMainWindow->addDockWidget(Qt::LeftDockWidgetArea, m_actionDockWidget);
 
 	// Setup event manager objects
 	m_viewerManager = new ViewerManager(m_qMainWindow);
 	m_viewer = m_viewerManager->current();
 
+	m_factory = new VisualizerFactory;
 
-	m_factory = new DataCollectorFactory;
 
 	// Show window
 	m_qMainWindow->show();
+
 
 	connectEvents();
 
@@ -73,6 +102,10 @@ ViewerApplication::ViewerApplication( int argc, char ** argv )
 	// Initalize dialogs
 	m_fogSettingsUI = 0;
 	m_fogSettingsDialog = 0;
+
+	m_playerDialog = new AnimationDialog(m_viewer);
+
+
 }
 
 void ViewerApplication::connectEvents()
@@ -96,15 +129,19 @@ void ViewerApplication::connectEvents()
 	connect(m_mainWindowUi->actionVertexView,     SIGNAL(activated()), this, SLOT(meshRenderModeChanged()));
 	connect(m_mainWindowUi->actionSurfaceView,    SIGNAL(activated()), this, SLOT(meshRenderModeChanged()));
 	connect(m_mainWindowUi->actionWireframeView,  SIGNAL(activated()), this, SLOT(meshRenderModeChanged()));
+
 	connect(m_mainWindowUi->actionPointCloudView, SIGNAL(activated()), this, SLOT(pointRenderModeChanged()));
+	connect(m_mainWindowUi->actionPointNormalView, SIGNAL(activated()), this, SLOT(pointRenderModeChanged()));
+
+	connect(m_mainWindowUi->actionRenderingSettings, SIGNAL(activated()), this, SLOT(displayRenderingSettings()));
 
 	// Fog settings
 	connect(m_mainWindowUi->actionToggle_fog, SIGNAL(activated()),  this, SLOT(toggleFog()));
 	connect(m_mainWindowUi->actionFog_settings, SIGNAL(activated()),this, SLOT(displayFogSettingsDialog()));
 
 	// Communication between the manager objects
-    connect(m_factory, SIGNAL(dataCollectorCreated(DataCollector*)), m_viewerManager, SLOT(addDataCollector(DataCollector*)));
-    connect(m_factory, SIGNAL(dataCollectorCreated(DataCollector*)), this,            SLOT(dataCollectorAdded(DataCollector*)));
+    connect(m_factory, SIGNAL(visualizerCreated(Visualizer*)), m_viewerManager, SLOT(addDataCollector(Visualizer*)));
+    connect(m_factory, SIGNAL(visualizerCreated(Visualizer*)), this,            SLOT(dataCollectorAdded(Visualizer*)));
 
 	// Communication between tree widget items
 	connect(treeWidget, SIGNAL(itemClicked(QTreeWidgetItem*, int)),         this, SLOT(treeItemClicked(QTreeWidgetItem*, int)));
@@ -114,6 +151,9 @@ void ViewerApplication::connectEvents()
 
 	// Actions
 	connect(m_sceneDockWidgetUi->actionExport, SIGNAL(triggered()), this, SLOT(saveSelectedObject()));
+	connect(m_sceneDockWidgetUi->actionChangeName, SIGNAL(triggered()), this, SLOT(changeSelectedName()));
+
+
 	connect(m_mainWindowUi->actionGenerateMesh,               SIGNAL(triggered()), this, SLOT(createMeshFromPointcloud()));
 
 	// Action dock functions
@@ -121,147 +161,198 @@ void ViewerApplication::connectEvents()
     connect(m_actionDockWidgetUi->buttonTransform,  SIGNAL(clicked()), this, SLOT(transformObject()));
     connect(m_actionDockWidgetUi->buttonDelete,     SIGNAL(clicked()), this, SLOT(deleteObject()));
     connect(m_actionDockWidgetUi->buttonExport,     SIGNAL(clicked()), this, SLOT(saveSelectedObject()));
+    connect(m_actionDockWidgetUi->buttonAnimation,  SIGNAL(clicked()), this, SLOT(createAnimation()));
+
+    connect(m_zoomAction, SIGNAL(activated()), this, SLOT(zoomChanged()));
+}
+
+void ViewerApplication::zoomChanged()
+{
+    QDoubleSpinBox* s = static_cast<QDoubleSpinBox*>(m_mainWindowUi->toolBar->widgetForAction(m_zoomBoxAction));
+    m_viewer->zoomChanged(s->value());
+}
+
+void ViewerApplication::displayRenderingSettings()
+{
+    // Create dialog ui
+    RenderingDialogUI*  render_ui = new RenderingDialogUI;
+    QDialog dialog;
+    render_ui->setupUi(&dialog);
+
+    // Get selected object
+    QTreeWidgetItem * t_item = m_sceneDockWidgetUi->treeWidget->currentItem();
+
+    if(t_item)
+    {
+        if(t_item->type() >= PointCloudItem)
+        {
+            // Convert to custom item
+            CustomTreeWidgetItem* item = static_cast<CustomTreeWidgetItem*>(t_item);
+
+            // Get relevant values from renderable and set them in ui
+            Renderable* renderable = item->renderable();
+            render_ui->spinBoxLineWidth->setValue(renderable->lineWidth());
+            render_ui->spinBoxPointSize->setValue(renderable->pointSize());
+
+            // Execute dialog and set new values
+            if(dialog.exec() == QDialog::Accepted)
+            {
+                renderable->setPointSize(render_ui->spinBoxPointSize->value());
+                renderable->setLineWidth(render_ui->spinBoxLineWidth->value());
+            }
+        }
+    }
+
+
 }
 
 void ViewerApplication::createMeshFromPointcloud()
 {
-    // Some usings
-    using namespace lssr;
-
-    // Display mesh generation dialog
-    QTreeWidgetItem* item = m_sceneDockWidgetUi->treeWidget->currentItem();
-    if(item)
-    {
-        if(item->type() == PointCloudItem)
-        {
-            CustomTreeWidgetItem* c_item = static_cast<CustomTreeWidgetItem*>(item);
-
-            // Create a dialog to parse options
-            QDialog* mesh_dialog = new QDialog(m_qMainWindow);
-            Ui::MeshingOptionsDialogUI* mesh_ui = new Ui::MeshingOptionsDialogUI;
-            mesh_ui->setupUi(mesh_dialog);
-            int result = mesh_dialog->exec();
-
-            // Check dialog result and create mesh
-            if(result == QDialog::Accepted)
-            {
-                // Get point cloud data
-                PointCloud* pc = static_cast<lssr::PointCloud*>(c_item->renderable());
-                PointBuffer* loader = pc->model()->m_pointCloud;
-
-                if(loader)
-                {
-                    // Create a point cloud manager object
-                    PointCloudManager<ColorVertex<float, unsigned char>, Normal<float> >* pcm;
-                    QString pcm_name = mesh_ui->comboBoxPCM->currentText();
-
-                    if(pcm_name == "PCL")
-                    {
-#ifdef _USE_PCL_
-                        pcm = new PCLPointCloudManager<ColorVertex<float, unsigned char>, Normal<float> > (loader);
-#else
-                        pcm = new StannPointCloudManager<ColorVertex<float, unsigned char>, Normal<float> > (loader);
-#endif
-                    }
-                    else
-                    {
-                        pcm = new StannPointCloudManager<ColorVertex<float, unsigned char>, Normal<float> > (loader);
-                    }
-
-                    // Set pcm parameters
-                    pcm->setKD(mesh_ui->spinBoxKd->value());
-                    pcm->setKI(mesh_ui->spinBoxKi->value());
-                    pcm->setKN(mesh_ui->spinBoxKn->value());
-                    pcm->calcNormals();
-
-                    // Create an empty mesh
-                    HalfEdgeMesh<ColorVertex<float, unsigned char>, Normal<float> > mesh(pcm);
-
-                    // Get reconstruction mesh
-                    float voxelsize = mesh_ui->spinBoxVoxelsize->value();
-
-                    FastReconstruction<ColorVertex<float, unsigned char>, Normal<float> > reconstruction(*pcm, voxelsize, true);
-                    reconstruction.getMesh(mesh);
-
-                    // Get optimization parameters
-                    bool optimize_planes = mesh_ui->checkBoxOptimizePlanes->isChecked();
-//                  bool fill_holes      = mesh_ui->checkBoxFillHoles->isChecked();
-//                  bool rds             = mesh_ui->checkBoxRDA->isChecked();
-//                  bool small_regions   = mesh_ui->checkBoxRemoveRegions->isChecked();
-                    bool retesselate     = mesh_ui->checkBoxRetesselate->isChecked();
-                    bool texture         = mesh_ui->checkBoxGenerateTextures->isChecked();
-                    bool color_regions   = mesh_ui->checkBoxColorRegions->isChecked();
-
-                    int  num_plane_its   = mesh_ui->spinBoxPlaneIterations->value();
-//                  int  num_rda         = mesh_ui->spinBoxRDA->value();
-                    int  num_rm_regions  = mesh_ui->spinBoxRemoveRegions->value();
-
-                    float min_plane_size = mesh_ui->spinBoxMinPlaneSize->value();
-                    float normal_thresh  = mesh_ui->spinBoxNormalThr->value();
-                    float max_hole_size  = mesh_ui->spinBoxHoleSize->value();
-
-                    // Perform optimizations
-                    if(optimize_planes)
-                    {
-                        if(color_regions)
-                        {
-                            mesh.enableRegionColoring();
-                        }
-
-                        mesh.optimizePlanes(num_plane_its,
-                                normal_thresh,
-                                min_plane_size,
-                                num_rm_regions,
-                                true);
-
-                        mesh.fillHoles(max_hole_size);
-                        mesh.optimizePlaneIntersections();
-                        mesh.restorePlanes(min_plane_size);
-                    }
-
-                    if(retesselate)
-                    {
-                        mesh.finalizeAndRetesselate(texture);
-                    }
-                    else
-                    {
-                        mesh.finalize();
-                    }
-
-
-                    // Create and add mesh to loaded objects
-                    MeshBuffer* l = mesh.meshBuffer();
-
-                    lssr::StaticMesh* static_mesh = new lssr::StaticMesh(l);
-                    TriangleMeshTreeWidgetItem* mesh_item = new TriangleMeshTreeWidgetItem(TriangleMeshItem);
-
-                    int modes = 0;
-                    modes |= Mesh;
-
-                    string name = "Mesh: " + c_item->name();
-
-                    cout << static_mesh->getNumberOfFaces() << endl;
-                    cout << static_mesh->getNumberOfVertices() << endl;
-
-                    if(static_mesh->getNormals())
-                    {
-                        modes |= VertexNormals;
-                    }
-                    mesh_item->setSupportedRenderModes(modes);
-                    mesh_item->setViewCentering(false);
-                    mesh_item->setName(name);
-                    mesh_item->setRenderable(static_mesh);
-                    mesh_item->setNumFaces(static_mesh->getNumberOfFaces());
-
-                    Static3DDataCollector* dc = new Static3DDataCollector(static_mesh, name, mesh_item);
-
-                    dataCollectorAdded(dc);
-                    m_viewerManager->addDataCollector(dc);
-                }
-
-            }
-        }
-    }
+//    // Some usings
+//    using namespace lvr;
+//
+//    // Display mesh generation dialog
+//    QTreeWidgetItem* item = m_sceneDockWidgetUi->treeWidget->currentItem();
+//    if(item)
+//    {
+//        if(item->type() == PointCloudItem || item->type() == MultiPointCloudItem)
+//        {
+//            CustomTreeWidgetItem* c_item = static_cast<CustomTreeWidgetItem*>(item);
+//
+//            // Create a dialog to parse options
+//            QDialog* mesh_dialog = new QDialog(m_qMainWindow);
+//            Ui::MeshingOptionsDialogUI* mesh_ui = new Ui::MeshingOptionsDialogUI;
+//            mesh_ui->setupUi(mesh_dialog);
+//            int result = mesh_dialog->exec();
+//
+//            // Check dialog result and create mesh
+//            if(result == QDialog::Accepted)
+//            {
+//                // Get point cloud data
+//                lvr::PointCloud* pc = static_cast<lvr::PointCloud*>(c_item->renderable());
+//                PointBufferPtr loader = pc->model()->m_pointCloud;
+//
+//                if(loader)
+//                {
+//                    // Create a point cloud manager object
+//                    lvr::AdaptiveKSearchSurface< RC_PCM_TYPE >::Ptr pcm;
+////                    PointCloudManager<ColorVertex<float, unsigned char>, Normal<float> >* pcm;
+//                    std::string pcm_name = mesh_ui->comboBoxPCM->currentText().toAscii().data();
+//
+//                    pcm = AdaptiveKSearchSurface< RC_PCM_TYPE >::Ptr(
+//                          new AdaptiveKSearchSurface<ColorVertex<float, unsigned char>, Normal<float> > ( loader, pcm_name ));
+//
+//                    // Set pcm parameters
+//                    pcm->setKD(mesh_ui->spinBoxKd->value());
+//                    pcm->setKI(mesh_ui->spinBoxKi->value());
+//                    pcm->setKN(mesh_ui->spinBoxKn->value());
+//                    pcm->calculateSurfaceNormals();
+//
+//                    // Create an empty mesh
+//                    HalfEdgeMesh<ColorVertex<float, unsigned char>, Normal<float> > mesh(pcm);
+//
+//                    // Get reconstruction mesh
+//                    float voxelsize = mesh_ui->spinBoxVoxelsize->value();
+//
+//                    FastReconstruction<ColorVertex<float, unsigned char>, Normal<float> > reconstruction(pcm, voxelsize, true);
+//                    reconstruction.getMesh(mesh);
+//
+//                    // Get optimization parameters
+//                    bool optimize_planes = mesh_ui->checkBoxOptimizePlanes->isChecked();
+//                    bool fill_holes      = mesh_ui->checkBoxFillHoles->isChecked();
+//                    bool rda             = mesh_ui->checkBoxRDA->isChecked();
+//                    bool small_regions   = mesh_ui->checkBoxRemoveRegions->isChecked();
+//                    bool retesselate     = mesh_ui->checkBoxRetesselate->isChecked();
+//                    bool texture         = mesh_ui->checkBoxGenerateTextures->isChecked();
+//                    bool color_regions   = mesh_ui->checkBoxColorRegions->isChecked();
+//
+//                    int  num_plane_its   = mesh_ui->spinBoxPlaneIterations->value();
+//                    int  num_rda         = mesh_ui->spinBoxRDA->value();
+//                    int  num_rm_regions  = mesh_ui->spinBoxRemoveRegions->value();
+//
+//                    float min_plane_size = mesh_ui->spinBoxMinPlaneSize->value();
+//                    float normal_thresh  = mesh_ui->spinBoxNormalThr->value();
+//                    float max_hole_size  = mesh_ui->spinBoxHoleSize->value();
+//
+//                    if(rda)
+//                    {
+//                        mesh.removeDanglingArtifacts(num_rda);
+//                    }
+//
+//                    if(!small_regions)
+//                    {
+//                        num_rm_regions = 0;
+//                    }
+//
+//                    // Perform optimizations
+//                    if(optimize_planes)
+//                    {
+//                        if(color_regions)
+//                        {
+//                            mesh.enableRegionColoring();
+//                        }
+//
+//                        mesh.optimizePlanes(num_plane_its,
+//                                normal_thresh,
+//                                min_plane_size,
+//                                num_rm_regions,
+//                                true);
+//
+//                        mesh.fillHoles(max_hole_size);
+//                        mesh.optimizePlaneIntersections();
+//                        mesh.restorePlanes(min_plane_size);
+//                    }
+//
+//                    if(retesselate)
+//                    {
+//                        mesh.finalizeAndRetesselate(texture);
+//                    }
+//                    else
+//                    {
+//                        mesh.finalize();
+//                    }
+//
+//
+//                    // Create and add mesh to loaded objects
+//                    MeshBufferPtr l = mesh.meshBuffer();
+//
+//                    lvr::StaticMesh* static_mesh = new lvr::StaticMesh(l);
+//                    TriangleMeshTreeWidgetItem* mesh_item = new TriangleMeshTreeWidgetItem(TriangleMeshItem);
+//
+//                    int modes = 0;
+//                    modes |= Mesh;
+//
+//                    string name = "Mesh: " + c_item->name();
+//
+//                    cout << static_mesh->getNumberOfFaces() << endl;
+//                    cout << static_mesh->getNumberOfVertices() << endl;
+//
+//                    if(static_mesh->getNormals())
+//                    {
+//                        modes |= VertexNormals;
+//                    }
+//                    mesh_item->setSupportedRenderModes(modes);
+//                    mesh_item->setViewCentering(false);
+//                    mesh_item->setName(name);
+//                    mesh_item->setRenderable(static_mesh);
+//                    mesh_item->setNumFaces(static_mesh->getNumberOfFaces());
+//
+//                    Static3DDataCollector* dc = new Static3DDataCollector(static_mesh, name, mesh_item);
+//
+//                    dataCollectorAdded(dc);
+//                    m_viewerManager->addDataCollector(dc);
+//                }
+//                else
+//                {
+//                    QMessageBox msgBox;
+//                    msgBox.setText("Action not supported.");
+//                    msgBox.setStandardButtons(QMessageBox::Ok  );
+//                    int ret = msgBox.exec();
+//                }
+//
+//            }
+//        }
+//    }
 
 }
 
@@ -271,12 +362,13 @@ void ViewerApplication::openFile()
     QStringList file_names;
     QStringList file_types;
 
-    file_types << "Point Clouds (*.pts)"
-            //             << "Points and Normals (*.nor)"
-            << "PLY Models (*.ply)"
-            //             << "Polygonal Meshes (*.bor)"
-            << "All Files (*.*)";
-
+    file_types
+      << "OBJ Files + Material (*.obj)"
+      << "PLY Models (*.ply)"
+      << "Point Clouds (*.pts)"
+      // << "Points and Normals (*.nor)"
+      // << "Polygonal Meshes (*.bor)"
+      << "All Files (*.*)";
 
     //Set Title
     file_dialog.setWindowTitle("Open File");
@@ -292,9 +384,6 @@ void ViewerApplication::openFile()
     //Get filename from list
     string file_name = file_names.constBegin()->toStdString();
     m_factory->create(file_name);
-
-
-
 }
 
 void ViewerApplication::meshRenderModeChanged()
@@ -307,13 +396,13 @@ void ViewerApplication::meshRenderModeChanged()
             TriangleMeshTreeWidgetItem* t_item = static_cast<TriangleMeshTreeWidgetItem*>(item);
 
             // Setup new render mode
-            lssr::StaticMesh* mesh = static_cast<lssr::StaticMesh*>(t_item->renderable());
+            lvr::StaticMesh* mesh = static_cast<lvr::StaticMesh*>(t_item->renderable());
 
             int renderMode = 0;
 
             // Check states of buttons
-            if(m_mainWindowUi->actionSurfaceView->isChecked()) renderMode |= lssr::RenderSurfaces;
-            if(m_mainWindowUi->actionWireframeView->isChecked()) renderMode |= lssr::RenderTriangles;
+            if(m_mainWindowUi->actionSurfaceView->isChecked()) renderMode |= lvr::RenderSurfaces;
+            if(m_mainWindowUi->actionWireframeView->isChecked()) renderMode |= lvr::RenderTriangles;
 
             // Set proper render mode and forbid nothing selected
             if(renderMode != 0)
@@ -322,8 +411,8 @@ void ViewerApplication::meshRenderModeChanged()
             }
 
             // Avoid inconsistencies in button toggle states
-            m_mainWindowUi->actionSurfaceView->setChecked(mesh->getRenderMode() & lssr::RenderSurfaces);
-            m_mainWindowUi->actionWireframeView->setChecked(mesh->getRenderMode() & lssr::RenderTriangles);
+            m_mainWindowUi->actionSurfaceView->setChecked(mesh->getRenderMode() & lvr::RenderSurfaces);
+            m_mainWindowUi->actionWireframeView->setChecked(mesh->getRenderMode() & lvr::RenderTriangles);
 
             // Force redisplay
             m_viewer->updateGL();
@@ -333,7 +422,24 @@ void ViewerApplication::meshRenderModeChanged()
 
 void ViewerApplication::pointRenderModeChanged()
 {
+    QTreeWidgetItem* item = m_sceneDockWidgetUi->treeWidget->currentItem();
+    if(item)
+    {
+        if(item->type() == PointCloudItem)
+        {
+            PointCloudTreeWidgetItem* t_item = static_cast<PointCloudTreeWidgetItem*>(item);
+            lvr::PointCloud* pc = static_cast<lvr::PointCloud*>(t_item->renderable());
 
+            int renderMode = 0;
+            renderMode |= lvr::RenderPoints;
+            if(m_mainWindowUi->actionPointNormalView->isChecked())
+            {
+                renderMode |= lvr::RenderNormals;
+            }
+            pc->setRenderMode(renderMode);
+            m_viewer->updateGL();
+        }
+    }
 }
 
 void ViewerApplication::openFile(string filename)
@@ -349,10 +455,14 @@ void ViewerApplication::transformObject()
         if(item->type() > 1000)
         {
             CustomTreeWidgetItem* c_item = static_cast<CustomTreeWidgetItem*>(item);
-//            TransformationDialog* d = 
-			new TransformationDialog(m_viewer, c_item->renderable());
+	        TransformationDialog* d = new TransformationDialog(m_viewer, c_item->renderable());
         }
     }
+}
+
+void ViewerApplication::createAnimation()
+{
+    m_playerDialog->show();
 }
 
 void ViewerApplication::deleteObject()
@@ -406,9 +516,11 @@ void ViewerApplication::treeContextMenuRequested(const QPoint &position)
             actions.append(mesh_action);
         }
 
+
         // Add standard action to context menu
         actions.append(m_mainWindowUi->actionShowSelection);
         actions.append(m_sceneDockWidgetUi->actionExport);
+        actions.append(m_sceneDockWidgetUi->actionChangeName);
     }
 
     // Display menu if actions are present
@@ -432,21 +544,30 @@ void ViewerApplication::saveSelectedObject()
         // Parse extensions by file type
         if(item->type() == PointCloudItem || item->type() == MultiPointCloudItem)
         {
-            file_types << "Point Clouds (*.pts)"
-                       << "PLY Models (*.ply)"
-                       << "All Files (*.*)";
+            file_types
+	      << "PLY Models (*.ply)"
+	      << "Point Clouds (*.pts)"
+	      << "All Files (*.*)";
         }
         else if (item->type() == TriangleMeshItem)
         {
-            file_types << "PLY Models (*.ply)"
-                       << "OBJ Models (*.obj)"
-                       << "All Files (*.*)";
+            file_types
+	      << "OBJ Models (*.obj)"
+	      << "PLY Models (*.ply)"
+	      << "All Files (*.*)";
+        }
+        else if (item->type() == ClusterItem)
+        {
+        	cout << "CLUSTER" << endl;
+        	ClusterTreeWidgetItem* c_item = static_cast<ClusterTreeWidgetItem*>(item);
+        	c_item->saveCluster("export.clu");
         }
         else
         {
             QMessageBox msgBox;
             msgBox.setText("Object type not supported");
             msgBox.setStandardButtons(QMessageBox::Ok);
+            msgBox.exec();
             return;
         }
 
@@ -467,15 +588,42 @@ void ViewerApplication::saveSelectedObject()
         {
             CustomTreeWidgetItem* c_item = static_cast<CustomTreeWidgetItem*>(item);
 
-            lssr::Model* m = c_item->renderable()->model();
-            lssr::ModelFactory::saveModel(m, file_name);
+            lvr::ModelPtr m = c_item->renderable()->model();
+            lvr::ModelFactory::saveModel( m, file_name );
 
         }
 
     }
 }
 
-void ViewerApplication::dataCollectorAdded(DataCollector* d)
+
+void ViewerApplication::changeSelectedName()
+{
+    QTreeWidgetItem* item = m_sceneDockWidgetUi->treeWidget->currentItem();
+    if(item)
+    {
+        // Test for custom item
+        if(item->type() > 1000)
+        {
+        	CustomTreeWidgetItem* c_item = static_cast<CustomTreeWidgetItem*>(item);
+        	QString new_name = QInputDialog::getText(
+        			0,
+        			QString("Input new label"),
+        			QString("Name:"),
+        			QLineEdit::Normal,
+        			QString(c_item->name().c_str()), 0, 0);
+        	c_item->setName(new_name.toStdString());
+        	c_item->renderable()->setName(new_name.toStdString());
+
+        	m_viewer->updateGL();
+        }
+
+    }
+}
+
+
+
+void ViewerApplication::dataCollectorAdded(Visualizer* d)
 {
     if(d->treeItem())
     {
@@ -551,27 +699,36 @@ void ViewerApplication::treeSelectionChanged()
 
 void ViewerApplication::updateToolbarActions(CustomTreeWidgetItem* item)
 {
-//    bool point_support = item->supportsMode(Points);
-//    bool pn_support = item->supportsMode(PointNormals);
-//    bool vn_support = item->supportsMode(VertexNormals);
+    bool point_support = item->supportsMode(Points);
+    bool pn_support = item->supportsMode(PointNormals);
+    //    bool vn_support = item->supportsMode(VertexNormals);
     bool mesh_support = item->supportsMode(Mesh);
+
+
+    m_mainWindowUi->actionVertexView->setEnabled(false);
+    m_mainWindowUi->actionWireframeView->setEnabled(false);
+    m_mainWindowUi->actionSurfaceView->setEnabled(false);
+    m_mainWindowUi->actionPointCloudView->setEnabled(false);
+    m_mainWindowUi->actionGenerateMesh->setEnabled(false);
+    m_mainWindowUi->actionPointNormalView->setEnabled(false);
 
     if(mesh_support)
     {
         m_mainWindowUi->actionVertexView->setEnabled(true);
         m_mainWindowUi->actionWireframeView->setEnabled(true);
         m_mainWindowUi->actionSurfaceView->setEnabled(true);
-        m_mainWindowUi->actionPointCloudView->setEnabled(false);
-        m_mainWindowUi->actionGenerateMesh->setEnabled(false);
     }
-    else
+
+    if(point_support)
     {
-        m_mainWindowUi->actionVertexView->setEnabled(false);
-        m_mainWindowUi->actionWireframeView->setEnabled(false);
-        m_mainWindowUi->actionSurfaceView->setEnabled(false);
         m_mainWindowUi->actionPointCloudView->setEnabled(true);
-        m_mainWindowUi->actionGenerateMesh->setEnabled(true);
     }
+
+    if(pn_support)
+    {
+        m_mainWindowUi->actionPointNormalView->setEnabled(true);
+    }
+
 
 }
 
