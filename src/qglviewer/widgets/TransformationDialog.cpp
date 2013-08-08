@@ -24,6 +24,7 @@
  *  @author Thomas Wiemann
  */
 
+#include <QFileDialog>
 #include "TransformationDialog.h"
 
 TransformationDialog::TransformationDialog(QWidget* parent, Renderable* r)
@@ -93,9 +94,29 @@ void TransformationDialog::connectSignalsAndSlots()
     QObject::connect(m_dialog->spinBoxZTrans, SIGNAL(valueChanged(double)),
               this, SLOT(translationZEntered(double)));
 
+    QObject::connect(m_dialog->spinBoxStep, SIGNAL(valueChanged(double)),
+              this, SLOT(stepChanged(double)));
 
 
+    QObject::connect(m_dialog->buttonSave, SIGNAL(clicked()), this, SLOT(save()));
 
+
+}
+
+void TransformationDialog::stepChanged(double value)
+{
+    m_dialog->spinBoxXTrans->setSingleStep(value);
+    m_dialog->spinBoxYTrans->setSingleStep(value);
+    m_dialog->spinBoxZTrans->setSingleStep(value);
+}
+
+void TransformationDialog::save()
+{
+    QString filename = QFileDialog::getSaveFileName(m_parent, "Save tranformation to pose file", "", "*.pose");
+
+    ofstream out(filename.toStdString().c_str());
+    out << m_posX << " " << m_posY << " " << m_posZ << " " << m_rotX << " " << m_rotY << " " << m_rotZ;
+    out.close();
 }
 
 void TransformationDialog::reset()
