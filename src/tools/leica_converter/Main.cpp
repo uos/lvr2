@@ -30,10 +30,30 @@ using namespace std;
 #include <boost/filesystem.hpp>
 
 #include "Options.hpp"
+#include "io/BaseIO.hpp"
+#include "io/DatIO.hpp"
 #include "io/Timestamp.hpp"
 #include "io/ModelFactory.hpp"
+#include "io/AsciiIO.hpp"
+#include "reconstruction/PCLFiltering.hpp"
 
 using namespace lvr;
+
+ModelPtr filterModel(ModelPtr p, int k, float sigma)
+{
+	if(p)
+	{
+		if(p->m_pointCloud)
+		{
+			PCLFiltering filter(p->m_pointCloud);
+			filter.applyOutlierRemoval(k, sigma);
+			PointBufferPtr pb( filter.getPointBuffer() );
+			ModelPtr out_model( new Model( pb ) );
+			return out_model;
+		}
+	}
+	p;
+}
 
 int main(int argc, char** argv)
 {
@@ -94,14 +114,53 @@ int main(int argc, char** argv)
 	{
 		if(options.getOutputFormat() == "SLAM")
 		{
-			cout << timestamp << "Reading point cloud data from " << it->c_str() << "." << endl;
-			ModelPtr model = ModelFactory::readModel(string(it->c_str()));
-			if(model)
+			int reduction = options.getTargetSize();
+			ModelPtr model;
+
+			if(reduction == 0)
 			{
-				char name[1024];
-				sprintf(name, "%s/scan%03d.3d", it->c_str(), c);
-				cout << name << endl;
+				cout << timestamp << "Reading point cloud data from " << it->c_str() << "." << endl;
+				model = ModelFactory::readModel(string(it->c_str()));
+				if(model)
+				{
+					char name[1024];
+					sprintf(name, "%s/scan%03d.3d", it->c_str(), c);
+					cout << name << endl;
+				}
 			}
+			else
+			{
+				cout << "OK " << reduction << endl;
+				if(options.getInputFormat() == "DAT")
+				{
+					DatIO io;
+					cout << timestamp << "Reading point cloud data from " << it->c_str() << "." << endl;
+					model = io.read(string(it->c_str()), 4, reduction);
+
+					if(options.filter())
+					{
+						cout << timestamp << "Filtering input data..." << endl;
+						model = filterModel(model, options.getK(), options.getSigma());
+					}
+
+					if(model)
+					{
+						char name[1024];
+						sprintf(name, "%s/scan%03d.3d", it->c_str(), c);
+						cout << "Saving " << name << "..." << endl;
+						AsciiIO outIO;
+						outIO.save(name);
+					}
+
+				}
+				else
+				{
+					cout << timestamp << "Reduction mode currently only supported for DAT format." << endl;
+					exit(-1);
+				}
+			}
+			c++;
+
 		}
 	}
 
