@@ -225,6 +225,7 @@ add_subdirectory(src/tools/asciiconverter)
 add_subdirectory(src/tools/texman)
 add_subdirectory(src/tools/tiogen)
 add_subdirectory(src/tools/meshoptimizer)
+add_subdirectory(src/tools/leica_converter)
 
 if(MPI_FOUND)
 add_subdirectory(src/tools/mpi)
