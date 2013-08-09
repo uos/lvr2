@@ -15,6 +15,7 @@ set(LSSR_SOURCES
     io/GridIO.cpp
     io/KinectGrabber.cpp
     io/KinectIO.cpp
+    io/DatIO.cpp
     io/CoordinateTransform.cpp
     io/BoctreeIO.cpp
     io/TextureIO.cpp
