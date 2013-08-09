@@ -30,6 +30,7 @@
 #include "io/ObjIO.hpp"
 #include "io/LasIO.hpp"
 #include "io/PCDIO.hpp"
+#include "io/DatIO.hpp"
 #include "io/BoctreeIO.hpp"
 #include "io/ModelFactory.hpp"
 
@@ -66,6 +67,10 @@ ModelPtr ModelFactory::readModel( std::string filename )
     else if (extension == ".las")
     {
         io = new LasIO;
+    }
+    else if (extension ==".dat")
+    {
+    	io = new DatIO;
     }
 #ifdef _USE_PCL_
     else if (extension == ".pcd")
@@ -166,7 +171,10 @@ void ModelFactory::saveModel( ModelPtr m, std::string filename)
     {
         io = new PCDIO;
     }
-
+    else if (extension == ".dat")
+    {
+    	io = new DatIO;
+    }
     // Save model
     if(io)
     {
