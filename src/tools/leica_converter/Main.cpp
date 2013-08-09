@@ -99,7 +99,7 @@ int main(int argc, char** argv)
 			if(model)
 			{
 				char name[1024];
-				sprintf(name, "%s/scan%03d.3d", c);
+				sprintf(name, "%s/scan%03d.3d", it->c_str(), c);
 				cout << name << endl;
 			}
 		}
