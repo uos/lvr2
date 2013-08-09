@@ -69,7 +69,7 @@ ModelPtr DatIO::read(string filename, int n, int reduction)
 	in.read((char*)&numPoints, sizeof(int));
 
 	// Determine modulo value suitable for desired reduction
-	int mod_filter = 0;
+	int mod_filter = 1;
 	if(reduction != 0)
 	{
 		cout << timestamp << "Reduction mode. Reading every " << mod_filter << "th point." << endl;
