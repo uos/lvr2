@@ -115,7 +115,7 @@ AdaptiveKSearchSurface<VertexT, NormalT>::AdaptiveKSearchSurface(
 template<typename VertexT, typename NormalT>
 void AdaptiveKSearchSurface<VertexT, NormalT>::parseScanPoses(string posefile)
 {
-
+	cout << timestamp << "Parsing scan poses." << endl;
 	std::ifstream in(posefile.c_str());
 	if(!in.good())
 	{
@@ -135,36 +135,39 @@ void AdaptiveKSearchSurface<VertexT, NormalT>::parseScanPoses(string posefile)
 	if(v.size() > 0)
 	{
 		PointBufferPtr loader (new PointBuffer);
-		floatArr points(new float[v.size()]);
+		floatArr points(new float[3 * v.size()]);
 		for(size_t i = 0; i < v.size(); i++)
 		{
 			points[3 * i] 		= v[i][0];
 			points[3 * i + 1]	= v[i][1];
 			points[3 * i + 2]	= v[i][2];
 		}
-		loader->setPointArray(points, v.size());
 
+		loader->setPointArray(points, v.size());
+		size_t n = v.size();
+
+		cout << timestamp << "Creating pose search tree(" << m_searchTreeName << ") with " << n << " poses." << endl;
 		if( m_searchTreeName == "flann"  || m_searchTreeName == "FLANN" )
 		{
 #ifdef _USE_PCL_
-			this->m_poseTree = search_tree::Ptr( new SearchTreeFlann<VertexT>(loader, this->m_numPoints, 1, 1, 1) );
+			this->m_poseTree = search_tree::Ptr( new SearchTreeFlann<VertexT>(loader, n, 1, 1, 1) );
 #else
 			cout << timestamp << "Warning: PCL is not installed. Using STANN search tree in AdaptiveKSearchSurface." << endl;
-			this->m_poseTree = search_tree::Ptr( new SearchTreeStann<VertexT>(loader, this->m_numPoints, 1, 1, 1) );
+			this->m_poseTree = search_tree::Ptr( new SearchTreeStann<VertexT>(loader, n, 1, 1, 1) );
 #endif
 		}
 		else if( m_searchTreeName == "stann" || m_searchTreeName == "STANN" )
 		{
-			this->m_poseTree = search_tree::Ptr( new SearchTreeStann<VertexT>(loader, this->m_numPoints, 1, 1, 1) );
+			this->m_poseTree = search_tree::Ptr( new SearchTreeStann<VertexT>(loader, n, 1, 1, 1) );
 		}
 		else if( m_searchTreeName == "nanoflann" || m_searchTreeName == "NANOFLANN")
 		{
-			this->m_poseTree = search_tree::Ptr( new SearchTreeNanoflann<VertexT>(loader, this->m_numPoints, 1, 1, 1));
+			this->m_poseTree = search_tree::Ptr( new SearchTreeNanoflann<VertexT>(loader, n, 1, 1, 1));
 		}
 #ifdef _USE_NABO
 		else if( m_searchTreeName == "nabo" || m_searchTreeName == "NABO" )
 		{
-			this->m_poseTree = search_tree::Ptr( new SearchTreeNabo<VertexT>(loader, this->m_numPoints, 1, 1, 1));
+			this->m_poseTree = search_tree::Ptr( new SearchTreeNabo<VertexT>(loader, n, 1, 1, 1));
 		}
 #endif
 		else
@@ -323,7 +326,7 @@ void AdaptiveKSearchSurface<VertexT, NormalT>::calculateSurfaceNormals()
         	{
         		VertexT nearest = nearestPoses[0];
         		normal = p.n;
-        		if(normal * (query_point - nearestPose) < 0) normal = normal * -1;
+        		if(normal * (query_point - nearest) < 0) normal = normal * -1;
         	}
         	else
         	{

@@ -227,7 +227,9 @@ int main(int argc, char** argv)
 					p_loader, pcm_name,
 					options.getKn(),
 					options.getKi(),
-					options.getKd()
+					options.getKd(),
+					options.useRansac(),
+					options.getScanPoseFile()
 			);
 
 			surface = psSurface::Ptr(aks);

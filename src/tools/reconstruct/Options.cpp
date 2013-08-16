@@ -55,6 +55,7 @@ Options::Options(int argc, char** argv) : m_descr("Supported options")
                 ("exportPointNormals,e", "Exports original point cloud data together with normals into a single file called 'pointnormals.ply'")
 		        ("saveGrid,g", "Writes the generated grid to a file called 'fastgrid.grid. The result can be rendered with qviewer.")
 		        ("saveOriginalData,s", "Save the original points and the estimated normals together with the reconstruction into one file ('triangle_mesh.ply')")
+		        ("scanPoseFile", value<string>()->default_value(""), "ASCII file containing scan positions that can be used to flip normals")
 		        ("kd", value<int>(&m_kd)->default_value(5), "Number of normals used for distance function evaluation")
 		        ("ki", value<int>(&m_ki)->default_value(10), "Number of normals used in the normal interpolation process")
 		        ("kn", value<int>(&m_kn)->default_value(10), "Size of k-neighborhood used for normal estimation")
@@ -167,6 +168,11 @@ string Options::getEdgeCollapseMethod() const
 string Options::getDecomposition() const
 {
     return (m_variables["decomposition"].as< string >());
+}
+
+string Options::getScanPoseFile() const
+{
+	return (m_variables["scanPoseFile"].as<string>());
 }
 
 int Options::getNumEdgeCollapses() const
