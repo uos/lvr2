@@ -46,9 +46,12 @@ ModelPtr filterModel(ModelPtr p, int k, float sigma)
 		if(p->m_pointCloud)
 		{
 			PCLFiltering filter(p->m_pointCloud);
+			cout << timestamp << "Filtering outliers with k=" << k << " and sigma=" << sigma << "." << endl;
+			size_t original_size = p->m_pointCloud->getNumPoints();
 			filter.applyOutlierRemoval(k, sigma);
 			PointBufferPtr pb( filter.getPointBuffer() );
 			ModelPtr out_model( new Model( pb ) );
+			cout << timestamp << "Filtered out " << original_size - out_model->m_pointCloud->getNumPoints() << " points." << endl;
 			return out_model;
 		}
 	}
@@ -95,9 +98,17 @@ int main(int argc, char** argv)
 		{
 			extension = ".dat";
 		}
-		else if(options.getInputFormat() == "ALL")
+		else if(options.getInputFormat() == "TXT")
 		{
-
+			extension = ".txt";
+		}
+		else if(options.getOutputFormat() == "ALL")
+		{
+			// Filter supported file formats
+			if(it->path().extension() == ".ply" || it->path().extension() == ".txt" || it->path().extension() == ".dat")
+			{
+				extension = string(it->path().extension().c_str());
+			}
 		}
 
 		if(it->path().extension() == extension)
@@ -108,6 +119,9 @@ int main(int argc, char** argv)
 
 	// Sort entries
 	sort(v.begin(), v.end());
+
+	vector<float>	 merge_points;
+	vector<uchar>	 merge_colors;
 
 	int c = 0;
 	for(vector<boost::filesystem::path>::iterator it = v.begin(); it != v.end(); it++)
@@ -124,13 +138,12 @@ int main(int argc, char** argv)
 				if(model)
 				{
 					char name[1024];
-					sprintf(name, "%s/scan%03d.3d", it->c_str(), c);
+					sprintf(name, "%s/scan%03d.3d", outputDir.c_str(), c);
 					cout << name << endl;
 				}
 			}
 			else
 			{
-				cout << "OK " << reduction << endl;
 				if(options.getInputFormat() == "DAT")
 				{
 					DatIO io;
@@ -142,28 +155,118 @@ int main(int argc, char** argv)
 						cout << timestamp << "Filtering input data..." << endl;
 						model = filterModel(model, options.getK(), options.getSigma());
 					}
-
-					if(model)
-					{
-						char name[1024];
-						sprintf(name, "%s/scan%03d.3d", it->c_str(), c);
-						cout << "Saving " << name << "..." << endl;
-						AsciiIO outIO;
-						outIO.save(name);
-					}
-
 				}
 				else
 				{
 					cout << timestamp << "Reduction mode currently only supported for DAT format." << endl;
 					exit(-1);
 				}
+
+				if(model)
+				{
+				/*	// Convert to slam coordinate system
+					if(model->m_pointCloud)
+					{
+						float point[3];
+						PointBufferPtr p_ptr = model->m_pointCloud;
+						size_t num;
+						floatArr points = p_ptr->getPointArray(num);
+						for(int i = 0; i < num; i++)
+						{
+							point[0] = points[3 * i + 1];
+							point[1] = points[3 * i + 2];
+							point[2] = points[3 * i];
+
+							point[0] *= -100;
+							point[1] *= 100;
+							point[2] *= 100;
+
+							points[3 * i] = point[0];
+							points[3 * i + 1] = point[1];
+							points[3 * i + 2] = point[2];
+						}
+					}
+*/
+					char name[1024];
+					sprintf(name, "%s/scan%03d.3d", outputDir.c_str(), c);
+					cout << timestamp << "Saving " << name << "..." << endl;
+					AsciiIO outIO;
+					outIO.setModel(model);
+					outIO.save(name);
+				}
+
+
+
 			}
 			c++;
 
 		}
+		else if(options.getOutputFormat() == "MERGE")
+		{
+			ModelPtr model = ModelFactory::readModel(string(it->c_str()));
+			if(model)
+			{
+				PointBufferPtr points = model->m_pointCloud;
+				size_t num_points = 0;
+				size_t num_colors = 0;
+				floatArr point_arr = points->getPointArray(num_points);
+				ucharArr color_arr = points->getPointColorArray(num_colors);
+
+				cout << timestamp << "Adding " << it->c_str() << " to merged point cloud" << endl;
+
+				for(size_t i = 0; i < num_points; i++)
+				{
+					merge_points.push_back(point_arr[3 * i]);
+					merge_points.push_back(point_arr[3 * i + 1]);
+					merge_points.push_back(point_arr[3 * i + 2]);
+
+					if(num_points == num_colors)
+					{
+						merge_colors.push_back(color_arr[3 * i]);
+						merge_colors.push_back(color_arr[3 * i + 1]);
+						merge_colors.push_back(color_arr[3 * i + 2]);
+					}
+					else
+					{
+						for(int j = 0; j < 3; j++)
+						{
+							merge_colors.push_back(128);
+						}
+					}
+				}
+			}
+			else
+			{
+				cout << "Unable to model data from " << it->c_str() << endl;
+			}
+		}
 	}
 
+	if(merge_points.size() > 0)
+	{
+		cout << timestamp << "Building merged model..." << endl;
+		cout << timestamp << "Merged model contains " << merge_points.size() << " points." << endl;
+
+		floatArr points (new float[merge_points.size()]);
+		ucharArr colors (new uchar[merge_colors.size()]);
+
+		for(size_t i = 0; i < merge_points.size(); i++)
+		{
+			points[i] = merge_points[i];
+			colors[i] = merge_colors[i];
+		}
+
+		PointBufferPtr pBuffer(new PointBuffer);
+		pBuffer->setPointArray(points, merge_points.size() / 3);
+		pBuffer->setPointColorArray(colors, merge_colors.size() / 3);
+
+		ModelPtr model(new Model(pBuffer));
+
+		cout << timestamp << "Writing 'merge.ply'" << endl;
+		ModelFactory::saveModel(model, "merge.3d");
+
+	}
+	cout << timestamp << "Program end." << endl;
 	return 0;
 }
 
