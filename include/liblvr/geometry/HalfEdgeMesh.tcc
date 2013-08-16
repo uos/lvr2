@@ -42,8 +42,9 @@ HalfEdgeMesh<VertexT, NormalT>::HalfEdgeMesh(
 }
 
 template<typename VertexT, typename NormalT>
-HalfEdgeMesh<VertexT, NormalT>::~HalfEdgeMesh(){
-    this->m_meshBuffer.reset();
+HalfEdgeMesh<VertexT, NormalT>::~HalfEdgeMesh()
+{
+   /* this->m_meshBuffer.reset();
     this->m_pointCloudManager.reset();
 
     for (int i = 0 ; i < m_vertices.size() ; i++)
@@ -68,7 +69,7 @@ HalfEdgeMesh<VertexT, NormalT>::~HalfEdgeMesh(){
 	    delete this->m_regionClassifier;
 	    this->m_regionClassifier = 0;
     }
-
+*/
 }
 
 template<typename VertexT, typename NormalT>
