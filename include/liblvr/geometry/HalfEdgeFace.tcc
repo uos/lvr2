@@ -44,7 +44,7 @@ HalfEdgeFace<VertexT, NormalT>::HalfEdgeFace(const HalfEdgeFace<VertexT, NormalT
 template<typename VertexT, typename NormalT>
 HalfEdgeFace<VertexT, NormalT>::~HalfEdgeFace()
 {
-	if(m_edge->next->next->pair)
+	/*	if(m_edge->next->next->pair)
 	{
 		if(m_edge->next->next->pair->face == 0)
 		{
@@ -94,7 +94,7 @@ HalfEdgeFace<VertexT, NormalT>::~HalfEdgeFace()
 	{
 		m_region->removeFace(this);
 		m_region = 0;
-	}
+	}*/
 }
 
 template<typename VertexT, typename NormalT>
@@ -229,8 +229,8 @@ void HalfEdgeFace<VertexT, NormalT>::getAdjacentFaces(vector<HalfEdgeFace<Vertex
 }
 
 template<typename VertexT, typename NormalT>
-NormalT HalfEdgeFace<VertexT, NormalT>::getFaceNormal(){
-
+NormalT HalfEdgeFace<VertexT, NormalT>::getFaceNormal()
+{
 	VertexT p0 = (*this)(0)->m_position;
 	VertexT p1 = (*this)(1)->m_position;
 	VertexT p2 = (*this)(2)->m_position;
@@ -305,10 +305,15 @@ HalfEdgeFace<VertexT, NormalT>::operator[](const int &index) const{
 
 template<typename VertexT, typename NormalT>
 HalfEdgeVertex<VertexT, NormalT>* 
-HalfEdgeFace<VertexT, NormalT>::operator()(const int &index) const{
+HalfEdgeFace<VertexT, NormalT>::operator()(const int &index) const
+{
+	cout << "OPERATOR() " << index << endl;
 	switch(index)
 	{
 	case 0:
+		cout << "CASE 0" << endl;
+		cout << m_edge << endl;
+		cout << m_edge->end << endl;
 		return this->m_edge->end;
 	case 1:
         if(!this->m_edge->next)
