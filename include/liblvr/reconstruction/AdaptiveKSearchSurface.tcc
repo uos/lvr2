@@ -314,10 +314,29 @@ void AdaptiveKSearchSurface<VertexT, NormalT>::calculateSurfaceNormals()
         // Get the mean distance to the tangent plane
         //mean_distance = meanDistance(p, id, k);
 
-        // Flip normals towards the center of the scene
-        normal =  p.n;
-
-        if(normal * (query_point - m_centroid) < 0) normal = normal * -1;
+        // Flip normals towards the center of the scene or nearest scan pose
+        if(m_poseTree)
+        {
+        	vector<VertexT> nearestPoses;
+        	m_poseTree->kSearch(query_point, 1, nearestPoses);
+        	if(nearestPoses.size() == 1)
+        	{
+        		VertexT nearest = nearestPoses[0];
+        		normal = p.n;
+        		if(normal * (query_point - nearestPose) < 0) normal = normal * -1;
+        	}
+        	else
+        	{
+        		cout << timestamp << "Could not get nearest scan pose. Defaulting to centroid." << endl;
+        		normal =  p.n;
+        		if(normal * (query_point - m_centroid) < 0) normal = normal * -1;
+        	}
+        }
+        else
+        {
+            normal =  p.n;
+            if(normal * (query_point - m_centroid) < 0) normal = normal * -1;
+        }
 
         // Save result in normal array
         this->m_normals[i][0] = normal[0];
