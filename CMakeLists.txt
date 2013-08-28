@@ -227,11 +227,12 @@ add_subdirectory(src/tools/tiogen)
 add_subdirectory(src/tools/meshoptimizer)
 
 if(MPI_FOUND)
-add_subdirectory(src/tools/mpi)
+#add_subdirectory(src/tools/mpi)
 endif(MPI_FOUND)
 
 if(CGAL_FOUND)
 add_subdirectory(src/tools/cgal_reconstruction)
+add_subdirectory(src/tools/slicer)
 endif(CGAL_FOUND)
 
 if(PCL_FOUND)
