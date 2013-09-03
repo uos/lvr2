@@ -268,7 +268,7 @@ template<typename VertexT, typename NormalT> void FusionMesh<VertexT, NormalT>::
 			std::pair<MapIterator,bool> const& r=global_vertices_map.insert(std::pair<VertexT, size_t>(v->m_position, m_global_index));
 			
 				if (r.second) { 
-					cout << "added vertex" << endl;
+					//cout << "added vertex" << endl;
 					addGlobalVertex(v);
 					face->m_index[j] = v->m_self_index;
 					//cout << "m_self " << global_vertices_map[v->m_position] << endl;
@@ -278,7 +278,7 @@ template<typename VertexT, typename NormalT> void FusionMesh<VertexT, NormalT>::
 					// note: the old value is available through r.first->second
 					// and may not be "some value"
 					
-					cout << "already have vertex " << endl;
+					//cout << "already have vertex " << endl;
 					
 					face->m_index[j] = r.first->second;
 					if(face->m_index[j] >= m_global_vertices.size())
@@ -396,7 +396,7 @@ template<typename VertexT, typename NormalT> void FusionMesh<VertexT, NormalT>::
 	special_case_faces = 0;
 		
 	for(size_t i = 0; i < m_local_faces.size(); i++)
-	{	
+	{		
 		FFace* face = m_local_faces[i];
 		
 		FVertex* v0 = m_local_vertices[face->m_index[0]];
@@ -412,18 +412,26 @@ template<typename VertexT, typename NormalT> void FusionMesh<VertexT, NormalT>::
 		FT dist_c = tree.squared_distance(c);
 		
 		Triangle temp = Triangle(a,b,c);
-	
+		
 		if (dist_a > threshold && dist_b > threshold && dist_c > threshold)
 		{
-			// unhandled exceptional situation
-			if (tree.do_intersect(temp))
+			
+			bool result = true;
+			try {
+				result = tree.do_intersect(temp);
+			} catch (...)
+		    {
+				cout << "i: " << i << " hier werf ich nen fehler" << endl;
+			}
+			if (result)
 			{
+				// unhandled exceptional situation
 				//cout << "found intersection out of distance" << endl;
 				//find solution
 				face->r = 200;
 				face->g = 200;
 				face->b = 200;	
-				special_case_faces ++;
+				special_case_faces++;
 				// lassen wir erstmal ganz weg
 			}
 			//Best Case: detect non overlapping local face
@@ -433,17 +441,19 @@ template<typename VertexT, typename NormalT> void FusionMesh<VertexT, NormalT>::
 				face->g = 0;
 				face->b = 200;
 				
-				remote_faces.push_back(face);	
+				remote_faces.push_back(face);
+
 			}
 		}
 		else if(dist_a < threshold && dist_b < threshold && dist_c < threshold)
-		{
+		{	
 			// Delete Case: redundant faces
 			face->r = 200;
 			face->g = 200;
 			face->b = 0;
 			redundant_faces++;
 			// lassen wir ganz weg
+
 		}
 		else
 		{
@@ -473,6 +483,8 @@ template<typename VertexT, typename NormalT> void FusionMesh<VertexT, NormalT>::
 			
 		}
 	}
+	cout << "finished checking cases" << endl;
+	
 	printFaceSortingStatus();
     cout << timestamp << "Finished Sorting Faces..." << endl;
  	

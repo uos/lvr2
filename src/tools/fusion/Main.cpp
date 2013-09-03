@@ -110,7 +110,9 @@ int main(int argc, char** argv)
 		
 		FusionMesh<fVertex, fNormal> mesh;
 		
-		mesh.setDistanceTreshold(options.getDistanceTreshold());
+		mesh.setDistanceThreshold(options.getDistanceTreshold());
+		
+		cout << timestamp << "here" << endl;
 		
 		// Load and integrate meshes
 		mesh.addMesh(mesh_buffer1);
@@ -122,7 +124,6 @@ int main(int argc, char** argv)
 	    mesh.finalize();
 	
 	  	// Write Result to .ply
-	 	
 		// Create output model and save to file
 		ModelPtr m( new Model( mesh.meshBuffer() ) );
 		if(options.outputFileNameSet())
