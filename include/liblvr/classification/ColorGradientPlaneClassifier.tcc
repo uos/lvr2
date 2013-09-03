@@ -23,7 +23,7 @@
  *      Author: Thomas Wiemann
  */
 
-namespace lvr
+namespace lssr
 {
 
 template<typename VertexT, typename NormalT>
@@ -61,8 +61,6 @@ uchar ColorGradientPlaneClassifier<VertexT, NormalT>::b(int i)
 	return tmp;
 }
 
-
-
 template<typename VertexT, typename NormalT>
 uchar* ColorGradientPlaneClassifier<VertexT, NormalT>::getColor(int i)
 {
@@ -87,7 +85,8 @@ uchar* ColorGradientPlaneClassifier<VertexT, NormalT>::getColor(int i)
 		}
 	}
 
+
 	return c;
 }
 
-} // namespace lvr
+} // namespace lssr
