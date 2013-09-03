@@ -72,7 +72,7 @@ using namespace std;
 #include "classification/ClassifierFactory.hpp"
 
 
-namespace lvr
+namespace lssr
 {
 
 template<typename VertexT, typename NormalT>
@@ -412,7 +412,7 @@ private:
 	friend class ClassifierFactory<VertexT, NormalT>;
 };
 
-} // namespace lvr
+} // namespace lssr
 
 
 #include "HalfEdgeMesh.tcc"

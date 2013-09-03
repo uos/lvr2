@@ -29,7 +29,7 @@
 #include "display/ColorMap.hpp"
 #include "RegionClassifier.hpp"
 
-namespace lvr
+namespace lssr
 {
 
 template<typename VertexT, typename NormalT>
@@ -53,7 +53,7 @@ private:
 
 };
 
-} /* namespace lvr */
+} /* namespace lssr */
 
 #include "ColorGradientPlaneClassifier.tcc"
 #endif /* COLORGRADIENTPLANECLASSIFIER_H_ */
