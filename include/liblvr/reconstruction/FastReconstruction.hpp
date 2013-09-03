@@ -40,7 +40,7 @@
 #include <ext/hash_map>
 using namespace __gnu_cxx;
 
-namespace lvr
+namespace lssr
 {
 
 /**
@@ -75,6 +75,7 @@ public:
      * @brief Destructor.
      */
     virtual ~FastReconstruction();
+
     /**
      * @brief Returns the surface reconstruction of the given point set.
      *
@@ -176,7 +177,7 @@ private:
 };
 
 
-} // namespace lvr
+} // namespace lssr
 
 
 #include "FastReconstruction.tcc"
