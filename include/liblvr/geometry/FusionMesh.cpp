@@ -506,14 +506,8 @@ template<typename VertexT, typename NormalT> void FusionMesh<VertexT, NormalT>::
 	
 	printLocalBufferStatus();
 	printGlobalBufferStatus(); 
-	
-	size_t num_current_local_vertices  = m_local_vertices.size();
-	size_t num_current_local_faces  = m_local_faces.size();
-		
-	size_t num_current_global_vertices = m_global_vertices.size();
-	size_t num_current_global_faces = m_global_faces.size();
     
-    if (num_current_global_vertices == 0)
+    if (m_global_vertices.size() == 0)
     {
 		lazyIntegrate(); //shorten
 	}
@@ -547,7 +541,7 @@ template<typename VertexT, typename NormalT> void FusionMesh<VertexT, NormalT>::
     clearLocalBuffer();
    /*
    
-    for(int i = 0; i < m_global_vertices.size(); i++)
+    for(unsigned int i = 0; i < m_global_vertices.size(); i++)
     {
 	 //  if(i != m_global_vertices[i]->m_self_index) 
 	//	cout << "Index[" <<  i << "] " << m_global_vertices[i]->m_self_index << endl; 

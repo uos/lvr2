@@ -267,6 +267,13 @@ public:
 	
 	virtual void addMeshAndLazyIntegrate(MeshBufferPtr model);
 	/**
+     * @brief   Insert an entire mesh into the local fusion buffer and lazyintegrate it imediately.
+     *
+     * @param   mesh      A pointer to the mesh to be inserted
+     */
+	virtual void addMeshAndLazyIntegrate(MeshBufferPtr model);
+	
+	/**
 	 * @brief 	Finalizes a mesh, i.e. converts the template based buffers
 	 * 			to OpenGL compatible buffers
 	 */
