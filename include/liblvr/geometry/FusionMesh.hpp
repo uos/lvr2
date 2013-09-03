@@ -265,7 +265,6 @@ public:
      */
 	virtual void addMeshAndIntegrate(MeshBufferPtr model);
 	
-	virtual void addMeshAndLazyIntegrate(MeshBufferPtr model);
 	/**
      * @brief   Insert an entire mesh into the local fusion buffer and lazyintegrate it imediately.
      *
