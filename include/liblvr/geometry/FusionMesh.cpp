@@ -178,13 +178,13 @@ template<typename VertexT, typename NormalT> void FusionMesh<VertexT, NormalT>::
 {
     // Create new FusionMeshVertex and increase vertex counter
     //v->m_self_index = m_global_index;
-    cout << "at insertion " << v->m_self_index << "-" << v->m_position << endl;
+    //cout << "at insertion " << v->m_self_index << "-" << v->m_position << endl;
     
     m_global_vertices.push_back(v);
     m_global_vertices[m_global_index]->m_self_index = m_global_index;
-    cout << "after insertion " << v->m_self_index << "-" << v->m_position << endl;
+   // cout << "after insertion " << v->m_self_index << "-" << v->m_position << endl;
   
-    cout << "in globale" <<  m_global_vertices[m_global_index]->m_self_index << "-" <<  m_global_vertices[m_global_index]->m_position << endl << endl;
+   // cout << "in globale" <<  m_global_vertices[m_global_index]->m_self_index << "-" <<  m_global_vertices[m_global_index]->m_position << endl << endl;
   
     
     m_global_index++; // = m_global_vertices.size() - 1;   
@@ -545,15 +545,15 @@ template<typename VertexT, typename NormalT> void FusionMesh<VertexT, NormalT>::
     */
      
     clearLocalBuffer();
-   
+   /*
    
     for(int i = 0; i < m_global_vertices.size(); i++)
     {
-	   if(i != m_global_vertices[i]->m_self_index) 
-		cout << "Index[" <<  i << "] " << m_global_vertices[i]->m_self_index << endl; 
+	 //  if(i != m_global_vertices[i]->m_self_index) 
+	//	cout << "Index[" <<  i << "] " << m_global_vertices[i]->m_self_index << endl; 
 	}
 	
-	
+	*/
     cout << endl << timestamp << "Finished Integrating..." << endl << endl;
 	
 	printLocalBufferStatus();
@@ -564,6 +564,12 @@ template<typename VertexT, typename NormalT> void FusionMesh<VertexT, NormalT>::
 {
 	addMesh(mesh);
 	integrate();
+}
+
+template<typename VertexT, typename NormalT> void FusionMesh<VertexT, NormalT>::addMeshAndLazyIntegrate(MeshBufferPtr mesh)
+{
+	addMesh(mesh);
+	lazyIntegrate();
 }
 
 template<typename VertexT, typename NormalT> void FusionMesh<VertexT, NormalT>::finalize()

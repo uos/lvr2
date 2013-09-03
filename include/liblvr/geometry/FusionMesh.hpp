@@ -265,6 +265,7 @@ public:
      */
 	virtual void addMeshAndIntegrate(MeshBufferPtr model);
 	
+	virtual void addMeshAndLazyIntegrate(MeshBufferPtr model);
 	/**
 	 * @brief 	Finalizes a mesh, i.e. converts the template based buffers
 	 * 			to OpenGL compatible buffers
@@ -281,7 +282,7 @@ public:
 	 *
 	 */
 	 
-	void setDistanceTreshold(double_t t) {threshold = t*t;};
+	void setDistanceThreshold(double_t t) {threshold = t*t;};
 
 private:
 
