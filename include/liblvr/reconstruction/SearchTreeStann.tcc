@@ -122,14 +122,14 @@ void SearchTreeStann< VertexT >::radiusSearch( float qp[3], double r, vector< ul
     // keep track of found distances and indices
     vector< double > distances;
 
-    double squared_radius = r*r;
+ //   double squared_radius = r*r;
     double max_radius = numeric_limits< double >::min();
     int k = 10;
     while( max_radius < r ){
         SearchTree< VertexT >::kSearch( qp, k, indices, distances );
 
         // check distances for all neighbours
-        for( int i=0; i < distances.size(); i++ )
+        for(unsigned int i=0; i < distances.size(); i++ )
         {
             max_radius = (max_radius > distances[i]) ? max_radius : distances[i];
             if( distances[i] < r )

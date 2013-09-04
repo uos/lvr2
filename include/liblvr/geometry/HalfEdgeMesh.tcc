@@ -28,7 +28,7 @@
  */
 
 
-namespace lssr
+namespace lvr
 {
 
 template<typename VertexT, typename NormalT>
@@ -1665,4 +1665,4 @@ void HalfEdgeMesh<VertexT, NormalT>::getCostMap(std::map<HVertex*, float> &costs
 	}
 }
 
-} // namespace lssr
+} // namespace lvr
