@@ -227,7 +227,7 @@ add_subdirectory(src/tools/tiogen)
 add_subdirectory(src/tools/meshoptimizer)
 
 if(MPI_FOUND)
-add_subdirectory(src/tools/mpi)
+#add_subdirectory(src/tools/mpi)
 endif(MPI_FOUND)
 
 if(CGAL_FOUND)
