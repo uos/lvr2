@@ -40,7 +40,7 @@
 #include <ext/hash_map>
 using namespace __gnu_cxx;
 
-namespace lssr
+namespace lvr
 {
 
 /**
@@ -177,7 +177,7 @@ private:
 };
 
 
-} // namespace lssr
+} // namespace lvr
 
 
 #include "FastReconstruction.tcc"
