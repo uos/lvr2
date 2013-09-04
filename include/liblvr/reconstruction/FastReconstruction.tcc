@@ -28,7 +28,7 @@
 #include "SharpBox.hpp"
 #include "io/Progress.hpp"
 
-namespace lssr
+namespace lvr
 {
 
 template<typename VertexT, typename NormalT>
@@ -428,4 +428,4 @@ void FastReconstruction<VertexT, NormalT>::saveGrid(string filename)
     }
 }
 
-} //namespace lssr
+} //namespace lvr
