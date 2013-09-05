@@ -14,7 +14,7 @@ include_directories(${LAS_VEGAS_SOURCE_DIR})
 include_directories(${LAS_VEGAS_SOURCE_DIR}/src/lib)
 
 
-set( CMAKE_CXX_FLAGS         ${CMAKE_CXX_FLAGS})
+set( CMAKE_CXX_FLAGS         ${CMAKE_CXX_FLAGS} "-std=gnu++0x")
 
 ###############################################################
 # EXTERNAL LIBRARIES
@@ -218,6 +218,7 @@ add_subdirectory(src/meshoptimizer)
 
 if(CGAL_FOUND)
 add_subdirectory(src/cgal_reconstruction)
+add_subdirectory(src/fusion)
 endif(CGAL_FOUND)
 
 if(PCL_FOUND)
