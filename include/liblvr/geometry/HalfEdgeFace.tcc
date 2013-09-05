@@ -44,7 +44,7 @@ HalfEdgeFace<VertexT, NormalT>::HalfEdgeFace(const HalfEdgeFace<VertexT, NormalT
 template<typename VertexT, typename NormalT>
 HalfEdgeFace<VertexT, NormalT>::~HalfEdgeFace()
 {
-	if(m_edge->next->next->pair)
+/*	if(m_edge->next->next->pair)
 	{
 		if(m_edge->next->next->pair->face == 0)
 		{
@@ -89,7 +89,7 @@ HalfEdgeFace<VertexT, NormalT>::~HalfEdgeFace()
 	delete m_edge->next->next;
 	delete m_edge->next;
 	delete m_edge;
-
+*/
 	if(m_region != 0)
 	{
 		m_region->removeFace(this);
