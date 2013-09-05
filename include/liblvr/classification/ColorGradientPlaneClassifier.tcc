@@ -69,7 +69,7 @@ uchar* ColorGradientPlaneClassifier<VertexT, NormalT>::getColor(int i)
 	c[1] = 200;
 	c[2] = 0;
 
-	//Region<VertexT, NormalT>* r = 0;
+	Region<VertexT, NormalT>* r = 0;
 	if((unsigned int) i < this->m_regions->size())
 	{
 		r = this->m_regions->at(i);
