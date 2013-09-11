@@ -181,14 +181,11 @@ template<typename VertexT, typename NormalT> void FusionMesh<VertexT, NormalT>::
     //cout << "at insertion " << v->m_self_index << "-" << v->m_position << endl;
     
     m_global_vertices.push_back(v);
-    m_global_vertices[m_global_index]->m_self_index = m_global_index;
-   // cout << "after insertion " << v->m_self_index << "-" << v->m_position << endl;
-  
-   // cout << "in globale" <<  m_global_vertices[m_global_index]->m_self_index << "-" <<  m_global_vertices[m_global_index]->m_position << endl << endl;
-  
     
-    m_global_index++; // = m_global_vertices.size() - 1;   
-	
+   // HIER wird auch der m_self_index des bereits vorhandenen Vertex im Global Buffer ersetzt
+    m_global_vertices[m_global_index]->m_self_index = m_global_index;
+    
+    m_global_index++;
 	
    // cout << "Adding Global Vertex at global buffer position " << m_global_index <<  endl;
    // cout << "m_Self_index " << v->m_self_index <<  endl;
@@ -265,11 +262,29 @@ template<typename VertexT, typename NormalT> void FusionMesh<VertexT, NormalT>::
 			
 			//cout << "Found it_index: " << it->second << endl;
 			
-			std::pair<MapIterator,bool> const& r=global_vertices_map.insert(std::pair<VertexT, size_t>(v->m_position, m_global_index));
+			int count = global_vertices_map.count((VertexT)v->m_position);
+			std::pair<MapIterator,bool> const& r=global_vertices_map.insert(std::pair<VertexT, size_t>((VertexT)v->m_position, m_global_index));
 			
-				if (r.second) { 
+				if (r.second) { // && (global_vertices_map.count(v->m_position) == 1)) {
+					if ((m_global_index == 35507 || m_global_index == 35508) && face->m_index[j] == 21967) {
+						cout << "count before insertion " << count << endl;
+						count = global_vertices_map.count((VertexT)v->m_position);
+						cout << "count after insertion " << count << endl;
+						count = global_vertices_map.count((VertexT)m_global_vertices[1]->m_position);
+						cout << "count of global vertex[1] " << count << endl;
+						
+						cout << v->m_position << endl;
+						cout << (VertexT)m_global_vertices[35460]->m_position << endl;
+						cout << (VertexT)m_local_vertices[21967]->m_position << endl;
+						cout << "comparison < " << ((VertexT)(m_global_vertices[35460]->m_position) < (VertexT)(v->m_position)) << endl;
+						cout << " > " << ((VertexT)(v->m_position) < (VertexT)(m_global_vertices[35460]->m_position)) << endl;
+						cout << "Index[" <<  "35460" << "] " << m_global_vertices[35460]->m_self_index << " vertex: " << face->m_index[j] << endl;
+					}
 					//cout << "added vertex" << endl;
 					addGlobalVertex(v);
+					if (m_global_index == 35507 || m_global_index == 35508) {
+						cout << "Index[" <<  "35460" << "] " << m_global_vertices[35460]->m_self_index << " vertex: " << face->m_index[j] << endl;
+					}
 					face->m_index[j] = v->m_self_index;
 					//cout << "m_self " << global_vertices_map[v->m_position] << endl;
 				} else {
@@ -288,9 +303,12 @@ template<typename VertexT, typename NormalT> void FusionMesh<VertexT, NormalT>::
 					}
 					else
 						face->vertices[j] = m_global_vertices[face->m_index[j]];
-						
 				}
-			
+				//trying to find error
+				/* int ind = m_global_index;
+				if(ind != m_global_vertices[ind]->m_self_index) 
+				cout << "Index[" <<  ind << "] " << m_global_vertices[i]->m_self_index << endl; 
+				*/
 			
 			/*
 			if(it == global_vertices_map.end())
@@ -421,7 +439,7 @@ template<typename VertexT, typename NormalT> void FusionMesh<VertexT, NormalT>::
 				result = tree.do_intersect(temp);
 			} catch (...)
 		    {
-				cout << "i: " << i << " hier werf ich nen fehler" << endl;
+				//cout << "i: " << i << " hier werf ich nen fehler" << endl;
 			}
 			if (result)
 			{
@@ -483,7 +501,6 @@ template<typename VertexT, typename NormalT> void FusionMesh<VertexT, NormalT>::
 			
 		}
 	}
-	cout << "finished checking cases" << endl;
 	
 	printFaceSortingStatus();
     cout << timestamp << "Finished Sorting Faces..." << endl;
@@ -551,15 +568,14 @@ template<typename VertexT, typename NormalT> void FusionMesh<VertexT, NormalT>::
     */
      
     clearLocalBuffer();
-   /*
    
+    cout << endl << "Errors" << endl;
     for(unsigned int i = 0; i < m_global_vertices.size(); i++)
     {
-	 //  if(i != m_global_vertices[i]->m_self_index) 
-	//	cout << "Index[" <<  i << "] " << m_global_vertices[i]->m_self_index << endl; 
+		if(i != m_global_vertices[i]->m_self_index) 
+		cout << "Index[" <<  i << "] " << m_global_vertices[i]->m_self_index << endl; 
 	}
 	
-	*/
     cout << endl << timestamp << "Finished Integrating..." << endl << endl;
 	
 	printLocalBufferStatus();
