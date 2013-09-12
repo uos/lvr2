@@ -219,6 +219,7 @@ add_subdirectory(src/meshoptimizer)
 if(CGAL_FOUND)
 add_subdirectory(src/cgal_reconstruction)
 add_subdirectory(src/fusion)
+add_subdirectory(src/slicer)
 endif(CGAL_FOUND)
 
 if(PCL_FOUND)
