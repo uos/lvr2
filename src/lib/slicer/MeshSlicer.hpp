@@ -50,6 +50,7 @@
 #include <CGAL/AABB_tree.h>
 #include <CGAL/AABB_traits.h>
 #include <CGAL/AABB_triangle_primitive.h>
+#include <CGAL/exceptions.h>
 
 #include "geometry/Vertex.hpp"
 #include "geometry/VertexTraits.hpp"
@@ -64,7 +65,7 @@ namespace lssr
 {
 
 /**
- * @brief TBA
+ * @brief Mesh Slicer
  **/
  
 class MeshSlicer
@@ -128,19 +129,39 @@ public:
 	virtual void computeIntersections(vector<Segment>& segments);
 	
 	/**
+     * @brief   Calculate all traingles within the desired bounding box and projects them onto a plane
+     *     
+     * @param   segments 		A buffer for all intersection segments
+     */
+	virtual void computeProjections(vector<Segment>& segments);
+	
+	/**
      * @brief   Integrate the local buffer into the global fused mesh
 	 *
      */
-	virtual vector<float> computeSlice();
-	
+	virtual vector<float> compute2dSlice();
+
+	/**
+	* @brief   Integrate the local buffer into the global fused mesh
+	 *
+	*/
+	virtual vector<float> compute2dProjection();
+
 	/// Convenience Function
 	
+	/**
+	* @brief   Insert an entire mesh into the local fusion buffer and integrate it imediately.
+	*
+	* @param   mesh      A pointer to the mesh to be inserted
+	*/
+	virtual vector<float> addMeshAndCompute2dSlice(MeshBufferPtr model);
+
 	/**
      * @brief   Insert an entire mesh into the local fusion buffer and integrate it imediately.
      *
      * @param   mesh      A pointer to the mesh to be inserted
      */
-	virtual vector<float> addMeshAndComputeSlice(MeshBufferPtr model);
+	virtual vector<float> addMeshAndCompute2dProjection(MeshBufferPtr model);
 
 	/// Parameter Methods
 
@@ -151,9 +172,9 @@ public:
 	 *
 	 */
 	 
-	void setDimension(string dim) { 
-		
-		dimension = dim;	
+	void setDimension(string dim) 
+	{ 
+		dimension = dim;
 	};
 	
 	/**
@@ -163,8 +184,8 @@ public:
 	 *
 	 */
 	 	 
-	void setValue(double val)	{ 
-	
+	void setValue(double val)
+	{ 
 		value = val;
 		
 	};
@@ -186,16 +207,14 @@ private:
 	vector<float> output;
 
 	/// CGAL AABB Tree
-	Tree		tree;
-	
+	Tree	tree;
+
 	/// Parameter
-	string		dimension;
-	double 	coord_x;
-	double		coord_y;
-	double		coord_z;
-	double 	value;
-
-
+	string	dimension;
+	double	coord_x;
+	double	coord_y;
+	double	coord_z;
+	double	value;
 };
 
 } // namespace lssr

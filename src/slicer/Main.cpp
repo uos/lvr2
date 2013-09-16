@@ -94,7 +94,7 @@ int main(int argc, char** argv)
 		// Load and slice mesh
 		mesh.addMesh(input_mesh);
 		cout << "here3" << endl;
-		vector<float> segments = mesh.computeSlice();
+		vector<float> segments = mesh.compute2dSlice();
 		 		cout << "here4" << endl;
 		cout << "Slice Segments:" << endl; 	
 		for(int i = 0; i < segments.size(); i+=6)
