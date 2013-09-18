@@ -58,30 +58,23 @@ void MeshSlicer::addMesh(MeshBufferPtr mesh)
 	
 	size_t num_verts;
 	size_t num_faces;
-
+	
 	floatArr vert_tmp = mesh->getVertexArray(num_verts);
-	for(size_t i = 0; i < num_verts; i++)
-	{
-		vertices.push_back(vert_tmp[i*3]);
-		vertices.push_back(vert_tmp[i*3+1]);
-		vertices.push_back(vert_tmp[i*3+2]);
-	}
-	
-	cout << "read in " << num_verts << " vertices" << endl;
-	cout << "read in " << vertices.size() << " values" << endl;
-	
 	uintArr face_tmp = mesh->getFaceArray(num_faces);
 	
-	cout << "read in " << num_faces << " faces" << endl;
-	
-	for(size_t i = 0; i < num_faces; i++)
+	for(int i = 0; i < num_verts; i++)
 	{
-		faces.push_back(face_tmp[i*3]);
-		faces.push_back(face_tmp[i*3+1]);
-		faces.push_back(face_tmp[i*3+2]);
-	//	cout << "face #" << i / num_faces << " values" << endl;
+		vertices.push_back(vert_tmp[3 * i]);
+		vertices.push_back(vert_tmp[3 * i + 1]); 
+		vertices.push_back(vert_tmp[3 * i + 2]);
 	}
-	cout << "read in " << faces.size() << " values" << endl;
+	
+	for(int i = 0; i < num_faces; i++)
+	{
+		faces.push_back(face_tmp[3 * i]);
+		faces.push_back(face_tmp[3 * i + 1]); 
+		faces.push_back(face_tmp[3 * i + 2]);
+	}
 }
 
 vector<float> MeshSlicer::addMeshAndCompute2dSlice(MeshBufferPtr mesh)
@@ -109,16 +102,20 @@ void MeshSlicer::clear()
 
 vector<float> MeshSlicer::compute2dSlice()
 {
+	cout << "Building Tree...";
 	buildTree(); 
+	cout << " Done." << endl;
+	cout << "Computing Intersections...";
 	computeIntersections(segments);
-	return output;  
+	cout << " Done." << endl;
+	return output;
 }
 
 vector<float> MeshSlicer::compute2dProjection()
 {
-	buildTree(); 
-	computeProjections(segments);
-	return output;  
+	//buildTree(); 
+	//computeProjections(segments);
+	return output;
 }
 
 /// AABB Tree Operations
@@ -129,36 +126,22 @@ void MeshSlicer::buildTree()
 	
 	if(faces.size() > 0)
 	{
-		cout << "Building Triangles "; // with " << faces.size() << " and " <<  vertices.size() << "vertices...";
-
 		for(size_t i = 0; i < faces.size(); i+=3)
 		{
-		//cout << "Indices of Face #" << i << ": " << faces.at(i) << " " << faces.at(i+1) << " " << faces.at(i+2) << endl;
-			
 			int vertex_ind_1 = faces.at(i);
 			int vertex_ind_2 = faces.at(i+1);
 			int vertex_ind_3 = faces.at(i+2);
 			
-			//cout << "vertices_num: " << vertices.size() << endl;
+			Point a(vertices.at(vertex_ind_1*3), vertices.at(vertex_ind_1*3+1), vertices.at(vertex_ind_1*3+2));
+			Point b(vertices.at(vertex_ind_2*3), vertices.at(vertex_ind_2*3+1), vertices.at(vertex_ind_2*3+2));
+			Point c(vertices.at(vertex_ind_3*3), vertices.at(vertex_ind_3*3+1), vertices.at(vertex_ind_3*3+2));
 			
-			//cout << "Get Vertex Values at " << vertex_ind_1 << ", " << vertex_ind_1+1 << ", " << vertex_ind_1+2 << endl;
-			Point a(vertices.at(vertex_ind_1), vertices.at(vertex_ind_1+1), vertices.at(vertex_ind_1+2));
-			//cout << "Get Vertex Values at " << vertex_ind_2 << ", " << vertex_ind_2+1 << ", " << vertex_ind_2+2 << endl;
-			Point b(vertices.at(vertex_ind_2), vertices.at(vertex_ind_2+1), vertices.at(vertex_ind_2+2));
-			//cout << "Get Vertex Values at " << vertex_ind_3 << ", " << vertex_ind_3+1 << ", " << vertex_ind_3+2 << endl;
-			Point c(vertices.at(vertex_ind_3), vertices.at(vertex_ind_3+1), vertices.at(vertex_ind_3+2));
-			
-			//cout << "add triangle " << a << " " << b << " " << c << " " << endl;
 			triangles.push_back(Triangle(a,b,c));
 		}
-		//cout << "Ended Adding Triangles... " << faces.size() << endl;
-		cout << " done." << endl;
-		
-		cout << "Building Tree...";
+
 		tree.clear();
 		tree.insert(triangles.begin(), triangles.end());
-		cout << " done." << endl;
-	}	
+	}
 }
 
 Plane MeshSlicer::getQueryPlane()
@@ -197,20 +180,20 @@ Plane MeshSlicer::getQueryPlane()
     Plane  plane_query(p, v);
     
     //TODO make output optional
-    cout << "Query Plane :" << endl; 
+    cout << endl << "Query Plane :" << endl; 
 	cout << "Dimension   : " << dimension.c_str() << endl;
-	cout << "Value       : " << value << endl;	
+	cout << "Value       : " << value << endl;
 	cout << "Plane Point : "  << p <<  endl;
-	cout << "Plane Normal: "  << " (" << coord_x << ", " << coord_y << ", " << coord_z << ")" << endl;
+	cout << "Plane Normal: "  << " (" << coord_x << ", " << coord_y << ", " << coord_z << ")" << endl <<endl;
 	
 	return plane_query;
 }
 
 void MeshSlicer::computeIntersections(vector<Segment>& segments)
 {	
-	cout << timestamp << "Start Computing Intersections... " << endl <<endl;
+	//cout << timestamp << "Start Computing Intersections... " << endl <<endl;
 
-    Plane  plane_query = getQueryPlane();
+	Plane  plane_query = getQueryPlane();
 
 	try
 	{
@@ -221,34 +204,29 @@ void MeshSlicer::computeIntersections(vector<Segment>& segments)
 		cout << "ERROR"<< endl;
 		cout << e.what() << endl;
 	}
+	
 	// computes all intersections with segment query (as pairs object - primitive_id)
-    std::list<Object_and_primitive_id> intersections;
-    
+	std::list<Object_and_primitive_id> intersections;
+
 	cout << "Calculating intersection segments...";
-    tree.all_intersections(plane_query, std::back_inserter(intersections));
-	cout << "There are " << intersections.size() << "intersections" << endl;
+	tree.all_intersections(plane_query, std::back_inserter(intersections));
+	//cout << "There are " << intersections.size() << "intersections" << endl;
  	for (std::list<Object_and_primitive_id>::iterator it = intersections.begin(); it != intersections.end(); it++)
 	{
-        Object_and_primitive_id op = *it;
-        CGAL::Object object = op.first;
-        Segment segment;
-    
-        if(CGAL::assign(segment,object))
+		Object_and_primitive_id op = *it;
+		CGAL::Object object = op.first;
+		Segment segment;
+
+		if(CGAL::assign(segment,object))
 		{
 			segments.push_back(segment);
-			
-			output.push_back((float) segment.source().x());
-			output.push_back((float) segment.source().y());
-			output.push_back((float) segment.source().z());
-		
 			output.push_back((float) segment.target().x());
 			output.push_back((float) segment.target().y());
 			output.push_back((float) segment.target().z());
-        }
-        else 
-			std::cout << "ERROR: intersection object is unknown" << std::endl; 
+		}
+		else std::cout << "ERROR: intersection object is unknown" << std::endl; 
 	}
-	
+
 	cout << timestamp << "Finished Computing " << output.size()/3 << " Intersections..." << endl;	
 }
 
@@ -256,4 +234,4 @@ void MeshSlicer::computeProjections(vector<Segment>& segments)
 {	
 }
 
-} // namespace lssr
+} // namespace lvr
