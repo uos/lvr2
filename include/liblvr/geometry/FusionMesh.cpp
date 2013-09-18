@@ -107,8 +107,8 @@ template<typename VertexT, typename NormalT> void FusionMesh<VertexT, NormalT>::
     floatArr vertices = mesh->getVertexArray(num_verts);
     floatArr normals = mesh->getVertexNormalArray(num_norms);
     
-    if(num_norms != num_verts)
-		cout << "Unequal number of vertices and normals" << endl;
+    //if(num_norms != num_verts)
+	//	cout << "Unequal number of vertices and normals" << endl;
     
     // Add all vertices
     for(size_t i = 0; i < num_verts; i++)
@@ -127,7 +127,6 @@ template<typename VertexT, typename NormalT> void FusionMesh<VertexT, NormalT>::
       // Add all vertex normals, in case we need that.
     /*
     
-   
     for(size_t i = 0; i < num_norms; i++)
     {
          addNormal(NormalT(normals[3 * i], normals[3 * i + 1], normals[3 * i + 2]));
@@ -184,8 +183,13 @@ template<typename VertexT, typename NormalT> void FusionMesh<VertexT, NormalT>::
     
    // HIER wird auch der m_self_index des bereits vorhandenen Vertex im Global Buffer ersetzt
     m_global_vertices[m_global_index]->m_self_index = m_global_index;
+   // cout << "after insertion " << v->m_self_index << "-" << v->m_position << endl;
+  
+   // cout << "in globale" <<  m_global_vertices[m_global_index]->m_self_index << "-" <<  m_global_vertices[m_global_index]->m_position << endl << endl;
+  
     
-    m_global_index++;
+    m_global_index++; // = m_global_vertices.size() - 1;   
+	
 	
    // cout << "Adding Global Vertex at global buffer position " << m_global_index <<  endl;
    // cout << "m_Self_index " << v->m_self_index <<  endl;
@@ -262,25 +266,10 @@ template<typename VertexT, typename NormalT> void FusionMesh<VertexT, NormalT>::
 			
 			//cout << "Found it_index: " << it->second << endl;
 			
-			int count = global_vertices_map.count((VertexT)v->m_position);
-			std::pair<MapIterator,bool> const& r=global_vertices_map.insert(std::pair<VertexT, size_t>((VertexT)v->m_position, m_global_index));
+			std::pair<MapIterator,bool> const& r=global_vertices_map.insert(std::pair<VertexT, size_t>(v->m_position, m_global_index));
 			
-				if (r.second) { // && (global_vertices_map.count(v->m_position) == 1)) {
-					if ((m_global_index == 35507 || m_global_index == 35508) && face->m_index[j] == 21967) {
-						cout << "count before insertion " << count << endl;
-						count = global_vertices_map.count((VertexT)v->m_position);
-						cout << "count after insertion " << count << endl;
-						count = global_vertices_map.count((VertexT)m_global_vertices[1]->m_position);
-						cout << "count of global vertex[1] " << count << endl;
-						
-						cout << v->m_position << endl;
-						cout << (VertexT)m_global_vertices[35460]->m_position << endl;
-						cout << (VertexT)m_local_vertices[21967]->m_position << endl;
-						cout << "comparison < " << ((VertexT)(m_global_vertices[35460]->m_position) < (VertexT)(v->m_position)) << endl;
-						cout << " > " << ((VertexT)(v->m_position) < (VertexT)(m_global_vertices[35460]->m_position)) << endl;
-						cout << "Index[" <<  "35460" << "] " << m_global_vertices[35460]->m_self_index << " vertex: " << face->m_index[j] << endl;
-					}
-					//cout << "added vertex" << endl;
+				if (r.second) { 
+					cout << "added vertex" << endl;
 					addGlobalVertex(v);
 					if (m_global_index == 35507 || m_global_index == 35508) {
 						cout << "Index[" <<  "35460" << "] " << m_global_vertices[35460]->m_self_index << " vertex: " << face->m_index[j] << endl;
@@ -293,7 +282,7 @@ template<typename VertexT, typename NormalT> void FusionMesh<VertexT, NormalT>::
 					// note: the old value is available through r.first->second
 					// and may not be "some value"
 					
-					//cout << "already have vertex " << endl;
+					cout << "already have vertex " << endl;
 					
 					face->m_index[j] = r.first->second;
 					if(face->m_index[j] >= m_global_vertices.size())
@@ -414,7 +403,7 @@ template<typename VertexT, typename NormalT> void FusionMesh<VertexT, NormalT>::
 	special_case_faces = 0;
 		
 	for(size_t i = 0; i < m_local_faces.size(); i++)
-	{		
+	{	
 		FFace* face = m_local_faces[i];
 		
 		FVertex* v0 = m_local_vertices[face->m_index[0]];
@@ -459,12 +448,11 @@ template<typename VertexT, typename NormalT> void FusionMesh<VertexT, NormalT>::
 				face->g = 0;
 				face->b = 200;
 				
-				remote_faces.push_back(face);
-
+				remote_faces.push_back(face);	
 			}
 		}
 		else if(dist_a < threshold && dist_b < threshold && dist_c < threshold)
-		{	
+		{
 			// Delete Case: redundant faces
 			face->r = 200;
 			face->g = 200;
