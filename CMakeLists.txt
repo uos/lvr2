@@ -14,7 +14,7 @@ include_directories(${LAS_VEGAS_SOURCE_DIR})
 include_directories(${LAS_VEGAS_SOURCE_DIR}/include/liblvr)
 
 
-set( CMAKE_CXX_FLAGS         ${CMAKE_CXX_FLAGS})
+set( CMAKE_CXX_FLAGS  ${CMAKE_CXX_FLAGS} "-std=c++0x")
 
 ###############################################################
 # EXTERNAL LIBRARIES
@@ -232,6 +232,7 @@ endif(MPI_FOUND)
 
 if(CGAL_FOUND)
 add_subdirectory(src/tools/cgal_reconstruction)
+add_subdirectory(src/tools/fusion)
 endif(CGAL_FOUND)
 
 if(PCL_FOUND)
