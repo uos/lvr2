@@ -238,7 +238,7 @@ public:
      * @param   remote_faces 			A buffer for all faces that can be added to the global buffer directly
      * @param   integration_faces 		A buffer for all faces that need to be integrated 
      */
-	virtual void sortFaces(vector<FFace*>& remote_faces, vector<FFace*>& integration_faces );
+	virtual void sortFaces(vector<FFace*>& remote_faces, vector<FFace*>& integration_faces, vector<FFace*>& closeby_faces );
 	
 	/**
      * @brief   Integrate the local buffer into the global fused mesh
@@ -311,7 +311,8 @@ private:
 
 	/// FaceBuffer used during integration process
 	vector<FFace*> remote_faces; 
-    vector<FFace*> integration_faces; 
+    vector<FFace*> intersection_faces;
+    vector<FFace*> closeby_faces; 
     int redundant_faces;
 	int special_case_faces;	
 
