@@ -94,6 +94,7 @@ public:
 	typedef CGAL::AABB_triangle_primitive<K,Iterator> Primitive;
 	typedef CGAL::AABB_traits<K, Primitive> AABB_triangle_traits;
 	typedef CGAL::AABB_tree<AABB_triangle_traits> Tree;
+	typedef Tree::Object_and_primitive_id Object_and_primitive_id;
 
 	struct cmpVertices {
 		bool operator()(const VertexT& a, const VertexT& b) const 
@@ -257,6 +258,12 @@ public:
 	 *
      */
 	virtual void remoteIntegrate(vector<FFace*>& faces);
+	
+	/**
+     * @brief   Integrate intersection faces
+	 *
+     */
+	virtual void intersectIntegrate(vector<FFace*>& faces);
 	
 	/**
      * @brief   Insert an entire mesh into the local fusion buffer and integrate it imediately.

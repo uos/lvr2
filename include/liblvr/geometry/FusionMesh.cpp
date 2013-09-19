@@ -286,7 +286,103 @@ template<typename VertexT, typename NormalT> void FusionMesh<VertexT, NormalT>::
 		}
     }
     cout << "Skipped " << degentFaces << " Faces due to degeneration" << endl;
+	cout << "Finished Remote Integrate" << endl;
+}
+
+template<typename VertexT, typename NormalT> void FusionMesh<VertexT, NormalT>::intersectIntegrate(vector<FFace*>& faces)
+{
+	cout << "Start Intersect Integrate..." << endl;
 	
+	
+	//start with first Face, will need some structure in the future
+	
+	FFace* face = faces[2]; //für HornMesh case wo nur eine Vertice behalten wird
+	
+	//redundancy: already checked in SortFaces, maybe save somewhere and pass on
+	FVertex* v0 = m_local_vertices[face->m_index[0]];
+	FVertex* v1 = m_local_vertices[face->m_index[1]];
+	FVertex* v2 = m_local_vertices[face->m_index[2]];
+	Point a(v0->m_position.x, v0->m_position.y, v0->m_position.z);
+	Point b(v1->m_position.x, v1->m_position.y, v1->m_position.z);
+	Point c(v2->m_position.x, v2->m_position.y, v2->m_position.z);
+	Point points[3] = {a,b,c};  
+	FT dist_a = tree.squared_distance(a);
+	FT dist_b = tree.squared_distance(b);
+	FT dist_c = tree.squared_distance(c);
+	
+	//check which edges are far from global mesh and will be kept
+	// hier zwar komplizierte Abfrage, aber so müssen danach nur zwei Fälle behandelt werden
+	int k1 = 9; //indices of points, that will be kept
+	int k2 = 9;
+	int nok1 = 9; //indices of points, that will not be kept
+	int nok2 = 9;
+	int count_keep = 0;
+	if (dist_a > threshold) {
+		k1 = 0;
+		count_keep++;
+	}
+	else {
+		nok1 = 0;
+	}
+	if (dist_b > threshold) {
+		if (count_keep == 0) {
+			k1 = 1;
+			count_keep++;
+		}
+		else {
+			k2 = 1;
+			count_keep++;
+		}
+	}
+	else {
+		if (count_keep == 0) {
+			nok2 = 1;
+		}
+		else {
+			nok1 = 1;
+		}
+	}
+	if (dist_c > threshold) {
+		if (count_keep == 0) {
+			k1 = 2;
+			count_keep++;
+		}
+		else {
+			k2 = 2;
+			count_keep++;
+		}
+	}
+	else {
+		if (count_keep == 1) {
+			nok2 = 2;
+		}
+		else {
+			nok1 = 2;
+		}
+	}
+	if (count_keep > 2 || count_keep == 0) {
+		cout << "error: all or non vertices of an Integration face are supposed to be kept" << endl;
+	}
+	
+	cout << "keep: " << k1 << ", " << k2 << " throw away: " << nok1 << ", " << nok2 << " count_keep: " << count_keep << endl;
+	
+	//find intersection points and arrange new vertices and faces
+	if (count_keep == 1) {
+		Line line1 = Line(points[k1],points[nok1]);
+		Line line2 = Line(points[k1],points[nok2]);
+		
+		cout << "number of intersections: " << tree.number_of_intersected_primitives(line1) << endl;
+		list<Object_and_primitive_id> intersections;
+		tree.all_intersections(line1, back_inserter(intersections));
+		Object_and_primitive_id op = intersections.front();
+		CGAL::Object object = op.first;
+		//object type needs to be checked see CGAL Documentation
+	}
+	
+	//need to fill global_vertices_map
+	
+	
+	cout << "Finished Intersect Integrate ..." << endl;
 }
 
 template<typename VertexT, typename NormalT> void FusionMesh<VertexT, NormalT>::buildTree()
@@ -341,24 +437,36 @@ template<typename VertexT, typename NormalT> void FusionMesh<VertexT, NormalT>::
 	special_case_faces = 0;
 	int far_tree_intersect_fails = 0;
 	int close_tree_intersect_fails = 0;
+	
+	bool result = tree.accelerate_distance_queries();
+	if (result) {
+		cout << "successfully accelerated_distance_queries" << endl; 
+	}
+	
+	FFace* face;
+	FVertex* v0;
+	FVertex* v1;
+	FVertex* v2;
+	FT dist_a, dist_b, dist_c;
+	Triangle temp;
 		
 	for(size_t i = 0; i < m_local_faces.size(); i++)
 	{		
-		FFace* face = m_local_faces[i];
+		face = m_local_faces[i];
 		
-		FVertex* v0 = m_local_vertices[face->m_index[0]];
-		FVertex* v1 = m_local_vertices[face->m_index[1]];
-		FVertex* v2 = m_local_vertices[face->m_index[2]];
+		v0 = m_local_vertices[face->m_index[0]];
+		v1 = m_local_vertices[face->m_index[1]];
+		v2 = m_local_vertices[face->m_index[2]];
 		
 		Point a(v0->m_position.x, v0->m_position.y, v0->m_position.z);
 		Point b(v1->m_position.x, v1->m_position.y, v1->m_position.z);
 		Point c(v2->m_position.x, v2->m_position.y, v2->m_position.z);
 		
-		FT dist_a = tree.squared_distance(a);
-		FT dist_b = tree.squared_distance(b);
-		FT dist_c = tree.squared_distance(c);
+		dist_a = tree.squared_distance(a);
+		dist_b = tree.squared_distance(b);
+		dist_c = tree.squared_distance(c);
 		
-		Triangle temp = Triangle(a,b,c);
+		temp = Triangle(a,b,c);
 		
 		if (dist_a > threshold && dist_b > threshold && dist_c > threshold)
 		{
@@ -393,7 +501,7 @@ template<typename VertexT, typename NormalT> void FusionMesh<VertexT, NormalT>::
 
 			}
 		}
-		else if(dist_a < threshold && dist_b < threshold && dist_c < threshold)
+		else if(dist_a <= threshold && dist_b <= threshold && dist_c <= threshold)
 		{	
 			// Delete Case: redundant faces
 			face->r = 200;
@@ -490,7 +598,8 @@ template<typename VertexT, typename NormalT> void FusionMesh<VertexT, NormalT>::
 		//lazyIntegrate();
 		cout << "Start Integration" << endl;
 		remoteIntegrate(remote_faces);
-		//remoteIntegrate(intersection_faces);
+		
+		intersectIntegrate(intersection_faces);
 	}
 	
     // for all faces in local buffer
