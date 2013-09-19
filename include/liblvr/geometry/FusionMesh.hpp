@@ -213,12 +213,12 @@ public:
 	virtual void addGlobalVertex(FVertex *v);
 	
 	/**
-     * @brief   Insert a new triangle into the mesh
+     * @brief   Insert a new triangle into the mesh and change vertex indeces by increment
      *
      * @param   f       A face from the local buffer
      * @param   i		 The increment that has to be used to shift the face indices properly. Ususally i = current global vertex buffer size.
      */
-	virtual void addGlobalTriangle(FFace *f, int i);
+	virtual void addGlobalTriangle(FFace *f, int i);	
 	
 	/**
      * @brief   build CGAL-AABB-Tree from global mesh
