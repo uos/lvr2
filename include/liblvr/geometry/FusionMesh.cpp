@@ -266,25 +266,9 @@ template<typename VertexT, typename NormalT> void FusionMesh<VertexT, NormalT>::
 			std::pair<MapIterator,bool> const& r=global_vertices_map.insert(std::pair<VertexT, size_t>((VertexT)v->m_position, m_global_index));
 			
 				if (r.second) { // && (global_vertices_map.count(v->m_position) == 1)) {
-					if ((m_global_index == 35507 || m_global_index == 35508) && face->m_index[j] == 21967) {
-						cout << "count before insertion " << count << endl;
-						count = global_vertices_map.count((VertexT)v->m_position);
-						cout << "count after insertion " << count << endl;
-						count = global_vertices_map.count((VertexT)m_global_vertices[1]->m_position);
-						cout << "count of global vertex[1] " << count << endl;
-						
-						cout << v->m_position << endl;
-						cout << (VertexT)m_global_vertices[35460]->m_position << endl;
-						cout << (VertexT)m_local_vertices[21967]->m_position << endl;
-						cout << "comparison < " << ((VertexT)(m_global_vertices[35460]->m_position) < (VertexT)(v->m_position)) << endl;
-						cout << " > " << ((VertexT)(v->m_position) < (VertexT)(m_global_vertices[35460]->m_position)) << endl;
-						cout << "Index[" <<  "35460" << "] " << m_global_vertices[35460]->m_self_index << " vertex: " << face->m_index[j] << endl;
-					}
+// FEHLER: MANCHMAL WIRD NICHT ERKANNT DAS DIE VERTEX BEREITS IN DER MAP LIEGT
 					//cout << "added vertex" << endl;
 					addGlobalVertex(v);
-					if (m_global_index == 35507 || m_global_index == 35508) {
-						cout << "Index[" <<  "35460" << "] " << m_global_vertices[35460]->m_self_index << " vertex: " << face->m_index[j] << endl;
-					}
 					face->m_index[j] = v->m_self_index;
 					//cout << "m_self " << global_vertices_map[v->m_position] << endl;
 				} else {
@@ -304,60 +288,8 @@ template<typename VertexT, typename NormalT> void FusionMesh<VertexT, NormalT>::
 					else
 						face->vertices[j] = m_global_vertices[face->m_index[j]];
 				}
-				//trying to find error
-				/* int ind = m_global_index;
-				if(ind != m_global_vertices[ind]->m_self_index) 
-				cout << "Index[" <<  ind << "] " << m_global_vertices[i]->m_self_index << endl; 
-				*/
-			
-			/*
-			if(it == global_vertices_map.end())
-			{
-				cout << "Found it_index: " << it->second << endl;
-				
-				cout << "size " << global_vertices_map.size() <<endl;
-				cout << "addVertex" << endl;
-				
-				//cout << "end_index: " << it->second << endl;
-				
-				//cout << "before insertion " << v->m_self_index << "-" << v->m_position << endl;
-				
-				//addGlobalVertex(v);
-				//cout << "Insert new vertex with self_index: " << v->m_self_index << " current size: " << m_global_index <<endl;
-				global_vertices_map.insert(std::pair<VertexT, size_t>(v->m_position, v->m_self_index));
-				cout << "size " << global_vertices_map.size() <<endl <<endl;
-				
-				/*
-				face->m_index[j] = v->m_self_index;
-				if(	m_global_vertices[v->m_self_index]->m_self_index != v->m_self_index)
-				{
-					cout << "inconsistency during addglobal vertex" << endl;
-					cout << "global buffer " << 	m_global_vertices[v->m_self_index] << endl;
-					cout << "global buffer " << 	v->m_self_index << endl;
-				}
-				 * /
-			}
-			else
-			{	
-				cout << "already existent" << endl;
-				/*if (it->second != m_global_vertices[it->second]->m_self_index)
-				{	
-					//cout << "map position " << it->first << " local pos: " << v->m_position << "global pos:" << m_global_vertices[it->second]->m_position << endl;
-					cout << "Vertex already in buffer, map_int: " << it->second << " buffer id: " << m_global_vertices[it->second]->m_self_index << endl;
-				}
-				//cout << "Vertex already in global buffer at " << it->second << " should be equal to " << face->vertices[j]->m_self_index << endl;
-				//cout << "Vertex is bla" << it->first;
-				
-				face->m_index[j] = it->second;
-				face->vertices[j] = m_global_vertices[face->m_index[j]];
-				//face->vertices[j]->m_self_index = it->second;
-				//temp = it->second;
-				//cout << "Vertex already in global buffer at " << it->second << " should be equal to " << m_global_vertices[temp]->m_self_index << endl;
-				//cout << "Vertex is bla" << it->first;	
-				* /
-			}
-			*/
 		}
+		m_global_faces.push_back(face); 
     }
 	
 }
