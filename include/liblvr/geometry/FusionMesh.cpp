@@ -238,12 +238,6 @@ template<typename VertexT, typename NormalT> void FusionMesh<VertexT, NormalT>::
 
 template<typename VertexT, typename NormalT> void FusionMesh<VertexT, NormalT>::remoteIntegrate(vector<FFace*>& faces)
 {	
-	/*
-	MapIterator it;
-	it =  global_vertices_map.find(m_global_vertices[0]->m_position);
-	cout << "Found it_index: " << it->second << endl;
-	*/
-	
 	int degentFaces = 0;
 	
 	cout << "Start Remote Integrate..." << endl;
@@ -256,26 +250,20 @@ template<typename VertexT, typename NormalT> void FusionMesh<VertexT, NormalT>::
 		
 		for(int j = 0; j < 3; j++)
 		{
-			FVertex* v =  m_local_vertices[face->m_index[j]]; // vertices[j];
+			FVertex* v =  m_local_vertices[face->m_index[j]];
 			
-			
-			//int count = global_vertices_map.count((VertexT)v->m_position);
 			std::pair<MapIterator,bool> const& r=global_vertices_map.insert(std::pair<VertexT, size_t>((VertexT)v->m_position, m_global_index));
 			
 				if (r.second) { // && (global_vertices_map.count(v->m_position) == 1)) {
 // FEHLER: MANCHMAL WIRD NICHT ERKANNT DAS DIE VERTEX BEREITS IN DER MAP LIEGT
-					//cout << "added vertex" << endl;
 					addGlobalVertex(v);
 					face->m_index[j] = v->m_self_index;
 					face->vertices[j] = m_global_vertices[face->m_index[j]]; 
-					//cout << "m_self " << global_vertices_map[v->m_position] << endl;
 				} else {
 					
 					// value wasn't inserted because my_map[foo_obj] already existed.
 					// note: the old value is available through r.first->second
 					// and may not be "some value"
-					
-					//cout << "already have vertex " << endl;
 					 
 					face->m_index[j] = r.first->second;
 					
@@ -342,7 +330,7 @@ template<typename VertexT, typename NormalT> void FusionMesh<VertexT, NormalT>::
 	}
 }
 
-template<typename VertexT, typename NormalT> void FusionMesh<VertexT, NormalT>::sortFaces(vector<FFace*>& remote_faces, vector<FFace*>& integration_faces)
+template<typename VertexT, typename NormalT> void FusionMesh<VertexT, NormalT>::sortFaces(vector<FFace*>& remote_faces, vector<FFace*>& intersection_faces, vector<FFace*>& closeby_faces)
 {	
 	cout << timestamp << "Start Sorting Faces... " << endl <<endl;
 	
@@ -351,6 +339,8 @@ template<typename VertexT, typename NormalT> void FusionMesh<VertexT, NormalT>::
 	
 	redundant_faces = 0;
 	special_case_faces = 0;
+	int far_tree_intersect_fails = 0;
+	int close_tree_intersect_fails = 0;
 		
 	for(size_t i = 0; i < m_local_faces.size(); i++)
 	{		
@@ -378,7 +368,8 @@ template<typename VertexT, typename NormalT> void FusionMesh<VertexT, NormalT>::
 				result = tree.do_intersect(temp);
 			} catch (...)
 		    {
-				//cout << "i: " << i << " hier werf ich nen fehler" << endl;
+				far_tree_intersect_fails++;
+				//cout << "For face: " << i << " tree.do_intersect() fails" << endl;
 			}
 			if (result)
 			{
@@ -391,7 +382,7 @@ template<typename VertexT, typename NormalT> void FusionMesh<VertexT, NormalT>::
 				special_case_faces++;
 				// lassen wir erstmal ganz weg
 			}
-			//Best Case: detect non overlapping local face
+			//detected non overlapping local face
 			else
 			{
 				face->r = 0;
@@ -413,35 +404,40 @@ template<typename VertexT, typename NormalT> void FusionMesh<VertexT, NormalT>::
 
 		}
 		else
-		{
-				//partial overlaping, gaps etc. case
-				//cout << "found within distance" << endl;
-				//ggf. hier intersection erzwingen ?! (wall method s. paper)
-				
+		{	
 			  //  face->r = 100;
 			  //	face->g = 100;
 			  //	face->b = 0;
 			
-			/*if (tree.do_intersect(temp))
+			bool result = false;
+			try {
+				result = tree.do_intersect(temp);
+			} catch (...)
 			{
-				* 
-				*/
-			
+				close_tree_intersect_fails++;
+				//cout << "For face: " << i << " three.do_intersect() fails" << endl;
+			}
+			if(result) {
 				//cout << "found intersection within distance" << endl;
 				//find solution
 				face->r = 200;
 				face->g = 0;
 				face->b = 0;
 				
-				integration_faces.push_back(face);
-				
-				// integrieren wir erstmal einfach so
-			//}
-			
+				intersection_faces.push_back(face);
+			}
+			else {
+				//partial overlaping, gaps etc. case
+				//cout << "found within distance" << endl;
+				//ggf. hier intersection erzwingen ?! (wall method s. paper)
+				closeby_faces.push_back(face);
+			}
 		}
 	}
 	
 	printFaceSortingStatus();
+	cout << "For " << far_tree_intersect_fails << " of Special Case Faces call to tree.intersect() failed" << endl;
+	cout << "For " << close_tree_intersect_fails << " of Closeby Faces call to tree.intersect() failed" << endl << endl; 
     cout << timestamp << "Finished Sorting Faces..." << endl;
  	
 	/*face->m_index[0] = face->m_index[0] + increment;
@@ -458,14 +454,17 @@ template<typename VertexT, typename NormalT> void FusionMesh<VertexT, NormalT>::
 	size_t num_current_local_faces  = m_local_faces.size();
 	
 		double remote_ratio = ((double) remote_faces.size() / (double) num_current_local_faces) * 100;
-		double integration_ratio = ((double) integration_faces.size() / (double) num_current_local_faces) * 100;
+		double intersection_ratio = ((double) intersection_faces.size() / (double) num_current_local_faces) * 100;
+		double closeby_ratio = ((double) closeby_faces.size() / (double) num_current_local_faces) * 100;
 		double redundant_ratio = ((double) redundant_faces / (double) num_current_local_faces) * 100;
 		double special_case_ratio = ((double) special_case_faces  / (double) num_current_local_faces) * 100;
-		
+		cout << endl;
 		cout << "Found # " <<  remote_faces.size() << " Remote Faces... " << remote_ratio << "% of all incoming" << endl;
-		cout << "Found # " <<  integration_faces.size()  << " Integration Faces... " << integration_ratio << "% of all incoming" << endl;
+		cout << "Found # " <<  intersection_faces.size()  << " Intersection Faces... " << intersection_ratio << "% of all incoming" << endl;
+		cout << "Found # " <<  closeby_faces.size() << " Closeby but not intersecting Faces... " << closeby_ratio << "% of all incoming" << endl;
 		cout << "Found # " <<  redundant_faces  << " Redundant Faces... " << redundant_ratio << "% of all incoming" << endl;
 		cout << "Found # " <<  special_case_faces  << " Special Case Faces... " <<  special_case_ratio << "% of all incoming" << endl;		
+		cout << endl;
 }
 
 template<typename VertexT, typename NormalT> void FusionMesh<VertexT, NormalT>::integrate()
@@ -486,12 +485,12 @@ template<typename VertexT, typename NormalT> void FusionMesh<VertexT, NormalT>::
 		// for all faces in local buffer
 		// check whether to add face to tree/global buffer
 		
-		sortFaces(remote_faces, integration_faces);
+		sortFaces(remote_faces, intersection_faces, closeby_faces);
 		
 		//lazyIntegrate();
 		cout << "Start Integration" << endl;
 		remoteIntegrate(remote_faces);
-		//remoteIntegrate(integration_faces);
+		//remoteIntegrate(intersection_faces);
 	}
 	
     // for all faces in local buffer
