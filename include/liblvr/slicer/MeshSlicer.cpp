@@ -63,14 +63,14 @@ void MeshSlicer::addMesh(MeshBufferPtr mesh)
 	floatArr vert_tmp = mesh->getVertexArray(num_verts);
 	uintArr face_tmp = mesh->getFaceArray(num_faces);
 	
-	for(int i = 0; i < num_verts; i++)
+	for(size_t i = 0; i < num_verts; i++)
 	{
 		vertices.push_back(vert_tmp[3 * i]);
 		vertices.push_back(vert_tmp[3 * i + 1]); 
 		vertices.push_back(vert_tmp[3 * i + 2]);
 	}
 	
-	for(int i = 0; i < num_faces; i++)
+	for(size_t i = 0; i < num_faces; i++)
 	{
 		faces.push_back(face_tmp[3 * i]);
 		faces.push_back(face_tmp[3 * i + 1]); 
