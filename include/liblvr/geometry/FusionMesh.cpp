@@ -248,6 +248,8 @@ template<typename VertexT, typename NormalT> void FusionMesh<VertexT, NormalT>::
 	cout << "Found it_index: " << it->second << endl;
 	*/
 	
+	int degentFaces = 0;
+	
 	cout << "Start Remote Integrate..." << endl;
 	
 	MapIterator it;
@@ -258,23 +260,16 @@ template<typename VertexT, typename NormalT> void FusionMesh<VertexT, NormalT>::
 		
 		for(int j = 0; j < 3; j++)
 		{
-			FVertex* v =  m_local_vertices[face->m_index[j]]; // vertices[j];
-			
-			//cout << "Find in map: " << v->m_position << endl;
-			
-			//it = global_vertices_map.find(v->m_position);
-			
-			//cout << "Found it_index: " << it->second << endl;
-			
+			FVertex* v =  m_local_vertices[face->m_index[j]];
+
 			std::pair<MapIterator,bool> const& r=global_vertices_map.insert(std::pair<VertexT, size_t>(v->m_position, m_global_index));
 			
-				if (r.second) { 
-					cout << "added vertex" << endl;
+				if (r.second) { // && (global_vertices_map.count(v->m_position) == 1)) {
+// FEHLER: MANCHMAL WIRD NICHT ERKANNT DAS DIE VERTEX BEREITS IN DER MAP LIEGT
+					//cout << "added vertex" << endl;
 					addGlobalVertex(v);
-					if (m_global_index == 35507 || m_global_index == 35508) {
-						cout << "Index[" <<  "35460" << "] " << m_global_vertices[35460]->m_self_index << " vertex: " << face->m_index[j] << endl;
-					}
 					face->m_index[j] = v->m_self_index;
+					face->vertices[j] = m_global_vertices[face->m_index[j]]; 
 					//cout << "m_self " << global_vertices_map[v->m_position] << endl;
 				} else {
 					
@@ -282,72 +277,29 @@ template<typename VertexT, typename NormalT> void FusionMesh<VertexT, NormalT>::
 					// note: the old value is available through r.first->second
 					// and may not be "some value"
 					
-					cout << "already have vertex " << endl;
-					
+					//cout << "already have vertex " << endl;
+					 
 					face->m_index[j] = r.first->second;
+					
 					if(face->m_index[j] >= m_global_vertices.size())
 					{
 					    cout << r.first->first << " " << r.first->second << endl;
 						cout << "error: " <<  face->m_index[j] << " >=  " << m_global_vertices.size() << endl;
 					}
-					else
+					else {
 						face->vertices[j] = m_global_vertices[face->m_index[j]];
+					}
 				}
-				//trying to find error
-				/* int ind = m_global_index;
-				if(ind != m_global_vertices[ind]->m_self_index) 
-				cout << "Index[" <<  ind << "] " << m_global_vertices[i]->m_self_index << endl; 
-				*/
-			
-			/*
-			if(it == global_vertices_map.end())
-			{
-				cout << "Found it_index: " << it->second << endl;
-				
-				cout << "size " << global_vertices_map.size() <<endl;
-				cout << "addVertex" << endl;
-				
-				//cout << "end_index: " << it->second << endl;
-				
-				//cout << "before insertion " << v->m_self_index << "-" << v->m_position << endl;
-				
-				//addGlobalVertex(v);
-				//cout << "Insert new vertex with self_index: " << v->m_self_index << " current size: " << m_global_index <<endl;
-				global_vertices_map.insert(std::pair<VertexT, size_t>(v->m_position, v->m_self_index));
-				cout << "size " << global_vertices_map.size() <<endl <<endl;
-				
-				/*
-				face->m_index[j] = v->m_self_index;
-				if(	m_global_vertices[v->m_self_index]->m_self_index != v->m_self_index)
-				{
-					cout << "inconsistency during addglobal vertex" << endl;
-					cout << "global buffer " << 	m_global_vertices[v->m_self_index] << endl;
-					cout << "global buffer " << 	v->m_self_index << endl;
-				}
-				 * /
-			}
-			else
-			{	
-				cout << "already existent" << endl;
-				/*if (it->second != m_global_vertices[it->second]->m_self_index)
-				{	
-					//cout << "map position " << it->first << " local pos: " << v->m_position << "global pos:" << m_global_vertices[it->second]->m_position << endl;
-					cout << "Vertex already in buffer, map_int: " << it->second << " buffer id: " << m_global_vertices[it->second]->m_self_index << endl;
-				}
-				//cout << "Vertex already in global buffer at " << it->second << " should be equal to " << face->vertices[j]->m_self_index << endl;
-				//cout << "Vertex is bla" << it->first;
-				
-				face->m_index[j] = it->second;
-				face->vertices[j] = m_global_vertices[face->m_index[j]];
-				//face->vertices[j]->m_self_index = it->second;
-				//temp = it->second;
-				//cout << "Vertex already in global buffer at " << it->second << " should be equal to " << m_global_vertices[temp]->m_self_index << endl;
-				//cout << "Vertex is bla" << it->first;	
-				* /
-			}
-			*/
+		}
+		//check for degenerated faces
+		if (face->m_index[0] == face->m_index[1] || face->m_index[0] == face->m_index[2] || face->m_index[1] == face->m_index[2]) {
+			degentFaces++;
+		}	
+		else {
+			m_global_faces.push_back(face);
 		}
     }
+    cout << "Skipped " << degentFaces << " Faces due to degeneration" << endl;
 	
 }
 
@@ -557,7 +509,16 @@ template<typename VertexT, typename NormalT> void FusionMesh<VertexT, NormalT>::
      
     clearLocalBuffer();
    
-    cout << endl << "Errors" << endl;
+    cout << endl << "Face Errors" << endl;
+    for(unsigned int i = 0; i < m_global_faces.size(); i++)
+    {
+		if (m_global_faces[i]->m_index[0] >= m_global_index || m_global_faces[i]->m_index[1] >= m_global_index || m_global_faces[i]->m_index[2] >= m_global_index) {
+			cout << "Vertex Indices for Face[" << i << "]: " << m_global_faces[i]->m_index[0] << ", " << m_global_faces[i]->m_index[1] << ", " << m_global_faces[i]->m_index[0] << endl;
+			cout << "m_global_index: " << m_global_index << endl;
+		}
+	}
+    
+    cout << endl << "Vertice Errors" << endl;
     for(unsigned int i = 0; i < m_global_vertices.size(); i++)
     {
 		if(i != m_global_vertices[i]->m_self_index) 
@@ -587,7 +548,7 @@ template<typename VertexT, typename NormalT> void FusionMesh<VertexT, NormalT>::
 	
     cout << endl << timestamp << "Finalizing mesh..." << endl;
 
-    boost::unordered_map<FusionVertex<VertexT, NormalT>*, int> index_map;
+    //boost::unordered_map<FusionVertex<VertexT, NormalT>*, int> index_map;
 
     int numVertices = m_global_vertices.size();
     int numFaces 	= m_global_faces.size();
@@ -617,7 +578,7 @@ template<typename VertexT, typename NormalT> void FusionMesh<VertexT, NormalT>::
 
         // Map the vertices to a position in the buffer.
         // This is necessary since the old indices might have been compromised.
-        index_map[*vertices_iter] = i;
+        //index_map[*vertices_iter] = i;
     }
 
     typename vector<FusionFace<VertexT, NormalT>*>::iterator face_iter = m_global_faces.begin();
@@ -629,16 +590,16 @@ template<typename VertexT, typename NormalT> void FusionMesh<VertexT, NormalT>::
 		r=(float) (*face_iter)->r;
 		g=(float) (*face_iter)->g;
 		b=(float) (*face_iter)->b;
-		
+		/*
         indexBuffer[3 * i]      = index_map[m_global_vertices[(*face_iter)->m_index[0]]];
         indexBuffer[3 * i + 1]  = index_map[m_global_vertices[(*face_iter)->m_index[1]]];
         indexBuffer[3 * i + 2]  = index_map[m_global_vertices[(*face_iter)->m_index[2]]];
+		*/
 
-/*
 		indexBuffer[3 * i]      = (*face_iter)->m_index[0];
         indexBuffer[3 * i + 1]  = (*face_iter)->m_index[1];
         indexBuffer[3 * i + 2]  = (*face_iter)->m_index[2];
-*/
+
 	
         colorBuffer[indexBuffer[3 * i]  * 3 + 0] = r;
         colorBuffer[indexBuffer[3 * i]  * 3 + 1] = g;
