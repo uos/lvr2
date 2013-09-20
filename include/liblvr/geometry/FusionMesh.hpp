@@ -88,6 +88,7 @@ public:
 	typedef K::FT FT;
 	typedef K::Ray_3 Ray;
 	typedef K::Line_3 Line;
+	typedef K::Segment_3 Segment;
 	typedef K::Point_3 Point;
 	typedef K::Triangle_3 Triangle;
 	typedef std::list<Triangle>::iterator Iterator;
@@ -237,9 +238,10 @@ public:
      * @brief   Insert a new triangle into the the tree
      *
      * @param   remote_faces 			A buffer for all faces that can be added to the global buffer directly
-     * @param   integration_faces 		A buffer for all faces that need to be integrated 
+     * @param   intersection_faces 	A buffer for all faces that intersect with global mesh
+     * @param   closeby_faces 			A buffer for all faces that are close to but do not intersect with global mesh
      */
-	virtual void sortFaces(vector<FFace*>& remote_faces, vector<FFace*>& integration_faces, vector<FFace*>& closeby_faces );
+	virtual void sortFaces(vector<FFace*>& remote_faces, vector<FFace*>& intersection_faces, vector<FFace*>& closeby_faces );
 	
 	/**
      * @brief   Integrate the local buffer into the global fused mesh
@@ -258,6 +260,22 @@ public:
 	 *
      */
 	virtual void remoteIntegrate(vector<FFace*>& faces);
+	
+	/**
+     * @brief   Assigns to each vertex, which faces belong to it
+	 *
+     */
+	//virtual void addFacesToVertices();
+	
+	/**
+     * @brief   Sort clipping points of clipping edge from p to q
+	 *
+     * @param   points 			Vector of points to be sorted along a segment (line with start and end point)
+     * @param   p 					Start point of the segment
+     * @param   q 					End point of the segment 
+     * @param   sorted_points 		Vector of sorted points 
+     */
+	virtual void sortClippingPoints(vector<const Point*> points, Point p, Point q, vector<const Point*>& sorted_points);
 	
 	/**
      * @brief   Integrate intersection faces

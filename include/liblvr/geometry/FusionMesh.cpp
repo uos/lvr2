@@ -289,94 +289,125 @@ template<typename VertexT, typename NormalT> void FusionMesh<VertexT, NormalT>::
 	cout << "Finished Remote Integrate" << endl;
 }
 
+/*template<typename VertexT, typename NormalT> void FusionMesh<VertexT, NormalT>::addFacesToVertices()
+{
+	// currently only operating on elements in local Buffer
+	for(size_t i = 0; i < m_local_faces.size(); i++)
+    {
+		FFace* face = m_local_faces[i];
+		for(int j = 0; j < 3; j++)
+		{
+			FVertex* v =  m_local_vertices[face->m_index[j]];
+			v->m_face_indices.push_back(i);
+		}
+	}
+}*/
+
+template<typename VertexT, typename NormalT> void FusionMesh<VertexT, NormalT>::sortClippingPoints(vector<const Point*> points, Point p, Point q, vector<const Point*>& sorted_points)
+{
+	sorted_points.clear();
+	if (points.size() < 2) {
+		sorted_points = points;
+	}
+	else {
+		/*cout << "points size " << points.size() << endl;
+		cout << "p: " << p.x() << ", " << p.y() << ", " << p.z() << endl;
+		cout << "q: " << q.x() << ", " << q.y() << ", " << q.z() << endl;
+		Segment seg1 = Segment(p, q);
+		FT dist1 = seg1.squared_length();
+		cout << "dist p q: " << dist1 << endl;*/
+		while (points.size()>1) {
+			FT min_dist = 9999999;
+			int ind = 99;
+			//find closest point to p
+			for (int i = 0; i < points.size(); i++) {
+				Point temp(points[i]->x(), points[i]->y(), points[i]->z());
+				Segment seg = Segment(p, temp);
+				FT dist = seg.squared_length();
+				if (dist < min_dist) {
+					min_dist = dist;
+					ind = i;
+				}
+			}
+			sorted_points.push_back(points[ind]);
+			points.erase(points.begin()+ind);
+		}
+		sorted_points.push_back(points[0]);
+		/*cout << "distances of sorted points: ";
+		for (int i=0; i < sorted_points.size(); i++) {
+			Point temp(sorted_points[i]->x(), sorted_points[i]->y(), sorted_points[i]->z());
+			Segment seg = Segment(p, temp);
+			FT dist = seg.squared_length();
+			cout << dist << ", ";
+		}
+	cout << endl;*/	
+	}
+}
+
 template<typename VertexT, typename NormalT> void FusionMesh<VertexT, NormalT>::intersectIntegrate(vector<FFace*>& faces)
 {
 	cout << "Start Intersect Integrate..." << endl;
 	
+	//addFacesToVertices();
 	
-	//start with first Face, will need some structure in the future
+	//assuming our local mesh is Mesh B in the paper
+	// -> first step is to identify intersections on clip boundary (Figure 5 left)
 	
-	FFace* face = faces[2]; //für HornMesh case wo nur eine Vertice behalten wird
+	vector<int> bound_vertex;
+	vector<Point> bound_points;
+	list<Object_and_primitive_id> intersections;
+	Object_and_primitive_id op;
+	CGAL::Object object;
+	vector<const Point*> intersect_points;
+	vector<const Point*> sorted_points;
 	
-	//redundancy: already checked in SortFaces, maybe save somewhere and pass on
-	FVertex* v0 = m_local_vertices[face->m_index[0]];
-	FVertex* v1 = m_local_vertices[face->m_index[1]];
-	FVertex* v2 = m_local_vertices[face->m_index[2]];
-	Point a(v0->m_position.x, v0->m_position.y, v0->m_position.z);
-	Point b(v1->m_position.x, v1->m_position.y, v1->m_position.z);
-	Point c(v2->m_position.x, v2->m_position.y, v2->m_position.z);
-	Point points[3] = {a,b,c};  
-	FT dist_a = tree.squared_distance(a);
-	FT dist_b = tree.squared_distance(b);
-	FT dist_c = tree.squared_distance(c);
-	
-	//check which edges are far from global mesh and will be kept
-	// hier zwar komplizierte Abfrage, aber so müssen danach nur zwei Fälle behandelt werden
-	int k1 = 9; //indices of points, that will be kept
-	int k2 = 9;
-	int nok1 = 9; //indices of points, that will not be kept
-	int nok2 = 9;
-	int count_keep = 0;
-	if (dist_a > threshold) {
-		k1 = 0;
-		count_keep++;
-	}
-	else {
-		nok1 = 0;
-	}
-	if (dist_b > threshold) {
-		if (count_keep == 0) {
-			k1 = 1;
-			count_keep++;
+	//size_t i = 2;
+	for(size_t i = 0; i < faces.size(); i++)
+    {
+		FFace* face = faces[i];
+		bound_vertex.clear();
+		bound_points.clear();
+		for(int j = 0; j < 3; j++)
+		{
+			FVertex* v =  m_local_vertices[face->m_index[j]];
+			Point a(v->m_position.x, v->m_position.y, v->m_position.z);
+			FT dist = tree.squared_distance(a);
+			//check wether this vertex lies on the boundary
+			if (dist <= threshold) {
+				bound_vertex.push_back(j);
+				bound_points.push_back(a);
+			}
+		}
+		if (bound_vertex.size() == 2) {
+			// face has an edge thats part of the clipping boundary
+			intersections.clear();
+			Segment seg1 = Segment(bound_points[0], bound_points[1]);
+			//cout << "number of intersections: " << tree.number_of_intersected_primitives(seg1) << endl;
+			tree.all_intersections(seg1, back_inserter(intersections));
+			intersect_points.clear();
+			// for each clipping edge list all intersection points
+			while (!intersections.empty()) {
+				op = intersections.front();
+				intersections.pop_front();
+				object = op.first;
+				//check wether intersection object is a point
+				if (const Point* p = CGAL::object_cast<Point>(&object)) {
+					/* cout << "bound_points: " << bound_points[0].x() << ", " << bound_points[0].y() << ", " << bound_points[0].z() << endl;
+					cout <<  bound_points[1].x() << ", " << bound_points[1].y() << ", " << bound_points[1].z() << endl;
+					cout << "intersection is point: " << p->x() << ", " << p->y() << ", " << p->z() << endl; */
+					intersect_points.push_back(p);
+				}
+				else if (const Segment* segment = CGAL::object_cast<Segment>(&object)) {
+					cout << "should not be: somehow intersection is a segment not a point" << endl;
+				}
+			}
+			//sort points on clipping edge
+			sortClippingPoints(intersect_points, bound_points[0], bound_points[1], sorted_points);
+			
 		}
 		else {
-			k2 = 1;
-			count_keep++;
+			//cout << "no intersection found for clipping boundary, boundary extension necessary, local face number: " << i << endl;
 		}
-	}
-	else {
-		if (count_keep == 0) {
-			nok2 = 1;
-		}
-		else {
-			nok1 = 1;
-		}
-	}
-	if (dist_c > threshold) {
-		if (count_keep == 0) {
-			k1 = 2;
-			count_keep++;
-		}
-		else {
-			k2 = 2;
-			count_keep++;
-		}
-	}
-	else {
-		if (count_keep == 1) {
-			nok2 = 2;
-		}
-		else {
-			nok1 = 2;
-		}
-	}
-	if (count_keep > 2 || count_keep == 0) {
-		cout << "error: all or non vertices of an Integration face are supposed to be kept" << endl;
-	}
-	
-	cout << "keep: " << k1 << ", " << k2 << " throw away: " << nok1 << ", " << nok2 << " count_keep: " << count_keep << endl;
-	
-	//find intersection points and arrange new vertices and faces
-	if (count_keep == 1) {
-		Line line1 = Line(points[k1],points[nok1]);
-		Line line2 = Line(points[k1],points[nok2]);
-		
-		cout << "number of intersections: " << tree.number_of_intersected_primitives(line1) << endl;
-		list<Object_and_primitive_id> intersections;
-		tree.all_intersections(line1, back_inserter(intersections));
-		Object_and_primitive_id op = intersections.front();
-		CGAL::Object object = op.first;
-		//object type needs to be checked see CGAL Documentation
 	}
 	
 	//need to fill global_vertices_map
