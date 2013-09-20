@@ -1285,8 +1285,7 @@ void HalfEdgeMesh<VertexT, NormalT>::finalizeAndRetesselate( bool genTextures, f
     std::vector<unsigned int> materialIndexBuffer;
     std::vector<Material*> materialBuffer;
     std::vector<float> textureCoordBuffer;
-	std::vector<GlTexture*> texturedBuffer;
-	
+    std::vector<GlTexture*> texturedBuffer;
     // Reset used variables. Otherwise the getContours() function might not work quite as expected.
     for(size_t j=0; j<m_faces.size(); j++)
     {
@@ -1451,10 +1450,10 @@ void HalfEdgeMesh<VertexT, NormalT>::finalizeAndRetesselate( bool genTextures, f
         {
             t = texturizer->texturizePlane( contours[0] );
             if(t)
-            {
-                GlTexture* texture = new GlTexture(t->m_texture->m_data, t->m_texture->m_width, t->m_texture->m_height);
-                texturedBuffer.push_back(texture);
-                //t->m_texture->save(t->m_textureIndex);
+			{
+				GlTexture* texture = new GlTexture(t->m_texture->m_data, t->m_texture->m_width, t->m_texture->m_height);
+				texturedBuffer.push_back(texture);
+				//t->m_texture->save(t->m_textureIndex);
             }
         }
 
