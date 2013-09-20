@@ -310,12 +310,12 @@ template<typename VertexT, typename NormalT> void FusionMesh<VertexT, NormalT>::
 		sorted_points = points;
 	}
 	else {
-		/*cout << "points size " << points.size() << endl;
-		cout << "p: " << p.x() << ", " << p.y() << ", " << p.z() << endl;
-		cout << "q: " << q.x() << ", " << q.y() << ", " << q.z() << endl;
-		Segment seg1 = Segment(p, q);
-		FT dist1 = seg1.squared_length();
-		cout << "dist p q: " << dist1 << endl;*/
+		//cout << "points size " << points.size() << endl;
+		//cout << "p: " << p.x() << ", " << p.y() << ", " << p.z() << endl;
+		//cout << "q: " << q.x() << ", " << q.y() << ", " << q.z() << endl;
+		//Segment seg1 = Segment(p, q);
+		//FT dist1 = seg1.squared_length();
+		//cout << "dist p q: " << dist1 << endl;
 		while (points.size()>1) {
 			FT min_dist = 9999999;
 			int ind = 99;
@@ -354,6 +354,7 @@ template<typename VertexT, typename NormalT> void FusionMesh<VertexT, NormalT>::
 	// -> first step is to identify intersections on clip boundary (Figure 5 left)
 	
 	vector<int> bound_vertex;
+	int inner_vertex;
 	vector<Point> bound_points;
 	list<Object_and_primitive_id> intersections;
 	Object_and_primitive_id op;
@@ -361,7 +362,9 @@ template<typename VertexT, typename NormalT> void FusionMesh<VertexT, NormalT>::
 	vector<const Point*> intersect_points;
 	vector<const Point*> sorted_points;
 	
-	//size_t i = 2;
+	int count_changed_faces = 0;
+	int count_new_faces = 0;
+	
 	for(size_t i = 0; i < faces.size(); i++)
     {
 		FFace* face = faces[i];
@@ -376,6 +379,9 @@ template<typename VertexT, typename NormalT> void FusionMesh<VertexT, NormalT>::
 			if (dist <= threshold) {
 				bound_vertex.push_back(j);
 				bound_points.push_back(a);
+			}
+			else {
+				inner_vertex = j;
 			}
 		}
 		if (bound_vertex.size() == 2) {
@@ -392,26 +398,51 @@ template<typename VertexT, typename NormalT> void FusionMesh<VertexT, NormalT>::
 				object = op.first;
 				//check wether intersection object is a point
 				if (const Point* p = CGAL::object_cast<Point>(&object)) {
-					/* cout << "bound_points: " << bound_points[0].x() << ", " << bound_points[0].y() << ", " << bound_points[0].z() << endl;
-					cout <<  bound_points[1].x() << ", " << bound_points[1].y() << ", " << bound_points[1].z() << endl;
-					cout << "intersection is point: " << p->x() << ", " << p->y() << ", " << p->z() << endl; */
+					// cout << "bound_points: " << bound_points[0].x() << ", " << bound_points[0].y() << ", " << bound_points[0].z() << endl;
+					// cout <<  bound_points[1].x() << ", " << bound_points[1].y() << ", " << bound_points[1].z() << endl;
+					// cout << "intersection is point: " << p->x() << ", " << p->y() << ", " << p->z() << endl;
 					intersect_points.push_back(p);
 				}
 				else if (const Segment* segment = CGAL::object_cast<Segment>(&object)) {
 					cout << "should not be: somehow intersection is a segment not a point" << endl;
 				}
 			}
+			//FT dist1 = seg1.squared_length();
+			//cout << "length of clipping edge " << sqrt(dist1) << endl;
 			//sort points on clipping edge
 			sortClippingPoints(intersect_points, bound_points[0], bound_points[1], sorted_points);
 			
+			//create new faces by dividing current face
+			//first update face thats already in local buffer
+			cout << "local index before change " << m_local_index << endl;
+			addVertex(VertexT(sorted_points[0]->x(), sorted_points[0]->y(), sorted_points[0]->z()));
+			face->m_index[bound_vertex[1]] = m_local_index-1;
+			cout << "local index after change "<< m_local_index << endl;
+			face->r = 200;
+			face->g = 200;
+			face->b = 200;
+			count_changed_faces++;
+			// from now on add new faces to local buffer
+			for (int l = 1; l < sorted_points.size(); l++) {
+				addTriangle(m_local_index-1, m_local_index, face->m_index[inner_vertex]);
+				addVertex(VertexT(sorted_points[l]->x(), sorted_points[l]->y(), sorted_points[l]->z()));
+				// push back face so that it can be integrated into global buffer
+				faces.push_back(m_local_faces[m_local_faces.size()-1]);
+				count_new_faces++;
+				FFace* colorFace = m_local_faces[m_local_faces.size()-1];
+				colorFace->r = 200;
+				colorFace->g = 0;
+				colorFace->b = 0;
+			}
 		}
 		else {
 			//cout << "no intersection found for clipping boundary, boundary extension necessary, local face number: " << i << endl;
 		}
 	}
+	cout << "changed " << count_changed_faces << " faces" << endl;
+	cout << "added " << count_new_faces << " faces" << endl;
 	
-	//need to fill global_vertices_map
-	
+	remoteIntegrate(faces);
 	
 	cout << "Finished Intersect Integrate ..." << endl;
 }
@@ -524,9 +555,9 @@ template<typename VertexT, typename NormalT> void FusionMesh<VertexT, NormalT>::
 			//detected non overlapping local face
 			else
 			{
-				face->r = 0;
+				/*face->r = 0;
 				face->g = 0;
-				face->b = 200;
+				face->b = 200;*/
 				
 				remote_faces.push_back(face);
 
@@ -559,9 +590,9 @@ template<typename VertexT, typename NormalT> void FusionMesh<VertexT, NormalT>::
 			if(result) {
 				//cout << "found intersection within distance" << endl;
 				//find solution
-				face->r = 200;
+				face->r = 0;
 				face->g = 0;
-				face->b = 0;
+				face->b = 200;
 				
 				intersection_faces.push_back(face);
 			}
