@@ -88,8 +88,8 @@ public:
 	/// The vertex index in the mesh
 	size_t 				m_self_index;
 	
-	/// The vertex index in the mesh
-	//vector<int> 		m_face_indices;
+	/// The vertex faces index in the mesh
+	vector<int> 		m_face_indices;
 
 	/// Indicator if vertex is part of the mesh boundary
 	bool is_border_vertex;
