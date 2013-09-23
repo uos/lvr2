@@ -251,7 +251,6 @@ template<typename VertexT, typename NormalT> void FusionMesh<VertexT, NormalT>::
 		for(int j = 0; j < 3; j++)
 		{
 			FVertex* v =  m_local_vertices[face->m_index[j]];
-			
 			std::pair<MapIterator,bool> const& r=global_vertices_map.insert(std::pair<VertexT, size_t>((VertexT)v->m_position, m_global_index));
 			
 				if (r.second) { // && (global_vertices_map.count(v->m_position) == 1)) {
@@ -303,7 +302,7 @@ template<typename VertexT, typename NormalT> void FusionMesh<VertexT, NormalT>::
 	}
 }*/
 
-template<typename VertexT, typename NormalT> void FusionMesh<VertexT, NormalT>::sortClippingPoints(vector<const Point*> points, Point p, Point q, vector<const Point*>& sorted_points)
+/*template<typename VertexT, typename NormalT> void FusionMesh<VertexT, NormalT>::sortClippingPoints(vector<const Point*> points, Point p, Point q, vector<const Point*>& sorted_points)
 {
 	sorted_points.clear();
 	if (points.size() < 2) {
@@ -340,9 +339,9 @@ template<typename VertexT, typename NormalT> void FusionMesh<VertexT, NormalT>::
 			FT dist = seg.squared_length();
 			cout << dist << ", ";
 		}
-	cout << endl;*/	
+	cout << endl;	
 	}
-}
+}*/
 
 template<typename VertexT, typename NormalT> void FusionMesh<VertexT, NormalT>::intersectIntegrate(vector<FFace*>& faces)
 {
@@ -350,68 +349,90 @@ template<typename VertexT, typename NormalT> void FusionMesh<VertexT, NormalT>::
 	
 	//addFacesToVertices();
 	
-	//assuming our local mesh is Mesh B in the paper
-	// -> first step is to identify intersections on clip boundary (Figure 5 left)
-	
-	vector<int> bound_vertex;
-	int inner_vertex;
-	vector<Point> bound_points;
-	list<Object_and_primitive_id> intersections;
-	Object_and_primitive_id op;
-	CGAL::Object object;
+	vector<int> outer_vertex; //face index of vertices that will be replaced
+	vector<int> inner_vertex; //face index of vertices that will be kept
+	vector<Point> old_vertex_pos;
 	vector<const Point*> intersect_points;
-	vector<const Point*> sorted_points;
+	list<Object_and_primitive_id> intersections;
+	vector<FFace*> faces_to_add;
 	
 	int count_changed_faces = 0;
 	int count_new_faces = 0;
+	bool add = false;
 	
 	for(size_t i = 0; i < faces.size(); i++)
     {
 		FFace* face = faces[i];
-		bound_vertex.clear();
-		bound_points.clear();
+		outer_vertex.clear();
+		inner_vertex.clear();
+		old_vertex_pos.clear();
 		for(int j = 0; j < 3; j++)
 		{
 			FVertex* v =  m_local_vertices[face->m_index[j]];
 			Point a(v->m_position.x, v->m_position.y, v->m_position.z);
+			old_vertex_pos.push_back(a);
 			FT dist = tree.squared_distance(a);
 			//check wether this vertex lies on the boundary
 			if (dist <= threshold) {
-				bound_vertex.push_back(j);
-				bound_points.push_back(a);
+				outer_vertex.push_back(j);
 			}
 			else {
-				inner_vertex = j;
+				inner_vertex.push_back(j);
 			}
 		}
-		if (bound_vertex.size() == 2) {
-			// face has an edge thats part of the clipping boundary
-			intersections.clear();
-			Segment seg1 = Segment(bound_points[0], bound_points[1]);
-			//cout << "number of intersections: " << tree.number_of_intersected_primitives(seg1) << endl;
-			tree.all_intersections(seg1, back_inserter(intersections));
-			intersect_points.clear();
-			// for each clipping edge list all intersection points
-			while (!intersections.empty()) {
-				op = intersections.front();
-				intersections.pop_front();
-				object = op.first;
-				//check wether intersection object is a point
-				if (const Point* p = CGAL::object_cast<Point>(&object)) {
-					// cout << "bound_points: " << bound_points[0].x() << ", " << bound_points[0].y() << ", " << bound_points[0].z() << endl;
-					// cout <<  bound_points[1].x() << ", " << bound_points[1].y() << ", " << bound_points[1].z() << endl;
-					// cout << "intersection is point: " << p->x() << ", " << p->y() << ", " << p->z() << endl;
-					intersect_points.push_back(p);
+		if (inner_vertex.size() == 1) {
+			add = false;
+			// two vertices will change their position
+			for (int j = 0; j < 2; j++) {
+				// for each edge find intersection with global mesh, to determine new vertex position
+				intersections.clear();
+				intersect_points.clear();
+				Segment seg = Segment(old_vertex_pos[inner_vertex[0]], old_vertex_pos[outer_vertex[j]]);
+				tree.all_intersections(seg, back_inserter(intersections));
+				// for each clipping edge list all intersection points
+				while (!intersections.empty()) {
+					Object_and_primitive_id op = intersections.front();
+					intersections.pop_front();
+					CGAL::Object object = op.first;
+					//check wether intersection object is a point
+					if (const Point* p = CGAL::object_cast<Point>(&object)) {
+						intersect_points.push_back(p);
+					}
+					else if (const Segment* segment = CGAL::object_cast<Segment>(&object)) {
+						cout << "should not be: somehow intersection is a segment not a point" << endl;
+					}
 				}
-				else if (const Segment* segment = CGAL::object_cast<Segment>(&object)) {
-					cout << "should not be: somehow intersection is a segment not a point" << endl;
+				if(intersect_points.size() != 1) {
+					cout << "multiple and zero intersections are not handled yet" << endl;
+					add = false;
+					break;
+				}
+				else {
+					// change vertex position
+					FVertex* v =  m_local_vertices[face->m_index[outer_vertex[j]]];
+					v->m_position.x = intersect_points[0]->x();
+					v->m_position.y = intersect_points[0]->y();
+					v->m_position.z = intersect_points[0]->z();
+					
+					cout << "intersect_point: " << intersect_points[0]->x() << ", " << intersect_points[0]->y() << ", " << intersect_points[0]->z() << endl;
+					add = true;
+					face->r = 200;
+					face->g = 0;
+					face->b = 0;
 				}
 			}
-			//FT dist1 = seg1.squared_length();
-			//cout << "length of clipping edge " << sqrt(dist1) << endl;
-			//sort points on clipping edge
-			sortClippingPoints(intersect_points, bound_points[0], bound_points[1], sorted_points);
+			if (add) {
+				count_changed_faces++;
+				faces_to_add.push_back(face);
+				for (int j=0; j < 3; j++) {
+					cout << "Old vertex pos: " << old_vertex_pos[0] << ", " << old_vertex_pos[1] << ", " << old_vertex_pos[2] << endl;
+					cout << "new position: " << m_local_vertices[face->m_index[0]]->m_position << ", " << m_local_vertices[face->m_index[1]]->m_position << ", " << m_local_vertices[face->m_index[2]]->m_position << endl;
+				}
+			}
+		}
 			
+			
+			/*}
 			//create new faces by dividing current face
 			//first update face thats already in local buffer
 			cout << "local index before change " << m_local_index << endl;
@@ -433,16 +454,12 @@ template<typename VertexT, typename NormalT> void FusionMesh<VertexT, NormalT>::
 				colorFace->r = 200;
 				colorFace->g = 0;
 				colorFace->b = 0;
-			}
-		}
-		else {
-			//cout << "no intersection found for clipping boundary, boundary extension necessary, local face number: " << i << endl;
-		}
+			}*/
 	}
 	cout << "changed " << count_changed_faces << " faces" << endl;
 	cout << "added " << count_new_faces << " faces" << endl;
 	
-	remoteIntegrate(faces);
+	remoteIntegrate(faces_to_add);
 	
 	cout << "Finished Intersect Integrate ..." << endl;
 }
