@@ -24,9 +24,7 @@
  *  @author Ann-Katrin Häuser (ahaeuser@uos.de)
  *  @author Thomas Wiemann (twiemann@uos.de)
  */
-#include <CGAL/Range_segment_tree_traits.h>
-#include <CGAL/Range_tree_k.h>
-#include <CGAL/Cartesian.h>
+
 namespace lvr
 {
 
@@ -45,16 +43,6 @@ typedef CGAL::AABB_traits<K, Primitive> AABB_triangle_traits;
 typedef CGAL::AABB_tree<AABB_triangle_traits> Tree;
 typedef Tree::Object_and_primitive_id Object_and_primitive_id;
 typedef Tree::Primitive_id Primitive_id;
-
-
-typedef CGAL::Cartesian<double> K2;
-typedef CGAL::Range_segment_tree_set_traits_3<K2> Traits;
-typedef CGAL::Range_tree_3<Traits> Range_tree_3_type;
-typedef K2::Triangle_3 Triangle2;
-typedef K2::Point_3 Point2;
-
-typedef Traits::Key Key;                
-typedef Traits::Interval Interval;    
 
 ///
 /// Mesh Construction Methods
@@ -115,19 +103,15 @@ void MeshSlicer::clear()
 
 vector<float> MeshSlicer::compute2dSlice()
 {
-	cout << "Building Tree...";
 	buildTree(); 
-	cout << " Done." << endl;
-	cout << "Computing Intersections...";
 	computeIntersections(segments);
-	cout << " Done." << endl;
 	return output;
 }
 
 vector<float> MeshSlicer::compute2dProjection()
 {
-	//buildTree(); 
-	//computeProjections(segments);
+	buildTree(); 
+	computeProjections(segments);
 	return output;
 }
 
@@ -156,42 +140,7 @@ void MeshSlicer::buildTree()
 	}
 }
 
-void buildRangeTree()
-{
-  std::vector<Key> InputList, OutputList;
-  std::vector<Key>::iterator first, last, current;
-
-  Point2 a(1.0, 1.0, 1.0);
-  Point2 b(0.0, 0.0, 0.0);
-  Point2 c(2.0, 2.0, 2.0);
-  
-  Point2 d(11.0, 11.0, 11.0);
-  Point2 e(10.0, 10.0, 10.0);
-  Point2 f(12.0, 12.0, 12.0);
-  
-  Triangle2 t1(a,b,c);
-  Triangle2 t2(d,e,f);
-  
-  InputList.push_back(Key(t1));
-  //InputList.push_back(Key(8,5.1));
-  //InputList.push_back(Key(1,1.1));
-  //InputList.push_back(Key(3,2.1));
-
-  //InputList.push_back(Key(Triangle(d,e,f), 't2'));
-
-  //Range_tree_3_type Range_tree_3(InputList.begin(),InputList.end());
-  
-  //Interval win(Interval(K::Point_2(4,8.1), K::Point_2(5,8.2)));
-  //std::cout << "\n Window Query:\n ";
-  //Range_tree_2.window_query(win, std::back_inserter(OutputList));
-  //std::vector<Key>::iterator current=OutputList.begin();
-  //while(current!=OutputList.end()){
-  //  std::cout << (*current).first.x() << "," << (*current).first.y()
-  //       << ":" << (*current++).second << std::endl;
-  //}
-}
-
-Plane MeshSlicer::getQueryPlane()
+Plane MeshSlicer::getQueryPlane(string dimension, double value)
 {
 	Point  p;
 	
@@ -240,7 +189,7 @@ void MeshSlicer::computeIntersections(vector<Segment>& segments)
 {	
 	//cout << timestamp << "Start Computing Intersections... " << endl <<endl;
 
-	Plane  plane_query = getQueryPlane();
+	Plane  plane_query = getQueryPlane(dimension, value);
 
 	try
 	{
@@ -251,7 +200,7 @@ void MeshSlicer::computeIntersections(vector<Segment>& segments)
 		cout << "ERROR"<< endl;
 		cout << e.what() << endl;
 	}
-	
+
 	// computes all intersections with segment query (as pairs object - primitive_id)
 	std::list<Object_and_primitive_id> intersections;
 
@@ -285,7 +234,59 @@ void MeshSlicer::computeIntersections(vector<Segment>& segments)
 }
 
 void MeshSlicer::computeProjections(vector<Segment>& segments)
-{	
+{
+	
+	//cout << timestamp << "Start Computing Intersections... " << endl <<endl;
+	
+	double current_value = value;
+	double increment = offset / number_of_slices;
+	int i = 0; 
+	while(current_value < (value + offset))
+	{
+		Plane  plane_query = getQueryPlane(dimension, current_value);
+
+		try
+		{
+			cout << "Found " << tree.number_of_intersected_primitives(plane_query) << "intersections(s) with " << i  << "/" <<number_of_slices <<"th plane: " << plane_query << endl;
+		}
+		catch(CGAL::Precondition_exception e)
+		{
+			cout << "ERROR"<< endl;
+			cout << e.what() << endl;
+		}
+
+		// computes all intersections with segment query (as pairs object - primitive_id)
+		std::list<Object_and_primitive_id> intersections;
+
+		// BETTER LIST ALL SLICED TRIANGLES AND PROJECT THEM AFTER WARDS
+		tree.all_intersections(plane_query, std::back_inserter(intersections));
+		for (std::list<Object_and_primitive_id>::iterator it = intersections.begin(); it != intersections.end(); it++)
+		{
+			Object_and_primitive_id op = *it;
+			CGAL::Object object = op.first;
+			Segment segment;
+
+			if(CGAL::assign(segment,object))
+			{
+				segments.push_back(segment);
+			
+				output.push_back((float) segment.source().x());
+				output.push_back((float) segment.source().y());
+				output.push_back((float) segment.source().z());
+			
+				output.push_back((float) segment.target().x());
+				output.push_back((float) segment.target().y());
+				output.push_back((float) segment.target().z());
+			}
+			else std::cout << "ERROR: intersection object is unknown" << std::endl; 
+		}
+		
+		current_value += increment;
+		i++;
+	}
+	
+	cout << timestamp << "Finished Computing " << output.size()/3 << " Intersections in total." << endl;
+	
 }
 
 } // namespace lvr

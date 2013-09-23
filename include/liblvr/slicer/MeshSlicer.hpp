@@ -119,7 +119,7 @@ public:
      * @brief   Calculates the query plane
      *     
      */
-	virtual Plane getQueryPlane();
+	virtual Plane getQueryPlane(string dimension, double value);
 	
 	/**
      * @brief   Calculate all intersection with the desired plane 
@@ -191,6 +191,32 @@ public:
 	};
 	
 	/**
+	 * Sets the plane position 
+	 *
+	 * @param val 	value
+	 *
+	 */
+	 	 
+	void setOffset(double off)
+	{ 
+		offset = off;
+		
+	};
+	
+	/**
+	 * Sets the plane position 
+	 *
+	 * @param val 	value
+	 *
+	 */
+	 	 
+	void setNumberOfSlices(int n)
+	{ 
+		number_of_slices = n;
+		
+	};
+	
+	/**
      * @brief   Reset the Input Data Storage.
      */
 	virtual void clear();
@@ -215,6 +241,9 @@ private:
 	double	coord_y;
 	double	coord_z;
 	double	value;
+	
+	double offset;
+	double number_of_slices;
 };
 
 } // namespace lvr
