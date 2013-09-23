@@ -275,7 +275,7 @@ public:
      * @param   q 					End point of the segment 
      * @param   sorted_points 		Vector of sorted points 
      */
-	virtual void sortClippingPoints(vector<const Point*> points, Point p, Point q, vector<const Point*>& sorted_points);
+	//virtual void sortClippingPoints(vector<const Point*> points, Point p, Point q, vector<const Point*>& sorted_points);
 	
 	/**
      * @brief   Integrate intersection faces
