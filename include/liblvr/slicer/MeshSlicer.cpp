@@ -24,7 +24,9 @@
  *  @author Ann-Katrin Häuser (ahaeuser@uos.de)
  *  @author Thomas Wiemann (twiemann@uos.de)
  */
-
+#include <CGAL/Range_segment_tree_traits.h>
+#include <CGAL/Range_tree_k.h>
+#include <CGAL/Cartesian.h>
 namespace lvr
 {
 
@@ -43,6 +45,16 @@ typedef CGAL::AABB_traits<K, Primitive> AABB_triangle_traits;
 typedef CGAL::AABB_tree<AABB_triangle_traits> Tree;
 typedef Tree::Object_and_primitive_id Object_and_primitive_id;
 typedef Tree::Primitive_id Primitive_id;
+
+
+typedef CGAL::Cartesian<double> K2;
+typedef CGAL::Range_segment_tree_set_traits_3<K2> Traits;
+typedef CGAL::Range_tree_3<Traits> Range_tree_3_type;
+typedef K2::Triangle_3 Triangle2;
+typedef K2::Point_3 Point2;
+
+typedef Traits::Key Key;                
+typedef Traits::Interval Interval;    
 
 ///
 /// Mesh Construction Methods
@@ -144,6 +156,41 @@ void MeshSlicer::buildTree()
 	}
 }
 
+void buildRangeTree()
+{
+  std::vector<Key> InputList, OutputList;
+  std::vector<Key>::iterator first, last, current;
+
+  Point2 a(1.0, 1.0, 1.0);
+  Point2 b(0.0, 0.0, 0.0);
+  Point2 c(2.0, 2.0, 2.0);
+  
+  Point2 d(11.0, 11.0, 11.0);
+  Point2 e(10.0, 10.0, 10.0);
+  Point2 f(12.0, 12.0, 12.0);
+  
+  Triangle2 t1(a,b,c);
+  Triangle2 t2(d,e,f);
+  
+  InputList.push_back(Key(t1));
+  //InputList.push_back(Key(8,5.1));
+  //InputList.push_back(Key(1,1.1));
+  //InputList.push_back(Key(3,2.1));
+
+  //InputList.push_back(Key(Triangle(d,e,f), 't2'));
+
+  //Range_tree_3_type Range_tree_3(InputList.begin(),InputList.end());
+  
+  //Interval win(Interval(K::Point_2(4,8.1), K::Point_2(5,8.2)));
+  //std::cout << "\n Window Query:\n ";
+  //Range_tree_2.window_query(win, std::back_inserter(OutputList));
+  //std::vector<Key>::iterator current=OutputList.begin();
+  //while(current!=OutputList.end()){
+  //  std::cout << (*current).first.x() << "," << (*current).first.y()
+  //       << ":" << (*current++).second << std::endl;
+  //}
+}
+
 Plane MeshSlicer::getQueryPlane()
 {
 	Point  p;
@@ -220,10 +267,17 @@ void MeshSlicer::computeIntersections(vector<Segment>& segments)
 		if(CGAL::assign(segment,object))
 		{
 			segments.push_back(segment);		
+			
+			output.push_back((float) segment.source().x());
+			output.push_back((float) segment.source().y());
+			output.push_back((float) segment.source().z());
+			
 			output.push_back((float) segment.target().x());
 			output.push_back((float) segment.target().y());
 			output.push_back((float) segment.target().z());
-		}
+		
+			//cout << "Adding Segment from: " << ((float) segment.source().x()) << ", " << ((float) segment.source().y()) << ", " << ((float) segment.source().z()) << " to " << ((float) segment.target().x()) << ", " <<  ((float) segment.target().y() )<< ", " << ((float) segment.target().z()) << end;
+ 		}
 		else std::cout << "ERROR: intersection object is unknown" << std::endl; 
 	}
 
