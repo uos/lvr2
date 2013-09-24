@@ -353,6 +353,7 @@ template<typename VertexT, typename NormalT> void FusionMesh<VertexT, NormalT>::
 	vector<int> inner_vertex; //face index of vertices that will be kept
 	vector<Point> old_vertex_pos;
 	vector<const Point*> intersect_points;
+	vector<const Segment*> intersect_segments;
 	list<Object_and_primitive_id> intersections;
 	vector<FFace*> faces_to_add;
 	
@@ -380,57 +381,69 @@ template<typename VertexT, typename NormalT> void FusionMesh<VertexT, NormalT>::
 				inner_vertex.push_back(j);
 			}
 		}
-		if (inner_vertex.size() == 1) {
-			add = false;
-			// two vertices will change their position
-			for (int j = 0; j < 2; j++) {
-				// for each edge find intersection with global mesh, to determine new vertex position
-				intersections.clear();
-				intersect_points.clear();
-				Segment seg = Segment(old_vertex_pos[inner_vertex[0]], old_vertex_pos[outer_vertex[j]]);
-				tree.all_intersections(seg, back_inserter(intersections));
-				// for each clipping edge list all intersection points
-				while (!intersections.empty()) {
-					Object_and_primitive_id op = intersections.front();
-					intersections.pop_front();
-					CGAL::Object object = op.first;
-					//check wether intersection object is a point
-					if (const Point* p = CGAL::object_cast<Point>(&object)) {
-						intersect_points.push_back(p);
-					}
-					else if (const Segment* segment = CGAL::object_cast<Segment>(&object)) {
-						cout << "should not be: somehow intersection is a segment not a point" << endl;
-					}
-				}
-				if(intersect_points.size() != 1) {
-					cout << "multiple and zero intersections are not handled yet" << endl;
-					add = false;
-					break;
-				}
-				else {
-					// change vertex position
-					FVertex* v =  m_local_vertices[face->m_index[outer_vertex[j]]];
-					v->m_position.x = intersect_points[0]->x();
-					v->m_position.y = intersect_points[0]->y();
-					v->m_position.z = intersect_points[0]->z();
-					
-					cout << "intersect_point: " << intersect_points[0]->x() << ", " << intersect_points[0]->y() << ", " << intersect_points[0]->z() << endl;
-					add = true;
-					face->r = 200;
-					face->g = 0;
-					face->b = 0;
-				}
+		Triangle tri = Triangle(old_vertex_pos[0], old_vertex_pos[1], old_vertex_pos[2]);
+		intersections.clear();
+		intersect_segments.clear();
+		//find all intersections for current triangle
+		try {
+				tree.all_intersections(tri, back_inserter(intersections));
+		} catch (...)
+		{
+				cout << "tree.do_intersect() fails" << endl;
+		}
+		while (!intersections.empty()) {
+			Object_and_primitive_id op = intersections.front();
+			intersections.pop_front();
+			CGAL::Object object = op.first;
+			//check wether intersection object is a segment
+			if (const Segment* s = CGAL::object_cast<Segment>(&object)){
+				intersect_segments.push_back(s);
 			}
-			if (add) {
-				count_changed_faces++;
-				faces_to_add.push_back(face);
-				for (int j=0; j < 3; j++) {
-					cout << "Old vertex pos: " << old_vertex_pos[0] << ", " << old_vertex_pos[1] << ", " << old_vertex_pos[2] << endl;
-					cout << "new position: " << m_local_vertices[face->m_index[0]]->m_position << ", " << m_local_vertices[face->m_index[1]]->m_position << ", " << m_local_vertices[face->m_index[2]]->m_position << endl;
-				}
+			else if (const Point* p = CGAL::object_cast<Point>(&object)){
+				cout << "intersection is a point not a segment" << endl;
 			}
 		}
-			
+		if (intersect_segments.size() < 1) {
+			cout << "no intersection found, wrong sorting" << endl;
+		}
+		else {
+			// one vertex will keep its position
+			if (inner_vertex.size() == 1) {
+				for (int j = 0; j < 1/*intersect_segments.size()*/; j++) {
+					const Segment* seg = intersect_segments[j];
+					Segment temp = Segment(seg->source(), old_vertex_pos[outer_vertex[0]]);
+					Segment temp1 = Segment(seg->target(), old_vertex_pos[outer_vertex[0]]);
+					if (temp.squared_length() < temp1.squared_length()) {
+						//change outer_vertex[0] position to seg.source
+						FVertex* v =  m_local_vertices[face->m_index[outer_vertex[0]]];
+						v->m_position.x = seg->source().x();
+						v->m_position.y = seg->source().y();
+						v->m_position.z = seg->source().z();
+						v = m_local_vertices[face->m_index[outer_vertex[1]]];
+						v->m_position.x = seg->target().x();
+						v->m_position.y = seg->target().y();
+						v->m_position.z = seg->target().z();
+						cout << seg->vertex(1) << seg->vertex(2) << endl;
+					}
+					else {
+						//change outer_vertex[0] position to seg.target
+						FVertex* v =  m_local_vertices[face->m_index[outer_vertex[1]]];
+						v->m_position.x = seg->source().x();
+						v->m_position.y = seg->source().y();
+						v->m_position.z = seg->source().z();
+						v = m_local_vertices[face->m_index[outer_vertex[0]]];
+						v->m_position.x = seg->target().x();
+						v->m_position.y = seg->target().y();
+						v->m_position.z = seg->target().z();	
+					}
+				}
+				count_changed_faces++;
+				faces_to_add.push_back(face); 
+			}
+			// two vertices will keep their position
+			else if (inner_vertex.size() == 2) {
+			}
+		}	
 			
 			/*}
 			//create new faces by dividing current face
