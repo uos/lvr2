@@ -52,6 +52,8 @@
 #include <CGAL/AABB_triangle_primitive.h>
 #include <CGAL/Exact_predicates_inexact_constructions_kernel.h>
 #include <CGAL/Projection_traits_xy_3.h>
+#include <CGAL/Projection_traits_yz_3.h>
+#include <CGAL/Projection_traits_xz_3.h>
 #include <CGAL/Delaunay_triangulation_2.h>
 
 #include "Vertex.hpp"
@@ -101,9 +103,10 @@ public:
 	
 	typedef Tree::Object_and_primitive_id Object_and_primitive_id;
 	typedef CGAL::Exact_predicates_inexact_constructions_kernel K2;
-	typedef CGAL::Projection_traits_xy_3<K2>  Gt;
+	typedef CGAL::Projection_traits_xz_3<K2>  Gt;
 	typedef CGAL::Delaunay_triangulation_2<Gt> Delaunay;
 	typedef K2::Point_3 Point2;
+	typedef K2::Triangle_3 Triangle2;
 
 	struct cmpVertices {
 		bool operator()(const VertexT& a, const VertexT& b) const 
