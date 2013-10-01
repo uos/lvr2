@@ -377,12 +377,12 @@ template<typename VertexT, typename NormalT> void FusionMesh<VertexT, NormalT>::
 			FT dist = tree.squared_distance(a);
 			tri_points.push_back(a);
 			//check wether this vertex will be kept
-			if (dist <= threshold) {
+			if (dist > threshold) {
 				new_vertex_pos.push_back(a);
 			}
 		}
 		//determine intersection points and add to new_vertex_pos
-		Triangle tri = Triangle(tri_points[0], tri_points[1], tri_points[3]);
+		Triangle tri = Triangle(tri_points[0], tri_points[1], tri_points[2]);
 		intersections.clear();
 		intersect_segments.clear();
 		try {
@@ -527,13 +527,36 @@ template<typename VertexT, typename NormalT> void FusionMesh<VertexT, NormalT>::
 		Point2 p(new_vertex_pos[i].x(), new_vertex_pos[i].y(), new_vertex_pos[i].z());
 		dt.push_back(p);
 	}
-	for (int i = 0; i < new_vertex_pos.size(); i++) {
-		Point2 p(new_vertex_pos[i].x(), new_vertex_pos[i].y(), new_vertex_pos[i].z());
+	//add vertices and faces to local buffer
+	Delaunay::Finite_faces_iterator it;	
+	for (it = dt.finite_faces_begin(); it != dt.finite_faces_end(); it++)
+	{
+		Triangle2 tri = dt.triangle(it);
+		int count_to_close_vertices = 0;
+		for (int i = 0; i < 3; i++) {
+			Point2 p = tri.vertex(i);
+			Point a(p.x(), p.y(), p.z());
+			FT dist = tree.squared_distance(a);
+			if (dist <= threshold) {
+				count_to_close_vertices++;
+			}
+			addVertex(VertexT(p.x(), p.y(), p.z()));
+		}
+		if (count_to_close_vertices < 3) {
+			addTriangle(m_local_index-3, m_local_index-2, m_local_index-1);
+			new_faces.push_back(m_local_faces[m_local_faces.size()-1]);
+			FFace* colorFace = m_local_faces[m_local_faces.size()-1];
+			cout << m_local_vertices[colorFace->m_index[0]]->m_position << m_local_vertices[colorFace->m_index[1]]->m_position << m_local_vertices[colorFace->m_index[2]]->m_position << endl;
+				colorFace->r = 200;
+				colorFace->g = 0;
+				colorFace->b = 0;
+		}
+	}
+	remoteIntegrate(new_faces);
+	
 		//OutputltFaces fit;
 		//Face_handle start;
 		//dt.get_conflicts(p, fit, start);
-	}
-	
 	
 	//cout << "changed " << count_changed_faces << " faces" << endl;
 	//cout << "added " << count_new_faces << " faces" << endl;
