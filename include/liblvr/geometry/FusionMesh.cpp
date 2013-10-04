@@ -257,9 +257,11 @@ template<typename VertexT, typename NormalT> void FusionMesh<VertexT, NormalT>::
 			FVertex* v =  m_local_vertices[face->m_index[j]];
 			std::pair<MapIterator,bool> const& r=global_vertices_map.insert(std::pair<VertexT, size_t>((VertexT)v->m_position, m_global_index));
 
-			
-				if (r.second) { // && (global_vertices_map.count(v->m_position) == 1)) {
-// FEHLER: MANCHMAL WIRD NICHT ERKANNT DAS DIE VERTEX BEREITS IN DER MAP LIEGT
+				if (r.second) 
+				{ 
+					
+					// && (global_vertices_map.count(v->m_position) == 1)) {
+					// FEHLER: MANCHMAL WIRD NICHT ERKANNT DAS DIE VERTEX BEREITS IN DER MAP LIEGT
 					addGlobalVertex(v);
 					face->m_index[j] = v->m_self_index;
 					face->vertices[j] = m_global_vertices[face->m_index[j]]; 
@@ -354,7 +356,8 @@ template<typename VertexT, typename NormalT> void FusionMesh<VertexT, NormalT>::
 	
 	//addFacesToVertices();
 	
-	/* before Delauny try
+	/*
+	before Delauny try
 	vector<int> outer_vertex; //face index of vertices that will be replaced
 	vector<int> inner_vertex; //face index of vertices that will be kept
 	vector<Point> old_vertex_pos;
@@ -364,7 +367,8 @@ template<typename VertexT, typename NormalT> void FusionMesh<VertexT, NormalT>::
 	vector<FFace*> faces_to_add;
 	int count_changed_faces = 0;
 	int count_new_faces = 0;
-	bool add = false; */
+	bool add = false; 
+	*/
 	
 	vector<Point> new_vertex_pos;
 	vector<Point> tri_points;
@@ -415,7 +419,8 @@ template<typename VertexT, typename NormalT> void FusionMesh<VertexT, NormalT>::
 			p = seg->target();
 			new_vertex_pos.push_back(p);
 		}
-		/* before Delauny try
+		/* 
+		before Delauny try
 		FFace* face = faces[i];
 		outer_vertex.clear();
 		inner_vertex.clear();
@@ -519,14 +524,17 @@ template<typename VertexT, typename NormalT> void FusionMesh<VertexT, NormalT>::
 				colorFace->r = 200;
 				colorFace->g = 0;
 				colorFace->b = 0;
-			}*/
+			}
+			*/
 	}
 	//Delauny Triangulation
-	/*vector<Point>::iterator begin;
+	/*
+	vector<Point>::iterator begin;
 	vector<Point>::iterator end;
 	begin = new_vertex_pos.begin();
 	end = new_vertex_pos.end();
-	Delaunay dt(begin,end);*/
+	Delaunay dt(begin,end);
+	*/
 	Delaunay dt;
 	for (int i = 0; i < new_vertex_pos.size(); i++) {
 		Point2 p(new_vertex_pos[i].x(), new_vertex_pos[i].y(), new_vertex_pos[i].z());
