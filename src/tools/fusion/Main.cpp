@@ -110,6 +110,7 @@ int main(int argc, char** argv)
 		
 		FusionMesh<fVertex, fNormal> mesh;
 		
+		mesh.setVerbosity(options.getVerbosity());
 		mesh.setDistanceThreshold(options.getDistanceTreshold());
 		
 		// Load and integrate meshes

@@ -39,7 +39,9 @@ Options::Options(int argc, char** argv) : m_descr("Supported options")
 		        ("mesh2", value< vector<string> >(), "Input file name for mesh2. Supported formats are .ply")
 		        ("fusion", value< vector<string> >(), "Input file name for mesh2. Supported formats are .ply")
 		        ("t", value< vector<double> >(), "Distance treshold for AABB Search.")
+				("v", "Verbosity On.")
         ;
+		;
 
 	m_pdescr.add("mesh1", -1);
 	m_pdescr.add("mesh2", -1);
@@ -48,15 +50,20 @@ Options::Options(int argc, char** argv) : m_descr("Supported options")
 	store(command_line_parser(argc, argv).options(m_descr).positional(m_pdescr).run(), m_variables);
 	notify(m_variables);
 
-  if(m_variables.count("help")) {
+  if(m_variables.count("help")) 
+  {
 	  
     ::std::cout<< m_descr << ::std::endl;
-  
   }
 }
 
 Options::~Options() {
 	// TODO Auto-generated destructor stub
+}
+
+bool Options::getVerbosity() const
+{
+	return (m_variables.count("v"));
 }
 
 string Options::getMesh1FileName() const
