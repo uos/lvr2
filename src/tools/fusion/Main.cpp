@@ -112,8 +112,6 @@ int main(int argc, char** argv)
 		
 		mesh.setDistanceThreshold(options.getDistanceTreshold());
 		
-		cout << timestamp << "here" << endl;
-		
 		// Load and integrate meshes
 		mesh.addMesh(mesh_buffer1);
 		mesh.lazyIntegrate();

@@ -415,11 +415,11 @@ bool Region<VertexT, NormalT>::detectFlicker(HFace* f)
 template<typename VertexT, typename NormalT>
 Region<VertexT, NormalT>::~Region()
 {
-	for (size_t i = 0; i < m_faces.size(); i++)
+/*	for (size_t i = 0; i < m_faces.size(); i++)
 	{
 		delete m_faces[i];
 	}
-	m_faces.clear();
+	m_faces.clear();*/
 }
 
 }

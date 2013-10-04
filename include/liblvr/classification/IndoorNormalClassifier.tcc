@@ -89,7 +89,7 @@ template<typename VertexT, typename NormalT>
 RegionLabel IndoorNormalClassifier<VertexT, NormalT>::classifyRegion(int index)
 {
 
-	if(index < this->m_regions->size())
+	if((unsigned int) index < this->m_regions->size())
 	{
 		NormalT n_ceil(0.0, 1.0, 0.0);
 		NormalT n_floor(0.0, -1.0, 0.0);
@@ -125,7 +125,7 @@ void IndoorNormalClassifier<VertexT, NormalT>::createRegionBuffer(
 				vector<uint> &colors
 				)
 {
-	int index_counter = 0;
+	//int index_counter = 0;
 	int	vertex_position = 0;
 
 	Region<VertexT, NormalT>* region = this->m_regions->at(region_id);
@@ -133,7 +133,7 @@ void IndoorNormalClassifier<VertexT, NormalT>::createRegionBuffer(
 	// Check if region is a planar cluster
 	VertexT current;
 	NormalT normal;
-	for(int a = 0; a < region->m_faces.size(); a++)
+	for(unsigned int a = 0; a < region->m_faces.size(); a++)
 	{
 		for(int d = 0; d < 3; d++)
 		{
@@ -189,6 +189,7 @@ void IndoorNormalClassifier<VertexT, NormalT>::writeBuffers(
 	case Ceiling 	: str_label = "Ceiling"; 	break;
 	case Floor		: str_label = "Floor";		break;
 	case Wall		: str_label = "Wall";		break;
+	case Unknown	: return;
 	}
 
 	out << str_label << c << endl;
@@ -230,7 +231,7 @@ void IndoorNormalClassifier<VertexT, NormalT>::writeMetaInfo()
 	vector<float> 	uc_normals;
 	map<VertexT, int> uc_vertex_map;
 
-	for(int i = 0; i < this->m_regions->size(); i++)
+	for(unsigned int i = 0; i < this->m_regions->size(); i++)
 	{
 		// Get current region and label
 		Region<VertexT, NormalT>* region = this->m_regions->at(i);
