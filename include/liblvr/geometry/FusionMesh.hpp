@@ -323,10 +323,22 @@ public:
 	 * @param t 	distance treshold
 	 *
 	 */
-	 
 	void setDistanceThreshold(double_t t) {threshold = t*t;};
 
+
+	/**
+	 * Sets verbosity level
+	 *
+	 * @param v 	verboisity level
+	 *
+	 */
+	void setVerbosity(bool v) {verbose = v;};
+
+
 private:
+
+	/// verbosity flag
+	bool verbose;
 
 	/// The faces in the fusion buffer 
 	vector<FusionFace<VertexT, NormalT>*>   m_local_faces;
