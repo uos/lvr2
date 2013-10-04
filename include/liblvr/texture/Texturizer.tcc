@@ -241,7 +241,7 @@ template<typename VertexT, typename NormalT>
 void Texturizer<VertexT, NormalT>::filterByCrossCorr(vector<Texture*> &textures, Texture* refTexture)
 {
 	//filter by CC
-	for (int i = 0; i < textures.size(); i++)
+	for (unsigned int i = 0; i < textures.size(); i++)
 	{
 		float dist = ImageProcessor::compareTexturesCrossCorr(textures[i], refTexture);
 		textures[i]->m_distance += dist;
@@ -253,7 +253,7 @@ void Texturizer<VertexT, NormalT>::filterByStats(vector<Texture*> &textures, Tex
 	vector<Texture*> toDelete;
 
 	//filter by stats
-	for (int i = 0; i < textures.size(); i++)
+	for (unsigned int i = 0; i < textures.size(); i++)
 	{
 		float dist = ImageProcessor::compareTexturesStats(textures[i], refTexture);
 		if(dist > threshold)
@@ -264,7 +264,7 @@ void Texturizer<VertexT, NormalT>::filterByStats(vector<Texture*> &textures, Tex
 	}	
 	
 	//delete bad matches
-	for (int d = 0; d < toDelete.size(); d++)
+	for (unsigned int d = 0; d < toDelete.size(); d++)
 	{
 		textures.erase(find(textures.begin(), textures.end(), toDelete[d]));
 	}	
@@ -275,7 +275,7 @@ void Texturizer<VertexT, NormalT>::filterByFeatures(vector<Texture*> &textures, 
 	vector<Texture*> toDelete;
 
 	//filter by features
-	for (int i = 0; i < textures.size(); i++)
+	for (unsigned int i = 0; i < textures.size(); i++)
 	{
 		float dist = ImageProcessor::compareTexturesSURF(textures[i], refTexture);
 		if(dist > threshold)
@@ -286,7 +286,7 @@ void Texturizer<VertexT, NormalT>::filterByFeatures(vector<Texture*> &textures, 
 	}	
 	
 	//delete bad matches
-	for (int d = 0; d < toDelete.size(); d++)
+	for (unsigned int d = 0; d < toDelete.size(); d++)
 	{
 		textures.erase(find(textures.begin(), textures.end(), toDelete[d]));
 	}	
@@ -300,7 +300,7 @@ void Texturizer<VertexT, NormalT>::filterByNormal(vector<Texture*> &textures, ve
 	NormalT n = (contour[1] - contour[0]).cross(contour[2]-contour[0]);
 	
 	//filter by normal
-	for (int i = 0; i < textures.size(); i++)
+	for (unsigned int i = 0; i < textures.size(); i++)
 	{
 		if(Texturizer<VertexT, NormalT>::classifyNormal(n) != textures[i]->m_textureClass)
 		{
@@ -309,7 +309,7 @@ void Texturizer<VertexT, NormalT>::filterByNormal(vector<Texture*> &textures, ve
 	}	
 	
 	//delete bad matches
-	for (int d = 0; d < toDelete.size(); d++)
+	for (unsigned int d = 0; d < toDelete.size(); d++)
 	{
 		textures.erase(find(textures.begin(), textures.end(), toDelete[d]));
 	}	
@@ -334,7 +334,7 @@ TextureToken<VertexT, NormalT>* Texturizer<VertexT, NormalT>::texturizePlane(vec
 		initialTexture = createInitialTexture(contour);
 
 		//reset distance values
-		for (int i = 0; i < this->m_tio->m_textures.size(); i++)
+		for (unsigned int i = 0; i < this->m_tio->m_textures.size(); i++)
 		{
 			this->m_tio->m_textures[i]->m_distance = 0;
 		}
