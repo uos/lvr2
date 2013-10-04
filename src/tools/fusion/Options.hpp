@@ -64,6 +64,11 @@ public:
 	 * @brief	Returns true if an output filen name was set
 	 */
 	bool	outputFileNameSet() const;
+	
+	/**
+	 * @brief	Returns the verbosity level
+	 */
+	bool 	getVerbosity() const;
 
 	/**
 	 * @brief	Returns the output file name
