@@ -652,7 +652,6 @@ template<typename VertexT, typename NormalT> void FusionMesh<VertexT, NormalT>::
 	if(verbose)
 	{
 		cout << timestamp << "Start Sorting Faces... " << endl <<endl;
-	
 		cout << "Distance Threshold: " << sqrt(threshold) << endl;
 		cout << "Squared Distance Threshold: " << threshold << endl;
 	}
