@@ -190,18 +190,18 @@ public:
 		
 	};
 	
-	/**
-	 * Sets the plane position 
-	 *
-	 * @param val 	value
-	 *
-	 */
-	 	 
-	void setOffset(double off)
+		void setMinValue(double min)
 	{ 
-		offset = off;
+		min_value = min;
 		
 	};
+	
+		void setMaxValue(double max)
+	{ 
+		max_value = max;
+		
+	};
+	
 	
 	/**
 	 * Sets the plane position 
@@ -210,9 +210,15 @@ public:
 	 *
 	 */
 	 	 
-	void setNumberOfSlices(int n)
+	void setResolution(double res)
 	{ 
-		number_of_slices = n;
+		resolution = res;
+		
+	};
+	
+	void setVerbosity(bool v)
+	{ 
+		verbose = v;
 		
 	};
 	
@@ -222,6 +228,8 @@ public:
 	virtual void clear();
 
 private:
+
+	bool verbose;
 
 	/// Input Data
 	 size_t num_verts, num_faces;
@@ -240,10 +248,11 @@ private:
 	double	coord_x;
 	double	coord_y;
 	double	coord_z;
-	double	value;
 	
-	double offset;
-	double number_of_slices;
+	double	value;
+	double min_value;
+	double max_value;
+	double resolution;
 };
 
 } // namespace lvr
