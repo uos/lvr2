@@ -45,12 +45,14 @@ typedef CGAL::AABB_tree<AABB_triangle_traits> Tree;
 
 template<typename VertexT, typename NormalT> FusionMesh<VertexT, NormalT>::FusionMesh()
 {
+   verbose = false;
    clearLocalBuffer();
    clearGlobalBuffer();
 }
 
 template<typename VertexT, typename NormalT> FusionMesh<VertexT, NormalT>::FusionMesh(MeshBufferPtr mesh)
 {
+   verbose = false;
    clearLocalBuffer();
    clearGlobalBuffer();
    addMesh(mesh);
@@ -114,7 +116,6 @@ template<typename VertexT, typename NormalT> void FusionMesh<VertexT, NormalT>::
     for(size_t i = 0; i < num_verts; i++)
     {
         addVertex(VertexT(vertices[3 * i], vertices[3 * i + 1], vertices[3 * i + 2]));
-		
     }
     
     // Add all faces
@@ -132,9 +133,7 @@ template<typename VertexT, typename NormalT> void FusionMesh<VertexT, NormalT>::
          addNormal(NormalT(normals[3 * i], normals[3 * i + 1], normals[3 * i + 2]));
 		
     } 
-    
     */ 
-
 }
 
 ///
@@ -144,7 +143,7 @@ template<typename VertexT, typename NormalT> void FusionMesh<VertexT, NormalT>::
 template<typename VertexT, typename NormalT> void FusionMesh<VertexT, NormalT>::clearLocalBuffer()
 {
 	m_local_index = 0;
-	m_local_vertices.clear();	
+	m_local_vertices.clear();
 	m_local_faces.clear();
 
 }
@@ -152,7 +151,7 @@ template<typename VertexT, typename NormalT> void FusionMesh<VertexT, NormalT>::
 template<typename VertexT, typename NormalT> void FusionMesh<VertexT, NormalT>::clearGlobalBuffer()
 {
 	m_global_index = 0;
-	m_global_vertices.clear();	
+	m_global_vertices.clear();
 	m_global_faces.clear();
 }
 
@@ -189,29 +188,31 @@ template<typename VertexT, typename NormalT> void FusionMesh<VertexT, NormalT>::
   
     
     m_global_index++; // = m_global_vertices.size() - 1;   
-	
-	
+
    // cout << "Adding Global Vertex at global buffer position " << m_global_index <<  endl;
    // cout << "m_Self_index " << v->m_self_index <<  endl;
 
 }
 
 template<typename VertexT, typename NormalT> void FusionMesh<VertexT, NormalT>::addGlobalTriangle(FFace *face, int increment)
-{		
+{
 	face->m_index[0] = face->m_index[0] + increment;
 	face->m_index[1] = face->m_index[1] + increment;
 	face->m_index[2] = face->m_index[2] + increment;
-	
+
 	m_global_faces.push_back(face);   
    // cout << "Adding Global Face - " << face->m_index[0] << " " << face->m_index[1] << " " << face->m_index[2] << " " << endl;
 }
 
 template<typename VertexT, typename NormalT> void FusionMesh<VertexT, NormalT>::lazyIntegrate()
 {
-	cout <<endl << timestamp << "Start Lazy Integration..." << endl << endl;
+	if(verbose)
+	{
+		cout <<endl << timestamp << "Start Lazy Integration..." << endl << endl;
+		//printLocalBufferStatus();
+		//printGlobalBufferStatus();
 	
-	//printLocalBufferStatus();
-	//printGlobalBufferStatus();
+	}
 	
 	size_t num_current_local_vertices  = m_local_vertices.size();
 	size_t num_current_local_faces  = m_local_faces.size();
@@ -233,19 +234,24 @@ template<typename VertexT, typename NormalT> void FusionMesh<VertexT, NormalT>::
     
     clearLocalBuffer();
     
-    cout << endl << timestamp << "Finished Lazy Integration..." << endl << endl;
+    if(verbose)
+    {
+		cout << endl << timestamp << "Finished Lazy Integration..." << endl << endl;
 	
-	//printLocalBufferStatus();
-	//printGlobalBufferStatus();
-	
+		//printLocalBufferStatus();
+		//printGlobalBufferStatus();
+	}
 }
 
 template<typename VertexT, typename NormalT> void FusionMesh<VertexT, NormalT>::remoteIntegrate(vector<FFace*>& faces)
 {	
-	int degentFaces = 0;
 	
-	cout << "Start Remote Integrate..." << endl;
+	if(verbose)
+    {
+		cout << timestamp << " Start Remote Integrate..." << endl;
+	}
 	
+	int degeneratedFaces = 0;
 	MapIterator it;
 	
 	for(size_t i = 0; i < faces.size(); i++)
@@ -259,14 +265,14 @@ template<typename VertexT, typename NormalT> void FusionMesh<VertexT, NormalT>::
 
 				if (r.second) 
 				{ 
-					
 					// && (global_vertices_map.count(v->m_position) == 1)) {
 					// FEHLER: MANCHMAL WIRD NICHT ERKANNT DAS DIE VERTEX BEREITS IN DER MAP LIEGT
 					addGlobalVertex(v);
 					face->m_index[j] = v->m_self_index;
 					face->vertices[j] = m_global_vertices[face->m_index[j]]; 
-				} else {
-					
+				}
+				else
+				{
 					// value wasn't inserted because my_map[foo_obj] already existed.
 					// note: the old value is available through r.first->second
 					// and may not be "some value"
@@ -284,15 +290,21 @@ template<typename VertexT, typename NormalT> void FusionMesh<VertexT, NormalT>::
 				}
 		}
 		//check for degenerated faces
-		if (face->m_index[0] == face->m_index[1] || face->m_index[0] == face->m_index[2] || face->m_index[1] == face->m_index[2]) {
-			degentFaces++;
-		}	
-		else {
+		if (face->m_index[0] == face->m_index[1] || face->m_index[0] == face->m_index[2] || face->m_index[1] == face->m_index[2]) 
+		{
+			degeneratedFaces++;
+		}
+		else
+		{
 			m_global_faces.push_back(face);
 		}
     }
-    cout << "Skipped " << degentFaces << " Faces due to degeneration" << endl;
-	cout << "Finished Remote Integrate" << endl;
+    
+    if(verbose)
+    {
+		cout << "Skipped " << degeneratedFaces << " Faces due to degeneration" << endl;
+		cout << timestamp << " Finished Remote Integrate" << endl;
+	}
 }
 
 /*template<typename VertexT, typename NormalT> void FusionMesh<VertexT, NormalT>::addFacesToVertices()
@@ -352,8 +364,10 @@ template<typename VertexT, typename NormalT> void FusionMesh<VertexT, NormalT>::
 
 template<typename VertexT, typename NormalT> void FusionMesh<VertexT, NormalT>::intersectIntegrate(vector<FFace*>& faces)
 {
-	cout << "Start Intersect Integrate..." << endl;
-	
+	if(verbose)
+	{
+		cout << timestamp << " Start Intersect Integrate..." << endl;
+	}
 	//addFacesToVertices();
 	
 	/*
@@ -575,8 +589,10 @@ template<typename VertexT, typename NormalT> void FusionMesh<VertexT, NormalT>::
 	//cout << "added " << count_new_faces << " faces" << endl;
 	
 	//remoteIntegrate(faces_to_add);
-	
-	cout << "Finished Intersect Integrate ..." << endl;
+	if(verbose)
+	{
+		cout << timestamp << " Finished Intersect Integrate ..." << endl;
+	}
 }
 
 template<typename VertexT, typename NormalT> void FusionMesh<VertexT, NormalT>::buildTree()
@@ -603,6 +619,17 @@ template<typename VertexT, typename NormalT> void FusionMesh<VertexT, NormalT>::
 		
 		tree.clear();
 		tree.insert(triangles.begin(), triangles.end());
+		
+		bool result = tree.accelerate_distance_queries();
+		if (result && verbose) 
+		{
+			cout << "successfully accelerated_distance_queries" << endl; 
+		}
+		else
+		{
+			cout << "could not accelerate aabb tree" << endl;
+		}
+	
 	}	
 }
 
@@ -622,20 +649,18 @@ template<typename VertexT, typename NormalT> void FusionMesh<VertexT, NormalT>::
 
 template<typename VertexT, typename NormalT> void FusionMesh<VertexT, NormalT>::sortFaces(vector<FFace*>& remote_faces, vector<FFace*>& intersection_faces, vector<FFace*>& closeby_faces)
 {	
-	cout << timestamp << "Start Sorting Faces... " << endl <<endl;
+	if(verbose)
+	{
+		cout << timestamp << "Start Sorting Faces... " << endl <<endl;
 	
-	cout << "Distance Threshold: " << sqrt(threshold) << endl;
-	cout << "Squared Distance Threshold: " << threshold << endl;
+		cout << "Distance Threshold: " << sqrt(threshold) << endl;
+		cout << "Squared Distance Threshold: " << threshold << endl;
+	}
 	
 	redundant_faces = 0;
 	special_case_faces = 0;
 	int far_tree_intersect_fails = 0;
 	int close_tree_intersect_fails = 0;
-	
-	bool result = tree.accelerate_distance_queries();
-	if (result) {
-		cout << "successfully accelerated_distance_queries" << endl; 
-	}
 	
 	FFace* face;
 	FVertex* v0;
@@ -645,10 +670,9 @@ template<typename VertexT, typename NormalT> void FusionMesh<VertexT, NormalT>::
 	Triangle temp;
 		
 	for(size_t i = 0; i < m_local_faces.size(); i++)
-	{		
+	{
 		face = m_local_faces[i];
 
-		
 		v0 = m_local_vertices[face->m_index[0]];
 		v1 = m_local_vertices[face->m_index[1]];
 		v2 = m_local_vertices[face->m_index[2]];
@@ -665,7 +689,6 @@ template<typename VertexT, typename NormalT> void FusionMesh<VertexT, NormalT>::
 		
 		if (dist_a > threshold && dist_b > threshold && dist_c > threshold)
 		{
-			
 			bool result = true;
 			try {
 				result = tree.do_intersect(temp);
@@ -695,7 +718,6 @@ template<typename VertexT, typename NormalT> void FusionMesh<VertexT, NormalT>::
 				remote_faces.push_back(face);	
 			}
 		}
-
 		else if(dist_a <= threshold && dist_b <= threshold && dist_c <= threshold)
 		{	
 			// Delete Case: redundant faces
@@ -704,7 +726,6 @@ template<typename VertexT, typename NormalT> void FusionMesh<VertexT, NormalT>::
 			face->b = 0;
 			redundant_faces++;
 			// lassen wir ganz weg
-
 		}
 		else
 		{	
@@ -738,18 +759,21 @@ template<typename VertexT, typename NormalT> void FusionMesh<VertexT, NormalT>::
 		}
 	}
 	
-	printFaceSortingStatus();
-	cout << "For " << far_tree_intersect_fails << " of Special Case Faces call to tree.intersect() failed" << endl;
-	cout << "For " << close_tree_intersect_fails << " of Closeby Faces call to tree.intersect() failed" << endl << endl; 
-    cout << timestamp << "Finished Sorting Faces..." << endl;
- 	
+	if(verbose)
+	{
+		printFaceSortingStatus();
+
+		cout << "For " << far_tree_intersect_fails << " of Special Case Faces call to tree.intersect() failed" << endl;
+		cout << "For " << close_tree_intersect_fails << " of Closeby Faces call to tree.intersect() failed" << endl << endl; 
+		cout << timestamp << "Finished Sorting Faces..." << endl;
+	}
+	
 	/*face->m_index[0] = face->m_index[0] + increment;
 	face->m_index[1] += increment;
 	face->m_index[2] += increment;
 	
 	m_global_faces.push_back(face);*/
-    
-   // cout << "Adding Tree Face - " << face->m_index[0] << " " << face->m_index[1] << " " << face->m_index[2] << " " << endl;
+	// cout << "Adding Tree Face - " << face->m_index[0] << " " << face->m_index[1] << " " << face->m_index[2] << " " << endl;
 }
 
 template<typename VertexT, typename NormalT> void FusionMesh<VertexT, NormalT>::printFaceSortingStatus()
@@ -772,34 +796,33 @@ template<typename VertexT, typename NormalT> void FusionMesh<VertexT, NormalT>::
 
 template<typename VertexT, typename NormalT> void FusionMesh<VertexT, NormalT>::integrate()
 {
-	cout <<endl << timestamp << "Start Integrating... " << endl;
+	if(verbose)
+	{
+		cout <<endl << timestamp << "Start Integrating... " << endl;
 	
-	printLocalBufferStatus();
-	printGlobalBufferStatus(); 
-    
-    if (m_global_vertices.size() == 0)
-    {
+		printLocalBufferStatus();
+		printGlobalBufferStatus(); 
+	}
+
+	if (m_global_vertices.size() == 0)
+	{
 		lazyIntegrate(); //shorten
 	}
-    else
-    {
+	else
+	{
 		buildTree();
 		buildVertexMap();
 		// for all faces in local buffer
 		// check whether to add face to tree/global buffer
 		
 		sortFaces(remote_faces, intersection_faces, closeby_faces);
-		
-		//lazyIntegrate();
-		cout << "Start Integration" << endl;
 		remoteIntegrate(remote_faces);
-		
 		intersectIntegrate(intersection_faces);
 	}
-	
-    // for all faces in local buffer
-    // add face to globalbuffer()
-    /* {
+
+	// for all faces in local buffer
+	// add face to globalbuffer()
+	/* {
 		 * int status = checkOverlappingStatus(face)
 		 * 
 		 * if(0 = completely redundant) break;
@@ -808,29 +831,39 @@ template<typename VertexT, typename NormalT> void FusionMesh<VertexT, NormalT>::
 		 * 
 	   }
     */
-     
-    clearLocalBuffer();
-   
-    cout << endl << "Face Errors" << endl;
-    for(unsigned int i = 0; i < m_global_faces.size(); i++)
-    {
-		if (m_global_faces[i]->m_index[0] >= m_global_index || m_global_faces[i]->m_index[1] >= m_global_index || m_global_faces[i]->m_index[2] >= m_global_index) {
-			cout << "Vertex Indices for Face[" << i << "]: " << m_global_faces[i]->m_index[0] << ", " << m_global_faces[i]->m_index[1] << ", " << m_global_faces[i]->m_index[0] << endl;
-			cout << "m_global_index: " << m_global_index << endl;
+
+	clearLocalBuffer();
+
+	if(verbose)
+	{
+		cout << endl << "Face Errors" << endl;
+
+		for(unsigned int i = 0; i < m_global_faces.size(); i++)
+		{
+			if (m_global_faces[i]->m_index[0] >= m_global_index || m_global_faces[i]->m_index[1] >= m_global_index || m_global_faces[i]->m_index[2] >= m_global_index) {
+				cout << "Vertex Indices for Face[" << i << "]: " << m_global_faces[i]->m_index[0] << ", " << m_global_faces[i]->m_index[1] << ", " << m_global_faces[i]->m_index[0] << endl;
+				cout << "m_global_index: " << m_global_index << endl;
+			}
+		}
+
+		cout << endl << "Vertice Errors" << endl;
+
+		for(unsigned int i = 0; i < m_global_vertices.size(); i++)
+		{
+			if(i != m_global_vertices[i]->m_self_index) 
+			{
+				cout << "Index[" <<  i << "] " << m_global_vertices[i]->m_self_index << endl; 
+			}
 		}
 	}
-    
-    cout << endl << "Vertice Errors" << endl;
-    for(unsigned int i = 0; i < m_global_vertices.size(); i++)
-    {
-		if(i != m_global_vertices[i]->m_self_index) 
-		cout << "Index[" <<  i << "] " << m_global_vertices[i]->m_self_index << endl; 
+	
+	if(verbose)
+	{
+		cout << endl << timestamp << "Finished Integrating..." << endl << endl;
+		
+		printLocalBufferStatus();
+		printGlobalBufferStatus();
 	}
-	
-    cout << endl << timestamp << "Finished Integrating..." << endl << endl;
-	
-	printLocalBufferStatus();
-	printGlobalBufferStatus();
 }
 
 template<typename VertexT, typename NormalT> void FusionMesh<VertexT, NormalT>::addMeshAndIntegrate(MeshBufferPtr mesh)
@@ -847,10 +880,12 @@ template<typename VertexT, typename NormalT> void FusionMesh<VertexT, NormalT>::
 
 template<typename VertexT, typename NormalT> void FusionMesh<VertexT, NormalT>::finalize()
 {
+	if(verbose)
+	{
+		cout << endl << timestamp << "Start Finalizing mesh..." << endl;
+	}
 	
-    cout << endl << timestamp << "Finalizing mesh..." << endl;
-
-    //boost::unordered_map<FusionVertex<VertexT, NormalT>*, int> index_map;
+	//boost::unordered_map<FusionVertex<VertexT, NormalT>*, int> index_map;
 
     int numVertices = m_global_vertices.size();
     int numFaces 	= m_global_faces.size();
@@ -932,7 +967,13 @@ template<typename VertexT, typename NormalT> void FusionMesh<VertexT, NormalT>::
     this->m_meshBuffer->setFaceArray( indexBuffer, numFaces );
     //this->m_meshBuffer->setFaceColorArray( faceColorBuffer );
     this->m_finalized = true;
-   
+	
+	if(verbose)
+	{
+		cout << endl << timestamp << "Ended Finalizing mesh..." << endl;
+	
+	}
+	
 }
 
 template<typename VertexT, typename NormalT> void FusionMesh<VertexT, NormalT>::flipEdge(uint v1, uint v2)
