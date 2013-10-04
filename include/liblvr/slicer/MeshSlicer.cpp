@@ -50,7 +50,8 @@ typedef Tree::Primitive_id Primitive_id;
 
 MeshSlicer::MeshSlicer()
 {
-   clear();
+	verbose = false;
+	clear();
 }
 
 void MeshSlicer::addMesh(MeshBufferPtr mesh)
@@ -118,7 +119,7 @@ vector<float> MeshSlicer::compute2dProjection()
 /// AABB Tree Operations
 
 void MeshSlicer::buildTree()
-{	
+{
 	std::list<Triangle> triangles;	
 	
 	if(faces.size() > 0)
@@ -134,7 +135,7 @@ void MeshSlicer::buildTree()
 			Point c(vertices.at(vertex_ind_3*3), vertices.at(vertex_ind_3*3+1), vertices.at(vertex_ind_3*3+2));
 			triangles.push_back(Triangle(a,b,c));
 		}
-
+		
 		tree.clear();
 		tree.insert(triangles.begin(), triangles.end());
 		tree.accelerate_distance_queries();
@@ -177,39 +178,37 @@ Plane MeshSlicer::getQueryPlane(string dimension, double value)
     Plane  plane_query(p, v);
     
     //TODO make output optional
-    /*cout << endl << "Query Plane :" << endl; 
-	cout << "Dimension   : " << dimension.c_str() << endl;
-	cout << "Value       : " << value << endl;
-	cout << "Plane Point : "  << p <<  endl;
-	cout << "Plane Normal: "  << " (" << coord_x << ", " << coord_y << ", " << coord_z << ")" << endl <<endl;
-	*/
+    if(verbose)
+    {
+		cout << endl << "Query Plane :" << endl; 
+		cout << "Dimension   : " << dimension.c_str() << endl;
+		cout << "Value       : " << value << endl;
+		cout << "Plane Point : "  << p <<  endl;
+		cout << "Plane Normal: "  << " (" << coord_x << ", " << coord_y << ", " << coord_z << ")" << endl <<endl;
+	}
 	return plane_query;
 }
 
 void MeshSlicer::computeIntersections(vector<Segment>& segments)
-{	
-	//cout << timestamp << "Start Computing Intersections... " << endl <<endl;
-
+{
 	Plane  plane_query = getQueryPlane(dimension, value);
 
-	/*
-	try
+	if(verbose)
 	{
-		cout << "Found " << tree.number_of_intersected_primitives(plane_query) << "intersections(s) with plane: " << plane_query << endl;
+		try
+		{
+			cout << "Found " << tree.number_of_intersected_primitives(plane_query) << "intersections(s) with plane: " << plane_query << endl;
+		}catch(...)
+		{
+			cout << "error in computeIntersections" << endl;
+		}
 	}
-	catch(CGAL::Precondition_exception e)
-	{
-		cout << "ERROR"<< endl;
-		cout << e.what() << endl;
-	}
-	*/
 	
 	// computes all intersections with segment query (as pairs object - primitive_id)
 	std::list<Object_and_primitive_id> intersections;
 
-	//cout << "Calculating intersection segments...";
 	tree.all_intersections(plane_query, std::back_inserter(intersections));
-	//cout << "There are " << intersections.size() << "intersections" << endl;
+
  	for (std::list<Object_and_primitive_id>::iterator it = intersections.begin(); it != intersections.end(); it++)
 	{
 		Object_and_primitive_id op = *it;
@@ -227,37 +226,56 @@ void MeshSlicer::computeIntersections(vector<Segment>& segments)
 			output.push_back((float) segment.target().x());
 			output.push_back((float) segment.target().y());
 			output.push_back((float) segment.target().z());
-		
-			//cout << "Adding Segment from: " << ((float) segment.source().x()) << ", " << ((float) segment.source().y()) << ", " << ((float) segment.source().z()) << " to " << ((float) segment.target().x()) << ", " <<  ((float) segment.target().y() )<< ", " << ((float) segment.target().z()) << end;
  		}
 		else std::cout << "ERROR: intersection object is unknown" << std::endl; 
 	}
-
-	//cout << timestamp << "Finished Computing " << output.size()/6 << " Intersections..." << endl;	
 }
 
 void MeshSlicer::computeProjections(vector<Segment>& segments)
 {
-	
-	//cout << timestamp << "Start Computing Intersections... " << endl <<endl;
-	
-	double current_value = value;
-	double increment = offset / number_of_slices;
-	int i = 0; 
-	while(current_value < (value + offset))
+	if(verbose)
 	{
+		cout << timestamp << "Start Computing Projections" << endl;
+		
+	}
+	double current_value = min_value;
+	double iterations = (max_value - min_value) / resolution;
+	int i = 0; 
+	
+	if(verbose)
+	{
+		cout << "min_value =" << min_value << endl; 
+		cout << "current_value =" << current_value << endl; 
+		cout << "max_value =" << max_value << endl; 
+		cout << "iterations= " << iterations << endl;
+		cout << "resolution= " << resolution << endl;
+	}
+	
+	while(current_value < max_value)
+	{
+		
+	if(verbose)
+	{
+		cout << "current_value =" << current_value << endl;
+		cout << "max_value ="     << max_value << endl;
+		 
+	}
+		
 		Plane  plane_query = getQueryPlane(dimension, current_value);
-		/*
-		try
+
+		if(verbose)
 		{
-			cout << "Found " << tree.number_of_intersected_primitives(plane_query) << "intersections(s) with " << i  << "/" <<number_of_slices <<"th plane: " << plane_query << endl;
+			try
+			{
+				cout << "Found " << tree.number_of_intersected_primitives(plane_query) << "intersections(s) at #" << i << " / " << iterations << " - " << current_value << " of " << max_value << endl;
+			}
+			catch(...)
+			{
+				cout << "error in computeIntersections" << endl;
+			}
 		}
-		catch(CGAL::Precondition_exception e)
-		{
-			cout << "ERROR"<< endl;
-			cout << e.what() << endl;
-		}
-		*/
+		
+		
 		// computes all intersections with segment query (as pairs object - primitive_id)
 		std::list<Object_and_primitive_id> intersections;
 
@@ -284,12 +302,14 @@ void MeshSlicer::computeProjections(vector<Segment>& segments)
 			else std::cout << "ERROR: intersection object is unknown" << std::endl; 
 		}
 		
-		current_value += increment;
+		current_value += resolution;
 		i++;
 	}
 	
-	//cout << timestamp << "Finished Computing " << output.size()/6 << " Intersections in total." << endl;
-	
+	if(verbose)
+	{
+		cout << timestamp << "Finished Computing " << output.size()/6 << " Intersections in total." << endl;
+	}
 }
 
 } // namespace lvr
