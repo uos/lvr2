@@ -421,7 +421,7 @@ void AdaptiveKSearchSurface<VertexT, NormalT>::distance(VertexT v, float &projec
     VertexT nearest;
     NormalT normal;
 
-    for ( size_t i(0); i < k; i++ )
+    for ( int i = 0; i < k; i++ )
     {
         //Get nearest tangent plane
         VertexT vq( this->m_points[id[i]][0], this->m_points[id[i]][1], this->m_points[id[i]][2] );
@@ -545,7 +545,7 @@ Plane<VertexT, NormalT> AdaptiveKSearchSurface<VertexT, NormalT>::calcPlaneRANSA
     int iterations              = 0;
     int nonimproving_iterations = 0;
 
-    int max_nonimproving = max(5, k / 2);
+  //  int max_nonimproving = max(5, k / 2);
     int max_interations  = 10;
 
     while((nonimproving_iterations < 5) && (iterations < max_interations))

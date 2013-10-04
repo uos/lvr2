@@ -42,7 +42,34 @@ HalfEdgeMesh<VertexT, NormalT>::HalfEdgeMesh(
 }
 
 template<typename VertexT, typename NormalT>
+HalfEdgeMesh<VertexT, NormalT>::HalfEdgeMesh(
+        MeshBufferPtr mesh)
+{
+    size_t num_verts, num_faces;
+    floatArr vertices = mesh->getVertexArray(num_verts);
+
+    // Add all vertices
+    for(size_t i = 0; i < num_verts; i++)
+    {
+        addVertex(VertexT(vertices[3 * i], vertices[3 * i + 1], vertices[3 * i + 2]));
+    }
+
+    // Add all faces
+    uintArr faces = mesh->getFaceArray(num_faces);
+    for(size_t i = 0; i < num_faces; i++)
+    {
+        addTriangle(faces[3 * i], faces[3 * i + 1], faces[3 * i + 2]);
+    }
+
+    // Initial remaing stuff
+    m_globalIndex = 0;
+    m_regionClassifier = ClassifierFactory<VertexT, NormalT>::get("Default", this);
+    m_depth = 100;
+}
+
+template<typename VertexT, typename NormalT>
 HalfEdgeMesh<VertexT, NormalT>::~HalfEdgeMesh(){
+
     this->m_meshBuffer.reset();
     this->m_pointCloudManager.reset();
 
@@ -69,32 +96,6 @@ HalfEdgeMesh<VertexT, NormalT>::~HalfEdgeMesh(){
 	    this->m_regionClassifier = 0;
     }
 
-}
-
-template<typename VertexT, typename NormalT>
-HalfEdgeMesh<VertexT, NormalT>::HalfEdgeMesh(
-        MeshBufferPtr mesh)
-{
-    size_t num_verts, num_faces;
-    floatArr vertices = mesh->getVertexArray(num_verts);
-
-    // Add all vertices
-    for(size_t i = 0; i < num_verts; i++)
-    {
-        addVertex(VertexT(vertices[3 * i], vertices[3 * i + 1], vertices[3 * i + 2]));
-    }
-
-    // Add all faces
-    uintArr faces = mesh->getFaceArray(num_faces);
-    for(size_t i = 0; i < num_faces; i++)
-    {
-        addTriangle(faces[3 * i], faces[3 * i + 1], faces[3 * i + 2]);
-    }
-
-    // Initial remaing stuff
-    m_globalIndex = 0;
-    m_regionClassifier = ClassifierFactory<VertexT, NormalT>::get("Default", this);
-    m_depth = 100;
 }
 
 template<typename VertexT, typename NormalT>
@@ -335,6 +336,7 @@ void HalfEdgeMesh<VertexT, NormalT>::cleanContours(int iterations)
 template<typename VertexT, typename NormalT>
 void HalfEdgeMesh<VertexT, NormalT>::deleteFace(HFace* f, bool erase)
 {
+
     //save references to edges and vertices
     HEdge* startEdge = (*f)[0];
     HEdge* nextEdge  = (*f)[1];
@@ -1283,7 +1285,7 @@ void HalfEdgeMesh<VertexT, NormalT>::finalizeAndRetesselate( bool genTextures, f
     std::vector<unsigned int> materialIndexBuffer;
     std::vector<Material*> materialBuffer;
     std::vector<float> textureCoordBuffer;
-
+    std::vector<GlTexture*> texturedBuffer;
     // Reset used variables. Otherwise the getContours() function might not work quite as expected.
     for(size_t j=0; j<m_faces.size(); j++)
     {
@@ -1448,8 +1450,10 @@ void HalfEdgeMesh<VertexT, NormalT>::finalizeAndRetesselate( bool genTextures, f
         {
             t = texturizer->texturizePlane( contours[0] );
             if(t)
-            {
-                t->m_texture->save(t->m_textureIndex);
+			{
+				GlTexture* texture = new GlTexture(t->m_texture->m_data, t->m_texture->m_width, t->m_texture->m_height);
+				texturedBuffer.push_back(texture);
+				//t->m_texture->save(t->m_textureIndex);
             }
         }
 
@@ -1562,6 +1566,7 @@ void HalfEdgeMesh<VertexT, NormalT>::finalizeAndRetesselate( bool genTextures, f
     this->m_meshBuffer->setVertexTextureCoordinateArray( textureCoordBuffer );
     this->m_meshBuffer->setMaterialArray( materialBuffer );
     this->m_meshBuffer->setFaceMaterialIndexArray( materialIndexBuffer );
+    this->m_meshBuffer->setTextureArray(texturedBuffer);
     this->m_finalized = true;
     cout<<endl<<*texturizer;
     cout << endl << timestamp << "Done retesselating." << endl;
