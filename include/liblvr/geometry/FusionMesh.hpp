@@ -313,6 +313,11 @@ public:
 	 * 			to OpenGL compatible buffers
 	 */
 	virtual void finalize();
+	
+	/**
+	 * @brief 	resets the FusionMesh, should only be called if it's okay to loose the current fusion
+	 */
+	virtual void reset();
 
 
 // Parameter Methods

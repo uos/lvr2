@@ -140,6 +140,12 @@ template<typename VertexT, typename NormalT> void FusionMesh<VertexT, NormalT>::
 /// Integration Methods
 ///
 
+template<typename VertexT, typename NormalT> void FusionMesh<VertexT, NormalT>::reset()
+{
+	clearLocalBuffer();
+	clearGlobalBuffer();
+}
+
 template<typename VertexT, typename NormalT> void FusionMesh<VertexT, NormalT>::clearLocalBuffer()
 {
 	m_local_index = 0;
