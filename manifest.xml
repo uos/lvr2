@@ -1,0 +1,18 @@
+<package>
+  <description brief="meshing.pg2013">
+    This repository contains the Las Vegas Reconstruction Toolskit.
+    We are temporary using this until we reach a stable version and
+    will then create a Debian package that will be uploaded to our
+    own package mirror.
+    After a successfull compile you need to tell your ros package
+    'lvr_tools' this working path. Just run the following command:
+    # echo "export LVR_PATH=/path/to/meshing.pg2013" >> ~/.bashrc
+    
+    This issue will be solved by creating a .deb package, meanwhile
+    we just need to accept it... ;-)
+  </description>
+  <author>Thomas Wiemann, Henning Deeken, Simon Herkenhoff</author>
+  <license>GPL</license>
+  <review status="unreviewed" notes="Still under development."/>
+  <url>software@kure.informatik.uni-osnabrueck.de:ros_slam6d.pg2013</url>
+</package>
