@@ -55,5 +55,6 @@ docu_hl: $(DOC)high_level_doc/documentation.tex
 	cd $(DOC)high_level_doc ; dvips documentation
 	cd $(DOC)high_level_doc ; ps2pdf14 documentation.ps ../documentation_HL.pdf
 
+# sets LVR_PATH if nonexistent
 .setpath:
-	echo "export LVR_PATH=$(PWD)" >> $(ROS_WORKSPACE)/setup.zsh
+	if [ -z "$(LVR_PATH)" ]; then echo "export LVR_PATH=$(PWD)" >> $(ROS_WORKSPACE)/setup.zsh; fi
