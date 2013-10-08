@@ -343,29 +343,59 @@ template<typename VertexT, typename NormalT> void FusionMesh<VertexT, NormalT>::
 	}
 }*/
 
+template<typename VertexT, typename NormalT> void FusionMesh<VertexT, NormalT>::triangulateAndAdd(vector<Point> vertices)
+{
+	vector<FFace*> new_faces;
+	Delaunay dt;
+	// add vertices to Delauny Triangulation
+	for (int i = 0; i < vertices.size(); i++) {
+		Point2 p(vertices[i].x(), vertices[i].y(), vertices[i].z());
+		dt.push_back(p);
+	}
+	Delaunay::Finite_faces_iterator it;
+	float max_tri_size = threshold/2;
+	for (it = dt.finite_faces_begin(); it != dt.finite_faces_end(); it++)
+	{	
+		// for each new face add all vertices to local buffer
+		// (remote integrate will handle redundant vertices)
+		Triangle2 tri = dt.triangle(it);
+		int count_to_close_vertices = 0;
+		int count_to_far_vertices = 0;
+		for (int i = 0; i < 3; i++) {
+			Point2 p = tri.vertex(i);
+			Point a(p.x(), p.y(), p.z());
+			FT dist = tree.squared_distance(a);
+			if (dist <= threshold) {
+				count_to_close_vertices++;
+			}
+			else {
+				count_to_far_vertices++;
+			}
+			addVertex(VertexT(p.x(), p.y(), p.z()));
+		}
+		// check for remote faces that might have been created
+		if (count_to_close_vertices < 3 && count_to_far_vertices < 3) {
+			addTriangle(m_local_index-3, m_local_index-2, m_local_index-1);
+			new_faces.push_back(m_local_faces[m_local_faces.size()-1]);
+			FFace* colorFace = m_local_faces[m_local_faces.size()-1];
+				colorFace->r = 200;
+				colorFace->g = 0;
+				colorFace->b = 0;
+		}
+	}
+	remoteIntegrate(new_faces);
+}
+
 template<typename VertexT, typename NormalT> void FusionMesh<VertexT, NormalT>::intersectIntegrate(vector<FFace*>& faces)
 {
 	cout << "Start Intersect Integrate..." << endl;
 	
 	//addFacesToVertices();
 	
-	/* before Delauny try
-	vector<int> outer_vertex; //face index of vertices that will be replaced
-	vector<int> inner_vertex; //face index of vertices that will be kept
-	vector<Point> old_vertex_pos;
-	vector<const Point*> intersect_points;
-	vector<const Segment*> intersect_segments;
-	list<Object_and_primitive_id> intersections;
-	vector<FFace*> faces_to_add;
-	int count_changed_faces = 0;
-	int count_new_faces = 0;
-	bool add = false; */
-	
 	vector<Point> new_vertex_pos;
 	vector<Point> tri_points;
 	vector<const Segment*> intersect_segments;
 	list<Object_and_primitive_id> intersections;
-	vector<FFace*> new_faces;
 	
 	for(size_t i = 0; i < faces.size(); i++)
     { 
@@ -410,158 +440,16 @@ template<typename VertexT, typename NormalT> void FusionMesh<VertexT, NormalT>::
 			p = seg->target();
 			new_vertex_pos.push_back(p);
 		}
-		/* before Delauny try
-		FFace* face = faces[i];
-		outer_vertex.clear();
-		inner_vertex.clear();
-		old_vertex_pos.clear();
-		for(int j = 0; j < 3; j++)
-		{
-			FVertex* v =  m_local_vertices[face->m_index[j]];
-			Point a(v->m_position.x, v->m_position.y, v->m_position.z);
-			old_vertex_pos.push_back(a);
-			FT dist = tree.squared_distance(a);
-			//check wether this vertex lies on the boundary
-			if (dist <= threshold) {
-				outer_vertex.push_back(j);
-			}
-			else {
-				inner_vertex.push_back(j);
-			}
-		}
-		Triangle tri = Triangle(old_vertex_pos[0], old_vertex_pos[1], old_vertex_pos[2]);
-		intersections.clear();
-		intersect_segments.clear();
-		//find all intersections for current triangle
-		try {
-				tree.all_intersections(tri, back_inserter(intersections));
-		} catch (...)
-		{
-				cout << "tree.do_intersect() fails" << endl;
-		}
-		while (!intersections.empty()) {
-			Object_and_primitive_id op = intersections.front();
-			intersections.pop_front();
-			CGAL::Object object = op.first;
-			//check wether intersection object is a segment
-			if (const Segment* s = CGAL::object_cast<Segment>(&object)){
-				intersect_segments.push_back(s);
-			}
-			else if (const Point* p = CGAL::object_cast<Point>(&object)){
-				cout << "intersection is a point not a segment" << endl;
-			}
-		}
-		if (intersect_segments.size() < 1) {
-			cout << "no intersection found, wrong sorting" << endl;
-		}
-		else {
-			// one vertex will keep its position
-			if (inner_vertex.size() == 1) {
-				for (int j = 0; j < 1; j++) {
-					const Segment* seg = intersect_segments[j];
-					Segment temp = Segment(seg->source(), old_vertex_pos[outer_vertex[0]]);
-					Segment temp1 = Segment(seg->target(), old_vertex_pos[outer_vertex[0]]);
-					if (temp.squared_length() < temp1.squared_length()) {
-						//change outer_vertex[0] position to seg.source
-						FVertex* v =  m_local_vertices[face->m_index[outer_vertex[0]]];
-						v->m_position.x = seg->source().x();
-						v->m_position.y = seg->source().y();
-						v->m_position.z = seg->source().z();
-						v = m_local_vertices[face->m_index[outer_vertex[1]]];
-						v->m_position.x = seg->target().x();
-						v->m_position.y = seg->target().y();
-						v->m_position.z = seg->target().z();
-						cout << seg->vertex(1) << seg->vertex(2) << endl;
-					}
-					else {
-						//change outer_vertex[0] position to seg.target
-						FVertex* v =  m_local_vertices[face->m_index[outer_vertex[1]]];
-						v->m_position.x = seg->source().x();
-						v->m_position.y = seg->source().y();
-						v->m_position.z = seg->source().z();
-						v = m_local_vertices[face->m_index[outer_vertex[0]]];
-						v->m_position.x = seg->target().x();
-						v->m_position.y = seg->target().y();
-						v->m_position.z = seg->target().z();	
-					}
-				}
-				count_changed_faces++;
-				faces_to_add.push_back(face); 
-			}
-			// two vertices will keep their position
-			else if (inner_vertex.size() == 2) {
-			}
-		}	*/
-			/*} //very old
-			//create new faces by dividing current face
-			//first update face thats already in local buffer
-			cout << "local index before change " << m_local_index << endl;
-			addVertex(VertexT(sorted_points[0]->x(), sorted_points[0]->y(), sorted_points[0]->z()));
-			face->m_index[bound_vertex[1]] = m_local_index-1;
-			cout << "local index after change "<< m_local_index << endl;
-			face->r = 200;
-			face->g = 200;
-			face->b = 200;
-			count_changed_faces++;
-			// from now on add new faces to local buffer
-			for (int l = 1; l < sorted_points.size(); l++) {
-				addTriangle(m_local_index-1, m_local_index, face->m_index[inner_vertex]);
-				addVertex(VertexT(sorted_points[l]->x(), sorted_points[l]->y(), sorted_points[l]->z()));
-				// push back face so that it can be integrated into global buffer
-				faces.push_back(m_local_faces[m_local_faces.size()-1]);
-				count_new_faces++;
-				FFace* colorFace = m_local_faces[m_local_faces.size()-1];
-				colorFace->r = 200;
-				colorFace->g = 0;
-				colorFace->b = 0;
-			}*/
 	}
-	//Delauny Triangulation
-	/*vector<Point>::iterator begin;
-	vector<Point>::iterator end;
-	begin = new_vertex_pos.begin();
-	end = new_vertex_pos.end();
-	Delaunay dt(begin,end);*/
-	Delaunay dt;
-	for (int i = 0; i < new_vertex_pos.size(); i++) {
-		Point2 p(new_vertex_pos[i].x(), new_vertex_pos[i].y(), new_vertex_pos[i].z());
-		dt.push_back(p);
-	}
-	//add vertices and faces to local buffer
-	Delaunay::Finite_faces_iterator it;	
-	for (it = dt.finite_faces_begin(); it != dt.finite_faces_end(); it++)
-	{
-		Triangle2 tri = dt.triangle(it);
-		int count_to_close_vertices = 0;
-		for (int i = 0; i < 3; i++) {
-			Point2 p = tri.vertex(i);
-			Point a(p.x(), p.y(), p.z());
-			FT dist = tree.squared_distance(a);
-			if (dist <= threshold) {
-				count_to_close_vertices++;
-			}
-			addVertex(VertexT(p.x(), p.y(), p.z()));
-		}
-		if (count_to_close_vertices < 3) {
-			addTriangle(m_local_index-3, m_local_index-2, m_local_index-1);
-			new_faces.push_back(m_local_faces[m_local_faces.size()-1]);
-			FFace* colorFace = m_local_faces[m_local_faces.size()-1];
-			cout << m_local_vertices[colorFace->m_index[0]]->m_position << m_local_vertices[colorFace->m_index[1]]->m_position << m_local_vertices[colorFace->m_index[2]]->m_position << endl;
-				colorFace->r = 200;
-				colorFace->g = 0;
-				colorFace->b = 0;
-		}
-	}
-	remoteIntegrate(new_faces);
-	
-		//OutputltFaces fit;
-		//Face_handle start;
-		//dt.get_conflicts(p, fit, start);
-	
-	//cout << "changed " << count_changed_faces << " faces" << endl;
-	//cout << "added " << count_new_faces << " faces" << endl;
-	
-	//remoteIntegrate(faces_to_add);
+	 
+       vector<FFace*> new_faces;
+       Delaunay dt;
+       for (int i = 0; i < new_vertex_pos.size(); i++) {
+               Point2 p(new_vertex_pos[i].x(), new_vertex_pos[i].y(), new_vertex_pos[i].z());
+               dt.push_back(p);
+       }
+
+	triangulateAndAdd(new_vertex_pos);
 	
 	cout << "Finished Intersect Integrate ..." << endl;
 }
