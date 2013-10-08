@@ -4,12 +4,12 @@
     We are temporary using this until we reach a stable version and
     will then create a Debian package that will be uploaded to our
     own package mirror.
-    After a successfull compile you need to tell your ros package
-    'lvr_tools' this working path. Just run the following command:
-    # echo "export LVR_PATH=/path/to/meshing.pg2013" >> ~/.bashrc
-    
+
+    A successful 'rosmake' will eventually create the environment
+    variable $LVR_PATH pointing to this directory.
+
     This issue will be solved by creating a .deb package, meanwhile
-    we just need to accept it... ;-)
+    we just need to accept this... ;-)
   </description>
   <author>Thomas Wiemann, Henning Deeken, Simon Herkenhoff</author>
   <license>GPL</license>
