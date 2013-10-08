@@ -289,6 +289,12 @@ public:
 	//virtual void sortClippingPoints(vector<const Point*> points, Point p, Point q, vector<const Point*>& sorted_points);
 	
 	/**
+     * @brief   Form new Triangles via Delauny Triangulation and add them to globale buffer
+	 *
+     */
+	virtual void triangulateAndAdd(vector<Point> vertices);
+	
+	/**
      * @brief   Integrate intersection faces
 	 *
      */
