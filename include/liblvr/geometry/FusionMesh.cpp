@@ -302,47 +302,6 @@ template<typename VertexT, typename NormalT> void FusionMesh<VertexT, NormalT>::
 	}
 }*/
 
-/*template<typename VertexT, typename NormalT> void FusionMesh<VertexT, NormalT>::sortClippingPoints(vector<const Point*> points, Point p, Point q, vector<const Point*>& sorted_points)
-{
-	sorted_points.clear();
-	if (points.size() < 2) {
-		sorted_points = points;
-	}
-	else {
-		//cout << "points size " << points.size() << endl;
-		//cout << "p: " << p.x() << ", " << p.y() << ", " << p.z() << endl;
-		//cout << "q: " << q.x() << ", " << q.y() << ", " << q.z() << endl;
-		//Segment seg1 = Segment(p, q);
-		//FT dist1 = seg1.squared_length();
-		//cout << "dist p q: " << dist1 << endl;
-		while (points.size()>1) {
-			FT min_dist = 9999999;
-			int ind = 99;
-			//find closest point to p
-			for (int i = 0; i < points.size(); i++) {
-				Point temp(points[i]->x(), points[i]->y(), points[i]->z());
-				Segment seg = Segment(p, temp);
-				FT dist = seg.squared_length();
-				if (dist < min_dist) {
-					min_dist = dist;
-					ind = i;
-				}
-			}
-			sorted_points.push_back(points[ind]);
-			points.erase(points.begin()+ind);
-		}
-		sorted_points.push_back(points[0]);
-		/*cout << "distances of sorted points: ";
-		for (int i=0; i < sorted_points.size(); i++) {
-			Point temp(sorted_points[i]->x(), sorted_points[i]->y(), sorted_points[i]->z());
-			Segment seg = Segment(p, temp);
-			FT dist = seg.squared_length();
-			cout << dist << ", ";
-		}
-	cout << endl;	
-	}
-}*/
-
 template<typename VertexT, typename NormalT> void FusionMesh<VertexT, NormalT>::triangulateAndAdd(vector<Point> vertices)
 {
 	vector<FFace*> new_faces;
@@ -441,13 +400,6 @@ template<typename VertexT, typename NormalT> void FusionMesh<VertexT, NormalT>::
 			new_vertex_pos.push_back(p);
 		}
 	}
-	 
-       vector<FFace*> new_faces;
-       Delaunay dt;
-       for (int i = 0; i < new_vertex_pos.size(); i++) {
-               Point2 p(new_vertex_pos[i].x(), new_vertex_pos[i].y(), new_vertex_pos[i].z());
-               dt.push_back(p);
-       }
 
 	triangulateAndAdd(new_vertex_pos);
 	
