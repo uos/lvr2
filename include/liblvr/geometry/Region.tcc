@@ -28,7 +28,7 @@
  
 #include <limits>
 
-#include "ext/psimpl/psimpl.h"
+#include "psimpl/psimpl.h"
 
 namespace lvr
 {
