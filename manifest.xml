@@ -1,5 +1,5 @@
 <package>
-  <description brief="meshing.pg2013">
+    <description brief="meshing.pg2013">
     This repository contains the Las Vegas Reconstruction Toolskit.
     We are temporary using this until we reach a stable version and
     will then create a Debian package that will be uploaded to our
@@ -10,9 +10,14 @@
 
     This issue will be solved by creating a .deb package, meanwhile
     we just need to accept this... ;-)
-  </description>
-  <author>Thomas Wiemann, Henning Deeken, Simon Herkenhoff</author>
-  <license>GPL</license>
-  <review status="unreviewed" notes="Still under development."/>
-  <url>software@kure.informatik.uni-osnabrueck.de:ros_slam6d.pg2013</url>
+    </description>
+    <author>Thomas Wiemann, Henning Deeken, Simon Herkenhoff</author>
+    <license>GPL</license>
+    <review status="unreviewed" notes="Still under development."/>
+    <url>software@kure.informatik.uni-osnabrueck.de:ros_slam6d.pg2013</url>
+
+    <export>
+        <cpp cflags="-I${prefix}/include -I${prefix}/include/liblvr" lflags="-L${prefix}/lib"/>
+    </export>
+
 </package>
