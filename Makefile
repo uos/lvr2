@@ -58,4 +58,6 @@ docu_hl: $(DOC)high_level_doc/documentation.tex
 
 # sets LVR_PATH if nonexistent
 .setpath:
-	if [ -z "$(LVR_PATH)" ] || [ "$(PWD)" != "$(LVR_PATH)" ]; then echo "export LVR_PATH=$(PWD)" >> $(ROS_WORKSPACE)/environment; fi
+	@echo "Setting LVR_PATH to ros environment"
+	@if [ -z "$(LVR_PATH)" ] || [ "$(PWD)" != "$(LVR_PATH)" ]; then echo "export LVR_PATH=$(PWD)" >> $(ROS_WORKSPACE)/environment; fi
+	@export LVR_PATH=$(PWD)
