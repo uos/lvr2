@@ -19,13 +19,14 @@ build:
 	mkdir -p build
 
 clean: build
-	cd build && $(MAKE) clean --no-print-directory
+	cd build && if [ -f Makefile ]; then $(MAKE) clean --no-print-directory; fi
 	rm -rf build
 	rm -rf lib
 	rm -rf bin
 	rm -f .configured
 	rm -f *.ply
-
+	@echo "Removing LVR_PATH variable"
+	@[ -f "$(ROS_WORKSPACE)/environment" ]; then sed '/LVR_PATH/d' $(ROS_WORKSPACE)/environment > $(ROS_WORKSPACE)/environment.tmp; mv $(ROS_WORKSPACE)/environment.tmp $(ROS_WORKSPACE)/environment; fi
 
 DOC = doc/
 docu: docu_html docu_latex docu_hl
