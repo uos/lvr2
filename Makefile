@@ -19,14 +19,12 @@ build:
 	mkdir -p build
 
 clean: build
-	cd build && if [ -f Makefile ]; then $(MAKE) clean --no-print-directory; fi
+	cd build && $(MAKE) clean --no-print-directory
 	rm -rf build
 	rm -rf lib
 	rm -rf bin
 	rm -f .configured
 	rm -f *.ply
-	@echo "Removing LVR_PATH variable"
-	@[ -f "$(ROS_WORKSPACE)/environment" ]; then sed '/LVR_PATH/d' $(ROS_WORKSPACE)/environment > $(ROS_WORKSPACE)/environment.tmp; mv $(ROS_WORKSPACE)/environment.tmp $(ROS_WORKSPACE)/environment; fi
 
 DOC = doc/
 docu: docu_html docu_latex docu_hl
@@ -55,9 +53,3 @@ docu_hl: $(DOC)high_level_doc/documentation.tex
 	cd $(DOC)high_level_doc ; latex documentation.tex
 	cd $(DOC)high_level_doc ; dvips documentation
 	cd $(DOC)high_level_doc ; ps2pdf14 documentation.ps ../documentation_HL.pdf
-
-# sets LVR_PATH if nonexistent
-.setpath:
-	@echo "Setting LVR_PATH to ros environment"
-	@if [ -z "$(LVR_PATH)" ] || [ "$(PWD)" != "$(LVR_PATH)" ]; then echo "export LVR_PATH=$(PWD)" >> $(ROS_WORKSPACE)/environment; fi
-	@export LVR_PATH=$(PWD)
