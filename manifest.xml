@@ -1,23 +1,18 @@
 <package>
+
     <description brief="meshing.pg2013">
     This repository contains the Las Vegas Reconstruction Toolskit.
     We are temporary using this until we reach a stable version and
     will then create a Debian package that will be uploaded to our
     own package mirror.
-
-    A successful 'rosmake' will eventually create the environment
-    variable $LVR_PATH pointing to this directory.
-
-    This issue will be solved by creating a .deb package, meanwhile
-    we just need to accept this... ;-)
     </description>
     <author>Thomas Wiemann, Henning Deeken, Simon Herkenhoff</author>
     <license>GPL</license>
     <review status="unreviewed" notes="Still under development."/>
-    <url>software@kure.informatik.uni-osnabrueck.de:ros_slam6d.pg2013</url>
+    <url>software@kure.informatik.uni-osnabrueck.de:meshing.pg2013</url>
 
     <export>
-        <cpp cflags="-I${prefix}/include -I${prefix}/include/liblvr" lflags="-L${prefix}/lib"/>
+        <cpp cflags="-I${prefix}/include/liblvr -I${prefix}/ext -I${prefix}/ext/Eigen -I${prefix}/ext/ann -I${prefix}/ext/laslib -I${prefix}/ext/libfreenect -I${prefix}/ext/nanoflann -I${prefix}/ext/newmat -I${prefix}/ext/obj -I${prefix}/ext/psimpl -I${prefix}/ext/rply -I${prefix}/ext/slam6d -I${prefix}/ext/stann" lflags="-L${prefix}/lib -L${prefix}/build/lib"/>
     </export>
 
 </package>

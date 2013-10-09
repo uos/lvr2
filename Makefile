@@ -4,7 +4,7 @@ ifeq ($(MAKE),)
 	MAKE=make
 endif
 
-all: .configured .setpath
+all: .configured
 	cd build && $(MAKE) --no-print-directory
 
 config: build
@@ -19,12 +19,12 @@ build:
 	mkdir -p build
 
 clean: build
-	cd build && $(MAKE) clean --no-print-directory
-	rm -rf build
 	rm -rf lib
 	rm -rf bin
 	rm -f .configured
 	rm -f *.ply
+	cd build && $(MAKE) clean --no-print-directory
+	rm -rf build
 
 DOC = doc/
 docu: docu_html docu_latex docu_hl
