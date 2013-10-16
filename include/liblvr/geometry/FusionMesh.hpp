@@ -63,7 +63,6 @@
 
 #include "FusionVertex.hpp"
 #include "FusionFace.hpp"
-//#include "FusionEdge.hpp"
 
 #include "io/Timestamp.hpp"
 #include "io/Progress.hpp"
@@ -83,12 +82,12 @@ template<typename VertexT, typename NormalT> class FusionFace;
  
 template<typename VertexT, typename NormalT> class FusionMesh : public BaseMesh<VertexT, NormalT>
 {
-	
+
 public:
-	
+
 	typedef FusionFace<VertexT, NormalT> FFace;
 	typedef FusionVertex<VertexT, NormalT> FVertex;
-	
+
 	typedef CGAL::Simple_cartesian<double> K;
 	typedef K::FT FT;
 	typedef K::Ray_3 Ray;
@@ -100,7 +99,7 @@ public:
 	typedef CGAL::AABB_triangle_primitive<K,Iterator> Primitive;
 	typedef CGAL::AABB_traits<K, Primitive> AABB_triangle_traits;
 	typedef CGAL::AABB_tree<AABB_triangle_traits> Tree;
-	
+
 	typedef Tree::Object_and_primitive_id Object_and_primitive_id;
 	typedef CGAL::Exact_predicates_inexact_constructions_kernel K2;
 	typedef CGAL::Projection_traits_xz_3<K2>  Gt;
@@ -108,50 +107,8 @@ public:
 	typedef K2::Point_3 Point2;
 	typedef K2::Triangle_3 Triangle2;
 
-	struct cmpVertices {
-		bool operator()(const VertexT& a, const VertexT& b) const 
-		{
-		/*	
-			   return ( a.x < b.x ) 
-                || ( ( this->x - other.x <= 0.00001 )
-                    && ( ( this->y < other.y ) 
-                        || ( ( this->z < other.z )
-                            && ( this->y - other.y <= 0.00001 ) ) ) );
-			*/
-			
-			/*
-			cout << "comparing " << a.x << " == "<<b.x << " and " << a.y << " == " <<  b.y << "and " << a.z << " == " << b.z << endl; 
-			if(((a.x == b.x) && (a.y == b.y) && (a.z == b.z)))
-			{
-				cout << "EQUAL" << endl << endl;
-			}
-			else
-			{
-				cout << "unequal" << endl;
-			}
-			*/
-			return !((a.x == b.x) && (a.y == b.y) && (a.z == b.z));
-		}
-	};
-	
-	struct hashVertices {
-		std::size_t operator()(VertexT a) const {
-     
-			size_t hash = a.x + a.y + a.z; //std::hash<double>((double) a.x + a.y + a.z);
-			return hash;
-		}	
-	};
-
 	typedef map<VertexT, size_t> Map;
 	typedef typename map<VertexT, size_t>::iterator MapIterator;
-	
-	//typedef map<VertexT, size_t, cmpVertices> Map;
-	//typedef typename map<VertexT, size_t, cmpVertices>::iterator MapIterator;
-
-	//typedef unordered_map<VertexT, size_t, hashVertices> Map;
-	//typedef typename unordered_map<VertexT, size_t, hashVertices>::iterator MapIterator;
-
-
 
 	/**
 	 * @brief   Creates an empty FusionMesh 
@@ -167,8 +124,6 @@ public:
 	 * @brief   Destructor.
 	 */
 	virtual ~FusionMesh() {};
-
-	// Mesh Construction Methods
 
 	/**
 	 * @brief 	This method should be called every time
@@ -198,25 +153,25 @@ public:
 	 */
 	virtual void addTriangle(uint a, uint b, uint c);
 
-    /**
-     * @brief   Insert a new triangle into the mesh
-     *
-     * @param   a       The first vertex of the triangle
-     * @param   b       The second vertex of the triangle
-     * @param   c       The third vertex of the triangle
-     * @param   f       A pointer to the created face
-     */
-	virtual void addTriangle(uint a, uint b, uint c, FFace* &f);
-	
 	/**
-     * @brief   Insert an entire mesh into the local fusion buffer. It is advised to call integrate() afterwards.
-     *
-     * @param   mesh      A pointer to the mesh to be inserted
-     */
+	* @brief   Insert a new triangle into the mesh
+	*
+	* @param   a	 The first vertex of the triangle
+	* @param   b	 The second vertex of the triangle
+	* @param   c	 The third vertex of the triangle
+	* @param   f	 A pointer to the created face
+	*/
+	virtual void addTriangle(uint a, uint b, uint c, FFace* &f);
+
+	/**
+	* @brief   Insert an entire mesh into the local fusion buffer. It is advised to call integrate() afterwards.
+	*
+	* @param   mesh	A pointer to the mesh to be inserted
+	*/
 	virtual void addMesh(MeshBufferPtr model);
-	
+
 // Integration Methods
-	
+
 	/**
 	 * @brief 	This method should be called every time
 	 * 			a vertex is transferred from the local buffer into the global buffer
@@ -226,88 +181,66 @@ public:
 	virtual void addGlobalVertex(FVertex *v);
 	
 	/**
-     * @brief   Insert a new triangle into the mesh and change vertex indeces by increment
-     *
-     * @param   f       A face from the local buffer
-     * @param   i		 The increment that has to be used to shift the face indices properly. Ususally i = current global vertex buffer size.
-     */
+	* @brief   Insert a new triangle into the mesh and change vertex indeces by increment
+	*
+	* @param   f	 A face from the local buffer
+	* @param   i		 The increment that has to be used to shift the face indices properly. Ususally i = current global vertex buffer size.
+	*/
 	virtual void addGlobalTriangle(FFace *f, int i);	
 	
 	/**
-     * @brief   build CGAL-AABB-Tree from global mesh
+	* @brief   build CGAL-AABB-Tree from global mesh
 	 *
-     */
+	*/
 	virtual void buildTree();
 	
 	/**
-     * @brief   build map of global vertices with global buffer index
-	 *
-     */
+	* @brief   build map of global vertices with global buffer index
+	*
+	*/
 	virtual void buildVertexMap();
-	
+
 	/**
-     * @brief   Insert a new triangle into the the tree
-     *
-     * @param   remote_faces 			A buffer for all faces that can be added to the global buffer directly
-     * @param   intersection_faces 	A buffer for all faces that intersect with global mesh
-     * @param   closeby_faces 			A buffer for all faces that are close to but do not intersect with global mesh
-     */
+	* @brief   Insert a new triangle into the the tree
+	*
+	* @param   remote_faces 			A buffer for all faces that can be added to the global buffer directly
+	* @param   intersection_faces 	A buffer for all faces that intersect with global mesh
+	* @param   closeby_faces 			A buffer for all faces that are close to but do not intersect with global mesh
+	*/
 	virtual void sortFaces(vector<FFace*>& remote_faces, vector<FFace*>& intersection_faces, vector<FFace*>& closeby_faces );
-	
+
 	/**
-     * @brief   Integrate the local buffer into the global fused mesh
+	* @brief   Integrate the local buffer into the global fused mesh
 	 *
-     */
+	*/
 	virtual void integrate();
 	
 	/**
-     * @brief   Integrate the local buffer into the global mesh, by simply adding all vertices and shifting the face indices
+	* @brief   Integrate the local buffer into the global mesh, by simply adding all vertices and shifting the face indices
 	 *
-     */
+	*/
 	virtual void lazyIntegrate();
 	
 	/**
-     * @brief   Integrate remote faces
+	* @brief   Integrate remote faces
 	 *
-     */
+	*/
 	virtual void remoteIntegrate(vector<FFace*>& faces);
-	
+
 	/**
-     * @brief   Assigns to each vertex, which faces belong to it
-	 *
-     */
-	//virtual void addFacesToVertices();
-	
-	/**
-     * @brief   Sort clipping points of clipping edge from p to q
-	 *
-     * @param   points 			Vector of points to be sorted along a segment (line with start and end point)
-     * @param   p 					Start point of the segment
-     * @param   q 					End point of the segment 
-     * @param   sorted_points 		Vector of sorted points 
-     */
-	//virtual void sortClippingPoints(vector<const Point*> points, Point p, Point q, vector<const Point*>& sorted_points);
-	
-	/**
-     * @brief   Integrate intersection faces
-	 *
-     */
-	virtual void intersectIntegrate(vector<FFace*>& faces);
-	
-	/**
-     * @brief   Insert an entire mesh into the local fusion buffer and integrate it imediately.
-     *
-     * @param   mesh      A pointer to the mesh to be inserted
-     */
+	* @brief   Insert an entire mesh into the local fusion buffer and integrate it imediately.
+	*
+	* @param   mesh	A pointer to the mesh to be inserted
+	*/
 	virtual void addMeshAndIntegrate(MeshBufferPtr model);
 	
 	/**
-     * @brief   Insert an entire mesh into the local fusion buffer and lazyintegrate it imediately.
-     *
-     * @param   mesh      A pointer to the mesh to be inserted
-     */
+	* @brief   Insert an entire mesh into the local fusion buffer and lazyintegrate it imediately.
+	*
+	* @param   mesh	A pointer to the mesh to be inserted
+	*/
 	virtual void addMeshAndLazyIntegrate(MeshBufferPtr model);
-	
+
 	/**
 	 * @brief 	Finalizes a mesh, i.e. converts the template based buffers
 	 * 			to OpenGL compatible buffers
@@ -352,15 +285,15 @@ private:
 	vector<FusionVertex<VertexT, NormalT>*>   m_local_vertices;
 
 	/// The length of the local vertex buffer
-	size_t                                      m_local_index;
+	size_t m_local_index;
 
 	/// The faces in the fused mesh
-	vector<FusionFace<VertexT, NormalT>*>     m_global_faces;
+	vector<FusionFace<VertexT, NormalT>*>	m_global_faces;
 
 	/// The vertices of the fused mesh
 	vector<FusionVertex<VertexT, NormalT>*>   m_global_vertices;
 	///  The length of the global vertex buffer
-	size_t                                      m_global_index;
+	size_t						  m_global_index;
 
 	/// FaceBuffer used during integration process
 	vector<FFace*> remote_faces; 
@@ -378,28 +311,28 @@ private:
 	double_t	threshold;
 
 	/**
-     * @brief   Reset the the local buffer e.g. after integration or at initialization.
-     */
+	* @brief   Reset the the local buffer e.g. after integration or at initialization.
+	*/
 	virtual void clearLocalBuffer();
 
 	/**
-     * @brief   Reset the the global buffer e.g. at initialization.
-     */
+	* @brief   Reset the the global buffer e.g. at initialization.
+	*/
 	virtual void clearGlobalBuffer();
 	
 	/**
-     * @brief   Prints the current status of the local buffer on the console.
-     */
+	* @brief   Prints the current status of the local buffer on the console.
+	*/
 	virtual void printLocalBufferStatus();
 	
 	/**
-     * @brief   Prints the current status of the local buffer on the console.
-     */
+	* @brief   Prints the current status of the local buffer on the console.
+	*/
 	virtual void printGlobalBufferStatus();
 	
 	/**
-     * @brief   Prints the current status of the face sorting process on the console.
-     */
+	* @brief   Prints the current status of the face sorting process on the console.
+	*/
 	virtual void printFaceSortingStatus();
 
 // unused methods, yet necessary due to BaseMesh interface
