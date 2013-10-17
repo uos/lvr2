@@ -262,7 +262,7 @@ public:
 	 *
 	 * @param	vertices	Vertices to triangulate
      */
-	virtual void triangulateAndAdd(vector<Point> vertices);
+	virtual void triangulateAndAdd(vector<Point>& vertices);
 	
 	/**
      * @brief   assigns new vertices for triangulation to their border region
@@ -270,7 +270,7 @@ public:
      * @param	vertexRegions	Vector of so far formed borderRegions
 	 * @param	new_vertices	Vertices to be added to a single border Region
      */
-	virtual void assignToBorderRegion(vector<PointSet*>& vertexRegions, vector<Point>new_vertices);
+	virtual void assignToBorderRegion(vector<PointSet>& vertexRegions, vector<Point>new_vertices);
 	
 	/**
      * @brief   Integrate intersection faces
