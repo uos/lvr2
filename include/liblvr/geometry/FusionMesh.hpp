@@ -111,8 +111,8 @@ public:
 	typedef map<VertexT, size_t> Map;
 	typedef typename map<VertexT, size_t>::iterator MapIterator;
 	
-	typedef set<VertexT> Set;
-	typedef typename set<VertexT>::iterator SetIterator;
+	typedef set<Point> PointSet;
+	typedef typename set<Point>::iterator PointSetIterator;
 	
 	//typedef map<VertexT, size_t, cmpVertices> Map;
 	//typedef typename map<VertexT, size_t, cmpVertices>::iterator MapIterator;
@@ -270,7 +270,7 @@ public:
      * @param	vertexRegions	Vector of so far formed borderRegions
 	 * @param	new_vertices	Vertices to be added to a single border Region
      */
-	virtual void assignToBorderRegion(vector<Set*>& vertexRegions, vector<Point>new_vertices);
+	virtual void assignToBorderRegion(vector<PointSet*>& vertexRegions, vector<Point>new_vertices);
 	
 	/**
      * @brief   Integrate intersection faces
