@@ -345,22 +345,22 @@ template<typename VertexT, typename NormalT> void FusionMesh<VertexT, NormalT>::
 	remoteIntegrate(new_faces);
 }
 
-template<typename VertexT, typename NormalT> void FusionMesh<VertexT, NormalT>::assignToBorderRegion(vector<Set*>& vertexRegions, vector<Point>new_vertices)
+template<typename VertexT, typename NormalT> void FusionMesh<VertexT, NormalT>::assignToBorderRegion(vector<PointSet*>& vertexRegions, vector<Point>new_vertices)
 {	
-	SetIterator it;
-	VertexT position;
+	PointSetIterator it;
+	Point p;
 	bool inserted = false;
 	
 	// check existing regions
 	for(int i = 0; i < vertexRegions.size(); i++)
 	{	
 		for(int j = 0; j < new_vertices.size(); j++) {
-			position = VertexT(new_vertices[j].x(), new_vertices[j].y(), new_vertices[j].z());
-			it = vertexRegions[i]->find(position);
+			p = new_vertices[j];
+			it = vertexRegions[i]->find(p);
 			if (it != vertexRegions[i]->end()){
 				for(int k = 0; k < new_vertices.size(); k++) {
-					position = VertexT(new_vertices[k].x(), new_vertices[k].y(), new_vertices[k].z());
-					vertexRegions[i]->insert(position);
+					p = new_vertices[k];
+					vertexRegions[i]->insert(p);
 				}
 				j = new_vertices.size();
 				i = vertexRegions.size();
@@ -370,10 +370,10 @@ template<typename VertexT, typename NormalT> void FusionMesh<VertexT, NormalT>::
 	}
 	// otherwise add new region
 	if (!inserted) {
-		Set* set = new Set;
+		PointSet* set = new PointSet;
 		for(int k = 0; k < new_vertices.size(); k++) {
-			position = VertexT(new_vertices[k].x(), new_vertices[k].y(), new_vertices[k].z());
-			set->insert(position);
+			p = new_vertices[k];
+			set->insert(p);
 		}
 		vertexRegions.push_back(set);
 	}
@@ -385,7 +385,7 @@ template<typename VertexT, typename NormalT> void FusionMesh<VertexT, NormalT>::
 	
 	//addFacesToVertices();
 	
-	vector<Set*> vertexRegions;
+	vector<PointSet*> vertexRegions;
 	vector<Point> new_vertex_pos;
 	vector<Point> tri_points;
 	vector<const Segment*> intersect_segments;
@@ -439,12 +439,13 @@ template<typename VertexT, typename NormalT> void FusionMesh<VertexT, NormalT>::
 	}
 	for(int i = 0; i < vertexRegions.size(); i++) {
 		new_vertex_pos.clear();
-		for (SetIterator it = vertexRegions[i]->begin(); it != vertexRegions[i]->end(); ++it) {
-			Point p = Point(it->x, it->y, it->z);
-			new_vertex_pos.push_back(p);
+		for (PointSetIterator it = vertexRegions[i]->begin(); it != vertexRegions[i]->end(); ++it) {
+			new_vertex_pos.push_back(*it);
 		}
 		triangulateAndAdd(new_vertex_pos);
+		// TODO: Speicher aufräumen
 	}
+	
 	
 	cout << "Finished Intersect Integrate ..." << endl;
 }
