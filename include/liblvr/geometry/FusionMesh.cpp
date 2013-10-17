@@ -345,12 +345,47 @@ template<typename VertexT, typename NormalT> void FusionMesh<VertexT, NormalT>::
 	remoteIntegrate(new_faces);
 }
 
+template<typename VertexT, typename NormalT> void FusionMesh<VertexT, NormalT>::assignToBorderRegion(vector<Set*>& vertexRegions, vector<Point>new_vertices)
+{	
+	SetIterator it;
+	VertexT position;
+	bool inserted = false;
+	
+	// check existing regions
+	for(int i = 0; i < vertexRegions.size(); i++)
+	{	
+		for(int j = 0; j < new_vertices.size(); j++) {
+			position = VertexT(new_vertices[j].x(), new_vertices[j].y(), new_vertices[j].z());
+			it = vertexRegions[i]->find(position);
+			if (it != vertexRegions[i]->end()){
+				for(int k = 0; k < new_vertices.size(); k++) {
+					position = VertexT(new_vertices[k].x(), new_vertices[k].y(), new_vertices[k].z());
+					vertexRegions[i]->insert(position);
+				}
+				j = new_vertices.size();
+				i = vertexRegions.size();
+				inserted = true;
+			}
+		}
+	}
+	// otherwise add new region
+	if (!inserted) {
+		Set* set = new Set;
+		for(int k = 0; k < new_vertices.size(); k++) {
+			position = VertexT(new_vertices[k].x(), new_vertices[k].y(), new_vertices[k].z());
+			set->insert(position);
+		}
+		vertexRegions.push_back(set);
+	}
+}
+
 template<typename VertexT, typename NormalT> void FusionMesh<VertexT, NormalT>::intersectIntegrate(vector<FFace*>& faces)
 {
 	cout << "Start Intersect Integrate..." << endl;
 	
 	//addFacesToVertices();
 	
+	vector<Set*> vertexRegions;
 	vector<Point> new_vertex_pos;
 	vector<Point> tri_points;
 	vector<const Segment*> intersect_segments;
@@ -360,6 +395,7 @@ template<typename VertexT, typename NormalT> void FusionMesh<VertexT, NormalT>::
     { 
 		FFace* face = faces[i];
 		tri_points.clear();
+		new_vertex_pos.clear();
 		for (int j = 0; j < 3; j++) {
 			FVertex* v = m_local_vertices[face->m_index[j]];
 			Point a(v->m_position.x, v->m_position.y, v->m_position.z);
@@ -399,9 +435,16 @@ template<typename VertexT, typename NormalT> void FusionMesh<VertexT, NormalT>::
 			p = seg->target();
 			new_vertex_pos.push_back(p);
 		}
+		assignToBorderRegion(vertexRegions, new_vertex_pos);
 	}
-
-	triangulateAndAdd(new_vertex_pos);
+	for(int i = 0; i < vertexRegions.size(); i++) {
+		new_vertex_pos.clear();
+		for (SetIterator it = vertexRegions[i]->begin(); it != vertexRegions[i]->end(); ++it) {
+			Point p = Point(it->x, it->y, it->z);
+			new_vertex_pos.push_back(p);
+		}
+		triangulateAndAdd(new_vertex_pos);
+	}
 	
 	cout << "Finished Intersect Integrate ..." << endl;
 }
