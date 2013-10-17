@@ -240,7 +240,7 @@ template<typename VertexT, typename NormalT> void FusionMesh<VertexT, NormalT>::
 {	
 	int degentFaces = 0;
 	
-	cout << "Start Remote Integrate..." << endl;
+	//cout << "Start Remote Integrate..." << endl;
 	
 	MapIterator it;
 	
@@ -284,8 +284,8 @@ template<typename VertexT, typename NormalT> void FusionMesh<VertexT, NormalT>::
 			m_global_faces.push_back(face);
 		}
     }
-    cout << "Skipped " << degentFaces << " Faces due to degeneration" << endl;
-	cout << "Finished Remote Integrate" << endl;
+    //cout << "Skipped " << degentFaces << " Faces due to degeneration" << endl;
+	//cout << "Finished Remote Integrate" << endl;
 }
 
 /*template<typename VertexT, typename NormalT> void FusionMesh<VertexT, NormalT>::addFacesToVertices()
@@ -302,7 +302,7 @@ template<typename VertexT, typename NormalT> void FusionMesh<VertexT, NormalT>::
 	}
 }*/
 
-template<typename VertexT, typename NormalT> void FusionMesh<VertexT, NormalT>::triangulateAndAdd(vector<Point> vertices)
+template<typename VertexT, typename NormalT> void FusionMesh<VertexT, NormalT>::triangulateAndAdd(vector<Point>& vertices)
 {
 	vector<FFace*> new_faces;
 	Delaunay dt;
@@ -345,7 +345,7 @@ template<typename VertexT, typename NormalT> void FusionMesh<VertexT, NormalT>::
 	remoteIntegrate(new_faces);
 }
 
-template<typename VertexT, typename NormalT> void FusionMesh<VertexT, NormalT>::assignToBorderRegion(vector<PointSet*>& vertexRegions, vector<Point>new_vertices)
+template<typename VertexT, typename NormalT> void FusionMesh<VertexT, NormalT>::assignToBorderRegion(vector<PointSet>& vertexRegions, vector<Point>new_vertices)
 {	
 	PointSetIterator it;
 	Point p;
@@ -356,11 +356,11 @@ template<typename VertexT, typename NormalT> void FusionMesh<VertexT, NormalT>::
 	{	
 		for(int j = 0; j < new_vertices.size(); j++) {
 			p = new_vertices[j];
-			it = vertexRegions[i]->find(p);
-			if (it != vertexRegions[i]->end()){
+			it = vertexRegions[i].find(p);
+			if (it != vertexRegions[i].end()){
 				for(int k = 0; k < new_vertices.size(); k++) {
 					p = new_vertices[k];
-					vertexRegions[i]->insert(p);
+					vertexRegions[i].insert(p);
 				}
 				j = new_vertices.size();
 				i = vertexRegions.size();
@@ -370,10 +370,10 @@ template<typename VertexT, typename NormalT> void FusionMesh<VertexT, NormalT>::
 	}
 	// otherwise add new region
 	if (!inserted) {
-		PointSet* set = new PointSet;
+		PointSet set;;
 		for(int k = 0; k < new_vertices.size(); k++) {
 			p = new_vertices[k];
-			set->insert(p);
+			set.insert(p);
 		}
 		vertexRegions.push_back(set);
 	}
@@ -385,7 +385,7 @@ template<typename VertexT, typename NormalT> void FusionMesh<VertexT, NormalT>::
 	
 	//addFacesToVertices();
 	
-	vector<PointSet*> vertexRegions;
+	vector<PointSet> vertexRegions;
 	vector<Point> new_vertex_pos;
 	vector<Point> tri_points;
 	vector<const Segment*> intersect_segments;
@@ -431,6 +431,7 @@ template<typename VertexT, typename NormalT> void FusionMesh<VertexT, NormalT>::
 		for (int j = 0; j < intersect_segments.size(); j++) {
 			const Segment* seg = intersect_segments[j];
 			Point p = seg->source();
+			//HIER ENTSTEHT BEIM HORN_MESH EIN PUNKT MIT e-316 Werten
 			new_vertex_pos.push_back(p);
 			p = seg->target();
 			new_vertex_pos.push_back(p);
@@ -439,11 +440,10 @@ template<typename VertexT, typename NormalT> void FusionMesh<VertexT, NormalT>::
 	}
 	for(int i = 0; i < vertexRegions.size(); i++) {
 		new_vertex_pos.clear();
-		for (PointSetIterator it = vertexRegions[i]->begin(); it != vertexRegions[i]->end(); ++it) {
+		for (PointSetIterator it = vertexRegions[i].begin(); it != vertexRegions[i].end(); ++it) {
 			new_vertex_pos.push_back(*it);
 		}
 		triangulateAndAdd(new_vertex_pos);
-		// TODO: Speicher aufräumen
 	}
 	
 	
