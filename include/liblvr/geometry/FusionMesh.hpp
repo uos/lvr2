@@ -108,42 +108,11 @@ public:
 	typedef K2::Point_3 Point2;
 	typedef K2::Triangle_3 Triangle2;
 
-	struct cmpVertices {
-		bool operator()(const VertexT& a, const VertexT& b) const 
-		{
-		/*	
-			   return ( a.x < b.x ) 
-                || ( ( this->x - other.x <= 0.00001 )
-                    && ( ( this->y < other.y ) 
-                        || ( ( this->z < other.z )
-                            && ( this->y - other.y <= 0.00001 ) ) ) );
-			*/
-			
-			/*
-			cout << "comparing " << a.x << " == "<<b.x << " and " << a.y << " == " <<  b.y << "and " << a.z << " == " << b.z << endl; 
-			if(((a.x == b.x) && (a.y == b.y) && (a.z == b.z)))
-			{
-				cout << "EQUAL" << endl << endl;
-			}
-			else
-			{
-				cout << "unequal" << endl;
-			}
-			*/
-			return !((a.x == b.x) && (a.y == b.y) && (a.z == b.z));
-		}
-	};
-	
-	struct hashVertices {
-		std::size_t operator()(VertexT a) const {
-     
-			size_t hash = a.x + a.y + a.z; //std::hash<double>((double) a.x + a.y + a.z);
-			return hash;
-		}	
-	};
-
 	typedef map<VertexT, size_t> Map;
 	typedef typename map<VertexT, size_t>::iterator MapIterator;
+	
+	typedef set<VertexT> Set;
+	typedef typename set<VertexT>::iterator SetIterator;
 	
 	//typedef map<VertexT, size_t, cmpVertices> Map;
 	//typedef typename map<VertexT, size_t, cmpVertices>::iterator MapIterator;
@@ -291,12 +260,22 @@ public:
 	/**
      * @brief   Form new Triangles via Delauny Triangulation and add them to globale buffer
 	 *
+	 * @param	vertices	Vertices to triangulate
      */
 	virtual void triangulateAndAdd(vector<Point> vertices);
 	
 	/**
+     * @brief   assigns new vertices for triangulation to their border region
+     * 
+     * @param	vertexRegions	Vector of so far formed borderRegions
+	 * @param	new_vertices	Vertices to be added to a single border Region
+     */
+	virtual void assignToBorderRegion(vector<Set*>& vertexRegions, vector<Point>new_vertices);
+	
+	/**
      * @brief   Integrate intersection faces
-	 *
+     * 
+     * @param	faces	Faces to be integrated
      */
 	virtual void intersectIntegrate(vector<FFace*>& faces);
 	
