@@ -387,7 +387,7 @@ template<typename VertexT, typename NormalT> void FusionMesh<VertexT, NormalT>::
 	
 	vector<PointSet> vertexRegions;
 	vector<Point> new_vertex_pos;
-	vector<Point> tri_points;
+	vector<EPoint> tri_points;
 	vector<const Segment*> intersect_segments;
 	list<Object_and_primitive_id> intersections;
 	
@@ -398,7 +398,7 @@ template<typename VertexT, typename NormalT> void FusionMesh<VertexT, NormalT>::
 		new_vertex_pos.clear();
 		for (int j = 0; j < 3; j++) {
 			FVertex* v = m_local_vertices[face->m_index[j]];
-			Point a(v->m_position.x, v->m_position.y, v->m_position.z);
+			EPoint a(v->m_position.x, v->m_position.y, v->m_position.z);
 			FT dist = tree.squared_distance(a);
 			tri_points.push_back(a);
 			//check wether this vertex will be kept
@@ -407,7 +407,7 @@ template<typename VertexT, typename NormalT> void FusionMesh<VertexT, NormalT>::
 			}
 		}
 		//determine intersection points and add to new_vertex_pos
-		Triangle tri = Triangle(tri_points[0], tri_points[1], tri_points[2]);
+		ETriangle tri = ETriangle(tri_points[0], tri_points[1], tri_points[2]);
 		intersections.clear();
 		intersect_segments.clear();
 		try {

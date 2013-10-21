@@ -71,6 +71,56 @@
 
 using namespace std;
 
+class ExtendedPoint: public CGAL::Simple_cartesian<double>::Point_3
+{	
+public:
+	typedef CGAL::Simple_cartesian<double>::Point_3 Point;
+	
+	/**
+     * @brief   Constructs a Point with given position
+     */
+	ExtendedPoint(double x, double y, double z) : Point(x, y, z) {}
+	
+	/**
+     * @brief   Constructs a Point with given position and corresponding vertex index
+     */
+	ExtendedPoint(double x, double y, double z, int i) : Point(x, y, z)
+		{ m_self_index = i; }
+	
+	/// The corresponding vertex's index in the mesh
+	int m_self_index;	
+};
+
+class ExtendedTriangle: public CGAL::Simple_cartesian<double>::Triangle_3
+{
+public:
+	typedef CGAL::Simple_cartesian<double>::Triangle_3 Triangle;
+	typedef CGAL::Simple_cartesian<double>::Point_3 Point;
+	
+	/**
+     * @brief   Constructs a Triangle between given points
+     */
+	ExtendedTriangle(Point& p, Point& q, Point& r) : Triangle(p, q, r) {}
+	
+	/**
+     * @brief   Constructs a Triangle between given points and corresponding face index
+     */
+	ExtendedTriangle(Point& p, Point& q, Point& r, int i) : Triangle(p, q, r)
+		{ m_self_index = i; }	
+
+	/// The corresponding face's index in the mesh
+	int m_self_index;
+	
+	/// inherit operators
+	bool operator==(const ExtendedTriangle& t2) {
+		return Triangle::operator==(t2);
+	}
+	bool operator!=(const ExtendedTriangle& t2) {
+		return Triangle::operator!=(t2);
+	}
+};
+
+
 namespace lvr
 {
 
@@ -88,6 +138,9 @@ public:
 	
 	typedef FusionFace<VertexT, NormalT> FFace;
 	typedef FusionVertex<VertexT, NormalT> FVertex;
+	
+	typedef ExtendedPoint EPoint;
+	typedef ExtendedTriangle ETriangle;
 	
 	typedef CGAL::Simple_cartesian<double> K;
 	typedef K::FT FT;
