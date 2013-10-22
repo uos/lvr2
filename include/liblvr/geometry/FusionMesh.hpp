@@ -71,19 +71,15 @@
 
 using namespace std;
 
+// CGAL Extensions
+
 class ExtendedPoint: public CGAL::Simple_cartesian<double>::Point_3
 {	
 public:
 	typedef CGAL::Simple_cartesian<double>::Point_3 Point;
 	
-	/**
-     * @brief   Constructs a Point with given position
-     */
 	ExtendedPoint(double x, double y, double z) : Point(x, y, z) {}
 	
-	/**
-     * @brief   Constructs a Point with given position and corresponding vertex index
-     */
 	ExtendedPoint(double x, double y, double z, int i) : Point(x, y, z)
 		{ m_self_index = i; }
 	
@@ -97,27 +93,13 @@ public:
 	typedef CGAL::Simple_cartesian<double>::Triangle_3 Triangle;
 	typedef CGAL::Simple_cartesian<double>::Point_3 Point;
 	
-	/**
-     * @brief   Constructs a Triangle between given points
-     */
 	ExtendedTriangle(Point& p, Point& q, Point& r) : Triangle(p, q, r) {}
 	
-	/**
-     * @brief   Constructs a Triangle between given points and corresponding face index
-     */
 	ExtendedTriangle(Point& p, Point& q, Point& r, int i) : Triangle(p, q, r)
 		{ m_self_index = i; }	
 
 	/// The corresponding face's index in the mesh
 	int m_self_index;
-	
-	/// inherit operators
-	bool operator==(const ExtendedTriangle& t2) {
-		return Triangle::operator==(t2);
-	}
-	bool operator!=(const ExtendedTriangle& t2) {
-		return Triangle::operator!=(t2);
-	}
 };
 
 
@@ -149,12 +131,13 @@ public:
 	typedef K::Segment_3 Segment;
 	typedef K::Point_3 Point;
 	typedef K::Triangle_3 Triangle;
-	typedef std::list<Triangle>::iterator Iterator;
+	typedef std::vector<ETriangle>::iterator Iterator;
 	typedef CGAL::AABB_triangle_primitive<K,Iterator> Primitive;
 	typedef CGAL::AABB_traits<K, Primitive> AABB_triangle_traits;
 	typedef CGAL::AABB_tree<AABB_triangle_traits> Tree;
-	
 	typedef Tree::Object_and_primitive_id Object_and_primitive_id;
+	typedef Tree::Primitive_id Primitive_id;
+	
 	typedef CGAL::Exact_predicates_inexact_constructions_kernel K2;
 	typedef CGAL::Projection_traits_xz_3<K2>  Gt;
 	typedef CGAL::Delaunay_triangulation_2<Gt> Delaunay;
@@ -166,14 +149,9 @@ public:
 	
 	typedef set<Point> PointSet;
 	typedef typename set<Point>::iterator PointSetIterator;
-	
-	//typedef map<VertexT, size_t, cmpVertices> Map;
-	//typedef typename map<VertexT, size_t, cmpVertices>::iterator MapIterator;
-
-	//typedef unordered_map<VertexT, size_t, hashVertices> Map;
-	//typedef typename unordered_map<VertexT, size_t, hashVertices>::iterator MapIterator;
 
 
+// Constructors
 
 	/**
 	 * @brief   Creates an empty FusionMesh 
@@ -190,7 +168,8 @@ public:
 	 */
 	virtual ~FusionMesh() {};
 
-	// Mesh Construction Methods
+	
+// Methods of BaseMesh
 
 	/**
 	 * @brief 	This method should be called every time
@@ -228,7 +207,25 @@ public:
      * @param   c       The third vertex of the triangle
      * @param   f       A pointer to the created face
      */
-	virtual void addTriangle(uint a, uint b, uint c, FFace* &f);
+	//virtual void addTriangle(uint a, uint b, uint c, FFace* &f);
+
+	/**
+	 * @brief 	Finalizes a mesh, i.e. converts the template based buffers
+	 * 			to OpenGL compatible buffers
+	 */
+	virtual void finalize();
+	
+	//unused
+	/**
+	 * @brief	Flip the edge between vertex index v1 and v2
+	 *
+	 * @param	v1	The index of the first vertex
+	 * @param	v2	The index of the second vertex
+	 */
+	virtual void flipEdge(uint v1, uint v2);
+
+	
+// Fusion Specific Methods
 	
 	/**
      * @brief   Insert an entire mesh into the local fusion buffer. It is advised to call integrate() afterwards.
@@ -236,45 +233,6 @@ public:
      * @param   mesh      A pointer to the mesh to be inserted
      */
 	virtual void addMesh(MeshBufferPtr model);
-	
-// Integration Methods
-	
-	/**
-	 * @brief 	This method should be called every time
-	 * 			a vertex is transferred from the local buffer into the global buffer
-	 *
-	 * @param	v 		A FusionVertex from the local buffer.
-	 */
-	virtual void addGlobalVertex(FVertex *v);
-	
-	/**
-     * @brief   Insert a new triangle into the mesh and change vertex indeces by increment
-     *
-     * @param   f       A face from the local buffer
-     * @param   i		 The increment that has to be used to shift the face indices properly. Ususally i = current global vertex buffer size.
-     */
-	virtual void addGlobalTriangle(FFace *f, int i);	
-	
-	/**
-     * @brief   build CGAL-AABB-Tree from global mesh
-	 *
-     */
-	virtual void buildTree();
-	
-	/**
-     * @brief   build map of global vertices with global buffer index
-	 *
-     */
-	virtual void buildVertexMap();
-	
-	/**
-     * @brief   Insert a new triangle into the the tree
-     *
-     * @param   remote_faces 			A buffer for all faces that can be added to the global buffer directly
-     * @param   intersection_faces 	A buffer for all faces that intersect with global mesh
-     * @param   closeby_faces 			A buffer for all faces that are close to but do not intersect with global mesh
-     */
-	virtual void sortFaces(vector<FFace*>& remote_faces, vector<FFace*>& intersection_faces, vector<FFace*>& closeby_faces );
 	
 	/**
      * @brief   Integrate the local buffer into the global fused mesh
@@ -287,29 +245,123 @@ public:
 	 *
      */
 	virtual void lazyIntegrate();
+
+
+// Parameter Methods
+
+	/**
+	 * Sets the distance treshold used for AABB search
+	 *
+	 * @param t 	distance treshold
+	 */ 
+	void setDistanceThreshold(double_t t) {threshold = t*t;};
+
+
+private:
+
+	/// The faces in the fusion buffer 
+	vector<FusionFace<VertexT, NormalT>*>   m_local_faces;
+
+	/// The vertices of the fusion buffer
+	vector<FusionVertex<VertexT, NormalT>*>   m_local_vertices;
+
+	/// The length of the local vertex buffer
+	size_t                                      m_local_index;
+
+	/// The faces in the fused mesh
+	vector<FusionFace<VertexT, NormalT>*>     m_global_faces;
+
+	/// The vertices of the fused mesh
+	vector<FusionVertex<VertexT, NormalT>*>   m_global_vertices;
+	///  The length of the global vertex buffer
+	size_t                                      m_global_index;
+
+	/// Squared maximal distance for fusion
+	double	threshold;
+	
+	// Nochmal überarbeiten
+	/// FaceBuffer used during integration process
+	vector<FFace*> remote_faces; 
+    vector<FFace*> intersection_faces;
+    vector<FFace*> closeby_faces;
+    int redundant_faces;
+	int special_case_faces;	
+
+	/// The CGAL AABB Tree
+	Tree		tree;
+	/// The Map with all global vertices
+	Map			global_vertices_map;
+	
+	
+
+	/**
+     * @brief   Reset the the local buffer e.g. after integration or at initialization.
+     */
+	virtual void clearLocalBuffer();
+
+	/**
+     * @brief   Reset the the global buffer e.g. at initialization.
+     */
+	//virtual void clearGlobalBuffer();
+	
+// Printing Methods
+		
+	/**
+     * @brief   Prints the current status of the local buffer on the console.
+     */
+	virtual void printLocalBufferStatus();
+	
+	/**
+     * @brief   Prints the current status of the local buffer on the console.
+     */
+	virtual void printGlobalBufferStatus();
+	
+	/**
+     * @brief   Prints the current status of the face sorting process on the console.
+     */
+	virtual void printFaceSortingStatus();
+
+
+	
+	/**
+	 * @brief 	This method should be called every time
+	 * 			a vertex is transferred into the global buffer
+	 *
+	 * @param	v 		A FusionVertex from the local buffer.
+	 */
+	virtual void addGlobalVertex(FVertex *v);
+	
+	/**
+     * @brief   Insert a new triangle into the mesh and change vertex indeces by increment
+     *
+     * @param   f       A face from the local buffer
+     * @param   i		 The increment that has to be used to shift the face indices properly. Ususally i = current global vertex buffer size.
+     */
+	//virtual void addGlobalTriangle(FFace *f, int i);	
+    
+    /**
+     * @brief   build CGAL-AABB-Tree from global mesh
+	 *
+     */ 
+	virtual void buildTree();
+	
+	/**
+     * @brief   build map of global vertices with global buffer index
+	 *
+     */
+	virtual void buildVertexMap();
+	
+	/**
+     * @brief   Sort faces based on how to integrate them
+     */
+	virtual void sortFaces();
 	
 	/**
      * @brief   Integrate remote faces
 	 *
      */
 	virtual void remoteIntegrate(vector<FFace*>& faces);
-	
-	/**
-     * @brief   Assigns to each vertex, which faces belong to it
-	 *
-     */
-	//virtual void addFacesToVertices();
-	
-	/**
-     * @brief   Sort clipping points of clipping edge from p to q
-	 *
-     * @param   points 			Vector of points to be sorted along a segment (line with start and end point)
-     * @param   p 					Start point of the segment
-     * @param   q 					End point of the segment 
-     * @param   sorted_points 		Vector of sorted points 
-     */
-	//virtual void sortClippingPoints(vector<const Point*> points, Point p, Point q, vector<const Point*>& sorted_points);
-	
+		
 	/**
      * @brief   Form new Triangles via Delauny Triangulation and add them to globale buffer
 	 *
@@ -345,93 +397,7 @@ public:
      * @param   mesh      A pointer to the mesh to be inserted
      */
 	virtual void addMeshAndLazyIntegrate(MeshBufferPtr model);
-	
-	/**
-	 * @brief 	Finalizes a mesh, i.e. converts the template based buffers
-	 * 			to OpenGL compatible buffers
-	 */
-	virtual void finalize();
-
-
-// Parameter Methods
-
-	/**
-	 * Sets the distance treshold used for AABB search
-	 *
-	 * @param t 	distance treshold
-	 *
-	 */
-	 
-	void setDistanceThreshold(double_t t) {threshold = t*t;};
-
-private:
-
-	/// The faces in the fusion buffer 
-	vector<FusionFace<VertexT, NormalT>*>   m_local_faces;
-
-	/// The vertices of the fusion buffer
-	vector<FusionVertex<VertexT, NormalT>*>   m_local_vertices;
-
-	/// The length of the local vertex buffer
-	size_t                                      m_local_index;
-
-	/// The faces in the fused mesh
-	vector<FusionFace<VertexT, NormalT>*>     m_global_faces;
-
-	/// The vertices of the fused mesh
-	vector<FusionVertex<VertexT, NormalT>*>   m_global_vertices;
-	///  The length of the global vertex buffer
-	size_t                                      m_global_index;
-
-	/// FaceBuffer used during integration process
-	vector<FFace*> remote_faces; 
-    vector<FFace*> intersection_faces;
-    vector<FFace*> closeby_faces; 
-    int redundant_faces;
-	int special_case_faces;	
-
-	/// The CGAL AABB Tree
-	Tree		tree;
-	/// The Map with all global vertices
-	Map			global_vertices_map;
-	
-	/// Squared maximal distance for fusion
-	double_t	threshold;
-
-	/**
-     * @brief   Reset the the local buffer e.g. after integration or at initialization.
-     */
-	virtual void clearLocalBuffer();
-
-	/**
-     * @brief   Reset the the global buffer e.g. at initialization.
-     */
-	virtual void clearGlobalBuffer();
-	
-	/**
-     * @brief   Prints the current status of the local buffer on the console.
-     */
-	virtual void printLocalBufferStatus();
-	
-	/**
-     * @brief   Prints the current status of the local buffer on the console.
-     */
-	virtual void printGlobalBufferStatus();
-	
-	/**
-     * @brief   Prints the current status of the face sorting process on the console.
-     */
-	virtual void printFaceSortingStatus();
-
-// unused methods, yet necessary due to BaseMesh interface
-
-	/**
-	 * @brief	Flip the edge between vertex index v1 and v2
-	 *
-	 * @param	v1	The index of the first vertex
-	 * @param	v2	The index of the second vertex
-	 */
-	virtual void flipEdge(uint v1, uint v2);
+		
 };
 
 } // namespace lvr
