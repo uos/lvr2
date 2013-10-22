@@ -53,7 +53,7 @@ public:
 	 */
 	FusionVertex() 
 	{
-		m_self_index = 1337;
+		m_self_index = 0;
 	}
 
 	/**
@@ -87,6 +87,9 @@ public:
 
 	/// The vertex index in the mesh
 	size_t 				m_self_index;
+	
+	/// The vertex distance to the tree representing the global buffer
+	double 			m_tree_dist;
 	
 	/// The vertex faces index in the mesh
 	//vector<int> 		m_face_indices;
