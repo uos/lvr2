@@ -23,6 +23,7 @@ clean: build
 	rm -rf bin
 	rm -f .configured
 	rm -f *.ply
+	rm -f *.clu
 	cd build && $(MAKE) clean --no-print-directory
 	rm -rf build
 
