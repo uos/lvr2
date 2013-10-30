@@ -55,6 +55,7 @@
 #include <CGAL/Projection_traits_yz_3.h>
 #include <CGAL/Projection_traits_xz_3.h>
 #include <CGAL/Delaunay_triangulation_2.h>
+#include <CGAL/squared_distance_3.h>
 
 #include "Vertex.hpp"
 #include "VertexTraits.hpp"
@@ -71,36 +72,43 @@
 
 using namespace std;
 
+typedef CGAL::Simple_cartesian<double> K;
+typedef K::FT FT;
+typedef K::Segment_3 Segment;
+typedef K::Point_3 Point;
+typedef K::Triangle_3 Triangle;
+typedef K::Plane_3 Plane;
+
+typedef CGAL::Exact_predicates_inexact_constructions_kernel KD;
+typedef CGAL::Projection_traits_xz_3<KD>  Gt;
+typedef CGAL::Delaunay_triangulation_2<Gt> Delaunay;
+typedef KD::Point_3 PointD;
+typedef KD::Triangle_3 TriangleD;
+
 // CGAL Extensions
 
-class ExtendedPoint: public CGAL::Simple_cartesian<double>::Point_3
-{	
-public:
-	typedef CGAL::Simple_cartesian<double>::Point_3 Point;
-	
-	ExtendedPoint(double x, double y, double z) : Point(x, y, z) {}
-	
-	ExtendedPoint(double x, double y, double z, int i) : Point(x, y, z)
-		{ m_self_index = i; }
-	
-	/// The corresponding vertex's index in the mesh
-	int m_self_index;	
-};
-
-class ExtendedTriangle: public CGAL::Simple_cartesian<double>::Triangle_3
+class ExtendedTriangle: public Triangle
 {
 public:
-	typedef CGAL::Simple_cartesian<double>::Triangle_3 Triangle;
-	typedef CGAL::Simple_cartesian<double>::Point_3 Point;
 	
-	ExtendedTriangle(Point& p, Point& q, Point& r) : Triangle(p, q, r) {}
+	ExtendedTriangle(Point& p, Point& q, Point& r) : Triangle(p, q, r)
+		{ m_self_index = 1773; }
 	
 	ExtendedTriangle(Point& p, Point& q, Point& r, int i) : Triangle(p, q, r)
-		{ m_self_index = i; }	
+		{ m_self_index = i; }
 
 	/// The corresponding face's index in the mesh
 	int m_self_index;
 };
+
+typedef ExtendedTriangle ETriangle;
+
+typedef std::vector<ETriangle>::iterator Iterator;
+typedef CGAL::AABB_triangle_primitive<K,Iterator> Primitive;
+typedef CGAL::AABB_traits<K, Primitive> AABB_triangle_traits;
+typedef CGAL::AABB_tree<AABB_triangle_traits> Tree;
+typedef Tree::Object_and_primitive_id Object_and_primitive_id;
+typedef Tree::Primitive_id Primitive_id;
 
 
 namespace lvr
@@ -121,29 +129,6 @@ public:
 	typedef FusionFace<VertexT, NormalT> FFace;
 	typedef FusionVertex<VertexT, NormalT> FVertex;
 	
-	typedef ExtendedPoint EPoint;
-	typedef ExtendedTriangle ETriangle;
-	
-	typedef CGAL::Simple_cartesian<double> K;
-	typedef K::FT FT;
-	typedef K::Ray_3 Ray;
-	typedef K::Line_3 Line;
-	typedef K::Segment_3 Segment;
-	typedef K::Point_3 Point;
-	typedef K::Triangle_3 Triangle;
-	typedef std::vector<ETriangle>::iterator Iterator;
-	typedef CGAL::AABB_triangle_primitive<K,Iterator> Primitive;
-	typedef CGAL::AABB_traits<K, Primitive> AABB_triangle_traits;
-	typedef CGAL::AABB_tree<AABB_triangle_traits> Tree;
-	typedef Tree::Object_and_primitive_id Object_and_primitive_id;
-	typedef Tree::Primitive_id Primitive_id;
-	
-	typedef CGAL::Exact_predicates_inexact_constructions_kernel K2;
-	typedef CGAL::Projection_traits_xz_3<K2>  Gt;
-	typedef CGAL::Delaunay_triangulation_2<Gt> Delaunay;
-	typedef K2::Point_3 Point2;
-	typedef K2::Triangle_3 Triangle2;
-
 	typedef map<VertexT, size_t> Map;
 	typedef typename map<VertexT, size_t>::iterator MapIterator;
 	
@@ -245,6 +230,20 @@ public:
 	 *
      */
 	virtual void lazyIntegrate();
+	
+	/**
+     * @brief   Insert an entire mesh into the local fusion buffer and integrate it imediately.
+     *
+     * @param   mesh      A pointer to the mesh to be inserted
+     */
+	virtual void addMeshAndIntegrate(MeshBufferPtr model);
+	
+	/**
+     * @brief   Insert an entire mesh into the local fusion buffer and lazyintegrate it imediately.
+     *
+     * @param   mesh      A pointer to the mesh to be inserted
+     */
+	virtual void addMeshAndLazyIntegrate(MeshBufferPtr model);
 
 
 // Parameter Methods
@@ -289,6 +288,13 @@ private:
 
 	/// The CGAL AABB Tree
 	Tree		tree;
+	/// The Vector the CGAL Tree is based on
+	vector<ETriangle> tree_triangles;
+	
+	Tree		local_tree;
+	vector<ETriangle> local_tree_triangles;
+	
+	
 	/// The Map with all global vertices
 	Map			global_vertices_map;
 	
@@ -332,12 +338,21 @@ private:
 	virtual void addGlobalVertex(FVertex *v);
 	
 	/**
-     * @brief   Insert a new triangle into the mesh and change vertex indeces by increment
+	 * @brief 	creates CGAL ETriangle from lvr Face
+	 */
+	virtual ETriangle faceToETriangle(FFace *face);
+	
+	/**
+	 * @brief 	creates CGAL Plane from lvr Face
+	 */
+	virtual Plane faceToPlane(FFace *face);
+	
+	/**
+     * @brief   Insert a new triangle into global mesh
      *
      * @param   f       A face from the local buffer
-     * @param   i		 The increment that has to be used to shift the face indices properly. Ususally i = current global vertex buffer size.
      */
-	//virtual void addGlobalTriangle(FFace *f, int i);	
+	virtual void addGlobalFace(FFace *f);	
     
     /**
      * @brief   build CGAL-AABB-Tree from global mesh
@@ -357,17 +372,18 @@ private:
 	virtual void sortFaces();
 	
 	/**
-     * @brief   Integrate remote faces
-	 *
+     * @brief   Adds faces to global buffer taking care of redundant vertices
+     * 
+	 * @param	faces	Faces to be added to global buffer
      */
-	virtual void remoteIntegrate(vector<FFace*>& faces);
+	virtual void addGlobal(vector<FFace*>& faces);
 		
 	/**
      * @brief   Form new Triangles via Delauny Triangulation and add them to globale buffer
 	 *
 	 * @param	vertices	Vertices to triangulate
      */
-	virtual void triangulateAndAdd(vector<Point>& vertices);
+	virtual void triangulateAndAdd(vector<Point>& vertices, Tree& tree);
 	
 	/**
      * @brief   assigns new vertices for triangulation to their border region
@@ -378,26 +394,28 @@ private:
 	virtual void assignToBorderRegion(vector<PointSet>& vertexRegions, vector<Point>new_vertices);
 	
 	/**
-     * @brief   Integrate intersection faces
+     * @brief  Integrate intersection faces
      * 
      * @param	faces	Faces to be integrated
      */
 	virtual void intersectIntegrate(vector<FFace*>& faces);
 	
 	/**
-     * @brief   Insert an entire mesh into the local fusion buffer and integrate it imediately.
-     *
-     * @param   mesh      A pointer to the mesh to be inserted
-     */
-	virtual void addMeshAndIntegrate(MeshBufferPtr model);
+	 * @brief	Finds all intersecting Triangles in Tree
+	 * 
+	 * @param	face	Face to find intersections with
+	 * 
+	 * @return	Adresses of Triangles in Global Buffer
+	 */
+	virtual vector<int> getIntersectingTriangles(FFace* face);
 	
 	/**
-     * @brief   Insert an entire mesh into the local fusion buffer and lazyintegrate it imediately.
-     *
-     * @param   mesh      A pointer to the mesh to be inserted
-     */
-	virtual void addMeshAndLazyIntegrate(MeshBufferPtr model);
-		
+	 * @brief	Finds all intersection points with tree
+	 * 
+	 * @param	face	Face to find intersections with
+	 * 			points		vector to add found intersections points to
+	 */
+	virtual void getIntersectionPoints(FFace* face, vector<Point>& local_points, vector<Point>& global_points);
 };
 
 } // namespace lvr

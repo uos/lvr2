@@ -28,17 +28,6 @@
 namespace lvr
 {
 
-typedef CGAL::Simple_cartesian<double> K;
-typedef K::FT FT;
-typedef K::Ray_3 Ray;
-typedef K::Line_3 Line;
-typedef K::Point_3 Point;
-typedef K::Triangle_3 Triangle;
-typedef std::list<Triangle>::iterator Iterator;
-typedef CGAL::AABB_triangle_primitive<K,Iterator> Primitive;
-typedef CGAL::AABB_traits<K, Primitive> AABB_triangle_traits;
-typedef CGAL::AABB_tree<AABB_triangle_traits> Tree;
-	
 ///
 /// Constructors
 ///
@@ -144,6 +133,7 @@ template<typename VertexT, typename NormalT> void FusionMesh<VertexT, NormalT>::
 
     for(size_t i = 0; face_iter != face_end; ++i, ++face_iter)
     {
+		if ((*face_iter)->is_valid) { //NUR ZUM TESTEN
 		
 		r=(float) (*face_iter)->r;
 		g=(float) (*face_iter)->g;
@@ -168,7 +158,7 @@ template<typename VertexT, typename NormalT> void FusionMesh<VertexT, NormalT>::
         // faceColorBuffer.push_back( r );
         // faceColorBuffer.push_back( g );
         // faceColorBuffer.push_back( b );
-    
+	}
     }
     // Hand the buffers over to the Model class for IO operations.
 
@@ -237,7 +227,7 @@ template<typename VertexT, typename NormalT> void FusionMesh<VertexT, NormalT>::
     
     if (m_global_vertices.size() == 0)
     {
-		lazyIntegrate();
+		addGlobal(m_local_faces);
 	}
     else
     {
@@ -247,22 +237,10 @@ template<typename VertexT, typename NormalT> void FusionMesh<VertexT, NormalT>::
 		sortFaces();
 		
 		cout << "Start Integration" << endl;
-		remoteIntegrate(remote_faces);
+		addGlobal(remote_faces);
 		intersectIntegrate(intersection_faces);
 	}
-	
-    // for all faces in local buffer
-    // add face to globalbuffer()
-    /* {
-		 * int status = checkOverlappingStatus(face)
-		 * 
-		 * if(0 = completely redundant) break;
-		 * if(1 = border overlap) --> clip(boarder_faces, face)
-		 * if(2 = interior overlap) --> später 
-		 * 
-	   }
-    */
-     
+	 
     clearLocalBuffer();
    
     cout << endl << "Face Errors" << endl;
@@ -310,13 +288,24 @@ template<typename VertexT, typename NormalT> void FusionMesh<VertexT, NormalT>::
 		face->m_index[0] = face->m_index[0] + num_current_global_vertices;
 		face->m_index[1] = face->m_index[1] + num_current_global_vertices;
 		face->m_index[2] = face->m_index[2] + num_current_global_vertices;
-		face->m_self_index = m_global_faces.size();
-		m_global_faces.push_back(face);
+		addGlobalFace(face);
     }
     
     clearLocalBuffer();
     
     cout << endl << timestamp << "Finished Lazy Integration..." << endl << endl;
+}
+
+template<typename VertexT, typename NormalT> void FusionMesh<VertexT, NormalT>::addMeshAndIntegrate(MeshBufferPtr mesh)
+{
+	addMesh(mesh);
+	integrate();
+}
+
+template<typename VertexT, typename NormalT> void FusionMesh<VertexT, NormalT>::addMeshAndLazyIntegrate(MeshBufferPtr mesh)
+{
+	addMesh(mesh);
+	lazyIntegrate();
 }
 
 ///
@@ -379,47 +368,64 @@ template<typename VertexT, typename NormalT> void FusionMesh<VertexT, NormalT>::
 /// Integration Methods (internal)
 ///
 
+template<typename VertexT, typename NormalT> ETriangle FusionMesh<VertexT, NormalT>::faceToETriangle(FFace *face)
+{
+	FVertex* v0 = face->vertices[0];
+	FVertex* v1 = face->vertices[1];
+	FVertex* v2 = face->vertices[2];
+	
+	Point a(v0->m_position[0], v0->m_position[1], v0->m_position[2]);
+	Point b(v1->m_position[0], v1->m_position[1], v1->m_position[2]);
+	Point c(v2->m_position[0], v2->m_position[1], v2->m_position[2]);
+	
+	return ETriangle(a,b,c, face->m_self_index);
+}
+
+template<typename VertexT, typename NormalT> Plane FusionMesh<VertexT, NormalT>::faceToPlane(FFace *face)
+{
+	FVertex* v0 = face->vertices[0];
+	FVertex* v1 = face->vertices[1];
+	FVertex* v2 = face->vertices[2];
+	
+	Point a = Point(v0->m_position[0], v0->m_position[1], v0->m_position[2]);
+	Point b = Point(v1->m_position[0], v1->m_position[1], v1->m_position[2]);
+	Point c = Point(v2->m_position[0], v2->m_position[1], v2->m_position[2]);
+	
+	return Plane(a,b,c);
+}
+
 template<typename VertexT, typename NormalT> void FusionMesh<VertexT, NormalT>::addGlobalVertex(FVertex *v)
 {
     m_global_vertices.push_back(v);
     m_global_vertices[m_global_index]->m_self_index = m_global_index;
     m_global_index++;
+    v->is_valid = true;
 }
 
-/*template<typename VertexT, typename NormalT> void FusionMesh<VertexT, NormalT>::addGlobalTriangle(FFace *face, int increment)
-{		
-	face->m_index[0] = face->m_index[0] + increment;
-	face->m_index[1] = face->m_index[1] + increment;
-	face->m_index[2] = face->m_index[2] + increment;
-	
+template<typename VertexT, typename NormalT> void FusionMesh<VertexT, NormalT>::addGlobalFace(FFace *face)
+{	
+	face->is_valid = true;
+	face->m_self_index = m_global_faces.size();
 	m_global_faces.push_back(face);   
    // cout << "Adding Global Face - " << face->m_index[0] << " " << face->m_index[1] << " " << face->m_index[2] << " " << endl;
-}*/
+}
 
 template<typename VertexT, typename NormalT> void FusionMesh<VertexT, NormalT>::buildTree()
 {
+	tree.clear();
+	tree_triangles.clear();
 	size_t num_current_global_vertices = m_global_vertices.size();
 	size_t num_current_global_faces = m_global_faces.size();
-
-	vector<ETriangle> triangles;	
-
+	
 	if(num_current_global_faces > 0)
 	{
 		for(size_t i = 0; i < num_current_global_faces; i++)
 		{
-			FVertex* v0 = m_global_vertices[m_global_faces[i]->m_index[0]];
-			FVertex* v1 = m_global_vertices[m_global_faces[i]->m_index[1]];
-			FVertex* v2 = m_global_vertices[m_global_faces[i]->m_index[2]];
-			
-			EPoint a(v0->m_position.x, v0->m_position.y, v0->m_position.z, v0->m_self_index);
-			EPoint b(v1->m_position.x, v1->m_position.y, v1->m_position.z, v0->m_self_index);
-			EPoint c(v2->m_position.x, v2->m_position.y, v2->m_position.z, v0->m_self_index);
-			
-			triangles.push_back(ETriangle(a,b,c,i));
+			FFace* face = m_global_faces[i];
+			ETriangle tri = faceToETriangle(face);
+			tree_triangles.push_back(tri);
 		}
-		
-		tree.clear();
-		tree.insert(triangles.begin(), triangles.end());
+		tree.insert(tree_triangles.begin(), tree_triangles.end());
 	}	
 }
 
@@ -444,12 +450,21 @@ template<typename VertexT, typename NormalT> void FusionMesh<VertexT, NormalT>::
 	cout << "Distance Threshold: " << sqrt(threshold) << endl;
 	cout << "Squared Distance Threshold: " << threshold << endl;
 	
+	remote_faces.clear();
+	intersection_faces.clear();
+	closeby_faces.clear();
 	redundant_faces = 0;
 	special_case_faces = 0;
 	int far_tree_intersect_fails = 0;
 	int close_tree_intersect_fails = 0;
 	
-	bool result = tree.accelerate_distance_queries();
+	bool result = false;
+	try {
+		result = tree.accelerate_distance_queries();
+	} catch (...)
+	{
+		cout << "function sortFaces: tree.accelerate_distance_queries() failed" << endl;
+	}
 	if (result) {
 		cout << "successfully accelerated_distance_queries" << endl; 
 	}
@@ -475,6 +490,7 @@ template<typename VertexT, typename NormalT> void FusionMesh<VertexT, NormalT>::
 		
 		temp = Triangle(a,b,c);
 		
+		//check wether distance to all vertices is above threshold
 		if (v0->m_tree_dist > threshold && v1->m_tree_dist > threshold && v2->m_tree_dist > threshold)
 		{
 			bool result = true;
@@ -483,67 +499,40 @@ template<typename VertexT, typename NormalT> void FusionMesh<VertexT, NormalT>::
 			} catch (...)
 		    {
 				far_tree_intersect_fails++;
-				//cout << "For this face: " << i << " tree.do_intersect() failed" << endl;
-				//cout << v0->m_position << ", " << v1->m_position << ", " << v2->m_position << endl;
 			}
 			if (result)
 			{
 				// unhandled exceptional situation
-				//cout << "found intersection out of distance" << endl;
 				//find solution
-				face->r = 200;
-				face->g = 200;
-				face->b = 200;	
 				special_case_faces++;
-				// lassen wir erstmal ganz weg
 			}
 			//detected non overlapping local face
-			else
-			{
-				/*face->r = 0;
-				face->g = 0;
-				face->b = 200;*/
-				
+			else {
 				remote_faces.push_back(face);
-
 			}
 		}
 		else if(v0->m_tree_dist <= threshold && v1->m_tree_dist <= threshold && v2->m_tree_dist <= threshold)
 		{	
 			// Delete Case: redundant faces
-			face->r = 200;
-			face->g = 200;
-			face->b = 0;
 			redundant_faces++;
-			// lassen wir ganz weg
-
+			delete face;
+			//TODO: delete vertices if not referenced by other face
 		}
 		else
 		{	
-			  //  face->r = 100;
-			  //	face->g = 100;
-			  //	face->b = 0;
-			
 			bool result = false;
 			try {
 				result = tree.do_intersect(temp);
 			} catch (...)
 			{
 				close_tree_intersect_fails++;
-				//cout << "For face: " << i << " three.do_intersect() fails" << endl;
 			}
 			if(result) {
-				//cout << "found intersection within distance" << endl;
-				//find solution
-				face->r = 0;
-				face->g = 0;
-				face->b = 200;
-				
+				// Intersection Case:
 				intersection_faces.push_back(face);
 			}
 			else {
 				//partial overlaping, gaps etc. case
-				//cout << "found within distance" << endl;
 				//ggf. hier intersection erzwingen ?! (wall method s. paper)
 				closeby_faces.push_back(face);
 			}
@@ -564,7 +553,7 @@ template<typename VertexT, typename NormalT> void FusionMesh<VertexT, NormalT>::
    // cout << "Adding Tree Face - " << face->m_index[0] << " " << face->m_index[1] << " " << face->m_index[2] << " " << endl;
 }
 
-template<typename VertexT, typename NormalT> void FusionMesh<VertexT, NormalT>::remoteIntegrate(vector<FFace*>& faces)
+template<typename VertexT, typename NormalT> void FusionMesh<VertexT, NormalT>::addGlobal(vector<FFace*>& faces)
 {	
 	int degentFaces = 0;
 	
@@ -609,67 +598,68 @@ template<typename VertexT, typename NormalT> void FusionMesh<VertexT, NormalT>::
 			degentFaces++;
 		}	
 		else {
-			m_global_faces.push_back(face);
+			addGlobalFace(face);
 		}
     }
-    //cout << "Skipped " << degentFaces << " Faces due to degeneration" << endl;
+    cout << "Skipped " << degentFaces << " Faces due to degeneration" << endl;
 	//cout << "Finished Remote Integrate" << endl;
 }
 
-template<typename VertexT, typename NormalT> void FusionMesh<VertexT, NormalT>::triangulateAndAdd(vector<Point>& vertices)
+template<typename VertexT, typename NormalT> void FusionMesh<VertexT, NormalT>::triangulateAndAdd(vector<Point>& vertices, Tree& tree)
 {
 	vector<FFace*> new_faces;
 	Delaunay dt;
-	// add vertices to Delauny Triangulation
+	// add points/vertices to Delauny Triangulation
 	for (int i = 0; i < vertices.size(); i++) {
-		Point2 p(vertices[i].x(), vertices[i].y(), vertices[i].z());
+		PointD p(vertices[i].x(), vertices[i].y(), vertices[i].z());
 		dt.push_back(p);
 	}
+	// extract new faces
 	Delaunay::Finite_faces_iterator it;
-	float max_tri_size = threshold/2;
 	for (it = dt.finite_faces_begin(); it != dt.finite_faces_end(); it++)
 	{	
-		// for each new face add all vertices to local buffer
-		// (remote integrate will handle redundant vertices)
-		Triangle2 tri = dt.triangle(it);
+		TriangleD tri = dt.triangle(it);
 		int count_to_close_vertices = 0;
 		int count_to_far_vertices = 0;
 		for (int i = 0; i < 3; i++) {
-			Point2 p = tri.vertex(i);
-			Point a(p.x(), p.y(), p.z());
-			FT dist = tree.squared_distance(a);
-			if (dist <= threshold) {
+			PointD pd = tri.vertex(i);
+			Point p(pd.x(), pd.y(), pd.z());
+			FT dist = tree.squared_distance(p);
+			if (dist <= threshold && dist >= 0) {
+				cout << "to close vertex dist: " << dist << endl;
 				count_to_close_vertices++;
 			}
 			else {
+				cout << "to far vertex dist: " << dist << endl;
 				count_to_far_vertices++;
 			}
 			addVertex(VertexT(p.x(), p.y(), p.z()));
+			cout << "added new vertex" << endl;
 		}
 		// check for remote faces that might have been created
 		if (count_to_close_vertices < 3 && count_to_far_vertices < 3) {
 			addTriangle(m_local_index-3, m_local_index-2, m_local_index-1);
 			new_faces.push_back(m_local_faces[m_local_faces.size()-1]);
+			cout << "pushed new face" << endl;
 			/*FFace* colorFace = m_local_faces[m_local_faces.size()-1];
 				colorFace->r = 200;
 				colorFace->g = 0;
 				colorFace->b = 0;*/
 		}
 	}
-	remoteIntegrate(new_faces);
+	addGlobal(new_faces);
 }
 
 template<typename VertexT, typename NormalT> void FusionMesh<VertexT, NormalT>::assignToBorderRegion(vector<PointSet>& vertexRegions, vector<Point>new_vertices)
 {	
 	PointSetIterator it;
-	Point p;
 	bool inserted = false;
 	
 	// check existing regions
 	for(int i = 0; i < vertexRegions.size(); i++)
 	{	
 		for(int j = 0; j < new_vertices.size(); j++) {
-			p = new_vertices[j];
+			Point p = new_vertices[j];
 			it = vertexRegions[i].find(p);
 			if (it != vertexRegions[i].end()){
 				for(int k = 0; k < new_vertices.size(); k++) {
@@ -686,7 +676,7 @@ template<typename VertexT, typename NormalT> void FusionMesh<VertexT, NormalT>::
 	if (!inserted) {
 		PointSet set;;
 		for(int k = 0; k < new_vertices.size(); k++) {
-			p = new_vertices[k];
+			Point p = new_vertices[k];
 			set.insert(p);
 		}
 		vertexRegions.push_back(set);
@@ -697,93 +687,160 @@ template<typename VertexT, typename NormalT> void FusionMesh<VertexT, NormalT>::
 {
 	cout << "Start Intersect Integrate..." << endl;
 	
-	//addFacesToVertices();
+	vector<PointSet> local_vertexRegions;
+	vector<PointSet> global_vertexRegions;
+	vector<int> intersect_ids;
+	vector<Point> new_local_vertices;
+	vector<Point> new_global_vertices;
+	FFace* face;
+	FFace* glo_face;
+	FVertex* v;
 	
-	vector<PointSet> vertexRegions;
-	vector<Point> new_vertex_pos;
-	vector<EPoint> tri_points;
-	vector<const Segment*> intersect_segments;
-	list<Object_and_primitive_id> intersections;
+	local_tree_triangles.clear();
+	local_tree.clear();
 	
 	for(size_t i = 0; i < faces.size(); i++)
-    { 
-		FFace* face = faces[i];
-		tri_points.clear();
-		new_vertex_pos.clear();
+    {	
+		intersect_ids.clear();
+		new_local_vertices.clear();
+		new_global_vertices.clear();
+		
+		face = faces[i];
+		//create vector of local intersection triangles for tree
+		ETriangle tri = faceToETriangle(face);
+		local_tree_triangles.push_back(tri);
+		
+		//check which vertices will be kept from local
 		for (int j = 0; j < 3; j++) {
-			FVertex* v = m_local_vertices[face->m_index[j]];
-			EPoint a(v->m_position.x, v->m_position.y, v->m_position.z);
-			FT dist = tree.squared_distance(a);
-			tri_points.push_back(a);
-			//check wether this vertex will be kept
-			if (dist > threshold) {
-				new_vertex_pos.push_back(a);
+			v = face->vertices[j];
+			if (v->m_tree_dist > threshold) {
+				Point a(v->m_position.x, v->m_position.y, v->m_position.z);
+				new_local_vertices.push_back(a);
 			}
 		}
-		//determine intersection points and add to new_vertex_pos
-		ETriangle tri = ETriangle(tri_points[0], tri_points[1], tri_points[2]);
-		intersections.clear();
-		intersect_segments.clear();
 		
-		list<Primitive_id> primitives;
-		tree.all_intersected_primitives(tri, back_inserter(primitives));
-		while (!primitives.empty()) {
-			Primitive_id id = primitives.front();
-			primitives.pop_front();
-			
-		}
-		
-		
-		try {
-				tree.all_intersections(tri, back_inserter(intersections));
-		} catch (...)
-		{
-				cout << "tree.do_intersect() fails" << endl;
-		}
-		while (!intersections.empty()) {
-			Object_and_primitive_id op = intersections.front();
-			intersections.pop_front();
-			CGAL::Object object = op.first;
-			//check wether intersection object is a segment
-			if (const Segment* s = CGAL::object_cast<Segment>(&object)){
-				intersect_segments.push_back(s);
-			}
-			else if (const Point* p = CGAL::object_cast<Point>(&object)){
-				cout << "intersection is a point not a segment" << endl;
+		//check which vertices to keep from intersecting triangles
+		intersect_ids = getIntersectingTriangles(face);
+		for (int j = 0; j < intersect_ids.size(); j++) {
+			Plane plane = faceToPlane(face);
+			glo_face = m_global_faces[intersect_ids[j]];
+			glo_face->is_valid = false;
+			for (int k = 0; k < 3; k++) {
+				v = glo_face->vertices[k];
+				Point a(v->m_position.x, v->m_position.y, v->m_position.z);
+				FT x = 0;
+				try {
+					x = CGAL::squared_distance(plane,a);
+				} catch (...)
+				{
+					cout << "function intersectIntegrate: squared_distance(plane,point) failed" << endl;
+				}
+				if (x > threshold) {
+					new_global_vertices.push_back(a);
+					//PRÜFEN OB IMMER MINDESTENS EINE VERTEX HINZUGEFÜGT WIRD
+				}
+				else {
+					//EVENTUELL NOCH ABSTAND ZU SEGMENTEN PRÜFEN
+					v->is_valid = false; //v aus Global wirklich safe?
+				}
 			}
 		}
-		for (int j = 0; j < intersect_segments.size(); j++) {
-			const Segment* seg = intersect_segments[j];
-			Point p = seg->source();
-			//HIER ENTSTEHT BEIM HORN_MESH EIN PUNKT MIT e-316 Werten
-			new_vertex_pos.push_back(p);
-			p = seg->target();
-			new_vertex_pos.push_back(p);
-		}
-		assignToBorderRegion(vertexRegions, new_vertex_pos);
-	}
-	for(int i = 0; i < vertexRegions.size(); i++) {
-		new_vertex_pos.clear();
-		for (PointSetIterator it = vertexRegions[i].begin(); it != vertexRegions[i].end(); ++it) {
-			new_vertex_pos.push_back(*it);
-		}
-		triangulateAndAdd(new_vertex_pos);
+		//get Intersection Points and assign them to Border Region
+		getIntersectionPoints(face, new_local_vertices, new_global_vertices);
+		assignToBorderRegion(local_vertexRegions, new_local_vertices);
+		assignToBorderRegion(global_vertexRegions, new_global_vertices);
 	}
 	
+	//build local tree from triangles
+	local_tree.insert(local_tree_triangles.begin(), local_tree_triangles.end());
+	bool result = false;
+	try {
+		result = local_tree.accelerate_distance_queries();
+	} catch (...)
+	{
+		cout << "function intersectIntegrate: local_tree.accelerate_distance_queries() failed" << endl;
+	}
+	if (result) {
+		cout << "successfully accelerated_distance_queries" << endl; 
+	}
 	
+	// triangulate and add all Border Regions
+	for(int i = 0; i < local_vertexRegions.size(); i++) {
+		new_local_vertices.clear();
+		for (PointSetIterator it = local_vertexRegions[i].begin(); it != local_vertexRegions[i].end(); ++it) {
+			new_local_vertices.push_back(*it);
+		}
+		triangulateAndAdd(new_local_vertices, tree);
+	}
+	for(int i = 0; i < global_vertexRegions.size(); i++) {
+		new_global_vertices.clear();
+		for (PointSetIterator it = global_vertexRegions[i].begin(); it != global_vertexRegions[i].end(); ++it) {
+			new_global_vertices.push_back(*it);
+		}
+		triangulateAndAdd(new_global_vertices, local_tree);
+	}
 	cout << "Finished Intersect Integrate ..." << endl;
 }
 
-template<typename VertexT, typename NormalT> void FusionMesh<VertexT, NormalT>::addMeshAndIntegrate(MeshBufferPtr mesh)
+template<typename VertexT, typename NormalT> vector<int> FusionMesh<VertexT, NormalT>::getIntersectingTriangles(FFace *face)
 {
-	addMesh(mesh);
-	integrate();
+	list<Primitive_id> primitives;
+	Primitive_id id;
+	vector<int> global_ids;
+	
+	ETriangle tri = faceToETriangle(face);
+	try {
+		tree.all_intersected_primitives(tri, back_inserter(primitives));
+	} catch (...)
+	{
+		cout << "function getIntersectingTriangles: tree.all_intersected_primitives() fails" << endl;
+	}
+	while (!primitives.empty()) {
+		id = primitives.front();
+		primitives.pop_front();
+		ETriangle tri2 = *id;
+		global_ids.push_back(tri2.m_self_index);
+	}
+	return global_ids;
 }
 
-template<typename VertexT, typename NormalT> void FusionMesh<VertexT, NormalT>::addMeshAndLazyIntegrate(MeshBufferPtr mesh)
+template<typename VertexT, typename NormalT> void FusionMesh<VertexT, NormalT>::getIntersectionPoints(FFace *face, vector<Point>& local_points, vector<Point>& global_points)
 {
-	addMesh(mesh);
-	lazyIntegrate();
+	vector<const Segment*> intersect_segments;
+	list<Object_and_primitive_id> intersections;
+	Object_and_primitive_id op;
+	CGAL::Object object;
+	Point p;
+
+	ETriangle tri = faceToETriangle(face);
+	try {
+			tree.all_intersections(tri, back_inserter(intersections));
+	} catch (...)
+	{
+		cout << "function getIntersectionPoints: tree.do_intersect() fails" << endl;
+	}
+	while (!intersections.empty()) {
+		op = intersections.front();
+		intersections.pop_front();
+		object = op.first;
+		//check wether intersection object is a segment
+		if (const Segment* s = CGAL::object_cast<Segment>(&object)){
+			intersect_segments.push_back(s);
+		}
+		else if (const Point* p = CGAL::object_cast<Point>(&object)){
+			cout << "intersection is a point not a segment" << endl;
+		}
+	}
+	for (int j = 0; j < intersect_segments.size(); j++) {
+		const Segment* seg = intersect_segments[j];
+		p = seg->source();
+		//HIER ENTSTEHT BEIM HORN_MESH EIN PUNKT MIT e-316 Werten
+		local_points.push_back(p);
+		global_points.push_back(p);
+		p = seg->target();
+		local_points.push_back(p);
+		global_points.push_back(p);
+	}
 }
 
 } // namespace lvr

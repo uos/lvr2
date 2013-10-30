@@ -53,7 +53,8 @@ public:
 	 */
 	FusionVertex() 
 	{
-		m_self_index = 0;
+		m_self_index = 1337;
+		is_valid = false;
 	}
 
 	/**
@@ -69,7 +70,7 @@ public:
 	/**
 	 * @brief	Copy Ctor.
 	 */
-	 /*
+	/*
 	FusionVertex(const FusionVertex& o)
 	{
 		m_position = o.m_position;
@@ -94,8 +95,8 @@ public:
 	/// The vertex faces index in the mesh
 	//vector<int> 		m_face_indices;
 
-	/// Indicator if vertex is part of the mesh boundary
-	bool is_border_vertex;
+	/// Indicator if the vertex is valid or supposed to be deleted
+	bool 				is_valid;
 
 };
 
