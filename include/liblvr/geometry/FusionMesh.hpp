@@ -23,6 +23,7 @@
  *  @author Ann-Katrin Häuser (ahaeuser@uos.de)
  *  @author Henning Deeken (hdeeken@uos.de)
  *  @author Thomas Wiemann (twiemann@uos.de)
+ *  @author Sebastian Puetz (spuetz@uos.de)
  */
 
 #ifndef FUSIONMESH_H_
@@ -69,6 +70,8 @@
 #include "io/Timestamp.hpp"
 #include "io/Progress.hpp"
 #include "io/Model.hpp"
+
+#define POINT_DIST_EPSILON 1e-6
 
 using namespace std;
 
@@ -416,6 +419,21 @@ private:
 	 * 			points		vector to add found intersections points to
 	 */
 	virtual void getIntersectionPoints(FFace* face, vector<Point>& local_points, vector<Point>& global_points);
+
+	/**
+	 * @brief	Finds all intersection segments
+	 * 
+	 * @param	face	Face to find intersection witt
+	 * 			segments	a vector, contains the found intersections segments
+	 */
+	virtual void getIntersectionSegments(FFace *face, vector<Segment>& segments);
+
+	/**
+	 * @brief	sort the given segments in the order of an edge sequence with a starting- and an endpoint
+	 *
+	 * @param	segments a vector of secments to sort
+	 */
+	virtual bool sortSegments(vector<Segment>& segments);
 };
 
 } // namespace lvr
