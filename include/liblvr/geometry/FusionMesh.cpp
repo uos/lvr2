@@ -401,6 +401,48 @@ template<typename VertexT, typename NormalT> Plane FusionMesh<VertexT, NormalT>:
 	return Plane(a,b,c);
 }
 
+template<typename VertexT, typename NormalT> AffineTF FusionMesh<VertexT, NormalT>::calcTransform(FFace *face)
+{
+	ETriangle tri = faceToETriangle(face);
+	// rotate around z
+	
+	cout << "A: " << tri.vertex(1) << " B: " << tri.vertex(2) << " C: " << tri.vertex(3) << endl;
+	
+	AffineTF tf (  1, 	0, 		0, 		-tri.vertex(1).x(),
+					0, 1, 0, -tri.vertex(1).y(),
+					0, 0, 1,  -tri.vertex(1).z(),	1);
+	Point a1 = tf.transform(tri.vertex(1));
+	Point b1 = tf.transform(tri.vertex(2));
+	Point c1 = tf.transform(tri.vertex(3));
+	cout << "after translation A: " << a1 << " B: " << b1 << " C: " << c1 << endl;
+	
+	CGAL::Vector_3<K> vec_AB = tri.vertex(2) - tri.vertex(1);
+	double a = atan2(vec_AB.y(), vec_AB.x()); //alpha
+	AffineTF tfz( cos(a), sin(a), 0, 0,
+				  -sin(a), cos(a), 0, 0,
+					0,		0,	   1, 0, 1);
+					
+	a1 = tfz.transform(a1);
+	b1 = tfz.transform(b1);
+	c1 = tfz.transform(c1);
+	
+	cout << "after rotation around z A: " << a1 << " B: " << b1 << " C: " << c1 << endl;
+	
+	CGAL::Vector_3<K> vec_AC = tri.vertex(3) - tri.vertex(2);
+	double b = atan2(vec_AC.z(), vec_AC.x()); //beta
+	
+	AffineTF tfx(  1, 	0, 		0, 		0,
+					0, cos(b), sin(b), 0,
+					0, -sin(b), cos(b),  0,	1);
+					
+	a1 = tfx.transform(a1);
+	b1 = tfx.transform(b1);
+	c1 = tfx.transform(c1);
+	
+	cout << "after rotation around x A: " << a1 << " B: " << b1 << " C: " << c1 << endl;
+	return tf*tfz*tfx;
+}
+
 template<typename VertexT, typename NormalT> void FusionMesh<VertexT, NormalT>::addGlobalVertex(FVertex *v)
 {
     m_global_vertices.push_back(v);
@@ -795,20 +837,20 @@ template<typename VertexT, typename NormalT> void FusionMesh<VertexT, NormalT>::
 			}
 		}
 		
+		AffineTF tf = calcTransform(face);
+
 		cout << "Polygon1: "<<endl;
 		for(int i=0; i < polygon1.size(); i++)
 		{
+			polygon1[i] = tf.transform(polygon1[i]);
 			cout << polygon1[i] << endl;
 		}
 		cout << "Polygon2: "<<endl;
 		for(int i=0; i < polygon2.size(); i++)
 		{
+			polygon2[i] = tf.transform(polygon2[i]);
 			cout << polygon2[i] << endl;
 		}
-
-
-
-
 
 
 	}
