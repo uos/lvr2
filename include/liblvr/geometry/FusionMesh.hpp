@@ -116,7 +116,6 @@ typedef Tree::Primitive_id Primitive_id;
 
 namespace lvr
 {
-cd b
 template<typename VertexT, typename NormalT> class FusionVertex;
 template<typename VertexT, typename NormalT> class FusionFace;
 
@@ -411,6 +410,24 @@ private:
 	virtual void getIntersectionPoints(FFace* face, vector<Point>& local_points, vector<Point>& global_points);
 
 	/**
+	 * @brief	Returns the CGAL Segments of a FFace
+	 *
+	 * @param	face 	Face to get the Segments from
+	 * @return	vector of CGAL Segments
+	 */
+	virtual vector<Segment> face2Segments(FFace* face);
+
+	/**
+	 * @brief	Returns true, if the given point lies on the given segment
+	 *
+	 * @param	p the point to check
+	 * @param 	s the segment to check
+	 * @return 	true, if the given point lies on the given segment
+	 */
+	virtual bool pointOnSegment(Point& p, Segment& s);
+
+
+	/**
 	 * @brief	Finds all intersection segments
 	 * 
 	 * @param	face	Face to find intersection witt
@@ -423,7 +440,9 @@ private:
 	 *
 	 * @param	segments a vector of secments to sort
 	 */
-	virtual bool sortSegments(vector<Segment>& segments);
+	virtual bool sortSegments(vector<Segment>& segments, vector<Point>& points);
+
+
 };
 
 } // namespace lvr
