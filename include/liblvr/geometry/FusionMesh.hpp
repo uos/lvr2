@@ -57,6 +57,8 @@
 #include <CGAL/Projection_traits_xz_3.h>
 #include <CGAL/Delaunay_triangulation_2.h>
 #include <CGAL/squared_distance_3.h>
+#include <CGAL/Aff_transformation_3.h>
+#include <CGAL/Vector_3.h>
 
 #include "Vertex.hpp"
 #include "VertexTraits.hpp"
@@ -87,6 +89,8 @@ typedef CGAL::Projection_traits_xz_3<KD>  Gt;
 typedef CGAL::Delaunay_triangulation_2<Gt> Delaunay;
 typedef KD::Point_3 PointD;
 typedef KD::Triangle_3 TriangleD;
+
+typedef CGAL::Aff_transformation_3<K> AffineTF;
 
 // CGAL Extensions
 
@@ -338,6 +342,11 @@ private:
 	 * @brief 	creates CGAL Plane from lvr Face
 	 */
 	virtual Plane faceToPlane(FFace *face);
+	
+	/**
+	 * @brief calculates Transformation matrix from face to xy plane
+	 */
+	 virtual AffineTF calcTransform(FFace *face);
 	
 	/**
      * @brief   Insert a new triangle into global mesh
