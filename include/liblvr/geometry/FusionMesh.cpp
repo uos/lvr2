@@ -699,7 +699,7 @@ template<typename VertexT, typename NormalT> void FusionMesh<VertexT, NormalT>::
 	local_tree_triangles.clear();
 	local_tree.clear();
 	
-	for(size_t i = 0; i < faces.size(); i++)
+	for(size_t i = 0;./ i < faces.size(); i++)
     {	
 		intersect_ids.clear();
 		new_local_vertices.clear();

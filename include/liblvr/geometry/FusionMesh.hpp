@@ -113,7 +113,7 @@ typedef Tree::Primitive_id Primitive_id;
 
 namespace lvr
 {
-
+cd b
 template<typename VertexT, typename NormalT> class FusionVertex;
 template<typename VertexT, typename NormalT> class FusionFace;
 
@@ -183,16 +183,6 @@ public:
 	 * @param	c		The third vertex of the triangle
 	 */
 	virtual void addTriangle(uint a, uint b, uint c);
-
-    /**
-     * @brief   Insert a new triangle into the mesh
-     *
-     * @param   a       The first vertex of the triangle
-     * @param   b       The second vertex of the triangle
-     * @param   c       The third vertex of the triangle
-     * @param   f       A pointer to the created face
-     */
-	//virtual void addTriangle(uint a, uint b, uint c, FFace* &f);
 
 	/**
 	 * @brief 	Finalizes a mesh, i.e. converts the template based buffers
