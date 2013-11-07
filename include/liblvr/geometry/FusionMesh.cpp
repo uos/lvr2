@@ -246,8 +246,14 @@ template<typename VertexT, typename NormalT> void FusionMesh<VertexT, NormalT>::
     cout << endl << "Face Errors" << endl;
     for(unsigned int i = 0; i < m_global_faces.size(); i++)
     {
-		if (m_global_faces[i]->m_index[0] >= m_global_index || m_global_faces[i]->m_index[1] >= m_global_index || m_global_faces[i]->m_index[2] >= m_global_index) {
-			cout << "Vertex Indices for Face[" << i << "]: " << m_global_faces[i]->m_index[0] << ", " << m_global_faces[i]->m_index[1] << ", " << m_global_faces[i]->m_index[0] << endl;
+		if (m_global_faces[i]->m_index[0] >= m_global_index || 
+				m_global_faces[i]->m_index[1] >= m_global_index || 
+				m_global_faces[i]->m_index[2] >= m_global_index) 
+		{
+			cout << "Vertex Indices for Face[" << i << "]: " << 
+				m_global_faces[i]->m_index[0] << ", " << 
+				m_global_faces[i]->m_index[1] << ", " << 
+				m_global_faces[i]->m_index[0] << endl;
 			cout << "m_global_index: " << m_global_index << endl;
 		}
 	}
@@ -683,15 +689,47 @@ template<typename VertexT, typename NormalT> void FusionMesh<VertexT, NormalT>::
 	}
 }
 
+
 template<typename VertexT, typename NormalT> void FusionMesh<VertexT, NormalT>::intersectIntegrate(vector<FFace*>& faces)
 {
 	cout << "Start Intersect Integrate..." << endl;
 	
+	set<int> global_intersect_triangles;
+	vector<int> intersect_ids; // ids from intersected triangles
+
+
+	// check intersected triangles of the globalmesh
+	for(size_t i = 0; i < faces.size(); i++)
+	{
+		FFace* face = faces[i];
+		intersect_ids = getIntersectingTriangles(face);
+		global_intersect_triangles.insert(intersect_ids.begin(), intersect_ids.end());
+	}
+
+
+
+	for(size_t i = 0; i < faces.size(); i++)
+	{
+
+		FFace* face = faces[i];
+		vector<Segment> segments;
+		getIntersectionSegments(face, segments); // get all intersected segments off the given face
+		bool ok = sortSegments(segments);
+
+		if(ok) cout << "ok: " << endl;
+		else cout << "failed!" << endl;
+		cout << " Segments: " << endl;
+		for(vector<Segment>::iterator iter = segments.begin(); iter != segments.end(); ++iter){
+			cout << "p1: " << iter->source() << "  p2: " << iter->target() << endl;
+		}
+	}
+
+/*
 	vector<PointSet> local_vertexRegions;
 	vector<PointSet> global_vertexRegions;
-	vector<int> intersect_ids;
 	vector<Point> new_local_vertices;
 	vector<Point> new_global_vertices;
+	
 	FFace* face;
 	FFace* glo_face;
 	FVertex* v;
@@ -780,9 +818,12 @@ template<typename VertexT, typename NormalT> void FusionMesh<VertexT, NormalT>::
 		triangulateAndAdd(new_global_vertices, local_tree);
 	}
 	cout << "Finished Intersect Integrate ..." << endl;
+*/
+
 }
 
-template<typename VertexT, typename NormalT> vector<int> FusionMesh<VertexT, NormalT>::getIntersectingTriangles(FFace *face)
+template<typename VertexT, typename NormalT>
+vector<int> FusionMesh<VertexT, NormalT>::getIntersectingTriangles(FFace *face)
 {
 	list<Primitive_id> primitives;
 	Primitive_id id;
@@ -802,6 +843,149 @@ template<typename VertexT, typename NormalT> vector<int> FusionMesh<VertexT, Nor
 		global_ids.push_back(tri2.m_self_index);
 	}
 	return global_ids;
+}
+
+
+template<typename VertexT, typename NormalT> 
+bool FusionMesh<VertexT, NormalT>::sortSegments(vector<Segment> &segments)
+{
+	bool regular = true;
+
+	struct EpsilonComparator {
+		double epsilon;
+		Point p_zero;	// compairison point
+		EpsilonComparator() 
+			:	epsilon(POINT_DIST_EPSILON),
+				p_zero(0,0,0)
+		{
+		}
+
+		bool operator()(Point const& a, Point const& b) const
+		{
+			double dist = CGAL::squared_distance(a, b);
+			if(dist < epsilon)
+			{
+				return false;
+			}
+			return CGAL::has_smaller_distance_to_point(p_zero, a, b);
+		}
+	};
+
+	map<Point, vector< Segment>, EpsilonComparator >point2Seg;
+	pair< map< Point, vector< Segment > >::iterator, bool> in1, in2;
+
+	for(size_t i = 0; i < segments.size(); i++)
+	{
+		Segment& seg = segments[i];
+		vector<Segment>v1, v2;
+		in1 = point2Seg.insert(pair<Point, vector<Segment> >(seg.source(), v1));
+		in2 = point2Seg.insert(pair<Point, vector<Segment> >(seg.target(), v2));
+		in1.first->second.push_back(seg);
+		in2.first->second.push_back(seg);
+	}
+
+	vector<Point> terminal_points;
+	for(map< Point, vector< Segment > >::iterator iter = point2Seg.begin(); iter != point2Seg.end(); ++iter)
+	{
+		switch(iter->second.size())
+		{
+			case 1:
+				// Endpunkt
+				terminal_points.push_back(iter->first);
+				break;
+			case 2:
+				cout << "found connection... " << endl;
+				// Verbindungspunkt
+				break;
+			default:
+				cout << "WARNING: There are segments with zero or more then 2 connections!" << endl;
+				regular = false;
+				break;
+		}
+	}
+
+	if(terminal_points.size() == 0)
+	{
+		cout << "WARNING: There are no terminal points!" << endl;
+		return false;
+	}
+	if(terminal_points.size() > 2){
+	   cout << "WARNING: There are more then two terminal points!" << endl;
+		return false;
+	}
+	vector< Segment > sorted_segments;
+	Point tmp_point = terminal_points.front();
+	Point end_point = terminal_points.back();
+	Segment tmp_segment = point2Seg[tmp_point].front();
+
+	cout << "start point: " << tmp_point << endl;
+	cout << "end point: " << end_point << endl;
+
+	while(tmp_point != end_point)
+	{
+		Point first = tmp_segment.source();
+		Point second = tmp_segment.target();
+		if(POINT_DIST_EPSILON > CGAL::squared_distance(tmp_point, first))
+		{
+			tmp_point = second;
+		}
+		else
+		{
+			tmp_point = first;
+		}
+		sorted_segments.push_back(tmp_segment);
+
+		const Segment first_seg = point2Seg[tmp_point].front();
+		const Segment second_seg = point2Seg[tmp_point].back();
+		
+		// TODO Muss hier auch ein Epsilon verwendet werden?
+		if(first_seg == tmp_segment)
+		{
+			tmp_segment = second_seg;
+		}
+		else
+		{
+			tmp_segment = first_seg;
+		}
+	}
+	cout << "... sort done" << endl;
+	segments.clear();
+	segments.insert(segments.end(), sorted_segments.begin(), sorted_segments.end());
+	return regular;
+}
+
+template<typename VertexT, typename NormalT> void FusionMesh<VertexT, NormalT>::getIntersectionSegments(FFace *face, vector<Segment>& segments)
+{
+	cout << "size of the tree: " << tree.size() << endl;
+
+	list<Object_and_primitive_id> intersections;
+	Object_and_primitive_id op;
+	CGAL::Object object;
+
+	ETriangle tri = faceToETriangle(face);
+	try {
+		tree.all_intersections(tri, back_inserter(intersections));
+	} catch (...)
+	{
+		cout << "function getIntersectionPoints: tree.do_intersect() fails" << endl;
+	}
+
+	cout << intersections.size() << " intersections found" << endl;
+	while (!intersections.empty()) {
+		op = intersections.front();
+		intersections.pop_front();
+		object = op.first;
+		//check wether intersection object is a segment
+		Segment seg;
+		Point p;
+		if (CGAL::assign(seg, object)){
+			segments.push_back(seg);
+			cout << "Found segment with x1: " << seg.source() << " x2: " << seg.target()  << endl;
+		}
+		else if (CGAL::assign(p, object)){
+			cout << "intersection is a point not a segment" << endl;
+		}
+	}
 }
 
 template<typename VertexT, typename NormalT> void FusionMesh<VertexT, NormalT>::getIntersectionPoints(FFace *face, vector<Point>& local_points, vector<Point>& global_points)
@@ -840,6 +1024,8 @@ template<typename VertexT, typename NormalT> void FusionMesh<VertexT, NormalT>::
 		p = seg->target();
 		local_points.push_back(p);
 		global_points.push_back(p);
+		//TODO intersect_segments wieder frei geben!
+
 	}
 }
 
