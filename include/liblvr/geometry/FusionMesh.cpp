@@ -23,6 +23,7 @@
  *	@author Henning Deeken (hdeeken@uos.de)
  *	@author Ann-Katrin Häuser (ahaeuser@uos.de)
  *  @author Thomas Wiemann (twiemann@uos.de)
+ *  @author Sebastin Puetz (spuetz@uos.de)
  */
 
 namespace lvr
@@ -713,15 +714,103 @@ template<typename VertexT, typename NormalT> void FusionMesh<VertexT, NormalT>::
 
 		FFace* face = faces[i];
 		vector<Segment> segments;
+		vector<Point> points;
 		getIntersectionSegments(face, segments); // get all intersected segments off the given face
-		bool ok = sortSegments(segments);
+		bool ok = sortSegments(segments, points);
 
-		if(ok) cout << "ok: " << endl;
-		else cout << "failed!" << endl;
-		cout << " Segments: " << endl;
+		if(ok)
+		{
+			cout << "sort segments was ok: " << endl;
+		}
+		else
+		{
+			cout << "sort segments failed!" << endl;
+			continue;
+		}
+		
+		/*
+		cout << "####################################" << endl;
+		cout << "Segments: " << endl;
 		for(vector<Segment>::iterator iter = segments.begin(); iter != segments.end(); ++iter){
 			cout << "p1: " << iter->source() << "  p2: " << iter->target() << endl;
 		}
+		cout << "####################################" << endl;
+		*/
+
+		vector<Segment> faceSegs = face2Segments(face);
+		Point startPoint = points.front();
+		Point endPoint = points.back();
+
+		bool sOnA = pointOnSegment(startPoint, faceSegs[0]);
+		bool sOnB = pointOnSegment(startPoint, faceSegs[1]);
+		bool sOnC = pointOnSegment(startPoint, faceSegs[2]);
+		bool eOnA = pointOnSegment(endPoint, faceSegs[0]);
+		bool eOnB = pointOnSegment(endPoint, faceSegs[1]);
+		bool eOnC = pointOnSegment(endPoint, faceSegs[2]);
+
+		Point p1 = faceSegs[0].source();
+		Point p2 = faceSegs[1].source();
+		Point p3 = faceSegs[2].source();
+
+		vector<Point>polygon1;
+		vector<Point>polygon2;
+		
+		polygon1.insert(polygon1.end(), points.begin(), points.end());	//add all sorted intersection points
+		polygon2.insert(polygon2.end(), points.begin(), points.end());	//add all sorted intersection points
+
+		if(eOnA) // between 0 and 1
+		{
+			polygon1.push_back(p1);
+			polygon2.push_back(p3);
+			if(sOnB)
+			{
+				polygon2.push_back(p2);
+			}else if(sOnC)
+			{
+				polygon1.push_back(p2);
+			}
+		}
+		else if(eOnB) // between 1 and 2
+		{
+			polygon1.push_back(p2);
+			polygon2.push_back(p1);
+			if(sOnC)
+			{
+				polygon2.push_back(p3);
+			}else if(sOnA)
+			{
+				polygon1.push_back(p3);
+			}
+		}
+		else if(eOnC) // between 2 and 0
+		{
+			polygon1.push_back(p3);
+			polygon2.push_back(p2);
+			if(sOnA)
+			{
+				polygon2.push_back(p1);
+			}else if(sOnB)
+			{
+				polygon1.push_back(p1);
+			}
+		}
+		
+		cout << "Polygon1: "<<endl;
+		for(int i=0; i < polygon1.size(); i++)
+		{
+			cout << polygon1[i] << endl;
+		}
+		cout << "Polygon2: "<<endl;
+		for(int i=0; i < polygon2.size(); i++)
+		{
+			cout << polygon2[i] << endl;
+		}
+
+
+
+
+
+
 	}
 
 /*
@@ -823,6 +912,31 @@ template<typename VertexT, typename NormalT> void FusionMesh<VertexT, NormalT>::
 }
 
 template<typename VertexT, typename NormalT>
+bool FusionMesh<VertexT, NormalT>::pointOnSegment(Point& p, Segment& s)
+{
+	return CGAL::squared_distance(s, p) < POINT_DIST_EPSILON;
+}
+
+
+template<typename VertexT, typename NormalT>
+vector<Segment> FusionMesh<VertexT, NormalT>::face2Segments(FFace *face)
+{
+	vector<Segment> segments;
+	ETriangle t = faceToETriangle(face);
+	Segment s1 = Segment(t[0], t[1]);
+	Segment s2 = Segment(t[1], t[2]);
+	Segment s3 = Segment(t[2], t[0]);
+
+	segments.push_back(s1);
+	segments.push_back(s2);
+	segments.push_back(s3);
+
+	return segments;
+}
+
+
+
+template<typename VertexT, typename NormalT>
 vector<int> FusionMesh<VertexT, NormalT>::getIntersectingTriangles(FFace *face)
 {
 	list<Primitive_id> primitives;
@@ -847,7 +961,7 @@ vector<int> FusionMesh<VertexT, NormalT>::getIntersectingTriangles(FFace *face)
 
 
 template<typename VertexT, typename NormalT> 
-bool FusionMesh<VertexT, NormalT>::sortSegments(vector<Segment> &segments)
+bool FusionMesh<VertexT, NormalT>::sortSegments(vector<Segment> &segments, vector<Point> &points)
 {
 	bool regular = true;
 
@@ -894,7 +1008,7 @@ bool FusionMesh<VertexT, NormalT>::sortSegments(vector<Segment> &segments)
 				terminal_points.push_back(iter->first);
 				break;
 			case 2:
-				cout << "found connection... " << endl;
+				//cout << "found connection... " << endl;
 				// Verbindungspunkt
 				break;
 			default:
@@ -918,11 +1032,9 @@ bool FusionMesh<VertexT, NormalT>::sortSegments(vector<Segment> &segments)
 	Point end_point = terminal_points.back();
 	Segment tmp_segment = point2Seg[tmp_point].front();
 
-	cout << "start point: " << tmp_point << endl;
-	cout << "end point: " << end_point << endl;
-
 	while(tmp_point != end_point)
 	{
+		points.push_back(tmp_point);
 		Point first = tmp_segment.source();
 		Point second = tmp_segment.target();
 		if(POINT_DIST_EPSILON > CGAL::squared_distance(tmp_point, first))
@@ -934,7 +1046,6 @@ bool FusionMesh<VertexT, NormalT>::sortSegments(vector<Segment> &segments)
 			tmp_point = first;
 		}
 		sorted_segments.push_back(tmp_segment);
-
 		const Segment first_seg = point2Seg[tmp_point].front();
 		const Segment second_seg = point2Seg[tmp_point].back();
 		
@@ -948,6 +1059,7 @@ bool FusionMesh<VertexT, NormalT>::sortSegments(vector<Segment> &segments)
 			tmp_segment = first_seg;
 		}
 	}
+	points.push_back(tmp_point);
 	cout << "... sort done" << endl;
 	segments.clear();
 	segments.insert(segments.end(), sorted_segments.begin(), sorted_segments.end());
@@ -980,7 +1092,7 @@ template<typename VertexT, typename NormalT> void FusionMesh<VertexT, NormalT>::
 		Point p;
 		if (CGAL::assign(seg, object)){
 			segments.push_back(seg);
-			cout << "Found segment with x1: " << seg.source() << " x2: " << seg.target()  << endl;
+			//cout << "Found segment with x1: " << seg.source() << " x2: " << seg.target()  << endl;
 		}
 		else if (CGAL::assign(p, object)){
 			cout << "intersection is a point not a segment" << endl;
