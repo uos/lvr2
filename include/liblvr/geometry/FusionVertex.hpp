@@ -86,7 +86,7 @@ public:
 	/// The vertex's normal
 	NormalT 			m_normal;
 
-	/// The vertex index in the mesh
+	/// The vertex index in the global mesh
 	size_t 				m_self_index;
 	
 	/// The vertex distance to the tree representing the global buffer
