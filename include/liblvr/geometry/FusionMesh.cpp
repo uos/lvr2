@@ -404,43 +404,40 @@ template<typename VertexT, typename NormalT> Plane FusionMesh<VertexT, NormalT>:
 template<typename VertexT, typename NormalT> AffineTF FusionMesh<VertexT, NormalT>::calcTransform(FFace *face)
 {
 	ETriangle tri = faceToETriangle(face);
-	// rotate around z
 	
-	cout << "A: " << tri.vertex(1) << " B: " << tri.vertex(2) << " C: " << tri.vertex(3) << endl;
+	Point a = tri.vertex(1);
+	Point b = tri.vertex(2);
+	Point c = tri.vertex(3);
 	
-	AffineTF tf (  1, 	0, 		0, 		-tri.vertex(1).x(),
-					0, 1, 0, -tri.vertex(1).y(),
-					0, 0, 1,  -tri.vertex(1).z(),	1);
-	Point a1 = tf.transform(tri.vertex(1));
-	Point b1 = tf.transform(tri.vertex(2));
-	Point c1 = tf.transform(tri.vertex(3));
-	cout << "after translation A: " << a1 << " B: " << b1 << " C: " << c1 << endl;
+	CGAL::Vector_3<K> vec_AB = b - a;
+	CGAL::Vector_3<K> vec_AC = c - a;
 	
-	CGAL::Vector_3<K> vec_AB = tri.vertex(2) - tri.vertex(1);
-	double a = atan2(vec_AB.y(), vec_AB.x()); //alpha
-	AffineTF tfz( cos(a), sin(a), 0, 0,
-				  -sin(a), cos(a), 0, 0,
-					0,		0,	   1, 0, 1);
-					
-	a1 = tfz.transform(a1);
-	b1 = tfz.transform(b1);
-	c1 = tfz.transform(c1);
+	double alpha 	= atan2(vec_AB.z(), vec_AB.x());
+	double beta 	= -atan2(vec_AB.y(), cos(alpha)*vec_AB.x() + sin(alpha)*vec_AB.z());
+	double gamma 	= -atan2(-sin(alpha)*vec_AC.x()+cos(alpha)*vec_AC.z(),
+				sin(beta)*(cos(alpha)*vec_AC.x()+sin(alpha)*vec_AC.z()) + cos(beta)*vec_AC.y()); 
 	
-	cout << "after rotation around z A: " << a1 << " B: " << b1 << " C: " << c1 << endl;
+	AffineTF trans ( 1, 0, 0, -a.x(),
+					 0, 1, 0, -a.y(),
+					 0, 0, 1, -a.z(),
+					 1);
 	
-	CGAL::Vector_3<K> vec_AC = tri.vertex(3) - tri.vertex(2);
-	double b = atan2(vec_AC.z(), vec_AC.x()); //beta
+	AffineTF roty ( 	cos(alpha), 0, sin(alpha), 0,
+						0, 1, 0, 0,
+						-sin(alpha), 0, cos(alpha), 0,
+						1);
 	
-	AffineTF tfx(  1, 	0, 		0, 		0,
-					0, cos(b), sin(b), 0,
-					0, -sin(b), cos(b),  0,	1);
-					
-	a1 = tfx.transform(a1);
-	b1 = tfx.transform(b1);
-	c1 = tfx.transform(c1);
+	AffineTF rotz ( cos(beta), -sin(beta), 0, 0,
+					sin(beta), cos(beta), 0, 0,
+					0, 0, 1, 0,
+					1);
 	
-	cout << "after rotation around x A: " << a1 << " B: " << b1 << " C: " << c1 << endl;
-	return tf*tfz*tfx;
+	AffineTF rotx (	1, 0, 0, 0,
+					0, cos(gamma), -sin(gamma), 0,
+					0, sin(gamma), cos(gamma), 0,
+					1);
+	
+	return rotx * rotz * roty * trans;
 }
 
 template<typename VertexT, typename NormalT> void FusionMesh<VertexT, NormalT>::addGlobalVertex(FVertex *v)
