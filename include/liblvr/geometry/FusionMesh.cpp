@@ -409,9 +409,11 @@ template<typename VertexT, typename NormalT> AffineTF FusionMesh<VertexT, Normal
 	Point b = tri.vertex(2);
 	Point c = tri.vertex(3);
 	
+	// calculate the plane-vectors
 	CGAL::Vector_3<K> vec_AB = b - a;
 	CGAL::Vector_3<K> vec_AC = c - a;
 	
+	// calculate the required angles for the rotations 
 	double alpha 	= atan2(vec_AB.z(), vec_AB.x());
 	double beta 	= -atan2(vec_AB.y(), cos(alpha)*vec_AB.x() + sin(alpha)*vec_AB.z());
 	double gamma 	= -atan2(-sin(alpha)*vec_AC.x()+cos(alpha)*vec_AC.z(),
@@ -422,10 +424,10 @@ template<typename VertexT, typename NormalT> AffineTF FusionMesh<VertexT, Normal
 					 0, 0, 1, -a.z(),
 					 1);
 	
-	AffineTF roty ( 	cos(alpha), 0, sin(alpha), 0,
-						0, 1, 0, 0,
-						-sin(alpha), 0, cos(alpha), 0,
-						1);
+	AffineTF roty ( cos(alpha), 0, sin(alpha), 0,
+					0, 1, 0, 0,
+					-sin(alpha), 0, cos(alpha), 0,
+					1);
 	
 	AffineTF rotz ( cos(beta), -sin(beta), 0, 0,
 					sin(beta), cos(beta), 0, 0,
@@ -436,7 +438,15 @@ template<typename VertexT, typename NormalT> AffineTF FusionMesh<VertexT, Normal
 					0, cos(gamma), -sin(gamma), 0,
 					0, sin(gamma), cos(gamma), 0,
 					1);
-	
+
+	/*
+	 * transformation to the xy-plane:
+	 * first translate till the point a is in the origin of ordinates,
+	 * then rotate around the the y-axis till the z-value of the point b is zero,
+	 * then rotate around the z-axis till the y-value of the point b is zero,
+	 * then rotate around the x-axis till all z-values are zero
+	 */
+
 	return rotx * rotz * roty * trans;
 }
 
@@ -835,21 +845,53 @@ template<typename VertexT, typename NormalT> void FusionMesh<VertexT, NormalT>::
 		}
 		
 		AffineTF tf = calcTransform(face);
+		AffineTF itf = tf.inverse();
 
 		cout << "Polygon1: "<<endl;
+		
+		Polygon poly2D1, poly2D2;
+
 		for(int i=0; i < polygon1.size(); i++)
 		{
 			polygon1[i] = tf.transform(polygon1[i]);
 			cout << polygon1[i] << endl;
+			poly2D1.push_back(Point2D(polygon1[i].x(), polygon1[i].y()));
 		}
 		cout << "Polygon2: "<<endl;
 		for(int i=0; i < polygon2.size(); i++)
 		{
 			polygon2[i] = tf.transform(polygon2[i]);
 			cout << polygon2[i] << endl;
+			poly2D2.push_back(Point2D(polygon1[i].x(), polygon1[i].y()));
 		}
 
+		vector<Triangle2D> triangles;
+		polygonTriangulation(poly2D1, triangles);
+		polygonTriangulation(poly2D2, triangles);
 
+		vector<FFace*> newFaces;
+
+		for(vector<Triangle2D>::iterator trit = triangles.begin(); trit != triangles.end(); ++trit)
+		{
+			Point p1(trit->vertex(0).x(), trit->vertex(0).y(), 0);
+			Point p2(trit->vertex(1).x(), trit->vertex(1).y(), 0);
+			Point p3(trit->vertex(2).x(), trit->vertex(2).y(), 0);
+			p1 = itf.transform(p1);
+			p2 = itf.transform(p2);
+			p3 = itf.transform(p3);
+			
+			cout << "Face: " << endl;
+			cout << p1 << endl << p2 << endl << p3 << endl;
+			addVertex(VertexT(p1.x(), p1.y(), p1.z()));
+			addVertex(VertexT(p2.x(), p2.y(), p2.z()));
+			addVertex(VertexT(p3.x(), p3.y(), p3.z()));
+			addTriangle(m_local_index-3, m_local_index-2, m_local_index-1);
+			newFaces.push_back(m_local_faces[m_local_faces.size()-1]);
+
+
+
+		}
+		addGlobal(newFaces);
 	}
 
 /*
@@ -1179,5 +1221,25 @@ template<typename VertexT, typename NormalT> void FusionMesh<VertexT, NormalT>::
 
 	}
 }
-
+	template<typename VertexT, typename NormalT> 
+bool FusionMesh<VertexT, NormalT>::polygonTriangulation(Polygon& polygon, vector<Triangle2D>& triangles)
+{
+	ConstrainedDelaunay cdt;
+	if ( polygon.is_empty() ) return false;
+	//ConstrainedDelaunay::Vertex_handle v_prev=cdt.insert(*CGAL::cpp11::prev(polygon.vertices_end()));
+	ConstrainedDelaunay::Vertex_handle v_prev=cdt.insert(polygon[polygon.size()-1]);
+	for (Polygon::Vertex_iterator vit=polygon.vertices_begin();
+			vit!=polygon.vertices_end();++vit)
+	{
+		ConstrainedDelaunay::Vertex_handle vh=cdt.insert(*vit);
+		cdt.insert_constraint(vh,v_prev);
+		v_prev=vh;
+	} 
+ 	for (ConstrainedDelaunay::Finite_faces_iterator fit=cdt.finite_faces_begin();
+			fit!=cdt.finite_faces_end();++fit)
+ 	{
+		triangles.push_back(cdt.triangle(fit));
+	}
+	return true;
+}
 } // namespace lvr
