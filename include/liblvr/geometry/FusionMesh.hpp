@@ -56,9 +56,13 @@
 #include <CGAL/Projection_traits_yz_3.h>
 #include <CGAL/Projection_traits_xz_3.h>
 #include <CGAL/Delaunay_triangulation_2.h>
+#include <CGAL/Constrained_Delaunay_triangulation_2.h>
+#include <CGAL/Triangulation_face_base_with_info_2.h>
+#include <CGAL/Exact_predicates_inexact_constructions_kernel.h>
 #include <CGAL/squared_distance_3.h>
 #include <CGAL/Aff_transformation_3.h>
 #include <CGAL/Vector_3.h>
+#include <CGAL/Polygon_2.h>
 
 #include "Vertex.hpp"
 #include "VertexTraits.hpp"
@@ -77,22 +81,41 @@
 
 using namespace std;
 
-typedef CGAL::Simple_cartesian<double> K;
-typedef K::FT FT;
-typedef K::Segment_3 Segment;
-typedef K::Point_3 Point;
-typedef K::Triangle_3 Triangle;
-typedef K::Plane_3 Plane;
+typedef CGAL::Simple_cartesian<double> 								K;
+typedef K::FT 														FT;
+typedef K::Segment_3 												Segment;
+typedef K::Point_3 													Point;
+typedef K::Triangle_3												Triangle;
+typedef K::Plane_3													Plane;
 
-typedef CGAL::Exact_predicates_inexact_constructions_kernel KD;
-typedef CGAL::Projection_traits_xz_3<KD>  Gt;
-typedef CGAL::Delaunay_triangulation_2<Gt> Delaunay;
-typedef KD::Point_3 PointD;
-typedef KD::Triangle_3 TriangleD;
+typedef CGAL::Exact_predicates_inexact_constructions_kernel 		KD;
+typedef CGAL::Projection_traits_xz_3<KD>  							Gt;
+typedef CGAL::Delaunay_triangulation_2<Gt> 							Delaunay;
+typedef KD::Point_3 												PointD;
+typedef KD::Triangle_3 												TriangleD;
 
-typedef CGAL::Aff_transformation_3<K> AffineTF;
+struct FaceInfo2
+{
+	FaceInfo2(){}
+	int nesting_level;
+	bool in_domain(){
+		return nesting_level%2 == 1;
+	}
+};
+
+typedef CGAL::Aff_transformation_3<K> 								AffineTF;
+typedef CGAL::Polygon_2<K> 											Polygon;
+typedef CGAL::Triangulation_vertex_base_2<K> Vb;
+typedef CGAL::Triangulation_face_base_with_info_2<FaceInfo2,K> 		Fbb;
+typedef CGAL::Constrained_triangulation_face_base_2<K,Fbb> 			Fb;
+typedef CGAL::Triangulation_data_structure_2<Vb,Fb> 				TDS;
+typedef CGAL::Exact_predicates_tag 									Itag;
+typedef CGAL::Constrained_Delaunay_triangulation_2<K, TDS, Itag>	ConstrainedDelaunay;
+typedef CGAL::Triangle_2<K>											Triangle2D;
+typedef CGAL::Point_2<K> 											Point2D;
 
 // CGAL Extensions
+
 
 class ExtendedTriangle: public Triangle
 {
@@ -451,6 +474,15 @@ private:
 	 */
 	virtual bool sortSegments(vector<Segment>& segments, vector<Point>& points);
 
+
+	/**
+	 * @brief	triangulates the given polygon
+	 * 
+	 * @param 	polygon		the polygon to trinagluate
+	 * @param 	triangles 	a vector of polygons for the resulting triangles
+	 * @return 	true, if the triangulation was successful
+	 */
+	virtual bool polygonTriangulation(Polygon& polygon, vector<Triangle2D>& triangles);
 
 };
 
