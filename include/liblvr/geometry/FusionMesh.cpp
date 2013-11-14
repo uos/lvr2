@@ -756,10 +756,13 @@ template<typename VertexT, typename NormalT> void FusionMesh<VertexT, NormalT>::
 		global_intersect_triangles.insert(intersect_ids.begin(), intersect_ids.end());
 	}
 
-
+	vector<vector<Point> > polys;
+	int counterVertices = 0;
+	int counterPolygons = 0;
 
 	for(size_t i = 0; i < faces.size(); i++)
 	{
+		cout << " ############### " << endl << endl << endl;
 
 		FFace* face = faces[i];
 		vector<Segment> segments;
@@ -776,101 +779,29 @@ template<typename VertexT, typename NormalT> void FusionMesh<VertexT, NormalT>::
 			cout << "sort segments failed!" << endl;
 			continue;
 		}
-		
-		/*
-		cout << "####################################" << endl;
-		cout << "Segments: " << endl;
-		for(vector<Segment>::iterator iter = segments.begin(); iter != segments.end(); ++iter){
-			cout << "p1: " << iter->source() << "  p2: " << iter->target() << endl;
-		}
-		cout << "####################################" << endl;
-		*/
-
-		vector<Segment> faceSegs = face2Segments(face);
-		Point startPoint = points.front();
-		Point endPoint = points.back();
-
-		bool sOnA = pointOnSegment(startPoint, faceSegs[0]);
-		bool sOnB = pointOnSegment(startPoint, faceSegs[1]);
-		bool sOnC = pointOnSegment(startPoint, faceSegs[2]);
-		bool eOnA = pointOnSegment(endPoint, faceSegs[0]);
-		bool eOnB = pointOnSegment(endPoint, faceSegs[1]);
-		bool eOnC = pointOnSegment(endPoint, faceSegs[2]);
-
-		Point p1 = faceSegs[0].source();
-		Point p2 = faceSegs[1].source();
-		Point p3 = faceSegs[2].source();
-
-		vector<Point>polygon1;
-		vector<Point>polygon2;
-		
-		polygon1.insert(polygon1.end(), points.begin(), points.end());	//add all sorted intersection points
-		polygon2.insert(polygon2.end(), points.begin(), points.end());	//add all sorted intersection points
-
-		if(eOnA) // between 0 and 1
-		{
-			polygon1.push_back(p1);
-			polygon2.push_back(p3);
-			if(sOnB)
-			{
-				polygon2.push_back(p2);
-			}else if(sOnC)
-			{
-				polygon1.push_back(p2);
-			}
-		}
-		else if(eOnB) // between 1 and 2
-		{
-			polygon1.push_back(p2);
-			polygon2.push_back(p1);
-			if(sOnC)
-			{
-				polygon2.push_back(p3);
-			}else if(sOnA)
-			{
-				polygon1.push_back(p3);
-			}
-		}
-		else if(eOnC) // between 2 and 0
-		{
-			polygon1.push_back(p3);
-			polygon2.push_back(p2);
-			if(sOnA)
-			{
-				polygon2.push_back(p1);
-			}else if(sOnB)
-			{
-				polygon1.push_back(p1);
-			}
-		}
+		vector<vector<Point> > polygons = buildPolygons(face, points);
 		
 		AffineTF tf = calcTransform(face);
 		AffineTF itf = tf.inverse();
-
-		cout << "Polygon1: "<<endl;
 		
-		Polygon poly2D1, poly2D2;
-
-		for(int i=0; i < polygon1.size(); i++)
-		{
-			polygon1[i] = tf.transform(polygon1[i]);
-			cout << polygon1[i] << endl;
-			poly2D1.push_back(Point2D(polygon1[i].x(), polygon1[i].y()));
-		}
-		cout << "Polygon2: "<<endl;
-		for(int i=0; i < polygon2.size(); i++)
-		{
-			polygon2[i] = tf.transform(polygon2[i]);
-			cout << polygon2[i] << endl;
-			poly2D2.push_back(Point2D(polygon1[i].x(), polygon1[i].y()));
-		}
-
+		vector<Polygon> polys2D;
 		vector<Triangle2D> triangles;
-		polygonTriangulation(poly2D1, triangles);
-		polygonTriangulation(poly2D2, triangles);
-
+		
+		for(int i=0; i<polygons.size(); i++)
+		{
+			counterVertices += polygons[i].size();
+			Polygon polygon;
+			for(int j=0; j<polygons[i].size(); j++)
+			{
+				
+				Point p = tf.transform(polygons[i][j]); 
+				polygon.push_back(Point2D(p.x(), p.y()));
+			}
+			
+			polys2D.push_back(polygon);	
+			polygonTriangulation(polygon, triangles);
+		}
 		vector<FFace*> newFaces;
-
 		for(vector<Triangle2D>::iterator trit = triangles.begin(); trit != triangles.end(); ++trit)
 		{
 			Point p1(trit->vertex(0).x(), trit->vertex(0).y(), 0);
@@ -880,21 +811,49 @@ template<typename VertexT, typename NormalT> void FusionMesh<VertexT, NormalT>::
 			p2 = itf.transform(p2);
 			p3 = itf.transform(p3);
 			
-			cout << "Face: " << endl;
-			cout << p1 << endl << p2 << endl << p3 << endl;
 			addVertex(VertexT(p1.x(), p1.y(), p1.z()));
 			addVertex(VertexT(p2.x(), p2.y(), p2.z()));
 			addVertex(VertexT(p3.x(), p3.y(), p3.z()));
 			addTriangle(m_local_index-3, m_local_index-2, m_local_index-1);
 			newFaces.push_back(m_local_faces[m_local_faces.size()-1]);
-
-
-
 		}
 		addGlobal(newFaces);
 	}
+/*	
+	ofstream polyfile;
+	polyfile.open("polyfile.ply");
+	polyfile << "ply" << endl;
+	polyfile << "format ascii 1.0" << endl;
+	polyfile << "comment test polygons" << endl;
+	polyfile << "element vertex " << counterVertices << endl;
+   	polyfile << "property float x" << endl;
+   	polyfile << "property float y" << endl;
+   	polyfile << "property float z" << endl;
+	polyfile << "element face " << polys.size() << endl;
+	polyfile << "property list uchar int vertex_indices" << endl;
+	polyfile << "end_header" << endl;
 
-/*
+	for(vector<vector<Point> >::iterator polyIter = polys.begin(); polyIter != polys.end(); ++polyIter)
+	{
+		for(vector<Point>::iterator pointIter = polyIter->begin(); pointIter != polyIter->end(); ++ pointIter)
+		{
+			polyfile << *pointIter << endl;
+		}
+	}
+
+	counterVertices = 0;
+	for(int i=0; i<polys.size(); i++)
+	{
+		polyfile << polys[i].size() << " ";
+		for(int j=0; j<polys[i].size(); j++)
+		{
+			polyfile << j + counterVertices << " ";
+		}
+		polyfile << endl;
+		counterVertices += polys[i].size();
+	}
+
+
 	vector<PointSet> local_vertexRegions;
 	vector<PointSet> global_vertexRegions;
 	vector<Point> new_local_vertices;
@@ -991,6 +950,129 @@ template<typename VertexT, typename NormalT> void FusionMesh<VertexT, NormalT>::
 */
 
 }
+
+template<typename VertexT, typename NormalT>
+vector<vector<Point> > FusionMesh<VertexT, NormalT>::buildPolygons(FFace *face, vector<Point>& points)
+{
+
+	vector<vector<Point> > polys;
+	vector<Segment> faceSegs = face2Segments(face);
+	Point startPoint = points.front();
+	Point endPoint = points.back();
+
+	bool sOnA = pointOnSegment(startPoint, faceSegs[0]);
+	bool sOnB = pointOnSegment(startPoint, faceSegs[1]);
+	bool sOnC = pointOnSegment(startPoint, faceSegs[2]);
+	bool eOnA = pointOnSegment(endPoint, faceSegs[0]);
+	bool eOnB = pointOnSegment(endPoint, faceSegs[1]);
+	bool eOnC = pointOnSegment(endPoint, faceSegs[2]);
+
+	Point p1 = faceSegs[0].source();
+	Point p2 = faceSegs[1].source();
+	Point p3 = faceSegs[2].source();
+
+	vector<Point>polygon1;
+	vector<Point>polygon2;
+	vector<Point>polygon3;
+	vector<Point>polygon4;
+	
+	polygon1.insert(polygon1.end(), points.begin(), points.end());	//add all sorted intersection points
+	polygon2.insert(polygon2.end(), points.begin(), points.end());	//add all sorted intersection points
+
+	if(eOnA) // between p1 and p2
+	{
+		polygon1.push_back(p1);
+		polygon2.push_back(p2);
+		if(sOnB)
+		{
+			polygon1.push_back(p3);
+		}
+		else if(sOnC)
+		{
+			polygon2.push_back(p3);
+		}
+		else if(sOnA)
+		{
+			// TODO 
+		}
+		else
+		{
+			polygon1.push_back(p3);
+			polygon2.push_back(p3);	
+		}
+	}
+	else if(eOnB) // between p2 and p3
+	{
+		polygon1.push_back(p2);
+		polygon2.push_back(p3);
+		if(sOnC)
+		{
+			polygon1.push_back(p1);
+		}
+		else if(sOnA)
+		{
+			polygon2.push_back(p1);
+		}
+		else if(sOnB)
+		{
+			// TODO 
+		}
+		else
+		{
+			polygon1.push_back(p1);
+			polygon2.push_back(p1);	
+		}
+	}
+	else if(eOnC) // between p3 and p1
+	{
+		polygon1.push_back(p3);
+		polygon2.push_back(p1);
+		if(sOnA)
+		{
+			polygon1.push_back(p2);
+		}
+		else if(sOnB)
+		{
+			polygon2.push_back(p2);
+		}
+		else if(sOnC)
+		{
+			// TODO 
+		}
+		else{
+			polygon1.push_back(p2);
+			polygon2.push_back(p2);	
+		}
+	}
+	else if(sOnA)
+	{
+		polygon1.push_back(p3);
+		polygon2.push_back(p3);	
+		polygon1.push_back(p1);
+		polygon2.push_back(p2);	
+	}	
+	else if(sOnB)
+	{
+		polygon1.push_back(p1);
+		polygon2.push_back(p1);	
+		polygon1.push_back(p2);
+		polygon2.push_back(p3);	
+	}	
+	else if(sOnC)
+	{
+		polygon1.push_back(p2);
+		polygon2.push_back(p2);	
+		polygon1.push_back(p1);
+		polygon2.push_back(p3);	
+	}	
+
+
+	polys.push_back(polygon1);
+	polys.push_back(polygon2);
+
+
+	return polys; 
+}	
 
 template<typename VertexT, typename NormalT>
 bool FusionMesh<VertexT, NormalT>::pointOnSegment(Point& p, Segment& s)
@@ -1099,14 +1181,20 @@ bool FusionMesh<VertexT, NormalT>::sortSegments(vector<Segment> &segments, vecto
 		}
 	}
 
-	if(terminal_points.size() == 0)
+	switch(terminal_points.size())
 	{
-		cout << "WARNING: There are no terminal points!" << endl;
-		return false;
-	}
-	if(terminal_points.size() > 2){
-	   cout << "WARNING: There are more then two terminal points!" << endl;
-		return false;
+		case 0:
+			cout << "WARNING: There are no terminal points!" << endl;
+			return false;
+		case 1:
+			cout << "WARNING: There is only one terminal point!" << endl;
+			return false;
+		case 2:
+			cout << "Party check!" << endl;
+			break;
+		default:
+			cout << "WARNING: There are more then two terminal points!" << endl;
+			return false;
 	}
 	vector< Segment > sorted_segments;
 	Point tmp_point = terminal_points.front();
