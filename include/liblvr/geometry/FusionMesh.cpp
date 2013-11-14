@@ -91,13 +91,6 @@ template<typename VertexT, typename NormalT> void FusionMesh<VertexT, NormalT>::
     m_local_faces.push_back(face);
 }
 
-/*template<typename VertexT, typename NormalT> void FusionMesh<VertexT, NormalT>::addTriangle(uint a, uint b, uint c)
-{
-	  //cout << "Adding Triangle..." << a << " " << b << " " << c << endl;
-      FFace* face;
-      addTriangle(a, b, c, face);
-}*/
-
 template<typename VertexT, typename NormalT> void FusionMesh<VertexT, NormalT>::finalize()
 {
     cout << endl << timestamp << "Finalizing mesh..." << endl;
@@ -321,9 +314,19 @@ template<typename VertexT, typename NormalT> void FusionMesh<VertexT, NormalT>::
 
 template<typename VertexT, typename NormalT> void FusionMesh<VertexT, NormalT>::clearLocalBuffer()
 {	
-	m_local_index = 0;
+	for (int i = 0; i < m_local_vertices.size(); i++) {
+		if (!m_local_vertices[i]->is_valid) {
+			delete m_local_vertices[i];
+		}
+	}
 	m_local_vertices.clear();	
+	for (int i = 0; i < m_local_faces.size(); i++) {
+		if (!m_local_faces[i]->is_valid) {
+			delete m_local_faces[i];
+		}
+	}
 	m_local_faces.clear();
+	m_local_index = 0;
 }
 
 /*template<typename VertexT, typename NormalT> void FusionMesh<VertexT, NormalT>::clearGlobalBuffer()
