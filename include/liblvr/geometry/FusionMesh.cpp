@@ -23,7 +23,7 @@
  *	@author Henning Deeken (hdeeken@uos.de)
  *	@author Ann-Katrin Häuser (ahaeuser@uos.de)
  *  @author Thomas Wiemann (twiemann@uos.de)
- *  @author Sebastin Puetz (spuetz@uos.de)
+ *  @author Sebastian Puetz (spuetz@uos.de)
  */
 
 namespace lvr
@@ -747,22 +747,47 @@ template<typename VertexT, typename NormalT> void FusionMesh<VertexT, NormalT>::
 {
 	cout << "Start Intersect Integrate..." << endl;
 	
-	set<int> global_intersect_triangles;
+	set<int> all_intersect_ids;
 	vector<int> intersect_ids; // ids from intersected triangles
+	vector<FFace*> gl_intersect_tri;
 
+	// split intersecting faces in local buffer
+	splitIntersectFaces(faces, tree);
 
-	// check intersected triangles of the globalmesh
+	// find intersected triangles in the globalmesh
 	for(size_t i = 0; i < faces.size(); i++)
 	{
 		FFace* face = faces[i];
 		intersect_ids = getIntersectingTriangles(face);
-		global_intersect_triangles.insert(intersect_ids.begin(), intersect_ids.end());
+		all_intersect_ids.insert(intersect_ids.begin(), intersect_ids.end());
 	}
+	// build buffer of intersecting triangles
+	for (set<int>::iterator it = all_intersect_ids.begin(); it != all_intersect_ids.end(); ++it)
+	{
+		gl_intersect_tri.push_back(m_global_faces[*it]);
+	}
+	// build tree of local intersecting triangles
+	vector<ETriangle> local_tree_triangles;
+	Tree local_tree;
+	for (size_t i = 0; i < faces.size(); i++) {
+		FFace* face = faces[i];
+		ETriangle tri = faceToETriangle(face);
+		local_tree_triangles.push_back(tri);
+	}
+	local_tree.insert(local_tree_triangles.begin(), local_tree_triangles.end());
+	
+	splitIntersectFaces(gl_intersect_tri, local_tree);
+	
+	cout << "Finished Intersect Integrate ..." << endl;
+}
 
+template<typename VertexT, typename NormalT>
+void FusionMesh<VertexT, NormalT>::splitIntersectFaces(vector<FFace*>& faces, Tree& tree)
+{
 	vector<vector<Point> > polys;
 	int counterVertices = 0;
 	int counterPolygons = 0;
-
+	
 	for(size_t i = 0; i < faces.size(); i++)
 	{
 		cout << " ############### " << endl << endl << endl;
@@ -770,7 +795,7 @@ template<typename VertexT, typename NormalT> void FusionMesh<VertexT, NormalT>::
 		FFace* face = faces[i];
 		vector<Segment> segments;
 		vector<Point> points;
-		getIntersectionSegments(face, segments); // get all intersected segments off the given face
+		getIntersectionSegments(face, segments, tree); // get all intersected segments off the given face
 		bool ok = sortSegments(segments, points);
 
 		if(ok)
@@ -822,7 +847,8 @@ template<typename VertexT, typename NormalT> void FusionMesh<VertexT, NormalT>::
 		}
 		addGlobal(newFaces);
 	}
-/*	
+	
+	/*	
 	ofstream polyfile;
 	polyfile.open("polyfile.ply");
 	polyfile << "ply" << endl;
@@ -954,10 +980,10 @@ template<typename VertexT, typename NormalT> void FusionMesh<VertexT, NormalT>::
 
 }
 
+
 template<typename VertexT, typename NormalT>
 vector<vector<Point> > FusionMesh<VertexT, NormalT>::buildPolygons(FFace *face, vector<Point>& points)
 {
-
 	vector<vector<Point> > polys;
 	vector<Segment> faceSegs = face2Segments(face);
 	Point startPoint = points.front();
@@ -1238,10 +1264,8 @@ bool FusionMesh<VertexT, NormalT>::sortSegments(vector<Segment> &segments, vecto
 	return regular;
 }
 
-template<typename VertexT, typename NormalT> void FusionMesh<VertexT, NormalT>::getIntersectionSegments(FFace *face, vector<Segment>& segments)
+template<typename VertexT, typename NormalT> void FusionMesh<VertexT, NormalT>::getIntersectionSegments(FFace *face, vector<Segment>& segments, Tree& tree)
 {
-	cout << "size of the tree: " << tree.size() << endl;
-
 	list<Object_and_primitive_id> intersections;
 	Object_and_primitive_id op;
 	CGAL::Object object;
