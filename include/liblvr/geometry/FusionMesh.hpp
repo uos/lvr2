@@ -484,6 +484,14 @@ private:
 	 */
 	virtual bool polygonTriangulation(Polygon& polygon, vector<Triangle2D>& triangles);
 
+	/**
+	 * @brief 	build polygons from a intesected face and the intersection path
+	 *
+	 * @param 	face 	the face to build polygons from
+	 * @param 	points	the intersection path
+	 * @return  vector of vectors with points to hold the polygons
+	 */
+	virtual vector<vector<Point> > buildPolygons(FFace *face, vector<Point>& points);
 };
 
 } // namespace lvr
