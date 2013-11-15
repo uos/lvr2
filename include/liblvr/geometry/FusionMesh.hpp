@@ -310,8 +310,8 @@ private:
 	/// The Vector the CGAL Tree is based on
 	vector<ETriangle> tree_triangles;
 	
-	Tree		local_tree;
-	vector<ETriangle> local_tree_triangles;
+	//Tree		local_tree;
+	//vector<ETriangle> local_tree_triangles;
 	
 	
 	/// The Map with all global vertices
@@ -425,6 +425,14 @@ private:
 	virtual void intersectIntegrate(vector<FFace*>& faces);
 	
 	/**
+     * @brief  splits faces at their intersection points and builds new triangles
+     * 
+     * @param	faces	Faces to be split
+     * @param	tree	tree containing intersecting faces
+     */
+	virtual void splitIntersectFaces(vector<FFace*>& faces, Tree& tree);
+	
+	/**
 	 * @brief	Finds all intersecting Triangles in Tree
 	 * 
 	 * @param	face	Face to find intersections with
@@ -465,7 +473,7 @@ private:
 	 * @param	face	Face to find intersection witt
 	 * 			segments	a vector, contains the found intersections segments
 	 */
-	virtual void getIntersectionSegments(FFace *face, vector<Segment>& segments);
+	virtual void getIntersectionSegments(FFace *face, vector<Segment>& segments, Tree& tree);
 
 	/**
 	 * @brief	sort the given segments in the order of an edge sequence with a starting- and an endpoint
