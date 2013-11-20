@@ -17,25 +17,20 @@
  * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA
  */
 
-
 /**
  * @file Main.cpp
  * @author Simon Herkenhoff <sherkenh@uni-osnabrueck.de>
- */
-
+*/
 
 // Program options for this tool
 
 #ifndef DEBUG
-  #include "Options.hpp"
+#include "Options.hpp"
 #endif
 
 // Local includes
-#include "classifier/AdaptiveKSearchSurface.hpp"
-#include "classification/ClassifierFactory.hpp"
-#include "classification/ColorGradientPlaneClassifier.hpp"
-#include "classification/IndoorNormalClassifier.hpp"
-#include "classification/RegionClassifier.hpp"
+#include "reconstruction/AdaptiveKSearchSurface.hpp"
+#include "reconstruction/FastReconstruction.hpp"
 #include "io/PLYIO.hpp"
 #include "geometry/Matrix4.hpp"
 #include "geometry/HalfEdgeMesh.hpp"
@@ -48,13 +43,52 @@
 
 #include <iostream>
 
+
 using namespace lvr;
 
+typedef ColorVertex<float, unsigned char>               cVertex;
+typedef Normal<float>                                   cNormal;
+typedef AdaptiveKSearchSurface<cVertex, cNormal>        akSurface;
+
 /**
- * @brief Main entry point for the LVR classifier executable
+ * @brief   Main entry point for the LSSR surface executable
  */
 int main(int argc, char** argv)
 {
+	try
+	{
+		// Parse command line arguments
+		classifier::Options options(argc, argv);
+
+		// Exit if options had to generate a usage message
+		// (this means required parameters are missing)
+		if ( options.printUsage() )
+		{
+			return 0;
+		}
+
+		omp_set_num_threads(options.getNumThreads());
+
+		::std::cout << options << ::std::endl;
+
+		// Create a point loader object
+		ModelFactory io_factory;
+		ModelPtr model = io_factory.readModel( options.getInputFileName() );
+		PointBufferPtr p_loader;
+
+		// Parse loaded data
+		if ( !model )
+		{
+			cout << timestamp << "IO Error: Unable to parse " << options.getInputFileName() << endl;
+			exit(-1);
+		}
+		p_loader = model->m_pointCloud;
+
+	}
+	catch(...)
+	{
+		std::cout << "Unable to parse options. Call 'classifier --help' for more information." << std::endl;
+	}
 	return 0;
 }
 
