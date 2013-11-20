@@ -39,27 +39,65 @@ using std::string;
 using std::vector;
 
 
-namespace reconstruct{
+namespace classifier
+{
 
-	using namespace boost::program_options;
+using namespace boost::program_options;
+
+/**
+ * @brief A class to parse the program options for the reconstruction
+ * executable.
+ */
+class Options
+{
+public:
 
 	/**
-	 * @brief A class to parse the program options for the reconstruction
-	 * executable.
+	 * @brief Ctor. Parses the command parameters given to the main
+	 *     function of the program
 	 */
-	class Options {
-		public:
+	Options(int argc, char** argv);
+	virtual ~Options();
 
-			/**
-			 * @brief Ctor. Parses the command parameters given to the main function of
-			 * the program.
-			 */
-			Options(int argc, char** argv);
-			virtual ~Options();
+	/**
+	 * @brief»··Returns the number of used threads
+	 */
+	int getNumThreads() const;
 
-		private:
+	/**
+	 * @brief Returns the output file name
+	 */
+	string getInputFileName() const;
 
-	};
+	/**
+	 * @brief Prints a usage message to stdout.
+	 */
+	bool printUsage() const;
+
+private:
+
+	/// The internally used variable map
+	variables_map m_variables;
+
+	/// The internally used option description
+	options_description m_descr;
+
+	/// The internally used positional option desription
+	positional_options_description m_pdescr;
+
+	/// The number of uesed threads
+	int m_numThreads;
+
+};
+
+/// Overlaoeded outpur operator
+inline ostream& operator<<(ostream& os, const Options &o)
+{
+	cout << "##### CLASSIFIER #####" << endl;
+	cout << "## Doing classification on " << o.getInputFileName() << endl;
+	cout << "## Working in " << o.getNumThreads() << " Threads" << endl;
+	return os;
+}
 
 }
 
