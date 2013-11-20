@@ -32,13 +32,13 @@
 namespace lvr
 {
 
-enum RegionLabel {
-		Wall,
-		Floor,
-		Ceiling,
-		Unknown
+enum RegionLabel
+{
+	vertical,
+	horizontallower,
+	horizontalupper,
+	unknown
 };
-
 
 /**
  * @brief	Classifier for normal and area based cluster interpretation as
@@ -65,7 +65,6 @@ public:
 	 * @brief Returns the r component for the given region
 	 */
 	virtual uchar r(int region);
-
 	/**
 	 * @brief Returns the g component for the given region
 	 */
@@ -75,12 +74,18 @@ public:
 	 */
 	virtual uchar b(int region);
 
+	/**
+	 * @brief Returns the label as a string
+	 */
+	virtual string rl(int region);
+
 	virtual void writeMetaInfo();
 
 private:
 
 	RegionLabel classifyRegion(int region);
 	uchar* getColor(int region);
+	string getLabel(RegionLabel label);
 
 	void createRegionBuffer(
 					int region_id,
@@ -88,8 +93,8 @@ private:
 					vector<int> &indices,
 					vector<float> &vertices,
 					vector<float> &normals,
-					vector<uint> &colors
-					);
+					vector<uint> &colors,
+					vector<string> &labels);
 
 	void writeBuffers(
 			ofstream &out,
@@ -97,7 +102,8 @@ private:
 			vector<int> &indices,
 			vector<float> &vertices,
 			vector<float> &normals,
-			vector<uint> &colors);
+			vector<uint> &colors,
+			vector<string> &labels);
 
 
 };
