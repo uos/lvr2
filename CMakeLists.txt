@@ -86,6 +86,7 @@ if(CGAL_FOUND)
 add_definitions(${CGAL_CXX_FLAGS_INIT})
 message(STATUS "CGAL CXX_FLAGS: " ${CGAL_CXX_FLAGS_INIT})
 find_package(GMP)
+find_package(MPFR)
 endif(CGAL_FOUND)
 
 
