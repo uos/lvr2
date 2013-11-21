@@ -11,5 +11,5 @@ set_target_properties(fusion PROPERTIES BINARY_OUTPUT_DIRECTORY
 target_link_libraries(fusion staticlvr)
 target_link_libraries(fusion ${Boost_FILESYSTEM_LIBRARY}
 							 ${Boost_SYSTEM_LIBRARY} ${Boost_THREAD_LIBRARY}
-							 ${Boost_PROGRAM_OPTIONS_LIBRARY} 'gmp')
+							 ${Boost_PROGRAM_OPTIONS_LIBRARY} ${GMP_LIBRARIES})
 target_link_libraries(fusion ${CGAL_LIBRARY})
