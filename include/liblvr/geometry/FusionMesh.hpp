@@ -39,6 +39,7 @@
 #include <unordered_map>
 #include <iostream>
 #include <sstream>
+#include <string>
 #include <float.h>
 #include <math.h>
 #include <algorithm>
@@ -57,6 +58,8 @@
 #include <CGAL/Projection_traits_xz_3.h>
 #include <CGAL/Delaunay_triangulation_2.h>
 #include <CGAL/Constrained_Delaunay_triangulation_2.h>
+#include <CGAL/Constrained_triangulation_plus_2.h>
+#include <CGAL/intersections.h>
 #include <CGAL/Triangulation_face_base_with_info_2.h>
 #include <CGAL/Exact_predicates_inexact_constructions_kernel.h>
 #include <CGAL/squared_distance_3.h>
@@ -77,7 +80,7 @@
 #include "io/Progress.hpp"
 #include "io/Model.hpp"
 
-#define POINT_DIST_EPSILON 1e-6
+#define POINT_DIST_EPSILON 1e-4
 
 using namespace std;
 
@@ -109,10 +112,11 @@ typedef CGAL::Triangulation_vertex_base_2<K> Vb;
 typedef CGAL::Triangulation_face_base_with_info_2<FaceInfo2,K> 		Fbb;
 typedef CGAL::Constrained_triangulation_face_base_2<K,Fbb> 			Fb;
 typedef CGAL::Triangulation_data_structure_2<Vb,Fb> 				TDS;
-typedef CGAL::Exact_predicates_tag 									Itag;
-typedef CGAL::Constrained_Delaunay_triangulation_2<K, TDS, Itag>	ConstrainedDelaunay;
+typedef CGAL::Exact_intersections_tag 								Itag;
+typedef CGAL::Constrained_Delaunay_triangulation_2<K, TDS, Itag>	CDT;
+typedef CGAL::Constrained_triangulation_plus_2<CDT>					CDTplus;
 typedef CGAL::Triangle_2<K>											Triangle2D;
-typedef CGAL::Point_2<K> 											Point2D;
+typedef CDTplus::Point	 											Point2D;
 
 // CGAL Extensions
 
@@ -493,6 +497,13 @@ private:
 	virtual bool polygonTriangulation(Polygon& polygon, vector<Triangle2D>& triangles);
 
 	/**
+	 * @brief	writs the given polygons in a svg file with the given filename
+	 * @param 	polys the polygons
+	 * @param	filename the filename of the resulting svg file
+	 */
+	virtual void writePolygonToSVG(vector<Polygon>& polys, vector<Triangle2D>& triangles, string& filename);
+
+	/**
 	 * @brief 	build polygons from a intesected face and the intersection path
 	 *
 	 * @param 	face 	the face to build polygons from
@@ -500,6 +511,13 @@ private:
 	 * @return  vector of vectors with points to hold the polygons
 	 */
 	virtual vector<vector<Point> > buildPolygons(FFace *face, vector<Point>& points);
+
+	virtual void markDomains(CDT& cdt);
+
+	virtual void markDomains(CDT& ct,
+		CDT::Face_handle start,
+		int index,
+		list<CDT::Edge>& border );
 };
 
 } // namespace lvr
