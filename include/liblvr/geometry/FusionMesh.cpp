@@ -797,7 +797,7 @@ void FusionMesh<VertexT, NormalT>::splitIntersectFaces(vector<FFace*>& faces, Tr
 		vector<Point> points;
 		getIntersectionSegments(face, segments, tree); // get all intersected segments off the given face
 		bool ok = sortSegments(segments, points);
-
+		
 		if(ok)
 		{
 			cout << "sort segments was ok: " << endl;
@@ -814,7 +814,7 @@ void FusionMesh<VertexT, NormalT>::splitIntersectFaces(vector<FFace*>& faces, Tr
 		
 		vector<Polygon> polys2D;
 		vector<Triangle2D> triangles;
-		
+		cout << "Face Nr.: " << to_string(i+1) << endl;	
 		for(int i=0; i<polygons.size(); i++)
 		{
 			counterVertices += polygons[i].size();
@@ -829,6 +829,10 @@ void FusionMesh<VertexT, NormalT>::splitIntersectFaces(vector<FFace*>& faces, Tr
 			polys2D.push_back(polygon);	
 			polygonTriangulation(polygon, triangles);
 		}
+		cout << "Count Triangles: " << triangles.size() << endl;
+
+		string filename = "polyfile" + to_string(i+1) + ".svg";
+		writePolygonToSVG(polys2D, triangles, filename);
 		vector<FFace*> newFaces;
 		for(vector<Triangle2D>::iterator trit = triangles.begin(); trit != triangles.end(); ++trit)
 		{
@@ -847,139 +851,45 @@ void FusionMesh<VertexT, NormalT>::splitIntersectFaces(vector<FFace*>& faces, Tr
 		}
 		addGlobal(newFaces);
 	}
-	
-	/*	
-	ofstream polyfile;
-	polyfile.open("polyfile.ply");
-	polyfile << "ply" << endl;
-	polyfile << "format ascii 1.0" << endl;
-	polyfile << "comment test polygons" << endl;
-	polyfile << "element vertex " << counterVertices << endl;
-   	polyfile << "property float x" << endl;
-   	polyfile << "property float y" << endl;
-   	polyfile << "property float z" << endl;
-	polyfile << "element face " << polys.size() << endl;
-	polyfile << "property list uchar int vertex_indices" << endl;
-	polyfile << "end_header" << endl;
-
-	for(vector<vector<Point> >::iterator polyIter = polys.begin(); polyIter != polys.end(); ++polyIter)
-	{
-		for(vector<Point>::iterator pointIter = polyIter->begin(); pointIter != polyIter->end(); ++ pointIter)
-		{
-			polyfile << *pointIter << endl;
-		}
-	}
-
-	counterVertices = 0;
-	for(int i=0; i<polys.size(); i++)
-	{
-		polyfile << polys[i].size() << " ";
-		for(int j=0; j<polys[i].size(); j++)
-		{
-			polyfile << j + counterVertices << " ";
-		}
-		polyfile << endl;
-		counterVertices += polys[i].size();
-	}
-
-
-	vector<PointSet> local_vertexRegions;
-	vector<PointSet> global_vertexRegions;
-	vector<Point> new_local_vertices;
-	vector<Point> new_global_vertices;
-	
-	FFace* face;
-	FFace* glo_face;
-	FVertex* v;
-	
-	local_tree_triangles.clear();
-	local_tree.clear();
-	
-	for(size_t i = 0;./ i < faces.size(); i++)
-    {	
-		intersect_ids.clear();
-		new_local_vertices.clear();
-		new_global_vertices.clear();
-		
-		face = faces[i];
-		//create vector of local intersection triangles for tree
-		ETriangle tri = faceToETriangle(face);
-		local_tree_triangles.push_back(tri);
-		
-		//check which vertices will be kept from local
-		for (int j = 0; j < 3; j++) {
-			v = face->vertices[j];
-			if (v->m_tree_dist > threshold) {
-				Point a(v->m_position.x, v->m_position.y, v->m_position.z);
-				new_local_vertices.push_back(a);
-			}
-		}
-		
-		//check which vertices to keep from intersecting triangles
-		intersect_ids = getIntersectingTriangles(face);
-		for (int j = 0; j < intersect_ids.size(); j++) {
-			Plane plane = faceToPlane(face);
-			glo_face = m_global_faces[intersect_ids[j]];
-			glo_face->is_valid = false;
-			for (int k = 0; k < 3; k++) {
-				v = glo_face->vertices[k];
-				Point a(v->m_position.x, v->m_position.y, v->m_position.z);
-				FT x = 0;
-				try {
-					x = CGAL::squared_distance(plane,a);
-				} catch (...)
-				{
-					cout << "function intersectIntegrate: squared_distance(plane,point) failed" << endl;
-				}
-				if (x > threshold) {
-					new_global_vertices.push_back(a);
-					//PRÜFEN OB IMMER MINDESTENS EINE VERTEX HINZUGEFÜGT WIRD
-				}
-				else {
-					//EVENTUELL NOCH ABSTAND ZU SEGMENTEN PRÜFEN
-					v->is_valid = false; //v aus Global wirklich safe?
-				}
-			}
-		}
-		//get Intersection Points and assign them to Border Region
-		getIntersectionPoints(face, new_local_vertices, new_global_vertices);
-		assignToBorderRegion(local_vertexRegions, new_local_vertices);
-		assignToBorderRegion(global_vertexRegions, new_global_vertices);
-	}
-	
-	//build local tree from triangles
-	local_tree.insert(local_tree_triangles.begin(), local_tree_triangles.end());
-	bool result = false;
-	try {
-		result = local_tree.accelerate_distance_queries();
-	} catch (...)
-	{
-		cout << "function intersectIntegrate: local_tree.accelerate_distance_queries() failed" << endl;
-	}
-	if (result) {
-		cout << "successfully accelerated_distance_queries" << endl; 
-	}
-	
-	// triangulate and add all Border Regions
-	for(int i = 0; i < local_vertexRegions.size(); i++) {
-		new_local_vertices.clear();
-		for (PointSetIterator it = local_vertexRegions[i].begin(); it != local_vertexRegions[i].end(); ++it) {
-			new_local_vertices.push_back(*it);
-		}
-		triangulateAndAdd(new_local_vertices, tree);
-	}
-	for(int i = 0; i < global_vertexRegions.size(); i++) {
-		new_global_vertices.clear();
-		for (PointSetIterator it = global_vertexRegions[i].begin(); it != global_vertexRegions[i].end(); ++it) {
-			new_global_vertices.push_back(*it);
-		}
-		triangulateAndAdd(new_global_vertices, local_tree);
-	}
-	cout << "Finished Intersect Integrate ..." << endl;
-*/
 
 }
 
+template<typename VertexT, typename NormalT>
+void FusionMesh<VertexT, NormalT>::writePolygonToSVG(vector<Polygon>& polys, vector<Triangle2D>& triangles, string& filename)
+{
+	ofstream polyfile;
+	polyfile.open(filename);
+	polyfile << "<?xml version=\"1.0\" encoding=\"UTF-8\"?>" << endl <<
+		"<!DOCTYPE svg PUBLIC \"-//W3C//DTD SVG 1.1//EN\" \"http://www.w3.org/Graphics/SVG/1.1/DTD/svg11.dtd\">" << endl << 
+		"<svg xmlns=\"http://www.w3.org/2000/svg\" " <<
+		"xmlns:xlink=\"http://www.w3.org/1999/xlink\" xmlns:ev=\"http://www.w3.org/2001/xml-events\" " << 
+		"version=\"1.1\" baseProfile=\"full\">" << endl << endl;
+
+	for(int i=0; i<polys.size(); i++)
+	{
+		if(polys[i].size() == 0)
+		{
+			continue;
+		}
+		polyfile << "<polygon points=\"";
+		for(int j=0; j<polys[i].size()-1; j++)
+		{
+			Point2D p = polys[i][j]; 
+			polyfile << p.x() << " " << p.y() << ", ";
+		}
+		Point2D p = polys[i][polys[i].size()-1]; 
+		polyfile << p.x() << " " << p.y() << "\" style=\"fill:lime; stroke-width:0.01\"/>" << endl;
+	}
+	for(int i=0; i< triangles.size(); i++)
+	{
+		Triangle2D &t = triangles[i];
+		polyfile << "<polygon points=\"";polyfile << t[0].x() << " " << t[0].y() << ", " <<
+			 t[1].x() << " " << t[1].y() << ", " << t[2].x() << " " << t[2].y() << 
+			 "\" style=\"fill:black; stroke-width:0.01\"/>" << endl;
+	}
+	polyfile << "</svg>" << endl;
+	polyfile.close();
+}
 
 template<typename VertexT, typename NormalT>
 vector<vector<Point> > FusionMesh<VertexT, NormalT>::buildPolygons(FFace *face, vector<Point>& points)
@@ -1226,8 +1136,8 @@ bool FusionMesh<VertexT, NormalT>::sortSegments(vector<Segment> &segments, vecto
 			return false;
 	}
 	vector< Segment > sorted_segments;
-	Point tmp_point = terminal_points.front();
-	Point end_point = terminal_points.back();
+	Point tmp_point = terminal_points.back();
+	Point end_point = terminal_points.front();
 	Segment tmp_segment = point2Seg[tmp_point].front();
 
 	while(tmp_point != end_point)
@@ -1243,7 +1153,6 @@ bool FusionMesh<VertexT, NormalT>::sortSegments(vector<Segment> &segments, vecto
 		{
 			tmp_point = first;
 		}
-		sorted_segments.push_back(tmp_segment);
 		const Segment first_seg = point2Seg[tmp_point].front();
 		const Segment second_seg = point2Seg[tmp_point].back();
 		
@@ -1258,9 +1167,6 @@ bool FusionMesh<VertexT, NormalT>::sortSegments(vector<Segment> &segments, vecto
 		}
 	}
 	points.push_back(tmp_point);
-	cout << "... sort done" << endl;
-	segments.clear();
-	segments.insert(segments.end(), sorted_segments.begin(), sorted_segments.end());
 	return regular;
 }
 
@@ -1336,25 +1242,88 @@ template<typename VertexT, typename NormalT> void FusionMesh<VertexT, NormalT>::
 
 	}
 }
+
+
+template<typename VertexT, typename NormalT> 
+void FusionMesh<VertexT, NormalT>::markDomains(CDT& ct,
+		CDT::Face_handle start,
+		int index,
+		list<CDT::Edge>& border )
+{
+	if(start->info().nesting_level != -1){
+		return;
+	}
+	std::list<CDT::Face_handle> queue;
+	queue.push_back(start);
+	while(! queue.empty()){
+		CDT::Face_handle fh = queue.front();
+		queue.pop_front();
+		if(fh->info().nesting_level == -1){
+			fh->info().nesting_level = index;
+			for(int i = 0; i < 3; i++){
+				CDT::Edge e(fh,i);
+				CDT::Face_handle n = fh->neighbor(i);
+				if(n->info().nesting_level == -1){
+					if(ct.is_constrained(e)) border.push_back(e);
+					else queue.push_back(n);
+				}
+			}
+		}
+	}
+}
+//explore set of facets connected with non constrained edges,
+//and attribute to each such set a nesting level.
+//We start from facets incident to the infinite vertex, with a nesting
+//level of 0. Then we recursively consider the non-explored facets incident
+//to constrained edges bounding the former set and increase the nesting level by 1.
+//Facets in the domain are those with an odd nesting level.
+template<typename VertexT, typename NormalT> 
+void FusionMesh<VertexT, NormalT>::markDomains(CDT& cdt)
+{
+	for(CDT::All_faces_iterator it = cdt.all_faces_begin(); it != cdt.all_faces_end(); ++it){
+		it->info().nesting_level = -1;
+	}
+	std::list<CDT::Edge> border;
+	markDomains(cdt, cdt.infinite_face(), 0, border);
+	while(! border.empty()){
+		CDT::Edge e = border.front();
+		border.pop_front();
+		CDT::Face_handle n = e.first->neighbor(e.second);
+		if(n->info().nesting_level == -1){
+			markDomains(cdt, n, e.first->info().nesting_level+1, border);
+		}
+	}
+}
 	template<typename VertexT, typename NormalT> 
 bool FusionMesh<VertexT, NormalT>::polygonTriangulation(Polygon& polygon, vector<Triangle2D>& triangles)
 {
-	ConstrainedDelaunay cdt;
+	CDT cdt;
 	if ( polygon.is_empty() ) return false;
 	//ConstrainedDelaunay::Vertex_handle v_prev=cdt.insert(*CGAL::cpp11::prev(polygon.vertices_end()));
-	ConstrainedDelaunay::Vertex_handle v_prev=cdt.insert(polygon[polygon.size()-1]);
+	CDT::Vertex_handle v_prev=cdt.insert(polygon[polygon.size()-1]);
 	for (Polygon::Vertex_iterator vit=polygon.vertices_begin();
 			vit!=polygon.vertices_end();++vit)
 	{
-		ConstrainedDelaunay::Vertex_handle vh=cdt.insert(*vit);
+		CDT::Vertex_handle vh=cdt.insert(*vit);
 		cdt.insert_constraint(vh,v_prev);
 		v_prev=vh;
-	} 
- 	for (ConstrainedDelaunay::Finite_faces_iterator fit=cdt.finite_faces_begin();
+	}
+
+	markDomains(cdt);	
+ 	int count = 0;
+	for (CDT::Finite_faces_iterator fit=cdt.finite_faces_begin();
 			fit!=cdt.finite_faces_end();++fit)
  	{
-		triangles.push_back(cdt.triangle(fit));
+		if(fit->info().in_domain() )
+		{
+			++count;
+			triangles.push_back(cdt.triangle(fit));
+		}
 	}
+
+	cout << "There are " << count << " facets in the domain." << endl;
 	return true;
 }
+
+
 } // namespace lvr
