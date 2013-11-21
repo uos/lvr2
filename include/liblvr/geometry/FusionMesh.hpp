@@ -263,6 +263,13 @@ public:
      * @param   mesh      A pointer to the mesh to be inserted
      */
 	virtual void addMeshAndLazyIntegrate(MeshBufferPtr model);
+	
+	/**
+     * @brief   Insert an entire mesh into the local fusion buffer and integrate only remote Faces.
+     *
+     * @param   mesh      A pointer to the mesh to be inserted
+     */
+	virtual void addMeshAndRemoteIntegrateOnly(MeshBufferPtr model);
 
 
 // Parameter Methods

@@ -308,6 +308,37 @@ template<typename VertexT, typename NormalT> void FusionMesh<VertexT, NormalT>::
 	lazyIntegrate();
 }
 
+template<typename VertexT, typename NormalT> void FusionMesh<VertexT, NormalT>::addMeshAndRemoteIntegrateOnly(MeshBufferPtr mesh)
+{
+	addMesh(mesh);
+	
+	cout <<endl << timestamp << "Start Integrating... " << endl;
+	
+	printLocalBufferStatus();
+	printGlobalBufferStatus(); 
+    
+    if (m_global_vertices.size() == 0)
+    {
+		addGlobal(m_local_faces);
+	}
+    else
+    {
+		buildTree();
+		buildVertexMap();
+		
+		sortFaces();
+		
+		addGlobal(remote_faces);
+	}
+	 
+    clearLocalBuffer();
+	
+    cout << endl << timestamp << "Finished Integrating..." << endl << endl;
+	
+	printLocalBufferStatus();
+	printGlobalBufferStatus();
+}
+
 ///
 /// Clear Methods (internal)
 ///
@@ -574,8 +605,6 @@ template<typename VertexT, typename NormalT> void FusionMesh<VertexT, NormalT>::
 		{	
 			// Delete Case: redundant faces
 			redundant_faces++;
-			delete face;
-			//TODO: delete vertices if not referenced by other face
 		}
 		else
 		{	

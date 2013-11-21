@@ -112,11 +112,14 @@ int main(int argc, char** argv)
 		std::cout << "Unable to parse options. Call 'fusion --help' for more information." << std::endl;
 	}
 	// Load and integrate meshes
-	mesh.addMesh(mesh_buffer1);
+	mesh.addMeshAndRemoteIntegrateOnly(mesh_buffer1);
+	mesh.addMeshAndRemoteIntegrateOnly(mesh_buffer2);
+	
+	/*mesh.addMesh(mesh_buffer1);
 	mesh.lazyIntegrate();
 
 	mesh.addMesh(mesh_buffer2);
-	mesh.integrate();
+	mesh.integrate();*/
 
 	mesh.finalize();
 
