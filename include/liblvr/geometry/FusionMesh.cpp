@@ -547,6 +547,7 @@ template<typename VertexT, typename NormalT> void FusionMesh<VertexT, NormalT>::
 	special_case_faces = 0;
 	int far_tree_intersect_fails = 0;
 	int close_tree_intersect_fails = 0;
+	int squared_distance_fails = 0;
 	
 	bool result = false;
 	try {
@@ -574,9 +575,16 @@ template<typename VertexT, typename NormalT> void FusionMesh<VertexT, NormalT>::
 		Point a(v0->m_position.x, v0->m_position.y, v0->m_position.z);
 		Point b(v1->m_position.x, v1->m_position.y, v1->m_position.z);
 		Point c(v2->m_position.x, v2->m_position.y, v2->m_position.z);
-		v0->m_tree_dist = tree.squared_distance(a);;
-		v1->m_tree_dist = tree.squared_distance(b);
-		v2->m_tree_dist = tree.squared_distance(c);
+		try {
+			v0->m_tree_dist = tree.squared_distance(a);
+			v1->m_tree_dist = tree.squared_distance(b);
+			v2->m_tree_dist = tree.squared_distance(c);
+		} catch (...)
+		{
+			//cout << "WARNING: tree.squared_distance call failed, face is skipped during sortFaces()" << endl;
+			squared_distance_fails++;
+			continue;
+		}
 		
 		temp = Triangle(a,b,c);
 		
@@ -628,8 +636,9 @@ template<typename VertexT, typename NormalT> void FusionMesh<VertexT, NormalT>::
 	}
 	
 	printFaceSortingStatus();
-	cout << "For " << far_tree_intersect_fails << " of Special Case Faces call to tree.intersect() failed" << endl;
-	cout << "For " << close_tree_intersect_fails << " of Closeby Faces call to tree.intersect() failed" << endl << endl; 
+	cout << "WARNING: For " << squared_distance_fails << " of all Faces tree.squared_distance() failed for at least one point" << endl;
+	cout << "WARNING: For " << far_tree_intersect_fails << " of Special Case Faces call to tree.intersect() failed" << endl;
+	cout << "WARNING: For " << close_tree_intersect_fails << " of Closeby Faces call to tree.intersect() failed" << endl << endl; 
     cout << timestamp << "Finished Sorting Faces..." << endl;
  	
 	/*face->m_index[0] = face->m_index[0] + increment;
