@@ -75,10 +75,13 @@ public:
 	/// The face normal
 	NormalT							m_normal;
 	
+	/// The faces index in global buffer
+	int								m_self_index;
+	
 	// all normal related functionality has been omitted for reasons of simplicity. if necessary see HalfEdeFace.hpp.
 
-	/// Indicator if face is part of the mesh boundary
-	bool 							m_is_border_face;
+	/// Indicator if face is valid or supposed to be deleted
+	bool 							is_valid;
 	
 	int r;
 	int g;
