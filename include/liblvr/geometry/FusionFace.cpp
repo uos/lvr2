@@ -38,7 +38,9 @@ template<typename VertexT, typename NormalT> FusionFace<VertexT, NormalT>::Fusio
 {
  r = 0;
  g = 255;
- b = 0;	
+ b = 0;
+ m_self_index = 1337;
+ is_valid = false;
 }
 
 template<typename VertexT, typename NormalT> FusionFace<VertexT, NormalT>::~FusionFace() {}
