@@ -369,7 +369,7 @@ template<typename VertexT, typename NormalT> void FusionMesh<VertexT, NormalT>::
 template<typename VertexT, typename NormalT> void FusionMesh<VertexT, NormalT>::reset()
 {
 	clearLocalBuffer();
-	clearGlobalBuffer();
+	//clearGlobalBuffer();
 }
 
 ///
