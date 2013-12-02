@@ -366,6 +366,12 @@ template<typename VertexT, typename NormalT> void FusionMesh<VertexT, NormalT>::
 	m_global_faces.clear();
 }*/
 
+template<typename VertexT, typename NormalT> void FusionMesh<VertexT, NormalT>::reset()
+{
+	clearLocalBuffer();
+	clearGlobalBuffer();
+}
+
 ///
 /// Print Methods (internal)
 ///
