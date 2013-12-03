@@ -49,7 +49,7 @@ public:
 		
 	void init()
 	{
-		m_self_index = 1337;
+		m_self_index = -1;
 		is_valid = false;
 	}
 	

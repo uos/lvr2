@@ -22,6 +22,7 @@
  *  @date 14.07.2013
  *  @author Henning Deeken (hdeeken@uos.de)
  *  @author Ann-Katrin Häuser (ahaeuser@uos.de)
+ *  @author Sebastian Pütz (spuetz@uos.de)
  */
 
 #ifndef FUSIONFACE_H_
@@ -46,7 +47,8 @@ template<typename VertexT, typename NormalT> class FusionVertex;
  * @brief A face in a fusion mesh.
  *
  */
-template<typename VertexT, typename NormalT> class FusionFace
+template<typename VertexT, typename NormalT> 
+class FusionFace : public HalfEdgeFace<VertexT, NormalT>
 {
 public:
 
@@ -72,9 +74,6 @@ public:
 	/// A three pointers to the face vertices
 	int 							m_index[3];
 
-	/// The face normal
-	NormalT							m_normal;
-	
 	/// The faces index in global buffer
 	int								m_self_index;
 	
