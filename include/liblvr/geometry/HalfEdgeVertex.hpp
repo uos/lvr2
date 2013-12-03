@@ -30,6 +30,7 @@
 #include <vector>
 using namespace std;
 
+#include "Matrix4.hpp"
 #include "Vertex.hpp"
 #include "Normal.hpp"
 #include "HalfEdge.hpp"
