@@ -1,4 +1,4 @@
-/* Copyright (C) 2011 Uni Osnabrück
+/* Co1pyright (C) 2011 Uni Osnabrück
  * This file is part of the LAS VEGAS Reconstruction Toolkit,
  *
  * LAS VEGAS is free software; you can redistribute it and/or modify
@@ -21,6 +21,7 @@
  *
  *  @date 14.07.2013
  *  @author Henning Deeken (hdeeken@uos.de)
+ *  @author Sebastian Pütz (spuetz@uos.de)
  */
 
 #ifndef FUSIONVERTEX_H_
@@ -29,10 +30,7 @@
 #include <vector>
 using namespace std;
 
-#include "Vertex.hpp"
-#include "Normal.hpp"
-//#include "FusionEdge.hpp"
-//#include "FusionFace.hpp"
+#include "HalfEdgeVertex.hpp"
 
 namespace lvr
 {
@@ -40,51 +38,49 @@ namespace lvr
 /**
  * @brief	A vertex in a fusion mesh
  */
-template<typename VertexT, typename NormalT> class FusionVertex
+template<typename VertexT, typename NormalT>
+class FusionVertex : public HalfEdgeVertex<VertexT, NormalT>
 {
-	
 public:
-
-	//typedef FusionEdge<FusionVertex<VertexT, NormalT>, FusionFace<VertexT, NormalT> > FEdge;
-	//typedef FusionFaceFace<VertexT, NormalT> FFace;
 
 	/**
 	 * @brief	Default ctor. Position is (0, 0, 0), normal is undefined
 	 */
-	FusionVertex() 
+		
+	void init()
 	{
 		m_self_index = 1337;
 		is_valid = false;
 	}
-
+	
 	/**
-	 * @brief	Constructs a vertex at given position with provided normal.
+	 * @brief	Default ctor. Position is (0, 0, 0), normal is undefined
 	 */
-	FusionVertex(VertexT v, NormalT n) : m_position(v), m_normal(n) {}
+	FusionVertex() 
+	: HalfEdgeVertex<VertexT, NormalT>::HalfEdgeVertex()
+	{
+		init();
+	}
 
 	/**
 	 * @brief	Constructs a vertex at given position
 	 */
-	FusionVertex(VertexT v) : m_position(v) {}
+	FusionVertex(VertexT vertex)
+		: HalfEdgeVertex<VertexT, NormalT>(vertex)
+	{
+		init();
+	}
 
 	/**
 	 * @brief	Copy Ctor.
 	 */
-	/*
 	FusionVertex(const FusionVertex& o)
+		: HalfEdgeVertex<VertexT, NormalT>::HalfEdgeVertex(o)
 	{
-		m_position = o.m_position;
-		m_normal = o.m_normal;
+		m_tree_dist = o.m_tree_dist;
+		is_valid = o.is_valid;
 		m_self_index = o.m_self_index;
-		is_border_vertex = o.is_border_vertex;
 	}
-	*/
-
-	/// The vertex's position
-	VertexT 			m_position;
-
-	/// The vertex's normal
-	NormalT 			m_normal;
 
 	/// The vertex index in the global mesh
 	size_t 				m_self_index;
@@ -92,12 +88,8 @@ public:
 	/// The vertex distance to the tree representing the global buffer
 	double 			m_tree_dist;
 	
-	/// The vertex faces index in the mesh
-	//vector<int> 		m_face_indices;
-
 	/// Indicator if the vertex is valid or supposed to be deleted
 	bool 				is_valid;
-
 };
 
 } // namespace lvr
