@@ -23,6 +23,7 @@
  *  @date 03.12.2008
  *  @author Henning Deeken (hdeeken@uos.de)
  *  @author Ann-Katrin Häuser (ahaeuser@uos.de)
+ *  @author Sebastian Pütz (spuetz@uos.de)
  */
 
 #include "FusionFace.hpp"
@@ -34,28 +35,20 @@ template<typename A, typename B> class FusionVertex;
 namespace lvr
 {
 
-template<typename VertexT, typename NormalT> FusionFace<VertexT, NormalT>::FusionFace() 
-{
- r = 0;
- g = 255;
- b = 0;
- m_self_index = 1337;
- is_valid = false;
-}
+	template<typename VertexT, typename NormalT> FusionFace<VertexT, NormalT>::FusionFace() 
+		: HalfEdgeFace<VertexT, NormalT>()
+	{
+		// color
+		r = 0;
+		g = 255;
+		b = 0;
 
-template<typename VertexT, typename NormalT> FusionFace<VertexT, NormalT>::~FusionFace() {}
+		m_self_index = -1;
+		is_valid = false;
+	}
 
-/*
-template<typename VertexT, typename NormalT> FusionFace<VertexT, NormalT>::FusionFace(const FusionFace<VertexT, NormalT> &o)
-{
-	vertices = o.vertices;
-	r = o.r;
-	g = o.g;
-	b = o.b;
-	m_index = o.m_index;
-    m_normal =o.m_normal;
-    m_is_border_face = o.m_is_border_face;
-}
-* */
+	template<typename VertexT, typename NormalT> FusionFace<VertexT, NormalT>::~FusionFace() {}
+
 
 } // namespace lvr
+
