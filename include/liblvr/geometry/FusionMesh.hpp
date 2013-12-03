@@ -126,7 +126,7 @@ class ExtendedTriangle: public Triangle
 public:
 	
 	ExtendedTriangle(Point& p, Point& q, Point& r) : Triangle(p, q, r)
-		{ m_self_index = 1773; }
+		{ m_self_index = -1; }
 	
 	ExtendedTriangle(Point& p, Point& q, Point& r, int i) : Triangle(p, q, r)
 		{ m_self_index = i; }
