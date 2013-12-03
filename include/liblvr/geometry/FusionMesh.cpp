@@ -790,34 +790,30 @@ void FusionMesh<VertexT, NormalT>::splitIntersectFaces(vector<FFace*>& faces, Tr
 	
 	for(size_t i = 0; i < faces.size(); i++)
 	{
-		cout << " ############### " << endl << endl << endl;
-
 		FFace* face = faces[i];
 		vector<Segment> segments;
-		vector<Point> points;
 		getIntersectionSegments(face, segments, tree); // get all intersected segments off the given face
-		bool ok = sortSegments(segments, points);
 		
-		if(ok)
+		// try to sort the segments
+		vector<Point> points;
+		if(! sortSegments(segments, points) )
 		{
-			cout << "sort segments was ok: " << endl;
-		}
-		else
-		{
-			cout << "sort segments failed!" << endl;
+			cout << "sort segments failed! - continue " << endl;
 			continue;
 		}
+		// build the intersection polygons
 		vector<vector<Point> > polygons = buildPolygons(face, points);
 		
+		// calculate the transformation to the xy-plane
 		AffineTF tf = calcTransform(face);
+		// and the inverse transformation
 		AffineTF itf = tf.inverse();
 		
+		// triangulate the 2d-polygons
 		vector<Polygon> polys2D;
 		vector<Triangle2D> triangles;
-		cout << "Face Nr.: " << to_string(i+1) << endl;	
 		for(int i=0; i<polygons.size(); i++)
 		{
-			counterVertices += polygons[i].size();
 			Polygon polygon;
 			for(int j=0; j<polygons[i].size(); j++)
 			{
@@ -825,14 +821,15 @@ void FusionMesh<VertexT, NormalT>::splitIntersectFaces(vector<FFace*>& faces, Tr
 				Point p = tf.transform(polygons[i][j]); 
 				polygon.push_back(Point2D(p.x(), p.y()));
 			}
-			
 			polys2D.push_back(polygon);	
 			polygonTriangulation(polygon, triangles);
 		}
-		cout << "Count Triangles: " << triangles.size() << endl;
-
+		
+		// save polygons and the new triangulted faces in svg images
 		string filename = "polyfile" + to_string(i+1) + ".svg";
 		writePolygonToSVG(polys2D, triangles, filename);
+
+		// inverse transforamtion - back to 3d - build new faces and add them to the buffer
 		vector<FFace*> newFaces;
 		for(vector<Triangle2D>::iterator trit = triangles.begin(); trit != triangles.end(); ++trit)
 		{
