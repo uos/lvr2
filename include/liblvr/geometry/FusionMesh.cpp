@@ -1125,8 +1125,7 @@ bool FusionMesh<VertexT, NormalT>::sortSegments(vector<Segment> &segments, vecto
 		case 1:
 			cout << "WARNING: There is only one terminal point!" << endl;
 			return false;
-		case 2:
-			cout << "Party check!" << endl;
+		case 2: // all right!
 			break;
 		default:
 			cout << "WARNING: There are more then two terminal points!" << endl;
