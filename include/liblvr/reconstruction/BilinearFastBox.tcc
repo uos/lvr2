@@ -28,15 +28,15 @@
 namespace lvr
 {
 
-static int PlaneTable[28] =
+/*static int PlaneTable[28] =
 {
         204, 51, 153, 102, 240, 15,
         192, 63, 48, 207, 12, 243, 3, 252, 96, 144, 6, 9, 159, 111, 249, 246, 136, 119, 17, 238, 34, 221
-};
+};*/
 
 template<typename VertexT, typename NormalT>
 BilinearFastBox<VertexT, NormalT>::BilinearFastBox(VertexT &center)
-    : FastBox<VertexT, NormalT>(center)
+    : FastBox<VertexT, NormalT>(center), m_mcIndex(0)
 {
 
 }
@@ -115,7 +115,6 @@ void BilinearFastBox<VertexT, NormalT>::getSurface(
         // Add triangle actually does the normal interpolation for us.
         HalfEdgeFace<VertexT, NormalT>* f;
         mesh->addTriangle(triangle_indices[0], triangle_indices[1], triangle_indices[2], f);
-
         m_faces.push_back(f);
     }
 }
@@ -129,16 +128,35 @@ void BilinearFastBox<VertexT, NormalT>::optimizePlanarFaces(typename PointsetSur
 
     // Detect triangles that are on the border of the mesh
     vector<HEdge*> out_edges;
+
     for(int i = 0; i < m_faces.size(); i++)
     {
         HalfEdgeFace<VertexT, NormalT>* face = m_faces[i];
-
         HEdge* e = face->m_edge;
-        HEdge* f = face->m_edge->next;
-        HEdge* g = face->m_edge->next->next;
-        if(e->pair->face == 0) out_edges.push_back(e);
-        if(f->pair->face == 0) out_edges.push_back(f);
-        if(g->pair->face == 0) out_edges.push_back(g);
+        for(int j = 0; j < 2; j++)
+        {
+            // Catch null pointer from outer faces
+            try
+            {
+                e->pair()->face();
+            }
+            catch (HalfEdgeAccessException& ex)
+            {
+                out_edges.push_back(e);
+            }
+
+            // Check integrety
+            try
+            {
+                e = e->next();
+            }
+            catch (HalfEdgeAccessException &ex)
+            {
+                // Face currupted, abort
+                cout << "Warning, currupted face" << endl;
+                break;
+            }
+        }
 
     }
 
@@ -150,7 +168,7 @@ void BilinearFastBox<VertexT, NormalT>::optimizePlanarFaces(typename PointsetSur
         {
 
             vector<VertexT> nearest1, nearest2;
-            tree->kSearch( out_edges[i]->start->m_position, kc, nearest1);
+            tree->kSearch( out_edges[i]->start()->m_position, kc, nearest1);
 
             size_t nk = min(kc, nearest1.size());
 
@@ -164,10 +182,10 @@ void BilinearFastBox<VertexT, NormalT>::optimizePlanarFaces(typename PointsetSur
                 	centroid1 += nearest1[a];
                 }
                 centroid1 /= nk;
-                out_edges[i]->start->m_position = centroid1;
+                out_edges[i]->start()->m_position = centroid1;
             }
 
-            tree->kSearch( out_edges[i]->end->m_position, kc, nearest2);
+            tree->kSearch( out_edges[i]->end()->m_position, kc, nearest2);
             nk = min(kc, nearest2.size());
 
             if(nk > 0)
@@ -178,7 +196,7 @@ void BilinearFastBox<VertexT, NormalT>::optimizePlanarFaces(typename PointsetSur
             		centroid2 += nearest2[a];
             	}
             	centroid2 /= nk;
-                out_edges[i]->end->m_position = centroid2;
+                out_edges[i]->end()->m_position = centroid2;
             }
 
         }
@@ -189,8 +207,8 @@ void BilinearFastBox<VertexT, NormalT>::optimizePlanarFaces(typename PointsetSur
 template<typename VertexT, typename NormalT>
 BilinearFastBox<VertexT, NormalT>::~BilinearFastBox()
 {
-	this->m_faces.clear();
-    // TODO Auto-generated destructor stub
+    //for(int i = 0; i < m_faces.size(); i++) delete[] m_faces[i];
+    m_faces.clear();
 }
 
 } /* namespace lvr */

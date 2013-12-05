@@ -53,6 +53,11 @@ public:
 	Texturizer( typename PointsetSurface<VertexT>::Ptr pm);
 
 	/**
+	 * @brief   Destructor.
+	 */
+	~Texturizer();
+
+	/**
 	 * @brief 	Creates or searches a texture for the region given by its' contour
 	 *
 	 * @param	contour	The contour of the region to create or find a texture for
@@ -180,12 +185,12 @@ private:
 template<typename VertexT, typename NormalT>
 inline ostream& operator<<(ostream& os, const Texturizer<VertexT, NormalT> t)
 {
-	os<<"-----------Texturizer statistiscs-----------"<<endl;	
+	os <<"-----------Texturizer statistiscs-----------"<<endl;
 	os << "Texturized Planes: " <<t.m_stats_texturizedPlanes<<endl;
 	os << "Matched individual textures: "<<t.m_stats_matchedIndTextures<<endl;
 	os << "Matched pattern textures: "<<t.m_stats_matchedPatTextures<<endl;
 	os << "Extracted Patterns: "<<t.m_stats_extractedPatterns<<endl;
-	os<<"--------------------------------------------"<<endl;	
+	os <<"--------------------------------------------"<<endl;
     return os;
 }
 

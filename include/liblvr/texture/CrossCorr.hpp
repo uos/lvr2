@@ -121,6 +121,7 @@ private:
 	 * \param	output	The destination where results are stored
 	 */
 	void getCCY(float* &output);
+
 	cv::Mat m_crosscorr;
 };
 

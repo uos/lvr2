@@ -41,6 +41,7 @@ set(LVR_SOURCES
     texture/CCV.cpp
     texture/Transform.cpp
     texture/Trans.cpp
+    geometry/HalfEdgeAccessExceptions.cpp
 )
 SET_SOURCE_FILES_PROPERTIES(io/BoctreeIO.cpp PROPERTIES COMPILE_FLAGS "-std=gnu++0x")
 
