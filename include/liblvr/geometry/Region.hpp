@@ -34,7 +34,7 @@
 #include "HalfEdgeFace.hpp"
 #include <vector>
 #include <stack>
-
+#include <boost/shared_ptr.hpp>
 
 namespace lvr {
 
@@ -61,6 +61,10 @@ public:
 	typedef HalfEdgeVertex<VertexT, NormalT> HVertex;
 	typedef HalfEdge<HVertex, HFace> HEdge;
 
+	typedef HVertex*  VertexPtr;
+	typedef HFace*    FacePtr;
+	typedef HEdge*    EdgePtr;
+
 	/**
 	 * @brief constructor.
 	 *
@@ -73,14 +77,14 @@ public:
 	 *
 	 * @param	f	the face to add
 	 */
-	virtual void addFace(HFace* f);
+	virtual void addFace(FacePtr f);
 
 	/**
 	 * @brief Removes a face from the region.
 	 *
 	 * @param	f	the face to remove
 	 */
-	virtual void removeFace(HFace* f);
+	virtual void deleteInvalidFaces();
 
 	/**
 	 * @brief Finds all contours of the region (outer contour + holes)
@@ -105,7 +109,7 @@ public:
 	 * @return	true if the given face is flickering, false otherwise
 	 *
 	 */
-	virtual bool detectFlicker(HFace* f);
+	virtual bool detectFlicker(FacePtr f);
 
 
     /**
@@ -122,7 +126,7 @@ public:
 	bool m_inPlane;
 
 	/// The faces in the region
-	vector<HFace*>    m_faces;
+	vector<FacePtr>    m_faces;
 
 	/// The number of the region
 	int m_regionNumber;
