@@ -19,14 +19,13 @@
  /*
  * Options.h
  *
- *  Created on: July 14, 2013
+ *  Created on: August 21, 2013
  *      Author: Henning Deeken {hdeeken@uos.de}
- *              Ann-Katrin Häuser {ahaeuser@uos.de}
  */
 
 #include "Options.hpp"
 
-namespace fusion{
+namespace slicer{
 
 Options::Options(int argc, char** argv) : m_descr("Supported options")
 {
@@ -35,23 +34,20 @@ Options::Options(int argc, char** argv) : m_descr("Supported options")
 
 	m_descr.add_options()
 		        ("help", "Produce help message")
-		        ("mesh1", value< vector<string> >(), "Input file name for mesh1. Supported formats are .ply")
-		        ("mesh2", value< vector<string> >(), "Input file name for mesh2. Supported formats are .ply")
-		        ("fusion", value< vector<string> >(), "Input file name for mesh2. Supported formats are .ply")
-		        ("t", value< vector<double> >(), "Distance treshold for AABB Search.")
-				("v", "Verbosity On.")
+		        ("input", value< vector<string> >(), "Input file name. Supported formats are .ply")
+		        ("dimension", value< vector<string> >(), "Dimension parameter for the AABB Search.")
+		        ("value", value< vector<double> >(), "Dimension value for the AABB Search.")
         ;
-		;
 
-	m_pdescr.add("mesh1", -1);
-	m_pdescr.add("mesh2", -1);
+	m_pdescr.add("input", -1);
+	m_pdescr.add("dimension", -1);
+	m_pdescr.add("value", -1);
 
 	// Parse command line and generate variables map
 	store(command_line_parser(argc, argv).options(m_descr).positional(m_pdescr).run(), m_variables);
 	notify(m_variables);
 
-  if(m_variables.count("help")) 
-  {
+  if(m_variables.count("help")) {
 	  
     ::std::cout<< m_descr << ::std::endl;
   }
@@ -61,41 +57,47 @@ Options::~Options() {
 	// TODO Auto-generated destructor stub
 }
 
-bool Options::getVerbosity() const
+string Options::getInputFileName() const
 {
-	return (m_variables.count("v"));
+	return (m_variables["input"].as< vector<string> >())[0];
 }
 
-string Options::getMesh1FileName() const
+string Options::getDimension() const
 {
-	return (m_variables["mesh1"].as< vector<string> >())[0];
+	return (m_variables["dimension"].as< vector<string> >())[0];
 }
 
-string Options::getMesh2FileName() const
+double Options::getValue() const
 {
-	return (m_variables["mesh2"].as< vector<string> >())[0];
-}
-
-string Options::getFusionMeshFileName() const
-{
-	return (m_variables["fusion"].as< vector<string> >())[0];
-}
-
-double Options::getDistanceTreshold() const
-{
-	return (m_variables["t"].as< vector<double> >())[0];
+	return (m_variables["value"].as< vector<double> >())[0];
 }
 
 bool Options::printUsage() const
 {
-  if(!m_variables.count("mesh1") || !m_variables.count("mesh2"))
+  if(!m_variables.count("input"))
     {
       cout << "Error: You must specify an input file." << endl;
       cout << endl;
       cout << m_descr << endl;
       return true;
     }
-  
+    
+    if(!m_variables.count("dimension") || m_variables.count("dimension") > 1)
+    {
+      cout << "Error: You must specify exactly one dimension d out of x, y, z." << endl;
+      cout << endl;
+      cout << m_descr << endl;
+      return true;
+    }
+    
+     if(!m_variables.count("value") || m_variables.count("value") > 1)
+    {
+      cout << "Error: You must specify exactly one value." << endl;
+      cout << endl;
+      cout << m_descr << endl;
+      return true;
+    }
+    
   if(m_variables.count("help"))
     {
       cout << endl;
@@ -105,10 +107,5 @@ bool Options::printUsage() const
   return false;
 }
 
-bool Options::outputFileNameSet() const
-{
-	return (m_variables["fusion"].as< vector<string> >()).size() > 0;
-}
-
-} // namespace fusion
+} // namespace slicer
 

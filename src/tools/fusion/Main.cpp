@@ -67,9 +67,6 @@ int main(int argc, char** argv)
 			return 0;
 		}
 
-		::std::cout << options << ::std::endl;
-
-
 		// Create a mesh loader object
 		ModelFactory io_factory;
 		ModelPtr model1 = io_factory.readModel( options.getMesh1FileName() );
@@ -105,18 +102,23 @@ int main(int argc, char** argv)
 			exit(-1);
 		}
 		cout << timestamp << "Successfully loaded both meshes." << endl;
+		
+		mesh.setVerbosity(options.getVerbosity());
 		mesh.setDistanceThreshold(options.getDistanceTreshold());
-	}
-	catch(...)
-	{
-		std::cout << "Unable to parse options. Call 'fusion --help' for more information." << std::endl;
-	}
+		
+	}catch(...)
+		{
+			std::cout << "Unable to parse options. Call 'fusion --help' for more information." << std::endl;
+		}
 	// Load and integrate meshes
-	mesh.addMesh(mesh_buffer1);
+	mesh.addMeshAndRemoteIntegrateOnly(mesh_buffer1);
+	mesh.addMeshAndRemoteIntegrateOnly(mesh_buffer2);
+	
+	/*mesh.addMesh(mesh_buffer1);
 	mesh.lazyIntegrate();
 
 	mesh.addMesh(mesh_buffer2);
-	mesh.integrate();
+	mesh.integrate();*/
 
 	mesh.finalize();
 

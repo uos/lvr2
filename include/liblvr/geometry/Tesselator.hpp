@@ -29,6 +29,7 @@
 
 using namespace std;
 
+#include <set>
 #include <vector>
 #include <glu.h>
 #include <glut.h>
@@ -55,6 +56,11 @@ template<typename VertexT, typename NormalT>
 class Tesselator
 {
 public:
+
+    /**
+     * @brief Free ressources that were created during the tesselation process.
+     */
+    static void clear();
 
     /**
      * @brief Initializes the Tesselator
@@ -161,7 +167,10 @@ private:
     static GLenum m_primitive;
 
     /* Number of already tesselated contours. Used for debugging */
-    static int    m_numContours;    
+    static int    m_numContours;
+
+    static set<GLdouble*> m_garbageVertices;
+
 }; /* end of class */
 
 } /* namespace lvr */

@@ -19,9 +19,8 @@
  /*
  * Options.h
  *
- *  Created on: July 14, 2013
+ *  Created on: August 21, 2013
  *      Author: Henning Deeken {hdeeken@uos.de}
- *              Ann-Katrin Häuser {ahaeuser@uos.de}
  */
 
 #ifndef OPTIONS_H_
@@ -37,7 +36,7 @@
 
 using namespace std;
 
-namespace fusion{
+namespace slicer{
 using namespace boost::program_options;
 /**
  * @brief A class to parse the program options for the fusion
@@ -61,35 +60,19 @@ public:
 	bool	printUsage() const;
 
 	/**
-	 * @brief	Returns true if an output filen name was set
-	 */
-	bool	outputFileNameSet() const;
-	
-	/**
-	 * @brief	Returns the verbosity level
-	 */
-	bool 	getVerbosity() const;
-
-	/**
 	 * @brief	Returns the output file name
 	 */
-	string 	getMesh1FileName() const;
+	string 	getInputFileName() const;
 	
 	/**
-	 * @brief	Returns the output file name
+	 * @brief	Returns the upper bound
 	 */
-	string 	getMesh2FileName() const;
-	
+	string getDimension() const;
+		
 	/**
-	 * @brief	Returns the output file name
+	 * @brief	Returns the value
 	 */
-	string 	getFusionMeshFileName() const;
-	
-	
-	/**
-	 * @brief	Returns the distance treshold file name
-	 */
-	double getDistanceTreshold() const;
+	double getValue() const;
 
 private:
 
@@ -104,34 +87,19 @@ private:
 
 };
 
-/// Overlaoeded outpur operator
+/// Overloaded output operator
 inline ostream& operator<<(ostream& os, const Options &o)
 {
 	cout << "##### Program options: " << endl;
 	cout << endl;
-	cout << "##### Mesh1: " << o.getMesh1FileName() << endl;
-	cout << "##### Mesh2: " << o.getMesh2FileName() << endl;
-		
-	if(o.outputFileNameSet())
-	{
-	    cout << "##### FusionMesh: " << o.getFusionMeshFileName() << endl;
-	}	
-
-/*
-	if(o.getIntersections() > 0)
-	{
-	    cout << "##### Intersections \t\t: " << o.getIntersections() << endl;
-	}
-	else
-	{
-	    cout << "##### Voxelsize \t\t: " << o.getVoxelsize() << endl;
-	}
-*/
+	cout << "##### Input: " << o.getInputFileName() << endl;
+    cout << "##### Dimension \t\t: " << o.getDimension().c_str() << endl;
+    cout << "##### Value \t\t: " << o.getValue() << endl;
 	
 	return os;
 }
 
-} // namespace fusion
+} // namespace slicer
 
 
 #endif /* OPTIONS_H_ */
