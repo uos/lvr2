@@ -69,7 +69,7 @@ namespace lvr {
 template<typename VertexT, typename NormalT>
 Texturizer<VertexT, NormalT>::~Texturizer()
 {
-    delete m_tio;
+    //delete m_tio;
 }
 
 template<typename VertexT, typename NormalT>
