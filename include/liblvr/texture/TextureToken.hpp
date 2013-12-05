@@ -73,7 +73,7 @@ public:
 	 * @brief 	Destructor.
 	 *
          */
-	~TextureToken(){delete m_texture;};
+	~TextureToken(){/*delete m_texture;*/};
 
 	///The associated texture	
 	Texture* m_texture;
