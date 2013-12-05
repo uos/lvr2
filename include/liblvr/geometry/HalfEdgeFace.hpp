@@ -39,13 +39,9 @@ using namespace std;
 #include "HalfEdge.hpp"
 #include "Region.hpp"
 
+
 namespace lvr
 {
-
-template<typename VertexT, typename NormalT> class Region;
-
-template<typename VertexT, typename NormalT>
-class HalfEdgeVertex;
 
 /**
  * @brief A face in a half edge mesh.
@@ -59,15 +55,23 @@ class HalfEdgeFace
 {
 public:
 
-    /**
+    typedef HalfEdge<HalfEdgeVertex<VertexT, NormalT>, HalfEdgeFace<VertexT, NormalT> >* EdgePtr;
+    typedef HalfEdgeVertex<VertexT, NormalT>* VertexPtr;
+    typedef HalfEdgeFace<VertexT, NormalT>*  FacePtr;
+    typedef vector<HalfEdgeFace<VertexT, NormalT>* >FaceVector;
+     /**
      * @brief   Constructs an empty face
      */
-	HalfEdgeFace() {m_region=0; m_used=false;};
+	HalfEdgeFace() :
+	    m_invalid(false), m_edge(0),
+	    m_used(false), m_region(-1),
+	    m_texture_index(-1),
+	    m_face_index(-1) {};
 
 	/**
 	 * @brief Destructor
 	 */
-	~HalfEdgeFace();
+	virtual ~HalfEdgeFace();
 
 	/**
 	 * @brief   Copy constructor
@@ -104,7 +108,7 @@ public:
 	 *
 	 * @param adj   A vector to store the adjacent vertices
 	 */
-	void getAdjacentFaces(vector<HalfEdgeFace<VertexT, NormalT>* > &adj);
+	void getAdjacentFaces(FaceVector &adj);
 
 	/**
 	 * @brief  Returns the face normal
@@ -146,16 +150,8 @@ public:
 	 */
 	bool isBorderFace();
 
-
-	typedef HalfEdgeVertex<VertexT, NormalT> HEV;
-	typedef HalfEdgeFace<VertexT, NormalT> HEF;
-	/**
-	 *
-	 */
-	void deletePointsFromEdge(HalfEdge< HEV, HEF> *ptr);
-
 	/// A pointer to a surrounding half edge
-	HalfEdge<HalfEdgeVertex<VertexT, NormalT>, HalfEdgeFace<VertexT, NormalT> >* m_edge;
+	EdgePtr m_edge;
 
 	/// A vector containing the indices of face vertices (currently redundant)
 	//vector<int> 					m_indices;
@@ -167,7 +163,7 @@ public:
 	int 							m_texture_index;
 
 	/// The region of the face
-	Region<VertexT, NormalT>*		m_region;
+	long int		                m_region;
 
 	/// used for region growing
 	bool							m_used;
@@ -177,6 +173,8 @@ public:
 
 	/// The face normal
 	NormalT							m_normal;
+
+	bool                            m_invalid;
 };
 
 }

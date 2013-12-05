@@ -26,6 +26,8 @@
  #ifndef __HALF_EDGE_H__
 #define __HALF_EDGE_H__
 
+#include <boost/shared_ptr.hpp>
+
 namespace lvr
 {
 
@@ -39,31 +41,49 @@ public:
     /**
      * @brief   Ctor.
      */
-	HalfEdge() : next(0), pair(0), start(0), end(0), face(0), used(false) {};
+	HalfEdge() : used(false), s(0), e(0), f(0), n(0), p(0) {};
 
-	~HalfEdge(){
-	
-	}
+	HalfEdge<HVertexT, FaceT>*  next();
+	HalfEdge<HVertexT, FaceT>*  pair();
+	HVertexT*                   start();
+	HVertexT*                   end();
+	FaceT*                      face();
 
+	void setNext  (HalfEdge<HVertexT, FaceT>* next)    { n = next;};
+	void setPair  (HalfEdge<HVertexT, FaceT>* pair)    { p = pair;};
+	void setStart (HVertexT* start)   {s = start;};
+	void setEnd   (HVertexT* end)     {e = end;};
+	void setFace  (FaceT* face)       {f = face;};
+
+	bool isBorderEdge();
+	bool hasNeighborFace();
+	bool hasFace();
+	bool hasPair();
+
+private:
 	/// A pointer to the next edge in current contour
-	HalfEdge<HVertexT, FaceT>* next;
+	HalfEdge<HVertexT, FaceT>* n;
 
 	/// A pointer to the pair edge of this edge
-	HalfEdge<HVertexT, FaceT>* pair;
+	HalfEdge<HVertexT, FaceT>* p;
 
 	/// A pointer to the start vertex of this edge
-	HVertexT* start;
+	HVertexT* s;
 
 	/// A pointer to the end vertex of this edge
-	HVertexT* end;
+	HVertexT* e;
 
 	/// A pointer to the surrounded face
-	FaceT* face;
+	FaceT* f;
 
+public:
 	/// Used for clustering (may be removed soon)
 	bool used;
 };
 
+
 } // namespace lvr
+
+#include "HalfEdge.tcc"
 
 #endif
