@@ -13,8 +13,7 @@ include_directories(${LAS_VEGAS_SOURCE_DIR}/ext/stann)
 include_directories(${LAS_VEGAS_SOURCE_DIR})
 include_directories(${LAS_VEGAS_SOURCE_DIR}/include/liblvr)
 
-
-set( CMAKE_CXX_FLAGS  ${CMAKE_CXX_FLAGS} "-std=c++0x")
+set( CMAKE_CXX_FLAGS  ${CMAKE_CXX_FLAGS} "-std=c++0x -std=gnu++0x")
 
 ###############################################################
 # EXTERNAL LIBRARIES
@@ -128,8 +127,8 @@ set( CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${OpenMP_CXX_FLAGS}" )
 
 find_package(OpenGL REQUIRED)
 if(OpenGL_FOUND)
-    link_directories(${OpenGL_INCLUDE_DIRS})
-    include_directories(${OpenGL_LIBRARY_DIRS})
+    link_directories(${OpenGL_LIBRARY_DIRS})
+    include_directories(${OpenGL_INCLUDE_DIRS})
     message( "OPEN GL LIBS 1 : " ${OPENGL_LIBRARIES}) 
     message( "OPEN GL LIBS 2 : " ${OPENGL_LIBRARY}) 
 endif(OpenGL_FOUND)
@@ -235,6 +234,7 @@ endif(MPI_FOUND)
 if(CGAL_FOUND)
 add_subdirectory(src/tools/cgal_reconstruction)
 add_subdirectory(src/tools/fusion)
+add_subdirectory(src/tools/slicer)
 endif(CGAL_FOUND)
 
 if(PCL_FOUND)

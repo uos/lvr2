@@ -35,6 +35,7 @@ namespace lvr
 
 /* Deklaration of all static data */
 template<typename VertexT, typename NormalT> vector<VertexT> Tesselator<VertexT, NormalT>::m_vertices;
+template<typename VertexT, typename NormalT> set<GLdouble*> Tesselator<VertexT, NormalT>::m_garbageVertices;
 template<typename VertexT, typename NormalT> vector<Vertex<float> > Tesselator<VertexT, NormalT>::m_triangles;
 template<typename VertexT, typename NormalT> GLUtesselator* Tesselator<VertexT, NormalT>::m_tesselator;
 template<typename VertexT, typename NormalT> GLenum  Tesselator<VertexT, NormalT>::m_primitive;
@@ -48,6 +49,16 @@ void Tesselator<VertexT, NormalT>::tesselatorBegin(GLenum which, VertexT* userDa
     m_vertices.clear();
 }
 
+
+template<typename VertexT, typename NormalT>
+void Tesselator<VertexT, NormalT>::clear()
+{
+    set<GLdouble*>::iterator it = m_garbageVertices.begin();
+    for(; it != m_garbageVertices.end(); it++)
+    {
+        delete[] *it;
+    }
+}
 
 template<typename VertexT, typename NormalT>
 void Tesselator<VertexT, NormalT>::tesselatorEnd()
@@ -114,7 +125,7 @@ void Tesselator<VertexT, NormalT>::tesselatorAddVertex(const GLvoid *data, Verte
 template<typename VertexT, typename NormalT>
 void Tesselator<VertexT, NormalT>::getFinalizedTriangles(vector<float> &vertexBuffer, vector<unsigned int> &indexBuffer, vector<vector<VertexT> > &vectorBorderPoints)
 {
-    // initialize tesselator. make sure datastructures are empty.
+    // initialize tesselator. make sure data structures are empty.
     init();
     tesselate(vectorBorderPoints);
     indexBuffer.clear();
@@ -164,6 +175,7 @@ void Tesselator<VertexT, NormalT>::tesselatorCombineVertices(GLdouble coords[3],
     Vertex<float> v(vertex[0], vertex[1], vertex[2]);
     m_vertices.push_back(VertexT(v));
     *dataOut = vertex;
+    m_garbageVertices.insert(vertex);
 }
 
 
@@ -225,6 +237,10 @@ void Tesselator<VertexT, NormalT>::tesselate(vector<vector<VertexT> > &vectorBor
         return;
     } 
 
+    // Manual garbage collection since OpenGL seems
+    // to produce a memory leak here...
+    vector<GLdouble*> garbage;
+
     /* Begin definition of the polygon to be tesselated */
     gluTessBeginPolygon(m_tesselator, 0);
 
@@ -249,6 +265,7 @@ void Tesselator<VertexT, NormalT>::tesselate(vector<vector<VertexT> > &vectorBor
             vertex[2] = (borderPoints.back())[2];
             borderPoints.pop_back();
             gluTessVertex(m_tesselator, vertex, vertex);
+            garbage.push_back(vertex);
         }
 
         /* End Contour */
@@ -259,6 +276,12 @@ void Tesselator<VertexT, NormalT>::tesselate(vector<vector<VertexT> > &vectorBor
     gluTessEndPolygon(m_tesselator);
     gluDeleteTess(m_tesselator);
     m_tesselator = 0;
+
+    for(int i = 0; i < garbage.size(); i++)
+    {
+       delete[] garbage[i];
+    }
+
     return;
 }
 
