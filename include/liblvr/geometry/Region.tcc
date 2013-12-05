@@ -28,7 +28,7 @@
  
 #include <limits>
 
-#include "psimpl/psimpl.h"
+#include "ext/psimpl/psimpl.h"
 
 namespace lvr
 {
@@ -42,278 +42,312 @@ Region<VertexT, NormalT>::Region(int regionNumber)
 }
 
 template<typename VertexT, typename NormalT>
-void Region<VertexT, NormalT>::addFace(HFace* f)
+void Region<VertexT, NormalT>::addFace(FacePtr f)
 {
 	this->m_faces.push_back(f);
-	f->m_region = this;
+	f->m_region = m_regionNumber;
 }
 
 template<typename VertexT, typename NormalT>
-void Region<VertexT, NormalT>::removeFace(HFace* f)
+void Region<VertexT, NormalT>::deleteInvalidFaces()
 {
-	m_faces.erase(find(m_faces.begin(), m_faces.end(), f));
+    typename vector<FacePtr>::iterator it = m_faces.begin();
+    while(it != m_faces.end())
+    {
+        if( (*it)->m_invalid)
+        {
+            it = m_faces.erase(it);
+        }
+        else
+        {
+            it++;
+        }
+    }
 }
 
 
 template<typename VertexT, typename NormalT>
 vector<vector<VertexT> > Region<VertexT, NormalT>::getContours(float epsilon)
 {
-	vector<vector<VertexT> > result;
+    vector<vector<VertexT> > result;
+    for (size_t i = 0; i < this->m_faces.size(); i++)
+    {
+        for (int k = 0; k < 3; k++)
+        {
+            EdgePtr current = (*m_faces[i])[k];
+            if(!current->used && current->isBorderEdge())
+            {
+                std::deque<float> contour;
+                //Region<VertexT, NormalT>* region = this;
 
-	for (size_t i = 0; i < this->m_faces.size(); i++)
-	{
-		for (int k = 0; k < 3; k++)
-		{
-			HEdge* current = (*m_faces[i])[k];
-			if(!current->used && (current->pair->face == 0 || current->pair->face->m_region != current->face->m_region))
-			{
-				std::deque<float> contour;
-				//Region<VertexT, NormalT>* region = this;
+                EdgePtr next;
+                while(current->used == false)
+                {
+                    //mark edge as used
+                    current->used = true;
+                    next = 0;
+                    //push the next vertex
+                    contour.push_back(current->end()->m_position[0]);
+                    contour.push_back(current->end()->m_position[1]);
+                    contour.push_back(current->end()->m_position[2]);
 
-				HEdge* next = 0;
-				while(current->used == false)
-				{
-					//mark edge as used
-					current->used = true;
-					next = 0;
-					//push the next vertex
-					contour.push_back(current->end->m_position[0]);
-					contour.push_back(current->end->m_position[1]);
-					contour.push_back(current->end->m_position[2]);
+                    for(size_t a = 0; a < current->end()->out.size(); a++)
+                    {
+                        try
+                        {
+                            if(current->end()->out[a]) // Don't know where the null pointers come from...
+                            {
+                                long int r1 = -1;
+                                long int r2 = -1;
 
-					//find next edge
-					for(size_t i = 0; i<current->end->out.size(); i++)
-					{
-						if( !current->end->out[i]->used
-								&& current->end->out[i]->face && current->end->out[i]->face->m_region == this
-								&& (current->end->out[i]->pair->face == 0
-										|| ( current->end->out[i]->pair->face  && current->end->out[i]->pair->face->m_region != this )))
-						{
-							next = current->end->out[i];
-						}
-					}
+                                if(current->end()->out[a]->hasFace())
+                                {
+                                    r1 = current->end()->out[a]->face()->m_region;
+                                }
 
-					if(next)
-					{
-						current = next;
-					}
-				}
+                                if(current->end()->out[a]->hasPair() && current->end()->out[a]->pair()->hasFace())
+                                {
+                                    r2 = current->end()->out[a]->pair()->face()->m_region;
+                                }
 
-				// Simplify contour
-				vector<float> simple_contour;
-				psimpl::simplify_reumann_witkam <3> (
-				    contour.begin (), contour.end (),
-				    epsilon, std::back_inserter(simple_contour));
+                                //find next edge
+                                if( !((current->end()->out[a])->used)
+                                        && current->end()->out[a]->hasFace() && r1 == m_regionNumber
+                                        && (!current->end()->out[a]->hasNeighborFace() || r2 == -1
+                                                || ( current->end()->out[a]->hasNeighborFace()  && r2 != m_regionNumber )) )
+                                {
+                                    next = current->end()->out[a];
+                                }
+                            }
+                        }
+                        catch(HalfEdgeAccessException &e)
+                        {
+                            //cout << e.what() << endl;
+                        }
+                    }
 
-				// Convert to VertexT
-				vector<VertexT> tmp;
+                    if(next)
+                    {
+                        current = next;
+                    }
+                }
 
-				for(int i = 0; i < simple_contour.size() / 3; i++)
-				{
-				    if(!tmp.size() || ! (tmp.back() == VertexT(simple_contour[i * 3], simple_contour[i * 3 + 1], simple_contour[i * 3 + 2])))
-				    {
-				        tmp.push_back(VertexT(simple_contour[i * 3], simple_contour[i * 3 + 1], simple_contour[i * 3 + 2]));
-				    }
-				}
+                // Simplify contour
+                vector<float> simple_contour;
+                psimpl::simplify_reumann_witkam <3> (
+                        contour.begin (), contour.end (),
+                        epsilon, std::back_inserter(simple_contour));
 
-				// Add contour
-				result.push_back(tmp);
-			}
-		}
-	}
+                // Convert to VertexT
+                vector<VertexT> tmp;
+                for(int i = 0; i < simple_contour.size() / 3; i++)
+                {
+                    if(!tmp.size() || ! (tmp.back() == VertexT(simple_contour[i * 3], simple_contour[i * 3 + 1], simple_contour[i * 3 + 2])))
+                    {
+                        tmp.push_back(VertexT(simple_contour[i * 3], simple_contour[i * 3 + 1], simple_contour[i * 3 + 2]));
+                    }
+                }
+
+                // Add contour
+                result.push_back(tmp);
+            }
+        }
+    }
 
 
-//	//don't try to find contours of a region which wasn't dragged into a plane
-//	if (!this->m_inPlane)
-//    {
-//        return result;
-//    }
-//
-//	for (size_t i = 0; i < this->m_faces.size(); i++)
-//	{
-//		for (int k = 0; k < 3; k++)
-//		{
-//			HEdge* current = (*m_faces[i])[k];
-//			if(!current->used && (current->pair->face == 0 || current->pair->face->m_region != current->face->m_region))
-//			{
-//				vector<VertexT> contour;
-//				//Region<VertexT, NormalT>* region = this;
-//
-//				HEdge* next = 0;
-//				while(current->used == false)
-//				{
-//					//mark edge as used
-//					current->used = true;
-//					next = 0;
-//					//push the next vertex
-//					contour.push_back(current->end->m_position);
-//
-//					//find next edge
-//					for(size_t i = 0; i<current->end->out.size(); i++)
-//					{
-//						if( !current->end->out[i]->used
-//								&& current->end->out[i]->face && current->end->out[i]->face->m_region == this
-//								&& (current->end->out[i]->pair->face == 0
-//										|| ( current->end->out[i]->pair->face  && current->end->out[i]->pair->face->m_region != this )))
-//						{
-//							next = current->end->out[i];
-//						}
-//					}
-//
-//					if(next)
-//					{
-//						current = next;
-//					}
-//				}
-//
-//				for(int kk = 0; kk < 1; kk++)
-//				{
-//					// delete vertices due to direction
-//					bool didSomething = true;
-//					while(didSomething)
-//					{
-//						vector<VertexT> toDelete;
-//						for(int c = 1; c < contour.size()-1; c++)
-//						{
-//							//calculate direction of the current edge
-//							NormalT nextDirection(contour[c+1] - contour[c]);
-//
-//							//calculate direction of the next edge
-//							NormalT previousDirection(contour[c] - contour[c-1]);
-//
-//							if
-//							(
-//									fabs(fabs(previousDirection[0]) - fabs(nextDirection[0])) <= epsilon
-//							     && fabs(fabs(previousDirection[1]) - fabs(nextDirection[1])) <= epsilon
-//							     && fabs(fabs(previousDirection[2]) - fabs(nextDirection[2])) <= epsilon
-//							)
-//							{
-//								toDelete.push_back(contour[c]);
-//							}
-//						}
-//						didSomething = false;
-//						for(int d = 0; d < toDelete.size(); d++)
-//						{
-//							contour.erase(find(contour.begin(), contour.end(), toDelete[d]));
-//							didSomething = true;
-//						}
-//					}
-//					// delete vertices due to distance
-//					didSomething = true;
-//					while(didSomething)
-//					{
-//						vector<VertexT> toDelete;
-//						for(int c = 0; c < contour.size()-1; c++)
-//						{
-//							if
-//							(
-//									fabs(contour[c+1][0] - contour[c][0]) <= epsilon
-//							     && fabs(contour[c+1][1] - contour[c][1]) <= epsilon
-//							     && fabs(contour[c+1][2] - contour[c][2]) <= epsilon
-//							)
-//							{
-//
-//								toDelete.push_back(contour[c]);
-//							}
-//						}
-//						didSomething = false;
-//						for(int d = 0; d < toDelete.size(); d++)
-//						{
-//							contour.erase(find(contour.begin(), contour.end(), toDelete[d]));
-//							didSomething = true;
-//						}
-//					}
-//
-//				}
-//				result.push_back(contour);
-//			}
-//		}
-//	}
+    //  //don't try to find contours of a region which wasn't dragged into a plane
+    //  if (!this->m_inPlane)
+    //    {
+    //        return result;
+    //    }
+    //
+    //  for (size_t i = 0; i < this->m_faces.size(); i++)
+    //  {
+    //      for (int k = 0; k < 3; k++)
+    //      {
+    //          HEdge* current = (*m_faces[i])[k];
+    //          if(!current->used && (current->pair->face == 0 || current->pair->face->m_region != current->face->m_region))
+    //          {
+    //              vector<VertexT> contour;
+    //              //Region<VertexT, NormalT>* region = this;
+    //
+    //              HEdge* next = 0;
+    //              while(current->used == false)
+    //              {
+    //                  //mark edge as used
+    //                  current->used = true;
+    //                  next = 0;
+    //                  //push the next vertex
+    //                  contour.push_back(current->end->m_position);
+    //
+    //                  //find next edge
+    //                  for(size_t i = 0; i<current->end->out.size(); i++)
+    //                  {
+    //                      if( !current->end->out[i]->used
+    //                              && current->end->out[i]->face && current->end->out[i]->face->m_region == this
+    //                              && (current->end->out[i]->pair->face == 0
+    //                                      || ( current->end->out[i]->pair->face  && current->end->out[i]->pair->face->m_region != this )))
+    //                      {
+    //                          next = current->end->out[i];
+    //                      }
+    //                  }
+    //
+    //                  if(next)
+    //                  {
+    //                      current = next;
+    //                  }
+    //              }
+    //
+    //              for(int kk = 0; kk < 1; kk++)
+    //              {
+    //                  // delete vertices due to direction
+    //                  bool didSomething = true;
+    //                  while(didSomething)
+    //                  {
+    //                      vector<VertexT> toDelete;
+    //                      for(int c = 1; c < contour.size()-1; c++)
+    //                      {
+    //                          //calculate direction of the current edge
+    //                          NormalT nextDirection(contour[c+1] - contour[c]);
+    //
+    //                          //calculate direction of the next edge
+    //                          NormalT previousDirection(contour[c] - contour[c-1]);
+    //
+    //                          if
+    //                          (
+    //                                  fabs(fabs(previousDirection[0]) - fabs(nextDirection[0])) <= epsilon
+    //                               && fabs(fabs(previousDirection[1]) - fabs(nextDirection[1])) <= epsilon
+    //                               && fabs(fabs(previousDirection[2]) - fabs(nextDirection[2])) <= epsilon
+    //                          )
+    //                          {
+    //                              toDelete.push_back(contour[c]);
+    //                          }
+    //                      }
+    //                      didSomething = false;
+    //                      for(int d = 0; d < toDelete.size(); d++)
+    //                      {
+    //                          contour.erase(find(contour.begin(), contour.end(), toDelete[d]));
+    //                          didSomething = true;
+    //                      }
+    //                  }
+    //                  // delete vertices due to distance
+    //                  didSomething = true;
+    //                  while(didSomething)
+    //                  {
+    //                      vector<VertexT> toDelete;
+    //                      for(int c = 0; c < contour.size()-1; c++)
+    //                      {
+    //                          if
+    //                          (
+    //                                  fabs(contour[c+1][0] - contour[c][0]) <= epsilon
+    //                               && fabs(contour[c+1][1] - contour[c][1]) <= epsilon
+    //                               && fabs(contour[c+1][2] - contour[c][2]) <= epsilon
+    //                          )
+    //                          {
+    //
+    //                              toDelete.push_back(contour[c]);
+    //                          }
+    //                      }
+    //                      didSomething = false;
+    //                      for(int d = 0; d < toDelete.size(); d++)
+    //                      {
+    //                          contour.erase(find(contour.begin(), contour.end(), toDelete[d]));
+    //                          didSomething = true;
+    //                      }
+    //                  }
+    //
+    //              }
+    //              result.push_back(contour);
+    //          }
+    //      }
+    //  }
 
-	//move outer contour to the first position
-	float xmax = std::numeric_limits<float>::min();
-	float ymax = std::numeric_limits<float>::min();
-	float zmax = std::numeric_limits<float>::min();
+    //move outer contour to the first position
+    float xmax = std::numeric_limits<float>::min();
+    float ymax = std::numeric_limits<float>::min();
+    float zmax = std::numeric_limits<float>::min();
 
-	int outer = -1;
-	for(size_t c = 0; c < result.size(); c++)
-	{
-		for(size_t v = 0; v < result[c].size(); v++)
-		{
-			if(result[c][v].x > xmax)
-			{
-				xmax = result[c][v].x;
-				outer = c;
-			}
-			if(result[c][v].y > ymax)
-			{
-				ymax = result[c][v].y;
-				outer = c;
-			}
-			if(result[c][v].z > zmax)
-			{
-				zmax = result[c][v].z;
-				outer = c;
-			}
-		}
-	}
+    int outer = -1;
+    for(size_t c = 0; c < result.size(); c++)
+    {
+        for(size_t v = 0; v < result[c].size(); v++)
+        {
+            if(result[c][v].x > xmax)
+            {
+                xmax = result[c][v].x;
+                outer = c;
+            }
+            if(result[c][v].y > ymax)
+            {
+                ymax = result[c][v].y;
+                outer = c;
+            }
+            if(result[c][v].z > zmax)
+            {
+                zmax = result[c][v].z;
+                outer = c;
+            }
+        }
+    }
 
-	if(outer != -1)
-	{
-		result.insert(result.begin(), result[outer]);
-		result.erase(result.begin()+outer+1);
-	}
-	else
-	{
-		cerr << "ERROR: could not find outer contour" << endl;
-	}
+    if(outer != -1)
+    {
+        result.insert(result.begin(), result[outer]);
+        result.erase(result.begin()+outer+1);
+    }
+    else
+    {
+       // cerr << "ERROR: could not find outer contour" << endl;
+    }
 
-	return result;
+    return result;
+
+
 }
 
 template<typename VertexT, typename NormalT>
 NormalT Region<VertexT, NormalT>::calcNormal()
 {
-	NormalT result;
+    NormalT result;
     //search for a valid normal of region
-	size_t i = 0;
-	do
-	{
-		result = m_faces[i++]->getFaceNormal();
-	}
-	while ((result.length() == 0 || isnan(result.length())) && i < m_faces.size());
+    size_t i = 0;
+    do
+    {
+        result = m_faces[i++]->getFaceNormal();
+    }
+    while ((result.length() == 0 || isnan(result.length())) && i < m_faces.size());
 
-	result.normalize();
+    result.normalize();
 
-	//Check if this normal is representative for most of the others / it is not a flickering normal
-	int fit   = 0;
-	int nofit = 0;
+    //Check if this normal is representative for most of the others / it is not a flickering normal
+    int fit   = 0;
+    int nofit = 0;
 
-	for(size_t i = 0; i < m_faces.size(); i++)
-	{
-		NormalT comp = m_faces[i]->getFaceNormal();
-		comp.normalize();
-		if(comp == result)
-		{
-			fit++;
-		}
-		else
-		{
-			if(comp == (result * -1))
-			{
-				nofit++;
-			}
-		}
-	}
+    for(size_t i = 0; i < m_faces.size(); i++)
+    {
+        NormalT comp = m_faces[i]->getFaceNormal();
+        comp.normalize();
+        if(comp == result)
+        {
+            fit++;
+        }
+        else
+        {
+            if(comp == (result * -1))
+            {
+                nofit++;
+            }
+        }
+    }
 
-	if(fit>nofit)
-	{
-		return result;
-	}
-	else
-	{
-		return result * -1;
-	}
+    if(fit>nofit)
+    {
+        return result;
+    }
+    else
+    {
+        return result * -1;
+    }
 }
 
 template<typename VertexT, typename NormalT>
@@ -400,7 +434,7 @@ void Region<VertexT, NormalT>::regressionPlane()
 }
 
 template<typename VertexT, typename NormalT>
-bool Region<VertexT, NormalT>::detectFlicker(HFace* f)
+bool Region<VertexT, NormalT>::detectFlicker(FacePtr f)
 {
 	if(this->m_inPlane)
 	{
@@ -415,11 +449,14 @@ bool Region<VertexT, NormalT>::detectFlicker(HFace* f)
 template<typename VertexT, typename NormalT>
 Region<VertexT, NormalT>::~Region()
 {
-/*	for (size_t i = 0; i < m_faces.size(); i++)
+	for (size_t i = 0; i < m_faces.size(); i++)
 	{
-		delete m_faces[i];
+	    if(m_faces[i])
+	    {
+	        m_faces[i]->m_region = -1;
+	    }
 	}
-	m_faces.clear();*/
+	//m_faces.clear();
 }
 
 }
