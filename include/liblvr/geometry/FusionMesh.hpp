@@ -74,7 +74,6 @@
 
 #include "FusionVertex.hpp"
 #include "FusionFace.hpp"
-//#include "FusionEdge.hpp"
 
 #include "io/Timestamp.hpp"
 #include "io/Progress.hpp"
@@ -156,9 +155,9 @@ template<typename VertexT, typename NormalT> class FusionFace;
  
 template<typename VertexT, typename NormalT> class FusionMesh : public BaseMesh<VertexT, NormalT>
 {
-	
+
 public:
-	
+
 	typedef FusionFace<VertexT, NormalT> FFace;
 	typedef FusionVertex<VertexT, NormalT> FVertex;
 	
@@ -217,11 +216,12 @@ public:
 	 */
 	virtual void addTriangle(uint a, uint b, uint c);
 
+
 	/**
 	 * @brief 	Finalizes a mesh, i.e. converts the template based buffers
 	 * 			to OpenGL compatible buffers
 	 */
-	virtual void finalize();
+	 virtual void finalize();
 	
 	//unused
 	/**
@@ -243,15 +243,15 @@ public:
 	virtual void addMesh(MeshBufferPtr model);
 	
 	/**
-     * @brief   Integrate the local buffer into the global fused mesh
+	* @brief   Integrate the local buffer into the global fused mesh
 	 *
-     */
+	*/
 	virtual void integrate();
 	
 	/**
-     * @brief   Integrate the local buffer into the global mesh, by simply adding all vertices and shifting the face indices
+	* @brief   Integrate the local buffer into the global mesh, by simply adding all vertices and shifting the face indices
 	 *
-     */
+	*/
 	virtual void lazyIntegrate();
 	
 	/**
@@ -262,11 +262,23 @@ public:
 	virtual void addMeshAndIntegrate(MeshBufferPtr model);
 	
 	/**
-     * @brief   Insert an entire mesh into the local fusion buffer and lazyintegrate it imediately.
+	* @brief   Insert an entire mesh into the local fusion buffer and lazyintegrate it imediately.
+	*
+	* @param   mesh	A pointer to the mesh to be inserted
+	*/
+	virtual void addMeshAndLazyIntegrate(MeshBufferPtr model);
+
+	/**
+     * @brief   Insert an entire mesh into the local fusion buffer and integrate only remote Faces.
      *
      * @param   mesh      A pointer to the mesh to be inserted
      */
-	virtual void addMeshAndLazyIntegrate(MeshBufferPtr model);
+	virtual void addMeshAndRemoteIntegrateOnly(MeshBufferPtr model);
+
+	/**
+	 * @brief 	resets the FusionMesh, should only be called if it's okay to loose the current fusion
+	 */
+	virtual void reset();
 
 
 // Parameter Methods
@@ -276,10 +288,25 @@ public:
 	 *
 	 * @param t 	distance treshold
 	 */ 
-	void setDistanceThreshold(double_t t) {threshold = t*t;};
+	void setDistanceThreshold(double t) {threshold = t*t;};
+
+	/**
+	* Sets verbosity level
+	*
+	* @param v     verboisity level
+	*
+	*/
+	void setVerbosity(bool v) {verbose = v;};
+
 
 
 private:
+
+	/// verbosity flag
+	bool verbose;
+	
+	/// Squared maximal distance for fusion
+	double threshold;
 
 	/// The faces in the fusion buffer 
 	vector<FusionFace<VertexT, NormalT>*>   m_local_faces;
@@ -288,18 +315,15 @@ private:
 	vector<FusionVertex<VertexT, NormalT>*>   m_local_vertices;
 
 	/// The length of the local vertex buffer
-	size_t                                      m_local_index;
+	size_t m_local_index;
 
 	/// The faces in the fused mesh
-	vector<FusionFace<VertexT, NormalT>*>     m_global_faces;
+	vector<FusionFace<VertexT, NormalT>*>	m_global_faces;
 
 	/// The vertices of the fused mesh
 	vector<FusionVertex<VertexT, NormalT>*>   m_global_vertices;
 	///  The length of the global vertex buffer
-	size_t                                      m_global_index;
-
-	/// Squared maximal distance for fusion
-	double	threshold;
+	size_t						  m_global_index;
 	
 	// Nochmal überarbeiten
 	/// FaceBuffer used during integration process
@@ -324,8 +348,8 @@ private:
 	
 
 	/**
-     * @brief   Reset the the local buffer e.g. after integration or at initialization.
-     */
+	* @brief   Reset the the local buffer e.g. after integration or at initialization.
+	*/
 	virtual void clearLocalBuffer();
 
 	/**
@@ -336,18 +360,18 @@ private:
 // Printing Methods
 		
 	/**
-     * @brief   Prints the current status of the local buffer on the console.
-     */
+	* @brief   Prints the current status of the local buffer on the console.
+	*/
 	virtual void printLocalBufferStatus();
 	
 	/**
-     * @brief   Prints the current status of the local buffer on the console.
-     */
+	* @brief   Prints the current status of the local buffer on the console.
+	*/
 	virtual void printGlobalBufferStatus();
 	
 	/**
-     * @brief   Prints the current status of the face sorting process on the console.
-     */
+	* @brief   Prints the current status of the face sorting process on the console.
+	*/
 	virtual void printFaceSortingStatus();
 
 

@@ -1,4 +1,7 @@
+build/
 lib/
 bin/
 *.ply
+*.clu
 *.*~
+.configured
