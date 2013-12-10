@@ -17,9 +17,9 @@
  */
 
 /*
- * FusionMesh.tcc
+ * Fusion.cpp
  *
- *  @date 13.11.2008
+ *  @date 11.07.2013
  *	@author Henning Deeken (hdeeken@uos.de)
  *	@author Ann-Katrin Häuser (ahaeuser@uos.de)
  *  @author Thomas Wiemann (twiemann@uos.de)
@@ -33,7 +33,7 @@ namespace lvr
 /// Constructors
 ///
 
-template<typename VertexT, typename NormalT> FusionMesh<VertexT, NormalT>::FusionMesh()
+template<typename VertexT, typename NormalT> Fusion<VertexT, NormalT>::Fusion()
 {
 
 	verbose = false;
@@ -41,10 +41,10 @@ template<typename VertexT, typename NormalT> FusionMesh<VertexT, NormalT>::Fusio
    m_global_index = 0;
 }
 
-template<typename VertexT, typename NormalT> FusionMesh<VertexT, NormalT>::FusionMesh(MeshBufferPtr mesh)
+template<typename VertexT, typename NormalT> Fusion<VertexT, NormalT>::Fusion(MeshBufferPtr mesh)
 {
 	verbose = false;
-   FusionMesh();
+   Fusion();
    addMesh(mesh);
    integrate();
 }
@@ -53,19 +53,19 @@ template<typename VertexT, typename NormalT> FusionMesh<VertexT, NormalT>::Fusio
 /// Methods of BaseMesh
 ///
 
-template<typename VertexT, typename NormalT> void FusionMesh<VertexT, NormalT>::addVertex(VertexT v)
+template<typename VertexT, typename NormalT> void Fusion<VertexT, NormalT>::addVertex(VertexT v)
 {
 	m_local_vertices.push_back(new FusionVertex<VertexT, NormalT>(v));	
 	m_local_index++;
 }
 
-template<typename VertexT, typename NormalT> void FusionMesh<VertexT, NormalT>::addNormal(NormalT n)
+template<typename VertexT, typename NormalT> void Fusion<VertexT, NormalT>::addNormal(NormalT n)
 {
     assert(m_local_index == m_local_vertices.size());
     m_local_vertices[m_local_index - 1]->m_normal = n;
 }
 
-template<typename VertexT, typename NormalT> void FusionMesh<VertexT, NormalT>::addTriangle(uint a, uint b, uint c/*, FFace* &face*/)
+template<typename VertexT, typename NormalT> void Fusion<VertexT, NormalT>::addTriangle(uint a, uint b, uint c/*, FFace* &face*/)
 {		
     // Create a new face
     FFace* face = new FFace;
@@ -90,7 +90,7 @@ template<typename VertexT, typename NormalT> void FusionMesh<VertexT, NormalT>::
 	m_local_faces.push_back(face);
 }
 
-template<typename VertexT, typename NormalT> void FusionMesh<VertexT, NormalT>::finalize()
+template<typename VertexT, typename NormalT> void Fusion<VertexT, NormalT>::finalize()
 {
     cout << endl << timestamp << "Finalizing mesh..." << endl;
 
@@ -169,7 +169,7 @@ template<typename VertexT, typename NormalT> void FusionMesh<VertexT, NormalT>::
    
 }
 
-template<typename VertexT, typename NormalT> void FusionMesh<VertexT, NormalT>::flipEdge(uint v1, uint v2)
+template<typename VertexT, typename NormalT> void Fusion<VertexT, NormalT>::flipEdge(uint v1, uint v2)
 {
 	cout << "No Edge no Flip!" << endl;
 	cout << "But these are two nice uints" << v1 << ", " << v2 << endl;
@@ -179,7 +179,7 @@ template<typename VertexT, typename NormalT> void FusionMesh<VertexT, NormalT>::
 /// Fusion Specific Methods
 ///
 
-template<typename VertexT, typename NormalT> void FusionMesh<VertexT, NormalT>::addMesh(MeshBufferPtr mesh)
+template<typename VertexT, typename NormalT> void Fusion<VertexT, NormalT>::addMesh(MeshBufferPtr mesh)
 {	
     size_t num_verts, num_norms, num_faces;
     floatArr vertices = mesh->getVertexArray(num_verts);
@@ -211,7 +211,7 @@ template<typename VertexT, typename NormalT> void FusionMesh<VertexT, NormalT>::
     }*/
 }
 
-template<typename VertexT, typename NormalT> void FusionMesh<VertexT, NormalT>::integrate()
+template<typename VertexT, typename NormalT> void Fusion<VertexT, NormalT>::integrate()
 {
 	cout <<endl << timestamp << "Start Integrating... " << endl;
 	
@@ -264,7 +264,7 @@ template<typename VertexT, typename NormalT> void FusionMesh<VertexT, NormalT>::
 	printGlobalBufferStatus();
 }
 
-template<typename VertexT, typename NormalT> void FusionMesh<VertexT, NormalT>::lazyIntegrate()
+template<typename VertexT, typename NormalT> void Fusion<VertexT, NormalT>::lazyIntegrate()
 {
 	cout <<endl << timestamp << "Start Lazy Integration..." << endl << endl;
 	
@@ -295,19 +295,19 @@ template<typename VertexT, typename NormalT> void FusionMesh<VertexT, NormalT>::
     cout << endl << timestamp << "Finished Lazy Integration..." << endl << endl;
 }
 
-template<typename VertexT, typename NormalT> void FusionMesh<VertexT, NormalT>::addMeshAndIntegrate(MeshBufferPtr mesh)
+template<typename VertexT, typename NormalT> void Fusion<VertexT, NormalT>::addMeshAndIntegrate(MeshBufferPtr mesh)
 {
 	addMesh(mesh);
 	integrate();
 }
 
-template<typename VertexT, typename NormalT> void FusionMesh<VertexT, NormalT>::addMeshAndLazyIntegrate(MeshBufferPtr mesh)
+template<typename VertexT, typename NormalT> void Fusion<VertexT, NormalT>::addMeshAndLazyIntegrate(MeshBufferPtr mesh)
 {
 	addMesh(mesh);
 	lazyIntegrate();
 }
 
-template<typename VertexT, typename NormalT> void FusionMesh<VertexT, NormalT>::addMeshAndRemoteIntegrateOnly(MeshBufferPtr mesh)
+template<typename VertexT, typename NormalT> void Fusion<VertexT, NormalT>::addMeshAndRemoteIntegrateOnly(MeshBufferPtr mesh)
 {
 	addMesh(mesh);
 	
@@ -342,7 +342,7 @@ template<typename VertexT, typename NormalT> void FusionMesh<VertexT, NormalT>::
 /// Clear Methods (internal)
 ///
 
-template<typename VertexT, typename NormalT> void FusionMesh<VertexT, NormalT>::clearLocalBuffer()
+template<typename VertexT, typename NormalT> void Fusion<VertexT, NormalT>::clearLocalBuffer()
 {	
 	for (int i = 0; i < m_local_vertices.size(); i++) {
 		if (!m_local_vertices[i]->is_valid) {
@@ -359,14 +359,14 @@ template<typename VertexT, typename NormalT> void FusionMesh<VertexT, NormalT>::
 	m_local_index = 0;
 }
 
-/*template<typename VertexT, typename NormalT> void FusionMesh<VertexT, NormalT>::clearGlobalBuffer()
+/*template<typename VertexT, typename NormalT> void Fusion<VertexT, NormalT>::clearGlobalBuffer()
 {
 	m_global_index = 0;
 	m_global_vertices.clear();
 	m_global_faces.clear();
 }*/
 
-template<typename VertexT, typename NormalT> void FusionMesh<VertexT, NormalT>::reset()
+template<typename VertexT, typename NormalT> void Fusion<VertexT, NormalT>::reset()
 {
 	clearLocalBuffer();
 	//clearGlobalBuffer();
@@ -376,7 +376,7 @@ template<typename VertexT, typename NormalT> void FusionMesh<VertexT, NormalT>::
 /// Print Methods (internal)
 ///
 
-template<typename VertexT, typename NormalT> void FusionMesh<VertexT, NormalT>::printLocalBufferStatus()
+template<typename VertexT, typename NormalT> void Fusion<VertexT, NormalT>::printLocalBufferStatus()
 {
 	cout << timestamp << "Local Buffer" << endl;
 	cout << timestamp << "#Index      :" << m_local_index <<  endl;
@@ -384,7 +384,7 @@ template<typename VertexT, typename NormalT> void FusionMesh<VertexT, NormalT>::
 	cout << timestamp << "#Faces      :" << m_local_faces.size() << endl;
 }
 
-template<typename VertexT, typename NormalT> void FusionMesh<VertexT, NormalT>::printGlobalBufferStatus()
+template<typename VertexT, typename NormalT> void Fusion<VertexT, NormalT>::printGlobalBufferStatus()
 {
 	cout << timestamp << "Global Buffer" << endl;
 	cout << timestamp << "#Index       :" << m_global_index <<  endl;
@@ -392,7 +392,7 @@ template<typename VertexT, typename NormalT> void FusionMesh<VertexT, NormalT>::
 	cout << timestamp << "#Faces       :" << m_global_faces.size() << endl; 
 }
 
-template<typename VertexT, typename NormalT> void FusionMesh<VertexT, NormalT>::printFaceSortingStatus()
+template<typename VertexT, typename NormalT> void Fusion<VertexT, NormalT>::printFaceSortingStatus()
 {
 	size_t num_current_local_faces  = m_local_faces.size();
 	
@@ -414,7 +414,7 @@ template<typename VertexT, typename NormalT> void FusionMesh<VertexT, NormalT>::
 /// Integration Methods (internal)
 ///
 
-template<typename VertexT, typename NormalT> ETriangle FusionMesh<VertexT, NormalT>::faceToETriangle(FFace *face)
+template<typename VertexT, typename NormalT> ETriangle Fusion<VertexT, NormalT>::faceToETriangle(FFace *face)
 {
 	FVertex* v0 = face->vertices[0];
 	FVertex* v1 = face->vertices[1];
@@ -427,7 +427,7 @@ template<typename VertexT, typename NormalT> ETriangle FusionMesh<VertexT, Norma
 	return ETriangle(a,b,c, face->m_self_index);
 }
 
-template<typename VertexT, typename NormalT> Plane FusionMesh<VertexT, NormalT>::faceToPlane(FFace *face)
+template<typename VertexT, typename NormalT> Plane Fusion<VertexT, NormalT>::faceToPlane(FFace *face)
 {
 	FVertex* v0 = face->vertices[0];
 	FVertex* v1 = face->vertices[1];
@@ -440,7 +440,7 @@ template<typename VertexT, typename NormalT> Plane FusionMesh<VertexT, NormalT>:
 	return Plane(a,b,c);
 }
 
-template<typename VertexT, typename NormalT> AffineTF FusionMesh<VertexT, NormalT>::calcTransform(FFace *face)
+template<typename VertexT, typename NormalT> AffineTF Fusion<VertexT, NormalT>::calcTransform(FFace *face)
 {
 	ETriangle tri = faceToETriangle(face);
 	
@@ -489,7 +489,7 @@ template<typename VertexT, typename NormalT> AffineTF FusionMesh<VertexT, Normal
 	return rotx * rotz * roty * trans;
 }
 
-template<typename VertexT, typename NormalT> void FusionMesh<VertexT, NormalT>::addGlobalVertex(FVertex *v)
+template<typename VertexT, typename NormalT> void Fusion<VertexT, NormalT>::addGlobalVertex(FVertex *v)
 {
     m_global_vertices.push_back(v);
     m_global_vertices[m_global_index]->m_self_index = m_global_index;
@@ -497,7 +497,7 @@ template<typename VertexT, typename NormalT> void FusionMesh<VertexT, NormalT>::
     v->is_valid = true;
 }
 
-template<typename VertexT, typename NormalT> void FusionMesh<VertexT, NormalT>::addGlobalFace(FFace *face)
+template<typename VertexT, typename NormalT> void Fusion<VertexT, NormalT>::addGlobalFace(FFace *face)
 {	
 	face->is_valid = true;
 	face->m_self_index = m_global_faces.size();
@@ -505,7 +505,7 @@ template<typename VertexT, typename NormalT> void FusionMesh<VertexT, NormalT>::
    // cout << "Adding Global Face - " << face->m_index[0] << " " << face->m_index[1] << " " << face->m_index[2] << " " << endl;
 }
 
-template<typename VertexT, typename NormalT> void FusionMesh<VertexT, NormalT>::buildTree()
+template<typename VertexT, typename NormalT> void Fusion<VertexT, NormalT>::buildTree()
 {
 	tree.clear();
 	tree_triangles.clear();
@@ -524,7 +524,7 @@ template<typename VertexT, typename NormalT> void FusionMesh<VertexT, NormalT>::
 	}	
 }
 
-template<typename VertexT, typename NormalT> void FusionMesh<VertexT, NormalT>::buildVertexMap()
+template<typename VertexT, typename NormalT> void Fusion<VertexT, NormalT>::buildVertexMap()
 {
 	size_t num_current_global_vertices = m_global_vertices.size();
 	
@@ -538,7 +538,7 @@ template<typename VertexT, typename NormalT> void FusionMesh<VertexT, NormalT>::
 	}
 }
 
-template<typename VertexT, typename NormalT> void FusionMesh<VertexT, NormalT>::sortFaces()
+template<typename VertexT, typename NormalT> void Fusion<VertexT, NormalT>::sortFaces()
 {	
 	cout << timestamp << "Start Sorting Faces... " << endl <<endl;
 	
@@ -653,7 +653,7 @@ template<typename VertexT, typename NormalT> void FusionMesh<VertexT, NormalT>::
    // cout << "Adding Tree Face - " << face->m_index[0] << " " << face->m_index[1] << " " << face->m_index[2] << " " << endl;
 }
 
-template<typename VertexT, typename NormalT> void FusionMesh<VertexT, NormalT>::addGlobal(vector<FFace*>& faces)
+template<typename VertexT, typename NormalT> void Fusion<VertexT, NormalT>::addGlobal(vector<FFace*>& faces)
 {	
 	int degentFaces = 0;
 	
@@ -705,7 +705,7 @@ template<typename VertexT, typename NormalT> void FusionMesh<VertexT, NormalT>::
 	//cout << "Finished Remote Integrate" << endl;
 }
 
-template<typename VertexT, typename NormalT> void FusionMesh<VertexT, NormalT>::triangulateAndAdd(vector<Point>& vertices, Tree& tree)
+template<typename VertexT, typename NormalT> void Fusion<VertexT, NormalT>::triangulateAndAdd(vector<Point>& vertices, Tree& tree)
 {
 	vector<FFace*> new_faces;
 	Delaunay dt;
@@ -750,7 +750,7 @@ template<typename VertexT, typename NormalT> void FusionMesh<VertexT, NormalT>::
 	addGlobal(new_faces);
 }
 
-template<typename VertexT, typename NormalT> void FusionMesh<VertexT, NormalT>::assignToBorderRegion(vector<PointSet>& vertexRegions, vector<Point>new_vertices)
+template<typename VertexT, typename NormalT> void Fusion<VertexT, NormalT>::assignToBorderRegion(vector<PointSet>& vertexRegions, vector<Point>new_vertices)
 {	
 	PointSetIterator it;
 	bool inserted = false;
@@ -784,7 +784,7 @@ template<typename VertexT, typename NormalT> void FusionMesh<VertexT, NormalT>::
 }
 
 
-template<typename VertexT, typename NormalT> void FusionMesh<VertexT, NormalT>::intersectIntegrate(vector<FFace*>& faces)
+template<typename VertexT, typename NormalT> void Fusion<VertexT, NormalT>::intersectIntegrate(vector<FFace*>& faces)
 {
 	cout << "Start Intersect Integrate..." << endl;
 	
@@ -823,7 +823,7 @@ template<typename VertexT, typename NormalT> void FusionMesh<VertexT, NormalT>::
 }
 
 template<typename VertexT, typename NormalT>
-void FusionMesh<VertexT, NormalT>::splitIntersectFaces(vector<FFace*>& faces, Tree& tree)
+void Fusion<VertexT, NormalT>::splitIntersectFaces(vector<FFace*>& faces, Tree& tree)
 {
 	vector<vector<Point> > polys;
 	int counterVertices = 0;
@@ -893,7 +893,7 @@ void FusionMesh<VertexT, NormalT>::splitIntersectFaces(vector<FFace*>& faces, Tr
 }
 
 template<typename VertexT, typename NormalT>
-void FusionMesh<VertexT, NormalT>::writePolygonToSVG(vector<Polygon>& polys, vector<Triangle2D>& triangles, string& filename)
+void Fusion<VertexT, NormalT>::writePolygonToSVG(vector<Polygon>& polys, vector<Triangle2D>& triangles, string& filename)
 {
 	ofstream polyfile;
 	polyfile.open(filename);
@@ -930,7 +930,7 @@ void FusionMesh<VertexT, NormalT>::writePolygonToSVG(vector<Polygon>& polys, vec
 }
 
 template<typename VertexT, typename NormalT>
-vector<vector<Point> > FusionMesh<VertexT, NormalT>::buildPolygons(FFace *face, vector<Point>& points)
+vector<vector<Point> > Fusion<VertexT, NormalT>::buildPolygons(FFace *face, vector<Point>& points)
 {
 	vector<vector<Point> > polys;
 	vector<Segment> faceSegs = face2Segments(face);
@@ -1052,14 +1052,14 @@ vector<vector<Point> > FusionMesh<VertexT, NormalT>::buildPolygons(FFace *face, 
 }	
 
 template<typename VertexT, typename NormalT>
-bool FusionMesh<VertexT, NormalT>::pointOnSegment(Point& p, Segment& s)
+bool Fusion<VertexT, NormalT>::pointOnSegment(Point& p, Segment& s)
 {
 	return CGAL::squared_distance(s, p) < POINT_DIST_EPSILON;
 }
 
 
 template<typename VertexT, typename NormalT>
-vector<Segment> FusionMesh<VertexT, NormalT>::face2Segments(FFace *face)
+vector<Segment> Fusion<VertexT, NormalT>::face2Segments(FFace *face)
 {
 	vector<Segment> segments;
 	ETriangle t = faceToETriangle(face);
@@ -1077,7 +1077,7 @@ vector<Segment> FusionMesh<VertexT, NormalT>::face2Segments(FFace *face)
 
 
 template<typename VertexT, typename NormalT>
-vector<int> FusionMesh<VertexT, NormalT>::getIntersectingTriangles(FFace *face)
+vector<int> Fusion<VertexT, NormalT>::getIntersectingTriangles(FFace *face)
 {
 	list<Primitive_id> primitives;
 	Primitive_id id;
@@ -1101,7 +1101,7 @@ vector<int> FusionMesh<VertexT, NormalT>::getIntersectingTriangles(FFace *face)
 
 
 template<typename VertexT, typename NormalT> 
-bool FusionMesh<VertexT, NormalT>::sortSegments(vector<Segment> &segments, vector<Point> &points)
+bool Fusion<VertexT, NormalT>::sortSegments(vector<Segment> &segments, vector<Point> &points)
 {
 	bool regular = true;
 
@@ -1207,7 +1207,7 @@ bool FusionMesh<VertexT, NormalT>::sortSegments(vector<Segment> &segments, vecto
 	return regular;
 }
 
-template<typename VertexT, typename NormalT> void FusionMesh<VertexT, NormalT>::getIntersectionSegments(FFace *face, vector<Segment>& segments, Tree& tree)
+template<typename VertexT, typename NormalT> void Fusion<VertexT, NormalT>::getIntersectionSegments(FFace *face, vector<Segment>& segments, Tree& tree)
 {
 	list<Object_and_primitive_id> intersections;
 	Object_and_primitive_id op;
@@ -1239,7 +1239,7 @@ template<typename VertexT, typename NormalT> void FusionMesh<VertexT, NormalT>::
 	}
 }
 
-template<typename VertexT, typename NormalT> void FusionMesh<VertexT, NormalT>::getIntersectionPoints(FFace *face, vector<Point>& local_points, vector<Point>& global_points)
+template<typename VertexT, typename NormalT> void Fusion<VertexT, NormalT>::getIntersectionPoints(FFace *face, vector<Point>& local_points, vector<Point>& global_points)
 {
 	vector<const Segment*> intersect_segments;
 	list<Object_and_primitive_id> intersections;
@@ -1282,7 +1282,7 @@ template<typename VertexT, typename NormalT> void FusionMesh<VertexT, NormalT>::
 
 
 template<typename VertexT, typename NormalT> 
-void FusionMesh<VertexT, NormalT>::markDomains(CDT& ct,
+void Fusion<VertexT, NormalT>::markDomains(CDT& ct,
 		CDT::Face_handle start,
 		int index,
 		list<CDT::Edge>& border )
@@ -1315,7 +1315,7 @@ void FusionMesh<VertexT, NormalT>::markDomains(CDT& ct,
 //to constrained edges bounding the former set and increase the nesting level by 1.
 //Facets in the domain are those with an odd nesting level.
 template<typename VertexT, typename NormalT> 
-void FusionMesh<VertexT, NormalT>::markDomains(CDT& cdt)
+void Fusion<VertexT, NormalT>::markDomains(CDT& cdt)
 {
 	for(CDT::All_faces_iterator it = cdt.all_faces_begin(); it != cdt.all_faces_end(); ++it){
 		it->info().nesting_level = -1;
@@ -1332,7 +1332,7 @@ void FusionMesh<VertexT, NormalT>::markDomains(CDT& cdt)
 	}
 }
 	template<typename VertexT, typename NormalT> 
-bool FusionMesh<VertexT, NormalT>::polygonTriangulation(Polygon& polygon, vector<Triangle2D>& triangles)
+bool Fusion<VertexT, NormalT>::polygonTriangulation(Polygon& polygon, vector<Triangle2D>& triangles)
 {
 	CDT cdt;
 	if ( polygon.is_empty() ) return false;

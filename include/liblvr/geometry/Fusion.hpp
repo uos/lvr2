@@ -17,7 +17,7 @@
  */
 
 /*
- * FusionMesh.hpp
+ * Fusion.hpp
  *
  *  @date   11.07.2013
  *  @author Ann-Katrin Häuser (ahaeuser@uos.de)
@@ -26,8 +26,8 @@
  *  @author Sebastian Puetz (spuetz@uos.de)
  */
 
-#ifndef FUSIONMESH_H_
-#define FUSIONMESH_H_
+#ifndef FUSION_H_
+#define FUSION_H_
 
 #include <boost/unordered_map.hpp>
 
@@ -153,7 +153,7 @@ template<typename VertexT, typename NormalT> class FusionFace;
  * @brief Implementation of a mesh structure that can be used to incrementally fuse different meshes into one.
  */
  
-template<typename VertexT, typename NormalT> class FusionMesh : public BaseMesh<VertexT, NormalT>
+template<typename VertexT, typename NormalT> class Fusion : public BaseMesh<VertexT, NormalT>
 {
 
 public:
@@ -171,19 +171,19 @@ public:
 // Constructors
 
 	/**
-	 * @brief   Creates an empty FusionMesh 
+	 * @brief   Creates an empty Fusion Class
 	 */
-	FusionMesh();
+	Fusion();
 
 	/**
-	 * @brief   Creates a FusionMesh from the given mesh buffer
+	 * @brief   Creates a Fusion Class from the given mesh buffer
 	 */
-	FusionMesh(MeshBufferPtr model);
+	Fusion(MeshBufferPtr model);
 
 	/**
 	 * @brief   Destructor.
 	 */
-	virtual ~FusionMesh() {};
+	virtual ~Fusion() {};
 
 	
 // Methods of BaseMesh
@@ -276,7 +276,7 @@ public:
 	virtual void addMeshAndRemoteIntegrateOnly(MeshBufferPtr model);
 
 	/**
-	 * @brief 	resets the FusionMesh, should only be called if it's okay to loose the current fusion
+	 * @brief 	resets the Fusion Class, should only be called if it's okay to loose the current fusion
 	 */
 	virtual void reset();
 
@@ -547,6 +547,6 @@ private:
 } // namespace lvr
 
 
-#include "FusionMesh.cpp"
+#include "Fusion.cpp"
 
-#endif /* FUSIONMESH_H_ */
+#endif /* FUSION_H_ */
