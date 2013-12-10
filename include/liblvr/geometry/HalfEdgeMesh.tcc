@@ -1248,9 +1248,11 @@ void HalfEdgeMesh<VertexT, NormalT>::finalize()
         colorBuffer[indexBuffer[3 * i + 2] * 3 + 1] = g;
         colorBuffer[indexBuffer[3 * i + 2] * 3 + 2] = b;
 
-		if (labeledFaces.count(label) == 1)
+        typename labeledFacesMap::iterator it = labeledFaces.find(label);
+
+		if (it != labeledFaces.end())
 		{
-			labeledFaces.at(label).push_back(i);
+			it->second.push_back(i);
 		}
 		else
 		{

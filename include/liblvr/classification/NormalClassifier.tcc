@@ -33,11 +33,14 @@ string NormalClassifier<VertexT, NormalT>::getLabel(NormalLabel label)
 	switch(label)
 	{
 		case VerticalFace:
-			return "vertical";
+			return "Vertical";
+			break;
 		case HorizontalupperFace:
 			return "horizontalupper";
+			break;
 		case HorizontallowerFace:
 			return "horizontallower";
+			break;
 		default:
 			return "unknown";
 	}
@@ -98,13 +101,19 @@ NormalLabel NormalClassifier<VertexT, NormalT>::classifyRegion(int index)
 
 		// Get region and normal
 		Region<VertexT, NormalT>* region = this->m_regions->at(index);
+		region->regressionPlane();
 		NormalT normal = region->m_normal;
 
-		//cout << " - normal.x is " << normal.x << " - normal.y is " << normal.y << " - normal.z is " << normal.z << endl;
-		
 		// Check if ceiling or floor
-		if(n_ceil * normal > 0.98) return HorizontalupperFace;
-		if(n_floor * normal > 0.98) return HorizontallowerFace;
+		if(n_ceil * normal > 0.98)
+		{
+		    return HorizontalupperFace;
+		}
+
+		if(n_floor * normal > 0.98)
+		{
+		    return HorizontallowerFace;
+		}
 
 		// Check for walls
 		float radius = sqrt(normal.x * normal.x + normal.z * normal.z);
@@ -134,8 +143,7 @@ void NormalClassifier<VertexT, NormalT>::createRegionBuffer(
 
 	Region<VertexT, NormalT>* region = this->m_regions->at(region_id);
 
-	NormalLabel label = classifyRegion(region_id);
-	std::string str_label = regiontostr(label);
+	std::string str_label = regiontostr(region_id);
 
 	region->setLabel(str_label);
 
@@ -152,7 +160,6 @@ void NormalClassifier<VertexT, NormalT>::createRegionBuffer(
 			current = (*f)(d)->m_position;
 			//normal =  (*f)(d)->m_normal;
 			normal = (*f).getFaceNormal();
-			cout << "normal is " << normal << endl;
 			
 			if(vertex_map.find(current) != vertex_map.end())
 			{
@@ -188,7 +195,6 @@ void NormalClassifier<VertexT, NormalT>::createRegionBuffer(
 template<typename VertexT, typename NormalT>
 void NormalClassifier<VertexT, NormalT>::createBuffer()
 {
-	cout << "running createBuffer() for " << this->m_regions->size() << " regions!" << endl;
 	for(unsigned int i = 0; i < this->m_regions->size(); i++)
 	{
 		// Buffer vectors
@@ -196,7 +202,6 @@ void NormalClassifier<VertexT, NormalT>::createBuffer()
 		vector<float> vertices;
 		vector<float> normals;
 		vector<uint> colors;
-		vector<string> labels;
 
 		map<VertexT, int> vertex_map;
 
