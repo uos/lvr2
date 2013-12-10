@@ -13,7 +13,7 @@ include_directories(${LAS_VEGAS_SOURCE_DIR}/ext/stann)
 include_directories(${LAS_VEGAS_SOURCE_DIR})
 include_directories(${LAS_VEGAS_SOURCE_DIR}/include/liblvr)
 
-set( CMAKE_CXX_FLAGS  ${CMAKE_CXX_FLAGS} "-std=c++0x -std=gnu++0x")
+set( CMAKE_CXX_FLAGS  ${CMAKE_CXX_FLAGS} "-O3 -std=c++0x -std=gnu++0x")
 
 ###############################################################
 # EXTERNAL LIBRARIES
@@ -224,6 +224,7 @@ add_subdirectory(src/tools/asciiconverter)
 add_subdirectory(src/tools/texman)
 add_subdirectory(src/tools/tiogen)
 add_subdirectory(src/tools/meshoptimizer)
+add_subdirectory(src/tools/transform)
 
 if(MPI_FOUND)
 #add_subdirectory(src/tools/mpi)
