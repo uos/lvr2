@@ -77,6 +77,8 @@ public:
 
 	virtual void writeMetaInfo();
 
+	virtual void createBuffer();
+
 private:
 
 	RegionLabel classifyRegion(int region);

@@ -265,5 +265,12 @@ void IndoorNormalClassifier<VertexT, NormalT>::writeMetaInfo()
 	out.close();
 }
 
+template<typename VertexT, typename NormalT>
+void IndoorNormalClassifier<VertexT, NormalT>::createBuffer()
+{
+	// TODO does nothing
+	return;
+}
+
 
 } /* namespace lvr */

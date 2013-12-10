@@ -437,6 +437,12 @@ int main(int argc, char** argv)
 			mesh.finalize();
 		}
 
+		// Write classification to file
+		if ( options.writeClassificationResult() )
+		{
+			mesh.writeClassificationResult();
+		}
+
 		// Create output model and save to file
 		ModelPtr m( new Model( mesh.meshBuffer() ) );
 		
