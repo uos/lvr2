@@ -26,21 +26,6 @@
 namespace lvr
 {
 
-template<typename VertexT, typename NormalT>
-string IndoorNormalClassifier<VertexT, NormalT>::getLabel(RegionLabel label)
-{
-	switch(label)
-	{
-		case vertical:
-			return "vertical";
-		case horizontalupper:
-			return "horizontalupper";
-		case horizontallower:
-			return "horizontallower";
-		default:
-			return "unknown";
-	}
-}
 
 template<typename VertexT, typename NormalT>
 uchar* IndoorNormalClassifier<VertexT, NormalT>::getColor(int index)
@@ -48,7 +33,21 @@ uchar* IndoorNormalClassifier<VertexT, NormalT>::getColor(int index)
 	float fc[3];
 	uchar* c = new uchar[3];
 
-	Colors::getColor(fc, LIGHTGREY);
+	RegionLabel label = classifyRegion(index);
+	switch(label)
+	{
+	case Ceiling:
+		Colors::getColor(fc, BLUE);
+		break;
+	case Floor:
+		Colors::getColor(fc, RED);
+		break;
+	case Wall:
+		Colors::getColor(fc, GREEN);
+		break;
+	default:
+		Colors::getColor(fc, LIGHTGREY);
+	}
 
 
 	for(int i = 0; i < 3; i++)
@@ -103,24 +102,18 @@ RegionLabel IndoorNormalClassifier<VertexT, NormalT>::classifyRegion(int index)
 		if(region->size() > 10)
 		{
 			// Check if ceiling or floor
-			if(n_ceil 	* normal > 0.98) return horizontalupper;
-			if(n_floor 	* normal > 0.98) return horizontallower;
+			if(n_ceil 	* normal > 0.98) return Ceiling;
+			if(n_floor 	* normal > 0.98) return Floor;
 
 			// Check for walls
 			float radius = sqrt(normal.x * normal.x + normal.z * normal.z);
-			if(radius > 0.95) return vertical;
+			if(radius > 0.95) return Wall;
 		}
 	}
 
-	return unknown;
+	return Unknown;
 }
 
-template<typename VertexT, typename NormalT>
-string IndoorNormalClassifier<VertexT, NormalT>::rl(int index)
-{
-	RegionLabel label = classifyRegion(index);
-	return getLabel(label);
-}
 
 template<typename VertexT, typename NormalT>
 void IndoorNormalClassifier<VertexT, NormalT>::createRegionBuffer(
@@ -129,11 +122,11 @@ void IndoorNormalClassifier<VertexT, NormalT>::createRegionBuffer(
 				vector<int> &indices,
 				vector<float> &vertices,
 				vector<float> &normals,
-				vector<uint> &colors,
-				vector<string> &labels)
+				vector<uint> &colors
+				)
 {
 	//int index_counter = 0;
-	int vertex_position = 0;
+	int	vertex_position = 0;
 
 	Region<VertexT, NormalT>* region = this->m_regions->at(region_id);
 
@@ -173,8 +166,6 @@ void IndoorNormalClassifier<VertexT, NormalT>::createRegionBuffer(
 				colors.push_back(r(region_id));
 				colors.push_back(g(region_id));
 				colors.push_back(b(region_id));
-
-				labels.push_back(rl(region_id));
 			}
 
 			indices.push_back(vertex_position);
@@ -189,15 +180,16 @@ void IndoorNormalClassifier<VertexT, NormalT>::writeBuffers(
 		vector<int> &indices,
 		vector<float> &vertices,
 		vector<float> &normals,
-		vector<uint> &colors,
-		vector<string> &labels)
+		vector<uint> &colors)
 {
 	static int c;
-	string str_label = getLabel(label);
-
-	if (str_label == "unknown")
+	string str_label = "Unclassified";
+	switch(label)
 	{
-		return;
+	case Ceiling 	: str_label = "Ceiling"; 	break;
+	case Floor		: str_label = "Floor";		break;
+	case Wall		: str_label = "Wall";		break;
+	case Unknown	: return;
 	}
 
 	out << str_label << c << endl;
@@ -233,11 +225,10 @@ void IndoorNormalClassifier<VertexT, NormalT>::writeMetaInfo()
 
 	// Save all small clusters in a seperate mesh for
 	// performance reasons
-	vector<int> uc_indices;
-	vector<float> uc_vertices;
-	vector<uint> uc_colors;
-	vector<float> uc_normals;
-	vector<string> uc_labels;
+	vector<int> 	uc_indices;
+	vector<float> 	uc_vertices;
+	vector<uint> 	uc_colors;
+	vector<float> 	uc_normals;
 	map<VertexT, int> uc_vertex_map;
 
 	for(unsigned int i = 0; i < this->m_regions->size(); i++)
@@ -251,27 +242,26 @@ void IndoorNormalClassifier<VertexT, NormalT>::writeMetaInfo()
 			RegionLabel label = classifyRegion(i);
 
 			// Buffer vectors
-			vector<int> indices;
-			vector<float> vertices;
-			vector<float> normals;
-			vector<uint> colors;
-			vector<string> labels;
+			vector<int> 	indices;
+			vector<float> 	vertices;
+			vector<float> 	normals;
+			vector<uint>	colors;
 
 			map<VertexT, int> vertex_map;
 
-			createRegionBuffer(i, vertex_map, indices, vertices, normals, colors, labels);
-			writeBuffers(out, label, indices, vertices, normals, colors, labels);
+			createRegionBuffer(i, vertex_map, indices, vertices, normals, colors);
+			writeBuffers(out, label, indices, vertices, normals, colors);
 
 		}
 		else
 		{
-			createRegionBuffer(i, uc_vertex_map, uc_indices, uc_vertices, uc_normals, uc_colors, uc_labels);
+			createRegionBuffer(i, uc_vertex_map, uc_indices, uc_vertices, uc_normals, uc_colors);
 		}
 
 	}
 
 	// Write all unclassified clusters
-	writeBuffers(out, unknown, uc_indices, uc_vertices, uc_normals, uc_colors, uc_labels);
+	writeBuffers(out, Unknown, uc_indices, uc_vertices, uc_normals, uc_colors);
 	out.close();
 }
 
