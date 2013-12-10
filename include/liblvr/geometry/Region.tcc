@@ -339,6 +339,14 @@ void Region<VertexT, NormalT>::regressionPlane()
 {
 //    srand(time(NULL));
 
+    // Quick and dirty fox to avoid hanging when
+    // degenrated faces are in buffer
+    if(m_faces.size() < 3)
+    {
+        m_normal = m_faces[0]->getFaceNormal();
+        return;
+    }
+
     VertexT point1;
     VertexT point2;
     VertexT point3;
