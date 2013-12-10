@@ -37,6 +37,7 @@ HalfEdgeMesh<VertexT, NormalT>::HalfEdgeMesh(
 {
     m_globalIndex = 0;
     m_regionClassifier = ClassifierFactory<VertexT, NormalT>::get("Default", this);
+    m_classifierType = "Default";
     m_pointCloudManager = pm;
     m_depth = 100;
 }
@@ -64,6 +65,7 @@ HalfEdgeMesh<VertexT, NormalT>::HalfEdgeMesh(
     // Initial remaing stuff
     m_globalIndex = 0;
     m_regionClassifier = ClassifierFactory<VertexT, NormalT>::get("Default", this);
+    m_classifierType = "Default";
     m_depth = 100;
 }
 
@@ -107,6 +109,9 @@ void HalfEdgeMesh<VertexT, NormalT>::setClassifier(string name)
 	// Create new one
 	m_regionClassifier = ClassifierFactory<VertexT, NormalT>::get(name, this);
 	
+	// update name
+	m_classifierType = name;
+
 	// Check if successful
 	if(!m_regionClassifier)
 	{
@@ -114,6 +119,7 @@ void HalfEdgeMesh<VertexT, NormalT>::setClassifier(string name)
 			 << name << "'. Using default." << endl;
 
 		ClassifierFactory<VertexT, NormalT>::get("Default", this);
+		m_classifierType = "Default";
 	}
 }
 
@@ -1214,8 +1220,12 @@ void HalfEdgeMesh<VertexT, NormalT>::finalize()
         index_map[*vertices_iter] = i;
     }
 
-    // create the buffers for region labeling
-	m_regionClassifier->createBuffer();
+    // create the buffers for region labeling if we have a capable classifier
+    if ( m_classifierType == "NormalClassifier" )
+    {
+    	cout << timestamp << "generating pre-labels." << endl;
+    	m_regionClassifier->createBuffer();
+    }
 
     typename vector<HalfEdgeFace<VertexT, NormalT>*>::iterator face_iter = m_faces.begin();
     typename vector<HalfEdgeFace<VertexT, NormalT>*>::iterator face_end  = m_faces.end();
@@ -1280,8 +1290,12 @@ void HalfEdgeMesh<VertexT, NormalT>::finalize()
 	this->m_meshBuffer->setLabeledFacesMap( labeledFaces );
     //this->m_meshBuffer->setFaceColorArray( faceColorBuffer );
     this->m_finalized = true;
+}
 
-    //m_regionClassifier->writeMetaInfo();
+template<typename VertexT, typename NormalT>
+void HalfEdgeMesh<VertexT, NormalT>::writeClassificationResult()
+{
+	m_regionClassifier->writeMetaInfo();
 }
 
 template<typename VertexT, typename NormalT>
