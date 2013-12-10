@@ -210,6 +210,7 @@ void NormalClassifier<VertexT, NormalT>::createBuffer()
 template<typename VertexT, typename NormalT>
 void NormalClassifier<VertexT, NormalT>::writeMetaInfo()
 {
+	cout << timestamp << "METHOD NormalClassifier::writeMetaInfo() NOT YET IMPLEMENTED" << endl;
 	return;
 }
 

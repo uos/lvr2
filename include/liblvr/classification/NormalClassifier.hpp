@@ -83,11 +83,12 @@ public:
 
 	virtual void createBuffer();
 
+	virtual string getLabel(NormalLabel label);
+
 private:
 
 	NormalLabel classifyRegion(int region);
 	uchar* getColor(int region);
-	string getLabel(NormalLabel label);
 
 	void createRegionBuffer(
 		int region_id,
