@@ -34,7 +34,7 @@ namespace lvr
 
 enum NormalLabel
 {
-	VerticalFace=40,
+	VerticalFace,
 	HorizontallowerFace,
 	HorizontalupperFace,
 	UnknownFace

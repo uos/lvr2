@@ -1214,7 +1214,7 @@ void HalfEdgeMesh<VertexT, NormalT>::finalize()
         index_map[*vertices_iter] = i;
     }
 
-	cout << "jetzt aufruf createBuffer()" << endl;
+    // create the buffers for region labeling
 	m_regionClassifier->createBuffer();
 
     typename vector<HalfEdgeFace<VertexT, NormalT>*>::iterator face_iter = m_faces.begin();
@@ -1256,7 +1256,6 @@ void HalfEdgeMesh<VertexT, NormalT>::finalize()
 		}
 		else
 		{
-			cout << "mach neuen eintrag fuer label \""<<label<<"\"!" << endl;
 			std::vector<unsigned int> label_face_ids;
 			label_face_ids.push_back(i);
 			labeledFaces.insert(std::pair<std::string, std::vector<unsigned int>>(label, label_face_ids));

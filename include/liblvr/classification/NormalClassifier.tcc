@@ -33,7 +33,7 @@ string NormalClassifier<VertexT, NormalT>::getLabel(NormalLabel label)
 	switch(label)
 	{
 		case VerticalFace:
-			return "Vertical";
+			return "vertical";
 			break;
 		case HorizontalupperFace:
 			return "horizontalupper";
@@ -156,9 +156,7 @@ void NormalClassifier<VertexT, NormalT>::createRegionBuffer(
 		{
 			HalfEdgeFace<VertexT, NormalT>* f = region->m_faces[a];
 
-			// hier statt m
 			current = (*f)(d)->m_position;
-			//normal =  (*f)(d)->m_normal;
 			normal = (*f).getFaceNormal();
 			
 			if(vertex_map.find(current) != vertex_map.end())
