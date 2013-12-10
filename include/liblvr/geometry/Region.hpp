@@ -83,6 +83,16 @@ public:
 	virtual void removeFace(HFace* f);
 
 	/**
+	 * TODO
+	 */
+	virtual void setLabel(std::string label);
+
+	/**
+	 * TODO
+	 */
+	virtual std::string getLabel();
+
+	/**
 	 * @brief Finds all contours of the region (outer contour + holes)
 	 *
 	 * @param	epsilon	controls the number of points used for a contour
@@ -136,6 +146,11 @@ public:
 	/// indicates if the region is to be deleted or not
 	bool m_toDelete;
 
+	/**
+	 * TODO
+	 */
+	std::string m_label;
+
 private:
     /**
 	 * @brief calculates a valid normal of the region
@@ -143,6 +158,7 @@ private:
 	 * @return a normal of the region
 	 */
 	virtual NormalT calcNormal();
+
 };
 }
 

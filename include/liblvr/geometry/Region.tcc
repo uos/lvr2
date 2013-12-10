@@ -54,6 +54,18 @@ void Region<VertexT, NormalT>::removeFace(HFace* f)
 	m_faces.erase(find(m_faces.begin(), m_faces.end(), f));
 }
 
+template<typename VertexT, typename NormalT>
+void Region<VertexT, NormalT>::setLabel(std::string label)
+{
+	this->m_label = label;
+}
+
+template<typename VertexT, typename NormalT>
+std::string Region<VertexT, NormalT>::getLabel()
+{
+	return this->m_label;
+}
+
 
 template<typename VertexT, typename NormalT>
 vector<vector<VertexT> > Region<VertexT, NormalT>::getContours(float epsilon)
