@@ -88,6 +88,11 @@ public:
 
 
 	/**
+	 * @brief Overwrite this class to create the region buffers
+	 */
+	virtual void createBuffer() {};
+
+	/**
 	 * @brief  Overwrite this class to write information about the clusters
 	 * 		   to a file
 	 */

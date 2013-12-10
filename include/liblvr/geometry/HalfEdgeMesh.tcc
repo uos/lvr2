@@ -106,7 +106,7 @@ void HalfEdgeMesh<VertexT, NormalT>::setClassifier(string name)
 
 	// Create new one
 	m_regionClassifier = ClassifierFactory<VertexT, NormalT>::get(name, this);
-
+	
 	// Check if successful
 	if(!m_regionClassifier)
 	{
@@ -1181,9 +1181,9 @@ void HalfEdgeMesh<VertexT, NormalT>::restorePlanes(int min_region_size)
 template<typename VertexT, typename NormalT>
 void HalfEdgeMesh<VertexT, NormalT>::finalize()
 {
-    cout << timestamp << "Finalizing mesh." << endl;
-
     boost::unordered_map<HalfEdgeVertex<VertexT, NormalT>*, int> index_map;
+
+	labeledFacesMap labeledFaces;
 
     int numVertices = m_vertices.size();
     int numFaces 	= m_faces.size();
@@ -1214,6 +1214,9 @@ void HalfEdgeMesh<VertexT, NormalT>::finalize()
         index_map[*vertices_iter] = i;
     }
 
+	cout << "jetzt aufruf createBuffer()" << endl;
+	m_regionClassifier->createBuffer();
+
     typename vector<HalfEdgeFace<VertexT, NormalT>*>::iterator face_iter = m_faces.begin();
     typename vector<HalfEdgeFace<VertexT, NormalT>*>::iterator face_end  = m_faces.end();
 
@@ -1224,9 +1227,11 @@ void HalfEdgeMesh<VertexT, NormalT>::finalize()
         indexBuffer[3 * i + 2]  = index_map[(*(*face_iter))(2)];
 
         int surface_class = 1;
+		std::string label = "unknown";
         if ((*face_iter)->m_region != 0)
         {
             surface_class = (*face_iter)->m_region->m_regionNumber;
+			label = (*face_iter)->m_region->m_label;
         }
 
         r = m_regionClassifier->r(surface_class);
@@ -1242,6 +1247,18 @@ void HalfEdgeMesh<VertexT, NormalT>::finalize()
         colorBuffer[indexBuffer[3 * i + 2] * 3 + 0] = r;
         colorBuffer[indexBuffer[3 * i + 2] * 3 + 1] = g;
         colorBuffer[indexBuffer[3 * i + 2] * 3 + 2] = b;
+
+		if (labeledFaces.count(label) == 1)
+		{
+			labeledFaces.at(label).push_back(i);
+		}
+		else
+		{
+			cout << "mach neuen eintrag fuer label \""<<label<<"\"!" << endl;
+			std::vector<unsigned int> label_face_ids;
+			label_face_ids.push_back(i);
+			labeledFaces.insert(std::pair<std::string, std::vector<unsigned int>>(label, label_face_ids));
+		}
 
         /// TODO: Implement materials
         /*faceColorBuffer.push_back( r );
@@ -1259,15 +1276,18 @@ void HalfEdgeMesh<VertexT, NormalT>::finalize()
     this->m_meshBuffer->setVertexColorArray( colorBuffer, numVertices );
     this->m_meshBuffer->setVertexNormalArray( normalBuffer, numVertices  );
     this->m_meshBuffer->setFaceArray( indexBuffer, numFaces );
+	this->m_meshBuffer->setLabeledFacesMap( labeledFaces );
     //this->m_meshBuffer->setFaceColorArray( faceColorBuffer );
     this->m_finalized = true;
 
-    m_regionClassifier->writeMetaInfo();
+    //m_regionClassifier->writeMetaInfo();
 }
 
 template<typename VertexT, typename NormalT>
 void HalfEdgeMesh<VertexT, NormalT>::finalizeAndRetesselate( bool genTextures, float fusionThreshold )
 {
+    cout << timestamp << "Finalizing mesh with HalfEdgeMesh::finalizeAndRetesselate()." << endl;
+
     // used Typedef's
     typedef std::vector<int>::iterator   intIterator;
 
