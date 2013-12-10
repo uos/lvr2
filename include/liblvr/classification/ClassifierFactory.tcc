@@ -31,7 +31,11 @@ namespace lvr
 template<typename VertexT, typename NormalT>
 RegionClassifier<VertexT, NormalT>*  ClassifierFactory<VertexT, NormalT>::get(string name, HMesh* mesh)
 {
-	if(name == "PlaneJet")
+	if(name == "Default")
+	{
+		return new ColorGradientPlaneClassifier<VertexT, NormalT>(&mesh->m_regions, SIMPSONS);
+	}
+	else if(name == "PlaneJet")
 	{
 		return new ColorGradientPlaneClassifier<VertexT, NormalT>(&mesh->m_regions, JET);
 	}
@@ -55,7 +59,7 @@ RegionClassifier<VertexT, NormalT>*  ClassifierFactory<VertexT, NormalT>::get(st
 	{
 		return new NormalClassifier<VertexT, NormalT>(&mesh->m_regions);
 	}
-	else if(name == "IndoorNormals")
+	else if(name == "IndoorNormalClassifier")
 	{
 		return new IndoorNormalClassifier<VertexT, NormalT>(&mesh->m_regions);
 	}
