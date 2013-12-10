@@ -35,7 +35,7 @@
 #include "io/ModelFactory.hpp"
 
 #include "geometry/ColorVertex.hpp"
-#include "geometry/FusionMesh.hpp"
+#include "geometry/Fusion.hpp"
 
 #include <iostream>
 
@@ -53,7 +53,7 @@ int main(int argc, char** argv)
 	MeshBufferPtr mesh_buffer1;
 	MeshBufferPtr mesh_buffer2;
 	// Create an empty mesh
-	FusionMesh<fVertex, fNormal> mesh;
+	Fusion<fVertex, fNormal> mesh;
 	// Parse command line arguments
 	fusion::Options options(argc, argv);
 	try
