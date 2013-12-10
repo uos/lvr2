@@ -1,4 +1,5 @@
-/* Copyright (C) 2011 Uni Osnabrück
+/**
+ * Copyright (C) 2013 Uni Osnabrück
  * This file is part of the LAS VEGAS Reconstruction Toolkit,
  *
  * LAS VEGAS is free software; you can redistribute it and/or modify
@@ -17,55 +18,53 @@
  */
 
 /*
- * IndoorNormalClassifier.hpp
+ * NormalClassifier.hpp
  *
- *  Created on: 12.04.2012
- *      Author: Thomas Wiemann
+ *  Created on: 01.10.2013
+ *      Author: Simon Herkenhoff
  */
 
-#ifndef INDOORNORMALCLASSIFIER_HPP_
-#define INDOORNORMALCLASSIFIER_HPP_
+#ifndef NORMALCLASSIFIER_HPP_
+#define NORMALCLASSIFIER_HPP_
 
-//#include "RegionClassifier.hpp"
 #include "display/Color.hpp"
 
 namespace lvr
 {
 
-enum RegionLabel {
-		Wall,
-		Floor,
-		Ceiling,
-		Unknown
+enum NormalLabel
+{
+	VerticalFace,
+	HorizontallowerFace,
+	HorizontalupperFace,
+	UnknownFace
 };
 
-
 /**
- * @brief	Classifier for normal and area based cluster interpretation as
- * 			presented in @ref KI2011
+ * @brief Classifier for normal and area based cluster interpretation as
+ * presented in @ref KI2011
  */
 template<typename VertexT, typename NormalT>
-class IndoorNormalClassifier : public RegionClassifier<VertexT, NormalT>
+class NormalClassifier : public RegionClassifier<VertexT, NormalT>
 {
 public:
 
 	/**
 	 * @brief Ctor
-	 * @param region		A vector of planar clusters
+	 * @param region A vector of planar clusters
 	 */
-	IndoorNormalClassifier(vector<Region<VertexT, NormalT>* >* region)
+	NormalClassifier(vector<Region<VertexT, NormalT>* >* region)
 		: RegionClassifier<VertexT, NormalT>(region) {};
 
 	/**
 	 * @brief Dtor.
 	 */
-	virtual ~IndoorNormalClassifier() {};
+	virtual ~NormalClassifier() {};
 
 	/**
 	 * @brief Returns the r component for the given region
 	 */
 	virtual uchar r(int region);
-
 	/**
 	 * @brief Returns the g component for the given region
 	 */
@@ -75,35 +74,33 @@ public:
 	 */
 	virtual uchar b(int region);
 
+	/**
+	 * @brief Returns the label as a string
+	 */
+	virtual string regiontostr(int region);
+
 	virtual void writeMetaInfo();
+
+	virtual void createBuffer();
 
 private:
 
-	RegionLabel classifyRegion(int region);
+	NormalLabel classifyRegion(int region);
 	uchar* getColor(int region);
+	string getLabel(NormalLabel label);
 
 	void createRegionBuffer(
-					int region_id,
-					map<VertexT, int> &map,
-					vector<int> &indices,
-					vector<float> &vertices,
-					vector<float> &normals,
-					vector<uint> &colors
-					);
-
-	void writeBuffers(
-			ofstream &out,
-			RegionLabel label,
-			vector<int> &indices,
-			vector<float> &vertices,
-			vector<float> &normals,
-			vector<uint> &colors);
-
+		int region_id,
+		map<VertexT, int> &map,
+		vector<int> &indices,
+		vector<float> &vertices,
+		vector<float> &normals,
+		vector<uint> &colors);
 
 };
 
 } /* namespace lvr */
 
-#include "IndoorNormalClassifier.tcc"
+#include "NormalClassifier.tcc"
 
-#endif /* INDOORNORMALCLASSIFIER_HPP_ */
+#endif /* NORMALCLASSIFIER_HPP_ */
