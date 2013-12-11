@@ -1454,6 +1454,8 @@ void HalfEdgeMesh<VertexT, NormalT>::finalize()
 
     cout << timestamp << "Finalizing mesh." << endl;
 
+    labeledFacesMap labeledFaces;
+
     boost::unordered_map<VertexPtr, int> index_map;
 
     int numVertices = m_vertices.size();
@@ -1506,7 +1508,7 @@ void HalfEdgeMesh<VertexT, NormalT>::finalize()
         if ((*face_iter)->m_region != 0)
         {
             surface_class = (*face_iter)->m_region;
-			label = (*face_iter)->m_region->m_label;
+			label = m_regions.at(surface_class)->getLabel();
         }
 
         r = m_regionClassifier->r(surface_class);

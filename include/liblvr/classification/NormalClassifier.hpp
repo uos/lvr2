@@ -74,16 +74,11 @@ public:
 	 */
 	virtual uchar b(int region);
 
-	/**
-	 * @brief Returns the label as a string
-	 */
-	virtual string regiontostr(int region);
-
 	virtual void writeMetaInfo();
 
 	virtual void createBuffer();
 
-	virtual string getLabel(NormalLabel label);
+	string getLabel(NormalLabel label);
 
 private:
 
