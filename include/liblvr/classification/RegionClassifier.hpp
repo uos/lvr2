@@ -84,8 +84,7 @@ public:
 	/**
 	 * @brief Returns the b component for the given region
 	 */
-	virtual uchar b(int region) { return 0;  }
-
+	virtual uchar b(int region) { return 0; }
 
 	/**
 	 * @brief Overwrite this class to create the region buffers
