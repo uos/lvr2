@@ -65,6 +65,18 @@ void Region<VertexT, NormalT>::deleteInvalidFaces()
     }
 }
 
+template<typename VertexT, typename NormalT>
+void Region<VertexT, NormalT>::setLabel(std::string label)
+{
+	this->m_label = label;
+}
+
+template<typename VertexT, typename NormalT>
+std::string Region<VertexT, NormalT>::getLabel()
+{
+	return this->m_label;
+}
+
 
 template<typename VertexT, typename NormalT>
 vector<vector<VertexT> > Region<VertexT, NormalT>::getContours(float epsilon)
@@ -360,6 +372,14 @@ template<typename VertexT, typename NormalT>
 void Region<VertexT, NormalT>::regressionPlane()
 {
 //    srand(time(NULL));
+
+    // Quick and dirty fox to avoid hanging when
+    // degenrated faces are in buffer
+    if(m_faces.size() < 3)
+    {
+        m_normal = m_faces[0]->getFaceNormal();
+        return;
+    }
 
     VertexT point1;
     VertexT point2;
