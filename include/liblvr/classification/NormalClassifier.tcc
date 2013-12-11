@@ -30,6 +30,7 @@ namespace lvr
 template<typename VertexT, typename NormalT>
 string NormalClassifier<VertexT, NormalT>::getLabel(NormalLabel label)
 {
+
 	switch(label)
 	{
 		case VerticalFace:
@@ -124,13 +125,6 @@ NormalLabel NormalClassifier<VertexT, NormalT>::classifyRegion(int index)
 }
 
 template<typename VertexT, typename NormalT>
-string NormalClassifier<VertexT, NormalT>::regiontostr(int index)
-{
-	NormalLabel label = classifyRegion(index);
-	return getLabel(label);
-}
-
-template<typename VertexT, typename NormalT>
 void NormalClassifier<VertexT, NormalT>::createRegionBuffer(
 				int region_id,
 				map<VertexT, int> &vertex_map,
@@ -143,9 +137,11 @@ void NormalClassifier<VertexT, NormalT>::createRegionBuffer(
 
 	Region<VertexT, NormalT>* region = this->m_regions->at(region_id);
 
-	std::string str_label = regiontostr(region_id);
+	NormalLabel label = classifyRegion(region_id);
 
-	region->setLabel(str_label);
+	std::string stringLabel = getLabel(label);
+
+	region->setLabel(stringLabel);
 
 	// Check if region is a planar cluster
 	VertexT current;

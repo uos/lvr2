@@ -7,7 +7,7 @@
  * (at your option) any later version.
  *
  * LAS VEGAS is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * but WITHOUT ANY WARRANTY; without even the implied wasrranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
  *
@@ -25,9 +25,6 @@
  *  @author Sven Schalk (sschalk@uos.de)
  *  @author Thomas Wiemann (twiemann@uos.de)
  */
-
-#include "HalfEdgeVertex.hpp"
-
 
 // Forward declaration
 template<typename A, typename B>
