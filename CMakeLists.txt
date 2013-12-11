@@ -14,7 +14,7 @@ include_directories(${LAS_VEGAS_SOURCE_DIR}/ext/psimpl)
 include_directories(${LAS_VEGAS_SOURCE_DIR})
 include_directories(${LAS_VEGAS_SOURCE_DIR}/include/liblvr)
 
-set( CMAKE_CXX_FLAGS  ${CMAKE_CXX_FLAGS} "-O3 -std=c++0x -std=gnu++0x")
+set( CMAKE_CXX_FLAGS  ${CMAKE_CXX_FLAGS} "-std=c++0x -std=gnu++0x")
 
 ###############################################################
 # EXTERNAL LIBRARIES
@@ -220,6 +220,7 @@ add_subdirectory(src/liblvr)
 ##############################################################
 
 add_subdirectory(src/tools/reconstruct)
+add_subdirectory(src/tools/classifier)
 add_subdirectory(src/tools/colorize)
 add_subdirectory(src/tools/scanreduce)
 add_subdirectory(src/tools/convert)

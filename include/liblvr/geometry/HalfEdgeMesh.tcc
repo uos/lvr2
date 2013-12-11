@@ -37,6 +37,7 @@ HalfEdgeMesh<VertexT, NormalT>::HalfEdgeMesh(
 {
     m_globalIndex = 0;
     m_regionClassifier = ClassifierFactory<VertexT, NormalT>::get("Default", this);
+    m_classifierType = "Default";
     m_pointCloudManager = pm;
     m_depth = 100;
 }
@@ -64,13 +65,14 @@ HalfEdgeMesh<VertexT, NormalT>::HalfEdgeMesh(
     // Initial remaining stuff
     m_globalIndex = 0;
     m_regionClassifier = ClassifierFactory<VertexT, NormalT>::get("Default", this);
+    m_classifierType = "Default";
     m_depth = 100;
 }
 
 template<typename VertexT, typename NormalT>
 HalfEdgeMesh<VertexT, NormalT>::~HalfEdgeMesh()
 {
-    // Reset buffers
+
     this->m_meshBuffer.reset();
     this->m_pointCloudManager.reset();
 
@@ -122,6 +124,9 @@ void HalfEdgeMesh<VertexT, NormalT>::setClassifier(string name)
 
 	// Create new one
 	m_regionClassifier = ClassifierFactory<VertexT, NormalT>::get(name, this);
+	
+	// update name
+	m_classifierType = name;
 
 	// Check if successful
 	if(!m_regionClassifier)
@@ -130,6 +135,7 @@ void HalfEdgeMesh<VertexT, NormalT>::setClassifier(string name)
 			 << name << "'. Using default." << endl;
 
 		ClassifierFactory<VertexT, NormalT>::get("Default", this);
+		m_classifierType = "Default";
 	}
 }
 
@@ -1479,6 +1485,13 @@ void HalfEdgeMesh<VertexT, NormalT>::finalize()
         index_map[*vertices_iter] = i;
     }
 
+    // create the buffers for region labeling if we have a capable classifier
+    if ( m_classifierType == "NormalClassifier" )
+    {
+    	cout << timestamp << "generating pre-labels." << endl;
+    	m_regionClassifier->createBuffer();
+    }
+
     typename vector<FacePtr>::iterator face_iter = m_faces.begin();
     typename vector<FacePtr>::iterator face_end  = m_faces.end();
 
@@ -1489,9 +1502,11 @@ void HalfEdgeMesh<VertexT, NormalT>::finalize()
         indexBuffer[3 * i + 2]  = index_map[(*(*face_iter))(2)];
 
         int surface_class = 1;
+		std::string label = "unknown";
         if ((*face_iter)->m_region != 0)
         {
             surface_class = (*face_iter)->m_region;
+			label = (*face_iter)->m_region->m_label;
         }
 
         r = m_regionClassifier->r(surface_class);
@@ -1507,6 +1522,19 @@ void HalfEdgeMesh<VertexT, NormalT>::finalize()
         colorBuffer[indexBuffer[3 * i + 2] * 3 + 0] = r;
         colorBuffer[indexBuffer[3 * i + 2] * 3 + 1] = g;
         colorBuffer[indexBuffer[3 * i + 2] * 3 + 2] = b;
+
+        typename labeledFacesMap::iterator it = labeledFaces.find(label);
+
+		if (it != labeledFaces.end())
+		{
+			it->second.push_back(i);
+		}
+		else
+		{
+			std::vector<unsigned int> label_face_ids;
+			label_face_ids.push_back(i);
+			labeledFaces.insert(std::pair<std::string, std::vector<unsigned int>>(label, label_face_ids));
+		}
 
         /// TODO: Implement materials
         /*faceColorBuffer.push_back( r );
@@ -1524,10 +1552,15 @@ void HalfEdgeMesh<VertexT, NormalT>::finalize()
     this->m_meshBuffer->setVertexColorArray( colorBuffer, numVertices );
     this->m_meshBuffer->setVertexNormalArray( normalBuffer, numVertices  );
     this->m_meshBuffer->setFaceArray( indexBuffer, numFaces );
+	this->m_meshBuffer->setLabeledFacesMap( labeledFaces );
     //this->m_meshBuffer->setFaceColorArray( faceColorBuffer );
     this->m_finalized = true;
+}
 
-    m_regionClassifier->writeMetaInfo();
+template<typename VertexT, typename NormalT>
+void HalfEdgeMesh<VertexT, NormalT>::writeClassificationResult()
+{
+	m_regionClassifier->writeMetaInfo();
 }
 
 template<typename VertexT, typename NormalT>
