@@ -1,4 +1,6 @@
-doc/
+.cproject
+.project
+Debug/
 build/
 lib/
 bin/
