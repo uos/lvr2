@@ -52,6 +52,7 @@ Options::Options(int argc, char** argv) : m_descr("Supported options")
                 ("rda", value<int>(&m_rda)->default_value(0), "Remove dangling artifacts, i.e. remove the n smallest not connected surfaces")
 		        ("pnt", value<float>(&m_planeNormalThreshold)->default_value(0.85), "(Plane Normal Threshold) Normal threshold for plane optimization. Default 0.85 equals about 3 degrees.")
 		        ("smallRegionThreshold", value<int>(&m_smallRegionThreshold)->default_value(0), "Threshold for small region removal. If 0 nothing will be deleted.")
+                ("writeClassificationResult,w", "Write classification results to file 'clusters.clu'")
                 ("exportPointNormals,e", "Exports original point cloud data together with normals into a single file called 'pointnormals.ply'")
 		        ("saveGrid,g", "Writes the generated grid to a file called 'fastgrid.grid. The result can be rendered with qviewer.")
 		        ("saveOriginalData,s", "Save the original points and the estimated normals together with the reconstruction into one file ('triangle_mesh.ply')")
@@ -212,6 +213,12 @@ bool Options::printUsage() const
 bool Options::saveFaceNormals() const
 {
 	return m_variables.count("saveFaceNormals");
+}
+
+bool Options::writeClassificationResult() const
+{
+	return m_variables.count("writeClassificationResult")
+			|| m_variables.count("w");
 }
 
 bool Options::doTextureAnalysis() const

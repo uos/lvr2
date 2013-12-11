@@ -214,6 +214,11 @@ public:
 	virtual void finalizeAndRetesselate(bool genTextures, float fusionThreshold = 0.01);
 
 	/**
+	 * @brief Writes the classification result to a file.
+	 */
+	virtual void writeClassificationResult();
+
+	/**
 	 * @brief 	fills all holes
 	 *
 	 * @param 	max_size 	the maximum size of a hole
@@ -227,6 +232,9 @@ public:
 	 */
 	virtual void restorePlanes(int minRegionSize);
 
+	/**
+	 * TODO write comments
+	 */
 	void setClassifier(string name);
 
 	/**
@@ -286,6 +294,9 @@ private:
 
 	/// Classification object
 	RegionClassifier<VertexT, NormalT>*         m_regionClassifier;
+
+	/// Classifier type
+	std::string                                 m_classifierType;
 
 	/// a pointer to the point cloud manager
 	typename PointsetSurface<VertexT>::Ptr      m_pointCloudManager;
