@@ -2,6 +2,7 @@
 .project
 Debug/
 build/
+doc/
 lib/
 bin/
 *.ply
