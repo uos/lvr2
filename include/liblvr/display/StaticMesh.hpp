@@ -59,8 +59,8 @@ class StaticMesh : public Renderable
 {
 public:
 	StaticMesh();
-	StaticMesh( ModelPtr model, string name="<unnamed static mesh>" );
-	StaticMesh( MeshBufferPtr buffer, string name="<unnamed static mesh>" );
+	StaticMesh( ModelPtr model, string name=""); // <unnamed static mesh>" );
+	StaticMesh( MeshBufferPtr buffer, string name=""); //<unnamed static mesh>" );
 
 	StaticMesh(const StaticMesh &o);
 	~StaticMesh();
