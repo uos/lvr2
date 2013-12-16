@@ -1103,8 +1103,6 @@ vector<int> Fusion<VertexT, NormalT>::getIntersectingTriangles(FFace *face)
 template<typename VertexT, typename NormalT> 
 bool Fusion<VertexT, NormalT>::sortSegments(vector<Segment> &segments, vector<Point> &points)
 {
-	bool regular = true;
-
 	struct EpsilonComparator {
 		double epsilon;
 		Point p_zero;	// compairison point
@@ -1153,8 +1151,7 @@ bool Fusion<VertexT, NormalT>::sortSegments(vector<Segment> &segments, vector<Po
 				break;
 			default:
 				cout << "WARNING: There are segments with zero or more then 2 connections!" << endl;
-				regular = false;
-				break;
+				return false;
 		}
 	}
 
@@ -1204,7 +1201,7 @@ bool Fusion<VertexT, NormalT>::sortSegments(vector<Segment> &segments, vector<Po
 		}
 	}
 	points.push_back(tmp_point);
-	return regular;
+	return true;
 }
 
 template<typename VertexT, typename NormalT> void Fusion<VertexT, NormalT>::getIntersectionSegments(FFace *face, vector<Segment>& segments, Tree& tree)
