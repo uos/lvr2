@@ -92,7 +92,7 @@ template<typename VertexT, typename NormalT> void Fusion<VertexT, NormalT>::addT
 
 template<typename VertexT, typename NormalT> void Fusion<VertexT, NormalT>::finalize()
 {
-    cout << endl << timestamp << "Finalizing mesh..." << endl;
+    //cout << endl << timestamp << "Finalizing mesh..." << endl;
 
     int numVertices = m_global_vertices.size();
     int numFaces 	= m_global_faces.size();
@@ -171,8 +171,8 @@ template<typename VertexT, typename NormalT> void Fusion<VertexT, NormalT>::fina
 
 template<typename VertexT, typename NormalT> void Fusion<VertexT, NormalT>::flipEdge(uint v1, uint v2)
 {
-	cout << "No Edge no Flip!" << endl;
-	cout << "But these are two nice uints" << v1 << ", " << v2 << endl;
+	//cout << "No Edge no Flip!" << endl;
+	//cout << "But these are two nice uints" << v1 << ", " << v2 << endl;
 }
 
 ///
@@ -186,7 +186,7 @@ template<typename VertexT, typename NormalT> void Fusion<VertexT, NormalT>::addM
     floatArr normals = mesh->getVertexNormalArray(num_norms);
     
     if(num_norms != num_verts)
-		cout << "Unequal number of vertices and normals" << endl;
+		//cout << "Unequal number of vertices and normals" << endl;
     
     clearLocalBuffer();
     
@@ -213,7 +213,7 @@ template<typename VertexT, typename NormalT> void Fusion<VertexT, NormalT>::addM
 
 template<typename VertexT, typename NormalT> void Fusion<VertexT, NormalT>::integrate()
 {
-	cout <<endl << timestamp << "Start Integrating... " << endl;
+	//cout <<endl << timestamp << "Start Integrating... " << endl;
 	
 	printLocalBufferStatus();
 	printGlobalBufferStatus(); 
@@ -229,36 +229,36 @@ template<typename VertexT, typename NormalT> void Fusion<VertexT, NormalT>::inte
 		
 		sortFaces();
 		
-		cout << "Start Integration" << endl;
+		//cout << "Start Integration" << endl;
 		addGlobal(remote_faces);
 		intersectIntegrate(intersection_faces);
 	}
 	 
     clearLocalBuffer();
    
-    cout << endl << "Face Errors" << endl;
+    //cout << endl << "Face Errors" << endl;
     for(unsigned int i = 0; i < m_global_faces.size(); i++)
     {
 		if (m_global_faces[i]->m_index[0] >= m_global_index || 
 				m_global_faces[i]->m_index[1] >= m_global_index || 
 				m_global_faces[i]->m_index[2] >= m_global_index) 
 		{
-			cout << "Vertex Indices for Face[" << i << "]: " << 
-				m_global_faces[i]->m_index[0] << ", " << 
-				m_global_faces[i]->m_index[1] << ", " << 
-				m_global_faces[i]->m_index[0] << endl;
-			cout << "m_global_index: " << m_global_index << endl;
+			//cout << "Vertex Indices for Face[" << i << "]: " << 
+			//	m_global_faces[i]->m_index[0] << ", " << 
+			//	m_global_faces[i]->m_index[1] << ", " << 
+			//	m_global_faces[i]->m_index[0] << endl;
+			////cout << "m_global_index: " << m_global_index << endl;
 		}
 	}
     
-    cout << endl << "Vertice Errors" << endl;
+    //cout << endl << "Vertice Errors" << endl;
     for(unsigned int i = 0; i < m_global_vertices.size(); i++)
     {
-		if(i != m_global_vertices[i]->m_self_index) 
-		cout << "Index[" <<  i << "] " << m_global_vertices[i]->m_self_index << endl; 
+		//if(i != m_global_vertices[i]->m_self_index) 
+		//cout << "Index[" <<  i << "] " << m_global_vertices[i]->m_self_index << endl; 
 	}
 	
-    cout << endl << timestamp << "Finished Integrating..." << endl << endl;
+    //cout << endl << timestamp << "Finished Integrating..." << endl << endl;
 	
 	printLocalBufferStatus();
 	printGlobalBufferStatus();
@@ -266,7 +266,7 @@ template<typename VertexT, typename NormalT> void Fusion<VertexT, NormalT>::inte
 
 template<typename VertexT, typename NormalT> void Fusion<VertexT, NormalT>::lazyIntegrate()
 {
-	cout <<endl << timestamp << "Start Lazy Integration..." << endl << endl;
+	//cout <<endl << timestamp << "Start Lazy Integration..." << endl << endl;
 	
 	size_t num_current_local_vertices  = m_local_vertices.size();
 	size_t num_current_local_faces  = m_local_faces.size();
@@ -292,7 +292,7 @@ template<typename VertexT, typename NormalT> void Fusion<VertexT, NormalT>::lazy
     
     clearLocalBuffer();
     
-    cout << endl << timestamp << "Finished Lazy Integration..." << endl << endl;
+    //cout << endl << timestamp << "Finished Lazy Integration..." << endl << endl;
 }
 
 template<typename VertexT, typename NormalT> void Fusion<VertexT, NormalT>::addMeshAndIntegrate(MeshBufferPtr mesh)
@@ -311,7 +311,7 @@ template<typename VertexT, typename NormalT> void Fusion<VertexT, NormalT>::addM
 {
 	addMesh(mesh);
 	
-	cout <<endl << timestamp << "Start Integrating... " << endl;
+	//cout <<endl << timestamp << "Start Integrating... " << endl;
 	
 	printLocalBufferStatus();
 	printGlobalBufferStatus(); 
@@ -332,7 +332,7 @@ template<typename VertexT, typename NormalT> void Fusion<VertexT, NormalT>::addM
 	 
     clearLocalBuffer();
 	
-    cout << endl << timestamp << "Finished Integrating..." << endl << endl;
+    //cout << endl << timestamp << "Finished Integrating..." << endl << endl;
 	
 	printLocalBufferStatus();
 	printGlobalBufferStatus();
@@ -378,18 +378,18 @@ template<typename VertexT, typename NormalT> void Fusion<VertexT, NormalT>::rese
 
 template<typename VertexT, typename NormalT> void Fusion<VertexT, NormalT>::printLocalBufferStatus()
 {
-	cout << timestamp << "Local Buffer" << endl;
-	cout << timestamp << "#Index      :" << m_local_index <<  endl;
-	cout << timestamp << "#Vertices   :" << m_local_vertices.size() <<  endl;
-	cout << timestamp << "#Faces      :" << m_local_faces.size() << endl;
+	//cout << timestamp << "Local Buffer" << endl;
+	//cout << timestamp << "#Index      :" << m_local_index <<  endl;
+	//cout << timestamp << "#Vertices   :" << m_local_vertices.size() <<  endl;
+	//cout << timestamp << "#Faces      :" << m_local_faces.size() << endl;
 }
 
 template<typename VertexT, typename NormalT> void Fusion<VertexT, NormalT>::printGlobalBufferStatus()
 {
-	cout << timestamp << "Global Buffer" << endl;
-	cout << timestamp << "#Index       :" << m_global_index <<  endl;
-	cout << timestamp << "#Vertices    :" << m_global_vertices.size() <<  endl;
-	cout << timestamp << "#Faces       :" << m_global_faces.size() << endl; 
+	//cout << timestamp << "Global Buffer" << endl;
+	//cout << timestamp << "#Index       :" << m_global_index <<  endl;
+	//cout << timestamp << "#Vertices    :" << m_global_vertices.size() <<  endl;
+	//cout << timestamp << "#Faces       :" << m_global_faces.size() << endl; 
 }
 
 template<typename VertexT, typename NormalT> void Fusion<VertexT, NormalT>::printFaceSortingStatus()
@@ -401,13 +401,13 @@ template<typename VertexT, typename NormalT> void Fusion<VertexT, NormalT>::prin
 		double closeby_ratio = ((double) closeby_faces.size() / (double) num_current_local_faces) * 100;
 		double redundant_ratio = ((double) redundant_faces / (double) num_current_local_faces) * 100;
 		double special_case_ratio = ((double) special_case_faces  / (double) num_current_local_faces) * 100;
-		cout << endl;
-		cout << "Found # " <<  remote_faces.size() << " Remote Faces... " << remote_ratio << "% of all incoming" << endl;
-		cout << "Found # " <<  intersection_faces.size()  << " Intersection Faces... " << intersection_ratio << "% of all incoming" << endl;
-		cout << "Found # " <<  closeby_faces.size() << " Closeby but not intersecting Faces... " << closeby_ratio << "% of all incoming" << endl;
-		cout << "Found # " <<  redundant_faces  << " Redundant Faces... " << redundant_ratio << "% of all incoming" << endl;
-		cout << "Found # " <<  special_case_faces  << " Special Case Faces... " <<  special_case_ratio << "% of all incoming" << endl;		
-		cout << endl;
+		//cout << endl;
+		//cout << "Found # " <<  remote_faces.size() << " Remote Faces... " << remote_ratio << "% of all incoming" << endl;
+		//cout << "Found # " <<  intersection_faces.size()  << " Intersection Faces... " << intersection_ratio << "% of all incoming" << endl;
+		//cout << "Found # " <<  closeby_faces.size() << " Closeby but not intersecting Faces... " << closeby_ratio << "% of all incoming" << endl;
+		//cout << "Found # " <<  redundant_faces  << " Redundant Faces... " << redundant_ratio << "% of all incoming" << endl;
+		//cout << "Found # " <<  special_case_faces  << " Special Case Faces... " <<  special_case_ratio << "% of all incoming" << endl;		
+		//cout << endl;
 }
 
 ///
@@ -502,7 +502,7 @@ template<typename VertexT, typename NormalT> void Fusion<VertexT, NormalT>::addG
 	face->is_valid = true;
 	face->m_self_index = m_global_faces.size();
 	m_global_faces.push_back(face);   
-   // cout << "Adding Global Face - " << face->m_index[0] << " " << face->m_index[1] << " " << face->m_index[2] << " " << endl;
+   // //cout << "Adding Global Face - " << face->m_index[0] << " " << face->m_index[1] << " " << face->m_index[2] << " " << endl;
 }
 
 template<typename VertexT, typename NormalT> void Fusion<VertexT, NormalT>::buildTree()
@@ -540,10 +540,10 @@ template<typename VertexT, typename NormalT> void Fusion<VertexT, NormalT>::buil
 
 template<typename VertexT, typename NormalT> void Fusion<VertexT, NormalT>::sortFaces()
 {	
-	cout << timestamp << "Start Sorting Faces... " << endl <<endl;
+	//cout << timestamp << "Start Sorting Faces... " << endl <<endl;
 	
-	cout << "Distance Threshold: " << sqrt(threshold) << endl;
-	cout << "Squared Distance Threshold: " << threshold << endl;
+	//cout << "Distance Threshold: " << sqrt(threshold) << endl;
+	//cout << "Squared Distance Threshold: " << threshold << endl;
 	
 	remote_faces.clear();
 	intersection_faces.clear();
@@ -559,10 +559,10 @@ template<typename VertexT, typename NormalT> void Fusion<VertexT, NormalT>::sort
 		result = tree.accelerate_distance_queries();
 	} catch (...)
 	{
-		cout << "function sortFaces: tree.accelerate_distance_queries() failed" << endl;
+		//cout << "function sortFaces: tree.accelerate_distance_queries() failed" << endl;
 	}
 	if (result) {
-		cout << "successfully accelerated_distance_queries" << endl; 
+		//cout << "successfully accelerated_distance_queries" << endl; 
 	}
 	
 	FFace* face;
@@ -586,7 +586,7 @@ template<typename VertexT, typename NormalT> void Fusion<VertexT, NormalT>::sort
 			v2->m_tree_dist = tree.squared_distance(c);
 		} catch (...)
 		{
-			//cout << "WARNING: tree.squared_distance call failed, face is skipped during sortFaces()" << endl;
+			////cout << "WARNING: tree.squared_distance call failed, face is skipped during sortFaces()" << endl;
 			squared_distance_fails++;
 			continue;
 		}
@@ -639,10 +639,10 @@ template<typename VertexT, typename NormalT> void Fusion<VertexT, NormalT>::sort
 		}
 	}	
 	printFaceSortingStatus();
-	cout << "WARNING: For " << squared_distance_fails << " of all Faces tree.squared_distance() failed for at least one point" << endl;
-	cout << "WARNING: For " << far_tree_intersect_fails << " of Special Case Faces call to tree.intersect() failed" << endl;
-	cout << "WARNING: For " << close_tree_intersect_fails << " of Closeby Faces call to tree.intersect() failed" << endl << endl; 
-    cout << timestamp << "Finished Sorting Faces..." << endl;
+	//cout << "WARNING: For " << squared_distance_fails << " of all Faces tree.squared_distance() failed for at least one point" << endl;
+	//cout << "WARNING: For " << far_tree_intersect_fails << " of Special Case Faces call to tree.intersect() failed" << endl;
+	//cout << "WARNING: For " << close_tree_intersect_fails << " of Closeby Faces call to tree.intersect() failed" << endl << endl; 
+    //cout << timestamp << "Finished Sorting Faces..." << endl;
  	
 	/*face->m_index[0] = face->m_index[0] + increment;
 	face->m_index[1] += increment;
@@ -650,14 +650,14 @@ template<typename VertexT, typename NormalT> void Fusion<VertexT, NormalT>::sort
 	
 	m_global_faces.push_back(face);*/
     
-   // cout << "Adding Tree Face - " << face->m_index[0] << " " << face->m_index[1] << " " << face->m_index[2] << " " << endl;
+   // //cout << "Adding Tree Face - " << face->m_index[0] << " " << face->m_index[1] << " " << face->m_index[2] << " " << endl;
 }
 
 template<typename VertexT, typename NormalT> void Fusion<VertexT, NormalT>::addGlobal(vector<FFace*>& faces)
 {	
 	int degentFaces = 0;
 	
-	//cout << "Start Remote Integrate..." << endl;
+	////cout << "Start Remote Integrate..." << endl;
 	
 	MapIterator it;
 	
@@ -685,8 +685,8 @@ template<typename VertexT, typename NormalT> void Fusion<VertexT, NormalT>::addG
 					
 					if(face->m_index[j] >= m_global_vertices.size())
 					{
-					    cout << r.first->first << " " << r.first->second << endl;
-						cout << "error: " <<  face->m_index[j] << " >=  " << m_global_vertices.size() << endl;
+					    //cout << r.first->first << " " << r.first->second << endl;
+						//cout << "error: " <<  face->m_index[j] << " >=  " << m_global_vertices.size() << endl;
 					}
 					else {
 						face->vertices[j] = m_global_vertices[face->m_index[j]];
@@ -701,8 +701,8 @@ template<typename VertexT, typename NormalT> void Fusion<VertexT, NormalT>::addG
 			addGlobalFace(face);
 		}
     }
-    cout << "Skipped " << degentFaces << " Faces due to degeneration" << endl;
-	//cout << "Finished Remote Integrate" << endl;
+    //cout << "Skipped " << degentFaces << " Faces due to degeneration" << endl;
+	////cout << "Finished Remote Integrate" << endl;
 }
 
 template<typename VertexT, typename NormalT> void Fusion<VertexT, NormalT>::triangulateAndAdd(vector<Point>& vertices, Tree& tree)
@@ -726,21 +726,21 @@ template<typename VertexT, typename NormalT> void Fusion<VertexT, NormalT>::tria
 			Point p(pd.x(), pd.y(), pd.z());
 			FT dist = tree.squared_distance(p);
 			if (dist <= threshold && dist >= 0) {
-				cout << "to close vertex dist: " << dist << endl;
+				//cout << "to close vertex dist: " << dist << endl;
 				count_to_close_vertices++;
 			}
 			else {
-				cout << "to far vertex dist: " << dist << endl;
+				//cout << "to far vertex dist: " << dist << endl;
 				count_to_far_vertices++;
 			}
 			addVertex(VertexT(p.x(), p.y(), p.z()));
-			cout << "added new vertex" << endl;
+			//cout << "added new vertex" << endl;
 		}
 		// check for remote faces that might have been created
 		if (count_to_close_vertices < 3 && count_to_far_vertices < 3) {
 			addTriangle(m_local_index-3, m_local_index-2, m_local_index-1);
 			new_faces.push_back(m_local_faces[m_local_faces.size()-1]);
-			cout << "pushed new face" << endl;
+			//cout << "pushed new face" << endl;
 			/*FFace* colorFace = m_local_faces[m_local_faces.size()-1];
 				colorFace->r = 200;
 				colorFace->g = 0;
@@ -786,7 +786,7 @@ template<typename VertexT, typename NormalT> void Fusion<VertexT, NormalT>::assi
 
 template<typename VertexT, typename NormalT> void Fusion<VertexT, NormalT>::intersectIntegrate(vector<FFace*>& faces)
 {
-	cout << "Start Intersect Integrate..." << endl;
+	//cout << "Start Intersect Integrate..." << endl;
 	
 	set<int> all_intersect_ids;
 	vector<int> intersect_ids; // ids from intersected triangles
@@ -819,7 +819,7 @@ template<typename VertexT, typename NormalT> void Fusion<VertexT, NormalT>::inte
 	
 	splitIntersectFaces(gl_intersect_tri, local_tree);
 	
-	cout << "Finished Intersect Integrate ..." << endl;
+	//cout << "Finished Intersect Integrate ..." << endl;
 }
 
 template<typename VertexT, typename NormalT>
@@ -839,7 +839,7 @@ void Fusion<VertexT, NormalT>::splitIntersectFaces(vector<FFace*>& faces, Tree& 
 		vector<Point> points;
 		if(! sortSegments(segments, points) )
 		{
-			cout << "sort segments failed! - continue " << endl;
+			//cout << "sort segments failed! - continue " << endl;
 			continue;
 		}
 		// build the intersection polygons
@@ -1088,7 +1088,7 @@ vector<int> Fusion<VertexT, NormalT>::getIntersectingTriangles(FFace *face)
 		tree.all_intersected_primitives(tri, back_inserter(primitives));
 	} catch (...)
 	{
-		cout << "function getIntersectingTriangles: tree.all_intersected_primitives() fails" << endl;
+		//cout << "function getIntersectingTriangles: tree.all_intersected_primitives() fails" << endl;
 	}
 	while (!primitives.empty()) {
 		id = primitives.front();
@@ -1146,11 +1146,11 @@ bool Fusion<VertexT, NormalT>::sortSegments(vector<Segment> &segments, vector<Po
 				terminal_points.push_back(iter->first);
 				break;
 			case 2:
-				//cout << "found connection... " << endl;
+				////cout << "found connection... " << endl;
 				// Verbindungspunkt
 				break;
 			default:
-				cout << "WARNING: There are segments with zero or more then 2 connections!" << endl;
+				//cout << "WARNING: There are segments with zero or more then 2 connections!" << endl;
 				return false;
 		}
 	}
@@ -1158,15 +1158,15 @@ bool Fusion<VertexT, NormalT>::sortSegments(vector<Segment> &segments, vector<Po
 	switch(terminal_points.size())
 	{
 		case 0:
-			cout << "WARNING: There are no terminal points!" << endl;
+			//cout << "WARNING: There are no terminal points!" << endl;
 			return false;
 		case 1:
-			cout << "WARNING: There is only one terminal point!" << endl;
+			//cout << "WARNING: There is only one terminal point!" << endl;
 			return false;
 		case 2: // all right!
 			break;
 		default:
-			cout << "WARNING: There are more then two terminal points!" << endl;
+			//cout << "WARNING: There are more then two terminal points!" << endl;
 			return false;
 	}
 	vector< Segment > sorted_segments;
@@ -1215,10 +1215,10 @@ template<typename VertexT, typename NormalT> void Fusion<VertexT, NormalT>::getI
 		tree.all_intersections(tri, back_inserter(intersections));
 	} catch (...)
 	{
-		cout << "function getIntersectionPoints: tree.do_intersect() fails" << endl;
+		//cout << "function getIntersectionPoints: tree.do_intersect() fails" << endl;
 	}
 
-	cout << intersections.size() << " intersections found" << endl;
+	//cout << intersections.size() << " intersections found" << endl;
 	while (!intersections.empty()) {
 		op = intersections.front();
 		intersections.pop_front();
@@ -1228,10 +1228,10 @@ template<typename VertexT, typename NormalT> void Fusion<VertexT, NormalT>::getI
 		Point p;
 		if (CGAL::assign(seg, object)){
 			segments.push_back(seg);
-			//cout << "Found segment with x1: " << seg.source() << " x2: " << seg.target()  << endl;
+			////cout << "Found segment with x1: " << seg.source() << " x2: " << seg.target()  << endl;
 		}
 		else if (CGAL::assign(p, object)){
-			cout << "intersection is a point not a segment" << endl;
+			//cout << "intersection is a point not a segment" << endl;
 		}
 	}
 }
@@ -1249,7 +1249,7 @@ template<typename VertexT, typename NormalT> void Fusion<VertexT, NormalT>::getI
 			tree.all_intersections(tri, back_inserter(intersections));
 	} catch (...)
 	{
-		cout << "function getIntersectionPoints: tree.do_intersect() fails" << endl;
+		//cout << "function getIntersectionPoints: tree.do_intersect() fails" << endl;
 	}
 	while (!intersections.empty()) {
 		op = intersections.front();
@@ -1260,7 +1260,7 @@ template<typename VertexT, typename NormalT> void Fusion<VertexT, NormalT>::getI
 			intersect_segments.push_back(s);
 		}
 		else if (const Point* p = CGAL::object_cast<Point>(&object)){
-			cout << "intersection is a point not a segment" << endl;
+			//cout << "intersection is a point not a segment" << endl;
 		}
 	}
 	for (int j = 0; j < intersect_segments.size(); j++) {
@@ -1355,7 +1355,7 @@ bool Fusion<VertexT, NormalT>::polygonTriangulation(Polygon& polygon, vector<Tri
 		}
 	}
 
-	cout << "There are " << count << " facets in the domain." << endl;
+	//cout << "There are " << count << " facets in the domain." << endl;
 	return true;
 }
 
