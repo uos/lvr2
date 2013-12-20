@@ -14,8 +14,6 @@ include_directories(${LAS_VEGAS_SOURCE_DIR}/ext/psimpl)
 include_directories(${LAS_VEGAS_SOURCE_DIR})
 include_directories(${LAS_VEGAS_SOURCE_DIR}/include/liblvr)
 
-set( CMAKE_CXX_FLAGS  ${CMAKE_CXX_FLAGS} "-std=c++0x -std=gnu++0x")
-
 ###############################################################
 # EXTERNAL LIBRARIES
 ###############################################################
