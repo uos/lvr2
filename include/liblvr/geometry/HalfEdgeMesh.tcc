@@ -1535,7 +1535,7 @@ void HalfEdgeMesh<VertexT, NormalT>::finalize()
 		{
 			std::vector<unsigned int> label_face_ids;
 			label_face_ids.push_back(i);
-			labeledFaces.insert(std::pair<std::string, std::vector<unsigned int>>(label, label_face_ids));
+			labeledFaces.insert(std::pair<std::string, std::vector<unsigned int> >(label, label_face_ids));
 		}
 
         /// TODO: Implement materials

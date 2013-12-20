@@ -37,6 +37,7 @@
 #include "boost/shared_array.hpp"
 #include "display/GlTexture.hpp"
 #include <map>
+#include <vector>
 
 namespace lvr
 {
@@ -150,7 +151,7 @@ typedef boost::shared_array< GlTexture* > textureArr;
 typedef std::pair<size_t, size_t> indexPair;
 
 
-typedef std::map<std::string, std::vector<unsigned int>> labeledFacesMap;
+typedef std::map<std::string, std::vector<unsigned int> > labeledFacesMap;
 }
 
 #endif
