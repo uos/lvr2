@@ -29,12 +29,16 @@
 #include "io/UosIO.hpp"
 #include "io/ObjIO.hpp"
 #include "io/LasIO.hpp"
-#include "io/PCDIO.hpp"
 #include "io/BoctreeIO.hpp"
 #include "io/ModelFactory.hpp"
 
 #include "io/Timestamp.hpp"
 #include "io/Progress.hpp"
+
+// PCL related includes
+#ifdef _USE_PCL_
+#include "io/PCDIO.hpp"
+#endif
 
 #include <boost/filesystem.hpp>
 
@@ -162,10 +166,12 @@ void ModelFactory::saveModel( ModelPtr m, std::string filename)
     {
         io = new ObjIO;
     }
+#ifdef _USE_PCL_
     else if (extension == ".pcd")
     {
         io = new PCDIO;
     }
+#endif
 
     // Save model
     if(io)

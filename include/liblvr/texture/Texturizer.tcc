@@ -24,6 +24,8 @@
  *  @author Kim Rinnewitz (krinnewitz@uos.de)
  */
 
+#include <opencv2/highgui/highgui.hpp>
+
 namespace lvr {
 
         ///File name of texture pack

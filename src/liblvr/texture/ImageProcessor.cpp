@@ -26,6 +26,7 @@
 
 #include "texture/ImageProcessor.hpp"
 #include <opencv/cv.h>
+#include <opencv2/highgui/highgui.hpp>
 #if CV_MAJOR_VERSION >= 2 && CV_MINOR_VERSION >= 4
   #include <opencv2/nonfree/features2d.hpp>
   #include <opencv2/legacy/legacy.hpp>
