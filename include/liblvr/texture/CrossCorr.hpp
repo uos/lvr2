@@ -32,6 +32,8 @@
 #include <cstdio>
 #include "Texture.hpp"
 
+#include <opencv/cv.h>
+
 namespace lvr {
 
 
