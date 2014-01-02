@@ -93,7 +93,7 @@ endif(CGAL_FOUND)
 ##############################
 #
 
-find_package( Boost 1.42
+find_package( Boost 
     COMPONENTS 
     program_options 
     filesystem system 
