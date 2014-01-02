@@ -26,7 +26,7 @@
 
 #include "texture/Transform.hpp"
 
-#include <opencv/highgui.h>
+#include <opencv2/highgui/highgui.hpp>
 #include <opencv/cv.h>
 #if CV_MAJOR_VERSION >= 2 && CV_MINOR_VERSION >= 4
   #include <opencv2/nonfree/features2d.hpp>
