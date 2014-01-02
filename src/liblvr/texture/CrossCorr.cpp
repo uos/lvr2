@@ -24,7 +24,7 @@
  *  @author Kim Rinnewitz (krinnewitz@uos.de)
  */
 
-#include <opencv/highgui.h>
+#include <opencv2/highgui/highgui.hpp>
 #include <opencv/cv.h>
 #include "texture/CrossCorr.hpp"
 
