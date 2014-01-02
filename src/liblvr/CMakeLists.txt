@@ -6,7 +6,6 @@ set(LVR_SOURCES
     io/UosIO.cpp
     io/ObjIO.cpp
     io/LasIO.cpp
-    io/PCDIO.cpp
     io/PPMIO.cpp
     io/Progress.cpp
     io/Timestamp.cpp
@@ -43,6 +42,12 @@ set(LVR_SOURCES
     texture/Trans.cpp
     geometry/HalfEdgeAccessExceptions.cpp
 )
+
+# Add PCD io if PCL is installes
+if(FOUND_PCL)
+  set(LVR_SOURCES ${LVR_SOURCES} io/PCD.cpp)
+endif(FOUND_PCL)
+
 SET_SOURCE_FILES_PROPERTIES(io/BoctreeIO.cpp PROPERTIES COMPILE_FLAGS "-std=gnu++0x")
 
 message(STATUS "Building static library")
