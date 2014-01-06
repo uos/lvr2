@@ -43,9 +43,9 @@ set(LVR_SOURCES
 )
 
 # Add PCD io if PCL is installes
-if(FOUND_PCL)
-  set(LVR_SOURCES ${LVR_SOURCES} io/PCD.cpp)
-endif(FOUND_PCL)
+if(PCL_FOUND)
+  set(LVR_SOURCES ${LVR_SOURCES} io/PCDIO.cpp)
+endif(PCL_FOUND)
 
 SET_SOURCE_FILES_PROPERTIES(io/BoctreeIO.cpp PROPERTIES COMPILE_FLAGS "-std=gnu++0x")
 
