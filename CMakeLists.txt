@@ -14,6 +14,8 @@ include_directories(${LAS_VEGAS_SOURCE_DIR}/ext/psimpl)
 include_directories(${LAS_VEGAS_SOURCE_DIR})
 include_directories(${LAS_VEGAS_SOURCE_DIR}/include/liblvr)
 
+add_definitions("-std=c++0x")
+
 ###############################################################
 # EXTERNAL LIBRARIES
 ###############################################################
@@ -93,7 +95,7 @@ endif(CGAL_FOUND)
 ##############################
 #
 
-find_package( Boost 
+find_package( Boost 1.42
     COMPONENTS 
     program_options 
     filesystem system 
