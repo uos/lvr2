@@ -48,6 +48,36 @@ string NormalClassifier<VertexT, NormalT>::getLabel(NormalLabel label)
 }
 
 template<typename VertexT, typename NormalT>
+uchar* NormalClassifier<VertexT, NormalT>::getColor(NormalLabel label)
+{
+	float fc[3];
+	uchar* c = new uchar[3];
+
+	switch(label)
+	{
+		case VerticalFace:
+			Colors::getColor(fc, BLUE);
+			break;
+		case HorizontalupperFace:
+			Colors::getColor(fc, ORANGE);
+			break;
+		case HorizontallowerFace:
+			Colors::getColor(fc, YELLOW);
+			break;
+		default:
+			Colors::getColor(fc, PINK);
+			break;
+	}
+
+	for(int i = 0; i < 3; i++)
+	{
+		c[i] = (uchar)(fc[i] * 255);
+	}
+
+	return c;
+}
+
+template<typename VertexT, typename NormalT>
 uchar* NormalClassifier<VertexT, NormalT>::getColor(int index)
 {
 	float fc[3];
@@ -141,6 +171,12 @@ void NormalClassifier<VertexT, NormalT>::createRegionBuffer(
 
 	std::string stringLabel = getLabel(label);
 
+	// get region's color
+	uchar* c = getColor(label);
+	unsigned int r = c[0];
+	unsigned int g = c[1];
+	unsigned int b = c[2];
+
 	region->setLabel(stringLabel);
 
 	// Check if region is a planar cluster
@@ -176,9 +212,9 @@ void NormalClassifier<VertexT, NormalT>::createRegionBuffer(
 				normals.push_back(normal.y);
 				normals.push_back(normal.z);
 
-				colors.push_back(r(region_id));
-				colors.push_back(g(region_id));
-				colors.push_back(b(region_id));
+				colors.push_back(r);
+				colors.push_back(g);
+				colors.push_back(b);
 			}
 
 			indices.push_back(vertex_position);
