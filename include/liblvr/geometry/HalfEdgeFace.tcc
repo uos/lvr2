@@ -295,8 +295,12 @@ HalfEdgeFace<VertexT, NormalT>::operator[](const int &index) const{
 	case 2:
 	    if(!this->m_edge->next)
 	    {
-	        cout << timestamp << "Degerated Face!" << endl;
+	        cout << timestamp << "Degenerated Face!" << endl;
 	        return 0;
+	    }
+	    if(!this->m_edge->next->next)
+	    {
+	        cout << timestamp << "Degenerated Face!" << endl;
 	    }
 		return this->m_edge->next->next;
 	}
