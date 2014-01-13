@@ -79,6 +79,7 @@ public:
 	virtual void createBuffer();
 
 	string getLabel(NormalLabel label);
+	uchar* getColor(NormalLabel label);
 
 private:
 
