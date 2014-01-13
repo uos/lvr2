@@ -941,6 +941,9 @@ bool HalfEdgeMesh<VertexT, NormalT>::safeCollapseEdge(HEdge* edge)
 template<typename VertexT, typename NormalT>
 void HalfEdgeMesh<VertexT, NormalT>::fillHoles(size_t max_size)
 {
+    // Do'nt fill holes if contour size is zero
+    if(max_size == 0) return;
+
     //holds all holes to close
     vector<vector<HEdge*> > holes;
 
@@ -950,6 +953,7 @@ void HalfEdgeMesh<VertexT, NormalT>::fillHoles(size_t max_size)
     {
         for(int k = 0; k < 3; k++)
         {
+
             HEdge* current = (*m_faces[i])[k]->pair;
             if(current->used == false && current->face == 0)
             {
