@@ -87,6 +87,11 @@ public:
 	virtual uchar b(int region) { return 0; }
 
 	/**
+	 * @brief Returns the label for the given region
+	 */
+	virtual string label(int region) { return "unknown"; }
+
+	/**
 	 * @brief Overwrite this class to create the region buffers
 	 */
 	virtual void createBuffer() {};

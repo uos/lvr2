@@ -78,21 +78,21 @@ public:
 
 	virtual void createBuffer();
 
-	string getLabel(NormalLabel label);
-	uchar* getColor(NormalLabel label);
+	string label(NormalLabel label_type);
 
 private:
 
 	NormalLabel classifyRegion(int region);
+
 	uchar* getColor(int region);
 
 	void createRegionBuffer(
-		int region_id,
-		map<VertexT, int> &map,
-		vector<int> &indices,
-		vector<float> &vertices,
-		vector<float> &normals,
-		vector<uint> &colors);
+					int region_id,
+					map<VertexT, int> &vertex_map,
+					vector<int> &indices,
+					vector<float> &vertices,
+					vector<float> &normals,
+					vector<uint> &colors);
 
 };
 

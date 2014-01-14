@@ -1492,6 +1492,7 @@ void HalfEdgeMesh<VertexT, NormalT>::finalize()
     {
     	cout << timestamp << "generating pre-labels." << endl;
     	m_regionClassifier->createBuffer();
+    	cout << timestamp << "pre-labels generated." << endl;
     }
 
     typename vector<FacePtr>::iterator face_iter = m_faces.begin();
@@ -1511,9 +1512,12 @@ void HalfEdgeMesh<VertexT, NormalT>::finalize()
 			label = m_regions.at(surface_class)->getLabel();
         }
 
-        r = m_regionClassifier->r(surface_class);
-        g = m_regionClassifier->g(surface_class);
-        b = m_regionClassifier->b(surface_class);
+        if ( m_classifierType != "NormalClassifier" )
+        {
+        	r = m_regionClassifier->r(surface_class);
+        	g = m_regionClassifier->g(surface_class);
+        	b = m_regionClassifier->b(surface_class);
+        }
 
         colorBuffer[indexBuffer[3 * i]  * 3 + 0] = r;
         colorBuffer[indexBuffer[3 * i]  * 3 + 1] = g;
