@@ -87,20 +87,20 @@ public:
 	virtual uchar b(int region) { return 0; }
 
 	/**
-	 * @brief Returns the label for the given region
-	 */
-	virtual string label(int region) { return "unknown"; }
-
-	/**
-	 * @brief Overwrite this class to create the region buffers
-	 */
-	virtual void createBuffer() {};
-
-	/**
-	 * @brief  Overwrite this class to write information about the clusters
+	 * @brief  Overwrite this method to write information about the clusters
 	 * 		   to a file
 	 */
 	virtual void writeMetaInfo() {};
+
+	/**
+	 * @brief True if classifier can generate pre-labels
+	 */
+	virtual bool generatesLabel() { return false; }
+
+	/**
+	 * @brief Returns the label for the given region
+	 */
+	virtual string getLabel(int region) { return "unknown"; }
 
 
 

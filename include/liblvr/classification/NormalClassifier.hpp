@@ -74,11 +74,20 @@ public:
 	 */
 	virtual uchar b(int region);
 
+	/**
+	 * @brief True if classifier can generate pre-labels
+	 */
+	virtual bool generatesLabel();
+
+	/**
+	 * @brief Returns the label for the given region
+	 */
+	virtual string getLabel(int index);
+
+	/**
+	 * @brief Writes information about the clusters to a file
+	 */
 	virtual void writeMetaInfo();
-
-	virtual void createBuffer();
-
-	string label(NormalLabel label_type);
 
 private:
 
@@ -88,11 +97,12 @@ private:
 
 	void createRegionBuffer(
 					int region_id,
-					map<VertexT, int> &vertex_map,
+					map<VertexT, int> &map,
 					vector<int> &indices,
 					vector<float> &vertices,
 					vector<float> &normals,
-					vector<uint> &colors);
+					vector<uint> &colors
+					);
 
 };
 

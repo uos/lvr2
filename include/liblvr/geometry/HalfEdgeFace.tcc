@@ -42,6 +42,7 @@ HalfEdgeFace<VertexT, NormalT>::HalfEdgeFace(const HalfEdgeFace<VertexT, NormalT
 	m_texture_index = o.m_texture_index;
 	m_face_index    = o.m_face_index;
 	m_invalid       = o.m_invalid;
+	buffer_id       = 0;
 }
 
 template<typename VertexT, typename NormalT>
@@ -283,6 +284,18 @@ bool HalfEdgeFace<VertexT, NormalT>::isBorderFace()
 	if(this->m_edge->next()->pair()->face() == 0) return true;
 	if(this->m_edge->next()->next()->pair()->face() == 0) return true;
 	return false;
+}
+
+template<typename VertexT, typename NormalT>
+int HalfEdgeFace<VertexT, NormalT>::getBufferID()
+{
+	return this->buffer_id;
+}
+
+template<typename VertexT, typename NormalT>
+void HalfEdgeFace<VertexT, NormalT>::setBufferID(unsigned int id)
+{
+	this->buffer_id = id;
 }
 
 } // namespace lvr
