@@ -113,7 +113,6 @@ RegionLabel IndoorNormalClassifier<VertexT, NormalT>::classifyRegion(int index)
 	return Unknown;
 }
 
-
 template<typename VertexT, typename NormalT>
 void IndoorNormalClassifier<VertexT, NormalT>::createRegionBuffer(
 				int region_id,
@@ -215,8 +214,6 @@ void IndoorNormalClassifier<VertexT, NormalT>::writeBuffers(
 	}
 }
 
-
-
 template<typename VertexT, typename NormalT>
 void IndoorNormalClassifier<VertexT, NormalT>::writeMetaInfo()
 {
@@ -269,13 +266,5 @@ void IndoorNormalClassifier<VertexT, NormalT>::writeMetaInfo()
 	writeBuffers(out, Unknown, uc_indices, uc_vertices, uc_normals, uc_colors);
 	out.close();
 }
-
-template<typename VertexT, typename NormalT>
-void IndoorNormalClassifier<VertexT, NormalT>::createBuffer()
-{
-	// TODO does nothing
-	return;
-}
-
 
 } /* namespace lvr */

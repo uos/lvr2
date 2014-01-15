@@ -28,23 +28,47 @@ namespace lvr
 {
 
 template<typename VertexT, typename NormalT>
-string NormalClassifier<VertexT, NormalT>::label(NormalLabel label_type)
+bool NormalClassifier<VertexT, NormalT>::generatesLabel()
 {
+	return true;
+}
 
-	switch(label_type)
+template<typename VertexT, typename NormalT>
+string NormalClassifier<VertexT, NormalT>::getLabel(int index)
+{
+	Region<VertexT, NormalT>* region = this->m_regions->at(index);
+
+	string label_str;
+
+	if (region->hasLabel())
 	{
-		case VerticalFace:
-			return "vertical";
-			break;
-		case HorizontalupperFace:
-			return "horizontalupper";
-			break;
-		case HorizontallowerFace:
-			return "horizontallower";
-			break;
-		default:
-			return "unknown";
+		label_str = region->getLabel();
 	}
+	else
+	{
+
+		NormalLabel label_type = classifyRegion(index);
+
+		switch(label_type)
+		{
+			case VerticalFace:
+				label_str = "vertical";
+				break;
+			case HorizontalupperFace:
+				label_str = "horizontalupper";
+				break;
+			case HorizontallowerFace:
+				label_str = "horizontallower";
+				break;
+			default:
+				label_str = "unknown";
+				break;
+		}
+
+		region->setLabel(label_str);
+	}
+
+	return label_str;
 }
 
 template<typename VertexT, typename NormalT>
@@ -54,20 +78,19 @@ uchar* NormalClassifier<VertexT, NormalT>::getColor(int index)
 	uchar* c = new uchar[3];
 
 	NormalLabel label_type = classifyRegion(index);
-
 	switch(label_type)
 	{
 		case VerticalFace:
-			Colors::getColor(fc, PINK);
+			Colors::getColor(fc, BLUE);
 			break;
 		case HorizontalupperFace:
-			Colors::getColor(fc, YELLOW);
+			Colors::getColor(fc, RED);
 			break;
 		case HorizontallowerFace:
-			Colors::getColor(fc, ORANGE);
+			Colors::getColor(fc, GREEN);
 			break;
 		default:
-			Colors::getColor(fc, GREEN);
+			Colors::getColor(fc, LIGHTGREY);
 			break;
 	}
 
@@ -117,23 +140,19 @@ NormalLabel NormalClassifier<VertexT, NormalT>::classifyRegion(int index)
 
 		// Get region and normal
 		Region<VertexT, NormalT>* region = this->m_regions->at(index);
-		region->regressionPlane();
 		NormalT normal = region->m_normal;
 
-		// Check if ceiling or floor
-		if(n_ceil * normal > 0.98)
+		// Only classify regions with a minimum of 10 faces
+		if(region->size() > 10)
 		{
-		    return HorizontalupperFace;
-		}
+			// Check if ceiling or floor
+			if(n_ceil 	* normal > 0.98) return HorizontalupperFace;
+			if(n_floor 	* normal > 0.98) return HorizontallowerFace;
 
-		if(n_floor * normal > 0.98)
-		{
-		    return HorizontallowerFace;
+			// Check for walls
+			float radius = sqrt(normal.x * normal.x + normal.z * normal.z);
+			if(radius > 0.95) return VerticalFace;
 		}
-
-		// Check for walls
-		float radius = sqrt(normal.x * normal.x + normal.z * normal.z);
-		if(radius > 0.95) return VerticalFace;
 	}
 
 	return UnknownFace;
@@ -146,16 +165,13 @@ void NormalClassifier<VertexT, NormalT>::createRegionBuffer(
 				vector<int> &indices,
 				vector<float> &vertices,
 				vector<float> &normals,
-				vector<uint> &colors)
+				vector<uint> &colors
+				)
 {
-	int vertex_position = 0;
+	//int index_counter = 0;
+	int	vertex_position = 0;
 
 	Region<VertexT, NormalT>* region = this->m_regions->at(region_id);
-
-	NormalLabel label_type = classifyRegion(region_id);
-
-	std::string stringLabel = label(label_type);
-	region->setLabel(stringLabel);
 
 	// get the color
 	uchar* color = getColor(region_id);
@@ -173,8 +189,8 @@ void NormalClassifier<VertexT, NormalT>::createRegionBuffer(
 			HalfEdgeFace<VertexT, NormalT>* f = region->m_faces[a];
 
 			current = (*f)(d)->m_position;
-			normal = (*f).getFaceNormal();
-			
+			normal =  (*f)(d)->m_normal;
+
 			if(vertex_map.find(current) != vertex_map.end())
 			{
 				// Use already present vertex
@@ -203,23 +219,6 @@ void NormalClassifier<VertexT, NormalT>::createRegionBuffer(
 
 			indices.push_back(vertex_position);
 		}
-	}
-}
-
-template<typename VertexT, typename NormalT>
-void NormalClassifier<VertexT, NormalT>::createBuffer()
-{
-	for(unsigned int i = 0; i < this->m_regions->size(); i++)
-	{
-		// Buffer vectors
-		vector<int> indices;
-		vector<float> vertices;
-		vector<float> normals;
-		vector<uint> colors;
-
-		map<VertexT, int> vertex_map;
-
-		createRegionBuffer(i, vertex_map, indices, vertices, normals, colors);
 	}
 }
 
