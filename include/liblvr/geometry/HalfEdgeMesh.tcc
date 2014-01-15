@@ -1500,9 +1500,6 @@ void HalfEdgeMesh<VertexT, NormalT>::finalize()
         indexBuffer[3 * i + 2]  = index_map[(*(*face_iter))(2)];
 
         int surface_class = 1;
-        r=0;
-        g=200;
-        b=0;
 
         if ((*face_iter)->m_region > 0)
         {
@@ -1515,7 +1512,7 @@ void HalfEdgeMesh<VertexT, NormalT>::finalize()
             	Region<VertexT, NormalT> region = (*m_regions.at(surface_class));
             	if (!region.hasLabel())
             	{
-            		region.setLabel(m_regionClassifier->getLabel(i));
+            		region.setLabel(m_regionClassifier->getLabel(surface_class));
             	}
             }
         }
@@ -1547,7 +1544,7 @@ void HalfEdgeMesh<VertexT, NormalT>::finalize()
     std::cout << timestamp << "doing " << m_regions.size() << " regions, maybe" << std::endl;
     if (m_regionClassifier->generatesLabel())
     {
-    	string label = "unknown";
+    	string label;
 		std::cout << "GENERATING PRE-LABELS FOR ALL REGIONS" << std::endl;
 
 		typename vector<RegionPtr>::iterator region_iter = m_regions.begin();
@@ -1557,7 +1554,7 @@ void HalfEdgeMesh<VertexT, NormalT>::finalize()
 			// hier sind wir in den einzelnen regions und holen und die zugehörigen faces
 			// darauf berechnen wir ein einziges mal das label und schreiben dann alle face ids in die map
 
-			string regionlabel = (*region_iter)->getLabel();
+			label = (*region_iter)->getLabel();
 
 			vector<unsigned int> ids;
 
@@ -1579,6 +1576,13 @@ void HalfEdgeMesh<VertexT, NormalT>::finalize()
 			{
 				labeledFaces.insert(std::pair<std::string, std::vector<unsigned int> >(label, ids));
 			}
+		}
+
+		typename labeledFacesMap::iterator labels_iter = labeledFaces.begin();
+		typename labeledFacesMap::iterator labels_end = labeledFaces.end();
+		for(size_t i = 0; labels_iter != labels_end; ++i, ++labels_iter)
+		{
+			cout << labels_iter->first << ": " << labels_iter->second.size() << endl;
 		}
     }
 
