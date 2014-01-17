@@ -149,7 +149,7 @@ void AdaptiveKSearchSurface<VertexT, NormalT>::calculateSurfaceNormals()
     string comment = timestamp.getElapsedTime() + "Estimating normals ";
     ProgressBar progress(this->m_numPoints, comment);
 
-    #pragma omp parallel for schedule(dynamic)
+    #pragma omp parallel for schedule(auto)
     for( int i = 0; i < (int)this->m_numPoints; i++){
 
         Vertexf query_point;
