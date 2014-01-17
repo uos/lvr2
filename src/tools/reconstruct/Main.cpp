@@ -265,7 +265,6 @@ int main(int argc, char** argv)
 		{
 		    Timestamp ts;
 			surface->calculateSurfaceNormals();
-			cerr << ts.getElapsedTimeInMs() << endl;
 		}
 		else
 		{
