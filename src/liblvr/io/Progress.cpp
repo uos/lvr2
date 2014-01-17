@@ -28,7 +28,6 @@
 
 #include <sstream>
 #include <iostream>
-#include <cmath>
 
 using std::stringstream;
 using std::cout;
