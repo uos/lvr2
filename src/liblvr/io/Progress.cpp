@@ -43,23 +43,22 @@ ProgressBar::ProgressBar(size_t max_val, string prefix)
 	m_maxVal = max_val;
         m_currentVal = 0;
 	m_percent = 0;
-	m_difference = 0;
 }
 
 void ProgressBar::operator++()
 {
 	boost::mutex::scoped_lock lock(m_mutex);
         m_currentVal++;
-        m_difference = (short)((float)m_currentVal/m_maxVal * 100 - m_percent);
-        if (m_difference < 1)
+        short difference = (short)((float)m_currentVal/m_maxVal * 100 - m_percent);
+        if (difference < 1)
         {
             return;
         }
 
-	while (m_difference >= 1)
+	while (difference >= 1)
         {
             m_percent++;
-            m_difference--;
+            difference--;
             print_bar();
         }
 }
