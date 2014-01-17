@@ -58,6 +58,7 @@ void Tesselator<VertexT, NormalT>::clear()
     {
         delete[] *it;
     }
+    m_garbageVertices.clear();
 }
 
 template<typename VertexT, typename NormalT>
