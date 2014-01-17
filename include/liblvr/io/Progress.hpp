@@ -81,9 +81,6 @@ protected:
         /// The current counter
         size_t	 		m_currentVal;
 
-	/// Difference between max and current
-        short			m_difference;
-
 	/// A mutex object for counter increment (for parallel executions)
 	boost::mutex 	m_mutex;
 
