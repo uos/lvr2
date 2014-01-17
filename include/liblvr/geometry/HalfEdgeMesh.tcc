@@ -1508,7 +1508,7 @@ void HalfEdgeMesh<VertexT, NormalT>::finalize()
         if ((*face_iter)->m_region != 0)
         {
             surface_class = (*face_iter)->m_region;
-			label = m_regions.at(surface_class)->getLabel();
+	    //label = m_regions.at(surface_class)->getLabel();
         }
 
         r = m_regionClassifier->r(surface_class);
