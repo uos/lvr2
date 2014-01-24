@@ -44,8 +44,8 @@
 #include <algorithm>
 #include <queue>
 
-#include <glu.h>
-#include <glut.h>
+#include <GL/glu.h>
+#include <GL/glut.h>
 
 using namespace std;
 
@@ -299,7 +299,10 @@ private:
 	std::string                                 m_classifierType;
 
 	/// a pointer to the point cloud manager
-	typename PointsetSurface<VertexT>::Ptr      m_pointCloudManager;
+	typename PointsetSurface<VertexT>           m_pointCloudManager;
+
+	/// a pointer to the MeshBuffer
+	MeshBufferPtr                               m_meshBuffer;
 
 	/**
 	 * @brief   Returns an edge that point to the edge defined
