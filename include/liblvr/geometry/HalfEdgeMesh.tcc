@@ -76,7 +76,6 @@ HalfEdgeMesh<VertexT, NormalT>::~HalfEdgeMesh()
     this->m_meshBuffer.reset();
     this->m_pointCloudManager.reset();
 
-
     typename set<EdgePtr>::iterator e_it = m_garbageEdges.begin();
     for(; e_it != m_garbageEdges.end(); e_it++)
     {
@@ -1474,7 +1473,7 @@ void HalfEdgeMesh<VertexT, NormalT>::finalize()
     // Set the Vertex and Normal Buffer for every Vertex.
     typename vector<VertexPtr>::iterator vertices_iter = m_vertices.begin();
     typename vector<VertexPtr>::iterator vertices_end  = m_vertices.end();
-    for(size_t i = 0; vertices_iter != vertices_end; ++i, ++vertices_iter)
+    for(size_t i = 0; vertices_iter != vertices_end; i++, ++vertices_iter)
     {
         vertexBuffer[3 * i] =     (*vertices_iter)->m_position[0];
         vertexBuffer[3 * i + 1] = (*vertices_iter)->m_position[1];
@@ -1492,7 +1491,7 @@ void HalfEdgeMesh<VertexT, NormalT>::finalize()
     std::cout << timestamp << "doing all " << m_faces.size() << " faces" << std::endl;
     typename vector<FacePtr>::iterator face_iter = m_faces.begin();
     typename vector<FacePtr>::iterator face_end  = m_faces.end();
-    for(size_t i = 0; face_iter != face_end; ++i, ++face_iter)
+    for(size_t i = 0; face_iter != face_end; i++, ++face_iter)
     {
 
         indexBuffer[3 * i]      = index_map[(*(*face_iter))(0)];
@@ -1549,7 +1548,7 @@ void HalfEdgeMesh<VertexT, NormalT>::finalize()
 
 		typename vector<RegionPtr>::iterator region_iter = m_regions.begin();
 		typename vector<RegionPtr>::iterator region_end  = m_regions.end();
-		for(size_t i = 0; region_iter != region_end; ++i, ++region_iter)
+		for(size_t i = 0; region_iter != region_end; i++, ++region_iter)
 		{
 			// hier sind wir in den einzelnen regions und holen und die zugehörigen faces
 			// darauf berechnen wir ein einziges mal das label und schreiben dann alle face ids in die map
@@ -1560,7 +1559,7 @@ void HalfEdgeMesh<VertexT, NormalT>::finalize()
 
 			typename vector<FacePtr>::iterator region_face_iter = (*region_iter)->m_faces.begin();
 			typename vector<FacePtr>::iterator region_face_end  = (*region_iter)->m_faces.end();
-			for(size_t i = 0; region_face_iter != region_face_end; ++i, ++region_face_iter)
+			for(size_t i = 0; region_face_iter != region_face_end; i++, ++region_face_iter)
 			{
 				ids.push_back((*region_face_iter)->getBufferID());
 			}
@@ -1580,7 +1579,7 @@ void HalfEdgeMesh<VertexT, NormalT>::finalize()
 
 		typename labeledFacesMap::iterator labels_iter = labeledFaces.begin();
 		typename labeledFacesMap::iterator labels_end = labeledFaces.end();
-		for(size_t i = 0; labels_iter != labels_end; ++i, ++labels_iter)
+		for(size_t i = 0; labels_iter != labels_end; i++, ++labels_iter)
 		{
 			cout << labels_iter->first << ": " << labels_iter->second.size() << endl;
 		}

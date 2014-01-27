@@ -399,6 +399,7 @@ int main(int argc, char** argv)
 		// Optimize mesh
 		mesh.cleanContours(options.getCleanContourIterations());
 		mesh.setClassifier(options.getClassifier());
+		mesh.getClassifier().setMinRegionSize(options.getSmallRegionThreshold());
 
 		if(options.optimizePlanes())
 		{
@@ -409,9 +410,7 @@ int main(int argc, char** argv)
 					true);
 
 			mesh.fillHoles(options.getFillHoles());
-
 			mesh.optimizePlaneIntersections();
-
 			mesh.restorePlanes(options.getMinPlaneSize());
 
 			if(options.getNumEdgeCollapses())

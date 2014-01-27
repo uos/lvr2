@@ -87,19 +87,19 @@ uchar IndoorNormalClassifier<VertexT, NormalT>::b(int i)
 template<typename VertexT, typename NormalT>
 RegionLabel IndoorNormalClassifier<VertexT, NormalT>::classifyRegion(int index)
 {
+	// Get region
+	Region<VertexT, NormalT>* region = this->m_regions->at(index);
 
 	if((unsigned int) index < this->m_regions->size())
 	{
-		NormalT n_ceil(0.0, 1.0, 0.0);
-		NormalT n_floor(0.0, -1.0, 0.0);
-
-		// Get region and normal
-		Region<VertexT, NormalT>* region = this->m_regions->at(index);
-		NormalT normal = region->m_normal;
-
 		// Only classify regions with a minimum of 10 faces
-		if(region->size() > 10)
+		if(region->size() > this->m_minSize)
 		{
+
+			NormalT normal = region->m_normal;
+			NormalT n_ceil(0.0, 1.0, 0.0);
+			NormalT n_floor(0.0, -1.0, 0.0);
+
 			// Check if ceiling or floor
 			if(n_ceil 	* normal > 0.98) return Ceiling;
 			if(n_floor 	* normal > 0.98) return Floor;
