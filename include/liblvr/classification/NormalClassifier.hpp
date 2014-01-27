@@ -54,7 +54,7 @@ public:
 	 * @param region A vector of planar clusters
 	 */
 	NormalClassifier(vector<Region<VertexT, NormalT>* >* region)
-		: RegionClassifier<VertexT, NormalT>(region) {};
+		: RegionClassifier<VertexT, NormalT>(region) {}
 
 	/**
 	 * @brief Dtor.
