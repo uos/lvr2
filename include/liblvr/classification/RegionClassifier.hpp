@@ -102,12 +102,18 @@ public:
 	 */
 	virtual string getLabel(int region) { return "unknown"; }
 
-
+	/**
+	 * @brief Set the mimimum number of faces for classification
+	 */
+	virtual void setMinRegionSize(unsigned int m_minSize) { this->m_minSize = m_minSize; }
 
 protected:
 
 	/// A pointer to a vector containing regions
 	vector<Region<VertexT, NormalT>* >*  m_regions;
+
+	/// minimum number of faces for classification
+	unsigned int m_minSize;
 };
 
 } /* namespace lvr */
