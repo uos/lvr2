@@ -193,7 +193,7 @@ int main(int argc, char** argv)
 
 		omp_set_num_threads(options.getNumThreads());
 
-		::std::cout << options << ::std::endl;
+		std::cout << options << std::endl;
 
 		// Create a point loader object
 		ModelFactory io_factory;
@@ -428,8 +428,7 @@ int main(int argc, char** argv)
 		// Save triangle mesh
 		if ( options.retesselate() )
 		{
-			mesh.finalizeAndRetesselate(options.generateTextures(),
-					options.getLineFusionThreshold());
+			mesh.finalizeAndRetesselate(options.generateTextures(), options.getLineFusionThreshold());
 		}
 		else
 		{
@@ -442,15 +441,22 @@ int main(int argc, char** argv)
 			mesh.writeClassificationResult();
 		}
 
+		size_t tmp;
+		mesh.meshBuffer()->getVertexArray(tmp);
+		cout << "im meshbuffer sind VOR saveModel " << tmp << " vertices. " << endl;
+
 		// Create output model and save to file
 		ModelPtr m( new Model( mesh.meshBuffer() ) );
-		
+
 		if(options.saveOriginalData())
 		{
 			m->m_pointCloud = model->m_pointCloud;
 		}
 		cout << timestamp << "Saving mesh." << endl;
 		ModelFactory::saveModel( m, "triangle_mesh.ply");
+
+		mesh.meshBuffer()->getVertexArray(tmp);
+		cout << "im meshbuffer sind NACH saveModel " << tmp << " vertices. " << endl;
 
 		// Save obj model if textures were generated
 		if(options.generateTextures())
