@@ -1468,9 +1468,8 @@ void HalfEdgeMesh<VertexT, NormalT>::finalize()
     ucharArr colorBuffer(  new uchar[3 * numVertices] );
     uintArr  indexBuffer(  new unsigned int[3 * numFaces] );
 
-    std::cout << timestamp << "doing all vertices" << std::endl;
-
     // Set the Vertex and Normal Buffer for every Vertex.
+    std::cout << timestamp << "doing all " << m_vertices.size() << " vertices" << std::endl;
     typename vector<VertexPtr>::iterator vertices_iter = m_vertices.begin();
     typename vector<VertexPtr>::iterator vertices_end  = m_vertices.end();
     for(size_t i = 0; vertices_iter != vertices_end; i++, ++vertices_iter)
@@ -1539,55 +1538,56 @@ void HalfEdgeMesh<VertexT, NormalT>::finalize()
         faceColorBuffer.push_back( b );*/
     }
 
-    // jetzt alle regions labeln, falls der classifier das kann
-    std::cout << timestamp << "doing " << m_regions.size() << " regions, maybe" << std::endl;
-    if (m_regionClassifier->generatesLabel())
-    {
-    	string label;
-		std::cout << "GENERATING PRE-LABELS FOR ALL REGIONS" << std::endl;
+	// jetzt alle regions labeln, falls der classifier das kann
+	if (m_regionClassifier->generatesLabel())
+	{
+		string label;
+		std::cout << timestamp << "doing all " << m_regions.size() << " regions, maybe" << std::endl;
 
 		typename vector<RegionPtr>::iterator region_iter = m_regions.begin();
 		typename vector<RegionPtr>::iterator region_end  = m_regions.end();
-		for(size_t i = 0; region_iter != region_end; i++, ++region_iter)
+		for(size_t i = 0; region_iter != region_end; ++i, ++region_iter)
 		{
 			// hier sind wir in den einzelnen regions und holen und die zugehörigen faces
 			// darauf berechnen wir ein einziges mal das label und schreiben dann alle face ids in die map
 
 			label = (*region_iter)->getLabel();
 
-			vector<unsigned int> ids;
+			// TODO the first region has a label of "", for now we skip it
+			if (label != "")
+			{
+				vector<unsigned int> ids;
 
-			typename vector<FacePtr>::iterator region_face_iter = (*region_iter)->m_faces.begin();
-			typename vector<FacePtr>::iterator region_face_end  = (*region_iter)->m_faces.end();
-			for(size_t i = 0; region_face_iter != region_face_end; i++, ++region_face_iter)
-			{
-				ids.push_back((*region_face_iter)->getBufferID());
-			}
-//
-//			// if prelabel already exists in map, insert face id, else create new entry
-			typename labeledFacesMap::iterator it = labeledFaces.find(label);
+				typename vector<FacePtr>::iterator region_face_iter = (*region_iter)->m_faces.begin();
+				typename vector<FacePtr>::iterator region_face_end  = (*region_iter)->m_faces.end();
+				for(size_t i = 0; region_face_iter != region_face_end; ++i, ++region_face_iter)
+				{
+					ids.push_back((*region_face_iter)->getBufferID());
+				}
 
-			if (it != labeledFaces.end())
-			{
-				it->second.insert(it->second.end(), ids.begin(), ids.end());
-			}
-			else
-			{
-				labeledFaces.insert(std::pair<std::string, std::vector<unsigned int> >(label, ids));
+				// if prelabel already exists in map, insert face id, else create new entry
+				typename labeledFacesMap::iterator it = labeledFaces.find(label);
+
+				if (it != labeledFaces.end())
+				{
+					it->second.insert(it->second.end(), ids.begin(), ids.end());
+				}
+				else
+				{
+					labeledFaces.insert(std::pair<std::string, std::vector<unsigned int> >(label, ids));
+				}
 			}
 		}
 
 		typename labeledFacesMap::iterator labels_iter = labeledFaces.begin();
 		typename labeledFacesMap::iterator labels_end = labeledFaces.end();
-		for(size_t i = 0; labels_iter != labels_end; i++, ++labels_iter)
+		for(size_t i = 0; labels_iter != labels_end; ++i, ++labels_iter)
 		{
 			cout << labels_iter->first << ": " << labels_iter->second.size() << endl;
 		}
-    }
-
+	}
 
     // Hand the buffers over to the Model class for IO operations.
-
     if ( !this->m_meshBuffer )
     {
         this->m_meshBuffer = MeshBufferPtr( new MeshBuffer );
@@ -1667,7 +1667,7 @@ void HalfEdgeMesh<VertexT, NormalT>::finalizeAndRetesselate( bool genTextures, f
         int surfaceClass = m_regions[iRegion]->m_regionNumber;
 
         // iterate over every face for the region number '*nonPlaneBegin'
-        for( size_t i=0; i < m_regions[iRegion]->m_faces.size(); i++ )
+        for( size_t i=0; i < m_regions[iRegion]->m_faces.size(); ++i )
         {
             int iFace=i;
             unsigned int pos;
