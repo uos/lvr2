@@ -44,8 +44,8 @@
 #include <algorithm>
 #include <queue>
 
-#include <glu.h>
-#include <glut.h>
+#include <GL/glu.h>
+#include <GL/glut.h>
 
 using namespace std;
 
@@ -238,6 +238,11 @@ public:
 	void setClassifier(string name);
 
 	/**
+	 * TODO write comments
+	 */
+	RegionClassifier<VertexT, NormalT> getClassifier() { return *m_regionClassifier; };
+
+	/**
 	 * Sets the maximum recursion depth for region growing
 	 *
 	 * @param depth
@@ -262,7 +267,6 @@ public:
 	 * 							values are between 1 and 4
 	 */
 	void cleanContours(int iterations);
-
 
 	/**
 	 * Simplyfys the mesh by collapsing the @ref n_collapses edges with the
@@ -299,7 +303,7 @@ private:
 	std::string                                 m_classifierType;
 
 	/// a pointer to the point cloud manager
-	typename PointsetSurface<VertexT>::Ptr      m_pointCloudManager;
+	typename PointsetSurface<VertexT>::Ptr   m_pointCloudManager;
 
 	/**
 	 * @brief   Returns an edge that point to the edge defined
