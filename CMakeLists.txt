@@ -14,7 +14,7 @@ include_directories(${LAS_VEGAS_SOURCE_DIR}/ext/psimpl)
 include_directories(${LAS_VEGAS_SOURCE_DIR})
 include_directories(${LAS_VEGAS_SOURCE_DIR}/include/liblvr)
 
-add_definitions("-std=c++0x")
+add_definitions("-std=c++0x -O0")
 
 ###############################################################
 # EXTERNAL LIBRARIES

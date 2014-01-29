@@ -87,14 +87,21 @@ public:
 	virtual void deleteInvalidFaces();
 
 	/**
-	 * TODO
+	 * @brief Sets this regions's label.
+	 *
+	 * @param label the label to set
 	 */
 	virtual void setLabel(std::string label);
 
 	/**
-	 * TODO
+	 * @brief Returns the regions's label.
 	 */
 	virtual std::string getLabel();
+
+	/**
+	 * @brief Returns true if region has a label.
+	 */
+	virtual bool hasLabel();
 
 	/**
 	 * @brief Finds all contours of the region (outer contour + holes)
@@ -120,7 +127,6 @@ public:
 	 *
 	 */
 	virtual bool detectFlicker(FacePtr f);
-
 
     /**
      * @brief the number of faces contained in this region
@@ -150,18 +156,20 @@ public:
 	/// indicates if the region is to be deleted or not
 	bool m_toDelete;
 
-	/**
-	 * TODO
-	 */
-	std::string m_label;
-
 private:
+
     /**
 	 * @brief calculates a valid normal of the region
 	 *
 	 * @return a normal of the region
 	 */
 	virtual NormalT calcNormal();
+
+	// The region's label
+	std::string m_label;
+
+	// Indicates whether the region has been labeled or not
+	bool b_labeled;
 
 };
 }

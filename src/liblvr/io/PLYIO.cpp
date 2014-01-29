@@ -108,7 +108,6 @@ void PLYIO::save( string filename )
     }
 
 
-
     p_ply oply = ply_create( filename.c_str(), mode, NULL, 0, NULL );
     if ( !oply )
     {

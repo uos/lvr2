@@ -193,7 +193,7 @@ int main(int argc, char** argv)
 
 		omp_set_num_threads(options.getNumThreads());
 
-		::std::cout << options << ::std::endl;
+		std::cout << options << std::endl;
 
 		// Create a point loader object
 		ModelFactory io_factory;
@@ -398,6 +398,7 @@ int main(int argc, char** argv)
 		// Optimize mesh
 		mesh.cleanContours(options.getCleanContourIterations());
 		mesh.setClassifier(options.getClassifier());
+		mesh.getClassifier().setMinRegionSize(options.getSmallRegionThreshold());
 
 		if(options.optimizePlanes())
 		{
@@ -408,9 +409,7 @@ int main(int argc, char** argv)
 					true);
 
 			mesh.fillHoles(options.getFillHoles());
-
 			mesh.optimizePlaneIntersections();
-
 			mesh.restorePlanes(options.getMinPlaneSize());
 
 			if(options.getNumEdgeCollapses())
@@ -428,8 +427,7 @@ int main(int argc, char** argv)
 		// Save triangle mesh
 		if ( options.retesselate() )
 		{
-			mesh.finalizeAndRetesselate(options.generateTextures(),
-					options.getLineFusionThreshold());
+			mesh.finalizeAndRetesselate(options.generateTextures(), options.getLineFusionThreshold());
 		}
 		else
 		{
@@ -444,7 +442,7 @@ int main(int argc, char** argv)
 
 		// Create output model and save to file
 		ModelPtr m( new Model( mesh.meshBuffer() ) );
-		
+
 		if(options.saveOriginalData())
 		{
 			m->m_pointCloud = model->m_pointCloud;

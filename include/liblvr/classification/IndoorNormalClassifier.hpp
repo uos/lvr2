@@ -77,11 +77,10 @@ public:
 
 	virtual void writeMetaInfo();
 
-	virtual void createBuffer();
-
 private:
 
 	RegionLabel classifyRegion(int region);
+
 	uchar* getColor(int region);
 
 	void createRegionBuffer(
@@ -100,7 +99,6 @@ private:
 			vector<float> &vertices,
 			vector<float> &normals,
 			vector<uint> &colors);
-
 
 };
 

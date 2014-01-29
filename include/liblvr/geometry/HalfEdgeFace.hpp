@@ -150,6 +150,17 @@ public:
 	 */
 	bool isBorderFace();
 
+	/**
+	 * @brief Returns the id of this face in MeshBuffer after finalize step.
+	 */
+	int getBufferID();
+
+	/**
+	 * @brief Sets the id of this face in MeshBuffer after finalize step.
+	 * @param id The id of this face in MeshBuffer after finalize step
+	 */
+	void setBufferID(unsigned int id);
+
 	/// A pointer to a surrounding half edge
 	EdgePtr m_edge;
 
@@ -175,6 +186,10 @@ public:
 	NormalT							m_normal;
 
 	bool                            m_invalid;
+
+private:
+
+	unsigned int                    buffer_id;
 };
 
 }
