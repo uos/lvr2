@@ -441,10 +441,6 @@ int main(int argc, char** argv)
 			mesh.writeClassificationResult();
 		}
 
-		size_t tmp;
-		mesh.meshBuffer()->getVertexArray(tmp);
-		cout << "im meshbuffer sind VOR saveModel " << tmp << " vertices. " << endl;
-
 		// Create output model and save to file
 		ModelPtr m( new Model( mesh.meshBuffer() ) );
 
@@ -454,9 +450,6 @@ int main(int argc, char** argv)
 		}
 		cout << timestamp << "Saving mesh." << endl;
 		ModelFactory::saveModel( m, "triangle_mesh.ply");
-
-		mesh.meshBuffer()->getVertexArray(tmp);
-		cout << "im meshbuffer sind NACH saveModel " << tmp << " vertices. " << endl;
 
 		// Save obj model if textures were generated
 		if(options.generateTextures())
