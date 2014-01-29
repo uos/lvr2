@@ -54,7 +54,7 @@ public:
 	 * @param region A vector of planar clusters
 	 */
 	NormalClassifier(vector<Region<VertexT, NormalT>* >* region)
-		: RegionClassifier<VertexT, NormalT>(region) {};
+		: RegionClassifier<VertexT, NormalT>(region) {}
 
 	/**
 	 * @brief Dtor.
@@ -74,24 +74,35 @@ public:
 	 */
 	virtual uchar b(int region);
 
+	/**
+	 * @brief Returns the label for the given region
+	 */
+	virtual string getLabel(int index);
+
+	/**
+	 * @brief Writes information about the clusters to a file
+	 */
 	virtual void writeMetaInfo();
 
-	virtual void createBuffer();
-
-	string getLabel(NormalLabel label);
+	/**
+	 * @brief True if classifier can generate pre-labels
+	 */
+	bool generatesLabel() { return true; }
 
 private:
 
 	NormalLabel classifyRegion(int region);
+
 	uchar* getColor(int region);
 
 	void createRegionBuffer(
-		int region_id,
-		map<VertexT, int> &map,
-		vector<int> &indices,
-		vector<float> &vertices,
-		vector<float> &normals,
-		vector<uint> &colors);
+					int region_id,
+					map<VertexT, int> &map,
+					vector<int> &indices,
+					vector<float> &vertices,
+					vector<float> &normals,
+					vector<uint> &colors
+					);
 
 };
 
