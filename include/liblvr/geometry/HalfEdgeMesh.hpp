@@ -305,9 +305,6 @@ private:
 	/// a pointer to the point cloud manager
 	typename PointsetSurface<VertexT>::Ptr   m_pointCloudManager;
 
-	/// a pointer to the MeshBuffer
-	MeshBufferPtr                               m_meshBuffer;
-
 	/**
 	 * @brief   Returns an edge that point to the edge defined
 	 *          by the given vertices.
