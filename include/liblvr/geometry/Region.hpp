@@ -87,14 +87,14 @@ public:
 	virtual void deleteInvalidFaces();
 
 	/**
-	 * @brief Sets this face's label.
+	 * @brief Sets this regions's label.
 	 *
 	 * @param label the label to set
 	 */
 	virtual void setLabel(std::string label);
 
 	/**
-	 * @brief Returns the face's label.
+	 * @brief Returns the regions's label.
 	 */
 	virtual std::string getLabel();
 
@@ -168,7 +168,7 @@ private:
 	// The region's label
 	std::string m_label;
 
-	// Indicates wheter the region has been labeled or not
+	// Indicates whether the region has been labeled or not
 	bool b_labeled;
 
 };
