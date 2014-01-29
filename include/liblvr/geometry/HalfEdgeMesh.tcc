@@ -1469,7 +1469,6 @@ void HalfEdgeMesh<VertexT, NormalT>::finalize()
     uintArr  indexBuffer(  new unsigned int[3 * numFaces] );
 
     // Set the Vertex and Normal Buffer for every Vertex.
-    std::cout << timestamp << "doing all " << m_vertices.size() << " vertices" << std::endl;
     typename vector<VertexPtr>::iterator vertices_iter = m_vertices.begin();
     typename vector<VertexPtr>::iterator vertices_end  = m_vertices.end();
     for(size_t i = 0; vertices_iter != vertices_end; i++, ++vertices_iter)
@@ -1487,7 +1486,6 @@ void HalfEdgeMesh<VertexT, NormalT>::finalize()
         index_map[*vertices_iter] = i;
     }
 
-    std::cout << timestamp << "doing all " << m_faces.size() << " faces" << std::endl;
     typename vector<FacePtr>::iterator face_iter = m_faces.begin();
     typename vector<FacePtr>::iterator face_end  = m_faces.end();
     for(size_t i = 0; face_iter != face_end; i++, ++face_iter)
@@ -1507,10 +1505,10 @@ void HalfEdgeMesh<VertexT, NormalT>::finalize()
             // label the region if not already done
             if (m_regionClassifier->generatesLabel())
             {
-            	Region<VertexT, NormalT> region = (*m_regions.at(surface_class));
-            	if (!region.hasLabel())
+            	Region<VertexT, NormalT>* region = m_regions.at(surface_class);
+            	if (!region->hasLabel())
             	{
-            		region.setLabel(m_regionClassifier->getLabel(surface_class));
+            		region->setLabel(m_regionClassifier->getLabel(surface_class));
             	}
             }
         }
@@ -1542,7 +1540,6 @@ void HalfEdgeMesh<VertexT, NormalT>::finalize()
 	if (m_regionClassifier->generatesLabel())
 	{
 		string label;
-		std::cout << timestamp << "doing all " << m_regions.size() << " regions, maybe" << std::endl;
 
 		typename vector<RegionPtr>::iterator region_iter = m_regions.begin();
 		typename vector<RegionPtr>::iterator region_end  = m_regions.end();
@@ -1577,13 +1574,6 @@ void HalfEdgeMesh<VertexT, NormalT>::finalize()
 					labeledFaces.insert(std::pair<std::string, std::vector<unsigned int> >(label, ids));
 				}
 			}
-		}
-
-		typename labeledFacesMap::iterator labels_iter = labeledFaces.begin();
-		typename labeledFacesMap::iterator labels_end = labeledFaces.end();
-		for(size_t i = 0; labels_iter != labels_end; ++i, ++labels_iter)
-		{
-			cout << labels_iter->first << ": " << labels_iter->second.size() << endl;
 		}
 	}
 
