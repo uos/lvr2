@@ -75,11 +75,6 @@ public:
 	virtual uchar b(int region);
 
 	/**
-	 * @brief True if classifier can generate pre-labels
-	 */
-	virtual bool generatesLabel();
-
-	/**
 	 * @brief Returns the label for the given region
 	 */
 	virtual string getLabel(int index);
@@ -88,6 +83,11 @@ public:
 	 * @brief Writes information about the clusters to a file
 	 */
 	virtual void writeMetaInfo();
+
+	/**
+	 * @brief True if classifier can generate pre-labels
+	 */
+	bool generatesLabel() { return true; }
 
 private:
 

@@ -28,12 +28,6 @@ namespace lvr
 {
 
 template<typename VertexT, typename NormalT>
-bool NormalClassifier<VertexT, NormalT>::generatesLabel()
-{
-	return true;
-}
-
-template<typename VertexT, typename NormalT>
 string NormalClassifier<VertexT, NormalT>::getLabel(int index)
 {
 	Region<VertexT, NormalT>* region = this->m_regions->at(index);
@@ -68,6 +62,7 @@ string NormalClassifier<VertexT, NormalT>::getLabel(int index)
 		region->setLabel(label_str);
 	}
 
+
 	return label_str;
 }
 
@@ -81,13 +76,13 @@ uchar* NormalClassifier<VertexT, NormalT>::getColor(int index)
 	switch(label_type)
 	{
 		case VerticalFace:
-			Colors::getColor(fc, BLUE);
+			Colors::getColor(fc, GREEN);
 			break;
 		case HorizontalupperFace:
-			Colors::getColor(fc, RED);
+			Colors::getColor(fc, BLUE);
 			break;
 		case HorizontallowerFace:
-			Colors::getColor(fc, GREEN);
+			Colors::getColor(fc, RED);
 			break;
 		default:
 			Colors::getColor(fc, LIGHTGREY);
