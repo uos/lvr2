@@ -39,6 +39,7 @@ Region<VertexT, NormalT>::Region(int regionNumber)
 	this->m_inPlane      = false;
 	this->m_regionNumber = regionNumber;
 	this->m_toDelete     = false;
+	this->b_labeled      = false;
 }
 
 template<typename VertexT, typename NormalT>
@@ -69,6 +70,13 @@ template<typename VertexT, typename NormalT>
 void Region<VertexT, NormalT>::setLabel(std::string label)
 {
 	this->m_label = label;
+	this->b_labeled = true;
+}
+
+template<typename VertexT, typename NormalT>
+bool Region<VertexT, NormalT>::hasLabel()
+{
+	return this->b_labeled;
 }
 
 template<typename VertexT, typename NormalT>
@@ -76,7 +84,6 @@ std::string Region<VertexT, NormalT>::getLabel()
 {
 	return this->m_label;
 }
-
 
 template<typename VertexT, typename NormalT>
 vector<vector<VertexT> > Region<VertexT, NormalT>::getContours(float epsilon)
