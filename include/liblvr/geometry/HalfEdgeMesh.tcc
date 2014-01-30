@@ -1157,6 +1157,9 @@ bool HalfEdgeMesh<VertexT, NormalT>::safeCollapseEdge(EdgePtr edge)
 template<typename VertexT, typename NormalT>
 void HalfEdgeMesh<VertexT, NormalT>::fillHoles(size_t max_size)
 {
+    // Do'nt fill holes if contour size is zero
+    if(max_size == 0) return;
+
     //holds all holes to close
     vector<vector<EdgePtr> > holes;
 
