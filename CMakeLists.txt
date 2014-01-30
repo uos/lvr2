@@ -10,11 +10,11 @@ link_directories("$ENV{HOME}/local/lib")
 include_directories(/usr/include/libusb-1.0/)
 include_directories(${LAS_VEGAS_SOURCE_DIR}/ext/Eigen)
 include_directories(${LAS_VEGAS_SOURCE_DIR}/ext/stann)
+include_directories(${LAS_VEGAS_SOURCE_DIR}/ext/psimpl)
 include_directories(${LAS_VEGAS_SOURCE_DIR})
 include_directories(${LAS_VEGAS_SOURCE_DIR}/include/liblvr)
 
-
-set( CMAKE_CXX_FLAGS         ${CMAKE_CXX_FLAGS})
+add_definitions("-std=c++0x -O0")
 
 ###############################################################
 # EXTERNAL LIBRARIES
@@ -85,6 +85,8 @@ find_package(CGAL)
 if(CGAL_FOUND)
 add_definitions(${CGAL_CXX_FLAGS_INIT})
 message(STATUS "CGAL CXX_FLAGS: " ${CGAL_CXX_FLAGS_INIT})
+find_package(GMP)
+find_package(MPFR)
 endif(CGAL_FOUND)
 
 
@@ -126,8 +128,8 @@ set( CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${OpenMP_CXX_FLAGS}" )
 
 find_package(OpenGL REQUIRED)
 if(OpenGL_FOUND)
-    link_directories(${OpenGL_INCLUDE_DIRS})
-    include_directories(${OpenGL_LIBRARY_DIRS})
+    link_directories(${OpenGL_LIBRARY_DIRS})
+    include_directories(${OpenGL_INCLUDE_DIRS})
     message( "OPEN GL LIBS 1 : " ${OPENGL_LIBRARIES}) 
     message( "OPEN GL LIBS 2 : " ${OPENGL_LIBRARY}) 
 endif(OpenGL_FOUND)
@@ -218,6 +220,7 @@ add_subdirectory(src/liblvr)
 ##############################################################
 
 add_subdirectory(src/tools/reconstruct)
+add_subdirectory(src/tools/classifier)
 add_subdirectory(src/tools/colorize)
 add_subdirectory(src/tools/scanreduce)
 add_subdirectory(src/tools/convert)
@@ -225,6 +228,7 @@ add_subdirectory(src/tools/asciiconverter)
 add_subdirectory(src/tools/texman)
 add_subdirectory(src/tools/tiogen)
 add_subdirectory(src/tools/meshoptimizer)
+add_subdirectory(src/tools/transform)
 
 if(MPI_FOUND)
 #add_subdirectory(src/tools/mpi)
@@ -232,6 +236,8 @@ endif(MPI_FOUND)
 
 if(CGAL_FOUND)
 add_subdirectory(src/tools/cgal_reconstruction)
+add_subdirectory(src/tools/fusion)
+add_subdirectory(src/tools/slicer)
 endif(CGAL_FOUND)
 
 if(PCL_FOUND)

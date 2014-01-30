@@ -341,6 +341,7 @@ float ImageProcessor::extractPattern(Texture* tex, Texture** dst)
 	}	
 
 	//ImageProcessor::showTexture(*dst, "POIMMES");
+	delete ac;
 
 	return result;
 }
@@ -413,7 +414,12 @@ float ImageProcessor::compareTexturesCCV(Texture* tex1, Texture* tex2)
 {
 	CCV* ccv1 = new CCV(tex1);
 	CCV* ccv2 = new CCV(tex2);
-	return ccv1->compareTo(ccv2);
+	float result = ccv1->compareTo(ccv2);
+
+	delete ccv1;
+	delete ccv2;
+
+	return result;
 }
 
 float ImageProcessor::compareTexturesStats(Texture* tex1, Texture* tex2)

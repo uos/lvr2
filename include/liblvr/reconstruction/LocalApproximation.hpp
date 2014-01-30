@@ -27,8 +27,8 @@
 #ifndef LOCALAPPROXIMATION_HPP_
 #define LOCALAPPROXIMATION_HPP_
 
-#include "../geometry/BaseMesh.hpp"
-#include "../reconstruction/AdaptiveKSearchSurface.hpp"
+#include "geometry/BaseMesh.hpp"
+#include "reconstruction/AdaptiveKSearchSurface.hpp"
 
 namespace lvr
 {

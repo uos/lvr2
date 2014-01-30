@@ -69,9 +69,15 @@ namespace lvr {
         bool Texturizer<VertexT, NormalT>::m_doAnalysis = false;
 
 template<typename VertexT, typename NormalT>
+Texturizer<VertexT, NormalT>::~Texturizer()
+{
+    //delete m_tio;
+}
+
+template<typename VertexT, typename NormalT>
 Texturizer<VertexT, NormalT>::Texturizer(typename PointsetSurface<VertexT>::Ptr pm)
 {
-	//Load texture package
+	//Load texture packamge
 	this->m_tio = new TextureIO(Texturizer::m_filename);
 	
 	this->m_pm = pm;
@@ -243,7 +249,7 @@ template<typename VertexT, typename NormalT>
 void Texturizer<VertexT, NormalT>::filterByCrossCorr(vector<Texture*> &textures, Texture* refTexture)
 {
 	//filter by CC
-	for (unsigned int i = 0; i < textures.size(); i++)
+	for (int i = 0; i < textures.size(); i++)
 	{
 		float dist = ImageProcessor::compareTexturesCrossCorr(textures[i], refTexture);
 		textures[i]->m_distance += dist;
@@ -255,7 +261,7 @@ void Texturizer<VertexT, NormalT>::filterByStats(vector<Texture*> &textures, Tex
 	vector<Texture*> toDelete;
 
 	//filter by stats
-	for (unsigned int i = 0; i < textures.size(); i++)
+	for (int i = 0; i < textures.size(); i++)
 	{
 		float dist = ImageProcessor::compareTexturesStats(textures[i], refTexture);
 		if(dist > threshold)
@@ -266,7 +272,7 @@ void Texturizer<VertexT, NormalT>::filterByStats(vector<Texture*> &textures, Tex
 	}	
 	
 	//delete bad matches
-	for (unsigned int d = 0; d < toDelete.size(); d++)
+	for (int d = 0; d < toDelete.size(); d++)
 	{
 		textures.erase(find(textures.begin(), textures.end(), toDelete[d]));
 	}	
@@ -277,7 +283,7 @@ void Texturizer<VertexT, NormalT>::filterByFeatures(vector<Texture*> &textures, 
 	vector<Texture*> toDelete;
 
 	//filter by features
-	for (unsigned int i = 0; i < textures.size(); i++)
+	for (int i = 0; i < textures.size(); i++)
 	{
 		float dist = ImageProcessor::compareTexturesSURF(textures[i], refTexture);
 		if(dist > threshold)
@@ -288,7 +294,7 @@ void Texturizer<VertexT, NormalT>::filterByFeatures(vector<Texture*> &textures, 
 	}	
 	
 	//delete bad matches
-	for (unsigned int d = 0; d < toDelete.size(); d++)
+	for (int d = 0; d < toDelete.size(); d++)
 	{
 		textures.erase(find(textures.begin(), textures.end(), toDelete[d]));
 	}	
@@ -302,7 +308,7 @@ void Texturizer<VertexT, NormalT>::filterByNormal(vector<Texture*> &textures, ve
 	NormalT n = (contour[1] - contour[0]).cross(contour[2]-contour[0]);
 	
 	//filter by normal
-	for (unsigned int i = 0; i < textures.size(); i++)
+	for (int i = 0; i < textures.size(); i++)
 	{
 		if(Texturizer<VertexT, NormalT>::classifyNormal(n) != textures[i]->m_textureClass)
 		{
@@ -311,7 +317,7 @@ void Texturizer<VertexT, NormalT>::filterByNormal(vector<Texture*> &textures, ve
 	}	
 	
 	//delete bad matches
-	for (unsigned int d = 0; d < toDelete.size(); d++)
+	for (int d = 0; d < toDelete.size(); d++)
 	{
 		textures.erase(find(textures.begin(), textures.end(), toDelete[d]));
 	}	
@@ -336,18 +342,22 @@ TextureToken<VertexT, NormalT>* Texturizer<VertexT, NormalT>::texturizePlane(vec
 		initialTexture = createInitialTexture(contour);
 
 		//reset distance values
-		for (unsigned int i = 0; i < this->m_tio->m_textures.size(); i++)
+		for (int i = 0; i < m_tio->m_textures.size(); i++)
 		{
-			this->m_tio->m_textures[i]->m_distance = 0;
+			m_tio->m_textures[i]->m_distance = 0;
 		}
 		//reduce number of matching textures from the texture pack step by step
 		//std::vector<Texture*> textures = this->m_tio->m_textures;
 		std::vector<Texture*> textures;
 
 		//std::copy(this->m_tio->m_textures.begin(), this->m_tio->m_textures.end(), textures.begin());
-		for(size_t i = 0; i < this->m_tio->m_textures.size(); i++)
+		for(size_t i = 0; i < m_tio->m_textures.size(); i++)
 		{
-		    textures.push_back(this->m_tio->m_textures[i]);
+		    cout << "PUSH: " << endl;
+		    cout << m_tio << endl;
+		    cout << m_tio->m_textures[i] << endl;
+		    textures.push_back(m_tio->m_textures[i]);
+		    cout << "DONE " << endl << endl;
 		}
 
 		if (textures.size() > 0 && m_doAnalysis)

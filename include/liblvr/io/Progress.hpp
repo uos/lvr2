@@ -60,7 +60,7 @@ public:
 	 * @param max_val	The number of performed iterations
 	 * @param prefix	The prefix string for progress output
 	 */
-	ProgressBar(int max_val, string prefix = "");
+	ProgressBar(size_t max_val, string prefix = "");
 
 	/**
 	 * @brief Increases the counter of performed iterations
@@ -78,17 +78,14 @@ protected:
 	/// The number of iterations
 	size_t			m_maxVal;
 
-	/// The current counter
-	size_t			m_currentVal;
-
-	/// The step size (in percent) after which an output is generated
-	size_t			m_stepSize;
+        /// The current counter
+        size_t	 		m_currentVal;
 
 	/// A mutex object for counter increment (for parallel executions)
 	boost::mutex 	m_mutex;
 
 	/// The current progress in percent
-	int				m_percent;
+	int			m_percent;
 
 	/// A string stream for output generation
 	stringstream	m_stream;
