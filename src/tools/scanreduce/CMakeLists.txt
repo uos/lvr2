@@ -4,11 +4,11 @@ set(RECONSTRUCT_SOURCES
     Main.cpp
 )
 
-add_executable(reduce ${RECONSTRUCT_SOURCES})
-set_target_properties(reduce PROPERTIES BINARY_OUTPUT_DIRECTORY
+add_executable(lvr_pointcloud_reduce ${RECONSTRUCT_SOURCES})
+set_target_properties(lvr_pointcloud_reduce PROPERTIES BINARY_OUTPUT_DIRECTORY
     ${CMAKE_SOURCE_DIR}/bin)
-target_link_libraries(reduce staticlvr)
-target_link_libraries(reduce ${Boost_FILESYSTEM_LIBRARY}
+target_link_libraries(lvr_pointcloud_reduce staticlvr)
+target_link_libraries(lvr_pointcloud_reduce ${Boost_FILESYSTEM_LIBRARY}
     ${Boost_SYSTEM_LIBRARY} ${Boost_THREAD_LIBRARY}
     ${Boost_PROGRAM_OPTIONS_LIBRARY})
 
