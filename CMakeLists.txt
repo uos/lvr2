@@ -196,13 +196,6 @@ add_subdirectory(ext/laslib)
 include_directories( ${CMAKE_CURRENT_SOURCE_DIR}/ext/obj/ )
 add_subdirectory(ext/obj)
 
-# Freenect
-if(APPLE)
-include_directories( /opt/local/include/libusb-1.0/)
-endif(APPLE)
-include_directories(ext/libfreenect/include/)
-add_subdirectory(ext/libfreenect)
-
 # SLAM6D stuff
 include_directories( ${CMAKE_CURRENT_SOURCE_DIR}/ext/slam6d )
 add_subdirectory(ext/slam6d)
