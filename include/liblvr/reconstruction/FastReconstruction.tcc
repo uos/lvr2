@@ -357,7 +357,7 @@ void FastReconstruction<VertexT, NormalT>::calcQueryPointValues(){
 
     // Status message output
     string comment = timestamp.getElapsedTime() + "Calculating distance values ";
-    ProgressBar progress((int)m_queryPoints.size(), comment);
+    ProgressBar progress(m_queryPoints.size(), comment);
 
     Timestamp ts;
 

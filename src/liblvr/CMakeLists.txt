@@ -4,7 +4,7 @@ set(LVR_SOURCES
     io/PLYIO.cpp
     io/AsciiIO.cpp
     io/UosIO.cpp
-    io/ObjIO.cpp	
+    io/ObjIO.cpp
     io/LasIO.cpp
     io/PPMIO.cpp
     io/Progress.cpp
@@ -40,6 +40,7 @@ set(LVR_SOURCES
     texture/CCV.cpp
     texture/Transform.cpp
     texture/Trans.cpp
+    geometry/HalfEdgeAccessExceptions.cpp
 )
 
 # Add PCD io if PCL is installes
@@ -86,7 +87,6 @@ target_link_libraries(lvr ${PCL_LIBRARIES})
 target_link_libraries(lvr slam6d)
 target_link_libraries(lvr GLU)
 target_link_libraries(lvr glut)
-
 
 if ( rply_shared )
      target_link_libraries(lvr ${rply_shared})
