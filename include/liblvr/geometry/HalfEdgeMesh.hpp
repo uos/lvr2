@@ -21,16 +21,17 @@
  * HalfEdgeMesh.hpp
  *
  *  @date 13.11.2008
+ *  @author Thomas Wiemann (twiemann@uos.de)
  *  @author Florian Otte (fotte@uos.de)
  *  @author Kim Rinnewitz (krinnewitz@uos.de)
  *  @author Sven Schalk (sschalk@uos.de)
- *  @author Thomas Wiemann (twiemann@uos.de)
  */
 
 #ifndef HALFEDGEMESH_H_
 #define HALFEDGEMESH_H_
 
 #include <boost/unordered_map.hpp>
+#include <boost/shared_ptr.hpp>
 
 #include <vector>
 #include <stack>
@@ -43,8 +44,8 @@
 #include <algorithm>
 #include <queue>
 
-#include <glu.h>
-#include <glut.h>
+#include <GL/glu.h>
+#include <GL/glut.h>
 
 using namespace std;
 
@@ -56,6 +57,7 @@ using namespace std;
 #include "HalfEdgeVertex.hpp"
 #include "HalfEdge.hpp"
 #include "HalfEdgeFace.hpp"
+#include "HalfEdgeAccessExceptions.hpp"
 
 #include "io/Timestamp.hpp"
 #include "io/Progress.hpp"
@@ -71,15 +73,14 @@ using namespace std;
 #include "reconstruction/PointsetSurface.hpp"
 #include "classification/ClassifierFactory.hpp"
 
-
-namespace lvr
-{
-
 template<typename VertexT, typename NormalT>
 class HalfEdgeVertex;
 
 template<typename VertexT, typename NormalT>
 class HalfEdgeFace;
+
+namespace lvr
+{
 
 /**
  * @brief A implementation of a half edge triangle mesh.
@@ -88,9 +89,22 @@ template<typename VertexT, typename NormalT>
 class HalfEdgeMesh : public BaseMesh<VertexT, NormalT>
 {
 public:
-	typedef HalfEdgeFace<VertexT, NormalT> HFace;
-	typedef HalfEdgeVertex<VertexT, NormalT> HVertex;
-	typedef HalfEdge<HVertex, HFace> HEdge;
+
+    typedef HalfEdgeFace<VertexT, NormalT> HFace;
+    typedef HalfEdgeVertex<VertexT, NormalT> HVertex;
+
+    typedef HalfEdge<HVertex, HFace> HEdge;
+
+    typedef HFace*                              FacePtr;
+    typedef HVertex*                            VertexPtr;
+    typedef Region<VertexT, NormalT>*           RegionPtr;
+    typedef HEdge*                              EdgePtr;
+
+    typedef vector<HFace*>  FaceVector;
+    typedef vector<Region<VertexT, NormalT>* >  RegionVector;
+    typedef vector<HEdge*>   EdgeVector;
+    typedef vector<HVertex* > VertexVector;
+
 
 	/**
 	 * @brief   Ctor.
@@ -145,7 +159,7 @@ public:
      * @param   c       The third vertex of the triangle
      * @param   f       A pointer to the created face
      */
-	virtual void addTriangle(uint a, uint b, uint c, HFace* &f);
+	virtual void addTriangle(uint a, uint b, uint c, FacePtr&f);
 
 	/**
 	 * @brief	Flip the edge between vertex index v1 and v2
@@ -200,6 +214,11 @@ public:
 	virtual void finalizeAndRetesselate(bool genTextures, float fusionThreshold = 0.01);
 
 	/**
+	 * @brief Writes the classification result to a file.
+	 */
+	virtual void writeClassificationResult();
+
+	/**
 	 * @brief 	fills all holes
 	 *
 	 * @param 	max_size 	the maximum size of a hole
@@ -213,7 +232,15 @@ public:
 	 */
 	virtual void restorePlanes(int minRegionSize);
 
+	/**
+	 * TODO write comments
+	 */
 	void setClassifier(string name);
+
+	/**
+	 * TODO write comments
+	 */
+	RegionClassifier<VertexT, NormalT> getClassifier() { return *m_regionClassifier; };
 
 	/**
 	 * Sets the maximum recursion depth for region growing
@@ -241,7 +268,6 @@ public:
 	 */
 	void cleanContours(int iterations);
 
-
 	/**
 	 * Simplyfys the mesh by collapsing the @ref n_collapses edges with the
 	 * lowest costs according to the given costs function
@@ -253,17 +279,19 @@ public:
 
 private:
 
+	void checkFaceIntegreties();
+
 	/// The faces in the half edge mesh
-	vector<HalfEdgeFace<VertexT, NormalT>*>     m_faces;
+	FaceVector                                  m_faces;
 
 	/// The vertices of the mesh
-	vector<HalfEdgeVertex<VertexT, NormalT>*>   m_vertices;
+	VertexVector                                m_vertices;
 
 	/// The maximum recursion depth
 	unsigned int 								m_depth;
 
 	/// The regions in the half edge mesh
-	vector<Region<VertexT, NormalT>*>           m_regions;
+	RegionVector                                m_regions;
 
 	/// The indexed of the newest inserted vertex
 	size_t                                      m_globalIndex;
@@ -271,8 +299,11 @@ private:
 	/// Classification object
 	RegionClassifier<VertexT, NormalT>*         m_regionClassifier;
 
+	/// Classifier type
+	std::string                                 m_classifierType;
+
 	/// a pointer to the point cloud manager
-	typename PointsetSurface<VertexT>::Ptr      m_pointCloudManager;
+	typename PointsetSurface<VertexT>::Ptr   m_pointCloudManager;
 
 	/**
 	 * @brief   Returns an edge that point to the edge defined
@@ -283,7 +314,7 @@ private:
 	 * @return      A pointer to an existing edge, or null if no suitable
 	 *              edge was found.
 	 */
-	HEdge* halfEdgeToVertex(HVertex* v, HVertex* next);
+	EdgePtr halfEdgeToVertex(VertexPtr v, VertexPtr next);
 
 	/**
 	 * @brief	This method should be called every time
@@ -291,7 +322,7 @@ private:
 	 *
 	 * @param	v	The vertex to delete.
 	 */
-	virtual void deleteVertex(HVertex* v);
+	virtual void deleteVertex(VertexPtr v);
 
 	/**
 	 * @brief	Delete the given edge
@@ -299,7 +330,7 @@ private:
 	 * @param	edge		The edge to delete
 	 * @param	deletePair	Whether to delete edge->pair or not
 	 */
-	virtual void deleteEdge(HEdge* edge, bool deletePair = true);
+	virtual void deleteEdge(EdgePtr edge, bool deletePair = true);
 
 	/**
 	 * @brief	Delete a face from the mesh
@@ -308,14 +339,14 @@ private:
 	 * @param	f		The face to be deleted
 	 * @param   erase   If the Face will be erased
 	 */
-	virtual void deleteFace(HFace* f, bool erase = true);
+	virtual void deleteFace(FacePtr f, bool erase = true);
 
 	/**
 	 * @brief	Collapse the given edge
 	 *
 	 * @param	edge	The edge to collapse
 	 */
-	virtual void collapseEdge(HEdge* edge);
+	virtual void collapseEdge(EdgePtr edge);
 
 	/**
 	 * @brief	Flip the edge between f1 and f2
@@ -323,14 +354,14 @@ private:
 	 * @param	f1		The first face
 	 * @param	f2		The second face
 	 */
-	virtual void flipEdge(HFace* f1, HFace* f2);
+	virtual void flipEdge(FacePtr f1, FacePtr f2);
 
 	/**
 	 * @brief	Flip the given edge
 	 *
 	 * @param	edge	The edge to flip
 	 */
-	virtual void flipEdge(HEdge* edge);
+	virtual void flipEdge(EdgePtr edge);
 
 	/**
 	 * @brief    performs the stack safe region growing by limiting the used stack size
@@ -345,7 +376,7 @@ private:
 	 *
 	 * @return	Returns the size of the region - 1 (the start face is not included)
 	 */
-	virtual int stackSafeRegionGrowing(HFace* start_face, NormalT &normal, float &angle, Region<VertexT, NormalT>* region);
+	virtual int stackSafeRegionGrowing(FacePtr start_face, NormalT &normal, float &angle, RegionPtr region);
 
 	/**
 	 * @brief	Starts a region growing wrt the angle between the faces and returns the
@@ -366,7 +397,7 @@ private:
 	 *
 	 * @return	Returns the size of the region - 1 (the start face is not included)
 	 */
-	virtual int regionGrowing(HFace* start_face, NormalT &normal, float &angle, Region<VertexT, NormalT>* region, vector<HFace*> &leafs, unsigned int depth);
+	virtual int regionGrowing(FacePtr start_face, NormalT &normal, float &angle, RegionPtr region, vector<FacePtr> &leafs, unsigned int depth);
 
 	/**
 	 * @brief	Deletes all faces of the regions marked by region->m_toDelete
@@ -391,7 +422,7 @@ private:
 	 *	@param	x				a point on the intersection line
 	 *	@param	direction		the direction of the intersection line
 	 */
-	virtual void dragOntoIntersection(Region<VertexT, NormalT>* plane, Region<VertexT, NormalT>* neighbor_region, VertexT& x, VertexT& direction);
+	virtual void dragOntoIntersection(RegionPtr plane, RegionPtr neighbor_region, VertexT& x, VertexT& direction);
 
 	/**
 	 * @brief	Collapse the given edge safely
@@ -400,16 +431,22 @@ private:
 	 *
 	 * @return	true if the edge was collapsed, false otherwise
 	 */
-	virtual bool safeCollapseEdge(HEdge* edge);
+	virtual bool safeCollapseEdge(EdgePtr edge);
 
 
 	/**
 	 * @brief	Calculates costs for every vertex in the mesh
 	 */
-	void getCostMap(std::map<HVertex*, float> &costs, VertexCosts<VertexT, NormalT> &c);
+	void getCostMap(std::map<VertexPtr, float> &costs, VertexCosts<VertexT, NormalT> &c);
 
 
 	friend class ClassifierFactory<VertexT, NormalT>;
+
+
+
+	set<EdgePtr>        m_garbageEdges;
+	set<HFace*>         m_garbageFaces;
+	set<RegionPtr>      m_garbageRegions;
 };
 
 } // namespace lvr

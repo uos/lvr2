@@ -72,7 +72,6 @@ public:
      **/
     PointBuffer();
 
-
     /**
      * \brief Set the point array.
      *
