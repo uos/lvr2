@@ -84,21 +84,36 @@ public:
 	/**
 	 * @brief Returns the b component for the given region
 	 */
-	virtual uchar b(int region) { return 0;  }
-
+	virtual uchar b(int region) { return 0; }
 
 	/**
-	 * @brief  Overwrite this class to write information about the clusters
+	 * @brief  Overwrite this method to write information about the clusters
 	 * 		   to a file
 	 */
 	virtual void writeMetaInfo() {};
 
+	/**
+	 * @brief True if classifier can generate pre-labels
+	 */
+	virtual bool generatesLabel() { return false; }
 
+	/**
+	 * @brief Returns the label for the given region
+	 */
+	virtual string getLabel(int region) { return "unknown"; }
+
+	/**
+	 * @brief Set the mimimum number of faces for classification
+	 */
+	virtual void setMinRegionSize(unsigned int m_minSize) { this->m_minSize = m_minSize; }
 
 protected:
 
 	/// A pointer to a vector containing regions
 	vector<Region<VertexT, NormalT>* >*  m_regions;
+
+	/// minimum number of faces for classification
+	unsigned int m_minSize;
 };
 
 } /* namespace lvr */

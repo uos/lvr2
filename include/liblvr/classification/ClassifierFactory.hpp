@@ -28,6 +28,7 @@
 
 #include "classification/ColorGradientPlaneClassifier.hpp"
 #include "classification/IndoorNormalClassifier.hpp"
+#include "classification/NormalClassifier.hpp"
 
 namespace lvr
 {

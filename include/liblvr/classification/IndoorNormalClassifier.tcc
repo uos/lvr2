@@ -26,7 +26,6 @@
 namespace lvr
 {
 
-
 template<typename VertexT, typename NormalT>
 uchar* IndoorNormalClassifier<VertexT, NormalT>::getColor(int index)
 {
@@ -47,8 +46,8 @@ uchar* IndoorNormalClassifier<VertexT, NormalT>::getColor(int index)
 		break;
 	default:
 		Colors::getColor(fc, LIGHTGREY);
+		break;
 	}
-
 
 	for(int i = 0; i < 3; i++)
 	{
@@ -98,8 +97,7 @@ RegionLabel IndoorNormalClassifier<VertexT, NormalT>::classifyRegion(int index)
 		Region<VertexT, NormalT>* region = this->m_regions->at(index);
 		NormalT normal = region->m_normal;
 
-		// Only classify regions with a minimum of 10 faces
-		if(region->size() > 10)
+		if(region->size() >= this->m_minSize)
 		{
 			// Check if ceiling or floor
 			if(n_ceil 	* normal > 0.98) return Ceiling;
@@ -113,7 +111,6 @@ RegionLabel IndoorNormalClassifier<VertexT, NormalT>::classifyRegion(int index)
 
 	return Unknown;
 }
-
 
 template<typename VertexT, typename NormalT>
 void IndoorNormalClassifier<VertexT, NormalT>::createRegionBuffer(
@@ -129,6 +126,12 @@ void IndoorNormalClassifier<VertexT, NormalT>::createRegionBuffer(
 	int	vertex_position = 0;
 
 	Region<VertexT, NormalT>* region = this->m_regions->at(region_id);
+
+	// get the color
+	uchar* color = getColor(region_id);
+	uchar red   = color[0];
+	uchar green = color[1];
+	uchar blue  = color[2];
 
 	// Check if region is a planar cluster
 	VertexT current;
@@ -163,9 +166,9 @@ void IndoorNormalClassifier<VertexT, NormalT>::createRegionBuffer(
 				normals.push_back(normal.y);
 				normals.push_back(normal.z);
 
-				colors.push_back(r(region_id));
-				colors.push_back(g(region_id));
-				colors.push_back(b(region_id));
+				colors.push_back(red);
+				colors.push_back(green);
+				colors.push_back(blue);
 			}
 
 			indices.push_back(vertex_position);
@@ -192,13 +195,13 @@ void IndoorNormalClassifier<VertexT, NormalT>::writeBuffers(
 	case Unknown	: return;
 	}
 
-	out << str_label << c << endl;
+	out << str_label << c << std::endl;
 	c++;
-	out << indices.size() / 3 << " " << vertices.size() / 3 << endl;
+	out << indices.size() / 3 << " " << vertices.size() / 3 << std::endl;
 	for(size_t c = 0; c < indices.size() / 3; c++)
 	{
 		int buff_pos = 3 * c;
-		out << indices[buff_pos] << " " << indices[buff_pos + 1] << " " << indices[buff_pos + 2] << endl;
+		out << indices[buff_pos] << " " << indices[buff_pos + 1] << " " << indices[buff_pos + 2] << std::endl;
 	}
 
 	for(size_t c = 0; c < vertices.size() / 3; c++)
@@ -206,11 +209,9 @@ void IndoorNormalClassifier<VertexT, NormalT>::writeBuffers(
 		int buff_pos = 3 * c;
 		out << vertices[buff_pos] << " " << vertices[buff_pos + 1] << " " << vertices[buff_pos + 2] << " ";
 		out << normals [buff_pos] << " " << normals [buff_pos + 1] << " " <<  normals[buff_pos + 2] << " ";
-		out << colors  [buff_pos] << " " << colors  [buff_pos + 1] << " " <<   colors[buff_pos + 2] << endl;
+		out << colors  [buff_pos] << " " << colors  [buff_pos + 1] << " " <<   colors[buff_pos + 2] << std::endl;
 	}
 }
-
-
 
 template<typename VertexT, typename NormalT>
 void IndoorNormalClassifier<VertexT, NormalT>::writeMetaInfo()
@@ -219,7 +220,7 @@ void IndoorNormalClassifier<VertexT, NormalT>::writeMetaInfo()
 
 	if(!out.good())
 	{
-		cout << "Unable to open cluster file." << endl;
+		std::cout << "Unable to open cluster file." << std::endl;
 		return;
 	}
 
@@ -264,6 +265,5 @@ void IndoorNormalClassifier<VertexT, NormalT>::writeMetaInfo()
 	writeBuffers(out, Unknown, uc_indices, uc_vertices, uc_normals, uc_colors);
 	out.close();
 }
-
 
 } /* namespace lvr */

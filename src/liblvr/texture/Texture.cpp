@@ -101,7 +101,7 @@ void Texture::save(int i)
 	//write image file
 	char fn[255];
 	sprintf(fn, "texture_%d.ppm", i);
-	PPMIO* pio = new PPMIO();
+	PPMIO* pio = new PPMIO;
 	pio->setDataArray(this->m_data, m_width, m_height);
 	pio->write(string(fn));
 	delete pio;
@@ -113,11 +113,11 @@ bool Texture::cmpTextures(Texture* t1, Texture* t2)
 }
 
 Texture::~Texture() {
-	delete m_data;
-	delete m_featureDescriptors;
-	delete m_stats;
-	delete m_CCV;
-	delete m_keyPoints;
+	delete[] m_data;
+	delete[] m_featureDescriptors;
+	delete[] m_stats;
+	delete[] m_CCV;
+	delete[] m_keyPoints;
 }
 
 }
