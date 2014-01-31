@@ -299,3 +299,11 @@ if( DOXYGEN_FOUND AND DOXYGEN_DOT_FOUND )
         WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}
         COMMENT "Generating API documentation with Doxygen" VERBATIM )
 endif( DOXYGEN_FOUND AND DOXYGEN_DOT_FOUND )
+
+###################################################################
+# INSTALLATION
+###################################################################
+
+INSTALL(DIRECTORY include/liblvr/ DESTINATION /include/lvr)
+
+

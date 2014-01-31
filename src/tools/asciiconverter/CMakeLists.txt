@@ -15,3 +15,8 @@ target_link_libraries(lvr_ascii_convert ${Boost_FILESYSTEM_LIBRARY}
 	
 target_link_libraries(lvr_ascii_convert ${PCL_LIBRARIES})
 target_link_libraries(lvr_ascii_convert staticlvr)
+
+INSTALL(TARGETS lvr_ascii_convert
+    RUNTIME DESTINATION bin
+    LIBRARY DESTINATION lib
+    ARCHIVE DESTINATION lib)

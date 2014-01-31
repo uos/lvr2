@@ -59,11 +59,11 @@ set_target_properties(staticlvr PROPERTIES LIBRARY_OUTPUT_DIRECTORY
 target_link_libraries(staticlvr ${Boost_PROGRAM_OPTIONS_LIBRARY}
     ${Boost_SYSTEM_LIBRARY} ${Boost_THREAD_LIBRARY} ${Boost_FILESYSTEM_LIBRARY}
     ${OpenMP_CXX_FLAGS} ${OPENGL_LIBRARY} ${OpenCV_LIBS})
-target_link_libraries(staticlvr laslib_static)
+target_link_libraries(staticlvr lvrlas_static)
 target_link_libraries(staticlvr obj)
 target_link_libraries(staticlvr pthread)
 target_link_libraries(staticlvr ${PCL_LIBRARIES})
-target_link_libraries(staticlvr slam6d_static)
+target_link_libraries(staticlvr lvrslam6d_static)
 
 if ( rply_shared ) 
     target_link_libraries(staticlvr ${rply_shared})
@@ -80,11 +80,11 @@ target_link_libraries(lvr ${Boost_PROGRAM_OPTIONS_LIBRARY}
      ${Boost_SYSTEM_LIBRARY} ${Boost_THREAD_LIBRARY} ${Boost_FILESYSTEM_LIBRARY}
      ${OpenMP_CXX_FLAGS} ${OPENGL_LIBRARY} ${OpenCV_LIBS} )
 
-target_link_libraries(lvr laslib)
+target_link_libraries(lvr lvrlas)
 target_link_libraries(lvr obj)
 target_link_libraries(lvr pthread)
 target_link_libraries(lvr ${PCL_LIBRARIES})
-target_link_libraries(lvr slam6d)
+target_link_libraries(lvr lvrslam6d)
 target_link_libraries(lvr GLU)
 target_link_libraries(lvr glut)
 
@@ -93,3 +93,8 @@ if ( rply_shared )
 else ( rply_shared )
      target_link_libraries(lvr rply_local)
 endif ( rply_shared )
+
+INSTALL(TARGETS lvr staticlvr
+    RUNTIME DESTINATION bin
+    LIBRARY DESTINATION lib
+    ARCHIVE DESTINATION lib)
