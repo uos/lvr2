@@ -14,3 +14,8 @@ target_link_libraries(lvr_slicer ${Boost_FILESYSTEM_LIBRARY}
 							${Boost_PROGRAM_OPTIONS_LIBRARY})
 
 target_link_libraries(lvr_slicer ${CGAL_LIBRARY})
+
+INSTALL(TARGETS lvr_slicer
+    RUNTIME DESTINATION bin
+    LIBRARY DESTINATION lib
+    ARCHIVE DESTINATION lib)

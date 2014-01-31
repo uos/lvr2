@@ -13,4 +13,9 @@ target_link_libraries(lvr_transform_model freenect)
 target_link_libraries(lvr_transform_model ${Boost_FILESYSTEM_LIBRARY}
     ${Boost_SYSTEM_LIBRARY} ${Boost_THREAD_LIBRARY}
     ${Boost_PROGRAM_OPTIONS_LIBRARY})
+    
+INSTALL(TARGETS lvr_transform_model
+    RUNTIME DESTINATION bin
+    LIBRARY DESTINATION lib
+    ARCHIVE DESTINATION lib)
 

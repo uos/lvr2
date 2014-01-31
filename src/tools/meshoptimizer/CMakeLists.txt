@@ -18,3 +18,8 @@ target_link_libraries(lvr_mesh_optimizer ${PCL_LIBRARIES})
 if( ${NABO_FOUND} )
     target_link_libraries(lvr_mesh_optimizer ${NABO_LIBRARIES})
 endif( ${NABO_FOUND} )
+
+INSTALL(TARGETS lvr_mesh_optimizer
+    RUNTIME DESTINATION bin
+    LIBRARY DESTINATION lib
+    ARCHIVE DESTINATION lib)

@@ -16,3 +16,8 @@ target_link_libraries(lvr_cgal_normal_estimation ${PCL_LIBRARIES})
 target_link_libraries(lvr_cgal_normal_estimation freenect)
 
 target_link_libraries(lvr_cgal_normal_estimation ${CGAL_LIBRARY})
+
+INSTALL(TARGETS lvr_cgal_normal_estimation
+    RUNTIME DESTINATION bin
+    LIBRARY DESTINATION lib
+    ARCHIVE DESTINATION lib)
