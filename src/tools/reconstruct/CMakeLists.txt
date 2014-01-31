@@ -18,3 +18,8 @@ target_link_libraries(lvr_reconstruct ${PCL_LIBRARIES})
 if( ${NABO_FOUND} )
     target_link_libraries(lvr_reconstruct ${NABO_LIBRARIES})
 endif( ${NABO_FOUND} )
+
+INSTALL(TARGETS lvr_reconstruct
+    RUNTIME DESTINATION bin
+    LIBRARY DESTINATION lib
+    ARCHIVE DESTINATION lib)

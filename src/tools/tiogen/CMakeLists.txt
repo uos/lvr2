@@ -6,3 +6,8 @@ target_link_libraries( lvr_tiogen staticlvr )
 target_link_libraries( lvr_tiogen ${Boost_FILESYSTEM_LIBRARY}
     ${Boost_SYSTEM_LIBRARY} ${Boost_THREAD_LIBRARY}
     ${Boost_PROGRAM_OPTIONS_LIBRARY})
+    
+INSTALL(TARGETS lvr_tiogen
+    RUNTIME DESTINATION bin
+    LIBRARY DESTINATION lib
+    ARCHIVE DESTINATION lib)
