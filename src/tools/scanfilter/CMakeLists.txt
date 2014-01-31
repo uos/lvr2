@@ -18,3 +18,8 @@ target_link_libraries(lvr_pointcloud_filter ${Boost_FILESYSTEM_LIBRARY}
     ${Boost_PROGRAM_OPTIONS_LIBRARY})
     
 target_link_libraries(lvr_pointcloud_filter ${PCL_LIBRARIES})
+
+INSTALL(TARGETS lvr_pointcloud_filter
+    RUNTIME DESTINATION bin
+    LIBRARY DESTINATION lib
+    ARCHIVE DESTINATION lib)

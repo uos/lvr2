@@ -94,3 +94,8 @@ target_link_libraries(qviewer pthread)
 target_link_libraries(qviewer GLU)
 target_link_libraries(qviewer ${PCL_LIBRARIES})
 target_link_libraries(qviewer GLU)
+
+INSTALL(TARGETS qviewer
+    RUNTIME DESTINATION bin
+    LIBRARY DESTINATION lib
+    ARCHIVE DESTINATION lib)

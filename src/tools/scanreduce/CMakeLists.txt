@@ -12,3 +12,7 @@ target_link_libraries(lvr_pointcloud_reduce ${Boost_FILESYSTEM_LIBRARY}
     ${Boost_SYSTEM_LIBRARY} ${Boost_THREAD_LIBRARY}
     ${Boost_PROGRAM_OPTIONS_LIBRARY})
 
+INSTALL(TARGETS lvr_pointcloud_reduce
+    RUNTIME DESTINATION bin
+    LIBRARY DESTINATION lib
+    ARCHIVE DESTINATION lib)

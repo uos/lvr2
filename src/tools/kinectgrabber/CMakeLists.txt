@@ -15,3 +15,8 @@ target_link_libraries(lvr_kinect_grabber ${Boost_FILESYSTEM_LIBRARY}
 target_link_libraries(lvr_kinect_grabber ${OpenMP_CXX_FLAGS})
 target_link_libraries(lvr_kinect_grabber ${PCL_LIBRARIES})
 target_link_libraries(lvr_kinect_grabber freenect)
+
+INSTALL(TARGETS lvr_kinect_grabber
+    RUNTIME DESTINATION bin
+    LIBRARY DESTINATION lib
+    ARCHIVE DESTINATION lib)

@@ -13,3 +13,8 @@ target_link_libraries(lvr_fusion ${Boost_FILESYSTEM_LIBRARY}
 							 ${Boost_SYSTEM_LIBRARY} ${Boost_THREAD_LIBRARY}
 							 ${Boost_PROGRAM_OPTIONS_LIBRARY} ${GMP_LIBRARIES}
 							 ${MPFR_LIBRARIES} ${CGAL_LIBRARY})
+							 
+INSTALL(TARGETS lvr_fusion
+    RUNTIME DESTINATION bin
+    LIBRARY DESTINATION lib
+    ARCHIVE DESTINATION lib)

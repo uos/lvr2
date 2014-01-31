@@ -9,3 +9,8 @@ endif(PCL_FOUND)
 if( ${NABO_FOUND} )
     target_link_libraries( lvr_colorize ${NABO_LIBRARIES})
 endif( ${NABO_FOUND} )
+
+INSTALL(TARGETS lvr_colorize
+    RUNTIME DESTINATION bin
+    LIBRARY DESTINATION lib
+    ARCHIVE DESTINATION lib)
