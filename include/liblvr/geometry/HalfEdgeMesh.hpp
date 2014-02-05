@@ -277,6 +277,11 @@ public:
 	 */
 	void reduceMeshByCollapse(int n_collapses, VertexCosts<VertexT, NormalT> &c);
 
+	/**
+	 * @brief returns the RegionVector
+	 */
+	RegionVector getRegions() { return m_regions; }
+
 private:
 
 	void checkFaceIntegreties();
