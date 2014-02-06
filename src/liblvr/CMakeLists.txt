@@ -62,6 +62,7 @@ target_link_libraries(staticlvr ${Boost_PROGRAM_OPTIONS_LIBRARY}
 target_link_libraries(staticlvr laslib_static)
 target_link_libraries(staticlvr obj)
 target_link_libraries(staticlvr pthread)
+target_link_libraries(staticlvr freenect)
 target_link_libraries(staticlvr ${PCL_LIBRARIES})
 target_link_libraries(staticlvr slam6d_static)
 
@@ -85,6 +86,7 @@ target_link_libraries(lvr obj)
 target_link_libraries(lvr pthread)
 target_link_libraries(lvr ${PCL_LIBRARIES})
 target_link_libraries(lvr slam6d)
+target_link_libraries(lvr freenect)
 target_link_libraries(lvr GLU)
 target_link_libraries(lvr glut)
 
