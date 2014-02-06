@@ -32,6 +32,13 @@ FIND_PACKAGE( MPI )
 include_directories(SYSTEM ${MPI_INCLUDE_PATH})
 
 ####
+## Searching for MPI
+##############################
+find_package(VTK REQUIRED)
+include(${VTK_USE_FILE})
+
+
+####
 ## Searching for NABO 
 ##############################
 
@@ -269,6 +276,8 @@ if( QT4_FOUND )
         message(STATUS "Building qglviewer application")
         add_subdirectory(src/qglviewer)
     endif(QGLVIEWER_LIBRARY_RELEASE)
+
+    add_subdirectory(src/tools/viewer)
 
 endif(QT4_FOUND)
 
