@@ -33,6 +33,8 @@
 #ifndef MESHIO_HPP_
 #define MESHIO_HPP_
 
+#include <boost/shared_ptr.hpp>
+
 #include <stdint.h>
 #include <cstddef>
 #include <cstdlib>
