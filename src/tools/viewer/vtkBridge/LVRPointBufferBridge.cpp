@@ -34,10 +34,9 @@
 namespace lvr
 {
 
-LVRPointBufferBridge::LVRPointBufferBridge(PointBufferPtr pointCloud) :
-    m_pointCloud(pointCloud)
+LVRPointBufferBridge::LVRPointBufferBridge(PointBufferPtr pointCloud)
 {
-    computePointCloudActor();
+    computePointCloudActor(pointCloud);
 }
 
 
@@ -46,9 +45,9 @@ LVRPointBufferBridge::~LVRPointBufferBridge()
 {
 }
 
-void LVRPointBufferBridge::computePointCloudActor()
+void LVRPointBufferBridge::computePointCloudActor(PointBufferPtr pc)
 {
-    if(m_pointCloud)
+    if(pc)
     {
         m_pointCloudActor= vtkSmartPointer<vtkActor>::New();
 
@@ -59,7 +58,7 @@ void LVRPointBufferBridge::computePointCloudActor()
 
         double point[3];
         size_t n;
-        floatArr points = m_pointCloud->getPointArray(n);
+        floatArr points = pc->getPointArray(n);
         for(vtkIdType i = 0; i < n; i++)
         {
             point[0] = points[3 * i    ];

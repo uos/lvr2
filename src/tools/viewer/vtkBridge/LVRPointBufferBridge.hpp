@@ -43,9 +43,8 @@ public:
 
 protected:
 
-    void computePointCloudActor();
+    void computePointCloudActor(PointBufferPtr pc);
 
-    PointBufferPtr                  m_pointCloud;
     vtkSmartPointer<vtkActor>       m_pointCloudActor;
 };
 
