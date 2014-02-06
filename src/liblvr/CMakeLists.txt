@@ -87,6 +87,7 @@ target_link_libraries(lvr ${PCL_LIBRARIES})
 target_link_libraries(lvr lvrslam6d)
 target_link_libraries(lvr GLU)
 target_link_libraries(lvr glut)
+target_link_libraries(lvr freenect)
 
 if ( rply_shared )
      target_link_libraries(lvr ${rply_shared})
