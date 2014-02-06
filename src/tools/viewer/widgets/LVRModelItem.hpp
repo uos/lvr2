@@ -25,6 +25,8 @@
 #ifndef LVRMODELITEM_H_
 #define LVRMODELITEM_H_
 
+#include "io/Model.hpp"
+
 namespace lvr
 {
 
@@ -33,6 +35,10 @@ class LVRModelItem
 public:
     LVRModelItem();
     virtual ~LVRModelItem();
+
+protected:
+
+
 };
 
 } /* namespace lvr */
