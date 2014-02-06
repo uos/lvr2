@@ -42,9 +42,8 @@ public:
     vtkSmartPointer<vtkActor> getMeshActor();
 
 protected:
-    void computeMeshActor();
+    void computeMeshActor(MeshBufferPtr meshbuffer);
 
-    MeshBufferPtr                   m_meshBuffer;
     vtkSmartPointer<vtkActor>       m_meshActor;
 };
 

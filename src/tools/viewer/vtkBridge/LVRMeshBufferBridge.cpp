@@ -36,10 +36,9 @@
 namespace lvr
 {
 
-LVRMeshBufferBridge::LVRMeshBufferBridge(MeshBufferPtr meshBuffer) :
-        m_meshBuffer(meshBuffer)
+LVRMeshBufferBridge::LVRMeshBufferBridge(MeshBufferPtr meshBuffer)
 {
-    computeMeshActor();
+    computeMeshActor(meshBuffer);
 }
 
 LVRMeshBufferBridge::~LVRMeshBufferBridge()
@@ -47,16 +46,16 @@ LVRMeshBufferBridge::~LVRMeshBufferBridge()
     // TODO Auto-generated destructor stub
 }
 
-void LVRMeshBufferBridge::computeMeshActor()
+void LVRMeshBufferBridge::computeMeshActor(MeshBufferPtr meshbuffer)
 {
-    if(m_meshBuffer)
+    if(meshbuffer)
     {
         vtkSmartPointer<vtkPolyData> mesh = vtkSmartPointer<vtkPolyData>::New();
 
         // Parse vertex and index buffer
         size_t n_v, n_i;
-        floatArr vertices = m_meshBuffer->getVertexArray(n_v);
-        uintArr indices = m_meshBuffer->getFaceArray(n_i);
+        floatArr vertices = meshbuffer->getVertexArray(n_v);
+        uintArr indices = meshbuffer->getFaceArray(n_i);
 
         vtkSmartPointer<vtkPoints> points = vtkSmartPointer<vtkPoints>::New();
         vtkSmartPointer<vtkCellArray> triangles = vtkSmartPointer<vtkCellArray>::New();

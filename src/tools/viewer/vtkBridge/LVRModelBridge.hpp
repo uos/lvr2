@@ -70,8 +70,6 @@ private:
     LVRPointBufferBridge        m_pointBridge;
     LVRMeshBufferBridge         m_meshBridge;
 
-    ModelPtr                    m_model;
-
 };
 
 } /* namespace lvr */
