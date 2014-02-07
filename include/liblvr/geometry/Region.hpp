@@ -105,10 +105,8 @@ public:
 
 	/**
 	 * @brief Finds all contours of the region (outer contour + holes)
-	 *
-	 * @param	epsilon	controls the number of points used for a contour
-	 *
-	 * @return 	a list of all contours
+	 * @param epsilon perpendicular (point-to-line) distance tolerance
+	 * @return a list of all contours
 	 */
 	virtual vector<vector<VertexT> > getContours(float epsilon);
 
