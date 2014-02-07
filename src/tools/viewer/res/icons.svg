@@ -15,7 +15,7 @@
    height="1052.3622047"
    id="svg2"
    version="1.1"
-   inkscape:version="0.48.1 r9760"
+   inkscape:version="0.48.4 r9939"
    sodipodi:docname="icons.svg">
   <sodipodi:namedview
      id="base"
@@ -25,15 +25,15 @@
      inkscape:pageopacity="0.0"
      inkscape:pageshadow="2"
      inkscape:zoom="1.7564974"
-     inkscape:cx="114.71694"
+     inkscape:cx="115.85557"
      inkscape:cy="848.00299"
      inkscape:document-units="px"
-     inkscape:current-layer="g4200-3"
+     inkscape:current-layer="layer1"
      showgrid="false"
      inkscape:window-width="1920"
-     inkscape:window-height="1027"
+     inkscape:window-height="1034"
      inkscape:window-x="0"
-     inkscape:window-y="24"
+     inkscape:window-y="25"
      inkscape:window-maximized="1"
      inkscape:snap-global="true"
      inkscape:snap-nodes="true"
@@ -1675,15 +1675,6 @@
          offset="0"
          id="stop5316-5-1-3-7-3-8" />
     </linearGradient>
-    <filter
-       color-interpolation-filters="sRGB"
-       inkscape:collect="always"
-       id="filter4196-3">
-      <feGaussianBlur
-         inkscape:collect="always"
-         stdDeviation="0.390625"
-         id="feGaussianBlur4198-3" />
-    </filter>
     <radialGradient
        inkscape:collect="always"
        xlink:href="#linearGradient5018"
@@ -1705,6 +1696,15 @@
          inkscape:collect="always"
          stdDeviation="16.351476"
          id="feGaussianBlur5072" />
+    </filter>
+    <filter
+       color-interpolation-filters="sRGB"
+       inkscape:collect="always"
+       id="filter5498-0">
+      <feGaussianBlur
+         inkscape:collect="always"
+         stdDeviation="0.17100741"
+         id="feGaussianBlur5500-2" />
     </filter>
   </defs>
   <metadata
@@ -4223,6 +4223,40 @@
              transform="matrix(0.75422379,0.65661745,-0.58626292,0.81012085,0,0)" />
         </g>
       </g>
+    </g>
+    <g
+       id="g5487-8"
+       transform="matrix(0.84857407,0,0,1,-247.37786,239.51665)"
+       style="fill:#e6e6e6;filter:url(#filter5498-0)"
+       inkscape:export-filename="/home/twiemann/software/meshing.twiemann/src/qglviewer/res/qv_model_tree_icon.png"
+       inkscape:export-xdpi="90"
+       inkscape:export-ydpi="90">
+      <path
+         inkscape:connector-curvature="0"
+         id="path5442-7"
+         d="m 391.30859,50.532983 0.35428,7.794049 8.14832,1.771377 -0.17714,-10.451111 z"
+         style="fill:#e6e6e6;stroke:#000000;stroke-width:0.16592622px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1" />
+      <path
+         inkscape:connector-curvature="0"
+         id="path5444-5"
+         d="m 399.45692,60.098409 0.17713,0"
+         style="fill:#e6e6e6;stroke:#000000;stroke-width:0.16592622px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1" />
+      <path
+         inkscape:connector-curvature="0"
+         id="path5452-0"
+         d="m 399.75357,60.008597 12.46288,-0.688903 0.0626,-9.895153 -6.45063,-7.202164 -6.1375,7.640558 z"
+         style="fill:#e6e6e6;stroke:#000000;stroke-width:0.16592622px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1" />
+      <path
+         inkscape:connector-curvature="0"
+         id="path5454-3"
+         d="m 407.08099,40.969824 8.14158,9.143621 -3.44452,0.250511 -6.57589,-8.016324 z"
+         style="fill:#e6e6e6;stroke:#000000;stroke-width:0.16592622px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1" />
+      <path
+         sodipodi:nodetypes="ccccc"
+         inkscape:connector-curvature="0"
+         id="path5440-2"
+         d="m 389.89149,50.532983 8.67973,-8.325456 8.32547,-1.239964 -7.12664,9.170013 z"
+         style="fill:#e6e6e6;stroke:#000000;stroke-width:0.16592622px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1" />
     </g>
   </g>
 </svg>
