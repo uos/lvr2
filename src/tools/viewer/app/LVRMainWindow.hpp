@@ -25,6 +25,10 @@
 #ifndef MAINWINDOW_HPP_
 #define MAINWINDOW_HPP_
 
+#include <vtkRenderer.h>
+#include <vtkSmartPointer.h>
+#include <vtkRenderWindow.h>
+
 #include <QtGui>
 #include "LVRMainWindowUI.h"
 
@@ -52,7 +56,10 @@ public Q_SLOTS:
     void loadModel();
 
 private:
+    void setupQVTK();
     void connectSignalsAndSlots();
+
+    vtkSmartPointer<vtkRenderer>        m_renderer;
 };
 
 } /* namespace lvr */
