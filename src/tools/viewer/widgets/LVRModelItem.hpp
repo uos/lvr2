@@ -26,18 +26,28 @@
 #define LVRMODELITEM_H_
 
 #include "io/Model.hpp"
+#include "../vtkBridge/LVRModelBridge.hpp"
+
+#include <QString>
+#include <QTreeWidgetItem>
+
+#include <boost/shared_ptr.hpp>
 
 namespace lvr
 {
 
-class LVRModelItem
+typedef boost::shared_ptr<LVRModelBridge> ModelBridgePtr;
+
+class LVRModelItem : public QTreeWidgetItem
 {
 public:
-    LVRModelItem();
+
+    LVRModelItem(ModelBridgePtr bridge, QString name = "");
     virtual ~LVRModelItem();
 
 protected:
-
+    ModelBridgePtr  m_modelBridge;
+    QString         m_name;
 
 };
 

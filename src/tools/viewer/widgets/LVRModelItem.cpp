@@ -27,9 +27,20 @@
 namespace lvr
 {
 
-LVRModelItem::LVRModelItem()
+LVRModelItem::LVRModelItem(ModelBridgePtr bridge, QString name) :
+    m_modelBridge(bridge), m_name(name)
 {
-    // TODO Auto-generated constructor stub
+    // Setup tree widget icon
+    QIcon icon;
+    icon.addFile(QString::fromUtf8(":/qv_model_tree_icon.png"), QSize(), QIcon::Normal, QIcon::Off);
+    setIcon(0, icon);
+
+    // Setup item properties
+    setText(0, m_name);
+    setCheckState(0, Qt::Checked);
+
+    // Insert sub items
+
 
 }
 
