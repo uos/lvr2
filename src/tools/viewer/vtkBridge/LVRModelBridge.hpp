@@ -65,6 +65,9 @@ public:
      */
     void removeActors(vtkSmartPointer<vtkRenderer> renderer);
 
+    // Declare model item classes as friends to have fast access to data chunks
+    friend class LVRModelItem;
+
 private:
 
     LVRPointBufferBridge        m_pointBridge;

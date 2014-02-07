@@ -22,14 +22,14 @@
  *  @date Jan 31, 2014
  *  @author Thomas Wiemann
  */
+
+#include <QFileInfo>
+
 #include "LVRMainWindow.hpp"
 #include "../vtkBridge/LVRModelBridge.hpp"
+#include "../widgets/LVRModelItem.hpp"
 
 #include "io/ModelFactory.hpp"
-
-#include <vtkRenderer.h>
-#include <vtkSmartPointer.h>
-#include <vtkRenderWindow.h>
 
 namespace lvr
 {
@@ -37,6 +37,7 @@ namespace lvr
 LVRMainWindow::LVRMainWindow()
 {
     setupUi(this);
+    setupQVTK();
     connectSignalsAndSlots();
 }
 
@@ -47,6 +48,13 @@ LVRMainWindow::~LVRMainWindow()
     // TODO Auto-generated destructor stub
 }
 
+void LVRMainWindow::setupQVTK()
+{
+    // Add new renderer to the render window of the QVTKWidget
+    m_renderer = vtkSmartPointer<vtkRenderer>::New();
+    this->qvtkWidget->GetRenderWindow()->AddRenderer(m_renderer);
+}
+
 void LVRMainWindow::connectSignalsAndSlots()
 {
     QObject::connect(actionOpen, SIGNAL(activated()), this, SLOT(loadModel()));
@@ -55,11 +63,21 @@ void LVRMainWindow::connectSignalsAndSlots()
 void LVRMainWindow::loadModel()
 {
     QString filename = QFileDialog::getOpenFileName(this, tr("Open Model"), "", tr("Model Files (*.ply *.obj *.pts *.3d *.txt)"));
+
+    // Load model and generate vtk representation
     ModelPtr model = ModelFactory::readModel(filename.toStdString());
-    LVRModelBridge bridge(model);
-    vtkSmartPointer<vtkRenderer> renderer = vtkSmartPointer<vtkRenderer>::New();
-    this->qvtkWidget->GetRenderWindow()->AddRenderer(renderer);
-    bridge.addActors(renderer);
+    ModelBridgePtr bridge( new LVRModelBridge(model));
+    bridge->addActors(m_renderer);
+
+    // Add item for this model to tree widget
+    QFileInfo info(filename);
+    QString base = info.fileName();
+    this->treeWidget->addTopLevelItem(new LVRModelItem(bridge, base));
+
+    // Update camera to new scene dimension and force rendering
+    m_renderer->ResetCamera();
+    this->qvtkWidget->GetRenderWindow()->Render();
+
 }
 
 } /* namespace lvr */
