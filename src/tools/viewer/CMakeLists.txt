@@ -10,6 +10,7 @@ set(LVR_VIEWER_SOURCES
     vtkBridge/LVRPointBufferBridge.cpp
     vtkBridge/LVRMeshBufferBridge.cpp
     widgets/LVRModelItem.cpp
+    widgets/LVRPointCloudItem.cpp
 )
 
 

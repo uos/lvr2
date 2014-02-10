@@ -23,6 +23,11 @@
  *  @author Thomas Wiemann
  */
 #include "LVRModelItem.hpp"
+#include "LVRPointCloudItem.hpp"
+
+#include <vtkSmartPointer.h>
+#include <vtkActor.h>
+#include <vtkPolyDataMapper.h>
 
 namespace lvr
 {
@@ -38,9 +43,14 @@ LVRModelItem::LVRModelItem(ModelBridgePtr bridge, QString name) :
     // Setup item properties
     setText(0, m_name);
     setCheckState(0, Qt::Checked);
+    LVRPointCloudItem* item = new LVRPointCloudItem(bridge->m_pointBridge, this);
 
     // Insert sub items
-
+    if(bridge->m_pointBridge.getNumPoints())
+    {
+        addChild(item);
+        item->setExpanded(true);
+    }
 
 }
 
