@@ -31,12 +31,8 @@
 #include <QString>
 #include <QTreeWidgetItem>
 
-#include <boost/shared_ptr.hpp>
-
 namespace lvr
 {
-
-typedef boost::shared_ptr<LVRModelBridge> ModelBridgePtr;
 
 class LVRModelItem : public QTreeWidgetItem
 {

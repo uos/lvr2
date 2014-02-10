@@ -39,6 +39,9 @@ LVRMainWindow::LVRMainWindow()
     setupUi(this);
     setupQVTK();
     connectSignalsAndSlots();
+
+    QHeaderView* v = this->treeWidget->header();
+    v->resizeSection(0, 150);
 }
 
 
@@ -72,7 +75,9 @@ void LVRMainWindow::loadModel()
     // Add item for this model to tree widget
     QFileInfo info(filename);
     QString base = info.fileName();
-    this->treeWidget->addTopLevelItem(new LVRModelItem(bridge, base));
+    LVRModelItem* item = new LVRModelItem(bridge, base);
+    this->treeWidget->addTopLevelItem(item);
+    item->setExpanded(true);
 
     // Update camera to new scene dimension and force rendering
     m_renderer->ResetCamera();
