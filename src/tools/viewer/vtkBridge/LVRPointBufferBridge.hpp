@@ -30,6 +30,8 @@
 #include <vtkSmartPointer.h>
 #include <vtkActor.h>
 
+#include <boost/shared_ptr.hpp>
+
 namespace lvr
 {
 
@@ -39,14 +41,22 @@ public:
     LVRPointBufferBridge(PointBufferPtr pointcloud);
     virtual ~LVRPointBufferBridge();
 
-    vtkSmartPointer<vtkActor> getPointCloudActor();
+    vtkSmartPointer<vtkActor>   getPointCloudActor();
+    size_t                      getNumPoints();
+    bool                        hasNormals();
+    bool                        hasColors();
 
 protected:
 
     void computePointCloudActor(PointBufferPtr pc);
 
     vtkSmartPointer<vtkActor>       m_pointCloudActor;
+    size_t                          m_numPoints;
+    bool                            m_hasNormals;
+    bool                            m_hasColors;
 };
+
+typedef boost::shared_ptr<LVRPointBufferBridge> PointBufferBridgePtr;
 
 } /* namespace lvr */
 

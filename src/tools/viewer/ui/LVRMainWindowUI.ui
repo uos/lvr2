@@ -158,12 +158,23 @@
     <layout class="QHBoxLayout" name="horizontalLayout">
      <item>
       <widget class="QTreeWidget" name="treeWidget">
+       <property name="autoExpandDelay">
+        <number>0</number>
+       </property>
+       <property name="columnCount">
+        <number>2</number>
+       </property>
        <attribute name="headerVisible">
         <bool>false</bool>
        </attribute>
        <column>
         <property name="text">
          <string notr="true">1</string>
+        </property>
+       </column>
+       <column>
+        <property name="text">
+         <string notr="true">2</string>
         </property>
        </column>
       </widget>

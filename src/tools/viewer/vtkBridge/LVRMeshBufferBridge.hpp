@@ -30,6 +30,8 @@
 #include <vtkSmartPointer.h>
 #include <vtkActor.h>
 
+#include <boost/shared_ptr.hpp>
+
 namespace lvr
 {
 
@@ -46,6 +48,8 @@ protected:
 
     vtkSmartPointer<vtkActor>       m_meshActor;
 };
+
+typedef boost::shared_ptr<LVRMeshBufferBridge> MeshBufferBridgePtr;
 
 } /* namespace lvr */
 
