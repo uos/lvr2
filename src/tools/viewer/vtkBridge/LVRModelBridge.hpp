@@ -32,6 +32,8 @@
 #include <vtkSmartPointer.h>
 #include <vtkRenderer.h>
 
+#include <boost/shared_ptr.hpp>
+
 namespace lvr
 {
 
@@ -74,6 +76,8 @@ private:
     LVRMeshBufferBridge         m_meshBridge;
 
 };
+
+typedef boost::shared_ptr<LVRModelBridge> ModelBridgePtr;
 
 } /* namespace lvr */
 
