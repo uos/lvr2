@@ -36,15 +36,23 @@ namespace lvr
 
 LVRPointBufferBridge::LVRPointBufferBridge(PointBufferPtr pointCloud)
 {
-    // Generate vtk actor representation
-    computePointCloudActor(pointCloud);
+    if(pointCloud)
+    {
+        // Generate vtk actor representation
+        computePointCloudActor(pointCloud);
 
-    // Save meta information
-    size_t numColors, numNormals;
-    m_numPoints = pointCloud->getNumPoints();
-    m_hasNormals = pointCloud->getPointNormalArray(numNormals);
-    m_hasColors = pointCloud->getPointColorArray(numColors);
-
+        // Save meta information
+        size_t numColors, numNormals;
+        m_numPoints = pointCloud->getNumPoints();
+        m_hasNormals = pointCloud->getPointNormalArray(numNormals);
+        m_hasColors = pointCloud->getPointColorArray(numColors);
+    }
+    else
+    {
+        m_numPoints = 0;
+        m_hasNormals = false;
+        m_hasColors = false;
+    }
 }
 
 size_t  LVRPointBufferBridge::getNumPoints()
