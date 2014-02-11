@@ -17,46 +17,32 @@
  */
 
 /**
- * LVRModelItem.cpp
+ * LVRPointCloudItem.hpp
  *
- *  @date Feb 6, 2014
+ *  @date Feb 7, 2014
  *  @author Thomas Wiemann
  */
-#include "LVRModelItem.hpp"
-#include "LVRPointCloudItem.hpp"
+#ifndef LVRPOINTCLOUDITEM_HPP_
+#define LVRPOINTCLOUDITEM_HPP_
 
-#include <vtkSmartPointer.h>
-#include <vtkActor.h>
-#include <vtkPolyDataMapper.h>
+#include "../vtkBridge/LVRPointBufferBridge.hpp"
+
+#include <QTreeWidgetItem>
 
 namespace lvr
 {
 
-LVRModelItem::LVRModelItem(ModelBridgePtr bridge, QString name) :
-    m_modelBridge(bridge), m_name(name)
+class LVRPointCloudItem : public QTreeWidgetItem
 {
-    // Setup tree widget icon
-    QIcon icon;
-    icon.addFile(QString::fromUtf8(":/qv_model_tree_icon.png"), QSize(), QIcon::Normal, QIcon::Off);
-    setIcon(0, icon);
+public:
 
-    // Setup item properties
-    setText(0, m_name);
-    setCheckState(0, Qt::Checked);
+    LVRPointCloudItem(LVRPointBufferBridge& ptr, QTreeWidgetItem* parent = 0);
+    virtual ~LVRPointCloudItem();
 
-
-    // Insert sub items
-    if(bridge->m_pointBridge.getNumPoints())
-    {
-        LVRPointCloudItem* pointItem = new LVRPointCloudItem(bridge->m_pointBridge, this);
-        addChild(pointItem);
-        pointItem->setExpanded(true);
-    }
-}
-
-LVRModelItem::~LVRModelItem()
-{
-    // TODO Auto-generated destructor stub
-}
+protected:
+    QTreeWidgetItem*        m_parent;
+};
 
 } /* namespace lvr */
+
+#endif /* LVRPOINTCLOUDITEM_HPP_ */
