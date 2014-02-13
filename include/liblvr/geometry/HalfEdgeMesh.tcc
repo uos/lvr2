@@ -1541,6 +1541,8 @@ void HalfEdgeMesh<VertexT, NormalT>::finalize()
 	// jetzt alle regions labeln, falls der classifier das kann
 	if (m_regionClassifier->generatesLabel())
 	{
+		std::cout << timestamp << "Generating pre-labels with classifier type " << m_classifierType << std::endl;
+
 		string label;
 
 		typename vector<RegionPtr>::iterator region_iter = m_regions.begin();
