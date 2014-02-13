@@ -1454,7 +1454,7 @@ void HalfEdgeMesh<VertexT, NormalT>::finalize()
 	std::cout << timestamp << "Checking face integreties." << std::endl;
     checkFaceIntegreties();
 
-    std::cout << timestamp << "Finalizing mesh." << std::endl;
+    std::cout << timestamp << "Finalizing mesh with classifier \"" << m_classifierType << "\"." << std::endl;
 
     labeledFacesMap labeledFaces;
 
@@ -1537,7 +1537,6 @@ void HalfEdgeMesh<VertexT, NormalT>::finalize()
         faceColorBuffer.push_back( g );
         faceColorBuffer.push_back( b );*/
     }
-
 	// jetzt alle regions labeln, falls der classifier das kann
 	if (m_regionClassifier->generatesLabel())
 	{
@@ -1554,29 +1553,25 @@ void HalfEdgeMesh<VertexT, NormalT>::finalize()
 
 			label = (*region_iter)->getLabel();
 
-			// TODO the first region has a label of "", for now we skip it
-			if (label != "")
+			vector<unsigned int> ids;
+
+			typename vector<FacePtr>::iterator region_face_iter = (*region_iter)->m_faces.begin();
+			typename vector<FacePtr>::iterator region_face_end  = (*region_iter)->m_faces.end();
+			for(size_t i = 0; region_face_iter != region_face_end; ++i, ++region_face_iter)
 			{
-				vector<unsigned int> ids;
+				ids.push_back((*region_face_iter)->getBufferID());
+			}
 
-				typename vector<FacePtr>::iterator region_face_iter = (*region_iter)->m_faces.begin();
-				typename vector<FacePtr>::iterator region_face_end  = (*region_iter)->m_faces.end();
-				for(size_t i = 0; region_face_iter != region_face_end; ++i, ++region_face_iter)
-				{
-					ids.push_back((*region_face_iter)->getBufferID());
-				}
+			// if prelabel already exists in map, insert face id, else create new entry
+			typename labeledFacesMap::iterator it = labeledFaces.find(label);
 
-				// if prelabel already exists in map, insert face id, else create new entry
-				typename labeledFacesMap::iterator it = labeledFaces.find(label);
-
-				if (it != labeledFaces.end())
-				{
-					it->second.insert(it->second.end(), ids.begin(), ids.end());
-				}
-				else
-				{
-					labeledFaces.insert(std::pair<std::string, std::vector<unsigned int> >(label, ids));
-				}
+			if (it != labeledFaces.end())
+			{
+				it->second.insert(it->second.end(), ids.begin(), ids.end());
+			}
+			else
+			{
+				labeledFaces.insert(std::pair<std::string, std::vector<unsigned int> >(label, ids));
 			}
 		}
 	}
