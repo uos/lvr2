@@ -24,6 +24,7 @@
  */
 #include "LVRModelItem.hpp"
 #include "LVRPointCloudItem.hpp"
+#include "LVRMeshItem.hpp"
 
 #include <vtkSmartPointer.h>
 #include <vtkActor.h>
@@ -51,6 +52,13 @@ LVRModelItem::LVRModelItem(ModelBridgePtr bridge, QString name) :
         LVRPointCloudItem* pointItem = new LVRPointCloudItem(bridge->m_pointBridge, this);
         addChild(pointItem);
         pointItem->setExpanded(true);
+    }
+
+    if(bridge->m_meshBridge.getNumTriangles())
+    {
+        LVRMeshItem* meshItem = new LVRMeshItem(bridge->m_meshBridge, this);
+        addChild(meshItem);
+        meshItem->setExpanded(true);
     }
 }
 
