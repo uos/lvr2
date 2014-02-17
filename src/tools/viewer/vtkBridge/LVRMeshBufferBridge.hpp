@@ -41,11 +41,15 @@ public:
     LVRMeshBufferBridge(MeshBufferPtr meshbuffer);
     virtual ~LVRMeshBufferBridge();
 
-    vtkSmartPointer<vtkActor> getMeshActor();
+    vtkSmartPointer<vtkActor>   getMeshActor();
+    size_t                      getNumTriangles();
+    size_t                      getNumVertices();
+    bool                        hasTextures();
 
 protected:
     void computeMeshActor(MeshBufferPtr meshbuffer);
-
+    size_t                          m_numVertices;
+    size_t                          m_numFaces;
     vtkSmartPointer<vtkActor>       m_meshActor;
 };
 

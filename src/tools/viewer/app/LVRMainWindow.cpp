@@ -41,7 +41,7 @@ LVRMainWindow::LVRMainWindow()
     connectSignalsAndSlots();
 
     QHeaderView* v = this->treeWidget->header();
-    v->resizeSection(0, 150);
+    v->resizeSection(0, 175);
 }
 
 
