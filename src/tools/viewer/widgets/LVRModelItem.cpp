@@ -26,6 +26,7 @@
 #include "LVRPointCloudItem.hpp"
 #include "LVRMeshItem.hpp"
 #include "LVRPoseItem.hpp"
+#include "LVRItemTypes.hpp"
 
 #include <vtkSmartPointer.h>
 #include <vtkActor.h>
@@ -35,7 +36,7 @@ namespace lvr
 {
 
 LVRModelItem::LVRModelItem(ModelBridgePtr bridge, QString name) :
-    m_modelBridge(bridge), m_name(name)
+    QTreeWidgetItem(LVRModelItemType), m_modelBridge(bridge), m_name(name)
 {
     // Setup tree widget icon
     QIcon icon;
@@ -66,6 +67,11 @@ LVRModelItem::LVRModelItem(ModelBridgePtr bridge, QString name) :
     // Setup Pose
     LVRPoseItem* poseItem = new LVRPoseItem(bridge, this);
     addChild(poseItem);
+}
+
+Pose LVRModelItem::getPose()
+{
+    return m_modelBridge->getPose();
 }
 
 LVRModelItem::~LVRModelItem()

@@ -23,12 +23,13 @@
  *  @author Thomas Wiemann
  */
 #include "LVRPoseItem.hpp"
+#include "LVRItemTypes.hpp"
 
 namespace lvr
 {
 
 LVRPoseItem::LVRPoseItem(ModelBridgePtr bridge, QTreeWidgetItem* parent):
-        QTreeWidgetItem(parent)
+        QTreeWidgetItem(parent, LVRPoseItemType)
 {
     m_pose = bridge->getPose();
 

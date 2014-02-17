@@ -17,54 +17,29 @@
  */
 
 /**
- * MainWindow.hpp
+ * LVRMeshItem.h
  *
- *  @date Jan 31, 2014
+ *  @date Feb 11, 2014
  *  @author Thomas Wiemann
  */
-#ifndef MAINWINDOW_HPP_
-#define MAINWINDOW_HPP_
+#ifndef LVRMESHITEM_H_
+#define LVRMESHITEM_H_
 
-#include <vtkRenderer.h>
-#include <vtkSmartPointer.h>
-#include <vtkRenderWindow.h>
+#include <QTreeWidgetItem>
 
-#include <QtGui>
-#include "LVRMainWindowUI.h"
-
-#include <iostream>
-using std::cout;
-using std::endl;
+#include "../vtkBridge/LVRMeshBufferBridge.hpp"
 
 namespace lvr
 {
 
-class LVRMainWindow : public QMainWindow, public Ui::MainWindow
+class LVRMeshItem : public QTreeWidgetItem
 {
-    Q_OBJECT
 public:
+    LVRMeshItem(LVRMeshBufferBridge& ptr, QTreeWidgetItem* parent = 0);
+    virtual ~LVRMeshItem();
 
-    /**
-     * @brief   MainWindow
-     */
-    LVRMainWindow();
-
-
-    virtual ~LVRMainWindow();
-
-public Q_SLOTS:
-    void loadModel();
-    void showTransformationDialog();
-
-private:
-    void setupQVTK();
-    void connectSignalsAndSlots();
-
-
-
-    vtkSmartPointer<vtkRenderer>        m_renderer;
 };
 
 } /* namespace lvr */
 
-#endif /* MAINWINDOW_HPP_ */
+#endif /* LVRMESHITEM_H_ */
