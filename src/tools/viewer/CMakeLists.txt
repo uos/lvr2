@@ -13,17 +13,20 @@ set(LVR_VIEWER_SOURCES
     widgets/LVRPointCloudItem.cpp
     widgets/LVRMeshItem.cpp
     widgets/LVRPoseItem.cpp
+    widgets/LVRTransformationDialog.cpp
 )
 
 
 set(LVR_VIEWER_MOCS 
     app/LVRMainWindow.hpp
+    widgets/LVRTransformationDialog.hpp
 )
 
 # Dynamically generated GUI object's from
 # QtDesigner 
 set(LVR_VIEWER_UIS
    ui/LVRMainWindowUI.ui
+   ui/LVRTransformationDialogUI.ui
 )
 
 set(LVR_VIEWER_RESOURCES
