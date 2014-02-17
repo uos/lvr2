@@ -17,46 +17,38 @@
  */
 
 /**
- * LVRModel.cpp
+ * LVRPoseItem.hpp
  *
- *  @date Feb 6, 2014
+ *  @date Feb 17, 2014
  *  @author Thomas Wiemann
  */
-#include "LVRModelBridge.hpp"
+#ifndef LVRPOSEITEM_HPP_
+#define LVRPOSEITEM_HPP_
+
+#include <QtGui/qtreewidget.h>
+
+#include "../vtkBridge/LVRModelBridge.hpp"
 
 namespace lvr
 {
 
-LVRModelBridge::LVRModelBridge(ModelPtr model)
-    : m_pointBridge(model->m_pointCloud), m_meshBridge(model->m_mesh)
+class LVRPoseItem: public QTreeWidgetItem
 {
-    m_pose = {0.0, 0.0, 0.0, 0.0, 0.0, 0.0};
-}
+public:
+    LVRPoseItem(ModelBridgePtr bridge, QTreeWidgetItem* parent = 0);
+    virtual ~LVRPoseItem();
 
-void LVRModelBridge::setPose(const Pose& pose)
-{
-    m_pose = pose;
-}
-Pose LVRModelBridge::getPose()
-{
-    return m_pose;
-}
+    void setPose(const Pose& pose);
+protected:
+    Pose m_pose;
+    QTreeWidgetItem* m_xItem;
+    QTreeWidgetItem* m_yItem;
+    QTreeWidgetItem* m_zItem;
+    QTreeWidgetItem* m_rItem;
+    QTreeWidgetItem* m_tItem;
+    QTreeWidgetItem* m_pItem;
+};
 
-void LVRModelBridge::addActors(vtkSmartPointer<vtkRenderer> renderer)
-{
-    renderer->AddActor(m_pointBridge.getPointCloudActor());
-    renderer->AddActor(m_meshBridge.getMeshActor());
-}
+} /* namespace lvr */
 
-void LVRModelBridge::removeActors(vtkSmartPointer<vtkRenderer> renderer)
-{
-    renderer->RemoveActor(m_pointBridge.getPointCloudActor());
-    renderer->RemoveActor(m_meshBridge.getMeshActor());
-}
-
-LVRModelBridge::~LVRModelBridge()
-{
-    // TODO Auto-generated destructor stub
-}
-
-} /* namespace asteroids */
+#endif /* LVRPOSEITEM_HPP_ */

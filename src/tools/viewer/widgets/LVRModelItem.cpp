@@ -25,6 +25,7 @@
 #include "LVRModelItem.hpp"
 #include "LVRPointCloudItem.hpp"
 #include "LVRMeshItem.hpp"
+#include "LVRPoseItem.hpp"
 
 #include <vtkSmartPointer.h>
 #include <vtkActor.h>
@@ -60,6 +61,11 @@ LVRModelItem::LVRModelItem(ModelBridgePtr bridge, QString name) :
         addChild(meshItem);
         meshItem->setExpanded(true);
     }
+
+
+    // Setup Pose
+    LVRPoseItem* poseItem = new LVRPoseItem(bridge, this);
+    addChild(poseItem);
 }
 
 LVRModelItem::~LVRModelItem()
