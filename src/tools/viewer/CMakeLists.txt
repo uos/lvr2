@@ -12,6 +12,7 @@ set(LVR_VIEWER_SOURCES
     widgets/LVRModelItem.cpp
     widgets/LVRPointCloudItem.cpp
     widgets/LVRMeshItem.cpp
+    widgets/LVRPoseItem.cpp
 )
 
 
