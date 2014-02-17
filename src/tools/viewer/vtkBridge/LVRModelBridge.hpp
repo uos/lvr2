@@ -37,6 +37,11 @@
 namespace lvr
 {
 
+struct Pose
+{
+    float x, y, z, r, t, p;
+};
+
 /**
  * @brief   Main class for conversion of LVR model instances to vtk actors. This class
  *          parses the internal model structures to vtk representations that can be
@@ -60,12 +65,15 @@ public:
     /**
      * @brief       Adds the generated actors to the given renderer
      */
-    void addActors(vtkSmartPointer<vtkRenderer> renderer);
+    void         addActors(vtkSmartPointer<vtkRenderer> renderer);
 
     /**
      * @brief       Removes the generated actors from the fiven renderer
      */
-    void removeActors(vtkSmartPointer<vtkRenderer> renderer);
+    void        removeActors(vtkSmartPointer<vtkRenderer> renderer);
+
+    void        setPose(const Pose& pose);
+    Pose        getPose();
 
     // Declare model item classes as friends to have fast access to data chunks
     friend class LVRModelItem;
@@ -74,6 +82,7 @@ private:
 
     LVRPointBufferBridge        m_pointBridge;
     LVRMeshBufferBridge         m_meshBridge;
+    Pose                        m_pose;
 
 };
 
