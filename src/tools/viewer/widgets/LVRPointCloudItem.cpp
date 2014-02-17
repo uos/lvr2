@@ -23,12 +23,13 @@
  *  @author Thomas Wiemann
  */
 #include "LVRPointCloudItem.hpp"
+#include "LVRItemTypes.hpp"
 
 namespace lvr
 {
 
 LVRPointCloudItem::LVRPointCloudItem(LVRPointBufferBridge& ptr, QTreeWidgetItem* item) :
-       QTreeWidgetItem(item), m_parent(item)
+       QTreeWidgetItem(item, LVRPointCloudItemType), m_parent(item)
 {
     // Setup tree widget icon
     QIcon icon;

@@ -41,6 +41,8 @@ public:
     LVRModelItem(ModelBridgePtr bridge, QString name = "");
     virtual ~LVRModelItem();
 
+    Pose    getPose();
+    void    setPose(const Pose& pose);
 protected:
     ModelBridgePtr  m_modelBridge;
     QString         m_name;
