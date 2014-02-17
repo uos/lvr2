@@ -38,7 +38,27 @@ namespace lvr
 
 LVRMeshBufferBridge::LVRMeshBufferBridge(MeshBufferPtr meshBuffer)
 {
-    computeMeshActor(meshBuffer);
+    if(meshBuffer)
+    {
+        computeMeshActor(meshBuffer);
+        meshBuffer->getVertexArray(m_numVertices);
+        meshBuffer->getFaceArray(m_numFaces);
+    }
+    else
+    {
+        m_numFaces = 0;
+        m_numVertices = 0;
+    }
+}
+
+size_t LVRMeshBufferBridge::getNumTriangles()
+{
+    return m_numFaces;
+}
+
+size_t LVRMeshBufferBridge::getNumVertices()
+{
+    return m_numVertices;
 }
 
 LVRMeshBufferBridge::~LVRMeshBufferBridge()
