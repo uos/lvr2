@@ -131,6 +131,12 @@ public:
      */
     virtual int size();
 
+    // TODO implement area calculation
+    /**
+     * @brief returns this region's area
+     */
+    double area() { return m_area; };
+
 	/**
 	 * @brief destructor.
 	 */
@@ -168,6 +174,9 @@ private:
 
 	// Indicates whether the region has been labeled or not
 	bool b_labeled;
+
+	// holds the area of this region
+	double m_area;
 
 };
 }
