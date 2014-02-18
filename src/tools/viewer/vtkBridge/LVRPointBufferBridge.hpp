@@ -35,10 +35,13 @@
 namespace lvr
 {
 
+struct Pose;
+
 class LVRPointBufferBridge
 {
 public:
     LVRPointBufferBridge(PointBufferPtr pointcloud);
+    LVRPointBufferBridge(const LVRPointBufferBridge& b);
     virtual ~LVRPointBufferBridge();
 
     vtkSmartPointer<vtkActor>   getPointCloudActor();

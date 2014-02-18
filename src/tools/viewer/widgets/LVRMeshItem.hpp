@@ -35,7 +35,7 @@ namespace lvr
 class LVRMeshItem : public QTreeWidgetItem
 {
 public:
-    LVRMeshItem(LVRMeshBufferBridge& ptr, QTreeWidgetItem* parent = 0);
+    LVRMeshItem(MeshBufferBridgePtr& ptr, QTreeWidgetItem* parent = 0);
     virtual ~LVRMeshItem();
 
 };

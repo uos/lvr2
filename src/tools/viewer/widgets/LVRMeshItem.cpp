@@ -28,7 +28,7 @@
 namespace lvr
 {
 
-LVRMeshItem::LVRMeshItem(LVRMeshBufferBridge& ptr, QTreeWidgetItem* parent) :
+LVRMeshItem::LVRMeshItem(MeshBufferBridgePtr& ptr, QTreeWidgetItem* parent) :
         QTreeWidgetItem(parent, LVRMeshItemType)
 {
     QIcon icon;
@@ -41,13 +41,13 @@ LVRMeshItem::LVRMeshItem(LVRMeshBufferBridge& ptr, QTreeWidgetItem* parent) :
     QTreeWidgetItem* vertItem = new QTreeWidgetItem(this);
     QString numVerts;
     vertItem->setText(0, "Num Points:");
-    vertItem->setText(1, numVerts.setNum(ptr.getNumVertices()));
+    vertItem->setText(1, numVerts.setNum(ptr->getNumVertices()));
     addChild(vertItem);
 
     QTreeWidgetItem* faceItem = new QTreeWidgetItem(this);
     QString numFaces;
     faceItem->setText(0, "Num Triangles:");
-    faceItem->setText(1, numFaces.setNum(ptr.getNumTriangles()));
+    faceItem->setText(1, numFaces.setNum(ptr->getNumTriangles()));
     addChild(faceItem);
 }
 

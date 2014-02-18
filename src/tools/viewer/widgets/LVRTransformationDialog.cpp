@@ -30,8 +30,8 @@
 namespace lvr
 {
 
-LVRTransformationDialog::LVRTransformationDialog(LVRModelItem* parent) :
-   m_parent(parent)
+LVRTransformationDialog::LVRTransformationDialog(LVRModelItem* parent, vtkRenderWindow* window) :
+   m_parent(parent), m_renderWindow(window)
 {
     // Setup DialogUI and events
     QDialog* dialog = new QDialog(parent->treeWidget());
@@ -140,7 +140,8 @@ void LVRTransformationDialog::transformGlobal()
 
 void LVRTransformationDialog::transformLocal()
 {
-   // TODO: vtkTransformation stuff
+    m_parent->setPose(m_pose);
+    m_renderWindow->Render();
 }
 
 void LVRTransformationDialog::rotationXEntered(double value)
