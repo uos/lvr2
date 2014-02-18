@@ -27,6 +27,8 @@
 #ifndef TRANSFORMATIONDIALOG_H_
 #define TRANSFORMATIONDIALOG_H_
 
+#include <vtkRenderWindow.h>
+
 #include "LVRTransformationDialogUI.h"
 #include "LVRModelItem.hpp"
 
@@ -40,7 +42,7 @@ class LVRTransformationDialog : public QObject
     Q_OBJECT
 
 public:
-    LVRTransformationDialog(LVRModelItem* parent);
+    LVRTransformationDialog(LVRModelItem* parent, vtkRenderWindow* renderer);
     virtual ~LVRTransformationDialog();
 
 public Q_SLOTS:
@@ -70,6 +72,7 @@ private:
     Pose                        m_pose;
     TransformationDialogUI*     m_dialogUI;
     LVRModelItem*               m_parent;
+    vtkRenderWindow*            m_renderWindow;
 
 };
 

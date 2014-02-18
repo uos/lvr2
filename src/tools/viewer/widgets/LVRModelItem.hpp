@@ -39,10 +39,11 @@ class LVRModelItem : public QTreeWidgetItem
 public:
 
     LVRModelItem(ModelBridgePtr bridge, QString name = "");
+    LVRModelItem(const LVRModelItem& item);
     virtual ~LVRModelItem();
 
     Pose    getPose();
-    void    setPose(const Pose& pose);
+    void    setPose( Pose& pose);
 protected:
     ModelBridgePtr  m_modelBridge;
     QString         m_name;

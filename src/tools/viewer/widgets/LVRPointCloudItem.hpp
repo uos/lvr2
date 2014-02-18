@@ -36,7 +36,7 @@ class LVRPointCloudItem : public QTreeWidgetItem
 {
 public:
 
-    LVRPointCloudItem(LVRPointBufferBridge& ptr, QTreeWidgetItem* parent = 0);
+    LVRPointCloudItem(PointBufferBridgePtr& ptr, QTreeWidgetItem* parent = 0);
     virtual ~LVRPointCloudItem();
 
 protected:

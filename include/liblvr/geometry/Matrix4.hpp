@@ -78,7 +78,7 @@ public:
 	}
 
 	/**
-	 * @brief	Constructs a matrix from given axis and angle. Trya to
+	 * @brief	Constructs a matrix from given axis and angle. Trys to
 	 * 			avoid a gimbal lock.
 	 */
 	template<typename T>

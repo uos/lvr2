@@ -49,14 +49,14 @@ LVRModelItem::LVRModelItem(ModelBridgePtr bridge, QString name) :
 
 
     // Insert sub items
-    if(bridge->m_pointBridge.getNumPoints())
+    if(bridge->m_pointBridge->getNumPoints())
     {
         LVRPointCloudItem* pointItem = new LVRPointCloudItem(bridge->m_pointBridge, this);
         addChild(pointItem);
         pointItem->setExpanded(true);
     }
 
-    if(bridge->m_meshBridge.getNumTriangles())
+    if(bridge->m_meshBridge->getNumTriangles())
     {
         LVRMeshItem* meshItem = new LVRMeshItem(bridge->m_meshBridge, this);
         addChild(meshItem);
@@ -69,9 +69,20 @@ LVRModelItem::LVRModelItem(ModelBridgePtr bridge, QString name) :
     addChild(poseItem);
 }
 
+LVRModelItem::LVRModelItem(const LVRModelItem& item)
+{
+    m_modelBridge   = item.m_modelBridge;
+    m_name          = item.m_name;
+}
+
 Pose LVRModelItem::getPose()
 {
     return m_modelBridge->getPose();
+}
+
+void LVRModelItem::setPose( Pose& pose)
+{
+    m_modelBridge->setPose(pose);
 }
 
 LVRModelItem::~LVRModelItem()
