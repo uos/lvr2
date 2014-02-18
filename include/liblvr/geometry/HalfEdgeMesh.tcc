@@ -1499,7 +1499,7 @@ void HalfEdgeMesh<VertexT, NormalT>::finalize()
 
         int surface_class = 1;
 
-        if ((*face_iter)->m_region > 0)
+        if ((*face_iter)->m_region >= 0)
         {
         	// get the faces surface class (region id)
             surface_class = (*face_iter)->m_region;

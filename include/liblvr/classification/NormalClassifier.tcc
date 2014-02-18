@@ -36,7 +36,7 @@ string NormalClassifier<VertexT, NormalT>::getLabel(int index)
 
 	if (region->hasLabel())
 	{
-		label_str = region->getLabel();
+		return region->getLabel();
 	}
 	else
 	{
@@ -60,10 +60,8 @@ string NormalClassifier<VertexT, NormalT>::getLabel(int index)
 		}
 
 		region->setLabel(label_str);
+		return label_str;
 	}
-
-
-	return label_str;
 }
 
 template<typename VertexT, typename NormalT>
