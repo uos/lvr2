@@ -25,7 +25,6 @@
 #include "LVRModelItem.hpp"
 #include "LVRPointCloudItem.hpp"
 #include "LVRMeshItem.hpp"
-#include "LVRPoseItem.hpp"
 #include "LVRItemTypes.hpp"
 
 #include <vtkSmartPointer.h>
@@ -65,24 +64,29 @@ LVRModelItem::LVRModelItem(ModelBridgePtr bridge, QString name) :
 
 
     // Setup Pose
-    LVRPoseItem* poseItem = new LVRPoseItem(bridge, this);
-    addChild(poseItem);
+    m_poseItem = new LVRPoseItem(bridge, this);
+    addChild(m_poseItem);
 }
 
 LVRModelItem::LVRModelItem(const LVRModelItem& item)
 {
     m_modelBridge   = item.m_modelBridge;
     m_name          = item.m_name;
+    m_poseItem      = item.m_poseItem;
 }
 
 Pose LVRModelItem::getPose()
 {
-    return m_modelBridge->getPose();
+    return m_poseItem->getPose();
 }
 
 void LVRModelItem::setPose( Pose& pose)
 {
+    // Update vtk representation
     m_modelBridge->setPose(pose);
+
+    // Update pose item
+    m_poseItem->setPose(pose);
 }
 
 LVRModelItem::~LVRModelItem()
