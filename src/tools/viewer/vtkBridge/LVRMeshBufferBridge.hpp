@@ -39,6 +39,8 @@ class LVRMeshBufferBridge
 {
 public:
     LVRMeshBufferBridge(MeshBufferPtr meshbuffer);
+    LVRMeshBufferBridge(const LVRMeshBufferBridge& b);
+
     virtual ~LVRMeshBufferBridge();
 
     vtkSmartPointer<vtkActor>   getMeshActor();
