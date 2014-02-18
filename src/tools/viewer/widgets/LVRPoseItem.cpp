@@ -39,42 +39,52 @@ LVRPoseItem::LVRPoseItem(ModelBridgePtr bridge, QTreeWidgetItem* parent):
     setIcon(0, icon);
     setText(0, "Pose");
 
-    setPose(m_pose);
+    m_xItem = new QTreeWidgetItem(this);
+    m_yItem = new QTreeWidgetItem(this);
+    m_zItem = new QTreeWidgetItem(this);
+    m_rItem = new QTreeWidgetItem(this);
+    m_tItem = new QTreeWidgetItem(this);
+    m_pItem = new QTreeWidgetItem(this);
+
     addChild(m_xItem);
     addChild(m_yItem);
     addChild(m_zItem);
     addChild(m_rItem);
     addChild(m_tItem);
     addChild(m_pItem);
+
+    setPose(m_pose);
 }
 
 
 void LVRPoseItem::setPose(const Pose& pose)
 {
+    m_pose = pose;
     QString num;
-    m_xItem = new QTreeWidgetItem(this);
-    m_xItem->setText(0, "X:");
-    m_xItem->setText(1, num.setNum(m_pose.x));
 
-    m_yItem = new QTreeWidgetItem(this);
-    m_yItem->setText(0, "Y:");
-    m_yItem->setText(1, num.setNum(m_pose.y));
+    m_xItem->setText(0, "Position X:");
+    m_xItem->setText(1, num.setNum(m_pose.x,'F'));
 
-    m_zItem = new QTreeWidgetItem(this);
-    m_zItem->setText(0, "Z:");
-    m_zItem->setText(1, num.setNum(m_pose.z));
+    m_yItem->setText(0, "Position Y:");
+    m_yItem->setText(1, num.setNum(m_pose.y,'f'));
 
-    m_rItem = new QTreeWidgetItem(this);
-    m_rItem->setText(0, "Rot. X:");
-    m_rItem->setText(1, num.setNum(m_pose.r));
+    m_zItem->setText(0, "Position Z:");
+    m_zItem->setText(1, num.setNum(m_pose.z,'f'));
 
-    m_tItem = new QTreeWidgetItem(this);
-    m_tItem->setText(0, "Rot. Y:");
-    m_tItem->setText(1, num.setNum(m_pose.t));
+    m_rItem->setText(0, "Rotation X:");
+    m_rItem->setText(1, num.setNum(m_pose.r,'f'));
 
-    m_pItem = new QTreeWidgetItem(this);
-    m_pItem->setText(0, "Rot. Z:");
-    m_pItem->setText(1, num.setNum(m_pose.p));
+    m_tItem->setText(0, "Rotation Y:");
+    m_tItem->setText(1, num.setNum(m_pose.t,'f'));
+
+    m_pItem->setText(0, "Rotation Z:");
+    m_pItem->setText(1, num.setNum(m_pose.p,'f'));
+
+}
+
+Pose LVRPoseItem::getPose()
+{
+    return m_pose;
 }
 
 LVRPoseItem::~LVRPoseItem()

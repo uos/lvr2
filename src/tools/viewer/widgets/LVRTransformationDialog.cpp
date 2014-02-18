@@ -40,6 +40,19 @@ LVRTransformationDialog::LVRTransformationDialog(LVRModelItem* parent, vtkRender
 
     m_pose = parent->getPose();
 
+    cout << m_pose.x << " " << m_pose.y << " " << m_pose.z << endl;
+
+    // Set slider to correct positions
+    m_dialogUI->sliderXRot->setValue(m_pose.r);
+    m_dialogUI->sliderYRot->setValue(m_pose.t);
+    m_dialogUI->sliderZRot->setValue(m_pose.p);
+    m_dialogUI->spinBoxXRot->setValue(m_pose.r);
+    m_dialogUI->spinBoxYRot->setValue(m_pose.t);
+    m_dialogUI->spinBoxZRot->setValue(m_pose.p);
+
+    m_dialogUI->spinBoxXTrans->setValue(m_pose.x);
+    m_dialogUI->spinBoxYTrans->setValue(m_pose.y);
+    m_dialogUI->spinBoxZTrans->setValue(m_pose.z);
     connectSignalsAndSlots();
 
     dialog->show();
@@ -130,7 +143,6 @@ void LVRTransformationDialog::reset()
     m_dialogUI->spinBoxXRot->setValue(0.0);
     m_dialogUI->spinBoxYRot->setValue(0.0);
     m_dialogUI->spinBoxZRot->setValue(0.0);
-
 }
 
 void LVRTransformationDialog::transformGlobal()

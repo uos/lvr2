@@ -27,6 +27,7 @@
 
 #include "io/Model.hpp"
 #include "../vtkBridge/LVRModelBridge.hpp"
+#include "LVRPoseItem.hpp"
 
 #include <QString>
 #include <QTreeWidgetItem>
@@ -47,6 +48,7 @@ public:
 protected:
     ModelBridgePtr  m_modelBridge;
     QString         m_name;
+    LVRPoseItem*    m_poseItem;
 
 };
 
