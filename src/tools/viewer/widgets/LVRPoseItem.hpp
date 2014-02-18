@@ -39,6 +39,8 @@ public:
     virtual ~LVRPoseItem();
 
     void setPose(const Pose& pose);
+    Pose getPose();
+
 protected:
     Pose m_pose;
     QTreeWidgetItem* m_xItem;
