@@ -28,7 +28,7 @@
 namespace lvr
 {
 
-LVRPointCloudItem::LVRPointCloudItem(LVRPointBufferBridge& ptr, QTreeWidgetItem* item) :
+LVRPointCloudItem::LVRPointCloudItem(PointBufferBridgePtr& ptr, QTreeWidgetItem* item) :
        QTreeWidgetItem(item, LVRPointCloudItemType), m_parent(item)
 {
     // Setup tree widget icon
@@ -42,12 +42,12 @@ LVRPointCloudItem::LVRPointCloudItem(LVRPointBufferBridge& ptr, QTreeWidgetItem*
     QTreeWidgetItem* numItem = new QTreeWidgetItem(this);
     QString num;
     numItem->setText(0, "Num Points:");
-    numItem->setText(1, num.setNum(ptr.getNumPoints()));
+    numItem->setText(1, num.setNum(ptr->getNumPoints()));
     addChild(numItem);
 
     QTreeWidgetItem* normalItem = new QTreeWidgetItem(this);
     normalItem->setText(0, "Has Normals:");
-    if(ptr.hasNormals())
+    if(ptr->hasNormals())
     {
         normalItem->setText(1, "yes");
     }
@@ -59,7 +59,7 @@ LVRPointCloudItem::LVRPointCloudItem(LVRPointBufferBridge& ptr, QTreeWidgetItem*
 
     QTreeWidgetItem* colorItem = new QTreeWidgetItem(this);
     colorItem->setText(0, "Has Colors:");
-    if(ptr.hasColors())
+    if(ptr->hasColors())
     {
         colorItem->setText(1, "yes");
     }

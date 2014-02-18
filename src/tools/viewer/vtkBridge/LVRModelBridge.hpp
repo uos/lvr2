@@ -57,6 +57,8 @@ public:
      */
     LVRModelBridge(ModelPtr model);
 
+    LVRModelBridge(const LVRModelBridge& b);
+
     /**
      * @brief       Destructor.
      */
@@ -72,17 +74,17 @@ public:
      */
     void        removeActors(vtkSmartPointer<vtkRenderer> renderer);
 
-    void        setPose(const Pose& pose);
+    void        setPose(Pose& pose);
     Pose        getPose();
 
     // Declare model item classes as friends to have fast access to data chunks
     friend class LVRModelItem;
 
-private:
+//private:
 
-    LVRPointBufferBridge        m_pointBridge;
-    LVRMeshBufferBridge         m_meshBridge;
-    Pose                        m_pose;
+    PointBufferBridgePtr            m_pointBridge;
+    MeshBufferBridgePtr             m_meshBridge;
+    Pose                            m_pose;
 
 };
 

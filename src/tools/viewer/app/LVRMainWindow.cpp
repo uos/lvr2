@@ -108,14 +108,15 @@ void LVRMainWindow::showTransformationDialog()
         if(item->type() == LVRModelItemType)
         {
             LVRModelItem* item = static_cast<LVRModelItem*>(items.first());
-            LVRTransformationDialog dialog(item);
+            LVRTransformationDialog* dialog = new LVRTransformationDialog(item, qvtkWidget->GetRenderWindow());
         }
         else if(item->type() == LVRPointCloudItemType || item->type() == LVRMeshItemType)
         {
             if(item->parent()->type() == LVRModelItemType)
             {
-                LVRModelItem* item = static_cast<LVRModelItem*>(items.first());
-                LVRTransformationDialog dialog(item);
+
+                LVRModelItem* l_item = static_cast<LVRModelItem*>(item->parent());
+                LVRTransformationDialog* dialog = new LVRTransformationDialog(l_item, qvtkWidget->GetRenderWindow());
             }
             else
             {

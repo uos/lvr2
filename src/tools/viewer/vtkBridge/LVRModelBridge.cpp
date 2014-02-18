@@ -24,19 +24,40 @@
  */
 #include "LVRModelBridge.hpp"
 
+#include <geometry/Matrix4.hpp>
+#include <geometry/Vertex.hpp>
+
+#include <vtkTransform.h>
+
 namespace lvr
 {
 
-LVRModelBridge::LVRModelBridge(ModelPtr model)
-    : m_pointBridge(model->m_pointCloud), m_meshBridge(model->m_mesh)
+LVRModelBridge::LVRModelBridge(ModelPtr model) :
+    m_pointBridge(new LVRPointBufferBridge(model->m_pointCloud)),
+    m_meshBridge(new LVRMeshBufferBridge(model->m_mesh))
 {
     m_pose = {0.0, 0.0, 0.0, 0.0, 0.0, 0.0};
 }
 
-void LVRModelBridge::setPose(const Pose& pose)
+LVRModelBridge::LVRModelBridge(const LVRModelBridge& b)
+{
+    m_pointBridge = b.m_pointBridge;
+    m_meshBridge = b.m_meshBridge;
+    m_pose = b.m_pose;
+}
+
+void LVRModelBridge::setPose(Pose& pose)
 {
     m_pose = pose;
+    vtkSmartPointer<vtkTransform> transform =  vtkSmartPointer<vtkTransform>::New();
+    transform->PostMultiply();
+    transform->RotateX(pose.r);
+    transform->RotateY(pose.t);
+    transform->RotateZ(pose.p);
+    transform->Translate(pose.x, pose.y, pose.z);
+    m_pointBridge->getPointCloudActor()->SetUserTransform(transform);
 }
+
 Pose LVRModelBridge::getPose()
 {
     return m_pose;
@@ -44,14 +65,14 @@ Pose LVRModelBridge::getPose()
 
 void LVRModelBridge::addActors(vtkSmartPointer<vtkRenderer> renderer)
 {
-    renderer->AddActor(m_pointBridge.getPointCloudActor());
-    renderer->AddActor(m_meshBridge.getMeshActor());
+    renderer->AddActor(m_pointBridge->getPointCloudActor());
+    renderer->AddActor(m_meshBridge->getMeshActor());
 }
 
 void LVRModelBridge::removeActors(vtkSmartPointer<vtkRenderer> renderer)
 {
-    renderer->RemoveActor(m_pointBridge.getPointCloudActor());
-    renderer->RemoveActor(m_meshBridge.getMeshActor());
+    renderer->RemoveActor(m_pointBridge->getPointCloudActor());
+    renderer->RemoveActor(m_meshBridge->getMeshActor());
 }
 
 LVRModelBridge::~LVRModelBridge()

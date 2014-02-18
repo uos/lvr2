@@ -23,6 +23,7 @@
  *  @author Thomas Wiemann
  */
 #include "LVRPointBufferBridge.hpp"
+#include "LVRModelBridge.hpp"
 
 #include <vtkSmartPointer.h>
 #include <vtkPolyData.h>
@@ -101,11 +102,19 @@ void LVRPointBufferBridge::computePointCloudActor(PointBufferPtr pc)
         vtk_polyData->SetVerts(vtk_cells);
 
         // Create poly data mapper and generate actor
-        vtkSmartPointer<vtkPolyDataMapper> mapper = vtkSmartPointer<vtkPolyDataMapper>::New();
+        //vtkSmartPointer<vtkPolyDataMapper> mapper = vtkSmartPointer<vtkPolyDataMapper>::New();
+        vtkPolyDataMapper* mapper = vtkPolyDataMapper::New();
         mapper->SetInput(vtk_polyData);
-
         m_pointCloudActor->SetMapper(mapper);
     }
+}
+
+LVRPointBufferBridge::LVRPointBufferBridge(const LVRPointBufferBridge& b)
+{
+    m_pointCloudActor   = b.m_pointCloudActor;
+    m_hasColors         = b.m_hasColors;
+    m_hasNormals        = b.m_hasNormals;
+    m_numPoints         = b.m_numPoints;
 }
 
 vtkSmartPointer<vtkActor> LVRPointBufferBridge::getPointCloudActor()

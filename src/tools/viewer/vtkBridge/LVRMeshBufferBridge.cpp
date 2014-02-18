@@ -51,6 +51,13 @@ LVRMeshBufferBridge::LVRMeshBufferBridge(MeshBufferPtr meshBuffer)
     }
 }
 
+LVRMeshBufferBridge::LVRMeshBufferBridge(const LVRMeshBufferBridge& b)
+{
+    m_numVertices   = b.m_numVertices;
+    m_numFaces      = b.m_numFaces;
+    m_meshActor     = b.m_meshActor;
+}
+
 size_t LVRMeshBufferBridge::getNumTriangles()
 {
     return m_numFaces;
