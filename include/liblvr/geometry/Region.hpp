@@ -104,7 +104,7 @@ public:
 	virtual bool hasLabel();
 
 	/**
-	 * @brief Finds all contours of the region (outer contour + holes)
+	 * @brief Finds all contours of the region (outer contour + holes). First entry is outer contour.
 	 * @param epsilon perpendicular (point-to-line) distance tolerance
 	 * @return a list of all contours
 	 */
