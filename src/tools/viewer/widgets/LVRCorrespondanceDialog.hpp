@@ -17,56 +17,26 @@
  */
 
 /**
- * MainWindow.hpp
+ * LVRCorrespondanceDialog.hpp
  *
- *  @date Jan 31, 2014
+ *  @date Feb 18, 2014
  *  @author Thomas Wiemann
  */
-#ifndef MAINWINDOW_HPP_
-#define MAINWINDOW_HPP_
+#ifndef LVRCORRESPONDANCEDIALOG_HPP_
+#define LVRCORRESPONDANCEDIALOG_HPP_
 
-#include <vtkRenderer.h>
-#include <vtkSmartPointer.h>
-#include <vtkRenderWindow.h>
-
-#include <QtGui>
-#include "LVRMainWindowUI.h"
-#include "../widgets/LVRCorrespondanceDialog.hpp"
-
-#include <iostream>
-using std::cout;
-using std::endl;
+#include "LVRCorrespondanceDialogUI.h"
 
 namespace lvr
 {
 
-class LVRMainWindow : public QMainWindow, public Ui::MainWindow
+class LVRCorrespondanceDialog : public Ui_CorrespondenceDialog, public QDialog
 {
-    Q_OBJECT
 public:
-
-    /**
-     * @brief   MainWindow
-     */
-    LVRMainWindow();
-
-
-    virtual ~LVRMainWindow();
-
-public Q_SLOTS:
-    void loadModel();
-    void manualICP();
-    void showTransformationDialog();
-
-private:
-    void setupQVTK();
-    void connectSignalsAndSlots();
-
-
-    LVRCorrespondanceDialog*            m_correspondanceDialog;
-    vtkSmartPointer<vtkRenderer>        m_renderer;
+    LVRCorrespondanceDialog(QWidget* parent);
+    virtual ~LVRCorrespondanceDialog();
 };
 
 } /* namespace lvr */
 
-#endif /* MAINWINDOW_HPP_ */
+#endif /* LVRCORRESPONDANCEDIALOG_HPP_ */
