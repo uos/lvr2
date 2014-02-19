@@ -112,7 +112,9 @@ void LVRMainWindow::showColorDialog()
 		}
 		else if(item->type() == LVRMeshItemType)
 		{
-
+		    LVRMeshItem* mesh_item = static_cast<LVRMeshItem*>(item);
+		    mesh_item->setColor(c);
+		    qvtkWidget->GetRenderWindow()->Render();
 		}
 	}
 }

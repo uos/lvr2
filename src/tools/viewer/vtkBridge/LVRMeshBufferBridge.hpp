@@ -48,6 +48,8 @@ public:
     size_t                      getNumVertices();
     bool                        hasTextures();
 
+    void setBaseColor(float r, float g, float b);
+
 protected:
     void computeMeshActor(MeshBufferPtr meshbuffer);
     size_t                          m_numVertices;
