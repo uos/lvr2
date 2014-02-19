@@ -34,6 +34,12 @@ ENDIF(CMAKE_COMPILER_IS_GNUCXX)
 FIND_PACKAGE( OpenCV REQUIRED )
 
 ####
+## Searching for Eigen3
+##############################
+find_package(Eigen3 REQUIRED)
+include_directories(${EIGEN3_INCLUDE_DIR})
+
+####
 ## Searching for MPI
 ##############################
 FIND_PACKAGE( MPI )

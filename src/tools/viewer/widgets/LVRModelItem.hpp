@@ -45,6 +45,8 @@ public:
 
     Pose    getPose();
     void    setPose( Pose& pose);
+
+
 protected:
     ModelBridgePtr  m_modelBridge;
     QString         m_name;
