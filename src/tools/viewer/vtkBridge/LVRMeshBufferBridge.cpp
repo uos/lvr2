@@ -51,6 +51,13 @@ LVRMeshBufferBridge::LVRMeshBufferBridge(MeshBufferPtr meshBuffer)
     }
 }
 
+void LVRMeshBufferBridge::setBaseColor(float r, float g, float b)
+{
+    vtkSmartPointer<vtkProperty> p = vtkSmartPointer<vtkProperty>::New();
+    p->SetColor(r, g, b);
+    m_meshActor->SetProperty(p);
+}
+
 LVRMeshBufferBridge::LVRMeshBufferBridge(const LVRMeshBufferBridge& b)
 {
     m_numVertices   = b.m_numVertices;
