@@ -23,14 +23,36 @@
  *  @author Thomas Wiemann
  */
 #include "LVRCorrespondanceDialog.hpp"
+#include "LVRItemTypes.hpp"
+
 
 namespace lvr
 {
 
-LVRCorrespondanceDialog::LVRCorrespondanceDialog(QWidget* parent) :
-    QDialog(parent)
+LVRCorrespondanceDialog::LVRCorrespondanceDialog(QTreeWidget* parent) :
+    QDialog(parent), m_treeWidget(parent)
 {
     setupUi(this);
+    fillComboBoxes();
+}
+
+void LVRCorrespondanceDialog::fillComboBoxes()
+{
+    // Clear contends
+    comboBoxModel->clear();
+    comboBoxData->clear();
+
+    // Iterator over all items
+    QTreeWidgetItemIterator it(m_treeWidget);
+    while (*it)
+    {
+        if ( (*it)->type() == LVRPointCloudItemType)
+        {
+            comboBoxData->addItem((*it)->parent()->text(0));
+            comboBoxModel->addItem((*it)->parent()->text(0));
+        }
+        ++it;
+    }
 }
 
 LVRCorrespondanceDialog::~LVRCorrespondanceDialog()
