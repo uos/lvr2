@@ -51,7 +51,7 @@ LVRMainWindow::LVRMainWindow()
 
 
     // Init members
-    m_correspondanceDialog = NULL;
+    m_correspondanceDialog = new LVRCorrespondanceDialog(this);
 
     // Setup specific properties
     QHeaderView* v = this->treeWidget->header();
@@ -66,6 +66,10 @@ LVRMainWindow::LVRMainWindow()
 
     m_treeContextMenu->addAction(m_actionShowColorDialog);
     m_treeContextMenu->addAction(m_actionDeleteModelItem);
+
+
+    m_pickingInteractor = new LVRPickingInteractor(m_renderer);
+    qvtkWidget->GetRenderWindow()->GetInteractor()->SetInteractorStyle( m_pickingInteractor );
 
     connectSignalsAndSlots();
 }
@@ -95,6 +99,9 @@ void LVRMainWindow::connectSignalsAndSlots()
     QObject::connect(treeWidget, SIGNAL(customContextMenuRequested(const QPoint&)), this, SLOT(showTreeContextMenu(const QPoint&)));
 
     QObject::connect(m_actionShowColorDialog, SIGNAL(activated()), this, SLOT(showColorDialog()));
+    QObject::connect(m_correspondanceDialog, SIGNAL(accepted()), m_pickingInteractor, SLOT(correspondenceSearchOff()));
+    QObject::connect(m_correspondanceDialog, SIGNAL(rejected()), m_pickingInteractor, SLOT(correspondenceSearchOff()));
+    QObject::connect(this, SIGNAL(correspondenceDialogOpened()), m_pickingInteractor, SLOT(correspondenceSearchOn()));
 }
 
 void LVRMainWindow::showColorDialog()
@@ -158,14 +165,10 @@ void LVRMainWindow::loadModel()
 
 void LVRMainWindow::manualICP()
 {
-    if(!m_correspondanceDialog)
-    {
-        m_correspondanceDialog = new LVRCorrespondanceDialog(this);
-    }
     m_correspondanceDialog->show();
     m_correspondanceDialog->raise();
     m_correspondanceDialog->activateWindow();
-
+    Q_EMIT(correspondenceDialogOpened());
 }
 
 void LVRMainWindow::showTransformationDialog()

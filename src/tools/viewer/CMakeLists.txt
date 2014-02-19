@@ -9,6 +9,7 @@ set(LVR_VIEWER_SOURCES
     vtkBridge/LVRModelBridge.cpp
     vtkBridge/LVRPointBufferBridge.cpp
     vtkBridge/LVRMeshBufferBridge.cpp
+    vtkBridge/LVRPickingInteractor.cpp
     widgets/LVRModelItem.cpp
     widgets/LVRPointCloudItem.cpp
     widgets/LVRMeshItem.cpp
@@ -20,6 +21,7 @@ set(LVR_VIEWER_SOURCES
 
 set(LVR_VIEWER_MOCS 
     app/LVRMainWindow.hpp
+    vtkBridge/LVRPickingInteractor.hpp
     widgets/LVRTransformationDialog.hpp
 )
 
