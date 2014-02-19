@@ -29,7 +29,7 @@ namespace lvr
 {
 
 LVRMeshItem::LVRMeshItem(MeshBufferBridgePtr& ptr, QTreeWidgetItem* parent) :
-        QTreeWidgetItem(parent, LVRMeshItemType)
+        QTreeWidgetItem(parent, LVRMeshItemType), m_meshBridge(ptr)
 {
     QIcon icon;
     icon.addFile(QString::fromUtf8(":/qv_mesh_tree_icon.png"), QSize(), QIcon::Normal, QIcon::Off);
@@ -49,6 +49,11 @@ LVRMeshItem::LVRMeshItem(MeshBufferBridgePtr& ptr, QTreeWidgetItem* parent) :
     faceItem->setText(0, "Num Triangles:");
     faceItem->setText(1, numFaces.setNum(ptr->getNumTriangles()));
     addChild(faceItem);
+}
+
+void LVRMeshItem::setColor(QColor &c)
+{
+    m_meshBridge->setBaseColor(c.redF(), c.greenF(), c.blueF());
 }
 
 LVRMeshItem::~LVRMeshItem()

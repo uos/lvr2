@@ -37,6 +37,10 @@ class LVRMeshItem : public QTreeWidgetItem
 public:
     LVRMeshItem(MeshBufferBridgePtr& ptr, QTreeWidgetItem* parent = 0);
     virtual ~LVRMeshItem();
+    void    setColor(QColor &c);
+
+private:
+    MeshBufferBridgePtr     m_meshBridge;
 
 };
 
