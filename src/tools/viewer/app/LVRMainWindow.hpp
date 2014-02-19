@@ -32,6 +32,7 @@
 #include <QtGui>
 #include "LVRMainWindowUI.h"
 #include "../widgets/LVRCorrespondanceDialog.hpp"
+#include "../vtkBridge/LVRPickingInteractor.hpp"
 
 #include <iostream>
 using std::cout;
@@ -60,15 +61,19 @@ public Q_SLOTS:
     void showTreeContextMenu(const QPoint&);
     void showColorDialog();
 
+Q_SIGNALS:
+    void correspondenceDialogOpened();
+
 private:
     void setupQVTK();
     void connectSignalsAndSlots();
 
     LVRCorrespondanceDialog*            m_correspondanceDialog;
     vtkSmartPointer<vtkRenderer>        m_renderer;
-    QMenu*				m_treeContextMenu;
-    QAction*				m_actionShowColorDialog;
-    QAction*			        m_actionDeleteModelItem;
+    QMenu*				                m_treeContextMenu;
+    QAction*				            m_actionShowColorDialog;
+    QAction*			                m_actionDeleteModelItem;
+    LVRPickingInteractor*               m_pickingInteractor;
 };
 
 } /* namespace lvr */
