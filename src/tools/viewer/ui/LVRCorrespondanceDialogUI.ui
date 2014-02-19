@@ -6,8 +6,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>844</width>
-    <height>697</height>
+    <width>741</width>
+    <height>518</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -18,6 +18,12 @@
     <layout class="QVBoxLayout" name="verticalLayout_2">
      <item>
       <widget class="QPushButton" name="buttonNew">
+       <property name="minimumSize">
+        <size>
+         <width>200</width>
+         <height>0</height>
+        </size>
+       </property>
        <property name="text">
         <string>Add New</string>
        </property>
@@ -42,6 +48,26 @@
         </size>
        </property>
       </spacer>
+     </item>
+     <item>
+      <widget class="QLabel" name="labelModelCloud">
+       <property name="text">
+        <string>Model Cloud:</string>
+       </property>
+      </widget>
+     </item>
+     <item>
+      <widget class="QComboBox" name="comboBoxModel"/>
+     </item>
+     <item>
+      <widget class="QLabel" name="labelDataCloud">
+       <property name="text">
+        <string>Data Cloud:</string>
+       </property>
+      </widget>
+     </item>
+     <item>
+      <widget class="QComboBox" name="comboBoxData"/>
      </item>
     </layout>
    </item>
