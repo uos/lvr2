@@ -57,14 +57,18 @@ public Q_SLOTS:
     void loadModel();
     void manualICP();
     void showTransformationDialog();
+    void showTreeContextMenu(const QPoint&);
+    void showColorDialog();
 
 private:
     void setupQVTK();
     void connectSignalsAndSlots();
 
-
     LVRCorrespondanceDialog*            m_correspondanceDialog;
     vtkSmartPointer<vtkRenderer>        m_renderer;
+    QMenu*				m_treeContextMenu;
+    QAction*				m_actionShowColorDialog;
+    QAction*			        m_actionDeleteModelItem;
 };
 
 } /* namespace lvr */
