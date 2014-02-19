@@ -25,15 +25,21 @@
 
 #include <QFileInfo>
 #include <QAbstractItemView>
+#include <QtGui>
 
 #include "LVRMainWindow.hpp"
 #include "../vtkBridge/LVRModelBridge.hpp"
 #include "../widgets/LVRModelItem.hpp"
 #include "../widgets/LVRItemTypes.hpp"
 #include "../widgets/LVRTransformationDialog.hpp"
+#include "../widgets/LVRPointCloudItem.hpp"
+#include "../widgets/LVRMeshItem.hpp"
 
 
 #include "io/ModelFactory.hpp"
+
+#include <vtkActor.h>
+#include <vtkProperty.h>
 
 namespace lvr
 {
@@ -42,7 +48,7 @@ LVRMainWindow::LVRMainWindow()
 {
     setupUi(this);
     setupQVTK();
-    connectSignalsAndSlots();
+
 
     // Init members
     m_correspondanceDialog = NULL;
@@ -52,6 +58,16 @@ LVRMainWindow::LVRMainWindow()
     v->resizeSection(0, 175);
 
     treeWidget->setSelectionMode( QAbstractItemView::SingleSelection);
+    treeWidget->setContextMenuPolicy(Qt::CustomContextMenu);
+
+    m_treeContextMenu = new QMenu;
+    m_actionShowColorDialog = new QAction("Select base color...", this);
+    m_actionDeleteModelItem = new QAction("Delete model", this);
+
+    m_treeContextMenu->addAction(m_actionShowColorDialog);
+    m_treeContextMenu->addAction(m_actionDeleteModelItem);
+
+    connectSignalsAndSlots();
 }
 
 
@@ -76,6 +92,45 @@ void LVRMainWindow::connectSignalsAndSlots()
     QObject::connect(actionOpen, SIGNAL(activated()), this, SLOT(loadModel()));
     QObject::connect(this->actionICP_using_manual_correspondance, SIGNAL(activated()), this, SLOT(manualICP()));
     QObject::connect(buttonTransformModel, SIGNAL(pressed()), this, SLOT(showTransformationDialog()));
+    QObject::connect(treeWidget, SIGNAL(customContextMenuRequested(const QPoint&)), this, SLOT(showTreeContextMenu(const QPoint&)));
+
+    QObject::connect(m_actionShowColorDialog, SIGNAL(activated()), this, SLOT(showColorDialog()));
+}
+
+void LVRMainWindow::showColorDialog()
+{
+	QColor c = QColorDialog::getColor();
+	QList<QTreeWidgetItem*> items = treeWidget->selectedItems();
+	if(items.size() > 0)
+	{
+		QTreeWidgetItem* item = items.first();
+		if(item->type() == LVRPointCloudItemType)
+		{
+			LVRPointCloudItem* pc_item = static_cast<LVRPointCloudItem*>(item);
+			//vtkActor* actor = pc_item->getPointCloudActor();
+			vtkSmartPointer<vtkProperty> p = vtkSmartPointer<vtkProperty>::New();
+			p->SetColor(c.redF(), c.greenF(), c.blueF());
+		}
+		else if(item->type() == LVRMeshItemType)
+		{
+
+		}
+	}
+}
+
+void LVRMainWindow::showTreeContextMenu(const QPoint& p)
+{
+	// Only display context menu for point clounds and meshes
+	QList<QTreeWidgetItem*> items = treeWidget->selectedItems();
+	if(items.size() > 0)
+	{
+		QTreeWidgetItem* item = items.first();
+		if(item->type() == LVRPointCloudItemType || item->type() == LVRMeshItemType)
+		{
+			QPoint globalPos = treeWidget->mapToGlobal(p);
+			m_treeContextMenu->exec(globalPos);
+		}
+	}
 }
 
 void LVRMainWindow::loadModel()
