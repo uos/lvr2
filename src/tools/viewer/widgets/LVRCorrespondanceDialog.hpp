@@ -33,8 +33,14 @@ namespace lvr
 class LVRCorrespondanceDialog : public Ui_CorrespondenceDialog, public QDialog
 {
 public:
-    LVRCorrespondanceDialog(QWidget* parent);
+    LVRCorrespondanceDialog(QTreeWidget* parent);
     virtual ~LVRCorrespondanceDialog();
+    void fillComboBoxes();
+
+private:
+
+    QTreeWidget*            m_treeWidget;
+
 };
 
 } /* namespace lvr */
