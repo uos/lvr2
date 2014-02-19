@@ -28,6 +28,7 @@
 #include "../vtkBridge/LVRPointBufferBridge.hpp"
 
 #include <QTreeWidgetItem>
+#include <QColor>
 
 namespace lvr
 {
@@ -38,9 +39,11 @@ public:
 
     LVRPointCloudItem(PointBufferBridgePtr& ptr, QTreeWidgetItem* parent = 0);
     virtual ~LVRPointCloudItem();
+    void    setColor(QColor &c);
 
 protected:
     QTreeWidgetItem*        m_parent;
+    PointBufferBridgePtr    m_pointBridge;
 };
 
 } /* namespace lvr */

@@ -49,6 +49,8 @@ public:
     bool                        hasNormals();
     bool                        hasColors();
 
+    void setBaseColor(float r, float g, float b);
+
 protected:
 
     void computePointCloudActor(PointBufferPtr pc);
