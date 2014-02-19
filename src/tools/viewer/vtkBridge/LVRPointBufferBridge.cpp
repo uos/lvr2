@@ -31,6 +31,7 @@
 #include <vtkPolyDataMapper.h>
 #include <vtkPoints.h>
 #include <vtkActor.h>
+#include <vtkProperty.h>
 
 namespace lvr
 {
@@ -115,6 +116,13 @@ LVRPointBufferBridge::LVRPointBufferBridge(const LVRPointBufferBridge& b)
     m_hasColors         = b.m_hasColors;
     m_hasNormals        = b.m_hasNormals;
     m_numPoints         = b.m_numPoints;
+}
+
+void LVRPointBufferBridge::setBaseColor(float r, float g, float b)
+{
+    vtkSmartPointer<vtkProperty> p = vtkSmartPointer<vtkProperty>::New();
+    p->SetColor(r, g, b);
+    m_pointCloudActor->SetProperty(p);
 }
 
 vtkSmartPointer<vtkActor> LVRPointBufferBridge::getPointCloudActor()
