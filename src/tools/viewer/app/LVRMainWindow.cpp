@@ -107,9 +107,8 @@ void LVRMainWindow::showColorDialog()
 		if(item->type() == LVRPointCloudItemType)
 		{
 			LVRPointCloudItem* pc_item = static_cast<LVRPointCloudItem*>(item);
-			//vtkActor* actor = pc_item->getPointCloudActor();
-			vtkSmartPointer<vtkProperty> p = vtkSmartPointer<vtkProperty>::New();
-			p->SetColor(c.redF(), c.greenF(), c.blueF());
+			pc_item->setColor(c);
+			qvtkWidget->GetRenderWindow()->Render();
 		}
 		else if(item->type() == LVRMeshItemType)
 		{

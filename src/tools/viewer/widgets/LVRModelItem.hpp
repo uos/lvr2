@@ -30,6 +30,7 @@
 #include "LVRPoseItem.hpp"
 
 #include <QString>
+#include <QColor>
 #include <QTreeWidgetItem>
 
 namespace lvr
@@ -45,7 +46,6 @@ public:
 
     Pose    getPose();
     void    setPose( Pose& pose);
-
 
 protected:
     ModelBridgePtr  m_modelBridge;

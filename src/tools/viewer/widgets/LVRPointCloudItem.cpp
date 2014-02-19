@@ -29,7 +29,7 @@ namespace lvr
 {
 
 LVRPointCloudItem::LVRPointCloudItem(PointBufferBridgePtr& ptr, QTreeWidgetItem* item) :
-       QTreeWidgetItem(item, LVRPointCloudItemType), m_parent(item)
+       QTreeWidgetItem(item, LVRPointCloudItemType), m_parent(item), m_pointBridge(ptr)
 {
     // Setup tree widget icon
     QIcon icon;
@@ -68,6 +68,11 @@ LVRPointCloudItem::LVRPointCloudItem(PointBufferBridgePtr& ptr, QTreeWidgetItem*
         colorItem->setText(1, "no");
     }
     addChild(colorItem);
+}
+
+void LVRPointCloudItem::setColor(QColor &c)
+{
+    m_pointBridge->setBaseColor(c.redF(), c.greenF(), c.blueF());
 }
 
 LVRPointCloudItem::~LVRPointCloudItem()
