@@ -14,6 +14,7 @@ set(LVR_VIEWER_SOURCES
     widgets/LVRMeshItem.cpp
     widgets/LVRPoseItem.cpp
     widgets/LVRTransformationDialog.cpp
+    widgets/LVRCorrespondanceDialog.cpp
 )
 
 
@@ -27,6 +28,7 @@ set(LVR_VIEWER_MOCS
 set(LVR_VIEWER_UIS
    ui/LVRMainWindowUI.ui
    ui/LVRTransformationDialogUI.ui
+   ui/LVRCorrespondanceDialogUI.ui
 )
 
 set(LVR_VIEWER_RESOURCES

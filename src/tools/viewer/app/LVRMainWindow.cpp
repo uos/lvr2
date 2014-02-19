@@ -32,6 +32,7 @@
 #include "../widgets/LVRItemTypes.hpp"
 #include "../widgets/LVRTransformationDialog.hpp"
 
+
 #include "io/ModelFactory.hpp"
 
 namespace lvr
@@ -42,6 +43,9 @@ LVRMainWindow::LVRMainWindow()
     setupUi(this);
     setupQVTK();
     connectSignalsAndSlots();
+
+    // Init members
+    m_correspondanceDialog = NULL;
 
     // Setup specific properties
     QHeaderView* v = this->treeWidget->header();
@@ -54,7 +58,10 @@ LVRMainWindow::LVRMainWindow()
 
 LVRMainWindow::~LVRMainWindow()
 {
-    // TODO Auto-generated destructor stub
+    if(m_correspondanceDialog)
+    {
+        delete m_correspondanceDialog;
+    }
 }
 
 void LVRMainWindow::setupQVTK()
@@ -67,6 +74,7 @@ void LVRMainWindow::setupQVTK()
 void LVRMainWindow::connectSignalsAndSlots()
 {
     QObject::connect(actionOpen, SIGNAL(activated()), this, SLOT(loadModel()));
+    QObject::connect(this->actionICP_using_manual_correspondance, SIGNAL(activated()), this, SLOT(manualICP()));
     QObject::connect(buttonTransformModel, SIGNAL(pressed()), this, SLOT(showTransformationDialog()));
 }
 
@@ -89,6 +97,18 @@ void LVRMainWindow::loadModel()
     // Update camera to new scene dimension and force rendering
     m_renderer->ResetCamera();
     this->qvtkWidget->GetRenderWindow()->Render();
+
+}
+
+void LVRMainWindow::manualICP()
+{
+    if(!m_correspondanceDialog)
+    {
+        m_correspondanceDialog = new LVRCorrespondanceDialog(this);
+    }
+    m_correspondanceDialog->show();
+    m_correspondanceDialog->raise();
+    m_correspondanceDialog->activateWindow();
 
 }
 
