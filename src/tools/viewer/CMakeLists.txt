@@ -23,6 +23,7 @@ set(LVR_VIEWER_MOCS
     app/LVRMainWindow.hpp
     vtkBridge/LVRPickingInteractor.hpp
     widgets/LVRTransformationDialog.hpp
+    widgets/LVRCorrespondanceDialog.hpp
 )
 
 # Dynamically generated GUI object's from

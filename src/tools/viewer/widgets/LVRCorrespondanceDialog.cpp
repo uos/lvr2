@@ -29,18 +29,33 @@
 namespace lvr
 {
 
-LVRCorrespondanceDialog::LVRCorrespondanceDialog(QTreeWidget* parent) :
-    QDialog(parent), m_treeWidget(parent)
+LVRCorrespondanceDialog::LVRCorrespondanceDialog(QTreeWidget* treeWidget) :
+    m_treeWidget(treeWidget)
 {
-    setupUi(this);
+    m_dialog = new QDialog(treeWidget);
+    m_ui = new Ui_CorrespondenceDialog;
+    m_ui->setupUi(m_dialog);
+
     fillComboBoxes();
+    QObject::connect(m_ui->comboBoxModel, SIGNAL(currentIndexChanged(QString)), this, SLOT(modelSelectionChanged(QString)));
+    QObject::connect(m_ui->comboBoxData, SIGNAL(currentIndexChanged(QString)), this, SLOT(dataSelectionChanged(QString)));
+}
+
+void LVRCorrespondanceDialog::modelSelectionChanged(QString text)
+{
+
+}
+
+void LVRCorrespondanceDialog::dataSelectionChanged(QString text)
+{
+
 }
 
 void LVRCorrespondanceDialog::fillComboBoxes()
 {
     // Clear contends
-    comboBoxModel->clear();
-    comboBoxData->clear();
+    m_ui->comboBoxModel->clear();
+    m_ui->comboBoxData->clear();
 
     // Iterator over all items
     QTreeWidgetItemIterator it(m_treeWidget);
@@ -48,8 +63,8 @@ void LVRCorrespondanceDialog::fillComboBoxes()
     {
         if ( (*it)->type() == LVRPointCloudItemType)
         {
-            comboBoxData->addItem((*it)->parent()->text(0));
-            comboBoxModel->addItem((*it)->parent()->text(0));
+            m_ui->comboBoxData->addItem((*it)->parent()->text(0));
+            m_ui->comboBoxModel->addItem((*it)->parent()->text(0));
         }
         ++it;
     }
