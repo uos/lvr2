@@ -60,6 +60,7 @@ public Q_SLOTS:
     void showTransformationDialog();
     void showTreeContextMenu(const QPoint&);
     void showColorDialog();
+    void renderVtkStuff();
 
 Q_SIGNALS:
     void correspondenceDialogOpened();
