@@ -24,6 +24,7 @@
  */
 #include "LVRCorrespondanceDialog.hpp"
 #include "LVRPointCloudItem.hpp"
+#include "LVRPickItem.hpp"
 #include "LVRItemTypes.hpp"
 
 
@@ -36,6 +37,8 @@ LVRCorrespondanceDialog::LVRCorrespondanceDialog(QTreeWidget* treeWidget) :
     m_dialog = new QDialog(treeWidget);
     m_ui = new Ui_CorrespondenceDialog;
     m_ui->setupUi(m_dialog);
+
+    m_ui->treeWidget->addTopLevelItem(new LVRPickItem(m_ui->treeWidget));
 
     m_dataSelectionColor = QColor(0, 255, 255, 0);
     m_modelSelectionColor = QColor(255, 255, 0, 0);
@@ -117,6 +120,18 @@ void LVRCorrespondanceDialog::updateDataSelection(QString str)
 LVRCorrespondanceDialog::~LVRCorrespondanceDialog()
 {
     // TODO Auto-generated destructor stub
+}
+
+void LVRCorrespondanceDialog::firstPointPicked(double* pos)
+{
+    QTreeWidgetItemIterator it(m_ui->treeWidget);
+    (static_cast<LVRPickItem*>(*it))->setStart(pos);
+}
+
+void LVRCorrespondanceDialog::secondPointPicked(double* pos)
+{
+    QTreeWidgetItemIterator it(m_ui->treeWidget);
+    (static_cast<LVRPickItem*>(*it))->setEnd(pos);
 }
 
 } /* namespace lvr */

@@ -14,6 +14,7 @@ set(LVR_VIEWER_SOURCES
     widgets/LVRPointCloudItem.cpp
     widgets/LVRMeshItem.cpp
     widgets/LVRPoseItem.cpp
+    widgets/LVRPickItem.cpp
     widgets/LVRTransformationDialog.cpp
     widgets/LVRCorrespondanceDialog.cpp
 )

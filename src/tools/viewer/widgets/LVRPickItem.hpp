@@ -17,17 +17,33 @@
  */
 
 /**
- * LVRItemTypes.hpp
+ * LVRPickItem.hpp
  *
- *  @date Feb 17, 2014
+ *  @date Feb 20, 2014
  *  @author Thomas Wiemann
  */
-#ifndef LVRITEMTYPES_HPP_
-#define LVRITEMTYPES_HPP_
+#ifndef LVRPICKITEM_HPP_
+#define LVRPICKITEM_HPP_
+
+#include <QtGui/qtreewidget.h>
+#include "LVRItemTypes.hpp"
 
 namespace lvr
 {
-    enum {LVRModelItemType = 1001, LVRPointCloudItemType, LVRMeshItemType, LVRPoseItemType, LVRPickItemType};
-}
 
-#endif /* LVRITEMTYPES_HPP_ */
+class LVRPickItem: public QTreeWidgetItem
+{
+public:
+    LVRPickItem(QTreeWidget* parent, int type = LVRPickItemType);
+    virtual ~LVRPickItem();
+
+    void setStart(double* start);
+    void setEnd(double* end);
+private:
+    double*     m_start;
+    double*     m_end;
+};
+
+} /* namespace lvr */
+
+#endif /* LVRPICKITEM_HPP_ */
