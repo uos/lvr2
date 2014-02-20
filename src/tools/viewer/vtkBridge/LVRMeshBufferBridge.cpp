@@ -121,7 +121,6 @@ void LVRMeshBufferBridge::computeMeshActor(MeshBufferPtr meshbuffer)
 
         m_meshActor = vtkSmartPointer<vtkActor>::New();
         m_meshActor->SetMapper(mapper);
-
     }
 }
 
