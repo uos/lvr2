@@ -17,17 +17,51 @@
  */
 
 /**
- * LVRItemTypes.hpp
+ * LVRPickItem.cpp
  *
- *  @date Feb 17, 2014
+ *  @date Feb 20, 2014
  *  @author Thomas Wiemann
  */
-#ifndef LVRITEMTYPES_HPP_
-#define LVRITEMTYPES_HPP_
+#include "LVRPickItem.hpp"
 
 namespace lvr
 {
-    enum {LVRModelItemType = 1001, LVRPointCloudItemType, LVRMeshItemType, LVRPoseItemType, LVRPickItemType};
+
+LVRPickItem::LVRPickItem(QTreeWidget* parent, int type) :
+        QTreeWidgetItem(parent, type)
+{
+    m_start = 0;
+    m_end = 0;
+    setText(0, "Empty");
+    setText(1, "Empty");
 }
 
-#endif /* LVRITEMTYPES_HPP_ */
+LVRPickItem::~LVRPickItem()
+{
+   if(m_start) delete[] m_start;
+   if(m_end) delete[] m_end;
+}
+
+void LVRPickItem::setStart(double* start)
+{
+    m_start = start;
+    QString x, y, z, text;
+    x.setNum(start[0], 'f');
+    y.setNum(start[1], 'f');
+    z.setNum(start[2], 'f');
+    text = QString("%1 %2 %3").arg(x).arg(y).arg(z);
+    setText(0, text);
+}
+
+void LVRPickItem::setEnd(double* end)
+{
+    m_end = end;
+    QString x, y, z, text;
+    x.setNum(end[0], 'f');
+    y.setNum(end[1], 'f');
+    z.setNum(end[2], 'f');
+    text = QString("%1 %2 %3").arg(x).arg(y).arg(z);
+    setText(1, text);
+}
+
+} /* namespace lvr */
