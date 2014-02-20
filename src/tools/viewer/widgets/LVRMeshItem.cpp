@@ -53,7 +53,20 @@ LVRMeshItem::LVRMeshItem(MeshBufferBridgePtr& ptr, QTreeWidgetItem* parent) :
 
 void LVRMeshItem::setColor(QColor &c)
 {
+    m_color = c;
     m_meshBridge->setBaseColor(c.redF(), c.greenF(), c.blueF());
+}
+
+
+
+void LVRMeshItem::setSelectionColor(QColor& c)
+{
+    m_meshBridge->setBaseColor(c.redF(), c.greenF(), c.blueF());
+}
+
+void LVRMeshItem::resetColor()
+{
+    m_meshBridge->setBaseColor(m_color.redF(), m_color.greenF(), m_color.blueF());
 }
 
 LVRMeshItem::~LVRMeshItem()
