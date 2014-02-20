@@ -84,6 +84,11 @@ LVRMainWindow::~LVRMainWindow()
     }
 }
 
+void LVRMainWindow::renderVtkStuff()
+{
+    this->qvtkWidget->GetRenderWindow()->Render();
+}
+
 void LVRMainWindow::setupQVTK()
 {
     // Add new renderer to the render window of the QVTKWidget
@@ -101,6 +106,8 @@ void LVRMainWindow::connectSignalsAndSlots()
     QObject::connect(m_actionShowColorDialog, SIGNAL(activated()), this, SLOT(showColorDialog()));
     QObject::connect(m_correspondanceDialog->m_dialog, SIGNAL(accepted()), m_pickingInteractor, SLOT(correspondenceSearchOff()));
     QObject::connect(m_correspondanceDialog->m_dialog, SIGNAL(rejected()), m_pickingInteractor, SLOT(correspondenceSearchOff()));
+    QObject::connect(m_correspondanceDialog, SIGNAL(render()), this, SLOT(renderVtkStuff()));
+
     QObject::connect(this, SIGNAL(correspondenceDialogOpened()), m_pickingInteractor, SLOT(correspondenceSearchOn()));
     QObject::connect(this, SIGNAL(correspondenceDialogOpened()), m_pickingInteractor, SLOT(correspondenceSearchOn()));
 
