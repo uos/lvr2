@@ -23,6 +23,7 @@
  *  @author Thomas Wiemann
  */
 #include "LVRCorrespondanceDialog.hpp"
+#include "LVRPointCloudItem.hpp"
 #include "LVRItemTypes.hpp"
 
 
@@ -36,20 +37,16 @@ LVRCorrespondanceDialog::LVRCorrespondanceDialog(QTreeWidget* treeWidget) :
     m_ui = new Ui_CorrespondenceDialog;
     m_ui->setupUi(m_dialog);
 
+    m_dataSelectionColor = QColor(0, 255, 255, 0);
+    m_modelSelectionColor = QColor(255, 255, 0, 0);
+    m_defaultColor = QColor(255, 255, 255, 0);
+
     fillComboBoxes();
-    QObject::connect(m_ui->comboBoxModel, SIGNAL(currentIndexChanged(QString)), this, SLOT(modelSelectionChanged(QString)));
-    QObject::connect(m_ui->comboBoxData, SIGNAL(currentIndexChanged(QString)), this, SLOT(dataSelectionChanged(QString)));
+    QObject::connect(m_ui->comboBoxModel, SIGNAL(currentIndexChanged(QString)), this, SLOT(updateModelSelection(QString)));
+    QObject::connect(m_ui->comboBoxData, SIGNAL(currentIndexChanged(QString)), this, SLOT(updateDataSelection(QString)));
 }
 
-void LVRCorrespondanceDialog::modelSelectionChanged(QString text)
-{
 
-}
-
-void LVRCorrespondanceDialog::dataSelectionChanged(QString text)
-{
-
-}
 
 void LVRCorrespondanceDialog::fillComboBoxes()
 {
@@ -68,6 +65,53 @@ void LVRCorrespondanceDialog::fillComboBoxes()
         }
         ++it;
     }
+    Q_EMIT(render());
+}
+
+void LVRCorrespondanceDialog::updateModelSelection(QString str)
+{
+    m_modelSelection = str;
+    QTreeWidgetItemIterator it(m_treeWidget);
+    while (*it)
+    {
+        if ( (*it)->type() == LVRPointCloudItemType )
+        {
+            LVRPointCloudItem* item = static_cast<LVRPointCloudItem*>(*it);
+            if(item->parent()->text(0) == str)
+            {
+                item->setSelectionColor(m_modelSelectionColor);
+            }
+            else if(item->parent()->text(0) != m_dataSelection)
+            {
+                item->setSelectionColor(m_defaultColor);
+            }
+        }
+        ++it;
+    }
+    Q_EMIT(render());
+}
+
+void LVRCorrespondanceDialog::updateDataSelection(QString str)
+{
+    m_dataSelection = str;
+    QTreeWidgetItemIterator it(m_treeWidget);
+     while (*it)
+     {
+         if ( (*it)->type() == LVRPointCloudItemType )
+         {
+             LVRPointCloudItem* item = static_cast<LVRPointCloudItem*>(*it);
+             if(item->parent()->text(0) == str)
+             {
+                 item->setSelectionColor(m_dataSelectionColor);
+             }
+             else if(item->parent()->text(0) != m_modelSelection)
+             {
+                 item->setSelectionColor(m_defaultColor);
+             }
+         }
+         ++it;
+     }
+     Q_EMIT(render());
 }
 
 LVRCorrespondanceDialog::~LVRCorrespondanceDialog()
