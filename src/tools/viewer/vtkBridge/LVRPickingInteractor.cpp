@@ -80,8 +80,6 @@ void LVRPickingInteractor::correspondenceSearchOff()
 
 void LVRPickingInteractor::OnLeftButtonDown()
 {
-
-
     if(m_pickMode != None)
     {
         int* pickPos = this->Interactor->GetEventPosition();
@@ -101,8 +99,6 @@ void LVRPickingInteractor::OnLeftButtonDown()
             Q_EMIT(secondPointPicked(picked));
         }
     }
-
-
     vtkInteractorStyleTrackballCamera::OnLeftButtonDown();
 }
 
