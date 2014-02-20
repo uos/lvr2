@@ -41,9 +41,13 @@ public:
     virtual ~LVRCorrespondanceDialog();
     void fillComboBoxes();
 
+
 public Q_SLOTS:
-    void modelSelectionChanged(QString);
-    void dataSelectionChanged(QString);
+    void updateModelSelection(QString);
+    void updateDataSelection(QString);
+
+Q_SIGNALS:
+    void render();
 
 public:
     Ui_CorrespondenceDialog*    m_ui;
@@ -51,6 +55,11 @@ public:
 
 private:
     QTreeWidget*                m_treeWidget;
+    QColor                      m_dataSelectionColor;
+    QColor                      m_modelSelectionColor;
+    QColor                      m_defaultColor;
+    QString                     m_dataSelection;
+    QString                     m_modelSelection;
 };
 
 } /* namespace lvr */
