@@ -40,6 +40,7 @@
 
 #include <vtkActor.h>
 #include <vtkProperty.h>
+#include <vtkPointPicker.h>
 
 namespace lvr
 {
@@ -70,7 +71,8 @@ LVRMainWindow::LVRMainWindow()
 
     m_pickingInteractor = new LVRPickingInteractor(m_renderer);
     qvtkWidget->GetRenderWindow()->GetInteractor()->SetInteractorStyle( m_pickingInteractor );
-
+    vtkSmartPointer<vtkPointPicker> pointPicker = vtkSmartPointer<vtkPointPicker>::New();
+    qvtkWidget->GetRenderWindow()->GetInteractor()->SetPicker(pointPicker);
     connectSignalsAndSlots();
 }
 

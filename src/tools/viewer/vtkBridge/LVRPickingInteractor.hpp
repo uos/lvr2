@@ -70,6 +70,10 @@ public Q_SLOTS:
     void correspondenceSearchOn();
     void correspondenceSearchOff();
 
+Q_SIGNALS:
+    void firstPointPicked(double*);
+    void secondPointPicked(double*);
+
 private:
     /// Indicates picking mode
     PickMode            m_pickMode;
