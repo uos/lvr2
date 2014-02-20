@@ -27,6 +27,9 @@
 #include <vtkObjectFactory.h>
 #include <vtkTextProperty.h>
 #include <vtkRenderWindowInteractor.h>
+#include <vtkAbstractPicker.h>
+#include <vtkRenderWindow.h>
+#include <vtkRendererCollection.h>
 
 namespace lvr
 {
@@ -77,6 +80,29 @@ void LVRPickingInteractor::correspondenceSearchOff()
 
 void LVRPickingInteractor::OnLeftButtonDown()
 {
+
+
+    if(m_pickMode != None)
+    {
+        int* pickPos = this->Interactor->GetEventPosition();
+        double* picked = new double[3];
+        this->Interactor->GetPicker()->Pick(this->Interactor->GetEventPosition()[0],
+                                this->Interactor->GetEventPosition()[1],
+                                0,  // always zero.
+                                this->Interactor->GetRenderWindow()->GetRenderers()->GetFirstRenderer());
+        this->Interactor->GetPicker()->GetPickPosition(picked);
+
+        if(m_pickMode == PickFirst)
+        {
+            Q_EMIT(firstPointPicked(picked));
+        }
+        else if(m_pickMode == PickSecond)
+        {
+            Q_EMIT(secondPointPicked(picked));
+        }
+    }
+
+
     vtkInteractorStyleTrackballCamera::OnLeftButtonDown();
 }
 
