@@ -47,6 +47,8 @@ public Q_SLOTS:
     void updateDataSelection(QString);
     void firstPointPicked(double*);
     void secondPointPicked(double*);
+    void insertNewItem();
+    void deleteItem();
 
 Q_SIGNALS:
     void render();
