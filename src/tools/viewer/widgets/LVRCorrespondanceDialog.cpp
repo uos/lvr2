@@ -27,6 +27,7 @@
 #include "LVRPickItem.hpp"
 #include "LVRItemTypes.hpp"
 
+#include <QMessageBox>
 
 namespace lvr
 {
@@ -38,7 +39,6 @@ LVRCorrespondanceDialog::LVRCorrespondanceDialog(QTreeWidget* treeWidget) :
     m_ui = new Ui_CorrespondenceDialog;
     m_ui->setupUi(m_dialog);
 
-    m_ui->treeWidget->addTopLevelItem(new LVRPickItem(m_ui->treeWidget));
 
     m_dataSelectionColor = QColor(0, 255, 255, 0);
     m_modelSelectionColor = QColor(255, 255, 0, 0);
@@ -47,9 +47,40 @@ LVRCorrespondanceDialog::LVRCorrespondanceDialog(QTreeWidget* treeWidget) :
     fillComboBoxes();
     QObject::connect(m_ui->comboBoxModel, SIGNAL(currentIndexChanged(QString)), this, SLOT(updateModelSelection(QString)));
     QObject::connect(m_ui->comboBoxData, SIGNAL(currentIndexChanged(QString)), this, SLOT(updateDataSelection(QString)));
+    QObject::connect(m_ui->buttonNew, SIGNAL(pressed()), this, SLOT(insertNewItem()));
+    QObject::connect(m_ui->buttonDelete, SIGNAL(pressed()), this, SLOT(deleteItem()));
 }
 
+void LVRCorrespondanceDialog::insertNewItem()
+{
+    LVRPickItem* item = new LVRPickItem( m_ui->treeWidget);
+    QList<QTreeWidgetItem*> items =  m_ui->treeWidget->selectedItems();
 
+    // De-select all previously selected items
+    QList<QTreeWidgetItem*>::iterator it;
+    for(it = items.begin(); it != items.end(); it++)
+    {
+        m_ui->treeWidget->setItemSelected(*it,false);
+    }
+
+    m_ui->treeWidget->addTopLevelItem(item);
+    m_ui->treeWidget->setItemSelected(item, true);
+}
+
+void LVRCorrespondanceDialog::deleteItem()
+{
+    QList<QTreeWidgetItem*> items =  m_ui->treeWidget->selectedItems();
+    if(items.size())
+    {
+        QTreeWidgetItem* it = items.first();
+        if(it->type() == LVRPickItemType)
+        {
+           int index = m_ui->treeWidget->indexOfTopLevelItem(it);
+           QTreeWidgetItem* i = m_ui->treeWidget->takeTopLevelItem(index);
+           if(i) delete i;
+        }
+    }
+}
 
 void LVRCorrespondanceDialog::fillComboBoxes()
 {
@@ -124,14 +155,47 @@ LVRCorrespondanceDialog::~LVRCorrespondanceDialog()
 
 void LVRCorrespondanceDialog::firstPointPicked(double* pos)
 {
-    QTreeWidgetItemIterator it(m_ui->treeWidget);
-    (static_cast<LVRPickItem*>(*it))->setStart(pos);
+    QList<QTreeWidgetItem*> items =  m_ui->treeWidget->selectedItems();
+    if(items.size())
+    {
+        QTreeWidgetItem* it = items.first();
+        if(it->type() == LVRPickItemType)
+        {
+            LVRPickItem* item = static_cast<LVRPickItem*>(it);
+            item->setStart(pos);
+        }
+    }
+    else
+    {
+        /*QMessageBox msgBox;
+        msgBox.setText("No item to edit selected.");
+        msgBox.setInformativeText("Please select one or add a new item to the list. Press 'q' to quit pick mode.");
+        msgBox.setStandardButtons(QMessageBox::Ok);
+        msgBox.exec();*/
+    }
 }
 
 void LVRCorrespondanceDialog::secondPointPicked(double* pos)
 {
-    QTreeWidgetItemIterator it(m_ui->treeWidget);
-    (static_cast<LVRPickItem*>(*it))->setEnd(pos);
+    QList<QTreeWidgetItem*> items =  m_ui->treeWidget->selectedItems();
+    if(items.size())
+    {
+        QTreeWidgetItem* it = items.first();
+        if(it->type() == LVRPickItemType)
+        {
+            LVRPickItem* item = static_cast<LVRPickItem*>(it);
+            item->setEnd(pos);
+        }
+    }
+    else
+    {
+        /*
+        QMessageBox msgBox;
+        msgBox.setText("No item to edit selected.");
+        msgBox.setInformativeText("Please select one or add a new item to the list. Press 'q' to quit pick mode.");
+        msgBox.setStandardButtons(QMessageBox::Ok);
+        msgBox.exec();*/
+    }
 }
 
 } /* namespace lvr */
