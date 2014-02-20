@@ -26,6 +26,7 @@
 #define LVRMESHITEM_H_
 
 #include <QTreeWidgetItem>
+#include <QColor>
 
 #include "../vtkBridge/LVRMeshBufferBridge.hpp"
 
@@ -38,8 +39,11 @@ public:
     LVRMeshItem(MeshBufferBridgePtr& ptr, QTreeWidgetItem* parent = 0);
     virtual ~LVRMeshItem();
     void    setColor(QColor &c);
+    void    setSelectionColor(QColor &c);
+    void    resetColor();
 
 private:
+    QColor                  m_color;
     MeshBufferBridgePtr     m_meshBridge;
 
 };

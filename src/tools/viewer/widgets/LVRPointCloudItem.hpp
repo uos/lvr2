@@ -40,10 +40,13 @@ public:
     LVRPointCloudItem(PointBufferBridgePtr& ptr, QTreeWidgetItem* parent = 0);
     virtual ~LVRPointCloudItem();
     void    setColor(QColor &c);
+    void    setSelectionColor(QColor &c);
+    void    resetColor();
 
 protected:
     QTreeWidgetItem*        m_parent;
     PointBufferBridgePtr    m_pointBridge;
+    QColor                  m_color;
 };
 
 } /* namespace lvr */

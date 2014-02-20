@@ -51,7 +51,6 @@ protected:
     ModelBridgePtr  m_modelBridge;
     QString         m_name;
     LVRPoseItem*    m_poseItem;
-
 };
 
 } /* namespace lvr */
