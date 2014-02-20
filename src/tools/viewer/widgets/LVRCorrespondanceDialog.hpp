@@ -27,20 +27,30 @@
 
 #include "LVRCorrespondanceDialogUI.h"
 
+#include <iostream>
+using namespace std;
+
 namespace lvr
 {
 
-class LVRCorrespondanceDialog : public Ui_CorrespondenceDialog, public QDialog
+class LVRCorrespondanceDialog : public QObject
 {
+    Q_OBJECT
 public:
     LVRCorrespondanceDialog(QTreeWidget* parent);
     virtual ~LVRCorrespondanceDialog();
     void fillComboBoxes();
 
+public Q_SLOTS:
+    void modelSelectionChanged(QString);
+    void dataSelectionChanged(QString);
+
+public:
+    Ui_CorrespondenceDialog*    m_ui;
+    QDialog*                    m_dialog;
+
 private:
-
-    QTreeWidget*            m_treeWidget;
-
+    QTreeWidget*                m_treeWidget;
 };
 
 } /* namespace lvr */

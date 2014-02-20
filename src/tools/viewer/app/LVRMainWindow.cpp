@@ -99,8 +99,8 @@ void LVRMainWindow::connectSignalsAndSlots()
     QObject::connect(treeWidget, SIGNAL(customContextMenuRequested(const QPoint&)), this, SLOT(showTreeContextMenu(const QPoint&)));
 
     QObject::connect(m_actionShowColorDialog, SIGNAL(activated()), this, SLOT(showColorDialog()));
-    QObject::connect(m_correspondanceDialog, SIGNAL(accepted()), m_pickingInteractor, SLOT(correspondenceSearchOff()));
-    QObject::connect(m_correspondanceDialog, SIGNAL(rejected()), m_pickingInteractor, SLOT(correspondenceSearchOff()));
+    QObject::connect(m_correspondanceDialog->m_dialog, SIGNAL(accepted()), m_pickingInteractor, SLOT(correspondenceSearchOff()));
+    QObject::connect(m_correspondanceDialog->m_dialog, SIGNAL(rejected()), m_pickingInteractor, SLOT(correspondenceSearchOff()));
     QObject::connect(this, SIGNAL(correspondenceDialogOpened()), m_pickingInteractor, SLOT(correspondenceSearchOn()));
     QObject::connect(this, SIGNAL(correspondenceDialogOpened()), m_pickingInteractor, SLOT(correspondenceSearchOn()));
 
@@ -168,9 +168,9 @@ void LVRMainWindow::loadModel()
 void LVRMainWindow::manualICP()
 {
     m_correspondanceDialog->fillComboBoxes();
-    m_correspondanceDialog->show();
-    m_correspondanceDialog->raise();
-    m_correspondanceDialog->activateWindow();
+    m_correspondanceDialog->m_dialog->show();
+    m_correspondanceDialog->m_dialog->raise();
+    m_correspondanceDialog->m_dialog->activateWindow();
     Q_EMIT(correspondenceDialogOpened());
 }
 
@@ -179,7 +179,7 @@ void LVRMainWindow::showTransformationDialog()
     // Setup a message box for unsupported items
     QMessageBox box;
     box.setText("Unsupported Item for Transformation.");
-    box.setText("Only whole models, point clouds or meshes can be transformed.");
+    box.setInformativeText("Only whole models, point clouds or meshes can be transformed.");
     box.setStandardButtons(QMessageBox::Ok);
 
     // Get selected item from tree and check type

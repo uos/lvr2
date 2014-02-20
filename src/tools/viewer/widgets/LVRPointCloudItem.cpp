@@ -73,6 +73,18 @@ LVRPointCloudItem::LVRPointCloudItem(PointBufferBridgePtr& ptr, QTreeWidgetItem*
 void LVRPointCloudItem::setColor(QColor &c)
 {
     m_pointBridge->setBaseColor(c.redF(), c.greenF(), c.blueF());
+    m_color = c;
+}
+
+
+void LVRPointCloudItem::setSelectionColor(QColor& c)
+{
+    m_pointBridge->setBaseColor(c.redF(), c.greenF(), c.blueF());
+}
+
+void LVRPointCloudItem::resetColor()
+{
+    m_pointBridge->setBaseColor(m_color.redF(), m_color.greenF(), m_color.blueF());
 }
 
 LVRPointCloudItem::~LVRPointCloudItem()
