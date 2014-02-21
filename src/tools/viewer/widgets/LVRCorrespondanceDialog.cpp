@@ -264,4 +264,58 @@ void LVRCorrespondanceDialog::treeItemSelected(QTreeWidgetItem* current, QTreeWi
     Q_EMIT(render());
 }
 
+
+Matrix4f LVRCorrespondanceDialog::getTransformation()
+{
+    PointPairVector pairs;
+    Vertexf centroid1;
+    Vertexf centroid2;
+    Matrix4f matrix;
+
+    QTreeWidgetItemIterator it(m_ui->treeWidget);
+    while (*it)
+    {
+        if( (*it)->type() == LVRPickItemType)
+        {
+            LVRPickItem* item = static_cast<LVRPickItem*>(*it);
+            if(item->getStart() && item->getEnd())
+            {
+                double* s = item->getStart();
+                double* e = item->getEnd();
+                Vertexf start(s[0], s[1], s[2]);
+                Vertexf end(e[1], e[2], e[3]);
+
+                centroid1 += start;
+                centroid2 += end;
+
+                pairs.push_back(std::pair<Vertexf, Vertexf>(start, end));
+            }
+        }
+        ++it;
+    }
+
+    if(pairs.size() > 3)
+    {
+        EigenSVDPointAlign align;
+        align.alignPoints(pairs, centroid1, centroid2, matrix);
+    }
+    else
+    {
+        cout << "Need at least 4 corresponding points" << endl;
+    }
+    return matrix;
+}
+
+QString LVRCorrespondanceDialog::getModelName()
+{
+    return m_ui->comboBoxModel->currentText();
+}
+
+QString LVRCorrespondanceDialog::getDataName()
+{
+    return m_ui->comboBoxData->currentText();
+}
+
 } /* namespace lvr */
+
+

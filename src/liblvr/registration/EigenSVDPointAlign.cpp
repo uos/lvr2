@@ -36,7 +36,7 @@ namespace lvr
 {
 
 
-double EigenSVDPointAlign::alignPoints(const pointPairVector& pairs,
+double EigenSVDPointAlign::alignPoints(const PointPairVector& pairs,
         const Vertexf centroid_m, const Vertexf centroid_d, Matrix4f& alignfx)
 {
     double error = 0;

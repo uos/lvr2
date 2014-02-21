@@ -43,6 +43,9 @@ public:
     void setEnd(double* end);
     LVRVtkArrow* getArrow();
 
+    double* getStart();
+    double* getEnd();
+
 private:
     double*         m_start;
     double*         m_end;
