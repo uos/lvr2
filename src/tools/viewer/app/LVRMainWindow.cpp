@@ -98,6 +98,28 @@ void LVRMainWindow::setupQVTK()
     this->qvtkWidget->GetRenderWindow()->AddRenderer(m_renderer);
 }
 
+void LVRMainWindow::removeArrow(LVRVtkArrow* a)
+{
+    if(a)
+    {
+        m_renderer->RemoveActor(a->getArrowActor());
+        m_renderer->RemoveActor(a->getStartActor());
+        m_renderer->RemoveActor(a->getEndActor());
+    }
+    this->qvtkWidget->GetRenderWindow()->Render();
+}
+
+void LVRMainWindow::addArrow(LVRVtkArrow* a)
+{
+    if(a)
+    {
+        m_renderer->AddActor(a->getArrowActor());
+        m_renderer->AddActor(a->getStartActor());
+        m_renderer->AddActor(a->getEndActor());
+    }
+    this->qvtkWidget->GetRenderWindow()->Render();
+}
+
 void LVRMainWindow::connectSignalsAndSlots()
 {
     QObject::connect(actionOpen, SIGNAL(activated()), this, SLOT(loadModel()));
@@ -109,7 +131,12 @@ void LVRMainWindow::connectSignalsAndSlots()
 
     QObject::connect(m_correspondanceDialog->m_dialog, SIGNAL(accepted()), m_pickingInteractor, SLOT(correspondenceSearchOff()));
     QObject::connect(m_correspondanceDialog->m_dialog, SIGNAL(rejected()), m_pickingInteractor, SLOT(correspondenceSearchOff()));
+    QObject::connect(m_correspondanceDialog, SIGNAL(addArrow(LVRVtkArrow*)), this, SLOT(addArrow(LVRVtkArrow*)));
+    QObject::connect(m_correspondanceDialog, SIGNAL(removeArrow(LVRVtkArrow*)), this, SLOT(removeArrow(LVRVtkArrow*)));
+
     QObject::connect(m_correspondanceDialog, SIGNAL(render()), this, SLOT(renderVtkStuff()));
+
+
     QObject::connect(m_pickingInteractor, SIGNAL(firstPointPicked(double*)),m_correspondanceDialog, SLOT(firstPointPicked(double*)));
     QObject::connect(m_pickingInteractor, SIGNAL(secondPointPicked(double*)),m_correspondanceDialog, SLOT(secondPointPicked(double*)));
 

@@ -33,6 +33,7 @@
 #include "LVRMainWindowUI.h"
 #include "../widgets/LVRCorrespondanceDialog.hpp"
 #include "../vtkBridge/LVRPickingInteractor.hpp"
+#include "../vtkBridge/LVRVtkArrow.hpp"
 
 #include <iostream>
 using std::cout;
@@ -61,6 +62,8 @@ public Q_SLOTS:
     void showTreeContextMenu(const QPoint&);
     void showColorDialog();
     void renderVtkStuff();
+    void removeArrow(LVRVtkArrow*);
+    void addArrow(LVRVtkArrow*);
 
 Q_SIGNALS:
     void correspondenceDialogOpened();
