@@ -76,7 +76,11 @@ void LVRCorrespondanceDialog::deleteItem()
         if(it->type() == LVRPickItemType)
         {
            int index = m_ui->treeWidget->indexOfTopLevelItem(it);
-           QTreeWidgetItem* i = m_ui->treeWidget->takeTopLevelItem(index);
+           LVRPickItem* i = static_cast<LVRPickItem*>(m_ui->treeWidget->takeTopLevelItem(index));
+           if(i->getArrow())
+           {
+               Q_EMIT(removeArrow(i->getArrow()));
+           }
            if(i) delete i;
         }
     }
@@ -162,7 +166,23 @@ void LVRCorrespondanceDialog::firstPointPicked(double* pos)
         if(it->type() == LVRPickItemType)
         {
             LVRPickItem* item = static_cast<LVRPickItem*>(it);
+
+            // Handle arrow displayment: Check if an arrow existed,
+            // remove it from renderer and create a new one (and pray
+            // that there are no concurrency problems...
+            LVRVtkArrow* arrow = item->getArrow();
+            if(arrow)
+            {
+                Q_EMIT(removeArrow(arrow));
+            }
             item->setStart(pos);
+            arrow = item->getArrow();
+            if(arrow)
+            {
+                Q_EMIT(addArrow(arrow));
+            }
+
+
         }
     }
     else
@@ -184,7 +204,21 @@ void LVRCorrespondanceDialog::secondPointPicked(double* pos)
         if(it->type() == LVRPickItemType)
         {
             LVRPickItem* item = static_cast<LVRPickItem*>(it);
+
+            // Handle arrow displayment: Check if an arrow existed,
+            // remove it from renderer and create a new one (and pray
+            // that there are no concurrency problems...
+            LVRVtkArrow* arrow = item->getArrow();
+            if(arrow)
+            {
+                Q_EMIT(removeArrow(arrow));
+            }
             item->setEnd(pos);
+            arrow = item->getArrow();
+            if(arrow)
+            {
+                Q_EMIT(addArrow(arrow));
+            }
         }
     }
     else
