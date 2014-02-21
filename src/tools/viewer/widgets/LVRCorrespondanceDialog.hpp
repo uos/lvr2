@@ -28,6 +28,9 @@
 #include "LVRCorrespondanceDialogUI.h"
 #include "../vtkBridge/LVRVtkArrow.hpp"
 
+#include "geometry/Matrix4.hpp"
+#include "registration/EigenSVDPointAlign.hpp"
+
 #include <iostream>
 using namespace std;
 
@@ -41,6 +44,9 @@ public:
     LVRCorrespondanceDialog(QTreeWidget* parent);
     virtual ~LVRCorrespondanceDialog();
     void fillComboBoxes();
+    Matrix4f getTransformation();
+    QString  getModelName();
+    QString  getDataName();
 
 public Q_SLOTS:
     void updateModelSelection(QString);

@@ -62,6 +62,16 @@ void LVRPickItem::setStart(double* start)
     }
 }
 
+double* LVRPickItem::getStart()
+{
+    return m_start;
+}
+
+double* LVRPickItem::getEnd()
+{
+    return m_end;
+}
+
 void LVRPickItem::setEnd(double* end)
 {
     m_end = end;
