@@ -26,6 +26,7 @@
 #define LVRCORRESPONDANCEDIALOG_HPP_
 
 #include "LVRCorrespondanceDialogUI.h"
+#include "../vtkBridge/LVRVtkArrow.hpp"
 
 #include <iostream>
 using namespace std;
@@ -41,7 +42,6 @@ public:
     virtual ~LVRCorrespondanceDialog();
     void fillComboBoxes();
 
-
 public Q_SLOTS:
     void updateModelSelection(QString);
     void updateDataSelection(QString);
@@ -52,6 +52,8 @@ public Q_SLOTS:
 
 Q_SIGNALS:
     void render();
+    void removeArrow(LVRVtkArrow *);
+    void addArrow(LVRVtkArrow *);
 
 public:
     Ui_CorrespondenceDialog*    m_ui;
