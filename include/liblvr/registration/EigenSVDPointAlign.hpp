@@ -32,14 +32,14 @@
 namespace lvr
 {
 
-typedef std::vector<std::pair<Vertexf, Vertexf> > pointPairVector;
+typedef std::vector<std::pair<Vertexf, Vertexf> > PointPairVector;
 
 class EigenSVDPointAlign
 {
 public:
     EigenSVDPointAlign() {};
     double alignPoints(
-            const pointPairVector& pairs,
+            const PointPairVector& pairs,
             const Vertexf centroid1,
             const Vertexf centroid2,
             Matrix4f& align);

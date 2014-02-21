@@ -104,7 +104,6 @@ void LVRTransformationDialog::connectSignalsAndSlots()
     QObject::connect(m_dialogUI->spinBoxStep, SIGNAL(valueChanged(double)),
               this, SLOT(stepChanged(double)));
 
-
     QObject::connect(m_dialogUI->buttonSave, SIGNAL(clicked()), this, SLOT(save()));
 
 
@@ -244,5 +243,6 @@ void LVRTransformationDialog::rotationZSlided(int value)
     // Update spin box
     m_dialogUI->spinBoxZRot->setValue(m_pose.p);
 }
+
 
 } // namespace lvr
