@@ -282,8 +282,10 @@ Matrix4f LVRCorrespondanceDialog::getTransformation()
             {
                 double* s = item->getStart();
                 double* e = item->getEnd();
-                Vertexf start(s[0], s[1], s[2]);
-                Vertexf end(e[1], e[2], e[3]);
+
+                // Convert to left handed coordinates!
+                Vertexf start(s[0], s[1], -s[2]);
+                Vertexf end(e[1], e[2], -e[3]);
 
                 centroid1 += start;
                 centroid2 += end;
@@ -296,6 +298,9 @@ Matrix4f LVRCorrespondanceDialog::getTransformation()
 
     if(pairs.size() > 3)
     {
+        centroid1 /= pairs.size();
+        centroid2 /= pairs.size();
+
         EigenSVDPointAlign align;
         align.alignPoints(pairs, centroid1, centroid2, matrix);
     }
