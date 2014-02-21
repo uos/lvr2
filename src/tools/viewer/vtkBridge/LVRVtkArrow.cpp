@@ -95,6 +95,10 @@ LVRVtkArrow::LVRVtkArrow(Vertexf start, Vertexf end):
     m_arrowActor->SetUserMatrix(transform->GetMatrix());
     m_arrowActor->SetMapper(mapper);
 
+    //Store default color and set new color to red (the new arrow is active)
+    m_arrowActor->GetProperty()->GetColor(m_r, m_g, m_b);
+    setTmpColor(1.0, 0.2, 0.2);
+
     // Create spheres for start and end point
     vtkSmartPointer<vtkSphereSource> sphereStartSource = vtkSmartPointer<vtkSphereSource>::New();
     sphereStartSource->SetCenter(start[0], start[1], start[2]);
@@ -111,6 +115,16 @@ LVRVtkArrow::LVRVtkArrow(Vertexf start, Vertexf end):
     m_endActor = vtkSmartPointer<vtkActor>::New();
     m_endActor->SetMapper(sphereEndMapper);
     m_endActor->GetProperty()->SetColor(1.0, .3, .3);
+}
+
+void LVRVtkArrow::restoreColor()
+{
+    m_arrowActor->GetProperty()->SetColor(m_r, m_g, m_b);
+}
+
+void LVRVtkArrow::setTmpColor(double r, double g, double b)
+{
+    m_arrowActor->GetProperty()->SetColor(r, g, b);
 }
 
 vtkSmartPointer<vtkActor> LVRVtkArrow::getArrowActor()

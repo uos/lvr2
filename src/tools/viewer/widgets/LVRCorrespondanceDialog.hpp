@@ -49,6 +49,7 @@ public Q_SLOTS:
     void secondPointPicked(double*);
     void insertNewItem();
     void deleteItem();
+    void treeItemSelected(QTreeWidgetItem*, QTreeWidgetItem*);
 
 Q_SIGNALS:
     void render();

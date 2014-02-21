@@ -47,6 +47,9 @@ public:
     vtkSmartPointer<vtkActor>   getStartActor();
     vtkSmartPointer<vtkActor>   getEndActor();
 
+    void restoreColor();
+    void setTmpColor(double r, double g, double b);
+
     virtual ~LVRVtkArrow();
 
 private:
@@ -55,6 +58,10 @@ private:
     vtkSmartPointer<vtkActor>   m_endActor;
     Vertexf                     m_start;
     Vertexf                     m_end;
+    double                      m_r;
+    double                      m_g;
+    double                      m_b;
+
 };
 
 } /* namespace lvr */
