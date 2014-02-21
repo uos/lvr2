@@ -17,38 +17,46 @@
  */
 
 /**
- * LVRPickItem.hpp
+ * LVRVtkArrow.hpp
  *
- *  @date Feb 20, 2014
+ *  @date Feb 21, 2014
  *  @author Thomas Wiemann
  */
-#ifndef LVRPICKITEM_HPP_
-#define LVRPICKITEM_HPP_
+#ifndef LVRVTKARROW_HPP_
+#define LVRVTKARROW_HPP_
 
-#include <QtGui/qtreewidget.h>
+#include <vtkSmartPointer.h>
+#include <vtkActor.h>
 
-#include "LVRItemTypes.hpp"
-#include "../vtkBridge/LVRVtkArrow.hpp"
+#include "geometry/Vertex.hpp"
 
 namespace lvr
 {
 
-class LVRPickItem: public QTreeWidgetItem
+/**
+ * @brief   A wrapper class to generate arrow actors for vtk based on
+ *          VTK's oriented arrow example.
+ */
+class LVRVtkArrow
 {
 public:
-    LVRPickItem(QTreeWidget* parent, int type = LVRPickItemType);
-    virtual ~LVRPickItem();
 
-    void setStart(double* start);
-    void setEnd(double* end);
-    LVRVtkArrow* getArrow();
+    LVRVtkArrow(Vertexf start, Vertexf end);
+
+    vtkSmartPointer<vtkActor>   getArrowActor();
+    vtkSmartPointer<vtkActor>   getStartActor();
+    vtkSmartPointer<vtkActor>   getEndActor();
+
+    virtual ~LVRVtkArrow();
 
 private:
-    double*         m_start;
-    double*         m_end;
-    LVRVtkArrow*    m_arrow;
+    vtkSmartPointer<vtkActor>   m_arrowActor;
+    vtkSmartPointer<vtkActor>   m_startActor;
+    vtkSmartPointer<vtkActor>   m_endActor;
+    Vertexf                     m_start;
+    Vertexf                     m_end;
 };
 
 } /* namespace lvr */
 
-#endif /* LVRPICKITEM_HPP_ */
+#endif /* LVRVTKARROW_HPP_ */
