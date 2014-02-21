@@ -120,6 +120,37 @@ void LVRMainWindow::addArrow(LVRVtkArrow* a)
     this->qvtkWidget->GetRenderWindow()->Render();
 }
 
+void LVRMainWindow::alignPointClouds()
+{
+    Matrix4f mat = m_correspondanceDialog->getTransformation();
+    QString name = m_correspondanceDialog->getModelName();
+    cout << name.toStdString() << endl;
+    cout << mat << endl;
+
+    QTreeWidgetItemIterator it(treeWidget);
+    while (*it)
+    {
+        if ( (*it)->type() == LVRModelItemType)
+        {
+            if( (*it)->text(0) == name)
+            {
+                float pose[6];
+                LVRModelItem* item = static_cast<LVRModelItem*>(*it);
+                mat.toPostionAngle(pose);
+                Pose p;
+                p.x = pose[0];
+                p.y = pose[1];
+                p.z = pose[2];
+                p.r = pose[3];
+                p.t = pose[4];
+                p.p = pose[5];
+                item->setPose(p);
+            }
+        }
+        ++it;
+    }
+}
+
 void LVRMainWindow::connectSignalsAndSlots()
 {
     QObject::connect(actionOpen, SIGNAL(activated()), this, SLOT(loadModel()));
@@ -130,6 +161,8 @@ void LVRMainWindow::connectSignalsAndSlots()
     QObject::connect(m_actionShowColorDialog, SIGNAL(activated()), this, SLOT(showColorDialog()));
 
     QObject::connect(m_correspondanceDialog->m_dialog, SIGNAL(accepted()), m_pickingInteractor, SLOT(correspondenceSearchOff()));
+    QObject::connect(m_correspondanceDialog->m_dialog, SIGNAL(accepted()), this, SLOT(alignPointClouds()));
+
     QObject::connect(m_correspondanceDialog->m_dialog, SIGNAL(rejected()), m_pickingInteractor, SLOT(correspondenceSearchOff()));
     QObject::connect(m_correspondanceDialog, SIGNAL(addArrow(LVRVtkArrow*)), this, SLOT(addArrow(LVRVtkArrow*)));
     QObject::connect(m_correspondanceDialog, SIGNAL(removeArrow(LVRVtkArrow*)), this, SLOT(removeArrow(LVRVtkArrow*)));

@@ -63,6 +63,8 @@ public Q_SLOTS:
 
     void reset();
     void save();
+
+
 private:
 
     void connectSignalsAndSlots();

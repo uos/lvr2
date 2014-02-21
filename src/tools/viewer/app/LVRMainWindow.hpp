@@ -64,6 +64,7 @@ public Q_SLOTS:
     void renderVtkStuff();
     void removeArrow(LVRVtkArrow*);
     void addArrow(LVRVtkArrow*);
+    void alignPointClouds();
 
 Q_SIGNALS:
     void correspondenceDialogOpened();
