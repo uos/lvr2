@@ -49,6 +49,7 @@ LVRCorrespondanceDialog::LVRCorrespondanceDialog(QTreeWidget* treeWidget) :
     QObject::connect(m_ui->comboBoxData, SIGNAL(currentIndexChanged(QString)), this, SLOT(updateDataSelection(QString)));
     QObject::connect(m_ui->buttonNew, SIGNAL(pressed()), this, SLOT(insertNewItem()));
     QObject::connect(m_ui->buttonDelete, SIGNAL(pressed()), this, SLOT(deleteItem()));
+    QObject::connect(m_ui->treeWidget, SIGNAL(currentItemChanged (QTreeWidgetItem*, QTreeWidgetItem*)), this, SLOT(treeItemSelected(QTreeWidgetItem*, QTreeWidgetItem*)));
 }
 
 void LVRCorrespondanceDialog::insertNewItem()
@@ -65,6 +66,7 @@ void LVRCorrespondanceDialog::insertNewItem()
 
     m_ui->treeWidget->addTopLevelItem(item);
     m_ui->treeWidget->setItemSelected(item, true);
+    m_ui->treeWidget->setCurrentItem(item);
 }
 
 void LVRCorrespondanceDialog::deleteItem()
@@ -230,6 +232,36 @@ void LVRCorrespondanceDialog::secondPointPicked(double* pos)
         msgBox.setStandardButtons(QMessageBox::Ok);
         msgBox.exec();*/
     }
+}
+
+void LVRCorrespondanceDialog::treeItemSelected(QTreeWidgetItem* current, QTreeWidgetItem* prev)
+{
+    // Set color of current item to red
+    if(current)
+    {
+        if(current->type() == LVRPickItemType)
+        {
+            LVRPickItem* item = static_cast<LVRPickItem*>(current);
+            if(item->getArrow())
+            {
+                item->getArrow()->setTmpColor(1.0, 0.2, 0.2);
+            }
+        }
+    }
+
+    // Reset previous item to default color
+    if(prev)
+    {
+        if(prev->type() == LVRPickItemType)
+        {
+            LVRPickItem* item = static_cast<LVRPickItem*>(prev);
+            if(item->getArrow())
+            {
+                item->getArrow()->restoreColor();
+            }
+        }
+    }
+    Q_EMIT(render());
 }
 
 } /* namespace lvr */
