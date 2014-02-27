@@ -49,12 +49,15 @@ public:
     QString  getDataName();
 
 public Q_SLOTS:
-    void updateModelSelection(QString);
-    void updateDataSelection(QString);
+    void updateModelSelection(int);
+    void updateDataSelection(int);
     void firstPointPicked(double*);
     void secondPointPicked(double*);
     void insertNewItem();
     void deleteItem();
+    void swapItemPositions();
+    void saveCorrespondences();
+    void loadCorrespondences();
     void treeItemSelected(QTreeWidgetItem*, QTreeWidgetItem*);
 
 Q_SIGNALS:
