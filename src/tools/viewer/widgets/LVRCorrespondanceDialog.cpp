@@ -28,6 +28,12 @@
 #include "LVRItemTypes.hpp"
 
 #include <QMessageBox>
+#include <QFont>
+#include <QFileDialog>
+
+#include <fstream>
+using std::ifstream;
+using std::ofstream;
 
 namespace lvr
 {
@@ -40,14 +46,27 @@ LVRCorrespondanceDialog::LVRCorrespondanceDialog(QTreeWidget* treeWidget) :
     m_ui->setupUi(m_dialog);
 
 
-    m_dataSelectionColor = QColor(0, 255, 255, 0);
-    m_modelSelectionColor = QColor(255, 255, 0, 0);
+    m_dataSelectionColor = QColor(0, 0, 255, 0);      // Blue
+    m_modelSelectionColor = QColor(255, 255, 0, 0);     // Yellow
     m_defaultColor = QColor(255, 255, 255, 0);
 
     fillComboBoxes();
-    QObject::connect(m_ui->comboBoxModel, SIGNAL(currentIndexChanged(QString)), this, SLOT(updateModelSelection(QString)));
-    QObject::connect(m_ui->comboBoxData, SIGNAL(currentIndexChanged(QString)), this, SLOT(updateDataSelection(QString)));
+
+    m_ui->comboBoxModel->setAutoFillBackground( true );
+    m_ui->comboBoxModel->setStyleSheet("QComboBox { background-color: blue; } QComboBox QAbstractItemView {border: 2px solid darkgray; selection-background-color: lightgray;}");
+
+
+
+    m_ui->comboBoxData->setAutoFillBackground( true );
+    m_ui->comboBoxData->setStyleSheet("QComboBox { background-color: yellow; }");
+
+    QObject::connect(m_ui->comboBoxModel, SIGNAL(activated(int)), this, SLOT(updateModelSelection(int)));
+    QObject::connect(m_ui->comboBoxData, SIGNAL(activated(int)), this, SLOT(updateDataSelection(int)));
     QObject::connect(m_ui->buttonNew, SIGNAL(pressed()), this, SLOT(insertNewItem()));
+    QObject::connect(m_ui->buttonDelete, SIGNAL(pressed()), this, SLOT(deleteItem()));
+    QObject::connect(m_ui->buttonLoad, SIGNAL(pressed()), this, SLOT(loadCorrespondences()));
+    QObject::connect(m_ui->buttonSave, SIGNAL(pressed()), this, SLOT(saveCorrespondences()));
+    QObject::connect(m_ui->buttonSwap, SIGNAL(pressed()), this, SLOT(swapItemPositions()));
     QObject::connect(m_ui->buttonDelete, SIGNAL(pressed()), this, SLOT(deleteItem()));
     QObject::connect(m_ui->treeWidget, SIGNAL(currentItemChanged (QTreeWidgetItem*, QTreeWidgetItem*)), this, SLOT(treeItemSelected(QTreeWidgetItem*, QTreeWidgetItem*)));
 }
@@ -108,8 +127,9 @@ void LVRCorrespondanceDialog::fillComboBoxes()
     Q_EMIT(render());
 }
 
-void LVRCorrespondanceDialog::updateModelSelection(QString str)
+void LVRCorrespondanceDialog::updateModelSelection(int index)
 {
+    QString str = m_ui->comboBoxModel->currentText();
     m_modelSelection = str;
     QTreeWidgetItemIterator it(m_treeWidget);
     while (*it)
@@ -121,18 +141,19 @@ void LVRCorrespondanceDialog::updateModelSelection(QString str)
             {
                 item->setSelectionColor(m_modelSelectionColor);
             }
-            else if(item->parent()->text(0) != m_dataSelection)
+           /* else if(item->parent()->text(0) != m_dataSelection)
             {
                 item->setSelectionColor(m_defaultColor);
-            }
+            }*/
         }
         ++it;
     }
     Q_EMIT(render());
 }
 
-void LVRCorrespondanceDialog::updateDataSelection(QString str)
+void LVRCorrespondanceDialog::updateDataSelection(int index)
 {
+    QString str = m_ui->comboBoxData->currentText();
     m_dataSelection = str;
     QTreeWidgetItemIterator it(m_treeWidget);
      while (*it)
@@ -144,10 +165,10 @@ void LVRCorrespondanceDialog::updateDataSelection(QString str)
              {
                  item->setSelectionColor(m_dataSelectionColor);
              }
-             else if(item->parent()->text(0) != m_modelSelection)
+       /*      else if(item->parent()->text(0) != m_modelSelection)
              {
                  item->setSelectionColor(m_defaultColor);
-             }
+             }*/
          }
          ++it;
      }
@@ -234,6 +255,68 @@ void LVRCorrespondanceDialog::secondPointPicked(double* pos)
     }
 }
 
+void LVRCorrespondanceDialog::swapItemPositions()
+{
+    cout << "SWAP" << endl;
+}
+
+void LVRCorrespondanceDialog::saveCorrespondences()
+{
+    QString fileName = QFileDialog::getSaveFileName(m_treeWidget,
+            tr("Save Correspondences"), "./", tr("Correspondence Files (*.cor)"));
+
+    if(fileName != "")
+    {
+        ofstream outfile(fileName.toStdString().c_str());
+        QTreeWidgetItemIterator it(m_ui->treeWidget);
+        while(*it)
+        {
+            if( (*it)->type() == LVRPickItemType)
+            {
+                LVRPickItem* item = static_cast<LVRPickItem*>(*it);
+                double* start = item->getStart();
+                double* end = item->getEnd();
+                outfile << start[0] << " " << start[1] << " " << start[2] << " ";
+                outfile << end[0] << " " << end[1] << " " << end[2] << endl;
+                cout << start << " " << end << endl;
+            }
+            ++it;
+        }
+        outfile.close();
+    }
+}
+
+void LVRCorrespondanceDialog::loadCorrespondences()
+{
+    QString fileName = QFileDialog::getOpenFileName(m_treeWidget,
+            tr("Load Correspondences"), "./", tr("Correspondence Files (*.cor)"));
+
+    if(fileName != "")
+    {
+        ifstream infile(fileName.toStdString().c_str());
+        while(infile.good())
+        {
+            double* start = new double[3];
+            double* end   = new double[3];
+            infile >> start[0] >> start[1] >> start[2];
+            infile >> end[0] >> end[1] >> end[2];
+            LVRPickItem* item = new LVRPickItem( m_ui->treeWidget);
+            item->setStart(start);
+            item->setEnd(end);
+
+            LVRVtkArrow* arrow = item->getArrow();
+            if(arrow)
+            {
+                Q_EMIT(addArrow(arrow));
+            }
+
+            m_ui->treeWidget->addTopLevelItem(item);
+            m_ui->treeWidget->setItemSelected(item, false);
+            m_ui->treeWidget->setCurrentItem(item);
+        }
+    }
+}
+
 void LVRCorrespondanceDialog::treeItemSelected(QTreeWidgetItem* current, QTreeWidgetItem* prev)
 {
     // Set color of current item to red
@@ -284,8 +367,8 @@ Matrix4f LVRCorrespondanceDialog::getTransformation()
                 double* e = item->getEnd();
 
                 // Convert to left handed coordinates!
-                Vertexf start(s[0], s[1], -s[2]);
-                Vertexf end(e[1], e[2], -e[3]);
+                Vertexf start(s[0], s[1], s[2]);
+                Vertexf end(e[1], e[2], e[3]);
 
                 centroid1 += start;
                 centroid2 += end;
