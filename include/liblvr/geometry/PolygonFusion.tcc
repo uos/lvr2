@@ -21,7 +21,7 @@ PolygonFusion<VertexT, NormalT>::~PolygonFusion() {
 
 
 template<typename VertexT, typename NormalT>
-bool PolygonFusion<VertexT, NormalT>::addFusionMesh(PolygonMesh<VertexT, NormalT> mesh) {
+void PolygonFusion<VertexT, NormalT>::addFusionMesh(PolygonMesh<VertexT, NormalT> mesh) {
 
 }
 
