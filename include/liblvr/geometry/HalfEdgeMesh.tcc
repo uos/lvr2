@@ -1613,19 +1613,19 @@ void HalfEdgeMesh<VertexT, NormalT>::assignLBI()
 			}
 		}
 	}
+}
 
-    // Hand the buffers over to the Model class for IO operations.
-    if ( !this->m_meshBuffer )
-    {
-        this->m_meshBuffer = MeshBufferPtr( new MeshBuffer );
-    }
-    this->m_meshBuffer->setVertexArray( vertexBuffer, numVertices );
-    this->m_meshBuffer->setVertexColorArray( colorBuffer, numVertices );
-    this->m_meshBuffer->setVertexNormalArray( normalBuffer, numVertices  );
-    this->m_meshBuffer->setFaceArray( indexBuffer, numFaces );
-	this->m_meshBuffer->setLabeledFacesMap( labeledFaces );
-    //this->m_meshBuffer->setFaceColorArray( faceColorBuffer );
-    this->m_finalized = true;
+
+template<typename VertexT, typename NormalT>
+void HalfEdgeMesh<VertexT, NormalT>::resetUsedFlags()
+{
+	for(size_t j=0; j<m_faces.size(); j++)
+	{
+		for(int k=0; k<3; k++)
+		{
+			(*m_faces[j])[k]->used=false;
+		}
+	}
 }
 
 template<typename VertexT, typename NormalT>
@@ -1658,13 +1658,7 @@ void HalfEdgeMesh<VertexT, NormalT>::finalizeAndRetesselate( bool genTextures, f
     std::vector<float> textureCoordBuffer;
 
     // Reset used variables. Otherwise the getContours() function might not work quite as expected.
-    for(size_t j=0; j<m_faces.size(); j++)
-    {
-        for(int k=0; k<3; k++)
-        {
-            (*m_faces[j])[k]->used=false;
-        }
-    }
+    resetUsedFlags();
 
     // Take all regions that are not in an intersection plane
     std::vector<int> nonPlaneRegions;
