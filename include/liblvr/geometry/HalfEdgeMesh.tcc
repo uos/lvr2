@@ -1454,9 +1454,7 @@ void HalfEdgeMesh<VertexT, NormalT>::finalize()
 	std::cout << timestamp << "Checking face integreties." << std::endl;
     checkFaceIntegreties();
 
-    std::cout << timestamp << "Finalizing mesh with classifier \"" << m_classifierType << "\"." << std::endl;
-
-    labeledFacesMap labeledFaces;
+    std::cout << timestamp << "finalize mesh with classifier \"" << m_classifierType << "\"." << std::endl;
 
     boost::unordered_map<VertexPtr, int> index_map;
 
@@ -1554,9 +1552,9 @@ void HalfEdgeMesh<VertexT, NormalT>::finalize()
 			label = (*region_iter)->getLabel();
 
 			vector<unsigned int> ids;
-
 			typename vector<FacePtr>::iterator region_face_iter = (*region_iter)->m_faces.begin();
 			typename vector<FacePtr>::iterator region_face_end  = (*region_iter)->m_faces.end();
+
 			for(size_t i = 0; region_face_iter != region_face_end; ++i, ++region_face_iter)
 			{
 				ids.push_back((*region_face_iter)->getBufferID());
@@ -1599,7 +1597,8 @@ void HalfEdgeMesh<VertexT, NormalT>::writeClassificationResult()
 template<typename VertexT, typename NormalT>
 void HalfEdgeMesh<VertexT, NormalT>::finalizeAndRetesselate( bool genTextures, float fusionThreshold )
 {
-    cout << timestamp << "Finalizing and re-tesselating" << endl;
+    std::cout << timestamp << "finalizeAndRetesselate mesh with classifier \"" << m_classifierType << "\"." << std::endl;
+
     // used Typedef's
     typedef std::vector<int>::iterator   intIterator;
 
