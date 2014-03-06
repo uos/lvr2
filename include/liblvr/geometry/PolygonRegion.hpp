@@ -25,17 +25,38 @@ public:
 	 */
 	PolygonRegion();
 
+
 	/**
 	 * @brief constructor
 	 *
-	 * @param new_polygons
+	 * @param new_polygons all Polygons of this Region (first in vector is the outer polygon)
+	 * @param label        the label of this Region
+	 * @param normal       the normal of this Region
 	 */
 	PolygonRegion(std::vector<Poly> new_polygons, std::string label, NormalT normal);
 
+
+	/**
+	 * @brief destructor
+	 */
 	~PolygonRegion();
 
-	void setPolygons(std::vector<Poly> new_polygons);
 
+	/**
+	 * @brief If you have a Polygon, but its data is wrong or empty, use this and fill it
+	 *
+	 * @param new_polygons all Polygons of this new Region (first in vector is the outer polygon)
+	 * @param label        the label of this new Region
+	 * @param normal       the normal of this new Region
+	 */
+	void setPolygons(std::vector<Poly> new_polygons, std::string label, std::string normal);
+
+
+	/**
+	 * @brief get all the Polygons
+	 *
+	 * @return all Polygons of this Region
+	 */
 	std::vector<Poly> getPolygons();
 
 
