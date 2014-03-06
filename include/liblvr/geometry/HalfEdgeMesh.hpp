@@ -452,6 +452,17 @@ private:
 	 */
 	void getCostMap(std::map<VertexPtr, float> &costs, VertexCosts<VertexT, NormalT> &c);
 
+	/**
+	 * @brief calls the Classifier with every single region
+	 */
+	void LabelRegions();
+
+
+	/**
+	 * @brief assign label buffer ids
+	 */
+	void assignLBI();
+
 
 	friend class ClassifierFactory<VertexT, NormalT>;
 
