@@ -18,10 +18,28 @@ namespace lvr {
 template<typename VertexT, typename NormalT>
 class Polygon {
 public:
+	/**
+	 * @brief standard constructor
+	 */
 	Polygon();
-	virtual ~Polygon();
+
+
+	/**
+	 * constructor
+	 */
 	Polygon(std::vector<VertexT> new_vertices);
 
+	/**
+	 * @brief destructor
+	 */
+	virtual ~Polygon();
+
+
+	/**
+	 * @brief Returns all vertices of this region
+	 *
+	 * @return all vertices of this region
+	 */
 	std::vector<VertexT> getVertices();
 
 private:

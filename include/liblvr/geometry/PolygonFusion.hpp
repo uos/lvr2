@@ -31,16 +31,40 @@ public:
 	typedef PolygonRegion<VertexT, NormalT> Polyregion;
 	typedef std::map<std::string, std::vector<Polyregion> > polyRegionMap;
 
+	/**
+	 * @brief standard constructor
+	 */
 	PolygonFusion();
+
+
+	/**
+	 * destructor
+	 */
 	virtual ~PolygonFusion();
 
-	bool addFusionMesh(PolygonMesh<VertexT, NormalT> mesh);
 
+	/**
+	 * @brief add a new PolygonMesh to the Fusion (store it in the container)
+	 */
+	void addFusionMesh(PolygonMesh<VertexT, NormalT> mesh);
+
+
+	/**
+	 * @brief Fuse all the Meshes (Polygons) in the container
+	 *
+	 * 		At first, only the Polygons with the same label
+	 *
+	 * @return returns false, if something went wrong
+	 */
 	bool doFusion();
 
 
-
 private:
+	/**
+	 * @brief This function tests if these two Polygons are planar
+	 *
+	 * @return true, if these Polygons are planar
+	 */
 	bool isPlanar(Polyregion a, Polyregion b);
 
 	// Vector for all data (Polygonmesh)
