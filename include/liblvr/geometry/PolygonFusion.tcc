@@ -13,6 +13,7 @@ namespace lvr
 template<typename VertexT, typename NormalT>
 PolygonFusion<VertexT, NormalT>::PolygonFusion() {
 	// TODO Auto-generated constructor stub
+	// noch in Options auslagern
 	m_distance_threshold = 0.05;
 }
 
@@ -25,15 +26,17 @@ PolygonFusion<VertexT, NormalT>::~PolygonFusion() {
 
 template<typename VertexT, typename NormalT>
 void PolygonFusion<VertexT, NormalT>::addFusionMesh(PolygonMesh<VertexT, NormalT> mesh) {
-
+	// Hier stellt sich mir die Frage, ob wir jetzt gleich die Regionen in die Map eintragen
+	// oder erstmal die gesamten Meshes speichern und dann später bei der Fusion erst die Map benutzen?
+	m_meshes.push_back(mesh);
 }
 
 
 template<typename VertexT, typename NormalT>
 bool PolygonFusion<VertexT, NormalT>::doFusion()
 {
-	/* To-Do Umbauen auf neue Struktur
-	ROS_INFO("polygonFusion!!");
+	// To-Do Umbauen auf neue Struktur
+	std::cout << "Starting PolygonFusion!!" << std::endl;
 
 	// 0.5) prepare map and other vectors
 	// 1) put polyregions into bins according to labels
@@ -45,36 +48,39 @@ bool PolygonFusion<VertexT, NormalT>::doFusion()
 	// 7) insert all left overs into response.mesh
 
 	// step 0.5)
-	typedef std::map<std::string, std::vector<lvr_tools::PolygonRegion> > polyRegionMap;
-	polyRegionMap polygonsByRegion;
+	//typedef std::map<std::string, std::vector<lvr_tools::PolygonRegion> > polyRegionMap;
+	//polyRegionMap polygonsByRegion;
 
 	// step 1) put polyregions into bins according to labels
 	// TODO unknown regions!!
-	std::vector<lvr_tools::PolygonMesh>::iterator polymesh_iter;
-	for( polymesh_iter = meshes.begin(); polymesh_iter != meshes.end(); ++polymesh_iter )
+	typename PolyMesh::iterator polymesh_iter;
+	//std::vector<lvr_tools::PolygonMesh>::iterator polymesh_iter;
+	for( polymesh_iter = m_meshes.begin(); polymesh_iter != m_meshes.end(); ++polymesh_iter )
 	{
-		std::vector<lvr_tools::PolygonRegion>::iterator polyregion_iter;
+		//std::vector<lvr_tools::PolygonRegion>::iterator polyregion_iter;
+		typename std::vector<PolyRegion>::iterator polyregion_iter;
 		for( polyregion_iter = (*polymesh_iter).polyregions.begin(); polyregion_iter != (*polymesh_iter).polyregions.end(); ++polyregion_iter )
 		{
-			if ( (*polyregion_iter).label != "unknown" )
+			if ( (*polyregion_iter).getLabel() != "unknown" )
 			{
 				// if prelabel already exists in map, just push back PolyGroup, else create
-				polyRegionMap::iterator it = polygonsByRegion.find((*polyregion_iter).label);
+				typename PolyRegionMap::iterator it;
+				it = m_polyregionmap.find((*polyregion_iter).getLabel());
 
-				if (it != polygonsByRegion.end())
+				if (it != m_polyregionmap.end())
 				{
 					it->second.insert(it->second.end(), (*polyregion_iter));
 				}
 				else
 				{
-					std::vector<lvr_tools::PolygonRegion> regions;
-					regions.push_back((*polyregion_iter));
-					polygonsByRegion.insert(std::pair<std::string, std::vector<lvr_tools::PolygonRegion> >((*polyregion_iter).label, regions));
+					std::vector<PolyRegion> tmp_regions;
+					tmp_regions.push_back((*polyregion_iter));
+					m_polyregionmap.insert(std::pair<std::string, std::vector<PolyRegion> >((*polyregion_iter).label, tmp_regions));
 				}
 			}
 		}
 	}
-
+/*
 // debug stuff
 	// Anzeigen von allen Polygonen mit gleichem Label
 	ROS_WARN("Vor der Schleife: Size der Map (Label) %d", polygonsByRegion.size());
@@ -181,7 +187,7 @@ bool PolygonFusion<VertexT, NormalT>::doFusion()
 
 
 template<typename VertexT, typename NormalT>
-bool PolygonFusion<VertexT, NormalT>::isPlanar(Polyregion a, Polyregion b)
+bool PolygonFusion<VertexT, NormalT>::isPlanar(PolyRegion a, PolyRegion b)
 {
 	// To-Do Umbauen für die neuen Typen (Polygon statt msg:Polygon)
 	bool coplanar = true;
