@@ -13,7 +13,7 @@ namespace lvr
 template<typename VertexT, typename NormalT>
 PolygonFusion<VertexT, NormalT>::PolygonFusion() {
 	// TODO Auto-generated constructor stub
-
+	m_distance_threshold = 0.05;
 }
 
 
@@ -183,34 +183,46 @@ bool PolygonFusion<VertexT, NormalT>::doFusion()
 template<typename VertexT, typename NormalT>
 bool PolygonFusion<VertexT, NormalT>::isPlanar(Polyregion a, Polyregion b)
 {
-	/* To-Do Umbauen für die neuen Typen (Polygon statt msg:Polygon)
+	// To-Do Umbauen für die neuen Typen (Polygon statt msg:Polygon)
 	bool coplanar = true;
+
+	NormalT norm_a;
+	VertexT point_a;
+	norm_a = a.getNormal();
+	// get the first vertex of the first polygon of this region
+	point_a = a.getPolygon().getVertices()[0];
 
 	// normale * p = d
 	// a*x + b*y + c*z + d = 0
-	float n_x = a.normal.x;
-	float n_y = a.normal.y;
-	float n_z = a.normal.z;
+	float n_x = norm_a.x;
+	float n_y = norm_a.y;
+	float n_z = norm_a.z;
 
-	float p1_x = a.polygons[0].points[0].x;
-	float p1_y = a.polygons[0].points[0].y;
-	float p1_z = a.polygons[0].points[0].z;
+	float p1_x = point_a.x;
+	float p1_y = point_a.y;
+	float p1_z = point_a.z;
 
 	float d = (n_x * p1_x + n_y * p1_y + n_z * p1_z) / sqrt( n_x * n_x + n_y * n_y + n_z * n_z );
 	float distance = 0.0;
 
-	std::vector<geometry_msgs::Point32>::iterator point_iter;
-	for( point_iter = b.polygons[0].points.begin(); coplanar != false, point_iter != b.polygons[0].points.end(); ++point_iter )
+	std::vector<Polygon<VertexT, NormalT>> polygons_b;
+	polygons_b = b.getPolygons();
+
+
+// Frage: Wir betrachten hier nur das äußere Polygon, reicht das? Also ich glaub schon, da die ja eh auf einer Ebene liegen sollten
+	typename std::vector<Polygon<VertexT, NormalT>>::iterator point_iter;
+	for( point_iter = polygons_b.begin(); coplanar != false, point_iter != polygons_b.end(); ++point_iter )
 	{
 		distance = abs( ( ( n_x * (*point_iter).x ) + ( n_y  *  (*point_iter).y ) + ( n_z  *  (*point_iter).z ) + d ) ) / sqrt( n_x * n_x + n_y * n_y + n_z * n_z );
-		if ( distance > distance_threshold )
+		if ( distance > m_distance_threshold )
 		{
 			coplanar = false;
 		}
 		else
 		{
-			ROS_WARN("COPLANAR!! Distance is %f", distance);
-			// TODO remove
+			std::cout << "******** COPLANAR!! Distance is " << distance << std::endl;
+			/*
+			// TODO remove after testing
 			if ( polyfusion_first_publish )
 			{
 				lvr_tools::PolygonMesh pm;
@@ -236,13 +248,11 @@ bool PolygonFusion<VertexT, NormalT>::isPlanar(Polyregion a, Polyregion b)
 //						//ROS_WARN("Punkt: %f  %f  %f  ", (*point_iter).x, (*point_iter).y, (*point_iter).z);
 //					}
 				}
-			}
+			} */
 		}
 	}
 
 	return coplanar;
-	*/
-	return false;
 }
 
 } // Ende of namespace lvr
