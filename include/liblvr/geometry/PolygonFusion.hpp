@@ -92,6 +92,28 @@ private:
 	 */
 	bool isPlanar(PolyRegion a, PolyRegion b);
 
+
+	/**
+	 * @brief This method transforms two PolygonRegions in 2D, fuses them and transforms it back
+	 *
+	 * @return the new PolygonRegion
+	 */
+	PolygonRegion<VertexT, NormalT> fuse(PolyRegion a, PolyRegion b);
+
+
+	/**
+	 * @brief Transforms from 3D in 2D and transformation from lvr::PolygonRegion in Boost_Polygon
+	 */
+	// To-Do Boost Polygon als Rückgabe
+	void transformto2DBoost(PolyRegion a);
+
+
+	/**
+	 * @brief Transforms from 2D in 3D and transformation from Boost_Polygon in lvr::PolygonRegion
+	 */
+	// To-Do Boost Polygon als Übergabeargument
+	PolygonRegion<VertexT, NormalT> transformto3Dlvr();
+
 	// Vector for all data (Polygonmesh)
 	PolyRegionMap	m_polyregionmap;
 
