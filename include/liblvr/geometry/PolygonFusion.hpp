@@ -27,11 +27,26 @@
 namespace lvr
 {
 
+/**
+ * @brief Class for Polygonfusion
+ *
+ *	0.5) Wait and store all given meshes
+ *	 1) put polyregions into bins according to labels
+ *	 2) in these bins, find "co-planar" polyregions -> same plane (Δ)
+ *	 3) transform these polygons into 2D space (see spuetz fusion)
+ *	 4) apply boost::geometry::union_ for these polygons
+ *	 5) transform resulting 2D polygon back into 3d space (inverse of step 3)
+ *	 6) place resulting 3D polygon in response mesh
+ *	 7) insert all left overs into response.mesh
+ *
+ */
+
 template<typename VertexT, typename NormalT>
 class PolygonFusion {
 public:
-	typedef PolygonRegion<VertexT, NormalT> Polyregion;
-	typedef std::map<std::string, std::vector<Polyregion> > polyRegionMap;
+	typedef PolygonRegion<VertexT, NormalT> PolyRegion;
+	typedef std::map<std::string, std::vector<PolyRegion> > PolyRegionMap;
+	typedef std::vector<PolygonMesh<VertexT, NormalT> > PolyMesh;
 
 	/**
 	 * @brief standard constructor
@@ -56,6 +71,14 @@ public:
 	 *
 	 * 		At first, only the Polygons with the same label
 	 *
+	 * 	 1) put polyregions into bins according to labels
+	 *	 2) in these bins, find "co-planar" polyregions -> same plane (Δ)
+	 *	 3) transform these polygons into 2D space (see spuetz fusion)
+	 *	 4) apply boost::geometry::union_ for these polygons
+	 *	 5) transform resulting 2D polygon back into 3d space (inverse of step 3)
+	 *	 6) place resulting 3D polygon in response mesh
+	 *	 7) insert all left overs into response.mesh
+	 *
 	 * @return returns false, if something went wrong
 	 */
 	bool doFusion();
@@ -67,12 +90,14 @@ private:
 	 *
 	 * @return true, if these Polygons are planar
 	 */
-	bool isPlanar(Polyregion a, Polyregion b);
+	bool isPlanar(PolyRegion a, PolyRegion b);
 
 	// Vector for all data (Polygonmesh)
-	polyRegionMap           m_polyregionmap;
+	PolyRegionMap	m_polyregionmap;
 
-	double m_distance_threshold;
+	PolyMesh 		m_meshes;
+
+	double			m_distance_threshold;
 
 
 

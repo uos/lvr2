@@ -16,7 +16,6 @@ namespace lvr {
 template<typename VertexT, typename NormalT>
 class PolygonMesh {
 public:
-	//typedef PolygonRegion<VertexT, NormalT> PolyRegion;
 
 	/**
 	 * @brief standard constructor

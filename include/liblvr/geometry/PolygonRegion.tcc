@@ -45,6 +45,11 @@ NormalT PolygonRegion<VertexT, NormalT>::getNormal(){
 	return m_normal;
 }
 
+template<typename VertexT, typename NormalT>
+std::string PolygonRegion<VertexT, NormalT>::getLabel(){
+	return m_label;
+}
+
 
 template<typename VertexT, typename NormalT>
 Polygon<VertexT, NormalT> PolygonRegion<VertexT, NormalT>::getPolygon(){
