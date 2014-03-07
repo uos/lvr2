@@ -49,6 +49,14 @@ public:
 	void addPolyRegions(std::vector<PolyRegion> polyregions);
 
 
+	/**
+	 * @brief Get all the regions of this mesh
+	 *
+	 * @return all (added) regions of this mesh
+	 */
+	std::vector<PolyRegion> getPolyRegions();
+
+
 private:
 	// container for all PolygonRegions in this Mesh
 	std::vector<PolyRegion> m_regions;
