@@ -25,7 +25,7 @@ Polygon<VertexT, NormalT>::~Polygon() {
 
 template<typename VertexT, typename NormalT>
 std::vector<VertexT> Polygon<VertexT, NormalT>::getVertices() {
-
+	return m_vertices;
 }
 
 } /* namespace lvr */
