@@ -24,7 +24,8 @@
 // lvr includes
 #include "io/Timestamp.hpp"
 
-using namespace lvr;
+namespace lvr
+{
 
 template<typename VertexT, typename NormalT>
 class PolygonFusion {
@@ -76,5 +77,6 @@ private:
 	Timestamp ts;
 };
 
+} // End of namespace lvr
 #include "PolygonFusion.tcc"
 #endif /* POLYGONFUSION_HPP_ */
