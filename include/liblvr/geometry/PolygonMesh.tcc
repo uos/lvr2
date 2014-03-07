@@ -21,14 +21,14 @@ PolygonMesh<VertexT, NormalT>::~PolygonMesh() {
 }
 
 template<typename VertexT, typename NormalT>
-void PolygonMesh<VertexT, NormalT>::addPolyRegion(PolyRegion polyregion) {
+void PolygonMesh<VertexT, NormalT>::addPolyRegion(PolygonRegion<VertexT, NormalT> polyregion) {
 	m_regions.push_back(polyregion);
 }
 
 template<typename VertexT, typename NormalT>
-void PolygonMesh<VertexT, NormalT>::addPolyRegions(std::vector<PolyRegion> polyregions) {
+void PolygonMesh<VertexT, NormalT>::addPolyRegions(std::vector<PolygonRegion<VertexT, NormalT>> polyregions) {
 	// das gleiche wie addPolyRegion nur mit mehreren Regions zur gleichen Zeit - erstmal unwichtig
-	std::vector<PolyRegion>::iterator it;
+	typename std::vector<PolygonRegion<VertexT, NormalT>>::iterator it;
 	for(it = polyregions.begin() ; it != polyregions.end() ; ++it)
 	{
 		m_regions.push_back((*it));
@@ -37,7 +37,7 @@ void PolygonMesh<VertexT, NormalT>::addPolyRegions(std::vector<PolyRegion> polyr
 
 
 template<typename VertexT, typename NormalT>
-std::vector<PolyRegion> PolygonMesh<VertexT, NormalT>::getPolyRegions()
+std::vector<PolygonRegion<VertexT, NormalT>> PolygonMesh<VertexT, NormalT>::getPolyRegions()
 {
 	return m_regions;
 }
