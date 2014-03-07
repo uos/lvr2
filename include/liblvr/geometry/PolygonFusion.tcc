@@ -102,25 +102,25 @@ bool PolygonFusion<VertexT, NormalT>::doFusion()
 		sleep(10);
 	}
 // debug end
-
+*/
 	// step 2-5) in these bins, find "co-planar" polyregions -> same plane (Δ)
 	// TODO fix coplanar detection
 	// TODO benchmark coplanar threshold and fusion / detection order (not only first one)
-	polyRegionMap::iterator map_iter;
-	for( map_iter = polygonsByRegion.begin(); map_iter != polygonsByRegion.end(); ++map_iter )
+	typename PolyRegionMap::iterator map_iter;
+	for( map_iter = m_polyregionmap.begin(); map_iter != m_polyregionmap.end(); ++map_iter )
 	{
-		ROS_WARN("trying to fuse polygons with regionlabel %s", (*map_iter).first.c_str());
+		std::cout << "trying to fuse polygons with regionlabel: " <<  (*map_iter).first << std::endl;
 
-		std::vector<lvr_tools::PolygonRegion> polyregions = (*map_iter).second;
+		std::vector<PolyRegion> polyregions = (*map_iter).second;
 
-		std::vector<lvr_tools::PolygonRegion> coplanar_regions;
-		std::vector<lvr_tools::PolygonRegion> nonplanar_regions;
-		std::vector<lvr_tools::PolygonRegion> fused_regions;
+		std::vector<PolyRegion> coplanar_regions;
+		std::vector<PolyRegion> nonplanar_regions;
+		std::vector<PolyRegion> fused_regions;
 
-		std::vector<lvr_tools::PolygonRegion>::iterator region_iter;
+		typename std::vector<PolyRegion>::iterator region_iter;
 		for( region_iter = polyregions.begin(); region_iter != polyregions.end(); )
 		{
-			ROS_ERROR("still need to process %d outer PolygonRegions", polyregions.size());
+			std::cout << "still need to process %d outer PolygonRegions" << std::endl;
 			// assume there exists at least least one coplanar region
 			coplanar_regions.push_back((*region_iter));
 
@@ -132,7 +132,7 @@ bool PolygonFusion<VertexT, NormalT>::doFusion()
 //				pm.polyregions.push_back()
 //			}
 
-			std::vector<lvr_tools::PolygonRegion>::iterator coplanar_iter;
+			typename std::vector<PolyRegion>::iterator coplanar_iter;
 			for( coplanar_iter = polyregions.begin(); coplanar_iter != polyregions.end(); )
 			{
 				// do not compare a polygon to itself
@@ -178,8 +178,7 @@ bool PolygonFusion<VertexT, NormalT>::doFusion()
 	}
 
 	// done!
-	ROS_ERROR("NOT YET IMPLEMENTED");
-	*/
+
 	return false;
 }
 
