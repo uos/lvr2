@@ -72,6 +72,8 @@ private:
 	// Vector for all data (Polygonmesh)
 	polyRegionMap           m_polyregionmap;
 
+	double m_distance_threshold;
+
 
 
 	Timestamp ts;
