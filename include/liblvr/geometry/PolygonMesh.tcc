@@ -35,4 +35,11 @@ void PolygonMesh<VertexT, NormalT>::addPolyRegions(std::vector<PolyRegion> polyr
 	}
 }
 
+
+template<typename VertexT, typename NormalT>
+std::vector<PolyRegion> PolygonMesh<VertexT, NormalT>::getPolyRegions()
+{
+	return m_regions;
+}
+
 } /* namespace lvr */
