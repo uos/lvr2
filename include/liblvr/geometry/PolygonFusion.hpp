@@ -41,7 +41,7 @@ public:
 	/**
 	 * destructor
 	 */
-	virtual ~PolygonFusion();
+	~PolygonFusion();
 
 
 	/**
@@ -76,4 +76,5 @@ private:
 	Timestamp ts;
 };
 
+#include "PolygonFusion.tcc"
 #endif /* POLYGONFUSION_HPP_ */
