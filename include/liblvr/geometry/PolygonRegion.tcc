@@ -40,4 +40,24 @@ void PolygonRegion<VertexT, NormalT>::setPolygons(std::vector<Polygon<VertexT, N
 }
 
 
+template<typename VertexT, typename NormalT>
+NormalT PolygonRegion<VertexT, NormalT>::getNormal(){
+	return m_normal;
+}
+
+
+template<typename VertexT, typename NormalT>
+Polygon<VertexT, NormalT> PolygonRegion<VertexT, NormalT>::getPolygon(){
+	if(!m_polygons.empty())
+	{
+		return m_polygons[0];
+	}
+	else
+	{
+		Polygon<VertexT, NormalT> tmp;
+		return tmp;
+	}
+}
+
+
 } /* namespace lvr */
