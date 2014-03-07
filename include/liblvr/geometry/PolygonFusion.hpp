@@ -17,6 +17,7 @@
 #include "geometry/Vertex.hpp"
 #include "geometry/Normal.hpp"
 #include "geometry/PolygonRegion.hpp"
+#include "geometry/PolygonMesh.hpp"
 #include <vector>
 #include <map>
 

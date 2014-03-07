@@ -15,7 +15,7 @@ PolygonRegion<VertexT, NormalT>::PolygonRegion() {
 }
 
 template<typename VertexT, typename NormalT>
-PolygonRegion<VertexT, NormalT>::PolygonRegion(std::vector<Poly> new_polygons, std::string label, NormalT normal) {
+PolygonRegion<VertexT, NormalT>::PolygonRegion(std::vector<Polygon<VertexT, NormalT>> new_polygons, std::string label, NormalT normal) {
 	m_polygons = new_polygons;
 	m_normal   = normal;
 	m_label    = label;
@@ -28,12 +28,12 @@ PolygonRegion<VertexT, NormalT>::~PolygonRegion() {
 }
 
 template<typename VertexT, typename NormalT>
-std::vector<Poly> PolygonRegion<VertexT, NormalT>::getPolygons() {
+std::vector<Polygon<VertexT, NormalT>> PolygonRegion<VertexT, NormalT>::getPolygons() {
 	return m_polygons;
 }
 
 template<typename VertexT, typename NormalT>
-void PolygonRegion<VertexT, NormalT>::setPolygons(std::vector<Poly> new_polygons, std::string label, std::string normal) {
+void PolygonRegion<VertexT, NormalT>::setPolygons(std::vector<Polygon<VertexT, NormalT>> new_polygons, std::string label, std::string normal) {
 	m_polygons = new_polygons;
 	m_normal   = normal;
 	m_label    = label;
