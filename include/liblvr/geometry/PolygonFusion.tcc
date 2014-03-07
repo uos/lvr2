@@ -260,5 +260,25 @@ bool PolygonFusion<VertexT, NormalT>::isPlanar(PolyRegion a, PolyRegion b)
 	return coplanar;
 }
 
+
+template<typename VertexT, typename NormalT>
+PolygonRegion<VertexT, NormalT> PolygonFusion<VertexT, NormalT>::fuse(PolyRegion a, PolyRegion b){
+	// To-Do Boost Fusion hier implementieren und
+}
+
+
+template<typename VertexT, typename NormalT>
+void PolygonFusion<VertexT, NormalT>::transformto2DBoost(PolyRegion a){
+	// To-Do Transformation von 3D in 2D und Umwandlung von lvr::PolygonRegion Boost_Polygon
+	// 		 Boost Polygon als Rückgabewert
+}
+
+template<typename VertexT, typename NormalT>
+PolygonRegion<VertexT, NormalT> PolygonFusion<VertexT, NormalT>::transformto3Dlvr(){
+	// To-Do Transformation von 2D in 3D und Umwandlung von Boost_Polygon in lvr::PolygonRegion
+	// 		 Boost Polygon als Übergabeparameter
+}
+
+
 } // Ende of namespace lvr
 
