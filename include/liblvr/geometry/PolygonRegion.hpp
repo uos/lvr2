@@ -18,7 +18,7 @@ namespace lvr {
 template<typename VertexT, typename NormalT>
 class PolygonRegion {
 public:
-	typedef Polygon<VertexT, NormalT> Poly;
+	//typedef Polygon<VertexT, NormalT> Poly;
 
 	/**
 	 * @brief standard constructor
@@ -33,7 +33,7 @@ public:
 	 * @param label        the label of this Region
 	 * @param normal       the normal of this Region
 	 */
-	PolygonRegion(std::vector<Poly> new_polygons, std::string label, NormalT normal);
+	PolygonRegion(std::vector<Polygon<VertexT, NormalT>> new_polygons, std::string label, NormalT normal);
 
 
 	/**
@@ -49,7 +49,7 @@ public:
 	 * @param label        the label of this new Region
 	 * @param normal       the normal of this new Region
 	 */
-	void setPolygons(std::vector<Poly> new_polygons, std::string label, std::string normal);
+	void setPolygons(std::vector<Polygon<VertexT, NormalT>> new_polygons, std::string label, std::string normal);
 
 
 	/**
@@ -57,12 +57,12 @@ public:
 	 *
 	 * @return all Polygons of this Region
 	 */
-	std::vector<Poly> getPolygons();
+	std::vector<Polygon<VertexT, NormalT>> getPolygons();
 
 
 private:
 	// List of all Polygons, the first one is the outer Polygon of this Region
-	std::vector<Poly> m_polygons;
+	std::vector<Polygon<VertexT, NormalT>> m_polygons;
 
 	// label of this Region
 	std::string m_label;
