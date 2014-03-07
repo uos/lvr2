@@ -18,7 +18,6 @@ namespace lvr {
 template<typename VertexT, typename NormalT>
 class PolygonRegion {
 public:
-	//typedef Polygon<VertexT, NormalT> Poly;
 
 	/**
 	 * @brief standard constructor
@@ -66,6 +65,14 @@ public:
 	 * @return the normal of this region
 	 */
 	NormalT getNormal();
+
+
+	/**
+	 * @brief Return the label of this region
+	 *
+	 * @return the label of this region
+	 */
+	std::string getLabel();
 
 
 	/**
