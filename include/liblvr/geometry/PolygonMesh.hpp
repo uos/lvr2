@@ -51,7 +51,7 @@ public:
 
 private:
 	// container for all PolygonRegions in this Mesh
-	std::vector<PolyRegion> m_meshes;
+	std::vector<PolyRegion> m_regions;
 };
 
 } /* namespace lvr */
