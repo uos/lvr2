@@ -7,6 +7,9 @@
 
 #include "PolygonFusion.hpp"
 
+namespace lvr
+{
+
 template<typename VertexT, typename NormalT>
 PolygonFusion<VertexT, NormalT>::PolygonFusion() {
 	// TODO Auto-generated constructor stub
@@ -241,4 +244,6 @@ bool PolygonFusion<VertexT, NormalT>::isPlanar(Polyregion a, Polyregion b)
 	*/
 	return false;
 }
+
+} // Ende of namespace lvr
 
