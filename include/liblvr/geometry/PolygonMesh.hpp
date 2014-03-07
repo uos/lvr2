@@ -16,7 +16,7 @@ namespace lvr {
 template<typename VertexT, typename NormalT>
 class PolygonMesh {
 public:
-	typedef PolygonRegion<VertexT, NormalT> PolyRegion;
+	//typedef PolygonRegion<VertexT, NormalT> PolyRegion;
 
 	/**
 	 * @brief standard constructor
@@ -28,7 +28,7 @@ public:
 	 *
 	 * @param first_regions the "first" Polygonregions of this Mesh, first means if you do not want to start with an empty Mesh
 	 */
-	PolygonMesh(std::vector<PolyRegion> first_regions);
+	PolygonMesh(std::vector<PolygonRegion<VertexT, NormalT>> first_regions);
 
 
 	/**
@@ -40,13 +40,13 @@ public:
 	/**
 	 * @brief Add one new PolygonRegion, it will be pushed into the container (std::vector)
 	 */
-	void addPolyRegion(PolyRegion polyregion);
+	void addPolyRegion(PolygonRegion<VertexT, NormalT> polyregion);
 
 
 	/**
 	 * @brief Add few new PolygonRegion, it will be pushed into the container (std::vector)
 	 */
-	void addPolyRegions(std::vector<PolyRegion> polyregions);
+	void addPolyRegions(std::vector<PolygonRegion<VertexT, NormalT>> polyregions);
 
 
 	/**
@@ -54,13 +54,15 @@ public:
 	 *
 	 * @return all (added) regions of this mesh
 	 */
-	std::vector<PolyRegion> getPolyRegions();
+	std::vector<PolygonRegion<VertexT, NormalT>> getPolyRegions();
 
 
 private:
 	// container for all PolygonRegions in this Mesh
-	std::vector<PolyRegion> m_regions;
+	std::vector<PolygonRegion<VertexT, NormalT>> m_regions;
 };
 
 } /* namespace lvr */
+
+#include "PolygonMesh.tcc"
 #endif /* POLYGONMESH_HPP_ */
