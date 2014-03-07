@@ -60,6 +60,20 @@ public:
 	std::vector<Polygon<VertexT, NormalT>> getPolygons();
 
 
+	/**
+	 * @brief Returns the normal of this region
+	 *
+	 * @return the normal of this region
+	 */
+	NormalT getNormal();
+
+
+	/**
+	 * @brief Returns one polygon of this region (the first polygon)
+	 */
+	Polygon<VertexT, NormalT> getPolygon();
+
+
 private:
 	// List of all Polygons, the first one is the outer Polygon of this Region
 	std::vector<Polygon<VertexT, NormalT>> m_polygons;
