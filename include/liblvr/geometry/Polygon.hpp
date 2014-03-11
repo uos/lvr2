@@ -23,7 +23,6 @@ public:
 	 */
 	Polygon();
 
-
 	/**
 	 * constructor
 	 */
@@ -34,13 +33,17 @@ public:
 	 */
 	virtual ~Polygon();
 
-
 	/**
 	 * @brief Returns all vertices of this region
-	 *
 	 * @return all vertices of this region
 	 */
 	std::vector<VertexT> getVertices();
+
+	/**
+	 * @brief Returns the number of vertices in this region
+	 * @return the number of vertices in this region
+	 */
+	size_t getSize();
 
 private:
 	// list of all vertices
