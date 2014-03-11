@@ -96,9 +96,11 @@ private:
 	/**
 	 * @brief This method transforms two PolygonRegions in 2D, fuses them and transforms it back
 	 *
+	 * @param coplanar_polys all coplanar polygons, which should get fused
+	 *
 	 * @return the new PolygonRegion
 	 */
-	PolygonRegion<VertexT, NormalT> fuse(PolyRegion a, PolyRegion b);
+	PolygonRegion<VertexT, NormalT> fuse(std::vector<PolyRegion> coplanar_polys);
 
 
 	/**

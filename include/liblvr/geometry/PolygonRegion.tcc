@@ -39,10 +39,14 @@ void PolygonRegion<VertexT, NormalT>::setPolygons(std::vector<Polygon<VertexT, N
 	m_label    = label;
 }
 
-
 template<typename VertexT, typename NormalT>
 NormalT PolygonRegion<VertexT, NormalT>::getNormal(){
 	return m_normal;
+}
+
+template<typename VertexT, typename NormalT>
+size_t PolygonRegion<VertexT, NormalT>::getSize(){
+	return m_polygons.at(0).size();
 }
 
 template<typename VertexT, typename NormalT>
