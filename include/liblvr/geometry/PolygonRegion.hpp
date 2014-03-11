@@ -50,14 +50,12 @@ public:
 	 */
 	void setPolygons(std::vector<Polygon<VertexT, NormalT> > new_polygons, std::string label, NormalT normal);
 
-
 	/**
 	 * @brief get all the Polygons
 	 *
 	 * @return all Polygons of this Region
 	 */
 	std::vector<Polygon<VertexT, NormalT> > getPolygons();
-
 
 	/**
 	 * @brief Returns the normal of this region
@@ -66,6 +64,12 @@ public:
 	 */
 	NormalT getNormal();
 
+	/**
+	 * @brief Returns the number of points in this region
+	 *
+	 * @return the umber of points in this region
+	 */
+	size_t getSize();
 
 	/**
 	 * @brief Return the label of this region

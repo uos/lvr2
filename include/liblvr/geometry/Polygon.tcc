@@ -28,4 +28,9 @@ std::vector<VertexT> Polygon<VertexT, NormalT>::getVertices() {
 	return m_vertices;
 }
 
+template<typename VertexT, typename NormalT>
+size_t Polygon<VertexT, NormalT>::getSize() {
+	return m_vertices.size();
+}
+
 } /* namespace lvr */

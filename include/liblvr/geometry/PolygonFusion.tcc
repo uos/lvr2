@@ -35,7 +35,7 @@ void PolygonFusion<VertexT, NormalT>::addFusionMesh(PolygonMesh<VertexT, NormalT
 template<typename VertexT, typename NormalT>
 bool PolygonFusion<VertexT, NormalT>::doFusion()
 {
-	// To-Do Umbauen auf neue Struktur
+	// TODO Umbauen auf neue Struktur
 	std::cout << "Starting PolygonFusion!!" << std::endl;
 
 	// 0.5) prepare map and other vectors
@@ -104,7 +104,7 @@ bool PolygonFusion<VertexT, NormalT>::doFusion()
 // debug end
 */
 	// step 2-5) in these bins, find "co-planar" polyregions -> same plane (Δ)
-	// TODO fix coplanar detection
+	// TODO fix coplanar detection (gewichtet nach Anzahl Punkten)
 	// TODO benchmark coplanar threshold and fusion / detection order (not only first one)
 	typename PolyRegionMap::iterator map_iter;
 	for( map_iter = m_polyregionmap.begin(); map_iter != m_polyregionmap.end(); ++map_iter )
@@ -262,8 +262,13 @@ bool PolygonFusion<VertexT, NormalT>::isPlanar(PolyRegion a, PolyRegion b)
 
 
 template<typename VertexT, typename NormalT>
-PolygonRegion<VertexT, NormalT> PolygonFusion<VertexT, NormalT>::fuse(PolyRegion a, PolyRegion b){
+PolygonRegion<VertexT, NormalT> PolygonFusion<VertexT, NormalT>::fuse(std::vector<PolyRegion> coplanar_polys){
 	// To-Do Boost Fusion hier implementieren und
+	std::vector<PolyRegion>::iterator poly_iter;
+	for(poly_iter = coplanar_polys.begin(); poly_iter != coplanar_polys.end(); ++poly_iter)
+	{
+
+	}
 }
 
 
