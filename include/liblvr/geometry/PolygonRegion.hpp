@@ -48,7 +48,7 @@ public:
 	 * @param label        the label of this new Region
 	 * @param normal       the normal of this new Region
 	 */
-	void setPolygons(std::vector<Polygon<VertexT, NormalT>> new_polygons, std::string label, std::string normal);
+	void setPolygons(std::vector<Polygon<VertexT, NormalT> > new_polygons, std::string label, NormalT normal);
 
 
 	/**
@@ -56,7 +56,7 @@ public:
 	 *
 	 * @return all Polygons of this Region
 	 */
-	std::vector<Polygon<VertexT, NormalT>> getPolygons();
+	std::vector<Polygon<VertexT, NormalT> > getPolygons();
 
 
 	/**
@@ -74,6 +74,21 @@ public:
 	 */
 	std::string getLabel();
 
+
+	/**
+	 * @brief Setter for the label
+	 *
+	 * @param new_label the new label of this region
+	 */
+	void setLabel(std::string new_label);
+
+
+	/**
+	 * @brief Setter for the normal
+	 *
+	 * @param new normal for this region
+	 */
+	void setNormal(NormalT new_normal);
 
 	/**
 	 * @brief Returns one polygon of this region (the first polygon)
