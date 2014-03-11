@@ -165,6 +165,20 @@ bool PolygonFusion<VertexT, NormalT>::doFusion()
 			// assumption was correct, need to do fusion
 			else
 			{
+				// hier haben wir in coplanar_regions mehr als eine polyregion, die zusammen passend
+
+				// gemittelte normale berechnen
+				size_t nPoints = 0;
+				VertexT normal = new VertexT();
+				vector<PolyRegion>::iterator poly_iter;
+				for ( poly_iter = coplanar_regions.begin(); poly_iter != coplanar_regions.end(); ++poly_iter )
+				{
+					normal += (poly_iter->getNormal() * poly_iter->getSize());
+					nPoints += poly_iter->getSize();
+				}
+				normal /= nPoints;
+
+
 				// transform
 				// do fusion
 				// transform back
