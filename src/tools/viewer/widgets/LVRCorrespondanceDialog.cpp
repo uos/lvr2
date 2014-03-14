@@ -86,6 +86,8 @@ void LVRCorrespondanceDialog::insertNewItem()
     m_ui->treeWidget->addTopLevelItem(item);
     m_ui->treeWidget->setItemSelected(item, true);
     m_ui->treeWidget->setCurrentItem(item);
+
+    Q_EMIT(enableCorrespondenceSearch());
 }
 
 void LVRCorrespondanceDialog::deleteItem()
@@ -312,25 +314,35 @@ void LVRCorrespondanceDialog::loadCorrespondences()
             double* end   = new double[3];
             infile >> start[0] >> start[1] >> start[2];
             infile >> end[0] >> end[1] >> end[2];
-            LVRPickItem* item = new LVRPickItem( m_ui->treeWidget);
-            item->setStart(start);
-            item->setEnd(end);
-
-            LVRVtkArrow* arrow = item->getArrow();
-            if(arrow)
+            // Check if we reached Eof with last read
+            if(infile.good())
             {
-                Q_EMIT(addArrow(arrow));
-            }
+                LVRPickItem* item = new LVRPickItem( m_ui->treeWidget);
+                item->setStart(start);
+                item->setEnd(end);
 
-            m_ui->treeWidget->addTopLevelItem(item);
-            m_ui->treeWidget->setItemSelected(item, false);
-            m_ui->treeWidget->setCurrentItem(item);
+                LVRVtkArrow* arrow = item->getArrow();
+                if(arrow)
+                {
+                    Q_EMIT(addArrow(arrow));
+                }
+
+                m_ui->treeWidget->addTopLevelItem(item);
+                m_ui->treeWidget->setItemSelected(item, false);
+                m_ui->treeWidget->setCurrentItem(item);
+            }
         }
+        // Disable search to prevent change of last loaded correspondes
+        // when the user clicks into the window
+        Q_EMIT(disableCorrespondenceSearch());
     }
 }
 
 void LVRCorrespondanceDialog::treeItemSelected(QTreeWidgetItem* current, QTreeWidgetItem* prev)
 {
+    // Enable picking
+    Q_EMIT(enableCorrespondenceSearch());
+
     // Set color of current item to red
     if(current)
     {
