@@ -219,29 +219,29 @@ void LVRMainWindow::loadModel()
 {
     QStringList filenames = QFileDialog::getOpenFileNames(this, tr("Open Model"), "", tr("Model Files (*.ply *.obj *.pts *.3d *.txt)"));
 
-
-    QStringList::Iterator it = filenames.begin();
-
-    while(it != filenames.end())
+    if(filenames.size() > 0)
     {
+        QStringList::Iterator it = filenames.begin();
+        while(it != filenames.end())
+        {
+            // Load model and generate vtk representation
+            ModelPtr model = ModelFactory::readModel((*it).toStdString());
+            ModelBridgePtr bridge( new LVRModelBridge(model));
+            bridge->addActors(m_renderer);
 
-        // Load model and generate vtk representation
-        ModelPtr model = ModelFactory::readModel((*it).toStdString());
-        ModelBridgePtr bridge( new LVRModelBridge(model));
-        bridge->addActors(m_renderer);
+            // Add item for this model to tree widget
+            QFileInfo info((*it));
+            QString base = info.fileName();
+            LVRModelItem* item = new LVRModelItem(bridge, base);
+            this->treeWidget->addTopLevelItem(item);
+            item->setExpanded(true);
+            ++it;
+        }
 
-        // Add item for this model to tree widget
-        QFileInfo info((*it));
-        QString base = info.fileName();
-        LVRModelItem* item = new LVRModelItem(bridge, base);
-        this->treeWidget->addTopLevelItem(item);
-        item->setExpanded(true);
-        ++it;
+        // Update camera to new scene dimension and force rendering
+        m_renderer->ResetCamera();
+        this->qvtkWidget->GetRenderWindow()->Render();
     }
-
-    // Update camera to new scene dimension and force rendering
-    m_renderer->ResetCamera();
-    this->qvtkWidget->GetRenderWindow()->Render();
 
 }
 
