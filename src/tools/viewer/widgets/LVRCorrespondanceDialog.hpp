@@ -64,6 +64,8 @@ Q_SIGNALS:
     void render();
     void removeArrow(LVRVtkArrow *);
     void addArrow(LVRVtkArrow *);
+    void disableCorrespondenceSearch();
+    void enableCorrespondenceSearch();
 
 public:
     Ui_CorrespondenceDialog*    m_ui;
