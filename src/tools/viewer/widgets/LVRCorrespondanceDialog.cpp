@@ -257,7 +257,19 @@ void LVRCorrespondanceDialog::secondPointPicked(double* pos)
 
 void LVRCorrespondanceDialog::swapItemPositions()
 {
-    cout << "SWAP" << endl;
+    QList<QTreeWidgetItem*> items =  m_ui->treeWidget->selectedItems();
+    if(items.size())
+    {
+        QTreeWidgetItem* it = items.first();
+        if(it->type() == LVRPickItemType)
+        {
+            LVRPickItem* item = static_cast<LVRPickItem*>(it);
+            double* end = item->getEnd();
+            double* start = item->getStart();
+            item->setStart(end);
+            item->setEnd(start);
+        }
+    }
 }
 
 void LVRCorrespondanceDialog::saveCorrespondences()
@@ -368,7 +380,7 @@ Matrix4f LVRCorrespondanceDialog::getTransformation()
 
                 // Convert to left handed coordinates!
                 Vertexf start(s[0], s[1], s[2]);
-                Vertexf end(e[1], e[2], e[3]);
+                Vertexf end(e[0], e[1], e[2]);
 
                 centroid1 += start;
                 centroid2 += end;
