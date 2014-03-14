@@ -217,19 +217,27 @@ void LVRMainWindow::showTreeContextMenu(const QPoint& p)
 
 void LVRMainWindow::loadModel()
 {
-    QString filename = QFileDialog::getOpenFileName(this, tr("Open Model"), "", tr("Model Files (*.ply *.obj *.pts *.3d *.txt)"));
+    QStringList filenames = QFileDialog::getOpenFileNames(this, tr("Open Model"), "", tr("Model Files (*.ply *.obj *.pts *.3d *.txt)"));
 
-    // Load model and generate vtk representation
-    ModelPtr model = ModelFactory::readModel(filename.toStdString());
-    ModelBridgePtr bridge( new LVRModelBridge(model));
-    bridge->addActors(m_renderer);
 
-    // Add item for this model to tree widget
-    QFileInfo info(filename);
-    QString base = info.fileName();
-    LVRModelItem* item = new LVRModelItem(bridge, base);
-    this->treeWidget->addTopLevelItem(item);
-    item->setExpanded(true);
+    QStringList::Iterator it = filenames.begin();
+
+    while(it != filenames.end())
+    {
+
+        // Load model and generate vtk representation
+        ModelPtr model = ModelFactory::readModel((*it).toStdString());
+        ModelBridgePtr bridge( new LVRModelBridge(model));
+        bridge->addActors(m_renderer);
+
+        // Add item for this model to tree widget
+        QFileInfo info((*it));
+        QString base = info.fileName();
+        LVRModelItem* item = new LVRModelItem(bridge, base);
+        this->treeWidget->addTopLevelItem(item);
+        item->setExpanded(true);
+        ++it;
+    }
 
     // Update camera to new scene dimension and force rendering
     m_renderer->ResetCamera();
