@@ -37,6 +37,7 @@
 
 
 #include "io/ModelFactory.hpp"
+#include "io/DataStruct.hpp"
 
 #include <vtkActor.h>
 #include <vtkProperty.h>
@@ -64,9 +65,11 @@ LVRMainWindow::LVRMainWindow()
     m_treeContextMenu = new QMenu;
     m_actionShowColorDialog = new QAction("Select base color...", this);
     m_actionDeleteModelItem = new QAction("Delete model", this);
+    m_actionExportModelTransformed = new QAction("Export model with transformation", this);
 
     m_treeContextMenu->addAction(m_actionShowColorDialog);
     m_treeContextMenu->addAction(m_actionDeleteModelItem);
+    m_treeContextMenu->addAction(m_actionExportModelTransformed);
 
 
     m_pickingInteractor = new LVRPickingInteractor(m_renderer);
@@ -84,6 +87,56 @@ LVRMainWindow::~LVRMainWindow()
     {
         delete m_correspondanceDialog;
     }
+}
+
+void LVRMainWindow::exportSelectedModel()
+{
+    // Get selected point cloud
+    QList<QTreeWidgetItem*> items = treeWidget->selectedItems();
+    if(items.size() > 0)
+    {
+        QTreeWidgetItem* item = items.first();
+        if(item->type() == LVRPointCloudItemType)
+        {
+            if(item->parent() && item->parent()->type() == LVRModelItemType)
+            {
+                QString qFileName = QFileDialog::getSaveFileName(this, tr("Export Point Cloud As..."), "", tr("Point cloud Files(*.ply *.3d)"));
+
+                LVRModelItem* model_item = static_cast<LVRModelItem*>(item->parent());
+                LVRPointCloudItem* pc_item = static_cast<LVRPointCloudItem*>(item);
+                PointBufferPtr points = pc_item->getPointBuffer();
+
+                // Get transformation matrix
+                Pose p = model_item->getPose();
+                Matrix4f mat(Vertexf(p.x, p.y, p.z), Vertexf(p.r, p.t, p.p));
+
+                cout << "MAT: " << mat;
+
+                // Allocate target buffer and insert transformed points
+                size_t n;
+                floatArr transformedPoints(new float[3 * points->getNumPoints()]);
+                floatArr pointArray = points->getPointArray(n);
+                for(size_t i = 0; i < points->getNumPoints(); i++)
+                {
+                    Vertexf v(pointArray[3 * i], pointArray[3 * i + 1], pointArray[3 * i + 2]);
+                    Vertexf vt = mat * v;
+
+                    transformedPoints[3 * i    ] = vt[0];
+                    transformedPoints[3 * i + 1] = vt[1];
+                    transformedPoints[3 * i + 2] = vt[2];
+                }
+
+                // Save transformed points
+                PointBufferPtr trans(new PointBuffer);
+                trans->setPointArray(transformedPoints, n);
+                ModelPtr model(new Model(trans));
+                ModelFactory::saveModel(model, qFileName.toStdString());
+
+            }
+        }
+    }
+
+
 }
 
 void LVRMainWindow::renderVtkStuff()
@@ -154,29 +207,27 @@ void LVRMainWindow::alignPointClouds()
 void LVRMainWindow::connectSignalsAndSlots()
 {
     QObject::connect(actionOpen, SIGNAL(activated()), this, SLOT(loadModel()));
-    QObject::connect(this->actionICP_using_manual_correspondance, SIGNAL(activated()), this, SLOT(manualICP()));
     QObject::connect(buttonTransformModel, SIGNAL(pressed()), this, SLOT(showTransformationDialog()));
     QObject::connect(treeWidget, SIGNAL(customContextMenuRequested(const QPoint&)), this, SLOT(showTreeContextMenu(const QPoint&)));
 
     QObject::connect(m_actionShowColorDialog, SIGNAL(activated()), this, SLOT(showColorDialog()));
+    QObject::connect(m_actionExportModelTransformed, SIGNAL(activated()), this, SLOT(exportSelectedModel()));
 
     QObject::connect(m_correspondanceDialog->m_dialog, SIGNAL(accepted()), m_pickingInteractor, SLOT(correspondenceSearchOff()));
     QObject::connect(m_correspondanceDialog->m_dialog, SIGNAL(accepted()), this, SLOT(alignPointClouds()));
-
     QObject::connect(m_correspondanceDialog->m_dialog, SIGNAL(rejected()), m_pickingInteractor, SLOT(correspondenceSearchOff()));
     QObject::connect(m_correspondanceDialog, SIGNAL(addArrow(LVRVtkArrow*)), this, SLOT(addArrow(LVRVtkArrow*)));
     QObject::connect(m_correspondanceDialog, SIGNAL(removeArrow(LVRVtkArrow*)), this, SLOT(removeArrow(LVRVtkArrow*)));
     QObject::connect(m_correspondanceDialog, SIGNAL(disableCorrespondenceSearch()), m_pickingInteractor, SLOT(correspondenceSearchOff()));
     QObject::connect(m_correspondanceDialog, SIGNAL(enableCorrespondenceSearch()), m_pickingInteractor, SLOT(correspondenceSearchOn()));
 
-    QObject::connect(this, SIGNAL(correspondenceDialogOpened()), m_pickingInteractor, SLOT(correspondenceSearchOn()));
-
 
     QObject::connect(m_pickingInteractor, SIGNAL(firstPointPicked(double*)),m_correspondanceDialog, SLOT(firstPointPicked(double*)));
     QObject::connect(m_pickingInteractor, SIGNAL(secondPointPicked(double*)),m_correspondanceDialog, SLOT(secondPointPicked(double*)));
 
     QObject::connect(this, SIGNAL(correspondenceDialogOpened()), m_pickingInteractor, SLOT(correspondenceSearchOn()));
-    QObject::connect(this, SIGNAL(correspondenceDialogOpened()), m_pickingInteractor, SLOT(correspondenceSearchOn()));
+
+    QObject::connect(this->actionICP_using_manual_correspondance, SIGNAL(activated()), this, SLOT(manualICP()));
 
 }
 

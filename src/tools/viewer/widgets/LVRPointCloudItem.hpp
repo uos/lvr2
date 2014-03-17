@@ -42,6 +42,7 @@ public:
     void    setColor(QColor &c);
     void    setSelectionColor(QColor &c);
     void    resetColor();
+    PointBufferPtr getPointBuffer();
 
 protected:
     QTreeWidgetItem*        m_parent;
