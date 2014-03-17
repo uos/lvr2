@@ -85,8 +85,8 @@
     <property name="title">
      <string>Registration</string>
     </property>
-    <addaction name="actionICP_using_Pose_estimations"/>
     <addaction name="actionICP_using_manual_correspondance"/>
+    <addaction name="actionICP_using_Pose_estimations"/>
     <addaction name="separator"/>
     <addaction name="actionGlobal_Relaxation"/>
    </widget>
@@ -636,12 +636,12 @@
   </action>
   <action name="actionICP_using_Pose_estimations">
    <property name="text">
-    <string>ICP using Pose estimations</string>
+    <string>Register via ICP</string>
    </property>
   </action>
   <action name="actionICP_using_manual_correspondance">
    <property name="text">
-    <string>ICP using manual correspondance</string>
+    <string>Pick correspondences...</string>
    </property>
   </action>
   <action name="actionGlobal_Relaxation">
