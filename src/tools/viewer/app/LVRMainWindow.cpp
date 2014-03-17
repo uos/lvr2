@@ -110,8 +110,6 @@ void LVRMainWindow::exportSelectedModel()
                 Pose p = model_item->getPose();
                 Matrix4f mat(Vertexf(p.x, p.y, p.z), Vertexf(p.r, p.t, p.p));
 
-                cout << "MAT: " << mat;
-
                 // Allocate target buffer and insert transformed points
                 size_t n;
                 floatArr transformedPoints(new float[3 * points->getNumPoints()]);
@@ -190,13 +188,16 @@ void LVRMainWindow::alignPointClouds()
                 float pose[6];
                 LVRModelItem* item = static_cast<LVRModelItem*>(*it);
                 mat.toPostionAngle(pose);
+
+                // Pose ist in radians, so we need to convert p to degrees
+                // to achieve consistency
                 Pose p;
                 p.x = pose[0];
                 p.y = pose[1];
                 p.z = pose[2];
-                p.r = pose[3];
-                p.t = pose[4];
-                p.p = pose[5];
+                p.r = pose[3]  * 57.295779513;
+                p.t = pose[4]  * 57.295779513;
+                p.p = pose[5]  * 57.295779513;
                 item->setPose(p);
             }
         }
