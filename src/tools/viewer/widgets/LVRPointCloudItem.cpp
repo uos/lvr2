@@ -87,6 +87,11 @@ void LVRPointCloudItem::resetColor()
     m_pointBridge->setBaseColor(m_color.redF(), m_color.greenF(), m_color.blueF());
 }
 
+PointBufferPtr LVRPointCloudItem::getPointBuffer()
+{
+    return m_pointBridge->getPointBuffer();
+}
+
 LVRPointCloudItem::~LVRPointCloudItem()
 {
     // TODO Auto-generated destructor stub

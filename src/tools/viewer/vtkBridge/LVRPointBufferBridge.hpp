@@ -51,6 +51,8 @@ public:
 
     void setBaseColor(float r, float g, float b);
 
+    PointBufferPtr getPointBuffer();
+
 protected:
 
     void computePointCloudActor(PointBufferPtr pc);
@@ -59,6 +61,7 @@ protected:
     size_t                          m_numPoints;
     bool                            m_hasNormals;
     bool                            m_hasColors;
+    PointBufferPtr                  m_pointBuffer;
 };
 
 typedef boost::shared_ptr<LVRPointBufferBridge> PointBufferBridgePtr;
