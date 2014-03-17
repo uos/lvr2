@@ -65,6 +65,7 @@ public Q_SLOTS:
     void removeArrow(LVRVtkArrow*);
     void addArrow(LVRVtkArrow*);
     void alignPointClouds();
+    void exportSelectedModel();
 
 Q_SIGNALS:
     void correspondenceDialogOpened();
@@ -78,6 +79,7 @@ private:
     QMenu*				                m_treeContextMenu;
     QAction*				            m_actionShowColorDialog;
     QAction*			                m_actionDeleteModelItem;
+    QAction*                            m_actionExportModelTransformed;
     LVRPickingInteractor*               m_pickingInteractor;
 };
 

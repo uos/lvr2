@@ -40,6 +40,9 @@ LVRPointBufferBridge::LVRPointBufferBridge(PointBufferPtr pointCloud)
 {
     if(pointCloud)
     {
+        // Save pc data
+        m_pointBuffer = pointCloud;
+
         // Generate vtk actor representation
         computePointCloudActor(pointCloud);
 
@@ -55,6 +58,11 @@ LVRPointBufferBridge::LVRPointBufferBridge(PointBufferPtr pointCloud)
         m_hasNormals = false;
         m_hasColors = false;
     }
+}
+
+PointBufferPtr LVRPointBufferBridge::getPointBuffer()
+{
+    return m_pointBuffer;
 }
 
 size_t  LVRPointBufferBridge::getNumPoints()
