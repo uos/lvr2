@@ -14,10 +14,13 @@
 #include <boost148/geometry/geometries/polygon.hpp>
 #include <boost148/geometry/domains/gis/io/wkt/wkt.hpp>
 
+#include <Eigen/Core>
+
 #include "geometry/Vertex.hpp"
 #include "geometry/Normal.hpp"
 #include "geometry/PolygonRegion.hpp"
 #include "geometry/PolygonMesh.hpp"
+#include "reconstruction/AdaptiveKSearchSurface.hpp"
 #include <vector>
 #include <map>
 
@@ -47,6 +50,8 @@ public:
 	typedef PolygonRegion<VertexT, NormalT> PolyRegion;
 	typedef std::map<std::string, std::vector<PolyRegion> > PolyRegionMap;
 	typedef std::vector<PolygonMesh<VertexT, NormalT> > PolyMesh;
+
+	typedef boost::geometry::model::polygon<boost::geometry::model::d2::point_xy<double> > BoostPolygon;
 
 	/**
 	 * @brief standard constructor
@@ -92,29 +97,44 @@ private:
 	 */
 	bool isPlanar(PolyRegion a, PolyRegion b);
 
+	/**
+	 *
+	 */
+	Eigen::Matrix4f calcTransform(VertexT a, VertexT b, VertexT c);
 
 	/**
 	 * @brief This method transforms two PolygonRegions in 2D, fuses them and transforms it back
 	 *
 	 * @param coplanar_polys all coplanar polygons, which should get fused
+	 * @param result the new fused PolygonRegion
 	 *
-	 * @return the new PolygonRegion
+	 * @return true, if everything works
 	 */
-	PolygonRegion<VertexT, NormalT> fuse(std::vector<PolyRegion> coplanar_polys);
+	bool fuse(std::vector<PolyRegion> coplanar_polys, PolygonRegion<VertexT, NormalT> &result);
 
 
 	/**
-	 * @brief Transforms from 3D in 2D and transformation from lvr::PolygonRegion in Boost_Polygon
+	 * @brief Transforms from 3D in 2D and transformation from lvr::PolygonRegion in Boost_Polygo
+	 *
+	 * @param a PolygonRegion which will be transformed
+	 * @param trans transformation as 4x4 matrix
+	 *
+	 * @return the resulting BoostPolygon
 	 */
-	// To-Do Boost Polygon als Rückgabe
-	void transformto2DBoost(PolyRegion a);
+	// TODO Boost Polygon als Rückgabe
+	BoostPolygon transformto2DBoost(PolyRegion a, Eigen::Matrix4f trans);
 
 
 	/**
 	 * @brief Transforms from 2D in 3D and transformation from Boost_Polygon in lvr::PolygonRegion
+	 *
+	 * @param a BoostPolygon which will be transformed
+	 * @param trans transformation as 4x4 matrix
+	 *
+	 * @return the resulting lvr PolygonRegion
 	 */
-	// To-Do Boost Polygon als Übergabeargument
-	PolygonRegion<VertexT, NormalT> transformto3Dlvr();
+	// TODO Boost Polygon als Übergabeargument
+	PolygonRegion<VertexT, NormalT> transformto3Dlvr(BoostPolygon a, Eigen::Matrix4f trans);
 
 	// Vector for all data (Polygonmesh)
 	PolyRegionMap	m_polyregionmap;
