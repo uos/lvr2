@@ -170,11 +170,11 @@ bool PolygonFusion<VertexT, NormalT>::doFusion()
 				// gemittelte normale berechnen
 				size_t nPoints = 0;
 				VertexT normal = new VertexT();
-				vector<PolyRegion>::iterator poly_iter;
-				for ( poly_iter = coplanar_regions.begin(); poly_iter != coplanar_regions.end(); ++poly_iter )
+				typename vector<PolyRegion>::iterator region_iter;
+				for ( region_iter = coplanar_regions.begin(); region_iter != coplanar_regions.end(); ++region_iter )
 				{
-					normal += (poly_iter->getNormal() * poly_iter->getSize());
-					nPoints += poly_iter->getSize();
+					normal += (region_iter->getNormal() * region_iter->getSize());
+					nPoints += region_iter->getSize();
 				}
 				normal /= nPoints;
 
@@ -274,27 +274,165 @@ bool PolygonFusion<VertexT, NormalT>::isPlanar(PolyRegion a, PolyRegion b)
 	return coplanar;
 }
 
-
 template<typename VertexT, typename NormalT>
-PolygonRegion<VertexT, NormalT> PolygonFusion<VertexT, NormalT>::fuse(std::vector<PolyRegion> coplanar_polys){
-	// To-Do Boost Fusion hier implementieren und
-	std::vector<PolyRegion>::iterator poly_iter;
+bool PolygonFusion<VertexT, NormalT>::fuse(std::vector<PolyRegion> coplanar_polys, PolygonRegion<VertexT, NormalT> &result){
+	// TODO Boost Fusion hier implementieren und
+	std::vector<VertexT> ransac_points;
+	VertexT centroid;
+	typename std::vector<PolyRegion>::iterator region_iter;
+	for(region_iter = coplanar_polys.begin(); region_iter != coplanar_polys.end(); ++region_iter)
+	{
+		std::vector<Polygon<VertexT, NormalT> > polygons = region_iter->getPolygons();
+		typename std::vector<Polygon<VertexT, NormalT> >::iterator poly_iter;
+		for(poly_iter = polygons.begin(); poly_iter != polygons.end(); ++poly_iter)
+		{
+			std::vector<VertexT> points = poly_iter->getVertices();
+			typename std::vector<VertexT>::iterator point_iter;
+			for(point_iter = points.begin(); point_iter != points.end(); ++point_iter)
+			{
+				centroid += (*point_iter);
+				ransac_points.push_back(*point_iter);
+			}
+		}
+	}
+
+	// normalize centroid
+	centroid /= ransac_points.size();
+
+	// calc best fit plane with ransac
+	AdaptiveKSearchSurface<VertexT, NormalT> akss;
+	akss = new AdaptiveKSearchSurface<VertexT, NormalT>();
+	Plane<VertexT, NormalT> plane;
+	bool ransac_success;
+	plane = akss.calcPlaneRANSACfromPoints(ransac_points.at(0), ransac_points.size(), ransac_points, ransac_success);
+
+	if (!ransac_success)
+	{
+		cout << timestamp << "UNABLE TO USE RANSAC FOR PLANE CREATION" << endl;
+		return false;
+	}
+
+	float d = (plane.p.x * plane.n.x) + (plane.p.y * plane.n.y) + (plane.p.z * plane.n.z);
+
+	// calc 2 points on this best fit plane, we need it for the transformation in 2D
+	VertexT vec1(1, 2, 3);
+	VertexT vec2(3, 2, 1);
+
+	vec1.cross(plane.n);
+	vec2.cross(plane.n);
+
+	vec1 += plane.p;
+	vec2 += plane.p;
+
+	Eigen::Matrix4f trans_mat;
+	trans_mat = calcTransform(plane.p, vec1, vec2);
+
+
+	typename std::vector<PolyRegion>::iterator poly_iter;
 	for(poly_iter = coplanar_polys.begin(); poly_iter != coplanar_polys.end(); ++poly_iter)
 	{
-
+		cout << "should boost union them all" << endl;
 	}
 }
 
 
 template<typename VertexT, typename NormalT>
-void PolygonFusion<VertexT, NormalT>::transformto2DBoost(PolyRegion a){
-	// To-Do Transformation von 3D in 2D und Umwandlung von lvr::PolygonRegion Boost_Polygon
+Eigen::Matrix4f PolygonFusion<VertexT, NormalT>::calcTransform(VertexT a, VertexT b, VertexT c)
+{
+
+     // calculate the plane-vectors
+     VertexT vec_AB = b - a;
+     VertexT vec_AC = c - a;
+
+     // calculate the required angles for the rotations
+     double alpha   = atan2(vec_AB.z(), vec_AB.x());
+     double beta    = -atan2(vec_AB.y(), cos(alpha)*vec_AB.x() + sin(alpha)*vec_AB.z());
+     double gamma   = -atan2(-sin(alpha)*vec_AC.x()+cos(alpha)*vec_AC.z(),
+                    sin(beta)*(cos(alpha)*vec_AC.x()+sin(alpha)*vec_AC.z()) + cos(beta)*vec_AC.y());
+
+     Eigen::Matrix4f trans ( 1, 0, 0, -a.x(),
+                          0, 1, 0, -a.y(),
+                          0, 0, 1, -a.z(),
+                          1);
+
+     Eigen::Matrix4f roty ( cos(alpha), 0, sin(alpha), 0,
+                         0, 1, 0, 0,
+                         -sin(alpha), 0, cos(alpha), 0,
+                         1);
+
+     Eigen::Matrix4f rotz ( cos(beta), -sin(beta), 0, 0,
+                         sin(beta), cos(beta), 0, 0,
+                         0, 0, 1, 0,
+                         1);
+
+     Eigen::Matrix4f rotx (     1, 0, 0, 0,
+                         0, cos(gamma), -sin(gamma), 0,
+                         0, sin(gamma), cos(gamma), 0,
+                         1);
+
+     /*
+      * transformation to the xy-plane:
+      * first translate till the point a is in the origin of ordinates,
+      * then rotate around the the y-axis till the z-value of the point b is zero,
+      * then rotate around the z-axis till the y-value of the point b is zero,
+      * then rotate around the x-axis till all z-values are zero
+      */
+
+     return rotx * rotz * roty * trans;
+}
+
+
+template<typename VertexT, typename NormalT>
+boost::geometry::model::polygon<boost::geometry::model::d2::point_xy<double> > PolygonFusion<VertexT, NormalT>::transformto2DBoost(PolyRegion a, Eigen::Matrix4f trans)
+{
+	// TODO Transformation von 3D in 2D und Umwandlung von lvr::PolygonRegion Boost_Polygon
 	// 		 Boost Polygon als Rückgabewert
+	// TODO remove boost example code
+
+	BoostPolygon result, tmp;
+	std::string poly_str, tmp_str;
+
+
+
+	BoostPolygon green, blue, red, yellow;
+
+    boost::geometry::read_wkt(
+        "POLYGON((0.0 0.0, 0.0 4.0, 4.0 4.0, 4.0 0.0, 0.0 0.0)" "(2.0 2.0, 3.0 2.0, 3.0 3.0, 2.0 3.0, 2.0 2.0))", green);
+    std::cout << "polygon green has area " << boost::geometry::area(green) << std::endl;
+    std::cout << "polygon green has length " << boost::geometry::length(green) << std::endl;
+
+    boost::geometry::read_wkt(
+        "POLYGON((2.0 2.0, 2.0 3.0, 3.0 3.0, 3.0 2.0, 2.0 2.0))", blue);
+    std::cout << "polygon blue has area " << boost::geometry::area(blue) << std::endl;
+    std::cout << "polygon blue has length " << boost::geometry::length(blue) << std::endl;
+
+    boost::geometry::read_wkt(
+        "POLYGON((2.0 2.0, 2.0 3.0, 3.0 3.0, 3.0 2.0, 2.0 2.0))", red);
+    std::cout << "polygon red has area " << boost::geometry::area(red) << std::endl;
+    std::cout << "polygon red has length " << boost::geometry::length(red) << std::endl;
+
+    boost::geometry::read_wkt(
+        "POLYGON((4.0 4.0, 4.0 5.0, 5.0 5.0, 5.0 4.0, 4.0 4.0))", yellow);
+    std::cout << "polygon yellow has area " << boost::geometry::area(yellow) << std::endl;
+    std::cout << "polygon yellow has length " << boost::geometry::length(yellow) << std::endl;
+
+    std::vector<BoostPolygon> output;
+    boost::geometry::union_(green, blue, output);
+
+    size_t i;
+    typename std::vector<BoostPolygon>::iterator poly_iter;
+    for ( i = 1, poly_iter = output.begin(); poly_iter != output.end(); ++poly_iter )
+    {
+        std::cout << boost::geometry::wkt((*poly_iter)) << std::endl;
+        //std::cout << i++ << ": " << boost::geometry::area(p) << std::endl;
+        std::cout << "union-polygon " << i++ << " has area " << boost::geometry::area((*poly_iter)) << std::endl;
+    }
+
 }
 
 template<typename VertexT, typename NormalT>
-PolygonRegion<VertexT, NormalT> PolygonFusion<VertexT, NormalT>::transformto3Dlvr(){
-	// To-Do Transformation von 2D in 3D und Umwandlung von Boost_Polygon in lvr::PolygonRegion
+PolygonRegion<VertexT, NormalT> PolygonFusion<VertexT, NormalT>::transformto3Dlvr(BoostPolygon, Eigen::Matrix4f trans){
+	// TODO Transformation von 2D in 3D und Umwandlung von Boost_Polygon in lvr::PolygonRegion
 	// 		 Boost Polygon als Übergabeparameter
 }
 
