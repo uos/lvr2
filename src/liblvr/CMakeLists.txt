@@ -33,6 +33,7 @@ set(LVR_SOURCES
     display/TexturedMesh.cpp
     reconstruction/PCLFiltering.cpp
     registration/EigenSVDPointAlign.cpp
+    registration/ICPPointAlign.cpp
     texture/Texture.cpp
     texture/ImageProcessor.cpp
     texture/Statistics.cpp

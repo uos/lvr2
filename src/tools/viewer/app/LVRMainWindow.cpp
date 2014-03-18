@@ -174,7 +174,7 @@ void LVRMainWindow::addArrow(LVRVtkArrow* a)
 void LVRMainWindow::alignPointClouds()
 {
     Matrix4f mat = m_correspondanceDialog->getTransformation();
-    QString name = m_correspondanceDialog->getModelName();
+    QString name = m_correspondanceDialog->getDataName();
     cout << name.toStdString() << endl;
     cout << mat << endl;
 
