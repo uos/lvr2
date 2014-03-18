@@ -27,18 +27,31 @@
 
 #include "registration/EigenSVDPointAlign.hpp"
 #include "reconstruction/SearchTreeFlann.hpp"
+#include "geometry/Matrix4.hpp"
+
 namespace lvr
 {
 
 class ICPPointAlign
 {
 public:
-    ICPPointAlign(PointBufferPtr model, PointBufferPtr data);
+    ICPPointAlign(PointBufferPtr model, PointBufferPtr data, Matrix4f transformation);
+
+    Matrix4f match();
+
     virtual ~ICPPointAlign();
+
+    void    setMaxMatchDistance(double distance);
+    void    setMaxIterations(int iterations);
+    void    setEpsilon(double epsilon);
+
+    double  getEpsilon();
+    double  getMaxMatchDistance();
+    int     getMaxIterations();
 
 protected:
 
-    void getPointPairs(PointPairVector& pairs);
+    void getPointPairs(PointPairVector& pairs, Vertexf& centroid_m, Vertexf& centroid_d, double& sum);
 
     double                              m_epsilon;
     double                              m_maxDistanceMatch;

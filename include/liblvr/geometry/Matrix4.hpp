@@ -467,13 +467,12 @@ public:
 	    return( result );
 	}
 
-	Matrix4 inv(Matrix4 in, bool &success = true)
+	Matrix4 inv(bool& success)
 	{
 	    Matrix4 Mout;
 	    ValueType  mdet = det();
 	    if ( fabs( mdet ) < 0.00000000000005 ) {
 	        cout << "Error matrix inverting! " << mdet << endl;
-	        success = false;
 	        return Mout;
 	    }
 	    ValueType  mtemp[9];
@@ -485,7 +484,6 @@ public:
 	            Mout[i+j*4] = ( det3( mtemp ) * sign ) / mdet;
 	        }
 	    }
-	    success = true;
 	    return Mout;
 	}
 
