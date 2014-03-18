@@ -249,6 +249,7 @@ add_subdirectory(src/tools/texman)
 add_subdirectory(src/tools/tiogen)
 add_subdirectory(src/tools/meshoptimizer)
 add_subdirectory(src/tools/transform)
+add_subdirectory(src/tools/registration)
 
 if(MPI_FOUND)
 #add_subdirectory(src/tools/mpi)
