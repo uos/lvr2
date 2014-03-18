@@ -240,5 +240,12 @@ CoordType Vertex<CoordType>::length()
     return sqrt(x * x + y * y + z * z);
 }
 
+template<typename CoordType>
+CoordType Vertex<CoordType>::length2()
+{
+    return x * x + y * y + z * z;
+}
+
+
 
 } // namespace lvr
