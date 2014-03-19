@@ -389,11 +389,176 @@ boost::geometry::model::polygon<boost::geometry::model::d2::point_xy<double> > P
 	// 		 Boost Polygon als Rückgabewert
 	// TODO remove boost example code
 
-	BoostPolygon result, tmp;
-	std::string poly_str, tmp_str;
+	BoostPolygon result, tmp_poly;
+	std::string poly_str;
+	std::string res_poly_str;
+	std::string tmp_str;
+	std::string first_poly_str;
+	bool first_it;
+	bool first_poly = true;
+	res_poly_str = "POLYGON(";
+
+	// get all the polygons from this region
+	std::vector<Polygon<VertexT, NormalT> > polygons = a.getPolygons();
+	typename std::vector<Polygon<VertexT, NormalT> >::iterator poly_iter;
+	// for all polygons in this region
+	for(poly_iter = polygons.begin(); poly_iter != polygons.end(); ++poly_iter)
+	{
+		first_it = true;
+
+		// get all vertices from this polygon
+		std::vector<VertexT> points = poly_iter->getVertices();
+		typename std::vector<VertexT>::iterator point_iter;
+		for(point_iter = points.begin(); point_iter != points.end(); ++point_iter)
+		{
+			// Transformation
+			Eigen::Matrix4f tmp_mat;
+			for(int i = 0 ; i < 4 ; i++)
+			{
+				for(int j = 0 ; j < 4 ; j++)
+				{
+					tmp_mat(i, j) = 0;
+				}
+			}
+			tmp_mat(0,0) = (*point_iter).x;
+			tmp_mat(1,1) = (*point_iter).y;
+			tmp_mat(2,2) = (*point_iter).z;
+			tmp_mat(0,3) = 1;
+			tmp_mat(1,3) = 1;
+			tmp_mat(2,3) = 1;
+			tmp_mat(3,3) = 1;
+
+			//transform point in 2D
+			tmp_mat = tmp_mat * trans;
+
+std::cout << "In transformto2DBoost ist der transformierte Vektor bzw. Matrix: " << std::endl;
+std::cout << tmp_mat << std::endl;
+
+			float x,y;
+			x = tmp_mat(0,0);
+			y = tmp_mat(1,1);
+
+			// transform in BoostPolygon
+			if (first_it)
+			{
+				// save the first one, for closing the polygon
+				first_poly_str.append(std::to_string(x));
+				first_poly_str.append(" ");
+				first_poly_str.append(std::to_string(y));
+				first_it = false;
+
+				poly_str.append("(");
+				poly_str.append(std::to_string(x));
+				poly_str.append(" ");
+				poly_str.append(std::to_string(y));
+				poly_str.append(", ");
+			}
+			else
+			{
+				poly_str.append(std::to_string(x));
+				poly_str.append(" ");
+				poly_str.append(std::to_string(y));
+				poly_str.append(", ");
+			}
+		}
+		poly_str.append(first_poly_str);
+		poly_str.append(")");
+
+		// check every single polygon, if it conform to the boost-polygon-style
+		std::string test_poly_str = "POLYGON(";
+		test_poly_str.append(poly_str);
+		test_poly_str.append(")");
+		boost::geometry::read_wkt(test_poly_str, tmp_poly);
+
+		// if it is positive, do the polygon it the other direction (boost polygon style)
+		if(first_poly)
+		{
+			first_poly = false;
+			if(boost::geometry::area(tmp_poly) <= 0)
+			{
+				//boost::reverse(tmp_poly);
+				first_it = true;
+				poly_str.clear();
+
+				// get all vertices from this polygon
+				for(point_iter = points.end() - 1; point_iter != points.begin() - 1; --point_iter)
+				{
+					// Transformation
+					Eigen::Vector4f tmp_vec;
+					float x,y;
+
+					// transform in BoostPolygon
+					if (first_it)
+					{
+						// save the first one, for closing the polygon
+						first_poly_str = tmp_str;
+						first_it = false;
+
+						poly_str.append("(");
+						poly_str.append(std::to_string(x));
+						poly_str.append(" ");
+						poly_str.append(std::to_string(y));
+						poly_str.append(", ");
+					}
+					else
+					{
+						poly_str.append(std::to_string(x));
+						poly_str.append(" ");
+						poly_str.append(std::to_string(y));
+						poly_str.append(", ");
+					}
+				}
+				poly_str.append(")");
+			}
+		}
+		else if(boost::geometry::area(tmp_poly) >= 0 )
+		{
+			//boost::reverse(tmp_poly);
+			first_it = true;
+			poly_str.clear();
+
+			// get all vertices from this polygon
+			for(point_iter = points.end() - 1; point_iter != points.begin() - 1; --point_iter)
+			{
+				// Transformation
+				Eigen::Vector4f tmp_vec;
+				float x,y;
+
+				// transform in BoostPolygon
+				if (first_it)
+				{
+					// save the first one, for closing the polygon
+					first_poly_str = tmp_str;
+					first_it = false;
+
+					poly_str.append("(");
+					poly_str.append(std::to_string(x));
+					poly_str.append(" ");
+					poly_str.append(std::to_string(y));
+					poly_str.append(", ");
+				}
+				else
+				{
+					poly_str.append(std::to_string(x));
+					poly_str.append(" ");
+					poly_str.append(std::to_string(y));
+					poly_str.append(", ");
+				}
+			}
+			poly_str.append(")");
+		}
+		// now, this "part" of the polygon can be added to the complete polygon
+		res_poly_str.append(poly_str);
+	}
+
+	poly_str.append(")");
+
+	boost::geometry::read_wkt(res_poly_str, result);
+
+	return result;
 
 
-
+/*
 	BoostPolygon green, blue, red, yellow;
 
     boost::geometry::read_wkt(
@@ -420,14 +585,14 @@ boost::geometry::model::polygon<boost::geometry::model::d2::point_xy<double> > P
     boost::geometry::union_(green, blue, output);
 
     size_t i;
-    typename std::vector<BoostPolygon>::iterator poly_iter;
-    for ( i = 1, poly_iter = output.begin(); poly_iter != output.end(); ++poly_iter )
+    typename std::vector<BoostPolygon>::iterator tmp_iter;
+    for ( i = 1, tmp_iter = output.begin(); tmp_iter != output.end(); ++poly_iter )
     {
-        std::cout << boost::geometry::wkt((*poly_iter)) << std::endl;
+        std::cout << boost::geometry::wkt((*tmp_iter)) << std::endl;
         //std::cout << i++ << ": " << boost::geometry::area(p) << std::endl;
-        std::cout << "union-polygon " << i++ << " has area " << boost::geometry::area((*poly_iter)) << std::endl;
+        std::cout << "union-polygon " << i++ << " has area " << boost::geometry::area((*tmp_iter)) << std::endl;
     }
-
+*/
 }
 
 template<typename VertexT, typename NormalT>
