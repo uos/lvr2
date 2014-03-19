@@ -380,30 +380,34 @@ Eigen::Matrix4f PolygonFusion<VertexT, NormalT>::calcTransform(VertexT a, Vertex
      VertexT vec_AC = c - a;
 
      // calculate the required angles for the rotations
-     double alpha   = atan2(vec_AB.z(), vec_AB.x());
-     double beta    = -atan2(vec_AB.y(), cos(alpha)*vec_AB.x() + sin(alpha)*vec_AB.z());
-     double gamma   = -atan2(-sin(alpha)*vec_AC.x()+cos(alpha)*vec_AC.z(),
-                    sin(beta)*(cos(alpha)*vec_AC.x()+sin(alpha)*vec_AC.z()) + cos(beta)*vec_AC.y());
+     double alpha   = atan2(vec_AB.z, vec_AB.x);
+     double beta    = -atan2(vec_AB.y, cos(alpha)*vec_AB.x + sin(alpha)*vec_AB.z);
+     double gamma   = -atan2(-sin(alpha)*vec_AC.x+cos(alpha)*vec_AC.z,
+                    sin(beta)*(cos(alpha)*vec_AC.x+sin(alpha)*vec_AC.z) + cos(beta)*vec_AC.y);
 
-     Eigen::Matrix4f trans ( 1.0, 0.0, 0.0, -a.x(),
-    		 0.0, 1.0, 0.0, -a.y(),
-    		 0.0, 0.0, 1.0, -a.z(),
-    		 1.0);
+     Eigen::Matrix4f trans;
+     trans << 1.0, 0.0, 0.0, -a.x,
+    		  0.0, 1.0, 0.0, -a.y,
+    		  0.0, 0.0, 1.0, -a.z,
+    		  0.0, 0.0, 0.0, 1.0;
 
-     Eigen::Matrix4f roty ( cos(alpha), 0.0, sin(alpha), 0.0,
+     Eigen::Matrix4f roty;
+     roty << cos(alpha), 0.0, sin(alpha), 0.0,
     		 0.0, 1.0, 0.0, 0.0,
     		 -sin(alpha), 0.0, cos(alpha), 0.0,
-    		 1.0);
+    		 0.0, 0.0, 0.0, 1.0;
 
-     Eigen::Matrix4f rotz ( cos(beta), -sin(beta), 0.0, 0.0,
+     Eigen::Matrix4f rotz;
+     rotz << cos(beta), -sin(beta), 0.0, 0.0,
     		 sin(beta), cos(beta), 0.0, 0.0,
     		 0.0, 0.0, 1.0, 0.0,
-    		 1.0);
+    		 0.0, 0.0, 0.0, 1.0;
 
-     Eigen::Matrix4f rotx (     1.0, 0.0, 0.0, 0.0,
+     Eigen::Matrix4f rotx;
+     rotx << 1.0, 0.0, 0.0, 0.0,
     		 0.0, cos(gamma), -sin(gamma), 0.0,
     		 0.0, sin(gamma), cos(gamma), 0.0,
-    		 1.0);
+    		 0.0, 0.0, 0.0, 1.0;
 
      /*
       * transformation to the xy-plane:
