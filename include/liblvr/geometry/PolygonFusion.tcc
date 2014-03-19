@@ -335,8 +335,8 @@ bool PolygonFusion<VertexT, NormalT>::fuse(std::vector<PolyRegion> coplanar_poly
 	centroid /= ransac_points.size();
 
 	// calc best fit plane with ransac
-	AdaptiveKSearchSurface<VertexT, NormalT> akss;
-	akss = new AdaptiveKSearchSurface<VertexT, NormalT>();
+	akSurface akss;
+
 	Plane<VertexT, NormalT> plane;
 	bool ransac_success;
 	plane = akss.calcPlaneRANSACfromPoints(ransac_points.at(0), ransac_points.size(), ransac_points, ransac_success);
