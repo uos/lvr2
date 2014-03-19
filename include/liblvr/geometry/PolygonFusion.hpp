@@ -51,7 +51,7 @@ public:
 	typedef std::map<std::string, std::vector<PolyRegion> > PolyRegionMap;
 	typedef std::vector<PolygonMesh<VertexT, NormalT> > PolyMesh;
 
-	typedef boost::geometry::model::polygon<boost::geometry::model::d2::point_xy<double> > BoostPolygon;
+	typedef boost::geometry::model::polygon<boost::geometry::model::d2::point_xy<float> > BoostPolygon;
 
 	/**
 	 * @brief standard constructor
