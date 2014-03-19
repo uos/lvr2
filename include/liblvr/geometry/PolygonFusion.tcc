@@ -385,25 +385,25 @@ Eigen::Matrix4f PolygonFusion<VertexT, NormalT>::calcTransform(VertexT a, Vertex
      double gamma   = -atan2(-sin(alpha)*vec_AC.x()+cos(alpha)*vec_AC.z(),
                     sin(beta)*(cos(alpha)*vec_AC.x()+sin(alpha)*vec_AC.z()) + cos(beta)*vec_AC.y());
 
-     Eigen::Matrix4f trans ( 1, 0, 0, -a.x(),
-                          0, 1, 0, -a.y(),
-                          0, 0, 1, -a.z(),
-                          1);
+     Eigen::Matrix4f trans ( 1.0, 0.0, 0.0, -a.x(),
+    		 0.0, 1.0, 0.0, -a.y(),
+    		 0.0, 0.0, 1.0, -a.z(),
+    		 1.0);
 
-     Eigen::Matrix4f roty ( cos(alpha), 0, sin(alpha), 0,
-                         0, 1, 0, 0,
-                         -sin(alpha), 0, cos(alpha), 0,
-                         1);
+     Eigen::Matrix4f roty ( cos(alpha), 0.0, sin(alpha), 0.0,
+    		 0.0, 1.0, 0.0, 0.0,
+    		 -sin(alpha), 0.0, cos(alpha), 0.0,
+    		 1.0);
 
-     Eigen::Matrix4f rotz ( cos(beta), -sin(beta), 0, 0,
-                         sin(beta), cos(beta), 0, 0,
-                         0, 0, 1, 0,
-                         1);
+     Eigen::Matrix4f rotz ( cos(beta), -sin(beta), 0.0, 0.0,
+    		 sin(beta), cos(beta), 0.0, 0.0,
+    		 0.0, 0.0, 1.0, 0.0,
+    		 1.0);
 
-     Eigen::Matrix4f rotx (     1, 0, 0, 0,
-                         0, cos(gamma), -sin(gamma), 0,
-                         0, sin(gamma), cos(gamma), 0,
-                         1);
+     Eigen::Matrix4f rotx (     1.0, 0.0, 0.0, 0.0,
+    		 0.0, cos(gamma), -sin(gamma), 0.0,
+    		 0.0, sin(gamma), cos(gamma), 0.0,
+    		 1.0);
 
      /*
       * transformation to the xy-plane:
