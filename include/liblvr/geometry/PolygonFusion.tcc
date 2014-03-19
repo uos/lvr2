@@ -277,6 +277,8 @@ bool PolygonFusion<VertexT, NormalT>::isPlanar(PolyRegion a, PolyRegion b)
 template<typename VertexT, typename NormalT>
 bool PolygonFusion<VertexT, NormalT>::fuse(std::vector<PolyRegion> coplanar_polys, PolygonRegion<VertexT, NormalT> &result){
 	// TODO Boost Fusion hier implementieren und
+	std::vector<BoostPolygon> boost_result;
+
 	std::vector<VertexT> ransac_points;
 	VertexT centroid;
 	typename std::vector<PolyRegion>::iterator region_iter;
@@ -476,22 +478,47 @@ std::cout << tmp_mat << std::endl;
 			first_poly = false;
 			if(boost::geometry::area(tmp_poly) <= 0)
 			{
-				//boost::reverse(tmp_poly);
 				first_it = true;
-				poly_str.clear();
 
 				// get all vertices from this polygon
-				for(point_iter = points.end() - 1; point_iter != points.begin() - 1; --point_iter)
+				std::vector<VertexT> points = poly_iter->getVertices();
+				typename std::vector<VertexT>::iterator point_iter;
+				for(point_iter = points.begin(); point_iter != points.end(); ++point_iter)
 				{
 					// Transformation
-					Eigen::Vector4f tmp_vec;
+					Eigen::Matrix4f tmp_mat;
+					for(int i = 0 ; i < 4 ; i++)
+					{
+						for(int j = 0 ; j < 4 ; j++)
+						{
+							tmp_mat(i, j) = 0;
+						}
+					}
+					tmp_mat(0,0) = (*point_iter).x;
+					tmp_mat(1,1) = (*point_iter).y;
+					tmp_mat(2,2) = (*point_iter).z;
+					tmp_mat(0,3) = 1;
+					tmp_mat(1,3) = 1;
+					tmp_mat(2,3) = 1;
+					tmp_mat(3,3) = 1;
+
+					//transform point in 2D
+					tmp_mat = tmp_mat * trans;
+
+					std::cout << "In transformto2DBoost (in if(poly_first)) ist der transformierte Vektor bzw. Matrix: " << std::endl;
+					std::cout << tmp_mat << std::endl;
+
 					float x,y;
+					x = tmp_mat(0,0);
+					y = tmp_mat(1,1);
 
 					// transform in BoostPolygon
 					if (first_it)
 					{
 						// save the first one, for closing the polygon
-						first_poly_str = tmp_str;
+						first_poly_str.append(std::to_string(x));
+						first_poly_str.append(" ");
+						first_poly_str.append(std::to_string(y));
 						first_it = false;
 
 						poly_str.append("(");
@@ -508,6 +535,7 @@ std::cout << tmp_mat << std::endl;
 						poly_str.append(", ");
 					}
 				}
+				poly_str.append(first_poly_str);
 				poly_str.append(")");
 			}
 		}
@@ -515,20 +543,46 @@ std::cout << tmp_mat << std::endl;
 		{
 			//boost::reverse(tmp_poly);
 			first_it = true;
-			poly_str.clear();
 
 			// get all vertices from this polygon
-			for(point_iter = points.end() - 1; point_iter != points.begin() - 1; --point_iter)
+			std::vector<VertexT> points = poly_iter->getVertices();
+			typename std::vector<VertexT>::iterator point_iter;
+			for(point_iter = points.begin(); point_iter != points.end(); ++point_iter)
 			{
 				// Transformation
-				Eigen::Vector4f tmp_vec;
+				Eigen::Matrix4f tmp_mat;
+				for(int i = 0 ; i < 4 ; i++)
+				{
+					for(int j = 0 ; j < 4 ; j++)
+					{
+						tmp_mat(i, j) = 0;
+					}
+				}
+				tmp_mat(0,0) = (*point_iter).x;
+				tmp_mat(1,1) = (*point_iter).y;
+				tmp_mat(2,2) = (*point_iter).z;
+				tmp_mat(0,3) = 1;
+				tmp_mat(1,3) = 1;
+				tmp_mat(2,3) = 1;
+				tmp_mat(3,3) = 1;
+
+				//transform point in 2D
+				tmp_mat = tmp_mat * trans;
+
+	std::cout << "In transformto2DBoost ist der transformierte Vektor bzw. Matrix: " << std::endl;
+	std::cout << tmp_mat << std::endl;
+
 				float x,y;
+				x = tmp_mat(0,0);
+				y = tmp_mat(1,1);
 
 				// transform in BoostPolygon
 				if (first_it)
 				{
 					// save the first one, for closing the polygon
-					first_poly_str = tmp_str;
+					first_poly_str.append(std::to_string(x));
+					first_poly_str.append(" ");
+					first_poly_str.append(std::to_string(y));
 					first_it = false;
 
 					poly_str.append("(");
@@ -545,6 +599,7 @@ std::cout << tmp_mat << std::endl;
 					poly_str.append(", ");
 				}
 			}
+			poly_str.append(first_poly_str);
 			poly_str.append(")");
 		}
 		// now, this "part" of the polygon can be added to the complete polygon
