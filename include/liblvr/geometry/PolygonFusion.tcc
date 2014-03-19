@@ -59,7 +59,7 @@ bool PolygonFusion<VertexT, NormalT>::doFusion()
 	{
 		//std::vector<lvr_tools::PolygonRegion>::iterator polyregion_iter;
 		typename std::vector<PolyRegion>::iterator polyregion_iter;
-		for( polyregion_iter = (*polymesh_iter).polyregions.begin(); polyregion_iter != (*polymesh_iter).polyregions.end(); ++polyregion_iter )
+		for( polyregion_iter = (*polymesh_iter).getPolyRegions().begin(); polyregion_iter != (*polymesh_iter).getPolyRegions().end(); ++polyregion_iter )
 		{
 			if ( (*polyregion_iter).getLabel() != "unknown" )
 			{
@@ -75,7 +75,7 @@ bool PolygonFusion<VertexT, NormalT>::doFusion()
 				{
 					std::vector<PolyRegion> tmp_regions;
 					tmp_regions.push_back((*polyregion_iter));
-					m_polyregionmap.insert(std::pair<std::string, std::vector<PolyRegion> >((*polyregion_iter).label, tmp_regions));
+					m_polyregionmap.insert(std::pair<std::string, std::vector<PolyRegion> >((*polyregion_iter).getLabel(), tmp_regions));
 				}
 			}
 		}
@@ -169,7 +169,7 @@ bool PolygonFusion<VertexT, NormalT>::doFusion()
 
 				// gemittelte normale berechnen
 				size_t nPoints = 0;
-				VertexT normal = new VertexT();
+				VertexT normal;
 				typename vector<PolyRegion>::iterator region_iter;
 				for ( region_iter = coplanar_regions.begin(); region_iter != coplanar_regions.end(); ++region_iter )
 				{
@@ -229,8 +229,9 @@ bool PolygonFusion<VertexT, NormalT>::isPlanar(PolyRegion a, PolyRegion b)
 
 
 // Frage: Wir betrachten hier nur das äußere Polygon, reicht das? Also ich glaub schon, da die ja eh auf einer Ebene liegen sollten
-	typename std::vector<Polygon<VertexT, NormalT>>::iterator point_iter;
-	for( point_iter = polygons_b.begin(); coplanar != false, point_iter != polygons_b.end(); ++point_iter )
+	std::vector<VertexT> check_me = polygons_b.at(0).getVertices();
+	typename std::vector<VertexT>::iterator point_iter;
+	for( point_iter = check_me.begin(); coplanar != false, point_iter != check_me.end(); ++point_iter )
 	{
 		distance = abs( ( ( n_x * (*point_iter).x ) + ( n_y  *  (*point_iter).y ) + ( n_z  *  (*point_iter).z ) + d ) ) / sqrt( n_x * n_x + n_y * n_y + n_z * n_z );
 		if ( distance > m_distance_threshold )
