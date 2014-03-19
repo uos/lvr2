@@ -34,14 +34,19 @@ public:
 	virtual ~Polygon();
 
 	/**
-	 * @brief Returns all vertices of this region
-	 * @return all vertices of this region
+	 * @brief Returns all vertices of this polygon
+	 * @return all vertices of this polygon
 	 */
 	std::vector<VertexT> getVertices();
 
 	/**
-	 * @brief Returns the number of vertices in this region
-	 * @return the number of vertices in this region
+	 * @brief Sets the vertices of this polygon
+	 */
+	void setVertices(std::vector<VertexT>);
+
+	/**
+	 * @brief Returns the number of vertices in this polygon
+	 * @return the number of vertices in this polygon
 	 */
 	size_t getSize();
 
