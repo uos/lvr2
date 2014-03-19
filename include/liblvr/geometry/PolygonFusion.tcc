@@ -13,21 +13,18 @@ template <typename Point>
 class round_coordinates
 {
 private :
-    std::vector<Point> vec;
-
+    std::vector<Point>* vec;
 
 public :
-    round_coordinates(std::vector<Point> &v)
+    round_coordinates(std::vector<Point>* v)
         : vec(v)
     {}
 
     inline void operator()(Point& p)
     {
         using boost::geometry::get;
-        using boost::geometry::set;
-        std::cout << "x = " << get<0>(p) << " y = " << get<1>(p) << std::endl;
-        //set<0>(p, round(get<0>(p)));
-        //set<1>(p, round(get<1>(p)));
+	//std::cout << "x = " << get<0>(p) << " y = " << get<1>(p) << std::endl;
+	vec->push_back(p);
     }
 };
 /*
@@ -690,14 +687,99 @@ std::cout << tmp_mat << std::endl;
 template<typename VertexT, typename NormalT>
 PolygonRegion<VertexT, NormalT> PolygonFusion<VertexT, NormalT>::transformto3Dlvr(BoostPolygon poly, Eigen::Matrix4f trans){
 	// TODO Transformation von 2D in 3D und Umwandlung von Boost_Polygon in lvr::PolygonRegion
-	PolyRegion result;
+
     typedef boost::geometry::model::d2::point_xy<float> point;
+    using boost::geometry::get;
 
+    // store all the points in vec
     std::vector<point> vec;
-    boost::geometry::for_each_point(poly, round_coordinates<point>(vec));
+    boost::geometry::for_each_point(poly, round_coordinates<point>(&vec));
 
+    std::vector<Polygon<VertexT, NormalT>> poly_vec;
+    std::vector<VertexT> point_vec;
+    double f_x, f_y;
+    bool first_p = true;
     std::vector<point>::iterator point_iter;
+    for(point_iter = vec.begin() ; point_iter != vec.end() ; ++point_iter)
+    {
+    	// to determine every single polygon (contour, hole etc.)
+    	if (first_p)
+    	{
+    		f_x = get<0>((*point_iter));
+    		f_y = get<1>((*point_iter));
+    		first_p = false;
 
+			// Transformation
+			Eigen::Matrix4f tmp_mat;
+			for(int i = 0 ; i < 4 ; i++)
+			{
+				for(int j = 0 ; j < 4 ; j++)
+				{
+					tmp_mat(i, j) = 0;
+				}
+			}
+			//TODO z wird also bei der Transformation auf Null projiziert?!
+			tmp_mat(0,0) = f_x;
+			tmp_mat(1,1) = f_y;
+			tmp_mat(2,2) = 0;
+			tmp_mat(0,3) = 1;
+			tmp_mat(1,3) = 1;
+			tmp_mat(2,3) = 1;
+			tmp_mat(3,3) = 1;
+
+			tmp_mat = tmp_mat * trans;
+
+			// store the point
+			VertexT tmp(tmp_mat(0,0), tmp_mat(1,1), tmp_mat(2,2));
+			point_vec.push_back(tmp);
+    	}
+    	else
+    	{
+    		double x,y;
+    		x = get<0>((*point_iter));
+    		y = get<1>((*point_iter));
+
+    		if(x == f_x && y == f_y)
+    		{
+    			Polygon<VertexT, NormalT> bla(point_vec);
+    			poly_vec.push_back(bla);
+    			point_vec.clear();
+    			first_p = true;
+    		}
+    		else
+    		{
+    			// Transformation
+    			Eigen::Matrix4f tmp_mat;
+    			for(int i = 0 ; i < 4 ; i++)
+    			{
+    				for(int j = 0 ; j < 4 ; j++)
+    				{
+    					tmp_mat(i, j) = 0;
+    				}
+    			}
+    			//TODO z wird also bei der Transformation auf Null projiziert?!
+    			tmp_mat(0,0) = x;
+    			tmp_mat(1,1) = y;
+    			tmp_mat(2,2) = 0;
+    			tmp_mat(0,3) = 1;
+    			tmp_mat(1,3) = 1;
+    			tmp_mat(2,3) = 1;
+    			tmp_mat(3,3) = 1;
+
+    			tmp_mat = tmp_mat * trans;
+
+    			// store the point
+    			VertexT tmp(tmp_mat(0,0), tmp_mat(1,1), tmp_mat(2,2));
+    			point_vec.push_back(tmp);
+    		}
+    	}
+    }
+
+    //TODO hier muessen noch das Label und die normale zur Verfügung stehen
+    std::string label = "noch_keins_da";
+    NormalT normal;
+    PolyRegion result(poly_vec, label, normal);
+    return result;
 }
 
 
