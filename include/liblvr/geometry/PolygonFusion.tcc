@@ -9,6 +9,37 @@
 
 namespace lvr
 {
+template <typename Point>
+class round_coordinates
+{
+private :
+    std::vector<Point> vec;
+
+
+public :
+    round_coordinates(std::vector<Point> &v)
+        : vec(v)
+    {}
+
+    inline void operator()(Point& p)
+    {
+        using boost::geometry::get;
+        using boost::geometry::set;
+        std::cout << "x = " << get<0>(p) << " y = " << get<1>(p) << std::endl;
+        //set<0>(p, round(get<0>(p)));
+        //set<1>(p, round(get<1>(p)));
+    }
+};
+/*
+template <typename Point>
+void list_coordinates(Point const& p)
+{
+    using boost::geometry::get;
+
+    std::cout << "x = " << get<0>(p) << " y = " << get<1>(p) << std::endl;
+
+}
+*/
 
 template<typename VertexT, typename NormalT>
 PolygonFusion<VertexT, NormalT>::PolygonFusion() {
@@ -178,7 +209,8 @@ bool PolygonFusion<VertexT, NormalT>::doFusion()
 				}
 				normal /= nPoints;
 
-
+				PolyRegion tmp;
+				fuse(coplanar_regions, tmp);
 				// transform
 				// do fusion
 				// transform back
@@ -386,7 +418,7 @@ Eigen::Matrix4f PolygonFusion<VertexT, NormalT>::calcTransform(VertexT a, Vertex
 
 
 template<typename VertexT, typename NormalT>
-boost::geometry::model::polygon<boost::geometry::model::d2::point_xy<double> > PolygonFusion<VertexT, NormalT>::transformto2DBoost(PolyRegion a, Eigen::Matrix4f trans)
+boost::geometry::model::polygon<boost::geometry::model::d2::point_xy<float> > PolygonFusion<VertexT, NormalT>::transformto2DBoost(PolyRegion a, Eigen::Matrix4f trans)
 {
 	// TODO Transformation von 3D in 2D und Umwandlung von lvr::PolygonRegion Boost_Polygon
 	// 		 Boost Polygon als Rückgabewert
@@ -652,9 +684,16 @@ std::cout << tmp_mat << std::endl;
 }
 
 template<typename VertexT, typename NormalT>
-PolygonRegion<VertexT, NormalT> PolygonFusion<VertexT, NormalT>::transformto3Dlvr(BoostPolygon, Eigen::Matrix4f trans){
+PolygonRegion<VertexT, NormalT> PolygonFusion<VertexT, NormalT>::transformto3Dlvr(BoostPolygon poly, Eigen::Matrix4f trans){
 	// TODO Transformation von 2D in 3D und Umwandlung von Boost_Polygon in lvr::PolygonRegion
-	// 		 Boost Polygon als Übergabeparameter
+	PolyRegion result;
+    typedef boost::geometry::model::d2::point_xy<float> point;
+
+    std::vector<point> vec;
+    boost::geometry::for_each_point(poly, round_coordinates<point>(vec));
+
+    std::vector<point>::iterator point_iter;
+
 }
 
 
