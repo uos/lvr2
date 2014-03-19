@@ -39,6 +39,15 @@ typedef Normal<float>                                   cNormal;
 typedef SearchTree<cVertex> search_tree;
 
 template<typename VertexT, typename NormalT>
+AdaptiveKSearchSurface<VertexT, NormalT>::AdaptiveKSearchSurface()
+{
+	m_useRANSAC = true;
+    this->m_ki = 10;
+    this->m_kn = 10;
+    this->m_kd = 10;
+}
+
+template<typename VertexT, typename NormalT>
 AdaptiveKSearchSurface<VertexT, NormalT>::AdaptiveKSearchSurface(
         PointBufferPtr loader,
         std::string searchTreeName,
