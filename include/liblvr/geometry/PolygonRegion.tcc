@@ -46,7 +46,7 @@ NormalT PolygonRegion<VertexT, NormalT>::getNormal(){
 
 template<typename VertexT, typename NormalT>
 size_t PolygonRegion<VertexT, NormalT>::getSize(){
-	return m_polygons.at(0).size();
+	return m_polygons.at(0).getSize();
 }
 
 template<typename VertexT, typename NormalT>
