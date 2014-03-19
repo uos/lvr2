@@ -47,9 +47,10 @@ namespace lvr
 template<typename VertexT, typename NormalT>
 class PolygonFusion {
 public:
-	typedef PolygonRegion<VertexT, NormalT> PolyRegion;
+	typedef PolygonRegion<VertexT, NormalT>               PolyRegion;
 	typedef std::map<std::string, std::vector<PolyRegion> > PolyRegionMap;
-	typedef std::vector<PolygonMesh<VertexT, NormalT> > PolyMesh;
+	typedef std::vector<PolygonMesh<VertexT, NormalT> >   PolyMesh;
+	typedef AdaptiveKSearchSurface<VertexT, NormalT>      akSurface;
 
 	typedef boost::geometry::model::polygon<boost::geometry::model::d2::point_xy<float> > BoostPolygon;
 
