@@ -85,9 +85,11 @@ public:
 	 *	 6) place resulting 3D polygon in response mesh
 	 *	 7) insert all left overs into response.mesh
 	 *
+	 * @param output The resulting PolygonMesh
+	 *
 	 * @return returns false, if something went wrong
 	 */
-	bool doFusion();
+	bool doFusion(std::vector<PolyRegion> &output);
 
 
 private:
@@ -111,7 +113,7 @@ private:
 	 *
 	 * @return true, if everything works
 	 */
-	bool fuse(std::vector<PolyRegion> coplanar_polys, PolygonRegion<VertexT, NormalT> &result);
+	bool fuse(std::vector<PolyRegion> coplanar_polys, std::vector<PolygonRegion<VertexT, NormalT>> &result);
 
 
 	/**
