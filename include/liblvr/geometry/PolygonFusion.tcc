@@ -357,13 +357,18 @@ bool PolygonFusion<VertexT, NormalT>::fuse(std::vector<PolyRegion> coplanar_poly
 	vec1 += plane.p;
 	vec2 += plane.p;
 
+	// calc transform
 	Eigen::Matrix4f trans_mat;
+	Eigen::Matrix4f trans_mat_inv;
 	trans_mat = calcTransform(plane.p, vec1, vec2);
 
+	// need transform from 3D to 2D and back from 2D to 3D
+	trans_mat_inv = trans_mat.inverse();
 
 	typename std::vector<PolyRegion>::iterator poly_iter;
 	for(poly_iter = coplanar_polys.begin(); poly_iter != coplanar_polys.end(); ++poly_iter)
 	{
+		// transform and fuse
 		cout << "should boost union them all" << endl;
 	}
 }
