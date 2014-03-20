@@ -309,6 +309,7 @@ bool PolygonFusion<VertexT, NormalT>::fuse(std::vector<PolyRegion> coplanar_poly
 	// TODO Boost Fusion hier implementieren und
 	std::vector<BoostPolygon> boost_result;
 
+	// we need all points from the polygons, so we can calculate a best fit plane
 	std::vector<VertexT> ransac_points;
 	VertexT centroid;
 	typename std::vector<PolyRegion>::iterator region_iter;
@@ -645,43 +646,6 @@ std::cout << tmp_mat << std::endl;
 	boost::geometry::read_wkt(res_poly_str, result);
 
 	return result;
-
-
-/*
-	BoostPolygon green, blue, red, yellow;
-
-    boost::geometry::read_wkt(
-        "POLYGON((0.0 0.0, 0.0 4.0, 4.0 4.0, 4.0 0.0, 0.0 0.0)" "(2.0 2.0, 3.0 2.0, 3.0 3.0, 2.0 3.0, 2.0 2.0))", green);
-    std::cout << "polygon green has area " << boost::geometry::area(green) << std::endl;
-    std::cout << "polygon green has length " << boost::geometry::length(green) << std::endl;
-
-    boost::geometry::read_wkt(
-        "POLYGON((2.0 2.0, 2.0 3.0, 3.0 3.0, 3.0 2.0, 2.0 2.0))", blue);
-    std::cout << "polygon blue has area " << boost::geometry::area(blue) << std::endl;
-    std::cout << "polygon blue has length " << boost::geometry::length(blue) << std::endl;
-
-    boost::geometry::read_wkt(
-        "POLYGON((2.0 2.0, 2.0 3.0, 3.0 3.0, 3.0 2.0, 2.0 2.0))", red);
-    std::cout << "polygon red has area " << boost::geometry::area(red) << std::endl;
-    std::cout << "polygon red has length " << boost::geometry::length(red) << std::endl;
-
-    boost::geometry::read_wkt(
-        "POLYGON((4.0 4.0, 4.0 5.0, 5.0 5.0, 5.0 4.0, 4.0 4.0))", yellow);
-    std::cout << "polygon yellow has area " << boost::geometry::area(yellow) << std::endl;
-    std::cout << "polygon yellow has length " << boost::geometry::length(yellow) << std::endl;
-
-    std::vector<BoostPolygon> output;
-    boost::geometry::union_(green, blue, output);
-
-    size_t i;
-    typename std::vector<BoostPolygon>::iterator tmp_iter;
-    for ( i = 1, tmp_iter = output.begin(); tmp_iter != output.end(); ++poly_iter )
-    {
-        std::cout << boost::geometry::wkt((*tmp_iter)) << std::endl;
-        //std::cout << i++ << ": " << boost::geometry::area(p) << std::endl;
-        std::cout << "union-polygon " << i++ << " has area " << boost::geometry::area((*tmp_iter)) << std::endl;
-    }
-*/
 }
 
 template<typename VertexT, typename NormalT>
