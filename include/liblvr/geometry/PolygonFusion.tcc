@@ -380,12 +380,44 @@ std::cout << "fuse wurde aufgerufen" << std::endl;
 	// need transform from 3D to 2D and back from 2D to 3D
 	trans_mat_inv = trans_mat.inverse();
 
+	std::vector<BoostPolygon> input;
+	std::vector<BoostPolygon> output;
+
 	typename std::vector<PolyRegion>::iterator poly_iter;
 	for(poly_iter = coplanar_polys.begin(); poly_iter != coplanar_polys.end(); ++poly_iter)
 	{
 		// transform and fuse
-		cout << "should boost union them all" << endl;
+
+		input.push_back(transformto2DBoost((*poly_iter), trans_mat));
 	}
+
+	// TODO Sonderfall abfangen, wenn Union "Fehlschlaegt", da man dann nicht weiß mit welchem
+	// Polygon die Vereinigung gemacht werden soll
+	bool first_it = true;
+	typename std::vector<BoostPolygon>::iterator input_iter;
+	for(input_iter = input.begin(); input_iter != input.end(); ++input_iter)
+	{
+		// transform and fuse
+		if(first_it)
+		{
+			first_it = false;
+			output.push_back((*input_iter));
+		}
+		else
+		{
+			cout << "Boost should union them all" << endl;
+			boost::geometry::union_(output[0], (*input_iter) , output);
+		}
+
+	}
+
+	typename std::vector<BoostPolygon>::iterator output_iter;
+	for(output_iter = input.begin(); output_iter != input.end(); ++output_iter)
+	{
+		result.push_back(transformto3Dlvr((*output_iter), trans_mat_inv));
+	}
+
+	return true;
 }
 
 
