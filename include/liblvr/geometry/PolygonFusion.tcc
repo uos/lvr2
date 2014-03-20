@@ -61,10 +61,10 @@ void PolygonFusion<VertexT, NormalT>::addFusionMesh(PolygonMesh<VertexT, NormalT
 
 
 template<typename VertexT, typename NormalT>
-bool PolygonFusion<VertexT, NormalT>::doFusion()
+bool PolygonFusion<VertexT, NormalT>::doFusion(std::vector<PolyRegion> &output)
 {
 	// TODO Umbauen auf neue Struktur
-	std::cout << "Starting PolygonFusion!!" << std::endl;
+	std::cout << "Starting PolygonFusion with " << m_meshes.size() << " Polygons!!" << std::endl;
 
 	// 0.5) prepare map and other vectors
 	// 1) put polyregions into bins according to labels
@@ -86,8 +86,10 @@ bool PolygonFusion<VertexT, NormalT>::doFusion()
 	for( polymesh_iter = m_meshes.begin(); polymesh_iter != m_meshes.end(); ++polymesh_iter )
 	{
 		//std::vector<lvr_tools::PolygonRegion>::iterator polyregion_iter;
+		std::vector<PolyRegion> regions;
+		regions = (*polymesh_iter).getPolyRegions();
 		typename std::vector<PolyRegion>::iterator polyregion_iter;
-		for( polyregion_iter = (*polymesh_iter).getPolyRegions().begin(); polyregion_iter != (*polymesh_iter).getPolyRegions().end(); ++polyregion_iter )
+		for( polyregion_iter = regions.begin(); polyregion_iter != regions.end(); ++polyregion_iter )
 		{
 			if ( (*polyregion_iter).getLabel() != "unknown" )
 			{
@@ -108,6 +110,7 @@ bool PolygonFusion<VertexT, NormalT>::doFusion()
 			}
 		}
 	}
+	std::cout << "Aufteilen der Regionen nach ihren labeln abgeschlossen" << std::endl;
 /*
 // debug stuff
 	// Anzeigen von allen Polygonen mit gleichem Label
@@ -137,7 +140,7 @@ bool PolygonFusion<VertexT, NormalT>::doFusion()
 	typename PolyRegionMap::iterator map_iter;
 	for( map_iter = m_polyregionmap.begin(); map_iter != m_polyregionmap.end(); ++map_iter )
 	{
-		std::cout << "trying to fuse polygons with regionlabel: " <<  (*map_iter).first << std::endl;
+		std::cout << "trying to fuse " << (*map_iter).second.size() << " polygons with regionlabel: " <<  (*map_iter).first << std::endl;
 
 		std::vector<PolyRegion> polyregions = (*map_iter).second;
 
@@ -145,10 +148,13 @@ bool PolygonFusion<VertexT, NormalT>::doFusion()
 		std::vector<PolyRegion> nonplanar_regions;
 		std::vector<PolyRegion> fused_regions;
 
+		size_t count = 0;
 		typename std::vector<PolyRegion>::iterator region_iter;
 		for( region_iter = polyregions.begin(); region_iter != polyregions.end(); )
 		{
-			std::cout << "still need to process %d outer PolygonRegions" << std::endl;
+			std::cout << "still need to process " << (polyregions.size() - (count++)) <<
+					" / " << polyregions.size() << " outer PolygonRegions" << std::endl;
+
 			// assume there exists at least least one coplanar region
 			coplanar_regions.push_back((*region_iter));
 
@@ -184,6 +190,7 @@ bool PolygonFusion<VertexT, NormalT>::doFusion()
 				}
 			}
 
+			std::cout << "Es wurden Coplanare polygone gefunden und werden gefused: " << coplanar_regions.size() << std::endl;
 			// assumption was wrong, no coplanar region
 			if ( coplanar_regions.size() == 1 )
 			{
@@ -206,8 +213,9 @@ bool PolygonFusion<VertexT, NormalT>::doFusion()
 				}
 				normal /= nPoints;
 
-				PolyRegion tmp;
-				fuse(coplanar_regions, tmp);
+
+				fuse(coplanar_regions, output);
+				std::cout << "YEAH YEAH YEAH, die Fusion ist durchgelaufen" << std::endl;
 				// transform
 				// do fusion
 				// transform back
@@ -231,6 +239,7 @@ bool PolygonFusion<VertexT, NormalT>::doFusion()
 template<typename VertexT, typename NormalT>
 bool PolygonFusion<VertexT, NormalT>::isPlanar(PolyRegion a, PolyRegion b)
 {
+	std::cout << "IsPlanar wurde aufgerufen" << std::endl;
 	// To-Do Umbauen für die neuen Typen (Polygon statt msg:Polygon)
 	bool coplanar = true;
 
@@ -250,8 +259,11 @@ bool PolygonFusion<VertexT, NormalT>::isPlanar(PolyRegion a, PolyRegion b)
 	float p1_y = point_a.y;
 	float p1_z = point_a.z;
 
-	float d = (n_x * p1_x + n_y * p1_y + n_z * p1_z) / sqrt( n_x * n_x + n_y * n_y + n_z * n_z );
+	float d = -(n_x * p1_x + n_y * p1_y + n_z * p1_z);// / sqrt( n_x * n_x + n_y * n_y + n_z * n_z );
 	float distance = 0.0;
+
+	std::cout << "Punkt ( " << p1_x << " ," <<
+			p1_y << ", " << p1_z << ") mit d = " << d << std::endl;
 
 	std::vector<Polygon<VertexT, NormalT>> polygons_b;
 	polygons_b = b.getPolygons();
@@ -266,6 +278,8 @@ bool PolygonFusion<VertexT, NormalT>::isPlanar(PolyRegion a, PolyRegion b)
 		if ( distance > m_distance_threshold )
 		{
 			coplanar = false;
+			std::cout << "punkt ( " << (*point_iter).x << " ," <<
+					(*point_iter).y << ", " << (*point_iter).z << ") nicht Coplanar mit distance: " << distance << std::endl;
 		}
 		else
 		{
@@ -301,14 +315,15 @@ bool PolygonFusion<VertexT, NormalT>::isPlanar(PolyRegion a, PolyRegion b)
 		}
 	}
 
+	if(coplanar) std::cout << "IsPlanar liefert true zurueck" << std::endl;
+	else         std::cout << "IsPlanar liefert false zurueck mit distance: " << distance << std::endl;
 	return coplanar;
 }
 
 template<typename VertexT, typename NormalT>
-bool PolygonFusion<VertexT, NormalT>::fuse(std::vector<PolyRegion> coplanar_polys, PolygonRegion<VertexT, NormalT> &result){
+bool PolygonFusion<VertexT, NormalT>::fuse(std::vector<PolyRegion> coplanar_polys, std::vector<PolygonRegion<VertexT, NormalT>> &result){
 	// TODO Boost Fusion hier implementieren und
-	std::vector<BoostPolygon> boost_result;
-
+std::cout << "fuse wurde aufgerufen" << std::endl;
 	// we need all points from the polygons, so we can calculate a best fit plane
 	std::vector<VertexT> ransac_points;
 	VertexT centroid;
