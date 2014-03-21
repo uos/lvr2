@@ -674,7 +674,7 @@ Plane<VertexT, NormalT> AdaptiveKSearchSurface<VertexT, NormalT>::calcPlaneRANSA
   //  int max_nonimproving = max(5, k / 2);
     int max_interations  = 10;
 
-    while((nonimproving_iterations < 5) && (iterations < max_interations))
+    while((nonimproving_iterations < 3) && (iterations < max_interations))
     {
         NormalT n0;
         //randomly choose 3 disjoint points
@@ -689,9 +689,19 @@ Plane<VertexT, NormalT> AdaptiveKSearchSurface<VertexT, NormalT>::calcPlaneRANSA
                 index[i] = r;
             }
 
+//            if(id[0] != id[1] && id[1] != id[2] && id[2] != id[0])
+//            {
+//            	break;
+//            }
+
             point1 = VertexT(points[index[0]][0], points[index[0]][1], points[index[0]][2]);
             point2 = VertexT(points[index[1]][0], points[index[1]][1], points[index[1]][2]);
             point3 = VertexT(points[index[2]][0], points[index[2]][1], points[index[2]][2]);
+
+            if( (point1 != point2) && (point2 != point3) && (point3 != point1) )
+            {
+                break;
+            }
 
             //compute normal of the plane given by the 3 points
             n0 = (point1 - point2).cross(point1 - point3);
