@@ -558,32 +558,50 @@ std::cout << "transformto2DBoost aufgerufen" << std::endl;
 		typename std::vector<VertexT>::iterator point_iter;
 		for(point_iter = points.begin(); point_iter != points.end(); ++point_iter)
 		{
-			// Transformation
-			Eigen::Matrix4f tmp_mat;
-			for(int i = 0 ; i < 4 ; i++)
-			{
-				for(int j = 0 ; j < 4 ; j++)
-				{
-					tmp_mat(i, j) = 0;
-				}
-			}
-			tmp_mat(0,0) = (*point_iter).x;
-			tmp_mat(1,1) = (*point_iter).y;
-			tmp_mat(2,2) = (*point_iter).z;
-			tmp_mat(0,3) = 1;
-			tmp_mat(1,3) = 1;
-			tmp_mat(2,3) = 1;
-			tmp_mat(3,3) = 1;
+			Eigen::Matrix<double, 4, 1> pt(point_iter->x, point_iter->y, point_iter->z, 1);
 
-			//transform point in 2D
-			tmp_mat = tmp_mat * trans;
+			float x = 	trans(0,0) * pt.coeffRef(0) +
+						trans(0,1) * pt.coeffRef(1) +
+						trans(0,2) * pt.coeffRef(2) +
+						trans(0,3) * pt.coeffRef(3);
 
-std::cout << "In transformto2DBoost ist der transformierte Vektor bzw. Matrix: " << std::endl;
-std::cout << tmp_mat << std::endl;
+			float y = 	trans(1,0) * pt.coeffRef(0) +
+						trans(1,1) * pt.coeffRef(1) +
+						trans(1,2) * pt.coeffRef(2) +
+						trans(1,3) * pt.coeffRef(3);
 
-			float x,y;
-			x = tmp_mat(0,0);
-			y = tmp_mat(1,1);
+			float z = 	trans(2,0) * pt.coeffRef(0) +
+						trans(2,1) * pt.coeffRef(1) +
+						trans(2,2) * pt.coeffRef(2) +
+						trans(2,3) * pt.coeffRef(3);
+			std::cout << "******************* z-Wert: " << z << std::endl;
+
+//			// Transformation
+//			Eigen::Matrix4f tmp_mat;
+//			for(int i = 0 ; i < 4 ; i++)
+//			{
+//				for(int j = 0 ; j < 4 ; j++)
+//				{
+//					tmp_mat(i, j) = 0;
+//				}
+//			}
+//			tmp_mat(0,0) = (*point_iter).x;
+//			tmp_mat(1,1) = (*point_iter).y;
+//			tmp_mat(2,2) = (*point_iter).z;
+//			tmp_mat(0,3) = 1;
+//			tmp_mat(1,3) = 1;
+//			tmp_mat(2,3) = 1;
+//			tmp_mat(3,3) = 1;
+//
+//			//transform point in 2D
+//			tmp_mat = tmp_mat * trans;
+//
+//std::cout << "In transformto2DBoost ist der transformierte Vektor bzw. Matrix: " << std::endl;
+//std::cout << tmp_mat << std::endl;
+//
+//			float x,y;
+//			x = tmp_mat(0,0);
+//			y = tmp_mat(1,1);
 
 			// transform in BoostPolygon
 			if (first_it)
@@ -817,6 +835,7 @@ PolygonRegion<VertexT, NormalT> PolygonFusion<VertexT, NormalT>::transformto3Dlv
 
     		if(x == f_x && y == f_y)
     		{
+    			std::cout << "Ein Polygon ist vollstaendig, da letzter und ersten Punkt gleich sind" << std::endl;
     			Polygon<VertexT, NormalT> bla(point_vec);
     			poly_vec.push_back(bla);
     			point_vec.clear();
