@@ -351,7 +351,7 @@ std::cout << "fuse wurde aufgerufen" << std::endl;
 	akSurface akss;
 
 	Plane<VertexT, NormalT> plane;
-	bool ransac_success;
+	bool ransac_success = true;
 	plane = akss.calcPlaneRANSACfromPoints(ransac_points.at(0), ransac_points.size(), ransac_points, ransac_success);
 
 	if (!ransac_success)
@@ -363,11 +363,12 @@ std::cout << "fuse wurde aufgerufen" << std::endl;
 	float d = (plane.p.x * plane.n.x) + (plane.p.y * plane.n.y) + (plane.p.z * plane.n.z);
 
 	// calc 2 points on this best fit plane, we need it for the transformation in 2D
+	// TODO Hier aufpassen, wenn vec1 oder vec2 genau die Normalen ist, bzw parallel
 	VertexT vec1(1, 2, 3);
 	VertexT vec2(3, 2, 1);
 
-	vec1.cross(plane.n);
-	vec2.cross(plane.n);
+	vec1 = vec1.cross(plane.n);
+	vec2 = vec2.cross(plane.n);
 
 	vec1 += plane.p;
 	vec2 += plane.p;
@@ -623,39 +624,30 @@ std::cout << "TestPolygon: " << test_poly_str << std::endl;
 			first_poly = false;
 			if(boost::geometry::area(tmp_poly) <= 0)
 			{
+				first_poly_str.clear(),
+				poly_str.clear();
+				std::cout << "falsche Richtung bei ersten Polygon, da area:" << boost::geometry::area(tmp_poly) << std::endl;
 				first_it = true;
 
 				// get all vertices from this polygon
 				std::vector<VertexT> points = poly_iter->getVertices();
 				typename std::vector<VertexT>::iterator point_iter;
-				for(point_iter = points.begin(); point_iter != points.end(); ++point_iter)
+				for(point_iter = points.end() - 1; point_iter != points.begin() - 1; --point_iter)
 				{
-					// Transformation
-					Eigen::Matrix4f tmp_mat;
-					for(int i = 0 ; i < 4 ; i++)
-					{
-						for(int j = 0 ; j < 4 ; j++)
-						{
-							tmp_mat(i, j) = 0;
-						}
-					}
-					tmp_mat(0,0) = (*point_iter).x;
-					tmp_mat(1,1) = (*point_iter).y;
-					tmp_mat(2,2) = (*point_iter).z;
-					tmp_mat(0,3) = 1;
-					tmp_mat(1,3) = 1;
-					tmp_mat(2,3) = 1;
-					tmp_mat(3,3) = 1;
+					Eigen::Matrix<double, 4, 1> pt(point_iter->x, point_iter->y, point_iter->z, 1);
 
-					//transform point in 2D
-					tmp_mat = tmp_mat * trans;
+					float x = 	trans(0,0) * pt.coeffRef(0) +
+								trans(0,1) * pt.coeffRef(1) +
+								trans(0,2) * pt.coeffRef(2) +
+								trans(0,3) * pt.coeffRef(3);
 
-					std::cout << "In transformto2DBoost (in if(poly_first)) ist der transformierte Vektor bzw. Matrix: " << std::endl;
-					std::cout << tmp_mat << std::endl;
+					float y = 	trans(1,0) * pt.coeffRef(0) +
+								trans(1,1) * pt.coeffRef(1) +
+								trans(1,2) * pt.coeffRef(2) +
+								trans(1,3) * pt.coeffRef(3);
 
-					float x,y;
-					x = tmp_mat(0,0);
-					y = tmp_mat(1,1);
+					//std::cout << "In transformto2DBoost (in if(poly_first)) ist der transformierte Vektor bzw. Matrix: " << std::endl;
+					//std::cout << tmp_mat << std::endl;
 
 					// transform in BoostPolygon
 					if (first_it)
@@ -686,40 +678,28 @@ std::cout << "TestPolygon: " << test_poly_str << std::endl;
 		}
 		else if(boost::geometry::area(tmp_poly) >= 0 )
 		{
+			first_poly_str.clear(),
+			poly_str.clear();
+			std::cout << "andere Richtung bei inneren" << std::endl;
 			//boost::reverse(tmp_poly);
 			first_it = true;
 
 			// get all vertices from this polygon
 			std::vector<VertexT> points = poly_iter->getVertices();
 			typename std::vector<VertexT>::iterator point_iter;
-			for(point_iter = points.begin(); point_iter != points.end(); ++point_iter)
+			for(point_iter = points.end() - 1; point_iter != points.begin() - 1 ;  --point_iter)
 			{
-				// Transformation
-				Eigen::Matrix4f tmp_mat;
-				for(int i = 0 ; i < 4 ; i++)
-				{
-					for(int j = 0 ; j < 4 ; j++)
-					{
-						tmp_mat(i, j) = 0;
-					}
-				}
-				tmp_mat(0,0) = (*point_iter).x;
-				tmp_mat(1,1) = (*point_iter).y;
-				tmp_mat(2,2) = (*point_iter).z;
-				tmp_mat(0,3) = 1;
-				tmp_mat(1,3) = 1;
-				tmp_mat(2,3) = 1;
-				tmp_mat(3,3) = 1;
+				Eigen::Matrix<double, 4, 1> pt(point_iter->x, point_iter->y, point_iter->z, 1);
 
-				//transform point in 2D
-				tmp_mat = tmp_mat * trans;
+				float x = 	trans(0,0) * pt.coeffRef(0) +
+							trans(0,1) * pt.coeffRef(1) +
+							trans(0,2) * pt.coeffRef(2) +
+							trans(0,3) * pt.coeffRef(3);
 
-	std::cout << "In transformto2DBoost ist der transformierte Vektor bzw. Matrix: " << std::endl;
-	std::cout << tmp_mat << std::endl;
-
-				float x,y;
-				x = tmp_mat(0,0);
-				y = tmp_mat(1,1);
+				float y = 	trans(1,0) * pt.coeffRef(0) +
+							trans(1,1) * pt.coeffRef(1) +
+							trans(1,2) * pt.coeffRef(2) +
+							trans(1,3) * pt.coeffRef(3);
 
 				// transform in BoostPolygon
 				if (first_it)
@@ -783,32 +763,50 @@ PolygonRegion<VertexT, NormalT> PolygonFusion<VertexT, NormalT>::transformto3Dlv
     	// to determine every single polygon (contour, hole etc.)
     	if (first_p)
     	{
+
+			Eigen::Matrix<double, 4, 1> pt(get<0>((*point_iter)), get<1>((*point_iter)), 0, 1);
+
+			float x = 	trans(0,0) * pt.coeffRef(0) +
+						trans(0,1) * pt.coeffRef(1) +
+						trans(0,2) * pt.coeffRef(2) +
+						trans(0,3) * pt.coeffRef(3);
+
+			float y = 	trans(1,0) * pt.coeffRef(0) +
+						trans(1,1) * pt.coeffRef(1) +
+						trans(1,2) * pt.coeffRef(2) +
+						trans(1,3) * pt.coeffRef(3);
+
+			float z = 	trans(2,0) * pt.coeffRef(0) +
+						trans(2,1) * pt.coeffRef(1) +
+						trans(2,2) * pt.coeffRef(2) +
+						trans(2,3) * pt.coeffRef(3);
+
     		f_x = get<0>((*point_iter));
     		f_y = get<1>((*point_iter));
     		first_p = false;
-
-			// Transformation
-			Eigen::Matrix4f tmp_mat;
-			for(int i = 0 ; i < 4 ; i++)
-			{
-				for(int j = 0 ; j < 4 ; j++)
-				{
-					tmp_mat(i, j) = 0;
-				}
-			}
-			//TODO z wird also bei der Transformation auf Null projiziert?!
-			tmp_mat(0,0) = f_x;
-			tmp_mat(1,1) = f_y;
-			tmp_mat(2,2) = 0;
-			tmp_mat(0,3) = 1;
-			tmp_mat(1,3) = 1;
-			tmp_mat(2,3) = 1;
-			tmp_mat(3,3) = 1;
-
-			tmp_mat = tmp_mat * trans;
-
-			// store the point
-			VertexT tmp(tmp_mat(0,0), tmp_mat(1,1), tmp_mat(2,2));
+//
+//			// Transformation
+//			Eigen::Matrix4f tmp_mat;
+//			for(int i = 0 ; i < 4 ; i++)
+//			{
+//				for(int j = 0 ; j < 4 ; j++)
+//				{
+//					tmp_mat(i, j) = 0;
+//				}
+//			}
+//			//TODO z wird also bei der Transformation auf Null projiziert?!
+//			tmp_mat(0,0) = f_x;
+//			tmp_mat(1,1) = f_y;
+//			tmp_mat(2,2) = 0;
+//			tmp_mat(0,3) = 1;
+//			tmp_mat(1,3) = 1;
+//			tmp_mat(2,3) = 1;
+//			tmp_mat(3,3) = 1;
+//
+//			tmp_mat = tmp_mat * trans;
+//
+//			// store the point
+			VertexT tmp(x, y, z);
 			point_vec.push_back(tmp);
     	}
     	else
