@@ -23,7 +23,7 @@ public :
     inline void operator()(Point& p)
     {
         using boost::geometry::get;
-	//std::cout << "x = " << get<0>(p) << " y = " << get<1>(p) << std::endl;
+	std::cout << "Beim Auslesen: x = " << get<0>(p) << " y = " << get<1>(p) << std::endl;
 	vec->push_back(p);
     }
 };
@@ -375,6 +375,11 @@ std::cout << "fuse wurde aufgerufen" << std::endl;
 	// calc transform
 	Eigen::Matrix4f trans_mat;
 	Eigen::Matrix4f trans_mat_inv;
+
+std::cout << "***********Input von calcTransform: " << std::endl;
+std::cout << plane.p;
+std::cout << vec1;
+std::cout << vec2;
 	trans_mat = calcTransform(plane.p, vec1, vec2);
 
 	// need transform from 3D to 2D and back from 2D to 3D
@@ -383,13 +388,39 @@ std::cout << "fuse wurde aufgerufen" << std::endl;
 	std::vector<BoostPolygon> input;
 	std::vector<BoostPolygon> output;
 
+std::cout << "**********PolygonRegion vor der Transformation*********" << std::endl;
 	typename std::vector<PolyRegion>::iterator poly_iter;
 	for(poly_iter = coplanar_polys.begin(); poly_iter != coplanar_polys.end(); ++poly_iter)
 	{
 		// transform and fuse
-
+// debug output
+		std::vector<Polygon<VertexT, NormalT>> points=  poly_iter->getPolygons();
+		typename std::vector<Polygon<VertexT, NormalT>>::iterator its;
+		cout << "Region hat " << points.size() << " Polygone" << std::endl;
+		for(its = points.begin() ; its != points.end() ; ++its)
+		{
+			std::vector<cVertex> vert = its->getVertices();
+			std::vector<cVertex>::iterator it2;
+			cout << "Polygon hat " << vert.size() << " Punkte" << std::endl;
+			for(it2 = vert.begin() ; it2 != vert.end() ; ++it2)
+			{
+				cout << "x: " << (*it2).x << "  y: " << (*it2).y << "  z: " << (*it2).z << endl;
+			}
+		}
+//end debug
 		input.push_back(transformto2DBoost((*poly_iter), trans_mat));
 	}
+
+// debug
+	std::cout << "????????? BoostPolygone vor der union" << std::endl;
+	int l = 0;
+	BOOST_FOREACH(BoostPolygon const& p, input)
+	{
+	    std::cout << boost::geometry::wkt(p) << std::endl;
+	    //std::cout << i++ << ": " << boost::geometry::area(p) << std::endl;
+	    std::cout << "not union-polygon " << l++ << " has area " << boost::geometry::area(p) << std::endl;
+	}
+// debug ende
 
 	// TODO Sonderfall abfangen, wenn Union "Fehlschlaegt", da man dann nicht weiß mit welchem
 	// Polygon die Vereinigung gemacht werden soll
@@ -405,15 +436,41 @@ std::cout << "fuse wurde aufgerufen" << std::endl;
 		}
 		else
 		{
+			BoostPolygon tmp;
+			// get the first polygon and erase it, if not there are double polys in the output-vec
+			if (output.size() == 1)
+			{
+				tmp = output[0];
+				output.clear();
+			}
+			else
+			{
+				// TODO nicht immer nur den ersten nehmen, am besten groessten???
+				tmp = output[0];
+				output.erase(output.begin());
+			}
 			cout << "Boost should union them all" << endl;
-			boost::geometry::union_(output[0], (*input_iter) , output);
+			boost::geometry::union_(tmp, (*input_iter) , output);
 		}
 
 	}
 
+
+// debug
+	int i = 0;
+    BOOST_FOREACH(BoostPolygon const& p, output)
+    {
+        std::cout << boost::geometry::wkt(p) << std::endl;
+        //std::cout << i++ << ": " << boost::geometry::area(p) << std::endl;
+        std::cout << "union-polygon " << i++ << " has area " << boost::geometry::area(p) << std::endl;
+    }
+// debug ende
+
+
 	typename std::vector<BoostPolygon>::iterator output_iter;
-	for(output_iter = input.begin(); output_iter != input.end(); ++output_iter)
+	for(output_iter = output.begin(); output_iter != output.end(); ++output_iter)
 	{
+		std::cout << "Also im OutputVektor von fuse sollte was drinstehen" << std::endl;
 		result.push_back(transformto3Dlvr((*output_iter), trans_mat_inv));
 	}
 
@@ -477,7 +534,7 @@ boost::geometry::model::polygon<boost::geometry::model::d2::point_xy<float> > Po
 	// TODO Transformation von 3D in 2D und Umwandlung von lvr::PolygonRegion Boost_Polygon
 	// 		 Boost Polygon als Rückgabewert
 	// TODO remove boost example code
-
+std::cout << "transformto2DBoost aufgerufen" << std::endl;
 	BoostPolygon result, tmp_poly;
 	std::string poly_str;
 	std::string res_poly_str;
@@ -557,6 +614,7 @@ std::cout << tmp_mat << std::endl;
 		std::string test_poly_str = "POLYGON(";
 		test_poly_str.append(poly_str);
 		test_poly_str.append(")");
+std::cout << "TestPolygon: " << test_poly_str << std::endl;
 		boost::geometry::read_wkt(test_poly_str, tmp_poly);
 
 		// if it is positive, do the polygon it the other direction (boost polygon style)
@@ -693,17 +751,21 @@ std::cout << tmp_mat << std::endl;
 		res_poly_str.append(poly_str);
 	}
 
-	poly_str.append(")");
+	res_poly_str.append(")");
 
+
+	std::cout << "Genau vorm Erstellen des Polygons mit string: " << res_poly_str << std::endl;
 	boost::geometry::read_wkt(res_poly_str, result);
+	std::cout << "danach" << std::endl;
 
+	std::cout << "transformto2DBoost durchgelaufen" << std::endl;
 	return result;
 }
 
 template<typename VertexT, typename NormalT>
 PolygonRegion<VertexT, NormalT> PolygonFusion<VertexT, NormalT>::transformto3Dlvr(BoostPolygon poly, Eigen::Matrix4f trans){
 	// TODO Transformation von 2D in 3D und Umwandlung von Boost_Polygon in lvr::PolygonRegion
-
+	std::cout << "transformto3Dlvr aufgerufgen" << std::endl;
     typedef boost::geometry::model::d2::point_xy<float> point;
     using boost::geometry::get;
 
@@ -764,33 +826,31 @@ PolygonRegion<VertexT, NormalT> PolygonFusion<VertexT, NormalT>::transformto3Dlv
     		}
     		else
     		{
-    			// Transformation
-    			Eigen::Matrix4f tmp_mat;
-    			for(int i = 0 ; i < 4 ; i++)
-    			{
-    				for(int j = 0 ; j < 4 ; j++)
-    				{
-    					tmp_mat(i, j) = 0;
-    				}
-    			}
-    			//TODO z wird also bei der Transformation auf Null projiziert?!
-    			tmp_mat(0,0) = x;
-    			tmp_mat(1,1) = y;
-    			tmp_mat(2,2) = 0;
-    			tmp_mat(0,3) = 1;
-    			tmp_mat(1,3) = 1;
-    			tmp_mat(2,3) = 1;
-    			tmp_mat(3,3) = 1;
+    			Eigen::Matrix<double, 4, 1> pt(get<0>((*point_iter)), get<1>((*point_iter)), 0, 1);
 
-    			tmp_mat = tmp_mat * trans;
+    			float x = 	trans(0,0) * pt.coeffRef(0) +
+    					trans(0,1) * pt.coeffRef(1) +
+    					trans(0,2) * pt.coeffRef(2) +
+    					trans(0,3) * pt.coeffRef(3);
+
+    			float y = 	trans(1,0) * pt.coeffRef(0) +
+    					trans(1,1) * pt.coeffRef(1) +
+    					trans(1,2) * pt.coeffRef(2) +
+    					trans(1,3) * pt.coeffRef(3);
+
+    			float z = 	trans(2,0) * pt.coeffRef(0) +
+    					trans(2,1) * pt.coeffRef(1) +
+    					trans(2,2) * pt.coeffRef(2) +
+    					trans(2,3) * pt.coeffRef(3);
 
     			// store the point
-    			VertexT tmp(tmp_mat(0,0), tmp_mat(1,1), tmp_mat(2,2));
+    			VertexT tmp(x, y, z);
     			point_vec.push_back(tmp);
     		}
     	}
     }
 
+	std::cout << "transformto3Dlvr durchgelaufen mit Rueckgabe von Vec mit size: " << poly_vec.size() << std::endl;
     //TODO hier muessen noch das Label und die normale zur Verfügung stehen
     std::string label = "noch_keins_da";
     NormalT normal;
