@@ -13,6 +13,7 @@
 #include <boost148/geometry/geometries/point_xy.hpp>
 #include <boost148/geometry/geometries/polygon.hpp>
 #include <boost148/geometry/domains/gis/io/wkt/wkt.hpp>
+#include <boost/foreach.hpp>
 
 #include <Eigen/Core>
 
