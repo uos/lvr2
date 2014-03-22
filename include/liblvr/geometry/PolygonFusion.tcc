@@ -548,18 +548,16 @@ Eigen::Matrix4f PolygonFusion<VertexT, NormalT>::calcTransform(VertexT a, Vertex
 template<typename VertexT, typename NormalT>
 boost::geometry::model::polygon<boost::geometry::model::d2::point_xy<float> > PolygonFusion<VertexT, NormalT>::transformto2DBoost(PolyRegion a, Eigen::Matrix4f trans)
 {
-	// TODO Transformation von 3D in 2D und Umwandlung von lvr::PolygonRegion Boost_Polygon
-	// 		 Boost Polygon als Rückgabewert
-	// TODO remove boost example code
-std::cout << "transformto2DBoost aufgerufen" << std::endl;
+	std::cout << "transformto2DBoost aufgerufen" << std::endl;
+
 	BoostPolygon result, tmp_poly;
-	std::string poly_str;
-	std::string res_poly_str;
-	std::string tmp_str;
-	std::string first_poly_str;
 	bool first_it;
 	bool first_poly = true;
-	res_poly_str = "POLYGON(";
+
+	std::stringstream res_poly_ss;
+	res_poly_ss << "POLYGON(";
+	std::stringstream first_poly_ss;
+	std::stringstream poly_ss;
 
 	// get all the polygons from this region
 	std::vector<Polygon<VertexT, NormalT> > polygons = a.getPolygons();
@@ -592,62 +590,26 @@ std::cout << "transformto2DBoost aufgerufen" << std::endl;
 						trans(2,3) * pt.coeffRef(3);
 			std::cout << "******************* z-Wert: " << z << std::endl;
 
-//			// Transformation
-//			Eigen::Matrix4f tmp_mat;
-//			for(int i = 0 ; i < 4 ; i++)
-//			{
-//				for(int j = 0 ; j < 4 ; j++)
-//				{
-//					tmp_mat(i, j) = 0;
-//				}
-//			}
-//			tmp_mat(0,0) = (*point_iter).x;
-//			tmp_mat(1,1) = (*point_iter).y;
-//			tmp_mat(2,2) = (*point_iter).z;
-//			tmp_mat(0,3) = 1;
-//			tmp_mat(1,3) = 1;
-//			tmp_mat(2,3) = 1;
-//			tmp_mat(3,3) = 1;
-//
-//			//transform point in 2D
-//			tmp_mat = tmp_mat * trans;
-//
-//std::cout << "In transformto2DBoost ist der transformierte Vektor bzw. Matrix: " << std::endl;
-//std::cout << tmp_mat << std::endl;
-//
-//			float x,y;
-//			x = tmp_mat(0,0);
-//			y = tmp_mat(1,1);
 
 			// transform in BoostPolygon
 			if (first_it)
 			{
 				// save the first one, for closing the polygon
-				first_poly_str.append(std::to_string(x));
-				first_poly_str.append(" ");
-				first_poly_str.append(std::to_string(y));
+				first_poly_ss << std::to_string(x) << " " << std::to_string(y);
 				first_it = false;
 
-				poly_str.append("(");
-				poly_str.append(std::to_string(x));
-				poly_str.append(" ");
-				poly_str.append(std::to_string(y));
-				poly_str.append(", ");
+				poly_ss << "(" << std::to_string(x) << " " << std::to_string(y) << ", ";
 			}
 			else
 			{
-				poly_str.append(std::to_string(x));
-				poly_str.append(" ");
-				poly_str.append(std::to_string(y));
-				poly_str.append(", ");
+				poly_ss << std::to_string(x) << " " << std::to_string(y) << ", ";
 			}
 		}
-		poly_str.append(first_poly_str);
-		poly_str.append(")");
+		poly_ss << first_poly_ss.str() << ")";
 
 		// check every single polygon, if it conform to the boost-polygon-style
 		std::string test_poly_str = "POLYGON(";
-		test_poly_str.append(poly_str);
+		test_poly_str.append(poly_ss.str());
 		test_poly_str.append(")");
 std::cout << "TestPolygon: " << test_poly_str << std::endl;
 		boost::geometry::read_wkt(test_poly_str, tmp_poly);
@@ -658,8 +620,12 @@ std::cout << "TestPolygon: " << test_poly_str << std::endl;
 			first_poly = false;
 			if(boost::geometry::area(tmp_poly) <= 0)
 			{
-				first_poly_str.clear(),
-				poly_str.clear();
+				// clear / flush the stringstreams
+				first_poly_ss.str("");
+				first_poly_ss.clear();
+				poly_ss.str("");
+				poly_ss.clear();
+
 				std::cout << "falsche Richtung bei ersten Polygon, da area:" << boost::geometry::area(tmp_poly) << std::endl;
 				first_it = true;
 
@@ -687,33 +653,27 @@ std::cout << "TestPolygon: " << test_poly_str << std::endl;
 					if (first_it)
 					{
 						// save the first one, for closing the polygon
-						first_poly_str.append(std::to_string(x));
-						first_poly_str.append(" ");
-						first_poly_str.append(std::to_string(y));
+						first_poly_ss << std::to_string(x) << " " << std::to_string(y);
 						first_it = false;
 
-						poly_str.append("(");
-						poly_str.append(std::to_string(x));
-						poly_str.append(" ");
-						poly_str.append(std::to_string(y));
-						poly_str.append(", ");
+						poly_ss << "(" << std::to_string(x) << " " << std::to_string(y) << ", ";
 					}
 					else
 					{
-						poly_str.append(std::to_string(x));
-						poly_str.append(" ");
-						poly_str.append(std::to_string(y));
-						poly_str.append(", ");
+						poly_ss << std::to_string(x) << " " << std::to_string(y) << ", ";
 					}
 				}
-				poly_str.append(first_poly_str);
-				poly_str.append(")");
+				poly_ss << first_poly_ss.str() << ")";
 			}
 		}
 		else if(boost::geometry::area(tmp_poly) >= 0 )
 		{
-			first_poly_str.clear(),
-			poly_str.clear();
+			// clear / flush the stringstreams
+			first_poly_ss.str("");
+			first_poly_ss.clear();
+			poly_ss.str("");
+			poly_ss.clear();
+
 			std::cout << "andere Richtung bei inneren" << std::endl;
 			//boost::reverse(tmp_poly);
 			first_it = true;
@@ -739,37 +699,26 @@ std::cout << "TestPolygon: " << test_poly_str << std::endl;
 				if (first_it)
 				{
 					// save the first one, for closing the polygon
-					first_poly_str.append(std::to_string(x));
-					first_poly_str.append(" ");
-					first_poly_str.append(std::to_string(y));
+					first_poly_ss << std::to_string(x) << " " << std::to_string(y);
 					first_it = false;
 
-					poly_str.append("(");
-					poly_str.append(std::to_string(x));
-					poly_str.append(" ");
-					poly_str.append(std::to_string(y));
-					poly_str.append(", ");
+					poly_ss << "(" << std::to_string(x) << " " << std::to_string(y) << ", ";
 				}
 				else
 				{
-					poly_str.append(std::to_string(x));
-					poly_str.append(" ");
-					poly_str.append(std::to_string(y));
-					poly_str.append(", ");
+					poly_ss << std::to_string(x) << " " << std::to_string(y) << ", ";
 				}
 			}
-			poly_str.append(first_poly_str);
-			poly_str.append(")");
+			poly_ss << first_poly_ss.str() << ")";
 		}
 		// now, this "part" of the polygon can be added to the complete polygon
-		res_poly_str.append(poly_str);
+		res_poly_ss << poly_ss.str();
 	}
+	res_poly_ss << ")";
 
-	res_poly_str.append(")");
 
-
-	std::cout << "Genau vorm Erstellen des Polygons mit string: " << res_poly_str << std::endl;
-	boost::geometry::read_wkt(res_poly_str, result);
+	std::cout << "Genau vorm Erstellen des Polygons mit string: " << res_poly_ss.str() << std::endl;
+	boost::geometry::read_wkt(res_poly_ss.str(), result);
 	std::cout << "danach" << std::endl;
 
 	std::cout << "transformto2DBoost durchgelaufen" << std::endl;
@@ -787,10 +736,12 @@ PolygonRegion<VertexT, NormalT> PolygonFusion<VertexT, NormalT>::transformto3Dlv
     std::vector<point> vec;
     boost::geometry::for_each_point(poly, round_coordinates<point>(&vec));
 
-    std::vector<Polygon<VertexT, NormalT>> poly_vec;
-    std::vector<VertexT> point_vec;
+    // some different modi
     double f_x, f_y;
     bool first_p = true;
+
+    std::vector<Polygon<VertexT, NormalT>> poly_vec;
+    std::vector<VertexT> point_vec;
     std::vector<point>::iterator point_iter;
     for(point_iter = vec.begin() ; point_iter != vec.end() ; ++point_iter)
     {
@@ -818,28 +769,8 @@ PolygonRegion<VertexT, NormalT> PolygonFusion<VertexT, NormalT>::transformto3Dlv
     		f_x = get<0>((*point_iter));
     		f_y = get<1>((*point_iter));
     		first_p = false;
-//
-//			// Transformation
-//			Eigen::Matrix4f tmp_mat;
-//			for(int i = 0 ; i < 4 ; i++)
-//			{
-//				for(int j = 0 ; j < 4 ; j++)
-//				{
-//					tmp_mat(i, j) = 0;
-//				}
-//			}
-//			//TODO z wird also bei der Transformation auf Null projiziert?!
-//			tmp_mat(0,0) = f_x;
-//			tmp_mat(1,1) = f_y;
-//			tmp_mat(2,2) = 0;
-//			tmp_mat(0,3) = 1;
-//			tmp_mat(1,3) = 1;
-//			tmp_mat(2,3) = 1;
-//			tmp_mat(3,3) = 1;
-//
-//			tmp_mat = tmp_mat * trans;
-//
-//			// store the point
+
+			// store the point
 			VertexT tmp(x, y, z);
 			point_vec.push_back(tmp);
     	}
@@ -880,10 +811,9 @@ PolygonRegion<VertexT, NormalT> PolygonFusion<VertexT, NormalT>::transformto3Dlv
     			VertexT tmp(x, y, z);
     			point_vec.push_back(tmp);
     		}
-    	}
-    }
+    	} // end else
+    } // end for
 
-	std::cout << "transformto3Dlvr durchgelaufen mit Rueckgabe von Vec mit size: " << poly_vec.size() << std::endl;
     //TODO hier muessen noch das Label und die normale zur Verfügung stehen
     std::string label = "noch_keins_da";
     NormalT normal;
