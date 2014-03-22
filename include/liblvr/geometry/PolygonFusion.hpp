@@ -93,6 +93,12 @@ public:
 	bool doFusion(std::vector<PolyRegion> &output);
 
 
+	/**
+	 * @brief reset the Fusion. clear all the data and wait for new instructions
+	 */
+	void reset();
+
+
 private:
 	/**
 	 * @brief This function tests if these two Polygons are planar
