@@ -91,6 +91,7 @@ bool PolygonFusion<VertexT, NormalT>::doFusion(std::vector<PolyRegion> &output)
 		typename std::vector<PolyRegion>::iterator polyregion_iter;
 		for( polyregion_iter = regions.begin(); polyregion_iter != regions.end(); ++polyregion_iter )
 		{
+			// only try to fuse, if this region has a label
 			if ( (*polyregion_iter).getLabel() != "unknown" )
 			{
 				// if prelabel already exists in map, just push back PolyGroup, else create
@@ -107,6 +108,11 @@ bool PolygonFusion<VertexT, NormalT>::doFusion(std::vector<PolyRegion> &output)
 					tmp_regions.push_back((*polyregion_iter));
 					m_polyregionmap.insert(std::pair<std::string, std::vector<PolyRegion> >((*polyregion_iter).getLabel(), tmp_regions));
 				}
+			}
+			// store the unknown regions
+			else
+			{
+				output.push_back((*polyregion_iter));
 			}
 		}
 	}
@@ -554,6 +560,7 @@ boost::geometry::model::polygon<boost::geometry::model::d2::point_xy<float> > Po
 	bool first_it;
 	bool first_poly = true;
 
+	// we need some stringstreams to build the BoostPolygons
 	std::stringstream res_poly_ss;
 	res_poly_ss << "POLYGON(";
 	std::stringstream first_poly_ss;
@@ -611,7 +618,7 @@ boost::geometry::model::polygon<boost::geometry::model::d2::point_xy<float> > Po
 		std::string test_poly_str = "POLYGON(";
 		test_poly_str.append(poly_ss.str());
 		test_poly_str.append(")");
-std::cout << "TestPolygon: " << test_poly_str << std::endl;
+
 		boost::geometry::read_wkt(test_poly_str, tmp_poly);
 
 		// if it is positive, do the polygon it the other direction (boost polygon style)
