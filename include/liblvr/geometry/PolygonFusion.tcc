@@ -40,22 +40,19 @@ void list_coordinates(Point const& p)
 
 template<typename VertexT, typename NormalT>
 PolygonFusion<VertexT, NormalT>::PolygonFusion() {
-	// TODO Auto-generated constructor stub
-	// noch in Options auslagern
-	m_distance_threshold = 0.05;
+	// TODO noch in Options auslagern
+	m_distance_threshold = 0.35;
 }
 
 
 template<typename VertexT, typename NormalT>
 PolygonFusion<VertexT, NormalT>::~PolygonFusion() {
-	// TODO Auto-generated destructor stub
+	reset();
 }
 
 
 template<typename VertexT, typename NormalT>
 void PolygonFusion<VertexT, NormalT>::addFusionMesh(PolygonMesh<VertexT, NormalT> mesh) {
-	// Hier stellt sich mir die Frage, ob wir jetzt gleich die Regionen in die Map eintragen
-	// oder erstmal die gesamten Meshes speichern und dann später bei der Fusion erst die Map benutzen?
 	m_meshes.push_back(mesh);
 }
 
@@ -63,7 +60,7 @@ void PolygonFusion<VertexT, NormalT>::addFusionMesh(PolygonMesh<VertexT, NormalT
 template<typename VertexT, typename NormalT>
 bool PolygonFusion<VertexT, NormalT>::doFusion(std::vector<PolyRegion> &output)
 {
-	// TODO Umbauen auf neue Struktur
+	// TODO Wenn alles fertig ist, die ganzen Ausgaben rausnehmen und Logger einbauen
 	std::cout << "Starting PolygonFusion with " << m_meshes.size() << " Polygons!!" << std::endl;
 
 	// 0.5) prepare map and other vectors
@@ -80,7 +77,7 @@ bool PolygonFusion<VertexT, NormalT>::doFusion(std::vector<PolyRegion> &output)
 	//polyRegionMap polygonsByRegion;
 
 	// step 1) put polyregions into bins according to labels
-	// TODO unknown regions!!
+	// TODO unknown regions!! (werden erstmal in den Output weitergeleitet
 	typename PolyMesh::iterator polymesh_iter;
 	//std::vector<lvr_tools::PolygonMesh>::iterator polymesh_iter;
 	for( polymesh_iter = m_meshes.begin(); polymesh_iter != m_meshes.end(); ++polymesh_iter )
@@ -325,7 +322,7 @@ bool PolygonFusion<VertexT, NormalT>::isPlanar(PolyRegion a, PolyRegion b)
 		}
 		else
 		{
-			std::cout << "******** COPLANAR!! Distance is " << distance << std::endl;
+			std::cout << "COPLANAR!! Distance is " << distance << std::endl;
 			/*
 			// TODO remove after testing
 			if ( polyfusion_first_publish )
