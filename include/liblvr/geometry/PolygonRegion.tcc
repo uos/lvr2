@@ -19,6 +19,7 @@ PolygonRegion<VertexT, NormalT>::PolygonRegion(std::vector<Polygon<VertexT, Norm
 	m_polygons = new_polygons;
 	m_normal   = normal;
 	m_label    = label;
+	calcBoundingBox();
 }
 
 
@@ -37,6 +38,17 @@ void PolygonRegion<VertexT, NormalT>::setPolygons(std::vector<Polygon<VertexT, N
 	m_polygons = new_polygons;
 	m_normal   = normal;
 	m_label    = label;
+	calcBoundingBox();
+}
+
+template<typename VertexT, typename NormalT>
+VertexT PolygonRegion<VertexT, NormalT>::getBoundMin() {
+	return m_bound_min;
+}
+
+template<typename VertexT, typename NormalT>
+VertexT PolygonRegion<VertexT, NormalT>::getBoundMax() {
+	return m_bound_max;
 }
 
 template<typename VertexT, typename NormalT>
@@ -78,6 +90,37 @@ Polygon<VertexT, NormalT> PolygonRegion<VertexT, NormalT>::getPolygon(){
 		Polygon<VertexT, NormalT> tmp;
 		return tmp;
 	}
+}
+
+template<typename VertexT, typename NormalT>
+void PolygonRegion<VertexT, NormalT>::calcBoundingBox()
+{
+	float minx = numeric_limits<float>::max();
+	float miny = numeric_limits<float>::max();
+	float minz = numeric_limits<float>::max();
+	float maxx = numeric_limits<float>::min();
+	float maxy = numeric_limits<float>::min();
+	float maxz = numeric_limits<float>::min();
+
+	typename vector<Polygon<VertexT, NormalT> >::iterator it;
+	for(it = m_polygons.begin() ; it != m_polygons.end() ; ++it)
+	{
+		typename std::vector<VertexT>::iterator it_p;
+		std::vector<VertexT> points = it->getVertices();
+		for(it_p = points.begin() ; it_p != points.end() ; ++it_p)
+		{
+			if      ((*it_p).x < minx) minx = (*it_p).x;
+			else if ((*it_p).x > maxx) maxx = (*it_p).x;
+
+			if      ((*it_p).y < miny) miny = (*it_p).y;
+			else if ((*it_p).y > maxy) maxy = (*it_p).y;
+
+			if      ((*it_p).z < minz) minz = (*it_p).z;
+			else if ((*it_p).z > maxz) maxz = (*it_p).z;
+		}
+	}
+	m_bound_min = VertexT(minx, miny, minz);
+	m_bound_max = VertexT(maxx, maxy, maxz);
 }
 
 
