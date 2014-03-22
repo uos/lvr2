@@ -260,6 +260,31 @@ bool PolygonFusion<VertexT, NormalT>::isPlanar(PolyRegion a, PolyRegion b)
 	// To-Do Umbauen für die neuen Typen (Polygon statt msg:Polygon)
 	bool coplanar = true;
 
+	// at first, make boundingbox-check
+	VertexT min_a = a.getBoundMin();
+	VertexT min_b = b.getBoundMin();
+	VertexT max_a = a.getBoundMax();
+	VertexT max_b = b.getBoundMax();
+
+	// include the distance_threshold
+	VertexT dist_thres(m_distance_threshold, m_distance_threshold, m_distance_threshold);
+	min_a -= dist_thres;
+	max_a += dist_thres;
+	min_b -= dist_thres;
+	max_b += dist_thres;
+
+	// TODO Ich glaube, mit der Abfragen werden noch nicht alle Fälle abgefangen
+	// check BoundingBoxes, if they overlap
+	if( max_a.x < min_b.x || max_a.y < min_b.y || max_a.z < min_b.z ) coplanar = false;
+	else if( max_b.x < min_a.x || max_b.y < min_a.y || max_b.z < min_a.z ) coplanar = false;
+
+	if(!coplanar)
+	{
+		std::cout << "************* Nicht Coplanar, da BoundingBox-check false zurueckliefert." << std::endl;
+		return coplanar;
+	}
+
+	// Now, check real coplanarity
 	NormalT norm_a;
 	VertexT point_a;
 	norm_a = a.getNormal();

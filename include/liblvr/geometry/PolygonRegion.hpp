@@ -78,6 +78,19 @@ public:
 	 */
 	std::string getLabel();
 
+	/**
+	 * @brief Return the lower left point of its BoundingBox
+	 *
+	 * @return lower left point of its BoundingBox
+	 */
+	VertexT getBoundMin();
+
+	/**
+	 * @brief Return the upper right point of its BoundingBox
+	 *
+	 * @return lower upper right of its BoundingBox
+	 */
+	VertexT getBoundMax();
 
 	/**
 	 * @brief Setter for the label
@@ -101,6 +114,7 @@ public:
 
 
 private:
+	void calcBoundingBox();
 	// List of all Polygons, the first one is the outer Polygon of this Region
 	std::vector<Polygon<VertexT, NormalT>> m_polygons;
 
@@ -109,6 +123,10 @@ private:
 
 	// Normal of this Region
 	NormalT m_normal;
+
+	// Edges of the BoundingBox
+	VertexT m_bound_min;
+	VertexT m_bound_max;
 
 };
 
