@@ -153,19 +153,11 @@ bool PolygonFusion<VertexT, NormalT>::doFusion(std::vector<PolyRegion> &output)
 		typename std::vector<PolyRegion>::iterator region_iter;
 		for( region_iter = polyregions.begin(); region_iter != polyregions.end(); )
 		{
-			std::cout << "still need to process " << (polyregions.size() - (count++)) <<
+			std::cout << "still need to process " << (polyregions.size() - (count)) <<
 					" / " << polyregions.size() << " outer PolygonRegions" << std::endl;
 
 			// assume there exists at least least one coplanar region
 			coplanar_regions.push_back((*region_iter));
-
-//			if ( polyfusion_first_publish )
-//			{
-//				lvr_tools::PolygonMesh pm;
-//				pm.header.frame_id = (*region_iter).header.frame_id;
-//				pm.header.stamp = (*region_iter).header.stamp;
-//				pm.polyregions.push_back()
-//			}
 
 			typename std::vector<PolyRegion>::iterator coplanar_iter;
 			for( coplanar_iter = polyregions.begin(); coplanar_iter != polyregions.end(); )
@@ -173,7 +165,7 @@ bool PolygonFusion<VertexT, NormalT>::doFusion(std::vector<PolyRegion> &output)
 				// do not compare a polygon to itself
 				if ( region_iter != coplanar_iter )
 				{
-					// do stuff
+					// if they are coplanar,
 					if ( isPlanar((*region_iter), (*coplanar_iter)) )
 					{
 						coplanar_regions.push_back((*coplanar_iter));
@@ -216,7 +208,7 @@ bool PolygonFusion<VertexT, NormalT>::doFusion(std::vector<PolyRegion> &output)
 				normal /= nPoints;
 
 
-				fuse(coplanar_regions, output);
+				fuse(coplanar_regions, fused_regions);
 				std::cout << "YEAH YEAH YEAH, die Fusion ist durchgelaufen" << std::endl;
 				// transform
 				// do fusion
@@ -227,8 +219,25 @@ bool PolygonFusion<VertexT, NormalT>::doFusion(std::vector<PolyRegion> &output)
 
 			// increment region iterator
 			region_iter = polyregions.erase(region_iter);
+
+			// store the fused polygonregions in the output vector
+			typename std::vector<PolyRegion>::iterator out_it;
+			for(out_it = fused_regions.begin() ; out_it != fused_regions.end() ; ++out_it)
+			{
+				output.push_back((*out_it));
+			}
+			fused_regions.clear();
+		} // end for Polyregions with same label
+
+		// store the fused polygonregions in the output vector
+		typename std::vector<PolyRegion>::iterator out_it;
+		for(out_it = nonplanar_regions.begin() ; out_it != nonplanar_regions.end() ; ++out_it)
+		{
+			output.push_back((*out_it));
 		}
-	}
+		nonplanar_regions.clear();
+	} // end for map
+
 
 	// done!
 
@@ -349,13 +358,16 @@ std::cout << "fuse wurde aufgerufen" << std::endl;
 
 	// normalize centroid
 	centroid /= ransac_points.size();
+	std::cout << "Mittelpunkt der uebergebenen Punkte ist: " << centroid << std::endl;
 
 	// calc best fit plane with ransac
 	akSurface akss;
 
+	// TODO die Ausgleichsebene nicht nur durch die Anzahl der Punkte gewichten sondern auch durch den
+	//      Flächeninhalt der Polygone
 	Plane<VertexT, NormalT> plane;
 	bool ransac_success = true;
-	plane = akss.calcPlaneRANSACfromPoints(ransac_points.at(0), ransac_points.size(), ransac_points, ransac_success);
+	plane = akss.calcPlaneRANSACfromPoints(centroid, ransac_points.size(), ransac_points, ransac_success);
 
 	if (!ransac_success)
 	{
