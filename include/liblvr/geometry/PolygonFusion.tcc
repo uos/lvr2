@@ -111,6 +111,7 @@ bool PolygonFusion<VertexT, NormalT>::doFusion(std::vector<PolyRegion> &output)
 		}
 	}
 	std::cout << "Aufteilen der Regionen nach ihren labeln abgeschlossen" << std::endl;
+	std::cout << "Es gibt insgesamt (eines davon ist 'unknown') "<< m_polyregionmap.size() << " verschiedene Label." << std::endl;
 /*
 // debug stuff
 	// Anzeigen von allen Polygonen mit gleichem Label
@@ -140,7 +141,7 @@ bool PolygonFusion<VertexT, NormalT>::doFusion(std::vector<PolyRegion> &output)
 	typename PolyRegionMap::iterator map_iter;
 	for( map_iter = m_polyregionmap.begin(); map_iter != m_polyregionmap.end(); ++map_iter )
 	{
-		std::cout << "trying to fuse " << (*map_iter).second.size() << " polygons with regionlabel: " <<  (*map_iter).first << std::endl;
+		std::cout << "******* Trying to fuse " << (*map_iter).second.size() << " polygons with regionlabel: " <<  (*map_iter).first << std::endl;
 
 		std::vector<PolyRegion> polyregions = (*map_iter).second;
 
@@ -190,10 +191,11 @@ bool PolygonFusion<VertexT, NormalT>::doFusion(std::vector<PolyRegion> &output)
 				}
 			}
 
-			std::cout << "Es wurden Coplanare polygone gefunden und werden gefused: " << coplanar_regions.size() << std::endl;
-			// assumption was wrong, no coplanar region
+
+			// assumption was wrong, no coplanar region for this PolygonRegion
 			if ( coplanar_regions.size() == 1 )
 			{
+				std::cout << "Es wurden keine coplanaren Polygone gefunden, also speicher das Polygon in nonplanar" << std::endl;
 				nonplanar_regions.push_back((*region_iter));
 				coplanar_regions.clear();
 			}
@@ -201,8 +203,8 @@ bool PolygonFusion<VertexT, NormalT>::doFusion(std::vector<PolyRegion> &output)
 			else
 			{
 				// hier haben wir in coplanar_regions mehr als eine polyregion, die zusammen passend
-
-				// gemittelte normale berechnen
+				std::cout << "Es wurden " << coplanar_regions.size() << " Coplanare polygone gefunden und werden gefused." << std::endl;
+				// calc averaged normal for all polygonregions
 				size_t nPoints = 0;
 				VertexT normal;
 				typename vector<PolyRegion>::iterator region_iter;
@@ -324,6 +326,7 @@ template<typename VertexT, typename NormalT>
 bool PolygonFusion<VertexT, NormalT>::fuse(std::vector<PolyRegion> coplanar_polys, std::vector<PolygonRegion<VertexT, NormalT>> &result){
 	// TODO Boost Fusion hier implementieren und
 std::cout << "fuse wurde aufgerufen" << std::endl;
+
 	// we need all points from the polygons, so we can calculate a best fit plane
 	std::vector<VertexT> ransac_points;
 	VertexT centroid;
@@ -378,9 +381,10 @@ std::cout << "fuse wurde aufgerufen" << std::endl;
 	Eigen::Matrix4f trans_mat_inv;
 
 std::cout << "***********Input von calcTransform: " << std::endl;
-std::cout << plane.p;
-std::cout << vec1;
-std::cout << vec2;
+std::cout << "Stuetzvektor   : " << plane.p;
+std::cout << "Normale        : " << plane.n;
+std::cout << "Richtungsvektor: " << vec1;
+std::cout << "Richtungsvektor: " << vec2;
 	trans_mat = calcTransform(plane.p, vec1, vec2);
 
 	// need transform from 3D to 2D and back from 2D to 3D
