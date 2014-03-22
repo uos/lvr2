@@ -876,5 +876,12 @@ PolygonRegion<VertexT, NormalT> PolygonFusion<VertexT, NormalT>::transformto3Dlv
 }
 
 
+template<typename VertexT, typename NormalT>
+void PolygonFusion<VertexT, NormalT>::reset()
+{
+	m_polyregionmap.clear();
+	m_meshes.clear();
+}
+
 } // Ende of namespace lvr
 
