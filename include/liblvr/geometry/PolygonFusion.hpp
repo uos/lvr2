@@ -16,14 +16,17 @@
 #include <boost/foreach.hpp>
 
 #include <Eigen/Core>
-
+//lvr include
 #include "geometry/Vertex.hpp"
 #include "geometry/Normal.hpp"
 #include "geometry/PolygonRegion.hpp"
 #include "geometry/PolygonMesh.hpp"
 #include "reconstruction/AdaptiveKSearchSurface.hpp"
+// std includes
 #include <vector>
 #include <map>
+#include <sstream>
+#include <string>
 
 // lvr includes
 #include "io/Timestamp.hpp"
