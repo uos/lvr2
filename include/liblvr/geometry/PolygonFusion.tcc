@@ -109,6 +109,7 @@ bool PolygonFusion<VertexT, NormalT>::doFusion(std::vector<PolyRegion> &output)
 			// store the unknown regions
 			else
 			{
+				// if you only want the labeled Regions in the output-vector, removed this command
 				output.push_back((*polyregion_iter));
 			}
 		}
