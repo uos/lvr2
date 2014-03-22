@@ -698,11 +698,6 @@ Plane<VertexT, NormalT> AdaptiveKSearchSurface<VertexT, NormalT>::calcPlaneRANSA
             point2 = VertexT(points[index[1]][0], points[index[1]][1], points[index[1]][2]);
             point3 = VertexT(points[index[2]][0], points[index[2]][1], points[index[2]][2]);
 
-            if( (point1 != point2) && (point2 != point3) && (point3 != point1) )
-            {
-                break;
-            }
-
             //compute normal of the plane given by the 3 points
             n0 = (point1 - point2).cross(point1 - point3);
             n0.normalize();
@@ -715,6 +710,10 @@ Plane<VertexT, NormalT> AdaptiveKSearchSurface<VertexT, NormalT>::calcPlaneRANSA
                 cout << "DL " << k << endl;
                 ok = false;
                 return p;
+            }
+            if( (point1 != point2) && (point2 != point3) && (point3 != point1) )
+            {
+                break;
             }
         }
         while(true);
@@ -734,7 +733,7 @@ Plane<VertexT, NormalT> AdaptiveKSearchSurface<VertexT, NormalT>::calcPlaneRANSA
         if(dist < bestdist)
         {
             bestdist = dist;
-
+std::cout << "Setzen Normale auf: " << n0 << std::endl;
             bestpoint = point1;
             bestNorm = n0;
 
@@ -746,14 +745,17 @@ Plane<VertexT, NormalT> AdaptiveKSearchSurface<VertexT, NormalT>::calcPlaneRANSA
         }
 
         iterations++;
-    }
+    } // end while
 
     // Save plane parameters
     p.a = 0;
     p.b = 0;
     p.c = 0;
     p.n = bestNorm;
-    p.p = bestpoint;
+    // TODO bestpoint oder Mittelpunkt? Mittelpunkt liefert mit Testpolygonen bessere Ergebnisse
+    //      Mittelpunkt in den Entscheidungsprozess um bestpoint mit einbauen! Uebergabe sonst unnoetig
+    //p.p = bestpoint;
+    p.p = queryPoint;
 
     return p;
 }
