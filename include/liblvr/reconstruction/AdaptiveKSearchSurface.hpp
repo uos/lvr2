@@ -144,7 +144,7 @@ public:
 	 */
 	Plane<VertexT, NormalT> calcPlaneRANSACfromPoints(const VertexT &queryPoint,
 	        const int &k,
-	        vector<VertexT> points, bool &ok);
+	        vector<VertexT> points, NormalT c_normal, bool &ok);
 
 
     /**
