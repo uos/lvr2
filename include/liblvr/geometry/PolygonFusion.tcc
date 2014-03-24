@@ -659,6 +659,7 @@ Eigen::Matrix4f PolygonFusion<VertexT, NormalT>::calcTransform(VertexT a, Vertex
 template<typename VertexT, typename NormalT>
 boost::geometry::model::polygon<boost::geometry::model::d2::point_xy<float> > PolygonFusion<VertexT, NormalT>::transformto2DBoost(PolyRegion a, Eigen::Matrix4f trans)
 {
+	// TODO boost::beometry::correct - Einbauen, spart die staendigen Abfragen und umdrehen von Polygonen bzw. Loechern
 	std::cout << "transformto2DBoost aufgerufen" << std::endl;
 
 	BoostPolygon result, tmp_poly;
