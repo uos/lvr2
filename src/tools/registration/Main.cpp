@@ -36,6 +36,8 @@ int main(int argc, char** argv)
 {
 	try
 	{
+
+	    float euler[6];
 		// Parse command line arguments
 		registration::Options options(argc, argv);
 		cout << options;
@@ -52,9 +54,11 @@ int main(int argc, char** argv)
 		Matrix4f transformation(position, angle);
 
 		ICPPointAlign align(modelModel->m_pointCloud, dataModel->m_pointCloud, transformation);
+		align.setMaxIterations(options.getMaxIterations());
+		align.setMaxMatchDistance(options.getMaxDistance());
 		Matrix4f correction = align.match();
 
-		float euler[6];
+
 		correction.toPostionAngle(euler);
 
 		cout << "Pose: " << euler[0] << " " << euler[1] << " " << euler[2] << " " << euler[3] << " " << euler[4] << " " << euler[5] << endl;
