@@ -26,6 +26,9 @@
 #include "registration/EigenSVDPointAlign.hpp"
 #include "io/Timestamp.hpp"
 
+#include <fstream>
+using std::ofstream;
+
 namespace lvr
 {
 
@@ -50,8 +53,9 @@ Matrix4f ICPPointAlign::match()
         return Matrix4f();
     }
 
-    // Reset transformation
-    m_transformation = Matrix4f();
+    // Quick hack
+    ofstream pose1("scan001.frames");
+    ofstream pose2("scan002.frames");
 
     double ret = 0.0, prev_ret = 0.0, prev_prev_ret = 0.0;
     EigenSVDPointAlign align;
@@ -66,6 +70,11 @@ Matrix4f ICPPointAlign::match()
         Vertexf         centroid_d;
         Matrix4f        transform;
         double          sum;
+
+        cout << i << endl;
+        cout << m_transformation;
+        cout << endl;
+
         PointPairVector pairs;
         getPointPairs(pairs, centroid_m, centroid_d, sum);
 
@@ -75,7 +84,15 @@ Matrix4f ICPPointAlign::match()
         // Apply transformation
         m_transformation *= transform;
 
-        cout << timestamp << "ICP Error is " << ret << " in iteration " << i << " / " << m_maxIterations << endl;
+        cout << timestamp << "ICP Error is " << ret << " in iteration " << i << " / " << m_maxIterations << " using " << pairs.size() << " points."<< endl;
+
+        pose1 << "1 0 0 0 0 1 0 0 0 0 1 0 0 0 0 1 2" << endl;
+
+        for(int j = 0; j < 16; j++)
+        {
+            pose2 << m_transformation[j] << " ";
+        }
+        pose2 << "1" << endl;
 
         // Check minimum distance
         if ((fabs(ret - prev_ret) < m_epsilon) && (fabs(ret - prev_prev_ret) < m_epsilon))
@@ -105,11 +122,12 @@ void ICPPointAlign::getPointPairs(PointPairVector& pairs, Vertexf& centroid_m, V
         for(int i = 0; i < m_dataCloud->getNumPoints(); i++)
         {
             // Get vertex representation of current data point
-            Vertexf queryPoint(dataPoints[i * 3], dataPoints[i * 3 + 1], dataPoints[i * 3 + 2]);
+            Vertexf dataPoint(dataPoints[i * 3], dataPoints[i * 3 + 1], dataPoints[i * 3 + 2]);
+            Vertexf queryPoint = m_transformation * dataPoint;
 
             // Perform inverse transformation on query point to
             // it's position relative to the model point data
-            Vertexf inverseQueryPoint = transformInv * queryPoint;
+            Vertexf inverseQueryPoint = transformInv * dataPoint;
 
             // Get closest point to "inverse query point"
             neighbors.clear();
@@ -122,8 +140,8 @@ void ICPPointAlign::getPointPairs(PointPairVector& pairs, Vertexf& centroid_m, V
                 Vertexf closest = m_transformation * neighbors[0];
                 if( (closest - queryPoint).length2() < m_maxDistanceMatch)
                 {
-                    centroid_dP += closest;
-                    centroid_mP += queryPoint;
+                    centroid_dP += queryPoint;
+                    centroid_mP += closest;
 
                     sum += (closest - queryPoint).length2();
 
@@ -139,14 +157,14 @@ void ICPPointAlign::getPointPairs(PointPairVector& pairs, Vertexf& centroid_m, V
         {
             centroid_d += centroid_dP;
             centroid_m += centroid_mP;
-            centroid_m /= pairs.size();
-            centroid_d /= pairs.size();
         }
         else
         {
             cout << timestamp << "Warning: ICPPointAlign::getPointPairs(): No correspondences found." << endl;
         }
     }
+    centroid_m /= pairs.size();
+    centroid_d /= pairs.size();
 }
 
 ICPPointAlign::~ICPPointAlign()

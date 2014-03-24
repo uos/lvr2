@@ -35,6 +35,7 @@
 #include <boost/filesystem.hpp>
 
 // lvr includes
+#include "geometry/VertexTraits.hpp"
 
 using std::cout;
 using std::endl;

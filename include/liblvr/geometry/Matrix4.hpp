@@ -454,7 +454,7 @@ public:
 	/**
 	 * @brief   Returns the matrix's determinant
 	 */
-	ValueType& det()
+	ValueType det()
 	{
 	    ValueType det, result = 0, i = 1.0;
 	    ValueType Msub3[9];
