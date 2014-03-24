@@ -89,8 +89,8 @@ bool PolygonFusion<VertexT, NormalT>::doFusion(std::vector<PolyRegion> &output)
 		for( polyregion_iter = regions.begin(); polyregion_iter != regions.end(); ++polyregion_iter )
 		{
 			// only try to fuse, if this region has a label
-			if ( (*polyregion_iter).getLabel() != "unknown" )
-			{
+//			if ( (*polyregion_iter).getLabel() != "unknown" )
+//			{
 				// if prelabel already exists in map, just push back PolyGroup, else create
 				typename PolyRegionMap::iterator it;
 				it = m_polyregionmap.find((*polyregion_iter).getLabel());
@@ -105,13 +105,13 @@ bool PolygonFusion<VertexT, NormalT>::doFusion(std::vector<PolyRegion> &output)
 					tmp_regions.push_back((*polyregion_iter));
 					m_polyregionmap.insert(std::pair<std::string, std::vector<PolyRegion> >((*polyregion_iter).getLabel(), tmp_regions));
 				}
-			}
+//			}
 			// store the unknown regions
-			else
-			{
-				// if you only want the labeled Regions in the output-vector, removed this command
-				output.push_back((*polyregion_iter));
-			}
+//			else
+//			{
+//				// if you only want the labeled Regions in the output-vector, removed this command
+//				output.push_back((*polyregion_iter));
+//			}
 		}
 	}
 	std::cout << "Aufteilen der Regionen nach ihren labeln abgeschlossen" << std::endl;
