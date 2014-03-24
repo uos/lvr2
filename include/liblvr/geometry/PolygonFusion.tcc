@@ -365,16 +365,18 @@ bool PolygonFusion<VertexT, NormalT>::isPlanar(PolyRegion a, PolyRegion b)
 template<typename VertexT, typename NormalT>
 bool PolygonFusion<VertexT, NormalT>::fuse(std::vector<PolyRegion> coplanar_polys, std::vector<PolygonRegion<VertexT, NormalT>> &result){
 	// TODO Boost Fusion hier implementieren und
-std::cout << "fuse wurde aufgerufen" << std::endl;
+std::cout << "fuse wurde aufgerufen mit Label:" << coplanar_polys[0].getLabel() << std::endl;
 
 	// we need all points from the polygons, so we can calculate a best fit plane
+	int c_count = 0;
 	std::vector<VertexT> ransac_points;
 	VertexT centroid(0.0, 0.0, 0.0);
 	NormalT c_normal(0.0, 0.0, 0.0);
 	typename std::vector<PolyRegion>::iterator region_iter;
 	for(region_iter = coplanar_polys.begin(); region_iter != coplanar_polys.end(); ++region_iter)
 	{
-		c_normal += region_iter->getNormal();
+		c_normal += (region_iter->getNormal() * region_iter->getSize());
+		c_count += region_iter->getSize();
 		std::vector<Polygon<VertexT, NormalT> > polygons = region_iter->getPolygons();
 		typename std::vector<Polygon<VertexT, NormalT> >::iterator poly_iter;
 		for(poly_iter = polygons.begin(); poly_iter != polygons.end(); ++poly_iter)
@@ -390,6 +392,8 @@ std::cout << "fuse wurde aufgerufen" << std::endl;
 	}
 
 	// normalize centroid
+	c_normal /= c_count;
+	c_normal.normalize();
 	centroid /= ransac_points.size();
 	std::cout << "Mittelpunkt der uebergebenen Punkte ist: " << centroid << std::endl;
 
@@ -431,6 +435,7 @@ std::cout << "Normale        : " << plane.n;
 std::cout << "Richtungsvektor: " << vec1;
 std::cout << "Richtungsvektor: " << vec2;
 	trans_mat = calcTransform(plane.p, vec1, vec2);
+
 
 	// need transform from 3D to 2D and back from 2D to 3D
 	trans_mat_inv = trans_mat.inverse();
