@@ -60,42 +60,42 @@ public:
 
     double getEpsilon() const
     {
-        m_variables["epsilon"].as<double>();
+        return m_variables["epsilon"].as<double>();
     }
 
     double getMaxDistance() const
     {
-        m_variables["maxDistance"].as<double>();
+        return m_variables["maxDistance"].as<double>();
     }
 
     double getRx() const
     {
-        m_variables["rx"].as<double>();
+        return m_variables["rx"].as<double>() * 0.0175453293;
     }
 
     double getRy() const
     {
-        m_variables["ry"].as<double>();
+        return m_variables["ry"].as<double>() * 0.0175453293;
     }
 
     double getRz() const
     {
-        m_variables["rz"].as<double>();
+        return m_variables["rz"].as<double>() * 0.0175453293;
     }
 
     double getTx() const
     {
-        m_variables["tx"].as<double>();
+        return m_variables["tx"].as<double>();
     }
 
     double getTy() const
     {
-        m_variables["ty"].as<double>();
+        return m_variables["ty"].as<double>();
     }
 
     double getTz() const
     {
-        m_variables["tz"].as<double>();
+        return m_variables["tz"].as<double>();
     }
 
     int getMaxIterations() const

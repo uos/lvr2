@@ -27,6 +27,7 @@
 
 #include "registration/EigenSVDPointAlign.hpp"
 #include "reconstruction/SearchTreeFlann.hpp"
+#include "reconstruction/SearchTreeStann.hpp"
 #include "geometry/Matrix4.hpp"
 
 namespace lvr
@@ -52,6 +53,7 @@ public:
 protected:
 
     void getPointPairs(PointPairVector& pairs, Vertexf& centroid_m, Vertexf& centroid_d, double& sum);
+    void transform();
 
     double                              m_epsilon;
     double                              m_maxDistanceMatch;
