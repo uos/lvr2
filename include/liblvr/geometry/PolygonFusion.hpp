@@ -156,6 +156,8 @@ private:
 
 	double			m_distance_threshold;
 
+	double 			m_simplify_dist;
+
 
 
 	Timestamp ts;

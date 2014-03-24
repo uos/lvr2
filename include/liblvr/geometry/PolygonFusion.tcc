@@ -42,6 +42,7 @@ template<typename VertexT, typename NormalT>
 PolygonFusion<VertexT, NormalT>::PolygonFusion() {
 	// TODO noch in Options auslagern
 	m_distance_threshold = 0.35;
+	m_simplify_dist = 0.5;
 }
 
 
@@ -443,66 +444,139 @@ std::cout << "**********PolygonRegion vor der Transformation*********" << std::e
 	{
 		// transform and fuse
 // debug output
-		std::vector<Polygon<VertexT, NormalT>> points=  poly_iter->getPolygons();
-		typename std::vector<Polygon<VertexT, NormalT>>::iterator its;
-		cout << "Region hat " << points.size() << " Polygone" << std::endl;
-		for(its = points.begin() ; its != points.end() ; ++its)
-		{
-			std::vector<cVertex> vert = its->getVertices();
-			std::vector<cVertex>::iterator it2;
-			cout << "Polygon hat " << vert.size() << " Punkte" << std::endl;
-			for(it2 = vert.begin() ; it2 != vert.end() ; ++it2)
-			{
-				cout << "x: " << (*it2).x << "  y: " << (*it2).y << "  z: " << (*it2).z << endl;
-			}
-		}
+//		std::vector<Polygon<VertexT, NormalT>> points=  poly_iter->getPolygons();
+//		typename std::vector<Polygon<VertexT, NormalT>>::iterator its;
+//		cout << "Region hat " << points.size() << " Polygone" << std::endl;
+//		for(its = points.begin() ; its != points.end() ; ++its)
+//		{
+//			std::vector<cVertex> vert = its->getVertices();
+//			std::vector<cVertex>::iterator it2;
+//			cout << "Polygon hat " << vert.size() << " Punkte" << std::endl;
+//			for(it2 = vert.begin() ; it2 != vert.end() ; ++it2)
+//			{
+//				cout << "x: " << (*it2).x << "  y: " << (*it2).y << "  z: " << (*it2).z << endl;
+//			}
+//		}
 //end debug
 		input.push_back(transformto2DBoost((*poly_iter), trans_mat));
 	}
 
 // debug
-	std::cout << "????????? BoostPolygone vor der union" << std::endl;
-	int l = 0;
-	BOOST_FOREACH(BoostPolygon const& p, input)
-	{
-	    std::cout << boost::geometry::wkt(p) << std::endl;
-	    //std::cout << i++ << ": " << boost::geometry::area(p) << std::endl;
-	    std::cout << "not union-polygon " << l++ << " has area " << boost::geometry::area(p) << std::endl;
-	}
+//	std::cout << "????????? BoostPolygone vor der union" << std::endl;
+//	int l = 0;
+//	BOOST_FOREACH(BoostPolygon const& p, input)
+//	{
+//	    std::cout << boost::geometry::wkt(p) << std::endl;
+//	    //std::cout << i++ << ": " << boost::geometry::area(p) << std::endl;
+//	    std::cout << "before union-polygon " << l++ << " has area " << boost::geometry::area(p) << std::endl;
+//	}
 // debug ende
 
 	// TODO Sonderfall abfangen, wenn Union "Fehlschlaegt", da man dann nicht weiß mit welchem
 	// Polygon die Vereinigung gemacht werden soll
 	bool first_it = true;
+	std::vector<BoostPolygon> intersectors;
 	typename std::vector<BoostPolygon>::iterator input_iter;
 	for(input_iter = input.begin(); input_iter != input.end(); ++input_iter)
 	{
+		BoostPolygon simplified_a, simplified_b;
 		// transform and fuse
 		if(first_it)
 		{
-			first_it = false;
-			output.push_back((*input_iter));
-		}
-		else
-		{
-			BoostPolygon tmp;
-			// get the first polygon and erase it, if not there are double polys in the output-vec
-			if (output.size() == 1)
+			if(boost::geometry::intersects((*input_iter)))
 			{
-				tmp = output[0];
-				output.clear();
+				std::cout << "Erstes Poly hat intersections" << std::endl;
+				// TODO behandeln von Polygonen, die intersections haben (Auftreten an Intersectionspoint)
+				//intersectors.push_back((*input_iter));
+				boost::geometry::simplify((*input_iter), simplified_a, m_simplify_dist);
+				output.push_back(simplified_a);
 			}
 			else
 			{
-				// TODO nicht immer nur den ersten nehmen, am besten groessten???
-				tmp = output[0];
-				output.erase(output.begin());
+				first_it = false;
+				output.push_back((*input_iter));
 			}
-			cout << "Boost should union them all" << endl;
-			boost::geometry::union_(tmp, (*input_iter) , output);
+		}
+		else
+		{
+			if(boost::geometry::intersects((*input_iter)))
+			{
+				std::cout << "Poly hat intersections" << std::endl;
+				// TODO behandeln von Polygonen, die intersections haben (Auftreten an Intersectionspoint)
+				//intersectors.push_back((*input_iter));
+				boost::geometry::simplify((*input_iter), simplified_b, m_simplify_dist);
+
+				BoostPolygon tmp;
+				// get the first polygon and erase it, if not there are double polys in the output-vec
+				if (output.size() == 1)
+				{
+					tmp = output[0];
+					output.clear();
+				}
+				else
+				{
+					// TODO nicht immer nur den ersten nehmen, am besten groessten???
+					tmp = output[0];
+					output.erase(output.begin());
+				}
+				if(boost::geometry::intersects(tmp))
+				{
+					std::cout << "Output_vec Poly hat intersections" << std::endl;
+					boost::geometry::simplify(output[0], tmp, m_simplify_dist);
+				}
+				cout << "Boost should union them all" << endl;
+				try
+				{
+					boost::geometry::union_(tmp, simplified_b , output);
+				}
+				catch(...)
+				{
+					std::cout << "Exception von boost_union gefangen" << std::endl;
+					if(output.size() == 0) output.push_back(tmp);
+					intersectors.push_back(simplified_b);
+				}
+			}
+			else
+			{
+				BoostPolygon tmp;
+				// get the first polygon and erase it, if not there are double polys in the output-vec
+				if (output.size() == 1)
+				{
+					tmp = output[0];
+					output.clear();
+				}
+				else
+				{
+					// TODO nicht immer nur den ersten nehmen, am besten groessten???
+					tmp = output[0];
+					output.erase(output.begin());
+				}
+				if(boost::geometry::intersects(tmp))
+				{
+					std::cout << "Output_vec Poly hat intersections" << std::endl;
+					boost::geometry::simplify(output[0], tmp, m_simplify_dist);
+				}
+				cout << "Boost should union them all" << endl;
+				try
+				{
+					boost::geometry::union_(tmp, (*input_iter) , output);
+				}
+				catch(...)
+				{
+					std::cout << "Exception von boost_union gefangen" << std::endl;
+					if(boost::geometry::intersects(tmp)) intersectors.push_back(tmp);
+					output.push_back((*input_iter));
+				}
+			}
 		}
 
 	}
+
+//	std::cout << "***************************** boostfusion: " << intersectors.size() << " / " << input.size() << std::endl;
+//	for(input_iter = intersectors.begin(); input_iter != intersectors.end(); ++input_iter)
+//	{
+//		output.push_back((*input_iter));
+//	}
 
 
 // debug
