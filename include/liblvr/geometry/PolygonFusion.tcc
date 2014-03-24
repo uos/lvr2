@@ -61,7 +61,7 @@ template<typename VertexT, typename NormalT>
 bool PolygonFusion<VertexT, NormalT>::doFusion(std::vector<PolyRegion> &output)
 {
 	// TODO Wenn alles fertig ist, die ganzen Ausgaben rausnehmen und Logger einbauen
-	std::cout << "Starting PolygonFusion with " << m_meshes.size() << " Polygons!!" << std::endl;
+	std::cout << "Starting PolygonFusion with " << m_meshes.size() << " PolygonMeshes!!" << std::endl;
 
 	// 0.5) prepare map and other vectors
 	// 1) put polyregions into bins according to labels
@@ -115,7 +115,7 @@ bool PolygonFusion<VertexT, NormalT>::doFusion(std::vector<PolyRegion> &output)
 		}
 	}
 	std::cout << "Aufteilen der Regionen nach ihren labeln abgeschlossen" << std::endl;
-	std::cout << "Es gibt insgesamt (eines davon ist 'unknown') "<< m_polyregionmap.size() << " verschiedene Label." << std::endl;
+	std::cout << "Es gibt insgesamt ('unknown' wird nicht betrachtet) "<< m_polyregionmap.size()  << " verschiedene Label." << std::endl;
 /*
 // debug stuff
 	// Anzeigen von allen Polygonen mit gleichem Label
@@ -172,12 +172,14 @@ bool PolygonFusion<VertexT, NormalT>::doFusion(std::vector<PolyRegion> &output)
 					// if they are coplanar,
 					if ( isPlanar((*region_iter), (*coplanar_iter)) )
 					{
+						std::cout << "Polygone sind Coplanar, fuege hinzu" << std::endl;
 						coplanar_regions.push_back((*coplanar_iter));
 						// remove element from vector
 						coplanar_iter = polyregions.erase(coplanar_iter);
 					}
 					else
 					{
+						std::cout << "Polygone sind nicht Coplanar, betrachte es nicht" << std::endl;
 						++coplanar_iter;
 					}
 				}
@@ -199,10 +201,10 @@ bool PolygonFusion<VertexT, NormalT>::doFusion(std::vector<PolyRegion> &output)
 			else
 			{
 				// hier haben wir in coplanar_regions mehr als eine polyregion, die zusammen passend
-				std::cout << "Es wurden " << coplanar_regions.size() << " Coplanare polygone gefunden und werden gefused." << std::endl;
+				std::cout << "\nEs wurden " << coplanar_regions.size() << " Coplanare polygone gefunden und werden gefused." << std::endl;
 				// calc averaged normal for all polygonregions
 				size_t nPoints = 0;
-				VertexT normal;
+				VertexT normal(0.0,0.0,0.0);
 				typename vector<PolyRegion>::iterator region_iter;
 				for ( region_iter = coplanar_regions.begin(); region_iter != coplanar_regions.end(); ++region_iter )
 				{
@@ -211,14 +213,9 @@ bool PolygonFusion<VertexT, NormalT>::doFusion(std::vector<PolyRegion> &output)
 				}
 				normal /= nPoints;
 
-
+				// Try to fuse alle coplanar regions at once
 				fuse(coplanar_regions, fused_regions);
 				std::cout << "YEAH YEAH YEAH, die Fusion ist durchgelaufen" << std::endl;
-				// transform
-				// do fusion
-				// transform back
-				// push_back
-				// erase
 			}
 
 			// increment region iterator
@@ -230,7 +227,10 @@ bool PolygonFusion<VertexT, NormalT>::doFusion(std::vector<PolyRegion> &output)
 			{
 				output.push_back((*out_it));
 			}
+
+			// clear the container
 			fused_regions.clear();
+			coplanar_regions.clear();
 		} // end for Polyregions with same label
 
 		// store the fused polygonregions in the output vector
@@ -273,8 +273,9 @@ bool PolygonFusion<VertexT, NormalT>::isPlanar(PolyRegion a, PolyRegion b)
 
 	// TODO Ich glaube, mit der Abfragen werden noch nicht alle Fälle abgefangen
 	// check BoundingBoxes, if they overlap
-	if( max_a.x < min_b.x || max_a.y < min_b.y || max_a.z < min_b.z ) coplanar = false;
-	else if( max_b.x < min_a.x || max_b.y < min_a.y || max_b.z < min_a.z ) coplanar = false;
+	if ( max_a.x < min_b.x || min_a.x > max_b.x ) coplanar = false;
+	if ( max_a.y < min_b.y || min_a.y > max_b.y ) coplanar = false;
+	if ( max_a.z < min_b.z || min_a.z > max_b.z ) coplanar = false;
 
 	if(!coplanar)
 	{
@@ -367,10 +368,12 @@ std::cout << "fuse wurde aufgerufen" << std::endl;
 
 	// we need all points from the polygons, so we can calculate a best fit plane
 	std::vector<VertexT> ransac_points;
-	VertexT centroid;
+	VertexT centroid(0.0, 0.0, 0.0);
+	NormalT c_normal(0.0, 0.0, 0.0);
 	typename std::vector<PolyRegion>::iterator region_iter;
 	for(region_iter = coplanar_polys.begin(); region_iter != coplanar_polys.end(); ++region_iter)
 	{
+		c_normal += region_iter->getNormal();
 		std::vector<Polygon<VertexT, NormalT> > polygons = region_iter->getPolygons();
 		typename std::vector<Polygon<VertexT, NormalT> >::iterator poly_iter;
 		for(poly_iter = polygons.begin(); poly_iter != polygons.end(); ++poly_iter)
@@ -396,7 +399,7 @@ std::cout << "fuse wurde aufgerufen" << std::endl;
 	//      Flächeninhalt der Polygone
 	Plane<VertexT, NormalT> plane;
 	bool ransac_success = true;
-	plane = akss.calcPlaneRANSACfromPoints(centroid, ransac_points.size(), ransac_points, ransac_success);
+	plane = akss.calcPlaneRANSACfromPoints(centroid, ransac_points.size(), ransac_points, c_normal, ransac_success);
 
 	if (!ransac_success)
 	{
