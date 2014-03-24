@@ -701,16 +701,16 @@ Plane<VertexT, NormalT> AdaptiveKSearchSurface<VertexT, NormalT>::calcPlaneRANSA
 
             //compute normal of the plane given by the 3 points (look at the end)
 
-//            if(c > 0)
-//            {
-//            	n0 = (point1 - point2).cross(point1 - point3);
-//            	n0.normalize();
-//            }
-//            else
-//            {
-//            	n0 = c_normal;
-//            	n0.normalize();
-//            }
+            if(c > 0)
+            {
+            	n0 = (point1 - point2).cross(point1 - point3);
+            	n0.normalize();
+            }
+            else
+            {
+            	n0 = c_normal;
+            	n0.normalize();
+            }
             c++;
 
             if( (point1 != point2) && (point2 != point3) && (point3 != point1) )
