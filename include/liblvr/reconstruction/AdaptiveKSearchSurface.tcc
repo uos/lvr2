@@ -652,6 +652,7 @@ template<typename VertexT, typename NormalT>
 Plane<VertexT, NormalT> AdaptiveKSearchSurface<VertexT, NormalT>::calcPlaneRANSACfromPoints(const VertexT &queryPoint,
         const int &k,
         const vector<VertexT> points,
+        NormalT c_normal,
         bool &ok)
 {
 
@@ -671,10 +672,10 @@ Plane<VertexT, NormalT> AdaptiveKSearchSurface<VertexT, NormalT>::calcPlaneRANSA
     int iterations              = 0;
     int nonimproving_iterations = 0;
 
-  //  int max_nonimproving = max(5, k / 2);
-    int max_interations  = 10;
+    int max_interations = max(10, k / 2);
+    //int max_interations  = 10;
 
-    while((nonimproving_iterations < 3) && (iterations < max_interations))
+    while((nonimproving_iterations < 5) && (iterations < max_interations))
     {
         NormalT n0;
         //randomly choose 3 disjoint points
@@ -698,22 +699,30 @@ Plane<VertexT, NormalT> AdaptiveKSearchSurface<VertexT, NormalT>::calcPlaneRANSA
             point2 = VertexT(points[index[1]][0], points[index[1]][1], points[index[1]][2]);
             point3 = VertexT(points[index[2]][0], points[index[2]][1], points[index[2]][2]);
 
-            //compute normal of the plane given by the 3 points
-            n0 = (point1 - point2).cross(point1 - point3);
-            n0.normalize();
+            //compute normal of the plane given by the 3 points (look at the end)
 
+//            if(c > 0)
+//            {
+//            	n0 = (point1 - point2).cross(point1 - point3);
+//            	n0.normalize();
+//            }
+//            else
+//            {
+//            	n0 = c_normal;
+//            	n0.normalize();
+//            }
             c++;
 
+            if( (point1 != point2) && (point2 != point3) && (point3 != point1) )
+            {
+                break;
+            }
             // Check for deadlock
             if(c > 50)
             {
                 cout << "DL " << k << endl;
                 ok = false;
                 return p;
-            }
-            if( (point1 != point2) && (point2 != point3) && (point3 != point1) )
-            {
-                break;
             }
         }
         while(true);
@@ -741,6 +750,7 @@ std::cout << "Setzen Normale auf: " << n0 << std::endl;
         }
         else
         {
+        	std::cout << "Setzen Normale nicht auf: " << n0 << " Abstand war zu gross"<< std::endl;
             nonimproving_iterations++;
         }
 
@@ -751,7 +761,8 @@ std::cout << "Setzen Normale auf: " << n0 << std::endl;
     p.a = 0;
     p.b = 0;
     p.c = 0;
-    p.n = bestNorm;
+    // TODO komisch, aber die gemittelte Normale liefert bessere Werte als die berechnete...
+    p.n = c_normal;//bestNorm;
     // TODO bestpoint oder Mittelpunkt? Mittelpunkt liefert mit Testpolygonen bessere Ergebnisse
     //      Mittelpunkt in den Entscheidungsprozess um bestpoint mit einbauen! Uebergabe sonst unnoetig
     //p.p = bestpoint;
