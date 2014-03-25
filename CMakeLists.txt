@@ -236,7 +236,7 @@ endif(MPI_FOUND)
 
 if(CGAL_FOUND)
 add_subdirectory(src/tools/cgal_reconstruction)
-#add_subdirectory(src/tools/fusion)
+add_subdirectory(src/tools/fusion)
 add_subdirectory(src/tools/slicer)
 endif(CGAL_FOUND)
 
