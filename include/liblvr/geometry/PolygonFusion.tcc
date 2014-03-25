@@ -513,24 +513,47 @@ std::cout << "Richtungsvektor: " << vec2;
 					// TODO nicht immer nur den ersten nehmen, am besten groessten???
 					tmp = output[0];
 					output.erase(output.begin());
-				}
-				if(boost::geometry::intersects(tmp))
-				{
-					std::cout << "Output_vec Poly hat intersections" << std::endl;
-					boost::geometry::simplify(output[0], tmp, m_simplify_dist);
+
+					if(boost::geometry::intersects(tmp))
+					{
+						std::cout << "Output_vec Poly hat intersections" << std::endl;
+						boost::geometry::simplify(output[0], tmp, m_simplify_dist);
+					}
 				}
 				cout << "Boost should union them all" << endl;
+
+				// try to catch exception from boost union, problem with intersections
 				try
 				{
 					boost::geometry::union_(tmp, simplified_b , output);
 				}
+				// TODO hier können noch viele unbehandelte Sonderfälle auftreten
 				catch(...)
 				{
 					std::cout << "Exception von boost_union gefangen" << std::endl;
-					if(output.size() == 0) output.push_back(tmp);
-					intersectors.push_back(simplified_b);
+					if(output.size() == 0)
+					{
+						if (boost::geometry::intersects(simplified_b))
+						{
+							intersectors.push_back(simplified_b);
+						}
+						else output.push_back(simplified_b);
+
+						if (boost::geometry::intersects(tmp))
+						{
+							intersectors.push_back(tmp);
+							if(output.size() == 0) first_it = true;
+						}
+						else output.push_back(tmp);
+					}
+					else
+					{
+						intersectors.push_back(tmp);
+						intersectors.push_back(simplified_b);
+					}
 				}
 			}
+			// current poly has no intersections
 			else
 			{
 				BoostPolygon tmp;
@@ -565,14 +588,13 @@ std::cout << "Richtungsvektor: " << vec2;
 			}
 		}
 
+	} // end for Boostpolygone
+
+	std::cout << "***************************** boostfusion: " << intersectors.size() << " / " << input.size() << std::endl;
+	for(input_iter = intersectors.begin(); input_iter != intersectors.end(); ++input_iter)
+	{
+		result.push_back((*input_iter));
 	}
-
-//	std::cout << "***************************** boostfusion: " << intersectors.size() << " / " << input.size() << std::endl;
-//	for(input_iter = intersectors.begin(); input_iter != intersectors.end(); ++input_iter)
-//	{
-//		output.push_back((*input_iter));
-//	}
-
 
 // debug
 	int i = 0;
