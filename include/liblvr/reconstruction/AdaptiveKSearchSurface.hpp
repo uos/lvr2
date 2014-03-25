@@ -121,6 +121,8 @@ public:
             const int &kd = 10,
             const bool &useRansac = false );
 
+    AdaptiveKSearchSurface();
+
 	/**
 	 * @brief   Destructor
 	 */
@@ -130,6 +132,19 @@ public:
      * @brief Returns the number of managed points
      */
     virtual size_t getNumPoints();
+
+	/**
+	 * @brief Calculates a tangent plane for the query point using the provided
+	 *        k-neighborhood
+	 *
+	 * @param queryPoint    The point for which the tangent plane is created
+	 * @param k             The size of the used k-neighborhood
+	 * @param points        The neighborhood points
+	 * @param ok            True, if RANSAC interpolation was succesfull
+	 */
+	Plane<VertexT, NormalT> calcPlaneRANSACfromPoints(const VertexT &queryPoint,
+	        const int &k,
+	        vector<VertexT> points, NormalT c_normal, bool &ok);
 
 
     /**
@@ -251,7 +266,7 @@ private:
 	 * @brief Calculates a tangent plane for the query point using the provided
 	 *        k-neighborhood
 	 *
-	 * @param queryPoint    The point fpr which the tangent plane is created
+	 * @param queryPoint    The point for which the tangent plane is created
 	 * @param k             The size of the used k-neighborhood
 	 * @param id            The positions of the neighborhood points in \ref m_points
 	 * @param ok            True, if RANSAC interpolation was succesfull
@@ -266,7 +281,7 @@ private:
 
 
 	/// The centroid of the point set
-	VertexT               		m_centroid;
+	VertexT                    m_centroid;
 
     /// Should a randomized algorithm be used to determine planes?
 	bool                        m_useRANSAC;
