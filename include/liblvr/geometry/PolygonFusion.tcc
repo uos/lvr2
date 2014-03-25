@@ -424,9 +424,22 @@ bool PolygonFusion<VertexT, NormalT>::fuse(std::vector<PolyRegion> coplanar_poly
 	// TODO Hier aufpassen, wenn vec1 oder vec2 genau die Normalen ist, bzw parallel
 	VertexT vec1(1, 2, 3);
 	VertexT vec2(3, 2, 1);
+	VertexT check_vec(0.0, 0.0, 0.0);
 
-	vec1 = vec1.cross(plane.n);
-	vec2 = vec2.cross(plane.n);
+	vec1.crossTo(plane.n);
+	vec2.crossTo(plane.n);
+
+	//check if vec1 or vec 2 was paralell or equal
+	if(check_vec == vec1)
+	{
+		VertexT tmp(2, 2, 3);
+		vec1 = tmp.cross(plane.n);
+	}
+	else if(check_vec == vec2)
+	{
+		VertexT tmp(2, 2, 3);
+		vec2 = tmp.cross(plane.n);
+	}
 
 	vec1 += plane.p;
 	vec2 += plane.p;
@@ -706,8 +719,13 @@ boost::geometry::model::polygon<boost::geometry::model::d2::point_xy<float> > Po
 		test_poly_str.append(poly_ss.str());
 		test_poly_str.append(")");
 
-//		std::cout << "vorm TestPolygon: " << test_poly_str << std::endl;
 		boost::geometry::read_wkt(test_poly_str, tmp_poly);
+
+		//flush data
+		first_poly_ss.str("");
+		first_poly_ss.clear();
+		poly_ss.str("");
+		poly_ss.clear();
 
 		// if it is positive, do the polygon it the other direction (boost polygon style)
 		if(first_poly)
