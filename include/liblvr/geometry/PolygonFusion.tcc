@@ -590,27 +590,28 @@ std::cout << "Richtungsvektor: " << vec2;
 
 	} // end for Boostpolygone
 
-	std::cout << "***************************** boostfusion: " << intersectors.size() << " / " << input.size() << std::endl;
-	for(input_iter = intersectors.begin(); input_iter != intersectors.end(); ++input_iter)
-	{
-		result.push_back((*input_iter));
-	}
 
 // debug
-	int i = 0;
-    BOOST_FOREACH(BoostPolygon const& p, output)
-    {
-        std::cout << boost::geometry::wkt(p) << std::endl;
-        //std::cout << i++ << ": " << boost::geometry::area(p) << std::endl;
-        std::cout << "union-polygon " << i++ << " has area " << boost::geometry::area(p) << std::endl;
-    }
+//	int i = 0;
+//    BOOST_FOREACH(BoostPolygon const& p, output)
+//    {
+//        std::cout << boost::geometry::wkt(p) << std::endl;
+//        //std::cout << i++ << ": " << boost::geometry::area(p) << std::endl;
+//        std::cout << "union-polygon " << i++ << " has area " << boost::geometry::area(p) << std::endl;
+//    }
 // debug ende
 
+	std::cout << "***************************** boostfusion: " << intersectors.size() << " / " << input.size() << std::endl;
+	// store the unfused polygonregions in the output vec and transform them into 3D
+	for(input_iter = intersectors.begin(); input_iter != intersectors.end(); ++input_iter)
+	{
+		result.push_back(transformto3Dlvr((*input_iter),trans_mat_inv));
+	}
 
+	// transform the fused polygonregion in 3D and store then in the output vec
 	typename std::vector<BoostPolygon>::iterator output_iter;
 	for(output_iter = output.begin(); output_iter != output.end(); ++output_iter)
 	{
-		std::cout << "Also im OutputVektor von fuse sollte was drinstehen" << std::endl;
 		result.push_back(transformto3Dlvr((*output_iter), trans_mat_inv));
 	}
 
