@@ -226,6 +226,11 @@ public:
 	virtual void fillHoles(size_t max_size);
 
 	/**
+	 * @brief Reset used variables. Otherwise the getContours() function might not work quite as expected.
+	 */
+	virtual void resetUsedFlags();
+
+	/**
 	 * restores the position of every triangle in a plane if it has been modified
 	 *
 	 * @param minRegionSize		The minimum size of a region
@@ -309,6 +314,9 @@ private:
 
 	/// a pointer to the point cloud manager
 	typename PointsetSurface<VertexT>::Ptr   m_pointCloudManager;
+
+	/// map for labeled faces
+	labeledFacesMap labeledFaces;
 
 	/**
 	 * @brief   Returns an edge that point to the edge defined
@@ -443,6 +451,17 @@ private:
 	 * @brief	Calculates costs for every vertex in the mesh
 	 */
 	void getCostMap(std::map<VertexPtr, float> &costs, VertexCosts<VertexT, NormalT> &c);
+
+	/**
+	 * @brief calls the Classifier with every single region
+	 */
+	void LabelRegions();
+
+
+	/**
+	 * @brief assign label buffer ids
+	 */
+	void assignLBI();
 
 
 	friend class ClassifierFactory<VertexT, NormalT>;
