@@ -112,7 +112,7 @@ bool PolygonFusion<VertexT, NormalT>::doFusion(std::vector<PolyRegion> &output)
 			else
 			{
 				// if you only want the labeled Regions in the output-vector, removed this command
-				output.push_back((*polyregion_iter));
+				//output.push_back((*polyregion_iter));
 			}
 		}
 	}
@@ -247,7 +247,7 @@ bool PolygonFusion<VertexT, NormalT>::doFusion(std::vector<PolyRegion> &output)
 template<typename VertexT, typename NormalT>
 bool PolygonFusion<VertexT, NormalT>::isPlanar(PolyRegion a, PolyRegion b)
 {
-	std::cout << "IsPlanar wurde aufgerufen" << std::endl;
+//	std::cout << "IsPlanar wurde aufgerufen" << std::endl;
 	// To-Do Umbauen für die neuen Typen (Polygon statt msg:Polygon)
 	bool coplanar = true;
 
@@ -271,7 +271,7 @@ bool PolygonFusion<VertexT, NormalT>::isPlanar(PolyRegion a, PolyRegion b)
 
 	if(!coplanar)
 	{
-		std::cout << "************* Nicht Coplanar, da BoundingBox-check false zurueckliefert." << std::endl;
+//		std::cout << "************* Nicht Coplanar, da BoundingBox-check false zurueckliefert." << std::endl;
 		return coplanar;
 	}
 
@@ -358,7 +358,7 @@ bool PolygonFusion<VertexT, NormalT>::isPlanar(PolyRegion a, PolyRegion b)
 template<typename VertexT, typename NormalT>
 bool PolygonFusion<VertexT, NormalT>::fuse(std::vector<PolyRegion> coplanar_polys, std::vector<PolygonRegion<VertexT, NormalT>> &result)
 {
-	std::cout << "fuse wurde aufgerufen mit Label:" << coplanar_polys[0].getLabel() << std::endl;
+//	std::cout << "fuse wurde aufgerufen mit Label: " << coplanar_polys[0].getLabel() << std::endl;
 
 	// we need all points from the polygons, so we can calculate a best fit plane
 	int c_count = 0;
@@ -391,7 +391,8 @@ bool PolygonFusion<VertexT, NormalT>::fuse(std::vector<PolyRegion> coplanar_poly
 	c_normal /= c_count;
 	c_normal.normalize();
 	centroid /= ransac_points.size();
-	std::cout << "Mittelpunkt der uebergebenen Punkte ist: " << centroid << std::endl;
+//	std::cout << "Mittelpunkt der uebergebenen Punkte ist: " << centroid << std::endl;
+//	std::cout << "Normale (gemittelt) der uebergebenen Punkte ist: " << c_normal << std::endl;
 
 	// calc best fit plane with ransac
 	akSurface akss;
@@ -438,11 +439,11 @@ bool PolygonFusion<VertexT, NormalT>::fuse(std::vector<PolyRegion> coplanar_poly
 	Eigen::Matrix4f trans_mat;
 	Eigen::Matrix4f trans_mat_inv;
 
-std::cout << "***********Input von calcTransform: " << std::endl;
-std::cout << "Stuetzvektor   : " << plane.p;
-std::cout << "Normale        : " << plane.n;
-std::cout << "Richtungsvektor: " << vec1;
-std::cout << "Richtungsvektor: " << vec2;
+//std::cout << "***********Input von calcTransform: " << std::endl;
+//std::cout << "Stuetzvektor   : " << plane.p;
+//std::cout << "Normale        : " << plane.n;
+//std::cout << "Richtungsvektor: " << vec1;
+//std::cout << "Richtungsvektor: " << vec2;
 	trans_mat = calcTransform(plane.p, vec1, vec2);
 
 
@@ -464,16 +465,18 @@ std::cout << "Richtungsvektor: " << vec2;
 	bool first_it = true;
 	std::vector<BoostPolygon> intersectors;
 
+	int count = 0;
 	typename std::vector<BoostPolygon>::iterator input_iter;
 	for(input_iter = input.begin(); input_iter != input.end(); ++input_iter)
 	{
+//		std::cout << "Debug: versuch " << count++ << " von " << input.size() << " miteinander zu fusionieren" << std::endl;
 		BoostPolygon simplified_a, simplified_b;
 		// transform and fuse
 		if(first_it)
 		{
 			if(boost::geometry::intersects((*input_iter)))
 			{
-				std::cout << "Erstes Poly hat intersections" << std::endl;
+//				std::cout << "Erstes Poly hat intersections" << std::endl;
 				boost::geometry::simplify((*input_iter), simplified_a, m_simplify_dist);
 				output.push_back(simplified_a);
 				first_it = false;
@@ -484,11 +487,12 @@ std::cout << "Richtungsvektor: " << vec2;
 				output.push_back((*input_iter));
 			}
 		}
+		else if(output.size() == 0) first_it = true;
 		else
 		{
 			if(boost::geometry::intersects((*input_iter)))
 			{
-				std::cout << "Poly hat intersections" << std::endl;
+//				std::cout << "Poly hat intersections" << std::endl;
 				boost::geometry::simplify((*input_iter), simplified_b, m_simplify_dist);
 
 				BoostPolygon tmp;
@@ -506,21 +510,22 @@ std::cout << "Richtungsvektor: " << vec2;
 
 					if(boost::geometry::intersects(tmp))
 					{
-						std::cout << "Output_vec Poly hat intersections" << std::endl;
+//						std::cout << "Output_vec Poly hat intersections" << std::endl;
 						boost::geometry::simplify(output[0], tmp, m_simplify_dist);
 					}
 				}
-				cout << "Boost should union them all" << endl;
+//				cout << "Boost should union them all" << endl;
 
 				// try to catch exception from boost union, problem with intersections
 				try
 				{
 					boost::geometry::union_(tmp, simplified_b , output);
+//					cout << "Boost fused them all, with intersections" << endl;
 				}
 				// TODO hier können noch viele unbehandelte Sonderfälle auftreten
 				catch(...)
 				{
-					std::cout << "Exception von boost_union gefangen" << std::endl;
+//					std::cout << "Exception von boost_union gefangen" << std::endl;
 					if(output.size() == 0)
 					{
 						if (boost::geometry::intersects(simplified_b))
@@ -532,12 +537,13 @@ std::cout << "Richtungsvektor: " << vec2;
 						if (boost::geometry::intersects(tmp))
 						{
 							intersectors.push_back(tmp);
-							if(output.size() == 0) first_it = true;
+							first_it = true;
 						}
 						else output.push_back(tmp);
 					}
 					else
 					{
+						// TODO hier muss noch weiter probiert werden und nicht alle weg
 						intersectors.push_back(tmp);
 						intersectors.push_back(simplified_b);
 					}
@@ -546,37 +552,42 @@ std::cout << "Richtungsvektor: " << vec2;
 			// current poly has no intersections
 			else
 			{
-				BoostPolygon tmp;
+//				std::cout << "Polygon ohne intersections" << std::endl;
+				BoostPolygon fuse_poly;
 				// get the first polygon and erase it, if not there are double polys in the output-vec
 				if (output.size() == 1)
 				{
-					tmp = output[0];
+//					std::cout << "1" << std::endl;
+					fuse_poly = output[0];
 					output.clear();
 				}
 				else
 				{
+//					std::cout << "2 mit size: " << output.size() << std::endl;
 					// TODO nicht immer nur den ersten nehmen, am besten groessten???
-					tmp = output[0];
+					fuse_poly = output[0];
 					output.erase(output.begin());
 				}
-				if(boost::geometry::intersects(tmp))
+				if(boost::geometry::intersects(fuse_poly))
 				{
-					std::cout << "Output_vec Poly hat intersections" << std::endl;
-					boost::geometry::simplify(output[0], tmp, m_simplify_dist);
+//					std::cout << "Output_vec Poly hat intersections" << std::endl;
+					BoostPolygon tmp = fuse_poly;
+					boost::geometry::simplify(tmp, fuse_poly, m_simplify_dist);
 				}
-				cout << "Boost should union them all" << endl;
+//				cout << "Boost should union them all" << endl;
 				try
 				{
-					boost::geometry::union_(tmp, (*input_iter) , output);
+					boost::geometry::union_(fuse_poly, (*input_iter) , output);
+//					cout << "Boost fused them all, nice one mit size: " << output.size() << endl;
 				}
 				catch(...)
 				{
-					std::cout << "Exception von boost_union gefangen" << std::endl;
-					if(boost::geometry::intersects(tmp)) intersectors.push_back(tmp);
+//					std::cout << "Exception von boost_union gefangen" << std::endl;
+					if(boost::geometry::intersects(fuse_poly)) intersectors.push_back(fuse_poly);
 					output.push_back((*input_iter));
 				}
 			}
-		}
+		} // end if else first_it
 
 	} // end for Boostpolygone
 
@@ -591,7 +602,7 @@ std::cout << "Richtungsvektor: " << vec2;
 //    }
 // debug ende
 
-	std::cout << "***************************** boostfusion: " << intersectors.size() << " / " << input.size() << std::endl;
+//	std::cout << "boostfusion (how much were intersectet): " << intersectors.size() << " / " << input.size() << std::endl;
 	// store the unfused polygonregions in the output vec and transform them into 3D
 	for(input_iter = intersectors.begin(); input_iter != intersectors.end(); ++input_iter)
 	{
@@ -664,7 +675,7 @@ boost::geometry::model::polygon<boost::geometry::model::d2::point_xy<float> > Po
 {
 	// TODO boost::beometry::correct - Einbauen, spart die staendigen Abfragen und umdrehen von Polygonen bzw. Loechern
 	// TODO Ablauf schön machen, unnötiges flushes und sowas
-	std::cout << "transformto2DBoost aufgerufen" << std::endl;
+//	std::cout << "transformto2DBoost aufgerufen mit polyregion_size: " << a.getSize() << std::endl;
 
 	BoostPolygon result, tmp_poly;
 	bool first_it;
@@ -748,7 +759,7 @@ boost::geometry::model::polygon<boost::geometry::model::d2::point_xy<float> > Po
 				poly_ss.str("");
 				poly_ss.clear();
 
-				std::cout << "falsche Richtung bei ersten Polygon, da area:" << boost::geometry::area(tmp_poly) << std::endl;
+//				std::cout << "falsche Richtung bei ersten Polygon, da area:" << boost::geometry::area(tmp_poly) << std::endl;
 				first_it = true;
 
 				// get all vertices from this polygon
@@ -796,7 +807,7 @@ boost::geometry::model::polygon<boost::geometry::model::d2::point_xy<float> > Po
 			poly_ss.str("");
 			poly_ss.clear();
 
-			std::cout << "andere Richtung bei inneren" << std::endl;
+//			std::cout << "andere Richtung bei inneren" << std::endl;
 			//boost::reverse(tmp_poly);
 			first_it = true;
 
@@ -842,14 +853,15 @@ boost::geometry::model::polygon<boost::geometry::model::d2::point_xy<float> > Po
 
 	boost::geometry::read_wkt(res_poly_ss.str(), result);
 
-	std::cout << "transformto2DBoost durchgelaufen" << std::endl;
+//	std::cout << "transformto2DBoost durchgelaufen mit:" << std::endl;
+	std::cout << boost::geometry::wkt(result) << std::endl;
 	return result;
 }
 
 template<typename VertexT, typename NormalT>
 PolygonRegion<VertexT, NormalT> PolygonFusion<VertexT, NormalT>::transformto3Dlvr(BoostPolygon poly, Eigen::Matrix4f trans){
 	// TODO Transformation von 2D in 3D und Umwandlung von Boost_Polygon in lvr::PolygonRegion
-	std::cout << "transformto3Dlvr aufgerufgen" << std::endl;
+//	std::cout << "transformto3Dlvr aufgerufgen" << std::endl;
     typedef boost::geometry::model::d2::point_xy<float> point;
     using boost::geometry::get;
 
@@ -903,7 +915,7 @@ PolygonRegion<VertexT, NormalT> PolygonFusion<VertexT, NormalT>::transformto3Dlv
 
     		if(x == f_x && y == f_y)
     		{
-    			std::cout << "Ein Polygon ist vollstaendig, da letzter und ersten Punkt gleich sind" << std::endl;
+//    			std::cout << "Ein Polygon ist vollstaendig, da letzter und ersten Punkt gleich sind" << std::endl;
     			Polygon<VertexT, NormalT> bla(point_vec);
     			poly_vec.push_back(bla);
     			point_vec.clear();
