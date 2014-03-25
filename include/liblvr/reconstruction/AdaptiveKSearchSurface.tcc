@@ -675,6 +675,7 @@ Plane<VertexT, NormalT> AdaptiveKSearchSurface<VertexT, NormalT>::calcPlaneRANSA
     int max_interations = max(10, k / 2);
     //int max_interations  = 10;
 
+    bool first_it = true;
     while((nonimproving_iterations < 5) && (iterations < max_interations))
     {
         NormalT n0;
@@ -701,20 +702,22 @@ Plane<VertexT, NormalT> AdaptiveKSearchSurface<VertexT, NormalT>::calcPlaneRANSA
 
             //compute normal of the plane given by the 3 points (look at the end)
 
-            if(c > 0)
-            {
-            	n0 = (point1 - point2).cross(point1 - point3);
-            	n0.normalize();
-            }
-            else
-            {
-            	n0 = c_normal;
-            	n0.normalize();
-            }
+
+    		n0 = (point1 - point2).cross(point1 - point3);
+    		n0.normalize();
+
             c++;
 
             if( (point1 != point2) && (point2 != point3) && (point3 != point1) )
             {
+            	// at first, use interpolated normal
+            	NormalT check(0.0, 0.0, 0.0);
+            	if(first_it && !(check == c_normal))
+            	{
+            		n0 = c_normal;
+            		n0.normalize();
+            		first_it = false;
+            	}
                 break;
             }
             // Check for deadlock
@@ -762,11 +765,11 @@ std::cout << "Setzen Normale auf: " << n0 << std::endl;
     p.b = 0;
     p.c = 0;
     // TODO komisch, aber die gemittelte Normale liefert bessere Werte als die berechnete...
-    p.n = c_normal;//bestNorm;
+    p.n = bestNorm;//c_normal;
     // TODO bestpoint oder Mittelpunkt? Mittelpunkt liefert mit Testpolygonen bessere Ergebnisse
     //      Mittelpunkt in den Entscheidungsprozess um bestpoint mit einbauen! Uebergabe sonst unnoetig
     //p.p = bestpoint;
-    p.p = queryPoint;
+    p.p = bestpoint; //queryPoint;
 
     return p;
 }
