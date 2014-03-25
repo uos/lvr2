@@ -114,7 +114,11 @@ public:
 
 
 private:
+	/**
+	 * @brief Calculates the axis aligned BoundingBox for this Polygonregion
+	 */
 	void calcBoundingBox();
+
 	// List of all Polygons, the first one is the outer Polygon of this Region
 	std::vector<Polygon<VertexT, NormalT>> m_polygons;
 

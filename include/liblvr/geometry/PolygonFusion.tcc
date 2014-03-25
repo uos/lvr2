@@ -155,16 +155,17 @@ bool PolygonFusion<VertexT, NormalT>::doFusion(std::vector<PolyRegion> &output)
 		std::vector<PolyRegion> nonplanar_regions;
 		std::vector<PolyRegion> fused_regions;
 
-		size_t count = 0;
+
 		typename std::vector<PolyRegion>::iterator region_iter;
 		for( region_iter = polyregions.begin(); region_iter != polyregions.end(); )
 		{
-			std::cout << "still need to process " << (polyregions.size() - (count)) <<
+			std::cout << "still need to process " << polyregions.size()  <<
 					" / " << polyregions.size() << " outer PolygonRegions" << std::endl;
 
 			// assume there exists at least least one coplanar region
 			coplanar_regions.push_back((*region_iter));
 
+			// check all polygons with the same label, if they are coplanar to the actual polygon
 			typename std::vector<PolyRegion>::iterator coplanar_iter;
 			for( coplanar_iter = polyregions.begin(); coplanar_iter != polyregions.end(); )
 			{
@@ -174,14 +175,14 @@ bool PolygonFusion<VertexT, NormalT>::doFusion(std::vector<PolyRegion> &output)
 					// if they are coplanar,
 					if ( isPlanar((*region_iter), (*coplanar_iter)) )
 					{
-						std::cout << "Polygone sind Coplanar, fuege hinzu" << std::endl;
+//						std::cout << "Polygone sind Coplanar, fuege hinzu" << std::endl;
 						coplanar_regions.push_back((*coplanar_iter));
 						// remove element from vector
 						coplanar_iter = polyregions.erase(coplanar_iter);
 					}
 					else
 					{
-						std::cout << "Polygone sind nicht Coplanar, betrachte es nicht" << std::endl;
+//						std::cout << "Polygone sind nicht Coplanar, betrachte es nicht" << std::endl;
 						++coplanar_iter;
 					}
 				}
@@ -189,7 +190,7 @@ bool PolygonFusion<VertexT, NormalT>::doFusion(std::vector<PolyRegion> &output)
 				{
 					++coplanar_iter;
 				}
-			}
+			} // end for coplanar
 
 
 			// assumption was wrong, no coplanar region for this PolygonRegion
@@ -217,7 +218,7 @@ bool PolygonFusion<VertexT, NormalT>::doFusion(std::vector<PolyRegion> &output)
 
 				// Try to fuse alle coplanar regions at once
 				fuse(coplanar_regions, fused_regions);
-				std::cout << "YEAH YEAH YEAH, die Fusion ist durchgelaufen" << std::endl;
+				std::cout << "YEAH YEAH YEAH, die Fusion ist durchgelaufen fuer das label: " << (*map_iter).first << std::endl;
 			}
 
 			// increment region iterator
@@ -235,7 +236,7 @@ bool PolygonFusion<VertexT, NormalT>::doFusion(std::vector<PolyRegion> &output)
 			coplanar_regions.clear();
 		} // end for Polyregions with same label
 
-		// store the fused polygonregions in the output vector
+		// store the polygonregions without interest in the output vector
 		typename std::vector<PolyRegion>::iterator out_it;
 		for(out_it = nonplanar_regions.begin() ; out_it != nonplanar_regions.end() ; ++out_it)
 		{
@@ -266,7 +267,7 @@ bool PolygonFusion<VertexT, NormalT>::isPlanar(PolyRegion a, PolyRegion b)
 	VertexT max_a = a.getBoundMax();
 	VertexT max_b = b.getBoundMax();
 
-	// include the distance_threshold
+	// include the distance_threshold TODO macht man das so?
 	VertexT dist_thres(m_distance_threshold, m_distance_threshold, m_distance_threshold);
 	min_a -= dist_thres;
 	max_a += dist_thres;
