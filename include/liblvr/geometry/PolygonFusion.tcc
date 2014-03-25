@@ -41,7 +41,7 @@ void list_coordinates(Point const& p)
 template<typename VertexT, typename NormalT>
 PolygonFusion<VertexT, NormalT>::PolygonFusion() {
 	// TODO noch in Options auslagern
-	m_distance_threshold = 0.35;
+	m_distance_threshold = 0.15;
 	m_simplify_dist = 0.5;
 }
 
@@ -89,9 +89,9 @@ bool PolygonFusion<VertexT, NormalT>::doFusion(std::vector<PolyRegion> &output)
 		typename std::vector<PolyRegion>::iterator polyregion_iter;
 		for( polyregion_iter = regions.begin(); polyregion_iter != regions.end(); ++polyregion_iter )
 		{
-			// only try to fuse, if this region has a label
-//			if ( (*polyregion_iter).getLabel() != "unknown" )
-//			{
+			// only try to fuse, if this region has a label TODO was soll jetzt genau gefust werden
+			if ( (*polyregion_iter).getLabel() == "" )
+			{
 				// if prelabel already exists in map, just push back PolyGroup, else create
 				typename PolyRegionMap::iterator it;
 				it = m_polyregionmap.find((*polyregion_iter).getLabel());
@@ -106,13 +106,14 @@ bool PolygonFusion<VertexT, NormalT>::doFusion(std::vector<PolyRegion> &output)
 					tmp_regions.push_back((*polyregion_iter));
 					m_polyregionmap.insert(std::pair<std::string, std::vector<PolyRegion> >((*polyregion_iter).getLabel(), tmp_regions));
 				}
-//			}
+			}
 			// store the unknown regions
-//			else
-//			{
-//				// if you only want the labeled Regions in the output-vector, removed this command
-//				output.push_back((*polyregion_iter));
-//			}
+			else
+			{
+				// if you only want the labeled Regions in the output-vector, removed this command
+				// TODO wieder einkommentieren
+				output.push_back((*polyregion_iter));
+			}
 		}
 	}
 	std::cout << "Aufteilen der Regionen nach ihren labeln abgeschlossen" << std::endl;
@@ -701,7 +702,7 @@ boost::geometry::model::polygon<boost::geometry::model::d2::point_xy<float> > Po
 						trans(2,1) * pt.coeffRef(1) +
 						trans(2,2) * pt.coeffRef(2) +
 						trans(2,3) * pt.coeffRef(3);
-			std::cout << "******************* z-Wert: " << z << std::endl;
+//			std::cout << "******************* z-Wert: " << z << std::endl;
 
 
 			// transform in BoostPolygon
@@ -720,11 +721,14 @@ boost::geometry::model::polygon<boost::geometry::model::d2::point_xy<float> > Po
 		}
 		poly_ss << first_poly_ss.str() << ")";
 
+		first_poly_ss.str("");
+		first_poly_ss.clear();
 		// check every single polygon, if it conform to the boost-polygon-style
 		std::string test_poly_str = "POLYGON(";
 		test_poly_str.append(poly_ss.str());
 		test_poly_str.append(")");
 
+//		std::cout << "vorm TestPolygon: " << test_poly_str << std::endl;
 		boost::geometry::read_wkt(test_poly_str, tmp_poly);
 
 		// if it is positive, do the polygon it the other direction (boost polygon style)
@@ -826,6 +830,8 @@ boost::geometry::model::polygon<boost::geometry::model::d2::point_xy<float> > Po
 		}
 		// now, this "part" of the polygon can be added to the complete polygon
 		res_poly_ss << poly_ss.str();
+		first_poly_ss.str("");
+		first_poly_ss.clear();
 	}
 	res_poly_ss << ")";
 
