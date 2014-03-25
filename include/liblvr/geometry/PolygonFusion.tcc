@@ -290,9 +290,10 @@ bool PolygonFusion<VertexT, NormalT>::isPlanar(PolyRegion a, PolyRegion b)
 	// Now, check real coplanarity
 	NormalT norm_a;
 	VertexT point_a;
-	norm_a = a.getNormal();
-	// get the first vertex of the first polygon of this region
+
+	// get the first vertex of the first polygon of this region and the normal of this region
 	point_a = a.getPolygon().getVertices()[0];
+	norm_a = a.getNormal();
 
 	// normale * p = d
 	// a*x + b*y + c*z + d = 0
@@ -304,17 +305,18 @@ bool PolygonFusion<VertexT, NormalT>::isPlanar(PolyRegion a, PolyRegion b)
 	float p1_y = point_a.y;
 	float p1_z = point_a.z;
 
-	float d = -(n_x * p1_x + n_y * p1_y + n_z * p1_z);// / sqrt( n_x * n_x + n_y * n_y + n_z * n_z );
+	float d = - ((n_x * p1_x) + (n_y * p1_y) + (n_z * p1_z) );
 	float distance = 0.0;
 
-	std::cout << "Punkt ( " << p1_x << " ," <<
-			p1_y << ", " << p1_z << ") mit d = " << d << std::endl;
+//	std::cout << "Punkt ( " << p1_x << " ," <<
+//			p1_y << ", " << p1_z << ") mit d = " << d << std::endl;
 
 	std::vector<Polygon<VertexT, NormalT>> polygons_b;
 	polygons_b = b.getPolygons();
 
 
-// Frage: Wir betrachten hier nur das äußere Polygon, reicht das? Also ich glaub schon, da die ja eh auf einer Ebene liegen sollten
+// TODO Frage: Wir betrachten hier nur das äußere Polygon, reicht das? Also ich glaub schon, da die ja eh auf einer Ebene liegen sollten
+	// Check for all points from polyregion b, the point to plane (polyregion a) distance
 	std::vector<VertexT> check_me = polygons_b.at(0).getVertices();
 	typename std::vector<VertexT>::iterator point_iter;
 	for( point_iter = check_me.begin(); coplanar != false, point_iter != check_me.end(); ++point_iter )
