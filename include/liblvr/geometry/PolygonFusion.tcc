@@ -91,7 +91,7 @@ bool PolygonFusion<VertexT, NormalT>::doFusion(std::vector<PolyRegion> &output)
 		for( polyregion_iter = regions.begin(); polyregion_iter != regions.end(); ++polyregion_iter )
 		{
 			// only try to fuse, if this region has a label TODO was soll jetzt genau gefust werden
-			if ( (*polyregion_iter).getLabel() == "" )
+			if ( (*polyregion_iter).getLabel() != "unknown" )
 			{
 				// if prelabel already exists in map, just push back PolyGroup, else create
 				typename PolyRegionMap::iterator it;
@@ -205,16 +205,6 @@ bool PolygonFusion<VertexT, NormalT>::doFusion(std::vector<PolyRegion> &output)
 			{
 				// hier haben wir in coplanar_regions mehr als eine polyregion, die zusammen passend
 				std::cout << "\nEs wurden " << coplanar_regions.size() << " Coplanare polygone gefunden und werden gefused." << std::endl;
-				// calc averaged normal for all polygonregions
-				size_t nPoints = 0;
-				VertexT normal(0.0,0.0,0.0);
-				typename vector<PolyRegion>::iterator region_iter;
-				for ( region_iter = coplanar_regions.begin(); region_iter != coplanar_regions.end(); ++region_iter )
-				{
-					normal += (region_iter->getNormal() * region_iter->getSize());
-					nPoints += region_iter->getSize();
-				}
-				normal /= nPoints;
 
 				// Try to fuse alle coplanar regions at once
 				fuse(coplanar_regions, fused_regions);
@@ -248,7 +238,7 @@ bool PolygonFusion<VertexT, NormalT>::doFusion(std::vector<PolyRegion> &output)
 
 	// done!
 
-	return false;
+	return true;
 }
 
 
@@ -744,12 +734,8 @@ boost::geometry::model::polygon<boost::geometry::model::d2::point_xy<float> > Po
 
 		boost::geometry::read_wkt(test_poly_str, tmp_poly);
 
-		//flush data
 		first_poly_ss.str("");
 		first_poly_ss.clear();
-		poly_ss.str("");
-		poly_ss.clear();
-
 		// if it is positive, do the polygon it the other direction (boost polygon style)
 		if(first_poly)
 		{
