@@ -152,11 +152,17 @@ private:
 	// Vector for all data (Polygonmesh)
 	PolyRegionMap	m_polyregionmap;
 
+	// Vector for all Polymeshes
 	PolyMesh 		m_meshes;
 
+	// tresholt for coplanar check with best fit plane
 	double			m_distance_threshold;
 
+	// simplify distance for boost function simplify
 	double 			m_simplify_dist;
+
+	// thresholt for overlapping bounding box check
+	double 			m_distance_threshold_bounding;
 
 
 
