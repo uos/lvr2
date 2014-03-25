@@ -41,8 +41,9 @@ void list_coordinates(Point const& p)
 template<typename VertexT, typename NormalT>
 PolygonFusion<VertexT, NormalT>::PolygonFusion() {
 	// TODO noch in Options auslagern
-	m_distance_threshold = 0.15;
+	m_distance_threshold = 0.05;
 	m_simplify_dist = 0.5;
+	m_distance_threshold_bounding = 0.05;
 }
 
 
@@ -268,7 +269,7 @@ bool PolygonFusion<VertexT, NormalT>::isPlanar(PolyRegion a, PolyRegion b)
 	VertexT max_b = b.getBoundMax();
 
 	// include the distance_threshold TODO macht man das so?
-	VertexT dist_thres(m_distance_threshold, m_distance_threshold, m_distance_threshold);
+	VertexT dist_thres(m_distance_threshold_bounding, m_distance_threshold_bounding, m_distance_threshold_bounding);
 	min_a -= dist_thres;
 	max_a += dist_thres;
 	min_b -= dist_thres;
