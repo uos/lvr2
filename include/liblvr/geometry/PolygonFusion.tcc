@@ -23,7 +23,7 @@ public :
     inline void operator()(Point& p)
     {
         using boost::geometry::get;
-	std::cout << "Beim Auslesen: x = " << get<0>(p) << " y = " << get<1>(p) << std::endl;
+//	std::cout << "Beim Auslesen: x = " << get<0>(p) << " y = " << get<1>(p) << std::endl;
 	vec->push_back(p);
     }
 };
@@ -318,7 +318,7 @@ bool PolygonFusion<VertexT, NormalT>::isPlanar(PolyRegion a, PolyRegion b)
 		}
 		else
 		{
-			std::cout << "COPLANAR!! Distance is " << distance << std::endl;
+//			std::cout << "COPLANAR!! Distance is " << distance << std::endl;
 			/*
 			// TODO remove after testing
 			if ( polyfusion_first_publish )
@@ -350,8 +350,8 @@ bool PolygonFusion<VertexT, NormalT>::isPlanar(PolyRegion a, PolyRegion b)
 		}
 	}
 
-	if(coplanar) std::cout << "IsPlanar liefert true zurueck" << std::endl;
-	else         std::cout << "IsPlanar liefert false zurueck mit distance: " << distance << std::endl;
+//	if(coplanar) std::cout << "IsPlanar liefert true zurueck" << std::endl;
+//	else         std::cout << "IsPlanar liefert false zurueck mit distance: " << distance << std::endl;
 	return coplanar;
 }
 
@@ -854,7 +854,7 @@ boost::geometry::model::polygon<boost::geometry::model::d2::point_xy<float> > Po
 	boost::geometry::read_wkt(res_poly_ss.str(), result);
 
 //	std::cout << "transformto2DBoost durchgelaufen mit:" << std::endl;
-	std::cout << boost::geometry::wkt(result) << std::endl;
+//	std::cout << boost::geometry::wkt(result) << std::endl;
 	return result;
 }
 
