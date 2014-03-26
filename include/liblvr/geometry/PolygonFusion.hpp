@@ -164,6 +164,8 @@ private:
 	// thresholt for overlapping bounding box check
 	double 			m_distance_threshold_bounding;
 
+	int dirty_fix;
+
 
 
 	Timestamp ts;
