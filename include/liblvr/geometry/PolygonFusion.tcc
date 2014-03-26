@@ -713,25 +713,27 @@ boost::geometry::model::polygon<boost::geometry::model::d2::point_xy<float> > Po
 						trans(1,3) * pt.coeffRef(3);
 
 // Debug stuff, test if trans goes right
-//			float z = 	trans(2,0) * pt.coeffRef(0) +
-//						trans(2,1) * pt.coeffRef(1) +
-//						trans(2,2) * pt.coeffRef(2) +
-//						trans(2,3) * pt.coeffRef(3);
-//			std::cout << "******************* z-Wert: " << z << std::endl;
+			float z = 	trans(2,0) * pt.coeffRef(0) +
+						trans(2,1) * pt.coeffRef(1) +
+						trans(2,2) * pt.coeffRef(2) +
+						trans(2,3) * pt.coeffRef(3);
+			std::cout << "******************* x-Wert: " << x << std::endl;
+			std::cout << "******************* y-Wert: " << y << std::endl;
+			std::cout << "******************* z-Wert: " << z << std::endl;
 
 
 			// transform in BoostPolygon
 			if (first_it)
 			{
 				// save the first one, for closing the polygon
-				first_poly_ss << std::to_string(x) << " " << std::to_string(y);
+				first_poly_ss << std::to_string(x) << " " << std::to_string(z);
 				first_it = false;
 
-				poly_ss << "(" << std::to_string(x) << " " << std::to_string(y) << ", ";
+				poly_ss << "(" << std::to_string(x) << " " << std::to_string(z) << ", ";
 			}
 			else
 			{
-				poly_ss << std::to_string(x) << " " << std::to_string(y) << ", ";
+				poly_ss << std::to_string(x) << " " << std::to_string(z) << ", ";
 			}
 		}
 		poly_ss << first_poly_ss.str() << ")";
@@ -779,6 +781,11 @@ boost::geometry::model::polygon<boost::geometry::model::d2::point_xy<float> > Po
 								trans(1,2) * pt.coeffRef(2) +
 								trans(1,3) * pt.coeffRef(3);
 
+					float z = 	trans(2,0) * pt.coeffRef(0) +
+								trans(2,1) * pt.coeffRef(1) +
+								trans(2,2) * pt.coeffRef(2) +
+								trans(2,3) * pt.coeffRef(3);
+
 					//std::cout << "In transformto2DBoost (in if(poly_first)) ist der transformierte Vektor bzw. Matrix: " << std::endl;
 					//std::cout << tmp_mat << std::endl;
 
@@ -786,14 +793,14 @@ boost::geometry::model::polygon<boost::geometry::model::d2::point_xy<float> > Po
 					if (first_it)
 					{
 						// save the first one, for closing the polygon
-						first_poly_ss << std::to_string(x) << " " << std::to_string(y);
+						first_poly_ss << std::to_string(x) << " " << std::to_string(z);
 						first_it = false;
 
-						poly_ss << "(" << std::to_string(x) << " " << std::to_string(y) << ", ";
+						poly_ss << "(" << std::to_string(x) << " " << std::to_string(z) << ", ";
 					}
 					else
 					{
-						poly_ss << std::to_string(x) << " " << std::to_string(y) << ", ";
+						poly_ss << std::to_string(x) << " " << std::to_string(z) << ", ";
 					}
 				}
 				poly_ss << first_poly_ss.str() << ")";
@@ -828,18 +835,23 @@ boost::geometry::model::polygon<boost::geometry::model::d2::point_xy<float> > Po
 							trans(1,2) * pt.coeffRef(2) +
 							trans(1,3) * pt.coeffRef(3);
 
+				float z = 	trans(2,0) * pt.coeffRef(0) +
+							trans(2,1) * pt.coeffRef(1) +
+							trans(2,2) * pt.coeffRef(2) +
+							trans(2,3) * pt.coeffRef(3);
+
 				// transform in BoostPolygon
 				if (first_it)
 				{
 					// save the first one, for closing the polygon
-					first_poly_ss << std::to_string(x) << " " << std::to_string(y);
+					first_poly_ss << std::to_string(x) << " " << std::to_string(z);
 					first_it = false;
 
-					poly_ss << "(" << std::to_string(x) << " " << std::to_string(y) << ", ";
+					poly_ss << "(" << std::to_string(x) << " " << std::to_string(z) << ", ";
 				}
 				else
 				{
-					poly_ss << std::to_string(x) << " " << std::to_string(y) << ", ";
+					poly_ss << std::to_string(x) << " " << std::to_string(z) << ", ";
 				}
 			}
 			poly_ss << first_poly_ss.str() << ")";
@@ -882,7 +894,7 @@ PolygonRegion<VertexT, NormalT> PolygonFusion<VertexT, NormalT>::transformto3Dlv
     	if (first_p)
     	{
 
-			Eigen::Matrix<double, 4, 1> pt(get<0>((*point_iter)), get<1>((*point_iter)), 0, 1);
+			Eigen::Matrix<double, 4, 1> pt(get<0>((*point_iter)), 0, get<1>((*point_iter)), 1);
 
 			float x = 	trans(0,0) * pt.coeffRef(0) +
 						trans(0,1) * pt.coeffRef(1) +
@@ -923,7 +935,7 @@ PolygonRegion<VertexT, NormalT> PolygonFusion<VertexT, NormalT>::transformto3Dlv
     		}
     		else
     		{
-    			Eigen::Matrix<double, 4, 1> pt(get<0>((*point_iter)), get<1>((*point_iter)), 0, 1);
+    			Eigen::Matrix<double, 4, 1> pt(get<0>((*point_iter)), 0,  get<1>((*point_iter)), 1);
 
     			float x = 	trans(0,0) * pt.coeffRef(0) +
     					trans(0,1) * pt.coeffRef(1) +
