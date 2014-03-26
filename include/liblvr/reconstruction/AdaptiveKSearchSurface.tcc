@@ -765,11 +765,11 @@ std::cout << "Setzen Normale auf: " << n0 << std::endl;
     p.b = 0;
     p.c = 0;
     // TODO komisch, aber die gemittelte Normale liefert bessere Werte als die berechnete...
-    p.n = bestNorm;//c_normal;
+    p.n = bestNorm;//c_normal; //
     // TODO bestpoint oder Mittelpunkt? Mittelpunkt liefert mit Testpolygonen bessere Ergebnisse
     //      Mittelpunkt in den Entscheidungsprozess um bestpoint mit einbauen! Uebergabe sonst unnoetig
-    //p.p = bestpoint;
-    p.p = bestpoint; //queryPoint;
+    p.p = bestpoint;
+    //p.p = queryPoint;
 
     return p;
 }

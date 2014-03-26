@@ -680,7 +680,9 @@ boost::geometry::model::polygon<boost::geometry::model::d2::point_xy<float> > Po
 	BoostPolygon result, tmp_poly;
 	bool first_it;
 	bool first_poly = true;
-
+	int dirty_x = 0;
+	int dirty_y = 0;
+	int dirty_z = 0;
 	// we need some stringstreams to build the BoostPolygons
 	std::stringstream res_poly_ss;
 	res_poly_ss << "POLYGON(";
@@ -720,20 +722,40 @@ boost::geometry::model::polygon<boost::geometry::model::d2::point_xy<float> > Po
 			std::cout << "******************* x-Wert: " << x << std::endl;
 			std::cout << "******************* y-Wert: " << y << std::endl;
 			std::cout << "******************* z-Wert: " << z << std::endl;
+			if(abs(x) <= abs(z) && abs(x) <= abs(y) )
+			{
+				dirty_x++;
+				x = y;
+				y = z;
+			}
+			else if(abs(y) <= abs(z) && abs(y) <= abs(x))
+			{
+				dirty_y++;
+				y = z;
+			}
+			// z is minimal
+			else if (abs(z) <= abs(y) && abs(z) <= abs(x))
+			{
+				dirty_z++;
+			}
+			else
+			{
+				std::cout << "x,y und z lassen sich in keiner Reihenfolge birngen" << std::endl;
+			}
 
 
 			// transform in BoostPolygon
 			if (first_it)
 			{
 				// save the first one, for closing the polygon
-				first_poly_ss << std::to_string(x) << " " << std::to_string(z);
+				first_poly_ss << std::to_string(x) << " " << std::to_string(y);
 				first_it = false;
 
-				poly_ss << "(" << std::to_string(x) << " " << std::to_string(z) << ", ";
+				poly_ss << "(" << std::to_string(x) << " " << std::to_string(y) << ", ";
 			}
 			else
 			{
-				poly_ss << std::to_string(x) << " " << std::to_string(z) << ", ";
+				poly_ss << std::to_string(x) << " " << std::to_string(y) << ", ";
 			}
 		}
 		poly_ss << first_poly_ss.str() << ")";
@@ -786,6 +808,26 @@ boost::geometry::model::polygon<boost::geometry::model::d2::point_xy<float> > Po
 								trans(2,2) * pt.coeffRef(2) +
 								trans(2,3) * pt.coeffRef(3);
 
+					if(abs(x) <= abs(z) && abs(x) <= abs(y) )
+					{
+						dirty_x++;;
+						x = y;
+						y = z;
+					}
+					else if(abs(y) <= abs(z) && abs(y) <= abs(x))
+					{
+						dirty_y++;;
+						y = z;
+					}
+					// z is minimal
+					else if (abs(z) <= abs(y) && abs(z) <= abs(x))
+					{
+						dirty_z++;
+					}
+					else
+					{
+						std::cout << "x,y und z lassen sich in keiner Reihenfolge birngen" << std::endl;
+					}
 					//std::cout << "In transformto2DBoost (in if(poly_first)) ist der transformierte Vektor bzw. Matrix: " << std::endl;
 					//std::cout << tmp_mat << std::endl;
 
@@ -793,14 +835,14 @@ boost::geometry::model::polygon<boost::geometry::model::d2::point_xy<float> > Po
 					if (first_it)
 					{
 						// save the first one, for closing the polygon
-						first_poly_ss << std::to_string(x) << " " << std::to_string(z);
+						first_poly_ss << std::to_string(x) << " " << std::to_string(y);
 						first_it = false;
 
-						poly_ss << "(" << std::to_string(x) << " " << std::to_string(z) << ", ";
+						poly_ss << "(" << std::to_string(x) << " " << std::to_string(y) << ", ";
 					}
 					else
 					{
-						poly_ss << std::to_string(x) << " " << std::to_string(z) << ", ";
+						poly_ss << std::to_string(x) << " " << std::to_string(y) << ", ";
 					}
 				}
 				poly_ss << first_poly_ss.str() << ")";
@@ -840,18 +882,38 @@ boost::geometry::model::polygon<boost::geometry::model::d2::point_xy<float> > Po
 							trans(2,2) * pt.coeffRef(2) +
 							trans(2,3) * pt.coeffRef(3);
 
+				if(abs(x) <= abs(z) && abs(x) <= abs(y) )
+				{
+					dirty_x++;
+					x = y;
+					y = z;
+				}
+				else if(abs(y) <= abs(z) && abs(y) <= abs(x))
+				{
+					dirty_y++;
+					y = z;
+				}
+				// z is minimal
+				else if (abs(z) <= abs(y) && abs(z) <= abs(x))
+				{
+					dirty_z++;
+				}
+				else
+				{
+					std::cout << "x,y und z lassen sich in keiner Reihenfolge birngen" << std::endl;
+				}
 				// transform in BoostPolygon
 				if (first_it)
 				{
 					// save the first one, for closing the polygon
-					first_poly_ss << std::to_string(x) << " " << std::to_string(z);
+					first_poly_ss << std::to_string(x) << " " << std::to_string(y);
 					first_it = false;
 
-					poly_ss << "(" << std::to_string(x) << " " << std::to_string(z) << ", ";
+					poly_ss << "(" << std::to_string(x) << " " << std::to_string(y) << ", ";
 				}
 				else
 				{
-					poly_ss << std::to_string(x) << " " << std::to_string(z) << ", ";
+					poly_ss << std::to_string(x) << " " << std::to_string(y) << ", ";
 				}
 			}
 			poly_ss << first_poly_ss.str() << ")";
@@ -864,6 +926,15 @@ boost::geometry::model::polygon<boost::geometry::model::d2::point_xy<float> > Po
 	res_poly_ss << ")";
 
 	boost::geometry::read_wkt(res_poly_ss.str(), result);
+
+	if(dirty_x >= dirty_y && dirty_x >= dirty_z) dirty_fix = 1;
+	else if(dirty_y >= dirty_x && dirty_y >= dirty_z) dirty_fix = 2;
+	else if(dirty_z >= dirty_x && dirty_z >= dirty_y) dirty_fix = 3;
+
+    std::cout << "Dirty-fix ist: " << dirty_fix << std::endl;
+    std::cout << "Dirty-fix ist x: " << dirty_x << std::endl;
+    std::cout << "Dirty-fix ist y: " << dirty_y << std::endl;
+    std::cout << "Dirty-fix ist z: " << dirty_z << std::endl;
 
 //	std::cout << "transformto2DBoost durchgelaufen mit:" << std::endl;
 //	std::cout << boost::geometry::wkt(result) << std::endl;
@@ -884,6 +955,7 @@ PolygonRegion<VertexT, NormalT> PolygonFusion<VertexT, NormalT>::transformto3Dlv
     // some different modi
     double f_x, f_y;
     bool first_p = true;
+    double tmp_x, tmp_y, tmp_z;
 
     std::vector<Polygon<VertexT, NormalT>> poly_vec;
     std::vector<VertexT> point_vec;
@@ -894,7 +966,25 @@ PolygonRegion<VertexT, NormalT> PolygonFusion<VertexT, NormalT>::transformto3Dlv
     	if (first_p)
     	{
 
-			Eigen::Matrix<double, 4, 1> pt(get<0>((*point_iter)), 0, get<1>((*point_iter)), 1);
+    		if(dirty_fix == 1)
+    		{
+    			tmp_x = 0;
+    			tmp_y = get<0>((*point_iter));
+    			tmp_z = get<1>((*point_iter));
+    		}
+    		else if (dirty_fix == 2)
+    		{
+    			tmp_x = get<0>((*point_iter));
+    			tmp_y = 0;
+    			tmp_z = get<1>((*point_iter));
+    		}
+    		else if (dirty_fix == 3)
+    		{
+    			tmp_x = get<0>((*point_iter));
+    			tmp_y = get<1>((*point_iter));
+    			tmp_z = 0;
+    		}
+			Eigen::Matrix<double, 4, 1> pt(tmp_x, tmp_y, tmp_z, 1);
 
 			float x = 	trans(0,0) * pt.coeffRef(0) +
 						trans(0,1) * pt.coeffRef(1) +
@@ -935,7 +1025,25 @@ PolygonRegion<VertexT, NormalT> PolygonFusion<VertexT, NormalT>::transformto3Dlv
     		}
     		else
     		{
-    			Eigen::Matrix<double, 4, 1> pt(get<0>((*point_iter)), 0,  get<1>((*point_iter)), 1);
+        		if(dirty_fix == 1)
+        		{
+        			tmp_x = 0;
+        			tmp_y = get<0>((*point_iter));
+        			tmp_z = get<1>((*point_iter));
+        		}
+        		else if (dirty_fix == 2)
+        		{
+        			tmp_x = get<0>((*point_iter));
+        			tmp_y = 0;
+        			tmp_z = get<1>((*point_iter));
+        		}
+        		else if (dirty_fix == 3)
+        		{
+        			tmp_x = get<0>((*point_iter));
+        			tmp_y = get<1>((*point_iter));
+        			tmp_z = 0;
+        		}
+    			Eigen::Matrix<double, 4, 1> pt(tmp_x, tmp_y, tmp_z, 1);
 
     			float x = 	trans(0,0) * pt.coeffRef(0) +
     					trans(0,1) * pt.coeffRef(1) +
@@ -963,6 +1071,7 @@ PolygonRegion<VertexT, NormalT> PolygonFusion<VertexT, NormalT>::transformto3Dlv
     std::string label = "noch_keins_da";
     NormalT normal;
     PolyRegion result(poly_vec, label, normal);
+    std::cout << "Dirty-fix ist: " << dirty_fix << std::endl;
     return result;
 }
 
