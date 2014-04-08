@@ -655,7 +655,7 @@ Plane<VertexT, NormalT> AdaptiveKSearchSurface<VertexT, NormalT>::calcPlaneRANSA
         NormalT c_normal,
         bool &ok)
 {
-
+	// the resulting plane
     Plane<VertexT, NormalT> p;
 
     VertexT point1;
@@ -691,23 +691,18 @@ Plane<VertexT, NormalT> AdaptiveKSearchSurface<VertexT, NormalT>::calcPlaneRANSA
                 index[i] = r;
             }
 
-//            if(id[0] != id[1] && id[1] != id[2] && id[2] != id[0])
-//            {
-//            	break;
-//            }
-
+            // get 3 points
             point1 = VertexT(points[index[0]][0], points[index[0]][1], points[index[0]][2]);
             point2 = VertexT(points[index[1]][0], points[index[1]][1], points[index[1]][2]);
             point3 = VertexT(points[index[2]][0], points[index[2]][1], points[index[2]][2]);
 
             //compute normal of the plane given by the 3 points (look at the end)
-
-
     		n0 = (point1 - point2).cross(point1 - point3);
     		n0.normalize();
 
             c++;
 
+            // check if the three points are disjoint
             if( (point1 != point2) && (point2 != point3) && (point3 != point1) )
             {
             	// at first, use interpolated normal
@@ -745,7 +740,6 @@ Plane<VertexT, NormalT> AdaptiveKSearchSurface<VertexT, NormalT>::calcPlaneRANSA
         if(dist < bestdist)
         {
             bestdist = dist;
-std::cout << "Setzen Normale auf: " << n0 << std::endl;
             bestpoint = point1;
             bestNorm = n0;
 
@@ -753,7 +747,6 @@ std::cout << "Setzen Normale auf: " << n0 << std::endl;
         }
         else
         {
-        	std::cout << "Setzen Normale nicht auf: " << n0 << " Abstand war zu gross"<< std::endl;
             nonimproving_iterations++;
         }
 
@@ -764,12 +757,8 @@ std::cout << "Setzen Normale auf: " << n0 << std::endl;
     p.a = 0;
     p.b = 0;
     p.c = 0;
-    // TODO komisch, aber die gemittelte Normale liefert bessere Werte als die berechnete...
-    p.n = bestNorm;//c_normal; //
-    // TODO bestpoint oder Mittelpunkt? Mittelpunkt liefert mit Testpolygonen bessere Ergebnisse
-    //      Mittelpunkt in den Entscheidungsprozess um bestpoint mit einbauen! Uebergabe sonst unnoetig
+    p.n = bestNorm;
     p.p = bestpoint;
-    //p.p = queryPoint;
 
     return p;
 }
