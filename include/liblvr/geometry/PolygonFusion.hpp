@@ -2,7 +2,8 @@
  * PolygonFusion.hpp
  *
  *  Created on: 05.03.2014
- *      Author: dofeldsc
+ *      Author: Dominik Feldschnieders (dofeldsc@uos.de)
+ *      Author: Simon Herkenhoff       (sherkenh@uos.de)
  */
 
 #ifndef POLYGONFUSION_HPP_
@@ -35,9 +36,11 @@ namespace lvr
 {
 
 /**
- * @brief Class for Polygonfusion
+ * @brief This class contains all the functionality for a 3D Polygonfusion.
+ * 		The data is represented by the PolygonMesh class and some others.
  *
- *	0.5) Wait and store all given meshes
+ * The procedure is as follows:
+ *	0.5) Wait and store all given meshes till the method "doFusion" is called
  *	 1) put polyregions into bins according to labels
  *	 2) in these bins, find "co-planar" polyregions -> same plane (Δ)
  *	 3) transform these polygons into 2D space (see spuetz fusion)
@@ -65,13 +68,15 @@ public:
 
 
 	/**
-	 * destructor
+	 * @brief destructor
 	 */
 	~PolygonFusion();
 
 
 	/**
-	 * @brief add a new PolygonMesh to the Fusion (store it in the container)
+	 * @brief Add a new PolygonMesh to the Fusion (store it in the container)
+	 *
+	 * @param mesh the new PolygonMesh
 	 */
 	void addFusionMesh(PolygonMesh<VertexT, NormalT> mesh);
 
@@ -83,7 +88,7 @@ public:
 	 *
 	 * 	 1) put polyregions into bins according to labels
 	 *	 2) in these bins, find "co-planar" polyregions -> same plane (Δ)
-	 *	 3) transform these polygons into 2D space (see spuetz fusion)
+	 *	 3) transform these polygons into 2D space
 	 *	 4) apply boost::geometry::union_ for these polygons
 	 *	 5) transform resulting 2D polygon back into 3d space (inverse of step 3)
 	 *	 6) place resulting 3D polygon in response mesh
@@ -97,12 +102,14 @@ public:
 
 
 	/**
-	 * @brief reset the Fusion. clear all the data and wait for new instructions
+	 * @brief reset the Fusion ( Clear all the data and wait for new instructions )
 	 */
 	void reset();
 
 	/**
 	 * @brief setter for m_useRansac
+	 *
+	 * @param use_ransac true or false
 	 */
 	void setRansac(bool use_ransac);
 
@@ -111,12 +118,22 @@ private:
 	/**
 	 * @brief This function tests if these two Polygons are planar
 	 *
+	 * @param a the current PolygonRegion
+	 * @param b the PolygonRegion, which should be checked
+	 *
 	 * @return true, if these Polygons are planar
 	 */
 	bool isPlanar(PolyRegion a, PolyRegion b);
 
 	/**
+	 * @brief This method calculates a transformation matrix from the xyz-Plane (3D) to the xy-Plane (2D).
+	 * 		The three points span a plane, which is needed for the calculation.
 	 *
+	 * @param a  a point of this plane
+	 * @param b  a second point of this plane
+	 * @üaram c  a third point of this plane
+	 *
+	 * @return the transformation matrix
 	 */
 	Eigen::Matrix4f calcTransform(VertexT a, VertexT b, VertexT c);
 
