@@ -683,7 +683,6 @@ Plane<VertexT, NormalT> AdaptiveKSearchSurface<VertexT, NormalT>::calcPlaneRANSA
         //randomly choose 3 disjoint points
         int c = 0;
         do{
-            //cout << "AAA" << endl;
             int index[3];
             for(int i = 0; i < 3; i++)
             {
