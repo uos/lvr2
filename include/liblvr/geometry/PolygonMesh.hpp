@@ -13,6 +13,11 @@
 
 namespace lvr {
 
+/**
+ * @brief This class represents a hole PolygonMesh, with all its PolygonRegions.
+ * 		There is no functionality for the fuision in this class but it is the "main-container"
+ * 		for the data, which is needed by PolygonFusion.
+ */
 template<typename VertexT, typename NormalT>
 class PolygonMesh {
 public:
@@ -38,12 +43,16 @@ public:
 
 	/**
 	 * @brief Add one new PolygonRegion, it will be pushed into the container (std::vector)
+	 *
+	 * @param polyregion the PolygonRegion, which will be added to the mesh
 	 */
 	void addPolyRegion(PolygonRegion<VertexT, NormalT> polyregion);
 
 
 	/**
 	 * @brief Add few new PolygonRegion, it will be pushed into the container (std::vector)
+	 *
+	 * @param polyregions a vector of PolygonRegions, which will be added to the mesh
 	 */
 	void addPolyRegions(std::vector<PolygonRegion<VertexT, NormalT>> polyregions);
 
