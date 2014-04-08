@@ -132,7 +132,7 @@ private:
 	// Normal of this Region
 	NormalT m_normal;
 
-	// Edges of the BoundingBox
+	// Edges of the axis aligned BoundingBox
 	VertexT m_bound_min;
 	VertexT m_bound_max;
 
