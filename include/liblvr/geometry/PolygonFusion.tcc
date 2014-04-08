@@ -23,8 +23,7 @@ public :
     inline void operator()(Point& p)
     {
         using boost::geometry::get;
-//	std::cout << "Beim Auslesen: x = " << get<0>(p) << " y = " << get<1>(p) << std::endl;
-	vec->push_back(p);
+        vec->push_back(p);
     }
 };
 
@@ -59,21 +58,16 @@ void PolygonFusion<VertexT, NormalT>::setRansac(bool use_ransac)
 template<typename VertexT, typename NormalT>
 bool PolygonFusion<VertexT, NormalT>::doFusion(std::vector<PolyRegion> &output)
 {
-	// TODO Wenn alles fertig ist, die ganzen Ausgaben rausnehmen und Logger einbauen
 	std::cout << "Starting PolygonFusion with " << m_meshes.size() << " PolygonMeshes!!" << std::endl;
 
 	// 0.5) prepare map and other vectors
 	// 1) put polyregions into bins according to labels
 	// 2) in these bins, find "co-planar" polyregions -> same plane (Δ)
-	// 3) transform these polygons into 2D space (see spuetz fusion)
+	// 3) transform these polygons into 2D space
 	// 4) apply boost::geometry::union_ for these polygons
 	// 5) transform resulting 2D polygon back into 3d space (inverse of step 3)
 	// 6) place resulting 3D polygon in response.mesh
 	// 7) insert all left overs into response.mesh
-
-	// step 0.5)
-	//typedef std::map<std::string, std::vector<lvr_tools::PolygonRegion> > polyRegionMap;
-	//polyRegionMap polygonsByRegion;
 
 	// step 1) put polyregions into bins according to labels
 	// TODO unknown regions werden jetzt betrachtet, entgültige Entscheidung treffen?
@@ -81,7 +75,7 @@ bool PolygonFusion<VertexT, NormalT>::doFusion(std::vector<PolyRegion> &output)
 	//std::vector<lvr_tools::PolygonMesh>::iterator polymesh_iter;
 	for( polymesh_iter = m_meshes.begin(); polymesh_iter != m_meshes.end(); ++polymesh_iter )
 	{
-		//std::vector<lvr_tools::PolygonRegion>::iterator polyregion_iter;
+
 		std::vector<PolyRegion> regions;
 		regions = (*polymesh_iter).getPolyRegions();
 		typename std::vector<PolyRegion>::iterator polyregion_iter;
@@ -108,46 +102,23 @@ bool PolygonFusion<VertexT, NormalT>::doFusion(std::vector<PolyRegion> &output)
 			// store the unknown regions
 			else
 			{
-				// if you only want the labeled Regions in the output-vector, removed this command
-				//output.push_back((*polyregion_iter));
+				// if you only want the labeled Regions in the output-vector, removed the following command
+				output.push_back((*polyregion_iter));
 			}
 		}
 	}
 	std::cout << "Aufteilen der Regionen nach ihren labeln abgeschlossen" << std::endl;
 	std::cout << "Es gibt insgesamt ('unknown' wird nicht betrachtet) "<< m_polyregionmap.size()  << " verschiedene Label." << std::endl;
-/*
-// debug stuff
-	// Anzeigen von allen Polygonen mit gleichem Label
-	ROS_WARN("Vor der Schleife: Size der Map (Label) %d", polygonsByRegion.size());
 
-	polyRegionMap::iterator map_iter2;
-	for( map_iter2 = polygonsByRegion.begin(); map_iter2 != polygonsByRegion.end(); ++map_iter2 )
-	{
 
-		lvr_tools::PolygonMesh polymesh;
-
-		std::vector<lvr_tools::PolygonRegion> polyregions = (*map_iter2).second;
-		std::vector<lvr_tools::PolygonRegion>::iterator reg_it;
-		for(reg_it = polyregions.begin() ; reg_it != polyregions.end() ; ++reg_it)
-		{
-			polymesh.polyregions.push_back((*reg_it));
-		}
-		ROS_ERROR("So jetzt zeig mal die regions an: &s", (*reg_it).label.c_str());
-		polymesh_pub.publish(polymesh);
-		sleep(10);
-	}
-// debug end
-*/
 	// step 2-5) in these bins, find "co-planar" polyregions -> same plane (Δ)
 	// TODO fix coplanar detection (gewichtet nach Anzahl Punkten)
 	// TODO benchmark coplanar threshold and fusion / detection order (not only first one)
 	typename PolyRegionMap::iterator map_iter;
 	for( map_iter = m_polyregionmap.begin(); map_iter != m_polyregionmap.end(); ++map_iter )
 	{
-		std::cout << "******* Trying to fuse " << (*map_iter).second.size() << " polygons with regionlabel: " <<  (*map_iter).first << std::endl;
-
+		// init the container
 		std::vector<PolyRegion> polyregions = (*map_iter).second;
-
 		std::vector<PolyRegion> coplanar_regions;
 		std::vector<PolyRegion> nonplanar_regions;
 		std::vector<PolyRegion> fused_regions;
@@ -156,9 +127,6 @@ bool PolygonFusion<VertexT, NormalT>::doFusion(std::vector<PolyRegion> &output)
 		typename std::vector<PolyRegion>::iterator region_iter;
 		for( region_iter = polyregions.begin(); region_iter != polyregions.end(); )
 		{
-			std::cout << "still need to process " << polyregions.size()  <<
-					" / " << polyregions.size() << " outer PolygonRegions" << std::endl;
-
 			// assume there exists at least least one coplanar region
 			coplanar_regions.push_back((*region_iter));
 
@@ -172,14 +140,12 @@ bool PolygonFusion<VertexT, NormalT>::doFusion(std::vector<PolyRegion> &output)
 					// if they are coplanar,
 					if ( isPlanar((*region_iter), (*coplanar_iter)) )
 					{
-//						std::cout << "Polygone sind Coplanar, fuege hinzu" << std::endl;
 						coplanar_regions.push_back((*coplanar_iter));
 						// remove element from vector
 						coplanar_iter = polyregions.erase(coplanar_iter);
 					}
 					else
 					{
-//						std::cout << "Polygone sind nicht Coplanar, betrachte es nicht" << std::endl;
 						++coplanar_iter;
 					}
 				}
@@ -193,19 +159,15 @@ bool PolygonFusion<VertexT, NormalT>::doFusion(std::vector<PolyRegion> &output)
 			// assumption was wrong, no coplanar region for this PolygonRegion
 			if ( coplanar_regions.size() == 1 )
 			{
-				std::cout << "Es wurden keine coplanaren Polygone gefunden, also speicher das Polygon in nonplanar" << std::endl;
+				// save this Region in the nonplaner Regions
 				nonplanar_regions.push_back((*region_iter));
 				coplanar_regions.clear();
 			}
-			// assumption was correct, need to do fusion
+			// assumption was correct, need to do fusion with a least two PolygonRegions
 			else
 			{
-				// hier haben wir in coplanar_regions mehr als eine polyregion, die zusammen passend
-				std::cout << "\nEs wurden " << coplanar_regions.size() << " Coplanare polygone gefunden und werden gefused." << std::endl;
-
-				// Try to fuse alle coplanar regions at once
+				// Try to fuse all coplanar regions at once
 				fuse(coplanar_regions, fused_regions);
-				std::cout << "YEAH YEAH YEAH, die Fusion ist durchgelaufen fuer das label: " << (*map_iter).first << std::endl;
 			}
 
 			// increment region iterator
@@ -232,9 +194,7 @@ bool PolygonFusion<VertexT, NormalT>::doFusion(std::vector<PolyRegion> &output)
 		nonplanar_regions.clear();
 	} // end for map
 
-
 	// done!
-
 	return true;
 }
 
@@ -300,9 +260,7 @@ bool PolygonFusion<VertexT, NormalT>::isPlanar(PolyRegion a, PolyRegion b)
 	std::vector<Polygon<VertexT, NormalT>> polygons_b;
 	polygons_b = b.getPolygons();
 
-
-// TODO Frage: Wir betrachten hier nur das äußere Polygon, reicht das? Also ich glaub schon, da die ja eh auf einer Ebene liegen sollten
-	// Check for all points from polyregion b, the point to plane (polyregion a) distance
+	// Check for all points (outer Polygon(-shell)) from polyregion b, the point to plane (polyregion a) distance
 	std::vector<VertexT> check_me = polygons_b.at(0).getVertices();
 	typename std::vector<VertexT>::iterator point_iter;
 	for( point_iter = check_me.begin(); coplanar != false, point_iter != check_me.end(); ++point_iter )
@@ -409,36 +367,38 @@ bool PolygonFusion<VertexT, NormalT>::fuse(std::vector<PolyRegion> coplanar_poly
 
 	trans_mat = calcTransform(plane.p, vec1, vec2);
 
-	// need transform from 3D to 2D and back from 2D to 3D
+	// need transform from 3D to 2D and back from 2D to 3D, so we need the inverse matrix too
 	trans_mat_inv = trans_mat.inverse();
 
 	std::vector<BoostPolygon> input;
 	std::vector<BoostPolygon> output;
 
+	// transform all the PolygonRegions
 	typename std::vector<PolyRegion>::iterator poly_iter;
 	for(poly_iter = coplanar_polys.begin(); poly_iter != coplanar_polys.end(); ++poly_iter)
 	{
-		// transform and fuse
+		// transform to 2D boost polyon
 		input.push_back(transformto2DBoost((*poly_iter), trans_mat));
 	}
 
-	// TODO Sonderfall abfangen, wenn Union "Fehlschlaegt", da man dann nicht weiß mit welchem
-	// Polygon die Vereinigung gemacht werden soll
+	// the rest of the method is a little bit dirty, because boost (at the latest with ROS compatible Version) can´t handle
+	// Polygons with intersections but there are a bunch of methods, that let us handle it but only in a dirty style.
+	// (so, i hope these problems are fixed if someone new tries...)
 	bool first_it = true;
 	std::vector<BoostPolygon> intersectors;
 
-	int count = 0;
+
+	// for all PolygonRegions aka BoostPolygons
 	typename std::vector<BoostPolygon>::iterator input_iter;
 	for(input_iter = input.begin(); input_iter != input.end(); ++input_iter)
 	{
-//		std::cout << "Debug: versuch " << count++ << " von " << input.size() << " miteinander zu fusionieren" << std::endl;
 		BoostPolygon simplified_a, simplified_b;
-		// transform and fuse
+		// in the first round, store the PolygonRegions in a container, which is used for fusion
 		if(first_it)
 		{
+			// if this Polygonregions has intersections, try to simplify it and store it
 			if(boost::geometry::intersects((*input_iter)))
 			{
-//				std::cout << "Erstes Poly hat intersections" << std::endl;
 				boost::geometry::simplify((*input_iter), simplified_a, m_simplify_dist);
 				output.push_back(simplified_a);
 				first_it = false;
@@ -449,12 +409,13 @@ bool PolygonFusion<VertexT, NormalT>::fuse(std::vector<PolyRegion> coplanar_poly
 				output.push_back((*input_iter));
 			}
 		}
+		// if output is empty, we need a "first" element in it
 		else if(output.size() == 0) first_it = true;
 		else
 		{
+			// if this Polygonregions has intersections, try to simplify it and try to fuse it
 			if(boost::geometry::intersects((*input_iter)))
 			{
-//				std::cout << "Poly hat intersections" << std::endl;
 				boost::geometry::simplify((*input_iter), simplified_b, m_simplify_dist);
 
 				BoostPolygon tmp;
@@ -554,17 +515,6 @@ bool PolygonFusion<VertexT, NormalT>::fuse(std::vector<PolyRegion> coplanar_poly
 	} // end for Boostpolygone
 
 
-// debug
-//	int i = 0;
-//    BOOST_FOREACH(BoostPolygon const& p, output)
-//    {
-//        std::cout << boost::geometry::wkt(p) << std::endl;
-//        //std::cout << i++ << ": " << boost::geometry::area(p) << std::endl;
-//        std::cout << "union-polygon " << i++ << " has area " << boost::geometry::area(p) << std::endl;
-//    }
-// debug ende
-
-//	std::cout << "boostfusion (how much were intersectet): " << intersectors.size() << " / " << input.size() << std::endl;
 	// store the unfused polygonregions in the output vec and transform them into 3D
 	for(input_iter = intersectors.begin(); input_iter != intersectors.end(); ++input_iter)
 	{
@@ -635,9 +585,7 @@ Eigen::Matrix4f PolygonFusion<VertexT, NormalT>::calcTransform(VertexT a, Vertex
 template<typename VertexT, typename NormalT>
 boost::geometry::model::polygon<boost::geometry::model::d2::point_xy<float> > PolygonFusion<VertexT, NormalT>::transformto2DBoost(PolyRegion a, Eigen::Matrix4f trans)
 {
-	// TODO boost::beometry::correct - Einbauen, spart die staendigen Abfragen und umdrehen von Polygonen bzw. Loechern
-	// TODO Ablauf schön machen, unnötiges flushes und sowas
-//	std::cout << "transformto2DBoost aufgerufen mit polyregion_size: " << a.getSize() << std::endl;
+	// TODO boost::geometry::correct - Einbauen, spart die staendigen Abfragen und umdrehen von Polygonen bzw. Loechern
 
 	BoostPolygon result, tmp_poly;
 	bool first_it;
@@ -681,9 +629,7 @@ boost::geometry::model::polygon<boost::geometry::model::d2::point_xy<float> > Po
 						trans(2,1) * pt.coeffRef(1) +
 						trans(2,2) * pt.coeffRef(2) +
 						trans(2,3) * pt.coeffRef(3);
-			std::cout << "******************* x-Wert: " << x << std::endl;
-			std::cout << "******************* y-Wert: " << y << std::endl;
-			std::cout << "******************* z-Wert: " << z << std::endl;
+
 			if(abs(x) <= abs(z) && abs(x) <= abs(y) )
 			{
 				dirty_x++;
@@ -744,8 +690,6 @@ boost::geometry::model::polygon<boost::geometry::model::d2::point_xy<float> > Po
 				first_poly_ss.clear();
 				poly_ss.str("");
 				poly_ss.clear();
-
-//				std::cout << "falsche Richtung bei ersten Polygon, da area:" << boost::geometry::area(tmp_poly) << std::endl;
 				first_it = true;
 
 				// get all vertices from this polygon
@@ -898,15 +842,12 @@ boost::geometry::model::polygon<boost::geometry::model::d2::point_xy<float> > Po
     std::cout << "Dirty-fix ist y: " << dirty_y << std::endl;
     std::cout << "Dirty-fix ist z: " << dirty_z << std::endl;
 
-//	std::cout << "transformto2DBoost durchgelaufen mit:" << std::endl;
-//	std::cout << boost::geometry::wkt(result) << std::endl;
 	return result;
 }
 
 template<typename VertexT, typename NormalT>
-PolygonRegion<VertexT, NormalT> PolygonFusion<VertexT, NormalT>::transformto3Dlvr(BoostPolygon poly, Eigen::Matrix4f trans){
-	// TODO Transformation von 2D in 3D und Umwandlung von Boost_Polygon in lvr::PolygonRegion
-//	std::cout << "transformto3Dlvr aufgerufgen" << std::endl;
+PolygonRegion<VertexT, NormalT> PolygonFusion<VertexT, NormalT>::transformto3Dlvr(BoostPolygon poly, Eigen::Matrix4f trans)
+{
     typedef boost::geometry::model::d2::point_xy<float> point;
     using boost::geometry::get;
 
