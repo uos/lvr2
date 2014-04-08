@@ -2,7 +2,7 @@
  * Polygonregion.tcc
  *
  *  Created on: 06.03.2014
- *      Author: dofeldsc
+ *      Author: Dominik Feldschnieders (dofeldsc@uos.de)
  */
 
 namespace lvr {
@@ -81,10 +81,12 @@ void PolygonRegion<VertexT, NormalT>::setNormal(NormalT new_normal)
 
 template<typename VertexT, typename NormalT>
 Polygon<VertexT, NormalT> PolygonRegion<VertexT, NormalT>::getPolygon(){
+	// return the outer Polygon(-shell)
 	if(!m_polygons.empty())
 	{
 		return m_polygons[0];
 	}
+	// or an empty Polygon
 	else
 	{
 		Polygon<VertexT, NormalT> tmp;
@@ -95,6 +97,7 @@ Polygon<VertexT, NormalT> PolygonRegion<VertexT, NormalT>::getPolygon(){
 template<typename VertexT, typename NormalT>
 void PolygonRegion<VertexT, NormalT>::calcBoundingBox()
 {
+	// get the right min and max values
 	float minx = numeric_limits<float>::max();
 	float miny = numeric_limits<float>::max();
 	float minz = numeric_limits<float>::max();
@@ -102,6 +105,7 @@ void PolygonRegion<VertexT, NormalT>::calcBoundingBox()
 	float maxy = numeric_limits<float>::min();
 	float maxz = numeric_limits<float>::min();
 
+	// calc the axis aligned Bounding-Box
 	typename vector<Polygon<VertexT, NormalT> >::iterator it;
 	for(it = m_polygons.begin() ; it != m_polygons.end() ; ++it)
 	{
