@@ -139,7 +139,6 @@ private:
 	 *
 	 * @return the resulting BoostPolygon
 	 */
-	// TODO Boost Polygon als Rückgabe
 	BoostPolygon transformto2DBoost(PolyRegion a, Eigen::Matrix4f trans);
 
 
@@ -151,7 +150,6 @@ private:
 	 *
 	 * @return the resulting lvr PolygonRegion
 	 */
-	// TODO Boost Polygon als Übergabeargument
 	PolygonRegion<VertexT, NormalT> transformto3Dlvr(BoostPolygon a, Eigen::Matrix4f trans);
 
 	// Vector for all data (Polygonmesh)
@@ -174,8 +172,6 @@ private:
 	// true, if the best fit plane for the transformation should be calculated with Ransac
 	// false, the best fit plane will be calculated by the interpolated normal and the centroid of all points
 	bool m_useRansac;
-
-
 
 	Timestamp ts;
 };
