@@ -44,6 +44,7 @@ PolygonFusion<VertexT, NormalT>::PolygonFusion() {
 	m_distance_threshold = 0.05;
 	m_simplify_dist = 0.5;
 	m_distance_threshold_bounding = 0.05;
+	m_useRansac = false;
 }
 
 
@@ -58,6 +59,11 @@ void PolygonFusion<VertexT, NormalT>::addFusionMesh(PolygonMesh<VertexT, NormalT
 	m_meshes.push_back(mesh);
 }
 
+template<typename VertexT, typename NormalT>
+void PolygonFusion<VertexT, NormalT>::setRansac(bool use_ransac)
+{
+	m_useRansac = use_ransac;
+}
 
 template<typename VertexT, typename NormalT>
 bool PolygonFusion<VertexT, NormalT>::doFusion(std::vector<PolyRegion> &output)
@@ -399,20 +405,31 @@ bool PolygonFusion<VertexT, NormalT>::fuse(std::vector<PolyRegion> coplanar_poly
 
 	// TODO die Ausgleichsebene nicht nur durch die Anzahl der Punkte gewichten sondern auch durch den
 	//      Flächeninhalt der Polygone
+	// TODO Fälle ob Ransac oder nicht einführen
 	Plane<VertexT, NormalT> plane;
-	bool ransac_success = true;
-	plane = akss.calcPlaneRANSACfromPoints(centroid, ransac_points.size(), ransac_points, c_normal, ransac_success);
-
-	if (!ransac_success)
+	if(m_useRansac)
 	{
-		cout << timestamp << "UNABLE TO USE RANSAC FOR PLANE CREATION" << endl;
-		return false;
+		bool ransac_success = true;
+		plane = akss.calcPlaneRANSACfromPoints(centroid, ransac_points.size(), ransac_points, c_normal, ransac_success);
+
+		if (!ransac_success)
+		{
+			cout << timestamp << "UNABLE TO USE RANSAC FOR PLANE CREATION" << endl;
+			return false;
+		}
+	}
+	else
+	{
+		plane.a = 0;
+		plane.b = 0;
+		plane.c = 0;
+		plane.n = c_normal;
+		plane.p = centroid;
 	}
 
 	float d = (plane.p.x * plane.n.x) + (plane.p.y * plane.n.y) + (plane.p.z * plane.n.z);
 
 	// calc 2 points on this best fit plane, we need it for the transformation in 2D
-	// TODO Hier aufpassen, wenn vec1 oder vec2 genau die Normalen ist, bzw parallel
 	VertexT vec1(1, 2, 3);
 	VertexT vec2(3, 2, 1);
 	VertexT check_vec(0.0, 0.0, 0.0);
