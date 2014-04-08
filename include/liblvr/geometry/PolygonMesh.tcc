@@ -2,7 +2,7 @@
  * PolygonMesh.tcc
  *
  *  Created on: 06.03.2014
- *      Author: dofeldsc
+ *      Author: Dominik Feldschnieders (dofeldsc@uos.de)
  */
 
 #include "PolygonMesh.hpp"

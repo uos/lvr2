@@ -2,7 +2,7 @@
  * Polygonregion.hpp
  *
  *  Created on: 06.03.2014
- *      Author: dofeldsc
+ *      Author: Dominik Feldschnieders (dofeldsc@uos.de)
  */
 
 #ifndef POLYGONREGION_HPP_
@@ -15,6 +15,12 @@
 
 namespace lvr {
 
+/**
+ * @brief This class represents a PolygonRegion (a Polygon and its holes).
+ * 		There are a bunch of getter and setter, but there is no fusion-functionality
+ * 		in this class.
+ *
+ */
 template<typename VertexT, typename NormalT>
 class PolygonRegion {
 public:
@@ -23,7 +29,6 @@ public:
 	 * @brief standard constructor
 	 */
 	PolygonRegion();
-
 
 	/**
 	 * @brief constructor
@@ -39,7 +44,6 @@ public:
 	 * @brief destructor
 	 */
 	~PolygonRegion();
-
 
 	/**
 	 * @brief If you have a Polygon, but its data is wrong or empty, use this and fill it

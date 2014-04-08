@@ -286,11 +286,18 @@ bool PolygonFusion<VertexT, NormalT>::isPlanar(PolyRegion a, PolyRegion b)
 	VertexT point_a;
 
 	// get the first vertex of the first polygon of this region and the normal of this region
-	point_a = a.getPolygon().getVertices()[0];
-	norm_a = a.getNormal();
+	std::vector<VertexT> tmp_vec = a.getPolygon().getVertices();
+	if(tmp_vec.size() != 0)
+	{
+		point_a = tmp_vec[0];
+		norm_a = a.getNormal();
+	}
+	else
+	{
+		std::cout << timestamp << "Polygon a in isPlanar war leer, daher wird false zurueckgegeben! (!!!Dieser Fall sollte nicht auftreten!!!)" << std::endl;
+		return false;
+	}
 
-	// normale * p = d
-	// a*x + b*y + c*z + d = 0
 	float n_x = norm_a.x;
 	float n_y = norm_a.y;
 	float n_z = norm_a.z;
