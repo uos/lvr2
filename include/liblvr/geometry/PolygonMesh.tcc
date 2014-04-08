@@ -11,13 +11,12 @@ namespace lvr {
 
 template<typename VertexT, typename NormalT>
 PolygonMesh<VertexT, NormalT>::PolygonMesh() {
-	// TODO Auto-generated constructor stub
-
+	// nothing to do
 }
 
 template<typename VertexT, typename NormalT>
 PolygonMesh<VertexT, NormalT>::~PolygonMesh() {
-	// TODO Auto-generated destructor stub
+	m_regions.clear();
 }
 
 template<typename VertexT, typename NormalT>
