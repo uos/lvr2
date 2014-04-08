@@ -28,7 +28,7 @@ public:
 	Polygon();
 
 	/**
-	 * constructor
+	 * @brief constructor
 	 *
 	 * @param new_vertices all the points for this polygon
 	 */

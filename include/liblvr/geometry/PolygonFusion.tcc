@@ -2,8 +2,16 @@
  * PolygonFusion.tcc
  *
  *  Created on: 05.03.2014
- *      Author: dofeldsc
+ *      Author: Dominik Feldschnieders (dofeldsc@uos.de)
+ *      Author: Simon Herkenhoff       (sherkenh@uos.de)
  */
+
+// TODO Le Kack mit der Transformation in die xy-Ebene funktioniert ja noch nicht richtig...dirty fix wieder rausnehmen
+// TODO Die Label aus den Messages müssen später auch wieder in diese Übertragen werden
+// TODO Logger einbauen
+// TODO in fuse die Gewichtung der normale nochmal überdenken
+// TODO transformto2DBoost überarbeiten, boost::geometry::correct einbauen
+
 
 #include "PolygonFusion.hpp"
 
@@ -84,7 +92,7 @@ bool PolygonFusion<VertexT, NormalT>::doFusion(std::vector<PolyRegion> &output)
 			// only try to fuse, if this region has a label TODO was soll jetzt genau gefust werden
 			if ( (*polyregion_iter).getLabel() != "unknown" )
 			{
-				// if prelabel already exists in map, just push back PolyGroup, else create
+				// if prelabel already exists in map, just push back PolyGroup, else create a new one
 				typename PolyRegionMap::iterator it;
 				it = m_polyregionmap.find((*polyregion_iter).getLabel());
 
@@ -212,7 +220,7 @@ bool PolygonFusion<VertexT, NormalT>::isPlanar(PolyRegion a, PolyRegion b)
 	VertexT max_a = a.getBoundMax();
 	VertexT max_b = b.getBoundMax();
 
-	// include the distance_threshold
+	// include the distance_threshold (it looks good but there were no big analysis...)
 	VertexT dist_thres(m_distance_threshold_bounding, m_distance_threshold_bounding, m_distance_threshold_bounding);
 	min_a -= dist_thres;
 	max_a += dist_thres;
@@ -224,6 +232,7 @@ bool PolygonFusion<VertexT, NormalT>::isPlanar(PolyRegion a, PolyRegion b)
 	if ( max_a.y < min_b.y || min_a.y > max_b.y ) coplanar = false;
 	if ( max_a.z < min_b.z || min_a.z > max_b.z ) coplanar = false;
 
+	// if the BoundingBox-check failed, return false
 	if(!coplanar)
 	{
 		return coplanar;
@@ -246,6 +255,7 @@ bool PolygonFusion<VertexT, NormalT>::isPlanar(PolyRegion a, PolyRegion b)
 		return false;
 	}
 
+	// span the plane (Hesse normal form)
 	float n_x = norm_a.x;
 	float n_y = norm_a.y;
 	float n_z = norm_a.z;
@@ -310,14 +320,14 @@ bool PolygonFusion<VertexT, NormalT>::fuse(std::vector<PolyRegion> coplanar_poly
 	c_normal.normalize();
 	centroid /= ransac_points.size();
 
-	// calc best fit plane with ransac
-	akSurface akss;
-
-	// TODO die Ausgleichsebene nicht nur durch die Anzahl der Punkte gewichten sondern auch durch den
-	//      Flächeninhalt der Polygone
+	// calculate best fit plane with ransac or with interpolated normal and centroid
 	Plane<VertexT, NormalT> plane;
 	if(m_useRansac)
 	{
+		// see typedef in header
+		akSurface akss;
+
+		// calc best fit plane with ransac
 		bool ransac_success = true;
 		plane = akss.calcPlaneRANSACfromPoints(centroid, ransac_points.size(), ransac_points, c_normal, ransac_success);
 
@@ -336,9 +346,11 @@ bool PolygonFusion<VertexT, NormalT>::fuse(std::vector<PolyRegion> coplanar_poly
 		plane.p = centroid;
 	}
 
-	float d = (plane.p.x * plane.n.x) + (plane.p.y * plane.n.y) + (plane.p.z * plane.n.z);
+	//float d = (plane.p.x * plane.n.x) + (plane.p.y * plane.n.y) + (plane.p.z * plane.n.z);
 
 	// calc 2 points on this best fit plane, we need it for the transformation in 2D
+	// take a random vector and cross it with the normal...you get a vector that can be used
+	// to span the plane
 	VertexT vec1(1, 2, 3);
 	VertexT vec2(3, 2, 1);
 	VertexT check_vec(0.0, 0.0, 0.0);
@@ -346,7 +358,7 @@ bool PolygonFusion<VertexT, NormalT>::fuse(std::vector<PolyRegion> coplanar_poly
 	vec1.crossTo(plane.n);
 	vec2.crossTo(plane.n);
 
-	//check if vec1 or vec 2 was paralell or equal
+	//check if vec1 or vec 2 was paralell or equal to the normal of the plane
 	if(check_vec == vec1)
 	{
 		VertexT tmp(2, 2, 3);
@@ -431,24 +443,23 @@ bool PolygonFusion<VertexT, NormalT>::fuse(std::vector<PolyRegion> coplanar_poly
 					tmp = output[0];
 					output.erase(output.begin());
 
+					// if this Polygonregions has intersections, try to simplify it for the fusion
 					if(boost::geometry::intersects(tmp))
 					{
-//						std::cout << "Output_vec Poly hat intersections" << std::endl;
 						boost::geometry::simplify(output[0], tmp, m_simplify_dist);
 					}
 				}
-//				cout << "Boost should union them all" << endl;
 
 				// try to catch exception from boost union, problem with intersections
 				try
 				{
 					boost::geometry::union_(tmp, simplified_b , output);
-//					cout << "Boost fused them all, with intersections" << endl;
 				}
 				// TODO hier können noch viele unbehandelte Sonderfälle auftreten
 				catch(...)
 				{
-//					std::cout << "Exception von boost_union gefangen" << std::endl;
+					// if the fusion failed and the container is empty, check for intersections and store them
+					// in the output, if the still have intersections, store them in the intersectors container
 					if(output.size() == 0)
 					{
 						if (boost::geometry::intersects(simplified_b))
@@ -475,39 +486,38 @@ bool PolygonFusion<VertexT, NormalT>::fuse(std::vector<PolyRegion> coplanar_poly
 			// current poly has no intersections
 			else
 			{
-//				std::cout << "Polygon ohne intersections" << std::endl;
 				BoostPolygon fuse_poly;
 				// get the first polygon and erase it, if not there are double polys in the output-vec
 				if (output.size() == 1)
 				{
-//					std::cout << "1" << std::endl;
 					fuse_poly = output[0];
 					output.clear();
 				}
 				else
 				{
-//					std::cout << "2 mit size: " << output.size() << std::endl;
 					// TODO nicht immer nur den ersten nehmen, am besten groessten???
 					fuse_poly = output[0];
 					output.erase(output.begin());
 				}
+				// if this Polygonregions has intersections, try to simplify it for the fusion
 				if(boost::geometry::intersects(fuse_poly))
 				{
-//					std::cout << "Output_vec Poly hat intersections" << std::endl;
 					BoostPolygon tmp = fuse_poly;
 					boost::geometry::simplify(tmp, fuse_poly, m_simplify_dist);
 				}
-//				cout << "Boost should union them all" << endl;
+
+				// try to fuse both Polygons
 				try
 				{
 					boost::geometry::union_(fuse_poly, (*input_iter) , output);
-//					cout << "Boost fused them all, nice one mit size: " << output.size() << endl;
 				}
 				catch(...)
 				{
-//					std::cout << "Exception von boost_union gefangen" << std::endl;
-					if(boost::geometry::intersects(fuse_poly)) intersectors.push_back(fuse_poly);
+					// if it doesn´t work, store the Polygons in the corresponding container
 					output.push_back((*input_iter));
+					if(boost::geometry::intersects(fuse_poly)) intersectors.push_back(fuse_poly);
+					else output.push_back(fuse_poly);
+
 				}
 			}
 		} // end if else first_it
@@ -603,13 +613,14 @@ boost::geometry::model::polygon<boost::geometry::model::d2::point_xy<float> > Po
 	std::vector<Polygon<VertexT, NormalT> > polygons = a.getPolygons();
 	typename std::vector<Polygon<VertexT, NormalT> >::iterator poly_iter;
 	// for all polygons in this region
-	for(poly_iter = polygons.begin(); poly_iter != polygons.end(); ++poly_iter)
+	for(poly_iter = polygons.begin() ; poly_iter != polygons.end() ; ++poly_iter )
 	{
 		first_it = true;
 
 		// get all vertices from this polygon
 		std::vector<VertexT> points = poly_iter->getVertices();
 		typename std::vector<VertexT>::iterator point_iter;
+		// for all vertices: transform them into the xy-plane
 		for(point_iter = points.begin(); point_iter != points.end(); ++point_iter)
 		{
 			Eigen::Matrix<double, 4, 1> pt(point_iter->x, point_iter->y, point_iter->z, 1);
@@ -652,7 +663,7 @@ boost::geometry::model::polygon<boost::geometry::model::d2::point_xy<float> > Po
 			}
 
 
-			// transform in BoostPolygon
+			// transform in BoostPolygon - a BoostPolygon looks like "POLYGON( 1 1, 1 2, 2 2, 2 1, 1 1)"
 			if (first_it)
 			{
 				// save the first one, for closing the polygon
@@ -668,6 +679,7 @@ boost::geometry::model::polygon<boost::geometry::model::d2::point_xy<float> > Po
 		}
 		poly_ss << first_poly_ss.str() << ")";
 
+		// flush the stringstream
 		first_poly_ss.str("");
 		first_poly_ss.clear();
 		// check every single polygon, if it conform to the boost-polygon-style
@@ -675,14 +687,14 @@ boost::geometry::model::polygon<boost::geometry::model::d2::point_xy<float> > Po
 		test_poly_str.append(poly_ss.str());
 		test_poly_str.append(")");
 
+		// read_wkt creates a BoostPolygon from the string
 		boost::geometry::read_wkt(test_poly_str, tmp_poly);
 
-		first_poly_ss.str("");
-		first_poly_ss.clear();
-		// if it is positive, do the polygon it the other direction (boost polygon style)
+
 		if(first_poly)
 		{
 			first_poly = false;
+			// if the outer Polygon(-shell) has a negativ area, do the polygon it the other direction (boost polygon style)
 			if(boost::geometry::area(tmp_poly) <= 0)
 			{
 				// clear / flush the stringstreams
@@ -754,6 +766,7 @@ boost::geometry::model::polygon<boost::geometry::model::d2::point_xy<float> > Po
 				poly_ss << first_poly_ss.str() << ")";
 			}
 		}
+		// if one of the inner Polygons (holes) has a positive area, do the polygon it the other direction (boost polygon style)
 		else if(boost::geometry::area(tmp_poly) >= 0 )
 		{
 			// clear / flush the stringstreams
