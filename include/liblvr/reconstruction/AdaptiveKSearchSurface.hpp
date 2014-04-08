@@ -121,6 +121,17 @@ public:
             const int &kd = 10,
             const bool &useRansac = false );
 
+    /**
+     * @brief standard Constructor
+     *
+     * 		m_useRANSAC = true;
+     * 		m_ki = 10;
+     *		m_kn = 10;
+     *		m_kd = 10;
+     *
+     *		This Constructor can be used, if only the method "calcPlaneRANSACfromPoints"
+     *		is required
+     */
     AdaptiveKSearchSurface();
 
 	/**
@@ -141,6 +152,8 @@ public:
 	 * @param k             The size of the used k-neighborhood
 	 * @param points        The neighborhood points
 	 * @param ok            True, if RANSAC interpolation was succesfull
+	 *
+	 * @return the resulting plane
 	 */
 	Plane<VertexT, NormalT> calcPlaneRANSACfromPoints(const VertexT &queryPoint,
 	        const int &k,

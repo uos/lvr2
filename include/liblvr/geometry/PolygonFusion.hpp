@@ -101,6 +101,11 @@ public:
 	 */
 	void reset();
 
+	/**
+	 * @brief setter for m_useRansac
+	 */
+	void setRansac(bool use_ransac);
+
 
 private:
 	/**
@@ -165,6 +170,10 @@ private:
 	double 			m_distance_threshold_bounding;
 
 	int dirty_fix;
+
+	// true, if the best fit plane for the transformation should be calculated with Ransac
+	// false, the best fit plane will be calculated by the interpolated normal and the centroid of all points
+	bool m_useRansac;
 
 
 
