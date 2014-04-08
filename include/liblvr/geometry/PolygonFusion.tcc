@@ -27,16 +27,7 @@ public :
 	vec->push_back(p);
     }
 };
-/*
-template <typename Point>
-void list_coordinates(Point const& p)
-{
-    using boost::geometry::get;
 
-    std::cout << "x = " << get<0>(p) << " y = " << get<1>(p) << std::endl;
-
-}
-*/
 
 template<typename VertexT, typename NormalT>
 PolygonFusion<VertexT, NormalT>::PolygonFusion() {
@@ -253,8 +244,6 @@ bool PolygonFusion<VertexT, NormalT>::doFusion(std::vector<PolyRegion> &output)
 template<typename VertexT, typename NormalT>
 bool PolygonFusion<VertexT, NormalT>::isPlanar(PolyRegion a, PolyRegion b)
 {
-//	std::cout << "IsPlanar wurde aufgerufen" << std::endl;
-	// To-Do Umbauen für die neuen Typen (Polygon statt msg:Polygon)
 	bool coplanar = true;
 
 	// at first, make boundingbox-check
@@ -277,7 +266,6 @@ bool PolygonFusion<VertexT, NormalT>::isPlanar(PolyRegion a, PolyRegion b)
 
 	if(!coplanar)
 	{
-//		std::cout << "************* Nicht Coplanar, da BoundingBox-check false zurueckliefert." << std::endl;
 		return coplanar;
 	}
 
@@ -309,9 +297,6 @@ bool PolygonFusion<VertexT, NormalT>::isPlanar(PolyRegion a, PolyRegion b)
 	float d = - ((n_x * p1_x) + (n_y * p1_y) + (n_z * p1_z) );
 	float distance = 0.0;
 
-//	std::cout << "Punkt ( " << p1_x << " ," <<
-//			p1_y << ", " << p1_z << ") mit d = " << d << std::endl;
-
 	std::vector<Polygon<VertexT, NormalT>> polygons_b;
 	polygons_b = b.getPolygons();
 
@@ -326,53 +311,15 @@ bool PolygonFusion<VertexT, NormalT>::isPlanar(PolyRegion a, PolyRegion b)
 		if ( distance > m_distance_threshold )
 		{
 			coplanar = false;
-//			std::cout << "punkt ( " << (*point_iter).x << " ," <<
-//					(*point_iter).y << ", " << (*point_iter).z << ") nicht Coplanar mit distance: " << distance << std::endl;
-		}
-		else
-		{
-//			std::cout << "COPLANAR!! Distance is " << distance << std::endl;
-			/*
-			// TODO remove after testing
-			if ( polyfusion_first_publish )
-			{
-				lvr_tools::PolygonMesh pm;
-				pm.header.frame_id = a.header.frame_id;
-				pm.header.stamp = a.header.stamp;
-				pm.polyregions.push_back(a);
-				poly_debug1_pub.publish(pm);
-				pm.header.frame_id = b.header.frame_id;
-				pm.header.stamp = b.header.stamp;
-				pm.polyregions.clear();
-				pm.polyregions.push_back(b);
-				poly_debug2_pub.publish(pm);
-				polyfusion_first_publish = false;
-				ROS_WARN("published two polygons with distance %f", distance);
-				// punkte ausgeben
-				vector<lvr_tools::Polygon>::iterator poly_iter;
-				for(poly_iter = a.polygons.begin(); poly_iter != a.polygons.end(); ++poly_iter)
-				{
-					ROS_WARN("Anzahl Punkte in Polygon: %d", poly_iter->points.size());
-					vector<geometry_msgs::Point32>::iterator point_iter;
-					for(point_iter = poly_iter->points.begin(); point_iter != poly_iter->points.end() ; ++point_iter)
-					{
-						//ROS_WARN("Punkt: %f  %f  %f  ", (*point_iter).x, (*point_iter).y, (*point_iter).z);
-					}
-				}
-			} */
 		}
 	}
 
-//	if(coplanar) std::cout << "IsPlanar liefert true zurueck" << std::endl;
-//	else         std::cout << "IsPlanar liefert false zurueck mit distance: " << distance << std::endl;
 	return coplanar;
 }
 
 template<typename VertexT, typename NormalT>
 bool PolygonFusion<VertexT, NormalT>::fuse(std::vector<PolyRegion> coplanar_polys, std::vector<PolygonRegion<VertexT, NormalT>> &result)
 {
-//	std::cout << "fuse wurde aufgerufen mit Label: " << coplanar_polys[0].getLabel() << std::endl;
-
 	// we need all points from the polygons, so we can calculate a best fit plane
 	int c_count = 0;
 	std::vector<VertexT> ransac_points;
@@ -404,15 +351,12 @@ bool PolygonFusion<VertexT, NormalT>::fuse(std::vector<PolyRegion> coplanar_poly
 	c_normal /= c_count;
 	c_normal.normalize();
 	centroid /= ransac_points.size();
-//	std::cout << "Mittelpunkt der uebergebenen Punkte ist: " << centroid << std::endl;
-//	std::cout << "Normale (gemittelt) der uebergebenen Punkte ist: " << c_normal << std::endl;
 
 	// calc best fit plane with ransac
 	akSurface akss;
 
 	// TODO die Ausgleichsebene nicht nur durch die Anzahl der Punkte gewichten sondern auch durch den
 	//      Flächeninhalt der Polygone
-	// TODO Fälle ob Ransac oder nicht einführen
 	Plane<VertexT, NormalT> plane;
 	if(m_useRansac)
 	{
@@ -463,13 +407,7 @@ bool PolygonFusion<VertexT, NormalT>::fuse(std::vector<PolyRegion> coplanar_poly
 	Eigen::Matrix4f trans_mat;
 	Eigen::Matrix4f trans_mat_inv;
 
-//std::cout << "***********Input von calcTransform: " << std::endl;
-//std::cout << "Stuetzvektor   : " << plane.p;
-//std::cout << "Normale        : " << plane.n;
-//std::cout << "Richtungsvektor: " << vec1;
-//std::cout << "Richtungsvektor: " << vec2;
 	trans_mat = calcTransform(plane.p, vec1, vec2);
-
 
 	// need transform from 3D to 2D and back from 2D to 3D
 	trans_mat_inv = trans_mat.inverse();
