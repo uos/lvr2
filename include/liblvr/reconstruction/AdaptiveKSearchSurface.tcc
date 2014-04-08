@@ -22,6 +22,7 @@
  *
  *  Created on: 07.02.2011
  *      Author: Thomas Wiemann
+ *   co-Author: Dominik Feldschnieders (dofeldsc@uos.de)
  */
 
 
