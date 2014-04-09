@@ -15,17 +15,21 @@ namespace lvr
 
 ModelPtr PCDIO::read( string filename )
 {
-    pcl::PointCloud<pcl::PointXYZRGB>::Ptr cloud( new pcl::PointCloud<pcl::PointXYZRGB> );
+    pcl::PointCloud<pcl::PointXYZRGBNormal>::Ptr cloud( new pcl::PointCloud<pcl::PointXYZRGBNormal> );
 
-    if ( pcl::io::loadPCDFile<pcl::PointXYZRGB>( filename, *cloud ) == -1)
+    if ( pcl::io::loadPCDFile<pcl::PointXYZRGBNormal>( filename, *cloud ) == -1)
     {
         std::cerr << "Couldn't read file “" << filename << "”." << std::endl;
         lvr::ModelPtr m;
         return m;
     }
 
+    bool has_normals = false;
+    bool has_colors = false;
+
     coord3fArr points = coord3fArr( new coord<float>[ cloud->points.size() ] );
     color3bArr colors = color3bArr( new color<uchar>[ cloud->points.size() ] );
+    coord3fArr normals =  coord3fArr( new coord<float>[ cloud->points.size() ] );
     /* model->m_pointCloud->setPointColorArray( pointColors, numPoints ); */
     for ( size_t i(0); i < cloud->points.size(); i++ )
     {
@@ -47,6 +51,7 @@ ModelPtr PCDIO::read( string filename )
             colors[i].r = cloud->points[i].r;
             colors[i].g = cloud->points[i].g;
             colors[i].b = cloud->points[i].b;
+            has_colors = true;
         }
         else
         {
@@ -54,11 +59,28 @@ ModelPtr PCDIO::read( string filename )
             colors[i].g = 255;
             colors[i].b = 0;
         }
+
+        if(!isnan(cloud->points[i].normal_x) && !isnan(cloud->points[i].normal_y) && !isnan(cloud->points[i].normal_z) )
+        {
+            normals[i].x = cloud->points[i].normal_x;
+            normals[i].y = cloud->points[i].normal_y;
+            normals[i].z = cloud->points[i].normal_z;
+            has_normals = true;
+        }
     }
 
     ModelPtr model( new Model( PointBufferPtr( new PointBuffer )));
     model->m_pointCloud->setIndexedPointArray( points, cloud->points.size() );
-    model->m_pointCloud->setIndexedPointColorArray( colors, cloud->points.size() );
+
+    if(has_colors)
+    {
+        model->m_pointCloud->setIndexedPointColorArray( colors, cloud->points.size() );
+    }
+
+    if(has_normals)
+    {
+        model->m_pointCloud->setIndexedPointNormalArray( normals, cloud->points.size() );
+    }
     m_model = model;
     return model;
 
