@@ -36,7 +36,8 @@
 namespace lvr
 {
 
-LVRMeshBufferBridge::LVRMeshBufferBridge(MeshBufferPtr meshBuffer)
+LVRMeshBufferBridge::LVRMeshBufferBridge(MeshBufferPtr meshBuffer) :
+        m_meshBuffer(meshBuffer)
 {
     if(meshBuffer)
     {
@@ -73,6 +74,11 @@ size_t LVRMeshBufferBridge::getNumTriangles()
 size_t LVRMeshBufferBridge::getNumVertices()
 {
     return m_numVertices;
+}
+
+MeshBufferPtr  LVRMeshBufferBridge::getMeshBuffer()
+{
+    return m_meshBuffer;
 }
 
 LVRMeshBufferBridge::~LVRMeshBufferBridge()

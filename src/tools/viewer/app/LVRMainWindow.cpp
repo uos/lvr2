@@ -35,9 +35,10 @@
 #include "../widgets/LVRPointCloudItem.hpp"
 #include "../widgets/LVRMeshItem.hpp"
 
-
 #include "io/ModelFactory.hpp"
 #include "io/DataStruct.hpp"
+
+#include "registration/ICPPointAlign.hpp"
 
 #include <vtkActor.h>
 #include <vtkProperty.h>
@@ -61,6 +62,8 @@ LVRMainWindow::LVRMainWindow()
 
     treeWidget->setSelectionMode( QAbstractItemView::SingleSelection);
     treeWidget->setContextMenuPolicy(Qt::CustomContextMenu);
+
+    m_treeWidgetHelper = new LVRTreeWidgetHelper(treeWidget);
 
     m_treeContextMenu = new QMenu;
     m_actionShowColorDialog = new QAction("Select base color...", this);
@@ -175,34 +178,52 @@ void LVRMainWindow::alignPointClouds()
 {
     Matrix4f mat = m_correspondanceDialog->getTransformation();
     QString name = m_correspondanceDialog->getDataName();
-    cout << name.toStdString() << endl;
-    cout << mat << endl;
+    QString modelName = m_correspondanceDialog->getModelName();
 
-    QTreeWidgetItemIterator it(treeWidget);
-    while (*it)
+    cout << "modelBuffer: " << modelName.toStdString() << endl;
+    PointBufferPtr modelBuffer = m_treeWidgetHelper->getPointBuffer(modelName);
+
+    cout << "dataBuffer: " << name.toStdString()  << endl;
+    PointBufferPtr dataBuffer  = m_treeWidgetHelper->getPointBuffer(name);
+
+    cout << "item" << endl;
+    float pose[6];
+    LVRModelItem* item = m_treeWidgetHelper->getModelItem(name);
+
+    cout << "transform" << endl;
+    if(item)
     {
-        if ( (*it)->type() == LVRModelItemType)
-        {
-            if( (*it)->text(0) == name)
-            {
-                float pose[6];
-                LVRModelItem* item = static_cast<LVRModelItem*>(*it);
-                mat.toPostionAngle(pose);
+        mat.toPostionAngle(pose);
 
-                // Pose ist in radians, so we need to convert p to degrees
-                // to achieve consistency
-                Pose p;
-                p.x = pose[0];
-                p.y = pose[1];
-                p.z = pose[2];
-                p.r = pose[3]  * 57.295779513;
-                p.t = pose[4]  * 57.295779513;
-                p.p = pose[5]  * 57.295779513;
-                item->setPose(p);
-            }
-        }
-        ++it;
+        // Pose ist in radians, so we need to convert p to degrees
+        // to achieve consistency
+        Pose p;
+        p.x = pose[0];
+        p.y = pose[1];
+        p.z = pose[2];
+        p.r = pose[3]  * 57.295779513;
+        p.t = pose[4]  * 57.295779513;
+        p.p = pose[5]  * 57.295779513;
+        item->setPose(p);
     }
+    this->qvtkWidget->GetRenderWindow()->Render();
+    // Refine pose via ICP
+    if(m_correspondanceDialog->doICP() && modelBuffer && dataBuffer)
+    {
+        ICPPointAlign icp(modelBuffer, dataBuffer, mat);
+        Matrix4f refinedTransform = icp.match();
+        refinedTransform.toPostionAngle(pose);
+        Pose p;
+        p.x = pose[0];
+        p.y = pose[1];
+        p.z = pose[2];
+        p.r = pose[3]  * 57.295779513;
+        p.t = pose[4]  * 57.295779513;
+        p.p = pose[5]  * 57.295779513;
+        item->setPose(p);
+    }
+    this->qvtkWidget->GetRenderWindow()->Render();
+
 }
 
 void LVRMainWindow::connectSignalsAndSlots()

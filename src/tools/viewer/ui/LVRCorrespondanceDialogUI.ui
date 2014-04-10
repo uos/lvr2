@@ -7,7 +7,7 @@
     <x>0</x>
     <y>0</y>
     <width>741</width>
-    <height>518</height>
+    <height>590</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -167,6 +167,119 @@
           <weight>75</weight>
           <bold>true</bold>
          </font>
+        </property>
+       </widget>
+      </widget>
+     </item>
+     <item>
+      <widget class="QGroupBox" name="groupBox">
+       <property name="minimumSize">
+        <size>
+         <width>0</width>
+         <height>200</height>
+        </size>
+       </property>
+       <property name="title">
+        <string>ICP Settings</string>
+       </property>
+       <widget class="QDoubleSpinBox" name="spinBoxEpsilon">
+        <property name="geometry">
+         <rect>
+          <x>10</x>
+          <y>40</y>
+          <width>131</width>
+          <height>25</height>
+         </rect>
+        </property>
+        <property name="decimals">
+         <number>7</number>
+        </property>
+        <property name="maximum">
+         <double>9999.989999999999782</double>
+        </property>
+        <property name="singleStep">
+         <double>0.000001000000000</double>
+        </property>
+        <property name="value">
+         <double>0.000100000000000</double>
+        </property>
+       </widget>
+       <widget class="QLabel" name="labelEpsilon">
+        <property name="geometry">
+         <rect>
+          <x>0</x>
+          <y>20</y>
+          <width>58</width>
+          <height>15</height>
+         </rect>
+        </property>
+        <property name="text">
+         <string>Epsilion</string>
+        </property>
+       </widget>
+       <widget class="QLabel" name="labelIterations">
+        <property name="geometry">
+         <rect>
+          <x>0</x>
+          <y>70</y>
+          <width>121</width>
+          <height>16</height>
+         </rect>
+        </property>
+        <property name="text">
+         <string>Max. Iterations</string>
+        </property>
+       </widget>
+       <widget class="QSpinBox" name="spinBoxIterations">
+        <property name="geometry">
+         <rect>
+          <x>10</x>
+          <y>90</y>
+          <width>131</width>
+          <height>25</height>
+         </rect>
+        </property>
+       </widget>
+       <widget class="QLabel" name="labelDistance">
+        <property name="geometry">
+         <rect>
+          <x>0</x>
+          <y>120</y>
+          <width>121</width>
+          <height>16</height>
+         </rect>
+        </property>
+        <property name="text">
+         <string>Max Distance</string>
+        </property>
+       </widget>
+       <widget class="QDoubleSpinBox" name="spinBoxDistance">
+        <property name="geometry">
+         <rect>
+          <x>10</x>
+          <y>140</y>
+          <width>131</width>
+          <height>25</height>
+         </rect>
+        </property>
+        <property name="value">
+         <double>25.000000000000000</double>
+        </property>
+       </widget>
+       <widget class="QCheckBox" name="checkBoxICP">
+        <property name="geometry">
+         <rect>
+          <x>0</x>
+          <y>170</y>
+          <width>141</width>
+          <height>20</height>
+         </rect>
+        </property>
+        <property name="text">
+         <string>Do ICP after match</string>
+        </property>
+        <property name="checked">
+         <bool>true</bool>
         </property>
        </widget>
       </widget>

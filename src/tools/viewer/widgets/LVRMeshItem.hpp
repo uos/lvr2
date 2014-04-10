@@ -41,6 +41,7 @@ public:
     void    setColor(QColor &c);
     void    setSelectionColor(QColor &c);
     void    resetColor();
+    MeshBufferPtr   getMeshBuffer();
 
 private:
     QColor                  m_color;

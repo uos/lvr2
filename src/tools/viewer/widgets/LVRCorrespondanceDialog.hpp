@@ -48,6 +48,10 @@ public:
     QString  getModelName();
     QString  getDataName();
 
+    bool    doICP();
+    double  getEpsilon();
+    double  getMaxDistance();
+
 public Q_SLOTS:
     void updateModelSelection(int);
     void updateDataSelection(int);
@@ -59,6 +63,8 @@ public Q_SLOTS:
     void saveCorrespondences();
     void loadCorrespondences();
     void treeItemSelected(QTreeWidgetItem*, QTreeWidgetItem*);
+
+
 
 Q_SIGNALS:
     void render();
