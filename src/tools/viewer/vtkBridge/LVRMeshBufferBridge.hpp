@@ -49,12 +49,14 @@ public:
     bool                        hasTextures();
 
     void setBaseColor(float r, float g, float b);
+    MeshBufferPtr getMeshBuffer();
 
 protected:
     void computeMeshActor(MeshBufferPtr meshbuffer);
     size_t                          m_numVertices;
     size_t                          m_numFaces;
     vtkSmartPointer<vtkActor>       m_meshActor;
+    MeshBufferPtr                   m_meshBuffer;
 };
 
 typedef boost::shared_ptr<LVRMeshBufferBridge> MeshBufferBridgePtr;

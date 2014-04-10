@@ -177,6 +177,20 @@ void LVRCorrespondanceDialog::updateDataSelection(int index)
      Q_EMIT(render());
 }
 
+bool LVRCorrespondanceDialog::doICP()
+{
+    return true;
+}
+
+double LVRCorrespondanceDialog::getEpsilon()
+{
+    return 0.0;
+}
+double LVRCorrespondanceDialog::getMaxDistance()
+{
+    return 0.0;
+}
+
 LVRCorrespondanceDialog::~LVRCorrespondanceDialog()
 {
     // TODO Auto-generated destructor stub
