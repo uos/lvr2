@@ -31,6 +31,7 @@
 
 #include <QtGui>
 #include "LVRMainWindowUI.h"
+#include "LVRTreeWidgetHelper.hpp"
 #include "../widgets/LVRCorrespondanceDialog.hpp"
 #include "../vtkBridge/LVRPickingInteractor.hpp"
 #include "../vtkBridge/LVRVtkArrow.hpp"
@@ -81,6 +82,7 @@ private:
     QAction*			                m_actionDeleteModelItem;
     QAction*                            m_actionExportModelTransformed;
     LVRPickingInteractor*               m_pickingInteractor;
+    LVRTreeWidgetHelper*                m_treeWidgetHelper;
 };
 
 } /* namespace lvr */
