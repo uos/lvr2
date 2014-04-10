@@ -71,9 +71,6 @@ Matrix4f ICPPointAlign::match()
         Matrix4f        transform;
         double          sum;
 
-        cout << i << endl;
-        cout << m_transformation;
-        cout << endl;
 
         PointPairVector pairs;
         getPointPairs(pairs, centroid_m, centroid_d, sum);
@@ -122,30 +119,30 @@ void ICPPointAlign::getPointPairs(PointPairVector& pairs, Vertexf& centroid_m, V
         for(int i = 0; i < m_dataCloud->getNumPoints(); i++)
         {
             // Get vertex representation of current data point
-            Vertexf dataPoint(dataPoints[i * 3], dataPoints[i * 3 + 1], dataPoints[i * 3 + 2]);
-            Vertexf queryPoint = m_transformation * dataPoint;
+            Vertexf t(dataPoints[i * 3], dataPoints[i * 3 + 1], dataPoints[i * 3 + 2]);
+
 
             // Perform inverse transformation on query point to
             // it's position relative to the model point data
-            Vertexf inverseQueryPoint = transformInv * dataPoint;
+            Vertexf s = transformInv * t;
 
             // Get closest point to "inverse query point"
             neighbors.clear();
-            m_searchTree->kSearch(inverseQueryPoint, 1, neighbors);
+            m_searchTree->kSearch(s, 1, neighbors);
 
             // If closest point was found, transform back to the corresponding
             // position in the data reference frame
             if(neighbors.size())
             {
                 Vertexf closest = m_transformation * neighbors[0];
-                if( (closest - queryPoint).length2() < m_maxDistanceMatch)
+                if( (closest - t).length() < m_maxDistanceMatch)
                 {
-                    centroid_dP += queryPoint;
-                    centroid_mP += closest;
+                    centroid_dP += closest;
+                    centroid_mP += t;
 
-                    sum += (closest - queryPoint).length2();
+                    sum += (closest - t).length2();
 
-                    std::pair<Vertexf, Vertexf> ptPair(closest, queryPoint);
+                    std::pair<Vertexf, Vertexf> ptPair(t, closest);
                     privatePairs.push_back(ptPair);
                 }
             }
