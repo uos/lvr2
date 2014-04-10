@@ -131,6 +131,13 @@ int main(int argc, char **argv)
         if(options.anyTranslationZ())
           z = options.getTranslationZ();
       }
+
+      // To radians
+      r1 = r1 * 0.0174532925;
+      r2 = r2 * 0.0174532925;
+      r3 = r3 * 0.0174532925;
+
+      mat = Matrix4f(Vertex3f(x, y, z), Vertex3f(r1, r2, r3));
     }
 
     // Get point buffer
@@ -141,7 +148,7 @@ int main(int argc, char **argv)
       cout << timestamp << "Using points" << endl;
       did_anything = true;
       coord3fArr points = p_buffer->getIndexedPointArray(num);
-
+      cout << mat;
       for(size_t i = 0; i < num; i++)
       {
         Vertex<float> v(points[i][0], points[i][1], points[i][2]);
