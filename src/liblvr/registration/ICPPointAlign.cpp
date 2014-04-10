@@ -53,10 +53,6 @@ Matrix4f ICPPointAlign::match()
         return Matrix4f();
     }
 
-    // Quick hack
-    ofstream pose1("scan001.frames");
-    ofstream pose2("scan002.frames");
-
     double ret = 0.0, prev_ret = 0.0, prev_prev_ret = 0.0;
     EigenSVDPointAlign align;
     for(int i = 0; i < m_maxIterations; i++)
@@ -82,14 +78,6 @@ Matrix4f ICPPointAlign::match()
         m_transformation *= transform;
 
         cout << timestamp << "ICP Error is " << ret << " in iteration " << i << " / " << m_maxIterations << " using " << pairs.size() << " points."<< endl;
-
-        pose1 << "1 0 0 0 0 1 0 0 0 0 1 0 0 0 0 1 2" << endl;
-
-        for(int j = 0; j < 16; j++)
-        {
-            pose2 << m_transformation[j] << " ";
-        }
-        pose2 << "1" << endl;
 
         // Check minimum distance
         if ((fabs(ret - prev_ret) < m_epsilon) && (fabs(ret - prev_prev_ret) < m_epsilon))
@@ -193,6 +181,7 @@ double ICPPointAlign::getMaxMatchDistance()
 {
     return m_maxDistanceMatch;
 }
+
 
 int ICPPointAlign::getMaxIterations()
 {

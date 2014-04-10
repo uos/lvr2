@@ -70,7 +70,7 @@ public:
     void         addActors(vtkSmartPointer<vtkRenderer> renderer);
 
     /**
-     * @brief       Removes the generated actors from the fiven renderer
+     * @brief       Removes the generated actors from the given renderer
      */
     void        removeActors(vtkSmartPointer<vtkRenderer> renderer);
 
