@@ -51,6 +51,7 @@ public:
     bool    doICP();
     double  getEpsilon();
     double  getMaxDistance();
+    int     getMaxIterations();
 
 public Q_SLOTS:
     void updateModelSelection(int);
