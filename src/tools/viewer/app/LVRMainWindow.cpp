@@ -211,7 +211,12 @@ void LVRMainWindow::alignPointClouds()
     if(m_correspondanceDialog->doICP() && modelBuffer && dataBuffer)
     {
         ICPPointAlign icp(modelBuffer, dataBuffer, mat);
+        icp.setEpsilon(m_correspondanceDialog->getEpsilon());
+        icp.setMaxIterations(m_correspondanceDialog->getMaxIterations());
+        icp.setMaxMatchDistance(m_correspondanceDialog->getMaxDistance());
         Matrix4f refinedTransform = icp.match();
+
+
 
         // Apply correction to initial estimation
         refinedTransform = mat * refinedTransform;
