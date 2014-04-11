@@ -212,6 +212,9 @@ void LVRMainWindow::alignPointClouds()
     {
         ICPPointAlign icp(modelBuffer, dataBuffer, mat);
         Matrix4f refinedTransform = icp.match();
+
+        // Apply correction to initial estimation
+        refinedTransform = mat * refinedTransform;
         refinedTransform.toPostionAngle(pose);
         Pose p;
         p.x = pose[0];
