@@ -179,16 +179,22 @@ void LVRCorrespondanceDialog::updateDataSelection(int index)
 
 bool LVRCorrespondanceDialog::doICP()
 {
-    return true;
+    return m_ui->checkBoxICP->isChecked();
 }
 
 double LVRCorrespondanceDialog::getEpsilon()
 {
-    return 0.0;
+    return m_ui->spinBoxEpsilon->value();
 }
+
 double LVRCorrespondanceDialog::getMaxDistance()
 {
-    return 0.0;
+    return m_ui->spinBoxDistance->value();
+}
+
+int LVRCorrespondanceDialog::getMaxIterations()
+{
+    return m_ui->spinBoxIterations->value();
 }
 
 LVRCorrespondanceDialog::~LVRCorrespondanceDialog()
