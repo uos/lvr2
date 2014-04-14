@@ -180,17 +180,12 @@ void LVRMainWindow::alignPointClouds()
     QString name = m_correspondanceDialog->getDataName();
     QString modelName = m_correspondanceDialog->getModelName();
 
-    cout << "modelBuffer: " << modelName.toStdString() << endl;
     PointBufferPtr modelBuffer = m_treeWidgetHelper->getPointBuffer(modelName);
-
-    cout << "dataBuffer: " << name.toStdString()  << endl;
     PointBufferPtr dataBuffer  = m_treeWidgetHelper->getPointBuffer(name);
 
-    cout << "item" << endl;
     float pose[6];
     LVRModelItem* item = m_treeWidgetHelper->getModelItem(name);
 
-    cout << "transform" << endl;
     if(item)
     {
         mat.toPostionAngle(pose);
@@ -206,6 +201,7 @@ void LVRMainWindow::alignPointClouds()
         p.p = pose[5]  * 57.295779513;
         item->setPose(p);
     }
+    cout << mat << endl;
     this->qvtkWidget->GetRenderWindow()->Render();
     // Refine pose via ICP
     if(m_correspondanceDialog->doICP() && modelBuffer && dataBuffer)
@@ -216,11 +212,14 @@ void LVRMainWindow::alignPointClouds()
         icp.setMaxMatchDistance(m_correspondanceDialog->getMaxDistance());
         Matrix4f refinedTransform = icp.match();
 
-
+        cout << "ICP transform" << refinedTransform << endl;
 
         // Apply correction to initial estimation
         refinedTransform = mat * refinedTransform;
         refinedTransform.toPostionAngle(pose);
+
+        cout << "Refined: " << refinedTransform << endl;
+
         Pose p;
         p.x = pose[0];
         p.y = pose[1];
