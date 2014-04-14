@@ -230,6 +230,7 @@ void LVRMainWindow::alignPointClouds()
         p.p = pose[5]  * 57.295779513;
         item->setPose(p);
     }
+    m_correspondanceDialog->clearAllItems();
     this->qvtkWidget->GetRenderWindow()->Render();
 
 }

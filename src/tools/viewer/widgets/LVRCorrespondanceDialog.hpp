@@ -64,7 +64,7 @@ public Q_SLOTS:
     void saveCorrespondences();
     void loadCorrespondences();
     void treeItemSelected(QTreeWidgetItem*, QTreeWidgetItem*);
-
+    void clearAllItems();
 
 
 Q_SIGNALS:
