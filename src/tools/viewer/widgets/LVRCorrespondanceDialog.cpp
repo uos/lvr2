@@ -71,6 +71,38 @@ LVRCorrespondanceDialog::LVRCorrespondanceDialog(QTreeWidget* treeWidget) :
     QObject::connect(m_ui->treeWidget, SIGNAL(currentItemChanged (QTreeWidgetItem*, QTreeWidgetItem*)), this, SLOT(treeItemSelected(QTreeWidgetItem*, QTreeWidgetItem*)));
 }
 
+void LVRCorrespondanceDialog::clearAllItems()
+{
+    // For some reason we have to hack here. Code below
+    // is not working properly
+    while(m_ui->treeWidget->topLevelItemCount ())
+    {
+        m_ui->treeWidget->selectAll();
+        deleteItem();
+    }
+
+    /*   NOT WORKING! Don't know why though...
+    QTreeWidgetItemIterator it( m_ui->treeWidget );
+    while(*it)
+    {
+        QTreeWidgetItem* item = *it;
+        if(item->type() == LVRPickItemType)
+        {
+            int index = m_ui->treeWidget->indexOfTopLevelItem(item);
+            LVRPickItem* i = static_cast<LVRPickItem*>(m_ui->treeWidget->takeTopLevelItem(index));
+            if(i->getArrow())
+            {
+                Q_EMIT(removeArrow(i->getArrow()));
+            }
+            //if(i) delete i;
+        }
+        ++it;
+    }
+    */
+
+    Q_EMIT(disableCorrespondenceSearch());
+}
+
 void LVRCorrespondanceDialog::insertNewItem()
 {
     LVRPickItem* item = new LVRPickItem( m_ui->treeWidget);
@@ -104,7 +136,7 @@ void LVRCorrespondanceDialog::deleteItem()
            {
                Q_EMIT(removeArrow(i->getArrow()));
            }
-           if(i) delete i;
+           //if(i) delete i;
         }
     }
 }
@@ -212,7 +244,7 @@ void LVRCorrespondanceDialog::firstPointPicked(double* pos)
         {
             LVRPickItem* item = static_cast<LVRPickItem*>(it);
 
-            // Handle arrow displayment: Check if an arrow existed,
+            // Handle arrow displayment: Check if an arrow exists,
             // remove it from renderer and create a new one (and pray
             // that there are no concurrency problems...
             LVRVtkArrow* arrow = item->getArrow();
@@ -352,7 +384,7 @@ void LVRCorrespondanceDialog::loadCorrespondences()
                 m_ui->treeWidget->setCurrentItem(item);
             }
         }
-        // Disable search to prevent change of last loaded correspondes
+        // Disable search to prevent change of last loaded correspondence
         // when the user clicks into the window
         Q_EMIT(disableCorrespondenceSearch());
     }
@@ -421,6 +453,7 @@ Matrix4f LVRCorrespondanceDialog::getTransformation()
             }
         }
         ++it;
+
     }
 
     if(pairs.size() > 3)
