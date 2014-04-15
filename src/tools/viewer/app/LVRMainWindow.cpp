@@ -201,7 +201,7 @@ void LVRMainWindow::alignPointClouds()
         p.p = pose[5]  * 57.295779513;
         item->setPose(p);
     }
-    cout << mat << endl;
+
     this->qvtkWidget->GetRenderWindow()->Render();
     // Refine pose via ICP
     if(m_correspondanceDialog->doICP() && modelBuffer && dataBuffer)
@@ -212,10 +212,10 @@ void LVRMainWindow::alignPointClouds()
         icp.setMaxMatchDistance(m_correspondanceDialog->getMaxDistance());
         Matrix4f refinedTransform = icp.match();
 
-        cout << "ICP transform" << refinedTransform << endl;
+        cout << "Initial: " << mat << endl;
 
         // Apply correction to initial estimation
-        refinedTransform = mat * refinedTransform;
+        //refinedTransform = mat * refinedTransform;
         refinedTransform.toPostionAngle(pose);
 
         cout << "Refined: " << refinedTransform << endl;
