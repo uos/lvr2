@@ -33,7 +33,7 @@ namespace lvr
 {
 
 ICPPointAlign::ICPPointAlign(PointBufferPtr model, PointBufferPtr data, Matrix4f transform) :
-    m_modelCloud(model), m_dataCloud(data), m_transformation(transform)
+    m_modelCloud(model), m_transformation(transform )
 {
     // Init default values
     m_epsilon               = 0.00001;
@@ -41,6 +41,22 @@ ICPPointAlign::ICPPointAlign(PointBufferPtr model, PointBufferPtr data, Matrix4f
     m_maxIterations         = 50;
 
     size_t numPoints = model->getNumPoints();
+
+    // Transform data points according to initial pose estimation
+    m_dataCloud = PointBufferPtr(new PointBuffer);
+    size_t n;
+    floatArr o_points = data->getPointArray(n);
+    floatArr t_points(new float[3 * n]);
+    bool success;
+    for(size_t i = 0; i < numPoints; i++)
+    {
+        Vertexf v(o_points[3 * i], o_points[3 * i + 1], o_points[3 * i + 2]);
+        Vertexf t = transform * v;
+        t_points[3 * i    ] = t[0];
+        t_points[3 * i + 1] = t[1];
+        t_points[3 * i + 2] = t[2];
+    }
+    m_dataCloud->setPointArray(t_points, n);
 
     // Create search tree
     m_searchTree = SearchTreeFlann<Vertexf>::Ptr(new SearchTreeFlann<Vertexf>(model, numPoints));
@@ -78,7 +94,7 @@ Matrix4f ICPPointAlign::match()
         m_transformation *= transform;
 
         cout << timestamp << "ICP Error is " << ret << " in iteration " << i << " / " << m_maxIterations << " using " << pairs.size() << " points."<< endl;
-
+        //cout << m_transformation << endl;
         // Check minimum distance
         if ((fabs(ret - prev_ret) < m_epsilon) && (fabs(ret - prev_prev_ret) < m_epsilon))
         {
