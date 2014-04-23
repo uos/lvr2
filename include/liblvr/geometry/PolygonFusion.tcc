@@ -18,6 +18,9 @@
 namespace lvr
 {
 template <typename Point>
+/**
+ * @brief A little helper-class, nothing important 
+ */
 class round_coordinates
 {
 private :
@@ -115,8 +118,8 @@ bool PolygonFusion<VertexT, NormalT>::doFusion(std::vector<PolyRegion> &output)
 			}
 		}
 	}
-	std::cout << "Aufteilen der Regionen nach ihren labeln abgeschlossen" << std::endl;
-	std::cout << "Es gibt insgesamt ('unknown' wird nicht betrachtet) "<< m_polyregionmap.size()  << " verschiedene Label." << std::endl;
+	std::cout << "Finished seperate Regions with different labels." << std::endl;
+	std::cout << "There are (without the label 'unknown') "<< m_polyregionmap.size()  << " different labels." << std::endl;
 
 
 	// step 2-5) in these bins, find "co-planar" polyregions -> same plane (Δ)
@@ -251,7 +254,7 @@ bool PolygonFusion<VertexT, NormalT>::isPlanar(PolyRegion a, PolyRegion b)
 	}
 	else
 	{
-		std::cout << timestamp << "Polygon a in isPlanar war leer, daher wird false zurueckgegeben! (!!!Dieser Fall sollte nicht auftreten!!!)" << std::endl;
+		std::cout << timestamp << "The vector with planar regions was empty, so nothing to do here and return false! (!!!This should not happend!!!)" << std::endl;
 		return false;
 	}
 
@@ -635,7 +638,7 @@ boost::geometry::model::polygon<boost::geometry::model::d2::point_xy<float> > Po
 						trans(1,2) * pt.coeffRef(2) +
 						trans(1,3) * pt.coeffRef(3);
 
-// Debug stuff, test if trans goes right
+// Debug stuff, test if trans goes right  -- still in progress
 			float z = 	trans(2,0) * pt.coeffRef(0) +
 						trans(2,1) * pt.coeffRef(1) +
 						trans(2,2) * pt.coeffRef(2) +
@@ -659,7 +662,7 @@ boost::geometry::model::polygon<boost::geometry::model::d2::point_xy<float> > Po
 			}
 			else
 			{
-				std::cout << "x,y und z lassen sich in keiner Reihenfolge birngen" << std::endl;
+				std::cout << "The drity fix does not work in this case, TODO..." << std::endl;
 			}
 
 
@@ -744,10 +747,8 @@ boost::geometry::model::polygon<boost::geometry::model::d2::point_xy<float> > Po
 					}
 					else
 					{
-						std::cout << "x,y und z lassen sich in keiner Reihenfolge birngen" << std::endl;
+						std::cout << "The drity fix does not work in this case, TODO..." << std::endl;
 					}
-					//std::cout << "In transformto2DBoost (in if(poly_first)) ist der transformierte Vektor bzw. Matrix: " << std::endl;
-					//std::cout << tmp_mat << std::endl;
 
 					// transform in BoostPolygon
 					if (first_it)
@@ -819,7 +820,7 @@ boost::geometry::model::polygon<boost::geometry::model::d2::point_xy<float> > Po
 				}
 				else
 				{
-					std::cout << "x,y und z lassen sich in keiner Reihenfolge birngen" << std::endl;
+					std::cout << "The drity fix does not work in this case, TODO..." << std::endl;
 				}
 				// transform in BoostPolygon
 				if (first_it)

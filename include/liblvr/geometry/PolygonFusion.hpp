@@ -38,6 +38,7 @@ namespace lvr
 /**
  * @brief This class contains all the functionality for a 3D Polygonfusion.
  * 		The data is represented by the PolygonMesh class and some others.
+ *		This class is still in progress and there are some important TODO`s
  *
  * The procedure is as follows:
  *	0.5) Wait and store all given meshes till the method "doFusion" is called
@@ -54,6 +55,7 @@ namespace lvr
 template<typename VertexT, typename NormalT>
 class PolygonFusion {
 public:
+	// some useful typedefs
 	typedef PolygonRegion<VertexT, NormalT>               PolyRegion;
 	typedef std::map<std::string, std::vector<PolyRegion> > PolyRegionMap;
 	typedef std::vector<PolygonMesh<VertexT, NormalT> >   PolyMesh;
@@ -184,6 +186,7 @@ private:
 	// thresholt for overlapping bounding box check
 	double 			m_distance_threshold_bounding;
 
+	// part of a TODO
 	int dirty_fix;
 
 	// true, if the best fit plane for the transformation should be calculated with Ransac
