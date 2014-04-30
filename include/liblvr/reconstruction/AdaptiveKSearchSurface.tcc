@@ -332,7 +332,7 @@ bool AdaptiveKSearchSurface<VertexT, NormalT>::boundingBoxOK(const float &dx, co
     else if(dy < e * dx) return false;
     else if(dy < e * dz) return false;
     else if(dz < e * dx) return false;
-    else if(dy < e * dy) return false;
+    else if(dz < e * dy) return false;
     return true;
 }
 
