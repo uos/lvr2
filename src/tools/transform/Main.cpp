@@ -97,7 +97,7 @@ int main(int argc, char **argv)
              >>  t[4] >>  t[5] >>  t[6] >>  t[7]
              >>  t[8] >>  t[9] >> t[10] >> t[11]
              >> t[12] >> t[13] >> t[14] >> t[15]
-             >> t[17]; // we don't need this value but we need to skip it
+             >> t[16]; // we don't need this value but we need to skip it
         }
 
         for(int i = 0; i < 16; ++i)
