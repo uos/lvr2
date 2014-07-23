@@ -34,40 +34,40 @@ using namespace lvr;
  */
 int main(int argc, char** argv)
 {
-	try
-	{
+    try
+    {
 
-	    float euler[6];
-		// Parse command line arguments
-		registration::Options options(argc, argv);
-		cout << options;
+        float euler[6];
+        // Parse command line arguments
+        registration::Options options(argc, argv);
+        cout << options;
 
-		// Load model and data point cloud
-		string modelName = options.getModelName();
-		string dataName = options.getDataName();
+        // Load model and data point cloud
+        string modelName = options.getModelName();
+        string dataName = options.getDataName();
 
-		ModelPtr modelModel = ModelFactory::readModel(modelName);
-		ModelPtr dataModel = ModelFactory::readModel(dataName);
+        ModelPtr modelModel = ModelFactory::readModel(modelName);
+        ModelPtr dataModel = ModelFactory::readModel(dataName);
 
-		Vertexf position(options.getTx(), options.getTy(), options.getTz());
-		Vertexf angle(options.getRx(), options.getRy(), options.getRz());
-		Matrix4f transformation(position, angle);
+        Vertexf position(options.getTx(), options.getTy(), options.getTz());
+        Vertexf angle(options.getRx(), options.getRy(), options.getRz());
+        Matrix4f transformation(position, angle);
 
-		ICPPointAlign align(modelModel->m_pointCloud, dataModel->m_pointCloud, transformation);
-		align.setMaxIterations(options.getMaxIterations());
-		align.setMaxMatchDistance(options.getMaxDistance());
-		Matrix4f correction = align.match();
+        ICPPointAlign align(modelModel->m_pointCloud, dataModel->m_pointCloud, transformation);
+        align.setMaxIterations(options.getMaxIterations());
+        align.setMaxMatchDistance(options.getMaxDistance());
+        Matrix4f correction = align.match();
 
 
-		correction.toPostionAngle(euler);
+        correction.toPostionAngle(euler);
 
-		cout << "Pose: " << euler[0] << " " << euler[1] << " " << euler[2] << " " << euler[3] << " " << euler[4] << " " << euler[5] << endl;
+        cout << "Pose: " << euler[0] << " " << euler[1] << " " << euler[2] << " " << euler[3] << " " << euler[4] << " " << euler[5] << endl;
 
-	}
-	catch(...)
-	{
-		std::cout << "Unable to parse options. Call 'lvr_registration --help' for more information." << std::endl;
-	}
-	return 0;
+    }
+    catch(...)
+    {
+        std::cout << "Unable to parse options. Call 'lvr_registration --help' for more information." << std::endl;
+    }
+    return 0;
 }
 
