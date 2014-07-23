@@ -33,7 +33,7 @@ namespace lvr
 {
 
 ICPPointAlign::ICPPointAlign(PointBufferPtr model, PointBufferPtr data, Matrix4f transform) :
-    m_modelCloud(model), m_transformation(transform )
+    m_modelCloud(model), m_transformation(transform)
 {
     // Init default values
     m_epsilon               = 0.00001;
@@ -90,8 +90,14 @@ Matrix4f ICPPointAlign::match()
         // Get transformation (if possible)
         ret = align.alignPoints(pairs, centroid_m, centroid_d, transform);
 
+        cout << "CORRECTION" << endl;
+        cout << transform << endl;
+
         // Apply transformation
         m_transformation *= transform;
+
+        cout << "TRANSFORMATION: " << endl;
+        cout << m_transformation << endl;
 
         cout << timestamp << "ICP Error is " << ret << " in iteration " << i << " / " << m_maxIterations << " using " << pairs.size() << " points."<< endl;
         //cout << m_transformation << endl;
