@@ -32,14 +32,14 @@ Options::Options(int argc, char** argv) : m_descr("Supported options")
 
 	m_descr.add_options()
 	("help", "Produce help message")
-	("t,targetSize", value<int>(&m_targetSize)->default_value( -1 ), "Number of desired points in the outpur file. Negative values indicate no reduction.")
-	("i,inputDirectory", value<string>(&m_inputDirectory)->default_value( "./" ), "Directory containing scans with normals.")
-	("o,outputFile", value<string>(&m_outputFile)->default_value( "normals.ply" ), "Output file. Supported are .ply and .3d.")
-	("s,start", value<int>(&m_start)->default_value( -1 ), "First scan to convert. Set to -1 for auto detection.")
-	("e,end", value<int>(&m_end)->default_value( -1 ), "Last scan to scanvert. Set to -1 for auto dection.")
+	("targetSize,t", value<int>(&m_targetSize)->default_value( -1 ), "Number of desired points in the outpur file. Negative values indicate no reduction.")
+	("inputDirectory,i", value<string>(&m_inputDirectory)->default_value( "./" ), "Directory containing scans with normals.")
+	("outputFile,o", value<string>(&m_outputFile)->default_value( "normals.ply" ), "Output file. Supported are .ply and .3d.")
+	("start,s", value<int>(&m_start)->default_value( -1 ), "First scan to convert. Set to -1 for auto detection.")
+	("end,e", value<int>(&m_end)->default_value( -1 ), "Last scan to scanvert. Set to -1 for auto dection.")
 	;
 
-	m_pdescr.add("inputFile", -1);
+	m_pdescr.add("inputDirectory", -1);
 
 	// Parse command line and generate variables map
 	store(command_line_parser(argc, argv).options(m_descr).positional(m_pdescr).run(), m_variables);
