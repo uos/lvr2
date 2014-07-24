@@ -309,6 +309,19 @@ public:
 		return Vertex<T>(x, y, z);
 	}
 
+    /**
+     * @brief   Multiplication of Matrix and Vertex types
+     */
+    template<typename T>
+    Normal<T> operator*(const Normal<T> &v) const
+    {
+        T x = m[ 0] * v.x + m[ 4] * v.y + m[8 ] * v.z;
+        T y = m[ 1] * v.x + m[ 5] * v.y + m[9 ] * v.z;
+        T z = m[ 2] * v.x + m[ 6] * v.y + m[10] * v.z;
+
+        return Normal<T>(x, y, z);
+    }
+
 	/**
 	 * @brief	Sets the given index of the Matrix's data field
 	 * 			to the provided value.
