@@ -37,6 +37,7 @@ Options::Options(int argc, char** argv) : m_descr("Supported options")
 	("outputFile,o", value<string>(&m_outputFile)->default_value( "normals.ply" ), "Output file. Supported are .ply and .3d.")
 	("start,s", value<int>(&m_start)->default_value( -1 ), "First scan to convert. Set to -1 for auto detection.")
 	("end,e", value<int>(&m_end)->default_value( -1 ), "Last scan to scanvert. Set to -1 for auto dection.")
+    ("ki", value<int>(&m_ki)->default_value( -1 ), "Number of nearest neighbors for normal interpolation.")
 	;
 
 	m_pdescr.add("inputDirectory", -1);
