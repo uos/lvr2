@@ -22,10 +22,18 @@
 #include "Options.hpp"
 #include "io/AsciiIO.hpp"
 #include "io/Timestamp.hpp"
+#include "io/Progress.hpp"
 #include "io/DataStruct.hpp"
 #include "io/ModelFactory.hpp"
 #include "geometry/Matrix4.hpp"
 #include "geometry/Normal.hpp"
+#include "reconstruction/SearchTree.hpp"
+#include "reconstruction/SearchTreeStann.hpp"
+
+// SearchTreePCL
+#ifdef _USE_PCL_
+    #include "reconstruction/SearchTreeFlann.hpp"
+#endif
 
 #include <boost/filesystem.hpp>
 
@@ -68,6 +76,67 @@ Matrix4<float> readPoseFile(string filename)
     return trans;
 }
 
+void dumpNormals(string filename, PointBufferPtr ptr)
+{
+    ofstream out(filename.c_str());
+    size_t count;
+    floatArr normals = ptr->getPointNormalArray(count);
+    for(size_t i = 0; i < count; i++)
+    {
+        size_t j = 3 * i;
+        out << normals[j] << " " << normals[j + 1] << " " << normals[j + 2] << endl;
+    }
+    out.close();
+}
+
+void interpolateNormals(PointBufferPtr pc, size_t numPoints, int n)
+{
+    cout << timestamp << "Creating search tree for interpolation" << endl;
+
+    typename SearchTree<Vertex<float> >::Ptr       tree;
+#ifdef _USE_PCL_
+        tree = SearchTree<Vertex<float> >::Ptr( new SearchTreeFlann<Vertex<float> >(pc, numPoints, n, n, n) );
+#else
+        cout << timestamp << "Warning: PCL is not installed. Using STANN search tree in AdaptiveKSearchSurface." << endl;
+        tree = SearchTree<Vertex<float> >::Ptr( new SearchTreeStann<Vertex<float> >(pc, numPoints, n, n, n) );
+#endif
+
+    size_t count;
+    floatArr points = pc->getPointArray(count);
+    floatArr normals = pc->getPointNormalArray(count);
+
+    string comment = timestamp.getElapsedTime() + "Interpolating normals ";
+    ProgressBar progress(numPoints, comment);
+
+    #pragma omp parallel for schedule(static)
+    for(size_t i = 0; i < numPoints; i++)
+    {
+        // Create search tree
+        vector< ulong > indices;
+        vector< double > distances;
+
+        Vertex<float> vertex(points[3 * i], points[3 * i + 1], points[3 * i + 2]);
+        tree->kSearch( vertex, n, indices, distances);
+
+        // Do interpolation
+        Normal<float> normal(normals[3 * i], normals[3 * i + 1], normals[3 * i + 2]);
+        for(int j = 0; j < indices.size(); j++)
+        {
+            normal += Normal<float>(normals[3 * indices[j]], normals[3 * indices[j] + 1], normals[3 * indices[j] + 2]);
+        }
+        normal.normalize();
+
+        // Save results in buffer (I know i should use a seperate buffer, but for testing it
+        // should be OK to save the interpolated values directly into the input buffer)
+        normals[3 * i]      = normal.x;
+        normals[3 * i + 1]  = normal.y;
+        normals[3 * i + 2]  = normal.z;
+
+        ++progress;
+    }
+    cout << endl;
+}
+
 /**
  * @brief   Main entry point for the LSSR surface executable
  */
@@ -76,6 +145,8 @@ int main(int argc, char** argv)
 	try
 	{
 	    normals::Options options(argc, argv);
+
+	    cout << options << endl;
 
 	    string dir = options.getInputDirectory();
 	    string outFileName = options.getOutputFile();
@@ -243,13 +314,19 @@ int main(int argc, char** argv)
 
 	        }
 	        cout << timestamp << "Read " << pointsRead << " from " << numPointsToRead << " requested." << endl;
-	        cout << timestamp << "Writing " << outFileName << endl;
+
 
 	        PointBufferPtr pc = PointBufferPtr( new PointBuffer );
 	        pc->setPointArray(points, numPointsToRead);
 	        pc->setPointNormalArray(normals, numPointsToRead);
 
+	        if(options.getInterpolation() > 0)
+	        {
+	            interpolateNormals(pc, numPointsToRead, options.getInterpolation());
+	        }
 	        ModelPtr model(new Model(pc));
+
+            cout << timestamp << "Writing " << outFileName << endl;
 	        ModelFactory::saveModel(model, outFileName);
 	    }
 	}
