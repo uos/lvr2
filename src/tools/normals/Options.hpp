@@ -95,6 +95,14 @@ public:
 	    return m_variables["end"].as<int>();
 	}
 
+	/**
+	 * @return  Get end scan number
+	 */
+	int     getInterpolation() const
+	{
+	    return m_variables["ki"].as<int>();
+	}
+
 private:
 
 	/// The internally used variable map
@@ -111,6 +119,9 @@ private:
 
 	/// Last scan to read
 	int         m_end;
+
+	/// Number of nearest neighbors for normal interpolation
+	int         m_ki;
 
 	/// Input directory
 	string      m_inputDirectory;
@@ -129,8 +140,9 @@ inline ostream& operator<<(ostream& os, const Options& o)
     os << "Input Dir\t: "   << o.getInputDirectory() << endl;
     os << "Start \t\t: "    << o.getStart() << endl;
     os << "Output File\t: " << o.getOutputFile() << endl;
-    os << "End \t: "        << o.getEnd() << endl;
+    os << "End \t\t: "        << o.getEnd() << endl;
     os << "Target Size\t: " << o.getTargetSize() << endl;
+    os << "Interpolation\t: " << o.getInterpolation() << endl;
     return os;
 }
 
