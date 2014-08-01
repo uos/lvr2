@@ -22,6 +22,7 @@
  *
  *  Created on: 07.02.2011
  *      Author: Thomas Wiemann
+ *   co-Author: Dominik Feldschnieders (dofeldsc@uos.de)
  */
 
 
@@ -37,6 +38,15 @@ namespace lvr
 typedef ColorVertex<float, unsigned char>               cVertex;
 typedef Normal<float>                                   cNormal;
 typedef SearchTree<cVertex> search_tree;
+
+template<typename VertexT, typename NormalT>
+AdaptiveKSearchSurface<VertexT, NormalT>::AdaptiveKSearchSurface()
+{
+	m_useRANSAC = true;
+    this->m_ki = 10;
+    this->m_kn = 10;
+    this->m_kd = 10;
+}
 
 template<typename VertexT, typename NormalT>
 AdaptiveKSearchSurface<VertexT, NormalT>::AdaptiveKSearchSurface(
@@ -522,13 +532,131 @@ size_t AdaptiveKSearchSurface<VertexT, NormalT>::getNumPoints()
     return m_numPoints;
 }
 
+   template<typename VertexT, typename NormalT>
+   Plane<VertexT, NormalT> AdaptiveKSearchSurface<VertexT, NormalT>::calcPlaneRANSAC(const VertexT &queryPoint,
+           const int &k,
+           const vector<unsigned long> &id,
+           bool &ok)
+           {
+
+       Plane<VertexT, NormalT> p;
+
+       VertexT point1;
+       VertexT point2;
+       VertexT point3;
+
+       //representation of best regression plane by point and normal
+       VertexT bestpoint;
+       NormalT bestNorm;
+
+       float bestdist = numeric_limits<float>::max();
+       float dist     = 0;
+
+       int iterations              = 0;
+       int nonimproving_iterations = 0;
+
+       //  int max_nonimproving = max(5, k / 2);
+       int max_interations  = 10;
+
+       while((nonimproving_iterations < 5) && (iterations < max_interations))
+       {
+           NormalT n0;
+
+           //randomly choose 3 disjoint points
+           int c = 0;
+           do{
+               //cout << "AAA" << endl;
+               int index[3];
+               for(int i = 0; i < 3; i++)
+               {
+                   float f = 1.0 * rand() / RAND_MAX;
+                   int r = (int)(f * id.size());
+                   index[i] = id[r];
+               }
+
+               if(id[0] != id[1] && id[1] != id[2] && id[2] != id[0])
+               {
+                   break;
+               }
+
+               point1 = VertexT(this->m_points[index[0]][0],this->m_points[index[0]][1], this->m_points[index[0]][2]);
+               point2 = VertexT(this->m_points[index[1]][0],this->m_points[index[1]][1], this->m_points[index[1]][2]);
+               point3 = VertexT(this->m_points[index[2]][0],this->m_points[index[2]][1], this->m_points[index[2]][2]);
+
+               //compute normal of the plane given by the 3 points
+               n0 = (point1 - point2).cross(point1 - point3);
+               n0.normalize();
+
+               //            if( (point1 != point2) && (point2 != point3) && (point3 != point1) )
+               //            {
+               //                break;
+               //            }
+               c++;
+
+               //            cout << index[0] << " " << index[1] << " " << index[2] << " " << id.size() << endl;
+               //            cout << point1;
+               //            cout << point2;
+               //            cout << point3;
+               //            cout << endl;
+
+               // Check for deadlock
+               if(c > 50)
+               {
+                   cout << "DL " << k << endl;
+                   ok = false;
+                   return p;
+               }
+           }
+           while(true);
+
+           //compute error to at most 50 other randomly chosen points
+           dist = 0;
+           int n = min(50,k);
+           for(int i = 0; i < n; i++)
+           {
+               int index = id[rand() % k];
+               VertexT refpoint = VertexT(this->m_points[index][0], this->m_points[index][1] ,this->m_points[index][2]);
+               dist += fabs(refpoint * n0 - point1 * n0);
+           }
+           if(n != 0) dist /= n;
+
+           //a new optimum is found
+           if(dist < bestdist)
+           {
+               bestdist = dist;
+
+               bestpoint = point1;
+               bestNorm = n0;
+
+               nonimproving_iterations = 0;
+           }
+           else
+           {
+               nonimproving_iterations++;
+           }
+
+           iterations++;
+       }
+
+       // Save plane parameters
+       p.a = 0;
+       p.b = 0;
+       p.c = 0;
+       p.n = bestNorm;
+       p.p = bestpoint;
+
+
+       return p;
+           }
+
 template<typename VertexT, typename NormalT>
-Plane<VertexT, NormalT> AdaptiveKSearchSurface<VertexT, NormalT>::calcPlaneRANSAC(const VertexT &queryPoint,
+Plane<VertexT, NormalT> AdaptiveKSearchSurface<VertexT, NormalT>::calcPlaneRANSACfromPoints(const VertexT &queryPoint,
         const int &k,
-        const vector<unsigned long> &id,
+        const vector<VertexT> points,
+        NormalT c_normal,
         bool &ok)
 {
-
+	// the resulting plane
     Plane<VertexT, NormalT> p;
 
     VertexT point1;
@@ -545,51 +673,46 @@ Plane<VertexT, NormalT> AdaptiveKSearchSurface<VertexT, NormalT>::calcPlaneRANSA
     int iterations              = 0;
     int nonimproving_iterations = 0;
 
-  //  int max_nonimproving = max(5, k / 2);
-    int max_interations  = 10;
+    int max_interations = max(10, k / 2);
+    //int max_interations  = 10;
 
+    bool first_it = true;
     while((nonimproving_iterations < 5) && (iterations < max_interations))
     {
         NormalT n0;
-
         //randomly choose 3 disjoint points
         int c = 0;
         do{
-            //cout << "AAA" << endl;
             int index[3];
             for(int i = 0; i < 3; i++)
             {
                 float f = 1.0 * rand() / RAND_MAX;
-                int r = (int)(f * id.size() - 1);
-                index[i] = id[r];
+                int r = (int)(f * points.size() - 1);
+                index[i] = r;
             }
-
-//            if(index[0] != index[1] && index[1] != index[2] && index[2] != index[0])
-//
-//                break;
-//            }
-            int test = id.size();
 
             point1 = VertexT(this->m_points[index[0]][0],this->m_points[index[0]][1], this->m_points[index[0]][2]);
             point2 = VertexT(this->m_points[index[1]][0],this->m_points[index[1]][1], this->m_points[index[1]][2]);
             point3 = VertexT(this->m_points[index[2]][0],this->m_points[index[2]][1], this->m_points[index[2]][2]);
 
-            //compute normal of the plane given by the 3 points
-            n0 = (point1 - point2).cross(point1 - point3);
-            n0.normalize();
-
-            if( (point1 != point2) && (point2 != point3) && (point3 != point1) )
-            {
-                break;
-            }
+            //compute normal of the plane given by the 3 points (look at the end)
+    		n0 = (point1 - point2).cross(point1 - point3);
+    		n0.normalize();
             c++;
 
-//            cout << index[0] << " " << index[1] << " " << index[2] << " " << id.size() << endl;
-//            cout << point1;
-//            cout << point2;
-//            cout << point3;
-//            cout << endl;
-
+            // check if the three points are disjoint
+            if( (point1 != point2) && (point2 != point3) && (point3 != point1) )
+            {
+            	// at first, use interpolated normal
+            	NormalT check(0.0, 0.0, 0.0);
+            	if(first_it && !(check == c_normal))
+            	{
+            		n0 = c_normal;
+            		n0.normalize();
+            		first_it = false;
+            	}
+                break;
+            }
             // Check for deadlock
             if(c > 50)
             {
@@ -600,13 +723,13 @@ Plane<VertexT, NormalT> AdaptiveKSearchSurface<VertexT, NormalT>::calcPlaneRANSA
         }
         while(true);
 
-        //compute error to at most 50 other randomly chosen points
+        //compute error to at most 10 other randomly chosen points
         dist = 0;
-        int n = min(50,k);
+        int n = min(10,k);
         for(int i = 0; i < n; i++)
         {
-            int index = id[rand() % k];
-            VertexT refpoint = VertexT(this->m_points[index][0], this->m_points[index][1] ,this->m_points[index][2]);
+            int index = rand() % points.size();
+            VertexT refpoint = VertexT(points[index][0], points[index][1] ,points[index][2]);
             dist += fabs(refpoint * n0 - point1 * n0);
         }
         if(n != 0) dist /= n;
@@ -615,7 +738,6 @@ Plane<VertexT, NormalT> AdaptiveKSearchSurface<VertexT, NormalT>::calcPlaneRANSA
         if(dist < bestdist)
         {
             bestdist = dist;
-
             bestpoint = point1;
             bestNorm = n0;
 
@@ -627,7 +749,7 @@ Plane<VertexT, NormalT> AdaptiveKSearchSurface<VertexT, NormalT>::calcPlaneRANSA
         }
 
         iterations++;
-    }
+    } // end while
 
     // Save plane parameters
     p.a = 0;
@@ -636,10 +758,8 @@ Plane<VertexT, NormalT> AdaptiveKSearchSurface<VertexT, NormalT>::calcPlaneRANSA
     p.n = bestNorm;
     p.p = bestpoint;
 
-
     return p;
 }
-
 
 template<typename VertexT, typename NormalT>
 void AdaptiveKSearchSurface<VertexT, NormalT>::colorizePointCloud(

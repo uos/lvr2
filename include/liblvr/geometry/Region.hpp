@@ -104,11 +104,9 @@ public:
 	virtual bool hasLabel();
 
 	/**
-	 * @brief Finds all contours of the region (outer contour + holes)
-	 *
-	 * @param	epsilon	controls the number of points used for a contour
-	 *
-	 * @return 	a list of all contours
+	 * @brief Finds all contours of the region (outer contour + holes). First entry is outer contour.
+	 * @param epsilon perpendicular (point-to-line) distance tolerance
+	 * @return a list of all contours
 	 */
 	virtual vector<vector<VertexT> > getContours(float epsilon);
 
@@ -132,6 +130,12 @@ public:
      * @brief the number of faces contained in this region
      */
     virtual int size();
+
+    // TODO implement area calculation
+    /**
+     * @brief returns this region's area
+     */
+    double area() { return m_area; };
 
 	/**
 	 * @brief destructor.
@@ -170,6 +174,9 @@ private:
 
 	// Indicates whether the region has been labeled or not
 	bool b_labeled;
+
+	// holds the area of this region
+	double m_area;
 
 };
 }
