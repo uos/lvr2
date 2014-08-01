@@ -37,7 +37,7 @@ PCLFiltering::PCLFiltering( PointBufferPtr loader )
 
     // Check if we have RGB data
     size_t numColors;
-    m_useColors = loader->getPointColorArray(numColors);
+    m_useColors = bool(loader->getPointColorArray(numColors));
 
     m_pointCloud  = pcl::PointCloud<pcl::PointXYZRGB>::Ptr (new pcl::PointCloud<pcl::PointXYZRGB>);
 
