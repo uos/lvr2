@@ -11,7 +11,7 @@
 #include <string>
 using std::string;
 
-#include <gl.h>
+#include <GL/gl.h>
 
 class GlTexture
 {

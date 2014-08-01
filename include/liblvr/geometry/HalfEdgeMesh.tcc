@@ -1454,9 +1454,7 @@ void HalfEdgeMesh<VertexT, NormalT>::finalize()
 	std::cout << timestamp << "Checking face integreties." << std::endl;
     checkFaceIntegreties();
 
-    std::cout << timestamp << "Finalizing mesh." << std::endl;
-
-    labeledFacesMap labeledFaces;
+    std::cout << timestamp << "finalize mesh with classifier \"" << m_classifierType << "\"." << std::endl;
 
     boost::unordered_map<VertexPtr, int> index_map;
 
@@ -1499,22 +1497,6 @@ void HalfEdgeMesh<VertexT, NormalT>::finalize()
 
         int surface_class = 1;
 
-        if ((*face_iter)->m_region > 0)
-        {
-        	// get the faces surface class (region id)
-            surface_class = (*face_iter)->m_region;
-
-            // label the region if not already done
-            if (m_regionClassifier->generatesLabel())
-            {
-            	Region<VertexT, NormalT>* region = m_regions.at(surface_class);
-            	if (!region->hasLabel())
-            	{
-            		region->setLabel(m_regionClassifier->getLabel(surface_class));
-            	}
-            }
-        }
-
         r = m_regionClassifier->r(surface_class);
         g = m_regionClassifier->g(surface_class);
         b = m_regionClassifier->b(surface_class);
@@ -1538,46 +1520,11 @@ void HalfEdgeMesh<VertexT, NormalT>::finalize()
         faceColorBuffer.push_back( b );*/
     }
 
+    // Label regions with Classifier
+    LabelRegions();
+
 	// jetzt alle regions labeln, falls der classifier das kann
-	if (m_regionClassifier->generatesLabel())
-	{
-		string label;
-
-		typename vector<RegionPtr>::iterator region_iter = m_regions.begin();
-		typename vector<RegionPtr>::iterator region_end  = m_regions.end();
-		for(size_t i = 0; region_iter != region_end; ++i, ++region_iter)
-		{
-			// hier sind wir in den einzelnen regions und holen und die zugehörigen faces
-			// darauf berechnen wir ein einziges mal das label und schreiben dann alle face ids in die map
-
-			label = (*region_iter)->getLabel();
-
-			// TODO the first region has a label of "", for now we skip it
-			if (label != "")
-			{
-				vector<unsigned int> ids;
-
-				typename vector<FacePtr>::iterator region_face_iter = (*region_iter)->m_faces.begin();
-				typename vector<FacePtr>::iterator region_face_end  = (*region_iter)->m_faces.end();
-				for(size_t i = 0; region_face_iter != region_face_end; ++i, ++region_face_iter)
-				{
-					ids.push_back((*region_face_iter)->getBufferID());
-				}
-
-				// if prelabel already exists in map, insert face id, else create new entry
-				typename labeledFacesMap::iterator it = labeledFaces.find(label);
-
-				if (it != labeledFaces.end())
-				{
-					it->second.insert(it->second.end(), ids.begin(), ids.end());
-				}
-				else
-				{
-					labeledFaces.insert(std::pair<std::string, std::vector<unsigned int> >(label, ids));
-				}
-			}
-		}
-	}
+    assignLBI();
 
     // Hand the buffers over to the Model class for IO operations.
     if ( !this->m_meshBuffer )
@@ -1591,6 +1538,94 @@ void HalfEdgeMesh<VertexT, NormalT>::finalize()
 	this->m_meshBuffer->setLabeledFacesMap( labeledFaces );
     //this->m_meshBuffer->setFaceColorArray( faceColorBuffer );
     this->m_finalized = true;
+
+    // clean up
+    labeledFaces.clear();
+}
+
+
+template<typename VertexT, typename NormalT>
+void HalfEdgeMesh<VertexT, NormalT>::LabelRegions()
+{
+
+	typename vector<FacePtr>::iterator face_iter = m_faces.begin();
+	typename vector<FacePtr>::iterator face_end  = m_faces.end();
+	for(size_t i = 0; face_iter != face_end; i++, ++face_iter)
+	{
+		int surface_class = 1;
+
+		if ((*face_iter)->m_region >= 0)
+		{
+			// get the faces surface class (region id)
+			surface_class = (*face_iter)->m_region;
+
+			// label the region if not already done
+			if (m_regionClassifier->generatesLabel())
+			{
+				Region<VertexT, NormalT>* region = m_regions.at(surface_class);
+				if (!region->hasLabel())
+				{
+					region->setLabel(m_regionClassifier->getLabel(surface_class));
+				}
+			}
+		}
+	}
+}
+
+
+template<typename VertexT, typename NormalT>
+void HalfEdgeMesh<VertexT, NormalT>::assignLBI()
+{
+	// jetzt alle regions labeln, falls der classifier das kann
+	if (m_regionClassifier->generatesLabel())
+	{
+		std::cout << timestamp << "Generating pre-labels with classifier type " << m_classifierType << std::endl;
+
+		string label;
+		typename vector<RegionPtr>::iterator region_iter = m_regions.begin();
+		typename vector<RegionPtr>::iterator region_end  = m_regions.end();
+		for(size_t i = 0; region_iter != region_end; ++i, ++region_iter)
+		{
+			// hier sind wir in den einzelnen regions und holen und die zugehörigen faces
+			// darauf berechnen wir ein einziges mal das label und schreiben dann alle face ids in die map
+
+			label = (*region_iter)->getLabel();
+
+			vector<unsigned int> ids;
+			typename vector<FacePtr>::iterator region_face_iter = (*region_iter)->m_faces.begin();
+			typename vector<FacePtr>::iterator region_face_end  = (*region_iter)->m_faces.end();
+
+			for(size_t i = 0; region_face_iter != region_face_end; ++i, ++region_face_iter)
+			{
+				ids.push_back((*region_face_iter)->getBufferID());
+			}
+
+			// if prelabel already exists in map, insert face id, else create new entry
+			typename labeledFacesMap::iterator it = labeledFaces.find(label);
+
+			if (it != labeledFaces.end())
+			{
+				it->second.insert(it->second.end(), ids.begin(), ids.end());
+			}
+			else
+			{
+				labeledFaces.insert(std::pair<std::string, std::vector<unsigned int> >(label, ids));
+			}
+		}
+	}
+}
+
+
+template<typename VertexT, typename NormalT>
+void HalfEdgeMesh<VertexT, NormalT>::resetUsedFlags()
+{
+	for(size_t j=0; j<m_faces.size(); j++)
+	{
+		for(int k=0; k<3; k++)
+		{
+			(*m_faces[j])[k]->used=false;
+		}
+	}
 }
 
 template<typename VertexT, typename NormalT>
@@ -1602,7 +1637,8 @@ void HalfEdgeMesh<VertexT, NormalT>::writeClassificationResult()
 template<typename VertexT, typename NormalT>
 void HalfEdgeMesh<VertexT, NormalT>::finalizeAndRetesselate( bool genTextures, float fusionThreshold )
 {
-    cout << timestamp << "Finalizing and re-tesselating" << endl;
+    std::cout << timestamp << "finalizeAndRetesselate mesh with classifier \"" << m_classifierType << "\"." << std::endl;
+
     // used Typedef's
     typedef std::vector<int>::iterator   intIterator;
 
@@ -1622,13 +1658,7 @@ void HalfEdgeMesh<VertexT, NormalT>::finalizeAndRetesselate( bool genTextures, f
     std::vector<float> textureCoordBuffer;
 
     // Reset used variables. Otherwise the getContours() function might not work quite as expected.
-    for(size_t j=0; j<m_faces.size(); j++)
-    {
-        for(int k=0; k<3; k++)
-        {
-            (*m_faces[j])[k]->used=false;
-        }
-    }
+    resetUsedFlags();
 
     // Take all regions that are not in an intersection plane
     std::vector<int> nonPlaneRegions;
@@ -1901,6 +1931,11 @@ void HalfEdgeMesh<VertexT, NormalT>::finalizeAndRetesselate( bool genTextures, f
 
     }
 
+
+    // Label regions with Classifier
+    LabelRegions();
+    assignLBI();
+
     if ( !this->m_meshBuffer )
     {
         this->m_meshBuffer = MeshBufferPtr( new MeshBuffer );
@@ -1912,15 +1947,16 @@ void HalfEdgeMesh<VertexT, NormalT>::finalizeAndRetesselate( bool genTextures, f
     this->m_meshBuffer->setVertexTextureCoordinateArray( textureCoordBuffer );
     this->m_meshBuffer->setMaterialArray( materialBuffer );
     this->m_meshBuffer->setFaceMaterialIndexArray( materialIndexBuffer );
+	this->m_meshBuffer->setLabeledFacesMap( labeledFaces );
     this->m_finalized = true;
     cout << endl << timestamp << "Done retesselating." << endl;
-    m_regionClassifier->writeMetaInfo();
 
     // Print texturizer statistics
     cout << *texturizer << endl;
 
     // Clean up
     delete texturizer;
+    labeledFaces.clear();
     Tesselator<VertexT, NormalT>::clear();
 } 
 

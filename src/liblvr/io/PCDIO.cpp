@@ -8,10 +8,10 @@
 
 #define isnan(x) ((x) != (x))
 
-#ifdef _USE_PCL_
-
 namespace lvr
 {
+
+#ifdef _USE_PCL_
 
 ModelPtr PCDIO::read( string filename )
 {
