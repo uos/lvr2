@@ -133,6 +133,13 @@ void LVRPointBufferBridge::setBaseColor(float r, float g, float b)
     m_pointCloudActor->SetProperty(p);
 }
 
+void LVRPointBufferBridge::setPointSize(int pointSize)
+{
+    vtkSmartPointer<vtkProperty> p = vtkSmartPointer<vtkProperty>::New();
+    p->SetPointSize(pointSize);
+    m_pointCloudActor->SetProperty(p);
+}
+
 vtkSmartPointer<vtkActor> LVRPointBufferBridge::getPointCloudActor()
 {
     return m_pointCloudActor;
