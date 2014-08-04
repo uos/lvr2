@@ -50,6 +50,7 @@ public:
     bool                        hasColors();
 
     void setBaseColor(float r, float g, float b);
+    void setPointSize(int pointSize);
 
     PointBufferPtr getPointBuffer();
 

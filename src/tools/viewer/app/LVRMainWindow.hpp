@@ -63,6 +63,7 @@ public Q_SLOTS:
     void showTreeContextMenu(const QPoint&);
     void showColorDialog();
     void deleteModelItem();
+    void changePointSize(int pointSize);
     void renderVtkStuff();
     void removeArrow(LVRVtkArrow*);
     void addArrow(LVRVtkArrow*);
@@ -82,6 +83,7 @@ private:
     QAction*				            m_actionShowColorDialog;
     QAction*			                m_actionDeleteModelItem;
     QAction*                            m_actionExportModelTransformed;
+    QSlider*							m_horizontalSliderPointSize;
     LVRPickingInteractor*               m_pickingInteractor;
     LVRTreeWidgetHelper*                m_treeWidgetHelper;
 };
