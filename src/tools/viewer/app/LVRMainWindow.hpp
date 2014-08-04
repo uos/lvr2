@@ -62,6 +62,7 @@ public Q_SLOTS:
     void showTransformationDialog();
     void showTreeContextMenu(const QPoint&);
     void showColorDialog();
+    void deleteModelItem();
     void renderVtkStuff();
     void removeArrow(LVRVtkArrow*);
     void addArrow(LVRVtkArrow*);

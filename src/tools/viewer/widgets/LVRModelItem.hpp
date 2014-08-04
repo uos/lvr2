@@ -46,6 +46,7 @@ public:
 
     Pose    getPose();
     void    setPose( Pose& pose);
+    ModelBridgePtr	getModelBridge();
 
 protected:
     ModelBridgePtr  m_modelBridge;
