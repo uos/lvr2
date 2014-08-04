@@ -71,6 +71,10 @@ void LVRModelBridge::addActors(vtkSmartPointer<vtkRenderer> renderer)
 
 void LVRModelBridge::removeActors(vtkSmartPointer<vtkRenderer> renderer)
 {
+	cout << "Grabbing m_pointBridge" << endl;
+	cout << "m_pointBridge: " << m_pointBridge->getPointCloudActor() << endl;
+	cout << "Grabbing m_meshBridge" << endl;
+	cout << "m_meshBridge: " << m_meshBridge->getMeshActor() << endl;
     renderer->RemoveActor(m_pointBridge->getPointCloudActor());
     renderer->RemoveActor(m_meshBridge->getMeshActor());
 }
