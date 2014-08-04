@@ -92,6 +92,11 @@ PointBufferPtr LVRPointCloudItem::getPointBuffer()
     return m_pointBridge->getPointBuffer();
 }
 
+PointBufferBridgePtr LVRPointCloudItem::getPointBridge()
+{
+	return m_pointBridge;
+}
+
 LVRPointCloudItem::~LVRPointCloudItem()
 {
     // TODO Auto-generated destructor stub
