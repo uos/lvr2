@@ -348,14 +348,12 @@ void LVRMainWindow::deleteModelItem()
 			m_renderer->RemoveActor(model_item->getMeshBridge()->getMeshActor());
 		}
 
-		// Remove list item
+		// Remove list item (safe according to http://stackoverflow.com/a/9399167)
 		delete item;
 
 		// Update view
 		m_renderer->ResetCamera();
-		cout << "Reset camera" << endl;
 		qvtkWidget->GetRenderWindow()->Render();
-		cout << "Rendered qvtkWidget" << endl;
 	}
 }
 
