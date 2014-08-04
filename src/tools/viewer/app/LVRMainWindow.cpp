@@ -241,6 +241,7 @@ void LVRMainWindow::connectSignalsAndSlots()
     QObject::connect(treeWidget, SIGNAL(customContextMenuRequested(const QPoint&)), this, SLOT(showTreeContextMenu(const QPoint&)));
 
     QObject::connect(m_actionShowColorDialog, SIGNAL(activated()), this, SLOT(showColorDialog()));
+    QObject::connect(m_actionDeleteModelItem, SIGNAL(activated()), this, SLOT(deleteModelItem()));
     QObject::connect(m_actionExportModelTransformed, SIGNAL(activated()), this, SLOT(exportSelectedModel()));
 
     QObject::connect(m_correspondanceDialog->m_dialog, SIGNAL(accepted()), m_pickingInteractor, SLOT(correspondenceSearchOff()));
@@ -326,6 +327,31 @@ void LVRMainWindow::loadModel()
         this->qvtkWidget->GetRenderWindow()->Render();
     }
 
+}
+
+void LVRMainWindow::deleteModelItem()
+{
+	QList<QTreeWidgetItem*> items = treeWidget->selectedItems();
+	if(items.size() > 0)
+	{
+		// Delete QT Item
+		QTreeWidgetItem* item = items.first();
+		delete item->parent();
+
+		// Remove model from view
+		LVRModelItem* model_item = static_cast<LVRModelItem*>(item);
+		cout << "Casted LVRModelItem* model_item" << endl;
+		ModelBridgePtr bridge = model_item->getModelBridge();
+		cout << "Got ModelBridgePtr bridge from model_item" << endl;
+		bridge->removeActors(m_renderer);
+		cout << "Removed actor from m_renderer" << endl;
+
+		// Update view
+		m_renderer->ResetCamera();
+		cout << "Reset camera" << endl;
+		qvtkWidget->GetRenderWindow()->Render();
+		cout << "Rendered qvtkWidget" << endl;
+	}
 }
 
 void LVRMainWindow::manualICP()

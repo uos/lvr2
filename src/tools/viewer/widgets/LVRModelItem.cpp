@@ -89,6 +89,11 @@ void LVRModelItem::setPose( Pose& pose)
     m_poseItem->setPose(pose);
 }
 
+ModelBridgePtr LVRModelItem::getModelBridge()
+{
+	return m_modelBridge;
+}
+
 LVRModelItem::~LVRModelItem()
 {
     // TODO Auto-generated destructor stub
