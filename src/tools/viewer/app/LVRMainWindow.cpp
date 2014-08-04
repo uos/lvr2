@@ -334,17 +334,22 @@ void LVRMainWindow::deleteModelItem()
 	QList<QTreeWidgetItem*> items = treeWidget->selectedItems();
 	if(items.size() > 0)
 	{
-		// Delete QT Item
 		QTreeWidgetItem* item = items.first();
-		delete item->parent();
 
 		// Remove model from view
-		LVRModelItem* model_item = static_cast<LVRModelItem*>(item);
-		cout << "Casted LVRModelItem* model_item" << endl;
-		ModelBridgePtr bridge = model_item->getModelBridge();
-		cout << "Got ModelBridgePtr bridge from model_item" << endl;
-		bridge->removeActors(m_renderer);
-		cout << "Removed actor from m_renderer" << endl;
+		if(item->type() == LVRPointCloudItemType)
+		{
+			LVRPointCloudItem* model_item = static_cast<LVRPointCloudItem*>(item);
+			m_renderer->RemoveActor(model_item->getPointBridge()->getPointCloudActor());
+		}
+		else if(item->type() == LVRMeshItemType)
+		{
+			LVRMeshItem* model_item = static_cast<LVRMeshItem*>(item);
+			m_renderer->RemoveActor(model_item->getMeshBridge()->getMeshActor());
+		}
+
+		// Remove list item
+		delete item;
 
 		// Update view
 		m_renderer->ResetCamera();
