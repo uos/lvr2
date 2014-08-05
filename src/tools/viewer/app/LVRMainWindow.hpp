@@ -75,6 +75,7 @@ Q_SIGNALS:
 
 private:
     void setupQVTK();
+    void refreshView();
     void updateView();
     void connectSignalsAndSlots();
 
