@@ -52,7 +52,6 @@ LVRMainWindow::LVRMainWindow()
     setupUi(this);
     setupQVTK();
 
-
     // Init members
     m_correspondanceDialog = new LVRCorrespondanceDialog(treeWidget);
 
@@ -151,7 +150,7 @@ void LVRMainWindow::updateView()
 {
     // Update camera to new scene dimension and force rendering
 	m_renderer->ResetCamera();
-	updateView();
+	this->qvtkWidget->GetRenderWindow()->Render();
 }
 
 void LVRMainWindow::removeArrow(LVRVtkArrow* a)
