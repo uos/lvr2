@@ -72,9 +72,9 @@ MeshBufferPtr LVRMeshItem::getMeshBuffer()
     return m_meshBridge->getMeshBuffer();
 }
 
-MeshBufferBridgePtr LVRMeshItem::getMeshBridge()
+vtkSmartPointer<vtkActor> LVRMeshItem::getActor()
 {
-	return m_meshBridge;
+	return m_meshBridge->getMeshActor();
 }
 
 LVRMeshItem::~LVRMeshItem()
