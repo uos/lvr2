@@ -68,30 +68,23 @@ LVRPointCloudItem::LVRPointCloudItem(PointBufferBridgePtr& ptr, QTreeWidgetItem*
         colorItem->setText(1, "no");
     }
     addChild(colorItem);
+
+    // set initial values
+    m_opacity = 1;
+    m_pointSize = 1;
+    m_color = QColor(255,255,255);
+    m_visible = true;
+}
+
+QColor LVRPointCloudItem::getColor()
+{
+	return m_color;
 }
 
 void LVRPointCloudItem::setColor(QColor &c)
 {
     m_pointBridge->setBaseColor(c.redF(), c.greenF(), c.blueF());
     m_color = c;
-}
-
-void LVRPointCloudItem::setPointSize(int &pointSize)
-{
-    m_pointBridge->setPointSize(pointSize);
-    m_pointSize = pointSize;
-}
-
-void LVRPointCloudItem::setOpacity(float &opacity)
-{
-    m_pointBridge->setOpacity(opacity);
-    m_opacity = opacity;
-}
-
-void LVRPointCloudItem::setVisibility(bool &visibility)
-{
-	m_pointBridge->setVisibility(visibility);
-	m_visible = visibility;
 }
 
 void LVRPointCloudItem::setSelectionColor(QColor& c)
@@ -102,6 +95,39 @@ void LVRPointCloudItem::setSelectionColor(QColor& c)
 void LVRPointCloudItem::resetColor()
 {
     m_pointBridge->setBaseColor(m_color.redF(), m_color.greenF(), m_color.blueF());
+}
+
+int LVRPointCloudItem::getPointSize()
+{
+	return m_pointSize;
+}
+
+void LVRPointCloudItem::setPointSize(int &pointSize)
+{
+    m_pointBridge->setPointSize(pointSize);
+    m_pointSize = pointSize;
+}
+
+float LVRPointCloudItem::getOpacity()
+{
+	return m_opacity;
+}
+
+void LVRPointCloudItem::setOpacity(float &opacity)
+{
+    m_pointBridge->setOpacity(opacity);
+    m_opacity = opacity;
+}
+
+bool LVRPointCloudItem::getVisibility()
+{
+	return m_visible;
+}
+
+void LVRPointCloudItem::setVisibility(bool &visibility)
+{
+	m_pointBridge->setVisibility(visibility);
+	m_visible = visibility;
 }
 
 PointBufferPtr LVRPointCloudItem::getPointBuffer()
