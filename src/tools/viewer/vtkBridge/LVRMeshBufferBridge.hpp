@@ -49,6 +49,7 @@ public:
     bool                        hasTextures();
 
     void setBaseColor(float r, float g, float b);
+    void setOpacity(float opacityValue)
     MeshBufferPtr getMeshBuffer();
 
 protected:

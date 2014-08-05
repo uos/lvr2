@@ -41,12 +41,14 @@ public:
     void    setColor(QColor &c);
     void    setSelectionColor(QColor &c);
     void    resetColor();
+    void    setOpacity(float &opacity);
     MeshBufferPtr   getMeshBuffer();
     vtkSmartPointer<vtkActor> getActor();
 
 private:
     QColor                  m_color;
     MeshBufferBridgePtr     m_meshBridge;
+    float					m_opacity;
 
 };
 
