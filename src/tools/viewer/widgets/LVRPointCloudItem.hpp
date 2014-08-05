@@ -42,13 +42,17 @@ public:
     void    setColor(QColor &c);
     void    setSelectionColor(QColor &c);
     void    resetColor();
+    void    setPointSize(int &pointSize);
+    void    setOpacity(float &opacity);
     PointBufferPtr getPointBuffer();
-    PointBufferBridgePtr getPointBridge();
+    vtkSmartPointer<vtkActor> getActor();
 
 protected:
     QTreeWidgetItem*        m_parent;
     PointBufferBridgePtr    m_pointBridge;
     QColor                  m_color;
+    int						m_pointSize;
+    float					m_opacity;
 };
 
 } /* namespace lvr */
