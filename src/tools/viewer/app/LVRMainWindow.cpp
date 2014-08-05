@@ -140,16 +140,18 @@ void LVRMainWindow::exportSelectedModel()
     }
 }
 
-void LVRMainWindow::renderVtkStuff()
-{
-    this->qvtkWidget->GetRenderWindow()->Render();
-}
-
 void LVRMainWindow::setupQVTK()
 {
     // Add new renderer to the render window of the QVTKWidget
     m_renderer = vtkSmartPointer<vtkRenderer>::New();
     this->qvtkWidget->GetRenderWindow()->AddRenderer(m_renderer);
+}
+
+void LVRMainWindow::updateView()
+{
+    // Update camera to new scene dimension and force rendering
+	m_renderer->ResetCamera();
+	this->qvtkWidget->GetRenderWindow()->Render();
 }
 
 void LVRMainWindow::removeArrow(LVRVtkArrow* a)
@@ -202,7 +204,7 @@ void LVRMainWindow::alignPointClouds()
         item->setPose(p);
     }
 
-    this->qvtkWidget->GetRenderWindow()->Render();
+    updateView();
     // Refine pose via ICP
     if(m_correspondanceDialog->doICP() && modelBuffer && dataBuffer)
     {
@@ -230,7 +232,7 @@ void LVRMainWindow::alignPointClouds()
         item->setPose(p);
     }
     m_correspondanceDialog->clearAllItems();
-    this->qvtkWidget->GetRenderWindow()->Render();
+    updateView();
 
 }
 
@@ -275,14 +277,16 @@ void LVRMainWindow::showColorDialog()
 		{
 			LVRPointCloudItem* pc_item = static_cast<LVRPointCloudItem*>(item);
 			pc_item->setColor(c);
-			qvtkWidget->GetRenderWindow()->Render();
 		}
 		else if(item->type() == LVRMeshItemType)
 		{
 		    LVRMeshItem* mesh_item = static_cast<LVRMeshItem*>(item);
 		    mesh_item->setColor(c);
-		    qvtkWidget->GetRenderWindow()->Render();
 		}
+		else {
+			return;
+		}
+		updateView();
 	}
 }
 
@@ -324,9 +328,7 @@ void LVRMainWindow::loadModel()
             ++it;
         }
 
-        // Update camera to new scene dimension and force rendering
-        m_renderer->ResetCamera();
-        this->qvtkWidget->GetRenderWindow()->Render();
+        updateView();
     }
 
 }
@@ -353,9 +355,7 @@ void LVRMainWindow::deleteModelItem()
 		// Remove list item (safe according to http://stackoverflow.com/a/9399167)
 		delete item;
 
-		// Update view
-		m_renderer->ResetCamera();
-		qvtkWidget->GetRenderWindow()->Render();
+		updateView();
 	}
 }
 
@@ -371,11 +371,16 @@ void LVRMainWindow::changePointSize(int pointSize)
 		{
 			LVRPointCloudItem* model_item = static_cast<LVRPointCloudItem*>(item);
 			model_item->getPointBridge()->setPointSize(pointSize);
-
-			// Update view
-			m_renderer->ResetCamera();
-			qvtkWidget->GetRenderWindow()->Render();
 		}
+		else if(item->type() == LVRMeshItemType)
+		{
+
+		}
+		else {
+			return;
+		}
+
+		updateView();
 	}
 }
 
@@ -390,14 +395,19 @@ void LVRMainWindow::changeTransparency(int transparencyValue)
 		if(item->type() == LVRPointCloudItemType)
 		{
 			float opacityValue = 1 - ((float)transparencyValue / (float)100);
-			cout << opacityValue << endl;
 			LVRPointCloudItem* model_item = static_cast<LVRPointCloudItem*>(item);
 			model_item->getPointBridge()->setOpacity(opacityValue);
-
-			// Update view
-			m_renderer->ResetCamera();
-			qvtkWidget->GetRenderWindow()->Render();
 		}
+		else if(item->type() == LVRMeshItemType)
+		{
+
+		}
+		else
+		{
+			return;
+		}
+
+		updateView();
 	}
 }
 
