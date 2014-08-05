@@ -38,10 +38,13 @@ class LVRMeshItem : public QTreeWidgetItem
 public:
     LVRMeshItem(MeshBufferBridgePtr& ptr, QTreeWidgetItem* parent = 0);
     virtual ~LVRMeshItem();
+    QColor	getColor();
     void    setColor(QColor &c);
     void    setSelectionColor(QColor &c);
     void    resetColor();
+    float	getOpacity();
     void    setOpacity(float &opacity);
+    bool	getVisibility();
     void    setVisibility(bool &visiblity);
     MeshBufferPtr   getMeshBuffer();
     vtkSmartPointer<vtkActor> getActor();
