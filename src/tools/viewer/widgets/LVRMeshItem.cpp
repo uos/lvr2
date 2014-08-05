@@ -67,6 +67,12 @@ void LVRMeshItem::resetColor()
     m_meshBridge->setBaseColor(m_color.redF(), m_color.greenF(), m_color.blueF());
 }
 
+void LVRMeshItem::setOpacity(float &opacity)
+{
+    m_meshBridge->setOpacity(opacity);
+    m_opacity = opacity;
+}
+
 MeshBufferPtr LVRMeshItem::getMeshBuffer()
 {
     return m_meshBridge->getMeshBuffer();
