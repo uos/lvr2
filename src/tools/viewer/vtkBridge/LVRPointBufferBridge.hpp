@@ -51,6 +51,7 @@ public:
 
     void setBaseColor(float r, float g, float b);
     void setPointSize(int pointSize);
+    void setOpacity(float opacityValue);
 
     PointBufferPtr getPointBuffer();
 
