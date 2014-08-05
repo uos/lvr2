@@ -151,7 +151,7 @@ void LVRMainWindow::updateView()
 {
     // Update camera to new scene dimension and force rendering
 	m_renderer->ResetCamera();
-	this->qvtkWidget->GetRenderWindow()->Render();
+	updateView();
 }
 
 void LVRMainWindow::removeArrow(LVRVtkArrow* a)
@@ -286,6 +286,7 @@ void LVRMainWindow::showColorDialog()
 		else {
 			return;
 		}
+
 		updateView();
 	}
 }
