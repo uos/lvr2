@@ -298,6 +298,12 @@
        <height>16</height>
       </rect>
      </property>
+     <property name="maximum">
+      <number>100</number>
+     </property>
+     <property name="value">
+      <number>0</number>
+     </property>
      <property name="orientation">
       <enum>Qt::Horizontal</enum>
      </property>
@@ -375,7 +381,7 @@
       </property>
      </item>
     </widget>
-    <widget class="QLabel" name="labelColorGradient_2">
+    <widget class="QLabel" name="labelShading">
      <property name="geometry">
       <rect>
        <x>0</x>
@@ -445,7 +451,7 @@
       </size>
      </property>
     </widget>
-    <widget class="QCommandLinkButton" name="buttoncreateMesh">
+    <widget class="QCommandLinkButton" name="buttonCreateMesh">
      <property name="geometry">
       <rect>
        <x>0</x>
@@ -708,6 +714,12 @@
    </property>
   </action>
   <action name="actionShow_Points">
+   <property name="checkable">
+    <bool>true</bool>
+   </property>
+   <property name="checked">
+    <bool>true</bool>
+   </property>
    <property name="icon">
     <iconset resource="../res/viewer.qrc">
      <normaloff>:/qv_fog.png</normaloff>:/qv_fog.png</iconset>
@@ -717,6 +729,12 @@
    </property>
   </action>
   <action name="actionShow_Wireframe">
+   <property name="checkable">
+    <bool>true</bool>
+   </property>
+   <property name="checked">
+    <bool>true</bool>
+   </property>
    <property name="icon">
     <iconset resource="../res/viewer.qrc">
      <normaloff>:/qv_wireframe.png</normaloff>:/qv_wireframe.png</iconset>
@@ -726,6 +744,12 @@
    </property>
   </action>
   <action name="actionShow_Normals">
+   <property name="checkable">
+    <bool>true</bool>
+   </property>
+   <property name="checked">
+    <bool>true</bool>
+   </property>
    <property name="icon">
     <iconset resource="../res/viewer.qrc">
      <normaloff>:/qv_pointNormals.png</normaloff>:/qv_pointNormals.png</iconset>
@@ -735,6 +759,12 @@
    </property>
   </action>
   <action name="actionShow_Mesh">
+   <property name="checkable">
+    <bool>true</bool>
+   </property>
+   <property name="checked">
+    <bool>true</bool>
+   </property>
    <property name="icon">
     <iconset resource="../res/viewer.qrc">
      <normaloff>:/qv_surfaces.png</normaloff>:/qv_surfaces.png</iconset>

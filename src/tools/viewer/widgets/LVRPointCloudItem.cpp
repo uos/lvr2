@@ -88,6 +88,12 @@ void LVRPointCloudItem::setOpacity(float &opacity)
     m_opacity = opacity;
 }
 
+void LVRPointCloudItem::setVisibility(bool &visibility)
+{
+	m_pointBridge->setVisibility(visibility);
+	m_visible = visibility;
+}
+
 void LVRPointCloudItem::setSelectionColor(QColor& c)
 {
     m_pointBridge->setBaseColor(c.redF(), c.greenF(), c.blueF());
