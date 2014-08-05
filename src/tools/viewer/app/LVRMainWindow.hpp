@@ -66,6 +66,7 @@ public Q_SLOTS:
     void changePointSize(int pointSize);
     void changeTransparency(int transparencyValue);
     void togglePoints(bool checkboxState);
+    void toggleMeshes(bool checkboxState);
     void removeArrow(LVRVtkArrow*);
     void addArrow(LVRVtkArrow*);
     void alignPointClouds();
@@ -87,6 +88,7 @@ private:
     QAction*			                m_actionDeleteModelItem;
     QAction*                            m_actionExportModelTransformed;
     QAction*							m_actionShow_Points;
+    QAction*							m_actionShow_Mesh;
     QSlider*							m_horizontalSliderPointSize;
     QSlider*							m_horizontalSliderTransparency;
     LVRPickingInteractor*               m_pickingInteractor;

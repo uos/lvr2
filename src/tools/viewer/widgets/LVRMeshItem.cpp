@@ -73,6 +73,12 @@ void LVRMeshItem::setOpacity(float &opacity)
     m_opacity = opacity;
 }
 
+void LVRMeshItem::setVisibility(bool &visibility)
+{
+	m_meshBridge->setVisibility(visibility);
+	m_visible = visibility;
+}
+
 MeshBufferPtr LVRMeshItem::getMeshBuffer()
 {
     return m_meshBridge->getMeshBuffer();
