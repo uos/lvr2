@@ -65,7 +65,6 @@ public Q_SLOTS:
     void deleteModelItem();
     void changePointSize(int pointSize);
     void changeTransparency(int transparencyValue);
-    void renderVtkStuff();
     void removeArrow(LVRVtkArrow*);
     void addArrow(LVRVtkArrow*);
     void alignPointClouds();
@@ -76,6 +75,7 @@ Q_SIGNALS:
 
 private:
     void setupQVTK();
+    void updateView();
     void connectSignalsAndSlots();
 
     LVRCorrespondanceDialog*            m_correspondanceDialog;
