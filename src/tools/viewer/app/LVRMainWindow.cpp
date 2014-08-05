@@ -372,10 +372,6 @@ void LVRMainWindow::changePointSize(int pointSize)
 			LVRPointCloudItem* model_item = static_cast<LVRPointCloudItem*>(item);
 			model_item->setPointSize(pointSize);
 		}
-		else if(item->type() == LVRMeshItemType)
-		{
-
-		}
 		else {
 			return;
 		}
@@ -390,17 +386,18 @@ void LVRMainWindow::changeTransparency(int transparencyValue)
 	if(items.size() > 0)
 	{
 		QTreeWidgetItem* item = items.first();
+		float opacityValue = 1 - ((float)transparencyValue / (float)100);
 
 		// Remove model from view
 		if(item->type() == LVRPointCloudItemType)
 		{
-			float opacityValue = 1 - ((float)transparencyValue / (float)100);
 			LVRPointCloudItem* model_item = static_cast<LVRPointCloudItem*>(item);
 			model_item->setOpacity(opacityValue);
 		}
 		else if(item->type() == LVRMeshItemType)
 		{
-
+			LVRMeshItem* model_item = static_cast<LVRMeshItem*>(item);
+			model_item->setOpacity(opacityValue);
 		}
 		else
 		{
