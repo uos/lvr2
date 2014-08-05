@@ -44,6 +44,7 @@ public:
     void    resetColor();
     void    setPointSize(int &pointSize);
     void    setOpacity(float &opacity);
+    void    setVisibility(bool &visiblity);
     PointBufferPtr getPointBuffer();
     vtkSmartPointer<vtkActor> getActor();
 
@@ -53,6 +54,7 @@ protected:
     QColor                  m_color;
     int						m_pointSize;
     float					m_opacity;
+    bool					m_visible;
 };
 
 } /* namespace lvr */
