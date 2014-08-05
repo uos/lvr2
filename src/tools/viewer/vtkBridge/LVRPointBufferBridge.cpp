@@ -140,6 +140,13 @@ void LVRPointBufferBridge::setPointSize(int pointSize)
     m_pointCloudActor->SetProperty(p);
 }
 
+void LVRPointBufferBridge::setOpacity(float opacityValue)
+{
+    vtkSmartPointer<vtkProperty> p = vtkSmartPointer<vtkProperty>::New();
+    p->SetOpacity(opacityValue);
+    m_pointCloudActor->SetProperty(p);
+}
+
 vtkSmartPointer<vtkActor> LVRPointBufferBridge::getPointCloudActor()
 {
     return m_pointCloudActor;
