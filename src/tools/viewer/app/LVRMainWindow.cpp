@@ -74,6 +74,7 @@ LVRMainWindow::LVRMainWindow()
     m_treeContextMenu->addAction(m_actionExportModelTransformed);
 
     m_actionShow_Points = this->actionShow_Points;
+    m_actionShow_Mesh = this->actionShow_Mesh;
 
     m_horizontalSliderPointSize = this->horizontalSliderPointSize;
     m_horizontalSliderTransparency = this->horizontalSliderTransparency;
@@ -150,8 +151,12 @@ void LVRMainWindow::setupQVTK()
 
 void LVRMainWindow::updateView()
 {
-    // Update camera to new scene dimension and force rendering
-	m_renderer->ResetCamera();
+    m_renderer->ResetCamera();
+	this->qvtkWidget->GetRenderWindow()->Render();
+}
+
+void LVRMainWindow::refreshView()
+{
 	this->qvtkWidget->GetRenderWindow()->Render();
 }
 
@@ -256,6 +261,7 @@ void LVRMainWindow::connectSignalsAndSlots()
     QObject::connect(m_correspondanceDialog, SIGNAL(enableCorrespondenceSearch()), m_pickingInteractor, SLOT(correspondenceSearchOn()));
 
     QObject::connect(m_actionShow_Points, SIGNAL(toggled(bool)), this, SLOT(togglePoints(bool)));
+    QObject::connect(m_actionShow_Mesh, SIGNAL(toggled(bool)), this, SLOT(toggleMeshes(bool)));
 
     QObject::connect(m_horizontalSliderPointSize, SIGNAL(valueChanged(int)), this, SLOT(changePointSize(int)));
     QObject::connect(m_horizontalSliderTransparency, SIGNAL(valueChanged(int)), this, SLOT(changeTransparency(int)));
@@ -290,7 +296,7 @@ void LVRMainWindow::showColorDialog()
 			return;
 		}
 
-		updateView();
+		refreshView();
 	}
 }
 
@@ -359,7 +365,7 @@ void LVRMainWindow::deleteModelItem()
 		// Remove list item (safe according to http://stackoverflow.com/a/9399167)
 		delete item;
 
-		updateView();
+		refreshView();
 	}
 }
 
@@ -380,7 +386,7 @@ void LVRMainWindow::changePointSize(int pointSize)
 			return;
 		}
 
-		updateView();
+		refreshView();
 	}
 }
 
@@ -408,7 +414,7 @@ void LVRMainWindow::changeTransparency(int transparencyValue)
 			return;
 		}
 
-		updateView();
+		refreshView();
 	}
 }
 
@@ -427,7 +433,25 @@ void LVRMainWindow::togglePoints(bool checkboxState)
 		++it;
 	}
 
-	updateView();
+	refreshView();
+}
+
+void LVRMainWindow::toggleMeshes(bool checkboxState)
+{
+	QTreeWidgetItemIterator it(treeWidget);
+
+	while(*it)
+	{
+		QTreeWidgetItem* item = *it;
+		if(item->type() == LVRMeshItemType)
+		{
+			LVRMeshItem* model_item = static_cast<LVRMeshItem*>(item);
+			model_item->setVisibility(checkboxState);
+		}
+		++it;
+	}
+
+	refreshView();
 }
 
 void LVRMainWindow::manualICP()

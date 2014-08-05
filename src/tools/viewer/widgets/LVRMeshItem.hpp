@@ -42,6 +42,7 @@ public:
     void    setSelectionColor(QColor &c);
     void    resetColor();
     void    setOpacity(float &opacity);
+    void    setVisibility(bool &visiblity);
     MeshBufferPtr   getMeshBuffer();
     vtkSmartPointer<vtkActor> getActor();
 
@@ -49,6 +50,7 @@ private:
     QColor                  m_color;
     MeshBufferBridgePtr     m_meshBridge;
     float					m_opacity;
+    bool					m_visible;
 
 };
 
