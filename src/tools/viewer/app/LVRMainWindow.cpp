@@ -75,6 +75,7 @@ LVRMainWindow::LVRMainWindow()
     m_treeContextMenu->addAction(m_actionExportModelTransformed);
 
     m_horizontalSliderPointSize = this->horizontalSliderPointSize;
+    m_horizontalSliderTransparency = this->horizontalSliderTransparency;
 
     m_pickingInteractor = new LVRPickingInteractor(m_renderer);
     qvtkWidget->GetRenderWindow()->GetInteractor()->SetInteractorStyle( m_pickingInteractor );
@@ -252,6 +253,7 @@ void LVRMainWindow::connectSignalsAndSlots()
     QObject::connect(m_correspondanceDialog, SIGNAL(enableCorrespondenceSearch()), m_pickingInteractor, SLOT(correspondenceSearchOn()));
 
     QObject::connect(m_horizontalSliderPointSize, SIGNAL(valueChanged(int)), this, SLOT(changePointSize(int)));
+    QObject::connect(m_horizontalSliderTransparency, SIGNAL(valueChanged(int)), this, SLOT(changeTransparency(int)));
 
     QObject::connect(m_pickingInteractor, SIGNAL(firstPointPicked(double*)),m_correspondanceDialog, SLOT(firstPointPicked(double*)));
     QObject::connect(m_pickingInteractor, SIGNAL(secondPointPicked(double*)),m_correspondanceDialog, SLOT(secondPointPicked(double*)));
@@ -369,6 +371,28 @@ void LVRMainWindow::changePointSize(int pointSize)
 		{
 			LVRPointCloudItem* model_item = static_cast<LVRPointCloudItem*>(item);
 			model_item->getPointBridge()->setPointSize(pointSize);
+
+			// Update view
+			m_renderer->ResetCamera();
+			qvtkWidget->GetRenderWindow()->Render();
+		}
+	}
+}
+
+void LVRMainWindow::changeTransparency(int transparencyValue)
+{
+	QList<QTreeWidgetItem*> items = treeWidget->selectedItems();
+	if(items.size() > 0)
+	{
+		QTreeWidgetItem* item = items.first();
+
+		// Remove model from view
+		if(item->type() == LVRPointCloudItemType)
+		{
+			float opacityValue = 1 - ((float)transparencyValue / (float)100);
+			cout << opacityValue << endl;
+			LVRPointCloudItem* model_item = static_cast<LVRPointCloudItem*>(item);
+			model_item->getPointBridge()->setOpacity(opacityValue);
 
 			// Update view
 			m_renderer->ResetCamera();
