@@ -73,6 +73,8 @@ LVRMainWindow::LVRMainWindow()
     m_treeContextMenu->addAction(m_actionDeleteModelItem);
     m_treeContextMenu->addAction(m_actionExportModelTransformed);
 
+    m_actionShow_Points = this->actionShow_Points;
+
     m_horizontalSliderPointSize = this->horizontalSliderPointSize;
     m_horizontalSliderTransparency = this->horizontalSliderTransparency;
 
@@ -253,6 +255,8 @@ void LVRMainWindow::connectSignalsAndSlots()
     QObject::connect(m_correspondanceDialog, SIGNAL(disableCorrespondenceSearch()), m_pickingInteractor, SLOT(correspondenceSearchOff()));
     QObject::connect(m_correspondanceDialog, SIGNAL(enableCorrespondenceSearch()), m_pickingInteractor, SLOT(correspondenceSearchOn()));
 
+    QObject::connect(m_actionShow_Points, SIGNAL(toggled(bool)), this, SLOT(togglePoints(bool)));
+
     QObject::connect(m_horizontalSliderPointSize, SIGNAL(valueChanged(int)), this, SLOT(changePointSize(int)));
     QObject::connect(m_horizontalSliderTransparency, SIGNAL(valueChanged(int)), this, SLOT(changeTransparency(int)));
 
@@ -406,6 +410,24 @@ void LVRMainWindow::changeTransparency(int transparencyValue)
 
 		updateView();
 	}
+}
+
+void LVRMainWindow::togglePoints(bool checkboxState)
+{
+	QTreeWidgetItemIterator it(treeWidget);
+
+	while(*it)
+	{
+		QTreeWidgetItem* item = *it;
+		if(item->type() == LVRPointCloudItemType)
+		{
+			LVRPointCloudItem* model_item = static_cast<LVRPointCloudItem*>(item);
+			model_item->setVisibility(checkboxState);
+		}
+		++it;
+	}
+
+	updateView();
 }
 
 void LVRMainWindow::manualICP()
