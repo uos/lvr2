@@ -76,6 +76,17 @@ void LVRPointCloudItem::setColor(QColor &c)
     m_color = c;
 }
 
+void LVRPointCloudItem::setPointSize(int &pointSize)
+{
+    m_pointBridge->setPointSize(pointSize);
+    m_pointSize = pointSize;
+}
+
+void LVRPointCloudItem::setOpacity(float &opacity)
+{
+    m_pointBridge->setOpacity(opacity);
+    m_opacity = opacity;
+}
 
 void LVRPointCloudItem::setSelectionColor(QColor& c)
 {
@@ -92,9 +103,9 @@ PointBufferPtr LVRPointCloudItem::getPointBuffer()
     return m_pointBridge->getPointBuffer();
 }
 
-PointBufferBridgePtr LVRPointCloudItem::getPointBridge()
+vtkSmartPointer<vtkActor> LVRPointCloudItem::getActor()
 {
-	return m_pointBridge;
+	return m_pointBridge->getPointCloudActor();
 }
 
 LVRPointCloudItem::~LVRPointCloudItem()

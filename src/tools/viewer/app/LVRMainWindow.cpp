@@ -344,12 +344,12 @@ void LVRMainWindow::deleteModelItem()
 		if(item->type() == LVRPointCloudItemType)
 		{
 			LVRPointCloudItem* model_item = static_cast<LVRPointCloudItem*>(item);
-			m_renderer->RemoveActor(model_item->getPointBridge()->getPointCloudActor());
+			m_renderer->RemoveActor(model_item->getActor());
 		}
 		else if(item->type() == LVRMeshItemType)
 		{
 			LVRMeshItem* model_item = static_cast<LVRMeshItem*>(item);
-			m_renderer->RemoveActor(model_item->getMeshBridge()->getMeshActor());
+			m_renderer->RemoveActor(model_item->getActor());
 		}
 
 		// Remove list item (safe according to http://stackoverflow.com/a/9399167)
@@ -370,7 +370,7 @@ void LVRMainWindow::changePointSize(int pointSize)
 		if(item->type() == LVRPointCloudItemType)
 		{
 			LVRPointCloudItem* model_item = static_cast<LVRPointCloudItem*>(item);
-			model_item->getPointBridge()->setPointSize(pointSize);
+			model_item->setPointSize(pointSize);
 		}
 		else if(item->type() == LVRMeshItemType)
 		{
@@ -396,7 +396,7 @@ void LVRMainWindow::changeTransparency(int transparencyValue)
 		{
 			float opacityValue = 1 - ((float)transparencyValue / (float)100);
 			LVRPointCloudItem* model_item = static_cast<LVRPointCloudItem*>(item);
-			model_item->getPointBridge()->setOpacity(opacityValue);
+			model_item->setOpacity(opacityValue);
 		}
 		else if(item->type() == LVRMeshItemType)
 		{
