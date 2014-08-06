@@ -87,17 +87,38 @@ private:
     vtkSmartPointer<vtkRenderer>        m_renderer;
     vtkSmartPointer<vtkCamera>			m_camera;
     QMenu*				                m_treeContextMenu;
-    QAction*							m_actionQuit;
-    QAction*				            m_actionShowColorDialog;
-    QAction*			                m_actionDeleteModelItem;
-    QAction*                            m_actionExportModelTransformed;
-    QAction*							m_actionShow_Points;
-    QAction*							m_actionShow_Mesh;
-    QAction*							m_actionReset_Camera;
-    QAction*							m_actionStore_Current_View;
-    QAction*							m_actionRecall_Stored_View;
+
+    // Toolbar item "File"
+	QAction*							m_actionOpen;
+	QAction*							m_actionExport;
+	QAction*							m_actionQuit;
+	// Toolbar item "Views"
+	QAction*							m_actionReset_Camera;
+	QAction*							m_actionStore_Current_View;
+	QAction*							m_actionRecall_Stored_View;
+	// QToolbar below toolbar
+	QAction*							m_actionShow_Points;
+	QAction*							m_actionShow_Normals;
+	QAction*							m_actionShow_Mesh;
+	QAction*							m_actionShow_Wireframe;
+    // Sliders below tree widget
     QSlider*							m_horizontalSliderPointSize;
+    QSlider*							m_horizontalSliderContrastLow;
+    QSlider*							m_horizontalSliderContrastHigh;
     QSlider*							m_horizontalSliderTransparency;
+    // Combo boxes below sliders
+    QComboBox*							m_comboBoxGradient;
+    QComboBox*							m_comboBoxShading;
+    // Buttons below combo boxes
+    QPushButton*						m_buttonRecordPath;
+    QPushButton*						m_buttonCreateMesh;
+    QPushButton*						m_buttonExportData;
+    QPushButton*						m_buttonTransformModel;
+
+	QAction*				            m_actionShowColorDialog;
+	QAction*			                m_actionDeleteModelItem;
+	QAction*                            m_actionExportModelTransformed;
+
     LVRPickingInteractor*               m_pickingInteractor;
     LVRTreeWidgetHelper*                m_treeWidgetHelper;
 };
