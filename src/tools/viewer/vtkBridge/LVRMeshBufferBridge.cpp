@@ -54,7 +54,7 @@ LVRMeshBufferBridge::LVRMeshBufferBridge(MeshBufferPtr meshBuffer) :
 
 void LVRMeshBufferBridge::setBaseColor(float r, float g, float b)
 {
-    vtkSmartPointer<vtkProperty> p = vtkSmartPointer<vtkProperty>::New();
+	vtkSmartPointer<vtkProperty> p = m_meshActor->GetProperty();
     p->SetColor(r, g, b);
     m_meshActor->SetProperty(p);
 }
@@ -132,7 +132,7 @@ void LVRMeshBufferBridge::computeMeshActor(MeshBufferPtr meshbuffer)
 
 void LVRMeshBufferBridge::setOpacity(float opacityValue)
 {
-    vtkSmartPointer<vtkProperty> p = vtkSmartPointer<vtkProperty>::New();
+	vtkSmartPointer<vtkProperty> p = m_meshActor->GetProperty();
     p->SetOpacity(opacityValue);
     m_meshActor->SetProperty(p);
 }
