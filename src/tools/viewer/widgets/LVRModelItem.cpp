@@ -46,6 +46,7 @@ LVRModelItem::LVRModelItem(ModelBridgePtr bridge, QString name) :
     setText(0, m_name);
     setCheckState(0, Qt::Checked);
 
+    // dynamically connect the checkbox to the setVisibility-SLOT
     //QSignalMapper *signalMapper = new QSignalMapper(this);
     //QObject::connect(signalMapper, SIGNAL(mapped(bool)), this, SLOT(setVisibility(bool)));
 
