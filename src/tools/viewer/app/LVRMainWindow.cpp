@@ -93,14 +93,103 @@ LVRMainWindow::LVRMainWindow()
     connectSignalsAndSlots();
 }
 
-
-
 LVRMainWindow::~LVRMainWindow()
 {
     if(m_correspondanceDialog)
     {
         delete m_correspondanceDialog;
     }
+}
+
+void LVRMainWindow::connectSignalsAndSlots()
+{
+    QObject::connect(actionOpen, SIGNAL(activated()), this, SLOT(loadModel()));
+    QObject::connect(buttonTransformModel, SIGNAL(pressed()), this, SLOT(showTransformationDialog()));
+    QObject::connect(treeWidget, SIGNAL(customContextMenuRequested(const QPoint&)), this, SLOT(showTreeContextMenu(const QPoint&)));
+
+    QObject::connect(m_actionQuit, SIGNAL(activated()), qApp, SLOT(quit()));
+
+    QObject::connect(m_actionShowColorDialog, SIGNAL(activated()), this, SLOT(showColorDialog()));
+    QObject::connect(m_actionDeleteModelItem, SIGNAL(activated()), this, SLOT(deleteModelItem()));
+    QObject::connect(m_actionExportModelTransformed, SIGNAL(activated()), this, SLOT(exportSelectedModel()));
+
+    QObject::connect(m_actionReset_Camera, SIGNAL(activated()), this, SLOT(updateView()));
+    QObject::connect(m_actionStore_Current_View, SIGNAL(activated()), this, SLOT(saveCamera()));
+    QObject::connect(m_actionRecall_Stored_View, SIGNAL(activated()), this, SLOT(loadCamera()));
+
+    QObject::connect(m_correspondanceDialog->m_dialog, SIGNAL(accepted()), m_pickingInteractor, SLOT(correspondenceSearchOff()));
+    QObject::connect(m_correspondanceDialog->m_dialog, SIGNAL(accepted()), this, SLOT(alignPointClouds()));
+    QObject::connect(m_correspondanceDialog->m_dialog, SIGNAL(rejected()), m_pickingInteractor, SLOT(correspondenceSearchOff()));
+    QObject::connect(m_correspondanceDialog, SIGNAL(addArrow(LVRVtkArrow*)), this, SLOT(addArrow(LVRVtkArrow*)));
+    QObject::connect(m_correspondanceDialog, SIGNAL(removeArrow(LVRVtkArrow*)), this, SLOT(removeArrow(LVRVtkArrow*)));
+    QObject::connect(m_correspondanceDialog, SIGNAL(disableCorrespondenceSearch()), m_pickingInteractor, SLOT(correspondenceSearchOff()));
+    QObject::connect(m_correspondanceDialog, SIGNAL(enableCorrespondenceSearch()), m_pickingInteractor, SLOT(correspondenceSearchOn()));
+
+    QObject::connect(m_actionShow_Points, SIGNAL(toggled(bool)), this, SLOT(togglePoints(bool)));
+    QObject::connect(m_actionShow_Mesh, SIGNAL(toggled(bool)), this, SLOT(toggleMeshes(bool)));
+
+    QObject::connect(m_horizontalSliderPointSize, SIGNAL(valueChanged(int)), this, SLOT(changePointSize(int)));
+    QObject::connect(m_horizontalSliderTransparency, SIGNAL(valueChanged(int)), this, SLOT(changeTransparency(int)));
+
+    QObject::connect(m_pickingInteractor, SIGNAL(firstPointPicked(double*)),m_correspondanceDialog, SLOT(firstPointPicked(double*)));
+    QObject::connect(m_pickingInteractor, SIGNAL(secondPointPicked(double*)),m_correspondanceDialog, SLOT(secondPointPicked(double*)));
+
+    QObject::connect(this, SIGNAL(correspondenceDialogOpened()), m_pickingInteractor, SLOT(correspondenceSearchOn()));
+
+    QObject::connect(this->actionICP_using_manual_correspondance, SIGNAL(activated()), this, SLOT(manualICP()));
+}
+
+void LVRMainWindow::setupQVTK()
+{
+    // Add new renderer to the render window of the QVTKWidget
+    m_renderer = vtkSmartPointer<vtkRenderer>::New();
+    m_camera = vtkSmartPointer<vtkCamera>::New();
+    this->qvtkWidget->GetRenderWindow()->AddRenderer(m_renderer);
+}
+
+void LVRMainWindow::updateView()
+{
+    m_renderer->ResetCamera();
+    m_renderer->ResetCameraClippingRange();
+	this->qvtkWidget->GetRenderWindow()->Render();
+}
+
+void LVRMainWindow::refreshView()
+{
+	this->qvtkWidget->GetRenderWindow()->Render();
+}
+
+void LVRMainWindow::saveCamera()
+{
+	m_camera->DeepCopy(m_renderer->GetActiveCamera());
+}
+
+void LVRMainWindow::loadCamera()
+{
+	m_renderer->GetActiveCamera()->DeepCopy(m_camera);
+	refreshView();
+}
+
+void LVRMainWindow::addArrow(LVRVtkArrow* a)
+{
+    if(a)
+    {
+        m_renderer->AddActor(a->getArrowActor());
+        m_renderer->AddActor(a->getStartActor());
+        m_renderer->AddActor(a->getEndActor());
+    }
+    this->qvtkWidget->GetRenderWindow()->Render();
+}
+
+void LVRMainWindow::removeArrow(LVRVtkArrow* a)
+{
+    if(a)
+    {
+        m_renderer->RemoveActor(a->getArrowActor());
+        m_renderer->RemoveActor(a->getStartActor());
+        m_renderer->RemoveActor(a->getEndActor());
+    }
+    this->qvtkWidget->GetRenderWindow()->Render();
 }
 
 void LVRMainWindow::exportSelectedModel()
@@ -147,59 +236,6 @@ void LVRMainWindow::exportSelectedModel()
             }
         }
     }
-}
-
-void LVRMainWindow::setupQVTK()
-{
-    // Add new renderer to the render window of the QVTKWidget
-    m_renderer = vtkSmartPointer<vtkRenderer>::New();
-    m_camera = vtkSmartPointer<vtkCamera>::New();
-    this->qvtkWidget->GetRenderWindow()->AddRenderer(m_renderer);
-}
-
-void LVRMainWindow::updateView()
-{
-    m_renderer->ResetCamera();
-    m_renderer->ResetCameraClippingRange();
-	this->qvtkWidget->GetRenderWindow()->Render();
-}
-
-void LVRMainWindow::refreshView()
-{
-	this->qvtkWidget->GetRenderWindow()->Render();
-}
-
-void LVRMainWindow::saveCamera()
-{
-	m_camera->DeepCopy(m_renderer->GetActiveCamera());
-}
-
-void LVRMainWindow::loadCamera()
-{
-	m_renderer->GetActiveCamera()->DeepCopy(m_camera);
-	refreshView();
-}
-
-void LVRMainWindow::removeArrow(LVRVtkArrow* a)
-{
-    if(a)
-    {
-        m_renderer->RemoveActor(a->getArrowActor());
-        m_renderer->RemoveActor(a->getStartActor());
-        m_renderer->RemoveActor(a->getEndActor());
-    }
-    this->qvtkWidget->GetRenderWindow()->Render();
-}
-
-void LVRMainWindow::addArrow(LVRVtkArrow* a)
-{
-    if(a)
-    {
-        m_renderer->AddActor(a->getArrowActor());
-        m_renderer->AddActor(a->getStartActor());
-        m_renderer->AddActor(a->getEndActor());
-    }
-    this->qvtkWidget->GetRenderWindow()->Render();
 }
 
 void LVRMainWindow::alignPointClouds()
@@ -260,70 +296,6 @@ void LVRMainWindow::alignPointClouds()
     m_correspondanceDialog->clearAllItems();
     updateView();
 
-}
-
-void LVRMainWindow::connectSignalsAndSlots()
-{
-    QObject::connect(actionOpen, SIGNAL(activated()), this, SLOT(loadModel()));
-    QObject::connect(buttonTransformModel, SIGNAL(pressed()), this, SLOT(showTransformationDialog()));
-    QObject::connect(treeWidget, SIGNAL(customContextMenuRequested(const QPoint&)), this, SLOT(showTreeContextMenu(const QPoint&)));
-
-    QObject::connect(m_actionQuit, SIGNAL(activated()), qApp, SLOT(quit()));
-
-    QObject::connect(m_actionShowColorDialog, SIGNAL(activated()), this, SLOT(showColorDialog()));
-    QObject::connect(m_actionDeleteModelItem, SIGNAL(activated()), this, SLOT(deleteModelItem()));
-    QObject::connect(m_actionExportModelTransformed, SIGNAL(activated()), this, SLOT(exportSelectedModel()));
-
-    QObject::connect(m_actionReset_Camera, SIGNAL(activated()), this, SLOT(updateView()));
-    QObject::connect(m_actionStore_Current_View, SIGNAL(activated()), this, SLOT(saveCamera()));
-    QObject::connect(m_actionRecall_Stored_View, SIGNAL(activated()), this, SLOT(loadCamera()));
-
-    QObject::connect(m_correspondanceDialog->m_dialog, SIGNAL(accepted()), m_pickingInteractor, SLOT(correspondenceSearchOff()));
-    QObject::connect(m_correspondanceDialog->m_dialog, SIGNAL(accepted()), this, SLOT(alignPointClouds()));
-    QObject::connect(m_correspondanceDialog->m_dialog, SIGNAL(rejected()), m_pickingInteractor, SLOT(correspondenceSearchOff()));
-    QObject::connect(m_correspondanceDialog, SIGNAL(addArrow(LVRVtkArrow*)), this, SLOT(addArrow(LVRVtkArrow*)));
-    QObject::connect(m_correspondanceDialog, SIGNAL(removeArrow(LVRVtkArrow*)), this, SLOT(removeArrow(LVRVtkArrow*)));
-    QObject::connect(m_correspondanceDialog, SIGNAL(disableCorrespondenceSearch()), m_pickingInteractor, SLOT(correspondenceSearchOff()));
-    QObject::connect(m_correspondanceDialog, SIGNAL(enableCorrespondenceSearch()), m_pickingInteractor, SLOT(correspondenceSearchOn()));
-
-    QObject::connect(m_actionShow_Points, SIGNAL(toggled(bool)), this, SLOT(togglePoints(bool)));
-    QObject::connect(m_actionShow_Mesh, SIGNAL(toggled(bool)), this, SLOT(toggleMeshes(bool)));
-
-    QObject::connect(m_horizontalSliderPointSize, SIGNAL(valueChanged(int)), this, SLOT(changePointSize(int)));
-    QObject::connect(m_horizontalSliderTransparency, SIGNAL(valueChanged(int)), this, SLOT(changeTransparency(int)));
-
-    QObject::connect(m_pickingInteractor, SIGNAL(firstPointPicked(double*)),m_correspondanceDialog, SLOT(firstPointPicked(double*)));
-    QObject::connect(m_pickingInteractor, SIGNAL(secondPointPicked(double*)),m_correspondanceDialog, SLOT(secondPointPicked(double*)));
-
-    QObject::connect(this, SIGNAL(correspondenceDialogOpened()), m_pickingInteractor, SLOT(correspondenceSearchOn()));
-
-    QObject::connect(this->actionICP_using_manual_correspondance, SIGNAL(activated()), this, SLOT(manualICP()));
-
-}
-
-void LVRMainWindow::showColorDialog()
-{
-	QColor c = QColorDialog::getColor();
-	QList<QTreeWidgetItem*> items = treeWidget->selectedItems();
-	if(items.size() > 0)
-	{
-		QTreeWidgetItem* item = items.first();
-		if(item->type() == LVRPointCloudItemType)
-		{
-			LVRPointCloudItem* pc_item = static_cast<LVRPointCloudItem*>(item);
-			pc_item->setColor(c);
-		}
-		else if(item->type() == LVRMeshItemType)
-		{
-		    LVRMeshItem* mesh_item = static_cast<LVRMeshItem*>(item);
-		    mesh_item->setColor(c);
-		}
-		else {
-			return;
-		}
-
-		refreshView();
-	}
 }
 
 void LVRMainWindow::showTreeContextMenu(const QPoint& p)
@@ -487,6 +459,31 @@ void LVRMainWindow::manualICP()
     m_correspondanceDialog->m_dialog->raise();
     m_correspondanceDialog->m_dialog->activateWindow();
     Q_EMIT(correspondenceDialogOpened());
+}
+
+void LVRMainWindow::showColorDialog()
+{
+	QColor c = QColorDialog::getColor();
+	QList<QTreeWidgetItem*> items = treeWidget->selectedItems();
+	if(items.size() > 0)
+	{
+		QTreeWidgetItem* item = items.first();
+		if(item->type() == LVRPointCloudItemType)
+		{
+			LVRPointCloudItem* pc_item = static_cast<LVRPointCloudItem*>(item);
+			pc_item->setColor(c);
+		}
+		else if(item->type() == LVRMeshItemType)
+		{
+		    LVRMeshItem* mesh_item = static_cast<LVRMeshItem*>(item);
+		    mesh_item->setColor(c);
+		}
+		else {
+			return;
+		}
+
+		refreshView();
+	}
 }
 
 void LVRMainWindow::showTransformationDialog()
