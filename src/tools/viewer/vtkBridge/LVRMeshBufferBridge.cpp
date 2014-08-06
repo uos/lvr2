@@ -130,6 +130,19 @@ void LVRMeshBufferBridge::computeMeshActor(MeshBufferPtr meshbuffer)
     }
 }
 
+void LVRMeshBufferBridge::setOpacity(float opacityValue)
+{
+    vtkSmartPointer<vtkProperty> p = vtkSmartPointer<vtkProperty>::New();
+    p->SetOpacity(opacityValue);
+    m_meshActor->SetProperty(p);
+}
+
+void LVRMeshBufferBridge::setVisibility(bool visible)
+{
+	if(visible) m_meshActor->VisibilityOn();
+	else m_meshActor->VisibilityOff();
+}
+
 vtkSmartPointer<vtkActor> LVRMeshBufferBridge::getMeshActor()
 {
     return m_meshActor;
