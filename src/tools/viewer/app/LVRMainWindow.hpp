@@ -87,6 +87,7 @@ private:
     vtkSmartPointer<vtkRenderer>        m_renderer;
     vtkSmartPointer<vtkCamera>			m_camera;
     QMenu*				                m_treeContextMenu;
+    QAction*							m_actionQuit;
     QAction*				            m_actionShowColorDialog;
     QAction*			                m_actionDeleteModelItem;
     QAction*                            m_actionExportModelTransformed;
