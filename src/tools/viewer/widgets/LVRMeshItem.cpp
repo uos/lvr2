@@ -49,17 +49,22 @@ LVRMeshItem::LVRMeshItem(MeshBufferBridgePtr& ptr, QTreeWidgetItem* parent) :
     faceItem->setText(0, "Num Triangles:");
     faceItem->setText(1, numFaces.setNum(ptr->getNumTriangles()));
     addChild(faceItem);
+
+    // set initial values
+    m_opacity = 1;
+    m_color = QColor(255,255,255);
+    m_visible = true;
+}
+
+QColor LVRMeshItem::getColor()
+{
+	return m_color;
 }
 
 void LVRMeshItem::setColor(QColor &c)
 {
     m_color = c;
     m_meshBridge->setBaseColor(c.redF(), c.greenF(), c.blueF());
-}
-
-MeshBufferPtr LVRMeshItem::getMeshBuffer()
-{
-    return m_meshBridge->getMeshBuffer();
 }
 
 void LVRMeshItem::setSelectionColor(QColor& c)
@@ -70,6 +75,38 @@ void LVRMeshItem::setSelectionColor(QColor& c)
 void LVRMeshItem::resetColor()
 {
     m_meshBridge->setBaseColor(m_color.redF(), m_color.greenF(), m_color.blueF());
+}
+
+float LVRMeshItem::getOpacity()
+{
+	return m_opacity;
+}
+
+void LVRMeshItem::setOpacity(float &opacity)
+{
+    m_meshBridge->setOpacity(opacity);
+    m_opacity = opacity;
+}
+
+bool LVRMeshItem::getVisibility()
+{
+	return m_visible;
+}
+
+void LVRMeshItem::setVisibility(bool &visibility)
+{
+	m_meshBridge->setVisibility(visibility);
+	m_visible = visibility;
+}
+
+MeshBufferPtr LVRMeshItem::getMeshBuffer()
+{
+    return m_meshBridge->getMeshBuffer();
+}
+
+vtkSmartPointer<vtkActor> LVRMeshItem::getActor()
+{
+	return m_meshBridge->getMeshActor();
 }
 
 LVRMeshItem::~LVRMeshItem()

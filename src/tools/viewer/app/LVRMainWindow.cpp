@@ -52,7 +52,6 @@ LVRMainWindow::LVRMainWindow()
     setupUi(this);
     setupQVTK();
 
-
     // Init members
     m_correspondanceDialog = new LVRCorrespondanceDialog(treeWidget);
 
@@ -74,6 +73,11 @@ LVRMainWindow::LVRMainWindow()
     m_treeContextMenu->addAction(m_actionDeleteModelItem);
     m_treeContextMenu->addAction(m_actionExportModelTransformed);
 
+    m_actionShow_Points = this->actionShow_Points;
+    m_actionShow_Mesh = this->actionShow_Mesh;
+
+    m_horizontalSliderPointSize = this->horizontalSliderPointSize;
+    m_horizontalSliderTransparency = this->horizontalSliderTransparency;
 
     m_pickingInteractor = new LVRPickingInteractor(m_renderer);
     qvtkWidget->GetRenderWindow()->GetInteractor()->SetInteractorStyle( m_pickingInteractor );
@@ -136,13 +140,6 @@ void LVRMainWindow::exportSelectedModel()
             }
         }
     }
-
-
-}
-
-void LVRMainWindow::renderVtkStuff()
-{
-    this->qvtkWidget->GetRenderWindow()->Render();
 }
 
 void LVRMainWindow::setupQVTK()
@@ -150,6 +147,17 @@ void LVRMainWindow::setupQVTK()
     // Add new renderer to the render window of the QVTKWidget
     m_renderer = vtkSmartPointer<vtkRenderer>::New();
     this->qvtkWidget->GetRenderWindow()->AddRenderer(m_renderer);
+}
+
+void LVRMainWindow::updateView()
+{
+    m_renderer->ResetCamera();
+	this->qvtkWidget->GetRenderWindow()->Render();
+}
+
+void LVRMainWindow::refreshView()
+{
+	this->qvtkWidget->GetRenderWindow()->Render();
 }
 
 void LVRMainWindow::removeArrow(LVRVtkArrow* a)
@@ -202,7 +210,7 @@ void LVRMainWindow::alignPointClouds()
         item->setPose(p);
     }
 
-    this->qvtkWidget->GetRenderWindow()->Render();
+    updateView();
     // Refine pose via ICP
     if(m_correspondanceDialog->doICP() && modelBuffer && dataBuffer)
     {
@@ -230,7 +238,7 @@ void LVRMainWindow::alignPointClouds()
         item->setPose(p);
     }
     m_correspondanceDialog->clearAllItems();
-    this->qvtkWidget->GetRenderWindow()->Render();
+    updateView();
 
 }
 
@@ -252,6 +260,11 @@ void LVRMainWindow::connectSignalsAndSlots()
     QObject::connect(m_correspondanceDialog, SIGNAL(disableCorrespondenceSearch()), m_pickingInteractor, SLOT(correspondenceSearchOff()));
     QObject::connect(m_correspondanceDialog, SIGNAL(enableCorrespondenceSearch()), m_pickingInteractor, SLOT(correspondenceSearchOn()));
 
+    QObject::connect(m_actionShow_Points, SIGNAL(toggled(bool)), this, SLOT(togglePoints(bool)));
+    QObject::connect(m_actionShow_Mesh, SIGNAL(toggled(bool)), this, SLOT(toggleMeshes(bool)));
+
+    QObject::connect(m_horizontalSliderPointSize, SIGNAL(valueChanged(int)), this, SLOT(changePointSize(int)));
+    QObject::connect(m_horizontalSliderTransparency, SIGNAL(valueChanged(int)), this, SLOT(changeTransparency(int)));
 
     QObject::connect(m_pickingInteractor, SIGNAL(firstPointPicked(double*)),m_correspondanceDialog, SLOT(firstPointPicked(double*)));
     QObject::connect(m_pickingInteractor, SIGNAL(secondPointPicked(double*)),m_correspondanceDialog, SLOT(secondPointPicked(double*)));
@@ -273,14 +286,17 @@ void LVRMainWindow::showColorDialog()
 		{
 			LVRPointCloudItem* pc_item = static_cast<LVRPointCloudItem*>(item);
 			pc_item->setColor(c);
-			qvtkWidget->GetRenderWindow()->Render();
 		}
 		else if(item->type() == LVRMeshItemType)
 		{
 		    LVRMeshItem* mesh_item = static_cast<LVRMeshItem*>(item);
 		    mesh_item->setColor(c);
-		    qvtkWidget->GetRenderWindow()->Render();
 		}
+		else {
+			return;
+		}
+
+		refreshView();
 	}
 }
 
@@ -322,9 +338,7 @@ void LVRMainWindow::loadModel()
             ++it;
         }
 
-        // Update camera to new scene dimension and force rendering
-        m_renderer->ResetCamera();
-        this->qvtkWidget->GetRenderWindow()->Render();
+        updateView();
     }
 
 }
@@ -334,24 +348,110 @@ void LVRMainWindow::deleteModelItem()
 	QList<QTreeWidgetItem*> items = treeWidget->selectedItems();
 	if(items.size() > 0)
 	{
-		// Delete QT Item
 		QTreeWidgetItem* item = items.first();
-		delete item->parent();
 
 		// Remove model from view
-		LVRModelItem* model_item = static_cast<LVRModelItem*>(item);
-		cout << "Casted LVRModelItem* model_item" << endl;
-		ModelBridgePtr bridge = model_item->getModelBridge();
-		cout << "Got ModelBridgePtr bridge from model_item" << endl;
-		bridge->removeActors(m_renderer);
-		cout << "Removed actor from m_renderer" << endl;
+		if(item->type() == LVRPointCloudItemType)
+		{
+			LVRPointCloudItem* model_item = static_cast<LVRPointCloudItem*>(item);
+			m_renderer->RemoveActor(model_item->getActor());
+		}
+		else if(item->type() == LVRMeshItemType)
+		{
+			LVRMeshItem* model_item = static_cast<LVRMeshItem*>(item);
+			m_renderer->RemoveActor(model_item->getActor());
+		}
 
-		// Update view
-		m_renderer->ResetCamera();
-		cout << "Reset camera" << endl;
-		qvtkWidget->GetRenderWindow()->Render();
-		cout << "Rendered qvtkWidget" << endl;
+		// Remove list item (safe according to http://stackoverflow.com/a/9399167)
+		delete item;
+
+		refreshView();
 	}
+}
+
+void LVRMainWindow::changePointSize(int pointSize)
+{
+	QList<QTreeWidgetItem*> items = treeWidget->selectedItems();
+	if(items.size() > 0)
+	{
+		QTreeWidgetItem* item = items.first();
+
+		// Remove model from view
+		if(item->type() == LVRPointCloudItemType)
+		{
+			LVRPointCloudItem* model_item = static_cast<LVRPointCloudItem*>(item);
+			model_item->setPointSize(pointSize);
+		}
+		else {
+			return;
+		}
+
+		refreshView();
+	}
+}
+
+void LVRMainWindow::changeTransparency(int transparencyValue)
+{
+	QList<QTreeWidgetItem*> items = treeWidget->selectedItems();
+	if(items.size() > 0)
+	{
+		QTreeWidgetItem* item = items.first();
+		float opacityValue = 1 - ((float)transparencyValue / (float)100);
+
+		// Remove model from view
+		if(item->type() == LVRPointCloudItemType)
+		{
+			LVRPointCloudItem* model_item = static_cast<LVRPointCloudItem*>(item);
+			model_item->setOpacity(opacityValue);
+		}
+		else if(item->type() == LVRMeshItemType)
+		{
+			LVRMeshItem* model_item = static_cast<LVRMeshItem*>(item);
+			model_item->setOpacity(opacityValue);
+		}
+		else
+		{
+			return;
+		}
+
+		refreshView();
+	}
+}
+
+void LVRMainWindow::togglePoints(bool checkboxState)
+{
+	QTreeWidgetItemIterator it(treeWidget);
+
+	while(*it)
+	{
+		QTreeWidgetItem* item = *it;
+		if(item->type() == LVRPointCloudItemType)
+		{
+			LVRPointCloudItem* model_item = static_cast<LVRPointCloudItem*>(item);
+			model_item->setVisibility(checkboxState);
+		}
+		++it;
+	}
+
+	refreshView();
+}
+
+void LVRMainWindow::toggleMeshes(bool checkboxState)
+{
+	QTreeWidgetItemIterator it(treeWidget);
+
+	while(*it)
+	{
+		QTreeWidgetItem* item = *it;
+		if(item->type() == LVRMeshItemType)
+		{
+			LVRMeshItem* model_item = static_cast<LVRMeshItem*>(item);
+			model_item->setVisibility(checkboxState);
+		}
+		++it;
+	}
+
+	refreshView();
 }
 
 void LVRMainWindow::manualICP()
