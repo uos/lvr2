@@ -46,6 +46,8 @@ LVRModelItem::LVRModelItem(ModelBridgePtr bridge, QString name) :
     setText(0, m_name);
     setCheckState(0, Qt::Checked);
 
+    //QSignalMapper *signalMapper = new QSignalMapper(this);
+    //QObject::connect(signalMapper, SIGNAL(mapped(bool)), this, SLOT(setVisibility(bool)));
 
     // Insert sub items
     if(bridge->m_pointBridge->getNumPoints())
@@ -92,6 +94,11 @@ void LVRModelItem::setPose( Pose& pose)
 ModelBridgePtr LVRModelItem::getModelBridge()
 {
 	return m_modelBridge;
+}
+
+void LVRModelItem::setVisibility(bool visible)
+{
+	m_modelBridge->setVisibility(visible);
 }
 
 LVRModelItem::~LVRModelItem()
