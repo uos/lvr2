@@ -70,6 +70,8 @@ LVRMainWindow::LVRMainWindow()
     m_actionDeleteModelItem = new QAction("Delete model", this);
     m_actionExportModelTransformed = new QAction("Export model with transformation", this);
 
+    m_actionQuit = this->actionQuit;
+
     m_actionReset_Camera = this->actionReset_Camera;
     m_actionStore_Current_View = this->actionStore_Current_View;
     m_actionRecall_Stored_View = this->actionRecall_Stored_View;
@@ -265,6 +267,8 @@ void LVRMainWindow::connectSignalsAndSlots()
     QObject::connect(actionOpen, SIGNAL(activated()), this, SLOT(loadModel()));
     QObject::connect(buttonTransformModel, SIGNAL(pressed()), this, SLOT(showTransformationDialog()));
     QObject::connect(treeWidget, SIGNAL(customContextMenuRequested(const QPoint&)), this, SLOT(showTreeContextMenu(const QPoint&)));
+
+    QObject::connect(m_actionQuit, SIGNAL(activated()), qApp, SLOT(quit()));
 
     QObject::connect(m_actionShowColorDialog, SIGNAL(activated()), this, SLOT(showColorDialog()));
     QObject::connect(m_actionDeleteModelItem, SIGNAL(activated()), this, SLOT(deleteModelItem()));
