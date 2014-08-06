@@ -46,7 +46,7 @@ FIND_PACKAGE( MPI )
 include_directories(SYSTEM ${MPI_INCLUDE_PATH})
 
 ####
-## Searching for MPI
+## Searching for VTK
 ##############################
 find_package(VTK REQUIRED)
 include(${VTK_USE_FILE})
@@ -293,9 +293,15 @@ if( QT4_FOUND )
         add_subdirectory(src/qglviewer)
     endif(QGLVIEWER_LIBRARY_RELEASE)
 
-    add_subdirectory(src/tools/viewer)
+   	find_package(QVTK)
+   	if(QVTK_FOUND)
+   		add_subdirectory(src/tools/viewer)
+	endif(QVTK_FOUND)
 
 endif(QT4_FOUND)
+
+
+
 
 ################################################################
 # DOCUMENTATION
