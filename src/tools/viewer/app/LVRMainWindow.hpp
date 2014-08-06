@@ -85,7 +85,7 @@ private:
 
     LVRCorrespondanceDialog*            m_correspondanceDialog;
     vtkSmartPointer<vtkRenderer>        m_renderer;
-    vtkCamera*							m_savedCamera;
+    vtkSmartPointer<vtkCamera>			m_camera;
     QMenu*				                m_treeContextMenu;
     QAction*				            m_actionShowColorDialog;
     QAction*			                m_actionDeleteModelItem;
