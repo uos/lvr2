@@ -39,15 +39,26 @@ public:
 
     LVRPointCloudItem(PointBufferBridgePtr& ptr, QTreeWidgetItem* parent = 0);
     virtual ~LVRPointCloudItem();
+    QColor	getColor();
     void    setColor(QColor &c);
     void    setSelectionColor(QColor &c);
     void    resetColor();
+    int		getPointSize();
+    void    setPointSize(int &pointSize);
+    float	getOpacity();
+    void    setOpacity(float &opacity);
+    bool	getVisibility();
+    void    setVisibility(bool &visiblity);
     PointBufferPtr getPointBuffer();
+    vtkSmartPointer<vtkActor> getActor();
 
 protected:
     QTreeWidgetItem*        m_parent;
     PointBufferBridgePtr    m_pointBridge;
     QColor                  m_color;
+    int						m_pointSize;
+    float					m_opacity;
+    bool					m_visible;
 };
 
 } /* namespace lvr */
