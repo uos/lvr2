@@ -70,21 +70,29 @@ LVRMainWindow::LVRMainWindow()
     m_actionDeleteModelItem = new QAction("Delete model", this);
     m_actionExportModelTransformed = new QAction("Export model with transformation", this);
 
-    m_actionQuit = this->actionQuit;
-
-    m_actionReset_Camera = this->actionReset_Camera;
-    m_actionStore_Current_View = this->actionStore_Current_View;
-    m_actionRecall_Stored_View = this->actionRecall_Stored_View;
-
     m_treeContextMenu->addAction(m_actionShowColorDialog);
     m_treeContextMenu->addAction(m_actionDeleteModelItem);
     m_treeContextMenu->addAction(m_actionExportModelTransformed);
 
+    // Toolbar item "File"
+    m_actionOpen = this->actionOpen;
+    m_actionExport = this->actionExport;
+    m_actionQuit = this->actionQuit;
+    // Toolbar item "Views"
+    m_actionReset_Camera = this->actionReset_Camera;
+    m_actionStore_Current_View = this->actionStore_Current_View;
+    m_actionRecall_Stored_View = this->actionRecall_Stored_View;
+    // QToolbar below toolbar
     m_actionShow_Points = this->actionShow_Points;
     m_actionShow_Mesh = this->actionShow_Mesh;
-
+    // Slider below tree widget
     m_horizontalSliderPointSize = this->horizontalSliderPointSize;
     m_horizontalSliderTransparency = this->horizontalSliderTransparency;
+    // Buttons below combo boxes
+    m_buttonRecordPath = this->buttonRecordPath;
+    m_buttonCreateMesh = this->buttonCreateMesh;
+    m_buttonExportData = this->buttonExportData;
+    m_buttonTransformModel = this->buttonTransformModel;
 
     m_pickingInteractor = new LVRPickingInteractor(m_renderer);
     qvtkWidget->GetRenderWindow()->GetInteractor()->SetInteractorStyle( m_pickingInteractor );
@@ -103,8 +111,8 @@ LVRMainWindow::~LVRMainWindow()
 
 void LVRMainWindow::connectSignalsAndSlots()
 {
-    QObject::connect(actionOpen, SIGNAL(activated()), this, SLOT(loadModel()));
-    QObject::connect(buttonTransformModel, SIGNAL(pressed()), this, SLOT(showTransformationDialog()));
+    QObject::connect(m_actionOpen, SIGNAL(activated()), this, SLOT(loadModel()));
+    QObject::connect(m_buttonTransformModel, SIGNAL(pressed()), this, SLOT(showTransformationDialog()));
     QObject::connect(treeWidget, SIGNAL(customContextMenuRequested(const QPoint&)), this, SLOT(showTreeContextMenu(const QPoint&)));
 
     QObject::connect(m_actionQuit, SIGNAL(activated()), qApp, SLOT(quit()));
