@@ -69,6 +69,10 @@ LVRMainWindow::LVRMainWindow()
     m_actionDeleteModelItem = new QAction("Delete model", this);
     m_actionExportModelTransformed = new QAction("Export model with transformation", this);
 
+    m_actionReset_Camera = this->actionReset_Camera;
+    m_actionStore_Current_View = this->actionStore_Current_View;
+    m_actionRecall_Stored_View = this->actionRecall_Stored_View;
+
     m_treeContextMenu->addAction(m_actionShowColorDialog);
     m_treeContextMenu->addAction(m_actionDeleteModelItem);
     m_treeContextMenu->addAction(m_actionExportModelTransformed);
@@ -151,6 +155,7 @@ void LVRMainWindow::setupQVTK()
 
 void LVRMainWindow::updateView()
 {
+	m_renderer->SetViewPoint(0,1,0);
     m_renderer->ResetCamera();
 	this->qvtkWidget->GetRenderWindow()->Render();
 }
@@ -158,6 +163,16 @@ void LVRMainWindow::updateView()
 void LVRMainWindow::refreshView()
 {
 	this->qvtkWidget->GetRenderWindow()->Render();
+}
+
+void LVRMainWindow::saveCamera()
+{
+	m_savedCamera = m_renderer->GetActiveCamera();
+}
+
+void LVRMainWindow::loadCamera()
+{
+	m_renderer->SetActiveCamera(m_savedCamera);
 }
 
 void LVRMainWindow::removeArrow(LVRVtkArrow* a)
@@ -251,6 +266,10 @@ void LVRMainWindow::connectSignalsAndSlots()
     QObject::connect(m_actionShowColorDialog, SIGNAL(activated()), this, SLOT(showColorDialog()));
     QObject::connect(m_actionDeleteModelItem, SIGNAL(activated()), this, SLOT(deleteModelItem()));
     QObject::connect(m_actionExportModelTransformed, SIGNAL(activated()), this, SLOT(exportSelectedModel()));
+
+    QObject::connect(m_actionReset_Camera, SIGNAL(activated()), this, SLOT(updateView()));
+    QObject::connect(m_actionStore_Current_View, SIGNAL(activated()), this, SLOT(saveCamera()));
+    QObject::connect(m_actionRecall_Stored_View, SIGNAL(activated()), this, SLOT(loadCamera()));
 
     QObject::connect(m_correspondanceDialog->m_dialog, SIGNAL(accepted()), m_pickingInteractor, SLOT(correspondenceSearchOff()));
     QObject::connect(m_correspondanceDialog->m_dialog, SIGNAL(accepted()), this, SLOT(alignPointClouds()));
