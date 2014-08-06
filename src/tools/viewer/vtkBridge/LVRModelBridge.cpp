@@ -75,6 +75,12 @@ void LVRModelBridge::removeActors(vtkSmartPointer<vtkRenderer> renderer)
     renderer->RemoveActor(m_meshBridge->getMeshActor());
 }
 
+void LVRModelBridge::setVisibility(bool visible)
+{
+	m_pointBridge->setVisibility(visible);
+	m_meshBridge->setVisibility(visible);
+}
+
 LVRModelBridge::~LVRModelBridge()
 {
     // TODO Auto-generated destructor stub
