@@ -43,6 +43,7 @@
 #include <vtkActor.h>
 #include <vtkProperty.h>
 #include <vtkPointPicker.h>
+#include <vtkCamera.h>
 
 namespace lvr
 {
@@ -150,13 +151,14 @@ void LVRMainWindow::setupQVTK()
 {
     // Add new renderer to the render window of the QVTKWidget
     m_renderer = vtkSmartPointer<vtkRenderer>::New();
+    m_camera = vtkSmartPointer<vtkCamera>::New();
     this->qvtkWidget->GetRenderWindow()->AddRenderer(m_renderer);
 }
 
 void LVRMainWindow::updateView()
 {
-	m_renderer->SetViewPoint(0,1,0);
     m_renderer->ResetCamera();
+    m_renderer->ResetCameraClippingRange();
 	this->qvtkWidget->GetRenderWindow()->Render();
 }
 
@@ -167,12 +169,13 @@ void LVRMainWindow::refreshView()
 
 void LVRMainWindow::saveCamera()
 {
-	m_savedCamera = m_renderer->GetActiveCamera();
+	m_camera->DeepCopy(m_renderer->GetActiveCamera());
 }
 
 void LVRMainWindow::loadCamera()
 {
-	m_renderer->SetActiveCamera(m_savedCamera);
+	m_renderer->GetActiveCamera()->DeepCopy(m_camera);
+	refreshView();
 }
 
 void LVRMainWindow::removeArrow(LVRVtkArrow* a)
