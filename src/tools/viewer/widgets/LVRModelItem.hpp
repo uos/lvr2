@@ -48,6 +48,9 @@ public:
     void    setPose( Pose& pose);
     ModelBridgePtr	getModelBridge();
 
+protected Q_SLOTS:
+	void			setVisibility(bool visible);
+
 protected:
     ModelBridgePtr  m_modelBridge;
     QString         m_name;
