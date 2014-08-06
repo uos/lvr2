@@ -63,7 +63,10 @@ public Q_SLOTS:
     void showTreeContextMenu(const QPoint&);
     void showColorDialog();
     void deleteModelItem();
-    void renderVtkStuff();
+    void changePointSize(int pointSize);
+    void changeTransparency(int transparencyValue);
+    void togglePoints(bool checkboxState);
+    void toggleMeshes(bool checkboxState);
     void removeArrow(LVRVtkArrow*);
     void addArrow(LVRVtkArrow*);
     void alignPointClouds();
@@ -74,6 +77,8 @@ Q_SIGNALS:
 
 private:
     void setupQVTK();
+    void refreshView();
+    void updateView();
     void connectSignalsAndSlots();
 
     LVRCorrespondanceDialog*            m_correspondanceDialog;
@@ -82,6 +87,10 @@ private:
     QAction*				            m_actionShowColorDialog;
     QAction*			                m_actionDeleteModelItem;
     QAction*                            m_actionExportModelTransformed;
+    QAction*							m_actionShow_Points;
+    QAction*							m_actionShow_Mesh;
+    QSlider*							m_horizontalSliderPointSize;
+    QSlider*							m_horizontalSliderTransparency;
     LVRPickingInteractor*               m_pickingInteractor;
     LVRTreeWidgetHelper*                m_treeWidgetHelper;
 };
