@@ -339,6 +339,7 @@ void LVRMainWindow::loadModel()
             QFileInfo info((*it));
             QString base = info.fileName();
             LVRModelItem* item = new LVRModelItem(bridge, base);
+            QObject::connect(treeWidget, SIGNAL(itemChanged(QTreeWidgetItem*, int)), this, SLOT(onItemChange(QTreeWidgetItem*, int)));
             this->treeWidget->addTopLevelItem(item);
             item->setExpanded(true);
             ++it;
@@ -346,7 +347,13 @@ void LVRMainWindow::loadModel()
 
         updateView();
     }
+}
 
+void LVRMainWindow::onItemChange(QTreeWidgetItem* treeWidgetItem, int column)
+{
+	LVRModelItem* item = static_cast<LVRModelItem*>(treeWidgetItem);
+	item->checkboxWrapper(column);
+	refreshView();
 }
 
 void LVRMainWindow::deleteModelItem()

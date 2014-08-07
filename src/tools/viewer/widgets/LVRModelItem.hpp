@@ -39,7 +39,6 @@ namespace lvr
 class LVRModelItem : public QTreeWidgetItem
 {
 public:
-
     LVRModelItem(ModelBridgePtr bridge, QString name = "");
     LVRModelItem(const LVRModelItem& item);
     virtual ~LVRModelItem();
@@ -47,6 +46,7 @@ public:
     Pose    getPose();
     void    setPose( Pose& pose);
     ModelBridgePtr	getModelBridge();
+	void			checkboxWrapper(int column);
 
 protected Q_SLOTS:
 	void			setVisibility(bool visible);

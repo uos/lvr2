@@ -76,6 +76,9 @@ public Q_SLOTS:
     void alignPointClouds();
     void exportSelectedModel();
 
+protected Q_SLOTS:
+    void onItemChange(QTreeWidgetItem* treeWidgetItem, int column);
+
 Q_SIGNALS:
     void correspondenceDialogOpened();
 
