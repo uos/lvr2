@@ -55,7 +55,8 @@ void LVRModelBridge::setPose(Pose& pose)
     transform->RotateY(pose.t);
     transform->RotateZ(pose.p);
     transform->Translate(pose.x, pose.y, pose.z);
-    m_pointBridge->getPointCloudActor()->SetUserTransform(transform);
+    if(m_pointBridge->getNumPoints() > 0) m_pointBridge->getPointCloudActor()->SetUserTransform(transform);
+    if(m_meshBridge->getNumTriangles() > 0) m_meshBridge->getMeshActor()->SetUserTransform(transform);
 }
 
 Pose LVRModelBridge::getPose()
