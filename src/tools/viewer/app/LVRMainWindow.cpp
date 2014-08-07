@@ -88,6 +88,9 @@ LVRMainWindow::LVRMainWindow()
     // Slider below tree widget
     m_horizontalSliderPointSize = this->horizontalSliderPointSize;
     m_horizontalSliderTransparency = this->horizontalSliderTransparency;
+    // Combo boxes
+    m_comboBoxGradient = this->comboBoxGradient;
+    m_comboBoxShading = this->comboBoxShading;
     // Buttons below combo boxes
     m_buttonRecordPath = this->buttonRecordPath;
     m_buttonCreateMesh = this->buttonCreateMesh;
@@ -138,6 +141,8 @@ void LVRMainWindow::connectSignalsAndSlots()
 
     QObject::connect(m_horizontalSliderPointSize, SIGNAL(valueChanged(int)), this, SLOT(changePointSize(int)));
     QObject::connect(m_horizontalSliderTransparency, SIGNAL(valueChanged(int)), this, SLOT(changeTransparency(int)));
+
+    QObject::connect(m_comboBoxShading, SIGNAL(currentIndexChanged(int)), this, SLOT(changeShading(int)));
 
     QObject::connect(m_pickingInteractor, SIGNAL(firstPointPicked(double*)),m_correspondanceDialog, SLOT(firstPointPicked(double*)));
     QObject::connect(m_pickingInteractor, SIGNAL(secondPointPicked(double*)),m_correspondanceDialog, SLOT(secondPointPicked(double*)));
@@ -429,6 +434,22 @@ void LVRMainWindow::changeTransparency(int transparencyValue)
 
 		refreshView();
 	}
+}
+
+void LVRMainWindow::changeShading(int shader)
+{
+    QList<QTreeWidgetItem*> items = treeWidget->selectedItems();
+    if(items.size() > 0)
+    {
+        QTreeWidgetItem* item = items.first();
+
+        if(item->type() == LVRMeshItemType)
+        {
+            LVRMeshItem* model_item = static_cast<LVRMeshItem*>(item);
+            model_item->setShading(shader);
+            refreshView();
+        }
+    }
 }
 
 void LVRMainWindow::togglePoints(bool checkboxState)
