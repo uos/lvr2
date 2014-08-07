@@ -149,8 +149,11 @@ void LVRPointBufferBridge::setOpacity(float opacityValue)
 
 void LVRPointBufferBridge::setVisibility(bool visible)
 {
-	if(visible) m_pointCloudActor->VisibilityOn();
-	else m_pointCloudActor->VisibilityOff();
+	if(this->m_numPoints > 0)
+	{
+		if(visible) m_pointCloudActor->VisibilityOn();
+		else m_pointCloudActor->VisibilityOff();
+	}
 }
 
 vtkSmartPointer<vtkActor> LVRPointBufferBridge::getPointCloudActor()
