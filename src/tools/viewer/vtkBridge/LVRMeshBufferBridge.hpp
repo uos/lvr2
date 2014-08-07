@@ -52,6 +52,7 @@ public:
     void setOpacity(float opacityValue);
     MeshBufferPtr getMeshBuffer();
     void setVisibility(bool visible);
+    void setShading(int shader);
 
 protected:
     void computeMeshActor(MeshBufferPtr meshbuffer);

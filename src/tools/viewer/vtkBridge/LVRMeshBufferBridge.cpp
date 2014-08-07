@@ -146,6 +146,13 @@ void LVRMeshBufferBridge::setVisibility(bool visible)
 	}
 }
 
+void LVRMeshBufferBridge::setShading(int shader)
+{
+    vtkSmartPointer<vtkProperty> p = m_meshActor->GetProperty();
+    p->SetShading(shader);
+    m_meshActor->SetProperty(p);
+}
+
 vtkSmartPointer<vtkActor> LVRMeshBufferBridge::getMeshActor()
 {
     return m_meshActor;

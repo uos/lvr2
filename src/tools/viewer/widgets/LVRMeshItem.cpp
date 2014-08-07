@@ -99,6 +99,17 @@ void LVRMeshItem::setVisibility(bool &visibility)
 	m_visible = visibility;
 }
 
+int LVRMeshItem::getShading()
+{
+    return m_shader;
+}
+
+void LVRMeshItem::setShading(int &shader)
+{
+    m_meshBridge->setShading(shader);
+    m_shader = shader;
+}
+
 MeshBufferPtr LVRMeshItem::getMeshBuffer()
 {
     return m_meshBridge->getMeshBuffer();
