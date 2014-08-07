@@ -46,6 +46,8 @@ public:
     void    setOpacity(float &opacity);
     bool	getVisibility();
     void    setVisibility(bool &visiblity);
+    int     getShading();
+    void    setShading(int &shader);
     MeshBufferPtr   getMeshBuffer();
     vtkSmartPointer<vtkActor> getActor();
 
@@ -54,6 +56,7 @@ private:
     MeshBufferBridgePtr     m_meshBridge;
     float					m_opacity;
     bool					m_visible;
+    int                     m_shader;
 
 };
 
