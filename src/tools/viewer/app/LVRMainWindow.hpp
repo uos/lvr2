@@ -65,6 +65,7 @@ public Q_SLOTS:
     void deleteModelItem();
     void changePointSize(int pointSize);
     void changeTransparency(int transparencyValue);
+    void changeShading(int shader);
     void togglePoints(bool checkboxState);
     void toggleMeshes(bool checkboxState);
     void refreshView();
