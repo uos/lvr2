@@ -36,6 +36,7 @@ LVRMeshItem::LVRMeshItem(MeshBufferBridgePtr& ptr, QTreeWidgetItem* parent) :
     setIcon(0, icon);
     setText(0, "Triangle Mesh");
     setExpanded(true);
+    m_meshBridge->setShading(0);
 
     // Setup Infos
     QTreeWidgetItem* vertItem = new QTreeWidgetItem(this);
@@ -54,6 +55,7 @@ LVRMeshItem::LVRMeshItem(MeshBufferBridgePtr& ptr, QTreeWidgetItem* parent) :
     m_opacity = 1;
     m_color = QColor(255,255,255);
     m_visible = true;
+    m_shader = 0;
 }
 
 QColor LVRMeshItem::getColor()
