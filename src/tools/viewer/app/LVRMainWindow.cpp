@@ -544,7 +544,6 @@ void LVRMainWindow::showTransformationDialog()
         {
             if(item->parent()->type() == LVRModelItemType)
             {
-
                 LVRModelItem* l_item = static_cast<LVRModelItem*>(item->parent());
                 LVRTransformationDialog* dialog = new LVRTransformationDialog(l_item, qvtkWidget->GetRenderWindow());
             }
