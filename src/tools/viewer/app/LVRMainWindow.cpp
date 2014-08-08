@@ -394,15 +394,26 @@ void LVRMainWindow::changePointSize(int pointSize)
 	{
 		QTreeWidgetItem* item = items.first();
 
-		// Remove model from view
-		if(item->type() == LVRPointCloudItemType)
-		{
-			LVRPointCloudItem* model_item = static_cast<LVRPointCloudItem*>(item);
-			model_item->setPointSize(pointSize);
-		}
-		else {
-			return;
-		}
+        if(item->type() == LVRModelItemType)
+        {
+            QTreeWidgetItemIterator it(item);
+
+            while(*it)
+            {
+                QTreeWidgetItem* child_item = *it;
+                if(child_item->type() == LVRPointCloudItemType)
+                {
+                    LVRPointCloudItem* model_item = static_cast<LVRPointCloudItem*>(child_item);
+                    model_item->setPointSize(pointSize);
+                }
+                ++it;
+            }
+        }
+        else if(item->type() == LVRPointCloudItemType)
+        {
+            LVRPointCloudItem* model_item = static_cast<LVRPointCloudItem*>(item);
+            model_item->setPointSize(pointSize);
+        }
 
 		refreshView();
 	}
@@ -416,20 +427,35 @@ void LVRMainWindow::changeTransparency(int transparencyValue)
 		QTreeWidgetItem* item = items.first();
 		float opacityValue = 1 - ((float)transparencyValue / (float)100);
 
-		// Remove model from view
-		if(item->type() == LVRPointCloudItemType)
+		if(item->type() == LVRModelItemType)
 		{
-			LVRPointCloudItem* model_item = static_cast<LVRPointCloudItem*>(item);
-			model_item->setOpacity(opacityValue);
+		    QTreeWidgetItemIterator it(item);
+
+            while(*it)
+            {
+                QTreeWidgetItem* child_item = *it;
+                if(child_item->type() == LVRPointCloudItemType)
+                {
+                    LVRPointCloudItem* model_item = static_cast<LVRPointCloudItem*>(child_item);
+                    model_item->setOpacity(opacityValue);
+                }
+                else if(child_item->type() == LVRMeshItemType)
+                {
+                    LVRMeshItem* model_item = static_cast<LVRMeshItem*>(child_item);
+                    model_item->setOpacity(opacityValue);
+                }
+                ++it;
+            }
+		}
+		else if(item->type() == LVRPointCloudItemType)
+		{
+		    LVRPointCloudItem* model_item = static_cast<LVRPointCloudItem*>(item);
+		    model_item->setOpacity(opacityValue);
 		}
 		else if(item->type() == LVRMeshItemType)
 		{
-			LVRMeshItem* model_item = static_cast<LVRMeshItem*>(item);
-			model_item->setOpacity(opacityValue);
-		}
-		else
-		{
-			return;
+		    LVRMeshItem* model_item = static_cast<LVRMeshItem*>(item);
+		    model_item->setOpacity(opacityValue);
 		}
 
 		refreshView();

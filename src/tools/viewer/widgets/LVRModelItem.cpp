@@ -61,7 +61,6 @@ LVRModelItem::LVRModelItem(ModelBridgePtr bridge, QString name) :
         meshItem->setExpanded(true);
     }
 
-
     // Setup Pose
     m_poseItem = new LVRPoseItem(bridge, this);
     addChild(m_poseItem);
