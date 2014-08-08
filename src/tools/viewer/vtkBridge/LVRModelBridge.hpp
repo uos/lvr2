@@ -82,8 +82,9 @@ public:
     // Declare model item classes as friends to have fast access to data chunks
     friend class LVRModelItem;
 
-//private:
-
+private:
+    bool                            validPointBridge();
+    bool                            validMeshBridge();
     PointBufferBridgePtr            m_pointBridge;
     MeshBufferBridgePtr             m_meshBridge;
     Pose                            m_pose;
