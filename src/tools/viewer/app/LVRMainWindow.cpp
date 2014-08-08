@@ -117,6 +117,7 @@ void LVRMainWindow::connectSignalsAndSlots()
     QObject::connect(m_actionOpen, SIGNAL(activated()), this, SLOT(loadModel()));
     QObject::connect(m_buttonTransformModel, SIGNAL(pressed()), this, SLOT(showTransformationDialog()));
     QObject::connect(treeWidget, SIGNAL(customContextMenuRequested(const QPoint&)), this, SLOT(showTreeContextMenu(const QPoint&)));
+    QObject::connect(treeWidget, SIGNAL(itemClicked(QTreeWidgetItem*, int)), this, SLOT(restoreSliders(QTreeWidgetItem*, int)));
 
     QObject::connect(m_actionQuit, SIGNAL(activated()), qApp, SLOT(quit()));
 
@@ -203,6 +204,67 @@ void LVRMainWindow::removeArrow(LVRVtkArrow* a)
         m_renderer->RemoveActor(a->getEndActor());
     }
     this->qvtkWidget->GetRenderWindow()->Render();
+}
+
+void LVRMainWindow::restoreSliders(QTreeWidgetItem* treeWidgetItem, int column)
+{
+
+    if(treeWidgetItem->type() == LVRModelItemType)
+    {
+        /*
+        QTreeWidgetItemIterator it(treeWidgetItem);
+
+        while(*it)
+        {
+            QTreeWidgetItem* child_item = *it;
+            cout << "CHILD TYPE: " << child_item->type() << endl;
+            if(child_item->type() == LVRPointCloudItemType)
+            {
+                LVRPointCloudItem* model_item = static_cast<LVRPointCloudItem*>(child_item);
+                m_horizontalSliderPointSize->setEnabled(true);
+                m_horizontalSliderPointSize->setValue(model_item->getPointSize());
+                int transparency = ((float)1 - model_item->getOpacity()) * 100;
+                m_horizontalSliderTransparency->setEnabled(true);
+                m_horizontalSliderTransparency->setValue(transparency);
+            }
+            else if(child_item->type() == LVRMeshItemType)
+            {
+                LVRMeshItem* model_item = static_cast<LVRMeshItem*>(child_item);
+                m_horizontalSliderPointSize->setEnabled(false);
+                m_horizontalSliderPointSize->setValue(1);
+                int transparency = ((float)1 - model_item->getOpacity()) * 100;
+                m_horizontalSliderTransparency->setEnabled(true);
+                m_horizontalSliderTransparency->setValue(transparency);
+            }
+            ++it;
+        }
+        */
+    }
+    else if(treeWidgetItem->type() == LVRPointCloudItemType)
+    {
+        LVRPointCloudItem* model_item = static_cast<LVRPointCloudItem*>(treeWidgetItem);
+        m_horizontalSliderPointSize->setEnabled(true);
+        m_horizontalSliderPointSize->setValue(model_item->getPointSize());
+        int transparency = ((float)1 - model_item->getOpacity()) * 100;
+        m_horizontalSliderTransparency->setEnabled(true);
+        m_horizontalSliderTransparency->setValue(transparency);
+    }
+    else if(treeWidgetItem->type() == LVRMeshItemType)
+    {
+        LVRMeshItem* model_item = static_cast<LVRMeshItem*>(treeWidgetItem);
+        m_horizontalSliderPointSize->setEnabled(false);
+        m_horizontalSliderPointSize->setValue(1);
+        int transparency = ((float)1 - model_item->getOpacity()) * 100;
+        m_horizontalSliderTransparency->setEnabled(true);
+        m_horizontalSliderTransparency->setValue(transparency);
+    }
+    else
+    {
+        m_horizontalSliderPointSize->setEnabled(false);
+        m_horizontalSliderPointSize->setValue(1);
+        m_horizontalSliderTransparency->setEnabled(false);
+        m_horizontalSliderTransparency->setValue(0);
+    }
 }
 
 void LVRMainWindow::exportSelectedModel()
