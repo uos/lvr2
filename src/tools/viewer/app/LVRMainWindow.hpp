@@ -78,7 +78,7 @@ public Q_SLOTS:
     void exportSelectedModel();
 
 protected Q_SLOTS:
-    void onItemChange(QTreeWidgetItem* treeWidgetItem, int column);
+    void setModelVisibility(QTreeWidgetItem* treeWidgetItem, int column);
     void restoreSliders(QTreeWidgetItem* treeWidgetItem, int column);
 
 Q_SIGNALS:
