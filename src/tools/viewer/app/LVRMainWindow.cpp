@@ -118,6 +118,7 @@ void LVRMainWindow::connectSignalsAndSlots()
     QObject::connect(m_buttonTransformModel, SIGNAL(pressed()), this, SLOT(showTransformationDialog()));
     QObject::connect(treeWidget, SIGNAL(customContextMenuRequested(const QPoint&)), this, SLOT(showTreeContextMenu(const QPoint&)));
     QObject::connect(treeWidget, SIGNAL(itemClicked(QTreeWidgetItem*, int)), this, SLOT(restoreSliders(QTreeWidgetItem*, int)));
+    QObject::connect(treeWidget, SIGNAL(itemChanged(QTreeWidgetItem*, int)), this, SLOT(setModelVisibility(QTreeWidgetItem*, int)));
 
     QObject::connect(m_actionQuit, SIGNAL(activated()), qApp, SLOT(quit()));
 
@@ -406,7 +407,6 @@ void LVRMainWindow::loadModel()
             QFileInfo info((*it));
             QString base = info.fileName();
             LVRModelItem* item = new LVRModelItem(bridge, base);
-            QObject::connect(treeWidget, SIGNAL(itemChanged(QTreeWidgetItem*, int)), this, SLOT(onItemChange(QTreeWidgetItem*, int)));
             this->treeWidget->addTopLevelItem(item);
             item->setExpanded(true);
             ++it;
@@ -416,11 +416,14 @@ void LVRMainWindow::loadModel()
     }
 }
 
-void LVRMainWindow::onItemChange(QTreeWidgetItem* treeWidgetItem, int column)
+void LVRMainWindow::setModelVisibility(QTreeWidgetItem* treeWidgetItem, int column)
 {
-	LVRModelItem* item = static_cast<LVRModelItem*>(treeWidgetItem);
-	item->checkboxWrapper(column);
-	refreshView();
+    if(treeWidgetItem->type() == LVRModelItemType)
+    {
+        LVRModelItem* item = static_cast<LVRModelItem*>(treeWidgetItem);
+        item->checkboxWrapper(column);
+        refreshView();
+    }
 }
 
 void LVRMainWindow::deleteModelItem()
