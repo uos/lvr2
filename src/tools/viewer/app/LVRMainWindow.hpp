@@ -79,6 +79,7 @@ public Q_SLOTS:
 
 protected Q_SLOTS:
     void onItemChange(QTreeWidgetItem* treeWidgetItem, int column);
+    void restoreSliders(QTreeWidgetItem* treeWidgetItem, int column);
 
 Q_SIGNALS:
     void correspondenceDialogOpened();
