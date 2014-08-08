@@ -46,6 +46,16 @@ LVRModelBridge::LVRModelBridge(const LVRModelBridge& b)
     m_pose = b.m_pose;
 }
 
+bool LVRModelBridge::validPointBridge()
+{
+    return (m_pointBridge->getNumPoints() > 0) ? true : false;
+}
+
+bool LVRModelBridge::validMeshBridge()
+{
+    return (m_meshBridge->getNumTriangles() > 0) ? true : false;
+}
+
 void LVRModelBridge::setPose(Pose& pose)
 {
     m_pose = pose;
@@ -55,8 +65,8 @@ void LVRModelBridge::setPose(Pose& pose)
     transform->RotateY(pose.t);
     transform->RotateZ(pose.p);
     transform->Translate(pose.x, pose.y, pose.z);
-    if(m_pointBridge->getNumPoints() > 0) m_pointBridge->getPointCloudActor()->SetUserTransform(transform);
-    if(m_meshBridge->getNumTriangles() > 0) m_meshBridge->getMeshActor()->SetUserTransform(transform);
+    if(validPointBridge()) m_pointBridge->getPointCloudActor()->SetUserTransform(transform);
+    if(validMeshBridge()) m_meshBridge->getMeshActor()->SetUserTransform(transform);
 }
 
 Pose LVRModelBridge::getPose()
@@ -66,20 +76,20 @@ Pose LVRModelBridge::getPose()
 
 void LVRModelBridge::addActors(vtkSmartPointer<vtkRenderer> renderer)
 {
-    renderer->AddActor(m_pointBridge->getPointCloudActor());
-    renderer->AddActor(m_meshBridge->getMeshActor());
+    if(validPointBridge()) renderer->AddActor(m_pointBridge->getPointCloudActor());
+    if(validMeshBridge()) renderer->AddActor(m_meshBridge->getMeshActor());
 }
 
 void LVRModelBridge::removeActors(vtkSmartPointer<vtkRenderer> renderer)
 {
-    renderer->RemoveActor(m_pointBridge->getPointCloudActor());
-    renderer->RemoveActor(m_meshBridge->getMeshActor());
+    if(validPointBridge()) renderer->RemoveActor(m_pointBridge->getPointCloudActor());
+    if(validMeshBridge()) renderer->RemoveActor(m_meshBridge->getMeshActor());
 }
 
 void LVRModelBridge::setVisibility(bool visible)
 {
-	m_pointBridge->setVisibility(visible);
-	m_meshBridge->setVisibility(visible);
+    if(validPointBridge()) m_pointBridge->setVisibility(visible);
+    if(validMeshBridge()) m_meshBridge->setVisibility(visible);
 }
 
 LVRModelBridge::~LVRModelBridge()
