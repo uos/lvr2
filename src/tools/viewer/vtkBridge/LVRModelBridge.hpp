@@ -59,6 +59,9 @@ public:
 
     LVRModelBridge(const LVRModelBridge& b);
 
+    bool        validPointBridge();
+    bool        validMeshBridge();
+
     /**
      * @brief       Destructor.
      */
@@ -83,8 +86,6 @@ public:
     friend class LVRModelItem;
 
 private:
-    bool                            validPointBridge();
-    bool                            validMeshBridge();
     PointBufferBridgePtr            m_pointBridge;
     MeshBufferBridgePtr             m_meshBridge;
     Pose                            m_pose;

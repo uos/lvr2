@@ -69,7 +69,7 @@ void LVRMeshItem::setColor(QColor &c)
     m_meshBridge->setBaseColor(c.redF(), c.greenF(), c.blueF());
 }
 
-void LVRMeshItem::setSelectionColor(QColor& c)
+void LVRMeshItem::setSelectionColor(QColor &c)
 {
     m_meshBridge->setBaseColor(c.redF(), c.greenF(), c.blueF());
 }
