@@ -209,17 +209,15 @@ void LVRMainWindow::removeArrow(LVRVtkArrow* a)
 
 void LVRMainWindow::restoreSliders(QTreeWidgetItem* treeWidgetItem, int column)
 {
-
     if(treeWidgetItem->type() == LVRModelItemType)
     {
-        /*
         QTreeWidgetItemIterator it(treeWidgetItem);
 
         while(*it)
         {
             QTreeWidgetItem* child_item = *it;
-            cout << "CHILD TYPE: " << child_item->type() << endl;
-            if(child_item->type() == LVRPointCloudItemType)
+
+            if(child_item->type() == LVRPointCloudItemType && child_item->parent()->isSelected())
             {
                 LVRPointCloudItem* model_item = static_cast<LVRPointCloudItem*>(child_item);
                 m_horizontalSliderPointSize->setEnabled(true);
@@ -228,7 +226,7 @@ void LVRMainWindow::restoreSliders(QTreeWidgetItem* treeWidgetItem, int column)
                 m_horizontalSliderTransparency->setEnabled(true);
                 m_horizontalSliderTransparency->setValue(transparency);
             }
-            else if(child_item->type() == LVRMeshItemType)
+            else if(child_item->type() == LVRMeshItemType && child_item->parent()->isSelected())
             {
                 LVRMeshItem* model_item = static_cast<LVRMeshItem*>(child_item);
                 m_horizontalSliderPointSize->setEnabled(false);
@@ -237,9 +235,9 @@ void LVRMainWindow::restoreSliders(QTreeWidgetItem* treeWidgetItem, int column)
                 m_horizontalSliderTransparency->setEnabled(true);
                 m_horizontalSliderTransparency->setValue(transparency);
             }
+
             ++it;
         }
-        */
     }
     else if(treeWidgetItem->type() == LVRPointCloudItemType)
     {
@@ -466,7 +464,7 @@ void LVRMainWindow::changePointSize(int pointSize)
             while(*it)
             {
                 QTreeWidgetItem* child_item = *it;
-                if(child_item->type() == LVRPointCloudItemType)
+                if(child_item->type() == LVRPointCloudItemType && child_item->parent()->isSelected())
                 {
                     LVRPointCloudItem* model_item = static_cast<LVRPointCloudItem*>(child_item);
                     model_item->setPointSize(pointSize);
@@ -499,12 +497,12 @@ void LVRMainWindow::changeTransparency(int transparencyValue)
             while(*it)
             {
                 QTreeWidgetItem* child_item = *it;
-                if(child_item->type() == LVRPointCloudItemType)
+                if(child_item->type() == LVRPointCloudItemType && child_item->parent()->isSelected())
                 {
                     LVRPointCloudItem* model_item = static_cast<LVRPointCloudItem*>(child_item);
                     model_item->setOpacity(opacityValue);
                 }
-                else if(child_item->type() == LVRMeshItemType)
+                else if(child_item->type() == LVRMeshItemType && child_item->parent()->isSelected())
                 {
                     LVRMeshItem* model_item = static_cast<LVRMeshItem*>(child_item);
                     model_item->setOpacity(opacityValue);
