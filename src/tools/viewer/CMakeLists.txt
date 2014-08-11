@@ -34,7 +34,7 @@ set(LVR_VIEWER_MOCS
 set(LVR_VIEWER_UIS
    ui/LVRMainWindowUI.ui
    ui/LVRTransformationDialogUI.ui
-   ui/LVRCorrespondanceDialogUI.ui
+   ui/LVRRegistrationPickCorrespondancesDialogUI.ui
 )
 
 set(LVR_VIEWER_RESOURCES
