@@ -35,6 +35,7 @@ set(LVR_VIEWER_UIS
    ui/LVRMainWindowUI.ui
    ui/LVRTransformationDialogUI.ui
    ui/LVRRegistrationPickCorrespondancesDialogUI.ui
+   ui/LVRAboutDialogUI.ui
 )
 
 set(LVR_VIEWER_RESOURCES

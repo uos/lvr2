@@ -55,6 +55,9 @@ LVRMainWindow::LVRMainWindow()
 
     // Init members
     m_correspondanceDialog = new LVRCorrespondanceDialog(treeWidget);
+    m_aboutDialog = new QDialog();
+    Ui::AboutDialog aboutDialog;
+    aboutDialog.setupUi(m_aboutDialog);
 
     // Setup specific properties
     QHeaderView* v = this->treeWidget->header();
@@ -82,6 +85,9 @@ LVRMainWindow::LVRMainWindow()
     m_actionReset_Camera = this->actionReset_Camera;
     m_actionStore_Current_View = this->actionStore_Current_View;
     m_actionRecall_Stored_View = this->actionRecall_Stored_View;
+    // Toolbar item "About"
+    // TODO: Replace "About"-QMenu with "About"-QAction
+    m_menuAbout = this->menuAbout;
     // QToolbar below toolbar
     m_actionShow_Points = this->actionShow_Points;
     m_actionShow_Mesh = this->actionShow_Mesh;
@@ -131,6 +137,8 @@ void LVRMainWindow::connectSignalsAndSlots()
     QObject::connect(m_actionReset_Camera, SIGNAL(activated()), this, SLOT(updateView()));
     QObject::connect(m_actionStore_Current_View, SIGNAL(activated()), this, SLOT(saveCamera()));
     QObject::connect(m_actionRecall_Stored_View, SIGNAL(activated()), this, SLOT(loadCamera()));
+
+    QObject::connect(m_menuAbout, SIGNAL(triggered(QAction*)), this, SLOT(showAboutDialog(QAction*)));
 
     QObject::connect(m_correspondanceDialog->m_dialog, SIGNAL(accepted()), m_pickingInteractor, SLOT(correspondenceSearchOff()));
     QObject::connect(m_correspondanceDialog->m_dialog, SIGNAL(accepted()), this, SLOT(alignPointClouds()));
@@ -648,6 +656,11 @@ void LVRMainWindow::showTransformationDialog()
             box.exec();
         }
     }
+}
+
+void LVRMainWindow::showAboutDialog(QAction*)
+{
+    m_aboutDialog->show();
 }
 
 
