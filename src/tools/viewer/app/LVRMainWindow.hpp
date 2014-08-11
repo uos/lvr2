@@ -32,6 +32,7 @@
 #include <QtGui>
 #include "LVRMainWindowUI.h"
 #include "LVRTreeWidgetHelper.hpp"
+#include "LVRAboutDialogUI.h"
 #include "../widgets/LVRCorrespondanceDialog.hpp"
 #include "../vtkBridge/LVRPickingInteractor.hpp"
 #include "../vtkBridge/LVRVtkArrow.hpp"
@@ -62,6 +63,7 @@ public Q_SLOTS:
     void showTransformationDialog();
     void showTreeContextMenu(const QPoint&);
     void showColorDialog();
+    void showAboutDialog(QAction*);
     void deleteModelItem();
     void changePointSize(int pointSize);
     void changeTransparency(int transparencyValue);
@@ -89,6 +91,7 @@ private:
     void connectSignalsAndSlots();
 
     LVRCorrespondanceDialog*            m_correspondanceDialog;
+    QDialog*                            m_aboutDialog;
     vtkSmartPointer<vtkRenderer>        m_renderer;
     vtkSmartPointer<vtkCamera>			m_camera;
     QMenu*				                m_treeContextMenu;
@@ -101,6 +104,8 @@ private:
 	QAction*							m_actionReset_Camera;
 	QAction*							m_actionStore_Current_View;
 	QAction*							m_actionRecall_Stored_View;
+	// Toolbar item "About"
+	QMenu*                              m_menuAbout;
 	// QToolbar below toolbar
 	QAction*							m_actionShow_Points;
 	QAction*							m_actionShow_Normals;
