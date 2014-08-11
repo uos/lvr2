@@ -108,8 +108,8 @@ private:
 	QAction*							m_actionShow_Wireframe;
     // Sliders below tree widget
     QSlider*							m_horizontalSliderPointSize;
-    QSlider*							m_horizontalSliderContrastLow;
-    QSlider*							m_horizontalSliderContrastHigh;
+    QSlider*							m_horizontalSliderBrightness;
+    QSlider*							m_horizontalSliderContrast;
     QSlider*							m_horizontalSliderTransparency;
     // Combo boxes below sliders
     QComboBox*							m_comboBoxGradient;
