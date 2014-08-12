@@ -150,6 +150,20 @@ void LVRMeshBufferBridge::setShading(int shader)
     m_meshActor->SetProperty(p);
 }
 
+void LVRMeshBufferBridge::setWireframe(bool wireframe)
+{
+    vtkSmartPointer<vtkProperty> p = m_meshActor->GetProperty();
+    if(wireframe)
+    {
+        p->SetRepresentationToWireframe();
+    }
+    else
+    {
+        p->SetRepresentationToSurface();
+    }
+    m_meshActor->SetProperty(p);
+}
+
 vtkSmartPointer<vtkActor> LVRMeshBufferBridge::getMeshActor()
 {
     return m_meshActor;

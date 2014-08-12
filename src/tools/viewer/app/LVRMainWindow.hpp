@@ -70,6 +70,7 @@ public Q_SLOTS:
     void changeShading(int shader);
     void togglePoints(bool checkboxState);
     void toggleMeshes(bool checkboxState);
+    void toggleWireframe(bool checkboxState);
     void refreshView();
     void updateView();
     void saveCamera();

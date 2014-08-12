@@ -48,6 +48,8 @@ public:
     void    setVisibility(bool &visiblity);
     int     getShading();
     void    setShading(int &shader);
+    bool    getWireframe();
+    void    setWireframe(bool &wireframe);
     MeshBufferPtr   getMeshBuffer();
     vtkSmartPointer<vtkActor> getActor();
 
@@ -57,7 +59,7 @@ private:
     float					m_opacity;
     bool					m_visible;
     int                     m_shader;
-
+    bool                    m_wireframe;
 };
 
 } /* namespace lvr */
