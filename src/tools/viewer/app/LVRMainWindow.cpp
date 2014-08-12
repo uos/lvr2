@@ -90,7 +90,9 @@ LVRMainWindow::LVRMainWindow()
     m_menuAbout = this->menuAbout;
     // QToolbar below toolbar
     m_actionShow_Points = this->actionShow_Points;
+    m_actionShow_Normals = this->actionShow_Normals;
     m_actionShow_Mesh = this->actionShow_Mesh;
+    m_actionShow_Wireframe = this->actionShow_Wireframe;
     // Slider below tree widget
     m_horizontalSliderPointSize = this->horizontalSliderPointSize;
     m_horizontalSliderBrightness = this->horizontalSliderBrightness;
@@ -150,6 +152,7 @@ void LVRMainWindow::connectSignalsAndSlots()
 
     QObject::connect(m_actionShow_Points, SIGNAL(toggled(bool)), this, SLOT(togglePoints(bool)));
     QObject::connect(m_actionShow_Mesh, SIGNAL(toggled(bool)), this, SLOT(toggleMeshes(bool)));
+    QObject::connect(m_actionShow_Wireframe, SIGNAL(toggled(bool)), this, SLOT(toggleWireframe(bool)));
 
     QObject::connect(m_horizontalSliderPointSize, SIGNAL(valueChanged(int)), this, SLOT(changePointSize(int)));
     QObject::connect(m_horizontalSliderTransparency, SIGNAL(valueChanged(int)), this, SLOT(changeTransparency(int)));
@@ -601,6 +604,27 @@ void LVRMainWindow::toggleMeshes(bool checkboxState)
 	}
 
 	refreshView();
+}
+
+void LVRMainWindow::toggleWireframe(bool checkboxState)
+{
+    if(m_actionShow_Mesh)
+    {
+        QTreeWidgetItemIterator it(treeWidget);
+
+        while(*it)
+        {
+            QTreeWidgetItem* item = *it;
+            if(item->type() == LVRMeshItemType)
+            {
+                LVRMeshItem* mesh_item = static_cast<LVRMeshItem*>(item);
+                mesh_item->setWireframe(checkboxState);
+            }
+            ++it;
+        }
+
+        refreshView();
+    }
 }
 
 void LVRMainWindow::manualICP()

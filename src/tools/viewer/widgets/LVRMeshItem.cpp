@@ -112,6 +112,17 @@ void LVRMeshItem::setShading(int &shader)
     m_shader = shader;
 }
 
+bool LVRMeshItem::getWireframe()
+{
+    return m_wireframe;
+}
+
+void LVRMeshItem::setWireframe(bool &wireframe)
+{
+    m_meshBridge->setWireframe(wireframe);
+    m_wireframe = wireframe;
+}
+
 MeshBufferPtr LVRMeshItem::getMeshBuffer()
 {
     return m_meshBridge->getMeshBuffer();
