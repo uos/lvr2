@@ -92,14 +92,22 @@ ModelBridgePtr LVRModelItem::getModelBridge()
 	return m_modelBridge;
 }
 
+bool LVRModelItem::isEnabled()
+{
+    return this->checkState(0);
+}
+
 void LVRModelItem::setVisibility(bool visible)
 {
 	m_modelBridge->setVisibility(visible);
 }
 
-void LVRModelItem::checkboxWrapper(int column)
+void LVRModelItem::setModelVisibility(int column, bool globalValue)
 {
-	if(column == 0) setVisibility(checkState(0));
+	if(checkState(column) == globalValue || globalValue == true)
+	{
+	    setVisibility(checkState(column));
+	}
 }
 
 LVRModelItem::~LVRModelItem()

@@ -428,8 +428,24 @@ void LVRMainWindow::setModelVisibility(QTreeWidgetItem* treeWidgetItem, int colu
 {
     if(treeWidgetItem->type() == LVRModelItemType)
     {
-        LVRModelItem* item = static_cast<LVRModelItem*>(treeWidgetItem);
-        item->checkboxWrapper(column);
+        QTreeWidgetItemIterator it(treeWidgetItem);
+
+        while(*it)
+        {
+            QTreeWidgetItem* child_item = *it;
+            if(child_item->type() == LVRPointCloudItemType)
+            {
+                LVRModelItem* model_item = static_cast<LVRModelItem*>(treeWidgetItem);
+                model_item->setModelVisibility(column, m_actionShow_Points->isChecked());
+            }
+            if(child_item->type() == LVRMeshItemType)
+            {
+                LVRModelItem* model_item = static_cast<LVRModelItem*>(treeWidgetItem);
+                model_item->setModelVisibility(column, m_actionShow_Mesh->isChecked());
+            }
+            ++it;
+        }
+
         refreshView();
     }
 }
@@ -560,8 +576,8 @@ void LVRMainWindow::togglePoints(bool checkboxState)
 		QTreeWidgetItem* item = *it;
 		if(item->type() == LVRPointCloudItemType)
 		{
-			LVRPointCloudItem* model_item = static_cast<LVRPointCloudItem*>(item);
-			model_item->setVisibility(checkboxState);
+            LVRModelItem* model_item = static_cast<LVRModelItem*>(item->parent());
+            if(model_item->isEnabled()) model_item->setVisibility(checkboxState);
 		}
 		++it;
 	}
@@ -578,8 +594,8 @@ void LVRMainWindow::toggleMeshes(bool checkboxState)
 		QTreeWidgetItem* item = *it;
 		if(item->type() == LVRMeshItemType)
 		{
-			LVRMeshItem* model_item = static_cast<LVRMeshItem*>(item);
-			model_item->setVisibility(checkboxState);
+            LVRModelItem* model_item = static_cast<LVRModelItem*>(item->parent());
+            if(model_item->isEnabled()) model_item->setVisibility(checkboxState);
 		}
 		++it;
 	}
