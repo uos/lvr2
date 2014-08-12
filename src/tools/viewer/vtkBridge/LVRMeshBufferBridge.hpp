@@ -53,6 +53,7 @@ public:
     MeshBufferPtr getMeshBuffer();
     void setVisibility(bool visible);
     void setShading(int shader);
+    void setWireframe(bool wireframe);
 
 protected:
     void computeMeshActor(MeshBufferPtr meshbuffer);
