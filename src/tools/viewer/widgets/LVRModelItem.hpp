@@ -45,10 +45,11 @@ public:
 
     Pose    getPose();
     void    setPose( Pose& pose);
+    bool            isEnabled();
     ModelBridgePtr	getModelBridge();
-	void			checkboxWrapper(int column);
+    void            setModelVisibility(int column, bool globalValue);
 
-protected Q_SLOTS:
+public Q_SLOTS:
 	void			setVisibility(bool visible);
 
 protected:
