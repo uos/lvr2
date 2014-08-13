@@ -621,7 +621,14 @@ void LVRMainWindow::toggleWireframe(bool checkboxState)
             if(item->type() == LVRMeshItemType)
             {
                 LVRMeshItem* mesh_item = static_cast<LVRMeshItem*>(item);
-                mesh_item->setWireframe(checkboxState);
+                if(checkboxState)
+                {
+                    m_renderer->AddActor(mesh_item->getWireframeActor());
+                }
+                else
+                {
+                    m_renderer->RemoveActor(mesh_item->getWireframeActor());
+                }
             }
             ++it;
         }

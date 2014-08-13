@@ -112,15 +112,9 @@ void LVRMeshItem::setShading(int &shader)
     m_shader = shader;
 }
 
-bool LVRMeshItem::getWireframe()
+vtkSmartPointer<vtkActor> LVRMeshItem::getWireframeActor()
 {
-    return m_wireframe;
-}
-
-void LVRMeshItem::setWireframe(bool &wireframe)
-{
-    m_meshBridge->setWireframe(wireframe);
-    m_wireframe = wireframe;
+    return m_meshBridge->getWireframeActor();
 }
 
 MeshBufferPtr LVRMeshItem::getMeshBuffer()
