@@ -57,7 +57,6 @@ public:
 
 protected:
     void computeMeshActor(MeshBufferPtr meshbuffer);
-    float*                         m_color;
     size_t                          m_numVertices;
     size_t                          m_numFaces;
     vtkSmartPointer<vtkActor>       m_meshActor;
