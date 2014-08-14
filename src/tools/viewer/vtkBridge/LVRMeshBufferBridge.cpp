@@ -32,7 +32,6 @@
 #include <vtkActor.h>
 #include <vtkTriangle.h>
 #include <vtkProperty.h>
-#include <vtkImageShiftScale.h>
 
 namespace lvr
 {
@@ -56,10 +55,15 @@ LVRMeshBufferBridge::LVRMeshBufferBridge(MeshBufferPtr meshBuffer) :
 void LVRMeshBufferBridge::setBaseColor(float r, float g, float b)
 {
 	vtkSmartPointer<vtkProperty> p = m_meshActor->GetProperty();
-	float color[3] = {r, g, b};
     p->SetColor(r, g, b);
-    m_color = color;
     m_meshActor->SetProperty(p);
+
+    p = m_wireframeActor->GetProperty();
+    float inv_r = (float)1 - r;
+    float inv_g = (float)1 - g;
+    float inv_b = (float)1 - b;
+    p->SetColor(inv_r, inv_g, inv_b);
+    m_wireframeActor->SetProperty(p);
 }
 
 LVRMeshBufferBridge::LVRMeshBufferBridge(const LVRMeshBufferBridge& b)
@@ -124,16 +128,22 @@ void LVRMeshBufferBridge::computeMeshActor(MeshBufferPtr meshbuffer)
         mesh->SetPoints(points);
         mesh->SetPolys(triangles);
 
-        vtkSmartPointer<vtkPolyDataMapper> mapper = vtkSmartPointer<vtkPolyDataMapper>::New();
-        mapper->SetInput(mesh);
-
-
+        vtkSmartPointer<vtkPolyDataMapper> mesh_mapper = vtkSmartPointer<vtkPolyDataMapper>::New();
+        mesh_mapper->SetInput(mesh);
         m_meshActor = vtkSmartPointer<vtkActor>::New();
-        m_meshActor->SetMapper(mapper);
-        setBaseColor(255,255,255);
+        m_meshActor->SetMapper(mesh_mapper);
 
+        vtkSmartPointer<vtkPolyDataMapper> wireframe_mapper = vtkSmartPointer<vtkPolyDataMapper>::New();
+        wireframe_mapper->SetInput(mesh);
         m_wireframeActor = vtkSmartPointer<vtkActor>::New();
         m_wireframeActor->ShallowCopy(m_meshActor);
+        m_wireframeActor->SetMapper(wireframe_mapper);
+        vtkSmartPointer<vtkProperty> p = vtkSmartPointer<vtkProperty>::New();
+        p->DeepCopy(m_meshActor->GetProperty());
+        p->SetRepresentationToWireframe();
+        m_wireframeActor->SetProperty(p);
+
+        setBaseColor(0.9, 0.9, 0.9);
     }
 }
 
@@ -159,11 +169,6 @@ void LVRMeshBufferBridge::setShading(int shader)
 
 vtkSmartPointer<vtkActor> LVRMeshBufferBridge::getWireframeActor()
 {
-    vtkSmartPointer<vtkProperty> p = vtkSmartPointer<vtkProperty>::New();
-    p->DeepCopy(m_meshActor->GetProperty());
-    p->SetRepresentationToWireframe();
-    p->SetColor(255 - m_color[0], 255 - m_color[1], 255 - m_color[2]);
-    m_wireframeActor->SetProperty(p);
     return m_wireframeActor;
 }
 

@@ -629,6 +629,7 @@ void LVRMainWindow::toggleWireframe(bool checkboxState)
                 {
                     m_renderer->RemoveActor(mesh_item->getWireframeActor());
                 }
+                refreshView();
             }
             ++it;
         }
