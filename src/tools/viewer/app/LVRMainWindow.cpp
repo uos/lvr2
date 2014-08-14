@@ -58,6 +58,9 @@ LVRMainWindow::LVRMainWindow()
     m_aboutDialog = new QDialog();
     Ui::AboutDialog aboutDialog;
     aboutDialog.setupUi(m_aboutDialog);
+    m_reconstructViaMarchingCubesDialog = new QDialog();
+    Ui::ReconstructViaMarchingCubesDialog reconstructViaMarchingCubesDialog;
+    reconstructViaMarchingCubesDialog.setupUi(m_reconstructViaMarchingCubesDialog);
 
     // Setup specific properties
     QHeaderView* v = this->treeWidget->header();
@@ -85,6 +88,8 @@ LVRMainWindow::LVRMainWindow()
     m_actionReset_Camera = this->actionReset_Camera;
     m_actionStore_Current_View = this->actionStore_Current_View;
     m_actionRecall_Stored_View = this->actionRecall_Stored_View;
+    // Toolbar item "Reconstruction"
+    m_actionMarching_Cubes = this->actionMarching_Cubes;
     // Toolbar item "About"
     // TODO: Replace "About"-QMenu with "About"-QAction
     m_menuAbout = this->menuAbout;
@@ -139,6 +144,8 @@ void LVRMainWindow::connectSignalsAndSlots()
     QObject::connect(m_actionReset_Camera, SIGNAL(activated()), this, SLOT(updateView()));
     QObject::connect(m_actionStore_Current_View, SIGNAL(activated()), this, SLOT(saveCamera()));
     QObject::connect(m_actionRecall_Stored_View, SIGNAL(activated()), this, SLOT(loadCamera()));
+
+    QObject::connect(m_actionMarching_Cubes, SIGNAL(activated()), this, SLOT(reconstructUsingMarchingCubes()));
 
     QObject::connect(m_menuAbout, SIGNAL(triggered(QAction*)), this, SLOT(showAboutDialog(QAction*)));
 
@@ -414,7 +421,7 @@ void LVRMainWindow::loadModel()
         {
             // Load model and generate vtk representation
             ModelPtr model = ModelFactory::readModel((*it).toStdString());
-            ModelBridgePtr bridge( new LVRModelBridge(model));
+            ModelBridgePtr bridge(new LVRModelBridge(model));
             bridge->addActors(m_renderer);
 
             // Add item for this model to tree widget
@@ -709,10 +716,14 @@ void LVRMainWindow::showTransformationDialog()
     }
 }
 
+void LVRMainWindow::reconstructUsingMarchingCubes()
+{
+    m_reconstructViaMarchingCubesDialog->show();
+}
+
 void LVRMainWindow::showAboutDialog(QAction*)
 {
     m_aboutDialog->show();
 }
-
 
 } /* namespace lvr */
