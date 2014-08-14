@@ -19,6 +19,7 @@ set(LVR_VIEWER_SOURCES
     widgets/LVRPickItem.cpp
     widgets/LVRTransformationDialog.cpp
     widgets/LVRCorrespondanceDialog.cpp
+    widgets/LVRReconstructionMarchingCubesDialog.cpp
 )
 
 
@@ -26,6 +27,7 @@ set(LVR_VIEWER_MOCS
     app/LVRMainWindow.hpp
     vtkBridge/LVRPickingInteractor.hpp
     widgets/LVRTransformationDialog.hpp
+    widgets/LVRReconstructionMarchingCubesDialog.hpp
     widgets/LVRCorrespondanceDialog.hpp
 )
 

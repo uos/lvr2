@@ -31,10 +31,10 @@
 
 #include <QtGui>
 #include "LVRMainWindowUI.h"
-#include "LVRReconstructionMarchingCubesDialogUI.h"
 #include "LVRAboutDialogUI.h"
 #include "LVRTreeWidgetHelper.hpp"
 #include "../widgets/LVRCorrespondanceDialog.hpp"
+#include "../widgets/LVRReconstructionMarchingCubesDialog.hpp"
 #include "../vtkBridge/LVRPickingInteractor.hpp"
 #include "../vtkBridge/LVRVtkArrow.hpp"
 
@@ -93,12 +93,12 @@ private:
     void setupQVTK();
     void connectSignalsAndSlots();
 
-    LVRCorrespondanceDialog*            m_correspondanceDialog;
-    QDialog*                            m_reconstructViaMarchingCubesDialog;
-    QDialog*                            m_aboutDialog;
-    vtkSmartPointer<vtkRenderer>        m_renderer;
-    vtkSmartPointer<vtkCamera>			m_camera;
-    QMenu*				                m_treeContextMenu;
+    LVRCorrespondanceDialog*                m_correspondanceDialog;
+    LVRReconstructViaMarchingCubesDialog*   m_reconstructViaMarchingCubesDialog;
+    QDialog*                                m_aboutDialog;
+    vtkSmartPointer<vtkRenderer>            m_renderer;
+    vtkSmartPointer<vtkCamera>			    m_camera;
+    QMenu*				                    m_treeContextMenu;
 
     // Toolbar item "File"
 	QAction*							m_actionOpen;
