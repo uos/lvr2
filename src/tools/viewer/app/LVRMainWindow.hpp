@@ -32,6 +32,7 @@
 #include <QtGui>
 #include "LVRMainWindowUI.h"
 #include "LVRTreeWidgetHelper.hpp"
+#include "LVRAboutDialogUI.h"
 #include "../widgets/LVRCorrespondanceDialog.hpp"
 #include "../vtkBridge/LVRPickingInteractor.hpp"
 #include "../vtkBridge/LVRVtkArrow.hpp"
@@ -62,35 +63,73 @@ public Q_SLOTS:
     void showTransformationDialog();
     void showTreeContextMenu(const QPoint&);
     void showColorDialog();
+    void showAboutDialog(QAction*);
     void deleteModelItem();
     void changePointSize(int pointSize);
     void changeTransparency(int transparencyValue);
+    void changeShading(int shader);
     void togglePoints(bool checkboxState);
     void toggleMeshes(bool checkboxState);
+    void toggleWireframe(bool checkboxState);
+    void refreshView();
+    void updateView();
+    void saveCamera();
+    void loadCamera();
     void removeArrow(LVRVtkArrow*);
     void addArrow(LVRVtkArrow*);
     void alignPointClouds();
     void exportSelectedModel();
+
+protected Q_SLOTS:
+    void setModelVisibility(QTreeWidgetItem* treeWidgetItem, int column);
+    void restoreSliders(QTreeWidgetItem* treeWidgetItem, int column);
 
 Q_SIGNALS:
     void correspondenceDialogOpened();
 
 private:
     void setupQVTK();
-    void refreshView();
-    void updateView();
     void connectSignalsAndSlots();
 
     LVRCorrespondanceDialog*            m_correspondanceDialog;
+    QDialog*                            m_aboutDialog;
     vtkSmartPointer<vtkRenderer>        m_renderer;
+    vtkSmartPointer<vtkCamera>			m_camera;
     QMenu*				                m_treeContextMenu;
-    QAction*				            m_actionShowColorDialog;
-    QAction*			                m_actionDeleteModelItem;
-    QAction*                            m_actionExportModelTransformed;
-    QAction*							m_actionShow_Points;
-    QAction*							m_actionShow_Mesh;
+
+    // Toolbar item "File"
+	QAction*							m_actionOpen;
+	QAction*							m_actionExport;
+	QAction*							m_actionQuit;
+	// Toolbar item "Views"
+	QAction*							m_actionReset_Camera;
+	QAction*							m_actionStore_Current_View;
+	QAction*							m_actionRecall_Stored_View;
+	// Toolbar item "About"
+	QMenu*                              m_menuAbout;
+	// QToolbar below toolbar
+	QAction*							m_actionShow_Points;
+	QAction*							m_actionShow_Normals;
+	QAction*							m_actionShow_Mesh;
+	QAction*							m_actionShow_Wireframe;
+    // Sliders below tree widget
     QSlider*							m_horizontalSliderPointSize;
+    QSlider*							m_horizontalSliderBrightness;
+    QSlider*							m_horizontalSliderContrast;
     QSlider*							m_horizontalSliderTransparency;
+    // Combo boxes below sliders
+    QComboBox*							m_comboBoxGradient;
+    QComboBox*							m_comboBoxShading;
+    // Buttons below combo boxes
+    QPushButton*						m_buttonRecordPath;
+    QPushButton*						m_buttonCreateMesh;
+    QPushButton*						m_buttonExportData;
+    QPushButton*						m_buttonTransformModel;
+
+	QAction*				            m_actionShowColorDialog;
+	QAction*			                m_actionDeleteModelItem;
+	QAction*                            m_actionExportModelTransformed;
+
     LVRPickingInteractor*               m_pickingInteractor;
     LVRTreeWidgetHelper*                m_treeWidgetHelper;
 };

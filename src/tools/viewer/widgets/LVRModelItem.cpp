@@ -46,7 +46,6 @@ LVRModelItem::LVRModelItem(ModelBridgePtr bridge, QString name) :
     setText(0, m_name);
     setCheckState(0, Qt::Checked);
 
-
     // Insert sub items
     if(bridge->m_pointBridge->getNumPoints())
     {
@@ -61,7 +60,6 @@ LVRModelItem::LVRModelItem(ModelBridgePtr bridge, QString name) :
         addChild(meshItem);
         meshItem->setExpanded(true);
     }
-
 
     // Setup Pose
     m_poseItem = new LVRPoseItem(bridge, this);
@@ -92,6 +90,24 @@ void LVRModelItem::setPose( Pose& pose)
 ModelBridgePtr LVRModelItem::getModelBridge()
 {
 	return m_modelBridge;
+}
+
+bool LVRModelItem::isEnabled()
+{
+    return this->checkState(0);
+}
+
+void LVRModelItem::setVisibility(bool visible)
+{
+	m_modelBridge->setVisibility(visible);
+}
+
+void LVRModelItem::setModelVisibility(int column, bool globalValue)
+{
+	if(checkState(column) == globalValue || globalValue == true)
+	{
+	    setVisibility(checkState(column));
+	}
 }
 
 LVRModelItem::~LVRModelItem()
