@@ -20,108 +20,6 @@
     </item>
    </layout>
   </widget>
-  <widget class="QMenuBar" name="menubar">
-   <property name="geometry">
-    <rect>
-     <x>0</x>
-     <y>0</y>
-     <width>1112</width>
-     <height>25</height>
-    </rect>
-   </property>
-   <widget class="QMenu" name="menuFile">
-    <property name="title">
-     <string>File</string>
-    </property>
-    <addaction name="actionOpen"/>
-    <addaction name="actionExport"/>
-    <addaction name="actionQuit"/>
-   </widget>
-   <widget class="QMenu" name="menuViews">
-    <property name="title">
-     <string>Views</string>
-    </property>
-    <addaction name="actionReset_Camera"/>
-    <addaction name="actionStore_Current_View"/>
-    <addaction name="actionRecall_Stored_View"/>
-    <addaction name="separator"/>
-    <addaction name="actionRecord_Path"/>
-    <addaction name="actionLoad_Path"/>
-    <addaction name="actionAnimate_Path"/>
-    <addaction name="actionExport_Animation"/>
-   </widget>
-   <widget class="QMenu" name="menuReconstruction">
-    <property name="title">
-     <string>Reconstruction</string>
-    </property>
-    <addaction name="actionEstimate_Normals"/>
-    <addaction name="separator"/>
-    <addaction name="actionMarching_Cubes"/>
-    <addaction name="actionPlanar_Marching_Cubes"/>
-    <addaction name="actionExtended_Marching_Cbes"/>
-    <addaction name="separator"/>
-    <addaction name="actionCompute_Textures"/>
-    <addaction name="actionMatch_Textures_from_Package"/>
-    <addaction name="actionExtract_and_Rematch_Patterns"/>
-   </widget>
-   <widget class="QMenu" name="menuFiltering">
-    <property name="title">
-     <string>Filtering</string>
-    </property>
-    <addaction name="actionRemove_Outliers"/>
-    <addaction name="actionMLS_Projection"/>
-   </widget>
-   <widget class="QMenu" name="menuMesh_Optimization">
-    <property name="title">
-     <string>Mesh Optimization</string>
-    </property>
-    <addaction name="actionPlanar_Optimization"/>
-    <addaction name="actionRetesselate"/>
-    <addaction name="actionRemove_Artifacts"/>
-    <addaction name="actionFill_Holes"/>
-    <addaction name="actionDelete_Small_Regions"/>
-   </widget>
-   <widget class="QMenu" name="menuRegistration">
-    <property name="title">
-     <string>Registration</string>
-    </property>
-    <addaction name="actionICP_using_manual_correspondance"/>
-    <addaction name="actionICP_using_Pose_estimations"/>
-    <addaction name="separator"/>
-    <addaction name="actionGlobal_Relaxation"/>
-   </widget>
-   <widget class="QMenu" name="menuClassification">
-    <property name="title">
-     <string>Classification</string>
-    </property>
-    <addaction name="actionSimple_Plane_Classification"/>
-    <addaction name="actionFurniture_Recognition"/>
-   </widget>
-   <widget class="QMenu" name="menuAbout">
-    <property name="title">
-     <string>About</string>
-    </property>
-   </widget>
-   <widget class="QMenu" name="menuRendering">
-    <property name="title">
-     <string>Rendering</string>
-    </property>
-    <addaction name="actionShow_Points"/>
-    <addaction name="actionShow_Normals"/>
-    <addaction name="separator"/>
-    <addaction name="actionShow_Wireframe"/>
-    <addaction name="actionShow_Mesh"/>
-   </widget>
-   <addaction name="menuFile"/>
-   <addaction name="menuViews"/>
-   <addaction name="menuRendering"/>
-   <addaction name="menuReconstruction"/>
-   <addaction name="menuMesh_Optimization"/>
-   <addaction name="menuFiltering"/>
-   <addaction name="menuRegistration"/>
-   <addaction name="menuClassification"/>
-   <addaction name="menuAbout"/>
-  </widget>
   <widget class="QStatusBar" name="statusbar"/>
   <widget class="QDockWidget" name="dockWidgetScene">
    <property name="minimumSize">
@@ -241,7 +139,7 @@
      <property name="geometry">
       <rect>
        <x>0</x>
-       <y>40</y>
+       <y>80</y>
        <width>91</width>
        <height>16</height>
       </rect>
@@ -250,7 +148,7 @@
       <string>Contrast:</string>
      </property>
     </widget>
-    <widget class="QSlider" name="horizontalSliderContrastLow">
+    <widget class="QSlider" name="horizontalSliderBrightness">
      <property name="geometry">
       <rect>
        <x>10</x>
@@ -263,11 +161,11 @@
       <enum>Qt::Horizontal</enum>
      </property>
     </widget>
-    <widget class="QSlider" name="horizontalSliderContrastHigh">
+    <widget class="QSlider" name="horizontalSliderContrast">
      <property name="geometry">
       <rect>
        <x>10</x>
-       <y>80</y>
+       <y>100</y>
        <width>251</width>
        <height>16</height>
       </rect>
@@ -280,20 +178,20 @@
      <property name="geometry">
       <rect>
        <x>0</x>
-       <y>100</y>
+       <y>120</y>
        <width>91</width>
        <height>16</height>
       </rect>
      </property>
      <property name="text">
-      <string>Transparancy:</string>
+      <string>Transparency:</string>
      </property>
     </widget>
     <widget class="QSlider" name="horizontalSliderTransparency">
      <property name="geometry">
       <rect>
        <x>10</x>
-       <y>120</y>
+       <y>140</y>
        <width>251</width>
        <height>16</height>
       </rect>
@@ -312,9 +210,9 @@
      <property name="geometry">
       <rect>
        <x>0</x>
-       <y>160</y>
+       <y>173</y>
        <width>131</width>
-       <height>16</height>
+       <height>20</height>
       </rect>
      </property>
      <property name="text">
@@ -325,7 +223,7 @@
      <property name="geometry">
       <rect>
        <x>110</x>
-       <y>150</y>
+       <y>170</y>
        <width>151</width>
        <height>25</height>
       </rect>
@@ -360,7 +258,7 @@
      <property name="geometry">
       <rect>
        <x>110</x>
-       <y>180</y>
+       <y>200</y>
        <width>151</width>
        <height>25</height>
       </rect>
@@ -372,7 +270,7 @@
      </item>
      <item>
       <property name="text">
-       <string>Gouroud</string>
+       <string>Gouraud</string>
       </property>
      </item>
      <item>
@@ -385,13 +283,26 @@
      <property name="geometry">
       <rect>
        <x>0</x>
-       <y>190</y>
+       <y>204</y>
        <width>131</width>
        <height>16</height>
       </rect>
      </property>
      <property name="text">
       <string>Shading:</string>
+     </property>
+    </widget>
+    <widget class="QLabel" name="labelContrast_2">
+     <property name="geometry">
+      <rect>
+       <x>0</x>
+       <y>40</y>
+       <width>91</width>
+       <height>16</height>
+      </rect>
+     </property>
+     <property name="text">
+      <string>Brightness:</string>
      </property>
     </widget>
    </widget>
@@ -548,6 +459,109 @@
    <addaction name="actionShow_Mesh"/>
    <addaction name="actionShow_Wireframe"/>
    <addaction name="separator"/>
+  </widget>
+  <widget class="QMenuBar" name="menubar">
+   <property name="geometry">
+    <rect>
+     <x>0</x>
+     <y>0</y>
+     <width>1112</width>
+     <height>25</height>
+    </rect>
+   </property>
+   <widget class="QMenu" name="menuFile">
+    <property name="title">
+     <string>File</string>
+    </property>
+    <addaction name="actionOpen"/>
+    <addaction name="actionExport"/>
+    <addaction name="actionQuit"/>
+   </widget>
+   <widget class="QMenu" name="menuViews">
+    <property name="title">
+     <string>Views</string>
+    </property>
+    <addaction name="actionReset_Camera"/>
+    <addaction name="actionStore_Current_View"/>
+    <addaction name="actionRecall_Stored_View"/>
+    <addaction name="separator"/>
+    <addaction name="actionRecord_Path"/>
+    <addaction name="actionLoad_Path"/>
+    <addaction name="actionAnimate_Path"/>
+    <addaction name="actionExport_Animation"/>
+   </widget>
+   <widget class="QMenu" name="menuReconstruction">
+    <property name="title">
+     <string>Reconstruction</string>
+    </property>
+    <addaction name="actionEstimate_Normals"/>
+    <addaction name="separator"/>
+    <addaction name="actionMarching_Cubes"/>
+    <addaction name="actionPlanar_Marching_Cubes"/>
+    <addaction name="actionExtended_Marching_Cbes"/>
+    <addaction name="separator"/>
+    <addaction name="actionCompute_Textures"/>
+    <addaction name="actionMatch_Textures_from_Package"/>
+    <addaction name="actionExtract_and_Rematch_Patterns"/>
+   </widget>
+   <widget class="QMenu" name="menuFiltering">
+    <property name="title">
+     <string>Filtering</string>
+    </property>
+    <addaction name="actionRemove_Outliers"/>
+    <addaction name="actionMLS_Projection"/>
+   </widget>
+   <widget class="QMenu" name="menuMesh_Optimization">
+    <property name="title">
+     <string>Mesh Optimization</string>
+    </property>
+    <addaction name="actionPlanar_Optimization"/>
+    <addaction name="actionRetesselate"/>
+    <addaction name="actionRemove_Artifacts"/>
+    <addaction name="actionFill_Holes"/>
+    <addaction name="actionDelete_Small_Regions"/>
+   </widget>
+   <widget class="QMenu" name="menuRegistration">
+    <property name="title">
+     <string>Registration</string>
+    </property>
+    <addaction name="actionICP_using_manual_correspondance"/>
+    <addaction name="actionICP_using_Pose_estimations"/>
+    <addaction name="separator"/>
+    <addaction name="actionGlobal_Relaxation"/>
+   </widget>
+   <widget class="QMenu" name="menuClassification">
+    <property name="title">
+     <string>Classification</string>
+    </property>
+    <addaction name="actionSimple_Plane_Classification"/>
+    <addaction name="actionFurniture_Recognition"/>
+   </widget>
+   <widget class="QMenu" name="menuRendering">
+    <property name="title">
+     <string>Rendering</string>
+    </property>
+    <addaction name="actionShow_Points"/>
+    <addaction name="actionShow_Normals"/>
+    <addaction name="separator"/>
+    <addaction name="actionShow_Wireframe"/>
+    <addaction name="actionShow_Mesh"/>
+   </widget>
+   <widget class="QMenu" name="menuAbout">
+    <property name="title">
+     <string>About</string>
+    </property>
+    <addaction name="actionAbout"/>
+   </widget>
+   <addaction name="menuFile"/>
+   <addaction name="menuViews"/>
+   <addaction name="menuRendering"/>
+   <addaction name="menuReconstruction"/>
+   <addaction name="menuMesh_Optimization"/>
+   <addaction name="menuFiltering"/>
+   <addaction name="menuRegistration"/>
+   <addaction name="menuClassification"/>
+   <addaction name="menuAbout"/>
   </widget>
   <action name="actionOpen">
    <property name="icon">
@@ -733,7 +747,7 @@
     <bool>true</bool>
    </property>
    <property name="checked">
-    <bool>true</bool>
+    <bool>false</bool>
    </property>
    <property name="icon">
     <iconset resource="../res/viewer.qrc">
@@ -771,6 +785,11 @@
    </property>
    <property name="text">
     <string>Show Mesh</string>
+   </property>
+  </action>
+  <action name="actionAbout">
+   <property name="text">
+    <string>About</string>
    </property>
   </action>
  </widget>
