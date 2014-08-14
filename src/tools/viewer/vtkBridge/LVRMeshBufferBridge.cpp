@@ -32,6 +32,7 @@
 #include <vtkActor.h>
 #include <vtkTriangle.h>
 #include <vtkProperty.h>
+#include <vtkImageShiftScale.h>
 
 namespace lvr
 {
@@ -54,8 +55,10 @@ LVRMeshBufferBridge::LVRMeshBufferBridge(MeshBufferPtr meshBuffer) :
 
 void LVRMeshBufferBridge::setBaseColor(float r, float g, float b)
 {
-    vtkSmartPointer<vtkProperty> p = vtkSmartPointer<vtkProperty>::New();
+	vtkSmartPointer<vtkProperty> p = m_meshActor->GetProperty();
+	float color[3] = {r, g, b};
     p->SetColor(r, g, b);
+    m_color = color;
     m_meshActor->SetProperty(p);
 }
 
@@ -127,20 +130,41 @@ void LVRMeshBufferBridge::computeMeshActor(MeshBufferPtr meshbuffer)
 
         m_meshActor = vtkSmartPointer<vtkActor>::New();
         m_meshActor->SetMapper(mapper);
+        setBaseColor(255,255,255);
+
+        m_wireframeActor = vtkSmartPointer<vtkActor>::New();
+        m_wireframeActor->ShallowCopy(m_meshActor);
     }
 }
 
 void LVRMeshBufferBridge::setOpacity(float opacityValue)
 {
-    vtkSmartPointer<vtkProperty> p = vtkSmartPointer<vtkProperty>::New();
+	vtkSmartPointer<vtkProperty> p = m_meshActor->GetProperty();
     p->SetOpacity(opacityValue);
     m_meshActor->SetProperty(p);
 }
 
 void LVRMeshBufferBridge::setVisibility(bool visible)
 {
-	if(visible) m_meshActor->VisibilityOn();
-	else m_meshActor->VisibilityOff();
+    if(visible) m_meshActor->VisibilityOn();
+    else m_meshActor->VisibilityOff();
+}
+
+void LVRMeshBufferBridge::setShading(int shader)
+{
+    vtkSmartPointer<vtkProperty> p = m_meshActor->GetProperty();
+    p->SetShading(shader);
+    m_meshActor->SetProperty(p);
+}
+
+vtkSmartPointer<vtkActor> LVRMeshBufferBridge::getWireframeActor()
+{
+    vtkSmartPointer<vtkProperty> p = vtkSmartPointer<vtkProperty>::New();
+    p->DeepCopy(m_meshActor->GetProperty());
+    p->SetRepresentationToWireframe();
+    p->SetColor(255 - m_color[0], 255 - m_color[1], 255 - m_color[2]);
+    m_wireframeActor->SetProperty(p);
+    return m_wireframeActor;
 }
 
 vtkSmartPointer<vtkActor> LVRMeshBufferBridge::getMeshActor()

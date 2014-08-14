@@ -36,6 +36,7 @@ LVRMeshItem::LVRMeshItem(MeshBufferBridgePtr& ptr, QTreeWidgetItem* parent) :
     setIcon(0, icon);
     setText(0, "Triangle Mesh");
     setExpanded(true);
+    m_meshBridge->setShading(0);
 
     // Setup Infos
     QTreeWidgetItem* vertItem = new QTreeWidgetItem(this);
@@ -54,6 +55,7 @@ LVRMeshItem::LVRMeshItem(MeshBufferBridgePtr& ptr, QTreeWidgetItem* parent) :
     m_opacity = 1;
     m_color = QColor(255,255,255);
     m_visible = true;
+    m_shader = 0;
 }
 
 QColor LVRMeshItem::getColor()
@@ -67,7 +69,7 @@ void LVRMeshItem::setColor(QColor &c)
     m_meshBridge->setBaseColor(c.redF(), c.greenF(), c.blueF());
 }
 
-void LVRMeshItem::setSelectionColor(QColor& c)
+void LVRMeshItem::setSelectionColor(QColor &c)
 {
     m_meshBridge->setBaseColor(c.redF(), c.greenF(), c.blueF());
 }
@@ -97,6 +99,22 @@ void LVRMeshItem::setVisibility(bool &visibility)
 {
 	m_meshBridge->setVisibility(visibility);
 	m_visible = visibility;
+}
+
+int LVRMeshItem::getShading()
+{
+    return m_shader;
+}
+
+void LVRMeshItem::setShading(int &shader)
+{
+    m_meshBridge->setShading(shader);
+    m_shader = shader;
+}
+
+vtkSmartPointer<vtkActor> LVRMeshItem::getWireframeActor()
+{
+    return m_meshBridge->getWireframeActor();
 }
 
 MeshBufferPtr LVRMeshItem::getMeshBuffer()

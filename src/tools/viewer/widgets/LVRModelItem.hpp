@@ -39,14 +39,18 @@ namespace lvr
 class LVRModelItem : public QTreeWidgetItem
 {
 public:
-
     LVRModelItem(ModelBridgePtr bridge, QString name = "");
     LVRModelItem(const LVRModelItem& item);
     virtual ~LVRModelItem();
 
     Pose    getPose();
     void    setPose( Pose& pose);
+    bool            isEnabled();
     ModelBridgePtr	getModelBridge();
+    void            setModelVisibility(int column, bool globalValue);
+
+public Q_SLOTS:
+	void			setVisibility(bool visible);
 
 protected:
     ModelBridgePtr  m_modelBridge;
