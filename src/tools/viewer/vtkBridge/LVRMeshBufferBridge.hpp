@@ -44,6 +44,7 @@ public:
     virtual ~LVRMeshBufferBridge();
 
     vtkSmartPointer<vtkActor>   getMeshActor();
+    vtkSmartPointer<vtkActor>   getWireframeActor();
     size_t                      getNumTriangles();
     size_t                      getNumVertices();
     bool                        hasTextures();
@@ -52,12 +53,15 @@ public:
     void setOpacity(float opacityValue);
     MeshBufferPtr getMeshBuffer();
     void setVisibility(bool visible);
+    void setShading(int shader);
 
 protected:
     void computeMeshActor(MeshBufferPtr meshbuffer);
     size_t                          m_numVertices;
     size_t                          m_numFaces;
+    float*                          m_color;
     vtkSmartPointer<vtkActor>       m_meshActor;
+    vtkSmartPointer<vtkActor>       m_wireframeActor;
     MeshBufferPtr                   m_meshBuffer;
 };
 

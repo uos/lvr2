@@ -59,6 +59,9 @@ public:
 
     LVRModelBridge(const LVRModelBridge& b);
 
+    bool        validPointBridge();
+    bool        validMeshBridge();
+
     /**
      * @brief       Destructor.
      */
@@ -77,11 +80,12 @@ public:
     void        setPose(Pose& pose);
     Pose        getPose();
 
+    void		setVisibility(bool visible);
+
     // Declare model item classes as friends to have fast access to data chunks
     friend class LVRModelItem;
 
-//private:
-
+private:
     PointBufferBridgePtr            m_pointBridge;
     MeshBufferBridgePtr             m_meshBridge;
     Pose                            m_pose;
