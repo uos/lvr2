@@ -32,7 +32,6 @@
 #include <vtkActor.h>
 #include <vtkTriangle.h>
 #include <vtkProperty.h>
-#include <vtkImageShiftScale.h>
 
 namespace lvr
 {
@@ -51,14 +50,17 @@ LVRMeshBufferBridge::LVRMeshBufferBridge(MeshBufferPtr meshBuffer) :
         m_numFaces = 0;
         m_numVertices = 0;
     }
+
+    m_color = new float[3];
 }
 
 void LVRMeshBufferBridge::setBaseColor(float r, float g, float b)
 {
 	vtkSmartPointer<vtkProperty> p = m_meshActor->GetProperty();
-	float color[3] = {r, g, b};
     p->SetColor(r, g, b);
-    m_color = color;
+    this->m_color[0] = r;
+    this->m_color[1] = g;
+    this->m_color[2] = b;
     m_meshActor->SetProperty(p);
 }
 
@@ -130,10 +132,13 @@ void LVRMeshBufferBridge::computeMeshActor(MeshBufferPtr meshbuffer)
 
         m_meshActor = vtkSmartPointer<vtkActor>::New();
         m_meshActor->SetMapper(mapper);
-        setBaseColor(255,255,255);
+        setBaseColor(0.9, 0.9, 0.9);
 
         m_wireframeActor = vtkSmartPointer<vtkActor>::New();
         m_wireframeActor->ShallowCopy(m_meshActor);
+        vtkSmartPointer<vtkProperty> p = vtkSmartPointer<vtkProperty>::New();
+        p->DeepCopy(m_meshActor->GetProperty());
+        m_wireframeActor->SetProperty(p);
     }
 }
 
@@ -159,10 +164,13 @@ void LVRMeshBufferBridge::setShading(int shader)
 
 vtkSmartPointer<vtkActor> LVRMeshBufferBridge::getWireframeActor()
 {
-    vtkSmartPointer<vtkProperty> p = vtkSmartPointer<vtkProperty>::New();
-    p->DeepCopy(m_meshActor->GetProperty());
+    vtkSmartPointer<vtkProperty> p = m_wireframeActor->GetProperty();
+    float* color = this->m_color;
+    float r = (float)1 - m_color[0];
+    float g = (float)1 - m_color[1];
+    float b = (float)1 - m_color[2];
+    p->SetColor(r, g, b);
     p->SetRepresentationToWireframe();
-    p->SetColor(255 - m_color[0], 255 - m_color[1], 255 - m_color[2]);
     m_wireframeActor->SetProperty(p);
     return m_wireframeActor;
 }
