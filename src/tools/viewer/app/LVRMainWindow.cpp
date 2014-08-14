@@ -58,9 +58,6 @@ LVRMainWindow::LVRMainWindow()
     m_aboutDialog = new QDialog();
     Ui::AboutDialog aboutDialog;
     aboutDialog.setupUi(m_aboutDialog);
-    m_reconstructViaMarchingCubesDialog = new QDialog();
-    Ui::ReconstructViaMarchingCubesDialog reconstructViaMarchingCubesDialog;
-    reconstructViaMarchingCubesDialog.setupUi(m_reconstructViaMarchingCubesDialog);
 
     // Setup specific properties
     QHeaderView* v = this->treeWidget->header();
@@ -718,7 +715,17 @@ void LVRMainWindow::showTransformationDialog()
 
 void LVRMainWindow::reconstructUsingMarchingCubes()
 {
-    m_reconstructViaMarchingCubesDialog->show();
+    // Get selected item from tree and check type
+    QList<QTreeWidgetItem*> items = treeWidget->selectedItems();
+    if(items.size() > 0)
+    {
+        QTreeWidgetItem* item = items.first();
+        if(item->type() == LVRModelItemType)
+        {
+            LVRModelItem* model_item = static_cast<LVRModelItem*>(items.first());
+            LVRReconstructViaMarchingCubesDialog* dialog = new LVRReconstructViaMarchingCubesDialog(model_item, qvtkWidget->GetRenderWindow());
+        }
+    }
 }
 
 void LVRMainWindow::showAboutDialog(QAction*)
