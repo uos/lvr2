@@ -467,7 +467,7 @@ LVRPointCloudItem* LVRMainWindow::getPointCloudItem(QTreeWidgetItem* item)
             QTreeWidgetItem* child_item = *it;
             if(child_item->type() == LVRPointCloudItemType && child_item->parent() == item)
             {
-                return static_cast<LVRPointCloudItem*>(item);
+                return static_cast<LVRPointCloudItem*>(child_item);
             }
             ++it;
         }
@@ -487,7 +487,7 @@ LVRMeshItem* LVRMainWindow::getMeshItem(QTreeWidgetItem* item)
             QTreeWidgetItem* child_item = *it;
             if(child_item->type() == LVRMeshItemType && child_item->parent() == item)
             {
-                return static_cast<LVRMeshItem*>(item);
+                return static_cast<LVRMeshItem*>(child_item);
             }
             ++it;
         }
@@ -754,9 +754,9 @@ void LVRMainWindow::reconstructUsingMarchingCubes()
     QList<QTreeWidgetItem*> items = treeWidget->selectedItems();
     if(items.size() > 0)
     {
-        LVRModelItem* model_item = getModelItem(items.first());
-        if(model_item != NULL)
-            LVRReconstructViaMarchingCubesDialog* dialog = new LVRReconstructViaMarchingCubesDialog(model_item, qvtkWidget->GetRenderWindow());
+        LVRPointCloudItem* pc_item = getPointCloudItem(items.first());
+        if(pc_item != NULL)
+            LVRReconstructViaMarchingCubesDialog* dialog = new LVRReconstructViaMarchingCubesDialog(pc_item, qvtkWidget->GetRenderWindow());
     }
 }
 
