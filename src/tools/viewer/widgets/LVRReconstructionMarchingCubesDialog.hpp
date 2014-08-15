@@ -3,8 +3,20 @@
 
 #include <vtkRenderWindow.h>
 
+#include "reconstruction/AdaptiveKSearchSurface.hpp"
+#include "reconstruction/FastReconstruction.hpp"
+#include "io/PLYIO.hpp"
+#include "geometry/Matrix4.hpp"
+#include "geometry/HalfEdgeMesh.hpp"
+#include "texture/Texture.hpp"
+#include "texture/Transform.hpp"
+#include "texture/Texturizer.hpp"
+#include "texture/Statistics.hpp"
+#include "geometry/QuadricVertexCosts.hpp"
+#include "reconstruction/SharpBox.hpp"
+
 #include "LVRReconstructionMarchingCubesDialogUI.h"
-#include "LVRModelItem.hpp"
+#include "LVRPointCloudItem.hpp"
 
 using Ui::ReconstructViaMarchingCubesDialog;
 
@@ -16,8 +28,12 @@ class LVRReconstructViaMarchingCubesDialog : public QObject
     Q_OBJECT
 
 public:
-    LVRReconstructViaMarchingCubesDialog(LVRModelItem* parent, vtkRenderWindow* renderer);
+    LVRReconstructViaMarchingCubesDialog(LVRPointCloudItem* parent, vtkRenderWindow* renderer);
     virtual ~LVRReconstructViaMarchingCubesDialog();
+    typedef ColorVertex<float, unsigned char>         cVertex;
+    typedef Normal<float>                               cNormal;
+    typedef PointsetSurface<cVertex>                    psSurface;
+    typedef AdaptiveKSearchSurface<cVertex, cNormal>    akSurface;
 
 public Q_SLOTS:
     void save();
@@ -28,7 +44,7 @@ private:
     void connectSignalsAndSlots();
 
     ReconstructViaMarchingCubesDialog*      m_dialog;
-    LVRModelItem*                           m_parent;
+    LVRPointCloudItem*                      m_parent;
     vtkRenderWindow*                        m_renderWindow;
 
 };
