@@ -21,6 +21,8 @@ public:
 
 public Q_SLOTS:
     void save();
+    void printAllValues();
+    void toggleRANSACcheckBox(const QString &text);
 
 private:
     void connectSignalsAndSlots();
