@@ -28,12 +28,6 @@
 #include <QtGui>
 
 #include "LVRMainWindow.hpp"
-#include "../vtkBridge/LVRModelBridge.hpp"
-#include "../widgets/LVRModelItem.hpp"
-#include "../widgets/LVRItemTypes.hpp"
-#include "../widgets/LVRTransformationDialog.hpp"
-#include "../widgets/LVRPointCloudItem.hpp"
-#include "../widgets/LVRMeshItem.hpp"
 
 #include "io/ModelFactory.hpp"
 #include "io/DataStruct.hpp"
@@ -434,6 +428,73 @@ void LVRMainWindow::loadModel()
     }
 }
 
+void LVRMainWindow::deleteModelItem()
+{
+    QList<QTreeWidgetItem*> items = treeWidget->selectedItems();
+    if(items.size() > 0)
+    {
+        QTreeWidgetItem* item = items.first();
+
+        // Remove model from view
+        LVRPointCloudItem* pc_item = getPointCloudItem(item);
+        if(pc_item != NULL) m_renderer->RemoveActor(pc_item->getActor());
+
+        LVRMeshItem* mesh_item = getMeshItem(item);
+        if(mesh_item != NULL) m_renderer->RemoveActor(mesh_item->getActor());
+
+        // Remove list item (safe according to http://stackoverflow.com/a/9399167)
+        delete item;
+
+        refreshView();
+    }
+}
+
+LVRModelItem* LVRMainWindow::getModelItem(QTreeWidgetItem* item)
+{
+    if(item->type() == LVRModelItemType) return static_cast<LVRModelItem*>(item);
+    return NULL;
+}
+
+LVRPointCloudItem* LVRMainWindow::getPointCloudItem(QTreeWidgetItem* item)
+{
+    if(item->type() == LVRPointCloudItemType) return static_cast<LVRPointCloudItem*>(item);
+    if(item->type() == LVRModelItemType)
+    {
+        QTreeWidgetItemIterator it(item);
+
+        while(*it)
+        {
+            QTreeWidgetItem* child_item = *it;
+            if(child_item->type() == LVRPointCloudItemType && child_item->parent() == item)
+            {
+                return static_cast<LVRPointCloudItem*>(item);
+            }
+            ++it;
+        }
+    }
+    return NULL;
+}
+
+LVRMeshItem* LVRMainWindow::getMeshItem(QTreeWidgetItem* item)
+{
+    if(item->type() == LVRMeshItemType) return static_cast<LVRMeshItem*>(item);
+    if(item->type() == LVRModelItemType)
+    {
+        QTreeWidgetItemIterator it(item);
+
+        while(*it)
+        {
+            QTreeWidgetItem* child_item = *it;
+            if(child_item->type() == LVRMeshItemType && child_item->parent() == item)
+            {
+                return static_cast<LVRMeshItem*>(item);
+            }
+            ++it;
+        }
+    }
+    return NULL;
+}
+
 void LVRMainWindow::setModelVisibility(QTreeWidgetItem* treeWidgetItem, int column)
 {
     if(treeWidgetItem->type() == LVRModelItemType)
@@ -458,32 +519,6 @@ void LVRMainWindow::setModelVisibility(QTreeWidgetItem* treeWidgetItem, int colu
 
         refreshView();
     }
-}
-
-void LVRMainWindow::deleteModelItem()
-{
-	QList<QTreeWidgetItem*> items = treeWidget->selectedItems();
-	if(items.size() > 0)
-	{
-		QTreeWidgetItem* item = items.first();
-
-		// Remove model from view
-		if(item->type() == LVRPointCloudItemType)
-		{
-			LVRPointCloudItem* model_item = static_cast<LVRPointCloudItem*>(item);
-			m_renderer->RemoveActor(model_item->getActor());
-		}
-		else if(item->type() == LVRMeshItemType)
-		{
-			LVRMeshItem* model_item = static_cast<LVRMeshItem*>(item);
-			m_renderer->RemoveActor(model_item->getActor());
-		}
-
-		// Remove list item (safe according to http://stackoverflow.com/a/9399167)
-		delete item;
-
-		refreshView();
-	}
 }
 
 void LVRMainWindow::changePointSize(int pointSize)
@@ -719,12 +754,9 @@ void LVRMainWindow::reconstructUsingMarchingCubes()
     QList<QTreeWidgetItem*> items = treeWidget->selectedItems();
     if(items.size() > 0)
     {
-        QTreeWidgetItem* item = items.first();
-        if(item->type() == LVRModelItemType)
-        {
-            LVRModelItem* model_item = static_cast<LVRModelItem*>(items.first());
+        LVRModelItem* model_item = getModelItem(items.first());
+        if(model_item != NULL)
             LVRReconstructViaMarchingCubesDialog* dialog = new LVRReconstructViaMarchingCubesDialog(model_item, qvtkWidget->GetRenderWindow());
-        }
     }
 }
 
