@@ -4,7 +4,7 @@
 namespace lvr
 {
 
-LVRReconstructViaMarchingCubesDialog::LVRReconstructViaMarchingCubesDialog(LVRModelItem* parent, vtkRenderWindow* window) :
+LVRReconstructViaMarchingCubesDialog::LVRReconstructViaMarchingCubesDialog(LVRPointCloudItem* parent, vtkRenderWindow* window) :
    m_parent(parent), m_renderWindow(window)
 {
     // Setup DialogUI and events
@@ -57,18 +57,40 @@ void LVRReconstructViaMarchingCubesDialog::toggleRANSACcheckBox(const QString &t
 
 void LVRReconstructViaMarchingCubesDialog::printAllValues()
 {
-    QComboBox* pcm = m_dialog->comboBox_pcm;
-    QCheckBox* ransacCheckBox = m_dialog->checkBox_RANSAC;
-    QDoubleSpinBox* kn = m_dialog->doubleSpinBox_kn;
-    QDoubleSpinBox* kd = m_dialog->doubleSpinBox_kd;
-    QDoubleSpinBox* ki = m_dialog->doubleSpinBox_ki;
-    QCheckBox* reestimateNormals = m_dialog->checkBox_renormals;
-    cout << "PCM: " << pcm->currentText().toStdString() << endl;
-    cout << "RANSAC enabled? " << ransacCheckBox->isChecked() << endl;
-    cout << "kn: " << kn->value() << endl;
-    cout << "kd: " << kd->value() << endl;
-    cout << "ki: " << ki->value() << endl;
-    cout << "(re-)estimate normals? " << reestimateNormals->isChecked() << endl;
+    QComboBox* pcm_box = m_dialog->comboBox_pcm;
+    string pcm = pcm_box->currentText().toStdString();
+    QCheckBox* ransac_box = m_dialog->checkBox_RANSAC;
+    bool ransac = ransac_box->isChecked();
+    QDoubleSpinBox* kn_box = m_dialog->doubleSpinBox_kn;
+    int kn = (int) kn_box->value();
+    QDoubleSpinBox* kd_box = m_dialog->doubleSpinBox_kd;
+    int kd = (int) kd_box->value();
+    QDoubleSpinBox* ki_box = m_dialog->doubleSpinBox_ki;
+    int ki = (int) ki_box->value();
+    QCheckBox* reNormals_box = m_dialog->checkBox_renormals;
+    bool reestimateNormals = reNormals_box->isChecked();
+    cout << "PCM: " << pcm << endl;
+    cout << "RANSAC enabled? " << ransac << endl;
+    cout << "kn: " << kn << endl;
+    cout << "kd: " << kd << endl;
+    cout << "ki: " << ki << endl;
+    cout << "(re-)estimate normals? " << reestimateNormals << endl;
+
+    PointBufferPtr pc_buffer = m_parent->getPointBuffer();
+
+    if(pcm == "STANN" || pcm == "FLANN" || pcm == "NABO")
+    {
+        akSurface* aks = new akSurface(pc_buffer, pcm, kn, kd, ki);
+
+        psSurface::Ptr surface;
+        surface = psSurface::Ptr(aks);
+
+        if(ransac) aks->useRansac(true);
+
+        if(!surface->pointBuffer()->hasPointNormals()
+                        || (surface->pointBuffer()->hasPointNormals() && reestimateNormals))
+            surface->calculateSurfaceNormals();
+    }
 }
 
 }
