@@ -39,6 +39,7 @@ public Q_SLOTS:
     void save();
     void printAllValues();
     void toggleRANSACcheckBox(const QString &text);
+    void switchGridSizeDetermination(int index);
 
 private:
     void connectSignalsAndSlots();

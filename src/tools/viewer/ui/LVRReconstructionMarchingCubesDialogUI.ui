@@ -7,7 +7,7 @@
     <x>0</x>
     <y>0</y>
     <width>400</width>
-    <height>259</height>
+    <height>332</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -17,7 +17,7 @@
    <property name="geometry">
     <rect>
      <x>10</x>
-     <y>220</y>
+     <y>290</y>
      <width>381</width>
      <height>32</height>
     </rect>
@@ -38,7 +38,7 @@
      <x>10</x>
      <y>10</y>
      <width>151</width>
-     <height>21</height>
+     <height>31</height>
     </rect>
    </property>
    <property name="text">
@@ -50,7 +50,7 @@
     <rect>
      <x>177</x>
      <y>10</y>
-     <width>211</width>
+     <width>201</width>
      <height>27</height>
     </rect>
    </property>
@@ -91,34 +91,6 @@
     <bool>true</bool>
    </property>
   </widget>
-  <widget class="QDoubleSpinBox" name="doubleSpinBox_kn">
-   <property name="geometry">
-    <rect>
-     <x>291</x>
-     <y>70</y>
-     <width>91</width>
-     <height>27</height>
-    </rect>
-   </property>
-   <property name="alignment">
-    <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
-   </property>
-   <property name="decimals">
-    <number>0</number>
-   </property>
-   <property name="minimum">
-    <double>1.000000000000000</double>
-   </property>
-   <property name="maximum">
-    <double>1000.000000000000000</double>
-   </property>
-   <property name="singleStep">
-    <double>1.000000000000000</double>
-   </property>
-   <property name="value">
-    <double>10.000000000000000</double>
-   </property>
-  </widget>
   <widget class="QLabel" name="label_kd">
    <property name="geometry">
     <rect>
@@ -133,34 +105,6 @@
    </property>
    <property name="wordWrap">
     <bool>true</bool>
-   </property>
-  </widget>
-  <widget class="QDoubleSpinBox" name="doubleSpinBox_kd">
-   <property name="geometry">
-    <rect>
-     <x>290</x>
-     <y>110</y>
-     <width>91</width>
-     <height>27</height>
-    </rect>
-   </property>
-   <property name="alignment">
-    <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
-   </property>
-   <property name="decimals">
-    <number>0</number>
-   </property>
-   <property name="minimum">
-    <double>1.000000000000000</double>
-   </property>
-   <property name="maximum">
-    <double>500.000000000000000</double>
-   </property>
-   <property name="singleStep">
-    <double>1.000000000000000</double>
-   </property>
-   <property name="value">
-    <double>5.000000000000000</double>
    </property>
   </widget>
   <widget class="QLabel" name="label_ki">
@@ -179,40 +123,12 @@
     <bool>true</bool>
    </property>
   </widget>
-  <widget class="QDoubleSpinBox" name="doubleSpinBox_ki">
-   <property name="geometry">
-    <rect>
-     <x>290</x>
-     <y>150</y>
-     <width>91</width>
-     <height>27</height>
-    </rect>
-   </property>
-   <property name="alignment">
-    <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
-   </property>
-   <property name="decimals">
-    <number>0</number>
-   </property>
-   <property name="minimum">
-    <double>1.000000000000000</double>
-   </property>
-   <property name="maximum">
-    <double>500.000000000000000</double>
-   </property>
-   <property name="singleStep">
-    <double>1.000000000000000</double>
-   </property>
-   <property name="value">
-    <double>10.000000000000000</double>
-   </property>
-  </widget>
   <widget class="QCheckBox" name="checkBox_renormals">
    <property name="geometry">
     <rect>
-     <x>180</x>
+     <x>200</x>
      <y>190</y>
-     <width>201</width>
+     <width>171</width>
      <height>22</height>
     </rect>
    </property>
@@ -226,7 +142,7 @@
   <widget class="QCheckBox" name="checkBox_RANSAC">
    <property name="geometry">
     <rect>
-     <x>160</x>
+     <x>150</x>
      <y>40</y>
      <width>231</width>
      <height>22</height>
@@ -237,6 +153,156 @@
    </property>
    <property name="checked">
     <bool>true</bool>
+   </property>
+  </widget>
+  <widget class="QCheckBox" name="checkBox_Extrusion">
+   <property name="geometry">
+    <rect>
+     <x>10</x>
+     <y>40</y>
+     <width>121</width>
+     <height>22</height>
+    </rect>
+   </property>
+   <property name="text">
+    <string>use extrusion</string>
+   </property>
+   <property name="checked">
+    <bool>true</bool>
+   </property>
+  </widget>
+  <widget class="QLabel" name="label_gs">
+   <property name="geometry">
+    <rect>
+     <x>10</x>
+     <y>220</y>
+     <width>66</width>
+     <height>31</height>
+    </rect>
+   </property>
+   <property name="text">
+    <string>Grid size</string>
+   </property>
+  </widget>
+  <widget class="QComboBox" name="comboBox_gs">
+   <property name="geometry">
+    <rect>
+     <x>80</x>
+     <y>220</y>
+     <width>301</width>
+     <height>27</height>
+    </rect>
+   </property>
+   <item>
+    <property name="text">
+     <string>manually set voxel size</string>
+    </property>
+   </item>
+   <item>
+    <property name="text">
+     <string>use intersection count to determine size</string>
+    </property>
+   </item>
+  </widget>
+  <widget class="QLabel" name="label_below_gs">
+   <property name="geometry">
+    <rect>
+     <x>10</x>
+     <y>250</y>
+     <width>66</width>
+     <height>21</height>
+    </rect>
+   </property>
+   <property name="text">
+    <string>Voxel size</string>
+   </property>
+  </widget>
+  <widget class="QSpinBox" name="spinBox_kn">
+   <property name="geometry">
+    <rect>
+     <x>289</x>
+     <y>70</y>
+     <width>91</width>
+     <height>27</height>
+    </rect>
+   </property>
+   <property name="alignment">
+    <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
+   </property>
+   <property name="minimum">
+    <number>1</number>
+   </property>
+   <property name="maximum">
+    <number>1000</number>
+   </property>
+   <property name="value">
+    <number>10</number>
+   </property>
+  </widget>
+  <widget class="QSpinBox" name="spinBox_kd">
+   <property name="geometry">
+    <rect>
+     <x>290</x>
+     <y>110</y>
+     <width>91</width>
+     <height>27</height>
+    </rect>
+   </property>
+   <property name="alignment">
+    <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
+   </property>
+   <property name="minimum">
+    <number>1</number>
+   </property>
+   <property name="maximum">
+    <number>1000</number>
+   </property>
+   <property name="value">
+    <number>5</number>
+   </property>
+  </widget>
+  <widget class="QSpinBox" name="spinBox_ki">
+   <property name="geometry">
+    <rect>
+     <x>290</x>
+     <y>150</y>
+     <width>91</width>
+     <height>27</height>
+    </rect>
+   </property>
+   <property name="alignment">
+    <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
+   </property>
+   <property name="minimum">
+    <number>1</number>
+   </property>
+   <property name="maximum">
+    <number>1000</number>
+   </property>
+   <property name="value">
+    <number>10</number>
+   </property>
+  </widget>
+  <widget class="QSpinBox" name="spinBox_below_gs">
+   <property name="geometry">
+    <rect>
+     <x>290</x>
+     <y>250</y>
+     <width>91</width>
+     <height>27</height>
+    </rect>
+   </property>
+   <property name="alignment">
+    <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
+   </property>
+   <property name="minimum">
+    <number>1</number>
+   </property>
+   <property name="maximum">
+    <number>1000</number>
+   </property>
+   <property name="value">
+    <number>10</number>
    </property>
   </widget>
  </widget>
