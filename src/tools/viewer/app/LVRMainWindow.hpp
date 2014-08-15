@@ -33,6 +33,12 @@
 #include "LVRMainWindowUI.h"
 #include "LVRAboutDialogUI.h"
 #include "LVRTreeWidgetHelper.hpp"
+#include "../vtkBridge/LVRModelBridge.hpp"
+#include "../widgets/LVRModelItem.hpp"
+#include "../widgets/LVRPointCloudItem.hpp"
+#include "../widgets/LVRMeshItem.hpp"
+#include "../widgets/LVRItemTypes.hpp"
+#include "../widgets/LVRTransformationDialog.hpp"
 #include "../widgets/LVRCorrespondanceDialog.hpp"
 #include "../widgets/LVRReconstructionMarchingCubesDialog.hpp"
 #include "../vtkBridge/LVRPickingInteractor.hpp"
@@ -81,6 +87,9 @@ public Q_SLOTS:
     void addArrow(LVRVtkArrow*);
     void alignPointClouds();
     void exportSelectedModel();
+    LVRModelItem* getModelItem(QTreeWidgetItem* item);
+    LVRPointCloudItem* getPointCloudItem(QTreeWidgetItem* item);
+    LVRMeshItem* getMeshItem(QTreeWidgetItem* item);
 
 protected Q_SLOTS:
     void setModelVisibility(QTreeWidgetItem* treeWidgetItem, int column);
