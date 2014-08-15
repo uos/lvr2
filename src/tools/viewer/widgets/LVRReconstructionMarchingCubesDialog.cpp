@@ -27,12 +27,7 @@ LVRReconstructViaMarchingCubesDialog::~LVRReconstructViaMarchingCubesDialog()
 void LVRReconstructViaMarchingCubesDialog::connectSignalsAndSlots()
 {
     QObject::connect(m_dialog->comboBox_pcm, SIGNAL(currentIndexChanged(const QString)), this, SLOT(toggleRANSACcheckBox(const QString)));
-    /*
-    QObject::connect(m_dialog->doubleSpinBox_kn, SIGNAL(valueChanged(double)), this, SLOT(printAllValues()));
-    QObject::connect(m_dialog->doubleSpinBox_kd, SIGNAL(valueChanged(double)), this, SLOT(printAllValues()));
-    QObject::connect(m_dialog->doubleSpinBox_ki, SIGNAL(valueChanged(double)), this, SLOT(printAllValues()));
-    QObject::connect(m_dialog->checkBox_renormals, SIGNAL(stateChanged(int)), this, SLOT(printAllValues()));
-    */
+    QObject::connect(m_dialog->comboBox_gs, SIGNAL(currentIndexChanged(int)), this, SLOT(switchGridSizeDetermination(int)));
     QObject::connect(m_dialog->buttonBox, SIGNAL(accepted()), this, SLOT(printAllValues()));
 }
 
@@ -43,15 +38,41 @@ void LVRReconstructViaMarchingCubesDialog::save()
 
 void LVRReconstructViaMarchingCubesDialog::toggleRANSACcheckBox(const QString &text)
 {
-    QCheckBox* ransacCheckBox = m_dialog->checkBox_RANSAC;
+    QCheckBox* ransac_box = m_dialog->checkBox_RANSAC;
     if(text == "PCL")
     {
-        ransacCheckBox->setChecked(false);
-        ransacCheckBox->setCheckable(false);
+        ransac_box->setChecked(false);
+        ransac_box->setCheckable(false);
     }
     else
     {
-        ransacCheckBox->setCheckable(true);
+        ransac_box->setCheckable(true);
+    }
+}
+
+void LVRReconstructViaMarchingCubesDialog::switchGridSizeDetermination(int index)
+{
+    QComboBox* gs_box = m_dialog->comboBox_gs;
+
+    QLabel* label = m_dialog->label_below_gs;
+    QSpinBox* spinBox = m_dialog->spinBox_below_gs;
+
+    // TODO: Add reasonable default values
+    if(index == 0)
+    {
+        label->setText("Voxel size");
+        spinBox->setMinimum(1);
+        spinBox->setMaximum(1000);
+        spinBox->setSingleStep(1);
+        spinBox->setValue(10);
+    }
+    else
+    {
+        label->setText("Number of intersections");
+        spinBox->setMinimum(1);
+        spinBox->setMaximum(1000);
+        spinBox->setSingleStep(1);
+        spinBox->setValue(10);
     }
 }
 
@@ -59,17 +80,20 @@ void LVRReconstructViaMarchingCubesDialog::printAllValues()
 {
     QComboBox* pcm_box = m_dialog->comboBox_pcm;
     string pcm = pcm_box->currentText().toStdString();
+    QCheckBox* extrusion_box = m_dialog->checkBox_Extrusion;
+    bool extrusion = extrusion_box->isChecked();
     QCheckBox* ransac_box = m_dialog->checkBox_RANSAC;
     bool ransac = ransac_box->isChecked();
-    QDoubleSpinBox* kn_box = m_dialog->doubleSpinBox_kn;
-    int kn = (int) kn_box->value();
-    QDoubleSpinBox* kd_box = m_dialog->doubleSpinBox_kd;
-    int kd = (int) kd_box->value();
-    QDoubleSpinBox* ki_box = m_dialog->doubleSpinBox_ki;
-    int ki = (int) ki_box->value();
+    QSpinBox* kn_box = m_dialog->spinBox_kn;
+    int kn = kn_box->value();
+    QSpinBox* kd_box = m_dialog->spinBox_kd;
+    int kd = kd_box->value();
+    QSpinBox* ki_box = m_dialog->spinBox_ki;
+    int ki = ki_box->value();
     QCheckBox* reNormals_box = m_dialog->checkBox_renormals;
     bool reestimateNormals = reNormals_box->isChecked();
     cout << "PCM: " << pcm << endl;
+    cout << "Extrusion enabled? " << extrusion << endl;
     cout << "RANSAC enabled? " << ransac << endl;
     cout << "kn: " << kn << endl;
     cout << "kd: " << kd << endl;
@@ -90,6 +114,9 @@ void LVRReconstructViaMarchingCubesDialog::printAllValues()
         if(!surface->pointBuffer()->hasPointNormals()
                         || (surface->pointBuffer()->hasPointNormals() && reestimateNormals))
             surface->calculateSurfaceNormals();
+
+        // Create an empty mesh
+        HalfEdgeMesh<cVertex, cNormal> mesh( surface );
     }
 }
 
