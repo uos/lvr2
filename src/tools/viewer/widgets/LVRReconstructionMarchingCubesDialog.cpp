@@ -92,6 +92,10 @@ void LVRReconstructViaMarchingCubesDialog::printAllValues()
     int ki = ki_box->value();
     QCheckBox* reNormals_box = m_dialog->checkBox_renormals;
     bool reestimateNormals = reNormals_box->isChecked();
+    QComboBox* gridMode_box = m_dialog->comboBox_gs;
+    bool useVoxelSize = (gridMode_box->currentIndex() == 0) ? true : false;
+    QSpinBox* gridSize_box = m_dialog->spinBox_below_gs;
+    int gridSize = gridSize_box->value();
     cout << "PCM: " << pcm << endl;
     cout << "Extrusion enabled? " << extrusion << endl;
     cout << "RANSAC enabled? " << ransac << endl;
@@ -99,25 +103,47 @@ void LVRReconstructViaMarchingCubesDialog::printAllValues()
     cout << "kd: " << kd << endl;
     cout << "ki: " << ki << endl;
     cout << "(re-)estimate normals? " << reestimateNormals << endl;
+    cout << "use voxel size? " << useVoxelSize << endl;
+    cout << "grid size: " << gridSize << endl;
 
     PointBufferPtr pc_buffer = m_parent->getPointBuffer();
+    psSurface::Ptr surface;
 
     if(pcm == "STANN" || pcm == "FLANN" || pcm == "NABO")
     {
         akSurface* aks = new akSurface(pc_buffer, pcm, kn, kd, ki);
-
-        psSurface::Ptr surface;
         surface = psSurface::Ptr(aks);
 
         if(ransac) aks->useRansac(true);
-
-        if(!surface->pointBuffer()->hasPointNormals()
-                        || (surface->pointBuffer()->hasPointNormals() && reestimateNormals))
-            surface->calculateSurfaceNormals();
-
-        // Create an empty mesh
-        HalfEdgeMesh<cVertex, cNormal> mesh( surface );
     }
+
+    surface->setKd(kd);
+    surface->setKi(ki);
+    surface->setKn(kn);
+
+    if(!surface->pointBuffer()->hasPointNormals()
+                    || (surface->pointBuffer()->hasPointNormals() && reestimateNormals))
+        surface->calculateSurfaceNormals();
+
+    // Create an empty mesh
+    HalfEdgeMesh<cVertex, cNormal> mesh( surface );
+
+    // Create a new reconstruction object
+    FastReconstruction<cVertex, cNormal> reconstruction(
+            surface,
+            gridSize,
+            useVoxelSize,
+            "MC",
+            extrusion);
+
+    // Create mesh
+    reconstruction.getMesh(mesh);
+    mesh.setClassifier("PlaneSimpsons");
+    mesh.getClassifier().setMinRegionSize(10);
+    mesh.finalize();
+
+    ModelPtr model(new Model(mesh.meshBuffer()));
+    ModelBridgePtr bridge(new LVRModelBridge(model));
 }
 
 }
