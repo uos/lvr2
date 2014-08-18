@@ -2,6 +2,9 @@
 #define RECONSTRUCTIONMARCHINGCUBESDIALOG_H_
 
 #include <vtkRenderWindow.h>
+#include <vtkRenderer.h>
+#include <vtkRendererCollection.h>
+#include <vtkSmartPointer.h>
 
 #include "reconstruction/AdaptiveKSearchSurface.hpp"
 #include "reconstruction/FastReconstruction.hpp"
@@ -14,9 +17,11 @@
 #include "texture/Statistics.hpp"
 #include "geometry/QuadricVertexCosts.hpp"
 #include "reconstruction/SharpBox.hpp"
+#include "../vtkBridge/LVRModelBridge.hpp"
 
 #include "LVRReconstructionMarchingCubesDialogUI.h"
 #include "LVRPointCloudItem.hpp"
+#include "LVRModelItem.hpp"
 
 using Ui::ReconstructViaMarchingCubesDialog;
 
@@ -28,16 +33,16 @@ class LVRReconstructViaMarchingCubesDialog : public QObject
     Q_OBJECT
 
 public:
-    LVRReconstructViaMarchingCubesDialog(LVRPointCloudItem* parent, vtkRenderWindow* renderer);
+    LVRReconstructViaMarchingCubesDialog(LVRPointCloudItem* pc, LVRModelItem* parent, QTreeWidget* treeWidget, vtkRenderWindow* renderer);
     virtual ~LVRReconstructViaMarchingCubesDialog();
+    LVRModelItem* getGeneratedModel();
     typedef ColorVertex<float, unsigned char>         cVertex;
     typedef Normal<float>                               cNormal;
     typedef PointsetSurface<cVertex>                    psSurface;
     typedef AdaptiveKSearchSurface<cVertex, cNormal>    akSurface;
 
 public Q_SLOTS:
-    void save();
-    void printAllValues();
+    void generateMesh();
     void toggleRANSACcheckBox(const QString &text);
     void switchGridSizeDetermination(int index);
 
@@ -45,7 +50,10 @@ private:
     void connectSignalsAndSlots();
 
     ReconstructViaMarchingCubesDialog*      m_dialog;
-    LVRPointCloudItem*                      m_parent;
+    LVRPointCloudItem*                      m_pc;
+    LVRModelItem*                           m_parent;
+    QTreeWidget*                            m_treeWidget;
+    LVRModelItem*                           m_generatedModel;
     vtkRenderWindow*                        m_renderWindow;
 
 };
