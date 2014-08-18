@@ -4,8 +4,8 @@
 namespace lvr
 {
 
-LVRReconstructViaMarchingCubesDialog::LVRReconstructViaMarchingCubesDialog(LVRPointCloudItem* pc, LVRModelItem* parent, QTreeWidget* treeWidget, vtkRenderWindow* window) :
-   m_pc(pc), m_parent(parent), m_treeWidget(treeWidget), m_renderWindow(window)
+LVRReconstructViaMarchingCubesDialog::LVRReconstructViaMarchingCubesDialog(string decomposition, LVRPointCloudItem* pc, LVRModelItem* parent, QTreeWidget* treeWidget, vtkRenderWindow* window) :
+   m_decomposition(decomposition), m_pc(pc), m_parent(parent), m_treeWidget(treeWidget), m_renderWindow(window)
 {
     // Setup DialogUI and events
     QDialog* dialog = new QDialog(parent->treeWidget());
@@ -119,7 +119,7 @@ void LVRReconstructViaMarchingCubesDialog::generateMesh()
             surface,
             gridSize,
             useVoxelSize,
-            "MC",
+            m_decomposition,
             extrusion);
 
     // Create mesh
@@ -133,7 +133,7 @@ void LVRReconstructViaMarchingCubesDialog::generateMesh()
     vtkSmartPointer<vtkRenderer> renderer = m_renderWindow->GetRenderers()->GetFirstRenderer();
     bridge->addActors(renderer);
 
-    QString base = m_parent->getName() + " (mesh)";
+    QString base = m_parent->getName() + "(mesh)";
     m_generatedModel = new LVRModelItem(bridge, base);
 
     m_treeWidget->addTopLevelItem(m_generatedModel);
