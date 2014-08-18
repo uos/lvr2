@@ -4,8 +4,8 @@
 namespace lvr
 {
 
-LVRReconstructViaMarchingCubesDialog::LVRReconstructViaMarchingCubesDialog(LVRPointCloudItem* parent, vtkRenderWindow* window) :
-   m_parent(parent), m_renderWindow(window)
+LVRReconstructViaMarchingCubesDialog::LVRReconstructViaMarchingCubesDialog(LVRPointCloudItem* pc, LVRModelItem* parent, QTreeWidget* treeWidget, vtkRenderWindow* window) :
+   m_pc(pc), m_parent(parent), m_treeWidget(treeWidget), m_renderWindow(window)
 {
     // Setup DialogUI and events
     QDialog* dialog = new QDialog(parent->treeWidget());
@@ -28,12 +28,7 @@ void LVRReconstructViaMarchingCubesDialog::connectSignalsAndSlots()
 {
     QObject::connect(m_dialog->comboBox_pcm, SIGNAL(currentIndexChanged(const QString)), this, SLOT(toggleRANSACcheckBox(const QString)));
     QObject::connect(m_dialog->comboBox_gs, SIGNAL(currentIndexChanged(int)), this, SLOT(switchGridSizeDetermination(int)));
-    QObject::connect(m_dialog->buttonBox, SIGNAL(accepted()), this, SLOT(printAllValues()));
-}
-
-void LVRReconstructViaMarchingCubesDialog::save()
-{
-
+    QObject::connect(m_dialog->buttonBox, SIGNAL(accepted()), this, SLOT(generateMesh()));
 }
 
 void LVRReconstructViaMarchingCubesDialog::toggleRANSACcheckBox(const QString &text)
@@ -76,7 +71,7 @@ void LVRReconstructViaMarchingCubesDialog::switchGridSizeDetermination(int index
     }
 }
 
-void LVRReconstructViaMarchingCubesDialog::printAllValues()
+void LVRReconstructViaMarchingCubesDialog::generateMesh()
 {
     QComboBox* pcm_box = m_dialog->comboBox_pcm;
     string pcm = pcm_box->currentText().toStdString();
@@ -96,17 +91,8 @@ void LVRReconstructViaMarchingCubesDialog::printAllValues()
     bool useVoxelSize = (gridMode_box->currentIndex() == 0) ? true : false;
     QSpinBox* gridSize_box = m_dialog->spinBox_below_gs;
     int gridSize = gridSize_box->value();
-    cout << "PCM: " << pcm << endl;
-    cout << "Extrusion enabled? " << extrusion << endl;
-    cout << "RANSAC enabled? " << ransac << endl;
-    cout << "kn: " << kn << endl;
-    cout << "kd: " << kd << endl;
-    cout << "ki: " << ki << endl;
-    cout << "(re-)estimate normals? " << reestimateNormals << endl;
-    cout << "use voxel size? " << useVoxelSize << endl;
-    cout << "grid size: " << gridSize << endl;
 
-    PointBufferPtr pc_buffer = m_parent->getPointBuffer();
+    PointBufferPtr pc_buffer = m_pc->getPointBuffer();
     psSurface::Ptr surface;
 
     if(pcm == "STANN" || pcm == "FLANN" || pcm == "NABO")
@@ -144,6 +130,14 @@ void LVRReconstructViaMarchingCubesDialog::printAllValues()
 
     ModelPtr model(new Model(mesh.meshBuffer()));
     ModelBridgePtr bridge(new LVRModelBridge(model));
+    vtkSmartPointer<vtkRenderer> renderer = m_renderWindow->GetRenderers()->GetFirstRenderer();
+    bridge->addActors(renderer);
+
+    QString base = m_parent->getName() + " (mesh)";
+    m_generatedModel = new LVRModelItem(bridge, base);
+
+    m_treeWidget->addTopLevelItem(m_generatedModel);
+    m_generatedModel->setExpanded(true);
 }
 
 }
