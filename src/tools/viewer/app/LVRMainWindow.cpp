@@ -81,6 +81,8 @@ LVRMainWindow::LVRMainWindow()
     m_actionRecall_Stored_View = this->actionRecall_Stored_View;
     // Toolbar item "Reconstruction"
     m_actionMarching_Cubes = this->actionMarching_Cubes;
+    m_actionPlanar_Marching_Cubes = this->actionPlanar_Marching_Cubes;
+    m_actionExtended_Marching_Cubes = this->actionExtended_Marching_Cubes;
     // Toolbar item "About"
     // TODO: Replace "About"-QMenu with "About"-QAction
     m_menuAbout = this->menuAbout;
@@ -137,6 +139,8 @@ void LVRMainWindow::connectSignalsAndSlots()
     QObject::connect(m_actionRecall_Stored_View, SIGNAL(activated()), this, SLOT(loadCamera()));
 
     QObject::connect(m_actionMarching_Cubes, SIGNAL(activated()), this, SLOT(reconstructUsingMarchingCubes()));
+    QObject::connect(m_actionPlanar_Marching_Cubes, SIGNAL(activated()), this, SLOT(reconstructUsingPlanarMarchingCubes()));
+    QObject::connect(m_actionExtended_Marching_Cubes, SIGNAL(activated()), this, SLOT(reconstructUsingExtendedMarchingCubes()));
 
     QObject::connect(m_menuAbout, SIGNAL(triggered(QAction*)), this, SLOT(showAboutDialog(QAction*)));
 
@@ -757,7 +761,33 @@ void LVRMainWindow::reconstructUsingMarchingCubes()
         LVRPointCloudItem* pc_item = getPointCloudItem(items.first());
         LVRModelItem* parent_item = getModelItem(items.first());
         if(pc_item != NULL)
-            LVRReconstructViaMarchingCubesDialog* dialog = new LVRReconstructViaMarchingCubesDialog(pc_item, parent_item, treeWidget, qvtkWidget->GetRenderWindow());
+            LVRReconstructViaMarchingCubesDialog* dialog = new LVRReconstructViaMarchingCubesDialog("MC", pc_item, parent_item, treeWidget, qvtkWidget->GetRenderWindow());
+    }
+}
+
+void LVRMainWindow::reconstructUsingPlanarMarchingCubes()
+{
+    // Get selected item from tree and check type
+    QList<QTreeWidgetItem*> items = treeWidget->selectedItems();
+    if(items.size() > 0)
+    {
+        LVRPointCloudItem* pc_item = getPointCloudItem(items.first());
+        LVRModelItem* parent_item = getModelItem(items.first());
+        if(pc_item != NULL)
+            LVRReconstructViaMarchingCubesDialog* dialog = new LVRReconstructViaMarchingCubesDialog("PMC", pc_item, parent_item, treeWidget, qvtkWidget->GetRenderWindow());
+    }
+}
+
+void LVRMainWindow::reconstructUsingExtendedMarchingCubes()
+{
+    // Get selected item from tree and check type
+    QList<QTreeWidgetItem*> items = treeWidget->selectedItems();
+    if(items.size() > 0)
+    {
+        LVRPointCloudItem* pc_item = getPointCloudItem(items.first());
+        LVRModelItem* parent_item = getModelItem(items.first());
+        if(pc_item != NULL)
+            LVRReconstructViaMarchingCubesDialog* dialog = new LVRReconstructViaMarchingCubesDialog("SF", pc_item, parent_item, treeWidget, qvtkWidget->GetRenderWindow());
     }
 }
 

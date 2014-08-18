@@ -33,7 +33,7 @@ class LVRReconstructViaMarchingCubesDialog : public QObject
     Q_OBJECT
 
 public:
-    LVRReconstructViaMarchingCubesDialog(LVRPointCloudItem* pc, LVRModelItem* parent, QTreeWidget* treeWidget, vtkRenderWindow* renderer);
+    LVRReconstructViaMarchingCubesDialog(string decomposition, LVRPointCloudItem* pc, LVRModelItem* parent, QTreeWidget* treeWidget, vtkRenderWindow* renderer);
     virtual ~LVRReconstructViaMarchingCubesDialog();
     LVRModelItem* getGeneratedModel();
     typedef ColorVertex<float, unsigned char>         cVertex;
@@ -49,6 +49,7 @@ public Q_SLOTS:
 private:
     void connectSignalsAndSlots();
 
+    string                                  m_decomposition;
     ReconstructViaMarchingCubesDialog*      m_dialog;
     LVRPointCloudItem*                      m_pc;
     LVRModelItem*                           m_parent;
