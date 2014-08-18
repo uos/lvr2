@@ -72,6 +72,8 @@ public Q_SLOTS:
     void showColorDialog();
     void showAboutDialog(QAction*);
     void reconstructUsingMarchingCubes();
+    void reconstructUsingExtendedMarchingCubes();
+    void reconstructUsingPlanarMarchingCubes();
     void deleteModelItem();
     void changePointSize(int pointSize);
     void changeTransparency(int transparencyValue);
@@ -119,6 +121,8 @@ private:
 	QAction*							m_actionRecall_Stored_View;
     // Toolbar item "Reconstruction"
 	QAction*                            m_actionMarching_Cubes;
+    QAction*                            m_actionPlanar_Marching_Cubes;
+    QAction*                            m_actionExtended_Marching_Cubes;
 	// Toolbar item "About"
 	QMenu*                              m_menuAbout;
 	// QToolbar below toolbar
