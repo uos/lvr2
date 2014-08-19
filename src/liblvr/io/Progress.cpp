@@ -39,6 +39,17 @@ namespace lvr
 
 #ifdef __WITH_QT4__
 bool ProgressBar::m_useDialog = false;
+
+void ProgressBar::enableDialog()
+{
+    m_useDialog = true;
+}
+
+void ProgressBar::disableDialog()
+{
+    m_useDialog = false;
+}
+
 #endif
 
 ProgressBar::ProgressBar(size_t max_val, string prefix)
@@ -48,9 +59,10 @@ ProgressBar::ProgressBar(size_t max_val, string prefix)
     m_currentVal = 0;
 	m_percent = 0;
 #ifdef __WITH_QT4__
+	m_dialog = 0;
 	if(m_useDialog)
 	{
-	    m_dialog = new QProgressDialog(QString(prefix), "Cancel", 0, 100);
+	    m_dialog = new QProgressDialog(QString(prefix.c_str()), "Cancel", 0, 100);
 	}
 #endif
 }
@@ -81,7 +93,7 @@ void ProgressBar::operator++()
         difference--;
         print_bar();
 #ifdef __WITH_QT4__
-        if(m_progressBar != 0)
+        if(m_dialog != 0)
         {
             m_dialog->setValue(m_percent);
         }
