@@ -68,6 +68,11 @@ target_link_libraries(staticlvr freenect)
 target_link_libraries(staticlvr ${PCL_LIBRARIES})
 target_link_libraries(staticlvr lvrslam6d_static)
 
+if( QT4_FOUND )
+target_link_libraries(staticlvr ${QT_QTGUI_LIBRARIES})
+target_link_libraries(staticlvr ${QT_QTCORE_LIBRARIES})
+endif (QT4_FOUND)
+
 if ( rply_shared ) 
     target_link_libraries(staticlvr ${rply_shared})
 else ( rply_shared )
@@ -92,6 +97,11 @@ target_link_libraries(lvr freenect)
 target_link_libraries(lvr GLU)
 target_link_libraries(lvr glut)
 
+
+if( QT4_FOUND )
+target_link_libraries(lvr ${QT_QTGUI_LIBRARIES})
+target_link_libraries(lvr ${QT_QTCORE_LIBRARIES})
+endif (QT4_FOUND)
 
 if ( rply_shared )
      target_link_libraries(lvr ${rply_shared})
