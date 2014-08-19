@@ -31,6 +31,10 @@
 #include <sstream>
 #include <iostream>
 
+#ifdef __WITH_QT4__
+#include <QProgressBar>
+#endif
+
 using std::stringstream;
 using std::cout;
 using std::endl;
@@ -92,6 +96,13 @@ protected:
 
 	/// A fill string for correct output alignment
 	string 			m_fillstring;
+
+#ifdef __WITH_QT4__
+	QProgressBar*       m_progressBar;
+
+public:
+	void setProgressBar(QProgressBar* progressBar) { m_progressBar = progressBar;}
+#endif
 };
 
 

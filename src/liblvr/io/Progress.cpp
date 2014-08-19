@@ -41,26 +41,35 @@ ProgressBar::ProgressBar(size_t max_val, string prefix)
 {
 	m_prefix = prefix;
 	m_maxVal = max_val;
-        m_currentVal = 0;
+    m_currentVal = 0;
 	m_percent = 0;
+#ifdef __WITH_QT4__
+	m_progressBar = 0;
+#endif
 }
 
 void ProgressBar::operator++()
 {
-	boost::mutex::scoped_lock lock(m_mutex);
-        m_currentVal++;
-        short difference = (short)((float)m_currentVal/m_maxVal * 100 - m_percent);
-        if (difference < 1)
-        {
-            return;
-        }
+    boost::mutex::scoped_lock lock(m_mutex);
+    m_currentVal++;
+    short difference = (short)((float)m_currentVal/m_maxVal * 100 - m_percent);
+    if (difference < 1)
+    {
+        return;
+    }
 
-	while (difference >= 1)
+    while (difference >= 1)
+    {
+        m_percent++;
+        difference--;
+        print_bar();
+#ifdef __WITH_QT4__
+        if(m_progressBar != 0)
         {
-            m_percent++;
-            difference--;
-            print_bar();
+            m_progressBar->setValue(m_percent);
         }
+#endif
+    }
 }
 
 void ProgressBar::print_bar()
