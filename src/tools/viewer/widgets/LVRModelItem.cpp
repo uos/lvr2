@@ -87,6 +87,17 @@ void LVRModelItem::setPose( Pose& pose)
     m_poseItem->setPose(pose);
 }
 
+QString LVRModelItem::getName()
+{
+    return m_name;
+}
+
+void LVRModelItem::setName(QString name)
+{
+    m_name = name;
+    setText(0, m_name);
+}
+
 ModelBridgePtr LVRModelItem::getModelBridge()
 {
 	return m_modelBridge;

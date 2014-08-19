@@ -31,9 +31,16 @@
 
 #include <QtGui>
 #include "LVRMainWindowUI.h"
-#include "LVRTreeWidgetHelper.hpp"
 #include "LVRAboutDialogUI.h"
+#include "LVRTreeWidgetHelper.hpp"
+#include "../vtkBridge/LVRModelBridge.hpp"
+#include "../widgets/LVRModelItem.hpp"
+#include "../widgets/LVRPointCloudItem.hpp"
+#include "../widgets/LVRMeshItem.hpp"
+#include "../widgets/LVRItemTypes.hpp"
+#include "../widgets/LVRTransformationDialog.hpp"
 #include "../widgets/LVRCorrespondanceDialog.hpp"
+#include "../widgets/LVRReconstructionMarchingCubesDialog.hpp"
 #include "../vtkBridge/LVRPickingInteractor.hpp"
 #include "../vtkBridge/LVRVtkArrow.hpp"
 
@@ -53,9 +60,12 @@ public:
      * @brief   MainWindow
      */
     LVRMainWindow();
-
-
     virtual ~LVRMainWindow();
+
+    typedef ColorVertex<float, unsigned char>               cVertex;
+    typedef Normal<float>                                   cNormal;
+    typedef PointsetSurface<cVertex>                        psSurface;
+    typedef AdaptiveKSearchSurface<cVertex, cNormal>        akSurface;
 
 public Q_SLOTS:
     void loadModel();
@@ -64,6 +74,10 @@ public Q_SLOTS:
     void showTreeContextMenu(const QPoint&);
     void showColorDialog();
     void showAboutDialog(QAction*);
+    void reconstructUsingMarchingCubes();
+    void reconstructUsingExtendedMarchingCubes();
+    void reconstructUsingPlanarMarchingCubes();
+    void retesselate();
     void deleteModelItem();
     void changePointSize(int pointSize);
     void changeTransparency(int transparencyValue);
@@ -79,6 +93,9 @@ public Q_SLOTS:
     void addArrow(LVRVtkArrow*);
     void alignPointClouds();
     void exportSelectedModel();
+    LVRModelItem* getModelItem(QTreeWidgetItem* item);
+    LVRPointCloudItem* getPointCloudItem(QTreeWidgetItem* item);
+    LVRMeshItem* getMeshItem(QTreeWidgetItem* item);
 
 protected Q_SLOTS:
     void setModelVisibility(QTreeWidgetItem* treeWidgetItem, int column);
@@ -91,11 +108,12 @@ private:
     void setupQVTK();
     void connectSignalsAndSlots();
 
-    LVRCorrespondanceDialog*            m_correspondanceDialog;
-    QDialog*                            m_aboutDialog;
-    vtkSmartPointer<vtkRenderer>        m_renderer;
-    vtkSmartPointer<vtkCamera>			m_camera;
-    QMenu*				                m_treeContextMenu;
+    LVRCorrespondanceDialog*                m_correspondanceDialog;
+    LVRReconstructViaMarchingCubesDialog*   m_reconstructViaMarchingCubesDialog;
+    QDialog*                                m_aboutDialog;
+    vtkSmartPointer<vtkRenderer>            m_renderer;
+    vtkSmartPointer<vtkCamera>			    m_camera;
+    QMenu*				                    m_treeContextMenu;
 
     // Toolbar item "File"
 	QAction*							m_actionOpen;
@@ -105,6 +123,16 @@ private:
 	QAction*							m_actionReset_Camera;
 	QAction*							m_actionStore_Current_View;
 	QAction*							m_actionRecall_Stored_View;
+    // Toolbar item "Reconstruction"
+	QAction*                            m_actionMarching_Cubes;
+    QAction*                            m_actionPlanar_Marching_Cubes;
+    QAction*                            m_actionExtended_Marching_Cubes;
+    // Toolbar item "Mesh Optimization"
+    QAction*                            m_actionPlanar_Optimization;
+    QAction*                            m_actionRetesselate;
+    QAction*                            m_actionRemove_Artifacts;
+    QAction*                            m_actionFill_Holes;
+    QAction*                            m_actionDelete_Small_Regions;
 	// Toolbar item "About"
 	QMenu*                              m_menuAbout;
 	// QToolbar below toolbar

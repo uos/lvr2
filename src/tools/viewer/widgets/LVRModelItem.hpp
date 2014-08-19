@@ -45,6 +45,8 @@ public:
 
     Pose    getPose();
     void    setPose( Pose& pose);
+    QString         getName();
+    void            setName(QString name);
     bool            isEnabled();
     ModelBridgePtr	getModelBridge();
     void            setModelVisibility(int column, bool globalValue);
