@@ -516,7 +516,6 @@
      <string>Mesh Optimization</string>
     </property>
     <addaction name="actionPlanar_Optimization"/>
-    <addaction name="actionRetesselate"/>
     <addaction name="actionRemove_Artifacts"/>
     <addaction name="actionFill_Holes"/>
     <addaction name="actionDelete_Small_Regions"/>
