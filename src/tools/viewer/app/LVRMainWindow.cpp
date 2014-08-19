@@ -456,6 +456,7 @@ void LVRMainWindow::deleteModelItem()
 LVRModelItem* LVRMainWindow::getModelItem(QTreeWidgetItem* item)
 {
     if(item->type() == LVRModelItemType) return static_cast<LVRModelItem*>(item);
+    if(item->parent()->type() == LVRModelItemType) return static_cast<LVRModelItem*>(item->parent());
     return NULL;
 }
 
