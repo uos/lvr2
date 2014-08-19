@@ -37,6 +37,10 @@ using std::flush;
 namespace lvr
 {
 
+#ifdef __WITH_QT4__
+bool ProgressBar::m_useDialog = false;
+#endif
+
 ProgressBar::ProgressBar(size_t max_val, string prefix)
 {
 	m_prefix = prefix;
@@ -44,9 +48,22 @@ ProgressBar::ProgressBar(size_t max_val, string prefix)
     m_currentVal = 0;
 	m_percent = 0;
 #ifdef __WITH_QT4__
-	m_progressBar = 0;
+	if(m_useDialog)
+	{
+	    m_dialog = new QProgressDialog(QString(prefix), "Cancel", 0, 100);
+	}
 #endif
 }
+
+#ifdef __WITH_QT4__
+ProgressBar::~ProgressBar()
+{
+    if(m_useDialog && m_dialog)
+    {
+        delete m_dialog;
+    }
+}
+#endif
 
 void ProgressBar::operator++()
 {
@@ -66,7 +83,7 @@ void ProgressBar::operator++()
 #ifdef __WITH_QT4__
         if(m_progressBar != 0)
         {
-            m_progressBar->setValue(m_percent);
+            m_dialog->setValue(m_percent);
         }
 #endif
     }
