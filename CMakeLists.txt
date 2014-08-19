@@ -280,6 +280,8 @@ if( QT4_FOUND )
     include_directories(${QT_QTOPENGL_INCLUDE_DIR})
     include_directories(${QT_QTCORE_INCLUDE_DIR})
     include_directories(${QT_QTXML_INCLUDE_DIR})
+    
+    add_definitions(-D__WITH_QT4__)
 
     # Try to find libQGLViewer
     find_library(QGLVIEWER_LIBRARY_RELEASE 
