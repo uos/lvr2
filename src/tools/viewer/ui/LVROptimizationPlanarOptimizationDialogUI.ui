@@ -89,6 +89,12 @@
      <height>27</height>
     </rect>
    </property>
+   <property name="singleStep">
+    <double>0.010000000000000</double>
+   </property>
+   <property name="value">
+    <double>0.850000000000000</double>
+   </property>
   </widget>
   <widget class="QLabel" name="label_mp">
    <property name="geometry">
@@ -134,6 +140,9 @@
    <property name="text">
     <string>Remove small regions</string>
    </property>
+   <property name="checked">
+    <bool>false</bool>
+   </property>
   </widget>
   <widget class="QLabel" name="label_sr">
    <property name="geometry">
@@ -149,6 +158,9 @@
    </property>
   </widget>
   <widget class="QSpinBox" name="spinBox_sr">
+   <property name="enabled">
+    <bool>false</bool>
+   </property>
    <property name="geometry">
     <rect>
      <x>310</x>
@@ -179,6 +191,9 @@
    <property name="text">
     <string>Fill holes</string>
    </property>
+   <property name="checked">
+    <bool>true</bool>
+   </property>
   </widget>
   <widget class="QCheckBox" name="checkBox_rt">
    <property name="geometry">
@@ -192,8 +207,11 @@
    <property name="text">
     <string>Retesselate</string>
    </property>
+   <property name="checked">
+    <bool>true</bool>
+   </property>
   </widget>
-  <widget class="QCheckBox" name="checkBox_rt_2">
+  <widget class="QCheckBox" name="checkBox_gt">
    <property name="geometry">
     <rect>
      <x>10</x>
@@ -206,7 +224,7 @@
     <string>Generate textures during retesselation</string>
    </property>
   </widget>
-  <widget class="QLabel" name="label_sr_2">
+  <widget class="QLabel" name="label_ls">
    <property name="geometry">
     <rect>
      <x>10</x>
@@ -219,7 +237,7 @@
     <string>Threshold for fusing line segments</string>
    </property>
   </widget>
-  <widget class="QDoubleSpinBox" name="doubleSpinBox_nt_2">
+  <widget class="QDoubleSpinBox" name="doubleSpinBox_ls">
    <property name="geometry">
     <rect>
      <x>310</x>
