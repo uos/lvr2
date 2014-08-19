@@ -41,6 +41,7 @@
 #include "../widgets/LVRTransformationDialog.hpp"
 #include "../widgets/LVRCorrespondanceDialog.hpp"
 #include "../widgets/LVRReconstructionMarchingCubesDialog.hpp"
+#include "../widgets/LVROptimizationPlanarOptimizationDialog.hpp"
 #include "../vtkBridge/LVRPickingInteractor.hpp"
 #include "../vtkBridge/LVRVtkArrow.hpp"
 
@@ -77,7 +78,7 @@ public Q_SLOTS:
     void reconstructUsingMarchingCubes();
     void reconstructUsingExtendedMarchingCubes();
     void reconstructUsingPlanarMarchingCubes();
-    void retesselate();
+    void optimizePlanes();
     void deleteModelItem();
     void changePointSize(int pointSize);
     void changeTransparency(int transparencyValue);
@@ -131,7 +132,6 @@ private:
     QAction*                            m_actionPlanar_Optimization;
     QAction*                            m_actionRetesselate;
     QAction*                            m_actionRemove_Artifacts;
-    QAction*                            m_actionFill_Holes;
     QAction*                            m_actionDelete_Small_Regions;
 	// Toolbar item "About"
 	QMenu*                              m_menuAbout;

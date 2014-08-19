@@ -20,6 +20,7 @@ set(LVR_VIEWER_SOURCES
     widgets/LVRTransformationDialog.cpp
     widgets/LVRCorrespondanceDialog.cpp
     widgets/LVRReconstructionMarchingCubesDialog.cpp
+    widgets/LVROptimizationPlanarOptimizationDialog.cpp
 )
 
 
@@ -28,6 +29,7 @@ set(LVR_VIEWER_MOCS
     vtkBridge/LVRPickingInteractor.hpp
     widgets/LVRTransformationDialog.hpp
     widgets/LVRReconstructionMarchingCubesDialog.hpp
+    widgets/LVROptimizationPlanarOptimizationDialog.hpp
     widgets/LVRCorrespondanceDialog.hpp
 )
 
@@ -39,6 +41,7 @@ set(LVR_VIEWER_UIS
    ui/LVRRegistrationPickCorrespondancesDialogUI.ui
    ui/LVRAboutDialogUI.ui
    ui/LVRReconstructionMarchingCubesDialogUI.ui
+   ui/LVROptimizationPlanarOptimizationDialogUI.ui
 )
 
 set(LVR_VIEWER_RESOURCES
