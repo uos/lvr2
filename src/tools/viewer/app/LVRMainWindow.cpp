@@ -85,9 +85,7 @@ LVRMainWindow::LVRMainWindow()
     m_actionExtended_Marching_Cubes = this->actionExtended_Marching_Cubes;
     // Toolbar item "Mesh Optimization"
     m_actionPlanar_Optimization = this->actionPlanar_Optimization;
-    m_actionRetesselate = this->actionRetesselate;
     m_actionRemove_Artifacts = this->actionRemove_Artifacts;
-    m_actionFill_Holes = this->actionFill_Holes;
     m_actionDelete_Small_Regions = this->actionDelete_Small_Regions;
     // Toolbar item "About"
     // TODO: Replace "About"-QMenu with "About"-QAction
@@ -148,7 +146,7 @@ void LVRMainWindow::connectSignalsAndSlots()
     QObject::connect(m_actionPlanar_Marching_Cubes, SIGNAL(activated()), this, SLOT(reconstructUsingPlanarMarchingCubes()));
     QObject::connect(m_actionExtended_Marching_Cubes, SIGNAL(activated()), this, SLOT(reconstructUsingExtendedMarchingCubes()));
 
-    QObject::connect(m_actionRetesselate, SIGNAL(activated()), this, SLOT(retesselate()));
+    QObject::connect(m_actionPlanar_Optimization, SIGNAL(activated()), this, SLOT(optimizePlanes()));
 
     QObject::connect(m_menuAbout, SIGNAL(triggered(QAction*)), this, SLOT(showAboutDialog(QAction*)));
 
@@ -764,6 +762,12 @@ void LVRMainWindow::showTransformationDialog()
 
 void LVRMainWindow::reconstructUsingMarchingCubes()
 {
+    // Setup a message box for unsupported items
+    QMessageBox box;
+    box.setText("Unsupported Item for Reconstruction.");
+    box.setInformativeText("Only models containing point clouds or point clouds themselves are applicable to reconstruction.");
+    box.setStandardButtons(QMessageBox::Ok);
+
     // Get selected item from tree and check type
     QList<QTreeWidgetItem*> items = treeWidget->selectedItems();
     if(items.size() > 0)
@@ -771,12 +775,23 @@ void LVRMainWindow::reconstructUsingMarchingCubes()
         LVRPointCloudItem* pc_item = getPointCloudItem(items.first());
         LVRModelItem* parent_item = getModelItem(items.first());
         if(pc_item != NULL)
+        {
             LVRReconstructViaMarchingCubesDialog* dialog = new LVRReconstructViaMarchingCubesDialog("MC", pc_item, parent_item, treeWidget, qvtkWidget->GetRenderWindow());
+            return;
+        }
     }
+
+    box.exec();
 }
 
 void LVRMainWindow::reconstructUsingPlanarMarchingCubes()
 {
+    // Setup a message box for unsupported items
+    QMessageBox box;
+    box.setText("Unsupported Item for Reconstruction.");
+    box.setInformativeText("Only models containing point clouds or point clouds themselves are applicable to reconstruction.");
+    box.setStandardButtons(QMessageBox::Ok);
+
     // Get selected item from tree and check type
     QList<QTreeWidgetItem*> items = treeWidget->selectedItems();
     if(items.size() > 0)
@@ -784,12 +799,23 @@ void LVRMainWindow::reconstructUsingPlanarMarchingCubes()
         LVRPointCloudItem* pc_item = getPointCloudItem(items.first());
         LVRModelItem* parent_item = getModelItem(items.first());
         if(pc_item != NULL)
+        {
             LVRReconstructViaMarchingCubesDialog* dialog = new LVRReconstructViaMarchingCubesDialog("PMC", pc_item, parent_item, treeWidget, qvtkWidget->GetRenderWindow());
+            return;
+        }
     }
+
+    box.exec();
 }
 
 void LVRMainWindow::reconstructUsingExtendedMarchingCubes()
 {
+    // Setup a message box for unsupported items
+    QMessageBox box;
+    box.setText("Unsupported Item for Reconstruction.");
+    box.setInformativeText("Only models containing point clouds or point clouds themselves are applicable to reconstruction.");
+    box.setStandardButtons(QMessageBox::Ok);
+
     // Get selected item from tree and check type
     QList<QTreeWidgetItem*> items = treeWidget->selectedItems();
     if(items.size() > 0)
@@ -797,12 +823,23 @@ void LVRMainWindow::reconstructUsingExtendedMarchingCubes()
         LVRPointCloudItem* pc_item = getPointCloudItem(items.first());
         LVRModelItem* parent_item = getModelItem(items.first());
         if(pc_item != NULL)
+        {
             LVRReconstructViaMarchingCubesDialog* dialog = new LVRReconstructViaMarchingCubesDialog("SF", pc_item, parent_item, treeWidget, qvtkWidget->GetRenderWindow());
+            return;
+        }
     }
+
+    box.exec();
 }
 
-void LVRMainWindow::retesselate()
+void LVRMainWindow::optimizePlanes()
 {
+    // Setup a message box for unsupported items
+    QMessageBox box;
+    box.setText("Unsupported Item for Optimization.");
+    box.setInformativeText("Only models containing meshes or meshes themselves are applicable to optimization.");
+    box.setStandardButtons(QMessageBox::Ok);
+
     // Get selected item from tree and check type
     QList<QTreeWidgetItem*> items = treeWidget->selectedItems();
     if(items.size() > 0)
@@ -811,10 +848,13 @@ void LVRMainWindow::retesselate()
         LVRModelItem* parent_item = getModelItem(items.first());
         if(mesh_item != NULL)
         {
-            HalfEdgeMesh<cVertex, cNormal> mesh(mesh_item->getMeshBuffer());
-            mesh.finalizeAndRetesselate(false, 0.01);
+            LVRPlanarOptimizationDialog* dialog = new LVRPlanarOptimizationDialog(mesh_item, parent_item, treeWidget, qvtkWidget->GetRenderWindow());
+
+            return;
         }
     }
+
+    box.exec();
 }
 
 void LVRMainWindow::showAboutDialog(QAction*)
