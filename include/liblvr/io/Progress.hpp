@@ -105,10 +105,10 @@ public:
 
 	/// If enabled, each instance will create a QT4 progress dialog
 	/// with the given message. Needs a valid QT context.
-	static void enableDialog() { m_useDialog = true; }
+	static void enableDialog();
 
 	/// Disables the usage if a QT4 progress dialog.
-	static void disableDialog() {m_useDialog = false; }
+	static void disableDialog();
 
 	QProgressDialog*        m_dialog;
 
