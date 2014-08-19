@@ -8,7 +8,7 @@ LVRReconstructViaMarchingCubesDialog::LVRReconstructViaMarchingCubesDialog(strin
    m_decomposition(decomposition), m_pc(pc), m_parent(parent), m_treeWidget(treeWidget), m_renderWindow(window)
 {
     // Setup DialogUI and events
-    QDialog* dialog = new QDialog(parent->treeWidget());
+    QDialog* dialog = new QDialog(m_treeWidget);
     m_dialog = new ReconstructViaMarchingCubesDialog;
     m_dialog->setupUi(dialog);
 
