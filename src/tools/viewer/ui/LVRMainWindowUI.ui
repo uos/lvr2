@@ -498,7 +498,7 @@
     <addaction name="separator"/>
     <addaction name="actionMarching_Cubes"/>
     <addaction name="actionPlanar_Marching_Cubes"/>
-    <addaction name="actionExtended_Marching_Cbes"/>
+    <addaction name="actionExtended_Marching_Cubes"/>
     <addaction name="separator"/>
     <addaction name="actionCompute_Textures"/>
     <addaction name="actionMatch_Textures_from_Package"/>
@@ -617,9 +617,9 @@
     <string>Planar Marching Cubes</string>
    </property>
   </action>
-  <action name="actionExtended_Marching_Cbes">
+  <action name="actionExtended_Marching_Cubes">
    <property name="text">
-    <string>Extended Marching Cbes</string>
+    <string>Extended Marching Cubes</string>
    </property>
   </action>
   <action name="actionMLS_Projection">
