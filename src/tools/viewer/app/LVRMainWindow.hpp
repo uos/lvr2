@@ -60,9 +60,12 @@ public:
      * @brief   MainWindow
      */
     LVRMainWindow();
-
-
     virtual ~LVRMainWindow();
+
+    typedef ColorVertex<float, unsigned char>               cVertex;
+    typedef Normal<float>                                   cNormal;
+    typedef PointsetSurface<cVertex>                        psSurface;
+    typedef AdaptiveKSearchSurface<cVertex, cNormal>        akSurface;
 
 public Q_SLOTS:
     void loadModel();
@@ -74,6 +77,7 @@ public Q_SLOTS:
     void reconstructUsingMarchingCubes();
     void reconstructUsingExtendedMarchingCubes();
     void reconstructUsingPlanarMarchingCubes();
+    void retesselate();
     void deleteModelItem();
     void changePointSize(int pointSize);
     void changeTransparency(int transparencyValue);
@@ -123,6 +127,12 @@ private:
 	QAction*                            m_actionMarching_Cubes;
     QAction*                            m_actionPlanar_Marching_Cubes;
     QAction*                            m_actionExtended_Marching_Cubes;
+    // Toolbar item "Mesh Optimization"
+    QAction*                            m_actionPlanar_Optimization;
+    QAction*                            m_actionRetesselate;
+    QAction*                            m_actionRemove_Artifacts;
+    QAction*                            m_actionFill_Holes;
+    QAction*                            m_actionDelete_Small_Regions;
 	// Toolbar item "About"
 	QMenu*                              m_menuAbout;
 	// QToolbar below toolbar
