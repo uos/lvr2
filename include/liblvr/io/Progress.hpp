@@ -101,7 +101,15 @@ protected:
 	QProgressBar*       m_progressBar;
 
 public:
-	void setProgressBar(QProgressBar* progressBar) { m_progressBar = progressBar;}
+	void setProgressBar(QProgressBar* progressBar)
+	{
+	    m_progressBar = progressBar;
+	    if(m_progressBar)
+	    {
+	        m_progressBar->setMinimum(0);
+	        m_progressBar->setMaximum(100);
+	    }
+	}
 #endif
 };
 
