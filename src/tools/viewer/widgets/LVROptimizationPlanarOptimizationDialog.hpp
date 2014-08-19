@@ -40,6 +40,8 @@ public:
 
 public Q_SLOTS:
     void optimizeMesh();
+    void toggleSmallRegionRemoval(int state);
+    void toggleRetesselation(int state);
 
 private:
     void connectSignalsAndSlots();
