@@ -86,7 +86,6 @@ LVRMainWindow::LVRMainWindow()
     // Toolbar item "Mesh Optimization"
     m_actionPlanar_Optimization = this->actionPlanar_Optimization;
     m_actionRemove_Artifacts = this->actionRemove_Artifacts;
-    m_actionDelete_Small_Regions = this->actionDelete_Small_Regions;
     // Toolbar item "About"
     // TODO: Replace "About"-QMenu with "About"-QAction
     m_menuAbout = this->menuAbout;
