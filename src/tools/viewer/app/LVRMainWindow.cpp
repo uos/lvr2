@@ -96,8 +96,6 @@ LVRMainWindow::LVRMainWindow()
     m_actionShow_Wireframe = this->actionShow_Wireframe;
     // Slider below tree widget
     m_horizontalSliderPointSize = this->horizontalSliderPointSize;
-    m_horizontalSliderBrightness = this->horizontalSliderBrightness;
-    m_horizontalSliderContrast = this->horizontalSliderContrast;
     m_horizontalSliderTransparency = this->horizontalSliderTransparency;
     // Combo boxes
     m_comboBoxGradient = this->comboBoxGradient;
