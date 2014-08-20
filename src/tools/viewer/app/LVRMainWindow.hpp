@@ -130,9 +130,7 @@ private:
     QAction*                            m_actionExtended_Marching_Cubes;
     // Toolbar item "Mesh Optimization"
     QAction*                            m_actionPlanar_Optimization;
-    QAction*                            m_actionRetesselate;
     QAction*                            m_actionRemove_Artifacts;
-    QAction*                            m_actionDelete_Small_Regions;
 	// Toolbar item "About"
 	QMenu*                              m_menuAbout;
 	// QToolbar below toolbar
