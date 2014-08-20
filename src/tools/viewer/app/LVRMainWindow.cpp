@@ -52,6 +52,12 @@ LVRMainWindow::LVRMainWindow()
     m_aboutDialog = new QDialog();
     Ui::AboutDialog aboutDialog;
     aboutDialog.setupUi(m_aboutDialog);
+    m_mlsProjectionDialog = new QDialog();
+    Ui::MLSProjectionDialog mlsProjectionDialog;
+    mlsProjectionDialog.setupUi(m_mlsProjectionDialog);
+    m_removeOutliersDialog = new QDialog();
+    Ui::RemoveOutliersDialog removeOutliersDialog;
+    removeOutliersDialog.setupUi(m_removeOutliersDialog);
 
     // Setup specific properties
     QHeaderView* v = this->treeWidget->header();
@@ -86,6 +92,9 @@ LVRMainWindow::LVRMainWindow()
     // Toolbar item "Mesh Optimization"
     m_actionPlanar_Optimization = this->actionPlanar_Optimization;
     m_actionRemove_Artifacts = this->actionRemove_Artifacts;
+    // Toolbar item "Filtering"
+    m_actionRemove_Outliers = this->actionRemove_Outliers;
+    m_actionMLS_Projection = this->actionMLS_Projection;
     // Toolbar item "About"
     // TODO: Replace "About"-QMenu with "About"-QAction
     m_menuAbout = this->menuAbout;
@@ -144,6 +153,9 @@ void LVRMainWindow::connectSignalsAndSlots()
     QObject::connect(m_actionExtended_Marching_Cubes, SIGNAL(activated()), this, SLOT(reconstructUsingExtendedMarchingCubes()));
 
     QObject::connect(m_actionPlanar_Optimization, SIGNAL(activated()), this, SLOT(optimizePlanes()));
+
+    QObject::connect(m_actionRemove_Outliers, SIGNAL(activated()), this, SLOT(removeOutliers()));
+    QObject::connect(m_actionMLS_Projection, SIGNAL(activated()), this, SLOT(applyMLSProjection()));
 
     QObject::connect(m_menuAbout, SIGNAL(triggered(QAction*)), this, SLOT(showAboutDialog(QAction*)));
 
@@ -852,6 +864,16 @@ void LVRMainWindow::optimizePlanes()
     }
 
     box.exec();
+}
+
+void LVRMainWindow::applyMLSProjection()
+{
+    m_mlsProjectionDialog->show();
+}
+
+void LVRMainWindow::removeOutliers()
+{
+    m_removeOutliersDialog->show();
 }
 
 void LVRMainWindow::showAboutDialog(QAction*)

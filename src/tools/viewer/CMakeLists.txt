@@ -42,6 +42,8 @@ set(LVR_VIEWER_UIS
    ui/LVRAboutDialogUI.ui
    ui/LVRReconstructionMarchingCubesDialogUI.ui
    ui/LVROptimizationPlanarOptimizationDialogUI.ui
+   ui/LVRFilteringMLSProjectionDialogUI.ui
+   ui/LVRFilteringRemoveOutliersDialogUI.ui
 )
 
 set(LVR_VIEWER_RESOURCES
