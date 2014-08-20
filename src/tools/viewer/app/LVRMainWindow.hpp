@@ -32,6 +32,8 @@
 #include <QtGui>
 #include "LVRMainWindowUI.h"
 #include "LVRAboutDialogUI.h"
+#include "LVRFilteringMLSProjectionDialogUI.h"
+#include "LVRFilteringRemoveOutliersDialogUI.h"
 #include "LVRTreeWidgetHelper.hpp"
 #include "../vtkBridge/LVRModelBridge.hpp"
 #include "../widgets/LVRModelItem.hpp"
@@ -79,6 +81,8 @@ public Q_SLOTS:
     void reconstructUsingExtendedMarchingCubes();
     void reconstructUsingPlanarMarchingCubes();
     void optimizePlanes();
+    void applyMLSProjection();
+    void removeOutliers();
     void deleteModelItem();
     void changePointSize(int pointSize);
     void changeTransparency(int transparencyValue);
@@ -112,6 +116,8 @@ private:
     LVRCorrespondanceDialog*                m_correspondanceDialog;
     LVRReconstructViaMarchingCubesDialog*   m_reconstructViaMarchingCubesDialog;
     QDialog*                                m_aboutDialog;
+    QDialog*                                m_mlsProjectionDialog;
+    QDialog*                                m_removeOutliersDialog;
     vtkSmartPointer<vtkRenderer>            m_renderer;
     vtkSmartPointer<vtkCamera>			    m_camera;
     QMenu*				                    m_treeContextMenu;
@@ -131,6 +137,9 @@ private:
     // Toolbar item "Mesh Optimization"
     QAction*                            m_actionPlanar_Optimization;
     QAction*                            m_actionRemove_Artifacts;
+    // Toolbar item "Filtering"
+    QAction*                            m_actionRemove_Outliers;
+    QAction*                            m_actionMLS_Projection;
 	// Toolbar item "About"
 	QMenu*                              m_menuAbout;
 	// QToolbar below toolbar
