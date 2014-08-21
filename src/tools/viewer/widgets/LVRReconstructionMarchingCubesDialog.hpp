@@ -35,7 +35,6 @@ class LVRReconstructViaMarchingCubesDialog : public QObject
 public:
     LVRReconstructViaMarchingCubesDialog(string decomposition, LVRPointCloudItem* pc, LVRModelItem* parent, QTreeWidget* treeWidget, vtkRenderWindow* renderer);
     virtual ~LVRReconstructViaMarchingCubesDialog();
-    LVRModelItem* getGeneratedModel();
     typedef ColorVertex<float, unsigned char>         cVertex;
     typedef Normal<float>                               cNormal;
     typedef PointsetSurface<cVertex>                    psSurface;

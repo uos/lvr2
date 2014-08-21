@@ -8,7 +8,7 @@ LVRPlanarOptimizationDialog::LVRPlanarOptimizationDialog(LVRMeshItem* mesh, LVRM
    m_mesh(mesh), m_parent(parent), m_treeWidget(treeWidget), m_renderWindow(window)
 {
     // Setup DialogUI and events
-    QDialog* dialog = new QDialog(treeWidget);
+    QDialog* dialog = new QDialog(m_treeWidget);
     m_dialog = new PlanarOptimizationDialog;
     m_dialog->setupUi(dialog);
 
