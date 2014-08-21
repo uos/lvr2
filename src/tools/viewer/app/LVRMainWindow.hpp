@@ -44,6 +44,7 @@
 #include "../widgets/LVRCorrespondanceDialog.hpp"
 #include "../widgets/LVRReconstructionMarchingCubesDialog.hpp"
 #include "../widgets/LVROptimizationPlanarOptimizationDialog.hpp"
+#include "../widgets/LVRFilteringMLSProjectionDialog.hpp"
 #include "../vtkBridge/LVRPickingInteractor.hpp"
 #include "../vtkBridge/LVRVtkArrow.hpp"
 
@@ -116,7 +117,6 @@ private:
     LVRCorrespondanceDialog*                m_correspondanceDialog;
     LVRReconstructViaMarchingCubesDialog*   m_reconstructViaMarchingCubesDialog;
     QDialog*                                m_aboutDialog;
-    QDialog*                                m_mlsProjectionDialog;
     QDialog*                                m_removeOutliersDialog;
     vtkSmartPointer<vtkRenderer>            m_renderer;
     vtkSmartPointer<vtkCamera>			    m_camera;
