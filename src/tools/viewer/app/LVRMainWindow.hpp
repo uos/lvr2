@@ -32,8 +32,6 @@
 #include <QtGui>
 #include "LVRMainWindowUI.h"
 #include "LVRAboutDialogUI.h"
-#include "LVRFilteringMLSProjectionDialogUI.h"
-#include "LVRFilteringRemoveOutliersDialogUI.h"
 #include "LVRTreeWidgetHelper.hpp"
 #include "../vtkBridge/LVRModelBridge.hpp"
 #include "../widgets/LVRModelItem.hpp"
@@ -45,6 +43,7 @@
 #include "../widgets/LVRReconstructionMarchingCubesDialog.hpp"
 #include "../widgets/LVROptimizationPlanarOptimizationDialog.hpp"
 #include "../widgets/LVRFilteringMLSProjectionDialog.hpp"
+#include "../widgets/LVRFilteringRemoveOutliersDialog.hpp"
 #include "../vtkBridge/LVRPickingInteractor.hpp"
 #include "../vtkBridge/LVRVtkArrow.hpp"
 
