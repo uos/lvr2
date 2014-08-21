@@ -21,6 +21,7 @@ set(LVR_VIEWER_SOURCES
     widgets/LVRCorrespondanceDialog.cpp
     widgets/LVRReconstructionMarchingCubesDialog.cpp
     widgets/LVROptimizationPlanarOptimizationDialog.cpp
+    widgets/LVRFilteringMLSProjectionDialog.cpp
 )
 
 
@@ -30,6 +31,7 @@ set(LVR_VIEWER_MOCS
     widgets/LVRTransformationDialog.hpp
     widgets/LVRReconstructionMarchingCubesDialog.hpp
     widgets/LVROptimizationPlanarOptimizationDialog.hpp
+    widgets/LVRFilteringMLSProjectionDialog.hpp
     widgets/LVRCorrespondanceDialog.hpp
 )
 

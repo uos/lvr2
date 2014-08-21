@@ -52,9 +52,6 @@ LVRMainWindow::LVRMainWindow()
     m_aboutDialog = new QDialog();
     Ui::AboutDialog aboutDialog;
     aboutDialog.setupUi(m_aboutDialog);
-    m_mlsProjectionDialog = new QDialog();
-    Ui::MLSProjectionDialog mlsProjectionDialog;
-    mlsProjectionDialog.setupUi(m_mlsProjectionDialog);
     m_removeOutliersDialog = new QDialog();
     Ui::RemoveOutliersDialog removeOutliersDialog;
     removeOutliersDialog.setupUi(m_removeOutliersDialog);
@@ -858,7 +855,6 @@ void LVRMainWindow::optimizePlanes()
         if(mesh_item != NULL)
         {
             LVRPlanarOptimizationDialog* dialog = new LVRPlanarOptimizationDialog(mesh_item, parent_item, treeWidget, qvtkWidget->GetRenderWindow());
-
             return;
         }
     }
@@ -882,7 +878,7 @@ void LVRMainWindow::applyMLSProjection()
         LVRModelItem* parent_item = getModelItem(items.first());
         if(pc_item != NULL)
         {
-            m_mlsProjectionDialog->show();
+            LVRMLSProjectionDialog* dialog = new LVRMLSProjectionDialog(pc_item, parent_item, treeWidget, qvtkWidget->GetRenderWindow());
             return;
         }
     }
