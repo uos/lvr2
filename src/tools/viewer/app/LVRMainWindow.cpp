@@ -868,12 +868,50 @@ void LVRMainWindow::optimizePlanes()
 
 void LVRMainWindow::applyMLSProjection()
 {
-    m_mlsProjectionDialog->show();
+    // Setup a message box for unsupported items
+    QMessageBox box;
+    box.setText("Unsupported Item for Filtering.");
+    box.setInformativeText("Only models containing point clouds or point clouds themselves are applicable to filtering.");
+    box.setStandardButtons(QMessageBox::Ok);
+
+    // Get selected item from tree and check type
+    QList<QTreeWidgetItem*> items = treeWidget->selectedItems();
+    if(items.size() > 0)
+    {
+        LVRPointCloudItem* pc_item = getPointCloudItem(items.first());
+        LVRModelItem* parent_item = getModelItem(items.first());
+        if(pc_item != NULL)
+        {
+            m_mlsProjectionDialog->show();
+            return;
+        }
+    }
+
+    box.exec();
 }
 
 void LVRMainWindow::removeOutliers()
 {
-    m_removeOutliersDialog->show();
+    // Setup a message box for unsupported items
+    QMessageBox box;
+    box.setText("Unsupported Item for Filtering.");
+    box.setInformativeText("Only models containing point clouds or point clouds themselves are applicable to filtering.");
+    box.setStandardButtons(QMessageBox::Ok);
+
+    // Get selected item from tree and check type
+    QList<QTreeWidgetItem*> items = treeWidget->selectedItems();
+    if(items.size() > 0)
+    {
+        LVRPointCloudItem* pc_item = getPointCloudItem(items.first());
+        LVRModelItem* parent_item = getModelItem(items.first());
+        if(pc_item != NULL)
+        {
+            m_removeOutliersDialog->show();
+            return;
+        }
+    }
+
+    box.exec();
 }
 
 void LVRMainWindow::showAboutDialog(QAction*)
