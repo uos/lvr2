@@ -33,7 +33,7 @@ class LVRPlanarOptimizationDialog : public QObject
     Q_OBJECT
 
 public:
-    LVRPlanarOptimizationDialog(LVRMeshItem* mesh_item, LVRModelItem* parent, QTreeWidget* treeWidget, vtkRenderWindow* renderer);
+    LVRPlanarOptimizationDialog(LVRMeshItem* mesh, LVRModelItem* parent, QTreeWidget* treeWidget, vtkRenderWindow* renderer);
     virtual ~LVRPlanarOptimizationDialog();
     typedef ColorVertex<float, unsigned char>         cVertex;
     typedef Normal<float>                               cNormal;
