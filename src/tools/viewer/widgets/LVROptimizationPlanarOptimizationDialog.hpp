@@ -48,6 +48,7 @@ private:
 
     PlanarOptimizationDialog*               m_dialog;
     LVRMeshItem*                            m_mesh;
+    LVRModelItem*                           m_optimizedModel;
     LVRModelItem*                           m_parent;
     QTreeWidget*                            m_treeWidget;
     vtkRenderWindow*                        m_renderWindow;

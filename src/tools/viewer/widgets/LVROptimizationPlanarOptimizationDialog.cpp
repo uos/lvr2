@@ -102,6 +102,17 @@ void LVRPlanarOptimizationDialog::optimizeMesh()
     {
         mesh.finalize();
     }
+
+    ModelPtr model(new Model(mesh.meshBuffer()));
+    ModelBridgePtr bridge(new LVRModelBridge(model));
+    vtkSmartPointer<vtkRenderer> renderer = m_renderWindow->GetRenderers()->GetFirstRenderer();
+    bridge->addActors(renderer);
+
+    QString base = m_parent->getName() + " (optimized)";
+    m_optimizedModel = new LVRModelItem(bridge, base);
+
+    m_treeWidget->addTopLevelItem(m_optimizedModel);
+    m_optimizedModel->setExpanded(true);
 }
 
 }
