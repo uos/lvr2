@@ -133,7 +133,7 @@ void LVRReconstructViaMarchingCubesDialog::generateMesh()
     vtkSmartPointer<vtkRenderer> renderer = m_renderWindow->GetRenderers()->GetFirstRenderer();
     bridge->addActors(renderer);
 
-    QString base = m_parent->getName() + "(mesh)";
+    QString base = m_parent->getName() + " (mesh)";
     m_generatedModel = new LVRModelItem(bridge, base);
 
     m_treeWidget->addTopLevelItem(m_generatedModel);
