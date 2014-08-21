@@ -52,9 +52,6 @@ LVRMainWindow::LVRMainWindow()
     m_aboutDialog = new QDialog();
     Ui::AboutDialog aboutDialog;
     aboutDialog.setupUi(m_aboutDialog);
-    m_removeOutliersDialog = new QDialog();
-    Ui::RemoveOutliersDialog removeOutliersDialog;
-    removeOutliersDialog.setupUi(m_removeOutliersDialog);
 
     // Setup specific properties
     QHeaderView* v = this->treeWidget->header();
@@ -902,7 +899,7 @@ void LVRMainWindow::removeOutliers()
         LVRModelItem* parent_item = getModelItem(items.first());
         if(pc_item != NULL)
         {
-            m_removeOutliersDialog->show();
+            LVRRemoveOutliersDialog* dialog = new LVRRemoveOutliersDialog(pc_item, parent_item, treeWidget, qvtkWidget->GetRenderWindow());
             return;
         }
     }
