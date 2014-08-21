@@ -34,7 +34,8 @@ void LVRMLSProjectionDialog::applyMLSProjection()
     QDoubleSpinBox* maximumDistance_box = m_dialog->doubleSpinBox_md;
     float maximumDistance = (float)maximumDistance_box->value();
 
-    cout << maximumDistance << endl;
+    //PCLFiltering filter(m_pc->getPointBuffer());
+    //filter.applyMLSProjection(maximumDistance);
 }
 
 }
