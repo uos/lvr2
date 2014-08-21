@@ -6,18 +6,8 @@
 #include <vtkRendererCollection.h>
 #include <vtkSmartPointer.h>
 
-#include "reconstruction/AdaptiveKSearchSurface.hpp"
-#include "reconstruction/FastReconstruction.hpp"
-#include "io/PLYIO.hpp"
-#include "geometry/Matrix4.hpp"
-#include "geometry/HalfEdgeMesh.hpp"
-#include "texture/Texture.hpp"
-#include "texture/Transform.hpp"
-#include "texture/Texturizer.hpp"
-#include "texture/Statistics.hpp"
-#include "geometry/QuadricVertexCosts.hpp"
-#include "reconstruction/SharpBox.hpp"
-#include "../vtkBridge/LVRModelBridge.hpp"
+#include "io/ModelFactory.hpp"
+#include "reconstruction/PCLFiltering.hpp"
 
 #include "LVRFilteringMLSProjectionDialogUI.h"
 #include "LVRPointCloudItem.hpp"
@@ -35,8 +25,6 @@ class LVRMLSProjectionDialog : public QObject
 public:
     LVRMLSProjectionDialog(LVRPointCloudItem* pc_item, LVRModelItem* parent, QTreeWidget* treeWidget, vtkRenderWindow* renderer);
     virtual ~LVRMLSProjectionDialog();
-    typedef ColorVertex<float, unsigned char>         cVertex;
-    typedef Normal<float>                               cNormal;
 
 public Q_SLOTS:
     void applyMLSProjection();
