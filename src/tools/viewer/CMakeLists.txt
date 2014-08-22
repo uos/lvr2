@@ -17,6 +17,7 @@ set(LVR_VIEWER_SOURCES
     widgets/LVRMeshItem.cpp
     widgets/LVRPoseItem.cpp
     widgets/LVRPickItem.cpp
+    widgets/LVRRenameDialog.cpp
     widgets/LVRTransformationDialog.cpp
     widgets/LVRCorrespondanceDialog.cpp
     widgets/LVRReconstructionMarchingCubesDialog.cpp
@@ -30,6 +31,7 @@ set(LVR_VIEWER_SOURCES
 set(LVR_VIEWER_MOCS 
     app/LVRMainWindow.hpp
     vtkBridge/LVRPickingInteractor.hpp
+    widgets/LVRRenameDialog.hpp
     widgets/LVRTransformationDialog.hpp
     widgets/LVRReconstructionMarchingCubesDialog.hpp
     widgets/LVROptimizationPlanarOptimizationDialog.hpp
@@ -43,6 +45,7 @@ set(LVR_VIEWER_MOCS
 # QtDesigner 
 set(LVR_VIEWER_UIS
    ui/LVRMainWindowUI.ui
+   ui/LVRRenameDialogUI.ui
    ui/LVRTransformationDialogUI.ui
    ui/LVRRegistrationPickCorrespondancesDialogUI.ui
    ui/LVRAboutDialogUI.ui

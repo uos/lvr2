@@ -38,6 +38,7 @@
 #include "../widgets/LVRPointCloudItem.hpp"
 #include "../widgets/LVRMeshItem.hpp"
 #include "../widgets/LVRItemTypes.hpp"
+#include "../widgets/LVRRenameDialog.hpp"
 #include "../widgets/LVRTransformationDialog.hpp"
 #include "../widgets/LVRCorrespondanceDialog.hpp"
 #include "../widgets/LVRReconstructionMarchingCubesDialog.hpp"
@@ -78,6 +79,7 @@ public Q_SLOTS:
     void showTreeContextMenu(const QPoint&);
     void showColorDialog();
     void showAboutDialog(QAction*);
+    void renameModelItem();
     void reconstructUsingMarchingCubes();
     void reconstructUsingExtendedMarchingCubes();
     void reconstructUsingPlanarMarchingCubes();
@@ -115,12 +117,12 @@ private:
     void setupQVTK();
     void connectSignalsAndSlots();
 
-    LVRCorrespondanceDialog*                m_correspondanceDialog;
-    QDialog*                                m_aboutDialog;
-    vtkSmartPointer<vtkRenderer>            m_renderer;
-    vtkSmartPointer<vtkCamera>			    m_camera;
-    QMenu*				                    m_treeParentItemContextMenu;
-    QMenu*                                  m_treeChildItemContextMenu;
+    LVRCorrespondanceDialog*            m_correspondanceDialog;
+    QDialog*                            m_aboutDialog;
+    vtkSmartPointer<vtkRenderer>        m_renderer;
+    vtkSmartPointer<vtkCamera>			m_camera;
+    QMenu*				                m_treeParentItemContextMenu;
+    QMenu*                              m_treeChildItemContextMenu;
 
     // Toolbar item "File"
 	QAction*							m_actionOpen;
@@ -160,6 +162,7 @@ private:
     QPushButton*						m_buttonTransformModel;
 
 	QAction*				            m_actionShowColorDialog;
+    QAction*                            m_actionRenameModelItem;
 	QAction*			                m_actionDeleteModelItem;
 	QAction*                            m_actionExportModelTransformed;
 
