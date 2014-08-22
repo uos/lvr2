@@ -34,8 +34,21 @@ void LVRMLSProjectionDialog::applyMLSProjection()
     QDoubleSpinBox* maximumDistance_box = m_dialog->doubleSpinBox_md;
     float maximumDistance = (float)maximumDistance_box->value();
 
-    //PCLFiltering filter(m_pc->getPointBuffer());
-    //filter.applyMLSProjection(maximumDistance);
+    PCLFiltering filter(m_pc->getPointBuffer());
+    filter.applyMLSProjection(maximumDistance);
+
+    PointBufferPtr pb( filter.getPointBuffer() );
+    ModelPtr model( new Model( pb ) );
+
+    ModelBridgePtr bridge(new LVRModelBridge(model));
+    vtkSmartPointer<vtkRenderer> renderer = m_renderWindow->GetRenderers()->GetFirstRenderer();
+    bridge->addActors(renderer);
+
+    QString base = m_parent->getName() + " (post-MLS)";
+    m_optimizedPointCloud = new LVRModelItem(bridge, base);
+
+    m_treeWidget->addTopLevelItem(m_optimizedPointCloud);
+    m_optimizedPointCloud->setExpanded(true);
 }
 
 }
