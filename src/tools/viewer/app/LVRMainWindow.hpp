@@ -114,7 +114,6 @@ private:
     void connectSignalsAndSlots();
 
     LVRCorrespondanceDialog*                m_correspondanceDialog;
-    LVRReconstructViaMarchingCubesDialog*   m_reconstructViaMarchingCubesDialog;
     QDialog*                                m_aboutDialog;
     vtkSmartPointer<vtkRenderer>            m_renderer;
     vtkSmartPointer<vtkCamera>			    m_camera;
