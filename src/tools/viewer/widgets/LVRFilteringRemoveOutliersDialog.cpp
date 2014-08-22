@@ -36,8 +36,21 @@ void LVRRemoveOutliersDialog::removeOutliers()
     QDoubleSpinBox* meanK_box = m_dialog->doubleSpinBox_st;
     float meanK = (float)meanK_box->value();
 
-    // PCLFiltering filter(m->m_pointCloud);
-    // filter.applyOutlierRemoval(meanK, standardDeviation);
+    PCLFiltering filter(m_pc->getPointBuffer());
+    filter.applyOutlierRemoval(meanK, standardDeviation);
+
+    PointBufferPtr pb( filter.getPointBuffer() );
+    ModelPtr model( new Model( pb ) );
+
+    ModelBridgePtr bridge(new LVRModelBridge(model));
+    vtkSmartPointer<vtkRenderer> renderer = m_renderWindow->GetRenderers()->GetFirstRenderer();
+    bridge->addActors(renderer);
+
+    QString base = m_parent->getName() + " (rem. outliers)";
+    m_optimizedPointCloud = new LVRModelItem(bridge, base);
+
+    m_treeWidget->addTopLevelItem(m_optimizedPointCloud);
+    m_optimizedPointCloud->setExpanded(true);
 }
 
 }
