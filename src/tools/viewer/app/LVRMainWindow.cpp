@@ -62,14 +62,16 @@ LVRMainWindow::LVRMainWindow()
 
     m_treeWidgetHelper = new LVRTreeWidgetHelper(treeWidget);
 
-    m_treeContextMenu = new QMenu;
-    m_actionShowColorDialog = new QAction("Select base color...", this);
+    m_treeParentItemContextMenu = new QMenu;
+    m_treeChildItemContextMenu = new QMenu;
     m_actionDeleteModelItem = new QAction("Delete model", this);
     m_actionExportModelTransformed = new QAction("Export model with transformation", this);
+    m_actionShowColorDialog = new QAction("Select base color...", this);
 
-    m_treeContextMenu->addAction(m_actionShowColorDialog);
-    m_treeContextMenu->addAction(m_actionDeleteModelItem);
-    m_treeContextMenu->addAction(m_actionExportModelTransformed);
+    m_treeParentItemContextMenu->addAction(m_actionDeleteModelItem);
+    m_treeChildItemContextMenu->addAction(m_actionExportModelTransformed);
+    m_treeChildItemContextMenu->addAction(m_actionShowColorDialog);
+    m_treeChildItemContextMenu->addAction(m_actionDeleteModelItem);
 
     // Toolbar item "File"
     m_actionOpen = this->actionOpen;
@@ -407,10 +409,15 @@ void LVRMainWindow::showTreeContextMenu(const QPoint& p)
 	if(items.size() > 0)
 	{
 		QTreeWidgetItem* item = items.first();
+        if(item->type() == LVRModelItemType)
+        {
+            QPoint globalPos = treeWidget->mapToGlobal(p);
+            m_treeParentItemContextMenu->exec(globalPos);
+        }
 		if(item->type() == LVRPointCloudItemType || item->type() == LVRMeshItemType)
 		{
 			QPoint globalPos = treeWidget->mapToGlobal(p);
-			m_treeContextMenu->exec(globalPos);
+			m_treeChildItemContextMenu->exec(globalPos);
 		}
 	}
 }
@@ -449,12 +456,36 @@ void LVRMainWindow::deleteModelItem()
     {
         QTreeWidgetItem* item = items.first();
 
-        // Remove model from view
-        LVRPointCloudItem* pc_item = getPointCloudItem(item);
-        if(pc_item != NULL) m_renderer->RemoveActor(pc_item->getActor());
+        if(item->type() == LVRModelItemType)
+        {
+            QTreeWidgetItemIterator it(item);
 
-        LVRMeshItem* mesh_item = getMeshItem(item);
-        if(mesh_item != NULL) m_renderer->RemoveActor(mesh_item->getActor());
+            while(*it)
+            {
+                QTreeWidgetItem* child_item = *it;
+                if(child_item->type() == LVRPointCloudItemType && child_item->parent() == item)
+                {
+                    LVRPointCloudItem* pc_item = getPointCloudItem(item);
+                    if(pc_item != NULL) m_renderer->RemoveActor(pc_item->getActor());
+                }
+                else if(child_item->type() == LVRMeshItemType && child_item->parent() == item)
+                {
+                    LVRMeshItem* mesh_item = getMeshItem(item);
+                    if(mesh_item != NULL) m_renderer->RemoveActor(mesh_item->getActor());
+                }
+
+                ++it;
+            }
+        }
+        else
+        {
+            // Remove model from view
+            LVRPointCloudItem* pc_item = getPointCloudItem(item);
+            if(pc_item != NULL) m_renderer->RemoveActor(pc_item->getActor());
+
+            LVRMeshItem* mesh_item = getMeshItem(item);
+            if(mesh_item != NULL) m_renderer->RemoveActor(mesh_item->getActor());
+        }
 
         // Remove list item (safe according to http://stackoverflow.com/a/9399167)
         delete item;
