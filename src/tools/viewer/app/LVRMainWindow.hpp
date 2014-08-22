@@ -116,10 +116,10 @@ private:
     LVRCorrespondanceDialog*                m_correspondanceDialog;
     LVRReconstructViaMarchingCubesDialog*   m_reconstructViaMarchingCubesDialog;
     QDialog*                                m_aboutDialog;
-    QDialog*                                m_removeOutliersDialog;
     vtkSmartPointer<vtkRenderer>            m_renderer;
     vtkSmartPointer<vtkCamera>			    m_camera;
-    QMenu*				                    m_treeContextMenu;
+    QMenu*				                    m_treeParentItemContextMenu;
+    QMenu*                                  m_treeChildItemContextMenu;
 
     // Toolbar item "File"
 	QAction*							m_actionOpen;
