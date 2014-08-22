@@ -57,17 +57,19 @@ LVRMainWindow::LVRMainWindow()
     QHeaderView* v = this->treeWidget->header();
     v->resizeSection(0, 175);
 
-    treeWidget->setSelectionMode( QAbstractItemView::SingleSelection);
+    treeWidget->setSelectionMode(QAbstractItemView::SingleSelection);
     treeWidget->setContextMenuPolicy(Qt::CustomContextMenu);
 
     m_treeWidgetHelper = new LVRTreeWidgetHelper(treeWidget);
 
     m_treeParentItemContextMenu = new QMenu;
     m_treeChildItemContextMenu = new QMenu;
-    m_actionDeleteModelItem = new QAction("Delete model", this);
-    m_actionExportModelTransformed = new QAction("Export model with transformation", this);
+    m_actionRenameModelItem = new QAction("Rename item", this);
+    m_actionDeleteModelItem = new QAction("Delete item", this);
+    m_actionExportModelTransformed = new QAction("Export item with transformation", this);
     m_actionShowColorDialog = new QAction("Select base color...", this);
 
+    m_treeParentItemContextMenu->addAction(m_actionRenameModelItem);
     m_treeParentItemContextMenu->addAction(m_actionDeleteModelItem);
     m_treeChildItemContextMenu->addAction(m_actionExportModelTransformed);
     m_treeChildItemContextMenu->addAction(m_actionShowColorDialog);
@@ -137,6 +139,7 @@ void LVRMainWindow::connectSignalsAndSlots()
     QObject::connect(m_actionQuit, SIGNAL(activated()), qApp, SLOT(quit()));
 
     QObject::connect(m_actionShowColorDialog, SIGNAL(activated()), this, SLOT(showColorDialog()));
+    QObject::connect(m_actionRenameModelItem, SIGNAL(activated()), this, SLOT(renameModelItem()));
     QObject::connect(m_actionDeleteModelItem, SIGNAL(activated()), this, SLOT(deleteModelItem()));
     QObject::connect(m_actionExportModelTransformed, SIGNAL(activated()), this, SLOT(exportSelectedModel()));
 
@@ -421,6 +424,18 @@ void LVRMainWindow::showTreeContextMenu(const QPoint& p)
 			m_treeChildItemContextMenu->exec(globalPos);
 		}
 	}
+}
+
+void LVRMainWindow::renameModelItem()
+{
+    // Only display context menu for point clounds and meshes
+    QList<QTreeWidgetItem*> items = treeWidget->selectedItems();
+    if(items.size() > 0)
+    {
+        QTreeWidgetItem* item = items.first();
+        LVRModelItem* model_item = getModelItem(item);
+        if(model_item != NULL) new LVRRenameDialog(model_item, treeWidget);
+    }
 }
 
 void LVRMainWindow::loadModel()
