@@ -149,6 +149,7 @@ void LVRMainWindow::connectSignalsAndSlots()
     QObject::connect(m_actionExtended_Marching_Cubes, SIGNAL(activated()), this, SLOT(reconstructUsingExtendedMarchingCubes()));
 
     QObject::connect(m_actionPlanar_Optimization, SIGNAL(activated()), this, SLOT(optimizePlanes()));
+    QObject::connect(m_actionRemove_Artifacts, SIGNAL(activated()), this, SLOT(removeArtifacts()));
 
     QObject::connect(m_actionRemove_Outliers, SIGNAL(activated()), this, SLOT(removeOutliers()));
     QObject::connect(m_actionMLS_Projection, SIGNAL(activated()), this, SLOT(applyMLSProjection()));
@@ -883,6 +884,30 @@ void LVRMainWindow::optimizePlanes()
         if(mesh_item != NULL)
         {
             LVRPlanarOptimizationDialog* dialog = new LVRPlanarOptimizationDialog(mesh_item, parent_item, treeWidget, qvtkWidget->GetRenderWindow());
+            return;
+        }
+    }
+
+    box.exec();
+}
+
+void LVRMainWindow::removeArtifacts()
+{
+    // Setup a message box for unsupported items
+    QMessageBox box;
+    box.setText("Unsupported Item for Optimization.");
+    box.setInformativeText("Only models containing meshes or meshes themselves are applicable to optimization.");
+    box.setStandardButtons(QMessageBox::Ok);
+
+    // Get selected item from tree and check type
+    QList<QTreeWidgetItem*> items = treeWidget->selectedItems();
+    if(items.size() > 0)
+    {
+        LVRMeshItem* mesh_item = getMeshItem(items.first());
+        LVRModelItem* parent_item = getModelItem(items.first());
+        if(mesh_item != NULL)
+        {
+            LVRRemoveArtifactsDialog* dialog = new LVRRemoveArtifactsDialog(mesh_item, parent_item, treeWidget, qvtkWidget->GetRenderWindow());
             return;
         }
     }
