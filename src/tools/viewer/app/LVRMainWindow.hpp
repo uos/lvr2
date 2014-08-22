@@ -42,6 +42,7 @@
 #include "../widgets/LVRCorrespondanceDialog.hpp"
 #include "../widgets/LVRReconstructionMarchingCubesDialog.hpp"
 #include "../widgets/LVROptimizationPlanarOptimizationDialog.hpp"
+#include "../widgets/LVROptimizationRemoveArtifactsDialog.hpp"
 #include "../widgets/LVRFilteringMLSProjectionDialog.hpp"
 #include "../widgets/LVRFilteringRemoveOutliersDialog.hpp"
 #include "../vtkBridge/LVRPickingInteractor.hpp"
@@ -81,6 +82,7 @@ public Q_SLOTS:
     void reconstructUsingExtendedMarchingCubes();
     void reconstructUsingPlanarMarchingCubes();
     void optimizePlanes();
+    void removeArtifacts();
     void applyMLSProjection();
     void removeOutliers();
     void deleteModelItem();
