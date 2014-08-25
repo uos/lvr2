@@ -956,12 +956,6 @@ void LVRMainWindow::applyMLSProjection()
 
 void LVRMainWindow::removeOutliers()
 {
-    // Setup a message box for unsupported items
-    QMessageBox box;
-    box.setText("Unsupported Item for Filtering.");
-    box.setInformativeText("Only models containing point clouds or point clouds themselves are applicable to filtering.");
-    box.setStandardButtons(QMessageBox::Ok);
-
     // Get selected item from tree and check type
     QList<QTreeWidgetItem*> items = treeWidget->selectedItems();
     if(items.size() > 0)
@@ -974,8 +968,41 @@ void LVRMainWindow::removeOutliers()
             return;
         }
     }
+}
 
-    box.exec();
+void LVRMainWindow::showIncompatibilityDialog(string actionName, vector<QChar> allowedTypes)
+{
+    // Setup a message box for unsupported items
+    QMessageBox box;
+    string titleString = str(boost::format("Unsupported Item for %1%.") % actionName);
+    QString title = QString::fromStdString(titleString);
+    string bodyString = "Only %2% are applicable to %1%.";
+    QString body;
+
+    bool pointCloudItemAllowed, meshItemAllowed, modelItemAllowed;
+    for(vector<QChar>::iterator it = allowedTypes.begin(); it != allowedTypes.end(); ++it)
+    {
+        if(*it == LVRPointCloudItemType) pointCloudItemAllowed = true;
+        if(*it == LVRMeshItemType) meshItemAllowed = true;
+        if(*it == LVRModelItemType) modelItemAllowed = true;
+    }
+
+    if(pointCloudItemAllowed && !modelItemAllowed)
+        bodyString = str(boost::format(bodyString) % actionName % "point clouds");
+    else if(meshItemAllowed && !modelItemAllowed)
+        bodyString = str(boost::format(bodyString) % actionName % "meshes");
+    else if(pointCloudItemAllowed && modelItemAllowed)
+        bodyString = str(boost::format(bodyString) % actionName % "point clouds and model items containing point clouds");
+    else if(meshItemAllowed && modelItemAllowed)
+        bodyString = str(boost::format(bodyString) % actionName % "meshes and model items containing meshes");
+    else if(modelItemAllowed)
+        bodyString = str(boost::format(bodyString) % actionName % "whole models");
+
+    body = QString::fromStdString(bodyString);
+
+    box.setText(title);
+    box.setInformativeText(body);
+    box.setStandardButtons(QMessageBox::Ok);
 }
 
 void LVRMainWindow::showAboutDialog(QAction*)
