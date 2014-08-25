@@ -50,6 +50,10 @@
 #include "../vtkBridge/LVRVtkArrow.hpp"
 
 #include <iostream>
+#include <iterator>
+#include <vector>
+#include "boost/format.hpp"
+using std::vector;
 using std::cout;
 using std::endl;
 
@@ -102,6 +106,7 @@ public Q_SLOTS:
     void addArrow(LVRVtkArrow*);
     void alignPointClouds();
     void exportSelectedModel();
+    void showIncompatibilityDialog(string actionName, vector<QChar> allowedTypes);
     LVRModelItem* getModelItem(QTreeWidgetItem* item);
     LVRPointCloudItem* getPointCloudItem(QTreeWidgetItem* item);
     LVRMeshItem* getMeshItem(QTreeWidgetItem* item);
