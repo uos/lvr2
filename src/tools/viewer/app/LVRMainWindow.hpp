@@ -41,6 +41,7 @@
 #include "../widgets/LVRRenameDialog.hpp"
 #include "../widgets/LVRTransformationDialog.hpp"
 #include "../widgets/LVRCorrespondanceDialog.hpp"
+#include "../widgets/LVRReconstructionEstimateNormalsDialog.hpp"
 #include "../widgets/LVRReconstructionMarchingCubesDialog.hpp"
 #include "../widgets/LVROptimizationPlanarOptimizationDialog.hpp"
 #include "../widgets/LVROptimizationRemoveArtifactsDialog.hpp"
@@ -84,6 +85,7 @@ public Q_SLOTS:
     void showColorDialog();
     void showAboutDialog(QAction*);
     void renameModelItem();
+    void estimateNormals();
     void reconstructUsingMarchingCubes();
     void reconstructUsingExtendedMarchingCubes();
     void reconstructUsingPlanarMarchingCubes();
