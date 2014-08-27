@@ -775,12 +775,7 @@ void LVRMainWindow::showColorDialog()
 
 void LVRMainWindow::showTransformationDialog()
 {
-    // Setup a message box for unsupported items
-    QMessageBox box;
-    box.setText("Unsupported Item for Transformation.");
-    box.setInformativeText("Only whole models, point clouds or meshes can be transformed.");
-    box.setStandardButtons(QMessageBox::Ok);
-
+    QMessageBox* box = buildIncompatibilityDialog(string("transformation"), TYPE_POINTCLOUDS_AND_MESHES_AND_PARENT_ONLY);
     // Get selected item from tree and check type
     QList<QTreeWidgetItem*> items = treeWidget->selectedItems();
     if(items.size() > 0)
@@ -800,24 +795,19 @@ void LVRMainWindow::showTransformationDialog()
             }
             else
             {
-                box.exec();
+                box->exec();
             }
         }
         else
         {
-            box.exec();
+            box->exec();
         }
     }
 }
 
 void LVRMainWindow::reconstructUsingMarchingCubes()
 {
-    // Setup a message box for unsupported items
-    QMessageBox box;
-    box.setText("Unsupported Item for Reconstruction.");
-    box.setInformativeText("Only models containing point clouds or point clouds themselves are applicable to reconstruction.");
-    box.setStandardButtons(QMessageBox::Ok);
-
+    QMessageBox* box = buildIncompatibilityDialog(string("reconstruction"), TYPE_POINTCLOUDS_AND_PARENT_ONLY);
     // Get selected item from tree and check type
     QList<QTreeWidgetItem*> items = treeWidget->selectedItems();
     if(items.size() > 0)
@@ -830,18 +820,12 @@ void LVRMainWindow::reconstructUsingMarchingCubes()
             return;
         }
     }
-
-    box.exec();
+    box->exec();
 }
 
 void LVRMainWindow::reconstructUsingPlanarMarchingCubes()
 {
-    // Setup a message box for unsupported items
-    QMessageBox box;
-    box.setText("Unsupported Item for Reconstruction.");
-    box.setInformativeText("Only models containing point clouds or point clouds themselves are applicable to reconstruction.");
-    box.setStandardButtons(QMessageBox::Ok);
-
+    QMessageBox* box = buildIncompatibilityDialog(string("reconstruction"), TYPE_POINTCLOUDS_AND_PARENT_ONLY);
     // Get selected item from tree and check type
     QList<QTreeWidgetItem*> items = treeWidget->selectedItems();
     if(items.size() > 0)
@@ -854,18 +838,12 @@ void LVRMainWindow::reconstructUsingPlanarMarchingCubes()
             return;
         }
     }
-
-    box.exec();
+    box->exec();
 }
 
 void LVRMainWindow::reconstructUsingExtendedMarchingCubes()
 {
-    // Setup a message box for unsupported items
-    QMessageBox box;
-    box.setText("Unsupported Item for Reconstruction.");
-    box.setInformativeText("Only models containing point clouds or point clouds themselves are applicable to reconstruction.");
-    box.setStandardButtons(QMessageBox::Ok);
-
+    QMessageBox* box = buildIncompatibilityDialog(string("reconstruction"), TYPE_POINTCLOUDS_AND_PARENT_ONLY);
     // Get selected item from tree and check type
     QList<QTreeWidgetItem*> items = treeWidget->selectedItems();
     if(items.size() > 0)
@@ -878,18 +856,12 @@ void LVRMainWindow::reconstructUsingExtendedMarchingCubes()
             return;
         }
     }
-
-    box.exec();
+    box->exec();
 }
 
 void LVRMainWindow::optimizePlanes()
 {
-    // Setup a message box for unsupported items
-    QMessageBox box;
-    box.setText("Unsupported Item for Optimization.");
-    box.setInformativeText("Only models containing meshes or meshes themselves are applicable to optimization.");
-    box.setStandardButtons(QMessageBox::Ok);
-
+    QMessageBox* box = buildIncompatibilityDialog(string("planar optimization"), TYPE_MESHES_AND_PARENT_ONLY);
     // Get selected item from tree and check type
     QList<QTreeWidgetItem*> items = treeWidget->selectedItems();
     if(items.size() > 0)
@@ -902,18 +874,12 @@ void LVRMainWindow::optimizePlanes()
             return;
         }
     }
-
-    box.exec();
+    box->exec();
 }
 
 void LVRMainWindow::removeArtifacts()
 {
-    // Setup a message box for unsupported items
-    QMessageBox box;
-    box.setText("Unsupported Item for Optimization.");
-    box.setInformativeText("Only models containing meshes or meshes themselves are applicable to optimization.");
-    box.setStandardButtons(QMessageBox::Ok);
-
+    QMessageBox* box = buildIncompatibilityDialog(string("artifact removal"), TYPE_MESHES_AND_PARENT_ONLY);
     // Get selected item from tree and check type
     QList<QTreeWidgetItem*> items = treeWidget->selectedItems();
     if(items.size() > 0)
@@ -926,18 +892,12 @@ void LVRMainWindow::removeArtifacts()
             return;
         }
     }
-
-    box.exec();
+    box->exec();
 }
 
 void LVRMainWindow::applyMLSProjection()
 {
-    // Setup a message box for unsupported items
-    QMessageBox box;
-    box.setText("Unsupported Item for Filtering.");
-    box.setInformativeText("Only models containing point clouds or point clouds themselves are applicable to filtering.");
-    box.setStandardButtons(QMessageBox::Ok);
-
+    QMessageBox* box = buildIncompatibilityDialog(string("MLS projection"), TYPE_POINTCLOUDS_AND_PARENT_ONLY);
     // Get selected item from tree and check type
     QList<QTreeWidgetItem*> items = treeWidget->selectedItems();
     if(items.size() > 0)
@@ -950,12 +910,12 @@ void LVRMainWindow::applyMLSProjection()
             return;
         }
     }
-
-    box.exec();
+    box->exec();
 }
 
 void LVRMainWindow::removeOutliers()
 {
+    QMessageBox* box = buildIncompatibilityDialog(string("outlier removal"), TYPE_POINTCLOUDS_AND_PARENT_ONLY);
     // Get selected item from tree and check type
     QList<QTreeWidgetItem*> items = treeWidget->selectedItems();
     if(items.size() > 0)
@@ -968,41 +928,38 @@ void LVRMainWindow::removeOutliers()
             return;
         }
     }
+    box->exec();
 }
 
-void LVRMainWindow::showIncompatibilityDialog(string actionName, vector<QChar> allowedTypes)
+QMessageBox* LVRMainWindow::buildIncompatibilityDialog(string actionName, unsigned char allowedTypes)
 {
     // Setup a message box for unsupported items
-    QMessageBox box;
+    QMessageBox* box = new QMessageBox(); // possible memory leak? might need deletion
     string titleString = str(boost::format("Unsupported Item for %1%.") % actionName);
     QString title = QString::fromStdString(titleString);
     string bodyString = "Only %2% are applicable to %1%.";
     QString body;
 
-    bool pointCloudItemAllowed, meshItemAllowed, modelItemAllowed;
-    for(vector<QChar>::iterator it = allowedTypes.begin(); it != allowedTypes.end(); ++it)
-    {
-        if(*it == LVRPointCloudItemType) pointCloudItemAllowed = true;
-        if(*it == LVRMeshItemType) meshItemAllowed = true;
-        if(*it == LVRModelItemType) modelItemAllowed = true;
-    }
-
-    if(pointCloudItemAllowed && !modelItemAllowed)
+    if(allowedTypes == TYPE_MODELITEMS_ONLY)
+            bodyString = str(boost::format(bodyString) % actionName % "whole models");
+    else if(allowedTypes == TYPE_POINTCLOUDS_ONLY)
         bodyString = str(boost::format(bodyString) % actionName % "point clouds");
-    else if(meshItemAllowed && !modelItemAllowed)
+    else if(allowedTypes == TYPE_MESHES_ONLY)
         bodyString = str(boost::format(bodyString) % actionName % "meshes");
-    else if(pointCloudItemAllowed && modelItemAllowed)
+    else if(allowedTypes == TYPE_POINTCLOUDS_AND_PARENT_ONLY)
         bodyString = str(boost::format(bodyString) % actionName % "point clouds and model items containing point clouds");
-    else if(meshItemAllowed && modelItemAllowed)
+    else if(allowedTypes == TYPE_MESHES_AND_PARENT_ONLY)
         bodyString = str(boost::format(bodyString) % actionName % "meshes and model items containing meshes");
-    else if(modelItemAllowed)
-        bodyString = str(boost::format(bodyString) % actionName % "whole models");
+    else if(allowedTypes == TYPE_POINTCLOUDS_AND_MESHES_AND_PARENT_ONLY)
+            bodyString = str(boost::format(bodyString) % actionName % "point clouds, meshes and whole models");
 
     body = QString::fromStdString(bodyString);
 
-    box.setText(title);
-    box.setInformativeText(body);
-    box.setStandardButtons(QMessageBox::Ok);
+    box->setText(title);
+    box->setInformativeText(body);
+    box->setStandardButtons(QMessageBox::Ok);
+
+    return box;
 }
 
 void LVRMainWindow::showAboutDialog(QAction*)
