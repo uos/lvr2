@@ -72,11 +72,6 @@ public:
     LVRMainWindow();
     virtual ~LVRMainWindow();
 
-    typedef ColorVertex<float, unsigned char>               cVertex;
-    typedef Normal<float>                                   cNormal;
-    typedef PointsetSurface<cVertex>                        psSurface;
-    typedef AdaptiveKSearchSurface<cVertex, cNormal>        akSurface;
-
 public Q_SLOTS:
     void loadModel();
     void manualICP();

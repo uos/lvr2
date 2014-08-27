@@ -130,6 +130,11 @@ void LVRPointCloudItem::setVisibility(bool &visibility)
 	m_visible = visibility;
 }
 
+size_t LVRPointCloudItem::getNumPoints()
+{
+    return m_pointBridge->getNumPoints();
+}
+
 PointBufferPtr LVRPointCloudItem::getPointBuffer()
 {
     return m_pointBridge->getPointBuffer();
