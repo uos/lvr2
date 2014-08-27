@@ -83,16 +83,31 @@ LVRMainWindow::LVRMainWindow()
     m_actionReset_Camera = this->actionReset_Camera;
     m_actionStore_Current_View = this->actionStore_Current_View;
     m_actionRecall_Stored_View = this->actionRecall_Stored_View;
+    m_actionRecord_Path = this->actionRecord_Path; // TODO: Record path
+    m_actionLoad_Path = this->actionLoad_Path; // TODO: Load path
+    m_actionAnimate_Path = this->actionAnimate_Path; // TODO: Animate path
+    m_actionExport_Animation = this->actionExport_Animation; // TODO: Save animation
     // Toolbar item "Reconstruction"
+    m_actionEstimate_Normals = this->actionEstimate_Normals; // TODO: Estimate normals
     m_actionMarching_Cubes = this->actionMarching_Cubes;
     m_actionPlanar_Marching_Cubes = this->actionPlanar_Marching_Cubes;
     m_actionExtended_Marching_Cubes = this->actionExtended_Marching_Cubes;
+    m_actionCompute_Textures = this->actionCompute_Textures; // TODO: Compute textures
+    m_actionMatch_Textures_from_Package = this->actionMatch_Textures_from_Package; // TODO: Match textures from package
+    m_actionExtract_and_Rematch_Patterns = this->actionExtract_and_Rematch_Patterns; // TODO: Extract and rematch patterns
     // Toolbar item "Mesh Optimization"
     m_actionPlanar_Optimization = this->actionPlanar_Optimization;
     m_actionRemove_Artifacts = this->actionRemove_Artifacts;
     // Toolbar item "Filtering"
     m_actionRemove_Outliers = this->actionRemove_Outliers;
     m_actionMLS_Projection = this->actionMLS_Projection;
+    // Toolbar item "Registration"
+    m_actionICP_Using_Manual_Correspondance = this->actionICP_Using_Manual_Correspondance;
+    m_actionICP_Using_Pose_Estimations = this->actionICP_Using_Pose_Estimations;
+    m_actionGlobal_Relaxation = this->actionGlobal_Relaxation;
+    // Toolbar item "Classification"
+    m_actionSimple_Plane_Classification = this->actionSimple_Plane_Classification;
+    m_actionFurniture_Recognition = this->actionFurniture_Recognition;
     // Toolbar item "About"
     // TODO: Replace "About"-QMenu with "About"-QAction
     m_menuAbout = this->menuAbout;
@@ -157,6 +172,8 @@ void LVRMainWindow::connectSignalsAndSlots()
     QObject::connect(m_actionRemove_Outliers, SIGNAL(activated()), this, SLOT(removeOutliers()));
     QObject::connect(m_actionMLS_Projection, SIGNAL(activated()), this, SLOT(applyMLSProjection()));
 
+    QObject::connect(m_actionICP_Using_Manual_Correspondance, SIGNAL(activated()), this, SLOT(manualICP()));
+
     QObject::connect(m_menuAbout, SIGNAL(triggered(QAction*)), this, SLOT(showAboutDialog(QAction*)));
 
     QObject::connect(m_correspondanceDialog->m_dialog, SIGNAL(accepted()), m_pickingInteractor, SLOT(correspondenceSearchOff()));
@@ -184,8 +201,6 @@ void LVRMainWindow::connectSignalsAndSlots()
     QObject::connect(m_pickingInteractor, SIGNAL(secondPointPicked(double*)),m_correspondanceDialog, SLOT(secondPointPicked(double*)));
 
     QObject::connect(this, SIGNAL(correspondenceDialogOpened()), m_pickingInteractor, SLOT(correspondenceSearchOn()));
-
-    QObject::connect(this->actionICP_using_manual_correspondance, SIGNAL(activated()), this, SLOT(manualICP()));
 }
 
 void LVRMainWindow::setupQVTK()
