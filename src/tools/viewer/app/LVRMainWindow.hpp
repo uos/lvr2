@@ -106,7 +106,7 @@ public Q_SLOTS:
     void addArrow(LVRVtkArrow*);
     void alignPointClouds();
     void exportSelectedModel();
-    void showIncompatibilityDialog(string actionName, vector<QChar> allowedTypes);
+    QMessageBox* buildIncompatibilityDialog(string actionName, unsigned char allowedTypes);
     LVRModelItem* getModelItem(QTreeWidgetItem* item);
     LVRPointCloudItem* getPointCloudItem(QTreeWidgetItem* item);
     LVRMeshItem* getMeshItem(QTreeWidgetItem* item);
@@ -173,6 +173,14 @@ private:
 
     LVRPickingInteractor*               m_pickingInteractor;
     LVRTreeWidgetHelper*                m_treeWidgetHelper;
+
+    static const unsigned char TYPE_MODELITEMS_ONLY = 0;
+    static const unsigned char TYPE_POINTCLOUDS_ONLY = 1;
+    static const unsigned char TYPE_MESHES_ONLY = 2;
+    static const unsigned char TYPE_POINTCLOUDS_AND_PARENT_ONLY = 3;
+    static const unsigned char TYPE_MESHES_AND_PARENT_ONLY = 4;
+    static const unsigned char TYPE_POINTCLOUDS_AND_MESHES_ONLY = 5;
+    static const unsigned char TYPE_POINTCLOUDS_AND_MESHES_AND_PARENT_ONLY = 6;
 };
 
 } /* namespace lvr */
