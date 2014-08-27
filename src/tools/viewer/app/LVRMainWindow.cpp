@@ -103,8 +103,8 @@ LVRMainWindow::LVRMainWindow()
     m_actionMLS_Projection = this->actionMLS_Projection;
     // Toolbar item "Registration"
     m_actionICP_Using_Manual_Correspondance = this->actionICP_Using_Manual_Correspondance;
-    m_actionICP_Using_Pose_Estimations = this->actionICP_Using_Pose_Estimations;
-    m_actionGlobal_Relaxation = this->actionGlobal_Relaxation;
+    m_actionICP_Using_Pose_Estimations = this->actionICP_Using_Pose_Estimations; // TODO: implement ICP registration
+    m_actionGlobal_Relaxation = this->actionGlobal_Relaxation; // TODO: implement global relaxation
     // Toolbar item "Classification"
     m_actionSimple_Plane_Classification = this->actionSimple_Plane_Classification;
     m_actionFurniture_Recognition = this->actionFurniture_Recognition;
@@ -120,8 +120,8 @@ LVRMainWindow::LVRMainWindow()
     m_horizontalSliderPointSize = this->horizontalSliderPointSize;
     m_horizontalSliderTransparency = this->horizontalSliderTransparency;
     // Combo boxes
-    m_comboBoxGradient = this->comboBoxGradient;
-    m_comboBoxShading = this->comboBoxShading;
+    m_comboBoxGradient = this->comboBoxGradient; // TODO: implement gradients
+    m_comboBoxShading = this->comboBoxShading; // TODO: fix shading
     // Buttons below combo boxes
     m_buttonRecordPath = this->buttonRecordPath;
     m_buttonCreateMesh = this->buttonCreateMesh;
@@ -162,6 +162,7 @@ void LVRMainWindow::connectSignalsAndSlots()
     QObject::connect(m_actionStore_Current_View, SIGNAL(activated()), this, SLOT(saveCamera()));
     QObject::connect(m_actionRecall_Stored_View, SIGNAL(activated()), this, SLOT(loadCamera()));
 
+    QObject::connect(m_actionEstimate_Normals, SIGNAL(activated()), this, SLOT(estimateNormals()));
     QObject::connect(m_actionMarching_Cubes, SIGNAL(activated()), this, SLOT(reconstructUsingMarchingCubes()));
     QObject::connect(m_actionPlanar_Marching_Cubes, SIGNAL(activated()), this, SLOT(reconstructUsingPlanarMarchingCubes()));
     QObject::connect(m_actionExtended_Marching_Cubes, SIGNAL(activated()), this, SLOT(reconstructUsingExtendedMarchingCubes()));
@@ -818,6 +819,24 @@ void LVRMainWindow::showTransformationDialog()
             box->exec();
         }
     }
+}
+
+void LVRMainWindow::estimateNormals()
+{
+    QMessageBox* box = buildIncompatibilityDialog(string("normal estimation"), TYPE_POINTCLOUDS_AND_PARENT_ONLY);
+    // Get selected item from tree and check type
+    QList<QTreeWidgetItem*> items = treeWidget->selectedItems();
+    if(items.size() > 0)
+    {
+        LVRPointCloudItem* pc_item = getPointCloudItem(items.first());
+        LVRModelItem* parent_item = getModelItem(items.first());
+        if(pc_item != NULL)
+        {
+            LVREstimateNormalsDialog* dialog = new LVREstimateNormalsDialog(pc_item, parent_item, treeWidget, qvtkWidget->GetRenderWindow());
+            return;
+        }
+    }
+    box->exec();
 }
 
 void LVRMainWindow::reconstructUsingMarchingCubes()
