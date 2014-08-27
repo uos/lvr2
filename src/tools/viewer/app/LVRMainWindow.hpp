@@ -137,16 +137,31 @@ private:
 	QAction*							m_actionReset_Camera;
 	QAction*							m_actionStore_Current_View;
 	QAction*							m_actionRecall_Stored_View;
+	QAction*                            m_actionRecord_Path;
+    QAction*                            m_actionLoad_Path;
+    QAction*                            m_actionAnimate_Path;
+    QAction*                            m_actionExport_Animation;
     // Toolbar item "Reconstruction"
+	QAction*                            m_actionEstimate_Normals;
 	QAction*                            m_actionMarching_Cubes;
     QAction*                            m_actionPlanar_Marching_Cubes;
     QAction*                            m_actionExtended_Marching_Cubes;
+    QAction*                            m_actionCompute_Textures;
+    QAction*                            m_actionMatch_Textures_from_Package;
+    QAction*                            m_actionExtract_and_Rematch_Patterns;
     // Toolbar item "Mesh Optimization"
     QAction*                            m_actionPlanar_Optimization;
     QAction*                            m_actionRemove_Artifacts;
     // Toolbar item "Filtering"
     QAction*                            m_actionRemove_Outliers;
     QAction*                            m_actionMLS_Projection;
+    // Toolbar item "Registration"
+    QAction*                            m_actionICP_Using_Manual_Correspondance;
+    QAction*                            m_actionICP_Using_Pose_Estimations;
+    QAction*                            m_actionGlobal_Relaxation;
+    // Toolbar item "Classification"
+    QAction*                            m_actionSimple_Plane_Classification;
+    QAction*                            m_actionFurniture_Recognition;
 	// Toolbar item "About"
 	QMenu*                              m_menuAbout;
 	// QToolbar below toolbar
