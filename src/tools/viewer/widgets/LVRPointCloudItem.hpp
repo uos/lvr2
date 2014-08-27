@@ -49,6 +49,7 @@ public:
     void    setOpacity(float &opacity);
     bool	getVisibility();
     void    setVisibility(bool &visiblity);
+    size_t  getNumPoints();
     PointBufferPtr getPointBuffer();
     vtkSmartPointer<vtkActor> getActor();
 

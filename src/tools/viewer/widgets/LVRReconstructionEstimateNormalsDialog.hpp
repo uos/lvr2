@@ -46,7 +46,7 @@ private:
 
     EstimateNormalsDialog*                  m_dialog;
     LVRPointCloudItem*                      m_pc;
-    LVRModelItem*                           m_optimizedPointCloud;
+    LVRModelItem*                           m_pointCloudWithNormals;
     LVRModelItem*                           m_parent;
     QTreeWidget*                            m_treeWidget;
     vtkRenderWindow*                        m_renderWindow;
