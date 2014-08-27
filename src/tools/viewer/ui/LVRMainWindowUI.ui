@@ -490,8 +490,8 @@
     <property name="title">
      <string>Registration</string>
     </property>
-    <addaction name="actionICP_using_manual_correspondance"/>
-    <addaction name="actionICP_using_Pose_estimations"/>
+    <addaction name="actionICP_Using_Manual_Correspondance"/>
+    <addaction name="actionICP_Using_Pose_Estimations"/>
     <addaction name="separator"/>
     <addaction name="actionGlobal_Relaxation"/>
    </widget>
@@ -622,12 +622,12 @@
     <string>Fill Holes</string>
    </property>
   </action>
-  <action name="actionICP_using_Pose_estimations">
+  <action name="actionICP_Using_Pose_Estimations">
    <property name="text">
     <string>Register via ICP</string>
    </property>
   </action>
-  <action name="actionICP_using_manual_correspondance">
+  <action name="actionICP_Using_Manual_Correspondance">
    <property name="text">
     <string>Pick correspondences...</string>
    </property>
