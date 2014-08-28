@@ -28,6 +28,7 @@
 #include <vtkRenderer.h>
 #include <vtkSmartPointer.h>
 #include <vtkRenderWindow.h>
+#include <vtkCameraRepresentation.h>
 
 #include <QtGui>
 #include "LVRMainWindowUI.h"
@@ -99,6 +100,8 @@ public Q_SLOTS:
     void updateView();
     void saveCamera();
     void loadCamera();
+    void recordPath();
+    void animatePath();
     void removeArrow(LVRVtkArrow*);
     void addArrow(LVRVtkArrow*);
     void alignPointClouds();
@@ -119,12 +122,14 @@ private:
     void setupQVTK();
     void connectSignalsAndSlots();
 
-    LVRCorrespondanceDialog*            m_correspondanceDialog;
-    QDialog*                            m_aboutDialog;
-    vtkSmartPointer<vtkRenderer>        m_renderer;
-    vtkSmartPointer<vtkCamera>			m_camera;
-    QMenu*				                m_treeParentItemContextMenu;
-    QMenu*                              m_treeChildItemContextMenu;
+    LVRCorrespondanceDialog*                    m_correspondanceDialog;
+    QDialog*                                    m_aboutDialog;
+    vtkSmartPointer<vtkRenderer>                m_renderer;
+    vtkSmartPointer<vtkRenderWindowInteractor>  m_renderWindowInteractor;
+    vtkSmartPointer<vtkCamera>			        m_camera;
+    vtkSmartPointer<vtkCameraRepresentation>    m_pathCamera;
+    QMenu*				                        m_treeParentItemContextMenu;
+    QMenu*                                      m_treeChildItemContextMenu;
 
     // Toolbar item "File"
 	QAction*							m_actionOpen;
