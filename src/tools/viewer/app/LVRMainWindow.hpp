@@ -186,13 +186,15 @@ private:
     LVRPickingInteractor*               m_pickingInteractor;
     LVRTreeWidgetHelper*                m_treeWidgetHelper;
 
-    static const unsigned char TYPE_MODELITEMS_ONLY = 0;
-    static const unsigned char TYPE_POINTCLOUDS_ONLY = 1;
-    static const unsigned char TYPE_MESHES_ONLY = 2;
-    static const unsigned char TYPE_POINTCLOUDS_AND_PARENT_ONLY = 3;
-    static const unsigned char TYPE_MESHES_AND_PARENT_ONLY = 4;
-    static const unsigned char TYPE_POINTCLOUDS_AND_MESHES_ONLY = 5;
-    static const unsigned char TYPE_POINTCLOUDS_AND_MESHES_AND_PARENT_ONLY = 6;
+    enum TYPE {
+        MODELITEMS_ONLY,
+        POINTCLOUDS_ONLY,
+        MESHES_ONLY,
+        POINTCLOUDS_AND_PARENT_ONLY,
+        MESHES_AND_PARENT_ONLY,
+        POINTCLOUDS_AND_MESHES_ONLY,
+        POINTCLOUDS_AND_MESHES_AND_PARENT_ONLY
+    };
 };
 
 } /* namespace lvr */

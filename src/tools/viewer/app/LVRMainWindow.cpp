@@ -88,7 +88,7 @@ LVRMainWindow::LVRMainWindow()
     m_actionAnimate_Path = this->actionAnimate_Path; // TODO: Animate path
     m_actionExport_Animation = this->actionExport_Animation; // TODO: Save animation
     // Toolbar item "Reconstruction"
-    m_actionEstimate_Normals = this->actionEstimate_Normals; // TODO: Estimate normals
+    m_actionEstimate_Normals = this->actionEstimate_Normals; // TODO: fix normal estimation
     m_actionMarching_Cubes = this->actionMarching_Cubes;
     m_actionPlanar_Marching_Cubes = this->actionPlanar_Marching_Cubes;
     m_actionExtended_Marching_Cubes = this->actionExtended_Marching_Cubes;
@@ -791,7 +791,7 @@ void LVRMainWindow::showColorDialog()
 
 void LVRMainWindow::showTransformationDialog()
 {
-    QMessageBox* box = buildIncompatibilityDialog(string("transformation"), TYPE_POINTCLOUDS_AND_MESHES_AND_PARENT_ONLY);
+    QMessageBox* box = buildIncompatibilityDialog(string("transformation"), POINTCLOUDS_AND_MESHES_AND_PARENT_ONLY);
     // Get selected item from tree and check type
     QList<QTreeWidgetItem*> items = treeWidget->selectedItems();
     if(items.size() > 0)
@@ -823,7 +823,7 @@ void LVRMainWindow::showTransformationDialog()
 
 void LVRMainWindow::estimateNormals()
 {
-    QMessageBox* box = buildIncompatibilityDialog(string("normal estimation"), TYPE_POINTCLOUDS_AND_PARENT_ONLY);
+    QMessageBox* box = buildIncompatibilityDialog(string("normal estimation"), POINTCLOUDS_AND_PARENT_ONLY);
     // Get selected item from tree and check type
     QList<QTreeWidgetItem*> items = treeWidget->selectedItems();
     if(items.size() > 0)
@@ -841,7 +841,7 @@ void LVRMainWindow::estimateNormals()
 
 void LVRMainWindow::reconstructUsingMarchingCubes()
 {
-    QMessageBox* box = buildIncompatibilityDialog(string("reconstruction"), TYPE_POINTCLOUDS_AND_PARENT_ONLY);
+    QMessageBox* box = buildIncompatibilityDialog(string("reconstruction"), POINTCLOUDS_AND_PARENT_ONLY);
     // Get selected item from tree and check type
     QList<QTreeWidgetItem*> items = treeWidget->selectedItems();
     if(items.size() > 0)
@@ -859,7 +859,7 @@ void LVRMainWindow::reconstructUsingMarchingCubes()
 
 void LVRMainWindow::reconstructUsingPlanarMarchingCubes()
 {
-    QMessageBox* box = buildIncompatibilityDialog(string("reconstruction"), TYPE_POINTCLOUDS_AND_PARENT_ONLY);
+    QMessageBox* box = buildIncompatibilityDialog(string("reconstruction"), POINTCLOUDS_AND_PARENT_ONLY);
     // Get selected item from tree and check type
     QList<QTreeWidgetItem*> items = treeWidget->selectedItems();
     if(items.size() > 0)
@@ -877,7 +877,7 @@ void LVRMainWindow::reconstructUsingPlanarMarchingCubes()
 
 void LVRMainWindow::reconstructUsingExtendedMarchingCubes()
 {
-    QMessageBox* box = buildIncompatibilityDialog(string("reconstruction"), TYPE_POINTCLOUDS_AND_PARENT_ONLY);
+    QMessageBox* box = buildIncompatibilityDialog(string("reconstruction"), POINTCLOUDS_AND_PARENT_ONLY);
     // Get selected item from tree and check type
     QList<QTreeWidgetItem*> items = treeWidget->selectedItems();
     if(items.size() > 0)
@@ -895,7 +895,7 @@ void LVRMainWindow::reconstructUsingExtendedMarchingCubes()
 
 void LVRMainWindow::optimizePlanes()
 {
-    QMessageBox* box = buildIncompatibilityDialog(string("planar optimization"), TYPE_MESHES_AND_PARENT_ONLY);
+    QMessageBox* box = buildIncompatibilityDialog(string("planar optimization"), MESHES_AND_PARENT_ONLY);
     // Get selected item from tree and check type
     QList<QTreeWidgetItem*> items = treeWidget->selectedItems();
     if(items.size() > 0)
@@ -913,7 +913,7 @@ void LVRMainWindow::optimizePlanes()
 
 void LVRMainWindow::removeArtifacts()
 {
-    QMessageBox* box = buildIncompatibilityDialog(string("artifact removal"), TYPE_MESHES_AND_PARENT_ONLY);
+    QMessageBox* box = buildIncompatibilityDialog(string("artifact removal"), MESHES_AND_PARENT_ONLY);
     // Get selected item from tree and check type
     QList<QTreeWidgetItem*> items = treeWidget->selectedItems();
     if(items.size() > 0)
@@ -931,7 +931,7 @@ void LVRMainWindow::removeArtifacts()
 
 void LVRMainWindow::applyMLSProjection()
 {
-    QMessageBox* box = buildIncompatibilityDialog(string("MLS projection"), TYPE_POINTCLOUDS_AND_PARENT_ONLY);
+    QMessageBox* box = buildIncompatibilityDialog(string("MLS projection"), POINTCLOUDS_AND_PARENT_ONLY);
     // Get selected item from tree and check type
     QList<QTreeWidgetItem*> items = treeWidget->selectedItems();
     if(items.size() > 0)
@@ -949,7 +949,7 @@ void LVRMainWindow::applyMLSProjection()
 
 void LVRMainWindow::removeOutliers()
 {
-    QMessageBox* box = buildIncompatibilityDialog(string("outlier removal"), TYPE_POINTCLOUDS_AND_PARENT_ONLY);
+    QMessageBox* box = buildIncompatibilityDialog(string("outlier removal"), POINTCLOUDS_AND_PARENT_ONLY);
     // Get selected item from tree and check type
     QList<QTreeWidgetItem*> items = treeWidget->selectedItems();
     if(items.size() > 0)
@@ -974,17 +974,17 @@ QMessageBox* LVRMainWindow::buildIncompatibilityDialog(string actionName, unsign
     string bodyString = "Only %2% are applicable to %1%.";
     QString body;
 
-    if(allowedTypes == TYPE_MODELITEMS_ONLY)
+    if(allowedTypes == MODELITEMS_ONLY)
             bodyString = str(boost::format(bodyString) % actionName % "whole models");
-    else if(allowedTypes == TYPE_POINTCLOUDS_ONLY)
+    else if(allowedTypes == POINTCLOUDS_ONLY)
         bodyString = str(boost::format(bodyString) % actionName % "point clouds");
-    else if(allowedTypes == TYPE_MESHES_ONLY)
+    else if(allowedTypes == MESHES_ONLY)
         bodyString = str(boost::format(bodyString) % actionName % "meshes");
-    else if(allowedTypes == TYPE_POINTCLOUDS_AND_PARENT_ONLY)
+    else if(allowedTypes == POINTCLOUDS_AND_PARENT_ONLY)
         bodyString = str(boost::format(bodyString) % actionName % "point clouds and model items containing point clouds");
-    else if(allowedTypes == TYPE_MESHES_AND_PARENT_ONLY)
+    else if(allowedTypes == MESHES_AND_PARENT_ONLY)
         bodyString = str(boost::format(bodyString) % actionName % "meshes and model items containing meshes");
-    else if(allowedTypes == TYPE_POINTCLOUDS_AND_MESHES_AND_PARENT_ONLY)
+    else if(allowedTypes == POINTCLOUDS_AND_MESHES_AND_PARENT_ONLY)
             bodyString = str(boost::format(bodyString) % actionName % "point clouds, meshes and whole models");
 
     body = QString::fromStdString(bodyString);
