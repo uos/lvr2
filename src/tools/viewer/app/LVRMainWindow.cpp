@@ -209,6 +209,9 @@ void LVRMainWindow::setupQVTK()
     // Add new renderer to the render window of the QVTKWidget
     m_renderer = vtkSmartPointer<vtkRenderer>::New();
     m_camera = vtkSmartPointer<vtkCamera>::New();
+    m_pathCamera = vtkSmartPointer<vtkCameraRepresentation>::New();
+    m_pathCamera->SetCamera(m_camera);
+    //m_renderWindowInteractor = m_renderer->GetRenderWindow()->MakeRenderWindowInteractor(); -- SEGFAULTs!
     this->qvtkWidget->GetRenderWindow()->AddRenderer(m_renderer);
 }
 
@@ -233,6 +236,16 @@ void LVRMainWindow::loadCamera()
 {
 	m_renderer->GetActiveCamera()->DeepCopy(m_camera);
 	refreshView();
+}
+
+void LVRMainWindow::recordPath()
+{
+    m_pathCamera->InitializePath();
+}
+
+void LVRMainWindow::animatePath()
+{
+
 }
 
 void LVRMainWindow::addArrow(LVRVtkArrow* a)
