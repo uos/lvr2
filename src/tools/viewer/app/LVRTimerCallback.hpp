@@ -26,6 +26,7 @@
 #define TIMERCALLBACK_HPP_
 
 #include <vtkSmartPointer.h>
+#include <vtkCameraRepresentation.h>
 #include <vtkCommand.h>
 #include <vtkRenderer.h>
 #include <vtkRendererCollection.h>
@@ -42,7 +43,11 @@ public:
     LVRTimerCallback();
     virtual ~LVRTimerCallback();
     static LVRTimerCallback* New();
+    void setPathCamera(vtkSmartPointer<vtkCameraRepresentation> pathCamera);
     void Execute(vtkObject* caller, unsigned long eventId, void* callData);
+private:
+    vtkSmartPointer<vtkCameraRepresentation>    m_pathCamera;
+    bool                                        m_firstrun;
 };
 
 } /* namespace lvr */
