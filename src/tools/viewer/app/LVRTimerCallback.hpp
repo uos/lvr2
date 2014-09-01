@@ -41,6 +41,8 @@ class LVRTimerCallback : public vtkCommand
 public:
     LVRTimerCallback();
     virtual ~LVRTimerCallback();
+    static LVRTimerCallback* New();
+    void Execute(vtkObject* caller, unsigned long eventId, void* callData);
 };
 
 } /* namespace lvr */
