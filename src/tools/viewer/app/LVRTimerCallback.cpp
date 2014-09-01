@@ -36,4 +36,18 @@ namespace lvr
     {
 
     }
+
+    LVRTimerCallback* LVRTimerCallback::New()
+    {
+        LVRTimerCallback* cb = new LVRTimerCallback;
+        return cb;
+    }
+
+    void LVRTimerCallback::Execute(vtkObject* caller, unsigned long eventId, void* callData)
+    {
+        if(vtkCommand::TimerEvent == eventId)
+        {
+            cout << "Tick-tock" << endl;
+        }
+    }
 } /* namespace lvr */

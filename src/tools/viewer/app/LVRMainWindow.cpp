@@ -216,7 +216,11 @@ void LVRMainWindow::setupQVTK()
     m_pathCamera = vtkSmartPointer<vtkCameraRepresentation>::New();
     m_pathCamera->SetCamera(m_camera);
     renderWindow->AddRenderer(m_renderer);
-    int timerId = m_renderWindowInteractor->CreateOneShotTimer(2000);
+
+    m_timerCallback = LVRTimerCallback::New();
+    m_renderWindowInteractor->AddObserver(vtkCommand::TimerEvent, m_timerCallback);
+    int timerId = m_renderWindowInteractor->CreateRepeatingTimer(2000);
+    m_renderWindowInteractor->Start();
 }
 
 void LVRMainWindow::updateView()
