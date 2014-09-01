@@ -210,13 +210,13 @@ void LVRMainWindow::setupQVTK()
     m_renderer = vtkSmartPointer<vtkRenderer>::New();
     vtkSmartPointer<vtkRenderWindow> renderWindow = this->qvtkWidget->GetRenderWindow();
     // currently breaks qvtk widget when uncommented
-    //m_renderWindowInteractor = vtkSmartPointer<vtkRenderWindowInteractor>::New();
-    //m_renderWindowInteractor->SetRenderWindow(renderWindow);
-    //m_renderWindowInteractor->Initialize();
+    m_renderWindowInteractor = this->qvtkWidget->GetInteractor();
+    m_renderWindowInteractor->Initialize();
     m_camera = vtkSmartPointer<vtkCamera>::New();
     m_pathCamera = vtkSmartPointer<vtkCameraRepresentation>::New();
     m_pathCamera->SetCamera(m_camera);
     renderWindow->AddRenderer(m_renderer);
+    int timerId = m_renderWindowInteractor->CreateOneShotTimer(2000);
 }
 
 void LVRMainWindow::updateView()
