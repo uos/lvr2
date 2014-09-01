@@ -218,9 +218,12 @@ void LVRMainWindow::setupQVTK()
     renderWindow->AddRenderer(m_renderer);
 
     m_timerCallback = LVRTimerCallback::New();
+    m_timerCallback->setPathCamera(m_pathCamera);
     m_renderWindowInteractor->AddObserver(vtkCommand::TimerEvent, m_timerCallback);
-    int timerId = m_renderWindowInteractor->CreateRepeatingTimer(2000);
+    int timerId = m_renderWindowInteractor->CreateRepeatingTimer(1000);
     m_renderWindowInteractor->Start();
+    // TODO: Start / Stop timer when clicking button
+    // TODO: Animate camera path (saved in m_pathCamera) when clicking play
 }
 
 void LVRMainWindow::updateView()

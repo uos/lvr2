@@ -29,12 +29,11 @@ namespace lvr
 {
     LVRTimerCallback::LVRTimerCallback()
     {
-
+        m_firstrun = true;
     }
 
     LVRTimerCallback::~LVRTimerCallback()
     {
-
     }
 
     LVRTimerCallback* LVRTimerCallback::New()
@@ -43,11 +42,21 @@ namespace lvr
         return cb;
     }
 
+    void LVRTimerCallback::setPathCamera(vtkSmartPointer<vtkCameraRepresentation> pathCamera)
+    {
+        m_pathCamera = pathCamera;
+    }
+
     void LVRTimerCallback::Execute(vtkObject* caller, unsigned long eventId, void* callData)
     {
         if(vtkCommand::TimerEvent == eventId)
         {
-            cout << "Tick-tock" << endl;
+            if(m_firstrun)
+            {
+                m_firstrun = false;
+                m_pathCamera->InitializePath();
+            }
+            m_pathCamera->AddCameraToPath();
         }
     }
 } /* namespace lvr */
