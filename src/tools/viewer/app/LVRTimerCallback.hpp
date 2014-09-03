@@ -40,14 +40,11 @@ namespace lvr
 class LVRTimerCallback : public vtkCommand
 {
 public:
-    LVRTimerCallback();
-    virtual ~LVRTimerCallback();
     static LVRTimerCallback* New();
     void setPathCamera(vtkSmartPointer<vtkCameraRepresentation> pathCamera);
     void Execute(vtkObject* caller, unsigned long eventId, void* callData);
 private:
     vtkSmartPointer<vtkCameraRepresentation>    m_pathCamera;
-    bool                                        m_firstrun;
 };
 
 } /* namespace lvr */
