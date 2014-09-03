@@ -161,6 +161,8 @@ void LVRMainWindow::connectSignalsAndSlots()
     QObject::connect(m_actionReset_Camera, SIGNAL(activated()), this, SLOT(updateView()));
     QObject::connect(m_actionStore_Current_View, SIGNAL(activated()), this, SLOT(saveCamera()));
     QObject::connect(m_actionRecall_Stored_View, SIGNAL(activated()), this, SLOT(loadCamera()));
+    QObject::connect(m_actionRecord_Path, SIGNAL(activated()), this, SLOT(recordPath()));
+    QObject::connect(m_actionAnimate_Path, SIGNAL(activated()), this, SLOT(animatePath()));
 
     QObject::connect(m_actionEstimate_Normals, SIGNAL(activated()), this, SLOT(estimateNormals()));
     QObject::connect(m_actionMarching_Cubes, SIGNAL(activated()), this, SLOT(reconstructUsingMarchingCubes()));
@@ -255,6 +257,7 @@ void LVRMainWindow::recordPath()
     if(m_timerID <= 0)
     {
         m_pathCamera->InitializePath();
+        m_timerCallback->reset();
         m_timerID = m_renderWindowInteractor->CreateRepeatingTimer(1000);
     }
     // stop recording if timer ID is valid, destroy timer
@@ -266,7 +269,8 @@ void LVRMainWindow::recordPath()
 
 void LVRMainWindow::animatePath()
 {
-
+    m_pathCamera->SetNumberOfFrames(m_timerCallback->getNumberOfFrames());
+    m_pathCamera->AnimatePath(m_renderWindowInteractor);
 }
 
 void LVRMainWindow::addArrow(LVRVtkArrow* a)

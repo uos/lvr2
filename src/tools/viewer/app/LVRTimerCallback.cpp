@@ -33,6 +33,16 @@ namespace lvr
         return cb;
     }
 
+    void LVRTimerCallback::reset()
+    {
+        m_numberOfFrames = 0;
+    }
+
+    int LVRTimerCallback::getNumberOfFrames()
+    {
+        return m_numberOfFrames;
+    }
+
     void LVRTimerCallback::setPathCamera(vtkSmartPointer<vtkCameraRepresentation> pathCamera)
     {
         m_pathCamera = pathCamera;
@@ -44,6 +54,7 @@ namespace lvr
         {
             cout << "Tick-tock!" << endl;
             m_pathCamera->AddCameraToPath();
+            m_numberOfFrames++;
         }
     }
 } /* namespace lvr */
