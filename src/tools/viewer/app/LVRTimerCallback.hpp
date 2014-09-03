@@ -41,10 +41,13 @@ class LVRTimerCallback : public vtkCommand
 {
 public:
     static LVRTimerCallback* New();
+    void reset();
+    int getNumberOfFrames();
     void setPathCamera(vtkSmartPointer<vtkCameraRepresentation> pathCamera);
     void Execute(vtkObject* caller, unsigned long eventId, void* callData);
 private:
     vtkSmartPointer<vtkCameraRepresentation>    m_pathCamera;
+    unsigned int                               m_numberOfFrames;
 };
 
 } /* namespace lvr */
