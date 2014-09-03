@@ -194,6 +194,7 @@ void LVRMainWindow::connectSignalsAndSlots()
 
     QObject::connect(m_comboBoxShading, SIGNAL(currentIndexChanged(int)), this, SLOT(changeShading(int)));
 
+    QObject::connect(m_buttonRecordPath, SIGNAL(pressed()), this, SLOT(recordPath()));
     QObject::connect(m_buttonCreateMesh, SIGNAL(pressed()), this, SLOT(reconstructUsingMarchingCubes()));
     QObject::connect(m_buttonExportData, SIGNAL(pressed()), this, SLOT(exportSelectedModel()));
     QObject::connect(m_buttonTransformModel, SIGNAL(pressed()), this, SLOT(showTransformationDialog()));
@@ -209,7 +210,6 @@ void LVRMainWindow::setupQVTK()
     // Add new renderer to the render window of the QVTKWidget
     m_renderer = vtkSmartPointer<vtkRenderer>::New();
     vtkSmartPointer<vtkRenderWindow> renderWindow = this->qvtkWidget->GetRenderWindow();
-    // currently breaks qvtk widget when uncommented
     m_renderWindowInteractor = this->qvtkWidget->GetInteractor();
     m_renderWindowInteractor->Initialize();
     m_camera = vtkSmartPointer<vtkCamera>::New();
@@ -220,7 +220,7 @@ void LVRMainWindow::setupQVTK()
     m_timerCallback = LVRTimerCallback::New();
     m_timerCallback->setPathCamera(m_pathCamera);
     m_renderWindowInteractor->AddObserver(vtkCommand::TimerEvent, m_timerCallback);
-    int timerId = m_renderWindowInteractor->CreateRepeatingTimer(1000);
+    m_timerID = -1;
     m_renderWindowInteractor->Start();
     // TODO: Start / Stop timer when clicking button
     // TODO: Animate camera path (saved in m_pathCamera) when clicking play
@@ -251,7 +251,17 @@ void LVRMainWindow::loadCamera()
 
 void LVRMainWindow::recordPath()
 {
-    m_pathCamera->InitializePath();
+    // start recording if timer ID is invalid
+    if(m_timerID <= 0)
+    {
+        m_pathCamera->InitializePath();
+        m_timerID = m_renderWindowInteractor->CreateRepeatingTimer(1000);
+    }
+    // stop recording if timer ID is valid, destroy timer
+    else
+    {
+        m_renderWindowInteractor->DestroyTimer(m_timerID);
+    }
 }
 
 void LVRMainWindow::animatePath()

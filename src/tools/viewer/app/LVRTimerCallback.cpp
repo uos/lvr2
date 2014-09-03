@@ -27,15 +27,6 @@
 
 namespace lvr
 {
-    LVRTimerCallback::LVRTimerCallback()
-    {
-        m_firstrun = true;
-    }
-
-    LVRTimerCallback::~LVRTimerCallback()
-    {
-    }
-
     LVRTimerCallback* LVRTimerCallback::New()
     {
         LVRTimerCallback* cb = new LVRTimerCallback;
@@ -51,11 +42,7 @@ namespace lvr
     {
         if(vtkCommand::TimerEvent == eventId)
         {
-            if(m_firstrun)
-            {
-                m_firstrun = false;
-                m_pathCamera->InitializePath();
-            }
+            cout << "Tick-tock!" << endl;
             m_pathCamera->AddCameraToPath();
         }
     }
