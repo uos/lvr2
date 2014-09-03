@@ -132,6 +132,7 @@ private:
     vtkSmartPointer<vtkRenderer>                m_renderer;
     vtkSmartPointer<vtkRenderWindowInteractor>  m_renderWindowInteractor;
     vtkSmartPointer<LVRTimerCallback>           m_timerCallback;
+    int                                         m_timerID;
     vtkSmartPointer<vtkCamera>			        m_camera;
     vtkSmartPointer<vtkCameraRepresentation>    m_pathCamera;
     QMenu*				                        m_treeParentItemContextMenu;
