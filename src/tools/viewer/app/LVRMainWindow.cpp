@@ -219,11 +219,13 @@ void LVRMainWindow::setupQVTK()
     vtkSmartPointer<vtkCameraInterpolator> cameraInterpolator = vtkSmartPointer<vtkCameraInterpolator>::New();
     cameraInterpolator->SetInterpolationTypeToSpline();
     m_pathCamera->SetInterpolator(cameraInterpolator);
-    //m_pathCamera->SetCamera(m_camera);
+    m_pathCamera->SetCamera(m_camera);
+    cameraInterpolator->DebugOn();
+    m_pathCamera->DebugOn();
     renderWindow->AddRenderer(m_renderer);
 
     m_timerCallback = vtkSmartPointer<LVRTimerCallback>::New();
-    m_timerCallback->setMainCamera(m_renderer->GetActiveCamera());
+    //m_timerCallback->setMainCamera(m_renderer->GetActiveCamera());
     m_timerCallback->setPathCamera(m_pathCamera);
     m_renderWindowInteractor->AddObserver(vtkCommand::TimerEvent, m_timerCallback);
     m_timerID = -1;
