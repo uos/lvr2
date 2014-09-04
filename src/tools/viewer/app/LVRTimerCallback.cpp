@@ -48,11 +48,19 @@ namespace lvr
         m_pathCamera = pathCamera;
     }
 
+    void LVRTimerCallback::setMainCamera(vtkSmartPointer<vtkCamera> mainCamera)
+    {
+        m_mainCamera = mainCamera;
+    }
+
     void LVRTimerCallback::Execute(vtkObject* caller, unsigned long eventId, void* callData)
     {
         if(vtkCommand::TimerEvent == eventId)
         {
             cout << "Tick-tock!" << endl;
+            vtkSmartPointer<vtkCamera> stepCamera = vtkSmartPointer<vtkCamera>::New();
+            stepCamera->DeepCopy(m_mainCamera);
+            m_pathCamera->SetCamera(stepCamera);
             m_pathCamera->AddCameraToPath();
             m_numberOfFrames++;
         }
