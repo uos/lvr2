@@ -27,7 +27,9 @@
 
 #include <vtkRenderer.h>
 #include <vtkSmartPointer.h>
+#include <vtkCamera.h>
 #include <vtkCameraRepresentation.h>
+#include <vtkCameraInterpolator.h>
 #include <vtkCommand.h>
 #include <vtkRendererCollection.h>
 #include <vtkRenderWindow.h>
