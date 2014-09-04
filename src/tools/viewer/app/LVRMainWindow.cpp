@@ -268,6 +268,7 @@ void LVRMainWindow::recordPath()
     else
     {
         m_renderWindowInteractor->DestroyTimer(m_timerID);
+        m_timerID = -1;
     }
 }
 
