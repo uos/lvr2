@@ -188,6 +188,7 @@ void LVRMainWindow::connectSignalsAndSlots()
     QObject::connect(m_correspondanceDialog, SIGNAL(enableCorrespondenceSearch()), m_pickingInteractor, SLOT(correspondenceSearchOn()));
 
     QObject::connect(m_actionShow_Points, SIGNAL(toggled(bool)), this, SLOT(togglePoints(bool)));
+    QObject::connect(m_actionShow_Normals, SIGNAL(toggled(bool)), this, SLOT(toggleNormals(bool)));
     QObject::connect(m_actionShow_Mesh, SIGNAL(toggled(bool)), this, SLOT(toggleMeshes(bool)));
     QObject::connect(m_actionShow_Wireframe, SIGNAL(toggled(bool)), this, SLOT(toggleWireframe(bool)));
 
@@ -274,7 +275,7 @@ void LVRMainWindow::recordPath()
 
 void LVRMainWindow::animatePath()
 {
-    m_pathCamera->SetNumberOfFrames(m_timerCallback->getNumberOfFrames());
+    m_pathCamera->SetNumberOfFrames(m_timerCallback->getNumberOfFrames() * 30);
     m_pathCamera->AnimatePath(m_renderWindowInteractor);
 }
 
@@ -749,6 +750,24 @@ void LVRMainWindow::togglePoints(bool checkboxState)
 	}
 
 	refreshView();
+}
+
+void LVRMainWindow::toggleNormals(bool checkboxState)
+{
+    QTreeWidgetItemIterator it(treeWidget);
+
+    while(*it)
+    {
+        QTreeWidgetItem* item = *it;
+        if(item->type() == LVRPointCloudItemType)
+        {
+            LVRModelItem* model_item = static_cast<LVRModelItem*>(item->parent());
+            if(model_item->isEnabled()) return; // TODO: functions to show/hide normals
+        }
+        ++it;
+    }
+
+    refreshView();
 }
 
 void LVRMainWindow::toggleMeshes(bool checkboxState)

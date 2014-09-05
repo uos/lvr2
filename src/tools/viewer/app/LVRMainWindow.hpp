@@ -101,6 +101,7 @@ public Q_SLOTS:
     void changeTransparency(int transparencyValue);
     void changeShading(int shader);
     void togglePoints(bool checkboxState);
+    void toggleNormals(bool checkboxState);
     void toggleMeshes(bool checkboxState);
     void toggleWireframe(bool checkboxState);
     void refreshView();
