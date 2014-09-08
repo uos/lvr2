@@ -277,6 +277,7 @@ void LVRMainWindow::animatePath()
 {
     m_pathCamera->SetNumberOfFrames(m_timerCallback->getNumberOfFrames() * 30);
     m_pathCamera->AnimatePath(m_renderWindowInteractor);
+    m_pathCamera->Print(std::cout);
 }
 
 void LVRMainWindow::addArrow(LVRVtkArrow* a)
