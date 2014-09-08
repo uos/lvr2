@@ -115,7 +115,7 @@ public Q_SLOTS:
     void addArrow(LVRVtkArrow*);
     void alignPointClouds();
     void exportSelectedModel();
-    QMessageBox* buildIncompatibilityDialog(string actionName, unsigned char allowedTypes);
+    void buildIncompatibilityBox(string actionName, unsigned char allowedTypes);
     LVRModelItem* getModelItem(QTreeWidgetItem* item);
     LVRPointCloudItem* getPointCloudItem(QTreeWidgetItem* item);
     LVRMeshItem* getMeshItem(QTreeWidgetItem* item);
@@ -133,6 +133,7 @@ private:
 
     LVRCorrespondanceDialog*                    m_correspondanceDialog;
     QDialog*                                    m_aboutDialog;
+    QMessageBox*                                m_incompatibilityBox;
     vtkSmartPointer<vtkRenderer>                m_renderer;
     vtkSmartPointer<vtkRenderWindowInteractor>  m_renderWindowInteractor;
     vtkSmartPointer<LVRTimerCallback>           m_timerCallback;
