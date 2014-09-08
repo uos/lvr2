@@ -49,6 +49,7 @@ LVRMainWindow::LVRMainWindow()
 
     // Init members
     m_correspondanceDialog = new LVRCorrespondanceDialog(treeWidget);
+    m_incompatibilityBox = new QMessageBox();
     m_aboutDialog = new QDialog();
     Ui::AboutDialog aboutDialog;
     aboutDialog.setupUi(m_aboutDialog);
@@ -141,6 +142,7 @@ LVRMainWindow::~LVRMainWindow()
     {
         delete m_correspondanceDialog;
     }
+    delete m_incompatibilityBox;
 }
 
 void LVRMainWindow::connectSignalsAndSlots()
@@ -867,7 +869,7 @@ void LVRMainWindow::showColorDialog()
 
 void LVRMainWindow::showTransformationDialog()
 {
-    QMessageBox* box = buildIncompatibilityDialog(string("transformation"), POINTCLOUDS_AND_MESHES_AND_PARENT_ONLY);
+    buildIncompatibilityBox(string("transformation"), POINTCLOUDS_AND_MESHES_AND_PARENT_ONLY);
     // Get selected item from tree and check type
     QList<QTreeWidgetItem*> items = treeWidget->selectedItems();
     if(items.size() > 0)
@@ -887,19 +889,19 @@ void LVRMainWindow::showTransformationDialog()
             }
             else
             {
-                box->exec();
+                m_incompatibilityBox->exec();
             }
         }
         else
         {
-            box->exec();
+            m_incompatibilityBox->exec();
         }
     }
 }
 
 void LVRMainWindow::estimateNormals()
 {
-    QMessageBox* box = buildIncompatibilityDialog(string("normal estimation"), POINTCLOUDS_AND_PARENT_ONLY);
+    buildIncompatibilityBox(string("normal estimation"), POINTCLOUDS_AND_PARENT_ONLY);
     // Get selected item from tree and check type
     QList<QTreeWidgetItem*> items = treeWidget->selectedItems();
     if(items.size() > 0)
@@ -912,12 +914,12 @@ void LVRMainWindow::estimateNormals()
             return;
         }
     }
-    box->exec();
+    m_incompatibilityBox->exec();
 }
 
 void LVRMainWindow::reconstructUsingMarchingCubes()
 {
-    QMessageBox* box = buildIncompatibilityDialog(string("reconstruction"), POINTCLOUDS_AND_PARENT_ONLY);
+    buildIncompatibilityBox(string("reconstruction"), POINTCLOUDS_AND_PARENT_ONLY);
     // Get selected item from tree and check type
     QList<QTreeWidgetItem*> items = treeWidget->selectedItems();
     if(items.size() > 0)
@@ -930,12 +932,12 @@ void LVRMainWindow::reconstructUsingMarchingCubes()
             return;
         }
     }
-    box->exec();
+    m_incompatibilityBox->exec();
 }
 
 void LVRMainWindow::reconstructUsingPlanarMarchingCubes()
 {
-    QMessageBox* box = buildIncompatibilityDialog(string("reconstruction"), POINTCLOUDS_AND_PARENT_ONLY);
+    buildIncompatibilityBox(string("reconstruction"), POINTCLOUDS_AND_PARENT_ONLY);
     // Get selected item from tree and check type
     QList<QTreeWidgetItem*> items = treeWidget->selectedItems();
     if(items.size() > 0)
@@ -948,12 +950,12 @@ void LVRMainWindow::reconstructUsingPlanarMarchingCubes()
             return;
         }
     }
-    box->exec();
+    m_incompatibilityBox->exec();
 }
 
 void LVRMainWindow::reconstructUsingExtendedMarchingCubes()
 {
-    QMessageBox* box = buildIncompatibilityDialog(string("reconstruction"), POINTCLOUDS_AND_PARENT_ONLY);
+    buildIncompatibilityBox(string("reconstruction"), POINTCLOUDS_AND_PARENT_ONLY);
     // Get selected item from tree and check type
     QList<QTreeWidgetItem*> items = treeWidget->selectedItems();
     if(items.size() > 0)
@@ -966,12 +968,12 @@ void LVRMainWindow::reconstructUsingExtendedMarchingCubes()
             return;
         }
     }
-    box->exec();
+    m_incompatibilityBox->exec();
 }
 
 void LVRMainWindow::optimizePlanes()
 {
-    QMessageBox* box = buildIncompatibilityDialog(string("planar optimization"), MESHES_AND_PARENT_ONLY);
+    buildIncompatibilityBox(string("planar optimization"), MESHES_AND_PARENT_ONLY);
     // Get selected item from tree and check type
     QList<QTreeWidgetItem*> items = treeWidget->selectedItems();
     if(items.size() > 0)
@@ -984,12 +986,12 @@ void LVRMainWindow::optimizePlanes()
             return;
         }
     }
-    box->exec();
+    m_incompatibilityBox->exec();
 }
 
 void LVRMainWindow::removeArtifacts()
 {
-    QMessageBox* box = buildIncompatibilityDialog(string("artifact removal"), MESHES_AND_PARENT_ONLY);
+    buildIncompatibilityBox(string("artifact removal"), MESHES_AND_PARENT_ONLY);
     // Get selected item from tree and check type
     QList<QTreeWidgetItem*> items = treeWidget->selectedItems();
     if(items.size() > 0)
@@ -1002,12 +1004,12 @@ void LVRMainWindow::removeArtifacts()
             return;
         }
     }
-    box->exec();
+    m_incompatibilityBox->exec();
 }
 
 void LVRMainWindow::applyMLSProjection()
 {
-    QMessageBox* box = buildIncompatibilityDialog(string("MLS projection"), POINTCLOUDS_AND_PARENT_ONLY);
+    buildIncompatibilityBox(string("MLS projection"), POINTCLOUDS_AND_PARENT_ONLY);
     // Get selected item from tree and check type
     QList<QTreeWidgetItem*> items = treeWidget->selectedItems();
     if(items.size() > 0)
@@ -1020,12 +1022,12 @@ void LVRMainWindow::applyMLSProjection()
             return;
         }
     }
-    box->exec();
+    m_incompatibilityBox->exec();
 }
 
 void LVRMainWindow::removeOutliers()
 {
-    QMessageBox* box = buildIncompatibilityDialog(string("outlier removal"), POINTCLOUDS_AND_PARENT_ONLY);
+    buildIncompatibilityBox(string("outlier removal"), POINTCLOUDS_AND_PARENT_ONLY);
     // Get selected item from tree and check type
     QList<QTreeWidgetItem*> items = treeWidget->selectedItems();
     if(items.size() > 0)
@@ -1038,13 +1040,12 @@ void LVRMainWindow::removeOutliers()
             return;
         }
     }
-    box->exec();
+    m_incompatibilityBox->exec();
 }
 
-QMessageBox* LVRMainWindow::buildIncompatibilityDialog(string actionName, unsigned char allowedTypes)
+void LVRMainWindow::buildIncompatibilityBox(string actionName, unsigned char allowedTypes)
 {
     // Setup a message box for unsupported items
-    QMessageBox* box = new QMessageBox(); // possible memory leak? might need deletion
     string titleString = str(boost::format("Unsupported Item for %1%.") % actionName);
     QString title = QString::fromStdString(titleString);
     string bodyString = "Only %2% are applicable to %1%.";
@@ -1065,11 +1066,9 @@ QMessageBox* LVRMainWindow::buildIncompatibilityDialog(string actionName, unsign
 
     body = QString::fromStdString(bodyString);
 
-    box->setText(title);
-    box->setInformativeText(body);
-    box->setStandardButtons(QMessageBox::Ok);
-
-    return box;
+    m_incompatibilityBox->setText(title);
+    m_incompatibilityBox->setInformativeText(body);
+    m_incompatibilityBox->setStandardButtons(QMessageBox::Ok);
 }
 
 void LVRMainWindow::showAboutDialog(QAction*)
