@@ -548,7 +548,11 @@ void LVRMainWindow::deleteModelItem()
                 else if(child_item->type() == LVRMeshItemType && child_item->parent() == item)
                 {
                     LVRMeshItem* mesh_item = getMeshItem(item);
-                    if(mesh_item != NULL) m_renderer->RemoveActor(mesh_item->getActor());
+                    if(mesh_item != NULL)
+                    {
+                        m_renderer->RemoveActor(mesh_item->getWireframeActor());
+                        m_renderer->RemoveActor(mesh_item->getActor());
+                    }
                 }
 
                 ++it;
