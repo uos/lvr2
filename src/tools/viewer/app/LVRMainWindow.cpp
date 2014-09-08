@@ -521,6 +521,7 @@ void LVRMainWindow::loadModel()
             ++it;
         }
 
+        assertToggles();
         updateView();
     }
 }
@@ -615,6 +616,14 @@ LVRMeshItem* LVRMainWindow::getMeshItem(QTreeWidgetItem* item)
         }
     }
     return NULL;
+}
+
+void LVRMainWindow::assertToggles()
+{
+    togglePoints(m_actionShow_Points->isChecked());
+    toggleNormals(m_actionShow_Normals->isChecked());
+    toggleMeshes(m_actionShow_Mesh->isChecked());
+    toggleWireframe(m_actionShow_Wireframe->isChecked());
 }
 
 void LVRMainWindow::setModelVisibility(QTreeWidgetItem* treeWidgetItem, int column)
