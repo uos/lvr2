@@ -78,10 +78,10 @@ void LVREstimateNormalsDialog::estimateNormals()
     {
         typename SearchTree<Vertex<float> >::Ptr       tree;
         #ifdef _USE_PCL_
-            tree = SearchTree<Vertex<float> >::Ptr( new SearchTreeFlann<Vertex<float> >(pc, numPoints, ki, ki, ki) );
+            tree = SearchTree<Vertex<float> >::Ptr( new SearchTreeFlann<Vertex<float> >(new_pc, numPoints, ki, ki, ki) );
         #else
             cout << timestamp << "Warning: PCL is not installed. Using STANN search tree in AdaptiveKSearchSurface." << endl;
-            tree = SearchTree<Vertex<float> >::Ptr( new SearchTreeStann<Vertex<float> >(pc, numPoints, ki, ki, ki) );
+            tree = SearchTree<Vertex<float> >::Ptr( new SearchTreeStann<Vertex<float> >(new_pc, numPoints, ki, ki, ki) );
         #endif
 
         #pragma omp parallel for schedule(static)
