@@ -1052,7 +1052,7 @@ void LVRMainWindow::buildIncompatibilityBox(string actionName, unsigned char all
     QString body;
 
     if(allowedTypes == MODELITEMS_ONLY)
-            bodyString = str(boost::format(bodyString) % actionName % "whole models");
+        bodyString = str(boost::format(bodyString) % actionName % "whole models");
     else if(allowedTypes == POINTCLOUDS_ONLY)
         bodyString = str(boost::format(bodyString) % actionName % "point clouds");
     else if(allowedTypes == MESHES_ONLY)
@@ -1062,7 +1062,7 @@ void LVRMainWindow::buildIncompatibilityBox(string actionName, unsigned char all
     else if(allowedTypes == MESHES_AND_PARENT_ONLY)
         bodyString = str(boost::format(bodyString) % actionName % "meshes and model items containing meshes");
     else if(allowedTypes == POINTCLOUDS_AND_MESHES_AND_PARENT_ONLY)
-            bodyString = str(boost::format(bodyString) % actionName % "point clouds, meshes and whole models");
+        bodyString = str(boost::format(bodyString) % actionName % "point clouds, meshes and whole models");
 
     body = QString::fromStdString(bodyString);
 
