@@ -10,7 +10,7 @@
     <x>0</x>
     <y>0</y>
     <width>198</width>
-    <height>137</height>
+    <height>180</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -20,7 +20,7 @@
    <property name="geometry">
     <rect>
      <x>-150</x>
-     <y>100</y>
+     <y>140</y>
      <width>341</width>
      <height>32</height>
     </rect>
@@ -62,6 +62,19 @@
    </property>
    <property name="maximum">
     <number>64</number>
+   </property>
+  </widget>
+  <widget class="QCheckBox" name="checkBox_in">
+   <property name="geometry">
+    <rect>
+     <x>10</x>
+     <y>110</y>
+     <width>181</width>
+     <height>22</height>
+    </rect>
+   </property>
+   <property name="text">
+    <string>Interpolate normals</string>
    </property>
   </widget>
  </widget>
