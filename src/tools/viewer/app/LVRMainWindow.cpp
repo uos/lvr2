@@ -403,7 +403,6 @@ void LVRMainWindow::exportSelectedModel()
                 trans->setPointArray(transformedPoints, n);
                 ModelPtr model(new Model(trans));
                 ModelFactory::saveModel(model, qFileName.toStdString());
-
             }
         }
     }
@@ -466,7 +465,6 @@ void LVRMainWindow::alignPointClouds()
     }
     m_correspondanceDialog->clearAllItems();
     updateView();
-
 }
 
 void LVRMainWindow::showTreeContextMenu(const QPoint& p)
