@@ -38,7 +38,8 @@ LVRTransformationDialog::LVRTransformationDialog(LVRModelItem* parent, vtkRender
     m_dialogUI = new TransformationDialogUI;
     m_dialogUI->setupUi(dialog);
 
-    m_pose = parent->getPose();
+    Pose m_pose, m_pose_original;
+    m_pose = m_pose_original = parent->getPose();
 
     // Set slider to correct positions
     m_dialogUI->sliderXRot->setValue(m_pose.r);
@@ -68,7 +69,6 @@ void LVRTransformationDialog::connectSignalsAndSlots()
 {
     QObject::connect(m_dialogUI->buttonReset, SIGNAL(clicked()),
              this, SLOT(reset()));
-
 
     // Slider and spin box for x rotation
     QObject::connect(m_dialogUI->sliderXRot, SIGNAL(sliderMoved(int)),
@@ -106,7 +106,7 @@ void LVRTransformationDialog::connectSignalsAndSlots()
 
     QObject::connect(m_dialogUI->buttonSave, SIGNAL(clicked()), this, SLOT(save()));
 
-
+    QObject::connect(m_dialogUI->buttonBox, SIGNAL(rejected()), this, SLOT(restoreAndClose()));
 }
 
 void LVRTransformationDialog::stepChanged(double value)
@@ -123,6 +123,12 @@ void LVRTransformationDialog::save()
     ofstream out(filename.toStdString().c_str());
     out << m_pose.x << " " << m_pose.y << " " << m_pose.z << " " << m_pose.r << " " << m_pose.t << " " << m_pose.p;
     out.close();
+}
+
+void LVRTransformationDialog::restoreAndClose()
+{
+    m_parent->setPose(m_pose_original);
+    m_renderWindow->Render();
 }
 
 void LVRTransformationDialog::reset()

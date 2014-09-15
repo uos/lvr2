@@ -156,8 +156,16 @@ void LVRMeshBufferBridge::setOpacity(float opacityValue)
 
 void LVRMeshBufferBridge::setVisibility(bool visible)
 {
-    if(visible) m_meshActor->VisibilityOn();
-    else m_meshActor->VisibilityOff();
+    if(visible)
+    {
+        m_meshActor->VisibilityOn();
+        m_wireframeActor->VisibilityOn();
+    }
+    else
+    {
+        m_meshActor->VisibilityOff();
+        m_wireframeActor->VisibilityOff();
+    }
 }
 
 void LVRMeshBufferBridge::setShading(int shader)
