@@ -59,8 +59,16 @@ void LVREstimateNormalsDialog::estimateNormals()
 
     // Get transformation from frames or pose files if possible
     Matrix4<float> transform;
-    //transform.toPostionAngle(m_parent->getPose());
-    // Matrix4 unterstützt lvr::Pose noch nicht
+    // Matrix4 unterstützt lvr::Pose noch nicht, Umwandlung in float-Array
+    Pose pose = m_parent->getPose();
+    float* float_pose = new float[6];
+    float_pose[0] = pose.x;
+    float_pose[1] = pose.y;
+    float_pose[2] = pose.z;
+    float_pose[3] = pose.r;
+    float_pose[4] = pose.t;
+    float_pose[5] = pose.p;
+    transform.toPostionAngle(float_pose);
 
     float x, y, z, nx, ny, nz;
     size_t pointsRead = 0;
