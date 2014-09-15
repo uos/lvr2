@@ -27,24 +27,42 @@
 
 #include <vtkRenderer.h>
 #include <vtkSmartPointer.h>
+#include <vtkCamera.h>
+#include <vtkCameraRepresentation.h>
+#include <vtkCameraInterpolator.h>
+#include <vtkCommand.h>
+#include <vtkRendererCollection.h>
 #include <vtkRenderWindow.h>
+#include <vtkRenderWindowInteractor.h>
+#include <vtkTesting.h>
 
 #include <QtGui>
 #include "LVRMainWindowUI.h"
 #include "LVRAboutDialogUI.h"
 #include "LVRTreeWidgetHelper.hpp"
+#include "LVRTimerCallback.hpp"
 #include "../vtkBridge/LVRModelBridge.hpp"
 #include "../widgets/LVRModelItem.hpp"
 #include "../widgets/LVRPointCloudItem.hpp"
 #include "../widgets/LVRMeshItem.hpp"
 #include "../widgets/LVRItemTypes.hpp"
+#include "../widgets/LVRRenameDialog.hpp"
 #include "../widgets/LVRTransformationDialog.hpp"
 #include "../widgets/LVRCorrespondanceDialog.hpp"
+#include "../widgets/LVRReconstructionEstimateNormalsDialog.hpp"
 #include "../widgets/LVRReconstructionMarchingCubesDialog.hpp"
+#include "../widgets/LVROptimizationPlanarOptimizationDialog.hpp"
+#include "../widgets/LVROptimizationRemoveArtifactsDialog.hpp"
+#include "../widgets/LVRFilteringMLSProjectionDialog.hpp"
+#include "../widgets/LVRFilteringRemoveOutliersDialog.hpp"
 #include "../vtkBridge/LVRPickingInteractor.hpp"
 #include "../vtkBridge/LVRVtkArrow.hpp"
 
 #include <iostream>
+#include <iterator>
+#include <vector>
+#include "boost/format.hpp"
+using std::vector;
 using std::cout;
 using std::endl;
 
@@ -62,11 +80,6 @@ public:
     LVRMainWindow();
     virtual ~LVRMainWindow();
 
-    typedef ColorVertex<float, unsigned char>               cVertex;
-    typedef Normal<float>                                   cNormal;
-    typedef PointsetSurface<cVertex>                        psSurface;
-    typedef AdaptiveKSearchSurface<cVertex, cNormal>        akSurface;
-
 public Q_SLOTS:
     void loadModel();
     void manualICP();
@@ -74,25 +87,35 @@ public Q_SLOTS:
     void showTreeContextMenu(const QPoint&);
     void showColorDialog();
     void showAboutDialog(QAction*);
+    void renameModelItem();
+    void estimateNormals();
     void reconstructUsingMarchingCubes();
     void reconstructUsingExtendedMarchingCubes();
     void reconstructUsingPlanarMarchingCubes();
-    void retesselate();
+    void optimizePlanes();
+    void removeArtifacts();
+    void applyMLSProjection();
+    void removeOutliers();
     void deleteModelItem();
     void changePointSize(int pointSize);
     void changeTransparency(int transparencyValue);
     void changeShading(int shader);
+    void assertToggles();
     void togglePoints(bool checkboxState);
+    void toggleNormals(bool checkboxState);
     void toggleMeshes(bool checkboxState);
     void toggleWireframe(bool checkboxState);
     void refreshView();
     void updateView();
     void saveCamera();
     void loadCamera();
+    void recordPath();
+    void animatePath();
     void removeArrow(LVRVtkArrow*);
     void addArrow(LVRVtkArrow*);
     void alignPointClouds();
     void exportSelectedModel();
+    void buildIncompatibilityBox(string actionName, unsigned char allowedTypes);
     LVRModelItem* getModelItem(QTreeWidgetItem* item);
     LVRPointCloudItem* getPointCloudItem(QTreeWidgetItem* item);
     LVRMeshItem* getMeshItem(QTreeWidgetItem* item);
@@ -108,12 +131,17 @@ private:
     void setupQVTK();
     void connectSignalsAndSlots();
 
-    LVRCorrespondanceDialog*                m_correspondanceDialog;
-    LVRReconstructViaMarchingCubesDialog*   m_reconstructViaMarchingCubesDialog;
-    QDialog*                                m_aboutDialog;
-    vtkSmartPointer<vtkRenderer>            m_renderer;
-    vtkSmartPointer<vtkCamera>			    m_camera;
-    QMenu*				                    m_treeContextMenu;
+    LVRCorrespondanceDialog*                    m_correspondanceDialog;
+    QDialog*                                    m_aboutDialog;
+    QMessageBox*                                m_incompatibilityBox;
+    vtkSmartPointer<vtkRenderer>                m_renderer;
+    vtkSmartPointer<vtkRenderWindowInteractor>  m_renderWindowInteractor;
+    vtkSmartPointer<LVRTimerCallback>           m_timerCallback;
+    int                                         m_timerID;
+    vtkSmartPointer<vtkCamera>			        m_camera;
+    vtkSmartPointer<vtkCameraRepresentation>    m_pathCamera;
+    QMenu*				                        m_treeParentItemContextMenu;
+    QMenu*                                      m_treeChildItemContextMenu;
 
     // Toolbar item "File"
 	QAction*							m_actionOpen;
@@ -123,16 +151,31 @@ private:
 	QAction*							m_actionReset_Camera;
 	QAction*							m_actionStore_Current_View;
 	QAction*							m_actionRecall_Stored_View;
+	QAction*                            m_actionRecord_Path;
+    QAction*                            m_actionLoad_Path;
+    QAction*                            m_actionAnimate_Path;
+    QAction*                            m_actionExport_Animation;
     // Toolbar item "Reconstruction"
+	QAction*                            m_actionEstimate_Normals;
 	QAction*                            m_actionMarching_Cubes;
     QAction*                            m_actionPlanar_Marching_Cubes;
     QAction*                            m_actionExtended_Marching_Cubes;
+    QAction*                            m_actionCompute_Textures;
+    QAction*                            m_actionMatch_Textures_from_Package;
+    QAction*                            m_actionExtract_and_Rematch_Patterns;
     // Toolbar item "Mesh Optimization"
     QAction*                            m_actionPlanar_Optimization;
-    QAction*                            m_actionRetesselate;
     QAction*                            m_actionRemove_Artifacts;
-    QAction*                            m_actionFill_Holes;
-    QAction*                            m_actionDelete_Small_Regions;
+    // Toolbar item "Filtering"
+    QAction*                            m_actionRemove_Outliers;
+    QAction*                            m_actionMLS_Projection;
+    // Toolbar item "Registration"
+    QAction*                            m_actionICP_Using_Manual_Correspondance;
+    QAction*                            m_actionICP_Using_Pose_Estimations;
+    QAction*                            m_actionGlobal_Relaxation;
+    // Toolbar item "Classification"
+    QAction*                            m_actionSimple_Plane_Classification;
+    QAction*                            m_actionFurniture_Recognition;
 	// Toolbar item "About"
 	QMenu*                              m_menuAbout;
 	// QToolbar below toolbar
@@ -142,8 +185,6 @@ private:
 	QAction*							m_actionShow_Wireframe;
     // Sliders below tree widget
     QSlider*							m_horizontalSliderPointSize;
-    QSlider*							m_horizontalSliderBrightness;
-    QSlider*							m_horizontalSliderContrast;
     QSlider*							m_horizontalSliderTransparency;
     // Combo boxes below sliders
     QComboBox*							m_comboBoxGradient;
@@ -155,11 +196,22 @@ private:
     QPushButton*						m_buttonTransformModel;
 
 	QAction*				            m_actionShowColorDialog;
+    QAction*                            m_actionRenameModelItem;
 	QAction*			                m_actionDeleteModelItem;
 	QAction*                            m_actionExportModelTransformed;
 
     LVRPickingInteractor*               m_pickingInteractor;
     LVRTreeWidgetHelper*                m_treeWidgetHelper;
+
+    enum TYPE {
+        MODELITEMS_ONLY,
+        POINTCLOUDS_ONLY,
+        MESHES_ONLY,
+        POINTCLOUDS_AND_PARENT_ONLY,
+        MESHES_AND_PARENT_ONLY,
+        POINTCLOUDS_AND_MESHES_ONLY,
+        POINTCLOUDS_AND_MESHES_AND_PARENT_ONLY
+    };
 };
 
 } /* namespace lvr */
