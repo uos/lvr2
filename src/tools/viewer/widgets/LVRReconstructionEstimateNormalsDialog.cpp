@@ -27,14 +27,28 @@ LVREstimateNormalsDialog::~LVREstimateNormalsDialog()
 void LVREstimateNormalsDialog::connectSignalsAndSlots()
 {
     QObject::connect(m_dialog->buttonBox, SIGNAL(accepted()), this, SLOT(estimateNormals()));
+    QObject::connect(m_dialog->checkBox_in, SIGNAL(stateChanged(int)), this, SLOT(toggleNormalInterpolation(int)));
+}
+
+void LVREstimateNormalsDialog::toggleNormalInterpolation(int state)
+{
+    QSpinBox* spinBox_ki = m_dialog->spinBox_ki;
+    if(state == Qt::CheckState::Checked)
+    {
+        spinBox_ki->setEnabled(true);
+    }
+    else
+    {
+        spinBox_ki->setEnabled(false);
+    }
 }
 
 void LVREstimateNormalsDialog::estimateNormals()
 {
-    QSpinBox* spinBox_ki = m_dialog->spinBox_ki;
-    int ki = spinBox_ki->value();
     QCheckBox* checkBox_in = m_dialog->checkBox_in;
     bool interpolateNormals = checkBox_in->isChecked();
+    QSpinBox* spinBox_ki = m_dialog->spinBox_ki;
+    int ki = spinBox_ki->value();
 
     PointBufferPtr pc = m_pc->getPointBuffer();
     size_t numPoints = m_pc->getNumPoints();
