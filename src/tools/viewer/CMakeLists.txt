@@ -19,6 +19,7 @@ set(LVR_VIEWER_SOURCES
     widgets/LVRPoseItem.cpp
     widgets/LVRPickItem.cpp
     widgets/LVRRenameDialog.cpp
+    widgets/LVRAnimationDialog.cpp
     widgets/LVRTransformationDialog.cpp
     widgets/LVRCorrespondanceDialog.cpp
     widgets/LVRReconstructionEstimateNormalsDialog.cpp
@@ -34,6 +35,7 @@ set(LVR_VIEWER_MOCS
     app/LVRMainWindow.hpp
     vtkBridge/LVRPickingInteractor.hpp
     widgets/LVRRenameDialog.hpp
+    widgets/LVRAnimationDialog.hpp
     widgets/LVRTransformationDialog.hpp
     widgets/LVRReconstructionEstimateNormalsDialog.hpp
     widgets/LVRReconstructionMarchingCubesDialog.hpp
@@ -49,6 +51,7 @@ set(LVR_VIEWER_MOCS
 set(LVR_VIEWER_UIS
    ui/LVRMainWindowUI.ui
    ui/LVRRenameDialogUI.ui
+   ui/LVRAnimationDialogUI.ui
    ui/LVRTransformationDialogUI.ui
    ui/LVRRegistrationPickCorrespondancesDialogUI.ui
    ui/LVRAboutDialogUI.ui
