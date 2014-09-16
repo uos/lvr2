@@ -225,11 +225,11 @@ void LVRMainWindow::setupQVTK()
     m_pathCamera->SetCamera(m_renderer->GetActiveCamera());
     renderWindow->AddRenderer(m_renderer);
 
-    m_timerCallback = vtkSmartPointer<LVRTimerCallback>::New();
+    //m_timerCallback = vtkSmartPointer<LVRTimerCallback>::New();
     //m_timerCallback->setMainCamera(m_renderer->GetActiveCamera());
-    m_timerCallback->setPathCamera(m_pathCamera);
-    m_renderWindowInteractor->AddObserver(vtkCommand::TimerEvent, m_timerCallback);
-    m_timerID = -1;
+    //m_timerCallback->setPathCamera(m_pathCamera);
+    //m_renderWindowInteractor->AddObserver(vtkCommand::TimerEvent, m_timerCallback);
+    //m_timerID = -1;
     // TODO: Animate camera path (saved in m_pathCamera) when clicking play
 }
 
@@ -258,19 +258,7 @@ void LVRMainWindow::loadCamera()
 
 void LVRMainWindow::recordPath()
 {
-    // start recording if timer ID is invalid
-    if(m_timerID <= 0)
-    {
-        m_pathCamera->InitializePath();
-        m_timerCallback->reset();
-        m_timerID = m_renderWindowInteractor->CreateRepeatingTimer(1000);
-    }
-    // stop recording if timer ID is valid, destroy timer
-    else
-    {
-        m_renderWindowInteractor->DestroyTimer(m_timerID);
-        m_timerID = -1;
-    }
+    new LVRAnimationDialog(m_renderWindowInteractor, m_pathCamera, treeWidget);
 }
 
 void LVRMainWindow::animatePath()
@@ -486,7 +474,6 @@ void LVRMainWindow::showTreeContextMenu(const QPoint& p)
 
 void LVRMainWindow::renameModelItem()
 {
-    // Only display context menu for point clounds and meshes
     QList<QTreeWidgetItem*> items = treeWidget->selectedItems();
     if(items.size() > 0)
     {
