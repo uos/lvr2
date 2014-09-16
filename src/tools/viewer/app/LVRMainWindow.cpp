@@ -222,9 +222,7 @@ void LVRMainWindow::setupQVTK()
     vtkSmartPointer<vtkCameraInterpolator> cameraInterpolator = vtkSmartPointer<vtkCameraInterpolator>::New();
     cameraInterpolator->SetInterpolationTypeToSpline();
     m_pathCamera->SetInterpolator(cameraInterpolator);
-    m_pathCamera->SetCamera(m_camera);
-    cameraInterpolator->DebugOn();
-    m_pathCamera->DebugOn();
+    m_pathCamera->SetCamera(m_renderer->GetActiveCamera());
     renderWindow->AddRenderer(m_renderer);
 
     m_timerCallback = vtkSmartPointer<LVRTimerCallback>::New();
@@ -279,7 +277,6 @@ void LVRMainWindow::animatePath()
 {
     m_pathCamera->SetNumberOfFrames(m_timerCallback->getNumberOfFrames() * 30);
     m_pathCamera->AnimatePath(m_renderWindowInteractor);
-    m_pathCamera->Print(std::cout);
 }
 
 void LVRMainWindow::addArrow(LVRVtkArrow* a)
