@@ -32,6 +32,7 @@ public Q_SLOTS:
     void addFrame();
     void removeFrame();
     void clearFrames();
+    void changeInterpolation(const QString& text);
     void play();
 
 private:
