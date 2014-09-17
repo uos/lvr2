@@ -29,19 +29,6 @@
     <set>QDialogButtonBox::Close</set>
    </property>
   </widget>
-  <widget class="QListView" name="timeline_list">
-   <property name="geometry">
-    <rect>
-     <x>10</x>
-     <y>10</y>
-     <width>211</width>
-     <height>341</height>
-    </rect>
-   </property>
-   <property name="horizontalScrollBarPolicy">
-    <enum>Qt::ScrollBarAlwaysOff</enum>
-   </property>
-  </widget>
   <widget class="QPushButton" name="loadPath_button">
    <property name="geometry">
     <rect>
@@ -118,6 +105,19 @@
    </property>
    <property name="text">
     <string>remove selected frame</string>
+   </property>
+  </widget>
+  <widget class="QListWidget" name="timeline_list">
+   <property name="geometry">
+    <rect>
+     <x>10</x>
+     <y>10</y>
+     <width>211</width>
+     <height>341</height>
+    </rect>
+   </property>
+   <property name="horizontalScrollBarPolicy">
+    <enum>Qt::ScrollBarAlwaysOff</enum>
    </property>
   </widget>
  </widget>

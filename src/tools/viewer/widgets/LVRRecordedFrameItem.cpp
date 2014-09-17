@@ -19,16 +19,17 @@
 #include "LVRRecordedFrameItem.hpp"
 #include "LVRItemTypes.hpp"
 
-#include <vtkSmartPointer.h>
-
 namespace lvr
 {
 
-LVRRecordedFrameItem::LVRRecordedFrameItem(QString name) :
+LVRRecordedFrameItem::LVRRecordedFrameItem(vtkSmartPointer<vtkCameraRepresentation> pathCamera, QString name) :
     m_name(name)
 {
     // Setup item properties
     setText(m_name);
+
+    m_recordedFrame = vtkSmartPointer<vtkCamera>::New();
+    m_recordedFrame->DeepCopy(pathCamera->GetCamera());
 }
 
 LVRRecordedFrameItem::~LVRRecordedFrameItem()
@@ -36,9 +37,9 @@ LVRRecordedFrameItem::~LVRRecordedFrameItem()
     // TODO Auto-generated destructor stub
 }
 
-void LVRRecordedFrameItem::reset()
+vtkSmartPointer<vtkCamera> LVRRecordedFrameItem::getFrame()
 {
-
+    return m_recordedFrame;
 }
 
 } /* namespace lvr */
