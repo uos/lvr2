@@ -40,6 +40,7 @@ private:
     AnimationDialog*                           m_dialog;
     vtkSmartPointer<vtkRenderWindowInteractor>  m_renderWindowInteractor;
     vtkSmartPointer<vtkCameraRepresentation>    m_pathCamera;
+    vtkSmartPointer<vtkCamera>                  m_mainCamera;
     QTreeWidget*                                m_treeWidget;
     int                                         m_timerID;
     unsigned int                               m_frameCounter;
