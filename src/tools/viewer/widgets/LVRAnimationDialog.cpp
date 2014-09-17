@@ -34,6 +34,8 @@ void LVRAnimationDialog::connectSignalsAndSlots()
     QObject::connect(m_dialog->removeFrame_button, SIGNAL(pressed()), this, SLOT(removeFrame()));
     QObject::connect(m_dialog->clearFrames_button, SIGNAL(pressed()), this, SLOT(clearFrames()));
     QObject::connect(m_dialog->interpolation_box, SIGNAL(currentIndexChanged(const QString&)), this, SLOT(changeInterpolation(const QString&)));
+    QObject::connect(m_dialog->savePath_button, SIGNAL(pressed()), this, SLOT(savePath()));
+    QObject::connect(m_dialog->loadPath_button, SIGNAL(pressed()), this, SLOT(loadPath()));
     QObject::connect(m_dialog->play_button, SIGNAL(pressed()), this, SLOT(play()));
 }
 
@@ -88,6 +90,37 @@ void LVRAnimationDialog::play()
     m_pathCamera->SetNumberOfFrames(frameCount * frameMultiplier);
     m_pathCamera->SetCamera(m_mainCamera);
     m_pathCamera->AnimatePath(m_renderWindowInteractor);
+}
+
+void LVRAnimationDialog::savePath()
+{
+    QString filename = QFileDialog::getSaveFileName(m_treeWidget, tr("Save Path"), "", tr("BCP files (*.bcp)"));
+    QFile pfile(filename);
+
+    if (!pfile.open(QFile::WriteOnly))
+    {
+        return;
+    }
+
+    for(int row = 0; row < m_timeline->count(); row++)
+    {
+        LVRRecordedFrameItem* recordedFrame = static_cast<LVRRecordedFrameItem*>(m_timeline->item(row));
+    }
+
+    pfile.close();
+}
+
+void LVRAnimationDialog::loadPath()
+{
+    QString filename = QFileDialog::getOpenFileName(m_treeWidget, tr("Load Path"), "", tr("BCP files (*.bcp)"));
+    QFile pfile(filename);
+
+    if (!pfile.open(QFile::ReadOnly))
+    {
+        return;
+    }
+
+    pfile.close();
 }
 
 }
