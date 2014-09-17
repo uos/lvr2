@@ -39,6 +39,7 @@ private:
     void connectSignalsAndSlots();
 
     AnimationDialog*                           m_dialog;
+    QListWidget*                                m_timeline;
     vtkSmartPointer<vtkRenderWindowInteractor>  m_renderWindowInteractor;
     vtkSmartPointer<vtkCameraRepresentation>    m_pathCamera;
     vtkSmartPointer<vtkCamera>                  m_mainCamera;
