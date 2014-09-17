@@ -29,6 +29,7 @@ public:
 
 public Q_SLOTS:
     void addFrame();
+    void removeFrame();
     void clearFrames();
     void play();
 
