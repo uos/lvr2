@@ -22,6 +22,7 @@
 #include <QString>
 #include <QColor>
 #include <QListWidgetItem>
+#include <QTextStream>
 
 #include <vtkSmartPointer.h>
 #include <vtkCamera.h>
@@ -35,11 +36,14 @@ class LVRRecordedFrameItem : public QListWidgetItem
 public:
     LVRRecordedFrameItem(vtkSmartPointer<vtkCameraRepresentation> pathCamera, QString name = "");
     virtual ~LVRRecordedFrameItem();
+    void writeToStream(QTextStream &stream);
+    static LVRRecordedFrameItem* createFromStream(QTextStream &stream);
 
 public Q_SLOTS:
     vtkSmartPointer<vtkCamera>	getFrame();
 
 protected:
+    LVRRecordedFrameItem(QString name = "");
 	vtkSmartPointer<vtkCamera>  m_recordedFrame;
     QString                     m_name;
 };

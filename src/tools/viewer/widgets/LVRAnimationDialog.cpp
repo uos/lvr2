@@ -105,6 +105,7 @@ void LVRAnimationDialog::savePath()
     for(int row = 0; row < m_timeline->count(); row++)
     {
         LVRRecordedFrameItem* recordedFrame = static_cast<LVRRecordedFrameItem*>(m_timeline->item(row));
+        recordedFrame->getFrame()->Print(std::cout);
     }
 
     pfile.close();
