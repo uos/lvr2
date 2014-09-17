@@ -12,6 +12,7 @@ LVRAnimationDialog::LVRAnimationDialog(vtkSmartPointer<vtkRenderWindowInteractor
     m_dialog = new AnimationDialog;
     m_dialog->setupUi(dialog);
 
+    m_timeline = m_dialog->timeline_list;
     m_mainCamera = m_pathCamera->GetCamera();
     m_frameCounter = 0;
 
@@ -41,12 +42,12 @@ void LVRAnimationDialog::addFrame()
     cout << "Frame added." << endl;
     QString frameCount = QString("Frame no. %1").arg(++m_frameCounter);
     QListWidgetItem* currentFrame = new LVRRecordedFrameItem(m_pathCamera, frameCount);
-    m_dialog->timeline_list->addItem(currentFrame);
+    m_timeline->addItem(currentFrame);
 }
 
 void LVRAnimationDialog::removeFrame()
 {
-    QListWidgetItem* currentItem = m_dialog->timeline_list->currentItem();
+    QListWidgetItem* currentItem = m_timeline->currentItem();
     if(currentItem)
     {
         cout << "Deleting " << currentItem->text().toStdString() << "..." << endl;
@@ -56,7 +57,7 @@ void LVRAnimationDialog::removeFrame()
 
 void LVRAnimationDialog::clearFrames()
 {
-    m_dialog->timeline_list->clear();
+    m_timeline->clear();
     m_frameCounter = 0;
 }
 
@@ -74,15 +75,17 @@ void LVRAnimationDialog::changeInterpolation(const QString& text)
 
 void LVRAnimationDialog::play()
 {
-    cout << "Animating " << m_dialog->timeline_list->count() << " frames..." << endl;
+    unsigned int frameCount = m_timeline->count();
+    cout << "Animating " << frameCount << " frames..." << endl;
     m_pathCamera->InitializePath();
-    for(int i = 0; i < m_dialog->timeline_list->count(); i++)
+    for(int i = 0; i < frameCount; i++)
     {
-        LVRRecordedFrameItem* recordedFrame = static_cast<LVRRecordedFrameItem*>(m_dialog->timeline_list->item(i));
+        LVRRecordedFrameItem* recordedFrame = static_cast<LVRRecordedFrameItem*>(m_timeline->item(i));
         m_pathCamera->SetCamera(recordedFrame->getFrame());
         m_pathCamera->AddCameraToPath();
     }
-    m_pathCamera->SetNumberOfFrames(m_dialog->timeline_list->count() * 30);
+    unsigned int frameMultiplier = m_dialog->frameMultiplier_box->value();
+    m_pathCamera->SetNumberOfFrames(frameCount * frameMultiplier);
     m_pathCamera->SetCamera(m_mainCamera);
     m_pathCamera->AnimatePath(m_renderWindowInteractor);
 }
