@@ -18,6 +18,7 @@ set(LVR_VIEWER_SOURCES
     widgets/LVRMeshItem.cpp
     widgets/LVRPoseItem.cpp
     widgets/LVRPickItem.cpp
+    widgets/LVRRecordedFrameItem.cpp
     widgets/LVRRenameDialog.cpp
     widgets/LVRAnimationDialog.cpp
     widgets/LVRTransformationDialog.cpp

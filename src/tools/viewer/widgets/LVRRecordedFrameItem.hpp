@@ -16,18 +16,29 @@
  * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA
  */
 
-/**
- * LVRItemTypes.hpp
- *
- *  @date Feb 17, 2014
- *  @author Thomas Wiemann
- */
-#ifndef LVRITEMTYPES_HPP_
-#define LVRITEMTYPES_HPP_
+#ifndef LVRRECORDEDFRAMEITEM_H_
+#define LVRRECORDEDFRAMEITEM_H_
+
+#include <QString>
+#include <QColor>
+#include <QListWidgetItem>
 
 namespace lvr
 {
-    enum {LVRModelItemType = 1001, LVRPointCloudItemType, LVRMeshItemType, LVRPoseItemType, LVRPickItemType, LVRRecordedFrameItemType};
-}
 
-#endif /* LVRITEMTYPES_HPP_ */
+class LVRRecordedFrameItem : public QListWidgetItem
+{
+public:
+    LVRRecordedFrameItem(QString name = "");
+    virtual ~LVRRecordedFrameItem();
+
+public Q_SLOTS:
+	void			reset();
+
+protected:
+    QString         m_name;
+};
+
+} /* namespace lvr */
+
+#endif /* LVRRECORDEDFRAMEITEM_H_ */
