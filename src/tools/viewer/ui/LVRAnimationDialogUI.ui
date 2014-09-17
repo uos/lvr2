@@ -120,6 +120,48 @@
     <enum>Qt::ScrollBarAlwaysOff</enum>
    </property>
   </widget>
+  <widget class="QLabel" name="interpolation_label">
+   <property name="geometry">
+    <rect>
+     <x>230</x>
+     <y>170</y>
+     <width>91</width>
+     <height>41</height>
+    </rect>
+   </property>
+   <property name="frameShape">
+    <enum>QFrame::NoFrame</enum>
+   </property>
+   <property name="text">
+    <string>Interpolation type</string>
+   </property>
+   <property name="wordWrap">
+    <bool>true</bool>
+   </property>
+  </widget>
+  <widget class="QComboBox" name="interpolation_box">
+   <property name="geometry">
+    <rect>
+     <x>320</x>
+     <y>180</y>
+     <width>111</width>
+     <height>27</height>
+    </rect>
+   </property>
+   <property name="currentIndex">
+    <number>1</number>
+   </property>
+   <item>
+    <property name="text">
+     <string>Linear</string>
+    </property>
+   </item>
+   <item>
+    <property name="text">
+     <string>Spline</string>
+    </property>
+   </item>
+  </widget>
  </widget>
  <resources/>
  <connections>

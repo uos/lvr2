@@ -32,6 +32,7 @@ void LVRAnimationDialog::connectSignalsAndSlots()
     QObject::connect(m_dialog->addFrame_button, SIGNAL(pressed()), this, SLOT(addFrame()));
     QObject::connect(m_dialog->removeFrame_button, SIGNAL(pressed()), this, SLOT(removeFrame()));
     QObject::connect(m_dialog->clearFrames_button, SIGNAL(pressed()), this, SLOT(clearFrames()));
+    QObject::connect(m_dialog->interpolation_box, SIGNAL(currentIndexChanged(const QString&)), this, SLOT(changeInterpolation(const QString&)));
     QObject::connect(m_dialog->play_button, SIGNAL(pressed()), this, SLOT(play()));
 }
 
@@ -57,6 +58,18 @@ void LVRAnimationDialog::clearFrames()
 {
     m_dialog->timeline_list->clear();
     m_frameCounter = 0;
+}
+
+void LVRAnimationDialog::changeInterpolation(const QString& text)
+{
+    if(text == "Linear")
+   {
+        m_pathCamera->GetInterpolator()->SetInterpolationTypeToLinear();
+   }
+   else if(text == "Spline")
+   {
+       m_pathCamera->GetInterpolator()->SetInterpolationTypeToSpline();
+   }
 }
 
 void LVRAnimationDialog::play()
