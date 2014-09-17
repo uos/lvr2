@@ -13,6 +13,7 @@
 
 #include <QtGui>
 #include "LVRAnimationDialogUI.h"
+#include "LVRRecordedFrameItem.hpp"
 
 using Ui::AnimationDialog;
 

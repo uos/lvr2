@@ -36,9 +36,9 @@ void LVRAnimationDialog::connectSignalsAndSlots()
 void LVRAnimationDialog::addFrame()
 {
     cout << "Frame added." << endl;
-    if(m_frameCounter == 0) m_pathCamera->InitializePath();
-    m_pathCamera->AddCameraToPath();
-    m_frameCounter++;
+    QString frameCount = QString("Frame no. %1").arg(m_dialog->timeline_list->count() + 1);
+    QListWidgetItem* currentFrame = new LVRRecordedFrameItem(m_pathCamera, frameCount);
+    m_dialog->timeline_list->addItem(currentFrame);
 }
 
 void LVRAnimationDialog::removeFrame()
