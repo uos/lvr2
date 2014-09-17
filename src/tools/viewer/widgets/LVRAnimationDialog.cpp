@@ -41,6 +41,11 @@ void LVRAnimationDialog::addFrame()
     m_frameCounter++;
 }
 
+void LVRAnimationDialog::removeFrame()
+{
+
+}
+
 void LVRAnimationDialog::clearFrames()
 {
     m_pathCamera->InitializePath();
