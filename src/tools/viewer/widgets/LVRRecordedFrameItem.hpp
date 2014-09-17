@@ -23,20 +23,25 @@
 #include <QColor>
 #include <QListWidgetItem>
 
+#include <vtkSmartPointer.h>
+#include <vtkCamera.h>
+#include <vtkCameraRepresentation.h>
+
 namespace lvr
 {
 
 class LVRRecordedFrameItem : public QListWidgetItem
 {
 public:
-    LVRRecordedFrameItem(QString name = "");
+    LVRRecordedFrameItem(vtkSmartPointer<vtkCameraRepresentation> pathCamera, QString name = "");
     virtual ~LVRRecordedFrameItem();
 
 public Q_SLOTS:
-	void			reset();
+    vtkSmartPointer<vtkCamera>	getFrame();
 
 protected:
-    QString         m_name;
+	vtkSmartPointer<vtkCamera>  m_recordedFrame;
+    QString                     m_name;
 };
 
 } /* namespace lvr */
