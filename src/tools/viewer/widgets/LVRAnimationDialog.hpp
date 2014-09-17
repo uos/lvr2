@@ -10,6 +10,7 @@
 #include <vtkRendererCollection.h>
 #include <vtkRenderWindow.h>
 #include <vtkRenderWindowInteractor.h>
+#include <vtkXMLWriter.h>
 
 #include <QtGui>
 #include "LVRAnimationDialogUI.h"
@@ -33,6 +34,8 @@ public Q_SLOTS:
     void removeFrame();
     void clearFrames();
     void changeInterpolation(const QString& text);
+    void savePath();
+    void loadPath();
     void play();
 
 private:
