@@ -16,18 +16,29 @@
  * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA
  */
 
-/**
- * LVRItemTypes.hpp
- *
- *  @date Feb 17, 2014
- *  @author Thomas Wiemann
- */
-#ifndef LVRITEMTYPES_HPP_
-#define LVRITEMTYPES_HPP_
+#include "LVRRecordedFrameItem.hpp"
+#include "LVRItemTypes.hpp"
+
+#include <vtkSmartPointer.h>
 
 namespace lvr
 {
-    enum {LVRModelItemType = 1001, LVRPointCloudItemType, LVRMeshItemType, LVRPoseItemType, LVRPickItemType, LVRRecordedFrameItemType};
+
+LVRRecordedFrameItem::LVRRecordedFrameItem(QString name) :
+    m_name(name)
+{
+    // Setup item properties
+    setText(m_name);
 }
 
-#endif /* LVRITEMTYPES_HPP_ */
+LVRRecordedFrameItem::~LVRRecordedFrameItem()
+{
+    // TODO Auto-generated destructor stub
+}
+
+void LVRRecordedFrameItem::reset()
+{
+
+}
+
+} /* namespace lvr */
