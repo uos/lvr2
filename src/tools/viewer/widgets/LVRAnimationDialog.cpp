@@ -12,6 +12,7 @@ LVRAnimationDialog::LVRAnimationDialog(vtkSmartPointer<vtkRenderWindowInteractor
     m_dialog = new AnimationDialog;
     m_dialog->setupUi(dialog);
 
+    m_mainCamera = m_pathCamera->GetCamera();
     m_frameCounter = 0;
 
     connectSignalsAndSlots();
@@ -54,14 +55,22 @@ void LVRAnimationDialog::removeFrame()
 
 void LVRAnimationDialog::clearFrames()
 {
-    m_pathCamera->InitializePath();
+    m_dialog->timeline_list->clear();
     m_frameCounter = 0;
 }
 
 void LVRAnimationDialog::play()
 {
-    cout << "Animating " << m_frameCounter << " frames..." << endl;
-    m_pathCamera->SetNumberOfFrames(m_frameCounter * 30);
+    cout << "Animating " << m_dialog->timeline_list->count() << " frames..." << endl;
+    m_pathCamera->InitializePath();
+    for(int i = 0; i < m_dialog->timeline_list->count(); i++)
+    {
+        LVRRecordedFrameItem* recordedFrame = static_cast<LVRRecordedFrameItem*>(m_dialog->timeline_list->item(i));
+        m_pathCamera->SetCamera(recordedFrame->getFrame());
+        m_pathCamera->AddCameraToPath();
+    }
+    m_pathCamera->SetNumberOfFrames(m_dialog->timeline_list->count() * 30);
+    m_pathCamera->SetCamera(m_mainCamera);
     m_pathCamera->AnimatePath(m_renderWindowInteractor);
 }
 
