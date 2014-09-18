@@ -56,8 +56,8 @@ void LVRRecordedFrameItem::writeToStream(QTextStream &stream)
 
 LVRRecordedFrameItem* createFromStream(QTextStream &stream)
 {
-    LVRRecordedFrameItem recordedFrameItem = new LVRRecordedFrameItem("Test");
-    return *recordedFrameItem;
+    LVRRecordedFrameItem* recordedFrameItem = new LVRRecordedFrameItem("Test");
+    return recordedFrameItem;
 }
 
 } /* namespace lvr */
