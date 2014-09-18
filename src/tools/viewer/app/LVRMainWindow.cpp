@@ -216,6 +216,10 @@ void LVRMainWindow::connectSignalsAndSlots()
 void LVRMainWindow::showBackgroundDialog()
 {
     LVRBackgroundDialog dialog(qvtkWidget->GetRenderWindow());
+    if(dialog.exec() == QDialog::Accepted)
+    {
+        cout << "OK" << endl;
+    }
 }
 
 void LVRMainWindow::setupQVTK()

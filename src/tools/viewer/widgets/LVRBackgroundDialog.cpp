@@ -30,13 +30,56 @@ namespace lvr
 LVRBackgroundDialog::LVRBackgroundDialog(vtkSmartPointer<vtkRenderWindow> renderWindow)
     : m_renderWindow(renderWindow)
 {
-    QDialog* dialog = new QDialog;
     m_ui = new BackgroundDialogUI;
-    m_ui->setupUi(dialog);
+    m_ui->setupUi(this);
 
-    dialog->show();
-    dialog->raise();
-    dialog->activateWindow();
+    updateColorBox(m_ui->colorFrame1, QColor(0, 0, 255));
+    updateColorBox(m_ui->colorFrame1, QColor(255, 255, 255));
+
+    connect(m_ui->buttonChange1, SIGNAL(pressed()), this, SLOT(color1Changed()));
+    connect(m_ui->buttonChange2, SIGNAL(pressed()), this, SLOT(color2Changed()));
+
+}
+
+void LVRBackgroundDialog::updateColorBox(QFrame* box, QColor color)
+{
+    QPalette pal(palette());
+    pal.setColor(QPalette::Background, color);
+    box->setAutoFillBackground(true);
+    box->setPalette(pal);
+}
+
+void LVRBackgroundDialog::color1Changed()
+{
+    m_colorDialog1.exec();
+    updateColorBox(m_ui->colorFrame1, m_colorDialog1.getColor());
+}
+
+void LVRBackgroundDialog::color2Changed()
+{
+    m_colorDialog2.exec();
+    updateColorBox(m_ui->colorFrame2, m_colorDialog2.getColor());
+}
+
+void LVRBackgroundDialog::getColor1(float &r, float &g, float &b)
+{
+    QColor c = m_colorDialog1.getColor();
+    r = c.redF();
+    g = c.greenF();
+    b = c.blueF();
+}
+
+void LVRBackgroundDialog::getColor2(float &r, float &g, float &b)
+{
+    QColor c = m_colorDialog2.getColor();
+    r = c.redF();
+    g = c.greenF();
+    b = c.blueF();
+}
+
+bool LVRBackgroundDialog::renderGradient()
+{
+    return !(m_ui->checkBoxUniformRendering->isChecked());
 }
 
 LVRBackgroundDialog::~LVRBackgroundDialog()
