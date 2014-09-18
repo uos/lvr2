@@ -51,30 +51,32 @@ void LVRBackgroundDialog::updateColorBox(QFrame* box, QColor color)
 
 void LVRBackgroundDialog::color1Changed()
 {
-    m_colorDialog1.exec();
-    updateColorBox(m_ui->colorFrame1, m_colorDialog1.getColor());
+    //m_colorDialog1.exec();
+    QColorDialog d;
+    m_color1 = d.getColor();
+    updateColorBox(m_ui->colorFrame1, m_color1);
 }
 
 void LVRBackgroundDialog::color2Changed()
 {
-    m_colorDialog2.exec();
-    updateColorBox(m_ui->colorFrame2, m_colorDialog2.getColor());
+   // m_colorDialog2.exec();
+    QColorDialog d;
+    m_color2 = d.getColor();
+    updateColorBox(m_ui->colorFrame2, m_color2);
 }
 
 void LVRBackgroundDialog::getColor1(float &r, float &g, float &b)
 {
-    QColor c = m_colorDialog1.getColor();
-    r = c.redF();
-    g = c.greenF();
-    b = c.blueF();
+    r = m_color1.redF();
+    g = m_color1.greenF();
+    b = m_color1.blueF();
 }
 
 void LVRBackgroundDialog::getColor2(float &r, float &g, float &b)
 {
-    QColor c = m_colorDialog2.getColor();
-    r = c.redF();
-    g = c.greenF();
-    b = c.blueF();
+    r = m_color2.redF();
+    g = m_color2.greenF();
+    b = m_color2.blueF();
 }
 
 bool LVRBackgroundDialog::renderGradient()
