@@ -158,6 +158,8 @@ void LVRAnimationDialog::loadPath()
     int transitionFrames = parameters[1].toInt();
     m_dialog->frameMultiplier_box->setValue(transitionFrames);
 
+    m_timeline->clear();
+
     while(!in.atEnd())
     {
         QListWidgetItem* recordedFrame = LVRRecordedFrameItem::createFromStream(in);
