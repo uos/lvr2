@@ -38,8 +38,9 @@ public:
     LVREstimateNormalsDialog(LVRPointCloudItem* pc_item, LVRModelItem* parent, QTreeWidget* treeWidget, vtkRenderWindow* renderer);
     virtual ~LVREstimateNormalsDialog();
 
-public Q_SLOTS:
+private Q_SLOTS:
     void estimateNormals();
+    void toggleNormalInterpolation(int state);
 
 private:
     void connectSignalsAndSlots();
