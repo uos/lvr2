@@ -16,12 +16,6 @@
  * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA
  */
 
-/**
- * MainWindow.hpp
- *
- *  @date Jan 31, 2014
- *  @author Thomas Wiemann
- */
 #ifndef TIMERCALLBACK_HPP_
 #define TIMERCALLBACK_HPP_
 
@@ -33,6 +27,8 @@
 #include <vtkRendererCollection.h>
 #include <vtkRenderWindow.h>
 #include <vtkRenderWindowInteractor.h>
+#include <vtkWindowToImageFilter.h>
+#include <vtkFFMPEGWriter.h>
 #include <vtkTesting.h>
 
 namespace lvr
@@ -42,15 +38,12 @@ class LVRTimerCallback : public vtkCommand
 {
 public:
     static LVRTimerCallback* New();
-    void reset();
-    int getNumberOfFrames();
-    void setMainCamera(vtkSmartPointer<vtkCamera> mainCamera);
-    void setPathCamera(vtkSmartPointer<vtkCameraRepresentation> pathCamera);
+    void setWindowToImageFilter(vtkSmartPointer<vtkWindowToImageFilter> w2i);
+    void setFFMPEGWriter(vtkSmartPointer<vtkFFMPEGWriter> videoWriter);
     void Execute(vtkObject* caller, unsigned long eventId, void* callData);
 private:
-    vtkSmartPointer<vtkCamera>                  m_mainCamera;
-    vtkSmartPointer<vtkCameraRepresentation>    m_pathCamera;
-    unsigned int                               m_numberOfFrames;
+    vtkSmartPointer<vtkWindowToImageFilter> m_w2i;
+    vtkSmartPointer<vtkFFMPEGWriter>        m_videoWriter;
 };
 
 } /* namespace lvr */
