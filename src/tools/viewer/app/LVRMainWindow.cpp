@@ -87,7 +87,7 @@ LVRMainWindow::LVRMainWindow()
     m_actionRecord_Path = this->actionRecord_Path; // TODO: Record path
     m_actionLoad_Path = this->actionLoad_Path; // TODO: Load path
     m_actionAnimate_Path = this->actionAnimate_Path; // TODO: Animate path
-    m_actionExport_Animation = this->actionExport_Animation; // TODO: Save animation
+    m_actionExport_Animation = this->actionExportAnimation; // TODO: Save animation
     // Toolbar item "Reconstruction"
     m_actionEstimate_Normals = this->actionEstimate_Normals; // TODO: fix normal estimation
     m_actionMarching_Cubes = this->actionMarching_Cubes;
@@ -117,6 +117,8 @@ LVRMainWindow::LVRMainWindow()
     m_actionShow_Normals = this->actionShow_Normals;
     m_actionShow_Mesh = this->actionShow_Mesh;
     m_actionShow_Wireframe = this->actionShow_Wireframe;
+    m_actionShowBackgroundSettings = this->actionShowBackgroundSettings;
+
     // Slider below tree widget
     m_horizontalSliderPointSize = this->horizontalSliderPointSize;
     m_horizontalSliderTransparency = this->horizontalSliderTransparency;
@@ -193,6 +195,7 @@ void LVRMainWindow::connectSignalsAndSlots()
     QObject::connect(m_actionShow_Normals, SIGNAL(toggled(bool)), this, SLOT(toggleNormals(bool)));
     QObject::connect(m_actionShow_Mesh, SIGNAL(toggled(bool)), this, SLOT(toggleMeshes(bool)));
     QObject::connect(m_actionShow_Wireframe, SIGNAL(toggled(bool)), this, SLOT(toggleWireframe(bool)));
+    QObject::connect(m_actionShowBackgroundSettings, SIGNAL(activated()), this, SLOT(showBackgroundDialog()));
 
     QObject::connect(m_horizontalSliderPointSize, SIGNAL(valueChanged(int)), this, SLOT(changePointSize(int)));
     QObject::connect(m_horizontalSliderTransparency, SIGNAL(valueChanged(int)), this, SLOT(changeTransparency(int)));
@@ -208,6 +211,11 @@ void LVRMainWindow::connectSignalsAndSlots()
     QObject::connect(m_pickingInteractor, SIGNAL(secondPointPicked(double*)),m_correspondanceDialog, SLOT(secondPointPicked(double*)));
 
     QObject::connect(this, SIGNAL(correspondenceDialogOpened()), m_pickingInteractor, SLOT(correspondenceSearchOn()));
+}
+
+void LVRMainWindow::showBackgroundDialog()
+{
+    LVRBackgroundDialog dialog(qvtkWidget->GetRenderWindow());
 }
 
 void LVRMainWindow::setupQVTK()
