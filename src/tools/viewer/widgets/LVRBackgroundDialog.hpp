@@ -59,8 +59,8 @@ private:
 
     vtkSmartPointer<vtkRenderWindow>    m_renderWindow;
     BackgroundDialogUI*                 m_ui;
-    QColorDialog                        m_colorDialog1;
-    QColorDialog                        m_colorDialog2;
+    QColor                              m_color1;
+    QColor                              m_color2;
 };
 
 } /* namespace lvr */
