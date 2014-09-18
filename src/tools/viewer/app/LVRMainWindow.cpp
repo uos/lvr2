@@ -218,7 +218,23 @@ void LVRMainWindow::showBackgroundDialog()
     LVRBackgroundDialog dialog(qvtkWidget->GetRenderWindow());
     if(dialog.exec() == QDialog::Accepted)
     {
-        cout << "OK" << endl;
+        if(dialog.renderGradient())
+        {
+            float r1, r2, g1, g2, b1, b2;
+            dialog.getColor1(r1, g1, b1);
+            dialog.getColor2(r2, g2, b2);
+            m_renderer->GradientBackgroundOn();
+            m_renderer->SetBackground(r1, g1, b1);
+            m_renderer->SetBackground2(r2, g2, b2);
+        }
+        else
+        {
+            float r, g, b;
+            dialog.getColor1(r, g, b);
+            m_renderer->GradientBackgroundOff();
+            m_renderer->SetBackground(r, g, b);
+        }
+        this->qvtkWidget->GetRenderWindow()->Render();
     }
 }
 
