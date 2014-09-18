@@ -46,7 +46,7 @@ FIND_PACKAGE( MPI )
 include_directories(SYSTEM ${MPI_INCLUDE_PATH})
 
 ####
-## Searching for MPI
+## Searching for VTK
 ##############################
 find_package(VTK REQUIRED)
 include(${VTK_USE_FILE})
@@ -228,30 +228,6 @@ endif(APPLE)
 include_directories(ext/libfreenect/include/)
 add_subdirectory(ext/libfreenect)
 
-
-##############################################################
-# LIBRARIES
-##############################################################
-
-add_subdirectory(src/liblvr)
-
-##############################################################
-# BINARIES
-##############################################################
-
-add_subdirectory(src/tools/reconstruct)
-add_subdirectory(src/tools/classifier)
-add_subdirectory(src/tools/colorize)
-add_subdirectory(src/tools/scanreduce)
-add_subdirectory(src/tools/convert)
-add_subdirectory(src/tools/asciiconverter)
-add_subdirectory(src/tools/texman)
-add_subdirectory(src/tools/tiogen)
-add_subdirectory(src/tools/meshoptimizer)
-add_subdirectory(src/tools/transform)
-add_subdirectory(src/tools/registration)
-add_subdirectory(src/tools/normals)
-
 if(MPI_FOUND)
 #add_subdirectory(src/tools/mpi)
 endif(MPI_FOUND)
@@ -280,6 +256,8 @@ if( QT4_FOUND )
     include_directories(${QT_QTOPENGL_INCLUDE_DIR})
     include_directories(${QT_QTCORE_INCLUDE_DIR})
     include_directories(${QT_QTXML_INCLUDE_DIR})
+    
+    add_definitions(-D__WITH_QT4__)
 
     # Try to find libQGLViewer
     find_library(QGLVIEWER_LIBRARY_RELEASE 
@@ -293,9 +271,36 @@ if( QT4_FOUND )
         add_subdirectory(src/qglviewer)
     endif(QGLVIEWER_LIBRARY_RELEASE)
 
-    add_subdirectory(src/tools/viewer)
+   	find_package(QVTK)
+   	if(QVTK_FOUND)
+   		add_subdirectory(src/tools/viewer)
+	endif(QVTK_FOUND)
 
 endif(QT4_FOUND)
+
+
+##############################################################
+# LIBRARIES
+##############################################################
+
+add_subdirectory(src/liblvr)
+
+##############################################################
+# BINARIES
+##############################################################
+
+add_subdirectory(src/tools/reconstruct)
+add_subdirectory(src/tools/classifier)
+add_subdirectory(src/tools/colorize)
+add_subdirectory(src/tools/scanreduce)
+add_subdirectory(src/tools/convert)
+add_subdirectory(src/tools/asciiconverter)
+add_subdirectory(src/tools/texman)
+add_subdirectory(src/tools/tiogen)
+add_subdirectory(src/tools/meshoptimizer)
+add_subdirectory(src/tools/transform)
+add_subdirectory(src/tools/registration)
+add_subdirectory(src/tools/normals)
 
 ################################################################
 # DOCUMENTATION
