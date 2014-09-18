@@ -47,6 +47,7 @@
 #include "../widgets/LVRMeshItem.hpp"
 #include "../widgets/LVRItemTypes.hpp"
 #include "../widgets/LVRRenameDialog.hpp"
+#include "../widgets/LVRAnimationDialog.hpp"
 #include "../widgets/LVRTransformationDialog.hpp"
 #include "../widgets/LVRCorrespondanceDialog.hpp"
 #include "../widgets/LVRReconstructionEstimateNormalsDialog.hpp"
