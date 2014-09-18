@@ -65,7 +65,7 @@ void LVRAnimationDialog::clearFrames()
 
 void LVRAnimationDialog::changeInterpolation(const QString& text)
 {
-    if(text == "Linear")
+   if(text == "Linear")
    {
         m_pathCamera->GetInterpolator()->SetInterpolationTypeToLinear();
    }
@@ -94,18 +94,23 @@ void LVRAnimationDialog::play()
 
 void LVRAnimationDialog::savePath()
 {
-    QString filename = QFileDialog::getSaveFileName(m_treeWidget, tr("Save Path"), "", tr("BCP files (*.bcp)"));
+    QString filename = QFileDialog::getSaveFileName(m_treeWidget, tr("Save Path"), "", tr("VCP files (*.vcp)"));
     QFile pfile(filename);
 
-    if (!pfile.open(QFile::WriteOnly))
+    if (!pfile.open(QFile::WriteOnly | QIODevice::Text))
     {
         return;
     }
 
+    QTextStream out(&pfile);
+    QString interpolation = m_dialog->interpolation_box->currentText();
+    QString transitionFrames = QString::number(m_dialog->frameMultiplier_box->value());
+    out << "S:" << interpolation << ";" << transitionFrames << endl;
+
     for(int row = 0; row < m_timeline->count(); row++)
     {
         LVRRecordedFrameItem* recordedFrame = static_cast<LVRRecordedFrameItem*>(m_timeline->item(row));
-        recordedFrame->getFrame()->Print(std::cout);
+        recordedFrame->writeToStream(out);
     }
 
     pfile.close();
@@ -113,15 +118,55 @@ void LVRAnimationDialog::savePath()
 
 void LVRAnimationDialog::loadPath()
 {
-    QString filename = QFileDialog::getOpenFileName(m_treeWidget, tr("Load Path"), "", tr("BCP files (*.bcp)"));
+    QString filename = QFileDialog::getOpenFileName(m_treeWidget, tr("Load Path"), "", tr("VCP files (*.vcp)"));
     QFile pfile(filename);
 
-    if (!pfile.open(QFile::ReadOnly))
+    if (!pfile.open(QFile::ReadOnly | QIODevice::Text))
     {
         return;
     }
 
+    QTextStream in(&pfile);
+    QString line = in.readLine();
+
+    if(!line.startsWith("S:"))
+    {
+        cout << "Can't parse path settings from file!" << endl;
+        cout << "Reverting to defaults..." << endl;
+        m_dialog->frameMultiplier_box->setValue(30);
+        m_dialog->interpolation_box->setCurrentIndex(1);
+        m_pathCamera->GetInterpolator()->SetInterpolationTypeToSpline();
+    }
+
+    line.remove(0,2);
+    QStringList parameters = line.trimmed().split(";");
+
+    cout << parameters[0].toStdString() << endl;
+    cout << parameters[1].toStdString() << endl;
+
+    if(parameters[0] == "Linear")
+    {
+        m_pathCamera->GetInterpolator()->SetInterpolationTypeToLinear();
+        m_dialog->interpolation_box->setCurrentIndex(0);
+    }
+    else if(parameters[0] == "Spline")
+    {
+        m_pathCamera->GetInterpolator()->SetInterpolationTypeToSpline();
+        m_dialog->interpolation_box->setCurrentIndex(1);
+    }
+
+    int transitionFrames = parameters[1].toInt();
+    m_dialog->frameMultiplier_box->setValue(transitionFrames);
+
+    while(!in.atEnd())
+    {
+        QListWidgetItem* recordedFrame = LVRRecordedFrameItem::createFromStream(in);
+        m_timeline->addItem(recordedFrame);
+    }
+
     pfile.close();
+
+    m_frameCounter = m_timeline->count();
 }
 
 }
