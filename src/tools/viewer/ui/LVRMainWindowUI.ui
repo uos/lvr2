@@ -434,7 +434,7 @@
      <x>0</x>
      <y>0</y>
      <width>1112</width>
-     <height>25</height>
+     <height>21</height>
     </rect>
    </property>
    <widget class="QMenu" name="menuFile">
@@ -456,7 +456,7 @@
     <addaction name="actionRecord_Path"/>
     <addaction name="actionLoad_Path"/>
     <addaction name="actionAnimate_Path"/>
-    <addaction name="actionExport_Animation"/>
+    <addaction name="actionExportAnimation"/>
    </widget>
    <widget class="QMenu" name="menuReconstruction">
     <property name="title">
@@ -511,6 +511,8 @@
     <addaction name="separator"/>
     <addaction name="actionShow_Wireframe"/>
     <addaction name="actionShow_Mesh"/>
+    <addaction name="separator"/>
+    <addaction name="actionShowBackgroundSettings"/>
    </widget>
    <widget class="QMenu" name="menuAbout">
     <property name="title">
@@ -652,7 +654,7 @@
     <string>Animate Path</string>
    </property>
   </action>
-  <action name="actionExport_Animation">
+  <action name="actionExportAnimation">
    <property name="text">
     <string>Export Animation</string>
    </property>
@@ -755,6 +757,11 @@
   <action name="actionAbout">
    <property name="text">
     <string>About</string>
+   </property>
+  </action>
+  <action name="actionShowBackgroundSettings">
+   <property name="text">
+    <string>Background...</string>
    </property>
   </action>
  </widget>
