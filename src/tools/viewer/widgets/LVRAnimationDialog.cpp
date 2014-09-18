@@ -36,6 +36,7 @@ void LVRAnimationDialog::connectSignalsAndSlots()
     QObject::connect(m_dialog->interpolation_box, SIGNAL(currentIndexChanged(const QString&)), this, SLOT(changeInterpolation(const QString&)));
     QObject::connect(m_dialog->savePath_button, SIGNAL(pressed()), this, SLOT(savePath()));
     QObject::connect(m_dialog->loadPath_button, SIGNAL(pressed()), this, SLOT(loadPath()));
+    QObject::connect(m_dialog->saveVideo_button, SIGNAL(pressed()), this, SLOT(saveVideo()));
     QObject::connect(m_dialog->play_button, SIGNAL(pressed()), this, SLOT(play()));
 }
 
@@ -169,6 +170,35 @@ void LVRAnimationDialog::loadPath()
     pfile.close();
 
     m_frameCounter = m_timeline->count();
+}
+
+void LVRAnimationDialog::saveVideo()
+{
+    QString filename = QFileDialog::getSaveFileName(m_treeWidget, tr("Save Path"), "", tr("AVI files (*.avi)"));
+
+    vtkSmartPointer<vtkFFMPEGWriter> videoWriter = vtkSmartPointer<vtkFFMPEGWriter>::New();
+    videoWriter->SetQuality(2);
+    videoWriter->SetRate(30);
+    //videoWriter->SetFileName(filename.toUtf8().constData());
+    videoWriter->SetFileName("Test.avi");
+
+    vtkSmartPointer<vtkWindowToImageFilter> w2i = vtkSmartPointer<vtkWindowToImageFilter>::New();
+    w2i->SetInput(m_renderWindowInteractor->GetRenderWindow());
+    videoWriter->SetInputConnection(w2i->GetOutputPort());
+
+    vtkSmartPointer<LVRTimerCallback> timerCallback = vtkSmartPointer<LVRTimerCallback>::New();
+    timerCallback->setFFMPEGWriter(videoWriter);
+    timerCallback->setWindowToImageFilter(w2i);
+    m_renderWindowInteractor->AddObserver(vtkCommand::TimerEvent, timerCallback);
+
+    videoWriter->Start();
+    int timerSpeed = 33; // ~30FPS
+    int timerID = m_renderWindowInteractor->CreateRepeatingTimer(timerSpeed);
+    play();
+    m_renderWindowInteractor->DestroyTimer(timerID);
+    videoWriter->End();
+
+    m_renderWindowInteractor->RemoveObserver(vtkCommand::TimerEvent);
 }
 
 }

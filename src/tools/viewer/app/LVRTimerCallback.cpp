@@ -30,36 +30,26 @@ namespace lvr
     LVRTimerCallback* LVRTimerCallback::New()
     {
         LVRTimerCallback* cb = new LVRTimerCallback;
+
         return cb;
     }
 
-    void LVRTimerCallback::reset()
+    void LVRTimerCallback::setWindowToImageFilter(vtkSmartPointer<vtkWindowToImageFilter> w2i)
     {
-        m_numberOfFrames = 0;
+        m_w2i = w2i;
     }
 
-    int LVRTimerCallback::getNumberOfFrames()
+    void LVRTimerCallback::setFFMPEGWriter(vtkSmartPointer<vtkFFMPEGWriter> videoWriter)
     {
-        return m_numberOfFrames;
-    }
-
-    void LVRTimerCallback::setPathCamera(vtkSmartPointer<vtkCameraRepresentation> pathCamera)
-    {
-        m_pathCamera = pathCamera;
-    }
-
-    void LVRTimerCallback::setMainCamera(vtkSmartPointer<vtkCamera> mainCamera)
-    {
-        m_mainCamera = mainCamera;
+        m_videoWriter = videoWriter;
     }
 
     void LVRTimerCallback::Execute(vtkObject* caller, unsigned long eventId, void* callData)
     {
         if(vtkCommand::TimerEvent == eventId)
         {
-            cout << "Tick-tock!" << endl;
-            m_pathCamera->AddCameraToPath();
-            m_numberOfFrames++;
+            m_w2i->Modified();
+            m_videoWriter->Write();
         }
     }
 } /* namespace lvr */

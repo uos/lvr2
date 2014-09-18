@@ -224,13 +224,6 @@ void LVRMainWindow::setupQVTK()
     m_pathCamera->SetInterpolator(cameraInterpolator);
     m_pathCamera->SetCamera(m_renderer->GetActiveCamera());
     renderWindow->AddRenderer(m_renderer);
-
-    //m_timerCallback = vtkSmartPointer<LVRTimerCallback>::New();
-    //m_timerCallback->setMainCamera(m_renderer->GetActiveCamera());
-    //m_timerCallback->setPathCamera(m_pathCamera);
-    //m_renderWindowInteractor->AddObserver(vtkCommand::TimerEvent, m_timerCallback);
-    //m_timerID = -1;
-    // TODO: Animate camera path (saved in m_pathCamera) when clicking play
 }
 
 void LVRMainWindow::updateView()
@@ -263,8 +256,8 @@ void LVRMainWindow::recordPath()
 
 void LVRMainWindow::animatePath()
 {
-    m_pathCamera->SetNumberOfFrames(m_timerCallback->getNumberOfFrames() * 30);
-    m_pathCamera->AnimatePath(m_renderWindowInteractor);
+    //m_pathCamera->SetNumberOfFrames(m_timerCallback->getNumberOfFrames() * 30);
+    //m_pathCamera->AnimatePath(m_renderWindowInteractor);
 }
 
 void LVRMainWindow::addArrow(LVRVtkArrow* a)
