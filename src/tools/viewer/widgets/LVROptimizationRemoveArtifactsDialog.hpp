@@ -1,5 +1,5 @@
-#ifndef RECONSTRUCTIONMARCHINGCUBESDIALOG_H_
-#define RECONSTRUCTIONMARCHINGCUBESDIALOG_H_
+#ifndef OPTIMIZATIONREMOVEARTIFACTSDIALOG_H_
+#define OPTIMIZATIONREMOVEARTIFACTSDIALOG_H_
 
 #include <vtkRenderWindow.h>
 #include <vtkRenderer.h>
@@ -19,45 +19,40 @@
 #include "reconstruction/SharpBox.hpp"
 #include "../vtkBridge/LVRModelBridge.hpp"
 
-#include "LVRReconstructionMarchingCubesDialogUI.h"
-#include "LVRPointCloudItem.hpp"
+#include "LVROptimizationRemoveArtifactsDialogUI.h"
+#include "LVRMeshItem.hpp"
 #include "LVRModelItem.hpp"
 
-using Ui::ReconstructViaMarchingCubesDialog;
+using Ui::RemoveArtifactsDialog;
 
 namespace lvr
 {
 
-class LVRReconstructViaMarchingCubesDialog : public QObject
+class LVRRemoveArtifactsDialog : public QObject
 {
     Q_OBJECT
 
 public:
-    LVRReconstructViaMarchingCubesDialog(string decomposition, LVRPointCloudItem* pc, LVRModelItem* parent, QTreeWidget* treeWidget, vtkRenderWindow* renderer);
-    virtual ~LVRReconstructViaMarchingCubesDialog();
+    LVRRemoveArtifactsDialog(LVRMeshItem* mesh, LVRModelItem* parent, QTreeWidget* treeWidget, vtkRenderWindow* renderer);
+    virtual ~LVRRemoveArtifactsDialog();
     typedef ColorVertex<float, unsigned char>         cVertex;
     typedef Normal<float>                               cNormal;
-    typedef PointsetSurface<cVertex>                    psSurface;
-    typedef AdaptiveKSearchSurface<cVertex, cNormal>    akSurface;
 
 public Q_SLOTS:
-    void generateMesh();
-    void toggleRANSACcheckBox(const QString &text);
-    void switchGridSizeDetermination(int index);
+    void removeArtifacts();
 
 private:
     void connectSignalsAndSlots();
 
-    string                                  m_decomposition;
-    ReconstructViaMarchingCubesDialog*      m_dialog;
-    LVRPointCloudItem*                      m_pc;
+    RemoveArtifactsDialog*                 m_dialog;
+    LVRMeshItem*                            m_mesh;
+    LVRModelItem*                           m_optimizedModel;
     LVRModelItem*                           m_parent;
     QTreeWidget*                            m_treeWidget;
-    LVRModelItem*                           m_generatedModel;
     vtkRenderWindow*                        m_renderWindow;
 
 };
 
 } // namespace lvr
 
-#endif /* RECONSTRUCTIONMARCHINGCUBESDIALOG_H_ */
+#endif /* OPTIMIZATIONREMOVEARTIFACTSDIALOG_H_ */

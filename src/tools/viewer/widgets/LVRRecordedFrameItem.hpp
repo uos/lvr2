@@ -16,18 +16,38 @@
  * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA
  */
 
-/**
- * LVRItemTypes.hpp
- *
- *  @date Feb 17, 2014
- *  @author Thomas Wiemann
- */
-#ifndef LVRITEMTYPES_HPP_
-#define LVRITEMTYPES_HPP_
+#ifndef LVRRECORDEDFRAMEITEM_H_
+#define LVRRECORDEDFRAMEITEM_H_
+
+#include <QString>
+#include <QColor>
+#include <QListWidgetItem>
+#include <QTextStream>
+
+#include <vtkSmartPointer.h>
+#include <vtkCamera.h>
+#include <vtkCameraRepresentation.h>
 
 namespace lvr
 {
-    enum {LVRModelItemType = 1001, LVRPointCloudItemType, LVRMeshItemType, LVRPoseItemType, LVRPickItemType, LVRRecordedFrameItemType};
-}
 
-#endif /* LVRITEMTYPES_HPP_ */
+class LVRRecordedFrameItem : public QListWidgetItem
+{
+public:
+    LVRRecordedFrameItem(vtkSmartPointer<vtkCameraRepresentation> pathCamera, QString name = "");
+    virtual ~LVRRecordedFrameItem();
+    void writeToStream(QTextStream &stream);
+    static LVRRecordedFrameItem* createFromStream(QTextStream &stream);
+
+public Q_SLOTS:
+    vtkSmartPointer<vtkCamera>	getFrame();
+
+protected:
+    LVRRecordedFrameItem(QString name = "");
+	vtkSmartPointer<vtkCamera>  m_recordedFrame;
+    QString                     m_name;
+};
+
+} /* namespace lvr */
+
+#endif /* LVRRECORDEDFRAMEITEM_H_ */
