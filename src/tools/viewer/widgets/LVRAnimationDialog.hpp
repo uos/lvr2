@@ -10,11 +10,13 @@
 #include <vtkRendererCollection.h>
 #include <vtkRenderWindow.h>
 #include <vtkRenderWindowInteractor.h>
-#include <vtkXMLWriter.h>
+#include <vtkFFMPEGWriter.h>
+#include <vtkWindowToImageFilter.h>
 
 #include <QtGui>
 #include "LVRAnimationDialogUI.h"
 #include "LVRRecordedFrameItem.hpp"
+#include "../app/LVRTimerCallback.hpp"
 
 using Ui::AnimationDialog;
 
@@ -36,6 +38,7 @@ public Q_SLOTS:
     void changeInterpolation(const QString& text);
     void savePath();
     void loadPath();
+    void saveVideo();
     void play();
 
 private:
