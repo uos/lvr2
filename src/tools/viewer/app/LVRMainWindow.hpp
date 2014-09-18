@@ -56,6 +56,8 @@
 #include "../widgets/LVROptimizationRemoveArtifactsDialog.hpp"
 #include "../widgets/LVRFilteringMLSProjectionDialog.hpp"
 #include "../widgets/LVRFilteringRemoveOutliersDialog.hpp"
+#include "../widgets/LVRBackgroundDialog.hpp"
+
 #include "../vtkBridge/LVRPickingInteractor.hpp"
 #include "../vtkBridge/LVRVtkArrow.hpp"
 
@@ -117,6 +119,8 @@ public Q_SLOTS:
     void alignPointClouds();
     void exportSelectedModel();
     void buildIncompatibilityBox(string actionName, unsigned char allowedTypes);
+    void showBackgroundDialog();
+
     LVRModelItem* getModelItem(QTreeWidgetItem* item);
     LVRPointCloudItem* getPointCloudItem(QTreeWidgetItem* item);
     LVRMeshItem* getMeshItem(QTreeWidgetItem* item);
@@ -184,6 +188,7 @@ private:
 	QAction*							m_actionShow_Normals;
 	QAction*							m_actionShow_Mesh;
 	QAction*							m_actionShow_Wireframe;
+	QAction*                            m_actionShowBackgroundSettings;
     // Sliders below tree widget
     QSlider*							m_horizontalSliderPointSize;
     QSlider*							m_horizontalSliderTransparency;
