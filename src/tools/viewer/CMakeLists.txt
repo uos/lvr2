@@ -92,15 +92,12 @@ target_link_libraries(lvr_viewer ${QT_QTXML_LIBRARY})
 target_link_libraries(lvr_viewer lvr)
 target_link_libraries(lvr_viewer ${OPENGL_LIBRARIES})
 target_link_libraries(lvr_viewer ${GLUT_LIBRARIES})
-target_link_libraries(lvr_viewer ${QGLVIEWER_LIBRARY_RELEASE})
-target_link_libraries(lvr_viewer GLU)
 target_link_libraries(lvr_viewer ${Boost_FILESYSTEM_LIBRARY}
     ${Boost_SYSTEM_LIBRARY} ${Boost_THREAD_LIBRARY}
     ${Boost_PROGRAM_OPTIONS_LIBRARY})
 target_link_libraries(lvr_viewer pthread)
-target_link_libraries(lvr_viewer GLU)
 target_link_libraries(lvr_viewer ${PCL_LIBRARIES})
-target_link_libraries(lvr_viewer GLU QVTK)
+target_link_libraries(lvr_viewer GLU ${QVTK_LIBRARY})
 
 INSTALL(TARGETS lvr_viewer
     RUNTIME DESTINATION bin

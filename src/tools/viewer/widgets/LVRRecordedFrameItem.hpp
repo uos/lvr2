@@ -36,6 +36,7 @@ class LVRRecordedFrameItem : public QListWidgetItem
 public:
     LVRRecordedFrameItem(vtkSmartPointer<vtkCameraRepresentation> pathCamera, QString name = "");
     LVRRecordedFrameItem(QString name = "");
+
     virtual ~LVRRecordedFrameItem();
     void writeToStream(QTextStream &out);
     static LVRRecordedFrameItem* createFromStream(QTextStream &in);

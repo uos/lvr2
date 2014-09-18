@@ -47,10 +47,13 @@ LVRPointBufferBridge::LVRPointBufferBridge(PointBufferPtr pointCloud)
         computePointCloudActor(pointCloud);
 
         // Save meta information
-        size_t numColors, numNormals;
+        size_t numColors(0), numNormals(0);
         m_numPoints = pointCloud->getNumPoints();
-        m_hasNormals = pointCloud->getPointNormalArray(numNormals);
-        m_hasColors = pointCloud->getPointColorArray(numColors);
+        pointCloud->getPointNormalArray(numNormals);
+        pointCloud->getPointColorArray(numColors);
+
+        if(numColors > 0) m_hasColors = true;
+        if(numNormals > 0) m_hasNormals = true;
     }
     else
     {
