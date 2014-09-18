@@ -62,6 +62,7 @@ public Q_SLOTS:
     void stepChanged(double value);
 
     void reset();
+    void restoreAndClose();
     void save();
 
 
@@ -72,6 +73,7 @@ private:
     void transformGlobal();
 
     Pose                        m_pose;
+    Pose                        m_pose_original;
     TransformationDialogUI*     m_dialogUI;
     LVRModelItem*               m_parent;
     vtkRenderWindow*            m_renderWindow;

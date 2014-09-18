@@ -7,6 +7,7 @@ set(LVR_VIEWER_SOURCES
     app/LVRMain.cpp
     app/LVRMainWindow.cpp
     app/LVRTreeWidgetHelper.cpp
+    app/LVRTimerCallback.cpp
     vtkBridge/LVRModelBridge.cpp
     vtkBridge/LVRPointBufferBridge.cpp
     vtkBridge/LVRMeshBufferBridge.cpp
@@ -17,17 +18,32 @@ set(LVR_VIEWER_SOURCES
     widgets/LVRMeshItem.cpp
     widgets/LVRPoseItem.cpp
     widgets/LVRPickItem.cpp
+    widgets/LVRRecordedFrameItem.cpp
+    widgets/LVRRenameDialog.cpp
+    widgets/LVRAnimationDialog.cpp
     widgets/LVRTransformationDialog.cpp
     widgets/LVRCorrespondanceDialog.cpp
+    widgets/LVRReconstructionEstimateNormalsDialog.cpp
     widgets/LVRReconstructionMarchingCubesDialog.cpp
+    widgets/LVROptimizationPlanarOptimizationDialog.cpp
+    widgets/LVROptimizationRemoveArtifactsDialog.cpp
+    widgets/LVRFilteringRemoveOutliersDialog.cpp
+    widgets/LVRFilteringMLSProjectionDialog.cpp
 )
 
 
 set(LVR_VIEWER_MOCS 
     app/LVRMainWindow.hpp
     vtkBridge/LVRPickingInteractor.hpp
+    widgets/LVRRenameDialog.hpp
+    widgets/LVRAnimationDialog.hpp
     widgets/LVRTransformationDialog.hpp
+    widgets/LVRReconstructionEstimateNormalsDialog.hpp
     widgets/LVRReconstructionMarchingCubesDialog.hpp
+    widgets/LVROptimizationPlanarOptimizationDialog.hpp
+    widgets/LVROptimizationRemoveArtifactsDialog.hpp
+    widgets/LVRFilteringRemoveOutliersDialog.hpp
+    widgets/LVRFilteringMLSProjectionDialog.hpp
     widgets/LVRCorrespondanceDialog.hpp
 )
 
@@ -35,10 +51,17 @@ set(LVR_VIEWER_MOCS
 # QtDesigner 
 set(LVR_VIEWER_UIS
    ui/LVRMainWindowUI.ui
+   ui/LVRRenameDialogUI.ui
+   ui/LVRAnimationDialogUI.ui
    ui/LVRTransformationDialogUI.ui
    ui/LVRRegistrationPickCorrespondancesDialogUI.ui
    ui/LVRAboutDialogUI.ui
    ui/LVRReconstructionMarchingCubesDialogUI.ui
+   ui/LVRReconstructionEstimateNormalsDialogUI.ui
+   ui/LVROptimizationPlanarOptimizationDialogUI.ui
+   ui/LVROptimizationRemoveArtifactsDialogUI.ui
+   ui/LVRFilteringRemoveOutliersDialogUI.ui
+   ui/LVRFilteringMLSProjectionDialogUI.ui
 )
 
 set(LVR_VIEWER_RESOURCES
