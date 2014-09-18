@@ -49,6 +49,7 @@ LVRMainWindow::LVRMainWindow()
 
     // Init members
     m_correspondanceDialog = new LVRCorrespondanceDialog(treeWidget);
+    m_incompatibilityBox = new QMessageBox();
     m_aboutDialog = new QDialog();
     Ui::AboutDialog aboutDialog;
     aboutDialog.setupUi(m_aboutDialog);
@@ -57,19 +58,23 @@ LVRMainWindow::LVRMainWindow()
     QHeaderView* v = this->treeWidget->header();
     v->resizeSection(0, 175);
 
-    treeWidget->setSelectionMode( QAbstractItemView::SingleSelection);
+    treeWidget->setSelectionMode(QAbstractItemView::SingleSelection);
     treeWidget->setContextMenuPolicy(Qt::CustomContextMenu);
 
     m_treeWidgetHelper = new LVRTreeWidgetHelper(treeWidget);
 
-    m_treeContextMenu = new QMenu;
+    m_treeParentItemContextMenu = new QMenu;
+    m_treeChildItemContextMenu = new QMenu;
+    m_actionRenameModelItem = new QAction("Rename item", this);
+    m_actionDeleteModelItem = new QAction("Delete item", this);
+    m_actionExportModelTransformed = new QAction("Export item with transformation", this);
     m_actionShowColorDialog = new QAction("Select base color...", this);
-    m_actionDeleteModelItem = new QAction("Delete model", this);
-    m_actionExportModelTransformed = new QAction("Export model with transformation", this);
 
-    m_treeContextMenu->addAction(m_actionShowColorDialog);
-    m_treeContextMenu->addAction(m_actionDeleteModelItem);
-    m_treeContextMenu->addAction(m_actionExportModelTransformed);
+    m_treeParentItemContextMenu->addAction(m_actionRenameModelItem);
+    m_treeParentItemContextMenu->addAction(m_actionDeleteModelItem);
+    m_treeChildItemContextMenu->addAction(m_actionExportModelTransformed);
+    m_treeChildItemContextMenu->addAction(m_actionShowColorDialog);
+    m_treeChildItemContextMenu->addAction(m_actionDeleteModelItem);
 
     // Toolbar item "File"
     m_actionOpen = this->actionOpen;
@@ -79,16 +84,31 @@ LVRMainWindow::LVRMainWindow()
     m_actionReset_Camera = this->actionReset_Camera;
     m_actionStore_Current_View = this->actionStore_Current_View;
     m_actionRecall_Stored_View = this->actionRecall_Stored_View;
+    m_actionRecord_Path = this->actionRecord_Path; // TODO: Record path
+    m_actionLoad_Path = this->actionLoad_Path; // TODO: Load path
+    m_actionAnimate_Path = this->actionAnimate_Path; // TODO: Animate path
+    m_actionExport_Animation = this->actionExport_Animation; // TODO: Save animation
     // Toolbar item "Reconstruction"
+    m_actionEstimate_Normals = this->actionEstimate_Normals; // TODO: fix normal estimation
     m_actionMarching_Cubes = this->actionMarching_Cubes;
     m_actionPlanar_Marching_Cubes = this->actionPlanar_Marching_Cubes;
     m_actionExtended_Marching_Cubes = this->actionExtended_Marching_Cubes;
+    m_actionCompute_Textures = this->actionCompute_Textures; // TODO: Compute textures
+    m_actionMatch_Textures_from_Package = this->actionMatch_Textures_from_Package; // TODO: Match textures from package
+    m_actionExtract_and_Rematch_Patterns = this->actionExtract_and_Rematch_Patterns; // TODO: Extract and rematch patterns
     // Toolbar item "Mesh Optimization"
     m_actionPlanar_Optimization = this->actionPlanar_Optimization;
-    m_actionRetesselate = this->actionRetesselate;
     m_actionRemove_Artifacts = this->actionRemove_Artifacts;
-    m_actionFill_Holes = this->actionFill_Holes;
-    m_actionDelete_Small_Regions = this->actionDelete_Small_Regions;
+    // Toolbar item "Filtering"
+    m_actionRemove_Outliers = this->actionRemove_Outliers;
+    m_actionMLS_Projection = this->actionMLS_Projection;
+    // Toolbar item "Registration"
+    m_actionICP_Using_Manual_Correspondance = this->actionICP_Using_Manual_Correspondance;
+    m_actionICP_Using_Pose_Estimations = this->actionICP_Using_Pose_Estimations; // TODO: implement ICP registration
+    m_actionGlobal_Relaxation = this->actionGlobal_Relaxation; // TODO: implement global relaxation
+    // Toolbar item "Classification"
+    m_actionSimple_Plane_Classification = this->actionSimple_Plane_Classification;
+    m_actionFurniture_Recognition = this->actionFurniture_Recognition;
     // Toolbar item "About"
     // TODO: Replace "About"-QMenu with "About"-QAction
     m_menuAbout = this->menuAbout;
@@ -99,12 +119,10 @@ LVRMainWindow::LVRMainWindow()
     m_actionShow_Wireframe = this->actionShow_Wireframe;
     // Slider below tree widget
     m_horizontalSliderPointSize = this->horizontalSliderPointSize;
-    m_horizontalSliderBrightness = this->horizontalSliderBrightness;
-    m_horizontalSliderContrast = this->horizontalSliderContrast;
     m_horizontalSliderTransparency = this->horizontalSliderTransparency;
     // Combo boxes
-    m_comboBoxGradient = this->comboBoxGradient;
-    m_comboBoxShading = this->comboBoxShading;
+    m_comboBoxGradient = this->comboBoxGradient; // TODO: implement gradients
+    m_comboBoxShading = this->comboBoxShading; // TODO: fix shading
     // Buttons below combo boxes
     m_buttonRecordPath = this->buttonRecordPath;
     m_buttonCreateMesh = this->buttonCreateMesh;
@@ -124,6 +142,7 @@ LVRMainWindow::~LVRMainWindow()
     {
         delete m_correspondanceDialog;
     }
+    delete m_incompatibilityBox;
 }
 
 void LVRMainWindow::connectSignalsAndSlots()
@@ -137,18 +156,28 @@ void LVRMainWindow::connectSignalsAndSlots()
     QObject::connect(m_actionQuit, SIGNAL(activated()), qApp, SLOT(quit()));
 
     QObject::connect(m_actionShowColorDialog, SIGNAL(activated()), this, SLOT(showColorDialog()));
+    QObject::connect(m_actionRenameModelItem, SIGNAL(activated()), this, SLOT(renameModelItem()));
     QObject::connect(m_actionDeleteModelItem, SIGNAL(activated()), this, SLOT(deleteModelItem()));
     QObject::connect(m_actionExportModelTransformed, SIGNAL(activated()), this, SLOT(exportSelectedModel()));
 
     QObject::connect(m_actionReset_Camera, SIGNAL(activated()), this, SLOT(updateView()));
     QObject::connect(m_actionStore_Current_View, SIGNAL(activated()), this, SLOT(saveCamera()));
     QObject::connect(m_actionRecall_Stored_View, SIGNAL(activated()), this, SLOT(loadCamera()));
+    QObject::connect(m_actionRecord_Path, SIGNAL(activated()), this, SLOT(recordPath()));
+    QObject::connect(m_actionAnimate_Path, SIGNAL(activated()), this, SLOT(animatePath()));
 
+    QObject::connect(m_actionEstimate_Normals, SIGNAL(activated()), this, SLOT(estimateNormals()));
     QObject::connect(m_actionMarching_Cubes, SIGNAL(activated()), this, SLOT(reconstructUsingMarchingCubes()));
     QObject::connect(m_actionPlanar_Marching_Cubes, SIGNAL(activated()), this, SLOT(reconstructUsingPlanarMarchingCubes()));
     QObject::connect(m_actionExtended_Marching_Cubes, SIGNAL(activated()), this, SLOT(reconstructUsingExtendedMarchingCubes()));
 
-    QObject::connect(m_actionRetesselate, SIGNAL(activated()), this, SLOT(retesselate()));
+    QObject::connect(m_actionPlanar_Optimization, SIGNAL(activated()), this, SLOT(optimizePlanes()));
+    QObject::connect(m_actionRemove_Artifacts, SIGNAL(activated()), this, SLOT(removeArtifacts()));
+
+    QObject::connect(m_actionRemove_Outliers, SIGNAL(activated()), this, SLOT(removeOutliers()));
+    QObject::connect(m_actionMLS_Projection, SIGNAL(activated()), this, SLOT(applyMLSProjection()));
+
+    QObject::connect(m_actionICP_Using_Manual_Correspondance, SIGNAL(activated()), this, SLOT(manualICP()));
 
     QObject::connect(m_menuAbout, SIGNAL(triggered(QAction*)), this, SLOT(showAboutDialog(QAction*)));
 
@@ -161,6 +190,7 @@ void LVRMainWindow::connectSignalsAndSlots()
     QObject::connect(m_correspondanceDialog, SIGNAL(enableCorrespondenceSearch()), m_pickingInteractor, SLOT(correspondenceSearchOn()));
 
     QObject::connect(m_actionShow_Points, SIGNAL(toggled(bool)), this, SLOT(togglePoints(bool)));
+    QObject::connect(m_actionShow_Normals, SIGNAL(toggled(bool)), this, SLOT(toggleNormals(bool)));
     QObject::connect(m_actionShow_Mesh, SIGNAL(toggled(bool)), this, SLOT(toggleMeshes(bool)));
     QObject::connect(m_actionShow_Wireframe, SIGNAL(toggled(bool)), this, SLOT(toggleWireframe(bool)));
 
@@ -169,6 +199,7 @@ void LVRMainWindow::connectSignalsAndSlots()
 
     QObject::connect(m_comboBoxShading, SIGNAL(currentIndexChanged(int)), this, SLOT(changeShading(int)));
 
+    QObject::connect(m_buttonRecordPath, SIGNAL(pressed()), this, SLOT(recordPath()));
     QObject::connect(m_buttonCreateMesh, SIGNAL(pressed()), this, SLOT(reconstructUsingMarchingCubes()));
     QObject::connect(m_buttonExportData, SIGNAL(pressed()), this, SLOT(exportSelectedModel()));
     QObject::connect(m_buttonTransformModel, SIGNAL(pressed()), this, SLOT(showTransformationDialog()));
@@ -177,16 +208,29 @@ void LVRMainWindow::connectSignalsAndSlots()
     QObject::connect(m_pickingInteractor, SIGNAL(secondPointPicked(double*)),m_correspondanceDialog, SLOT(secondPointPicked(double*)));
 
     QObject::connect(this, SIGNAL(correspondenceDialogOpened()), m_pickingInteractor, SLOT(correspondenceSearchOn()));
-
-    QObject::connect(this->actionICP_using_manual_correspondance, SIGNAL(activated()), this, SLOT(manualICP()));
 }
 
 void LVRMainWindow::setupQVTK()
 {
     // Add new renderer to the render window of the QVTKWidget
     m_renderer = vtkSmartPointer<vtkRenderer>::New();
+    vtkSmartPointer<vtkRenderWindow> renderWindow = this->qvtkWidget->GetRenderWindow();
+    m_renderWindowInteractor = this->qvtkWidget->GetInteractor();
+    m_renderWindowInteractor->Initialize();
     m_camera = vtkSmartPointer<vtkCamera>::New();
-    this->qvtkWidget->GetRenderWindow()->AddRenderer(m_renderer);
+    m_pathCamera = vtkSmartPointer<vtkCameraRepresentation>::New();
+    vtkSmartPointer<vtkCameraInterpolator> cameraInterpolator = vtkSmartPointer<vtkCameraInterpolator>::New();
+    cameraInterpolator->SetInterpolationTypeToSpline();
+    m_pathCamera->SetInterpolator(cameraInterpolator);
+    m_pathCamera->SetCamera(m_renderer->GetActiveCamera());
+    renderWindow->AddRenderer(m_renderer);
+
+    //m_timerCallback = vtkSmartPointer<LVRTimerCallback>::New();
+    //m_timerCallback->setMainCamera(m_renderer->GetActiveCamera());
+    //m_timerCallback->setPathCamera(m_pathCamera);
+    //m_renderWindowInteractor->AddObserver(vtkCommand::TimerEvent, m_timerCallback);
+    //m_timerID = -1;
+    // TODO: Animate camera path (saved in m_pathCamera) when clicking play
 }
 
 void LVRMainWindow::updateView()
@@ -210,6 +254,17 @@ void LVRMainWindow::loadCamera()
 {
 	m_renderer->GetActiveCamera()->DeepCopy(m_camera);
 	refreshView();
+}
+
+void LVRMainWindow::recordPath()
+{
+    new LVRAnimationDialog(m_renderWindowInteractor, m_pathCamera, treeWidget);
+}
+
+void LVRMainWindow::animatePath()
+{
+    m_pathCamera->SetNumberOfFrames(m_timerCallback->getNumberOfFrames() * 30);
+    m_pathCamera->AnimatePath(m_renderWindowInteractor);
 }
 
 void LVRMainWindow::addArrow(LVRVtkArrow* a)
@@ -333,7 +388,6 @@ void LVRMainWindow::exportSelectedModel()
                 trans->setPointArray(transformedPoints, n);
                 ModelPtr model(new Model(trans));
                 ModelFactory::saveModel(model, qFileName.toStdString());
-
             }
         }
     }
@@ -396,7 +450,6 @@ void LVRMainWindow::alignPointClouds()
     }
     m_correspondanceDialog->clearAllItems();
     updateView();
-
 }
 
 void LVRMainWindow::showTreeContextMenu(const QPoint& p)
@@ -406,12 +459,28 @@ void LVRMainWindow::showTreeContextMenu(const QPoint& p)
 	if(items.size() > 0)
 	{
 		QTreeWidgetItem* item = items.first();
+        if(item->type() == LVRModelItemType)
+        {
+            QPoint globalPos = treeWidget->mapToGlobal(p);
+            m_treeParentItemContextMenu->exec(globalPos);
+        }
 		if(item->type() == LVRPointCloudItemType || item->type() == LVRMeshItemType)
 		{
 			QPoint globalPos = treeWidget->mapToGlobal(p);
-			m_treeContextMenu->exec(globalPos);
+			m_treeChildItemContextMenu->exec(globalPos);
 		}
 	}
+}
+
+void LVRMainWindow::renameModelItem()
+{
+    QList<QTreeWidgetItem*> items = treeWidget->selectedItems();
+    if(items.size() > 0)
+    {
+        QTreeWidgetItem* item = items.first();
+        LVRModelItem* model_item = getModelItem(item);
+        if(model_item != NULL) new LVRRenameDialog(model_item, treeWidget);
+    }
 }
 
 void LVRMainWindow::loadModel()
@@ -437,6 +506,7 @@ void LVRMainWindow::loadModel()
             ++it;
         }
 
+        assertToggles();
         updateView();
     }
 }
@@ -448,12 +518,40 @@ void LVRMainWindow::deleteModelItem()
     {
         QTreeWidgetItem* item = items.first();
 
-        // Remove model from view
-        LVRPointCloudItem* pc_item = getPointCloudItem(item);
-        if(pc_item != NULL) m_renderer->RemoveActor(pc_item->getActor());
+        if(item->type() == LVRModelItemType)
+        {
+            QTreeWidgetItemIterator it(item);
 
-        LVRMeshItem* mesh_item = getMeshItem(item);
-        if(mesh_item != NULL) m_renderer->RemoveActor(mesh_item->getActor());
+            while(*it)
+            {
+                QTreeWidgetItem* child_item = *it;
+                if(child_item->type() == LVRPointCloudItemType && child_item->parent() == item)
+                {
+                    LVRPointCloudItem* pc_item = getPointCloudItem(item);
+                    if(pc_item != NULL) m_renderer->RemoveActor(pc_item->getActor());
+                }
+                else if(child_item->type() == LVRMeshItemType && child_item->parent() == item)
+                {
+                    LVRMeshItem* mesh_item = getMeshItem(item);
+                    if(mesh_item != NULL)
+                    {
+                        m_renderer->RemoveActor(mesh_item->getWireframeActor());
+                        m_renderer->RemoveActor(mesh_item->getActor());
+                    }
+                }
+
+                ++it;
+            }
+        }
+        else
+        {
+            // Remove model from view
+            LVRPointCloudItem* pc_item = getPointCloudItem(item);
+            if(pc_item != NULL) m_renderer->RemoveActor(pc_item->getActor());
+
+            LVRMeshItem* mesh_item = getMeshItem(item);
+            if(mesh_item != NULL) m_renderer->RemoveActor(mesh_item->getActor());
+        }
 
         // Remove list item (safe according to http://stackoverflow.com/a/9399167)
         delete item;
@@ -507,6 +605,14 @@ LVRMeshItem* LVRMainWindow::getMeshItem(QTreeWidgetItem* item)
         }
     }
     return NULL;
+}
+
+void LVRMainWindow::assertToggles()
+{
+    togglePoints(m_actionShow_Points->isChecked());
+    toggleNormals(m_actionShow_Normals->isChecked());
+    toggleMeshes(m_actionShow_Mesh->isChecked());
+    toggleWireframe(m_actionShow_Wireframe->isChecked());
 }
 
 void LVRMainWindow::setModelVisibility(QTreeWidgetItem* treeWidgetItem, int column)
@@ -644,6 +750,24 @@ void LVRMainWindow::togglePoints(bool checkboxState)
 	refreshView();
 }
 
+void LVRMainWindow::toggleNormals(bool checkboxState)
+{
+    QTreeWidgetItemIterator it(treeWidget);
+
+    while(*it)
+    {
+        QTreeWidgetItem* item = *it;
+        if(item->type() == LVRPointCloudItemType)
+        {
+            LVRModelItem* model_item = static_cast<LVRModelItem*>(item->parent());
+            if(model_item->isEnabled()) return; // TODO: functions to show/hide normals
+        }
+        ++it;
+    }
+
+    refreshView();
+}
+
 void LVRMainWindow::toggleMeshes(bool checkboxState)
 {
 	QTreeWidgetItemIterator it(treeWidget);
@@ -727,12 +851,7 @@ void LVRMainWindow::showColorDialog()
 
 void LVRMainWindow::showTransformationDialog()
 {
-    // Setup a message box for unsupported items
-    QMessageBox box;
-    box.setText("Unsupported Item for Transformation.");
-    box.setInformativeText("Only whole models, point clouds or meshes can be transformed.");
-    box.setStandardButtons(QMessageBox::Ok);
-
+    buildIncompatibilityBox(string("transformation"), POINTCLOUDS_AND_MESHES_AND_PARENT_ONLY);
     // Get selected item from tree and check type
     QList<QTreeWidgetItem*> items = treeWidget->selectedItems();
     if(items.size() > 0)
@@ -752,18 +871,19 @@ void LVRMainWindow::showTransformationDialog()
             }
             else
             {
-                box.exec();
+                m_incompatibilityBox->exec();
             }
         }
         else
         {
-            box.exec();
+            m_incompatibilityBox->exec();
         }
     }
 }
 
-void LVRMainWindow::reconstructUsingMarchingCubes()
+void LVRMainWindow::estimateNormals()
 {
+    buildIncompatibilityBox(string("normal estimation"), POINTCLOUDS_AND_PARENT_ONLY);
     // Get selected item from tree and check type
     QList<QTreeWidgetItem*> items = treeWidget->selectedItems();
     if(items.size() > 0)
@@ -771,12 +891,35 @@ void LVRMainWindow::reconstructUsingMarchingCubes()
         LVRPointCloudItem* pc_item = getPointCloudItem(items.first());
         LVRModelItem* parent_item = getModelItem(items.first());
         if(pc_item != NULL)
-            LVRReconstructViaMarchingCubesDialog* dialog = new LVRReconstructViaMarchingCubesDialog("MC", pc_item, parent_item, treeWidget, qvtkWidget->GetRenderWindow());
+        {
+            LVREstimateNormalsDialog* dialog = new LVREstimateNormalsDialog(pc_item, parent_item, treeWidget, qvtkWidget->GetRenderWindow());
+            return;
+        }
     }
+    m_incompatibilityBox->exec();
+}
+
+void LVRMainWindow::reconstructUsingMarchingCubes()
+{
+    buildIncompatibilityBox(string("reconstruction"), POINTCLOUDS_AND_PARENT_ONLY);
+    // Get selected item from tree and check type
+    QList<QTreeWidgetItem*> items = treeWidget->selectedItems();
+    if(items.size() > 0)
+    {
+        LVRPointCloudItem* pc_item = getPointCloudItem(items.first());
+        LVRModelItem* parent_item = getModelItem(items.first());
+        if(pc_item != NULL)
+        {
+            LVRReconstructViaMarchingCubesDialog* dialog = new LVRReconstructViaMarchingCubesDialog("MC", pc_item, parent_item, treeWidget, qvtkWidget->GetRenderWindow());
+            return;
+        }
+    }
+    m_incompatibilityBox->exec();
 }
 
 void LVRMainWindow::reconstructUsingPlanarMarchingCubes()
 {
+    buildIncompatibilityBox(string("reconstruction"), POINTCLOUDS_AND_PARENT_ONLY);
     // Get selected item from tree and check type
     QList<QTreeWidgetItem*> items = treeWidget->selectedItems();
     if(items.size() > 0)
@@ -784,12 +927,17 @@ void LVRMainWindow::reconstructUsingPlanarMarchingCubes()
         LVRPointCloudItem* pc_item = getPointCloudItem(items.first());
         LVRModelItem* parent_item = getModelItem(items.first());
         if(pc_item != NULL)
+        {
             LVRReconstructViaMarchingCubesDialog* dialog = new LVRReconstructViaMarchingCubesDialog("PMC", pc_item, parent_item, treeWidget, qvtkWidget->GetRenderWindow());
+            return;
+        }
     }
+    m_incompatibilityBox->exec();
 }
 
 void LVRMainWindow::reconstructUsingExtendedMarchingCubes()
 {
+    buildIncompatibilityBox(string("reconstruction"), POINTCLOUDS_AND_PARENT_ONLY);
     // Get selected item from tree and check type
     QList<QTreeWidgetItem*> items = treeWidget->selectedItems();
     if(items.size() > 0)
@@ -797,12 +945,17 @@ void LVRMainWindow::reconstructUsingExtendedMarchingCubes()
         LVRPointCloudItem* pc_item = getPointCloudItem(items.first());
         LVRModelItem* parent_item = getModelItem(items.first());
         if(pc_item != NULL)
+        {
             LVRReconstructViaMarchingCubesDialog* dialog = new LVRReconstructViaMarchingCubesDialog("SF", pc_item, parent_item, treeWidget, qvtkWidget->GetRenderWindow());
+            return;
+        }
     }
+    m_incompatibilityBox->exec();
 }
 
-void LVRMainWindow::retesselate()
+void LVRMainWindow::optimizePlanes()
 {
+    buildIncompatibilityBox(string("planar optimization"), MESHES_AND_PARENT_ONLY);
     // Get selected item from tree and check type
     QList<QTreeWidgetItem*> items = treeWidget->selectedItems();
     if(items.size() > 0)
@@ -811,10 +964,93 @@ void LVRMainWindow::retesselate()
         LVRModelItem* parent_item = getModelItem(items.first());
         if(mesh_item != NULL)
         {
-            HalfEdgeMesh<cVertex, cNormal> mesh(mesh_item->getMeshBuffer());
-            mesh.finalizeAndRetesselate(false, 0.01);
+            LVRPlanarOptimizationDialog* dialog = new LVRPlanarOptimizationDialog(mesh_item, parent_item, treeWidget, qvtkWidget->GetRenderWindow());
+            return;
         }
     }
+    m_incompatibilityBox->exec();
+}
+
+void LVRMainWindow::removeArtifacts()
+{
+    buildIncompatibilityBox(string("artifact removal"), MESHES_AND_PARENT_ONLY);
+    // Get selected item from tree and check type
+    QList<QTreeWidgetItem*> items = treeWidget->selectedItems();
+    if(items.size() > 0)
+    {
+        LVRMeshItem* mesh_item = getMeshItem(items.first());
+        LVRModelItem* parent_item = getModelItem(items.first());
+        if(mesh_item != NULL)
+        {
+            LVRRemoveArtifactsDialog* dialog = new LVRRemoveArtifactsDialog(mesh_item, parent_item, treeWidget, qvtkWidget->GetRenderWindow());
+            return;
+        }
+    }
+    m_incompatibilityBox->exec();
+}
+
+void LVRMainWindow::applyMLSProjection()
+{
+    buildIncompatibilityBox(string("MLS projection"), POINTCLOUDS_AND_PARENT_ONLY);
+    // Get selected item from tree and check type
+    QList<QTreeWidgetItem*> items = treeWidget->selectedItems();
+    if(items.size() > 0)
+    {
+        LVRPointCloudItem* pc_item = getPointCloudItem(items.first());
+        LVRModelItem* parent_item = getModelItem(items.first());
+        if(pc_item != NULL)
+        {
+            LVRMLSProjectionDialog* dialog = new LVRMLSProjectionDialog(pc_item, parent_item, treeWidget, qvtkWidget->GetRenderWindow());
+            return;
+        }
+    }
+    m_incompatibilityBox->exec();
+}
+
+void LVRMainWindow::removeOutliers()
+{
+    buildIncompatibilityBox(string("outlier removal"), POINTCLOUDS_AND_PARENT_ONLY);
+    // Get selected item from tree and check type
+    QList<QTreeWidgetItem*> items = treeWidget->selectedItems();
+    if(items.size() > 0)
+    {
+        LVRPointCloudItem* pc_item = getPointCloudItem(items.first());
+        LVRModelItem* parent_item = getModelItem(items.first());
+        if(pc_item != NULL)
+        {
+            LVRRemoveOutliersDialog* dialog = new LVRRemoveOutliersDialog(pc_item, parent_item, treeWidget, qvtkWidget->GetRenderWindow());
+            return;
+        }
+    }
+    m_incompatibilityBox->exec();
+}
+
+void LVRMainWindow::buildIncompatibilityBox(string actionName, unsigned char allowedTypes)
+{
+    // Setup a message box for unsupported items
+    string titleString = str(boost::format("Unsupported Item for %1%.") % actionName);
+    QString title = QString::fromStdString(titleString);
+    string bodyString = "Only %2% are applicable to %1%.";
+    QString body;
+
+    if(allowedTypes == MODELITEMS_ONLY)
+        bodyString = str(boost::format(bodyString) % actionName % "whole models");
+    else if(allowedTypes == POINTCLOUDS_ONLY)
+        bodyString = str(boost::format(bodyString) % actionName % "point clouds");
+    else if(allowedTypes == MESHES_ONLY)
+        bodyString = str(boost::format(bodyString) % actionName % "meshes");
+    else if(allowedTypes == POINTCLOUDS_AND_PARENT_ONLY)
+        bodyString = str(boost::format(bodyString) % actionName % "point clouds and model items containing point clouds");
+    else if(allowedTypes == MESHES_AND_PARENT_ONLY)
+        bodyString = str(boost::format(bodyString) % actionName % "meshes and model items containing meshes");
+    else if(allowedTypes == POINTCLOUDS_AND_MESHES_AND_PARENT_ONLY)
+        bodyString = str(boost::format(bodyString) % actionName % "point clouds, meshes and whole models");
+
+    body = QString::fromStdString(bodyString);
+
+    m_incompatibilityBox->setText(title);
+    m_incompatibilityBox->setInformativeText(body);
+    m_incompatibilityBox->setStandardButtons(QMessageBox::Ok);
 }
 
 void LVRMainWindow::showAboutDialog(QAction*)
