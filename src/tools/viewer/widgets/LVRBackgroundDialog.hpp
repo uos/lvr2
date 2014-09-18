@@ -28,6 +28,9 @@
 #include <vtkSmartPointer.h>
 #include <vtkRenderWindow.h>
 
+
+#include <QColorDialog>
+
 #include "LVRBackgroundDialogUI.h"
 
 using Ui::BackgroundDialogUI;
@@ -35,17 +38,29 @@ using Ui::BackgroundDialogUI;
 namespace lvr
 {
 
-class LVRBackgroundDialog : public QObject
+class LVRBackgroundDialog : public QDialog
 {
     Q_OBJECT
 public:
     LVRBackgroundDialog(vtkSmartPointer<vtkRenderWindow> renderWindow);
     virtual ~LVRBackgroundDialog();
 
+    void getColor1(float &r, float &g, float &b);
+    void getColor2(float &r, float &g, float &b);
+    bool renderGradient();
+
+public Q_SLOTS:
+    void color1Changed();
+    void color2Changed();
+
 private:
+
+    void updateColorBox(QFrame* box, QColor color);
+
     vtkSmartPointer<vtkRenderWindow>    m_renderWindow;
     BackgroundDialogUI*                 m_ui;
-
+    QColorDialog                        m_colorDialog1;
+    QColorDialog                        m_colorDialog2;
 };
 
 } /* namespace lvr */
