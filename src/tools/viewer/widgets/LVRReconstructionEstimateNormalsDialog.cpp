@@ -27,14 +27,28 @@ LVREstimateNormalsDialog::~LVREstimateNormalsDialog()
 void LVREstimateNormalsDialog::connectSignalsAndSlots()
 {
     QObject::connect(m_dialog->buttonBox, SIGNAL(accepted()), this, SLOT(estimateNormals()));
+    QObject::connect(m_dialog->checkBox_in, SIGNAL(stateChanged(int)), this, SLOT(toggleNormalInterpolation(int)));
+}
+
+void LVREstimateNormalsDialog::toggleNormalInterpolation(int state)
+{
+    QSpinBox* spinBox_ki = m_dialog->spinBox_ki;
+    if(state == Qt::CheckState::Checked)
+    {
+        spinBox_ki->setEnabled(true);
+    }
+    else
+    {
+        spinBox_ki->setEnabled(false);
+    }
 }
 
 void LVREstimateNormalsDialog::estimateNormals()
 {
-    QSpinBox* spinBox_ki = m_dialog->spinBox_ki;
-    int ki = spinBox_ki->value();
     QCheckBox* checkBox_in = m_dialog->checkBox_in;
     bool interpolateNormals = checkBox_in->isChecked();
+    QSpinBox* spinBox_ki = m_dialog->spinBox_ki;
+    int ki = spinBox_ki->value();
 
     PointBufferPtr pc = m_pc->getPointBuffer();
     size_t numPoints = m_pc->getNumPoints();
@@ -45,8 +59,16 @@ void LVREstimateNormalsDialog::estimateNormals()
 
     // Get transformation from frames or pose files if possible
     Matrix4<float> transform;
-    //transform.toPostionAngle(m_parent->getPose());
-    // Matrix4 unterstützt lvr::Pose noch nicht
+    // Matrix4 unterstützt lvr::Pose noch nicht, Umwandlung in float-Array
+    Pose pose = m_parent->getPose();
+    float* float_pose = new float[6];
+    float_pose[0] = pose.x;
+    float_pose[1] = pose.y;
+    float_pose[2] = pose.z;
+    float_pose[3] = pose.r;
+    float_pose[4] = pose.t;
+    float_pose[5] = pose.p;
+    transform.toPostionAngle(float_pose);
 
     float x, y, z, nx, ny, nz;
     size_t pointsRead = 0;
