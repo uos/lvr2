@@ -46,7 +46,7 @@ public:
 	 * @brief Constructs a classifier for the given set of clusters
 	 * @param region	A vector containing the region to classify
 	 */
-	RegionClassifier(vector<Region<VertexT, NormalT>* >* region) : m_regions(region) {};
+	RegionClassifier(vector<Region<VertexT, NormalT>* >* region) : m_regions(region), m_minSize(5) {};
 
 	/**
 	 * @brief Dtor.
