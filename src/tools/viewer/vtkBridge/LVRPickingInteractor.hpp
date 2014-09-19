@@ -61,10 +61,6 @@ public:
 
     virtual void OnKeyDown();
 
-    virtual void OnTimer();
-    virtual void OnExpose();
-    virtual void OnConfigure();
-
     /**
      * @brief   returns the text-actor, needed to readd-it after clearing the render window
      */
