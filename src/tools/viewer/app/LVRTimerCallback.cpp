@@ -16,13 +16,6 @@
  * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA
  */
 
-/**
- * MainWindow.cpp
- *
- *  @date Jan 31, 2014
- *  @author Thomas Wiemann
- */
-
 #include "LVRTimerCallback.hpp"
 
 namespace lvr
@@ -48,6 +41,7 @@ namespace lvr
     {
         if(vtkCommand::TimerEvent == eventId)
         {
+            cout << "Tick-tock!" << endl;
             m_w2i->Modified();
             m_videoWriter->Write();
         }
