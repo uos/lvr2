@@ -129,10 +129,6 @@ LVRMainWindow::LVRMainWindow()
     m_buttonExportData = this->buttonExportData;
     m_buttonTransformModel = this->buttonTransformModel;
 
-    m_pickingInteractor = new LVRPickingInteractor(m_renderer);
-    qvtkWidget->GetRenderWindow()->GetInteractor()->SetInteractorStyle( m_pickingInteractor );
-    vtkSmartPointer<vtkPointPicker> pointPicker = vtkSmartPointer<vtkPointPicker>::New();
-    qvtkWidget->GetRenderWindow()->GetInteractor()->SetPicker(pointPicker);
     connectSignalsAndSlots();
 }
 
@@ -212,17 +208,29 @@ void LVRMainWindow::connectSignalsAndSlots()
 
 void LVRMainWindow::setupQVTK()
 {
-    // Add new renderer to the render window of the QVTKWidget
+    // Grab relevant entities from the qvtk widget
     m_renderer = vtkSmartPointer<vtkRenderer>::New();
     vtkSmartPointer<vtkRenderWindow> renderWindow = this->qvtkWidget->GetRenderWindow();
     m_renderWindowInteractor = this->qvtkWidget->GetInteractor();
     m_renderWindowInteractor->Initialize();
+
+    // Camera that saves a position that can be loaded
     m_camera = vtkSmartPointer<vtkCamera>::New();
+
+    // Custom interactor to handle picking actions
+    m_pickingInteractor = new LVRPickingInteractor(m_renderer);
+    qvtkWidget->GetRenderWindow()->GetInteractor()->SetInteractorStyle( m_pickingInteractor );
+    vtkSmartPointer<vtkPointPicker> pointPicker = vtkSmartPointer<vtkPointPicker>::New();
+    qvtkWidget->GetRenderWindow()->GetInteractor()->SetPicker(pointPicker);
+
+    // Camera and camera interpolator to be used for camera paths
     m_pathCamera = vtkSmartPointer<vtkCameraRepresentation>::New();
     vtkSmartPointer<vtkCameraInterpolator> cameraInterpolator = vtkSmartPointer<vtkCameraInterpolator>::New();
     cameraInterpolator->SetInterpolationTypeToSpline();
     m_pathCamera->SetInterpolator(cameraInterpolator);
     m_pathCamera->SetCamera(m_renderer->GetActiveCamera());
+
+    // Finalize QVTK setup by adding the renderer to the window
     renderWindow->AddRenderer(m_renderer);
 }
 
