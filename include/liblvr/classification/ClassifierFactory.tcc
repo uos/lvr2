@@ -59,7 +59,7 @@ RegionClassifier<VertexT, NormalT>*  ClassifierFactory<VertexT, NormalT>::get(st
 	{
 		return new NormalClassifier<VertexT, NormalT>(&mesh->m_regions);
 	}
-	else if(name == "IndoorNormalClassifier")
+	else if(name == "IndoorNormals")
 	{
 		return new IndoorNormalClassifier<VertexT, NormalT>(&mesh->m_regions);
 	}
