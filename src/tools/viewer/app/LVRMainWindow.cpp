@@ -84,10 +84,7 @@ LVRMainWindow::LVRMainWindow()
     m_actionReset_Camera = this->actionReset_Camera;
     m_actionStore_Current_View = this->actionStore_Current_View;
     m_actionRecall_Stored_View = this->actionRecall_Stored_View;
-    m_actionRecord_Path = this->actionRecord_Path; // TODO: Record path
-    m_actionLoad_Path = this->actionLoad_Path; // TODO: Load path
-    m_actionAnimate_Path = this->actionAnimate_Path; // TODO: Animate path
-    m_actionExport_Animation = this->actionExport_Animation; // TODO: Save animation
+    m_actionCameraPathTool = this->actionCameraPathTool;
     // Toolbar item "Reconstruction"
     m_actionEstimate_Normals = this->actionEstimate_Normals; // TODO: fix normal estimation
     m_actionMarching_Cubes = this->actionMarching_Cubes;
@@ -124,7 +121,7 @@ LVRMainWindow::LVRMainWindow()
     m_comboBoxGradient = this->comboBoxGradient; // TODO: implement gradients
     m_comboBoxShading = this->comboBoxShading; // TODO: fix shading
     // Buttons below combo boxes
-    m_buttonRecordPath = this->buttonRecordPath;
+    m_buttonCameraPathTool = this->buttonCameraPathTool;
     m_buttonCreateMesh = this->buttonCreateMesh;
     m_buttonExportData = this->buttonExportData;
     m_buttonTransformModel = this->buttonTransformModel;
@@ -159,8 +156,7 @@ void LVRMainWindow::connectSignalsAndSlots()
     QObject::connect(m_actionReset_Camera, SIGNAL(activated()), this, SLOT(updateView()));
     QObject::connect(m_actionStore_Current_View, SIGNAL(activated()), this, SLOT(saveCamera()));
     QObject::connect(m_actionRecall_Stored_View, SIGNAL(activated()), this, SLOT(loadCamera()));
-    QObject::connect(m_actionRecord_Path, SIGNAL(activated()), this, SLOT(recordPath()));
-    QObject::connect(m_actionAnimate_Path, SIGNAL(activated()), this, SLOT(animatePath()));
+    QObject::connect(m_actionCameraPathTool, SIGNAL(activated()), this, SLOT(openCameraPathTool()));
 
     QObject::connect(m_actionEstimate_Normals, SIGNAL(activated()), this, SLOT(estimateNormals()));
     QObject::connect(m_actionMarching_Cubes, SIGNAL(activated()), this, SLOT(reconstructUsingMarchingCubes()));
@@ -195,7 +191,7 @@ void LVRMainWindow::connectSignalsAndSlots()
 
     QObject::connect(m_comboBoxShading, SIGNAL(currentIndexChanged(int)), this, SLOT(changeShading(int)));
 
-    QObject::connect(m_buttonRecordPath, SIGNAL(pressed()), this, SLOT(recordPath()));
+    QObject::connect(m_buttonCameraPathTool, SIGNAL(pressed()), this, SLOT(openCameraPathTool()));
     QObject::connect(m_buttonCreateMesh, SIGNAL(pressed()), this, SLOT(reconstructUsingMarchingCubes()));
     QObject::connect(m_buttonExportData, SIGNAL(pressed()), this, SLOT(exportSelectedModel()));
     QObject::connect(m_buttonTransformModel, SIGNAL(pressed()), this, SLOT(showTransformationDialog()));
@@ -257,15 +253,9 @@ void LVRMainWindow::loadCamera()
 	refreshView();
 }
 
-void LVRMainWindow::recordPath()
+void LVRMainWindow::openCameraPathTool()
 {
     new LVRAnimationDialog(m_renderWindowInteractor, m_pathCamera, treeWidget);
-}
-
-void LVRMainWindow::animatePath()
-{
-    //m_pathCamera->SetNumberOfFrames(m_timerCallback->getNumberOfFrames() * 30);
-    //m_pathCamera->AnimatePath(m_renderWindowInteractor);
 }
 
 void LVRMainWindow::addArrow(LVRVtkArrow* a)

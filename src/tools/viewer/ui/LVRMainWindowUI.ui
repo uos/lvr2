@@ -305,7 +305,7 @@
     <number>1</number>
    </attribute>
    <widget class="QWidget" name="dockWidgetActionsContents">
-    <widget class="QCommandLinkButton" name="buttonRecordPath">
+    <widget class="QCommandLinkButton" name="buttonCameraPathTool">
      <property name="geometry">
       <rect>
        <x>0</x>
@@ -315,7 +315,7 @@
       </rect>
      </property>
      <property name="text">
-      <string>Record Path</string>
+      <string>Open Camera Path Tool</string>
      </property>
      <property name="icon">
       <iconset resource="../res/viewer.qrc">
@@ -453,10 +453,7 @@
     <addaction name="actionStore_Current_View"/>
     <addaction name="actionRecall_Stored_View"/>
     <addaction name="separator"/>
-    <addaction name="actionRecord_Path"/>
-    <addaction name="actionLoad_Path"/>
-    <addaction name="actionAnimate_Path"/>
-    <addaction name="actionExport_Animation"/>
+    <addaction name="actionCameraPathTool"/>
    </widget>
    <widget class="QMenu" name="menuReconstruction">
     <property name="title">
@@ -652,9 +649,9 @@
     <string>Animate Path</string>
    </property>
   </action>
-  <action name="actionExport_Animation">
+  <action name="actionCameraPathTool">
    <property name="text">
-    <string>Export Animation</string>
+    <string>Camera Path Tool</string>
    </property>
   </action>
   <action name="actionDelete_Small_Regions">
