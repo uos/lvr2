@@ -25,22 +25,24 @@
 #ifndef MAINWINDOW_HPP_
 #define MAINWINDOW_HPP_
 
-#include <vtkRenderer.h>
 #include <vtkSmartPointer.h>
 #include <vtkCamera.h>
 #include <vtkCameraRepresentation.h>
 #include <vtkCameraInterpolator.h>
 #include <vtkCommand.h>
+#include <vtkRenderer.h>
 #include <vtkRendererCollection.h>
 #include <vtkRenderWindow.h>
 #include <vtkRenderWindowInteractor.h>
+#include <vtkViewport.h>
+#include <vtkObjectFactory.h>
+#include <vtkGraphicsFactory.h>
 #include <vtkTesting.h>
 
 #include <QtGui>
 #include "LVRMainWindowUI.h"
 #include "LVRAboutDialogUI.h"
 #include "LVRTreeWidgetHelper.hpp"
-#include "LVRTimerCallback.hpp"
 #include "../vtkBridge/LVRModelBridge.hpp"
 #include "../widgets/LVRModelItem.hpp"
 #include "../widgets/LVRPointCloudItem.hpp"
@@ -110,8 +112,7 @@ public Q_SLOTS:
     void updateView();
     void saveCamera();
     void loadCamera();
-    void recordPath();
-    void animatePath();
+    void openCameraPathTool();
     void removeArrow(LVRVtkArrow*);
     void addArrow(LVRVtkArrow*);
     void alignPointClouds();
@@ -137,8 +138,6 @@ private:
     QMessageBox*                                m_incompatibilityBox;
     vtkSmartPointer<vtkRenderer>                m_renderer;
     vtkSmartPointer<vtkRenderWindowInteractor>  m_renderWindowInteractor;
-    vtkSmartPointer<LVRTimerCallback>           m_timerCallback;
-    int                                         m_timerID;
     vtkSmartPointer<vtkCamera>			        m_camera;
     vtkSmartPointer<vtkCameraRepresentation>    m_pathCamera;
     QMenu*				                        m_treeParentItemContextMenu;
@@ -152,10 +151,7 @@ private:
 	QAction*							m_actionReset_Camera;
 	QAction*							m_actionStore_Current_View;
 	QAction*							m_actionRecall_Stored_View;
-	QAction*                            m_actionRecord_Path;
-    QAction*                            m_actionLoad_Path;
-    QAction*                            m_actionAnimate_Path;
-    QAction*                            m_actionExport_Animation;
+	QAction*                            m_actionCameraPathTool;
     // Toolbar item "Reconstruction"
 	QAction*                            m_actionEstimate_Normals;
 	QAction*                            m_actionMarching_Cubes;
@@ -191,7 +187,7 @@ private:
     QComboBox*							m_comboBoxGradient;
     QComboBox*							m_comboBoxShading;
     // Buttons below combo boxes
-    QPushButton*						m_buttonRecordPath;
+    QPushButton*						m_buttonCameraPathTool;
     QPushButton*						m_buttonCreateMesh;
     QPushButton*						m_buttonExportData;
     QPushButton*						m_buttonTransformModel;
