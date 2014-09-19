@@ -110,8 +110,7 @@ public Q_SLOTS:
     void updateView();
     void saveCamera();
     void loadCamera();
-    void recordPath();
-    void animatePath();
+    void openCameraPathTool();
     void removeArrow(LVRVtkArrow*);
     void addArrow(LVRVtkArrow*);
     void alignPointClouds();
@@ -152,10 +151,7 @@ private:
 	QAction*							m_actionReset_Camera;
 	QAction*							m_actionStore_Current_View;
 	QAction*							m_actionRecall_Stored_View;
-	QAction*                            m_actionRecord_Path;
-    QAction*                            m_actionLoad_Path;
-    QAction*                            m_actionAnimate_Path;
-    QAction*                            m_actionExport_Animation;
+	QAction*                            m_actionCameraPathTool;
     // Toolbar item "Reconstruction"
 	QAction*                            m_actionEstimate_Normals;
 	QAction*                            m_actionMarching_Cubes;
@@ -191,7 +187,7 @@ private:
     QComboBox*							m_comboBoxGradient;
     QComboBox*							m_comboBoxShading;
     // Buttons below combo boxes
-    QPushButton*						m_buttonRecordPath;
+    QPushButton*						m_buttonCameraPathTool;
     QPushButton*						m_buttonCreateMesh;
     QPushButton*						m_buttonExportData;
     QPushButton*						m_buttonTransformModel;
