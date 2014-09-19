@@ -16,7 +16,6 @@
 #include <QtGui>
 #include "LVRAnimationDialogUI.h"
 #include "LVRRecordedFrameItem.hpp"
-#include "../app/LVRTimerCallback.hpp"
 
 using Ui::AnimationDialog;
 
@@ -50,7 +49,6 @@ private:
     vtkSmartPointer<vtkCameraRepresentation>    m_pathCamera;
     vtkSmartPointer<vtkCamera>                  m_mainCamera;
     QTreeWidget*                                m_treeWidget;
-    int                                         m_timerID;
     unsigned int                               m_frameCounter;
 };
 

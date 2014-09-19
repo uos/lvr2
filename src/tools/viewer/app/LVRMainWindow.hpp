@@ -25,22 +25,24 @@
 #ifndef MAINWINDOW_HPP_
 #define MAINWINDOW_HPP_
 
-#include <vtkRenderer.h>
 #include <vtkSmartPointer.h>
 #include <vtkCamera.h>
 #include <vtkCameraRepresentation.h>
 #include <vtkCameraInterpolator.h>
 #include <vtkCommand.h>
+#include <vtkRenderer.h>
 #include <vtkRendererCollection.h>
 #include <vtkRenderWindow.h>
 #include <vtkRenderWindowInteractor.h>
+#include <vtkViewport.h>
+#include <vtkObjectFactory.h>
+#include <vtkGraphicsFactory.h>
 #include <vtkTesting.h>
 
 #include <QtGui>
 #include "LVRMainWindowUI.h"
 #include "LVRAboutDialogUI.h"
 #include "LVRTreeWidgetHelper.hpp"
-#include "LVRTimerCallback.hpp"
 #include "../vtkBridge/LVRModelBridge.hpp"
 #include "../widgets/LVRModelItem.hpp"
 #include "../widgets/LVRPointCloudItem.hpp"
@@ -56,6 +58,7 @@
 #include "../widgets/LVROptimizationRemoveArtifactsDialog.hpp"
 #include "../widgets/LVRFilteringMLSProjectionDialog.hpp"
 #include "../widgets/LVRFilteringRemoveOutliersDialog.hpp"
+#include "../vtkBridge/LVRRecordingRenderer.hpp"
 #include "../vtkBridge/LVRPickingInteractor.hpp"
 #include "../vtkBridge/LVRVtkArrow.hpp"
 
@@ -136,8 +139,6 @@ private:
     QMessageBox*                                m_incompatibilityBox;
     vtkSmartPointer<vtkRenderer>                m_renderer;
     vtkSmartPointer<vtkRenderWindowInteractor>  m_renderWindowInteractor;
-    vtkSmartPointer<LVRTimerCallback>           m_timerCallback;
-    int                                         m_timerID;
     vtkSmartPointer<vtkCamera>			        m_camera;
     vtkSmartPointer<vtkCameraRepresentation>    m_pathCamera;
     QMenu*				                        m_treeParentItemContextMenu;
