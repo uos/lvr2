@@ -22,6 +22,7 @@
 namespace lvr
 {
 
+// Create a camera from the current frame
 LVRRecordedFrameItem::LVRRecordedFrameItem(vtkSmartPointer<vtkCameraRepresentation> pathCamera, QString name) :
     m_name(name)
 {
@@ -32,6 +33,7 @@ LVRRecordedFrameItem::LVRRecordedFrameItem(vtkSmartPointer<vtkCameraRepresentati
     m_recordedFrame->DeepCopy(pathCamera->GetCamera());
 }
 
+// Create a camera without setting its properties
 LVRRecordedFrameItem::LVRRecordedFrameItem(QString name) :
     m_name(name)
 {
@@ -53,6 +55,7 @@ vtkSmartPointer<vtkCamera> LVRRecordedFrameItem::getFrame()
 
 void LVRRecordedFrameItem::writeToStream(QTextStream &out)
 {
+    // Save the position, the focal point and the view up to the current text stream
     out << "C:" << m_name << ";";
     double* position = m_recordedFrame->GetPosition();
     out << position[0] << "," << position[1] << "," << position[2] << ";";
@@ -65,6 +68,8 @@ void LVRRecordedFrameItem::writeToStream(QTextStream &out)
 LVRRecordedFrameItem* LVRRecordedFrameItem::createFromStream(QTextStream &in)
 {
     QString line = in.readLine();
+    // TODO: Surround with try and catch to prevent errors
+    // Very basic file validity checking
     if(!line.startsWith("C:"))
     {
         cout << "Couldn't read frame from file!" << endl;

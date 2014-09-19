@@ -42,7 +42,6 @@ void LVRAnimationDialog::connectSignalsAndSlots()
 
 void LVRAnimationDialog::addFrame()
 {
-    cout << "Frame added." << endl;
     QString frameCount = QString("Frame no. %1").arg(++m_frameCounter);
     QListWidgetItem* currentFrame = new LVRRecordedFrameItem(m_pathCamera, frameCount);
     m_timeline->addItem(currentFrame);
@@ -51,11 +50,7 @@ void LVRAnimationDialog::addFrame()
 void LVRAnimationDialog::removeFrame()
 {
     QListWidgetItem* currentItem = m_timeline->currentItem();
-    if(currentItem)
-    {
-        cout << "Deleting " << currentItem->text().toStdString() << "..." << endl;
-        delete currentItem;
-    }
+    if(currentItem) delete currentItem;
 }
 
 void LVRAnimationDialog::clearFrames()
@@ -74,12 +69,14 @@ void LVRAnimationDialog::changeInterpolation(const QString& text)
    {
        m_pathCamera->GetInterpolator()->SetInterpolationTypeToSpline();
    }
+   m_pathCamera->GetInterpolator()->Initialize();
 }
 
 void LVRAnimationDialog::play()
 {
     unsigned int frameCount = m_timeline->count();
-    cout << "Animating " << frameCount << " frames..." << endl;
+
+    // remove all cameras from the buffer and add every single one currently in the timeline
     m_pathCamera->InitializePath();
     for(int i = 0; i < frameCount; i++)
     {
@@ -87,8 +84,11 @@ void LVRAnimationDialog::play()
         m_pathCamera->SetCamera(recordedFrame->getFrame());
         m_pathCamera->AddCameraToPath();
     }
+
     unsigned int frameMultiplier = m_dialog->frameMultiplier_box->value();
     m_pathCamera->SetNumberOfFrames(frameCount * frameMultiplier);
+
+    // reset camera to main camera to play animation
     m_pathCamera->SetCamera(m_mainCamera);
     m_pathCamera->AnimatePath(m_renderWindowInteractor);
 }
@@ -104,10 +104,12 @@ void LVRAnimationDialog::savePath()
     }
 
     QTextStream out(&pfile);
+    // save settings from the dialog to the first line
     QString interpolation = m_dialog->interpolation_box->currentText();
     QString transitionFrames = QString::number(m_dialog->frameMultiplier_box->value());
     out << "S:" << interpolation << ";" << transitionFrames << endl;
 
+    // save settings for each camera in the timeline to a seperate line
     for(int row = 0; row < m_timeline->count(); row++)
     {
         LVRRecordedFrameItem* recordedFrame = static_cast<LVRRecordedFrameItem*>(m_timeline->item(row));
@@ -130,6 +132,8 @@ void LVRAnimationDialog::loadPath()
     QTextStream in(&pfile);
     QString line = in.readLine();
 
+    // TODO: surround with try and catch to prevent errors
+    // very basic file validity checking
     if(!line.startsWith("S:"))
     {
         cout << "Can't parse path settings from file!" << endl;
@@ -161,6 +165,7 @@ void LVRAnimationDialog::loadPath()
 
     m_timeline->clear();
 
+    // read each line in the file and create a camera from it; add it to the timeline
     while(!in.atEnd())
     {
         QListWidgetItem* recordedFrame = LVRRecordedFrameItem::createFromStream(in);
