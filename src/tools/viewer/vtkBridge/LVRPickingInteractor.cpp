@@ -102,7 +102,6 @@ void LVRPickingInteractor::OnLeftButtonDown()
     vtkInteractorStyleTrackballCamera::OnLeftButtonDown();
 }
 
-
 void LVRPickingInteractor::OnKeyPress()
 {
 

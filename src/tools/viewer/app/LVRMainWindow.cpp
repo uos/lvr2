@@ -84,10 +84,7 @@ LVRMainWindow::LVRMainWindow()
     m_actionReset_Camera = this->actionReset_Camera;
     m_actionStore_Current_View = this->actionStore_Current_View;
     m_actionRecall_Stored_View = this->actionRecall_Stored_View;
-    m_actionRecord_Path = this->actionRecord_Path; // TODO: Record path
-    m_actionLoad_Path = this->actionLoad_Path; // TODO: Load path
-    m_actionAnimate_Path = this->actionAnimate_Path; // TODO: Animate path
-    m_actionExport_Animation = this->actionExport_Animation; // TODO: Save animation
+    m_actionCameraPathTool = this->actionCameraPathTool;
     // Toolbar item "Reconstruction"
     m_actionEstimate_Normals = this->actionEstimate_Normals; // TODO: fix normal estimation
     m_actionMarching_Cubes = this->actionMarching_Cubes;
@@ -124,15 +121,11 @@ LVRMainWindow::LVRMainWindow()
     m_comboBoxGradient = this->comboBoxGradient; // TODO: implement gradients
     m_comboBoxShading = this->comboBoxShading; // TODO: fix shading
     // Buttons below combo boxes
-    m_buttonRecordPath = this->buttonRecordPath;
+    m_buttonCameraPathTool = this->buttonCameraPathTool;
     m_buttonCreateMesh = this->buttonCreateMesh;
     m_buttonExportData = this->buttonExportData;
     m_buttonTransformModel = this->buttonTransformModel;
 
-    m_pickingInteractor = new LVRPickingInteractor(m_renderer);
-    qvtkWidget->GetRenderWindow()->GetInteractor()->SetInteractorStyle( m_pickingInteractor );
-    vtkSmartPointer<vtkPointPicker> pointPicker = vtkSmartPointer<vtkPointPicker>::New();
-    qvtkWidget->GetRenderWindow()->GetInteractor()->SetPicker(pointPicker);
     connectSignalsAndSlots();
 }
 
@@ -163,8 +156,7 @@ void LVRMainWindow::connectSignalsAndSlots()
     QObject::connect(m_actionReset_Camera, SIGNAL(activated()), this, SLOT(updateView()));
     QObject::connect(m_actionStore_Current_View, SIGNAL(activated()), this, SLOT(saveCamera()));
     QObject::connect(m_actionRecall_Stored_View, SIGNAL(activated()), this, SLOT(loadCamera()));
-    QObject::connect(m_actionRecord_Path, SIGNAL(activated()), this, SLOT(recordPath()));
-    QObject::connect(m_actionAnimate_Path, SIGNAL(activated()), this, SLOT(animatePath()));
+    QObject::connect(m_actionCameraPathTool, SIGNAL(activated()), this, SLOT(openCameraPathTool()));
 
     QObject::connect(m_actionEstimate_Normals, SIGNAL(activated()), this, SLOT(estimateNormals()));
     QObject::connect(m_actionMarching_Cubes, SIGNAL(activated()), this, SLOT(reconstructUsingMarchingCubes()));
@@ -199,7 +191,7 @@ void LVRMainWindow::connectSignalsAndSlots()
 
     QObject::connect(m_comboBoxShading, SIGNAL(currentIndexChanged(int)), this, SLOT(changeShading(int)));
 
-    QObject::connect(m_buttonRecordPath, SIGNAL(pressed()), this, SLOT(recordPath()));
+    QObject::connect(m_buttonCameraPathTool, SIGNAL(pressed()), this, SLOT(openCameraPathTool()));
     QObject::connect(m_buttonCreateMesh, SIGNAL(pressed()), this, SLOT(reconstructUsingMarchingCubes()));
     QObject::connect(m_buttonExportData, SIGNAL(pressed()), this, SLOT(exportSelectedModel()));
     QObject::connect(m_buttonTransformModel, SIGNAL(pressed()), this, SLOT(showTransformationDialog()));
@@ -212,25 +204,30 @@ void LVRMainWindow::connectSignalsAndSlots()
 
 void LVRMainWindow::setupQVTK()
 {
-    // Add new renderer to the render window of the QVTKWidget
+    // Grab relevant entities from the qvtk widget
     m_renderer = vtkSmartPointer<vtkRenderer>::New();
     vtkSmartPointer<vtkRenderWindow> renderWindow = this->qvtkWidget->GetRenderWindow();
     m_renderWindowInteractor = this->qvtkWidget->GetInteractor();
     m_renderWindowInteractor->Initialize();
+
+    // Camera that saves a position that can be loaded
     m_camera = vtkSmartPointer<vtkCamera>::New();
+
+    // Custom interactor to handle picking actions
+    m_pickingInteractor = new LVRPickingInteractor(m_renderer);
+    qvtkWidget->GetRenderWindow()->GetInteractor()->SetInteractorStyle( m_pickingInteractor );
+    vtkSmartPointer<vtkPointPicker> pointPicker = vtkSmartPointer<vtkPointPicker>::New();
+    qvtkWidget->GetRenderWindow()->GetInteractor()->SetPicker(pointPicker);
+
+    // Camera and camera interpolator to be used for camera paths
     m_pathCamera = vtkSmartPointer<vtkCameraRepresentation>::New();
     vtkSmartPointer<vtkCameraInterpolator> cameraInterpolator = vtkSmartPointer<vtkCameraInterpolator>::New();
     cameraInterpolator->SetInterpolationTypeToSpline();
     m_pathCamera->SetInterpolator(cameraInterpolator);
     m_pathCamera->SetCamera(m_renderer->GetActiveCamera());
-    renderWindow->AddRenderer(m_renderer);
 
-    //m_timerCallback = vtkSmartPointer<LVRTimerCallback>::New();
-    //m_timerCallback->setMainCamera(m_renderer->GetActiveCamera());
-    //m_timerCallback->setPathCamera(m_pathCamera);
-    //m_renderWindowInteractor->AddObserver(vtkCommand::TimerEvent, m_timerCallback);
-    //m_timerID = -1;
-    // TODO: Animate camera path (saved in m_pathCamera) when clicking play
+    // Finalize QVTK setup by adding the renderer to the window
+    renderWindow->AddRenderer(m_renderer);
 }
 
 void LVRMainWindow::updateView()
@@ -256,15 +253,9 @@ void LVRMainWindow::loadCamera()
 	refreshView();
 }
 
-void LVRMainWindow::recordPath()
+void LVRMainWindow::openCameraPathTool()
 {
     new LVRAnimationDialog(m_renderWindowInteractor, m_pathCamera, treeWidget);
-}
-
-void LVRMainWindow::animatePath()
-{
-    m_pathCamera->SetNumberOfFrames(m_timerCallback->getNumberOfFrames() * 30);
-    m_pathCamera->AnimatePath(m_renderWindowInteractor);
 }
 
 void LVRMainWindow::addArrow(LVRVtkArrow* a)

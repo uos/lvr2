@@ -10,7 +10,8 @@
 #include <vtkRendererCollection.h>
 #include <vtkRenderWindow.h>
 #include <vtkRenderWindowInteractor.h>
-#include <vtkXMLWriter.h>
+#include <vtkFFMPEGWriter.h>
+#include <vtkWindowToImageFilter.h>
 
 #include <QtGui>
 #include "LVRAnimationDialogUI.h"
@@ -36,6 +37,7 @@ public Q_SLOTS:
     void changeInterpolation(const QString& text);
     void savePath();
     void loadPath();
+    void saveVideo();
     void play();
 
 private:
@@ -47,7 +49,6 @@ private:
     vtkSmartPointer<vtkCameraRepresentation>    m_pathCamera;
     vtkSmartPointer<vtkCamera>                  m_mainCamera;
     QTreeWidget*                                m_treeWidget;
-    int                                         m_timerID;
     unsigned int                               m_frameCounter;
 };
 
