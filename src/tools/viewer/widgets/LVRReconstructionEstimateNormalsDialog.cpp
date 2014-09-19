@@ -59,7 +59,8 @@ void LVREstimateNormalsDialog::estimateNormals()
 
     // Get transformation from frames or pose files if possible
     Matrix4<float> transform;
-    // Matrix4 unterstützt lvr::Pose noch nicht, Umwandlung in float-Array
+    // Matrix4 does not support lvr::Pose, convert to float-Array
+    // TODO: fix transformation
     Pose pose = m_parent->getPose();
     float* float_pose = new float[6];
     float_pose[0] = pose.x;

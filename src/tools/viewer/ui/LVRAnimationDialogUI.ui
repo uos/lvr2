@@ -85,7 +85,7 @@
    <property name="geometry">
     <rect>
      <x>230</x>
-     <y>320</y>
+     <y>290</y>
      <width>201</width>
      <height>27</height>
     </rect>
@@ -124,7 +124,7 @@
    <property name="geometry">
     <rect>
      <x>230</x>
-     <y>170</y>
+     <y>140</y>
      <width>91</width>
      <height>41</height>
     </rect>
@@ -143,7 +143,7 @@
    <property name="geometry">
     <rect>
      <x>320</x>
-     <y>180</y>
+     <y>150</y>
      <width>111</width>
      <height>27</height>
     </rect>
@@ -166,7 +166,7 @@
    <property name="geometry">
     <rect>
      <x>230</x>
-     <y>220</y>
+     <y>190</y>
      <width>91</width>
      <height>91</height>
     </rect>
@@ -185,7 +185,7 @@
    <property name="geometry">
     <rect>
      <x>329</x>
-     <y>250</y>
+     <y>220</y>
      <width>101</width>
      <height>27</height>
     </rect>
@@ -195,6 +195,19 @@
    </property>
    <property name="value">
     <number>30</number>
+   </property>
+  </widget>
+  <widget class="QPushButton" name="saveVideo_button">
+   <property name="geometry">
+    <rect>
+     <x>230</x>
+     <y>330</y>
+     <width>201</width>
+     <height>27</height>
+    </rect>
+   </property>
+   <property name="text">
+    <string>save animation as video</string>
    </property>
   </widget>
  </widget>
