@@ -133,7 +133,7 @@ void HalfEdgeMesh<VertexT, NormalT>::setClassifier(string name)
 		cout << timestamp << "Warning: Unable to create classifier type '"
 			 << name << "'. Using default." << endl;
 
-		ClassifierFactory<VertexT, NormalT>::get("Default", this);
+		m_regionClassifier = ClassifierFactory<VertexT, NormalT>::get("Default", this);
 		m_classifierType = "Default";
 	}
 }
@@ -1454,7 +1454,7 @@ void HalfEdgeMesh<VertexT, NormalT>::finalize()
 	std::cout << timestamp << "Checking face integreties." << std::endl;
     checkFaceIntegreties();
 
-    std::cout << timestamp << "finalize mesh with classifier \"" << m_classifierType << "\"." << std::endl;
+    std::cout << timestamp << "Finalizing mesh with classifier \"" << m_classifierType << "\"." << std::endl;
 
     boost::unordered_map<VertexPtr, int> index_map;
 
