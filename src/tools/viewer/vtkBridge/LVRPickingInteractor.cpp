@@ -142,22 +142,4 @@ void LVRPickingInteractor::OnKeyRelease()
 
 }
 
-void LVRPickingInteractor::OnTimer()
-{
-    cout << "[LVRPickingInteractor] OnTimer()" << endl;
-    vtkInteractorStyleTrackballCamera::OnTimer();
-}
-
-void LVRPickingInteractor::OnExpose()
-{
-    cout << "[LVRPickingInteractor] OnExpose()" << endl;
-    vtkInteractorStyleTrackballCamera::OnExpose();
-}
-
-void LVRPickingInteractor::OnConfigure()
-{
-    cout << "[LVRPickingInteractor] OnConfigure()" << endl;
-    vtkInteractorStyleTrackballCamera::OnConfigure();
-}
-
 } /* namespace lvr */
