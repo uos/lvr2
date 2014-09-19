@@ -40,6 +40,7 @@ Region<VertexT, NormalT>::Region(int regionNumber)
 	this->m_regionNumber = regionNumber;
 	this->m_toDelete     = false;
 	this->b_labeled      = false;
+	this->m_area           = 0;
 }
 
 template<typename VertexT, typename NormalT>
@@ -48,6 +49,22 @@ void Region<VertexT, NormalT>::addFace(FacePtr f)
 	this->m_faces.push_back(f);
 	f->m_region = m_regionNumber;
 }
+
+template<typename VertexT, typename NormalT>
+float Region<VertexT, NormalT>::getArea()
+{
+    return m_area;
+}
+
+template<typename VertexT, typename NormalT>
+void Region<VertexT, NormalT>::calcArea()
+{
+    for(size_t i = 0; i < m_faces.size(); i++)
+    {
+        m_area += m_faces[i]->getArea();
+    }
+}
+
 
 template<typename VertexT, typename NormalT>
 void Region<VertexT, NormalT>::deleteInvalidFaces()
