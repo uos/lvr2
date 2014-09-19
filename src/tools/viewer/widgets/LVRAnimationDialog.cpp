@@ -179,8 +179,7 @@ void LVRAnimationDialog::saveVideo()
     vtkSmartPointer<vtkFFMPEGWriter> videoWriter = vtkSmartPointer<vtkFFMPEGWriter>::New();
     videoWriter->SetQuality(2);
     videoWriter->SetRate(30);
-    //videoWriter->SetFileName(filename.toUtf8().constData());
-    videoWriter->SetFileName("Test.avi");
+    videoWriter->SetFileName(filename.toUtf8().constData());
 
     vtkSmartPointer<vtkWindowToImageFilter> w2i = vtkSmartPointer<vtkWindowToImageFilter>::New();
     w2i->SetInput(m_renderWindowInteractor->GetRenderWindow());
