@@ -185,19 +185,9 @@ void LVRAnimationDialog::saveVideo()
     w2i->SetInput(m_renderWindowInteractor->GetRenderWindow());
     videoWriter->SetInputConnection(w2i->GetOutputPort());
 
-    vtkSmartPointer<LVRTimerCallback> timerCallback = vtkSmartPointer<LVRTimerCallback>::New();
-    timerCallback->setFFMPEGWriter(videoWriter);
-    timerCallback->setWindowToImageFilter(w2i);
-    m_renderWindowInteractor->AddObserver(vtkCommand::TimerEvent, timerCallback);
-
     videoWriter->Start();
-    int timerSpeed = 33; // ~30FPS
-    int timerID = m_renderWindowInteractor->CreateRepeatingTimer(timerSpeed);
-    play();
-    m_renderWindowInteractor->DestroyTimer(timerID);
+    play(); // TODO: Capture video while playing!
     videoWriter->End();
-
-    m_renderWindowInteractor->RemoveObserver(vtkCommand::TimerEvent);
 }
 
 }
