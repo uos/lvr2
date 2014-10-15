@@ -18,7 +18,7 @@
 
 
  /*
- * SearchTreeNabo.tcc 
+ * SearchTreeNabo.tcc
  *
  *  Created on: 02.01.2012
  *      Author: Florian Otte
@@ -28,7 +28,7 @@
 #include <limits>
 
 // External libraries in lvr source tree
-#include "../Eigen/Dense"
+#include <Eigen/Dense>
 
 // boost libraries
 #include <boost/filesystem.hpp>
