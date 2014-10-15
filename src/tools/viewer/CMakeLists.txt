@@ -97,6 +97,9 @@ target_link_libraries(lvr_viewer ${Boost_FILESYSTEM_LIBRARY}
 target_link_libraries(lvr_viewer pthread)
 target_link_libraries(lvr_viewer ${PCL_LIBRARIES})
 target_link_libraries(lvr_viewer GLU ${QVTK_LIBRARY})
+if( ${NABO_FOUND} )
+    target_link_libraries(lvr_viewer ${NABO_LIBRARIES})
+endif( ${NABO_FOUND} )
 
 INSTALL(TARGETS lvr_viewer
     RUNTIME DESTINATION bin
