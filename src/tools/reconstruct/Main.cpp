@@ -165,13 +165,13 @@
 
 using namespace lvr;
 
-typedef ColorVertex<float, unsigned char>               cVertex;
-typedef Normal<float>                                   cNormal;
-typedef PointsetSurface<cVertex>                        psSurface;
-typedef AdaptiveKSearchSurface<cVertex, cNormal>        akSurface;
+typedef ColorVertex<float, unsigned char>						cVertex;
+typedef Normal<float>											cNormal;
+typedef PointsetSurface<ColorVertex<float, unsigned char> >		psSurface;
+typedef AdaptiveKSearchSurface<ColorVertex<float, unsigned char>, Normal<float> >	akSurface;
 
 #ifdef _USE_PCL_
-typedef PCLKSurface<cVertex, cNormal>                   pclSurface;
+typedef PCLKSurface<Vertex<float> , Normal<float> >                   pclSurface;
 #endif
 
 /**
@@ -280,7 +280,7 @@ int main(int argc, char** argv)
 		}
 
 		// Create an empty mesh
-		HalfEdgeMesh<cVertex, cNormal> mesh( surface );
+		HalfEdgeMesh<ColorVertex<float, unsigned char> , Normal<float> > mesh( surface );
 
 		// Set recursion depth for region growing
 		if(options.getDepth())
@@ -295,7 +295,7 @@ int main(int argc, char** argv)
 		
 		if(options.getTexturePack() != "")
 		{
-			Texturizer<cVertex, cNormal>::m_filename = options.getTexturePack();
+			Texturizer<Vertex<float> , Normal<float> >::m_filename = options.getTexturePack();
 			if(options.getStatsCoeffs())
 			{	
 				float* sc = options.getStatsCoeffs();
@@ -307,40 +307,40 @@ int main(int argc, char** argv)
 			}
 			if(options.getNumStatsColors())
 			{
-				Texturizer<cVertex, cNormal>::m_numStatsColors = options.getNumStatsColors();
+				Texturizer<Vertex<float> , Normal<float> >::m_numStatsColors = options.getNumStatsColors();
 			}
 			if(options.getNumCCVColors())
 			{
-				Texturizer<cVertex, cNormal>::m_numCCVColors = options.getNumCCVColors();
+				Texturizer<Vertex<float> , Normal<float> >::m_numCCVColors = options.getNumCCVColors();
 			}
 			if(options.getCoherenceThreshold())
 			{
-				Texturizer<cVertex, cNormal>::m_coherenceThreshold = options.getCoherenceThreshold();
+				Texturizer<Vertex<float> , Normal<float> >::m_coherenceThreshold = options.getCoherenceThreshold();
 			}
 
 			if(options.getColorThreshold())
 			{
-				Texturizer<cVertex, cNormal>::m_colorThreshold = options.getColorThreshold();
+				Texturizer<Vertex<float> , Normal<float> >::m_colorThreshold = options.getColorThreshold();
 			}
 			if(options.getStatsThreshold())
 			{
-				Texturizer<cVertex, cNormal>::m_statsThreshold = options.getStatsThreshold();
+				Texturizer<Vertex<float> , Normal<float> >::m_statsThreshold = options.getStatsThreshold();
 			}
 			if(options.getUseCrossCorr())
 			{
-				Texturizer<cVertex, cNormal>::m_useCrossCorr = options.getUseCrossCorr();
+				Texturizer<Vertex<float> , Normal<float> >::m_useCrossCorr = options.getUseCrossCorr();
 			}
 			if(options.getFeatureThreshold())
 			{
-				Texturizer<cVertex, cNormal>::m_featureThreshold = options.getFeatureThreshold();
+				Texturizer<Vertex<float> , Normal<float> >::m_featureThreshold = options.getFeatureThreshold();
 			}
 			if(options.getPatternThreshold())
 			{
-				Texturizer<cVertex, cNormal>::m_patternThreshold = options.getPatternThreshold();
+				Texturizer<Vertex<float> , Normal<float> >::m_patternThreshold = options.getPatternThreshold();
 			}
 			if(options.doTextureAnalysis())
 			{
-			    Texturizer<cVertex, cNormal>::m_doAnalysis = true;
+			    Texturizer<Vertex<float> , Normal<float> >::m_doAnalysis = true;
 			}
 			if(options.getMinimumTransformationVotes())
 			{
@@ -350,11 +350,11 @@ int main(int argc, char** argv)
 
 		if(options.getSharpFeatureThreshold())
 		{
-			SharpBox<cVertex, cNormal>::m_theta_sharp = options.getSharpFeatureThreshold();
+			SharpBox<Vertex<float> , Normal<float> >::m_theta_sharp = options.getSharpFeatureThreshold();
 		}
 		if(options.getSharpCornerThreshold())
 		{
-			SharpBox<cVertex, cNormal>::m_phi_corner = options.getSharpCornerThreshold();
+			SharpBox<Vertex<float> , Normal<float> >::m_phi_corner = options.getSharpCornerThreshold();
 		}
 
 		// Determine whether to use intersections or voxelsize
@@ -373,7 +373,7 @@ int main(int argc, char** argv)
 
 		// Create a new reconstruction object
 
-		FastReconstruction<cVertex, cNormal > reconstruction(
+		FastReconstruction<ColorVertex<float, unsigned char> , Normal<float>  > reconstruction(
 				surface,
 				resolution,
 				useVoxelsize,
@@ -414,7 +414,7 @@ int main(int argc, char** argv)
 
 			if(options.getNumEdgeCollapses())
 			{
-				QuadricVertexCosts<cVertex, cNormal> c = QuadricVertexCosts<cVertex, cNormal>(true);
+				QuadricVertexCosts<ColorVertex<float, unsigned char> , Normal<float> > c = QuadricVertexCosts<ColorVertex<float, unsigned char> , Normal<float> >(true);
 				mesh.reduceMeshByCollapse(options.getNumEdgeCollapses(), c);
 			}
 		}

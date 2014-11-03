@@ -71,9 +71,9 @@ CoordType& Vertex<CoordType>::operator[](const int &index)
 template<typename CoordType>
 bool Vertex<CoordType>::operator==(const Vertex &other) const
 {
-    return fabs(x - other.x) <= Vertex::epsilon &&
-           fabs(y - other.y) <= Vertex::epsilon &&
-           fabs(z - other.z) <= Vertex::epsilon;
+    return std::fabs((float)x - other.x) <= Vertex::epsilon &&
+           std::fabs((float)y - other.y) <= Vertex::epsilon &&
+           std::fabs((float)z - other.z) <= Vertex::epsilon;
 }
 
 template<typename CoordType>

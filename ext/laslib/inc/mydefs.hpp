@@ -54,7 +54,7 @@ typedef double             F64;
 #if defined(_MSC_VER) && (_MSC_VER < 1300)
 typedef int                BOOL;
 #else
-typedef bool               BOOL;
+typedef int               BOOL;
 #endif
 
 typedef union U32I32F32 { U32 u32; I32 i32; F32 f32; } U32I32F32;

@@ -45,7 +45,7 @@ int main(int argc, char **argv)
   try {
     bool did_anything = false;
     float x, y, z, r1, r2, r3;
-    Matrix4f mat;
+    Matrix4<float> mat;
     size_t num;
 
     // get options
@@ -84,7 +84,7 @@ int main(int argc, char **argv)
         r2 = r2 * 0.0174532925;
         r3 = r3 * 0.0174532925;
 
-        mat = Matrix4f(Vertex3f(x, y, z), Vertex3f(r1, r2, r3));
+        mat = Matrix4<float>(Vertex3f(x, y, z), Vertex3f(r1, r2, r3));
       }
       else //expect frames file instead
       {
@@ -137,7 +137,7 @@ int main(int argc, char **argv)
       r2 = r2 * 0.0174532925;
       r3 = r3 * 0.0174532925;
 
-      mat = Matrix4f(Vertex3f(x, y, z), Vertex3f(r1, r2, r3));
+      mat = Matrix4<float>(Vertex3f(x, y, z), Vertex3f(r1, r2, r3));
     }
 
     // Get point buffer

@@ -10,7 +10,6 @@
 #include <vtkRendererCollection.h>
 #include <vtkRenderWindow.h>
 #include <vtkRenderWindowInteractor.h>
-#include <vtkFFMPEGWriter.h>
 #include <vtkWindowToImageFilter.h>
 
 #include <QtGui>

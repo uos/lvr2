@@ -99,7 +99,7 @@ void LVREstimateNormalsDialog::estimateNormals()
 
     if(interpolateNormals)
     {
-        typename SearchTree<Vertex<float> >::Ptr       tree;
+        SearchTree<Vertex<float> >::Ptr       tree;
         #ifdef _USE_PCL_
             tree = SearchTree<Vertex<float> >::Ptr( new SearchTreeFlann<Vertex<float> >(new_pc, numPoints, ki, ki, ki) );
         #else
@@ -108,7 +108,7 @@ void LVREstimateNormalsDialog::estimateNormals()
         #endif
 
         #pragma omp parallel for schedule(static)
-        for(size_t i = 0; i < numPoints; i++)
+        for(int i = 0; i < numPoints; i++)
         {
             // Create search tree
             vector< ulong > indices;

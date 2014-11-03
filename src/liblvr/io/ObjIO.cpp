@@ -130,9 +130,9 @@ void ObjIO::parseMtlFile(
 			{
 				float r, g, b;
 				ss >> r >> g >> b;
-				m->r = (uchar)(r * 255);
-				m->g = (uchar)(g * 255);
-				m->b = (uchar)(b * 255);
+				m->r = (unsigned char)(r * 255);
+				m->g = (unsigned char)(g * 255);
+				m->b = (unsigned char)(b * 255);
 			}
 			else if(keyword == "map_Kd")
 			{
@@ -310,7 +310,7 @@ ModelPtr ObjIO::read(string filename)
 
 void ObjIO::save( string filename )
 {
-	typedef Vertex<uchar> ObjColor;
+	typedef Vertex<unsigned char> ObjColor;
 
 	size_t lenVertices;
 	size_t lenNormals;

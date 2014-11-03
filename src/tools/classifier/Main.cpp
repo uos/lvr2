@@ -48,7 +48,7 @@ using namespace lvr;
 
 typedef ColorVertex<float, unsigned char>               cVertex;
 typedef Normal<float>                                   cNormal;
-typedef AdaptiveKSearchSurface<cVertex, cNormal>        akSurface;
+typedef AdaptiveKSearchSurface<cVertex, Normal<float> >        akSurface;
 
 /**
  * @brief   Main entry point for the LSSR surface executable

@@ -98,9 +98,9 @@ void PointCloud::init(PointBufferPtr buffer)
 				float color[3];
 				c_map.getColor(color, (size_t)intensities[i], SHSV);
 
-				r = (uchar)(color[0] * 255);
-				g = (uchar)(color[1] * 255);
-				b = (uchar)(color[2] * 255);
+				r = (unsigned char)(color[0] * 255);
+				g = (unsigned char)(color[1] * 255);
+				b = (unsigned char)(color[2] * 255);
 
 			}
 			else

@@ -31,8 +31,8 @@ using namespace std;
 
 #include <set>
 #include <vector>
-#include <glu.h>
-#include <glut.h>
+#include <GL/GLU.h>
+#include <GL/glut.h>
 #include <iomanip>
 
 #include "Vertex.hpp"

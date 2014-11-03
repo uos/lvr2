@@ -12,8 +12,8 @@ set(LVR_SOURCES
     io/MeshBuffer.cpp
     io/PointBuffer.cpp
     io/GridIO.cpp
-    io/KinectGrabber.cpp
-    io/KinectIO.cpp
+#    io/KinectGrabber.cpp
+#    io/KinectIO.cpp
     io/CoordinateTransform.cpp
     io/BoctreeIO.cpp
     io/TextureIO.cpp
