@@ -112,7 +112,7 @@ public:
 	 *
 	 * \return	The imported CCV map
 	 */
-	std::map< uchar, std::pair<ulong, ulong> > fromArray(unsigned long int* arr);
+	std::map< unsigned char, std::pair<unsigned long, unsigned long> > fromArray(unsigned long int* arr);
 	
 	/**
 	 * Destructor.
@@ -123,13 +123,13 @@ public:
 	int m_numPix;
 
 	//The CCV for the r channel
-	std::map< uchar, std::pair<ulong, ulong> > m_CCV_r; 
+	std::map< unsigned char, std::pair<unsigned long, unsigned long> > m_CCV_r; 
 
 	//The CCV for the g channel
-	std::map< uchar, std::pair<ulong, ulong> > m_CCV_g; 
+	std::map< unsigned char, std::pair<unsigned long, unsigned long> > m_CCV_g; 
 
 	//The CCV for the b channel
-	std::map< uchar, std::pair<ulong, ulong> > m_CCV_b; 
+	std::map< unsigned char, std::pair<unsigned long, unsigned long> > m_CCV_b; 
 private:
 	/**
 	* \brief 	Calculates the coherence of each pixel. The
@@ -143,7 +143,7 @@ private:
 	* \return	A std::map containing the size and color value for each
 	*		connected component
 	*/
-	std::map<ushort, std::pair<uchar, ulong> >calcCoherence(cv::Mat inputColors, cv::Mat inputLabels);
+	std::map<ushort, std::pair<unsigned char, unsigned long> >calcCoherence(cv::Mat inputColors, cv::Mat inputLabels);
 
 	/**
 	 * \brief Calculates the CCV for the given image.
@@ -157,7 +157,7 @@ private:
 	 * \return	A color coherence vector given by a std::map that holds the alpha and beta
 	 *		values for each color.
 	 */
-	std::map< uchar, std::pair<ulong, ulong> > calculateCCV(cv::Mat img);
+	std::map< unsigned char, std::pair<unsigned long, unsigned long> > calculateCCV(cv::Mat img);
 
 	//The number of colors
 	int m_numColors;

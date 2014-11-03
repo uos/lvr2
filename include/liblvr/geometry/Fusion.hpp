@@ -68,7 +68,6 @@
 #include <CGAL/Polygon_2.h>
 
 #include "Vertex.hpp"
-#include "VertexTraits.hpp"
 #include "Normal.hpp"
 #include "BaseMesh.hpp"
 

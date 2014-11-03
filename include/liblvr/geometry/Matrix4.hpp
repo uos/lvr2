@@ -37,6 +37,9 @@
 #define _USE_MATH_DEFINES
 #include <cmath>
 
+#ifndef M_PI
+#define M_PI 3.141592654
+#endif
 using namespace std;
 
 namespace lvr{

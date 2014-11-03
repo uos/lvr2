@@ -129,7 +129,7 @@ uint FastReconstruction<VertexT, NormalT>::findQueryPoint(
         }
     }
 
-    return FastBox<float, uint>::INVALID_INDEX;
+    return FastBox<VertexT, NormalT>::INVALID_INDEX;
 
 
 }
@@ -143,7 +143,7 @@ void FastReconstruction<VertexT, NormalT>::createGrid()
 	int index_x, index_y, index_z;
 	size_t hash_value;
 
-	uint INVALID = FastBox<float, uint>::INVALID_INDEX;
+	uint INVALID = FastBox<VertexT, NormalT>::INVALID_INDEX;
 
 	float vsh = 0.5 * m_voxelsize;
 

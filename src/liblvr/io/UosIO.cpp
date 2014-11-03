@@ -73,11 +73,11 @@ ModelPtr UosIO::read(string dir)
         for(boost::filesystem::directory_iterator it(directory); it != lastFile; it++ )
         {
             boost::filesystem::path p = it->path();
-            if(string(p.extension().c_str()) == ".3d")
+            if(p.extension().string() == ".3d")
             {
                 // Check for naming convention "scanxxx.3d"
                 int num = 0;
-                if(sscanf(p.filename().c_str(), "scan%3d", &num))
+                if(sscanf(p.filename().string().c_str(), "scan%3d", &num))
                 {
                     n3dFiles++;
                     if(firstScan == -1) firstScan = num;
@@ -122,7 +122,7 @@ ModelPtr UosIO::read(string dir)
                 int num = 0;
 
                 // Only count numbered dirs
-                if(sscanf(p.filename().c_str(), "%d", &num))
+                if(sscanf(p.filename().string().c_str(), "%d", &num))
                 {
                     if(firstScan == -1) firstScan = num;
                     if(lastScan == -1) lastScan = num;
@@ -466,7 +466,7 @@ void UosIO::readNewFormat(ModelPtr &model, string dir, int first, int last, size
         // Save color information
         if ( allColors.size() )
         {
-            pointColors = ucharArr( new uchar[ 3 * numPoints ] );
+            pointColors = ucharArr( new unsigned char[ 3 * numPoints ] );
             i = 0;
             list<Vertex<int> >::iterator c_it;
             for(c_it = allColors.begin(); c_it != allColors.end(); c_it++)

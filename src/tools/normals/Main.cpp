@@ -93,7 +93,7 @@ void interpolateNormals(PointBufferPtr pc, size_t numPoints, int n)
 {
     cout << timestamp << "Creating search tree for interpolation" << endl;
 
-    typename SearchTree<Vertex<float> >::Ptr       tree;
+    SearchTree<Vertex<float> >::Ptr       tree;
 #ifdef _USE_PCL_
         tree = SearchTree<Vertex<float> >::Ptr( new SearchTreeFlann<Vertex<float> >(pc, numPoints, n, n, n) );
 #else
@@ -109,7 +109,7 @@ void interpolateNormals(PointBufferPtr pc, size_t numPoints, int n)
     ProgressBar progress(numPoints, comment);
 
     #pragma omp parallel for schedule(static)
-    for(size_t i = 0; i < numPoints; i++)
+    for(int i = 0; i < numPoints; i++)
     {
         // Create search tree
         vector< ulong > indices;
@@ -171,11 +171,11 @@ int main(int argc, char** argv)
 	        for(boost::filesystem::directory_iterator it(directory); it != lastFile; it++ )
 	        {
 	            boost::filesystem::path p = it->path();
-	            if(string(p.extension().c_str()) == ".3d")
+	            if(string(p.extension().string().c_str()) == ".3d")
 	            {
 	                // Check for naming convention "scanxxx.3d"
 	                int num = 0;
-	                if(sscanf(p.filename().c_str(), "scan%3d", &num))
+	                if(sscanf(p.filename().string().c_str(), "scan%3d", &num))
 	                {
 	                    n3dFiles++;
 	                    if(firstScan == -1) firstScan = num;
@@ -214,7 +214,7 @@ int main(int argc, char** argv)
 	            boost::filesystem::path filePath(scanFileName);
 	            boost::filesystem::path scanFilePath = directory / filePath;
 
-	            string scanFile = scanFilePath.c_str();
+	            string scanFile = scanFilePath.string().c_str();
 	            cout << timestamp << "Counting points in file " << scanFile << std::flush;
 	            size_t pointsInScan = AsciiIO::countLines(scanFile);
 	            cout << " --> " << pointsInScan << endl;
@@ -263,7 +263,7 @@ int main(int argc, char** argv)
 	            {
 	                float pose[6];
 	                cout << timestamp << "Reading " << frameFilePath.c_str() << std::flush;
-	                transform = readFrameFile(frameFilePath.c_str());
+	                transform = readFrameFile(frameFilePath.string().c_str());
 	                transform.toPostionAngle(pose);
 	                cout << " --> " << pose[0] << " " << pose[1] << " " << pose[2] << " ";
 	                cout << pose[3] << " " << pose[4] << " " << pose[5] << " " << endl;
@@ -272,7 +272,7 @@ int main(int argc, char** argv)
 	            {
 	                float pose[6];
 	                cout << timestamp << "Reading " << poseFilePath.c_str() << std::flush;
-	                transform = readPoseFile(poseFilePath.c_str());
+	                transform = readPoseFile(poseFilePath.string().c_str());
 	                transform.toPostionAngle(pose);
 	                cout << " --> " << pose[0] << " " << pose[1] << " " << pose[2] << " ";
 	                cout << pose[3] << " " << pose[4] << " " << pose[5] << " " << endl;
@@ -282,7 +282,7 @@ int main(int argc, char** argv)
 	                cout << timestamp << "Warning: No transformation found for scan " << i << ". Copying points." << endl;
 	            }
 
-	            string scanFile = scanFilePath.c_str();
+	            string scanFile = scanFilePath.string().c_str();
 	            cout << timestamp << "Processing " << scanFile << endl;
 
 	            // Open scan file

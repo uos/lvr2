@@ -106,14 +106,12 @@ struct idxVal
 };
 
 
-typedef unsigned char uchar;
-
 
 struct Material
 {
-	uchar r;
-	uchar g;
-	uchar b;
+	unsigned char r;
+	unsigned char g;
+	unsigned char b;
 	int texture_index;
 };
 
@@ -124,10 +122,10 @@ typedef boost::shared_array<unsigned int> uintArr;
 typedef boost::shared_array<float> floatArr;
 
 
-typedef boost::shared_array<uchar> ucharArr;
+typedef boost::shared_array<unsigned char> ucharArr;
 
 
-typedef boost::shared_array< color<uchar> > color3bArr;
+typedef boost::shared_array< color<unsigned char> > color3bArr;
 
 
 typedef boost::shared_array< coord<float> > coord3fArr;

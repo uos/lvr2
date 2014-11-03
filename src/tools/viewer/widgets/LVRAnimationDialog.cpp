@@ -181,7 +181,7 @@ void LVRAnimationDialog::saveVideo()
 {
     QString filename = QFileDialog::getSaveFileName(m_treeWidget, tr("Save Path"), "", tr("AVI files (*.avi)"));
 
-    vtkSmartPointer<vtkFFMPEGWriter> videoWriter = vtkSmartPointer<vtkFFMPEGWriter>::New();
+   /* vtkSmartPointer<vtkFFMPEGWriter> videoWriter = vtkSmartPointer<vtkFFMPEGWriter>::New();
     videoWriter->SetQuality(2);
     videoWriter->SetRate(30);
     videoWriter->SetFileName(filename.toUtf8().constData());
@@ -192,7 +192,7 @@ void LVRAnimationDialog::saveVideo()
 
     videoWriter->Start();
     play(); // TODO: Capture video while playing!
-    videoWriter->End();
+    videoWriter->End(); */
 }
 
 }
