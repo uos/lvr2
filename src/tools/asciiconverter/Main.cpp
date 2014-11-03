@@ -99,7 +99,7 @@ int main(int argc, char** argv)
     if(in.good())
     {
         // Data to store the input data
-        float data[numEntries];
+        float* data = new float[numEntries];
         in.getline(buffer, 2048);
         int c = 0;
         while(in.good() && c <= numPoints)
@@ -141,6 +141,7 @@ int main(int argc, char** argv)
             c++;
             ++progress;
         }
+		delete[] data;
 
         // Create model and save data
         PointBufferPtr pointBuffer(new PointBuffer);

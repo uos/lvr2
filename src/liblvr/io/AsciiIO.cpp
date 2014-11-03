@@ -43,7 +43,7 @@ ModelPtr AsciiIO::read(string filename)
 {
     // Check extension
     boost::filesystem::path selectedFile(filename);
-    string extension(selectedFile.extension().c_str());
+    string extension(selectedFile.extension().string());
 
     if ( extension != ".pts" && extension != ".3d" && extension != ".xyz" && extension != ".txt" )
     {
@@ -140,18 +140,18 @@ ModelPtr AsciiIO::read(string filename)
         {
             in >> x >> y >> z >> i >> r >> g >> b;
             pointIntensities[c] = i;
-            pointColors[ c * 3     ] = (uchar) r;
-            pointColors[ c * 3 + 1 ] = (uchar) g;
-            pointColors[ c * 3 + 2 ] = (uchar) b;
+            pointColors[ c * 3     ] = (unsigned char) r;
+            pointColors[ c * 3 + 1 ] = (unsigned char) g;
+            pointColors[ c * 3 + 2 ] = (unsigned char) b;
 
         }
         else if ( has_color && has_accuracy && has_validcolor )
         {
             in >> x >> y >> z >> confidence >> dummy >> r >> g >> b;
             pointConfidences[c]      = confidence;
-            pointColors[ c * 3     ] = (uchar) r;
-            pointColors[ c * 3 + 1 ] = (uchar) g;
-            pointColors[ c * 3 + 2 ] = (uchar) b;
+            pointColors[ c * 3     ] = (unsigned char) r;
+            pointColors[ c * 3 + 1 ] = (unsigned char) g;
+            pointColors[ c * 3 + 2 ] = (unsigned char) b;
 
         }
         else if (has_intensity)
@@ -163,9 +163,9 @@ ModelPtr AsciiIO::read(string filename)
         else if(has_color)
         {
             in >> x >> y >> z >> r >> g >> b;
-            pointColors[ c * 3     ] = (uchar) r;
-            pointColors[ c * 3 + 1 ] = (uchar) g;
-            pointColors[ c * 3 + 2 ] = (uchar) b;
+            pointColors[ c * 3     ] = (unsigned char) r;
+            pointColors[ c * 3 + 1 ] = (unsigned char) g;
+            pointColors[ c * 3 + 2 ] = (unsigned char) b;
         }
         else
         {

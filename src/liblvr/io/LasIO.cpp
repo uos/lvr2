@@ -53,7 +53,7 @@ ModelPtr LasIO::read(string filename )
         // Alloc coordinate array
         floatArr points ( new float[3 * num_points]);
         floatArr intensities ( new float[num_points]);
-        ucharArr colors (new uchar[3 * num_points]);
+        ucharArr colors (new unsigned char[3 * num_points]);
 
         // Read point data
         for(size_t i = 0; i < num_points; i++)

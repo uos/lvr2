@@ -44,10 +44,10 @@ MeshBuffer::MeshBuffer() :
     m_numTextures(0)
 {
 
-    /* Make shure we can convert the indexed arrays into interlaced arrays and
+    /* Make sure we can convert the indexed arrays into interlaced arrays and
      * vice versa. */
 	assert( 3 * sizeof(float) == sizeof(coord<float>) );
-	assert( 3 * sizeof(uchar) == sizeof(color<uchar>) );
+	assert( 3 * sizeof(unsigned char) == sizeof(color<unsigned char>) );
 	assert( 3 * sizeof(unsigned int) == sizeof(coord<unsigned int>) );
 	assert( sizeof(float) == sizeof(idxVal<float>) );
 
@@ -214,7 +214,7 @@ void MeshBuffer::setVertexColorArray(ucharArr array, size_t n)
 
 void MeshBuffer::setVertexColorArray(std::vector<uint8_t>& array)
 {
-	m_vertexColors = ucharArr(new uchar[array.size()]);
+	m_vertexColors = ucharArr(new unsigned char[array.size()]);
 	for (int i(0); i < array.size(); i++)
 	{
 		m_vertexColors[i] = array[i];

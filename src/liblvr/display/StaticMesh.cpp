@@ -128,7 +128,7 @@ void StaticMesh::init( MeshBufferPtr mesh )
 
 		if(n_colors == 0)
 		{
-			m_colors = ucharArr( new uchar[3 * m_numVertices] );
+			m_colors = ucharArr( new unsigned char[3 * m_numVertices] );
 			for( int i = 0; i < m_numVertices; ++i )
 			{
 				m_colors[3 * i] = 0;
@@ -286,7 +286,7 @@ void StaticMesh::compileNameList()
 	glRasterPos3f(v.x, v.y, v.z);
 	for(int i = 0; i < Name().size(); i++)
 	{
-		glutBitmapCharacter(GLUT_BITMAP_HELVETICA_12, Name()[i]);
+		//glutBitmapCharacter(GLUT_BITMAP_HELVETICA_12, Name()[i]);
 	}
 	glEnable(GL_LIGHTING);
 	glEndList();
@@ -362,7 +362,7 @@ void StaticMesh::interpolateNormals()
 
 void StaticMesh::setDefaultColors()
 {
-    m_colors = ucharArr( new uchar[3 * m_numVertices] );
+    m_colors = ucharArr( new unsigned char[3 * m_numVertices] );
     for(size_t i = 0; i < m_numVertices; i++)
     {
         m_colors[i] = 0.0;
