@@ -35,7 +35,7 @@ void LVRRemoveOutliersDialog::removeOutliers()
     float standardDeviation = (float)standardDeviation_box->value();
     QDoubleSpinBox* meanK_box = m_dialog->doubleSpinBox_st;
     float meanK = (float)meanK_box->value();
-
+	/*
     PCLFiltering filter(m_pc->getPointBuffer());
     filter.applyOutlierRemoval(meanK, standardDeviation);
 
@@ -50,7 +50,7 @@ void LVRRemoveOutliersDialog::removeOutliers()
     m_optimizedPointCloud = new LVRModelItem(bridge, base);
 
     m_treeWidget->addTopLevelItem(m_optimizedPointCloud);
-    m_optimizedPointCloud->setExpanded(true);
+    m_optimizedPointCloud->setExpanded(true); */
 }
 
 }

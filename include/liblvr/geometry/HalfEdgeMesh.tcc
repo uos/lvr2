@@ -1461,7 +1461,9 @@ void HalfEdgeMesh<VertexT, NormalT>::finalize()
     int numVertices = m_vertices.size();
     int numFaces    = m_faces.size();
     int numRegions  = m_regions.size();
-    float r, g, b;
+	float r = 0.0;
+	float g = 0.0;
+	float b = 0.0;
     std::vector<uchar> faceColorBuffer;
 
     floatArr vertexBuffer( new float[3 * numVertices] );
@@ -1764,7 +1766,7 @@ void HalfEdgeMesh<VertexT, NormalT>::finalizeAndRetesselate( bool genTextures, f
                 indexBuffer.push_back( pos );
             }
 
-            if ( genTextures && VertexTraits<VertexT>::has_color() )
+            if ( genTextures )
             {
                 int one = 1;
                 vector<VertexT> cv;

@@ -26,7 +26,9 @@
 #define ICPPOINTALIGN_HPP_
 
 #include "registration/EigenSVDPointAlign.hpp"
+#ifdef _USE_PCL
 #include "reconstruction/SearchTreeFlann.hpp"
+#endif
 #include "reconstruction/SearchTreeStann.hpp"
 #include "geometry/Matrix4.hpp"
 
@@ -63,7 +65,7 @@ protected:
     PointBufferPtr                      m_dataCloud;
     Matrix4f                            m_transformation;
 
-    SearchTreeFlann<Vertexf>::Ptr       m_searchTree;
+    SearchTree<Vertexf>::Ptr			m_searchTree;
 };
 
 } /* namespace lvr */

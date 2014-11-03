@@ -37,8 +37,11 @@
 #include "reconstruction/QueryPoint.hpp"
 #include "reconstruction/PointsetSurface.hpp"
 
-#include <ext/hash_map>
-using namespace __gnu_cxx;
+//#include <ext/hash_map>
+//using namespace __gnu_cxx;
+
+#include <hash_map>
+using namespace stdext;
 
 namespace lvr
 {

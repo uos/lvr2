@@ -56,11 +56,11 @@ ModelPtr BoctreeIO::read(string directory )
     for(boost::filesystem::directory_iterator it(directory); it != lastFile; it++ )
     {
         boost::filesystem::path p = it->path();
-        if(string(p.extension().c_str()) == ".oct")
+        if(string(p.extension().string().c_str()) == ".oct")
         {
             // Check for naming convention "scanxxx.3d"
             int num = 0;
-            if(sscanf(p.filename().c_str(), "scan%3d", &num))
+            if(sscanf(p.filename().string().c_str(), "scan%3d", &num))
             {
                 numScans++;
                 if(firstScan == -1) firstScan = num;
@@ -154,7 +154,7 @@ ModelPtr BoctreeIO::read(string directory )
     if(allPoints.size())
     {
         floatArr points(new float[3 * allPoints.size()]);
-        ucharArr colors(new uchar[3 * allPoints.size()]);
+        ucharArr colors(new unsigned char[3 * allPoints.size()]);
         floatArr intensities( new float[allPoints.size()]);
 
         int i = 0;

@@ -2,7 +2,7 @@ cmake_minimum_required(VERSION 2.8)
 project(LAS_VEGAS)
 
 set( CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_SOURCE_DIR}/bin )
-set( CMAKE_MODULE_PATH ${LAS_VEGAS_SOURCE_DIR}/CMakeModules )
+set( CMAKE_MODULE_PATH ${LAS_VEGAS_SOURCE_DIR}/CMakeModules D:/Library/CGAL/cmake/modules ${CMAKE_MODULE_PATH})
 
 link_directories("${CMAKE_SOURCE_DIR}/lib")
 link_directories("$ENV{HOME}/local/lib")
@@ -15,7 +15,7 @@ include_directories(${LAS_VEGAS_SOURCE_DIR})
 include_directories(${LAS_VEGAS_SOURCE_DIR}/include/liblvr)
 
 add_definitions("-std=c++0x")
-
+add_definitions(-DNOMINMAX)
 
 IF(CMAKE_COMPILER_IS_GNUCC)
   SET(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -fmessage-length=0")
@@ -115,6 +115,8 @@ endif(CGAL_FOUND)
 ## Searching for Boost
 ##############################
 #
+set(Boost_USE_STATIC_LIBS       ON)
+set(Boost_USE_MULTITHREADED      ON)
 
 find_package( Boost 
     COMPONENTS 
@@ -174,6 +176,7 @@ endif(UNIX)
 find_package(GLUT REQUIRED)
 if ( GLUT_FOUND )
     message( "-- Found OpenGL Utility Toolkit" )
+    include_directories(${GLUT_INCLUDE_DIR})
 else ( GLUT_FOUND )
     message( SEND_ERROR "-- could not find OpenGL Utility Toolkit" )
 endif ( GLUT_FOUND )
@@ -222,11 +225,11 @@ include_directories( ${CMAKE_CURRENT_SOURCE_DIR}/ext/slam6d )
 add_subdirectory(ext/slam6d)
 
 # Freenect
-if(APPLE)
-include_directories( /opt/local/include/libusb-1.0/)
-endif(APPLE)
-include_directories(ext/libfreenect/include/)
-add_subdirectory(ext/libfreenect)
+#if(APPLE)
+#include_directories( /opt/local/include/libusb-1.0/)
+#endif(APPLE)
+#include_directories(ext/libfreenect/include/)
+#add_subdirectory(ext/libfreenect)
 
 if(MPI_FOUND)
 #add_subdirectory(src/tools/mpi)
@@ -234,7 +237,7 @@ endif(MPI_FOUND)
 
 if(CGAL_FOUND)
 add_subdirectory(src/tools/cgal_reconstruction)
-add_subdirectory(src/tools/fusion)
+#add_subdirectory(src/tools/fusion)
 add_subdirectory(src/tools/slicer)
 endif(CGAL_FOUND)
 
@@ -291,7 +294,7 @@ add_subdirectory(src/liblvr)
 
 add_subdirectory(src/tools/reconstruct)
 add_subdirectory(src/tools/classifier)
-add_subdirectory(src/tools/colorize)
+#add_subdirectory(src/tools/colorize)
 add_subdirectory(src/tools/scanreduce)
 add_subdirectory(src/tools/convert)
 add_subdirectory(src/tools/asciiconverter)

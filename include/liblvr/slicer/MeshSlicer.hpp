@@ -43,8 +43,8 @@
 #include <algorithm>
 #include <queue>
 
-#include <glu.h>
-#include <glut.h>
+#include <GL/GLU.h>
+#include <GL/glut.h>
 
 #include <CGAL/Simple_cartesian.h>
 #include <CGAL/AABB_tree.h>
@@ -53,7 +53,6 @@
 #include <CGAL/exceptions.h>
 
 #include "geometry/Vertex.hpp"
-#include "geometry/VertexTraits.hpp"
 
 #include "io/Timestamp.hpp"
 #include "io/Progress.hpp"

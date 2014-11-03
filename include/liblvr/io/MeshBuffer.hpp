@@ -439,7 +439,7 @@ class MeshBuffer
          * \param array  Pointer to interlaced vertex color data.
          * \param n      Amount of color information in the array.
          **/
-        void setVertexColorArray( std::vector<uchar>& array );
+        void setVertexColorArray( std::vector<unsigned char>& array );
 
 
         /**

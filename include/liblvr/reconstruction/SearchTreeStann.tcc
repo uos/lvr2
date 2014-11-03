@@ -35,7 +35,6 @@
 #include <boost/filesystem.hpp>
 
 // lvr includes
-#include "geometry/VertexTraits.hpp"
 
 using std::cout;
 using std::endl;
@@ -89,7 +88,7 @@ void SearchTreeStann< VertexT >::kSearch(VertexT qp, int k, vector< VertexT > &n
 	SearchTree<VertexT>::kSearch(f_qp, k, indices);
 	for(size_t i = 0; i < indices.size(); i++)
 	{
-		if(VertexTraits<VertexT>::has_color() && m_colors)
+		if( m_colors)
 		{
 			neighbors.push_back(
 					VertexT(m_points[indices[i]][0],

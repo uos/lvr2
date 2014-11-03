@@ -27,10 +27,12 @@
 #ifndef UOSIO_H_
 #define UOSIO_H_
 
+#define _USE_MATH_DEFINES
+
 #include <string>
 #include <iomanip>
 #include <iostream>
-#include <cmath>
+#include <math.h>
 #include <fstream>
 #include <sstream>
 #include <vector>

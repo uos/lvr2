@@ -525,7 +525,7 @@ ModelPtr PLYIO::read( string filename, bool readColor, bool readConfidence,
     }
     if ( numVertexColors )
     {
-        vertexColors = ucharArr( new uchar[ numVertices * 3 ] );
+        vertexColors = ucharArr( new unsigned char[ numVertices * 3 ] );
     }
     if ( numVertexConfidences )
     {
@@ -549,7 +549,7 @@ ModelPtr PLYIO::read( string filename, bool readColor, bool readConfidence,
     }
     if ( numPointColors )
     {
-        pointColors = ucharArr( new uchar[ numPoints * 3 ] );
+        pointColors = ucharArr( new unsigned char[ numPoints * 3 ] );
     }
     if ( numPointConfidence )
     {

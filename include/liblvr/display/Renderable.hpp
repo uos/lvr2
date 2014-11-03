@@ -28,8 +28,9 @@
 #ifndef RENDERABLE_H_
 #define RENDERABLE_H_
 
-#include "gl.h"
-#include "glut.h"
+#include <Windows.h>
+#include <GL/gl.h>
+#include <GL/glut.h>
 
 #include <string>
 using namespace std;

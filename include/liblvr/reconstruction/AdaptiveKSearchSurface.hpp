@@ -35,7 +35,6 @@
 #include "io/AsciiIO.hpp"
 #include "io/UosIO.hpp"
 
-#include "geometry/VertexTraits.hpp"
 #include "geometry/Vertex.hpp"
 #include "geometry/Normal.hpp"
 #include "geometry/ColorVertex.hpp"
@@ -177,9 +176,9 @@ public:
     virtual void distance(VertexT v, float &projectedDistance, float &euklideanDistance);
 
 
-    virtual void colorizePointCloud( AdaptiveKSearchSurface<VertexT, NormalT>::Ptr pcm,
+    virtual void colorizePointCloud( typename AdaptiveKSearchSurface<VertexT, NormalT>::Ptr pcm,
           const float &sqrtMaxDist = std::numeric_limits<float>::max(),
-          const uchar* blankColor = NULL );
+          const unsigned char* blankColor = NULL );
 
     /**
      * @brief Calculates initial point normals using a least squares fit to

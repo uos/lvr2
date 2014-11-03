@@ -132,7 +132,7 @@ protected:
      * @param distance      The corresponding distance value
      * @param positions     The interpolated intersections.
      */
-    void getIntersections(VertexT corners[], float distance[], VertexT positions[]);
+    void getIntersections(VertexT* corners, float* distance, VertexT* positions);
 
     /**
      * @brief Calculates the position of the eight cell corners
