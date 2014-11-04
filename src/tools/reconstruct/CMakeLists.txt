@@ -1,25 +1,38 @@
+#####################################################################################
+# Set source files
+#####################################################################################
+
 set(RECONSTRUCT_SOURCES
     Options.cpp     
     Main.cpp
 )
 
-add_executable(lvr_reconstruct ${RECONSTRUCT_SOURCES})
-set_target_properties(lvr_reconstruct PROPERTIES BINARY_OUTPUT_DIRECTORY
-    ${CMAKE_SOURCE_DIR}/bin)
-target_link_libraries(lvr_reconstruct lvr)
-target_link_libraries(lvr_reconstruct freenect)
-target_link_libraries(lvr_reconstruct glut)
+#####################################################################################
+# Setup dependencies to external libraries 
+#####################################################################################
 
-target_link_libraries(lvr_reconstruct ${Boost_FILESYSTEM_LIBRARY}
-    ${Boost_SYSTEM_LIBRARY} ${Boost_THREAD_LIBRARY}
-    ${Boost_PROGRAM_OPTIONS_LIBRARY})
-target_link_libraries(lvr_reconstruct ${OpenMP_CXX_FLAGS})
-target_link_libraries(lvr_reconstruct ${PCL_LIBRARIES})
+set(LVR_RECONSTRUCT_DEPENDENCIES 
+	lvr_static
+	${Boost_PROGRAM_OPTIONS_LIBRARY}
+    ${Boost_SYSTEM_LIBRARY} 
+	${Boost_THREAD_LIBRARY} 
+	${Boost_FILESYSTEM_LIBRARY}
+	${OPENGL_LIBRARY} 
+	${GLUT_LIBRARIES}
+	${OpenCV_LIBS}
+	${PCL_LIBRARIES}
+	)
+
 if( ${NABO_FOUND} )
-    target_link_libraries(lvr_reconstruct ${NABO_LIBRARIES})
+set(LVR_RECONSTRUCT_DEPENDENCIES ${LVR_RECONSTRUCT_DEPENDENCIES} ${NABO_LIBRARIES})
 endif( ${NABO_FOUND} )
 
-INSTALL(TARGETS lvr_reconstruct
-    RUNTIME DESTINATION bin
-    LIBRARY DESTINATION lib
-    ARCHIVE DESTINATION lib)
+
+#####################################################################################
+# Add executable
+#####################################################################################
+
+add_executable(lvr_reconstruct ${RECONSTRUCT_SOURCES})
+set_target_properties(lvr_reconstruct PROPERTIES BINARY_OUTPUT_DIRECTORY ${CMAKE_SOURCE_DIR}/bin)
+target_link_libraries(lvr_reconstruct ${LVR_RECONSTRUCT_DEPENDENCIES})
+

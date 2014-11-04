@@ -126,7 +126,7 @@ find_package( Boost
     REQUIRED )
 
 if(Boost_FOUND)
-    link_directories(${BOOST_LIBRARY_DIRS})
+    link_directories(${Boost_LIBRARY_DIR})
     include_directories(${Boost_INCLUDE_DIRS})
     add_definitions(${Boost_LIB_DIAGNOSTIC_DEFINITIONS})
 endif()
@@ -138,8 +138,8 @@ endif()
 
 find_package(OpenMP)
 if(OpenMP_FOUND)
-    link_directories(${OpenMP_LIBRARY_DIRS})
-    include_directories(${OpenMP_INCLUDE_DIRS})
+	link_directories(${OpenMP_LIBRARY_DIRS})
+	include_directories(${OpenMP_INCLUDE_DIRS})
 endif(OpenMP_FOUND)
 
 set( CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${OpenMP_CXX_FLAGS}" )
