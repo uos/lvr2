@@ -62,7 +62,7 @@ ProgressBar::ProgressBar(size_t max_val, string prefix)
 	m_dialog = 0;
 	if(m_useDialog)
 	{
-	    m_dialog = new QProgressDialog(QString(prefix.c_str()), "Cancel", 0, 100);
+	   // m_dialog = new QProgressDialog(QString(prefix.c_str()), "Cancel", 0, 100);
 	}
 #endif
 }
@@ -95,7 +95,7 @@ void ProgressBar::operator++()
 #ifdef __WITH_QT4__
         if(m_dialog != 0)
         {
-            m_dialog->setValue(m_percent);
+            //m_dialog->setValue(m_percent);
         }
 #endif
     }
