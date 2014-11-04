@@ -45,71 +45,82 @@ set(LVR_SOURCES
     geometry/HalfEdgeAccessExceptions.cpp
 )
 
-# Add PCD io if PCL is installes
+#####################################################################################
+# Setup dependencies to external libraries 
+#####################################################################################
+
+set(LVR_LIB_DEPENDENCIES 
+	lvrrply_static
+	lvrlas_static
+	lvrslam6d_static 
+	${Boost_PROGRAM_OPTIONS_LIBRARY}
+    ${Boost_SYSTEM_LIBRARY} 
+	${Boost_THREAD_LIBRARY} 
+	${Boost_FILESYSTEM_LIBRARY}
+	${OPENGL_LIBRARY} 
+	${GLUT_LIBRARIES}
+	${OpenCV_LIBS})
+    	
+#####################################################################################
+# On Unix/Linux we need to link against pthreads 
+#####################################################################################
+
+if ( UNIX )
+set(LVR_LIB_DEPENDENCIES $(LVR_LIB_DEPENDENCIES) pthread)
+endif ( UNIX)
+
+#####################################################################################
+# Add QT dependencies if found
+#####################################################################################
+
+if( QT4_FOUND )
+set(LVR_LIB_DEPENDENCIES $(LVR_LIB_DEPENDENCIES) 
+	${QT_QTGUI_LIBRARIES} 
+	${QT_QTCORE_LIBRARIES})
+
+endif (QT4_FOUND)
+
+#####################################################################################
+# Set c++0x flags for gcc compilers (needed for boctree io)
+#####################################################################################
+
+if( UNIX )
+SET_SOURCE_FILES_PROPERTIES(io/BoctreeIO.cpp PROPERTIES COMPILE_FLAGS "-std=gnu++0x")
+endif ( UNIX )
+
+#####################################################################################
+# Add PCD io if PCL is installed
+#####################################################################################
+
 if(PCL_FOUND)
   set(LVR_SOURCES ${LVR_SOURCES} io/PCDIO.cpp)
 endif(PCL_FOUND)
 
-SET_SOURCE_FILES_PROPERTIES(io/BoctreeIO.cpp PROPERTIES COMPILE_FLAGS "-std=gnu++0x")
+#####################################################################################
+# Compile object files for static and dynamic library
+#####################################################################################
+
+add_library( lvrcore OBJECT ${LVR_SOURCES})
+
+#####################################################################################
+# Build static library
+#####################################################################################
 
 message(STATUS "Building static library")
-add_library(staticlvr STATIC ${LVR_SOURCES})
+add_library(lvr_static STATIC $<TARGET_OBJECTS:lvrcore>)
+set_target_properties(lvr_static PROPERTIES LIBRARY_OUTPUT_DIRECTORY ${CMAKE_SOURCE_DIR}/lib)
+target_link_libraries(lvr_static ${LVR_LIB_DEPENDENCIES})
 
-set_target_properties(staticlvr PROPERTIES LIBRARY_OUTPUT_DIRECTORY
-    ${CMAKE_SOURCE_DIR}/lib)
 
-target_link_libraries(staticlvr ${Boost_PROGRAM_OPTIONS_LIBRARY}
-    ${Boost_SYSTEM_LIBRARY} ${Boost_THREAD_LIBRARY} ${Boost_FILESYSTEM_LIBRARY}
-    ${OpenMP_CXX_FLAGS} ${OPENGL_LIBRARY} ${OpenCV_LIBS})
-target_link_libraries(staticlvr lvrlas_static)
-target_link_libraries(staticlvr obj)
-target_link_libraries(staticlvr pthread)
-target_link_libraries(staticlvr freenect)
-target_link_libraries(staticlvr ${PCL_LIBRARIES})
-target_link_libraries(staticlvr lvrslam6d_static)
-
-if( QT4_FOUND )
-target_link_libraries(staticlvr ${QT_QTGUI_LIBRARIES})
-target_link_libraries(staticlvr ${QT_QTCORE_LIBRARIES})
-endif (QT4_FOUND)
-
-if ( rply_shared ) 
-    target_link_libraries(staticlvr ${rply_shared})
-else ( rply_shared )
-    target_link_libraries(staticlvr rply_local_static)
-endif ( rply_shared )
+#####################################################################################
+# Build shared library
+#####################################################################################
 
 message(STATUS "Building shared library")
-add_library(lvr SHARED ${LVR_SOURCES})
-
-set_target_properties(lvr PROPERTIES LIBRARY_OUTPUT_DIRECTORY
-     ${CMAKE_SOURCE_DIR}/lib)
-target_link_libraries(lvr ${Boost_PROGRAM_OPTIONS_LIBRARY}
-     ${Boost_SYSTEM_LIBRARY} ${Boost_THREAD_LIBRARY} ${Boost_FILESYSTEM_LIBRARY}
-     ${OpenMP_CXX_FLAGS} ${OPENGL_LIBRARY} ${OpenCV_LIBS} )
-
-target_link_libraries(lvr lvrlas)
-target_link_libraries(lvr obj)
-target_link_libraries(lvr pthread)
-target_link_libraries(lvr ${PCL_LIBRARIES})
-target_link_libraries(lvr lvrslam6d)
-target_link_libraries(lvr freenect)
-target_link_libraries(lvr GLU)
-target_link_libraries(lvr glut)
+add_library(lvr SHARED $<TARGET_OBJECTS:lvrcore>)
+set_target_properties(lvr PROPERTIES LIBRARY_OUTPUT_DIRECTORY ${CMAKE_SOURCE_DIR}/lib)
+target_link_libraries(lvr ${LVR_LIB_DEPENDENCIES} )
 
 
-if( QT4_FOUND )
-target_link_libraries(lvr ${QT_QTGUI_LIBRARIES})
-target_link_libraries(lvr ${QT_QTCORE_LIBRARIES})
-endif (QT4_FOUND)
 
-if ( rply_shared )
-     target_link_libraries(lvr ${rply_shared})
-else ( rply_shared )
-     target_link_libraries(lvr rply_local)
-endif ( rply_shared )
 
-INSTALL(TARGETS lvr staticlvr
-    RUNTIME DESTINATION bin
-    LIBRARY DESTINATION lib
-    ARCHIVE DESTINATION lib)
