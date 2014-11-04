@@ -275,7 +275,8 @@ if( QT4_FOUND )
     endif(QGLVIEWER_LIBRARY_RELEASE)
 
    	find_package(QVTK)
-   	if(QVTK_FOUND)
+	if(QVTK_FOUND)
+		include_directories(${QVTK_INCLUDE_DIR})
    		add_subdirectory(src/tools/viewer)
 	endif(QVTK_FOUND)
 
