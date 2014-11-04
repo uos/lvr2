@@ -1,8 +1,13 @@
-# Objects that use Qt's signals and slots
+#####################################################################################
+# Avoid the name collision with boost signals
+#####################################################################################
 
 ADD_DEFINITIONS(-DQT_NO_KEYWORDS )
 
-# Main Sources
+#####################################################################################
+# Set source files
+#####################################################################################
+
 set(LVR_VIEWER_SOURCES
     app/LVRMain.cpp
     app/LVRMainWindow.cpp
@@ -30,6 +35,9 @@ set(LVR_VIEWER_SOURCES
     widgets/LVRFilteringMLSProjectionDialog.cpp
 )
 
+#####################################################################################
+# Set mocs
+#####################################################################################
 
 set(LVR_VIEWER_MOCS 
     app/LVRMainWindow.hpp
@@ -46,8 +54,10 @@ set(LVR_VIEWER_MOCS
     widgets/LVRCorrespondanceDialog.hpp
 )
 
-# Dynamically generated GUI object's from
-# QtDesigner 
+#####################################################################################
+# Set uis
+#####################################################################################
+
 set(LVR_VIEWER_UIS
    ui/LVRMainWindowUI.ui
    ui/LVRRenameDialogUI.ui
@@ -63,45 +73,69 @@ set(LVR_VIEWER_UIS
    ui/LVRFilteringMLSProjectionDialogUI.ui
 )
 
+#####################################################################################
+# Set resources
+#####################################################################################
+
 set(LVR_VIEWER_RESOURCES
    res/viewer.qrc
 )
 
-# Generate mocs and header files for qt objects
-# and forms
+#####################################################################################
+# Generate mocs, ui and resource headers
+#####################################################################################
+
 qt_wrap_cpp(lvr_viewer LVR_VIEWER_MOC_SRC ${LVR_VIEWER_MOCS})
 qt_wrap_ui(lvr_viewer LVR_VIEWER_UI_HDRS LVR_VIEWER_UI_SRC ${LVR_VIEWER_UIS})
 qt4_add_resources(LVR_VIEWER_RES ${LVR_VIEWER_RESOURCES})
 
 add_definitions(${QT_DEFINITIONS})
 
-# Add current binary dir to includes to find
-# the generated header files
+#####################################################################################
+# Add current binary dir to includes to find the generated header files
+#####################################################################################
+
 include_directories(${CMAKE_CURRENT_BINARY_DIR})
 include_directories(${LAS_VEGAS_SOURCE_DIR}/include/liblvr)
 
-# Create a new targer
-add_executable(lvr_viewer ${LVR_VIEWER_SOURCES} ${LVR_VIEWER_RES} ${LVR_VIEWER_MOC_SRC} ${LVR_VIEWER_UI_HDRS})
+#####################################################################################
+# Setup dependencies
+#####################################################################################
 
-# Add needed libraries
-target_link_libraries(lvr_viewer ${QT_QTCORE_LIBRARIES})
-target_link_libraries(lvr_viewer ${QT_QTGUI_LIBRARIES})
-target_link_libraries(lvr_viewer ${QT_QTOPENGL_LIBRARIES})
-target_link_libraries(lvr_viewer ${QT_QTXML_LIBRARY})
-target_link_libraries(lvr_viewer lvr)
-target_link_libraries(lvr_viewer ${OPENGL_LIBRARIES})
-target_link_libraries(lvr_viewer ${GLUT_LIBRARIES})
-target_link_libraries(lvr_viewer ${Boost_FILESYSTEM_LIBRARY}
-    ${Boost_SYSTEM_LIBRARY} ${Boost_THREAD_LIBRARY}
-    ${Boost_PROGRAM_OPTIONS_LIBRARY})
-target_link_libraries(lvr_viewer pthread)
-target_link_libraries(lvr_viewer ${PCL_LIBRARIES})
-target_link_libraries(lvr_viewer GLU ${QVTK_LIBRARY})
+set(LVR_VIEWER_DEPENDENCIES
+	lvr_static
+	lvrrply_static
+	lvrlas_static
+	lvrslam6d_static
+	${OpenCV_LIBS}
+	${QT_QTCORE_LIBRARIES} 
+	${QT_QTGUI_LIBRARIES}  
+	${QT_QTOPENGL_LIBRARIES} 
+	${QT_QTXML_LIBRARY}  
+	${OPENGL_LIBRARY} 
+	${GLUT_LIBRARIES}  
+	${Boost_FILESYSTEM_LIBRARY}
+    ${Boost_SYSTEM_LIBRARY} 
+	${Boost_THREAD_LIBRARY}
+    ${Boost_PROGRAM_OPTIONS_LIBRARY}
+	${QVTK_LIBRARY}
+	${VTK_LIBRARIES}
+	${PCL_LIBRARIES}
+)
+
+if( UNIX )
+	set(LVR_VIEWER_DEPENDENCIES ${LVR_VIEWER_DEPENDENCIES} pthread)
+endif( UNIX ) 
+
 if( ${NABO_FOUND} )
-    target_link_libraries(lvr_viewer ${NABO_LIBRARIES})
+	set(LVR_VIEWER_DEPENDENCIES ${LVR_VIEWER_DEPENDENCIES} ${NABO_LIBRARIES})
 endif( ${NABO_FOUND} )
 
-INSTALL(TARGETS lvr_viewer
-    RUNTIME DESTINATION bin
-    LIBRARY DESTINATION lib
-    ARCHIVE DESTINATION lib)
+#####################################################################################
+# Add main executable
+#####################################################################################
+
+add_executable(lvr_viewer ${LVR_VIEWER_SOURCES} ${LVR_VIEWER_RES} ${LVR_VIEWER_MOC_SRC} ${LVR_VIEWER_UI_HDRS})
+target_link_libraries(lvr_viewer ${LVR_VIEWER_DEPENDENCIES})
+
+
