@@ -2,7 +2,7 @@ cmake_minimum_required(VERSION 2.8)
 project(LAS_VEGAS)
 
 set( CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_SOURCE_DIR}/bin )
-set( CMAKE_MODULE_PATH ${LAS_VEGAS_SOURCE_DIR}/CMakeModules D:/Library/CGAL/cmake/modules ${CMAKE_MODULE_PATH})
+set( CMAKE_MODULE_PATH ${LAS_VEGAS_SOURCE_DIR}/CMakeModules ${CMAKE_MODULE_PATH})
 
 link_directories("${CMAKE_SOURCE_DIR}/lib")
 link_directories("$ENV{HOME}/local/lib")
@@ -104,10 +104,11 @@ endif(PCL_FOUND)
 
 find_package(CGAL)
 if(CGAL_FOUND)
+include(${CGAL_USE_FILE})
 add_definitions(${CGAL_CXX_FLAGS_INIT})
-message(STATUS "CGAL CXX_FLAGS: " ${CGAL_CXX_FLAGS_INIT})
-find_package(GMP)
-find_package(MPFR)
+include_directories(${CGAL_INCLUDE_DIRS})
+link_directories(${CGAL_LIBRARIES_DIR})
+message(STATUS "FOUND CGAL")
 endif(CGAL_FOUND)
 
 
@@ -175,7 +176,7 @@ endif(UNIX)
 
 find_package(GLUT REQUIRED)
 if ( GLUT_FOUND )
-    message( "-- Found OpenGL Utility Toolkit" )
+    message(STATUS "-- Found OpenGL Utility Toolkit" )
     include_directories(${GLUT_INCLUDE_DIR})
 else ( GLUT_FOUND )
     message( SEND_ERROR "-- could not find OpenGL Utility Toolkit" )
