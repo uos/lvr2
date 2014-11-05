@@ -72,7 +72,7 @@ int main( int argc, char ** argv )
                     if(convert && !points->getPointColorArray(n))
                     {
                         cout << timestamp << "Allocating new point color array." << endl;
-                        ucharArr colors(new uchar[numPoints * 3]);
+                        ucharArr colors(new unsigned char[numPoints * 3]);
                         points->setPointColorArray(colors, numPoints);
                     }
 
@@ -132,9 +132,9 @@ int main( int argc, char ** argv )
 
                                 colorMap.getColor(color, (size_t)intensities[i], gradType );
 
-                                colors[3 * i    ] = (uchar)(color[0] * 255);
-                                colors[3 * i + 1] = (uchar)(color[1] * 255);
-                                colors[3 * i + 2] = (uchar)(color[2] * 255);
+                                colors[3 * i    ] = (unsigned char)(color[0] * 255);
+                                colors[3 * i + 1] = (unsigned char)(color[1] * 255);
+                                colors[3 * i + 2] = (unsigned char)(color[2] * 255);
                                 //cout << intensities[i] << endl;
                                 //cout << (int) colors[3 * i    ] << " " << (int)colors[3 * i + 1] << " " << (int)colors[3 * i + 2] << endl;
 
