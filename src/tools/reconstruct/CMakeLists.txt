@@ -13,10 +13,9 @@ set(RECONSTRUCT_SOURCES
 
 set(LVR_RECONSTRUCT_DEPENDENCIES 
 	lvr_static
-	${Boost_PROGRAM_OPTIONS_LIBRARY}
-    ${Boost_SYSTEM_LIBRARY} 
-	${Boost_THREAD_LIBRARY} 
-	${Boost_FILESYSTEM_LIBRARY}
+	lvrlas_static
+	lvrrply_static
+	lvrslam6d_static
 	${OPENGL_LIBRARY} 
 	${GLUT_LIBRARIES}
 	${OpenCV_LIBS}

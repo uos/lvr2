@@ -1,11 +1,32 @@
-add_executable( lvr_convertmodel Convert.cpp Options.cpp )
-target_link_libraries( lvr_convertmodel staticlvr )
+#####################################################################################
+# Set source files
+#####################################################################################
+
+set(LVR_CONVERT_SOURCES   
+    Convert.cpp Options.cpp
+)
+
+#####################################################################################
+# Setup dependencies to external libraries 
+#####################################################################################
+
+set(LVR_CONVERT_DEPENDENCIES 
+	lvr_static
+	lvrlas_static
+	lvrrply_static
+	lvrslam6d_static
+	${OPENGL_LIBRARY} 
+	${GLUT_LIBRARIES}
+	)
 
 if(PCL_FOUND)
-    target_link_libraries( lvr_convertmodel ${PCL_LIBRARIES} )
+    set(LVR_CONVERT_DEPENDENCIES ${LVR_CONVERT_DEPENDENCIES} ${PCL_LIBRARIES} )
 endif(PCL_FOUND)
 
-INSTALL(TARGETS lvr_convertmodel
-    RUNTIME DESTINATION bin
-    LIBRARY DESTINATION lib
-    ARCHIVE DESTINATION lib)
+#####################################################################################
+# Add executable
+#####################################################################################
+
+add_executable( lvr_convertmodel ${LVR_CONVERT_SOURCES} )
+set_target_properties( lvr_convertmodel PROPERTIES BINARY_OUTPUT_DIRECTORY ${CMAKE_SOURCE_DIR}/bin)
+target_link_libraries( lvr_convertmodel ${LVR_CONVERT_DEPENDENCIES} )
