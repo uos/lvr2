@@ -156,7 +156,7 @@ vector<vector<VertexT> > Region<VertexT, NormalT>::getContours(float epsilon)
                                 }
                             }
                         }
-                        catch(HalfEdgeAccessException &e)
+                        catch(HalfEdgeAccessException)
                         {
                             //cout << e.what() << endl;
                         }
@@ -303,7 +303,7 @@ vector<vector<VertexT> > Region<VertexT, NormalT>::getContours(float epsilon)
     float ymax = std::numeric_limits<float>::min();
     float zmax = std::numeric_limits<float>::min();
 
-    int outer = -1;
+    size_t outer = -1;
     for(size_t c = 0; c < result.size(); c++)
     {
         for(size_t v = 0; v < result[c].size(); v++)
@@ -387,7 +387,7 @@ NormalT Region<VertexT, NormalT>::calcNormal()
 }
 
 template<typename VertexT, typename NormalT>
-int Region<VertexT, NormalT>::size()
+size_t Region<VertexT, NormalT>::size()
 {
 	return this->m_faces.size();
 }

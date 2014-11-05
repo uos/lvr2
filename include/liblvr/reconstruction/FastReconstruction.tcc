@@ -248,7 +248,7 @@ void FastReconstruction<VertexT, NormalT>::createGrid()
 
 				//Set pointers to the neighbors of the current box
 				int neighbor_index = 0;
-				int neighbor_hash = 0;
+				size_t neighbor_hash = 0;
 
 				for(int a = -1; a < 2; a++)
 				{

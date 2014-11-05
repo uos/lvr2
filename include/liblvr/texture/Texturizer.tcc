@@ -128,7 +128,7 @@ TextureToken<VertexT, NormalT>* Texturizer<VertexT, NormalT>::createInitialTextu
 		{
 			int r = 0;
 			int s = 0;
-			float denom = 0.01;
+			float denom = 0.01f;
 			for(int t = 0; t < 3; t++)
 			{
 				for(int u = 0; u < 3; u++)
@@ -434,7 +434,7 @@ TextureToken<VertexT, NormalT>* Texturizer<VertexT, NormalT>::texturizePlane(vec
 		        ImageProcessor::calcCCV(pattern, Texturizer<VertexT, NormalT>::m_numCCVColors, Texturizer<VertexT, NormalT>::m_coherenceThreshold);
 
 		        //Add pattern to texture package
-		        int index = this->m_tio->add(pattern);
+		        size_t index = this->m_tio->add(pattern);
 		        this->m_tio->write();
 
 		        //return a texture token

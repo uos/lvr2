@@ -196,8 +196,7 @@ int main(int argc, char** argv)
 		std::cout << options << std::endl;
 
 		// Create a point loader object
-		ModelFactory io_factory;
-		ModelPtr model = io_factory.readModel( options.getInputFileName() );
+		ModelPtr model = ModelFactory::readModel( options.getInputFileName() );
 		PointBufferPtr p_loader;
 
 		// Parse loaded data

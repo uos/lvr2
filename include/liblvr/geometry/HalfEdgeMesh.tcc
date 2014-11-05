@@ -434,7 +434,7 @@ void HalfEdgeMesh<VertexT, NormalT>::checkFaceIntegreties()
             {
                 edge = (*(*it))[i];
             }
-            catch(HalfEdgeAccessException &e)
+            catch(HalfEdgeAccessException)
             {
                 face_ok = false;
             }
@@ -500,7 +500,7 @@ void HalfEdgeMesh<VertexT, NormalT>::deleteEdge(EdgePtr edge, bool deletePair)
                 edge->pair()->start()->out.erase(it);
             }
         }
-        catch (HalfEdgeAccessException &e)
+        catch (HalfEdgeAccessException )
         {
             //cout << "HalfEdgeMesh::deleteEdge(): " << e.what() << endl;
         }
@@ -514,7 +514,7 @@ void HalfEdgeMesh<VertexT, NormalT>::deleteEdge(EdgePtr edge, bool deletePair)
             }
             edge->pair()->setPair(0);
         }
-        catch (HalfEdgeAccessException &e)
+        catch (HalfEdgeAccessException)
         {
             //cout << "HalfEdgeMesh::deleteEdge(): " << e.what() << endl;
         }
@@ -555,7 +555,7 @@ void HalfEdgeMesh<VertexT, NormalT>::collapseEdge(EdgePtr edge)
             deleteEdge(e2, false);
         }
     }
-    catch(HalfEdgeAccessException &e)
+    catch(HalfEdgeAccessException)
     {
     }
 
@@ -575,7 +575,7 @@ void HalfEdgeMesh<VertexT, NormalT>::collapseEdge(EdgePtr edge)
             deleteEdge(e2, false);
         }
     }
-    catch(HalfEdgeAccessException &e)
+    catch(HalfEdgeAccessException )
     {
 
     }
@@ -589,7 +589,7 @@ void HalfEdgeMesh<VertexT, NormalT>::collapseEdge(EdgePtr edge)
             edge->setPair(0);
         }
     }
-    catch(HalfEdgeAccessException &e)
+    catch(HalfEdgeAccessException )
     {
     }
 
@@ -601,7 +601,7 @@ void HalfEdgeMesh<VertexT, NormalT>::collapseEdge(EdgePtr edge)
             edge->setFace(0);
         }
     }
-    catch(HalfEdgeAccessException &e)
+    catch(HalfEdgeAccessException )
     {
     }
 
@@ -805,7 +805,7 @@ int HalfEdgeMesh<VertexT, NormalT>::regionGrowing(FacePtr start_face, NormalT &n
             }
         }
     }
-    catch (HalfEdgeAccessException &e)
+    catch (HalfEdgeAccessException )
     {
         // Just ignore access to invalid elements
         //cout << "HalfEdgeMesh::regionGrowing(): " << e.what() << endl;
@@ -1019,7 +1019,7 @@ bool HalfEdgeMesh<VertexT, NormalT>::safeCollapseEdge(EdgePtr edge)
             }
         }
     }
-    catch(HalfEdgeAccessException &e)
+    catch(HalfEdgeAccessException )
     {
 
     }
@@ -1034,7 +1034,7 @@ bool HalfEdgeMesh<VertexT, NormalT>::safeCollapseEdge(EdgePtr edge)
             }
         }
     }
-    catch(HalfEdgeAccessException &e)
+    catch(HalfEdgeAccessException )
     {
 
     }
@@ -1051,7 +1051,7 @@ bool HalfEdgeMesh<VertexT, NormalT>::safeCollapseEdge(EdgePtr edge)
                 edgeCnt++;
             }
         }
-        catch(HalfEdgeAccessException &e)
+        catch(HalfEdgeAccessException )
         {
 
         }
@@ -1071,7 +1071,7 @@ bool HalfEdgeMesh<VertexT, NormalT>::safeCollapseEdge(EdgePtr edge)
             return false;
         }
     }
-    catch(HalfEdgeAccessException &e)
+    catch(HalfEdgeAccessException)
     {
 
     }
@@ -1090,7 +1090,7 @@ bool HalfEdgeMesh<VertexT, NormalT>::safeCollapseEdge(EdgePtr edge)
                 }
             }
         }
-        catch(HalfEdgeAccessException &e)
+        catch(HalfEdgeAccessException )
         {
 
         }
@@ -1117,7 +1117,7 @@ bool HalfEdgeMesh<VertexT, NormalT>::safeCollapseEdge(EdgePtr edge)
                 }
             }
         }
-        catch(HalfEdgeAccessException &e)
+        catch(HalfEdgeAccessException)
         {
 
         }
@@ -1142,7 +1142,7 @@ bool HalfEdgeMesh<VertexT, NormalT>::safeCollapseEdge(EdgePtr edge)
                 }
             }
         }
-        catch(HalfEdgeAccessException &e)
+        catch(HalfEdgeAccessException)
         {
 
         }
@@ -1194,7 +1194,7 @@ void HalfEdgeMesh<VertexT, NormalT>::fillHoles(size_t max_size)
                                     current->start()->out[e]->pair()->used  = true;
                                 }
                             }
-                            catch (HalfEdgeAccessException &e)
+                            catch (HalfEdgeAccessException)
                             {
                                 // cout << "HalfEdgeMesg::fillHoles: " << e.what() << endl;
                             }
@@ -1221,7 +1221,7 @@ void HalfEdgeMesh<VertexT, NormalT>::fillHoles(size_t max_size)
                     }
                 }
             }
-            catch(HalfEdgeAccessException &e)
+            catch(HalfEdgeAccessException)
             {
                 // cout << "HalfEdgeMesg::fillHoles: " << e.what() << endl;
             }
@@ -1287,7 +1287,7 @@ void HalfEdgeMesh<VertexT, NormalT>::fillHoles(size_t max_size)
                                         m_regions[(*f)[0]->pair()->face()->m_region]->addFace(f);
                                     }
                                 }
-                                catch(HalfEdgeAccessException &e)
+                                catch(HalfEdgeAccessException)
                                 {
 
                                 }
@@ -1327,7 +1327,7 @@ void HalfEdgeMesh<VertexT, NormalT>::dragOntoIntersection(RegionPtr plane, Regio
                     }
                 }
             }
-            catch(HalfEdgeAccessException &e)
+            catch(HalfEdgeAccessException)
             {
                 // Just ignore access to invalid elements
                 // cout << "HalfEdgeMesh::dragOntoIntersection(): " << e.what() << endl;
@@ -1432,7 +1432,7 @@ void HalfEdgeMesh<VertexT, NormalT>::restorePlanes(int min_region_size)
 
             RegionPtr region = new Region<VertexT, NormalT>(region_number);
             m_garbageRegions.insert(region);
-            float almostOne = 0.999;
+            float almostOne = 0.999f;
             region_size = stackSafeRegionGrowing(m_faces[i], n, almostOne, region) + 1;
 
             if(region_size > max(min_region_size, default_region_threshold))
@@ -1456,14 +1456,14 @@ void HalfEdgeMesh<VertexT, NormalT>::finalize()
 
     std::cout << timestamp << "Finalizing mesh with classifier \"" << m_classifierType << "\"." << std::endl;
 
-    boost::unordered_map<VertexPtr, int> index_map;
+    boost::unordered_map<VertexPtr, size_t> index_map;
 
-    int numVertices = m_vertices.size();
-    int numFaces    = m_faces.size();
-    int numRegions  = m_regions.size();
-	float r = 0.0;
-	float g = 0.0;
-	float b = 0.0;
+    size_t numVertices = m_vertices.size();
+    size_t numFaces    = m_faces.size();
+    size_t numRegions  = m_regions.size();
+	float r = 0.0f;
+	float g = 0.0f;
+	float b = 0.0f;
     std::vector<uchar> faceColorBuffer;
 
     floatArr vertexBuffer( new float[3 * numVertices] );
@@ -1668,7 +1668,7 @@ void HalfEdgeMesh<VertexT, NormalT>::finalizeAndRetesselate( bool genTextures, f
     std::cout << timestamp << "finalizeAndRetesselate mesh with classifier \"" << m_classifierType << "\"." << std::endl;
 
     // used Typedef's
-    typedef std::vector<int>::iterator   intIterator;
+    typedef std::vector<size_t>::iterator   intIterator;
 
     // default colors
     float r=0, g=200, b=0;
@@ -1689,9 +1689,9 @@ void HalfEdgeMesh<VertexT, NormalT>::finalizeAndRetesselate( bool genTextures, f
     resetUsedFlags();
 
     // Take all regions that are not in an intersection plane
-    std::vector<int> nonPlaneRegions;
+    std::vector<size_t> nonPlaneRegions;
     // Take all regions that were drawn into an intersection plane
-    std::vector<int> planeRegions;
+    std::vector<size_t> planeRegions;
     for( size_t i = 0; i < m_regions.size(); ++i )
     {
         if( !m_regions[i]->m_inPlane || m_regions[i]->m_regionNumber < 0)
@@ -1713,14 +1713,14 @@ void HalfEdgeMesh<VertexT, NormalT>::finalizeAndRetesselate( bool genTextures, f
     // Copy all regions that are non in an intersection plane directly to the buffers.
     for( intIterator nonPlane = nonPlaneRegions.begin(); nonPlane != nonPlaneRegions.end(); ++nonPlane )
     {
-        int iRegion = *nonPlane;
+        size_t iRegion = *nonPlane;
         int surfaceClass = m_regions[iRegion]->m_regionNumber;
 
         // iterate over every face for the region number '*nonPlaneBegin'
         for( size_t i=0; i < m_regions[iRegion]->m_faces.size(); ++i )
         {
-            int iFace=i;
-            unsigned int pos;
+            size_t iFace=i;
+            size_t pos;
             // loop over each vertex for this face
             for( int j=0; j < 3; j++ )
             {
@@ -1819,7 +1819,7 @@ void HalfEdgeMesh<VertexT, NormalT>::finalizeAndRetesselate( bool genTextures, f
     {
         try
         {
-            int iRegion = *planeNr;
+            size_t iRegion = *planeNr;
 
             int surface_class = m_regions[iRegion]->m_regionNumber;
             //            r = (uchar)( 255 * fabs( cos( surfaceClass ) ) );
@@ -1878,7 +1878,7 @@ void HalfEdgeMesh<VertexT, NormalT>::finalizeAndRetesselate( bool genTextures, f
 
             // copy indices...
             // get the old end of the vertex buffer.
-            int offset = vertexBuffer.size() - points.size();
+            size_t offset = vertexBuffer.size() - points.size();
 
             // calculate the index value for the old end of the vertex buffer.
             offset = ( offset / 3 );

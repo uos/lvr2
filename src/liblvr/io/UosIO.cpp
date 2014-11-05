@@ -534,7 +534,7 @@ void UosIO::readOldFormat(ModelPtr &model, string dir, int first, int last, size
 
         // Convert angles from deg to rad
         for (unsigned int i = 3; i <= 5; i++) {
-            euler[i] *= 0.01;
+            euler[i] *= 0.01f;
             //   if (euler[i] < 0.0) euler[i] += 360;
             euler[i] = rad(euler[i]);
         }
