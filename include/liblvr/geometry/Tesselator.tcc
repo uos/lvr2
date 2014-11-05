@@ -134,7 +134,7 @@ void Tesselator<VertexT, NormalT>::getFinalizedTriangles(vector<float> &vertexBu
     
     // keep track of already used vertices to avoid doubled or tripled vertices
     map<Vertex<float>, unsigned int> vertexMap;
-    unsigned int pos;
+    size_t pos;
 
     // iterate over all new triangles:
     typename std::vector<Vertex<float> >::iterator triangles=m_triangles.begin();
