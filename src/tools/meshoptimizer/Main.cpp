@@ -43,8 +43,8 @@ using namespace lvr;
 
 typedef ColorVertex<float, unsigned char>						cVertex;
 typedef Normal<float>											cNormal;
-typedef PointsetSurface<Vertex<float> >							psSurface;
-typedef AdaptiveKSearchSurface<Vertex<float> , Normal<float>  > akSurface;
+typedef PointsetSurface<ColorVertex<float, unsigned char> >							psSurface;
+typedef AdaptiveKSearchSurface<ColorVertex<float, unsigned char> , Normal<float>  > akSurface;
 
 #ifdef _USE_PCL_
 typedef PCLKSurface<Vertex<float> , cNormal>                   pclSurface;
@@ -90,7 +90,7 @@ int main(int argc, char** argv)
 		}
 
 		// Create an empty mesh
-		HalfEdgeMesh<Vertex<float> , Normal<float> > mesh( mesh_buffer );
+		HalfEdgeMesh<ColorVertex<float, unsigned char> , Normal<float> > mesh( mesh_buffer );
 
 		// Set recursion depth for region growing
 		if(options.getDepth())
