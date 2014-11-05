@@ -317,7 +317,7 @@ void LASwriteOpener::set_file_name(const char* file_name)
   if (this->file_name) free(this->file_name);
   if (file_name)
   {
-    this->file_name = strdup(file_name);
+    this->file_name = _strdup(file_name);
     if (strstr(file_name, ".laz") || strstr(file_name, ".LAZ"))
     {
       format = LAS_TOOLS_FORMAT_LAZ;
@@ -378,7 +378,7 @@ void LASwriteOpener::set_format(const char* format)
 
 void LASwriteOpener::make_file_name(const char* file_name, I32 file_number)
 {
-  int len;
+  size_t len;
   if (file_number > -1)
   {
     if (file_name)
@@ -426,7 +426,7 @@ void LASwriteOpener::make_file_name(const char* file_name, I32 file_number)
     else
     {
       len = 7;
-      this->file_name = strdup("output.xxx");
+      this->file_name = _strdup("output.xxx");
     }
   }
   if (format <= LAS_TOOLS_FORMAT_LAS)
@@ -474,13 +474,13 @@ I32 LASwriteOpener::get_format() const
 void LASwriteOpener::set_parse_string(const char* parse_string)
 {
   if (this->parse_string) free(this->parse_string);
-  this->parse_string = strdup(parse_string);
+  this->parse_string = _strdup(parse_string);
 }
 
 void LASwriteOpener::set_separator(const char* separator)
 {
   if (this->separator) free(this->separator);
-  this->separator = strdup(separator);
+  this->separator = _strdup(separator);
 }
 
 BOOL LASwriteOpener::active() const

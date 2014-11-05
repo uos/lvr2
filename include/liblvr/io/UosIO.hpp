@@ -190,7 +190,7 @@ private:
      */
     inline float rad(const float deg)
     {
-      return ( (2 * M_PI * deg) / 360 );
+		return (float)((2 * M_PI * deg) / 360);
     }
 
 
@@ -202,7 +202,7 @@ private:
      */
     inline float deg(const float rad)
     {
-      return ( (rad * 360) / (2 * M_PI) );
+		return (float)((rad * 360) / (2 * M_PI));
     }
 
 

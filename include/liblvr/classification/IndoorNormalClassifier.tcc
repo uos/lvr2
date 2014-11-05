@@ -123,7 +123,7 @@ void IndoorNormalClassifier<VertexT, NormalT>::createRegionBuffer(
 				)
 {
 	//int index_counter = 0;
-	int	vertex_position = 0;
+	size_t	vertex_position = 0;
 
 	Region<VertexT, NormalT>* region = this->m_regions->at(region_id);
 
@@ -200,13 +200,13 @@ void IndoorNormalClassifier<VertexT, NormalT>::writeBuffers(
 	out << indices.size() / 3 << " " << vertices.size() / 3 << std::endl;
 	for(size_t c = 0; c < indices.size() / 3; c++)
 	{
-		int buff_pos = 3 * c;
+		size_t buff_pos = 3 * c;
 		out << indices[buff_pos] << " " << indices[buff_pos + 1] << " " << indices[buff_pos + 2] << std::endl;
 	}
 
 	for(size_t c = 0; c < vertices.size() / 3; c++)
 	{
-		int buff_pos = 3 * c;
+		size_t buff_pos = 3 * c;
 		out << vertices[buff_pos] << " " << vertices[buff_pos + 1] << " " << vertices[buff_pos + 2] << " ";
 		out << normals [buff_pos] << " " << normals [buff_pos + 1] << " " <<  normals[buff_pos + 2] << " ";
 		out << colors  [buff_pos] << " " << colors  [buff_pos + 1] << " " <<   colors[buff_pos + 2] << std::endl;

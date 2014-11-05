@@ -113,7 +113,7 @@ protected:
 	vector<Region<VertexT, NormalT>* >*  m_regions;
 
 	/// minimum number of faces for classification
-	unsigned int m_minSize;
+	size_t m_minSize;
 };
 
 } /* namespace lvr */

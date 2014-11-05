@@ -47,7 +47,7 @@ ICPPointAlign::ICPPointAlign(PointBufferPtr model, PointBufferPtr data, Matrix4f
     size_t n;
     floatArr o_points = data->getPointArray(n);
     floatArr t_points(new float[3 * n]);
-    bool success;
+    
     for(size_t i = 0; i < numPoints; i++)
     {
         Vertexf v(o_points[3 * i], o_points[3 * i + 1], o_points[3 * i + 2]);

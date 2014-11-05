@@ -50,11 +50,11 @@ Grid::Grid(floatArr vertices, uintArr boxes, uint numPoints, uint numBoxes)
 
         if(d > 0)
         {
-            glColor3f(0.54, 0.17, 0.89);
+            glColor3f(0.54f, 0.17f, 0.89f);
         }
         else
         {
-            glColor3f(1.0, 0.64, 0.0);
+            glColor3f(1.0f, 0.64f, 0.0f);
         }
         glVertex3f(x, y, z);
 
@@ -72,7 +72,7 @@ Grid::Grid(floatArr vertices, uintArr boxes, uint numPoints, uint numBoxes)
     float z[8];
 
     // Get box corner coordinates
-    for(int i = 0; i < m_numBoxes; i++)
+    for(unsigned int i = 0; i < m_numBoxes; i++)
     {
         int box_pos = i * 8;
         for(int j = 0; j < 8; j++)

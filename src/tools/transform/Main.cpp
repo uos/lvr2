@@ -56,8 +56,7 @@ int main(int argc, char **argv)
       return 0;
 
     // load model via ModelFactory
-    ModelFactory factory;
-    ModelPtr model = factory.readModel(options.getInputFile());
+    ModelPtr model = ModelFactory::readModel(options.getInputFile());
     
     if(!model)
     {
@@ -80,9 +79,9 @@ int main(int argc, char **argv)
         cout << timestamp << "Reading from .pose file" << endl;
         in >> x >> y >> z >> r1 >> r2 >> r3;
 
-        r1 = r1 * 0.0174532925;
-        r2 = r2 * 0.0174532925;
-        r3 = r3 * 0.0174532925;
+        r1 = r1 * 0.0174532925f;
+        r2 = r2 * 0.0174532925f;
+        r3 = r3 * 0.0174532925f;
 
         mat = Matrix4<float>(Vertex3f(x, y, z), Vertex3f(r1, r2, r3));
       }
@@ -133,9 +132,9 @@ int main(int argc, char **argv)
       }
 
       // To radians
-      r1 = r1 * 0.0174532925;
-      r2 = r2 * 0.0174532925;
-      r3 = r3 * 0.0174532925;
+      r1 = r1 * 0.0174532925f;
+      r2 = r2 * 0.0174532925f;
+      r3 = r3 * 0.0174532925f;
 
       mat = Matrix4<float>(Vertex3f(x, y, z), Vertex3f(r1, r2, r3));
     }
@@ -190,7 +189,7 @@ int main(int argc, char **argv)
       cout << timestamp << "Finished. Program end." << endl;
     }
 
-    factory.saveModel(model, options.getOutputFile());
+    ModelFactory::saveModel(model, options.getOutputFile());
   } catch(...) {
     cout << "something went wrong..." << endl;
   }

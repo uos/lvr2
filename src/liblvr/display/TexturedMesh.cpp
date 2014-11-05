@@ -127,7 +127,7 @@ void TexturedMesh::generateMaterialGroups()
 				MaterialGroup* g = new MaterialGroup;
 				g->textureIndex = m->texture_index;
 				g->faceBuffer.push_back(i);
-				g->color = Vertex<float>(m->r / 255.0, m->g / 255.0, m->b / 255.0);
+				g->color = Vertex<float>(m->r / 255.0f, m->g / 255.0f, m->b / 255.0f);
 				m_colorMaterials.push_back(g);
 			}
 			else
