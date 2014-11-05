@@ -27,7 +27,7 @@ bool  HalfEdge<HVertexT, FaceT>::isBorderEdge()
     {
         pair()->face();
     }
-    catch(HalfEdgeAccessException& e)
+    catch(HalfEdgeAccessException )
     {
         // Current edge is a border edge
         return true;
@@ -54,7 +54,7 @@ bool HalfEdge<HVertexT, FaceT>::hasNeighborFace()
     {
         pair()->face();
     }
-    catch(HalfEdgeAccessException &e)
+    catch(HalfEdgeAccessException )
     {
         // Face has no neighbor if no pair edge
         // or pair->face exists
@@ -70,7 +70,7 @@ bool HalfEdge<HVertexT, FaceT>::hasPair()
     {
         pair();
     }
-    catch(HalfEdgeAccessException &e)
+    catch(HalfEdgeAccessException )
     {
         return false;
     }
@@ -84,7 +84,7 @@ bool HalfEdge<HVertexT, FaceT>::hasFace()
     {
         face();
     }
-    catch(HalfEdgeAccessException &e)
+    catch(HalfEdgeAccessException)
     {
         return false;
     }

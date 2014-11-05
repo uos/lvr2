@@ -144,7 +144,7 @@ void ObjIO::parseMtlFile(
 
 				GlTexture* texture = TextureFactory::instance().getTexture(tex_file.string());
 				textures.push_back(texture);
-				m->texture_index = textures.size() - 1;
+				m->texture_index = (GLuint)textures.size() - 1;
 			}
 			else
 			{
@@ -314,10 +314,8 @@ void ObjIO::save( string filename )
 
 	size_t lenVertices;
 	size_t lenNormals;
-	size_t lenColors;
 	size_t lenFaces;
 	size_t lenTextureCoordinates;
-	size_t lenFaceIndices;
 	size_t lenFaceMaterials;
 	size_t lenFaceMaterialIndices;
 	coord3fArr vertices           = m_model->m_mesh->getIndexedVertexArray( lenVertices );

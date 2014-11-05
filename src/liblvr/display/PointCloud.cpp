@@ -132,9 +132,9 @@ void PointCloud::updateDisplayLists(){
 
     for(size_t i = 0; i < m_points.size(); i++)
     {
-        float r = m_points[i].r / 255.0;
-        float g = m_points[i].g / 255.0;
-        float b = m_points[i].b / 255.0;
+        float r = m_points[i].r / 255.0f;
+        float g = m_points[i].g / 255.0f;
+        float b = m_points[i].b / 255.0f;
 
         glColor3f(r, g, b);
         glVertex3f(m_points[i].x,
@@ -166,7 +166,7 @@ void PointCloud::updateDisplayLists(){
     glEnd();
     glEndList();
 
-    float length = 0.01 * m_boundingBox->getRadius();
+    float length = 0.01f * m_boundingBox->getRadius();
 
     // Create a new display list for normals
     if(m_numNormals)

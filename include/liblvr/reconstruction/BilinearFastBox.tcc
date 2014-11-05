@@ -140,7 +140,7 @@ void BilinearFastBox<VertexT, NormalT>::optimizePlanarFaces(typename PointsetSur
             {
                 e->pair()->face();
             }
-            catch (HalfEdgeAccessException& ex)
+            catch (HalfEdgeAccessException)
             {
                 out_edges.push_back(e);
             }
@@ -150,7 +150,7 @@ void BilinearFastBox<VertexT, NormalT>::optimizePlanarFaces(typename PointsetSur
             {
                 e = e->next();
             }
-            catch (HalfEdgeAccessException &ex)
+            catch (HalfEdgeAccessException)
             {
                 // Face currupted, abort
                 cout << "Warning, currupted face" << endl;

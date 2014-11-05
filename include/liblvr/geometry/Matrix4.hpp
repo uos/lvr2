@@ -371,7 +371,7 @@ public:
 			if(m[0] > 0.0) {
 				pose[4] = asin(m[8]);
 			} else {
-				pose[4] = M_PI - asin(m[8]);
+				pose[4] = (float)M_PI - asin(m[8]);
 			}
 			// rPosTheta[1] =  asin( m[8]);      // Calculate Y-axis angle
 

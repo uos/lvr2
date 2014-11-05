@@ -32,7 +32,7 @@ namespace lvr
 {
 
 template<typename CoordType>
-float Vertex<CoordType>::epsilon = 0.00001;
+float Vertex<CoordType>::epsilon = 0.00001f;
 
 template<typename CoordType>
 CoordType Vertex<CoordType>::operator[](const int &index) const

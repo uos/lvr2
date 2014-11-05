@@ -761,7 +761,7 @@ BOOL LASreadOpener::parse(int argc, char* argv[])
       while (fgets(line, 1024, file))
       {
         // find end of line
-        int len = strlen(line) - 1;
+        size_t len = strlen(line) - 1;
         // remove extra white spaces and line return at the end 
         while (len > 0 && ((line[len] == '\n') || (line[len] == ' ') || (line[len] == '\t') || (line[len] == '\012')))
         {
@@ -1033,7 +1033,7 @@ BOOL LASreadOpener::add_file_name(const char* file_name, BOOL unique)
       fprintf(stderr, "ERROR: alloc for file_names pointer array failed at %d\n", file_name_allocated);
     }
   }
-  file_names[file_name_number] = strdup(file_name);
+  file_names[file_name_number] = _strdup(file_name);
   file_name_number++;
   return TRUE;
 }
@@ -1072,7 +1072,7 @@ void LASreadOpener::add_file_name_windows(const char* file_name, BOOL unique)
   if (h != INVALID_HANDLE_VALUE)
   {
     // find the path
-    int len = strlen(file_name);
+    size_t len = strlen(file_name);
     while (len && file_name[len] != '\\') len--;
     if (len)
     {
@@ -1107,7 +1107,7 @@ void LASreadOpener::set_parse_string(const char* parse_string)
   if (this->parse_string) free(this->parse_string);
   if (parse_string)
   {
-    this->parse_string = strdup(parse_string);
+    this->parse_string = _strdup(parse_string);
   }
   else
   {
@@ -1175,8 +1175,8 @@ void LASreadOpener::set_scale_scan_angle(F32 scale_scan_angle)
 void LASreadOpener::add_extra_attribute(I32 data_type, const char* name, const char* description, F64 scale, F64 offset)
 {
   extra_attribute_data_types[number_extra_attributes] = data_type;
-  extra_attribute_names[number_extra_attributes] = (name ? strdup(name) : 0);
-  extra_attribute_descriptions[number_extra_attributes] = (description ? strdup(description) : 0);
+  extra_attribute_names[number_extra_attributes] = (name ? _strdup(name) : 0);
+  extra_attribute_descriptions[number_extra_attributes] = (description ? _strdup(description) : 0);
   extra_attribute_scales[number_extra_attributes] = scale;
   extra_attribute_offsets[number_extra_attributes] = offset;
   number_extra_attributes++;

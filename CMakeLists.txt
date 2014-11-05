@@ -14,14 +14,21 @@ include_directories(${LAS_VEGAS_SOURCE_DIR}/ext/psimpl)
 include_directories(${LAS_VEGAS_SOURCE_DIR})
 include_directories(${LAS_VEGAS_SOURCE_DIR}/include/liblvr)
 
-add_definitions("-std=c++0x")
+
+##################################################################################
+# Some compiler specific settings
+##################################################################################
+
+if(MSVC)
 add_definitions(-DNOMINMAX)
+endif()
 
 IF(CMAKE_COMPILER_IS_GNUCC)
   SET(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -fmessage-length=0")
 ENDIF(CMAKE_COMPILER_IS_GNUCC)
 IF(CMAKE_COMPILER_IS_GNUCXX)
   SET(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -fmessage-length=0")
+  add_definitions("-std=c++0x")
 ENDIF(CMAKE_COMPILER_IS_GNUCXX)
 
 ###############################################################
@@ -334,11 +341,4 @@ if( DOXYGEN_FOUND AND DOXYGEN_DOT_FOUND )
         WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}
         COMMENT "Generating API documentation with Doxygen" VERBATIM )
 endif( DOXYGEN_FOUND AND DOXYGEN_DOT_FOUND )
-
-###################################################################
-# INSTALLATION
-###################################################################
-
-INSTALL(DIRECTORY include/liblvr/ DESTINATION /include/lvr)
-
 

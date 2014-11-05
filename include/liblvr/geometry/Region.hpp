@@ -133,7 +133,7 @@ public:
     /**
      * @brief the number of faces contained in this region
      */
-    virtual int size();
+    virtual size_t size();
 
 	/**
 	 * @brief destructor.

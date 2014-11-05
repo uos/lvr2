@@ -187,9 +187,9 @@ void AdaptiveKSearchSurface<VertexT, NormalT>::calculateSurfaceNormals()
             //T* point = this->m_points[i];
             this->m_searchTree->kSearch(this->m_points[i], k, id, di);
 
-            float min_x = 1e15;
-            float min_y = 1e15;
-            float min_z = 1e15;
+            float min_x = 1e15f;
+            float min_y = 1e15f;
+            float min_z = 1e15f;
             float max_x = - min_x;
             float max_y = - min_y;
             float max_z = - min_z;
@@ -336,7 +336,7 @@ bool AdaptiveKSearchSurface<VertexT, NormalT>::boundingBoxOK(const float &dx, co
     /**
      * @todo Replace magic number here.
      */
-    float e = 0.05;
+    float e = 0.05f;
     if(dx < e * dy) return false;
     else if(dx < e * dz) return false;
     else if(dy < e * dx) return false;
