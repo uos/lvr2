@@ -165,13 +165,13 @@
 
 using namespace lvr;
 
-typedef ColorVertex<float, unsigned char>						cVertex;
-typedef Normal<float>											cNormal;
-typedef PointsetSurface<ColorVertex<float, unsigned char> >		psSurface;
-typedef AdaptiveKSearchSurface<ColorVertex<float, unsigned char>, Normal<float> >	akSurface;
+typedef ColorVertex<float, unsigned char> cVertex;
+typedef Normal<float> cNormal;
+typedef PointsetSurface<ColorVertex<float, unsigned char> > psSurface;
+typedef AdaptiveKSearchSurface<ColorVertex<float, unsigned char>, Normal<float> > akSurface;
 
 #ifdef _USE_PCL_
-typedef PCLKSurface<Vertex<float> , Normal<float> >                   pclSurface;
+typedef PCLKSurface<ColorVertex<float, unsigned char> , Normal<float> > pclSurface;
 #endif
 
 /**

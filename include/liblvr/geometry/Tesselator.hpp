@@ -31,7 +31,12 @@ using namespace std;
 
 #include <set>
 #include <vector>
+#if _MSC_VER
+#include <Windows.h>
 #include <GL/GLU.h>
+#else
+#include <GL/glu.h>
+#endif
 #include <GL/glut.h>
 #include <iomanip>
 

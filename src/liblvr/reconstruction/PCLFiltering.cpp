@@ -171,7 +171,7 @@ PointBufferPtr PCLFiltering::getPointBuffer()
 
     if(m_useColors)
     {
-       colors = ucharArr(new uchar[3 * m_pointCloud->size()]);
+       colors = ucharArr(new unsigned char[3 * m_pointCloud->size()]);
     }
 
     for(int i = 0; i < m_pointCloud->size(); i++)
