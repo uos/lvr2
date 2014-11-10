@@ -43,7 +43,12 @@
 #include <algorithm>
 #include <queue>
 
+#if _MSC_VER
 #include <GL/GLU.h>
+#else
+#include <GL/glu.h>
+#endif
+
 #include <GL/glut.h>
 
 #include <CGAL/Simple_cartesian.h>
