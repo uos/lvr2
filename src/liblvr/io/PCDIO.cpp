@@ -28,7 +28,7 @@ ModelPtr PCDIO::read( string filename )
     bool has_colors = false;
 
     coord3fArr points = coord3fArr( new coord<float>[ cloud->points.size() ] );
-    color3bArr colors = color3bArr( new color<uchar>[ cloud->points.size() ] );
+    color3bArr colors = color3bArr( new color<unsigned char>[ cloud->points.size() ] );
     coord3fArr normals =  coord3fArr( new coord<float>[ cloud->points.size() ] );
     /* model->m_pointCloud->setPointColorArray( pointColors, numPoints ); */
     for ( size_t i(0); i < cloud->points.size(); i++ )
