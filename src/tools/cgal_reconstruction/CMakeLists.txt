@@ -28,7 +28,6 @@ set(CGAL_NORMAL_DEPENDENCIES
 
 add_executable(lvr_cgal_normal_estimation ${CGNORMALS_SOURCES})
 set_target_properties(lvr_cgal_normal_estimation PROPERTIES BINARY_OUTPUT_DIRECTORY ${CMAKE_SOURCE_DIR}/bin)
-    
 target_link_libraries(lvr_cgal_normal_estimation ${CGAL_NORMAL_DEPENDENCIES})
 
 

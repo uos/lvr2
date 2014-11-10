@@ -73,25 +73,25 @@ BOOL LASwriterTXT::open(FILE* file, const LASheader* header, const char* parse_s
 
   if (parse_string)
   {
-    this->parse_string = _strdup(parse_string);
+    this->parse_string = strdup(parse_string);
   }
   else
   {
     if (header->point_data_format == 1 || header->point_data_format == 4)
     {
-      this->parse_string = _strdup("xyzt");
+      this->parse_string = strdup("xyzt");
     }
     else if (header->point_data_format == 2)
     {
-      this->parse_string = _strdup("xyzRGB");
+      this->parse_string = strdup("xyzRGB");
     }
     else if (header->point_data_format == 3 || header->point_data_format == 5)
     {
-      this->parse_string = _strdup("xyztRGB");
+      this->parse_string = strdup("xyztRGB");
     }
     else
     {
-      this->parse_string = _strdup("xyz");
+      this->parse_string = strdup("xyz");
     }
   }
 

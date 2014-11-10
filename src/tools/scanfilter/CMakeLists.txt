@@ -11,7 +11,6 @@ set_target_properties(lvr_pointcloud_filter PROPERTIES BINARY_OUTPUT_DIRECTORY
     
 target_link_libraries(lvr_pointcloud_filter lvr)
 target_link_libraries(lvr_pointcloud_filter glut)
-target_link_libraries(lvr_pointcloud_filter freenect)
 
 target_link_libraries(lvr_pointcloud_filter ${Boost_FILESYSTEM_LIBRARY}
     ${Boost_SYSTEM_LIBRARY} ${Boost_THREAD_LIBRARY}

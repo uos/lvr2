@@ -28,7 +28,10 @@
 #ifndef RENDERABLE_H_
 #define RENDERABLE_H_
 
+#if _MSC_VER
 #include <Windows.h>
+#endif
+
 #include <GL/gl.h>
 #include <GL/glut.h>
 
