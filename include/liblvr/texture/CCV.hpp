@@ -130,6 +130,7 @@ public:
 
 	//The CCV for the b channel
 	std::map< unsigned char, std::pair<unsigned long, unsigned long> > m_CCV_b; 
+
 private:
 	/**
 	* \brief 	Calculates the coherence of each pixel. The
@@ -143,7 +144,7 @@ private:
 	* \return	A std::map containing the size and color value for each
 	*		connected component
 	*/
-	std::map<ushort, std::pair<unsigned char, unsigned long> >calcCoherence(cv::Mat inputColors, cv::Mat inputLabels);
+	std::map<unsigned short, std::pair<unsigned char, unsigned long> >calcCoherence(cv::Mat inputColors, cv::Mat inputLabels);
 
 	/**
 	 * \brief Calculates the CCV for the given image.
