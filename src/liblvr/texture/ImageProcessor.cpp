@@ -26,7 +26,7 @@
 
 #include "texture/ImageProcessor.hpp"
 #include <opencv/cv.h>
-#include <opencv2/highgui/highgui.hpp>
+// #include <opencv2/highgui/highgui.hpp>
 #if CV_MAJOR_VERSION >= 2 && CV_MINOR_VERSION >= 4
   #include <opencv2/nonfree/features2d.hpp>
   #include <opencv2/legacy/legacy.hpp>
@@ -443,14 +443,14 @@ void ImageProcessor::showTexture(Texture* t, string caption)
 
 	//cv::putText(img, caption, cv::Point2f(0,img.rows/2), cv::FONT_HERSHEY_SIMPLEX, 0.4, cv::Scalar(255,0,0), 2);
 
-	cv::startWindowThread();
+	/*	cv::startWindowThread();
 	
 	//show the reference image
 	cv::namedWindow(caption, CV_WINDOW_AUTOSIZE);
 	cv::imshow(caption, img);
 	cv::waitKey();
 
-	cv::destroyAllWindows();
+	cv::destroyAllWindows();*/
 }
 
 void ImageProcessor::showTexture(cv::Mat img, string caption)
@@ -458,13 +458,13 @@ void ImageProcessor::showTexture(cv::Mat img, string caption)
 
 	//cv::putText(img, caption, cv::Point2f(0,img.rows/2), cv::FONT_HERSHEY_SIMPLEX, 0.4, cv::Scalar(255,0,0), 2);
 
-	cv::startWindowThread();
+  /*	cv::startWindowThread();
 	
 	//show the reference image
 	cv::namedWindow(caption, CV_WINDOW_AUTOSIZE);
 	cv::imshow(caption, img);
 	cv::waitKey();
 
-	cv::destroyAllWindows();
+	cv::destroyAllWindows();*/
 }
 }

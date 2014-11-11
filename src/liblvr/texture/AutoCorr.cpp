@@ -25,7 +25,7 @@
  */
 
 #include "texture/AutoCorr.hpp"
-#include <opencv2/highgui/highgui.hpp>
+//#include <opencv2/highgui/highgui.hpp>
 #include <opencv/cv.h>
 
 namespace lvr {
