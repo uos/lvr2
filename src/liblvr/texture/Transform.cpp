@@ -26,7 +26,7 @@
 
 #include "texture/Transform.hpp"
 
-#include <opencv2/highgui/highgui.hpp>
+//#include <opencv2/highgui/highgui.hpp>
 #include <opencv/cv.h>
 #if CV_MAJOR_VERSION >= 2 && CV_MINOR_VERSION >= 4
   #include <opencv2/nonfree/features2d.hpp>
@@ -41,7 +41,7 @@ int Transform::m_minimumVotes = 3;
 //DEBUG
 void showMatchings(cv::Mat t1, cv::Mat t2, std::vector<cv::KeyPoint> keyPoints1, std::vector<cv::KeyPoint> keyPoints2, std::vector< cv::DMatch > matches)
 {
-	cv::Mat result;
+  /*	cv::Mat result;
 	cv::drawMatches(t1, keyPoints1, t2, keyPoints2, matches, result);
 	std::cout<<keyPoints1.size()<<" "<<keyPoints2.size()<<std::endl;
 	
@@ -52,7 +52,7 @@ void showMatchings(cv::Mat t1, cv::Mat t2, std::vector<cv::KeyPoint> keyPoints1,
 	cv::imshow("MATCHES", result);
 	cv::waitKey();
 
-	cv::destroyAllWindows();
+	cv::destroyAllWindows();*/
 	
 }
 
