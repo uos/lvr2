@@ -25,7 +25,7 @@
  */
 
 #include "texture/CCV.hpp"
-#include <opencv2/highgui/highgui.hpp>
+//#include <opencv2/highgui/highgui.hpp>
 #include <opencv/cv.h>
 
 using namespace std;
@@ -81,9 +81,9 @@ CCV::CCV(Texture* t)
 	m_CCV_b = fromArray(&t->m_CCV[m_numColors * 2 * 2]);
 }
 
-std::map< uchar, std::pair<ulong, ulong> > CCV::fromArray(unsigned long int* arr)
+std::map< uchar, std::pair<unsigned long, unsigned long> > CCV::fromArray(unsigned long int* arr)
 {
-	std::map< uchar, std::pair<ulong, ulong> > ccv;
+	std::map< uchar, std::pair<unsigned long, unsigned long> > ccv;
 	for (int i = 0; i < 2 * m_numColors; i += 2)
 	{	
 		ccv[i / 2 + 0].first  = arr[i + 0];
@@ -99,7 +99,7 @@ void CCV::toArray_r(unsigned long int* arr)
 	{	
 		arr[i] = 0;
 	}
-	std::map< uchar, std::pair<ulong, ulong> >::iterator ccvit;
+	std::map< uchar, std::pair<unsigned long, unsigned long> >::iterator ccvit;
 	//r
 	for(ccvit = this->m_CCV_r.begin(); ccvit != this->m_CCV_r.end(); ccvit++)
 	{
@@ -114,7 +114,7 @@ void CCV::toArray_g(unsigned long int* arr)
 	{	
 		arr[i] = 0;
 	}
-	std::map< uchar, std::pair<ulong, ulong> >::iterator ccvit;
+	std::map< uchar, std::pair<unsigned long, unsigned long> >::iterator ccvit;
 	//g
 	for(ccvit = this->m_CCV_g.begin(); ccvit != this->m_CCV_g.end(); ccvit++)
 	{
@@ -129,7 +129,7 @@ void CCV::toArray_b(unsigned long int* arr)
 	{	
 		arr[i] = 0;
 	}
-	std::map< uchar, std::pair<ulong, ulong> >::iterator ccvit;
+	std::map< uchar, std::pair<unsigned long, unsigned long> >::iterator ccvit;
 	//b
 	for(ccvit = this->m_CCV_b.begin(); ccvit != this->m_CCV_b.end(); ccvit++)
 	{
@@ -139,7 +139,7 @@ void CCV::toArray_b(unsigned long int* arr)
 }
 
 
-std::map<ushort, std::pair<uchar, ulong> >CCV::calcCoherence(cv::Mat inputColors, cv::Mat inputLabels)
+std::map<ushort, std::pair<uchar, unsigned long> >CCV::calcCoherence(cv::Mat inputColors, cv::Mat inputLabels)
 {
 	//1 channel pointer to input image
 	cv::Mat_<ushort>& ptrInputLabels = (cv::Mat_<ushort>&)inputLabels;
@@ -147,7 +147,7 @@ std::map<ushort, std::pair<uchar, ulong> >CCV::calcCoherence(cv::Mat inputColors
 	cv::Mat_<uchar>& ptrInputColors = (cv::Mat_<uchar>&)inputColors;
 
 	//Map to hold the number of pixels and the color per label
-	std::map<ushort, std::pair<uchar, ulong> > coherences;
+	std::map<ushort, std::pair<uchar, unsigned long> > coherences;
 
 
 	//calculate coherence values per label	
@@ -171,7 +171,7 @@ std::map<ushort, std::pair<uchar, ulong> >CCV::calcCoherence(cv::Mat inputColors
 }
 
 
-std::map< uchar, std::pair<ulong, ulong> > CCV::calculateCCV(cv::Mat img)
+std::map< uchar, std::pair<unsigned long, unsigned long> > CCV::calculateCCV(cv::Mat img)
 {
 	//blurred image
 	cv::Mat blurred;
@@ -195,16 +195,16 @@ std::map< uchar, std::pair<ulong, ulong> > CCV::calculateCCV(cv::Mat img)
 	//	  of the current pixel.
 	ImageProcessor::connectedCompLabeling(reduced, labledComps);	
 	//  label         color  size
-	std::map<ushort, std::pair<uchar, ulong> > coherenceMap = calcCoherence(reduced, labledComps);	
+	std::map<ushort, std::pair<uchar, unsigned long> > coherenceMap = calcCoherence(reduced, labledComps);	
 
 	//Step 4: Calculate the CCV
 	//This map holds the alpha and beta values for each color and can be referred to 
 	//as the color coherence vector.
 	//   color        alpha  beta
-	std::map< uchar, std::pair<ulong, ulong> > ccv;
+	std::map< uchar, std::pair<unsigned long, unsigned long> > ccv;
 
 	//Iterator over the coherenceMap
-	std::map<ushort, std::pair<uchar, ulong> >::iterator it;
+	std::map<ushort, std::pair<uchar, unsigned long> >::iterator it;
 
 	//Walk through the coherence map and sum up the incoherent and 
 	//coherent pixels for every color
@@ -261,7 +261,7 @@ float CCV::compareTo(CCV* other)
 {
 	float result = 0;
 
-	std::map< uchar, std::pair<ulong, ulong> >::iterator ccvit;
+	std::map< uchar, std::pair<unsigned long, unsigned long> >::iterator ccvit;
 
 	//r
 	for(ccvit = this->m_CCV_r.begin(); ccvit != this->m_CCV_r.end(); ccvit++)
