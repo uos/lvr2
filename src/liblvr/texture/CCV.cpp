@@ -25,7 +25,7 @@
  */
 
 #include "texture/CCV.hpp"
-#include <opencv2/highgui/highgui.hpp>
+//#include <opencv2/highgui/highgui.hpp>
 #include <opencv/cv.h>
 
 using namespace std;
@@ -139,7 +139,7 @@ void CCV::toArray_b(unsigned long int* arr)
 }
 
 
-std::map<ushort, std::pair<unsigned char, unsigned long> >CCV::calcCoherence(cv::Mat inputColors, cv::Mat inputLabels)
+std::map<unsigned short, std::pair<unsigned char, unsigned long> >CCV::calcCoherence(cv::Mat inputColors, cv::Mat inputLabels)
 {
 	//1 channel pointer to input image
 	cv::Mat_<ushort>& ptrInputLabels = (cv::Mat_<ushort>&)inputLabels;
@@ -147,8 +147,7 @@ std::map<ushort, std::pair<unsigned char, unsigned long> >CCV::calcCoherence(cv:
 	cv::Mat_<unsigned char>& ptrInputColors = (cv::Mat_<unsigned char>&)inputColors;
 
 	//Map to hold the number of pixels and the color per label
-	std::map<ushort, std::pair<unsigned char, unsigned long> > coherences;
-
+	std::map<unsigned short, std::pair<unsigned char, unsigned long> > coherences;
 
 	//calculate coherence values per label	
 	for (int y = 0; y < inputLabels.size().height; y++)
@@ -195,16 +194,17 @@ std::map< unsigned char, std::pair<unsigned long, unsigned long> > CCV::calculat
 	//	  of the current pixel.
 	ImageProcessor::connectedCompLabeling(reduced, labledComps);	
 	//  label         color  size
-	std::map<ushort, std::pair<unsigned char, unsigned long> > coherenceMap = calcCoherence(reduced, labledComps);	
+	std::map<unsigned short, std::pair<unsigned char, unsigned long> > coherenceMap = calcCoherence(reduced, labledComps);	
 
 	//Step 4: Calculate the CCV
 	//This map holds the alpha and beta values for each color and can be referred to 
 	//as the color coherence vector.
 	//   color        alpha  beta
+
 	std::map< unsigned char, std::pair<unsigned long, unsigned long> > ccv;
 
 	//Iterator over the coherenceMap
-	std::map<ushort, std::pair<unsigned char, unsigned long> >::iterator it;
+	std::map<unsigned short, std::pair<unsigned char, unsigned long> >::iterator it;
 
 	//Walk through the coherence map and sum up the incoherent and 
 	//coherent pixels for every color
