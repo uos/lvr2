@@ -60,7 +60,7 @@ set(LVR_LIB_DEPENDENCIES
 	${OPENGL_LIBRARY} 
 	${GLUT_LIBRARIES}
 	${OpenCV_LIBS})
-    	
+
 #####################################################################################
 # On Unix/Linux we need to link against pthreads 
 #####################################################################################
@@ -94,7 +94,6 @@ endif ( UNIX )
 if(PCL_FOUND)
   set(LVR_SOURCES ${LVR_SOURCES} io/PCDIO.cpp)
   set(LVR_LIB_DEPENDENCIES ${LVR_LIB_DEPENDENCIES} ${PCL_LIBRARIES})
-
 endif(PCL_FOUND)
 
 #####################################################################################
@@ -118,9 +117,9 @@ target_link_libraries(lvr_static ${LVR_LIB_DEPENDENCIES})
 #####################################################################################
 
 message(STATUS "Building shared library")
-add_library(lvr SHARED $<TARGET_OBJECTS:lvrcore>)
-set_target_properties(lvr PROPERTIES LIBRARY_OUTPUT_DIRECTORY ${CMAKE_SOURCE_DIR}/lib)
-target_link_libraries(lvr ${LVR_LIB_DEPENDENCIES})
+#add_library(lvr SHARED $<TARGET_OBJECTS:lvrcore>)
+#set_target_properties(lvr PROPERTIES LIBRARY_OUTPUT_DIRECTORY ${CMAKE_SOURCE_DIR}/lib)
+#target_link_libraries(lvr ${LVR_LIB_DEPENDENCIES})
 
 
 
