@@ -26,6 +26,14 @@ if( ${NABO_FOUND} )
 set(LVR_RECONSTRUCT_DEPENDENCIES ${LVR_RECONSTRUCT_DEPENDENCIES} ${NABO_LIBRARIES})
 endif( ${NABO_FOUND} )
 
+#####################################################################################
+# Add PCD io if PCL is installed
+#####################################################################################
+
+if(PCL_FOUND)
+  set(LVR_RECONSTRUCT_DEPENDENCIES  ${LVR_RECONSTRUCT_DEPENDENCIES} ${PCL_LIBRARIES})
+endif(PCL_FOUND)
+
 
 #####################################################################################
 # Add executable
