@@ -79,6 +79,7 @@ endif(NABO_FOUND)
 
 # We intentionally do this twice as there seems to be a bug in PCL 1.4 which
 # leads to a non set PCL_VERSION variable if you call it only once.
+
 find_package(PCL 1.0)
 if ( "${PCL_VERSION}" STREQUAL "" )
     find_package(PCL 1.0)
@@ -124,10 +125,9 @@ endif(CGAL_FOUND)
 ##############################
 #
 
-if(MSVC)
-set(Boost_USE_STATIC_LIBS       ON)
-set(Boost_USE_MULTITHREADED      ON)
-endif()
+
+#set(Boost_USE_STATIC_LIBS       ON)
+set(Boost_USE_MULTITHREADED     ON)
 
 find_package( Boost 
     COMPONENTS 
