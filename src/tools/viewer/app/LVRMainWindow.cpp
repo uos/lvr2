@@ -114,6 +114,8 @@ LVRMainWindow::LVRMainWindow()
     m_actionShow_Normals = this->actionShow_Normals;
     m_actionShow_Mesh = this->actionShow_Mesh;
     m_actionShow_Wireframe = this->actionShow_Wireframe;
+    m_actionShowBackgroundSettings = this->actionShowBackgroundSettings;
+
     // Slider below tree widget
     m_horizontalSliderPointSize = this->horizontalSliderPointSize;
     m_horizontalSliderTransparency = this->horizontalSliderTransparency;
@@ -126,6 +128,10 @@ LVRMainWindow::LVRMainWindow()
     m_buttonExportData = this->buttonExportData;
     m_buttonTransformModel = this->buttonTransformModel;
 
+    m_pickingInteractor = new LVRPickingInteractor(m_renderer);
+    qvtkWidget->GetRenderWindow()->GetInteractor()->SetInteractorStyle( m_pickingInteractor );
+    vtkSmartPointer<vtkPointPicker> pointPicker = vtkSmartPointer<vtkPointPicker>::New();
+    qvtkWidget->GetRenderWindow()->GetInteractor()->SetPicker(pointPicker);
     connectSignalsAndSlots();
 }
 
@@ -185,6 +191,7 @@ void LVRMainWindow::connectSignalsAndSlots()
     QObject::connect(m_actionShow_Normals, SIGNAL(toggled(bool)), this, SLOT(toggleNormals(bool)));
     QObject::connect(m_actionShow_Mesh, SIGNAL(toggled(bool)), this, SLOT(toggleMeshes(bool)));
     QObject::connect(m_actionShow_Wireframe, SIGNAL(toggled(bool)), this, SLOT(toggleWireframe(bool)));
+    QObject::connect(m_actionShowBackgroundSettings, SIGNAL(activated()), this, SLOT(showBackgroundDialog()));
 
     QObject::connect(m_horizontalSliderPointSize, SIGNAL(valueChanged(int)), this, SLOT(changePointSize(int)));
     QObject::connect(m_horizontalSliderTransparency, SIGNAL(valueChanged(int)), this, SLOT(changeTransparency(int)));
@@ -200,6 +207,31 @@ void LVRMainWindow::connectSignalsAndSlots()
     QObject::connect(m_pickingInteractor, SIGNAL(secondPointPicked(double*)),m_correspondanceDialog, SLOT(secondPointPicked(double*)));
 
     QObject::connect(this, SIGNAL(correspondenceDialogOpened()), m_pickingInteractor, SLOT(correspondenceSearchOn()));
+}
+
+void LVRMainWindow::showBackgroundDialog()
+{
+    LVRBackgroundDialog dialog(qvtkWidget->GetRenderWindow());
+    if(dialog.exec() == QDialog::Accepted)
+    {
+        if(dialog.renderGradient())
+        {
+            float r1, r2, g1, g2, b1, b2;
+            dialog.getColor1(r1, g1, b1);
+            dialog.getColor2(r2, g2, b2);
+            m_renderer->GradientBackgroundOn();
+            m_renderer->SetBackground(r1, g1, b1);
+            m_renderer->SetBackground2(r2, g2, b2);
+        }
+        else
+        {
+            float r, g, b;
+            dialog.getColor1(r, g, b);
+            m_renderer->GradientBackgroundOff();
+            m_renderer->SetBackground(r, g, b);
+        }
+        this->qvtkWidget->GetRenderWindow()->Render();
+    }
 }
 
 void LVRMainWindow::setupQVTK()
