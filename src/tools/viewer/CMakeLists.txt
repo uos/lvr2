@@ -33,6 +33,7 @@ set(LVR_VIEWER_SOURCES
     widgets/LVROptimizationRemoveArtifactsDialog.cpp
     widgets/LVRFilteringRemoveOutliersDialog.cpp
     widgets/LVRFilteringMLSProjectionDialog.cpp
+    widgets/LVRBackgroundDialog.cpp
 )
 
 #####################################################################################
@@ -52,6 +53,7 @@ set(LVR_VIEWER_MOCS
     widgets/LVRFilteringRemoveOutliersDialog.hpp
     widgets/LVRFilteringMLSProjectionDialog.hpp
     widgets/LVRCorrespondanceDialog.hpp
+    widgets/LVRBackgroundDialog.hpp
 )
 
 #####################################################################################
@@ -71,6 +73,7 @@ set(LVR_VIEWER_UIS
    ui/LVROptimizationRemoveArtifactsDialogUI.ui
    ui/LVRFilteringRemoveOutliersDialogUI.ui
    ui/LVRFilteringMLSProjectionDialogUI.ui
+   ui/LVRBackgroundDialogUI.ui
 )
 
 #####################################################################################
