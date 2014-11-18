@@ -434,7 +434,7 @@
      <x>0</x>
      <y>0</y>
      <width>1112</width>
-     <height>25</height>
+     <height>21</height>
     </rect>
    </property>
    <widget class="QMenu" name="menuFile">
@@ -508,6 +508,8 @@
     <addaction name="separator"/>
     <addaction name="actionShow_Wireframe"/>
     <addaction name="actionShow_Mesh"/>
+    <addaction name="separator"/>
+    <addaction name="actionShowBackgroundSettings"/>
    </widget>
    <widget class="QMenu" name="menuAbout">
     <property name="title">
@@ -752,6 +754,11 @@
   <action name="actionAbout">
    <property name="text">
     <string>About</string>
+   </property>
+  </action>
+  <action name="actionShowBackgroundSettings">
+   <property name="text">
+    <string>Background...</string>
    </property>
   </action>
  </widget>
