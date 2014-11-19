@@ -24,8 +24,6 @@
  *  @author Kim Rinnewitz (krinnewitz@uos.de)
  */
 
-#include <opencv2/highgui/highgui.hpp>
-
 namespace lvr {
 
         ///File name of texture pack
@@ -499,7 +497,7 @@ void Texturizer<VertexT, NormalT>::markTexture(TextureToken<VertexT, NormalT>* t
 template<typename VertexT, typename NormalT>
 void Texturizer<VertexT, NormalT>::showTexture(TextureToken<VertexT, NormalT>* tt, string caption)
 {
-	Texture* t = tt->m_texture;
+/*	Texture* t = tt->m_texture;
 
 	for (int i = 0; i < 6; i++)
 	{
@@ -517,7 +515,7 @@ void Texturizer<VertexT, NormalT>::showTexture(TextureToken<VertexT, NormalT>* t
 	cv::imshow("Window", img);
 	cv::waitKey();
 
-	cv::destroyAllWindows();
+	cv::destroyAllWindows(); */
 }
 
 }
