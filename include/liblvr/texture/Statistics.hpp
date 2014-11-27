@@ -27,6 +27,7 @@
 #ifndef STATISTICS_HPP_
 #define STATISTICS_HPP_
 
+#include <opencv/cv.h>
 #include <cstring>
 #include <math.h>
 #include <cstdio>

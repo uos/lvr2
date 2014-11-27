@@ -1,6 +1,38 @@
 
-message( STATUS "Creating target texman…" )
-add_executable( texman texman.cpp )
-FIND_PACKAGE( OpenCV REQUIRED )
-TARGET_LINK_LIBRARIES( texman ${OpenCV_LIBS} )
-target_link_libraries( texman staticlvr )
+#####################################################################################
+# Set source files
+#####################################################################################
+
+set(LVR_TEXMAN_SOURCES
+   texman.cpp
+)
+
+#####################################################################################
+# Setup dependencies to external libraries 
+#####################################################################################
+
+set(LVR_TEXMAN_DEPENDENCIES 
+	lvr_static
+	lvrlas_static
+	lvrrply_static
+	lvrslam6d_static
+	${OPENGL_LIBRARY} 
+	${GLUT_LIBRARIES}
+	${OpenCV_LIBS}
+	${PCL_LIBRARIES}
+	)
+
+if( ${NABO_FOUND} )
+set(LVR_TEXMAN_DEPENDENCIES ${LVR_TEXMAN_DEPENDENCIES} ${NABO_LIBRARIES})
+endif( ${NABO_FOUND} )
+
+#####################################################################################
+# Add executable
+#####################################################################################
+
+
+add_executable( lvr_texman  ${LVR_TEXMAN_SOURCES})
+set_target_properties(lvr_texman PROPERTIES BINARY_OUTPUT_DIRECTORY ${CMAKE_SOURCE_DIR}/bin)
+TARGET_LINK_LIBRARIES( lvr_texman ${LVR_TEXMAN_DEPENDENCIES} )
+
+

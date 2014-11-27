@@ -378,7 +378,7 @@ void LASwriteOpener::set_format(const char* format)
 
 void LASwriteOpener::make_file_name(const char* file_name, I32 file_number)
 {
-  int len;
+  size_t len;
   if (file_number > -1)
   {
     if (file_name)

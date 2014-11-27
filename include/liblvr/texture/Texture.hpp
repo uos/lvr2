@@ -30,7 +30,6 @@
 
 #include <cstring>
 #include <math.h>
-#include <opencv/highgui.h>
 #include <cstdio>
 #include <io/PPMIO.hpp>
 

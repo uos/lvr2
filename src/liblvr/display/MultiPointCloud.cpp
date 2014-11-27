@@ -126,7 +126,7 @@ ModelPtr MultiPointCloud::model( )
     // Create a new model and save points
     PointBufferPtr pcBuffer( new PointBuffer);
     floatArr pointBuffer(new float[3 * c]);
-    ucharArr colorBuffer(new uchar[3 * c]);
+    ucharArr colorBuffer(new unsigned char[3 * c]);
     c = 0;
 
     for(it = m_clouds.begin(); it != m_clouds.end(); it++)

@@ -1,17 +1,30 @@
+#####################################################################################
+# Set source files
+#####################################################################################
 
 set(ASCII_SOURCES
     Options.cpp     
     Main.cpp
 )
 
-add_executable(ascii_convert ${ASCII_SOURCES})
+#####################################################################################
+# Setup dependencies to external libraries 
+#####################################################################################
 
-set_target_properties(ascii_convert PROPERTIES BINARY_OUTPUT_DIRECTORY
-	${CMAKE_SOURCE_DIR}/bin)
-	
-target_link_libraries(ascii_convert ${Boost_FILESYSTEM_LIBRARY}
-	${Boost_SYSTEM_LIBRARY} ${Boost_THREAD_LIBRARY}
-	${Boost_PROGRAM_OPTIONS_LIBRARY})
-	
-target_link_libraries(ascii_convert ${PCL_LIBRARIES})
-target_link_libraries(ascii_convert staticlvr)
+set(LVR_ASCIICONVERT_DEPENDENCIES 
+	lvr_static
+	lvrlas_static
+	lvrrply_static
+	lvrslam6d_static
+	${OPENGL_LIBRARY} 
+	${GLUT_LIBRARIES}
+	)
+
+#####################################################################################
+# Add executable
+#####################################################################################
+
+add_executable(lvr_ascii_convert ${ASCII_SOURCES})
+set_target_properties(lvr_ascii_convert PROPERTIES BINARY_OUTPUT_DIRECTORY ${CMAKE_SOURCE_DIR}/bin)
+target_link_libraries(lvr_ascii_convert ${LVR_ASCIICONVERT_DEPENDENCIES})
+

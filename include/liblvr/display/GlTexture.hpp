@@ -11,7 +11,11 @@
 #include <string>
 using std::string;
 
-#include <gl.h>
+#ifdef _MSC_VER
+#include <Windows.h>
+#endif
+
+#include <GL/gl.h>
 
 class GlTexture
 {

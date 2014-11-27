@@ -24,6 +24,7 @@
  *  @author Thomas Wiemann (twiemann@uos.de)
  */
 
+
 namespace lvr
 {
 
@@ -113,9 +114,9 @@ inline void BoundingBox<VertexT>::expand(float x, float y, float z)
     m_ySize = fabs(m_max[1] - m_min[1]);
     m_zSize = fabs(m_max[2] - m_min[2]);
 
-    m_centroid = VertexT(m_min[0] + 0.5 * m_xSize,
-                           m_min[1] + 0.5 * m_ySize,
-                           m_min[2] + 0.5 * m_zSize);
+    m_centroid = VertexT(m_min[0] + 0.5f * m_xSize,
+                         m_min[1] + 0.5f * m_ySize,
+                         m_min[2] + 0.5f * m_zSize);
 
 }
 

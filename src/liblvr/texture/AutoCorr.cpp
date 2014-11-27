@@ -25,7 +25,7 @@
  */
 
 #include "texture/AutoCorr.hpp"
-#include <opencv/highgui.h>
+//#include <opencv2/highgui/highgui.hpp>
 #include <opencv/cv.h>
 
 namespace lvr {
@@ -198,7 +198,7 @@ int AutoCorr::countPeaks(const float* data, float &stdDev, int len, int peaks[])
 	}
 
 	stdDev = calcStdDev(distances, result - 1);
-
+	delete[] distances;
 	return result;
 }
 
@@ -299,6 +299,7 @@ double AutoCorr::getMinimalPattern(unsigned int &sX, unsigned int &sY, unsigned 
 				sizeX 	= width;
 				sX	= high_xPeaks[x];
 			}
+			delete cc;
 		}
 	}
 	//Could not find enough peaks
@@ -342,6 +343,7 @@ double AutoCorr::getMinimalPattern(unsigned int &sX, unsigned int &sY, unsigned 
 				sizeY 	= height;
 				sY	= high_yPeaks[y];
 			}
+			delete cc;
 		}
 	}
 	//Could not find enough peaks
@@ -351,7 +353,12 @@ double AutoCorr::getMinimalPattern(unsigned int &sX, unsigned int &sY, unsigned 
 		sY	= 0;
 	}
 	
-	if (y_highest_correlation == -FLT_MAX == x_highest_correlation || stdDevX < 0.00001 && stdDevY < 0.00001 || peaksX < 0.00001 || peaksY < 0.00001)
+	delete[] xPeaks;
+	delete[] yPeaks;
+	delete[] rho_x;
+	delete[] rho_y;
+
+	if (y_highest_correlation == -FLT_MAX == x_highest_correlation || ((stdDevX < 0.00001) && (stdDevY < 0.00001)) || (peaksX < 0.00001) || (peaksY < 0.00001))
 	{
 		//Texture is aperiodic
 		return 0;

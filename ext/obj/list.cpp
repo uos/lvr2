@@ -41,7 +41,7 @@ void list_make(list *listo, int start_size, char growable)
 
 int list_add_item(list *listo, void *item, char *name)
 {
-	int name_length;
+	size_t name_length;
 	char *new_name;
 	
 	if( list_is_full(listo) )
@@ -143,7 +143,7 @@ void list_delete_name(list *listo, char *name)
 	//char remove = 0;
 	
 	//	int length_name = strlen(name);
-	int item_name;
+	size_t item_name;
 	
 	if(name == NULL)
 		return;

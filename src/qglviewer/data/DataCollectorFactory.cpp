@@ -70,7 +70,7 @@ void DataCollectorFactory::create(string filename)
 
 	    if(mesh_buffer)
 	    {
-	        lvr::StaticMesh* mesh = new lssr::StaticMesh( model );
+	        lvr::StaticMesh* mesh = new lvr::StaticMesh( model );
 	        TriangleMeshTreeWidgetItem* item = new TriangleMeshTreeWidgetItem(TriangleMeshItem);
 
 	        int modes = 0;

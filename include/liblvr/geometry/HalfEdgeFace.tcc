@@ -7,7 +7,7 @@
  * (at your option) any later version.
  *
  * LAS VEGAS is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * but WITHOUT ANY WARRANTY; without even the implied wasrranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
  *
@@ -26,9 +26,6 @@
  *  @author Thomas Wiemann (twiemann@uos.de)
  */
 
-#include "HalfEdgeVertex.hpp"
-
-
 // Forward declaration
 template<typename A, typename B>
 class HalfEdgeVertex;
@@ -37,89 +34,25 @@ namespace lvr
 {
 
 template<typename VertexT, typename NormalT>
-HalfEdgeFace<VertexT, NormalT>::HalfEdgeFace(const HalfEdgeFace<VertexT, NormalT> &o){
-	m_edge = o.m_edge;
+HalfEdgeFace<VertexT, NormalT>::HalfEdgeFace(const HalfEdgeFace<VertexT, NormalT> &o)
+{
+    m_used          = o.m_used;
+	m_edge          = o.m_edge;
+	m_region        = o.m_region;
+	m_texture_index = o.m_texture_index;
+	m_face_index    = o.m_face_index;
+	m_invalid       = o.m_invalid;
+	buffer_id       = 0;
 }
 
 template<typename VertexT, typename NormalT>
 HalfEdgeFace<VertexT, NormalT>::~HalfEdgeFace()
 {
-	/*	if(m_edge->next->next->pair)
-	{
-		if(m_edge->next->next->pair->face == 0)
-		{
-                        delete m_edge->next->next->pair;
-			m_edge->next->next->pair = 0;
-		}
-
-                else
-                {
-                       m_edge->next->next->pair->pair = 0;
-                }
-	}
-
-        if(m_edge->next->pair)
-        {
-	        if(m_edge->next->pair->face == 0)
-		{
-                        delete m_edge->next->pair;
-			m_edge->next->pair = 0;
-		}
-
-                else
-                {
-                       m_edge->next->pair->pair = 0;
-                }
-	}
-
-	if(m_edge->pair)
-	{
-		if(m_edge->pair->face == 0)
-		{
-                        delete m_edge->pair;
-			m_edge->pair = 0;
-		}
-
-                else
-                {
-                       m_edge->pair->pair = 0;
-                }
-	}
-
-	delete m_edge->next->next;
-	delete m_edge->next;
-	delete m_edge;
-
-	if(m_region != 0)
-	{
-		m_region->removeFace(this);
-		m_region = 0;
-	}*/
-}
-
-template<typename VertexT, typename NormalT>
-void HalfEdgeFace<VertexT, NormalT>::deletePointsFromEdge(HalfEdge<HalfEdgeVertex<VertexT, NormalT>, HalfEdgeFace<VertexT, NormalT> > *ptr)
-{
-	std::cout << "\n DeletePointsfromEdge wurde aufgerufen!!! " << std::endl;
-    if (ptr->start != 0)
+    if(m_region > 0)
     {
-    	std::cout << " start" << std::endl;
-    	delete ptr->start;
-    	ptr->start = 0;
+        m_region = -1;
     }
-/*    if (ptr->end != 0)
-    {
-    	std::cout << " end" << std::endl;
-    	delete ptr->end;
-    	ptr->end = 0;
-    }
- */
-    std::cout << "deletePointsfromEdge ist durch" << std::endl;
-
-
 }
-
-
 
 template<typename VertexT, typename NormalT>
 float HalfEdgeFace<VertexT, NormalT>::getArea()
@@ -139,210 +72,206 @@ float HalfEdgeFace<VertexT, NormalT>::getArea()
 template<typename VertexT, typename NormalT>
 void HalfEdgeFace<VertexT, NormalT>::calc_normal(){
 
-	VertexT vertices[3];
-	HalfEdgeVertex<VertexT, NormalT>* start = m_edge->start;
-	HalfEdge<HalfEdgeVertex<VertexT, NormalT>, HalfEdgeFace<VertexT, NormalT> >* current_edge = m_edge;
+    VertexT vertices[3];
+    VertexPtr start = m_edge->start();
+    EdgePtr current_edge = m_edge;
 
-	int c = 0;
-	while(current_edge->end != start)
-	{
-		vertices[c] = current_edge->start->m_position;
-		current_edge = current_edge->next;
-		c++;
-	}
-	VertexT diff1 = vertices[0] - vertices[1];
-	VertexT diff2 = vertices[0] - vertices[2];
-	m_normal = NormalT(diff1.cross(diff2));
+    int c = 0;
+    while(current_edge->end() != start)
+    {
+        vertices[c] = current_edge->start()->m_position;
+        current_edge = current_edge->next();
+        c++;
+    }
+    VertexT diff1 = vertices[0] - vertices[1];
+    VertexT diff2 = vertices[0] - vertices[2];
+    m_normal = NormalT(diff1.cross(diff2));
 }
 
 template<typename VertexT, typename NormalT>
 void HalfEdgeFace<VertexT, NormalT>::interpolate_normal(){
 
-	//reset current normal
-	m_normal = NormalT();
+    //reset current normal
+    m_normal = NormalT();
 
-	HalfEdgeVertex<NormalT, VertexT>* start = m_edge->start;
-	HalfEdge<NormalT, HalfEdgeFace<VertexT, NormalT> >* current_edge = m_edge;
+    VertexPtr start = m_edge->start;
+    EdgePtr current_edge = m_edge;
 
-	int c = 0;
-	while(current_edge->end != start)
-	{
-		m_normal += current_edge->start->normal;
-		current_edge = current_edge->next;
-		c++;
-	}
+    int c = 0;
+    while(current_edge->end() != start)
+    {
+        m_normal += current_edge->start()->normal;
+        current_edge = current_edge->next();
+        c++;
+    }
 
-	m_normal.x = m_normal.x / 3.0f;
-	m_normal.y = m_normal.y / 3.0f;
-	m_normal.z = m_normal.z / 3.0f;
+    m_normal.x = m_normal.x / 3.0f;
+    m_normal.y = m_normal.y / 3.0f;
+    m_normal.z = m_normal.z / 3.0f;
 
-	m_normal.normalize();
+    m_normal.normalize();
 }
 
 template<typename VertexT, typename NormalT>
-void HalfEdgeFace<VertexT, NormalT>::getVertexNormals(vector<NormalT> &n){
+void HalfEdgeFace<VertexT, NormalT>::getVertexNormals(vector<NormalT> &n)
+{
 
-	HalfEdgeVertex<VertexT, NormalT>* start = m_edge->start;
-	HalfEdge<VertexT, HalfEdgeFace<VertexT, NormalT> >* current_edge = m_edge;
-	while(current_edge->end != start)
-	{
-		n.push_back(current_edge->end->normal);
-		current_edge = current_edge->next;
-	}
+    VertexPtr start = m_edge->start();
+    EdgePtr current_edge = m_edge;
+    while(current_edge->end() != start)
+    {
+        n.push_back(current_edge->end()->normal);
+        current_edge = current_edge->next;
+    }
 
 }
 
 template<typename VertexT, typename NormalT>
-void HalfEdgeFace<VertexT, NormalT>::getVertices(vector<VertexT> &v){
+void HalfEdgeFace<VertexT, NormalT>::getVertices(vector<VertexT> &v)
+{
 
-	HalfEdgeVertex<VertexT, NormalT>* start = m_edge->start;
-	HalfEdge<HalfEdgeVertex<VertexT, NormalT>, HalfEdgeFace<VertexT, NormalT> >* current_edge = m_edge;
-	do
-	{
-		v.push_back(current_edge->end->m_position);
-		current_edge = current_edge->next;
-	} while(current_edge->end != start);
-	v.push_back(current_edge->end->m_position);
+    VertexPtr start = m_edge->start();
+    EdgePtr current_edge = m_edge;
+    do
+    {
+        v.push_back(current_edge->end()->m_position);
+        current_edge = current_edge->next();
+    } while(current_edge->end() != start);
+    v.push_back(current_edge->end()->m_position);
 }
 
 template<typename VertexT, typename NormalT>
-void HalfEdgeFace<VertexT, NormalT>::getAdjacentFaces(vector<HalfEdgeFace<VertexT, NormalT>*> &adj){
+void HalfEdgeFace<VertexT, NormalT>::getAdjacentFaces(FaceVector &adj){
 
-	HalfEdge<VertexT, HalfEdgeFace<VertexT, NormalT> >* current = m_edge;
-	HalfEdge<VertexT, HalfEdgeFace<VertexT, NormalT> >* pair;
-	HalfEdgeFace<VertexT, NormalT>* neighbor;
+    EdgePtr current = m_edge;
+    EdgePtr pair;
+    FacePtr neighbor;
 
-	do
-	{
-		pair = current->pair;
-		if(pair != 0)
-		{
-			neighbor = pair->face;
-			if(neighbor != 0)
-			{
-				adj.push_back(neighbor);
-			}
-		}
-		current = current->next;
-	} while(m_edge != current);
+    do
+    {
+        pair = current->pair();
+        if(pair != 0)
+        {
+            neighbor = pair->face();
+            if(neighbor != 0)
+            {
+                adj.push_back(neighbor);
+            }
+        }
+        current = current->next();
+    } while(m_edge != current);
 
 }
 
 template<typename VertexT, typename NormalT>
 NormalT HalfEdgeFace<VertexT, NormalT>::getFaceNormal()
 {
-	VertexT p0 = (*this)(0)->m_position;
-	VertexT p1 = (*this)(1)->m_position;
-	VertexT p2 = (*this)(2)->m_position;
+    try
+    {
+        VertexT p0 = (*this)(0)->m_position;
+        VertexT p1 = (*this)(1)->m_position;
+        VertexT p2 = (*this)(2)->m_position;
 
-	VertexT diff1 = p0 - p1;
-	VertexT diff2 = p0 - p2;
+        VertexT diff1 = p0 - p1;
+        VertexT diff2 = p0 - p2;
 
-	return NormalT(diff1.cross(diff2));
+        return NormalT(diff1.cross(diff2));
+    }
+    catch(...)
+    {
+        return NormalT(0, 0, 0);
+    }
 }
 
 template<typename VertexT, typename NormalT>
 NormalT HalfEdgeFace<VertexT, NormalT>::getInterpolatedNormal(){
-	NormalT return_normal = NormalT();
+    NormalT return_normal = NormalT();
 
-	for (int i = 0; i < 3; i++)
-	{
-		return_normal += (*this)(i)->m_normal;
-	}
+    for (int i = 0; i < 3; i++)
+    {
+        return_normal += (*this)(i)->m_normal;
+    }
 
-	return_normal /= 3.0f;
+    return_normal /= 3.0f;
 
-	return_normal.normalize();
-	return return_normal;
+    return_normal.normalize();
+    return return_normal;
 }
 
 template<typename VertexT, typename NormalT>
 VertexT HalfEdgeFace<VertexT, NormalT>::getCentroid(){
-	vector<VertexT> vert;
-	getVertices(vert);
+    vector<VertexT> vert;
+    getVertices(vert);
 
-	VertexT centroid;
+    VertexT centroid;
 
-	for(size_t i = 0; i < vert.size(); i++)
-	{
-		centroid += vert[i];
-	}
+    for(size_t i = 0; i < vert.size(); i++)
+    {
+        centroid += vert[i];
+    }
 
-	if(vert.size() > 0)
-	{
-		centroid.x = centroid.x / vert.size();
-		centroid.y = centroid.y / vert.size();
-		centroid.z = centroid.z / vert.size();
-	}
-	else
-	{
-		cout << "Warning: HalfEdgeFace::getCentroid: No vertices found." << endl;
-		return VertexT();
-	}
+    if(vert.size() > 0)
+    {
+        centroid.x = centroid.x / vert.size();
+        centroid.y = centroid.y / vert.size();
+        centroid.z = centroid.z / vert.size();
+    }
+    else
+    {
+        cout << "Warning: HalfEdgeFace::getCentroid: No vertices found." << endl;
+        return VertexT();
+    }
 
-	return centroid;
+    return centroid;
 }
 
 template<typename VertexT, typename NormalT>
-HalfEdge<HalfEdgeVertex<VertexT, NormalT>, HalfEdgeFace<VertexT, NormalT> >* 
-HalfEdgeFace<VertexT, NormalT>::operator[](const int &index) const{
+HalfEdge<HalfEdgeVertex<VertexT, NormalT>, HalfEdgeFace<VertexT, NormalT> >* HalfEdgeFace<VertexT, NormalT>::operator[](const int &index) const
+{
+    // Throw exception to caller of invalid access occurs
+    if(!m_edge)
+    {
+        cout << "!m_edge[]" << endl;
+    }
+
 	switch(index)
 	{
 	case 0:
 		return this->m_edge;
 	case 1:
-		return this->m_edge->next;
+		return this->m_edge->next();
 	case 2:
-	    if(!this->m_edge->next)
-	    {
-	        cout << timestamp << "Degerated Face!" << endl;
-	        return 0;
-	    }
-		return this->m_edge->next->next;
+		return this->m_edge->next()->next();
 	}
-    return 0;
+	return 0;
 }
 
 template<typename VertexT, typename NormalT>
-HalfEdgeVertex<VertexT, NormalT>* 
-HalfEdgeFace<VertexT, NormalT>::operator()(const int &index) const
+HalfEdgeVertex<VertexT, NormalT>* HalfEdgeFace<VertexT, NormalT>::operator()(const int &index) const
 {
-	cout << "OPERATOR() " << index << endl;
-	switch(index)
-	{
-	case 0:
-		cout << "CASE 0" << endl;
-		cout << m_edge << endl;
-		cout << m_edge->end << endl;
-		return this->m_edge->end;
-	case 1:
-        if(!this->m_edge->next)
-        {
-            cout << timestamp << "Degerated Face!" << endl;
-            return 0;
-        }
-		return this->m_edge->next->end;
-	case 2:
+    if(!m_edge)
+      {
+          cout << "!m_edge()" << endl;
+      }
 
-        if(!this->m_edge->next)
-        {
-            cout << timestamp << "Degerated Face!" << endl;
-            return 0;
-        }
-        if(!this->m_edge->next->next)
-        {
-            cout << timestamp << "Degerated Face!" << endl;
-            return 0;
-        }
-		return this->m_edge->next->next->end;
-	}
+
+    // Throw exception to caller of invalid access occurs
+    switch(index)
+    {
+    case 0:
+        return this->m_edge->end();
+    case 1:
+        return this->m_edge->next()->end();
+    case 2:
+        return this->m_edge->next()->next()->end();
+    }
     return 0;
 }
 template<typename VertexT, typename NormalT>
 float HalfEdgeFace<VertexT, NormalT>::getD()
 {
 	NormalT normal = getFaceNormal();
-	VertexT vertex = this->m_edge->end->m_position;
+	VertexT vertex = this->m_edge->end()->m_position;
 
 	return -(normal * vertex);
 }
@@ -351,10 +280,22 @@ float HalfEdgeFace<VertexT, NormalT>::getD()
 template<typename VertexT, typename NormalT>
 bool HalfEdgeFace<VertexT, NormalT>::isBorderFace()
 {
-	if(this->m_edge->pair->face == 0) return true;
-	if(this->m_edge->next->pair->face == 0) return true;
-	if(this->m_edge->next->next->pair->face == 0) return true;
+	if(this->m_edge->pair()->face() == 0) return true;
+	if(this->m_edge->next()->pair()->face() == 0) return true;
+	if(this->m_edge->next()->next()->pair()->face() == 0) return true;
 	return false;
+}
+
+template<typename VertexT, typename NormalT>
+int HalfEdgeFace<VertexT, NormalT>::getBufferID()
+{
+	return this->buffer_id;
+}
+
+template<typename VertexT, typename NormalT>
+void HalfEdgeFace<VertexT, NormalT>::setBufferID(unsigned int id)
+{
+	this->buffer_id = id;
 }
 
 } // namespace lvr

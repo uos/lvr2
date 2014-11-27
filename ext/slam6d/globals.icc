@@ -1282,7 +1282,7 @@ inline void transform3(const double *alignxf, const double *point, double *tpoin
 
 inline std::string trim(const std::string& source)
 {
-  unsigned int start = 0, end = source.size() - 1;
+  size_t start = 0, end = source.size() - 1;
   while(source[start] == ' ') start++;
   while(source[end] == ' ') end--;
   return source.substr(start, end - start + 1);

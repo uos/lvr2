@@ -14,7 +14,6 @@
 using std::cout;
 using std::endl;
 
-#include <opencv/highgui.h>
 
 TextureFactory::TextureFactory()
 {

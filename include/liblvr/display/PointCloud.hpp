@@ -62,7 +62,7 @@ public:
     vector<uColorVertex> getPoints(){return m_points;};
     void setPoints(){};
 
-    void addPoint(float x, float y, float z, uchar r, uchar g, uchar b){
+    void addPoint(float x, float y, float z, unsigned char r, unsigned char g, unsigned char b){
         m_boundingBox->expand(uColorVertex(x, y, z, r, g, b));
         m_points.push_back(uColorVertex(x, y, z, r, g, b));
     };
