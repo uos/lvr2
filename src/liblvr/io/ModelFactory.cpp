@@ -31,6 +31,7 @@
 #include "io/LasIO.hpp"
 #include "io/BoctreeIO.hpp"
 #include "io/ModelFactory.hpp"
+#include "io/DatIO.hpp"
 
 #include "io/Timestamp.hpp"
 #include "io/Progress.hpp"
