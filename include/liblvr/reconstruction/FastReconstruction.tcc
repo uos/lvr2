@@ -106,7 +106,7 @@ void FastReconstruction<VertexT, NormalT>::calcIndices()
 }
 
 template<typename VertexT, typename NormalT>
-uint FastReconstruction<VertexT, NormalT>::findQueryPoint(
+unsigned int FastReconstruction<VertexT, NormalT>::findQueryPoint(
         const int &position, const int &x, const int &y, const int &z)
 {
     int n_x, n_y, n_z, q_v, offset;
@@ -143,7 +143,7 @@ void FastReconstruction<VertexT, NormalT>::createGrid()
 	int index_x, index_y, index_z;
 	size_t hash_value;
 
-	uint INVALID = FastBox<VertexT, NormalT>::INVALID_INDEX;
+	unsigned int INVALID = FastBox<VertexT, NormalT>::INVALID_INDEX;
 
 	float vsh = 0.5 * m_voxelsize;
 
@@ -155,7 +155,7 @@ void FastReconstruction<VertexT, NormalT>::createGrid()
 	// already present query point, global index is id that the next
 	// created query point will get
 	int global_index = 0;
-	uint current_index = 0;
+	unsigned int current_index = 0;
 
 	int dx, dy, dz;
 
@@ -296,7 +296,7 @@ void FastReconstruction<VertexT, NormalT>::getMesh(BaseMesh<VertexT, NormalT> &m
 
 	// Some pointers
 	FastBox<VertexT, NormalT>* b;
-	uint global_index = 0;
+	unsigned int global_index = 0;
 
 	// Iterate through cells and calculate local approximations
 	typename unordered_map<size_t, FastBox<VertexT, NormalT>* >::iterator it;

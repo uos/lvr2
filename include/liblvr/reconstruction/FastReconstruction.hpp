@@ -134,7 +134,7 @@ private:
      * @return The index of an existing query point or -1 if no point
      *         corresponding to the given position exists.
      */
-    uint findQueryPoint(const int &position,
+    unsigned int findQueryPoint(const int &position,
             const int &i, const int &j, const int &k);
 
     /**
