@@ -37,6 +37,8 @@
 #include "reconstruction/QueryPoint.hpp"
 #include "reconstruction/PointsetSurface.hpp"
 
+#include "HashGrid.hpp"
+
 /*#if _MSC_VER
 #include <hash_map>
 using namespace stdext;
@@ -56,7 +58,7 @@ namespace lvr
  *        marching cubes algorithm using a hashed grid structure for
  *        parallel computation.
  */
-template<typename VertexT, typename NormalT>
+template<typename VertexT, typename NormalT, typename BoxT>
 class FastReconstruction : public PointsetMeshGenerator<VertexT, NormalT>
 {
 public:
@@ -64,19 +66,9 @@ public:
     /**
      * @brief Constructor.
      *
-     * @param manager       A point cloud manager instance
-     * @param resolution    The number of intersections (on the longest side
-     *                      of the volume taken by the data points) used by
-     *                      the reconstruction.
-     * @param isVoxelsize   If set to true, interpret resolution as voxelsize
-     *                      instead of number of intersections
+     * @param grid	A HashGrid instance on which the reconstruction is performed.
      */
-    FastReconstruction( 
-            typename PointsetSurface<VertexT>::Ptr surface,
-            float resolution,
-            bool isVoxelsize = false,
-            string boxType = "MC",
-            bool extrude = true);
+    FastReconstruction(HashGrid<VertexT, BoxT>* grid);
 
 
     /**
@@ -91,97 +83,9 @@ public:
      */
     virtual void getMesh(BaseMesh<VertexT, NormalT> &mesh);
 
-    /**
-     * @brief Saves a grid representation to an ASCII file. File format is as follows:
-     *        First line declares the number of query points in the grid and the cells size. Then one point
-     *        per line is defined (x, y, z, distance). After that, tuples of eight
-     *        indices per line define the grid cells.
-     */
-    void saveGrid(string filename);
-
-    /**
-     * @brief   If set to true, the grid will be extruded by one box
-     *          to close sparse data sets.
-     */
-    void setExtrusion(bool do_it) { m_extrude = do_it;}
-
 private:
 
-    /**
-     * @brief Calculates the maximal grid indices
-     */
-    void calcIndices();
-
-    /**
-     * @brief Creates the needed query points for the reconstruction
-     *        processs
-     */
-    void createGrid();
-
-    /**
-     * @brief Calculates the distance for all generated query points
-     */
-    void calcQueryPointValues();
-
-    /**
-     * @brief Tries to find an existing query point in the grid for
-     *        the virtual box corner (1..8) for the  cell at (i, j, k)
-     *        in the grid.
-     *
-     * @param position  The box corner index
-     * @param i, j, k   A triple that identifies a cell in the grid
-     *
-     * @return The index of an existing query point or -1 if no point
-     *         corresponding to the given position exists.
-     */
-    unsigned int findQueryPoint(const int &position,
-            const int &i, const int &j, const int &k);
-
-    /**
-     * @brief Calculates the hash value for the given index tripel
-     */
-    inline size_t hashValue(int i, int j, int k) const
-    {
-        return i * m_maxIndexSquare + j * m_maxIndex + k;
-    }
-
-    /**
-     * @brief Rounds the given value to the neares integer value
-     */
-    inline int calcIndex(float f)
-    {
-        return f < 0 ? f-.5:f+.5;
-    }
-
-    /// The voxelsize used for reconstruction
-    float                  		m_voxelsize;
-
-    /// The absolute maximal index of the reconstruction grid
-    size_t                      m_maxIndex;
-
-    /// The squared maximal index of the reconstruction grid
-    size_t                      m_maxIndexSquare;
-
-    /// The maximal index in x direction
-    size_t                      m_maxIndexX;
-
-    /// The maximal index in y direction
-    size_t                      m_maxIndexY;
-
-    /// The maximal index in z direction
-    size_t                      m_maxIndexZ;
-
-    /// A hahs map to store the created grid cells
-    unordered_map<size_t, FastBox<VertexT, NormalT>* >  m_cells;
-
-    /// A vector containing the query points for the reconstruction
-    vector<QueryPoint<VertexT> > m_queryPoints;
-
-    /// True if a local tetraeder decomposition is used for reconstruction
-    string                        m_boxType;
-
-    /// True if we want to create extra boxes at the end of the grid
-    bool                        m_extrude;
+    HashGrid<VertexT, BoxT>*		m_grid;
 };
 
 
