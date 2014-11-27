@@ -36,7 +36,7 @@ struct MaterialGroup
 	int	textureIndex;
 	int numFaces;
 	Vertex<float> color;
-	vector<unsigned int> faceBuffer;
+	vector<size_t> faceBuffer;
 };
 
 class TexturedMesh: public StaticMesh

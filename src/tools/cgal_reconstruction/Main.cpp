@@ -58,7 +58,9 @@ int main(int argc, char** argv)
 	// Estimates normals direction.
 	// Note: pca_estimate_normals() requires an iterator over points
 	// as well as property maps to access each point's position and normal.
-	const int nb_neighbors = 18; // K-nearest neighbors = 3 rings
+
+
+	const int nb_neighbors = atoi(argv[2]); // K-nearest neighbors = 3 rings
 	CGAL::pca_estimate_normals(points.begin(), points.end(),
 			CGAL::First_of_pair_property_map<PointVectorPair>(),
 			CGAL::Second_of_pair_property_map<PointVectorPair>(),

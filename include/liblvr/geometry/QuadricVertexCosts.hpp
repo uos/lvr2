@@ -52,6 +52,8 @@ public:
 	 */
 	QuadricVertexCosts(bool useTriangleArea) : m_useTri(useTriangleArea) {};
 
+	virtual ~QuadricVertexCosts(){}
+
 	/**
 	 * @brief 	Implementation of Garland and Heckberts cost function. If the object
 	 * 			was created with the useTriangleArea flag, the weighted costs function

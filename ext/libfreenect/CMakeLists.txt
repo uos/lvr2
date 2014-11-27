@@ -125,13 +125,13 @@ endif()
 add_subdirectory (src)
 
 # Add examples
-IF(BUILD_EXAMPLES)
-  add_subdirectory (examples)
-ENDIF()
+#IF(BUILD_EXAMPLES)
+#  add_subdirectory (examples)
+#ENDIF()
 
-IF(BUILD_FAKENECT)
-  add_subdirectory (fakenect)
-ENDIF()
+#IF(BUILD_FAKENECT)
+#  add_subdirectory (fakenect)
+#ENDIF()
 
 IF(BUILD_C_SYNC)
   add_subdirectory (wrappers/c_sync)

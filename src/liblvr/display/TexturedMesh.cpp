@@ -86,14 +86,14 @@ void TexturedMesh::generateMaterialGroups()
 {
 
 	map<int, MaterialGroup* > texMatMap;
-	map<Vertex<uchar>, MaterialGroup* > colorMatMap;
+	map<Vertex<unsigned char>, MaterialGroup* > colorMatMap;
 
 	// Iterate over face material buffer and
 	// sort faces by their material
 	for(size_t i = 0; i < m_numFaces; i++)
 	{
 		map<int, MaterialGroup*>::iterator texIt;
-		map<Vertex<uchar>, MaterialGroup* >::iterator colIt;
+		map<Vertex<unsigned char>, MaterialGroup* >::iterator colIt;
 
 		// Get material by index and lookup in map. If present
 		// add face index to the corresponding group. Create a new
@@ -121,13 +121,13 @@ void TexturedMesh::generateMaterialGroups()
 		}
 		else
 		{
-			colIt = colorMatMap.find(Vertex<uchar>(m->r, m->g, m->b));
+			colIt = colorMatMap.find(Vertex<unsigned char>(m->r, m->g, m->b));
 			if(colIt == colorMatMap.end())
 			{
 				MaterialGroup* g = new MaterialGroup;
 				g->textureIndex = m->texture_index;
 				g->faceBuffer.push_back(i);
-				g->color = Vertex<float>(m->r / 255.0, m->g / 255.0, m->b / 255.0);
+				g->color = Vertex<float>(m->r / 255.0f, m->g / 255.0f, m->b / 255.0f);
 				m_colorMaterials.push_back(g);
 			}
 			else

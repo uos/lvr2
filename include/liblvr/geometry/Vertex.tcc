@@ -32,7 +32,7 @@ namespace lvr
 {
 
 template<typename CoordType>
-float Vertex<CoordType>::epsilon = 0.00001;
+float Vertex<CoordType>::epsilon = 0.00001f;
 
 template<typename CoordType>
 CoordType Vertex<CoordType>::operator[](const int &index) const
@@ -71,9 +71,9 @@ CoordType& Vertex<CoordType>::operator[](const int &index)
 template<typename CoordType>
 bool Vertex<CoordType>::operator==(const Vertex &other) const
 {
-    return fabs(x - other.x) <= Vertex::epsilon &&
-           fabs(y - other.y) <= Vertex::epsilon &&
-           fabs(z - other.z) <= Vertex::epsilon;
+    return std::fabs((float)x - other.x) <= Vertex::epsilon &&
+           std::fabs((float)y - other.y) <= Vertex::epsilon &&
+           std::fabs((float)z - other.z) <= Vertex::epsilon;
 }
 
 template<typename CoordType>
@@ -239,6 +239,13 @@ CoordType Vertex<CoordType>::length()
 {
     return sqrt(x * x + y * y + z * z);
 }
+
+template<typename CoordType>
+CoordType Vertex<CoordType>::length2()
+{
+    return x * x + y * y + z * z;
+}
+
 
 
 } // namespace lvr

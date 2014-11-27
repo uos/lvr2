@@ -37,9 +37,16 @@
 #include "reconstruction/QueryPoint.hpp"
 #include "reconstruction/PointsetSurface.hpp"
 
+//#include <ext/hash_map>
+//using namespace __gnu_cxx;
+
+#if _MSC_VER
+#include <hash_map>
+using namespace stdext;
+#else
 #include <ext/hash_map>
 using namespace __gnu_cxx;
-
+#endif
 namespace lvr
 {
 
@@ -75,6 +82,7 @@ public:
      * @brief Destructor.
      */
     virtual ~FastReconstruction();
+
     /**
      * @brief Returns the surface reconstruction of the given point set.
      *

@@ -137,6 +137,8 @@ protected:
      */
     PointsetSurface(PointBufferPtr pointcloud);
 
+    PointsetSurface(){};
+
     /// The point cloud used for surface approximation
     PointBufferPtr                          m_pointBuffer;
 

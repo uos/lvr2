@@ -29,13 +29,16 @@
 #include "io/UosIO.hpp"
 #include "io/ObjIO.hpp"
 #include "io/LasIO.hpp"
-#include "io/PCDIO.hpp"
-#include "io/DatIO.hpp"
 #include "io/BoctreeIO.hpp"
 #include "io/ModelFactory.hpp"
 
 #include "io/Timestamp.hpp"
 #include "io/Progress.hpp"
+
+// PCL related includes
+#ifdef _USE_PCL_
+#include "io/PCDIO.hpp"
+#endif
 
 #include <boost/filesystem.hpp>
 
@@ -48,7 +51,7 @@ ModelPtr ModelFactory::readModel( std::string filename )
 
     // Check extension
     boost::filesystem::path selectedFile( filename );
-    std::string extension = selectedFile.extension().c_str();
+    std::string extension = selectedFile.extension().string();
 
     // Try to parse given file
     BaseIO* io = 0;
@@ -91,22 +94,22 @@ ModelPtr ModelFactory::readModel( std::string filename )
             boost::filesystem::path p = it->path();
 
             // Check for 3d files
-            if(string(p.extension().c_str()) == ".3d")
+            if(p.extension().string() == ".3d")
             {
                 // Check for naming convention "scanxxx.3d"
                 int num = 0;
-                if(sscanf(p.filename().c_str(), "scan%3d", &num))
+				if(sscanf(p.filename().string().c_str(), "scan%3d", &num))
                 {
                     found_3d = true;
                 }
             }
 
             // Check for .oct files
-            if(string(p.extension().c_str()) == ".oct")
+            if(p.extension().string() == ".oct")
             {
                 // Check for naming convention "scanxxx.3d"
                 int num = 0;
-                if(sscanf(p.filename().c_str(), "scan%3d", &num))
+                if(sscanf(p.filename().string().c_str(), "scan%3d", &num))
                 {
                     found_boctree = true;
                 }
@@ -150,7 +153,7 @@ void ModelFactory::saveModel( ModelPtr m, std::string filename)
 {
     // Get file exptension
     boost::filesystem::path selectedFile(filename);
-    std::string extension = selectedFile.extension().c_str();
+    std::string extension = selectedFile.extension().string();
 
     BaseIO* io = 0;
 
@@ -167,14 +170,13 @@ void ModelFactory::saveModel( ModelPtr m, std::string filename)
     {
         io = new ObjIO;
     }
+#ifdef _USE_PCL_
     else if (extension == ".pcd")
     {
         io = new PCDIO;
     }
-    else if (extension == ".dat")
-    {
-    	io = new DatIO;
-    }
+#endif
+
     // Save model
     if(io)
     {

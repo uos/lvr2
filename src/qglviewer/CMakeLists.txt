@@ -82,7 +82,7 @@ target_link_libraries(qviewer ${QT_QTCORE_LIBRARIES})
 target_link_libraries(qviewer ${QT_QTGUI_LIBRARIES})
 target_link_libraries(qviewer ${QT_QTOPENGL_LIBRARIES})
 target_link_libraries(qviewer ${QT_QTXML_LIBRARY})
-target_link_libraries(qviewer staticlvr)
+target_link_libraries(qviewer lvr_static)
 target_link_libraries(qviewer ${OPENGL_LIBRARIES})
 target_link_libraries(qviewer ${GLUT_LIBRARIES})
 target_link_libraries(qviewer ${QGLVIEWER_LIBRARY_RELEASE})
@@ -94,3 +94,8 @@ target_link_libraries(qviewer pthread)
 target_link_libraries(qviewer GLU)
 target_link_libraries(qviewer ${PCL_LIBRARIES})
 target_link_libraries(qviewer GLU)
+
+INSTALL(TARGETS qviewer
+    RUNTIME DESTINATION bin
+    LIBRARY DESTINATION lib
+    ARCHIVE DESTINATION lib)

@@ -37,6 +37,9 @@
 #define _USE_MATH_DEFINES
 #include <cmath>
 
+#ifndef M_PI
+#define M_PI 3.141592654
+#endif
 using namespace std;
 
 namespace lvr{
@@ -78,7 +81,7 @@ public:
 	}
 
 	/**
-	 * @brief	Constructs a matrix from given axis and angle. Trya to
+	 * @brief	Constructs a matrix from given axis and angle. Trys to
 	 * 			avoid a gimbal lock.
 	 */
 	template<typename T>
@@ -309,6 +312,19 @@ public:
 		return Vertex<T>(x, y, z);
 	}
 
+    /**
+     * @brief   Multiplication of Matrix and Vertex types
+     */
+    template<typename T>
+    Normal<T> operator*(const Normal<T> &v) const
+    {
+        T x = m[ 0] * v.x + m[ 4] * v.y + m[8 ] * v.z;
+        T y = m[ 1] * v.x + m[ 5] * v.y + m[9 ] * v.z;
+        T z = m[ 2] * v.x + m[ 6] * v.y + m[10] * v.z;
+
+        return Normal<T>(x, y, z);
+    }
+
 	/**
 	 * @brief	Sets the given index of the Matrix's data field
 	 * 			to the provided value.
@@ -355,7 +371,7 @@ public:
 			if(m[0] > 0.0) {
 				pose[4] = asin(m[8]);
 			} else {
-				pose[4] = M_PI - asin(m[8]);
+				pose[4] = (float)M_PI - asin(m[8]);
 			}
 			// rPosTheta[1] =  asin( m[8]);      // Calculate Y-axis angle
 
@@ -451,7 +467,77 @@ public:
 		return m[index];
 	}
 
+	/**
+	 * @brief   Returns the matrix's determinant
+	 */
+	ValueType det()
+	{
+	    ValueType det, result = 0, i = 1.0;
+	    ValueType Msub3[9];
+	    int    n;
+	    for ( n = 0; n < 4; n++, i *= -1.0 ) {
+	        submat( Msub3, 0, n );
+	        det     = det3( Msub3 );
+	        result += m[n] * det * i;
+	    }
+	    return( result );
+	}
+
+	Matrix4 inv(bool& success)
+	{
+	    Matrix4 Mout;
+	    ValueType  mdet = det();
+	    if ( fabs( mdet ) < 0.00000000000005 ) {
+	        cout << "Error matrix inverting! " << mdet << endl;
+	        return Mout;
+	    }
+	    ValueType  mtemp[9];
+	    int     i, j, sign;
+	    for ( i = 0; i < 4; i++ ) {
+	        for ( j = 0; j < 4; j++ ) {
+	            sign = 1 - ( (i +j) % 2 ) * 2;
+	            submat( mtemp, i, j );
+	            Mout[i+j*4] = ( det3( mtemp ) * sign ) / mdet;
+	        }
+	    }
+	    return Mout;
+	}
+
 private:
+
+    /**
+     * @brief   Returns a sub matrix without row \ref i and column \ref j.
+     */
+	void submat(ValueType* submat, int i, int j)
+	{
+	    int di, dj, si, sj;
+	    // loop through 3x3 submatrix
+	    for( di = 0; di < 3; di ++ ) {
+	        for( dj = 0; dj < 3; dj ++ ) {
+	            // map 3x3 element (destination) to 4x4 element (source)
+	            si = di + ( ( di >= i ) ? 1 : 0 );
+	            sj = dj + ( ( dj >= j ) ? 1 : 0 );
+	            // copy element
+	            submat[di * 3 + dj] = m[si * 4 + sj];
+	        }
+	    }
+	}
+
+	/**
+	 * @brief    Calculates the determinant of a 3x3 matrix
+	 *
+	 * @param    M  input 3x3 matrix
+	 * @return   determinant of input matrix
+	 */
+	ValueType det3( const ValueType *M )
+	{
+	  ValueType det;
+	  det = (double)(  M[0] * ( M[4]*M[8] - M[7]*M[5] )
+	                 - M[1] * ( M[3]*M[8] - M[6]*M[5] )
+	                 + M[2] * ( M[3]*M[7] - M[6]*M[4] ));
+	  return ( det );
+	}
+
 	ValueType m[16];
 };
 
@@ -469,6 +555,8 @@ inline ostream& operator<<(ostream& os, const Matrix4<T> matrix){
 	os << endl;
 	return os;
 }
+
+typedef Matrix4<float> Matrix4f;
 
 } // namespace lvr
 #endif /* MATRIX_H_ */

@@ -1,4 +1,11 @@
+.cproject
+.project
+Debug/
+build/
+doc/
 lib/
 bin/
 *.ply
+*.clu
 *.*~
+.configured

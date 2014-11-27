@@ -1,0 +1,776 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ui version="4.0">
+ <class>MainWindow</class>
+ <widget class="QMainWindow" name="MainWindow">
+  <property name="geometry">
+   <rect>
+    <x>0</x>
+    <y>0</y>
+    <width>1112</width>
+    <height>847</height>
+   </rect>
+  </property>
+  <property name="minimumSize">
+   <size>
+    <width>0</width>
+    <height>0</height>
+   </size>
+  </property>
+  <property name="windowTitle">
+   <string>Las Vegas Reconstruction Toolkit</string>
+  </property>
+  <widget class="QWidget" name="centralwidget">
+   <layout class="QVBoxLayout" name="verticalLayout">
+    <item>
+     <widget class="QVTKWidget" name="qvtkWidget"/>
+    </item>
+   </layout>
+  </widget>
+  <widget class="QStatusBar" name="statusbar"/>
+  <widget class="QDockWidget" name="dockWidgetScene">
+   <property name="minimumSize">
+    <size>
+     <width>200</width>
+     <height>392</height>
+    </size>
+   </property>
+   <property name="maximumSize">
+    <size>
+     <width>524287</width>
+     <height>524287</height>
+    </size>
+   </property>
+   <property name="styleSheet">
+    <string notr="true"/>
+   </property>
+   <property name="floating">
+    <bool>false</bool>
+   </property>
+   <property name="features">
+    <set>QDockWidget::DockWidgetVerticalTitleBar</set>
+   </property>
+   <property name="allowedAreas">
+    <set>Qt::LeftDockWidgetArea</set>
+   </property>
+   <property name="windowTitle">
+    <string>Loaded Objects</string>
+   </property>
+   <attribute name="dockWidgetArea">
+    <number>1</number>
+   </attribute>
+   <widget class="QWidget" name="dockWidgetSceneContents">
+    <layout class="QHBoxLayout" name="horizontalLayout">
+     <item>
+      <widget class="QTreeWidget" name="treeWidget">
+       <property name="sizePolicy">
+        <sizepolicy hsizetype="Expanding" vsizetype="Expanding">
+         <horstretch>0</horstretch>
+         <verstretch>0</verstretch>
+        </sizepolicy>
+       </property>
+       <property name="minimumSize">
+        <size>
+         <width>0</width>
+         <height>374</height>
+        </size>
+       </property>
+       <property name="autoExpandDelay">
+        <number>0</number>
+       </property>
+       <property name="columnCount">
+        <number>2</number>
+       </property>
+       <attribute name="headerVisible">
+        <bool>false</bool>
+       </attribute>
+       <column>
+        <property name="text">
+         <string notr="true">1</string>
+        </property>
+       </column>
+       <column>
+        <property name="text">
+         <string notr="true">2</string>
+        </property>
+       </column>
+      </widget>
+     </item>
+    </layout>
+   </widget>
+  </widget>
+  <widget class="QDockWidget" name="dockWidgetRendering">
+   <property name="minimumSize">
+    <size>
+     <width>41</width>
+     <height>150</height>
+    </size>
+   </property>
+   <property name="maximumSize">
+    <size>
+     <width>524287</width>
+     <height>230</height>
+    </size>
+   </property>
+   <property name="features">
+    <set>QDockWidget::DockWidgetMovable|QDockWidget::DockWidgetVerticalTitleBar</set>
+   </property>
+   <property name="windowTitle">
+    <string>Render Settings</string>
+   </property>
+   <attribute name="dockWidgetArea">
+    <number>1</number>
+   </attribute>
+   <widget class="QWidget" name="dockWidgetRenderingContents">
+    <widget class="QLabel" name="labelPointSize">
+     <property name="geometry">
+      <rect>
+       <x>0</x>
+       <y>0</y>
+       <width>91</width>
+       <height>16</height>
+      </rect>
+     </property>
+     <property name="text">
+      <string>Point Size:</string>
+     </property>
+    </widget>
+    <widget class="QSlider" name="horizontalSliderPointSize">
+     <property name="geometry">
+      <rect>
+       <x>10</x>
+       <y>20</y>
+       <width>251</width>
+       <height>16</height>
+      </rect>
+     </property>
+     <property name="minimum">
+      <number>1</number>
+     </property>
+     <property name="maximum">
+      <number>10</number>
+     </property>
+     <property name="orientation">
+      <enum>Qt::Horizontal</enum>
+     </property>
+    </widget>
+    <widget class="QLabel" name="labelContrastTransparency">
+     <property name="geometry">
+      <rect>
+       <x>0</x>
+       <y>40</y>
+       <width>91</width>
+       <height>16</height>
+      </rect>
+     </property>
+     <property name="text">
+      <string>Transparency:</string>
+     </property>
+    </widget>
+    <widget class="QSlider" name="horizontalSliderTransparency">
+     <property name="geometry">
+      <rect>
+       <x>10</x>
+       <y>60</y>
+       <width>251</width>
+       <height>16</height>
+      </rect>
+     </property>
+     <property name="maximum">
+      <number>100</number>
+     </property>
+     <property name="value">
+      <number>0</number>
+     </property>
+     <property name="orientation">
+      <enum>Qt::Horizontal</enum>
+     </property>
+    </widget>
+    <widget class="QLabel" name="labelColorGradient">
+     <property name="geometry">
+      <rect>
+       <x>0</x>
+       <y>80</y>
+       <width>131</width>
+       <height>20</height>
+      </rect>
+     </property>
+     <property name="text">
+      <string>Color Gradient:</string>
+     </property>
+    </widget>
+    <widget class="QComboBox" name="comboBoxGradient">
+     <property name="geometry">
+      <rect>
+       <x>110</x>
+       <y>80</y>
+       <width>151</width>
+       <height>25</height>
+      </rect>
+     </property>
+     <item>
+      <property name="text">
+       <string>Grey</string>
+      </property>
+     </item>
+     <item>
+      <property name="text">
+       <string>Hot</string>
+      </property>
+     </item>
+     <item>
+      <property name="text">
+       <string>Jet</string>
+      </property>
+     </item>
+     <item>
+      <property name="text">
+       <string>HSV</string>
+      </property>
+     </item>
+     <item>
+      <property name="text">
+       <string>Simpsons</string>
+      </property>
+     </item>
+    </widget>
+    <widget class="QComboBox" name="comboBoxShading">
+     <property name="geometry">
+      <rect>
+       <x>110</x>
+       <y>110</y>
+       <width>151</width>
+       <height>25</height>
+      </rect>
+     </property>
+     <item>
+      <property name="text">
+       <string>Flat</string>
+      </property>
+     </item>
+     <item>
+      <property name="text">
+       <string>Gouraud</string>
+      </property>
+     </item>
+     <item>
+      <property name="text">
+       <string>Phong</string>
+      </property>
+     </item>
+    </widget>
+    <widget class="QLabel" name="labelShading">
+     <property name="geometry">
+      <rect>
+       <x>0</x>
+       <y>110</y>
+       <width>131</width>
+       <height>16</height>
+      </rect>
+     </property>
+     <property name="text">
+      <string>Shading:</string>
+     </property>
+    </widget>
+   </widget>
+  </widget>
+  <widget class="QDockWidget" name="dockWidgetActions">
+   <property name="sizePolicy">
+    <sizepolicy hsizetype="Preferred" vsizetype="Preferred">
+     <horstretch>0</horstretch>
+     <verstretch>0</verstretch>
+    </sizepolicy>
+   </property>
+   <property name="minimumSize">
+    <size>
+     <width>200</width>
+     <height>200</height>
+    </size>
+   </property>
+   <property name="maximumSize">
+    <size>
+     <width>524287</width>
+     <height>200</height>
+    </size>
+   </property>
+   <property name="autoFillBackground">
+    <bool>false</bool>
+   </property>
+   <property name="features">
+    <set>QDockWidget::DockWidgetVerticalTitleBar</set>
+   </property>
+   <property name="windowTitle">
+    <string>Actions</string>
+   </property>
+   <attribute name="dockWidgetArea">
+    <number>1</number>
+   </attribute>
+   <widget class="QWidget" name="dockWidgetActionsContents">
+    <widget class="QCommandLinkButton" name="buttonCameraPathTool">
+     <property name="geometry">
+      <rect>
+       <x>0</x>
+       <y>0</y>
+       <width>251</width>
+       <height>51</height>
+      </rect>
+     </property>
+     <property name="text">
+      <string>Open Camera Path Tool</string>
+     </property>
+     <property name="icon">
+      <iconset resource="../res/viewer.qrc">
+       <normaloff>:/qv_animation.png</normaloff>:/qv_animation.png</iconset>
+     </property>
+     <property name="iconSize">
+      <size>
+       <width>30</width>
+       <height>30</height>
+      </size>
+     </property>
+    </widget>
+    <widget class="QCommandLinkButton" name="buttonCreateMesh">
+     <property name="geometry">
+      <rect>
+       <x>0</x>
+       <y>50</y>
+       <width>251</width>
+       <height>51</height>
+      </rect>
+     </property>
+     <property name="text">
+      <string>Create Mesh</string>
+     </property>
+     <property name="icon">
+      <iconset resource="../res/viewer.qrc">
+       <normaloff>:/qv_createMesh.png</normaloff>:/qv_createMesh.png</iconset>
+     </property>
+     <property name="iconSize">
+      <size>
+       <width>30</width>
+       <height>30</height>
+      </size>
+     </property>
+    </widget>
+    <widget class="QCommandLinkButton" name="buttonExportData">
+     <property name="geometry">
+      <rect>
+       <x>0</x>
+       <y>100</y>
+       <width>251</width>
+       <height>51</height>
+      </rect>
+     </property>
+     <property name="text">
+      <string>Export Data</string>
+     </property>
+     <property name="icon">
+      <iconset resource="../res/viewer.qrc">
+       <normaloff>:/qv_export.png</normaloff>:/qv_export.png</iconset>
+     </property>
+     <property name="iconSize">
+      <size>
+       <width>30</width>
+       <height>30</height>
+      </size>
+     </property>
+    </widget>
+    <widget class="QCommandLinkButton" name="buttonTransformModel">
+     <property name="geometry">
+      <rect>
+       <x>0</x>
+       <y>150</y>
+       <width>251</width>
+       <height>51</height>
+      </rect>
+     </property>
+     <property name="text">
+      <string>Transform Model</string>
+     </property>
+     <property name="icon">
+      <iconset resource="../res/viewer.qrc">
+       <normaloff>:/qv_transform.png</normaloff>:/qv_transform.png</iconset>
+     </property>
+     <property name="iconSize">
+      <size>
+       <width>30</width>
+       <height>30</height>
+      </size>
+     </property>
+    </widget>
+   </widget>
+  </widget>
+  <widget class="QToolBar" name="toolBar">
+   <property name="windowTitle">
+    <string>toolBar</string>
+   </property>
+   <property name="movable">
+    <bool>false</bool>
+   </property>
+   <property name="allowedAreas">
+    <set>Qt::NoToolBarArea</set>
+   </property>
+   <property name="iconSize">
+    <size>
+     <width>30</width>
+     <height>30</height>
+    </size>
+   </property>
+   <attribute name="toolBarArea">
+    <enum>TopToolBarArea</enum>
+   </attribute>
+   <attribute name="toolBarBreak">
+    <bool>false</bool>
+   </attribute>
+   <addaction name="actionOpen"/>
+   <addaction name="separator"/>
+   <addaction name="actionShow_Points"/>
+   <addaction name="actionShow_Normals"/>
+   <addaction name="actionShow_Mesh"/>
+   <addaction name="actionShow_Wireframe"/>
+  </widget>
+  <widget class="QMenuBar" name="menubar">
+   <property name="geometry">
+    <rect>
+     <x>0</x>
+     <y>0</y>
+     <width>1112</width>
+     <height>21</height>
+    </rect>
+   </property>
+   <widget class="QMenu" name="menuFile">
+    <property name="title">
+     <string>File</string>
+    </property>
+    <addaction name="actionOpen"/>
+    <addaction name="actionExport"/>
+    <addaction name="actionQuit"/>
+   </widget>
+   <widget class="QMenu" name="menuViews">
+    <property name="title">
+     <string>Views</string>
+    </property>
+    <addaction name="actionReset_Camera"/>
+    <addaction name="actionStore_Current_View"/>
+    <addaction name="actionRecall_Stored_View"/>
+    <addaction name="separator"/>
+    <addaction name="actionCameraPathTool"/>
+   </widget>
+   <widget class="QMenu" name="menuReconstruction">
+    <property name="title">
+     <string>Reconstruction</string>
+    </property>
+    <addaction name="actionEstimate_Normals"/>
+    <addaction name="separator"/>
+    <addaction name="actionMarching_Cubes"/>
+    <addaction name="actionPlanar_Marching_Cubes"/>
+    <addaction name="actionExtended_Marching_Cubes"/>
+    <addaction name="separator"/>
+    <addaction name="actionCompute_Textures"/>
+    <addaction name="actionMatch_Textures_from_Package"/>
+    <addaction name="actionExtract_and_Rematch_Patterns"/>
+   </widget>
+   <widget class="QMenu" name="menuFiltering">
+    <property name="title">
+     <string>Filtering</string>
+    </property>
+    <addaction name="actionRemove_Outliers"/>
+    <addaction name="actionMLS_Projection"/>
+   </widget>
+   <widget class="QMenu" name="menuMesh_Optimization">
+    <property name="title">
+     <string>Mesh Optimization</string>
+    </property>
+    <addaction name="actionPlanar_Optimization"/>
+    <addaction name="actionRemove_Artifacts"/>
+   </widget>
+   <widget class="QMenu" name="menuRegistration">
+    <property name="title">
+     <string>Registration</string>
+    </property>
+    <addaction name="actionICP_Using_Manual_Correspondance"/>
+    <addaction name="actionICP_Using_Pose_Estimations"/>
+    <addaction name="separator"/>
+    <addaction name="actionGlobal_Relaxation"/>
+   </widget>
+   <widget class="QMenu" name="menuClassification">
+    <property name="title">
+     <string>Classification</string>
+    </property>
+    <addaction name="actionSimple_Plane_Classification"/>
+    <addaction name="actionFurniture_Recognition"/>
+   </widget>
+   <widget class="QMenu" name="menuRendering">
+    <property name="title">
+     <string>Rendering</string>
+    </property>
+    <addaction name="actionShow_Points"/>
+    <addaction name="actionShow_Normals"/>
+    <addaction name="separator"/>
+    <addaction name="actionShow_Wireframe"/>
+    <addaction name="actionShow_Mesh"/>
+    <addaction name="separator"/>
+    <addaction name="actionShowBackgroundSettings"/>
+   </widget>
+   <widget class="QMenu" name="menuAbout">
+    <property name="title">
+     <string>About</string>
+    </property>
+    <addaction name="actionAbout"/>
+   </widget>
+   <addaction name="menuFile"/>
+   <addaction name="menuViews"/>
+   <addaction name="menuRendering"/>
+   <addaction name="menuReconstruction"/>
+   <addaction name="menuMesh_Optimization"/>
+   <addaction name="menuFiltering"/>
+   <addaction name="menuRegistration"/>
+   <addaction name="menuClassification"/>
+   <addaction name="menuAbout"/>
+  </widget>
+  <action name="actionOpen">
+   <property name="icon">
+    <iconset resource="../res/viewer.qrc">
+     <normaloff>:/qv_import.png</normaloff>:/qv_import.png</iconset>
+   </property>
+   <property name="text">
+    <string>Open</string>
+   </property>
+  </action>
+  <action name="actionExport">
+   <property name="text">
+    <string>Export</string>
+   </property>
+  </action>
+  <action name="actionQuit">
+   <property name="text">
+    <string>Quit</string>
+   </property>
+  </action>
+  <action name="actionReset_Camera">
+   <property name="text">
+    <string>Reset Camera</string>
+   </property>
+  </action>
+  <action name="actionStore_Current_View">
+   <property name="text">
+    <string>Store Current View</string>
+   </property>
+  </action>
+  <action name="actionRecall_Stored_View">
+   <property name="text">
+    <string>Recall Stored View</string>
+   </property>
+  </action>
+  <action name="actionRemove_Outliers">
+   <property name="text">
+    <string>Remove Outliers</string>
+   </property>
+  </action>
+  <action name="actionEstimate_Normals">
+   <property name="text">
+    <string>Estimate Normals</string>
+   </property>
+  </action>
+  <action name="actionMarching_Cubes">
+   <property name="text">
+    <string>Marching Cubes</string>
+   </property>
+  </action>
+  <action name="actionPlanar_Marching_Cubes">
+   <property name="text">
+    <string>Planar Marching Cubes</string>
+   </property>
+  </action>
+  <action name="actionExtended_Marching_Cubes">
+   <property name="text">
+    <string>Extended Marching Cubes</string>
+   </property>
+  </action>
+  <action name="actionMLS_Projection">
+   <property name="text">
+    <string>MLS-Projection</string>
+   </property>
+  </action>
+  <action name="actionMesh_Optimization">
+   <property name="text">
+    <string>Mesh Optimization</string>
+   </property>
+  </action>
+  <action name="actionTexture_Generation">
+   <property name="text">
+    <string>Texture Generation</string>
+   </property>
+  </action>
+  <action name="actionPlanar_Optimization">
+   <property name="text">
+    <string>Planar Optimization</string>
+   </property>
+  </action>
+  <action name="actionRetesselate">
+   <property name="text">
+    <string>Retesselate</string>
+   </property>
+  </action>
+  <action name="actionRemove_Artifacts">
+   <property name="text">
+    <string>Remove Artifacts</string>
+   </property>
+  </action>
+  <action name="actionFill_Holes">
+   <property name="text">
+    <string>Fill Holes</string>
+   </property>
+  </action>
+  <action name="actionICP_Using_Pose_Estimations">
+   <property name="text">
+    <string>Register via ICP</string>
+   </property>
+  </action>
+  <action name="actionICP_Using_Manual_Correspondance">
+   <property name="text">
+    <string>Pick correspondences...</string>
+   </property>
+  </action>
+  <action name="actionGlobal_Relaxation">
+   <property name="text">
+    <string>Global Relaxation</string>
+   </property>
+  </action>
+  <action name="actionRecord_Path">
+   <property name="text">
+    <string>Record Path</string>
+   </property>
+  </action>
+  <action name="actionLoad_Path">
+   <property name="text">
+    <string>Load Path</string>
+   </property>
+  </action>
+  <action name="actionAnimate_Path">
+   <property name="text">
+    <string>Animate Path</string>
+   </property>
+  </action>
+  <action name="actionCameraPathTool">
+   <property name="text">
+    <string>Camera Path Tool</string>
+   </property>
+  </action>
+  <action name="actionDelete_Small_Regions">
+   <property name="text">
+    <string>Delete Small Regions</string>
+   </property>
+  </action>
+  <action name="actionSimple_Plane_Classification">
+   <property name="text">
+    <string>Simple Plane Classification</string>
+   </property>
+  </action>
+  <action name="actionFurniture_Recognition">
+   <property name="text">
+    <string>Furniture Recognition</string>
+   </property>
+  </action>
+  <action name="actionCompute_Textures">
+   <property name="text">
+    <string>Compute Textures</string>
+   </property>
+  </action>
+  <action name="actionMatch_Textures_from_Package">
+   <property name="text">
+    <string>Match Textures from Package</string>
+   </property>
+  </action>
+  <action name="actionExtract_and_Rematch_Patterns">
+   <property name="text">
+    <string>Extract and Rematch Patterns</string>
+   </property>
+  </action>
+  <action name="actionPoint_Size">
+   <property name="text">
+    <string>Point Size</string>
+   </property>
+  </action>
+  <action name="actionShow_Points">
+   <property name="checkable">
+    <bool>true</bool>
+   </property>
+   <property name="checked">
+    <bool>true</bool>
+   </property>
+   <property name="icon">
+    <iconset resource="../res/viewer.qrc">
+     <normaloff>:/qv_fog.png</normaloff>:/qv_fog.png</iconset>
+   </property>
+   <property name="text">
+    <string>Show Points</string>
+   </property>
+  </action>
+  <action name="actionShow_Wireframe">
+   <property name="checkable">
+    <bool>true</bool>
+   </property>
+   <property name="checked">
+    <bool>false</bool>
+   </property>
+   <property name="icon">
+    <iconset resource="../res/viewer.qrc">
+     <normaloff>:/qv_wireframe.png</normaloff>:/qv_wireframe.png</iconset>
+   </property>
+   <property name="text">
+    <string>Show Wireframe</string>
+   </property>
+  </action>
+  <action name="actionShow_Normals">
+   <property name="checkable">
+    <bool>true</bool>
+   </property>
+   <property name="checked">
+    <bool>true</bool>
+   </property>
+   <property name="icon">
+    <iconset resource="../res/viewer.qrc">
+     <normaloff>:/qv_pointNormals.png</normaloff>:/qv_pointNormals.png</iconset>
+   </property>
+   <property name="text">
+    <string>Show Normals</string>
+   </property>
+  </action>
+  <action name="actionShow_Mesh">
+   <property name="checkable">
+    <bool>true</bool>
+   </property>
+   <property name="checked">
+    <bool>true</bool>
+   </property>
+   <property name="icon">
+    <iconset resource="../res/viewer.qrc">
+     <normaloff>:/qv_surfaces.png</normaloff>:/qv_surfaces.png</iconset>
+   </property>
+   <property name="text">
+    <string>Show Mesh</string>
+   </property>
+  </action>
+  <action name="actionAbout">
+   <property name="text">
+    <string>About</string>
+   </property>
+  </action>
+  <action name="actionShowBackgroundSettings">
+   <property name="text">
+    <string>Background...</string>
+   </property>
+  </action>
+ </widget>
+ <customwidgets>
+  <customwidget>
+   <class>QVTKWidget</class>
+   <extends>QWidget</extends>
+   <header>QVTKWidget.h</header>
+  </customwidget>
+ </customwidgets>
+ <resources>
+  <include location="../res/viewer.qrc"/>
+ </resources>
+ <connections/>
+</ui>

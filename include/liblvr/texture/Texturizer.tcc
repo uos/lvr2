@@ -67,9 +67,15 @@ namespace lvr {
         bool Texturizer<VertexT, NormalT>::m_doAnalysis = false;
 
 template<typename VertexT, typename NormalT>
+Texturizer<VertexT, NormalT>::~Texturizer()
+{
+    //delete m_tio;
+}
+
+template<typename VertexT, typename NormalT>
 Texturizer<VertexT, NormalT>::Texturizer(typename PointsetSurface<VertexT>::Ptr pm)
 {
-	//Load texture package
+	//Load texture packamge
 	this->m_tio = new TextureIO(Texturizer::m_filename);
 	
 	this->m_pm = pm;
@@ -120,7 +126,7 @@ TextureToken<VertexT, NormalT>* Texturizer<VertexT, NormalT>::createInitialTextu
 		{
 			int r = 0;
 			int s = 0;
-			float denom = 0.01;
+			float denom = 0.01f;
 			for(int t = 0; t < 3; t++)
 			{
 				for(int u = 0; u < 3; u++)
@@ -334,18 +340,22 @@ TextureToken<VertexT, NormalT>* Texturizer<VertexT, NormalT>::texturizePlane(vec
 		initialTexture = createInitialTexture(contour);
 
 		//reset distance values
-		for (int i = 0; i < this->m_tio->m_textures.size(); i++)
+		for (int i = 0; i < m_tio->m_textures.size(); i++)
 		{
-			this->m_tio->m_textures[i]->m_distance = 0;
+			m_tio->m_textures[i]->m_distance = 0;
 		}
 		//reduce number of matching textures from the texture pack step by step
 		//std::vector<Texture*> textures = this->m_tio->m_textures;
 		std::vector<Texture*> textures;
 
 		//std::copy(this->m_tio->m_textures.begin(), this->m_tio->m_textures.end(), textures.begin());
-		for(size_t i = 0; i < this->m_tio->m_textures.size(); i++)
+		for(size_t i = 0; i < m_tio->m_textures.size(); i++)
 		{
-		    textures.push_back(this->m_tio->m_textures[i]);
+		    cout << "PUSH: " << endl;
+		    cout << m_tio << endl;
+		    cout << m_tio->m_textures[i] << endl;
+		    textures.push_back(m_tio->m_textures[i]);
+		    cout << "DONE " << endl << endl;
 		}
 
 		if (textures.size() > 0 && m_doAnalysis)
@@ -422,7 +432,7 @@ TextureToken<VertexT, NormalT>* Texturizer<VertexT, NormalT>::texturizePlane(vec
 		        ImageProcessor::calcCCV(pattern, Texturizer<VertexT, NormalT>::m_numCCVColors, Texturizer<VertexT, NormalT>::m_coherenceThreshold);
 
 		        //Add pattern to texture package
-		        int index = this->m_tio->add(pattern);
+		        size_t index = this->m_tio->add(pattern);
 		        this->m_tio->write();
 
 		        //return a texture token
@@ -487,7 +497,7 @@ void Texturizer<VertexT, NormalT>::markTexture(TextureToken<VertexT, NormalT>* t
 template<typename VertexT, typename NormalT>
 void Texturizer<VertexT, NormalT>::showTexture(TextureToken<VertexT, NormalT>* tt, string caption)
 {
-	Texture* t = tt->m_texture;
+/*	Texture* t = tt->m_texture;
 
 	for (int i = 0; i < 6; i++)
 	{
@@ -505,7 +515,7 @@ void Texturizer<VertexT, NormalT>::showTexture(TextureToken<VertexT, NormalT>* t
 	cv::imshow("Window", img);
 	cv::waitKey();
 
-	cv::destroyAllWindows();
+	cv::destroyAllWindows(); */
 }
 
 }
