@@ -43,8 +43,14 @@ using namespace std;
 using namespace tr1;
 typedef unordered_map<I32,U32> my_cell_hash;
 #else
+
+#if _MSC_VER
+#include <hash_map>
+using namespace stdext;
+#else
 #include <ext/hash_map>
 using namespace __gnu_cxx;
+#endif
 
 typedef hash_map<I32,U32> my_cell_hash;
 #endif

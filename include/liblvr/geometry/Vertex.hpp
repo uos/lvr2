@@ -88,6 +88,13 @@ class Vertex{
          */
         CoordType length();
 
+
+        /**
+         *
+         * @brief     Returns to squared length of the vector
+         */
+        CoordType length2();
+
         /**
          * @brief    Calculates the cross product between this and
          *             the given vector. Returns a new Vertex instance.

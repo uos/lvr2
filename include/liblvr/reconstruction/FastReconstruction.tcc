@@ -75,7 +75,6 @@ FastReconstruction<VertexT, NormalT>::FastReconstruction(
 
 }
 
-
 template<typename VertexT, typename NormalT>
 FastReconstruction<VertexT, NormalT>::~FastReconstruction()
 {
@@ -86,7 +85,8 @@ FastReconstruction<VertexT, NormalT>::~FastReconstruction()
     }
 
     m_cells.clear();
-};
+}
+
 
 
 template<typename VertexT, typename NormalT>
@@ -129,7 +129,7 @@ uint FastReconstruction<VertexT, NormalT>::findQueryPoint(
         }
     }
 
-    return FastBox<float, uint>::INVALID_INDEX;
+    return FastBox<VertexT, NormalT>::INVALID_INDEX;
 
 
 }
@@ -143,7 +143,7 @@ void FastReconstruction<VertexT, NormalT>::createGrid()
 	int index_x, index_y, index_z;
 	size_t hash_value;
 
-	uint INVALID = FastBox<float, uint>::INVALID_INDEX;
+	uint INVALID = FastBox<VertexT, NormalT>::INVALID_INDEX;
 
 	float vsh = 0.5 * m_voxelsize;
 
@@ -192,6 +192,7 @@ void FastReconstruction<VertexT, NormalT>::createGrid()
 			dz = HGCreateTable[j][2];
 
 			hash_value = hashValue(index_x + dx, index_y + dy, index_z +dz);
+
 
 			it = m_cells.find(hash_value);
 			if(it == m_cells.end())
@@ -247,7 +248,7 @@ void FastReconstruction<VertexT, NormalT>::createGrid()
 
 				//Set pointers to the neighbors of the current box
 				int neighbor_index = 0;
-				int neighbor_hash = 0;
+				size_t neighbor_hash = 0;
 
 				for(int a = -1; a < 2; a++)
 				{
@@ -277,13 +278,11 @@ void FastReconstruction<VertexT, NormalT>::createGrid()
 				}
 
 				m_cells[hash_value] = box;
-
 			}
 		}
 	}
 	cout << timestamp << "Finished Grid Creation. Number of generated cells:        " << m_cells.size() << endl;
 	cout << timestamp << "Finished Grid Creation. Number of generated query points: " << m_queryPoints.size() << endl;
-
 
 }
 
@@ -304,7 +303,7 @@ void FastReconstruction<VertexT, NormalT>::getMesh(BaseMesh<VertexT, NormalT> &m
 	for(it = m_cells.begin(); it != m_cells.end(); it++)
 	{
 		b = it->second;
-		b->getSurface(mesh, m_queryPoints, global_index); // >>>>> Hier ist noch ein kleines Speicherleck vorhanden. <<<<<
+		b->getSurface(mesh, m_queryPoints, global_index);
 		++progress;
 	}
 
@@ -351,8 +350,6 @@ void FastReconstruction<VertexT, NormalT>::getMesh(BaseMesh<VertexT, NormalT> &m
 	    cout << endl;
 	}
 
-
-
 }
 
 template<typename VertexT, typename NormalT>
@@ -360,7 +357,7 @@ void FastReconstruction<VertexT, NormalT>::calcQueryPointValues(){
 
     // Status message output
     string comment = timestamp.getElapsedTime() + "Calculating distance values ";
-    ProgressBar progress((int)m_queryPoints.size(), comment);
+    ProgressBar progress(m_queryPoints.size(), comment);
 
     Timestamp ts;
 

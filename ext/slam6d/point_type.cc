@@ -136,7 +136,7 @@ void PointType::serialize(std::ofstream &f) {
 unsigned int PointType::toFlags() const { return types; } 
 
 bool PointType::hasType(unsigned int type) {
-  return types & type;
+  return (types & type) == 0;
 }
 
 

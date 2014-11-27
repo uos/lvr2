@@ -170,6 +170,11 @@ public:
 	bool 	clusterPlanes() const;
 
 	/**
+	 * @brief  True if region clustering without plane optimization is required.
+	 */
+	bool 	writeClassificationResult() const;
+
+	/**
 	 * @brief	Returns the output file name
 	 */
 	string 	getInputFileName() const;
@@ -343,6 +348,9 @@ private:
     /// Whether or not the mesh should be retesselated while being finalized
 	bool						   m_generateTextures;
 
+    /// Whether or not the classifier shall dump meta data to a file 'clusters.clu'
+	bool						   m_writeClassificationResult;
+
 	/// The used point cloud manager
 	string                          m_pcm;
 
@@ -452,6 +460,14 @@ inline ostream& operator<<(ostream& os, const Options &o)
 
 	cout << "##### Voxel decomposition: \t: " << o.getDecomposition()   << endl;
 	cout << "##### Classifier:\t\t: "         << o.getClassifier()      << endl;
+	if(o.writeClassificationResult())
+	{
+	    cout << "##### Dump classification\t: YES" << endl;
+	}
+	else
+	{
+	    cout << "##### Dump classification\t: NO" << endl;
+	}
 	cout << "##### k_n \t\t\t: "              << o.getKn()              << endl;
 	cout << "##### k_i \t\t\t: "              << o.getKi()              << endl;
 	cout << "##### k_d \t\t\t: "              << o.getKd()              << endl;

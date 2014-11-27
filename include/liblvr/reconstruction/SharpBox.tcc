@@ -28,10 +28,10 @@ namespace lvr
 {
 
 template<typename VertexT, typename NormalT>
-float SharpBox<VertexT, NormalT>::m_theta_sharp = 0.9;
+float SharpBox<VertexT, NormalT>::m_theta_sharp = 0.9f;
 
 template<typename VertexT, typename NormalT>
-float SharpBox<VertexT, NormalT>::m_phi_corner = 0.7;
+float SharpBox<VertexT, NormalT>::m_phi_corner = 0.7f;
 
 template<typename VertexT, typename NormalT>
 SharpBox<VertexT, NormalT>::SharpBox(VertexT v, typename PointsetSurface<VertexT>::Ptr surface) : FastBox<VertexT, NormalT>(v)

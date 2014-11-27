@@ -61,8 +61,6 @@ uchar ColorGradientPlaneClassifier<VertexT, NormalT>::b(int i)
 	return tmp;
 }
 
-
-
 template<typename VertexT, typename NormalT>
 uchar* ColorGradientPlaneClassifier<VertexT, NormalT>::getColor(int i)
 {
@@ -72,7 +70,7 @@ uchar* ColorGradientPlaneClassifier<VertexT, NormalT>::getColor(int i)
 	c[2] = 0;
 
 	Region<VertexT, NormalT>* r = 0;
-	if(i < this->m_regions->size())
+	if((unsigned int) i < this->m_regions->size())
 	{
 		r = this->m_regions->at(i);
 	}
@@ -86,6 +84,7 @@ uchar* ColorGradientPlaneClassifier<VertexT, NormalT>::getColor(int i)
 			c[i] = (uchar)(fc[i] * 255);
 		}
 	}
+
 
 	return c;
 }

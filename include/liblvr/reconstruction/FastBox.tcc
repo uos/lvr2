@@ -137,9 +137,9 @@ float FastBox<VertexT, NormalT>::calcIntersection(float x1, float x2, float d1, 
 }
 
 template<typename VertexT, typename NormalT>
-void FastBox<VertexT, NormalT>::getIntersections(VertexT corners[],
-                                                 float distance[],
-                                                 VertexT positions[])
+void FastBox<VertexT, NormalT>::getIntersections(VertexT* corners,
+                                                 float* distance,
+                                                 VertexT* positions)
 {
     //float d1, d2;
     //d1 = 
@@ -147,7 +147,9 @@ void FastBox<VertexT, NormalT>::getIntersections(VertexT corners[],
 
     float intersection;
 
-    intersection = calcIntersection(corners[0][0], corners[1][0], distance[0], distance[1]);
+	VertexT v1 = corners[0];
+
+    intersection = calcIntersection( (corners[0])[0], (corners[1])[0], distance[0], distance[1]);
     positions[0] = VertexT(intersection, corners[0][1], corners[0][2]);
 
     intersection = calcIntersection(corners[1][1], corners[2][1], distance[1], distance[2]);

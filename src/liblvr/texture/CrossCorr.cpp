@@ -24,11 +24,12 @@
  *  @author Kim Rinnewitz (krinnewitz@uos.de)
  */
 
-#include <opencv/highgui.h>
+//#include <opencv2/highgui/highgui.hpp>
 #include <opencv/cv.h>
 #include "texture/CrossCorr.hpp"
 
 namespace lvr {
+
 CrossCorr::CrossCorr(Texture *t1, Texture* t2)
 {
 	//convert texture to cv::Mat
@@ -147,15 +148,15 @@ double CrossCorr::getMax(unsigned int &resX, unsigned int &resY)
 
 float CrossCorr::at(unsigned int x, unsigned int y)
 {
-	//cout << m_crosscorr.rows << " " << m_crosscorr.cols << " " << x << " " << y << endl; 
-if(x < m_crosscorr.cols && y < m_crosscorr.rows)
-{
-	return m_crosscorr.at<float>(y, x);
-}
-	else
-{
-	return 0;
-}
+    //cout << x << " " << y << " " << m_crosscorr.size().width << " "<< m_crosscorr.size().height << endl;
+    if(x < m_crosscorr.size().width && y <  m_crosscorr.size().height)
+    {
+        return m_crosscorr.at<float>(y, x);
+    }
+    else
+    {
+        return 0.0;
+    }
 }
 
 void CrossCorr::getCCX(float* &output)

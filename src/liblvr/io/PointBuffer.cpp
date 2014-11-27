@@ -45,7 +45,7 @@ PointBuffer::PointBuffer() :
         /* coordf must be the exact size of three floats to cast the float
          * array to a coordf array. */
         assert( 3 * sizeof(float) == sizeof(coord<float>) );
-        assert( 3 * sizeof(uchar) == sizeof(color<uchar>) );
+        assert( 3 * sizeof(unsigned char) == sizeof(color<unsigned char>) );
         assert( sizeof(float) == sizeof(idxVal<float>) );
 
         m_points.reset();

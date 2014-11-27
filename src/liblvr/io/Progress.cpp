@@ -37,33 +37,74 @@ using std::flush;
 namespace lvr
 {
 
-ProgressBar::ProgressBar(int max_val, string prefix)
+#ifdef __WITH_QT4__
+bool ProgressBar::m_useDialog = false;
+
+void ProgressBar::enableDialog()
+{
+    m_useDialog = true;
+}
+
+void ProgressBar::disableDialog()
+{
+    m_useDialog = false;
+}
+
+#endif
+
+ProgressBar::ProgressBar(size_t max_val, string prefix)
 {
 	m_prefix = prefix;
 	m_maxVal = max_val;
-	m_currentVal = 0;
-	m_stepSize = max_val / 100;
+    m_currentVal = 0;
 	m_percent = 0;
+#ifdef __WITH_QT4__
+	m_dialog = 0;
+	if(m_useDialog)
+	{
+	   // m_dialog = new QProgressDialog(QString(prefix.c_str()), "Cancel", 0, 100);
+	}
+#endif
 }
+
+#ifdef __WITH_QT4__
+ProgressBar::~ProgressBar()
+{
+    if(m_useDialog && m_dialog)
+    {
+        delete m_dialog;
+    }
+}
+#endif
 
 void ProgressBar::operator++()
 {
-	boost::mutex::scoped_lock lock(m_mutex);
-	m_currentVal++;
-	if(m_currentVal >= m_stepSize)
-	{
-		m_currentVal = 0;
-		print_bar();
-	}
+    boost::mutex::scoped_lock lock(m_mutex);
+    m_currentVal++;
+    short difference = (short)((float)m_currentVal/m_maxVal * 100 - m_percent);
+    if (difference < 1)
+    {
+        return;
+    }
+
+    while (difference >= 1)
+    {
+        m_percent++;
+        difference--;
+        print_bar();
+#ifdef __WITH_QT4__
+        if(m_dialog != 0)
+        {
+            //m_dialog->setValue(m_percent);
+        }
+#endif
+    }
 }
 
 void ProgressBar::print_bar()
 {
-	m_percent += 1;
 	cout <<  "\r" << m_prefix << " " << m_percent << "%" << flush;
 }
-
-
 
 ProgressCounter::ProgressCounter(int stepVal, string prefix)
 {

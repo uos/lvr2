@@ -31,7 +31,7 @@ template<typename VertexT, typename NormalT>
 void HalfEdgeVertex<VertexT, NormalT>::calcQuadric(Matrix4<float> &q, bool use_tri)
 {
 	// Get adjacent faces
-	list<HFace*> adj_faces;
+	list<FacePtr> adj_faces;
 	getAdjacentFaces(adj_faces);
 
 	// Init quadric data
@@ -39,10 +39,10 @@ void HalfEdgeVertex<VertexT, NormalT>::calcQuadric(Matrix4<float> &q, bool use_t
 	for(int i = 0; i < 16; i++) data[i] = 0;
 
 	// Calculate quadric entries
-	typename list<HFace*>::iterator it;
+	typename list<FacePtr>::iterator it;
 	for(it = adj_faces.begin(); it != adj_faces.end(); it++)
 	{
-		HFace* f = *it;
+		FacePtr f = *it;
 
 		float triangle_area = 1;
 		if(use_tri)
@@ -82,10 +82,10 @@ void HalfEdgeVertex<VertexT, NormalT>::calcQuadric(Matrix4<float> &q, bool use_t
 
 
 template<typename VertexT, typename NormalT>
-void HalfEdgeVertex<VertexT, NormalT>::getAdjacentFaces(list<HalfEdgeFace<VertexT, NormalT>* > &adj )
+void HalfEdgeVertex<VertexT, NormalT>::getAdjacentFaces(list<FacePtr> &adj )
 {
-	set<HFace*> adj_faces;
-	typename vector<HEdge*>::iterator it;
+	set<FacePtr> adj_faces;
+	typename vector<EdgePtr>::iterator it;
 
 	// Iterate over incoming edges and get all surrounding faces.
 	// In a correctly linked  mesh it shouldn't be necessary to
@@ -93,26 +93,26 @@ void HalfEdgeVertex<VertexT, NormalT>::getAdjacentFaces(list<HalfEdgeFace<Vertex
 
 	for(it = out.begin(); it != out.end(); it++)
 	{
-		HEdge* e = *it;
+		EdgePtr e = *it;
 		if(e)
 		{
-			if(e->face)
+			if(e->face())
 			{
-				adj_faces.insert(e->face);
+				adj_faces.insert(e->face());
 			}
 
-			if(e->pair)
+			if(e->pair())
 			{
-				if(e->pair->face)
+				if(e->pair()->face())
 				{
-					adj_faces.insert(e->pair->face);
+					adj_faces.insert(e->pair()->face());
 				}
 			}
 		}
 	}
 
 	// Copy pointers to out list
-	typename set<HFace*>::iterator sit;
+	typename set<FacePtr>::iterator sit;
 	for(sit = adj_faces.begin(); sit != adj_faces.end(); sit++)
 	{
 		adj.push_back(*sit);
@@ -122,13 +122,13 @@ void HalfEdgeVertex<VertexT, NormalT>::getAdjacentFaces(list<HalfEdgeFace<Vertex
 template<typename VertexT, typename NormalT>
 bool HalfEdgeVertex<VertexT, NormalT>::isBorderVertex()
 {
-	list<HalfEdgeFace<VertexT, NormalT>* > adj;
-	typename list<HalfEdgeFace<VertexT, NormalT>* >::iterator it;
+	list<FacePtr> adj;
+	typename list<FacePtr>::iterator it;
 	getAdjacentFaces(adj);
 
 	for(it = adj.begin(); it != adj.end(); it++)
 	{
-		HalfEdgeFace<VertexT, NormalT>* f = *it;
+		FacePtr f = *it;
 		if(f->isBorderFace())
 		{
 			return false;
@@ -138,7 +138,7 @@ bool HalfEdgeVertex<VertexT, NormalT>::isBorderVertex()
 }
 
 template<typename VertexT, typename NormalT>
-HalfEdge< HalfEdgeVertex<VertexT, NormalT>, HalfEdgeFace<VertexT, NormalT> >*  HalfEdgeVertex<VertexT, NormalT>::getShortestEdge()
+HalfEdge< HalfEdgeVertex<VertexT, NormalT>, HalfEdgeFace<VertexT, NormalT> >* HalfEdgeVertex<VertexT, NormalT>::getShortestEdge()
 {
 	HEdge* shortest = 0;
 	float s_length = numeric_limits<float>::max();
@@ -147,8 +147,8 @@ HalfEdge< HalfEdgeVertex<VertexT, NormalT>, HalfEdgeFace<VertexT, NormalT> >*  H
 	for(it = in.begin(); it != in.end(); it++)
 	{
 		HEdge* e = *it;
-		VertexT v1 = e->start->m_position;
-		VertexT v2 = e->end->m_position;
+		VertexT v1 = e->start()->m_position;
+		VertexT v2 = e->end()->m_position;
 		float length = (v1 - v2).length();
 
 		if(shortest == 0 || length < s_length )

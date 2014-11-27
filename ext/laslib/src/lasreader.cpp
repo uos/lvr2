@@ -761,7 +761,7 @@ BOOL LASreadOpener::parse(int argc, char* argv[])
       while (fgets(line, 1024, file))
       {
         // find end of line
-        int len = strlen(line) - 1;
+        size_t len = strlen(line) - 1;
         // remove extra white spaces and line return at the end 
         while (len > 0 && ((line[len] == '\n') || (line[len] == ' ') || (line[len] == '\t') || (line[len] == '\012')))
         {
@@ -1072,7 +1072,7 @@ void LASreadOpener::add_file_name_windows(const char* file_name, BOOL unique)
   if (h != INVALID_HANDLE_VALUE)
   {
     // find the path
-    int len = strlen(file_name);
+    size_t len = strlen(file_name);
     while (len && file_name[len] != '\\') len--;
     if (len)
     {
