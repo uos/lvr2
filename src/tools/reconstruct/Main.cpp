@@ -144,6 +144,9 @@
 // Local includes
 #include "reconstruction/AdaptiveKSearchSurface.hpp"
 #include "reconstruction/FastReconstruction.hpp"
+#include "reconstruction/PointsetGrid.hpp"
+#include "reconstruction/FastBox.hpp"
+
 #include "io/PLYIO.hpp"
 #include "geometry/Matrix4.hpp"
 #include "geometry/HalfEdgeMesh.hpp"
@@ -372,15 +375,15 @@ int main(int argc, char** argv)
 			useVoxelsize = true;
 		}
 
-		// Create a new reconstruction object
+		// Create a point set grid for reconstruction
+		PointsetGrid<ColorVertex<float, unsigned char>, FastBox<ColorVertex<float, unsigned char>, Normal<float> > > grid(resolution, surface, useVoxelsize);
+		grid.calcDistanceValues();
+		grid.setExtrusion(options.extrude());
 
-		FastReconstruction<ColorVertex<float, unsigned char> , Normal<float>  > reconstruction(
-				surface,
-				resolution,
-				useVoxelsize,
-				options.getDecomposition(),
-				options.extrude());
-		
+
+		// Create a new reconstruction object
+		FastReconstruction<ColorVertex<float, unsigned char> , Normal<float>, FastBox<ColorVertex<float, unsigned char>, Normal<float> >  > reconstruction(&grid);
+
 		
 		// Create mesh
 		 reconstruction.getMesh(mesh); // kleines Speicherleck noch vorhanden
@@ -388,7 +391,7 @@ int main(int argc, char** argv)
 		// Save grid to file
 		if(options.saveGrid())
 		{
-			reconstruction.saveGrid("fastgrid.grid");
+			grid.saveGrid("fastgrid.grid");
 		}
 
 		if(options.getDanglingArtifacts())

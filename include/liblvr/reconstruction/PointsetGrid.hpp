@@ -19,15 +19,27 @@ template<typename VertexT, typename BoxT>
 class PointsetGrid: public HashGrid<VertexT, BoxT>
 {
 public:
-	PointsetGrid(float cellSize, BoundingBox<VertexT> boundingBox, typename PointsetSurface<VertexT>::Ptr surface, bool isVoxelsize = true);
+	PointsetGrid(float cellSize, typename PointsetSurface<VertexT>::Ptr surface, bool isVoxelsize = true);
 	virtual ~PointsetGrid();
 
 	void calcDistanceValues();
 
 private:
+
+    /**
+     * @brief Rounds the given value to the neares integer value
+     */
+    inline int calcIndex(float f)
+    {
+        return f < 0 ? f-.5:f+.5;
+    }
+
 	typename PointsetSurface<VertexT>::Ptr		m_surface;
 };
 
 } /* namespace lvr */
+
+#include "PointsetGrid.tcc"
+
 
 #endif /* INCLUDE_LIBLVR_RECONSTRUCTION_POINTSETGRID_HPP_ */

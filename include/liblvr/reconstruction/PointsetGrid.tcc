@@ -11,13 +11,13 @@ namespace lvr
 {
 
 template<typename VertexT, typename BoxT>
-PointsetGrid<VertexT, BoxT>::PointsetGrid(float cellSize, BoundingBox<VertexT> boundingBox, typename PointsetSurface<VertexT>::Ptr surface, bool isVoxelsize = true)
-	: HashGrid<VertexT, BoxT>(cellSize, boundingBox, isVoxelsize)
+PointsetGrid<VertexT, BoxT>::PointsetGrid(float cellSize, typename PointsetSurface<VertexT>::Ptr surface, bool isVoxelsize)
+	: HashGrid<VertexT, BoxT>(cellSize, surface->getBoundingBox(), isVoxelsize)
 {
 	PointBufferPtr buffer = surface->pointBuffer();
 
-	VertexT v_min = m_boundingBox.getMin();
-	VertexT v_max = m_boundingBox.getMax();
+	VertexT v_min = this->m_boundingBox.getMin();
+	VertexT v_max = this->m_boundingBox.getMax();
 
 	// Get indexed point buffer pointer
 	size_t num_points;
@@ -30,10 +30,10 @@ PointsetGrid<VertexT, BoxT>::PointsetGrid(float cellSize, BoundingBox<VertexT> b
 	// Iterator over all points, calc lattice indices and add lattice points to the grid
 	for(size_t i = 0; i < num_points; i++)
 	{
-		index_x = calcIndex((points[i][0] - v_min[0]) / m_voxelsize);
-		index_y = calcIndex((points[i][1] - v_min[1]) / m_voxelsize);
-		index_z = calcIndex((points[i][2] - v_min[2]) / m_voxelsize);
-		addLatticePoint(index_x, index_y, index_z);
+		index_x = calcIndex((points[i][0] - v_min[0]) / this->m_voxelsize);
+		index_y = calcIndex((points[i][1] - v_min[1]) / this->m_voxelsize);
+		index_z = calcIndex((points[i][2] - v_min[2]) / this->m_voxelsize);
+		this->addLatticePoint(index_x, index_y, index_z);
 	}
 
 	cout << endl;
@@ -41,28 +41,28 @@ PointsetGrid<VertexT, BoxT>::PointsetGrid(float cellSize, BoundingBox<VertexT> b
 }
 
 template<typename VertexT, typename BoxT>
-void PointsetGrid<VertexT, BoxT>::calcQueryPointValues()
+void PointsetGrid<VertexT, BoxT>::calcDistanceValues()
 {
 	// Status message output
 	string comment = timestamp.getElapsedTime() + "Calculating distance values ";
-	ProgressBar progress(m_queryPoints.size(), comment);
+	ProgressBar progress(this->m_queryPoints.size(), comment);
 
 	Timestamp ts;
 
 	// Calculate a distance value for each query point
 #pragma omp parallel for
-	for( int i = 0; i < (int)m_queryPoints.size(); i++){
+	for( int i = 0; i < (int)this->m_queryPoints.size(); i++){
 		float projectedDistance;
 		float euklideanDistance;
 
 		//cout << euklideanDistance << " " << projectedDistance << endl;
 
-		this->m_surface->distance(m_queryPoints[i].m_position, projectedDistance, euklideanDistance);
-		if (euklideanDistance > 1.7320 * m_voxelsize)
+		this->m_surface->distance(this->m_queryPoints[i].m_position, projectedDistance, euklideanDistance);
+		if (euklideanDistance > 1.7320 * this->m_voxelsize)
 		{
-			m_queryPoints[i].m_invalid = true;
+			this->m_queryPoints[i].m_invalid = true;
 		}
-		m_queryPoints[i].m_distance = projectedDistance;
+		this->m_queryPoints[i].m_distance = projectedDistance;
 		++progress;
 	}
 	cout << endl;

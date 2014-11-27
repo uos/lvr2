@@ -34,7 +34,7 @@
  */
 #include "HashGrid.hpp"
 #include "geometry/BaseMesh.hpp"
-#include "HashGridTables.hpp"
+#include "FastReconstructionTables.hpp"
 #include "SharpBox.hpp"
 #include "io/Progress.hpp"
 
@@ -55,7 +55,7 @@ HashGrid<VertexT, BoxT>::HashGrid(float cellSize, BoundingBox<VertexT> boundingB
 
 	if(!isVoxelsize)
 	{
-		m_voxelsize = (float) m_boundingBox.getLongestSide() / resolution;
+		m_voxelsize = (float) m_boundingBox.getLongestSide() / cellSize;
 	}
 	else
 	{
@@ -102,7 +102,7 @@ void HashGrid<VertexT, BoxT>::calcIndices()
 }
 
 template<typename VertexT, typename BoxT>
-unsigned int HashGrid<VertexT, typename BoxT>::findQueryPoint(
+unsigned int HashGrid<VertexT, BoxT>::findQueryPoint(
 		const int &position, const int &x, const int &y, const int &z)
 		{
 	int n_x, n_y, n_z, q_v, offset;
@@ -129,7 +129,7 @@ unsigned int HashGrid<VertexT, typename BoxT>::findQueryPoint(
 		}
 
 template<typename VertexT, typename BoxT>
-void HashGrid<VertexT, BoxT>::addLatticePoint(size_t index_x, size_t index_y, size_t index_z, float distance = 0.0)
+void HashGrid<VertexT, BoxT>::addLatticePoint(size_t index_x, size_t index_y, size_t index_z, float distance)
 {
 	size_t hash_value;
 
@@ -154,84 +154,86 @@ void HashGrid<VertexT, BoxT>::addLatticePoint(size_t index_x, size_t index_y, si
 
 	int e;
 	m_extrude ? e = 8 : e = 1;
-
-	// Get the grid offsets for the neighboring grid position
-	// for the given box corner
-	dx = HGCreateTable[j][0];
-	dy = HGCreateTable[j][1];
-	dz = HGCreateTable[j][2];
-
-	hash_value = hashValue(index_x + dx, index_y + dy, index_z +dz);
-
-
-	it = m_cells.find(hash_value);
-	if(it == m_cells.end())
+	for(int j = 0; j < e; j++)
 	{
-		//Calculate box center
-		VertexT box_center(
-				(index_x + dx) * m_voxelsize + v_min[0],
-				(index_y + dy) * m_voxelsize + v_min[1],
-				(index_z + dz) * m_voxelsize + v_min[2]);
+		// Get the grid offsets for the neighboring grid position
+		// for the given box corner
+		dx = HGCreateTable[j][0];
+		dy = HGCreateTable[j][1];
+		dz = HGCreateTable[j][2];
 
-		//Create new box
-		BoxT* box = new BoxT(box_center);
+		hash_value = hashValue(index_x + dx, index_y + dy, index_z +dz);
 
-		//Setup the box itself
-		for(int k = 0; k < 8; k++){
 
-			//Find point in Grid
-			current_index = findQueryPoint(k, index_x + dx, index_y + dy, index_z + dz);
-
-			//If point exist, save index in box
-			if(current_index != INVALID) box->setVertex(k, current_index);
-
-			//Otherwise create new grid point and associate it with the current box
-			else
-			{
-				VertexT position(box_center[0] + box_creation_table[k][0] * vsh,
-						box_center[1] + box_creation_table[k][1] * vsh,
-						box_center[2] + box_creation_table[k][2] * vsh);
-
-				m_queryPoints.push_back(QueryPoint<VertexT>(position));
-
-				box->setVertex(k, m_globalIndex);
-				m_globalIndex++;
-
-			}
-		}
-
-		//Set pointers to the neighbors of the current box
-		int neighbor_index = 0;
-		size_t neighbor_hash = 0;
-
-		for(int a = -1; a < 2; a++)
+		it = m_cells.find(hash_value);
+		if(it == m_cells.end())
 		{
-			for(int b = -1; b < 2; b++)
-			{
-				for(int c = -1; c < 2; c++)
+			//Calculate box center
+			VertexT box_center(
+					(index_x + dx) * m_voxelsize + v_min[0],
+					(index_y + dy) * m_voxelsize + v_min[1],
+					(index_z + dz) * m_voxelsize + v_min[2]);
+
+			//Create new box
+			BoxT* box = new BoxT(box_center);
+
+			//Setup the box itself
+			for(int k = 0; k < 8; k++){
+
+				//Find point in Grid
+				current_index = findQueryPoint(k, index_x + dx, index_y + dy, index_z + dz);
+
+				//If point exist, save index in box
+				if(current_index != INVALID) box->setVertex(k, current_index);
+
+				//Otherwise create new grid point and associate it with the current box
+				else
 				{
+					VertexT position(box_center[0] + box_creation_table[k][0] * vsh,
+							box_center[1] + box_creation_table[k][1] * vsh,
+							box_center[2] + box_creation_table[k][2] * vsh);
 
-					//Calculate hash value for current neighbor cell
-					neighbor_hash = hashValue(index_x + dx + a,
-							index_y + dy + b,
-							index_z + dz + c);
+					m_queryPoints.push_back(QueryPoint<VertexT>(position));
 
-					//Try to find this cell in the grid
-					neighbor_it = m_cells.find(neighbor_hash);
+					box->setVertex(k, m_globalIndex);
+					m_globalIndex++;
 
-					//If it exists, save pointer in box
-					if(neighbor_it != m_cells.end())
-					{
-						box->setNeighbor(neighbor_index, (*neighbor_it).second);
-						(*neighbor_it).second->setNeighbor(26 - neighbor_index, box);
-					}
-
-					neighbor_index++;
 				}
 			}
-		}
 
-		m_cells[hash_value] = box;
+			//Set pointers to the neighbors of the current box
+			int neighbor_index = 0;
+			size_t neighbor_hash = 0;
+
+			for(int a = -1; a < 2; a++)
+			{
+				for(int b = -1; b < 2; b++)
+				{
+					for(int c = -1; c < 2; c++)
+					{
+
+						//Calculate hash value for current neighbor cell
+						neighbor_hash = hashValue(index_x + dx + a,
+								index_y + dy + b,
+								index_z + dz + c);
+
+						//Try to find this cell in the grid
+						neighbor_it = m_cells.find(neighbor_hash);
+
+						//If it exists, save pointer in box
+						if(neighbor_it != m_cells.end())
+						{
+							box->setNeighbor(neighbor_index, (*neighbor_it).second);
+							(*neighbor_it).second->setNeighbor(26 - neighbor_index, box);
+						}
+
+						neighbor_index++;
+					}
+				}
+			}
+
+			m_cells[hash_value] = box;
+		}
 	}
 
 }
@@ -270,8 +272,8 @@ void HashGrid<VertexT, BoxT>::saveGrid(string filename)
 		}
 
 		// Write box definitions
-		typename unordered_map<size_t, FastBox<VertexT, BoxT>* >::iterator it;
-		FastBox<VertexT, BoxT>* box;
+		typename unordered_map<size_t, BoxT* >::iterator it;
+		BoxT* box;
 		for(it = m_cells.begin(); it != m_cells.end(); it++)
 		{
 			box = it->second;
