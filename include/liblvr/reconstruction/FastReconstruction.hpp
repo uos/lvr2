@@ -37,16 +37,17 @@
 #include "reconstruction/QueryPoint.hpp"
 #include "reconstruction/PointsetSurface.hpp"
 
-//#include <ext/hash_map>
-//using namespace __gnu_cxx;
-
-#if _MSC_VER
+/*#if _MSC_VER
 #include <hash_map>
 using namespace stdext;
 #else
 #include <ext/hash_map>
 using namespace __gnu_cxx;
-#endif
+#endif */
+
+#include <unordered_map>
+using std::unordered_map;
+
 namespace lvr
 {
 
@@ -171,7 +172,7 @@ private:
     size_t                      m_maxIndexZ;
 
     /// A hahs map to store the created grid cells
-    hash_map<size_t, FastBox<VertexT, NormalT>* >  m_cells;
+    unordered_map<size_t, FastBox<VertexT, NormalT>* >  m_cells;
 
     /// A vector containing the query points for the reconstruction
     vector<QueryPoint<VertexT> > m_queryPoints;
