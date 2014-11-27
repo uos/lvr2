@@ -1,162 +1,287 @@
 /*
- * HashGrid.hpp
+ * HashGrid.cpp
  *
  *  Created on: Nov 27, 2014
  *      Author: twiemann
  */
 
-#ifndef _HASHGRID_HPP_
-#define _HASHGRID_HPP_
 
-#include <unordered_map>
-#include <vector>
-#include <string>
 
-#include "reconstruction/QueryPoint.hpp"
-#include "geometry/BoundingBox.hpp"
+/* Copyright (C) 2011 Uni Osnabrück
+ * This file is part of the LAS VEGAS Reconstruction Toolkit,
+ *
+ * LAS VEGAS is free software; you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation; either version 2 of the License, or
+ * (at your option) any later version.
+ *
+ * LAS VEGAS is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program; if not, write to the Free Software
+ * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA
+ */
 
-using std::string;
-using std::vector;
-using std::unordered_map;
+
+/*
+ * HashGrid.cpp
+ *
+ *  Created on: 16.02.2011
+ *      Author: Thomas Wiemann
+ */
+#include "HashGrid.hpp"
+#include "geometry/BaseMesh.hpp"
+#include "HashGridTables.hpp"
+#include "SharpBox.hpp"
+#include "io/Progress.hpp"
 
 namespace lvr
 {
 
 template<typename VertexT, typename BoxT>
-class HashGrid
+HashGrid<VertexT, BoxT>::HashGrid(float cellSize, BoundingBox<VertexT> boundingBox, bool isVoxelsize) :
+	m_extrude(true),
+	m_boundingBox(boundingBox),
+	m_globalIndex(0)
 {
-public:
 
-	/// Typedef to alias box map
-	typedef unordered_map<size_t, BoxT*> 			box_map;
+	if(!m_boundingBox.isValid())
+	{
+		cout << timestamp << "Waring: Malformed BoundingBox." << endl;
+	}
 
-	/// Typedef to alias iterators for box maps
-	typedef unordered_map<size_t, BoxT*>::iterator  box_map_it;
+	if(!isVoxelsize)
+	{
+		m_voxelsize = (float) m_boundingBox.getLongestSide() / resolution;
+	}
+	else
+	{
+		m_voxelsize = cellSize;
+	}
 
-	/***
-	 * @brief	Constructor
-	 *
-	 * If set to true, cell size is interpreted as
-	 * absolute voxel size (default). Otherwise \ref cellSize
-	 * is interpreted as number of intersections along the
-	 * longest size of the given bounding box to estimate a suitable
-	 * resolution.
-	 *
-	 * @param 	cellSize		Voxel size of the grid cells
-	 * @param	isVoxelSize		Whether to interpret \ref cellSize as voxelsize or intersections
-	 */
-	HashGrid(float cellSize, BoundingBox<VertexT> boundingBox, bool isVoxelSize = true);
+	cout << timestamp << "Used voxelsize is " << m_voxelsize << endl;
 
-	/**
-	 *
-	 * @param i 		Discrete x position within the grid.
-	 * @param j			Discrete y position within the grid.
-	 * @param k			Discrete z position within the grid.
-	 * @param distance	Signed distance to the represented surface
-	 * 					at the position within the grid.
-	 */
-	void addLatticePoint(size_t i, size_t j, size_t k, float distance = 0.0);
+	if(!m_extrude)
+	{
+		cout << timestamp << "Grid is not extruded." << endl;
+	}
 
-	/**
-	 * @brief	Saves a representation of the grid to the given file
-	 *
-	 * @param file		Output file name.
-	 */
-	void saveGrid(string file);
+	BoxT::m_voxelsize = m_voxelsize;
+	calcIndices();
+}
 
-	/***
-	 * @brief	Is extrude is set to true, additional cells within the
-	 * 			grid will be create to fill up holes consisting of single
-	 * 			cells.
-	 *
-	 * @param extrude	If set to true, additional cells will be created.
-	 * 					Default value is true.
-	 */
-	void setExtrusion(bool extrude) {m_extrude = extrude;}
+template<typename VertexT, typename BoxT>
+HashGrid<VertexT, BoxT>::~HashGrid()
+{
+	box_map_it iter;
+	for(iter = m_cells.begin(); iter != m_cells.end(); iter++)
+	{
+		delete ((*iter).second);
+	}
 
-	/***
-	 * @brief 	Returns the number of generated cells.
-	 */
-	size_t getNumberOfCells() {return m_cells.size();}
-
-	/**
-	 * @return	Returns an iterator to the first box in the cell map.
-	 */
-	box_map_it	first() {return m_cells.begin();}
-
-	/**
-	 * @return 	Returns an iterator to the last box in the cell map.
-	 */
-	box_map_it	last() {return m_cells.end();}
+	m_cells.clear();
+}
 
 
-	/***
-	 * @brief	Destructor
-	 */
-	virtual ~HashGrid();
 
-private:
+template<typename VertexT, typename BoxT>
+void HashGrid<VertexT, BoxT>::calcIndices()
+{
+	float max_size = m_boundingBox.getLongestSide();
 
-	/***
-	 * @brief	Searches for a existing shared lattice point in the grid.
-	 *
-	 * @param position	Number of a possible neighbor
-	 * @param x			x index within the grid
-	 * @param y			y index within the grid
-	 * @param z			z index within the grid
-	 * @return			Query point index of the found point, INVALID_INDEX otherwise
-	 */
-	unsigned int findQueryPoint(
-			const int &position,
-			const int &x,
-			const int &y,
-			const int &z);
+	//Save needed grid parameters
+	m_maxIndex = (int)ceil( (max_size + 5 * m_voxelsize) / m_voxelsize);
+	m_maxIndexSquare = m_maxIndex * m_maxIndex;
 
-    /**
-     * @brief Calculates the hash value for the given index triple
-     */
-    inline size_t hashValue(int i, int j, int k) const
-    {
-        return i * m_maxIndexSquare + j * m_maxIndex + k;
-    }
+	m_maxIndexX = (int)ceil(m_boundingBox.getXSize() / m_voxelsize) + 1;
+	m_maxIndexY = (int)ceil(m_boundingBox.getYSize() / m_voxelsize) + 2;
+	m_maxIndexZ = (int)ceil(m_boundingBox.getZSize() / m_voxelsize) + 3;
+}
 
-	/// Map to handle the boxes in the grid
-	box_map			m_cells;
+template<typename VertexT, typename BoxT>
+unsigned int HashGrid<VertexT, typename BoxT>::findQueryPoint(
+		const int &position, const int &x, const int &y, const int &z)
+		{
+	int n_x, n_y, n_z, q_v, offset;
+	box_map_it it;
 
-	/// The voxelsize used for reconstruction
-	float                  		m_voxelsize;
+	for(int i = 0; i < 7; i++){
+		offset = i * 4;
+		n_x = x + shared_vertex_table[position][offset];
+		n_y = y + shared_vertex_table[position][offset + 1];
+		n_z = z + shared_vertex_table[position][offset + 2];
+		q_v = shared_vertex_table[position][offset + 3];
 
-	/// The absolute maximal index of the reconstruction grid
-	size_t                      m_maxIndex;
+		size_t hash = hashValue(n_x, n_y, n_z);
 
-	/// The squared maximal index of the reconstruction grid
-	size_t                      m_maxIndexSquare;
+		it = m_cells.find(hash);
+		if(it != m_cells.end())
+		{
+			BoxT* b = it->second;
+			if(b->getVertex(q_v) != BoxT::INVALID_INDEX) return b->getVertex(q_v);
+		}
+	}
 
-	/// The maximal index in x direction
-	size_t                      m_maxIndexX;
+	return BoxT::INVALID_INDEX;
+		}
 
-	/// The maximal index in y direction
-	size_t                      m_maxIndexY;
+template<typename VertexT, typename BoxT>
+void HashGrid<VertexT, BoxT>::addLatticePoint(size_t index_x, size_t index_y, size_t index_z, float distance = 0.0)
+{
+	size_t hash_value;
 
-	/// The maximal index in z direction
-	size_t                      m_maxIndexZ;
+	unsigned int INVALID = FastBox<VertexT, BoxT>::INVALID_INDEX;
 
-    /// A vector containing the query points for the reconstruction
-    vector<QueryPoint<VertexT> > m_queryPoints;
+	float vsh = 0.5 * m_voxelsize;
 
-    /// True if a local tetraeder decomposition is used for reconstruction
-    string                      m_boxType;
+	// Some iterators for hash map accesses
+	box_map_it it;
+	box_map_it neighbor_it;
 
-    /// True if we want to create extra boxes at the end of the grid
-    bool                        m_extrude;
+	// Values for current and global indices. Current refers to a
+	// already present query point, global index is id that the next
+	// created query point will get
+	unsigned int current_index = 0;
 
-    /// Bounding box of the covered volume
-    BoundingBox<VertexT>		m_boundingBox;
+	int dx, dy, dz;
 
-    /// The maximum used cell index within the grid
-    unsigned int				m_globalIndex;
-};
+	// Get min and max vertex of the point clouds bounding box
+	VertexT v_min = m_boundingBox.getMin();
+	VertexT v_max = m_boundingBox.getMax();
 
-} /* namespace lvr */
+	int e;
+	m_extrude ? e = 8 : e = 1;
 
-#endif /* _HASHGRID_HPP_ */
+	// Get the grid offsets for the neighboring grid position
+	// for the given box corner
+	dx = HGCreateTable[j][0];
+	dy = HGCreateTable[j][1];
+	dz = HGCreateTable[j][2];
+
+	hash_value = hashValue(index_x + dx, index_y + dy, index_z +dz);
+
+
+	it = m_cells.find(hash_value);
+	if(it == m_cells.end())
+	{
+		//Calculate box center
+		VertexT box_center(
+				(index_x + dx) * m_voxelsize + v_min[0],
+				(index_y + dy) * m_voxelsize + v_min[1],
+				(index_z + dz) * m_voxelsize + v_min[2]);
+
+		//Create new box
+		BoxT* box = new BoxT(box_center);
+
+		//Setup the box itself
+		for(int k = 0; k < 8; k++){
+
+			//Find point in Grid
+			current_index = findQueryPoint(k, index_x + dx, index_y + dy, index_z + dz);
+
+			//If point exist, save index in box
+			if(current_index != INVALID) box->setVertex(k, current_index);
+
+			//Otherwise create new grid point and associate it with the current box
+			else
+			{
+				VertexT position(box_center[0] + box_creation_table[k][0] * vsh,
+						box_center[1] + box_creation_table[k][1] * vsh,
+						box_center[2] + box_creation_table[k][2] * vsh);
+
+				m_queryPoints.push_back(QueryPoint<VertexT>(position));
+
+				box->setVertex(k, m_globalIndex);
+				m_globalIndex++;
+
+			}
+		}
+
+		//Set pointers to the neighbors of the current box
+		int neighbor_index = 0;
+		size_t neighbor_hash = 0;
+
+		for(int a = -1; a < 2; a++)
+		{
+			for(int b = -1; b < 2; b++)
+			{
+				for(int c = -1; c < 2; c++)
+				{
+
+					//Calculate hash value for current neighbor cell
+					neighbor_hash = hashValue(index_x + dx + a,
+							index_y + dy + b,
+							index_z + dz + c);
+
+					//Try to find this cell in the grid
+					neighbor_it = m_cells.find(neighbor_hash);
+
+					//If it exists, save pointer in box
+					if(neighbor_it != m_cells.end())
+					{
+						box->setNeighbor(neighbor_index, (*neighbor_it).second);
+						(*neighbor_it).second->setNeighbor(26 - neighbor_index, box);
+					}
+
+					neighbor_index++;
+				}
+			}
+		}
+
+		m_cells[hash_value] = box;
+	}
+
+}
+
+
+template<typename VertexT, typename BoxT>
+void HashGrid<VertexT, BoxT>::saveGrid(string filename)
+{
+	cout << timestamp << "Writing grid..." << endl;
+
+	// Open file for writing
+	ofstream out(filename.c_str());
+
+	// Write data
+	if(out.good())
+	{
+		// Write header
+		out << m_queryPoints.size() << " " << m_voxelsize << " " << m_cells.size() << endl;
+
+		// Write query points and distances
+		for(size_t i = 0; i < m_queryPoints.size(); i++)
+		{
+			out << m_queryPoints[i].m_position[0] << " "
+					<< m_queryPoints[i].m_position[1] << " "
+					<< m_queryPoints[i].m_position[2] << " ";
+
+			if(!isnan(m_queryPoints[i].m_distance))
+			{
+				out << m_queryPoints[i].m_distance << endl;
+			}
+			else
+			{
+				out << 0 << endl;
+			}
+
+		}
+
+		// Write box definitions
+		typename unordered_map<size_t, FastBox<VertexT, BoxT>* >::iterator it;
+		FastBox<VertexT, BoxT>* box;
+		for(it = m_cells.begin(); it != m_cells.end(); it++)
+		{
+			box = it->second;
+			for(int i = 0; i < 8; i++)
+			{
+				out << box->getVertex(i) << " ";
+			}
+			out << endl;
+		}
+	}
+}
+
+} //namespace lvr
