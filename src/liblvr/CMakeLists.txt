@@ -116,10 +116,10 @@ target_link_libraries(lvr_static ${LVR_LIB_DEPENDENCIES})
 # Build shared library
 #####################################################################################
 
-message(STATUS "Building shared library")
-add_library(lvr SHARED $<TARGET_OBJECTS:lvrcore>)
-set_target_properties(lvr PROPERTIES LIBRARY_OUTPUT_DIRECTORY ${CMAKE_SOURCE_DIR}/lib)
-target_link_libraries(lvr ${LVR_LIB_DEPENDENCIES})
+#message(STATUS "Building shared library")
+#add_library(lvr SHARED $<TARGET_OBJECTS:lvrcore>)
+#set_target_properties(lvr PROPERTIES LIBRARY_OUTPUT_DIRECTORY ${CMAKE_SOURCE_DIR}/lib)
+#target_link_libraries(lvr ${LVR_LIB_DEPENDENCIES})
 
 
 
