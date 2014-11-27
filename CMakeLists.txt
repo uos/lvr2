@@ -243,7 +243,7 @@ add_subdirectory(ext/slam6d)
 #add_subdirectory(ext/libfreenect)
 
 if(MPI_FOUND)
-#add_subdirectory(src/tools/mpi)
+add_subdirectory(src/tools/mpi)
 endif(MPI_FOUND)
 
 if(CGAL_FOUND)
@@ -316,6 +316,7 @@ add_subdirectory(src/tools/meshoptimizer)
 add_subdirectory(src/tools/transform)
 add_subdirectory(src/tools/registration)
 add_subdirectory(src/tools/normals)
+add_subdirectory(src/tools/leica_converter)
 
 ################################################################
 # DOCUMENTATION
