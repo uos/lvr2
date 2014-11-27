@@ -173,7 +173,7 @@ public:
     Returns the current size of the queue 
     \return Size
   */  
-   long unsigned int size(){ return pq.size(); }
+   size_t size(){ return pq.size(); }
 };
 
 #endif

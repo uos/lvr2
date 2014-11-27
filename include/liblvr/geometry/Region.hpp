@@ -34,7 +34,7 @@
 #include "HalfEdgeFace.hpp"
 #include <vector>
 #include <stack>
-
+#include <boost/shared_ptr.hpp>
 
 namespace lvr {
 
@@ -61,6 +61,10 @@ public:
 	typedef HalfEdgeVertex<VertexT, NormalT> HVertex;
 	typedef HalfEdge<HVertex, HFace> HEdge;
 
+	typedef HVertex*  VertexPtr;
+	typedef HFace*    FacePtr;
+	typedef HEdge*    EdgePtr;
+
 	/**
 	 * @brief constructor.
 	 *
@@ -73,14 +77,33 @@ public:
 	 *
 	 * @param	f	the face to add
 	 */
-	virtual void addFace(HFace* f);
+	virtual void addFace(FacePtr f);
 
 	/**
 	 * @brief Removes a face from the region.
 	 *
 	 * @param	f	the face to remove
 	 */
-	virtual void removeFace(HFace* f);
+	virtual void deleteInvalidFaces();
+
+	float getArea();
+
+	/**
+	 * @brief Sets this regions's label.
+	 *
+	 * @param label the label to set
+	 */
+	virtual void setLabel(std::string label);
+
+	/**
+	 * @brief Returns the regions's label.
+	 */
+	virtual std::string getLabel();
+
+	/**
+	 * @brief Returns true if region has a label.
+	 */
+	virtual bool hasLabel();
 
 	/**
 	 * @brief Finds all contours of the region (outer contour + holes)
@@ -105,13 +128,12 @@ public:
 	 * @return	true if the given face is flickering, false otherwise
 	 *
 	 */
-	virtual bool detectFlicker(HFace* f);
-
+	virtual bool detectFlicker(FacePtr f);
 
     /**
      * @brief the number of faces contained in this region
      */
-    virtual int size();
+    virtual size_t size();
 
 	/**
 	 * @brief destructor.
@@ -122,7 +144,7 @@ public:
 	bool m_inPlane;
 
 	/// The faces in the region
-	vector<HFace*>    m_faces;
+	vector<FacePtr>    m_faces;
 
 	/// The number of the region
 	int m_regionNumber;
@@ -136,13 +158,24 @@ public:
 	/// indicates if the region is to be deleted or not
 	bool m_toDelete;
 
+	void calcArea();
 private:
+
     /**
 	 * @brief calculates a valid normal of the region
 	 *
 	 * @return a normal of the region
 	 */
 	virtual NormalT calcNormal();
+
+	// The region's label
+	std::string m_label;
+
+	// Indicates whether the region has been labeled or not
+	bool b_labeled;
+
+	float m_area;
+
 };
 }
 

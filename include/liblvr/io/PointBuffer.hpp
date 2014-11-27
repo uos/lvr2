@@ -44,6 +44,7 @@
 #include <algorithm>
 #include "DataStruct.hpp"
 
+#include "boost/shared_ptr.hpp"
 
 namespace lvr
 {
@@ -71,7 +72,6 @@ public:
      * The default constructor. This clears all internal data.
      **/
     PointBuffer();
-
 
     /**
      * \brief Set the point array.

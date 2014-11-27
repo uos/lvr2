@@ -130,9 +130,9 @@ void ObjIO::parseMtlFile(
 			{
 				float r, g, b;
 				ss >> r >> g >> b;
-				m->r = (uchar)(r * 255);
-				m->g = (uchar)(g * 255);
-				m->b = (uchar)(b * 255);
+				m->r = (unsigned char)(r * 255);
+				m->g = (unsigned char)(g * 255);
+				m->b = (unsigned char)(b * 255);
 			}
 			else if(keyword == "map_Kd")
 			{
@@ -144,7 +144,7 @@ void ObjIO::parseMtlFile(
 
 				GlTexture* texture = TextureFactory::instance().getTexture(tex_file.string());
 				textures.push_back(texture);
-				m->texture_index = textures.size() - 1;
+				m->texture_index = (GLuint)textures.size() - 1;
 			}
 			else
 			{
@@ -310,14 +310,12 @@ ModelPtr ObjIO::read(string filename)
 
 void ObjIO::save( string filename )
 {
-	typedef Vertex<uchar> ObjColor;
+	typedef Vertex<unsigned char> ObjColor;
 
 	size_t lenVertices;
 	size_t lenNormals;
-	size_t lenColors;
 	size_t lenFaces;
 	size_t lenTextureCoordinates;
-	size_t lenFaceIndices;
 	size_t lenFaceMaterials;
 	size_t lenFaceMaterialIndices;
 	coord3fArr vertices           = m_model->m_mesh->getIndexedVertexArray( lenVertices );

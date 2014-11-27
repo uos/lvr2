@@ -33,6 +33,8 @@
 #ifndef MESHIO_HPP_
 #define MESHIO_HPP_
 
+#include <boost/shared_ptr.hpp>
+
 #include <stdint.h>
 #include <cstddef>
 #include <cstdlib>
@@ -167,11 +169,15 @@ class MeshBuffer
 
         floatArr getVertexTextureCoordinateArray( size_t &n );
 
+		labeledFacesMap getLabeledFacesMap();
+
         materialArr getMaterialArray(size_t &n);
 
         uintArr	getFaceMaterialIndexArray(size_t &n);
 
         textureArr getTextureArray(size_t &n);
+
+		size_t getNumLabels();
 
 
 #define SECTION_INDEXED_GETTER
@@ -358,6 +364,8 @@ class MeshBuffer
         void setVertexTextureCoordinateArray( floatArr array, size_t n );
 
 
+		void setLabeledFacesMap( labeledFacesMap map );
+
         void setMaterialArray( materialArr array, size_t n );
 
         void setFaceMaterialIndexArray( uintArr array, size_t n);
@@ -431,7 +439,7 @@ class MeshBuffer
          * \param array  Pointer to interlaced vertex color data.
          * \param n      Amount of color information in the array.
          **/
-        void setVertexColorArray( std::vector<uchar>& array );
+        void setVertexColorArray( std::vector<unsigned char>& array );
 
 
         /**
@@ -541,6 +549,8 @@ class MeshBuffer
          **/
         void setIndexedVertexNormalArray( std::vector< coord<float> >&array);
 
+		void setLabeledFacesMap( labeledFacesMap* &map );
+
         void setMaterialArray( std::vector<Material*> &array);
 
         void setFaceMaterialIndexArray(std::vector<unsigned int> &array);
@@ -619,8 +629,9 @@ class MeshBuffer
 
         materialArr m_faceMaterials;
 
-        textureArr	m_textures;
+        labeledFacesMap m_labeledFacesMap;
 
+        textureArr	m_textures;
 
 };
 

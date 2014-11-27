@@ -41,13 +41,13 @@
 using namespace lvr;
 
 
-typedef ColorVertex<float, unsigned char>               cVertex;
-typedef Normal<float>                                   cNormal;
-typedef PointsetSurface<cVertex>                        psSurface;
-typedef AdaptiveKSearchSurface<cVertex, cNormal>        akSurface;
+typedef ColorVertex<float, unsigned char>						cVertex;
+typedef Normal<float>											cNormal;
+typedef PointsetSurface<ColorVertex<float, unsigned char> >							psSurface;
+typedef AdaptiveKSearchSurface<ColorVertex<float, unsigned char> , Normal<float>  > akSurface;
 
 #ifdef _USE_PCL_
-typedef PCLKSurface<cVertex, cNormal>                   pclSurface;
+typedef PCLKSurface<Vertex<float> , cNormal>                   pclSurface;
 #endif
 
 /**
@@ -71,8 +71,7 @@ int main(int argc, char** argv)
 
 
 		// Create a point loader object
-		ModelFactory io_factory;
-		ModelPtr model = io_factory.readModel( options.getInputFileName() );
+		ModelPtr model = ModelFactory::readModel( options.getInputFileName() );
 
 		MeshBufferPtr mesh_buffer;
 
@@ -90,7 +89,7 @@ int main(int argc, char** argv)
 		}
 
 		// Create an empty mesh
-		HalfEdgeMesh<cVertex, cNormal> mesh( mesh_buffer );
+		HalfEdgeMesh<ColorVertex<float, unsigned char> , Normal<float> > mesh( mesh_buffer );
 
 		// Set recursion depth for region growing
 		if(options.getDepth())

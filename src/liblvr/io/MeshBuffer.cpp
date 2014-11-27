@@ -44,10 +44,10 @@ MeshBuffer::MeshBuffer() :
     m_numTextures(0)
 {
 
-    /* Make shure we can convert the indexed arrays into interlaced arrays and
+    /* Make sure we can convert the indexed arrays into interlaced arrays and
      * vice versa. */
 	assert( 3 * sizeof(float) == sizeof(coord<float>) );
-	assert( 3 * sizeof(uchar) == sizeof(color<uchar>) );
+	assert( 3 * sizeof(unsigned char) == sizeof(color<unsigned char>) );
 	assert( 3 * sizeof(unsigned int) == sizeof(coord<unsigned int>) );
 	assert( sizeof(float) == sizeof(idxVal<float>) );
 
@@ -70,6 +70,10 @@ floatArr MeshBuffer::getVertexArray( size_t &n )
     return m_vertices;
 }
 
+labeledFacesMap MeshBuffer::getLabeledFacesMap()
+{
+	return m_labeledFacesMap;
+}
 
 floatArr MeshBuffer::getVertexNormalArray( size_t &n )
 {
@@ -210,7 +214,7 @@ void MeshBuffer::setVertexColorArray(ucharArr array, size_t n)
 
 void MeshBuffer::setVertexColorArray(std::vector<uint8_t>& array)
 {
-	m_vertexColors = ucharArr(new uchar[array.size()]);
+	m_vertexColors = ucharArr(new unsigned char[array.size()]);
 	for (int i(0); i < array.size(); i++)
 	{
 		m_vertexColors[i] = array[i];
@@ -328,6 +332,11 @@ void MeshBuffer::setFaceMaterialIndexArray(uintArr array, size_t n)
 	m_numFaceMaterialIndices = n;
 }
 
+void MeshBuffer::setLabeledFacesMap(labeledFacesMap map)
+{
+	m_labeledFacesMap = map;
+}
+
 void MeshBuffer::setMaterialArray(std::vector<Material*>& array)
 {
 	m_faceMaterials = materialArr(new Material*[array.size()]);
@@ -370,10 +379,8 @@ void MeshBuffer::setTextureArray(std::vector<GlTexture*>& array)
 	}
 }
 
-
 void MeshBuffer::freeBuffer()
 {
-
     m_faceIndices.reset();
     m_vertexColors.reset();
     m_vertexConfidence.reset();
@@ -382,19 +389,25 @@ void MeshBuffer::freeBuffer()
     m_vertexTextureCoordinates.reset();
     m_vertices.reset();
 
-    m_numVertices = m_numVertexColors = m_numVertexIntensities
-        = m_numVertexConfidences = m_numVertexNormals = m_numFaces = 0;
+	m_numVertices = 0;
+	m_numVertexColors = 0;
+	m_numVertexIntensities = 0;
+	m_numVertexConfidences = 0;
+	m_numVertexNormals = 0;
+	m_numFaces = 0;
 
 }
 
-
-}
-
-void lvr::MeshBuffer::setMaterialArray(materialArr array, size_t n)
+void MeshBuffer::setMaterialArray(materialArr array, size_t n)
 {
 	m_faceMaterials = array;
 	m_numMaterials = n;
 }
 
+size_t MeshBuffer::getNumLabels()
+{
+	return m_labeledFacesMap.size();
+}
 
+}
  /* namespace lvr */

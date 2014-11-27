@@ -73,7 +73,7 @@ public:
 	 * @brief 	Destructor.
 	 *
          */
-	~TextureToken(){delete m_texture;};
+	~TextureToken(){/*delete m_texture;*/};
 
 	///The associated texture	
 	Texture* m_texture;
@@ -88,7 +88,7 @@ public:
 	float a_min, b_min;
 
 	///index of the texture in the texture pack
-	int m_textureIndex;
+	size_t m_textureIndex;
 
 	///Matrix that stores an affine transform that will be applied to the texture coordinates
 	double m_transformationMatrix[6];

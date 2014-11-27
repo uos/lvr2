@@ -37,7 +37,7 @@ PCLFiltering::PCLFiltering( PointBufferPtr loader )
 
     // Check if we have RGB data
     size_t numColors;
-    m_useColors = loader->getPointColorArray(numColors);
+    m_useColors = bool(loader->getPointColorArray(numColors));
 
     m_pointCloud  = pcl::PointCloud<pcl::PointXYZRGB>::Ptr (new pcl::PointCloud<pcl::PointXYZRGB>);
 
@@ -171,7 +171,7 @@ PointBufferPtr PCLFiltering::getPointBuffer()
 
     if(m_useColors)
     {
-       colors = ucharArr(new uchar[3 * m_pointCloud->size()]);
+       colors = ucharArr(new unsigned char[3 * m_pointCloud->size()]);
     }
 
     for(int i = 0; i < m_pointCloud->size(); i++)

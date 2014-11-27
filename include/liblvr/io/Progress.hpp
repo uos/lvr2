@@ -39,6 +39,10 @@ using std::string;
 
 #include <boost/thread/mutex.hpp>
 
+#ifdef __WITH_QT4__
+#include <QProgressDialog>
+#endif
+
 namespace lvr{
 
 /**
@@ -60,7 +64,9 @@ public:
 	 * @param max_val	The number of performed iterations
 	 * @param prefix	The prefix string for progress output
 	 */
-	ProgressBar(int max_val, string prefix = "");
+	ProgressBar(size_t max_val, string prefix = "");
+
+
 
 	/**
 	 * @brief Increases the counter of performed iterations
@@ -78,23 +84,36 @@ protected:
 	/// The number of iterations
 	size_t			m_maxVal;
 
-	/// The current counter
-	size_t			m_currentVal;
-
-	/// The step size (in percent) after which an output is generated
-	size_t			m_stepSize;
+        /// The current counter
+        size_t	 		m_currentVal;
 
 	/// A mutex object for counter increment (for parallel executions)
 	boost::mutex 	m_mutex;
 
 	/// The current progress in percent
-	int				m_percent;
+	int			m_percent;
 
 	/// A string stream for output generation
 	stringstream	m_stream;
 
 	/// A fill string for correct output alignment
 	string 			m_fillstring;
+
+#ifdef __WITH_QT4__
+	static bool             m_useDialog;
+public:
+
+	/// If enabled, each instance will create a QT4 progress dialog
+	/// with the given message. Needs a valid QT context.
+	static void enableDialog();
+
+	/// Disables the usage if a QT4 progress dialog.
+	static void disableDialog();
+
+	QProgressDialog*        m_dialog;
+
+	~ProgressBar();
+#endif
 };
 
 

@@ -2,7 +2,7 @@ cmake_minimum_required(VERSION 2.8)
 project(LAS_VEGAS)
 
 set( CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_SOURCE_DIR}/bin )
-set( CMAKE_MODULE_PATH ${LAS_VEGAS_SOURCE_DIR}/CMakeModules )
+set( CMAKE_MODULE_PATH ${LAS_VEGAS_SOURCE_DIR}/CMakeModules ${CMAKE_MODULE_PATH})
 
 link_directories("${CMAKE_SOURCE_DIR}/lib")
 link_directories("$ENV{HOME}/local/lib")
@@ -10,11 +10,26 @@ link_directories("$ENV{HOME}/local/lib")
 include_directories(/usr/include/libusb-1.0/)
 include_directories(${LAS_VEGAS_SOURCE_DIR}/ext/Eigen)
 include_directories(${LAS_VEGAS_SOURCE_DIR}/ext/stann)
+include_directories(${LAS_VEGAS_SOURCE_DIR}/ext/psimpl)
 include_directories(${LAS_VEGAS_SOURCE_DIR})
 include_directories(${LAS_VEGAS_SOURCE_DIR}/include/liblvr)
 
 
-set( CMAKE_CXX_FLAGS         ${CMAKE_CXX_FLAGS})
+##################################################################################
+# Some compiler specific settings
+##################################################################################
+
+if(MSVC)
+add_definitions(-DNOMINMAX)
+endif()
+
+IF(CMAKE_COMPILER_IS_GNUCC)
+  SET(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -fmessage-length=0 -fPIC -Wno-deprecated")
+ENDIF(CMAKE_COMPILER_IS_GNUCC)
+IF(CMAKE_COMPILER_IS_GNUCXX)
+  SET(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -fmessage-length=0 -fPIC -Wno-deprecated")
+  add_definitions("-std=c++0x")
+ENDIF(CMAKE_COMPILER_IS_GNUCXX)
 
 ###############################################################
 # EXTERNAL LIBRARIES
@@ -26,10 +41,23 @@ set( CMAKE_CXX_FLAGS         ${CMAKE_CXX_FLAGS})
 FIND_PACKAGE( OpenCV REQUIRED )
 
 ####
+## Searching for Eigen3
+##############################
+find_package(Eigen3 REQUIRED)
+include_directories(${EIGEN3_INCLUDE_DIR})
+
+####
 ## Searching for MPI
 ##############################
 FIND_PACKAGE( MPI )
 include_directories(SYSTEM ${MPI_INCLUDE_PATH})
+
+####
+## Searching for VTK
+##############################
+find_package(VTK REQUIRED)
+include(${VTK_USE_FILE})
+
 
 ####
 ## Searching for NABO 
@@ -51,6 +79,7 @@ endif(NABO_FOUND)
 
 # We intentionally do this twice as there seems to be a bug in PCL 1.4 which
 # leads to a non set PCL_VERSION variable if you call it only once.
+
 find_package(PCL 1.0)
 if ( "${PCL_VERSION}" STREQUAL "" )
     find_package(PCL 1.0)
@@ -83,8 +112,11 @@ endif(PCL_FOUND)
 
 find_package(CGAL)
 if(CGAL_FOUND)
+include(${CGAL_USE_FILE})
 add_definitions(${CGAL_CXX_FLAGS_INIT})
-message(STATUS "CGAL CXX_FLAGS: " ${CGAL_CXX_FLAGS_INIT})
+include_directories(${CGAL_INCLUDE_DIRS})
+link_directories(${CGAL_LIBRARIES_DIR})
+message(STATUS "FOUND CGAL")
 endif(CGAL_FOUND)
 
 
@@ -93,7 +125,11 @@ endif(CGAL_FOUND)
 ##############################
 #
 
-find_package( Boost 1.42
+
+#set(Boost_USE_STATIC_LIBS       ON)
+set(Boost_USE_MULTITHREADED     ON)
+
+find_package( Boost 
     COMPONENTS 
     program_options 
     filesystem system 
@@ -101,7 +137,7 @@ find_package( Boost 1.42
     REQUIRED )
 
 if(Boost_FOUND)
-    link_directories(${BOOST_LIBRARY_DIRS})
+    link_directories(${Boost_LIBRARY_DIR})
     include_directories(${Boost_INCLUDE_DIRS})
     add_definitions(${Boost_LIB_DIAGNOSTIC_DEFINITIONS})
 endif()
@@ -113,8 +149,8 @@ endif()
 
 find_package(OpenMP)
 if(OpenMP_FOUND)
-    link_directories(${OpenMP_LIBRARY_DIRS})
-    include_directories(${OpenMP_INCLUDE_DIRS})
+	link_directories(${OpenMP_LIBRARY_DIRS})
+	include_directories(${OpenMP_INCLUDE_DIRS})
 endif(OpenMP_FOUND)
 
 set( CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${OpenMP_CXX_FLAGS}" )
@@ -126,8 +162,8 @@ set( CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${OpenMP_CXX_FLAGS}" )
 
 find_package(OpenGL REQUIRED)
 if(OpenGL_FOUND)
-    link_directories(${OpenGL_INCLUDE_DIRS})
-    include_directories(${OpenGL_LIBRARY_DIRS})
+    link_directories(${OpenGL_LIBRARY_DIRS})
+    include_directories(${OpenGL_INCLUDE_DIRS})
     message( "OPEN GL LIBS 1 : " ${OPENGL_LIBRARIES}) 
     message( "OPEN GL LIBS 2 : " ${OPENGL_LIBRARY}) 
 endif(OpenGL_FOUND)
@@ -150,7 +186,8 @@ endif(UNIX)
 
 find_package(GLUT REQUIRED)
 if ( GLUT_FOUND )
-    message( "-- Found OpenGL Utility Toolkit" )
+    message(STATUS "-- Found OpenGL Utility Toolkit" )
+    include_directories(${GLUT_INCLUDE_DIR})
 else ( GLUT_FOUND )
     message( SEND_ERROR "-- could not find OpenGL Utility Toolkit" )
 endif ( GLUT_FOUND )
@@ -194,50 +231,30 @@ add_subdirectory(ext/laslib)
 include_directories( ${CMAKE_CURRENT_SOURCE_DIR}/ext/obj/ )
 add_subdirectory(ext/obj)
 
-# Freenect
-if(APPLE)
-include_directories( /opt/local/include/libusb-1.0/)
-endif(APPLE)
-include_directories(ext/libfreenect/include/)
-add_subdirectory(ext/libfreenect)
-
 # SLAM6D stuff
 include_directories( ${CMAKE_CURRENT_SOURCE_DIR}/ext/slam6d )
 add_subdirectory(ext/slam6d)
 
-
-
-##############################################################
-# LIBRARIES
-##############################################################
-
-add_subdirectory(src/liblvr)
-
-##############################################################
-# BINARIES
-##############################################################
-
-add_subdirectory(src/tools/reconstruct)
-add_subdirectory(src/tools/colorize)
-add_subdirectory(src/tools/scanreduce)
-add_subdirectory(src/tools/convert)
-add_subdirectory(src/tools/asciiconverter)
-add_subdirectory(src/tools/texman)
-add_subdirectory(src/tools/tiogen)
-add_subdirectory(src/tools/meshoptimizer)
-add_subdirectory(src/tools/leica_converter)
+# Freenect
+#if(APPLE)
+#include_directories( /opt/local/include/libusb-1.0/)
+#endif(APPLE)
+#include_directories(ext/libfreenect/include/)
+#add_subdirectory(ext/libfreenect)
 
 if(MPI_FOUND)
-add_subdirectory(src/tools/mpi)
+#add_subdirectory(src/tools/mpi)
 endif(MPI_FOUND)
 
 if(CGAL_FOUND)
 add_subdirectory(src/tools/cgal_reconstruction)
+#add_subdirectory(src/tools/fusion)
+add_subdirectory(src/tools/slicer)
 endif(CGAL_FOUND)
 
 if(PCL_FOUND)
     add_subdirectory(src/tools/scanfilter)
-    add_subdirectory(src/tools/kinectgrabber)
+#    add_subdirectory(src/tools/kinectgrabber)
 endif(PCL_FOUND)
 
 ##############################################################
@@ -253,6 +270,8 @@ if( QT4_FOUND )
     include_directories(${QT_QTOPENGL_INCLUDE_DIR})
     include_directories(${QT_QTCORE_INCLUDE_DIR})
     include_directories(${QT_QTXML_INCLUDE_DIR})
+    
+    add_definitions(-D__WITH_QT4__)
 
     # Try to find libQGLViewer
     find_library(QGLVIEWER_LIBRARY_RELEASE 
@@ -266,7 +285,37 @@ if( QT4_FOUND )
         add_subdirectory(src/qglviewer)
     endif(QGLVIEWER_LIBRARY_RELEASE)
 
+   	find_package(QVTK)
+	if(QVTK_FOUND)
+		include_directories(${QVTK_INCLUDE_DIR})
+   		add_subdirectory(src/tools/viewer)
+	endif(QVTK_FOUND)
+
 endif(QT4_FOUND)
+
+
+##############################################################
+# LIBRARIES
+##############################################################
+
+add_subdirectory(src/liblvr)
+
+##############################################################
+# BINARIES
+##############################################################
+
+add_subdirectory(src/tools/reconstruct)
+add_subdirectory(src/tools/classifier)
+#add_subdirectory(src/tools/colorize)
+add_subdirectory(src/tools/scanreduce)
+add_subdirectory(src/tools/convert)
+add_subdirectory(src/tools/asciiconverter)
+add_subdirectory(src/tools/texman)
+add_subdirectory(src/tools/tiogen)
+add_subdirectory(src/tools/meshoptimizer)
+add_subdirectory(src/tools/transform)
+add_subdirectory(src/tools/registration)
+add_subdirectory(src/tools/normals)
 
 ################################################################
 # DOCUMENTATION
@@ -295,3 +344,4 @@ if( DOXYGEN_FOUND AND DOXYGEN_DOT_FOUND )
         WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}
         COMMENT "Generating API documentation with Doxygen" VERBATIM )
 endif( DOXYGEN_FOUND AND DOXYGEN_DOT_FOUND )
+

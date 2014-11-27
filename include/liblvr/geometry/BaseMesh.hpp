@@ -46,6 +46,8 @@ class BaseMesh
 
         BaseMesh();
 
+        virtual ~BaseMesh() {};
+
         /**
          * @brief    This method should be called every time
          *           a new vertex is created.

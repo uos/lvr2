@@ -35,8 +35,8 @@ set(LASLIB_SOURCES
 	src/arithmeticmodel.cpp 
 	src/fopen_compressed.cpp)
 
-ADD_LIBRARY(laslib_static STATIC ${LASLIB_SOURCES})
-set_target_properties(laslib_static PROPERTIES LIBRARY_OUTPUT_DIRECTORY ${CMAKE_SOURCE_DIR}/lib)
+ADD_LIBRARY(lvrlas_static STATIC ${LASLIB_SOURCES})
+set_target_properties(lvrlas_static PROPERTIES LIBRARY_OUTPUT_DIRECTORY ${CMAKE_SOURCE_DIR}/lib)
 
-ADD_LIBRARY(laslib SHARED ${LASLIB_SOURCES})
-set_target_properties(laslib PROPERTIES LIBRARY_OUTPUT_DIRECTORY ${CMAKE_SOURCE_DIR}/lib)
+ADD_LIBRARY(lvrlas SHARED ${LASLIB_SOURCES})
+set_target_properties(lvrlas PROPERTIES LIBRARY_OUTPUT_DIRECTORY ${CMAKE_SOURCE_DIR}/lib)

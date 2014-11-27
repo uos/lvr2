@@ -27,10 +27,12 @@
 #ifndef UOSIO_H_
 #define UOSIO_H_
 
+#define _USE_MATH_DEFINES
+
 #include <string>
 #include <iomanip>
 #include <iostream>
-#include <cmath>
+#include <math.h>
 #include <fstream>
 #include <sstream>
 #include <vector>
@@ -188,7 +190,7 @@ private:
      */
     inline float rad(const float deg)
     {
-      return ( (2 * M_PI * deg) / 360 );
+		return (float)((2 * M_PI * deg) / 360);
     }
 
 
@@ -200,7 +202,7 @@ private:
      */
     inline float deg(const float rad)
     {
-      return ( (rad * 360) / (2 * M_PI) );
+		return (float)((rad * 360) / (2 * M_PI));
     }
 
 

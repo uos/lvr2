@@ -27,11 +27,11 @@
 #ifndef FastBox_H_
 #define FastBox_H_
 
-#include "../geometry/Vertex.hpp"
-#include "../geometry/Normal.hpp"
-#include "../reconstruction/QueryPoint.hpp"
-#include "../reconstruction/MCTable.hpp"
-#include "../reconstruction/FastBoxTables.hpp"
+#include "geometry/Vertex.hpp"
+#include "geometry/Normal.hpp"
+#include "reconstruction/QueryPoint.hpp"
+#include "reconstruction/MCTable.hpp"
+#include "reconstruction/FastBoxTables.hpp"
 #include <vector>
 #include <limits>
 
@@ -132,7 +132,7 @@ protected:
      * @param distance      The corresponding distance value
      * @param positions     The interpolated intersections.
      */
-    void getIntersections(VertexT corners[], float distance[], VertexT positions[]);
+    void getIntersections(VertexT* corners, float* distance, VertexT* positions);
 
     /**
      * @brief Calculates the position of the eight cell corners

@@ -37,11 +37,11 @@ float QuadricVertexCosts<VertexT, NormalT>::operator()(HalfEdgeVertex<VertexT, N
 	v.calcQuadric(q1, false);
 
 	// Iterator over all neighbour vertices
-	typename vector<HEdge*>::iterator it;
+	typename vector<HEdge* >::iterator it;
 	for (it = v.out.begin(); it != v.out.end(); it++)
 	{
 
-		HVertex* n = (*it)->end;
+		HVertex* n = (*it)->end();
 
 		Matrix4<float> q2;
 
