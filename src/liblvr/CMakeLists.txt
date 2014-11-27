@@ -17,6 +17,7 @@ set(LVR_SOURCES
     io/CoordinateTransform.cpp
     io/BoctreeIO.cpp
     io/TextureIO.cpp
+    io/DatIO.cpp
     display/InteractivePointCloud.cpp
     display/CoordinateAxes.cpp
     display/Renderable.cpp

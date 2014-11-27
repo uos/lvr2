@@ -120,8 +120,8 @@ int main(int argc, char** argv)
 	// Sort entries
 	sort(v.begin(), v.end());
 
-	vector<float>	 merge_points;
-	vector<uchar>	 merge_colors;
+	vector<float>	 		merge_points;
+	vector<unsigned char>	merge_colors;
 
 	int c = 0;
 	for(vector<boost::filesystem::path>::iterator it = v.begin(); it != v.end(); it++)
@@ -248,7 +248,7 @@ int main(int argc, char** argv)
 		cout << timestamp << "Merged model contains " << merge_points.size() << " points." << endl;
 
 		floatArr points (new float[merge_points.size()]);
-		ucharArr colors (new uchar[merge_colors.size()]);
+		ucharArr colors (new unsigned char[merge_colors.size()]);
 
 		for(size_t i = 0; i < merge_points.size(); i++)
 		{
