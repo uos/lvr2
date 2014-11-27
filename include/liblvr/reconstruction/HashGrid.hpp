@@ -28,13 +28,13 @@ class HashGrid
 public:
 
 	/// Typedef to alias box map
-	typedef unordered_map<size_t, BoxT*> 			box_map;
+	typedef unordered_map<size_t, BoxT*> box_map;
 
 	/// Typedef to alias iterators for box maps
-	typedef unordered_map<size_t, BoxT*>::iterator  box_map_it;
+	typedef typename unordered_map<size_t, BoxT*>::iterator  box_map_it;
 
 	/// Typedef to alias iterators to query points
-	typedef vector<QueryPoint<VertexT> >::iterator	query_point_it;
+	typedef typename vector<QueryPoint<VertexT> >::iterator	query_point_it;
 
 	/***
 	 * @brief	Constructor
@@ -109,7 +109,7 @@ public:
 	 */
 	virtual ~HashGrid();
 
-private:
+protected:
 
 	/***
 	 * @brief	Searches for a existing shared lattice point in the grid.
@@ -125,6 +125,11 @@ private:
 			const int &x,
 			const int &y,
 			const int &z);
+
+	/**
+	 * @brief 	Calculates needed lattice parameters.
+	 */
+	void calcIndices();
 
     /**
      * @brief Calculates the hash value for the given index triple
@@ -172,5 +177,7 @@ private:
 };
 
 } /* namespace lvr */
+
+#include "HashGrid.tcc"
 
 #endif /* _HASHGRID_HPP_ */

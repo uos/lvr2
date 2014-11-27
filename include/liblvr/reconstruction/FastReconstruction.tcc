@@ -31,27 +31,26 @@
 namespace lvr
 {
 
-template<typename VertexT, typename BoxT, typename NormalT>
-FastReconstruction<VertexT, BoxT, NormalT>::FastReconstruction(HashGrid<VertexT, BoxT>* grid)
-	m_grid(grid)
+template<typename VertexT, typename NormalT, typename BoxT>
+FastReconstruction<VertexT, NormalT, BoxT>::FastReconstruction(HashGrid<VertexT, BoxT>* grid)
 {
-
+	m_grid = grid;
 }
 
-template<typename VertexT, typename BoxT, typename NormalT>
-void FastReconstruction<VertexT, BoxT, NormalT>::getMesh(BaseMesh<VertexT, typename BoxT, NormalT> &mesh)
+template<typename VertexT, typename NormalT, typename BoxT>
+void FastReconstruction<VertexT, NormalT, BoxT>::getMesh(BaseMesh<VertexT, NormalT> &mesh)
 {
 	// Status message for mesh generation
 	string comment = timestamp.getElapsedTime() + "Creating Mesh ";
-	ProgressBar progress(m_cells.size(), comment);
+	ProgressBar progress(m_grid->getNumberOfCells(), comment);
 
 	// Some pointers
 	BoxT* b;
 	unsigned int global_index = 0;
 
 	// Iterate through cells and calculate local approximations
-	typename HashGrid::box_map_it it;
-	for(it = m_cells.getFirstCell(); it != m_cells.getLastCell(); it++)
+	typename HashGrid<VertexT, BoxT>::box_map_it it;
+	for(it = m_grid->firstCell(); it != m_grid->lastCell(); it++)
 	{
 		b = it->second;
 		b->getSurface(mesh, m_grid->getQueryPoints(), global_index);
@@ -103,7 +102,7 @@ void FastReconstruction<VertexT, BoxT, NormalT>::getMesh(BaseMesh<VertexT, typen
 */
 }
 
-/*template<typename VertexT, typename BoxT, typename NormalT>
+/*template<typename VertexT, typename NormalT, typename BoxT>
 void FastReconstruction<VertexT, typename BoxT, NormalT>::calcQueryPointValues(){
 
     // Status message output

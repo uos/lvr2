@@ -59,7 +59,7 @@ namespace lvr
  *        parallel computation.
  */
 template<typename VertexT, typename NormalT, typename BoxT>
-class FastReconstruction : public PointsetMeshGenerator<VertexT, NormalT>
+class FastReconstruction
 {
 public:
 
@@ -74,7 +74,7 @@ public:
     /**
      * @brief Destructor.
      */
-    virtual ~FastReconstruction();
+    virtual ~FastReconstruction() {};
 
     /**
      * @brief Returns the surface reconstruction of the given point set.
