@@ -78,7 +78,7 @@ FastReconstruction<VertexT, NormalT>::FastReconstruction(
 template<typename VertexT, typename NormalT>
 FastReconstruction<VertexT, NormalT>::~FastReconstruction()
 {
-    typename hash_map<size_t, FastBox<VertexT, NormalT>* >::iterator iter;
+    typename unordered_map<size_t, FastBox<VertexT, NormalT>* >::iterator iter;
     for(iter = m_cells.begin(); iter != m_cells.end(); iter++)
     {
 	delete ((*iter).second);
@@ -110,7 +110,7 @@ uint FastReconstruction<VertexT, NormalT>::findQueryPoint(
         const int &position, const int &x, const int &y, const int &z)
 {
     int n_x, n_y, n_z, q_v, offset;
-    typename hash_map<size_t, FastBox<VertexT, NormalT>* >::iterator it;
+    typename unordered_map<size_t, FastBox<VertexT, NormalT>* >::iterator it;
 
     for(int i = 0; i < 7; i++){
         offset = i * 4;
@@ -148,8 +148,8 @@ void FastReconstruction<VertexT, NormalT>::createGrid()
 	float vsh = 0.5 * m_voxelsize;
 
 	// Some iterators for hash map accesses
-	typename hash_map<size_t, FastBox<VertexT, NormalT>* >::iterator it;
-	typename hash_map<size_t, FastBox<VertexT, NormalT>* >::iterator neighbor_it;
+	typename unordered_map<size_t, FastBox<VertexT, NormalT>* >::iterator it;
+	typename unordered_map<size_t, FastBox<VertexT, NormalT>* >::iterator neighbor_it;
 
 	// Values for current and global indices. Current refers to a
 	// already present query point, global index is id that the next
@@ -299,7 +299,7 @@ void FastReconstruction<VertexT, NormalT>::getMesh(BaseMesh<VertexT, NormalT> &m
 	uint global_index = 0;
 
 	// Iterate through cells and calculate local approximations
-	typename hash_map<size_t, FastBox<VertexT, NormalT>* >::iterator it;
+	typename unordered_map<size_t, FastBox<VertexT, NormalT>* >::iterator it;
 	for(it = m_cells.begin(); it != m_cells.end(); it++)
 	{
 		b = it->second;
@@ -414,7 +414,7 @@ void FastReconstruction<VertexT, NormalT>::saveGrid(string filename)
         }
 
         // Write box definitions
-        typename hash_map<size_t, FastBox<VertexT, NormalT>* >::iterator it;
+        typename unordered_map<size_t, FastBox<VertexT, NormalT>* >::iterator it;
         FastBox<VertexT, NormalT>* box;
         for(it = m_cells.begin(); it != m_cells.end(); it++)
         {
