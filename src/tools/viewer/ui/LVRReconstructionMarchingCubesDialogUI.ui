@@ -208,7 +208,7 @@
    <property name="geometry">
     <rect>
      <x>10</x>
-     <y>250</y>
+     <y>260</y>
      <width>271</width>
      <height>21</height>
     </rect>
@@ -283,26 +283,14 @@
     <number>10</number>
    </property>
   </widget>
-  <widget class="QSpinBox" name="spinBox_below_gs">
+  <widget class="QDoubleSpinBox" name="spinBox_below_gs">
    <property name="geometry">
     <rect>
-     <x>290</x>
+     <x>291</x>
      <y>250</y>
      <width>91</width>
-     <height>27</height>
+     <height>31</height>
     </rect>
-   </property>
-   <property name="alignment">
-    <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
-   </property>
-   <property name="minimum">
-    <number>1</number>
-   </property>
-   <property name="maximum">
-    <number>1000</number>
-   </property>
-   <property name="value">
-    <number>10</number>
    </property>
   </widget>
  </widget>

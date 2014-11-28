@@ -52,7 +52,7 @@ void LVRReconstructViaMarchingCubesDialog::switchGridSizeDetermination(int index
     QComboBox* gs_box = m_dialog->comboBox_gs;
 
     QLabel* label = m_dialog->label_below_gs;
-    QSpinBox* spinBox = m_dialog->spinBox_below_gs;
+    QDoubleSpinBox* spinBox = m_dialog->spinBox_below_gs;
 
     // TODO: Add reasonable default values
     if(index == 0)
@@ -91,8 +91,8 @@ void LVRReconstructViaMarchingCubesDialog::generateMesh()
     bool reestimateNormals = reNormals_box->isChecked();
     QComboBox* gridMode_box = m_dialog->comboBox_gs;
     bool useVoxelSize = (gridMode_box->currentIndex() == 0) ? true : false;
-    QSpinBox* gridSize_box = m_dialog->spinBox_below_gs;
-    int gridSize = gridSize_box->value();
+    QDoubleSpinBox* gridSize_box = m_dialog->spinBox_below_gs;
+    float  gridSize = (float)gridSize_box->value();
 
     PointBufferPtr pc_buffer = m_pc->getPointBuffer();
     psSurface::Ptr surface;
