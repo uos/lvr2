@@ -104,11 +104,12 @@ void HashGrid<VertexT, BoxT>::calcIndices()
 template<typename VertexT, typename BoxT>
 unsigned int HashGrid<VertexT, BoxT>::findQueryPoint(
 		const int &position, const int &x, const int &y, const int &z)
-		{
+{
 	int n_x, n_y, n_z, q_v, offset;
 	box_map_it it;
 
-	for(int i = 0; i < 7; i++){
+	for(int i = 0; i < 7; i++)
+	{
 		offset = i * 4;
 		n_x = x + shared_vertex_table[position][offset];
 		n_y = y + shared_vertex_table[position][offset + 1];
@@ -126,14 +127,14 @@ unsigned int HashGrid<VertexT, BoxT>::findQueryPoint(
 	}
 
 	return BoxT::INVALID_INDEX;
-		}
+}
 
 template<typename VertexT, typename BoxT>
-void HashGrid<VertexT, BoxT>::addLatticePoint(size_t index_x, size_t index_y, size_t index_z, float distance)
+void HashGrid<VertexT, BoxT>::addLatticePoint(int index_x, int index_y, int index_z, float distance)
 {
 	size_t hash_value;
 
-	unsigned int INVALID = FastBox<VertexT, BoxT>::INVALID_INDEX;
+	unsigned int INVALID = BoxT::INVALID_INDEX;
 
 	float vsh = 0.5 * m_voxelsize;
 
@@ -164,7 +165,6 @@ void HashGrid<VertexT, BoxT>::addLatticePoint(size_t index_x, size_t index_y, si
 
 		hash_value = hashValue(index_x + dx, index_y + dy, index_z +dz);
 
-
 		it = m_cells.find(hash_value);
 		if(it == m_cells.end())
 		{
@@ -182,7 +182,6 @@ void HashGrid<VertexT, BoxT>::addLatticePoint(size_t index_x, size_t index_y, si
 
 				//Find point in Grid
 				current_index = findQueryPoint(k, index_x + dx, index_y + dy, index_z + dz);
-
 				//If point exist, save index in box
 				if(current_index != INVALID) box->setVertex(k, current_index);
 
@@ -193,8 +192,7 @@ void HashGrid<VertexT, BoxT>::addLatticePoint(size_t index_x, size_t index_y, si
 							box_center[1] + box_creation_table[k][1] * vsh,
 							box_center[2] + box_creation_table[k][2] * vsh);
 
-					m_queryPoints.push_back(QueryPoint<VertexT>(position));
-
+					m_queryPoints.push_back(QueryPoint<VertexT>(position, distance));
 					box->setVertex(k, m_globalIndex);
 					m_globalIndex++;
 

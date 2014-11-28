@@ -376,9 +376,9 @@ int main(int argc, char** argv)
 		}
 
 		// Create a point set grid for reconstruction
-		PointsetGrid<ColorVertex<float, unsigned char>, FastBox<ColorVertex<float, unsigned char>, Normal<float> > > grid(resolution, surface, useVoxelsize);
-		grid.calcDistanceValues();
+		PointsetGrid<ColorVertex<float, unsigned char>, FastBox<ColorVertex<float, unsigned char>, Normal<float> > > grid(resolution, surface, surface->getBoundingBox(), useVoxelsize);
 		grid.setExtrusion(options.extrude());
+		grid.calcDistanceValues();
 
 
 		// Create a new reconstruction object
@@ -386,7 +386,7 @@ int main(int argc, char** argv)
 
 		
 		// Create mesh
-		 reconstruction.getMesh(mesh); // kleines Speicherleck noch vorhanden
+		 reconstruction.getMesh(mesh);
 		
 		// Save grid to file
 		if(options.saveGrid())
@@ -395,7 +395,7 @@ int main(int argc, char** argv)
 		}
 
 		if(options.getDanglingArtifacts())
-		{
+ 		{
 			mesh.removeDanglingArtifacts(options.getDanglingArtifacts());
 		}
 

@@ -58,7 +58,7 @@ public:
 	 * @param distance	Signed distance to the represented surface
 	 * 					at the position within the grid.
 	 */
-	void addLatticePoint(size_t i, size_t j, size_t k, float distance = 0.0);
+	void addLatticePoint(int i, int j, int k, float distance = 0.0);
 
 	/**
 	 * @brief	Saves a representation of the grid to the given file
