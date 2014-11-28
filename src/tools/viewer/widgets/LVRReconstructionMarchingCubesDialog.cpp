@@ -1,6 +1,8 @@
 #include <QFileDialog>
 #include "LVRReconstructionMarchingCubesDialog.hpp"
 
+#include "reconstruction/PointsetGrid.hpp"
+
 namespace lvr
 {
 
@@ -114,13 +116,15 @@ void LVRReconstructViaMarchingCubesDialog::generateMesh()
     // Create an empty mesh
     HalfEdgeMesh<cVertex, cNormal> mesh( surface );
 
+    // Create a point set grid for reconstruction
+    PointsetGrid<ColorVertex<float, unsigned char>, FastBox<ColorVertex<float, unsigned char>, Normal<float> > > grid(gridSize, surface, surface->getBoundingBox(), useVoxelSize);
+    grid.setExtrusion(extrusion);
+    grid.calcDistanceValues();
+
+
     // Create a new reconstruction object
-    FastReconstruction<cVertex, cNormal> reconstruction(
-            surface,
-            gridSize,
-            useVoxelSize,
-            m_decomposition,
-            extrusion);
+    FastReconstruction<ColorVertex<float, unsigned char> , Normal<float>, FastBox<ColorVertex<float, unsigned char>, Normal<float> >  > reconstruction(&grid);
+
 
     // Create mesh
     reconstruction.getMesh(mesh);
