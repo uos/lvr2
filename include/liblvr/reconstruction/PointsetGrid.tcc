@@ -11,8 +11,8 @@ namespace lvr
 {
 
 template<typename VertexT, typename BoxT>
-PointsetGrid<VertexT, BoxT>::PointsetGrid(float cellSize, typename PointsetSurface<VertexT>::Ptr surface, bool isVoxelsize)
-	: HashGrid<VertexT, BoxT>(cellSize, surface->getBoundingBox(), isVoxelsize)
+PointsetGrid<VertexT, BoxT>::PointsetGrid(float cellSize, typename PointsetSurface<VertexT>::Ptr& surface, BoundingBox<VertexT> bb, bool isVoxelsize)
+	: HashGrid<VertexT, BoxT>(cellSize, bb, isVoxelsize), m_surface(surface)
 {
 	PointBufferPtr buffer = surface->pointBuffer();
 
@@ -36,8 +36,6 @@ PointsetGrid<VertexT, BoxT>::PointsetGrid(float cellSize, typename PointsetSurfa
 		this->addLatticePoint(index_x, index_y, index_z);
 	}
 
-	cout << endl;
-
 }
 
 template<typename VertexT, typename BoxT>
@@ -50,7 +48,7 @@ void PointsetGrid<VertexT, BoxT>::calcDistanceValues()
 	Timestamp ts;
 
 	// Calculate a distance value for each query point
-#pragma omp parallel for
+//#pragma omp parallel for
 	for( int i = 0; i < (int)this->m_queryPoints.size(); i++){
 		float projectedDistance;
 		float euklideanDistance;

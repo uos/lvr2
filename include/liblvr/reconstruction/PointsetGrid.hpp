@@ -19,7 +19,7 @@ template<typename VertexT, typename BoxT>
 class PointsetGrid: public HashGrid<VertexT, BoxT>
 {
 public:
-	PointsetGrid(float cellSize, typename PointsetSurface<VertexT>::Ptr surface, bool isVoxelsize = true);
+	PointsetGrid(float cellSize, typename PointsetSurface<VertexT>::Ptr& surface, BoundingBox<VertexT> bb, bool isVoxelsize = true);
 	virtual ~PointsetGrid();
 
 	void calcDistanceValues();
