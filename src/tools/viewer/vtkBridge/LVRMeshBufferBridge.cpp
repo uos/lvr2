@@ -185,4 +185,11 @@ vtkSmartPointer<vtkActor> LVRMeshBufferBridge::getMeshActor()
     return m_meshActor;
 }
 
+bool LVRMeshBufferBridge::hasTextures()
+{
+	size_t num;
+	m_meshBuffer->getTextureArray(num);
+	return (num > 0);
+}
+
 } /* namespace lvr */
