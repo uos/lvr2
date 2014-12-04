@@ -26,9 +26,12 @@
 #define LVRMESHBUFFERBRIDGE_H_
 
 #include "io/MeshBuffer.hpp"
+#include "display/TexturedMesh.hpp"
+#include "display/GlTexture.hpp"
 
 #include <vtkSmartPointer.h>
 #include <vtkActor.h>
+#include <vtkActorCollection.h>
 
 #include <boost/shared_ptr.hpp>
 
@@ -43,11 +46,12 @@ public:
 
     virtual ~LVRMeshBufferBridge();
 
-    vtkSmartPointer<vtkActor>   getMeshActor();
-    vtkSmartPointer<vtkActor>   getWireframeActor();
-    size_t                      getNumTriangles();
-    size_t                      getNumVertices();
-    bool                        hasTextures();
+    vtkSmartPointer<vtkActor>   			getMeshActor();
+    vtkSmartPointer<vtkActor>   			getWireframeActor();
+    vtkSmartPointer<vtkActorCollection>		getTexturedActors();
+    size_t                      			getNumTriangles();
+    size_t                      			getNumVertices();
+    bool                        			hasTextures();
 
     void setBaseColor(float r, float g, float b);
     void setOpacity(float opacityValue);
@@ -62,6 +66,16 @@ protected:
     vtkSmartPointer<vtkActor>       m_meshActor;
     vtkSmartPointer<vtkActor>       m_wireframeActor;
     MeshBufferPtr                   m_meshBuffer;
+
+    void computeMaterialGroups(vector<MaterialGroup*>& matGroups, vector<MaterialGroup*>& colorMatGroups);
+    void remapIndices(MaterialGroup* g, vector<Vertex<float> >& vertices, vector<Vertex<float> >& texCoords, vector<int>& indices);
+
+    vtkSmartPointer<vtkActor>		getTexturedActor(MaterialGroup* g);
+    vtkSmartPointer<vtkActor>		getColoredActor(MaterialGroup* g);
+    vtkSmartPointer<vtkTexture>		getTexture(int index);
+
+private:
+
 };
 
 typedef boost::shared_ptr<LVRMeshBufferBridge> MeshBufferBridgePtr;
