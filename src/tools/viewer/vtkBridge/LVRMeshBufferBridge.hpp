@@ -68,10 +68,13 @@ protected:
     MeshBufferPtr                   m_meshBuffer;
 
     void computeMaterialGroups(vector<MaterialGroup*>& matGroups, vector<MaterialGroup*>& colorMatGroups);
-    void remapIndices(MaterialGroup* g, vector<Vertex<float> >& vertices, vector<Vertex<float> >& texCoords, vector<int>& indices);
+    void remapTexturedIndices(MaterialGroup* g, vector<Vertex<float> >& vertices, vector<Vertex<float> >& texCoords, vector<int>& indices);
+    void remapIndices(vector<MaterialGroup*> g, vector<Vertex<float> >& vertices, vector<Vertex<unsigned char> >& colors, vector<int>& indices);
+
 
     vtkSmartPointer<vtkActor>		getTexturedActor(MaterialGroup* g);
-    vtkSmartPointer<vtkActor>		getColoredActor(MaterialGroup* g);
+    vtkSmartPointer<vtkActor>		getColorMeshActor(vector<MaterialGroup*> groups);
+
     vtkSmartPointer<vtkTexture>		getTexture(int index);
 
 private:

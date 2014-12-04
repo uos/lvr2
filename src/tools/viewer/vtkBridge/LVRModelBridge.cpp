@@ -98,6 +98,7 @@ void LVRModelBridge::addActors(vtkSmartPointer<vtkRenderer> renderer)
     		collection->InitTraversal();
     		for(vtkIdType i = 0; i < collection->GetNumberOfItems(); i++)
     		{
+    			cout << i << " / " << collection->GetNumberOfItems() << endl;
     			renderer->AddActor(collection->GetNextActor());
     		}
 
