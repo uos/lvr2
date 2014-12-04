@@ -360,7 +360,7 @@ vtkSmartPointer<vtkActor> LVRMeshBufferBridge::getTexturedActor(MaterialGroup* g
                 vertices[i][0],
                 vertices[i][1],
                 vertices[i][2]);
-        tc->InsertNextTuple3(texCoords[i][0], texCoords[i][1], 0.0);
+        tc->InsertNextTuple3(texCoords[i][1], texCoords[i][0], 0.0);
     }
 
     for(size_t i = 0; i < indices.size() / 3; i++)
@@ -398,14 +398,14 @@ vtkSmartPointer<vtkTexture> LVRMeshBufferBridge::getTexture(int index)
 	unsigned char* texData = tex->m_pixels;
 
 	vtkSmartPointer<vtkImageData> data = vtkSmartPointer<vtkImageData>::New();
-	data->SetDimensions(w, h, 1);
+	data->SetDimensions(h, w, 1);
 	data->SetNumberOfScalarComponents(3);
 	data->SetScalarTypeToUnsignedChar();
 	data->AllocateScalars();
 	int c = 0;
-	for(int i = 0; i < w; i++)
+	for(int i = 0; i < h; i++)
 	{
-		for(int j = 0; j < h; j++)
+		for(int j = 0; j < w; j++)
 		{
 			unsigned char* pixel = static_cast<unsigned char*>(data->GetScalarPointer(i,j,0));
 			pixel[0] = texData[3 * c];
