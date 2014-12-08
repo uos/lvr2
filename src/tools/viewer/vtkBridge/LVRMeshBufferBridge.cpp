@@ -36,6 +36,7 @@
 #include <vtkTexture.h>
 #include <vtkFloatArray.h>
 #include <vtkPointData.h>
+#include <vtkCellData.h>
 
 namespace lvr
 {
@@ -284,6 +285,7 @@ void LVRMeshBufferBridge::remapTexturedIndices(
 		int b = faceBuffer[g->faceBuffer[i] * 3 + 1];
 		int c = faceBuffer[g->faceBuffer[i] * 3 + 2];
 
+
 		// Lookup a *******************************************************************************
 		it = indexMap.find(a);
 		if(it == indexMap.end())
@@ -354,11 +356,20 @@ void LVRMeshBufferBridge::remapIndices(
 
 	for(size_t a = 0; a < groups.size(); a++)
 	{
-		MaterialGroup* g = groups[a];	for(size_t i = 0; i < g->faceBuffer.size(); i++)
+		MaterialGroup* g = groups[a];
+
+		for(size_t i = 0; i < g->faceBuffer.size(); i++)
 		{
 			int a = faceBuffer[g->faceBuffer[i] * 3    ];
 			int b = faceBuffer[g->faceBuffer[i] * 3 + 1];
 			int c = faceBuffer[g->faceBuffer[i] * 3 + 2];
+
+			colors.push_back(
+					Vertex<unsigned char>(
+							(unsigned char) (255*g->color[0]),
+							(unsigned char) (255*g->color[1]),
+							(unsigned char) (255*g->color[2])
+					));
 
 			// Lookup a *******************************************************************************
 			it = indexMap.find(a);
@@ -522,24 +533,29 @@ vtkSmartPointer<vtkActorCollection> LVRMeshBufferBridge::getTexturedActors()
 		collection->AddItem(a);
 	}
 
-	//vtkSmartPointer<vtkActor> a = getColoredActor(colorGroups);
-	//collection->AddItem(a);
-
+	vtkSmartPointer<vtkActor> a = getColorMeshActor(colorGroups);
+	collection->AddItem(a);
 
 	return collection;
 }
 
 vtkSmartPointer<vtkActor> LVRMeshBufferBridge::getColorMeshActor(vector<MaterialGroup*> groups)
 {
-/*	vector<Vertex<float> > vertices;
+	vector<Vertex<float> > vertices;
 	vector<int> indices;
-	remapIndices(groups, vertices, indices);
+	vector<Vertex<unsigned char> > colors;
+
+	vtkSmartPointer<vtkPolyData> mesh = vtkSmartPointer<vtkPolyData>::New();
+	vtkSmartPointer<vtkActor> actor = vtkSmartPointer<vtkActor>::New();
+
+	remapIndices(groups, vertices, colors, indices);
 
 	vtkSmartPointer<vtkPoints> points = vtkSmartPointer<vtkPoints>::New();
 	vtkSmartPointer<vtkCellArray> triangles = vtkSmartPointer<vtkCellArray>::New();
-	vtkSmartPointer<vtkFloatArray> tc = vtkSmartPointer<vtkFloatArray>::New();
-	tc->SetNumberOfComponents(3);
-	tc->SetName("TextureCoordinates");
+
+	vtkSmartPointer<vtkUnsignedCharArray> scalars = vtkSmartPointer<vtkUnsignedCharArray>::New();
+	scalars->SetNumberOfComponents(3);
+	scalars->SetName("Colors");
 
 	// Insert used vertices and texture coordinates into new arrays
     for(size_t i = 0; i < vertices.size(); i++){
@@ -547,13 +563,18 @@ vtkSmartPointer<vtkActor> LVRMeshBufferBridge::getColorMeshActor(vector<Material
                 vertices[i][0],
                 vertices[i][1],
                 vertices[i][2]);
-         tc->InsertNextTuple3(texCoords[i][1], texCoords[i][0], 0.0);
-
     }
 
     // Add triangles
     for(size_t i = 0; i < indices.size() / 3; i++)
     {
+    	unsigned char color[3];
+    	color[0] = colors[i][0];
+    	color[1] = colors[i][1];
+    	color[2] = colors[i][2];
+
+    	scalars->InsertNextTupleValue(color);
+
         size_t index = 3 * i;
         vtkSmartPointer<vtkTriangle> t = vtkSmartPointer<vtkTriangle>::New();
         t->GetPointIds()->SetId(0, indices[index]);
@@ -562,10 +583,11 @@ vtkSmartPointer<vtkActor> LVRMeshBufferBridge::getColorMeshActor(vector<Material
         triangles->InsertNextCell(t);
     }
 
+
     // Build polydata
 	mesh->SetPoints(points);
 	mesh->SetPolys(triangles);
-	mesh->GetPointData()->SetTCoords(tc);
+	mesh->GetCellData()->SetScalars(scalars);
 
 
 	// Generate actor
@@ -573,14 +595,8 @@ vtkSmartPointer<vtkActor> LVRMeshBufferBridge::getColorMeshActor(vector<Material
 	mesh_mapper->SetInput(mesh);
 	actor = vtkSmartPointer<vtkActor>::New();
 	actor->SetMapper(mesh_mapper);
-	actor->SetTexture(getTexture(g->textureIndex));
 
-	// Set color properties
-	vtkSmartPointer<vtkProperty> property = vtkSmartPointer<vtkProperty>::New();
-	property->SetColor(g->color[0], g->color[1], g->color[2]);
-	actor->SetProperty(property);
-
-	return actor;*/
+	return actor;
 }
 
 bool LVRMeshBufferBridge::hasTextures()
