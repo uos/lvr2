@@ -52,6 +52,10 @@ public:
     MeshBufferPtr   getMeshBuffer();
     vtkSmartPointer<vtkActor> getActor();
 
+protected:
+    virtual void addSubItems();
+
+
 private:
     QColor                  m_color;
     MeshBufferBridgePtr     m_meshBridge;
