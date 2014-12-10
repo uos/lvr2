@@ -59,6 +59,10 @@ public:
     void setVisibility(bool visible);
     void setShading(int shader);
 
+    size_t									getNumColoredFaces();
+    size_t									getNumTexturedFaces();
+    size_t									getNumTextures();
+
 protected:
     void computeMeshActor(MeshBufferPtr meshbuffer);
     size_t                          m_numVertices;
@@ -66,6 +70,10 @@ protected:
     vtkSmartPointer<vtkActor>       m_meshActor;
     vtkSmartPointer<vtkActor>       m_wireframeActor;
     MeshBufferPtr                   m_meshBuffer;
+
+    size_t							m_numColoredFaces;
+    size_t							m_numTexturedFaces;
+    size_t							m_numTextures;
 
     void computeMaterialGroups(vector<MaterialGroup*>& matGroups, vector<MaterialGroup*>& colorMatGroups);
     void remapTexturedIndices(MaterialGroup* g, vector<Vertex<float> >& vertices, vector<Vertex<float> >& texCoords, vector<int>& indices);

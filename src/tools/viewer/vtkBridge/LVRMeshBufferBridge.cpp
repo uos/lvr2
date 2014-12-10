@@ -55,6 +55,10 @@ LVRMeshBufferBridge::LVRMeshBufferBridge(MeshBufferPtr meshBuffer) :
         m_numFaces = 0;
         m_numVertices = 0;
     }
+
+    m_numColoredFaces 	= 0;
+    m_numTexturedFaces 	= 0;
+    m_numTextures		= 0;
 }
 
 void LVRMeshBufferBridge::setBaseColor(float r, float g, float b)
@@ -76,6 +80,20 @@ LVRMeshBufferBridge::LVRMeshBufferBridge(const LVRMeshBufferBridge& b)
     m_numVertices   = b.m_numVertices;
     m_numFaces      = b.m_numFaces;
     m_meshActor     = b.m_meshActor;
+}
+
+size_t	LVRMeshBufferBridge::getNumColoredFaces()
+{
+	return m_numColoredFaces;
+}
+
+size_t	LVRMeshBufferBridge::getNumTexturedFaces()
+{
+	return m_numTexturedFaces;
+}
+size_t	LVRMeshBufferBridge::getNumTextures()
+{
+	return m_numTextures;
 }
 
 size_t LVRMeshBufferBridge::getNumTriangles()
@@ -458,6 +476,7 @@ vtkSmartPointer<vtkActor> LVRMeshBufferBridge::getTexturedActor(MaterialGroup* g
         t->GetPointIds()->SetId(1, indices[index + 1]);
         t->GetPointIds()->SetId(2, indices[index + 2]);
         triangles->InsertNextCell(t);
+        m_numTexturedFaces++;
     }
 
     // Build polydata
@@ -525,6 +544,8 @@ vtkSmartPointer<vtkActorCollection> LVRMeshBufferBridge::getTexturedActors()
 	vector<MaterialGroup*> colorGroups;
 	computeMaterialGroups(textureGroups, colorGroups);
 
+	m_numTextures = textureGroups.size();
+
 	vtkSmartPointer<vtkActorCollection> collection = vtkSmartPointer<vtkActorCollection>::New();
 	for(size_t i = 0; i < textureGroups.size(); i++)
 	{
@@ -581,6 +602,7 @@ vtkSmartPointer<vtkActor> LVRMeshBufferBridge::getColorMeshActor(vector<Material
         t->GetPointIds()->SetId(1, indices[index + 1]);
         t->GetPointIds()->SetId(2, indices[index + 2]);
         triangles->InsertNextCell(t);
+        m_numColoredFaces++;
     }
 
 

@@ -26,6 +26,7 @@
 #include "LVRPointCloudItem.hpp"
 #include "LVRMeshItem.hpp"
 #include "LVRItemTypes.hpp"
+#include "LVRTextureMeshItem.hpp"
 
 #include <vtkSmartPointer.h>
 #include <vtkActor.h>
@@ -56,9 +57,18 @@ LVRModelItem::LVRModelItem(ModelBridgePtr bridge, QString name) :
 
     if(bridge->m_meshBridge->getNumTriangles())
     {
-        LVRMeshItem* meshItem = new LVRMeshItem(bridge->m_meshBridge, this);
-        addChild(meshItem);
-        meshItem->setExpanded(true);
+    	if(bridge->m_meshBridge->hasTextures())
+    	{
+    		LVRTextureMeshItem* texItem = new LVRTextureMeshItem(bridge->m_meshBridge, this);
+    		addChild(texItem);
+    		texItem->setExpanded(true);
+    	}
+    	else
+    	{
+    		LVRMeshItem* meshItem = new LVRMeshItem(bridge->m_meshBridge, this);
+    		addChild(meshItem);
+    		meshItem->setExpanded(true);
+    	}
     }
 
     // Setup Pose
