@@ -36,7 +36,7 @@ LVRMeshItem::LVRMeshItem(MeshBufferBridgePtr& ptr, QTreeWidgetItem* parent) :
     m_color = QColor(255,255,255);
     m_visible = true;
     m_shader = 0;
-
+    m_parent = parent;
     addSubItems();
 }
 
