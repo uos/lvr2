@@ -31,6 +31,17 @@ namespace lvr
 LVRMeshItem::LVRMeshItem(MeshBufferBridgePtr& ptr, QTreeWidgetItem* parent) :
         QTreeWidgetItem(parent, LVRMeshItemType), m_meshBridge(ptr)
 {
+    // set initial values
+    m_opacity = 1;
+    m_color = QColor(255,255,255);
+    m_visible = true;
+    m_shader = 0;
+
+    addSubItems();
+}
+
+void LVRMeshItem::addSubItems()
+{
     QIcon icon;
     icon.addFile(QString::fromUtf8(":/qv_mesh_tree_icon.png"), QSize(), QIcon::Normal, QIcon::Off);
     setIcon(0, icon);
@@ -42,20 +53,14 @@ LVRMeshItem::LVRMeshItem(MeshBufferBridgePtr& ptr, QTreeWidgetItem* parent) :
     QTreeWidgetItem* vertItem = new QTreeWidgetItem(this);
     QString numVerts;
     vertItem->setText(0, "Num Points:");
-    vertItem->setText(1, numVerts.setNum(ptr->getNumVertices()));
+    vertItem->setText(1, numVerts.setNum(m_meshBridge->getNumVertices()));
     addChild(vertItem);
 
     QTreeWidgetItem* faceItem = new QTreeWidgetItem(this);
     QString numFaces;
     faceItem->setText(0, "Num Triangles:");
-    faceItem->setText(1, numFaces.setNum(ptr->getNumTriangles()));
+    faceItem->setText(1, numFaces.setNum(m_meshBridge->getNumTriangles()));
     addChild(faceItem);
-
-    // set initial values
-    m_opacity = 1;
-    m_color = QColor(255,255,255);
-    m_visible = true;
-    m_shader = 0;
 }
 
 QColor LVRMeshItem::getColor()
