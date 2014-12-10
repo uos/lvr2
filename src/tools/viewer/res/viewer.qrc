@@ -27,11 +27,13 @@
 	<file>qv_zoom.png</file>
 	<file>qv_model_tree_icon.png</file>
 	<file>qv_mesh_tree_icon.png</file>
+	<file>qv_mesh_texture_item</item>
 	<file>qv_transform_tree_icon.png</file>
 	<file>qv_pc_tree_icon.png</file>
 	<file>tb_left.png</file>
 	<file>tb_right.png</file>
 	<file>tb_delete.png</file>
+	
 </qresource>
 </RCC>
 
