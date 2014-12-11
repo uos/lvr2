@@ -185,6 +185,11 @@ public:
 	string 	getClassifier() const;
 
 	/**
+	 * @brief	Returns the name of the given file with scan poses used for normal flipping.
+	 */
+	string 	getScanPoseFile() const;
+
+	/**
 	 * @brief   Returns the number of intersections. If the return value
 	 *          is positive it will be used for reconstruction instead of
 	 *          absolute voxelsize.
