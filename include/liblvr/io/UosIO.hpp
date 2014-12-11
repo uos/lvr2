@@ -119,6 +119,7 @@ public:
     void save(string filename) {}
 
 
+
     /**
      * @brief Convert remission value to pseudo RGB values while saving
      */
@@ -129,7 +130,6 @@ public:
      * @brief Save remission (if present)
      */
     void saveRemission(bool yes) { m_saveRemission= yes;}
-
 
 private:
 
@@ -217,10 +217,6 @@ private:
 
     /// Filestream to save reduced data
     ofstream    m_outputFile;
-
-    /// Reduction factor
-    int     m_reduction;
-
 
     /// Number of loaded scans
     int     m_numScans;
