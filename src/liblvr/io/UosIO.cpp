@@ -190,8 +190,7 @@ void UosIO::reduce(string dir, string target, int reduction)
     // Read data and write reduced points
     ModelPtr m = read(dir);
 
-    // Write reduced points...
-    ///TODO: Implement writing...
+
 }
 
 

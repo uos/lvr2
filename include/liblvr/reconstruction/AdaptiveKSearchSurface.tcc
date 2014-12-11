@@ -32,6 +32,8 @@
 // boost libraries
 #include <boost/filesystem.hpp>
 
+#include <fstream>
+
 namespace lvr
 {
 
@@ -55,11 +57,14 @@ AdaptiveKSearchSurface<VertexT, NormalT>::AdaptiveKSearchSurface(
         const int &kn,
         const int &ki,
         const int &kd,
-        const bool &useRansac )
+        const bool &useRansac,
+        string posefile)
 : PointsetSurface<VertexT>( loader )
 {
    // Init:
 //    srand(time(NULL));
+
+	m_searchTreeName = searchTreeName;
 
    size_t n_points, n_normals;
    this->m_points = loader->getIndexedPointArray(n_points);
@@ -109,6 +114,78 @@ AdaptiveKSearchSurface<VertexT, NormalT>::AdaptiveKSearchSurface(
        cout << timestamp << "No Valid Searchtree class specified!" << endl;
        cout << timestamp << "Class: " << searchTreeName << endl;
     }
+
+    if(posefile != "")
+    {
+    	parseScanPoses(posefile);
+    }
+
+}
+
+template<typename VertexT, typename NormalT>
+void AdaptiveKSearchSurface<VertexT, NormalT>::parseScanPoses(string posefile)
+{
+	cout << timestamp << "Parsing scan poses." << endl;
+	std::ifstream in(posefile.c_str());
+	if(!in.good())
+	{
+		cout << timestamp << "Unable to open scan pose file " << posefile << endl;
+		return;
+	}
+
+	// Read vertex information
+	float x, y, z;
+	std::vector<VertexT> v;
+	while(in.good())
+	{
+		in >> x >> y >> z;
+		v.push_back(VertexT(x, y, z));
+	}
+
+	if(v.size() > 0)
+	{
+		PointBufferPtr loader (new PointBuffer);
+		floatArr points(new float[3 * v.size()]);
+		for(size_t i = 0; i < v.size(); i++)
+		{
+			points[3 * i] 		= v[i][0];
+			points[3 * i + 1]	= v[i][1];
+			points[3 * i + 2]	= v[i][2];
+		}
+
+		loader->setPointArray(points, v.size());
+		size_t n = v.size();
+
+		cout << timestamp << "Creating pose search tree(" << m_searchTreeName << ") with " << n << " poses." << endl;
+		if( m_searchTreeName == "flann"  || m_searchTreeName == "FLANN" )
+		{
+#ifdef _USE_PCL_
+			this->m_poseTree = search_tree::Ptr( new SearchTreeFlann<VertexT>(loader, n, 1, 1, 1) );
+#else
+			cout << timestamp << "Warning: PCL is not installed. Using STANN search tree in AdaptiveKSearchSurface." << endl;
+			this->m_poseTree = search_tree::Ptr( new SearchTreeStann<VertexT>(loader, n, 1, 1, 1) );
+#endif
+		}
+		else if( m_searchTreeName == "stann" || m_searchTreeName == "STANN" )
+		{
+			this->m_poseTree = search_tree::Ptr( new SearchTreeStann<VertexT>(loader, n, 1, 1, 1) );
+		}
+		else if( m_searchTreeName == "nanoflann" || m_searchTreeName == "NANOFLANN")
+		{
+			this->m_poseTree = search_tree::Ptr( new SearchTreeNanoflann<VertexT>(loader, n, 1, 1, 1));
+		}
+#ifdef _USE_NABO
+		else if( m_searchTreeName == "nabo" || m_searchTreeName == "NABO" )
+		{
+			this->m_poseTree = search_tree::Ptr( new SearchTreeNabo<VertexT>(loader, n, 1, 1, 1));
+		}
+#endif
+		else
+		{
+			cout << timestamp << "No Valid Searchtree class specified!" << endl;
+			cout << timestamp << "Class: " << m_searchTreeName << endl;
+	    }
+	}
 }
 
 template<typename VertexT, typename NormalT>
@@ -250,10 +327,29 @@ void AdaptiveKSearchSurface<VertexT, NormalT>::calculateSurfaceNormals()
         // Get the mean distance to the tangent plane
         //mean_distance = meanDistance(p, id, k);
 
-        // Flip normals towards the center of the scene
-        normal =  p.n;
-
-        if(normal * (query_point - m_centroid) < 0) normal = normal * -1;
+        // Flip normals towards the center of the scene or nearest scan pose
+        if(m_poseTree)
+        {
+        	vector<VertexT> nearestPoses;
+        	m_poseTree->kSearch(query_point, 1, nearestPoses);
+        	if(nearestPoses.size() == 1)
+        	{
+        		VertexT nearest = nearestPoses[0];
+        		normal = p.n;
+        		if(normal * (query_point - nearest) < 0) normal = normal * -1;
+        	}
+        	else
+        	{
+        		cout << timestamp << "Could not get nearest scan pose. Defaulting to centroid." << endl;
+        		normal =  p.n;
+        		if(normal * (query_point - m_centroid) < 0) normal = normal * -1;
+        	}
+        }
+        else
+        {
+            normal =  p.n;
+            if(normal * (query_point - m_centroid) < 0) normal = normal * -1;
+        }
 
         // Save result in normal array
         this->m_normals[i][0] = normal[0];

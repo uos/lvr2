@@ -39,7 +39,7 @@ using std::string;
 using std::vector;
 
 
-namespace reduce
+namespace leica_convert
 {
 
 using namespace boost::program_options;
@@ -58,26 +58,19 @@ public:
 	Options(int argc, char** argv);
 	virtual ~Options();
 
-	/**
-	 * @brief	Returns the given voxelsize
-	 */
-	int     firstScan() const;
-	int     lastScan() const;
-	int     reduction() const;
-	string  directory() const;
-	string  outputFile() const;
-	bool    convertRemission() const;
-	bool    saveRemission() const;
-
-	bool    printUsage() const;
+	string	getInputDir() const;
+	string 	getOutputDir() const;
+	string 	getOutputFormat() const;
+	string 	getInputFormat() const;
+	bool	filter() const;
+	int		getK() const;
+	float	getSigma() const;
+	int		getTargetSize() const;
 
 private:
 
-	int m_first;
-	int m_last;
-	int m_reduction;
+	/// Output file name
 	string m_outputFile;
-	bool m_convertRemission;
 
     /// The internally used variable map
     variables_map                   m_variables;
@@ -95,13 +88,19 @@ private:
 inline ostream& operator<<(ostream& os, const Options &o)
 {
 	cout << "##### Program options: " 	<< endl;
-	cout << "##### Input dir \t\t: "  << o.directory() << endl;
-	cout << "##### Output file \t\t: " 	<< o.outputFile() << endl;
-	cout << "##### First scan to read \t: " << o.firstScan() << endl;
-	cout << "##### Last scan to read \t: " << o.lastScan() << endl;
-	cout << "##### Reduction \t\t: " << o.reduction() << endl;
-	cout << "##### Save Remission:\t\t" << o.saveRemission() << endl;
-	cout << "##### Convert Remission: " << o.convertRemission() << endl;
+	cout << "##### Input dir \t\t: "  << o.getInputDir() << endl;
+	cout << "##### Output dir \t\t: " 	<< o.getOutputDir() << endl;
+	if(o.filter())
+	{
+		cout << "##### Filter  \t\t\t: YES" << endl;
+		cout << "##### K  \t\t\t\t: " << o.getK() << endl;
+		cout << "##### Sigma \t\t\t: " << o.getSigma() << endl;
+	}
+	else
+	{
+		cout << "##### Filter  \t\t\t: NO" << endl;
+	}
+	cout << "##### Target Size \t: " << o.getTargetSize() << endl;
 	return os;
 }
 

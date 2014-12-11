@@ -31,6 +31,7 @@
 #include "io/LasIO.hpp"
 #include "io/BoctreeIO.hpp"
 #include "io/ModelFactory.hpp"
+#include "io/DatIO.hpp"
 
 #include "io/Timestamp.hpp"
 #include "io/Progress.hpp"
@@ -70,6 +71,10 @@ ModelPtr ModelFactory::readModel( std::string filename )
     else if (extension == ".las")
     {
         io = new LasIO;
+    }
+    else if (extension ==".dat")
+    {
+    	io = new DatIO;
     }
 #ifdef _USE_PCL_
     else if (extension == ".pcd")
