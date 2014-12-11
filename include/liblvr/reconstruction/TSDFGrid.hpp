@@ -24,7 +24,7 @@ public:
 
 } /* namespace lvr */
 
-#include "TsdfGrid.tcc"
+#include "TSDFGrid.tcc"
 
 
 #endif /* INCLUDE_LIBLVR_RECONSTRUCTION_TsdfGrid_HPP_ */
