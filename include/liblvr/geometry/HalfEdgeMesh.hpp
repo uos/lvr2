@@ -105,6 +105,8 @@ public:
     typedef vector<HVertex* > VertexVector;
 
 
+	HalfEdgeMesh();
+
 	/**
 	 * @brief   Ctor.
 	 *
