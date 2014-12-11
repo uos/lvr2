@@ -144,6 +144,9 @@
 // Local includes
 #include "reconstruction/AdaptiveKSearchSurface.hpp"
 #include "reconstruction/FastReconstruction.hpp"
+#include "reconstruction/PointsetGrid.hpp"
+#include "reconstruction/FastBox.hpp"
+
 #include "io/PLYIO.hpp"
 #include "geometry/Matrix4.hpp"
 #include "geometry/HalfEdgeMesh.hpp"
@@ -227,7 +230,9 @@ int main(int argc, char** argv)
 					p_loader, pcm_name,
 					options.getKn(),
 					options.getKi(),
-					options.getKd()
+					options.getKd(),
+					options.useRansac(),
+					options.getScanPoseFile()
 			);
 
 			surface = psSurface::Ptr(aks);
@@ -370,27 +375,27 @@ int main(int argc, char** argv)
 			useVoxelsize = true;
 		}
 
-		// Create a new reconstruction object
+		// Create a point set grid for reconstruction
+		PointsetGrid<ColorVertex<float, unsigned char>, FastBox<ColorVertex<float, unsigned char>, Normal<float> > > grid(resolution, surface, surface->getBoundingBox(), useVoxelsize);
+		grid.setExtrusion(options.extrude());
+		grid.calcDistanceValues();
 
-		FastReconstruction<ColorVertex<float, unsigned char> , Normal<float>  > reconstruction(
-				surface,
-				resolution,
-				useVoxelsize,
-				options.getDecomposition(),
-				options.extrude());
-		
+
+		// Create a new reconstruction object
+		FastReconstruction<ColorVertex<float, unsigned char> , Normal<float>, FastBox<ColorVertex<float, unsigned char>, Normal<float> >  > reconstruction(&grid);
+
 		
 		// Create mesh
-		 reconstruction.getMesh(mesh); // kleines Speicherleck noch vorhanden
+		 reconstruction.getMesh(mesh);
 		
 		// Save grid to file
 		if(options.saveGrid())
 		{
-			reconstruction.saveGrid("fastgrid.grid");
+			grid.saveGrid("fastgrid.grid");
 		}
 
 		if(options.getDanglingArtifacts())
-		{
+ 		{
 			mesh.removeDanglingArtifacts(options.getDanglingArtifacts());
 		}
 

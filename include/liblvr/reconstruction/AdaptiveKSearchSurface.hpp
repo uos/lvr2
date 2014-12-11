@@ -119,7 +119,8 @@ public:
             const int &kn = 10,
             const int &ki = 10,
             const int &kd = 10,
-            const bool &useRansac = false );
+            const bool &useRansac = false,
+            string poseFile = "");
 
     /**
      * @brief standard Constructor
@@ -220,6 +221,12 @@ public:
 private:
 
     /**
+     * @brief Parses the file with scan poses and creates a search tree to
+     * 		  search for the nearest pose when flipping normals
+     */
+    void parseScanPoses(string posefile);
+
+    /**
      * @brief Returns the k closest neighbor vertices to a given queryy point
      *
      * @param v         A query vertex
@@ -298,7 +305,7 @@ private:
 
     /// Should a randomized algorithm be used to determine planes?
 	bool                        m_useRANSAC;
-    
+
     /// The currently stored points
     coord3fArr                  m_points;
 
@@ -318,6 +325,13 @@ private:
 
     /// The number of tangent planes used for distance determination
     int                         m_kd;
+
+    /// Search tree for scan poses
+    typename SearchTree<VertexT>::Ptr  m_poseTree;
+
+    /// Type of used search tree
+    string						m_searchTreeName;
+
 };
 
 

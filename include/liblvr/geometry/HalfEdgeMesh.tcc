@@ -30,6 +30,16 @@
 
 namespace lvr
 {
+	
+template<typename VertexT, typename NormalT>
+HalfEdgeMesh<VertexT, NormalT>::HalfEdgeMesh( )
+{
+    m_globalIndex = 0;
+    m_regionClassifier = ClassifierFactory<VertexT, NormalT>::get("Default", this);
+    m_classifierType = "Default";
+    m_pointCloudManager = NULL;
+    m_depth = 100;
+}
 
 template<typename VertexT, typename NormalT>
 HalfEdgeMesh<VertexT, NormalT>::HalfEdgeMesh( 
@@ -74,7 +84,8 @@ HalfEdgeMesh<VertexT, NormalT>::~HalfEdgeMesh()
 {
 
     this->m_meshBuffer.reset();
-    this->m_pointCloudManager.reset();
+    if(this->m_pointCloudManager != NULL)
+		this->m_pointCloudManager.reset();
 
     typename set<EdgePtr>::iterator e_it = m_garbageEdges.begin();
     for(; e_it != m_garbageEdges.end(); e_it++)
@@ -907,6 +918,7 @@ void HalfEdgeMesh<VertexT, NormalT>::optimizePlanes(
     }
 
     // Delete too small regions
+    cout << timestamp << "Starting to delete small regions" << endl;
     if(small_region_size)
     {
         cout << timestamp << "Deleting small regions" << endl;
