@@ -11,7 +11,7 @@ namespace lvr
 {
 
 template<typename VertexT, typename BoxT, typename TsdfT>
-TsdfGrid(float cellSize,  BoundingBox<VertexT> bb, TsdfT* tsdf, size_t size, bool isVoxelsize = true);
+TsdfGrid<VertexT, BoxT, TsdfT>::TsdfGrid(float cellSize,  BoundingBox<VertexT> bb, TsdfT* tsdf, size_t size, bool isVoxelsize)
 	: HashGrid<VertexT, BoxT>(cellSize, bb, isVoxelsize)
 {
 	// Iterator over all points, calc lattice indices and add lattice points to the grid
@@ -23,7 +23,7 @@ TsdfGrid(float cellSize,  BoundingBox<VertexT> bb, TsdfT* tsdf, size_t size, boo
 }
 
 template<typename VertexT, typename BoxT, typename TsdfT>
-TsdfGrid<VertexT, BoxT>::~TsdfGrid()
+TsdfGrid<VertexT, BoxT, TsdfT>::~TsdfGrid()
 {
 
 }
