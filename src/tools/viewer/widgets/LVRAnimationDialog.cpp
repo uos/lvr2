@@ -218,16 +218,14 @@ void LVRAnimationDialog::saveVideo()
 	double step = (maxT - minT) / (double)n;
 	vtkSmartPointer<vtkCamera> i_cam = vtkSmartPointer<vtkCamera>::New();
 
-	vtkSmartPointer<vtkWindowToImageFilter> windowToImageFilter =
-	    vtkSmartPointer<vtkWindowToImageFilter>::New();
 
-	windowToImageFilter->SetInput(m_renderWindowInteractor->GetRenderWindow());
 
 
 	vtkRendererCollection* collection = m_renderWindowInteractor->GetRenderWindow()->GetRenderers();
 	vtkRenderer* renderer;
 	char buffer[256];
 	int c = 0;
+	double range[2];
 	for(double camT = 0; camT < maxT; camT += step)
 	{
 		i->InterpolateCamera(camT, i_cam);
@@ -240,6 +238,11 @@ void LVRAnimationDialog::saveVideo()
 			m_renderWindowInteractor->GetRenderWindow()->Render();
 			renderer = collection->GetNextItem();
 		}
+
+		vtkSmartPointer<vtkWindowToImageFilter> windowToImageFilter =
+			    vtkSmartPointer<vtkWindowToImageFilter>::New();
+
+			windowToImageFilter->SetInput(m_renderWindowInteractor->GetRenderWindow());
 		windowToImageFilter->Update();
 
 		  vtkSmartPointer<vtkPNGWriter> writer =
