@@ -35,7 +35,10 @@ using namespace std;
 #include "io/Timestamp.hpp"
 #include "io/ModelFactory.hpp"
 #include "io/AsciiIO.hpp"
-#include "reconstruction/PCLFiltering.hpp"
+#ifdef _USE_PCL_
+	#include "reconstruction/PCLFiltering.hpp"
+#endif
+
 
 using namespace lvr;
 
@@ -45,6 +48,7 @@ ModelPtr filterModel(ModelPtr p, int k, float sigma)
 	{
 		if(p->m_pointCloud)
 		{
+#ifdef _USE_PCL_
 			PCLFiltering filter(p->m_pointCloud);
 			cout << timestamp << "Filtering outliers with k=" << k << " and sigma=" << sigma << "." << endl;
 			size_t original_size = p->m_pointCloud->getNumPoints();
@@ -53,6 +57,11 @@ ModelPtr filterModel(ModelPtr p, int k, float sigma)
 			ModelPtr out_model( new Model( pb ) );
 			cout << timestamp << "Filtered out " << original_size - out_model->m_pointCloud->getNumPoints() << " points." << endl;
 			return out_model;
+#else 
+			cout << timestamp << "Can't create a PCL Filter without PCL installed." << endl;
+			return NULL;
+#endif
+			
 		}
 	}
 	p;
