@@ -21,7 +21,10 @@
 
 #include "io/Timestamp.hpp"
 #include "io/ModelFactory.hpp"
+#ifdef _USE_PCL_
 #include "reconstruction/PCLFiltering.hpp"
+#endif
+
 
 #include <iostream>
 
@@ -51,6 +54,8 @@ int main(int argc, char** argv)
 		{
 			if(m->m_pointCloud)
 			{
+
+#ifdef _USE_PCL_
 				PCLFiltering filter(m->m_pointCloud);
 
 				// Apply filters
@@ -69,6 +74,10 @@ int main(int argc, char** argv)
 				ModelPtr out_model( new Model( pb ) );
 
 				ModelFactory::saveModel(out_model, options.outputFile());
+#else 
+				cout << timestamp << "Can't create a PCL Filter without PCL installed." << endl;
+				exit(-1);
+#endif
 			}
 		}
 		else
