@@ -84,7 +84,9 @@ find_package(PCL 1.0)
 if ( "${PCL_VERSION}" STREQUAL "" )
     find_package(PCL 1.0)
 endif ( "${PCL_VERSION}" STREQUAL "" )
-if(PCL_NOT_FOUND)
+set(PCL_FOUND 0)
+
+if(PCL_FOUND)
     message(STATUS "Found PCL ${PCL_VERSION}")
 	if ( "${PCL_VERSION}" VERSION_GREATER "1.0" )
         include_directories(${PCL_INCLUDE_DIRS})
@@ -100,10 +102,10 @@ if(PCL_NOT_FOUND)
         message( "-- Your PCL version is to old.." )
         message( "-- PCL related stuff will be disabled." )
 	endif ( "${PCL_VERSION}" VERSION_GREATER "1.0" )
-else(PCL_NOT_FOUND)
+else(PCL_FOUND)
         message( "-- No PCL found." )
         message( "-- PCL related stuff will be disabled." )
-endif(PCL_NOT_FOUND)
+endif(PCL_FOUND)
 
 
 ####

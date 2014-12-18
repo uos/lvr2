@@ -109,6 +109,12 @@ public:
 	 */
 	virtual ~HashGrid();
 
+	/**
+	 * @brief	Set x, y, z values to scale the scene or use combinations
+	 * 			of +/-1 to mapp different coordinate systems
+	 */
+	void setCoordinateScaling(float x, float y, float z);
+
 protected:
 
 	/***
@@ -174,6 +180,9 @@ protected:
 
     /// The maximum used cell index within the grid
     unsigned int				m_globalIndex;
+
+    /// Save scaling factors (i.e., -1 or +1) to mapp different coordinate systems
+    VertexT						m_coordinateScales;
 };
 
 } /* namespace lvr */
