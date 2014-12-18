@@ -84,6 +84,8 @@ find_package(PCL 1.0)
 if ( "${PCL_VERSION}" STREQUAL "" )
     find_package(PCL 1.0)
 endif ( "${PCL_VERSION}" STREQUAL "" )
+set(PCL_FOUND 0)
+
 if(PCL_FOUND)
     message(STATUS "Found PCL ${PCL_VERSION}")
 	if ( "${PCL_VERSION}" VERSION_GREATER "1.0" )
