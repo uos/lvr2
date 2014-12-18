@@ -47,6 +47,9 @@ HashGrid<VertexT, BoxT>::HashGrid(float cellSize, BoundingBox<VertexT> boundingB
 	m_boundingBox(boundingBox),
 	m_globalIndex(0)
 {
+	m_coordinateScales[0] = 1.0;
+	m_coordinateScales[1] = 1.0;
+	m_coordinateScales[2] = 1.0;
 
 	if(!m_boundingBox.isValid())
 	{
@@ -71,6 +74,14 @@ HashGrid<VertexT, BoxT>::HashGrid(float cellSize, BoundingBox<VertexT> boundingB
 
 	BoxT::m_voxelsize = m_voxelsize;
 	calcIndices();
+}
+
+template<typename VertexT, typename BoxT>
+void HashGrid<VertexT, BoxT>::setCoordinateScaling(float x, float y, float z)
+{
+	m_coordinateScales[0] = x;
+	m_coordinateScales[1] = y;
+	m_coordinateScales[2] = z;
 }
 
 template<typename VertexT, typename BoxT>
@@ -170,9 +181,9 @@ void HashGrid<VertexT, BoxT>::addLatticePoint(int index_x, int index_y, int inde
 		{
 			//Calculate box center
 			VertexT box_center(
-					(index_x + dx) * m_voxelsize + v_min[0],
-					(index_y + dy) * m_voxelsize + v_min[1],
-					(index_z + dz) * m_voxelsize + v_min[2]);
+					m_coordinateScales[0] * ((index_x + dx) * m_voxelsize + v_min[0]),
+					m_coordinateScales[1] * ((index_y + dy) * m_voxelsize + v_min[1]),
+					m_coordinateScales[2] * ((index_z + dz) * m_voxelsize + v_min[2]));
 
 			//Create new box
 			BoxT* box = new BoxT(box_center);
@@ -188,9 +199,10 @@ void HashGrid<VertexT, BoxT>::addLatticePoint(int index_x, int index_y, int inde
 				//Otherwise create new grid point and associate it with the current box
 				else
 				{
-					VertexT position(box_center[0] + box_creation_table[k][0] * vsh,
-							box_center[1] + box_creation_table[k][1] * vsh,
-							box_center[2] + box_creation_table[k][2] * vsh);
+					VertexT position(
+							m_coordinateScales[0] * (box_center[0] + box_creation_table[k][0] * vsh),
+							m_coordinateScales[1] * (box_center[1] + box_creation_table[k][1] * vsh),
+							m_coordinateScales[2] * (box_center[2] + box_creation_table[k][2] * vsh));
 
 					m_queryPoints.push_back(QueryPoint<VertexT>(position, distance));
 					box->setVertex(k, m_globalIndex);
