@@ -181,9 +181,9 @@ void HashGrid<VertexT, BoxT>::addLatticePoint(int index_x, int index_y, int inde
 		{
 			//Calculate box center
 			VertexT box_center(
-					m_coordinateScales[0] * ((index_x + dx) * m_voxelsize + v_min[0]),
-					m_coordinateScales[1] * ((index_y + dy) * m_voxelsize + v_min[1]),
-					m_coordinateScales[2] * ((index_z + dz) * m_voxelsize + v_min[2]));
+					((index_x + dx) * m_voxelsize + v_min[0]),
+					((index_y + dy) * m_voxelsize + v_min[1]),
+					((index_z + dz) * m_voxelsize + v_min[2]));
 
 			//Create new box
 			BoxT* box = new BoxT(box_center);
