@@ -214,7 +214,7 @@ void LVRAnimationDialog::saveVideo()
 
 	double minT = i->GetMinimumT();
 	double maxT = i->GetMaximumT();
-	int n = frameCount * frameMultiplier;
+	int n = frameMultiplier;
 	double step = (maxT - minT) / (double)n;
 	vtkSmartPointer<vtkCamera> i_cam = vtkSmartPointer<vtkCamera>::New();
 
