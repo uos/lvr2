@@ -237,6 +237,8 @@ public:
 	 * @param minRegionSize		The minimum size of a region
 	 */
 	virtual void restorePlanes(int minRegionSize);
+	
+	virtual size_t meshSize() { return m_vertices.size(); };
 
 	/**
 	 * TODO write comments
@@ -287,7 +289,12 @@ public:
 	 * @brief returns the RegionVector
 	 */
 	RegionVector getRegions() { return m_regions; }
-
+	
+	/**
+	 * @brief returns a reference to the VertexVector
+	 */
+	VertexVector& getVertices() { return m_vertices; }
+	
 private:
 
 	void checkFaceIntegreties();
