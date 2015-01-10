@@ -19,6 +19,7 @@ TsdfGrid<VertexT, BoxT, TsdfT>::TsdfGrid(float cellSize,  BoundingBox<VertexT> b
 	// Iterator over all points, calc lattice indices and add lattice points to the grid
 	for(size_t i = 0; i < size; i++)
 	{
+		#pragma omp task
 		this->addLatticePoint(tsdf[i].x , tsdf[i].y, tsdf[i].z, tsdf[i].w);
 	}
 	cout << timestamp << "Finished creating grid" << endl;
