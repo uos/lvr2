@@ -54,10 +54,12 @@ void FastReconstruction<VertexT, NormalT, BoxT>::getMesh(BaseMesh<VertexT, Norma
 	{
 		b = it->second;
 		b->getSurface(mesh, m_grid->getQueryPoints(), global_index);
-		++progress;
+		if(!timestamp.isQuiet())
+			++progress;
 	}
-
-	cout << endl;
+	
+	if(!timestamp.isQuiet())
+		cout << endl;
 
 /*	if(m_boxType == "SF")  // Perform edge flipping for extended marching cubes
 	{
