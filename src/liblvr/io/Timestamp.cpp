@@ -92,7 +92,7 @@ using namespace std;
 
 namespace lvr {
 
-Timestamp::Timestamp()
+Timestamp::Timestamp(): m_nullStream(&m_nullBuffer)
 {
     resetTimer();
 }

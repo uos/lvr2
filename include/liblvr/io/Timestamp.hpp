@@ -75,27 +75,50 @@ public:
 	 * @brief	Resets the internal timer
 	 */
 	void     	   resetTimer();
+	
+	void 		   setQuiet(bool quiet) { m_quiet = quiet;};
 
 	/**
 	 * @brief	Returns a string representation of the current
 	 * 			timer value
 	 */
 	string		   getElapsedTime() const;
+	
+	bool		   isQuiet() {return m_quiet;};
+	
+	ostream&       getNullStream() { return m_nullStream; };
+	
 
 private:
+	
+	class NullBuffer : public std::streambuf
+	{
+		public:
+			int overflow(int c) { return c; }
+	};
 
 	/// The system at object instantiation
 	unsigned long 	m_startTime;
+	bool 			m_quiet;
+	NullBuffer 		m_nullBuffer;
+	std::ostream    m_nullStream;
 };
 
 /// A global time stamp object for program runtime measurement
 static Timestamp timestamp;
 
 /// The output operator for Timestamp objects
-inline ostream& operator<<(ostream& os, const Timestamp &ts)
+inline ostream& operator<<(ostream& os, Timestamp &ts)
 {
-	os << ts.getElapsedTime();
-	return os;
+	if(ts.isQuiet())
+	{
+		return ts.getNullStream();
+	}
+	else
+	{
+		os << ts.getElapsedTime();
+		return os;
+	}
 }
 
 } // namespace lvr
