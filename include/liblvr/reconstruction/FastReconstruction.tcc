@@ -53,6 +53,7 @@ void FastReconstruction<VertexT, NormalT, BoxT>::getMesh(BaseMesh<VertexT, Norma
 	for(it = m_grid->firstCell(); it != m_grid->lastCell(); it++)
 	{
 		b = it->second;
+		#pragma omp task shared(mesh) // speedup 1/3
 		b->getSurface(mesh, m_grid->getQueryPoints(), global_index);
 		if(!timestamp.isQuiet())
 			++progress;
