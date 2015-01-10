@@ -89,6 +89,8 @@ class BaseMesh
          *           to OpenGL compatible buffers
          */
         virtual void finalize() = 0;
+        
+        virtual size_t meshSize() = 0;
 
 
         /**
