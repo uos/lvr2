@@ -58,8 +58,8 @@ public:
 		this->x = _x;
 		this->y = _y;
 		this->z = _z;
-		this->r = 255;
-		this->g = 255;
+		this->r = 0;
+		this->g = 100;
 		this->b = 0;
 	}
 
