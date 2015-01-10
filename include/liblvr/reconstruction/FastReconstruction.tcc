@@ -46,7 +46,7 @@ void FastReconstruction<VertexT, NormalT, BoxT>::getMesh(BaseMesh<VertexT, Norma
 
 	// Some pointers
 	BoxT* b;
-	unsigned int global_index = 0;
+	unsigned int global_index = mesh.meshSize();
 
 	// Iterate through cells and calculate local approximations
 	typename HashGrid<VertexT, BoxT>::box_map_it it;
