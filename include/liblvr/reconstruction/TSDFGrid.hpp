@@ -19,6 +19,10 @@ class TsdfGrid: public HashGrid<VertexT, BoxT>
 public:
 	TsdfGrid(float cellSize,  BoundingBox<VertexT> bb, TsdfT* tsdf, size_t size, bool isVoxelsize = true);
 	virtual ~TsdfGrid();
+	inline int calcIndex(float f)
+    {
+        return f < 0 ? f-.5:f+.5;
+    }
 
 };
 
