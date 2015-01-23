@@ -35,6 +35,8 @@
 #include <io/ModelFactory.hpp>
 #include <io/Timestamp.hpp>
 
+#include "config/lvropenmp.hpp"
+
 #include "reconstruction/AdaptiveKSearchSurface.hpp"
 
 using namespace lvr;
@@ -98,12 +100,12 @@ void parseArgs( int argc, char ** argv ) {
                 break;
             case 'j':
                 if ( !strcmp( optarg, "auto" ) ) {
-                    omp_set_num_threads( omp_get_num_procs() );
+                	OpenMPConfig::setMaxNumThreads();
                 } else {
-                    omp_set_num_threads( 
+                    OpenMPConfig::setNumThreads(
                             atoi( optarg ) > 1 
                             ? atoi( optarg )
-                            : omp_get_num_procs() );
+                            : OpenMPConfig::getNumThreads() );
                 }
                 break;
             case 'c':

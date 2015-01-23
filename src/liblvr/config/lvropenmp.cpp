@@ -49,6 +49,13 @@ void OpenMPConfig::setNumThreads(int n)
 #endif
 }
 
+void OpenMPConfig::setMaxNumThreads()
+{
+#ifdef _USE_OPEN_MP
+	omp_set_num_threads(omp_get_num_procs());
+#endif
+}
+
 int OpenMPConfig::getNumThreads()
 {
 #ifdef _USE_OPEN_MP
