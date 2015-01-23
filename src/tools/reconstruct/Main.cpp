@@ -148,6 +148,7 @@
 #include "reconstruction/FastBox.hpp"
 
 #include "io/PLYIO.hpp"
+#include "config/lvropenmp.hpp"
 #include "geometry/Matrix4.hpp"
 #include "geometry/HalfEdgeMesh.hpp"
 #include "texture/Texture.hpp"
@@ -194,7 +195,7 @@ int main(int argc, char** argv)
 			return 0;
 		}
 
-		omp_set_num_threads(options.getNumThreads());
+		OpenMPConfig::setNumThreads(options.getNumThreads());
 
 		std::cout << options << std::endl;
 
