@@ -1,4 +1,5 @@
 set(LVR_SOURCES
+    config/lvropenmp.cpp
     io/BaseIO.cpp
     io/ModelFactory.cpp
     io/PLYIO.cpp
