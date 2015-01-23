@@ -21,6 +21,9 @@ public:
 
 	/// Sets the number of used threads if OpenMP is used for parallelization
 	static void setNumThreads(int n);
+
+	/// Enables the maximum number of parallel threads
+	static void setMaxNumThreads();
 };
 
 } // namespace lvr
