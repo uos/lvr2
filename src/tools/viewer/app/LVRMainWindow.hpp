@@ -37,7 +37,6 @@
 #include <vtkViewport.h>
 #include <vtkObjectFactory.h>
 #include <vtkGraphicsFactory.h>
-#include <vtkTesting.h>
 
 #include <QtGui>
 #include "LVRMainWindowUI.h"
