@@ -34,7 +34,7 @@ void LVRPlanarOptimizationDialog::connectSignalsAndSlots()
 void LVRPlanarOptimizationDialog::toggleSmallRegionRemoval(int state)
 {
     QSpinBox* smallRegionRemoval_box = m_dialog->spinBox_sr;
-    if(state == Qt::CheckState::Checked)
+    if(state == Qt::Checked)
     {
         smallRegionRemoval_box->setEnabled(true);
     }
@@ -48,7 +48,7 @@ void LVRPlanarOptimizationDialog::toggleRetesselation(int state)
 {
     QCheckBox* generateTextures_box = m_dialog->checkBox_gt;
     QDoubleSpinBox* lineSegmentThreshold_box = m_dialog->doubleSpinBox_ls;
-    if(state == Qt::CheckState::Checked)
+    if(state == Qt::Checked)
     {
         generateTextures_box->setEnabled(true);
         lineSegmentThreshold_box->setEnabled(true);
