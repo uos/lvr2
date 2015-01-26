@@ -134,7 +134,12 @@ void LVRTransformationDialog::restoreAndClose()
 void LVRTransformationDialog::reset()
 {
     // Reset values
-    m_pose = {0.0, 0.0, 0.0, 0.0, 0.0, 0.0};
+    m_pose.p = 0.0;
+    m_pose.r = 0.0;
+    m_pose.t = 0.0;
+    m_pose.x = 0.0;
+    m_pose.y = 0.0;
+    m_pose.z = 0.0;
 
     // Reset sliders
     m_dialogUI->sliderXRot->setValue(0);

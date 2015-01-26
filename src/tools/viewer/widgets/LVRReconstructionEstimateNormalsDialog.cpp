@@ -33,7 +33,7 @@ void LVREstimateNormalsDialog::connectSignalsAndSlots()
 void LVREstimateNormalsDialog::toggleNormalInterpolation(int state)
 {
     QSpinBox* spinBox_ki = m_dialog->spinBox_ki;
-    if(state == Qt::CheckState::Checked)
+    if(state == Qt::Checked)
     {
         spinBox_ki->setEnabled(true);
     }
