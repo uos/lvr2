@@ -37,23 +37,23 @@
 #include "bytestreamin_file.hpp"
 #include "bytestreamout_file.hpp"
 
-#ifdef UNORDERED
-#include <tr1/unordered_map>
+//#ifdef UNORDERED
+#include <unordered_map>
 using namespace std;
-using namespace tr1;
+//using namespace tr1;
 typedef unordered_map<I32,U32> my_cell_hash;
-#else
+//#else
 
-#if _MSC_VER
+/*#if _MSC_VER
 #include <hash_map>
 using namespace stdext;
 #else
 #include <ext/hash_map>
 using namespace __gnu_cxx;
-#endif
+#endif */
 
-typedef hash_map<I32,U32> my_cell_hash;
-#endif
+//typedef hash_map<I32,U32> my_cell_hash;
+//#endif
 
 LASindex::LASindex()
 {
