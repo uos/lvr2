@@ -38,14 +38,14 @@
 #include <set>
 using namespace std;
 
-#ifdef UNORDERED
-#include <tr1/unordered_map>
-using namespace tr1;
+//#ifdef UNORDERED
+#include <unordered_map>
+using namespace std;
 typedef unordered_map<I32, LASintervalStartCell*> my_cell_hash;
-#else
+//#else
 
 
-#if _MSC_VER
+/*#if _MSC_VER
 #include <hash_map>
 using namespace stdext;
 #else
@@ -55,7 +55,7 @@ using namespace __gnu_cxx;
 
 typedef hash_map<I32, LASintervalStartCell*> my_cell_hash;
 #endif
-
+*/
 typedef multimap<U32, LASintervalCell*> my_cell_map;
 typedef set<LASintervalStartCell*> my_cell_set;
 
