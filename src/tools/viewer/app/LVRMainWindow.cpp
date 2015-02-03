@@ -239,6 +239,7 @@ void LVRMainWindow::setupQVTK()
     // Grab relevant entities from the qvtk widget
     m_renderer = vtkSmartPointer<vtkRenderer>::New();
     vtkSmartPointer<vtkRenderWindow> renderWindow = this->qvtkWidget->GetRenderWindow();
+
     m_renderWindowInteractor = this->qvtkWidget->GetInteractor();
     m_renderWindowInteractor->Initialize();
 
@@ -248,6 +249,7 @@ void LVRMainWindow::setupQVTK()
     // Custom interactor to handle picking actions
     m_pickingInteractor = new LVRPickingInteractor(m_renderer);
     qvtkWidget->GetRenderWindow()->GetInteractor()->SetInteractorStyle( m_pickingInteractor );
+
     vtkSmartPointer<vtkPointPicker> pointPicker = vtkSmartPointer<vtkPointPicker>::New();
     qvtkWidget->GetRenderWindow()->GetInteractor()->SetPicker(pointPicker);
 
