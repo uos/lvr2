@@ -24,6 +24,15 @@
  *  @author Kim Rinnewitz (krinnewitz@uos.de)
  */
 
+#include <iostream>
+#include <string>
+using std::ofstream;
+using std::cout;
+using std::endl;
+using std::string;
+
+#include "io/Progress.hpp"
+
 namespace lvr {
 
         ///File name of texture pack
@@ -84,6 +93,124 @@ Texturizer<VertexT, NormalT>::Texturizer(typename PointsetSurface<VertexT>::Ptr 
         m_stats_matchedIndTextures = 0;
         m_stats_matchedPatTextures = 0;
         m_stats_extractedPatterns = 0;
+}
+
+
+
+template<typename VertexT, typename NormalT>
+void Texturizer<VertexT, NormalT>::writePlaneTexels(vector<VertexT> contour, int planeIndex)
+{
+    int minArea = INT_MAX;
+
+    float best_a_min, best_a_max, best_b_min, best_b_max;
+    VertexT best_v1, best_v2;
+
+    NormalT n = (contour[1] - contour[0]).cross(contour[2] - contour[0]);
+    if (n.x < 0)
+    {
+        n *= -1;
+    }
+
+    //store a stuetzvector for the bounding box
+    VertexT p = contour[0];
+
+    //calculate a vector in the plane of the bounding box
+    NormalT v1 = contour[1] - contour[0], v2;
+    if (v1.x < 0)
+    {
+        v1 *= -1;
+    }
+
+    //determines the resolution of iterative improvement steps
+    float delta = M_PI / 2 / 90;
+
+    for(float theta = 0; theta < M_PI / 2; theta += delta)
+    {
+        //rotate the bounding box
+        v1 = v1 * cos(theta) + v2 * sin(theta);
+        v2 = v1.cross(n);
+
+        //calculate the bounding box
+        float a_min = FLT_MAX, a_max = FLT_MIN, b_min = FLT_MAX, b_max = FLT_MIN;
+        for(size_t c = 0; c < contour.size(); c++)
+        {
+            int r = 0;
+            int s = 0;
+            float denom = 0.01f;
+            for(int t = 0; t < 3; t++)
+            {
+                for(int u = 0; u < 3; u++)
+                {
+                    if(fabs(v1[t] * v2[u] - v1[u] * v2[t]) > fabs(denom))
+                    {
+                        denom = v1[t] * v2[u] - v1[u] * v2[t];
+                        r = t;
+                        s = u;
+                    }
+                }
+            }
+            float a = ((contour[c][r] - p[r]) * v2[s] - (contour[c][s] - p[s]) * v2[r]) / denom;
+            float b = ((contour[c][s] - p[s]) * v1[r] - (contour[c][r] - p[r]) * v1[s]) / denom;
+            if (a > a_max) a_max = a;
+            if (a < a_min) a_min = a;
+            if (b > b_max) b_max = b;
+            if (b < b_min) b_min = b;
+        }
+        int x = ceil((a_max - a_min) / Texture::m_texelSize);
+        int y = ceil((b_max - b_min) / Texture::m_texelSize);
+
+        //iterative improvement of the area
+        if(x * y < minArea)
+        {
+            minArea = x * y;
+            best_a_min = a_min;
+            best_a_max = a_max;
+            best_b_min = b_min;
+            best_b_max = b_max;
+            best_v1 = v1;
+            best_v2 = v2;
+        }
+    }
+
+
+    //calculate the texture size
+    unsigned short int sizeX = ceil((best_a_max - best_a_min) / Texture::m_texelSize);
+    unsigned short int sizeY = ceil((best_b_max - best_b_min) / Texture::m_texelSize);
+
+    //walk through the bounding box and collect color information for each texel
+
+    char buffer[256] = {0};
+    ofstream planeOut;
+    if(planeIndex >= 0)
+    {
+        sprintf(buffer, "plane%03d.txt", planeIndex);
+        cout << "Generating " << buffer << "..." << std::flush;
+        planeOut.open(buffer);
+        if(planeOut.good())
+        {
+            planeOut << sizeX << " x " << sizeY << endl;
+        }
+    }
+
+    //#pragma omp parallel for
+    for(int y = 0; y < sizeY; y++)
+    {
+        for(int x = 0; x < sizeX; x++)
+        {
+            vector<VertexT> cv;
+
+            VertexT current_position = p + best_v1
+                * (x * Texture::m_texelSize + best_a_min - Texture::m_texelSize / 2.0)
+                + best_v2
+                * (y * Texture::m_texelSize + best_b_min - Texture::m_texelSize / 2.0);
+
+            planeOut << current_position.x << " " << current_position.y << " " << current_position.z << " ";
+            planeOut << x << " " << y << endl;
+
+
+        }
+    }
+
 }
 
 template<typename VertexT, typename NormalT>
@@ -174,7 +301,12 @@ TextureToken<VertexT, NormalT>* Texturizer<VertexT, NormalT>::createInitialTextu
 	TextureToken<VertexT, NormalT>* result = new TextureToken<VertexT, NormalT>(best_v1, best_v2, p, best_a_min, best_b_min, texture);
 
 	//walk through the bounding box and collect color information for each texel
-	#pragma omp parallel for
+
+    cout << "PIXELS IN TEXTURE: " << sizeX * sizeY << endl;
+    string msg = timestamp.getElapsedTime() + "Calculating Texture Pixels... ";
+    ProgressBar progress(sizeX * sizeY, msg);
+
+    #pragma omp parallel for
 	for(int y = 0; y < sizeY; y++)
 	{
 		for(int x = 0; x < sizeX; x++)
@@ -192,7 +324,9 @@ TextureToken<VertexT, NormalT>* Texturizer<VertexT, NormalT>::createInitialTextu
 			texture->m_data[(sizeY - y - 1) * (sizeX * 3) + 3 * x + 0] = cv[0].r;
 			texture->m_data[(sizeY - y - 1) * (sizeX * 3) + 3 * x + 1] = cv[0].g;
 			texture->m_data[(sizeY - y - 1) * (sizeX * 3) + 3 * x + 2] = cv[0].b;
+
 		}
+        ++progress;
 	}
 
 	//calculate SURF features of  texture
@@ -322,7 +456,8 @@ void Texturizer<VertexT, NormalT>::filterByNormal(vector<Texture*> &textures, ve
 }
 
 template<typename VertexT, typename NormalT>
-TextureToken<VertexT, NormalT>* Texturizer<VertexT, NormalT>::texturizePlane(vector<VertexT> contour)
+TextureToken<VertexT, NormalT>* Texturizer<VertexT, NormalT>::texturizePlane(vector<VertexT> contour
+                                                                             )
 {
 	TextureToken<VertexT, NormalT>* initialTexture = 0;
 
@@ -337,7 +472,7 @@ TextureToken<VertexT, NormalT>* Texturizer<VertexT, NormalT>::texturizePlane(vec
 	{
 		m_stats_texturizedPlanes++;
 		//create an initial texture from the point cloud
-		initialTexture = createInitialTexture(contour);
+        initialTexture = createInitialTexture(contour);
 
 		//reset distance values
 		for (int i = 0; i < m_tio->m_textures.size(); i++)
