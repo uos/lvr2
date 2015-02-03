@@ -65,7 +65,7 @@ public:
 	 * @return	A TextureToken containing the generated texture
 	 *
 	**/
-	TextureToken<VertexT, NormalT>* texturizePlane(vector<VertexT> contour);
+    TextureToken<VertexT, NormalT>* texturizePlane(vector<VertexT> contour);
 
 	
 	int m_stats_texturizedPlanes;
@@ -104,6 +104,10 @@ public:
 	/// Flag for texture analysis
 	static bool  m_doAnalysis;
 
+
+    void writePlaneTexels(vector<VertexT> contour, int index);
+
+
 private:
 
 	/**
@@ -114,7 +118,9 @@ private:
 	 * @return	A TextureToken containing the generated texture
 	 *
 	**/
-	TextureToken<VertexT, NormalT>* createInitialTexture(vector<VertexT> contour);
+    TextureToken<VertexT, NormalT>* createInitialTexture(vector<VertexT> contour);
+
+
 
 	/**
 	 * \brief 	Filters the given set of textures with the help of histograms and 
