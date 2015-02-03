@@ -1705,6 +1705,8 @@ void HalfEdgeMesh<VertexT, NormalT>::finalizeAndRetesselate( bool genTextures, f
         }
     }
 
+    cout << "Sorted regions" << endl;
+
     // keep track of used vertices to avoid doubles.
     map<Vertex<float>, unsigned int> vertexMap;
     Vertex<float> current;
@@ -1717,11 +1719,13 @@ void HalfEdgeMesh<VertexT, NormalT>::finalizeAndRetesselate( bool genTextures, f
         size_t iRegion = *nonPlane;
         int surfaceClass = m_regions[iRegion]->m_regionNumber;
 
+
         // iterate over every face for the region number '*nonPlaneBegin'
         for( size_t i=0; i < m_regions[iRegion]->m_faces.size(); ++i )
         {
             size_t iFace=i;
             size_t pos;
+
             // loop over each vertex for this face
             for( int j=0; j < 3; j++ )
             {
@@ -1799,7 +1803,6 @@ void HalfEdgeMesh<VertexT, NormalT>::finalizeAndRetesselate( bool genTextures, f
                 globalMaterialIndex++;
             }
 
-
         }
     }
     cout << timestamp << "Done copying non planar regions.";
@@ -1850,7 +1853,9 @@ void HalfEdgeMesh<VertexT, NormalT>::finalizeAndRetesselate( bool genTextures, f
                 t = texturizer->texturizePlane( contours[0] );
                 if(t)
                 {
+
                     t->m_texture->save(t->m_textureIndex);
+                    texturizer->writePlaneTexels(contours[0], t->m_textureIndex);
                 }
             }
 

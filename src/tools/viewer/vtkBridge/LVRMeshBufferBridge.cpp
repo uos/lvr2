@@ -152,12 +152,14 @@ void LVRMeshBufferBridge::computeMeshActor(MeshBufferPtr meshbuffer)
         mesh->SetPolys(triangles);
 
         vtkSmartPointer<vtkPolyDataMapper> mesh_mapper = vtkSmartPointer<vtkPolyDataMapper>::New();
-        mesh_mapper->SetInputData(mesh);
-        m_meshActor = vtkSmartPointer<vtkActor>::New();
+	//        mesh_mapper->SetInputData(mesh); VTK 6
+	mesh_mapper->SetInput(mesh);
+	m_meshActor = vtkSmartPointer<vtkActor>::New();
         m_meshActor->SetMapper(mesh_mapper);
 
         vtkSmartPointer<vtkPolyDataMapper> wireframe_mapper = vtkSmartPointer<vtkPolyDataMapper>::New();
-        wireframe_mapper->SetInputData(mesh);
+        // wireframe_mapper->SetInputData(mesh); VTK 6
+	wireframe_mapper->SetInput(mesh);
         m_wireframeActor = vtkSmartPointer<vtkActor>::New();
         m_wireframeActor->ShallowCopy(m_meshActor);
         m_wireframeActor->SetMapper(wireframe_mapper);
@@ -487,7 +489,8 @@ vtkSmartPointer<vtkActor> LVRMeshBufferBridge::getTexturedActor(MaterialGroup* g
 
 	// Generate actor
 	vtkSmartPointer<vtkPolyDataMapper> mesh_mapper = vtkSmartPointer<vtkPolyDataMapper>::New();
-	mesh_mapper->SetInputData(mesh);
+	//	mesh_mapper->SetInputData(mesh); VTK 6
+	mesh_mapper->SetInput(mesh);
 	actor = vtkSmartPointer<vtkActor>::New();
 	actor->SetMapper(mesh_mapper);
 	actor->SetTexture(getTexture(g->textureIndex));
@@ -511,10 +514,10 @@ vtkSmartPointer<vtkTexture> LVRMeshBufferBridge::getTexture(int index)
 
 	vtkSmartPointer<vtkImageData> data = vtkSmartPointer<vtkImageData>::New();
 	data->SetDimensions(h, w, 1);
-	data->AllocateScalars(VTK_UNSIGNED_CHAR, 3);
-	//data->SetNumberOfScalarComponents(3);
-	//data->SetScalarTypeToUnsignedChar();
-	//data->AllocateScalars();
+	//data->AllocateScalars(VTK_UNSIGNED_CHAR, 3); VTK 6
+	data->SetNumberOfScalarComponents(3);
+	data->SetScalarTypeToUnsignedChar();
+	data->AllocateScalars();
 	int c = 0;
 	for(int i = 0; i < h; i++)
 	{
@@ -530,7 +533,8 @@ vtkSmartPointer<vtkTexture> LVRMeshBufferBridge::getTexture(int index)
 	data->Modified();
 
 	vtkSmartPointer<vtkTexture> texture = vtkSmartPointer<vtkTexture>::New();
-	texture->SetInputData(data);
+	// texture->SetInputData(data); VTK 6
+	texture->SetInput(data);
 
 	return texture;
 }
@@ -615,7 +619,8 @@ vtkSmartPointer<vtkActor> LVRMeshBufferBridge::getColorMeshActor(vector<Material
 
 	// Generate actor
 	vtkSmartPointer<vtkPolyDataMapper> mesh_mapper = vtkSmartPointer<vtkPolyDataMapper>::New();
-	mesh_mapper->SetInputData(mesh);
+	//mesh_mapper->SetInputData(mesh); VTK6
+	mesh_mapper->SetInput(mesh);
 	actor = vtkSmartPointer<vtkActor>::New();
 	actor->SetMapper(mesh_mapper);
 
