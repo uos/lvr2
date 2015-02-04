@@ -33,6 +33,8 @@
 #include <boost/program_options.hpp>
 #include <float.h>
 
+#include "config/BaseOption.hpp"
+
 using std::ostream;
 using std::cout;
 using std::endl;
@@ -42,13 +44,11 @@ using std::vector;
 
 namespace reconstruct{
 
-using namespace boost::program_options;
-
 /**
  * @brief A class to parse the program options for the reconstruction
  * 		  executable.
  */
-class Options {
+class Options : public lvr::BaseOption{
 public:
 
 	/**
@@ -280,35 +280,7 @@ public:
      */
     int getNumEdgeCollapses() const;
 
-    /**
-     * @brief   Returns the scaling factor for the x coordinates
-     */
-    float sx() { return m_variables["sx"].as<float>();}
 
-    /**
-     * @brief   Returns the scaling factor for the y coordinates
-     */
-    float sy() { return m_variables["sy"].as<float>();}
-
-    /**
-     * @brief   Returns the scaling factor for the z coordinates
-     */
-    float sz() { return m_variables["sz"].as<float>();}
-
-    /**
-     * @brief   Returns the position of the x coordinate in the data.
-     */
-    int x() { return m_variables["xPos"].as<int>();}
-
-    /**
-     * @brief   Returns the position of the x coordinate in the data.
-     */
-    int y() { return m_variables["yPos"].as<int>();}
-
-    /**
-     * @brief   Returns the position of the x coordinate in the data.
-     */
-    int z() { return m_variables["zPos"].as<int>();}
 
 
     /**
@@ -346,14 +318,6 @@ private:
 	/// The number of uesed threads
 	int				                m_numThreads;
 
-	/// The internally used variable map
-	variables_map			        m_variables;
-
-	/// The internally used option description
-	options_description 		    m_descr;
-
-	/// The internally used positional option desription
-	positional_options_description 	m_pdescr;
 
 	/// The putput file name for face normals
 	string 				            m_faceNormalFile;
@@ -469,7 +433,9 @@ private:
 /// Overlaoeded outpur operator
 inline ostream& operator<<(ostream& os, const Options &o)
 {
-	cout << "##### Program options: " << endl;
+	o.printTransformation(os);
+
+
 	if(o.getIntersections() > 0)
 	{
 	    cout << "##### Intersections \t\t: " << o.getIntersections() << endl;
