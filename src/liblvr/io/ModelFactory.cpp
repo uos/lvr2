@@ -46,6 +46,8 @@
 namespace lvr
 {
 
+CoordinateTransform ModelFactory::m_transform;
+
 ModelPtr ModelFactory::readModel( std::string filename )
 {
     ModelPtr m;
