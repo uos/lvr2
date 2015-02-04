@@ -37,6 +37,8 @@
 #include <vtkViewport.h>
 #include <vtkObjectFactory.h>
 #include <vtkGraphicsFactory.h>
+#include <vtkOrientationMarkerWidget.h>
+#include <vtkAxesActor.h>
 
 #include <QtGui>
 #include "LVRMainWindowUI.h"
@@ -143,6 +145,9 @@ private:
     vtkSmartPointer<vtkRenderWindowInteractor>  m_renderWindowInteractor;
     vtkSmartPointer<vtkCamera>			        m_camera;
     vtkSmartPointer<vtkCameraRepresentation>    m_pathCamera;
+    vtkSmartPointer<vtkOrientationMarkerWidget> m_axesWidget;
+    vtkSmartPointer<vtkAxesActor> 				m_axes;
+
     QMenu*				                        m_treeParentItemContextMenu;
     QMenu*                                      m_treeChildItemContextMenu;
 
