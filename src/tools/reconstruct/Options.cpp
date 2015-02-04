@@ -85,6 +85,13 @@ Options::Options(int argc, char** argv) : m_descr("Supported options")
 		        ("cro", "Use texture matching based on cross correlation.")
 		        ("patt", value<float>(&m_patternThreshold)->default_value(100), "Threshold for pattern extraction from textures")
 		        ("mtv", value<int>(&m_minimumTransformationVotes)->default_value(3), "Minimum number of votes to consider a texture transformation as correct")
+			    ("xPos,x", value<int>()->default_value(0), "Position of the x-coordinates in the input point data (according to screen coordinates).")
+			    ("yPos,y", value<int>()->default_value(1), "Position of the y-coordinates in the input data lines (according to screen coordinates).")
+			    ("zPos,z", value<int>()->default_value(2), "Position of the z-coordinates in the input data lines (according to screen coordinates).")
+			    ("sx", value<float>()->default_value(1.0), "Scaling factor for the x coordinates.")
+			    ("sy", value<float>()->default_value(1.0), "Scaling factor for the y coordinates.")
+			    ("sz", value<float>()->default_value(1.0), "Scaling factor for the z coordinates.")
+
         ;
 
 	m_pdescr.add("inputFile", -1);
