@@ -178,9 +178,9 @@ ModelPtr ModelFactory::readModel( std::string filename )
         		p[3 * i + 2]    = point[2];
         		if(n_normals)
         		{
-        			normal[0] = p[3 * i + m_transform.x] * m_transform.sx;
-        			normal[1] = p[3 * i + m_transform.y] * m_transform.sy;
-        			normal[2] = p[3 * i + m_transform.z] * m_transform.sz;
+        			normal[0] = n[3 * i + m_transform.x] * m_transform.sx;
+        			normal[1] = n[3 * i + m_transform.y] * m_transform.sy;
+        			normal[2] = n[3 * i + m_transform.z] * m_transform.sz;
 
             		n[3 * i] 		= normal[0];
             		n[3 * i + 1]	= normal[1];
