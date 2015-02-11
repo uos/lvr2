@@ -64,7 +64,7 @@ struct CoordinateTransform
 	bool  convert;
 
 	CoordinateTransform()
-		: x(1), y(2), z(2), sx(1.0), sy(1.0), sz(1.0), convert(false) {}
+		: x(0), y(1), z(2), sx(1.0), sy(1.0), sz(1.0), convert(false) {}
 };
 
 /**

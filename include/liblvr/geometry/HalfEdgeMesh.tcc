@@ -1705,20 +1705,17 @@ void HalfEdgeMesh<VertexT, NormalT>::finalizeAndRetesselate( bool genTextures, f
         }
     }
 
-    cout << "Sorted regions" << endl;
-
     // keep track of used vertices to avoid doubles.
     map<Vertex<float>, unsigned int> vertexMap;
     Vertex<float> current;
 
     int globalMaterialIndex = 0;
 
-    // Copy all regions that are non in an intersection plane directly to the buffers.
+    // Copy all regions that are not in an intersection plane directly to the buffers.
     for( intIterator nonPlane = nonPlaneRegions.begin(); nonPlane != nonPlaneRegions.end(); ++nonPlane )
     {
         size_t iRegion = *nonPlane;
         int surfaceClass = m_regions[iRegion]->m_regionNumber;
-
 
         // iterate over every face for the region number '*nonPlaneBegin'
         for( size_t i=0; i < m_regions[iRegion]->m_faces.size(); ++i )
@@ -1786,6 +1783,7 @@ void HalfEdgeMesh<VertexT, NormalT>::finalizeAndRetesselate( bool genTextures, f
             if(it != materialMap.end())
             {
             	// If found, put material index into buffer
+            	cout << "RE-USING MAT" << endl;
             	unsigned int position = it->second;
             	materialIndexBuffer.push_back(position);
             }
@@ -1805,7 +1803,7 @@ void HalfEdgeMesh<VertexT, NormalT>::finalizeAndRetesselate( bool genTextures, f
 
         }
     }
-    cout << timestamp << "Done copying non planar regions.";
+    cout << timestamp << "Done copying non planar regions." << endl;
 
     /*
          Done copying the simple stuff. Now the planes are going to be retesselated
