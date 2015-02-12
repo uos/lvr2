@@ -175,9 +175,9 @@ void HashGrid<VertexT, BoxT>::addLatticePoint(int index_x, int index_y, int inde
 
 		hash_value = hashValue(index_x, index_y, index_z);
 
-		it = m_cells.find(hash_value);
-		if(it == m_cells.end())
-		{
+		//it = m_cells.find(hash_value);
+		//if(it == m_cells.end())
+		//{
 			//Calculate box center .. useless
 			VertexT box_center(
 					(index_x * m_voxelsize + v_min[0] * vsh),
@@ -247,7 +247,7 @@ void HashGrid<VertexT, BoxT>::addLatticePoint(int index_x, int index_y, int inde
 			}
 
 			m_cells[hash_value] = box;
-		}
+		//}
 	//}
 
 }
