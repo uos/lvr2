@@ -148,7 +148,6 @@ void HashGrid<VertexT, BoxT>::addLatticePoint(int index_x, int index_y, int inde
 	unsigned int INVALID = BoxT::INVALID_INDEX;
 
 	float vsh = 0.5 * m_voxelsize;
-	//float vsh = m_voxelsize;
 
 	// Some iterators for hash map accesses
 	box_map_it it;
@@ -165,52 +164,48 @@ void HashGrid<VertexT, BoxT>::addLatticePoint(int index_x, int index_y, int inde
 	VertexT v_min = m_boundingBox.getMin();
 	VertexT v_max = m_boundingBox.getMax();
 
-	/*int e;
+	int e;
 	m_extrude ? e = 8 : e = 1;
 	for(int j = 0; j < e; j++)
-	{*/
+	{
 		// Get the grid offsets for the neighboring grid position
 		// for the given box corner
-		
+		dx = HGCreateTable[j][0];
+		dy = HGCreateTable[j][1];
+		dz = HGCreateTable[j][2];
 
-		hash_value = hashValue(index_x, index_y, index_z);
+		hash_value = hashValue(index_x + dx, index_y + dy, index_z +dz);
 
-		//it = m_cells.find(hash_value);
-		//if(it == m_cells.end())
-		//{
-			//Calculate box center .. useless
+		it = m_cells.find(hash_value);
+		if(it == m_cells.end())
+		{
+			//Calculate box center
 			VertexT box_center(
-					(index_x * m_voxelsize + v_min[0] * vsh),
-					(index_y * m_voxelsize + v_min[1] * vsh),
-					(index_z * m_voxelsize + v_min[2] * vsh));
+					(index_x + dx) * m_voxelsize + v_min[0],
+					(index_y + dy) * m_voxelsize + v_min[1],
+					(index_z + dz) * m_voxelsize + v_min[2]);
 
 			//Create new box
 			BoxT* box = new BoxT(box_center);
 
 			//Setup the box itself
-			for(int k = 0; k < 8; k++)
-			{
+			for(int k = 0; k < 8; k++){
+
 				//Find point in Grid
-				//current_index = findQueryPoint(k, index_x + dx, index_y + dy, index_z + dz);
-				dx = HGCreateTable[k][0];
-				dy = HGCreateTable[k][1];
-				dz = HGCreateTable[k][2];
-				size_t corner_hash = hashValue(index_x + dx, index_y + dy, index_z + dz);
-				auto qp_index_it = m_qpIndices.find(corner_hash);
+				current_index = findQueryPoint(k, index_x + dx, index_y + dy, index_z + dz);
 				//If point exist, save index in box
-				if(qp_index_it != m_qpIndices.end()) box->setVertex(k, qp_index_it->second);
+				if(current_index != INVALID) box->setVertex(k, current_index);
+
 				//Otherwise create new grid point and associate it with the current box
 				else
 				{
-					return;
-					/*VertexT position(
-							m_coordinateScales[0] * (box_center[0] + box_creation_table[k][0] * vsh),
-							m_coordinateScales[1] * (box_center[1] + box_creation_table[k][1] * vsh),
-							m_coordinateScales[2] * (box_center[2] + box_creation_table[k][2] * vsh));
+					VertexT position(box_center[0] + box_creation_table[k][0] * vsh,
+							box_center[1] + box_creation_table[k][1] * vsh,
+							box_center[2] + box_creation_table[k][2] * vsh);
 
 					m_queryPoints.push_back(QueryPoint<VertexT>(position, distance));
 					box->setVertex(k, m_globalIndex);
-					m_globalIndex++;*/
+					m_globalIndex++;
 
 				}
 			}
@@ -227,9 +222,9 @@ void HashGrid<VertexT, BoxT>::addLatticePoint(int index_x, int index_y, int inde
 					{
 
 						//Calculate hash value for current neighbor cell
-						neighbor_hash = hashValue(index_x + a,
-								index_y + b,
-								index_z + c);
+						neighbor_hash = hashValue(index_x + dx + a,
+								index_y + dy + b,
+								index_z + dz + c);
 
 						//Try to find this cell in the grid
 						neighbor_it = m_cells.find(neighbor_hash);
@@ -247,8 +242,8 @@ void HashGrid<VertexT, BoxT>::addLatticePoint(int index_x, int index_y, int inde
 			}
 
 			m_cells[hash_value] = box;
-		//}
-	//}
+		}
+	}
 
 }
 
