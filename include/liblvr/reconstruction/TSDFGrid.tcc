@@ -19,6 +19,7 @@ TsdfGrid<VertexT, BoxT, TsdfT>::TsdfGrid(float cellSize,  BoundingBox<VertexT> b
 	size_t center_of_bb_y = (this->m_boundingBox.getYSize()/2) / this->m_voxelsize;
 	size_t center_of_bb_z = (this->m_boundingBox.getZSize()/2) / this->m_voxelsize;
 	//#pragma omp parallllell for
+	this->m_queryPoints.resize(size);
 	for(size_t i = 0; i < size; i++)
 	{
 		// shift tsdf into global grid
