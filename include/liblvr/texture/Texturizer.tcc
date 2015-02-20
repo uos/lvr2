@@ -184,7 +184,7 @@ void Texturizer<VertexT, NormalT>::writePlaneTexels(vector<VertexT> contour, int
     if(planeIndex >= 0)
     {
         sprintf(buffer, "plane%03d.txt", planeIndex);
-        cout << "Generating " << buffer << "..." << std::flush;
+        //cout << "Generating " << buffer << "..." << std::flush;
         planeOut.open(buffer);
         if(planeOut.good())
         {
@@ -302,7 +302,7 @@ TextureToken<VertexT, NormalT>* Texturizer<VertexT, NormalT>::createInitialTextu
 
 	//walk through the bounding box and collect color information for each texel
 
-    cout << "PIXELS IN TEXTURE: " << sizeX * sizeY << endl;
+    //cout << "PIXELS IN TEXTURE: " << sizeX * sizeY << endl;
     string msg = timestamp.getElapsedTime() + "Calculating Texture Pixels... ";
     ProgressBar progress(sizeX * sizeY, msg);
 
@@ -486,11 +486,7 @@ TextureToken<VertexT, NormalT>* Texturizer<VertexT, NormalT>::texturizePlane(vec
 		//std::copy(this->m_tio->m_textures.begin(), this->m_tio->m_textures.end(), textures.begin());
 		for(size_t i = 0; i < m_tio->m_textures.size(); i++)
 		{
-		    cout << "PUSH: " << endl;
-		    cout << m_tio << endl;
-		    cout << m_tio->m_textures[i] << endl;
 		    textures.push_back(m_tio->m_textures[i]);
-		    cout << "DONE " << endl << endl;
 		}
 
 		if (textures.size() > 0 && m_doAnalysis)
