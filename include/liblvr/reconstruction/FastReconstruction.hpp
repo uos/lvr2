@@ -71,7 +71,7 @@ public:
  *        parallel computation.
  */
 template<typename VertexT, typename NormalT, typename BoxT>
-class FastReconstruction
+class FastReconstruction : public FastReconstructionBase<VertexT, NormalT>
 {
 public:
 
