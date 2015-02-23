@@ -61,14 +61,15 @@ void FastReconstruction<VertexT, NormalT, BoxT>::getMesh(BaseMesh<VertexT, Norma
 
 	BoxTraits<BoxT> traits;
 
-/*	if(m_boxType == "SF")  // Perform edge flipping for extended marching cubes
+	if(traits.type == "SharpBox")  // Perform edge flipping for extended marching cubes
 	{
 		string SFComment = timestamp.getElapsedTime() + "Flipping edges  ";
-		ProgressBar SFProgress(m_cells.size(), SFComment);
-		for(it = m_cells.begin(); it != m_cells.end(); it++)
+		ProgressBar SFProgress(this->m_grid->getNumberOfCells(), SFComment);
+		for(it = this->m_grid->firstCell(); it != this->m_grid->lastCell(); it++)
 		{
-			SharpBox<VertexT, typename BoxT, NormalT>* sb;
-			sb = (SharpBox<VertexT, typename BoxT, NormalT>*) it->second;
+
+			SharpBox<VertexT, NormalT>* sb;
+			sb = reinterpret_cast<SharpBox<VertexT, NormalT>* >(it->second);
 			if(sb->m_containsSharpFeature)
 			{
 				if(sb->m_containsSharpCorner)
@@ -86,8 +87,7 @@ void FastReconstruction<VertexT, NormalT, BoxT>::getMesh(BaseMesh<VertexT, Norma
 			++SFProgress;
 		}
 		cout << endl;
-	
-        }*/
+	}
 
 	if(traits.type == "BilinearFastBox")
 	{
