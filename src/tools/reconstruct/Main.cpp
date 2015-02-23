@@ -377,22 +377,49 @@ int main(int argc, char** argv)
 		}
 
 		// Create a point set grid for reconstruction
-		PointsetGrid<ColorVertex<float, unsigned char>, FastBox<ColorVertex<float, unsigned char>, Normal<float> > > grid(resolution, surface, surface->getBoundingBox(), useVoxelsize);
-		grid.setExtrusion(options.extrude());
-		grid.calcDistanceValues();
 
+		string decomposition = options.getDecomposition();
+		GridBase* grid;
+		FastReconstructionBase<ColorVertex<float, unsigned char>, Normal<float> >* reconstruction;
+		if(decomposition == "MC")
+		{
+			grid = new PointsetGrid<ColorVertex<float, unsigned char>, FastBox<ColorVertex<float, unsigned char>, Normal<float> > >(resolution, surface, surface->getBoundingBox(), useVoxelsize);
+			grid->setExtrusion(options.extrude());
 
-		// Create a new reconstruction object
-		FastReconstruction<ColorVertex<float, unsigned char> , Normal<float>, FastBox<ColorVertex<float, unsigned char>, Normal<float> >  > reconstruction(&grid);
+			PointsetGrid<ColorVertex<float, unsigned char>, FastBox<ColorVertex<float, unsigned char>, Normal<float> > >* ps_grid = static_cast<PointsetGrid<ColorVertex<float, unsigned char>, FastBox<ColorVertex<float, unsigned char>, Normal<float> > > *>(grid);
+			ps_grid->calcDistanceValues();
+
+			reconstruction = new FastReconstruction<ColorVertex<float, unsigned char> , Normal<float>, FastBox<ColorVertex<float, unsigned char>, Normal<float> >  >(ps_grid);
+
+		}
+		else if(decomposition == "PMC")
+		{
+			grid = new PointsetGrid<ColorVertex<float, unsigned char>, BilinearFastBox<ColorVertex<float, unsigned char>, Normal<float> > >(resolution, surface, surface->getBoundingBox(), useVoxelsize);
+			grid->setExtrusion(options.extrude());
+			BilinearFastBox<ColorVertex<float, unsigned char>, Normal<float> >::m_surface = surface;
+			PointsetGrid<ColorVertex<float, unsigned char>, BilinearFastBox<ColorVertex<float, unsigned char>, Normal<float> > >* ps_grid = static_cast<PointsetGrid<ColorVertex<float, unsigned char>, BilinearFastBox<ColorVertex<float, unsigned char>, Normal<float> > > *>(grid);
+			ps_grid->calcDistanceValues();
+
+			reconstruction = new FastReconstruction<ColorVertex<float, unsigned char> , Normal<float>, BilinearFastBox<ColorVertex<float, unsigned char>, Normal<float> >  >(ps_grid);
+
+		}
+		else if(decomposition == "SF")
+		{
+			grid = new PointsetGrid<ColorVertex<float, unsigned char>, SharpBox<ColorVertex<float, unsigned char>, Normal<float> > >(resolution, surface, surface->getBoundingBox(), useVoxelsize);
+			grid->setExtrusion(options.extrude());
+			PointsetGrid<ColorVertex<float, unsigned char>, SharpBox<ColorVertex<float, unsigned char>, Normal<float> > >* ps_grid = static_cast<PointsetGrid<ColorVertex<float, unsigned char>, SharpBox<ColorVertex<float, unsigned char>, Normal<float> > > *>(grid);
+			ps_grid->calcDistanceValues();
+			reconstruction = new FastReconstruction<ColorVertex<float, unsigned char> , Normal<float>, SharpBox<ColorVertex<float, unsigned char>, Normal<float> >  >(ps_grid);
+		}
 
 		
 		// Create mesh
-		 reconstruction.getMesh(mesh);
+		reconstruction->getMesh(mesh);
 		
 		// Save grid to file
 		if(options.saveGrid())
 		{
-			grid.saveGrid("fastgrid.grid");
+			grid->saveGrid("fastgrid.grid");
 		}
 
 		if(options.getDanglingArtifacts())
