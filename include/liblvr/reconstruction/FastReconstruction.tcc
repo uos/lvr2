@@ -59,6 +59,8 @@ void FastReconstruction<VertexT, NormalT, BoxT>::getMesh(BaseMesh<VertexT, Norma
 
 	cout << endl;
 
+	BoxTraits<BoxT> traits;
+
 /*	if(m_boxType == "SF")  // Perform edge flipping for extended marching cubes
 	{
 		string SFComment = timestamp.getElapsedTime() + "Flipping edges  ";
@@ -85,21 +87,22 @@ void FastReconstruction<VertexT, NormalT, BoxT>::getMesh(BaseMesh<VertexT, Norma
 		}
 		cout << endl;
 	
-        }
+        }*/
 
-	if(this->m_boxType == "PMC")
+	if(traits.type == "BilinearFastBox")
 	{
 	    string comment = timestamp.getElapsedTime() + "Optimizing plane contours  ";
-	    ProgressBar progress(m_cells.size(), comment);
-	    for(it = m_cells.begin(); it != m_cells.end(); it++)
+	    ProgressBar progress(this->m_grid->getNumberOfCells(), comment);
+	    for(it = this->m_grid->firstCell(); it != this->m_grid->lastCell(); it++)
 	    {
-	        BilinearFastBox<VertexT, typename BoxT, NormalT>* box = static_cast<BilinearFastBox<VertexT, typename BoxT, NormalT>*> (it->second);
-	        box->optimizePlanarFaces(this->m_surface, 5);
+	    	// FUCK type safety. According to traits object this is OK!
+	        BilinearFastBox<VertexT, NormalT>* box = reinterpret_cast<BilinearFastBox<VertexT, NormalT>*>(it->second);
+	        box->optimizePlanarFaces(5);
 	        ++progress;
 	    }
 	    cout << endl;
 	}
-*/
+
 }
 
 /*template<typename VertexT, typename NormalT, typename BoxT>
