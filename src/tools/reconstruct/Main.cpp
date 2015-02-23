@@ -385,7 +385,6 @@ int main(int argc, char** argv)
 		{
 			grid = new PointsetGrid<ColorVertex<float, unsigned char>, FastBox<ColorVertex<float, unsigned char>, Normal<float> > >(resolution, surface, surface->getBoundingBox(), useVoxelsize);
 			grid->setExtrusion(options.extrude());
-
 			PointsetGrid<ColorVertex<float, unsigned char>, FastBox<ColorVertex<float, unsigned char>, Normal<float> > >* ps_grid = static_cast<PointsetGrid<ColorVertex<float, unsigned char>, FastBox<ColorVertex<float, unsigned char>, Normal<float> > > *>(grid);
 			ps_grid->calcDistanceValues();
 
@@ -405,6 +404,7 @@ int main(int argc, char** argv)
 		}
 		else if(decomposition == "SF")
 		{
+			SharpBox<ColorVertex<float, unsigned char>, Normal<float> >::m_surface = surface;
 			grid = new PointsetGrid<ColorVertex<float, unsigned char>, SharpBox<ColorVertex<float, unsigned char>, Normal<float> > >(resolution, surface, surface->getBoundingBox(), useVoxelsize);
 			grid->setExtrusion(options.extrude());
 			PointsetGrid<ColorVertex<float, unsigned char>, SharpBox<ColorVertex<float, unsigned char>, Normal<float> > >* ps_grid = static_cast<PointsetGrid<ColorVertex<float, unsigned char>, SharpBox<ColorVertex<float, unsigned char>, Normal<float> > > *>(grid);
