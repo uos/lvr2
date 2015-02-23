@@ -665,7 +665,14 @@ void HalfEdgeMesh<VertexT, NormalT>::flipEdge(uint v1, uint v2)
     EdgePtr edge = halfEdgeToVertex(m_vertices[v1], m_vertices[v2]);
     if(edge)
     {
-        flipEdge(edge);
+    	try
+    	{
+    		flipEdge(edge);
+    	}
+        catch(...)
+        {
+        	cout << "Warning: Could not flip edge: " << v1 << " " << v2 << endl;
+        }
     }
 }
 
