@@ -946,25 +946,21 @@ template<typename VertexT, typename NormalT>
 void HalfEdgeMesh<VertexT, NormalT>::deleteRegions()
 {
 
-	int fc = 0;
     for(int i = 0; i < m_faces.size(); i++)
     {
         if(m_faces[i]->m_region >= 0 && m_regions[m_faces[i]->m_region]->m_toDelete)
         {
             deleteFace(m_faces[i], false);
             m_faces[i] = 0;
-            fc++;
         }
     }
 
-    int c = 0, d = m_faces.size();
     typename vector<FacePtr>::iterator f_iter = m_faces.begin();
     while (f_iter != m_faces.end())
     {
         if (!(*f_iter))
         {
             f_iter = m_faces.erase(f_iter);
-            c++;
         }
         else
         {
