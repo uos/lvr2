@@ -11,26 +11,60 @@ namespace lvr
 {
 
 template<typename VertexT, typename BoxT, typename TsdfT>
-TsdfGrid<VertexT, BoxT, TsdfT>::TsdfGrid(float cellSize,  BoundingBox<VertexT> bb, TsdfT* tsdf, size_t size, bool isVoxelsize)
+TsdfGrid<VertexT, BoxT, TsdfT>::TsdfGrid(float cellSize,  BoundingBox<VertexT> bb, TsdfT* tsdf, size_t size,
+										int shiftX, int shiftY, int shiftZ, 
+										TsdfGrid<VertexT, BoxT, TsdfT>* lastGrid, bool isVoxelsize)
 	: HashGrid<VertexT, BoxT>(cellSize, bb, isVoxelsize)
 {
 	cout << timestamp << "Started creating grid " << "Values: " << size << endl;
-	size_t center_of_bb_x = (this->m_boundingBox.getXSize()/2) / this->m_voxelsize;
-	size_t center_of_bb_y = (this->m_boundingBox.getYSize()/2) / this->m_voxelsize;
-	size_t center_of_bb_z = (this->m_boundingBox.getZSize()/2) / this->m_voxelsize;
+	// get fusion slice from old grid if it exists one
+	if(lastGrid != NULL)
+	{
+		this->m_queryPoints = lastGrid->getFusionPoints();
+		this->m_qpIndices = lastGrid->getFusionIndices();
+		this->m_cells = lastGrid->getFusionCells();
+		//for(auto it = this->firstCell(); it != this->lastCell(); it++)
+		//{
+			/*for(int k = 0; k < 12 ; k++)
+			{
+				if(FastBox<VertexT, VertexT>::INVALID_INDEX != it->second->m_intersections[k])
+					cout << "intersecs: " << it->second->m_intersections[k];
+			}*/
+			/*for(int k = 0; k < 8; k++)
+			{
+				it->second->setVertex(k, lastGrid->m_fusion_oldIndices[it->second->getVertex(k)]);
+			}*/
+		//}
+	}
+	int center_of_bb_x = (this->m_boundingBox.getXSize()/2) / this->m_voxelsize;
+	int center_of_bb_y = (this->m_boundingBox.getYSize()/2) / this->m_voxelsize;
+	int	center_of_bb_z = (this->m_boundingBox.getZSize()/2) / this->m_voxelsize;
+	m_fusionIndex_x = shiftX + center_of_bb_x;
+	m_fusionIndex_y = shiftY + center_of_bb_y;
+	m_fusionIndex_z = shiftZ + center_of_bb_z;
 	//#pragma omp parallllell for
-	this->m_queryPoints.resize(size);
+	m_fusionIndex = 0;
+	size_t last_size = this->m_queryPoints.size();
+	this->m_queryPoints.resize(size + last_size);
 	for(size_t i = 0; i < size; i++)
 	{
+		int grid_index = i + last_size;
 		// shift tsdf into global grid
 		int global_x = tsdf[i].x + center_of_bb_x;
 		int global_y = tsdf[i].y + center_of_bb_y;
 		int global_z = tsdf[i].z + center_of_bb_z;
 		VertexT position(global_x, global_y, global_z);
-		this->m_queryPoints[i] = QueryPoint<VertexT>(position, tsdf[i].w);
+		QueryPoint<VertexT> qp = QueryPoint<VertexT>(position, tsdf[i].w);
+		this->m_queryPoints[grid_index] = qp;
 		size_t hash_value = this->hashValue(global_x, global_y, global_z);
-		this->m_qpIndices[hash_value] = i;
+		this->m_qpIndices[hash_value] = grid_index;
 		this->m_globalIndex++;
+		if((global_x == m_fusionIndex_x) || (global_y == m_fusionIndex_y) || (global_z == m_fusionIndex_z))
+		{
+			m_fusion_qpIndices[hash_value] = m_fusionIndex;
+			m_fusionPoints.push_back(qp);
+			m_fusionIndex++;
+		}
 	}
 	cout << timestamp << "Finished inserting" << endl;
 	// Iterator over all points, calc lattice indices and add lattice points to the grid
@@ -43,11 +77,17 @@ TsdfGrid<VertexT, BoxT, TsdfT>::TsdfGrid(float cellSize,  BoundingBox<VertexT> b
 		addTSDFLatticePoint(global_x , global_y, global_z, tsdf[i].w);
 	}
 	cout << timestamp << "Finished creating grid" << endl;
+	//cout << "Fusion Boxes " << m_fusion_cells.size() << endl;
 }
 
 template<typename VertexT, typename BoxT, typename TsdfT>
 void TsdfGrid<VertexT, BoxT, TsdfT>::addTSDFLatticePoint(int index_x, int index_y, int index_z, float distance)
 {
+	bool isFusion = false;
+	if((index_x == m_fusionIndex_x) || (index_y == m_fusionIndex_y) || (index_z == m_fusionIndex_z))
+	{
+		isFusion = true;
+	}
 	size_t hash_value;
 
 	unsigned int INVALID = BoxT::INVALID_INDEX;
@@ -80,9 +120,9 @@ void TsdfGrid<VertexT, BoxT, TsdfT>::addTSDFLatticePoint(int index_x, int index_
 
 		hash_value = this->hashValue(index_x, index_y, index_z);
 
-		//it = m_cells.find(hash_value);
-		//if(it == m_cells.end())
-		//{
+		it = this->m_cells.find(hash_value);
+		if(it == this->m_cells.end())
+		{
 			//Calculate box center .. useless
 			VertexT box_center(
 					(index_x * this->m_voxelsize + v_min[0] * vsh),
@@ -90,23 +130,51 @@ void TsdfGrid<VertexT, BoxT, TsdfT>::addTSDFLatticePoint(int index_x, int index_
 					(index_z * this->m_voxelsize + v_min[2] * vsh));
 
 			//Create new box
-			BoxT* box = new BoxT(box_center);
-
+			BoxT* box = new BoxT(box_center, isFusion);
+			vector<size_t> boxQps;
+			boxQps.resize(8);
+			vector<size_t> cornerHashs;
+			cornerHashs.resize(8);
+			//vector<size_t> oldIndice;
+			//oldIndice.resize(8);
 			//Setup the box itself
 			for(int k = 0; k < 8; k++)
 			{
 				//Find point in Grid
-				//current_index = findQueryPoint(k, index_x + dx, index_y + dy, index_z + dz);
 				dx = TSDFCreateTable[k][0];
 				dy = TSDFCreateTable[k][1];
 				dz = TSDFCreateTable[k][2];
 				size_t corner_hash = this->hashValue(index_x + dx, index_y + dy, index_z + dz);
+				if(!isFusion && ((index_x + dx == m_fusionIndex_x) || (index_y + dy == m_fusionIndex_y) || (index_z + dz == m_fusionIndex_z)))
+				{
+					isFusion = true;
+					box->setFusion(true);
+				}
 				auto qp_index_it = this->m_qpIndices.find(corner_hash);
 				//If point exist, save index in box
 				if(qp_index_it != this->m_qpIndices.end()) 
+				{
 					box->setVertex(k, qp_index_it->second);
+					//oldIndice.push_back(qp_index_it->second);
+				}
 				else
+				{
+					delete box;
 					return;
+				}
+				boxQps[k] = qp_index_it->second;
+				cornerHashs[k] = corner_hash;
+			}
+			if(isFusion)
+			{
+				for(size_t i = 0; i < 8; i++)
+				{
+					m_fusion_qpIndices[cornerHashs[i]] = m_fusionIndex;
+					m_fusionPoints.push_back(this->m_queryPoints[boxQps[i]]);
+					box->setVertex(i, m_fusionIndex);
+					//m_fusion_oldIndices[oldIndice[i]]= m_fusionIndex;
+					m_fusionIndex++;
+				}
 			}
 
 			//Set pointers to the neighbors of the current box
@@ -119,7 +187,7 @@ void TsdfGrid<VertexT, BoxT, TsdfT>::addTSDFLatticePoint(int index_x, int index_
 				{
 					for(int c = -1; c < 2; c++)
 					{
-
+						
 						//Calculate hash value for current neighbor cell
 						neighbor_hash = this->hashValue(index_x + a,
 								index_y + b,
@@ -141,7 +209,16 @@ void TsdfGrid<VertexT, BoxT, TsdfT>::addTSDFLatticePoint(int index_x, int index_
 			}
 
 			this->m_cells[hash_value] = box;
-		//}
+			if(isFusion)
+			{
+				this->m_fusion_cells[hash_value] = box;
+			}
+		}
+		else
+		{
+			cout << "double cell " << endl;
+			//cout << "index z: " << index_z <<  endl;
+		}
 	//}
 
 }

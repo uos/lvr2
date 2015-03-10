@@ -88,10 +88,14 @@ template<typename VertexT, typename BoxT>
 HashGrid<VertexT, BoxT>::~HashGrid()
 {
 	box_map_it iter;
-	for(iter = m_cells.begin(); iter != m_cells.end(); iter++)
+	/*for(iter = m_cells.begin(); iter != m_cells.end(); iter++)
 	{
-		delete ((*iter).second);
-	}
+		if(iter->second != NULL)
+		{
+			delete (iter->second);
+			iter->second = NULL;
+		}
+	}*/
 
 	m_cells.clear();
 }

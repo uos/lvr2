@@ -54,7 +54,7 @@ public:
 	 * @brief Constructs a new box at the given center point defined
 	 * 		  by the used \ref{m_voxelsize}.
 	 */
-    FastBox(VertexT &center);
+    FastBox(VertexT &center, bool fusionBox = false);
 
     /**
      * @brief Destructor.
@@ -70,6 +70,8 @@ public:
      * @param value			An index in the reconstruction grid.
      */
     void setVertex(int index,  uint value);
+
+	void setFusion(bool fusionBox);
 
     /**
      * @brief Adjacent cells in the grid should use common vertices.
@@ -116,6 +118,7 @@ public:
 
     /// The twelve intersection between box and surface
     uint                   		m_intersections[12];
+    bool 						m_fusionBox;
 
 protected:
 
