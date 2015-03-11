@@ -47,7 +47,7 @@ typedef PointsetSurface<ColorVertex<float, unsigned char> >							psSurface;
 typedef AdaptiveKSearchSurface<ColorVertex<float, unsigned char> , Normal<float>  > akSurface;
 
 #ifdef _USE_PCL_
-typedef PCLKSurface<Vertex<float> , cNormal>                   pclSurface;
+typedef PCLKSurface<Vertex<float> , Normal<float> >                   pclSurface;
 #endif
 
 /**
