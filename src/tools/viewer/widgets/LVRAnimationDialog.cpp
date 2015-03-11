@@ -1,7 +1,7 @@
 #include <QFileDialog>
 #include "LVRAnimationDialog.hpp"
 
-#include <vtkFFMPEGWriter.h>
+//#include <vtkFFMPEGWriter.h>
 #include <vtkWindowToImageFilter.h>
 #include <vtkPNGWriter.h>
 
@@ -191,7 +191,6 @@ void LVRAnimationDialog::saveVideo()
 //#ifdef VTK_USE_FFMPEG_ENCODER
 	QString filename = QFileDialog::getSaveFileName(m_treeWidget, tr("Save Path"), "", tr("AVI files (*.avi)"));
 
-	vtkSmartPointer<vtkFFMPEGWriter> writer = vtkSmartPointer<vtkFFMPEGWriter>::New();
 	this->m_renderWindowInteractor->GetRenderWindow()->SetOffScreenRendering( 1 );
 
 	vtkCameraInterpolator* i =  m_pathCamera->GetInterpolator();
