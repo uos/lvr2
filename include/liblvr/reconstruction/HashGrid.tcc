@@ -69,6 +69,7 @@ HashGrid<VertexT, BoxT>::HashGrid(float cellSize, BoundingBox<VertexT> boundingB
 		cout << timestamp << "Grid is not extruded." << endl;
 	}
 
+
 	BoxT::m_voxelsize = m_voxelsize;
 	calcIndices();
 }
