@@ -855,6 +855,24 @@ void LVRMainWindow::toggleWireframe(bool checkboxState)
     }
 }
 
+void LVRMainWindow::parseCommandLine(int argc, char** argv)
+{
+	for(int i = 1; i < argc; i++)
+	{
+	    // Load model and generate vtk representation
+		ModelPtr model = ModelFactory::readModel(string(argv[i]));
+		ModelBridgePtr bridge(new LVRModelBridge(model));
+		bridge->addActors(m_renderer);
+
+		// Add item for this model to tree widget
+		QFileInfo info(QString(argv[i]));
+		QString base = info.fileName();
+		LVRModelItem* item = new LVRModelItem(bridge, base);
+		this->treeWidget->addTopLevelItem(item);
+		item->setExpanded(true);
+	}
+}
+
 void LVRMainWindow::manualICP()
 {
     m_correspondanceDialog->fillComboBoxes();
