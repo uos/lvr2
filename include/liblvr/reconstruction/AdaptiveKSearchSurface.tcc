@@ -33,6 +33,8 @@
 #include <boost/filesystem.hpp>
 
 #include <fstream>
+#include <set>
+#include <random>
 
 namespace lvr
 {
@@ -660,50 +662,72 @@ size_t AdaptiveKSearchSurface<VertexT, NormalT>::getNumPoints()
 
            //randomly choose 3 disjoint points
            int c = 0;
-           do{
-               //cout << "AAA" << endl;
-               int index[3];
-               for(int i = 0; i < 3; i++)
-               {
-                   float f = 1.0 * rand() / RAND_MAX;
-                   int r = (int)(f * id.size());
-                   index[i] = id[r];
-               }
+           //do{
+           //    //cout << "AAA" << endl;
+           //    int index[3];
+           //    for(int i = 0; i < 3; i++)
+           //    {
+           //        float f = 1.0 * rand() / RAND_MAX;
+           //        int r = (int)(f * (id.size() - 1));
+           //        index[i] = id[r];
+           //    }
 
-               if(id[0] != id[1] && id[1] != id[2] && id[2] != id[0])
-               {
-                   break;
-               }
+           //    if(index[0] == index[1] || index[1] == index[2] || index[2] == index[0])
+           //    {
+           //        continue;
+           //    }
 
-               point1 = VertexT(this->m_points[index[0]][0],this->m_points[index[0]][1], this->m_points[index[0]][2]);
-               point2 = VertexT(this->m_points[index[1]][0],this->m_points[index[1]][1], this->m_points[index[1]][2]);
-               point3 = VertexT(this->m_points[index[2]][0],this->m_points[index[2]][1], this->m_points[index[2]][2]);
+           //    point1 = VertexT(this->m_points[index[0]][0],this->m_points[index[0]][1], this->m_points[index[0]][2]);
+           //    point2 = VertexT(this->m_points[index[1]][0],this->m_points[index[1]][1], this->m_points[index[1]][2]);
+           //    point3 = VertexT(this->m_points[index[2]][0],this->m_points[index[2]][1], this->m_points[index[2]][2]);
 
-               //compute normal of the plane given by the 3 points
-               n0 = (point1 - point2).cross(point1 - point3);
-               n0.normalize();
+           //    //compute normal of the plane given by the 3 points
+           //    n0 = (point1 - point2).cross(point1 - point3);
+           //    n0.normalize();
 
-               //            if( (point1 != point2) && (point2 != point3) && (point3 != point1) )
-               //            {
-               //                break;
-               //            }
-               c++;
+           //    //            if( (point1 != point2) && (point2 != point3) && (point3 != point1) )
+           //    //            {
+           //    //                break;
+           //    //            }
+           //    c++;
 
-               //            cout << index[0] << " " << index[1] << " " << index[2] << " " << id.size() << endl;
-               //            cout << point1;
-               //            cout << point2;
-               //            cout << point3;
-               //            cout << endl;
+           //    //            cout << index[0] << " " << index[1] << " " << index[2] << " " << id.size() << endl;
+           //    //            cout << point1;
+           //    //            cout << point2;
+           //    //            cout << point3;
+           //    //            cout << endl;
 
-               // Check for deadlock
-               if(c > 50)
-               {
-                   cout << "DL " << k << endl;
-                   ok = false;
-                   return p;
-               }
-           }
-           while(true);
+           //    // Check for deadlock
+           //    if(c > 50)
+           //    {
+           //        cout << "DL " << k << endl;
+           //        ok = false;
+           //        return p;
+           //    }
+           //}
+           //while(true);
+
+		   std::set<unsigned long> ids;
+		   std::default_random_engine generator;
+		   std::uniform_int_distribution<unsigned long> distribution(0, id.size() - 1);
+		   auto number = std::bind(distribution, generator);
+		   do
+		   {
+			   ids.insert(number());
+			   c++;
+			   if (c == 20) cout << "Deadlock" << endl;
+		   } 
+		   while (ids.size() < 3 && c <= 20);
+
+		   vector<unsigned long> sample_ids(ids.size());
+		   std::copy(ids.begin(), ids.end(), sample_ids.begin());
+
+		   point1 = VertexT(this->m_points[sample_ids[0]][0], this->m_points[sample_ids[0]][1], this->m_points[sample_ids[0]][2]);
+		   point2 = VertexT(this->m_points[sample_ids[1]][0], this->m_points[sample_ids[1]][1], this->m_points[sample_ids[1]][2]);
+		   point3 = VertexT(this->m_points[sample_ids[2]][0], this->m_points[sample_ids[2]][1], this->m_points[sample_ids[2]][2]);
+
+		   n0 = (point1 - point2).cross(point1 - point3);
+		   n0.normalize();
 
            //compute error to at most 50 other randomly chosen points
            dist = 0;
