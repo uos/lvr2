@@ -115,6 +115,7 @@ public Q_SLOTS:
     void updateView();
     void saveCamera();
     void loadCamera();
+    void parseCommandLine(int argc, char** argv);
     void openCameraPathTool();
     void removeArrow(LVRVtkArrow*);
     void addArrow(LVRVtkArrow*);
