@@ -85,7 +85,7 @@
     </rect>
    </property>
    <property name="text">
-    <string>Amount of neighbors used for normal estimation</string>
+    <string>Number of neighbors used for normal estimation</string>
    </property>
    <property name="wordWrap">
     <bool>true</bool>
@@ -101,7 +101,7 @@
     </rect>
    </property>
    <property name="text">
-    <string>Amount of normals used to evaluate distance</string>
+    <string>Number of normals used to evaluate distance</string>
    </property>
    <property name="wordWrap">
     <bool>true</bool>
@@ -117,7 +117,7 @@
     </rect>
    </property>
    <property name="text">
-    <string>Amount of normals used to interpolate all other normals</string>
+    <string>Number of normals used to interpolate all other normals</string>
    </property>
    <property name="wordWrap">
     <bool>true</bool>
@@ -136,7 +136,7 @@
     <string>(re-)estimate normals</string>
    </property>
    <property name="checked">
-    <bool>true</bool>
+    <bool>false</bool>
    </property>
   </widget>
   <widget class="QCheckBox" name="checkBox_RANSAC">
@@ -152,7 +152,7 @@
     <string>use RANSAC-based estimation</string>
    </property>
    <property name="checked">
-    <bool>true</bool>
+    <bool>false</bool>
    </property>
   </widget>
   <widget class="QCheckBox" name="checkBox_Extrusion">
@@ -291,6 +291,15 @@
      <width>91</width>
      <height>31</height>
     </rect>
+   </property>
+   <property name="maximum">
+    <double>99999.990000000005239</double>
+   </property>
+   <property name="singleStep">
+    <double>0.100000000000000</double>
+   </property>
+   <property name="value">
+    <double>5.000000000000000</double>
    </property>
   </widget>
  </widget>
