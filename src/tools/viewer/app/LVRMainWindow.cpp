@@ -871,6 +871,9 @@ void LVRMainWindow::parseCommandLine(int argc, char** argv)
 		this->treeWidget->addTopLevelItem(item);
 		item->setExpanded(true);
 	}
+	updateView();
+    assertToggles();
+
 }
 
 void LVRMainWindow::manualICP()
