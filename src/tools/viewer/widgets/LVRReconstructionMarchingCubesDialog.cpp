@@ -17,6 +17,11 @@ LVRReconstructViaMarchingCubesDialog::LVRReconstructViaMarchingCubesDialog(strin
     m_dialog = new ReconstructViaMarchingCubesDialog;
     m_dialog->setupUi(dialog);
 
+    if(decomposition == "PMC")
+    {
+    	dialog->setWindowTitle("Planar Marching Cubes");
+    }
+
     connectSignalsAndSlots();
 
     dialog->show();
