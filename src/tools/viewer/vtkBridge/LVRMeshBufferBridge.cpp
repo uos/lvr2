@@ -148,7 +148,7 @@ void LVRMeshBufferBridge::computeMeshActor(MeshBufferPtr meshbuffer)
         		color[0] = colors[index];
         		color[1] = colors[index + 1];
         		color[2] = colors[index + 2];
-
+        		cout << (int)color[0] << " " << (int)color[1] << " " << (int)color[2] << endl;
         		scalars->InsertNextTupleValue(color);
         	}
         }
