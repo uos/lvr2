@@ -66,8 +66,8 @@ void LVRReconstructViaMarchingCubesDialog::switchGridSizeDetermination(int index
     if(index == 0)
     {
         label->setText("Voxel size");
-        spinBox->setMinimum(1);
-        spinBox->setMaximum(1000);
+        spinBox->setMinimum(0);
+        spinBox->setMaximum(2000000);
         spinBox->setSingleStep(1);
         spinBox->setValue(10);
     }
@@ -75,7 +75,7 @@ void LVRReconstructViaMarchingCubesDialog::switchGridSizeDetermination(int index
     {
         label->setText("Number of intersections");
         spinBox->setMinimum(1);
-        spinBox->setMaximum(1000);
+        spinBox->setMaximum(200000);
         spinBox->setSingleStep(1);
         spinBox->setValue(10);
     }
