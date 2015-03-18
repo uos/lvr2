@@ -28,7 +28,6 @@
 #include <QtGui>
 
 #include "LVRMainWindow.hpp"
-
 #include "io/ModelFactory.hpp"
 #include "io/DataStruct.hpp"
 
@@ -1007,8 +1006,8 @@ void LVRMainWindow::reconstructUsingExtendedMarchingCubes()
         LVRModelItem* parent_item = getModelItem(items.first());
         if(pc_item != NULL)
         {
-            LVRReconstructViaMarchingCubesDialog* dialog = new LVRReconstructViaMarchingCubesDialog("SF", pc_item, parent_item, treeWidget, qvtkWidget->GetRenderWindow());
-            return;
+        	LVRReconstructViaExtendedMarchingCubesDialog* dialog = new LVRReconstructViaExtendedMarchingCubesDialog("SF", pc_item, parent_item, treeWidget, qvtkWidget->GetRenderWindow());
+        	return;
         }
     }
     m_incompatibilityBox->exec();

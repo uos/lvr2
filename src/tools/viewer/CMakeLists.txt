@@ -30,6 +30,7 @@ set(LVR_VIEWER_SOURCES
     widgets/LVRCorrespondanceDialog.cpp
     widgets/LVRReconstructionEstimateNormalsDialog.cpp
     widgets/LVRReconstructionMarchingCubesDialog.cpp
+    widgets/LVRReconstructionExtendedMarchingCubesDialog.cpp
     widgets/LVROptimizationPlanarOptimizationDialog.cpp
     widgets/LVROptimizationRemoveArtifactsDialog.cpp
     widgets/LVRFilteringRemoveOutliersDialog.cpp
@@ -49,6 +50,7 @@ set(LVR_VIEWER_MOCS
     widgets/LVRTransformationDialog.hpp
     widgets/LVRReconstructionEstimateNormalsDialog.hpp
     widgets/LVRReconstructionMarchingCubesDialog.hpp
+    widgets/LVRReconstructionExtendedMarchingCubesDialog.hpp
     widgets/LVROptimizationPlanarOptimizationDialog.hpp
     widgets/LVROptimizationRemoveArtifactsDialog.hpp
     widgets/LVRFilteringRemoveOutliersDialog.hpp
@@ -69,6 +71,7 @@ set(LVR_VIEWER_UIS
    ui/LVRRegistrationPickCorrespondancesDialogUI.ui
    ui/LVRAboutDialogUI.ui
    ui/LVRReconstructionMarchingCubesDialogUI.ui
+   ui/LVRReconstructionExtendedMarchingCubesDialogUI.ui
    ui/LVRReconstructionEstimateNormalsDialogUI.ui
    ui/LVROptimizationPlanarOptimizationDialogUI.ui
    ui/LVROptimizationRemoveArtifactsDialogUI.ui
