@@ -55,6 +55,7 @@
 #include "../widgets/LVRCorrespondanceDialog.hpp"
 #include "../widgets/LVRReconstructionEstimateNormalsDialog.hpp"
 #include "../widgets/LVRReconstructionMarchingCubesDialog.hpp"
+#include "../widgets/LVRReconstructionExtendedMarchingCubesDialog.hpp"
 #include "../widgets/LVROptimizationPlanarOptimizationDialog.hpp"
 #include "../widgets/LVROptimizationRemoveArtifactsDialog.hpp"
 #include "../widgets/LVRFilteringMLSProjectionDialog.hpp"
