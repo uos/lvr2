@@ -93,9 +93,9 @@ void LVRReconstructViaMarchingCubesDialog::generateMesh()
     QCheckBox* reNormals_box = m_dialog->checkBox_renormals;
     bool reestimateNormals = reNormals_box->isChecked();
     QComboBox* gridMode_box = m_dialog->comboBox_gs;
-    bool useVoxelSize = (gridMode_box->currentIndex() == 0) ? true : false;
+    bool useVoxelsize = (gridMode_box->currentIndex() == 0) ? true : false;
     QDoubleSpinBox* gridSize_box = m_dialog->spinBox_below_gs;
-    float  gridSize = (float)gridSize_box->value();
+    float  resolution = (float)gridSize_box->value();
 
     PointBufferPtr pc_buffer = m_pc->getPointBuffer();
     psSurface::Ptr surface;
@@ -114,23 +114,48 @@ void LVRReconstructViaMarchingCubesDialog::generateMesh()
 
     if(!surface->pointBuffer()->hasPointNormals()
                     || (surface->pointBuffer()->hasPointNormals() && reestimateNormals))
+    {
         surface->calculateSurfaceNormals();
+    }
 
     // Create an empty mesh
     HalfEdgeMesh<cVertex, cNormal> mesh( surface );
 
     // Create a point set grid for reconstruction
-    PointsetGrid<ColorVertex<float, unsigned char>, FastBox<ColorVertex<float, unsigned char>, Normal<float> > > grid(gridSize, surface, surface->getBoundingBox(), useVoxelSize);
-    grid.setExtrusion(extrusion);
-    grid.calcDistanceValues();
+    GridBase* grid;
+	FastReconstructionBase<ColorVertex<float, unsigned char>, Normal<float> >* reconstruction;
+	if(m_decomposition == "MC")
+	{
+		grid = new PointsetGrid<ColorVertex<float, unsigned char>, FastBox<ColorVertex<float, unsigned char>, Normal<float> > >(resolution, surface, surface->getBoundingBox(), useVoxelsize);
+		grid->setExtrusion(extrusion);
+		PointsetGrid<ColorVertex<float, unsigned char>, FastBox<ColorVertex<float, unsigned char>, Normal<float> > >* ps_grid = static_cast<PointsetGrid<ColorVertex<float, unsigned char>, FastBox<ColorVertex<float, unsigned char>, Normal<float> > > *>(grid);
+		ps_grid->calcDistanceValues();
 
+		reconstruction = new FastReconstruction<ColorVertex<float, unsigned char> , Normal<float>, FastBox<ColorVertex<float, unsigned char>, Normal<float> >  >(ps_grid);
 
-    // Create a new reconstruction object
-    FastReconstruction<ColorVertex<float, unsigned char> , Normal<float>, FastBox<ColorVertex<float, unsigned char>, Normal<float> >  > reconstruction(&grid);
+	}
+	else if(m_decomposition == "PMC")
+	{
+		grid = new PointsetGrid<ColorVertex<float, unsigned char>, BilinearFastBox<ColorVertex<float, unsigned char>, Normal<float> > >(resolution, surface, surface->getBoundingBox(), useVoxelsize);
+		grid->setExtrusion(extrusion);
+		BilinearFastBox<ColorVertex<float, unsigned char>, Normal<float> >::m_surface = surface;
+		PointsetGrid<ColorVertex<float, unsigned char>, BilinearFastBox<ColorVertex<float, unsigned char>, Normal<float> > >* ps_grid = static_cast<PointsetGrid<ColorVertex<float, unsigned char>, BilinearFastBox<ColorVertex<float, unsigned char>, Normal<float> > > *>(grid);
+		ps_grid->calcDistanceValues();
 
+		reconstruction = new FastReconstruction<ColorVertex<float, unsigned char> , Normal<float>, BilinearFastBox<ColorVertex<float, unsigned char>, Normal<float> >  >(ps_grid);
 
+	}
+	else if(m_decomposition == "SF")
+	{
+		SharpBox<ColorVertex<float, unsigned char>, Normal<float> >::m_surface = surface;
+		grid = new PointsetGrid<ColorVertex<float, unsigned char>, SharpBox<ColorVertex<float, unsigned char>, Normal<float> > >(resolution, surface, surface->getBoundingBox(), useVoxelsize);
+		grid->setExtrusion(extrusion);
+		PointsetGrid<ColorVertex<float, unsigned char>, SharpBox<ColorVertex<float, unsigned char>, Normal<float> > >* ps_grid = static_cast<PointsetGrid<ColorVertex<float, unsigned char>, SharpBox<ColorVertex<float, unsigned char>, Normal<float> > > *>(grid);
+		ps_grid->calcDistanceValues();
+		reconstruction = new FastReconstruction<ColorVertex<float, unsigned char> , Normal<float>, SharpBox<ColorVertex<float, unsigned char>, Normal<float> >  >(ps_grid);
+	}
     // Create mesh
-    reconstruction.getMesh(mesh);
+    reconstruction->getMesh(mesh);
     mesh.setClassifier("PlaneSimpsons");
     mesh.getClassifier().setMinRegionSize(10);
     mesh.finalize();
