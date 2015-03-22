@@ -129,17 +129,22 @@ float FastBox<VertexT, NormalT>::calcIntersection(float x1, float x2, float d1, 
 {
 
     // Calculate the surface intersection using linear interpolation
-      // and check for different signs of the given distance values.
-      // If for some reason there was no sign change, return the
-      // middle point
-      if( (d1 < 0 && d2 >= 0) || (d2 < 0 && d1 >= 0) )
-      {
-          return  x2 - d2 * (x1 - x2) / (d1 - d2);
-      }
-      else
-      {
-          return  (x2 + x1) / 2.0;
-      }
+	// and check for different signs of the given distance values.
+	// If for some reason there was no sign change, return the
+	// middle point
+	if( (d1 < 0 && d2 >= 0) || (d2 < 0 && d1 >= 0) )
+	{
+	  float interpolation = x2 - d2 * (x1 - x2) / (d1 - d2);
+	  if(compareFloat(interpolation, x1))
+		interpolation += 0.01;
+	  else if(compareFloat(interpolation, x2))
+		interpolation -= 0.01;
+	  return  interpolation;
+	}
+	else
+	{
+	  return  (x2 + x1) / 2.0;
+	}
 }
 
 template<typename VertexT, typename NormalT>
@@ -147,10 +152,6 @@ void FastBox<VertexT, NormalT>::getIntersections(VertexT* corners,
                                                  float* distance,
                                                  VertexT* positions)
 {
-    //float d1, d2;
-    //d1 = 
-    //d2 = 0;
-
     float intersection;
 
 	VertexT v1 = corners[0];
@@ -253,7 +254,6 @@ void FastBox<VertexT, NormalT>::getSurface(BaseMesh<VertexT, NormalT> &mesh,
 						{
 							current_neighbor->m_intersections[neighbor_vertex_table[edge_index][i]] = globalIndex;
 						}
-
 					}
 					// Increase the global vertex counter to save the buffer
 					// position were the next new vertex has to be inserted
@@ -272,6 +272,6 @@ void FastBox<VertexT, NormalT>::getSurface(BaseMesh<VertexT, NormalT> &mesh,
 	{
 		m_fusionBox = false;
 	}
-}
+}	
 
 } // namespace lvr
