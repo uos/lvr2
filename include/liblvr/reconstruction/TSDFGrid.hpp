@@ -42,8 +42,7 @@ public:
     }
     box_map m_fusion_cells;
     qp_map	m_fusion_qpIndices;
-    qp_map  m_fusion_oldIndices;
-    vector<QueryPoint<VertexT> > m_fusionPoints;
+	vector<QueryPoint<VertexT> > m_fusionPoints;
     int m_fusionIndex_x;
     int m_fusionIndex_y;
     int m_fusionIndex_z;
