@@ -86,6 +86,7 @@ const static int box_creation_table[8][3] = {
  * @brief This tables stors adjacency information for the
  *        grid creation algorithm.
  */
+
 const static int TSDFCreateTable[8][3] = {
   { 0,  0,  0},
   { 1,  0,  0}, 
