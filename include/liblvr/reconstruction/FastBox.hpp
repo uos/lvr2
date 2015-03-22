@@ -122,6 +122,15 @@ public:
 
 protected:
 
+
+	inline bool compareFloat(double num1, double num2)
+	{
+		if(fabs(num1 - num2) < std::numeric_limits<double>::epsilon())
+			return true;
+		else
+			return false;
+	}
+
     /**
      * @brief Calculated the index for the MC table
      */
@@ -152,9 +161,7 @@ protected:
      * @param query_points  The query points of the grid
      */
     void getDistances(float distances[], vector<QueryPoint<VertexT> > &query_points);
-
-
-
+    
     /***
      * @brief Interpolates the intersection between x1 and x1.
      *
