@@ -3,8 +3,25 @@
 
 #include "reconstruction/PointsetGrid.hpp"
 
+#include "io/Progress.hpp"
+
 namespace lvr
 {
+
+//QProgressDialog* LVRReconstructViaMarchingCubesDialog::m_progressBar = new QProgressDialog;
+
+LVRReconstructViaMarchingCubesDialog* LVRReconstructViaMarchingCubesDialog::master = 0;
+
+void LVRReconstructViaMarchingCubesDialog::updateProgressbar(int p)
+{
+	//LVRReconstructViaMarchingCubesDialog::m_progressBar->setValue(p);
+	master->setProgressvalue(p);
+}
+
+void LVRReconstructViaMarchingCubesDialog::setProgressvalue(int v)
+{
+	m_progressDialog->setValue(v);
+}
 
 LVRReconstructViaMarchingCubesDialog::LVRReconstructViaMarchingCubesDialog(string decomposition, LVRPointCloudItem* pc, LVRModelItem* parent, QTreeWidget* treeWidget, vtkRenderWindow* window) :
    m_decomposition(decomposition), 
@@ -12,6 +29,8 @@ LVRReconstructViaMarchingCubesDialog::LVRReconstructViaMarchingCubesDialog(strin
    m_treeWidget(treeWidget),
    m_renderWindow(window)
 {
+	master = this;
+
     // Setup DialogUI and events
     QDialog* dialog = new QDialog(m_treeWidget);
     m_dialog = new ReconstructViaMarchingCubesDialog;
@@ -24,10 +43,16 @@ LVRReconstructViaMarchingCubesDialog::LVRReconstructViaMarchingCubesDialog(strin
 
     connectSignalsAndSlots();
 
+    m_progressDialog = new QProgressDialog;
+
     dialog->show();
     dialog->raise();
     dialog->activateWindow();
+
+
 }
+
+
 
 LVRReconstructViaMarchingCubesDialog::~LVRReconstructViaMarchingCubesDialog()
 {
@@ -101,6 +126,8 @@ void LVRReconstructViaMarchingCubesDialog::generateMesh()
     bool useVoxelsize = (gridMode_box->currentIndex() == 0) ? true : false;
     QDoubleSpinBox* gridSize_box = m_dialog->spinBox_below_gs;
     float  resolution = (float)gridSize_box->value();
+
+    lvr::ProgressBar::setProgressCallback(&updateProgressbar);
 
     PointBufferPtr pc_buffer = m_pc->getPointBuffer();
     psSurface::Ptr surface;
