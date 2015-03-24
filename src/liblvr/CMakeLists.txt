@@ -82,16 +82,6 @@ set(LVR_LIB_DEPENDENCIES ${LVR_LIB_DEPENDENCIES} pthread)
 endif ( UNIX)
 
 #####################################################################################
-# Add QT dependencies if found
-#####################################################################################
-
-if( QT4_FOUND )
-set(LVR_LIB_DEPENDENCIES ${LVR_LIB_DEPENDENCIES} 
-	${QT_QTGUI_LIBRARIES} 
-	${QT_QTCORE_LIBRARIES})
-endif (QT4_FOUND)
-
-#####################################################################################
 # Set c++0x flags for gcc compilers (needed for boctree io)
 #####################################################################################
 
@@ -112,7 +102,7 @@ endif(PCL_FOUND)
 # Compile object files for static and dynamic library
 #####################################################################################
 
-add_library( lvrcore OBJECT ${LVR_SOURCES})
+add_library( lvrcore OBJECT ${LVR_SOURCES} ${LVR_LIB_MOC_SRC})
 
 #####################################################################################
 # Build static library
