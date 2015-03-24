@@ -23,6 +23,8 @@
 #include "LVRPointCloudItem.hpp"
 #include "LVRModelItem.hpp"
 
+#include <QProgressDialog>
+
 using Ui::ReconstructViaMarchingCubesDialog;
 
 namespace lvr
@@ -40,10 +42,16 @@ public:
     typedef PointsetSurface<cVertex>                    psSurface;
     typedef AdaptiveKSearchSurface<cVertex, cNormal>    akSurface;
 
+    static void updateProgressbar(int p);
+    static LVRReconstructViaMarchingCubesDialog* master;
+
+    void setProgressvalue(int v);
+
 public Q_SLOTS:
     void generateMesh();
     void toggleRANSACcheckBox(const QString &text);
     void switchGridSizeDetermination(int index);
+
 
 private:
     void connectSignalsAndSlots();
@@ -55,6 +63,9 @@ private:
     QTreeWidget*                            m_treeWidget;
     LVRModelItem*                           m_generatedModel;
     vtkRenderWindow*                        m_renderWindow;
+    QProgressDialog*						m_progressDialog;
+
+
 
 };
 
