@@ -37,15 +37,17 @@ class LVRReconstructViaMarchingCubesDialog : public QObject
 public:
     LVRReconstructViaMarchingCubesDialog(string decomposition, LVRPointCloudItem* pc, LVRModelItem* parent, QTreeWidget* treeWidget, vtkRenderWindow* renderer);
     virtual ~LVRReconstructViaMarchingCubesDialog();
-    typedef ColorVertex<float, unsigned char>         cVertex;
+    typedef ColorVertex<float, unsigned char>         	cVertex;
     typedef Normal<float>                               cNormal;
     typedef PointsetSurface<cVertex>                    psSurface;
     typedef AdaptiveKSearchSurface<cVertex, cNormal>    akSurface;
 
     static void updateProgressbar(int p);
+    static void updateProgressbarTitle(string t);
 
 
-    void setProgressvalue(int v);
+    void setProgressValue(int v);
+    void setProgressTitle(string);
 
 public Q_SLOTS:
     void generateMesh();
@@ -54,6 +56,7 @@ public Q_SLOTS:
 
 Q_SIGNALS:
     void progressValueChanged(int);
+    void progressTitleChanged(const QString&);
 
 
 private:

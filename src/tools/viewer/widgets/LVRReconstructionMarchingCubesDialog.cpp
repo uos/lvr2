@@ -14,12 +14,23 @@ LVRReconstructViaMarchingCubesDialog* LVRReconstructViaMarchingCubesDialog::m_ma
 
 void LVRReconstructViaMarchingCubesDialog::updateProgressbar(int p)
 {
-	m_master->setProgressvalue(p);
+	m_master->setProgressValue(p);
 }
 
-void LVRReconstructViaMarchingCubesDialog::setProgressvalue(int v)
+void LVRReconstructViaMarchingCubesDialog::updateProgressbarTitle(string t)
+{
+	m_master->setProgressTitle(t);
+}
+
+
+void LVRReconstructViaMarchingCubesDialog::setProgressValue(int v)
 {
 	Q_EMIT(progressValueChanged(v));
+}
+
+void LVRReconstructViaMarchingCubesDialog::setProgressTitle(string t)
+{
+	Q_EMIT(progressTitleChanged(QString(t.c_str())));
 }
 
 LVRReconstructViaMarchingCubesDialog::LVRReconstructViaMarchingCubesDialog(string decomposition, LVRPointCloudItem* pc, LVRModelItem* parent, QTreeWidget* treeWidget, vtkRenderWindow* window) :
@@ -48,7 +59,12 @@ LVRReconstructViaMarchingCubesDialog::LVRReconstructViaMarchingCubesDialog(strin
     m_progressDialog->setMinimumDuration(100);
     m_progressDialog->setWindowTitle("Processing...");
 
+    // Register LVR progress callbacks
+    lvr::ProgressBar::setProgressCallback(&updateProgressbar);
+    lvr::ProgressBar::setProgressTitleCallback(&updateProgressbarTitle);
+
     connect(this, SIGNAL(progressValueChanged(int)), m_progressDialog, SLOT(setValue(int)));
+    connect(this, SIGNAL(progressTitleChanged(const QString&)), m_progressDialog, SLOT(setLabelText(const QString&)));
 
     dialog->show();
     dialog->raise();
@@ -61,7 +77,9 @@ LVRReconstructViaMarchingCubesDialog::LVRReconstructViaMarchingCubesDialog(strin
 
 LVRReconstructViaMarchingCubesDialog::~LVRReconstructViaMarchingCubesDialog()
 {
-    // TODO Auto-generated destructor stub
+    m_master = 0;
+    lvr::ProgressBar::setProgressCallback(0);
+    lvr::ProgressBar::setProgressTitleCallback(0);
 }
 
 void LVRReconstructViaMarchingCubesDialog::connectSignalsAndSlots()
@@ -132,7 +150,7 @@ void LVRReconstructViaMarchingCubesDialog::generateMesh()
     QDoubleSpinBox* gridSize_box = m_dialog->spinBox_below_gs;
     float  resolution = (float)gridSize_box->value();
 
-    lvr::ProgressBar::setProgressCallback(&updateProgressbar);
+
     m_progressDialog->raise();
     m_progressDialog->show();
     m_progressDialog->activateWindow();

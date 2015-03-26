@@ -38,7 +38,8 @@ using std::flush;
 namespace lvr
 {
 
-ProgressCallbackPtr ProgressBar::m_callBack = 0;
+ProgressCallbackPtr ProgressBar::m_progressCallback = 0;
+ProgressTitleCallbackPtr ProgressBar::m_titleCallback = 0;
 
 ProgressBar::ProgressBar(size_t max_val, string prefix)
 {
@@ -47,6 +48,10 @@ ProgressBar::ProgressBar(size_t max_val, string prefix)
     m_currentVal = 0;
 	m_percent = 0;
 
+	if(m_titleCallback)
+	{
+		m_titleCallback(prefix);
+	}
 }
 
 ProgressBar::~ProgressBar()
@@ -56,9 +61,13 @@ ProgressBar::~ProgressBar()
 
 void ProgressBar::setProgressCallback(ProgressCallbackPtr ptr)
 {
-	m_callBack = ptr;
+	m_progressCallback = ptr;
 }
 
+void ProgressBar::setProgressTitleCallback(ProgressTitleCallbackPtr ptr)
+{
+	m_titleCallback = ptr;
+}
 
 void ProgressBar::operator++()
 {
@@ -77,9 +86,9 @@ void ProgressBar::operator++()
         difference--;
         print_bar();
 
-        if(m_callBack)
+        if(m_progressCallback)
         {
-        	m_callBack(m_percent);
+        	m_progressCallback(m_percent);
         }
     }
 
