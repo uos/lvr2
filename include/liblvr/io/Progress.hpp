@@ -52,6 +52,7 @@ namespace lvr{
  */
 
 typedef void(*ProgressCallbackPtr)(int);
+typedef void(*ProgressTitleCallbackPtr)(string);
 
 class ProgressBar
 {
@@ -73,7 +74,20 @@ public:
 	 */
 	void operator++();
 
+	/**
+	 * @brief 	Registers a callback that is called with the new value
+	 * 			when the percentage of the progress changed.
+	 *
+	 * @param
+	 */
 	static void setProgressCallback(ProgressCallbackPtr);
+
+	/**
+	 * @brief	Registers a callback that is called when a new progress
+	 * 			instance is created.
+	 * @param
+	 */
+	static void setProgressTitleCallback(ProgressTitleCallbackPtr);
 
 protected:
 
@@ -101,8 +115,8 @@ protected:
 	/// A fill string for correct output alignment
 	string 			m_fillstring;
 
-	static ProgressCallbackPtr m_callBack;
-
+	static ProgressCallbackPtr 			m_progressCallback;
+	static ProgressTitleCallbackPtr		m_titleCallback;
 };
 
 
