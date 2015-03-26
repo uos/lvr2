@@ -43,7 +43,7 @@ public:
     typedef AdaptiveKSearchSurface<cVertex, cNormal>    akSurface;
 
     static void updateProgressbar(int p);
-    static LVRReconstructViaMarchingCubesDialog* master;
+
 
     void setProgressvalue(int v);
 
@@ -52,19 +52,22 @@ public Q_SLOTS:
     void toggleRANSACcheckBox(const QString &text);
     void switchGridSizeDetermination(int index);
 
+Q_SIGNALS:
+    void progressValueChanged(int);
+
 
 private:
     void connectSignalsAndSlots();
 
-    string                                  m_decomposition;
-    ReconstructViaMarchingCubesDialog*      m_dialog;
-    LVRPointCloudItem*                      m_pc;
-    LVRModelItem*                           m_parent;
-    QTreeWidget*                            m_treeWidget;
-    LVRModelItem*                           m_generatedModel;
-    vtkRenderWindow*                        m_renderWindow;
-    QProgressDialog*						m_progressDialog;
-
+    string                                  		m_decomposition;
+    ReconstructViaMarchingCubesDialog*      		m_dialog;
+    LVRPointCloudItem*                      		m_pc;
+    LVRModelItem*                           		m_parent;
+    QTreeWidget*                            		m_treeWidget;
+    LVRModelItem*                          			m_generatedModel;
+    vtkRenderWindow*                        		m_renderWindow;
+    QProgressDialog*								m_progressDialog;
+    static LVRReconstructViaMarchingCubesDialog* 	m_master;
 
 
 };
