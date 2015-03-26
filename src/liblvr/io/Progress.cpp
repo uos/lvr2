@@ -50,7 +50,10 @@ ProgressBar::ProgressBar(size_t max_val, string prefix)
 
 	if(m_titleCallback)
 	{
-		m_titleCallback(prefix);
+		// Remove time brackets
+		unsigned index;
+		index = prefix.find_last_of("]");
+		m_titleCallback(prefix.substr(index+1));
 	}
 }
 
