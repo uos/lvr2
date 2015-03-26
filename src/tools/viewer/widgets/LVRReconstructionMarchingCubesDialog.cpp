@@ -10,17 +10,16 @@ namespace lvr
 
 //QProgressDialog* LVRReconstructViaMarchingCubesDialog::m_progressBar = new QProgressDialog;
 
-LVRReconstructViaMarchingCubesDialog* LVRReconstructViaMarchingCubesDialog::master = 0;
+LVRReconstructViaMarchingCubesDialog* LVRReconstructViaMarchingCubesDialog::m_master;
 
 void LVRReconstructViaMarchingCubesDialog::updateProgressbar(int p)
 {
-	//LVRReconstructViaMarchingCubesDialog::m_progressBar->setValue(p);
-	master->setProgressvalue(p);
+	m_master->setProgressvalue(p);
 }
 
 void LVRReconstructViaMarchingCubesDialog::setProgressvalue(int v)
 {
-	m_progressDialog->setValue(v);
+	Q_EMIT(progressValueChanged(v));
 }
 
 LVRReconstructViaMarchingCubesDialog::LVRReconstructViaMarchingCubesDialog(string decomposition, LVRPointCloudItem* pc, LVRModelItem* parent, QTreeWidget* treeWidget, vtkRenderWindow* window) :
@@ -29,7 +28,7 @@ LVRReconstructViaMarchingCubesDialog::LVRReconstructViaMarchingCubesDialog(strin
    m_treeWidget(treeWidget),
    m_renderWindow(window)
 {
-	master = this;
+	m_master = this;
 
     // Setup DialogUI and events
     QDialog* dialog = new QDialog(m_treeWidget);
@@ -44,6 +43,12 @@ LVRReconstructViaMarchingCubesDialog::LVRReconstructViaMarchingCubesDialog(strin
     connectSignalsAndSlots();
 
     m_progressDialog = new QProgressDialog;
+    m_progressDialog->setMinimum(0);
+    m_progressDialog->setMaximum(100);
+    m_progressDialog->setMinimumDuration(100);
+    m_progressDialog->setWindowTitle("Processing...");
+
+    connect(this, SIGNAL(progressValueChanged(int)), m_progressDialog, SLOT(setValue(int)));
 
     dialog->show();
     dialog->raise();
@@ -128,6 +133,9 @@ void LVRReconstructViaMarchingCubesDialog::generateMesh()
     float  resolution = (float)gridSize_box->value();
 
     lvr::ProgressBar::setProgressCallback(&updateProgressbar);
+    m_progressDialog->raise();
+    m_progressDialog->show();
+    m_progressDialog->activateWindow();
 
     PointBufferPtr pc_buffer = m_pc->getPointBuffer();
     psSurface::Ptr surface;
@@ -203,6 +211,8 @@ void LVRReconstructViaMarchingCubesDialog::generateMesh()
 
     m_treeWidget->addTopLevelItem(m_generatedModel);
     m_generatedModel->setExpanded(true);
+
+    m_progressDialog->hide();
 }
 
 }
