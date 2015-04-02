@@ -58,7 +58,9 @@ void FastReconstruction<VertexT, NormalT, BoxT>::getMesh(BaseMesh<VertexT, Norma
 		if(!timestamp.isQuiet())
 			++progress;
 	}
-	
+
+	cout << "mesh size "<< mesh.meshSize() << endl;
+
 	if(!timestamp.isQuiet())
 		cout << endl;
 

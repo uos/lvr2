@@ -154,7 +154,24 @@ template<typename VertexT, typename NormalT>
 void HalfEdgeMesh<VertexT, NormalT>::addVertex(VertexT v)
 {
     // Create new HalfEdgeVertex and increase vertex counter
+    m_vertices.push_back(new HVertex(v));
+    m_globalIndex++;
+}
 
+template<typename VertexT, typename NormalT>
+void HalfEdgeMesh<VertexT, NormalT>::addGiftVertex(VertexT v, bool& bullseye)
+{
+    // Create new HalfEdgeVertex and increase vertex counter
+	for(int i = 300000; i < m_vertices.size(); i++){
+		auto vertex  = m_vertices[i];
+		if(vertex->m_position[0] == v[0] && vertex->m_position[1] == v[1]  && vertex->m_position[2] == v[2]){
+			cout << "ICH BIN DOPPELT" << endl;
+			cout << "i: "  << i <<  endl;
+			cout <<"vorhanden " << vertex->m_position[0] << " " << vertex->m_position[1] << " " << vertex->m_position[2] << endl;
+			cout <<"versuch " << v << endl;
+			bullseye = true;
+		}
+	}
     m_vertices.push_back(new HVertex(v));
     m_globalIndex++;
 }

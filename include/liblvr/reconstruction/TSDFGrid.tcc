@@ -23,6 +23,12 @@ TsdfGrid<VertexT, BoxT, TsdfT>::TsdfGrid(float cellSize,  BoundingBox<VertexT> b
 		this->m_queryPoints = lastGrid->getFusionPoints();
 		this->m_qpIndices = lastGrid->getFusionIndices();
 		this->m_cells = lastGrid->getFusionCells();
+		for(auto cellPair : lastGrid->getFusionCells())
+		{
+			BoxT* box = new BoxT(*(cellPair.second));
+			this->m_cells[cellPair.first] = box;
+		}
+		this->m_global_cells = lastGrid->m_global_cells;
 	}
 	int center_of_bb_x = (this->m_boundingBox.getXSize()/2) / this->m_voxelsize;
 	int center_of_bb_y = (this->m_boundingBox.getYSize()/2) / this->m_voxelsize;
@@ -32,11 +38,12 @@ TsdfGrid<VertexT, BoxT, TsdfT>::TsdfGrid(float cellSize,  BoundingBox<VertexT> b
 	m_fusionIndex_z = shiftZ + center_of_bb_z;
 	//#pragma omp parallllell for
 	m_fusionIndex = 0;
+	int grid_index = 0;
 	size_t last_size = this->m_queryPoints.size();
 	this->m_queryPoints.resize(size + last_size);
 	for(size_t i = 0; i < size; i++)
 	{
-		int grid_index = i + last_size;
+		grid_index = i + last_size;
 		// shift tsdf into global grid
 		int global_x = tsdf[i].x + center_of_bb_x;
 		int global_y = tsdf[i].y + center_of_bb_y;
@@ -46,7 +53,6 @@ TsdfGrid<VertexT, BoxT, TsdfT>::TsdfGrid(float cellSize,  BoundingBox<VertexT> b
 		this->m_queryPoints[grid_index] = qp;
 		size_t hash_value = this->hashValue(global_x, global_y, global_z);
 		this->m_qpIndices[hash_value] = grid_index;
-		this->m_globalIndex++;
 		if((global_x == m_fusionIndex_x) || (global_y == m_fusionIndex_y) || (global_z == m_fusionIndex_z))
 		{
 			m_fusion_qpIndices[hash_value] = m_fusionIndex;
@@ -54,6 +60,7 @@ TsdfGrid<VertexT, BoxT, TsdfT>::TsdfGrid(float cellSize,  BoundingBox<VertexT> b
 			m_fusionIndex++;
 		}
 	}
+	this->m_globalIndex = grid_index + 1;
 	cout << timestamp << "Finished inserting" << endl;
 	// Iterator over all points, calc lattice indices and add lattice points to the grid
 	for(size_t i = 0; i < size; i++)
@@ -65,6 +72,7 @@ TsdfGrid<VertexT, BoxT, TsdfT>::TsdfGrid(float cellSize,  BoundingBox<VertexT> b
 		addTSDFLatticePoint(global_x , global_y, global_z, tsdf[i].w);
 	}
 	cout << timestamp << "Finished creating grid" << endl;
+	cout << "Repaired " << this->m_globalIndex - grid_index - 1 << " boxes " << endl;
 	cout << "Fusion Boxes " << m_fusion_cells.size() << endl;
 }
 
@@ -92,119 +100,170 @@ void TsdfGrid<VertexT, BoxT, TsdfT>::addTSDFLatticePoint(int index_x, int index_
 	// created query point will get
 	unsigned int current_index = 0;
 
-	int dx, dy, dz;
+	int dx, dy, dz, nx, ny, nz;
 
 	// Get min and max vertex of the point clouds bounding box
 	VertexT v_min = this->m_boundingBox.getMin();
 	VertexT v_max = this->m_boundingBox.getMax();
 
-	/*int e;
-	m_extrude ? e = 8 : e = 1;
-	for(int j = 0; j < e; j++)
-	{*/
-		// Get the grid offsets for the neighboring grid position
-		// for the given box corner
-		
+	hash_value = this->hashValue(index_x, index_y, index_z);
 
-		hash_value = this->hashValue(index_x, index_y, index_z);
+	//Calculate box center .. useless
+	VertexT box_center(
+			(index_x),
+			(index_y),
+			(index_z));
 
-		it = this->m_cells.find(hash_value);
-		if(it == this->m_cells.end())
+	//Create new box
+	BoxT* box = new BoxT(box_center, isFusion, hash_value);
+	vector<size_t> boxQps;
+	boxQps.resize(8);
+	vector<size_t> cornerHashs;
+	cornerHashs.resize(8);
+	std::vector<int> missingCorner;
+	//Setup the box itself
+	for(int k = 0; k < 8; k++)
+	{
+		//Find point in Grid
+		dx = TSDFCreateTable[k][0];
+		dy = TSDFCreateTable[k][1];
+		dz = TSDFCreateTable[k][2];
+		size_t corner_hash = this->hashValue(index_x + dx, index_y + dy, index_z + dz);
+		if(!isFusion && ((index_x + dx == m_fusionIndex_x) || (index_y + dy == m_fusionIndex_y) || (index_z + dz == m_fusionIndex_z)))
 		{
-			//Calculate box center .. useless
-			VertexT box_center(
-					(index_x),
-					(index_y),
-					(index_z));
-
-			//Create new box
-			BoxT* box = new BoxT(box_center, isFusion);
-			vector<size_t> boxQps;
-			boxQps.resize(8);
-			vector<size_t> cornerHashs;
-			cornerHashs.resize(8);
-			//Setup the box itself
-			for(int k = 0; k < 8; k++)
-			{
-				//Find point in Grid
-				dx = TSDFCreateTable[k][0];
-				dy = TSDFCreateTable[k][1];
-				dz = TSDFCreateTable[k][2];
-				size_t corner_hash = this->hashValue(index_x + dx, index_y + dy, index_z + dz);
-				if(!isFusion && ((index_x + dx == m_fusionIndex_x) || (index_y + dy == m_fusionIndex_y) || (index_z + dz == m_fusionIndex_z)))
-				{
-					isFusion = true;
-					box->setFusion(true);
-				}
-				auto qp_index_it = this->m_qpIndices.find(corner_hash);
-				//If point exist, save index in box
-				if(qp_index_it != this->m_qpIndices.end()) 
-				{
-					box->setVertex(k, qp_index_it->second);
-				}
-				else
-				{
-					delete box;
-					return;
-				}
-				boxQps[k] = qp_index_it->second;
-				cornerHashs[k] = corner_hash;
-			}
-			if(isFusion)
-			{
-				for(size_t i = 0; i < 8; i++)
-				{
-					m_fusion_qpIndices[cornerHashs[i]] = m_fusionIndex;
-					m_fusionPoints.push_back(this->m_queryPoints[boxQps[i]]);
-					box->setVertex(i, m_fusionIndex);
-					m_fusionIndex++;
-				}
-			}
-
-			//Set pointers to the neighbors of the current box
-			int neighbor_index = 0;
-			size_t neighbor_hash = 0;
-
-			for(int a = -1; a < 2; a++)
-			{
-				for(int b = -1; b < 2; b++)
-				{
-					for(int c = -1; c < 2; c++)
-					{
-						
-						//Calculate hash value for current neighbor cell
-						neighbor_hash = this->hashValue(index_x + a,
-								index_y + b,
-								index_z + c);
-						
-						//Try to find this cell in the grid
-						neighbor_it = this->m_cells.find(neighbor_hash);
-
-						//If it exists, save pointer in box
-						if(neighbor_it != this->m_cells.end())
-						{
-							box->setNeighbor(neighbor_index, (*neighbor_it).second);
-							(*neighbor_it).second->setNeighbor(26 - neighbor_index, box);
-						}
-						//cout << "neigbour index " << neighbor_index << endl;
-						neighbor_index++;
-					}
-				}
-			}
-
-			this->m_cells[hash_value] = box;
-			if(isFusion)
-			{
-				this->m_fusion_cells[hash_value] = box;
-			}
+			isFusion = true;
+			box->setFusion(true);
+		}
+		auto qp_index_it = this->m_qpIndices.find(corner_hash);
+		//If point exist, save index in box
+		if(qp_index_it != this->m_qpIndices.end()) 
+		{
+			box->setVertex(k, qp_index_it->second);
+			boxQps[k] = qp_index_it->second;
 		}
 		else
 		{
-			cout << "double cell " << endl;
-			//cout << "index z: " << index_z <<  endl;
+			missingCorner.push_back(k);
+			boxQps[k] = 0;
+			//delete box;
+			//return;
 		}
-	//}
+		cornerHashs[k] = corner_hash;
+	}
+	/*if(missingCorner.size() == 1)
+	{
+		int h = missingCorner[0];
+		//Find point in Grid
+		nx = box_creation_table[h][0];
+		ny = box_creation_table[h][1];
+		nz = box_creation_table[h][2];
+		//Find point in Grid
+		dx = TSDFCreateTable[h][0];
+		dy = TSDFCreateTable[h][1];
+		dz = TSDFCreateTable[h][2];
+		std::vector<size_t> neighbour_hashes;
+		neighbour_hashes.resize(3);
+		bool interfered = false;
+		neighbour_hashes[0] = this->hashValue((index_x + dx) + nx, (index_y + dy) ,      (index_z + dz));
+		neighbour_hashes[1] = this->hashValue((index_x + dx) ,     (index_y + dy) + ny , (index_z + dz));
+		neighbour_hashes[2] = this->hashValue((index_x + dx) ,     (index_y + dy) ,      (index_z + dz) + nz);
+		for(int j = 0; j < 3 ; j++)
+		{
+			//cout << "check interference " << endl;
+			auto qp_index_it = this->m_qpIndices.find(neighbour_hashes[j]);
+			//If point exist, interfere tsdf value and create new qp
+			if(qp_index_it != this->m_qpIndices.end()) 
+			{
+				interfered = true;
+				double tsdf_1 = this->m_queryPoints[qp_index_it->second].m_distance;
+				int corner2 = box_neighbour_table[h][j];
+				double tsdf_2 = this->m_queryPoints[boxQps[corner2]].m_distance;
+				double tsdf = (tsdf_1 + tsdf_2)/2;
+				VertexT position(index_x + dx, index_y + dy, index_z + dz);
+				QueryPoint<VertexT> qp = QueryPoint<VertexT>(position, tsdf);
+				this->m_queryPoints.resize(this->m_queryPoints.size() + 1);
+				this->m_queryPoints[this->m_globalIndex] = qp;
+				size_t miss_hash = this->hashValue(index_x + dx, index_y + dy, index_z + dz);
+				this->m_qpIndices[miss_hash] = this->m_globalIndex;
+				box->setVertex(h, this->m_globalIndex);
+				boxQps[h] = this->m_globalIndex;
+				this->m_globalIndex++;
+				break;
+			}
+		}
+		if(!interfered)
+		{
+			delete box;
+			return;
+		}
+	}*/
+	if(missingCorner.size() > 0)
+	{
+		delete box;
+		return;
+	}
+	
+	// add box to global cell map
+	auto global_box = this->m_global_cells.find(hash_value);
+	if(global_box != m_global_cells.end())
+	{
+		//delete box->m_intersections;
+		//box->m_intersections = global_box->second;
+		//cout << "double double " << endl;
+		//box->m_doubleBox = true;
+		delete box;
+		return;
+	}
+	else
+	{
+		m_global_cells[hash_value] = box->m_intersections;
+	}
+	
+	if(isFusion)
+	{
+		for(size_t i = 0; i < 8; i++)
+		{
+			m_fusion_qpIndices[cornerHashs[i]] = m_fusionIndex;
+			m_fusionPoints.push_back(this->m_queryPoints[boxQps[i]]);
+			box->setVertex(i, m_fusionIndex);
+			m_fusionIndex++;
+		}
+	}
+	//Set pointers to the neighbors of the current box
+	int neighbor_index = 0;
+	size_t neighbor_hash = 0;
 
+	for(int a = -1; a < 2; a++)
+	{
+		for(int b = -1; b < 2; b++)
+		{
+			for(int c = -1; c < 2; c++)
+			{
+				
+				//Calculate hash value for current neighbor cell
+				neighbor_hash = this->hashValue(index_x + a,
+						index_y + b,
+						index_z + c);
+				
+				//Try to find this cell in the grid
+				neighbor_it = this->m_cells.find(neighbor_hash);
+
+				//If it exists, save pointer in box
+				if(neighbor_it != this->m_cells.end())
+				{
+					box->setNeighbor(neighbor_index, (*neighbor_it).second);
+					(*neighbor_it).second->setNeighbor(26 - neighbor_index, box);
+				}
+				neighbor_index++;
+			}
+		}
+	}
+	
+	this->m_cells[hash_value] = box;
+	if(isFusion)
+	{
+		this->m_fusion_cells[hash_value] = box;
+	}
 }
 
 template<typename VertexT, typename BoxT, typename TsdfT>
