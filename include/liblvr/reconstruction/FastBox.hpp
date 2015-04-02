@@ -54,7 +54,7 @@ public:
 	 * @brief Constructs a new box at the given center point defined
 	 * 		  by the used \ref{m_voxelsize}.
 	 */
-    FastBox(VertexT &center, bool fusionBox = false);
+    FastBox(VertexT &center, bool fusionBox = false, size_t hash = 0);
 
     /**
      * @brief Destructor.
@@ -117,8 +117,10 @@ public:
     static uint		   		INVALID_INDEX;
 
     /// The twelve intersection between box and surface
-    uint                   		m_intersections[12];
+    size_t                      m_hash;
+    uint*                   	m_intersections;
     bool 						m_fusionBox;
+    bool 						m_doubleBox;
 
 protected:
 
