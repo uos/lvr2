@@ -35,8 +35,10 @@ template<typename VertexT, typename NormalT>
 uint FastBox<VertexT, NormalT>::INVALID_INDEX = numeric_limits<uint>::max();
 
 template<typename VertexT, typename NormalT>
-FastBox<VertexT, NormalT>::FastBox(VertexT &center, bool fusionBox): m_fusionBox(fusionBox)
+FastBox<VertexT, NormalT>::FastBox(VertexT &center, bool fusionBox, size_t hash)
+			: m_fusionBox(fusionBox), m_hash(hash)
 {
+	m_intersections = new uint[12];
     // Init members
     for(int i = 0; i < 12; i++)
     {
@@ -52,8 +54,8 @@ FastBox<VertexT, NormalT>::FastBox(VertexT &center, bool fusionBox): m_fusionBox
     {
         m_neighbors[i] = 0;
     }
-
     m_center = center;
+    m_doubleBox = false;
 }
 
 template<typename VertexT, typename NormalT>
@@ -203,7 +205,7 @@ void FastBox<VertexT, NormalT>::getSurface(BaseMesh<VertexT, NormalT> &mesh,
                                                vector<QueryPoint<VertexT> > &qp,
                                                uint &globalIndex)
 {
-	if(!m_fusionBox)
+	if(!m_fusionBox && !m_doubleBox)
     {
 		VertexT corners[8];
 		VertexT vertex_positions[12];
@@ -233,19 +235,24 @@ void FastBox<VertexT, NormalT>::getSurface(BaseMesh<VertexT, NormalT> &mesh,
 		for(int a = 0; MCTable[index][a] != -1; a+= 3){
 			for(int b = 0; b < 3; b++){
 				edge_index = MCTable[index][a + b];
-
+				
 				//If no index was found generate new index and vertex
 				//and update all neighbor boxes
 				if(m_intersections[edge_index] == INVALID_INDEX)
 				{
+					//if(m_doubleBox)
 					m_intersections[edge_index] = globalIndex;
-					VertexT v = vertex_positions[edge_index];
-
+					VertexT v = vertex_positions[edge_index];		
 					// Insert vertex and a new temp normal into mesh.
 					// The normal is inserted to assure that vertex
 					// and normal array always have the same size.
 					// The actual normal is interpolated later.
-					mesh.addVertex(v);
+					//mesh.addVertex(v);
+					bool bullseye = false;
+					if(mesh.meshSize() > 11580000)
+						mesh.addGiftVertex(v, bullseye);
+					else
+						mesh.addVertex(v);
 					mesh.addNormal(NormalT());
 					for(int i = 0; i < 3; i++)
 					{
