@@ -56,6 +56,8 @@ class BaseMesh
          *           must support []-access.
          */
         virtual void addVertex(VertexT v) = 0;
+        
+        virtual void addGiftVertex(VertexT v, bool& bullseye) = 0;
 
         /**
          * @brief    This method should be called every time

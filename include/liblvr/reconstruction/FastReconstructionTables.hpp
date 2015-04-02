@@ -82,6 +82,17 @@ const static int box_creation_table[8][3] = {
     {-1,  1,  1}
 };
 
+const static int box_neighbour_table[8][3] = {
+    { 1, 3, 4},
+    { 0, 2, 5},
+    { 3, 1, 6},
+    { 2, 0, 7},
+    { 5, 7, 0},
+    { 4, 6, 1},
+    { 7, 5, 2},
+    { 6, 4, 3}
+};
+
 /**
  * @brief This tables stors adjacency information for the
  *        grid creation algorithm.

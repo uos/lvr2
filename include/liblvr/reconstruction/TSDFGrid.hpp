@@ -10,6 +10,7 @@
 
 #include "HashGrid.hpp"
 
+
 namespace lvr
 {
 
@@ -20,6 +21,7 @@ public:
 
 	typedef unordered_map<size_t, BoxT*> box_map;
 	typedef unordered_map<size_t, size_t> qp_map;
+	typedef unordered_map<size_t, uint*> smallBox_map;;
 	
 	typedef unordered_map<size_t, size_t>::iterator qp_map_iterator;
 	/// Typedef to alias iterators for box maps
@@ -42,11 +44,13 @@ public:
     }
     box_map m_fusion_cells;
     qp_map	m_fusion_qpIndices;
+    smallBox_map m_global_cells;
 	vector<QueryPoint<VertexT> > m_fusionPoints;
     int m_fusionIndex_x;
     int m_fusionIndex_y;
     int m_fusionIndex_z;
     int m_fusionIndex;
+    
 };
 
 } /* namespace lvr */
