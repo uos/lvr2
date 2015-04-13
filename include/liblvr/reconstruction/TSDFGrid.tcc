@@ -53,12 +53,6 @@ TsdfGrid<VertexT, BoxT, TsdfT>::TsdfGrid(float cellSize,  BoundingBox<VertexT> b
 		this->m_queryPoints[grid_index] = qp;
 		size_t hash_value = this->hashValue(global_x, global_y, global_z);
 		this->m_qpIndices[hash_value] = grid_index;
-		if((global_x == m_fusionIndex_x) || (global_y == m_fusionIndex_y) || (global_z == m_fusionIndex_z))
-		{
-			m_fusion_qpIndices[hash_value] = m_fusionIndex;
-			m_fusionPoints.push_back(qp);
-			m_fusionIndex++;
-		}
 	}
 	this->m_globalIndex = grid_index + 1;
 	cout << timestamp << "Finished inserting" << endl;
@@ -72,8 +66,8 @@ TsdfGrid<VertexT, BoxT, TsdfT>::TsdfGrid(float cellSize,  BoundingBox<VertexT> b
 		addTSDFLatticePoint(global_x , global_y, global_z, tsdf[i].w);
 	}
 	cout << timestamp << "Finished creating grid" << endl;
-	cout << "Repaired " << this->m_globalIndex - grid_index - 1 << " boxes " << endl;
-	cout << "Fusion Boxes " << m_fusion_cells.size() << endl;
+	//cout << "Repaired " << this->m_globalIndex - grid_index - 1 << " boxes " << endl;
+	//cout << "Fusion Boxes " << m_fusion_cells.size() << endl;
 }
 
 template<typename VertexT, typename BoxT, typename TsdfT>
