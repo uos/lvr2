@@ -94,7 +94,7 @@ void TsdfGrid<VertexT, BoxT, TsdfT>::addTSDFLatticePoint(int index_x, int index_
 	// created query point will get
 	unsigned int current_index = 0;
 
-	int dx, dy, dz, nx, ny, nz;
+	int dx, dy, dz;
 
 	// Get min and max vertex of the point clouds bounding box
 	VertexT v_min = this->m_boundingBox.getMin();
@@ -139,66 +139,22 @@ void TsdfGrid<VertexT, BoxT, TsdfT>::addTSDFLatticePoint(int index_x, int index_
 		{
 			missingCorner.push_back(k);
 			boxQps[k] = 0;
-			//delete box;
-			//return;
 		}
 		cornerHashs[k] = corner_hash;
 	}
-	/*if(missingCorner.size() == 1)
-	{
-		int h = missingCorner[0];
-		//Find point in Grid
-		nx = box_creation_table[h][0];
-		ny = box_creation_table[h][1];
-		nz = box_creation_table[h][2];
-		//Find point in Grid
-		dx = TSDFCreateTable[h][0];
-		dy = TSDFCreateTable[h][1];
-		dz = TSDFCreateTable[h][2];
-		std::vector<size_t> neighbour_hashes;
-		neighbour_hashes.resize(3);
-		bool interfered = false;
-		neighbour_hashes[0] = this->hashValue((index_x + dx) + nx, (index_y + dy) ,      (index_z + dz));
-		neighbour_hashes[1] = this->hashValue((index_x + dx) ,     (index_y + dy) + ny , (index_z + dz));
-		neighbour_hashes[2] = this->hashValue((index_x + dx) ,     (index_y + dy) ,      (index_z + dz) + nz);
-		for(int j = 0; j < 3 ; j++)
-		{
-			//cout << "check interference " << endl;
-			auto qp_index_it = this->m_qpIndices.find(neighbour_hashes[j]);
-			//If point exist, interfere tsdf value and create new qp
-			if(qp_index_it != this->m_qpIndices.end()) 
-			{
-				interfered = true;
-				double tsdf_1 = this->m_queryPoints[qp_index_it->second].m_distance;
-				int corner2 = box_neighbour_table[h][j];
-				double tsdf_2 = this->m_queryPoints[boxQps[corner2]].m_distance;
-				double tsdf = (tsdf_1 + tsdf_2)/2;
-				VertexT position(index_x + dx, index_y + dy, index_z + dz);
-				QueryPoint<VertexT> qp = QueryPoint<VertexT>(position, tsdf);
-				this->m_queryPoints.resize(this->m_queryPoints.size() + 1);
-				this->m_queryPoints[this->m_globalIndex] = qp;
-				size_t miss_hash = this->hashValue(index_x + dx, index_y + dy, index_z + dz);
-				this->m_qpIndices[miss_hash] = this->m_globalIndex;
-				box->setVertex(h, this->m_globalIndex);
-				boxQps[h] = this->m_globalIndex;
-				this->m_globalIndex++;
-				break;
-			}
-		}
-		if(!interfered)
-		{
-			delete box;
-			return;
-		}
-	}*/
 	if(missingCorner.size() > 0)
 	{
+		/*for(int t = 0; t < missingCorner.size(); t++)
+		{
+			if(!repairCell(box, index_x, index_y, index_z, missingCorner[t], boxQps))
+				return;
+		}*/
 		delete box;
 		return;
 	}
 	
 	// add box to global cell map
-	auto global_box = this->m_global_cells.find(hash_value);
+	/*auto global_box = this->m_global_cells.find(hash_value);
 	if(global_box != m_global_cells.end())
 	{
 		//delete box->m_intersections;
@@ -211,7 +167,7 @@ void TsdfGrid<VertexT, BoxT, TsdfT>::addTSDFLatticePoint(int index_x, int index_
 	else
 	{
 		m_global_cells[hash_value] = box->m_intersections;
-	}
+	}*/
 	
 	if(isFusion)
 	{
@@ -258,6 +214,50 @@ void TsdfGrid<VertexT, BoxT, TsdfT>::addTSDFLatticePoint(int index_x, int index_
 	{
 		this->m_fusion_cells[hash_value] = box;
 	}
+}
+
+template<typename VertexT, typename BoxT, typename TsdfT>
+int TsdfGrid<VertexT, BoxT, TsdfT>::repairCell(BoxT* box, 
+				int index_x, int index_y, int index_z, int corner, vector<size_t>& boxQps)
+{
+	//Find point in Grid
+	int nx = box_creation_table[corner][0];
+	int ny = box_creation_table[corner][1];
+	int nz = box_creation_table[corner][2];
+	//Find point in Grid
+	int dx = TSDFCreateTable[corner][0];
+	int dy = TSDFCreateTable[corner][1];
+	int dz = TSDFCreateTable[corner][2];
+	std::vector<size_t> neighbour_hashes;
+	neighbour_hashes.resize(3);
+	neighbour_hashes[0] = this->hashValue((index_x + dx) + nx, (index_y + dy) ,      (index_z + dz));
+	neighbour_hashes[1] = this->hashValue((index_x + dx) ,     (index_y + dy) + ny , (index_z + dz));
+	neighbour_hashes[2] = this->hashValue((index_x + dx) ,     (index_y + dy) ,      (index_z + dz) + nz);
+	for(int j = 0; j < 3 ; j++)
+	{
+		//cout << "check interference " << endl;
+		auto qp_index_it = this->m_qpIndices.find(neighbour_hashes[j]);
+		//If point exist, interfere tsdf value and create new qp
+		if(qp_index_it != this->m_qpIndices.end()) 
+		{
+			double tsdf_1 = this->m_queryPoints[qp_index_it->second].m_distance;
+			int corner2 = box_neighbour_table[corner][j];
+			double tsdf_2 = this->m_queryPoints[boxQps[corner2]].m_distance;
+			double tsdf = (tsdf_1 + tsdf_2)/2;
+			VertexT position(index_x + dx, index_y + dy, index_z + dz);
+			QueryPoint<VertexT> qp = QueryPoint<VertexT>(position, tsdf);
+			this->m_queryPoints.resize(this->m_queryPoints.size() + 1);
+			this->m_queryPoints[this->m_globalIndex] = qp;
+			size_t miss_hash = this->hashValue(index_x + dx, index_y + dy, index_z + dz);
+			this->m_qpIndices[miss_hash] = this->m_globalIndex;
+			box->setVertex(corner, this->m_globalIndex);
+			boxQps[corner] = this->m_globalIndex;
+			this->m_globalIndex++;
+			return 1;
+		}
+	}
+	delete box;
+	return 0;
 }
 
 template<typename VertexT, typename BoxT, typename TsdfT>
