@@ -37,6 +37,7 @@ public:
 	void addTSDFLatticePoint(int index_x, int index_y, int index_z, float distance);
 	box_map getFusionCells() { return m_fusion_cells;}
 	qp_map getFusionIndices() { return m_fusion_qpIndices;}
+	int repairCell(BoxT* box, int index_x, int index_y, int index_z, int corner, vector<size_t>& boxQps);
 	vector<QueryPoint<VertexT> > getFusionPoints() {return m_fusionPoints;}
 	inline int calcIndex(float f)
     {
