@@ -149,6 +149,7 @@ int main (int argc , char *argv[]) {
 
 	MPI::Request status[numprocs-1];
 	// Master-Process
+	std::cout << "rank: " << rank << std::endl;
 	if (rank == 0){
 		int * int_numpoint = new int[numprocs - 1];
 		int * tmp_int = new int[1];
@@ -350,7 +351,7 @@ int main (int argc , char *argv[]) {
 
 
 		AdaptiveKSearchSurface<ColorVertex<float, unsigned char>, Normal<float> >* tmp_surface;
-		tmp_surface = new AdaptiveKSearchSurface<ColorVertex<float, unsigned char>, Normal<float> >(m_loader, "STANN", kn, ki, kd, ransac);
+		tmp_surface = new AdaptiveKSearchSurface<ColorVertex<float, unsigned char>, Normal<float> >(m_loader, "FLANN", kn, ki, kd, ransac);
 	
 		tmp_surface->interpolateSurfaceNormals();
 	
@@ -437,7 +438,7 @@ int main (int argc , char *argv[]) {
 				PointsetSurface<ColorVertex<float, unsigned char> >* surface;
 				
 				// Set search options for normal estimation and distance evaluation
-				surface = new AdaptiveKSearchSurface<ColorVertex<float, unsigned char>, Normal<float> >(pointcloud, "STANN", kn, ki, kd, ransac);
+				surface = new AdaptiveKSearchSurface<ColorVertex<float, unsigned char>, Normal<float> >(pointcloud, "FLANN", kn, ki, kd, ransac);
 			
 				// set global Bounding-Box
 				surface->expandBoundingBox(expansion_bounding[0], expansion_bounding[1], expansion_bounding[2],
