@@ -29,7 +29,7 @@ namespace lvr
 {
 
 template<typename VertexT, typename NormalT>
-typename PointsetSurface<VertexT>::Ptr BilinearFastBox<VertexT, NormalT>::m_surface = 0;
+typename PointsetSurface<VertexT>::Ptr BilinearFastBox<VertexT, NormalT>::m_surface(0);
 
 
 /*static int PlaneTable[28] =
