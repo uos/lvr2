@@ -35,8 +35,8 @@ template<typename VertexT, typename NormalT>
 uint FastBox<VertexT, NormalT>::INVALID_INDEX = numeric_limits<uint>::max();
 
 template<typename VertexT, typename NormalT>
-FastBox<VertexT, NormalT>::FastBox(VertexT &center, bool fusionBox, size_t hash)
-			: m_fusionBox(fusionBox), m_hash(hash)
+FastBox<VertexT, NormalT>::FastBox(VertexT &center, bool fusionBox)
+			: m_fusionBox(fusionBox)
 {
 	m_intersections = new uint[12];
     // Init members
@@ -55,7 +55,6 @@ FastBox<VertexT, NormalT>::FastBox(VertexT &center, bool fusionBox, size_t hash)
         m_neighbors[i] = 0;
     }
     m_center = center;
-    m_fusedBox = false;
 }
 
 template<typename VertexT, typename NormalT>
@@ -278,6 +277,7 @@ void FastBox<VertexT, NormalT>::getSurface(BaseMesh<VertexT, NormalT> &mesh,
 	else
 	{
 		m_fusionBox = false;
+		m_fusedBox = true;
 	}
 }	
 
