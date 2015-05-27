@@ -55,7 +55,7 @@ FastBox<VertexT, NormalT>::FastBox(VertexT &center, bool fusionBox, size_t hash)
         m_neighbors[i] = 0;
     }
     m_center = center;
-    m_doubleBox = false;
+    m_fusedBox = false;
 }
 
 template<typename VertexT, typename NormalT>
@@ -205,7 +205,7 @@ void FastBox<VertexT, NormalT>::getSurface(BaseMesh<VertexT, NormalT> &mesh,
                                                vector<QueryPoint<VertexT> > &qp,
                                                uint &globalIndex)
 {
-	if(!m_fusionBox && !m_doubleBox)
+	if(!m_fusionBox)
     {
 		VertexT corners[8];
 		VertexT vertex_positions[12];
@@ -248,11 +248,11 @@ void FastBox<VertexT, NormalT>::getSurface(BaseMesh<VertexT, NormalT> &mesh,
 					// and normal array always have the same size.
 					// The actual normal is interpolated later.
 					//mesh.addVertex(v);
-					bool bullseye = false;
+					/*bool bullseye = false;
 					if(mesh.meshSize() > 11580000)
 						mesh.addGiftVertex(v, bullseye);
-					else
-						mesh.addVertex(v);
+					else*/
+					mesh.addVertex(v);
 					mesh.addNormal(NormalT());
 					for(int i = 0; i < 3; i++)
 					{
