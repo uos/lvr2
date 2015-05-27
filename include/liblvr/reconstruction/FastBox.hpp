@@ -120,7 +120,7 @@ public:
     size_t                      m_hash;
     uint*                   	m_intersections;
     bool 						m_fusionBox;
-    bool 						m_doubleBox;
+    bool 						m_fusedBox;
 
 protected:
 
