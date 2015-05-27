@@ -327,6 +327,12 @@ void HalfEdgeMesh<VertexT, NormalT>::addTriangle(uint a, uint b, uint c, FacePtr
 }
 
 template<typename VertexT, typename NormalT>
+void HalfEdgeMesh<VertexT, NormalT>::setFusionVertex(uint v)
+{
+	m_vertices[v]->m_fused = true;
+}
+
+template<typename VertexT, typename NormalT>
 void HalfEdgeMesh<VertexT, NormalT>::addTriangle(uint a, uint b, uint c)
 {
     FacePtr face;
@@ -895,13 +901,13 @@ void HalfEdgeMesh<VertexT, NormalT>::optimizePlanes(
         cout << timestamp << "Optimizing planes. Iteration " <<  j + 1 << " / "  << iterations << endl;
 
         // Reset all used variables
-        for(size_t i = 100; i < m_faces.size(); i++)
+        for(size_t i = 0; i < m_faces.size(); i++)
         {
             m_faces[i]->m_used = false;
         }
 
         // Find all regions by regionGrowing with normal criteria
-        for(size_t i = 100; i < m_faces.size(); i++)
+        for(size_t i = 0; i < m_faces.size(); i++)
         {
             if(m_faces[i]->m_used == false)
             {
@@ -986,9 +992,16 @@ void HalfEdgeMesh<VertexT, NormalT>::optimizeIterativePlanes(
         cout << timestamp << "Optimizing planes. Iteration " <<  j + 1 << " / "  << iterations << endl;
 
         // Reset all used variables
+        // TODO Track Vertex Pose in new mesh
         for(size_t i = oldSize; i < m_faces.size(); i++)
         {
-            m_faces[i]->m_used = false;
+			FacePtr face = m_faces[i];
+			if((*face)(0)->m_fused || (*face)(1)->m_fused || (*face)(2)->m_fused)
+			{
+				face->m_used = true;
+			}
+			else
+				face->m_used = false;
         }
 
         // Find all regions by regionGrowing with normal criteria
