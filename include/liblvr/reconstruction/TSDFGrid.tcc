@@ -137,21 +137,22 @@ void TsdfGrid<VertexT, BoxT, TsdfT>::addTSDFLatticePoint(int index_x, int index_
 		}
 		else
 		{
-			missingCorner.push_back(k);
-			boxQps[k] = 0;
+			delete box;
+			return;
+			//missingCorner.push_back(k);
+			//boxQps[k] = 0;
 		}
 		cornerHashs[k] = corner_hash;
 	}
-	if(missingCorner.size() > 0)
-	{
+	//if(missingCorner.size() > 0)
+	//{
 		/*for(int t = 0; t < missingCorner.size(); t++)
 		{
 			if(!repairCell(box, index_x, index_y, index_z, missingCorner[t], boxQps))
 				return;
 		}*/
-		delete box;
-		return;
-	}
+		
+	//}
 	
 	// add box to global cell map
 	/*auto global_box = this->m_global_cells.find(hash_value);
