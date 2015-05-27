@@ -187,6 +187,8 @@ public:
 	 * @param remove_flickering	Whether to remove flickering faces or not
 	 */
 	virtual void optimizePlanes(int iterations, float normalThreshold, int minRegionSize = 50, int smallRegionSize = 0, bool remove_flickering = true);
+	
+	virtual void optimizeIterativePlanes(int iterations, float normalThreshold, int minRegionSize = 50, size_t oldSize = 0);
 
 	/**
 	 * @brief	Removes artifacts in the mesh that are not connected to the main mesh
@@ -215,6 +217,8 @@ public:
      * @param 	genTextures	Whether to generate textures or not
 	 */
 	virtual void finalizeAndRetesselate(bool genTextures, float fusionThreshold = 0.01);
+	
+	virtual HalfEdgeMesh<VertexT, NormalT>*  retesselateInHalfEdge(float fusionThreshold = 0.01);
 
 	/**
 	 * @brief Writes the classification result to a file.

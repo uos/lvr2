@@ -76,7 +76,7 @@ void TsdfGrid<VertexT, BoxT, TsdfT>::addTSDFLatticePoint(int index_x, int index_
 	bool isFusion = false;
 	if((index_x == m_fusionIndex_x) || (index_y == m_fusionIndex_y) || (index_z == m_fusionIndex_z))
 	{
-		isFusion = true;
+		isFusion = false;
 	}
 	size_t hash_value;
 
@@ -125,8 +125,8 @@ void TsdfGrid<VertexT, BoxT, TsdfT>::addTSDFLatticePoint(int index_x, int index_
 		size_t corner_hash = this->hashValue(index_x + dx, index_y + dy, index_z + dz);
 		if(!isFusion && ((index_x + dx == m_fusionIndex_x) || (index_y + dy == m_fusionIndex_y) || (index_z + dz == m_fusionIndex_z)))
 		{
-			isFusion = true;
-			box->setFusion(true);
+			isFusion = false;
+			box->setFusion(false);
 		}
 		auto qp_index_it = this->m_qpIndices.find(corner_hash);
 		//If point exist, save index in box
