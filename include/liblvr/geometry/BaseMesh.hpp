@@ -77,6 +77,8 @@ class BaseMesh
          * @param c  The third vertex of the triangle
          */
         virtual void addTriangle(uint a, uint b, uint c) = 0;
+        
+        virtual void setFusionVertex(uint v) = 0;
 
     	/**
     	 * @brief	Flip the edge between vertex index v1 and v2

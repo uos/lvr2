@@ -153,6 +153,8 @@ public:
 	 * @param	c		The third vertex of the triangle
 	 */
 	virtual void addTriangle(uint a, uint b, uint c);
+	
+	virtual void setFusionVertex(uint v);
 
     /**
      * @brief   Insert a new triangle into the mesh
@@ -163,7 +165,7 @@ public:
      * @param   f       A pointer to the created face
      */
 	virtual void addTriangle(uint a, uint b, uint c, FacePtr&f);
-
+	
 	/**
 	 * @brief	Flip the edge between vertex index v1 and v2
 	 *
