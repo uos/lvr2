@@ -67,7 +67,7 @@ TsdfGrid<VertexT, BoxT, TsdfT>::TsdfGrid(float cellSize,  BoundingBox<VertexT> b
 	}
 	cout << timestamp << "Finished creating grid" << endl;
 	//cout << "Repaired " << this->m_globalIndex - grid_index - 1 << " boxes " << endl;
-	//cout << "Fusion Boxes " << m_fusion_cells.size() << endl;
+	cout << "Fusion Boxes " << m_fusion_cells.size() << endl;
 }
 
 template<typename VertexT, typename BoxT, typename TsdfT>

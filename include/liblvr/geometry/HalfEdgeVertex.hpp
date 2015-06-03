@@ -99,6 +99,7 @@ public:
 	size_t 				m_index;
 	
 	bool                m_fused;
+	size_t              m_actIndex;
 
 	/// The list incoming edges
 	vector<HEdge*> in;
