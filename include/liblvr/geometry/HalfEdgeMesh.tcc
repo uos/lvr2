@@ -232,7 +232,7 @@ void HalfEdgeMesh<VertexT, NormalT>::addTriangle(uint a, uint b, uint c, FacePtr
 
     // Traverse face triangles
     for(int k = 0; k < 3; k++)
-    {
+    { 
         // Pointer to start and end vertex of an edge
         VertexPtr current;
         VertexPtr next;
@@ -241,14 +241,17 @@ void HalfEdgeMesh<VertexT, NormalT>::addTriangle(uint a, uint b, uint c, FacePtr
         switch(k)
         {
         case 0:
+            //face->m_indices[k] = a;
             current = m_vertices[a];
             next    = m_vertices[b];
             break;
         case 1:
+            //face->m_indices[k] = b;
             current = m_vertices[b];
             next    = m_vertices[c];
             break;
         case 2:
+            //face->m_indices[k] = c;
             current = m_vertices[c];
             next    = m_vertices[a];
             break;
@@ -329,7 +332,10 @@ void HalfEdgeMesh<VertexT, NormalT>::addTriangle(uint a, uint b, uint c, FacePtr
 template<typename VertexT, typename NormalT>
 void HalfEdgeMesh<VertexT, NormalT>::setFusionVertex(uint v)
 {
-	m_vertices[v]->m_fused = true;
+	auto vertice = m_vertices[v];
+	vertice->m_fused = true;
+	vertice->m_actIndex = v;
+	
 }
 
 template<typename VertexT, typename NormalT>
@@ -998,9 +1004,10 @@ void HalfEdgeMesh<VertexT, NormalT>::optimizeIterativePlanes(
 			FacePtr face = m_faces[i];
 			if((*face)(0)->m_fused || (*face)(1)->m_fused || (*face)(2)->m_fused)
 			{
+				m_fusionFaces.push_back(face);
 				face->m_used = true;
 			}
-			else
+			else 
 				face->m_used = false;
         }
 
@@ -2136,7 +2143,7 @@ HalfEdgeMesh<VertexT, NormalT>* HalfEdgeMesh<VertexT, NormalT>::retesselateInHal
     Vertex<float> current;
 
     int globalMaterialIndex = 0;
-
+    int counter = 0;
     // Copy all regions that are non in an intersection plane directly to the buffers.
     for( intIterator nonPlane = nonPlaneRegions.begin(); nonPlane != nonPlaneRegions.end(); ++nonPlane )
     {
@@ -2194,7 +2201,67 @@ HalfEdgeMesh<VertexT, NormalT>* HalfEdgeMesh<VertexT, NormalT>::retesselateInHal
             }
         }
     }
+    map<Vertex<float>, unsigned int> vertexMap2;
+    Vertex<float> curre;
+    // iterate over every face for the region number '*nonPlaneBegin'
+	for( size_t i=0; i < m_fusionFaces.size(); ++i )
+	{
+		size_t iFace=i;
+		size_t pos;
+		// loop over each vertex for this face
+		for( int j=0; j < 3; j++ )
+		{
+			int iVertex = j;
+			curre = (*m_fusionFaces[iFace])(iVertex)->m_position;
+
+			// look up the current vertex. If it was used before get the position for the indexBuffer.
+			if( vertexMap2.find(curre) != vertexMap2.end() )
+			{
+				pos = vertexMap2[curre];
+			}
+			else
+			{
+				pos = vertexBuffer.size() / 3;
+				vertexMap2.insert(pair<Vertex<float>, unsigned int>(curre, pos));
+				vertexBuffer.push_back( (*m_fusionFaces[iFace])(iVertex)->m_position.x );
+				vertexBuffer.push_back( (*m_fusionFaces[iFace])(iVertex)->m_position.y );
+				vertexBuffer.push_back( (*m_fusionFaces[iFace])(iVertex)->m_position.z );
+
+				if((*m_fusionFaces[iFace])(iVertex)->m_normal.length() > 0.0001)
+				{
+					normalBuffer.push_back( (*m_fusionFaces[iFace])(iVertex)->m_normal[0] );
+					normalBuffer.push_back( (*m_fusionFaces[iFace])(iVertex)->m_normal[1] );
+					normalBuffer.push_back( (*m_fusionFaces[iFace])(iVertex)->m_normal[2] );
+				}
+				else
+				{
+					normalBuffer.push_back(m_fusionFaces[iFace]->getFaceNormal()[0]);
+					normalBuffer.push_back(m_fusionFaces[iFace]->getFaceNormal()[1]);
+					normalBuffer.push_back(m_fusionFaces[iFace]->getFaceNormal()[2]);
+				}
+
+				//TODO: Color Vertex Traits stuff?
+				colorBuffer.push_back( r );
+				colorBuffer.push_back( g );
+				colorBuffer.push_back( b );
+
+				textureCoordBuffer.push_back( 0.0 );
+				textureCoordBuffer.push_back( 0.0 );
+				textureCoordBuffer.push_back( 0.0 );
+			}
+
+			indexBuffer.push_back( pos );
+		}
+	}
+    /* VertexPtr vertex = (*m_regions[iRegion]->m_faces[iFace])(iVertex);
+	if(vertex->m_fused)
+	{
+		counter++;
+		cout << "trueeee " << endl;
+		//auto ins = m_slice_verts.insert(pair<size_t,size_t>(vert_ind, pos));
+	}*/
     cout << timestamp << "Done copying non planar regions.";
+    cout << "Done copying non planar regions. " << counter << endl;
 
     /*
          Done copying the simple stuff. Now the planes are going to be retesselated
