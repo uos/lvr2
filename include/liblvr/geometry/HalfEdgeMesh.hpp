@@ -303,6 +303,9 @@ public:
 	 */
 	VertexVector& getVertices() { return m_vertices; }
 	
+	unordered_map<size_t, size_t> m_slice_verts;
+	vector<FacePtr> m_fusionFaces;
+	
 private:
 
 	void checkFaceIntegreties();
@@ -487,6 +490,7 @@ private:
 	set<EdgePtr>        m_garbageEdges;
 	set<HFace*>         m_garbageFaces;
 	set<RegionPtr>      m_garbageRegions;
+	
 };
 
 } // namespace lvr
