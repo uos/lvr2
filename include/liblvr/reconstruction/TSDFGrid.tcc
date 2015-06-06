@@ -30,9 +30,9 @@ TsdfGrid<VertexT, BoxT, TsdfT>::TsdfGrid(float cellSize,  BoundingBox<VertexT> b
 		}
 		this->m_global_cells = lastGrid->m_global_cells;
 	}
-	int center_of_bb_x = (this->m_boundingBox.getXSize()/2) / this->m_voxelsize;
-	int center_of_bb_y = (this->m_boundingBox.getYSize()/2) / this->m_voxelsize;
-	int	center_of_bb_z = (this->m_boundingBox.getZSize()/2) / this->m_voxelsize;
+	int center_of_bb_x = 0;//(this->m_boundingBox.getXSize()/2) / this->m_voxelsize;
+	int center_of_bb_y = 0;//(this->m_boundingBox.getYSize()/2) / this->m_voxelsize;
+	int	center_of_bb_z = 0;//(this->m_boundingBox.getZSize()/2) / this->m_voxelsize;
 	m_fusionIndex_x = shiftX + center_of_bb_x;
 	m_fusionIndex_y = shiftY + center_of_bb_y;
 	m_fusionIndex_z = shiftZ + center_of_bb_z;
