@@ -2160,7 +2160,8 @@ HalfEdgeMesh<VertexT, NormalT>* HalfEdgeMesh<VertexT, NormalT>::retesselateInHal
             {
                 int iVertex = j;
                 current = (*m_regions[iRegion]->m_faces[iFace])(iVertex)->m_position;
-
+			    if((*m_regions[iRegion]->m_faces[iFace])(iVertex)->m_fused)
+					counter++;
                 // look up the current vertex. If it was used before get the position for the indexBuffer.
                 if( vertexMap.find(current) != vertexMap.end() )
                 {
@@ -2201,6 +2202,7 @@ HalfEdgeMesh<VertexT, NormalT>* HalfEdgeMesh<VertexT, NormalT>::retesselateInHal
             }
         }
     }
+    cout << "so much fusion vertices: " << counter << endl;
     map<Vertex<float>, unsigned int> vertexMap2;
     Vertex<float> curre;
     // iterate over every face for the region number '*nonPlaneBegin'
@@ -2222,6 +2224,8 @@ HalfEdgeMesh<VertexT, NormalT>* HalfEdgeMesh<VertexT, NormalT>::retesselateInHal
 			else
 			{
 				pos = vertexBuffer.size() / 3;
+				size_t act_ind = (*m_fusionFaces[iFace])(iVertex)->m_actIndex;
+				m_slice_verts.insert(pair<size_t,size_t>(act_ind, pos));
 				vertexMap2.insert(pair<Vertex<float>, unsigned int>(curre, pos));
 				vertexBuffer.push_back( (*m_fusionFaces[iFace])(iVertex)->m_position.x );
 				vertexBuffer.push_back( (*m_fusionFaces[iFace])(iVertex)->m_position.y );
@@ -2253,13 +2257,7 @@ HalfEdgeMesh<VertexT, NormalT>* HalfEdgeMesh<VertexT, NormalT>::retesselateInHal
 			indexBuffer.push_back( pos );
 		}
 	}
-    /* VertexPtr vertex = (*m_regions[iRegion]->m_faces[iFace])(iVertex);
-	if(vertex->m_fused)
-	{
-		counter++;
-		cout << "trueeee " << endl;
-		//auto ins = m_slice_verts.insert(pair<size_t,size_t>(vert_ind, pos));
-	}*/
+
     cout << timestamp << "Done copying non planar regions.";
     cout << "Done copying non planar regions. " << counter << endl;
 
