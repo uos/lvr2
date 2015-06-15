@@ -207,7 +207,6 @@ void FastBox<VertexT, NormalT>::getSurface(BaseMesh<VertexT, NormalT> &mesh,
 {
 	if(!m_fusionBox && !m_doubleBox)
     {
-		double voxel_size = 0.005859375;
 		VertexT corners[8];
 		VertexT vertex_positions[12];
 
@@ -244,15 +243,6 @@ void FastBox<VertexT, NormalT>::getSurface(BaseMesh<VertexT, NormalT> &mesh,
 					//if(m_doubleBox)
 					m_intersections[edge_index] = globalIndex;
 					VertexT v = vertex_positions[edge_index];
-					v *= voxel_size;
-					//offset for cube coord to center coord
-					v[0] -= 1.5;
-					v[1] -= 1.5;
-					//v[2] -= 1.5; 		
-					//offset for grid shifting
-					v[0] -= 150;
-					v[1] -= 150;
-					v[2] -= 150;
 					// Insert vertex and a new temp normal into mesh.
 					// The normal is inserted to assure that vertex
 					// and normal array always have the same size.
