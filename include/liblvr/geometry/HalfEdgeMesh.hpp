@@ -153,6 +153,8 @@ public:
 	 * @param	c		The third vertex of the triangle
 	 */
 	virtual void addTriangle(uint a, uint b, uint c);
+	
+	virtual void setFusionVertex(uint v);
 
     /**
      * @brief   Insert a new triangle into the mesh
@@ -163,7 +165,7 @@ public:
      * @param   f       A pointer to the created face
      */
 	virtual void addTriangle(uint a, uint b, uint c, FacePtr&f);
-
+	
 	/**
 	 * @brief	Flip the edge between vertex index v1 and v2
 	 *
@@ -187,6 +189,8 @@ public:
 	 * @param remove_flickering	Whether to remove flickering faces or not
 	 */
 	virtual void optimizePlanes(int iterations, float normalThreshold, int minRegionSize = 50, int smallRegionSize = 0, bool remove_flickering = true);
+	
+	virtual void optimizeIterativePlanes(int iterations, float normalThreshold, int minRegionSize = 50, size_t oldSize = 0);
 
 	/**
 	 * @brief	Removes artifacts in the mesh that are not connected to the main mesh
@@ -215,6 +219,8 @@ public:
      * @param 	genTextures	Whether to generate textures or not
 	 */
 	virtual void finalizeAndRetesselate(bool genTextures, float fusionThreshold = 0.01);
+	
+	virtual HalfEdgeMesh<VertexT, NormalT>*  retesselateInHalfEdge(float fusionThreshold = 0.01);
 
 	/**
 	 * @brief Writes the classification result to a file.
@@ -296,6 +302,9 @@ public:
 	 * @brief returns a reference to the VertexVector
 	 */
 	VertexVector& getVertices() { return m_vertices; }
+	
+	unordered_map<size_t, size_t> m_slice_verts;
+	vector<FacePtr> m_fusionFaces;
 	
 private:
 
@@ -481,6 +490,7 @@ private:
 	set<EdgePtr>        m_garbageEdges;
 	set<HFace*>         m_garbageFaces;
 	set<RegionPtr>      m_garbageRegions;
+	
 };
 
 } // namespace lvr
