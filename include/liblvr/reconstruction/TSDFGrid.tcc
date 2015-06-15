@@ -67,7 +67,7 @@ TsdfGrid<VertexT, BoxT, TsdfT>::TsdfGrid(float cellSize,  BoundingBox<VertexT> b
 	}
 	cout << timestamp << "Finished creating grid" << endl;
 	//cout << "Repaired " << this->m_globalIndex - grid_index - 1 << " boxes " << endl;
-	//cout << "Fusion Boxes " << m_fusion_cells.size() << endl;
+	cout << "Fusion Boxes " << m_fusion_cells.size() << endl;
 }
 
 template<typename VertexT, typename BoxT, typename TsdfT>
@@ -109,7 +109,7 @@ void TsdfGrid<VertexT, BoxT, TsdfT>::addTSDFLatticePoint(int index_x, int index_
 			(index_z));
 
 	//Create new box
-	BoxT* box = new BoxT(box_center, isFusion, hash_value);
+	BoxT* box = new BoxT(box_center, isFusion);
 	vector<size_t> boxQps;
 	boxQps.resize(8);
 	vector<size_t> cornerHashs;
@@ -137,21 +137,22 @@ void TsdfGrid<VertexT, BoxT, TsdfT>::addTSDFLatticePoint(int index_x, int index_
 		}
 		else
 		{
-			missingCorner.push_back(k);
-			boxQps[k] = 0;
+			delete box;
+			return;
+			//missingCorner.push_back(k);
+			//boxQps[k] = 0;
 		}
 		cornerHashs[k] = corner_hash;
 	}
-	if(missingCorner.size() > 0)
-	{
+	//if(missingCorner.size() > 0)
+	//{
 		/*for(int t = 0; t < missingCorner.size(); t++)
 		{
 			if(!repairCell(box, index_x, index_y, index_z, missingCorner[t], boxQps))
 				return;
 		}*/
-		delete box;
-		return;
-	}
+		
+	//}
 	
 	// add box to global cell map
 	/*auto global_box = this->m_global_cells.find(hash_value);
