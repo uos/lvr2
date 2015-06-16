@@ -1960,6 +1960,11 @@ void HalfEdgeMesh<VertexT, NormalT>::finalizeAndRetesselate( bool genTextures, f
                 m->b = b;
                 m->texture_index = -1;
                 materialBuffer.push_back(m);
+                for( int j = 0; j < indices.size() / 3; j++ )
+                {
+                    materialIndexBuffer.push_back(globalMaterialIndex);
+                }
+                globalMaterialIndex++;
             }
 
 
