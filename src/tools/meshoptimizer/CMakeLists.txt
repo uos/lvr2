@@ -34,6 +34,5 @@ endif( ${NABO_FOUND} )
 #####################################################################################
 
 add_executable(lvr_mesh_optimizer ${MESH_OPT_SRC})
-set_target_properties(lvr_mesh_optimizer PROPERTIES BINARY_OUTPUT_DIRECTORY ${CMAKE_SOURCE_DIR}/bin)
 target_link_libraries(lvr_mesh_optimizer ${LVR_OPT_DEPENDENCIES} )
    

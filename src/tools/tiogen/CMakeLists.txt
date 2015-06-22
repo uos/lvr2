@@ -31,5 +31,4 @@ endif( ${NABO_FOUND} )
 #####################################################################################
 
 add_executable( lvr_tiogen ${LVR_TIOGEN_SOURCES} )
-set_target_properties(lvr_tiogen PROPERTIES BINARY_OUTPUT_DIRECTORY ${CMAKE_SOURCE_DIR}/bin)
 TARGET_LINK_LIBRARIES( lvr_tiogen ${LVR_TIOGEN_DEPENDENCIES} )
