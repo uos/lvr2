@@ -705,7 +705,14 @@ void HalfEdgeMesh<VertexT, NormalT>::flipEdge(uint v1, uint v2)
     EdgePtr edge = halfEdgeToVertex(m_vertices[v1], m_vertices[v2]);
     if(edge)
     {
-        flipEdge(edge);
+    	try
+    	{
+    		flipEdge(edge);
+    	}
+        catch(...)
+        {
+        	cout << "Warning: Could not flip edge: " << v1 << " " << v2 << endl;
+        }
     }
 }
 
@@ -1045,6 +1052,7 @@ void HalfEdgeMesh<VertexT, NormalT>::optimizeIterativePlanes(
 template<typename VertexT, typename NormalT>
 void HalfEdgeMesh<VertexT, NormalT>::deleteRegions()
 {
+
     for(int i = 0; i < m_faces.size(); i++)
     {
         if(m_faces[i]->m_region >= 0 && m_regions[m_faces[i]->m_region]->m_toDelete)
@@ -1084,11 +1092,14 @@ void HalfEdgeMesh<VertexT, NormalT>::deleteRegions()
 template<typename VertexT, typename NormalT>
 void HalfEdgeMesh<VertexT, NormalT>::removeDanglingArtifacts(int threshold)
 {
+	cout << timestamp << "Clustering for RDA detection..." << endl;
+	int c = 0;
+	int region_number = 0;
     for(size_t i = 0; i < m_faces.size(); i++)
     {
         if(m_faces[i]->m_used == false)
         {
-            RegionPtr region = new Region<VertexT, NormalT>(0);
+            RegionPtr region = new Region<VertexT, NormalT>(region_number);
             m_garbageRegions.insert(region);
             NormalT n = m_faces[i]->getFaceNormal();
             float angle = -1;
@@ -1096,7 +1107,10 @@ void HalfEdgeMesh<VertexT, NormalT>::removeDanglingArtifacts(int threshold)
             if(region_size <= threshold)
             {
                 region->m_toDelete = true;
+                c++;
             }
+            m_regions.push_back(region);
+            region_number++;
         }
     }
 
@@ -1109,6 +1123,7 @@ void HalfEdgeMesh<VertexT, NormalT>::removeDanglingArtifacts(int threshold)
     {
         m_faces[i]->m_used = false;
     }
+    m_regions.clear();
 }
 
 template<typename VertexT, typename NormalT>
@@ -1637,15 +1652,20 @@ void HalfEdgeMesh<VertexT, NormalT>::finalize()
             b = m_regionClassifier->b(surface_class);
         }
 
-        colorBuffer[indexBuffer[3 * i]  * 3 + 0] = r;
-        colorBuffer[indexBuffer[3 * i]  * 3 + 1] = g;
-        colorBuffer[indexBuffer[3 * i]  * 3 + 2] = b;
-        colorBuffer[indexBuffer[3 * i + 1] * 3 + 0] = r;
-        colorBuffer[indexBuffer[3 * i + 1] * 3 + 1] = g;
-        colorBuffer[indexBuffer[3 * i + 1] * 3 + 2] = b;
-        colorBuffer[indexBuffer[3 * i + 2] * 3 + 0] = r;
-        colorBuffer[indexBuffer[3 * i + 2] * 3 + 1] = g;
-        colorBuffer[indexBuffer[3 * i + 2] * 3 + 2] = b;
+        unsigned char ur = 255 * r;
+        unsigned char ug = 255 * g;
+        unsigned char ub = 255 * b;
+
+        colorBuffer[indexBuffer[3 * i]  * 3 + 0] = ur;
+        colorBuffer[indexBuffer[3 * i]  * 3 + 1] = ug;
+        colorBuffer[indexBuffer[3 * i]  * 3 + 2] = ub;
+        colorBuffer[indexBuffer[3 * i + 1] * 3 + 0] = ur;
+        colorBuffer[indexBuffer[3 * i + 1] * 3 + 1] = ug;
+        colorBuffer[indexBuffer[3 * i + 1] * 3 + 2] = ub;
+        colorBuffer[indexBuffer[3 * i + 2] * 3 + 0] = ur;
+        colorBuffer[indexBuffer[3 * i + 2] * 3 + 1] = ug;
+        colorBuffer[indexBuffer[3 * i + 2] * 3 + 2] = ub;
+
 
         // now store the MeshBuffer face id into the face
         (*face_iter)->setBufferID(i);
@@ -1818,7 +1838,7 @@ void HalfEdgeMesh<VertexT, NormalT>::finalizeAndRetesselate( bool genTextures, f
 
     int globalMaterialIndex = 0;
 
-    // Copy all regions that are non in an intersection plane directly to the buffers.
+    // Copy all regions that are not in an intersection plane directly to the buffers.
     for( intIterator nonPlane = nonPlaneRegions.begin(); nonPlane != nonPlaneRegions.end(); ++nonPlane )
     {
         size_t iRegion = *nonPlane;
@@ -1829,6 +1849,7 @@ void HalfEdgeMesh<VertexT, NormalT>::finalizeAndRetesselate( bool genTextures, f
         {
             size_t iFace=i;
             size_t pos;
+
             // loop over each vertex for this face
             for( int j=0; j < 3; j++ )
             {
@@ -1889,6 +1910,7 @@ void HalfEdgeMesh<VertexT, NormalT>::finalizeAndRetesselate( bool genTextures, f
             if(it != materialMap.end())
             {
             	// If found, put material index into buffer
+            	cout << "RE-USING MAT" << endl;
             	unsigned int position = it->second;
             	materialIndexBuffer.push_back(position);
             }
@@ -1906,10 +1928,9 @@ void HalfEdgeMesh<VertexT, NormalT>::finalizeAndRetesselate( bool genTextures, f
                 globalMaterialIndex++;
             }
 
-
         }
     }
-    cout << timestamp << "Done copying non planar regions.";
+    cout << timestamp << "Done copying non planar regions." << endl;
 
     /*
          Done copying the simple stuff. Now the planes are going to be retesselated
@@ -1957,7 +1978,9 @@ void HalfEdgeMesh<VertexT, NormalT>::finalizeAndRetesselate( bool genTextures, f
                 t = texturizer->texturizePlane( contours[0] );
                 if(t)
                 {
+
                     t->m_texture->save(t->m_textureIndex);
+                    texturizer->writePlaneTexels(contours[0], t->m_textureIndex);
                 }
             }
 
@@ -2049,6 +2072,11 @@ void HalfEdgeMesh<VertexT, NormalT>::finalizeAndRetesselate( bool genTextures, f
                 m->b = b;
                 m->texture_index = -1;
                 materialBuffer.push_back(m);
+                for( int j = 0; j < indices.size() / 3; j++ )
+                {
+                    materialIndexBuffer.push_back(globalMaterialIndex);
+                }
+                globalMaterialIndex++;
             }
 
 

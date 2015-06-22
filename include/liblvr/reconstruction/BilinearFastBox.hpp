@@ -57,13 +57,24 @@ public:
             vector<QueryPoint<VertexT> > &query_points,
             uint &globalIndex);
 
-    void optimizePlanarFaces(typename PointsetSurface<VertexT>::Ptr surface, size_t kc);
+    void optimizePlanarFaces(size_t kc);
+
+    // the point set surface
+    static typename PointsetSurface<VertexT>::Ptr m_surface;
+
 
 private:
     vector<HalfEdgeFace<VertexT, NormalT>* > m_faces;
     int                                      m_mcIndex;
 
 };
+
+template<typename VertexT, typename NormalT>
+struct BoxTraits<BilinearFastBox<VertexT, NormalT> >
+{
+	static const string type;
+};
+
 
 
 } /* namespace lvr */

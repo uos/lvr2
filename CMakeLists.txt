@@ -1,8 +1,11 @@
 cmake_minimum_required(VERSION 2.8)
 project(LAS_VEGAS)
 
-set( CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_SOURCE_DIR}/bin )
+set_property(GLOBAL PROPERTY USE_FOLDERS On) 
+
+set( CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/bin )
 set( CMAKE_MODULE_PATH ${LAS_VEGAS_SOURCE_DIR}/CMakeModules ${CMAKE_MODULE_PATH})
+set( CMAKE_MODULE_PATH ${LAS_VEGAS_SOURCE_DIR}/ext/kintinuous/cmake/Modules ${CMAKE_MODULE_PATH})
 
 link_directories("${CMAKE_SOURCE_DIR}/lib")
 link_directories("$ENV{HOME}/local/lib")
@@ -11,6 +14,7 @@ include_directories(/usr/include/libusb-1.0/)
 include_directories(${LAS_VEGAS_SOURCE_DIR}/ext/Eigen)
 include_directories(${LAS_VEGAS_SOURCE_DIR}/ext/stann)
 include_directories(${LAS_VEGAS_SOURCE_DIR}/ext/psimpl)
+include_directories(${LAS_VEGAS_SOURCE_DIR}/ext/kintinuous/kfusion/include)
 include_directories(${LAS_VEGAS_SOURCE_DIR})
 include_directories(${LAS_VEGAS_SOURCE_DIR}/include/liblvr)
 
@@ -84,7 +88,6 @@ find_package(PCL 1.0)
 if ( "${PCL_VERSION}" STREQUAL "" )
     find_package(PCL 1.0)
 endif ( "${PCL_VERSION}" STREQUAL "" )
-set(PCL_FOUND 0)
 
 if(PCL_FOUND)
     message(STATUS "Found PCL ${PCL_VERSION}")
@@ -153,6 +156,7 @@ find_package(OpenMP)
 if(OpenMP_FOUND)
 	link_directories(${OpenMP_LIBRARY_DIRS})
 	include_directories(${OpenMP_INCLUDE_DIRS})
+	add_definitions(-D_USE_OPEN_MP)
 endif(OpenMP_FOUND)
 
 set( CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${OpenMP_CXX_FLAGS}" )
@@ -237,6 +241,9 @@ add_subdirectory(ext/obj)
 include_directories( ${CMAKE_CURRENT_SOURCE_DIR}/ext/slam6d )
 add_subdirectory(ext/slam6d)
 
+# KINTINUOUS
+add_subdirectory(ext/kintinuous)
+
 # Freenect
 #if(APPLE)
 #include_directories( /opt/local/include/libusb-1.0/)
@@ -256,6 +263,7 @@ endif(CGAL_FOUND)
 
 if(PCL_FOUND)
     add_subdirectory(src/tools/scanfilter)
+    add_subdirectory(src/tools/leica_converter)
 #    add_subdirectory(src/tools/kinectgrabber)
 endif(PCL_FOUND)
 
@@ -272,8 +280,8 @@ if( QT4_FOUND )
     include_directories(${QT_QTOPENGL_INCLUDE_DIR})
     include_directories(${QT_QTCORE_INCLUDE_DIR})
     include_directories(${QT_QTXML_INCLUDE_DIR})
-    
-    add_definitions(-D__WITH_QT4__)
+  
+    add_definitions(-D_USE_QT)
 
     # Try to find libQGLViewer
     find_library(QGLVIEWER_LIBRARY_RELEASE 
@@ -318,7 +326,6 @@ add_subdirectory(src/tools/meshoptimizer)
 add_subdirectory(src/tools/transform)
 add_subdirectory(src/tools/registration)
 add_subdirectory(src/tools/normals)
-add_subdirectory(src/tools/leica_converter)
 
 ################################################################
 # DOCUMENTATION
