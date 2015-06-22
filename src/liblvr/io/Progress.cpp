@@ -24,6 +24,7 @@
  *      Author: Thomas Wiemann
  */
 
+
 #include "io/Progress.hpp"
 
 #include <sstream>
@@ -37,20 +38,8 @@ using std::flush;
 namespace lvr
 {
 
-#ifdef __WITH_QT4__
-bool ProgressBar::m_useDialog = false;
-
-void ProgressBar::enableDialog()
-{
-    m_useDialog = true;
-}
-
-void ProgressBar::disableDialog()
-{
-    m_useDialog = false;
-}
-
-#endif
+ProgressCallbackPtr ProgressBar::m_progressCallback = 0;
+ProgressTitleCallbackPtr ProgressBar::m_titleCallback = 0;
 
 ProgressBar::ProgressBar(size_t max_val, string prefix)
 {
@@ -58,28 +47,35 @@ ProgressBar::ProgressBar(size_t max_val, string prefix)
 	m_maxVal = max_val;
     m_currentVal = 0;
 	m_percent = 0;
-#ifdef __WITH_QT4__
-	m_dialog = 0;
-	if(m_useDialog)
+
+	if(m_titleCallback)
 	{
-	   // m_dialog = new QProgressDialog(QString(prefix.c_str()), "Cancel", 0, 100);
+		// Remove time brackets
+		unsigned index;
+		index = prefix.find_last_of("]");
+		m_titleCallback(prefix.substr(index+1));
 	}
-#endif
 }
 
-#ifdef __WITH_QT4__
 ProgressBar::~ProgressBar()
 {
-    if(m_useDialog && m_dialog)
-    {
-        delete m_dialog;
-    }
+
 }
-#endif
+
+void ProgressBar::setProgressCallback(ProgressCallbackPtr ptr)
+{
+	m_progressCallback = ptr;
+}
+
+void ProgressBar::setProgressTitleCallback(ProgressTitleCallbackPtr ptr)
+{
+	m_titleCallback = ptr;
+}
 
 void ProgressBar::operator++()
 {
     boost::mutex::scoped_lock lock(m_mutex);
+
     m_currentVal++;
     short difference = (short)((float)m_currentVal/m_maxVal * 100 - m_percent);
     if (difference < 1)
@@ -92,13 +88,13 @@ void ProgressBar::operator++()
         m_percent++;
         difference--;
         print_bar();
-#ifdef __WITH_QT4__
-        if(m_dialog != 0)
+
+        if(m_progressCallback)
         {
-            //m_dialog->setValue(m_percent);
+        	m_progressCallback(m_percent);
         }
-#endif
     }
+
 }
 
 void ProgressBar::print_bar()
@@ -127,6 +123,8 @@ void ProgressCounter::print_progress()
 {
 	cout << "\r" << m_prefix << " " << m_currentVal << flush;
 }
+
+
 
 } // namespace lvr
 
