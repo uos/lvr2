@@ -63,7 +63,7 @@ TsdfGrid<VertexT, BoxT, TsdfT>::TsdfGrid(float cellSize,  BoundingBox<VertexT> b
 		int global_y = tsdf[i].y + center_of_bb_y;
 		int global_z = tsdf[i].z + center_of_bb_z;
 		//#pragma omp task
-		addTSDFLatticePoint(global_x , global_y, global_z, tsdf[i].w);
+		addLatticePoint(global_x , global_y, global_z, tsdf[i].w);
 	}
 	cout << timestamp << "Finished creating grid" << endl;
 	//cout << "Repaired " << this->m_globalIndex - grid_index - 1 << " boxes " << endl;
@@ -71,7 +71,7 @@ TsdfGrid<VertexT, BoxT, TsdfT>::TsdfGrid(float cellSize,  BoundingBox<VertexT> b
 }
 
 template<typename VertexT, typename BoxT, typename TsdfT>
-void TsdfGrid<VertexT, BoxT, TsdfT>::addTSDFLatticePoint(int index_x, int index_y, int index_z, float distance)
+void TsdfGrid<VertexT, BoxT, TsdfT>::addLatticePoint(int index_x, int index_y, int index_z, float distance)
 {
 	bool isFusion = false;
 	if((index_x == m_fusionIndex_x) || (index_y == m_fusionIndex_y) || (index_z == m_fusionIndex_z))
