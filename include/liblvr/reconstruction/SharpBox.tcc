@@ -28,15 +28,21 @@ namespace lvr
 {
 
 template<typename VertexT, typename NormalT>
+const string BoxTraits<SharpBox<VertexT, NormalT> >::type = "SharpBox";
+
+
+template<typename VertexT, typename NormalT>
 float SharpBox<VertexT, NormalT>::m_theta_sharp = 0.9f;
 
 template<typename VertexT, typename NormalT>
 float SharpBox<VertexT, NormalT>::m_phi_corner = 0.7f;
 
 template<typename VertexT, typename NormalT>
-SharpBox<VertexT, NormalT>::SharpBox(VertexT v, typename PointsetSurface<VertexT>::Ptr surface) : FastBox<VertexT, NormalT>(v)
+typename PointsetSurface<VertexT>::Ptr SharpBox<VertexT, NormalT>::m_surface;
+
+template<typename VertexT, typename NormalT>
+SharpBox<VertexT, NormalT>::SharpBox(VertexT v) : FastBox<VertexT, NormalT>(v)
 {
-	m_surface = surface;
 	m_containsSharpFeature = false;
 	m_containsSharpCorner = false;
 }

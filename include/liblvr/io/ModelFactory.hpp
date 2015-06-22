@@ -38,6 +38,36 @@ namespace lvr
 {
 
 /**
+ * @brief Struct to define coordinate transformations
+ */
+struct CoordinateTransform
+{
+	// x scaling
+	float sx;
+
+	// y scaling
+	float sy;
+
+	// z scaling
+	float sz;
+
+	// Position of the x coordinate in the input data
+	int	  x;
+
+	// Position of the x coordinate in the input data
+	int   y;
+
+	// Position of the x coordinate in the input data
+	int   z;
+
+	// True, if conversion is necessary
+	bool  convert;
+
+	CoordinateTransform()
+		: x(0), y(1), z(2), sx(1.0), sy(1.0), sz(1.0), convert(false) {}
+};
+
+/**
  * @brief Factory class extract point cloud and mesh information
  *        from supported file formats. The instantiated MeshLoader
  *        and PointLoader instances are persistent, i.e. they will
@@ -51,6 +81,8 @@ class ModelFactory
         static ModelPtr readModel( std::string filename );
 
         static void saveModel( ModelPtr m, std::string file);
+
+        static CoordinateTransform m_transform;
 
 };
 

@@ -42,7 +42,7 @@ template<typename VertexT, typename NormalT>
 class SharpBox : public FastBox<VertexT, NormalT>
 {
 public:
-    SharpBox(VertexT, typename PointsetSurface<VertexT>::Ptr surface);
+    SharpBox(VertexT);
     virtual ~SharpBox();
 
     /**
@@ -78,6 +78,9 @@ public:
     // used for Edge Flipping
     uint m_extendedMCIndex;
 
+    // the point set surface
+    static typename PointsetSurface<VertexT>::Ptr m_surface;
+
 private:
     /**
      * @brief gets the normals for the given vertices
@@ -90,9 +93,16 @@ private:
 
     void detectSharpFeatures(VertexT vertex_positions[], NormalT vertex_normals[], uint index);
 
-    // the point set surface
-    typename PointsetSurface<VertexT>::Ptr m_surface;
+
+    typedef SharpBox<VertexT, NormalT> BoxType;
 };
+
+template<typename VertexT, typename NormalT>
+struct BoxTraits<SharpBox<VertexT, NormalT> >
+{
+	static const string type;
+};
+
 
 } /* namespace lvr */
 

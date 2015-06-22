@@ -1,6 +1,8 @@
 cmake_minimum_required(VERSION 2.8)
 project(LAS_VEGAS)
 
+set_property(GLOBAL PROPERTY USE_FOLDERS On) 
+
 set( CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_SOURCE_DIR}/bin )
 set( CMAKE_MODULE_PATH ${LAS_VEGAS_SOURCE_DIR}/CMakeModules ${CMAKE_MODULE_PATH})
 
@@ -153,6 +155,7 @@ find_package(OpenMP)
 if(OpenMP_FOUND)
 	link_directories(${OpenMP_LIBRARY_DIRS})
 	include_directories(${OpenMP_INCLUDE_DIRS})
+	add_definitions(-D_USE_OPEN_MP)
 endif(OpenMP_FOUND)
 
 set( CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${OpenMP_CXX_FLAGS}" )
