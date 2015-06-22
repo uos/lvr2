@@ -28,6 +28,9 @@
 namespace lvr
 {
 
+template<typename BoxT>
+const string BoxTraits<BoxT>::type = "FastBox";
+
 template<typename VertexT, typename NormalT>
 float FastBox<VertexT, NormalT>::m_voxelsize = 0;
 

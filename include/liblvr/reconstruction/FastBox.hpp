@@ -41,6 +41,12 @@ using std::numeric_limits;
 namespace lvr
 {
 
+template<typename BoxT>
+struct BoxTraits
+{
+	const static string type;
+};
+
 /**
  * @brief A volume representation used by the standard Marching Cubes
  * 		  implementation.
@@ -185,6 +191,8 @@ protected:
     FastBox<VertexT, NormalT>*  m_neighbors[27];
 
     template<typename Q, typename V> friend class BilinearFastBox;
+
+    typedef FastBox<VertexT, NormalT> BoxType;
 };
 
 } // namespace lvr

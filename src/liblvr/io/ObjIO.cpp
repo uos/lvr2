@@ -376,7 +376,7 @@ void ObjIO::save( string filename )
 		// format of a face: f v/vt/vn
 		for( size_t i = 0; i < lenFaces; ++i )
 		{
-
+			cout << faceMaterialIndices[i] << " " << lenFaceMaterials << endl;
 			Material* m = materials[faceMaterialIndices[i]];
 			if(m->texture_index >= 0)
 			{

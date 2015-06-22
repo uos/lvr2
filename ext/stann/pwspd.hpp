@@ -21,7 +21,7 @@
 #include <comp_quad_tree.hpp>
 #include <zorder_lt.hpp>
 
-#ifdef _OPENMP
+#ifdef _USE_OPEN_MP
 #include <omp.h>
 #endif
 /*! \file

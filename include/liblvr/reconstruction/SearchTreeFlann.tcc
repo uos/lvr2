@@ -58,7 +58,7 @@ SearchTreeFlann< VertexT >::SearchTreeFlann( PointBufferPtr buffer, size_t &n_po
     color3bArr colors = buffer->getIndexedPointColorArray(n_colors);
 
     // initialize pointCloud for pcl.
-    m_pointCloud = pcl::PointCloud< pcl::PointXYZRGB >::Ptr( new pcl::PointCloud< pcl::PointXYZRGB >() );
+    m_pointCloud = pcl::PointCloud< pcl::PointXYZRGB >::Ptr( new pcl::PointCloud< pcl::PointXYZRGB >);
     m_pointCloud->resize( n_points );
 
     // Store points in pclCloud
@@ -95,7 +95,7 @@ SearchTreeFlann< VertexT >::SearchTreeFlann( PointBufferPtr buffer, size_t &n_po
 
     // initialize kd-Tree
     cout << timestamp << "Initialising PCL<Flann> Kd-Tree" << endl;
-    m_kdTree = KdTreeFLANN< pcl::PointXYZRGB >::Ptr( new KdTreeFLANN< pcl::PointXYZRGB >() );
+    m_kdTree = KdTreeFLANN< pcl::PointXYZRGB >::Ptr( new KdTreeFLANN< pcl::PointXYZRGB > );
     m_kdTree->setInputCloud(m_pointCloud);
 }
 

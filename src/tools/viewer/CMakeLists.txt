@@ -22,6 +22,7 @@ set(LVR_VIEWER_SOURCES
     widgets/LVRMeshItem.cpp
     widgets/LVRPoseItem.cpp
     widgets/LVRPickItem.cpp
+    widgets/LVRTextureMeshItem.cpp
     widgets/LVRRecordedFrameItem.cpp
     widgets/LVRRenameDialog.cpp
     widgets/LVRAnimationDialog.cpp
@@ -83,6 +84,14 @@ set(LVR_VIEWER_UIS
 set(LVR_VIEWER_RESOURCES
    res/viewer.qrc
 )
+
+#####################################################################################
+# Setup Visual Studio Project
+#####################################################################################
+
+if(MSVC)
+include(LVRVSSetup.txt)
+endif()
 
 #####################################################################################
 # Generate mocs, ui and resource headers

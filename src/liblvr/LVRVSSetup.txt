@@ -1,0 +1,100 @@
+# Config module ---------------------------------------------------
+file(GLOB 
+	 CONFIG_HEADERS 
+	 ${LAS_VEGAS_SOURCE_DIR}/include/liblvr/config/*.hpp 
+	 ${LAS_VEGAS_SOURCE_DIR}/include/liblvr/config/*.tcc)
+
+# Display module --------------------------------------------------
+file(GLOB 
+	 DISPLAY_HEADERS 
+	 ${LAS_VEGAS_SOURCE_DIR}/include/liblvr/display/*.hpp 
+	 ${LAS_VEGAS_SOURCE_DIR}/include/liblvr/display/*.tcc)
+
+file(GLOB 
+	 DISPLAY_SOURCES 
+	 display/*.cpp)
+
+# Geometry module -------------------------------------------------
+file(GLOB 
+	 GEOMETRY_HEADERS 
+	 ${LAS_VEGAS_SOURCE_DIR}/include/liblvr/geometry/*.hpp 
+	 ${LAS_VEGAS_SOURCE_DIR}/include/liblvr/geometry/*.tcc)
+
+file(GLOB 
+	 GEOMETRY_SOURCES 
+	 geometry/*.cpp)
+
+# I/O module ------------------------------------------------------
+file(GLOB 
+	 IO_HEADERS 
+	 ${LAS_VEGAS_SOURCE_DIR}/include/liblvr/io/*.hpp 
+	 ${LAS_VEGAS_SOURCE_DIR}/include/liblvr/io/*.tcc)
+
+file(GLOB 
+	 IO_SOURCES 
+	 io/*.cpp)
+
+# Reconstruction module --------------------------------------------
+file(GLOB 
+	 RECONSTRUCTION_HEADERS 
+	 ${LAS_VEGAS_SOURCE_DIR}/include/liblvr/reconstruction/*.hpp 
+	 ${LAS_VEGAS_SOURCE_DIR}/include/liblvr/reconstruction/*.tcc)
+
+file(GLOB 
+	 RECONSTRUCTION_SOURCES 
+	 reconstruction/*.cpp)
+
+# Registration module --------------------------------------------
+file(GLOB 
+	 REGISTRATION_HEADERS 
+	 ${LAS_VEGAS_SOURCE_DIR}/include/liblvr/registration/*.hpp 
+	 ${LAS_VEGAS_SOURCE_DIR}/include/liblvr/registration/*.tcc)
+
+file(GLOB 
+	 REGISTRATION_SOURCES 
+	 registration/*.cpp)
+
+# Texture module --------------------------------------------
+file(GLOB 
+	 TEXTURE_HEADERS 
+	 ${LAS_VEGAS_SOURCE_DIR}/include/liblvr/texture/*.hpp 
+	 ${LAS_VEGAS_SOURCE_DIR}/include/liblvr/texture/*.tcc)
+
+file(GLOB 
+	 TEXTURE_SOURCES 
+	 texture/*.cpp)
+
+# Create source groups
+
+source_group(include\\config FILES ${CONFIG_HEADERS})
+
+source_group(include\\display FILES ${DISPLAY_HEADERS})
+source_group(src\\display FILES ${DISPLAY_SOURCES})
+
+source_group(include\\geometry FILES ${GEOMETRY_HEADERS})
+source_group(src\\geometry FILES ${GEOMETRY_HEADERS})
+
+source_group(src\\io FILES ${IO_SOURCES})
+source_group(include\\io FILES ${IO_HEADERS})
+
+source_group(src\\registration FILES ${REGISTRATION_SOURCES})
+source_group(include\\registration FILES ${REGISTRATION_HEADERS})
+
+source_group(src\\reconstruction FILES ${RECONSTRUCTION_SOURCES})
+source_group(include\\reconstruction FILES ${RECONSTRUCTION_HEADERS})
+
+source_group(src\\texture FILES ${TEXTURE_SOURCES})
+source_group(include\\texture FILES ${TEXTURE_HEADERS})
+
+set(LVR_HEADERS 
+	${CONFIG_HEADERS} 
+	${DISPLAY_HEADERS} 
+	${GEOMETRY_HEADERS} 
+	${IO_HEADERS}
+	${REGISTRATION_HEADERS}
+	${RECONSTRUCTION_HEADERS} 
+	${TEXTURE_HEADERS})
+
+add_custom_target(ALL_LIBRARY_SOURCES SOURCES ${LVR_HEADERS} ${LVR_SOURCES})
+set_target_properties(ALL_LIBRARY_SOURCES PROPERTIES  EXCLUDE_FROM_DEFAULT_BUILD 1)
+

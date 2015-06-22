@@ -22,8 +22,47 @@ using std::unordered_map;
 namespace lvr
 {
 
+class GridBase
+{
+public:
+
+	GridBase() : m_extrude(false){}
+
+	virtual ~GridBase() {}
+
+	/**
+	 *
+	 * @param i 		Discrete x position within the grid.
+	 * @param j			Discrete y position within the grid.
+	 * @param k			Discrete z position within the grid.
+	 * @param distance	Signed distance to the represented surface
+	 * 					at the position within the grid.
+	 */
+	virtual void addLatticePoint(int i, int j, int k, float distance = 0.0) = 0;
+
+	/**
+	 * @brief	Saves a representation of the grid to the given file
+	 *
+	 * @param file		Output file name.
+	 */
+	virtual void saveGrid(string file) = 0;
+
+	/***
+	 * @brief	Is extrude is set to true, additional cells within the
+	 * 			grid will be create to fill up holes consisting of single
+	 * 			cells.
+	 *
+	 * @param extrude	If set to true, additional cells will be created.
+	 * 					Default value is true.
+	 */
+	virtual void setExtrusion(bool extrude) {m_extrude = extrude;}
+
+protected:
+	bool m_extrude;
+};
+
 template<typename VertexT, typename BoxT>
-class HashGrid
+class HashGrid : public GridBase
 {
 public:
 
@@ -60,24 +99,14 @@ public:
 	 * @param distance	Signed distance to the represented surface
 	 * 					at the position within the grid.
 	 */
-	void addLatticePoint(int i, int j, int k, float distance = 0.0);
+	virtual void addLatticePoint(int i, int j, int k, float distance = 0.0) = 0;
 
 	/**
 	 * @brief	Saves a representation of the grid to the given file
 	 *
 	 * @param file		Output file name.
 	 */
-	void saveGrid(string file);
-
-	/***
-	 * @brief	Is extrude is set to true, additional cells within the
-	 * 			grid will be create to fill up holes consisting of single
-	 * 			cells.
-	 *
-	 * @param extrude	If set to true, additional cells will be created.
-	 * 					Default value is true.
-	 */
-	void setExtrusion(bool extrude) {m_extrude = extrude;}
+	virtual void saveGrid(string file);
 
 	/***
 	 * @brief 	Returns the number of generated cells.
@@ -104,7 +133,7 @@ public:
 	 */
 	query_point_it lastQueryPoint() { return m_queryPoints.end();}
 
-	 vector<QueryPoint<VertexT> >& getQueryPoints() { return m_queryPoints;}
+	vector<QueryPoint<VertexT> >& getQueryPoints() { return m_queryPoints;}
 
 	/***
 	 * @brief	Destructor
