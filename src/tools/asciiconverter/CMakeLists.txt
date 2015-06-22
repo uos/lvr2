@@ -25,6 +25,5 @@ set(LVR_ASCIICONVERT_DEPENDENCIES
 #####################################################################################
 
 add_executable(lvr_ascii_convert ${ASCII_SOURCES})
-set_target_properties(lvr_ascii_convert PROPERTIES BINARY_OUTPUT_DIRECTORY ${CMAKE_SOURCE_DIR}/bin)
 target_link_libraries(lvr_ascii_convert ${LVR_ASCIICONVERT_DEPENDENCIES})
 

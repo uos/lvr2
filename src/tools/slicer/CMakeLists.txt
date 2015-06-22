@@ -35,5 +35,4 @@ endif( ${NABO_FOUND} )
 #####################################################################################
 
 add_executable(lvr_slicer ${SLICER_SOURCES})
-set_target_properties(lvr_slicer PROPERTIES BINARY_OUTPUT_DIRECTORY ${CMAKE_SOURCE_DIR}/bin)
 target_link_libraries(lvr_slicer ${LVR_SLICER_DEPENDENCIES} )

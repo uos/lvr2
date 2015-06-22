@@ -32,5 +32,4 @@ endif( ${NABO_FOUND} )
 #####################################################################################
 
 add_executable(lvr_classifier ${LVR_CLASSIFIER_SOURCES})
-set_target_properties(lvr_classifier PROPERTIES BINARY_OUTPUT_DIRECTORY ${CMAKE_SOURCE_DIR}/bin)
 target_link_libraries(lvr_classifier ${LVR_CLASSIFIER_DEPENDENCIES})
