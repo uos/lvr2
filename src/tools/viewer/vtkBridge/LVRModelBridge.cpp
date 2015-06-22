@@ -36,7 +36,12 @@ LVRModelBridge::LVRModelBridge(ModelPtr model) :
     m_pointBridge(new LVRPointBufferBridge(model->m_pointCloud)),
     m_meshBridge(new LVRMeshBufferBridge(model->m_mesh))
 {
-    m_pose = {0.0, 0.0, 0.0, 0.0, 0.0, 0.0};
+    m_pose.p = 0.0;
+    m_pose.r = 0.0;
+    m_pose.t = 0.0;
+    m_pose.x = 0.0;
+    m_pose.y = 0.0;
+    m_pose.z = 0.0;
 }
 
 LVRModelBridge::LVRModelBridge(const LVRModelBridge& b)
@@ -76,8 +81,31 @@ Pose LVRModelBridge::getPose()
 
 void LVRModelBridge::addActors(vtkSmartPointer<vtkRenderer> renderer)
 {
-    if(validPointBridge()) renderer->AddActor(m_pointBridge->getPointCloudActor());
-    if(validMeshBridge()) renderer->AddActor(m_meshBridge->getMeshActor());
+    if(validPointBridge())
+    {
+    	renderer->AddActor(m_pointBridge->getPointCloudActor());
+    }
+
+    if(validMeshBridge())
+    {
+    	// For simple meshes we only need to add a sigle actor to
+    	// render it. For textured meshes we add a actor collection
+    	// (one actor per texture).
+    	if(!m_meshBridge->hasTextures())
+    	{
+    		renderer->AddActor(m_meshBridge->getMeshActor());
+    	}
+    	else
+    	{
+    		vtkSmartPointer<vtkActorCollection> collection = m_meshBridge->getTexturedActors();
+    		collection->InitTraversal();
+    		for(vtkIdType i = 0; i < collection->GetNumberOfItems(); i++)
+    		{
+    			renderer->AddActor(collection->GetNextActor());
+    		}
+
+    	}
+    }
 }
 
 void LVRModelBridge::removeActors(vtkSmartPointer<vtkRenderer> renderer)

@@ -24,7 +24,7 @@
 */
 
 #include "Options.hpp"
-#include <omp.h>
+#include "config/lvropenmp.hpp"
 #include <fstream>
 
 namespace classifier
@@ -37,7 +37,7 @@ Options::Options(int argc, char** argv) : m_descr("Supported options")
 
 	m_descr.add_options()
 	("help", "Produce help message")
-	("threads", value<int>(&m_numThreads)->default_value( omp_get_num_procs() ), "Number of threads")
+	("threads", value<int>(&m_numThreads)->default_value( lvr::OpenMPConfig::getNumThreads() ), "Number of threads")
 	("inputFile", value< vector<string> >(), "Input file name. Supported formats are ASCII (.pts, .xyz) and .ply")
 	;
 

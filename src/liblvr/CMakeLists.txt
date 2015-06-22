@@ -1,4 +1,5 @@
 set(LVR_SOURCES
+    config/lvropenmp.cpp
     io/BaseIO.cpp
     io/ModelFactory.cpp
     io/PLYIO.cpp
@@ -18,6 +19,7 @@ set(LVR_SOURCES
     io/BoctreeIO.cpp
     io/TextureIO.cpp
     io/DatIO.cpp
+    config/BaseOption.cpp
     display/InteractivePointCloud.cpp
     display/CoordinateAxes.cpp
     display/Renderable.cpp
@@ -45,6 +47,15 @@ set(LVR_SOURCES
     texture/Trans.cpp
     geometry/HalfEdgeAccessExceptions.cpp
 )
+
+
+#####################################################################################
+# Create source groups to structure code in Visual Studio
+#####################################################################################
+
+if(MSVC)
+include(LVRVSSetup.txt)
+endif()
 
 #####################################################################################
 # Setup dependencies to external libraries 
