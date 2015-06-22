@@ -55,6 +55,7 @@
 #include "../widgets/LVRCorrespondanceDialog.hpp"
 #include "../widgets/LVRReconstructionEstimateNormalsDialog.hpp"
 #include "../widgets/LVRReconstructionMarchingCubesDialog.hpp"
+#include "../widgets/LVRReconstructionExtendedMarchingCubesDialog.hpp"
 #include "../widgets/LVROptimizationPlanarOptimizationDialog.hpp"
 #include "../widgets/LVROptimizationRemoveArtifactsDialog.hpp"
 #include "../widgets/LVRFilteringMLSProjectionDialog.hpp"
@@ -115,6 +116,7 @@ public Q_SLOTS:
     void updateView();
     void saveCamera();
     void loadCamera();
+    void parseCommandLine(int argc, char** argv);
     void openCameraPathTool();
     void removeArrow(LVRVtkArrow*);
     void addArrow(LVRVtkArrow*);

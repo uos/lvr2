@@ -3,8 +3,35 @@
 
 #include "reconstruction/PointsetGrid.hpp"
 
+#include "io/Progress.hpp"
+
 namespace lvr
 {
+
+//QProgressDialog* LVRReconstructViaMarchingCubesDialog::m_progressBar = new QProgressDialog;
+
+LVRReconstructViaMarchingCubesDialog* LVRReconstructViaMarchingCubesDialog::m_master;
+
+void LVRReconstructViaMarchingCubesDialog::updateProgressbar(int p)
+{
+	m_master->setProgressValue(p);
+}
+
+void LVRReconstructViaMarchingCubesDialog::updateProgressbarTitle(string t)
+{
+	m_master->setProgressTitle(t);
+}
+
+
+void LVRReconstructViaMarchingCubesDialog::setProgressValue(int v)
+{
+	Q_EMIT(progressValueChanged(v));
+}
+
+void LVRReconstructViaMarchingCubesDialog::setProgressTitle(string t)
+{
+	Q_EMIT(progressTitleChanged(QString(t.c_str())));
+}
 
 LVRReconstructViaMarchingCubesDialog::LVRReconstructViaMarchingCubesDialog(string decomposition, LVRPointCloudItem* pc, LVRModelItem* parent, QTreeWidget* treeWidget, vtkRenderWindow* window) :
    m_decomposition(decomposition), 
@@ -12,21 +39,47 @@ LVRReconstructViaMarchingCubesDialog::LVRReconstructViaMarchingCubesDialog(strin
    m_treeWidget(treeWidget),
    m_renderWindow(window)
 {
+	m_master = this;
+
     // Setup DialogUI and events
     QDialog* dialog = new QDialog(m_treeWidget);
     m_dialog = new ReconstructViaMarchingCubesDialog;
     m_dialog->setupUi(dialog);
 
+    if(decomposition == "PMC")
+    {
+    	dialog->setWindowTitle("Planar Marching Cubes");
+    }
+
     connectSignalsAndSlots();
+
+    m_progressDialog = new QProgressDialog;
+    m_progressDialog->setMinimum(0);
+    m_progressDialog->setMaximum(100);
+    m_progressDialog->setMinimumDuration(100);
+    m_progressDialog->setWindowTitle("Processing...");
+
+    // Register LVR progress callbacks
+    lvr::ProgressBar::setProgressCallback(&updateProgressbar);
+    lvr::ProgressBar::setProgressTitleCallback(&updateProgressbarTitle);
+
+    connect(this, SIGNAL(progressValueChanged(int)), m_progressDialog, SLOT(setValue(int)));
+    connect(this, SIGNAL(progressTitleChanged(const QString&)), m_progressDialog, SLOT(setLabelText(const QString&)));
 
     dialog->show();
     dialog->raise();
     dialog->activateWindow();
+
+
 }
+
+
 
 LVRReconstructViaMarchingCubesDialog::~LVRReconstructViaMarchingCubesDialog()
 {
-    // TODO Auto-generated destructor stub
+    m_master = 0;
+    lvr::ProgressBar::setProgressCallback(0);
+    lvr::ProgressBar::setProgressTitleCallback(0);
 }
 
 void LVRReconstructViaMarchingCubesDialog::connectSignalsAndSlots()
@@ -61,8 +114,8 @@ void LVRReconstructViaMarchingCubesDialog::switchGridSizeDetermination(int index
     if(index == 0)
     {
         label->setText("Voxel size");
-        spinBox->setMinimum(1);
-        spinBox->setMaximum(1000);
+        spinBox->setMinimum(0);
+        spinBox->setMaximum(2000000);
         spinBox->setSingleStep(1);
         spinBox->setValue(10);
     }
@@ -70,7 +123,7 @@ void LVRReconstructViaMarchingCubesDialog::switchGridSizeDetermination(int index
     {
         label->setText("Number of intersections");
         spinBox->setMinimum(1);
-        spinBox->setMaximum(1000);
+        spinBox->setMaximum(200000);
         spinBox->setSingleStep(1);
         spinBox->setValue(10);
     }
@@ -93,9 +146,14 @@ void LVRReconstructViaMarchingCubesDialog::generateMesh()
     QCheckBox* reNormals_box = m_dialog->checkBox_renormals;
     bool reestimateNormals = reNormals_box->isChecked();
     QComboBox* gridMode_box = m_dialog->comboBox_gs;
-    bool useVoxelSize = (gridMode_box->currentIndex() == 0) ? true : false;
+    bool useVoxelsize = (gridMode_box->currentIndex() == 0) ? true : false;
     QDoubleSpinBox* gridSize_box = m_dialog->spinBox_below_gs;
-    float  gridSize = (float)gridSize_box->value();
+    float  resolution = (float)gridSize_box->value();
+
+
+    m_progressDialog->raise();
+    m_progressDialog->show();
+    m_progressDialog->activateWindow();
 
     PointBufferPtr pc_buffer = m_pc->getPointBuffer();
     psSurface::Ptr surface;
@@ -114,23 +172,48 @@ void LVRReconstructViaMarchingCubesDialog::generateMesh()
 
     if(!surface->pointBuffer()->hasPointNormals()
                     || (surface->pointBuffer()->hasPointNormals() && reestimateNormals))
+    {
         surface->calculateSurfaceNormals();
+    }
 
     // Create an empty mesh
     HalfEdgeMesh<cVertex, cNormal> mesh( surface );
 
     // Create a point set grid for reconstruction
-    PointsetGrid<ColorVertex<float, unsigned char>, FastBox<ColorVertex<float, unsigned char>, Normal<float> > > grid(gridSize, surface, surface->getBoundingBox(), useVoxelSize);
-    grid.setExtrusion(extrusion);
-    grid.calcDistanceValues();
+    GridBase* grid;
+	FastReconstructionBase<ColorVertex<float, unsigned char>, Normal<float> >* reconstruction;
+	if(m_decomposition == "MC")
+	{
+		grid = new PointsetGrid<ColorVertex<float, unsigned char>, FastBox<ColorVertex<float, unsigned char>, Normal<float> > >(resolution, surface, surface->getBoundingBox(), useVoxelsize);
+		grid->setExtrusion(extrusion);
+		PointsetGrid<ColorVertex<float, unsigned char>, FastBox<ColorVertex<float, unsigned char>, Normal<float> > >* ps_grid = static_cast<PointsetGrid<ColorVertex<float, unsigned char>, FastBox<ColorVertex<float, unsigned char>, Normal<float> > > *>(grid);
+		ps_grid->calcDistanceValues();
 
+		reconstruction = new FastReconstruction<ColorVertex<float, unsigned char> , Normal<float>, FastBox<ColorVertex<float, unsigned char>, Normal<float> >  >(ps_grid);
 
-    // Create a new reconstruction object
-    FastReconstruction<ColorVertex<float, unsigned char> , Normal<float>, FastBox<ColorVertex<float, unsigned char>, Normal<float> >  > reconstruction(&grid);
+	}
+	else if(m_decomposition == "PMC")
+	{
+		grid = new PointsetGrid<ColorVertex<float, unsigned char>, BilinearFastBox<ColorVertex<float, unsigned char>, Normal<float> > >(resolution, surface, surface->getBoundingBox(), useVoxelsize);
+		grid->setExtrusion(extrusion);
+		BilinearFastBox<ColorVertex<float, unsigned char>, Normal<float> >::m_surface = surface;
+		PointsetGrid<ColorVertex<float, unsigned char>, BilinearFastBox<ColorVertex<float, unsigned char>, Normal<float> > >* ps_grid = static_cast<PointsetGrid<ColorVertex<float, unsigned char>, BilinearFastBox<ColorVertex<float, unsigned char>, Normal<float> > > *>(grid);
+		ps_grid->calcDistanceValues();
 
+		reconstruction = new FastReconstruction<ColorVertex<float, unsigned char> , Normal<float>, BilinearFastBox<ColorVertex<float, unsigned char>, Normal<float> >  >(ps_grid);
 
+	}
+	else if(m_decomposition == "SF")
+	{
+		SharpBox<ColorVertex<float, unsigned char>, Normal<float> >::m_surface = surface;
+		grid = new PointsetGrid<ColorVertex<float, unsigned char>, SharpBox<ColorVertex<float, unsigned char>, Normal<float> > >(resolution, surface, surface->getBoundingBox(), useVoxelsize);
+		grid->setExtrusion(extrusion);
+		PointsetGrid<ColorVertex<float, unsigned char>, SharpBox<ColorVertex<float, unsigned char>, Normal<float> > >* ps_grid = static_cast<PointsetGrid<ColorVertex<float, unsigned char>, SharpBox<ColorVertex<float, unsigned char>, Normal<float> > > *>(grid);
+		ps_grid->calcDistanceValues();
+		reconstruction = new FastReconstruction<ColorVertex<float, unsigned char> , Normal<float>, SharpBox<ColorVertex<float, unsigned char>, Normal<float> >  >(ps_grid);
+	}
     // Create mesh
-    reconstruction.getMesh(mesh);
+    reconstruction->getMesh(mesh);
     mesh.setClassifier("PlaneSimpsons");
     mesh.getClassifier().setMinRegionSize(10);
     mesh.finalize();
@@ -146,6 +229,8 @@ void LVRReconstructViaMarchingCubesDialog::generateMesh()
 
     m_treeWidget->addTopLevelItem(m_generatedModel);
     m_generatedModel->setExpanded(true);
+
+    m_progressDialog->hide();
 }
 
 }

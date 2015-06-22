@@ -123,12 +123,17 @@ void LVRMeshBufferBridge::computeMeshActor(MeshBufferPtr meshbuffer)
         vtkSmartPointer<vtkPolyData> mesh = vtkSmartPointer<vtkPolyData>::New();
 
         // Parse vertex and index buffer
-        size_t n_v, n_i;
+        size_t n_v, n_i, n_c;
         floatArr vertices = meshbuffer->getVertexArray(n_v);
         uintArr indices = meshbuffer->getFaceArray(n_i);
+        ucharArr colors = meshbuffer->getVertexColorArray(n_c);
 
         vtkSmartPointer<vtkPoints> points = vtkSmartPointer<vtkPoints>::New();
         vtkSmartPointer<vtkCellArray> triangles = vtkSmartPointer<vtkCellArray>::New();
+
+        vtkSmartPointer<vtkUnsignedCharArray> scalars = vtkSmartPointer<vtkUnsignedCharArray>::New();
+        scalars->SetNumberOfComponents(3);
+        scalars->SetName("Colors");
 
         for(size_t i = 0; i < n_v; i++){
             size_t index = 3 * i;
@@ -136,30 +141,47 @@ void LVRMeshBufferBridge::computeMeshActor(MeshBufferPtr meshbuffer)
                     vertices[index    ],
                     vertices[index + 1],
                     vertices[index + 2]);
+
+        	if(n_c)
+        	{
+        		unsigned char color[3];
+        		color[0] = colors[index];
+        		color[1] = colors[index + 1];
+        		color[2] = colors[index + 2];
+        		scalars->InsertNextTupleValue(color);
+        	}
         }
 
         for(size_t i = 0; i < n_i; i++)
         {
+
+
             size_t index = 3 * i;
             vtkSmartPointer<vtkTriangle> t = vtkSmartPointer<vtkTriangle>::New();
             t->GetPointIds()->SetId(0, indices[index]);
             t->GetPointIds()->SetId(1, indices[index + 1]);
             t->GetPointIds()->SetId(2, indices[index + 2]);
             triangles->InsertNextCell(t);
+
         }
 
         mesh->SetPoints(points);
         mesh->SetPolys(triangles);
 
+        if(n_c)
+        {
+        	mesh->GetPointData()->SetScalars(scalars);
+        }
+
         vtkSmartPointer<vtkPolyDataMapper> mesh_mapper = vtkSmartPointer<vtkPolyDataMapper>::New();
-	//        mesh_mapper->SetInputData(mesh); VTK 6
-	mesh_mapper->SetInput(mesh);
-	m_meshActor = vtkSmartPointer<vtkActor>::New();
+        //        mesh_mapper->SetInputData(mesh); VTK 6
+        mesh_mapper->SetInput(mesh);
+        m_meshActor = vtkSmartPointer<vtkActor>::New();
         m_meshActor->SetMapper(mesh_mapper);
 
         vtkSmartPointer<vtkPolyDataMapper> wireframe_mapper = vtkSmartPointer<vtkPolyDataMapper>::New();
         // wireframe_mapper->SetInputData(mesh); VTK 6
-	wireframe_mapper->SetInput(mesh);
+        wireframe_mapper->SetInput(mesh);
         m_wireframeActor = vtkSmartPointer<vtkActor>::New();
         m_wireframeActor->ShallowCopy(m_meshActor);
         m_wireframeActor->SetMapper(wireframe_mapper);

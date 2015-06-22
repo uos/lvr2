@@ -1,5 +1,5 @@
-#ifndef RECONSTRUCTIONMARCHINGCUBESDIALOG_H_
-#define RECONSTRUCTIONMARCHINGCUBESDIALOG_H_
+#ifndef RECONSTRUCTIONEXTENDEDMARCHINGCUBESDIALOG_H_
+#define RECONSTRUCTIONEXTENDEDMARCHINGCUBESDIALOG_H_
 
 #include <vtkRenderWindow.h>
 #include <vtkRenderer.h>
@@ -19,59 +19,42 @@
 #include "reconstruction/SharpBox.hpp"
 #include "../vtkBridge/LVRModelBridge.hpp"
 
-#include "LVRReconstructionMarchingCubesDialogUI.h"
+#include "LVRReconstructionExtendedMarchingCubesDialogUI.h"
 #include "LVRPointCloudItem.hpp"
 #include "LVRModelItem.hpp"
 
-#include <QProgressDialog>
-
-using Ui::ReconstructViaMarchingCubesDialog;
+using Ui::ReconstructViaExtendedMarchingCubesDialog;
 
 namespace lvr
 {
 
-class LVRReconstructViaMarchingCubesDialog : public QObject
+class LVRReconstructViaExtendedMarchingCubesDialog  : public QObject
 {
     Q_OBJECT
 
 public:
-    LVRReconstructViaMarchingCubesDialog(string decomposition, LVRPointCloudItem* pc, LVRModelItem* parent, QTreeWidget* treeWidget, vtkRenderWindow* renderer);
-    virtual ~LVRReconstructViaMarchingCubesDialog();
-    typedef ColorVertex<float, unsigned char>         	cVertex;
+    LVRReconstructViaExtendedMarchingCubesDialog(string decomposition, LVRPointCloudItem* pc, LVRModelItem* parent, QTreeWidget* treeWidget, vtkRenderWindow* renderer);
+    virtual ~LVRReconstructViaExtendedMarchingCubesDialog();
+    typedef ColorVertex<float, unsigned char>         cVertex;
     typedef Normal<float>                               cNormal;
     typedef PointsetSurface<cVertex>                    psSurface;
     typedef AdaptiveKSearchSurface<cVertex, cNormal>    akSurface;
-
-    static void updateProgressbar(int p);
-    static void updateProgressbarTitle(string t);
-
-
-    void setProgressValue(int v);
-    void setProgressTitle(string);
 
 public Q_SLOTS:
     void generateMesh();
     void toggleRANSACcheckBox(const QString &text);
     void switchGridSizeDetermination(int index);
 
-Q_SIGNALS:
-    void progressValueChanged(int);
-    void progressTitleChanged(const QString&);
-
-
 private:
     void connectSignalsAndSlots();
 
     string                                  		m_decomposition;
-    ReconstructViaMarchingCubesDialog*      		m_dialog;
-    LVRPointCloudItem*                      		m_pc;
+    ReconstructViaExtendedMarchingCubesDialog*      m_dialog;
+    LVRPointCloudItem*                     		    m_pc;
     LVRModelItem*                           		m_parent;
-    QTreeWidget*                            		m_treeWidget;
-    LVRModelItem*                          			m_generatedModel;
+    QTreeWidget*                           		 	m_treeWidget;
+    LVRModelItem*                           		m_generatedModel;
     vtkRenderWindow*                        		m_renderWindow;
-    QProgressDialog*								m_progressDialog;
-    static LVRReconstructViaMarchingCubesDialog* 	m_master;
-
 
 };
 
