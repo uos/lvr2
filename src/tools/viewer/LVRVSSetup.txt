@@ -1,0 +1,31 @@
+
+file(GLOB LVR_APP_SOURCES app/*.cpp)
+file(GLOB LVR_APP_HEADERS app/*.hpp)
+file(GLOB LVR_VTK_SOURCES vtkBridge/*.cpp)
+file(GLOB LVR_VTK_HEADERS vtkBridge/*.hpp)
+file(GLOB LVR_WIDGET_SOURCES widgets/*.cpp)
+file(GLOB LVR_WIDGET_HEADERS widgets/*.hpp)
+
+source_group(include\\app FILES ${LVR_APP_HEADERS})
+source_group(include\\vtk FILES ${LVR_VTK_HEADERS})
+source_group(include\\widgets FILES ${LVR_WIDGET_HEADERS})
+
+source_group(src\\app FILES ${LVR_APP_SOURCES})
+source_group(src\\vtk FILES ${LVR_VTK_SOURCES})
+source_group(src\\widgets FILES ${LVR_WIDGET_SOURCES})
+
+source_group(ui FILES ${LVR_VIEWER_UIS})
+source_group(res FILES ${LVR_VIEWER_RESOURCES})
+
+add_custom_target(
+	ALL_VIEWER_SOURCES SOURCES
+	${LVR_APP_HEADERS}
+	${LVR_VTK_HEADERS}
+	${LVR_WIDGET_HEADERS}
+	${LVR_APP_SOURCES}
+	${LVR_VTK_SOURCES}
+	${LVR_WIDGET_SOURCES}
+	${LVR_VIEWER_UIS}
+	${LVR_VIEWER_RESOURCES}
+)
+set_target_properties(ALL_VIEWER_SOURCES PROPERTIES EXCLUDE_FROM_DEFAULT_BUILD 1)
