@@ -52,12 +52,19 @@ public:
     MeshBufferPtr   getMeshBuffer();
     vtkSmartPointer<vtkActor> getActor();
 
+protected:
+    virtual void addSubItems();
+    MeshBufferBridgePtr     m_meshBridge;
+
 private:
     QColor                  m_color;
-    MeshBufferBridgePtr     m_meshBridge;
+
     float					m_opacity;
     bool					m_visible;
     int                     m_shader;
+
+protected:
+    QTreeWidgetItem* 		m_parent;
 };
 
 } /* namespace lvr */

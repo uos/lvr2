@@ -32,6 +32,7 @@
 #include <vtkPoints.h>
 #include <vtkActor.h>
 #include <vtkProperty.h>
+#include <vtkPointData.h>
 
 namespace lvr
 {
@@ -98,14 +99,32 @@ void LVRPointBufferBridge::computePointCloudActor(PointBufferPtr pc)
         vtkSmartPointer<vtkPoints>      vtk_points = vtkSmartPointer<vtkPoints>::New();
         vtkSmartPointer<vtkCellArray>   vtk_cells = vtkSmartPointer<vtkCellArray>::New();
 
+        vtkSmartPointer<vtkUnsignedCharArray> scalars = vtkSmartPointer<vtkUnsignedCharArray>::New();
+        scalars->SetNumberOfComponents(3);
+        scalars->SetName("Colors");
+
         double point[3];
-        size_t n;
+        size_t n, n_c;
         floatArr points = pc->getPointArray(n);
+        ucharArr colors = pc->getPointColorArray(n_c);
+
         for(vtkIdType i = 0; i < n; i++)
         {
-            point[0] = points[3 * i    ];
-            point[1] = points[3 * i + 1];
-            point[2] = points[3 * i + 2];
+        	int index = 3 * i;
+            point[0] = points[index    ];
+            point[1] = points[index + 1];
+            point[2] = points[index + 2];
+
+            if(n_c)
+            {
+            	unsigned char color[3];
+            	color[0] = colors[index];
+            	color[1] = colors[index + 1];
+            	color[2] = colors[index + 2];
+
+            	scalars->InsertNextTupleValue(color);
+            }
+
             vtk_points->InsertNextPoint(point);
             vtk_cells->InsertNextCell(1, &i);
         }
@@ -113,9 +132,15 @@ void LVRPointBufferBridge::computePointCloudActor(PointBufferPtr pc)
         vtk_polyData->SetPoints(vtk_points);
         vtk_polyData->SetVerts(vtk_cells);
 
+        if(n_c)
+        {
+               	vtk_polyData->GetPointData()->SetScalars(scalars);
+        }
+
         // Create poly data mapper and generate actor
         //vtkSmartPointer<vtkPolyDataMapper> mapper = vtkSmartPointer<vtkPolyDataMapper>::New();
         vtkPolyDataMapper* mapper = vtkPolyDataMapper::New();
+	//        mapper->SetInputData(vtk_polyData);
         mapper->SetInput(vtk_polyData);
         m_pointCloudActor->SetMapper(mapper);
     }

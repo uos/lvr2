@@ -61,6 +61,12 @@ public:
 
     virtual void OnKeyDown();
 
+    virtual void Dolly();
+    virtual void Pan();
+    virtual void Spin();
+    virtual void Zoom();
+    virtual void Rotate();
+
     /**
      * @brief   returns the text-actor, needed to readd-it after clearing the render window
      */

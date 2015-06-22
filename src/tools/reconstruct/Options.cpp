@@ -25,12 +25,16 @@
  */
 
 #include "Options.hpp"
-#include <omp.h>
+#include "config/lvropenmp.hpp"
+
 #include <fstream>
 
 namespace reconstruct{
 
-Options::Options(int argc, char** argv) : m_descr("Supported options")
+using namespace boost::program_options;
+
+Options::Options(int argc, char** argv)
+	: BaseOption(argc, argv)
 {
 	// Create option descriptions
 
@@ -68,7 +72,7 @@ Options::Options(int argc, char** argv) : m_descr("Supported options")
 		        ("classifier", value<string>(&m_classifier)->default_value("PlaneSimpsons"),"Classfier object used to color the mesh.")
 		        ("depth", value<int>(&m_depth)->default_value(100), "Maximum recursion depth for region growing.")
 		        ("recalcNormals,r", "Always estimate normals, even if given in .ply file.")
-		        ("threads", value<int>(&m_numThreads)->default_value( omp_get_num_procs() ), "Number of threads")
+		        ("threads", value<int>(&m_numThreads)->default_value( lvr::OpenMPConfig::getNumThreads() ), "Number of threads")
 		        ("sft", value<float>(&m_sft)->default_value(0.9), "Sharp feature threshold when using sharp feature decomposition")
 		        ("sct", value<float>(&m_sct)->default_value(0.7), "Sharp corner threshold when using sharp feature decomposition")
 		        ("ecm", value<string>(&m_ecm)->default_value("QUADRIC"), "Edge collapse method for mesh reduction. Choose from QUADRIC, QUADRIC_TRI, MELAX, SHORTEST")
@@ -86,15 +90,7 @@ Options::Options(int argc, char** argv) : m_descr("Supported options")
 		        ("mtv", value<int>(&m_minimumTransformationVotes)->default_value(3), "Minimum number of votes to consider a texture transformation as correct")
         ;
 
-	m_pdescr.add("inputFile", -1);
-
-	// Parse command line and generate variables map
-	store(command_line_parser(argc, argv).options(m_descr).positional(m_pdescr).run(), m_variables);
-	notify(m_variables);
-
-  if(m_variables.count("help")) {
-    ::std::cout<< m_descr << ::std::endl;
-  }
+	setup();
 
 }
 

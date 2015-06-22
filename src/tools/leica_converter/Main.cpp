@@ -116,7 +116,7 @@ int main(int argc, char** argv)
 			// Filter supported file formats
 			if(it->path().extension() == ".ply" || it->path().extension() == ".txt" || it->path().extension() == ".dat")
 			{
-				extension = string(it->path().extension().c_str());
+				extension = string(it->path().extension().string());
 			}
 		}
 
@@ -143,7 +143,7 @@ int main(int argc, char** argv)
 			if(reduction == 0)
 			{
 				cout << timestamp << "Reading point cloud data from " << it->c_str() << "." << endl;
-				model = ModelFactory::readModel(string(it->c_str()));
+				model = ModelFactory::readModel(it->string());
 				if(model)
 				{
 					char name[1024];
@@ -157,7 +157,7 @@ int main(int argc, char** argv)
 				{
 					DatIO io;
 					cout << timestamp << "Reading point cloud data from " << it->c_str() << "." << endl;
-					model = io.read(string(it->c_str()), 4, reduction);
+					model = io.read(it->string(), 4, reduction);
 
 					if(options.filter())
 					{
@@ -212,7 +212,7 @@ int main(int argc, char** argv)
 		}
 		else if(options.getOutputFormat() == "MERGE")
 		{
-			ModelPtr model = ModelFactory::readModel(string(it->c_str()));
+			ModelPtr model = ModelFactory::readModel(it->string());
 			if(model)
 			{
 				PointBufferPtr points = model->m_pointCloud;

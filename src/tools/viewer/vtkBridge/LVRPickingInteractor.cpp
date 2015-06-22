@@ -59,6 +59,31 @@ LVRPickingInteractor::~LVRPickingInteractor()
 }
 
 
+void LVRPickingInteractor::Dolly()
+{
+	vtkInteractorStyleTrackballCamera::Dolly();
+}
+
+void LVRPickingInteractor::Pan()
+{
+	vtkInteractorStyleTrackballCamera::Pan();
+}
+
+void LVRPickingInteractor::Spin()
+{
+	vtkInteractorStyleTrackballCamera::Spin();
+}
+
+void LVRPickingInteractor::Zoom()
+{
+	vtkInteractorStyleTrackballCamera::Zoom();
+}
+
+void LVRPickingInteractor::Rotate()
+{
+	vtkInteractorStyleTrackballCamera::Rotate();
+}
+
 void LVRPickingInteractor::correspondenceSearchOn()
 {
     vtkRenderWindowInteractor *rwi = this->Interactor;

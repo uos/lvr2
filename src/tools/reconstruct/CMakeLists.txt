@@ -40,6 +40,6 @@ endif(PCL_FOUND)
 #####################################################################################
 
 add_executable(lvr_reconstruct ${RECONSTRUCT_SOURCES})
-set_target_properties(lvr_reconstruct PROPERTIES BINARY_OUTPUT_DIRECTORY ${CMAKE_SOURCE_DIR}/bin)
+#set_target_properties(lvr_reconstruct PROPERTIES BINARY_OUTPUT_DIRECTORY ${CMAKE_SOURCE_DIR}/bin)
 target_link_libraries(lvr_reconstruct ${LVR_RECONSTRUCT_DEPENDENCIES})
 

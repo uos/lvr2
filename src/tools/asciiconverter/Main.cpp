@@ -81,7 +81,7 @@ int main(int argc, char** argv)
 
     if(readColor || (readIntensity && convert))
     {
-        colors = ucharArr(new uchar[3 * numPoints]);
+        colors = ucharArr(new unsigned char[3 * numPoints]);
     }
 
     if(readIntensity)
@@ -123,15 +123,15 @@ int main(int argc, char** argv)
 
             if(convert)
             {
-                colors[posPtr    ] = (uchar)data[options.i()];
-                colors[posPtr + 1] = (uchar)data[options.i()];
-                colors[posPtr + 2] = (uchar)data[options.i()];
+                colors[posPtr    ] = (unsigned char)data[options.i()];
+                colors[posPtr + 1] = (unsigned char)data[options.i()];
+                colors[posPtr + 2] = (unsigned char)data[options.i()];
             }
             else if (readColor)
             {
-                colors[posPtr    ] = (uchar)data[options.r()];
-                colors[posPtr + 1] = (uchar)data[options.g()];
-                colors[posPtr + 2] = (uchar)data[options.b()];
+                colors[posPtr    ] = (unsigned char)data[options.r()];
+                colors[posPtr + 1] = (unsigned char)data[options.g()];
+                colors[posPtr + 2] = (unsigned char)data[options.b()];
             }
 
             if(readIntensity)
