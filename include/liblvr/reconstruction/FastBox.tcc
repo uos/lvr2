@@ -233,7 +233,7 @@ void FastBox<VertexT, NormalT>::getSurface(BaseMesh<VertexT, NormalT> &mesh,
 		uint edge_index = 0;
 
 		int triangle_indices[3];
-		// Generate the local approximation sirface according to the marching
+		// Generate the local approximation surface according to the marching
 		// cubes table for Paul Burke.
 		for(int a = 0; MCTable[index][a] != -1; a+= 3){
 			for(int b = 0; b < 3; b++){
