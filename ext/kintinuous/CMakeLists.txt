@@ -24,7 +24,6 @@ endif()
 find_package(OpenCV 2.4.8 REQUIRED COMPONENTS core viz highgui imgproc features2d nonfree )
 find_package(CUDA 5.0 REQUIRED)
 find_package(OpenNI2 REQUIRED)
-find_package(LSSR REQUIRED)
 find_package(OpenGL REQUIRED)
 find_package(OpenMP REQUIRED)
 find_package(Eigen3 REQUIRED)
@@ -89,7 +88,7 @@ endif(LINUX)
 
 add_definitions(-std=c++11 -D_GLIBCXX_PARALLEL)
 
-include_directories(${OpenCV_INCLUDE_DIRS} ${CUDA_INCLUDE_DIRS} ${OPENNI2_INCLUDE_DIRS} ${LSSR_INCLUDE_DIRS})
+include_directories(${OpenCV_INCLUDE_DIRS} ${CUDA_INCLUDE_DIRS} ${OPENNI2_INCLUDE_DIRS})
 
 # ---[ misc settings
 if(USE_PROJECT_FOLDERS)
