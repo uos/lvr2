@@ -36,6 +36,7 @@
 
 // lvr includes
 #include "io/Timestamp.hpp"
+#include "config/lvropenmp.hpp"
 
 using std::cout;
 using std::endl;
@@ -66,7 +67,7 @@ SearchTreeStann< VertexT >::SearchTreeStann(
 
     // Create Stann Kd-tree
     cout << timestamp << "Creating STANN Kd-Tree" << endl;
-    m_pointTree = sfcnn< coord< float >, 3, float >( m_points.get(), n_points, omp_get_num_procs() );
+    m_pointTree = sfcnn< coord< float >, 3, float >( m_points.get(), n_points, OpenMPConfig::getNumThreads() );
 }
 
 

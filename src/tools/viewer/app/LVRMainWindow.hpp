@@ -37,7 +37,8 @@
 #include <vtkViewport.h>
 #include <vtkObjectFactory.h>
 #include <vtkGraphicsFactory.h>
-#include <vtkTesting.h>
+#include <vtkOrientationMarkerWidget.h>
+#include <vtkAxesActor.h>
 
 #include <QtGui>
 #include "LVRMainWindowUI.h"
@@ -54,6 +55,7 @@
 #include "../widgets/LVRCorrespondanceDialog.hpp"
 #include "../widgets/LVRReconstructionEstimateNormalsDialog.hpp"
 #include "../widgets/LVRReconstructionMarchingCubesDialog.hpp"
+#include "../widgets/LVRReconstructionExtendedMarchingCubesDialog.hpp"
 #include "../widgets/LVROptimizationPlanarOptimizationDialog.hpp"
 #include "../widgets/LVROptimizationRemoveArtifactsDialog.hpp"
 #include "../widgets/LVRFilteringMLSProjectionDialog.hpp"
@@ -114,6 +116,7 @@ public Q_SLOTS:
     void updateView();
     void saveCamera();
     void loadCamera();
+    void parseCommandLine(int argc, char** argv);
     void openCameraPathTool();
     void removeArrow(LVRVtkArrow*);
     void addArrow(LVRVtkArrow*);
@@ -144,6 +147,9 @@ private:
     vtkSmartPointer<vtkRenderWindowInteractor>  m_renderWindowInteractor;
     vtkSmartPointer<vtkCamera>			        m_camera;
     vtkSmartPointer<vtkCameraRepresentation>    m_pathCamera;
+    vtkSmartPointer<vtkOrientationMarkerWidget> m_axesWidget;
+    vtkSmartPointer<vtkAxesActor> 				m_axes;
+
     QMenu*				                        m_treeParentItemContextMenu;
     QMenu*                                      m_treeChildItemContextMenu;
 

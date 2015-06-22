@@ -84,7 +84,7 @@ ModelPtr DatIO::read(string filename, int n, int reduction)
 
 
 	float* pointArray = new float[3 * numPoints];
-	uchar* colorArray = new uchar[3 * numPoints];
+	unsigned char* colorArray = new unsigned char[3 * numPoints];
 
 	float* buffer = new float[n-1];
 	int    reflect;
@@ -109,15 +109,15 @@ ModelPtr DatIO::read(string filename, int n, int reduction)
 
 			if(n > 3)
 			{
-				colorArray[pos] 	= (uchar)reflect;
-				colorArray[pos + 1] = (uchar)reflect;
-				colorArray[pos + 2] = (uchar)reflect;
+				colorArray[pos] 	= (unsigned char)reflect;
+				colorArray[pos + 1] = (unsigned char)reflect;
+				colorArray[pos + 2] = (unsigned char)reflect;
 			}
 			else
 			{
-				colorArray[pos] 	= (uchar)0;
-				colorArray[pos + 1] = (uchar)0;
-				colorArray[pos + 2] = (uchar)0;
+				colorArray[pos] 	= (unsigned char)0;
+				colorArray[pos + 1] = (unsigned char)0;
+				colorArray[pos + 2] = (unsigned char)0;
 			}
 			d++;
 			++progress;
@@ -129,7 +129,7 @@ ModelPtr DatIO::read(string filename, int n, int reduction)
 
 	// Truncate arrays to actual size
 	pointArray = (float*)realloc(pointArray, 3 * d * sizeof(float));
-	colorArray = (uchar*)realloc(colorArray, 3 * d * sizeof(uchar));
+	colorArray = (unsigned char*)realloc(colorArray, 3 * d * sizeof(unsigned char));
 
 	cout << timestamp << "Creating point buffer with " << d << "points." << endl;
 

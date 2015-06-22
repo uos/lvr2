@@ -1,4 +1,5 @@
 set(LVR_SOURCES
+    config/lvropenmp.cpp
     io/BaseIO.cpp
     io/ModelFactory.cpp
     io/PLYIO.cpp
@@ -18,6 +19,7 @@ set(LVR_SOURCES
     io/BoctreeIO.cpp
     io/TextureIO.cpp
     io/DatIO.cpp
+    config/BaseOption.cpp
     display/InteractivePointCloud.cpp
     display/CoordinateAxes.cpp
     display/Renderable.cpp
@@ -46,6 +48,15 @@ set(LVR_SOURCES
     geometry/HalfEdgeAccessExceptions.cpp
 )
 
+
+#####################################################################################
+# Create source groups to structure code in Visual Studio
+#####################################################################################
+
+if(MSVC)
+include(LVRVSSetup.txt)
+endif()
+
 #####################################################################################
 # Setup dependencies to external libraries 
 #####################################################################################
@@ -71,16 +82,6 @@ set(LVR_LIB_DEPENDENCIES ${LVR_LIB_DEPENDENCIES} pthread)
 endif ( UNIX)
 
 #####################################################################################
-# Add QT dependencies if found
-#####################################################################################
-
-if( QT4_FOUND )
-set(LVR_LIB_DEPENDENCIES ${LVR_LIB_DEPENDENCIES} 
-	${QT_QTGUI_LIBRARIES} 
-	${QT_QTCORE_LIBRARIES})
-endif (QT4_FOUND)
-
-#####################################################################################
 # Set c++0x flags for gcc compilers (needed for boctree io)
 #####################################################################################
 
@@ -101,7 +102,7 @@ endif(PCL_FOUND)
 # Compile object files for static and dynamic library
 #####################################################################################
 
-add_library( lvrcore OBJECT ${LVR_SOURCES})
+add_library( lvrcore OBJECT ${LVR_SOURCES} ${LVR_LIB_MOC_SRC})
 
 #####################################################################################
 # Build static library
@@ -109,7 +110,7 @@ add_library( lvrcore OBJECT ${LVR_SOURCES})
 
 message(STATUS "Building static library")
 add_library(lvr_static STATIC $<TARGET_OBJECTS:lvrcore>)
-set_target_properties(lvr_static PROPERTIES LIBRARY_OUTPUT_DIRECTORY ${CMAKE_SOURCE_DIR}/lib)
+#set_target_properties(lvr_static PROPERTIES LIBRARY_OUTPUT_DIRECTORY ${CMAKE_SOURCE_DIR}/lib)
 target_link_libraries(lvr_static ${LVR_LIB_DEPENDENCIES})
 
 

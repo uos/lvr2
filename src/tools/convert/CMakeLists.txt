@@ -28,5 +28,4 @@ endif(PCL_FOUND)
 #####################################################################################
 
 add_executable( lvr_convertmodel ${LVR_CONVERT_SOURCES} )
-set_target_properties( lvr_convertmodel PROPERTIES BINARY_OUTPUT_DIRECTORY ${CMAKE_SOURCE_DIR}/bin)
 target_link_libraries( lvr_convertmodel ${LVR_CONVERT_DEPENDENCIES} )

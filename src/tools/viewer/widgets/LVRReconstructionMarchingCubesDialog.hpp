@@ -23,6 +23,8 @@
 #include "LVRPointCloudItem.hpp"
 #include "LVRModelItem.hpp"
 
+#include <QProgressDialog>
+
 using Ui::ReconstructViaMarchingCubesDialog;
 
 namespace lvr
@@ -35,26 +37,41 @@ class LVRReconstructViaMarchingCubesDialog : public QObject
 public:
     LVRReconstructViaMarchingCubesDialog(string decomposition, LVRPointCloudItem* pc, LVRModelItem* parent, QTreeWidget* treeWidget, vtkRenderWindow* renderer);
     virtual ~LVRReconstructViaMarchingCubesDialog();
-    typedef ColorVertex<float, unsigned char>         cVertex;
+    typedef ColorVertex<float, unsigned char>         	cVertex;
     typedef Normal<float>                               cNormal;
     typedef PointsetSurface<cVertex>                    psSurface;
     typedef AdaptiveKSearchSurface<cVertex, cNormal>    akSurface;
+
+    static void updateProgressbar(int p);
+    static void updateProgressbarTitle(string t);
+
+
+    void setProgressValue(int v);
+    void setProgressTitle(string);
 
 public Q_SLOTS:
     void generateMesh();
     void toggleRANSACcheckBox(const QString &text);
     void switchGridSizeDetermination(int index);
 
+Q_SIGNALS:
+    void progressValueChanged(int);
+    void progressTitleChanged(const QString&);
+
+
 private:
     void connectSignalsAndSlots();
 
-    string                                  m_decomposition;
-    ReconstructViaMarchingCubesDialog*      m_dialog;
-    LVRPointCloudItem*                      m_pc;
-    LVRModelItem*                           m_parent;
-    QTreeWidget*                            m_treeWidget;
-    LVRModelItem*                           m_generatedModel;
-    vtkRenderWindow*                        m_renderWindow;
+    string                                  		m_decomposition;
+    ReconstructViaMarchingCubesDialog*      		m_dialog;
+    LVRPointCloudItem*                      		m_pc;
+    LVRModelItem*                           		m_parent;
+    QTreeWidget*                            		m_treeWidget;
+    LVRModelItem*                          			m_generatedModel;
+    vtkRenderWindow*                        		m_renderWindow;
+    QProgressDialog*								m_progressDialog;
+    static LVRReconstructViaMarchingCubesDialog* 	m_master;
+
 
 };
 

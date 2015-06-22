@@ -34,7 +34,7 @@ public:
 			int shiftX, int shiftY, int shiftZ,
 			TsdfGrid<VertexT, BoxT, TsdfT>* lastGrid, bool isVoxelsize = true);
 	virtual ~TsdfGrid();
-	void addTSDFLatticePoint(int index_x, int index_y, int index_z, float distance);
+	virtual void addLatticePoint(int index_x, int index_y, int index_z, float distance = 0);
 	box_map getFusionCells() { return m_fusion_cells;}
 	qp_map getFusionIndices() { return m_fusion_qpIndices;}
 	int repairCell(BoxT* box, int index_x, int index_y, int index_z, int corner, vector<size_t>& boxQps);

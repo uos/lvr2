@@ -28,7 +28,6 @@
 #include <QtGui>
 
 #include "LVRMainWindow.hpp"
-
 #include "io/ModelFactory.hpp"
 #include "io/DataStruct.hpp"
 
@@ -132,6 +131,20 @@ LVRMainWindow::LVRMainWindow()
     qvtkWidget->GetRenderWindow()->GetInteractor()->SetInteractorStyle( m_pickingInteractor );
     vtkSmartPointer<vtkPointPicker> pointPicker = vtkSmartPointer<vtkPointPicker>::New();
     qvtkWidget->GetRenderWindow()->GetInteractor()->SetPicker(pointPicker);
+
+
+   // Widget to display the coordinate system
+     m_axes = vtkSmartPointer<vtkAxesActor>::New();
+
+     m_axesWidget = vtkSmartPointer<vtkOrientationMarkerWidget>::New();
+     m_axesWidget->SetOutlineColor( 0.9300, 0.5700, 0.1300 );
+     m_axesWidget->SetOrientationMarker( m_axes );
+     m_axesWidget->SetInteractor( m_renderer->GetRenderWindow()->GetInteractor() );
+     m_axesWidget->SetDefaultRenderer(m_renderer);
+     m_axesWidget->SetViewport( 0.0, 0.0, 0.3, 0.3 );
+     m_axesWidget->SetEnabled( 1 );
+     m_axesWidget->InteractiveOff();
+
     connectSignalsAndSlots();
 }
 
@@ -239,8 +252,10 @@ void LVRMainWindow::setupQVTK()
     // Grab relevant entities from the qvtk widget
     m_renderer = vtkSmartPointer<vtkRenderer>::New();
     vtkSmartPointer<vtkRenderWindow> renderWindow = this->qvtkWidget->GetRenderWindow();
+
     m_renderWindowInteractor = this->qvtkWidget->GetInteractor();
     m_renderWindowInteractor->Initialize();
+
 
     // Camera that saves a position that can be loaded
     m_camera = vtkSmartPointer<vtkCamera>::New();
@@ -248,6 +263,7 @@ void LVRMainWindow::setupQVTK()
     // Custom interactor to handle picking actions
     m_pickingInteractor = new LVRPickingInteractor(m_renderer);
     qvtkWidget->GetRenderWindow()->GetInteractor()->SetInteractorStyle( m_pickingInteractor );
+
     vtkSmartPointer<vtkPointPicker> pointPicker = vtkSmartPointer<vtkPointPicker>::New();
     qvtkWidget->GetRenderWindow()->GetInteractor()->SetPicker(pointPicker);
 
@@ -838,6 +854,27 @@ void LVRMainWindow::toggleWireframe(bool checkboxState)
     }
 }
 
+void LVRMainWindow::parseCommandLine(int argc, char** argv)
+{
+	for(int i = 1; i < argc; i++)
+	{
+	    // Load model and generate vtk representation
+		ModelPtr model = ModelFactory::readModel(string(argv[i]));
+		ModelBridgePtr bridge(new LVRModelBridge(model));
+		bridge->addActors(m_renderer);
+
+		// Add item for this model to tree widget
+		QFileInfo info(QString(argv[i]));
+		QString base = info.fileName();
+		LVRModelItem* item = new LVRModelItem(bridge, base);
+		this->treeWidget->addTopLevelItem(item);
+		item->setExpanded(true);
+	}
+	updateView();
+    assertToggles();
+
+}
+
 void LVRMainWindow::manualICP()
 {
     m_correspondanceDialog->fillComboBoxes();
@@ -969,8 +1006,8 @@ void LVRMainWindow::reconstructUsingExtendedMarchingCubes()
         LVRModelItem* parent_item = getModelItem(items.first());
         if(pc_item != NULL)
         {
-            LVRReconstructViaMarchingCubesDialog* dialog = new LVRReconstructViaMarchingCubesDialog("SF", pc_item, parent_item, treeWidget, qvtkWidget->GetRenderWindow());
-            return;
+        	LVRReconstructViaExtendedMarchingCubesDialog* dialog = new LVRReconstructViaExtendedMarchingCubesDialog("SF", pc_item, parent_item, treeWidget, qvtkWidget->GetRenderWindow());
+        	return;
         }
     }
     m_incompatibilityBox->exec();

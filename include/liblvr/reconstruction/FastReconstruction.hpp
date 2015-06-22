@@ -53,13 +53,25 @@ using std::unordered_map;
 namespace lvr
 {
 
+template<typename VertexT, typename NormalT>
+class FastReconstructionBase
+{
+public:
+    /**
+     * @brief Returns the surface reconstruction of the given point set.
+     *
+     * @param mesh
+     */
+    virtual void getMesh(BaseMesh<VertexT, NormalT> &mesh) = 0;
+};
+
 /**
  * @brief A surface reconstruction object that implements the standard
  *        marching cubes algorithm using a hashed grid structure for
  *        parallel computation.
  */
 template<typename VertexT, typename NormalT, typename BoxT>
-class FastReconstruction
+class FastReconstruction : public FastReconstructionBase<VertexT, NormalT>
 {
 public:
 
