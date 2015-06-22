@@ -28,7 +28,6 @@
 #include <QtGui>
 
 #include "LVRMainWindow.hpp"
-
 #include "io/ModelFactory.hpp"
 #include "io/DataStruct.hpp"
 
@@ -855,6 +854,27 @@ void LVRMainWindow::toggleWireframe(bool checkboxState)
     }
 }
 
+void LVRMainWindow::parseCommandLine(int argc, char** argv)
+{
+	for(int i = 1; i < argc; i++)
+	{
+	    // Load model and generate vtk representation
+		ModelPtr model = ModelFactory::readModel(string(argv[i]));
+		ModelBridgePtr bridge(new LVRModelBridge(model));
+		bridge->addActors(m_renderer);
+
+		// Add item for this model to tree widget
+		QFileInfo info(QString(argv[i]));
+		QString base = info.fileName();
+		LVRModelItem* item = new LVRModelItem(bridge, base);
+		this->treeWidget->addTopLevelItem(item);
+		item->setExpanded(true);
+	}
+	updateView();
+    assertToggles();
+
+}
+
 void LVRMainWindow::manualICP()
 {
     m_correspondanceDialog->fillComboBoxes();
@@ -986,8 +1006,8 @@ void LVRMainWindow::reconstructUsingExtendedMarchingCubes()
         LVRModelItem* parent_item = getModelItem(items.first());
         if(pc_item != NULL)
         {
-            LVRReconstructViaMarchingCubesDialog* dialog = new LVRReconstructViaMarchingCubesDialog("SF", pc_item, parent_item, treeWidget, qvtkWidget->GetRenderWindow());
-            return;
+        	LVRReconstructViaExtendedMarchingCubesDialog* dialog = new LVRReconstructViaExtendedMarchingCubesDialog("SF", pc_item, parent_item, treeWidget, qvtkWidget->GetRenderWindow());
+        	return;
         }
     }
     m_incompatibilityBox->exec();

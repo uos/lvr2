@@ -1573,15 +1573,20 @@ void HalfEdgeMesh<VertexT, NormalT>::finalize()
             b = m_regionClassifier->b(surface_class);
         }
 
-        colorBuffer[indexBuffer[3 * i]  * 3 + 0] = r;
-        colorBuffer[indexBuffer[3 * i]  * 3 + 1] = g;
-        colorBuffer[indexBuffer[3 * i]  * 3 + 2] = b;
-        colorBuffer[indexBuffer[3 * i + 1] * 3 + 0] = r;
-        colorBuffer[indexBuffer[3 * i + 1] * 3 + 1] = g;
-        colorBuffer[indexBuffer[3 * i + 1] * 3 + 2] = b;
-        colorBuffer[indexBuffer[3 * i + 2] * 3 + 0] = r;
-        colorBuffer[indexBuffer[3 * i + 2] * 3 + 1] = g;
-        colorBuffer[indexBuffer[3 * i + 2] * 3 + 2] = b;
+        unsigned char ur = 255 * r;
+        unsigned char ug = 255 * g;
+        unsigned char ub = 255 * b;
+
+        colorBuffer[indexBuffer[3 * i]  * 3 + 0] = ur;
+        colorBuffer[indexBuffer[3 * i]  * 3 + 1] = ug;
+        colorBuffer[indexBuffer[3 * i]  * 3 + 2] = ub;
+        colorBuffer[indexBuffer[3 * i + 1] * 3 + 0] = ur;
+        colorBuffer[indexBuffer[3 * i + 1] * 3 + 1] = ug;
+        colorBuffer[indexBuffer[3 * i + 1] * 3 + 2] = ub;
+        colorBuffer[indexBuffer[3 * i + 2] * 3 + 0] = ur;
+        colorBuffer[indexBuffer[3 * i + 2] * 3 + 1] = ug;
+        colorBuffer[indexBuffer[3 * i + 2] * 3 + 2] = ub;
+
 
         // now store the MeshBuffer face id into the face
         (*face_iter)->setBufferID(i);

@@ -24,8 +24,8 @@
  *      Author: Thomas Wiemann
  */
 
-#ifndef PROGRESSBAR_H_
-#define PROGRESSBAR_H_
+#ifndef PROGRESSBARQT_H_
+#define PROGRESSBARQT_H_
 
 #include <string>
 #include <sstream>
@@ -39,10 +39,6 @@ using std::string;
 
 #include <boost/thread/mutex.hpp>
 
-#ifdef __WITH_QT4__
-#include <QProgressDialog>
-#endif
-
 namespace lvr{
 
 /**
@@ -54,8 +50,13 @@ namespace lvr{
  * 	progress information in '%' is automatically printed to stdout
  * 	together with the given prefix string.
  */
+
+typedef void(*ProgressCallbackPtr)(int);
+typedef void(*ProgressTitleCallbackPtr)(string);
+
 class ProgressBar
 {
+
 public:
 
 	/**
@@ -66,12 +67,27 @@ public:
 	 */
 	ProgressBar(size_t max_val, string prefix = "");
 
-
+	virtual ~ProgressBar();
 
 	/**
 	 * @brief Increases the counter of performed iterations
 	 */
 	void operator++();
+
+	/**
+	 * @brief 	Registers a callback that is called with the new value
+	 * 			when the percentage of the progress changed.
+	 *
+	 * @param
+	 */
+	static void setProgressCallback(ProgressCallbackPtr);
+
+	/**
+	 * @brief	Registers a callback that is called when a new progress
+	 * 			instance is created.
+	 * @param
+	 */
+	static void setProgressTitleCallback(ProgressTitleCallbackPtr);
 
 protected:
 
@@ -85,7 +101,7 @@ protected:
 	size_t			m_maxVal;
 
         /// The current counter
-        size_t	 		m_currentVal;
+    size_t	 		m_currentVal;
 
 	/// A mutex object for counter increment (for parallel executions)
 	boost::mutex 	m_mutex;
@@ -99,21 +115,8 @@ protected:
 	/// A fill string for correct output alignment
 	string 			m_fillstring;
 
-#ifdef __WITH_QT4__
-	static bool             m_useDialog;
-public:
-
-	/// If enabled, each instance will create a QT4 progress dialog
-	/// with the given message. Needs a valid QT context.
-	static void enableDialog();
-
-	/// Disables the usage if a QT4 progress dialog.
-	static void disableDialog();
-
-	QProgressDialog*        m_dialog;
-
-	~ProgressBar();
-#endif
+	static ProgressCallbackPtr 			m_progressCallback;
+	static ProgressTitleCallbackPtr		m_titleCallback;
 };
 
 

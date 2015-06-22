@@ -263,6 +263,7 @@ endif(CGAL_FOUND)
 
 if(PCL_FOUND)
     add_subdirectory(src/tools/scanfilter)
+    add_subdirectory(src/tools/leica_converter)
 #    add_subdirectory(src/tools/kinectgrabber)
 endif(PCL_FOUND)
 
@@ -279,8 +280,8 @@ if( QT4_FOUND )
     include_directories(${QT_QTOPENGL_INCLUDE_DIR})
     include_directories(${QT_QTCORE_INCLUDE_DIR})
     include_directories(${QT_QTXML_INCLUDE_DIR})
-    
-    add_definitions(-D__WITH_QT4__)
+  
+    add_definitions(-D_USE_QT)
 
     # Try to find libQGLViewer
     find_library(QGLVIEWER_LIBRARY_RELEASE 
@@ -325,7 +326,6 @@ add_subdirectory(src/tools/meshoptimizer)
 add_subdirectory(src/tools/transform)
 add_subdirectory(src/tools/registration)
 add_subdirectory(src/tools/normals)
-add_subdirectory(src/tools/leica_converter)
 
 ################################################################
 # DOCUMENTATION
