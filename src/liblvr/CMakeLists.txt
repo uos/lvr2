@@ -120,7 +120,7 @@ add_library( lvrcore OBJECT ${LVR_SOURCES})
 
 message(STATUS "Building static library")
 add_library(lvr_static STATIC $<TARGET_OBJECTS:lvrcore>)
-set_target_properties(lvr_static PROPERTIES LIBRARY_OUTPUT_DIRECTORY ${CMAKE_SOURCE_DIR}/lib)
+#set_target_properties(lvr_static PROPERTIES LIBRARY_OUTPUT_DIRECTORY ${CMAKE_SOURCE_DIR}/lib)
 target_link_libraries(lvr_static ${LVR_LIB_DEPENDENCIES})
 
 

@@ -35,5 +35,4 @@ endif( ${NABO_FOUND} )
 #####################################################################################
 
 add_executable(lvr_pointcloud_reduce ${LVR_REDUCE_SOURCES})
-set_target_properties(lvr_pointcloud_reduce PROPERTIES BINARY_OUTPUT_DIRECTORY ${CMAKE_SOURCE_DIR}/bin)
 target_link_libraries(lvr_pointcloud_reduce ${LVR_REDUCE_DEPENDENCIES})

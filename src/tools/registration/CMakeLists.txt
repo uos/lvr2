@@ -35,5 +35,4 @@ endif( ${NABO_FOUND} )
 #####################################################################################
 
 add_executable(lvr_registration ${LVR_REGISTRATION_SOURCES})
-set_target_properties(lvr_registration PROPERTIES BINARY_OUTPUT_DIRECTORY ${CMAKE_SOURCE_DIR}/bin)
 target_link_libraries(lvr_registration  ${LVR_REGISTRATION_DEPENDENCIES})
