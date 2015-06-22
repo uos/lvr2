@@ -24,7 +24,7 @@
 #include <algorithm>
 #include <timer.hpp>
 
-#ifdef _OPENMP
+#ifdef _USE_OPEN_MP
 #include <omp.h>
 #endif
 

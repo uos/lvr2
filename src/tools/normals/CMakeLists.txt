@@ -34,6 +34,5 @@ endif( ${NABO_FOUND} )
 #####################################################################################
 
 add_executable(lvr_normal_conversion ${LVR_NORMAL_CONVERSION_SOURCES})
-set_target_properties(lvr_normal_conversion PROPERTIES BINARY_OUTPUT_DIRECTORY ${CMAKE_SOURCE_DIR}/bin)
 target_link_libraries(lvr_normal_conversion ${LVR_NORMAL_CONVERSION_DEPENDENCIES})
 
