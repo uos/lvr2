@@ -41,7 +41,7 @@ template<typename VertexT, typename NormalT>
 FastBox<VertexT, NormalT>::FastBox(VertexT &center, bool fusionBox)
 			: m_fusionBox(fusionBox)
 {
-	m_intersections = new uint[12];
+	//m_intersections = new uint[12];
     // Init members
     for(int i = 0; i < 12; i++)
     {
