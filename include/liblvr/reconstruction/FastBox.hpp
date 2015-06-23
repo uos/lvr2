@@ -123,7 +123,7 @@ public:
     static uint		   		INVALID_INDEX;
 
     /// The twelve intersection between box and surface
-    uint*                   	m_intersections;
+    uint                   	m_intersections[12];
     bool 						m_fusionBox;
     bool 						m_fusedBox;
 
