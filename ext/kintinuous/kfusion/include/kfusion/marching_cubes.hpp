@@ -15,6 +15,7 @@
 #include <kfusion/cuda/tsdf_volume.hpp>
 #include <kfusion/cuda/projective_icp.hpp>
 #include <thread>
+#include <queue>
 
 
 using namespace lvr;
@@ -24,7 +25,8 @@ typedef ColorVertex<float, unsigned char> cVertex;
 typedef FastBox<ColorVertex<float, unsigned char>, lvr::Normal<float> > cFastBox;
 typedef TsdfGrid<cVertex, cFastBox, kfusion::Point> TGrid;
 typedef FastReconstruction<ColorVertex<float, unsigned char>, lvr::Normal<float>, cFastBox > cFastReconstruction;
-typedef HalfEdgeMesh<ColorVertex<float, unsigned char> , lvr::Normal<float> >* MeshPtr;
+typedef HalfEdgeMesh<cVertex, lvr::Normal<float> > HMesh;
+typedef HMesh* MeshPtr;
 
 namespace kfusion
 {
@@ -37,12 +39,14 @@ namespace kfusion
 			~MaCuWrapper() 
 			{ 
 				delete meshPtr_;
-				delete last_grid_;
+				//delete last_grid_;
 			}
+			
 			
 			void createGrid(cv::Mat& cloud_host,  Vec3i offset, const bool last_shift);
 			
 			void createMeshSlice(const bool last_shift);
+			
 			
 			void resetMesh();
 			
@@ -59,8 +63,8 @@ namespace kfusion
 		    
 			double camera_target_distance_;
 		    std::thread* mcthread_;
-			TGrid* last_grid_;
-			TGrid* grid_ptr_;
+			queue<TGrid*> grid_queue_;
+			queue<TGrid*> last_grid_queue_;
 			std::vector<double> timeStats_;
 			MeshPtr meshPtr_;
 			double voxel_size_;
