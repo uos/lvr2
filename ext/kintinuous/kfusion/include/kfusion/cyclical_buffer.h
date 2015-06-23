@@ -79,6 +79,7 @@ namespace kfusion
 				global_shift_[0] = 0;
 				global_shift_[1] = 0;
 				global_shift_[2] = 0;
+				//mcwrap_ = MaCuWrapper(distance_threshold, (double)buffer_.volume_size.x / nb_voxels_per_axis[0]);
 			}
 
 
@@ -104,6 +105,7 @@ namespace kfusion
 				buffer_.voxels_size.y = nb_voxels_y; 
 				buffer_.voxels_size.z = nb_voxels_z; 
 				marching_thread_ = NULL;
+				
 			}
 			
 			~CyclicalBuffer()
@@ -148,7 +150,6 @@ namespace kfusion
 		    void setDistanceThreshold (const double threshold) 
 		    { 
 			  distance_threshold_ = threshold; 
-			  // PCL_INFO ("Shifting threshold set to %f meters.\n", distance_threshold_);
 		    }
 
 		    /** \brief Returns the distance threshold between cube's center and target point that triggers a shift. */
@@ -227,6 +228,8 @@ namespace kfusion
 		  }
 		  
 		  void resetMesh(){mcwrap_.resetMesh();}
+		  
+		  MeshPtr getMesh() {return mcwrap_.getMesh();}
 		  
 		  int getSliceCount(){return slice_count_;}
 		  			

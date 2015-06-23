@@ -18,9 +18,8 @@ kfusion::KinFuParams kfusion::KinFuParams::default_params()
     p.cols = 640;  //pixels
     p.rows = 480;  //pixels
     p.intr = Intr(525.f, 525.f, p.cols/2 - 0.5f, p.rows/2 - 0.5f);
-
     p.shifting_distance = 0.35f; //meters to go before shifting the volume
-    p.distance_camera_target = 0.7;
+    p.distance_camera_target = 1.2;
 
     p.volume_dims = Vec3i::all(512);  //number of voxels
     p.volume_size = Vec3f::all(3.f);  //meters
@@ -50,7 +49,7 @@ kfusion::KinFuParams kfusion::KinFuParams::default_params()
 
 kfusion::KinFu::KinFu(const KinFuParams& params) : frame_counter_(0), params_(params), has_shifted_(false), perform_last_scan_(false), perform_shift_(false)
                                                    , cyclical_(params_.shifting_distance, params.volume_size, params.volume_dims)
-                                                   , distance_camera_target_(params_.distance_camera_target) 
+                                                   
 {
     CV_Assert(params.volume_dims[0] % 32 == 0);
 
@@ -144,15 +143,15 @@ void kfusion::KinFu::reset(Affine3f initialPose)
 {
     if (frame_counter_)
         cout << "Reset" << endl;
-
+    //initialPose.translate(Vec3f(0, 0, params_.distance_camera_target));
     frame_counter_ = 0;
     poses_.clear();
-    poses_.reserve(60000);
+    //poses_.reserve(60000);
     poses_.push_back(initialPose);
     volume_->clear();
     volume_->setPose(params_.volume_pose);
     cyclical_.resetBuffer (volume_);
-    //cyclical_.resetMesh ();
+    cyclical_.resetMesh();
     has_shifted_=false;
 }
 
@@ -215,7 +214,7 @@ bool kfusion::KinFu::operator()(const kfusion::cuda::Depth& depth, const kfusion
     poses_.push_back(poses_.back() * affine); // curr -> global
     
     // check if we need to shift
-    has_shifted_ = cyclical_.checkForShift(volume_, getCameraPose(), distance_camera_target_ , perform_shift_, perform_last_scan_, record_mode_); 
+    has_shifted_ = cyclical_.checkForShift(volume_, getCameraPose(), params_.distance_camera_target , perform_shift_, perform_last_scan_, record_mode_); 
 	perform_shift_ = false;
     ///////////////////////////////////////////////////////////////////////////////////////////
     // Volume integration
