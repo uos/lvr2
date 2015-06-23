@@ -20,7 +20,7 @@ struct KinFuApp
             kinfu.take_cloud(*kinfu.kinfu_);
 
         if(event.code == 'i' || event.code == 'I')
-            kinfu.iteractive_mode_ = !kinfu.iteractive_mode_;
+            kinfu.set_interactive();
             
         if(event.code == 'r' || event.code == 'R')
         {
@@ -28,17 +28,28 @@ struct KinFuApp
             kinfu.capture_.triggerRecord();
          }
         
-        if(event.code == 'f' || event.code == 'F')
+        if(event.code == 'g' || event.code == 'G')
             kinfu.extractImage(*kinfu.kinfu_, *kinfu.image_);
+            
+        if(event.code == 'd' || event.code == 'D')
+        {
+            kinfu.capture_.triggerPause();
+            kinfu.pause_ = !kinfu.pause_;
+        }
         
         if(event.code == '+')
         {			
-           kinfu.kinfu_->params().shifting_distance += 0.5;
+           kinfu.kinfu_->params().distance_camera_target += 0.1;
+           kinfu.kinfu_->performShift();
+        }
+        if(event.code == '-')
+        {			
+           kinfu.kinfu_->params().distance_camera_target -= 0.1;
            kinfu.kinfu_->performShift();
         }
     }
 
-    KinFuApp(OpenNISource& source) : exit_ (false),  iteractive_mode_(false),
+    KinFuApp(OpenNISource& source) : exit_ (false),  iteractive_mode_(false), pause_(false),
 										capture_ (source), cube_count_(0), pic_count_(0)
     {
         KinFuParams params = KinFuParams::default_params();
@@ -46,12 +57,14 @@ struct KinFuApp
 
         capture_.setRegistration(true);
 
-		viz.showWidget("legend", cv::viz::WText("Controls", cv::Point(5, 160), 30, cv::viz::Color::red()));
-		viz.showWidget("r", cv::viz::WText("r - Trigger record", cv::Point(5, 125), 20, cv::viz::Color::green()));
-		viz.showWidget("t", cv::viz::WText("t - Finish scan", cv::Point(5, 100), 20, cv::viz::Color::green()));
-		viz.showWidget("e", cv::viz::WText("f - Export image & pose", cv::Point(5, 75), 20, cv::viz::Color::green()));
-		viz.showWidget("i", cv::viz::WText("i - Interactive mode", cv::Point(5, 50), 20, cv::viz::Color::green()));
-		viz.showWidget("esc", cv::viz::WText("esc - Finish and quit", cv::Point(5, 25), 20, cv::viz::Color::green()));
+		viz.showWidget("legend", cv::viz::WText("Controls", cv::Point(5, 205), 30, cv::viz::Color::red()));
+		viz.showWidget("r", cv::viz::WText("r Trigger record", cv::Point(5, 175), 20, cv::viz::Color::green()));
+		viz.showWidget("d", cv::viz::WText("d Trigger pause", cv::Point(5, 150), 20, cv::viz::Color::green()));
+		viz.showWidget("t", cv::viz::WText("t Finish scan", cv::Point(5, 125), 20, cv::viz::Color::green()));
+		viz.showWidget("g", cv::viz::WText("g Export image & pose", cv::Point(5, 100), 20, cv::viz::Color::green()));
+		viz.showWidget("i", cv::viz::WText("i Interactive mode", cv::Point(5, 75), 20, cv::viz::Color::green()));
+		viz.showWidget("+", cv::viz::WText("+/- Change cam distance", cv::Point(5, 50), 20, cv::viz::Color::green()));
+		viz.showWidget("esc", cv::viz::WText("esc Finish and quit", cv::Point(5, 25), 20, cv::viz::Color::green()));
         cv::viz::WCube cube(cv::Vec3d::all(0), cv::Vec3d(params.volume_size), true, cv::viz::Color::red());
         cv::viz::WArrow arrow(cv::Point3f(0, 0, 0), cv::Point3f(0, 0, 0.5), 0.05, cv::viz::Color::green());
         viz.showWidget("cube0", cube);
@@ -70,8 +83,15 @@ struct KinFuApp
         cv::namedWindow("Image", 0 );
 		cv::resizeWindow("Image",800, 500);
 		cv::moveWindow("Image", 0, 500);
-        
+        show_mesh();
     }
+    
+    void show_mesh()
+    {
+		auto mesh = kinfu_->cyclical().getMesh();
+		//cv::viz::Mesh cvmesh = cv::viz::Mesh::load("test_mesh.ply");
+		//viz.showWidget("mesh", cv::viz::WMesh(cvmesh));
+	}
 
     void show_depth(const cv::Mat& depth)
     {
@@ -84,17 +104,18 @@ struct KinFuApp
     void show_raycasted(KinFu& kinfu)
     {
         const int mode = 4;
-        //if (iteractive_mode_)
-        //kinfu.renderImage(view_device_, viz.getViewerPose(), mode);
-        //else
-        kinfu.renderImage(view_device_, mode);
+        if (iteractive_mode_)
+          kinfu.renderImage(view_device_, viz.getViewerPose(), mode);
+        else
+			kinfu.renderImage(view_device_, mode);
 
         view_host_.create(view_device_.rows(), view_device_.cols(), CV_8UC4);
         view_device_.download(view_host_.ptr<void>(), view_host_.step);
         
         cv::imshow("Scene", view_host_);
-
-        viz.setWidgetPose("arrow", kinfu.getCameraPose());  
+		
+		if(iteractive_mode_)
+			viz.setWidgetPose("arrow", kinfu.getCameraPose());  
     }
     
     void show_cube(KinFu& kinfu)
@@ -107,7 +128,16 @@ struct KinFuApp
         viz.setWidgetPose("cube0", kinfu.tsdf().getPose()); 
         
 	}
-
+	
+	void set_interactive()
+	{   
+		iteractive_mode_ = !iteractive_mode_;
+		Affine3f eagle_view = Affine3f::Identity();
+		eagle_view.translate(kinfu_->getCameraPose().translation());
+		viz.setViewerPose(eagle_view.translate(Vec3f(0,0,-1)));
+	}
+	
+	
     void take_cloud(KinFu& kinfu)
     {
 		cout << "Performing last scan" << std::endl;
@@ -144,13 +174,22 @@ struct KinFuApp
     {
 		pic_count_++;
 		auto trans = kinfu.getCameraPose().translation();
-		trans += Vec3f(150,150,150);
-		imwrite( string("Pic" + std::to_string(pic_count_) + ".jpg"), image );
+		auto rot =  kinfu.getCameraPose().rotation();
+		imwrite( string("Pic" + std::to_string(pic_count_) + ".png"), image );
 		ofstream pose_file;
-		pose_file.open (string("Pic" + std::to_string(pic_count_) + ".pose"));
-	    pose_file << "Rotation: " << kinfu.getCameraPose().rotation();
+		pose_file.open (string("Pic" + std::to_string(pic_count_) + ".txt"));
+		pose_file << "Translation: " << endl;
+		pose_file << trans[0] << endl;
+		pose_file << trans[1] << endl;
+		pose_file << trans[2] << endl;
+		pose_file << endl;
+	    pose_file << "Rotation: " << endl;
+	    pose_file << rot(0,0) << " " << rot(0,1) << " " << rot(0,2) << endl;
+	    pose_file << rot(1,0) << " " << rot(1,1) << " " << rot(1,2) << endl;
+	    pose_file << rot(2,0) << " " << rot(2,1) << " " << rot(2,2) << endl;
 	    pose_file << endl;
-	    pose_file << "Translation: " << trans;
+	    pose_file << "Camera Intrinsics: " << endl;
+	    pose_file << kinfu.params().intr.fx << " " <<  kinfu.params().rows << " " << kinfu.params().cols << endl;
 	    pose_file.close();
 	}
 		
@@ -164,19 +203,22 @@ struct KinFuApp
 
         for (int i = 0; !exit_ && !viz.wasStopped(); ++i)
         {
-            int has_frame = capture_.grab(depth, image);
-            image_ = &image;
-            if (has_frame == 0)
-                return std::cout << "Can't grab" << std::endl, false;
-			// check if oni file ended
-			if (has_frame == 2)
-				take_cloud(kinfu);
-            depth_device_.upload(depth.data, depth.step, depth.rows, depth.cols);
-
+			if(!pause_ || !capture_.isRecord())
             {
-                SampledScopeTime fps(time_ms); (void)fps;
-                has_image = kinfu(depth_device_);
-            }
+				int has_frame = capture_.grab(depth, image);
+				image_ = &image;
+				if (has_frame == 0)
+					return std::cout << "Can't grab" << std::endl, false;
+				// check if oni file ended
+				if (has_frame == 2)
+					take_cloud(kinfu);
+				depth_device_.upload(depth.data, depth.step, depth.rows, depth.cols);
+
+				{
+					SampledScopeTime fps(time_ms); (void)fps;
+					has_image = kinfu(depth_device_);
+				}
+			}
 
             if (has_image)
                 show_raycasted(kinfu);
@@ -190,20 +232,20 @@ struct KinFuApp
 
             if (!iteractive_mode_)
             {
-				//TODO eagle view
-				Affine3f eagle_view = Affine3f::Identity();
-				eagle_view.translate(kinfu.getCameraPose().translation());
-                viz.setViewerPose(eagle_view.translate(Vec3f(0,0,-6)));
+                viz.setViewerPose(kinfu.getCameraPose());
 			}
+				
             int key = cv::waitKey(3);
 
             switch(key)
             {
 				case 't': case 'T' : take_cloud(kinfu); break;
-				case 'i': case 'I' : iteractive_mode_ = !iteractive_mode_; break;
+				case 'i': case 'I' : set_interactive(); break;
+				case 'd': case 'D' : capture_.triggerPause();pause_  = !pause_; break;
 				case 'r': case 'R' : kinfu.triggerRecord(); capture_.triggerRecord(); break;
-				case 'f': case 'F' : extractImage(kinfu, image); break;
-				case '+': kinfu.params().shifting_distance += 0.1; kinfu.performShift(); break;
+				case 'g': case 'G' : extractImage(kinfu, image); break;
+				case '+': kinfu.params().distance_camera_target += 0.1; kinfu.performShift(); break;
+				case '-': kinfu.params().distance_camera_target -= 0.1; kinfu.performShift(); break;
 				case 27: case 32: exit_ = true; break;
             }
 
@@ -215,7 +257,7 @@ struct KinFuApp
         return true;
     }
 
-    bool exit_, iteractive_mode_;
+    bool exit_, iteractive_mode_, pause_;
     OpenNISource& capture_;
     KinFu::Ptr kinfu_;
     cv::viz::Viz3d viz;
