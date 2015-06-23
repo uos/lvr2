@@ -43,7 +43,7 @@ bool
 kfusion::cuda::CyclicalBuffer::checkForShift (cv::Ptr<cuda::TsdfVolume> volume, const Affine3f &cam_pose, const double distance_camera_target, const bool perform_shift, const bool last_shift, const bool record_mode)
 {
     bool result = false;
-	
+    mcwrap_.setCameraDist(distance_camera_target);
  	cv::Vec3f targetPoint(0,0, distance_camera_target);
  	targetPoint = cam_pose * targetPoint;
     targetPoint[1] = cam_pose.translation()[1];
@@ -51,7 +51,6 @@ kfusion::cuda::CyclicalBuffer::checkForShift (cv::Ptr<cuda::TsdfVolume> volume, 
 	center_cube[0] = buffer_.origin_metric.x + buffer_.volume_size.x/2.0f;
 	center_cube[1] = buffer_.origin_metric.y + buffer_.volume_size.y/2.0f;
 	center_cube[2] = buffer_.origin_metric.z + buffer_.volume_size.z/2.0f;
-
 	double dist = norm(targetPoint, center_cube, cv::NORM_L2);
 	//printf("   dist: %f   \n", dist);
 	if (dist > distance_threshold_)
@@ -115,32 +114,6 @@ kfusion::cuda::CyclicalBuffer::performShift (cv::Ptr<cuda::TsdfVolume> volume, c
 		Point* tsdf_ptr = cloud_slice_.ptr<Point>();
 		if(cloud.size() > 0)
 		{
-			/*int min_x = 1000;
-			int max_x = 0;
-			int min_y = 1000;
-			int max_y = 0;
-			int min_z = 1000;
-			int max_z = 0;
-			for(int i = 1; i < cloud.size() - 1; i++)
-			{
-				if(tsdf_ptr[i].x > max_x)
-					max_x = tsdf_ptr[i].x;
-				if(tsdf_ptr[i].y > max_y)
-					max_y = tsdf_ptr[i].y;
-				if(tsdf_ptr[i].z > max_z)
-					max_z = tsdf_ptr[i].z;
-				if(tsdf_ptr[i].x < min_x)
-					min_x = tsdf_ptr[i].x;
-				if(tsdf_ptr[i].y < min_y)
-					min_y = tsdf_ptr[i].y;
-				if((tsdf_ptr[i].x < minBounds[0] || tsdf_ptr[i].x > maxBounds[0]) && (tsdf_ptr[i].y < minBounds[1] || tsdf_ptr[i].y > maxBounds[1]))
-					if(tsdf_ptr[i].z < min_z)
-						min_z = tsdf_ptr[i].z;
-			}
-			//cout << "Max x y z: " << max_x - global_shift_[0] << " " << max_y - global_shift_[1] << " " << max_z - global_shift_[2] << endl;
-			//cout << "Min x y z: " << min_x - global_shift_[0] << " " << min_y - global_shift_[1] << " " << min_z - global_shift_[2] << endl;
-			cout << "Global Max x y z: " << max_x + 26500 << " " << max_y + 26500 << " " << max_z + 26500 << endl;
-			cout << "Global Min x y z: " << min_x + 26500 << " " << min_y + 26500 << " " << min_z + 26500 << endl;*/
 			Vec3i fusionShift = global_shift_;
 			for(int i = 0; i < 3; i++)
 			{
@@ -151,23 +124,10 @@ kfusion::cuda::CyclicalBuffer::performShift (cv::Ptr<cuda::TsdfVolume> volume, c
 				else
 					fusionShift[i] += minBounds[i];
 			}
-			//cout << "Fusion shift: " << fusionShift << endl;
-			/*cout << "MinBounds Global: " << minBounds[0] + 26500 + global_shift_[0] << " " << minBounds[1] + 26500 + global_shift_[1] << " " << minBounds[2] + 26500 + global_shift_[2] << endl;
-			cout << "MaxBounds Global: " << maxBounds[0] + 26500 + global_shift_[0] << " " << maxBounds[1] + 26500 + global_shift_[1] << " " << maxBounds[2] + 26500 + global_shift_[2] << endl;
-			cout << "MinBounds Local : " << minBounds[0] << " " << minBounds[1] << " " << minBounds[2] << endl;
-			cout << "MaxBounds Local : " << maxBounds[0] << " " << maxBounds[1] << " " << maxBounds[2] << endl;
-			*/
-			//cout << "Fusion shift Global : " << fusionShift[0] + 26500 << " " << fusionShift[1] + 26500 << " " << fusionShift[2] + 26500 << endl;
-				
-			if(!last_shift)
-			{
-				marching_thread_ = new std::thread(&kfusion::MaCuWrapper::createMeshSlice, &mcwrap_ , std::ref(cloud_slice_), fusionShift, last_shift);
-			}
+			if(!last_shift)	
+				marching_thread_ = new std::thread(&kfusion::MaCuWrapper::createGrid, &mcwrap_ , std::ref(cloud_slice_), fusionShift, last_shift);
 			else
-			{
-				mcwrap_.createMeshSlice(cloud_slice_, fusionShift, last_shift);
-				return;
-			}
+				mcwrap_.createGrid(cloud_slice_, fusionShift, last_shift);
 		}
 		else
 		{

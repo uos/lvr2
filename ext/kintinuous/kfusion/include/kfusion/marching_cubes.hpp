@@ -8,11 +8,13 @@
 #include <io/PointBuffer.hpp>
 #include <io/DataStruct.hpp>
 #include <io/Timestamp.hpp>
+#include <geometry/HalfEdgeVertex.hpp>
 #include <geometry/HalfEdgeMesh.hpp>
 #include <geometry/BoundingBox.hpp>
 #include <kfusion/types.hpp>
 #include <kfusion/cuda/tsdf_volume.hpp>
 #include <kfusion/cuda/projective_icp.hpp>
+#include <thread>
 
 
 using namespace lvr;
@@ -22,6 +24,7 @@ typedef ColorVertex<float, unsigned char> cVertex;
 typedef FastBox<ColorVertex<float, unsigned char>, lvr::Normal<float> > cFastBox;
 typedef TsdfGrid<cVertex, cFastBox, kfusion::Point> TGrid;
 typedef FastReconstruction<ColorVertex<float, unsigned char>, lvr::Normal<float>, cFastBox > cFastReconstruction;
+typedef HalfEdgeMesh<ColorVertex<float, unsigned char> , lvr::Normal<float> >* MeshPtr;
 
 namespace kfusion
 {
@@ -29,7 +32,7 @@ namespace kfusion
     {
 		public:
 
-			MaCuWrapper();
+			MaCuWrapper(double camera_target_distance = 0, double voxel_size = 3.0/512.0);
         
 			~MaCuWrapper() 
 			{ 
@@ -37,18 +40,30 @@ namespace kfusion
 				delete last_grid_;
 			}
 			
-			void createMeshSlice(cv::Mat& cloud_host,  Vec3i offset, const bool last_shift);
+			void createGrid(cv::Mat& cloud_host,  Vec3i offset, const bool last_shift);
+			
+			void createMeshSlice(const bool last_shift);
 			
 			void resetMesh();
 			
+			MeshPtr getMesh() {return meshPtr_;};
+			
 			double calcTimeStats();
 			
+			void setCameraDist(const double threshold) { camera_target_distance_ = threshold;} 
+			
 			int slice_count_;
-        
+			
 		private:
+		    void transformMeshBack();
+		    
+			double camera_target_distance_;
+		    std::thread* mcthread_;
 			TGrid* last_grid_;
+			TGrid* grid_ptr_;
 			std::vector<double> timeStats_;
-			HalfEdgeMesh<ColorVertex<float, unsigned char> , lvr::Normal<float> > *meshPtr_;
+			MeshPtr meshPtr_;
+			double voxel_size_;
 			
     };
 }
