@@ -6,6 +6,12 @@ if (DEFINED CMAKE_BUILD_TYPE)
   set_property(CACHE CMAKE_BUILD_TYPE PROPERTY STRINGS ${CMAKE_CONFIGURATION_TYPES})
 endif()
 
+if(NOT CMAKE_BUILD_TYPE)
+	set(CMAKE_BUILD_TYPE "Release" CACHE STRING
+       "Choose the type of build, options are: Debug Release"
+       FORCE)
+endif(NOT CMAKE_BUILD_TYPE)
+
 # ---[ Solution name
 project(kfusion C CXX)
 
@@ -86,7 +92,7 @@ endif ( OPENGL_glu_LIBRARY )
 
 endif(LINUX)
 
-add_definitions(-std=c++11 -D_GLIBCXX_PARALLEL)
+add_definitions(-std=c++11)
 
 include_directories(${OpenCV_INCLUDE_DIRS} ${CUDA_INCLUDE_DIRS} ${OPENNI2_INCLUDE_DIRS})
 
@@ -98,7 +104,6 @@ endif()
 
 # ---[ cuda settings
 set(HAVE_CUDA 1)
-#list(APPEND CUDA_NVCC_FLAGS "-arch;compute_20")
 list(APPEND CUDA_NVCC_FLAGS "-gencode;arch=compute_20,code=sm_20;-gencode;arch=compute_20,code=sm_21;-gencode;arch=compute_30,code=sm_30;-gencode;arch=compute_35,code=sm_35;-gencode;arch=compute_50,code=sm_50 ")
 
 if(UNIX OR APPLE)
