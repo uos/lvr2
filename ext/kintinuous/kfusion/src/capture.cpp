@@ -161,6 +161,20 @@ void kfusion::OpenNISource::open(const std::string& filename)
     
 }
 
+void kfusion::OpenNISource::triggerPause()
+{
+	double speed = impl_->device.getPlaybackControl()->getSpeed();
+	if(isOni_ && speed == 1.0)
+	{
+		impl_->device.getPlaybackControl()->setSpeed(-1.0); 
+	}
+	else if (isOni_ && speed == -1.0)
+	{
+		impl_->device.getPlaybackControl()->setSpeed(1.0);
+	} 
+}
+
+
 void kfusion::OpenNISource::triggerRecord()
 {
 	if(!isOni_ && !recording_)
