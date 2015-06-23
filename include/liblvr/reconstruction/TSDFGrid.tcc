@@ -20,15 +20,15 @@ TsdfGrid<VertexT, BoxT, TsdfT>::TsdfGrid(float cellSize,  BoundingBox<VertexT> b
 	// get fusion slice from old grid if it exists one
 	if(lastGrid != NULL)
 	{
-		this->m_queryPoints = lastGrid->getFusionPoints();
-		this->m_qpIndices = lastGrid->getFusionIndices();
+		this->m_queryPoints = vector<QueryPoint<VertexT> >(lastGrid->getFusionPoints());
+		this->m_qpIndices = qp_map(lastGrid->getFusionIndices());
 		this->m_cells = lastGrid->getFusionCells();
-		for(auto cellPair : lastGrid->getFusionCells())
+		/*for(auto cellPair : lastGrid->getFusionCells())
 		{
 			BoxT* box = new BoxT(*(cellPair.second));
-			this->m_cells[cellPair.first] = box;
-		}
-		this->m_global_cells = lastGrid->m_global_cells;
+			this->m_cells[cellPair.first] = cellPair.second;
+		}*/
+		//this->m_global_cells = lastGrid->m_global_cells;
 	}
 	int center_of_bb_x = (this->m_boundingBox.getXSize()/2) / this->m_voxelsize;
 	int center_of_bb_y = (this->m_boundingBox.getYSize()/2) / this->m_voxelsize;
@@ -264,7 +264,20 @@ int TsdfGrid<VertexT, BoxT, TsdfT>::repairCell(BoxT* box,
 template<typename VertexT, typename BoxT, typename TsdfT>
 TsdfGrid<VertexT, BoxT, TsdfT>::~TsdfGrid()
 {
-
+	box_map_it iter;
+	for(iter = this->m_cells.begin(); iter != this->m_cells.end(); iter++)
+	{
+		if(iter->second != NULL)
+		{
+			if(!iter->second->m_fusedBox)
+			{
+				delete (iter->second);
+				iter->second = NULL;
+			}
+			else
+				iter->second->m_fusedBox = false;
+		}
+	}
 }
 
 } /* namespace lvr */
