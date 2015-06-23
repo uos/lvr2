@@ -74,7 +74,7 @@ namespace kfusion
 				transformMeshBack();
 				meshPtr_->finalize();
 				ModelPtr m( new Model( meshPtr_->meshBuffer() ) );
-				ModelFactory::saveModel( m, "./slices/mesh_" + to_string(slice_count_) + ".ply");
+				ModelFactory::saveModel( m, "./mesh_" + to_string(slice_count_) + ".ply");
 				//ModelFactory::saveModel( m, "./test_mesh.ply");
 			}
 			//cout << "Global cell count: " << grid_ptr->m_global_cells.size() << endl;
