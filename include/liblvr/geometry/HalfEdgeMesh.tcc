@@ -80,6 +80,28 @@ HalfEdgeMesh<VertexT, NormalT>::HalfEdgeMesh(
 }
 
 template<typename VertexT, typename NormalT>
+void HalfEdgeMesh<VertexT, NormalT>::addMesh(HalfEdgeMesh<VertexT, NormalT>& slice, unordered_map<size_t, size_t> fusion_verts)
+{
+	size_t old_size = m_faces.size();
+	m_faces.resize(old_size +  slice.m_faces.size());
+    for(int i = 0; i < slice.m_faces.size();i++)
+    {
+		size_t index = old_size + i;
+		m_faces[index] = slice.m_faces[i];
+	}
+	
+	old_size = m_vertices.size();
+	m_vertices.resize(old_size +  slice.m_vertices.size());
+    for(int i = 0; i < slice.m_vertices.size();i++)
+    {
+		size_t index = old_size + i;
+		m_vertices[index] = slice.m_vertices[i];
+	}
+	m_globalIndex = this->meshSize();
+}
+
+
+template<typename VertexT, typename NormalT>
 HalfEdgeMesh<VertexT, NormalT>::~HalfEdgeMesh()
 {
 

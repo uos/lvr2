@@ -10,7 +10,7 @@ namespace kfusion
 	MaCuWrapper::MaCuWrapper(double camera_target_distance, double voxel_size) : slice_count_(0), camera_target_distance_(camera_target_distance), voxel_size_(voxel_size)
 	{
 			omp_set_num_threads(omp_get_num_procs());
-			meshPtr_ = new HMesh();
+			//meshPtr_ = new HMesh();
 			//last_grid_ = NULL;
 			//grid_ptr_ = NULL;
 			mcthread_ = NULL;
@@ -24,8 +24,8 @@ namespace kfusion
 			last_grid_ = NULL;
 		}
 		delete grid_ptr_;*/
-		delete meshPtr_;
-		meshPtr_ = new HalfEdgeMesh<ColorVertex<float, unsigned char> , lvr::Normal<float> >();
+		//delete meshPtr_;
+		//meshPtr_ = new HalfEdgeMesh<ColorVertex<float, unsigned char> , lvr::Normal<float> >();
 	}
 
 	void MaCuWrapper::createGrid(cv::Mat& cloud_host,  Vec3i offset, const bool last_shift)
@@ -36,11 +36,11 @@ namespace kfusion
 		BoundingBox<cVertex> bbox(0.0, 0.0, 0.0, 300.0, 300.0, 300.0);
 		bbox.expand(300.0, 300.0, 300.0);
 		float voxelsize = 3.0 / 512.0;
-		TGrid* last_grid = NULL;
+		//TGrid* last_grid = NULL;
 		TGrid* act_grid = NULL;
-		if(last_grid_queue_.size() > 0)
-		  last_grid = grid_queue_.front();
-		act_grid = new TGrid(voxelsize, bbox, tsdf_ptr, cloud_host.cols, offset[0], offset[1], offset[2], last_grid, true);
+		//if(last_grid_queue_.size() > 0)
+		  //last_grid = grid_queue_.front();
+		act_grid = new TGrid(voxelsize, bbox, tsdf_ptr, cloud_host.cols, offset[0], offset[1], offset[2], NULL, true);
 		grid_queue_.push(act_grid);
 		std::cout << "            ####     1 Finished grid number: " << slice_count_ << "   ####" << std::endl;
 		//grid_ptr->saveGrid("./slices/grid" + std::to_string(slice_count_) + ".grid");
@@ -53,24 +53,25 @@ namespace kfusion
 			mcthread_ = NULL;
 		}
 		delete grid_time;
-		if(last_grid != NULL)
-			delete last_grid;
-		last_grid_queue_.pop();
-		last_grid_queue_.push(act_grid);
-		if(!last_shift)
+		//if(last_grid != NULL)
+			//delete last_grid;
+		//last_grid_queue_.pop();
+		//last_grid_queue_.push(act_grid);
+		/*if(!last_shift)
 			mcthread_ = new std::thread(&kfusion::MaCuWrapper::createMeshSlice, this , last_shift);
-		else
+		else*/
 			createMeshSlice(last_shift);
 	}
 	
 	void MaCuWrapper::createMeshSlice(const bool last_shift)
 	{
+		HMesh meshPtr = new HMesh();
 		TGrid* act_grid = grid_queue_.front();
-		grid_queue_.pop();
 		ScopeTime* cube_time = new ScopeTime("Marching Cubes");
 		cFastReconstruction* fast_recon =  new cFastReconstruction(act_grid);
+		grid_queue_.pop();
 		// Create an empty mesh
-		fast_recon->getMesh(*meshPtr_);
+		fast_recon->getMesh(*meshPtr);
 		// mark all fusion vertices in the mesh
 		for(auto cellPair : act_grid->getFusionCells())
 		{
@@ -79,14 +80,30 @@ namespace kfusion
 			{
 				uint inter = box->m_intersections[i];
 				if(inter != cFastBox::INVALID_INDEX)
-					meshPtr_->setFusionVertex(inter);
+					meshPtr->setFusionVertex(inter);
 			}
 		}
-		meshPtr_->optimizeIterativePlanes(3, 0.85, 7, 10);
+		if(mesh_queue_.size() == 0)
+			meshPtr_ = meshPtr;
+		else
+			mesh_queue_.push(meshPtr);
+		delete cube_time;
+		delete fast_recon;
+		//std::cout << "Processed one tsdf value in " << recon_factor << "ns " << std::endl;
+		std::cout << "                        ####    2 Finished slice number: " << slice_count_ << "   ####" << std::endl;
+		optimizeMeshSlice(last_shift);
+		//grid_ptr_ = NULL;
+	}
+	
+	void optimizeMeshSlice(const bool last_shift)
+	{
+		HMesh act_mesh = mesh_queue_.front();
+		act_mesh->optimizeIterativePlanes(3, 0.85, 7, 10);
 		MeshPtr tmp_pointer = NULL;
-		tmp_pointer = meshPtr_->retesselateInHalfEdge();
+		tmp_pointer = act_mesh->retesselateInHalfEdge();
+		mesh_queue_.pop();
 		// update neighborhood
-		for(auto cellPair : act_grid->getFusionCells())
+		/*for(auto cellPair : act_grid->getFusionCells())
 		{
 			cFastBox* box = cellPair.second;
 			for( int i = 0; i < 12; i++)
@@ -102,10 +119,18 @@ namespace kfusion
 					tmp_pointer->setFusionVertex(new_ind);
 				}
 			}
-		}
-		delete meshPtr_;
-		meshPtr_ = tmp_pointer;
+		}*/
+		opti_mesh_queue_.push(tmp_pointer);
+		if(mesh_queue_.size() > 1)
+			fuseMeshSlice(last_shift);
+		//cout << "Global cell count: " << grid_ptr->m_global_cells.size() << endl;
 		
+	}
+	
+	void fuseMeshSlice(const bool last_shift)
+	{
+		
+		MeshPtr opti_mesh
 		if(last_shift)
 		{
 			// plane_iterations, normal_threshold, min_plan_size, small_region_threshold
@@ -121,35 +146,29 @@ namespace kfusion
 			ModelFactory::saveModel( m, "./slices/mesh_" + to_string(slice_count_) + ".ply");
 			//ModelFactory::saveModel( m, "./test_mesh.ply");
 		}
-		//cout << "Global cell count: " << grid_ptr->m_global_cells.size() << endl;
-		delete fast_recon;
-		//last_grid_ = grid_ptr_;
-		delete cube_time;
-		//std::cout << "Processed one tsdf value in " << recon_factor << "ns " << std::endl;
-		std::cout << "                        ####    2 Finished slice number: " << slice_count_ << "   ####" << std::endl;
 		slice_count_++;
-		//grid_ptr_ = NULL;
 	}
-	
-	void MaCuWrapper::transformMeshBack()
-	{
-		for(auto vert : meshPtr_->getVertices())
+		
+		void MaCuWrapper::transformMeshBack()
 		{
-			// calc in voxel
-			vert->m_position.x 	*= voxel_size_;				
-			vert->m_position.y 	*= voxel_size_;				
-			vert->m_position.z 	*= voxel_size_;			
-			//offset for cube coord to center coord
-			vert->m_position.x 	-= 1.5;				
-			vert->m_position.y 	-= 1.5;				
-			vert->m_position.z 	-= 1.5 - camera_target_distance_;				
-			
-			//offset for cube coord to center coord
-			vert->m_position.x 	-= 150;				
-			vert->m_position.y 	-= 150;				
-			vert->m_position.z 	-= 150;
-		}
-	}		
+			for(auto vert : meshPtr_->getVertices())
+			{
+				// calc in voxel
+				vert->m_position.x 	*= voxel_size_;				
+				vert->m_position.y 	*= voxel_size_;				
+				vert->m_position.z 	*= voxel_size_;			
+				//offset for cube coord to center coord
+				vert->m_position.x 	-= 1.5;				
+				vert->m_position.y 	-= 1.5;				
+				vert->m_position.z 	-= 1.5 - camera_target_distance_;				
+				
+				//offset for cube coord to center coord
+				vert->m_position.x 	-= 150;				
+				vert->m_position.y 	-= 150;				
+				vert->m_position.z 	-= 150;
+			}
+		}		
+	}
 
 
 	double MaCuWrapper::calcTimeStats()
