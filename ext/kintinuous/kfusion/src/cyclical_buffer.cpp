@@ -251,14 +251,14 @@ void kfusion::cuda::CyclicalBuffer::calcBounds(Vec3i& offset, Vec3i& minBounds, 
 		{
 			if(minBounds[i] == 0)
 			{
-				maxBounds[i] += 1;
-				minBounds[i] += 1;
+				//maxBounds[i] += 1;
+				//minBounds[i] += 1;
 			}
 			if(maxBounds[i] == 512)
 			{
-				minBounds[i] -= 1;
-				maxBounds[i] -= 1;
-				offset[i] -=1;
+				//minBounds[i] -= 1;
+				//maxBounds[i] -= 1;
+				//offset[i] -=1;
 			}
 		}
 	}
