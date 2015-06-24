@@ -47,6 +47,9 @@ namespace kfusion
 			
 			void createMeshSlice(const bool last_shift);
 			
+			void optimizeMeshSlice(const bool last_shift);
+			
+			void fuseMeshSlice(const bool last_shift);
 			
 			void resetMesh();
 			
@@ -64,7 +67,8 @@ namespace kfusion
 			double camera_target_distance_;
 		    std::thread* mcthread_;
 			queue<TGrid*> grid_queue_;
-			queue<TGrid*> last_grid_queue_;
+			queue<MeshPtr> mesh_queue_;
+			queue<MeshPtr> opti_mesh_queue_;
 			std::vector<double> timeStats_;
 			MeshPtr meshPtr_;
 			double voxel_size_;
