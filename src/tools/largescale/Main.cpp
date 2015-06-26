@@ -24,7 +24,7 @@
 
 #include <boost/program_options.hpp>
 #include "largescale/LSTree.hpp"
-
+#include <random>
 #include <boost/iostreams/device/mapped_file.hpp>
 #include <iostream>
 
@@ -35,6 +35,19 @@ size_t countLines(string filename);
 int main (int argc , char *argv[]) {
     // get all options
 
+    std::default_random_engine generator;
+    std::uniform_int_distribution<int> distribution(-500,500);
+//    ofstream ofs("/home/isaak/meshing.largescale/dat/large.3d");
+//    for(int i=0 ; i<500 ; i++)
+//    {
+//        for(int j=0 ; j<500 ; j++)
+//        {
+//            for(int k=0 ; k<500 ; k++)
+//            {
+//                ofs << distribution(generator) << " " << distribution(generator) << " " << distribution(generator) << "\n";
+//            }
+//        }
+//    }
 
     boost::program_options::options_description desc("Allowed options");
     desc.add_options() ("file", boost::program_options::value<string>()->default_value("noinput"), "Inputfile");
@@ -76,7 +89,7 @@ int main (int argc , char *argv[]) {
         std::cout << timestamp << "last element: " << data[0] << "|"<< data[0+1]<<"|" << data[0+2] << " bufindex: " << bufferIndex << " numelem: " << numberOfElements << endl;
         file.close();
 
-        LSTree tree(mfp.path, 1000, 100000, numberOfElements*3);
+        LSTree tree(mfp.path, 100, 24000000, numberOfElements*3);
         std::cout << timestamp << "finished" << endl;
 
     } else {
