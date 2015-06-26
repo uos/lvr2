@@ -17,6 +17,8 @@ using namespace lvr;
  */
     class LSNode {
     public:
+
+
         LSNode()
         {
             this->m_points = vector<unsigned long long int>();

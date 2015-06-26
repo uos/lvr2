@@ -11,7 +11,7 @@
 #include "geometry/BoundingBox.hpp"
 #include "geometry/Vertex.hpp"
 #include "largescale/LSNode.hpp"
-
+#include <memory>
 namespace lvr{
 using namespace std;
 /**
@@ -52,7 +52,7 @@ using namespace std;
                 std::cout << lvr::timestamp << "Files in vector: " << m_points.size()  << std::endl;
                 std::cout << " Test Vertex: " << (m_data[m_points[0]]) << "|" << m_data[m_points[0]+1] << "|" << m_data[m_points[0]+2] << endl;
                 std::cout << "Bounding Box: " << m_bbox << endl;
-                LSNode * root = new LSNode();
+                shared_ptr<LSNode> root(new LSNode);
                 root->setPoints(m_points);
                 root->setBoundingBox(m_bbox);
                 splitPointCloud(root,0);
@@ -68,7 +68,7 @@ using namespace std;
 
     private:
 
-        void splitPointCloud(LSNode * node, int again)
+        void splitPointCloud(shared_ptr<LSNode> node, int again)
         {
             cout <<"-----"<< endl << timestamp << "size: " << node->getPoints().size() << " von " <<  m_maxPoints << endl;
             //Check if Node has enough points;
@@ -79,7 +79,8 @@ using namespace std;
             else if(node->getPoints().size()==0  || node->again == 6)
             {
                 node->getPoints().clear();
-                delete node;
+                //delete node;
+                //delete node;
             }
             else
             {
@@ -142,8 +143,8 @@ using namespace std;
 
                 cout << timestamp << "splitting axis: " << splitaxis << " at " << splitAxisPoint << endl;
 
-                LSNode * child1 = new LSNode();
-                LSNode * child2 = new LSNode();
+                shared_ptr<LSNode> child1(new LSNode);
+                shared_ptr<LSNode> child2(new LSNode);
 
                 Vertex<float> child2_min = minVertex;
                 Vertex<float> child1_max = maxVertex;
@@ -183,14 +184,13 @@ using namespace std;
                     {
                         cout << timestamp<< "child1 = 0"<< endl;
                         child1->getPoints().clear();
-                        delete child1;
                         splitPointCloud(child2, 0);
                     }
                     else if (child2->getPoints().size() == 0 )
                     {
                         cout << timestamp<< "child1 = 2"<< endl;
                         child2->getPoints().clear();
-                        delete child2;
+                        //delete child2;
                         splitPointCloud(child1, 0);
                     }
                     else
@@ -198,14 +198,18 @@ using namespace std;
 
                         if ( child1->getPoints().size() < child2->getPoints().size())
                         {
-                            delete child1;
-                            delete  child2;
+                            child1->getPoints().clear();
+                            child2->getPoints().clear();
+                          //  delete child1;
+                            //delete  child2;
                             splitPointCloud(node, 1);
                         }
                         else
                         {
-                            delete child1;
-                            delete  child2;
+                            child1->getPoints().clear();
+                            child2->getPoints().clear();
+                            //delete child1;
+                            //delete  child2;
                             splitPointCloud(node, 2);
                         }
                     }
@@ -217,7 +221,7 @@ using namespace std;
 
                     splitPointCloud(child1, 0);
                     splitPointCloud(child2, 0);
-                    delete node;
+                    //delete node;
                 }
 
 
@@ -230,7 +234,7 @@ using namespace std;
 
 
 
-        vector<LSNode*> m_nodes;
+        vector<shared_ptr<LSNode>> m_nodes;
         vector<unsigned long long int> m_points;
         boost::iostreams::mapped_file_source m_mmf;
         BoundingBox<Vertex<float>> m_bbox;
