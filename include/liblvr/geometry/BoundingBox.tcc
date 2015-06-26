@@ -166,6 +166,10 @@ VertexT BoundingBox<VertexT>::getMax() const
     return m_max;
 }
 
-
+template<typename VertexT>
+bool BoundingBox<VertexT>::contains(VertexT v)
+{
+    return (v<m_max) && (m_min<v);
+}
 
 } // namespace lvr
