@@ -149,6 +149,11 @@ public:
      */
     VertexT             getMin() const;
 
+	/**
+     * @brief Returns true if the Vertex is in the bounding box
+     */
+	bool 				contains(VertexT v);
+
 private:
 
 	/// The lower right point of the bounding box
