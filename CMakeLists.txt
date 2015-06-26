@@ -1,7 +1,7 @@
 cmake_minimum_required(VERSION 2.8)
 project(LAS_VEGAS)
 
-set_property(GLOBAL PROPERTY USE_FOLDERS On) 
+set_property(GLOBAL PROPERTY USE_FOLDERS On)
 
 set( CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_SOURCE_DIR}/bin )
 set( CMAKE_MODULE_PATH ${LAS_VEGAS_SOURCE_DIR}/CMakeModules ${CMAKE_MODULE_PATH})
@@ -61,8 +61,12 @@ find_package(VTK REQUIRED)
 include(${VTK_USE_FILE})
 
 
+set(LVR_HEAD
+    include/liblvr/io/AsciiIO.hpp
+)
+
 ####
-## Searching for NABO 
+## Searching for NABO
 ##############################
 
 SET(NABO_INCLUDE_DIRS "")
@@ -131,11 +135,12 @@ endif(CGAL_FOUND)
 #set(Boost_USE_STATIC_LIBS       ON)
 set(Boost_USE_MULTITHREADED     ON)
 
-find_package( Boost 
-    COMPONENTS 
-    program_options 
-    filesystem system 
+find_package( Boost
+    COMPONENTS
+    program_options
+    filesystem system
     thread
+    iostreams
     REQUIRED )
 
 if(Boost_FOUND)
@@ -167,8 +172,8 @@ find_package(OpenGL REQUIRED)
 if(OpenGL_FOUND)
     link_directories(${OpenGL_LIBRARY_DIRS})
     include_directories(${OpenGL_INCLUDE_DIRS})
-    message( "OPEN GL LIBS 1 : " ${OPENGL_LIBRARIES}) 
-    message( "OPEN GL LIBS 2 : " ${OPENGL_LIBRARY}) 
+    message( "OPEN GL LIBS 1 : " ${OPENGL_LIBRARIES})
+    message( "OPEN GL LIBS 2 : " ${OPENGL_LIBRARY})
 endif(OpenGL_FOUND)
 
 IF(APPLE)
@@ -208,17 +213,18 @@ else ( GLUT_Xi_LIBRARY )
     message( SEND_ERROR "-- Could not find X.Org X11 libXi runtime library" )
 endif ( GLUT_Xi_LIBRARY )
 
-if ( OPENGL_glu_LIBRARY ) 
+if ( OPENGL_glu_LIBRARY )
     message( "-- Found GLU library" )
-else ( OPENGL_glu_LIBRARY ) 
+else ( OPENGL_glu_LIBRARY )
     message( SEND_ERROR "-- Could not find GLU library" )
-endif ( OPENGL_glu_LIBRARY ) 
+endif ( OPENGL_glu_LIBRARY )
 
 endif(LINUX)
 
 ##############################################################
 # USED THIRD PARTY STUFF
 ##############################################################
+
 
 include_directories( ${CMAKE_CURRENT_SOURCE_DIR}/ext )
 
@@ -273,13 +279,13 @@ if( QT4_FOUND )
     include_directories(${QT_QTOPENGL_INCLUDE_DIR})
     include_directories(${QT_QTCORE_INCLUDE_DIR})
     include_directories(${QT_QTXML_INCLUDE_DIR})
-  
+
     add_definitions(-D_USE_QT)
 
     # Try to find libQGLViewer
-    find_library(QGLVIEWER_LIBRARY_RELEASE 
-        NAMES qglviewer-qt4 qglviewer QGLViewer QGLViewer2 
-        PATHS /usr/lib /usr/local/lib ENV QGLVIEWERROOT 
+    find_library(QGLVIEWER_LIBRARY_RELEASE
+        NAMES qglviewer-qt4 qglviewer QGLViewer QGLViewer2
+        PATHS /usr/lib /usr/local/lib ENV QGLVIEWERROOT
         ENV LD_LIBRARY_PATH ENV LIBRARY_PATH
         PATH_SUFFIXES QGLViewer QGLViewer/release)
     if(QGLVIEWER_LIBRARY_RELEASE)
@@ -320,6 +326,7 @@ add_subdirectory(src/tools/transform)
 add_subdirectory(src/tools/registration)
 add_subdirectory(src/tools/normals)
 add_subdirectory(src/tools/leica_converter)
+add_subdirectory(src/tools/largescale)
 
 ################################################################
 # DOCUMENTATION
@@ -341,11 +348,10 @@ if( NOT DOXYGEN_DOT_FOUND )
 endif( NOT DOXYGEN_DOT_FOUND )
 
 if( DOXYGEN_FOUND AND DOXYGEN_DOT_FOUND )
-    configure_file( ${CMAKE_CURRENT_SOURCE_DIR}/Doxyfile.in 
+    configure_file( ${CMAKE_CURRENT_SOURCE_DIR}/Doxyfile.in
         ${CMAKE_CURRENT_BINARY_DIR}/Doxyfile @ONLY )
     add_custom_target( doc
         ${DOXYGEN_EXECUTABLE} ${CMAKE_CURRENT_BINARY_DIR}/Doxyfile
         WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}
         COMMENT "Generating API documentation with Doxygen" VERBATIM )
 endif( DOXYGEN_FOUND AND DOXYGEN_DOT_FOUND )
-
