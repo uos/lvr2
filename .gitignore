@@ -24,4 +24,5 @@
 # Build Folder
 build/
 bin/
+dat/
 .idea/
