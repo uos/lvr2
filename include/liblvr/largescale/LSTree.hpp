@@ -21,16 +21,17 @@ using namespace std;
     class LSTree {
     public:
 
-        LSTree(string mmfPath, int minP, int maxP, unsigned long long int mmf_size)
+        LSTree(string mmfPath, int minP, int maxP)
         {
             m_maxPoints=maxP;
             m_minPoints=minP;
             m_mmf.open(mmfPath);
             if(m_mmf.is_open())
             {
+                unsigned long long int mmfsize = (m_mmf.size()/sizeof(float));
                 m_data = (float *)m_mmf.data();
                 Vertex<float> testm, tests;
-                for(unsigned long long int i  = 0; i<mmf_size; i+=3)
+                for(unsigned long long int i  = 0; i<mmfsize; i+=3)
                 {
                     Vertex<float> tmp(m_data[i], m_data[i+1], m_data[i+2]);
                     if(i==0)
@@ -66,8 +67,19 @@ using namespace std;
             }
         }
 
+
+        const vector<unsigned long long int> &getM_points() const {
+            return m_points;
+        }
+
     private:
 
+    public:
+        const BoundingBox<Vertex<float>> &getM_bbox() const {
+            return m_bbox;
+        }
+
+    private:
         void splitPointCloud(shared_ptr<LSNode> node, int again)
         {
             cout <<"-----"<< endl << timestamp << "size: " << node->getPoints().size() << " von " <<  m_maxPoints << endl;
