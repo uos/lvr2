@@ -138,8 +138,10 @@ set(Boost_USE_MULTITHREADED     ON)
 find_package( Boost
     COMPONENTS
     program_options
-    filesystem system
+    filesystem system#
+    serialization
     thread
+    mpi
     iostreams
     REQUIRED )
 
