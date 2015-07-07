@@ -78,7 +78,6 @@ kfusion::cuda::CyclicalBuffer::checkForShift (cv::Ptr<cuda::TsdfVolume> volume, 
 void
 kfusion::cuda::CyclicalBuffer::performShift (cv::Ptr<cuda::TsdfVolume> volume, const cv::Vec3f& target_point, const Affine3f &cam_pose, const bool last_shift, const bool record_mode)
 {
-	std::cout << "####    Performing slice number: " << slice_count_ << "   ####" << std::endl;	
 	//ScopeTime* time = new ScopeTime("Whole Cube shift");
 	// compute new origin and offsets
 	Vec3i offset;
@@ -110,10 +109,10 @@ kfusion::cuda::CyclicalBuffer::performShift (cv::Ptr<cuda::TsdfVolume> volume, c
 		
 		//delete slice_time;
 		
-		cout << "TSDF Values: " << cloud.size() << endl;
 		Point* tsdf_ptr = cloud_slice_.ptr<Point>();
 		if(cloud.size() > 0)
 		{
+			std::cout << "####    Performing slice number: " << slice_count_ << " with " << cloud.size() << " TSDF values  ####" << std::endl;	
 			Vec3i fusionShift = global_shift_;
 			for(int i = 0; i < 3; i++)
 			{
@@ -128,10 +127,7 @@ kfusion::cuda::CyclicalBuffer::performShift (cv::Ptr<cuda::TsdfVolume> volume, c
 				marching_thread_ = new std::thread(&kfusion::MaCuWrapper::createGrid, &mcwrap_ , std::ref(cloud_slice_), fusionShift, last_shift);
 			else
 				mcwrap_.createGrid(cloud_slice_, fusionShift, last_shift);
-		}
-		else
-		{
-			mcwrap_.slice_count_++;
+			slice_count_++;
 		}
 	}
 	// clear buffer slice and update the world model
@@ -140,7 +136,7 @@ kfusion::cuda::CyclicalBuffer::performShift (cv::Ptr<cuda::TsdfVolume> volume, c
 	// shift buffer addresses
 	shiftOrigin (volume, offset);
 	
-	slice_count_++;
+	
 }
 
 void
@@ -159,7 +155,7 @@ kfusion::cuda::CyclicalBuffer::computeAndSetNewCubeMetricOrigin (cv::Ptr<cuda::T
 	offset[1] = calcIndex((new_cube_origin_meters.y - buffer_.origin_metric.y) * ( buffer_.voxels_size.y / (float) (buffer_.volume_size.y) ));
 	offset[2] = calcIndex((new_cube_origin_meters.z - buffer_.origin_metric.z) * ( buffer_.voxels_size.z / (float) (buffer_.volume_size.z) ));
 	
-	printf("The shift indices are (X:%d, Y:%d, Z:%d).\n", offset[0], offset[1], offset[2]);
+	//printf("The shift indices are (X:%d, Y:%d, Z:%d).\n", offset[0], offset[1], offset[2]);
 	// update the cube's metric origin
 	buffer_.origin_metric = new_cube_origin_meters;
 	volume->setPose(Affine3f().translate(Vec3f(new_cube_origin_meters.x, new_cube_origin_meters.y,  new_cube_origin_meters.z)));

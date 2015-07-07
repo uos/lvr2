@@ -124,7 +124,7 @@ public:
 	 */
 	virtual ~HalfEdgeMesh();
 	
-	void addMesh(HalfEdgeMesh& slice, unordered_map<size_t, size_t> fusion_verts);
+	void addMesh(HalfEdgeMesh* slice, unordered_map<size_t, size_t>& fusion_verts);
 
 	/**
 	 * @brief 	This method should be called every time
