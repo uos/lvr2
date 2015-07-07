@@ -305,8 +305,6 @@ namespace kfusion
 			global_shift_[0] = buffer_.origin_GRID_global.x += offset[0];
 			global_shift_[1] = buffer_.origin_GRID_global.y += offset[1];
 			global_shift_[2] = buffer_.origin_GRID_global.z += offset[2];
-
-			std::cout << "global shifted " << global_shift_ << endl;
 		  }
 	  
 	  };

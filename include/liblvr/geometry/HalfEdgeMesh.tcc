@@ -80,22 +80,25 @@ HalfEdgeMesh<VertexT, NormalT>::HalfEdgeMesh(
 }
 
 template<typename VertexT, typename NormalT>
-void HalfEdgeMesh<VertexT, NormalT>::addMesh(HalfEdgeMesh<VertexT, NormalT>& slice, unordered_map<size_t, size_t> fusion_verts)
+void HalfEdgeMesh<VertexT, NormalT>::addMesh(HalfEdgeMesh<VertexT, NormalT>* slice, unordered_map<size_t, size_t>& fusion_verts)
 {
+	cout << "iam in add mesh" << endl;
 	size_t old_size = m_faces.size();
-	m_faces.resize(old_size +  slice.m_faces.size());
-    for(int i = 0; i < slice.m_faces.size();i++)
+	m_faces.resize(old_size +  slice->m_faces.size());
+    for(int i = 0; i < slice->m_faces.size();i++)
     {
 		size_t index = old_size + i;
-		m_faces[index] = slice.m_faces[i];
+		m_faces[index] = slice->m_faces[i];
 	}
 	
-	old_size = m_vertices.size();
-	m_vertices.resize(old_size +  slice.m_vertices.size());
-    for(int i = 0; i < slice.m_vertices.size();i++)
+	size_t old_vert_size = m_vertices.size();
+	cout << "old size " << old_vert_size << endl;
+	cout << "new size " << old_vert_size +  slice->m_vertices.size() << endl;
+	m_vertices.resize(old_vert_size +  slice->m_vertices.size());
+    for(int i = 0; i < slice->m_vertices.size();i++)
     {
-		size_t index = old_size + i;
-		m_vertices[index] = slice.m_vertices[i];
+		size_t index = old_vert_size + i;
+		m_vertices[index] = slice->m_vertices[i];
 	}
 	m_globalIndex = this->meshSize();
 }
@@ -105,7 +108,7 @@ template<typename VertexT, typename NormalT>
 HalfEdgeMesh<VertexT, NormalT>::~HalfEdgeMesh()
 {
 
-    this->m_meshBuffer.reset();
+    /*this->m_meshBuffer.reset();
     if(this->m_pointCloudManager != NULL)
 		this->m_pointCloudManager.reset();
 
@@ -144,7 +147,7 @@ HalfEdgeMesh<VertexT, NormalT>::~HalfEdgeMesh()
         FacePtr f = *f_it;
         delete f;
     }
-    m_garbageFaces.clear();
+    m_garbageFaces.clear();*/
 
 }
 
@@ -2252,7 +2255,6 @@ HalfEdgeMesh<VertexT, NormalT>* HalfEdgeMesh<VertexT, NormalT>::retesselateInHal
             }
         }
     }
-    cout << "so much fusion vertices: " << counter << endl;
     map<Vertex<float>, unsigned int> vertexMap2;
     Vertex<float> curre;
     // iterate over every face for the region number '*nonPlaneBegin'
@@ -2309,7 +2311,6 @@ HalfEdgeMesh<VertexT, NormalT>* HalfEdgeMesh<VertexT, NormalT>::retesselateInHal
 	}
 
     cout << timestamp << "Done copying non planar regions.";
-    cout << "Done copying non planar regions. " << counter << endl;
 
     /*
          Done copying the simple stuff. Now the planes are going to be retesselated
