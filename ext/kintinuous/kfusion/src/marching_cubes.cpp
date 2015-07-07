@@ -42,7 +42,7 @@ namespace kfusion
 		  //last_grid = grid_queue_.front();
 		act_grid = new TGrid(voxelsize, bbox, tsdf_ptr, cloud_host.cols, offset[0], offset[1], offset[2], NULL, true);
 		grid_queue_.push(act_grid);
-		std::cout << "            ####     1 Finished grid number: " << slice_count_ << "   ####" << std::endl;
+		std::cout << "    ####     1 Finished grid number: " << slice_count_ << "   ####" << std::endl;
 		//grid_ptr->saveGrid("./slices/grid" + std::to_string(slice_count_) + ".grid");
 		double recon_factor = (grid_time->getTime()/cloud_host.cols) * 1000;
 		timeStats_.push_back(recon_factor);
@@ -65,11 +65,11 @@ namespace kfusion
 	
 	void MaCuWrapper::createMeshSlice(const bool last_shift)
 	{
-		HMesh meshPtr = new HMesh();
+		MeshPtr meshPtr = new HMesh();
 		TGrid* act_grid = grid_queue_.front();
 		ScopeTime* cube_time = new ScopeTime("Marching Cubes");
 		cFastReconstruction* fast_recon =  new cFastReconstruction(act_grid);
-		grid_queue_.pop();
+		
 		// Create an empty mesh
 		fast_recon->getMesh(*meshPtr);
 		// mark all fusion vertices in the mesh
@@ -83,25 +83,43 @@ namespace kfusion
 					meshPtr->setFusionVertex(inter);
 			}
 		}
-		if(mesh_queue_.size() == 0)
+		if(slice_count_ == 0)
 			meshPtr_ = meshPtr;
 		else
+		{
+			cout << "iam in else " << endl;
 			mesh_queue_.push(meshPtr);
+			cout << "size " << mesh_queue_.size() << endl;
+		}
+		cout << "size " << mesh_queue_.size() << endl;
+		grid_queue_.pop();
+		delete act_grid;
 		delete cube_time;
 		delete fast_recon;
 		//std::cout << "Processed one tsdf value in " << recon_factor << "ns " << std::endl;
-		std::cout << "                        ####    2 Finished slice number: " << slice_count_ << "   ####" << std::endl;
+		std::cout << "        ####     2 Finished reconstruction number: " << slice_count_ << "   ####" << std::endl;
 		optimizeMeshSlice(last_shift);
 		//grid_ptr_ = NULL;
 	}
 	
-	void optimizeMeshSlice(const bool last_shift)
+	void MaCuWrapper::optimizeMeshSlice(const bool last_shift)
 	{
-		HMesh act_mesh = mesh_queue_.front();
+		MeshPtr act_mesh = NULL;
+		if(slice_count_ == 0)
+			act_mesh = meshPtr_;
+		else
+			act_mesh = mesh_queue_.front();
+		cout << "size " << mesh_queue_.size() << endl;
 		act_mesh->optimizeIterativePlanes(3, 0.85, 7, 10);
 		MeshPtr tmp_pointer = NULL;
 		tmp_pointer = act_mesh->retesselateInHalfEdge();
-		mesh_queue_.pop();
+		
+		//mesh_queue_.pop();
+		if(slice_count_ > 0)
+		{
+			mesh_queue_.pop();
+			delete act_mesh;
+		}
 		// update neighborhood
 		/*for(auto cellPair : act_grid->getFusionCells())
 		{
@@ -121,16 +139,22 @@ namespace kfusion
 			}
 		}*/
 		opti_mesh_queue_.push(tmp_pointer);
-		if(mesh_queue_.size() > 1)
+		std::cout << "            ####     3 Finished optimisation number: " << slice_count_ << "   ####" << std::endl;
+		if(slice_count_ > 0)
 			fuseMeshSlice(last_shift);
-		//cout << "Global cell count: " << grid_ptr->m_global_cells.size() << endl;
+		else
+			slice_count_++;
 		
 	}
 	
-	void fuseMeshSlice(const bool last_shift)
+	void MaCuWrapper::fuseMeshSlice(const bool last_shift)
 	{
 		
-		MeshPtr opti_mesh
+		MeshPtr opti_mesh = opti_mesh_queue_.front();
+		cout << "mesh Size " << meshPtr_->meshSize() << endl;
+		meshPtr_->addMesh(opti_mesh, opti_mesh->m_slice_verts);
+		opti_mesh_queue_.pop();
+		delete opti_mesh;
 		if(last_shift)
 		{
 			// plane_iterations, normal_threshold, min_plan_size, small_region_threshold
@@ -143,31 +167,31 @@ namespace kfusion
 			transformMeshBack();
 			meshPtr_->finalize();
 			ModelPtr m( new Model( meshPtr_->meshBuffer() ) );
-			ModelFactory::saveModel( m, "./slices/mesh_" + to_string(slice_count_) + ".ply");
+			ModelFactory::saveModel( m, "./mesh_" + to_string(slice_count_) + ".ply");
 			//ModelFactory::saveModel( m, "./test_mesh.ply");
 		}
+		std::cout << "                        ####    4 Finished slice number: " << slice_count_ << "   ####" << std::endl;
 		slice_count_++;
 	}
 		
-		void MaCuWrapper::transformMeshBack()
+	void MaCuWrapper::transformMeshBack()
+	{
+		for(auto vert : meshPtr_->getVertices())
 		{
-			for(auto vert : meshPtr_->getVertices())
-			{
-				// calc in voxel
-				vert->m_position.x 	*= voxel_size_;				
-				vert->m_position.y 	*= voxel_size_;				
-				vert->m_position.z 	*= voxel_size_;			
-				//offset for cube coord to center coord
-				vert->m_position.x 	-= 1.5;				
-				vert->m_position.y 	-= 1.5;				
-				vert->m_position.z 	-= 1.5 - camera_target_distance_;				
-				
-				//offset for cube coord to center coord
-				vert->m_position.x 	-= 150;				
-				vert->m_position.y 	-= 150;				
-				vert->m_position.z 	-= 150;
-			}
-		}		
+			// calc in voxel
+			vert->m_position.x 	*= voxel_size_;				
+			vert->m_position.y 	*= voxel_size_;				
+			vert->m_position.z 	*= voxel_size_;			
+			//offset for cube coord to center coord
+			vert->m_position.x 	-= 1.5;				
+			vert->m_position.y 	-= 1.5;				
+			vert->m_position.z 	-= 1.5 - camera_target_distance_;				
+			
+			//offset for cube coord to center coord
+			vert->m_position.x 	-= 150;				
+			vert->m_position.y 	-= 150;				
+			vert->m_position.z 	-= 150;
+		}
 	}
 
 

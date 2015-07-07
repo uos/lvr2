@@ -235,7 +235,7 @@ add_subdirectory(ext/laslib)
 
 # OBJ
 include_directories( ${CMAKE_CURRENT_SOURCE_DIR}/ext/obj/ )
-add_subdirectory(ext/obj)
+#add_subdirectory(ext/obj)
 
 # SLAM6D stuff
 include_directories( ${CMAKE_CURRENT_SOURCE_DIR}/ext/slam6d )
@@ -252,18 +252,18 @@ add_subdirectory(ext/kintinuous)
 #add_subdirectory(ext/libfreenect)
 
 if(MPI_FOUND)
-add_subdirectory(src/tools/mpi)
+#add_subdirectory(src/tools/mpi)
 endif(MPI_FOUND)
 
 if(CGAL_FOUND)
-add_subdirectory(src/tools/cgal_reconstruction)
+#add_subdirectory(src/tools/cgal_reconstruction)
 #add_subdirectory(src/tools/fusion)
-add_subdirectory(src/tools/slicer)
+#add_subdirectory(src/tools/slicer)
 endif(CGAL_FOUND)
 
 if(PCL_FOUND)
-    add_subdirectory(src/tools/scanfilter)
-    add_subdirectory(src/tools/leica_converter)
+    #add_subdirectory(src/tools/scanfilter)
+    #add_subdirectory(src/tools/leica_converter)
 #    add_subdirectory(src/tools/kinectgrabber)
 endif(PCL_FOUND)
 
