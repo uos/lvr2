@@ -245,7 +245,12 @@ using namespace std;
         }
 
 
+    public:
+        const vector<shared_ptr<LSNode>> &getM_nodes() const {
+            return m_nodes;
+        }
 
+    private:
         vector<shared_ptr<LSNode>> m_nodes;
         vector<unsigned long long int> m_points;
         boost::iostreams::mapped_file_source m_mmf;

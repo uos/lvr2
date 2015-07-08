@@ -327,6 +327,7 @@ add_subdirectory(src/tools/meshoptimizer)
 add_subdirectory(src/tools/transform)
 add_subdirectory(src/tools/registration)
 add_subdirectory(src/tools/normals)
+add_subdirectory(src/tools/convertMMF)
 add_subdirectory(src/tools/leica_converter)
 add_subdirectory(src/tools/largescale)
 

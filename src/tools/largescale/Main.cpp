@@ -29,7 +29,8 @@ using namespace lvr;
 namespace mpi = boost::mpi;
 size_t countLines(string filename);
 std::string mmf_path = "asd.raw";
-enum ClientServerMsgs{READY, BUSY,STOP, START, BBOX, READY};
+enum ClientServerMsgs{READY, BUSY,STOP, START, BBOX, SIZE};
+void save_normals(floatArr normals, size_t n, std::vector<unsigned long long int> index_vec );
 
 int main (int argc , char *argv[]) {
     // get all options
@@ -49,13 +50,14 @@ int main (int argc , char *argv[]) {
 
 
 
-        LSTree tree(mmf_path, 100, 24000000);
+        LSTree tree(mmf_path, 100, 140000);
 
-
-        vector<bool> clients_ready(world.size()-1,false);
+        cout << timestamp << "Tree built" << " running MPI on 1 server and " << world.size()-1 << " clients" << endl;
+        vector<bool> clients_ready(world.size()-1,true);
         int next_element=0;
         bool finished = false;
         std::vector<mpi::request> mpi_requests;
+        std::vector<mpi::request> mpi_requests_ready(world.size()-1);
 
         //Send Bounding Box:
         float fbbox[6];
@@ -65,24 +67,47 @@ int main (int argc , char *argv[]) {
         fbbox[3]= tree.getM_bbox().getMax().x;
         fbbox[4]= tree.getM_bbox().getMax().y;
         fbbox[5]= tree.getM_bbox().getMax().z;
-
+        cout << timestamp << "Sending Timestamp" << endl;
         for(int i = 0; i<clients_ready.size() ; i++)
         {
 
             world.send(i+1, BBOX, fbbox);
 
         }
-        while(!finished)
+        cout << timestamp << "starting loop " << clients_ready.size() << endl;
+        while(next_element<tree.getM_nodes().size())
         {
             //Check if clients need new data
             for(int i = 0; i<clients_ready.size() ; i++)
             {
+
                 if(clients_ready[i])
                 {
-                    mpi_requests.push_back(world.isend(i+1, START, tree.getM_points()[next_element++]));
+                    cout << "yes"<< endl;
+
+                    cout << "sending " << tree.getM_nodes()[next_element]->getPoints().size()<< " to " << i+1 << endl;
+                    world.isend(i+1, START, tree.getM_nodes()[next_element]->getPoints());
+                    cout << 2 << endl;
+                    mpi_requests_ready[i] = world.irecv(i+1, READY);
+                    cout << 3 << endl;
                     clients_ready[i] = false;
+                    cout << 4 << endl;
+                    next_element++;
+                }
+
+            }
+
+            for(int i = 0 ; i<mpi_requests_ready.size() ; i++) {
+                /* std::cout << *it; ... */
+                if (mpi_requests_ready[i].test())
+                {
+                    cout << "'bla" << endl;
+                    cout << timestamp << i+1 << " is Ready again" << endl;
+                    clients_ready[i] = true;
+
                 }
             }
+
 
 
         }
@@ -101,49 +126,80 @@ int main (int argc , char *argv[]) {
 
         mmf.open(mmf_path);
         float * mmf_data = (float *)mmf.data();
-        std::vector<unsigned long long int> * index_vec = new std::vector<unsigned long long int>();
+
+        int size;
         float bbox[6];
         world.recv(0,BBOX,bbox);
+        cout << timestamp << "Client "<< world.rank()<< " got BoundingBox" << endl;
+        mpi::request reqs[3];
+        std::vector<unsigned long long int>  index_vec;
+        reqs[0] = world.irecv(0,START,index_vec);
+        reqs[1] = world.irecv(0,STOP);
+
         while(true)
         {
-            index_vec->clear();
-            mpi::request reqs[2];
-            reqs[0] = world.irecv(0,START,*(index_vec));
-            reqs[1] = world.irecv(0,STOP);
-            mpi::wait_any(reqs, reqs+1);
-            if(index_vec->size()<=1) break;
-            cout << "Nr " << world.rank() << "got vector with:" << endl;
-            float * vertex_array = new float[3 * index_vec->size()];
 
 
-            int j = 0;
-            for(int i = 0 ; i<index_vec->size() ;i++)
-            {
-                vertex_array[j  ]=mmf_data[(*(index_vec))[i]  ];
-                vertex_array[j+1]=mmf_data[(*(index_vec))[i]+1];
-                vertex_array[j+2]=mmf_data[(*(index_vec))[i]+2];
-                j+=3;
+            cout << timestamp << "Client "<< world.rank()<< " waiting for any" << endl;
+            //mpi::wait_any(reqs, reqs+1);
+            if(reqs[1].test()) {
+                cout << timestamp << "Client "<< world.rank()<< " leaving loop" << endl;
+                break;
             }
-            boost::shared_array<float> vertices (vertex_array);
-            PointBufferPtr pointcloud(new PointBuffer());
-            pointcloud->setPointArray(vertices, index_vec->size());
-            PointsetSurface<ColorVertex<float, unsigned char> >* surface;
-            surface = new AdaptiveKSearchSurface<ColorVertex<float, unsigned char>, Normal<float> >(pointcloud, "FLANN", 100, 100, 100, false);
+            if(reqs[0].test())
+            {
+                std::vector<unsigned long long int>  index_vec2(index_vec);
+                cout << timestamp << "Client "<< world.rank()<< " waiting for vec" << endl;
 
-            // set global Bounding-Box
-            surface->expandBoundingBox(bbox[0], bbox[1], bbox[2],
-                                       bbox[3], bbox[4], bbox[5]);
+                cout << "Nr " << world.rank() << "got vector with: " << index_vec2.size() << endl;
+                vector<float> vertex_array;
+
+                cout << timestamp << "Client "<< world.rank()<< " loading vertices to ram" << endl;
+                int j = 0;
+                for(int i = 0 ; i<index_vec2.size() ;i++)
+                {
+                    //cout << mmf_data[index_vec[i]] << "|" << mmf_data[index_vec[i]+1] << "|" << mmf_data[index_vec[i]+2] << endl;
+
+
+                    float x = mmf_data[index_vec2[i]];
+                    float y = mmf_data[index_vec2[i]+1];
+                    float z = mmf_data[index_vec2[i]+2];
+
+                    vertex_array.push_back(x);
+                    vertex_array.push_back(y);
+                    vertex_array.push_back(z);
+                    j+=3;
+                    if(world.rank() == 1)cout << index_vec2[i] << "," << endl;
+                }
+                cout << timestamp << "Client "<< world.rank()<< " done loading vertices to ram" << endl;
+                boost::shared_array<float> vertices (vertex_array.data());
+                PointBufferPtr pointcloud(new PointBuffer());
+                pointcloud->setPointArray(vertices, index_vec2.size());
+                PointsetSurface<ColorVertex<float, unsigned char> >* surface;
+                surface = new AdaptiveKSearchSurface<ColorVertex<float, unsigned char>, Normal<float> >(pointcloud, "FLANN", 100, 100, 100, false);
+
+                // set global Bounding-Box
+                surface->expandBoundingBox(bbox[0], bbox[1], bbox[2],
+                                           bbox[3], bbox[4], bbox[5]);
 
 
 
-            // calculate the normals
-            std::cout << timestamp << "Client " << world.rank() << " calculates surface normals with " << index_vec->size() << " points." <<  std::endl;
-            surface->calculateSurfaceNormals();
-            pointcloud = surface->pointBuffer();
-            size_t n;
-            floatArr normals = pointcloud->getPointNormalArray(n);
-            world.send(0, READY);
-            threads.push_back(std::thread(save_normals, normals, index_vec->size(),index_vec));
+                // calculate the normals
+                std::cout << timestamp << "Client " << world.rank() << " calculates surface normals with " <<  index_vec2.size() << " points." <<  std::endl;
+                surface->calculateSurfaceNormals();
+                pointcloud = surface->pointBuffer();
+                size_t n;
+                cout << "asdasdasdasd" << endl;
+                floatArr normals = pointcloud->getPointNormalArray(n);
+                cout << "saving normals to file" << endl;
+                //std::vector<unsigned long long int> *  tmp = new std::vector<unsigned long long int>( index_vec2) ;
+                save_normals( normals, index_vec2.size(),index_vec2);
+
+                reqs[0] = world.irecv(0,START,index_vec);
+                reqs[2] = world.irecv(0,SIZE,size);
+                world.send(0, READY);
+            }
+
         }
 
     }
@@ -151,7 +207,7 @@ int main (int argc , char *argv[]) {
 
 }
 
-void save_normals(floatArr normals, size_t n, std::vector<unsigned long long int> * index_vec )
+void save_normals(floatArr normals, size_t n, std::vector<unsigned long long int>  index_vec )
 {
     boost::iostreams::mapped_file_params mfp;
     mfp.new_file_size = n*3* sizeof(float);
@@ -162,12 +218,14 @@ void save_normals(floatArr normals, size_t n, std::vector<unsigned long long int
 
     for(int i = 0 ; i<n ;i++)
     {
-        normal_data[(*(index_vec))[i]]  = normals[i*3];
-        normal_data[(*(index_vec))[i]+1] = normals[i*3 +1];
-        normal_data[(*(index_vec))[i]+2] = normals[i*3 +2];
+        cout << index_vec[i] << endl;
+        normal_data[index_vec[i]]  = 1;
+        normal_data[index_vec[i]+1] = 2;
+        normal_data[index_vec[i]+2] = 3;
     }
+    cout << "test" <<endl;
     mmf_normals.close();
-    delete index_vec;
+    //delete index_vec;
 }
 
 size_t countLines(string filename)
