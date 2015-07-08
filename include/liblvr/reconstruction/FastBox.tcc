@@ -207,8 +207,8 @@ void FastBox<VertexT, NormalT>::getSurface(BaseMesh<VertexT, NormalT> &mesh,
                                                vector<QueryPoint<VertexT> > &qp,
                                                uint &globalIndex)
 {
-	//if(!m_fusionBox)
-    //{
+	if(!m_fusionBox)
+	{
 		VertexT corners[8];
 		VertexT vertex_positions[12];
 
@@ -276,8 +276,8 @@ void FastBox<VertexT, NormalT>::getSurface(BaseMesh<VertexT, NormalT> &mesh,
 			// Add triangle actually does the normal interpolation for us.
 			mesh.addTriangle(triangle_indices[0], triangle_indices[1], triangle_indices[2]);
 		}
-	/*}
-	else
+	}
+	/*else
 	{
 		m_fusionBox = false;
 		m_fusedBox = true;
