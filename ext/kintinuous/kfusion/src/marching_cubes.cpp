@@ -87,11 +87,8 @@ namespace kfusion
 			meshPtr_ = meshPtr;
 		else
 		{
-			cout << "iam in else " << endl;
 			mesh_queue_.push(meshPtr);
-			cout << "size " << mesh_queue_.size() << endl;
 		}
-		cout << "size " << mesh_queue_.size() << endl;
 		grid_queue_.pop();
 		delete act_grid;
 		delete cube_time;
@@ -109,16 +106,16 @@ namespace kfusion
 			act_mesh = meshPtr_;
 		else
 			act_mesh = mesh_queue_.front();
-		cout << "size " << mesh_queue_.size() << endl;
-		act_mesh->optimizeIterativePlanes(3, 0.85, 7, 10);
+		//cout << "size " << mesh_queue_.size() << endl;
+		//act_mesh->optimizeIterativePlanes(3, 0.85, 7, 10);
 		MeshPtr tmp_pointer = NULL;
-		tmp_pointer = act_mesh->retesselateInHalfEdge();
+		//tmp_pointer = act_mesh->retesselateInHalfEdge();
 		
-		//mesh_queue_.pop();
 		if(slice_count_ > 0)
 		{
+			opti_mesh_queue_.push(act_mesh);
 			mesh_queue_.pop();
-			delete act_mesh;
+			//delete act_mesh;
 		}
 		// update neighborhood
 		/*for(auto cellPair : act_grid->getFusionCells())
@@ -138,7 +135,7 @@ namespace kfusion
 				}
 			}
 		}*/
-		opti_mesh_queue_.push(tmp_pointer);
+		
 		std::cout << "            ####     3 Finished optimisation number: " << slice_count_ << "   ####" << std::endl;
 		if(slice_count_ > 0)
 			fuseMeshSlice(last_shift);
@@ -151,7 +148,6 @@ namespace kfusion
 	{
 		
 		MeshPtr opti_mesh = opti_mesh_queue_.front();
-		cout << "mesh Size " << meshPtr_->meshSize() << endl;
 		meshPtr_->addMesh(opti_mesh, opti_mesh->m_slice_verts);
 		opti_mesh_queue_.pop();
 		delete opti_mesh;
