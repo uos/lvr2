@@ -145,6 +145,14 @@ public:
 	 * 			of +/-1 to mapp different coordinate systems
 	 */
 	void setCoordinateScaling(float x, float y, float z);
+	
+	    /**
+     * @brief Calculates the hash value for the given index triple
+     */
+	inline size_t hashValue(int i, int j, int k) const
+    {
+        return i * m_maxIndexSquare + j * m_maxIndex + k;
+    }
 
 protected:
 
@@ -167,14 +175,7 @@ protected:
 	 * @brief 	Calculates needed lattice parameters.
 	 */
 	void calcIndices();
-
-    /**
-     * @brief Calculates the hash value for the given index triple
-     */
-    inline size_t hashValue(int i, int j, int k) const
-    {
-        return i * m_maxIndexSquare + j * m_maxIndex + k;
-    }
+    
 
 	/// Map to handle the boxes in the grid
 	box_map			m_cells;
