@@ -126,6 +126,13 @@ public:
     uint                   	m_intersections[12];
     bool 						m_fusionBox;
     bool 						m_fusedBox;
+    bool                        m_oldfusionBox;
+    bool                        m_fusionNeighborBox;
+     /// The box center
+    VertexT               		m_center;
+    
+        /// Pointer to all adjacent cells
+    FastBox<VertexT, NormalT>*  m_neighbors[27];
 
 protected:
 
@@ -180,14 +187,10 @@ protected:
      */
     float calcIntersection(float x1, float x2, float d1, float d2);
 
-    /// The box center
-    VertexT               		m_center;
+   
 
     /// The eight box corners
     uint                  		m_vertices[8];
-
-    /// Pointer to all adjacent cells
-    FastBox<VertexT, NormalT>*  m_neighbors[27];
 
     template<typename Q, typename V> friend class BilinearFastBox;
 

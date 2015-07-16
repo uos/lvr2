@@ -82,7 +82,6 @@ HalfEdgeMesh<VertexT, NormalT>::HalfEdgeMesh(
 template<typename VertexT, typename NormalT>
 void HalfEdgeMesh<VertexT, NormalT>::addMesh(HalfEdgeMesh<VertexT, NormalT>* slice, unordered_map<size_t, size_t>& fusion_verts)
 {
-	cout << "iam in add mesh" << endl;
 	size_t old_size = m_faces.size();
 	m_faces.resize(old_size +  slice->m_faces.size());
     for(int i = 0; i < slice->m_faces.size();i++)
@@ -92,15 +91,31 @@ void HalfEdgeMesh<VertexT, NormalT>::addMesh(HalfEdgeMesh<VertexT, NormalT>* sli
 	}
 	
 	size_t old_vert_size = m_vertices.size();
-	cout << "old size " << old_vert_size << endl;
-	cout << "new size " << old_vert_size +  slice->m_vertices.size() << endl;
 	m_vertices.resize(old_vert_size +  slice->m_vertices.size());
     for(int i = 0; i < slice->m_vertices.size();i++)
     {
 		size_t index = old_vert_size + i;
+		/*if(slice->m_vertices[i]->m_oldFused)
+		{
+			double min_dist = 100000000;
+			for(int j = 0; j < old_vert_size; j++)
+			{
+				if(m_vertices[j]->m_fused)
+				{
+					auto v1 = m_vertices[j]->m_position;
+					auto v2 = slice->m_vertices[i]->m_position;
+					double dist = sqrt(pow(v2.x - v1.x,2) + pow(v2.y - v1.y,2) + pow(v2.z - v1.z,2));
+					min_dist = min(min_dist, dist);
+				}
+			}
+			cout << "min dist " << min_dist << endl;
+			
+		}*/
 		m_vertices[index] = slice->m_vertices[i];
 	}
 	m_globalIndex = this->meshSize();
+	m_fusionBoxes = slice->m_fusionBoxes;
+	m_oldfusionBoxes = slice->m_oldfusionBoxes;
 }
 
 
@@ -359,6 +374,15 @@ void HalfEdgeMesh<VertexT, NormalT>::setFusionVertex(uint v)
 {
 	auto vertice = m_vertices[v];
 	vertice->m_fused = true;
+	vertice->m_actIndex = v;
+	
+}
+
+template<typename VertexT, typename NormalT>
+void HalfEdgeMesh<VertexT, NormalT>::setOldFusionVertex(uint v)
+{
+	auto vertice = m_vertices[v];
+	vertice->m_oldFused = true;
 	vertice->m_actIndex = v;
 	
 }
