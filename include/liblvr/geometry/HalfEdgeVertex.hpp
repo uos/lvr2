@@ -58,7 +58,7 @@ public:
 	/**
 	 * @brief	Default ctor. Position is (0, 0, 0), normal is undefined
 	 */
-	HalfEdgeVertex() : m_index(-1), m_fused(false){}
+	HalfEdgeVertex() : m_index(-1), m_fused(false), m_oldFused(false){}
 
 	~HalfEdgeVertex()
 	{
@@ -99,6 +99,7 @@ public:
 	size_t 				m_index;
 	
 	bool                m_fused;
+	bool                m_oldFused;
 	size_t              m_actIndex;
 
 	/// The list incoming edges
