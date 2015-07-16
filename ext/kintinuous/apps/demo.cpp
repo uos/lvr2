@@ -209,8 +209,8 @@ struct KinFuApp
 
             viz.spinOnce(3, true);
 			exit_ = exit_ || ( kinfu.hasShifted() && kinfu.isLastScan() );
-			//if(kinfu.cyclical().getSliceCount() == 14)
-				//take_cloud(kinfu);
+			if(kinfu.cyclical().getSliceCount() == 2)
+				take_cloud(kinfu);
         }
         return true;
     }

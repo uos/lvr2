@@ -157,6 +157,8 @@ public:
 	virtual void addTriangle(uint a, uint b, uint c);
 	
 	virtual void setFusionVertex(uint v);
+	
+	virtual void setOldFusionVertex(uint v);
 
     /**
      * @brief   Insert a new triangle into the mesh
@@ -306,6 +308,9 @@ public:
 	VertexVector& getVertices() { return m_vertices; }
 	
 	unordered_map<size_t, size_t> m_slice_verts;
+	unordered_map<size_t, FastBox<VertexT, NormalT>* > m_fusionBoxes;
+	unordered_map<size_t, FastBox<VertexT, NormalT>* > m_oldfusionBoxes;
+	unordered_map<size_t, FastBox<VertexT, NormalT>* > m_fusionNeighborBoxes;
 	vector<FacePtr> m_fusionFaces;
 	
 private:

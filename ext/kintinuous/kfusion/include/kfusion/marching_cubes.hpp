@@ -61,15 +61,24 @@ namespace kfusion
 			
 			int slice_count_;
 			
+			inline size_t hashValue(int i, int j, int k) const
+			{
+				return i * maxIndexSquare_ + j * maxIndex_ + k;
+			}
+			
 		private:
 		    void transformMeshBack();
 		    
 			double camera_target_distance_;
 		    std::thread* mcthread_;
 			queue<TGrid*> grid_queue_;
+			queue<TGrid*> last_grid_queue_;
 			queue<MeshPtr> mesh_queue_;
 			queue<MeshPtr> opti_mesh_queue_;
 			std::vector<double> timeStats_;
+			BoundingBox<cVertex> bbox_;
+			size_t maxIndexSquare_;
+			size_t maxIndex_;
 			MeshPtr meshPtr_;
 			double voxel_size_;
 			
