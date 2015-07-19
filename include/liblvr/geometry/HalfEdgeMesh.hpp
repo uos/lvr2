@@ -307,7 +307,11 @@ public:
 	 */
 	VertexVector& getVertices() { return m_vertices; }
 	
+	void mergeVertex(VertexPtr merge_vert, VertexPtr erase_vert);
+	
 	unordered_map<size_t, size_t> m_slice_verts;
+	unordered_map<size_t, size_t> m_fusion_verts;
+	size_t m_old_size;
 	unordered_map<size_t, FastBox<VertexT, NormalT>* > m_fusionBoxes;
 	unordered_map<size_t, FastBox<VertexT, NormalT>* > m_oldfusionBoxes;
 	unordered_map<size_t, FastBox<VertexT, NormalT>* > m_fusionNeighborBoxes;

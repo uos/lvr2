@@ -39,6 +39,7 @@ HalfEdgeMesh<VertexT, NormalT>::HalfEdgeMesh( )
     m_classifierType = "Default";
     m_pointCloudManager = NULL;
     m_depth = 100;
+    m_old_size = 0;
 }
 
 template<typename VertexT, typename NormalT>
@@ -95,29 +96,41 @@ void HalfEdgeMesh<VertexT, NormalT>::addMesh(HalfEdgeMesh<VertexT, NormalT>* sli
     for(int i = 0; i < slice->m_vertices.size();i++)
     {
 		size_t index = old_vert_size + i;
-		/*if(slice->m_vertices[i]->m_oldFused)
-		{
-			double min_dist = 100000000;
-			for(int j = 0; j < old_vert_size; j++)
-			{
-				if(m_vertices[j]->m_fused)
-				{
-					auto v1 = m_vertices[j]->m_position;
-					auto v2 = slice->m_vertices[i]->m_position;
-					double dist = sqrt(pow(v2.x - v1.x,2) + pow(v2.y - v1.y,2) + pow(v2.z - v1.z,2));
-					min_dist = min(min_dist, dist);
-				}
-			}
-			cout << "min dist " << min_dist << endl;
-			
-		}*/
 		m_vertices[index] = slice->m_vertices[i];
 	}
+	
+	for(auto vert_it = slice->m_fusion_verts.begin(); vert_it != slice->m_fusion_verts.end(); vert_it++)
+	{
+		size_t merge_index = vert_it->first + m_old_size;
+		size_t erase_index = vert_it->second + old_vert_size;
+		mergeVertex(m_vertices[merge_index], m_vertices[erase_index]);
+	}
+	
+	m_old_size = old_vert_size;
 	m_globalIndex = this->meshSize();
 	m_fusionBoxes = slice->m_fusionBoxes;
 	m_oldfusionBoxes = slice->m_oldfusionBoxes;
 }
 
+template<typename VertexT, typename NormalT>
+void HalfEdgeMesh<VertexT, NormalT>::mergeVertex(VertexPtr merge_vert, VertexPtr erase_vert)
+{
+	size_t old_size = merge_vert->in.size();
+	merge_vert->in.resize(old_size + erase_vert->in.size());
+	for(size_t i = 0; i < erase_vert->in.size(); i++)
+	{
+		size_t index = old_size + i;
+		merge_vert->in[index] = erase_vert->in[i];
+	}
+    old_size = merge_vert->out.size();
+	merge_vert->out.resize(old_size + erase_vert->out.size());
+	for(size_t i = 0; i < erase_vert->out.size(); i++)
+	{
+		size_t index = old_size + i;
+		merge_vert->out[index] = erase_vert->out[i];
+	}
+	delete erase_vert;
+}
 
 template<typename VertexT, typename NormalT>
 HalfEdgeMesh<VertexT, NormalT>::~HalfEdgeMesh()
