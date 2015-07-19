@@ -71,9 +71,10 @@ namespace kfusion
 	
 	void MaCuWrapper::createMeshSlice(const bool last_shift)
 	{
-		map<size_t, size_t> verts_map;
+		unordered_map<size_t, size_t> verts_map;
 		MeshPtr meshPtr = new HMesh();
 		TGrid* act_grid = grid_queue_.front();
+		MeshPtr oldMesh = last_mesh_queue_.front();
 		ScopeTime* cube_time = new ScopeTime("Marching Cubes");
 		cFastReconstruction* fast_recon =  new cFastReconstruction(act_grid);
 		
@@ -95,19 +96,7 @@ namespace kfusion
 				}
 			}
 		}
-		/*for(auto cellPair : act_grid->m_old_fusion_cells)
-		{
-			cFastBox* box = cellPair.second;
-			for( int i = 0; i < 12; i++)
-			{
-				uint inter = box->m_intersections[i];
-				if(inter != cFastBox::INVALID_INDEX)
-				{
-					meshPtr->setFusionVertex(inter);
-				}
-			}
-		}*/
-		for(auto cellPair : meshPtr->m_fusionNeighborBoxes)
+		/*for(auto cellPair : meshPtr->m_fusionNeighborBoxes)
 		{
 			cFastBox* box = cellPair.second;
 			for( int edge_index = 0; edge_index < 12; edge_index++)
@@ -118,9 +107,9 @@ namespace kfusion
 						meshPtr->setOldFusionVertex(inter);
 				}
 			}		
-		}
+		}*/
 		cout << "actual mesh size " << meshPtr->meshSize() << endl;
-		for(auto cellPair : act_grid->m_fusion_cells_neighbors)
+		for(auto cellPair : act_grid->m_old_fusion_cells)
 		{
 			cFastBox* box = cellPair.second;
 			for( int edge_index = 0; edge_index < 12; edge_index++)
@@ -136,14 +125,14 @@ namespace kfusion
 						{
 							uint in2 = current_neighbor->m_intersections[neighbor_vertex_table[edge_index][i]];
 							auto vert_it = verts_map.find(in2);
-							if(vert_it == verts_map.end() && in2 != cFastBox::INVALID_INDEX && in2 != 0 && in2 != inter)
+							if(vert_it == verts_map.end() && in2 != cFastBox::INVALID_INDEX && in2 != 0 && in2 != inter && current_neighbor->m_fusionNeighborBox)
 							{
 								inter2 = in2;
 								
 								verts_map.insert(pair<size_t, size_t>(inter, inter2));
-								cout << "fusion neighbor? " << current_neighbor->m_oldfusionBox << endl;
-								cout << "inter1 " << inter << " inter2 " << inter2 << " verts from inter2 " << endl;
+								//cout << "inter1 " << inter << " inter2 " << inter2 << " verts from inter2 " << endl;
 								//cout << "vert " << meshPtr->getVertices()[inter2]->m_position << endl; 
+								//cout << "vert " << oldMesh->getVertices()[inter]->m_position << endl; 
 								break;
 							}
 						}
@@ -152,6 +141,7 @@ namespace kfusion
 				
 			}
 		}
+		meshPtr->m_fusion_verts = verts_map;
 		if(slice_count_ == 0)
 			meshPtr_ = meshPtr;
 		else
@@ -160,6 +150,12 @@ namespace kfusion
 		}
 		grid_queue_.pop();
 		//delete act_grid;
+		if(last_mesh_queue_.size() > 0)
+		{
+			//delete last_mesh_queue_.front();
+			last_mesh_queue_.pop();
+		}
+		last_mesh_queue_.push(meshPtr);
 		delete cube_time;
 		delete fast_recon;
 		//std::cout << "Processed one tsdf value in " << recon_factor << "ns " << std::endl;
@@ -218,7 +214,10 @@ namespace kfusion
 	{
 		
 		MeshPtr opti_mesh = opti_mesh_queue_.front();
-		unordered_map<size_t, size_t> fusion_verts;
+		/*for(auto vert_it = opti_mesh->m_fusion_verts.begin(); it != opti_mesh->m_fusion_verts.end(); vert_it++)
+		{
+			vert_it->first += meshPtr_->m_old_size;
+		}*/
 		/*for(auto cellPair : opti_mesh->m_oldfusionBoxes)
 		{
 			cFastBox* box = cellPair.second;
@@ -252,7 +251,7 @@ namespace kfusion
 		}*/	
 		meshPtr_->addMesh(opti_mesh, opti_mesh->m_slice_verts);
 		opti_mesh_queue_.pop();
-		delete opti_mesh;
+		//delete opti_mesh;
 		if(last_shift)
 		{
 			// plane_iterations, normal_threshold, min_plan_size, small_region_threshold
