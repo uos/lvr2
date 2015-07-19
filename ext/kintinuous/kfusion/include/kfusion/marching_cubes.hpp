@@ -74,6 +74,7 @@ namespace kfusion
 			queue<TGrid*> grid_queue_;
 			queue<TGrid*> last_grid_queue_;
 			queue<MeshPtr> mesh_queue_;
+			queue<MeshPtr> last_mesh_queue_;
 			queue<MeshPtr> opti_mesh_queue_;
 			std::vector<double> timeStats_;
 			BoundingBox<cVertex> bbox_;

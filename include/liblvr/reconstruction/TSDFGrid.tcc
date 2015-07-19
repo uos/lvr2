@@ -210,8 +210,8 @@ void TsdfGrid<VertexT, BoxT, TsdfT>::addLatticePoint(int index_x, int index_y, i
 					{
 						//cout << "fusion neighbor box found" << endl;
 						fusion_neighbor_it->second->setNeighbor(26 - neighbor_index, box);
-						fusion_neighbor_it->second->m_fusionNeighborBox = true;
-					    box->m_oldfusionBox = true;
+						//fusion_neighbor_it->second->m_fusionNeighborBox = true;
+					    box->m_fusionNeighborBox = true;
 					    this->m_fusion_cells_neighbors[hash_value] = box;
 					} 
 				}
