@@ -133,8 +133,6 @@ public:
 	 */
 	virtual void addVertex(VertexT v);
 	
-	virtual void addGiftVertex(VertexT v, bool& bullseye);
-
 	/**
 	 * @brief 	This method should be called every time
 	 * 			a new vertex is created to ensure that vertex
