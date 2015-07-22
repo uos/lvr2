@@ -250,11 +250,6 @@ void FastBox<VertexT, NormalT>::getSurface(BaseMesh<VertexT, NormalT> &mesh,
 					// The normal is inserted to assure that vertex
 					// and normal array always have the same size.
 					// The actual normal is interpolated later.
-					//mesh.addVertex(v);
-					/*bool bullseye = false;
-					if(mesh.meshSize() > 11580000)
-						mesh.addGiftVertex(v, bullseye);
-					else*/
 					mesh.addVertex(v);
 					mesh.addNormal(NormalT());
 					for(int i = 0; i < 3; i++)
