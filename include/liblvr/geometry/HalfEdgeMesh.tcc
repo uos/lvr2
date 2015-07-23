@@ -40,6 +40,8 @@ HalfEdgeMesh<VertexT, NormalT>::HalfEdgeMesh( )
     m_pointCloudManager = NULL;
     m_depth = 100;
     m_old_size = 0;
+    m_old_count = 0;
+    m_fusionNeighbors = 0;
 }
 
 template<typename VertexT, typename NormalT>
@@ -92,21 +94,42 @@ void HalfEdgeMesh<VertexT, NormalT>::addMesh(HalfEdgeMesh<VertexT, NormalT>* sli
 	}
 	
 	size_t old_vert_size = m_vertices.size();
-	m_vertices.resize(old_vert_size +  slice->m_vertices.size());
+	m_vertices.resize(old_vert_size +  slice->m_vertices.size() - slice->m_fusionNeighbors);
+
+    size_t count = 0;
     for(int i = 0; i < slice->m_vertices.size();i++)
     {
-		size_t index = old_vert_size + i;
-		m_vertices[index] = slice->m_vertices[i];
+		size_t index = old_vert_size + i - count;
+		if(!slice->m_vertices[i]->m_oldFused)
+		{
+			m_vertices[index] = slice->m_vertices[i];
+		}
+		else
+			count++;
 	}
-	
+	cout << "neighbors " << slice->m_fusionNeighbors << endl;
+	cout << "neighbors count " << count << endl;
+    cout << "old_vert_size " << old_vert_size << endl;	
+	cout << "m_old_size " << m_old_size << endl;
+	cout << "size " << m_vertices.size() << endl;
+	cout << "first index " << slice->m_fusion_verts.begin()->first << endl;
+	size_t count2 = 0;
 	for(auto vert_it = slice->m_fusion_verts.begin(); vert_it != slice->m_fusion_verts.end(); vert_it++)
 	{
 		size_t merge_index = vert_it->first + m_old_size;
-		size_t erase_index = vert_it->second + old_vert_size;
-		mergeVertex(m_vertices[merge_index], m_vertices[erase_index]);
+		size_t erase_index = vert_it->second;
+		/*for(size_t i = 0; i < old_vert_size; i++)
+		{
+			if(m_vertices[i]->m_position.x  == slice->m_vertices[erase_index]->m_position.x && m_vertices[i]->m_position.y  == slice->m_vertices[erase_index]->m_position.y && m_vertices[i]->m_position.x  == slice->m_vertices[erase_index]->m_position.x)
+				cout << "yoooo " << i << " offset " << (int)(merge_index - i) << endl;
+		}*/
+		//cout << merge_index << " size " << m_vertices.size() << endl;
+		//mergeVertex(m_vertices[merge_index], slice->m_vertices[erase_index]);
+		count2++;
 	}
-	
-	m_old_size = old_vert_size;
+	cout << " count 2 " << count2 << endl; 
+	m_old_size = old_vert_size - slice->m_fusionNeighbors;
+	m_old_count = slice->m_fusionNeighbors;
 	m_globalIndex = this->meshSize();
 	m_fusionBoxes = slice->m_fusionBoxes;
 	m_oldfusionBoxes = slice->m_oldfusionBoxes;
@@ -115,12 +138,17 @@ void HalfEdgeMesh<VertexT, NormalT>::addMesh(HalfEdgeMesh<VertexT, NormalT>* sli
 template<typename VertexT, typename NormalT>
 void HalfEdgeMesh<VertexT, NormalT>::mergeVertex(VertexPtr merge_vert, VertexPtr erase_vert)
 {
+	if(merge_vert->m_position.x != erase_vert->m_position.x || merge_vert->m_position.y != erase_vert->m_position.y || merge_vert->m_position.z != erase_vert->m_position.z)
+		cout << "yfuuuuuuuuu " << endl;
+	//cout << "pos 1 " << merge_vert->m_position << endl;
+	//cout << "pos 2 " << erase_vert->m_position << endl;
 	size_t old_size = merge_vert->in.size();
 	merge_vert->in.resize(old_size + erase_vert->in.size());
 	for(size_t i = 0; i < erase_vert->in.size(); i++)
 	{
 		size_t index = old_size + i;
 		merge_vert->in[index] = erase_vert->in[i];
+		erase_vert->in[i]->setEnd(merge_vert);
 	}
     old_size = merge_vert->out.size();
 	merge_vert->out.resize(old_size + erase_vert->out.size());
@@ -128,6 +156,7 @@ void HalfEdgeMesh<VertexT, NormalT>::mergeVertex(VertexPtr merge_vert, VertexPtr
 	{
 		size_t index = old_size + i;
 		merge_vert->out[index] = erase_vert->out[i];
+		erase_vert->out[i]->setStart(erase_vert);
 	}
 	delete erase_vert;
 }
@@ -235,8 +264,8 @@ template<typename VertexT, typename NormalT>
 void HalfEdgeMesh<VertexT, NormalT>::deleteVertex(VertexPtr v)
 {
     // Delete HalfEdgeVertex and decrease vertex counter
-  /*  m_vertices.erase(find(m_vertices.begin(), m_vertices.end(), v));
-    m_globalIndex--;*/
+    m_vertices.erase(find(m_vertices.begin(), m_vertices.end(), v));
+    m_globalIndex--;
 }
 
 template<typename VertexT, typename NormalT>
@@ -395,9 +424,12 @@ template<typename VertexT, typename NormalT>
 void HalfEdgeMesh<VertexT, NormalT>::setOldFusionVertex(uint v)
 {
 	auto vertice = m_vertices[v];
-	vertice->m_oldFused = true;
-	vertice->m_actIndex = v;
-	
+	if(!vertice->m_oldFused)
+	{
+		vertice->m_oldFused = true;
+		vertice->m_actIndex = v;
+		m_fusionNeighbors++;
+	}
 }
 
 template<typename VertexT, typename NormalT>
