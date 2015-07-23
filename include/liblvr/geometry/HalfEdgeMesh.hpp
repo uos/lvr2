@@ -310,6 +310,7 @@ public:
 	void mergeVertex(VertexPtr merge_vert, VertexPtr erase_vert);
 	
 	unordered_map<size_t, size_t> m_slice_verts;
+	unordered_map<size_t, size_t> m_fused_verts;
 	unordered_map<size_t, size_t> m_fusion_verts;
 	size_t m_old_size;
 	size_t m_old_count;
