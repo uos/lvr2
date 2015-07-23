@@ -84,6 +84,7 @@ namespace kfusion
 		meshPtr->m_oldfusionBoxes = act_grid->m_old_fusion_cells;
 		meshPtr->m_fusionNeighborBoxes = act_grid->m_fusion_cells_neighbors;
 		// mark all fusion vertices in the mesh
+		size_t count = 0;
 		for(auto cellPair : act_grid->getFusionCells())
 		{
 			cFastBox* box = cellPair.second;
@@ -93,9 +94,11 @@ namespace kfusion
 				if(inter != cFastBox::INVALID_INDEX)
 				{
 					meshPtr->setFusionVertex(inter);
+					count++;
 				}
 			}
 		}
+		cout << "fusion count " << count << endl;
 		/*for(auto cellPair : meshPtr->m_fusionNeighborBoxes)
 		{
 			cFastBox* box = cellPair.second;
@@ -130,6 +133,7 @@ namespace kfusion
 								inter2 = in2;
 								
 								verts_map.insert(pair<size_t, size_t>(inter, inter2));
+								meshPtr->setOldFusionVertex(inter2);
 								//cout << "inter1 " << inter << " inter2 " << inter2 << " verts from inter2 " << endl;
 								//cout << "vert " << meshPtr->getVertices()[inter2]->m_position << endl; 
 								//cout << "vert " << oldMesh->getVertices()[inter]->m_position << endl; 

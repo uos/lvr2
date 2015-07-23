@@ -312,6 +312,8 @@ public:
 	unordered_map<size_t, size_t> m_slice_verts;
 	unordered_map<size_t, size_t> m_fusion_verts;
 	size_t m_old_size;
+	size_t m_old_count;
+	size_t m_fusionNeighbors;
 	unordered_map<size_t, FastBox<VertexT, NormalT>* > m_fusionBoxes;
 	unordered_map<size_t, FastBox<VertexT, NormalT>* > m_oldfusionBoxes;
 	unordered_map<size_t, FastBox<VertexT, NormalT>* > m_fusionNeighborBoxes;
