@@ -57,8 +57,6 @@ class BaseMesh
          */
         virtual void addVertex(VertexT v) = 0;
         
-        virtual void addGiftVertex(VertexT v, bool& bullseye) = 0;
-
         /**
          * @brief    This method should be called every time
          *           a new vertex is created to ensure that vertex
