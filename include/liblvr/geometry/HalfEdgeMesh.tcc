@@ -110,12 +110,12 @@ void HalfEdgeMesh<VertexT, NormalT>::addMesh(HalfEdgeMesh<VertexT, NormalT>* sli
 		else
 			count++;
 	}
-	cout << "neighbors " << slice->m_fusionNeighbors << endl;
+	/*cout << "neighbors " << slice->m_fusionNeighbors << endl;
 	cout << "neighbors count " << count << endl;
     cout << "old_vert_size " << old_vert_size << endl;	
 	cout << "m_old_size " << m_old_size << endl;
 	cout << "size " << m_vertices.size() << endl;
-	cout << "first index " << slice->m_fusion_verts.begin()->first << endl;
+	cout << "first index " << slice->m_fusion_verts.begin()->first << endl;*/
 	size_t count2 = 0;
 	for(auto vert_it = slice->m_fusion_verts.begin(); vert_it != slice->m_fusion_verts.end(); vert_it++)
 	{
@@ -123,19 +123,19 @@ void HalfEdgeMesh<VertexT, NormalT>::addMesh(HalfEdgeMesh<VertexT, NormalT>* sli
 		size_t erase_index = vert_it->second;
 		if(m_fused_verts.size() > 0)
 		{
-			cout << "using " <<  m_fused_verts[merge_index] << endl;
+			//cout << "using " <<  m_fused_verts[merge_index] << endl;
 			merge_index = m_fused_verts[merge_index];
 		}
-		for(size_t i = 0; i < old_vert_size; i++)
+		/*for(size_t i = 0; i < old_vert_size; i++)
 		{
 			if(m_vertices[i]->m_position.x  == slice->m_vertices[erase_index]->m_position.x && m_vertices[i]->m_position.y  == slice->m_vertices[erase_index]->m_position.y && m_vertices[i]->m_position.x  == slice->m_vertices[erase_index]->m_position.x)
 				cout << "yoooo " << i << " offset " << (int)(merge_index - i) << endl;
-		}
+		}*/
 		//cout << merge_index << " size " << m_vertices.size() << endl;
 		mergeVertex(m_vertices[merge_index], slice->m_vertices[erase_index]);
-		count2++;
+		//count2++;
 	}
-	cout << " count 2 " << count2 << endl;
+	//cout << " count 2 " << count2 << endl;
 	m_old_size = old_vert_size - slice->m_fusionNeighbors;
 	m_old_count = slice->m_fusionNeighbors;
 	m_fused_verts = fused_verts;
@@ -147,12 +147,12 @@ void HalfEdgeMesh<VertexT, NormalT>::addMesh(HalfEdgeMesh<VertexT, NormalT>* sli
 template<typename VertexT, typename NormalT>
 void HalfEdgeMesh<VertexT, NormalT>::mergeVertex(VertexPtr merge_vert, VertexPtr erase_vert)
 {
-	if(merge_vert->m_position.x != erase_vert->m_position.x || merge_vert->m_position.y != erase_vert->m_position.y || merge_vert->m_position.z != erase_vert->m_position.z)
+	/*if(merge_vert->m_position.x != erase_vert->m_position.x || merge_vert->m_position.y != erase_vert->m_position.y || merge_vert->m_position.z != erase_vert->m_position.z)
 	{
 		cout << "yfuuuuuuuuu " << endl;
 		cout << "merge vert " << merge_vert->m_position << endl; 
 		cout << "erase vert " << erase_vert->m_position << endl;
-	} 
+	} */
 	//cout << "pos 1 " << merge_vert->m_position << endl;
 	//cout << "pos 2 " << erase_vert->m_position << endl;
 	size_t old_size = merge_vert->in.size();
