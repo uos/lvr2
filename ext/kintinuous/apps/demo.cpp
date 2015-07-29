@@ -209,7 +209,7 @@ struct KinFuApp
 
             viz.spinOnce(3, true);
 			exit_ = exit_ || ( kinfu.hasShifted() && kinfu.isLastScan() );
-			if(kinfu.cyclical().getSliceCount() == 4)
+			if(kinfu.cyclical().getSliceCount() == 6)
 				take_cloud(kinfu);
         }
         return true;
@@ -247,7 +247,7 @@ int main (int argc, char* argv[])
 	{
 		capture.open(0);
 	}
-   
+    capture.triggerPause();
     //capture.open (0);
     //capture.open("/home/tristan/kintinuous.tigelbri/build/Captured.oni");
     //capture.open("/home/tristan/home.oni");
