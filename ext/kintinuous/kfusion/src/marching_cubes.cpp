@@ -98,20 +98,6 @@ namespace kfusion
 				}
 			}
 		}
-		cout << "fusion count " << count << endl;
-		/*for(auto cellPair : meshPtr->m_fusionNeighborBoxes)
-		{
-			cFastBox* box = cellPair.second;
-			for( int edge_index = 0; edge_index < 12; edge_index++)
-			{
-				uint inter = box->m_intersections[edge_index];
-				if(inter != cFastBox::INVALID_INDEX)
-				{
-						meshPtr->setOldFusionVertex(inter);
-				}
-			}		
-		}*/
-		cout << "actual mesh size " << meshPtr->meshSize() << endl;
 		for(auto cellPair : act_grid->m_old_fusion_cells)
 		{
 			cFastBox* box = cellPair.second;
@@ -134,9 +120,6 @@ namespace kfusion
 								
 								verts_map.insert(pair<size_t, size_t>(inter, inter2));
 								meshPtr->setOldFusionVertex(inter2);
-								//cout << "inter1 " << inter << " inter2 " << inter2 << " verts from inter2 " << endl;
-								//cout << "vert " << meshPtr->getVertices()[inter2]->m_position << endl; 
-								//cout << "vert " << oldMesh->getVertices()[inter]->m_position << endl; 
 								break;
 							}
 						}
@@ -145,6 +128,7 @@ namespace kfusion
 				
 			}
 		}
+		cout << "fusion verts size " << verts_map.size() << endl;
 		meshPtr->m_fusion_verts = verts_map;
 		if(slice_count_ == 0)
 			meshPtr_ = meshPtr;
@@ -175,37 +159,19 @@ namespace kfusion
 			act_mesh = meshPtr_;
 		else
 			act_mesh = mesh_queue_.front();
-		//cout << "size " << mesh_queue_.size() << endl;
-		//act_mesh->optimizeIterativePlanes(3, 0.85, 7, 10);
+		cout << "size " << mesh_queue_.size() << endl;
+		act_mesh->optimizePlanes(3, 0.83, 7, 40);
+		//act_mesh->optimizePlaneIntersections();
 		MeshPtr tmp_pointer = NULL;
-		//tmp_pointer = act_mesh->retesselateInHalfEdge();
+		tmp_pointer = act_mesh->retesselateInHalfEdge();
 		
 		if(slice_count_ > 0)
 		{
-			//opti_mesh_queue_.push(tmp_pointer);
-			opti_mesh_queue_.push(act_mesh);
+			opti_mesh_queue_.push(tmp_pointer);
+			//opti_mesh_queue_.push(act_mesh);
 			mesh_queue_.pop();
 			//delete act_mesh;
 		}
-		// update neighborhood
-		/*for(auto cellPair : tmp_pointer->m_fusionBoxes())
-		{
-			cFastBox* box = cellPair.second;
-			for( int i = 0; i < 12; i++)
-			{
-				uint inter = box->m_intersections[i];
-				if(inter != cFastBox::INVALID_INDEX)
-				{
-					int new_ind = -1;
-					try{
-						new_ind = act_mesh_->m_slice_verts.at(inter);
-						box->m_intersections[i] = new_ind;
-					}catch(...){cout << "failed to map vertice index from old slice " << endl;}
-					tmp_pointer->setFusionVertex(new_ind);
-				}
-			}
-		}*/
-		
 		std::cout << "            ####     3 Finished optimisation number: " << slice_count_ << "   ####" << std::endl;
 		if(slice_count_ > 0)
 			fuseMeshSlice(last_shift);
@@ -253,6 +219,7 @@ namespace kfusion
 				}
 			}
 		}*/	
+		cout << "going to add mesh " << endl;
 		meshPtr_->addMesh(opti_mesh, opti_mesh->m_slice_verts);
 		opti_mesh_queue_.pop();
 		//delete opti_mesh;
