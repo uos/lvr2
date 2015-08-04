@@ -85,18 +85,21 @@ HalfEdgeMesh<VertexT, NormalT>::HalfEdgeMesh(
 template<typename VertexT, typename NormalT>
 void HalfEdgeMesh<VertexT, NormalT>::addMesh(HalfEdgeMesh<VertexT, NormalT>* slice, unordered_map<size_t, size_t>& fusion_verts)
 {
+	cout << "iam in add mesh " << slice->meshSize() << endl;
 	size_t old_size = m_faces.size();
+	//cout << "iam in add mesh " << slice->m_faces.size() << endl;
 	m_faces.resize(old_size +  slice->m_faces.size());
     for(int i = 0; i < slice->m_faces.size();i++)
     {
 		size_t index = old_size + i;
 		m_faces[index] = slice->m_faces[i];
 	}
-	
+	//cout << "iam in add mesh " << slice->m_vertices.size() << endl;
 	size_t old_vert_size = m_vertices.size();
 	m_vertices.resize(old_vert_size +  slice->m_vertices.size() - slice->m_fusionNeighbors);
 
     size_t count = 0;
+    size_t count_doubles = 0;
     size_t old_index = 0;
     unordered_map<size_t, size_t> fused_verts;
     for(int i = 0; i < slice->m_vertices.size();i++)
@@ -110,35 +113,45 @@ void HalfEdgeMesh<VertexT, NormalT>::addMesh(HalfEdgeMesh<VertexT, NormalT>* sli
 		else
 			count++;
 	}
-	/*cout << "neighbors " << slice->m_fusionNeighbors << endl;
+	cout << "doubles " << count_doubles << endl;
+	cout << "slice size " << slice->meshSize() << endl;
+	cout << "slice_verts size " << slice->m_slice_verts.size() << endl;
+	cout << "neighbors " << slice->m_fusionNeighbors << endl;
 	cout << "neighbors count " << count << endl;
-    cout << "old_vert_size " << old_vert_size << endl;	
+    /*cout << "old_vert_size " << old_vert_size << endl;	
 	cout << "m_old_size " << m_old_size << endl;
-	cout << "size " << m_vertices.size() << endl;
-	cout << "first index " << slice->m_fusion_verts.begin()->first << endl;*/
+	cout << "size " << m_vertices.size() << endl;*/
+	//cout << "first index " << slice->m_fusion_verts.begin()->first << endl;
 	size_t count2 = 0;
 	for(auto vert_it = slice->m_fusion_verts.begin(); vert_it != slice->m_fusion_verts.end(); vert_it++)
 	{
 		size_t merge_index = vert_it->first;
+		cout << "merge index 1 " << merge_index << endl;
 		size_t erase_index = vert_it->second;
 		if(m_fused_verts.size() > 0)
 		{
 			//cout << "using " <<  m_fused_verts[merge_index] << endl;
+			//cout << "using " <<  m_slice_verts.size() << endl;
+			merge_index = m_slice_verts[merge_index];
+			cout << "merge index 2 " << merge_index << endl;
 			merge_index = m_fused_verts[merge_index];
+			//merge_index = m_fused_verts[merge_index];
 		}
 		/*for(size_t i = 0; i < old_vert_size; i++)
 		{
 			if(m_vertices[i]->m_position.x  == slice->m_vertices[erase_index]->m_position.x && m_vertices[i]->m_position.y  == slice->m_vertices[erase_index]->m_position.y && m_vertices[i]->m_position.x  == slice->m_vertices[erase_index]->m_position.x)
 				cout << "yoooo " << i << " offset " << (int)(merge_index - i) << endl;
 		}*/
-		//cout << merge_index << " size " << m_vertices.size() << endl;
-		mergeVertex(m_vertices[merge_index], slice->m_vertices[erase_index]);
+		cout << "merge index " << merge_index << endl;
+		//mergeVertex(m_vertices[merge_index], slice->m_vertices[erase_index]);
+		mergeVertex(m_vertices[merge_index], slice->m_vertices[slice->m_slice_verts[erase_index]]);
 		//count2++;
 	}
 	//cout << " count 2 " << count2 << endl;
 	m_old_size = old_vert_size - slice->m_fusionNeighbors;
 	m_old_count = slice->m_fusionNeighbors;
 	m_fused_verts = fused_verts;
+	m_slice_verts = slice->m_slice_verts;
 	m_globalIndex = this->meshSize();
 	m_fusionBoxes = slice->m_fusionBoxes;
 	m_oldfusionBoxes = slice->m_oldfusionBoxes;
@@ -147,14 +160,12 @@ void HalfEdgeMesh<VertexT, NormalT>::addMesh(HalfEdgeMesh<VertexT, NormalT>* sli
 template<typename VertexT, typename NormalT>
 void HalfEdgeMesh<VertexT, NormalT>::mergeVertex(VertexPtr merge_vert, VertexPtr erase_vert)
 {
-	/*if(merge_vert->m_position.x != erase_vert->m_position.x || merge_vert->m_position.y != erase_vert->m_position.y || merge_vert->m_position.z != erase_vert->m_position.z)
+	if(merge_vert->m_position.x != erase_vert->m_position.x || merge_vert->m_position.y != erase_vert->m_position.y || merge_vert->m_position.z != erase_vert->m_position.z)
 	{
 		cout << "yfuuuuuuuuu " << endl;
 		cout << "merge vert " << merge_vert->m_position << endl; 
 		cout << "erase vert " << erase_vert->m_position << endl;
-	} */
-	//cout << "pos 1 " << merge_vert->m_position << endl;
-	//cout << "pos 2 " << erase_vert->m_position << endl;
+	}
 	size_t old_size = merge_vert->in.size();
 	merge_vert->in.resize(old_size + erase_vert->in.size());
 	for(size_t i = 0; i < erase_vert->in.size(); i++)
@@ -171,7 +182,7 @@ void HalfEdgeMesh<VertexT, NormalT>::mergeVertex(VertexPtr merge_vert, VertexPtr
 		merge_vert->out[index] = erase_vert->out[i];
 		erase_vert->out[i]->setStart(erase_vert);
 	}
-	//delete erase_vert;
+	delete erase_vert;
 }
 
 template<typename VertexT, typename NormalT>
@@ -252,25 +263,6 @@ void HalfEdgeMesh<VertexT, NormalT>::addVertex(VertexT v)
     m_vertices.push_back(new HVertex(v));
     m_globalIndex++;
 }
-
-template<typename VertexT, typename NormalT>
-void HalfEdgeMesh<VertexT, NormalT>::addGiftVertex(VertexT v, bool& bullseye)
-{
-    // Create new HalfEdgeVertex and increase vertex counter
-	for(int i = 300000; i < m_vertices.size(); i++){
-		auto vertex  = m_vertices[i];
-		if(vertex->m_position[0] == v[0] && vertex->m_position[1] == v[1]  && vertex->m_position[2] == v[2]){
-			cout << "ICH BIN DOPPELT" << endl;
-			cout << "i: "  << i <<  endl;
-			cout <<"vorhanden " << vertex->m_position[0] << " " << vertex->m_position[1] << " " << vertex->m_position[2] << endl;
-			cout <<"versuch " << v << endl;
-			bullseye = true;
-		}
-	}
-    m_vertices.push_back(new HVertex(v));
-    m_globalIndex++;
-}
-
 
 
 template<typename VertexT, typename NormalT>
@@ -1023,7 +1015,17 @@ void HalfEdgeMesh<VertexT, NormalT>::optimizePlanes(
         // Reset all used variables
         for(size_t i = 0; i < m_faces.size(); i++)
         {
-            m_faces[i]->m_used = false;
+            FacePtr face = m_faces[i];
+			//if((*face)(0)->m_fused || (*face)(1)->m_fused || (*face)(2)->m_fused)
+			//{
+			if((*face)(0)->m_fused || (*face)(1)->m_fused || (*face)(2)->m_fused || 
+			    (*face)(0)->m_oldFused || (*face)(1)->m_oldFused || (*face)(2)->m_oldFused)
+			{
+				m_fusionFaces.push_back(face);
+				face->m_used = true;
+			}
+			else 
+				face->m_used = false;
         }
 
         // Find all regions by regionGrowing with normal criteria
@@ -1118,6 +1120,9 @@ void HalfEdgeMesh<VertexT, NormalT>::optimizeIterativePlanes(
 			FacePtr face = m_faces[i];
 			if((*face)(0)->m_fused || (*face)(1)->m_fused || (*face)(2)->m_fused)
 			{
+			//if((*face)(0)->m_fused || (*face)(1)->m_fused || (*face)(2)->m_fused || 
+			    //(*face)(0)->m_oldFused || (*face)(1)->m_oldFused || (*face)(2)->m_oldFused)
+			//{
 				m_fusionFaces.push_back(face);
 				face->m_used = true;
 			}
@@ -2276,15 +2281,14 @@ HalfEdgeMesh<VertexT, NormalT>* HalfEdgeMesh<VertexT, NormalT>::retesselateInHal
     // keep track of used vertices to avoid doubles.
     map<Vertex<float>, unsigned int> vertexMap;
     Vertex<float> current;
-
+    size_t vertexcount = 0;
     int globalMaterialIndex = 0;
-    int counter = 0;
     // Copy all regions that are non in an intersection plane directly to the buffers.
     for( intIterator nonPlane = nonPlaneRegions.begin(); nonPlane != nonPlaneRegions.end(); ++nonPlane )
     {
         size_t iRegion = *nonPlane;
         int surfaceClass = m_regions[iRegion]->m_regionNumber;
-
+		
         // iterate over every face for the region number '*nonPlaneBegin'
         for( size_t i=0; i < m_regions[iRegion]->m_faces.size(); ++i )
         {
@@ -2295,8 +2299,6 @@ HalfEdgeMesh<VertexT, NormalT>* HalfEdgeMesh<VertexT, NormalT>::retesselateInHal
             {
                 int iVertex = j;
                 current = (*m_regions[iRegion]->m_faces[iFace])(iVertex)->m_position;
-			    if((*m_regions[iRegion]->m_faces[iFace])(iVertex)->m_fused)
-					counter++;
                 // look up the current vertex. If it was used before get the position for the indexBuffer.
                 if( vertexMap.find(current) != vertexMap.end() )
                 {
@@ -2304,6 +2306,7 @@ HalfEdgeMesh<VertexT, NormalT>* HalfEdgeMesh<VertexT, NormalT>::retesselateInHal
                 }
                 else
                 {
+					vertexcount++;
                     pos = vertexBuffer.size() / 3;
                     vertexMap.insert(pair<Vertex<float>, unsigned int>(current, pos));
                     vertexBuffer.push_back( (*m_regions[iRegion]->m_faces[iFace])(iVertex)->m_position.x );
@@ -2337,7 +2340,6 @@ HalfEdgeMesh<VertexT, NormalT>* HalfEdgeMesh<VertexT, NormalT>::retesselateInHal
             }
         }
     }
-    map<Vertex<float>, unsigned int> vertexMap2;
     Vertex<float> curre;
     // iterate over every face for the region number '*nonPlaneBegin'
 	for( size_t i=0; i < m_fusionFaces.size(); ++i )
@@ -2351,16 +2353,16 @@ HalfEdgeMesh<VertexT, NormalT>* HalfEdgeMesh<VertexT, NormalT>::retesselateInHal
 			curre = (*m_fusionFaces[iFace])(iVertex)->m_position;
 
 			// look up the current vertex. If it was used before get the position for the indexBuffer.
-			if( vertexMap2.find(curre) != vertexMap2.end() )
+			if( vertexMap.find(curre) != vertexMap.end() )
 			{
-				pos = vertexMap2[curre];
+				pos = vertexMap[curre];
 			}
 			else
 			{
 				pos = vertexBuffer.size() / 3;
 				size_t act_ind = (*m_fusionFaces[iFace])(iVertex)->m_actIndex;
 				m_slice_verts.insert(pair<size_t,size_t>(act_ind, pos));
-				vertexMap2.insert(pair<Vertex<float>, unsigned int>(curre, pos));
+				vertexMap.insert(pair<Vertex<float>, unsigned int>(curre, pos));
 				vertexBuffer.push_back( (*m_fusionFaces[iFace])(iVertex)->m_position.x );
 				vertexBuffer.push_back( (*m_fusionFaces[iFace])(iVertex)->m_position.y );
 				vertexBuffer.push_back( (*m_fusionFaces[iFace])(iVertex)->m_position.z );
@@ -2391,13 +2393,15 @@ HalfEdgeMesh<VertexT, NormalT>* HalfEdgeMesh<VertexT, NormalT>::retesselateInHal
 			indexBuffer.push_back( pos );
 		}
 	}
-
+	
+	
     cout << timestamp << "Done copying non planar regions.";
 
     /*
          Done copying the simple stuff. Now the planes are going to be retesselated
          and the textures are generated if there are textures to generate at all.!
      */
+     vertexcount = 0;
     for(intIterator planeNr = planeRegions.begin(); planeNr != planeRegions.end(); ++planeNr )
     {
         try
@@ -2423,43 +2427,53 @@ HalfEdgeMesh<VertexT, NormalT>* HalfEdgeMesh<VertexT, NormalT>::retesselateInHal
             std::vector<unsigned int> indices;
 
             Tesselator<VertexT, NormalT>::getFinalizedTriangles(points, indices, contours);
+			
+			unordered_map<size_t, size_t> point_map;
+			Vertex<float> current;
+			size_t pos;
+			for(size_t k = 0; k < points.size(); k+=3)
+			{
+				current = Vertex<float>(points[k], points[k + 1], points[k + 2]);
+				auto it = vertexMap.find(current);
+				if(it != vertexMap.end())
+				{
+					pos = vertexMap[current];
+				}
+				else
+				{
+					
+				    pos = (vertexBuffer.size() / 3);
+				    vertexMap.insert(pair<Vertex<float>, unsigned int>(current, pos));
+			        vertexBuffer.push_back( points[k] );
+					vertexBuffer.push_back( points[k + 1]);
+					vertexBuffer.push_back( points[k + 2]);
+					
+				    normalBuffer.push_back( m_regions[iRegion]->m_normal[0] );
+					normalBuffer.push_back( m_regions[iRegion]->m_normal[1] );
+					normalBuffer.push_back( m_regions[iRegion]->m_normal[2] );
 
-            // copy new vertex data:
-            vertexBuffer.insert( vertexBuffer.end(), points.begin(), points.end() );
+					colorBuffer.push_back( r );
+					colorBuffer.push_back( g );
+					colorBuffer.push_back( b );
 
-            // copy vertex, normal and color data.
-            for(int j=0; j< points.size()/3; ++j)
-            {
-                normalBuffer.push_back( m_regions[iRegion]->m_normal[0] );
-                normalBuffer.push_back( m_regions[iRegion]->m_normal[1] );
-                normalBuffer.push_back( m_regions[iRegion]->m_normal[2] );
-
-                colorBuffer.push_back( r );
-                colorBuffer.push_back( g );
-                colorBuffer.push_back( b );
-
-                float u1 = 0;
-                float u2 = 0;
-                //if(t) t->textureCoords( VertexT( points[j * 3 + 0], points[j * 3 + 1], points[j * 3 + 2]), u1, u2 );
-                textureCoordBuffer.push_back( u1 );
-                textureCoordBuffer.push_back( u2 );
-                textureCoordBuffer.push_back(  0 );
-
-            }
-
-            // copy indices...
-            // get the old end of the vertex buffer.
-            size_t offset = vertexBuffer.size() - points.size();
-
-            // calculate the index value for the old end of the vertex buffer.
-            offset = ( offset / 3 );
+					float u1 = 0;
+					float u2 = 0;
+					//if(t) t->textureCoords( VertexT( points[j * 3 + 0], points[j * 3 + 1], points[j * 3 + 2]), u1, u2 );
+					textureCoordBuffer.push_back( u1 );
+					textureCoordBuffer.push_back( u2 );
+					textureCoordBuffer.push_back(  0 );
+				}
+				point_map.insert(pair<size_t, size_t >(k/3, pos));
+			}
 
             for(int j=0; j < indices.size(); j+=3)
             {
-  
-                int a =  indices[j + 0] + offset;
-                int b =  indices[j + 1] + offset;
-                int c =  indices[j + 2] + offset;
+				auto it_a = point_map.find(indices[j + 0]);
+				auto it_b = point_map.find(indices[j + 1]);
+				auto it_c = point_map.find(indices[j + 2]);
+                int a =  it_a->second;
+                int b =  it_b->second;
+                int c =  it_c->second;
 
                 if(a != b && b != c && a != c)
                 {
@@ -2467,9 +2481,7 @@ HalfEdgeMesh<VertexT, NormalT>* HalfEdgeMesh<VertexT, NormalT>::retesselateInHal
                     indexBuffer.push_back( b );
                     indexBuffer.push_back( c );
                 }
-
             }
-
         }
         catch(...)
         {
@@ -2477,7 +2489,7 @@ HalfEdgeMesh<VertexT, NormalT>* HalfEdgeMesh<VertexT, NormalT>::retesselateInHal
         };
 
     }
-
+    
     if ( !this->m_meshBuffer )
     {
         this->m_meshBuffer = MeshBufferPtr( new MeshBuffer );
@@ -2489,6 +2501,14 @@ HalfEdgeMesh<VertexT, NormalT>* HalfEdgeMesh<VertexT, NormalT>::retesselateInHal
     cout << endl << timestamp << "Done retesselating." << endl;
 		
 	HalfEdgeMesh<VertexT, NormalT>* retased_mesh =  new HalfEdgeMesh(this->m_meshBuffer);
+	size_t count_doubles = 0;
+	for(auto it = this->m_fusion_verts.begin(); it != this->m_fusion_verts.end(); it++)
+	{
+		retased_mesh->setOldFusionVertex(m_slice_verts[it->second]);
+	}
+	retased_mesh->m_fusionNeighbors = m_fusionNeighbors;
+	retased_mesh->m_slice_verts = m_slice_verts;
+	retased_mesh->m_fusion_verts = m_fusion_verts;
     Tesselator<VertexT, NormalT>::clear();
     return retased_mesh;
 } 
