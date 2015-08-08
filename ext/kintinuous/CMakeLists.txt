@@ -86,7 +86,7 @@ endif ( OPENGL_glu_LIBRARY )
 
 endif(LINUX)
 
-add_definitions(-std=c++11 -D_GLIBCXX_PARALLEL)
+add_definitions(-std=c++1y)
 
 include_directories(${OpenCV_INCLUDE_DIRS} ${CUDA_INCLUDE_DIRS} ${OPENNI2_INCLUDE_DIRS})
 
