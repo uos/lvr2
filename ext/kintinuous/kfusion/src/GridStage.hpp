@@ -14,9 +14,9 @@ public:
 	// default constructor
 	GridStage(double voxel_size = 3.0/512.0);
 
-	virtual void FirstStep() { /* omit */ };
-	virtual void Step();
-	virtual void LastStep()	{ /* omit */ };
+	virtual void firstStep();
+	virtual void step();
+	virtual void lastStep();
 	void setLastShift(bool last_shift){last_shift_ = last_shift;}
 	
 private:
