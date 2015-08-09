@@ -1,5 +1,5 @@
-#ifndef MeshStage_HPP__
-#define MeshStage_HPP__
+#ifndef FusionStage_HPP__
+#define FusionStage_HPP__
 
 #include "AbstractStage.hpp"
 #include "BlockingQueue.h"
@@ -7,12 +7,12 @@
 
 using namespace std;
 
-class MeshStage : public AbstractStage
+class FusionStage : public AbstractStage
 {
 public:
 
 	// default constructor
-	MeshStage();
+	FusionStage(MeshPtr mesh);
 
 	virtual void firstStep();
 	virtual void step();
@@ -20,5 +20,6 @@ public:
 	
 private:
 	size_t mesh_count_;
+	MeshPtr mesh_;
 };
 #endif // STAGE

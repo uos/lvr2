@@ -15,17 +15,11 @@ public:
 	AbstractStage()
 		: m_done(false)
 	{		
+		m_inQueue = boost::shared_ptr<BlockingQueue>(
+			new BlockingQueue());
+		m_outQueue = boost::shared_ptr<BlockingQueue>(
+			new BlockingQueue());
 	}
-
-	// initialize the incoming queue and outgoing queue
-	/*void InitQueues(
-		boost::shared_ptr<BlockingQueue<WorkTypeIN> > inQueue, 
-		boost::shared_ptr<BlockingQueue<WorkTypeOUT> > outQueue)
-
-	{
-		m_inQueue = inQueue;
-		m_outQueue = outQueue;
-	}*/
 
 	// Activate this stage through this method. FirstStep(), Step() and
 	// LastStep() will be invoked sequentially until it's operation is 
