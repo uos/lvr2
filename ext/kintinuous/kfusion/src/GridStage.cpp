@@ -3,19 +3,15 @@
 // default constructor
 GridStage::GridStage(double voxel_size) : AbstractStage()
 {
-	m_inQueue = boost::shared_ptr<BlockingQueue>(
-			new BlockingQueue());
-	m_outQueue = boost::shared_ptr<BlockingQueue>(
-			new BlockingQueue());
 	grid_count_ = 0;
 	voxel_size_  = voxel_size;
 	bbox_ = BoundingBox<cVertex>(0.0, 0.0, 0.0, 300.0, 300.0, 300.0);
 	bbox_.expand(300.0, 300.0, 300.0);
 }
 
-void GridStage::FirstStep() { /* omit */ };
+void GridStage::firstStep() { /* omit */ };
 
-void GridStage::Step()
+void GridStage::step()
 {
 	auto cloud_work = boost::any_cast<pair<cv::Mat&, Vec3i> >(getInQueue()->Take());
 	cv::Mat& cloud = cloud_work.first;
@@ -44,4 +40,4 @@ void GridStage::Step()
 	if(last_shift_ && getInQueue()->size() == 0)
 		done(true);
 }
-void GridStage::LastStep()	{ /* omit */ };
+void GridStage::lastStep()	{ /* omit */ };
