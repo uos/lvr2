@@ -1,5 +1,5 @@
-#ifndef MeshStage_HPP__
-#define MeshStage_HPP__
+#ifndef OptimizeStage_HPP__
+#define OptimizeStage_HPP__
 
 #include "AbstractStage.hpp"
 #include "BlockingQueue.h"
@@ -7,12 +7,12 @@
 
 using namespace std;
 
-class MeshStage : public AbstractStage
+class OptimizeStage : public AbstractStage
 {
 public:
 
 	// default constructor
-	MeshStage();
+	OptimizeStage();
 
 	virtual void firstStep();
 	virtual void step();
