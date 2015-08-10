@@ -48,7 +48,6 @@
 #include <cuda_runtime.h>
 #include <thread>
 
-
 namespace kfusion
 { 
     namespace cuda
@@ -67,7 +66,7 @@ namespace kfusion
 			* \param[in] nb_voxels_per_axis number of voxels per axis of the volume represented by the TSDF buffer.
 			*/
 			CyclicalBuffer (const double distance_threshold,
-			                const Vec3f cube_size, const Vec3i nb_voxels_per_axis)
+			                const Vec3f cube_size, const Vec3i nb_voxels_per_axis) : pl_(distance_threshold, (double)(cube_size(0) / nb_voxels_per_axis[0]))
 			{
 				distance_threshold_ = distance_threshold;
 				buffer_.volume_size.x = cube_size[0]; 
@@ -80,7 +79,7 @@ namespace kfusion
 				global_shift_[0] = 0;
 				global_shift_[1] = 0;
 				global_shift_[2] = 0;
-				pl_ = LVRPipeline(distance_threshold, (double)buffer_.volume_size.x / nb_voxels_per_axis[0]);
+				//pl_ = LVRPipeline(distance_threshold, (double)buffer_.volume_size.x / nb_voxels_per_axis[0]);
 				//mcwrap_ = MaCuWrapper(distance_threshold, (double)buffer_.volume_size.x / nb_voxels_per_axis[0]);
 			}
 

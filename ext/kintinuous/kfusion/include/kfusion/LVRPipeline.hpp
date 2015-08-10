@@ -1,5 +1,5 @@
-#ifndef MARCHING_CUBES_HPP_
-#define MARCHING_CUBES_HPP_
+#ifndef LVR_PIPELINE_HPP_
+#define LVR_PIPELINE_HPP_
 
 #include <reconstruction/FastReconstruction.hpp>
 #include <reconstruction/TSDFGrid.hpp>
@@ -34,12 +34,9 @@ namespace kfusion
 		public:
 
 			LVRPipeline(double camera_target_distance = 0, double voxel_size = 3.0/512.0);
-        
-			~LVRPipeline() 
-			{ 
-				delete meshPtr_;
-			}			
 			
+			~LVRPipeline();
+        
 			void addTSDFSlice(cv::Mat& cloud_host,  Vec3i offset, const bool last_shift);
 			
 			void resetMesh();
@@ -56,7 +53,8 @@ namespace kfusion
 		    MeshPtr meshPtr_;
 		    size_t slice_count_;
 			std::vector<double> timeStats_;
-			LinearPipeline<TGrid*, MeshPtr> pl_;
+			double camera_target_distance_;
+			LinearPipeline<pair<pair<cv::Mat&, Vec3i>, bool> , MeshPtr> pl_;
 			
     };
 }
