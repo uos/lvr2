@@ -42,6 +42,7 @@
 #include <kfusion/cuda/tsdf_volume.hpp>
 #include <kfusion/tsdf_buffer.h>
 #include <kfusion/marching_cubes.hpp>
+#include <kfusion/LVRPipeline.hpp>
 #include <Eigen/Core>
 #include "types.hpp"
 #include <cuda_runtime.h>
@@ -75,10 +76,11 @@ namespace kfusion
 				buffer_.voxels_size.x = nb_voxels_per_axis[0]; 
 				buffer_.voxels_size.y = nb_voxels_per_axis[1]; 
 				buffer_.voxels_size.z = nb_voxels_per_axis[2]; 
-				marching_thread_ = NULL;
+				//marching_thread_ = NULL;
 				global_shift_[0] = 0;
 				global_shift_[1] = 0;
 				global_shift_[2] = 0;
+				pl_ = LVRPipeline(distance_threshold, (double)buffer_.volume_size.x / nb_voxels_per_axis[0]);
 				//mcwrap_ = MaCuWrapper(distance_threshold, (double)buffer_.volume_size.x / nb_voxels_per_axis[0]);
 			}
 
@@ -104,14 +106,14 @@ namespace kfusion
 				buffer_.voxels_size.x = nb_voxels_x; 
 				buffer_.voxels_size.y = nb_voxels_y; 
 				buffer_.voxels_size.z = nb_voxels_z; 
-				marching_thread_ = NULL;
+				//marching_thread_ = NULL;
 				
 			}
 			
 			~CyclicalBuffer()
 			{
-				double averageMCTime = mcwrap_.calcTimeStats();
-				cout << "----- Average time for processing one tsdf value " << averageMCTime << "ns -----" << endl;
+				//double averageMCTime = mcwrap_.calcTimeStats();
+				//cout << "----- Average time for processing one tsdf value " << averageMCTime << "ns -----" << endl;
 			} 				
 
 		    /** \brief Check if shifting needs to be performed, returns true if so.
@@ -227,9 +229,9 @@ namespace kfusion
 			initBuffer (tsdf_volume);
 		  }
 		  
-		  void resetMesh(){mcwrap_.resetMesh();}
+		  void resetMesh(){/*mcwrap_.resetMesh();*/}
 		  
-		  MeshPtr getMesh() {return mcwrap_.getMesh();}
+		  MeshPtr getMesh() {/*return mcwrap_.getMesh();*/}
 		  
 		  int getSliceCount(){return slice_count_;}
 		  			
@@ -242,7 +244,6 @@ namespace kfusion
 		  /** \brief distance threshold (cube's center to target point) to trigger shift */
 		  double distance_threshold_;
 		  Vec3i global_shift_;
-		  std::thread* marching_thread_;
 		  cv::Mat cloud_slice_;
 		  int slice_count_ = 0;
 		  Affine3f last_camPose_;
@@ -250,8 +251,8 @@ namespace kfusion
 		  /** \brief structure that contains all TSDF buffer's addresses */
 		  tsdf_buffer buffer_;
 		  
-		  MaCuWrapper mcwrap_;
-		  
+		  //MaCuWrapper mcwrap_;
+		  LVRPipeline pl_;
 			inline int calcIndex(float f) const
 			{
 				return f < 0 ? f-.5:f+.5;

@@ -1,31 +1,24 @@
-#ifndef ConvertStage_HPP__
-#define ConvertStage_HPP__
+#ifndef ABSTRACTSTAGE_HPP__
+#define ABSTRACTSTAGE_HPP__
 
-#include "BlockingQueue.h"
+#include <kfusion/BlockingQueue.hpp>
 
 // A pipeline stage interface class that can be overridden to perform
 // customized steps. Each stage holds pointer to two queues. The in-queue,
 // which is the incoming work for this stage, and out-queue, which is the
 // completed work from this stage.
-template<typename WorkTypeIN, WorktypeOUT>
-class Stage
+class AbstractStage
 {
 public:
 
 	// default constructor
-	ConvertStage()
+	AbstractStage()
 		: m_done(false)
 	{		
-	}
-
-	// initialize the incoming queue and outgoing queue
-	void InitQueues(
-		boost::shared_ptr<BlockingQueue<WorkTypeIN> > inQueue, 
-		boost::shared_ptr<BlockingQueue<WorkTypeOUT> > outQueue)
-
-	{
-		m_inQueue = inQueue;
-		m_outQueue = outQueue;
+		m_inQueue = boost::shared_ptr<BlockingQueue>(
+			new BlockingQueue());
+		m_outQueue = boost::shared_ptr<BlockingQueue>(
+			new BlockingQueue());
 	}
 
 	// Activate this stage through this method. FirstStep(), Step() and
@@ -35,7 +28,7 @@ public:
 	{
 		FirstStep();
 
-		while(Done() == false)
+		while(done() == false)
 		{
 			Step();
 		}
@@ -50,16 +43,16 @@ public:
 	// override this method as the final step of this stage
 	virtual void LastStep() = 0;
 
-	BlockingQueue<WorkTypeIN> & GetInQueue() const { return *m_inQueue; }
-	BlockingQueue<WorkTypeOUT> & GetOutQueue() const { return *m_outQueue; }
+	boost::shared_ptr<BlockingQueue> getInQueue() const { return m_inQueue; }
+	boost::shared_ptr<BlockingQueue> getOutQueue() const { return m_outQueue; }
 
-	bool Done() const { return m_done; }
-	void Done(bool val) { m_done = val; }	
+	bool done() const { return m_done; }
+	void done(bool val) { m_done = val; }	
 
-private:
+protected:
 
-	boost::shared_ptr<BlockingQueue<WorkTypeIN> > m_inQueue;
-	boost::shared_ptr<BlockingQueue<WorkTypeOUT> > m_outQueue;
+	boost::shared_ptr<BlockingQueue> m_inQueue;
+	boost::shared_ptr<BlockingQueue> m_outQueue;
 
 	bool m_done;
 };
