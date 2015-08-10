@@ -19,6 +19,7 @@
 
 using namespace lvr;
 using namespace std;
+using namespace kfusion;
 
 typedef Vertex<float>  fVertex;
 typedef ColorVertex<float, unsigned char> cVertex;
@@ -40,6 +41,7 @@ public:
 	virtual void lastStep();
 	
 private:
+
 	size_t mesh_count_;
 };
 #endif // STAGE

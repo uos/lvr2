@@ -15,10 +15,13 @@ public:
 	AbstractStage()
 		: m_done(false)
 	{		
-		m_inQueue = boost::shared_ptr<BlockingQueue>(
-			new BlockingQueue());
-		m_outQueue = boost::shared_ptr<BlockingQueue>(
-			new BlockingQueue());
+	}
+	
+	void InitQueues( boost::shared_ptr<BlockingQueue > inQueue, 
+			boost::shared_ptr<BlockingQueue > outQueue)
+	{
+		m_inQueue = inQueue;
+		m_outQueue = outQueue;
 	}
 
 	// Activate this stage through this method. FirstStep(), Step() and
@@ -26,22 +29,22 @@ public:
 	// completed.
 	void Run()
 	{
-		FirstStep();
+		firstStep();
 
 		while(done() == false)
 		{
-			Step();
+			step();
 		}
 
-		LastStep();
+		lastStep();
 	}
 
 	// override this method for the first step of this stage
-	virtual void FirstStep() = 0;
+	virtual void firstStep() = 0;
 	// override this method for intermediate steps of this stage
-	virtual void Step() = 0;
+	virtual void step() = 0;
 	// override this method as the final step of this stage
-	virtual void LastStep() = 0;
+	virtual void lastStep() = 0;
 
 	boost::shared_ptr<BlockingQueue> getInQueue() const { return m_inQueue; }
 	boost::shared_ptr<BlockingQueue> getOutQueue() const { return m_outQueue; }

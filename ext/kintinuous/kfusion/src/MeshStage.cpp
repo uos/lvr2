@@ -12,7 +12,7 @@ void MeshStage::step()
 {
 	auto grid_work = boost::any_cast<pair<TGrid*, bool> >(getInQueue()->Take());
 	unordered_map<size_t, size_t> verts_map;
-	TGrid* act_gird = grid_work.first;
+	TGrid* act_grid = grid_work.first;
 	bool last_shift = grid_work.second;
 	MeshPtr meshPtr = new HMesh();
 	ScopeTime* cube_time = new ScopeTime("Marching Cubes");
