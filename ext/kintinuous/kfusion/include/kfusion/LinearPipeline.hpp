@@ -83,7 +83,7 @@ private:
 	> m_stages;
 
 	std::vector<
-		boost::shared_ptr<AbstractBlockingQueue > 
+		boost::shared_ptr<BlockingQueue > 
 	> m_queues;
 
 	std::vector<

@@ -59,14 +59,14 @@ kfusion::cuda::CyclicalBuffer::checkForShift (cv::Ptr<cuda::TsdfVolume> volume, 
 	// perform shifting operations
 	if (result || last_shift || perform_shift)
 	{
-		// sync old marching cubes thread
+		/*// sync old marching cubes thread
 		if(marching_thread_ != NULL)
 		{
 			cout << "####    Next shift incoming!    ####" << endl;
 			marching_thread_->join();
 			delete marching_thread_;
 			marching_thread_ = NULL;
-		}
+		}*/
 		performShift (volume, targetPoint, cam_pose, last_shift, record_mode);
 		return true;
 	}
@@ -123,10 +123,11 @@ kfusion::cuda::CyclicalBuffer::performShift (cv::Ptr<cuda::TsdfVolume> volume, c
 				else
 					fusionShift[i] += minBounds[i];
 			}
-			if(!last_shift)	
+			pl_.addWork(cloud_slice, fusionShift, last_shift);
+			/*if(!last_shift)	
 				marching_thread_ = new std::thread(&kfusion::MaCuWrapper::createGrid, &mcwrap_ , std::ref(cloud_slice_), fusionShift, last_shift);
 			else
-				mcwrap_.createGrid(cloud_slice_, fusionShift, last_shift);
+				mcwrap_.createGrid(cloud_slice_, fusionShift, last_shift);*/
 			slice_count_++;
 		}
 	}
