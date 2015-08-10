@@ -37,9 +37,9 @@ public:
 	// default constructor
 	GridStage(double voxel_size = 3.0/512.0);
 
-	virtual void firstStep();
-	virtual void step();
-	virtual void lastStep();
+	void firstStep();
+	void step();
+	void lastStep();
 	
 private:
 	size_t grid_count_;

@@ -17,14 +17,15 @@ namespace kfusion
 			boost::shared_ptr<OptimizeStage>(new OptimizeStage())
 			);
 		pl_.AddStage(
-			boost::shared_ptr<FusionStage>(new FusionStage(new HMesh(), camera_target_distance_))
+			boost::shared_ptr<FusionStage>(new FusionStage(new HMesh(), camera_target_distance_, voxel_size))
 			);
 		pl_.Start();
 	}
 	
 	LVRPipeline::~LVRPipeline()
 	{
-		pl.join();
+		pl_.join();
+		delete meshPtr_;
 	}
 
 	void LVRPipeline::resetMesh()
@@ -36,7 +37,7 @@ namespace kfusion
 	{
 		
 		pair<pair<cv::Mat&, Vec3i>, bool> workload(pair<cv::Mat&, Vec3i>(cloud_host, offset), last_shift);
-		pl.AddWork(workload);
+		pl_.AddWork(workload);
 		slice_count_++;
 	}
 	//	std::vector<int> result = pl.GetResult();
