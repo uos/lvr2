@@ -1,7 +1,7 @@
 #ifndef LINEAR_PIPELINE_HPP__
 #define LINEAR_PIPELINE_HPP__
 
-#include "BlockingQueue.h"
+#include "BlockingQueue.hpp"
 #include "AbstractStage.hpp"
 #include <boost/bind.hpp>
 #include <boost/thread.hpp>
@@ -30,10 +30,21 @@ public:
 		// be allocated.
 		if(m_queues[numStage-1] == 0)
 		{
-			m_queues[numStage-1] = stage->getInQueue();
+			m_queues[numStage-1] = 
+				boost::shared_ptr<BlockingQueue >(
+					new BlockingQueue()
+					);
 		}
 		// allocate a queue for the new stage
-		m_queues[numStage] = stage->getOutQueue();
+		m_queues[numStage] = 
+			boost::shared_ptr<BlockingQueue >(
+				new BlockingQueue()
+				);
+
+		// initialize the stage with the in and out queue
+		m_stages[numStage-1]->InitQueues(
+			m_queues[numStage-1], m_queues[numStage]
+			);
 	}
 
 
@@ -53,6 +64,7 @@ public:
 	// Start all stages by spinning up one thread per stage.
 	void Start()
 	{
+		cout << "starting " << endl;
 		for(size_t i=0; i<m_stages.size(); ++i)
 		{
 			m_threads.push_back(
@@ -60,11 +72,13 @@ public:
 				boost::bind(&LinearPipeline<WorkTypeA, WorkTypeB>::StartStage, this, i)
 				)));
 		}
+		cout << " started " << endl;
 	}
 
 	// join all stages 
-	void Join()
+	void join()
 	{
+		cout << "joining " << endl;
 		for(size_t i=0; i<m_stages.size(); ++i)
 		{
 			m_threads[i]->join();

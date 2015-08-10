@@ -43,7 +43,7 @@ bool
 kfusion::cuda::CyclicalBuffer::checkForShift (cv::Ptr<cuda::TsdfVolume> volume, const Affine3f &cam_pose, const double distance_camera_target, const bool perform_shift, const bool last_shift, const bool record_mode)
 {
     bool result = false;
-    mcwrap_.setCameraDist(distance_camera_target);
+    //mcwrap_.setCameraDist(distance_camera_target);
  	cv::Vec3f targetPoint(0,0, distance_camera_target);
  	targetPoint = cam_pose * targetPoint;
     targetPoint[1] = cam_pose.translation()[1];
@@ -123,7 +123,7 @@ kfusion::cuda::CyclicalBuffer::performShift (cv::Ptr<cuda::TsdfVolume> volume, c
 				else
 					fusionShift[i] += minBounds[i];
 			}
-			pl_.addWork(cloud_slice, fusionShift, last_shift);
+			pl_.addTSDFSlice(cloud_slice_, fusionShift, last_shift);
 			/*if(!last_shift)	
 				marching_thread_ = new std::thread(&kfusion::MaCuWrapper::createGrid, &mcwrap_ , std::ref(cloud_slice_), fusionShift, last_shift);
 			else
@@ -256,7 +256,7 @@ void kfusion::cuda::CyclicalBuffer::calcBounds(Vec3i& offset, Vec3i& minBounds, 
 			{
 				minBounds[i] -= 1;
 				maxBounds[i] -= 1;
-				offset[i] -=1;
+				//offset[i] -=1;
 			}
 		}
 	}

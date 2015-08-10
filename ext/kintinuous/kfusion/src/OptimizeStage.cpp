@@ -8,7 +8,7 @@ OptimizeStage::OptimizeStage() : AbstractStage()
 
 void OptimizeStage::firstStep() { /* skip */ };
 
-void OptimizeStage::Step()
+void OptimizeStage::step()
 {
 	auto mesh_work = boost::any_cast<pair<MeshPtr, bool> >(getInQueue()->Take());
 	bool last_shift = mesh_work.second;
@@ -18,9 +18,9 @@ void OptimizeStage::Step()
 	MeshPtr tmp_pointer = act_mesh->retesselateInHalfEdge();
 	std::cout << "            ####     3 Finished optimisation number: " << mesh_count_ << "   ####" << std::endl;
 	mesh_count_++;
-	getOutQueue()->Add(pair<MeshPtr, bool>(tmp_pointer, lsat_shift));
+	getOutQueue()->Add(pair<MeshPtr, bool>(tmp_pointer, last_shift));
 	delete act_mesh;
 	if(last_shift)
 		done(true);
 }
-void OptimizeStage::LastStep()	{ /* skip */ };
+void OptimizeStage::lastStep()	{ /* skip */ };

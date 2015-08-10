@@ -85,7 +85,6 @@ HalfEdgeMesh<VertexT, NormalT>::HalfEdgeMesh(
 template<typename VertexT, typename NormalT>
 void HalfEdgeMesh<VertexT, NormalT>::addMesh(HalfEdgeMesh<VertexT, NormalT>* slice, unordered_map<size_t, size_t>& fusion_verts)
 {
-	cout << "iam in add mesh " << slice->meshSize() << endl;
 	size_t old_size = m_faces.size();
 	//cout << "iam in add mesh " << slice->m_faces.size() << endl;
 	m_faces.resize(old_size +  slice->m_faces.size());
@@ -118,22 +117,23 @@ void HalfEdgeMesh<VertexT, NormalT>::addMesh(HalfEdgeMesh<VertexT, NormalT>* sli
 	cout << "slice_verts size " << slice->m_slice_verts.size() << endl;
 	cout << "neighbors " << slice->m_fusionNeighbors << endl;
 	cout << "neighbors count " << count << endl;
-    /*cout << "old_vert_size " << old_vert_size << endl;	
+    cout << "old_vert_size " << old_vert_size << endl;	
 	cout << "m_old_size " << m_old_size << endl;
-	cout << "size " << m_vertices.size() << endl;*/
+	cout << "size " << m_vertices.size() << endl;
 	//cout << "first index " << slice->m_fusion_verts.begin()->first << endl;
 	size_t count2 = 0;
 	for(auto vert_it = slice->m_fusion_verts.begin(); vert_it != slice->m_fusion_verts.end(); vert_it++)
 	{
 		size_t merge_index = vert_it->first;
+		
 		cout << "merge index 1 " << merge_index << endl;
+		merge_index = m_slice_verts[merge_index];
 		size_t erase_index = vert_it->second;
 		if(m_fused_verts.size() > 0)
 		{
 			//cout << "using " <<  m_fused_verts[merge_index] << endl;
 			//cout << "using " <<  m_slice_verts.size() << endl;
-			merge_index = m_slice_verts[merge_index];
-			cout << "merge index 2 " << merge_index << endl;
+		    cout << "merge index 2 " << merge_index << endl;
 			merge_index = m_fused_verts[merge_index];
 			//merge_index = m_fused_verts[merge_index];
 		}
@@ -1697,7 +1697,7 @@ void HalfEdgeMesh<VertexT, NormalT>::finalize()
     size_t numFaces    = m_faces.size();
     size_t numRegions  = m_regions.size();
 	float r = 0.0f;
-	float g = 255.0f;
+	float g = 200.0f;
 	float b = 0.0f;
     std::vector<uchar> faceColorBuffer;
 

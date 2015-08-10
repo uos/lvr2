@@ -18,6 +18,7 @@
 
 
 using namespace lvr;
+using namespace kfusion;
 using namespace std;
 
 typedef Vertex<float>  fVertex;
