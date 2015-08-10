@@ -1,4 +1,4 @@
-#include "OptimizeStage.hpp"
+#include <kfusion/OptimizeStage.hpp>
 
 // default constructor
 OptimizeStage::OptimizeStage() : AbstractStage()
@@ -19,7 +19,8 @@ void OptimizeStage::Step()
 	std::cout << "            ####     3 Finished optimisation number: " << mesh_count_ << "   ####" << std::endl;
 	mesh_count_++;
 	getOutQueue()->Add(pair<MeshPtr, bool>(tmp_pointer, lsat_shift));
-	if(last_shift && getInQueue()->size() == 0)
+	delete act_mesh;
+	if(last_shift)
 		done(true);
 }
 void OptimizeStage::LastStep()	{ /* skip */ };

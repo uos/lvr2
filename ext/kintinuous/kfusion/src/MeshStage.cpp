@@ -1,4 +1,4 @@
-#include "MeshStage.hpp"
+#include <kfusion/MeshStage.hpp>
 
 // default constructor
 MeshStage::MeshStage() : AbstractStage()
@@ -77,7 +77,7 @@ void MeshStage::step()
 	delete fast_recon;
 	std::cout << "        ####     2 Finished reconstruction number: " << mesh_count_ << "   ####" << std::endl;
 	getOutQueue()->Add(pair<MeshPtr, bool>(meshPtr, grid_work.second));
-	if(last_shift && getInQueue()->size() == 0)
+	if(last_shift)
 		done(true);
 }
 void MeshStage::lastStep()	{ /* skip */ };
