@@ -7,5 +7,5 @@ target_link_libraries(kfusion
 	${OPENNI2_LIBRARIES}
 	)
 
-add_executable(pipeline src/main.cpp)
-target_link_libraries(pipeline ${Boost_LIBRARIES})
+#add_executable(pipeline src/main.cpp)
+#target_link_libraries(pipeline ${Boost_LIBRARIES})

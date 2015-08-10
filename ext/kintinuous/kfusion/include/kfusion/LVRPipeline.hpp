@@ -23,11 +23,7 @@
 
 using namespace lvr;
 
-typedef Vertex<float>  fVertex;
 typedef ColorVertex<float, unsigned char> cVertex;
-typedef FastBox<ColorVertex<float, unsigned char>, lvr::Normal<float> > cFastBox;
-typedef TsdfGrid<cVertex, cFastBox, kfusion::Point> TGrid;
-typedef FastReconstruction<ColorVertex<float, unsigned char>, lvr::Normal<float>, cFastBox > cFastReconstruction;
 typedef HalfEdgeMesh<cVertex, lvr::Normal<float> > HMesh;
 typedef HMesh* MeshPtr;
 
@@ -56,13 +52,10 @@ namespace kfusion
 			
 			
 		private:
-		    void transformMeshBack();
 		    
 		    MeshPtr meshPtr_;
 		    size_t slice_count_;
-			double camera_target_distance_;
 			std::vector<double> timeStats_;
-			double voxel_size_;
 			LinearPipeline<TGrid*, MeshPtr> pl_;
 			
     };
