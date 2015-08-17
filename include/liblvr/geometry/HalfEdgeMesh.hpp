@@ -123,6 +123,8 @@ public:
 	 * @brief   Dtor.
 	 */
 	virtual ~HalfEdgeMesh();
+	
+	void addMesh(HalfEdgeMesh* slice);
 
 	/**
 	 * @brief 	This method should be called every time
@@ -133,8 +135,6 @@ public:
 	 */
 	virtual void addVertex(VertexT v);
 	
-	virtual void addGiftVertex(VertexT v, bool& bullseye);
-
 	/**
 	 * @brief 	This method should be called every time
 	 * 			a new vertex is created to ensure that vertex
@@ -155,6 +155,8 @@ public:
 	virtual void addTriangle(uint a, uint b, uint c);
 	
 	virtual void setFusionVertex(uint v);
+	
+	virtual void setOldFusionVertex(uint v);
 
     /**
      * @brief   Insert a new triangle into the mesh
@@ -303,7 +305,15 @@ public:
 	 */
 	VertexVector& getVertices() { return m_vertices; }
 	
+	void mergeVertex(VertexPtr merge_vert, VertexPtr erase_vert);
+	
 	unordered_map<size_t, size_t> m_slice_verts;
+	unordered_map<size_t, size_t> m_fused_verts;
+	unordered_map<size_t, size_t> m_fusion_verts;
+	size_t m_fusionNeighbors;
+	//unordered_map<size_t, FastBox<VertexT, NormalT>* > m_fusionBoxes;
+	//unordered_map<size_t, FastBox<VertexT, NormalT>* > m_oldfusionBoxes;
+	//unordered_map<size_t, FastBox<VertexT, NormalT>* > m_fusionNeighborBoxes;
 	vector<FacePtr> m_fusionFaces;
 	
 private:

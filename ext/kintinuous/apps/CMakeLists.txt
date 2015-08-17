@@ -7,9 +7,6 @@ add_executable(lvr_kinfu ${srcs})
 target_link_libraries(lvr_kinfu 
 	kfusion
 	lvr_static
-	lvrrply_static
-	lvrlas_static
-	lvrslam6d_static
 	${OpenCV_LIBS}
 	${Boost_SYSTEM_LIBRARY} 
 	${Boost_PROGRAM_OPTIONS_LIBRARY}
