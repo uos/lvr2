@@ -247,7 +247,7 @@ int main (int argc, char* argv[])
 	{
 		capture.open(0);
 	}
-    capture.triggerPause();
+    //capture.triggerPause();
     //capture.open (0);
     //capture.open("/home/tristan/kintinuous.tigelbri/build/Captured.oni");
     //capture.open("/home/tristan/home.oni");
