@@ -33,10 +33,10 @@ namespace kfusion
 		//TODO implement mesh reset
 	}
 
-	void LVRPipeline::addTSDFSlice(cv::Mat& cloud_host,  Vec3i offset, const bool last_shift)
+	void LVRPipeline::addTSDFSlice(TSDFSlice slice, const bool last_shift)
 	{
 		
-		pair<pair<cv::Mat&, Vec3i>, bool> workload(pair<cv::Mat&, Vec3i>(cloud_host, offset), last_shift);
+		pair<TSDFSlice, bool> workload(slice, last_shift);
 		pl_.AddWork(workload);
 		slice_count_++;
 	}
