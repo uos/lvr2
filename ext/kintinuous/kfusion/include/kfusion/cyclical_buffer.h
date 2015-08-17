@@ -228,6 +228,7 @@ namespace kfusion
 		  }
 		  
 		  void resetMesh(){/*mcwrap_.resetMesh();*/}
+		  void addImgPose(ImgPose* imgPose){ imgPoses_.push_back(imgPose);}
 		  
 		  MeshPtr getMesh() {/*return mcwrap_.getMesh();*/}
 		  
@@ -243,6 +244,7 @@ namespace kfusion
 		  double distance_threshold_;
 		  Vec3i global_shift_;
 		  cv::Mat cloud_slice_;
+		  std::vector<ImgPose*> imgPoses_;
 		  int slice_count_ = 0;
 		  Affine3f last_camPose_;
 		  
