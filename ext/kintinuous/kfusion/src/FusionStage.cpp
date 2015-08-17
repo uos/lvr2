@@ -17,7 +17,7 @@ void FusionStage::step()
 	if(mesh_count_ == 0)
 		mesh_ = opti_mesh;
 	else
-		mesh_->addMesh(opti_mesh, opti_mesh->m_slice_verts);
+		mesh_->addMesh(opti_mesh);
 	std::cout << "                        ####    4 Finished slice number: " << mesh_count_ << "   ####" << std::endl;
 	getOutQueue()->Add(mesh_);
 	mesh_count_++;

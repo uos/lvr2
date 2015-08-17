@@ -20,9 +20,9 @@ void MeshStage::step()
 	
 	// Create an empty mesh
 	fast_recon->getMesh(*meshPtr);
-	meshPtr->m_fusionBoxes = act_grid->getFusionCells();
-	meshPtr->m_oldfusionBoxes = act_grid->m_old_fusion_cells;
-	meshPtr->m_fusionNeighborBoxes = act_grid->m_fusion_cells_neighbors;
+	//meshPtr->m_fusionBoxes = act_grid->getFusionCells();
+	//meshPtr->m_oldfusionBoxes = act_grid->m_old_fusion_cells;
+	//meshPtr->m_fusionNeighborBoxes = act_grid->m_fusion_cells_neighbors;
 	// mark all fusion vertices in the mesh
 	for(auto cellPair : act_grid->getFusionCells())
 	{

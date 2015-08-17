@@ -39,8 +39,6 @@ HalfEdgeMesh<VertexT, NormalT>::HalfEdgeMesh( )
     m_classifierType = "Default";
     m_pointCloudManager = NULL;
     m_depth = 100;
-    m_old_size = 0;
-    m_old_count = 0;
     m_fusionNeighbors = 0;
 }
 
@@ -83,17 +81,16 @@ HalfEdgeMesh<VertexT, NormalT>::HalfEdgeMesh(
 }
 
 template<typename VertexT, typename NormalT>
-void HalfEdgeMesh<VertexT, NormalT>::addMesh(HalfEdgeMesh<VertexT, NormalT>* slice, unordered_map<size_t, size_t>& fusion_verts)
+void HalfEdgeMesh<VertexT, NormalT>::addMesh(HalfEdgeMesh<VertexT, NormalT>* slice)
 {
 	size_t old_size = m_faces.size();
-	//cout << "iam in add mesh " << slice->m_faces.size() << endl;
 	m_faces.resize(old_size +  slice->m_faces.size());
     for(int i = 0; i < slice->m_faces.size();i++)
     {
 		size_t index = old_size + i;
 		m_faces[index] = slice->m_faces[i];
 	}
-	//cout << "iam in add mesh " << slice->m_vertices.size() << endl;
+
 	size_t old_vert_size = m_vertices.size();
 	m_vertices.resize(old_vert_size +  slice->m_vertices.size() - slice->m_fusionNeighbors);
 
@@ -112,49 +109,23 @@ void HalfEdgeMesh<VertexT, NormalT>::addMesh(HalfEdgeMesh<VertexT, NormalT>* sli
 		else
 			count++;
 	}
-	cout << "doubles " << count_doubles << endl;
-	cout << "slice size " << slice->meshSize() << endl;
-	cout << "slice_verts size " << slice->m_slice_verts.size() << endl;
-	cout << "neighbors " << slice->m_fusionNeighbors << endl;
-	cout << "neighbors count " << count << endl;
-    cout << "old_vert_size " << old_vert_size << endl;	
-	cout << "m_old_size " << m_old_size << endl;
-	cout << "size " << m_vertices.size() << endl;
-	//cout << "first index " << slice->m_fusion_verts.begin()->first << endl;
-	size_t count2 = 0;
 	for(auto vert_it = slice->m_fusion_verts.begin(); vert_it != slice->m_fusion_verts.end(); vert_it++)
 	{
 		size_t merge_index = vert_it->first;
 		
-		cout << "merge index 1 " << merge_index << endl;
 		merge_index = m_slice_verts[merge_index];
 		size_t erase_index = vert_it->second;
 		if(m_fused_verts.size() > 0)
 		{
-			//cout << "using " <<  m_fused_verts[merge_index] << endl;
-			//cout << "using " <<  m_slice_verts.size() << endl;
-		    cout << "merge index 2 " << merge_index << endl;
 			merge_index = m_fused_verts[merge_index];
-			//merge_index = m_fused_verts[merge_index];
 		}
-		/*for(size_t i = 0; i < old_vert_size; i++)
-		{
-			if(m_vertices[i]->m_position.x  == slice->m_vertices[erase_index]->m_position.x && m_vertices[i]->m_position.y  == slice->m_vertices[erase_index]->m_position.y && m_vertices[i]->m_position.x  == slice->m_vertices[erase_index]->m_position.x)
-				cout << "yoooo " << i << " offset " << (int)(merge_index - i) << endl;
-		}*/
-		cout << "merge index " << merge_index << endl;
-		//mergeVertex(m_vertices[merge_index], slice->m_vertices[erase_index]);
 		mergeVertex(m_vertices[merge_index], slice->m_vertices[slice->m_slice_verts[erase_index]]);
-		//count2++;
 	}
-	//cout << " count 2 " << count2 << endl;
-	m_old_size = old_vert_size - slice->m_fusionNeighbors;
-	m_old_count = slice->m_fusionNeighbors;
 	m_fused_verts = fused_verts;
 	m_slice_verts = slice->m_slice_verts;
 	m_globalIndex = this->meshSize();
-	m_fusionBoxes = slice->m_fusionBoxes;
-	m_oldfusionBoxes = slice->m_oldfusionBoxes;
+	//m_fusionBoxes = slice->m_fusionBoxes;
+	//m_oldfusionBoxes = slice->m_oldfusionBoxes;
 }
 
 template<typename VertexT, typename NormalT>
@@ -162,7 +133,7 @@ void HalfEdgeMesh<VertexT, NormalT>::mergeVertex(VertexPtr merge_vert, VertexPtr
 {
 	if(merge_vert->m_position.x != erase_vert->m_position.x || merge_vert->m_position.y != erase_vert->m_position.y || merge_vert->m_position.z != erase_vert->m_position.z)
 	{
-		cout << "yfuuuuuuuuu " << endl;
+		cout << "Vertex missalignment! " << endl;
 		cout << "merge vert " << merge_vert->m_position << endl; 
 		cout << "erase vert " << erase_vert->m_position << endl;
 	}
@@ -189,7 +160,7 @@ template<typename VertexT, typename NormalT>
 HalfEdgeMesh<VertexT, NormalT>::~HalfEdgeMesh()
 {
 
-    /*this->m_meshBuffer.reset();
+    this->m_meshBuffer.reset();
     if(this->m_pointCloudManager != NULL)
 		this->m_pointCloudManager.reset();
 
@@ -228,7 +199,7 @@ HalfEdgeMesh<VertexT, NormalT>::~HalfEdgeMesh()
         FacePtr f = *f_it;
         delete f;
     }
-    m_garbageFaces.clear();*/
+    m_garbageFaces.clear();
 
 }
 
