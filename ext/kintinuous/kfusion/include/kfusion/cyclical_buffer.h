@@ -41,7 +41,6 @@
 
 #include <kfusion/cuda/tsdf_volume.hpp>
 #include <kfusion/tsdf_buffer.h>
-#include <kfusion/marching_cubes.hpp>
 #include <kfusion/LVRPipeline.hpp>
 #include <Eigen/Core>
 #include "types.hpp"
