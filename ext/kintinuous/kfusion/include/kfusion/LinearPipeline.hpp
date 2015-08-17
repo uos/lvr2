@@ -64,7 +64,6 @@ public:
 	// Start all stages by spinning up one thread per stage.
 	void Start()
 	{
-		cout << "starting " << endl;
 		for(size_t i=0; i<m_stages.size(); ++i)
 		{
 			m_threads.push_back(
@@ -72,13 +71,11 @@ public:
 				boost::bind(&LinearPipeline<WorkTypeA, WorkTypeB>::StartStage, this, i)
 				)));
 		}
-		cout << " started " << endl;
 	}
 
 	// join all stages 
 	void join()
 	{
-		cout << "joining " << endl;
 		for(size_t i=0; i<m_stages.size(); ++i)
 		{
 			m_threads[i]->join();

@@ -37,7 +37,7 @@ namespace kfusion
 			
 			~LVRPipeline();
         
-			void addTSDFSlice(cv::Mat& cloud_host,  Vec3i offset, const bool last_shift);
+			void addTSDFSlice(TSDFSlice slice,  const bool last_shift);
 			
 			void resetMesh();
 			
@@ -54,7 +54,7 @@ namespace kfusion
 		    size_t slice_count_;
 			std::vector<double> timeStats_;
 			double camera_target_distance_;
-			LinearPipeline<pair<pair<cv::Mat&, Vec3i>, bool> , MeshPtr> pl_;
+			LinearPipeline<pair<TSDFSlice, bool> , MeshPtr> pl_;
 			
     };
 }

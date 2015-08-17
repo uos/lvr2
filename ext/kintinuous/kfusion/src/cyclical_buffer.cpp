@@ -123,11 +123,11 @@ kfusion::cuda::CyclicalBuffer::performShift (cv::Ptr<cuda::TsdfVolume> volume, c
 				else
 					fusionShift[i] += minBounds[i];
 			}
-			pl_.addTSDFSlice(cloud_slice_, fusionShift, last_shift);
-			/*if(!last_shift)	
-				marching_thread_ = new std::thread(&kfusion::MaCuWrapper::createGrid, &mcwrap_ , std::ref(cloud_slice_), fusionShift, last_shift);
-			else
-				mcwrap_.createGrid(cloud_slice_, fusionShift, last_shift);*/
+			TSDFSlice slice;
+			slice.tsdf_values_ = cloud_slice_;
+			slice.offset_ = fusionShift;
+			slice.imgposes_ = imgPoses_;
+			pl_.addTSDFSlice(slice, last_shift);
 			slice_count_++;
 		}
 	}
