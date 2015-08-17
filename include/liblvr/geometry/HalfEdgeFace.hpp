@@ -165,7 +165,7 @@ public:
 	EdgePtr m_edge;
 
 	/// A vector containing the indices of face vertices (currently redundant)
-	//vector<int> 					m_indices;
+	size_t					        m_indices[3];
 
 	/// A three pointers to the face vertices
 	//int 							m_index[3];

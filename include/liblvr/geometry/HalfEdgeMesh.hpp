@@ -25,6 +25,7 @@
  *  @author Florian Otte (fotte@uos.de)
  *  @author Kim Rinnewitz (krinnewitz@uos.de)
  *  @author Sven Schalk (sschalk@uos.de)
+ *  @author Tristan Igelbrink (tigelbri@uos.de)
  */
 
 #ifndef HALFEDGEMESH_H_
@@ -123,6 +124,8 @@ public:
 	 * @brief   Dtor.
 	 */
 	virtual ~HalfEdgeMesh();
+	
+	void addMesh(HalfEdgeMesh* slice);
 
 	/**
 	 * @brief 	This method should be called every time
@@ -151,6 +154,10 @@ public:
 	 * @param	c		The third vertex of the triangle
 	 */
 	virtual void addTriangle(uint a, uint b, uint c);
+	
+	virtual void setFusionVertex(uint v);
+	
+	virtual void setOldFusionVertex(uint v);
 
     /**
      * @brief   Insert a new triangle into the mesh
@@ -161,7 +168,7 @@ public:
      * @param   f       A pointer to the created face
      */
 	virtual void addTriangle(uint a, uint b, uint c, FacePtr&f);
-
+	
 	/**
 	 * @brief	Flip the edge between vertex index v1 and v2
 	 *
@@ -185,7 +192,7 @@ public:
 	 * @param remove_flickering	Whether to remove flickering faces or not
 	 */
 	virtual void optimizePlanes(int iterations, float normalThreshold, int minRegionSize = 50, int smallRegionSize = 0, bool remove_flickering = true);
-
+	
 	/**
 	 * @brief	Removes artifacts in the mesh that are not connected to the main mesh
 	 *
@@ -213,6 +220,8 @@ public:
      * @param 	genTextures	Whether to generate textures or not
 	 */
 	virtual void finalizeAndRetesselate(bool genTextures, float fusionThreshold = 0.01);
+	
+	virtual HalfEdgeMesh<VertexT, NormalT>*  retesselateInHalfEdge(float fusionThreshold = 0.01);
 
 	/**
 	 * @brief Writes the classification result to a file.
@@ -294,6 +303,17 @@ public:
 	 * @brief returns a reference to the VertexVector
 	 */
 	VertexVector& getVertices() { return m_vertices; }
+	
+	void mergeVertex(VertexPtr merge_vert, VertexPtr erase_vert);
+	
+	unordered_map<size_t, size_t> m_slice_verts;
+	unordered_map<size_t, size_t> m_fused_verts;
+	unordered_map<size_t, size_t> m_fusion_verts;
+	size_t m_fusionNeighbors;
+	//unordered_map<size_t, FastBox<VertexT, NormalT>* > m_fusionBoxes;
+	//unordered_map<size_t, FastBox<VertexT, NormalT>* > m_oldfusionBoxes;
+	//unordered_map<size_t, FastBox<VertexT, NormalT>* > m_fusionNeighborBoxes;
+	vector<FacePtr> m_fusionFaces;
 	
 private:
 
@@ -479,6 +499,7 @@ private:
 	set<EdgePtr>        m_garbageEdges;
 	set<HFace*>         m_garbageFaces;
 	set<RegionPtr>      m_garbageRegions;
+	
 };
 
 } // namespace lvr

@@ -43,6 +43,8 @@ public:
     {
         return f < 0 ? f-.5:f+.5;
     }
+    box_map m_old_fusion_cells;
+    box_map m_fusion_cells_neighbors;
     box_map m_fusion_cells;
     qp_map	m_fusion_qpIndices;
     smallBox_map m_global_cells;

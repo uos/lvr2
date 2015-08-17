@@ -39,6 +39,7 @@ HalfEdgeMesh<VertexT, NormalT>::HalfEdgeMesh( )
     m_classifierType = "Default";
     m_pointCloudManager = NULL;
     m_depth = 100;
+    m_fusionNeighbors = 0;
 }
 
 template<typename VertexT, typename NormalT>
@@ -73,10 +74,86 @@ HalfEdgeMesh<VertexT, NormalT>::HalfEdgeMesh(
     }
 
     // Initial remaining stuff
-    m_globalIndex = 0;
+    m_globalIndex = this->meshSize();
     m_regionClassifier = ClassifierFactory<VertexT, NormalT>::get("Default", this);
     m_classifierType = "Default";
     m_depth = 100;
+}
+
+template<typename VertexT, typename NormalT>
+void HalfEdgeMesh<VertexT, NormalT>::addMesh(HalfEdgeMesh<VertexT, NormalT>* slice)
+{
+	size_t old_size = m_faces.size();
+	m_faces.resize(old_size +  slice->m_faces.size());
+    for(int i = 0; i < slice->m_faces.size();i++)
+    {
+		size_t index = old_size + i;
+		m_faces[index] = slice->m_faces[i];
+	}
+
+	size_t old_vert_size = m_vertices.size();
+	m_vertices.resize(old_vert_size +  slice->m_vertices.size() - slice->m_fusionNeighbors);
+
+    size_t count = 0;
+    size_t count_doubles = 0;
+    size_t old_index = 0;
+    unordered_map<size_t, size_t> fused_verts;
+    for(int i = 0; i < slice->m_vertices.size();i++)
+    {
+		size_t index = old_vert_size + i - count;
+		if(!slice->m_vertices[i]->m_oldFused)
+		{
+			m_vertices[index] = slice->m_vertices[i];
+			fused_verts[i] = index;
+		}
+		else
+			count++;
+	}
+	for(auto vert_it = slice->m_fusion_verts.begin(); vert_it != slice->m_fusion_verts.end(); vert_it++)
+	{
+		size_t merge_index = vert_it->first;
+		
+		merge_index = m_slice_verts[merge_index];
+		size_t erase_index = vert_it->second;
+		if(m_fused_verts.size() > 0)
+		{
+			merge_index = m_fused_verts[merge_index];
+		}
+		mergeVertex(m_vertices[merge_index], slice->m_vertices[slice->m_slice_verts[erase_index]]);
+	}
+	m_fused_verts = fused_verts;
+	m_slice_verts = slice->m_slice_verts;
+	m_globalIndex = this->meshSize();
+	//m_fusionBoxes = slice->m_fusionBoxes;
+	//m_oldfusionBoxes = slice->m_oldfusionBoxes;
+}
+
+template<typename VertexT, typename NormalT>
+void HalfEdgeMesh<VertexT, NormalT>::mergeVertex(VertexPtr merge_vert, VertexPtr erase_vert)
+{
+	if(merge_vert->m_position.x != erase_vert->m_position.x || merge_vert->m_position.y != erase_vert->m_position.y || merge_vert->m_position.z != erase_vert->m_position.z)
+	{
+		cout << "Vertex missalignment! " << endl;
+		cout << "merge vert " << merge_vert->m_position << endl; 
+		cout << "erase vert " << erase_vert->m_position << endl;
+	}
+	size_t old_size = merge_vert->in.size();
+	merge_vert->in.resize(old_size + erase_vert->in.size());
+	for(size_t i = 0; i < erase_vert->in.size(); i++)
+	{
+		size_t index = old_size + i;
+		merge_vert->in[index] = erase_vert->in[i];
+		erase_vert->in[i]->setEnd(merge_vert);
+	}
+    old_size = merge_vert->out.size();
+	merge_vert->out.resize(old_size + erase_vert->out.size());
+	for(size_t i = 0; i < erase_vert->out.size(); i++)
+	{
+		size_t index = old_size + i;
+		merge_vert->out[index] = erase_vert->out[i];
+		erase_vert->out[i]->setStart(erase_vert);
+	}
+	delete erase_vert;
 }
 
 template<typename VertexT, typename NormalT>
@@ -158,12 +235,13 @@ void HalfEdgeMesh<VertexT, NormalT>::addVertex(VertexT v)
     m_globalIndex++;
 }
 
+
 template<typename VertexT, typename NormalT>
 void HalfEdgeMesh<VertexT, NormalT>::deleteVertex(VertexPtr v)
 {
     // Delete HalfEdgeVertex and decrease vertex counter
-  /*  m_vertices.erase(find(m_vertices.begin(), m_vertices.end(), v));
-    m_globalIndex--;*/
+    m_vertices.erase(find(m_vertices.begin(), m_vertices.end(), v));
+    m_globalIndex--;
 }
 
 template<typename VertexT, typename NormalT>
@@ -304,6 +382,27 @@ void HalfEdgeMesh<VertexT, NormalT>::addTriangle(uint a, uint b, uint c, FacePtr
     face->calc_normal();
     face->m_face_index = m_faces.size();
     f = face;
+}
+
+template<typename VertexT, typename NormalT>
+void HalfEdgeMesh<VertexT, NormalT>::setFusionVertex(uint v)
+{
+	auto vertice = m_vertices[v];
+	vertice->m_fused = true;
+	vertice->m_actIndex = v;
+	
+}
+
+template<typename VertexT, typename NormalT>
+void HalfEdgeMesh<VertexT, NormalT>::setOldFusionVertex(uint v)
+{
+	auto vertice = m_vertices[v];
+	if(!vertice->m_oldFused)
+	{
+		vertice->m_oldFused = true;
+		vertice->m_actIndex = v;
+		m_fusionNeighbors++;
+	}
 }
 
 template<typename VertexT, typename NormalT>
@@ -884,7 +983,15 @@ void HalfEdgeMesh<VertexT, NormalT>::optimizePlanes(
         // Reset all used variables
         for(size_t i = 0; i < m_faces.size(); i++)
         {
-            m_faces[i]->m_used = false;
+            FacePtr face = m_faces[i];
+			if((*face)(0)->m_fused || (*face)(1)->m_fused || (*face)(2)->m_fused || 
+			    (*face)(0)->m_oldFused || (*face)(1)->m_oldFused || (*face)(2)->m_oldFused)
+			{
+				m_fusionFaces.push_back(face);
+				face->m_used = true;
+			}
+			else 
+				face->m_used = false;
         }
 
         // Find all regions by regionGrowing with normal criteria
@@ -1486,7 +1593,7 @@ void HalfEdgeMesh<VertexT, NormalT>::finalize()
     size_t numFaces    = m_faces.size();
     size_t numRegions  = m_regions.size();
 	float r = 0.0f;
-	float g = 255.0f;
+	float g = 200.0f;
 	float b = 0.0f;
     std::vector<uchar> faceColorBuffer;
 
@@ -1703,7 +1810,7 @@ void HalfEdgeMesh<VertexT, NormalT>::finalizeAndRetesselate( bool genTextures, f
     float r=0, g=200, b=0;
 
     map<Vertex<uchar>, unsigned int> materialMap;
-
+	
     // Since all buffer sizes are unknown when retesselating
     // all buffers are instantiated as vectors, to avoid manual reallocation
     std::vector<float> vertexBuffer;
@@ -2024,6 +2131,284 @@ void HalfEdgeMesh<VertexT, NormalT>::finalizeAndRetesselate( bool genTextures, f
     labeledFaces.clear();
     Tesselator<VertexT, NormalT>::clear();
 } 
+
+template<typename VertexT, typename NormalT>
+HalfEdgeMesh<VertexT, NormalT>* HalfEdgeMesh<VertexT, NormalT>::retesselateInHalfEdge(float fusionThreshold)
+{
+	 std::cout << timestamp << "Retesselate mesh" << std::endl;
+
+    // used Typedef's
+    typedef std::vector<size_t>::iterator   intIterator;
+
+    // default colors
+    float r=0, g=200, b=0;
+
+    map<Vertex<uchar>, unsigned int> materialMap;
+	
+    // Since all buffer sizes are unknown when retesselating
+    // all buffers are instantiated as vectors, to avoid manual reallocation
+    std::vector<float> vertexBuffer;
+    std::vector<float> normalBuffer;
+    std::vector<uchar> colorBuffer;
+    std::vector<unsigned int> indexBuffer;
+    std::vector<unsigned int> materialIndexBuffer;
+    std::vector<Material*> materialBuffer;
+    std::vector<float> textureCoordBuffer;
+
+    // Reset used variables. Otherwise the getContours() function might not work quite as expected.
+    resetUsedFlags();
+
+    // Take all regions that are not in an intersection plane
+    std::vector<size_t> nonPlaneRegions;
+    // Take all regions that were drawn into an intersection plane
+    std::vector<size_t> planeRegions;
+    for( size_t i = 0; i < m_regions.size(); ++i )
+    {
+        if( !m_regions[i]->m_inPlane || m_regions[i]->m_regionNumber < 0)
+        {
+            nonPlaneRegions.push_back(i);
+        }
+        else
+        {
+            planeRegions.push_back(i);
+        }
+    }
+
+    // keep track of used vertices to avoid doubles.
+    map<Vertex<float>, unsigned int> vertexMap;
+    Vertex<float> current;
+    size_t vertexcount = 0;
+    int globalMaterialIndex = 0;
+    // Copy all regions that are non in an intersection plane directly to the buffers.
+    for( intIterator nonPlane = nonPlaneRegions.begin(); nonPlane != nonPlaneRegions.end(); ++nonPlane )
+    {
+        size_t iRegion = *nonPlane;
+        int surfaceClass = m_regions[iRegion]->m_regionNumber;
+		
+        // iterate over every face for the region number '*nonPlaneBegin'
+        for( size_t i=0; i < m_regions[iRegion]->m_faces.size(); ++i )
+        {
+            size_t iFace=i;
+            size_t pos;
+            // loop over each vertex for this face
+            for( int j=0; j < 3; j++ )
+            {
+                int iVertex = j;
+                current = (*m_regions[iRegion]->m_faces[iFace])(iVertex)->m_position;
+                // look up the current vertex. If it was used before get the position for the indexBuffer.
+                if( vertexMap.find(current) != vertexMap.end() )
+                {
+                    pos = vertexMap[current];
+                }
+                else
+                {
+					vertexcount++;
+                    pos = vertexBuffer.size() / 3;
+                    vertexMap.insert(pair<Vertex<float>, unsigned int>(current, pos));
+                    vertexBuffer.push_back( (*m_regions[iRegion]->m_faces[iFace])(iVertex)->m_position.x );
+                    vertexBuffer.push_back( (*m_regions[iRegion]->m_faces[iFace])(iVertex)->m_position.y );
+                    vertexBuffer.push_back( (*m_regions[iRegion]->m_faces[iFace])(iVertex)->m_position.z );
+
+                    if((*m_regions[iRegion]->m_faces[iFace])(iVertex)->m_normal.length() > 0.0001)
+                    {
+                    	normalBuffer.push_back( (*m_regions[iRegion]->m_faces[iFace])(iVertex)->m_normal[0] );
+                    	normalBuffer.push_back( (*m_regions[iRegion]->m_faces[iFace])(iVertex)->m_normal[1] );
+                    	normalBuffer.push_back( (*m_regions[iRegion]->m_faces[iFace])(iVertex)->m_normal[2] );
+                    }
+                    else
+                    {
+                    	normalBuffer.push_back((*m_regions[iRegion]->m_faces[iFace]).getFaceNormal()[0]);
+                    	normalBuffer.push_back((*m_regions[iRegion]->m_faces[iFace]).getFaceNormal()[1]);
+                    	normalBuffer.push_back((*m_regions[iRegion]->m_faces[iFace]).getFaceNormal()[2]);
+                    }
+
+                    //TODO: Color Vertex Traits stuff?
+                    colorBuffer.push_back( r );
+                    colorBuffer.push_back( g );
+                    colorBuffer.push_back( b );
+
+                    textureCoordBuffer.push_back( 0.0 );
+                    textureCoordBuffer.push_back( 0.0 );
+                    textureCoordBuffer.push_back( 0.0 );
+                }
+
+                indexBuffer.push_back( pos );
+            }
+        }
+    }
+    Vertex<float> curre;
+    // iterate over every face for the region number '*nonPlaneBegin'
+	for( size_t i=0; i < m_fusionFaces.size(); ++i )
+	{
+		size_t iFace=i;
+		size_t pos;
+		// loop over each vertex for this face
+		for( int j=0; j < 3; j++ )
+		{
+			int iVertex = j;
+			curre = (*m_fusionFaces[iFace])(iVertex)->m_position;
+
+			// look up the current vertex. If it was used before get the position for the indexBuffer.
+			if( vertexMap.find(curre) != vertexMap.end() )
+			{
+				pos = vertexMap[curre];
+			}
+			else
+			{
+				pos = vertexBuffer.size() / 3;
+				size_t act_ind = (*m_fusionFaces[iFace])(iVertex)->m_actIndex;
+				m_slice_verts.insert(pair<size_t,size_t>(act_ind, pos));
+				vertexMap.insert(pair<Vertex<float>, unsigned int>(curre, pos));
+				vertexBuffer.push_back( (*m_fusionFaces[iFace])(iVertex)->m_position.x );
+				vertexBuffer.push_back( (*m_fusionFaces[iFace])(iVertex)->m_position.y );
+				vertexBuffer.push_back( (*m_fusionFaces[iFace])(iVertex)->m_position.z );
+
+				if((*m_fusionFaces[iFace])(iVertex)->m_normal.length() > 0.0001)
+				{
+					normalBuffer.push_back( (*m_fusionFaces[iFace])(iVertex)->m_normal[0] );
+					normalBuffer.push_back( (*m_fusionFaces[iFace])(iVertex)->m_normal[1] );
+					normalBuffer.push_back( (*m_fusionFaces[iFace])(iVertex)->m_normal[2] );
+				}
+				else
+				{
+					normalBuffer.push_back(m_fusionFaces[iFace]->getFaceNormal()[0]);
+					normalBuffer.push_back(m_fusionFaces[iFace]->getFaceNormal()[1]);
+					normalBuffer.push_back(m_fusionFaces[iFace]->getFaceNormal()[2]);
+				}
+
+				//TODO: Color Vertex Traits stuff?
+				colorBuffer.push_back( r );
+				colorBuffer.push_back( g );
+				colorBuffer.push_back( b );
+
+				textureCoordBuffer.push_back( 0.0 );
+				textureCoordBuffer.push_back( 0.0 );
+				textureCoordBuffer.push_back( 0.0 );
+			}
+
+			indexBuffer.push_back( pos );
+		}
+	}
+	
+	
+    cout << timestamp << "Done copying non planar regions.";
+
+    /*
+         Done copying the simple stuff. Now the planes are going to be retesselated
+         and the textures are generated if there are textures to generate at all.!
+     */
+     vertexcount = 0;
+    for(intIterator planeNr = planeRegions.begin(); planeNr != planeRegions.end(); ++planeNr )
+    {
+        try
+        {
+            size_t iRegion = *planeNr;
+
+            int surface_class = m_regions[iRegion]->m_regionNumber;
+
+            r = m_regionClassifier->r(surface_class);
+            g = m_regionClassifier->g(surface_class);
+            b = m_regionClassifier->b(surface_class);
+
+            //textureBuffer.push_back( m_regions[iRegion]->m_regionNumber );
+
+            // get the contours for this region
+            vector<vector<VertexT> > contours = m_regions[iRegion]->getContours(fusionThreshold);
+
+            // alocate a new texture
+            TextureToken<VertexT, NormalT>* t = NULL;
+
+            //retesselate these contours.
+            std::vector<float> points;
+            std::vector<unsigned int> indices;
+
+            Tesselator<VertexT, NormalT>::getFinalizedTriangles(points, indices, contours);
+			
+			unordered_map<size_t, size_t> point_map;
+			Vertex<float> current;
+			size_t pos;
+			for(size_t k = 0; k < points.size(); k+=3)
+			{
+				current = Vertex<float>(points[k], points[k + 1], points[k + 2]);
+				auto it = vertexMap.find(current);
+				if(it != vertexMap.end())
+				{
+					pos = vertexMap[current];
+				}
+				else
+				{
+					
+				    pos = (vertexBuffer.size() / 3);
+				    vertexMap.insert(pair<Vertex<float>, unsigned int>(current, pos));
+			        vertexBuffer.push_back( points[k] );
+					vertexBuffer.push_back( points[k + 1]);
+					vertexBuffer.push_back( points[k + 2]);
+					
+				    normalBuffer.push_back( m_regions[iRegion]->m_normal[0] );
+					normalBuffer.push_back( m_regions[iRegion]->m_normal[1] );
+					normalBuffer.push_back( m_regions[iRegion]->m_normal[2] );
+
+					colorBuffer.push_back( r );
+					colorBuffer.push_back( g );
+					colorBuffer.push_back( b );
+
+					float u1 = 0;
+					float u2 = 0;
+					//if(t) t->textureCoords( VertexT( points[j * 3 + 0], points[j * 3 + 1], points[j * 3 + 2]), u1, u2 );
+					textureCoordBuffer.push_back( u1 );
+					textureCoordBuffer.push_back( u2 );
+					textureCoordBuffer.push_back(  0 );
+				}
+				point_map.insert(pair<size_t, size_t >(k/3, pos));
+			}
+
+            for(int j=0; j < indices.size(); j+=3)
+            {
+				auto it_a = point_map.find(indices[j + 0]);
+				auto it_b = point_map.find(indices[j + 1]);
+				auto it_c = point_map.find(indices[j + 2]);
+                int a =  it_a->second;
+                int b =  it_b->second;
+                int c =  it_c->second;
+
+                if(a != b && b != c && a != c)
+                {
+                    indexBuffer.push_back( a );
+                    indexBuffer.push_back( b );
+                    indexBuffer.push_back( c );
+                }
+            }
+        }
+        catch(...)
+        {
+            cout << timestamp << "Exception during finalization. Skipping triangle." << endl;
+        };
+
+    }
+    
+    if ( !this->m_meshBuffer )
+    {
+        this->m_meshBuffer = MeshBufferPtr( new MeshBuffer );
+    }
+    this->m_meshBuffer->setVertexArray( vertexBuffer );
+    this->m_meshBuffer->setVertexColorArray( colorBuffer );
+    this->m_meshBuffer->setVertexNormalArray( normalBuffer );
+    this->m_meshBuffer->setFaceArray( indexBuffer );
+    cout << endl << timestamp << "Done retesselating." << endl;
+		
+	HalfEdgeMesh<VertexT, NormalT>* retased_mesh =  new HalfEdgeMesh(this->m_meshBuffer);
+	size_t count_doubles = 0;
+	for(auto it = this->m_fusion_verts.begin(); it != this->m_fusion_verts.end(); it++)
+	{
+		retased_mesh->setOldFusionVertex(m_slice_verts[it->second]);
+	}
+	retased_mesh->m_fusionNeighbors = m_fusionNeighbors;
+	retased_mesh->m_slice_verts = m_slice_verts;
+	retased_mesh->m_fusion_verts = m_fusion_verts;
+    Tesselator<VertexT, NormalT>::clear();
+    return retased_mesh;
+} 
+	
 
 
 

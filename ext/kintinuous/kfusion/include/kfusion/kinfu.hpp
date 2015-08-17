@@ -94,7 +94,6 @@ namespace kfusion
         const cuda::ProjectiveICP& icp() const;
         cuda::ProjectiveICP& icp();
 
-        //void reset(Affine3f initialPose = Affine3f().translate(Vec3f(0, 0, -1)));
         void reset(Affine3f initialPose = Affine3f::Identity());
         
         bool operator()(const cuda::Depth& dpeth, const cuda::Image& image = cuda::Image());
@@ -111,7 +110,6 @@ namespace kfusion
         KinFuParams params_;
 
         std::vector<Affine3f> poses_;
-        double distance_camera_target_;
 
         cuda::Dists dists_;
         cuda::Frame curr_, prev_;

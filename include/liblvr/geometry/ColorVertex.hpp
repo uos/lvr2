@@ -48,6 +48,7 @@ public:
 	{
 		this->x = this->y = this->z = 0;
 		this->r = this->g = this->b = 0;
+		fusion = false;
 	}
 
 	/**
@@ -61,6 +62,7 @@ public:
 		this->r = 0;
 		this->g = 100;
 		this->b = 0;
+		fusion = false;
 	}
 
 	/**
@@ -75,6 +77,7 @@ public:
 		this->r = _r;
 		this->g = _g;
 		this->b = _b;
+		fusion = false;
 	}
 
 	/**
@@ -88,6 +91,7 @@ public:
 		this->r = o.r;
 		this->g = o.g;
 		this->b = o.b;
+		this->fusion = o.fusion;
 	}
 
 	/**
@@ -115,6 +119,7 @@ public:
             case 3: return *((CoordType*) &r);
             case 4: return *((CoordType*) &g);
             case 5: return *((CoordType*) &b);
+            case 6: return *((CoordType*) &fusion);
             default:
                 throw std::overflow_error( "Access index out of range." );
         }
@@ -131,6 +136,7 @@ public:
             case 3: return *((CoordType*) &r);
             case 4: return *((CoordType*) &g);
             case 5: return *((CoordType*) &b);
+            case 6: return *((CoordType*) &fusion);
             default:
                 throw std::overflow_error("Access index out of range.");
         }
@@ -138,6 +144,7 @@ public:
 
 
 	ColorT r, g, b;
+	bool fusion;
 
 };
 
