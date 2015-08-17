@@ -235,7 +235,7 @@ add_subdirectory(ext/laslib)
 
 # OBJ
 include_directories( ${CMAKE_CURRENT_SOURCE_DIR}/ext/obj/ )
-add_subdirectory(ext/obj)
+#add_subdirectory(ext/obj)
 
 # SLAM6D stuff
 include_directories( ${CMAKE_CURRENT_SOURCE_DIR}/ext/slam6d )
@@ -252,18 +252,18 @@ add_subdirectory(ext/kintinuous)
 #add_subdirectory(ext/libfreenect)
 
 if(MPI_FOUND)
-add_subdirectory(src/tools/mpi)
+#add_subdirectory(src/tools/mpi)
 endif(MPI_FOUND)
 
 if(CGAL_FOUND)
-add_subdirectory(src/tools/cgal_reconstruction)
+#add_subdirectory(src/tools/cgal_reconstruction)
 #add_subdirectory(src/tools/fusion)
-add_subdirectory(src/tools/slicer)
+#add_subdirectory(src/tools/slicer)
 endif(CGAL_FOUND)
 
 if(PCL_FOUND)
-    add_subdirectory(src/tools/scanfilter)
-    add_subdirectory(src/tools/leica_converter)
+    #add_subdirectory(src/tools/scanfilter)
+    #add_subdirectory(src/tools/leica_converter)
 #    add_subdirectory(src/tools/kinectgrabber)
 endif(PCL_FOUND)
 
@@ -292,13 +292,13 @@ if( QT4_FOUND )
     if(QGLVIEWER_LIBRARY_RELEASE)
         message(STATUS "Found libqglviewer")
         message(STATUS "Building qglviewer application")
-        add_subdirectory(src/qglviewer)
+        #add_subdirectory(src/qglviewer)
     endif(QGLVIEWER_LIBRARY_RELEASE)
 
    	find_package(QVTK)
 	if(QVTK_FOUND)
 		include_directories(${QVTK_INCLUDE_DIR})
-   		add_subdirectory(src/tools/viewer)
+   		#add_subdirectory(src/tools/viewer)
 	endif(QVTK_FOUND)
 
 endif(QT4_FOUND)
@@ -314,18 +314,18 @@ add_subdirectory(src/liblvr)
 # BINARIES
 ##############################################################
 
-add_subdirectory(src/tools/reconstruct)
-add_subdirectory(src/tools/classifier)
+#add_subdirectory(src/tools/reconstruct)
+#add_subdirectory(src/tools/classifier)
 #add_subdirectory(src/tools/colorize)
-add_subdirectory(src/tools/scanreduce)
-add_subdirectory(src/tools/convert)
-add_subdirectory(src/tools/asciiconverter)
-add_subdirectory(src/tools/texman)
-add_subdirectory(src/tools/tiogen)
-add_subdirectory(src/tools/meshoptimizer)
-add_subdirectory(src/tools/transform)
-add_subdirectory(src/tools/registration)
-add_subdirectory(src/tools/normals)
+#add_subdirectory(src/tools/scanreduce)
+#add_subdirectory(src/tools/convert)
+#add_subdirectory(src/tools/asciiconverter)
+#add_subdirectory(src/tools/texman)
+#add_subdirectory(src/tools/tiogen)
+#add_subdirectory(src/tools/meshoptimizer)
+#add_subdirectory(src/tools/transform)
+#add_subdirectory(src/tools/registration)
+#add_subdirectory(src/tools/normals)
 
 ################################################################
 # DOCUMENTATION
