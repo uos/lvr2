@@ -267,6 +267,7 @@ int kfusion::OpenNISource::grab(cv::Mat& depth, cv::Mat& color)
       int x = impl_->colorFrame.getWidth();
       int y = impl_->colorFrame.getHeight();
       cv::Mat(y, x, CV_8UC3, (void*)pColor).copyTo(color);
+      cv::cvtColor(color, color, cv::COLOR_RGB2BGR);
     }
     else
     {
