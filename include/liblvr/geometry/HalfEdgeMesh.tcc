@@ -1593,7 +1593,7 @@ void HalfEdgeMesh<VertexT, NormalT>::finalize()
     size_t numFaces    = m_faces.size();
     size_t numRegions  = m_regions.size();
 	float r = 0.0f;
-	float g = 200.0f;
+	float g = 255.0f;
 	float b = 0.0f;
     std::vector<uchar> faceColorBuffer;
 
@@ -2141,7 +2141,7 @@ HalfEdgeMesh<VertexT, NormalT>* HalfEdgeMesh<VertexT, NormalT>::retesselateInHal
     typedef std::vector<size_t>::iterator   intIterator;
 
     // default colors
-    float r=0, g=200, b=0;
+    float r=0, g=255, b=0;
 
     map<Vertex<uchar>, unsigned int> materialMap;
 	
