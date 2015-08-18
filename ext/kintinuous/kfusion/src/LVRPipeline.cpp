@@ -40,8 +40,6 @@ namespace kfusion
 		pl_.AddWork(workload);
 		slice_count_++;
 	}
-	//	std::vector<int> result = pl.GetResult();
-	//	std::cout << result[0] << std::endl;
 
 	double LVRPipeline::calcTimeStats()
 	{			
