@@ -89,7 +89,8 @@ struct KinFuApp
     void show_mesh()
     {
 		auto mesh = kinfu_->cyclical().getMesh();
-		//cv::viz::Mesh cvmesh = cv::viz::Mesh::load("test_mesh.ply");
+		cout << "iam in show mesh !!!! " << endl;
+		//cv::viz::Mesh cvmesh = cv::viz::Mesh::load("test_mesh.ply", LOAD_OBJ);
 		//viz.showWidget("mesh", cv::viz::WMesh(cvmesh));
 	}
 
@@ -200,6 +201,7 @@ struct KinFuApp
         cv::Mat depth, image;
         double time_ms = 0;
         int has_image = 0;
+        size_t mesh_size = kinfu.cyclical().getMesh().meshSize();
 
         for (int i = 0; !exit_ && !viz.wasStopped(); ++i)
         {
@@ -223,10 +225,14 @@ struct KinFuApp
             if (has_image)
                 show_raycasted(kinfu);
                 
+			if(kinfu.cyclical().getMesh().meshSize() > mesh_size)
+			{
+				show_mesh();
+				mesh_size = kinfu.cyclical().getMesh().meshSize();
+			}
 			
 			if(kinfu.hasShifted())
 				show_cube(kinfu);
-            //show_depth(depth);
 
 			cv::imshow("Image", image);
 
