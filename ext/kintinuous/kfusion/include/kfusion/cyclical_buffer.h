@@ -229,7 +229,7 @@ namespace kfusion
 		  
 		  void resetMesh(){/*mcwrap_.resetMesh();*/}
 		  
-		  MeshPtr getMesh() {/*return mcwrap_.getMesh();*/}
+		  MeshPtr getMesh() {return pl_.getMesh();}
 		  
 		  int getSliceCount(){return slice_count_;}
 		  			

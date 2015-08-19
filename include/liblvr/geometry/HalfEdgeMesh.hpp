@@ -304,6 +304,8 @@ public:
 	 */
 	VertexVector& getVertices() { return m_vertices; }
 	
+	FaceVector& getFaces() { return m_faces; }
+	
 	void mergeVertex(VertexPtr merge_vert, VertexPtr erase_vert);
 	
 	unordered_map<size_t, size_t> m_slice_verts;

@@ -41,7 +41,7 @@ namespace kfusion
 			
 			void resetMesh();
 			
-			MeshPtr getMesh() {return meshPtr_;};
+			MeshPtr getMesh() {return pl_.GetResult();}
 			
 			double calcTimeStats();
 			
