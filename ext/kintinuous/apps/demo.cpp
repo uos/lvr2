@@ -201,7 +201,7 @@ struct KinFuApp
         cv::Mat depth, image;
         double time_ms = 0;
         int has_image = 0;
-        size_t mesh_size = kinfu.cyclical().getMesh().meshSize();
+        size_t mesh_size = kinfu.cyclical().getMesh()->meshSize();
 
         for (int i = 0; !exit_ && !viz.wasStopped(); ++i)
         {
@@ -225,10 +225,10 @@ struct KinFuApp
             if (has_image)
                 show_raycasted(kinfu);
                 
-			if(kinfu.cyclical().getMesh().meshSize() > mesh_size)
+			if(kinfu.cyclical().getMesh()->meshSize() > mesh_size)
 			{
 				show_mesh();
-				mesh_size = kinfu.cyclical().getMesh().meshSize();
+				mesh_size = kinfu.cyclical().getMesh()->meshSize();
 			}
 			
 			if(kinfu.hasShifted())
