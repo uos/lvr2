@@ -83,15 +83,31 @@ struct KinFuApp
         cv::namedWindow("Image", 0 );
 		cv::resizeWindow("Image",800, 500);
 		cv::moveWindow("Image", 0, 500);
-        show_mesh();
     }
     
     void show_mesh()
     {
-		auto mesh = kinfu_->cyclical().getMesh();
 		cout << "iam in show mesh !!!! " << endl;
+		auto lvr_mesh = kinfu_->cyclical().getMesh();
+		cv::viz::Mesh cv_mesh;
+		//fill cloud
+		cv_mesh.cloud.create(1, lvr_mesh->getVertices().size(), CV_64FC3);
+        cv::Vec3d *ddata = cv_mesh.cloud.ptr<cv::Vec3d>();
+        for(auto vertex : lvr_mesh->getVertices())
+                *ddata++ = cv::Vec3d(vertex->m_position[0], vertex->m_position[1], vertex->m_position[2]);
+		//fill polygons
+		cv_mesh.polygons.create(1, lvr_mesh->getFaces().size(), CV_32SC1);
+		int* poly_ptr = cv_mesh.polygons.ptr<int>();
+
+		for(auto face : lvr_mesh->getFaces())
+		{
+			*poly_ptr++ = 3;
+			for (size_t i = 0; i < 3; ++i)
+				*poly_ptr++ = (size_t)face->m_indices[i];
+		}
 		//cv::viz::Mesh cvmesh = cv::viz::Mesh::load("test_mesh.ply", LOAD_OBJ);
-		//viz.showWidget("mesh", cv::viz::WMesh(cvmesh));
+		viz.showWidget("mesh", cv::viz::WMesh(cv_mesh));
+		//std::thread meh_viz(show_mesh);
 	}
 
     void show_depth(const cv::Mat& depth)
@@ -201,8 +217,7 @@ struct KinFuApp
         cv::Mat depth, image;
         double time_ms = 0;
         int has_image = 0;
-        size_t mesh_size = kinfu.cyclical().getMesh()->meshSize();
-
+		std::thread meh_viz(&KinFuApp::show_mesh,this);
         for (int i = 0; !exit_ && !viz.wasStopped(); ++i)
         {
 			if(!pause_ || !capture_.isRecord())
@@ -225,11 +240,12 @@ struct KinFuApp
             if (has_image)
                 show_raycasted(kinfu);
                 
-			if(kinfu.cyclical().getMesh()->meshSize() > mesh_size)
+			/*if(newMesh)
 			{
+				cout << "size " << kinfu.cyclical().getMesh()->meshSize() << endl;
 				show_mesh();
 				mesh_size = kinfu.cyclical().getMesh()->meshSize();
-			}
+			}*/
 			
 			if(kinfu.hasShifted())
 				show_cube(kinfu);
