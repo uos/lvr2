@@ -83,14 +83,6 @@ HalfEdgeMesh<VertexT, NormalT>::HalfEdgeMesh(
 template<typename VertexT, typename NormalT>
 void HalfEdgeMesh<VertexT, NormalT>::addMesh(HalfEdgeMesh<VertexT, NormalT>* slice)
 {
-	size_t old_size = m_faces.size();
-	m_faces.resize(old_size +  slice->m_faces.size());
-    for(int i = 0; i < slice->m_faces.size();i++)
-    {
-		size_t index = old_size + i;
-		m_faces[index] = slice->m_faces[i];
-	}
-
 	size_t old_vert_size = m_vertices.size();
 	m_vertices.resize(old_vert_size +  slice->m_vertices.size() - slice->m_fusionNeighbors);
 
@@ -121,6 +113,19 @@ void HalfEdgeMesh<VertexT, NormalT>::addMesh(HalfEdgeMesh<VertexT, NormalT>* sli
 		}
 		mergeVertex(m_vertices[merge_index], slice->m_vertices[slice->m_slice_verts[erase_index]]);
 	}
+	
+	size_t old_size = m_faces.size();
+	m_faces.resize(old_size +  slice->m_faces.size());
+    for(int i = 0; i < slice->m_faces.size();i++)
+    {
+		size_t index = old_size + i;
+		m_faces[index] = slice->m_faces[i];
+		for(size_t i = 0; i < 3; i++)
+		{
+			m_faces[index]->m_indices[i] = fused_verts[m_faces[index]->m_indices[i]];
+		}
+	}
+	
 	m_fused_verts = fused_verts;
 	m_slice_verts = slice->m_slice_verts;
 	m_globalIndex = this->meshSize();
