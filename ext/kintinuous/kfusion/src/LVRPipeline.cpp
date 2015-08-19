@@ -6,6 +6,7 @@ namespace kfusion
 {
 	LVRPipeline::LVRPipeline(double camera_target_distance, double voxel_size) : slice_count_(0)
 	{
+		meshPtr_ = new HMesh();
 		omp_set_num_threads(omp_get_num_procs());
 		pl_.AddStage(
 			boost::shared_ptr<GridStage>(new GridStage(voxel_size))
@@ -17,7 +18,7 @@ namespace kfusion
 			boost::shared_ptr<OptimizeStage>(new OptimizeStage())
 			);
 		pl_.AddStage(
-			boost::shared_ptr<FusionStage>(new FusionStage(new HMesh(), camera_target_distance_, voxel_size))
+			boost::shared_ptr<FusionStage>(new FusionStage(meshPtr_, camera_target_distance_, voxel_size))
 			);
 		pl_.Start();
 	}
