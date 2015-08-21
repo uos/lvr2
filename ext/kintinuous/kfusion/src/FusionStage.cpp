@@ -33,7 +33,7 @@ void FusionStage::lastStep()
 	//min_plan_size
 	//meshPtr_->restorePlanes(7);
 	//meshPtr_->finalizeAndRetesselate(false, 0.01);
-	transformMeshBack();
+	//transformMeshBack();
 	mesh_->finalize();
 	ModelPtr m( new Model( mesh_->meshBuffer() ) );
 	ModelFactory::saveModel( m, "./mesh_" + to_string(mesh_count_) + ".ply");

@@ -33,13 +33,16 @@ class OptimizeStage : public AbstractStage
 public:
 
 	// default constructor
-	OptimizeStage();
+	OptimizeStage(double camera_target_distance_, double voxel_size);
 
 	virtual void firstStep();
 	virtual void step();
 	virtual void lastStep();
 	
 private:
+	void transformMeshBack(MeshPtr mesh);
 	size_t mesh_count_;
+	double camera_target_distance_;
+	double voxel_size_;
 };
 #endif // STAGE
