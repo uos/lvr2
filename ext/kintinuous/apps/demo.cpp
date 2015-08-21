@@ -3,9 +3,13 @@
 #include <opencv2/imgproc/imgproc.hpp>
 #include <opencv2/viz/vizcore.hpp>
 #include <kfusion/kinfu.hpp>
+#include <geometry/HalfEdgeVertex.hpp>
+
 #include <io/capture.hpp>
 
 using namespace kfusion;
+typedef lvr::ColorVertex<float, unsigned char> cVertex;
+typedef lvr::HalfEdgeVertex<cVertex, lvr::Normal<float> >* VertexPtr;
 
 struct KinFuApp
 {
@@ -49,8 +53,8 @@ struct KinFuApp
         }
     }
 
-    KinFuApp(OpenNISource& source) : exit_ (false),  iteractive_mode_(false), pause_(false),
-										capture_ (source), cube_count_(0), pic_count_(0)
+    KinFuApp(OpenNISource& source) : exit_ (false),  iteractive_mode_(false), pause_(false), meshRender_(false),
+										capture_ (source), cube_count_(0), pic_count_(0), mesh_(NULL), garbageMesh_(NULL)
     {
         KinFuParams params = KinFuParams::default_params();
         kinfu_ = KinFu::Ptr( new KinFu(params) );
@@ -87,27 +91,34 @@ struct KinFuApp
     
     void show_mesh()
     {
-		cout << "iam in show mesh !!!! " << endl;
-		auto lvr_mesh = kinfu_->cyclical().getMesh();
-		cv::viz::Mesh cv_mesh;
-		//fill cloud
-		cv_mesh.cloud.create(1, lvr_mesh->getVertices().size(), CV_64FC3);
-        cv::Vec3d *ddata = cv_mesh.cloud.ptr<cv::Vec3d>();
-        for(auto vertex : lvr_mesh->getVertices())
-                *ddata++ = cv::Vec3d(vertex->m_position[0], vertex->m_position[1], vertex->m_position[2]);
-		//fill polygons
-		cv_mesh.polygons.create(1, lvr_mesh->getFaces().size(), CV_32SC1);
-		int* poly_ptr = cv_mesh.polygons.ptr<int>();
-
-		for(auto face : lvr_mesh->getFaces())
+		while(true)
 		{
-			*poly_ptr++ = 3;
-			for (size_t i = 0; i < 3; ++i)
-				*poly_ptr++ = (size_t)face->m_indices[i];
+			auto lvr_mesh = kinfu_->cyclical().getMesh();
+			cv::viz::Mesh* cv_mesh = new cv::viz::Mesh();
+			//fill cloud
+			cv_mesh->cloud.create(1, lvr_mesh->getVertices().size(), CV_32FC3);
+			cv::Vec3f *ddata = cv_mesh->cloud.ptr<cv::Vec3f>();
+			unordered_map<VertexPtr, size_t> index_map;
+			size_t k = 0;
+			for(auto vertex : lvr_mesh->getVertices())
+			{
+				index_map[vertex] = k;
+				*ddata++ = cv::Vec3f(vertex->m_position[0], vertex->m_position[1], vertex->m_position[2]);
+				k++;
+			}
+			//fill polygons
+			cv_mesh->polygons.create(1, lvr_mesh->getFaces().size() * 4, CV_32SC1);
+			int* poly_ptr = cv_mesh->polygons.ptr<int>();
+			for(auto face : lvr_mesh->getFaces())
+			{
+				*poly_ptr++ = 3;
+				*poly_ptr++ = index_map[face->m_edge->end()];
+				*poly_ptr++ = index_map[face->m_edge->next()->end()];
+				*poly_ptr++ = index_map[face->m_edge->next()->next()->end()];
+			}
+			mesh_ = cv_mesh;
+			meshRender_ = true;
 		}
-		//cv::viz::Mesh cvmesh = cv::viz::Mesh::load("test_mesh.ply", LOAD_OBJ);
-		viz.showWidget("mesh", cv::viz::WMesh(cv_mesh));
-		//std::thread meh_viz(show_mesh);
 	}
 
     void show_depth(const cv::Mat& depth)
@@ -220,7 +231,7 @@ struct KinFuApp
 		std::thread meh_viz(&KinFuApp::show_mesh,this);
         for (int i = 0; !exit_ && !viz.wasStopped(); ++i)
         {
-			if(!pause_ || !capture_.isRecord())
+			if((!pause_ || !capture_.isRecord()) && !(kinfu.hasShifted() && kinfu.isLastScan()))
             {
 				int has_frame = capture_.grab(depth, image);
 				image_ = &image;
@@ -240,12 +251,17 @@ struct KinFuApp
             if (has_image)
                 show_raycasted(kinfu);
                 
-			/*if(newMesh)
+			if(meshRender_)
 			{
-				cout << "size " << kinfu.cyclical().getMesh()->meshSize() << endl;
-				show_mesh();
-				mesh_size = kinfu.cyclical().getMesh()->meshSize();
-			}*/
+				if(garbageMesh_ != NULL)
+				{
+					viz.removeWidget("mesh");
+					delete garbageMesh_;
+				}
+				viz.showWidget("mesh", cv::viz::WMesh(*mesh_));
+				garbageMesh_ = mesh_;
+				meshRender_ = false;
+			}
 			
 			if(kinfu.hasShifted())
 				show_cube(kinfu);
@@ -272,17 +288,19 @@ struct KinFuApp
             }
 
             viz.spinOnce(3, true);
-			exit_ = exit_ || ( kinfu.hasShifted() && kinfu.isLastScan() );
+			//exit_ = exit_ || ( kinfu.hasShifted() && kinfu.isLastScan() );
 			//if(kinfu.cyclical().getSliceCount() == 1)
 				//take_cloud(kinfu);
         }
         return true;
     }
 
-    bool exit_, iteractive_mode_, pause_;
+    bool exit_, iteractive_mode_, pause_, meshRender_;
     OpenNISource& capture_;
     KinFu::Ptr kinfu_;
     cv::viz::Viz3d viz;
+    cv::viz::Mesh* mesh_;
+    cv::viz::Mesh* garbageMesh_;
 	size_t cube_count_, pic_count_;
     cv::Mat view_host_;
     cv::Mat* image_;

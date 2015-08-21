@@ -97,6 +97,7 @@ void HalfEdgeMesh<VertexT, NormalT>::addMesh(HalfEdgeMesh<VertexT, NormalT>* sli
 		{
 			m_vertices[index] = slice->m_vertices[i];
 			fused_verts[i] = index;
+			m_vertices[index]->m_actIndex = index;
 		}
 		else
 			count++;
@@ -120,10 +121,18 @@ void HalfEdgeMesh<VertexT, NormalT>::addMesh(HalfEdgeMesh<VertexT, NormalT>* sli
     {
 		size_t index = old_size + i;
 		m_faces[index] = slice->m_faces[i];
-		for(size_t i = 0; i < 3; i++)
+		/*for(size_t i = 0; i < 3; i++)
 		{
-			m_faces[index]->m_indices[i] = fused_verts[m_faces[index]->m_indices[i]];
-		}
+			auto it = fused_verts.find(m_faces[index]->m_indices[i]);
+			size_t new_index = 0;
+			if(it == fused_verts.end())
+			{
+				new_index = m_faces[index]->m_indices[i] + old_vert_size;
+			}
+			else
+				new_index = fused_verts[m_faces[index]->m_indices[i]];
+			m_faces[index]->m_indices[i] = new_index;
+		}*/
 	}
 	
 	m_fused_verts = fused_verts;
@@ -236,7 +245,9 @@ template<typename VertexT, typename NormalT>
 void HalfEdgeMesh<VertexT, NormalT>::addVertex(VertexT v)
 {
     // Create new HalfEdgeVertex and increase vertex counter
-    m_vertices.push_back(new HVertex(v));
+    HVertex* h = new HVertex(v);
+    h->m_actIndex = m_vertices.size();
+    m_vertices.push_back(h);
     m_globalIndex++;
 }
 
@@ -386,6 +397,9 @@ void HalfEdgeMesh<VertexT, NormalT>::addTriangle(uint a, uint b, uint c, FacePtr
     face->m_edge = edges[0];
     face->calc_normal();
     face->m_face_index = m_faces.size();
+    face->m_indices[0] = a;
+    face->m_indices[1] = b;
+    face->m_indices[2] = c;
     f = face;
 }
 
@@ -394,7 +408,7 @@ void HalfEdgeMesh<VertexT, NormalT>::setFusionVertex(uint v)
 {
 	auto vertice = m_vertices[v];
 	vertice->m_fused = true;
-	vertice->m_actIndex = v;
+	//vertice->m_actIndex = v;
 	
 }
 
@@ -405,7 +419,7 @@ void HalfEdgeMesh<VertexT, NormalT>::setOldFusionVertex(uint v)
 	if(!vertice->m_oldFused)
 	{
 		vertice->m_oldFused = true;
-		vertice->m_actIndex = v;
+		//vertice->m_actIndex = v;
 		m_fusionNeighbors++;
 	}
 }
