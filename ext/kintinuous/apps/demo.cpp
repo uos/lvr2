@@ -91,32 +91,97 @@ struct KinFuApp
     
     void show_mesh()
     {
+		unordered_map<VertexPtr, size_t> index_map;
+		size_t verts_size = 0;
+		size_t faces_size = 0;
 		while(true)
 		{
 			auto lvr_mesh = kinfu_->cyclical().getMesh();
-			cv::viz::Mesh* cv_mesh = new cv::viz::Mesh();
+			size_t slice_size = lvr_mesh->getVertices().size() - verts_size;
+			size_t slice_face_size = lvr_mesh->getFaces().size() - faces_size;
+			cv::viz::Mesh* cv_mesh;
 			//fill cloud
-			cv_mesh->cloud.create(1, lvr_mesh->getVertices().size(), CV_32FC3);
-			cv::Vec3f *ddata = cv_mesh->cloud.ptr<cv::Vec3f>();
-			unordered_map<VertexPtr, size_t> index_map;
-			size_t k = 0;
-			for(auto vertex : lvr_mesh->getVertices())
+			cv::Mat verts;
+			cv::Vec3f *ddata;
+			if(mesh_ == NULL)
 			{
-				index_map[vertex] = k;
-				*ddata++ = cv::Vec3f(vertex->m_position[0], vertex->m_position[1], vertex->m_position[2]);
-				k++;
+				cv_mesh = new cv::viz::Mesh();
+				cv_mesh->cloud.create(1, slice_size, CV_32FC3);
+				ddata = cv_mesh->cloud.ptr<cv::Vec3f>();
 			}
-			//fill polygons
-			cv_mesh->polygons.create(1, lvr_mesh->getFaces().size() * 4, CV_32SC1);
-			int* poly_ptr = cv_mesh->polygons.ptr<int>();
-			for(auto face : lvr_mesh->getFaces())
+			else
 			{
+				verts.create(1, slice_size, CV_32FC3);
+				ddata = verts.ptr<cv::Vec3f>();
+			}
+			
+			for(size_t k = 0; k < slice_size; k++)
+			{
+				auto vertex = lvr_mesh->getVertices()[k + verts_size];
+				index_map[vertex] = k + verts_size;
+				*ddata++ = cv::Vec3f(vertex->m_position[0], vertex->m_position[1], vertex->m_position[2]);
+			}
+			if(mesh_ != NULL)
+				cv::hconcat(mesh_->cloud, verts, mesh_->cloud);
+			//fill polygons
+			cv::Mat faces;
+			int* poly_ptr;
+			if(mesh_ == NULL)
+			{
+				cv_mesh->polygons.create(1, lvr_mesh->getFaces().size() * 4, CV_32SC1);
+				poly_ptr = cv_mesh->polygons.ptr<int>();
+			}
+			else
+			{
+				faces.create(1, slice_face_size * 4, CV_32SC1);
+				poly_ptr = faces.ptr<int>();
+			}
+			for(size_t k = 0; k < slice_face_size; k++)
+			{
+				auto face = lvr_mesh->getFaces()[k + faces_size];
 				*poly_ptr++ = 3;
 				*poly_ptr++ = index_map[face->m_edge->end()];
 				*poly_ptr++ = index_map[face->m_edge->next()->end()];
 				*poly_ptr++ = index_map[face->m_edge->next()->next()->end()];
 			}
-			mesh_ = cv_mesh;
+			if(mesh_ != NULL)
+				cv::hconcat(mesh_->polygons, faces, mesh_->polygons);
+				
+			//fill color
+			cv::Mat colors;
+			cv::Mat buffer;
+			cv::Vec3d *cptr;
+			size_t size;
+			auto cBuffer = lvr_mesh->meshBuffer()->getVertexColorArray(size);
+			cout << "color size " << size << endl;
+			if(mesh_ == NULL)
+			{
+				cv_mesh->colors.create(1, slice_size, CV_64FC(3));
+				cptr = cv_mesh->colors.ptr<cv::Vec3d>();
+			}
+			else
+			{
+				buffer.create(1, slice_size, CV_64FC(3));
+				cptr = buffer.ptr<cv::Vec3d>();
+				//buffer.convertTo(colors, CV_8U, 255.0);
+				
+			}
+			for(size_t i = 0; i < slice_size; ++i)
+				//*cptr++ = cv::Vec3d(cBuffer[i + verts_size], cBuffer[i + verts_size + 1], cBuffer[i+ verts_size + 2]);
+				*cptr++ = cv::Vec3d(0.0, 255.0, 0.0);
+				
+			if(mesh_ != NULL)
+			{
+				buffer.convertTo(buffer, CV_8U, 255.0);
+				cv::hconcat(mesh_->colors, buffer, mesh_->colors);
+			}
+			else
+			{
+				cv_mesh->colors.convertTo(cv_mesh->colors, CV_8U, 255.0);
+				mesh_ = cv_mesh;
+			}
+			verts_size = lvr_mesh->getVertices().size();
+			faces_size = lvr_mesh->getFaces().size();
 			meshRender_ = true;
 		}
 	}
@@ -234,6 +299,8 @@ struct KinFuApp
 			if((!pause_ || !capture_.isRecord()) && !(kinfu.hasShifted() && kinfu.isLastScan()))
             {
 				int has_frame = capture_.grab(depth, image);
+				cv::flip(depth, depth, 1);
+				cv::flip(image, image, 1);
 				image_ = &image;
 				if (has_frame == 0)
 					return std::cout << "Can't grab" << std::endl, false;
@@ -256,7 +323,7 @@ struct KinFuApp
 				if(garbageMesh_ != NULL)
 				{
 					viz.removeWidget("mesh");
-					delete garbageMesh_;
+					//delete garbageMesh_;
 				}
 				viz.showWidget("mesh", cv::viz::WMesh(*mesh_));
 				garbageMesh_ = mesh_;

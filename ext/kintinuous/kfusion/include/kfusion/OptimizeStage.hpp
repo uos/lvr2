@@ -44,5 +44,6 @@ private:
 	size_t mesh_count_;
 	double camera_target_distance_;
 	double voxel_size_;
+	MeshPtr optiMesh_;
 };
 #endif // STAGE

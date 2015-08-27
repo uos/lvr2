@@ -20,9 +20,6 @@ void MeshStage::step()
 	
 	// Create an empty mesh
 	fast_recon->getMesh(*meshPtr);
-	//meshPtr->m_fusionBoxes = act_grid->getFusionCells();
-	//meshPtr->m_oldfusionBoxes = act_grid->m_old_fusion_cells;
-	//meshPtr->m_fusionNeighborBoxes = act_grid->m_fusion_cells_neighbors;
 	// mark all fusion vertices in the mesh
 	for(auto cellPair : act_grid->getFusionCells())
 	{
@@ -67,12 +64,6 @@ void MeshStage::step()
 		}
 	}
 	meshPtr->m_fusion_verts = verts_map;
-	/*if(slice_count_ == 0)
-	meshPtr_ = meshPtr;
-	else
-	{
-		mesh_queue_.push(meshPtr);
-	}*/
 	delete cube_time;
 	delete fast_recon;
 	std::cout << "        ####     2 Finished reconstruction number: " << mesh_count_ << "   ####" << std::endl;
