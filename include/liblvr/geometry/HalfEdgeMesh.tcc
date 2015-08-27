@@ -2178,8 +2178,8 @@ HalfEdgeMesh<VertexT, NormalT>* HalfEdgeMesh<VertexT, NormalT>::retesselateInHal
     std::vector<size_t> planeRegions;
     for( size_t i = 0; i < m_regions.size(); ++i )
     {
-		if(!m_regions[i]->m_unfinished)
-		{
+		//if(!m_regions[i]->m_unfinished)
+		//{
 			if( !m_regions[i]->m_inPlane || m_regions[i]->m_regionNumber < 0)
 			{
 				
@@ -2187,10 +2187,9 @@ HalfEdgeMesh<VertexT, NormalT>* HalfEdgeMesh<VertexT, NormalT>::retesselateInHal
 			}
 			else
 			{
-				cout << "plane region ! " << endl;
 				planeRegions.push_back(i);
 			}
-		}	
+		//}	
     }
 
     // keep track of used vertices to avoid doubles.
@@ -2350,7 +2349,7 @@ HalfEdgeMesh<VertexT, NormalT>* HalfEdgeMesh<VertexT, NormalT>::retesselateInHal
 			{
 				deleteFace(m_regions[iRegion]->m_faces[i]);
 			}*/
-			  m_regions[iRegion]->m_toDelete = true;
+			  //m_regions[iRegion]->m_toDelete = true;
         }
         catch(...)
         {
