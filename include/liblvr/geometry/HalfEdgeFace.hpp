@@ -64,7 +64,7 @@ public:
      */
 	HalfEdgeFace() :
 	    m_invalid(false), m_edge(0),
-	    m_used(false), m_region(-1),
+	    m_used(false),m_fusion_face(false), m_region(-1),
 	    m_texture_index(-1),
 	    m_face_index(-1) {};
 
@@ -186,6 +186,7 @@ public:
 	NormalT							m_normal;
 
 	bool                            m_invalid;
+	bool 							m_fusion_face;
 
 private:
 
