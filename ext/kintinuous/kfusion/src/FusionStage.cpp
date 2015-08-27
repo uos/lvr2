@@ -20,6 +20,7 @@ void FusionStage::step()
 		mesh_->addMesh(opti_mesh);
 	std::cout << "                        ####    4 Finished slice number: " << mesh_count_ << "   ####" << std::endl;
 	getOutQueue()->Add(mesh_);
+	//getOutQueue()->Add(opti_mesh);
 	mesh_count_++;
 	if(last_shift)
 		done(true);

@@ -58,7 +58,7 @@ public:
 	/**
 	 * @brief	Default ctor. Position is (0, 0, 0), normal is undefined
 	 */
-	HalfEdgeVertex() : m_index(-1), m_fused(false), m_oldFused(false){}
+	HalfEdgeVertex() : m_index(-1), m_fused(false), m_oldFused(false), m_actIndex(0){}
 
 	~HalfEdgeVertex()
 	{

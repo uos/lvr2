@@ -6,21 +6,27 @@ OptimizeStage::OptimizeStage(double camera_target_distance, double voxel_size) :
 {
 }
 
-void OptimizeStage::firstStep() { /* skip */ };
+void OptimizeStage::firstStep() { optiMesh_ = NULL; };
 
 void OptimizeStage::step()
 {
 	auto mesh_work = boost::any_cast<pair<MeshPtr, bool> >(getInQueue()->Take());
 	bool last_shift = mesh_work.second;
 	MeshPtr act_mesh = mesh_work.first;
-	act_mesh->optimizePlanes(3, 0.83, 7, 40);
+	transformMeshBack(act_mesh);
+	/*if(optiMesh_ == NULL)
+		optiMesh_ = act_mesh;
+	else
+		optiMesh_->addMesh(act_mesh);*/
+	
+	//optiMesh_->optimizePlanes(3, 0.85, 7, 0);
 	//act_mesh->optimizePlaneIntersections();
-	MeshPtr tmp_pointer = act_mesh->retesselateInHalfEdge();
+	//MeshPtr tmp_pointer = optiMesh_->retesselateInHalfEdge();
 	std::cout << "            ####     3 Finished optimisation number: " << mesh_count_ << "   ####" << std::endl;
 	mesh_count_++;
-	transformMeshBack(tmp_pointer);
-	getOutQueue()->Add(pair<MeshPtr, bool>(tmp_pointer, last_shift));
-	delete act_mesh;
+	getOutQueue()->Add(pair<MeshPtr, bool>(act_mesh, last_shift));
+	//getOutQueue()->Add(pair<MeshPtr, bool>(optiMesh_, last_shift));
+	//delete act_mesh;
 	if(last_shift)
 		done(true);
 }
