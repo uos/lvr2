@@ -14,12 +14,12 @@ void FusionStage::step()
 	auto mesh_work = boost::any_cast<pair<MeshPtr, bool> >(getInQueue()->Take());
 	bool last_shift = mesh_work.second;
 	MeshPtr opti_mesh = mesh_work.first;
-	if(mesh_count_ == 0)
+	/*if(mesh_count_ == 0)
 		mesh_ = opti_mesh;
 	else
-		mesh_->addMesh(opti_mesh);
+		mesh_->addMesh(opti_mesh);*/
 	std::cout << "                        ####    4 Finished slice number: " << mesh_count_ << "   ####" << std::endl;
-	getOutQueue()->Add(mesh_);
+	getOutQueue()->Add(opti_mesh);
 	//getOutQueue()->Add(opti_mesh);
 	mesh_count_++;
 	if(last_shift)
