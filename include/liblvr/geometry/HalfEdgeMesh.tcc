@@ -408,7 +408,7 @@ void HalfEdgeMesh<VertexT, NormalT>::setFusionVertex(uint v)
 {
 	auto vertice = m_vertices[v];
 	vertice->m_fused = true;
-	//vertice->m_actIndex = v;
+	vertice->m_actIndex = v;
 	
 }
 
@@ -419,7 +419,7 @@ void HalfEdgeMesh<VertexT, NormalT>::setOldFusionVertex(uint v)
 	if(!vertice->m_oldFused)
 	{
 		vertice->m_oldFused = true;
-		//vertice->m_actIndex = v;
+		vertice->m_actIndex = v;
 		m_fusionNeighbors++;
 	}
 }
