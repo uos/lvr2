@@ -116,6 +116,12 @@ struct KinFuApp
 				*poly_ptr++ = index_map[face->m_edge->next()->end()];
 				*poly_ptr++ = index_map[face->m_edge->next()->next()->end()];
 			}
+			//fill color
+			cv_mesh->colors.create(1, lvr_mesh->getVertices().size(), CV_64FC(3));
+			cv::Vec3d *cptr = cv_mesh->colors.ptr<cv::Vec3d>();
+			for(size_t i = 0; i < slice_size; ++i)
+				*cptr++ = cv::Vec3d(0.0, 255.0, 0.0);
+			cv_mesh->colors.convertTo(cv_mesh->colors, CV_8U, 255.0);
 			mesh_ = cv_mesh;
 			meshRender_ = true;
 		}
