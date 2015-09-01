@@ -105,14 +105,17 @@ void HalfEdgeMesh<VertexT, NormalT>::addMesh(HalfEdgeMesh<VertexT, NormalT>* sli
 	for(auto vert_it = slice->m_fusion_verts.begin(); vert_it != slice->m_fusion_verts.end(); vert_it++)
 	{
 		size_t merge_index = vert_it->first;
-		
-		merge_index = m_slice_verts[merge_index];
+		if(m_slice_verts.size() > 0)
+			merge_index = m_slice_verts[merge_index];
 		size_t erase_index = vert_it->second;
 		if(m_fused_verts.size() > 0)
 		{
 			merge_index = m_fused_verts[merge_index];
 		}
-		mergeVertex(m_vertices[merge_index], slice->m_vertices[slice->m_slice_verts[erase_index]]);
+		if(m_slice_verts.size() > 0)
+			mergeVertex(m_vertices[merge_index], slice->m_vertices[slice->m_slice_verts[erase_index]]);
+		else
+			mergeVertex(m_vertices[merge_index], slice->m_vertices[erase_index]);
 	}
 	
 	size_t old_size = m_faces.size();
@@ -121,18 +124,6 @@ void HalfEdgeMesh<VertexT, NormalT>::addMesh(HalfEdgeMesh<VertexT, NormalT>* sli
     {
 		size_t index = old_size + i;
 		m_faces[index] = slice->m_faces[i];
-		/*for(size_t i = 0; i < 3; i++)
-		{
-			auto it = fused_verts.find(m_faces[index]->m_indices[i]);
-			size_t new_index = 0;
-			if(it == fused_verts.end())
-			{
-				new_index = m_faces[index]->m_indices[i] + old_vert_size;
-			}
-			else
-				new_index = fused_verts[m_faces[index]->m_indices[i]];
-			m_faces[index]->m_indices[i] = new_index;
-		}*/
 	}
 	
 	m_fused_verts = fused_verts;
@@ -147,9 +138,9 @@ void HalfEdgeMesh<VertexT, NormalT>::mergeVertex(VertexPtr merge_vert, VertexPtr
 {
 	if(merge_vert->m_position.x != erase_vert->m_position.x || merge_vert->m_position.y != erase_vert->m_position.y || merge_vert->m_position.z != erase_vert->m_position.z)
 	{
-		cout << "Vertex missalignment! " << endl;
-		cout << "merge vert " << merge_vert->m_position << endl; 
-		cout << "erase vert " << erase_vert->m_position << endl;
+		//cout << "Vertex missalignment! " << endl;
+		//cout << "merge vert " << merge_vert->m_position << endl; 
+		//cout << "erase vert " << erase_vert->m_position << endl;
 	}
 	size_t old_size = merge_vert->in.size();
 	merge_vert->in.resize(old_size + erase_vert->in.size());
