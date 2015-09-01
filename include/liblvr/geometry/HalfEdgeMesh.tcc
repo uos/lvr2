@@ -138,6 +138,7 @@ void HalfEdgeMesh<VertexT, NormalT>::addMesh(HalfEdgeMesh<VertexT, NormalT>* sli
 template<typename VertexT, typename NormalT>
 void HalfEdgeMesh<VertexT, NormalT>::mergeVertex(VertexPtr merge_vert, VertexPtr erase_vert)
 {
+	merge_vert->m_merged = true;
 	if(merge_vert->m_position.x != erase_vert->m_position.x || merge_vert->m_position.y != erase_vert->m_position.y || merge_vert->m_position.z != erase_vert->m_position.z)
 	{
 		//cout << "Vertex missalignment! " << endl;
@@ -613,6 +614,7 @@ void HalfEdgeMesh<VertexT, NormalT>::deleteEdge(EdgePtr edge, bool deletePair)
         try
         {
             //delete references from start point to outgoing edge
+            cout << " size zeor 1 " << edge->pair()->end()->out.size() << endl;
             it = find(edge->pair()->start()->out.begin(), edge->pair()->start()->out.end(), edge->pair());
             if(it != edge->pair()->start()->out.end())
             {
@@ -626,6 +628,7 @@ void HalfEdgeMesh<VertexT, NormalT>::deleteEdge(EdgePtr edge, bool deletePair)
 
         try
         {
+			cout << " size zeor " << edge->pair()->end()->in.size() << endl;
             it = find(edge->pair()->end()->in.begin(), edge->pair()->end()->in.end(), edge->pair());
             if(it != edge->pair()->end()->in.end())
             {
@@ -2187,7 +2190,7 @@ HalfEdgeMesh<VertexT, NormalT>* HalfEdgeMesh<VertexT, NormalT>::retesselateInHal
 			}
 			else
 			{
-				cout << "plane region ! " << endl;
+				//cout << "plane region ! " << endl;
 				planeRegions.push_back(i);
 			}
 		}	
@@ -2221,6 +2224,8 @@ HalfEdgeMesh<VertexT, NormalT>* HalfEdgeMesh<VertexT, NormalT>::retesselateInHal
                 }
                 else
                 {
+					(*m_regions[iRegion]->m_faces[iFace])(iVertex)->m_oldFused = false;
+                    (*m_regions[iRegion]->m_faces[iFace])(iVertex)->m_fused = false;
 					vertexcount++;
                     pos = vertexBuffer.size() / 3;
                     vertexMap.insert(pair<Vertex<float>, unsigned int>(current, pos));
@@ -2303,7 +2308,6 @@ HalfEdgeMesh<VertexT, NormalT>* HalfEdgeMesh<VertexT, NormalT>::retesselateInHal
 				}
 				else
 				{
-					
 				    pos = (vertexBuffer.size() / 3);
 				    vertexMap.insert(pair<Vertex<float>, unsigned int>(current, pos));
 			        vertexBuffer.push_back( points[k] );
