@@ -153,6 +153,8 @@ struct KinFuApp
 			cv::Vec3d *cptr;
 			size_t size;
 			auto cBuffer = lvr_mesh->meshBuffer()->getVertexColorArray(size);
+			auto fused_map = lvr_mesh->m_fused_verts;
+			cout << "slcie size " << slice_size << endl;
 			cout << "color size " << size << endl;
 			if(mesh_ == NULL)
 			{
@@ -167,8 +169,8 @@ struct KinFuApp
 				
 			}
 			for(size_t i = 0; i < slice_size; ++i)
-				//*cptr++ = cv::Vec3d(cBuffer[i + verts_size], cBuffer[i + verts_size + 1], cBuffer[i+ verts_size + 2]);
-				*cptr++ = cv::Vec3d(0.0, 255.0, 0.0);
+				*cptr++ = cv::Vec3d(3 * cBuffer[fused_map[i]], 3 * cBuffer[fused_map[i] + 1], 3 * cBuffer[fused_map[i] + 2]);
+				//*cptr++ = cv::Vec3d(0.0, 255.0, 0.0);
 				
 			if(mesh_ != NULL)
 			{
@@ -197,9 +199,9 @@ struct KinFuApp
     void show_raycasted(KinFu& kinfu)
     {
         const int mode = 4;
-        if (iteractive_mode_)
-          kinfu.renderImage(view_device_, viz.getViewerPose(), mode);
-        else
+        //if (iteractive_mode_)
+          //kinfu.renderImage(view_device_, viz.getViewerPose(), mode);
+        //else
 			kinfu.renderImage(view_device_, mode);
 
         view_host_.create(view_device_.rows(), view_device_.cols(), CV_8UC4);
