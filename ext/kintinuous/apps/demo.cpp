@@ -240,6 +240,8 @@ struct KinFuApp
 			if((!pause_ || !capture_.isRecord()) && !(kinfu.hasShifted() && kinfu.isLastScan()))
             {
 				int has_frame = capture_.grab(depth, image);
+				cv::flip(depth, depth, 1);
+				cv::flip(image, image, 1);
 				image_ = &image;
 				if (has_frame == 0)
 					return std::cout << "Can't grab" << std::endl, false;
