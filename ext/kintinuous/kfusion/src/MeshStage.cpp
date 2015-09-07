@@ -4,6 +4,7 @@
 MeshStage::MeshStage() : AbstractStage()
 {
 	mesh_count_ = 0;
+	timestamp.setQuiet(true);
 }
 
 void MeshStage::firstStep() { /* skip */ };
@@ -75,6 +76,7 @@ void MeshStage::step()
 	}*/
 	delete cube_time;
 	delete fast_recon;
+	mesh_count_++;
 	std::cout << "        ####     2 Finished reconstruction number: " << mesh_count_ << "   ####" << std::endl;
 	getOutQueue()->Add(pair<MeshPtr, bool>(meshPtr, grid_work.second));
 	if(last_shift)

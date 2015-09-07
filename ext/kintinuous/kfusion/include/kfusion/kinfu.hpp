@@ -52,6 +52,8 @@ namespace kfusion
         float gradient_delta_factor; // in voxel sizes
 
         Vec3f light_pose; //meters
+        
+        bool optimize; //online mesh optimization
 
     };
 
