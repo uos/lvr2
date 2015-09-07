@@ -4,6 +4,7 @@
 OptimizeStage::OptimizeStage(double camera_target_distance, double voxel_size, bool optimize) : AbstractStage()
 	,mesh_count_(0), camera_target_distance_(camera_target_distance), voxel_size_(voxel_size), optimize_(optimize)
 {
+	timestamp.setQuiet(true);
 }
 
 void OptimizeStage::firstStep() { /* skip */ };
