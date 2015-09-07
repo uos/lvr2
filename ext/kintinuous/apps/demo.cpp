@@ -53,10 +53,11 @@ struct KinFuApp
         }
     }
 
-    KinFuApp(OpenNISource& source) : exit_ (false),  iteractive_mode_(false), pause_(false), meshRender_(false),
+    KinFuApp(OpenNISource& source, bool optimize) : exit_ (false),  iteractive_mode_(false), pause_(false), meshRender_(false),
 										capture_ (source), cube_count_(0), pic_count_(0), mesh_(NULL), garbageMesh_(NULL)
     {
         KinFuParams params = KinFuParams::default_params();
+        params.optimize = optimize;
         kinfu_ = KinFu::Ptr( new KinFu(params) );
 
         capture_.setRegistration(true);
@@ -138,9 +139,9 @@ struct KinFuApp
     void show_raycasted(KinFu& kinfu)
     {
         const int mode = 4;
-        if (iteractive_mode_)
-          kinfu.renderImage(view_device_, viz.getViewerPose(), mode);
-        else
+        //if (iteractive_mode_)
+          //kinfu.renderImage(view_device_, viz.getViewerPose(), mode);
+        //else
 			kinfu.renderImage(view_device_, mode);
 
         view_host_.create(view_device_.rows(), view_device_.cols(), CV_8UC4);
@@ -323,6 +324,7 @@ struct KinFuApp
 int main (int argc, char* argv[])
 {
     int device = 0;
+    bool optimize = false;
     cuda::setDevice (device);
     cuda::printShortCudaDeviceInfo (device);
 
@@ -332,17 +334,27 @@ int main (int argc, char* argv[])
 	OpenNISource capture;
 	
 	if(argc == 2)
+	{
 		capture.open(string(argv[1]));
-	else
+	}
+	else if(argc == 3)
+	{
+		capture.open(string(argv[1]));
+		optimize = bool(argv[2]);
+	}
+	else if(argc == 4)
 	{
 		capture.open(0);
+		optimize = bool(argv[2]);
 	}
+	else
+		capture.open(0);
     //capture.triggerPause();
     //capture.open (0);
     //capture.open("/home/tristan/kintinuous.tigelbri/build/Captured.oni");
     //capture.open("/home/tristan/home.oni");
 
-    KinFuApp app (capture);
+    KinFuApp app (capture, optimize);
 
     // executing
     try { app.execute (); }

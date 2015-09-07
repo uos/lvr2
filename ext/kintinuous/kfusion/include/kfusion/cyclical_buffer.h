@@ -65,7 +65,7 @@ namespace kfusion
 			* \param[in] nb_voxels_per_axis number of voxels per axis of the volume represented by the TSDF buffer.
 			*/
 			CyclicalBuffer (const double distance_threshold,
-			                const Vec3f cube_size, const Vec3i nb_voxels_per_axis) : pl_(distance_threshold, (double)(cube_size(0) / nb_voxels_per_axis[0]))
+			                const Vec3f cube_size, const Vec3i nb_voxels_per_axis, bool optimize) : pl_(0, (double)(cube_size(0) / nb_voxels_per_axis[0]), optimize)
 			{
 				distance_threshold_ = distance_threshold;
 				buffer_.volume_size.x = cube_size[0]; 
@@ -95,7 +95,7 @@ namespace kfusion
 			CyclicalBuffer (const double distance_threshold,
 			                const double volume_size_x, const double volume_size_y, 
 			                const double volume_size_z, const int nb_voxels_x, const int nb_voxels_y, 
-			                const int nb_voxels_z)
+			                const int nb_voxels_z) : pl_(0, (double)(volume_size_x /  nb_voxels_x), false)
 			{
 				distance_threshold_ = distance_threshold;
 				buffer_.volume_size.x = volume_size_x; 

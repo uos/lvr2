@@ -976,8 +976,8 @@ void HalfEdgeMesh<VertexT, NormalT>::optimizePlanes(
         int small_region_size,
         bool remove_flickering)
 {
-    cout << timestamp << "Starting plane optimization with threshold " << angle << endl;
-    cout << timestamp << "Number of faces before optimization: " << m_faces.size() << endl;
+    //cout << timestamp << "Starting plane optimization with threshold " << angle << endl;
+    //cout << timestamp << "Number of faces before optimization: " << m_faces.size() << endl;
 
     // Magic numbers
     int default_region_threshold = (int) 10 * log(m_faces.size());
@@ -988,7 +988,7 @@ void HalfEdgeMesh<VertexT, NormalT>::optimizePlanes(
 
     for(int j = 0; j < iterations; j++)
     {
-        cout << timestamp << "Optimizing planes. Iteration " <<  j + 1 << " / "  << iterations << endl;
+        //cout << timestamp << "Optimizing planes. Iteration " <<  j + 1 << " / "  << iterations << endl;
 
         // Reset all used variables
         for(size_t i = 0; i < m_faces.size(); i++)
@@ -1039,10 +1039,10 @@ void HalfEdgeMesh<VertexT, NormalT>::optimizePlanes(
     }
 
     // Delete too small regions
-    cout << timestamp << "Starting to delete small regions" << endl;
+    //cout << timestamp << "Starting to delete small regions" << endl;
     if(small_region_size)
     {
-        cout << timestamp << "Deleting small regions" << endl;
+        //cout << timestamp << "Deleting small regions" << endl;
         deleteRegions();
     }
 
@@ -2301,7 +2301,7 @@ HalfEdgeMesh<VertexT, NormalT>* HalfEdgeMesh<VertexT, NormalT>::retesselateInHal
 	}
 	
 	
-    cout << timestamp << "Done copying non planar regions.";
+    //cout << timestamp << "Done copying non planar regions.";
 
     /*
          Done copying the simple stuff. Now the planes are going to be retesselated
@@ -2404,7 +2404,7 @@ HalfEdgeMesh<VertexT, NormalT>* HalfEdgeMesh<VertexT, NormalT>::retesselateInHal
     this->m_meshBuffer->setVertexColorArray( colorBuffer );
     this->m_meshBuffer->setVertexNormalArray( normalBuffer );
     this->m_meshBuffer->setFaceArray( indexBuffer );
-    cout << endl << timestamp << "Done retesselating." << endl;
+    //cout << endl << timestamp << "Done retesselating." << endl;
 		
 	HalfEdgeMesh<VertexT, NormalT>* retased_mesh =  new HalfEdgeMesh(this->m_meshBuffer);
 	size_t count_doubles = 0;
