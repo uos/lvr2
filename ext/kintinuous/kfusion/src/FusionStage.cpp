@@ -34,6 +34,8 @@ void FusionStage::lastStep()
 	//meshPtr_->restorePlanes(7);
 	//meshPtr_->finalizeAndRetesselate(false, 0.01);
 	//transformMeshBack();
+	std::cout << "Global amount of vertices: " << mesh_->meshSize() << endl;
+	std::cout << "Global amount of faces: " << mesh_->getFaces().size() << endl;
 	mesh_->finalize();
 	ModelPtr m( new Model( mesh_->meshBuffer() ) );
 	ModelFactory::saveModel( m, "./mesh_" + to_string(mesh_count_) + ".ply");

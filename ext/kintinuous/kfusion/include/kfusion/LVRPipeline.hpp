@@ -33,7 +33,7 @@ namespace kfusion
     {
 		public:
 
-			LVRPipeline(double camera_target_distance = 0, double voxel_size = 3.0/512.0);
+			LVRPipeline(double camera_target_distance, double voxel_size = 3.0/512.0, bool optimize = false);
 			
 			~LVRPipeline();
         
@@ -46,7 +46,6 @@ namespace kfusion
 			double calcTimeStats();
 			
 			void setCameraDist(const double threshold) { camera_target_distance_ = threshold;} 
-			
 			
 		private:
 		    

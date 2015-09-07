@@ -19,7 +19,7 @@ kfusion::KinFuParams kfusion::KinFuParams::default_params()
     p.rows = 480;  //pixels
     p.intr = Intr(525.f, 525.f, p.cols/2 - 0.5f, p.rows/2 - 0.5f);
     p.shifting_distance = 0.4f; //meters to go before shifting the volume
-    p.distance_camera_target = 0.5;
+    p.distance_camera_target = 0.8;
 
     p.volume_dims = Vec3i::all(512);  //number of voxels
     p.volume_size = Vec3f::all(3.f);  //meters
@@ -43,12 +43,13 @@ kfusion::KinFuParams kfusion::KinFuParams::default_params()
 
     //p.light_pose = p.volume_pose.translation()/4; //meters
     p.light_pose = Vec3f::all(0.f); //meters
+    p.optimize = false;
 
     return p;
 }
 
 kfusion::KinFu::KinFu(const KinFuParams& params) : frame_counter_(0), params_(params), has_shifted_(false), perform_last_scan_(false), perform_shift_(false)
-                                                   , cyclical_(params_.shifting_distance, params.volume_size, params.volume_dims)
+                                                   , cyclical_(params_.shifting_distance, params.volume_size, params.volume_dims, params.optimize)
                                                    
 {
     CV_Assert(params.volume_dims[0] % 32 == 0);
