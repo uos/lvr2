@@ -10,10 +10,10 @@ void OptimizeStage::firstStep() { optiMesh_ = NULL; };
 
 void OptimizeStage::step()
 {
-	auto mesh_work = boost::any_cast<pair<MeshPtr, bool> >(getInQueue()->Take());
-	bool last_shift = mesh_work.second;
-	MeshPtr act_mesh = mesh_work.first;
-	transformMeshBack(act_mesh);
+	auto mesh_work = boost::any_cast<pair<pair<MeshPtr, bool>, vector<kfusion::ImgPose*> > >(getInQueue()->Take());
+	bool last_shift = mesh_work.first.second;
+	MeshPtr act_mesh = mesh_work.first.first;
+    	transformMeshBack(act_mesh);
 	//if(optiMesh_ == NULL)
 		optiMesh_ = act_mesh;
 	//else
@@ -24,8 +24,8 @@ void OptimizeStage::step()
 	MeshPtr tmp_pointer = optiMesh_->retesselateInHalfEdge();
 	std::cout << "            ####     3 Finished optimisation number: " << mesh_count_ << "   ####" << std::endl;
 	mesh_count_++;
-	getOutQueue()->Add(pair<MeshPtr, bool>(tmp_pointer, last_shift));
-	//getOutQueue()->Add(pair<MeshPtr, bool>(optiMesh_, last_shift));
+	getOutQueue()->Add(pair<pair<MeshPtr, bool>, vector<kfusion::ImgPose*> >(
+				pair<MeshPtr, bool>(tmp_pointer, last_shift), mesh_work.second));
 	//delete act_mesh;
 	if(last_shift)
 		done(true);
