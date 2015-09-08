@@ -24,6 +24,20 @@ namespace kfusion
         Intr (float fx, float fy, float cx, float cy);
         Intr operator()(int level_index) const;
     };
+    
+    struct KF_EXPORTS ImgPose
+    {
+		cv::Mat image;
+		Affine3f pose;
+		cv::Mat intrinsics;
+    };
+    
+    struct KF_EXPORTS TSDFSlice
+    {
+		cv::Mat tsdf_values_;
+		Vec3i offset_;
+		std::vector<ImgPose*> imgposes_;
+    };
 
     KF_EXPORTS std::ostream& operator << (std::ostream& os, const Intr& intr);
 
