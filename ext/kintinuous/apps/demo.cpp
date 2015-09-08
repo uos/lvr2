@@ -152,10 +152,10 @@ struct KinFuApp
 			cv::Mat buffer;
 			cv::Vec3d *cptr;
 			size_t size;
-			auto cBuffer = lvr_mesh->meshBuffer()->getVertexColorArray(size);
+			//auto cBuffer = lvr_mesh->meshBuffer()->getVertexColorArray(size);
 			auto fused_map = lvr_mesh->m_fused_verts;
-			cout << "slcie size " << slice_size << endl;
-			cout << "color size " << size << endl;
+			//cout << "slcie size " << slice_size << endl;
+			//cout << "color size " << size << endl;
 			if(mesh_ == NULL)
 			{
 				cv_mesh->colors.create(1, slice_size, CV_64FC(3));
@@ -169,8 +169,8 @@ struct KinFuApp
 				
 			}
 			for(size_t i = 0; i < slice_size; ++i)
-				*cptr++ = cv::Vec3d(3 * cBuffer[fused_map[i]], 3 * cBuffer[fused_map[i] + 1], 3 * cBuffer[fused_map[i] + 2]);
-				//*cptr++ = cv::Vec3d(0.0, 255.0, 0.0);
+				//*cptr++ = cv::Vec3d(3 * cBuffer[fused_map[i]], 3 * cBuffer[fused_map[i] + 1], 3 * cBuffer[fused_map[i] + 2]);
+				*cptr++ = cv::Vec3d(0.0, 255.0, 0.0);
 				
 			if(mesh_ != NULL)
 			{

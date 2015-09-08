@@ -19,7 +19,7 @@ void OptimizeStage::step()
 	else
 		optiMesh_->addMesh(act_mesh);
 	
-	optiMesh_->optimizePlanes(3, 0.85, 7, 0);
+	optiMesh_->optimizePlanes(1, 0.83, 7, 0);
 	//act_mesh->optimizePlaneIntersections();
 	MeshPtr tmp_pointer = optiMesh_->retesselateInHalfEdge();
 	std::cout << "            ####     3 Finished optimisation number: " << mesh_count_ << "   ####" << std::endl;
@@ -30,7 +30,13 @@ void OptimizeStage::step()
 	if(last_shift)
 		done(true);
 }
-void OptimizeStage::lastStep()	{ /* skip */ };
+void OptimizeStage::lastStep()	
+{ 
+	optiMesh_->finalize();
+	ModelPtr m( new Model( optiMesh_->meshBuffer() ) );
+	ModelFactory::saveModel( m, "./normalMesh_" + to_string(mesh_count_) + ".ply");	 
+	 
+};
 
 void OptimizeStage::transformMeshBack(MeshPtr mesh)
 {
