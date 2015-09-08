@@ -159,7 +159,7 @@ void HalfEdgeMesh<VertexT, NormalT>::mergeVertex(VertexPtr merge_vert, VertexPtr
 	{
 		size_t index = old_size + i;
 		merge_vert->out[index] = erase_vert->out[i];
-		erase_vert->out[i]->setStart(erase_vert);
+		erase_vert->out[i]->setStart(merge_vert);
 	}
 	delete erase_vert;
 }
@@ -614,7 +614,6 @@ void HalfEdgeMesh<VertexT, NormalT>::deleteEdge(EdgePtr edge, bool deletePair)
         try
         {
             //delete references from start point to outgoing edge
-            cout << " size zeor 1 " << edge->pair()->end()->out.size() << endl;
             it = find(edge->pair()->start()->out.begin(), edge->pair()->start()->out.end(), edge->pair());
             if(it != edge->pair()->start()->out.end())
             {
@@ -628,7 +627,6 @@ void HalfEdgeMesh<VertexT, NormalT>::deleteEdge(EdgePtr edge, bool deletePair)
 
         try
         {
-			cout << " size zeor " << edge->pair()->end()->in.size() << endl;
             it = find(edge->pair()->end()->in.begin(), edge->pair()->end()->in.end(), edge->pair());
             if(it != edge->pair()->end()->in.end())
             {
@@ -922,7 +920,9 @@ int HalfEdgeMesh<VertexT, NormalT>::regionGrowing(FacePtr start_face, NormalT &n
                     && fabs((*start_face)[k]->pair()->face()->getFaceNormal() * normal) > angle )
             {
 				if(start_face->m_fusion_face)
+				{
 					region->m_unfinished = true;
+                }
                 if(depth == 0)
                 {
                     // if the maximum recursion depth is reached save the child faces to restart the recursion from
@@ -992,7 +992,6 @@ void HalfEdgeMesh<VertexT, NormalT>::optimizePlanes(
     int region_size   = 0;
     int region_number = 0;
     m_regions.clear();
-
     for(int j = 0; j < iterations; j++)
     {
         cout << timestamp << "Optimizing planes. Iteration " <<  j + 1 << " / "  << iterations << endl;
@@ -1004,10 +1003,15 @@ void HalfEdgeMesh<VertexT, NormalT>::optimizePlanes(
 			if((*face)(0)->m_fused || (*face)(1)->m_fused || (*face)(2)->m_fused)
 			{
 				face->m_fusion_face = true;
-				(*face)(0)->m_fused = false;
-				(*face)(1)->m_fused = false;
-				(*face)(2)->m_fused = false;
+				if(j == iterations -1)
+				{
+					(*face)(0)->m_fused = false;
+					(*face)(1)->m_fused = false;
+					(*face)(2)->m_fused = false;
+				}
 			}
+			else 
+				face->m_fusion_face = false;
 			face->m_used = false;
         }
 
@@ -1023,9 +1027,9 @@ void HalfEdgeMesh<VertexT, NormalT>::optimizePlanes(
                 region_size = stackSafeRegionGrowing(m_faces[i], n, angle, region) + 1;
 
                 // Fit big regions into the regression plane
-                if(region_size > max(min_region_size, default_region_threshold))
+                if(region_size > max(min_region_size, default_region_threshold) && !region->m_unfinished)
                 {
-                    region->regressionPlane();
+                    //region->regressionPlane();
                 }
 
                 if(j == iterations - 1)
@@ -2179,6 +2183,7 @@ HalfEdgeMesh<VertexT, NormalT>* HalfEdgeMesh<VertexT, NormalT>::retesselateInHal
     std::vector<size_t> nonPlaneRegions;
     // Take all regions that were drawn into an intersection plane
     std::vector<size_t> planeRegions;
+    size_t unfinished_count = 0;
     for( size_t i = 0; i < m_regions.size(); ++i )
     {
 		if(!m_regions[i]->m_unfinished)
@@ -2193,8 +2198,14 @@ HalfEdgeMesh<VertexT, NormalT>* HalfEdgeMesh<VertexT, NormalT>::retesselateInHal
 				//cout << "plane region ! " << endl;
 				planeRegions.push_back(i);
 			}
-		}	
+		}
+		else
+		{
+			unfinished_count++;
+		}
+			
     }
+    cout << "unifinished count " <<  unfinished_count << endl;
 
     // keep track of used vertices to avoid doubles.
     map<Vertex<float>, unsigned int> vertexMap;
