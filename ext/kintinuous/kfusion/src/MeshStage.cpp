@@ -10,10 +10,10 @@ void MeshStage::firstStep() { /* skip */ };
 
 void MeshStage::step()
 {
-	auto grid_work = boost::any_cast<pair<TGrid*, bool> >(getInQueue()->Take());
+	auto grid_work = boost::any_cast<pair<pair<TGrid*, bool>, vector<ImgPose*> > >(getInQueue()->Take());
 	unordered_map<size_t, size_t> verts_map;
-	TGrid* act_grid = grid_work.first;
-	bool last_shift = grid_work.second;
+	TGrid* act_grid = grid_work.first.first;
+	bool last_shift = grid_work.first.second;
 	MeshPtr meshPtr = new HMesh();
 	ScopeTime* cube_time = new ScopeTime("Marching Cubes");
 	cFastReconstruction* fast_recon =  new cFastReconstruction(act_grid);
@@ -67,7 +67,8 @@ void MeshStage::step()
 	delete cube_time;
 	delete fast_recon;
 	std::cout << "        ####     2 Finished reconstruction number: " << mesh_count_ << "   ####" << std::endl;
-	getOutQueue()->Add(pair<MeshPtr, bool>(meshPtr, grid_work.second));
+	getOutQueue()->Add(pair<pair<MeshPtr, bool>, vector<ImgPose*> >(
+				pair<MeshPtr, bool>(meshPtr, last_shift), grid_work.second));
 	if(last_shift)
 		done(true);
 }

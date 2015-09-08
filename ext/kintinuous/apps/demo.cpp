@@ -87,6 +87,7 @@ struct KinFuApp
         cv::namedWindow("Image", 0 );
 		cv::resizeWindow("Image",800, 500);
 		cv::moveWindow("Image", 0, 500);
+        timer_start_ = cv::getTickCount();
     }
     
     void show_mesh()
@@ -263,6 +264,7 @@ struct KinFuApp
         //viz.showWidget("cloud", cv::viz::WPaintedCloud(cloud_host));
 		kinfu.performLastScan();
     }
+    
     void extractImage(KinFu& kinfu, cv::Mat& image)
     {
 		pic_count_++;
@@ -284,6 +286,18 @@ struct KinFuApp
 	    pose_file << "Camera Intrinsics: " << endl;
 	    pose_file << kinfu.params().intr.fx << " " <<  kinfu.params().rows << " " << kinfu.params().cols << endl;
 	    pose_file.close();
+	}
+	
+	void storePicPose(KinFu& kinfu, cv::Mat& image)
+	{
+		ImgPose* imgpose = new ImgPose();
+		imgpose->pose = kinfu.getCameraPose();
+		imgpose->image = image;
+		cv::Mat intrinsics = (cv::Mat_<float>(3,3) << kinfu.params().intr.fx, 0, kinfu.params().cols,
+												  0, kinfu.params().intr.fx, kinfu.params().rows,
+												  0, 0, 1);
+		imgpose->intrinsics = intrinsics;
+		kinfu.cyclical().addImgPose(imgpose);
 	}
 		
 
@@ -316,7 +330,16 @@ struct KinFuApp
 			}
 
             if (has_image)
+            {
+				size_t ref_timer = cv::getTickCount();
+				double time = (timer_start_ - ref_timer)/ cv::getTickFrequency();
+                if(time - 3.0 > 0)
+                {
+					storePicPose(kinfu, image);
+					timer_start_ = ref_timer;
+				}
                 show_raycasted(kinfu);
+             }
                 
 			if(meshRender_)
 			{
@@ -332,6 +355,7 @@ struct KinFuApp
 			
 			if(kinfu.hasShifted())
 				show_cube(kinfu);
+            //show_depth(depth);
 
 			cv::imshow("Image", image);
 
@@ -368,7 +392,7 @@ struct KinFuApp
     cv::viz::Viz3d viz;
     cv::viz::Mesh* mesh_;
     cv::viz::Mesh* garbageMesh_;
-	size_t cube_count_, pic_count_;
+	size_t cube_count_, pic_count_, timer_start_;
     cv::Mat view_host_;
     cv::Mat* image_;
     cuda::Image view_device_;
@@ -400,7 +424,7 @@ int main (int argc, char* argv[])
     //capture.open (0);
     //capture.open("/home/tristan/kintinuous.tigelbri/build/Captured.oni");
     //capture.open("/home/tristan/home.oni");
-
+	
     KinFuApp app (capture);
 
     // executing
