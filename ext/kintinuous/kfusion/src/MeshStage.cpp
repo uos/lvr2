@@ -15,9 +15,11 @@ void MeshStage::step()
 	TGrid* act_grid = grid_work.first;
 	bool last_shift = grid_work.second;
 	MeshPtr meshPtr = new HMesh();
-	ScopeTime* cube_time = new ScopeTime("Marching Cubes");
-	cFastReconstruction* fast_recon =  new cFastReconstruction(act_grid);
+	string mesh_notice = ("#### B:        Mesh Creation " +  to_string(mesh_count_) + "    ####");
+	ScopeTime* cube_time = new ScopeTime(mesh_notice.c_str());
 	
+	cFastReconstruction* fast_recon =  new cFastReconstruction(act_grid);
+	timestamp.setQuiet(true);
 	// Create an empty mesh
 	fast_recon->getMesh(*meshPtr);
 	// mark all fusion vertices in the mesh
@@ -66,7 +68,6 @@ void MeshStage::step()
 	meshPtr->m_fusion_verts = verts_map;
 	delete cube_time;
 	delete fast_recon;
-	std::cout << "        ####     2 Finished reconstruction number: " << mesh_count_ << "   ####" << std::endl;
 	getOutQueue()->Add(pair<MeshPtr, bool>(meshPtr, grid_work.second));
 	if(last_shift)
 		done(true);

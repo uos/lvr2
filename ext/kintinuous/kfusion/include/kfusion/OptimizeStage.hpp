@@ -19,6 +19,7 @@
 
 using namespace lvr;
 using namespace std;
+using namespace kfusion;
 
 typedef Vertex<float>  fVertex;
 typedef ColorVertex<float, unsigned char> cVertex;
