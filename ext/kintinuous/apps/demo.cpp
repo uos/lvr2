@@ -169,9 +169,13 @@ struct KinFuApp
 				
 			}
 			for(size_t i = 0; i < slice_size; ++i)
-				//*cptr++ = cv::Vec3d(3 * cBuffer[fused_map[i]], 3 * cBuffer[fused_map[i] + 1], 3 * cBuffer[fused_map[i] + 2]);
-				*cptr++ = cv::Vec3d(0.0, 255.0, 0.0);
-				
+			{
+				if(lvr_mesh->getVertices()[i + verts_size]->m_fused)
+					*cptr++ = cv::Vec3d(255.0, 0.0, 0.0);
+				else
+					*cptr++ = cv::Vec3d(0.0, 255.0, 0.0);
+			}
+			//*cptr++ = cv::Vec3d(3 * cBuffer[fused_map[i]], 3 * cBuffer[fused_map[i] + 1], 3 * cBuffer[fused_map[i] + 2]);	
 			if(mesh_ != NULL)
 			{
 				buffer.convertTo(buffer, CV_8U, 255.0);
@@ -358,7 +362,7 @@ struct KinFuApp
 
             viz.spinOnce(3, true);
 			//exit_ = exit_ || ( kinfu.hasShifted() && kinfu.isLastScan() );
-			//if(kinfu.cyclical().getSliceCount() == 1)
+			//if(kinfu.cyclical().getSliceCount() == 4 && !(kinfu.hasShifted() && kinfu.isLastScan()))
 				//take_cloud(kinfu);
         }
         return true;

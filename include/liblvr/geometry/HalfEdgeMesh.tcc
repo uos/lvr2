@@ -150,6 +150,17 @@ void HalfEdgeMesh<VertexT, NormalT>::mergeVertex(VertexPtr merge_vert, VertexPtr
 	for(size_t i = 0; i < erase_vert->in.size(); i++)
 	{
 		size_t index = old_size + i;
+		if(erase_vert->in[i]->isBorderEdge())
+		{
+			for(size_t j = 0; j < merge_vert->out.size(); j++)
+			{
+				if(merge_vert->out[j]->end() == erase_vert->in[i]->start())
+				{
+					erase_vert->in[i]->setPair(merge_vert->out[j]);
+					merge_vert->out[j]->setPair(erase_vert->in[i]);
+				}	
+			}
+		}
 		merge_vert->in[index] = erase_vert->in[i];
 		erase_vert->in[i]->setEnd(merge_vert);
 	}
@@ -161,6 +172,7 @@ void HalfEdgeMesh<VertexT, NormalT>::mergeVertex(VertexPtr merge_vert, VertexPtr
 		merge_vert->out[index] = erase_vert->out[i];
 		erase_vert->out[i]->setStart(merge_vert);
 	}
+	merge_vert->m_fused = false;
 	delete erase_vert;
 }
 
@@ -1000,7 +1012,7 @@ void HalfEdgeMesh<VertexT, NormalT>::optimizePlanes(
         for(size_t i = 0; i < m_faces.size(); i++)
         {
             FacePtr face = m_faces[i];
-			if((*face)(0)->m_fused || (*face)(1)->m_fused || (*face)(2)->m_fused)
+			if((*face)(0)->m_fused || (*face)(1)->m_fused || (*face)(2)->m_fused) 
 			{
 				face->m_fusion_face = true;
 				if(j == iterations -1)
@@ -1029,7 +1041,7 @@ void HalfEdgeMesh<VertexT, NormalT>::optimizePlanes(
                 // Fit big regions into the regression plane
                 if(region_size > max(min_region_size, default_region_threshold) && !region->m_unfinished)
                 {
-                    //region->regressionPlane();
+                    region->regressionPlane();
                 }
 
                 if(j == iterations - 1)
@@ -2183,7 +2195,6 @@ HalfEdgeMesh<VertexT, NormalT>* HalfEdgeMesh<VertexT, NormalT>::retesselateInHal
     std::vector<size_t> nonPlaneRegions;
     // Take all regions that were drawn into an intersection plane
     std::vector<size_t> planeRegions;
-    size_t unfinished_count = 0;
     for( size_t i = 0; i < m_regions.size(); ++i )
     {
 		if(!m_regions[i]->m_unfinished)
@@ -2199,14 +2210,7 @@ HalfEdgeMesh<VertexT, NormalT>* HalfEdgeMesh<VertexT, NormalT>::retesselateInHal
 				planeRegions.push_back(i);
 			}
 		}
-		else
-		{
-			unfinished_count++;
-		}
-			
     }
-    cout << "unifinished count " <<  unfinished_count << endl;
-
     // keep track of used vertices to avoid doubles.
     map<Vertex<float>, unsigned int> vertexMap;
     Vertex<float> current;
@@ -2386,15 +2390,8 @@ HalfEdgeMesh<VertexT, NormalT>* HalfEdgeMesh<VertexT, NormalT>::retesselateInHal
 		
 	HalfEdgeMesh<VertexT, NormalT>* retased_mesh =  new HalfEdgeMesh(this->m_meshBuffer);
 	size_t count_doubles = 0;
-	/*for(auto it = this->m_fusion_verts.begin(); it != this->m_fusion_verts.end(); it++)
-	{
-		retased_mesh->setOldFusionVertex(m_slice_verts[it->second]);
-	}*/
 	retased_mesh->m_fusionNeighbors = 0;
 	deleteRegions();
-	//retased_mesh->m_fusionNeighbors = m_fusionNeighbors;
-	//retased_mesh->m_slice_verts = m_slice_verts;
-	//retased_mesh->m_fusion_verts = m_fusion_verts;
     Tesselator<VertexT, NormalT>::clear();
     return retased_mesh;
 } 
