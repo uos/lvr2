@@ -288,26 +288,46 @@ struct KinFuApp
 	    pose_file.close();
 	}
 	
-	void storePicPose(KinFu& kinfu, cv::Mat& image)
+	void storePicPose(KinFu& kinfu, cv::Mat image)
 	{
 		ImgPose* imgpose = new ImgPose();
 		imgpose->pose = kinfu.getCameraPose();
-		imgpose->image = image;
-		cv::Mat intrinsics = (cv::Mat_<float>(3,3) << kinfu.params().intr.fx, 0, kinfu.params().cols,
-												  0, kinfu.params().intr.fx, kinfu.params().rows,
+		imgpose->image = image.clone();
+		//intrinsics wrong? changed rows and cols + /2
+		cv::Mat intrinsics = (cv::Mat_<float>(3,3) << kinfu.params().intr.fx, 0, kinfu.params().cols/2 - 0.5f,
+												  0, kinfu.params().intr.fx, kinfu.params().rows/2 - 0.5f,
 												  0, 0, 1);
 		imgpose->intrinsics = intrinsics;
 		kinfu.cyclical().addImgPose(imgpose);
 	}
-		
+	
+	void storePicPose(KinFu& kinfu, Affine3f pose, cv::Mat image){
+		ImgPose* imgpose = new ImgPose();
+		imgpose->pose = pose;
+		imgpose->image = image.clone();
+		//intrinsics wrong? changed rows and cols + /2
+		cv::Mat intrinsics = (cv::Mat_<float>(3,3) << kinfu.params().intr.fx, 0, kinfu.params().cols/2 - 0.5f,
+												  0, kinfu.params().intr.fx, kinfu.params().rows/2 - 0.5f,
+												  0, 0, 1);
+		imgpose->intrinsics = intrinsics;
+		kinfu.cyclical().addImgPose(imgpose);
+	}
 
     bool execute()
     {
         KinFu& kinfu = *kinfu_;
-        cv::Mat depth, image;
+        cv::Mat depth, image, image_copy;
         double time_ms = 0;
         int has_image = 0;
 		std::thread meh_viz(&KinFuApp::show_mesh,this);
+		
+		std::vector<Affine3f> posen;
+		std::vector<cv::Mat> rvecs;
+		
+		Affine3f best_pose;
+		cv::Mat best_rvec,best_image;
+		float best_dist=0.0;
+		
         for (int i = 0; !exit_ && !viz.wasStopped(); ++i)
         {
 			if((!pause_ || !capture_.isRecord()) && !(kinfu.hasShifted() && kinfu.isLastScan()))
@@ -329,15 +349,52 @@ struct KinFuApp
 				}
 			}
 
-            if (has_image)
+            if ((!pause_ || !capture_.isRecord()) && !(kinfu.hasShifted() && kinfu.isLastScan()) && has_image)
             {
-				size_t ref_timer = cv::getTickCount();
-				double time = (timer_start_ - ref_timer)/ cv::getTickFrequency();
-                if(time - 3.0 > 0)
-                {
-					storePicPose(kinfu, image);
-					timer_start_ = ref_timer;
+				//new nice shit
+				//braucht noch einen namen
+				//
+				double ref_timer = cv::getTickCount();
+				double time = abs((timer_start_ - ref_timer))/ cv::getTickFrequency();
+				
+				if(rvecs.size()<1){
+					std::cout << "first pic" << std::endl;
+					image.copyTo(image_copy);
+					
+					//buffer of all imgposes
+					rvecs.push_back(cv::Mat(kinfu.getCameraPose().rvec()));
+					posen.push_back(kinfu.getCameraPose());
+					
+					storePicPose(kinfu, image_copy);
+					extractImage(kinfu, image_copy);
+				}else{
+					float dist = 0.0;
+					cv::Mat mom_rvec(kinfu.getCameraPose().rvec());
+					for(size_t z=0;z<rvecs.size();z++){
+						dist += norm(mom_rvec-rvecs[z]);
+					}
+					if(dist > best_dist){
+						best_dist = dist;
+						best_rvec = mom_rvec.clone(); 
+						best_image = image.clone();
+						best_pose = kinfu.getCameraPose();
+						//std::cout << "better image found, sum rvec distances: " << best_dist << std::endl;
+					}
+					
+					if(time - 3.0 > 0)
+					{
+						std::cout << "Best Image taken" << std::endl;
+						
+						rvecs.push_back(best_rvec);
+						posen.push_back(best_pose);
+					
+						storePicPose(kinfu, best_pose, best_image);
+						//extractImage(kinfu, best_image);
+						timer_start_ = ref_timer;
+					}
 				}
+				
+                
                 show_raycasted(kinfu);
              }
                 
