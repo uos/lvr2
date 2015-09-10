@@ -11,9 +11,9 @@ void FusionStage::firstStep() { /* skip */ };
 
 void FusionStage::step()
 {
-	auto mesh_work = boost::any_cast<pair<MeshPtr, bool> >(getInQueue()->Take());
-	bool last_shift = mesh_work.second;
-	MeshPtr opti_mesh = mesh_work.first;
+	auto mesh_work = boost::any_cast<pair<pair<MeshPtr, bool>, vector<kfusion::ImgPose*> > >(getInQueue()->Take());
+	bool last_shift = mesh_work.first.second;
+	MeshPtr opti_mesh = mesh_work.first.first;
 	/*if(mesh_count_ == 0)
 		mesh_ = opti_mesh;
 	else

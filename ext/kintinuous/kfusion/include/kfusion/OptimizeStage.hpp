@@ -40,10 +40,16 @@ public:
 	virtual void lastStep();
 	
 private:
+	void addMesh(MeshBufferPtr src, MeshBufferPtr dst);
 	void transformMeshBack(MeshPtr mesh);
 	size_t mesh_count_;
 	double camera_target_distance_;
 	double voxel_size_;
 	MeshPtr optiMesh_;
+	
+	MeshBufferPtr meshBufferPtr;
+	size_t bounding_counter,pic_count_;
+	bool textured;
+	
 };
 #endif // STAGE

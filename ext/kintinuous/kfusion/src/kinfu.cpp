@@ -18,8 +18,8 @@ kfusion::KinFuParams kfusion::KinFuParams::default_params()
     p.cols = 640;  //pixels
     p.rows = 480;  //pixels
     p.intr = Intr(525.f, 525.f, p.cols/2 - 0.5f, p.rows/2 - 0.5f);
-    p.shifting_distance = 0.45f; //meters to go before shifting the volume
-    p.distance_camera_target = 0.7;
+    p.shifting_distance = 30.45f; //meters to go before shifting the volume
+    p.distance_camera_target = 0.0;
 
     p.volume_dims = Vec3i::all(512);  //number of voxels
     p.volume_size = Vec3f::all(3.f);  //meters
