@@ -99,11 +99,11 @@ template<typename VertexT, typename NormalT> void Fusion<VertexT, NormalT>::fina
     
     // Default Color values. Used if regions should not be colored.
     float r=0, g=255, b=0;
-    std::vector<uchar> faceColorBuffer;
+    std::vector<unsigned char> faceColorBuffer;
 
     floatArr vertexBuffer( new float[3 * numVertices] );
     floatArr normalBuffer( new float[3 * numVertices] );
-    ucharArr colorBuffer(  new uchar[3 * numVertices] );
+    ucharArr colorBuffer(  new unsigned char[3 * numVertices] );
     uintArr  indexBuffer(  new unsigned int[3 * numFaces] );
 
     // Set the Vertex and Normal Buffer for every Vertex.
