@@ -53,6 +53,9 @@ namespace kfusion
 
         Vec3f light_pose; //meters
         
+        string mesh_name; // name of the stored mesh
+        
+        bool no_reconstruct; //online reconstruction
         bool optimize; //online mesh optimization
 
     };
