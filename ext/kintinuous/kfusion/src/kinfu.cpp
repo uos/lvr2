@@ -43,13 +43,16 @@ kfusion::KinFuParams kfusion::KinFuParams::default_params()
 
     //p.light_pose = p.volume_pose.translation()/4; //meters
     p.light_pose = Vec3f::all(0.f); //meters
+    p.mesh_name = "output_mesh.ply";
+    p.no_reconstruct = false;
     p.optimize = false;
 
     return p;
 }
 
 kfusion::KinFu::KinFu(const KinFuParams& params) : frame_counter_(0), params_(params), has_shifted_(false), perform_last_scan_(false), perform_shift_(false)
-                                                   , cyclical_(params_.distance_camera_target, params_.shifting_distance, params.volume_size, params.volume_dims, params.optimize)
+                                                   , cyclical_(params_.distance_camera_target, params_.shifting_distance, 
+                                                               params.volume_size, params.volume_dims, params.optimize, params.no_reconstruct, params.mesh_name)
                                                    
 {
     CV_Assert(params.volume_dims[0] % 32 == 0);

@@ -133,15 +133,20 @@ void HalfEdgeMesh<VertexT, NormalT>::mergeVertex(VertexPtr merge_vert, VertexPtr
 	merge_vert->m_merged = true;
 	if(merge_vert->m_position.x != erase_vert->m_position.x || merge_vert->m_position.y != erase_vert->m_position.y || merge_vert->m_position.z != erase_vert->m_position.z)
 	{
+		cout << "Vertex missalignment! " << endl;
 		float dist_x = merge_vert->m_position.x - erase_vert->m_position.x;
 		float dist_y = merge_vert->m_position.y - erase_vert->m_position.y;
 		float dist_z = merge_vert->m_position.z - erase_vert->m_position.z;
 		float dist = sqrt(dist_x*dist_x + dist_y*dist_y + dist_z*dist_z);
-		if(dist > 0.05)
+		cout << "dist x " << dist_x << endl;
+		cout << "dist y " << dist_y << endl;
+		cout << "dist z " << dist_z << endl;
+		cout << "distance " << dist << endl; 
+		/*if(dist > 0.005)
 		{
 			cout << "Vertex missalignment! " << endl;
 			cout << "distance " << dist << endl; 
-		}
+		}*/
 	}
 	size_t old_size = merge_vert->in.size();
 	merge_vert->in.resize(old_size + erase_vert->in.size());
