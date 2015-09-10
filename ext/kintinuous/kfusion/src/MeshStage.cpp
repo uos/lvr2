@@ -1,7 +1,8 @@
 #include <kfusion/MeshStage.hpp>
 
 // default constructor
-MeshStage::MeshStage() : AbstractStage()
+MeshStage::MeshStage(double camera_target_distance, double voxel_size) : AbstractStage(),
+					camera_target_distance_(camera_target_distance), voxel_size_(voxel_size)
 {
 	mesh_count_ = 0;
 	timestamp.setQuiet(true);
@@ -68,10 +69,31 @@ void MeshStage::step()
 	}
 	meshPtr->m_fusion_verts = verts_map;
 	mesh_count_++;
+	transformMeshBack(meshPtr);
 	delete cube_time;
 	delete fast_recon;
 	getOutQueue()->Add(pair<MeshPtr, bool>(meshPtr, grid_work.second));
 	if(last_shift)
 		done(true);
 }
-void MeshStage::lastStep()	{ /* skip */ };
+void MeshStage::lastStep()	{ /* skip */ }
+
+void MeshStage::transformMeshBack(MeshPtr mesh)
+{
+	for(auto vert : mesh->getVertices())
+	{
+		// calc in voxel
+		vert->m_position.x 	*= voxel_size_;				
+		vert->m_position.y 	*= voxel_size_;				
+		vert->m_position.z 	*= voxel_size_;			
+		//offset for cube coord to center coord
+		vert->m_position.x 	-= 1.5;				
+		vert->m_position.y 	-= 1.5;				
+		vert->m_position.z 	-= 1.5 - camera_target_distance_;				
+		
+		//offset for cube coord to center coord
+		vert->m_position.x 	-= 150;				
+		vert->m_position.y 	-= 150;				
+		vert->m_position.z 	-= 150;
+	}
+}
