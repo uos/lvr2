@@ -16,14 +16,13 @@ void MeshStage::step()
 	TGrid* act_grid = grid_work.first;
 	bool last_shift = grid_work.second;
 	MeshPtr meshPtr = new HMesh();
-	ScopeTime* cube_time = new ScopeTime("Marching Cubes");
-	cFastReconstruction* fast_recon =  new cFastReconstruction(act_grid);
+	string mesh_notice = ("#### B:        Mesh Creation " +  to_string(mesh_count_) + "    ####");
+	ScopeTime* cube_time = new ScopeTime(mesh_notice.c_str());
 	
+	cFastReconstruction* fast_recon =  new cFastReconstruction(act_grid);
+	timestamp.setQuiet(true);
 	// Create an empty mesh
 	fast_recon->getMesh(*meshPtr);
-	//meshPtr->m_fusionBoxes = act_grid->getFusionCells();
-	//meshPtr->m_oldfusionBoxes = act_grid->m_old_fusion_cells;
-	//meshPtr->m_fusionNeighborBoxes = act_grid->m_fusion_cells_neighbors;
 	// mark all fusion vertices in the mesh
 	for(auto cellPair : act_grid->getFusionCells())
 	{
@@ -68,16 +67,9 @@ void MeshStage::step()
 		}
 	}
 	meshPtr->m_fusion_verts = verts_map;
-	/*if(slice_count_ == 0)
-	meshPtr_ = meshPtr;
-	else
-	{
-		mesh_queue_.push(meshPtr);
-	}*/
+	mesh_count_++;
 	delete cube_time;
 	delete fast_recon;
-	mesh_count_++;
-	std::cout << "        ####     2 Finished reconstruction number: " << mesh_count_ << "   ####" << std::endl;
 	getOutQueue()->Add(pair<MeshPtr, bool>(meshPtr, grid_work.second));
 	if(last_shift)
 		done(true);
