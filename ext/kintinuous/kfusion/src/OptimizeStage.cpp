@@ -7,30 +7,42 @@ OptimizeStage::OptimizeStage(double camera_target_distance, double voxel_size, b
 	timestamp.setQuiet(true);
 }
 
-void OptimizeStage::firstStep() { /* skip */ };
+void OptimizeStage::firstStep() { optiMesh_ = NULL; }
 
 void OptimizeStage::step()
 {
 	auto mesh_work = boost::any_cast<pair<MeshPtr, bool> >(getInQueue()->Take());
 	bool last_shift = mesh_work.second;
 	MeshPtr act_mesh = mesh_work.first;
-	if(optimize_)
+    transformMeshBack(act_mesh);
+    if(optimize_)
 	{
-		act_mesh->optimizePlanes(3, 0.83, 7, 40);
-		//act_mesh->optimizePlaneIntersections();
-		act_mesh = act_mesh->retesselateInHalfEdge();
+		string mesh_notice = ("#### C:            Mesh Optimization " +  to_string(mesh_count_) + "    ####");
+		ScopeTime* opti_time = new ScopeTime(mesh_notice.c_str());
+	
+		if(optiMesh_ == NULL)
+			optiMesh_ = act_mesh;
+		else
+			optiMesh_->addMesh(act_mesh);
+		timestamp.setQuiet(true);
+		optiMesh_->optimizePlanes(3, 0.8, 7, 0);
+		//optiMesh_->optimizePlaneIntersections();
+	
+		MeshPtr tmp_pointer = optiMesh_->retesselateInHalfEdge();
+		delete opti_time;
+		mesh_count_++;
+		getOutQueue()->Add(pair<MeshPtr, bool>(tmp_pointer, last_shift));
 	}
-	std::cout << "            ####     3 Finished optimisation number: " << mesh_count_ << "   ####" << std::endl;
-	mesh_count_++;
-	//transformMeshBack(tmp_pointer);
-	transformMeshBack(act_mesh);
-	//getOutQueue()->Add(pair<MeshPtr, bool>(tmp_pointer, last_shift));
-	getOutQueue()->Add(pair<MeshPtr, bool>(act_mesh, last_shift));
-	//delete act_mesh;
+	else
+		getOutQueue()->Add(pair<MeshPtr, bool>(act_mesh, last_shift));
+		
 	if(last_shift)
 		done(true);
 }
-void OptimizeStage::lastStep()	{ /* skip */ };
+void OptimizeStage::lastStep()	
+{  
+	 
+}
 
 void OptimizeStage::transformMeshBack(MeshPtr mesh)
 {
