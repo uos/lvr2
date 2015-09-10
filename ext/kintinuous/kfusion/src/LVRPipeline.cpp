@@ -20,6 +20,7 @@ namespace kfusion
 		pl_.AddStage(
 			boost::shared_ptr<FusionStage>(new FusionStage(meshPtr_, camera_target_distance_, voxel_size))
 			);
+		
 		pl_.Start();
 	}
 	

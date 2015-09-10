@@ -49,7 +49,7 @@ kfusion::KinFuParams kfusion::KinFuParams::default_params()
 }
 
 kfusion::KinFu::KinFu(const KinFuParams& params) : frame_counter_(0), params_(params), has_shifted_(false), perform_last_scan_(false), perform_shift_(false)
-                                                   , cyclical_(params_.shifting_distance, params.volume_size, params.volume_dims, params.optimize)
+                                                   , cyclical_(params_.distance_camera_target, params_.shifting_distance, params.volume_size, params.volume_dims, params.optimize)
                                                    
 {
     CV_Assert(params.volume_dims[0] % 32 == 0);
