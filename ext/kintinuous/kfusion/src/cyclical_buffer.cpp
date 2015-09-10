@@ -79,7 +79,7 @@ kfusion::cuda::CyclicalBuffer::performShift (cv::Ptr<cuda::TsdfVolume> volume, c
 	computeAndSetNewCubeMetricOrigin (volume, target_point, offset);
 	//ScopeTime* slice_time = new ScopeTime("Slice download");
 	// extract current slice from the TSDF volume (coordinates are in indices! (see fetchSliceAsCloud() )
-	if(!record_mode)
+	if(!record_mode && !no_reconstruct_)
 	{
 		DeviceArray<Point> cloud; 
 		
@@ -115,11 +115,8 @@ kfusion::cuda::CyclicalBuffer::performShift (cv::Ptr<cuda::TsdfVolume> volume, c
 				else
 					fusionShift[i] += minBounds[i];
 			}
+			
 			pl_.addTSDFSlice(cloud_slice_, fusionShift, last_shift);
-			/*if(!last_shift)	
-				marching_thread_ = new std::thread(&kfusion::MaCuWrapper::createGrid, &mcwrap_ , std::ref(cloud_slice_), fusionShift, last_shift);
-			else
-				mcwrap_.createGrid(cloud_slice_, fusionShift, last_shift);*/
 			slice_count_++;
 		}
 	}
@@ -248,11 +245,6 @@ void kfusion::cuda::CyclicalBuffer::calcBounds(Vec3i& offset, Vec3i& minBounds, 
 			{
 				minBounds[i] -= 1;
 				maxBounds[i] -= 1;
-				//if(!optimize_)
-				//{
-					//cout << "not optimizing" << endl;
-					//offset[i] -=1;
-				//}
 			}
 		}
 	}

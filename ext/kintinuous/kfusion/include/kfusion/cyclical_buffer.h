@@ -65,8 +65,8 @@ namespace kfusion
 			* \param[in] nb_voxels_per_axis number of voxels per axis of the volume represented by the TSDF buffer.
 			*/
 			CyclicalBuffer (double camera_target_distance, const double distance_threshold,
-			                const Vec3f cube_size, const Vec3i nb_voxels_per_axis, bool optimize) :
-			                pl_(camera_target_distance, (double)(cube_size(0) / nb_voxels_per_axis[0]), optimize), optimize_(optimize)
+			                const Vec3f cube_size, const Vec3i nb_voxels_per_axis, bool optimize, bool no_reconstruct, string mesh_name) :
+			                pl_(camera_target_distance, (double)(cube_size(0) / nb_voxels_per_axis[0]), optimize, mesh_name), optimize_(optimize), no_reconstruct_(no_reconstruct)
 			{
 				distance_threshold_ = distance_threshold;
 				buffer_.volume_size.x = cube_size[0]; 
@@ -241,7 +241,7 @@ namespace kfusion
 		  cv::Mat cloud_slice_;
 		  int slice_count_ = 0;
 		  Affine3f last_camPose_;
-		  bool optimize_;
+		  bool optimize_, no_reconstruct_;
 		  
 		  /** \brief structure that contains all TSDF buffer's addresses */
 		  tsdf_buffer buffer_;

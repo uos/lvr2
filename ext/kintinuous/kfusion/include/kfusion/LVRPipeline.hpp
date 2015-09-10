@@ -33,7 +33,7 @@ namespace kfusion
     {
 		public:
 
-			LVRPipeline(double camera_target_distance, double voxel_size = 3.0/512.0, bool optimize = false);
+			LVRPipeline(double camera_target_distance, double voxel_size = 3.0/512.0, bool optimize = false, string mesh_name = "mesh_output.ply");
 			
 			~LVRPipeline();
         
