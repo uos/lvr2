@@ -59,14 +59,6 @@ kfusion::cuda::CyclicalBuffer::checkForShift (cv::Ptr<cuda::TsdfVolume> volume, 
 	// perform shifting operations
 	if (result || last_shift || perform_shift)
 	{
-		/*// sync old marching cubes thread
-		if(marching_thread_ != NULL)
-		{
-			cout << "####    Next shift incoming!    ####" << endl;
-			marching_thread_->join();
-			delete marching_thread_;
-			marching_thread_ = NULL;
-		}*/
 		performShift (volume, targetPoint, cam_pose, last_shift, record_mode);
 		return true;
 	}
@@ -256,7 +248,11 @@ void kfusion::cuda::CyclicalBuffer::calcBounds(Vec3i& offset, Vec3i& minBounds, 
 			{
 				minBounds[i] -= 1;
 				maxBounds[i] -= 1;
-				//offset[i] -=1;
+				//if(!optimize_)
+				//{
+					//cout << "not optimizing" << endl;
+					//offset[i] -=1;
+				//}
 			}
 		}
 	}

@@ -19,6 +19,7 @@
 
 using namespace lvr;
 using namespace std;
+using namespace kfusion;
 
 typedef Vertex<float>  fVertex;
 typedef ColorVertex<float, unsigned char> cVertex;
@@ -44,6 +45,7 @@ private:
 	size_t mesh_count_;
 	double camera_target_distance_;
 	double voxel_size_;
-	bool optimize_;
+	MeshPtr optiMesh_;
+    bool optimize_;
 };
 #endif // STAGE
