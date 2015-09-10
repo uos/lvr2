@@ -546,6 +546,6 @@ private:
 } // namespace lvr
 
 
-#include "Fusion.cpp"
+#include "Fusion.tcc"
 
 #endif /* FUSION_H_ */
