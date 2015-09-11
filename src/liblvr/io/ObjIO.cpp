@@ -319,6 +319,7 @@ class sort_indices
 
 void ObjIO::save( string filename )
 {
+	
 	typedef Vertex<unsigned char> ObjColor;
 
 	size_t lenVertices;
@@ -536,11 +537,12 @@ void ObjIO::save( string filename )
 				mtlFile << "newmtl texture_"      << m->texture_index << endl;
 				mtlFile << "Ka 1.000 1.000 1.000" << endl;
 				mtlFile << "Kd 1.000 1.000 1.000" << endl;
-				mtlFile << "map_Kd texture_"      << m->texture_index << ".ppm" << endl << endl;
+				mtlFile << "map_Kd texture_"      << m->texture_index << ".jpg" << endl << endl;
 			}
 		}
 	}
 	mtlFile.close();
 }
+
 
 } // Namespace lvr
