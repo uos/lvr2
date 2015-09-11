@@ -39,7 +39,7 @@ bool  HalfEdge<HVertexT, FaceT>::isBorderEdge()
     }
     catch(HalfEdgeAccessException &e)
     {
-        cout << "HalfEdge::isBorderEdge(): " << e.what() << endl;
+        //cout << "HalfEdge::isBorderEdge(): " << e.what() << endl;
         return false;
     }
 
