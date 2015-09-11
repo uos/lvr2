@@ -35,8 +35,8 @@ template<typename VertexT, typename NormalT>
 HalfEdgeMesh<VertexT, NormalT>::HalfEdgeMesh( )
 {
     m_globalIndex = 0;
-    m_regionClassifier = ClassifierFactory<VertexT, NormalT>::get( "PlaneSimpsons", this);
-    m_classifierType =  "PlaneSimpsons";
+    m_regionClassifier = ClassifierFactory<VertexT, NormalT>::get("Default", this);
+    m_classifierType = "Default";
     m_pointCloudManager = NULL;
     m_depth = 100;
     m_fusionNeighbors = 0;
@@ -47,8 +47,8 @@ HalfEdgeMesh<VertexT, NormalT>::HalfEdgeMesh(
         typename PointsetSurface<VertexT>::Ptr pm )
 {
     m_globalIndex = 0;
-    m_regionClassifier = ClassifierFactory<VertexT, NormalT>::get( "PlaneSimpsons", this);
-    m_classifierType =  "PlaneSimpsons";
+    m_regionClassifier = ClassifierFactory<VertexT, NormalT>::get("Default", this);
+    m_classifierType = "Default";
     m_pointCloudManager = pm;
     m_depth = 100;
 }
@@ -104,19 +104,11 @@ void HalfEdgeMesh<VertexT, NormalT>::addMesh(HalfEdgeMesh<VertexT, NormalT>* sli
 	for(auto vert_it = slice->m_fusion_verts.begin(); vert_it != slice->m_fusion_verts.end(); vert_it++)
 	{
 		size_t merge_index = vert_it->first;
-		//cout << "merge index1 " << merge_index << endl;
-		//if(m_slice_verts.size() > 0)
-		//{
-			//merge_index = m_slice_verts[merge_index];
-		//}
 		size_t erase_index = vert_it->second;
-		//cout << "merge index2 " << merge_index << endl;
 		if(m_fused_verts.size() > 0)
 		{
 			merge_index = m_fused_verts[merge_index];
 		}
-		//cout << "merge index	3 " << merge_index << endl;
-		//mergeVertex(m_vertices[merge_index], slice->m_vertices[slice->m_slice_verts[erase_index]]);
 		mergeVertex(m_vertices[merge_index], slice->m_vertices[erase_index]);
 	}
 	
@@ -138,17 +130,40 @@ void HalfEdgeMesh<VertexT, NormalT>::addMesh(HalfEdgeMesh<VertexT, NormalT>* sli
 template<typename VertexT, typename NormalT>
 void HalfEdgeMesh<VertexT, NormalT>::mergeVertex(VertexPtr merge_vert, VertexPtr erase_vert)
 {
+	merge_vert->m_merged = true;
 	if(merge_vert->m_position.x != erase_vert->m_position.x || merge_vert->m_position.y != erase_vert->m_position.y || merge_vert->m_position.z != erase_vert->m_position.z)
 	{
-		//cout << "Vertex missalignment! " << endl;
-		//cout << "merge vert " << merge_vert->m_position << endl; 
-		//cout << "erase vert " << erase_vert->m_position << endl;
+		cout << "Vertex missalignment! " << endl;
+		float dist_x = merge_vert->m_position.x - erase_vert->m_position.x;
+		float dist_y = merge_vert->m_position.y - erase_vert->m_position.y;
+		float dist_z = merge_vert->m_position.z - erase_vert->m_position.z;
+		float dist = sqrt(dist_x*dist_x + dist_y*dist_y + dist_z*dist_z);
+		cout << "dist x " << dist_x << endl;
+		cout << "dist y " << dist_y << endl;
+		cout << "dist z " << dist_z << endl;
+		cout << "distance " << dist << endl; 
+		/*if(dist > 0.005)
+		{
+			cout << "Vertex missalignment! " << endl;
+			cout << "distance " << dist << endl; 
+		}*/
 	}
 	size_t old_size = merge_vert->in.size();
 	merge_vert->in.resize(old_size + erase_vert->in.size());
 	for(size_t i = 0; i < erase_vert->in.size(); i++)
 	{
 		size_t index = old_size + i;
+		if(erase_vert->in[i]->isBorderEdge())
+		{
+			for(size_t j = 0; j < merge_vert->out.size(); j++)
+			{
+				if(merge_vert->out[j]->end() == erase_vert->in[i]->start())
+				{
+					erase_vert->in[i]->setPair(merge_vert->out[j]);
+					merge_vert->out[j]->setPair(erase_vert->in[i]);
+				}	
+			}
+		}
 		merge_vert->in[index] = erase_vert->in[i];
 		erase_vert->in[i]->setEnd(merge_vert);
 	}
@@ -158,8 +173,9 @@ void HalfEdgeMesh<VertexT, NormalT>::mergeVertex(VertexPtr merge_vert, VertexPtr
 	{
 		size_t index = old_size + i;
 		merge_vert->out[index] = erase_vert->out[i];
-		erase_vert->out[i]->setStart(erase_vert);
+		erase_vert->out[i]->setStart(merge_vert);
 	}
+	merge_vert->m_fused = false;
 	delete erase_vert;
 }
 
@@ -919,7 +935,9 @@ int HalfEdgeMesh<VertexT, NormalT>::regionGrowing(FacePtr start_face, NormalT &n
                     && fabs((*start_face)[k]->pair()->face()->getFaceNormal() * normal) > angle )
             {
 				if(start_face->m_fusion_face)
+				{
 					region->m_unfinished = true;
+                }
                 if(depth == 0)
                 {
                     // if the maximum recursion depth is reached save the child faces to restart the recursion from
@@ -980,6 +998,7 @@ void HalfEdgeMesh<VertexT, NormalT>::optimizePlanes(
         int small_region_size,
         bool remove_flickering)
 {
+	timestamp.setQuiet(true);
     cout << timestamp << "Starting plane optimization with threshold " << angle << endl;
     cout << timestamp << "Number of faces before optimization: " << m_faces.size() << endl;
 
@@ -989,7 +1008,6 @@ void HalfEdgeMesh<VertexT, NormalT>::optimizePlanes(
     int region_size   = 0;
     int region_number = 0;
     m_regions.clear();
-
     for(int j = 0; j < iterations; j++)
     {
         cout << timestamp << "Optimizing planes. Iteration " <<  j + 1 << " / "  << iterations << endl;
@@ -998,13 +1016,18 @@ void HalfEdgeMesh<VertexT, NormalT>::optimizePlanes(
         for(size_t i = 0; i < m_faces.size(); i++)
         {
             FacePtr face = m_faces[i];
-			if((*face)(0)->m_fused || (*face)(1)->m_fused || (*face)(2)->m_fused)
+			if((*face)(0)->m_fused || (*face)(1)->m_fused || (*face)(2)->m_fused) 
 			{
 				face->m_fusion_face = true;
-				(*face)(0)->m_fused = false;
-				(*face)(1)->m_fused = false;
-				(*face)(2)->m_fused = false;
+				if(j == iterations -1)
+				{
+					(*face)(0)->m_fused = false;
+					(*face)(1)->m_fused = false;
+					(*face)(2)->m_fused = false;
+				}
 			}
+			else 
+				face->m_fusion_face = false;
 			face->m_used = false;
         }
 
@@ -1020,7 +1043,7 @@ void HalfEdgeMesh<VertexT, NormalT>::optimizePlanes(
                 region_size = stackSafeRegionGrowing(m_faces[i], n, angle, region) + 1;
 
                 // Fit big regions into the regression plane
-                if(region_size > max(min_region_size, default_region_threshold))
+                if(region_size > max(min_region_size, default_region_threshold) && !region->m_unfinished)
                 {
                     region->regressionPlane();
                 }
@@ -2178,8 +2201,8 @@ HalfEdgeMesh<VertexT, NormalT>* HalfEdgeMesh<VertexT, NormalT>::retesselateInHal
     std::vector<size_t> planeRegions;
     for( size_t i = 0; i < m_regions.size(); ++i )
     {
-		//if(!m_regions[i]->m_unfinished)
-		//{
+		if(!m_regions[i]->m_unfinished)
+		{
 			if( !m_regions[i]->m_inPlane || m_regions[i]->m_regionNumber < 0)
 			{
 				
@@ -2187,11 +2210,11 @@ HalfEdgeMesh<VertexT, NormalT>* HalfEdgeMesh<VertexT, NormalT>::retesselateInHal
 			}
 			else
 			{
+				//cout << "plane region ! " << endl;
 				planeRegions.push_back(i);
 			}
-		//}	
+		}
     }
-
     // keep track of used vertices to avoid doubles.
     map<Vertex<float>, unsigned int> vertexMap;
     Vertex<float> current;
@@ -2220,6 +2243,8 @@ HalfEdgeMesh<VertexT, NormalT>* HalfEdgeMesh<VertexT, NormalT>::retesselateInHal
                 }
                 else
                 {
+					(*m_regions[iRegion]->m_faces[iFace])(iVertex)->m_oldFused = false;
+                    (*m_regions[iRegion]->m_faces[iFace])(iVertex)->m_fused = false;
 					vertexcount++;
                     pos = vertexBuffer.size() / 3;
                     vertexMap.insert(pair<Vertex<float>, unsigned int>(current, pos));
@@ -2302,7 +2327,6 @@ HalfEdgeMesh<VertexT, NormalT>* HalfEdgeMesh<VertexT, NormalT>::retesselateInHal
 				}
 				else
 				{
-					
 				    pos = (vertexBuffer.size() / 3);
 				    vertexMap.insert(pair<Vertex<float>, unsigned int>(current, pos));
 			        vertexBuffer.push_back( points[k] );
@@ -2349,7 +2373,7 @@ HalfEdgeMesh<VertexT, NormalT>* HalfEdgeMesh<VertexT, NormalT>::retesselateInHal
 			{
 				deleteFace(m_regions[iRegion]->m_faces[i]);
 			}*/
-			  //m_regions[iRegion]->m_toDelete = true;
+			  m_regions[iRegion]->m_toDelete = true;
         }
         catch(...)
         {
@@ -2370,15 +2394,8 @@ HalfEdgeMesh<VertexT, NormalT>* HalfEdgeMesh<VertexT, NormalT>::retesselateInHal
 		
 	HalfEdgeMesh<VertexT, NormalT>* retased_mesh =  new HalfEdgeMesh(this->m_meshBuffer);
 	size_t count_doubles = 0;
-	/*for(auto it = this->m_fusion_verts.begin(); it != this->m_fusion_verts.end(); it++)
-	{
-		retased_mesh->setOldFusionVertex(m_slice_verts[it->second]);
-	}*/
 	retased_mesh->m_fusionNeighbors = 0;
 	deleteRegions();
-	//retased_mesh->m_fusionNeighbors = m_fusionNeighbors;
-	//retased_mesh->m_slice_verts = m_slice_verts;
-	//retased_mesh->m_fusion_verts = m_fusion_verts;
     Tesselator<VertexT, NormalT>::clear();
     return retased_mesh;
 } 

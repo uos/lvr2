@@ -34,14 +34,17 @@ class MeshStage : public AbstractStage
 public:
 
 	// default constructor
-	MeshStage();
+	MeshStage(double camera_target_distance, double voxel_size);
 
 	virtual void firstStep();
 	virtual void step();
 	virtual void lastStep();
 	
 private:
+	void transformMeshBack(MeshPtr mesh);
 
+	double camera_target_distance_;
+	double voxel_size_;
 	size_t mesh_count_;
 };
 #endif // STAGE
