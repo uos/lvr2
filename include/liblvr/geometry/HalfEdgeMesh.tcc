@@ -2891,7 +2891,7 @@ void HalfEdgeMesh<VertexT,NormalT>::fillInitialTextures(std::vector<std::vector<
 
 		//saving
 		for(int i=0;i<textures.size();i++)
-			cv::imwrite(string(texture_output_dir)+"texture_"+std::to_string(start_texture_index+i)+".ppm",textures[i]);
+			cv::imwrite(string(texture_output_dir)+"texture_"+std::to_string(start_texture_index+i)+".jpg",textures[i]);
 
 
 	//color calculation for nonPlanar Regions
