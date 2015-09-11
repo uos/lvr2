@@ -45,14 +45,11 @@ namespace kfusion
 			
 			double calcTimeStats();
 			
-			void setCameraDist(const double threshold) { camera_target_distance_ = threshold;} 
-			
 		private:
 		    
 		    MeshPtr meshPtr_;
 		    size_t slice_count_;
 			std::vector<double> timeStats_;
-			double camera_target_distance_;
 			LinearPipeline<pair<TSDFSlice, bool> , MeshPtr> pl_;
 			
     };
