@@ -54,40 +54,40 @@ set(LVR_SOURCES
 #####################################################################################
 
 if(MSVC)
-include(LVRVSSetup.txt)
+  include(LVRVSSetup.txt)
 endif()
 
 #####################################################################################
-# Setup dependencies to external libraries 
+# Setup dependencies to external libraries
 #####################################################################################
 
-set(LVR_LIB_DEPENDENCIES 
-	lvrrply_static
-	lvrlas_static
-	lvrslam6d_static 
-	${Boost_PROGRAM_OPTIONS_LIBRARY}
-	${Boost_SYSTEM_LIBRARY} 
-	${Boost_THREAD_LIBRARY} 
-	${Boost_FILESYSTEM_LIBRARY}
-	${OPENGL_LIBRARY} 
-	${GLUT_LIBRARIES}
-	${OpenCV_LIBS})
+set(LVR_LIB_DEPENDENCIES
+    lvrrply_static
+    lvrlas_static
+    lvrslam6d_static
+    ${Boost_PROGRAM_OPTIONS_LIBRARY}
+    ${Boost_SYSTEM_LIBRARY}
+    ${Boost_THREAD_LIBRARY}
+    ${Boost_FILESYSTEM_LIBRARY}
+    ${OPENGL_LIBRARY}
+    ${GLUT_LIBRARIES}
+    ${OpenCV_LIBS})
 
 #####################################################################################
-# On Unix/Linux we need to link against pthreads 
+# On Unix/Linux we need to link against pthreads
 #####################################################################################
 
-if ( UNIX )
-set(LVR_LIB_DEPENDENCIES ${LVR_LIB_DEPENDENCIES} pthread)
-endif ( UNIX)
+if(UNIX)
+  set(LVR_LIB_DEPENDENCIES ${LVR_LIB_DEPENDENCIES} pthread)
+endif(UNIX)
 
 #####################################################################################
 # Set c++0x flags for gcc compilers (needed for boctree io)
 #####################################################################################
 
-if( UNIX )
-SET_SOURCE_FILES_PROPERTIES(io/BoctreeIO.cpp PROPERTIES COMPILE_FLAGS "-std=gnu++0x")
-endif ( UNIX )
+if(UNIX)
+  SET_SOURCE_FILES_PROPERTIES(io/BoctreeIO.cpp PROPERTIES COMPILE_FLAGS "-std=gnu++0x")
+endif(UNIX)
 
 #####################################################################################
 # Add PCD io if PCL is installed
@@ -102,7 +102,7 @@ endif(PCL_FOUND)
 # Compile object files for static and dynamic library
 #####################################################################################
 
-add_library( lvrcore OBJECT ${LVR_SOURCES} ${LVR_LIB_MOC_SRC})
+add_library(lvrcore OBJECT ${LVR_SOURCES} ${LVR_LIB_MOC_SRC})
 
 #####################################################################################
 # Build static library
@@ -110,16 +110,16 @@ add_library( lvrcore OBJECT ${LVR_SOURCES} ${LVR_LIB_MOC_SRC})
 
 message(STATUS "Building static library")
 add_library(lvr_static STATIC $<TARGET_OBJECTS:lvrcore>)
-#set_target_properties(lvr_static PROPERTIES LIBRARY_OUTPUT_DIRECTORY ${CMAKE_SOURCE_DIR}/lib)
 target_link_libraries(lvr_static ${LVR_LIB_DEPENDENCIES})
+#set_target_properties(lvr_static PROPERTIES LIBRARY_OUTPUT_DIRECTORY ${CMAKE_SOURCE_DIR}/lib)
 
 #####################################################################################
 # Build shared library
 #####################################################################################
 
-if(NOT MSVC)
-message(STATUS "Building shared library")
-add_library(lvr SHARED $<TARGET_OBJECTS:lvrcore>)
-set_target_properties(lvr PROPERTIES LIBRARY_OUTPUT_DIRECTORY ${CMAKE_SOURCE_DIR}/lib)
-target_link_libraries(lvr ${LVR_LIB_DEPENDENCIES})
-endif(MSVC)
+if( NOT MSVC )
+  message(STATUS "Building shared library")
+  add_library(lvr SHARED $<TARGET_OBJECTS:lvrcore>)
+  set_target_properties(lvr PROPERTIES LIBRARY_OUTPUT_DIRECTORY ${CMAKE_SOURCE_DIR}/lib)
+  target_link_libraries(lvr ${LVR_LIB_DEPENDENCIES})
+endif( NOT MSVC)
