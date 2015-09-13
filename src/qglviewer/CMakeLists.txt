@@ -2,7 +2,7 @@
 
 ADD_DEFINITIONS(-DQT_NO_KEYWORDS )
 
-set(QVIEWER_MOCS 
+set(QVIEWER_MOCS
     app/ViewerApplication.h
     data/VisualizerFactory.hpp
     data/Visualizer.hpp
@@ -15,7 +15,7 @@ set(QVIEWER_MOCS
 )
 
 # Dynamically generated GUI object's from
-# QtDesigner 
+# QtDesigner
 set(QVIEWER_UIS
     ui/FogDensityDialog.ui
     ui/InputCoordinateSystemDialog.ui
