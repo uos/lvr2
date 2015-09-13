@@ -89,24 +89,14 @@ PCLFiltering::PCLFiltering( PointBufferPtr loader )
     // Create an empty kdtree representation, and pass it to the normal estimation object.
     // Its content will be filled inside the object, based on the given input dataset
     // (as no other search surface is given).
-#ifdef _PCL_VERSION_12_
-    m_kdTree = pcl::KdTreeFLANN<pcl::PointXYZRGB>::Ptr (new pcl::KdTreeFLANN<pcl::PointXYZRGB> ());
-#else
 	m_kdTree = pcl::search::KdTree<pcl::PointXYZRGB>::Ptr( new pcl::search::KdTree<pcl::PointXYZRGB> );
-#endif
-     
     m_kdTree->setInputCloud (m_pointCloud);
 }
 
 void PCLFiltering::applyMLSProjection(float searchRadius)
 {
-#if defined PCL_MAJOR_VERSION && defined PCL_MINOR_VERSION && PCL_MAJOR_VERSION == 1 && PCL_MINOR_VERSION >= 6
     pcl::MovingLeastSquares<pcl::PointXYZRGB, pcl::PointNormal> mls;
     pcl::PointCloud<pcl::PointNormal> mls_points;
-#else
-    pcl::MovingLeastSquares<pcl::PointXYZRGB, pcl::Normal> mls;
-    pcl::PointCloud<pcl::PointXYZRGB> mls_points;
-#endif
 
     // Set Parameters
     mls.setInputCloud(m_pointCloud);
@@ -117,11 +107,7 @@ void PCLFiltering::applyMLSProjection(float searchRadius)
     std::cout << timestamp << "Applying MSL projection" << std::endl;
 
     // Reconstruct
-#if defined PCL_MAJOR_VERSION && defined PCL_MINOR_VERSION && PCL_MAJOR_VERSION == 1 && PCL_MINOR_VERSION >= 6
     mls.process(mls_points);
-#else
-    mls.reconstruct(mls_points);
-#endif
 
     std::cout << timestamp << "Filtered cloud has " << mls_points.size() << " points" << std::endl;
     std::cout << timestamp << "Saving result" << std::endl;
