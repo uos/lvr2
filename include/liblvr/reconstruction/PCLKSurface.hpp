@@ -88,11 +88,7 @@ public:
 
 private:
 
-#ifdef _PCL_VERSION_12_
-    pcl::KdTreeFLANN<pcl::PointXYZ>::Ptr      m_kdTree;
-#else
     pcl::search::KdTree<pcl::PointXYZ>::Ptr   m_kdTree;
-#endif
 
     /// A PCL point cloud representation of the given buffer
     pcl::PointCloud<pcl::PointXYZ>::Ptr     m_pointCloud;
