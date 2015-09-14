@@ -64,8 +64,9 @@ namespace kfusion
 			* \param[in] cube_size physical size (in meters) of the volume (here, a cube) represented by the TSDF buffer.
 			* \param[in] nb_voxels_per_axis number of voxels per axis of the volume represented by the TSDF buffer.
 			*/
-			CyclicalBuffer (const double distance_threshold,
-			                const Vec3f cube_size, const Vec3i nb_voxels_per_axis) : pl_(distance_threshold, (double)(cube_size(0) / nb_voxels_per_axis[0]))
+			CyclicalBuffer (double camera_target_distance, const double distance_threshold,
+			                const Vec3f cube_size, const Vec3i nb_voxels_per_axis, bool optimize, bool no_reconstruct, string mesh_name) :
+			                pl_(camera_target_distance, (double)(cube_size(0) / nb_voxels_per_axis[0]), optimize, mesh_name), optimize_(optimize), no_reconstruct_(no_reconstruct)
 			{
 				distance_threshold_ = distance_threshold;
 				buffer_.volume_size.x = cube_size[0]; 
@@ -74,12 +75,9 @@ namespace kfusion
 				buffer_.voxels_size.x = nb_voxels_per_axis[0]; 
 				buffer_.voxels_size.y = nb_voxels_per_axis[1]; 
 				buffer_.voxels_size.z = nb_voxels_per_axis[2]; 
-				//marching_thread_ = NULL;
 				global_shift_[0] = 0;
 				global_shift_[1] = 0;
 				global_shift_[2] = 0;
-				//pl_ = LVRPipeline(distance_threshold, (double)buffer_.volume_size.x / nb_voxels_per_axis[0]);
-				//mcwrap_ = MaCuWrapper(distance_threshold, (double)buffer_.volume_size.x / nb_voxels_per_axis[0]);
 			}
 
 
@@ -95,7 +93,7 @@ namespace kfusion
 			CyclicalBuffer (const double distance_threshold,
 			                const double volume_size_x, const double volume_size_y, 
 			                const double volume_size_z, const int nb_voxels_x, const int nb_voxels_y, 
-			                const int nb_voxels_z)
+			                const int nb_voxels_z) : pl_(0, (double)(volume_size_x /  nb_voxels_x), false)
 			{
 				distance_threshold_ = distance_threshold;
 				buffer_.volume_size.x = volume_size_x; 
@@ -104,8 +102,6 @@ namespace kfusion
 				buffer_.voxels_size.x = nb_voxels_x; 
 				buffer_.voxels_size.y = nb_voxels_y; 
 				buffer_.voxels_size.z = nb_voxels_z; 
-				//marching_thread_ = NULL;
-				
 			}
 			
 			~CyclicalBuffer()
@@ -247,6 +243,7 @@ namespace kfusion
 		  std::vector<ImgPose*> imgPoses_;
 		  int slice_count_ = 0;
 		  Affine3f last_camPose_;
+		  bool optimize_, no_reconstruct_;
 		  
 		  /** \brief structure that contains all TSDF buffer's addresses */
 		  tsdf_buffer buffer_;
