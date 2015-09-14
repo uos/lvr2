@@ -35,18 +35,16 @@ class FusionStage : public AbstractStage
 public:
 
 	// default constructor
-	FusionStage(MeshPtr mesh, double camera_target_distance_, double voxel_size);
+	FusionStage(MeshPtr mesh, string mesh_name);
 
 	virtual void firstStep();
 	virtual void step();
 	virtual void lastStep();
 	
 private:
-	void transformMeshBack();
 	
+	string mesh_name_;
 	size_t mesh_count_;
 	MeshPtr mesh_;
-	double camera_target_distance_;
-	double voxel_size_;
 };
 #endif // STAGE

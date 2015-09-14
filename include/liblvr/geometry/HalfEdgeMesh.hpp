@@ -321,9 +321,9 @@ public:
 	//unordered_map<size_t, FastBox<VertexT, NormalT>* > m_fusionNeighborBoxes;
 	vector<FacePtr> m_fusionFaces;
 	
-	int projectAndMapNewImage(kfusion::ImgPose img_pose, const char* texture_output_dir="");
+	//int projectAndMapNewImage(kfusion::ImgPose img_pose, const char* texture_output_dir="");
 	
-	std::vector<std::vector<cv::Point3f> > getBoundingRectangles(int& size);
+	//std::vector<std::vector<cv::Point3f> > getBoundingRectangles(int& size);
 	
 private:
 
@@ -504,20 +504,20 @@ private:
 	/** TEXTURE STUFF 
 	 * @brief getBoundingRectangles 
 	 */
-	std::vector<cv::Point3f> getBoundingRectangle(std::vector<VertexT> act_contour, NormalT normale);
+	//std::vector<cv::Point3f> getBoundingRectangle(std::vector<VertexT> act_contour, NormalT normale);
 	
-	void createInitialTexture(std::vector<cv::Point3f> b_rect, int texture_index, const char* output_dir="",float pic_size_factor=1000.0);
+	//void createInitialTexture(std::vector<cv::Point3f> b_rect, int texture_index, const char* output_dir="",float pic_size_factor=1000.0);
 	
-	void getInitialUV(float x,float y,float z,std::vector<cv::Point3f> b_rect,float& u, float& v);
-	void getInitialUV_b(float x,float y,float z,std::vector<std::vector<cv::Point3f> > b_rects,size_t b_rect_number,float& u, float& v);
+	//void getInitialUV(float x,float y,float z,std::vector<cv::Point3f> b_rect,float& u, float& v);
+	//void getInitialUV_b(float x,float y,float z,std::vector<std::vector<cv::Point3f> > b_rects,size_t b_rect_number,float& u, float& v);
 	
-	void fillInitialTextures(std::vector<std::vector<cv::Point3f> > b_rects,
-		   kfusion::ImgPose img_pose, int image_number,
-		   const char* texture_output_dir="");
+	//void fillInitialTextures(std::vector<std::vector<cv::Point3f> > b_rects,
+		   //kfusion::ImgPose img_pose, int image_number,
+		   //const char* texture_output_dir="");
 		   
-	void fillInitialTexture(std::vector<std::vector<cv::Point3f> > b_rects,
-		   kfusion::ImgPose img_pose, int image_number,
-		   const char* texture_output_dir="");
+	//void fillInitialTexture(std::vector<std::vector<cv::Point3f> > b_rects,
+		   //kfusion::ImgPose img_pose, int image_number,
+		   //const char* texture_output_dir="");
 		   
 	//first version with one texture each bounding box
 	std::vector<cv::Mat> textures;
