@@ -45,7 +45,7 @@ bool OpenMPConfig::haveOpenMP()
 void OpenMPConfig::setNumThreads(int n)
 {
 #ifdef _USE_OPEN_MP
-	omp_set_num_threads(n)
+	omp_set_num_threads(n);
 #endif
 }
 
