@@ -1,8 +1,8 @@
 #include <kfusion/FusionStage.hpp>
 
 // default constructor
-FusionStage::FusionStage(MeshPtr mesh, double camera_target_distance, double voxel_size) : AbstractStage()
-	, mesh_(mesh), mesh_count_(0), camera_target_distance_(camera_target_distance), voxel_size_(voxel_size)
+FusionStage::FusionStage(MeshPtr mesh, string mesh_name) : AbstractStage()
+	, mesh_(mesh), mesh_count_(0), mesh_name_(mesh_name)
 {
 
 }
@@ -14,14 +14,15 @@ void FusionStage::step()
 	auto mesh_work = boost::any_cast<pair<pair<MeshPtr, bool>, vector<kfusion::ImgPose*> > >(getInQueue()->Take());
 	bool last_shift = mesh_work.first.second;
 	MeshPtr opti_mesh = mesh_work.first.first;
-	/*if(mesh_count_ == 0)
+	string mesh_notice = ("#### D:                Mesh Fusion " +  to_string(mesh_count_) + "    ####");
+	ScopeTime* fusion_time = new ScopeTime(mesh_notice.c_str());
+	if(mesh_count_ == 0)
 		mesh_ = opti_mesh;
 	else
-		mesh_->addMesh(opti_mesh);*/
-	std::cout << "                        ####    4 Finished slice number: " << mesh_count_ << "   ####" << std::endl;
-	getOutQueue()->Add(opti_mesh);
-	//getOutQueue()->Add(opti_mesh);
+		mesh_->addMesh(opti_mesh);
+	getOutQueue()->Add(mesh_);
 	mesh_count_++;
+	delete fusion_time;
 	if(last_shift)
 		done(true);
 }
@@ -35,28 +36,10 @@ void FusionStage::lastStep()
 	//meshPtr_->restorePlanes(7);
 	//meshPtr_->finalizeAndRetesselate(false, 0.01);
 	//transformMeshBack();
+	std::cout << "Global amount of vertices: " << mesh_->meshSize() << endl;
+	std::cout << "Global amount of faces: " << mesh_->getFaces().size() << endl;
 	mesh_->finalize();
 	ModelPtr m( new Model( mesh_->meshBuffer() ) );
-	ModelFactory::saveModel( m, "./mesh_" + to_string(mesh_count_) + ".ply");
+	ModelFactory::saveModel( m, mesh_name_);
 	//ModelFactory::saveModel( m, "./test_mesh.ply"); 
-}
-
-void FusionStage::transformMeshBack()
-{
-	for(auto vert : mesh_->getVertices())
-	{
-		// calc in voxel
-		vert->m_position.x 	*= voxel_size_;				
-		vert->m_position.y 	*= voxel_size_;				
-		vert->m_position.z 	*= voxel_size_;			
-		//offset for cube coord to center coord
-		vert->m_position.x 	-= 1.5;				
-		vert->m_position.y 	-= 1.5;				
-		vert->m_position.z 	-= 1.5 - camera_target_distance_;				
-		
-		//offset for cube coord to center coord
-		vert->m_position.x 	-= 150;				
-		vert->m_position.y 	-= 150;				
-		vert->m_position.z 	-= 150;
-	}
 }

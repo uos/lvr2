@@ -33,7 +33,7 @@ namespace kfusion
     {
 		public:
 
-			LVRPipeline(double camera_target_distance = 0, double voxel_size = 3.0/512.0);
+			LVRPipeline(double camera_target_distance, double voxel_size = 3.0/512.0, bool optimize = false, string mesh_name = "mesh_output.ply");
 			
 			~LVRPipeline();
         
@@ -45,15 +45,11 @@ namespace kfusion
 			
 			double calcTimeStats();
 			
-			void setCameraDist(const double threshold) { camera_target_distance_ = threshold;} 
-			
-			
 		private:
 		    
 		    MeshPtr meshPtr_;
 		    size_t slice_count_;
 			std::vector<double> timeStats_;
-			double camera_target_distance_;
 			LinearPipeline<pair<TSDFSlice, bool> , MeshPtr> pl_;
 			
     };
