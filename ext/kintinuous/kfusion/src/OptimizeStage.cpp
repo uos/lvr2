@@ -2,7 +2,7 @@
 
 // default constructor
 OptimizeStage::OptimizeStage() : AbstractStage()
-	,mesh_count_(0),textured(false)
+	,mesh_count_(0),textured(true),bounding_counter(0)
 {
 	timestamp.setQuiet(true);
 }
@@ -25,6 +25,7 @@ void OptimizeStage::step()
 	std::cout << "Loaded " << image_poses_buffer.size() << " Images. " << std::endl;
 	
 	optiMesh_->optimizePlanes(3, 0.85, 7, 0);
+	
 	//act_mesh->optimizePlaneIntersections();
 	MeshPtr tmp_pointer = optiMesh_->retesselateInHalfEdge(0.01,textured,bounding_counter);
 	std::cout << "            ####     3 Finished optimisation number: " << mesh_count_ << "   ####" << std::endl;
@@ -34,18 +35,14 @@ void OptimizeStage::step()
 	if(textured){
 		int counter=0;
 		for(int i=0;i<image_poses_buffer.size();i++){
-			//counter = optiMesh_->projectAndMapNewImage(*(image_poses_buffer[i]));
+			counter = optiMesh_->projectAndMapNewImage(*(image_poses_buffer[i]));
 		}
 		bounding_counter += counter;
-		if(meshBufferPtr){
-			std::cout << "addMesh" << std::endl;
-			//addMesh(optiMesh_->meshBuffer(),meshBufferPtr); 
-			meshBufferPtr = act_mesh->meshBuffer();
-		} else {
-			meshBufferPtr = optiMesh_->meshBuffer();
-		}
-		image_poses_buffer.resize(0);
+		
+		meshBufferPtr = optiMesh_->meshBuffer();
+				
 	}
+	image_poses_buffer.resize(0);
 	
 	
 	getOutQueue()->Add(pair<pair<MeshPtr, bool>, vector<kfusion::ImgPose*> >(
