@@ -24,8 +24,8 @@ void OptimizeStage::step()
 	timestamp.setQuiet(true);
 	//optiMesh_->optimizePlanes(3, 0.8, 7, 0);
 	optiMesh_->optimizePlanes(3, 0.8, 7, 10, true);
-	optiMesh_->fillHoles(40);
-	optiMesh_->optimizePlaneIntersections();
+	//optiMesh_->fillHoles(40);
+	//optiMesh_->optimizePlaneIntersections();
 	delete opo_time;
 	MeshPtr tmp_pointer = optiMesh_->retesselateInHalfEdge();
 	delete opti_time;
