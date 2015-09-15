@@ -122,6 +122,8 @@ kfusion::cuda::CyclicalBuffer::performShift (cv::Ptr<cuda::TsdfVolume> volume, c
 			pl_.addTSDFSlice(slice, last_shift);
 			slice_count_++;
 		}
+		else
+			cout << "Slice size 0" << endl;
 	}
 	// clear buffer slice and update the world model
 	volume->clearSlice(&buffer_, offset);
