@@ -20,13 +20,12 @@ if(MSVC)
   add_definitions(-DNOMINMAX)
 endif()
 
-if(CMAKE_COMPILER_IS_GNUCC)
-  set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -fmessage-length=0 -fPIC -Wno-deprecated")
-endif(CMAKE_COMPILER_IS_GNUCC)
-if(CMAKE_COMPILER_IS_GNUCXX)
-  set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -fmessage-length=0 -fPIC -Wno-deprecated")
-  add_definitions("-std=c++0x")
-endif(CMAKE_COMPILER_IS_GNUCXX)
+if(CMAKE_COMPILER_IS_GNUCC AND CMAKE_COMPILER_IS_GNUCXX)
+  add_compile_options(-fmessage-length=0 -fPIC -Wno-deprecated)
+  # with cmake 3.3
+  #add_compile_options($<$<COMPILE_LANGUAGE:CXX>:-std=c++0x>)
+  set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++0x")
+endif()
 
 ###############################################################
 # EXTERNAL LIBRARIES
