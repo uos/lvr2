@@ -27,6 +27,8 @@
 #include "PerspectiveViewer.h"
 #include "OrthoCamera.h"
 
+#include <QGLViewer/manipulatedCameraFrame.h>
+
 #include <iostream>
 using std::cout;
 using std::endl;
