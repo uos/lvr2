@@ -26,6 +26,8 @@
 #include "AnimationDialog.hpp"
 #include "VideoExportDialog.hpp"
 
+#include <QGLViewer/manipulatedCameraFrame.h>
+
 #include <iostream>
 using std::cout;
 using std::endl;
