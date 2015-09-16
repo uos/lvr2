@@ -106,10 +106,11 @@ endif(CGAL_FOUND)
 #set(Boost_USE_STATIC_LIBS       ON)
 set(Boost_USE_MULTITHREADED     ON)
 
-find_package( Boost
+find_package( Boost 1.54
     COMPONENTS
     program_options
-    filesystem system
+    filesystem
+    system
     thread
     REQUIRED )
 
