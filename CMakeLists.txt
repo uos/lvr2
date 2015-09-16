@@ -198,10 +198,6 @@ add_subdirectory(ext/rply)
 include_directories( ${CMAKE_CURRENT_SOURCE_DIR}/ext/laslib/inc )
 add_subdirectory(ext/laslib)
 
-# OBJ
-include_directories( ${CMAKE_CURRENT_SOURCE_DIR}/ext/obj/ )
-add_subdirectory(ext/obj)
-
 # SLAM6D stuff
 include_directories( ${CMAKE_CURRENT_SOURCE_DIR}/ext/slam6d )
 add_subdirectory(ext/slam6d)

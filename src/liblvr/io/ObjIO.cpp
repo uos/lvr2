@@ -29,7 +29,6 @@
  */
 
 #include "io/ObjIO.hpp"
-#include "objLoader.h"
 
 #include <climits>
 #include <iostream>
