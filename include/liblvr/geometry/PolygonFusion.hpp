@@ -10,10 +10,10 @@
 #define POLYGONFUSION_HPP_
 
 // Boost includes for the Fusion
-#include <boost148/geometry.hpp>
-#include <boost148/geometry/geometries/point_xy.hpp>
-#include <boost148/geometry/geometries/polygon.hpp>
-#include <boost148/geometry/domains/gis/io/wkt/wkt.hpp>
+#include <boost/geometry.hpp>
+#include <boost/geometry/geometries/point_xy.hpp>
+#include <boost/geometry/geometries/polygon.hpp>
+#include <boost/geometry/io/wkt/wkt.hpp>
 #include <boost/foreach.hpp>
 
 #include <Eigen/Core>
