@@ -60,12 +60,9 @@ include(${VTK_USE_FILE})
 ## Searching for NABO
 ##############################
 
-set(NABO_INCLUDE_DIRS "")
-set(NABO_LIBRARIES "")
 find_package(Nabo)
 if(NABO_FOUND)
   include_directories(${NABO_INCLUDE_DIRS})
-  link_directories(${NABO_LIBRARIES})
   add_definitions(-D_USE_NABO)
 endif(NABO_FOUND)
 
