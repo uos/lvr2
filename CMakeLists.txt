@@ -151,9 +151,9 @@ if(LIBFREENECT_FOUND)
   include_directories(${LIBFREENECT_INCLUDE_DIRS})
 endif(LIBFREENECT_FOUND)
 
-##############################################################
-## Searching for glut and it's additional runtime libraries.
-##############################################################
+####
+## Searching for glut
+##############################
 
 find_package(GLUT REQUIRED)
 if(GLUT_FOUND)
@@ -162,26 +162,6 @@ if(GLUT_FOUND)
 else(GLUT_FOUND)
   message( SEND_ERROR "-- could not find OpenGL Utility Toolkit" )
 endif(GLUT_FOUND)
-
-if(LINUX)
-  if(GLUT_Xmu_LIBRARY)
-    message( "-- Found X.Org X11 libXmu/libXmuu runtime libraries" )
-  else(GLUT_Xmu_LIBRARY)
-    message( SEND_ERROR "-- Could not find X.Org X11 libXmu/libXmuu runtime libraries" )
-  endif(GLUT_Xmu_LIBRARY)
-
-  if(GLUT_Xi_LIBRARY)
-    message( "-- Found X.Org X11 libXi runtime library" )
-  else(GLUT_Xi_LIBRARY)
-    message( SEND_ERROR "-- Could not find X.Org X11 libXi runtime library" )
-  endif(GLUT_Xi_LIBRARY)
-
-  if(OPENGL_glu_LIBRARY)
-    message( "-- Found GLU library" )
-  else(OPENGL_glu_LIBRARY)
-    message( SEND_ERROR "-- Could not find GLU library" )
-  endif(OPENGL_glu_LIBRARY)
-endif(LINUX)
 
 ##############################################################
 # USED THIRD PARTY STUFF
