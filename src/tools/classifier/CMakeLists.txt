@@ -24,7 +24,7 @@ set(LVR_CLASSIFIER_DEPENDENCIES
 	)
 
 if( ${NABO_FOUND} )
-set(LVR_CLASSIFIER_DEPENDENCIES ${LVR_CLASSIFIER_DEPENDENCIES} ${NABO_LIBRARIES})
+set(LVR_CLASSIFIER_DEPENDENCIES ${LVR_CLASSIFIER_DEPENDENCIES} ${NABO_LIBRARY})
 endif( ${NABO_FOUND} )
 
 #####################################################################################
