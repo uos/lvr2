@@ -152,6 +152,16 @@ if(UNIX)
   include_directories(${OPENGL_INC})
 endif(UNIX)
 
+####
+## Searching for libfreenect
+##############################
+
+find_package(PkgConfig REQUIRED)
+pkg_check_modules(LIBFREENECT libfreenect)
+if(LIBFREENECT_FOUND)
+  include_directories(${LIBFREENECT_INCLUDE_DIRS})
+endif(LIBFREENECT_FOUND)
+
 ##############################################################
 ## Searching for glut and it's additional runtime libraries.
 ##############################################################
@@ -204,13 +214,6 @@ add_subdirectory(ext/slam6d)
 
 # KINTINUOUS
 add_subdirectory(ext/kintinuous)
-
-# Freenect
-#if(APPLE)
-#include_directories( /opt/local/include/libusb-1.0/)
-#endif(APPLE)
-#include_directories(ext/libfreenect/include/)
-#add_subdirectory(ext/libfreenect)
 
 if(MPI_FOUND)
   add_subdirectory(src/tools/mpi)
