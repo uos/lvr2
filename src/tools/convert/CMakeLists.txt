@@ -15,7 +15,7 @@ set(LVR_CONVERT_DEPENDENCIES
 	lvrlas_static
 	lvrrply_static
 	lvrslam6d_static
-	${OPENGL_LIBRARY} 
+	${OPENGL_LIBRARIES}
 	${GLUT_LIBRARIES}
 	)
 
