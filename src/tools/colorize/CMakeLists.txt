@@ -7,6 +7,6 @@ if(PCL_FOUND)
     target_link_libraries( lvr_colorize ${PCL_LIBRARIES} )
 endif(PCL_FOUND)
 if( ${NABO_FOUND} )
-    target_link_libraries( lvr_colorize ${NABO_LIBRARIES})
+    target_link_libraries( lvr_colorize ${NABO_LIBRARY})
 endif( ${NABO_FOUND} )
 

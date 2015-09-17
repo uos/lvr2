@@ -23,7 +23,7 @@ set(LVR_TIOGEN_DEPENDENCIES
 	)
 
 if( ${NABO_FOUND} )
-set(LVR_TIOGEN_DEPENDENCIES ${LVR_TIOGEN_DEPENDENCIES} ${NABO_LIBRARIES})
+set(LVR_TIOGEN_DEPENDENCIES ${LVR_TIOGEN_DEPENDENCIES} ${NABO_LIBRARY})
 endif( ${NABO_FOUND} )
 
 #####################################################################################
