@@ -13,8 +13,6 @@ set(LVR_SOURCES
     io/MeshBuffer.cpp
     io/PointBuffer.cpp
     io/GridIO.cpp
-#    io/KinectGrabber.cpp
-#    io/KinectIO.cpp
     io/CoordinateTransform.cpp
     io/BoctreeIO.cpp
     io/TextureIO.cpp
@@ -98,6 +96,10 @@ if(PCL_FOUND)
   set(LVR_LIB_DEPENDENCIES ${LVR_LIB_DEPENDENCIES} ${PCL_LIBRARIES})
 endif(PCL_FOUND)
 
+if(LIBFREENECT_FOUND)
+  set(LVR_SOURCES ${LVR_SOURCES} io/KinectGrabber.cpp io/KinectIO.cpp)
+  set(LVR_LIB_DEPENDENCIES ${LVR_LIB_DEPENDENCIES} ${LIBFREENECT_LIBRARIES})
+endif(LIBFREENECT_FOUND)
 #####################################################################################
 # Compile object files for static and dynamic library
 #####################################################################################
