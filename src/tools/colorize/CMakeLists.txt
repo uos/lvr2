@@ -1,7 +1,7 @@
 
 message( STATUS "Creating target colorize…" )
 add_executable( lvr_colorize colorize.cpp )
-target_link_libraries( lvr_colorize staticlvr )
+target_link_libraries( lvr_colorize lvr_static )
 
 if(PCL_FOUND)
     target_link_libraries( lvr_colorize ${PCL_LIBRARIES} )
