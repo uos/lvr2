@@ -132,21 +132,14 @@ endif(OpenMP_FOUND)
 ##############################
 
 find_package(OpenGL REQUIRED)
-message( "OPEN GL LIBS 1 : " ${OPENGL_LIBRARIES})
-message( "OPEN GL LIBS 2 : " ${OPENGL_LIBRARY})
-include_directories(${OpenGL_INCLUDE_DIRS})
-link_directories(${OpenGL_LIBRARY_DIRS})
+message( "OPEN GL LIBS : " ${OPENGL_LIBRARIES})
+include_directories(${OPENGL_INCLUDE_DIR})
 
 if(APPLE)
   include_directories(/System/Library/Frameworks/GLUT.framework/Headers)
   include_directories(/System/Library/Frameworks/OpenGL.framework/Headers)
   link_directories(/opt/local/lib)
 endif(APPLE)
-
-if(UNIX)
-  find_path(OPENGL_INC gl.h /usr/include/GL)
-  include_directories(${OPENGL_INC})
-endif(UNIX)
 
 ####
 ## Searching for libfreenect
