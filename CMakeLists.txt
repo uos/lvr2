@@ -91,10 +91,12 @@ endif(PCL_FOUND)
 
 find_package(CGAL)
 if(CGAL_FOUND)
+  set(_CMAKE_CXX_FLAGS ${CMAKE_CXX_FLAGS})
+  set(CMAKE_CXX_FLAGS)
+  # CGAL_USE_FILE overrides theses flags...
   include(${CGAL_USE_FILE})
-  include_directories(${CGAL_INCLUDE_DIRS})
-  link_directories(${CGAL_LIBRARIES_DIR})
-  add_definitions(${CGAL_CXX_FLAGS_INIT})
+  set(CMAKE_CXX_FLAGS "${_CMAKE_CXX_FLAGS} ${CMAKE_CXX_FLAGS}")
+
   message(STATUS "FOUND CGAL")
 endif(CGAL_FOUND)
 
