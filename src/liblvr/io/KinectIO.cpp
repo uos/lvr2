@@ -83,7 +83,7 @@ PointBufferPtr KinectIO::getBuffer()
 	// Convert depth image into point cloud
 	PointBufferPtr buffer(new PointBuffer);
 	floatArr points(new float[numPoints * 3]);
-	ucharArr colors(new uchar[numPoints * 3]);
+	ucharArr colors(new unsigned char[numPoints * 3]);
 
 	int i,j;
 	int index = 0;
