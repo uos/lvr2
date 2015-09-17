@@ -11,4 +11,4 @@ target_link_libraries(lvr_kinect_grabber ${Boost_FILESYSTEM_LIBRARY}
                               ${Boost_PROGRAM_OPTIONS_LIBRARY})
 target_link_libraries(lvr_kinect_grabber ${OpenMP_CXX_FLAGS})
 target_link_libraries(lvr_kinect_grabber ${PCL_LIBRARIES})
-target_link_libraries(lvr_kinect_grabber freenect)
+target_link_libraries(lvr_kinect_grabber ${LIBFREENECT_LIBRARIES})
