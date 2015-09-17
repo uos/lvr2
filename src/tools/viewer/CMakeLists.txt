@@ -143,7 +143,7 @@ if( UNIX )
 endif( UNIX ) 
 
 if( ${NABO_FOUND} )
-	set(LVR_VIEWER_DEPENDENCIES ${LVR_VIEWER_DEPENDENCIES} ${NABO_LIBRARIES})
+	set(LVR_VIEWER_DEPENDENCIES ${LVR_VIEWER_DEPENDENCIES} ${NABO_LIBRARY})
 endif( ${NABO_FOUND} )
 
 #####################################################################################
