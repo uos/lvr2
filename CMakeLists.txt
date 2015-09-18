@@ -142,6 +142,14 @@ if(APPLE)
 endif(APPLE)
 
 ####
+## Searching for glut
+##############################
+
+find_package(GLUT REQUIRED)
+message(STATUS "-- Found OpenGL Utility Toolkit" )
+include_directories(${GLUT_INCLUDE_DIR})
+
+####
 ## Searching for libfreenect
 ##############################
 
@@ -150,18 +158,6 @@ pkg_check_modules(LIBFREENECT libfreenect)
 if(LIBFREENECT_FOUND)
   include_directories(${LIBFREENECT_INCLUDE_DIRS})
 endif(LIBFREENECT_FOUND)
-
-####
-## Searching for glut
-##############################
-
-find_package(GLUT REQUIRED)
-if(GLUT_FOUND)
-  message(STATUS "-- Found OpenGL Utility Toolkit" )
-  include_directories(${GLUT_INCLUDE_DIR})
-else(GLUT_FOUND)
-  message( SEND_ERROR "-- could not find OpenGL Utility Toolkit" )
-endif(GLUT_FOUND)
 
 ##############################################################
 # USED THIRD PARTY STUFF
