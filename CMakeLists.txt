@@ -55,6 +55,9 @@ endif(MPI_FOUND)
 ##############################
 find_package(VTK REQUIRED)
 include(${VTK_USE_FILE})
+if(VTK_MAJOR_VERSION VERSION_LESS "6")
+  add_definitions(-D_USE_VTK5)
+endif()
 
 ####
 ## Searching for NABO
