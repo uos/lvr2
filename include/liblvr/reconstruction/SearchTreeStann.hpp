@@ -30,7 +30,7 @@
 #include <vector>
 
 // Stann
-#include "stann/sfcnn.hpp"
+#include <sfcnn.hpp>
 
 // Superclass
 #include "SearchTree.hpp"
