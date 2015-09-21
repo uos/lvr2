@@ -1,3 +1,8 @@
+
+find_path(LASLIB_INCLUDE_DIR lasreader.hpp PATH inc)
+
+include_directories(${LASLIB_INCLUDE_DIR})
+
 set(LASLIB_SOURCES
 	src/lasreader.cpp
 	src/laswriter.cpp
