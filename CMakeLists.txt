@@ -174,20 +174,20 @@ include_directories(${LAS_VEGAS_SOURCE_DIR}/ext/nanoflann)
 include_directories(${LAS_VEGAS_SOURCE_DIR}/ext/psimpl)
 
 # RPLY
-include_directories( ${CMAKE_CURRENT_SOURCE_DIR}/ext/rply/ )
 add_subdirectory(ext/rply)
+include_directories( ${RPLY_INCLUDE_DIR} )
 
 # LASLIB
-include_directories( ${CMAKE_CURRENT_SOURCE_DIR}/ext/laslib/inc )
 add_subdirectory(ext/laslib)
+include_directories( ${LASLIB_INCLUDE_DIR} )
 
 # SLAM6D stuff
 add_subdirectory(ext/slam6d)
-include_directories( ${CMAKE_CURRENT_SOURCE_DIR}/ext/slam6d/include )
+include_directories( ${SLAM6D_INCLUDE_DIR} )
 
 # KINTINUOUS
-include_directories(${LAS_VEGAS_SOURCE_DIR}/ext/kintinuous/kfusion/include)
 add_subdirectory(ext/kintinuous)
+include_directories(${LAS_VEGAS_SOURCE_DIR}/ext/kintinuous/kfusion/include)
 
 ##############################################################
 # VIEWERS
