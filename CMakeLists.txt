@@ -187,22 +187,6 @@ add_subdirectory(ext/slam6d)
 include_directories(${LAS_VEGAS_SOURCE_DIR}/ext/kintinuous/kfusion/include)
 add_subdirectory(ext/kintinuous)
 
-if(MPI_FOUND)
-  add_subdirectory(src/tools/mpi)
-endif(MPI_FOUND)
-
-if(CGAL_FOUND)
-  add_subdirectory(src/tools/cgal_reconstruction)
-  #add_subdirectory(src/tools/fusion)
-  add_subdirectory(src/tools/slicer)
-endif(CGAL_FOUND)
-
-if(PCL_FOUND)
-  add_subdirectory(src/tools/scanfilter)
-  add_subdirectory(src/tools/leica_converter)
-  #add_subdirectory(src/tools/kinectgrabber)
-endif(PCL_FOUND)
-
 ##############################################################
 # VIEWERS
 ##############################################################
@@ -259,6 +243,22 @@ add_subdirectory(src/tools/meshoptimizer)
 add_subdirectory(src/tools/transform)
 add_subdirectory(src/tools/registration)
 add_subdirectory(src/tools/normals)
+
+if(MPI_FOUND)
+  add_subdirectory(src/tools/mpi)
+endif(MPI_FOUND)
+
+if(CGAL_FOUND)
+  add_subdirectory(src/tools/cgal_reconstruction)
+  #add_subdirectory(src/tools/fusion)
+  add_subdirectory(src/tools/slicer)
+endif(CGAL_FOUND)
+
+if(PCL_FOUND)
+  add_subdirectory(src/tools/scanfilter)
+  add_subdirectory(src/tools/leica_converter)
+  #add_subdirectory(src/tools/kinectgrabber)
+endif(PCL_FOUND)
 
 ################################################################
 # DOCUMENTATION
