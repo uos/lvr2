@@ -5,7 +5,6 @@ set_property(GLOBAL PROPERTY USE_FOLDERS On)
 
 set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/bin )
 set(CMAKE_MODULE_PATH ${LAS_VEGAS_SOURCE_DIR}/CMakeModules ${CMAKE_MODULE_PATH})
-set(CMAKE_MODULE_PATH ${LAS_VEGAS_SOURCE_DIR}/ext/kintinuous/cmake/Modules ${CMAKE_MODULE_PATH})
 
 include_directories(${LAS_VEGAS_SOURCE_DIR}/include/liblvr)
 
