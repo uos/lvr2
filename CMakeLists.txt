@@ -167,6 +167,9 @@ include_directories( ${CMAKE_CURRENT_SOURCE_DIR}/ext )
 # STANN
 include_directories(${LAS_VEGAS_SOURCE_DIR}/ext/stann)
 
+# NanoFLANN
+include_directories(${LAS_VEGAS_SOURCE_DIR}/ext/nanoflann)
+
 # PSIMPL
 include_directories(${LAS_VEGAS_SOURCE_DIR}/ext/psimpl)
 
