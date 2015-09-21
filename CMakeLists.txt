@@ -7,9 +7,6 @@ set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/bin )
 set(CMAKE_MODULE_PATH ${LAS_VEGAS_SOURCE_DIR}/CMakeModules ${CMAKE_MODULE_PATH})
 set(CMAKE_MODULE_PATH ${LAS_VEGAS_SOURCE_DIR}/ext/kintinuous/cmake/Modules ${CMAKE_MODULE_PATH})
 
-include_directories(${LAS_VEGAS_SOURCE_DIR}/ext/stann)
-include_directories(${LAS_VEGAS_SOURCE_DIR}/ext/psimpl)
-include_directories(${LAS_VEGAS_SOURCE_DIR}/ext/kintinuous/kfusion/include)
 include_directories(${LAS_VEGAS_SOURCE_DIR}/include/liblvr)
 
 ##################################################################################
@@ -168,6 +165,12 @@ endif(LIBFREENECT_FOUND)
 
 include_directories( ${CMAKE_CURRENT_SOURCE_DIR}/ext )
 
+# STANN
+include_directories(${LAS_VEGAS_SOURCE_DIR}/ext/stann)
+
+# PSIMPL
+include_directories(${LAS_VEGAS_SOURCE_DIR}/ext/psimpl)
+
 # RPLY
 include_directories( ${CMAKE_CURRENT_SOURCE_DIR}/ext/rply/ )
 add_subdirectory(ext/rply)
@@ -181,6 +184,7 @@ include_directories( ${CMAKE_CURRENT_SOURCE_DIR}/ext/slam6d )
 add_subdirectory(ext/slam6d)
 
 # KINTINUOUS
+include_directories(${LAS_VEGAS_SOURCE_DIR}/ext/kintinuous/kfusion/include)
 add_subdirectory(ext/kintinuous)
 
 if(MPI_FOUND)
