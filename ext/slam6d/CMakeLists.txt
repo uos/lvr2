@@ -1,6 +1,8 @@
 cmake_minimum_required(VERSION 2.8)
 
-include_directories(include)
+find_path(SLAM6D_INCLUDE_DIR slam6d/scan_io.h PATH include)
+
+include_directories(${SLAM6D_INCLUDE_DIR})
 
 set(SLAM_SOURCES
 	Boctree.cc
