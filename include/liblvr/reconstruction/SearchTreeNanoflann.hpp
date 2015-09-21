@@ -28,7 +28,7 @@
 
 #include "SearchTree.hpp"
 
-#include <nanoflann/nanoflann.hpp>
+#include <nanoflann.hpp>
 
 namespace lvr
 {
