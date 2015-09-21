@@ -44,9 +44,6 @@
 
 #include "boost/shared_ptr.hpp"
 
-// Stann
-#include "stann/sfcnn.hpp"
-
 // SearchTreeStann
 #include "SearchTreeStann.hpp"
 #include "SearchTreeNanoflann.hpp"
