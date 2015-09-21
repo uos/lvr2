@@ -179,8 +179,8 @@ include_directories( ${CMAKE_CURRENT_SOURCE_DIR}/ext/laslib/inc )
 add_subdirectory(ext/laslib)
 
 # SLAM6D stuff
-include_directories( ${CMAKE_CURRENT_SOURCE_DIR}/ext/slam6d )
 add_subdirectory(ext/slam6d)
+include_directories( ${CMAKE_CURRENT_SOURCE_DIR}/ext/slam6d/include )
 
 # KINTINUOUS
 include_directories(${LAS_VEGAS_SOURCE_DIR}/ext/kintinuous/kfusion/include)
