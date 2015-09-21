@@ -162,8 +162,6 @@ endif(LIBFREENECT_FOUND)
 # USED THIRD PARTY STUFF
 ##############################################################
 
-include_directories( ${CMAKE_CURRENT_SOURCE_DIR}/ext )
-
 # STANN
 include_directories(${LAS_VEGAS_SOURCE_DIR}/ext/stann)
 
