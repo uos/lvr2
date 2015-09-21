@@ -1,5 +1,7 @@
 cmake_minimum_required(VERSION 2.8)
 
+include_directories(include)
+
 set(SLAM_SOURCES
 	Boctree.cc
 	allocator.cc
