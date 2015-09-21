@@ -28,7 +28,9 @@
 #ifdef _USE_PCL_
 #include "reconstruction/SearchTreeFlann.hpp"
 #endif
+#ifdef _USE_STANN
 #include "reconstruction/SearchTreeStann.hpp"
+#endif
 
 #include <fstream>
 using std::ofstream;

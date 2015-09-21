@@ -88,30 +88,29 @@ AdaptiveKSearchSurface<VertexT, NormalT>::AdaptiveKSearchSurface(
 
     init();
 
+#ifdef _USE_PCL_
     if( searchTreeName == "flann"  || searchTreeName == "FLANN" )
     {
-#ifdef _USE_PCL_
         this->m_searchTree = search_tree::Ptr( new SearchTreeFlann<VertexT>(loader, this->m_numPoints, kn, ki, kd) );
-#else
-        cout << timestamp << "Warning: PCL is not installed. Using STANN search tree in AdaptiveKSearchSurface." << endl;
-        this->m_searchTree = search_tree::Ptr( new SearchTreeStann<VertexT>(loader, this->m_numPoints, kn, ki, kd) );
-#endif
     }
-    else if( searchTreeName == "stann" || searchTreeName == "STANN" )
+#endif
+#ifdef _USE_STANN
+    if( searchTreeName == "stann" || searchTreeName == "STANN" )
     {
         this->m_searchTree = search_tree::Ptr( new SearchTreeStann<VertexT>(loader, this->m_numPoints, kn, ki, kd) );
     }
-    else if( searchTreeName == "nanoflann" || searchTreeName == "NANOFLANN")
+#endif
+    if( searchTreeName == "nanoflann" || searchTreeName == "NANOFLANN")
     {
         this->m_searchTree = search_tree::Ptr( new SearchTreeNanoflann<VertexT>(loader, this->m_numPoints, kn, ki, kd));
     }
 #ifdef _USE_NABO
-    else if( searchTreeName == "nabo" || searchTreeName == "NABO" )
+    if( searchTreeName == "nabo" || searchTreeName == "NABO" )
     {
         this->m_searchTree = search_tree::Ptr( new SearchTreeNabo<VertexT>(loader, this->m_numPoints, kn, ki, kd));
     }
 #endif
-    else
+    if( !this->m_searchTree )
     {
        cout << timestamp << "No Valid Searchtree class specified!" << endl;
        cout << timestamp << "Class: " << searchTreeName << endl;
@@ -159,34 +158,33 @@ void AdaptiveKSearchSurface<VertexT, NormalT>::parseScanPoses(string posefile)
 		size_t n = v.size();
 
 		cout << timestamp << "Creating pose search tree(" << m_searchTreeName << ") with " << n << " poses." << endl;
+#ifdef _USE_PCL_
 		if( m_searchTreeName == "flann"  || m_searchTreeName == "FLANN" )
 		{
-#ifdef _USE_PCL_
 			this->m_poseTree = search_tree::Ptr( new SearchTreeFlann<VertexT>(loader, n, 1, 1, 1) );
-#else
-			cout << timestamp << "Warning: PCL is not installed. Using STANN search tree in AdaptiveKSearchSurface." << endl;
-			this->m_poseTree = search_tree::Ptr( new SearchTreeStann<VertexT>(loader, n, 1, 1, 1) );
-#endif
 		}
-		else if( m_searchTreeName == "stann" || m_searchTreeName == "STANN" )
+#endif
+#ifdef _USE_STANN
+		if( m_searchTreeName == "stann" || m_searchTreeName == "STANN" )
 		{
 			this->m_poseTree = search_tree::Ptr( new SearchTreeStann<VertexT>(loader, n, 1, 1, 1) );
 		}
-		else if( m_searchTreeName == "nanoflann" || m_searchTreeName == "NANOFLANN")
+#endif
+		if( m_searchTreeName == "nanoflann" || m_searchTreeName == "NANOFLANN")
 		{
 			this->m_poseTree = search_tree::Ptr( new SearchTreeNanoflann<VertexT>(loader, n, 1, 1, 1));
 		}
 #ifdef _USE_NABO
-		else if( m_searchTreeName == "nabo" || m_searchTreeName == "NABO" )
+		if( m_searchTreeName == "nabo" || m_searchTreeName == "NABO" )
 		{
 			this->m_poseTree = search_tree::Ptr( new SearchTreeNabo<VertexT>(loader, n, 1, 1, 1));
 		}
 #endif
-		else
+		if( !this->m_poseTree )
 		{
 			cout << timestamp << "No Valid Searchtree class specified!" << endl;
 			cout << timestamp << "Class: " << m_searchTreeName << endl;
-	    }
+		}
 	}
 }
 
