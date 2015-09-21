@@ -14,12 +14,6 @@
 #include "geometry/Matrix4.hpp"
 #include "geometry/Normal.hpp"
 #include "reconstruction/SearchTree.hpp"
-#include "reconstruction/SearchTreeStann.hpp"
-
-// SearchTreePCL
-#ifdef _USE_PCL_
-    #include "reconstruction/SearchTreeFlann.hpp"
-#endif
 
 #include "LVRReconstructionEstimateNormalsDialogUI.h"
 #include "LVRPointCloudItem.hpp"
