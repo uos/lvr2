@@ -26,10 +26,7 @@
 #define ICPPOINTALIGN_HPP_
 
 #include "registration/EigenSVDPointAlign.hpp"
-#ifdef _USE_PCL
-#include "reconstruction/SearchTreeFlann.hpp"
-#endif
-#include "reconstruction/SearchTreeStann.hpp"
+#include "reconstruction/SearchTree.hpp"
 #include "geometry/Matrix4.hpp"
 
 namespace lvr
