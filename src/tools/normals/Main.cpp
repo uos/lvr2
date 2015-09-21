@@ -28,11 +28,14 @@
 #include "geometry/Matrix4.hpp"
 #include "geometry/Normal.hpp"
 #include "reconstruction/SearchTree.hpp"
-#include "reconstruction/SearchTreeStann.hpp"
 
 // SearchTreePCL
-#ifdef _USE_PCL_
+#ifdef _USE_STANN
+    #include "reconstruction/SearchTreeStann.hpp"
+#elif _USE_PCL_
     #include "reconstruction/SearchTreeFlann.hpp"
+#else
+    #error "Neither FLANN nor STANN is available, but one is required"
 #endif
 
 #include <boost/filesystem.hpp>
@@ -94,11 +97,10 @@ void interpolateNormals(PointBufferPtr pc, size_t numPoints, int n)
     cout << timestamp << "Creating search tree for interpolation" << endl;
 
     SearchTree<Vertex<float> >::Ptr       tree;
-#ifdef _USE_PCL_
-        tree = SearchTree<Vertex<float> >::Ptr( new SearchTreeFlann<Vertex<float> >(pc, numPoints, n, n, n) );
-#else
-        cout << timestamp << "Warning: PCL is not installed. Using STANN search tree in AdaptiveKSearchSurface." << endl;
+#ifdef _USE_STANN
         tree = SearchTree<Vertex<float> >::Ptr( new SearchTreeStann<Vertex<float> >(pc, numPoints, n, n, n) );
+#else
+        tree = SearchTree<Vertex<float> >::Ptr( new SearchTreeFlann<Vertex<float> >(pc, numPoints, n, n, n) );
 #endif
 
     size_t count;

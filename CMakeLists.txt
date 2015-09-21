@@ -158,12 +158,20 @@ if(LIBFREENECT_FOUND)
   include_directories(${LIBFREENECT_INCLUDE_DIRS})
 endif(LIBFREENECT_FOUND)
 
+####
+## Searching for STANN
+##############################
+
+set(STANN_DIR "" CACHE PATH "directory that contains the STANN library headers")
+find_package(STANN)
+if(STANN_FOUND)
+  add_definitions(-D_USE_STANN)
+  include_directories(${STANN_INCLUDE_DIR})
+endif(STANN_FOUND)
+
 ##############################################################
 # USED THIRD PARTY STUFF
 ##############################################################
-
-# STANN
-include_directories(${LAS_VEGAS_SOURCE_DIR}/ext/stann)
 
 # NanoFLANN
 include_directories(${LAS_VEGAS_SOURCE_DIR}/ext/nanoflann)

@@ -44,8 +44,11 @@
 
 #include "boost/shared_ptr.hpp"
 
+#ifdef _USE_STANN
 // SearchTreeStann
 #include "SearchTreeStann.hpp"
+#endif
+
 #include "SearchTreeNanoflann.hpp"
 
 // SearchTreePCL
