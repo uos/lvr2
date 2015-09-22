@@ -142,25 +142,25 @@
 #endif
 
 // Local includes
-#include "reconstruction/AdaptiveKSearchSurface.hpp"
-#include "reconstruction/FastReconstruction.hpp"
-#include "reconstruction/PointsetGrid.hpp"
-#include "reconstruction/FastBox.hpp"
+#include <lvr/reconstruction/AdaptiveKSearchSurface.hpp>
+#include <lvr/reconstruction/FastReconstruction.hpp>
+#include <lvr/reconstruction/PointsetGrid.hpp>
+#include <lvr/reconstruction/FastBox.hpp>
 
-#include "io/PLYIO.hpp"
-#include "config/lvropenmp.hpp"
-#include "geometry/Matrix4.hpp"
-#include "geometry/HalfEdgeMesh.hpp"
-#include "texture/Texture.hpp"
-#include "texture/Transform.hpp"
-#include "texture/Texturizer.hpp"
-#include "texture/Statistics.hpp"
-#include "geometry/QuadricVertexCosts.hpp"
-#include "reconstruction/SharpBox.hpp"
+#include <lvr/io/PLYIO.hpp>
+#include <lvr/config/lvropenmp.hpp>
+#include <lvr/geometry/Matrix4.hpp>
+#include <lvr/geometry/HalfEdgeMesh.hpp>
+#include <lvr/texture/Texture.hpp>
+#include <lvr/texture/Transform.hpp>
+#include <lvr/texture/Texturizer.hpp>
+#include <lvr/texture/Statistics.hpp>
+#include <lvr/geometry/QuadricVertexCosts.hpp>
+#include <lvr/reconstruction/SharpBox.hpp>
 
 // PCL related includes
 #ifdef _USE_PCL_
-#include "reconstruction/PCLKSurface.hpp"
+#include <lvr/reconstruction/PCLKSurface.hpp>
 #endif
 
 

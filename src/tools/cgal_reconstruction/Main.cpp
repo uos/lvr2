@@ -16,8 +16,8 @@
  * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA
  */
 
-#include "io/Timestamp.hpp"
-#include "io/ModelFactory.hpp"
+#include <lvr/io/Timestamp.hpp>
+#include <lvr/io/ModelFactory.hpp>
 
 using namespace lvr;
 

@@ -30,13 +30,13 @@ using namespace std;
 #include <boost/filesystem.hpp>
 
 #include "Options.hpp"
-#include "io/BaseIO.hpp"
-#include "io/DatIO.hpp"
-#include "io/Timestamp.hpp"
-#include "io/ModelFactory.hpp"
-#include "io/AsciiIO.hpp"
+#include <lvr/io/BaseIO.hpp>
+#include <lvr/io/DatIO.hpp>
+#include <lvr/io/Timestamp.hpp>
+#include <lvr/io/ModelFactory.hpp>
+#include <lvr/io/AsciiIO.hpp>
 #ifdef _USE_PCL_
-	#include "reconstruction/PCLFiltering.hpp"
+	#include <lvr/reconstruction/PCLFiltering.hpp>
 #endif
 
 

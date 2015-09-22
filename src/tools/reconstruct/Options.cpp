@@ -25,7 +25,7 @@
  */
 
 #include "Options.hpp"
-#include "config/lvropenmp.hpp"
+#include <lvr/config/lvropenmp.hpp>
 
 #include <fstream>
 
