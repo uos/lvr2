@@ -24,7 +24,7 @@
  */
 #include "LVRVtkArrow.hpp"
 
-#include "geometry/Normal.hpp"
+#include <lvr/geometry/Normal.hpp>
 
 #include <vtkArrowSource.h>
 #include <vtkPolyData.h>
