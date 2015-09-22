@@ -33,7 +33,7 @@
 using std::cout;
 using std::endl;
 
-#include "geometry/Vertex.hpp"
+#include <lvr/geometry/Vertex.hpp>
 
 ViewerType PerspectiveViewer::type()
 {
