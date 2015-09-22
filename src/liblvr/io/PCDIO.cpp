@@ -1,17 +1,17 @@
 
 #include <lvr/io/PCDIO.hpp>
 #include <fstream>
-#ifdef _USE_PCL_
+#ifdef LVR_USE_PCL
 #include <pcl/io/pcd_io.h>
 #include <pcl/point_types.h>
-#endif /* _USE_PCL_ */
+#endif /* LVR_USE_PCL */
 
 #define isnan(x) ((x) != (x))
 
 namespace lvr
 {
 
-#ifdef _USE_PCL_
+#ifdef LVR_USE_PCL
 
 ModelPtr PCDIO::read( string filename )
 {
@@ -85,7 +85,7 @@ ModelPtr PCDIO::read( string filename )
     return model;
 
 }
-#else /*  _USE_PCL_ */
+#else /*  LVR_USE_PCL */
 
 ModelPtr PCDIO::read( string filename )
 {
@@ -93,7 +93,7 @@ ModelPtr PCDIO::read( string filename )
     lvr::ModelPtr m( new Model );
     return m;
 }
-#endif /* _USE_PCL_ */
+#endif /* LVR_USE_PCL */
 
 
 void PCDIO::save( string filename )

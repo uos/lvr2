@@ -25,10 +25,10 @@
 #include <lvr/registration/ICPPointAlign.hpp>
 #include <lvr/registration/EigenSVDPointAlign.hpp>
 #include <lvr/io/Timestamp.hpp>
-#ifdef _USE_PCL_
+#ifdef LVR_USE_PCL
 #include <lvr/reconstruction/SearchTreeFlann.hpp>
 #endif
-#ifdef _USE_STANN
+#ifdef LVR_USE_STANN
 #include <lvr/reconstruction/SearchTreeStann.hpp>
 #endif
 
@@ -65,7 +65,7 @@ ICPPointAlign::ICPPointAlign(PointBufferPtr model, PointBufferPtr data, Matrix4f
     m_dataCloud->setPointArray(t_points, n);
 
     // Create search tree
-#ifdef _USE_PCL_
+#ifdef LVR_USE_PCL
     m_searchTree = SearchTreeFlann<Vertexf>::Ptr(new SearchTreeFlann<Vertexf>(model, numPoints));
 #else
 	m_searchTree = SearchTreeStann<Vertexf>::Ptr(new SearchTreeStann<Vertexf>(model, numPoints));

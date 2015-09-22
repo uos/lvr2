@@ -159,7 +159,7 @@
 #include <lvr/reconstruction/SharpBox.hpp>
 
 // PCL related includes
-#ifdef _USE_PCL_
+#ifdef LVR_USE_PCL
 #include <lvr/reconstruction/PCLKSurface.hpp>
 #endif
 
@@ -174,7 +174,7 @@ typedef Normal<float> cNormal;
 typedef PointsetSurface<ColorVertex<float, unsigned char> > psSurface;
 typedef AdaptiveKSearchSurface<ColorVertex<float, unsigned char>, Normal<float> > akSurface;
 
-#ifdef _USE_PCL_
+#ifdef LVR_USE_PCL
 typedef PCLKSurface<ColorVertex<float, unsigned char> , Normal<float> > pclSurface;
 #endif
 
@@ -218,7 +218,7 @@ int main(int argc, char** argv)
 		// Create point set surface object
 		if(pcm_name == "PCL")
 		{
-#ifdef _USE_PCL_
+#ifdef LVR_USE_PCL
 			surface = psSurface::Ptr( new pclSurface(p_loader));
 #else 
 			cout << timestamp << "Can't create a PCL point set surface without PCL installed." << endl;
@@ -249,10 +249,10 @@ int main(int argc, char** argv)
 			cout << timestamp << "Unknown option '" << pcm_name << "'." << endl;
 			cout << timestamp << "Available PCMs are: " << endl;
 			cout << timestamp << "STANN, STANN_RANSAC";
-#ifdef _USE_PCL_
+#ifdef LVR_USE_PCL
 			cout << ", PCL";
 #endif
-#ifdef _USE_NABO
+#ifdef LVR_USE_NABO
 			cout << ", Nabo";
 #endif
 			cout << endl;
