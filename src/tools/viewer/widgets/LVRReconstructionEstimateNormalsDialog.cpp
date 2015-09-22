@@ -2,10 +2,10 @@
 #include "LVRReconstructionEstimateNormalsDialog.hpp"
 
 #ifdef _USE_PCL_
-#include "reconstruction/SearchTreeFlann.hpp"
+#include <lvr/reconstruction/SearchTreeFlann.hpp>
 #endif
 #ifdef _USE_STANN
-#include "reconstruction/SearchTreeStann.hpp"
+#include <lvr/reconstruction/SearchTreeStann.hpp>
 #endif
 
 namespace lvr

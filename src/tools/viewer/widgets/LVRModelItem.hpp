@@ -25,7 +25,7 @@
 #ifndef LVRMODELITEM_H_
 #define LVRMODELITEM_H_
 
-#include "io/Model.hpp"
+#include <lvr/io/Model.hpp>
 #include "../vtkBridge/LVRModelBridge.hpp"
 #include "LVRPoseItem.hpp"
 

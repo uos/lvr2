@@ -1,9 +1,9 @@
 #include <QFileDialog>
 #include "LVRReconstructionMarchingCubesDialog.hpp"
 
-#include "reconstruction/PointsetGrid.hpp"
+#include <lvr/reconstruction/PointsetGrid.hpp>
 
-#include "io/Progress.hpp"
+#include <lvr/io/Progress.hpp>
 
 namespace lvr
 {
