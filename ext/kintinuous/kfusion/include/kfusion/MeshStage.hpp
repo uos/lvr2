@@ -10,7 +10,6 @@
 #include <reconstruction/FastBox.hpp>
 #include <io/PointBuffer.hpp>
 #include <io/DataStruct.hpp>
-#include <io/Timestamp.hpp>
 #include <geometry/HalfEdgeVertex.hpp>
 #include <geometry/HalfEdgeMesh.hpp>
 #include <geometry/BoundingBox.hpp>
@@ -34,7 +33,7 @@ class MeshStage : public AbstractStage
 public:
 
 	// default constructor
-	MeshStage(double camera_target_distance, double voxel_size);
+	MeshStage(double camera_target_distance, double voxel_size, Options* options);
 
 	virtual void firstStep();
 	virtual void step();
@@ -46,5 +45,6 @@ private:
 	double camera_target_distance_;
 	double voxel_size_;
 	size_t mesh_count_;
+	Options* options_;
 };
 #endif // STAGE

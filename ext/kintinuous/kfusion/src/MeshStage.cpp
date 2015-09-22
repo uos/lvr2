@@ -1,11 +1,11 @@
 #include <kfusion/MeshStage.hpp>
 
 // default constructor
-MeshStage::MeshStage(double camera_target_distance, double voxel_size) : AbstractStage(),
-					camera_target_distance_(camera_target_distance), voxel_size_(voxel_size)
+MeshStage::MeshStage(double camera_target_distance, double voxel_size, Options* options) : AbstractStage(),
+					camera_target_distance_(camera_target_distance), voxel_size_(voxel_size), options_(options)
 {
 	mesh_count_ = 0;
-	timestamp.setQuiet(true);
+	timestamp.setQuiet(!options->verbose());
 }
 
 void MeshStage::firstStep() { /* skip */ };
@@ -21,7 +21,7 @@ void MeshStage::step()
 	ScopeTime* cube_time = new ScopeTime(mesh_notice.c_str());
 	
 	cFastReconstruction* fast_recon =  new cFastReconstruction(act_grid);
-	timestamp.setQuiet(true);
+	timestamp.setQuiet(!options_->verbose());
 	// Create an empty mesh
 	fast_recon->getMesh(*meshPtr);
 	// mark all fusion vertices in the mesh
