@@ -10,6 +10,6 @@
 	<review status="unreviewed" notes="Still under development."/>
 	<url>software@kure.informatik.uni-osnabrueck.de:meshing.pg2013</url>
 	<export>
-		<cpp cflags="-I${prefix}/include/liblvr -I${prefix}/ext/laslib -I${prefix}/ext/nanoflann -I${prefix}/ext/psimpl -I${prefix}/ext/rply -I${prefix}/ext/slam6d/include -I${prefix}/ext/stann" lflags="-L${prefix}/lib -L${prefix}/build/lib"/>
+		<cpp cflags="-I${prefix}/include/liblvr -I${prefix}/ext/laslib -I${prefix}/ext/nanoflann -I${prefix}/ext/psimpl -I${prefix}/ext/rply -I${prefix}/ext/slam6d/include" lflags="-L${prefix}/lib -L${prefix}/build/lib"/>
 	</export>
 </package>
