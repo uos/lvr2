@@ -19,10 +19,10 @@
 
 #include "Options.hpp"
 
-#include "io/Timestamp.hpp"
-#include "io/ModelFactory.hpp"
+#include <lvr/io/Timestamp.hpp>
+#include <lvr/io/ModelFactory.hpp>
 #ifdef _USE_PCL_
-#include "reconstruction/PCLFiltering.hpp"
+#include <lvr/reconstruction/PCLFiltering.hpp>
 #endif
 
 

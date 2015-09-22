@@ -19,7 +19,7 @@
 
  #include "Options.hpp"
 
-#include "io/UosIO.hpp"
+#include <lvr/io/UosIO.hpp>
 
 #include <iostream>
 

@@ -20,20 +20,20 @@
 
 // Program options for this tool
 #include "Options.hpp"
-#include "io/AsciiIO.hpp"
-#include "io/Timestamp.hpp"
-#include "io/Progress.hpp"
-#include "io/DataStruct.hpp"
-#include "io/ModelFactory.hpp"
-#include "geometry/Matrix4.hpp"
-#include "geometry/Normal.hpp"
-#include "reconstruction/SearchTree.hpp"
+#include <lvr/io/AsciiIO.hpp>
+#include <lvr/io/Timestamp.hpp>
+#include <lvr/io/Progress.hpp>
+#include <lvr/io/DataStruct.hpp>
+#include <lvr/io/ModelFactory.hpp>
+#include <lvr/geometry/Matrix4.hpp>
+#include <lvr/geometry/Normal.hpp>
+#include <lvr/reconstruction/SearchTree.hpp>
 
 // SearchTreePCL
 #ifdef _USE_STANN
-    #include "reconstruction/SearchTreeStann.hpp"
+    #include <lvr/reconstruction/SearchTreeStann.hpp>
 #elif _USE_PCL_
-    #include "reconstruction/SearchTreeFlann.hpp"
+    #include <lvr/reconstruction/SearchTreeFlann.hpp>
 #else
     #error "Neither FLANN nor STANN is available, but one is required"
 #endif
