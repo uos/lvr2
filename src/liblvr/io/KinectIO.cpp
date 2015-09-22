@@ -5,9 +5,9 @@
  *      Author: Thomas Wiemann
  */
 
-#include "io/KinectIO.hpp"
-#include "io/PointBuffer.hpp"
-#include "io/DataStruct.hpp"
+#include <lvr/io/KinectIO.hpp>
+#include <lvr/io/PointBuffer.hpp>
+#include <lvr/io/DataStruct.hpp>
 
 #include <Eigen/Dense>
 

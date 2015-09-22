@@ -24,7 +24,7 @@
  *      Author: Thomas Wiemann
  */
 
-#include "display/Renderable.hpp"
+#include <lvr/display/Renderable.hpp>
 
 namespace lvr
 {

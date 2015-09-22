@@ -1,4 +1,4 @@
-#include "geometry/HalfEdgeAccessExceptions.hpp"
+#include <lvr/geometry/HalfEdgeAccessExceptions.hpp>
 
 namespace lvr
 {

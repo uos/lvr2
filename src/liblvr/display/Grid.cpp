@@ -23,7 +23,7 @@
  *  @author Thomas Wiemann
  */
 
-#include "display/Grid.hpp"
+#include <lvr/display/Grid.hpp>
 namespace lvr
 {
 

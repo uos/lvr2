@@ -24,21 +24,21 @@
  *  @author Thomas Wiemann
  */
 
-#include "io/AsciiIO.hpp"
-#include "io/PLYIO.hpp"
-#include "io/UosIO.hpp"
-#include "io/ObjIO.hpp"
-#include "io/LasIO.hpp"
-#include "io/BoctreeIO.hpp"
-#include "io/ModelFactory.hpp"
-#include "io/DatIO.hpp"
+#include <lvr/io/AsciiIO.hpp>
+#include <lvr/io/PLYIO.hpp>
+#include <lvr/io/UosIO.hpp>
+#include <lvr/io/ObjIO.hpp>
+#include <lvr/io/LasIO.hpp>
+#include <lvr/io/BoctreeIO.hpp>
+#include <lvr/io/ModelFactory.hpp>
+#include <lvr/io/DatIO.hpp>
 
-#include "io/Timestamp.hpp"
-#include "io/Progress.hpp"
+#include <lvr/io/Timestamp.hpp>
+#include <lvr/io/Progress.hpp>
 
 // PCL related includes
 #ifdef _USE_PCL_
-#include "io/PCDIO.hpp"
+#include <lvr/io/PCDIO.hpp>
 #endif
 
 #include <boost/filesystem.hpp>
