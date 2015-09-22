@@ -52,11 +52,11 @@ namespace lvr {
  *      library to implement a nearest neighbour search for point-data.
  */
 template< typename VertexT >
-class SearchTreeFlann : public SearchTree< VertexT>
+class SearchTreeFlannPCL : public SearchTree< VertexT>
 {
 public:
 
-    typedef boost::shared_ptr< SearchTreeFlann< VertexT> > Ptr;
+    typedef boost::shared_ptr< SearchTreeFlannPCL< VertexT> > Ptr;
 
 
     /**
@@ -67,7 +67,7 @@ public:
      *  @param ki      The number of neighbour points used for normal interpolation.
      *  @param kd      The number of neighbour points esed for distance value calculation.
      */
-    SearchTreeFlann( PointBufferPtr points,
+    SearchTreeFlannPCL( PointBufferPtr points,
             size_t &n_points,
             const int &kn = 10,
             const int &ki = 10,
@@ -77,7 +77,7 @@ public:
     /**
      * @brief Destructor
      */
-    virtual ~SearchTreeFlann();
+    virtual ~SearchTreeFlannPCL();
 
 
     /**

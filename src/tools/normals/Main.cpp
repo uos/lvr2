@@ -95,7 +95,7 @@ void interpolateNormals(PointBufferPtr pc, size_t numPoints, int n)
 
     SearchTree<Vertex<float> >::Ptr       tree;
 #ifdef _USE_PCL_
-        tree = SearchTree<Vertex<float> >::Ptr( new SearchTreeFlann<Vertex<float> >(pc, numPoints, n, n, n) );
+        tree = SearchTree<Vertex<float> >::Ptr( new SearchTreeFlannPCL<Vertex<float> >(pc, numPoints, n, n, n) );
 #else
         cout << timestamp << "Warning: PCL is not installed. Using STANN search tree in AdaptiveKSearchSurface." << endl;
         tree = SearchTree<Vertex<float> >::Ptr( new SearchTreeStann<Vertex<float> >(pc, numPoints, n, n, n) );
