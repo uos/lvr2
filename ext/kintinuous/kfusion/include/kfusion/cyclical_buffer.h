@@ -64,17 +64,16 @@ namespace kfusion
 			* \param[in] cube_size physical size (in meters) of the volume (here, a cube) represented by the TSDF buffer.
 			* \param[in] nb_voxels_per_axis number of voxels per axis of the volume represented by the TSDF buffer.
 			*/
-			CyclicalBuffer (double camera_target_distance, const double distance_threshold,
-			                const Vec3f cube_size, const Vec3i nb_voxels_per_axis, bool optimize, bool no_reconstruct, string mesh_name) :
-			                pl_(camera_target_distance, (double)(cube_size(0) / nb_voxels_per_axis[0]), optimize, mesh_name), optimize_(optimize), no_reconstruct_(no_reconstruct)
+			CyclicalBuffer (KinFuParams params): pl_(params),
+			                optimize_(params.cmd_options->optimizePlanes()), no_reconstruct_(params.cmd_options->noReconstruction())
 			{
-				distance_threshold_ = distance_threshold;
-				buffer_.volume_size.x = cube_size[0]; 
-				buffer_.volume_size.y = cube_size[1]; 
-				buffer_.volume_size.z = cube_size[2];
-				buffer_.voxels_size.x = nb_voxels_per_axis[0]; 
-				buffer_.voxels_size.y = nb_voxels_per_axis[1]; 
-				buffer_.voxels_size.z = nb_voxels_per_axis[2]; 
+				distance_threshold_ = params.shifting_distance;
+				buffer_.volume_size.x = params.volume_size[0]; 
+				buffer_.volume_size.y = params.volume_size[1]; 
+				buffer_.volume_size.z = params.volume_size[2];
+				buffer_.voxels_size.x = params.volume_dims[0]; 
+				buffer_.voxels_size.y = params.volume_dims[1]; 
+				buffer_.voxels_size.z = params.volume_dims[2]; 
 				global_shift_[0] = 0;
 				global_shift_[1] = 0;
 				global_shift_[2] = 0;
@@ -90,10 +89,10 @@ namespace kfusion
 			* \param[in] nb_voxels_y number of voxels for Y axis of the volume represented by the TSDF buffer.
 			* \param[in] nb_voxels_z number of voxels for Z axis of the volume represented by the TSDF buffer.
 			*/
-			CyclicalBuffer (const double distance_threshold,
+			/*CyclicalBuffer (const double distance_threshold,
 			                const double volume_size_x, const double volume_size_y, 
 			                const double volume_size_z, const int nb_voxels_x, const int nb_voxels_y, 
-			                const int nb_voxels_z) : pl_(0, (double)(volume_size_x /  nb_voxels_x), false)
+			                const int nb_voxels_z)
 			{
 				distance_threshold_ = distance_threshold;
 				buffer_.volume_size.x = volume_size_x; 
@@ -102,7 +101,7 @@ namespace kfusion
 				buffer_.voxels_size.x = nb_voxels_x; 
 				buffer_.voxels_size.y = nb_voxels_y; 
 				buffer_.voxels_size.z = nb_voxels_z; 
-			}
+			}*/
 			
 			~CyclicalBuffer()
 			{

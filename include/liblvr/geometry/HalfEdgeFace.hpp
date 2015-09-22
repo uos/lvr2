@@ -178,6 +178,8 @@ public:
 
 	/// used for region growing
 	bool							m_used;
+	
+	bool							m_region_used;
 
 	/// The number of the face in the half edge mesh (convenience only, will be removed soon)
 	size_t							m_face_index;
