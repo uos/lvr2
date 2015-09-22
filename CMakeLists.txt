@@ -55,7 +55,7 @@ endif(MPI_FOUND)
 find_package(VTK REQUIRED)
 include(${VTK_USE_FILE})
 if(VTK_MAJOR_VERSION VERSION_LESS "6")
-  add_definitions(-D_USE_VTK5)
+  add_definitions(-DLVR_USE_VTK5)
 endif()
 
 ####
@@ -65,7 +65,7 @@ endif()
 find_package(Nabo)
 if(NABO_FOUND)
   include_directories(${NABO_INCLUDE_DIRS})
-  add_definitions(-D_USE_NABO)
+  add_definitions(-DLVR_USE_NABO)
 endif(NABO_FOUND)
 
 ####
@@ -77,7 +77,7 @@ if(PCL_FOUND)
   include_directories(${PCL_INCLUDE_DIRS})
   link_directories(${PCL_LIBRARY_DIRS})
   add_definitions(${PCL_DEFINITIONS})
-  add_definitions(-D_USE_PCL_)
+  add_definitions(-DLVR_USE_PCL)
 else(PCL_FOUND)
   message( "-- No PCL found." )
   message( "-- PCL related stuff will be disabled." )
@@ -125,7 +125,7 @@ find_package(OpenMP)
 if(OpenMP_FOUND)
   link_directories(${OpenMP_LIBRARY_DIRS})
   include_directories(${OpenMP_INCLUDE_DIRS})
-  add_definitions(-D_USE_OPEN_MP)
+  add_definitions(-DLVR_USE_OPEN_MP)
   set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${OpenMP_CXX_FLAGS}")
 endif(OpenMP_FOUND)
 
@@ -168,7 +168,7 @@ endif(LIBFREENECT_FOUND)
 set(STANN_DIR "" CACHE PATH "directory that contains the STANN library headers")
 find_package(STANN)
 if(STANN_FOUND)
-  add_definitions(-D_USE_STANN)
+  add_definitions(-DLVR_USE_STANN)
   include_directories(${STANN_INCLUDE_DIR})
 endif(STANN_FOUND)
 
@@ -211,8 +211,6 @@ if(QT4_FOUND)
   include_directories(${QT_QTOPENGL_INCLUDE_DIR})
   include_directories(${QT_QTCORE_INCLUDE_DIR})
   include_directories(${QT_QTXML_INCLUDE_DIR})
-
-  add_definitions(-D_USE_QT)
 
   # Try to find libQGLViewer
   find_library(QGLVIEWER_LIBRARY_RELEASE

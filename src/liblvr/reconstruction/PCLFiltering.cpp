@@ -23,7 +23,7 @@
  *  @author Thomas Wiemann
  */
 
-#ifdef _USE_PCL_
+#ifdef LVR_USE_PCL
 
 #include <lvr/reconstruction/PCLFiltering.hpp>
 #include <pcl/pcl_config.h>
