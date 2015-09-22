@@ -30,9 +30,9 @@
 #include <lvr/reconstruction/SearchTree.hpp>
 
 // SearchTreePCL
-#ifdef _USE_STANN
+#ifdef LVR_USE_STANN
     #include <lvr/reconstruction/SearchTreeStann.hpp>
-#elif _USE_PCL_
+#elif LVR_USE_PCL
     #include <lvr/reconstruction/SearchTreeFlann.hpp>
 #else
     #error "Neither FLANN nor STANN is available, but one is required"
@@ -97,7 +97,7 @@ void interpolateNormals(PointBufferPtr pc, size_t numPoints, int n)
     cout << timestamp << "Creating search tree for interpolation" << endl;
 
     SearchTree<Vertex<float> >::Ptr       tree;
-#ifdef _USE_STANN
+#ifdef LVR_USE_STANN
         tree = SearchTree<Vertex<float> >::Ptr( new SearchTreeStann<Vertex<float> >(pc, numPoints, n, n, n) );
 #else
         tree = SearchTree<Vertex<float> >::Ptr( new SearchTreeFlann<Vertex<float> >(pc, numPoints, n, n, n) );

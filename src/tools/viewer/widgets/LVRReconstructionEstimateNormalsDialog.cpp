@@ -1,10 +1,10 @@
 #include <QFileDialog>
 #include "LVRReconstructionEstimateNormalsDialog.hpp"
 
-#ifdef _USE_PCL_
+#ifdef LVR_USE_PCL
 #include <lvr/reconstruction/SearchTreeFlann.hpp>
 #endif
-#ifdef _USE_STANN
+#ifdef LVR_USE_STANN
 #include <lvr/reconstruction/SearchTreeStann.hpp>
 #endif
 
@@ -107,9 +107,9 @@ void LVREstimateNormalsDialog::estimateNormals()
     if(interpolateNormals)
     {
         SearchTree<Vertex<float> >::Ptr       tree;
-        #ifdef _USE_PCL_
+        #ifdef LVR_USE_PCL
             tree = SearchTree<Vertex<float> >::Ptr( new SearchTreeFlann<Vertex<float> >(new_pc, numPoints, ki, ki, ki) );
-        #elif _USE_STANN
+        #elif LVR_USE_STANN
             tree = SearchTree<Vertex<float> >::Ptr( new SearchTreeStann<Vertex<float> >(new_pc, numPoints, ki, ki, ki) );
         #else
             #error "Neither FLANN nor STANN is supported, but one is required"
