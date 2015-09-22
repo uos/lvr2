@@ -52,7 +52,7 @@ void MeshStage::step()
 					if(current_neighbor != 0)
 					{
 						uint in2 = current_neighbor->m_intersections[neighbor_vertex_table[edge_index][i]];
-						auto vert_it = verts_map.find(in2);
+						auto vert_it = verts_map.find(inter);
 						if(vert_it == verts_map.end() && in2 != cFastBox::INVALID_INDEX && in2 != 0 && in2 != inter && current_neighbor->m_fusionNeighborBox)
 						{
 							inter2 = in2;
