@@ -26,9 +26,10 @@
 #ifndef MODEL_H_
 #define MODEL_H_
 
-#include "io/MeshBuffer.hpp"
-#include "io/PointBuffer.hpp"
-#include "boost/shared_ptr.hpp"
+#include "MeshBuffer.hpp"
+#include "PointBuffer.hpp"
+
+#include <boost/shared_ptr.hpp>
 
 #include <algorithm>
 #include <iostream>

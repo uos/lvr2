@@ -31,7 +31,7 @@
 #include <cstring>
 #include <math.h>
 #include <cstdio>
-#include <io/PPMIO.hpp>
+#include <lvr/io/PPMIO.hpp>
 
 namespace lvr {
 

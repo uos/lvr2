@@ -28,8 +28,8 @@
 
 #include "FastBox.hpp"
 #include "PointsetSurface.hpp"
-#include "geometry/HalfEdgeMesh.hpp"
-#include "geometry/HalfEdgeFace.hpp"
+#include <lvr/geometry/HalfEdgeMesh.hpp>
+#include <lvr/geometry/HalfEdgeFace.hpp>
 
 namespace lvr
 {

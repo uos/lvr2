@@ -41,7 +41,7 @@
 using namespace std;
 
 #include "Renderable.hpp"
-#include "geometry/BoundingBox.hpp"
+#include <lvr/geometry/BoundingBox.hpp>
 
 namespace lvr
 {

@@ -27,7 +27,7 @@
 #ifndef ARROW_H_
 #define ARROW_H_
 
-#include "geometry/Vertex.hpp"
+#include <lvr/geometry/Vertex.hpp>
 #include "Renderable.hpp"
 
 #include <vector>

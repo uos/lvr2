@@ -18,11 +18,13 @@
 
 #include <Eigen/Core>
 //lvr include
-#include "geometry/Vertex.hpp"
-#include "geometry/Normal.hpp"
-#include "geometry/PolygonRegion.hpp"
-#include "geometry/PolygonMesh.hpp"
-#include "reconstruction/AdaptiveKSearchSurface.hpp"
+#include "Vertex.hpp"
+#include "Normal.hpp"
+#include "PolygonRegion.hpp"
+#include "PolygonMesh.hpp"
+
+#include <lvr/reconstruction/AdaptiveKSearchSurface.hpp>
+
 // std includes
 #include <vector>
 #include <map>
@@ -30,7 +32,7 @@
 #include <string>
 
 // lvr includes
-#include "io/Timestamp.hpp"
+#include <lvr/io/Timestamp.hpp>
 
 namespace lvr
 {

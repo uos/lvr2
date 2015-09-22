@@ -8,15 +8,15 @@
 #ifndef MPITREE_HPP_
 #define MPITREE_HPP_
 
-#include "geometry/BoundingBox.hpp"
-#include "io/ModelFactory.hpp"
-#include "io/PointBuffer.hpp"
-#include "geometry/Vertex.hpp"
-#include "io/Model.hpp"
+#include <lvr/geometry/BoundingBox.hpp>
+#include <lvr/io/ModelFactory.hpp>
+#include <lvr/io/PointBuffer.hpp>
+#include <lvr/geometry/Vertex.hpp>
+#include <lvr/io/Model.hpp>
 
-#include "io/PLYIO.hpp"
-#include "io/AsciiIO.hpp"
-#include "io/UosIO.hpp"
+#include <lvr/io/PLYIO.hpp>
+#include <lvr/io/AsciiIO.hpp>
+#include <lvr/io/UosIO.hpp>
 
 // vorerst
 #include <cstring>

@@ -27,7 +27,7 @@
 #define GRID_HPP_
 
 #include "Renderable.hpp"
-#include "io/DataStruct.hpp"
+#include <lvr/io/DataStruct.hpp>
 
 namespace lvr
 {

@@ -25,9 +25,9 @@
 #ifndef ICPPOINTALIGN_HPP_
 #define ICPPOINTALIGN_HPP_
 
-#include "registration/EigenSVDPointAlign.hpp"
-#include "reconstruction/SearchTree.hpp"
-#include "geometry/Matrix4.hpp"
+#include "EigenSVDPointAlign.hpp"
+#include <lvr/reconstruction/SearchTree.hpp>
+#include <lvr/geometry/Matrix4.hpp>
 
 namespace lvr
 {

@@ -8,10 +8,10 @@
 #ifndef MPINODE_HPP_
 #define MPINODE_HPP_
 
-#include "geometry/Vertex.hpp"
-#include "io/Model.hpp"
-#include "io/DataStruct.hpp"
-#include "geometry/Vertex.hpp"
+#include <lvr/geometry/Vertex.hpp>
+#include <lvr/io/Model.hpp>
+#include <lvr/io/DataStruct.hpp>
+#include <lvr/geometry/Vertex.hpp>
 
 
 /**

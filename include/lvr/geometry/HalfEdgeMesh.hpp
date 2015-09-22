@@ -58,19 +58,19 @@ using namespace std;
 #include "HalfEdgeFace.hpp"
 #include "HalfEdgeAccessExceptions.hpp"
 
-#include "io/Timestamp.hpp"
-#include "io/Progress.hpp"
-#include "io/Model.hpp"
+#include <lvr/io/Timestamp.hpp>
+#include <lvr/io/Progress.hpp>
+#include <lvr/io/Model.hpp>
 
 #include "Region.hpp"
 #include "Tesselator.hpp"
-#include "texture/Texturizer.hpp"
+#include <lvr/texture/Texturizer.hpp>
 #include "ColorVertex.hpp"
 
 #include "VertexCosts.hpp"
 
-#include "reconstruction/PointsetSurface.hpp"
-#include "classification/ClassifierFactory.hpp"
+#include <lvr/reconstruction/PointsetSurface.hpp>
+#include <lvr/classification/ClassifierFactory.hpp>
 
 template<typename VertexT, typename NormalT>
 class HalfEdgeVertex;

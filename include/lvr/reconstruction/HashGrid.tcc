@@ -33,10 +33,10 @@
  *      Author: Thomas Wiemann
  */
 #include "HashGrid.hpp"
-#include "geometry/BaseMesh.hpp"
+#include <lvr/geometry/BaseMesh.hpp>
 #include "FastReconstructionTables.hpp"
 #include "SharpBox.hpp"
-#include "io/Progress.hpp"
+#include <lvr/io/Progress.hpp>
 
 namespace lvr
 {

@@ -26,7 +26,7 @@
 #ifndef MESHGENERATOR_HPP_
 #define MESHGENERATOR_HPP_
 
-#include "geometry/BaseMesh.hpp"
+#include <lvr/geometry/BaseMesh.hpp>
 
 namespace lvr
 {

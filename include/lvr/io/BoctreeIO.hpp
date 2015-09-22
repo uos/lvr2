@@ -29,7 +29,7 @@
 #include <boost/filesystem.hpp>
 #include "slam6d/scan_io_oct.h"
 #include "BaseIO.hpp"
-#include "geometry/Matrix4.hpp"
+#include <lvr/geometry/Matrix4.hpp>
 
 
 namespace lvr

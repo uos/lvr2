@@ -12,8 +12,9 @@
 #include <vector>
 #include <string>
 
-#include "reconstruction/QueryPoint.hpp"
-#include "geometry/BoundingBox.hpp"
+#include <lvr/geometry/BoundingBox.hpp>
+
+#include "QueryPoint.hpp"
 
 using std::string;
 using std::vector;

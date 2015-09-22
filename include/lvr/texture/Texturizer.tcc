@@ -31,7 +31,7 @@ using std::cout;
 using std::endl;
 using std::string;
 
-#include "io/Progress.hpp"
+#include <lvr/io/Progress.hpp>
 
 namespace lvr {
 

@@ -11,7 +11,7 @@
 #include <boost/program_options.hpp>
 #include <iostream>
 
-#include "io/ModelFactory.hpp"
+#include <lvr/io/ModelFactory.hpp>
 
 namespace lvr
 {

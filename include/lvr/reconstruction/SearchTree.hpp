@@ -26,12 +26,12 @@
 #ifndef SEARCH_TREE_H_
 #define SEARCH_TREE_H_
 
-/*#include "../io/Model.hpp"
-#include "../io/Progress.hpp"
-#include "../io/Timestamp.hpp"
-#include "../io/PLYIO.hpp"
-#include "../io/AsciiIO.hpp"
-#include "../io/UosIO.hpp" */
+/*#include <lvr/io/Model.hpp>
+#include <lvr/io/Progress.hpp>
+#include <lvr/io/Timestamp.hpp>
+#include <lvr/io/PLYIO.hpp>
+#include <lvr/io/AsciiIO.hpp>
+#include <lvr/io/UosIO.hpp> */
 
 
 // Standard C++ includes
