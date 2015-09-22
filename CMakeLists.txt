@@ -9,7 +9,7 @@ set(CMAKE_ARCHIVE_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/lib)
 
 set(CMAKE_MODULE_PATH ${LAS_VEGAS_SOURCE_DIR}/CMakeModules ${CMAKE_MODULE_PATH})
 
-include_directories(${LAS_VEGAS_SOURCE_DIR}/include/liblvr)
+include_directories(${LAS_VEGAS_SOURCE_DIR}/include/lvr)
 
 ##################################################################################
 # Some compiler specific settings
