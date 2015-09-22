@@ -269,7 +269,9 @@ endif(CGAL_FOUND)
 if(PCL_FOUND)
   add_subdirectory(src/tools/scanfilter)
   add_subdirectory(src/tools/leica_converter)
-  #add_subdirectory(src/tools/kinectgrabber)
+  if(LIBFREENECT_FOUND)
+    add_subdirectory(src/tools/kinectgrabber)
+  endif(LIBFREENECT_FOUND)
 endif(PCL_FOUND)
 
 ################################################################
