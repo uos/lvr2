@@ -111,7 +111,6 @@ add_definitions(${QT_DEFINITIONS})
 #####################################################################################
 
 include_directories(${CMAKE_CURRENT_BINARY_DIR})
-include_directories(${LAS_VEGAS_SOURCE_DIR}/include/liblvr)
 
 #####################################################################################
 # Setup dependencies
