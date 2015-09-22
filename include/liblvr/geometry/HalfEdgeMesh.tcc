@@ -133,7 +133,7 @@ void HalfEdgeMesh<VertexT, NormalT>::mergeVertex(VertexPtr merge_vert, VertexPtr
 	merge_vert->m_merged = true;
 	if(merge_vert->m_position.x != erase_vert->m_position.x || merge_vert->m_position.y != erase_vert->m_position.y || merge_vert->m_position.z != erase_vert->m_position.z)
 	{
-		cout << "Vertex missalignment! " << endl;
+		/*cout << "Vertex missalignment! " << endl;
 		float dist_x = merge_vert->m_position.x - erase_vert->m_position.x;
 		float dist_y = merge_vert->m_position.y - erase_vert->m_position.y;
 		float dist_z = merge_vert->m_position.z - erase_vert->m_position.z;
@@ -141,7 +141,7 @@ void HalfEdgeMesh<VertexT, NormalT>::mergeVertex(VertexPtr merge_vert, VertexPtr
 		cout << "dist x " << dist_x << endl;
 		cout << "dist y " << dist_y << endl;
 		cout << "dist z " << dist_z << endl;
-		cout << "distance " << dist << endl; 
+		cout << "distance " << dist << endl;*/ 
 		/*if(dist > 0.005)
 		{
 			cout << "Vertex missalignment! " << endl;
@@ -498,8 +498,8 @@ void HalfEdgeMesh<VertexT, NormalT>::cleanContours(int iterations)
 template<typename VertexT, typename NormalT>
 void HalfEdgeMesh<VertexT, NormalT>::deleteFace(FacePtr f, bool erase)
 {
-    f->m_invalid = true;
-    m_regions[f->m_region]->deleteInvalidFaces();
+    //f->m_invalid = true;
+    //m_regions[f->m_region]->deleteInvalidFaces();
 
     //save references to edges and vertices
     HEdge* startEdge = (*f)[0];
@@ -998,7 +998,6 @@ void HalfEdgeMesh<VertexT, NormalT>::optimizePlanes(
         int small_region_size,
         bool remove_flickering)
 {
-	timestamp.setQuiet(true);
     cout << timestamp << "Starting plane optimization with threshold " << angle << endl;
     cout << timestamp << "Number of faces before optimization: " << m_faces.size() << endl;
 
@@ -1028,7 +1027,10 @@ void HalfEdgeMesh<VertexT, NormalT>::optimizePlanes(
 			}
 			else 
 				face->m_fusion_face = false;
-			face->m_used = false;
+			if(face->m_invalid)
+				face->m_used = true;
+			else
+				face->m_used = false;
         }
 
         // Find all regions by regionGrowing with normal criteria
@@ -1097,7 +1099,6 @@ void HalfEdgeMesh<VertexT, NormalT>::optimizePlanes(
 template<typename VertexT, typename NormalT>
 void HalfEdgeMesh<VertexT, NormalT>::deleteRegions()
 {
-
     for(int i = 0; i < m_faces.size(); i++)
     {
         if(m_faces[i]->m_region >= 0 && m_regions[m_faces[i]->m_region]->m_toDelete)
@@ -1106,7 +1107,6 @@ void HalfEdgeMesh<VertexT, NormalT>::deleteRegions()
             m_faces[i] = 0;
         }
     }
-
     typename vector<FacePtr>::iterator f_iter = m_faces.begin();
     while (f_iter != m_faces.end())
     {
@@ -1119,7 +1119,6 @@ void HalfEdgeMesh<VertexT, NormalT>::deleteRegions()
             ++f_iter;
         }
     }
-
     typename vector<RegionPtr>::iterator r_iter = m_regions.begin();
     while (r_iter != m_regions.end())
     {
@@ -2277,8 +2276,9 @@ HalfEdgeMesh<VertexT, NormalT>* HalfEdgeMesh<VertexT, NormalT>::retesselateInHal
 
                 indexBuffer.push_back( pos );
             }
+            m_regions[iRegion]->m_faces[iFace]->m_invalid = true;
         }
-        m_regions[iRegion]->m_toDelete = true;
+        //m_regions[iRegion]->m_toDelete = true;
     }
 	
     cout << timestamp << "Done copying non planar regions.";
@@ -2295,6 +2295,11 @@ HalfEdgeMesh<VertexT, NormalT>* HalfEdgeMesh<VertexT, NormalT>::retesselateInHal
             size_t iRegion = *planeNr;
 
             int surface_class = m_regions[iRegion]->m_regionNumber;
+            for( size_t i=0; i < m_regions[iRegion]->m_faces.size(); ++i )
+			{
+				size_t iFace=i;
+				(*m_regions[iRegion]->m_faces[iFace]).m_invalid = true;
+			}
 
             r = m_regionClassifier->r(surface_class);
             g = m_regionClassifier->g(surface_class);
@@ -2367,13 +2372,7 @@ HalfEdgeMesh<VertexT, NormalT>* HalfEdgeMesh<VertexT, NormalT>::retesselateInHal
                     indexBuffer.push_back( c );
                 }
             }
-		
-			// iterate over every face for the region number '*nonPlaneBegin'
-			/*for( size_t i=0; i < m_regions[iRegion]->m_faces.size(); ++i )
-			{
-				deleteFace(m_regions[iRegion]->m_faces[i]);
-			}*/
-			  m_regions[iRegion]->m_toDelete = true;
+			 // m_regions[iRegion]->m_toDelete = true;
         }
         catch(...)
         {
@@ -2393,9 +2392,10 @@ HalfEdgeMesh<VertexT, NormalT>* HalfEdgeMesh<VertexT, NormalT>::retesselateInHal
     cout << endl << timestamp << "Done retesselating." << endl;
 		
 	HalfEdgeMesh<VertexT, NormalT>* retased_mesh =  new HalfEdgeMesh(this->m_meshBuffer);
-	size_t count_doubles = 0;
 	retased_mesh->m_fusionNeighbors = 0;
-	deleteRegions();
+	//cout << timestamp << "deleting regions " << endl;
+	//deleteRegions();
+	//cout << timestamp << "deleted regions " << endl;
     Tesselator<VertexT, NormalT>::clear();
     return retased_mesh;
 } 

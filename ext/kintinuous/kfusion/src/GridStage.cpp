@@ -1,13 +1,13 @@
 #include <kfusion/GridStage.hpp>
 
 // default constructor
-GridStage::GridStage(double voxel_size) : AbstractStage()
+GridStage::GridStage(double voxel_size, Options* options) : AbstractStage()
 {
 	grid_count_ = 0;
 	voxel_size_  = voxel_size;
 	bbox_ = BoundingBox<cVertex>(0.0, 0.0, 0.0, 300.0, 300.0, 300.0);
 	bbox_.expand(300.0, 300.0, 300.0);
-	timestamp.setQuiet(true);
+	timestamp.setQuiet(!options->verbose());
 }
 
 void GridStage::firstStep() { /* omit */ };
