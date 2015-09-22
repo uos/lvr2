@@ -113,7 +113,6 @@ add_library(lvrcore OBJECT ${LVR_SOURCES} ${LVR_LIB_MOC_SRC})
 message(STATUS "Building static library")
 add_library(lvr_static STATIC $<TARGET_OBJECTS:lvrcore>)
 target_link_libraries(lvr_static ${LVR_LIB_DEPENDENCIES})
-#set_target_properties(lvr_static PROPERTIES LIBRARY_OUTPUT_DIRECTORY ${CMAKE_SOURCE_DIR}/lib)
 
 #####################################################################################
 # Build shared library
@@ -122,6 +121,5 @@ target_link_libraries(lvr_static ${LVR_LIB_DEPENDENCIES})
 if( NOT MSVC )
   message(STATUS "Building shared library")
   add_library(lvr SHARED $<TARGET_OBJECTS:lvrcore>)
-  set_target_properties(lvr PROPERTIES LIBRARY_OUTPUT_DIRECTORY ${CMAKE_SOURCE_DIR}/lib)
   target_link_libraries(lvr ${LVR_LIB_DEPENDENCIES})
 endif( NOT MSVC)

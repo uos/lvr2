@@ -5,7 +5,5 @@ PROJECT(rply)
 find_path(RPLY_INCLUDE_DIR rply.h PATH .)
 
 ADD_LIBRARY(lvrrply_static STATIC rply.c)
-#set_target_properties(rply_local_static PROPERTIES LIBRARY_OUTPUT_DIRECTORY ${CMAKE_SOURCE_DIR}/lib)
 
 ADD_LIBRARY(lvrrply SHARED rply.c)
-#set_target_properties(rply_local PROPERTIES LIBRARY_OUTPUT_DIRECTORY ${CMAKE_SOURCE_DIR}/lib)
