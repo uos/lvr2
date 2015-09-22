@@ -162,7 +162,7 @@ void AdaptiveKSearchSurface<VertexT, NormalT>::parseScanPoses(string posefile)
 		if( m_searchTreeName == "flann"  || m_searchTreeName == "FLANN" )
 		{
 #ifdef _USE_PCL_
-			this->m_poseTree = search_tree::Ptr( new SearchTreeFlannPCL<VertexT>(loader, n, 1, 1, 1) );
+			this->m_poseTree = search_tree::Ptr( new SearchTreeFlannPCLmake <VertexT>(loader, n, 1, 1, 1) );
 #else
 			cout << timestamp << "Warning: PCL is not installed. Using STANN search tree in AdaptiveKSearchSurface." << endl;
 			this->m_poseTree = search_tree::Ptr( new SearchTreeStann<VertexT>(loader, n, 1, 1, 1) );
