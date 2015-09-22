@@ -67,6 +67,7 @@ namespace kfusion
         void renderImage(cuda::Image& image, const Affine3f& pose, Intr cameraIntrinsics, cv::Size size, int flags = 0);
 
         Affine3f getCameraPose (int time = -1) const;
+        std::vector<Affine3f>& getCameraPoses() {return poses_;}
     private:
         void allocate_buffers();
 

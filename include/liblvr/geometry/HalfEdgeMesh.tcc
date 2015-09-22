@@ -109,6 +109,11 @@ void HalfEdgeMesh<VertexT, NormalT>::addMesh(HalfEdgeMesh<VertexT, NormalT>* sli
 		{
 			merge_index = m_fused_verts[merge_index];
 		}
+		if(merge_index == 0)
+		{
+			cout << "Index not found!! " << endl;
+			continue;
+		}
 		mergeVertex(m_vertices[merge_index], slice->m_vertices[erase_index]);
 	}
 	
