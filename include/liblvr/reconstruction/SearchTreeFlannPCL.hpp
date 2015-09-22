@@ -109,6 +109,6 @@ protected:
 
 
 } // namespace lvr
-#include "SearchTreeFlann.tcc"
+#include "SearchTreeFlannPCL.tcc"
 
 #endif  // include-guard
