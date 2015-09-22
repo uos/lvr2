@@ -22,14 +22,14 @@
  *  @date Mar 18, 2014
  *  @author Thomas Wiemann
  */
-#include "registration/ICPPointAlign.hpp"
-#include "registration/EigenSVDPointAlign.hpp"
-#include "io/Timestamp.hpp"
+#include <lvr/registration/ICPPointAlign.hpp>
+#include <lvr/registration/EigenSVDPointAlign.hpp>
+#include <lvr/io/Timestamp.hpp>
 #ifdef _USE_PCL_
-#include "reconstruction/SearchTreeFlann.hpp"
+#include <lvr/reconstruction/SearchTreeFlann.hpp>
 #endif
 #ifdef _USE_STANN
-#include "reconstruction/SearchTreeStann.hpp"
+#include <lvr/reconstruction/SearchTreeStann.hpp>
 #endif
 
 #include <fstream>

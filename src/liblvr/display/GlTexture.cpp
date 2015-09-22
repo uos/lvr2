@@ -5,7 +5,7 @@
  *  @author Thomas Wiemann
  */
 
-#include "display/GlTexture.hpp"
+#include <lvr/display/GlTexture.hpp>
 #include <iostream>
 
 using namespace std;

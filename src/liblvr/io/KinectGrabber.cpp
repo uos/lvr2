@@ -9,8 +9,8 @@
 using std::cout;
 using std::endl;
 
-#include "io/KinectGrabber.hpp"
-#include "io/Timestamp.hpp"
+#include <lvr/io/KinectGrabber.hpp>
+#include <lvr/io/Timestamp.hpp>
 
 namespace lvr
 {

@@ -7,8 +7,8 @@
  *  @author Denis Meyer
  */
 
-#include "display/TextureFactory.hpp"
-#include "io/PPMIO.hpp"
+#include <lvr/display/TextureFactory.hpp>
+#include <lvr/io/PPMIO.hpp>
 
 #include <iostream>
 using std::cout;

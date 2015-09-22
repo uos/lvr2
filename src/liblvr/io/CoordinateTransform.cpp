@@ -24,9 +24,9 @@
  *      Author: Thomas Wiemann
  */
 
-#include "io/CoordinateTransform.hpp"
+#include <lvr/io/CoordinateTransform.hpp>
 
-#include "io/Timestamp.hpp"
+#include <lvr/io/Timestamp.hpp>
 
 #include <boost/shared_ptr.hpp>
 #include <iostream>
