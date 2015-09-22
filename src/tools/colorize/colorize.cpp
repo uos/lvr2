@@ -32,12 +32,12 @@
 
 #include <iostream>
 #include <cmath>
-#include <io/ModelFactory.hpp>
-#include <io/Timestamp.hpp>
+#include <lvr/io/ModelFactory.hpp>
+#include <lvr/io/Timestamp.hpp>
 
-#include "config/lvropenmp.hpp"
+#include <lvr/config/lvropenmp.hpp>
 
-#include "reconstruction/AdaptiveKSearchSurface.hpp"
+#include <lvr/reconstruction/AdaptiveKSearchSurface.hpp>
 
 using namespace lvr;
 
