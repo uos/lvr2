@@ -45,8 +45,8 @@
 #include <algorithm>
 #include <queue>
 
-#include <glu.h>
-#include <glut.h>
+#include <GL/glu.h>
+#include <GL/glut.h>
 
 #include <CGAL/Simple_cartesian.h>
 #include <CGAL/AABB_tree.h>
