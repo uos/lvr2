@@ -27,7 +27,7 @@
 #define INDOORNORMALCLASSIFIER_HPP_
 
 //#include "RegionClassifier.hpp"
-#include "display/Color.hpp"
+#include <lvr/display/Color.hpp>
 
 namespace lvr
 {

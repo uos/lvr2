@@ -37,11 +37,11 @@
 #include <sstream>
 #include <vector>
 
-#include "io/BaseIO.hpp"
-#include "io/AsciiIO.hpp"
+#include "BaseIO.hpp"
+#include "AsciiIO.hpp"
 
-#include "geometry/Vertex.hpp"
-#include "geometry/Matrix4.hpp"
+#include <lvr/geometry/Vertex.hpp>
+#include <lvr/geometry/Matrix4.hpp>
 
 using std::string;
 using std::fstream;

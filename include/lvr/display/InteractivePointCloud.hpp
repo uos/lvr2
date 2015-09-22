@@ -28,7 +28,7 @@
 
 #include "Renderable.hpp"
 
-#include "io/Model.hpp"
+#include <lvr/io/Model.hpp>
 
 namespace lvr
 {

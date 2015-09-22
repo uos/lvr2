@@ -31,11 +31,11 @@
 #include <cstdio>
 #include <math.h>
 //#include <boost/pending/disjoint_sets.hpp>
-#include <texture/Texture.hpp>
-#include <texture/Statistics.hpp>
-#include <texture/AutoCorr.hpp>
-#include <texture/CrossCorr.hpp>
-#include <texture/CCV.hpp>
+#include "Texture.hpp"
+#include "Statistics.hpp"
+#include "AutoCorr.hpp"
+#include "CrossCorr.hpp"
+#include "CCV.hpp"
 #include <opencv2/features2d/features2d.hpp>
 
 namespace lvr {

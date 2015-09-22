@@ -35,8 +35,8 @@
 #include <boost/filesystem.hpp>
 
 // lvr includes
-#include "io/Timestamp.hpp"
-#include "config/lvropenmp.hpp"
+#include <lvr/io/Timestamp.hpp>
+#include <lvr/config/lvropenmp.hpp>
 
 using std::cout;
 using std::endl;

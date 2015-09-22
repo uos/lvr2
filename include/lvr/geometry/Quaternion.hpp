@@ -41,11 +41,9 @@
 
 #include "math.h"
 
-
-
-#include "geometry/Vertex.hpp"
-#include "geometry/Normal.hpp"
-#include "geometry/Matrix4.hpp"
+#include "Vertex.hpp"
+#include "Normal.hpp"
+#include "Matrix4.hpp"
 
 #include <iostream>
 

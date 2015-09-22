@@ -27,7 +27,7 @@
 #define REGIONCLASSIFIER_H
 
 #include <vector>
-#include "geometry/Region.hpp"
+#include <lvr/geometry/Region.hpp>
 using std::vector;
 
 

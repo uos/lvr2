@@ -27,7 +27,7 @@
 #ifndef BASEMESH_H_
 #define BASEMESH_H_
 
-#include "io/Model.hpp"
+#include <lvr/io/Model.hpp>
 #include <vector>
 
 namespace lvr

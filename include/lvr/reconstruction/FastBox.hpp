@@ -27,11 +27,13 @@
 #ifndef FastBox_H_
 #define FastBox_H_
 
-#include "geometry/Vertex.hpp"
-#include "geometry/Normal.hpp"
-#include "reconstruction/QueryPoint.hpp"
-#include "reconstruction/MCTable.hpp"
-#include "reconstruction/FastBoxTables.hpp"
+#include <lvr/geometry/Vertex.hpp>
+#include <lvr/geometry/Normal.hpp>
+
+#include "QueryPoint.hpp"
+#include "MCTable.hpp"
+#include "FastBoxTables.hpp"
+
 #include <vector>
 #include <limits>
 
