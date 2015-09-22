@@ -27,12 +27,12 @@
 #ifndef TEXTURIZER_HPP_
 #define TEXTURIZER_HPP_
 
-#include "reconstruction/PointsetSurface.hpp"
+#include <lvr/reconstruction/PointsetSurface.hpp>
+#include <lvr/io/TextureIO.hpp>
 #include "TextureToken.hpp"
+#include "ImageProcessor.hpp"
+#include "Transform.hpp"
 #include <string>
-#include <io/TextureIO.hpp>
-#include <texture/ImageProcessor.hpp>
-#include <texture/Transform.hpp>
 
 namespace lvr {
 

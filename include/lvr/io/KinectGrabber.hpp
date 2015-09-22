@@ -26,7 +26,7 @@
 #ifndef KINECGRABBER_H_
 #define KINECGRABBER_H_
 
-#include "io/PointBuffer.hpp"
+#include "PointBuffer.hpp"
 #include "libfreenect.hpp"
 
 #include <boost/thread.hpp>

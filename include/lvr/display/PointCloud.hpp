@@ -29,7 +29,7 @@
 
 #include "Renderable.hpp"
 
-#include "geometry/ColorVertex.hpp"
+#include <lvr/geometry/ColorVertex.hpp>
 
 #include <vector>
 #include <string>

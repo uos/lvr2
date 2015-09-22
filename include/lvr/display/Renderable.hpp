@@ -38,11 +38,11 @@
 #include <string>
 using namespace std;
 
-#include "geometry/Matrix4.hpp"
-#include "geometry/Quaternion.hpp"
-#include "geometry/BoundingBox.hpp"
+#include <lvr/geometry/Matrix4.hpp>
+#include <lvr/geometry/Quaternion.hpp>
+#include <lvr/geometry/BoundingBox.hpp>
 
-#include "io/Model.hpp"
+#include <lvr/io/Model.hpp>
 
 namespace lvr
 {

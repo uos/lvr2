@@ -25,9 +25,9 @@
 #ifndef EIGENSVDPOINTALIGN_HPP_
 #define EIGENSVDPOINTALIGN_HPP_
 
-#include "io/PointBuffer.hpp"
-#include "geometry/Matrix4.hpp"
-#include "geometry/Vertex.hpp"
+#include <lvr/io/PointBuffer.hpp>
+#include <lvr/geometry/Matrix4.hpp>
+#include <lvr/geometry/Vertex.hpp>
 
 namespace lvr
 {

@@ -23,10 +23,10 @@
  *  Created on: 16.02.2011
  *      Author: Thomas Wiemann
  */
-#include "../geometry/BaseMesh.hpp"
+#include <lvr/geometry/BaseMesh.hpp>
 #include "FastReconstructionTables.hpp"
 #include "SharpBox.hpp"
-#include "io/Progress.hpp"
+#include <lvr/io/Progress.hpp>
 
 namespace lvr
 {

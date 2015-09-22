@@ -27,7 +27,7 @@
 #ifndef NORMALCLASSIFIER_HPP_
 #define NORMALCLASSIFIER_HPP_
 
-#include "display/Color.hpp"
+#include <lvr/display/Color.hpp>
 
 namespace lvr
 {

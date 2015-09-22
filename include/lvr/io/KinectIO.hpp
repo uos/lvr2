@@ -9,7 +9,7 @@
 #define KINECTIO_H_
 
 #include "KinectGrabber.hpp"
-#include "geometry/Matrix4.hpp"
+#include <lvr/geometry/Matrix4.hpp>
 #include <Eigen/Dense>
 
 namespace lvr

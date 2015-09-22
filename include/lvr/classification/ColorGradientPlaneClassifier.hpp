@@ -26,7 +26,7 @@
 #ifndef COLORGRADIENTPLANECLASSIFIER_H_
 #define COLORGRADIENTPLANECLASSIFIER_H_
 
-#include "display/ColorMap.hpp"
+#include <lvr/display/ColorMap.hpp>
 #include "RegionClassifier.hpp"
 
 namespace lvr

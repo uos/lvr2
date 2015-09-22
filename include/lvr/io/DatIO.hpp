@@ -24,8 +24,8 @@
 #ifndef DATIO_HPP_
 #define DATIO_HPP_
 
-#include "io/BaseIO.hpp"
-#include "io/Model.hpp"
+#include "BaseIO.hpp"
+#include "Model.hpp"
 
 #include <string>
 using std::string;

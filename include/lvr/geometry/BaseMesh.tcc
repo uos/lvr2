@@ -25,7 +25,7 @@
  */
 
 #include "BaseMesh.hpp"
-#include "io/ModelFactory.hpp"
+#include <lvr/io/ModelFactory.hpp>
 
 namespace lvr
 {

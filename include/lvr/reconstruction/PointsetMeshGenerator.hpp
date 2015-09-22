@@ -27,9 +27,9 @@
 #ifndef MESH_GENERATOR_HPP
 #define MESH_GENERATOR_HPP
 
-#include "geometry/BaseMesh.hpp"
-#include "reconstruction/MeshGenerator.hpp"
-#include "reconstruction/PointsetSurface.hpp"
+#include <lvr/geometry/BaseMesh.hpp>
+#include "MeshGenerator.hpp"
+#include "PointsetSurface.hpp"
 
 namespace lvr
 {
