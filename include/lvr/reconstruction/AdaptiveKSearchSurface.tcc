@@ -88,13 +88,13 @@ AdaptiveKSearchSurface<VertexT, NormalT>::AdaptiveKSearchSurface(
 
     init();
 
-#ifdef _USE_PCL_
+#ifdef LVR_USE_PCL
     if( searchTreeName == "flann"  || searchTreeName == "FLANN" )
     {
         this->m_searchTree = search_tree::Ptr( new SearchTreeFlann<VertexT>(loader, this->m_numPoints, kn, ki, kd) );
     }
 #endif
-#ifdef _USE_STANN
+#ifdef LVR_USE_STANN
     if( searchTreeName == "stann" || searchTreeName == "STANN" )
     {
         this->m_searchTree = search_tree::Ptr( new SearchTreeStann<VertexT>(loader, this->m_numPoints, kn, ki, kd) );
@@ -104,7 +104,7 @@ AdaptiveKSearchSurface<VertexT, NormalT>::AdaptiveKSearchSurface(
     {
         this->m_searchTree = search_tree::Ptr( new SearchTreeNanoflann<VertexT>(loader, this->m_numPoints, kn, ki, kd));
     }
-#ifdef _USE_NABO
+#ifdef LVR_USE_NABO
     if( searchTreeName == "nabo" || searchTreeName == "NABO" )
     {
         this->m_searchTree = search_tree::Ptr( new SearchTreeNabo<VertexT>(loader, this->m_numPoints, kn, ki, kd));
@@ -158,13 +158,13 @@ void AdaptiveKSearchSurface<VertexT, NormalT>::parseScanPoses(string posefile)
 		size_t n = v.size();
 
 		cout << timestamp << "Creating pose search tree(" << m_searchTreeName << ") with " << n << " poses." << endl;
-#ifdef _USE_PCL_
+#ifdef LVR_USE_PCL
 		if( m_searchTreeName == "flann"  || m_searchTreeName == "FLANN" )
 		{
 			this->m_poseTree = search_tree::Ptr( new SearchTreeFlann<VertexT>(loader, n, 1, 1, 1) );
 		}
 #endif
-#ifdef _USE_STANN
+#ifdef LVR_USE_STANN
 		if( m_searchTreeName == "stann" || m_searchTreeName == "STANN" )
 		{
 			this->m_poseTree = search_tree::Ptr( new SearchTreeStann<VertexT>(loader, n, 1, 1, 1) );
@@ -174,7 +174,7 @@ void AdaptiveKSearchSurface<VertexT, NormalT>::parseScanPoses(string posefile)
 		{
 			this->m_poseTree = search_tree::Ptr( new SearchTreeNanoflann<VertexT>(loader, n, 1, 1, 1));
 		}
-#ifdef _USE_NABO
+#ifdef LVR_USE_NABO
 		if( m_searchTreeName == "nabo" || m_searchTreeName == "NABO" )
 		{
 			this->m_poseTree = search_tree::Ptr( new SearchTreeNabo<VertexT>(loader, n, 1, 1, 1));

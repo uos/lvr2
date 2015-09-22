@@ -26,7 +26,7 @@
 #ifndef PCLFILTERING_H_
 #define PCLFILTERING_H_
 
-#ifdef _USE_PCL_
+#ifdef LVR_USE_PCL
 
 #include <lvr/io/Timestamp.hpp>
 #include <lvr/io/PointBuffer.hpp>

@@ -31,7 +31,7 @@
 #include <lvr/texture/Texture.hpp>
 
 // PCL related includes
-#ifdef _USE_PCL_
+#ifdef LVR_USE_PCL
 #include <lvr/reconstruction/PCLKSurface.hpp>
 #endif
 
@@ -46,7 +46,7 @@ typedef Normal<float>											cNormal;
 typedef PointsetSurface<ColorVertex<float, unsigned char> >							psSurface;
 typedef AdaptiveKSearchSurface<ColorVertex<float, unsigned char> , Normal<float>  > akSurface;
 
-#ifdef _USE_PCL_
+#ifdef LVR_USE_PCL
 typedef PCLKSurface<Vertex<float> , Normal<float> >                   pclSurface;
 #endif
 

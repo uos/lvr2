@@ -37,7 +37,7 @@
 #include <lvr/io/Progress.hpp>
 
 // PCL related includes
-#ifdef _USE_PCL_
+#ifdef LVR_USE_PCL
 #include <lvr/io/PCDIO.hpp>
 #endif
 
@@ -78,12 +78,12 @@ ModelPtr ModelFactory::readModel( std::string filename )
     {
     	io = new DatIO;
     }
-#ifdef _USE_PCL_
+#ifdef LVR_USE_PCL
     else if (extension == ".pcd")
     {
         io = new PCDIO;
     }
-#endif /* _USE_PCL_ */
+#endif /* LVR_USE_PCL */
     else if (extension == "")
     {
         bool found_3d = false;
@@ -217,7 +217,7 @@ void ModelFactory::saveModel( ModelPtr m, std::string filename)
     {
         io = new ObjIO;
     }
-#ifdef _USE_PCL_
+#ifdef LVR_USE_PCL
     else if (extension == ".pcd")
     {
         io = new PCDIO;

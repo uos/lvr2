@@ -44,7 +44,7 @@
 
 #include "boost/shared_ptr.hpp"
 
-#ifdef _USE_STANN
+#ifdef LVR_USE_STANN
 // SearchTreeStann
 #include "SearchTreeStann.hpp"
 #endif
@@ -52,12 +52,12 @@
 #include "SearchTreeNanoflann.hpp"
 
 // SearchTreePCL
-#ifdef _USE_PCL_
+#ifdef LVR_USE_PCL
     #include "SearchTreeFlann.hpp"
 #endif
 
 // SearchTreeNabo
-#ifdef _USE_NABO
+#ifdef LVR_USE_NABO
     #include "SearchTreeNabo.hpp"
 #endif
 
