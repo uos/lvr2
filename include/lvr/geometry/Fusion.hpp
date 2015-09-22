@@ -74,9 +74,9 @@
 #include "FusionVertex.hpp"
 #include "FusionFace.hpp"
 
-#include "io/Timestamp.hpp"
-#include "io/Progress.hpp"
-#include "io/Model.hpp"
+#include <lvr/io/Timestamp.hpp>
+#include <lvr/io/Progress.hpp>
+#include <lvr/io/Model.hpp>
 
 #define POINT_DIST_EPSILON 1e-4
 

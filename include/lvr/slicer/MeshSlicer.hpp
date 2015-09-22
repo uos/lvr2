@@ -57,11 +57,11 @@
 #include <CGAL/AABB_triangle_primitive.h>
 #include <CGAL/exceptions.h>
 
-#include "geometry/Vertex.hpp"
+#include <lvr/geometry/Vertex.hpp>
 
-#include "io/Timestamp.hpp"
-#include "io/Progress.hpp"
-#include "io/Model.hpp"
+#include <lvr/io/Timestamp.hpp>
+#include <lvr/io/Progress.hpp>
+#include <lvr/io/Model.hpp>
 
 using namespace std;
 

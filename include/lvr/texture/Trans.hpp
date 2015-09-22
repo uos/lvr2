@@ -30,8 +30,8 @@
 #include <cstring>
 #include <math.h>
 #include <cstdio>
-#include <texture/Texture.hpp>
-#include <texture/ImageProcessor.hpp>
+#include "Texture.hpp"
+#include "ImageProcessor.hpp"
 #include <opencv2/imgproc/imgproc.hpp>
 
 namespace lvr {

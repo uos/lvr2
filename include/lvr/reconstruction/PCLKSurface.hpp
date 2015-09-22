@@ -34,10 +34,10 @@
 
 #include "PointsetSurface.hpp"
 
-#include "io/PointBuffer.hpp"
-#include "io/Model.hpp"
+#include <lvr/io/PointBuffer.hpp>
+#include <lvr/io/Model.hpp>
 
-#include "geometry/BoundingBox.hpp"
+#include <lvr/geometry/BoundingBox.hpp>
 
 namespace lvr
 {

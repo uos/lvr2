@@ -28,17 +28,17 @@
 #ifndef M_POINTCLOUDMANAGER_H_
 #define M_POINTCLOUDMANAGER_H_
 
-#include "io/Model.hpp"
-#include "io/Progress.hpp"
-#include "io/Timestamp.hpp"
-#include "io/PLYIO.hpp"
-#include "io/AsciiIO.hpp"
-#include "io/UosIO.hpp"
+#include <lvr/io/Model.hpp>
+#include <lvr/io/Progress.hpp>
+#include <lvr/io/Timestamp.hpp>
+#include <lvr/io/PLYIO.hpp>
+#include <lvr/io/AsciiIO.hpp>
+#include <lvr/io/UosIO.hpp>
 
-#include "geometry/Vertex.hpp"
-#include "geometry/Normal.hpp"
-#include "geometry/ColorVertex.hpp"
-#include "geometry/BoundingBox.hpp"
+#include <lvr/geometry/Vertex.hpp>
+#include <lvr/geometry/Normal.hpp>
+#include <lvr/geometry/ColorVertex.hpp>
+#include <lvr/geometry/BoundingBox.hpp>
 
 #include "PointsetSurface.hpp"
 

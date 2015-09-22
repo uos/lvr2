@@ -10,7 +10,7 @@
 
 #include "HashGrid.hpp"
 
-#include "reconstruction/PointsetSurface.hpp"
+#include "PointsetSurface.hpp"
 
 namespace lvr
 {

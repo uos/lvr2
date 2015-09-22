@@ -39,7 +39,7 @@
 // Superclass
 #include "SearchTree.hpp"
 
-#include "io/Timestamp.hpp"
+#include <lvr/io/Timestamp.hpp>
 
 using std::vector;
 

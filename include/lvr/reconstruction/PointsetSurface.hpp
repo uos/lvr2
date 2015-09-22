@@ -26,8 +26,8 @@
 #ifndef POINTSETSURFACE_HPP_
 #define POINTSETSURFACE_HPP_
 
-#include "io/PointBuffer.hpp"
-#include "geometry/BoundingBox.hpp"
+#include <lvr/io/PointBuffer.hpp>
+#include <lvr/geometry/BoundingBox.hpp>
 #include "SearchTree.hpp"
 
 namespace lvr

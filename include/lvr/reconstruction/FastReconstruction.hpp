@@ -27,16 +27,16 @@
 #ifndef FastReconstruction_H_
 #define FastReconstruction_H_
 
-#include "geometry/Vertex.hpp"
-#include "geometry/BoundingBox.hpp"
-#include "reconstruction/PointsetMeshGenerator.hpp"
-#include "reconstruction/LocalApproximation.hpp"
-#include "reconstruction/FastBox.hpp"
-#include "reconstruction/TetraederBox.hpp"
-#include "reconstruction/BilinearFastBox.hpp"
-#include "reconstruction/QueryPoint.hpp"
-#include "reconstruction/PointsetSurface.hpp"
+#include <lvr/geometry/Vertex.hpp>
+#include <lvr/geometry/BoundingBox.hpp>
 
+#include "PointsetMeshGenerator.hpp"
+#include "LocalApproximation.hpp"
+#include "FastBox.hpp"
+#include "TetraederBox.hpp"
+#include "BilinearFastBox.hpp"
+#include "QueryPoint.hpp"
+#include "PointsetSurface.hpp"
 #include "HashGrid.hpp"
 
 /*#if _MSC_VER

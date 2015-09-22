@@ -26,9 +26,9 @@
 #ifndef CLASSIFIERFACTORY_H_
 #define CLASSIFIERFACTORY_H_
 
-#include "classification/ColorGradientPlaneClassifier.hpp"
-#include "classification/IndoorNormalClassifier.hpp"
-#include "classification/NormalClassifier.hpp"
+#include "ColorGradientPlaneClassifier.hpp"
+#include "IndoorNormalClassifier.hpp"
+#include "NormalClassifier.hpp"
 
 namespace lvr
 {

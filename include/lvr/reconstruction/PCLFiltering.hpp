@@ -28,8 +28,8 @@
 
 #ifdef _USE_PCL_
 
-#include "io/Timestamp.hpp"
-#include "io/PointBuffer.hpp"
+#include <lvr/io/Timestamp.hpp>
+#include <lvr/io/PointBuffer.hpp>
 
 #include <pcl/point_types.h>
 #include <pcl/point_cloud.h>
