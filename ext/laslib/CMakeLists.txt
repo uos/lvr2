@@ -41,7 +41,5 @@ set(LASLIB_SOURCES
 	src/fopen_compressed.cpp)
 
 add_library(lvrlas_static STATIC ${LASLIB_SOURCES})
-set_target_properties(lvrlas_static PROPERTIES LIBRARY_OUTPUT_DIRECTORY ${CMAKE_SOURCE_DIR}/lib)
 
 add_library(lvrlas SHARED ${LASLIB_SOURCES})
-set_target_properties(lvrlas PROPERTIES LIBRARY_OUTPUT_DIRECTORY ${CMAKE_SOURCE_DIR}/lib)
