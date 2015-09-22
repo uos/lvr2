@@ -24,7 +24,7 @@
  *  @author Kim Rinnewitz (krinnewitz@uos.de)
  */
 
-#include "texture/CCV.hpp"
+#include <lvr/texture/CCV.hpp>
 //#include <opencv2/highgui/highgui.hpp>
 #include <opencv/cv.h>
 
