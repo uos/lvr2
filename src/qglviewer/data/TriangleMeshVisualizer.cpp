@@ -26,8 +26,8 @@
 
 #include "TriangleMeshVisualizer.hpp"
 
-#include "display/StaticMesh.hpp"
-#include "display/TexturedMesh.hpp"
+#include <lvr/display/StaticMesh.hpp>
+#include <lvr/display/TexturedMesh.hpp>
 
 #include "../widgets/TriangleMeshTreeWidgetItem.h"
 
