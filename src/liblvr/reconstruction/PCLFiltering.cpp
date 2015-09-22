@@ -25,7 +25,7 @@
 
 #ifdef _USE_PCL_
 
-#include "reconstruction/PCLFiltering.hpp"
+#include <lvr/reconstruction/PCLFiltering.hpp>
 #include <pcl/pcl_config.h>
 
 namespace lvr

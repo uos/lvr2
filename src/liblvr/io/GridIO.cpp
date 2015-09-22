@@ -23,8 +23,8 @@
  *  @author Thomas Wiemann
  */
 
-#include "io/GridIO.hpp"
-#include "io/DataStruct.hpp"
+#include <lvr/io/GridIO.hpp>
+#include <lvr/io/DataStruct.hpp>
 
 #include <fstream>
 using std::ifstream;

@@ -1,5 +1,5 @@
 
-#include "io/PCDIO.hpp"
+#include <lvr/io/PCDIO.hpp>
 #include <fstream>
 #ifdef _USE_PCL_
 #include <pcl/io/pcd_io.h>

@@ -24,7 +24,7 @@
  *      Author: Thomas Wiemann
  */
 
-#include "config/lvropenmp.hpp"
+#include <lvr/config/lvropenmp.hpp>
 
 #ifdef _USE_OPEN_MP
 #include <omp.h>

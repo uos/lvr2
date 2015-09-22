@@ -28,7 +28,7 @@
  *      Author:  Denis Meyer    ( denmeyer@uos.de )
  */
 
-#include "io/PPMIO.hpp"
+#include <lvr/io/PPMIO.hpp>
 #include <iostream>
 #include <fstream>
 #include <string.h>
