@@ -78,6 +78,8 @@ public:
 	 */
 	bool 	optimizePlanes() const;
 	
+	bool 	textures() const;
+	
 	bool    noVizualisation() const;
 
 	bool    noReconstruction() const;
@@ -261,7 +263,10 @@ inline ostream& operator<<(ostream& os, const Options &o)
 		cout << "##### Normal threshold \t\t\t: " << o.getNormalThreshold() << endl;
 		cout << "##### Region threshold \t\t\t: " << o.getSmallRegionThreshold() << endl;
 	}
-
+	if(o.textures())
+		cout << "##### Live texturing \t\t\t: YES" << endl;
+	else
+		cout << "##### Live texturing \t\t\t: NO" << endl;
 	if(o.getDepth())
 	{
 	    cout << "##### Recursion depth \t\t\t: " << o.getDepth() << endl;
