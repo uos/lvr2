@@ -336,7 +336,7 @@ struct KinFuApp
             {
 				double ref_timer = (double)cv::getTickCount();
 				double time = fabs((timer_start_ - ref_timer)/ cv::getTickFrequency());
-                if(time - 2.0 > 0)
+                if(time - 1.0 > 0)
                 {
 					//storePicPose(kinfu, image);
 					//viz.removeWidget("path");
