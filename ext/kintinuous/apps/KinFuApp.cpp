@@ -269,7 +269,7 @@ struct KinFuApp
 	void storePicPose(KinFu& kinfu, Affine3f pose, cv::Mat image){
 		ImgPose* imgpose = new ImgPose();
 		imgpose->pose = pose;
-		imgpose->image = image.clone();
+		imgpose->image = image;//.clone();
 		//intrinsics wrong? changed rows and cols + /2
 		cv::Mat intrinsics = (cv::Mat_<float>(3,3) << kinfu.params().intr.fx, 0, kinfu.params().cols/2 - 0.5f,
 												  0, kinfu.params().intr.fx, kinfu.params().rows/2 - 0.5f,
@@ -319,7 +319,7 @@ struct KinFuApp
         
         if(!no_viz_)
         {
-			mesh_viz = thread(&KinFuApp::show_mesh,this);
+			//mesh_viz = thread(&KinFuApp::show_mesh,this);
 		}
         for (int i = 0; !exit_ && !viz.wasStopped(); ++i)
         {
@@ -344,8 +344,7 @@ struct KinFuApp
 
             if ((!pause_ || !capture_.isRecord()) && !(kinfu.hasShifted() && kinfu.isLastScan()) && has_image)
             {
-				//new nice shit
-				//braucht noch einen namen
+				//biggest rvec difference -> new pic
 				//
 				double ref_timer = cv::getTickCount();
 				double time = abs((timer_start_ - ref_timer))/ cv::getTickFrequency();
@@ -368,6 +367,8 @@ struct KinFuApp
 					}
 					if(dist > best_dist){
 						best_dist = dist;
+						//mom_rvec.copyTo(best_rvec);
+						//image.copyTo(best_image);
 						best_rvec = mom_rvec.clone(); 
 						best_image = image.clone();
 						best_pose = kinfu.getCameraPose();

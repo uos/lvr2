@@ -41,5 +41,6 @@ void FusionStage::lastStep()
 	mesh_->finalize();
 	ModelPtr m( new Model( mesh_->meshBuffer() ) );
 	ModelFactory::saveModel( m, mesh_name_);
+	ModelFactory::saveModel( m, "mesh_OUT_after.obj");
 	//ModelFactory::saveModel( m, "./test_mesh.ply"); 
 }
