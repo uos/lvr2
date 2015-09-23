@@ -3,15 +3,15 @@
 #####################################################################################
 
 set(LVR_REGISTRATION_SOURCES
-    Options.cpp     
+    Options.cpp
     Main.cpp
 )
 
 #####################################################################################
-# Setup dependencies to external libraries 
+# Setup dependencies to external libraries
 #####################################################################################
 
-set(LVR_REGISTRATION_DEPENDENCIES 
+set(LVR_REGISTRATION_DEPENDENCIES
 	lvr_static
 	lvrlas_static
 	lvrrply_static
@@ -22,11 +22,11 @@ set(LVR_REGISTRATION_DEPENDENCIES
 	)
 
 if(PCL_FOUND)
-   set(LVR_REGISTRATION_DEPENDENCIES  ${LVR_REGISTRATION_DEPENDENCIES} ${PCL_LIBRARIES} )
+  set(LVR_REGISTRATION_DEPENDENCIES  ${LVR_REGISTRATION_DEPENDENCIES} ${PCL_LIBRARIES} )
 endif(PCL_FOUND)
 
 if( ${NABO_FOUND} )
-   set(LVR_REGISTRATION_DEPENDENCIES  ${LVR_REGISTRATION_DEPENDENCIES} ${NABO_LIBRARY} )
+  set(LVR_REGISTRATION_DEPENDENCIES  ${LVR_REGISTRATION_DEPENDENCIES} ${NABO_LIBRARY} )
 endif( ${NABO_FOUND} )
 
 
@@ -36,3 +36,6 @@ endif( ${NABO_FOUND} )
 
 add_executable(lvr_registration ${LVR_REGISTRATION_SOURCES})
 target_link_libraries(lvr_registration  ${LVR_REGISTRATION_DEPENDENCIES})
+
+install(TARGETS lvr_registration
+  RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR})

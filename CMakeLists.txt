@@ -3,13 +3,17 @@ project(LAS_VEGAS)
 
 set_property(GLOBAL PROPERTY USE_FOLDERS On)
 
+include(GNUInstallDirs)
+
 set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/bin)
 set(CMAKE_LIBRARY_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/lib)
 set(CMAKE_ARCHIVE_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/lib)
 
 set(CMAKE_MODULE_PATH ${LAS_VEGAS_SOURCE_DIR}/CMakeModules ${CMAKE_MODULE_PATH})
 
-include_directories(${LAS_VEGAS_SOURCE_DIR}/include)
+include_directories(include)
+
+install(DIRECTORY include/lvr DESTINATION ${CMAKE_INSTALL_INCLUDEDIR})
 
 ##################################################################################
 # Some compiler specific settings
@@ -177,10 +181,12 @@ endif(STANN_FOUND)
 ##############################################################
 
 # NanoFLANN
-include_directories(${LAS_VEGAS_SOURCE_DIR}/ext/nanoflann)
+add_subdirectory(ext/nanoflann)
+include_directories( ${NANOFLANN_INCLUDE_DIR} )
 
 # PSIMPL
-include_directories(${LAS_VEGAS_SOURCE_DIR}/ext/psimpl)
+add_subdirectory(ext/psimpl)
+include_directories( ${PSIMPL_INCLUDE_DIR} )
 
 # RPLY
 add_subdirectory(ext/rply)

@@ -8,10 +8,10 @@ set(LVR_TIOGEN_SOURCES
 )
 
 #####################################################################################
-# Setup dependencies to external libraries 
+# Setup dependencies to external libraries
 #####################################################################################
 
-set(LVR_TIOGEN_DEPENDENCIES 
+set(LVR_TIOGEN_DEPENDENCIES
 	lvr_static
 	lvrlas_static
 	lvrrply_static
@@ -23,7 +23,7 @@ set(LVR_TIOGEN_DEPENDENCIES
 	)
 
 if( ${NABO_FOUND} )
-set(LVR_TIOGEN_DEPENDENCIES ${LVR_TIOGEN_DEPENDENCIES} ${NABO_LIBRARY})
+  set(LVR_TIOGEN_DEPENDENCIES ${LVR_TIOGEN_DEPENDENCIES} ${NABO_LIBRARY})
 endif( ${NABO_FOUND} )
 
 #####################################################################################
@@ -31,4 +31,7 @@ endif( ${NABO_FOUND} )
 #####################################################################################
 
 add_executable( lvr_tiogen ${LVR_TIOGEN_SOURCES} )
-TARGET_LINK_LIBRARIES( lvr_tiogen ${LVR_TIOGEN_DEPENDENCIES} )
+target_link_libraries( lvr_tiogen ${LVR_TIOGEN_DEPENDENCIES} )
+
+install(TARGETS lvr_tiogen
+  RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR})
