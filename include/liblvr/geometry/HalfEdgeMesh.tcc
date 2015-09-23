@@ -108,18 +108,12 @@ void HalfEdgeMesh<VertexT, NormalT>::addMesh(HalfEdgeMesh<VertexT, NormalT>* sli
 		if(m_fused_verts.size() > 0)
 		{
 			auto merge_it = m_fused_verts.find(merge_index);
-			if(merge_it == m_fused_verts.end())
-			{
-				cout << "size " << m_fused_verts.size() << endl;
-				cout << "Index not found!! " << merge_index << endl;
-				cout << "slice index " << erase_index << endl;
-				cout << "slice vert " << slice->m_vertices[erase_index]->m_position << endl;
-			}
-			else
+			if(merge_it != m_fused_verts.end())
 			{
 				merge_index = merge_it->second;
-				fused_verts[erase_index] = merge_index;
+				fused_verts[erase_index] = vert_it->first;
 			}
+			
 		}
 		mergeVertex(m_vertices[merge_index], slice->m_vertices[erase_index]);
 	}
@@ -156,7 +150,7 @@ void HalfEdgeMesh<VertexT, NormalT>::mergeVertex(VertexPtr merge_vert, VertexPtr
 		cout << "distance " << dist << endl;*/ 
 		if(dist > 0.01)
 		{
-			cout << "Vertex missalignment! " << endl;
+			cout << "Big Vertex missalignment!!!!! " << endl;
 			cout << "distance " << dist << endl; 
 		}
 	}
