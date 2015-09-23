@@ -40,6 +40,8 @@ HalfEdgeMesh<VertexT, NormalT>::HalfEdgeMesh( )
     m_pointCloudManager = NULL;
     m_depth = 100;
     m_fusionNeighbors = 0;
+    ///added
+    start_texture_index=0;
 }
 
 template<typename VertexT, typename NormalT>
@@ -51,6 +53,8 @@ HalfEdgeMesh<VertexT, NormalT>::HalfEdgeMesh(
     m_classifierType = "Default";
     m_pointCloudManager = pm;
     m_depth = 100;
+    ///added
+    start_texture_index=0;
 }
 
 template<typename VertexT, typename NormalT>
@@ -79,6 +83,8 @@ HalfEdgeMesh<VertexT, NormalT>::HalfEdgeMesh(
     m_classifierType = "Default";
     m_depth = 100;
     this->m_meshBuffer = mesh;
+    ///added
+    start_texture_index=0;
 }
 
 template<typename VertexT, typename NormalT>
@@ -124,7 +130,53 @@ void HalfEdgeMesh<VertexT, NormalT>::addMesh(HalfEdgeMesh<VertexT, NormalT>* sli
 	m_fused_verts = fused_verts;
 	m_slice_verts = slice->m_slice_verts;
 	m_globalIndex = this->meshSize();
-	this->m_meshBuffer = slice->m_meshBuffer;
+	if(slice->m_meshBuffer && this->m_meshBuffer)
+	{
+		cout << "fusing textures " << slice->m_meshBuffer <<endl;
+		cout << "fusing textures " << this->m_meshBuffer <<endl;
+		size_t a = 0;
+		//TextureCoords
+		vector<float> textureCoordBuffer_dst;
+		floatArr textureCoordBuffer_src = this->m_meshBuffer->getVertexTextureCoordinateArray(a);
+		cout << "having " << a <<  " texture coordinates " << endl;
+		for(size_t i=0;i<a*3;i++)
+			textureCoordBuffer_dst.push_back(textureCoordBuffer_src[i]);
+		textureCoordBuffer_src = slice->m_meshBuffer->getVertexTextureCoordinateArray(a);
+		for(size_t i=0;i<a*3;i++)
+			textureCoordBuffer_dst.push_back(textureCoordBuffer_src[i]);
+		cout << "fusing " << a <<  " texture coordinates " << endl;
+		//Material
+		size_t offset = 0;
+		std::vector<Material*> materialBuffer_dst;
+		materialArr materialBuffer_src = this->m_meshBuffer->getMaterialArray(offset);
+		for(size_t i=0;i<offset;i++)
+			materialBuffer_dst.push_back(materialBuffer_src[i]);
+		materialBuffer_src = slice->m_meshBuffer->getMaterialArray(a);
+		for(size_t i=0;i<a;i++)
+			materialBuffer_dst.push_back(materialBuffer_src[i]);
+			
+		//MaterialIndices
+		vector<unsigned int> materialIndexBuffer_dst;
+		uintArr materialIndexBuffer_src = this->m_meshBuffer->getFaceMaterialIndexArray(a);
+		for(size_t i=0;i<a;i++)
+			materialIndexBuffer_dst.push_back(materialIndexBuffer_src[i]);
+		materialIndexBuffer_src = slice->m_meshBuffer->getFaceMaterialIndexArray(a);
+		for(size_t i=0;i<a;i++)
+			materialIndexBuffer_dst.push_back(materialIndexBuffer_src[i]+offset);
+		
+		this->m_meshBuffer->setVertexTextureCoordinateArray( textureCoordBuffer_dst );
+		this->m_meshBuffer->setMaterialArray( materialBuffer_dst );
+		this->m_meshBuffer->setFaceMaterialIndexArray( materialIndexBuffer_dst );
+		
+		///texture stuff
+		int b_rect_size;
+		std::vector<std::vector<cv::Point3f> > b_rects = slice->getBoundingRectangles(b_rect_size);;
+		bounding_rectangles_3D.insert(bounding_rectangles_3D.end(),b_rects.begin(),b_rects.end());
+		this->b_rect_size += b_rect_size;
+		
+		std::vector<cv::Mat> textures = slice->getTextures();
+		this->textures.insert(this->textures.end(),textures.begin(),textures.end());
+	}
 }
 
 template<typename VertexT, typename NormalT>
@@ -2314,6 +2366,10 @@ HalfEdgeMesh<VertexT, NormalT>* HalfEdgeMesh<VertexT, NormalT>::retesselateInHal
          and the textures are generated if there are textures to generate at all.!
      */
      
+     if( bounding_rectangles_3D.size() > 0 )  
+		bounding_rectangles_3D.resize(0);
+	 if( textures.size() > 0 )  
+		textures.resize(0);
      vertexcount = 0;
      b_rect_size = 0;
      this->start_texture_index = start_texture_index;
@@ -2506,6 +2562,9 @@ HalfEdgeMesh<VertexT, NormalT>* HalfEdgeMesh<VertexT, NormalT>::retesselateInHal
     {
         this->m_meshBuffer = MeshBufferPtr( new MeshBuffer );
     }
+    
+    if(vertexBuffer.size() == 0 )
+		return NULL;
     this->m_meshBuffer->setVertexArray( vertexBuffer );
     this->m_meshBuffer->setVertexColorArray( colorBuffer );
     this->m_meshBuffer->setVertexNormalArray( normalBuffer );
@@ -2517,10 +2576,17 @@ HalfEdgeMesh<VertexT, NormalT>* HalfEdgeMesh<VertexT, NormalT>::retesselateInHal
 		
 	HalfEdgeMesh<VertexT, NormalT>* retased_mesh =  new HalfEdgeMesh(this->m_meshBuffer);
 	retased_mesh->m_meshBuffer = this->m_meshBuffer;
+	retased_mesh->bounding_rectangles_3D = bounding_rectangles_3D;
+	retased_mesh->num_cams = num_cams;
+	retased_mesh->textures = textures;
+	retased_mesh->end_texture_index = end_texture_index;
+	retased_mesh->start_texture_index = start_texture_index;
+	
 	size_t count_doubles = 0;
 	retased_mesh->m_fusionNeighbors = 0;
-	deleteRegions();
+	//deleteRegions();
     Tesselator<VertexT, NormalT>::clear();
+    this->m_meshBuffer = NULL;
     return retased_mesh;
 } 
 	
@@ -2838,6 +2904,8 @@ void HalfEdgeMesh<VertexT,NormalT>::fillInitialTextures(std::vector<std::vector<
 	cv::Mat cam = img_pose.intrinsics;
 
 	std::cout << "Writing texture from ImagePose " << image_number << std::endl;
+	std::cout << "Textures: " << textures.size() << std::endl;
+	std::cout << "Bounding Rectangles: " << b_rects.size() << std::endl;
 	
 			//size_t j=70;
 	for(size_t j=0;j<textures.size();j++){
@@ -2847,6 +2915,7 @@ void HalfEdgeMesh<VertexT,NormalT>::fillInitialTextures(std::vector<std::vector<
 			//project plane i to pic j -> cam_points
 			//rvec tvec
 
+		
 				std::vector<cv::Point2f> image_points2D_br;
 				std::vector<cv::Point3f> object_points_br(b_rects[j]);
 
@@ -3041,5 +3110,11 @@ std::vector<std::vector<cv::Point3f> > HalfEdgeMesh<VertexT,NormalT>::getBoundin
 	size = b_rect_size;
 	return bounding_rectangles_3D;
 }
+
+template<typename VertexT, typename NormalT>
+std::vector<cv::Mat> HalfEdgeMesh<VertexT,NormalT>::getTextures(){
+	return textures;
+}
+
 
 } // namespace lvr

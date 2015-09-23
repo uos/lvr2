@@ -2,7 +2,7 @@
 
 // default constructor
 OptimizeStage::OptimizeStage() : AbstractStage()
-	,mesh_count_(0),textured(true),bounding_counter(0)
+	,mesh_count_(0),textured(true),bounding_counter(0),texture_counter(0),pic_count_(0)
 {
 	timestamp.setQuiet(true);
 }
@@ -27,19 +27,31 @@ void OptimizeStage::step()
 	optiMesh_->optimizePlanes(3, 0.85, 7, 0);
 	
 	//act_mesh->optimizePlaneIntersections();
-	MeshPtr tmp_pointer = optiMesh_->retesselateInHalfEdge(0.01,textured,bounding_counter);
+	std::cout << "start_texture_index: " << texture_counter << std::endl;
+	MeshPtr tmp_pointer = optiMesh_->retesselateInHalfEdge(0.01,textured,texture_counter);
+	if(!last_shift)
+		optiMesh_->deleteRegions();
+	if(tmp_pointer  == NULL)
+	{
+		cout <<"skipped " << endl;
+		return;
+	}
 	std::cout << "            ####     3 Finished optimisation number: " << mesh_count_ << "   ####" << std::endl;
 	mesh_count_++;
-	
 	///texturing
 	if(textured){
 		int counter=0;
-		for(int i=0;i<image_poses_buffer.size();i++){
-			counter = optiMesh_->projectAndMapNewImage(*(image_poses_buffer[i]));
+		int i;
+		for(i=0;i<image_poses_buffer.size();i++){
+			counter = tmp_pointer->projectAndMapNewImage(*(image_poses_buffer[i]));
 		}
-		bounding_counter += counter;
+		pic_count_+=i;
 		
-		meshBufferPtr = optiMesh_->meshBuffer();
+		
+		
+		texture_counter += tmp_pointer->textures.size();
+		
+		meshBufferPtr = tmp_pointer->meshBuffer();
 				
 	}
 	image_poses_buffer.resize(0);
