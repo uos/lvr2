@@ -1,11 +1,11 @@
 #include <kfusion/MeshStage.hpp>
 
 // default constructor
-MeshStage::MeshStage(double camera_target_distance, double voxel_size) : AbstractStage(),
-					camera_target_distance_(camera_target_distance), voxel_size_(voxel_size)
+MeshStage::MeshStage(double camera_target_distance, double voxel_size, Options* options) : AbstractStage(),
+					camera_target_distance_(camera_target_distance), voxel_size_(voxel_size), options_(options)
 {
 	mesh_count_ = 0;
-	timestamp.setQuiet(true);
+	timestamp.setQuiet(!options->verbose());
 }
 
 void MeshStage::firstStep() { /* skip */ };
@@ -21,9 +21,11 @@ void MeshStage::step()
 	ScopeTime* cube_time = new ScopeTime(mesh_notice.c_str());
 	
 	cFastReconstruction* fast_recon =  new cFastReconstruction(act_grid);
-	timestamp.setQuiet(true);
+	timestamp.setQuiet(!options_->verbose());
 	// Create an empty mesh
 	fast_recon->getMesh(*meshPtr);
+	if(meshPtr->meshSize() == 0)
+		return;
 	// mark all fusion vertices in the mesh
 	for(auto cellPair : act_grid->getFusionCells())
 	{
@@ -52,8 +54,8 @@ void MeshStage::step()
 					if(current_neighbor != 0)
 					{
 						uint in2 = current_neighbor->m_intersections[neighbor_vertex_table[edge_index][i]];
-						auto vert_it = verts_map.find(in2);
-						if(vert_it == verts_map.end() && in2 != cFastBox::INVALID_INDEX && in2 != 0 && in2 != inter && current_neighbor->m_fusionNeighborBox)
+						auto vert_it = verts_map.find(inter);
+						if(current_neighbor->m_fusionNeighborBox && vert_it == verts_map.end() && in2 != cFastBox::INVALID_INDEX && in2 != inter)
 						{
 							inter2 = in2;
 							

@@ -10,7 +10,6 @@
 #include <reconstruction/FastBox.hpp>
 #include <io/PointBuffer.hpp>
 #include <io/DataStruct.hpp>
-#include <io/Timestamp.hpp>
 #include <geometry/HalfEdgeVertex.hpp>
 #include <geometry/HalfEdgeMesh.hpp>
 #include <geometry/BoundingBox.hpp>
@@ -34,7 +33,7 @@ class OptimizeStage : public AbstractStage
 public:
 
 	// default constructor
-	OptimizeStage();
+	OptimizeStage(Options* options);
 
 	virtual void firstStep();
 	virtual void step();
@@ -44,6 +43,7 @@ private:
 	
 	size_t mesh_count_;
 	MeshPtr optiMesh_;
+	Options* options_;
 	
 	MeshBufferPtr meshBufferPtr;
 	size_t bounding_counter,pic_count_,texture_counter;

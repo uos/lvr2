@@ -113,7 +113,13 @@ void HalfEdgeMesh<VertexT, NormalT>::addMesh(HalfEdgeMesh<VertexT, NormalT>* sli
 		size_t erase_index = vert_it->second;
 		if(m_fused_verts.size() > 0)
 		{
-			merge_index = m_fused_verts[merge_index];
+			auto merge_it = m_fused_verts.find(merge_index);
+			if(merge_it != m_fused_verts.end())
+			{
+				merge_index = merge_it->second;
+				fused_verts[erase_index] = vert_it->first;
+			}
+			
 		}
 		mergeVertex(m_vertices[merge_index], slice->m_vertices[erase_index]);
 	}
@@ -185,20 +191,20 @@ void HalfEdgeMesh<VertexT, NormalT>::mergeVertex(VertexPtr merge_vert, VertexPtr
 	merge_vert->m_merged = true;
 	if(merge_vert->m_position.x != erase_vert->m_position.x || merge_vert->m_position.y != erase_vert->m_position.y || merge_vert->m_position.z != erase_vert->m_position.z)
 	{
-		cout << "Vertex missalignment! " << endl;
-		float dist_x = merge_vert->m_position.x - erase_vert->m_position.x;
+		/*cout << "Vertex missalignment! " << endl;
+		*/float dist_x = merge_vert->m_position.x - erase_vert->m_position.x;
 		float dist_y = merge_vert->m_position.y - erase_vert->m_position.y;
 		float dist_z = merge_vert->m_position.z - erase_vert->m_position.z;
 		float dist = sqrt(dist_x*dist_x + dist_y*dist_y + dist_z*dist_z);
-		cout << "dist x " << dist_x << endl;
+		/*cout << "dist x " << dist_x << endl;
 		cout << "dist y " << dist_y << endl;
 		cout << "dist z " << dist_z << endl;
-		cout << "distance " << dist << endl; 
-		/*if(dist > 0.005)
+		cout << "distance " << dist << endl;*/ 
+		if(dist > 0.01)
 		{
-			cout << "Vertex missalignment! " << endl;
+			cout << "Big Vertex missalignment!!!!! " << endl;
 			cout << "distance " << dist << endl; 
-		}*/
+		}
 	}
 	size_t old_size = merge_vert->in.size();
 	merge_vert->in.resize(old_size + erase_vert->in.size());
@@ -550,8 +556,8 @@ void HalfEdgeMesh<VertexT, NormalT>::cleanContours(int iterations)
 template<typename VertexT, typename NormalT>
 void HalfEdgeMesh<VertexT, NormalT>::deleteFace(FacePtr f, bool erase)
 {
-    f->m_invalid = true;
-    m_regions[f->m_region]->deleteInvalidFaces();
+    //f->m_invalid = true;
+    //m_regions[f->m_region]->deleteInvalidFaces();
 
     //save references to edges and vertices
     HEdge* startEdge = (*f)[0];
@@ -1050,7 +1056,6 @@ void HalfEdgeMesh<VertexT, NormalT>::optimizePlanes(
         int small_region_size,
         bool remove_flickering)
 {
-	timestamp.setQuiet(true);
     cout << timestamp << "Starting plane optimization with threshold " << angle << endl;
     cout << timestamp << "Number of faces before optimization: " << m_faces.size() << endl;
 
@@ -1080,7 +1085,10 @@ void HalfEdgeMesh<VertexT, NormalT>::optimizePlanes(
 			}
 			else 
 				face->m_fusion_face = false;
-			face->m_used = false;
+			if(face->m_invalid)
+				face->m_used = true;
+			else
+				face->m_used = false;
         }
 
         // Find all regions by regionGrowing with normal criteria
@@ -1682,7 +1690,7 @@ void HalfEdgeMesh<VertexT, NormalT>::finalize()
     size_t numFaces    = m_faces.size();
     size_t numRegions  = m_regions.size();
 	float r = 0.0f;
-	float g = 255.0f;
+	float g = 200.0f;
 	float b = 0.0f;
     std::vector<uchar> faceColorBuffer;
 
@@ -2355,8 +2363,9 @@ HalfEdgeMesh<VertexT, NormalT>* HalfEdgeMesh<VertexT, NormalT>::retesselateInHal
 				
 				globalMaterialIndex++;
 			}
+            m_regions[iRegion]->m_faces[iFace]->m_invalid = true;
         }
-        m_regions[iRegion]->m_toDelete = true;
+        //m_regions[iRegion]->m_toDelete = true;
     }
 	
     cout << timestamp << "Done copying non planar regions.";
@@ -2387,6 +2396,11 @@ HalfEdgeMesh<VertexT, NormalT>* HalfEdgeMesh<VertexT, NormalT>::retesselateInHal
             size_t iRegion = *planeNr;
 
             int surface_class = m_regions[iRegion]->m_regionNumber;
+            for( size_t i=0; i < m_regions[iRegion]->m_faces.size(); ++i )
+			{
+				size_t iFace=i;
+				(*m_regions[iRegion]->m_faces[iFace]).m_invalid = true;
+			}
 
             r = m_regionClassifier->r(surface_class);
             g = m_regionClassifier->g(surface_class);
@@ -2584,7 +2598,6 @@ HalfEdgeMesh<VertexT, NormalT>* HalfEdgeMesh<VertexT, NormalT>::retesselateInHal
 	
 	size_t count_doubles = 0;
 	retased_mesh->m_fusionNeighbors = 0;
-	//deleteRegions();
     Tesselator<VertexT, NormalT>::clear();
     this->m_meshBuffer = NULL;
     return retased_mesh;
