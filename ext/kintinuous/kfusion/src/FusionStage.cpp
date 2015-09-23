@@ -27,15 +27,7 @@ void FusionStage::step()
 		done(true);
 }
 void FusionStage::lastStep()
-{ 
-	// plane_iterations, normal_threshold, min_plan_size, small_region_threshold
-	//meshPtr_->optimizePlanes(3, 0.85, 7, 10, true);
-	//meshPtr_->fillHoles(30);
-	//meshPtr_->optimizePlaneIntersections();
-	//min_plan_size
-	//meshPtr_->restorePlanes(7);
-	//meshPtr_->finalizeAndRetesselate(false, 0.01);
-	//transformMeshBack();
+{
 	std::cout << "Global amount of vertices: " << mesh_->meshSize() << endl;
 	std::cout << "Global amount of faces: " << mesh_->getFaces().size() << endl;
 	mesh_->finalize();

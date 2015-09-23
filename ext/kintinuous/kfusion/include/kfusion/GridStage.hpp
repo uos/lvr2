@@ -10,7 +10,6 @@
 #include <reconstruction/FastBox.hpp>
 #include <io/PointBuffer.hpp>
 #include <io/DataStruct.hpp>
-#include <io/Timestamp.hpp>
 #include <geometry/HalfEdgeVertex.hpp>
 #include <geometry/HalfEdgeMesh.hpp>
 #include <geometry/BoundingBox.hpp>
@@ -35,7 +34,7 @@ class GridStage : public AbstractStage
 public:
 
 	// default constructor
-	GridStage(double voxel_size = 3.0/512.0);
+	GridStage(double voxel_size = 3.0/512.0, Options* options = NULL);
 
 	void firstStep();
 	void step();

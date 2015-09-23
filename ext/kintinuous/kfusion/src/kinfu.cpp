@@ -6,53 +6,8 @@ using namespace std;
 using namespace kfusion;
 using namespace kfusion::cuda;
 
-static inline float deg2rad (float alpha) { return alpha * 0.017453293f; }
-
-kfusion::KinFuParams kfusion::KinFuParams::default_params()
-{
-    const int iters[] = {10, 5, 4, 0};
-    const int levels = sizeof(iters)/sizeof(iters[0]);
-
-    KinFuParams p;
-
-    p.cols = 640;  //pixels
-    p.rows = 480;  //pixels
-    p.intr = Intr(525.f, 525.f, p.cols/2 - 0.5f, p.rows/2 - 0.5f);
-    p.shifting_distance = 0.4f; //meters to go before shifting the volume
-    p.distance_camera_target = 2.0;
-
-    p.volume_dims = Vec3i::all(512);  //number of voxels
-    p.volume_size = Vec3f::all(3.f);  //meters
-    p.volume_pose = Affine3f().translate(Vec3f(-p.volume_size[0]/2, -p.volume_size[1]/2,  -p.volume_size[2]/2 + p.distance_camera_target));
-
-    p.bilateral_sigma_depth = 0.04f;  //meter
-    p.bilateral_sigma_spatial = 4.5; //pixels
-    p.bilateral_kernel_size = 7;     //pixels
-
-    p.icp_truncate_depth_dist = 0.f;        //meters, disabled
-    p.icp_dist_thres = 0.1f;                //meters
-    p.icp_angle_thres = deg2rad(30.f); //radians
-    p.icp_iter_num.assign(iters, iters + levels);
-
-    p.tsdf_min_camera_movement = 0.f; //meters, disabled
-    p.tsdf_trunc_dist = 0.04f; //meters;
-    p.tsdf_max_weight = 64;   //frames
-
-    p.raycast_step_factor = 0.75f;  //in voxel sizes
-    p.gradient_delta_factor = 0.5f; //in voxel sizes
-
-    //p.light_pose = p.volume_pose.translation()/4; //meters
-    p.light_pose = Vec3f::all(0.f); //meters
-    p.mesh_name = "output_mesh.ply";
-    p.no_reconstruct = false;
-    p.optimize = false;
-
-    return p;
-}
-
 kfusion::KinFu::KinFu(const KinFuParams& params) : frame_counter_(0), params_(params), has_shifted_(false), perform_last_scan_(false), perform_shift_(false)
-                                                   , cyclical_(params_.distance_camera_target, params_.shifting_distance, 
-                                                               params.volume_size, params.volume_dims, params.optimize, params.no_reconstruct, params.mesh_name)
+                                                   , cyclical_(params)
                                                    
 {
     CV_Assert(params.volume_dims[0] % 32 == 0);
