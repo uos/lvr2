@@ -2,7 +2,7 @@
 
 // default constructor
 OptimizeStage::OptimizeStage(Options* options) : AbstractStage()
-	,mesh_count_(0), options_(options), textured(true),bounding_counter(0),texture_counter(0),pic_count_(0)
+	,mesh_count_(0), options_(options), bounding_counter(0),texture_counter(0),pic_count_(0)
 {
 	 optiMesh_ = NULL;
 	timestamp.setQuiet(!options_->verbose());
@@ -41,12 +41,14 @@ void OptimizeStage::step()
 	optiMesh_->fillHoles(options_->getFillHoles());
 	optiMesh_->optimizePlaneIntersections();
 	//optiMesh_->restorePlanes(options_->getMinPlaneSize());
-	MeshPtr tmp_pointer = optiMesh_->retesselateInHalfEdge(options_->getLineFusionThreshold(), textured, texture_counter);
+	MeshPtr tmp_pointer = optiMesh_->retesselateInHalfEdge(options_->getLineFusionThreshold(), options_->textures(), texture_counter);
+	if(tmp_pointer == NULL)
+		return;
 	delete opti_time;
 	mesh_count_++;
 
     ///texturing
-	if(textured){
+	if(options_->textures()){
 		int counter=0;
 		int i;
 		for(i=0;i<image_poses_buffer.size();i++){

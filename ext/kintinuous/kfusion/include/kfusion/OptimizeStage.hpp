@@ -47,7 +47,6 @@ private:
 	
 	MeshBufferPtr meshBufferPtr;
 	size_t bounding_counter,pic_count_,texture_counter;
-	bool textured;
 	
 };
 #endif // STAGE
