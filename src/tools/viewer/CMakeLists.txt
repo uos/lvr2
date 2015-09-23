@@ -42,7 +42,7 @@ set(LVR_VIEWER_SOURCES
 # Set mocs
 #####################################################################################
 
-set(LVR_VIEWER_MOCS 
+set(LVR_VIEWER_MOCS
     app/LVRMainWindow.hpp
     vtkBridge/LVRPickingInteractor.hpp
     widgets/LVRRenameDialog.hpp
@@ -93,7 +93,7 @@ set(LVR_VIEWER_RESOURCES
 #####################################################################################
 
 if(MSVC)
-include(LVRVSSetup.txt)
+  include(LVRVSSetup.txt)
 endif()
 
 #####################################################################################
@@ -122,14 +122,14 @@ set(LVR_VIEWER_DEPENDENCIES
 	lvrlas_static
 	lvrslam6d_static
 	${OpenCV_LIBS}
-	${QT_QTCORE_LIBRARIES} 
-	${QT_QTGUI_LIBRARIES}  
-	${QT_QTOPENGL_LIBRARIES} 
-	${QT_QTXML_LIBRARY}  
+	${QT_QTCORE_LIBRARIES}
+	${QT_QTGUI_LIBRARIES}
+	${QT_QTOPENGL_LIBRARIES}
+	${QT_QTXML_LIBRARY}
 	${OPENGL_LIBRARIES}
-	${GLUT_LIBRARIES}  
+	${GLUT_LIBRARIES}
 	${Boost_FILESYSTEM_LIBRARY}
-    ${Boost_SYSTEM_LIBRARY} 
+    ${Boost_SYSTEM_LIBRARY}
 	${Boost_THREAD_LIBRARY}
     ${Boost_PROGRAM_OPTIONS_LIBRARY}
 	${QVTK_LIBRARY}
@@ -139,7 +139,7 @@ set(LVR_VIEWER_DEPENDENCIES
 
 if( UNIX )
 	set(LVR_VIEWER_DEPENDENCIES ${LVR_VIEWER_DEPENDENCIES} pthread)
-endif( UNIX ) 
+endif( UNIX )
 
 if( ${NABO_FOUND} )
 	set(LVR_VIEWER_DEPENDENCIES ${LVR_VIEWER_DEPENDENCIES} ${NABO_LIBRARY})
@@ -152,4 +152,5 @@ endif( ${NABO_FOUND} )
 add_executable(lvr_viewer ${LVR_VIEWER_SOURCES} ${LVR_VIEWER_RES} ${LVR_VIEWER_MOC_SRC} ${LVR_VIEWER_UI_HDRS})
 target_link_libraries(lvr_viewer ${LVR_VIEWER_DEPENDENCIES})
 
-
+install(TARGETS lvr_viewer
+  RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR})

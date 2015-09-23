@@ -18,6 +18,8 @@ add_library(lvrslam6d_static STATIC ${SLAM_SOURCES})
 add_library(lvrslam6d SHARED ${SLAM_SOURCES})
 
 install(TARGETS lvrslam6d_static lvrslam6d
-  RUNTIME DESTINATION bin
-  LIBRARY DESTINATION lib
-  ARCHIVE DESTINATION lib)
+  LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR}
+  ARCHIVE DESTINATION ${CMAKE_INSTALL_LIBDIR})
+
+# this intentionally installs to lvr/ext/slam6d/slam6d to keep a separate include path
+install(DIRECTORY include/slam6d DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}/lvr/ext/slam6d)
