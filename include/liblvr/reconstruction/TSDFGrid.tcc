@@ -36,7 +36,7 @@ TsdfGrid<VertexT, BoxT, TsdfT>::TsdfGrid(float cellSize,  BoundingBox<VertexT> b
 	for(size_t i = 0; i < size; i++)
 	{
 		grid_index = i + last_size;
-		// shift tsdf into global grid
+		// shift tsdf onto global grid
 		int global_x = tsdf[i].x + center_of_bb_x;
 		int global_y = tsdf[i].y + center_of_bb_y;
 		int global_z = tsdf[i].z + center_of_bb_z;
@@ -47,7 +47,6 @@ TsdfGrid<VertexT, BoxT, TsdfT>::TsdfGrid(float cellSize,  BoundingBox<VertexT> b
 		this->m_qpIndices[hash_value] = grid_index;
 	}
 	this->m_globalIndex = grid_index + 1;
-	cout << timestamp << "Finished inserting" << endl;
 	// Iterator over all points, calc lattice indices and add lattice points to the grid
 	for(size_t i = 0; i < size; i++)
 	{
@@ -58,7 +57,6 @@ TsdfGrid<VertexT, BoxT, TsdfT>::TsdfGrid(float cellSize,  BoundingBox<VertexT> b
 		addLatticePoint(global_x , global_y, global_z, tsdf[i].w);
 	}
 	cout << timestamp << "Finished creating grid" << endl;
-	//cout << "Fusion Boxes " << m_fusion_cells.size() << endl;
 }
 
 template<typename VertexT, typename BoxT, typename TsdfT>
@@ -72,9 +70,6 @@ void TsdfGrid<VertexT, BoxT, TsdfT>::addLatticePoint(int index_x, int index_y, i
 	size_t hash_value;
 
 	unsigned int INVALID = BoxT::INVALID_INDEX;
-
-	float vsh = 0.5 * this->m_voxelsize;
-	//float vsh = m_voxelsize;
 
 	// Some iterators for hash map accesses
 	box_map_it it;

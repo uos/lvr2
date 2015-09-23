@@ -1,3 +1,5 @@
+#pragma once
+
 #include <iostream>
 #include <opencv2/highgui/highgui.hpp>
 #include <opencv2/imgproc/imgproc.hpp>
@@ -19,7 +21,7 @@ struct KinFuApp
 
         if(event.action != cv::viz::KeyboardEvent::KEY_DOWN)
             return;
-        
+
         if(event.code == 't' || event.code == 'T')
             kinfu.take_cloud(*kinfu.kinfu_);
 
@@ -51,16 +53,19 @@ struct KinFuApp
            kinfu.kinfu_->params().distance_camera_target -= 0.1;
            kinfu.kinfu_->performShift();
         }
+        if(!event.symbol.compare("Escape"))
+        {
+			 kinfu.exit_ = true;
+		}
     }
-
-    KinFuApp(OpenNISource& source, string mesh_name, bool no_reconstruct, bool optimize, bool no_viz) :
-				exit_ (false),  iteractive_mode_(false), pause_(false), meshRender_(false), no_viz_(no_viz),
+    KinFuApp(OpenNISource& source, Options* options) :
+				exit_ (false),  iteractive_mode_(false), pause_(false), meshRender_(false), no_viz_(options->noVizualisation()),
 				capture_ (source), cube_count_(0), pic_count_(0), mesh_(NULL), garbageMesh_(NULL)
     {
         KinFuParams params = KinFuParams::default_params();
-        params.optimize = optimize;
-        params.mesh_name = mesh_name;
-        params.no_reconstruct = no_reconstruct;
+        params.cmd_options = options;
+        params.shifting_distance = options->getShiftingDistance();
+        params.distance_camera_target = options->getCameraOffset();
         kinfu_ = KinFu::Ptr( new KinFu(params) );
 
         capture_.setRegistration(true);
@@ -72,7 +77,7 @@ struct KinFuApp
 		viz.showWidget("g", cv::viz::WText("g Export image & pose", cv::Point(5, 100), 20, cv::viz::Color::green()));
 		viz.showWidget("i", cv::viz::WText("i Interactive mode", cv::Point(5, 75), 20, cv::viz::Color::green()));
 		viz.showWidget("+", cv::viz::WText("+/- Change cam distance", cv::Point(5, 50), 20, cv::viz::Color::green()));
-		viz.showWidget("esc", cv::viz::WText("esc Finish and quit", cv::Point(5, 25), 20, cv::viz::Color::green()));
+		viz.showWidget("esc", cv::viz::WText("ESC Quit", cv::Point(5, 25), 20, cv::viz::Color::green()));
         cv::viz::WCube cube(cv::Vec3d::all(0), cv::Vec3d(params.volume_size), true, cv::viz::Color::red());
         cv::viz::WArrow arrow(cv::Point3f(0, 0, 0), cv::Point3f(0, 0, 0.5), 0.05, cv::viz::Color::green());
         viz.showWidget("cube0", cube);
@@ -92,6 +97,9 @@ struct KinFuApp
 		cv::resizeWindow("Image",800, 500);
 		cv::moveWindow("Image", 0, 500);
 		timer_start_ = (double)cv::getTickCount();
+		set_interactive();
+		sample_poses_.push_back(kinfu_->getCameraPose());
+        viz.showWidget("path", cv::viz::WTrajectory(sample_poses_));
     }
     
     void show_mesh()
@@ -231,8 +239,8 @@ struct KinFuApp
     void show_cube(KinFu& kinfu)
     {
 		cube_count_++;
-		string new_cube_name = string("cube" + to_string(cube_count_));
-		cv::viz::WCube cube(cv::Vec3d::all(0), cv::Vec3d(kinfu.params().volume_size), true, cv::viz::Color::apricot());
+		//string new_cube_name = string("cube" + to_string(cube_count_));
+		//cv::viz::WCube cube(cv::Vec3d::all(0), cv::Vec3d(kinfu.params().volume_size), true, cv::viz::Color::apricot());
 		//viz.showWidget(new_cube_name, cube);
 		//viz.setWidgetPose(new_cube_name, viz.getWidgetPose("cube0"));
         viz.setWidgetPose("cube0", kinfu.tsdf().getPose()); 
@@ -384,7 +392,10 @@ struct KinFuApp
 					
 						storePicPose(kinfu, best_pose, best_image);
 						//extractImage(kinfu, best_image);
+						sample_poses_.push_back(kinfu_->getCameraPose());
+						viz.showWidget("path", cv::viz::WTrajectory(sample_poses_));
 						timer_start_ = ref_timer;
+						
 					}
 				}
                 show_raycasted(kinfu);
@@ -426,7 +437,7 @@ struct KinFuApp
 				case 27: case 32: exit_ = true; break;
             }
 
-            viz.spinOnce(3, true);
+            viz.spinOnce(2, true);
 			//exit_ = exit_ || ( kinfu.hasShifted() && kinfu.isLastScan() );
 			//if(kinfu.cyclical().getSliceCount() == 4 && !(kinfu.hasShifted() && kinfu.isLastScan()))
 				//take_cloud(kinfu);
@@ -437,6 +448,7 @@ struct KinFuApp
     bool exit_, iteractive_mode_, pause_, meshRender_, no_viz_;
     OpenNISource& capture_;
     KinFu::Ptr kinfu_;
+    vector<Affine3f> sample_poses_;
     cv::viz::Viz3d viz;
     cv::viz::Mesh* mesh_;
     cv::viz::Mesh* garbageMesh_;
