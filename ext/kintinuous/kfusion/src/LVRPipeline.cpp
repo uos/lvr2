@@ -4,25 +4,25 @@ using namespace lvr;
 
 namespace kfusion
 {
-	LVRPipeline::LVRPipeline(double camera_target_distance, double voxel_size, bool optimize, string mesh_name) : slice_count_(0)
+	LVRPipeline::LVRPipeline(KinFuParams params) : slice_count_(0)
 	{
 		meshPtr_ = new HMesh();
-		optimize=true;
+		meshPtr_->setQuiet(!params.cmd_options->verbose());	
 		omp_set_num_threads(omp_get_num_procs());
 		pl_.AddStage(
-			boost::shared_ptr<GridStage>(new GridStage(voxel_size))
+			boost::shared_ptr<GridStage>(new GridStage((double)(params.volume_size[0] / params.volume_dims[0]), params.cmd_options))
 			);
 		pl_.AddStage(
-			boost::shared_ptr<MeshStage>(new MeshStage(camera_target_distance, voxel_size))
+			boost::shared_ptr<MeshStage>(new MeshStage(params.distance_camera_target, (double)(params.volume_size[0] / params.volume_dims[0]), params.cmd_options))
 			);
-		if(optimize)
+		if(params.cmd_options->optimizePlanes())
 		{
 			pl_.AddStage(
-				boost::shared_ptr<OptimizeStage>(new OptimizeStage())
+				boost::shared_ptr<OptimizeStage>(new OptimizeStage(params.cmd_options))
 				);
 		}
 		pl_.AddStage(
-			boost::shared_ptr<FusionStage>(new FusionStage(meshPtr_, mesh_name))
+			boost::shared_ptr<FusionStage>(new FusionStage(meshPtr_, params.cmd_options->getOutput()))
 			);
 		
 		pl_.Start();
@@ -31,7 +31,7 @@ namespace kfusion
 	LVRPipeline::~LVRPipeline()
 	{
 		pl_.join();
-		//delete meshPtr_;
+		delete meshPtr_;
 	}
 
 	void LVRPipeline::resetMesh()

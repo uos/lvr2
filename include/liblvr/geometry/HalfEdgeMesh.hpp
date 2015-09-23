@@ -310,15 +310,14 @@ public:
 	
 	FaceVector& getFaces() { return m_faces; }
 	
+	void setQuiet(bool quiet){timestamp.setQuiet(quiet);}
+	
 	void mergeVertex(VertexPtr merge_vert, VertexPtr erase_vert);
 	
 	unordered_map<size_t, size_t> m_slice_verts;
 	unordered_map<size_t, size_t> m_fused_verts;
 	unordered_map<size_t, size_t> m_fusion_verts;
 	size_t m_fusionNeighbors;
-	//unordered_map<size_t, FastBox<VertexT, NormalT>* > m_fusionBoxes;
-	//unordered_map<size_t, FastBox<VertexT, NormalT>* > m_oldfusionBoxes;
-	//unordered_map<size_t, FastBox<VertexT, NormalT>* > m_fusionNeighborBoxes;
 	vector<FacePtr> m_fusionFaces;
 	
 	int projectAndMapNewImage(kfusion::ImgPose img_pose, const char* texture_output_dir="");

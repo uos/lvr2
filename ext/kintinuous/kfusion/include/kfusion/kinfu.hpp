@@ -19,47 +19,6 @@ namespace kfusion
         KF_EXPORTS void printShortCudaDeviceInfo(int device);
     }
 
-    struct KF_EXPORTS KinFuParams
-    {
-        static KinFuParams default_params();
-
-        int cols;  //pixels
-        int rows;  //pixels
-
-        Intr intr;  //Camera parameters
-
-        Vec3i volume_dims; //number of voxels
-        Vec3f volume_size; //meters
-        Affine3f volume_pose; //meters, inital pose
-
-        float shifting_distance;
-        double distance_camera_target;
-        
-        float bilateral_sigma_depth;   //meters
-        float bilateral_sigma_spatial;   //pixels
-        int   bilateral_kernel_size;   //pixels
-
-        float icp_truncate_depth_dist; //meters
-        float icp_dist_thres;          //meters
-        float icp_angle_thres;         //radians
-        std::vector<int> icp_iter_num; //iterations for level index 0,1,..,3
-
-        float tsdf_min_camera_movement; //meters, integrate only if exceedes
-        float tsdf_trunc_dist;             //meters;
-        int tsdf_max_weight;               //frames
-
-        float raycast_step_factor;   // in voxel sizes
-        float gradient_delta_factor; // in voxel sizes
-
-        Vec3f light_pose; //meters
-        
-        string mesh_name; // name of the stored mesh
-        
-        bool no_reconstruct; //online reconstruction
-        bool optimize; //online mesh optimization
-
-    };
-
     class KF_EXPORTS KinFu
     {
     public:        
@@ -108,6 +67,7 @@ namespace kfusion
         void renderImage(cuda::Image& image, const Affine3f& pose, Intr cameraIntrinsics, cv::Size size, int flags = 0);
 
         Affine3f getCameraPose (int time = -1) const;
+        std::vector<Affine3f>& getCameraPoses() {return poses_;}
     private:
         void allocate_buffers();
 
