@@ -324,6 +324,21 @@ public:
 	int projectAndMapNewImage(kfusion::ImgPose img_pose, const char* texture_output_dir="");
 	
 	std::vector<std::vector<cv::Point3f> > getBoundingRectangles(int& size);
+	std::vector<cv::Mat> getTextures();
+	
+	 std::vector<std::vector<cv::Point3f> > bounding_rectangles_3D;
+	 //first version with one texture each bounding box
+	std::vector<cv::Mat> textures;
+	
+	//global bounding_rectangles
+   
+    size_t num_cams,b_rect_size,end_texture_index,start_texture_index;
+	
+	/**
+	 * @brief	Deletes all faces of the regions marked by region->m_toDelete
+	 */
+	virtual void deleteRegions();
+
 	
 private:
 
@@ -450,10 +465,6 @@ private:
 	 */
 	virtual int regionGrowing(FacePtr start_face, NormalT &normal, float &angle, RegionPtr region, vector<FacePtr> &leafs, unsigned int depth);
 
-	/**
-	 * @brief	Deletes all faces of the regions marked by region->m_toDelete
-	 */
-	virtual void deleteRegions();
 
 	/**
 	 * @brief 	Tells if the given pointer is a null pointer (needed for fast deletion of regions)
@@ -519,15 +530,12 @@ private:
 		   kfusion::ImgPose img_pose, int image_number,
 		   const char* texture_output_dir="");
 		   
-	//first version with one texture each bounding box
-	std::vector<cv::Mat> textures;
+	
 	//second version with one clipped texture
 	cv::Mat texture;
 	std::vector< pair<size_t, cv::Size > > texture_stats;
 	
-	//global bounding_rectangles
-    std::vector<std::vector<cv::Point3f> > bounding_rectangles_3D;
-    size_t num_cams,b_rect_size,end_texture_index,start_texture_index;
+	
     
     ///texturing end
 

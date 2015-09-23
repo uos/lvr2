@@ -46,7 +46,7 @@ private:
 	MeshPtr optiMesh_;
 	
 	MeshBufferPtr meshBufferPtr;
-	size_t bounding_counter,pic_count_;
+	size_t bounding_counter,pic_count_,texture_counter;
 	bool textured;
 	
 };
