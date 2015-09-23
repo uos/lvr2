@@ -38,6 +38,7 @@ Options::Options(int argc, char** argv) : m_descr("Supported options")
 		        ("help", "Produce help message")
 		        ("device,i", value(&m_device)->default_value("0"), "set RGB-D device or either a path to an oni file")
 				("output,s", value(&m_mesh_name)->default_value("mesh_output.ply"), "filename to save reconstructed mesh")
+				("textures,t", "live texturizing the mesh")
 				("shiftingDistance", value<float>(&m_shifting_distance)->default_value(0.4), " distance in meters of how far the volume is shifted")
 				("cameraOffset", value<float>(&m_cam_offset)->default_value(0.7), "offset of the camera from the volume center in z dimension")
 				("no_reconstruct,r", "set for no reconstruction, just recording")
@@ -137,6 +138,12 @@ bool Options::printUsage() const
 bool Options::optimizePlanes() const
 {
 	return m_variables.count("optimizePlanes");
+}
+
+bool Options::textures() const
+{
+	return m_variables.count("textures") && 
+	m_variables.count("optimizePlanes");
 }
 
 bool Options::noVizualisation() const
