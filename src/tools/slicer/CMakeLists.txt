@@ -2,16 +2,16 @@
 # Set source files
 #####################################################################################
 
-set(SLICER_SOURCES  
+set(SLICER_SOURCES
     Options.cpp
     Main.cpp
 )
 
 #####################################################################################
-# Setup dependencies to external libraries 
+# Setup dependencies to external libraries
 #####################################################################################
 
-set(LVR_SLICER_DEPENDENCIES 
+set(LVR_SLICER_DEPENDENCIES
 	lvr_static
 	lvrlas_static
 	lvrrply_static
@@ -22,11 +22,11 @@ set(LVR_SLICER_DEPENDENCIES
 	)
 
 if(PCL_FOUND)
-   set(LVR_SLICER_DEPENDENCIES  ${LVR_SLICER_DEPENDENCIES} ${PCL_LIBRARIES} )
+  set(LVR_SLICER_DEPENDENCIES  ${LVR_SLICER_DEPENDENCIES} ${PCL_LIBRARIES} )
 endif(PCL_FOUND)
 
 if( ${NABO_FOUND} )
-   set(LVR_SLICER_DEPENDENCIES  ${LVR_SLICER_DEPENDENCIES} ${NABO_LIBRARY} )
+  set(LVR_SLICER_DEPENDENCIES  ${LVR_SLICER_DEPENDENCIES} ${NABO_LIBRARY} )
 endif( ${NABO_FOUND} )
 
 
@@ -36,3 +36,6 @@ endif( ${NABO_FOUND} )
 
 add_executable(lvr_slicer ${SLICER_SOURCES})
 target_link_libraries(lvr_slicer ${LVR_SLICER_DEPENDENCIES} )
+
+install(TARGETS lvr_slicer
+  RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR})

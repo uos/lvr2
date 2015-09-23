@@ -100,6 +100,7 @@ if(LIBFREENECT_FOUND)
   set(LVR_SOURCES ${LVR_SOURCES} io/KinectGrabber.cpp io/KinectIO.cpp)
   set(LVR_LIB_DEPENDENCIES ${LVR_LIB_DEPENDENCIES} ${LIBFREENECT_LIBRARIES})
 endif(LIBFREENECT_FOUND)
+
 #####################################################################################
 # Compile object files for static and dynamic library
 #####################################################################################
@@ -123,3 +124,7 @@ if( NOT MSVC )
   add_library(lvr SHARED $<TARGET_OBJECTS:lvrcore>)
   target_link_libraries(lvr ${LVR_LIB_DEPENDENCIES})
 endif( NOT MSVC)
+
+install(TARGETS lvr_static lvr
+  LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR}
+  ARCHIVE DESTINATION ${CMAKE_INSTALL_LIBDIR})

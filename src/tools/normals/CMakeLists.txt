@@ -3,15 +3,15 @@
 #####################################################################################
 
 set(LVR_NORMAL_CONVERSION_SOURCES
-    Options.cpp     
+    Options.cpp
     Main.cpp
 )
 
 #####################################################################################
-# Setup dependencies to external libraries 
+# Setup dependencies to external libraries
 #####################################################################################
 
-set(LVR_NORMAL_CONVERSION_DEPENDENCIES 
+set(LVR_NORMAL_CONVERSION_DEPENDENCIES
 	lvr_static
 	lvrlas_static
 	lvrrply_static
@@ -22,11 +22,11 @@ set(LVR_NORMAL_CONVERSION_DEPENDENCIES
 	)
 
 if(PCL_FOUND)
-    set(LVR_NORMAL_CONVERSION_DEPENDENCIES  ${LVR_NORMAL_CONVERSION_DEPENDENCIES} ${PCL_LIBRARIES} )
+  set(LVR_NORMAL_CONVERSION_DEPENDENCIES  ${LVR_NORMAL_CONVERSION_DEPENDENCIES} ${PCL_LIBRARIES} )
 endif(PCL_FOUND)
 
 if( ${NABO_FOUND} )
-   set(LVR_NORMAL_CONVERSION_DEPENDENCIES  ${LVR_NORMAL_CONVERSION_DEPENDENCIES } ${NABO_LIBRARY} )
+ set(LVR_NORMAL_CONVERSION_DEPENDENCIES  ${LVR_NORMAL_CONVERSION_DEPENDENCIES } ${NABO_LIBRARY} )
 endif( ${NABO_FOUND} )
 
 #####################################################################################
@@ -36,3 +36,5 @@ endif( ${NABO_FOUND} )
 add_executable(lvr_normal_conversion ${LVR_NORMAL_CONVERSION_SOURCES})
 target_link_libraries(lvr_normal_conversion ${LVR_NORMAL_CONVERSION_DEPENDENCIES})
 
+install(TARGETS lvr_normal_conversion
+  RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR})

@@ -1,4 +1,4 @@
-set(GRABBER_SOURCES   
+set(GRABBER_SOURCES
     Main.cpp
     Options.cpp
 )
@@ -12,3 +12,6 @@ target_link_libraries(lvr_kinect_grabber ${Boost_FILESYSTEM_LIBRARY}
 target_link_libraries(lvr_kinect_grabber ${OpenMP_CXX_FLAGS})
 target_link_libraries(lvr_kinect_grabber ${PCL_LIBRARIES})
 target_link_libraries(lvr_kinect_grabber ${LIBFREENECT_LIBRARIES})
+
+install(TARGETS lvr_kinect_grabber
+  RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR})
