@@ -24,6 +24,8 @@ void MeshStage::step()
 	timestamp.setQuiet(!options_->verbose());
 	// Create an empty mesh
 	fast_recon->getMesh(*meshPtr);
+	if(meshPtr->meshSize() == 0)
+		return;
 	// mark all fusion vertices in the mesh
 	for(auto cellPair : act_grid->getFusionCells())
 	{
@@ -53,7 +55,7 @@ void MeshStage::step()
 					{
 						uint in2 = current_neighbor->m_intersections[neighbor_vertex_table[edge_index][i]];
 						auto vert_it = verts_map.find(inter);
-						if(vert_it == verts_map.end() && in2 != cFastBox::INVALID_INDEX && in2 != 0 && in2 != inter && current_neighbor->m_fusionNeighborBox)
+						if(current_neighbor->m_fusionNeighborBox && vert_it == verts_map.end() && in2 != cFastBox::INVALID_INDEX && in2 != inter)
 						{
 							inter2 = in2;
 							

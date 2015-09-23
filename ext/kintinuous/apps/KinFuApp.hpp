@@ -99,7 +99,7 @@ struct KinFuApp
 		timer_start_ = (double)cv::getTickCount();
 		set_interactive();
 		sample_poses_.push_back(kinfu_->getCameraPose());
-        viz.showWidget("path", cv::viz::WTrajectorySpheres(sample_poses_));
+        viz.showWidget("path", cv::viz::WTrajectory(sample_poses_));
     }
     
     void show_mesh()
@@ -336,13 +336,12 @@ struct KinFuApp
             {
 				double ref_timer = (double)cv::getTickCount();
 				double time = fabs((timer_start_ - ref_timer)/ cv::getTickFrequency());
-                if(time - 0.5 > 0)
+                if(time - 2.0 > 0)
                 {
 					//storePicPose(kinfu, image);
-					viz.removeWidget("path");
+					//viz.removeWidget("path");
 					sample_poses_.push_back(kinfu_->getCameraPose());
-					viz.showWidget("path", cv::viz::WTrajectorySpheres(sample_poses_, 0.1, 0.01,
-						cv::viz::Color::red(), cv::viz::Color::white()));
+					viz.showWidget("path", cv::viz::WTrajectory(sample_poses_));
 					timer_start_ = ref_timer;
 				}
                 show_raycasted(kinfu);
@@ -384,7 +383,7 @@ struct KinFuApp
 				case 27: case 32: exit_ = true; break;
             }
 
-            viz.spinOnce(8, true);
+            viz.spinOnce(2, true);
 			//exit_ = exit_ || ( kinfu.hasShifted() && kinfu.isLastScan() );
 			//if(kinfu.cyclical().getSliceCount() == 4 && !(kinfu.hasShifted() && kinfu.isLastScan()))
 				//take_cloud(kinfu);
