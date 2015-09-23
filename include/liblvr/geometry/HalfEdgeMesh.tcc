@@ -107,12 +107,19 @@ void HalfEdgeMesh<VertexT, NormalT>::addMesh(HalfEdgeMesh<VertexT, NormalT>* sli
 		size_t erase_index = vert_it->second;
 		if(m_fused_verts.size() > 0)
 		{
-			merge_index = m_fused_verts[merge_index];
-		}
-		if(merge_index == 0)
-		{
-			cout << "Index not found!! " << endl;
-			continue;
+			auto merge_it = m_fused_verts.find(merge_index);
+			if(merge_it == m_fused_verts.end())
+			{
+				cout << "size " << m_fused_verts.size() << endl;
+				cout << "Index not found!! " << merge_index << endl;
+				cout << "slice index " << erase_index << endl;
+				cout << "slice vert " << slice->m_vertices[erase_index]->m_position << endl;
+			}
+			else
+			{
+				merge_index = merge_it->second;
+				fused_verts[erase_index] = merge_index;
+			}
 		}
 		mergeVertex(m_vertices[merge_index], slice->m_vertices[erase_index]);
 	}
@@ -139,19 +146,19 @@ void HalfEdgeMesh<VertexT, NormalT>::mergeVertex(VertexPtr merge_vert, VertexPtr
 	if(merge_vert->m_position.x != erase_vert->m_position.x || merge_vert->m_position.y != erase_vert->m_position.y || merge_vert->m_position.z != erase_vert->m_position.z)
 	{
 		/*cout << "Vertex missalignment! " << endl;
-		float dist_x = merge_vert->m_position.x - erase_vert->m_position.x;
+		*/float dist_x = merge_vert->m_position.x - erase_vert->m_position.x;
 		float dist_y = merge_vert->m_position.y - erase_vert->m_position.y;
 		float dist_z = merge_vert->m_position.z - erase_vert->m_position.z;
 		float dist = sqrt(dist_x*dist_x + dist_y*dist_y + dist_z*dist_z);
-		cout << "dist x " << dist_x << endl;
+		/*cout << "dist x " << dist_x << endl;
 		cout << "dist y " << dist_y << endl;
 		cout << "dist z " << dist_z << endl;
 		cout << "distance " << dist << endl;*/ 
-		/*if(dist > 0.005)
+		if(dist > 0.01)
 		{
 			cout << "Vertex missalignment! " << endl;
 			cout << "distance " << dist << endl; 
-		}*/
+		}
 	}
 	size_t old_size = merge_vert->in.size();
 	merge_vert->in.resize(old_size + erase_vert->in.size());

@@ -49,5 +49,5 @@ void OptimizeStage::step()
 }
 void OptimizeStage::lastStep()	
 {  
-	 
+	 delete optiMesh_;
 }
