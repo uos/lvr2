@@ -8,10 +8,10 @@ set(LVR_TEXMAN_SOURCES
 )
 
 #####################################################################################
-# Setup dependencies to external libraries 
+# Setup dependencies to external libraries
 #####################################################################################
 
-set(LVR_TEXMAN_DEPENDENCIES 
+set(LVR_TEXMAN_DEPENDENCIES
 	lvr_static
 	lvrlas_static
 	lvrrply_static
@@ -32,6 +32,7 @@ endif( ${NABO_FOUND} )
 
 
 add_executable( lvr_texman  ${LVR_TEXMAN_SOURCES})
-TARGET_LINK_LIBRARIES( lvr_texman ${LVR_TEXMAN_DEPENDENCIES} )
+target_link_libraries( lvr_texman ${LVR_TEXMAN_DEPENDENCIES} )
 
-
+install(TARGETS lvr_texman
+  RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR})

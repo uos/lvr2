@@ -1,6 +1,6 @@
 
 set(FILTER_SOURCES
-    Options.cpp     
+    Options.cpp
     Main.cpp
 )
 
@@ -12,6 +12,8 @@ target_link_libraries(lvr_pointcloud_filter ${GLUT_LIBRARIES})
 target_link_libraries(lvr_pointcloud_filter ${Boost_FILESYSTEM_LIBRARY}
     ${Boost_SYSTEM_LIBRARY} ${Boost_THREAD_LIBRARY}
     ${Boost_PROGRAM_OPTIONS_LIBRARY})
-    
+
 target_link_libraries(lvr_pointcloud_filter ${PCL_LIBRARIES})
 
+install(TARGETS lvr_pointcloud_filter
+  RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR})
