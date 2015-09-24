@@ -111,7 +111,7 @@ void HalfEdgeMesh<VertexT, NormalT>::addMesh(HalfEdgeMesh<VertexT, NormalT>* sli
 			if(merge_it != m_fused_verts.end())
 			{
 				merge_index = merge_it->second;
-				fused_verts[erase_index] = vert_it->first;
+				fused_verts[erase_index] = merge_index;
 			}
 			
 		}
@@ -1154,7 +1154,7 @@ void HalfEdgeMesh<VertexT, NormalT>::removeDanglingArtifacts(int threshold)
             NormalT n = m_faces[i]->getFaceNormal();
             float angle = -1;
             int region_size = stackSafeRegionGrowing(m_faces[i], n, angle, region) + 1;
-            if(region_size <= threshold)
+            if(region_size <= threshold && !region->m_unfinished)
             {
                 region->m_toDelete = true;
                 c++;
