@@ -199,12 +199,6 @@ struct KinFuApp
 				cv_mesh->colors.convertTo(cv_mesh->colors, CV_8U, 255.0);
 				mesh_ = cv_mesh;
 			}
-			/*for(size_t i = 0; i < lvr_mesh->m_fusedVerts.size(); i++)
-			{
-				size_t index = index_map[lvr_mesh->m_fusedVerts[i]];
-				cout << "index " << index << endl; 
-				mesh_->colors.ptr<cv::Vec3d>()[index] = cv::Vec3d(0.0, 0.0, 0.0);
-			}*/
 			verts_size = lvr_mesh->getVertices().size();
 			faces_size = lvr_mesh->getFaces().size();
 			meshRender_ = true;
@@ -239,10 +233,6 @@ struct KinFuApp
     void show_cube(KinFu& kinfu)
     {
 		cube_count_++;
-		//string new_cube_name = string("cube" + to_string(cube_count_));
-		//cv::viz::WCube cube(cv::Vec3d::all(0), cv::Vec3d(kinfu.params().volume_size), true, cv::viz::Color::apricot());
-		//viz.showWidget(new_cube_name, cube);
-		//viz.setWidgetPose(new_cube_name, viz.getWidgetPose("cube0"));
         viz.setWidgetPose("cube0", kinfu.tsdf().getPose()); 
         
 	}
@@ -327,7 +317,7 @@ struct KinFuApp
         
         if(!no_viz_)
         {
-			//mesh_viz = thread(&KinFuApp::show_mesh,this);
+			mesh_viz = thread(&KinFuApp::show_mesh,this);
 		}
         for (int i = 0; !exit_ && !viz.wasStopped(); ++i)
         {
@@ -358,7 +348,6 @@ struct KinFuApp
 				double time = abs((timer_start_ - ref_timer))/ cv::getTickFrequency();
 				
 				if(rvecs.size()<1){
-					std::cout << "first pic" << std::endl;
 					image.copyTo(image_copy);
 					
 					//buffer of all imgposes
@@ -385,7 +374,6 @@ struct KinFuApp
 					
 					if(time - 3.0 > 0)
 					{
-						std::cout << "Best Image taken" << std::endl;
 						
 						rvecs.push_back(best_rvec);
 						posen.push_back(best_pose);
