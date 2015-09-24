@@ -30,16 +30,17 @@ void OptimizeStage::step()
 	{
 		optiMesh_->removeDanglingArtifacts(options_->getDanglingArtifacts());
 	}
-	optiMesh_->cleanContours(options_->getCleanContourIterations());
 	optiMesh_->setClassifier(options_->getClassifier());
 	optiMesh_->optimizePlanes(options_->getPlaneIterations(),
 					options_->getNormalThreshold(),
 					options_->getMinPlaneSize(),
 					options_->getSmallRegionThreshold(), false);
-	optiMesh_->fillHoles(options_->getFillHoles());
-	optiMesh_->optimizePlaneIntersections();
+	//optiMesh_->fillHoles(options_->getFillHoles());
 	//optiMesh_->restorePlanes(options_->getMinPlaneSize());
+	//optiMesh_->optimizePlaneIntersections();
 	MeshPtr tmp_pointer = optiMesh_->retesselateInHalfEdge(options_->getLineFusionThreshold());
+	//tmp_pointer->fillHoles(options_->getFillHoles());
+	//tmp_pointer->restorePlanes(options_->getMinPlaneSize());
 	delete opti_time;
 	mesh_count_++;
 	getOutQueue()->Add(pair<pair<MeshPtr, bool>, vector<ImgPose*> >(
