@@ -35,7 +35,7 @@ class FusionStage : public AbstractStage
 public:
 
 	// default constructor
-	FusionStage(MeshPtr mesh, string mesh_name);
+	FusionStage(MeshPtr mesh, Options* options);
 
 	virtual void firstStep();
 	virtual void step();
@@ -43,7 +43,7 @@ public:
 	
 private:
 	
-	string mesh_name_;
+	Options* options_;
 	size_t mesh_count_;
 	MeshPtr mesh_;
 };

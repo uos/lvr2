@@ -129,7 +129,7 @@ public:
 	 */
 	virtual ~HalfEdgeMesh();
 	
-	void addMesh(HalfEdgeMesh* slice);
+	void addMesh(HalfEdgeMesh* slice, bool texture);
 
 	/**
 	 * @brief 	This method should be called every time
