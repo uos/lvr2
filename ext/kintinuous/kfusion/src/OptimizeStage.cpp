@@ -20,7 +20,7 @@ void OptimizeStage::step()
 	if(optiMesh_ == NULL)
 		optiMesh_ = act_mesh;
 	else
-		optiMesh_->addMesh(act_mesh);
+		optiMesh_->addMesh(act_mesh, options_->textures());
     std::vector<kfusion::ImgPose*> image_poses_buffer = mesh_work.second;
 	std::cout << "Loaded " << image_poses_buffer.size() << " Images. " << std::endl;
 	// Set recursion depth for region growing

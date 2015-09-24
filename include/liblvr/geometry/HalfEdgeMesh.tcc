@@ -88,7 +88,7 @@ HalfEdgeMesh<VertexT, NormalT>::HalfEdgeMesh(
 }
 
 template<typename VertexT, typename NormalT>
-void HalfEdgeMesh<VertexT, NormalT>::addMesh(HalfEdgeMesh<VertexT, NormalT>* slice)
+void HalfEdgeMesh<VertexT, NormalT>::addMesh(HalfEdgeMesh<VertexT, NormalT>* slice, bool texture)
 {
 	size_t old_vert_size = m_vertices.size();
 	m_vertices.resize(old_vert_size +  slice->m_vertices.size() - slice->m_fusionNeighbors);
@@ -117,9 +117,12 @@ void HalfEdgeMesh<VertexT, NormalT>::addMesh(HalfEdgeMesh<VertexT, NormalT>* sli
 			if(merge_it != m_fused_verts.end())
 			{
 				merge_index = merge_it->second;
-				fused_verts[erase_index] = vert_it->first;
 			}
-			
+			else
+				cout << "merge vertex not found " << endl;
+			//merge_it = fused_verts.find(erase_index);
+			//if(merge_it == fused_verts.end())
+				//fused_verts[erase_index] = merge_index;
 		}
 		mergeVertex(m_vertices[merge_index], slice->m_vertices[erase_index]);
 	}
@@ -136,10 +139,9 @@ void HalfEdgeMesh<VertexT, NormalT>::addMesh(HalfEdgeMesh<VertexT, NormalT>* sli
 	m_fused_verts = fused_verts;
 	m_slice_verts = slice->m_slice_verts;
 	m_globalIndex = this->meshSize();
-	if(slice->m_meshBuffer && this->m_meshBuffer)
+	
+	if(slice->m_meshBuffer && this->m_meshBuffer && texture)
 	{
-		cout << "fusing textures " << slice->m_meshBuffer <<endl;
-		cout << "fusing textures " << this->m_meshBuffer <<endl;
 		size_t a = 0;
 		//TextureCoords
 		vector<float> textureCoordBuffer_dst;
@@ -2598,6 +2600,7 @@ HalfEdgeMesh<VertexT, NormalT>* HalfEdgeMesh<VertexT, NormalT>::retesselateInHal
 	
 	size_t count_doubles = 0;
 	retased_mesh->m_fusionNeighbors = 0;
+	retased_mesh->m_fusion_verts.clear();
     Tesselator<VertexT, NormalT>::clear();
     this->m_meshBuffer = NULL;
     return retased_mesh;

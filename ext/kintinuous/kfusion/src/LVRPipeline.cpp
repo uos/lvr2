@@ -22,7 +22,7 @@ namespace kfusion
 				);
 		}
 		pl_.AddStage(
-			boost::shared_ptr<FusionStage>(new FusionStage(meshPtr_, params.cmd_options->getOutput()))
+			boost::shared_ptr<FusionStage>(new FusionStage(meshPtr_, params.cmd_options))
 			);
 		
 		pl_.Start();
