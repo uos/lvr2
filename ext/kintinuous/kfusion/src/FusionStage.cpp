@@ -1,8 +1,8 @@
 #include <kfusion/FusionStage.hpp>
 
 // default constructor
-FusionStage::FusionStage(MeshPtr mesh, string mesh_name) : AbstractStage()
-	, mesh_(mesh), mesh_count_(0), mesh_name_(mesh_name)
+FusionStage::FusionStage(MeshPtr mesh, Options* options) : AbstractStage()
+	, mesh_(mesh), mesh_count_(0), options_(options)
 {
 
 }
@@ -19,7 +19,7 @@ void FusionStage::step()
 	if(mesh_count_ == 0)
 		mesh_ = opti_mesh;
 	else
-		mesh_->addMesh(opti_mesh);
+		mesh_->addMesh(opti_mesh, options_->textures());
 	getOutQueue()->Add(mesh_);
 	mesh_count_++;
 	delete fusion_time;
@@ -32,7 +32,8 @@ void FusionStage::lastStep()
 	std::cout << "Global amount of faces: " << mesh_->getFaces().size() << endl;
 	mesh_->finalize();
 	ModelPtr m( new Model( mesh_->meshBuffer() ) );
-	ModelFactory::saveModel( m, mesh_name_);
-	ModelFactory::saveModel( m, "mesh_OUT_after.obj");
-	//ModelFactory::saveModel( m, "./test_mesh.ply"); 
+	if(!options_->textures())
+		ModelFactory::saveModel( m, string(options_->getOutput() + ".ply"));
+	else
+		ModelFactory::saveModel( m, string(options_->getOutput() + ".obj"));
 }
