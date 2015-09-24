@@ -22,24 +22,18 @@ void OptimizeStage::step()
 	else
 		optiMesh_->addMesh(act_mesh, options_->textures());
     std::vector<kfusion::ImgPose*> image_poses_buffer = mesh_work.second;
-	std::cout << "Loaded " << image_poses_buffer.size() << " Images. " << std::endl;
+	//std::cout << "Loaded " << image_poses_buffer.size() << " Images. " << std::endl;
 	// Set recursion depth for region growing
 	if(options_->getDepth())
 	{
 		optiMesh_->setDepth(options_->getDepth());
 	}
-	if(options_->getDanglingArtifacts())
-	{
-		optiMesh_->removeDanglingArtifacts(options_->getDanglingArtifacts());
-	}
-	optiMesh_->cleanContours(options_->getCleanContourIterations());
 	optiMesh_->setClassifier(options_->getClassifier());
 	optiMesh_->optimizePlanes(options_->getPlaneIterations(),
 					options_->getNormalThreshold(),
 					options_->getMinPlaneSize(),
 					options_->getSmallRegionThreshold(), false);
-	optiMesh_->fillHoles(options_->getFillHoles());
-	optiMesh_->optimizePlaneIntersections();
+	//optiMesh_->fillHoles(options_->getFillHoles());
 	//optiMesh_->restorePlanes(options_->getMinPlaneSize());
 	MeshPtr tmp_pointer = optiMesh_->retesselateInHalfEdge(options_->getLineFusionThreshold(), options_->textures(), texture_counter);
 	if(tmp_pointer == NULL)

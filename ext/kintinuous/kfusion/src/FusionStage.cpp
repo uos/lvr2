@@ -20,6 +20,8 @@ void FusionStage::step()
 		mesh_ = opti_mesh;
 	else
 		mesh_->addMesh(opti_mesh, options_->textures());
+	mesh_->fillHoles(options_->getFillHoles());
+	//optiMesh_->restorePlanes(options_->getMinPlaneSize());
 	getOutQueue()->Add(mesh_);
 	mesh_count_++;
 	delete fusion_time;
