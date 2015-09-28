@@ -63,9 +63,11 @@ struct KinFuApp
 				capture_ (source), cube_count_(0), pic_count_(0), mesh_(NULL), garbageMesh_(NULL)
     {
         KinFuParams params = KinFuParams::default_params();
-        params.cmd_options = options;
         params.shifting_distance = options->getShiftingDistance();
         params.distance_camera_target = options->getCameraOffset();
+        params.volume_pose = params.volume_pose.translate(Vec3f(0, 0,  options->getCameraOffset()));
+        params.cmd_options = options;
+
         kinfu_ = KinFu::Ptr( new KinFu(params) );
 
         capture_.setRegistration(true);

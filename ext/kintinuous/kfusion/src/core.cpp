@@ -246,11 +246,11 @@ kf::KinFuParams kf::KinFuParams::default_params()
 	p.rows = 480;  //pixels
 	p.intr = Intr(525.f, 525.f, p.cols/2 - 0.5f, p.rows/2 - 0.5f);
 	p.shifting_distance = 0.5f; //meters to go before shifting the volume
-	p.distance_camera_target = 1.4	;
+	p.distance_camera_target = 1.4;
 
 	p.volume_dims = Vec3i::all(512);  //number of voxels
 	p.volume_size = Vec3f::all(3.f);  //meters
-	p.volume_pose = Affine3f().translate(Vec3f(-p.volume_size[0]/2, -p.volume_size[1]/2,  -p.volume_size[2]/2 + p.distance_camera_target));
+	p.volume_pose = Affine3f().translate(Vec3f(-p.volume_size[0]/2, -p.volume_size[1]/2,  -p.volume_size[2]/2 ));
 
 	p.bilateral_sigma_depth = 0.04f;  //meter
 	p.bilateral_sigma_spatial = 4.5; //pixels

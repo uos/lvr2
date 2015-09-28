@@ -40,6 +40,8 @@ HalfEdgeMesh<VertexT, NormalT>::HalfEdgeMesh( )
     m_pointCloudManager = NULL;
     m_depth = 100;
     m_fusionNeighbors = 0;
+    ///added
+    start_texture_index=0;
 }
 
 template<typename VertexT, typename NormalT>
@@ -51,6 +53,8 @@ HalfEdgeMesh<VertexT, NormalT>::HalfEdgeMesh(
     m_classifierType = "Default";
     m_pointCloudManager = pm;
     m_depth = 100;
+    ///added
+    start_texture_index=0;
 }
 
 template<typename VertexT, typename NormalT>
@@ -79,6 +83,8 @@ HalfEdgeMesh<VertexT, NormalT>::HalfEdgeMesh(
     m_classifierType = "Default";
     m_depth = 100;
     this->m_meshBuffer = mesh;
+    ///added
+    start_texture_index=0;
 }
 
 template<typename VertexT, typename NormalT>
@@ -111,7 +117,7 @@ void HalfEdgeMesh<VertexT, NormalT>::addMesh(HalfEdgeMesh<VertexT, NormalT>* sli
 			if(merge_it != m_fused_verts.end())
 			{
 				merge_index = merge_it->second;
-				fused_verts[erase_index] = merge_index;
+				//fused_verts[erase_index] = vert_it->first;
 			}
 			
 		}
@@ -2222,7 +2228,7 @@ void HalfEdgeMesh<VertexT, NormalT>::finalizeAndRetesselate( bool genTextures, f
 template<typename VertexT, typename NormalT>
 HalfEdgeMesh<VertexT, NormalT>* HalfEdgeMesh<VertexT, NormalT>::retesselateInHalfEdge(float fusionThreshold , bool textured , int start_texture_index)
 {
-		std::cout << timestamp << "Retesselate mesh" << std::endl;
+	std::cout << timestamp << "Retesselate mesh" << std::endl;
 
     // used Typedef's
     typedef std::vector<size_t>::iterator   intIterator;
@@ -3120,5 +3126,6 @@ template<typename VertexT, typename NormalT>
 std::vector<cv::Mat> HalfEdgeMesh<VertexT,NormalT>::getTextures(){
 	return textures;
 }
+
 
 } // namespace lvr
