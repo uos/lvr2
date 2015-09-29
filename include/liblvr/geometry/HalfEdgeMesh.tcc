@@ -139,7 +139,59 @@ void HalfEdgeMesh<VertexT, NormalT>::addMesh(HalfEdgeMesh<VertexT, NormalT>* sli
 	
 	if(slice->m_meshBuffer && this->m_meshBuffer && texture)
 	{
-		size_t a = 0;
+		size_t lenVertices_A,lenVertices_B;
+		size_t lenNormals_A,lenNormals_B;
+		size_t lenFaces;
+		size_t lenTextureCoordinates;
+		size_t lenFaceMaterials;
+		size_t lenFaceMaterialIndices;
+		size_t lenColors;
+		
+		
+		
+		////Vertices
+		//floatArr vertexBuffer_A = this->m_meshBuffer->getVertexArray(lenVertices_A);
+		//floatArr vertexBuffer_B = slice->m_meshBuffer->getVertexArray(lenVertices_B);
+		
+		//floatArr vertexBuffer_dst = boost::shared_array<float>(new float[lenVertices_A*3+lenVertices_B*3]);
+		//vertexBuffer_dst.swap(vertexBuffer_A);
+		//for(size_t i = 0 ; i<lenVertices_B*3 ; i++)
+			//vertexBuffer_dst[lenVertices_A*3+i] = vertexBuffer_B[i];
+			
+		////Normals
+		//floatArr vertexNormalBuffer_A = this->m_meshBuffer->getVertexNormalArray(lenNormals_A);
+		//floatArr vertexNormalBuffer_B = slice->m_meshBuffer->getVertexNormalArray(lenNormals_B);
+		
+		//floatArr vertexNormalBuffer_dst = boost::shared_array<float>(new float[lenNormals_A*3+lenNormals_B*3]);
+		//vertexNormalBuffer_dst.swap(vertexNormalBuffer_A);
+		//for(size_t i = 0 ; i<lenNormals_B*3 ; i++)
+			//vertexNormalBuffer_dst[lenNormals_A*3+i] = vertexNormalBuffer_B[i];
+		
+		
+		
+		size_t a = 0,b = 0;
+		////Vertices
+		//vector<float> vertexBuffer_dst;
+		//floatArr vertexBuffer_src = this->m_meshBuffer->getVertexArray(a);
+		//cout << "having " << a <<  " vertices " << endl;
+		//for(size_t i=0;i<a*3;i++)
+			//vertexBuffer_dst.push_back(vertexBuffer_src[i]);
+		//vertexBuffer_src = slice->m_meshBuffer->getVertexArray(a);
+		//for(size_t i=0;i<a*3;i++)
+			//vertexBuffer_dst.push_back(vertexBuffer_src[i]);
+		//cout << "fusing " << a <<  " vertices " << endl;
+		
+		////Normals
+		//vector<float> vertexNormalBuffer_dst;
+		//floatArr vertexNormalBuffer_src = this->m_meshBuffer->getVertexNormalArray(a);
+		//cout << "having " << a <<  " normals " << endl;
+		//for(size_t i=0;i<a*3;i++)
+			//vertexNormalBuffer_dst.push_back(vertexNormalBuffer_src[i]);
+		//vertexNormalBuffer_src = slice->m_meshBuffer->getVertexNormalArray(a);
+		//for(size_t i=0;i<a*3;i++)
+			//vertexNormalBuffer_dst.push_back(vertexNormalBuffer_src[i]);
+		//cout << "fusing " << a <<  " normals " << endl;
+		
 		//TextureCoords
 		vector<float> textureCoordBuffer_dst;
 		floatArr textureCoordBuffer_src = this->m_meshBuffer->getVertexTextureCoordinateArray(a);
@@ -150,6 +202,7 @@ void HalfEdgeMesh<VertexT, NormalT>::addMesh(HalfEdgeMesh<VertexT, NormalT>* sli
 		for(size_t i=0;i<a*3;i++)
 			textureCoordBuffer_dst.push_back(textureCoordBuffer_src[i]);
 		cout << "fusing " << a <<  " texture coordinates " << endl;
+		
 		//Material
 		size_t offset = 0;
 		std::vector<Material*> materialBuffer_dst;
@@ -169,9 +222,28 @@ void HalfEdgeMesh<VertexT, NormalT>::addMesh(HalfEdgeMesh<VertexT, NormalT>* sli
 		for(size_t i=0;i<a;i++)
 			materialIndexBuffer_dst.push_back(materialIndexBuffer_src[i]+offset);
 		
+		//Colors
+		vector<unsigned char> colorBuffer_dst;
+		ucharArr colorBuffer_src = this->m_meshBuffer->getVertexColorArray(a);
+		cout << "having " << a <<  " colors " << endl;
+		for(size_t i=0;i<a*3;i++)
+			colorBuffer_dst.push_back(colorBuffer_src[i]);
+		colorBuffer_src = slice->m_meshBuffer->getVertexColorArray(a);
+		for(size_t i=0;i<a*3;i++)
+			colorBuffer_dst.push_back(colorBuffer_src[i]);
+		cout << "adding " << a <<  " colors " << endl;
+		
+		//this->m_meshBuffer->setVertexArray(vertexBuffer_dst,lenVertices_A+lenVertices_B);
+		//this->m_meshBuffer->setVertexNormalArray(vertexNormalBuffer_dst,lenNormals_A+lenNormals_B);
+		//this->m_meshBuffer->setVertexTextureCoordinateArray( vertexBuffer_dst );
+		//this->m_meshBuffer->setVertexTextureCoordinateArray( vertexNormalBuffer_dst );
 		this->m_meshBuffer->setVertexTextureCoordinateArray( textureCoordBuffer_dst );
 		this->m_meshBuffer->setMaterialArray( materialBuffer_dst );
 		this->m_meshBuffer->setFaceMaterialIndexArray( materialIndexBuffer_dst );
+		this->m_meshBuffer->setVertexColorArray(colorBuffer_dst);
+		
+		
+		
 		
 		///texture stuff
 		int b_rect_size;
@@ -1789,7 +1861,7 @@ void HalfEdgeMesh<VertexT, NormalT>::finalize()
         this->m_meshBuffer = MeshBufferPtr( new MeshBuffer );
     }
     this->m_meshBuffer->setVertexArray( vertexBuffer, numVertices );
-    this->m_meshBuffer->setVertexColorArray( colorBuffer, numVertices );
+    //this->m_meshBuffer->setVertexColorArray( colorBuffer, numVertices );
     this->m_meshBuffer->setVertexNormalArray( normalBuffer, numVertices  );
     this->m_meshBuffer->setFaceArray( indexBuffer, numFaces );
 	this->m_meshBuffer->setLabeledFacesMap( labeledFaces );
@@ -2234,7 +2306,7 @@ HalfEdgeMesh<VertexT, NormalT>* HalfEdgeMesh<VertexT, NormalT>::retesselateInHal
     typedef std::vector<size_t>::iterator   intIterator;
 
     // default colors
-    float r=177, g=177, b=177;
+    unsigned char r=(unsigned char)255, g=(unsigned char)255, b=(unsigned char)255;
 
     map<Vertex<uchar>, unsigned int> materialMap;
 	
@@ -2465,9 +2537,9 @@ HalfEdgeMesh<VertexT, NormalT>* HalfEdgeMesh<VertexT, NormalT>::retesselateInHal
 							normalBuffer.push_back( m_regions[iRegion]->m_normal[1] );
 							normalBuffer.push_back( m_regions[iRegion]->m_normal[2] );
 
-							colorBuffer.push_back( r );
-							colorBuffer.push_back( g );
-							colorBuffer.push_back( b );
+							colorBuffer.push_back( static_cast<unsigned char>(255));
+							colorBuffer.push_back( static_cast<unsigned char>(255));
+							colorBuffer.push_back( static_cast<unsigned char>(255));
 
 							textureCoordBuffer.push_back( u );
 							textureCoordBuffer.push_back( v );
@@ -2488,9 +2560,9 @@ HalfEdgeMesh<VertexT, NormalT>* HalfEdgeMesh<VertexT, NormalT>::retesselateInHal
 					normalBuffer.push_back( m_regions[iRegion]->m_normal[1] );
 					normalBuffer.push_back( m_regions[iRegion]->m_normal[2] );
 
-					colorBuffer.push_back( r );
-					colorBuffer.push_back( g );
-					colorBuffer.push_back( b );
+					colorBuffer.push_back( static_cast<unsigned char>(255) );
+					colorBuffer.push_back( static_cast<unsigned char>(255) );
+					colorBuffer.push_back( static_cast<unsigned char>(255) );
 
 					textureCoordBuffer.push_back( u );
 					textureCoordBuffer.push_back( v );
@@ -2583,6 +2655,8 @@ HalfEdgeMesh<VertexT, NormalT>* HalfEdgeMesh<VertexT, NormalT>::retesselateInHal
 	this->m_meshBuffer->setMaterialArray( materialBuffer );
 	this->m_meshBuffer->setFaceMaterialIndexArray( materialIndexBuffer );
     cout << endl << timestamp << "Done retesselating." << ((textured)? " Done texturizing.": "") <<  endl;
+    
+   // std::cout << "First color: " << (unsigned int)colorBuffer[0] << " " << (unsigned int)colorBuffer[1] << " " << (unsigned int)colorBuffer[2] << std::endl;
 		
 	HalfEdgeMesh<VertexT, NormalT>* retased_mesh =  new HalfEdgeMesh(this->m_meshBuffer);
 	retased_mesh->m_meshBuffer = this->m_meshBuffer;
@@ -2598,7 +2672,6 @@ HalfEdgeMesh<VertexT, NormalT>* HalfEdgeMesh<VertexT, NormalT>::retesselateInHal
     Tesselator<VertexT, NormalT>::clear();
     this->m_meshBuffer = NULL;
     return retased_mesh;
-    
 } 
 	
 
@@ -2871,7 +2944,10 @@ void HalfEdgeMesh<VertexT,NormalT>::getInitialUV_b(float x,float y,float z,std::
 template<typename VertexT, typename NormalT>
 int HalfEdgeMesh<VertexT,NormalT>::projectAndMapNewImage(kfusion::ImgPose img_pose, const char* texture_output_dir)
 {
-
+	//meshlab doesnt show any colors for obj fileformat
+	int num_colored_points = fillNonPlanarColors(img_pose);
+	
+	std::cout << "Colorized " << num_colored_points << " Points." << std::endl;
 	 //3) project plane to pic area.
 				    				//calc transformation matrix with homography
 				    				//warp perspective with trans-mat in the gevin texture file from planeindex
@@ -2889,10 +2965,119 @@ int HalfEdgeMesh<VertexT,NormalT>::projectAndMapNewImage(kfusion::ImgPose img_po
 }
 
 template<typename VertexT, typename NormalT>
+int HalfEdgeMesh<VertexT,NormalT>::fillNonPlanarColors(kfusion::ImgPose img_pose)
+{
+	std::cout << "Fill non Planar Regions with some colors ..." << std::endl;
+	
+	cv::Mat distCoeffs(4,1,cv::DataType<float>::type);
+					distCoeffs.at<float>(0) = 0.0;
+					distCoeffs.at<float>(1) = 0.0;
+					distCoeffs.at<float>(2) = 0.0;
+					distCoeffs.at<float>(3) = 0.0;
+
+	cv::Affine3f pose = img_pose.pose.inv();
+	cv::Mat tvec(pose.translation());
+	cv::Mat rvec(pose.rvec());
+	cv::Mat cam = img_pose.intrinsics;
+	
+	
+	size_t a,b,c,d,e;
+	a=b=c=d=e=0;
+	floatArr vertexBuffer = this->m_meshBuffer->getVertexArray(a);
+	ucharArr colorBuffer = this->m_meshBuffer->getVertexColorArray(b);
+	materialArr materialBuffer = this->m_meshBuffer->getMaterialArray(c);
+	uintArr materialIndexBuffer = this->m_meshBuffer->getFaceMaterialIndexArray(d);
+	floatArr textureCoordBuffer = this->m_meshBuffer->getVertexTextureCoordinateArray(e);
+	
+	std::vector<Material*> materialBuffer_vec;
+	for(size_t i=0;i<c;i++)
+		materialBuffer_vec.push_back(materialBuffer[i]);
+	
+	std::vector<cv::Point3f> uncolored_points;
+	std::vector<unsigned int> uncolored_indices;
+	
+	//collect uncolored points
+	for(unsigned int i=0;i<b;i++)
+	{	
+		if(static_cast<unsigned int>(colorBuffer[i*3]) < 255 || static_cast<unsigned int>(colorBuffer[i*3+1]) < 255 || static_cast<unsigned int>(colorBuffer[i*3+2]) < 255) 
+			continue;
+		else if(textureCoordBuffer[i*3]==0.0 && textureCoordBuffer[i*3+1]==0.0){
+			uncolored_points.push_back(cv::Point3f(vertexBuffer[i*3],vertexBuffer[i*3+1],vertexBuffer[i*3+2]));
+			uncolored_indices.push_back(i);
+		}
+	}
+	
+	//colorize
+	
+	std::vector<cv::Point2f> projected_uncolored_points;
+	if(uncolored_points.size() == 0)
+		return 0;
+
+	cv::projectPoints(uncolored_points,rvec,tvec,cam,distCoeffs,projected_uncolored_points);
+	
+	float width = cam.at<float>(0,2);
+	float height = cam.at<float>(1,2);
+	
+	size_t i=0;
+	size_t counter=0;
+	
+	map<Vertex<uchar>, unsigned int> materialMap;
+	
+	for(std::vector<cv::Point2f>::iterator it = projected_uncolored_points.begin(); it != projected_uncolored_points.end() ; ++it )
+	{
+		if(it->x >= 0 && it->x < width && it->y >= 0 && it->y < height)
+		{
+			cv::Vec3b current_color(img_pose.image.at<cv::Vec3b>(it->y,it->x));
+			
+			colorBuffer[uncolored_indices[i]*3] = current_color[2];
+			colorBuffer[uncolored_indices[i]*3+1] = current_color[1];
+			colorBuffer[uncolored_indices[i]*3+2] = current_color[0];
+			counter++;
+			
+			// Try to find a material with the same color
+			std::map<Vertex<uchar>, unsigned int >::iterator it = materialMap.find(Vertex<uchar>(current_color[0], current_color[1], current_color[2]));
+			if(it != materialMap.end())
+			{
+				// If found, put material index into buffer
+				//std::cout << "RE-USING MAT" << std::endl;
+				unsigned int position = it->second;
+				materialIndexBuffer[i] = position;
+			}
+			else
+			{
+				Material* m = new Material;
+				m->r = current_color[0];
+				m->g = current_color[1];
+				m->b = current_color[2];
+				m->texture_index = -1;
+
+				// Save material index
+				materialBuffer_vec.push_back(m);
+				materialIndexBuffer[i] = materialBuffer_vec.size()-1;
+				
+				materialMap.insert(pair<Vertex<uchar>,unsigned int>(Vertex<uchar>(current_color[0],current_color[1],current_color[2]),materialBuffer_vec.size()-1));
+				
+			}
+			
+		}
+		
+		i++;
+	}
+	
+	this->m_meshBuffer->setMaterialArray( materialBuffer_vec );
+	
+    return counter;
+    
+	
+}
+
+template<typename VertexT, typename NormalT>
 void HalfEdgeMesh<VertexT,NormalT>::fillInitialTextures(std::vector<std::vector<cv::Point3f> > b_rects,
 		   kfusion::ImgPose img_pose, int image_number,
 		   const char* texture_output_dir)
 {
+
+	
 
 	//texture calculation
 	//if(textures.size()<b_rects.size())

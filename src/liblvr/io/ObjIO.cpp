@@ -328,12 +328,14 @@ void ObjIO::save( string filename )
 	size_t lenTextureCoordinates;
 	size_t lenFaceMaterials;
 	size_t lenFaceMaterialIndices;
+	size_t lenColors;
 	coord3fArr vertices           = m_model->m_mesh->getIndexedVertexArray( lenVertices );
 	coord3fArr normals            = m_model->m_mesh->getIndexedVertexNormalArray( lenNormals );
 	coord3fArr textureCoordinates = m_model->m_mesh->getIndexedVertexTextureCoordinateArray( lenTextureCoordinates );
 	uintArr    faceIndices        = m_model->m_mesh->getFaceArray( lenFaces );
 	materialArr materials		  = m_model->m_mesh->getMaterialArray(lenFaceMaterials);
 	uintArr	faceMaterialIndices   = m_model->m_mesh->getFaceMaterialIndexArray(lenFaceMaterialIndices);
+	ucharArr colors 			  = m_model->m_mesh->getVertexColorArray(lenColors);
 
 	std::map<ObjColor, unsigned int> colorMap;
 
@@ -357,9 +359,17 @@ void ObjIO::save( string filename )
 
 		for( size_t i=0; i < lenVertices; ++i )
 		{
+			
 			out << "v " << vertices[i][0] << " "
 					<< vertices[i][1] << " "
-					<< vertices[i][2] << endl;
+					<< vertices[i][2] << " ";
+					if(lenColors>0){
+						unsigned int r=static_cast<unsigned int>(colors[i*3]),g=static_cast<unsigned int>(colors[i*3+1]),b=static_cast<unsigned int>(colors[i*3+2]);
+						out << static_cast<float>(r)/255.0 << " "
+						<< static_cast<float>(g)/255.0 << " "
+						<< static_cast<float>(b)/255.0 ;
+					}
+					out << endl;
 		}
 
 		out<<endl;
