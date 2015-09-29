@@ -59,10 +59,17 @@ endif()
 # Setup dependencies to external libraries
 #####################################################################################
 
-set(LVR_LIB_DEPENDENCIES
+set(LVR_INTERNAL_DEPENDENCIES_STATIC
     lvrrply_static
     lvrlas_static
-    lvrslam6d_static
+    lvrslam6d_static)
+
+set(LVR_INTERNAL_DEPENDENCIES_SHARED
+    lvrrply
+    lvrlas
+    lvrslam6d)
+
+set(LVR_LIB_DEPENDENCIES
     ${Boost_PROGRAM_OPTIONS_LIBRARY}
     ${Boost_SYSTEM_LIBRARY}
     ${Boost_THREAD_LIBRARY}
@@ -113,7 +120,7 @@ add_library(lvrcore OBJECT ${LVR_SOURCES} ${LVR_LIB_MOC_SRC})
 
 message(STATUS "Building static library")
 add_library(lvr_static STATIC $<TARGET_OBJECTS:lvrcore>)
-target_link_libraries(lvr_static ${LVR_LIB_DEPENDENCIES})
+target_link_libraries(lvr_static ${LVR_INTERNAL_DEPENDENCIES_STATIC} ${LVR_LIB_DEPENDENCIES})
 
 #####################################################################################
 # Build shared library
@@ -122,7 +129,7 @@ target_link_libraries(lvr_static ${LVR_LIB_DEPENDENCIES})
 if( NOT MSVC )
   message(STATUS "Building shared library")
   add_library(lvr SHARED $<TARGET_OBJECTS:lvrcore>)
-  target_link_libraries(lvr ${LVR_LIB_DEPENDENCIES})
+  target_link_libraries(lvr ${LVR_INTERNAL_DEPENDENCIES_SHARED} ${LVR_LIB_DEPENDENCIES})
 endif( NOT MSVC)
 
 install(TARGETS lvr_static lvr
