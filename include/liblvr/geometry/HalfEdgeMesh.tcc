@@ -2656,8 +2656,6 @@ HalfEdgeMesh<VertexT, NormalT>* HalfEdgeMesh<VertexT, NormalT>::retesselateInHal
 	this->m_meshBuffer->setFaceMaterialIndexArray( materialIndexBuffer );
     cout << endl << timestamp << "Done retesselating." << ((textured)? " Done texturizing.": "") <<  endl;
     
-   // std::cout << "First color: " << (unsigned int)colorBuffer[0] << " " << (unsigned int)colorBuffer[1] << " " << (unsigned int)colorBuffer[2] << std::endl;
-		
 	HalfEdgeMesh<VertexT, NormalT>* retased_mesh =  new HalfEdgeMesh(this->m_meshBuffer);
 	retased_mesh->m_meshBuffer = this->m_meshBuffer;
 	retased_mesh->bounding_rectangles_3D = bounding_rectangles_3D;
@@ -2925,8 +2923,6 @@ void HalfEdgeMesh<VertexT,NormalT>::getInitialUV(float x,float y,float z,std::ve
 	if(u>1.0) u=1.0;
 	if(v>1.0) v=1.0;
 	
-	
-	
 }
 
 
@@ -2967,8 +2963,6 @@ int HalfEdgeMesh<VertexT,NormalT>::projectAndMapNewImage(kfusion::ImgPose img_po
 template<typename VertexT, typename NormalT>
 int HalfEdgeMesh<VertexT,NormalT>::fillNonPlanarColors(kfusion::ImgPose img_pose)
 {
-	std::cout << "Fill non Planar Regions with some colors ..." << std::endl;
-	
 	cv::Mat distCoeffs(4,1,cv::DataType<float>::type);
 					distCoeffs.at<float>(0) = 0.0;
 					distCoeffs.at<float>(1) = 0.0;
@@ -2981,23 +2975,17 @@ int HalfEdgeMesh<VertexT,NormalT>::fillNonPlanarColors(kfusion::ImgPose img_pose
 	cv::Mat cam = img_pose.intrinsics;
 	
 	
-	size_t a,b,c,d,e;
-	a=b=c=d=e=0;
-	floatArr vertexBuffer = this->m_meshBuffer->getVertexArray(a);
-	ucharArr colorBuffer = this->m_meshBuffer->getVertexColorArray(b);
-	materialArr materialBuffer = this->m_meshBuffer->getMaterialArray(c);
-	uintArr materialIndexBuffer = this->m_meshBuffer->getFaceMaterialIndexArray(d);
-	floatArr textureCoordBuffer = this->m_meshBuffer->getVertexTextureCoordinateArray(e);
-	
-	std::vector<Material*> materialBuffer_vec;
-	for(size_t i=0;i<c;i++)
-		materialBuffer_vec.push_back(materialBuffer[i]);
+	size_t lenVertices,lenColors,lenTextureCoords;
+	lenVertices=lenColors=lenTextureCoords=0;
+	floatArr vertexBuffer = this->m_meshBuffer->getVertexArray(lenVertices);
+	ucharArr colorBuffer = this->m_meshBuffer->getVertexColorArray(lenColors);
+	floatArr textureCoordBuffer = this->m_meshBuffer->getVertexTextureCoordinateArray(lenTextureCoords);
 	
 	std::vector<cv::Point3f> uncolored_points;
 	std::vector<unsigned int> uncolored_indices;
 	
 	//collect uncolored points
-	for(unsigned int i=0;i<b;i++)
+	for(unsigned int i=0;i<lenVertices;i++)
 	{	
 		if(static_cast<unsigned int>(colorBuffer[i*3]) < 255 || static_cast<unsigned int>(colorBuffer[i*3+1]) < 255 || static_cast<unsigned int>(colorBuffer[i*3+2]) < 255) 
 			continue;
@@ -3008,7 +2996,6 @@ int HalfEdgeMesh<VertexT,NormalT>::fillNonPlanarColors(kfusion::ImgPose img_pose
 	}
 	
 	//colorize
-	
 	std::vector<cv::Point2f> projected_uncolored_points;
 	if(uncolored_points.size() == 0)
 		return 0;
@@ -3021,11 +3008,9 @@ int HalfEdgeMesh<VertexT,NormalT>::fillNonPlanarColors(kfusion::ImgPose img_pose
 	size_t i=0;
 	size_t counter=0;
 	
-	map<Vertex<uchar>, unsigned int> materialMap;
-	
 	for(std::vector<cv::Point2f>::iterator it = projected_uncolored_points.begin(); it != projected_uncolored_points.end() ; ++it )
 	{
-		if(it->x >= 0 && it->x < width && it->y >= 0 && it->y < height)
+		if(it->x >= 0 && it->x < width*2 && it->y >= 0 && it->y < height*2)
 		{
 			cv::Vec3b current_color(img_pose.image.at<cv::Vec3b>(it->y,it->x));
 			
@@ -3033,42 +3018,11 @@ int HalfEdgeMesh<VertexT,NormalT>::fillNonPlanarColors(kfusion::ImgPose img_pose
 			colorBuffer[uncolored_indices[i]*3+1] = current_color[1];
 			colorBuffer[uncolored_indices[i]*3+2] = current_color[0];
 			counter++;
-			
-			// Try to find a material with the same color
-			std::map<Vertex<uchar>, unsigned int >::iterator it = materialMap.find(Vertex<uchar>(current_color[0], current_color[1], current_color[2]));
-			if(it != materialMap.end())
-			{
-				// If found, put material index into buffer
-				//std::cout << "RE-USING MAT" << std::endl;
-				unsigned int position = it->second;
-				materialIndexBuffer[i] = position;
-			}
-			else
-			{
-				Material* m = new Material;
-				m->r = current_color[0];
-				m->g = current_color[1];
-				m->b = current_color[2];
-				m->texture_index = -1;
-
-				// Save material index
-				materialBuffer_vec.push_back(m);
-				materialIndexBuffer[i] = materialBuffer_vec.size()-1;
-				
-				materialMap.insert(pair<Vertex<uchar>,unsigned int>(Vertex<uchar>(current_color[0],current_color[1],current_color[2]),materialBuffer_vec.size()-1));
-				
-			}
-			
 		}
-		
 		i++;
 	}
 	
-	this->m_meshBuffer->setMaterialArray( materialBuffer_vec );
-	
     return counter;
-    
-	
 }
 
 template<typename VertexT, typename NormalT>
