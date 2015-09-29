@@ -479,6 +479,8 @@ void ObjIO::save( string filename )
 			}
 		}
 		
+		out<<endl;
+		
 		//textures
 		for(size_t i = 0; i<texture_indices.size() ; i++)
 		{
@@ -540,7 +542,7 @@ void ObjIO::save( string filename )
 				mtlFile << "Kd "
 						<< m->r / 255.0f << " "
 						<< m->g / 255.0f << " "
-						<< m->b / 255.0f << endl;
+						<< m->b / 255.0f << endl << endl;
 			}
 			else
 			{
