@@ -278,6 +278,18 @@ if(PCL_FOUND)
 endif(PCL_FOUND)
 
 ################################################################
+# CMAKE FILES
+################################################################
+
+install(EXPORT lvrTargets
+    FILE lvrTargets.cmake
+    NAMESPACE lvr::
+    DESTINATION ${CMAKE_INSTALL_LIBDIR}/cmake/lvr)
+
+install(FILES lvrConfig.cmake
+    DESTINATION ${CMAKE_INSTALL_LIBDIR}/cmake/lvr)
+
+################################################################
 # DOCUMENTATION
 ################################################################
 

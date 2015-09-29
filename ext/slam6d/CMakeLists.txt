@@ -17,9 +17,11 @@ add_library(lvrslam6d_static STATIC ${SLAM_SOURCES})
 
 add_library(lvrslam6d SHARED ${SLAM_SOURCES})
 
-install(TARGETS lvrslam6d_static lvrslam6d
-  LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR}
-  ARCHIVE DESTINATION ${CMAKE_INSTALL_LIBDIR})
-
 # this intentionally installs to lvr/ext/slam6d/slam6d to keep a separate include path
 install(DIRECTORY include/slam6d DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}/lvr/ext/slam6d)
+
+install(TARGETS lvrslam6d_static lvrslam6d
+  EXPORT lvrTargets
+  LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR}
+  ARCHIVE DESTINATION ${CMAKE_INSTALL_LIBDIR}
+  INCLUDES DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}/lvr/ext/slam6d)
