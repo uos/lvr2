@@ -529,6 +529,8 @@ private:
 		   kfusion::ImgPose img_pose, int image_number,
 		   const char* texture_output_dir="");
 		   
+	int fillNonPlanarColors(kfusion::ImgPose img_pose);
+		   
 	
 	//second version with one clipped texture
 	cv::Mat texture;
