@@ -60,3 +60,5 @@ if(lvr_USE_STATIC_LIBS)
 else()
   set(LVR_LIBRARIES lvr::lvr)
 endif()
+
+set(lvr_FOUND TRUE)
