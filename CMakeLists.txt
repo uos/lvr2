@@ -11,10 +11,6 @@ set(CMAKE_ARCHIVE_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/lib)
 
 set(CMAKE_MODULE_PATH ${LAS_VEGAS_SOURCE_DIR}/CMakeModules ${CMAKE_MODULE_PATH})
 
-include_directories(include)
-
-install(DIRECTORY include/lvr DESTINATION ${CMAKE_INSTALL_INCLUDEDIR})
-
 ##################################################################################
 # Some compiler specific settings
 ##################################################################################
@@ -203,6 +199,14 @@ include_directories( ${SLAM6D_INCLUDE_DIR} )
 # KINTINUOUS
 add_subdirectory(ext/kintinuous)
 include_directories(${LAS_VEGAS_SOURCE_DIR}/ext/kintinuous/kfusion/include)
+
+##############################################################
+# HEADERS
+##############################################################
+
+include_directories(include)
+
+install(DIRECTORY include/lvr DESTINATION ${CMAKE_INSTALL_INCLUDEDIR})
 
 ##############################################################
 # VIEWERS
