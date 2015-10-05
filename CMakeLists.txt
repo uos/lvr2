@@ -16,7 +16,7 @@ set(CMAKE_MODULE_PATH ${LAS_VEGAS_SOURCE_DIR}/CMakeModules ${CMAKE_MODULE_PATH})
 ##################################################################################
 
 if(MSVC)
-  add_definitions(-DNOMINMAX)
+  list(APPEND LVR_DEFINITIONS -DNOMINMAX)
 endif()
 
 if(CMAKE_COMPILER_IS_GNUCC AND CMAKE_COMPILER_IS_GNUCXX)
@@ -55,7 +55,7 @@ endif(MPI_FOUND)
 find_package(VTK REQUIRED)
 include(${VTK_USE_FILE})
 if(VTK_MAJOR_VERSION VERSION_LESS "6")
-  add_definitions(-DLVR_USE_VTK5)
+  list(APPEND LVR_DEFINITIONS -DLVR_USE_VTK5)
 endif()
 
 ####
@@ -65,7 +65,7 @@ endif()
 find_package(Nabo)
 if(NABO_FOUND)
   include_directories(${NABO_INCLUDE_DIRS})
-  add_definitions(-DLVR_USE_NABO)
+  list(APPEND LVR_DEFINITIONS -DLVR_USE_NABO)
 endif(NABO_FOUND)
 
 ####
@@ -77,7 +77,7 @@ if(PCL_FOUND)
   include_directories(${PCL_INCLUDE_DIRS})
   link_directories(${PCL_LIBRARY_DIRS})
   add_definitions(${PCL_DEFINITIONS})
-  add_definitions(-DLVR_USE_PCL)
+  list(APPEND LVR_DEFINITIONS -DLVR_USE_PCL)
 else(PCL_FOUND)
   message( "-- No PCL found." )
   message( "-- PCL related stuff will be disabled." )
@@ -125,7 +125,7 @@ find_package(OpenMP)
 if(OpenMP_FOUND)
   link_directories(${OpenMP_LIBRARY_DIRS})
   include_directories(${OpenMP_INCLUDE_DIRS})
-  add_definitions(-DLVR_USE_OPEN_MP)
+  list(APPEND LVR_DEFINITIONS -DLVR_USE_OPEN_MP)
   set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${OpenMP_CXX_FLAGS}")
 endif(OpenMP_FOUND)
 
@@ -168,7 +168,7 @@ endif(LIBFREENECT_FOUND)
 set(STANN_DIR "" CACHE PATH "directory that contains the STANN library headers")
 find_package(STANN)
 if(STANN_FOUND)
-  add_definitions(-DLVR_USE_STANN)
+  list(APPEND LVR_DEFINITIONS -DLVR_USE_STANN)
   include_directories(${STANN_INCLUDE_DIR})
 endif(STANN_FOUND)
 
@@ -207,6 +207,8 @@ include_directories(${LAS_VEGAS_SOURCE_DIR}/ext/kintinuous/kfusion/include)
 include_directories(include)
 
 install(DIRECTORY include/lvr DESTINATION ${CMAKE_INSTALL_INCLUDEDIR})
+
+add_definitions(${LVR_DEFINITIONS})
 
 ##############################################################
 # VIEWERS
