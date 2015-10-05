@@ -112,7 +112,7 @@ endif(LIBFREENECT_FOUND)
 # Compile object files for static and dynamic library
 #####################################################################################
 
-add_library(lvrcore OBJECT ${LVR_SOURCES} ${LVR_LIB_MOC_SRC})
+add_library(lvrcore OBJECT ${LVR_SOURCES})
 
 #####################################################################################
 # Build static library
