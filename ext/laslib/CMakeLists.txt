@@ -1,5 +1,8 @@
 
+# set include dirs
+set(LASLIB_INSTALL_INCLUDE_DIR ${CMAKE_INSTALL_PREFIX}/${CMAKE_INSTALL_INCLUDEDIR}/lvr/ext/laslib CACHE PATH "install location of laslib library headers")
 find_path(LASLIB_INCLUDE_DIR lasreader.hpp PATH inc)
+mark_as_advanced(LASLIB_INCLUDE_DIR LASLIB_INSTALL_INCLUDE_DIR)
 
 include_directories(${LASLIB_INCLUDE_DIR})
 
@@ -44,10 +47,9 @@ add_library(lvrlas_static STATIC ${LASLIB_SOURCES})
 
 add_library(lvrlas SHARED ${LASLIB_SOURCES})
 
-install(DIRECTORY inc/ DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}/lvr/ext/laslib)
+install(DIRECTORY inc/ DESTINATION ${LASLIB_INSTALL_INCLUDE_DIR})
 
 install(TARGETS lvrlas_static lvrlas
   EXPORT lvrTargets
   LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR}
-  ARCHIVE DESTINATION ${CMAKE_INSTALL_LIBDIR}
-  INCLUDES DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}/lvr/ext/laslib)
+  ARCHIVE DESTINATION ${CMAKE_INSTALL_LIBDIR})

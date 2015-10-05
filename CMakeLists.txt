@@ -179,22 +179,27 @@ endif(STANN_FOUND)
 # NanoFLANN
 add_subdirectory(ext/nanoflann)
 include_directories( ${NANOFLANN_INCLUDE_DIR} )
+list(APPEND LVR_INSTALL_INCLUDE_DIRS ${NANOFLANN_INSTALL_INCLUDE_DIR})
 
 # PSIMPL
 add_subdirectory(ext/psimpl)
 include_directories( ${PSIMPL_INCLUDE_DIR} )
+list(APPEND LVR_INSTALL_INCLUDE_DIRS ${PSIMPL_INSTALL_INCLUDE_DIR})
 
 # RPLY
 add_subdirectory(ext/rply)
 include_directories( ${RPLY_INCLUDE_DIR} )
+list(APPEND LVR_INSTALL_INCLUDE_DIRS ${RPLY_INSTALL_INCLUDE_DIR})
 
 # LASLIB
 add_subdirectory(ext/laslib)
 include_directories( ${LASLIB_INCLUDE_DIR} )
+list(APPEND LVR_INSTALL_INCLUDE_DIRS ${LASLIB_INSTALL_INCLUDE_DIR})
 
 # SLAM6D stuff
 add_subdirectory(ext/slam6d)
 include_directories( ${SLAM6D_INCLUDE_DIR} )
+list(APPEND LVR_INSTALL_INCLUDE_DIRS ${SLAM6D_INSTALL_INCLUDE_DIR})
 
 # KINTINUOUS
 add_subdirectory(ext/kintinuous)
@@ -207,6 +212,8 @@ include_directories(${LAS_VEGAS_SOURCE_DIR}/ext/kintinuous/kfusion/include)
 include_directories(include)
 
 install(DIRECTORY include/lvr DESTINATION ${CMAKE_INSTALL_INCLUDEDIR})
+
+list(APPEND LVR_INSTALL_INCLUDE_DIRS ${CMAKE_INSTALL_PREFIX}/${CMAKE_INSTALL_INCLUDEDIR})
 
 add_definitions(${LVR_DEFINITIONS})
 
