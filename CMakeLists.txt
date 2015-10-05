@@ -299,7 +299,8 @@ install(EXPORT lvrTargets
     NAMESPACE lvr::
     DESTINATION ${CMAKE_INSTALL_LIBDIR}/cmake/lvr)
 
-install(FILES lvrConfig.cmake
+configure_file(lvrConfig.cmake.in ${CMAKE_BINARY_DIR}/lvrConfig.cmake @ONLY)
+install(FILES ${CMAKE_BINARY_DIR}/lvrConfig.cmake
     DESTINATION ${CMAKE_INSTALL_LIBDIR}/cmake/lvr)
 
 ################################################################

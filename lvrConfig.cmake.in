@@ -1,0 +1,12 @@
+include("${CMAKE_CURRENT_LIST_DIR}/lvrTargets.cmake")
+
+option(lvr_USE_STATIC_LIBS OFF)
+
+if(lvr_USE_STATIC_LIBS)
+  set(LVR_LIBRARIES lvr::lvr_static)
+else()
+  set(LVR_LIBRARIES lvr::lvr)
+endif()
+
+set(LVR_INCLUDE_DIRS @LVR_INSTALL_INCLUDE_DIRS@)
+set(LVR_DEFINITIONS @LVR_DEFINITIONS@)
