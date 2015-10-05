@@ -7,6 +7,12 @@ set(LVR_DEFINITIONS @LVR_DEFINITIONS@)
 
 find_dependency(OpenCV)
 
+# eigen3 2.6 sets EIGEN3_FOUND on second run,
+# but find_dependency is case sensitive...
+# this is a dirty hack that might come back to haunt
+# you some day (when this is hopefully fixed in upstream
+# and can be removed)
+set(Eigen3_FOUND TRUE)
 find_dependency(Eigen3)
 list(APPEND LVR_INCLUDE_DIRS ${EIGEN3_INCLUDE_DIR})
 
