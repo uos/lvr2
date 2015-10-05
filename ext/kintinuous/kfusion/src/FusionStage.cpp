@@ -36,6 +36,8 @@ void FusionStage::lastStep()
 	ModelPtr m( new Model( mesh_->meshBuffer() ) );
 	if(!options_->textures())
 		ModelFactory::saveModel( m, string(options_->getOutput() + ".ply"));
-	else
+	else{
 		ModelFactory::saveModel( m, string(options_->getOutput() + ".obj"));
+		std::cout << "Finished saving obj " << std::endl; 
+	}
 }

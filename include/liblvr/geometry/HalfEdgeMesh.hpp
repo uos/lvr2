@@ -323,11 +323,12 @@ public:
 	int projectAndMapNewImage(kfusion::ImgPose img_pose, const char* texture_output_dir="");
 	
 	std::vector<std::vector<cv::Point3f> > getBoundingRectangles(int& size);
-	std::vector<cv::Mat> getTextures();
+	std::vector<std::pair<cv::Mat,float> > getTextures();
 	
 	 std::vector<std::vector<cv::Point3f> > bounding_rectangles_3D;
 	 //first version with one texture each bounding box
-	std::vector<cv::Mat> textures;
+	 //texture + float saving best angle area was seen
+	std::vector<std::pair<cv::Mat,float> > textures;
 	
 	//global bounding_rectangles
    
@@ -530,7 +531,10 @@ private:
 		   const char* texture_output_dir="");
 		   
 	int fillNonPlanarColors(kfusion::ImgPose img_pose);
+	
+	void firstBehindSecondImage(cv::Mat first, cv::Mat second, cv::Mat& dst);
 		   
+	cv::Rect calcCvRect(std::vector<cv::Point2f> rect);
 	
 	//second version with one clipped texture
 	cv::Mat texture;
