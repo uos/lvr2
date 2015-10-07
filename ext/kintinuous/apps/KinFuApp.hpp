@@ -374,7 +374,7 @@ struct KinFuApp
 						//std::cout << "better image found, sum rvec distances: " << best_dist << std::endl;
 					}
 					
-					if(time - 3.0 > 0)
+					if(time - 2.0 > 0)
 					{
 						
 						rvecs.push_back(best_rvec);
