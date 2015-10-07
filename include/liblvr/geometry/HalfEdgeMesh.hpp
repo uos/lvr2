@@ -533,6 +533,7 @@ private:
 	int fillNonPlanarColors(kfusion::ImgPose img_pose);
 	
 	void firstBehindSecondImage(cv::Mat first, cv::Mat second, cv::Mat& dst);
+	void firstBehindSecondImage(cv::Mat first, cv::Mat second, cv::Mat& dst, cv::Mat mask);
 		   
 	cv::Rect calcCvRect(std::vector<cv::Point2f> rect);
 	

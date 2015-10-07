@@ -244,7 +244,7 @@ kf::KinFuParams kf::KinFuParams::default_params()
 
 	p.cols = 640;  //pixels
 	p.rows = 480;  //pixels
-	p.intr = Intr(525.f, 525.f, p.cols/2 - 0.5f, p.rows/2 - 0.5f);
+	p.intr = Intr(575.816f, 575.816f, p.cols/2 - 0.5f, p.rows/2 - 0.5f);
 	p.shifting_distance = 0.5f; //meters to go before shifting the volume
 	p.distance_camera_target = 1.4;
 
