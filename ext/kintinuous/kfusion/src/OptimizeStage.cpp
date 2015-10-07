@@ -45,12 +45,14 @@ void OptimizeStage::step()
 	if(options_->textures()){
 		int counter=0;
 		int i;
+		int progress = 0, j;
+	
+		
 		for(i=0;i<image_poses_buffer.size();i++){
 			counter = tmp_pointer->projectAndMapNewImage(*(image_poses_buffer[i]));
 		}
+		
 		pic_count_+=i;
-		
-		
 		
 		texture_counter += tmp_pointer->textures.size();
 		

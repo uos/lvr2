@@ -139,104 +139,51 @@ void HalfEdgeMesh<VertexT, NormalT>::addMesh(HalfEdgeMesh<VertexT, NormalT>* sli
 	
 	if(slice->m_meshBuffer && this->m_meshBuffer && texture)
 	{
-		size_t lenVertices_A,lenVertices_B;
-		size_t lenNormals_A,lenNormals_B;
-		size_t lenFaces;
-		size_t lenTextureCoordinates;
-		size_t lenFaceMaterials;
-		size_t lenFaceMaterialIndices;
-		size_t lenColors;
-		
-		
-		
-		////Vertices
-		//floatArr vertexBuffer_A = this->m_meshBuffer->getVertexArray(lenVertices_A);
-		//floatArr vertexBuffer_B = slice->m_meshBuffer->getVertexArray(lenVertices_B);
-		
-		//floatArr vertexBuffer_dst = boost::shared_array<float>(new float[lenVertices_A*3+lenVertices_B*3]);
-		//vertexBuffer_dst.swap(vertexBuffer_A);
-		//for(size_t i = 0 ; i<lenVertices_B*3 ; i++)
-			//vertexBuffer_dst[lenVertices_A*3+i] = vertexBuffer_B[i];
-			
-		////Normals
-		//floatArr vertexNormalBuffer_A = this->m_meshBuffer->getVertexNormalArray(lenNormals_A);
-		//floatArr vertexNormalBuffer_B = slice->m_meshBuffer->getVertexNormalArray(lenNormals_B);
-		
-		//floatArr vertexNormalBuffer_dst = boost::shared_array<float>(new float[lenNormals_A*3+lenNormals_B*3]);
-		//vertexNormalBuffer_dst.swap(vertexNormalBuffer_A);
-		//for(size_t i = 0 ; i<lenNormals_B*3 ; i++)
-			//vertexNormalBuffer_dst[lenNormals_A*3+i] = vertexNormalBuffer_B[i];
-		
-		
 		
 		size_t a = 0,b = 0;
-		////Vertices
-		//vector<float> vertexBuffer_dst;
-		//floatArr vertexBuffer_src = this->m_meshBuffer->getVertexArray(a);
-		//cout << "having " << a <<  " vertices " << endl;
-		//for(size_t i=0;i<a*3;i++)
-			//vertexBuffer_dst.push_back(vertexBuffer_src[i]);
-		//vertexBuffer_src = slice->m_meshBuffer->getVertexArray(a);
-		//for(size_t i=0;i<a*3;i++)
-			//vertexBuffer_dst.push_back(vertexBuffer_src[i]);
-		//cout << "fusing " << a <<  " vertices " << endl;
-		
-		////Normals
-		//vector<float> vertexNormalBuffer_dst;
-		//floatArr vertexNormalBuffer_src = this->m_meshBuffer->getVertexNormalArray(a);
-		//cout << "having " << a <<  " normals " << endl;
-		//for(size_t i=0;i<a*3;i++)
-			//vertexNormalBuffer_dst.push_back(vertexNormalBuffer_src[i]);
-		//vertexNormalBuffer_src = slice->m_meshBuffer->getVertexNormalArray(a);
-		//for(size_t i=0;i<a*3;i++)
-			//vertexNormalBuffer_dst.push_back(vertexNormalBuffer_src[i]);
-		//cout << "fusing " << a <<  " normals " << endl;
 		
 		//TextureCoords
-		vector<float> textureCoordBuffer_dst;
-		floatArr textureCoordBuffer_src = this->m_meshBuffer->getVertexTextureCoordinateArray(a);
-		cout << "having " << a <<  " texture coordinates " << endl;
+		std::vector<float> textureCoordBuffer_dst;
+		floatArr textureCoordBuffer_src_A = this->m_meshBuffer->getVertexTextureCoordinateArray(a);
+		floatArr textureCoordBuffer_src_B = slice->m_meshBuffer->getVertexTextureCoordinateArray(b);
+		textureCoordBuffer_dst.resize(a*3+b*3);
 		for(size_t i=0;i<a*3;i++)
-			textureCoordBuffer_dst.push_back(textureCoordBuffer_src[i]);
-		textureCoordBuffer_src = slice->m_meshBuffer->getVertexTextureCoordinateArray(a);
-		for(size_t i=0;i<a*3;i++)
-			textureCoordBuffer_dst.push_back(textureCoordBuffer_src[i]);
-		cout << "fusing " << a <<  " texture coordinates " << endl;
+			textureCoordBuffer_dst[i] = textureCoordBuffer_src_A[i];
+		for(size_t i=0;i<b*3;i++)
+			textureCoordBuffer_dst[a*3+i] = textureCoordBuffer_src_B[i];
 		
 		//Material
 		size_t offset = 0;
 		std::vector<Material*> materialBuffer_dst;
-		materialArr materialBuffer_src = this->m_meshBuffer->getMaterialArray(offset);
+		materialArr materialBuffer_src_A = this->m_meshBuffer->getMaterialArray(offset);
+		materialArr materialBuffer_src_B = slice->m_meshBuffer->getMaterialArray(a);
+		materialBuffer_dst.resize(offset+a);
 		for(size_t i=0;i<offset;i++)
-			materialBuffer_dst.push_back(materialBuffer_src[i]);
-		materialBuffer_src = slice->m_meshBuffer->getMaterialArray(a);
+			materialBuffer_dst[i] = materialBuffer_src_A[i];
 		for(size_t i=0;i<a;i++)
-			materialBuffer_dst.push_back(materialBuffer_src[i]);
+			materialBuffer_dst[offset+i] = materialBuffer_src_B[i];
 			
 		//MaterialIndices
-		vector<unsigned int> materialIndexBuffer_dst;
-		uintArr materialIndexBuffer_src = this->m_meshBuffer->getFaceMaterialIndexArray(a);
+		std::vector<unsigned int> materialIndexBuffer_dst;
+		uintArr materialIndexBuffer_src_A = this->m_meshBuffer->getFaceMaterialIndexArray(a);
+		uintArr materialIndexBuffer_src_B = slice->m_meshBuffer->getFaceMaterialIndexArray(b);
+		materialIndexBuffer_dst.resize(a+b);
 		for(size_t i=0;i<a;i++)
-			materialIndexBuffer_dst.push_back(materialIndexBuffer_src[i]);
-		materialIndexBuffer_src = slice->m_meshBuffer->getFaceMaterialIndexArray(a);
-		for(size_t i=0;i<a;i++)
-			materialIndexBuffer_dst.push_back(materialIndexBuffer_src[i]+offset);
+			materialIndexBuffer_dst[i] = materialIndexBuffer_src_A[i];
+		for(size_t i=0;i<b;i++)
+			materialIndexBuffer_dst[a+i] = materialIndexBuffer_src_B[i]+offset;
 		
 		//Colors
-		vector<unsigned char> colorBuffer_dst;
-		ucharArr colorBuffer_src = this->m_meshBuffer->getVertexColorArray(a);
-		cout << "having " << a <<  " colors " << endl;
+		std::vector<unsigned char> colorBuffer_dst;
+		ucharArr colorBuffer_src_A = this->m_meshBuffer->getVertexColorArray(a);
+		ucharArr colorBuffer_src_B = slice->m_meshBuffer->getVertexColorArray(b);
+		colorBuffer_dst.resize(a*3+b*3);
 		for(size_t i=0;i<a*3;i++)
-			colorBuffer_dst.push_back(colorBuffer_src[i]);
-		colorBuffer_src = slice->m_meshBuffer->getVertexColorArray(a);
-		for(size_t i=0;i<a*3;i++)
-			colorBuffer_dst.push_back(colorBuffer_src[i]);
-		cout << "adding " << a <<  " colors " << endl;
+			colorBuffer_dst[i] = colorBuffer_src_A[i];
+		for(size_t i=0;i<b*3;i++)
+			colorBuffer_dst[a*3+i] = colorBuffer_src_B[i];
 		
-		//this->m_meshBuffer->setVertexArray(vertexBuffer_dst,lenVertices_A+lenVertices_B);
-		//this->m_meshBuffer->setVertexNormalArray(vertexNormalBuffer_dst,lenNormals_A+lenNormals_B);
-		//this->m_meshBuffer->setVertexTextureCoordinateArray( vertexBuffer_dst );
-		//this->m_meshBuffer->setVertexTextureCoordinateArray( vertexNormalBuffer_dst );
+		
 		this->m_meshBuffer->setVertexTextureCoordinateArray( textureCoordBuffer_dst );
 		this->m_meshBuffer->setMaterialArray( materialBuffer_dst );
 		this->m_meshBuffer->setFaceMaterialIndexArray( materialIndexBuffer_dst );
@@ -2765,19 +2712,15 @@ void HalfEdgeMesh<VertexT, NormalT>::getCostMap(std::map<VertexPtr, float> &cost
 template<typename VertexT, typename NormalT>
 std::vector<cv::Point3f> HalfEdgeMesh<VertexT,NormalT>::getBoundingRectangle(std::vector<VertexT> act_contour, NormalT normale)
 {
-	//std::cout << "contour.size(): " << act_contour.size() << std::endl;
 	vector<cv::Point3f> contour;
 	for(auto it=act_contour.begin(); it != act_contour.end(); ++it){
 		contour.push_back(cv::Point3f((*it)[0],(*it)[1],(*it)[2]));
 	}
 	
-	//std::cout << "Konturpunkte: " << contour.size() << std::endl;
-	
 	std::vector<cv::Point3f> rect;
 	
 	if(contour.size()<3){
 		// testloesung
-		//std::cout << "Kontur kleiner als 3 punkte" << std::endl;
 		rect.push_back(cv::Point3f(contour[0].x,contour[0].y,contour[0].z));
 	    rect.push_back(cv::Point3f(contour[0].x,contour[1].y,contour[0].z));
 	    rect.push_back(cv::Point3f(contour[1].x,contour[1].y,contour[1].z));
@@ -2785,10 +2728,6 @@ std::vector<cv::Point3f> HalfEdgeMesh<VertexT,NormalT>::getBoundingRectangle(std
 	    
 	    return rect;
 	}
-	
-	
-	
-	
 
 	float minArea = FLT_MAX;
 
@@ -2943,7 +2882,7 @@ int HalfEdgeMesh<VertexT,NormalT>::projectAndMapNewImage(kfusion::ImgPose img_po
 	//meshlab doesnt show any colors for obj fileformat
 	int num_colored_points = fillNonPlanarColors(img_pose);
 	
-	std::cout << "Colorized " << num_colored_points << " Points." << std::endl;
+	std::cout << timestamp <<  "Colorized " << num_colored_points << " Points." << std::endl;
 	 //3) project plane to pic area.
 				    				//calc transformation matrix with homography
 				    				//warp perspective with trans-mat in the gevin texture file from planeindex
@@ -3031,6 +2970,7 @@ void HalfEdgeMesh<VertexT,NormalT>::fillInitialTextures(std::vector<std::vector<
 		   const char* texture_output_dir)
 {
 
+	std::cout << timestamp << "Writing texture from ImagePose " << image_number << std::endl;
 	cv::Mat distCoeffs(4,1,cv::DataType<float>::type);
 					distCoeffs.at<float>(0) = 0.0;
 					distCoeffs.at<float>(1) = 0.0;
@@ -3046,12 +2986,6 @@ void HalfEdgeMesh<VertexT,NormalT>::fillInitialTextures(std::vector<std::vector<
 	
 	cv::Vec3f view_direction(img_pose.pose.rotation() * (cv::Vec3f(0,0,1)));
 	
-
-	std::cout << "Writing texture from ImagePose " << image_number << std::endl;
-	std::cout << "Textures: " << textures.size() << std::endl;
-	std::cout << "Bounding Rectangles: " << b_rects.size() << std::endl;
-	
-			//size_t j=70;
 	for(size_t j=0;j<textures.size();j++){
 
 
@@ -3087,17 +3021,30 @@ void HalfEdgeMesh<VertexT,NormalT>::fillInitialTextures(std::vector<std::vector<
 				
 				
 				if(texture_current.size()==textures[j].first.size()){
-					//calc shadows
 					
+					cv::Mat shadow_mask(texture_current.size(), CV_8U, cv::Scalar(255.0));
+					
+					//TODO
+					//calc shadows -> shadow_mask: shadows = 0.0
+					//float dist_current_brect = cv::norm(b_rects[j][0] - cv::Point3f(tvec));
+					//for(size_t i=0;i<b_rects.size();i++){
+						//if(i==j)continue;
+						//if(dist_current_brect > cv::norm(b_rects[i][0]- cv::Point3f(tvec)))
+						//{
+							//cv::Mat black_texture_current = cv::Mat(textures[i].first.size(),shadow_mask.type(),cv::Scalar(0.0));
+							//cv::warpPerspective(black_texture_current,shadow_mask,H,shadow_mask.size(),cv::INTER_NEAREST | cv::BORDER_CONSTANT);
+						//}
+					//}
+					
+					//angle calculation
 					if(fabs(angle_diff_current) >= textures[j].second){
 						//wenn bisheriger winkelunterschied kleiner gleich der aktuelle
-						firstBehindSecondImage(texture_current,textures[j].first,textures[j].first);
+						firstBehindSecondImage(texture_current,textures[j].first.clone(),textures[j].first,shadow_mask);
 					}else{
 						//wenn bisheriger winkelunterschied groesser als der aktuelle
-						firstBehindSecondImage(textures[j].first,texture_current,textures[j].first);
+						firstBehindSecondImage(textures[j].first.clone(),texture_current,textures[j].first,shadow_mask);
 						textures[j].second = fabs(angle_diff_current);
 					}
-					
 				}
 			}
 
@@ -3120,6 +3067,21 @@ void HalfEdgeMesh<VertexT,NormalT>::firstBehindSecondImage(cv::Mat first, cv::Ma
 	//cv::bitwise_or(first,second,dst,mask_bin_second);
 	first.copyTo(second,mask_bin_second);
 	second.copyTo(dst);
+}
+
+template<typename VertexT, typename NormalT>
+void HalfEdgeMesh<VertexT,NormalT>::firstBehindSecondImage(cv::Mat first, cv::Mat second, cv::Mat& dst, cv::Mat mask){
+	cv::Mat gray_second;
+	 
+	cvtColor(second,gray_second,CV_RGB2GRAY);
+	cv::Mat mask_bin_second;
+	//mask_bin: bisherige textur schwarz oder false
+	cv::threshold(gray_second,mask_bin_second,1,255,cv::THRESH_BINARY_INV);
+
+	//neue textur nur an stellen wo mask_bin true ist
+	//cv::bitwise_or(first,second,dst,mask_bin_second);
+	first.copyTo(second,mask_bin_second);
+	second.copyTo(dst,mask);
 }
 
 template<typename VertexT, typename NormalT>
