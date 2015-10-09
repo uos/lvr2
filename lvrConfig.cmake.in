@@ -1,22 +1,14 @@
 include("${CMAKE_CURRENT_LIST_DIR}/lvrTargets.cmake")
 
-include(CMakeFindDependencyMacro)
-
 set(LVR_INCLUDE_DIRS @LVR_INSTALL_INCLUDE_DIRS@)
 set(LVR_DEFINITIONS @LVR_DEFINITIONS@)
 
-find_dependency(OpenCV)
+find_package(OpenCV REQUIRED)
 
-# eigen3 2.6 sets EIGEN3_FOUND on second run,
-# but find_dependency is case sensitive...
-# this is a dirty hack that might come back to haunt
-# you some day (when this is hopefully fixed in upstream
-# and can be removed)
-set(Eigen3_FOUND TRUE)
-find_dependency(Eigen3)
+find_package(Eigen3 REQUIRED)
 list(APPEND LVR_INCLUDE_DIRS ${EIGEN3_INCLUDE_DIR})
 
-find_dependency(VTK)
+find_package(VTK REQUIRED)
 list(APPEND LVR_INCLUDE_DIRS ${VTK_INCLUDE_DIRS})
 list(APPEND LVR_DEFINITIONS ${VTK_DEFINTIONS})
 
@@ -27,31 +19,31 @@ endif()
 
 # pcl
 if(@PCL_FOUND@)
-  find_dependency(PCL)
+  find_package(PCL REQUIRED)
   list(APPEND LVR_INCLUDE_DIRS ${PCL_INCLUDE_DIRS})
   list(APPEND LVR_DEFINITIONS ${PCL_DEFINITIONS})
 endif()
 
 # cgal
 if(@CGAL_FOUND@)
-  find_dependency(CGAL)
+  find_package(CGAL REQUIRED)
   list(APPEND LVR_INCLUDE_DIRS ${CGAL_INCLUDE_DIRS})
 endif()
 
-find_dependency(Boost)
+find_package(Boost REQUIRED)
 list(APPEND LVR_INCLUDE_DIRS ${Boost_INCLUDE_DIRS})
 list(APPEND LVR_DEFINITIONS ${Boost_LIB_DIAGNOSTIC_DEFINITIONS})
 
-find_dependency(OpenGL)
+find_package(OpenGL REQUIRED)
 list(APPEND LVR_INCLUDE_DIRS ${OPENGL_INCLUDE_DIR})
 
-find_dependency(GLUT)
+find_package(GLUT REQUIRED)
 list(APPEND LVR_INCLUDE_DIRS ${GLUT_INCLUDE_DIR})
 
 # libfreenect
 if(@LIBFREENECT_FOUND@)
-  find_dependency(PkgConfig)
-  pkg_check_modules(LIBFREENECT libfreenect)
+  find_package(PkgConfig REQUIRED)
+  pkg_check_modules(LIBFREENECT REQUIRED libfreenect)
   list(APPEND LVR_INCLUDE_DIRS ${LIBFREENECT_INCLUDE_DIRS})
 endif()
 
