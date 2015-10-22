@@ -14,6 +14,7 @@
 #include <geometry/HalfEdgeMesh.hpp>
 #include <geometry/BoundingBox.hpp>
 #include <kfusion/types.hpp>
+#include <geometry/TexturedMesh.hpp>
 
 
 using namespace lvr;
@@ -25,7 +26,9 @@ typedef ColorVertex<float, unsigned char> cVertex;
 typedef FastBox<ColorVertex<float, unsigned char>, lvr::Normal<float> > cFastBox;
 typedef TsdfGrid<cVertex, cFastBox, kfusion::Point> TGrid;
 typedef FastReconstruction<ColorVertex<float, unsigned char>, lvr::Normal<float>, cFastBox > cFastReconstruction;
+typedef TexturedMesh<cVertex, lvr::Normal<float> > TMesh;
 typedef HalfEdgeMesh<cVertex, lvr::Normal<float> > HMesh;
+typedef TMesh* TMeshPtr;
 typedef HMesh* MeshPtr;
 
 class OptimizeStage : public AbstractStage
