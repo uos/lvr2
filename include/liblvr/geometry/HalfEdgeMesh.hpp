@@ -517,6 +517,8 @@ private:
 	 */
 	std::vector<cv::Point3f> getBoundingRectangle(std::vector<VertexT> act_contour, NormalT normale);
 	
+	std::vector<cv::Point3f> getBoundingRectanglePCA(std::vector<VertexT> act_contour, NormalT normale);
+	
 	void createInitialTexture(std::vector<cv::Point3f> b_rect, int texture_index, const char* output_dir="",float pic_size_factor=1000.0);
 	
 	void getInitialUV(float x,float y,float z,std::vector<cv::Point3f> b_rect,float& u, float& v);
@@ -536,6 +538,10 @@ private:
 	void firstBehindSecondImage(cv::Mat first, cv::Mat second, cv::Mat& dst, cv::Mat mask);
 		   
 	cv::Rect calcCvRect(std::vector<cv::Point2f> rect);
+	
+	std::pair<int, std::vector<int> > calcShadowTupel(std::vector<cv::Point3f> base_rect, std::vector<cv::Point3f> shadow_rect, int shadow_rect_index);
+	
+	bool calcShadowInliers(std::vector<cv::Point3f> base_rect, std::vector<cv::Point3f> shadow_rect, std::vector<int>& inliers);
 	
 	//second version with one clipped texture
 	cv::Mat texture;
