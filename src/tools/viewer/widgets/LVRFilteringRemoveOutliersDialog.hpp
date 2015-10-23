@@ -6,8 +6,8 @@
 #include <vtkRendererCollection.h>
 #include <vtkSmartPointer.h>
 
-#include "io/ModelFactory.hpp"
-#include "reconstruction/PCLFiltering.hpp"
+#include <lvr/io/ModelFactory.hpp>
+#include <lvr/reconstruction/PCLFiltering.hpp>
 
 #include "LVRFilteringRemoveOutliersDialogUI.h"
 #include "LVRPointCloudItem.hpp"

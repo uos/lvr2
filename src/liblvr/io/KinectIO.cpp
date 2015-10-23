@@ -5,9 +5,9 @@
  *      Author: Thomas Wiemann
  */
 
-#include "io/KinectIO.hpp"
-#include "io/PointBuffer.hpp"
-#include "io/DataStruct.hpp"
+#include <lvr/io/KinectIO.hpp>
+#include <lvr/io/PointBuffer.hpp>
+#include <lvr/io/DataStruct.hpp>
 
 #include <Eigen/Dense>
 
@@ -83,7 +83,7 @@ PointBufferPtr KinectIO::getBuffer()
 	// Convert depth image into point cloud
 	PointBufferPtr buffer(new PointBuffer);
 	floatArr points(new float[numPoints * 3]);
-	ucharArr colors(new uchar[numPoints * 3]);
+	ucharArr colors(new unsigned char[numPoints * 3]);
 
 	int i,j;
 	int index = 0;

@@ -26,9 +26,9 @@
  */
 
 #include <iostream>
-#include "io/ModelFactory.hpp"
-#include "io/Timestamp.hpp"
-#include "display/ColorMap.hpp"
+#include <lvr/io/ModelFactory.hpp>
+#include <lvr/io/Timestamp.hpp>
+#include <lvr/display/ColorMap.hpp>
 #include "Options.hpp"
 
 using namespace lvr;

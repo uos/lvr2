@@ -25,7 +25,7 @@
 #ifndef LVRPOINTBUFFERBRIDGE_HPP_
 #define LVRPOINTBUFFERBRIDGE_HPP_
 
-#include "io/PointBuffer.hpp"
+#include <lvr/io/PointBuffer.hpp>
 
 #include <vtkSmartPointer.h>
 #include <vtkActor.h>

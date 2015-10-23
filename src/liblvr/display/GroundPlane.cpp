@@ -24,7 +24,7 @@
  *      Author: Thomas Wiemann
  */
 
-#include "display/GroundPlane.hpp"
+#include <lvr/display/GroundPlane.hpp>
 
 namespace lvr
 {

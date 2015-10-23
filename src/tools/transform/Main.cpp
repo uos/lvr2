@@ -25,11 +25,11 @@
  */
 
 #include "Options.hpp"
-#include "geometry/Matrix4.hpp"
-#include "geometry/Vertex.hpp"
-#include "io/Model.hpp"
-#include "io/ModelFactory.hpp"
-#include "io/Timestamp.hpp"
+#include <lvr/geometry/Matrix4.hpp>
+#include <lvr/geometry/Vertex.hpp>
+#include <lvr/io/Model.hpp>
+#include <lvr/io/ModelFactory.hpp>
+#include <lvr/io/Timestamp.hpp>
 #include <iostream>
 #include <cmath>
 

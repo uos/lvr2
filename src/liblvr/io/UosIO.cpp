@@ -24,7 +24,7 @@
  *  @author Thomas Wiemann
  */
 
-#include "io/UosIO.hpp"
+#include <lvr/io/UosIO.hpp>
 
 
 #include <list>
@@ -45,8 +45,8 @@ using std::stringstream;
 //using namespace boost::filesystem;
 
 
-#include "io/Progress.hpp"
-#include "io/Timestamp.hpp"
+#include <lvr/io/Progress.hpp>
+#include <lvr/io/Timestamp.hpp>
 
 namespace lvr
 {

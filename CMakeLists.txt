@@ -1,37 +1,32 @@
 cmake_minimum_required(VERSION 2.8)
 project(LAS_VEGAS)
+SET(ENV{CC} "icc")
+SET(ENV{CXX} "icpc")
 
 set_property(GLOBAL PROPERTY USE_FOLDERS On)
 
-set( CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_SOURCE_DIR}/bin )
-set( CMAKE_MODULE_PATH ${LAS_VEGAS_SOURCE_DIR}/CMakeModules ${CMAKE_MODULE_PATH})
+include(GNUInstallDirs)
 
-link_directories("${CMAKE_SOURCE_DIR}/lib")
-link_directories("$ENV{HOME}/local/lib")
+set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/bin)
+set(CMAKE_LIBRARY_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/lib)
+set(CMAKE_ARCHIVE_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/lib)
 
-include_directories(/usr/include/libusb-1.0/)
-include_directories(${LAS_VEGAS_SOURCE_DIR}/ext/Eigen)
-include_directories(${LAS_VEGAS_SOURCE_DIR}/ext/stann)
-include_directories(${LAS_VEGAS_SOURCE_DIR}/ext/psimpl)
-include_directories(${LAS_VEGAS_SOURCE_DIR})
-include_directories(${LAS_VEGAS_SOURCE_DIR}/include/liblvr)
-
+set(CMAKE_MODULE_PATH ${LAS_VEGAS_SOURCE_DIR}/CMakeModules ${CMAKE_MODULE_PATH})
 
 ##################################################################################
 # Some compiler specific settings
 ##################################################################################
 
 if(MSVC)
-add_definitions(-DNOMINMAX)
+  list(APPEND LVR_DEFINITIONS -DNOMINMAX)
 endif()
 
-IF(CMAKE_COMPILER_IS_GNUCC)
-  SET(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -fmessage-length=0 -fPIC -Wno-deprecated")
-ENDIF(CMAKE_COMPILER_IS_GNUCC)
-IF(CMAKE_COMPILER_IS_GNUCXX)
-  SET(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -fmessage-length=0 -fPIC -Wno-deprecated")
-  add_definitions("-std=c++0x")
-ENDIF(CMAKE_COMPILER_IS_GNUCXX)
+if(CMAKE_COMPILER_IS_GNUCC AND CMAKE_COMPILER_IS_GNUCXX)
+  add_compile_options(-fmessage-length=0 -fPIC -Wno-deprecated)
+  # with cmake 3.3
+  add_compile_options($<$<COMPILE_LANGUAGE:CXX>:-std=c++0x>)
+  set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++0x")
+endif()
 
 ###############################################################
 # EXTERNAL LIBRARIES
@@ -40,7 +35,7 @@ ENDIF(CMAKE_COMPILER_IS_GNUCXX)
 ####
 ## Searching for OpenCV
 ##############################
-FIND_PACKAGE( OpenCV REQUIRED )
+find_package( OpenCV REQUIRED )
 
 ####
 ## Searching for Eigen3
@@ -51,66 +46,44 @@ include_directories(${EIGEN3_INCLUDE_DIR})
 ####
 ## Searching for MPI
 ##############################
-FIND_PACKAGE( MPI )
-include_directories(SYSTEM ${MPI_INCLUDE_PATH})
+find_package( MPI )
+if(MPI_FOUND)
+  include_directories(SYSTEM ${MPI_INCLUDE_PATH})
+endif(MPI_FOUND)
 
 ####
 ## Searching for VTK
 ##############################
-find_package(VTK REQUIRED)
-include(${VTK_USE_FILE})
-
-
-set(LVR_HEAD
-    include/liblvr/io/AsciiIO.hpp
-)
+#find_package(VTK REQUIRED)
+#include(${VTK_USE_FILE})
+#if(VTK_MAJOR_VERSION VERSION_LESS "6")
+#  list(APPEND LVR_DEFINITIONS -DLVR_USE_VTK5)
+#endif()
 
 ####
 ## Searching for NABO
 ##############################
 
-SET(NABO_INCLUDE_DIRS "")
-SET(NABO_LIBRARIES "")
 find_package(Nabo)
 if(NABO_FOUND)
-   include_directories(${NABO_INCLUDE_DIRS})
-   link_directories(${NABO_LIBRARIES})
-   add_definitions(-D_USE_NABO)
+  include_directories(${NABO_INCLUDE_DIRS})
+  list(APPEND LVR_DEFINITIONS -DLVR_USE_NABO)
 endif(NABO_FOUND)
-
 
 ####
 ## Searching for PCL
 ##############################
 
-# We intentionally do this twice as there seems to be a bug in PCL 1.4 which
-# leads to a non set PCL_VERSION variable if you call it only once.
-
-find_package(PCL 1.0)
-if ( "${PCL_VERSION}" STREQUAL "" )
-    find_package(PCL 1.0)
-endif ( "${PCL_VERSION}" STREQUAL "" )
+find_package(PCL 1.6)
 if(PCL_FOUND)
-    message(STATUS "Found PCL ${PCL_VERSION}")
-	if ( "${PCL_VERSION}" VERSION_GREATER "1.0" )
-        include_directories(${PCL_INCLUDE_DIRS})
-        link_directories(${PCL_LIBRARY_DIRS})
-        add_definitions(${PCL_DEFINITIONS})
-        add_definitions(-D_USE_PCL_)
-		if ( "${PCL_VERSION}" VERSION_GREATER "1.2" )
-            add_definitions(-D_PCL_VERSION_GT_12_)
-		else ( "${PCL_VERSION}" VERSION_GREATER "1.2" )
-            add_definitions(-D_PCL_VERSION_12_)
-		endif ( "${PCL_VERSION}" VERSION_GREATER "1.2" )
-    else ( "${PCL_VERSION}" VERSION_GREATER "1.0" )
-        message( "-- Your PCL version is to old.." )
-        message( "-- PCL related stuff will be disabled." )
-	endif ( "${PCL_VERSION}" VERSION_GREATER "1.0" )
+  include_directories(${PCL_INCLUDE_DIRS})
+  link_directories(${PCL_LIBRARY_DIRS})
+  add_definitions(${PCL_DEFINITIONS})
+  list(APPEND LVR_DEFINITIONS -DLVR_USE_PCL)
 else(PCL_FOUND)
-        message( "-- No PCL found." )
-        message( "-- PCL related stuff will be disabled." )
+  message( "-- No PCL found." )
+  message( "-- PCL related stuff will be disabled." )
 endif(PCL_FOUND)
-
 
 ####
 ## Searching CGAL
@@ -118,39 +91,33 @@ endif(PCL_FOUND)
 
 find_package(CGAL)
 if(CGAL_FOUND)
-include(${CGAL_USE_FILE})
-add_definitions(${CGAL_CXX_FLAGS_INIT})
-include_directories(${CGAL_INCLUDE_DIRS})
-link_directories(${CGAL_LIBRARIES_DIR})
-message(STATUS "FOUND CGAL")
-endif(CGAL_FOUND)
+  set(_CMAKE_CXX_FLAGS ${CMAKE_CXX_FLAGS})
+  set(CMAKE_CXX_FLAGS)
+  # CGAL_USE_FILE overrides theses flags...
+  include(${CGAL_USE_FILE})
+  set(CMAKE_CXX_FLAGS "${_CMAKE_CXX_FLAGS} ${CMAKE_CXX_FLAGS}")
 
+  message(STATUS "FOUND CGAL")
+endif(CGAL_FOUND)
 
 ####
 ## Searching for Boost
 ##############################
-#
-
 
 #set(Boost_USE_STATIC_LIBS       ON)
 set(Boost_USE_MULTITHREADED     ON)
 
-find_package( Boost
+find_package( Boost 1.54
     COMPONENTS
     program_options
-    filesystem system#
-    serialization
+    filesystem
+    system
     thread
-    mpi
-    iostreams
     REQUIRED )
 
-if(Boost_FOUND)
-    link_directories(${Boost_LIBRARY_DIR})
-    include_directories(${Boost_INCLUDE_DIRS})
-    add_definitions(${Boost_LIB_DIAGNOSTIC_DEFINITIONS})
-endif()
-
+link_directories(${Boost_LIBRARY_DIR})
+include_directories(${Boost_INCLUDE_DIRS})
+add_definitions(${Boost_LIB_DIAGNOSTIC_DEFINITIONS})
 
 ####
 ## Searching for OpenMP
@@ -158,151 +125,102 @@ endif()
 
 find_package(OpenMP)
 if(OpenMP_FOUND)
-	link_directories(${OpenMP_LIBRARY_DIRS})
-	include_directories(${OpenMP_INCLUDE_DIRS})
-	add_definitions(-D_USE_OPEN_MP)
+  link_directories(${OpenMP_LIBRARY_DIRS})
+  include_directories(${OpenMP_INCLUDE_DIRS})
+  list(APPEND LVR_DEFINITIONS -DLVR_USE_OPEN_MP)
+  set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${OpenMP_CXX_FLAGS}")
 endif(OpenMP_FOUND)
-
-set( CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${OpenMP_CXX_FLAGS}" )
-
 
 ####
 ## Searching for OpenGL
 ##############################
 
 find_package(OpenGL REQUIRED)
-if(OpenGL_FOUND)
-    link_directories(${OpenGL_LIBRARY_DIRS})
-    include_directories(${OpenGL_INCLUDE_DIRS})
-    message( "OPEN GL LIBS 1 : " ${OPENGL_LIBRARIES})
-    message( "OPEN GL LIBS 2 : " ${OPENGL_LIBRARY})
-endif(OpenGL_FOUND)
+message( "OPEN GL LIBS : " ${OPENGL_LIBRARIES})
+include_directories(${OPENGL_INCLUDE_DIR})
 
-IF(APPLE)
-    link_directories(/opt/local/lib)
-    include_directories(/System/Library/Frameworks/GLUT.framework/Headers)
-    include_directories(/System/Library/Frameworks/OpenGL.framework/Headers)
-ENDIF(APPLE)
+if(APPLE)
+  include_directories(/System/Library/Frameworks/GLUT.framework/Headers)
+  include_directories(/System/Library/Frameworks/OpenGL.framework/Headers)
+  link_directories(/opt/local/lib)
+endif(APPLE)
 
-if(UNIX)
-    FIND_PATH(OPENGL_INC gl.h /usr/include/GL)
-    include_directories(${OPENGL_INC})
-endif(UNIX)
-
-
-##############################################################
-## Searching for glut and it's additional runtime libraries.
-##############################################################
+####
+## Searching for glut
+##############################
 
 find_package(GLUT REQUIRED)
-if ( GLUT_FOUND )
-    message(STATUS "-- Found OpenGL Utility Toolkit" )
-    include_directories(${GLUT_INCLUDE_DIR})
-else ( GLUT_FOUND )
-    message( SEND_ERROR "-- could not find OpenGL Utility Toolkit" )
-endif ( GLUT_FOUND )
+message(STATUS "-- Found OpenGL Utility Toolkit" )
+include_directories(${GLUT_INCLUDE_DIR})
 
-if(LINUX)
-if ( GLUT_Xmu_LIBRARY )
-    message( "-- Found X.Org X11 libXmu/libXmuu runtime libraries" )
-else ( GLUT_Xmu_LIBRARY )
-    message( SEND_ERROR "-- Could not find X.Org X11 libXmu/libXmuu runtime libraries" )
-endif ( GLUT_Xmu_LIBRARY )
+####
+## Searching for libfreenect
+##############################
 
-if ( GLUT_Xi_LIBRARY )
-    message( "-- Found X.Org X11 libXi runtime library" )
-else ( GLUT_Xi_LIBRARY )
-    message( SEND_ERROR "-- Could not find X.Org X11 libXi runtime library" )
-endif ( GLUT_Xi_LIBRARY )
+#find_package(PkgConfig REQUIRED)
+#pkg_check_modules(LIBFREENECT libfreenect)
+#if(LIBFREENECT_FOUND)
+#  include_directories(${LIBFREENECT_INCLUDE_DIRS})
+#endif(LIBFREENECT_FOUND)
 
-if ( OPENGL_glu_LIBRARY )
-    message( "-- Found GLU library" )
-else ( OPENGL_glu_LIBRARY )
-    message( SEND_ERROR "-- Could not find GLU library" )
-endif ( OPENGL_glu_LIBRARY )
+####
+## Searching for STANN
+##############################
 
-endif(LINUX)
+set(STANN_DIR "" CACHE PATH "directory that contains the STANN library headers")
+find_package(STANN)
+if(STANN_FOUND)
+  list(APPEND LVR_DEFINITIONS -DLVR_USE_STANN)
+  include_directories(${STANN_INCLUDE_DIR})
+endif(STANN_FOUND)
 
 ##############################################################
 # USED THIRD PARTY STUFF
 ##############################################################
 
+# NanoFLANN
+add_subdirectory(ext/nanoflann)
+include_directories( ${NANOFLANN_INCLUDE_DIR} )
+list(APPEND LVR_INSTALL_INCLUDE_DIRS ${NANOFLANN_INSTALL_INCLUDE_DIR})
 
-include_directories( ${CMAKE_CURRENT_SOURCE_DIR}/ext )
+# PSIMPL
+add_subdirectory(ext/psimpl)
+include_directories( ${PSIMPL_INCLUDE_DIR} )
+list(APPEND LVR_INSTALL_INCLUDE_DIRS ${PSIMPL_INSTALL_INCLUDE_DIR})
 
 # RPLY
-include_directories( ${CMAKE_CURRENT_SOURCE_DIR}/ext/rply/ )
 add_subdirectory(ext/rply)
+include_directories( ${RPLY_INCLUDE_DIR} )
+list(APPEND LVR_INSTALL_INCLUDE_DIRS ${RPLY_INSTALL_INCLUDE_DIR})
 
 # LASLIB
-include_directories( ${CMAKE_CURRENT_SOURCE_DIR}/ext/laslib/inc )
 add_subdirectory(ext/laslib)
-
-# OBJ
-include_directories( ${CMAKE_CURRENT_SOURCE_DIR}/ext/obj/ )
-add_subdirectory(ext/obj)
+include_directories( ${LASLIB_INCLUDE_DIR} )
+list(APPEND LVR_INSTALL_INCLUDE_DIRS ${LASLIB_INSTALL_INCLUDE_DIR})
 
 # SLAM6D stuff
-include_directories( ${CMAKE_CURRENT_SOURCE_DIR}/ext/slam6d )
 add_subdirectory(ext/slam6d)
+include_directories( ${SLAM6D_INCLUDE_DIR} )
+list(APPEND LVR_INSTALL_INCLUDE_DIRS ${SLAM6D_INSTALL_INCLUDE_DIR})
 
-# Freenect
-#if(APPLE)
-#include_directories( /opt/local/include/libusb-1.0/)
-#endif(APPLE)
-#include_directories(ext/libfreenect/include/)
-#add_subdirectory(ext/libfreenect)
 
-if(MPI_FOUND)
-add_subdirectory(src/tools/mpi)
-endif(MPI_FOUND)
 
-if(CGAL_FOUND)
-add_subdirectory(src/tools/cgal_reconstruction)
-#add_subdirectory(src/tools/fusion)
-add_subdirectory(src/tools/slicer)
-endif(CGAL_FOUND)
+##############################################################
+# HEADERS
+##############################################################
 
-if(PCL_FOUND)
-    add_subdirectory(src/tools/scanfilter)
-#    add_subdirectory(src/tools/kinectgrabber)
-endif(PCL_FOUND)
+include_directories(include)
+
+install(DIRECTORY include/lvr DESTINATION ${CMAKE_INSTALL_INCLUDEDIR})
+
+list(APPEND LVR_INSTALL_INCLUDE_DIRS ${CMAKE_INSTALL_PREFIX}/${CMAKE_INSTALL_INCLUDEDIR})
+
+add_definitions(${LVR_DEFINITIONS})
 
 ##############################################################
 # VIEWERS
 ##############################################################
 
-set( QT_USE_QTOPENGL TRUE )
-set( QT_USE_XML TRUE)
-find_package( Qt4 )
-if( QT4_FOUND )
-    include_directories(${QT_INCLUDE_DIR})
-    include_directories(${QT_QTGUI_INCLUDE_DIR})
-    include_directories(${QT_QTOPENGL_INCLUDE_DIR})
-    include_directories(${QT_QTCORE_INCLUDE_DIR})
-    include_directories(${QT_QTXML_INCLUDE_DIR})
-
-    add_definitions(-D_USE_QT)
-
-    # Try to find libQGLViewer
-    find_library(QGLVIEWER_LIBRARY_RELEASE
-        NAMES qglviewer-qt4 qglviewer QGLViewer QGLViewer2
-        PATHS /usr/lib /usr/local/lib ENV QGLVIEWERROOT
-        ENV LD_LIBRARY_PATH ENV LIBRARY_PATH
-        PATH_SUFFIXES QGLViewer QGLViewer/release)
-    if(QGLVIEWER_LIBRARY_RELEASE)
-        message(STATUS "Found libqglviewer")
-        message(STATUS "Building qglviewer application")
-        add_subdirectory(src/qglviewer)
-    endif(QGLVIEWER_LIBRARY_RELEASE)
-
-   	find_package(QVTK)
-	if(QVTK_FOUND)
-		include_directories(${QVTK_INCLUDE_DIR})
-   		add_subdirectory(src/tools/viewer)
-	endif(QVTK_FOUND)
-
-endif(QT4_FOUND)
 
 
 ##############################################################
@@ -325,36 +243,58 @@ add_subdirectory(src/tools/texman)
 add_subdirectory(src/tools/tiogen)
 add_subdirectory(src/tools/meshoptimizer)
 add_subdirectory(src/tools/transform)
-add_subdirectory(src/tools/registration)
-add_subdirectory(src/tools/normals)
-add_subdirectory(src/tools/convertMMF)
-add_subdirectory(src/tools/leica_converter)
-add_subdirectory(src/tools/largescale)
+#add_subdirectory(src/tools/registration)
+#add_subdirectory(src/tools/normals)
+
+if(MPI_FOUND)
+  add_subdirectory(src/tools/mpi)
+endif(MPI_FOUND)
+
+if(CGAL_FOUND)
+  add_subdirectory(src/tools/cgal_reconstruction)
+  #add_subdirectory(src/tools/fusion)
+  add_subdirectory(src/tools/slicer)
+endif(CGAL_FOUND)
+
+if(PCL_FOUND)
+  add_subdirectory(src/tools/scanfilter)
+  add_subdirectory(src/tools/leica_converter)
+endif(PCL_FOUND)
+
+################################################################
+# CMAKE FILES
+################################################################
+
+install(EXPORT lvrTargets
+    FILE lvrTargets.cmake
+    NAMESPACE lvr::
+    DESTINATION ${CMAKE_INSTALL_LIBDIR}/cmake/lvr)
+
+configure_file(lvrConfig.cmake.in ${CMAKE_BINARY_DIR}/lvrConfig.cmake @ONLY)
+install(FILES ${CMAKE_BINARY_DIR}/lvrConfig.cmake
+    DESTINATION ${CMAKE_INSTALL_LIBDIR}/cmake/lvr)
 
 ################################################################
 # DOCUMENTATION
 ################################################################
 
-# Try to find doxygen
 find_package( Doxygen )
-
-# Doxygen found
 if( NOT DOXYGEN_FOUND )
-    message( WARNING "Could not find Doxygen. "
-        "You will not be able to build the documentation." )
+  message( WARNING "Could not find Doxygen. "
+      "You will not be able to build the documentation." )
 endif( NOT DOXYGEN_FOUND )
 
-# GraphViz found
 if( NOT DOXYGEN_DOT_FOUND )
-    message( WARNING "Could not find GraphViz. "
-        "You will not be able to build the documentation." )
+  message( WARNING "Could not find GraphViz. "
+      "You will not be able to build the documentation." )
 endif( NOT DOXYGEN_DOT_FOUND )
 
 if( DOXYGEN_FOUND AND DOXYGEN_DOT_FOUND )
-    configure_file( ${CMAKE_CURRENT_SOURCE_DIR}/Doxyfile.in
-        ${CMAKE_CURRENT_BINARY_DIR}/Doxyfile @ONLY )
-    add_custom_target( doc
-        ${DOXYGEN_EXECUTABLE} ${CMAKE_CURRENT_BINARY_DIR}/Doxyfile
-        WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}
-        COMMENT "Generating API documentation with Doxygen" VERBATIM )
+  configure_file( ${CMAKE_CURRENT_SOURCE_DIR}/Doxyfile.in
+      ${CMAKE_CURRENT_BINARY_DIR}/Doxyfile @ONLY )
+  add_custom_target( doc
+      ${DOXYGEN_EXECUTABLE} ${CMAKE_CURRENT_BINARY_DIR}/Doxyfile
+      WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}
+      COMMENT "Generating API documentation with Doxygen" VERBATIM )
 endif( DOXYGEN_FOUND AND DOXYGEN_DOT_FOUND )
+
