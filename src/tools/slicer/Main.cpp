@@ -27,13 +27,13 @@
 #include "Options.hpp"
 
 // Local includes
-#include "io/PLYIO.hpp"
-#include "io/Timestamp.hpp"
-#include "io/Progress.hpp"
-#include "io/Model.hpp"
-#include "io/ModelFactory.hpp"
+#include <lvr/io/PLYIO.hpp>
+#include <lvr/io/Timestamp.hpp>
+#include <lvr/io/Progress.hpp>
+#include <lvr/io/Model.hpp>
+#include <lvr/io/ModelFactory.hpp>
 
-#include "slicer/MeshSlicer.hpp"
+#include <lvr/slicer/MeshSlicer.hpp>
 
 #include <iostream>
 

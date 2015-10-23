@@ -6,17 +6,18 @@
 #include <vtkRendererCollection.h>
 #include <vtkSmartPointer.h>
 
-#include "reconstruction/AdaptiveKSearchSurface.hpp"
-#include "reconstruction/FastReconstruction.hpp"
-#include "io/PLYIO.hpp"
-#include "geometry/Matrix4.hpp"
-#include "geometry/HalfEdgeMesh.hpp"
-#include "texture/Texture.hpp"
-#include "texture/Transform.hpp"
-#include "texture/Texturizer.hpp"
-#include "texture/Statistics.hpp"
-#include "geometry/QuadricVertexCosts.hpp"
-#include "reconstruction/SharpBox.hpp"
+#include <lvr/reconstruction/AdaptiveKSearchSurface.hpp>
+#include <lvr/reconstruction/FastReconstruction.hpp>
+#include <lvr/io/PLYIO.hpp>
+#include <lvr/geometry/Matrix4.hpp>
+#include <lvr/geometry/HalfEdgeMesh.hpp>
+#include <lvr/texture/Texture.hpp>
+#include <lvr/texture/Transform.hpp>
+#include <lvr/texture/Texturizer.hpp>
+#include <lvr/texture/Statistics.hpp>
+#include <lvr/geometry/QuadricVertexCosts.hpp>
+#include <lvr/reconstruction/SharpBox.hpp>
+
 #include "../vtkBridge/LVRModelBridge.hpp"
 
 #include "LVROptimizationRemoveArtifactsDialogUI.h"

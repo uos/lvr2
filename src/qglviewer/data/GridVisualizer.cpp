@@ -23,8 +23,9 @@
  *      Author: Thomas Wiemann
  */
 
-#include "display/Grid.hpp"
-#include "io/GridIO.hpp"
+#include <lvr/display/Grid.hpp>
+#include <lvr/io/GridIO.hpp>
+
 #include "GridVisualizer.hpp"
 
 #include "../widgets/PointCloudTreeWidgetItem.h"

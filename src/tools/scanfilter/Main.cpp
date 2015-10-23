@@ -19,9 +19,12 @@
 
 #include "Options.hpp"
 
-#include "io/Timestamp.hpp"
-#include "io/ModelFactory.hpp"
-#include "reconstruction/PCLFiltering.hpp"
+#include <lvr/io/Timestamp.hpp>
+#include <lvr/io/ModelFactory.hpp>
+#ifdef LVR_USE_PCL
+#include <lvr/reconstruction/PCLFiltering.hpp>
+#endif
+
 
 #include <iostream>
 
@@ -51,6 +54,8 @@ int main(int argc, char** argv)
 		{
 			if(m->m_pointCloud)
 			{
+
+#ifdef LVR_USE_PCL
 				PCLFiltering filter(m->m_pointCloud);
 
 				// Apply filters
@@ -69,6 +74,10 @@ int main(int argc, char** argv)
 				ModelPtr out_model( new Model( pb ) );
 
 				ModelFactory::saveModel(out_model, options.outputFile());
+#else 
+				cout << timestamp << "Can't create a PCL Filter without PCL installed." << endl;
+				exit(-1);
+#endif
 			}
 		}
 		else

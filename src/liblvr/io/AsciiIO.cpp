@@ -32,9 +32,9 @@ using std::ifstream;
 
 #include <boost/filesystem.hpp>
 
-#include "io/AsciiIO.hpp"
-#include "io/Progress.hpp"
-#include "io/Timestamp.hpp"
+#include <lvr/io/AsciiIO.hpp>
+#include <lvr/io/Progress.hpp>
+#include <lvr/io/Timestamp.hpp>
 
 namespace lvr
 {

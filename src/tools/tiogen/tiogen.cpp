@@ -29,14 +29,14 @@
  */
 
 
-#include <io/Timestamp.hpp>
-#include <io/TextureIO.hpp>
+#include <lvr/io/Timestamp.hpp>
+#include <lvr/io/TextureIO.hpp>
 #include <cstdlib>
 #include <iomanip>
 #include <sstream>
 #include <opencv/cv.h>
 #include <opencv2/highgui/highgui.hpp>
-#include <texture/ImageProcessor.hpp>
+#include <lvr/texture/ImageProcessor.hpp>
 
 #include <iostream>
 #include <iterator>
