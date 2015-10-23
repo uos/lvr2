@@ -23,7 +23,7 @@ to do ist to include the specific header file. For reading PLY it is
 “PLYIO.hpp” from the directory “io”. Actually everything we use in this
 tutorial is in the “io” dir.
 
-    #include <io/PLYIO.hpp>
+    #include <lvr/io/PLYIO.hpp>
 
 Next we have to create a PLYIO object and use it to read the file:
 
@@ -76,7 +76,7 @@ format. This tool can be found in a slightly extended version in
 “src/convert/convert.cpp”.
 
     #include <cstdio>
-    #include <io/ModelFactory.hpp>
+    #include <lvr/io/ModelFactory.hpp>
 
 
     int main( int argc, char ** argv )

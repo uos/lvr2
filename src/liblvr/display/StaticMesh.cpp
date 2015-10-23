@@ -24,7 +24,7 @@
  *      Author: Thomas Wiemann
  */
 
-#include "display/StaticMesh.hpp"
+#include <lvr/display/StaticMesh.hpp>
 
 #include <cassert>
 

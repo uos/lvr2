@@ -29,7 +29,7 @@
 
 #include <QtGui>
 
-#include "display/Renderable.hpp"
+#include <lvr/display/Renderable.hpp>
 
 using lvr::Renderable;
 

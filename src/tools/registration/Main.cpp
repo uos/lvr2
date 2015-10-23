@@ -20,9 +20,9 @@
 
 // Program options for this tool
 #include "Options.hpp"
-#include "registration/ICPPointAlign.hpp"
-#include "io/DataStruct.hpp"
-#include "io/ModelFactory.hpp"
+#include <lvr/registration/ICPPointAlign.hpp>
+#include <lvr/io/DataStruct.hpp>
+#include <lvr/io/ModelFactory.hpp>
 
 #include <iostream>
 

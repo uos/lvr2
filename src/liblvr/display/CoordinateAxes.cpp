@@ -24,7 +24,7 @@
  *      Author: Thomas Wiemann
  */
 
-#include "display/CoordinateAxes.hpp"
+#include <lvr/display/CoordinateAxes.hpp>
 
 namespace lvr
 {

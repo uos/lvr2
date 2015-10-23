@@ -25,9 +25,9 @@
 #ifndef LVRMESHBUFFERBRIDGE_H_
 #define LVRMESHBUFFERBRIDGE_H_
 
-#include "io/MeshBuffer.hpp"
-#include "display/TexturedMesh.hpp"
-#include "display/GlTexture.hpp"
+#include <lvr/io/MeshBuffer.hpp>
+#include <lvr/display/TexturedMesh.hpp>
+#include <lvr/display/GlTexture.hpp>
 
 #include <vtkSmartPointer.h>
 #include <vtkActor.h>

@@ -30,12 +30,15 @@ using namespace std;
 #include <boost/filesystem.hpp>
 
 #include "Options.hpp"
-#include "io/BaseIO.hpp"
-#include "io/DatIO.hpp"
-#include "io/Timestamp.hpp"
-#include "io/ModelFactory.hpp"
-#include "io/AsciiIO.hpp"
-#include "reconstruction/PCLFiltering.hpp"
+#include <lvr/io/BaseIO.hpp>
+#include <lvr/io/DatIO.hpp>
+#include <lvr/io/Timestamp.hpp>
+#include <lvr/io/ModelFactory.hpp>
+#include <lvr/io/AsciiIO.hpp>
+#ifdef LVR_USE_PCL
+	#include <lvr/reconstruction/PCLFiltering.hpp>
+#endif
+
 
 using namespace lvr;
 
@@ -45,6 +48,7 @@ ModelPtr filterModel(ModelPtr p, int k, float sigma)
 	{
 		if(p->m_pointCloud)
 		{
+#ifdef LVR_USE_PCL
 			PCLFiltering filter(p->m_pointCloud);
 			cout << timestamp << "Filtering outliers with k=" << k << " and sigma=" << sigma << "." << endl;
 			size_t original_size = p->m_pointCloud->getNumPoints();
@@ -53,6 +57,11 @@ ModelPtr filterModel(ModelPtr p, int k, float sigma)
 			ModelPtr out_model( new Model( pb ) );
 			cout << timestamp << "Filtered out " << original_size - out_model->m_pointCloud->getNumPoints() << " points." << endl;
 			return out_model;
+#else 
+			cout << timestamp << "Can't create a PCL Filter without PCL installed." << endl;
+			return NULL;
+#endif
+			
 		}
 	}
 	p;

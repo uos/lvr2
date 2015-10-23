@@ -1,8 +1,8 @@
 # Objects that use Qt's signals and slots
 
-ADD_DEFINITIONS(-DQT_NO_KEYWORDS )
+add_definitions(-DQT_NO_KEYWORDS )
 
-set(QVIEWER_MOCS 
+set(QVIEWER_MOCS
     app/ViewerApplication.h
     data/VisualizerFactory.hpp
     data/Visualizer.hpp
@@ -15,7 +15,7 @@ set(QVIEWER_MOCS
 )
 
 # Dynamically generated GUI object's from
-# QtDesigner 
+# QtDesigner
 set(QVIEWER_UIS
     ui/FogDensityDialog.ui
     ui/InputCoordinateSystemDialog.ui
@@ -95,7 +95,5 @@ target_link_libraries(qviewer GLU)
 target_link_libraries(qviewer ${PCL_LIBRARIES})
 target_link_libraries(qviewer GLU)
 
-INSTALL(TARGETS qviewer
-    RUNTIME DESTINATION bin
-    LIBRARY DESTINATION lib
-    ARCHIVE DESTINATION lib)
+install(TARGETS qviewer
+    RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR})
