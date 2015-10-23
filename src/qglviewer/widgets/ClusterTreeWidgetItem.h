@@ -27,7 +27,8 @@
 #define CLUSTERTREEWIDGETITEM_H_
 
 #include "CustomTreeWidgetItem.h"
-#include "display/MeshCluster.hpp"
+
+#include <lvr/display/MeshCluster.hpp>
 
 using lvr::MeshCluster;
 

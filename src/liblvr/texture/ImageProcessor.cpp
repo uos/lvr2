@@ -24,7 +24,7 @@
  *  @author Kim Rinnewitz (krinnewitz@uos.de)
  */
 
-#include "texture/ImageProcessor.hpp"
+#include <lvr/texture/ImageProcessor.hpp>
 #include <opencv/cv.h>
 // #include <opencv2/highgui/highgui.hpp>
 #if CV_MAJOR_VERSION >= 2 && CV_MINOR_VERSION >= 4

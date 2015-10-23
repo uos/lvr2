@@ -24,7 +24,7 @@
  *  @author Kim Rinnewitz (krinnewitz@uos.de)
  */
 
-#include "texture/Transform.hpp"
+#include <lvr/texture/Transform.hpp>
 
 //#include <opencv2/highgui/highgui.hpp>
 #include <opencv/cv.h>

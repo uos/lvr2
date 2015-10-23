@@ -28,7 +28,7 @@
  *
  **/
 
-#include "io/PointBuffer.hpp"
+#include <lvr/io/PointBuffer.hpp>
 
 #include <iostream>
 
