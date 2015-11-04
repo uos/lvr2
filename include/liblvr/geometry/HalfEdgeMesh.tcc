@@ -2473,11 +2473,11 @@ HalfEdgeMesh<VertexT, NormalT>* HalfEdgeMesh<VertexT, NormalT>::retesselateInHal
 					getInitialUV(points[k+0],points[k+1],points[k+2],bounding_rectangle,u,v);
 				///
 
-				current = Vertex<float>(points[k], points[k + 1], points[k + 2]);
-				auto it = vertexMap.find(current);
-				if(it != vertexMap.end())
-				{
-					pos = vertexMap[current];
+				//current = Vertex<float>(points[k], points[k + 1], points[k + 2]);
+				//auto it = vertexMap.find(current);
+				//if(it != vertexMap.end())
+				//{
+					//pos = vertexMap[current];
 
 					//vertex of non planar region has no UV
 					/// added
@@ -2509,11 +2509,11 @@ HalfEdgeMesh<VertexT, NormalT>* HalfEdgeMesh<VertexT, NormalT>::retesselateInHal
 						}
 					}
 					///
-				}
-				else
-				{
+				//}
+				//else
+				//{
 				    pos = (vertexBuffer.size() / 3);
-				    vertexMap.insert(pair<Vertex<float>, unsigned int>(current, pos));
+				    //vertexMap.insert(pair<Vertex<float>, unsigned int>(current, pos));
 			        vertexBuffer.push_back( points[k] );
 					vertexBuffer.push_back( points[k + 1]);
 					vertexBuffer.push_back( points[k + 2]);
@@ -2522,18 +2522,42 @@ HalfEdgeMesh<VertexT, NormalT>* HalfEdgeMesh<VertexT, NormalT>::retesselateInHal
 					normalBuffer.push_back( m_regions[iRegion]->m_normal[1] );
 					normalBuffer.push_back( m_regions[iRegion]->m_normal[2] );
 
-					colorBuffer.push_back( static_cast<unsigned char>(255) );
-					colorBuffer.push_back( static_cast<unsigned char>(255) );
-					colorBuffer.push_back( static_cast<unsigned char>(255) );
+					colorBuffer.push_back( r );
+					colorBuffer.push_back( g );
+					colorBuffer.push_back( b );
 
 					textureCoordBuffer.push_back( u );
 					textureCoordBuffer.push_back( v );
 					textureCoordBuffer.push_back(  0 );
-				}
-				point_map.insert(pair<size_t, size_t >(k/3, pos));
+				//}
+				//point_map.insert(pair<size_t, size_t >(k/3, pos));
 			}
+            size_t offset = vertexBuffer.size() - points.size();
+
+            // calculate the index value for the old end of the vertex buffer.
+            offset = ( offset / 3 );
 
             for(int j=0; j < indices.size(); j+=3)
+            {
+                /*if(indices[j] == indices[j+1] || indices[j+1] == indices[j+2] || indices[j+2] == indices[j])
+                {
+                    cout << "Detected degenerated face: " << indices[j] << " " << indices[j + 1] << " " << indices[j + 2] << endl;
+                }*/
+
+                // store the indices with the correct offset to the indices buffer.
+                int a =  indices[j + 0] + offset;
+                int b =  indices[j + 1] + offset;
+                int c =  indices[j + 2] + offset;
+
+                if(a != b && b != c && a != c)
+                {
+                    indexBuffer.push_back( a );
+                    indexBuffer.push_back( b );
+                    indexBuffer.push_back( c );
+                }
+
+            }
+            /*for(int j=0; j < indices.size(); j+=3)
             {
 				auto it_a = point_map.find(indices[j + 0]);
 				auto it_b = point_map.find(indices[j + 1]);
@@ -2548,7 +2572,7 @@ HalfEdgeMesh<VertexT, NormalT>* HalfEdgeMesh<VertexT, NormalT>::retesselateInHal
                     indexBuffer.push_back( b );
                     indexBuffer.push_back( c );
                 }
-            }
+            }*/
 
             ///added
             if(textured){
