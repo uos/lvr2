@@ -38,6 +38,7 @@ void OptimizeStage::step()
 	MeshPtr tmp_pointer = optiMesh_->retesselateInHalfEdge(options_->getLineFusionThreshold(), options_->textures(), texture_counter);
 	if(tmp_pointer == NULL)
 		return;
+	optiMesh_->restorePlanes(options_->getMinPlaneSize());
 	delete opti_time;
 	mesh_count_++;
 
