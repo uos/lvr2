@@ -137,6 +137,20 @@ void HalfEdgeMesh<VertexT, NormalT>::addMesh(HalfEdgeMesh<VertexT, NormalT>* sli
 	m_slice_verts = slice->m_slice_verts;
 	m_globalIndex = this->meshSize();
 
+    if(slice->m_meshBuffer && this->m_meshBuffer)
+	{
+        //Colors
+        size_t a = 0,b = 0;
+        std::vector<unsigned char> colorBuffer_dst;
+        ucharArr colorBuffer_src_A = this->m_meshBuffer->getVertexColorArray(a);
+        ucharArr colorBuffer_src_B = slice->m_meshBuffer->getVertexColorArray(b);
+        colorBuffer_dst.resize(a*3+b*3);
+        for(size_t i=0;i<a*3;i++)
+            colorBuffer_dst[i] = colorBuffer_src_A[i];
+        for(size_t i=0;i<b*3;i++)
+            colorBuffer_dst[a*3+i] = colorBuffer_src_B[i];
+        this->m_meshBuffer->setVertexColorArray(colorBuffer_dst);
+    }
 	if(slice->m_meshBuffer && this->m_meshBuffer && texture)
 	{
 
