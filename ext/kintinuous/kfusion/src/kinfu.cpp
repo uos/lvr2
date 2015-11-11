@@ -7,8 +7,8 @@ using namespace kfusion;
 using namespace kfusion::cuda;
 
 kfusion::KinFu::KinFu(const KinFuParams& params) : frame_counter_(0), params_(params), has_shifted_(false), perform_last_scan_(false), perform_shift_(false)
-                                                   , cyclical_(params)
-                                                   
+                                                   , cyclical_(params), checkForShift_(true)
+
 {
     CV_Assert(params.volume_dims[0] % 32 == 0);
 
@@ -23,7 +23,7 @@ kfusion::KinFu::KinFu(const KinFuParams& params) : frame_counter_(0), params_(pa
 
     // initialize cyclical buffer
     cyclical_.initBuffer(volume_);
-	
+
     icp_ = cv::Ptr<cuda::ProjectiveICP>(new cuda::ProjectiveICP());
     icp_->setDistThreshold(params_.icp_dist_thres);
     icp_->setAngleThreshold(params_.icp_angle_thres);
@@ -171,9 +171,10 @@ bool kfusion::KinFu::operator()(const kfusion::cuda::Depth& depth, const kfusion
             return reset(), false;
     }
     poses_.push_back(poses_.back() * affine); // curr -> global
-    
+
     // check if we need to shift
-    has_shifted_ = cyclical_.checkForShift(volume_, getCameraPose(), params_.distance_camera_target , perform_shift_, perform_last_scan_, record_mode_); 
+    if(checkForShift_)
+        has_shifted_ = cyclical_.checkForShift(volume_, getCameraPose(), params_.distance_camera_target , perform_shift_, perform_last_scan_, record_mode_);
 	perform_shift_ = false;
     ///////////////////////////////////////////////////////////////////////////////////////////
     // Volume integration
@@ -302,5 +303,3 @@ void kfusion::KinFu::renderImage(cuda::Image& image, const Affine3f& pose, Intr 
 
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-
-

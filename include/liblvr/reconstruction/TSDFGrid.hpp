@@ -32,6 +32,7 @@ public:
 	
 	TsdfGrid(float cellSize,  BoundingBox<VertexT> bb, TsdfT* tsdf, size_t size,
 			int shiftX, int shiftY, int shiftZ,
+			int backShiftX, int backShiftY, int backShiftZ,
 			TsdfGrid<VertexT, BoxT, TsdfT>* lastGrid, bool isVoxelsize = true);
 	virtual ~TsdfGrid();
 	virtual void addLatticePoint(int index_x, int index_y, int index_z, float distance = 0);
@@ -52,8 +53,10 @@ public:
     int m_fusionIndex_x;
     int m_fusionIndex_y;
     int m_fusionIndex_z;
+    int m_oldFusionIndex_x;
+    int m_oldFusionIndex_y;
+    int m_oldFusionIndex_z;
     int m_fusionIndex;
-    
 };
 
 } /* namespace lvr */

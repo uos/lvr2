@@ -128,7 +128,7 @@ public:
 	 * @brief   Dtor.
 	 */
 	virtual ~HalfEdgeMesh();
-	
+
 	void addMesh(HalfEdgeMesh* slice, bool texture);
 
 	/**
@@ -139,7 +139,7 @@ public:
 	 * 					must support []-access.
 	 */
 	virtual void addVertex(VertexT v);
-	
+
 	/**
 	 * @brief 	This method should be called every time
 	 * 			a new vertex is created to ensure that vertex
@@ -158,9 +158,11 @@ public:
 	 * @param	c		The third vertex of the triangle
 	 */
 	virtual void addTriangle(uint a, uint b, uint c);
-	
+
 	virtual void setFusionVertex(uint v);
-	
+
+	virtual void setFusionNeighborVertex(uint v);
+
 	virtual void setOldFusionVertex(uint v);
 
     /**
@@ -172,7 +174,7 @@ public:
      * @param   f       A pointer to the created face
      */
 	virtual void addTriangle(uint a, uint b, uint c, FacePtr&f);
-	
+
 	/**
 	 * @brief	Flip the edge between vertex index v1 and v2
 	 *
@@ -196,7 +198,7 @@ public:
 	 * @param remove_flickering	Whether to remove flickering faces or not
 	 */
 	virtual void optimizePlanes(int iterations, float normalThreshold, int minRegionSize = 50, int smallRegionSize = 0, bool remove_flickering = true);
-	
+
 	/**
 	 * @brief	Removes artifacts in the mesh that are not connected to the main mesh
 	 *
@@ -224,7 +226,7 @@ public:
      * @param 	genTextures	Whether to generate textures or not
 	 */
 	virtual void finalizeAndRetesselate(bool genTextures, float fusionThreshold = 0.01);
-	
+
 	virtual HalfEdgeMesh<VertexT, NormalT>*  retesselateInHalfEdge(float fusionThreshold = 0.01, bool textured = false, int start_texture_index=0);
 
 	/**
@@ -250,7 +252,7 @@ public:
 	 * @param minRegionSize		The minimum size of a region
 	 */
 	virtual void restorePlanes(int minRegionSize);
-	
+
 	virtual size_t meshSize() { return m_vertices.size(); };
 
 	/**
@@ -302,44 +304,48 @@ public:
 	 * @brief returns the RegionVector
 	 */
 	RegionVector getRegions() { return m_regions; }
-	
+
 	/**
 	 * @brief returns a reference to the VertexVector
 	 */
 	VertexVector& getVertices() { return m_vertices; }
-	
+
 	FaceVector& getFaces() { return m_faces; }
-	
+
 	void setQuiet(bool quiet){timestamp.setQuiet(quiet);}
-	
+
 	void mergeVertex(VertexPtr merge_vert, VertexPtr erase_vert);
-	
+
 	unordered_map<size_t, size_t> m_slice_verts;
 	unordered_map<size_t, size_t> m_fused_verts;
-	unordered_map<size_t, size_t> m_fusion_verts;
+	unordered_map<VertexPtr, VertexPtr> m_fusion_verts;
 	size_t m_fusionNeighbors;
+	//size_t m_fusionVertices;
+	size_t m_fusionOldNeighbors;
 	vector<FacePtr> m_fusionFaces;
-	
+	VertexVector                                m_fusionVertices;
+	VertexVector                                m_oldFusionVertices;
+
 	int projectAndMapNewImage(kfusion::ImgPose img_pose, const char* texture_output_dir="");
-	
+
 	std::vector<std::vector<cv::Point3f> > getBoundingRectangles(int& size);
 	std::vector<std::pair<cv::Mat,float> > getTextures();
-	
+
 	 std::vector<std::vector<cv::Point3f> > bounding_rectangles_3D;
 	 //first version with one texture each bounding box
 	 //texture + float saving best angle area was seen
 	std::vector<std::pair<cv::Mat,float> > textures;
-	
+
 	//global bounding_rectangles
-   
+
     size_t num_cams,b_rect_size,end_texture_index,start_texture_index;
-	
+
 	/**
 	 * @brief	Deletes all faces of the regions marked by region->m_toDelete
 	 */
 	virtual void deleteRegions();
 
-	
+
 private:
 
 	void checkFaceIntegreties();
@@ -511,38 +517,38 @@ private:
 	 * @brief assign label buffer ids
 	 */
 	void assignLBI();
-	
-	/** TEXTURE STUFF 
-	 * @brief getBoundingRectangles 
+
+	/** TEXTURE STUFF
+	 * @brief getBoundingRectangles
 	 */
 	std::vector<cv::Point3f> getBoundingRectangle(std::vector<VertexT> act_contour, NormalT normale);
-	
+
 	void createInitialTexture(std::vector<cv::Point3f> b_rect, int texture_index, const char* output_dir="",float pic_size_factor=1000.0);
-	
+
 	void getInitialUV(float x,float y,float z,std::vector<cv::Point3f> b_rect,float& u, float& v);
 	void getInitialUV_b(float x,float y,float z,std::vector<std::vector<cv::Point3f> > b_rects,size_t b_rect_number,float& u, float& v);
-	
+
 	void fillInitialTextures(std::vector<std::vector<cv::Point3f> > b_rects,
 		   kfusion::ImgPose img_pose, int image_number,
 		   const char* texture_output_dir="");
-		   
+
 	void fillInitialTexture(std::vector<std::vector<cv::Point3f> > b_rects,
 		   kfusion::ImgPose img_pose, int image_number,
 		   const char* texture_output_dir="");
-		   
+
 	int fillNonPlanarColors(kfusion::ImgPose img_pose);
-	
+
 	void firstBehindSecondImage(cv::Mat first, cv::Mat second, cv::Mat& dst);
 	void firstBehindSecondImage(cv::Mat first, cv::Mat second, cv::Mat& dst, cv::Mat mask);
-		   
+
 	cv::Rect calcCvRect(std::vector<cv::Point2f> rect);
-	
+
 	//second version with one clipped texture
 	cv::Mat texture;
 	std::vector< pair<size_t, cv::Size > > texture_stats;
-	
-	
-    
+
+
+
     ///texturing end
 
 
@@ -553,7 +559,7 @@ private:
 	set<EdgePtr>        m_garbageEdges;
 	set<HFace*>         m_garbageFaces;
 	set<RegionPtr>      m_garbageRegions;
-	
+
 };
 
 } // namespace lvr

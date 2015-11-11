@@ -17,15 +17,16 @@ void GridStage::step()
 	auto slice_work = boost::any_cast<pair<TSDFSlice, bool> >(getInQueue()->Take());
 	cv::Mat& tsdf_values = slice_work.first.tsdf_values_;
 	Vec3i offset = slice_work.first.offset_;
+	Vec3i back_offset = slice_work.first.back_offset_;
 	bool last_shift = slice_work.second;
 	Point* tsdf_ptr = tsdf_values.ptr<Point>();				
 	TGrid* act_grid = NULL;
 	string grid_notice = ("#### A:    Grid Creation " +  to_string(grid_count_) + "    ####");
 	ScopeTime* grid_time = new ScopeTime(grid_notice.c_str());
 	if(last_grid_queue_.size() == 0)
-		act_grid = new TGrid(voxel_size_, bbox_, tsdf_ptr, tsdf_values.cols, offset[0], offset[1], offset[2], NULL, true);
+		act_grid = new TGrid(voxel_size_, bbox_, tsdf_ptr, tsdf_values.cols, offset[0], offset[1], offset[2], back_offset[0], back_offset[1], back_offset[2], NULL, true);
 	else
-		act_grid = new TGrid(voxel_size_, bbox_, tsdf_ptr, tsdf_values.cols, offset[0], offset[1], offset[2], last_grid_queue_.front(), true);
+		act_grid = new TGrid(voxel_size_, bbox_, tsdf_ptr, tsdf_values.cols, offset[0], offset[1], offset[2], back_offset[0], back_offset[1], back_offset[2], last_grid_queue_.front(), true);
 
 	//grid_ptr->saveGrid("./slices/grid" + std::to_string(slice_count_) + ".grid");
 	delete grid_time;

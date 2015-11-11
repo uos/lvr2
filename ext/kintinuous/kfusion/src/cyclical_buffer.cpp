@@ -75,14 +75,14 @@ kfusion::cuda::CyclicalBuffer::performShift (cv::Ptr<cuda::TsdfVolume> volume, c
 	Vec3i offset;
 	Vec3i minBounds;
 	Vec3i maxBounds;
-
-	computeAndSetNewCubeMetricOrigin (volume, target_point, offset);
+	if(!last_shift)
+		computeAndSetNewCubeMetricOrigin (volume, target_point, offset);
 	//ScopeTime* slice_time = new ScopeTime("Slice download");
 	// extract current slice from the TSDF volume (coordinates are in indices! (see fetchSliceAsCloud() )
 	if(!record_mode && !no_reconstruct_)
 	{
-		DeviceArray<Point> cloud; 
-		
+		DeviceArray<Point> cloud;
+
 		// calculate mininum and maximum slice bounds
 		if(last_shift)
 		{
@@ -93,43 +93,57 @@ kfusion::cuda::CyclicalBuffer::performShift (cv::Ptr<cuda::TsdfVolume> volume, c
 		{
 			calcBounds(offset, minBounds, maxBounds);
 		}
-		
+
 		cloud = volume->fetchSliceAsCloud(cloud_buffer_device_, &buffer_, minBounds, maxBounds, global_shift_ );
-		
+
 		cloud_slice_ = cv::Mat(1, (int)cloud.size(), CV_32FC4);
 		cloud.download(cloud_slice_.ptr<Point>());
-		
+
 		//delete slice_time;
-		
+
 		Point* tsdf_ptr = cloud_slice_.ptr<Point>();
 		if(cloud.size() > 0)
 		{
-			std::cout << "####    Performing slice number: " << slice_count_ << " with " << cloud.size() << " TSDF values  ####" << std::endl;	
+			std::cout << "####    Performing slice number: " << slice_count_ << " with " << cloud.size() << " TSDF values  ####" << std::endl;
 			Vec3i fusionShift = global_shift_;
+			Vec3i fusionBackShift = global_shift_;
 			for(int i = 0; i < 3; i++)
 			{
-				if(minBounds[i] == 0 && maxBounds[i] == 0 || last_shift)
-					fusionShift[i] == -1000000;
-				else if(minBounds[i] == 1)
+				if(minBounds[i] == 1 && !last_shift)
+				{
 					fusionShift[i] += maxBounds[i];
-				else
+					fusionBackShift[i] += minBounds[i];
+				}
+				else if(last_shift)
+                {
+                    fusionShift[i] -= 1000000000;
+					fusionBackShift[i] += maxBounds[i];
+                }
+                else
+				{
 					fusionShift[i] += minBounds[i];
+					fusionBackShift[i] += maxBounds[i];
+				}
 			}
 			TSDFSlice slice;
 			slice.tsdf_values_ = cloud_slice_;
 			slice.offset_ = fusionShift;
+			slice.back_offset_ = fusionBackShift;
 			slice.imgposes_ = imgPoses_;
 			pl_.addTSDFSlice(slice, last_shift);
 			slice_count_++;
 		}
 	}
-	// clear buffer slice and update the world model
-	volume->clearSlice(&buffer_, offset);
+	if(!last_shift)
+	{
+		// clear buffer slice and update the world model
+		volume->clearSlice(&buffer_, offset);
 
-	// shift buffer addresses
-	shiftOrigin (volume, offset);
-	
-	
+		// shift buffer addresses
+		shiftOrigin (volume, offset);
+	}
+
+
 }
 
 void
@@ -147,7 +161,7 @@ kfusion::cuda::CyclicalBuffer::computeAndSetNewCubeMetricOrigin (cv::Ptr<cuda::T
 	offset[0] = calcIndex((new_cube_origin_meters.x - buffer_.origin_metric.x) * ( buffer_.voxels_size.x / (float) (buffer_.volume_size.x) ));
 	offset[1] = calcIndex((new_cube_origin_meters.y - buffer_.origin_metric.y) * ( buffer_.voxels_size.y / (float) (buffer_.volume_size.y) ));
 	offset[2] = calcIndex((new_cube_origin_meters.z - buffer_.origin_metric.z) * ( buffer_.voxels_size.z / (float) (buffer_.volume_size.z) ));
-	
+
 	//printf("The shift indices are (X:%d, Y:%d, Z:%d).\n", offset[0], offset[1], offset[2]);
 	// update the cube's metric origin
 	buffer_.origin_metric = new_cube_origin_meters;
@@ -156,7 +170,7 @@ kfusion::cuda::CyclicalBuffer::computeAndSetNewCubeMetricOrigin (cv::Ptr<cuda::T
 
 void kfusion::cuda::CyclicalBuffer::calcBounds(Vec3i& offset, Vec3i& minBounds, Vec3i& maxBounds)
 {
-	
+
 	//Compute slice bounds
 	int newX = buffer_.origin_GRID.x + offset[0];
 	int newY = buffer_.origin_GRID.y + offset[1];
@@ -166,7 +180,7 @@ void kfusion::cuda::CyclicalBuffer::calcBounds(Vec3i& offset, Vec3i& minBounds, 
 	if (newX >= 0)
 	{
 		minBounds[0] = buffer_.origin_GRID.x;
-		maxBounds[0] = newX;    
+		maxBounds[0] = newX;
 	}
 	else
 	{
@@ -221,7 +235,7 @@ void kfusion::cuda::CyclicalBuffer::calcBounds(Vec3i& offset, Vec3i& minBounds, 
 	  minBounds[0] += buffer_.voxels_size.x;
 	  maxBounds[0] += buffer_.voxels_size.x;
 	}
-		
+
 
 	if (minBounds[1] < 0) // We are shifting up
 	{
@@ -242,7 +256,7 @@ void kfusion::cuda::CyclicalBuffer::calcBounds(Vec3i& offset, Vec3i& minBounds, 
 			{
 				maxBounds[i] += 1;
 				minBounds[i] += 1;
-				
+
 			}
 			if(maxBounds[i] == 512)
 			{
@@ -252,8 +266,8 @@ void kfusion::cuda::CyclicalBuffer::calcBounds(Vec3i& offset, Vec3i& minBounds, 
 			}
 		}
 	}
-	
-	
+
+
 	//cout << "minBounds: " << minBounds[0] <<  ", " << minBounds[1] <<  ", " << minBounds[2] << endl;
 	//cout << "maxBounds: " << maxBounds[0] <<  ", " << maxBounds[1] <<  ", " << maxBounds[2] << endl;
 }
