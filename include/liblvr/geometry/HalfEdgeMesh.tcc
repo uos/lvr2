@@ -91,7 +91,7 @@ template<typename VertexT, typename NormalT>
 void HalfEdgeMesh<VertexT, NormalT>::addMesh(HalfEdgeMesh<VertexT, NormalT>* slice, bool texture)
 {
 	size_t old_vert_size = m_vertices.size();
-	m_vertices.resize(old_vert_size +  slice->m_vertices.size() - slice->m_fusionNeighbors);
+	m_vertices.resize(old_vert_size +  slice->m_vertices.size() - slice->m_fusion_verts.size());
 
     size_t count = 0;
     unordered_map<size_t, size_t> fused_verts;
@@ -101,7 +101,7 @@ void HalfEdgeMesh<VertexT, NormalT>::addMesh(HalfEdgeMesh<VertexT, NormalT>* sli
 		if(!slice->m_vertices[i]->m_oldFused)
 		{
 			m_vertices[index] = slice->m_vertices[i];
-			fused_verts[i] = index;
+			//fused_verts[i] = index;
 			m_vertices[index]->m_actIndex = index;
 		}
 		else
@@ -109,7 +109,7 @@ void HalfEdgeMesh<VertexT, NormalT>::addMesh(HalfEdgeMesh<VertexT, NormalT>* sli
 	}
 	for(auto vert_it = slice->m_fusion_verts.begin(); vert_it != slice->m_fusion_verts.end(); vert_it++)
 	{
-		size_t merge_index = vert_it->first;
+		/*size_t merge_index = vert_it->first;
 		size_t erase_index = vert_it->second;
 		if(m_fused_verts.size() > 0)
 		{
@@ -117,11 +117,11 @@ void HalfEdgeMesh<VertexT, NormalT>::addMesh(HalfEdgeMesh<VertexT, NormalT>* sli
 			if(merge_it != m_fused_verts.end())
 			{
 				merge_index = merge_it->second;
-				//fused_verts[erase_index] = vert_it->first;
+				//fused_verts[erase_index] = merge_index;
 			}
 
-		}
-		mergeVertex(m_vertices[merge_index], slice->m_vertices[erase_index]);
+		}*/
+		mergeVertex(vert_it->first, vert_it->second);
 	}
 
 	size_t old_size = m_faces.size();
@@ -133,7 +133,7 @@ void HalfEdgeMesh<VertexT, NormalT>::addMesh(HalfEdgeMesh<VertexT, NormalT>* sli
 		m_faces[index] = slice->m_faces[i];
 	}
 
-	m_fused_verts = fused_verts;
+	//m_fused_verts = fused_verts;
 	m_slice_verts = slice->m_slice_verts;
 	m_globalIndex = this->meshSize();
 
@@ -232,10 +232,11 @@ void HalfEdgeMesh<VertexT, NormalT>::mergeVertex(VertexPtr merge_vert, VertexPtr
 		cout << "dist y " << dist_y << endl;
 		cout << "dist z " << dist_z << endl;
 		cout << "distance " << dist << endl;*/
-		if(dist > 0.01)
+		if(dist > 0.1)
 		{
 			cout << "Big Vertex missalignment!!!!! " << endl;
 			cout << "distance " << dist << endl;
+            m_vertices.push_back(erase_vert);
             return;
 		}
 	}
@@ -267,7 +268,7 @@ void HalfEdgeMesh<VertexT, NormalT>::mergeVertex(VertexPtr merge_vert, VertexPtr
 		erase_vert->out[i]->setStart(merge_vert);
 	}
 	merge_vert->m_fused = false;
-	delete erase_vert;
+	//delete erase_vert;
 }
 
 template<typename VertexT, typename NormalT>
@@ -509,7 +510,16 @@ void HalfEdgeMesh<VertexT, NormalT>::setFusionVertex(uint v)
 	auto vertice = m_vertices[v];
 	vertice->m_fused = true;
 	vertice->m_actIndex = v;
+	m_fusionVertices.push_back(vertice);
+}
 
+template<typename VertexT, typename NormalT>
+void HalfEdgeMesh<VertexT, NormalT>::setFusionNeighborVertex(uint v)
+{
+	auto vertice = m_vertices[v];
+	vertice->m_fusedNeighbor = true;
+	vertice->m_actIndex = v;
+	m_oldFusionVertices.push_back(vertice);
 }
 
 template<typename VertexT, typename NormalT>
@@ -2615,8 +2625,8 @@ HalfEdgeMesh<VertexT, NormalT>* HalfEdgeMesh<VertexT, NormalT>::retesselateInHal
 			/*for( size_t i=0; i < m_regions[iRegion]->m_faces.size(); ++i )
 			{
 				deleteFace(m_regions[iRegion]->m_faces[i]);
-			}*/
-			  m_regions[iRegion]->m_toDelete = true;
+			}
+			m_regions[iRegion]->m_toDelete = true;*/
 
         }
         catch(...)
@@ -2755,7 +2765,6 @@ std::vector<cv::Point3f> HalfEdgeMesh<VertexT,NormalT>::getBoundingRectangle(std
 	for(auto it=act_contour.begin(); it != act_contour.end(); ++it){
 		contour.push_back(cv::Point3f((*it)[0],(*it)[1],(*it)[2]));
 	}
-
 	std::vector<cv::Point3f> rect;
 
 	if(contour.size()<3){

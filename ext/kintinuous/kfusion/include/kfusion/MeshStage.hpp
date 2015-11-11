@@ -14,7 +14,7 @@
 #include <geometry/HalfEdgeMesh.hpp>
 #include <geometry/BoundingBox.hpp>
 #include <kfusion/types.hpp>
-
+#include "geometry/Matrix4.hpp"
 
 using namespace lvr;
 using namespace std;
@@ -42,9 +42,11 @@ public:
 private:
 	void transformMeshBack(MeshPtr mesh);
 
+	queue<MeshPtr> last_mesh_queue_;
 	double camera_target_distance_;
 	double voxel_size_;
-	size_t mesh_count_;
+	size_t mesh_count_, fusion_count_;
 	Options* options_;
+	lvr::Matrix4f global_correction_;
 };
 #endif // STAGE

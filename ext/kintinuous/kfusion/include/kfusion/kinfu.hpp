@@ -21,7 +21,7 @@ namespace kfusion
 
     class KF_EXPORTS KinFu
     {
-    public:        
+    public:
         typedef cv::Ptr<KinFu> Ptr;
 
         enum RenderMode
@@ -35,23 +35,26 @@ namespace kfusion
 
         const KinFuParams& params() const;
         KinFuParams& params();
-        
+
         void performLastScan();
-        
+
         void performShift() { perform_shift_ = true;}
-        
+
         bool hasShifted()
 			{return has_shifted_;}
-		
+
+        void triggerCheckForShift()
+    			{checkForShift_ != checkForShift_;}
+
 		void triggerRecord()
 			{record_mode_ = !record_mode_;}
-			
+
 		 bool isLastScan()
 			{return perform_last_scan_;};
 
         const cuda::TsdfVolume& tsdf() const;
         cuda::TsdfVolume& tsdf();
-        
+
         const cuda::CyclicalBuffer& cyclical() const;
         cuda::CyclicalBuffer& cyclical();
 
@@ -59,7 +62,7 @@ namespace kfusion
         cuda::ProjectiveICP& icp();
 
         void reset(Affine3f initialPose = Affine3f::Identity());
-        
+
         bool operator()(const cuda::Depth& dpeth, const cuda::Image& image = cuda::Image());
 
         void renderImage(cuda::Image& image, int flags = 0);
@@ -82,11 +85,12 @@ namespace kfusion
         cuda::Cloud points_;
         cuda::Normals normals_;
         cuda::Depth depths_;
-        
+
 		bool has_shifted_;
 		bool perform_last_scan_;
 		bool perform_shift_;
 		bool record_mode_;
+        bool checkForShift_;
         cv::Ptr<cuda::TsdfVolume> volume_;
         /** \brief Cyclical buffer object */
         cuda::CyclicalBuffer cyclical_;
