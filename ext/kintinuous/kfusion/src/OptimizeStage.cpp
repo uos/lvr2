@@ -17,6 +17,7 @@ void OptimizeStage::step()
 	MeshPtr act_mesh = mesh_work.first.first;
 	string mesh_notice = ("#### C:            Mesh Optimization " +  to_string(mesh_count_) + "    ####");
 	ScopeTime* opti_time = new ScopeTime(mesh_notice.c_str());
+	act_mesh->fillHoles(options_->getFillHoles());
 	if(optiMesh_ == NULL)
 		optiMesh_ = act_mesh;
 	else
@@ -33,7 +34,7 @@ void OptimizeStage::step()
 					options_->getNormalThreshold(),
 					options_->getMinPlaneSize(),
 					options_->getSmallRegionThreshold(), false);
-	//optiMesh_->fillHoles(options_->getFillHoles());
+	optiMesh_->optimizePlaneIntersections();
 	//optiMesh_->restorePlanes(options_->getMinPlaneSize());
 	MeshPtr tmp_pointer = optiMesh_->retesselateInHalfEdge(options_->getLineFusionThreshold(), options_->textures(), texture_counter);
 	if(tmp_pointer == NULL)
@@ -47,18 +48,18 @@ void OptimizeStage::step()
 		int counter=0;
 		int i;
 		int progress = 0, j;
-	
-		
+
+
 		for(i=0;i<image_poses_buffer.size();i++){
 			counter = tmp_pointer->projectAndMapNewImage(*(image_poses_buffer[i]));
 		}
-		
+
 		pic_count_+=i;
-		
+
 		texture_counter += tmp_pointer->textures.size();
-		
+
 		meshBufferPtr = tmp_pointer->meshBuffer();
-				
+
 	}
 	image_poses_buffer.resize(0);
 	getOutQueue()->Add(pair<pair<MeshPtr, bool>, vector<ImgPose*> >(
@@ -66,7 +67,7 @@ void OptimizeStage::step()
 	if(last_shift)
 		done(true);
 }
-void OptimizeStage::lastStep()	
-{  
+void OptimizeStage::lastStep()
+{
 	 delete optiMesh_;
 }

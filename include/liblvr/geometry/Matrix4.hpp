@@ -256,14 +256,14 @@ public:
 	template<typename T>
 	Matrix4 operator+=(const Matrix4<T> &other)
 	{
-		if(other != *this)
-		{
+		//if(other != *this)
+		//{
 			return *this + other;
-		}
-		else
-		{
-			return *this;
-		}
+		//}
+		//else
+		//{
+			//return *this;
+		//}
 	}
 
 	/**

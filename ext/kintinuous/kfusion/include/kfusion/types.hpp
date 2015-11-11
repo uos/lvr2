@@ -37,6 +37,7 @@ namespace kfusion
     {
 		cv::Mat tsdf_values_;
 		Vec3i offset_;
+		Vec3i back_offset_;
 		std::vector<ImgPose*> imgposes_;
     };
 
