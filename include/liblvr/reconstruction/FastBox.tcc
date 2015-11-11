@@ -38,8 +38,8 @@ template<typename VertexT, typename NormalT>
 uint FastBox<VertexT, NormalT>::INVALID_INDEX = numeric_limits<uint>::max();
 
 template<typename VertexT, typename NormalT>
-FastBox<VertexT, NormalT>::FastBox(VertexT &center, bool fusionBox)
-			: m_fusionBox(fusionBox)
+FastBox<VertexT, NormalT>::FastBox(VertexT &center, bool fusionBox, bool oldFusionBox)
+			: m_fusionBox(fusionBox), m_oldfusionBox(oldFusionBox)
 {
 	//m_intersections = new uint[12];
     // Init members
@@ -58,8 +58,6 @@ FastBox<VertexT, NormalT>::FastBox(VertexT &center, bool fusionBox)
         m_neighbors[i] = 0;
     }
     m_center = center;
-    m_oldfusionBox = false;
-    m_fusedBox = false;
 }
 
 template<typename VertexT, typename NormalT>
@@ -250,14 +248,21 @@ void FastBox<VertexT, NormalT>::getSurface(BaseMesh<VertexT, NormalT> &mesh,
 				// The actual normal is interpolated later.
 				mesh.addVertex(v);
 				mesh.addNormal(NormalT());
+				int neighbour_count = 0;
 				for(int i = 0; i < 3; i++)
 				{
 					FastBox<VertexT, NormalT>* current_neighbor = m_neighbors[neighbor_table[edge_index][i]];
 					if(current_neighbor != 0)
 					{
 						current_neighbor->m_intersections[neighbor_vertex_table[edge_index][i]] = globalIndex;
+						if(!current_neighbor->m_fusionNeighborBox) 
+							neighbour_count++;
 					}
 				}
+				if(m_fusionBox && neighbour_count < 3)
+					mesh.setFusionVertex(globalIndex);
+				if(m_oldfusionBox && neighbour_count < 3)
+					mesh.setFusionNeighborVertex(globalIndex);
 				// Increase the global vertex counter to save the buffer
 				// position were the next new vertex has to be inserted
 				globalIndex++;

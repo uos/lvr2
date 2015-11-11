@@ -60,7 +60,7 @@ public:
 	 * @brief Constructs a new box at the given center point defined
 	 * 		  by the used \ref{m_voxelsize}.
 	 */
-    FastBox(VertexT &center, bool fusionBox = false);
+    FastBox(VertexT &center, bool fusionBox = false, bool m_oldfusionBox = false);
 
     /**
      * @brief Destructor.

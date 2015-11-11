@@ -75,7 +75,7 @@ public:
 	/**
 	 * @brief	Constructs a vertex at given position
 	 */
-	HalfEdgeVertex(VertexT v) : m_position(v), m_index(-1), m_fused(false), m_oldFused(false) {}
+	HalfEdgeVertex(VertexT v) : m_position(v), m_index(-1), m_fused(false), m_oldFused(false), m_fusedNeighbor(false) {}
 
 	/**
 	 * @brief	Copy Ctor.
@@ -100,6 +100,7 @@ public:
 	bool				m_merged;
 	bool                m_fused;
 	bool                m_oldFused;
+	bool				m_fusedNeighbor;
 	size_t              m_actIndex;
 
 	/// The list incoming edges
