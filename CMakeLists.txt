@@ -303,6 +303,12 @@ configure_file(lvrConfig.cmake.in ${CMAKE_BINARY_DIR}/lvrConfig.cmake @ONLY)
 install(FILES ${CMAKE_BINARY_DIR}/lvrConfig.cmake
     DESTINATION ${CMAKE_INSTALL_LIBDIR}/cmake/lvr)
 
+install(FILES
+    CMakeModules/FindEigen3.cmake
+    CMakeModules/FindNabo.cmake
+    CMakeModules/FindSTANN.cmake
+    DESTINATION ${CMAKE_INSTALL_LIBDIR}/cmake/lvr/Modules)
+
 ################################################################
 # DOCUMENTATION
 ################################################################
