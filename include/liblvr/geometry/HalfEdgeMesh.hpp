@@ -534,6 +534,7 @@ private:
 		   
 	int fillNonPlanarColors(kfusion::ImgPose img_pose);
 	
+	void fillImageWithBlackPolygon( cv::Mat& img , cv::Point* pointarr, int size);
 	void firstBehindSecondImage(cv::Mat first, cv::Mat second, cv::Mat& dst);
 	void firstBehindSecondImage(cv::Mat first, cv::Mat second, cv::Mat& dst, cv::Mat mask);
 		   
@@ -547,7 +548,14 @@ private:
 	cv::Mat texture;
 	std::vector< pair<size_t, cv::Size > > texture_stats;
 	
-	
+	class sort_indices
+	{
+		private:
+		std::vector<std::pair<cv::Mat,float> > textures;
+		public:
+		sort_indices(std::vector<std::pair<cv::Mat,float> > textures) : textures(textures) {}
+		bool operator()(int i, int j) { return (textures[i].first.cols*textures[i].first.rows)<(textures[j].first.cols*textures[j].first.rows); }
+	};
     
     ///texturing end
 

@@ -31,6 +31,7 @@ namespace kfusion
 		cv::Mat image;
 		Affine3f pose;
 		cv::Mat intrinsics;
+		cv::Mat distortion;
     };
     
     struct KF_EXPORTS TSDFSlice
