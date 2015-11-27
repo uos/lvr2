@@ -84,12 +84,16 @@ struct KinFuApp
 		viz.showWidget("+", cv::viz::WText("+/- Change cam distance", cv::Point(5, 50), 20, cv::viz::Color::green()));
 		viz.showWidget("esc", cv::viz::WText("ESC Quit", cv::Point(5, 25), 20, cv::viz::Color::green()));
         cv::viz::WCube cube(cv::Vec3d::all(0), cv::Vec3d(params.volume_size), true, cv::viz::Color::red());
-        cv::viz::WArrow arrow(cv::Point3f(0, 0, 0), cv::Point3f(0, 0, options->getCameraOffset()), 0.03, cv::viz::Color::green());
+        //cv::viz::WArrow arrow(cv::Point3f(0, 0, 0), cv::Point3f(0, 0, options->getCameraOffset()), 0.03, cv::viz::Color::green());
+        cv::Vec2d fov(0.64,0.48);
+        cv::viz::WCameraPosition arrow(fov, 0.5, cv::viz::Color::silver());
         cv::viz::WSphere sphere(cv::Point3f(0, 0, 0), params.shifting_distance);
         sphere.setRenderingProperty(cv::viz::OPACITY, 0.2);
+        cube.setRenderingProperty(cv::viz::LINE_WIDTH, 2.0);
+        arrow.setRenderingProperty(cv::viz::LINE_WIDTH, 2.0);
         viz.showWidget("cube0", cube);
         viz.showWidget("arrow", arrow);
-        viz.showWidget("center", sphere);
+        //viz.showWidget("center", sphere);
         viz.showWidget("coor", cv::viz::WCoordinateSystem(0.3));
         //show_cube(*kinfu_);
         viz.setWidgetPose("cube0", kinfu_->tsdf().getPose());
@@ -249,8 +253,8 @@ struct KinFuApp
   {
     cube_count_++;
     viz.setWidgetPose("cube0", kinfu.tsdf().getPose());
-    cv::Affine3f center = kinfu.tsdf().getPose().translate(cv::Vec3f(1.5, 1.5, 1.5));
-    viz.setWidgetPose("center", center);
+    //cv::Affine3f center = kinfu.tsdf().getPose().translate(cv::Vec3f(1.5, 1.5, 1.5));
+    //viz.setWidgetPose("center", center);
   }
 
 	void set_interactive()
@@ -267,18 +271,6 @@ struct KinFuApp
     cout << "Performing last scan" << std::endl;
     kinfu.performLastScan();
   }
-
-    void storePicPose(KinFu& kinfu, cv::Mat& image)
-	{
-		ImgPose* imgpose = new ImgPose();
-		imgpose->pose = kinfu.getCameraPose();
-		imgpose->image = image;
-		cv::Mat intrinsics = (cv::Mat_<float>(3,3) << kinfu.params().intr.fx, 0, kinfu.params().cols,
-												  0, kinfu.params().intr.fx, kinfu.params().rows,
-												  0, 0, 1);
-		imgpose->intrinsics = intrinsics;
-		kinfu.cyclical().addImgPose(imgpose);
-	}
 
 	void storePicPose(KinFu& kinfu, Affine3f pose, cv::Mat image)
   {
@@ -391,7 +383,7 @@ struct KinFuApp
 						//std::cout << "better image found, sum rvec distances: " << best_dist << std::endl;
 					}
 
-					if(time - 3.0 > 0)
+					if(time - 3 > 0)
 					{
 
 						rvecs.push_back(best_rvec);
@@ -400,7 +392,7 @@ struct KinFuApp
 						storePicPose(kinfu, best_pose, best_image);
 						//extractImage(kinfu, best_image);
 						sample_poses_.push_back(kinfu_->getCameraPose());
-						viz.showWidget("path", cv::viz::WTrajectory(sample_poses_));
+						viz.showWidget("path", cv::viz::WTrajectory(sample_poses_,cv::viz::WTrajectory::PATH, 6.0));
 						timer_start_ = ref_timer;
 
 					}

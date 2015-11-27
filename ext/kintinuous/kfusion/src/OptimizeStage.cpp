@@ -34,7 +34,7 @@ void OptimizeStage::step()
 					options_->getNormalThreshold(),
 					options_->getMinPlaneSize(),
 					options_->getSmallRegionThreshold(), false);
-	optiMesh_->optimizePlaneIntersections();
+	//optiMesh_->optimizePlaneIntersections();
 	//optiMesh_->restorePlanes(options_->getMinPlaneSize());
 	MeshPtr tmp_pointer = optiMesh_->retesselateInHalfEdge(options_->getLineFusionThreshold(), options_->textures(), texture_counter);
 	if(tmp_pointer == NULL)
