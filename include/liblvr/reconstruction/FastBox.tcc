@@ -235,7 +235,7 @@ void FastBox<VertexT, NormalT>::getSurface(BaseMesh<VertexT, NormalT> &mesh,
 	for(int a = 0; MCTable[index][a] != -1; a+= 3){
 		for(int b = 0; b < 3; b++){
 			edge_index = MCTable[index][a + b];
-			
+
 			//If no index was found generate new index and vertex
 			//and update all neighbor boxes
 			if(m_intersections[edge_index] == INVALID_INDEX)
@@ -255,7 +255,7 @@ void FastBox<VertexT, NormalT>::getSurface(BaseMesh<VertexT, NormalT> &mesh,
 					if(current_neighbor != 0)
 					{
 						current_neighbor->m_intersections[neighbor_vertex_table[edge_index][i]] = globalIndex;
-						if(!current_neighbor->m_fusionNeighborBox) 
+						if(!current_neighbor->m_fusionNeighborBox)
 							neighbour_count++;
 					}
 				}
@@ -280,6 +280,8 @@ void FastBox<VertexT, NormalT>::getSurface(BaseMesh<VertexT, NormalT> &mesh,
 		m_fusionBox = false;
 		m_fusedBox = true;
 	}
-}	
+	//if(m_oldfusionBox)
+		//m_oldfusionBox = false;
+}
 
 } // namespace lvr
