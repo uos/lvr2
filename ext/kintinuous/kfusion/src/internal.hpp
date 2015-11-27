@@ -4,7 +4,7 @@
 #include <kfusion/tsdf_buffer.h>
 #include "safe_call.hpp"
 
-#define USE_DEPTH
+//#define USE_DEPTH
 
 namespace kfusion
 {

@@ -66,7 +66,8 @@ void MeshStage::step()
 								cout << "dist_z " << dist_z << endl;*/
 								misscount++;
 							}
-							break;
+							//current_neighbor->m_fusionNeighborBox = false;
+							//break;
 						}
 					}
 				}
