@@ -44,7 +44,7 @@ namespace kfusion
 			{return has_shifted_;}
 
         void triggerCheckForShift()
-    			{checkForShift_ != checkForShift_;}
+    			{checkForShift_ = !checkForShift_;}
 
 		void triggerRecord()
 			{record_mode_ = !record_mode_;}

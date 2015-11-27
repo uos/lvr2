@@ -21,7 +21,12 @@ TsdfGrid<VertexT, BoxT, TsdfT>::TsdfGrid(float cellSize,  BoundingBox<VertexT> b
 	// get fusion slice from old grid if it exists one
 	if(lastGrid != NULL)
 	{
-	    this->m_old_fusion_cells = lastGrid->m_fusion_cells;
+		for(auto cellPair : lastGrid->m_fusion_cells)
+		{
+			BoxT* box = new BoxT(*(cellPair.second));
+			this->m_old_fusion_cells[cellPair.first] = box;
+		}
+	    //this->m_old_fusion_cells = lastGrid->m_fusion_cells;
 	}
 	int center_of_bb_x = (this->m_boundingBox.getXSize()/2) / this->m_voxelsize;
 	int center_of_bb_y = (this->m_boundingBox.getYSize()/2) / this->m_voxelsize;

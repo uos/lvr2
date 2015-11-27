@@ -175,7 +175,8 @@ bool kfusion::KinFu::operator()(const kfusion::cuda::Depth& depth, const kfusion
     // check if we need to shift
     if(checkForShift_)
         has_shifted_ = cyclical_.checkForShift(volume_, getCameraPose(), params_.distance_camera_target , perform_shift_, perform_last_scan_, record_mode_);
-	perform_shift_ = false;
+
+    perform_shift_ = false;
     ///////////////////////////////////////////////////////////////////////////////////////////
     // Volume integration
     Affine3f local_pose = Affine3f().translate(poses_.back().translation() - volume_->getPose().translation());

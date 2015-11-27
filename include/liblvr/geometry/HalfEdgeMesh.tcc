@@ -187,21 +187,10 @@ void HalfEdgeMesh<VertexT, NormalT>::addMesh(HalfEdgeMesh<VertexT, NormalT>* sli
 		for(size_t i=0;i<b;i++)
 			materialIndexBuffer_dst[a+i] = materialIndexBuffer_src_B[i]+offset;
 
-		//Colors
-		std::vector<unsigned char> colorBuffer_dst;
-		ucharArr colorBuffer_src_A = this->m_meshBuffer->getVertexColorArray(a);
-		ucharArr colorBuffer_src_B = slice->m_meshBuffer->getVertexColorArray(b);
-		colorBuffer_dst.resize(a*3+b*3);
-		for(size_t i=0;i<a*3;i++)
-			colorBuffer_dst[i] = colorBuffer_src_A[i];
-		for(size_t i=0;i<b*3;i++)
-			colorBuffer_dst[a*3+i] = colorBuffer_src_B[i];
-
 
 		this->m_meshBuffer->setVertexTextureCoordinateArray( textureCoordBuffer_dst );
 		this->m_meshBuffer->setMaterialArray( materialBuffer_dst );
 		this->m_meshBuffer->setFaceMaterialIndexArray( materialIndexBuffer_dst );
-		this->m_meshBuffer->setVertexColorArray(colorBuffer_dst);
 
 
 

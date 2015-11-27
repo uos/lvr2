@@ -87,7 +87,7 @@ kfusion::cuda::CyclicalBuffer::performShift (cv::Ptr<cuda::TsdfVolume> volume, c
 		if(last_shift)
 		{
 			minBounds[0] = minBounds[1] = minBounds[2] = 0;
-			maxBounds[0] = maxBounds[1] = maxBounds[2] = 511;
+			maxBounds[0] = maxBounds[1] = maxBounds[2] = 512;
 		}
 		else
 		{

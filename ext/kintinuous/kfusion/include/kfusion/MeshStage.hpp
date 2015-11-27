@@ -38,7 +38,7 @@ public:
 	virtual void firstStep();
 	virtual void step();
 	virtual void lastStep();
-	
+
 private:
 	void transformMeshBack(MeshPtr mesh);
 
