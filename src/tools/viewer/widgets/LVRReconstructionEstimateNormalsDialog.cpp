@@ -112,7 +112,7 @@ void LVREstimateNormalsDialog::estimateNormals()
         {
             // Create search tree
             vector< ulong > indices;
-            vector< double > distances;
+            vector< float > distances;
 
             Vertex<float> vertex(points[3 * i], points[3 * i + 1], points[3 * i + 2]);
             tree->kSearch(vertex, ki, indices, distances);
