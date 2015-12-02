@@ -72,17 +72,17 @@ public:
     virtual void kSearch(
             coord < float >& qp,
             int neighbours, vector< ulong > &indices,
-            vector< double > &distances );
+            vector< float > &distances );
 
 
     virtual void kSearch(VertexT qp, int k, vector< VertexT > &neighbors);
 
 
-    virtual void radiusSearch( float              qp[3], double r, vector< ulong > &indices );
-    virtual void radiusSearch( VertexT&              qp, double r, vector< ulong > &indices );
-    virtual void radiusSearch( const VertexT&        qp, double r, vector< ulong > &indices );
-    virtual void radiusSearch( coord< float >&       qp, double r, vector< ulong > &indices );
-    virtual void radiusSearch( const coord< float >& qp, double r, vector< ulong > &indices );
+    virtual void radiusSearch( float              qp[3], float r, vector< ulong > &indices );
+    virtual void radiusSearch( VertexT&              qp, float r, vector< ulong > &indices );
+    virtual void radiusSearch( const VertexT&        qp, float r, vector< ulong > &indices );
+    virtual void radiusSearch( coord< float >&       qp, float r, vector< ulong > &indices );
+    virtual void radiusSearch( const coord< float >& qp, float r, vector< ulong > &indices );
 
     /// Destructor
     virtual ~SearchTreeNanoflann() {};
