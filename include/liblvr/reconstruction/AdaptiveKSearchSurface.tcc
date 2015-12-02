@@ -88,7 +88,7 @@ AdaptiveKSearchSurface<VertexT, NormalT>::AdaptiveKSearchSurface(
 
     init();
 
-    if( searchTreeName == "flann"  || searchTreeName == "FLANN" )
+    if( searchTreeName == "flannpcl"  || searchTreeName == "FLANNPCL" )
     {
 #ifdef _USE_PCL_
         this->m_searchTree = search_tree::Ptr( new SearchTreeFlannPCL<VertexT>(loader, this->m_numPoints, kn, ki, kd) );
@@ -111,6 +111,10 @@ AdaptiveKSearchSurface<VertexT, NormalT>::AdaptiveKSearchSurface(
         this->m_searchTree = search_tree::Ptr( new SearchTreeNabo<VertexT>(loader, this->m_numPoints, kn, ki, kd));
     }
 #endif
+    else if( searchTreeName == "flann" || searchTreeName == "FLANN")
+    {
+    	this->m_searchTree = search_tree::Ptr(new SearchTreeFlann<VertexT>(loader, this->m_numPoints, kn, ki, kd));
+    }
     else
     {
        cout << timestamp << "No Valid Searchtree class specified!" << endl;
@@ -159,10 +163,10 @@ void AdaptiveKSearchSurface<VertexT, NormalT>::parseScanPoses(string posefile)
 		size_t n = v.size();
 
 		cout << timestamp << "Creating pose search tree(" << m_searchTreeName << ") with " << n << " poses." << endl;
-		if( m_searchTreeName == "flann"  || m_searchTreeName == "FLANN" )
+		if( m_searchTreeName == "flannpcl"  || m_searchTreeName == "FLANNPCL" )
 		{
 #ifdef _USE_PCL_
-			this->m_poseTree = search_tree::Ptr( new SearchTreeFlannPCLmake <VertexT>(loader, n, 1, 1, 1) );
+			this->m_poseTree = search_tree::Ptr( new SearchTreeFlannPCL<VertexT>(loader, n, 1, 1, 1) );
 #else
 			cout << timestamp << "Warning: PCL is not installed. Using STANN search tree in AdaptiveKSearchSurface." << endl;
 			this->m_poseTree = search_tree::Ptr( new SearchTreeStann<VertexT>(loader, n, 1, 1, 1) );
@@ -182,6 +186,10 @@ void AdaptiveKSearchSurface<VertexT, NormalT>::parseScanPoses(string posefile)
 			this->m_poseTree = search_tree::Ptr( new SearchTreeNabo<VertexT>(loader, n, 1, 1, 1));
 		}
 #endif
+	    else if( m_searchTreeName == "flann" || m_searchTreeName == "FLANN")
+	    {
+	    	this->m_searchTree = search_tree::Ptr(new SearchTreeFlann<VertexT>(loader, n, 1, 1, 1));
+	    }
 		else
 		{
 			cout << timestamp << "No Valid Searchtree class specified!" << endl;
@@ -249,7 +257,7 @@ void AdaptiveKSearchSurface<VertexT, NormalT>::calculateSurfaceNormals()
         // search on the stann kd tree. So we don't use
         // the template parameter T for di
         vector<unsigned long> id;
-        vector<double> di;
+        vector<float> di;
 
         int n = 0;
         size_t k = k_0;
@@ -380,7 +388,7 @@ void AdaptiveKSearchSurface<VertexT, NormalT>::interpolateSurfaceNormals()
     for( int i = 0; i < (int)this->m_numPoints; i++){
 
         vector<unsigned long> id;
-        vector<double> di;
+        vector<float> di;
 
         this->m_searchTree->kSearch(this->m_points[i], this->m_ki, id, di);
 
@@ -512,7 +520,7 @@ void AdaptiveKSearchSurface<VertexT, NormalT>::distance(VertexT v, float &projec
     int k = this->m_kd;
 
     vector<unsigned long> id;
-    vector<double> di;
+    vector<float> di;
 
     //Allocate ANN point
     {
