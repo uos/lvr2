@@ -20,7 +20,7 @@
 *  SearchTree.hpp
 *
 *       Created on: 02.01.2012
-*           Author: Florian Otte
+*           Author: Florian Otte, Thomas Wiemann
  */
 
 #ifndef SEARCH_TREE_H_
@@ -83,22 +83,22 @@ public:
      * @param indices     A vector that stores the indices for the neighbours whithin the dataset.
      * @param distances   A vector that sotres the distances for the neighbours that are found.
      */
-    virtual void kSearch( float               qp[3], int k, vector< ulong > &indices, vector< double > &distances );
-    virtual void kSearch( VertexT&               qp, int k, vector< ulong > &indices, vector< double > &distances );
-    virtual void kSearch( const VertexT&         qp, int k, vector< ulong > &indices, vector< double > &distances );
-    virtual void kSearch( const coord < float >& qp, int k, vector< ulong > &indices, vector< double > &distances );
+    virtual void kSearch( float               qp[3], int k, vector< ulong > &indices, vector< float > &distances );
+    virtual void kSearch( VertexT&               qp, int k, vector< ulong > &indices, vector< float > &distances );
+    virtual void kSearch( const VertexT&         qp, int k, vector< ulong > &indices, vector< float > &distances );
+    virtual void kSearch( const coord < float >& qp, int k, vector< ulong > &indices, vector< float > &distances );
 
     // Pure virtual. All other search functions map to this. Must be implemented in sub-class.
-    virtual void kSearch( coord < float >&       qp, int k, vector< ulong > &indices, vector< double > &distances ) = 0;
+    virtual void kSearch( coord < float >&       qp, int k, vector< ulong > &indices, vector< float > &distances ) = 0;
     virtual void kSearch( VertexT      qp, int k, vector< VertexT > &neighbors ) = 0;
 
 
 
-    virtual void radiusSearch( float              qp[3], double r, vector< ulong > &indices ) = 0;
-    virtual void radiusSearch( VertexT&              qp, double r, vector< ulong > &indices ) = 0;
-    virtual void radiusSearch( const VertexT&        qp, double r, vector< ulong > &indices ) = 0;
-    virtual void radiusSearch( coord< float >&       qp, double r, vector< ulong > &indices ) = 0;
-    virtual void radiusSearch( const coord< float >& qp, double r, vector< ulong > &indices ) = 0;
+    virtual void radiusSearch( float              qp[3], float r, vector< ulong > &indices ) = 0;
+    virtual void radiusSearch( VertexT&              qp, float r, vector< ulong > &indices ) = 0;
+    virtual void radiusSearch( const VertexT&        qp, float r, vector< ulong > &indices ) = 0;
+    virtual void radiusSearch( coord< float >&       qp, float r, vector< ulong > &indices ) = 0;
+    virtual void radiusSearch( const coord< float >& qp, float r, vector< ulong > &indices ) = 0;
 
 
     /**
