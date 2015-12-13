@@ -5,7 +5,7 @@
 #include "LargeScaleOctree.hpp"
 namespace lvr
 {
-LargeScaleOctree::LargeScaleOctree(Vertexf center, float size) : m_center(center), m_size(size), m_maxPoints(4700000), m_data()
+LargeScaleOctree::LargeScaleOctree(Vertexf center, float size) : m_center(center), m_size(size), m_maxPoints(20000000), m_data()
 {
     for(int i=0 ; i<8 ; i++) m_children[i] = NULL;
 }
