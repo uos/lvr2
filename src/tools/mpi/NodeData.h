@@ -30,7 +30,7 @@ public:
     void remove();
     void remove(unsigned int i);
     void add(lvr::Vertex<float> input);
-    lvr::Vertex<float> get(int);
+    lvr::Vertex<float>& get(int);
     lvr::Vertex<float> next();
     size_t size();
 

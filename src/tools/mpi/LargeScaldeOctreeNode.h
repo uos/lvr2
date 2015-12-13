@@ -17,10 +17,11 @@ namespace lvr
         NodeData m_data;
         const size_t m_maxPoints;
     public:
-        LargeScaldeOctreeNode(Vertexf center, float size) : m_center(center), m_size(size), m_maxPoints(100000), m_data()
+        LargeScaldeOctreeNode(Vertexf center, float size) : m_center(center), m_size(size), m_maxPoints(4700000), m_data()
         {
             //cout << "NEW NODE" << endl;
             for(int i=0 ; i<8 ; i++) m_children[i] = NULL;
+            //cout << "center: " << m_center << " " << m_size << endl;
         }
 /*        LargeScaldeOctreeNode(const LargeScaldeOctreeNode& copy) : m_center(copy.m_center), m_size(copy.m_size), m_data(copy.m_data), m_maxPoints(10)
         {
@@ -43,8 +44,9 @@ namespace lvr
             if(isLeaf())
             {
                 m_data.add(pos);
-                if(m_data.size() > m_maxPoints)
+                if(m_data.size() == m_maxPoints)
                 {
+
                     //Todo: splitup octree
                     for(int i = 0 ; i<8 ; i++)
                     {
@@ -54,13 +56,20 @@ namespace lvr
                         newCenter.z = m_center.z + m_size * 0.5 * (i&1 ? 0.5 : -0.5);
                         m_children[i] = new LargeScaldeOctreeNode(newCenter, m_size * 0.5);
                     }
-                    for(auto it = m_data.begin() ; it!=m_data.end() ; it++ )
+                    for(int i = 0 ; i<m_data.size() ; i++)
                     {
-                        m_children[getOctantContainingPoint(*it)]->insert(*it);
+                        Vertexf v = m_data.get(i);
+                        //cout << getOctantContainingPoint(v) << " " << v;
+                        m_children[getOctantContainingPoint(v)]->insert(v);
                     }
+//                    for(auto it = m_data.begin() ; it!=m_data.end() ; it++ )
+//                    {
+//                        m_children[getOctantContainingPoint(*it)]->insert(*it);
+//                    }
                     m_data.remove();
                     //m_children[getOctantContainingPoint(pos)]->insert(pos);
                 }
+
             }
             else
             {
