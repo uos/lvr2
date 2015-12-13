@@ -30,7 +30,7 @@ NodeData::NodeData()
     m_dataPath.append("-");
     m_dataPath.append(to_string(m_id));
     m_dataPath.append(".xyz");
-    m_bufferSize = 2000000;
+    m_bufferSize = 40000000;
     m_bufferIndex = 0;
 }
 
