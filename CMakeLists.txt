@@ -1,8 +1,7 @@
 cmake_minimum_required(VERSION 2.8)
 project(LAS_VEGAS)
-SET(ENV{CC} "icc")
-SET(ENV{CXX} "icpc")
 
+set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++11")
 set_property(GLOBAL PROPERTY USE_FOLDERS On)
 
 include(GNUInstallDirs)
@@ -24,8 +23,8 @@ endif()
 if(CMAKE_COMPILER_IS_GNUCC AND CMAKE_COMPILER_IS_GNUCXX)
   add_compile_options(-fmessage-length=0 -fPIC -Wno-deprecated)
   # with cmake 3.3
-  add_compile_options($<$<COMPILE_LANGUAGE:CXX>:-std=c++0x>)
-  set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++0x")
+  add_compile_options($<$<COMPILE_LANGUAGE:CXX>:-std=c++11>)
+  set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++11")
 endif()
 
 ###############################################################
