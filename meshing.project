@@ -1,0 +1,702 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<CodeLite_Project Name="meshing.largescale" InternalType="">
+  <VirtualDirectory Name="build">
+    <VirtualDirectory Name="CMakeFiles">
+      <VirtualDirectory Name="3.4.0-rc2">
+        <VirtualDirectory Name="CompilerIdC">
+          <File Name="build/CMakeFiles/3.4.0-rc2/CompilerIdC/CMakeCCompilerId.c"/>
+        </VirtualDirectory>
+        <VirtualDirectory Name="CompilerIdCXX">
+          <File Name="build/CMakeFiles/3.4.0-rc2/CompilerIdCXX/CMakeCXXCompilerId.cpp"/>
+        </VirtualDirectory>
+      </VirtualDirectory>
+      <File Name="build/CMakeFiles/cmake_mpi_test.c"/>
+      <File Name="build/CMakeFiles/cmake_mpi_test.cpp"/>
+    </VirtualDirectory>
+  </VirtualDirectory>
+  <VirtualDirectory Name="src">
+    <VirtualDirectory Name="qglviewer">
+      <VirtualDirectory Name="app">
+        <File Name="src/qglviewer/app/Main.cpp"/>
+        <File Name="src/qglviewer/app/ViewerApplication.cpp"/>
+        <File Name="src/qglviewer/app/ViewerApplication.h"/>
+        <File Name="src/qglviewer/app/Types.h"/>
+      </VirtualDirectory>
+      <VirtualDirectory Name="data">
+        <File Name="src/qglviewer/data/GridVisualizer.cpp"/>
+        <File Name="src/qglviewer/data/PointCloudVisualizer.cpp"/>
+        <File Name="src/qglviewer/data/SignalingMeshGenerator.cpp"/>
+        <File Name="src/qglviewer/data/TriangleMeshVisualizer.cpp"/>
+        <File Name="src/qglviewer/data/ClusterVisualizer.hpp"/>
+        <File Name="src/qglviewer/data/MultiPointCloudVisualizer.cpp"/>
+        <File Name="src/qglviewer/data/MultiPointCloudVisualizer.hpp"/>
+        <File Name="src/qglviewer/data/TriangleMeshVisualizer.hpp"/>
+        <File Name="src/qglviewer/data/DataCollectorFactory.cpp"/>
+        <File Name="src/qglviewer/data/Visualizer.cpp"/>
+        <File Name="src/qglviewer/data/GridVisualizer.hpp"/>
+        <File Name="src/qglviewer/data/PointCloudVisualizer.hpp"/>
+        <File Name="src/qglviewer/data/Visualizer.hpp"/>
+        <File Name="src/qglviewer/data/ClusterVisualizer.cpp"/>
+        <File Name="src/qglviewer/data/SignalingMeshGenerator.hpp"/>
+        <File Name="src/qglviewer/data/VisualizerFactory.hpp"/>
+        <File Name="src/qglviewer/data/VisualizerFactory.cpp"/>
+      </VirtualDirectory>
+      <VirtualDirectory Name="widgets">
+        <File Name="src/qglviewer/widgets/MultiPointCloudTreeWidgetItem.h"/>
+        <File Name="src/qglviewer/widgets/TriangleMeshTreeWidgetItem.cpp"/>
+        <File Name="src/qglviewer/widgets/TransformationDialog.cpp"/>
+        <File Name="src/qglviewer/widgets/CustomTreeWidgetItem.cpp"/>
+        <File Name="src/qglviewer/widgets/TransformationDialog.h"/>
+        <File Name="src/qglviewer/widgets/VideoExportDialog.cpp"/>
+        <File Name="src/qglviewer/widgets/ClusterTreeWidgetItem.cpp"/>
+        <File Name="src/qglviewer/widgets/VideoExportDialog.hpp"/>
+        <File Name="src/qglviewer/widgets/PointCloudTreeWidgetItem.h"/>
+        <File Name="src/qglviewer/widgets/QDebugStream.hpp"/>
+        <File Name="src/qglviewer/widgets/AnimationDialog.cpp"/>
+        <File Name="src/qglviewer/widgets/DebugOutputDialog.hpp"/>
+        <File Name="src/qglviewer/widgets/PointCloudTreeWidgetItem.cpp"/>
+        <File Name="src/qglviewer/widgets/MultiPointCloudTreeWidgetItem.cpp"/>
+        <File Name="src/qglviewer/widgets/TriangleMeshTreeWidgetItem.h"/>
+        <File Name="src/qglviewer/widgets/CustomTreeWidgetItem.h"/>
+        <File Name="src/qglviewer/widgets/ClusterTreeWidgetItem.h"/>
+        <File Name="src/qglviewer/widgets/AnimationListItem.hpp"/>
+        <File Name="src/qglviewer/widgets/DebugOutputDialog.cpp"/>
+        <File Name="src/qglviewer/widgets/AnimationDialog.hpp"/>
+        <File Name="src/qglviewer/widgets/AnimationListItem.cpp"/>
+      </VirtualDirectory>
+      <VirtualDirectory Name="viewers">
+        <File Name="src/qglviewer/viewers/Viewer.h"/>
+        <File Name="src/qglviewer/viewers/OrthoCamera.cpp"/>
+        <File Name="src/qglviewer/viewers/Viewer.cpp"/>
+        <File Name="src/qglviewer/viewers/ViewerManager.h"/>
+        <File Name="src/qglviewer/viewers/PerspectiveViewer.h"/>
+        <File Name="src/qglviewer/viewers/OrthoCamera.h"/>
+        <File Name="src/qglviewer/viewers/PerspectiveViewer.cpp"/>
+        <File Name="src/qglviewer/viewers/ViewerManager.cpp"/>
+      </VirtualDirectory>
+    </VirtualDirectory>
+    <VirtualDirectory Name="tools">
+      <VirtualDirectory Name="viewer">
+        <VirtualDirectory Name="app">
+          <File Name="src/tools/viewer/app/LVRMainWindow.cpp"/>
+          <File Name="src/tools/viewer/app/LVRTreeWidgetHelper.hpp"/>
+          <File Name="src/tools/viewer/app/LVRMain.cpp"/>
+          <File Name="src/tools/viewer/app/LVRMainWindow.hpp"/>
+          <File Name="src/tools/viewer/app/LVRTreeWidgetHelper.cpp"/>
+        </VirtualDirectory>
+        <VirtualDirectory Name="widgets">
+          <File Name="src/tools/viewer/widgets/LVROptimizationPlanarOptimizationDialog.cpp"/>
+          <File Name="src/tools/viewer/widgets/LVRItemTypes.hpp"/>
+          <File Name="src/tools/viewer/widgets/LVRReconstructionExtendedMarchingCubesDialog.cpp"/>
+          <File Name="src/tools/viewer/widgets/LVRPickItem.cpp"/>
+          <File Name="src/tools/viewer/widgets/LVRCorrespondanceDialog.hpp"/>
+          <File Name="src/tools/viewer/widgets/LVRRenameDialog.cpp"/>
+          <File Name="src/tools/viewer/widgets/LVRTransformationDialog.cpp"/>
+          <File Name="src/tools/viewer/widgets/LVRPointCloudItem.hpp"/>
+          <File Name="src/tools/viewer/widgets/LVRRecordedFrameItem.hpp"/>
+          <File Name="src/tools/viewer/widgets/LVROptimizationRemoveArtifactsDialog.hpp"/>
+          <File Name="src/tools/viewer/widgets/LVRFilteringMLSProjectionDialog.cpp"/>
+          <File Name="src/tools/viewer/widgets/LVRAnimationDialog.cpp"/>
+          <File Name="src/tools/viewer/widgets/LVROptimizationPlanarOptimizationDialog.hpp"/>
+          <File Name="src/tools/viewer/widgets/LVRFilteringRemoveOutliersDialog.cpp"/>
+          <File Name="src/tools/viewer/widgets/LVRAnimationDialog.hpp"/>
+          <File Name="src/tools/viewer/widgets/LVRReconstructionExtendedMarchingCubesDialog.hpp"/>
+          <File Name="src/tools/viewer/widgets/LVRFilteringMLSProjectionDialog.hpp"/>
+          <File Name="src/tools/viewer/widgets/LVRModelItem.hpp"/>
+          <File Name="src/tools/viewer/widgets/LVRReconstructionMarchingCubesDialog.cpp"/>
+          <File Name="src/tools/viewer/widgets/LVRTextureMeshItem.hpp"/>
+          <File Name="src/tools/viewer/widgets/LVRBackgroundDialog.hpp"/>
+          <File Name="src/tools/viewer/widgets/LVRTextureMeshItem.cpp"/>
+          <File Name="src/tools/viewer/widgets/LVRRecordedFrameItem.cpp"/>
+          <File Name="src/tools/viewer/widgets/LVROptimizationRemoveArtifactsDialog.cpp"/>
+          <File Name="src/tools/viewer/widgets/LVRModelItem.cpp"/>
+          <File Name="src/tools/viewer/widgets/LVRReconstructionEstimateNormalsDialog.cpp"/>
+          <File Name="src/tools/viewer/widgets/LVRFilteringRemoveOutliersDialog.hpp"/>
+          <File Name="src/tools/viewer/widgets/LVRReconstructionMarchingCubesDialog.hpp"/>
+          <File Name="src/tools/viewer/widgets/LVRMeshItem.cpp"/>
+          <File Name="src/tools/viewer/widgets/LVRMeshItem.hpp"/>
+          <File Name="src/tools/viewer/widgets/LVRTransformationDialog.hpp"/>
+          <File Name="src/tools/viewer/widgets/LVRCorrespondanceDialog.cpp"/>
+          <File Name="src/tools/viewer/widgets/LVRReconstructionEstimateNormalsDialog.hpp"/>
+          <File Name="src/tools/viewer/widgets/LVRBackgroundDialog.cpp"/>
+          <File Name="src/tools/viewer/widgets/LVRPoseItem.hpp"/>
+          <File Name="src/tools/viewer/widgets/LVRPickItem.hpp"/>
+          <File Name="src/tools/viewer/widgets/LVRPoseItem.cpp"/>
+          <File Name="src/tools/viewer/widgets/LVRRenameDialog.hpp"/>
+          <File Name="src/tools/viewer/widgets/LVRPointCloudItem.cpp"/>
+        </VirtualDirectory>
+        <VirtualDirectory Name="vtkBridge">
+          <File Name="src/tools/viewer/vtkBridge/LVRPointBufferBridge.cpp"/>
+          <File Name="src/tools/viewer/vtkBridge/LVRPointBufferBridge.hpp"/>
+          <File Name="src/tools/viewer/vtkBridge/LVRPickingInteractor.cpp"/>
+          <File Name="src/tools/viewer/vtkBridge/LVRVtkArrow.hpp"/>
+          <File Name="src/tools/viewer/vtkBridge/LVRModelBridge.hpp"/>
+          <File Name="src/tools/viewer/vtkBridge/LVRModelBridge.cpp"/>
+          <File Name="src/tools/viewer/vtkBridge/LVRVtkArrow.cpp"/>
+          <File Name="src/tools/viewer/vtkBridge/LVRPickingInteractor.hpp"/>
+          <File Name="src/tools/viewer/vtkBridge/LVRMeshBufferBridge.cpp"/>
+          <File Name="src/tools/viewer/vtkBridge/LVRMeshBufferBridge.hpp"/>
+        </VirtualDirectory>
+      </VirtualDirectory>
+      <VirtualDirectory Name="reconstruct">
+        <File Name="src/tools/reconstruct/Main.cpp"/>
+        <File Name="src/tools/reconstruct/Options.hpp"/>
+        <File Name="src/tools/reconstruct/Options.cpp"/>
+      </VirtualDirectory>
+      <VirtualDirectory Name="normals">
+        <File Name="src/tools/normals/Main.cpp"/>
+        <File Name="src/tools/normals/Options.hpp"/>
+        <File Name="src/tools/normals/Options.cpp"/>
+      </VirtualDirectory>
+      <VirtualDirectory Name="tiogen">
+        <File Name="src/tools/tiogen/tiogen.cpp"/>
+      </VirtualDirectory>
+      <VirtualDirectory Name="transform">
+        <File Name="src/tools/transform/Main.cpp"/>
+        <File Name="src/tools/transform/Options.hpp"/>
+        <File Name="src/tools/transform/Options.cpp"/>
+      </VirtualDirectory>
+      <VirtualDirectory Name="meshoptimizer">
+        <File Name="src/tools/meshoptimizer/Main.cpp"/>
+        <File Name="src/tools/meshoptimizer/Options.hpp"/>
+        <File Name="src/tools/meshoptimizer/Options.cpp"/>
+      </VirtualDirectory>
+      <VirtualDirectory Name="scanreduce">
+        <File Name="src/tools/scanreduce/Main.cpp"/>
+        <File Name="src/tools/scanreduce/Options.hpp"/>
+        <File Name="src/tools/scanreduce/Options.cpp"/>
+      </VirtualDirectory>
+      <VirtualDirectory Name="scanfilter">
+        <File Name="src/tools/scanfilter/Main.cpp"/>
+        <File Name="src/tools/scanfilter/Options.hpp"/>
+        <File Name="src/tools/scanfilter/Options.cpp"/>
+      </VirtualDirectory>
+      <VirtualDirectory Name="slicer">
+        <File Name="src/tools/slicer/Main.cpp"/>
+        <File Name="src/tools/slicer/Options.hpp"/>
+        <File Name="src/tools/slicer/Options.cpp"/>
+      </VirtualDirectory>
+      <VirtualDirectory Name="colorize">
+        <File Name="src/tools/colorize/colorize.cpp"/>
+      </VirtualDirectory>
+      <VirtualDirectory Name="mpi">
+        <File Name="src/tools/mpi/Main.cpp"/>
+      </VirtualDirectory>
+      <VirtualDirectory Name="kinectgrabber">
+        <File Name="src/tools/kinectgrabber/Main.cpp"/>
+        <File Name="src/tools/kinectgrabber/Options.hpp"/>
+        <File Name="src/tools/kinectgrabber/Options.cpp"/>
+      </VirtualDirectory>
+      <VirtualDirectory Name="fusion">
+        <File Name="src/tools/fusion/Main.cpp"/>
+        <File Name="src/tools/fusion/Options.hpp"/>
+        <File Name="src/tools/fusion/Options.cpp"/>
+      </VirtualDirectory>
+      <VirtualDirectory Name="leica_converter">
+        <File Name="src/tools/leica_converter/Main.cpp"/>
+        <File Name="src/tools/leica_converter/Options.hpp"/>
+        <File Name="src/tools/leica_converter/Options.cpp"/>
+      </VirtualDirectory>
+      <VirtualDirectory Name="texman">
+        <File Name="src/tools/texman/texman.cpp"/>
+      </VirtualDirectory>
+      <VirtualDirectory Name="classifier">
+        <File Name="src/tools/classifier/Main.cpp"/>
+        <File Name="src/tools/classifier/Options.hpp"/>
+        <File Name="src/tools/classifier/Options.cpp"/>
+      </VirtualDirectory>
+      <VirtualDirectory Name="convert">
+        <File Name="src/tools/convert/Options.hpp"/>
+        <File Name="src/tools/convert/Options.cpp"/>
+        <File Name="src/tools/convert/Convert.cpp"/>
+      </VirtualDirectory>
+      <VirtualDirectory Name="registration">
+        <File Name="src/tools/registration/Main.cpp"/>
+        <File Name="src/tools/registration/Options.hpp"/>
+        <File Name="src/tools/registration/Options.cpp"/>
+      </VirtualDirectory>
+      <VirtualDirectory Name="asciiconverter">
+        <File Name="src/tools/asciiconverter/Main.cpp"/>
+        <File Name="src/tools/asciiconverter/Options.hpp"/>
+        <File Name="src/tools/asciiconverter/Options.cpp"/>
+      </VirtualDirectory>
+      <VirtualDirectory Name="cgal_reconstruction">
+        <File Name="src/tools/cgal_reconstruction/Main.cpp"/>
+      </VirtualDirectory>
+    </VirtualDirectory>
+    <VirtualDirectory Name="liblvr">
+      <VirtualDirectory Name="config">
+        <File Name="src/liblvr/config/BaseOption.cpp"/>
+        <File Name="src/liblvr/config/lvropenmp.cpp"/>
+      </VirtualDirectory>
+      <VirtualDirectory Name="display">
+        <File Name="src/liblvr/display/PointCloud.cpp"/>
+        <File Name="src/liblvr/display/MeshCluster.cpp"/>
+        <File Name="src/liblvr/display/TexturedMesh.cpp"/>
+        <File Name="src/liblvr/display/GroundPlane.cpp"/>
+        <File Name="src/liblvr/display/ColorMap.cpp"/>
+        <File Name="src/liblvr/display/MultiPointCloud.cpp"/>
+        <File Name="src/liblvr/display/Renderable.cpp"/>
+        <File Name="src/liblvr/display/Arrow.cpp"/>
+        <File Name="src/liblvr/display/GlTexture.cpp"/>
+        <File Name="src/liblvr/display/StaticMesh.cpp"/>
+        <File Name="src/liblvr/display/CoordinateAxes.cpp"/>
+        <File Name="src/liblvr/display/Grid.cpp"/>
+        <File Name="src/liblvr/display/InteractivePointCloud.cpp"/>
+        <File Name="src/liblvr/display/TextureFactory.cpp"/>
+        <File Name="src/liblvr/display/Color.cpp"/>
+      </VirtualDirectory>
+      <VirtualDirectory Name="io">
+        <File Name="src/liblvr/io/LasIO.cpp"/>
+        <File Name="src/liblvr/io/BaseIO.cpp"/>
+        <File Name="src/liblvr/io/AsciiIO.cpp"/>
+        <File Name="src/liblvr/io/UosIO.cpp"/>
+        <File Name="src/liblvr/io/GridIO.cpp"/>
+        <File Name="src/liblvr/io/PCDIO.cpp"/>
+        <File Name="src/liblvr/io/Timestamp.cpp"/>
+        <File Name="src/liblvr/io/PLYIO.cpp"/>
+        <File Name="src/liblvr/io/KinectGrabber.cpp"/>
+        <File Name="src/liblvr/io/CoordinateTransform.cpp"/>
+        <File Name="src/liblvr/io/ModelFactory.cpp"/>
+        <File Name="src/liblvr/io/TextureIO.cpp"/>
+        <File Name="src/liblvr/io/PointBuffer.cpp"/>
+        <File Name="src/liblvr/io/DatIO.cpp"/>
+        <File Name="src/liblvr/io/ObjIO.cpp"/>
+        <File Name="src/liblvr/io/MeshBuffer.cpp"/>
+        <File Name="src/liblvr/io/KinectIO.cpp"/>
+        <File Name="src/liblvr/io/Progress.cpp"/>
+        <File Name="src/liblvr/io/PPMIO.cpp"/>
+        <File Name="src/liblvr/io/BoctreeIO.cpp"/>
+      </VirtualDirectory>
+      <VirtualDirectory Name="reconstruction">
+        <File Name="src/liblvr/reconstruction/PCLFiltering.cpp"/>
+      </VirtualDirectory>
+      <VirtualDirectory Name="geometry">
+        <File Name="src/liblvr/geometry/HalfEdgeAccessExceptions.cpp"/>
+      </VirtualDirectory>
+      <VirtualDirectory Name="texture">
+        <File Name="src/liblvr/texture/Trans.cpp"/>
+        <File Name="src/liblvr/texture/CrossCorr.cpp"/>
+        <File Name="src/liblvr/texture/Transform.cpp"/>
+        <File Name="src/liblvr/texture/Texture.cpp"/>
+        <File Name="src/liblvr/texture/AutoCorr.cpp"/>
+        <File Name="src/liblvr/texture/Statistics.cpp"/>
+        <File Name="src/liblvr/texture/CCV.cpp"/>
+        <File Name="src/liblvr/texture/ImageProcessor.cpp"/>
+      </VirtualDirectory>
+      <VirtualDirectory Name="registration">
+        <File Name="src/liblvr/registration/ICPPointAlign.cpp"/>
+        <File Name="src/liblvr/registration/EigenSVDPointAlign.cpp"/>
+      </VirtualDirectory>
+    </VirtualDirectory>
+  </VirtualDirectory>
+  <VirtualDirectory Name="ext">
+    <VirtualDirectory Name="laslib">
+      <VirtualDirectory Name="inc">
+        <File Name="ext/laslib/inc/laswaveform13reader.hpp"/>
+        <File Name="ext/laslib/inc/laswriter_las.hpp"/>
+        <File Name="ext/laslib/inc/lasdefinitions.hpp"/>
+        <File Name="ext/laslib/inc/laszip.hpp"/>
+        <File Name="ext/laslib/inc/laszipper.hpp"/>
+        <File Name="ext/laslib/inc/lasreader_txt.hpp"/>
+        <File Name="ext/laslib/inc/lasquadtree.hpp"/>
+        <File Name="ext/laslib/inc/lasinterval.hpp"/>
+        <File Name="ext/laslib/inc/lasreader_shp.hpp"/>
+        <File Name="ext/laslib/inc/lasreader_bin.hpp"/>
+        <File Name="ext/laslib/inc/lasunzipper.hpp"/>
+        <File Name="ext/laslib/inc/laswaveform13writer.hpp"/>
+        <File Name="ext/laslib/inc/mydefs.hpp"/>
+        <File Name="ext/laslib/inc/lasspatial.hpp"/>
+        <File Name="ext/laslib/inc/lasfilter.hpp"/>
+        <File Name="ext/laslib/inc/laswriter_bin.hpp"/>
+        <File Name="ext/laslib/inc/lasreadermerged.hpp"/>
+        <File Name="ext/laslib/inc/lasreader_las.hpp"/>
+        <File Name="ext/laslib/inc/lasindex.hpp"/>
+        <File Name="ext/laslib/inc/lastransform.hpp"/>
+        <File Name="ext/laslib/inc/lasutility.hpp"/>
+        <File Name="ext/laslib/inc/lasreader_qfit.hpp"/>
+        <File Name="ext/laslib/inc/laswriter_qfit.hpp"/>
+        <File Name="ext/laslib/inc/lasreader.hpp"/>
+        <File Name="ext/laslib/inc/laswriter_txt.hpp"/>
+        <File Name="ext/laslib/inc/bytestreamin.hpp"/>
+        <File Name="ext/laslib/inc/laswriter.hpp"/>
+      </VirtualDirectory>
+      <VirtualDirectory Name="src">
+        <File Name="ext/laslib/src/lasspatial.cpp"/>
+        <File Name="ext/laslib/src/lasreader_qfit.cpp"/>
+        <File Name="ext/laslib/src/lasindex.cpp"/>
+        <File Name="ext/laslib/src/bytestreamout_file.hpp"/>
+        <File Name="ext/laslib/src/arithmeticmodel.hpp"/>
+        <File Name="ext/laslib/src/lastransform.cpp"/>
+        <File Name="ext/laslib/src/laswriteitemraw.hpp"/>
+        <File Name="ext/laslib/src/laszip_common_v2.hpp"/>
+        <File Name="ext/laslib/src/integercompressor.hpp"/>
+        <File Name="ext/laslib/src/laswriter_bin.cpp"/>
+        <File Name="ext/laslib/src/arithmeticdecoder.cpp"/>
+        <File Name="ext/laslib/src/lasinterval.cpp"/>
+        <File Name="ext/laslib/src/laswriter.cpp"/>
+        <File Name="ext/laslib/src/arithmeticencoder.cpp"/>
+        <File Name="ext/laslib/src/integercompressor.cpp"/>
+        <File Name="ext/laslib/src/lasreaditemraw.hpp"/>
+        <File Name="ext/laslib/src/bytestreamin_file.hpp"/>
+        <File Name="ext/laslib/src/laswriter_las.cpp"/>
+        <File Name="ext/laslib/src/laswriteitemcompressed_v1.hpp"/>
+        <File Name="ext/laslib/src/laswriter_txt.cpp"/>
+        <File Name="ext/laslib/src/lasreadermerged.cpp"/>
+        <File Name="ext/laslib/src/bytestreamout_ostream.hpp"/>
+        <File Name="ext/laslib/src/lasfilter.cpp"/>
+        <File Name="ext/laslib/src/bytestreamout.hpp"/>
+        <File Name="ext/laslib/src/entropyencoder.hpp"/>
+        <File Name="ext/laslib/src/arithmeticdecoder.hpp"/>
+        <File Name="ext/laslib/src/bytestreamin_istream.hpp"/>
+        <File Name="ext/laslib/src/lasreaditemcompressed_v2.hpp"/>
+        <File Name="ext/laslib/src/lasreader.cpp"/>
+        <File Name="ext/laslib/src/lasunzipper.cpp"/>
+        <File Name="ext/laslib/src/lasreadpoint.hpp"/>
+        <File Name="ext/laslib/src/laszipper.cpp"/>
+        <File Name="ext/laslib/src/lasreadpoint.cpp"/>
+        <File Name="ext/laslib/src/lasreader_bin.cpp"/>
+        <File Name="ext/laslib/src/laswritepoint.cpp"/>
+        <File Name="ext/laslib/src/lasreaditemcompressed_v1.cpp"/>
+        <File Name="ext/laslib/src/lasreader_txt.cpp"/>
+        <File Name="ext/laslib/src/lasreader_shp.cpp"/>
+        <File Name="ext/laslib/src/laswriteitem.hpp"/>
+        <File Name="ext/laslib/src/laswriter_qfit.cpp"/>
+        <File Name="ext/laslib/src/laswriteitemcompressed_v1.cpp"/>
+        <File Name="ext/laslib/src/lasreaditemcompressed_v2.cpp"/>
+        <File Name="ext/laslib/src/fopen_compressed.cpp"/>
+        <File Name="ext/laslib/src/laswaveform13writer.cpp"/>
+        <File Name="ext/laslib/src/entropydecoder.hpp"/>
+        <File Name="ext/laslib/src/lasreaditem.hpp"/>
+        <File Name="ext/laslib/src/lasquadtree.cpp"/>
+        <File Name="ext/laslib/src/arithmeticencoder.hpp"/>
+        <File Name="ext/laslib/src/arithmeticmodel.cpp"/>
+        <File Name="ext/laslib/src/laswriteitemcompressed_v2.cpp"/>
+        <File Name="ext/laslib/src/lasreader_las.cpp"/>
+        <File Name="ext/laslib/src/lasutility.cpp"/>
+        <File Name="ext/laslib/src/bytestreamout_nil.hpp"/>
+        <File Name="ext/laslib/src/laszip.cpp"/>
+        <File Name="ext/laslib/src/laswritepoint.hpp"/>
+        <File Name="ext/laslib/src/lasreaditemcompressed_v1.hpp"/>
+        <File Name="ext/laslib/src/laswriteitemcompressed_v2.hpp"/>
+        <File Name="ext/laslib/src/laswaveform13reader.cpp"/>
+      </VirtualDirectory>
+    </VirtualDirectory>
+    <VirtualDirectory Name="kintinuous">
+      <VirtualDirectory Name="kfusion">
+        <VirtualDirectory Name="src">
+          <VirtualDirectory Name="cuda">
+            <File Name="ext/kintinuous/kfusion/src/cuda/device.hpp"/>
+            <File Name="ext/kintinuous/kfusion/src/cuda/temp_utils.hpp"/>
+            <File Name="ext/kintinuous/kfusion/src/cuda/texture_binder.hpp"/>
+          </VirtualDirectory>
+          <File Name="ext/kintinuous/kfusion/src/core.cpp"/>
+          <File Name="ext/kintinuous/kfusion/src/capture.cpp"/>
+          <File Name="ext/kintinuous/kfusion/src/kinfu.cpp"/>
+          <File Name="ext/kintinuous/kfusion/src/tsdf_volume.cpp"/>
+          <File Name="ext/kintinuous/kfusion/src/precomp.cpp"/>
+          <File Name="ext/kintinuous/kfusion/src/imgproc.cpp"/>
+          <File Name="ext/kintinuous/kfusion/src/precomp.hpp"/>
+          <File Name="ext/kintinuous/kfusion/src/projective_icp.cpp"/>
+          <File Name="ext/kintinuous/kfusion/src/safe_call.hpp"/>
+          <File Name="ext/kintinuous/kfusion/src/device_memory.cpp"/>
+          <File Name="ext/kintinuous/kfusion/src/cyclical_buffer.cpp"/>
+          <File Name="ext/kintinuous/kfusion/src/marching_cubes.cpp"/>
+          <File Name="ext/kintinuous/kfusion/src/internal.hpp"/>
+        </VirtualDirectory>
+        <VirtualDirectory Name="include">
+          <VirtualDirectory Name="kfusion">
+            <VirtualDirectory Name="cuda">
+              <File Name="ext/kintinuous/kfusion/include/kfusion/cuda/tsdf_volume.hpp"/>
+              <File Name="ext/kintinuous/kfusion/include/kfusion/cuda/kernel_containers.hpp"/>
+              <File Name="ext/kintinuous/kfusion/include/kfusion/cuda/projective_icp.hpp"/>
+              <File Name="ext/kintinuous/kfusion/include/kfusion/cuda/device_array.hpp"/>
+              <File Name="ext/kintinuous/kfusion/include/kfusion/cuda/device_memory.hpp"/>
+              <File Name="ext/kintinuous/kfusion/include/kfusion/cuda/imgproc.hpp"/>
+            </VirtualDirectory>
+            <File Name="ext/kintinuous/kfusion/include/kfusion/kinfu.hpp"/>
+            <File Name="ext/kintinuous/kfusion/include/kfusion/marching_cubes.hpp"/>
+            <File Name="ext/kintinuous/kfusion/include/kfusion/types.hpp"/>
+            <File Name="ext/kintinuous/kfusion/include/kfusion/tsdf_buffer.h"/>
+            <File Name="ext/kintinuous/kfusion/include/kfusion/exports.hpp"/>
+            <File Name="ext/kintinuous/kfusion/include/kfusion/cyclical_buffer.h"/>
+          </VirtualDirectory>
+          <VirtualDirectory Name="io">
+            <File Name="ext/kintinuous/kfusion/include/io/capture.hpp"/>
+          </VirtualDirectory>
+        </VirtualDirectory>
+      </VirtualDirectory>
+      <VirtualDirectory Name="apps">
+        <File Name="ext/kintinuous/apps/demo.cpp"/>
+      </VirtualDirectory>
+    </VirtualDirectory>
+    <VirtualDirectory Name="slam6d">
+      <VirtualDirectory Name="include">
+        <VirtualDirectory Name="slam6d">
+          <File Name="ext/slam6d/include/slam6d/scan_io_oct.h"/>
+          <File Name="ext/slam6d/include/slam6d/data_types.h"/>
+          <File Name="ext/slam6d/include/slam6d/allocator.h"/>
+          <File Name="ext/slam6d/include/slam6d/scan_io.h"/>
+          <File Name="ext/slam6d/include/slam6d/io_types.h"/>
+          <File Name="ext/slam6d/include/slam6d/nnparams.h"/>
+          <File Name="ext/slam6d/include/slam6d/ptpair.h"/>
+          <File Name="ext/slam6d/include/slam6d/pointfilter.h"/>
+          <File Name="ext/slam6d/include/slam6d/searchCache.h"/>
+          <File Name="ext/slam6d/include/slam6d/point.h"/>
+          <File Name="ext/slam6d/include/slam6d/Boctree.h"/>
+          <File Name="ext/slam6d/include/slam6d/searchTree.h"/>
+          <File Name="ext/slam6d/include/slam6d/point_type.h"/>
+        </VirtualDirectory>
+      </VirtualDirectory>
+      <File Name="ext/slam6d/searchTree.cc"/>
+      <File Name="ext/slam6d/point_type.cc"/>
+      <File Name="ext/slam6d/scan_io_oct.cc"/>
+      <File Name="ext/slam6d/Boctree.cc"/>
+      <File Name="ext/slam6d/allocator.cc"/>
+    </VirtualDirectory>
+    <VirtualDirectory Name="nanoflann">
+      <File Name="ext/nanoflann/nanoflann.hpp"/>
+    </VirtualDirectory>
+    <VirtualDirectory Name="rply">
+      <File Name="ext/rply/rply.c"/>
+      <File Name="ext/rply/rply.h"/>
+    </VirtualDirectory>
+    <VirtualDirectory Name="psimpl">
+      <File Name="ext/psimpl/psimpl.h"/>
+    </VirtualDirectory>
+  </VirtualDirectory>
+  <VirtualDirectory Name="include">
+    <VirtualDirectory Name="lvr">
+      <VirtualDirectory Name="config">
+        <File Name="include/lvr/config/BaseOption.hpp"/>
+        <File Name="include/lvr/config/lvropenmp.hpp"/>
+      </VirtualDirectory>
+      <VirtualDirectory Name="classification">
+        <File Name="include/lvr/classification/ColorGradientPlaneClassifier.tcc"/>
+        <File Name="include/lvr/classification/RegionClassifier.tcc"/>
+        <File Name="include/lvr/classification/NormalClassifier.hpp"/>
+        <File Name="include/lvr/classification/NormalClassifier.tcc"/>
+        <File Name="include/lvr/classification/ClassifierFactory.tcc"/>
+        <File Name="include/lvr/classification/IndoorNormalClassifier.hpp"/>
+        <File Name="include/lvr/classification/ClassifierFactory.hpp"/>
+        <File Name="include/lvr/classification/IndoorNormalClassifier.tcc"/>
+        <File Name="include/lvr/classification/RegionClassifier.hpp"/>
+        <File Name="include/lvr/classification/ColorGradientPlaneClassifier.hpp"/>
+      </VirtualDirectory>
+      <VirtualDirectory Name="slicer">
+        <File Name="include/lvr/slicer/MeshSlicer.cpp"/>
+        <File Name="include/lvr/slicer/MeshSlicer.hpp"/>
+      </VirtualDirectory>
+      <VirtualDirectory Name="display">
+        <File Name="include/lvr/display/GroundPlane.hpp"/>
+        <File Name="include/lvr/display/Arrow.hpp"/>
+        <File Name="include/lvr/display/Color.hpp"/>
+        <File Name="include/lvr/display/TextureFactory.hpp"/>
+        <File Name="include/lvr/display/MultiPointCloud.hpp"/>
+        <File Name="include/lvr/display/PointCloud.hpp"/>
+        <File Name="include/lvr/display/GlTexture.hpp"/>
+        <File Name="include/lvr/display/InteractivePointCloud.hpp"/>
+        <File Name="include/lvr/display/ColorMap.hpp"/>
+        <File Name="include/lvr/display/TexturedMesh.hpp"/>
+        <File Name="include/lvr/display/StaticMesh.hpp"/>
+        <File Name="include/lvr/display/CoordinateAxes.hpp"/>
+        <File Name="include/lvr/display/MeshCluster.hpp"/>
+        <File Name="include/lvr/display/Grid.hpp"/>
+        <File Name="include/lvr/display/Renderable.hpp"/>
+      </VirtualDirectory>
+      <VirtualDirectory Name="io">
+        <File Name="include/lvr/io/BoctreeIO.hpp"/>
+        <File Name="include/lvr/io/PCDIO.hpp"/>
+        <File Name="include/lvr/io/UosIO.hpp"/>
+        <File Name="include/lvr/io/DataStruct.hpp"/>
+        <File Name="include/lvr/io/MeshBuffer.hpp"/>
+        <File Name="include/lvr/io/ModelFactory.hpp"/>
+        <File Name="include/lvr/io/ObjIO.hpp"/>
+        <File Name="include/lvr/io/PLYIO.hpp"/>
+        <File Name="include/lvr/io/TextureIO.hpp"/>
+        <File Name="include/lvr/io/Model.hpp"/>
+        <File Name="include/lvr/io/PPMIO.hpp"/>
+        <File Name="include/lvr/io/BaseIO.hpp"/>
+        <File Name="include/lvr/io/PointBuffer.hpp"/>
+        <File Name="include/lvr/io/DatIO.hpp"/>
+        <File Name="include/lvr/io/KinectGrabber.hpp"/>
+        <File Name="include/lvr/io/KinectIO.hpp"/>
+        <File Name="include/lvr/io/AsciiIO.hpp"/>
+        <File Name="include/lvr/io/GridIO.hpp"/>
+        <File Name="include/lvr/io/CoordinateTransform.hpp"/>
+        <File Name="include/lvr/io/Progress.hpp"/>
+        <File Name="include/lvr/io/Timestamp.hpp"/>
+        <File Name="include/lvr/io/LasIO.hpp"/>
+      </VirtualDirectory>
+      <VirtualDirectory Name="mpi">
+        <File Name="include/lvr/mpi/MPINode.hpp"/>
+        <File Name="include/lvr/mpi/MPITree.tcc"/>
+        <File Name="include/lvr/mpi/MPINode.tcc"/>
+        <File Name="include/lvr/mpi/MPITree.hpp"/>
+      </VirtualDirectory>
+      <VirtualDirectory Name="reconstruction">
+        <File Name="include/lvr/reconstruction/SearchTreeStann.tcc"/>
+        <File Name="include/lvr/reconstruction/ExtendedMCTable.hpp"/>
+        <File Name="include/lvr/reconstruction/TSDFGrid.hpp"/>
+        <File Name="include/lvr/reconstruction/TetraederBox.tcc"/>
+        <File Name="include/lvr/reconstruction/QueryPoint.hpp"/>
+        <File Name="include/lvr/reconstruction/BilinearFastBox.tcc"/>
+        <File Name="include/lvr/reconstruction/SearchTreeNabo.hpp"/>
+        <File Name="include/lvr/reconstruction/FastReconstruction.hpp"/>
+        <File Name="include/lvr/reconstruction/HashGrid.hpp"/>
+        <File Name="include/lvr/reconstruction/SearchTreeStann.hpp"/>
+        <File Name="include/lvr/reconstruction/MCTable.hpp"/>
+        <File Name="include/lvr/reconstruction/SharpBox.tcc"/>
+        <File Name="include/lvr/reconstruction/PCLKSurface.tcc"/>
+        <File Name="include/lvr/reconstruction/SearchTreeFlann.hpp"/>
+        <File Name="include/lvr/reconstruction/HashGrid.tcc"/>
+        <File Name="include/lvr/reconstruction/SearchTreeFlann.tcc"/>
+        <File Name="include/lvr/reconstruction/MeshGenerator.hpp"/>
+        <File Name="include/lvr/reconstruction/PointsetGrid.hpp"/>
+        <File Name="include/lvr/reconstruction/PointsetGrid.tcc"/>
+        <File Name="include/lvr/reconstruction/PCLKSurface.hpp"/>
+        <File Name="include/lvr/reconstruction/SearchTree.hpp"/>
+        <File Name="include/lvr/reconstruction/TetraederTables.hpp"/>
+        <File Name="include/lvr/reconstruction/FastBox.tcc"/>
+        <File Name="include/lvr/reconstruction/FastBox.hpp"/>
+        <File Name="include/lvr/reconstruction/AdaptiveKSearchSurface.tcc"/>
+        <File Name="include/lvr/reconstruction/PointsetSurface.tcc"/>
+        <File Name="include/lvr/reconstruction/PointsetMeshGenerator.hpp"/>
+        <File Name="include/lvr/reconstruction/PointsetSurface.hpp"/>
+        <File Name="include/lvr/reconstruction/TSDFGrid.tcc"/>
+        <File Name="include/lvr/reconstruction/PlanarFastBox.tcc"/>
+        <File Name="include/lvr/reconstruction/SearchTreeNanoflann.tcc"/>
+        <File Name="include/lvr/reconstruction/QueryPoint.tcc"/>
+        <File Name="include/lvr/reconstruction/SearchTree.tcc"/>
+        <File Name="include/lvr/reconstruction/LocalApproximation.hpp"/>
+        <File Name="include/lvr/reconstruction/SearchTreeNabo.tcc"/>
+        <File Name="include/lvr/reconstruction/PCLFiltering.hpp"/>
+        <File Name="include/lvr/reconstruction/AdaptiveKSearchSurface.hpp"/>
+        <File Name="include/lvr/reconstruction/PlanarFastBox.hpp"/>
+        <File Name="include/lvr/reconstruction/TetraederBox.hpp"/>
+        <File Name="include/lvr/reconstruction/BilinearFastBox.hpp"/>
+        <File Name="include/lvr/reconstruction/SearchTreeNanoflann.hpp"/>
+        <File Name="include/lvr/reconstruction/FastReconstruction.tcc"/>
+        <File Name="include/lvr/reconstruction/SharpBox.hpp"/>
+        <File Name="include/lvr/reconstruction/FastBoxTables.hpp"/>
+        <File Name="include/lvr/reconstruction/FastReconstructionTables.hpp"/>
+      </VirtualDirectory>
+      <VirtualDirectory Name="geometry">
+        <File Name="include/lvr/geometry/FusionFace.cpp"/>
+        <File Name="include/lvr/geometry/Vertex.hpp"/>
+        <File Name="include/lvr/geometry/PolygonFusion.tcc"/>
+        <File Name="include/lvr/geometry/HalfEdgeMesh.hpp"/>
+        <File Name="include/lvr/geometry/Normal.hpp"/>
+        <File Name="include/lvr/geometry/HalfEdgeMesh.tcc"/>
+        <File Name="include/lvr/geometry/BoundingBox.tcc"/>
+        <File Name="include/lvr/geometry/Region.tcc"/>
+        <File Name="include/lvr/geometry/HalfEdgeAccessExceptions.hpp"/>
+        <File Name="include/lvr/geometry/Fusion.hpp"/>
+        <File Name="include/lvr/geometry/Fusion.tcc"/>
+        <File Name="include/lvr/geometry/VertexCosts.hpp"/>
+        <File Name="include/lvr/geometry/Tesselator.tcc"/>
+        <File Name="include/lvr/geometry/PolygonMesh.tcc"/>
+        <File Name="include/lvr/geometry/HalfEdge.hpp"/>
+        <File Name="include/lvr/geometry/PolygonRegion.tcc"/>
+        <File Name="include/lvr/geometry/HalfEdge.tcc"/>
+        <File Name="include/lvr/geometry/FusionFace.hpp"/>
+        <File Name="include/lvr/geometry/Quaternion.tcc"/>
+        <File Name="include/lvr/geometry/HalfEdgeVertex.hpp"/>
+        <File Name="include/lvr/geometry/Quaternion.hpp"/>
+        <File Name="include/lvr/geometry/QuadricVertexCosts.tcc"/>
+        <File Name="include/lvr/geometry/FusionVertex.hpp"/>
+        <File Name="include/lvr/geometry/BaseMesh.hpp"/>
+        <File Name="include/lvr/geometry/Polygon.tcc"/>
+        <File Name="include/lvr/geometry/FusionEdge.hpp"/>
+        <File Name="include/lvr/geometry/HalfEdgeFace.hpp"/>
+        <File Name="include/lvr/geometry/Vertex.tcc"/>
+        <File Name="include/lvr/geometry/PolygonFusion.hpp"/>
+        <File Name="include/lvr/geometry/ColorVertex.hpp"/>
+        <File Name="include/lvr/geometry/HalfEdgeFace.tcc"/>
+        <File Name="include/lvr/geometry/Tesselator.hpp"/>
+        <File Name="include/lvr/geometry/BaseMesh.tcc"/>
+        <File Name="include/lvr/geometry/Normal.tcc"/>
+        <File Name="include/lvr/geometry/PolygonMesh.hpp"/>
+        <File Name="include/lvr/geometry/Matrix4.hpp"/>
+        <File Name="include/lvr/geometry/QuadricVertexCosts.hpp"/>
+        <File Name="include/lvr/geometry/HalfEdgeVertex.tcc"/>
+        <File Name="include/lvr/geometry/Region.hpp"/>
+        <File Name="include/lvr/geometry/PolygonRegion.hpp"/>
+        <File Name="include/lvr/geometry/BoundingBox.hpp"/>
+        <File Name="include/lvr/geometry/Polygon.hpp"/>
+      </VirtualDirectory>
+      <VirtualDirectory Name="texture">
+        <File Name="include/lvr/texture/CrossCorr.hpp"/>
+        <File Name="include/lvr/texture/CCV.hpp"/>
+        <File Name="include/lvr/texture/ImageProcessor.hpp"/>
+        <File Name="include/lvr/texture/Texturizer.hpp"/>
+        <File Name="include/lvr/texture/Statistics.hpp"/>
+        <File Name="include/lvr/texture/Texture.hpp"/>
+        <File Name="include/lvr/texture/Texturizer.tcc"/>
+        <File Name="include/lvr/texture/Trans.hpp"/>
+        <File Name="include/lvr/texture/AutoCorr.hpp"/>
+        <File Name="include/lvr/texture/TextureToken.tcc"/>
+        <File Name="include/lvr/texture/Transform.hpp"/>
+        <File Name="include/lvr/texture/TextureToken.hpp"/>
+      </VirtualDirectory>
+      <VirtualDirectory Name="registration">
+        <File Name="include/lvr/registration/ICPPointAlign.hpp"/>
+        <File Name="include/lvr/registration/EigenSVDPointAlign.hpp"/>
+      </VirtualDirectory>
+    </VirtualDirectory>
+  </VirtualDirectory>
+  <Description/>
+  <Dependencies/>
+  <Settings Type="Executable">
+    <GlobalSettings>
+      <Compiler Options="" C_Options="" Assembler="">
+        <IncludePath Value="."/>
+      </Compiler>
+      <Linker Options="">
+        <LibraryPath Value="."/>
+      </Linker>
+      <ResourceCompiler Options=""/>
+    </GlobalSettings>
+    <Configuration Name="Debug" CompilerType="Cross GCC ( x86_64-linux-gnu )" DebuggerType="GNU gdb debugger" Type="Executable" BuildCmpWithGlobalSettings="append" BuildLnkWithGlobalSettings="append" BuildResWithGlobalSettings="append">
+      <Compiler Options="-g -Wall" C_Options="" Assembler="" Required="yes" PreCompiledHeader="" PCHInCommandLine="no" PCHFlags="" PCHFlagsPolicy="0">
+        <IncludePath Value="."/>
+      </Compiler>
+      <Linker Options="-O0" Required="yes">
+        <LibraryPath Value="."/>
+        <LibraryPath Value="Debug"/>
+      </Linker>
+      <ResourceCompiler Options="" Required="no"/>
+      <General OutputFile="$(IntermediateDirectory)/$(ProjectName)" IntermediateDirectory="./Debug" Command="./$(ProjectName)" CommandArguments="" UseSeparateDebugArgs="no" DebugArguments="" WorkingDirectory="./Debug" PauseExecWhenProcTerminates="no" IsGUIProgram="no" IsEnabled="yes"/>
+      <Environment EnvVarSetName="&lt;Use Workspace Settings&gt;" DbgSetName="&lt;Use Global Settings&gt;">
+        <![CDATA[]]>
+      </Environment>
+      <Debugger IsRemote="no" RemoteHostName="" RemoteHostPort="" DebuggerPath="" IsExtended="no">
+        <DebuggerSearchPaths/>
+        <PostConnectCommands/>
+        <StartupCommands/>
+      </Debugger>
+      <PreBuild/>
+      <PostBuild/>
+      <CustomBuild Enabled="no">
+        <RebuildCommand/>
+        <CleanCommand/>
+        <BuildCommand/>
+        <PreprocessFileCommand/>
+        <SingleFileCommand/>
+        <MakefileGenerationCommand/>
+        <ThirdPartyToolName/>
+        <WorkingDirectory/>
+      </CustomBuild>
+      <AdditionalRules>
+        <CustomPostBuild/>
+        <CustomPreBuild/>
+      </AdditionalRules>
+      <Completion EnableCpp11="no" EnableCpp14="no">
+        <ClangCmpFlagsC/>
+        <ClangCmpFlags/>
+        <ClangPP/>
+        <SearchPaths/>
+      </Completion>
+    </Configuration>
+  </Settings>
+</CodeLite_Project>
