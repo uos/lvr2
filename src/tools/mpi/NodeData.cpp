@@ -3,6 +3,7 @@
 //
 
 #include <vector>
+#include <sstream>
 #include "NodeData.h"
 
 
@@ -28,7 +29,35 @@ NodeData::NodeData()
     m_dataPath.append(to_string(c_tstamp));
     m_dataPath.append("-");
     m_dataPath.append(to_string(m_id));
-    bufferSize = 100000;
+    m_bufferSize = 400000;
+    m_bufferIndex = 0;
+}
+
+void NodeData::fillBuffer(size_t start_id)
+{
+    m_readBuffer.clear();
+    ifstream ifs(m_dataPath);
+    m_bufferIndex=start_id;
+    int i = 0;
+    int j = 0;
+    float x,y,z;
+    string s;
+    while( getline( ifs, s ) )
+    {
+        if(i>=size() || j>=m_bufferSize) break;
+        else if(i>=start_id)
+        {
+            stringstream ss;
+            ss.str(s);
+            ss >> x >> y >> z;
+            m_readBuffer.push_back(Vertexf(x,y,z));
+            j++;
+        }
+        i++;
+
+    }
+
+
 }
 
 void NodeData::create(string inputPoints, string nodePoints)
@@ -73,6 +102,17 @@ void NodeData::add(Vertex<float> input)
 
 Vertex<float> NodeData::get(int i)
 {
+
+    if(i>=m_bufferIndex && i < m_readBuffer.size())
+    {
+        return m_readBuffer[i - m_bufferIndex];
+    }
+    else
+    {
+        fillBuffer(i);
+        return m_readBuffer[i - m_bufferIndex];
+    }
+
     ifstream ifs;
     try
     {
