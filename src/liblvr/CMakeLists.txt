@@ -104,7 +104,7 @@ if(PCL_FOUND)
 endif(PCL_FOUND)
 
 if(LIBFREENECT_FOUND)
-  set(LVR_SOURCES ${LVR_SOURCES} io/KinectGrabber.cpp io/KinectIO.cpp)
+  set(LVR_SOURCES ${LVR_SOURCES} io/KinectGrabber.cpp io/KinectIO.cpp ../tools/mpi/LargeScaleOctree.cpp ../tools/mpi/LargeScaleOctree.h ../tools/mpi/LargeScaldeOctreeNode.cpp ../tools/mpi/LargeScaldeOctreeNode.h)
   set(LVR_LIB_DEPENDENCIES ${LVR_LIB_DEPENDENCIES} ${LIBFREENECT_LIBRARIES})
 endif(LIBFREENECT_FOUND)
 
