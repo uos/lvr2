@@ -17,7 +17,7 @@ namespace lvr
         NodeData m_data;
         const size_t m_maxPoints;
     public:
-        LargeScaldeOctreeNode(Vertexf center, float size) : m_center(center), m_size(size), m_maxPoints(200000), m_data()
+        LargeScaldeOctreeNode(Vertexf center, float size) : m_center(center), m_size(size), m_maxPoints(100000), m_data()
         {
             //cout << "NEW NODE" << endl;
             for(int i=0 ; i<8 ; i++) m_children[i] = NULL;

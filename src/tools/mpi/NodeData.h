@@ -36,6 +36,7 @@ public:
 
 private:
     void copy(NodeData& origin);
+    void fillBuffer(size_t start_id);
     string m_dataPath;
     bool m_gotSize;
     size_t m_size;
@@ -44,8 +45,8 @@ private:
     static int c_last_id;
     static time_t c_tstamp;
     vector<Vertexf> m_readBuffer;
-    size_t bufferSize;
-    size_t bufferIndex;
+    size_t m_bufferSize;
+    size_t m_bufferIndex;
 
 
 

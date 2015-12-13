@@ -17,6 +17,28 @@ void printTest(Vertexf v)
 
 int main(int argc, char** argv)
 {
+/*
+    string filepath(argv[1]);
+    ifstream inputData(filepath);
+    string s;
+    int j = 1;
+    NodeData nd;
+    while( getline( inputData, s ) )
+    {
+        stringstream ss;
+        ss.str(s);
+        Vertexf v;
+        ss >> v.x >> v.y >> v.z;
+        nd.add(v);
+
+    }
+    for(Vertexf vv : nd)
+    {
+        cout << vv;
+    }
+
+    */
+
 
 
     string filepath(argv[1]);
@@ -56,6 +78,7 @@ int main(int argc, char** argv)
         octree.insert(v);
 
     }
+
 
 
 
