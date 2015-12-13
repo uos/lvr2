@@ -176,6 +176,7 @@ std::ostream& operator<<(std::ostream& os, BoundingBox<T>&bb)
     os << "Bounding Box: " << endl;
     os << "Min \t\t: " << bb.getMin();
     os << "Max \t\t: " << bb.getMax();
+	os << "Centroid \t: " << bb.getCentroid();
     os << "Dimensions \t: " << bb.getXSize() << " " << bb.getYSize() << " " << bb.getZSize();
     return os;
 }

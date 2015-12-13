@@ -48,7 +48,7 @@ int main(int argc, char** argv)
     int j = 1;
     while( getline( inputData, s ) )
     {
-        cout << "j: " << j++ << endl;
+        //cout << "j: " << j++ << endl;
         stringstream ss;
         ss.str(s);
         Vertexf v;
@@ -58,7 +58,10 @@ int main(int argc, char** argv)
     }
 
     float size = box.getLongestSide();
-    Vertexf center = box.getCentroid();
+    Vertexf center = box.getMax()+box.getMin();
+    center/=2;
+    cout << box << endl << "--------" << endl;
+
     LargeScaldeOctreeNode octree(center, size);
 
     inputData.close();
@@ -78,6 +81,7 @@ int main(int argc, char** argv)
         octree.insert(v);
 
     }
+
 
 
 

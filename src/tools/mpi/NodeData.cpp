@@ -29,7 +29,8 @@ NodeData::NodeData()
     m_dataPath.append(to_string(c_tstamp));
     m_dataPath.append("-");
     m_dataPath.append(to_string(m_id));
-    m_bufferSize = 400000;
+    m_dataPath.append(".xyz");
+    m_bufferSize = 2000000;
     m_bufferIndex = 0;
 }
 
@@ -84,6 +85,7 @@ void NodeData::remove()
 {
     std::remove(m_dataPath.c_str());
     m_dataPath = "";
+    m_readBuffer.clear();
 }
 
 void NodeData::remove(unsigned int i)
@@ -100,10 +102,10 @@ void NodeData::add(Vertex<float> input)
 
 }
 
-Vertex<float> NodeData::get(int i)
+Vertex<float>& NodeData::get(int i)
 {
 
-    if(i>=m_bufferIndex && i < m_readBuffer.size())
+    if(i>=m_bufferIndex && i - m_bufferIndex < m_readBuffer.size())
     {
         return m_readBuffer[i - m_bufferIndex];
     }
@@ -113,37 +115,7 @@ Vertex<float> NodeData::get(int i)
         return m_readBuffer[i - m_bufferIndex];
     }
 
-    ifstream ifs;
-    try
-    {
-        //cout << "opening: " << m_dataPath << endl;
-       ifs.open(m_dataPath);
-    }
-    catch (exception& e)
-    {
-        cout << e.what() << endl;
-    }
 
-    int j = 0;
-    float x,y,z;
-    Vertex<float> res;
-    //std::cout << "good: " << ifs.good() << "eof?: " << ifs.eof() << std::endl;
-
-    while(ifs.good() && !ifs.eof())
-    {
-        ifs >> x >> y >> z;
-        if(j==i && ifs.good() && !ifs.eof())
-        {
-            res.x = x;
-            res.y = y;
-            res.z = z;
-            ifs.close();
-            return res;
-        }
-        j++;
-    }
-    ifs.close();
-    return Vertex<float>();
 }
 
 Vertex<float> NodeData::next()
