@@ -110,7 +110,7 @@ void kfusion::OpenNISource::open(const std::string& filename)
 	else
 	{
 		openni::VideoMode colorMode;
-		colorMode.setResolution (640, 480);
+		colorMode.setResolution (1280, 1024);
 		colorMode.setFps(30);
 		colorMode.setPixelFormat(openni::PIXEL_FORMAT_RGB888);
 
