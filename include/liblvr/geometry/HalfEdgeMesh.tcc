@@ -2453,7 +2453,7 @@ HalfEdgeMesh<VertexT, NormalT>* HalfEdgeMesh<VertexT, NormalT>::retesselateInHal
 			if(textured){
 					bounding_rectangle = getBoundingRectangle(contours[0],m_regions[iRegion]->m_normal);
 					bounding_rectangles_3D.push_back(bounding_rectangle);
-					createInitialTexture(bounding_rectangle,end_texture_index,"",1000);
+					createInitialTexture(bounding_rectangle,end_texture_index,"",2000);
 					b_rect_size+=4;
 			}
 			///
@@ -2520,7 +2520,7 @@ HalfEdgeMesh<VertexT, NormalT>* HalfEdgeMesh<VertexT, NormalT>::retesselateInHal
 				else
 				{
 				    pos = (vertexBuffer.size() / 3);
-				    //vertexMap.insert(pair<Vertex<float>, unsigned int>(current, pos));
+				    vertexMap.insert(pair<Vertex<float>, unsigned int>(current, pos));
 			        vertexBuffer.push_back( points[k] );
 					vertexBuffer.push_back( points[k + 1]);
 					vertexBuffer.push_back( points[k + 2]);
@@ -2529,9 +2529,9 @@ HalfEdgeMesh<VertexT, NormalT>* HalfEdgeMesh<VertexT, NormalT>::retesselateInHal
 					normalBuffer.push_back( m_regions[iRegion]->m_normal[1] );
 					normalBuffer.push_back( m_regions[iRegion]->m_normal[2] );
 
-					colorBuffer.push_back( r );
-					colorBuffer.push_back( g );
-					colorBuffer.push_back( b );
+					colorBuffer.push_back( static_cast<unsigned char>(255) );
+					colorBuffer.push_back( static_cast<unsigned char>(255) );
+					colorBuffer.push_back( static_cast<unsigned char>(255) );
 
 					textureCoordBuffer.push_back( u );
 					textureCoordBuffer.push_back( v );
@@ -2539,31 +2539,7 @@ HalfEdgeMesh<VertexT, NormalT>* HalfEdgeMesh<VertexT, NormalT>::retesselateInHal
 				}
 				point_map.insert(pair<size_t, size_t >(k/3, pos));
 			}
-            //size_t offset = vertexBuffer.size() - points.size();
 
-            // calculate the index value for the old end of the vertex buffer.
-            //offset = ( offset / 3 );
-
-            // for(int j=0; j < indices.size(); j+=3)
-            // {
-            //     /*if(indices[j] == indices[j+1] || indices[j+1] == indices[j+2] || indices[j+2] == indices[j])
-            //     {
-            //         cout << "Detected degenerated face: " << indices[j] << " " << indices[j + 1] << " " << indices[j + 2] << endl;
-            //     }*/
-            //
-            //     // store the indices with the correct offset to the indices buffer.
-            //     int a =  indices[j + 0] + offset;
-            //     int b =  indices[j + 1] + offset;
-            //     int c =  indices[j + 2] + offset;
-            //
-            //     if(a != b && b != c && a != c)
-            //     {
-            //         indexBuffer.push_back( a );
-            //         indexBuffer.push_back( b );
-            //         indexBuffer.push_back( c );
-            //     }
-            //
-            // }
             for(int j=0; j < indices.size(); j+=3)
             {
 				auto it_a = point_map.find(indices[j + 0]);
@@ -2622,8 +2598,8 @@ HalfEdgeMesh<VertexT, NormalT>* HalfEdgeMesh<VertexT, NormalT>::retesselateInHal
 			/*for( size_t i=0; i < m_regions[iRegion]->m_faces.size(); ++i )
 			{
 				deleteFace(m_regions[iRegion]->m_faces[i]);
-			}
-			m_regions[iRegion]->m_toDelete = true;*/
+			}*/
+			  m_regions[iRegion]->m_toDelete = true;
 
         }
         catch(...)
@@ -2762,14 +2738,16 @@ std::vector<cv::Point3f> HalfEdgeMesh<VertexT,NormalT>::getBoundingRectangle(std
 	for(auto it=act_contour.begin(); it != act_contour.end(); ++it){
 		contour.push_back(cv::Point3f((*it)[0],(*it)[1],(*it)[2]));
 	}
+
 	std::vector<cv::Point3f> rect;
+	rect.resize(4);
 
 	if(contour.size()<3){
 		// testloesung
-		rect.push_back(cv::Point3f(contour[0].x,contour[0].y,contour[0].z));
-	    rect.push_back(cv::Point3f(contour[0].x,contour[1].y,contour[0].z));
-	    rect.push_back(cv::Point3f(contour[1].x,contour[1].y,contour[1].z));
-	    rect.push_back(cv::Point3f(contour[1].x,contour[0].y,contour[1].z));
+		rect[0] = cv::Point3f(contour[0].x,contour[0].y,contour[0].z);
+	    rect[1] = cv::Point3f(contour[0].x,contour[1].y,contour[0].z);
+	    rect[2] = cv::Point3f(contour[1].x,contour[1].y,contour[1].z);
+	    rect[3] = cv::Point3f(contour[1].x,contour[0].y,contour[1].z);
 
 	    return rect;
 	}
@@ -2847,10 +2825,10 @@ std::vector<cv::Point3f> HalfEdgeMesh<VertexT,NormalT>::getBoundingRectangle(std
 	        }
 	    }
 
-	    rect.push_back(cv::Point3f(p + best_a_min * best_v1 + best_b_min* best_v2));
-	    rect.push_back(cv::Point3f(p + best_a_min * best_v1 + best_b_max* best_v2));
-	    rect.push_back(cv::Point3f(p + best_a_max * best_v1 + best_b_max* best_v2));
-	    rect.push_back(cv::Point3f(p + best_a_max * best_v1 + best_b_min* best_v2));
+	    rect[0] = cv::Point3f(p + best_a_min * best_v1 + best_b_min* best_v2);
+	    rect[1] = cv::Point3f(p + best_a_min * best_v1 + best_b_max* best_v2);
+	    rect[2] = cv::Point3f(p + best_a_max * best_v1 + best_b_max* best_v2);
+	    rect[3] = cv::Point3f(p + best_a_max * best_v1 + best_b_min* best_v2);
 
 	return rect;
 }
@@ -2947,11 +2925,16 @@ int HalfEdgeMesh<VertexT,NormalT>::projectAndMapNewImage(kfusion::ImgPose img_po
 template<typename VertexT, typename NormalT>
 int HalfEdgeMesh<VertexT,NormalT>::fillNonPlanarColors(kfusion::ImgPose img_pose)
 {
-	cv::Mat distCoeffs(4,1,cv::DataType<float>::type);
+	cv::Mat distCoeffs;
+	if(img_pose.distortion.rows ==0){
+	distCoeffs = cv::Mat(4,1,cv::DataType<float>::type);
 					distCoeffs.at<float>(0) = 0.0;
 					distCoeffs.at<float>(1) = 0.0;
 					distCoeffs.at<float>(2) = 0.0;
 					distCoeffs.at<float>(3) = 0.0;
+	}else{
+		distCoeffs=img_pose.distortion;
+	}
 
 	cv::Affine3f pose = img_pose.pose.inv();
 	cv::Mat tvec(pose.translation());
@@ -3016,11 +2999,16 @@ void HalfEdgeMesh<VertexT,NormalT>::fillInitialTextures(std::vector<std::vector<
 {
 
 	std::cout << timestamp << "Writing texture from ImagePose " << image_number << std::endl;
-	cv::Mat distCoeffs(4,1,cv::DataType<float>::type);
+	cv::Mat distCoeffs;
+	if(img_pose.distortion.rows ==0){
+	distCoeffs = cv::Mat(4,1,cv::DataType<float>::type);
 					distCoeffs.at<float>(0) = 0.0;
 					distCoeffs.at<float>(1) = 0.0;
 					distCoeffs.at<float>(2) = 0.0;
 					distCoeffs.at<float>(3) = 0.0;
+	}else{
+		distCoeffs=img_pose.distortion;
+	}
 
 	cv::Affine3f pose = img_pose.pose.inv();
 	cv::Mat tvec(pose.translation());
@@ -3031,9 +3019,18 @@ void HalfEdgeMesh<VertexT,NormalT>::fillInitialTextures(std::vector<std::vector<
 
 	cv::Vec3f view_direction(img_pose.pose.rotation() * (cv::Vec3f(0,0,1)));
 
-	for(size_t j=0;j<textures.size();j++){
+	//doppelte indizierung zum sortieren
+	std::vector<int> sorted_indices;
+	sorted_indices.resize(textures.size());
+	for(int i=0;i<sorted_indices.size();i++) sorted_indices[i] = i;
+
+	std::sort(sorted_indices.begin(),sorted_indices.end(),sort_indices(textures));
+	//sortierung ende
 
 
+	//for(size_t j=0;j<textures.size();j++){
+	for(size_t z=0;z<sorted_indices.size();z++){
+		size_t j = sorted_indices[z];
 			//für jede region
 			//project plane i to pic j -> cam_points
 			//rvec tvec
@@ -3060,6 +3057,8 @@ void HalfEdgeMesh<VertexT,NormalT>::fillInitialTextures(std::vector<std::vector<
 				//cv::Mat H = cv::findHomography(image_points2D_br ,local_b_rect,CV_RANSAC );
 				cv::Mat H = cv::getPerspectiveTransform(image_points2D_br,local_b_rect);
 
+
+
 				cv::Mat texture_current = cv::Mat(textures[j].first.size(), CV_8UC3, cvScalar(0.0));
 				cv::warpPerspective(img_pose.image,texture_current,H,textures[j].first.size(),cv::INTER_NEAREST | cv::BORDER_CONSTANT);
 				//neue texture dst fuellt schwarze stellen der bisherigen textur -> dst hinter alte textur
@@ -3067,29 +3066,32 @@ void HalfEdgeMesh<VertexT,NormalT>::fillInitialTextures(std::vector<std::vector<
 
 				if(texture_current.size()==textures[j].first.size()){
 
-					cv::Mat shadow_mask(texture_current.size(), CV_8U, cv::Scalar(255.0));
+					//cv::Mat shadow_mask(texture_current.size(), CV_8U, cv::Scalar(255.0));
 
-					//TODO
-					//calc shadows -> shadow_mask: shadows = 0.0
-					//float dist_current_brect = cv::norm(b_rects[j][0] - cv::Point3f(tvec));
-					//for(size_t i=0;i<b_rects.size();i++){
-						//if(i==j)continue;
-						//if(dist_current_brect > cv::norm(b_rects[i][0]- cv::Point3f(tvec)))
-						//{
-							//cv::Mat black_texture_current = cv::Mat(textures[i].first.size(),shadow_mask.type(),cv::Scalar(0.0));
-							//cv::warpPerspective(black_texture_current,shadow_mask,H,shadow_mask.size(),cv::INTER_NEAREST | cv::BORDER_CONSTANT);
-						//}
-					//}
+
 
 					//angle calculation
 					if(fabs(angle_diff_current) >= textures[j].second){
 						//wenn bisheriger winkelunterschied kleiner gleich der aktuelle
-						firstBehindSecondImage(texture_current,textures[j].first.clone(),textures[j].first,shadow_mask);
+						firstBehindSecondImage(texture_current,textures[j].first.clone(),textures[j].first);
+
+						//cv::imwrite("shadow_mask_"+std::to_string(start_texture_index+j)+".jpg",shadow_mask);
 					}else{
 						//wenn bisheriger winkelunterschied groesser als der aktuelle
-						firstBehindSecondImage(textures[j].first.clone(),texture_current,textures[j].first,shadow_mask);
+						firstBehindSecondImage(textures[j].first.clone(),texture_current,textures[j].first);
 						textures[j].second = fabs(angle_diff_current);
+
+						//cv::imwrite("shadow_mask_"+std::to_string(start_texture_index+j)+".jpg",shadow_mask);
 					}
+
+					//shadow magic
+
+					cv::Point pointarr[image_points2D_br.size()];
+					for(int i=0;i<image_points2D_br.size();i++)
+						pointarr[i]=cv::Point(image_points2D_br[i].x,image_points2D_br[i].y);
+
+					//fillImageWithBlackPolygon( img_pose.image , pointarr, (int)image_points2D_br.size());
+
 				}
 			}
 
@@ -3098,6 +3100,21 @@ void HalfEdgeMesh<VertexT,NormalT>::fillInitialTextures(std::vector<std::vector<
 			cv::imwrite(string(texture_output_dir)+"texture_"+std::to_string(start_texture_index+i)+".jpg",textures[i].first);
 
 }
+
+template<typename VertexT, typename NormalT>
+void HalfEdgeMesh<VertexT,NormalT>::fillImageWithBlackPolygon( cv::Mat& img , cv::Point* pointarr, int size)
+{
+  int lineType = 8;
+
+  const cv::Point* ppt[1] = { pointarr };
+  int npt[] = { size };
+  cv::fillPoly( img,
+            ppt,
+            npt,
+            1,
+            cv::Scalar( 0, 0, 0 ),
+            lineType );
+ }
 
 template<typename VertexT, typename NormalT>
 void HalfEdgeMesh<VertexT,NormalT>::firstBehindSecondImage(cv::Mat first, cv::Mat second, cv::Mat& dst){
@@ -3143,16 +3160,31 @@ cv::Rect HalfEdgeMesh<VertexT,NormalT>::calcCvRect(std::vector<cv::Point2f> rect
 }
 
 template<typename VertexT, typename NormalT>
+std::pair<int, std::vector<int> > HalfEdgeMesh<VertexT,NormalT>::calcShadowTupel(std::vector<cv::Point3f> base_rect, std::vector<cv::Point3f> shadow_rect, int shadow_rect_index){
+	std::vector<int> point_inlier_indices;
+
+	return std::pair<int, std::vector<int> >(shadow_rect_index ,point_inlier_indices);
+}
+
+template<typename VertexT, typename NormalT>
+bool HalfEdgeMesh<VertexT,NormalT>::calcShadowInliers(std::vector<cv::Point3f> base_rect, std::vector<cv::Point3f> shadow_rect, std::vector<int>& inliers){
+
+
+	return true;
+}
+
+
+template<typename VertexT, typename NormalT>
 void HalfEdgeMesh<VertexT,NormalT>::fillInitialTexture(std::vector<std::vector<cv::Point3f> > b_rects,
 		   kfusion::ImgPose img_pose, int image_number,
 		   const char* texture_output_dir)
 {
 
 	cv::Mat distCoeffs(4,1,cv::DataType<float>::type);
-					distCoeffs.at<float>(0) = 0.0;
-					distCoeffs.at<float>(1) = 0.0;
-					distCoeffs.at<float>(2) = 0.0;
-					distCoeffs.at<float>(3) = 0.0;
+					distCoeffs.at<float>(0) = 0.042855;
+					distCoeffs.at<float>(1) = -0.110419;
+					distCoeffs.at<float>(2) = 0.004809;
+					distCoeffs.at<float>(3) = 0.000398;
 
 	cv::Affine3f pose = img_pose.pose.inv();
 	cv::Mat tvec(pose.translation());
@@ -3198,7 +3230,7 @@ void HalfEdgeMesh<VertexT,NormalT>::fillInitialTexture(std::vector<std::vector<c
 			texture_before.copyTo(texture(cv::Rect(texture_stats[j].first,0,texture_stats[j].second.width,texture_stats[j].second.height)));
 		}
 	}
-	cv::imwrite(string(texture_output_dir)+"texture_"+std::to_string(start_texture_index)+".ppm",texture);
+	cv::imwrite(string(texture_output_dir)+"texture_"+std::to_string(start_texture_index)+".jpg",texture);
 }
 
 template<typename VertexT, typename NormalT>
