@@ -231,7 +231,6 @@ void kfusion::OpenNISource::release ()
 int kfusion::OpenNISource::grab(cv::Mat& depth, cv::Mat& color)
 {
     Status rc = STATUS_OK;
-    int frame = 0;
     if (impl_->has_depth)
     {
       rc = impl_->depthStream.readFrame(&impl_->depthFrame);

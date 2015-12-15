@@ -394,7 +394,8 @@ struct KinFuApp
 						storePicPose(kinfu, best_pose, best_image);
 						//extractImage(kinfu, best_image);
 						sample_poses_.push_back(kinfu_->getCameraPose());
-						viz.showWidget("path", cv::viz::WTrajectory(sample_poses_,cv::viz::WTrajectory::PATH, 6.0));
+						viz.showWidget("path", cv::viz::WTrajectory(sample_poses_));
+						std::cout << "image taken "<< image_count++ << ", time: "<< time << std::endl;
 						timer_start_ = ref_timer;
 
 					}
