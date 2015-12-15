@@ -110,7 +110,7 @@ void kfusion::OpenNISource::open(const std::string& filename)
 	else
 	{
 		openni::VideoMode colorMode;
-		colorMode.setResolution (640, 480);
+		colorMode.setResolution (1280, 1024);
 		colorMode.setFps(30);
 		colorMode.setPixelFormat(openni::PIXEL_FORMAT_RGB888);
 
@@ -231,6 +231,7 @@ void kfusion::OpenNISource::release ()
 int kfusion::OpenNISource::grab(cv::Mat& depth, cv::Mat& color)
 {
     Status rc = STATUS_OK;
+    int frame = 0;
     if (impl_->has_depth)
     {
       rc = impl_->depthStream.readFrame(&impl_->depthFrame);
@@ -239,10 +240,8 @@ int kfusion::OpenNISource::grab(cv::Mat& depth, cv::Mat& color)
         sprintf (impl_->strError, "Frame grab failed: %s\n", openni::OpenNI::getExtendedError() );
         REPORT_ERROR (impl_->strError);
       }
-	  int frame = impl_->depthFrame.getFrameIndex();
-	  if(frame > maxFrameIndex_)
-		return 2;
-		
+	  frame = impl_->depthFrame.getFrameIndex();
+
       const void* pDepth = impl_->depthFrame.getData();
       int x = impl_->depthFrame.getWidth();
       int y = impl_->depthFrame.getHeight();
@@ -264,8 +263,10 @@ int kfusion::OpenNISource::grab(cv::Mat& depth, cv::Mat& color)
       }
 
       const void* pColor = impl_->colorFrame.getData();
+
       int x = impl_->colorFrame.getWidth();
       int y = impl_->colorFrame.getHeight();
+
       cv::Mat(y, x, CV_8UC3, (void*)pColor).copyTo(color);
       cv::cvtColor(color, color, cv::COLOR_RGB2BGR);
     }
@@ -274,6 +275,9 @@ int kfusion::OpenNISource::grab(cv::Mat& depth, cv::Mat& color)
         color.release();
         printf ("no color\n");
     }
+    if(frame > maxFrameIndex_)
+        return 2;
+
 
     return impl_->has_image || impl_->has_depth;
 }

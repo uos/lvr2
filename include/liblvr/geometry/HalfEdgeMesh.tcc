@@ -2431,7 +2431,7 @@ HalfEdgeMesh<VertexT, NormalT>* HalfEdgeMesh<VertexT, NormalT>::retesselateInHal
 			if(textured){
 					bounding_rectangle = getBoundingRectangle(contours[0],m_regions[iRegion]->m_normal);
 					bounding_rectangles_3D.push_back(bounding_rectangle);
-					createInitialTexture(bounding_rectangle,end_texture_index,"",1000);
+					createInitialTexture(bounding_rectangle,end_texture_index,"",2000);
 					b_rect_size+=4;
 			}
 			///
@@ -3054,34 +3054,6 @@ void HalfEdgeMesh<VertexT,NormalT>::fillInitialTextures(std::vector<std::vector<
 					
 					
 					
-					//TODO
-					//calc shadows -> shadow_mask: shadows = 0.0
-					//zu viel schwarz ueberschrieben
-					//zu langsam
-					//float dist_current_brect = cv::norm(b_rects[j][0] - cv::Point3f(tvec));
-					//for(size_t i=0;i<b_rects.size();i++){
-						//if(i==j)continue;
-						//if(dist_current_brect > cv::norm(b_rects[i][0]- cv::Point3f(tvec)))
-						//{
-							//std::cout << "b_rect " << i << " in front of b_rect " << j << std::endl;
-							
-							//cv::Mat black_texture_shadow = cv::Mat(textures[i].first.size(),shadow_mask.type(),cv::Scalar(255.0));
-							
-							////calc new H
-							//std::vector<cv::Point2f> image_points_shadow;
-							//std::vector<cv::Point3f> object_points_shadow(b_rects[i]);
-							
-							////calc points of b_rect3D shadow in image 
-							//cv::projectPoints(object_points_shadow,rvec,tvec,cam,distCoeffs,image_points_shadow);
-							
-							////calc perpective Transform of image_points_shadow to local_b_rect
-							//cv::Mat H_shadow = cv::getPerspectiveTransform(image_points_shadow,local_b_rect);
-							//if(black_texture_shadow.cols > 0 && black_texture_shadow.rows > 0 )
-								//cv::warpPerspective(black_texture_shadow,shadow_mask,H_shadow,shadow_mask.size(),cv::INTER_NEAREST | cv::BORDER_REPLICATE);
-						//}
-					//}
-					//std::cout << "shadows calculated: " << j << "/" << textures.size() << std::endl;
-					
 					//angle calculation
 					if(fabs(angle_diff_current) >= textures[j].second){
 						//wenn bisheriger winkelunterschied kleiner gleich der aktuelle
@@ -3102,7 +3074,8 @@ void HalfEdgeMesh<VertexT,NormalT>::fillInitialTextures(std::vector<std::vector<
 					for(int i=0;i<image_points2D_br.size();i++)
 						pointarr[i]=cv::Point(image_points2D_br[i].x,image_points2D_br[i].y);
 						
-					fillImageWithBlackPolygon( img_pose.image , pointarr, (int)image_points2D_br.size());
+					//fillImageWithBlackPolygon( img_pose.image , pointarr, (int)image_points2D_br.size());
+
 				}
 			}
 
