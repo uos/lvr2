@@ -278,8 +278,10 @@ struct KinFuApp
 		imgpose->pose = pose;
 		imgpose->image = image;//.clone();
 		//intrinsics wrong? changed rows and cols + /2
-		cv::Mat intrinsics = (cv::Mat_<float>(3,3) << kinfu.params().intr.fx, 0, kinfu.params().cols/2 - 0.5f,
-												  0, kinfu.params().intr.fx, kinfu.params().rows/2 - 0.5f,
+		//kinfu.params().cols/2 - 0.5f
+		//kinfu.params().rows/2 - 0.5f
+		cv::Mat intrinsics = (cv::Mat_<float>(3,3) << kinfu.params().intr.fx*2, 0, 1280/2-0.5f + 3,
+												  0, kinfu.params().intr.fx*2, 1024/2-0.5f,
 												  0, 0, 1);
 		imgpose->intrinsics = intrinsics;
 		kinfu.cyclical().addImgPose(imgpose);
@@ -382,8 +384,8 @@ struct KinFuApp
 						best_pose = kinfu.getCameraPose();
 						//std::cout << "better image found, sum rvec distances: " << best_dist << std::endl;
 					}
-
-					if(time - 3 > 0)
+					//if(time - 3.0 > 0)
+					if(frame_count==7)
 					{
 
 						rvecs.push_back(best_rvec);
@@ -436,8 +438,9 @@ struct KinFuApp
 				case '-': kinfu.params().distance_camera_target -= 0.1; kinfu.performShift(); break;
 				case 27: case 32: exit_ = true; break;
             }
-
-            viz.spinOnce(3, true);
+			frame_count++;
+			if(frame_count==20) frame_count=0;
+            viz.spinOnce(2, true);
 			//exit_ = exit_ || ( kinfu.hasShifted() && kinfu.isLastScan() );
 			//if(kinfu.cyclical().getSliceCount() == 4 && !(kinfu.hasShifted() && kinfu.isLastScan()))
 				//take_cloud(kinfu);
@@ -445,6 +448,8 @@ struct KinFuApp
         return true;
     }
 
+	unsigned int image_count=0;
+	unsigned int frame_count=0;
     bool exit_, iteractive_mode_, pause_, meshRender_, no_viz_;
     OpenNISource& capture_;
     KinFu::Ptr kinfu_;
