@@ -25,14 +25,14 @@ namespace kfusion
         Intr (float fx, float fy, float cx, float cy);
         Intr operator()(int level_index) const;
     };
-    
+
     struct KF_EXPORTS ImgPose
     {
 		cv::Mat image;
 		Affine3f pose;
 		cv::Mat intrinsics;
     };
-    
+
     struct KF_EXPORTS TSDFSlice
     {
 		cv::Mat tsdf_values_;
@@ -50,8 +50,8 @@ namespace kfusion
             float data[4];
             struct { float x, y, z, w; };
         };
-        
-        Point& operator+(cv::Vec<float, 3> vec) 
+
+        Point& operator+(cv::Vec<float, 3> vec)
 		{
 			this->x += vec[0];
 			this->y += vec[1];
@@ -59,9 +59,9 @@ namespace kfusion
 			return *this;
 		}
     };
-    
+
     typedef Point Normal;
-    
+
     KF_EXPORTS std::ostream& operator << (std::ostream& os, const kfusion::Point& p);
 
     struct RGB
@@ -122,7 +122,7 @@ namespace kfusion
         double& time_ms_;
         double start;
     };
-    
+
     struct KF_EXPORTS KinFuParams
     {
         static KinFuParams default_params();
@@ -131,6 +131,7 @@ namespace kfusion
         int rows;  //pixels
 
         Intr intr;  //Camera parameters
+        //Intr intr_rgb;  //Camera parameters
 
         Vec3i volume_dims; //number of voxels
         Vec3f volume_size; //meters
@@ -138,7 +139,7 @@ namespace kfusion
 
         float shifting_distance;
         double distance_camera_target;
-        
+
         float bilateral_sigma_depth;   //meters
         float bilateral_sigma_spatial;   //pixels
         int   bilateral_kernel_size;   //pixels
@@ -156,8 +157,8 @@ namespace kfusion
         float gradient_delta_factor; // in voxel sizes
 
         Vec3f light_pose; //meters
-        
-		Options* cmd_options; // cmd_options 
+
+		Options* cmd_options; // cmd_options
 
     };
 

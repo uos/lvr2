@@ -210,17 +210,24 @@ template<typename VertexT, typename NormalT>
 void HalfEdgeMesh<VertexT, NormalT>::mergeVertex(VertexPtr merge_vert, VertexPtr erase_vert)
 {
 	merge_vert->m_merged = true;
+    if(erase_vert == NULL)
+    {
+        cout << "Merging NULL Pointer! " << endl;
+        return;
+    }
+
+    //cout << "merge vertex " << merge_vert << endl;
+    //cout << "erase vertex " << erase_vert << endl;
 	if(merge_vert->m_position.x != erase_vert->m_position.x || merge_vert->m_position.y != erase_vert->m_position.y || merge_vert->m_position.z != erase_vert->m_position.z)
 	{
-		/*cout << "Vertex missalignment! " << endl;
-		*/float dist_x = merge_vert->m_position.x - erase_vert->m_position.x;
+		//cout << "Vertex missalignment! " << endl;
+		float dist_x = merge_vert->m_position.x - erase_vert->m_position.x;
 		float dist_y = merge_vert->m_position.y - erase_vert->m_position.y;
 		float dist_z = merge_vert->m_position.z - erase_vert->m_position.z;
 		float dist = sqrt(dist_x*dist_x + dist_y*dist_y + dist_z*dist_z);
-		/*cout << "dist x " << dist_x << endl;
-		cout << "dist y " << dist_y << endl;
-		cout << "dist z " << dist_z << endl;
-		cout << "distance " << dist << endl;*/
+		//cout << "distance " << dist << endl;*/
+
+
 		if(dist > 0.1)
 		{
 			cout << "Big Vertex missalignment!!!!! " << endl;
@@ -257,7 +264,8 @@ void HalfEdgeMesh<VertexT, NormalT>::mergeVertex(VertexPtr merge_vert, VertexPtr
 		erase_vert->out[i]->setStart(merge_vert);
 	}
 	merge_vert->m_fused = false;
-	//delete erase_vert;
+	delete erase_vert;
+    erase_vert = NULL;
 }
 
 template<typename VertexT, typename NormalT>
@@ -1718,9 +1726,9 @@ void HalfEdgeMesh<VertexT, NormalT>::finalize()
     size_t numVertices = m_vertices.size();
     size_t numFaces    = m_faces.size();
     size_t numRegions  = m_regions.size();
-	float r = 0.0f;
-	float g = 200.0f;
-	float b = 0.0f;
+	float r = 255.0f;
+	float g = 255.0f;
+	float b = 255.0f;
     std::vector<uchar> faceColorBuffer;
 
     floatArr vertexBuffer( new float[3 * numVertices] );
@@ -2472,11 +2480,11 @@ HalfEdgeMesh<VertexT, NormalT>* HalfEdgeMesh<VertexT, NormalT>::retesselateInHal
 					getInitialUV(points[k+0],points[k+1],points[k+2],bounding_rectangle,u,v);
 				///
 
-				//current = Vertex<float>(points[k], points[k + 1], points[k + 2]);
-				//auto it = vertexMap.find(current);
-				//if(it != vertexMap.end())
-				//{
-					//pos = vertexMap[current];
+				current = Vertex<float>(points[k], points[k + 1], points[k + 2]);
+				auto it = vertexMap.find(current);
+				if(it != vertexMap.end())
+				{
+					pos = vertexMap[current];
 
 					//vertex of non planar region has no UV
 					/// added
@@ -2508,9 +2516,9 @@ HalfEdgeMesh<VertexT, NormalT>* HalfEdgeMesh<VertexT, NormalT>::retesselateInHal
 						}
 					}
 					///
-				//}
-				//else
-				//{
+				}
+				else
+				{
 				    pos = (vertexBuffer.size() / 3);
 				    //vertexMap.insert(pair<Vertex<float>, unsigned int>(current, pos));
 			        vertexBuffer.push_back( points[k] );
@@ -2528,35 +2536,35 @@ HalfEdgeMesh<VertexT, NormalT>* HalfEdgeMesh<VertexT, NormalT>::retesselateInHal
 					textureCoordBuffer.push_back( u );
 					textureCoordBuffer.push_back( v );
 					textureCoordBuffer.push_back(  0 );
-				//}
-				//point_map.insert(pair<size_t, size_t >(k/3, pos));
+				}
+				point_map.insert(pair<size_t, size_t >(k/3, pos));
 			}
-            size_t offset = vertexBuffer.size() - points.size();
+            //size_t offset = vertexBuffer.size() - points.size();
 
             // calculate the index value for the old end of the vertex buffer.
-            offset = ( offset / 3 );
+            //offset = ( offset / 3 );
 
+            // for(int j=0; j < indices.size(); j+=3)
+            // {
+            //     /*if(indices[j] == indices[j+1] || indices[j+1] == indices[j+2] || indices[j+2] == indices[j])
+            //     {
+            //         cout << "Detected degenerated face: " << indices[j] << " " << indices[j + 1] << " " << indices[j + 2] << endl;
+            //     }*/
+            //
+            //     // store the indices with the correct offset to the indices buffer.
+            //     int a =  indices[j + 0] + offset;
+            //     int b =  indices[j + 1] + offset;
+            //     int c =  indices[j + 2] + offset;
+            //
+            //     if(a != b && b != c && a != c)
+            //     {
+            //         indexBuffer.push_back( a );
+            //         indexBuffer.push_back( b );
+            //         indexBuffer.push_back( c );
+            //     }
+            //
+            // }
             for(int j=0; j < indices.size(); j+=3)
-            {
-                /*if(indices[j] == indices[j+1] || indices[j+1] == indices[j+2] || indices[j+2] == indices[j])
-                {
-                    cout << "Detected degenerated face: " << indices[j] << " " << indices[j + 1] << " " << indices[j + 2] << endl;
-                }*/
-
-                // store the indices with the correct offset to the indices buffer.
-                int a =  indices[j + 0] + offset;
-                int b =  indices[j + 1] + offset;
-                int c =  indices[j + 2] + offset;
-
-                if(a != b && b != c && a != c)
-                {
-                    indexBuffer.push_back( a );
-                    indexBuffer.push_back( b );
-                    indexBuffer.push_back( c );
-                }
-
-            }
-            /*for(int j=0; j < indices.size(); j+=3)
             {
 				auto it_a = point_map.find(indices[j + 0]);
 				auto it_b = point_map.find(indices[j + 1]);
@@ -2571,7 +2579,7 @@ HalfEdgeMesh<VertexT, NormalT>* HalfEdgeMesh<VertexT, NormalT>::retesselateInHal
                     indexBuffer.push_back( b );
                     indexBuffer.push_back( c );
                 }
-            }*/
+            }
 
             ///added
             if(textured){
