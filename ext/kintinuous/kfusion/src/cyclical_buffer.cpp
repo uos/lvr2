@@ -59,6 +59,7 @@ kfusion::cuda::CyclicalBuffer::checkForShift (cv::Ptr<cuda::TsdfVolume> volume, 
 	// perform shifting operations
 	if (result || last_shift || perform_shift)
 	{
+		cout << "performing shift BITCHES!! " << endl;
 		performShift (volume, targetPoint, cam_pose, last_shift, record_mode);
 		return true;
 	}
@@ -79,7 +80,7 @@ kfusion::cuda::CyclicalBuffer::performShift (cv::Ptr<cuda::TsdfVolume> volume, c
 		computeAndSetNewCubeMetricOrigin (volume, target_point, offset);
 	//ScopeTime* slice_time = new ScopeTime("Slice download");
 	// extract current slice from the TSDF volume (coordinates are in indices! (see fetchSliceAsCloud() )
-	if(!record_mode && !no_reconstruct_)
+	if(!no_reconstruct_)
 	{
 		DeviceArray<Point> cloud;
 
