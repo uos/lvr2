@@ -59,7 +59,6 @@ kfusion::cuda::CyclicalBuffer::checkForShift (cv::Ptr<cuda::TsdfVolume> volume, 
 	// perform shifting operations
 	if (result || last_shift || perform_shift)
 	{
-		cout << "performing shift BITCHES!! " << endl;
 		performShift (volume, targetPoint, cam_pose, last_shift, record_mode);
 		return true;
 	}
