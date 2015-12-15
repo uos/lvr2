@@ -66,7 +66,7 @@ void MeshStage::step()
 								cout << "dist_z " << dist_z << endl;*/
 								misscount++;
 							}
-							//current_neighbor->m_fusionNeighborBox = false;
+							current_neighbor->m_fusionNeighborBox = false;
 							//break;
 						}
 					}
@@ -77,12 +77,12 @@ void MeshStage::step()
 	if(last_mesh_queue_.size() > 0)
 	{
 		auto m = last_mesh_queue_.front();
-		cout << "founded fusion verts from old slice " << m->m_fusionVertices.size() << endl;
-		cout << "founded fusion verts from new slice " << meshPtr->m_oldFusionVertices.size() << endl;
+		//cout << "founded fusion verts from old slice " << m->m_fusionVertices.size() << endl;
+		//cout << "founded fusion verts from new slice " << meshPtr->m_oldFusionVertices.size() << endl;
 		if(verts_map.size() > 0)
 		{
-			cout << "merged fusion verts " << (double)verts_map.size()/m->m_fusionVertices.size() << endl;
-			cout << "misscount quote " << (double)(misscount/verts_map.size()) << endl;
+			//cout << "merged fusion verts " << (double)verts_map.size()/m->m_fusionVertices.size() << endl;
+			//cout << "misscount quote " << (double)(misscount/verts_map.size()) << endl;
 			if(((double)verts_map.size()/m->m_fusionVertices.size() < 0.5) || ((double)misscount/verts_map.size() > 0.9) )
 			{
 				/*cout << "SLICE CORRECTION " << endl;
@@ -113,11 +113,13 @@ void MeshStage::step()
 				align.setMaxIterations(20);
 				align.setMaxMatchDistance(0.8);
 				Matrix4f correction = align.match();
-				correction.set(12, correction[12]/100.0);
-				correction.set(13, correction[13]/100.0);
-				correction.set(14, -correction[14]/100.0);
-				correction.toPostionAngle(euler);
-				double correction_value = sqrt(pow(correction[12],2) + pow(correction[13],2) + pow(correction[14],2));
+				Matrix4f trans;
+				trans.set(12, -correction[12]/100.0);
+				trans.set(13, -correction[13]/100.0);
+				trans.set(14, correction[14]/100.0);
+				cout << " X: " << trans[12] << " Y: " << trans[13] << " Z: " << trans[14] << endl;
+				trans.toPostionAngle(euler);
+				double correction_value = sqrt(pow(trans[12],2) + pow(trans[13],2) + pow(trans[14],2));
 				cout << "correction_value " << correction_value << endl;
 				if(correction_value < 0.08)
 				{
@@ -125,30 +127,63 @@ void MeshStage::step()
 					cout << "Pose: " << correction[12] << " " << correction[13] << " " << correction[14] << " " << euler[3] << " " << euler[4] << " " << euler[5] << endl;
 					for(auto vert : meshPtr->getVertices())
 					{
-						vert->m_position.transform(correction);
+						vert->m_position.transform(trans);
 					}
-					PointPairVector pairs;
-					double sum;
-					Vertexf centroid_m;
-					Vertexf centroid_d;
-					align.getPointPairs(pairs, centroid_m, centroid_d, sum);
-					//verts_map.clear();
-
-					for(std::pair<Vertexf, Vertexf> vpair : pairs)
+					cout << " size " << m->m_fusionVertices.size() << endl;
+					map<size_t, HMesh::VertexPtr> kdFusionVertsMap;
+					cv::Mat data;
+					data.create(cvSize(3,m->m_fusionVertices.size()), CV_32F); // The set A
+					for(size_t i = 0; i < m->m_fusionVertices.size();i++)
 					{
-						cout << "second entry " << vpair.second << endl;
-						map<double, int> oldVertMap;
-						for(int i = 0; i < meshPtr->m_oldFusionVertices.size(); i++)
-						{
-							double diff_sum =    (pow(vpair.second[0],2) - (-pow(meshPtr->m_oldFusionVertices[i]->m_position.x * 100,2)))
-							 			+ (pow(vpair.second[1],2) - (-pow(meshPtr->m_oldFusionVertices[i]->m_position.y * 100,2)))
-							 			+ (pow(vpair.second[2],2) - pow(meshPtr->m_oldFusionVertices[i]->m_position.z * 100,2));
-							oldVertMap.insert(pair<double, int>(diff_sum, i));
-						}
-						cout << "best match old verts " << oldVertMap.begin()->first << " " <<  meshPtr->m_oldFusionVertices[oldVertMap.begin()->second]->m_position << endl;
+						data.at<float>(i,0) =  m->m_fusionVertices[i]->m_position.x;
+						data.at<float>(i,1) =  m->m_fusionVertices[i]->m_position.y;
+						data.at<float>(i,2) =  m->m_fusionVertices[i]->m_position.z;
+						kdFusionVertsMap.insert(pair<size_t, HMesh::VertexPtr>(i,m->m_fusionVertices[i]));
 					}
+					cout << " size " << m->m_fusionVertices.size() << endl;
+					map<size_t, HMesh::VertexPtr> kdOldFusionVertsMap;
+					cv::Mat query;
+					query.create(cvSize(3,meshPtr->m_oldFusionVertices.size()), CV_32F); // The set A
+					for(size_t i = 0; i < meshPtr->m_oldFusionVertices.size();i++)
+					{
+						query.at<float>(i,0) =  meshPtr->m_oldFusionVertices[i]->m_position.x;
+						query.at<float>(i,1) =  meshPtr->m_oldFusionVertices[i]->m_position.y;
+						query.at<float>(i,2) =  meshPtr->m_oldFusionVertices[i]->m_position.z;
+						kdOldFusionVertsMap.insert(pair<size_t, HMesh::VertexPtr>(i, meshPtr->m_oldFusionVertices[i]));
+					}
+					cout << " size " << m->m_fusionVertices.size() << endl;
+					cv::Mat matches; //This mat will contain the index of nearest neighbour as returned by Kd-tree
+					cv::Mat distances; //In this mat Kd-Tree return the distances for each nearest neighbour
+					 //This set B
+					const cvflann::SearchParams params(32); //How many leaves to search in a tree
+					cv::flann::GenericIndex< cvflann::L2<float> > *kdtrees; // The flann searching tree
 
-					global_correction_ *= correction;
+					// Create matrices
+					matches.create(cvSize(1,meshPtr->m_oldFusionVertices.size()), CV_32SC1);
+					distances.create(cvSize(1,meshPtr->m_oldFusionVertices.size()), CV_32FC1);
+					kdtrees =  new cv::flann::GenericIndex< cvflann::L2<float> >(data, cvflann::KDTreeIndexParams(4)); // a 4 k-d tree
+					cout << " size " << m->m_fusionVertices.size() << endl;
+					// Search KdTree
+					kdtrees->knnSearch(query, matches, distances, 1,  cvflann::SearchParams(8));
+					int NN_index;
+					float dist;
+					verts_map.clear();
+					//for(int i = 0; i < meshPtr->m_oldFusionVertices.size(); i++) {
+					for(int i = 0; i < 10; i++) {
+
+					    NN_index = matches.at<int>(i,0);
+					    dist = distances.at<float>(i, 0);
+						cout << " index " << NN_index << endl;
+						cout << " dist "  << dist << endl;
+						cout << "gift " << kdFusionVertsMap[NN_index] << endl;
+						cout << "old gift " << kdOldFusionVertsMap[i] << endl;
+						cout << " fusing  " << kdFusionVertsMap[NN_index]->m_position << endl;
+						cout << " with  " << kdOldFusionVertsMap[i]->m_position << endl;
+
+						verts_map.insert(pair<HMesh::VertexPtr, HMesh::VertexPtr>(kdFusionVertsMap[NN_index], kdOldFusionVertsMap[i]));
+					}
+					delete kdtrees;
+					global_correction_ *= trans;
 				}*/
 
 			}

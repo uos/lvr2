@@ -15,6 +15,8 @@
 #include <geometry/BoundingBox.hpp>
 #include <kfusion/types.hpp>
 #include "geometry/Matrix4.hpp"
+#include <opencv2/flann/flann.hpp>
+
 
 using namespace lvr;
 using namespace std;
