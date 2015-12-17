@@ -25,4 +25,5 @@
 build/
 bin/
 dat/
+doc/
 .idea/
