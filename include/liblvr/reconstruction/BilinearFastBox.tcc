@@ -29,7 +29,7 @@ namespace lvr
 {
 
 template<typename VertexT, typename NormalT>
-typename PointsetSurface<VertexT>::Ptr BilinearFastBox<VertexT, NormalT>::m_surface;
+typename PointsetSurface<VertexT>::Ptr BilinearFastBox<VertexT, NormalT>::m_surface = 0;
 
 
 /*static int PlaneTable[28] =
@@ -46,7 +46,7 @@ template<typename VertexT, typename NormalT>
 BilinearFastBox<VertexT, NormalT>::BilinearFastBox(VertexT &center)
     : FastBox<VertexT, NormalT>(center), m_mcIndex(0)
 {
-
+	cout << m_surface << endl;
 }
 
 template<typename VertexT, typename NormalT>
@@ -71,7 +71,7 @@ void BilinearFastBox<VertexT, NormalT>::getSurface(
     int index = this->getIndex(qp);
     m_mcIndex = index;
 
-    // Do not create traingles for invalid boxes
+    // Do not create triangles for invalid boxes
     for (int i = 0; i < 8; i++)
     {
         if (qp[this->m_vertices[i]].m_invalid)
@@ -84,7 +84,7 @@ void BilinearFastBox<VertexT, NormalT>::getSurface(
 
     int triangle_indices[3];
 
-    // Generate the local approximation sirface according to the marching
+    // Generate the local approximation surface according to the marching
     // cubes table for Paul Burke.
     for(int a = 0; MCTable[index][a] != -1; a+= 3){
         for(int b = 0; b < 3; b++){
@@ -150,20 +150,20 @@ void BilinearFastBox<VertexT, NormalT>::optimizePlanarFaces(size_t kc)
 				{
 					e->pair()->face();
 				}
-				catch (HalfEdgeAccessException)
+				catch (HalfEdgeAccessException& ex)
 				{
 					out_edges.push_back(e);
 				}
 
-				// Check integrety
+				// Check integrity
 				try
 				{
 					e = e->next();
 				}
-				catch (HalfEdgeAccessException)
+				catch (HalfEdgeAccessException& ex)
 				{
-					// Face currupted, abort
-					cout << "Warning, currupted face" << endl;
+					// Face corrupted, abort
+					cout << "Warning, corrupted face" << endl;
 					break;
 				}
 			}
@@ -176,9 +176,8 @@ void BilinearFastBox<VertexT, NormalT>::optimizePlanarFaces(size_t kc)
 			// Get nearest points
 			for(int i = 0; i < out_edges.size(); i++)
 			{
-
 				vector<VertexT> nearest1, nearest2;
-				tree->kSearch( out_edges[i]->start()->m_position, kc, nearest1);
+				this->m_surface->searchTree()->kSearch( out_edges[i]->start()->m_position, kc, nearest1);
 
 				size_t nk = min(kc, nearest1.size());
 
@@ -195,7 +194,7 @@ void BilinearFastBox<VertexT, NormalT>::optimizePlanarFaces(size_t kc)
 					out_edges[i]->start()->m_position = centroid1;
 				}
 
-				tree->kSearch( out_edges[i]->end()->m_position, kc, nearest2);
+				this->m_surface->searchTree()->kSearch( out_edges[i]->end()->m_position, kc, nearest2);
 				nk = min(kc, nearest2.size());
 
 				if(nk > 0)

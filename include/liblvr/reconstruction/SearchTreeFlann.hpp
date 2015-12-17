@@ -82,6 +82,7 @@ protected:
     boost::shared_ptr<flann::Index<flann::L2_Simple<float> > > 		m_tree;
     floatArr 													    m_points;
     size_t															m_numPoints;
+    flann::Matrix<float>  	 										m_flannPoints;
 
 }; // SearchTreeFlann
 
