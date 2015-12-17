@@ -13,17 +13,17 @@ namespace lvr
 template<typename VertexT>
 SearchTreeFlann< VertexT >::SearchTreeFlann( PointBufferPtr buffer, size_t &n_points, const int &kn, const int &ki, const int &kd )
 {
-	flann::Matrix<float> points(new float[3 * n_points], n_points, 3);
+	m_flannPoints = flann::Matrix<float> (new float[3 * n_points], n_points, 3);
 	m_points = buffer->getPointArray(m_numPoints);
 	for(size_t i = 0; i < n_points; i++)
 	{
-		points[i][0] = m_points[3 * i];
-		points[i][1] = m_points[3 * i + 1];
-		points[i][2] = m_points[3 * i + 2];
+		m_flannPoints[i][0] = m_points[3 * i];
+		m_flannPoints[i][1] = m_points[3 * i + 1];
+		m_flannPoints[i][2] = m_points[3 * i + 2];
 	}
 
 
-	m_tree = boost::shared_ptr<flann::Index<flann::L2_Simple<float> > >(new flann::Index<flann::L2_Simple<float>>(points, ::flann::KDTreeSingleIndexParams (10, false)));
+	m_tree = boost::shared_ptr<flann::Index<flann::L2_Simple<float> > >(new flann::Index<flann::L2_Simple<float> >(m_flannPoints, ::flann::KDTreeSingleIndexParams (10, false)));
 	m_tree->buildIndex();
 
 }
@@ -31,8 +31,8 @@ SearchTreeFlann< VertexT >::SearchTreeFlann( PointBufferPtr buffer, size_t &n_po
 
 template<typename VertexT>
 SearchTreeFlann< VertexT >::~SearchTreeFlann() {
-}
 
+}
 
 template<typename VertexT>
 void SearchTreeFlann< VertexT >::kSearch( coord< float > &qp, int k, vector< ulong > &indices, vector< float > &distances )
@@ -60,7 +60,7 @@ void SearchTreeFlann< VertexT >::kSearch(VertexT qp, int k, vector< VertexT > &n
 	query_point[0][1] = qp[1];
 	query_point[0][2] = qp[2];
 
-	cout << "OP: " << qp[0] << " " << qp[1] << " " << qp[2] << endl;
+	cout << "OP: " << qp[0] << " " << qp1] << " " << qp[2] << endl;
 	cout << "QP: " << query_point[0][0] << " " << query_point[0][1] << " " << query_point[0][2] << endl;*/
 
 	flann::Matrix<float> query_point(new float[3], 1, 3);
@@ -68,7 +68,7 @@ void SearchTreeFlann< VertexT >::kSearch(VertexT qp, int k, vector< VertexT > &n
 	query_point[0][1] = qp.y;
 	query_point[0][2] = qp.z;
 
-	vector<size_t> indices(k);
+	vector<ulong> indices(k);
 	vector<float> distances(k);
 
 	flann::Matrix<ulong> ind (&indices[0], 1, k);
@@ -78,15 +78,15 @@ void SearchTreeFlann< VertexT >::kSearch(VertexT qp, int k, vector< VertexT > &n
 
 	for(size_t i = 0; i < k; i++)
 	{
-		size_t index = indices[k];
+		ulong index = indices[k];
 
-			cout << index << " " << dist[0][k] << endl;
+			cout << m_tree << " " << index << " " << dist[0][k] << endl;
 			VertexT v(m_points[3 * index], m_points[3 * index + 1], m_points[3 * index + 2]);
-			cout << index << v;
+		//	cout << index << v;
 			nb.push_back(v);
 
 	}
-	cout << endl;
+	//cout << endl;
 }
 
 /*
