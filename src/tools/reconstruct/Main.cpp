@@ -393,12 +393,11 @@ int main(int argc, char** argv)
 		}
 		else if(decomposition == "PMC")
 		{
+			BilinearFastBox<ColorVertex<float, unsigned char>, Normal<float> >::m_surface = surface;
 			grid = new PointsetGrid<ColorVertex<float, unsigned char>, BilinearFastBox<ColorVertex<float, unsigned char>, Normal<float> > >(resolution, surface, surface->getBoundingBox(), useVoxelsize);
 			grid->setExtrusion(options.extrude());
-			BilinearFastBox<ColorVertex<float, unsigned char>, Normal<float> >::m_surface = surface;
 			PointsetGrid<ColorVertex<float, unsigned char>, BilinearFastBox<ColorVertex<float, unsigned char>, Normal<float> > >* ps_grid = static_cast<PointsetGrid<ColorVertex<float, unsigned char>, BilinearFastBox<ColorVertex<float, unsigned char>, Normal<float> > > *>(grid);
 			ps_grid->calcDistanceValues();
-
 			reconstruction = new FastReconstruction<ColorVertex<float, unsigned char> , Normal<float>, BilinearFastBox<ColorVertex<float, unsigned char>, Normal<float> >  >(ps_grid);
 
 		}
