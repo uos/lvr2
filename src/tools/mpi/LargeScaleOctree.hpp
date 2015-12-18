@@ -11,11 +11,13 @@ namespace lvr
 {
     class LargeScaleOctree {
     private:
+        static vector<LargeScaleOctree*> c_nodeList;
         float m_size;
         Vertexf m_center;
         LargeScaleOctree* m_children[8];
         NodeData m_data;
         const size_t m_maxPoints;
+        vector<LargeScaleOctree*> leafs;
     public:
         LargeScaleOctree(Vertexf center, float size);
         virtual ~LargeScaleOctree();
@@ -24,6 +26,9 @@ namespace lvr
         void insert(Vertexf& pos);
 
         int getOctant(const Vertexf &point) const;
+        LargeScaleOctree* getChildren();
+        string getFilePath();
+        vector<LargeScaleOctree*> getNodes();
 
 
     };

@@ -112,6 +112,8 @@ find_package( Boost 1.54
     filesystem
     system
     thread
+    mpi
+    serialization
     REQUIRED )
 
 link_directories(${Boost_LIBRARY_DIR})

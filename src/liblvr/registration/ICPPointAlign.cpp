@@ -24,6 +24,7 @@
  */
 #include <lvr/registration/ICPPointAlign.hpp>
 #include <lvr/registration/EigenSVDPointAlign.hpp>
+#include <lvr/reconstruction/SearchTreeStann.hpp>
 #include <lvr/io/Timestamp.hpp>
 #ifdef LVR_USE_PCL
 #include <lvr/reconstruction/SearchTreeFlann.hpp>
