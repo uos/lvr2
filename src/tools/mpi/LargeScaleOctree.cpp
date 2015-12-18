@@ -5,9 +5,13 @@
 #include "LargeScaleOctree.hpp"
 namespace lvr
 {
-LargeScaleOctree::LargeScaleOctree(Vertexf center, float size) : m_center(center), m_size(size), m_maxPoints(20000000), m_data()
+
+vector<LargeScaleOctree*> LargeScaleOctree::c_nodeList;
+
+LargeScaleOctree::LargeScaleOctree(Vertexf center, float size) : m_center(center), m_size(size), m_maxPoints(20000), m_data()
 {
     for(int i=0 ; i<8 ; i++) m_children[i] = NULL;
+    LargeScaleOctree::c_nodeList.push_back(this);
 }
 
 LargeScaleOctree::~LargeScaleOctree()
@@ -61,5 +65,25 @@ int LargeScaleOctree::getOctant(const Vertexf& point) const
     if(point.z >= m_center.z) oct |= 1;
     return oct;
 }
+
+string LargeScaleOctree::getFilePath()
+{
+    return m_data.getDataPath();
+}
+
+LargeScaleOctree* LargeScaleOctree::getChildren()
+{
+    return (LargeScaleOctree*)m_children;
+}
+
+
+vector<LargeScaleOctree*> LargeScaleOctree::getNodes()
+{
+    return LargeScaleOctree::c_nodeList;
+}
+
+
+
+
 
 }
