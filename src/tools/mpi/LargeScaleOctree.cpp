@@ -8,11 +8,12 @@ namespace lvr
 
 vector<LargeScaleOctree*> LargeScaleOctree::c_nodeList;
 
-LargeScaleOctree::LargeScaleOctree(Vertexf center, float size) : m_center(center), m_size(size), m_maxPoints(20000), m_data()
+LargeScaleOctree::LargeScaleOctree(Vertexf center, float size) : m_center(center), m_size(size), m_maxPoints(1000000), m_data()
 {
     for(int i=0 ; i<8 ; i++) m_children[i] = NULL;
     LargeScaleOctree::c_nodeList.push_back(this);
 }
+
 
 LargeScaleOctree::~LargeScaleOctree()
 {
@@ -21,6 +22,12 @@ LargeScaleOctree::~LargeScaleOctree()
         if(m_children[i]!=NULL) delete m_children[i];
     }
 }
+
+size_t LargeScaleOctree::getSize()
+{
+    return m_data.size();
+}
+
 void LargeScaleOctree::insert(Vertexf& pos)
 {
     if(isLeaf())
