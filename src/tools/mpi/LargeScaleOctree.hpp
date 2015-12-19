@@ -24,7 +24,7 @@ namespace lvr
 
         bool isLeaf();
         void insert(Vertexf& pos);
-
+        size_t getSize();
         int getOctant(const Vertexf &point) const;
         LargeScaleOctree* getChildren();
         string getFilePath();
