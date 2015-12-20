@@ -51,7 +51,7 @@ int main(int argc, char* argv[])
         return 0;
     }
     OpenMPConfig::setNumThreads(options.getNumThreads());
-    std::cout << options << std::endl;
+    //std::cout << options << std::endl;
 
 /*    ifstream ifs(argv[1]);
     ofstream ofs("schloss4.xyz");
