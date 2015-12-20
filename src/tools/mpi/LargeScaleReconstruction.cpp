@@ -26,6 +26,8 @@
 #include <lvr/reconstruction/FastReconstruction.hpp>
 #include <lvr/reconstruction/PointsetGrid.hpp>
 #include <boost/optional/optional_io.hpp>
+#include <lvr/geometry/QuadricVertexCosts.hpp>
+#include "Options.hpp"
 
 namespace mpi = boost::mpi;
 using namespace std;
@@ -38,9 +40,18 @@ enum MPIMSGSTATUS {DATA, FINISHED};
 
 int main(int argc, char* argv[])
 {
-    OpenMPConfig::setNumThreads(1);
     mpi::environment env;
     mpi::communicator world;
+    Largescale::Options options(argc, argv);
+
+    // Exit if options had to generate a usage message
+    // (this means required parameters are missing)
+    if ( options.printUsage() )
+    {
+        return 0;
+    }
+    OpenMPConfig::setNumThreads(options.getNumThreads());
+    std::cout << options << std::endl;
 
 /*    ifstream ifs(argv[1]);
     ofstream ofs("schloss4.xyz");
@@ -64,9 +75,10 @@ int main(int argc, char* argv[])
     //---------------------------------------------
     if (world.rank() == 0)
     {
+        std::cout << options << std::endl;
         cout << lvr::timestamp << "start" << endl;
         clock_t begin = clock();
-        ifstream inputData(argv[1]);
+        ifstream inputData(options.getInputFileName());
         string s;
         BoundingBox<Vertexf> box;
         int j = 1;
@@ -89,7 +101,7 @@ int main(int argc, char* argv[])
 
         inputData.close();
         inputData.clear();
-        ifstream inputData2(argv[1]);
+        ifstream inputData2(options.getInputFileName());
 
         while( getline( inputData2, s ) )
         {
@@ -179,54 +191,125 @@ int main(int argc, char* argv[])
                 cout << timestamp << "IO Error: Unable to parse " << filePath << endl;
                 exit(-1);
             }
+            string pcm_name = options.getPCM();
             p_loader = model->m_pointCloud;
 
             psSurface::Ptr surface;
             akSurface* aks = new akSurface(
                     p_loader, "STANN",
-                    20,
-                    60,
-                    60,
-                    true,
-                    ""
+                    options.getKn(),
+                    options.getKi(),
+                    options.getKd(),
+                    options.useRansac(),
+                    options.getScanPoseFile()
             );
 
             surface = psSurface::Ptr(aks);
-            aks->useRansac(true);
-            surface->setKd(20);
-            surface->setKi(60);
-            surface->setKn(60);
+            if(options.useRansac())
+            {
+                aks->useRansac(true);
+            }
+            surface->setKd(options.getKd());
+            surface->setKi(options.getKi());
+            surface->setKn(options.getKn());
             surface->calculateSurfaceNormals();
+
             HalfEdgeMesh<ColorVertex<float, unsigned char> , Normal<float> > mesh( surface );
+            // Set recursion depth for region growing
+            if(options.getDepth())
+            {
+                mesh.setDepth(options.getDepth());
+            }
+            if(options.getSharpFeatureThreshold())
+            {
+                SharpBox<Vertex<float> , Normal<float> >::m_theta_sharp = options.getSharpFeatureThreshold();
+            }
+            if(options.getSharpCornerThreshold())
+            {
+                SharpBox<Vertex<float> , Normal<float> >::m_phi_corner = options.getSharpCornerThreshold();
+            }
+
             float resolution;
             bool useVoxelsize;
-            resolution = 0.05;
-            useVoxelsize = true;
-            string decomposition = "PMC";
+            if(options.getIntersections() > 0)
+            {
+                resolution = options.getIntersections();
+                useVoxelsize = false;
+            }
+            else
+            {
+                resolution = options.getVoxelsize();
+                useVoxelsize = true;
+            }
+            string decomposition = options.getDecomposition();
             GridBase* grid;
             FastReconstructionBase<ColorVertex<float, unsigned char>, Normal<float> >* reconstruction;
-            grid = new PointsetGrid<ColorVertex<float, unsigned char>, BilinearFastBox<ColorVertex<float, unsigned char>, Normal<float> > >(resolution, surface, surface->getBoundingBox(), useVoxelsize);
-            grid->setExtrusion(true);
-            BilinearFastBox<ColorVertex<float, unsigned char>, Normal<float> >::m_surface = surface;
-            PointsetGrid<ColorVertex<float, unsigned char>, BilinearFastBox<ColorVertex<float, unsigned char>, Normal<float> > >* ps_grid = static_cast<PointsetGrid<ColorVertex<float, unsigned char>, BilinearFastBox<ColorVertex<float, unsigned char>, Normal<float> > > *>(grid);
-            ps_grid->calcDistanceValues();
+            if(decomposition == "MC")
+            {
+                grid = new PointsetGrid<ColorVertex<float, unsigned char>, FastBox<ColorVertex<float, unsigned char>, Normal<float> > >(resolution, surface, surface->getBoundingBox(), useVoxelsize);
+                grid->setExtrusion(options.extrude());
+                PointsetGrid<ColorVertex<float, unsigned char>, FastBox<ColorVertex<float, unsigned char>, Normal<float> > >* ps_grid = static_cast<PointsetGrid<ColorVertex<float, unsigned char>, FastBox<ColorVertex<float, unsigned char>, Normal<float> > > *>(grid);
+                ps_grid->calcDistanceValues();
 
-            reconstruction = new FastReconstruction<ColorVertex<float, unsigned char> , Normal<float>, BilinearFastBox<ColorVertex<float, unsigned char>, Normal<float> >  >(ps_grid);
+                reconstruction = new FastReconstruction<ColorVertex<float, unsigned char> , Normal<float>, FastBox<ColorVertex<float, unsigned char>, Normal<float> >  >(ps_grid);
+
+            }
+            else if(decomposition == "PMC")
+            {
+                grid = new PointsetGrid<ColorVertex<float, unsigned char>, BilinearFastBox<ColorVertex<float, unsigned char>, Normal<float> > >(resolution, surface, surface->getBoundingBox(), useVoxelsize);
+                grid->setExtrusion(options.extrude());
+                BilinearFastBox<ColorVertex<float, unsigned char>, Normal<float> >::m_surface = surface;
+                PointsetGrid<ColorVertex<float, unsigned char>, BilinearFastBox<ColorVertex<float, unsigned char>, Normal<float> > >* ps_grid = static_cast<PointsetGrid<ColorVertex<float, unsigned char>, BilinearFastBox<ColorVertex<float, unsigned char>, Normal<float> > > *>(grid);
+                ps_grid->calcDistanceValues();
+
+                reconstruction = new FastReconstruction<ColorVertex<float, unsigned char> , Normal<float>, BilinearFastBox<ColorVertex<float, unsigned char>, Normal<float> >  >(ps_grid);
+
+            }
+            else if(decomposition == "SF")
+            {
+                SharpBox<ColorVertex<float, unsigned char>, Normal<float> >::m_surface = surface;
+                grid = new PointsetGrid<ColorVertex<float, unsigned char>, SharpBox<ColorVertex<float, unsigned char>, Normal<float> > >(resolution, surface, surface->getBoundingBox(), useVoxelsize);
+                grid->setExtrusion(options.extrude());
+                PointsetGrid<ColorVertex<float, unsigned char>, SharpBox<ColorVertex<float, unsigned char>, Normal<float> > >* ps_grid = static_cast<PointsetGrid<ColorVertex<float, unsigned char>, SharpBox<ColorVertex<float, unsigned char>, Normal<float> > > *>(grid);
+                ps_grid->calcDistanceValues();
+                reconstruction = new FastReconstruction<ColorVertex<float, unsigned char> , Normal<float>, SharpBox<ColorVertex<float, unsigned char>, Normal<float> >  >(ps_grid);
+            }
 
             reconstruction->getMesh(mesh);
             //mesh.cleanContours(2);
-            mesh.setClassifier("PlaneSimpsons");
-            mesh.getClassifier().setMinRegionSize(0.1);
+            if(options.getDanglingArtifacts())
+            {
+                mesh.removeDanglingArtifacts(options.getDanglingArtifacts());
+            }
 
-            mesh.optimizePlanes(3,
-                                0.85,
-                                7,
-                                0,
-                                true);
+            mesh.cleanContours(options.getCleanContourIterations());
+            mesh.setClassifier(options.getClassifier());
+            mesh.getClassifier().setMinRegionSize(options.getSmallRegionThreshold());
 
-            mesh.fillHoles(1);
-            mesh.optimizePlaneIntersections();
-            mesh.restorePlanes(1);
+            if(options.optimizePlanes())
+            {
+                mesh.optimizePlanes(options.getPlaneIterations(),
+                                    options.getNormalThreshold(),
+                                    options.getMinPlaneSize(),
+                                    options.getSmallRegionThreshold(),
+                                    true);
+
+                mesh.fillHoles(options.getFillHoles());
+                mesh.optimizePlaneIntersections();
+                mesh.restorePlanes(options.getMinPlaneSize());
+
+                if(options.getNumEdgeCollapses())
+                {
+                    QuadricVertexCosts<ColorVertex<float, unsigned char> , Normal<float> > c = QuadricVertexCosts<ColorVertex<float, unsigned char> , Normal<float> >(true);
+                    mesh.reduceMeshByCollapse(options.getNumEdgeCollapses(), c);
+                }
+            }
+            else if(options.clusterPlanes())
+            {
+                mesh.clusterRegions(options.getNormalThreshold(), options.getMinPlaneSize());
+                mesh.fillHoles(options.getFillHoles());
+            }
+
 
             mesh.finalize();
             ModelPtr m( new Model( mesh.meshBuffer() ) );
