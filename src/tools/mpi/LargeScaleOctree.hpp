@@ -20,7 +20,8 @@ namespace lvr
         vector<LargeScaleOctree*> leafs;
     public:
         LargeScaleOctree(Vertexf center, float size);
-        virtual ~LargeScaleOctree();
+        LargeScaleOctree(Vertexf center, float size, unsigned int maxPoints);
+	virtual ~LargeScaleOctree();
 
         bool isLeaf();
         void insert(Vertexf& pos);
