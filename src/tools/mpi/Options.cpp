@@ -98,11 +98,11 @@ Options::Options(int argc, char** argv)
 
 unsigned int Options::getOctreeNodeSize() const
 {
-	return m_variables["buff"].as<unsigned int>();
+	return m_variables["os"].as<unsigned int>();
 }
 unsigned int Options::getBufferSize() const
 {
-	return m_variables["os"].as<unsigned int>();
+	return m_variables["buff"].as<unsigned int>();
 }
 
 float Options::getVoxelsize() const

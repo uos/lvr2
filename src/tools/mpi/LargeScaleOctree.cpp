@@ -14,6 +14,11 @@ LargeScaleOctree::LargeScaleOctree(Vertexf center, float size) : m_center(center
     LargeScaleOctree::c_nodeList.push_back(this);
 }
 
+LargeScaleOctree::LargeScaleOctree(Vertexf center, float size, unsigned int maxPoints) : m_center(center), m_size(size), m_maxPoints(maxPoints), m_data()
+{
+    for(int i=0 ; i<8 ; i++) m_children[i] = NULL;
+    LargeScaleOctree::c_nodeList.push_back(this);
+}
 
 LargeScaleOctree::~LargeScaleOctree()
 {
@@ -41,7 +46,7 @@ void LargeScaleOctree::insert(Vertexf& pos)
                 newCenter.x = m_center.x + m_size * 0.5 * (i&4 ? 0.5 : -0.5);
                 newCenter.y = m_center.y + m_size * 0.5 * (i&2 ? 0.5 : -0.5);
                 newCenter.z = m_center.z + m_size * 0.5 * (i&1 ? 0.5 : -0.5);
-                m_children[i] = new LargeScaleOctree(newCenter, m_size * 0.5);
+                m_children[i] = new LargeScaleOctree(newCenter, m_size * 0.5, m_maxPoints);
             }
             for(Vertexf v : m_data)
             {
