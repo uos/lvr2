@@ -274,7 +274,15 @@ int main(int argc, char* argv[])
                 ps_grid->calcDistanceValues();
                 reconstruction = new FastReconstruction<ColorVertex<float, unsigned char> , Normal<float>, SharpBox<ColorVertex<float, unsigned char>, Normal<float> >  >(ps_grid);
             }
-
+            if(options.saveGrid())
+            {
+                string out = filePath;
+                out.pop_back();
+                out.pop_back();
+                out.pop_back();
+                out.append("grid");
+                grid->saveGrid(out);
+            }
             reconstruction->getMesh(mesh);
             //mesh.cleanContours(2);
             if(options.getDanglingArtifacts())
