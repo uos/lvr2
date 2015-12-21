@@ -97,7 +97,7 @@ int main(int argc, char* argv[])
         center/=2;
         cout << box << endl << "--------" << endl;
 
-        LargeScaleOctree octree(center, size);
+        LargeScaleOctree octree(center, size, options.getOctreeNodeSize() );
 
         inputData.close();
         inputData.clear();
