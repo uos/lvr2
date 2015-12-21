@@ -319,7 +319,14 @@ int main(int argc, char* argv[])
             }
 
 
-            mesh.finalize();
+            if ( options.retesselate() )
+            {
+                mesh.finalizeAndRetesselate(options.generateTextures(), options.getLineFusionThreshold());
+            }
+            else
+            {
+                mesh.finalize();
+            }
             ModelPtr m( new Model( mesh.meshBuffer() ) );
             cout << timestamp << "Saving mesh." << endl;
             string output = filePath;
