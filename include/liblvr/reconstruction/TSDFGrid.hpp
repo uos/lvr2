@@ -22,14 +22,14 @@ public:
 	typedef unordered_map<size_t, BoxT*> box_map;
 	typedef unordered_map<size_t, size_t> qp_map;
 	typedef unordered_map<size_t, uint*> smallBox_map;;
-	
+
 	typedef unordered_map<size_t, size_t>::iterator qp_map_iterator;
 	/// Typedef to alias iterators for box maps
 	typedef typename unordered_map<size_t, BoxT*>::iterator  box_map_it;;
 
 	/// Typedef to alias iterators to query points
 	typedef typename vector<QueryPoint<VertexT> >::iterator	query_point_it;
-	
+
 	TsdfGrid(float cellSize,  BoundingBox<VertexT> bb, TsdfT* tsdf, size_t size,
 			int shiftX, int shiftY, int shiftZ,
 			int backShiftX, int backShiftY, int backShiftZ,
