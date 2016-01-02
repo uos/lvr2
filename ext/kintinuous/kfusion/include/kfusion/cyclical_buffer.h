@@ -34,6 +34,12 @@
  *  POSSIBILITY OF SUCH DAMAGE.
  *
  */
+ /*
+  * cyclical_buffer.h
+  *
+  *  @date 13.11.2015
+  *  @author Tristan Igelbrink (Tristan@Igelbrink.com)
+  */
 
 
 #ifndef CYCLICAL_BUFFER_IMPL_H_
@@ -48,7 +54,7 @@
 #include <thread>
 
 namespace kfusion
-{ 
+{
     namespace cuda
     {
 		/** \brief CyclicalBuffer implements a cyclical TSDF buffer.
@@ -57,7 +63,7 @@ namespace kfusion
 		*/
 		class KF_EXPORTS CyclicalBuffer
 		{
-			
+
 		  public:
 			/** \brief Constructor for a cubic CyclicalBuffer.
 			* \param[in] distance_threshold distance between cube center and target point at which we decide to shift.
@@ -68,12 +74,12 @@ namespace kfusion
 			                optimize_(params.cmd_options->optimizePlanes()), no_reconstruct_(params.cmd_options->noReconstruction())
 			{
 				distance_threshold_ = params.shifting_distance;
-				buffer_.volume_size.x = params.volume_size[0]; 
-				buffer_.volume_size.y = params.volume_size[1]; 
+				buffer_.volume_size.x = params.volume_size[0];
+				buffer_.volume_size.y = params.volume_size[1];
 				buffer_.volume_size.z = params.volume_size[2];
-				buffer_.voxels_size.x = params.volume_dims[0]; 
-				buffer_.voxels_size.y = params.volume_dims[1]; 
-				buffer_.voxels_size.z = params.volume_dims[2]; 
+				buffer_.voxels_size.x = params.volume_dims[0];
+				buffer_.voxels_size.y = params.volume_dims[1];
+				buffer_.voxels_size.z = params.volume_dims[2];
 				global_shift_[0] = 0;
 				global_shift_[1] = 0;
 				global_shift_[2] = 0;
@@ -90,24 +96,24 @@ namespace kfusion
 			* \param[in] nb_voxels_z number of voxels for Z axis of the volume represented by the TSDF buffer.
 			*/
 			/*CyclicalBuffer (const double distance_threshold,
-			                const double volume_size_x, const double volume_size_y, 
-			                const double volume_size_z, const int nb_voxels_x, const int nb_voxels_y, 
+			                const double volume_size_x, const double volume_size_y,
+			                const double volume_size_z, const int nb_voxels_x, const int nb_voxels_y,
 			                const int nb_voxels_z)
 			{
 				distance_threshold_ = distance_threshold;
-				buffer_.volume_size.x = volume_size_x; 
-				buffer_.volume_size.y = volume_size_y; 
+				buffer_.volume_size.x = volume_size_x;
+				buffer_.volume_size.y = volume_size_y;
 				buffer_.volume_size.z = volume_size_z;
-				buffer_.voxels_size.x = nb_voxels_x; 
-				buffer_.voxels_size.y = nb_voxels_y; 
-				buffer_.voxels_size.z = nb_voxels_z; 
+				buffer_.voxels_size.x = nb_voxels_x;
+				buffer_.voxels_size.y = nb_voxels_y;
+				buffer_.voxels_size.z = nb_voxels_z;
 			}*/
-			
+
 			~CyclicalBuffer()
 			{
 				//double averageMCTime = mcwrap_.calcTimeStats();
 				//cout << "----- Average time for processing one tsdf value " << averageMCTime << "ns -----" << endl;
-			} 				
+			}
 
 		    /** \brief Check if shifting needs to be performed, returns true if so.
 			  Shifting is considered needed if the target point is farther than distance_treshold_.
@@ -121,10 +127,10 @@ namespace kfusion
 			* \return true is the cube needs to be or has been shifted.
 			*/
 			bool checkForShift (cv::Ptr<cuda::TsdfVolume> volume,
-			                    const Affine3f &cam_pose, const double distance_camera_target, 
-			                    const bool perform_shift = true, const bool last_shift = false, 
+			                    const Affine3f &cam_pose, const double distance_camera_target,
+			                    const bool perform_shift = true, const bool last_shift = false,
 			                    const bool record_mode = false);
-	  
+
 		    /** \brief Perform shifting operations:
 			  Compute offsets.
 			  Extract current slice from TSDF buffer.
@@ -132,7 +138,7 @@ namespace kfusion
 			  Clear shifted slice in TSDF buffer.
 			  Push existing data into TSDF buffer.
 			  Update rolling buffer
-			  Update world model. 
+			  Update world model.
 			* \param[in] volume pointer to the TSDFVolume living in GPU
 			* \param[in] target_point target point around which the new cube will be centered
 			* \param[in] last_shift if set to true, the whole cube will be shifted. This is used to push the whole cube to the world model.
@@ -142,9 +148,9 @@ namespace kfusion
 		   /** \brief Sets the distance threshold between cube's center and target point that triggers a shift.
 			* \param[in] threshold the distance in meters at which to trigger shift.
 			*/
-		    void setDistanceThreshold (const double threshold) 
-		    { 
-			  distance_threshold_ = threshold; 
+		    void setDistanceThreshold (const double threshold)
+		    {
+			  distance_threshold_ = threshold;
 		    }
 
 		    /** \brief Returns the distance threshold between cube's center and target point that triggers a shift. */
@@ -159,21 +165,21 @@ namespace kfusion
 		    * \param[in] size_x size of the volume on X axis, in meters.
 		    * \param[in] size_y size of the volume on Y axis, in meters.
 		    * \param[in] size_z size of the volume on Z axis, in meters.
-		    */ 
+		    */
 			void setVolumeSize (const Vec3f size)
 			{
 				buffer_.volume_size.x = size[0];
 				buffer_.volume_size.y = size[1];
 				buffer_.volume_size.z = size[2];
 			}
-			
+
 			void setVoxelSize (const Vec3f vsize)
 			{
 				buffer_.voxels_size.x = vsize[0];
 				buffer_.voxels_size.y = vsize[1];
 				buffer_.voxels_size.z = vsize[2];
 			}
-			
+
 			Vec3f getOrigin()
 			{
 				return Vec3f(buffer_.origin_metric.x, buffer_.origin_metric.y, buffer_.origin_metric.z);
@@ -194,12 +200,12 @@ namespace kfusion
 			* \param[out] shiftX shift on X axis (in indices).
 			* \param[out] shiftY shift on Y axis (in indices).
 			* \param[out] shiftZ shift on Z axis (in indices).
-			*/ 
+			*/
 		  void computeAndSetNewCubeMetricOrigin (cv::Ptr<cuda::TsdfVolume> volume, const cv::Vec3f& target_point, Vec3i& offset);
-	  
+
 		  /** \brief Initializes memory pointers of the  cyclical buffer (start, end, current origin)
 			* \param[in] tsdf_volume pointer to the TSDF volume managed by this cyclical buffer
-			*/ 
+			*/
 		  void initBuffer (cv::Ptr<cuda::TsdfVolume> tsdf_volume)
 		  {
 			buffer_.tsdf_memory_start = tsdf_volume->getCoord(0, 0, 0, 0, 0);
@@ -207,10 +213,10 @@ namespace kfusion
 
 			buffer_.tsdf_rolling_buff_origin = buffer_.tsdf_memory_start;
 		  }
-		  
+
 		  /** \brief Reset buffer structure
 			* \param[in] tsdf_volume pointer to the TSDF volume managed by this cyclical buffer
-			*/ 
+			*/
 		  void resetBuffer (cv::Ptr<cuda::TsdfVolume> tsdf_volume)
 		  {
 			buffer_.origin_GRID.x = 0; buffer_.origin_GRID.y = 0; buffer_.origin_GRID.z = 0;
@@ -221,20 +227,20 @@ namespace kfusion
 			buffer_.origin_metric.z = position[2];
 			initBuffer (tsdf_volume);
 		  }
-		  
+
 		  void resetMesh(){/*mcwrap_.resetMesh();*/}
 		  void addImgPose(ImgPose* imgPose){ imgPoses_.push_back(imgPose);}
-		  
+
 		  MeshPtr getMesh() {return pl_.getMesh();}
-		  
+
 		  int getSliceCount(){return slice_count_;}
-		  			
-	  
+
+
 		private:
 
 		  /** \brief buffer used to extract XYZ values from GPU */
 		  DeviceArray<Point> cloud_buffer_device_;
-		  
+
 		  /** \brief distance threshold (cube's center to target point) to trigger shift */
 		  double distance_threshold_;
 		  Vec3i global_shift_;
@@ -243,21 +249,21 @@ namespace kfusion
 		  int slice_count_ = 0;
 		  Affine3f last_camPose_;
 		  bool optimize_, no_reconstruct_;
-		  
+
 		  /** \brief structure that contains all TSDF buffer's addresses */
 		  tsdf_buffer buffer_;
-		  
+
 		  //MaCuWrapper mcwrap_;
 		  LVRPipeline pl_;
 			inline int calcIndex(float f) const
 			{
 				return f < 0 ? f-.5:f+.5;
 			}
-		  
-		  float euclideanDistance(const Point& p1, const Point& p2); 
-		  
+
+		  float euclideanDistance(const Point& p1, const Point& p2);
+
 		  void getEulerYPR(float& yaw, float& pitch, float& roll, cv::Affine3<float>::Mat3& mat,  unsigned int solution_number = 1);
-		  
+
 		  void calcBounds(Vec3i& offset, Vec3i& minBounds, Vec3i& maxBounds);
 
 		  /** \brief updates cyclical buffer origins given offsets on X, Y and Z
@@ -265,7 +271,7 @@ namespace kfusion
 			* \param[in] offset_x offset in indices on axis X
 			* \param[in] offset_y offset in indices on axis Y
 			* \param[in] offset_z offset in indices on axis Z
-			*/ 
+			*/
 		  void shiftOrigin (cv::Ptr<cuda::TsdfVolume> tsdf_volume, Vec3i offset)
 		  {
 			// shift rolling origin (making sure they keep in [0 - NbVoxels[ )
@@ -276,34 +282,34 @@ namespace kfusion
 			{
 			  buffer_.origin_GRID.x += buffer_.voxels_size.x ;
 			}
-			  
+
 			buffer_.origin_GRID.y += offset[1];
 			if(buffer_.origin_GRID.y >= buffer_.voxels_size.y)
 			  buffer_.origin_GRID.y -= buffer_.voxels_size.y;
 			else if(buffer_.origin_GRID.y < 0)
 			{
 			  buffer_.origin_GRID.y += buffer_.voxels_size.y;
-			}  
-			
+			}
+
 			buffer_.origin_GRID.z += offset[2];
 			if(buffer_.origin_GRID.z >= buffer_.voxels_size.z)
 			  buffer_.origin_GRID.z -= buffer_.voxels_size.z;
 			else if(buffer_.origin_GRID.z < 0)
 			{
 			  buffer_.origin_GRID.z += buffer_.voxels_size.z;
-			} 
+			}
 			// update memory pointers
 			CudaData localVolume = tsdf_volume->data();
 			buffer_.tsdf_memory_start = tsdf_volume->getCoord(0, 0, 0, 0, 0);
 			buffer_.tsdf_memory_end = tsdf_volume->getCoord(buffer_.voxels_size.x - 1, buffer_.voxels_size.y - 1, buffer_.voxels_size.z - 1, buffer_.voxels_size.x, buffer_.voxels_size.y);
 			buffer_.tsdf_rolling_buff_origin = tsdf_volume->getCoord(buffer_.origin_GRID.x, buffer_.origin_GRID.y, buffer_.origin_GRID.z, buffer_.voxels_size.x, buffer_.voxels_size.y);
-			
+
 			// update global origin
 			global_shift_[0] = buffer_.origin_GRID_global.x += offset[0];
 			global_shift_[1] = buffer_.origin_GRID_global.y += offset[1];
 			global_shift_[2] = buffer_.origin_GRID_global.z += offset[2];
 		  }
-	  
+
 	  };
 	}
 }

@@ -1,10 +1,49 @@
+/*
+ * Software License Agreement (BSD License)
+ *
+ *  Redistribution and use in source and binary forms, with or without
+ *  modification, are permitted provided that the following conditions
+ *  are met:
+ *
+ *   * Redistributions of source code must retain the above copyright
+ *     notice, this list of conditions and the following disclaimer.
+ *   * Redistributions in binary form must reproduce the above
+ *     copyright notice, this list of conditions and the following
+ *     disclaimer in the documentation and/or other materials provided
+ *     with the distribution.
+ *   * Neither the name of Willow Garage, Inc. nor the names of its
+ *     contributors may be used to endorse or promote products derived
+ *     from this software without specific prior written permission.
+ *
+ *  THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
+ *  "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT
+ *  LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS
+ *  FOR A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE
+ *  COPYRIGHT OWNER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT,
+ *  INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING,
+ *  BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
+ *  LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER
+ *  CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT
+ *  LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN
+ *  ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
+ *  POSSIBILITY OF SUCH DAMAGE.
+ *
+ */
+/*
+ * MeshStage.cpp
+ *
+ *  @date 13.11.2015
+ *  @author Tristan Igelbrink (Tristan@Igelbrink.com)
+ */
+
 #include <kfusion/MeshStage.hpp>
 #include <registration/ICPPointAlign.hpp>
 #include <io/DataStruct.hpp>
 
 // default constructor
 MeshStage::MeshStage(double camera_target_distance, double voxel_size, Options* options) : AbstractStage(),
-					camera_target_distance_(camera_target_distance), voxel_size_(voxel_size), options_(options), fusion_count_(0)
+					camera_target_distance_(camera_target_distance), voxel_size_(voxel_size), options_(options), fusion_count_(0),
+					slice_correction_(false)
 {
 	mesh_count_ = 0;
 	timestamp.setQuiet(!options->verbose());
@@ -56,18 +95,9 @@ void MeshStage::step()
 							if(act_vert->m_position[0] != old_vert->m_position[0] ||  act_vert->m_position[1] != old_vert->m_position[1]
 								 || act_vert->m_position[2] != old_vert->m_position[2])
 							{
-								//cout << "missalignment" << endl;
-								/*float dist_x = pos1.x - pos2.x;
-								float dist_y = pos1.y - pos2.y;
-								float dist_z = pos1.z - pos2.z;
-								cout << "pos1 " << pos1 << " pos 2 " << pos2 <<endl;
-								cout << "dist_x " << dist_x << endl;
-								cout << "dist_y " << dist_y << endl;
-								cout << "dist_z " << dist_z << endl;*/
 								misscount++;
 							}
 							current_neighbor->m_fusionNeighborBox = false;
-							//break;
 						}
 					}
 				}
@@ -77,15 +107,11 @@ void MeshStage::step()
 	if(last_mesh_queue_.size() > 0)
 	{
 		auto m = last_mesh_queue_.front();
-		//cout << "founded fusion verts from old slice " << m->m_fusionVertices.size() << endl;
-		//cout << "founded fusion verts from new slice " << meshPtr->m_oldFusionVertices.size() << endl;
 		if(verts_map.size() > 0)
 		{
-			//cout << "merged fusion verts " << (double)verts_map.size()/m->m_fusionVertices.size() << endl;
-			//cout << "misscount quote " << (double)(misscount/verts_map.size()) << endl;
-			if(((double)verts_map.size()/m->m_fusionVertices.size() < 0.5) || ((double)misscount/verts_map.size() > 0.9) )
+
+			if(slice_correction_ && (((double)verts_map.size()/m->m_fusionVertices.size() < 0.5) || ((double)misscount/verts_map.size() > 0.9)) )
 			{
-				/*cout << "SLICE CORRECTION " << endl;
 				float euler[6];
 				PointBufferPtr buffer(new PointBuffer());
 				PointBufferPtr dataBuffer(new PointBuffer());
@@ -117,10 +143,8 @@ void MeshStage::step()
 				trans.set(12, -correction[12]/100.0);
 				trans.set(13, -correction[13]/100.0);
 				trans.set(14, correction[14]/100.0);
-				cout << " X: " << trans[12] << " Y: " << trans[13] << " Z: " << trans[14] << endl;
 				trans.toPostionAngle(euler);
 				double correction_value = sqrt(pow(trans[12],2) + pow(trans[13],2) + pow(trans[14],2));
-				cout << "correction_value " << correction_value << endl;
 				if(correction_value < 0.08)
 				{
 					cout << "Applieng ICP Pose " << endl;
@@ -129,7 +153,6 @@ void MeshStage::step()
 					{
 						vert->m_position.transform(trans);
 					}
-					cout << " size " << m->m_fusionVertices.size() << endl;
 					map<size_t, HMesh::VertexPtr> kdFusionVertsMap;
 					cv::Mat data;
 					data.create(cvSize(3,m->m_fusionVertices.size()), CV_32F); // The set A
@@ -140,7 +163,6 @@ void MeshStage::step()
 						data.at<float>(i,2) =  m->m_fusionVertices[i]->m_position.z;
 						kdFusionVertsMap.insert(pair<size_t, HMesh::VertexPtr>(i,m->m_fusionVertices[i]));
 					}
-					cout << " size " << m->m_fusionVertices.size() << endl;
 					map<size_t, HMesh::VertexPtr> kdOldFusionVertsMap;
 					cv::Mat query;
 					query.create(cvSize(3,meshPtr->m_oldFusionVertices.size()), CV_32F); // The set A
@@ -151,7 +173,6 @@ void MeshStage::step()
 						query.at<float>(i,2) =  meshPtr->m_oldFusionVertices[i]->m_position.z;
 						kdOldFusionVertsMap.insert(pair<size_t, HMesh::VertexPtr>(i, meshPtr->m_oldFusionVertices[i]));
 					}
-					cout << " size " << m->m_fusionVertices.size() << endl;
 					cv::Mat matches; //This mat will contain the index of nearest neighbour as returned by Kd-tree
 					cv::Mat distances; //In this mat Kd-Tree return the distances for each nearest neighbour
 					 //This set B
@@ -162,37 +183,23 @@ void MeshStage::step()
 					matches.create(cvSize(1,meshPtr->m_oldFusionVertices.size()), CV_32SC1);
 					distances.create(cvSize(1,meshPtr->m_oldFusionVertices.size()), CV_32FC1);
 					kdtrees =  new cv::flann::GenericIndex< cvflann::L2<float> >(data, cvflann::KDTreeIndexParams(4)); // a 4 k-d tree
-					cout << " size " << m->m_fusionVertices.size() << endl;
 					// Search KdTree
 					kdtrees->knnSearch(query, matches, distances, 1,  cvflann::SearchParams(8));
 					int NN_index;
 					float dist;
 					verts_map.clear();
-					//for(int i = 0; i < meshPtr->m_oldFusionVertices.size(); i++) {
 					for(int i = 0; i < 10; i++) {
 
 					    NN_index = matches.at<int>(i,0);
 					    dist = distances.at<float>(i, 0);
-						cout << " index " << NN_index << endl;
-						cout << " dist "  << dist << endl;
-						cout << "gift " << kdFusionVertsMap[NN_index] << endl;
-						cout << "old gift " << kdOldFusionVertsMap[i] << endl;
-						cout << " fusing  " << kdFusionVertsMap[NN_index]->m_position << endl;
-						cout << " with  " << kdOldFusionVertsMap[i]->m_position << endl;
-
 						verts_map.insert(pair<HMesh::VertexPtr, HMesh::VertexPtr>(kdFusionVertsMap[NN_index], kdOldFusionVertsMap[i]));
 					}
 					delete kdtrees;
 					global_correction_ *= trans;
-				}*/
+				}
 
 			}
 		}
-
-
-
-		//cout << "merged quote " << verts_map.size() << endl;
-		//cout << "missaligned verts " << misscount << endl;
 		meshPtr->m_fusion_verts = verts_map;
 	}
 	if(last_mesh_queue_.size() > 0)
@@ -217,7 +224,6 @@ void MeshStage::lastStep()	{ /* skip */ }
 
 void MeshStage::transformMeshBack(MeshPtr mesh)
 {
-	cout << "global correction " << global_correction_ << endl;
 	for(auto vert : mesh->getVertices())
 	{
 		// calc in voxel

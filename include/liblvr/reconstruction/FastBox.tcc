@@ -38,8 +38,7 @@ template<typename VertexT, typename NormalT>
 uint FastBox<VertexT, NormalT>::INVALID_INDEX = numeric_limits<uint>::max();
 
 template<typename VertexT, typename NormalT>
-FastBox<VertexT, NormalT>::FastBox(VertexT &center, bool fusionBox, bool oldFusionBox)
-			: m_fusionBox(fusionBox), m_oldfusionBox(oldFusionBox)
+FastBox<VertexT, NormalT>::FastBox(VertexT &center)
 {
 	//m_intersections = new uint[12];
     // Init members
@@ -64,12 +63,6 @@ template<typename VertexT, typename NormalT>
 void FastBox<VertexT, NormalT>::setVertex(int index, uint nb)
 {
     m_vertices[index] = nb;
-}
-
-template<typename VertexT, typename NormalT>
-void FastBox<VertexT, NormalT>::setFusion(bool fusionBox)
-{
-    m_fusionBox = fusionBox;
 }
 
 template<typename VertexT, typename NormalT>
@@ -248,21 +241,15 @@ void FastBox<VertexT, NormalT>::getSurface(BaseMesh<VertexT, NormalT> &mesh,
 				// The actual normal is interpolated later.
 				mesh.addVertex(v);
 				mesh.addNormal(NormalT());
-				int neighbour_count = 0;
 				for(int i = 0; i < 3; i++)
 				{
 					FastBox<VertexT, NormalT>* current_neighbor = m_neighbors[neighbor_table[edge_index][i]];
 					if(current_neighbor != 0)
 					{
 						current_neighbor->m_intersections[neighbor_vertex_table[edge_index][i]] = globalIndex;
-						if(!current_neighbor->m_fusionNeighborBox)
-							neighbour_count++;
 					}
 				}
-				if(m_fusionBox && neighbour_count < 3)
-					mesh.setFusionVertex(globalIndex);
-				if(m_oldfusionBox && neighbour_count < 3)
-					mesh.setFusionNeighborVertex(globalIndex);
+
 				// Increase the global vertex counter to save the buffer
 				// position were the next new vertex has to be inserted
 				globalIndex++;
@@ -275,13 +262,6 @@ void FastBox<VertexT, NormalT>::getSurface(BaseMesh<VertexT, NormalT> &mesh,
 		// Add triangle actually does the normal interpolation for us.
 		mesh.addTriangle(triangle_indices[0], triangle_indices[1], triangle_indices[2]);
 	}
-	if(m_fusionBox)
-	{
-		m_fusionBox = false;
-		m_fusedBox = true;
-	}
-	//if(m_oldfusionBox)
-		//m_oldfusionBox = false;
 }
 
 } // namespace lvr

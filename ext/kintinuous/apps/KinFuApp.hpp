@@ -385,7 +385,7 @@ struct KinFuApp
 						//std::cout << "better image found, sum rvec distances: " << best_dist << std::endl;
 					}
 					//if(time - 3.0 > 0)
-					if(frame_count==7)
+					if(kinfu.params().cmd_options->textures() && frame_count==7)
 					{
 
 						rvecs.push_back(best_rvec);

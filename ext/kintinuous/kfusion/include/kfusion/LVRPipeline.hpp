@@ -9,7 +9,7 @@
 #include <io/DataStruct.hpp>
 #include <io/Timestamp.hpp>
 #include <geometry/HalfEdgeVertex.hpp>
-#include <geometry/HalfEdgeMesh.hpp>
+#include <geometry/HalfEdgeKinFuMesh.hpp>
 #include <geometry/BoundingBox.hpp>
 #include <kfusion/types.hpp>
 #include <kfusion/cuda/tsdf_volume.hpp>
@@ -24,7 +24,7 @@
 using namespace lvr;
 
 typedef ColorVertex<float, unsigned char> cVertex;
-typedef HalfEdgeMesh<cVertex, lvr::Normal<float> > HMesh;
+typedef HalfEdgeKinFuMesh<cVertex, lvr::Normal<float> > HMesh;
 typedef HMesh* MeshPtr;
 
 namespace kfusion
@@ -34,24 +34,24 @@ namespace kfusion
 		public:
 
 			LVRPipeline(KinFuParams params);
-			
+
 			~LVRPipeline();
-        
+
 			void addTSDFSlice(TSDFSlice slice,  const bool last_shift);
-			
+
 			void resetMesh();
-			
+
 			MeshPtr getMesh() {return pl_.GetResult();}
-			
+
 			double calcTimeStats();
-			
+
 		private:
-		    
+
 		    MeshPtr meshPtr_;
 		    size_t slice_count_;
 			std::vector<double> timeStats_;
 			LinearPipeline<pair<TSDFSlice, bool> , MeshPtr> pl_;
-			
+
     };
 }
 #endif
