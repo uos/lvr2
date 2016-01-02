@@ -60,7 +60,7 @@ public:
 	 * @brief Constructs a new box at the given center point defined
 	 * 		  by the used \ref{m_voxelsize}.
 	 */
-    FastBox(VertexT &center, bool fusionBox = false, bool m_oldfusionBox = false);
+    FastBox(VertexT &center);
 
     /**
      * @brief Destructor.
@@ -130,7 +130,7 @@ public:
     bool                        m_fusionNeighborBox;
      /// The box center
     VertexT               		m_center;
-    
+
         /// Pointer to all adjacent cells
     FastBox<VertexT, NormalT>*  m_neighbors[27];
 
@@ -175,7 +175,7 @@ protected:
      * @param query_points  The query points of the grid
      */
     void getDistances(float distances[], vector<QueryPoint<VertexT> > &query_points);
-    
+
     /***
      * @brief Interpolates the intersection between x1 and x1.
      *
@@ -187,7 +187,7 @@ protected:
      */
     float calcIntersection(float x1, float x2, float d1, float d2);
 
-   
+
 
     /// The eight box corners
     uint                  		m_vertices[8];

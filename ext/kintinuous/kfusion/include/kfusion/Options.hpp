@@ -77,13 +77,13 @@ public:
 	 * @brief 	Returns true if cluster optimization is enabled
 	 */
 	bool 	optimizePlanes() const;
-	
+
 	bool 	textures() const;
-	
+
 	bool    noVizualisation() const;
 
 	bool    noReconstruction() const;
-	
+
 	bool    verbose() const;
 
 	/**
@@ -95,7 +95,7 @@ public:
 	 * @brief	Returns the output file name
 	 */
 	string 	getInputDevice() const;
-	
+
 	string getOutput() const;
 
 	/**
@@ -139,7 +139,7 @@ public:
 	 * @brief   Returns the region threshold for hole filling
 	 */
 	int   getFillHoles() const;
-	
+
 	float    getShiftingDistance() const;
 
 	float    getCameraOffset() const;
@@ -178,7 +178,7 @@ private:
 
 	/// The number of used default values
 	int                             m_numberOfDefaults;
-	
+
 	/// Number of iterations for plane optimzation
 	int                             m_planeIterations;
 
@@ -226,11 +226,11 @@ inline ostream& operator<<(ostream& os, const Options &o)
 
 	if(o.noVizualisation())
 	{
-		 cout << "##### Live vizualisation \t\t: NO"  << endl;
+		 cout << "##### Live visualization \t\t: NO"  << endl;
 	}
 	else
-		cout << "##### Live vizualisation \t\t: YES"  << endl;
-	
+		cout << "##### Live visualization \t\t: YES"  << endl;
+
 	if(o.noReconstruction())
 	{
 		 cout << "##### Online reconstruction \t\t: NO"  << endl;
