@@ -129,8 +129,6 @@ public:
 	 */
 	virtual ~HalfEdgeMesh();
 
-	void addMesh(HalfEdgeMesh* slice, bool texture);
-
 	/**
 	 * @brief 	This method should be called every time
 	 * 			a new vertex is created.
@@ -158,12 +156,6 @@ public:
 	 * @param	c		The third vertex of the triangle
 	 */
 	virtual void addTriangle(uint a, uint b, uint c);
-
-	virtual void setFusionVertex(uint v);
-
-	virtual void setFusionNeighborVertex(uint v);
-
-	virtual void setOldFusionVertex(uint v);
 
     /**
      * @brief   Insert a new triangle into the mesh
@@ -226,8 +218,6 @@ public:
      * @param 	genTextures	Whether to generate textures or not
 	 */
 	virtual void finalizeAndRetesselate(bool genTextures, float fusionThreshold = 0.01);
-
-	virtual HalfEdgeMesh<VertexT, NormalT>*  retesselateInHalfEdge(float fusionThreshold = 0.01, bool textured = false, int start_texture_index=0);
 
 	/**
 	 * @brief Writes the classification result to a file.
@@ -316,37 +306,13 @@ public:
 
 	void mergeVertex(VertexPtr merge_vert, VertexPtr erase_vert);
 
-	unordered_map<size_t, size_t> m_slice_verts;
-	unordered_map<size_t, size_t> m_fused_verts;
-	unordered_map<VertexPtr, VertexPtr> m_fusion_verts;
-	size_t m_fusionNeighbors;
-	//size_t m_fusionVertices;
-	size_t m_fusionOldNeighbors;
-	vector<FacePtr> m_fusionFaces;
-	VertexVector                                m_fusionVertices;
-	VertexVector                                m_oldFusionVertices;
-
-	int projectAndMapNewImage(kfusion::ImgPose img_pose, const char* texture_output_dir="");
-
-	std::vector<std::vector<cv::Point3f> > getBoundingRectangles(int& size);
-	std::vector<std::pair<cv::Mat,float> > getTextures();
-
-	 std::vector<std::vector<cv::Point3f> > bounding_rectangles_3D;
-	 //first version with one texture each bounding box
-	 //texture + float saving best angle area was seen
-	std::vector<std::pair<cv::Mat,float> > textures;
-
-	//global bounding_rectangles
-
-    size_t num_cams,b_rect_size,end_texture_index,start_texture_index;
-
 	/**
 	 * @brief	Deletes all faces of the regions marked by region->m_toDelete
 	 */
 	virtual void deleteRegions();
 
 
-private:
+protected:
 
 	void checkFaceIntegreties();
 
@@ -517,51 +483,6 @@ private:
 	 * @brief assign label buffer ids
 	 */
 	void assignLBI();
-
-	/** TEXTURE STUFF
-	 * @brief getBoundingRectangles
-	 */
-	std::vector<cv::Point3f> getBoundingRectangle(std::vector<VertexT> act_contour, NormalT normale);
-
-	void createInitialTexture(std::vector<cv::Point3f> b_rect, int texture_index, const char* output_dir="",float pic_size_factor=1000.0);
-
-	void getInitialUV(float x,float y,float z,std::vector<cv::Point3f> b_rect,float& u, float& v);
-	void getInitialUV_b(float x,float y,float z,std::vector<std::vector<cv::Point3f> > b_rects,size_t b_rect_number,float& u, float& v);
-
-	void fillInitialTextures(std::vector<std::vector<cv::Point3f> > b_rects,
-		   kfusion::ImgPose img_pose, int image_number,
-		   const char* texture_output_dir="");
-
-	void fillInitialTexture(std::vector<std::vector<cv::Point3f> > b_rects,
-		   kfusion::ImgPose img_pose, int image_number,
-		   const char* texture_output_dir="");
-
-	int fillNonPlanarColors(kfusion::ImgPose img_pose);
-	
-	void fillImageWithBlackPolygon( cv::Mat& img , cv::Point* pointarr, int size);
-	void firstBehindSecondImage(cv::Mat first, cv::Mat second, cv::Mat& dst);
-	void firstBehindSecondImage(cv::Mat first, cv::Mat second, cv::Mat& dst, cv::Mat mask);
-
-	cv::Rect calcCvRect(std::vector<cv::Point2f> rect);
-	
-	std::pair<int, std::vector<int> > calcShadowTupel(std::vector<cv::Point3f> base_rect, std::vector<cv::Point3f> shadow_rect, int shadow_rect_index);
-	
-	bool calcShadowInliers(std::vector<cv::Point3f> base_rect, std::vector<cv::Point3f> shadow_rect, std::vector<int>& inliers);
-	
-	//second version with one clipped texture
-	cv::Mat texture;
-	std::vector< pair<size_t, cv::Size > > texture_stats;
-	
-	class sort_indices
-	{
-		private:
-		std::vector<std::pair<cv::Mat,float> > textures;
-		public:
-		sort_indices(std::vector<std::pair<cv::Mat,float> > textures) : textures(textures) {}
-		bool operator()(int i, int j) { return (textures[i].first.cols*textures[i].first.rows)<(textures[j].first.cols*textures[j].first.rows); }
-	};
-    
-    ///texturing end
 
 
 	friend class ClassifierFactory<VertexT, NormalT>;
