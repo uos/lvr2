@@ -377,8 +377,15 @@ int main(int argc, char** argv)
 		}
 
 		// Create a point set grid for reconstruction
-
 		string decomposition = options.getDecomposition();
+
+		// Fail safe check
+		if(decomposition != "MC" && decomposition != "PMC" && decomposition != "SF" )
+		{
+			cout << "Unsupported decomposition type " << decomposition << ". Defaulting to PMC." << endl;
+			decomposition = "PMC";
+		}
+
 		GridBase* grid;
 		FastReconstructionBase<ColorVertex<float, unsigned char>, Normal<float> >* reconstruction;
 		if(decomposition == "MC")
