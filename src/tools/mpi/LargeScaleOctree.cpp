@@ -42,7 +42,7 @@ void LargeScaleOctree::insert(Vertexf& pos)
         if(m_data.size() == m_maxPoints)
         {
             m_data.writeBuffer();
-            cout << "NEW NODES" << endl;
+            //cout << "NEW NODES" << endl;
             for(int i = 0 ; i<8 ; i++)
             {
                 Vertexf newCenter;
