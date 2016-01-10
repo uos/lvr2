@@ -17,8 +17,8 @@ class NodeData
 {
     class Iterator;
 public:
-    NodeData(string inputPoints, string nodePoints );
-    NodeData();
+    NodeData(string inputPoints, string nodePoints, size_t bufferSize );
+    NodeData(size_t bufferSize);
     NodeData(NodeData& origin);
     NodeData& operator=(NodeData& origin);
     void create(string inputPoints, string nodePoints);
@@ -30,6 +30,8 @@ public:
     void remove();
     void remove(unsigned int i);
     void add(lvr::Vertex<float> input);
+    void addBuffered(lvr::Vertex<float> input);
+    void writeBuffer();
     lvr::Vertex<float>& get(int);
     lvr::Vertex<float> next();
     size_t size();
@@ -47,6 +49,7 @@ private:
     vector<Vertexf> m_readBuffer;
     size_t m_bufferSize;
     size_t m_bufferIndex;
+    vector<Vertexf> m_writeBuffer;
 
 
 
