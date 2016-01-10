@@ -104,18 +104,25 @@ void NodeData::add(Vertex<float> input)
 
 void NodeData::addBuffered(lvr::Vertex<float> input)
 {
+
+    if(m_gotSize) m_size++;
     m_writeBuffer.push_back(input);
 }
 void NodeData::writeBuffer()
 {
 
     ofstream ofs(m_dataPath, fstream::app);
-    for(Vertexf& input : m_writeBuffer)
+    for(Vertexf input : m_writeBuffer)
     {
         ofs << input.x << " " << input.y << " " <<  input.z << " " <<  std::endl;
     }
     ofs.close();
     m_writeBuffer.clear();
+}
+
+size_t NodeData::getWriteBufferSize()
+{
+    return m_writeBuffer.size();
 }
 
 Vertex<float>& NodeData::get(int i)
@@ -190,6 +197,7 @@ size_t NodeData::size()
         m_size = size;
         m_gotSize = true;
         ifs.close();
+        size+=m_writeBuffer.size();
         return size;
     }
 }

@@ -37,18 +37,12 @@ void LargeScaleOctree::insert(Vertexf& pos)
 {
     if(isLeaf())
     {
-        if(m_data.size() < m_maxPoints)
-        {
-            m_data.addBuffered(pos);
-        }
-        else
-        {
-            m_data.writeBuffer();
-            m_data.add(pos);
-        }
+        m_data.addBuffered(pos);
 
         if(m_data.size() == m_maxPoints)
         {
+            m_data.writeBuffer();
+            cout << "NEW NODES" << endl;
             for(int i = 0 ; i<8 ; i++)
             {
                 Vertexf newCenter;
@@ -100,6 +94,10 @@ LargeScaleOctree* LargeScaleOctree::getChildren()
 
 vector<LargeScaleOctree*> LargeScaleOctree::getNodes()
 {
+    for(int i = 0; i<c_nodeList.size() ; i++)
+    {
+        c_nodeList[i]->m_data.writeBuffer();
+    }
     return LargeScaleOctree::c_nodeList;
 }
 
