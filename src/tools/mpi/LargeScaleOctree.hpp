@@ -19,7 +19,6 @@ namespace lvr
         const size_t m_maxPoints;
         vector<LargeScaleOctree*> leafs;
     public:
-        LargeScaleOctree(Vertexf center, float size, size_t bufferSize = 40000000);
         LargeScaleOctree(Vertexf center, float size, unsigned int maxPoints, size_t bufferSize = 40000000);
 	virtual ~LargeScaleOctree();
 
