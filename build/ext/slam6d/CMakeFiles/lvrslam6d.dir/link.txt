@@ -1,0 +1,1 @@
+/sw/sdev/gcc/x86_64/4.9.2/bin/g++  -fPIC  -std=c++11 -std=c++11 -fopenmp -O3 -DNDEBUG  -shared -Wl,-soname,liblvrslam6d.so -o ../../lib/liblvrslam6d.so CMakeFiles/lvrslam6d.dir/Boctree.cc.o CMakeFiles/lvrslam6d.dir/allocator.cc.o CMakeFiles/lvrslam6d.dir/point_type.cc.o CMakeFiles/lvrslam6d.dir/searchTree.cc.o CMakeFiles/lvrslam6d.dir/scan_io_oct.cc.o 
