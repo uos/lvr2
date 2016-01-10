@@ -95,7 +95,7 @@ int main(int argc, char* argv[])
         float size = box.getLongestSide();
         Vertexf center = box.getMax()+box.getMin();
         center/=2;
-        cout << box << endl << "--------" << endl;
+        cout << lvr::timestamp << box << endl << "--------" << endl;
 
         LargeScaleOctree octree(center, size, options.getOctreeNodeSize() );
 
@@ -113,7 +113,7 @@ int main(int argc, char* argv[])
 
         }
 
-        cout << "...Octree finished" << endl;
+        cout << lvr::timestamp << "...Octree finished" << endl;
         clock_t end = clock();
         vector<LargeScaleOctree*> nodes = octree.getNodes() ;
         vector<LargeScaleOctree*> leafs;
@@ -124,8 +124,7 @@ int main(int argc, char* argv[])
             if(nodes[i]->isLeaf() && nodes[i]->getSize()>=100 ) leafs.push_back(nodes[i]);
         }
         //leafs.resize(std::distance(nodes.begin(),it));  // shrink container to new size
-        cout << "...Octree finished" << endl;
-        cout << "...got leafs1" << endl;
+        cout << lvr::timestamp << "...got leafs1" << endl;
         stack<char> waitingfor;
         for(int i = 1 ; i< world.size() && !leafs.empty() ; i++)
         {
@@ -328,7 +327,7 @@ int main(int argc, char* argv[])
                 mesh.finalize();
             }
             ModelPtr m( new Model( mesh.meshBuffer() ) );
-            cout << timestamp << "Saving mesh." << endl;
+            cout << timestamp << "Node: " << world.rank() << "Saving mesh." << endl;
             string output = filePath;
             output.pop_back();
             output.pop_back();
@@ -336,6 +335,7 @@ int main(int argc, char* argv[])
             output.append("ply");
             ModelFactory::saveModel( m, output);
             world.send(0, FINISHED, std::string("world"));
+            cout << timestamp << "Node: " << world.rank() << "finished " << output << endl;
         }
 
     }
