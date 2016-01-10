@@ -16,12 +16,12 @@ namespace lvr
 int NodeData::c_last_id = 0;
 time_t NodeData::c_tstamp =  std::time(0);
 
-NodeData::NodeData(string inputPoints, string nodePoints) : NodeData()
+NodeData::NodeData(string inputPoints, string nodePoints, size_t bufferSize) : NodeData(bufferSize)
 {
     create(inputPoints, nodePoints);
 }
 
-NodeData::NodeData()
+NodeData::NodeData(size_t bufferSize) : m_bufferSize(bufferSize)
 {
     m_gotSize = false;
     m_id = ++c_last_id;
@@ -30,8 +30,8 @@ NodeData::NodeData()
     m_dataPath.append("-");
     m_dataPath.append(to_string(m_id));
     m_dataPath.append(".xyz");
-    m_bufferSize = 40000000;
     m_bufferIndex = 0;
+    m_writeBuffer.clear();
 }
 
 void NodeData::fillBuffer(size_t start_id)
@@ -102,6 +102,22 @@ void NodeData::add(Vertex<float> input)
 
 }
 
+void NodeData::addBuffered(lvr::Vertex<float> input)
+{
+    m_writeBuffer.push_back(input);
+}
+void NodeData::writeBuffer()
+{
+
+    ofstream ofs(m_dataPath, fstream::app);
+    for(Vertexf& input : m_writeBuffer)
+    {
+        ofs << input.x << " " << input.y << " " <<  input.z << " " <<  std::endl;
+    }
+    ofs.close();
+    m_writeBuffer.clear();
+}
+
 Vertex<float>& NodeData::get(int i)
 {
 
@@ -133,7 +149,7 @@ NodeData::Iterator NodeData::end()
     return NodeData::Iterator(*this, this->size());
 }
 
-NodeData::NodeData(NodeData &origin) : NodeData()
+NodeData::NodeData(NodeData &origin) : NodeData(origin.m_bufferSize)
 {
     copy(origin);
 }
