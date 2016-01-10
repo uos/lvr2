@@ -4,6 +4,8 @@
 
 #include <vector>
 #include <sstream>
+#include <boost/filesystem/path.hpp>
+#include <boost/filesystem/operations.hpp>
 #include "NodeData.hpp"
 
 
@@ -23,11 +25,18 @@ NodeData::NodeData(string inputPoints, string nodePoints, size_t bufferSize) : N
 
 NodeData::NodeData(size_t bufferSize) : m_bufferSize(bufferSize)
 {
+
     m_gotSize = false;
     m_id = ++c_last_id;
     m_dataPath = "node-";
     m_dataPath.append(to_string(c_tstamp));
-    m_dataPath.append("-");
+    m_dataPath.append("/");
+    boost::filesystem::path dir(m_dataPath);
+
+    if(!(boost::filesystem::exists(dir)))
+    {
+       boost::filesystem::create_directory(dir);
+    }
     m_dataPath.append(to_string(m_id));
     m_dataPath.append(".xyz");
     m_bufferIndex = 0;
