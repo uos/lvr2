@@ -1,2 +1,0 @@
-/sw/sdev/binutils/x86_64/2.22/bin/ar qc ../../lib/liblvrrply_static.a  CMakeFiles/lvrrply_static.dir/rply.c.o
-/sw/sdev/binutils/x86_64/2.22/bin/ranlib ../../lib/liblvrrply_static.a
