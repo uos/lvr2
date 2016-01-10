@@ -32,6 +32,7 @@ public:
     void add(lvr::Vertex<float> input);
     void addBuffered(lvr::Vertex<float> input);
     void writeBuffer();
+    size_t getWriteBufferSize();
     lvr::Vertex<float>& get(int);
     lvr::Vertex<float> next();
     size_t size();

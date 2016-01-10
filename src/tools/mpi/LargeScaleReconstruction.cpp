@@ -124,7 +124,7 @@ int main(int argc, char* argv[])
             if(nodes[i]->isLeaf() && nodes[i]->getSize()>=100 ) leafs.push_back(nodes[i]);
         }
         //leafs.resize(std::distance(nodes.begin(),it));  // shrink container to new size
-        cout << lvr::timestamp << "...got leafs1" << endl;
+        cout << lvr::timestamp << "...got leafs, amount = " <<  leafs.size()<< endl;
         stack<char> waitingfor;
         for(int i = 1 ; i< world.size() && !leafs.empty() ; i++)
         {
