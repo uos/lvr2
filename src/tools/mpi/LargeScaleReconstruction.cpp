@@ -121,7 +121,11 @@ int main(int argc, char* argv[])
         //auto it = std::copy_if (nodes.begin(), nodes.end(), leafs.begin(), [](LargeScaleOctree* oc){return oc->isLeaf();} );
         for(int i = 0 ; i< nodes.size() ; i++)
         {
-            if(nodes[i]->isLeaf() && nodes[i]->getSize()>=10 ) leafs.push_back(nodes[i]);
+            if(nodes[i]->isLeaf() && nodes[i]->getSize()>=10 )
+            {
+                leafs.push_back(nodes[i]);
+                cout << lvr::timestamp << nodes[i]->getFilePath() << " size: " << nodes[i]->getSize() << endl;
+            }
         }
         //leafs.resize(std::distance(nodes.begin(),it));  // shrink container to new size
         cout << lvr::timestamp << "...got leafs, amount = " <<  leafs.size()<< endl;

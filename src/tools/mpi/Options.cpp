@@ -90,6 +90,7 @@ Options::Options(int argc, char** argv)
 		        ("mtv", value<int>(&m_minimumTransformationVotes)->default_value(3), "Minimum number of votes to consider a texture transformation as correct")
 						("buff", value<unsigned int>(&m_bufferSize)->default_value(30000000), "Minimum number of votes to consider a texture transformation as correct")
 						("os", value<unsigned int>(&m_octreeNodeSize)->default_value(1000000), "Minimum number of votes to consider a texture transformation as correct")
+						("outputFolder", value<string>(&m_outputFolderPath)->default_value(""), "Output Folder Path")
         ;
 
 	setup();
@@ -241,6 +242,11 @@ bool Options::doTextureAnalysis() const
 bool Options::filenameSet() const
 {
 	return (m_variables["inputFile"].as< vector<string> >()).size() > 0;
+}
+
+string Options::getOutputFolderPath() const
+{
+    return (m_variables["outputFolder"].as< vector<string> >())[0];
 }
 
 bool Options::recalcNormals() const
