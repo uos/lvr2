@@ -92,7 +92,7 @@ void NodeData::open(string path)
 
 void NodeData::remove()
 {
-    std::remove(m_dataPath.c_str());
+    boost::filesystem::remove(m_dataPath);
     m_dataPath = "";
     m_readBuffer.clear();
 }
@@ -194,6 +194,7 @@ void NodeData::copy(NodeData &origin)
 
 size_t NodeData::size()
 {
+    //writeBuffer();
     if(m_gotSize) return m_size;
     else
     {
@@ -209,6 +210,7 @@ size_t NodeData::size()
         size+=m_writeBuffer.size();
         return size;
     }
+
 }
 
 }
