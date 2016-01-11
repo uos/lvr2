@@ -311,6 +311,7 @@ public:
     int getMinimumTransformationVotes() const;
 	unsigned int getOctreeNodeSize() const;
 	unsigned int getBufferSize() const;
+	string getOutputFolderPath() const;
 
 
 private:
@@ -395,6 +396,8 @@ private:
 
 	/// Number of edge collapses
 	int								m_numEdgeCollapses;
+
+	string                          m_outputFolderPath;
 
 
 	
