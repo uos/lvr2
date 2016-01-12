@@ -28,7 +28,9 @@
 #include <boost/optional/optional_io.hpp>
 #include <lvr/geometry/QuadricVertexCosts.hpp>
 #include "Options.hpp"
-
+#ifdef LVR_USE_PCL
+#include <lvr/reconstruction/PCLKSurface.hpp>
+#endif
 namespace mpi = boost::mpi;
 using namespace std;
 using  namespace lvr;
@@ -36,6 +38,9 @@ typedef ColorVertex<float, unsigned char> cVertex;
 typedef Normal<float> cNormal;
 typedef PointsetSurface<ColorVertex<float, unsigned char> > psSurface;
 typedef AdaptiveKSearchSurface<ColorVertex<float, unsigned char>, Normal<float> > akSurface;
+#ifdef LVR_USE_PCL
+typedef PCLKSurface<ColorVertex<float, unsigned char> , Normal<float> > pclSurface;
+#endif
 enum MPIMSGSTATUS {DATA, FINISHED};
 
 int main(int argc, char* argv[])
@@ -194,24 +199,55 @@ int main(int argc, char* argv[])
                 cout << timestamp << "IO Error: Unable to parse " << filePath << endl;
                 exit(-1);
             }
-            string pcm_name = options.getPCM();
             p_loader = model->m_pointCloud;
 
+            string pcm_name = options.getPCM();
             psSurface::Ptr surface;
-            akSurface* aks = new akSurface(
-                    p_loader, "STANN",
-                    options.getKn(),
-                    options.getKi(),
-                    options.getKd(),
-                    options.useRansac(),
-                    options.getScanPoseFile()
-            );
 
-            surface = psSurface::Ptr(aks);
-            if(options.useRansac())
+            // Create point set surface object
+            if(pcm_name == "PCL")
             {
-                aks->useRansac(true);
+#ifdef LVR_USE_PCL
+                surface = psSurface::Ptr( new pclSurface(p_loader));
+#else
+                cout << timestamp << "Can't create a PCL point set surface without PCL installed." << endl;
+			exit(-1);
+#endif
             }
+            else if(pcm_name == "STANN" || pcm_name == "FLANN" || pcm_name == "NABO" || pcm_name == "NANOFLANN")
+            {
+                akSurface* aks = new akSurface(
+                        p_loader, pcm_name,
+                        options.getKn(),
+                        options.getKi(),
+                        options.getKd(),
+                        options.useRansac(),
+                        options.getScanPoseFile()
+                );
+
+                surface = psSurface::Ptr(aks);
+                // Set RANSAC flag
+                if(options.useRansac())
+                {
+                    aks->useRansac(true);
+                }
+            }
+            else
+            {
+                cout << timestamp << "Unable to create PointCloudManager." << endl;
+                cout << timestamp << "Unknown option '" << pcm_name << "'." << endl;
+                cout << timestamp << "Available PCMs are: " << endl;
+                cout << timestamp << "STANN, STANN_RANSAC";
+#ifdef LVR_USE_PCL
+                cout << ", PCL";
+#endif
+#ifdef LVR_USE_NABO
+                cout << ", Nabo";
+#endif
+                cout << endl;
+                return 0;
+            }
+
             surface->setKd(options.getKd());
             surface->setKi(options.getKi());
             surface->setKn(options.getKn());
