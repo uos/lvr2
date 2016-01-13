@@ -124,7 +124,9 @@ int main(int argc, char* argv[])
         vector<LargeScaleOctree*> leafs;
 
         //auto it = std::copy_if (nodes.begin(), nodes.end(), leafs.begin(), [](LargeScaleOctree* oc){return oc->isLeaf();} );
-        size_t minSize = std::max(std::min(options.getKn(), options.getKd()), options.getKi());
+        size_t minSize = std::max(std::max(options.getKn(), options.getKd()), options.getKi());
+        minSize=minSize*2*2*2*2*2;
+        cout << "min size: " << options.getKn() << endl;
 	for(int i = 0 ; i< nodes.size() ; i++)
         {
             if(nodes[i]->isLeaf() && nodes[i]->getSize()>minSize )
@@ -133,6 +135,7 @@ int main(int argc, char* argv[])
                 cout << lvr::timestamp << nodes[i]->getFilePath() << " size: " << nodes[i]->getSize() << endl;
             }
         }
+        std::sort(leafs.begin(), leafs.end());
         //leafs.resize(std::distance(nodes.begin(),it));  // shrink container to new size
         cout << lvr::timestamp << "...got leafs, amount = " <<  leafs.size()<< endl;
         stack<char> waitingfor;

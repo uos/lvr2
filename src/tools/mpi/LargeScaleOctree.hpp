@@ -22,6 +22,7 @@ namespace lvr
         LargeScaleOctree(Vertexf center, float size, unsigned int maxPoints, size_t bufferSize = 40000000);
 	virtual ~LargeScaleOctree();
 
+        bool operator<(  LargeScaleOctree& rhs ) ;
         bool isLeaf();
         void insert(Vertexf& pos);
         size_t getSize();
