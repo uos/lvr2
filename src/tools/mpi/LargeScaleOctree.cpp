@@ -96,6 +96,11 @@ vector<LargeScaleOctree*> LargeScaleOctree::getNodes()
     return LargeScaleOctree::c_nodeList;
 }
 
+bool LargeScaleOctree::operator<(  LargeScaleOctree& rhs )
+{
+    return getSize() < rhs.getSize();
+}
+
 
 
 
