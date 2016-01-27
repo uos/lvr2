@@ -18,7 +18,7 @@ set(KINFU_VIEWER_SOURCES
 #####################################################################################
 
 set(KINFU_VIEWER_MOCS 
-    
+    MainWindow.hpp
 )
 
 #####################################################################################
@@ -65,7 +65,7 @@ endif(QT4_FOUND)
 # Generate mocs, ui and resource headers
 #####################################################################################
 
-#qt_wrap_cpp(kinfu_viewer LVR_VIEWER_MOC_SRC ${LVR_VIEWER_MOCS})
+qt_wrap_cpp(kinfu_viewer KINFU_VIEWER_MOC_SRC ${KINFU_VIEWER_MOCS})
 qt_wrap_ui(kinfu_viewer KINFU_VIEWER_UI_HDRS KINFU_VIEWER_UI_SRC ${KINFU_VIEWER_UIS})
 #qt4_add_resources(LVR_VIEWER_RES ${LVR_VIEWER_RESOURCES})
 
