@@ -45,7 +45,16 @@ GridStage::GridStage(double voxel_size, Options* options) : AbstractStage()
 	voxel_size_  = voxel_size;
 	bbox_ = BoundingBox<cVertex>(0.0, 0.0, 0.0, 300.0, 300.0, 300.0);
 	bbox_.expand(300.0, 300.0, 300.0);
-	timestamp.setQuiet(!options->verbose());
+
+	if(options)
+	{
+		timestamp.setQuiet(!options->verbose());
+	}
+	else
+	{
+		timestamp.setQuiet(false);
+	}
+
 }
 
 void GridStage::firstStep() { /* omit */ };
