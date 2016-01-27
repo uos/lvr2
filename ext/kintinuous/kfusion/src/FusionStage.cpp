@@ -54,10 +54,18 @@ void FusionStage::step()
 	MeshPtr opti_mesh = mesh_work.first.first;
 	string mesh_notice = ("#### D:                Mesh Fusion " +  to_string(mesh_count_) + "    ####");
 	ScopeTime* fusion_time = new ScopeTime(mesh_notice.c_str());
+
+	bool textures = false;
+	if(options_)
+	{
+		textures = options_->textures();
+	}
+
+
 	if(mesh_count_ == 0)
 		mesh_ = opti_mesh;
 	else
-		mesh_->addMesh(opti_mesh, options_->textures());
+		mesh_->addMesh(opti_mesh, textures);
 	//mesh_->fillHoles(options_->getFillHoles());
 	//optiMesh_->restorePlanes(options_->getMinPlaneSize());
 	getOutQueue()->Add(mesh_);
