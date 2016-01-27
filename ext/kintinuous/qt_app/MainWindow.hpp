@@ -21,13 +21,20 @@
  */
 class MainWindow : public QMainWindow, public Ui::MainWindow
 {
+	Q_OBJECT
 public:
 	MainWindow(QMainWindow* parent = 0);
 	virtual ~MainWindow();
 
+public Q_SLOTS:
+	void pollGPUData();
+
 private:
 	OpenNISource*			m_openNISource;
 	kfusion::KinFu::Ptr		m_kinfu;
+	QTimer*		 			m_timer;
+	cuda::Image 			m_viewImage;
+	cuda::Depth 			m_depth_device;
 
 };
 
