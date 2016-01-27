@@ -47,8 +47,7 @@ struct KinFuApp
         }
 
         if(event.code == '+')
-        {
-           kinfu.kinfu_->params().distance_camera_target += 0.1;
+        {           kinfu.kinfu_->params().distance_camera_target += 0.1;
            kinfu.kinfu_->performShift();
         }
         if(event.code == '-')
