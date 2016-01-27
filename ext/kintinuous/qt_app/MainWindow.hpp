@@ -28,6 +28,7 @@ public:
 
 public Q_SLOTS:
 	void pollGPUData();
+	void finalizeMesh();
 
 private:
 	OpenNISource*			m_openNISource;
@@ -35,6 +36,8 @@ private:
 	QTimer*		 			m_timer;
 	cuda::Image 			m_viewImage;
 	cuda::Depth 			m_depth_device;
+	cv::Mat 				m_deviceImg;
+
 
 };
 
