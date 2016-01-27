@@ -115,3 +115,4 @@ warnings_disable(CMAKE_CXX_FLAGS /wd4985)
 
 add_subdirectory(kfusion)
 add_subdirectory(apps)
+add_subdirectory(qt_app)
