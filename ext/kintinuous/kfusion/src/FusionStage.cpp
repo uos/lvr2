@@ -79,8 +79,15 @@ void FusionStage::lastStep()
 	std::cout << "Global amount of vertices: " << mesh_->meshSize() << endl;
 	std::cout << "Global amount of faces: " << mesh_->getFaces().size() << endl;
 	mesh_->finalize();
+
+	bool textures = false;
+	if(options_)
+	{
+		textures = options_->textures();
+	}
+
 	ModelPtr m( new Model( mesh_->meshBuffer() ) );
-	if(!options_->textures())
+	if(!textures)
 		ModelFactory::saveModel( m, string(options_->getOutput() + ".ply"));
 	else
 		ModelFactory::saveModel( m, string(options_->getOutput() + ".obj"));
