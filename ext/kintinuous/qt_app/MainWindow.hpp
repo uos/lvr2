@@ -43,6 +43,7 @@ public:
 public Q_SLOTS:
 	void pollGPUData();
 	void finalizeMesh();
+	void updateMesh(vtkActor*);
 
 private:
 	void setupVTK();
@@ -56,6 +57,7 @@ private:
 
     vtkSmartPointer<vtkRenderer>                m_renderer;
     vtkSmartPointer<vtkRenderWindowInteractor>  m_renderWindowInteractor;
+    vtkActor*									m_meshActor;
 
     MeshUpdateThread*							m_meshThread;
 

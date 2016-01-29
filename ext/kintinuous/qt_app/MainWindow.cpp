@@ -12,6 +12,7 @@
 MainWindow::MainWindow(QMainWindow* parent) : QMainWindow(parent)
 {
 	setupUi(this);
+	setupVTK();
 
 	// Create Kinfu object
 	KinFuParams params = KinFuParams::default_params();
@@ -47,9 +48,23 @@ MainWindow::MainWindow(QMainWindow* parent) : QMainWindow(parent)
 	connect(m_timer, SIGNAL(timeout()), this, SLOT(pollGPUData()));
 	connect(m_pbStop, SIGNAL(pressed()), this, SLOT(finalizeMesh()));
 
+	// Create seperate thread for mesh polling
     m_meshThread = new MeshUpdateThread(m_kinfu);
     m_meshThread->start();
 
+    connect(m_meshThread, SIGNAL(meshUpdate(vtkActor*)), this, SLOT(updateMesh(vtkActor*)), Qt::DirectConnection);
+}
+
+void MainWindow::updateMesh(vtkActor* actor)
+{
+	if(m_meshActor)
+	{
+		m_renderer->RemoveActor(m_meshActor);
+	}
+	cout << "RECEIVED POINTER " << actor << endl;
+	m_meshActor = actor;
+	m_renderer->AddActor(actor);
+	this->qvtkWidget->GetRenderWindow()->Render();
 }
 
 void  MainWindow::finalizeMesh()
@@ -59,6 +74,9 @@ void  MainWindow::finalizeMesh()
 
 void  MainWindow::setupVTK()
 {
+	// No mesh received yet
+	m_meshActor = 0;
+
 	// Grab relevant entities from the qvtk widget
 	m_renderer = vtkSmartPointer<vtkRenderer>::New();
 	vtkSmartPointer<vtkRenderWindow> renderWindow = this->qvtkWidget->GetRenderWindow();
