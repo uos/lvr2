@@ -16,9 +16,15 @@
 
 class MeshUpdateThread : public QThread
 {
+	Q_OBJECT
+Q_SIGNALS:
+	void meshUpdate(vtkActor* actor);
+
 public:
 	MeshUpdateThread(kfusion::KinFu::Ptr kinfu);
 	virtual ~MeshUpdateThread();
+
+
 
 private:
 	typedef lvr::HalfEdgeVertex<cVertex, lvr::Normal<float> >* VertexPtr;
@@ -28,7 +34,7 @@ private:
 
 	kfusion::KinFu::Ptr 						m_kinfu;
 	unordered_map<VertexPtr, size_t> 			m_indexMap;
-    vtkSmartPointer<vtkActor>       			m_meshActor;
+    vtkActor*      								m_meshActor;
     vtkSmartPointer<vtkActor>       			m_wireframeActor;
 };
 

@@ -20,6 +20,7 @@ set(KINFU_VIEWER_SOURCES
 
 set(KINFU_VIEWER_MOCS 
     MainWindow.hpp
+    MeshUpdateThread.hpp
 )
 
 #####################################################################################
