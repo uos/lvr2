@@ -61,7 +61,9 @@ void MainWindow::updateMesh(vtkActor* actor)
 	{
 		m_renderer->RemoveActor(m_meshActor);
 	}
-	cout << "RECEIVED POINTER " << actor << endl;
+
+	actor->Print(cout);
+
 	m_meshActor = actor;
 	m_renderer->AddActor(actor);
 	this->qvtkWidget->GetRenderWindow()->Render();
