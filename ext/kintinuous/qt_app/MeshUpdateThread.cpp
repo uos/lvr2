@@ -78,34 +78,36 @@ void MeshUpdateThread::computeMeshActor(HMesh* meshbuffer)
         vtkSmartPointer<vtkPolyDataMapper> mesh_mapper = vtkSmartPointer<vtkPolyDataMapper>::New();
         //        mesh_mapper->SetInputData(mesh); VTK 6
         mesh_mapper->SetInput(mesh);
-        m_meshActor = vtkSmartPointer<vtkActor>::New();
+        m_meshActor = vtkActor::New();
         m_meshActor->SetMapper(mesh_mapper);
 
-        vtkSmartPointer<vtkPolyDataMapper> wireframe_mapper = vtkSmartPointer<vtkPolyDataMapper>::New();
-        // wireframe_mapper->SetInputData(mesh); VTK 6
-        wireframe_mapper->SetInput(mesh);
-        m_wireframeActor = vtkSmartPointer<vtkActor>::New();
-        m_wireframeActor->ShallowCopy(m_meshActor);
-        m_wireframeActor->SetMapper(wireframe_mapper);
-        vtkSmartPointer<vtkProperty> p = vtkSmartPointer<vtkProperty>::New();
-        p->DeepCopy(m_meshActor->GetProperty());
-        p->SetRepresentationToWireframe();
-        m_wireframeActor->SetProperty(p);
-
-        float r = 0.0;
-        float g = 0.9;
-        float b = 0.0;
-
-        p = m_meshActor->GetProperty();
-        p->SetColor(r, g, b);
-        m_meshActor->SetProperty(p);
-
-        p = m_wireframeActor->GetProperty();
-        float inv_r = (float)1 - r;
-        float inv_g = (float)1 - g;
-        float inv_b = (float)1 - b;
-        p->SetColor(inv_r, inv_g, inv_b);
-        m_wireframeActor->SetProperty(p);
+//        vtkSmartPointer<vtkPolyDataMapper> wireframe_mapper = vtkSmartPointer<vtkPolyDataMapper>::New();
+//        // wireframe_mapper->SetInputData(mesh); VTK 6
+//        wireframe_mapper->SetInput(mesh);
+//        m_wireframeActor = vtkSmartPointer<vtkActor>::New();
+//        m_wireframeActor->ShallowCopy(m_meshActor);
+//        m_wireframeActor->SetMapper(wireframe_mapper);
+//
+//        vtkSmartPointer<vtkProperty> p = vtkSmartPointer<vtkProperty>::New();
+//        p->DeepCopy(m_meshActor->GetProperty());
+//        p->SetRepresentationToWireframe();
+//        m_wireframeActor->SetProperty(p);
+//
+//        float r = 0.0;
+//        float g = 0.9;
+//        float b = 0.0;
+//
+//        p->DeepCopy(m_meshActor->GetProperty());
+//        p->SetRepresentationToWireframe();
+//        p->SetColor(r, g, b);
+//        m_meshActor->SetProperty(p);
+//
+//        p = m_wireframeActor->GetProperty();
+//        float inv_r = (float)1 - r;
+//        float inv_g = (float)1 - g;
+//        float inv_b = (float)1 - b;
+//        p->SetColor(inv_r, inv_g, inv_b);
+//        m_wireframeActor->SetProperty(p);
     }
 }
 
@@ -113,10 +115,10 @@ void MeshUpdateThread::run()
 {
 	while(true)
 	{
-		cout << "GET MESH" << endl;
 		auto b = m_kinfu->cyclical().getMesh();
 		computeMeshActor(b);
-		cout << "END||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||" << endl;
+		cout << "GET MESH POINTER: " << m_meshActor<< endl;
+		Q_EMIT(meshUpdate(m_meshActor));
 	}
 }
 
