@@ -7,7 +7,7 @@
 
 #include "MainWindow.hpp"
 
-
+#include <kfusion/LVRPipeline.hpp>
 
 MainWindow::MainWindow(QMainWindow* parent) : QMainWindow(parent)
 {
@@ -46,11 +46,28 @@ MainWindow::MainWindow(QMainWindow* parent) : QMainWindow(parent)
 	connect(m_pbStart, SIGNAL(pressed()), m_timer, SLOT(start()));
 	connect(m_timer, SIGNAL(timeout()), this, SLOT(pollGPUData()));
 	connect(m_pbStop, SIGNAL(pressed()), this, SLOT(finalizeMesh()));
+
+    m_meshThread = new MeshUpdateThread(m_kinfu);
+    m_meshThread->start();
+
 }
 
 void  MainWindow::finalizeMesh()
 {
 	m_kinfu->performLastScan();
+}
+
+void  MainWindow::setupVTK()
+{
+	// Grab relevant entities from the qvtk widget
+	m_renderer = vtkSmartPointer<vtkRenderer>::New();
+	vtkSmartPointer<vtkRenderWindow> renderWindow = this->qvtkWidget->GetRenderWindow();
+
+	m_renderWindowInteractor = this->qvtkWidget->GetInteractor();
+	m_renderWindowInteractor->Initialize();
+
+	// Finalize QVTK setup by adding the renderer to the window
+	renderWindow->AddRenderer(m_renderer);
 }
 
 void MainWindow::pollGPUData()
@@ -102,7 +119,12 @@ void MainWindow::pollGPUData()
 					image.rows,
 					QImage::Format_RGB888).rgbSwapped()));
 
+
 }
+
+
+
+
 
 MainWindow::~MainWindow()
 {
@@ -117,5 +139,9 @@ MainWindow::~MainWindow()
 	}
 
 	m_kinfu.release();
+
+	m_meshThread->quit();
+	m_meshThread->wait();
+	delete m_meshThread;
 }
 

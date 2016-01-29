@@ -11,6 +11,7 @@ ADD_DEFINITIONS(-DQT_NO_KEYWORDS )
 set(KINFU_VIEWER_SOURCES
     MainWindow.cpp
     Main.cpp
+    MeshUpdateThread.cpp
 )
 
 #####################################################################################
