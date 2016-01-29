@@ -14,7 +14,21 @@
 #include <io/capture.hpp>
 
 #include "KinfuMainWindow.h"
+#include "MeshUpdateThread.hpp"
 
+#include <vtkSmartPointer.h>
+#include <vtkActor.h>
+#include <vtkActorCollection.h>
+#include <vtkCommand.h>
+#include <vtkRenderer.h>
+#include <vtkRendererCollection.h>
+#include <vtkRenderWindow.h>
+#include <vtkRenderWindowInteractor.h>
+#include <vtkViewport.h>
+#include <vtkObjectFactory.h>
+#include <vtkGraphicsFactory.h>
+#include <vtkOrientationMarkerWidget.h>
+#include <vtkAxesActor.h>
 
 /*
  *
@@ -31,13 +45,19 @@ public Q_SLOTS:
 	void finalizeMesh();
 
 private:
-	OpenNISource*			m_openNISource;
-	kfusion::KinFu::Ptr		m_kinfu;
-	QTimer*		 			m_timer;
-	cuda::Image 			m_viewImage;
-	cuda::Depth 			m_depth_device;
-	cv::Mat 				m_deviceImg;
+	void setupVTK();
 
+	OpenNISource*								m_openNISource;
+	kfusion::KinFu::Ptr							m_kinfu;
+	QTimer*		 								m_timer;
+	cuda::Image 								m_viewImage;
+	cuda::Depth 								m_depth_device;
+	cv::Mat 									m_deviceImg;
+
+    vtkSmartPointer<vtkRenderer>                m_renderer;
+    vtkSmartPointer<vtkRenderWindowInteractor>  m_renderWindowInteractor;
+
+    MeshUpdateThread*							m_meshThread;
 
 };
 
