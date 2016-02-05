@@ -78,13 +78,12 @@ void MainWindow::updateMesh(vtkActor* actor)
 	}
 
 	m_meshActor = actor;
-	cout << "ADD" << endl;
 	m_renderer->AddActor(actor);
-
 
     m_renderer->ResetCamera();
     m_renderer->ResetCameraClippingRange();
 	this->qvtkWidget->GetRenderWindow()->Render();
+	this->qvtkWidget->update();
 }
 
 void  MainWindow::finalizeMesh()
@@ -106,7 +105,9 @@ void  MainWindow::setupVTK()
 
 	// Finalize QVTK setup by adding the renderer to the window
 	renderWindow->AddRenderer(m_renderer);
-
+	m_renderer->GradientBackgroundOn();
+	m_renderer->SetBackground(0.0, 0.0, 0.8);
+	m_renderer->SetBackground2(1.0, 1.0, 1.0);
 
     m_axes = vtkSmartPointer<vtkAxesActor>::New();
 
