@@ -44,7 +44,7 @@
 #include <GL/glu.h>
 #include <GL/glut.h>
 //mein zeugs
-#include <opencv2/opencv.hpp>
+//#include <opencv2/opencv.hpp>
 #include <kfusion/types.hpp>
 
 
