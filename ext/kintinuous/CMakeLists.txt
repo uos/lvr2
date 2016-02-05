@@ -27,7 +27,7 @@ if(MSVC)
 endif()
 
 # ---[ find dependencies
-find_package(OpenCV 2.4.8 REQUIRED COMPONENTS core viz highgui imgproc features2d nonfree)
+find_package(OpenCV 2.4.8 COMPONENTS core viz highgui imgproc features2d nonfree)
 find_package(CUDA 5.0 REQUIRED)
 find_package(OpenNI2 REQUIRED)
 find_package(OpenGL REQUIRED)
@@ -114,5 +114,9 @@ endif()
 warnings_disable(CMAKE_CXX_FLAGS /wd4985)
 
 add_subdirectory(kfusion)
+
+if(OPENCV_VIZ_FOUND)
 add_subdirectory(apps)
+endif()
+
 add_subdirectory(qt_app)

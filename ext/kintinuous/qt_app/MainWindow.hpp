@@ -62,7 +62,7 @@ private:
     vtkActor*									m_meshActor;
 
     MeshUpdateThread*							m_meshThread;
-
+    vector<Affine3f> sample_poses_;
 };
 
 #endif /* EXT_KINTINUOUS_QT_APP_MAINWINDOW_HPP_ */
