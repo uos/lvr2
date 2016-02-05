@@ -48,7 +48,7 @@ void MeshUpdateThread::computeMeshActor(HMesh* meshbuffer)
         scalars->SetNumberOfComponents(3);
         scalars->SetName("Colors");
 
-        cout << "1" << endl;
+
         for(size_t k = 0; k < slice_size; k++)
         {
         	auto vertex = meshbuffer->getVertices()[k + verts_size];
@@ -58,8 +58,19 @@ void MeshUpdateThread::computeMeshActor(HMesh* meshbuffer)
 					vertex->m_position[1],
 					vertex->m_position[2]);
 
+        	//cout << vertex->m_position[0] << " " << vertex->m_position[1] << " " << vertex->m_position[2] << endl;
+
+
+
+        	unsigned char color[3] = {0, 255, 0};
+        	scalars->InsertNextTupleValue(color);
+
         }
 
+
+
+
+        mesh->GetPointData()->SetScalars(scalars);
         cout << "2 " << slice_face_size << endl;
         for(size_t k = 0; k < slice_face_size; k++)
         {
@@ -70,6 +81,14 @@ void MeshUpdateThread::computeMeshActor(HMesh* meshbuffer)
         	t->GetPointIds()->SetId(1, m_indexMap[face->m_edge->next()->end()]);
         	t->GetPointIds()->SetId(2, m_indexMap[face->m_edge->next()->next()->end()]);
         	triangles->InsertNextCell(t);
+
+//        	int a = m_indexMap[face->m_edge->end()];
+//        	int b = m_indexMap[face->m_edge->next()->end()];
+//        	int c = m_indexMap[face->m_edge->next()->next()->end()];
+//
+//        	if(a >= m_indexMap.size()) cout << "A: " << a << " / " << m_indexMap.size() << endl;
+//        	if(b >= m_indexMap.size()) cout << "B: " << b << " / " << m_indexMap.size() << endl;
+//        	if(c >= m_indexMap.size()) cout << "C: " << c << " / " << m_indexMap.size() << endl;
       }
 
 		verts_size = meshbuffer->getVertices().size();
@@ -84,7 +103,7 @@ void MeshUpdateThread::computeMeshActor(HMesh* meshbuffer)
         mesh_mapper->SetInput(mesh);
         m_meshActor = vtkActor::New();
         m_meshActor->SetMapper(mesh_mapper);
-        m_meshActor->GetMapper()->ScalarVisibilityOn();
+
 
         vtkSmartPointer<vtkProperty> p = vtkSmartPointer<vtkProperty>::New();
         p->SetColor(1.0, 1.0, 1.0);
