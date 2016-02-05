@@ -57,6 +57,8 @@ private:
 
     vtkSmartPointer<vtkRenderer>                m_renderer;
     vtkSmartPointer<vtkRenderWindowInteractor>  m_renderWindowInteractor;
+    vtkSmartPointer<vtkOrientationMarkerWidget> m_axesWidget;
+    vtkSmartPointer<vtkAxesActor> 				m_axes;
     vtkActor*									m_meshActor;
 
     MeshUpdateThread*							m_meshThread;
