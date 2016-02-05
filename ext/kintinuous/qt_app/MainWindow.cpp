@@ -9,6 +9,21 @@
 
 #include <kfusion/LVRPipeline.hpp>
 
+	void storePicPose(KinFu& kinfu, Affine3f pose, cv::Mat image)
+  {
+		ImgPose* imgpose = new ImgPose();
+		imgpose->pose = pose;
+		imgpose->image = image;//.clone();
+		//intrinsics wrong? changed rows and cols + /2
+		//kinfu.params().cols/2 - 0.5f
+		//kinfu.params().rows/2 - 0.5f
+		cv::Mat intrinsics = (cv::Mat_<float>(3,3) << kinfu.params().intr.fx*2, 0, 1280/2-0.5f + 3,
+												  0, kinfu.params().intr.fx*2, 1024/2-0.5f,
+												  0, 0, 1);
+		imgpose->intrinsics = intrinsics;
+		kinfu.cyclical().addImgPose(imgpose);
+	}
+
 MainWindow::MainWindow(QMainWindow* parent) : QMainWindow(parent)
 {
 	setupUi(this);
@@ -110,7 +125,16 @@ void MainWindow::pollGPUData()
 {
 	KinFu& kinfu = *m_kinfu;
 	cv::Mat depth, image, image_copy;
-	int has_image = 0;
+	static int has_image = 0;
+	static int image_count = 0;
+	static int frame_count = 0;
+
+   static std::vector<Affine3f> posen;
+		static std::vector<cv::Mat> rvecs;
+
+		static Affine3f best_pose;
+		static cv::Mat best_rvec,best_image;
+		static float best_dist=0.0;
 
 	if(!(m_kinfu->hasShifted() && m_kinfu->isLastScan()))
 	{
@@ -131,7 +155,62 @@ void MainWindow::pollGPUData()
 		}
 		m_depth_device.upload(depth.data, depth.step, depth.rows, depth.cols);
 		has_image = kinfu(m_depth_device);
+		if(has_image) frame_count++;
 	}
+
+
+	if (!(m_kinfu->hasShifted() && m_kinfu->isLastScan()) && has_image)
+            {
+				//biggest rvec difference -> new pic
+				//
+				double ref_timer = cv::getTickCount();
+				
+				if(rvecs.size()<1){
+					image.copyTo(image_copy);
+
+					//buffer of all imgposes
+					rvecs.push_back(cv::Mat(kinfu.getCameraPose().rvec()));
+					posen.push_back(kinfu.getCameraPose());
+
+					//storePicPose(kinfu, image_copy);
+					//extractImage(kinfu, image_copy);
+				}
+                else
+                {
+					float dist = 0.0;
+					cv::Mat mom_rvec(kinfu.getCameraPose().rvec());
+					for(size_t z=0;z<rvecs.size();z++){
+						dist += norm(mom_rvec-rvecs[z]);
+					}
+					if(dist > best_dist){
+						best_dist = dist;
+						//mom_rvec.copyTo(best_rvec);
+						//image.copyTo(best_image);
+						best_rvec = mom_rvec.clone();
+						best_image = image.clone();
+						best_pose = kinfu.getCameraPose();
+						//std::cout << "better image found, sum rvec distances: " << best_dist << std::endl;
+					}
+					//if(time - 3.0 > 0)
+					if(true && (frame_count % 7 == 0))
+					{
+					  cout  <<"STORE!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!" << endl;
+
+						rvecs.push_back(best_rvec);
+						posen.push_back(best_pose);
+
+						storePicPose(*m_kinfu, best_pose, best_image);
+						//extractImage(kinfu, best_image);
+						sample_poses_.push_back(m_kinfu->getCameraPose());
+						 std::cout << "image taken "<< image_count++ << ", time: "<< time << std::endl;
+		
+
+					}
+				}
+            }
+
+
+
 
     const int mode = 4;
 
