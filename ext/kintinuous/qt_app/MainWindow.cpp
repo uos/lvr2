@@ -59,13 +59,16 @@ void MainWindow::updateMesh(vtkActor* actor)
 {
 	if(m_meshActor)
 	{
-		m_renderer->RemoveActor(m_meshActor);
+		//m_renderer->RemoveActor(m_meshActor);
 	}
 
-	actor->Print(cout);
-
 	m_meshActor = actor;
+	cout << "ADD" << endl;
 	m_renderer->AddActor(actor);
+
+
+    m_renderer->ResetCamera();
+    m_renderer->ResetCameraClippingRange();
 	this->qvtkWidget->GetRenderWindow()->Render();
 }
 
@@ -88,6 +91,19 @@ void  MainWindow::setupVTK()
 
 	// Finalize QVTK setup by adding the renderer to the window
 	renderWindow->AddRenderer(m_renderer);
+
+
+    m_axes = vtkSmartPointer<vtkAxesActor>::New();
+
+    m_axesWidget = vtkSmartPointer<vtkOrientationMarkerWidget>::New();
+    m_axesWidget->SetOutlineColor( 0.9300, 0.5700, 0.1300 );
+    m_axesWidget->SetOrientationMarker( m_axes );
+    m_axesWidget->SetInteractor( m_renderer->GetRenderWindow()->GetInteractor() );
+    m_axesWidget->SetDefaultRenderer(m_renderer);
+    m_axesWidget->SetViewport( 0.0, 0.0, 0.3, 0.3 );
+    m_axesWidget->SetEnabled( 1 );
+    m_axesWidget->InteractiveOff();
+
 }
 
 void MainWindow::pollGPUData()

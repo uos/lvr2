@@ -60,7 +60,7 @@ void MeshUpdateThread::computeMeshActor(HMesh* meshbuffer)
 
         }
 
-        cout << "2" << endl;
+        cout << "2 " << slice_face_size << endl;
         for(size_t k = 0; k < slice_face_size; k++)
         {
         	auto face = meshbuffer->getFaces()[k + faces_size];
@@ -69,7 +69,11 @@ void MeshUpdateThread::computeMeshActor(HMesh* meshbuffer)
         	t->GetPointIds()->SetId(0, m_indexMap[face->m_edge->end()]);
         	t->GetPointIds()->SetId(1, m_indexMap[face->m_edge->next()->end()]);
         	t->GetPointIds()->SetId(2, m_indexMap[face->m_edge->next()->next()->end()]);
-        }
+        	triangles->InsertNextCell(t);
+      }
+
+		verts_size = meshbuffer->getVertices().size();
+		faces_size = meshbuffer->getFaces().size();
 
         mesh->SetPoints(points);
         mesh->SetPolys(triangles);
@@ -80,6 +84,13 @@ void MeshUpdateThread::computeMeshActor(HMesh* meshbuffer)
         mesh_mapper->SetInput(mesh);
         m_meshActor = vtkActor::New();
         m_meshActor->SetMapper(mesh_mapper);
+        m_meshActor->GetMapper()->ScalarVisibilityOn();
+
+        vtkSmartPointer<vtkProperty> p = vtkSmartPointer<vtkProperty>::New();
+        p->SetColor(1.0, 1.0, 1.0);
+        m_meshActor->SetProperty(p);
+        m_meshActor->VisibilityOn();
+
 
 //        vtkSmartPointer<vtkPolyDataMapper> wireframe_mapper = vtkSmartPointer<vtkPolyDataMapper>::New();
 //        // wireframe_mapper->SetInputData(mesh); VTK 6
@@ -117,7 +128,6 @@ void MeshUpdateThread::run()
 	{
 		auto b = m_kinfu->cyclical().getMesh();
 		computeMeshActor(b);
-		cout << "GET MESH POINTER: " << m_meshActor<< endl;
 		Q_EMIT(meshUpdate(m_meshActor));
 	}
 }
