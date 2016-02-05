@@ -26,7 +26,7 @@ public:
 
 
 
-private:
+//private:
 	typedef lvr::HalfEdgeVertex<cVertex, lvr::Normal<float> >* VertexPtr;
 
 	void run();
