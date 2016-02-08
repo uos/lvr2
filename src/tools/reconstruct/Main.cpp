@@ -377,8 +377,14 @@ int main(int argc, char** argv)
 		}
 
 		// Create a point set grid for reconstruction
-
 		string decomposition = options.getDecomposition();
+
+		// Fail safe check
+		if(decomposition != "MC" && decomposition != "PMC" && decomposition != "SF" )
+		{
+			cout << "Unsupported decomposition type " << decomposition << ". Defaulting to PMC." << endl;
+		}
+
 		GridBase* grid;
 		FastReconstructionBase<ColorVertex<float, unsigned char>, Normal<float> >* reconstruction;
 		if(decomposition == "MC")
@@ -411,6 +417,7 @@ int main(int argc, char** argv)
 			ps_grid->calcDistanceValues();
 			reconstruction = new FastReconstruction<ColorVertex<float, unsigned char> , Normal<float>, SharpBox<ColorVertex<float, unsigned char>, Normal<float> >  >(ps_grid);
 		}
+
 
 		
 		// Create mesh
