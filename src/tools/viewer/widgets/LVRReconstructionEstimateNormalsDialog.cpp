@@ -101,7 +101,7 @@ void LVREstimateNormalsDialog::estimateNormals()
     {
         SearchTree<Vertex<float> >::Ptr       tree;
         #ifdef _USE_PCL_
-            tree = SearchTree<Vertex<float> >::Ptr( new SearchTreeFlann<Vertex<float> >(new_pc, numPoints, ki, ki, ki) );
+            tree = SearchTree<Vertex<float> >::Ptr( new SearchTreeFlannPCL<Vertex<float> >(new_pc, numPoints, ki, ki, ki) );
         #else
             cout << timestamp << "Warning: PCL is not installed. Using STANN search tree in AdaptiveKSearchSurface." << endl;
             tree = SearchTree<Vertex<float> >::Ptr( new SearchTreeStann<Vertex<float> >(new_pc, numPoints, ki, ki, ki) );
@@ -112,7 +112,7 @@ void LVREstimateNormalsDialog::estimateNormals()
         {
             // Create search tree
             vector< ulong > indices;
-            vector< double > distances;
+            vector< float > distances;
 
             Vertex<float> vertex(points[3 * i], points[3 * i + 1], points[3 * i + 2]);
             tree->kSearch(vertex, ki, indices, distances);

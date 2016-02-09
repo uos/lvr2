@@ -1,182 +1,98 @@
-/* Copyright (C) 2011 Uni Osnabrück
- * This file is part of the LAS VEGAS Reconstruction Toolkit,
- *
- * LAS VEGAS is free software; you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation; either version 2 of the License, or
- * (at your option) any later version.
- *
- * LAS VEGAS is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public License
- * along with this program; if not, write to the Free Software
- * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA
- */
-
-
- /*
+/*
  * SearchTreeFlann.tcc
  *
- *  Created on: 02.01.2012
- *      Author: Florian Otte
+ *  Created on: Sep 22, 2015
+ *      Author: twiemann
  */
 
-// stl includes
-#include <limits>
+#include "SearchTreeFlann.hpp"
 
-// External libraries in lvr source tree
-#include <Eigen/Dense>
-
-// boost libraries
-#include <boost/filesystem.hpp>
-
-// lvr includes
-
-using std::cout;
-using std::endl;
-using std::numeric_limits;
-
-using pcl::PointCloud;
-using pcl::PointXYZ;
-using pcl::KdTreeFLANN;
-
-namespace lvr {
+namespace lvr
+{
 
 template<typename VertexT>
 SearchTreeFlann< VertexT >::SearchTreeFlann( PointBufferPtr buffer, size_t &n_points, const int &kn, const int &ki, const int &kd )
 {
-    // Store parameters
-    this->m_ki = ki;
-    this->m_kn = kn;
-    this->m_kd = kd;
-
-    size_t n_colors;
-    coord3fArr points = buffer->getIndexedPointArray(n_points);
-    color3bArr colors = buffer->getIndexedPointColorArray(n_colors);
-
-    // initialize pointCloud for pcl.
-    m_pointCloud = pcl::PointCloud< pcl::PointXYZRGB >::Ptr( new pcl::PointCloud< pcl::PointXYZRGB >);
-    m_pointCloud->resize( n_points );
-
-    // Store points in pclCloud
-    for( int i(0); i < n_points; ++i )
-    {
-        m_pointCloud->points[i].x = points[i].x;
-        m_pointCloud->points[i].y = points[i].y;
-        m_pointCloud->points[i].z = points[i].z;
-
-        // Assign color data
-        if(n_colors)
-        {
-            m_pointCloud->points[i].r = colors[i].r;
-            m_pointCloud->points[i].g = colors[i].g;
-            m_pointCloud->points[i].b = colors[i].b;
-        }
-        else
-        {
-            m_pointCloud->points[i].r = 0.0;
-            m_pointCloud->points[i].g = 1.0;
-            m_pointCloud->points[i].b = 0.0;
-        }
-
-//        cout << m_pointCloud->points[i].x << " " << m_pointCloud->points[i].y << " " << m_pointCloud->points[i].z << " "
-//             << m_pointCloud->points[i].r << " " << m_pointCloud->points[i].g << " " << m_pointCloud->points[i].b << " " << endl;
-
-    }
+	m_flannPoints = flann::Matrix<float> (new float[3 * n_points], n_points, 3);
+	m_points = buffer->getPointArray(m_numPoints);
+	for(size_t i = 0; i < n_points; i++)
+	{
+		m_flannPoints[i][0] = m_points[3 * i];
+		m_flannPoints[i][1] = m_points[3 * i + 1];
+		m_flannPoints[i][2] = m_points[3 * i + 2];
+	}
 
 
+	m_tree = boost::shared_ptr<flann::Index<flann::L2_Simple<float> > >(new flann::Index<flann::L2_Simple<float> >(m_flannPoints, ::flann::KDTreeSingleIndexParams (10, false)));
+	m_tree->buildIndex();
 
-    // Set pointCloud dimensions
-    m_pointCloud->width  = n_points;
-    m_pointCloud->height = 1;
-
-    // initialize kd-Tree
-    cout << timestamp << "Initialising PCL<Flann> Kd-Tree" << endl;
-    m_kdTree = KdTreeFLANN< pcl::PointXYZRGB >::Ptr( new KdTreeFLANN< pcl::PointXYZRGB > );
-    m_kdTree->setInputCloud(m_pointCloud);
 }
 
 
 template<typename VertexT>
 SearchTreeFlann< VertexT >::~SearchTreeFlann() {
-}
-
-
-template<typename VertexT>
-void SearchTreeFlann< VertexT >::kSearch( coord< float > &qp, int neighbours, vector< ulong > &indices, vector< double > &distances )
-{
-    // get pcl compatible point.
-    pcl::PointXYZRGB pcl_qp;
-    pcl_qp.x = qp[0];
-    pcl_qp.y = qp[1];
-    pcl_qp.z = qp[2];
-
-    // get pcl-compatible indice and distance vectors
-    vector< int > ind;
-    vector< float > dist;
-
-    // perform the search
-    m_kdTree->nearestKSearch( pcl_qp, neighbours, ind, dist );
-
-    // copy information to interface conform vector types
-    indices.clear();
-    distances.clear();
-    indices.insert( indices.begin(), ind.begin(), ind.end() );
-    distances.insert( distances.begin(), dist.begin(), dist.end() );
 
 }
 
 template<typename VertexT>
-void SearchTreeFlann< VertexT >::kSearch(VertexT qp, int k, vector< VertexT > &neighbors)
+void SearchTreeFlann< VertexT >::kSearch( coord< float > &qp, int k, vector< ulong > &indices, vector< float > &distances )
 {
-    vector<ulong> indices;
-    vector<double> dist;
+	flann::Matrix<float> query_point(new float[3], 1, 3);
+	query_point[0][0] = qp.x;
+	query_point[0][1] = qp.y;
+	query_point[0][2] = qp.z;
 
-    coord<float> p;
-    p[0] = qp[0];
-    p[1] = qp[1];
-    p[2] = qp[2];
+	indices.resize(k);
+	distances.resize(k);
 
-    this->kSearch(p, k, indices, dist);
+	flann::Matrix<ulong> ind (&indices[0], 1, k);
+	flann::Matrix<float> dist (&distances[0], 1, k);
 
-    for(size_t i = 0; i < indices.size(); i++)
-    {
-        neighbors.push_back(
-                VertexT(m_pointCloud->points[indices[i]].x,
-                        m_pointCloud->points[indices[i]].y,
-                        m_pointCloud->points[indices[i]].z,
-                        m_pointCloud->points[indices[i]].r,
-                        m_pointCloud->points[indices[i]].g,
-                        m_pointCloud->points[indices[i]].b));
-    }
+	m_tree->knnSearch(query_point, ind, dist, k, flann::SearchParams());
+
+	//for(int i = 0; i < indices.size(); i++) cout << indices[i] << " ";
+	//cout << endl;
+}
+
+template<typename VertexT>
+void SearchTreeFlann< VertexT >::kSearch(VertexT qp, int k, vector< VertexT > &nb)
+{
+	flann::Matrix<float> query_point(new float[3], 1, 3);
+	query_point[0][0] = qp.x;
+	query_point[0][1] = qp.y;
+	query_point[0][2] = qp.z;
+
+	m_dst.resize(k);
+	m_ind.resize(k);
+
+	flann::Matrix<ulong> ind (&m_ind[0], 1, k);
+	flann::Matrix<float> dist (&m_dst[0], 1, k);
+
+	m_tree->knnSearch(query_point, ind, dist, k, flann::SearchParams());
+
+	for(size_t i = 0; i < k; i++)
+	{
+		ulong index = m_ind[i];
+		if(index < m_numPoints)
+		{
+			VertexT v(m_points[3 * index], m_points[3 * index + 1], m_points[3 * index + 2]);
+			nb.push_back(v);
+		}
+	}
 }
 
 /*
    Begin of radiusSearch implementations
  */
 template<typename VertexT>
-void SearchTreeFlann< VertexT >::radiusSearch( float qp[3], double r, vector< ulong > &indices )
+void SearchTreeFlann< VertexT >::radiusSearch( float qp[3], float r, vector< ulong > &indices )
 {
-    // TODO: Implement me!
+	cout << "Flann radius search not yet implemented" << endl;
 }
 
 
 template<typename VertexT>
-void SearchTreeFlann< VertexT >::radiusSearch( VertexT& qp, double r, vector< ulong > &indices )
-{
-    float qp_arr[3];
-    qp_arr[0] = qp[0];
-    qp_arr[1] = qp[1];
-    qp_arr[2] = qp[2];
-    this->radiusSearch( qp_arr, r, indices );
-}
-
-
-template<typename VertexT>
-void SearchTreeFlann< VertexT >::radiusSearch( const VertexT& qp, double r, vector< ulong > &indices )
+void SearchTreeFlann< VertexT >::radiusSearch( VertexT& qp, float r, vector< ulong > &indices )
 {
     float qp_arr[3];
     qp_arr[0] = qp[0];
@@ -187,7 +103,7 @@ void SearchTreeFlann< VertexT >::radiusSearch( const VertexT& qp, double r, vect
 
 
 template<typename VertexT>
-void SearchTreeFlann< VertexT >::radiusSearch( coord< float >& qp, double r, vector< ulong > &indices )
+void SearchTreeFlann< VertexT >::radiusSearch( const VertexT& qp, float r, vector< ulong > &indices )
 {
     float qp_arr[3];
     qp_arr[0] = qp[0];
@@ -198,7 +114,18 @@ void SearchTreeFlann< VertexT >::radiusSearch( coord< float >& qp, double r, vec
 
 
 template<typename VertexT>
-void SearchTreeFlann< VertexT >::radiusSearch( const coord< float >& qp, double r, vector< ulong > &indices )
+void SearchTreeFlann< VertexT >::radiusSearch( coord< float >& qp, float r, vector< ulong > &indices )
+{
+    float qp_arr[3];
+    qp_arr[0] = qp[0];
+    qp_arr[1] = qp[1];
+    qp_arr[2] = qp[2];
+    this->radiusSearch( qp_arr, r, indices );
+}
+
+
+template<typename VertexT>
+void SearchTreeFlann< VertexT >::radiusSearch( const coord< float >& qp, float r, vector< ulong > &indices )
 {
     float qp_arr[3];
     coord< float > qpcpy = qp;
@@ -207,4 +134,5 @@ void SearchTreeFlann< VertexT >::radiusSearch( const coord< float >& qp, double 
     qp_arr[2] = qpcpy[2];
     this->radiusSearch( qp_arr, r, indices );
 }
-} // namespace lvr
+
+} /* namespace lvr */
