@@ -84,6 +84,9 @@ protected:
     size_t															m_numPoints;
     flann::Matrix<float>  	 										m_flannPoints;
 
+    vector<ulong>													m_ind;
+    vector<float>													m_dst;
+
 }; // SearchTreeFlann
 
 }

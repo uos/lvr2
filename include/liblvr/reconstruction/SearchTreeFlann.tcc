@@ -48,45 +48,37 @@ void SearchTreeFlann< VertexT >::kSearch( coord< float > &qp, int k, vector< ulo
 	flann::Matrix<ulong> ind (&indices[0], 1, k);
 	flann::Matrix<float> dist (&distances[0], 1, k);
 
-
 	m_tree->knnSearch(query_point, ind, dist, k, flann::SearchParams());
+
+	//for(int i = 0; i < indices.size(); i++) cout << indices[i] << " ";
+	//cout << endl;
 }
 
 template<typename VertexT>
 void SearchTreeFlann< VertexT >::kSearch(VertexT qp, int k, vector< VertexT > &nb)
 {
-	/*flann::Matrix<float> query_point(new float[3], 1, 3);
-	query_point[0][0] = qp[0];
-	query_point[0][1] = qp[1];
-	query_point[0][2] = qp[2];
-
-	cout << "OP: " << qp[0] << " " << qp1] << " " << qp[2] << endl;
-	cout << "QP: " << query_point[0][0] << " " << query_point[0][1] << " " << query_point[0][2] << endl;*/
-
 	flann::Matrix<float> query_point(new float[3], 1, 3);
 	query_point[0][0] = qp.x;
 	query_point[0][1] = qp.y;
 	query_point[0][2] = qp.z;
 
-	vector<ulong> indices(k);
-	vector<float> distances(k);
+	m_dst.resize(k);
+	m_ind.resize(k);
 
-	flann::Matrix<ulong> ind (&indices[0], 1, k);
-	flann::Matrix<float> dist (&distances[0], 1, k);
+	flann::Matrix<ulong> ind (&m_ind[0], 1, k);
+	flann::Matrix<float> dist (&m_dst[0], 1, k);
 
-	m_tree->knnSearch(query_point, ind, dist, k, flann::SearchParams(-1, 0.0f));
+	m_tree->knnSearch(query_point, ind, dist, k, flann::SearchParams());
 
 	for(size_t i = 0; i < k; i++)
 	{
-		ulong index = indices[k];
-
-			cout << m_tree << " " << index << " " << dist[0][k] << endl;
+		ulong index = m_ind[i];
+		if(index < m_numPoints)
+		{
 			VertexT v(m_points[3 * index], m_points[3 * index + 1], m_points[3 * index + 2]);
-		//	cout << index << v;
 			nb.push_back(v);
-
+		}
 	}
-	//cout << endl;
 }
 
 /*
@@ -95,7 +87,7 @@ void SearchTreeFlann< VertexT >::kSearch(VertexT qp, int k, vector< VertexT > &n
 template<typename VertexT>
 void SearchTreeFlann< VertexT >::radiusSearch( float qp[3], float r, vector< ulong > &indices )
 {
-    // TODO: Implement me!
+	cout << "Flann radius search not yet implemented" << endl;
 }
 
 
