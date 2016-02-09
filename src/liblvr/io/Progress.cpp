@@ -25,7 +25,7 @@
  */
 
 
-#include "io/Progress.hpp"
+#include <lvr/io/Progress.hpp>
 
 #include <sstream>
 #include <iostream>

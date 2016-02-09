@@ -25,7 +25,7 @@
  *  @author Sven Schalk (sschalk@uos.de)
  */
 
-#include "texture/Texture.hpp"
+#include <lvr/texture/Texture.hpp>
 
 namespace lvr {
 

@@ -29,8 +29,8 @@
 #include "../widgets/LVRItemTypes.hpp"
 #include "../widgets/LVRModelItem.hpp"
 
-#include "io/MeshBuffer.hpp"
-#include "io/PointBuffer.hpp"
+#include <lvr/io/MeshBuffer.hpp>
+#include <lvr/io/PointBuffer.hpp>
 
 namespace lvr
 {

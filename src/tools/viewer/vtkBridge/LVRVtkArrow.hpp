@@ -28,7 +28,7 @@
 #include <vtkSmartPointer.h>
 #include <vtkActor.h>
 
-#include "geometry/Vertex.hpp"
+#include <lvr/geometry/Vertex.hpp>
 
 namespace lvr
 {

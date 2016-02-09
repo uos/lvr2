@@ -5,7 +5,7 @@
  *      Author: twiemann
  */
 
-#include "config/BaseOption.hpp"
+#include <lvr/config/BaseOption.hpp>
 
 namespace lvr
 {

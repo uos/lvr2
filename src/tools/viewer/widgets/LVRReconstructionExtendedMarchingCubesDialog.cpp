@@ -1,7 +1,7 @@
 #include <QFileDialog>
 #include "LVRReconstructionExtendedMarchingCubesDialog.hpp"
 
-#include "reconstruction/PointsetGrid.hpp"
+#include <lvr/reconstruction/PointsetGrid.hpp>
 
 namespace lvr
 {

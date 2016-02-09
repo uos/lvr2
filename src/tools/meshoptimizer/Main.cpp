@@ -21,18 +21,18 @@
 #include "Options.hpp"
 
 // Local includes
-#include "reconstruction/AdaptiveKSearchSurface.hpp"
-#include "reconstruction/FastReconstruction.hpp"
-#include "io/PLYIO.hpp"
-#include "geometry/Matrix4.hpp"
-#include "geometry/HalfEdgeMesh.hpp"
-#include "geometry/QuadricVertexCosts.hpp"
-#include "reconstruction/SharpBox.hpp"
-#include "texture/Texture.hpp"
+#include <lvr/reconstruction/AdaptiveKSearchSurface.hpp>
+#include <lvr/reconstruction/FastReconstruction.hpp>
+#include <lvr/io/PLYIO.hpp>
+#include <lvr/geometry/Matrix4.hpp>
+#include <lvr/geometry/HalfEdgeMesh.hpp>
+#include <lvr/geometry/QuadricVertexCosts.hpp>
+#include <lvr/reconstruction/SharpBox.hpp>
+#include <lvr/texture/Texture.hpp>
 
 // PCL related includes
-#ifdef _USE_PCL_
-#include "reconstruction/PCLKSurface.hpp"
+#ifdef LVR_USE_PCL
+#include <lvr/reconstruction/PCLKSurface.hpp>
 #endif
 
 
@@ -46,7 +46,7 @@ typedef Normal<float>											cNormal;
 typedef PointsetSurface<ColorVertex<float, unsigned char> >							psSurface;
 typedef AdaptiveKSearchSurface<ColorVertex<float, unsigned char> , Normal<float>  > akSurface;
 
-#ifdef _USE_PCL_
+#ifdef LVR_USE_PCL
 typedef PCLKSurface<Vertex<float> , Normal<float> >                   pclSurface;
 #endif
 
