@@ -51,14 +51,14 @@
 #include "../widgets/DebugOutputDialog.hpp"
 #include "../widgets/AnimationDialog.hpp"
 
-#include "display/StaticMesh.hpp"
-#include "geometry/HalfEdgeMesh.hpp"
+#include <lvr/display/StaticMesh.hpp>
+#include <lvr/geometry/HalfEdgeMesh.hpp>
 
-#include "reconstruction/AdaptiveKSearchSurface.hpp"
-#include "reconstruction/FastReconstruction.hpp"
+#include <lvr/reconstruction/AdaptiveKSearchSurface.hpp>
+#include <lvr/reconstruction/FastReconstruction.hpp>
 
-#include "io/Model.hpp"
-#include "io/ModelFactory.hpp"
+#include <lvr/io/Model.hpp>
+#include <lvr/io/ModelFactory.hpp>
 
 using Ui::MainWindow;
 using Ui::Fogsettings;

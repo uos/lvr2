@@ -25,7 +25,8 @@
 
 #include "MultiPointCloudVisualizer.hpp"
 
-#include "display/MultiPointCloud.hpp"
+#include <lvr/display/MultiPointCloud.hpp>
+
 #include "../widgets/MultiPointCloudTreeWidgetItem.h"
 
 using namespace lvr;

@@ -19,10 +19,10 @@
 
 #include "Options.hpp"
 
-#include "io/Timestamp.hpp"
-#include "io/ModelFactory.hpp"
-#ifdef _USE_PCL_
-#include "reconstruction/PCLFiltering.hpp"
+#include <lvr/io/Timestamp.hpp>
+#include <lvr/io/ModelFactory.hpp>
+#ifdef LVR_USE_PCL
+#include <lvr/reconstruction/PCLFiltering.hpp>
 #endif
 
 
@@ -55,7 +55,7 @@ int main(int argc, char** argv)
 			if(m->m_pointCloud)
 			{
 
-#ifdef _USE_PCL_
+#ifdef LVR_USE_PCL
 				PCLFiltering filter(m->m_pointCloud);
 
 				// Apply filters

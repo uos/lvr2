@@ -20,20 +20,15 @@
 
 // Program options for this tool
 #include "Options.hpp"
-#include "io/AsciiIO.hpp"
-#include "io/Timestamp.hpp"
-#include "io/Progress.hpp"
-#include "io/DataStruct.hpp"
-#include "io/ModelFactory.hpp"
-#include "geometry/Matrix4.hpp"
-#include "geometry/Normal.hpp"
-#include "reconstruction/SearchTree.hpp"
-#include "reconstruction/SearchTreeStann.hpp"
-
-// SearchTreePCL
-#ifdef _USE_PCL_
-    #include "reconstruction/SearchTreeFlannPCL.hpp"
-#endif
+#include <lvr/io/AsciiIO.hpp>
+#include <lvr/io/Timestamp.hpp>
+#include <lvr/io/Progress.hpp>
+#include <lvr/io/DataStruct.hpp>
+#include <lvr/io/ModelFactory.hpp>
+#include <lvr/geometry/Matrix4.hpp>
+#include <lvr/geometry/Normal.hpp>
+#include <lvr/reconstruction/SearchTree.hpp>
+#include <lvr/reconstruction/SearchTreeFlann.hpp>
 
 #include <boost/filesystem.hpp>
 
@@ -94,12 +89,8 @@ void interpolateNormals(PointBufferPtr pc, size_t numPoints, int n)
     cout << timestamp << "Creating search tree for interpolation" << endl;
 
     SearchTree<Vertex<float> >::Ptr       tree;
-#ifdef _USE_PCL_
-        tree = SearchTree<Vertex<float> >::Ptr( new SearchTreeFlannPCL<Vertex<float> >(pc, numPoints, n, n, n) );
-#else
-        cout << timestamp << "Warning: PCL is not installed. Using STANN search tree in AdaptiveKSearchSurface." << endl;
-        tree = SearchTree<Vertex<float> >::Ptr( new SearchTreeStann<Vertex<float> >(pc, numPoints, n, n, n) );
-#endif
+    tree = SearchTree<Vertex<float> >::Ptr( new SearchTreeFlann<Vertex<float> >(pc, numPoints, n, n, n) );
+
 
     size_t count;
     floatArr points = pc->getPointArray(count);

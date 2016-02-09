@@ -6,20 +6,18 @@
 #include <vtkRendererCollection.h>
 #include <vtkSmartPointer.h>
 
-#include "io/AsciiIO.hpp"
-#include "io/Timestamp.hpp"
-#include "io/Progress.hpp"
-#include "io/DataStruct.hpp"
-#include "io/ModelFactory.hpp"
-#include "geometry/Matrix4.hpp"
-#include "geometry/Normal.hpp"
-#include "reconstruction/SearchTree.hpp"
-#include "reconstruction/SearchTreeStann.hpp"
-
-// SearchTreePCL
-#ifdef _USE_PCL_
-    #include "reconstruction/SearchTreeFlannPCL.hpp"
+#ifdef LVR_USE_PCL
+#include <lvr/reconstruction/SearchTreeFlannPCL.hpp>
 #endif
+
+#include <lvr/io/AsciiIO.hpp>
+#include <lvr/io/Timestamp.hpp>
+#include <lvr/io/Progress.hpp>
+#include <lvr/io/DataStruct.hpp>
+#include <lvr/io/ModelFactory.hpp>
+#include <lvr/geometry/Matrix4.hpp>
+#include <lvr/geometry/Normal.hpp>
+#include <lvr/reconstruction/SearchTree.hpp>
 
 #include "LVRReconstructionEstimateNormalsDialogUI.h"
 #include "LVRPointCloudItem.hpp"

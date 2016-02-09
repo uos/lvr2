@@ -25,7 +25,8 @@
 #ifndef LVRMODEL_HPP_
 #define LVRMODEL_HPP_
 
-#include "io/Model.hpp"
+#include <lvr/io/Model.hpp>
+
 #include "LVRPointBufferBridge.hpp"
 #include "LVRMeshBufferBridge.hpp"
 

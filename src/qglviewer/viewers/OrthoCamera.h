@@ -35,7 +35,11 @@ public:
 	OrthoCamera();
 	virtual ~OrthoCamera();
 
+#if QGLVIEWER_VERSION >= 0x020600
+	virtual qreal zNear() const;
+#else
 	virtual float zNear() const;
+#endif
 };
 
 #endif /* ORTHOCAM_H_ */

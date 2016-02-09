@@ -1,5 +1,12 @@
 cmake_minimum_required(VERSION 2.8)
 
+# set include dirs
+set(SLAM6D_INSTALL_INCLUDE_DIR ${CMAKE_INSTALL_PREFIX}/${CMAKE_INSTALL_INCLUDEDIR}/lvr/ext/slam6d CACHE PATH "install location of slam6d headers")
+find_path(SLAM6D_INCLUDE_DIR slam6d/scan_io.h PATH include)
+mark_as_advanced(SLAM6D_INCLUDE_DIR SLAM6D_INSTALL_INCLUDE_DIR)
+
+include_directories(${SLAM6D_INCLUDE_DIR})
+
 set(SLAM_SOURCES
 	Boctree.cc
 	allocator.cc
@@ -7,16 +14,16 @@ set(SLAM_SOURCES
 	searchTree.cc
 	scan_io_oct.cc
 )
-SET_SOURCE_FILES_PROPERTIES(${SLAM_SOURCES} PROPERTIES COMPILE_FLAGS "-std=gnu++0x")
+set_source_files_properties(${SLAM_SOURCES} PROPERTIES COMPILE_FLAGS "-std=gnu++0x")
 
-ADD_LIBRARY(lvrslam6d_static STATIC ${SLAM_SOURCES})
-set_target_properties(lvrslam6d_static PROPERTIES LIBRARY_OUTPUT_DIRECTORY ${CMAKE_SOURCE_DIR}/lib)
+add_library(lvrslam6d_static STATIC ${SLAM_SOURCES})
 
-ADD_LIBRARY(lvrslam6d SHARED ${SLAM_SOURCES})
-set_target_properties(lvrslam6d PROPERTIES LIBRARY_OUTPUT_DIRECTORY ${CMAKE_SOURCE_DIR}/lib)
+add_library(lvrslam6d SHARED ${SLAM_SOURCES})
 
-INSTALL(TARGETS lvrslam6d_static lvrslam6d 
-  RUNTIME DESTINATION bin
-  LIBRARY DESTINATION lib
-  ARCHIVE DESTINATION lib)
+# this intentionally installs to lvr/ext/slam6d/slam6d to keep a separate include path
+install(DIRECTORY include/slam6d DESTINATION ${SLAM6D_INSTALL_INCLUDE_DIR})
 
+install(TARGETS lvrslam6d_static lvrslam6d
+  EXPORT lvrTargets
+  LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR}
+  ARCHIVE DESTINATION ${CMAKE_INSTALL_LIBDIR})

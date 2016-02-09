@@ -25,10 +25,10 @@
 
 #include <stdio.h>
 
-#include "io/BoctreeIO.hpp"
-#include "io/Timestamp.hpp"
+#include <lvr/io/BoctreeIO.hpp>
+#include <lvr/io/Timestamp.hpp>
 
-#include "geometry/Matrix4.hpp"
+#include <lvr/geometry/Matrix4.hpp>
 
 #include "slam6d/Boctree.h"
 

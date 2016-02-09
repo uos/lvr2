@@ -3,27 +3,27 @@
 #####################################################################################
 
 set(RECONSTRUCT_SOURCES
-    Options.cpp     
+    Options.cpp
     Main.cpp
 )
 
 #####################################################################################
-# Setup dependencies to external libraries 
+# Setup dependencies to external libraries
 #####################################################################################
 
-set(LVR_RECONSTRUCT_DEPENDENCIES 
+set(LVR_RECONSTRUCT_DEPENDENCIES
 	lvr_static
 	lvrlas_static
 	lvrrply_static
 	lvrslam6d_static
-	${OPENGL_LIBRARY} 
+	${OPENGL_LIBRARIES}
 	${GLUT_LIBRARIES}
 	${OpenCV_LIBS}
 	${PCL_LIBRARIES}
 	)
 
 if( ${NABO_FOUND} )
-set(LVR_RECONSTRUCT_DEPENDENCIES ${LVR_RECONSTRUCT_DEPENDENCIES} ${NABO_LIBRARIES})
+  set(LVR_RECONSTRUCT_DEPENDENCIES ${LVR_RECONSTRUCT_DEPENDENCIES} ${NABO_LIBRARY})
 endif( ${NABO_FOUND} )
 
 #####################################################################################
@@ -43,3 +43,5 @@ add_executable(lvr_reconstruct ${RECONSTRUCT_SOURCES})
 #set_target_properties(lvr_reconstruct PROPERTIES BINARY_OUTPUT_DIRECTORY ${CMAKE_SOURCE_DIR}/bin)
 target_link_libraries(lvr_reconstruct ${LVR_RECONSTRUCT_DEPENDENCIES})
 
+install(TARGETS lvr_reconstruct
+  RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR})

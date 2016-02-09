@@ -29,8 +29,8 @@
 using std::ofstream;
 using std::stringstream;
 
-#include "display/MultiPointCloud.hpp"
-#include "io/UosIO.hpp"
+#include <lvr/display/MultiPointCloud.hpp>
+#include <lvr/io/UosIO.hpp>
 
 #include <boost/filesystem.hpp>
 

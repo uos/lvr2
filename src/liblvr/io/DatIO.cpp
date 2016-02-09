@@ -21,9 +21,9 @@
  *      Author: Thomas Wiemann
  */
 
-#include "io/DatIO.hpp"
-#include "io/Timestamp.hpp"
-#include "io/Progress.hpp"
+#include <lvr/io/DatIO.hpp>
+#include <lvr/io/Timestamp.hpp>
+#include <lvr/io/Progress.hpp>
 
 #include <boost/filesystem.hpp>
 

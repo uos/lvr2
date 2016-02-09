@@ -1,6 +1,13 @@
 #include <QFileDialog>
 #include "LVRReconstructionEstimateNormalsDialog.hpp"
 
+#ifdef LVR_USE_PCL
+#include <lvr/reconstruction/SearchTreeFlannPCL.hpp>
+#endif
+#ifdef LVR_USE_STANN
+#include <lvr/reconstruction/SearchTreeStann.hpp>
+#endif
+
 namespace lvr
 {
 
@@ -100,12 +107,8 @@ void LVREstimateNormalsDialog::estimateNormals()
     if(interpolateNormals)
     {
         SearchTree<Vertex<float> >::Ptr       tree;
-        #ifdef _USE_PCL_
-            tree = SearchTree<Vertex<float> >::Ptr( new SearchTreeFlannPCL<Vertex<float> >(new_pc, numPoints, ki, ki, ki) );
-        #else
-            cout << timestamp << "Warning: PCL is not installed. Using STANN search tree in AdaptiveKSearchSurface." << endl;
-            tree = SearchTree<Vertex<float> >::Ptr( new SearchTreeStann<Vertex<float> >(new_pc, numPoints, ki, ki, ki) );
-        #endif
+	tree = SearchTree<Vertex<float> >::Ptr( new SearchTreeFlannPCL<Vertex<float> >(new_pc, numPoints, ki, ki, ki) );
+	    
 
         #pragma omp parallel for schedule(static)
         for(int i = 0; i < numPoints; i++)
