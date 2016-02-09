@@ -31,10 +31,9 @@
 #include "../data/Visualizer.hpp"
 #include "../widgets/CustomTreeWidgetItem.h"
 
-#include "geometry/BoundingBox.hpp"
-
-#include "display/Renderable.hpp"
-#include "display/PointCloud.hpp"
+#include <lvr/geometry/BoundingBox.hpp>
+#include <lvr/display/Renderable.hpp>
+#include <lvr/display/PointCloud.hpp>
 
 #include <QGLViewer/qglviewer.h>
 

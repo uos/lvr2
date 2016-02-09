@@ -24,8 +24,8 @@
  */
 #include "LVRModelBridge.hpp"
 
-#include <geometry/Matrix4.hpp>
-#include <geometry/Vertex.hpp>
+#include <lvr/geometry/Matrix4.hpp>
+#include <lvr/geometry/Vertex.hpp>
 
 #include <vtkTransform.h>
 

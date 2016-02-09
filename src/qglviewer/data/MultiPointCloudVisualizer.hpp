@@ -28,7 +28,8 @@
 #ifndef MULTIPOINTCLOUDVISUALIZER_HPP_
 #define MULTIPOINTCLOUDVISUALIZER_HPP_
 
-#include "io/PointBuffer.hpp"
+#include <lvr/io/PointBuffer.hpp>
+
 #include "Visualizer.hpp"
 
 using namespace lvr;

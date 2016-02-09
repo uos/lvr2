@@ -28,8 +28,8 @@
 #include "LVRRegistrationPickCorrespondancesDialogUI.h"
 #include "../vtkBridge/LVRVtkArrow.hpp"
 
-#include "geometry/Matrix4.hpp"
-#include "registration/EigenSVDPointAlign.hpp"
+#include <lvr/geometry/Matrix4.hpp>
+#include <lvr/registration/EigenSVDPointAlign.hpp>
 
 #include <iostream>
 using namespace std;

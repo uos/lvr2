@@ -26,7 +26,7 @@
 
 //#include <opencv2/highgui/highgui.hpp>
 #include <opencv/cv.h>
-#include "texture/CrossCorr.hpp"
+#include <lvr/texture/CrossCorr.hpp>
 
 namespace lvr {
 

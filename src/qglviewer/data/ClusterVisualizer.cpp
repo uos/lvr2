@@ -26,8 +26,9 @@
 #include "../widgets/ClusterTreeWidgetItem.h"
 
 #include "ClusterVisualizer.hpp"
-#include "display/MeshCluster.hpp"
-#include "io/MeshBuffer.hpp"
+
+#include <lvr/display/MeshCluster.hpp>
+#include <lvr/io/MeshBuffer.hpp>
 
 #include <fstream>
 

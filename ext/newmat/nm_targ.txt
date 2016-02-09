@@ -1,7 +1,0 @@
-newmat.lfl
-tmt
-example
-test_exc
-nl_ex
-sl_ex
-garch

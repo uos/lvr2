@@ -1,4 +1,4 @@
-#include "display/Color.hpp"
+#include <lvr/display/Color.hpp>
 
 float Colors::PrimeColorTable[][3] = {
 	{ 0.80, 0.00, 0.00},	// Red 3
