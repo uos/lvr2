@@ -32,7 +32,7 @@
 #include <string>
 using std::string;
 
-#include "display/Renderable.hpp"
+#include <lvr/display/Renderable.hpp>
 
 #include "../app/Types.h"
 #include "../viewers/Viewer.h"

@@ -37,7 +37,11 @@ OrthoCamera::~OrthoCamera()
 	// TODO Auto-generated destructor stub
 }
 
+#if QGLVIEWER_VERSION >= 0x020600
+qreal OrthoCamera::zNear() const
+#else
 float OrthoCamera::zNear() const
+#endif
 {
 	return  0.2 * sceneRadius();
 }

@@ -31,8 +31,8 @@
  */
 
 
-#include "io/PLYIO.hpp"
-#include "io/Timestamp.hpp"
+#include <lvr/io/PLYIO.hpp>
+#include <lvr/io/Timestamp.hpp>
 
 #include <cstring>
 #include <ctime>

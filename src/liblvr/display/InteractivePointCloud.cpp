@@ -23,7 +23,7 @@
  *      Author: Thomas Wiemann
  */
 
-#include "display/InteractivePointCloud.hpp"
+#include <lvr/display/InteractivePointCloud.hpp>
 
 namespace lvr
 {

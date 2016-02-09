@@ -13,14 +13,14 @@
 #include <unistd.h>
 
 // Las vegas Toolkit
-#include "io/PointBuffer.hpp"
-#include "io/Model.hpp"
-#include "io/ModelFactory.hpp"
-#include "mpi/MPITree.hpp"
-#include "geometry/ColorVertex.hpp"
-#include "geometry/Normal.hpp"
-#include "reconstruction/AdaptiveKSearchSurface.hpp"
-#include "io/Progress.hpp"
+#include <lvr/io/PointBuffer.hpp>
+#include <lvr/io/Model.hpp>
+#include <lvr/io/ModelFactory.hpp>
+#include <lvr/mpi/MPITree.hpp>
+#include <lvr/geometry/ColorVertex.hpp>
+#include <lvr/geometry/Normal.hpp>
+#include <lvr/reconstruction/AdaptiveKSearchSurface.hpp>
+#include <lvr/io/Progress.hpp>
 
 #include <boost/program_options.hpp>
 

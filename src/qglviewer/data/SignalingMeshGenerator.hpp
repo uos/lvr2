@@ -27,9 +27,10 @@
 #define SIGNALINGMESHGENERATOR_HPP_
 
 #include <QtGui>
-#include "io/PointBuffer.hpp"
-#include "reconstruction/AdaptiveKSearchSurface.hpp"
-#include "reconstruction/FastReconstruction.hpp"
+
+#include <lvr/io/PointBuffer.hpp>
+#include <lvr/reconstruction/AdaptiveKSearchSurface.hpp>
+#include <lvr/reconstruction/FastReconstruction.hpp>
 
 using namespace lvr;
 

@@ -1,7 +1,7 @@
 #include <QtGui>
 #include "LVRMainWindow.hpp"
 
-#include "io/Progress.hpp"
+#include <lvr/io/Progress.hpp>
 
 using namespace lvr;
 

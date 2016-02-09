@@ -33,7 +33,7 @@
 #include <boost/program_options.hpp>
 #include <float.h>
 
-#include "config/BaseOption.hpp"
+#include <lvr/config/BaseOption.hpp>
 
 using std::ostream;
 using std::cout;

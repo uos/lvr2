@@ -25,7 +25,7 @@
  */
 
 
-#include "io/TextureIO.hpp"
+#include <lvr/io/TextureIO.hpp>
 
 
 
