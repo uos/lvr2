@@ -46,7 +46,7 @@ template<typename VertexT, typename NormalT>
 BilinearFastBox<VertexT, NormalT>::BilinearFastBox(VertexT &center)
     : FastBox<VertexT, NormalT>(center), m_mcIndex(0)
 {
-	cout << m_surface << endl;
+	//cout << m_surface << endl;
 }
 
 template<typename VertexT, typename NormalT>
