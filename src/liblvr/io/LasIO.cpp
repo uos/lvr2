@@ -27,8 +27,8 @@
 using std::cout;
 using std::endl;
 
-#include "io/LasIO.hpp"
-#include "io/Timestamp.hpp"
+#include <lvr/io/LasIO.hpp>
+#include <lvr/io/Timestamp.hpp>
 
 #include "lasreader.hpp"
 #include "laswriter.hpp"

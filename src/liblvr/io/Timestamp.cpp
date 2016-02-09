@@ -24,7 +24,7 @@
  *      Author: Thomas Wiemann
  */
 
-#include "io/Timestamp.hpp"
+#include <lvr/io/Timestamp.hpp>
 
 #if defined(_MSC_VER)
 #include <time.h>
