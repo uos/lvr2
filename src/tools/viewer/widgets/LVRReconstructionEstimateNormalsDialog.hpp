@@ -18,7 +18,7 @@
 
 // SearchTreePCL
 #ifdef _USE_PCL_
-    #include "reconstruction/SearchTreeFlann.hpp"
+    #include "reconstruction/SearchTreeFlannPCL.hpp"
 #endif
 
 #include "LVRReconstructionEstimateNormalsDialogUI.h"
