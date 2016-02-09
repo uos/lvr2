@@ -22,7 +22,7 @@
  *  @date Feb 21, 2014
  *  @author Thomas Wiemann
  */
-#include "registration/EigenSVDPointAlign.hpp"
+#include <lvr/registration/EigenSVDPointAlign.hpp>
 
 #include <limits>
 #include <cmath>

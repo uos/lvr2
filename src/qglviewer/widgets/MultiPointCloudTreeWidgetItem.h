@@ -27,8 +27,8 @@
 #ifndef MULTIPOINTCLOUDTREEWIDGETITEM_H_
 #define MULTIPOINTCLOUDTREEWIDGETITEM_H_
 
-#include "display/PointCloud.hpp"
-#include "display/MultiPointCloud.hpp"
+#include <lvr/display/PointCloud.hpp>
+#include <lvr/display/MultiPointCloud.hpp>
 
 #include "CustomTreeWidgetItem.h"
 

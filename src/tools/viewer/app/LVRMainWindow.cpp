@@ -28,10 +28,11 @@
 #include <QtGui>
 
 #include "LVRMainWindow.hpp"
-#include "io/ModelFactory.hpp"
-#include "io/DataStruct.hpp"
 
-#include "registration/ICPPointAlign.hpp"
+#include <lvr/io/ModelFactory.hpp>
+#include <lvr/io/DataStruct.hpp>
+
+#include <lvr/registration/ICPPointAlign.hpp>
 
 #include <vtkActor.h>
 #include <vtkProperty.h>

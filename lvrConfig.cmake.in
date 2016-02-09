@@ -1,0 +1,87 @@
+# -----------------------------------------------------------------
+# lvr's cmake configuration
+#
+# provided options:
+# - lvr_USE_STATIC_LIBS(=OFF) to link the static libraries of lvr
+#
+# provided interface variables:
+# - lvr_INCLUDE_DIRS
+# - lvr_DEFINITIONS
+# - lvr_LIBRARIES
+#
+# Do not forget to add_defintions(${lvr_DEFINITIONS}) as they
+# describe the build configuration of liblvr.
+#
+# -----------------------------------------------------------------
+include("${CMAKE_CURRENT_LIST_DIR}/lvrTargets.cmake")
+
+list(APPEND CMAKE_MODULE_PATH "${CMAKE_CURRENT_LIST_DIR}/Modules")
+
+cmake_policy(PUSH)
+cmake_policy(SET CMP0012 NEW)
+
+set(lvr_INCLUDE_DIRS @LVR_INSTALL_INCLUDE_DIRS@)
+set(lvr_DEFINITIONS @LVR_DEFINITIONS@)
+
+find_package(OpenCV REQUIRED)
+
+find_package(Eigen3 REQUIRED)
+list(APPEND lvr_INCLUDE_DIRS ${EIGEN3_INCLUDE_DIR})
+
+find_package(VTK REQUIRED)
+list(APPEND lvr_INCLUDE_DIRS ${VTK_INCLUDE_DIRS})
+list(APPEND lvr_DEFINITIONS ${VTK_DEFINTIONS})
+
+# nabo
+if(@NABO_FOUND@)
+  find_package(Nabo REQUIRED)
+  list(APPEND lvr_INCLUDE_DIRS ${NABO_INCLUDE_DIRS})
+endif()
+
+# pcl
+if(@PCL_FOUND@)
+  find_package(PCL REQUIRED)
+  list(APPEND lvr_INCLUDE_DIRS ${PCL_INCLUDE_DIRS})
+  list(APPEND lvr_DEFINITIONS ${PCL_DEFINITIONS})
+endif()
+
+# cgal
+if(@CGAL_FOUND@)
+  find_package(CGAL REQUIRED)
+  list(APPEND lvr_INCLUDE_DIRS ${CGAL_INCLUDE_DIRS})
+endif()
+
+find_package(Boost REQUIRED)
+list(APPEND lvr_INCLUDE_DIRS ${Boost_INCLUDE_DIRS})
+list(APPEND lvr_DEFINITIONS ${Boost_LIB_DIAGNOSTIC_DEFINITIONS})
+
+find_package(OpenGL REQUIRED)
+list(APPEND lvr_INCLUDE_DIRS ${OPENGL_INCLUDE_DIR})
+
+find_package(GLUT REQUIRED)
+list(APPEND lvr_INCLUDE_DIRS ${GLUT_INCLUDE_DIR})
+
+# libfreenect
+if(@LIBFREENECT_FOUND@)
+  find_package(PkgConfig REQUIRED)
+  pkg_check_modules(LIBFREENECT REQUIRED libfreenect)
+  list(APPEND lvr_INCLUDE_DIRS ${LIBFREENECT_INCLUDE_DIRS})
+endif()
+
+# stann
+if(@STANN_FOUND@)
+  set(STANN_DIR @STANN_DIR@)
+  find_package(STANN REQUIRED)
+  list(APPEND lvr_INCLUDE_DIRS ${STANN_INCLUDE_DIR})
+endif()
+
+cmake_policy(POP)
+
+option(lvr_USE_STATIC_LIBS OFF)
+if(lvr_USE_STATIC_LIBS)
+  set(lvr_LIBRARIES lvr::lvr_static)
+else()
+  set(lvr_LIBRARIES lvr::lvr)
+endif()
+
+set(lvr_FOUND TRUE)
