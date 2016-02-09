@@ -32,7 +32,7 @@
 
 // SearchTreePCL
 #ifdef _USE_PCL_
-    #include "reconstruction/SearchTreeFlann.hpp"
+    #include "reconstruction/SearchTreeFlannPCL.hpp"
 #endif
 
 #include <boost/filesystem.hpp>
@@ -95,7 +95,7 @@ void interpolateNormals(PointBufferPtr pc, size_t numPoints, int n)
 
     SearchTree<Vertex<float> >::Ptr       tree;
 #ifdef _USE_PCL_
-        tree = SearchTree<Vertex<float> >::Ptr( new SearchTreeFlann<Vertex<float> >(pc, numPoints, n, n, n) );
+        tree = SearchTree<Vertex<float> >::Ptr( new SearchTreeFlannPCL<Vertex<float> >(pc, numPoints, n, n, n) );
 #else
         cout << timestamp << "Warning: PCL is not installed. Using STANN search tree in AdaptiveKSearchSurface." << endl;
         tree = SearchTree<Vertex<float> >::Ptr( new SearchTreeStann<Vertex<float> >(pc, numPoints, n, n, n) );
@@ -113,7 +113,7 @@ void interpolateNormals(PointBufferPtr pc, size_t numPoints, int n)
     {
         // Create search tree
         vector< ulong > indices;
-        vector< double > distances;
+        vector< float > distances;
 
         Vertex<float> vertex(points[3 * i], points[3 * i + 1], points[3 * i + 2]);
         tree->kSearch( vertex, n, indices, distances);

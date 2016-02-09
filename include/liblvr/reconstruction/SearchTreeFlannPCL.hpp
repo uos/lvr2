@@ -1,23 +1,45 @@
-/*
- * SearchTreeFlann.hpp
+/* Copyright (C) 2011 Uni Osnabrück
+ * This file is part of the LAS VEGAS Reconstruction Toolkit,
  *
- *  Created on: Sep 22, 2015
- *      Author: Thomas Wiemann
+ * LAS VEGAS is free software; you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation; either version 2 of the License, or
+ * (at your option) any later version.
+ *
+ * LAS VEGAS is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program; if not, write to the Free Software
+ * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA
  */
 
-#ifndef INCLUDE_LIBLVR_RECONSTRUCTION_SEARCHTREEFLANN_HPP_
-#define INCLUDE_LIBLVR_RECONSTRUCTION_SEARCHTREEFLANN_HPP_
+/*
+*  SearchTreePCL.hpp
+*
+*       Created on: 02.01.2012
+*           Author: Florian Otte
+ */
+
+#ifndef SEARCHTREEFLANN_H_
+#define SEARCHTREEFLANN_H_
 
 // C++ Stl includes
 #include <vector>
 
-#include <flann/flann.hpp>
-#include <boost/shared_ptr.hpp>
+// PCL includes
+#include <pcl/point_types.h>
+#include <pcl/point_cloud.h>
+#include <pcl/io/pcd_io.h>
+#include <pcl/features/normal_3d.h>
+#include <pcl/features/normal_3d_omp.h>
 
 // Superclass
 #include "SearchTree.hpp"
 
-#include "../io/Timestamp.hpp"
+#include "io/Timestamp.hpp"
 
 using std::vector;
 
@@ -26,15 +48,15 @@ namespace lvr {
 /**
  * @brief SearchClass for point data.
  *
- *      This class uses the FLANN ( http://www.cs.ubc.ca/~mariusm/uploads/FLANN )
+ *      This class uses the stann( https://sites.google.com/a/compgeom.com/stann/ )
  *      library to implement a nearest neighbour search for point-data.
  */
 template< typename VertexT >
-class SearchTreeFlann : public SearchTree< VertexT>
+class SearchTreeFlannPCL : public SearchTree< VertexT>
 {
 public:
 
-    typedef boost::shared_ptr< SearchTreeFlann< VertexT> > Ptr;
+    typedef boost::shared_ptr< SearchTreeFlannPCL< VertexT> > Ptr;
 
 
     /**
@@ -45,7 +67,7 @@ public:
      *  @param ki      The number of neighbour points used for normal interpolation.
      *  @param kd      The number of neighbour points esed for distance value calculation.
      */
-    SearchTreeFlann( PointBufferPtr points,
+    SearchTreeFlannPCL( PointBufferPtr points,
             size_t &n_points,
             const int &kn = 10,
             const int &ki = 10,
@@ -55,7 +77,7 @@ public:
     /**
      * @brief Destructor
      */
-    virtual ~SearchTreeFlann();
+    virtual ~SearchTreeFlannPCL();
 
 
     /**
@@ -79,18 +101,14 @@ public:
 
 protected:
 
-    boost::shared_ptr<flann::Index<flann::L2_Simple<float> > > 		m_tree;
-    floatArr 													    m_points;
-    size_t															m_numPoints;
-    flann::Matrix<float>  	 										m_flannPoints;
+    /// Store the pcl kd-tree
+    pcl::PointCloud< pcl::PointXYZRGB >::Ptr       m_pointCloud;
+    pcl::KdTreeFLANN< pcl::PointXYZRGB >::Ptr      m_kdTree;
 
-    vector<ulong>													m_ind;
-    vector<float>													m_dst;
+}; // SearchTreePCL
 
-}; // SearchTreeFlann
 
-}
+} // namespace lvr
+#include "SearchTreeFlannPCL.tcc"
 
-#include "SearchTreeFlann.tcc"
-
-#endif /* INCLUDE_LIBLVR_RECONSTRUCTION_SEARCHTREEFLANN_HPP_ */
+#endif  // include-guard

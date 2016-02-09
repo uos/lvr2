@@ -43,7 +43,7 @@ namespace lvr
 
 template<typename VertexT, typename BoxT>
 HashGrid<VertexT, BoxT>::HashGrid(float cellSize, BoundingBox<VertexT> boundingBox, bool isVoxelsize) :
-	m_extrude(false),
+	m_extrude(true),
 	m_boundingBox(boundingBox),
 	m_globalIndex(0)
 {
