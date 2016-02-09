@@ -31,15 +31,15 @@
 #include "GridVisualizer.hpp"
 #include "ClusterVisualizer.hpp"
 
-#include "display/Grid.hpp"
-#include "display/StaticMesh.hpp"
-#include "display/PointCloud.hpp"
-#include "display/MultiPointCloud.hpp"
+#include <lvr/display/Grid.hpp>
+#include <lvr/display/StaticMesh.hpp>
+#include <lvr/display/PointCloud.hpp>
+#include <lvr/display/MultiPointCloud.hpp>
 
-#include "io/Model.hpp"
-#include "io/GridIO.hpp"
-#include "io/ModelFactory.hpp"
-#include "io/DataStruct.hpp"
+#include <lvr/io/Model.hpp>
+#include <lvr/io/GridIO.hpp>
+#include <lvr/io/ModelFactory.hpp>
+#include <lvr/io/DataStruct.hpp>
 
 #include "../widgets/PointCloudTreeWidgetItem.h"
 #include "../widgets/MultiPointCloudTreeWidgetItem.h"

@@ -29,7 +29,7 @@
 
 #include "TransformationDialogUI.h"
 
-#include "display/Renderable.hpp"
+#include <lvr/display/Renderable.hpp>
 
 using lvr::Renderable;
 using lvr::Vertex;

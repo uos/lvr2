@@ -17,11 +17,11 @@
  */
 #include <iostream>
 
-#include "io/ModelFactory.hpp"
-#include "io/KinectIO.hpp"
-#include "io/CoordinateTransform.hpp"
+#include <lvr/io/ModelFactory.hpp>
+#include <lvr/io/KinectIO.hpp>
+#include <lvr/io/CoordinateTransform.hpp>
 
-#include "reconstruction/SearchTreeFlann.hpp"
+#include <lvr/reconstruction/SearchTreeFlann.hpp>
 
 #include "Options.hpp"
 
