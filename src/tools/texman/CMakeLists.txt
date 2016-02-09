@@ -8,22 +8,22 @@ set(LVR_TEXMAN_SOURCES
 )
 
 #####################################################################################
-# Setup dependencies to external libraries 
+# Setup dependencies to external libraries
 #####################################################################################
 
-set(LVR_TEXMAN_DEPENDENCIES 
+set(LVR_TEXMAN_DEPENDENCIES
 	lvr_static
 	lvrlas_static
 	lvrrply_static
 	lvrslam6d_static
-	${OPENGL_LIBRARY} 
+	${OPENGL_LIBRARIES}
 	${GLUT_LIBRARIES}
 	${OpenCV_LIBS}
 	${PCL_LIBRARIES}
 	)
 
 if( ${NABO_FOUND} )
-set(LVR_TEXMAN_DEPENDENCIES ${LVR_TEXMAN_DEPENDENCIES} ${NABO_LIBRARIES})
+set(LVR_TEXMAN_DEPENDENCIES ${LVR_TEXMAN_DEPENDENCIES} ${NABO_LIBRARY})
 endif( ${NABO_FOUND} )
 
 #####################################################################################
@@ -32,6 +32,7 @@ endif( ${NABO_FOUND} )
 
 
 add_executable( lvr_texman  ${LVR_TEXMAN_SOURCES})
-TARGET_LINK_LIBRARIES( lvr_texman ${LVR_TEXMAN_DEPENDENCIES} )
+target_link_libraries( lvr_texman ${LVR_TEXMAN_DEPENDENCIES} )
 
-
+install(TARGETS lvr_texman
+  RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR})

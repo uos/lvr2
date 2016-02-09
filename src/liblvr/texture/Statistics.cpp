@@ -24,7 +24,7 @@
  *  @author Kim Rinnewitz (krinnewitz@uos.de)
  */
 
-#include "texture/Statistics.hpp"
+#include <lvr/texture/Statistics.hpp>
 #include <opencv/cv.h>
 
 using namespace std;

@@ -24,7 +24,7 @@
  *  @author Thomas Wiemann
  */
 
-#include "display/ColorMap.hpp"
+#include <lvr/display/ColorMap.hpp>
 
 #include <cassert>
 #include <cmath>

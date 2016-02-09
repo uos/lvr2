@@ -28,8 +28,7 @@
  *  @author Denis Meyer (denmeyer@uos.de)
  */
 
-#include "io/ObjIO.hpp"
-#include "objLoader.h"
+#include <lvr/io/ObjIO.hpp>
 
 #include <climits>
 #include <iostream>
@@ -41,11 +40,11 @@
 #include <boost/filesystem.hpp>
 #include "boost/tuple/tuple.hpp"
 
-#include "io/PLYIO.hpp"
-#include "io/Timestamp.hpp"
-#include "geometry/Vertex.hpp"
-#include "display/GlTexture.hpp"
-#include "display/TextureFactory.hpp"
+#include <lvr/io/PLYIO.hpp>
+#include <lvr/io/Timestamp.hpp>
+#include <lvr/geometry/Vertex.hpp>
+#include <lvr/display/GlTexture.hpp>
+#include <lvr/display/TextureFactory.hpp>
 
 
 namespace lvr

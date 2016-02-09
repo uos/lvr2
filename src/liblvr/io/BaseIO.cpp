@@ -29,7 +29,7 @@
  * @date       Last modified: 2012-01-03 12:34:28
  */
 
-#include "io/BaseIO.hpp"
+#include <lvr/io/BaseIO.hpp>
 
 
 namespace lvr

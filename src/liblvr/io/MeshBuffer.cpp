@@ -27,7 +27,7 @@
  * @author	  Thomas Wiemann (twiemann), twiemann@uos.de
  *
  **/
-#include "io/MeshBuffer.hpp"
+#include <lvr/io/MeshBuffer.hpp>
 
 namespace lvr
 {

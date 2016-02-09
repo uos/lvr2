@@ -23,7 +23,7 @@
  *      Author: Thomas Wiemann
  */
 
-#include "display/TexturedMesh.hpp"
+#include <lvr/display/TexturedMesh.hpp>
 
 #include <map>
 using std::multimap;

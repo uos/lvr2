@@ -27,11 +27,13 @@
 #include "PerspectiveViewer.h"
 #include "OrthoCamera.h"
 
+#include <QGLViewer/manipulatedCameraFrame.h>
+
 #include <iostream>
 using std::cout;
 using std::endl;
 
-#include "geometry/Vertex.hpp"
+#include <lvr/geometry/Vertex.hpp>
 
 ViewerType PerspectiveViewer::type()
 {

@@ -27,8 +27,8 @@
 #include "ClusterTreeWidgetItem.h"
 #include "TriangleMeshTreeWidgetItem.h"
 
-#include "io/Model.hpp"
-#include "display/StaticMesh.hpp"
+#include <lvr/io/Model.hpp>
+#include <lvr/display/StaticMesh.hpp>
 
 using namespace lvr;
 
