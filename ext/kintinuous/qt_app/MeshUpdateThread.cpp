@@ -21,8 +21,11 @@
 #include <vtkPointData.h>
 #include <vtkCellData.h>
 
+#include <QApplication>
+
 MeshUpdateThread::MeshUpdateThread(kfusion::KinFu::Ptr kinfu)
 {
+	moveToThread(QApplication::instance()->thread());
 	cout << "CREATE" << endl;
 	m_kinfu = kinfu;
 }
@@ -32,6 +35,10 @@ void MeshUpdateThread::computeMeshActor(HMesh* meshbuffer)
 	static size_t verts_size = 0;
 	static size_t faces_size = 0;
 	cout << "0" << endl;
+
+	m_vertices.clear();
+	m_faces.clear();
+
     if(meshbuffer)
     {
         vtkSmartPointer<vtkPolyData> mesh = vtkSmartPointer<vtkPolyData>::New();
@@ -60,7 +67,9 @@ void MeshUpdateThread::computeMeshActor(HMesh* meshbuffer)
 
         	//cout << vertex->m_position[0] << " " << vertex->m_position[1] << " " << vertex->m_position[2] << endl;
 
-
+        	m_vertices.push_back(vertex->m_position[0]);
+        	m_vertices.push_back(vertex->m_position[1]);
+        	m_vertices.push_back(vertex->m_position[2]);
 
         	unsigned char color[3] = {0, 255, 0};
         	scalars->InsertNextTupleValue(color);
@@ -82,9 +91,16 @@ void MeshUpdateThread::computeMeshActor(HMesh* meshbuffer)
         	t->GetPointIds()->SetId(2, m_indexMap[face->m_edge->next()->next()->end()]);
         	triangles->InsertNextCell(t);
 
-//        	int a = m_indexMap[face->m_edge->end()];
-//        	int b = m_indexMap[face->m_edge->next()->end()];
-//        	int c = m_indexMap[face->m_edge->next()->next()->end()];
+        	m_faces.push_back(m_indexMap[face->m_edge->end()]);
+        	m_faces.push_back(m_indexMap[face->m_edge->next()->end()]);
+        	m_faces.push_back(m_indexMap[face->m_edge->next()->next()->end()]);
+
+
+        	int a = m_indexMap[face->m_edge->end()];
+        	int b = m_indexMap[face->m_edge->next()->end()];
+        	int c = m_indexMap[face->m_edge->next()->next()->end()];
+
+        	cout << a << " " << b << " " << c << " " << m_indexMap.size() << " " << m_vertices.size() / 3 << endl;
 //
 //        	if(a >= m_indexMap.size()) cout << "A: " << a << " / " << m_indexMap.size() << endl;
 //        	if(b >= m_indexMap.size()) cout << "B: " << b << " / " << m_indexMap.size() << endl;
@@ -146,6 +162,7 @@ void MeshUpdateThread::run()
 	while(true)
 	{
 		auto b = m_kinfu->cyclical().getMesh();
+		m_kinfu->cyclical()
 		computeMeshActor(b);
 		Q_EMIT(meshUpdate(m_meshActor));
 	}
