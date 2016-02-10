@@ -36,6 +36,9 @@ public:
 	unordered_map<VertexPtr, size_t> 			m_indexMap;
     vtkActor*      								m_meshActor;
     vtkSmartPointer<vtkActor>       			m_wireframeActor;
+
+    vector<float>								m_vertices;
+    vector<int>									m_faces;
 };
 
 #endif /* EXT_KINTINUOUS_QT_APP_MESHUPDATETHREAD_HPP_ */
