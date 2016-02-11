@@ -78,6 +78,215 @@ HashGrid<VertexT, BoxT>::HashGrid(float cellSize, BoundingBox<VertexT> boundingB
 }
 
 template<typename VertexT, typename BoxT>
+HashGrid<VertexT, BoxT>::HashGrid(string file)
+{
+
+
+
+	ifstream ifs(file.c_str());
+	float minx, miny, minz, maxx, maxy, maxz;
+	size_t qsize, vsize, csize;
+	ifs >> minx >> miny >> minz >> maxx >> maxy >> maxz >> qsize >> vsize >> csize;
+
+	m_boundingBox = BoundingBox<VertexT>(minx, miny, minz, maxx, maxy, maxz);
+	m_globalIndex = 0;
+	m_extrude=false;
+	m_coordinateScales[0] = 1.0;
+	m_coordinateScales[1] = 1.0;
+	m_coordinateScales[2] = 1.0;
+	m_voxelsize = vsize;
+	BoxT::m_voxelsize = m_voxelsize;
+	calcIndices();
+
+
+	float  pdist;
+	VertexT v;
+	cout << timestamp << "Creating Grid..." << endl;
+
+	// Iterator over all points, calc lattice indices and add lattice points to the grid
+	for(size_t i = 0; i < qsize; i++)
+	{
+
+		ifs >> v[0] >> v[1] >> v[2] >> pdist;
+
+		QueryPoint<VertexT> qp(v, pdist);
+		m_queryPoints.push_back(qp);
+
+	}
+	cout << timestamp << "read qpoints.. csize: " << csize << endl;
+	size_t h;
+	unsigned int cell[8];
+	VertexT cell_center;
+	for(size_t k = 0 ; k< csize ; k++)
+	{
+		//cout << "i: " << k << endl;
+		ifs >> h >> cell[0] >> cell[1] >> cell[2] >> cell[3] >> cell[4] >> cell[5] >> cell[6] >> cell[7]
+				 >> cell_center[0] >> cell_center[1] >> cell_center[2] ;
+		//cout <<  h << " " << cell[0] << " " << cell[1] << " " << cell[2] << " " << cell[3] << " " << cell[4] << " " << cell[5] << " " << cell[6] << " " << cell[7]
+		//		 << " " << cell_center[0] << " " << cell_center[1] << " " << cell_center[2] << endl;
+		BoxT* box = new BoxT(cell_center);
+		for(int j=0 ; j<8 ; j++)
+		{
+			box->setVertex(j,  cell[j]);
+		}
+
+		m_cells[h] = box;
+	}
+	cout << timestamp << "read cells.." << endl;
+	typename HashGrid<VertexT, BoxT>::box_map_it it;
+	typename HashGrid<VertexT, BoxT>::box_map_it neighbor_it;
+
+	cout << "c size: " << m_cells.size() << endl;
+	for( it = m_cells.begin() ; it != m_cells.end() ; it++)
+	{
+		cout << "asdfsdfgsdfgdsfgdfg" << endl;
+		BoxT* currentBox = it->second;
+		int neighbor_index = 0;
+		size_t neighbor_hash = 0;
+
+		for(int a = -1; a < 2; a++)
+		{
+			for(int b = -1; b < 2; b++)
+			{
+				for(int c = -1; c < 2; c++)
+				{
+
+
+					//Calculate hash value for current neighbor cell
+					neighbor_hash = this->hashValue(it->first + a,
+													it->first + b,
+													it->first + c);
+					//cout << "n hash: " << neighbor_hash  << endl;
+					//cout << " id: " << neighbor_index << endl;
+
+					//Try to find this cell in the grid
+					neighbor_it = this->m_cells.find(neighbor_hash);
+
+					//If it exists, save pointer in box
+					if(neighbor_it != this->m_cells.end())
+					{
+						currentBox->setNeighbor(neighbor_index, (*neighbor_it).second);
+						(*neighbor_it).second->setNeighbor(26 - neighbor_index, currentBox);
+					}
+
+					neighbor_index++;
+				}
+			}
+		}
+	}
+
+
+}
+
+
+template<typename VertexT, typename BoxT>
+void HashGrid<VertexT, BoxT>::addLatticePoint(int index_x, int index_y, int index_z, float distance)
+{
+	size_t hash_value;
+
+	unsigned int INVALID = BoxT::INVALID_INDEX;
+
+	float vsh = 0.5 * this->m_voxelsize;
+
+	// Some iterators for hash map accesses
+	typename HashGrid<VertexT, BoxT>::box_map_it it;
+	typename HashGrid<VertexT, BoxT>::box_map_it neighbor_it;
+
+	// Values for current and global indices. Current refers to a
+	// already present query point, global index is id that the next
+	// created query point will get
+	unsigned int current_index = 0;
+
+	int dx, dy, dz;
+
+	// Get min and max vertex of the point clouds bounding box
+	VertexT v_min = this->m_boundingBox.getMin();
+	VertexT v_max = this->m_boundingBox.getMax();
+
+	int e;
+	this->m_extrude ? e = 8 : e = 1;
+	for(int j = 0; j < e; j++)
+	{
+		// Get the grid offsets for the neighboring grid position
+		// for the given box corner
+		dx = HGCreateTable[j][0];
+		dy = HGCreateTable[j][1];
+		dz = HGCreateTable[j][2];
+
+		hash_value = this->hashValue(index_x + dx, index_y + dy, index_z +dz);
+
+		it = this->m_cells.find(hash_value);
+		if(it == this->m_cells.end())
+		{
+			//Calculate box center
+			VertexT box_center(
+					(index_x + dx) * this->m_voxelsize + v_min[0],
+					(index_y + dy) * this->m_voxelsize + v_min[1],
+					(index_z + dz) * this->m_voxelsize + v_min[2]);
+
+			//Create new box
+			BoxT* box = new BoxT(box_center);
+
+			//Setup the box itself
+			for(int k = 0; k < 8; k++){
+
+				//Find point in Grid
+				current_index = this->findQueryPoint(k, index_x + dx, index_y + dy, index_z + dz);
+				//If point exist, save index in box
+				if(current_index != INVALID) box->setVertex(k, current_index);
+
+					//Otherwise create new grid point and associate it with the current box
+				else
+				{
+					VertexT position(box_center[0] + box_creation_table[k][0] * vsh,
+									 box_center[1] + box_creation_table[k][1] * vsh,
+									 box_center[2] + box_creation_table[k][2] * vsh);
+
+					this->m_queryPoints.push_back(QueryPoint<VertexT>(position, distance));
+					box->setVertex(k, this->m_globalIndex);
+					this->m_globalIndex++;
+
+				}
+			}
+
+			//Set pointers to the neighbors of the current box
+			int neighbor_index = 0;
+			size_t neighbor_hash = 0;
+
+			for(int a = -1; a < 2; a++)
+			{
+				for(int b = -1; b < 2; b++)
+				{
+					for(int c = -1; c < 2; c++)
+					{
+
+						//Calculate hash value for current neighbor cell
+						neighbor_hash = this->hashValue(index_x + dx + a,
+														index_y + dy + b,
+														index_z + dz + c);
+
+						//Try to find this cell in the grid
+						neighbor_it = this->m_cells.find(neighbor_hash);
+
+						//If it exists, save pointer in box
+						if(neighbor_it != this->m_cells.end())
+						{
+							box->setNeighbor(neighbor_index, (*neighbor_it).second);
+							(*neighbor_it).second->setNeighbor(26 - neighbor_index, box);
+						}
+
+						neighbor_index++;
+					}
+				}
+			}
+
+			this->m_cells[hash_value] = box;
+		}
+	}
+
+}
+
+template<typename VertexT, typename BoxT>
 void HashGrid<VertexT, BoxT>::setCoordinateScaling(float x, float y, float z)
 {
 	m_coordinateScales[0] = x;
@@ -193,4 +402,107 @@ void HashGrid<VertexT, BoxT>::saveGrid(string filename)
 	}
 }
 
+
+template<typename VertexT, typename BoxT>
+void HashGrid<VertexT, BoxT>::serialize(string file)
+{
+	ofstream out(file.c_str());
+
+	// Write data
+	if(out.good())
+	{
+		out <<    m_boundingBox.getMin()[0] << " " << m_boundingBox.getMin()[1]
+		<< " " << m_boundingBox.getMin()[2] << " " << m_boundingBox.getMax()[0]
+		<< " " << m_boundingBox.getMax()[1] << " " << m_boundingBox.getMax()[2] << endl;
+
+
+		out << m_queryPoints.size() << " " << m_voxelsize << " " << m_cells.size() << endl;
+
+		// Write query points and distances
+		for(size_t i = 0; i < m_queryPoints.size(); i++)
+		{
+			out << m_queryPoints[i].m_position[0] << " "
+			<< m_queryPoints[i].m_position[1] << " "
+			<< m_queryPoints[i].m_position[2] << " ";
+
+			if(!isnan(m_queryPoints[i].m_distance))
+			{
+				out << m_queryPoints[i].m_distance << endl;
+			}
+			else
+			{
+				out << 0 << endl;
+			}
+
+		}
+
+		// Write box definitions
+		typename unordered_map<size_t, BoxT* >::iterator it;
+		BoxT* box;
+		for(it = m_cells.begin(); it != m_cells.end(); it++)
+		{
+			box = it->second;
+			out << it->first << " ";
+			for(int i = 0; i < 8; i++)
+			{
+				out << box->getVertex(i) << " ";
+			}
+			out << box->getCenter()[0] << " " << box->getCenter()[1] << " " << box->getCenter()[2] << endl;
+		}
+	}
+	out.close();
+
+	/*
+	ofstream ofs(file);
+	// write cells amount:
+	ofs << m_cells.size() << endl;
+	//write cells map
+	for(auto it = m_cells.begin() ; it != m_cells.end() ;it++)
+	{
+		ofs << it->first << " " << it->second;
+	}
+	ofs << endl;
+
+	//wirte qpIndices size
+	ofs << m_qpIndices.size() << endl;
+	//write qpIndices map
+	for(auto it = m_qpIndices.begin() ; it != m_qpIndices.end() ; it++)
+	{
+		ofs << it->first << " " << it->second;
+	}
+	ofs << endl;
+
+	ofs << m_voxelsize << endl;
+	ofs << m_maxIndex << endl;
+	ofs << m_maxIndexSquare << endl;
+	ofs << m_maxIndexX << endl;
+	ofs << m_maxIndexY << endl;
+	ofs << m_maxIndexZ << endl;
+
+	//write querypoints#
+	ofs << m_queryPoints.size() << endl;
+	for(auto it = m_queryPoints.begin() ; it != m_queryPoints.end() ; it++)
+	{
+		ofs << it->m_position[0] << " " << it->m_position[0] << " " <<  it->m_position[0];
+		if(!isnan(m_queryPoints[i].m_distance))
+		{
+			ofs << " " << it->m_distance;
+		}
+		else
+		{
+			ofs << " " << 0;
+		}
+		ofs << endl;
+	}
+
+	ofs << m_boxType << endl;
+	ofs << m_extrude << endl;
+	ofs << m_boundingBox.getMin()[0] << " " << m_boundingBox.getMin()[1] << " " << m_boundingBox.getMin()[2] << endl;
+	ofs << m_boundingBox.getMax()[0] << " " << m_boundingBox.getMax()[1] << " " <<  m_boundingBox.getMax()[2] << endl;
+	ofs << m_globalIndex << endl;
+	ofs << m_coordinateScales[0] << " " << m_coordinateScales[1] << " " << m_coordinateScales[2] << endl;
+*/
+
+
+}
 } //namespace lvr
