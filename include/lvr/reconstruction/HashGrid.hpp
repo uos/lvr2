@@ -92,6 +92,16 @@ public:
 	 */
 	HashGrid(float cellSize, BoundingBox<VertexT> boundingBox, bool isVoxelSize = true);
 
+
+	/***
+	 * @brief	Constructor
+	 *
+	 * Construcs a HashGrid from a file
+	 *
+	 * @param 	file		File representing the HashGrid (See HashGrid::serialize(string file) )
+	 */
+	HashGrid(string file);
+
 	/**
 	 *
 	 * @param i 		Discrete x position within the grid.
@@ -100,7 +110,7 @@ public:
 	 * @param distance	Signed distance to the represented surface
 	 * 					at the position within the grid.
 	 */
-	virtual void addLatticePoint(int i, int j, int k, float distance = 0.0) = 0;
+	virtual void addLatticePoint(int i, int j, int k, float distance = 0.0);
 
 	/**
 	 * @brief	Saves a representation of the grid to the given file
@@ -108,6 +118,8 @@ public:
 	 * @param file		Output file name.
 	 */
 	virtual void saveGrid(string file);
+
+	virtual void serialize(string file);
 
 	/***
 	 * @brief 	Returns the number of generated cells.
@@ -176,6 +188,11 @@ protected:
     {
         return i * m_maxIndexSquare + j * m_maxIndex + k;
     }
+
+	inline int calcIndex(float f)
+	{
+		return f < 0 ? f-.5:f+.5;
+	}
 
 	/// Map to handle the boxes in the grid
 	box_map			m_cells;

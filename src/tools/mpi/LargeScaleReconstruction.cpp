@@ -139,6 +139,7 @@ int main(int argc, char* argv[])
 
             }
         }
+        std::string firstpath = leafs[0]->getFilePath();
         std::sort(leafs.begin(), leafs.end(), nodePtrCompare);
         for(int i = 0 ; i< leafs.size(); i++)
         {
@@ -190,6 +191,15 @@ int main(int argc, char* argv[])
 
         }
 
+        //test
+        firstpath.pop_back();
+        firstpath.pop_back();
+        firstpath.pop_back();
+        firstpath.append("grid");
+        cout << "fpath: " << firstpath << endl;
+        HashGrid<ColorVertex<float, unsigned char>, FastBox<ColorVertex<float, unsigned char>, Normal<float> > > hg(firstpath);
+        cout << hg.getQueryPoints().size() << " " << hg.getNumberOfCells() << endl;
+        hg.serialize("test.grid");
         cout << "FINESHED in " << lvr::timestamp  << endl;
         world.abort(0);
     }
@@ -304,7 +314,12 @@ int main(int argc, char* argv[])
                 ps_grid->calcDistanceValues();
 
                 reconstruction = new FastReconstruction<ColorVertex<float, unsigned char> , Normal<float>, FastBox<ColorVertex<float, unsigned char>, Normal<float> >  >(ps_grid);
-
+                string out = filePath;
+                out.pop_back();
+                out.pop_back();
+                out.pop_back();
+                out.append("grid");
+                ps_grid->serialize(out);
             }
             else if(decomposition == "PMC")
             {
@@ -326,6 +341,9 @@ int main(int argc, char* argv[])
                 ps_grid->calcDistanceValues();
                 reconstruction = new FastReconstruction<ColorVertex<float, unsigned char> , Normal<float>, SharpBox<ColorVertex<float, unsigned char>, Normal<float> >  >(ps_grid);
             }
+
+
+            /*
             if(options.saveGrid())
             {
                 string out = filePath;
@@ -335,6 +353,8 @@ int main(int argc, char* argv[])
                 out.append("grid");
                 grid->saveGrid(out);
             }
+
+
             reconstruction->getMesh(mesh);
             //mesh.cleanContours(2);
             if(options.getDanglingArtifacts())
@@ -387,8 +407,9 @@ int main(int argc, char* argv[])
             output.pop_back();
             output.append("ply");
             ModelFactory::saveModel( m, output);
+             */
             world.send(0, FINISHED, std::string("world"));
-            cout << timestamp << "Node: " << world.rank() << "finished " << output << endl;
+            cout << timestamp << "Node: " << world.rank() << "finished "  << endl;
         }
 
     }
