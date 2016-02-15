@@ -36,12 +36,17 @@
 #include <string.h>
 #include <sstream>
 
-#include <GL/glut.h>
-
-using namespace std;
+#ifndef __APPLE__
+#include <GL/gl.h>
+#else
+#include <OpenGL/gl.h>
+#endif
 
 #include "Renderable.hpp"
 #include <lvr/geometry/BoundingBox.hpp>
+
+using namespace std;
+
 
 namespace lvr
 {
