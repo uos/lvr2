@@ -19,12 +19,12 @@ if(MSVC)
   list(APPEND LVR_DEFINITIONS -DNOMINMAX)
 endif()
 
-if(CMAKE_COMPILER_IS_GNUCC AND CMAKE_COMPILER_IS_GNUCXX)
+#if(CMAKE_COMPILER_IS_GNUCC AND CMAKE_COMPILER_IS_GNUCXX)
   add_compile_options(-fmessage-length=0 -fPIC -Wno-deprecated)
   # with cmake 3.3
   #add_compile_options($<$<COMPILE_LANGUAGE:CXX>:-std=c++0x>)
-  set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++0x")
-endif()
+  set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++11")
+#endif()
 
 ###############################################################
 # EXTERNAL LIBRARIES
@@ -72,7 +72,7 @@ endif(NABO_FOUND)
 ## Searching for PCL
 ##############################
 
-find_package(PCL 1.6)
+find_package(PCL 1.7)
 if(PCL_FOUND)
   include_directories(${PCL_INCLUDE_DIRS})
   link_directories(${PCL_LIBRARY_DIRS})
@@ -277,7 +277,11 @@ if(MPI_FOUND)
 endif(MPI_FOUND)
 
 if(CGAL_FOUND)
-  add_subdirectory(src/tools/cgal_reconstruction)
+  # There is a name clash between CGAL and std::pair. Should
+  # be fixed in the next CGAL release
+  if(CMAKE_COMPILER_IS_GNUCC AND CMAKE_COMPILER_IS_GNU)
+    add_subdirectory(src/tools/cgal_reconstruction)
+  endif()
   #add_subdirectory(src/tools/fusion)
   add_subdirectory(src/tools/slicer)
 endif(CGAL_FOUND)
