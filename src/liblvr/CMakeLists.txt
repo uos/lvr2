@@ -32,7 +32,6 @@ set(LVR_SOURCES
     display/GlTexture.cpp
     display/TextureFactory.cpp
     display/TexturedMesh.cpp
-    reconstruction/PCLFiltering.cpp
     registration/EigenSVDPointAlign.cpp
     registration/ICPPointAlign.cpp
     texture/Texture.cpp
@@ -99,7 +98,10 @@ endif(UNIX)
 #####################################################################################
 
 if(PCL_FOUND)
-  set(LVR_SOURCES ${LVR_SOURCES} io/PCDIO.cpp)
+  set(LVR_SOURCES ${LVR_SOURCES}
+      io/PCDIO.cpp
+      reconstruction/PCLFiltering.cpp)
+      
   set(LVR_LIB_DEPENDENCIES ${LVR_LIB_DEPENDENCIES} ${PCL_LIBRARIES})
 endif(PCL_FOUND)
 
