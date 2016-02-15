@@ -44,8 +44,13 @@
 #include <algorithm>
 #include <queue>
 
+#ifndef __APPLE__
 #include <GL/glu.h>
 #include <GL/glut.h>
+#else
+#include <OpenGL/glu.h>
+#include <GLUT/glut.h>
+#endif
 
 using namespace std;
 
