@@ -28,6 +28,7 @@
 #include <boost/optional/optional_io.hpp>
 #include <lvr/geometry/QuadricVertexCosts.hpp>
 #include "Options.hpp"
+#include <boost/algorithm/string.hpp>
 #ifdef LVR_USE_PCL
 #include <lvr/reconstruction/PCLKSurface.hpp>
 #endif
@@ -46,6 +47,62 @@ enum MPIMSGSTATUS {DATA, FINISHED};
 bool nodePtrCompare(LargeScaleOctree* rhs, LargeScaleOctree* lhs)
 {
     return (*lhs) < (*rhs);
+}
+
+void getNeighborsOnSide(Vertexf dir, vector<std::pair<Vertexf, LargeScaleOctree*> >& neighbors, LargeScaleOctree* currentNode)
+{
+    if(currentNode->isLeaf())
+    {
+        neighbors.push_back(std::pair<Vertexf, LargeScaleOctree*>(dir*-1,currentNode));
+        return;
+    }
+    int ids[4];
+    if(dir.x == 1)
+    {
+        ids[0] = 4;
+        ids[1] = 5;
+        ids[2] = 6;
+        ids[3] = 7;
+    }
+    else if(dir.x == -1)
+    {
+        ids[0] = 0;
+        ids[1] = 1;
+        ids[2] = 2;
+        ids[3] = 3;
+    }
+    else if(dir.y == 1)
+    {
+        ids[0] = 2;
+        ids[1] = 3;
+        ids[2] = 6;
+        ids[3] = 7;
+    }
+    else if(dir.y == -1)
+    {
+        ids[0] = 0;
+        ids[1] = 1;
+        ids[2] = 4;
+        ids[3] = 5;
+    }
+    else if(dir.z == 1)
+    {
+        ids[0] = 1;
+        ids[1] = 3;
+        ids[2] = 5;
+        ids[3] = 7;
+    }
+    else if(dir.z == -1)
+    {
+        ids[0] = 0;
+        ids[1] = 2;
+        ids[2] = 4;
+        ids[3] = 6;
+    }
+    for(int i = 0 ; i<4 ;i++)
+    {
+        getNeighborsOnSide(dir, neighbors, (currentNode->getChildren()[ids[i]]));
+    }
 }
 
 int main(int argc, char* argv[])
@@ -131,7 +188,7 @@ int main(int argc, char* argv[])
         //auto it = std::copy_if (nodes.begin(), nodes.end(), leafs.begin(), [](LargeScaleOctree* oc){return oc->isLeaf();} );
         size_t minSize = std::max(std::max(options.getKn(), options.getKd()), options.getKi());
         cout << "min size: " << options.getKn() << endl;
-	for(int i = 0 ; i< nodes.size() ; i++)
+	    for(int i = 0 ; i< nodes.size() ; i++)
         {
             if(nodes[i]->isLeaf() && nodes[i]->getSize()>minSize )
             {
@@ -148,6 +205,75 @@ int main(int argc, char* argv[])
 
         //leafs.resize(std::distance(nodes.begin(),it));  // shrink container to new size
         cout << lvr::timestamp << "...got leafs, amount = " <<  leafs.size()<< endl;
+
+        //Creating neighbor map
+        std::map<string,vector<std::pair<Vertexf, LargeScaleOctree*> > > nmap;
+        for(LargeScaleOctree* OTNode : leafs)
+        {
+            Vertexf center = OTNode->getCenter();
+            float radius = OTNode->getLength()/2;
+            const Vertexf directions[] = {{0,0,1}, {0,1,0}, {1,0,0}, {0,0,-1}, {0,-1,0}, {-1,0,0}};
+            vector<std::pair<Vertexf, LargeScaleOctree*> > currentNeigbors;
+            LargeScaleOctree* currentNode = &octree;
+            Vertexf max = octree.getCenter() + Vertexf(1,1,1)*(octree.getLength()/2);
+            Vertexf min = octree.getCenter() + Vertexf(-1,-1,-1)*(octree.getLength()/2);
+            //get neighbor for each direction (left, right, up, down, front, back)
+            for(int i = 0 ; i<6 ; i++)
+            {
+                LargeScaleOctree* currentNode = &octree;
+                Vertexf dirPoint = center + (directions[i]*(radius+(radius/2)));
+                int depth = 0;
+
+                while (!currentNode->isLeaf())
+                {
+                    if( dirPoint.x > max.x || dirPoint.y > max.y || dirPoint.z > max.z ||
+                        dirPoint.x < min.x || dirPoint.y < min.y || dirPoint.z < min.z )
+                    {
+                        break;
+                    }
+                    //Check if neighbor Node is the same size
+                    if(fabs(currentNode->getLength() - OTNode->getLength())<=1 || currentNode->isLeaf()) break;
+                    int nextChildNode = currentNode->getOctant(dirPoint);
+                    currentNode = currentNode->getChildren()[nextChildNode];
+                    //currentNode = &(currentNode->getChildren()[currentNode->getOctant(dirPoint)]);
+                    depth++;
+                    if(currentNode == 0) {
+                        cout <<"no!" << endl;
+                        break;
+                    }
+
+                }
+                if(depth>0 && currentNode->isLeaf() && currentNode!=0)
+                {
+                    currentNeigbors.push_back(std::pair<Vertexf, LargeScaleOctree*>(directions[i],currentNode));
+                }
+                else if(!(dirPoint.x > max.x || dirPoint.y > max.y || dirPoint.z > max.z ||
+                        dirPoint.x < min.x || dirPoint.y < min.y || dirPoint.z < min.z ))
+                {
+                    getNeighborsOnSide(directions[i]*-1, currentNeigbors,  currentNode);
+                }
+
+
+            }
+            if(! currentNeigbors.empty())
+            {
+                nmap[OTNode->getFilePath()] = currentNeigbors;
+            }
+
+        }
+
+        /*cout << "MAP size: " << nmap.size() << endl;
+        for(auto it = nmap.begin() ; it != nmap.end() ; it++)
+        {
+            cout << it->first << " : " ;
+            for(auto n : it->second)
+            {
+                cout << n->getFilePath() << " ";
+            }
+            cout << endl;
+        }*/
+
+
         stack<char> waitingfor;
         for(int i = 1 ; i< world.size() && !leafs.empty() ; i++)
         {
@@ -192,7 +318,7 @@ int main(int argc, char* argv[])
         }
 
         //test
-        firstpath.pop_back();
+        /*firstpath.pop_back();
         firstpath.pop_back();
         firstpath.pop_back();
         firstpath.append("grid");
@@ -200,6 +326,99 @@ int main(int argc, char* argv[])
         HashGrid<ColorVertex<float, unsigned char>, FastBox<ColorVertex<float, unsigned char>, Normal<float> > > hg(firstpath);
         cout << hg.getQueryPoints().size() << " " << hg.getNumberOfCells() << endl;
         hg.serialize("test.grid");
+         */
+
+        int latticeDirID[6][4] =
+        {
+            {2,6,1,5},
+            {3,7,2,6},
+            {7,4,5,6},
+            {0,4,3,7},
+            {4,0,1,5},
+            {0,1,2,3}
+        };
+
+        for(auto it = nmap.begin() ; it != nmap.end() ; it++)
+        {
+            string mainPath = it->first;
+            boost::replace_all(mainPath, "xyz", "grid");
+            HashGrid<ColorVertex<float, unsigned char>, FastBox<ColorVertex<float, unsigned char>, Normal<float> > > mainGrid(mainPath);
+            Vertexf maxMainIndices(mainGrid.getMaxIndexX(), mainGrid.getMaxIndexY(), mainGrid.getMaxIndexZ());
+            for(auto neighbor : it->second)
+            {
+                string neighborPath = neighbor.second->getFilePath();
+                boost::replace_all(neighborPath, "xyz", "grid");
+
+
+                if(boost::filesystem::exists(neighborPath))
+                {
+                    HashGrid<ColorVertex<float, unsigned char>, FastBox<ColorVertex<float, unsigned char>, Normal<float> > > neighborGrid(mainPath);
+                    Vertexf & dir = neighbor.first;
+                    Vertex<int> diri(dir.x, dir.y, dir.z);
+                    diri = diri * -1;
+                    size_t x,y,z;
+                    size_t  maxx, maxy, maxz;
+
+                    x = y = z = 0;
+                    maxx = neighborGrid.getMaxIndexX();
+                    maxy = neighborGrid.getMaxIndexY();
+                    maxz = neighborGrid.getMaxIndexZ();
+
+                    int lpSideId=0;
+
+                    if		(diri.x == 1)
+                    {
+                        x = maxx;
+                        lpSideId = 0;
+                    }
+                    else if (diri.y == 1)
+                    {
+                        y = maxy;
+                        lpSideId = 1;
+                    }
+                    else if (diri.z == 1)
+                    {
+                        z = maxz;
+                        lpSideId = 2;
+                    }
+                    else if (diri.x == -1)
+                    {
+                        x = 0;
+                        maxx = 0;
+                        lpSideId = 3;
+                    }
+                    else if (diri.y == -1)
+                    {
+                        y = 0;
+                        maxy = 0;
+                        lpSideId = 4;
+                    }
+                    else if (diri.z == -1)
+                    {
+                        z = 0;
+                        maxz = 0;
+                        lpSideId = 5;
+                    }
+                    for(int i = x ; i<=maxx ; i++)
+                    {
+                        for(int j = y ; j<=maxy; j++)
+                        {
+                            for(int k = z ; k<=maxz ; k++)
+                            {
+                                for(int l = 0 ; l<4 ; l++)
+                                {
+                                    size_t qp_ID = neighborGrid.findQueryPoint(latticeDirID[lpSideId][l],x,y,z);
+                                    float & distN = neighborGrid.getQueryPoints()[qp_ID].m_distance;
+                                }
+                            }
+
+                        }
+                    }
+
+                }
+
+            }
+        }
         cout << "FINESHED in " << lvr::timestamp  << endl;
         world.abort(0);
     }
