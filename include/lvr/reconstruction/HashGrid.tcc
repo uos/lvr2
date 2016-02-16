@@ -177,6 +177,8 @@ HashGrid<VertexT, BoxT>::HashGrid(string file)
 
 
 }
+
+/*
 template<typename VertexT, typename BoxT>
 vector<BoxT*> void HashGrid<VertexT, BoxT>::getSideCells(Vertex<int> direction)
 {
@@ -224,7 +226,7 @@ vector<BoxT*> void HashGrid<VertexT, BoxT>::getSideCells(Vertex<int> direction)
 
 
 }
-
+*/
 template<typename VertexT, typename BoxT>
 void HashGrid<VertexT, BoxT>::addLatticePoint(int index_x, int index_y, int index_z, float distance)
 {
