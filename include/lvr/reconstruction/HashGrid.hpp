@@ -148,7 +148,7 @@ public:
 
 	vector<QueryPoint<VertexT> >& getQueryPoints() { return m_queryPoints;}
 
-	vector<BoxT*> getSideCells(Vertex<int> directions);
+	//vector<BoxT*> getSideCells(Vertex<int> directions);
 
 	box_map getCells() { return m_cells; }
 
@@ -170,6 +170,8 @@ public:
 	size_t getMaxIndexY(){return m_maxIndexY;}
 
 	size_t getMaxIndexZ(){return m_maxIndexZ;}
+
+	BoundingBox<VertexT> & getBoundingBox(){return m_boundingBox;}
 
 	/**
      * @brief Calculates the hash value for the given index triple
