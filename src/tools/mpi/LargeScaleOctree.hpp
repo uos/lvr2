@@ -14,10 +14,18 @@ namespace lvr
         static vector<LargeScaleOctree*> c_nodeList;
         float m_size;
         Vertexf m_center;
-        LargeScaleOctree* m_children[8];
+
+        /*
+                id:	    0 1 2 3 4 5 6 7
+                x:      - - - - + + + +
+                y:      - - + + - - + +
+                z:      - + - + - + - +
+         */
+        vector<LargeScaleOctree*>  m_children;
         NodeData m_data;
         const size_t m_maxPoints;
         vector<LargeScaleOctree*> leafs;
+        bool m_leaf;
     public:
         LargeScaleOctree(Vertexf center, float size, unsigned int maxPoints, size_t bufferSize = 40000000);
 	virtual ~LargeScaleOctree();
@@ -26,8 +34,10 @@ namespace lvr
         bool isLeaf();
         void insert(Vertexf& pos);
         size_t getSize();
+        Vertexf getCenter();
+        float getLength();
         int getOctant(const Vertexf &point) const;
-        LargeScaleOctree* getChildren();
+        vector<LargeScaleOctree*>& getChildren();
         string getFilePath();
         vector<LargeScaleOctree*> getNodes();
 
