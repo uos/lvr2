@@ -1,16 +1,16 @@
 #ifndef LVR_PIPELINE_HPP_
 #define LVR_PIPELINE_HPP_
 
-#include <reconstruction/FastReconstruction.hpp>
-#include <reconstruction/TSDFGrid.hpp>
-#include <reconstruction/PointsetSurface.hpp>
-#include <reconstruction/FastBox.hpp>
-#include <io/PointBuffer.hpp>
-#include <io/DataStruct.hpp>
-#include <io/Timestamp.hpp>
-#include <geometry/HalfEdgeVertex.hpp>
-#include <geometry/HalfEdgeKinFuMesh.hpp>
-#include <geometry/BoundingBox.hpp>
+#include <lvr/reconstruction/FastReconstruction.hpp>
+#include <lvr/reconstruction/TSDFGrid.hpp>
+#include <lvr/reconstruction/PointsetSurface.hpp>
+#include <lvr/reconstruction/FastBox.hpp>
+#include <lvr/io/PointBuffer.hpp>
+#include <lvr/io/DataStruct.hpp>
+#include <lvr/io/Timestamp.hpp>
+#include <lvr/geometry/HalfEdgeVertex.hpp>
+#include <lvr/geometry/HalfEdgeKinFuMesh.hpp>
+#include <lvr/geometry/BoundingBox.hpp>
 #include <kfusion/types.hpp>
 #include <kfusion/cuda/tsdf_volume.hpp>
 #include <kfusion/cuda/projective_icp.hpp>

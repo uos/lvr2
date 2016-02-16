@@ -65,7 +65,7 @@ namespace kfusion
 			boost::shared_ptr<MeshStage>(new MeshStage(params.distance_camera_target, (double)(params.volume_size[0] / params.volume_dims[0]), params.cmd_options))
 			);
 
-		bool optimize_planes = false;
+		bool optimize_planes = true;
 		if(params.cmd_options)
 		{
 			optimize_planes = params.cmd_options->optimizePlanes();

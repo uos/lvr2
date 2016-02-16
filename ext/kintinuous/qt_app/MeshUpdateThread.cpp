@@ -21,8 +21,11 @@
 #include <vtkPointData.h>
 #include <vtkCellData.h>
 
+#include <QApplication>
+
 MeshUpdateThread::MeshUpdateThread(kfusion::KinFu::Ptr kinfu)
 {
+	moveToThread(QApplication::instance()->thread());
 	cout << "CREATE" << endl;
 	m_kinfu = kinfu;
 }
@@ -32,6 +35,10 @@ void MeshUpdateThread::computeMeshActor(HMesh* meshbuffer)
 	static size_t verts_size = 0;
 	static size_t faces_size = 0;
 	cout << "0" << endl;
+
+	m_vertices.clear();
+	m_faces.clear();
+
     if(meshbuffer)
     {
         vtkSmartPointer<vtkPolyData> mesh = vtkSmartPointer<vtkPolyData>::New();
@@ -48,7 +55,7 @@ void MeshUpdateThread::computeMeshActor(HMesh* meshbuffer)
         scalars->SetNumberOfComponents(3);
         scalars->SetName("Colors");
 
-        cout << "1" << endl;
+
         for(size_t k = 0; k < slice_size; k++)
         {
         	auto vertex = meshbuffer->getVertices()[k + verts_size];
@@ -58,9 +65,22 @@ void MeshUpdateThread::computeMeshActor(HMesh* meshbuffer)
 					vertex->m_position[1],
 					vertex->m_position[2]);
 
+        	//cout << vertex->m_position[0] << " " << vertex->m_position[1] << " " << vertex->m_position[2] << endl;
+
+        	m_vertices.push_back(vertex->m_position[0]);
+        	m_vertices.push_back(vertex->m_position[1]);
+        	m_vertices.push_back(vertex->m_position[2]);
+
+        	unsigned char color[3] = {0, 255, 0};
+        	scalars->InsertNextTupleValue(color);
+
         }
 
-        cout << "2" << endl;
+
+
+
+        mesh->GetPointData()->SetScalars(scalars);
+        cout << "2 " << slice_face_size << endl;
         for(size_t k = 0; k < slice_face_size; k++)
         {
         	auto face = meshbuffer->getFaces()[k + faces_size];
@@ -69,7 +89,26 @@ void MeshUpdateThread::computeMeshActor(HMesh* meshbuffer)
         	t->GetPointIds()->SetId(0, m_indexMap[face->m_edge->end()]);
         	t->GetPointIds()->SetId(1, m_indexMap[face->m_edge->next()->end()]);
         	t->GetPointIds()->SetId(2, m_indexMap[face->m_edge->next()->next()->end()]);
-        }
+        	triangles->InsertNextCell(t);
+
+        	m_faces.push_back(m_indexMap[face->m_edge->end()]);
+        	m_faces.push_back(m_indexMap[face->m_edge->next()->end()]);
+        	m_faces.push_back(m_indexMap[face->m_edge->next()->next()->end()]);
+
+
+        	int a = m_indexMap[face->m_edge->end()];
+        	int b = m_indexMap[face->m_edge->next()->end()];
+        	int c = m_indexMap[face->m_edge->next()->next()->end()];
+
+        	cout << a << " " << b << " " << c << " " << m_indexMap.size() << " " << m_vertices.size() / 3 << endl;
+//
+//        	if(a >= m_indexMap.size()) cout << "A: " << a << " / " << m_indexMap.size() << endl;
+//        	if(b >= m_indexMap.size()) cout << "B: " << b << " / " << m_indexMap.size() << endl;
+//        	if(c >= m_indexMap.size()) cout << "C: " << c << " / " << m_indexMap.size() << endl;
+      }
+
+		verts_size = meshbuffer->getVertices().size();
+		faces_size = meshbuffer->getFaces().size();
 
         mesh->SetPoints(points);
         mesh->SetPolys(triangles);
@@ -78,34 +117,43 @@ void MeshUpdateThread::computeMeshActor(HMesh* meshbuffer)
         vtkSmartPointer<vtkPolyDataMapper> mesh_mapper = vtkSmartPointer<vtkPolyDataMapper>::New();
         //        mesh_mapper->SetInputData(mesh); VTK 6
         mesh_mapper->SetInput(mesh);
-        m_meshActor = vtkSmartPointer<vtkActor>::New();
+        m_meshActor = vtkActor::New();
         m_meshActor->SetMapper(mesh_mapper);
 
-        vtkSmartPointer<vtkPolyDataMapper> wireframe_mapper = vtkSmartPointer<vtkPolyDataMapper>::New();
-        // wireframe_mapper->SetInputData(mesh); VTK 6
-        wireframe_mapper->SetInput(mesh);
-        m_wireframeActor = vtkSmartPointer<vtkActor>::New();
-        m_wireframeActor->ShallowCopy(m_meshActor);
-        m_wireframeActor->SetMapper(wireframe_mapper);
+
         vtkSmartPointer<vtkProperty> p = vtkSmartPointer<vtkProperty>::New();
-        p->DeepCopy(m_meshActor->GetProperty());
-        p->SetRepresentationToWireframe();
-        m_wireframeActor->SetProperty(p);
-
-        float r = 0.0;
-        float g = 0.9;
-        float b = 0.0;
-
-        p = m_meshActor->GetProperty();
-        p->SetColor(r, g, b);
+        p->SetColor(1.0, 1.0, 1.0);
         m_meshActor->SetProperty(p);
+        m_meshActor->VisibilityOn();
 
-        p = m_wireframeActor->GetProperty();
-        float inv_r = (float)1 - r;
-        float inv_g = (float)1 - g;
-        float inv_b = (float)1 - b;
-        p->SetColor(inv_r, inv_g, inv_b);
-        m_wireframeActor->SetProperty(p);
+
+//        vtkSmartPointer<vtkPolyDataMapper> wireframe_mapper = vtkSmartPointer<vtkPolyDataMapper>::New();
+//        // wireframe_mapper->SetInputData(mesh); VTK 6
+//        wireframe_mapper->SetInput(mesh);
+//        m_wireframeActor = vtkSmartPointer<vtkActor>::New();
+//        m_wireframeActor->ShallowCopy(m_meshActor);
+//        m_wireframeActor->SetMapper(wireframe_mapper);
+//
+//        vtkSmartPointer<vtkProperty> p = vtkSmartPointer<vtkProperty>::New();
+//        p->DeepCopy(m_meshActor->GetProperty());
+//        p->SetRepresentationToWireframe();
+//        m_wireframeActor->SetProperty(p);
+//
+//        float r = 0.0;
+//        float g = 0.9;
+//        float b = 0.0;
+//
+//        p->DeepCopy(m_meshActor->GetProperty());
+//        p->SetRepresentationToWireframe();
+//        p->SetColor(r, g, b);
+//        m_meshActor->SetProperty(p);
+//
+//        p = m_wireframeActor->GetProperty();
+//        float inv_r = (float)1 - r;
+//        float inv_g = (float)1 - g;
+//        float inv_b = (float)1 - b;
+//        p->SetColor(inv_r, inv_g, inv_b);
+//        m_wireframeActor->SetProperty(p);
     }
 }
 
@@ -113,10 +161,10 @@ void MeshUpdateThread::run()
 {
 	while(true)
 	{
-		cout << "GET MESH" << endl;
 		auto b = m_kinfu->cyclical().getMesh();
+		m_kinfu->cyclical()
 		computeMeshActor(b);
-		cout << "END||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||" << endl;
+		Q_EMIT(meshUpdate(m_meshActor));
 	}
 }
 
