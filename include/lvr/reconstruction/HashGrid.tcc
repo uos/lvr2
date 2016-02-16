@@ -139,7 +139,7 @@ HashGrid<VertexT, BoxT>::HashGrid(string file)
 	cout << "c size: " << m_cells.size() << endl;
 	for( it = m_cells.begin() ; it != m_cells.end() ; it++)
 	{
-		cout << "asdfsdfgsdfgdsfgdfg" << endl;
+		//cout << "asdfsdfgsdfgdsfgdfg" << endl;
 		BoxT* currentBox = it->second;
 		int neighbor_index = 0;
 		size_t neighbor_hash = 0;
@@ -177,7 +177,53 @@ HashGrid<VertexT, BoxT>::HashGrid(string file)
 
 
 }
+template<typename VertexT, typename BoxT>
+vector<BoxT*> void HashGrid<VertexT, BoxT>::getSideCells(Vertex<int> direction)
+{
+	vector<BoxT*> out;
+	size_t x,y,z;
+	size_t  maxx, maxy, maxz;
 
+	x = y = z = 0;
+	maxx = m_maxIndexX;
+	maxy = m_maxIndexY;
+	maxz = m_maxIndexZ;
+
+	if		(direction.x == 1) x = maxx = m_maxIndexX;
+	else if (direction.y == 1) y = maxy = m_maxIndexY;
+	else if (direction.z == 1) z = maxz = m_maxIndexZ;
+	else if (direction.x == -1)
+	{
+		x = 0;
+		maxx = 0;
+	}
+	else if (direction.y == -1)
+	{
+		y = 0;
+		maxy = 0;
+	}
+	else if (direction.z == -1)
+	{
+		z = 0;
+		maxz = 0;
+	}
+
+	for(int i = x ; i<=maxx ; i++)
+	{
+		for(int j = y ; j<=maxy; j++)
+		{
+			for(int k = z ; k<=maxz ; k++)
+			{
+				size_t h = hashValue(i,j,k);
+				out.push_back(m_cells[h]);
+			}
+
+		}
+	}
+	return out;
+
+
+}
 
 template<typename VertexT, typename BoxT>
 void HashGrid<VertexT, BoxT>::addLatticePoint(int index_x, int index_y, int index_z, float distance)

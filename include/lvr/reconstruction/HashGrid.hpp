@@ -148,6 +148,10 @@ public:
 
 	vector<QueryPoint<VertexT> >& getQueryPoints() { return m_queryPoints;}
 
+	vector<BoxT*> getSideCells(Vertex<int> directions);
+
+	box_map getCells() { return m_cells; }
+
 	/***
 	 * @brief	Destructor
 	 */
@@ -159,35 +163,46 @@ public:
 	 */
 	void setCoordinateScaling(float x, float y, float z);
 
-protected:
+	size_t getMaxIndex(){return m_maxIndex;}
+
+	size_t getMaxIndexX(){return m_maxIndexX;}
+
+	size_t getMaxIndexY(){return m_maxIndexY;}
+
+	size_t getMaxIndexZ(){return m_maxIndexZ;}
+
+	/**
+     * @brief Calculates the hash value for the given index triple
+     */
+	inline size_t hashValue(int i, int j, int k) const
+	{
+		return i * m_maxIndexSquare + j * m_maxIndex + k;
+	}
 
 	/***
-	 * @brief	Searches for a existing shared lattice point in the grid.
-	 *
-	 * @param position	Number of a possible neighbor
-	 * @param x			x index within the grid
-	 * @param y			y index within the grid
-	 * @param z			z index within the grid
-	 * @return			Query point index of the found point, INVALID_INDEX otherwise
-	 */
+ * @brief	Searches for a existing shared lattice point in the grid.
+ *
+ * @param position	Number of a possible neighbor
+ * @param x			x index within the grid
+ * @param y			y index within the grid
+ * @param z			z index within the grid
+ * @return			Query point index of the found point, INVALID_INDEX otherwise
+ */
 	unsigned int findQueryPoint(
 			const int &position,
 			const int &x,
 			const int &y,
 			const int &z);
+protected:
+
+
 
 	/**
 	 * @brief 	Calculates needed lattice parameters.
 	 */
 	void calcIndices();
 
-    /**
-     * @brief Calculates the hash value for the given index triple
-     */
-    inline size_t hashValue(int i, int j, int k) const
-    {
-        return i * m_maxIndexSquare + j * m_maxIndex + k;
-    }
+
 
 	inline int calcIndex(float f)
 	{
