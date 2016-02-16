@@ -6,51 +6,9 @@ using namespace std;
 using namespace kfusion;
 using namespace kfusion::cuda;
 
-static inline float deg2rad (float alpha) { return alpha * 0.017453293f; }
-
-kfusion::KinFuParams kfusion::KinFuParams::default_params()
-{
-    const int iters[] = {10, 5, 4, 0};
-    const int levels = sizeof(iters)/sizeof(iters[0]);
-
-    KinFuParams p;
-
-    p.cols = 640;  //pixels
-    p.rows = 480;  //pixels
-    p.intr = Intr(525.f, 525.f, p.cols/2 - 0.5f, p.rows/2 - 0.5f);
-
-    p.shifting_distance = 0.35f; //meters to go before shifting the volume
-    p.distance_camera_target = 0.7;
-
-    p.volume_dims = Vec3i::all(512);  //number of voxels
-    p.volume_size = Vec3f::all(3.f);  //meters
-    p.volume_pose = Affine3f().translate(Vec3f(-p.volume_size[0]/2, -p.volume_size[1]/2,  -p.volume_size[2]/2 + p.distance_camera_target));
-
-    p.bilateral_sigma_depth = 0.04f;  //meter
-    p.bilateral_sigma_spatial = 4.5; //pixels
-    p.bilateral_kernel_size = 7;     //pixels
-
-    p.icp_truncate_depth_dist = 0.f;        //meters, disabled
-    p.icp_dist_thres = 0.1f;                //meters
-    p.icp_angle_thres = deg2rad(30.f); //radians
-    p.icp_iter_num.assign(iters, iters + levels);
-
-    p.tsdf_min_camera_movement = 0.f; //meters, disabled
-    p.tsdf_trunc_dist = 0.04f; //meters;
-    p.tsdf_max_weight = 64;   //frames
-
-    p.raycast_step_factor = 0.75f;  //in voxel sizes
-    p.gradient_delta_factor = 0.5f; //in voxel sizes
-
-    //p.light_pose = p.volume_pose.translation()/4; //meters
-    p.light_pose = Vec3f::all(0.f); //meters
-
-    return p;
-}
-
 kfusion::KinFu::KinFu(const KinFuParams& params) : frame_counter_(0), params_(params), has_shifted_(false), perform_last_scan_(false), perform_shift_(false)
-                                                   , cyclical_(params_.shifting_distance, params.volume_size, params.volume_dims)
-                                                   , distance_camera_target_(params_.distance_camera_target) 
+                                                   , cyclical_(params), checkForShift_(true)
+
 {
     CV_Assert(params.volume_dims[0] % 32 == 0);
 
@@ -65,7 +23,7 @@ kfusion::KinFu::KinFu(const KinFuParams& params) : frame_counter_(0), params_(pa
 
     // initialize cyclical buffer
     cyclical_.initBuffer(volume_);
-	
+
     icp_ = cv::Ptr<cuda::ProjectiveICP>(new cuda::ProjectiveICP());
     icp_->setDistThreshold(params_.icp_dist_thres);
     icp_->setAngleThreshold(params_.icp_angle_thres);
@@ -144,15 +102,15 @@ void kfusion::KinFu::reset(Affine3f initialPose)
 {
     if (frame_counter_)
         cout << "Reset" << endl;
-
+    //initialPose.translate(Vec3f(0, 0, params_.distance_camera_target));
     frame_counter_ = 0;
     poses_.clear();
-    poses_.reserve(60000);
+    //poses_.reserve(60000);
     poses_.push_back(initialPose);
     volume_->clear();
     volume_->setPose(params_.volume_pose);
     cyclical_.resetBuffer (volume_);
-    //cyclical_.resetMesh ();
+    cyclical_.resetMesh();
     has_shifted_=false;
 }
 
@@ -213,10 +171,12 @@ bool kfusion::KinFu::operator()(const kfusion::cuda::Depth& depth, const kfusion
             return reset(), false;
     }
     poses_.push_back(poses_.back() * affine); // curr -> global
-    
+
     // check if we need to shift
-    has_shifted_ = cyclical_.checkForShift(volume_, getCameraPose(), distance_camera_target_ , perform_shift_, perform_last_scan_, record_mode_); 
-	perform_shift_ = false;
+    if(checkForShift_)
+        has_shifted_ = cyclical_.checkForShift(volume_, getCameraPose(), params_.distance_camera_target , perform_shift_, perform_last_scan_, record_mode_);
+
+    perform_shift_ = false;
     ///////////////////////////////////////////////////////////////////////////////////////////
     // Volume integration
     Affine3f local_pose = Affine3f().translate(poses_.back().translation() - volume_->getPose().translation());
@@ -344,5 +304,3 @@ void kfusion::KinFu::renderImage(cuda::Image& image, const Affine3f& pose, Intr 
 
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-
-

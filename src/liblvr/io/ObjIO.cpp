@@ -307,8 +307,18 @@ ModelPtr ObjIO::read(string filename)
 	return m;
 }
 
+class sort_indices
+{
+   private:
+     uintArr faceMaterialIndices;
+   public:
+     sort_indices(uintArr faceMaterialIndices) : faceMaterialIndices(faceMaterialIndices) {}
+     bool operator()(int i, int j) { return faceMaterialIndices[i]<faceMaterialIndices[j]; }
+};
+
 void ObjIO::save( string filename )
 {
+	
 	typedef Vertex<unsigned char> ObjColor;
 
 	size_t lenVertices;
@@ -317,12 +327,14 @@ void ObjIO::save( string filename )
 	size_t lenTextureCoordinates;
 	size_t lenFaceMaterials;
 	size_t lenFaceMaterialIndices;
+	size_t lenColors;
 	coord3fArr vertices           = m_model->m_mesh->getIndexedVertexArray( lenVertices );
 	coord3fArr normals            = m_model->m_mesh->getIndexedVertexNormalArray( lenNormals );
 	coord3fArr textureCoordinates = m_model->m_mesh->getIndexedVertexTextureCoordinateArray( lenTextureCoordinates );
 	uintArr    faceIndices        = m_model->m_mesh->getFaceArray( lenFaces );
 	materialArr materials		  = m_model->m_mesh->getMaterialArray(lenFaceMaterials);
 	uintArr	faceMaterialIndices   = m_model->m_mesh->getFaceMaterialIndexArray(lenFaceMaterialIndices);
+	ucharArr colors 			  = m_model->m_mesh->getVertexColorArray(lenColors);
 
 	std::map<ObjColor, unsigned int> colorMap;
 
@@ -346,9 +358,17 @@ void ObjIO::save( string filename )
 
 		for( size_t i=0; i < lenVertices; ++i )
 		{
+			
 			out << "v " << vertices[i][0] << " "
 					<< vertices[i][1] << " "
-					<< vertices[i][2] << endl;
+					<< vertices[i][2] << " ";
+					if(lenColors>0){
+						unsigned int r=static_cast<unsigned int>(colors[i*3]),g=static_cast<unsigned int>(colors[i*3+1]),b=static_cast<unsigned int>(colors[i*3+2]);
+						out << static_cast<float>(r)/255.0 << " "
+						<< static_cast<float>(g)/255.0 << " "
+						<< static_cast<float>(b)/255.0 ;
+					}
+					out << endl;
 		}
 
 		out<<endl;
@@ -373,34 +393,128 @@ void ObjIO::save( string filename )
 
 		out << endl << endl << "##  Beginning of faces.\n";
 		// format of a face: f v/vt/vn
-		for( size_t i = 0; i < lenFaces; ++i )
-		{
-			cout << faceMaterialIndices[i] << " " << lenFaceMaterials << endl;
-			Material* m = materials[faceMaterialIndices[i]];
-			if(m->texture_index >= 0)
-			{
-				out << "usemtl texture_" << m->texture_index << endl;
-			}
-			else
-			{
-				out << "usemtl color_" << faceMaterialIndices[i] << endl;
-			}
+		//for( size_t i = 0; i < lenFaces; ++i )
+		//{
+			//cout << faceMaterialIndices[i] << " " << lenFaceMaterials << endl;
+			//Material* m = materials[faceMaterialIndices[i]];
+			//if(m->texture_index >= 0)
+			//{
+				//out << "usemtl texture_" << m->texture_index << endl;
+			//}
+			//else
+			//{
+				//out << "usemtl color_" << faceMaterialIndices[i] << endl;
+			//}
 
-			//unsigned int* faceTextureIndices
-			//float**       textureCoordinates
-			//usemtl....
-			// +1 after every index since in obj the 0-th vertex has index 1.
-			out << "f "
-					<< faceIndices[i * 3 + 0] + 1 << "/"
-					<< faceIndices[i * 3 + 0] + 1 << "/"
-					<< faceIndices[i * 3 + 0] + 1 << " "
-					<< faceIndices[i * 3 + 1] + 1 << "/"
-					<< faceIndices[i * 3 + 1] + 1 << "/"
-					<< faceIndices[i * 3 + 1] + 1 << " "
-					<< faceIndices[i * 3 + 2] + 1 << "/"
-					<< faceIndices[i * 3 + 2] + 1 << "/"
-					<< faceIndices[i * 3 + 2] + 1 << endl;
+			////unsigned int* faceTextureIndices
+			////float**       textureCoordinates
+			////usemtl....
+			//// +1 after every index since in obj the 0-th vertex has index 1.
+			//out << "f "
+					//<< faceIndices[i * 3 + 0] + 1 << "/"
+					//<< faceIndices[i * 3 + 0] + 1 << "/"
+					//<< faceIndices[i * 3 + 0] + 1 << " "
+					//<< faceIndices[i * 3 + 1] + 1 << "/"
+					//<< faceIndices[i * 3 + 1] + 1 << "/"
+					//<< faceIndices[i * 3 + 1] + 1 << " "
+					//<< faceIndices[i * 3 + 2] + 1 << "/"
+					//<< faceIndices[i * 3 + 2] + 1 << "/"
+					//<< faceIndices[i * 3 + 2] + 1 << endl;
+		//}
+		
+		// format of a face: f v/vt/vn
+		
+		std::vector<int> color_indices,texture_indices;
+		
+		//splitting materials in colors an textures
+		for(size_t i = 0; i< lenFaces; ++i)
+		{
+			Material* m = materials[faceMaterialIndices[i]];
+			if(m->texture_index >=0 )
+			{
+				texture_indices.push_back(i);
+			}else{
+				color_indices.push_back(i);
+			}
 		}
+		
+		//sort faceMaterialsIndices: colors, textur_indices 
+		//sort new index lists instead of the faceMaterialIndices
+		std::sort(color_indices.begin(),color_indices.end(),sort_indices(faceMaterialIndices));
+		std::sort(texture_indices.begin(),texture_indices.end(),sort_indices(faceMaterialIndices));
+		
+		//colors
+		for(size_t i = 0; i<color_indices.size() ; i++)
+		{
+			unsigned int first = faceMaterialIndices[color_indices[i]];
+			unsigned int face_index=color_indices[i];
+			
+			if( i == 0 || first != faceMaterialIndices[color_indices[i-1]] )
+			{
+				out << "usemtl color_" << faceMaterialIndices[color_indices[i]] << endl;
+				out << "f "
+					<< faceIndices[face_index * 3 + 0] + 1 << "/"
+					<< faceIndices[face_index * 3 + 0] + 1 << "/"
+					<< faceIndices[face_index * 3 + 0] + 1 << " "
+					<< faceIndices[face_index * 3 + 1] + 1 << "/"
+					<< faceIndices[face_index * 3 + 1] + 1 << "/"
+					<< faceIndices[face_index * 3 + 1] + 1 << " "
+					<< faceIndices[face_index * 3 + 2] + 1 << "/"
+					<< faceIndices[face_index * 3 + 2] + 1 << "/"
+					<< faceIndices[face_index * 3 + 2] + 1 << endl;
+				
+			}else if( first == faceMaterialIndices[color_indices[i-1]] )
+			{
+				out << "f "
+					<< faceIndices[face_index * 3 + 0] + 1 << "/"
+					<< faceIndices[face_index * 3 + 0] + 1 << "/"
+					<< faceIndices[face_index * 3 + 0] + 1 << " "
+					<< faceIndices[face_index * 3 + 1] + 1 << "/"
+					<< faceIndices[face_index * 3 + 1] + 1 << "/"
+					<< faceIndices[face_index * 3 + 1] + 1 << " "
+					<< faceIndices[face_index * 3 + 2] + 1 << "/"
+					<< faceIndices[face_index * 3 + 2] + 1 << "/"
+					<< faceIndices[face_index * 3 + 2] + 1 << endl;
+			}
+		}
+		
+		out<<endl;
+		
+		//textures
+		for(size_t i = 0; i<texture_indices.size() ; i++)
+		{
+			Material* first = materials[faceMaterialIndices[texture_indices[i]]];
+			size_t face_index=texture_indices[i];
+			
+			if(i==0 || first->texture_index != materials[faceMaterialIndices[texture_indices[i-1]]]->texture_index )
+			{
+				out << "usemtl texture_" << first->texture_index << endl;
+				//std::cout << "usemtl texture_" << first->texture_index << std::endl;
+				out << "f "
+					<< faceIndices[face_index * 3 + 0] + 1 << "/"
+					<< faceIndices[face_index * 3 + 0] + 1 << "/"
+					<< faceIndices[face_index * 3 + 0] + 1 << " "
+					<< faceIndices[face_index * 3 + 1] + 1 << "/"
+					<< faceIndices[face_index * 3 + 1] + 1 << "/"
+					<< faceIndices[face_index * 3 + 1] + 1 << " "
+					<< faceIndices[face_index * 3 + 2] + 1 << "/"
+					<< faceIndices[face_index * 3 + 2] + 1 << "/"
+					<< faceIndices[face_index * 3 + 2] + 1 << endl;
+			}else if(first->texture_index == materials[faceMaterialIndices[texture_indices[i-1]]]->texture_index )
+			{ 
+				out << "f "
+					<< faceIndices[face_index * 3 + 0] + 1 << "/"
+					<< faceIndices[face_index * 3 + 0] + 1 << "/"
+					<< faceIndices[face_index * 3 + 0] + 1 << " "
+					<< faceIndices[face_index * 3 + 1] + 1 << "/"
+					<< faceIndices[face_index * 3 + 1] + 1 << "/"
+					<< faceIndices[face_index * 3 + 1] + 1 << " "
+					<< faceIndices[face_index * 3 + 2] + 1 << "/"
+					<< faceIndices[face_index * 3 + 2] + 1 << "/"
+					<< faceIndices[face_index * 3 + 2] + 1 << endl;
+			}
+		}
+
 
 		out<<endl;
 		out.close();
@@ -427,18 +541,19 @@ void ObjIO::save( string filename )
 				mtlFile << "Kd "
 						<< m->r / 255.0f << " "
 						<< m->g / 255.0f << " "
-						<< m->b / 255.0f << endl;
+						<< m->b / 255.0f << endl << endl;
 			}
 			else
 			{
 				mtlFile << "newmtl texture_"      << m->texture_index << endl;
 				mtlFile << "Ka 1.000 1.000 1.000" << endl;
 				mtlFile << "Kd 1.000 1.000 1.000" << endl;
-				mtlFile << "map_Kd texture_"      << m->texture_index << ".ppm" << endl << endl;
+				mtlFile << "map_Kd texture_"      << m->texture_index << ".jpg" << endl << endl;
 			}
 		}
 	}
 	mtlFile.close();
 }
+
 
 } // Namespace lvr
