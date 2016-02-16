@@ -55,7 +55,7 @@ void FusionStage::step()
 	string mesh_notice = ("#### D:                Mesh Fusion " +  to_string(mesh_count_) + "    ####");
 	ScopeTime* fusion_time = new ScopeTime(mesh_notice.c_str());
 
-	bool textures = false;
+	bool textures = true;
 	if(options_)
 	{
 		textures = options_->textures();
@@ -80,16 +80,19 @@ void FusionStage::lastStep()
 	std::cout << "Global amount of faces: " << mesh_->getFaces().size() << endl;
 	mesh_->finalize();
 
-	bool textures = false;
+	bool textures = true;
 	if(options_)
 	{
-		textures = options_->textures();
+	    textures = options_->textures();
 	}
 
+	
 	ModelPtr m( new Model( mesh_->meshBuffer() ) );
+	
+	string meshname = "outmesh";
 	if(!textures)
-		ModelFactory::saveModel( m, string(options_->getOutput() + ".ply"));
+		ModelFactory::saveModel( m, string(meshname + ".ply"));
 	else
-		ModelFactory::saveModel( m, string(options_->getOutput() + ".obj"));
+		ModelFactory::saveModel( m, string(meshname + ".obj"));
 	std::cout << "Finished saving" << std::endl;
 }
