@@ -40,6 +40,7 @@ Region<VertexT, NormalT>::Region(int regionNumber)
 	this->m_regionNumber = regionNumber;
 	this->m_toDelete     = false;
 	this->b_labeled      = false;
+	this->m_unfinished	 = false;
 	this->m_area           = 0;
 }
 

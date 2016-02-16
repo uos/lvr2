@@ -202,20 +202,18 @@ include_directories( ${SLAM6D_INCLUDE_DIR} )
 list(APPEND LVR_INSTALL_INCLUDE_DIRS ${SLAM6D_INSTALL_INCLUDE_DIR})
 
 # KINTINUOUS
-#add_subdirectory(ext/kintinuous)
-#include_directories(${LAS_VEGAS_SOURCE_DIR}/ext/kintinuous/kfusion/include)
+add_subdirectory(ext/kintinuous)
+include_directories(${LAS_VEGAS_SOURCE_DIR}/ext/kintinuous/kfusion/include)
 
 ##############################################################
 # HEADERS
 ##############################################################
 
 include_directories(include)
-
 install(DIRECTORY include/lvr DESTINATION ${CMAKE_INSTALL_INCLUDEDIR})
-
 list(APPEND LVR_INSTALL_INCLUDE_DIRS ${CMAKE_INSTALL_PREFIX}/${CMAKE_INSTALL_INCLUDEDIR})
-
 add_definitions(${LVR_DEFINITIONS})
+
 
 ##############################################################
 # VIEWERS
@@ -261,7 +259,7 @@ add_subdirectory(src/liblvr)
 
 add_subdirectory(src/tools/reconstruct)
 add_subdirectory(src/tools/classifier)
-#add_subdirectory(src/tools/colorize)
+add_subdirectory(src/tools/colorize)
 add_subdirectory(src/tools/scanreduce)
 add_subdirectory(src/tools/convert)
 add_subdirectory(src/tools/asciiconverter)
