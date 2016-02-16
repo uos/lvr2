@@ -343,6 +343,7 @@ int main(int argc, char* argv[])
             string mainPath = it->first;
             boost::replace_all(mainPath, "xyz", "grid");
             HashGrid<ColorVertex<float, unsigned char>, FastBox<ColorVertex<float, unsigned char>, Normal<float> > > mainGrid(mainPath);
+            BoundingBox<ColorVertex<float, unsigned char> > & mbb = mainGrid.getBoundingBox();
             Vertexf maxMainIndices(mainGrid.getMaxIndexX(), mainGrid.getMaxIndexY(), mainGrid.getMaxIndexZ());
             for(auto neighbor : it->second)
             {
@@ -353,11 +354,20 @@ int main(int argc, char* argv[])
                 if(boost::filesystem::exists(neighborPath))
                 {
                     HashGrid<ColorVertex<float, unsigned char>, FastBox<ColorVertex<float, unsigned char>, Normal<float> > > neighborGrid(mainPath);
+
+                    BoundingBox<ColorVertex<float, unsigned char> > & nbb = neighborGrid.getBoundingBox();
+                    ColorVertex<float, unsigned char> posDiff = nbb.getMin() - mbb.getMin();
                     Vertexf & dir = neighbor.first;
                     Vertex<int> diri(dir.x, dir.y, dir.z);
                     diri = diri * -1;
                     size_t x,y,z;
                     size_t  maxx, maxy, maxz;
+
+                    size_t mainAxisId=0;
+                    if     ((diri*-1).x == 1)  mainAxisId = mainGrid.getMaxIndexX();
+                    else if((diri*-1).y == 1)  mainAxisId = mainGrid.getMaxIndexY();
+                    else if((diri*-1).z == 1)  mainAxisId = mainGrid.getMaxIndexZ();
+
 
                     x = y = z = 0;
                     maxx = neighborGrid.getMaxIndexX();
@@ -365,66 +375,261 @@ int main(int argc, char* argv[])
                     maxz = neighborGrid.getMaxIndexZ();
 
                     int lpSideId=0;
+                    int lpSideId2 = 0;
 
                     if		(diri.x == 1)
                     {
                         x = maxx;
                         lpSideId = 0;
+                        lpSideId2 = 5;
                     }
                     else if (diri.y == 1)
                     {
                         y = maxy;
                         lpSideId = 1;
+                        lpSideId2 = 4;
                     }
                     else if (diri.z == 1)
                     {
                         z = maxz;
                         lpSideId = 2;
+                        lpSideId2 = 3;
                     }
                     else if (diri.x == -1)
                     {
                         x = 0;
                         maxx = 0;
                         lpSideId = 3;
+                        lpSideId2 = 2;
                     }
                     else if (diri.y == -1)
                     {
                         y = 0;
                         maxy = 0;
                         lpSideId = 4;
+                        lpSideId2 = 1;
                     }
                     else if (diri.z == -1)
                     {
                         z = 0;
                         maxz = 0;
                         lpSideId = 5;
+                        lpSideId2 = 0;
                     }
                     for(int i = x ; i<=maxx ; i++)
                     {
                         for(int j = y ; j<=maxy; j++)
                         {
-                            for(int k = z ; k<=maxz ; k++)
+
+                            for(int k = z ; k<=maxz; k++)
                             {
-                                for(int l = 0 ; l<4 ; l++)
+                                bool abbruch = false;
+                                float distMW=0;
+                                for(int l = 0 ; l<4 && !abbruch; l++)
                                 {
                                     size_t qp_ID = neighborGrid.findQueryPoint(latticeDirID[lpSideId][l],x,y,z);
-                                    float & distN = neighborGrid.getQueryPoints()[qp_ID].m_distance;
+
+
+                                    if (qp_ID == FastBox<ColorVertex<float, unsigned char>, Normal<float> >::INVALID_INDEX)
+                                    {
+                                        abbruch = true;
+                                        break;
+                                    }
+                                    float  distN = neighborGrid.getQueryPoints()[qp_ID].m_distance;
+                                    distMW +=distN;
+                                    Vertex<int> nv(diri);
+                                    if(nv.x == 0) nv.x = 1;
+                                    else if(nv.x == 1 || nv.x == -1) nv.x = 0;
+                                    if(nv.y == 0) nv.y = 1;
+                                    else if(nv.y == 1 || nv.y == -1) nv.y = 0;
+                                    if(nv.z == 0) nv.z = 1;
+                                    else if(nv.z == 1 || nv.z == -1) nv.z = 0;
+
+                                    Vertex<int> mainCellCoord(x,y,z);
+                                    mainCellCoord.x *= nv.x;
+                                    mainCellCoord.y *= nv.y;
+                                    mainCellCoord.z *= nv.z;
+
+                                    if(mainCellCoord.x == 0) mainCellCoord.x = mainAxisId;
+                                    else if(mainCellCoord.y == 0) mainCellCoord.y = mainAxisId;
+                                    else if(mainCellCoord.z == 0) mainCellCoord.z = mainAxisId;
+
+                                    size_t qpMG_ID = mainGrid.findQueryPoint(latticeDirID[lpSideId2][l],mainCellCoord.x,mainCellCoord.y,mainCellCoord.z);
+
+
+                                    if (qpMG_ID == FastBox<ColorVertex<float, unsigned char>, Normal<float> >::INVALID_INDEX)
+                                    {
+                                        break;
+                                        abbruch = true;
+                                    }
+                                    float  distMGN = mainGrid.getQueryPoints()[qpMG_ID].m_distance;
+                                    distMW +=distMGN;
+                                    if(!abbruch && l ==3)
+                                    {
+                                        distMW = distMW/8;
+                                        for(int m = 0; m<4 ;m++)
+                                        {
+                                            size_t qp_ID = neighborGrid.findQueryPoint(latticeDirID[lpSideId][m],x,y,z);
+                                            neighborGrid.getQueryPoints()[qp_ID].m_distance = distMW;
+                                            size_t qpMG_ID = mainGrid.findQueryPoint(latticeDirID[lpSideId2][m],mainCellCoord.x,mainCellCoord.y,mainCellCoord.z);
+                                            mainGrid.getQueryPoints()[qpMG_ID].m_distance = distMW;
+
+
+
+                                        }
+                                    }
+
+
+
                                 }
+
                             }
 
                         }
                     }
-
+                    cout << timestamp <<" saving grid " << neighborPath << endl;
+                    neighborGrid.serialize(neighborPath);
                 }
 
             }
+            cout << timestamp <<" saving grid " << mainPath << endl;
+            mainGrid.serialize(mainPath);
         }
-        cout << "FINESHED in " << lvr::timestamp  << endl;
+        for(auto it = nmap.begin() ; it != nmap.end() ; it++)
+        {
+            string mainPath = it->first;
+            boost::replace_all(mainPath, "xyz", "grid");
+            std::string filePath;
+
+            ModelPtr model = ModelFactory::readModel( it->first );
+            PointBufferPtr p_loader;
+            if ( !model )
+            {
+                cout << timestamp << "IO Error: Unable to parse " << filePath << endl;
+                exit(-1);
+            }
+            p_loader = model->m_pointCloud;
+            cout << "loaded " << it->first << " with : "<< model->m_pointCloud->getNumPoints() << endl;
+
+            string pcm_name = options.getPCM();
+            psSurface::Ptr surface;
+
+            // Create point set surface object
+            if(pcm_name == "PCL")
+            {
+#ifdef LVR_USE_PCL
+                surface = psSurface::Ptr( new pclSurface(p_loader));
+#else
+                cout << timestamp << "Can't create a PCL point set surface without PCL installed." << endl;
+			exit(-1);
+#endif
+            }
+            else if(pcm_name == "STANN" || pcm_name == "FLANN" || pcm_name == "NABO" || pcm_name == "NANOFLANN")
+            {
+                akSurface* aks = new akSurface(
+                        p_loader, pcm_name,
+                        options.getKn(),
+                        options.getKi(),
+                        options.getKd(),
+                        options.useRansac(),
+                        options.getScanPoseFile()
+                );
+
+                surface = psSurface::Ptr(aks);
+                // Set RANSAC flag
+                if(options.useRansac())
+                {
+                    aks->useRansac(true);
+                }
+            }
+            else
+            {
+                cout << timestamp << "Unable to create PointCloudManager." << endl;
+                cout << timestamp << "Unknown option '" << pcm_name << "'." << endl;
+                cout << timestamp << "Available PCMs are: " << endl;
+                cout << timestamp << "STANN, STANN_RANSAC";
+#ifdef LVR_USE_PCL
+                cout << ", PCL";
+#endif
+#ifdef LVR_USE_NABO
+                cout << ", Nabo";
+#endif
+                cout << endl;
+                return 0;
+            }
+
+            surface->setKd(options.getKd());
+            surface->setKi(options.getKi());
+            surface->setKn(options.getKn());
+            HalfEdgeMesh<ColorVertex<float, unsigned char> , Normal<float> > mesh( surface );
+            // Set recursion depth for region growing
+            if(options.getDepth())
+            {
+                mesh.setDepth(options.getDepth());
+            }
+
+            HashGrid<ColorVertex<float, unsigned char>, FastBox<ColorVertex<float, unsigned char>, Normal<float> > > mainGrid(mainPath);
+            FastReconstructionBase<ColorVertex<float, unsigned char>, Normal<float> >* reconstruction;
+            reconstruction = new FastReconstruction<ColorVertex<float, unsigned char> , Normal<float>, FastBox<ColorVertex<float, unsigned char>, Normal<float> >  >(&mainGrid);
+            reconstruction->getMesh(mesh);
+            //mesh.cleanContours(2);
+            if(options.getDanglingArtifacts())
+            {
+                mesh.removeDanglingArtifacts(options.getDanglingArtifacts());
+            }
+
+            mesh.cleanContours(options.getCleanContourIterations());
+            mesh.setClassifier(options.getClassifier());
+            mesh.getClassifier().setMinRegionSize(options.getSmallRegionThreshold());
+
+            if(options.optimizePlanes())
+            {
+                mesh.optimizePlanes(options.getPlaneIterations(),
+                                    options.getNormalThreshold(),
+                                    options.getMinPlaneSize(),
+                                    options.getSmallRegionThreshold(),
+                                    true);
+
+                mesh.fillHoles(options.getFillHoles());
+                mesh.optimizePlaneIntersections();
+                mesh.restorePlanes(options.getMinPlaneSize());
+
+                if(options.getNumEdgeCollapses())
+                {
+                    QuadricVertexCosts<ColorVertex<float, unsigned char> , Normal<float> > c = QuadricVertexCosts<ColorVertex<float, unsigned char> , Normal<float> >(true);
+                    mesh.reduceMeshByCollapse(options.getNumEdgeCollapses(), c);
+                }
+            }
+            else if(options.clusterPlanes())
+            {
+                mesh.clusterRegions(options.getNormalThreshold(), options.getMinPlaneSize());
+                mesh.fillHoles(options.getFillHoles());
+            }
+
+
+            if ( options.retesselate() )
+            {
+                mesh.finalizeAndRetesselate(options.generateTextures(), options.getLineFusionThreshold());
+            }
+            else
+            {
+                mesh.finalize();
+            }
+            ModelPtr m( new Model( mesh.meshBuffer() ) );
+
+            string output = it->first;
+            output.pop_back();
+            output.pop_back();
+            output.pop_back();
+            output.append("ply");
+            ModelFactory::saveModel( m, output);
+        }
+        cout << "FINESHED in " << lvr::timestamp << endl;
         world.abort(0);
     }
         //---------------------------------------------
         // SLAVE NODE
-        //---------------------------------------------
+        //--------------------------------------------
     else
     {
         bool ready = false;
