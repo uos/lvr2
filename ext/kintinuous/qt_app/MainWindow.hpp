@@ -43,6 +43,7 @@ public:
 public Q_SLOTS:
 	void pollGPUData();
 	void finalizeMesh();
+	void updateMesh(vtkActor*);
 
 private:
 	void setupVTK();
@@ -56,9 +57,12 @@ private:
 
     vtkSmartPointer<vtkRenderer>                m_renderer;
     vtkSmartPointer<vtkRenderWindowInteractor>  m_renderWindowInteractor;
+    vtkSmartPointer<vtkOrientationMarkerWidget> m_axesWidget;
+    vtkSmartPointer<vtkAxesActor> 				m_axes;
+    vtkActor*									m_meshActor;
 
     MeshUpdateThread*							m_meshThread;
-
+    vector<Affine3f> sample_poses_;
 };
 
 #endif /* EXT_KINTINUOUS_QT_APP_MAINWINDOW_HPP_ */
