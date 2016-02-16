@@ -22,16 +22,17 @@ public:
 	typedef unordered_map<size_t, BoxT*> box_map;
 	typedef unordered_map<size_t, size_t> qp_map;
 	typedef unordered_map<size_t, uint*> smallBox_map;;
-	
+
 	typedef unordered_map<size_t, size_t>::iterator qp_map_iterator;
 	/// Typedef to alias iterators for box maps
 	typedef typename unordered_map<size_t, BoxT*>::iterator  box_map_it;;
 
 	/// Typedef to alias iterators to query points
 	typedef typename vector<QueryPoint<VertexT> >::iterator	query_point_it;
-	
+
 	TsdfGrid(float cellSize,  BoundingBox<VertexT> bb, TsdfT* tsdf, size_t size,
 			int shiftX, int shiftY, int shiftZ,
+			int backShiftX, int backShiftY, int backShiftZ,
 			TsdfGrid<VertexT, BoxT, TsdfT>* lastGrid, bool isVoxelsize = true);
 	virtual ~TsdfGrid();
 	virtual void addLatticePoint(int index_x, int index_y, int index_z, float distance = 0);
@@ -43,6 +44,8 @@ public:
     {
         return f < 0 ? f-.5:f+.5;
     }
+    box_map m_old_fusion_cells;
+    box_map m_fusion_cells_neighbors;
     box_map m_fusion_cells;
     qp_map	m_fusion_qpIndices;
     smallBox_map m_global_cells;
@@ -50,8 +53,10 @@ public:
     int m_fusionIndex_x;
     int m_fusionIndex_y;
     int m_fusionIndex_z;
+    int m_oldFusionIndex_x;
+    int m_oldFusionIndex_y;
+    int m_oldFusionIndex_z;
     int m_fusionIndex;
-    
 };
 
 } /* namespace lvr */

@@ -26,7 +26,7 @@ struct kfusion::OpenNISource::Impl
   bool has_image;
 };
 
-kfusion::OpenNISource::OpenNISource() 
+kfusion::OpenNISource::OpenNISource()
   : depth_focal_length_VGA (0.f)
   , baseline (0.f)
   , shadow_value (0)
@@ -87,30 +87,30 @@ void kfusion::OpenNISource::open(const std::string& filename)
       sprintf (impl_->strError, "Init failed: %s\n", openni::OpenNI::getExtendedError() );
       REPORT_ERROR (impl_->strError);
     }
-    
+
     rc = impl_->colorStream.create(impl_->device, openni::SENSOR_COLOR);
     if (rc != openni::STATUS_OK)
     {
       sprintf (impl_->strError, "Init failed: %s\n", openni::OpenNI::getExtendedError() );
       REPORT_ERROR (impl_->strError);
     }
-    
+
     rc = impl_->depthStream.create(impl_->device, openni::SENSOR_DEPTH);
     if (rc != openni::STATUS_OK)
     {
       sprintf (impl_->strError, "Init failed: %s\n", openni::OpenNI::getExtendedError() );
       REPORT_ERROR (impl_->strError);
     }
-    
+
     if(isOni_)
 	{
-		impl_->device.getPlaybackControl()->setRepeatEnabled(false); 
+		impl_->device.getPlaybackControl()->setRepeatEnabled(false);
 		maxFrameIndex_ = impl_->device.getPlaybackControl()->getNumberOfFrames(impl_->depthStream) - 10;
 	}
 	else
 	{
 		openni::VideoMode colorMode;
-		colorMode.setResolution (640, 480);
+		colorMode.setResolution (1280, 1024);
 		colorMode.setFps(30);
 		colorMode.setPixelFormat(openni::PIXEL_FORMAT_RGB888);
 
@@ -119,7 +119,7 @@ void kfusion::OpenNISource::open(const std::string& filename)
 		depthMode.setFps(30);
 		//depthMode.setPixelFormat(openni::PIXEL_FORMAT_RGB888);
 		depthMode.setPixelFormat(openni::PIXEL_FORMAT_DEPTH_1_MM);
-		
+
 		rc = impl_->colorStream.setVideoMode(colorMode);
 		if (rc != openni::STATUS_OK)
 		{
@@ -142,7 +142,7 @@ void kfusion::OpenNISource::open(const std::string& filename)
 		rec_.attach(impl_->depthStream);
 		rec_.attach(impl_->colorStream);
 	}
-	
+
     getParams ();
 
     rc = impl_->colorStream.start();
@@ -158,8 +158,22 @@ void kfusion::OpenNISource::open(const std::string& filename)
       sprintf (impl_->strError, "Init failed: %s\n", openni::OpenNI::getExtendedError() );
       REPORT_ERROR (impl_->strError);
     }
-    
+
 }
+
+void kfusion::OpenNISource::triggerPause()
+{
+	double speed = impl_->device.getPlaybackControl()->getSpeed();
+	if(isOni_ && speed == 1.0)
+	{
+		impl_->device.getPlaybackControl()->setSpeed(-1.0);
+	}
+	else if (isOni_ && speed == -1.0)
+	{
+		impl_->device.getPlaybackControl()->setSpeed(1.0);
+	}
+}
+
 
 void kfusion::OpenNISource::triggerRecord()
 {
@@ -185,7 +199,7 @@ void kfusion::OpenNISource::triggerRecord()
 		printf ("Stop recording.\n");
 	}
 }
-		
+
 void kfusion::OpenNISource::release ()
 {
     if (impl_)
@@ -225,10 +239,7 @@ int kfusion::OpenNISource::grab(cv::Mat& depth, cv::Mat& color)
         sprintf (impl_->strError, "Frame grab failed: %s\n", openni::OpenNI::getExtendedError() );
         REPORT_ERROR (impl_->strError);
       }
-	  int frame = impl_->depthFrame.getFrameIndex();
-	  if(frame > maxFrameIndex_)
-		return 2;
-		
+
       const void* pDepth = impl_->depthFrame.getData();
       int x = impl_->depthFrame.getWidth();
       int y = impl_->depthFrame.getHeight();
@@ -253,12 +264,17 @@ int kfusion::OpenNISource::grab(cv::Mat& depth, cv::Mat& color)
       int x = impl_->colorFrame.getWidth();
       int y = impl_->colorFrame.getHeight();
       cv::Mat(y, x, CV_8UC3, (void*)pColor).copyTo(color);
+      cv::cvtColor(color, color, cv::COLOR_RGB2BGR);
     }
     else
     {
         color.release();
         printf ("no color\n");
     }
+
+    int frame = impl_->depthFrame.getFrameIndex();
+    if(frame > maxFrameIndex_)
+      return 2;
 
     return impl_->has_image || impl_->has_depth;
 }

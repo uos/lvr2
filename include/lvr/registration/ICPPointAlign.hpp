@@ -49,9 +49,10 @@ public:
     double  getMaxMatchDistance();
     int     getMaxIterations();
 
+    void getPointPairs(PointPairVector& pairs, Vertexf& centroid_m, Vertexf& centroid_d, double& sum);
+
 protected:
 
-    void getPointPairs(PointPairVector& pairs, Vertexf& centroid_m, Vertexf& centroid_d, double& sum);
     void transform();
 
     double                              m_epsilon;

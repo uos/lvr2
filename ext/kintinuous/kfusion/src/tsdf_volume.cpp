@@ -2,7 +2,7 @@
 
 using namespace kfusion;
 using namespace kfusion::cuda;
-	
+
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 /// TsdfVolume::Entry
 
@@ -71,7 +71,7 @@ void kfusion::cuda::TsdfVolume::swap(CudaData& data) { data_.swap(data); }
 void kfusion::cuda::TsdfVolume::applyAffine(const Affine3f& affine) { pose_ = affine * pose_; }
 
 void kfusion::cuda::TsdfVolume::clear()
-{ 
+{
     device::Vec3i dims = device_cast<device::Vec3i>(dims_);
     device::Vec3f vsz  = device_cast<device::Vec3f>(getVoxelSize());
 
@@ -83,7 +83,7 @@ void kfusion::cuda::TsdfVolume::clearSlice(const kfusion::tsdf_buffer* buffer, c
 {
     device::Vec3i dims = device_cast<device::Vec3i>(dims_);
     device::Vec3f vsz  = device_cast<device::Vec3f>(getVoxelSize());
-	
+
 	device::Vec3i offset_c;
 	offset_c.x = offset[0];
 	offset_c.y = offset[1];
@@ -183,39 +183,35 @@ void kfusion::cuda::TsdfVolume::fetchNormals(const DeviceArray<Point>& cloud, co
 DeviceArray<Point>
 kfusion::cuda::TsdfVolume::fetchSliceAsCloud (DeviceArray<Point>& cloud_buffer, const kfusion::tsdf_buffer* buffer, const Vec3i minBounds, const Vec3i maxBounds, const Vec3i globalShift ) const
 {
-  
+
     enum { DEFAULT_CLOUD_BUFFER_SIZE = 10 * 1000 * 1000 };
     if (cloud_buffer.empty ())
-      cloud_buffer.create (DEFAULT_CLOUD_BUFFER_SIZE/2);
+      cloud_buffer.create (DEFAULT_CLOUD_BUFFER_SIZE);
 
 	DeviceArray<device::Point>& b = (DeviceArray<device::Point>&)cloud_buffer;
-	
+
 	device::Vec3i dims = device_cast<device::Vec3i>(dims_);
 	device::Vec3i deviceGlobalShift;
 	deviceGlobalShift.x = globalShift[0];
 	deviceGlobalShift.y = globalShift[1];
 	deviceGlobalShift.z = globalShift[2];
-	
+
 	device::Vec3i minBounds_c;
 	minBounds_c.x = minBounds[0];
 	minBounds_c.y = minBounds[1];
 	minBounds_c.z = minBounds[2];
-	
+
 	device::Vec3i maxBounds_c;
 	maxBounds_c.x = maxBounds[0];
 	maxBounds_c.y = maxBounds[1];
 	maxBounds_c.z = maxBounds[2];
-	
+
     device::Vec3f vsz  = device_cast<device::Vec3f>(getVoxelSize());
     device::Aff3f aff  = device_cast<device::Aff3f>(pose_);
 
     device::TsdfVolume volume((ushort2*)data_.ptr<ushort2>(), dims, vsz, trunc_dist_, max_weight_);
-    
+
     size_t size = extractSliceAsCloud (volume, buffer, minBounds_c, maxBounds_c, deviceGlobalShift, aff, b);
 
     return DeviceArray<Point>((Point*)cloud_buffer.ptr(), size);
 }
-
-
-
-
