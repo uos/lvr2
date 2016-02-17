@@ -1,4 +1,4 @@
-include_directories(${CMAKE_SOURCE_DIR}/kfusion/include)
+include_directories(${CMAKE_SOURCE_DIR}/ext/kintinuous/kfusion/include)
 link_directories(${LSSR_LIBRARIES} /usr/lib/x86_64-linux-gnu/)
 
 file(GLOB srcs *.cpp *.hpp)
