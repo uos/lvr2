@@ -9,7 +9,9 @@ set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/bin)
 set(CMAKE_LIBRARY_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/lib)
 set(CMAKE_ARCHIVE_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/lib)
 
-set(CMAKE_MODULE_PATH ${LAS_VEGAS_SOURCE_DIR}/CMakeModules ${CMAKE_MODULE_PATH})
+set(CMAKE_MODULE_PATH ${LAS_VEGAS_SOURCE_DIR}/CMakeModules ${LAS_VEGAS_SOURCE_DIR}/ext/kintinuous/cmake/Modules ${CMAKE_MODULE_PATH})
+
+message(STATUS ${CMAKE_MODULE_PATH})
 
 include_directories(include)
 
@@ -33,9 +35,15 @@ endif()
 ###############################################################
 
 ####
+## Searching for CUDA
+##############################
+find_package( CUDA )
+
+
+####
 ## Searching for OpenCV
 ##############################
-find_package( OpenCV REQUIRED )
+find_package( OpenCV 2.4.8 REQUIRED )
 
 ####
 ## Searching for Eigen3
@@ -204,8 +212,11 @@ include_directories( ${SLAM6D_INCLUDE_DIR} )
 list(APPEND LVR_INSTALL_INCLUDE_DIRS ${SLAM6D_INSTALL_INCLUDE_DIR})
 
 # KINTINUOUS
+if(CUDA_FOUND AND "${OpenCV_VERSION_PATCH}" VERSION_GREATER "8")
+message(STATUS "Building LVR KinFu")
 add_subdirectory(ext/kintinuous)
 include_directories(${LAS_VEGAS_SOURCE_DIR}/ext/kintinuous/kfusion/include)
+endif()
 
 ##############################################################
 # HEADERS
