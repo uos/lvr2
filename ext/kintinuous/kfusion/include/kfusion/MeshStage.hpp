@@ -43,17 +43,17 @@
 #include "AbstractStage.hpp"
 #include "BlockingQueue.hpp"
 #include <boost/any.hpp>
-#include <reconstruction/FastReconstruction.hpp>
-#include <reconstruction/TSDFGrid.hpp>
-#include <reconstruction/PointsetSurface.hpp>
-#include <reconstruction/FastKinFuBox.hpp>
-#include <io/PointBuffer.hpp>
-#include <io/DataStruct.hpp>
-#include <geometry/HalfEdgeVertex.hpp>
-#include <geometry/HalfEdgeKinFuMesh.hpp>
-#include <geometry/BoundingBox.hpp>
+#include <lvr/reconstruction/FastReconstruction.hpp>
+#include <lvr/reconstruction/TSDFGrid.hpp>
+#include <lvr/reconstruction/PointsetSurface.hpp>
+#include <lvr/reconstruction/FastKinFuBox.hpp>
+#include <lvr/io/PointBuffer.hpp>
+#include <lvr/io/DataStruct.hpp>
+#include <lvr/geometry/HalfEdgeVertex.hpp>
+#include <lvr/geometry/HalfEdgeKinFuMesh.hpp>
+#include <lvr/geometry/BoundingBox.hpp>
 #include <kfusion/types.hpp>
-#include "geometry/Matrix4.hpp"
+#include <lvr/geometry/Matrix4.hpp>
 #include <opencv2/flann/flann.hpp>
 
 

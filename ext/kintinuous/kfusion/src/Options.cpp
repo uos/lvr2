@@ -25,7 +25,7 @@
  */
 
 #include <kfusion/Options.hpp>
-#include "config/lvropenmp.hpp"
+#include <lvr/config/lvropenmp.hpp>
 
 namespace kfusion{
 
