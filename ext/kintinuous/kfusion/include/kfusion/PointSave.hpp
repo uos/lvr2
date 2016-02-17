@@ -4,7 +4,7 @@
 
 #include <opencv2/core/core.hpp>
 #include <opencv2/highgui/highgui.hpp>
-#include <geometry/ColorVertex.hpp>
+#include <lvr/geometry/ColorVertex.hpp>
 
 
 #include <kfusion/types.hpp>

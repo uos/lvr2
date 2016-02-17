@@ -37,8 +37,8 @@
  */
 
 #include <kfusion/MeshStage.hpp>
-#include <registration/ICPPointAlign.hpp>
-#include <io/DataStruct.hpp>
+#include <lvr/registration/ICPPointAlign.hpp>
+#include <lvr/io/DataStruct.hpp>
 
 // default constructor
 MeshStage::MeshStage(double camera_target_distance, double voxel_size, Options* options) : AbstractStage(),

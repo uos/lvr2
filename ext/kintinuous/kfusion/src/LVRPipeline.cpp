@@ -55,7 +55,7 @@ namespace kfusion
 			meshPtr_->setQuiet(true);
 		}
 
-		omp_set_num_threads(omp_get_num_procs());
+		//omp_set_num_threads(omp_get_num_procs());
 
 		// Adding the single processing stages to the pipeline
 		pl_.AddStage(

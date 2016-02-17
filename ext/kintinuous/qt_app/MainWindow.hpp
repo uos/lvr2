@@ -10,7 +10,7 @@
 
 #include <QtGui>
 
-#include <kfusion/kinfu.hpp>
+#include "../kfusion/include/kfusion/kinfu.hpp"
 #include <io/capture.hpp>
 
 #include "KinfuMainWindow.h"
