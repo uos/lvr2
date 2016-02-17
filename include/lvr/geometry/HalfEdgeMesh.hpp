@@ -54,8 +54,8 @@
 #endif
 
 //mein zeugs
-#include <opencv2/opencv.hpp>
-#include <kfusion/types.hpp>
+//#include <opencv2/opencv.hpp>
+//#include <kfusion/types.hpp>
 
 
 using namespace std;
