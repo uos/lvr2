@@ -5,7 +5,7 @@
 #include <opencv2/imgproc/imgproc.hpp>
 #include <opencv2/viz/vizcore.hpp>
 #include <kfusion/kinfu.hpp>
-#include <geometry/HalfEdgeVertex.hpp>
+#include <lvr/geometry/HalfEdgeVertex.hpp>
 
 #include <io/capture.hpp>
 

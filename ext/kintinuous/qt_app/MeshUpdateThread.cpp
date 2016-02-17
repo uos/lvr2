@@ -162,7 +162,6 @@ void MeshUpdateThread::run()
 	while(true)
 	{
 		auto b = m_kinfu->cyclical().getMesh();
-		m_kinfu->cyclical()
 		computeMeshActor(b);
 		Q_EMIT(meshUpdate(m_meshActor));
 	}
