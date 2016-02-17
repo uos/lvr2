@@ -27,10 +27,10 @@
 #ifndef FastKinFuBox_H_
 #define FastKinFuBox_H_
 
-#include "geometry/Vertex.hpp"
-#include "geometry/Normal.hpp"
-#include "reconstruction/FastBox.hpp"
-#include "geometry/HalfEdgeKinFuMesh.hpp"
+#include <lvr/geometry/Vertex.hpp>
+#include <lvr/geometry/Normal.hpp>
+#include <lvr/reconstruction/FastBox.hpp>
+#include <lvr/geometry/HalfEdgeKinFuMesh.hpp>
 #include <vector>
 #include <limits>
 
