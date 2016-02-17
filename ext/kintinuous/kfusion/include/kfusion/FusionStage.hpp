@@ -43,13 +43,13 @@
 #include "BlockingQueue.hpp"
 #include <list>
 #include <boost/any.hpp>
-#include <reconstruction/PointsetSurface.hpp>
-#include <io/PointBuffer.hpp>
-#include <io/DataStruct.hpp>
-#include <io/Timestamp.hpp>
-#include <geometry/HalfEdgeVertex.hpp>
-#include <geometry/HalfEdgeKinFuMesh.hpp>
-#include <geometry/BoundingBox.hpp>
+#include <lvr/reconstruction/PointsetSurface.hpp>
+#include <lvr/io/PointBuffer.hpp>
+#include <lvr/io/DataStruct.hpp>
+#include <lvr/io/Timestamp.hpp>
+#include <lvr/geometry/HalfEdgeVertex.hpp>
+#include <lvr/geometry/HalfEdgeKinFuMesh.hpp>
+#include <lvr/geometry/BoundingBox.hpp>
 #include <kfusion/types.hpp>
 
 
