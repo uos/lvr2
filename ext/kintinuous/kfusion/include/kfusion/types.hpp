@@ -10,12 +10,16 @@
 
 struct CUevent_st;
 
+
+
 namespace kfusion
 {
+class Options;
+
     typedef cv::Matx33f Mat3f;
     typedef cv::Vec3f Vec3f;
-        typedef cv::Vec3i Vec3i;
-typedef cv::Affine3f Affine3f;
+    typedef cv::Vec3i Vec3i;
+    typedef cv::Affine3f Affine3f;
 
     struct KF_EXPORTS Intr
     {
@@ -159,7 +163,7 @@ typedef cv::Affine3f Affine3f;
 
         Vec3f light_pose; //meters
 
-		Options* cmd_options; // cmd_options
+		kfusion::Options* cmd_options; // cmd_options
 
     };
 
