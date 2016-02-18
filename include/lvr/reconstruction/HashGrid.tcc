@@ -174,6 +174,7 @@ HashGrid<VertexT, BoxT>::HashGrid(string file)
 			}
 		}
 	}
+	cout << "finished readhing grid" << endl;
 
 
 }
