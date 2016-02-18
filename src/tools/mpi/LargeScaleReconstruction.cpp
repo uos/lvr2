@@ -203,6 +203,11 @@ int main(int argc, char* argv[])
         {
             cout << lvr::timestamp << leafs[i]->getFilePath() << " size: " << leafs[i]->getSize() << endl;
         }
+        vector<string> nodePaths(leafs.size());
+        for(int i = 0 ; i< leafs.size() ; i++)
+        {
+            nodePaths.push_back(leafs[i]->getFilePath());
+        }
 
         //leafs.resize(std::distance(nodes.begin(),it));  // shrink container to new size
         cout << lvr::timestamp << "...got leafs, amount = " <<  leafs.size()<< endl;
@@ -351,6 +356,7 @@ int main(int argc, char* argv[])
             {
 
                 string neighborPath = neighbor.second->getFilePath();
+                if(std::find(nodePaths.begin(), nodePaths.end(), neighborPath) == nodePaths.end()) break;
                 cout << "interpolating points of " << it->first << " with: " << neighborPath<< endl;
                 boost::replace_all(neighborPath, "xyz", "grid");
 
