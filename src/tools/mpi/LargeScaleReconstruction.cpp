@@ -184,6 +184,7 @@ int main(int argc, char* argv[])
         clock_t end = clock();
         vector<LargeScaleOctree*> nodes = octree.getNodes() ;
         vector<LargeScaleOctree*> leafs;
+        vector<LargeScaleOctree*> originleafs;
 
         //auto it = std::copy_if (nodes.begin(), nodes.end(), leafs.begin(), [](LargeScaleOctree* oc){return oc->isLeaf();} );
         size_t minSize = std::max(std::max(options.getKn(), options.getKd()), options.getKi());
@@ -205,7 +206,7 @@ int main(int argc, char* argv[])
 
         //leafs.resize(std::distance(nodes.begin(),it));  // shrink container to new size
         cout << lvr::timestamp << "...got leafs, amount = " <<  leafs.size()<< endl;
-
+        originleafs = leafs;
         //Creating neighbor map
         std::map<string,vector<std::pair<Vertexf, LargeScaleOctree*> > > nmap;
         for(LargeScaleOctree* OTNode : leafs)
@@ -340,6 +341,7 @@ int main(int argc, char* argv[])
 
         for(auto it = nmap.begin() ; it != nmap.end() ; it++)
         {
+
             string mainPath = it->first;
             boost::replace_all(mainPath, "xyz", "grid");
             HashGrid<ColorVertex<float, unsigned char>, FastBox<ColorVertex<float, unsigned char>, Normal<float> > > mainGrid(mainPath);
@@ -347,13 +349,15 @@ int main(int argc, char* argv[])
             Vertexf maxMainIndices(mainGrid.getMaxIndexX(), mainGrid.getMaxIndexY(), mainGrid.getMaxIndexZ());
             for(auto neighbor : it->second)
             {
+
                 string neighborPath = neighbor.second->getFilePath();
+                cout << "interpolating points of " << it->first << " with: " << neighborPath<< endl;
                 boost::replace_all(neighborPath, "xyz", "grid");
 
 
                 if(boost::filesystem::exists(neighborPath))
                 {
-                    HashGrid<ColorVertex<float, unsigned char>, FastBox<ColorVertex<float, unsigned char>, Normal<float> > > neighborGrid(mainPath);
+                    HashGrid<ColorVertex<float, unsigned char>, FastBox<ColorVertex<float, unsigned char>, Normal<float> > > neighborGrid(neighborPath);
 
                     BoundingBox<ColorVertex<float, unsigned char> > & nbb = neighborGrid.getBoundingBox();
                     ColorVertex<float, unsigned char> posDiff = nbb.getMin() - mbb.getMin();
@@ -495,134 +499,59 @@ int main(int argc, char* argv[])
             cout << timestamp <<" saving grid " << mainPath << endl;
             mainGrid.serialize(mainPath);
         }
-        for(auto it = nmap.begin() ; it != nmap.end() ; it++)
+
+        std::vector<string> grids(nmap.size());
+
+        for(int i = 0 ; i<originleafs.size() ;i++)
         {
-            string mainPath = it->first;
+            string mainPath = originleafs[i]->getFilePath();
             boost::replace_all(mainPath, "xyz", "grid");
-            std::string filePath;
+            grids.push_back(mainPath);
 
-            ModelPtr model = ModelFactory::readModel( it->first );
-            PointBufferPtr p_loader;
-            if ( !model )
+        }
+
+
+        while(! waitingfor.empty()) waitingfor.pop();
+        for(int i = 1 ; i< world.size() && !grids.empty() ; i++)
+        {
+            cout << "...sending to " << i << " do:  " << grids.back() << endl;
+            world.send(i, DATA, grids.back());
+            waitingfor.push(1);
+            cout << "...poping to " << i << endl;
+            grids.pop_back();
+        }
+        cout << "...got grids" << endl;
+        //WHILE DATA to send
+
+        while(! grids.empty() || waitingfor.size()>0)
+        {
+            cout << "grids left: " << grids.size() << endl;
+            string msg;
+            mpi::status requests = world.recv(boost::mpi::any_source, FINISHED, msg);
+            waitingfor.pop();
+            cout << "######## rank 0 got message" << endl;
+
+            //cout << "######## testing " << requests.test()<< endl;
+            int rid = requests.source();
+            cout << "from" << requests.source() << endl;
+            cout << "QQQQQQQQQQQQQQQQQQQQQQQQ " << waitingfor.size() << "|" << grids.size() << endl;
+            if(! grids.empty())
             {
-                cout << timestamp << "IO Error: Unable to parse " << filePath << endl;
-                exit(-1);
+                world.send(rid, DATA, grids.back());
+                grids.pop_back();
+                waitingfor.push(1);
             }
-            p_loader = model->m_pointCloud;
-            cout << "loaded " << it->first << " with : "<< model->m_pointCloud->getNumPoints() << endl;
-
-            string pcm_name = options.getPCM();
-            psSurface::Ptr surface;
-
-            // Create point set surface object
-            if(pcm_name == "PCL")
+            else if(waitingfor.size()==0)
             {
-#ifdef LVR_USE_PCL
-                surface = psSurface::Ptr( new pclSurface(p_loader));
-#else
-                cout << timestamp << "Can't create a PCL point set surface without PCL installed." << endl;
-			exit(-1);
-#endif
-            }
-            else if(pcm_name == "STANN" || pcm_name == "FLANN" || pcm_name == "NABO" || pcm_name == "NANOFLANN")
-            {
-                akSurface* aks = new akSurface(
-                        p_loader, pcm_name,
-                        options.getKn(),
-                        options.getKi(),
-                        options.getKd(),
-                        options.useRansac(),
-                        options.getScanPoseFile()
-                );
-
-                surface = psSurface::Ptr(aks);
-                // Set RANSAC flag
-                if(options.useRansac())
+                for(int i = 1 ; i< world.size() && !grids.empty() ; i++)
                 {
-                    aks->useRansac(true);
+                    cout << "...sending to " << i << " finished"  << endl;
+                    world.send(i, DATA, "ready");
+
                 }
-            }
-            else
-            {
-                cout << timestamp << "Unable to create PointCloudManager." << endl;
-                cout << timestamp << "Unknown option '" << pcm_name << "'." << endl;
-                cout << timestamp << "Available PCMs are: " << endl;
-                cout << timestamp << "STANN, STANN_RANSAC";
-#ifdef LVR_USE_PCL
-                cout << ", PCL";
-#endif
-#ifdef LVR_USE_NABO
-                cout << ", Nabo";
-#endif
-                cout << endl;
-                return 0;
+                break;
             }
 
-            surface->setKd(options.getKd());
-            surface->setKi(options.getKi());
-            surface->setKn(options.getKn());
-            HalfEdgeMesh<ColorVertex<float, unsigned char> , Normal<float> > mesh( surface );
-            // Set recursion depth for region growing
-            if(options.getDepth())
-            {
-                mesh.setDepth(options.getDepth());
-            }
-
-            HashGrid<ColorVertex<float, unsigned char>, FastBox<ColorVertex<float, unsigned char>, Normal<float> > > mainGrid(mainPath);
-            FastReconstructionBase<ColorVertex<float, unsigned char>, Normal<float> >* reconstruction;
-            reconstruction = new FastReconstruction<ColorVertex<float, unsigned char> , Normal<float>, FastBox<ColorVertex<float, unsigned char>, Normal<float> >  >(&mainGrid);
-            reconstruction->getMesh(mesh);
-            //mesh.cleanContours(2);
-            if(options.getDanglingArtifacts())
-            {
-                mesh.removeDanglingArtifacts(options.getDanglingArtifacts());
-            }
-
-            mesh.cleanContours(options.getCleanContourIterations());
-            mesh.setClassifier(options.getClassifier());
-            mesh.getClassifier().setMinRegionSize(options.getSmallRegionThreshold());
-
-            if(options.optimizePlanes())
-            {
-                mesh.optimizePlanes(options.getPlaneIterations(),
-                                    options.getNormalThreshold(),
-                                    options.getMinPlaneSize(),
-                                    options.getSmallRegionThreshold(),
-                                    true);
-
-                mesh.fillHoles(options.getFillHoles());
-                mesh.optimizePlaneIntersections();
-                mesh.restorePlanes(options.getMinPlaneSize());
-
-                if(options.getNumEdgeCollapses())
-                {
-                    QuadricVertexCosts<ColorVertex<float, unsigned char> , Normal<float> > c = QuadricVertexCosts<ColorVertex<float, unsigned char> , Normal<float> >(true);
-                    mesh.reduceMeshByCollapse(options.getNumEdgeCollapses(), c);
-                }
-            }
-            else if(options.clusterPlanes())
-            {
-                mesh.clusterRegions(options.getNormalThreshold(), options.getMinPlaneSize());
-                mesh.fillHoles(options.getFillHoles());
-            }
-
-
-            if ( options.retesselate() )
-            {
-                mesh.finalizeAndRetesselate(options.generateTextures(), options.getLineFusionThreshold());
-            }
-            else
-            {
-                mesh.finalize();
-            }
-            ModelPtr m( new Model( mesh.meshBuffer() ) );
-
-            string output = it->first;
-            output.pop_back();
-            output.pop_back();
-            output.pop_back();
-            output.append("ply");
-            ModelFactory::saveModel( m, output);
         }
         cout << "FINESHED in " << lvr::timestamp << endl;
         world.abort(0);
@@ -639,199 +568,271 @@ int main(int argc, char* argv[])
             world.recv(0, DATA, filePath);
             if(filePath=="ready") break;
             std::cout << "NODE: " << world.rank() << " will use file: " << filePath << endl;
-            ModelPtr model = ModelFactory::readModel( filePath );
-            PointBufferPtr p_loader;
-            if ( !model )
-            {
-                cout << timestamp << "IO Error: Unable to parse " << filePath << endl;
-                exit(-1);
-            }
-            p_loader = model->m_pointCloud;
 
-            string pcm_name = options.getPCM();
-            psSurface::Ptr surface;
 
-            // Create point set surface object
-            if(pcm_name == "PCL")
+            //If filePath does not contain "grid" it will generate a grid
+            // else ist will generate a mesh from a given grid file
+            if(filePath.find("xyz") != std::string::npos)
             {
+                ModelPtr model = ModelFactory::readModel( filePath );
+                PointBufferPtr p_loader;
+                if ( !model )
+                {
+                    cout << timestamp << "IO Error: Unable to parse " << filePath << endl;
+                    exit(-1);
+                }
+                p_loader = model->m_pointCloud;
+
+                string pcm_name = options.getPCM();
+                psSurface::Ptr surface;
+
+                // Create point set surface object
+                if(pcm_name == "PCL")
+                {
 #ifdef LVR_USE_PCL
-                surface = psSurface::Ptr( new pclSurface(p_loader));
+                    surface = psSurface::Ptr( new pclSurface(p_loader));
 #else
-                cout << timestamp << "Can't create a PCL point set surface without PCL installed." << endl;
+                    cout << timestamp << "Can't create a PCL point set surface without PCL installed." << endl;
 			exit(-1);
 #endif
-            }
-            else if(pcm_name == "STANN" || pcm_name == "FLANN" || pcm_name == "NABO" || pcm_name == "NANOFLANN")
-            {
-                akSurface* aks = new akSurface(
-                        p_loader, pcm_name,
-                        options.getKn(),
-                        options.getKi(),
-                        options.getKd(),
-                        options.useRansac(),
-                        options.getScanPoseFile()
-                );
-
-                surface = psSurface::Ptr(aks);
-                // Set RANSAC flag
-                if(options.useRansac())
-                {
-                    aks->useRansac(true);
                 }
-            }
-            else
-            {
-                cout << timestamp << "Unable to create PointCloudManager." << endl;
-                cout << timestamp << "Unknown option '" << pcm_name << "'." << endl;
-                cout << timestamp << "Available PCMs are: " << endl;
-                cout << timestamp << "STANN, STANN_RANSAC";
+                else if(pcm_name == "STANN" || pcm_name == "FLANN" || pcm_name == "NABO" || pcm_name == "NANOFLANN")
+                {
+                    akSurface* aks = new akSurface(
+                            p_loader, pcm_name,
+                            options.getKn(),
+                            options.getKi(),
+                            options.getKd(),
+                            options.useRansac(),
+                            options.getScanPoseFile()
+                    );
+
+                    surface = psSurface::Ptr(aks);
+                    // Set RANSAC flag
+                    if(options.useRansac())
+                    {
+                        aks->useRansac(true);
+                    }
+                }
+                else
+                {
+                    cout << timestamp << "Unable to create PointCloudManager." << endl;
+                    cout << timestamp << "Unknown option '" << pcm_name << "'." << endl;
+                    cout << timestamp << "Available PCMs are: " << endl;
+                    cout << timestamp << "STANN, STANN_RANSAC";
 #ifdef LVR_USE_PCL
-                cout << ", PCL";
+                    cout << ", PCL";
 #endif
 #ifdef LVR_USE_NABO
-                cout << ", Nabo";
+                    cout << ", Nabo";
 #endif
-                cout << endl;
-                return 0;
-            }
+                    cout << endl;
+                    return 0;
+                }
 
-            surface->setKd(options.getKd());
-            surface->setKi(options.getKi());
-            surface->setKn(options.getKn());
-            surface->calculateSurfaceNormals();
+                surface->setKd(options.getKd());
+                surface->setKi(options.getKi());
+                surface->setKn(options.getKn());
+                surface->calculateSurfaceNormals();
 
-            HalfEdgeMesh<ColorVertex<float, unsigned char> , Normal<float> > mesh( surface );
-            // Set recursion depth for region growing
-            if(options.getDepth())
-            {
-                mesh.setDepth(options.getDepth());
-            }
-            if(options.getSharpFeatureThreshold())
-            {
-                SharpBox<Vertex<float> , Normal<float> >::m_theta_sharp = options.getSharpFeatureThreshold();
-            }
-            if(options.getSharpCornerThreshold())
-            {
-                SharpBox<Vertex<float> , Normal<float> >::m_phi_corner = options.getSharpCornerThreshold();
-            }
-
-            float resolution;
-            bool useVoxelsize;
-            if(options.getIntersections() > 0)
-            {
-                resolution = options.getIntersections();
-                useVoxelsize = false;
-            }
-            else
-            {
-                resolution = options.getVoxelsize();
-                useVoxelsize = true;
-            }
-            string decomposition = options.getDecomposition();
-            GridBase* grid;
-            FastReconstructionBase<ColorVertex<float, unsigned char>, Normal<float> >* reconstruction;
-            if(decomposition == "MC")
-            {
-                grid = new PointsetGrid<ColorVertex<float, unsigned char>, FastBox<ColorVertex<float, unsigned char>, Normal<float> > >(resolution, surface, surface->getBoundingBox(), useVoxelsize);
-                grid->setExtrusion(options.extrude());
-                PointsetGrid<ColorVertex<float, unsigned char>, FastBox<ColorVertex<float, unsigned char>, Normal<float> > >* ps_grid = static_cast<PointsetGrid<ColorVertex<float, unsigned char>, FastBox<ColorVertex<float, unsigned char>, Normal<float> > > *>(grid);
-                ps_grid->calcDistanceValues();
-
-                reconstruction = new FastReconstruction<ColorVertex<float, unsigned char> , Normal<float>, FastBox<ColorVertex<float, unsigned char>, Normal<float> >  >(ps_grid);
-                string out = filePath;
-                out.pop_back();
-                out.pop_back();
-                out.pop_back();
-                out.append("grid");
-                ps_grid->serialize(out);
-            }
-            else if(decomposition == "PMC")
-            {
-                grid = new PointsetGrid<ColorVertex<float, unsigned char>, BilinearFastBox<ColorVertex<float, unsigned char>, Normal<float> > >(resolution, surface, surface->getBoundingBox(), useVoxelsize);
-                grid->setExtrusion(options.extrude());
-                BilinearFastBox<ColorVertex<float, unsigned char>, Normal<float> >::m_surface = surface;
-                PointsetGrid<ColorVertex<float, unsigned char>, BilinearFastBox<ColorVertex<float, unsigned char>, Normal<float> > >* ps_grid = static_cast<PointsetGrid<ColorVertex<float, unsigned char>, BilinearFastBox<ColorVertex<float, unsigned char>, Normal<float> > > *>(grid);
-                ps_grid->calcDistanceValues();
-
-                reconstruction = new FastReconstruction<ColorVertex<float, unsigned char> , Normal<float>, BilinearFastBox<ColorVertex<float, unsigned char>, Normal<float> >  >(ps_grid);
-
-            }
-            else if(decomposition == "SF")
-            {
-                SharpBox<ColorVertex<float, unsigned char>, Normal<float> >::m_surface = surface;
-                grid = new PointsetGrid<ColorVertex<float, unsigned char>, SharpBox<ColorVertex<float, unsigned char>, Normal<float> > >(resolution, surface, surface->getBoundingBox(), useVoxelsize);
-                grid->setExtrusion(options.extrude());
-                PointsetGrid<ColorVertex<float, unsigned char>, SharpBox<ColorVertex<float, unsigned char>, Normal<float> > >* ps_grid = static_cast<PointsetGrid<ColorVertex<float, unsigned char>, SharpBox<ColorVertex<float, unsigned char>, Normal<float> > > *>(grid);
-                ps_grid->calcDistanceValues();
-                reconstruction = new FastReconstruction<ColorVertex<float, unsigned char> , Normal<float>, SharpBox<ColorVertex<float, unsigned char>, Normal<float> >  >(ps_grid);
-            }
-
-
-            /*
-            if(options.saveGrid())
-            {
-                string out = filePath;
-                out.pop_back();
-                out.pop_back();
-                out.pop_back();
-                out.append("grid");
-                grid->saveGrid(out);
-            }
-
-
-            reconstruction->getMesh(mesh);
-            //mesh.cleanContours(2);
-            if(options.getDanglingArtifacts())
-            {
-                mesh.removeDanglingArtifacts(options.getDanglingArtifacts());
-            }
-
-            mesh.cleanContours(options.getCleanContourIterations());
-            mesh.setClassifier(options.getClassifier());
-            mesh.getClassifier().setMinRegionSize(options.getSmallRegionThreshold());
-
-            if(options.optimizePlanes())
-            {
-                mesh.optimizePlanes(options.getPlaneIterations(),
-                                    options.getNormalThreshold(),
-                                    options.getMinPlaneSize(),
-                                    options.getSmallRegionThreshold(),
-                                    true);
-
-                mesh.fillHoles(options.getFillHoles());
-                mesh.optimizePlaneIntersections();
-                mesh.restorePlanes(options.getMinPlaneSize());
-
-                if(options.getNumEdgeCollapses())
+                HalfEdgeMesh<ColorVertex<float, unsigned char> , Normal<float> > mesh( surface );
+                // Set recursion depth for region growing
+                if(options.getDepth())
                 {
-                    QuadricVertexCosts<ColorVertex<float, unsigned char> , Normal<float> > c = QuadricVertexCosts<ColorVertex<float, unsigned char> , Normal<float> >(true);
-                    mesh.reduceMeshByCollapse(options.getNumEdgeCollapses(), c);
+                    mesh.setDepth(options.getDepth());
+                }
+                if(options.getSharpFeatureThreshold())
+                {
+                    SharpBox<Vertex<float> , Normal<float> >::m_theta_sharp = options.getSharpFeatureThreshold();
+                }
+                if(options.getSharpCornerThreshold())
+                {
+                    SharpBox<Vertex<float> , Normal<float> >::m_phi_corner = options.getSharpCornerThreshold();
+                }
+
+                float resolution;
+                bool useVoxelsize;
+                if(options.getIntersections() > 0)
+                {
+                    resolution = options.getIntersections();
+                    useVoxelsize = false;
+                }
+                else
+                {
+                    resolution = options.getVoxelsize();
+                    useVoxelsize = true;
+                }
+                string decomposition = options.getDecomposition();
+                GridBase* grid;
+                FastReconstructionBase<ColorVertex<float, unsigned char>, Normal<float> >* reconstruction;
+                if(decomposition == "MC")
+                {
+                    grid = new PointsetGrid<ColorVertex<float, unsigned char>, FastBox<ColorVertex<float, unsigned char>, Normal<float> > >(resolution, surface, surface->getBoundingBox(), useVoxelsize);
+                    grid->setExtrusion(options.extrude());
+                    PointsetGrid<ColorVertex<float, unsigned char>, FastBox<ColorVertex<float, unsigned char>, Normal<float> > >* ps_grid = static_cast<PointsetGrid<ColorVertex<float, unsigned char>, FastBox<ColorVertex<float, unsigned char>, Normal<float> > > *>(grid);
+                    ps_grid->calcDistanceValues();
+
+                    reconstruction = new FastReconstruction<ColorVertex<float, unsigned char> , Normal<float>, FastBox<ColorVertex<float, unsigned char>, Normal<float> >  >(ps_grid);
+                    string out = filePath;
+                    out.pop_back();
+                    out.pop_back();
+                    out.pop_back();
+                    out.append("grid");
+                    ps_grid->serialize(out);
+
+                }
+                else if(decomposition == "PMC")
+                {
+                    grid = new PointsetGrid<ColorVertex<float, unsigned char>, BilinearFastBox<ColorVertex<float, unsigned char>, Normal<float> > >(resolution, surface, surface->getBoundingBox(), useVoxelsize);
+                    grid->setExtrusion(options.extrude());
+                    BilinearFastBox<ColorVertex<float, unsigned char>, Normal<float> >::m_surface = surface;
+                    PointsetGrid<ColorVertex<float, unsigned char>, BilinearFastBox<ColorVertex<float, unsigned char>, Normal<float> > >* ps_grid = static_cast<PointsetGrid<ColorVertex<float, unsigned char>, BilinearFastBox<ColorVertex<float, unsigned char>, Normal<float> > > *>(grid);
+                    ps_grid->calcDistanceValues();
+
+                    reconstruction = new FastReconstruction<ColorVertex<float, unsigned char> , Normal<float>, BilinearFastBox<ColorVertex<float, unsigned char>, Normal<float> >  >(ps_grid);
+
+                }
+                else if(decomposition == "SF")
+                {
+                    SharpBox<ColorVertex<float, unsigned char>, Normal<float> >::m_surface = surface;
+                    grid = new PointsetGrid<ColorVertex<float, unsigned char>, SharpBox<ColorVertex<float, unsigned char>, Normal<float> > >(resolution, surface, surface->getBoundingBox(), useVoxelsize);
+                    grid->setExtrusion(options.extrude());
+                    PointsetGrid<ColorVertex<float, unsigned char>, SharpBox<ColorVertex<float, unsigned char>, Normal<float> > >* ps_grid = static_cast<PointsetGrid<ColorVertex<float, unsigned char>, SharpBox<ColorVertex<float, unsigned char>, Normal<float> > > *>(grid);
+                    ps_grid->calcDistanceValues();
+                    reconstruction = new FastReconstruction<ColorVertex<float, unsigned char> , Normal<float>, SharpBox<ColorVertex<float, unsigned char>, Normal<float> >  >(ps_grid);
                 }
             }
-            else if(options.clusterPlanes())
+            // Create Mesh from Grid
+            else if(filePath.find("grid") != std::string::npos)
             {
-                mesh.clusterRegions(options.getNormalThreshold(), options.getMinPlaneSize());
-                mesh.fillHoles(options.getFillHoles());
-            }
+                cout << "going to rreconstruct " << filePath << endl;
+                string cloudPath = filePath;
+                boost::algorithm::replace_last(cloudPath, "grid", "xyz");
+                ModelPtr model = ModelFactory::readModel(cloudPath );
+                PointBufferPtr p_loader;
+                if ( !model )
+                {
+                    cout << timestamp << "IO Error: Unable to parse " << filePath << endl;
+                    exit(-1);
+                }
+                p_loader = model->m_pointCloud;
+                cout << "loaded " << cloudPath << " with : "<< model->m_pointCloud->getNumPoints() << endl;
+
+                string pcm_name = options.getPCM();
+                psSurface::Ptr surface;
+
+                // Create point set surface object
+                if(pcm_name == "PCL")
+                {
+#ifdef LVR_USE_PCL
+                    surface = psSurface::Ptr( new pclSurface(p_loader));
+#else
+                    cout << timestamp << "Can't create a PCL point set surface without PCL installed." << endl;
+			exit(-1);
+#endif
+                }
+                else if(pcm_name == "STANN" || pcm_name == "FLANN" || pcm_name == "NABO" || pcm_name == "NANOFLANN")
+                {
+                    akSurface* aks = new akSurface(
+                            p_loader, pcm_name,
+                            options.getKn(),
+                            options.getKi(),
+                            options.getKd(),
+                            options.useRansac(),
+                            options.getScanPoseFile()
+                    );
+
+                    surface = psSurface::Ptr(aks);
+                    // Set RANSAC flag
+                    if(options.useRansac())
+                    {
+                        aks->useRansac(true);
+                    }
+                }
+                else
+                {
+                    cout << timestamp << "Unable to create PointCloudManager." << endl;
+                    cout << timestamp << "Unknown option '" << pcm_name << "'." << endl;
+                    cout << timestamp << "Available PCMs are: " << endl;
+                    cout << timestamp << "STANN, STANN_RANSAC";
+#ifdef LVR_USE_PCL
+                    cout << ", PCL";
+#endif
+#ifdef LVR_USE_NABO
+                    cout << ", Nabo";
+#endif
+                    cout << endl;
+                    return 0;
+                }
+
+                surface->setKd(options.getKd());
+                surface->setKi(options.getKi());
+                surface->setKn(options.getKn());
+                HalfEdgeMesh<ColorVertex<float, unsigned char> , Normal<float> > mesh( surface );
+                // Set recursion depth for region growing
+                if(options.getDepth())
+                {
+                    mesh.setDepth(options.getDepth());
+                }
+
+                HashGrid<ColorVertex<float, unsigned char>, FastBox<ColorVertex<float, unsigned char>, Normal<float> > > mainGrid(filePath);
+                string out2 = filePath;
+                boost::algorithm::replace_first(out2, ".grid", "-2.grid");
+                mainGrid.saveGrid(out2);
+                cout << "finished reading the grid " << filePath << endl;
+                FastReconstructionBase<ColorVertex<float, unsigned char>, Normal<float> >* reconstruction;
+                reconstruction = new FastReconstruction<ColorVertex<float, unsigned char> , Normal<float>, FastBox<ColorVertex<float, unsigned char>, Normal<float> >  >(&mainGrid);
+                reconstruction->getMesh(mesh);
+                //mesh.cleanContours(2);
+                if(options.getDanglingArtifacts())
+                {
+                    mesh.removeDanglingArtifacts(options.getDanglingArtifacts());
+                }
+
+                mesh.cleanContours(options.getCleanContourIterations());
+                mesh.setClassifier(options.getClassifier());
+                mesh.getClassifier().setMinRegionSize(options.getSmallRegionThreshold());
+
+                if(options.optimizePlanes())
+                {
+                    mesh.optimizePlanes(options.getPlaneIterations(),
+                                        options.getNormalThreshold(),
+                                        options.getMinPlaneSize(),
+                                        options.getSmallRegionThreshold(),
+                                        true);
+
+                    mesh.fillHoles(options.getFillHoles());
+                    mesh.optimizePlaneIntersections();
+                    mesh.restorePlanes(options.getMinPlaneSize());
+
+                    if(options.getNumEdgeCollapses())
+                    {
+                        QuadricVertexCosts<ColorVertex<float, unsigned char> , Normal<float> > c = QuadricVertexCosts<ColorVertex<float, unsigned char> , Normal<float> >(true);
+                        mesh.reduceMeshByCollapse(options.getNumEdgeCollapses(), c);
+                    }
+                }
+                else if(options.clusterPlanes())
+                {
+                    mesh.clusterRegions(options.getNormalThreshold(), options.getMinPlaneSize());
+                    mesh.fillHoles(options.getFillHoles());
+                }
 
 
-            if ( options.retesselate() )
-            {
-                mesh.finalizeAndRetesselate(options.generateTextures(), options.getLineFusionThreshold());
+                if ( options.retesselate() )
+                {
+                    mesh.finalizeAndRetesselate(options.generateTextures(), options.getLineFusionThreshold());
+                }
+                else
+                {
+                    mesh.finalize();
+                }
+                ModelPtr m( new Model( mesh.meshBuffer() ) );
+
+                string output = filePath;
+                boost::algorithm::replace_first(output, "grid", "ply");
+                ModelFactory::saveModel( m, output);
             }
-            else
-            {
-                mesh.finalize();
-            }
-            ModelPtr m( new Model( mesh.meshBuffer() ) );
-            cout << timestamp << "Node: " << world.rank() << "Saving mesh." << endl;
-            string output = filePath;
-            output.pop_back();
-            output.pop_back();
-            output.pop_back();
-            output.append("ply");
-            ModelFactory::saveModel( m, output);
-             */
+
             world.send(0, FINISHED, std::string("world"));
             cout << timestamp << "Node: " << world.rank() << "finished "  << endl;
         }
