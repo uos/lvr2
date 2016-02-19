@@ -84,8 +84,8 @@ HashGrid<VertexT, BoxT>::HashGrid(string file)
 
 
 	ifstream ifs(file.c_str());
-	float minx, miny, minz, maxx, maxy, maxz;
-	size_t qsize, vsize, csize;
+	float minx, miny, minz, maxx, maxy, maxz, vsize;
+	size_t qsize, csize;
 	ifs >> minx >> miny >> minz >> maxx >> maxy >> maxz >> qsize >> vsize >> csize;
 
 	m_boundingBox = BoundingBox<VertexT>(minx, miny, minz, maxx, maxy, maxz);
@@ -101,7 +101,7 @@ HashGrid<VertexT, BoxT>::HashGrid(string file)
 
 	float  pdist;
 	VertexT v;
-	cout << timestamp << "Creating Grid..." << endl;
+	//cout << timestamp << "Creating Grid..." << endl;
 
 	// Iterator over all points, calc lattice indices and add lattice points to the grid
 	for(size_t i = 0; i < qsize; i++)
@@ -113,7 +113,7 @@ HashGrid<VertexT, BoxT>::HashGrid(string file)
 		m_queryPoints.push_back(qp);
 
 	}
-	cout << timestamp << "read qpoints.. csize: " << csize << endl;
+	//cout << timestamp << "read qpoints.. csize: " << csize << endl;
 	size_t h;
 	unsigned int cell[8];
 	VertexT cell_center;
@@ -391,13 +391,15 @@ unsigned int HashGrid<VertexT, BoxT>::findQueryPoint(
 		q_v = shared_vertex_table[position][offset + 3];
 
 		size_t hash = hashValue(n_x, n_y, n_z);
-
+		//cout << "i=" << i << " looking for hash: " << hash << endl;
 		it = m_cells.find(hash);
 		if(it != m_cells.end())
 		{
+		//	cout << "found hash" << endl;
 			BoxT* b = it->second;
 			if(b->getVertex(q_v) != BoxT::INVALID_INDEX) return b->getVertex(q_v);
 		}
+		//cout << "did not find hash" << endl;
 	}
 
 	return BoxT::INVALID_INDEX;
