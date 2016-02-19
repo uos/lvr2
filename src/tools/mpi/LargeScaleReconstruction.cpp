@@ -433,18 +433,23 @@ int main(int argc, char* argv[])
 
                             for(int k = z ; k<=maxz; k++)
                             {
+                               // cout << "x=" << i << " y=" << j << " z=" << z << " max= " << maxx << " " << maxy << " " << maxz << endl;
                                 bool abbruch = false;
                                 float distMW=0;
                                 for(int l = 0 ; l<4 && !abbruch; l++)
                                 {
-                                    size_t qp_ID = neighborGrid.findQueryPoint(latticeDirID[lpSideId][l],x,y,z);
+                                   // cout << "trying to find grid: " << latticeDirID[lpSideId][l] << " " << i<< ", " << j << ", " << k << endl;
+                                    size_t qp_ID = neighborGrid.findQueryPoint(latticeDirID[lpSideId][l],i,j,k);
+
 
 
                                     if (qp_ID == FastBox<ColorVertex<float, unsigned char>, Normal<float> >::INVALID_INDEX)
                                     {
+                                     //   cout << "did not find grid id" << endl;
                                         abbruch = true;
                                         break;
                                     }
+                                    //cout << "found grid id" << endl;
                                     float  distN = neighborGrid.getQueryPoints()[qp_ID].m_distance;
                                     distMW +=distN;
                                     Vertex<int> nv(diri);
@@ -463,7 +468,7 @@ int main(int argc, char* argv[])
                                     if(mainCellCoord.x == 0) mainCellCoord.x = mainAxisId;
                                     else if(mainCellCoord.y == 0) mainCellCoord.y = mainAxisId;
                                     else if(mainCellCoord.z == 0) mainCellCoord.z = mainAxisId;
-
+                                    //cout << "trying to find grid2: " << latticeDirID[lpSideId2][l] << " " << mainCellCoord.x<< ", " << mainCellCoord.y << ", " << mainCellCoord.z << endl;
                                     size_t qpMG_ID = mainGrid.findQueryPoint(latticeDirID[lpSideId2][l],mainCellCoord.x,mainCellCoord.y,mainCellCoord.z);
 
 
@@ -479,10 +484,11 @@ int main(int argc, char* argv[])
                                         distMW = distMW/8;
                                         for(int m = 0; m<4 ;m++)
                                         {
-                                            size_t qp_ID = neighborGrid.findQueryPoint(latticeDirID[lpSideId][m],x,y,z);
-                                            neighborGrid.getQueryPoints()[qp_ID].m_distance = distMW;
+                                            size_t qp_ID = neighborGrid.findQueryPoint(latticeDirID[lpSideId][m],i,j,k);
+                                            neighborGrid.getQueryPoints().at(qp_ID).m_distance = distMW;
+                                            //neighborGrid.getQueryPoints()[qp_ID].m_distance = distMW;
                                             size_t qpMG_ID = mainGrid.findQueryPoint(latticeDirID[lpSideId2][m],mainCellCoord.x,mainCellCoord.y,mainCellCoord.z);
-                                            mainGrid.getQueryPoints()[qpMG_ID].m_distance = distMW;
+                                            mainGrid.getQueryPoints().at(qpMG_ID).m_distance = distMW;
 
 
 

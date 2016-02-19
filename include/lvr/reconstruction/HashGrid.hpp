@@ -146,7 +146,7 @@ public:
 	 */
 	query_point_it lastQueryPoint() { return m_queryPoints.end();}
 
-	vector<QueryPoint<VertexT> >& getQueryPoints() { return m_queryPoints;}
+	vector<QueryPoint<VertexT> > & getQueryPoints() { return m_queryPoints;}
 
 	//vector<BoxT*> getSideCells(Vertex<int> directions);
 
