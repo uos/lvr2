@@ -46,6 +46,14 @@ find_package( CUDA )
 find_package( OpenCV 2.4.8 REQUIRED )
 
 ####
+## Searching for FLANN
+##############################
+find_package(  FLANN REQUIRED )
+if(FLANN_FOUND)
+  include_directories(${FLANN_DIR})
+endif(FLANN_FOUND)
+
+####
 ## Searching for Eigen3
 ##############################
 find_package(Eigen3 REQUIRED)
