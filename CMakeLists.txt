@@ -9,7 +9,11 @@ set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/bin)
 set(CMAKE_LIBRARY_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/lib)
 set(CMAKE_ARCHIVE_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/lib)
 
-set(CMAKE_MODULE_PATH ${LAS_VEGAS_SOURCE_DIR}/CMakeModules ${CMAKE_MODULE_PATH})
+set(CMAKE_MODULE_PATH ${LAS_VEGAS_SOURCE_DIR}/CMakeModules ${LAS_VEGAS_SOURCE_DIR}/ext/kintinuous/cmake/Modules ${CMAKE_MODULE_PATH})
+
+message(STATUS ${CMAKE_MODULE_PATH})
+
+include_directories(include)
 
 ##################################################################################
 # Some compiler specific settings
@@ -29,9 +33,23 @@ endif(MSVC)
 ###############################################################
 
 ####
+## Searching for CUDA
+##############################
+find_package( CUDA )
+
+
+####
 ## Searching for OpenCV
 ##############################
-find_package( OpenCV REQUIRED )
+find_package( OpenCV 2.4.8 REQUIRED )
+
+####
+## Searching for FLANN
+##############################
+find_package(  FLANN REQUIRED )
+if(FLANN_FOUND)
+  include_directories(${FLANN_DIR})
+endif(FLANN_FOUND)
 
 ####
 ## Searching for Eigen3
@@ -200,20 +218,20 @@ include_directories( ${SLAM6D_INCLUDE_DIR} )
 list(APPEND LVR_INSTALL_INCLUDE_DIRS ${SLAM6D_INSTALL_INCLUDE_DIR})
 
 # KINTINUOUS
-#add_subdirectory(ext/kintinuous)
-#include_directories(${LAS_VEGAS_SOURCE_DIR}/ext/kintinuous/kfusion/include)
+if(CUDA_FOUND AND "${OpenCV_VERSION_PATCH}" VERSION_GREATER "8")
+message(STATUS "Building LVR KinFu")
+add_subdirectory(ext/kintinuous)
+include_directories(${LAS_VEGAS_SOURCE_DIR}/ext/kintinuous/kfusion/include)
+endif()
 
 ##############################################################
 # HEADERS
 ##############################################################
 
-include_directories(include)
-
 install(DIRECTORY include/lvr DESTINATION ${CMAKE_INSTALL_INCLUDEDIR})
-
 list(APPEND LVR_INSTALL_INCLUDE_DIRS ${CMAKE_INSTALL_PREFIX}/${CMAKE_INSTALL_INCLUDEDIR})
-
 add_definitions(${LVR_DEFINITIONS})
+
 
 ##############################################################
 # VIEWERS
@@ -259,7 +277,7 @@ add_subdirectory(src/liblvr)
 
 add_subdirectory(src/tools/reconstruct)
 add_subdirectory(src/tools/classifier)
-#add_subdirectory(src/tools/colorize)
+add_subdirectory(src/tools/colorize)
 add_subdirectory(src/tools/scanreduce)
 add_subdirectory(src/tools/convert)
 add_subdirectory(src/tools/asciiconverter)

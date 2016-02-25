@@ -6,6 +6,12 @@ if (DEFINED CMAKE_BUILD_TYPE)
   set_property(CACHE CMAKE_BUILD_TYPE PROPERTY STRINGS ${CMAKE_CONFIGURATION_TYPES})
 endif()
 
+if(NOT CMAKE_BUILD_TYPE)
+	set(CMAKE_BUILD_TYPE "Release" CACHE STRING
+       "Choose the type of build, options are: Debug Release"
+       FORCE)
+endif(NOT CMAKE_BUILD_TYPE)
+
 # ---[ Solution name
 project(kfusion C CXX)
 
@@ -21,11 +27,11 @@ if(MSVC)
 endif()
 
 # ---[ find dependencies
-find_package(OpenCV 2.4.8 REQUIRED COMPONENTS core viz highgui imgproc features2d nonfree )
+find_package(OpenCV 2.4.8 COMPONENTS core viz highgui imgproc features2d nonfree)
 find_package(CUDA 5.0 REQUIRED)
 find_package(OpenNI2 REQUIRED)
 find_package(OpenGL REQUIRED)
-find_package(OpenMP REQUIRED)
+find_package(OpenMP)
 find_package(Eigen3 REQUIRED)
 find_package(GLUT REQUIRED)
 find_package(Boost REQUIRED COMPONENTS system filesystem program_options)
@@ -86,7 +92,7 @@ endif ( OPENGL_glu_LIBRARY )
 
 endif(LINUX)
 
-add_definitions(-std=c++11 -D_GLIBCXX_PARALLEL)
+add_definitions(-std=c++11)
 
 include_directories(${OpenCV_INCLUDE_DIRS} ${CUDA_INCLUDE_DIRS} ${OPENNI2_INCLUDE_DIRS})
 
@@ -99,13 +105,20 @@ endif()
 # ---[ cuda settings
 set(HAVE_CUDA 1)
 #list(APPEND CUDA_NVCC_FLAGS "-arch;compute_20")
-list(APPEND CUDA_NVCC_FLAGS "-gencode;arch=compute_20,code=sm_20;-gencode;arch=compute_20,code=sm_21;-gencode;arch=compute_30,code=sm_30;-gencode;arch=compute_35,code=sm_35 ")
+
+SET(CUDA_PROPAGATE_HOST_FLAGS OFF)
+list(APPEND CUDA_NVCC_FLAGS "-gencode;arch=compute_20,code=sm_20;-gencode;arch=compute_20,code=sm_21;-gencode;arch=compute_30,code=sm_30;-gencode;arch=compute_35,code=sm_35")
 
 if(UNIX OR APPLE)
-  list(APPEND CUDA_NVCC_FLAGS "-Xcompiler;-fPIC;")
+  #list(APPEND CUDA_NVCC_FLAGS "-Xcompiler;-fPIC")
 endif()
 
-warnings_disable(CMAKE_CXX_FLAGS /wd4985)
+#warnings_disable(CMAKE_CXX_FLAGS /wd4985)
 
 add_subdirectory(kfusion)
+
+if(OPENCV_VIZ_FOUND)
 add_subdirectory(apps)
+endif()
+
+add_subdirectory(qt_app)
