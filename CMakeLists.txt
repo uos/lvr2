@@ -17,14 +17,12 @@ set(CMAKE_MODULE_PATH ${LAS_VEGAS_SOURCE_DIR}/CMakeModules ${CMAKE_MODULE_PATH})
 
 if(MSVC)
   list(APPEND LVR_DEFINITIONS -DNOMINMAX)
-endif()
-
-#if(CMAKE_COMPILER_IS_GNUCC AND CMAKE_COMPILER_IS_GNUCXX)
+else(MSVC)
   add_compile_options(-fmessage-length=0 -fPIC -Wno-deprecated)
   # with cmake 3.3
   #add_compile_options($<$<COMPILE_LANGUAGE:CXX>:-std=c++0x>)
   set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++11")
-#endif()
+endif(MSVC)
 
 ###############################################################
 # EXTERNAL LIBRARIES
