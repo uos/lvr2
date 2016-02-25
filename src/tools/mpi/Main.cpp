@@ -253,7 +253,7 @@ int main (int argc , char *argv[]) {
 			normals[client_serv_data] = new float [3 * int_numpoint[client_serv_data]];
 
 			// get the indices for the original sequence
-			Indizes[client_serv_data] = (*it)->indizes.get();
+			Indizes[client_serv_data] = (long unsigned int*) ((*it)->indizes.get());
 
 			laufvariable[client_serv_data] = (*it)->getnumpoints();
 
