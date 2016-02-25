@@ -42,16 +42,26 @@ void SearchTreeFlann< VertexT >::kSearch( coord< float > &qp, int k, vector< ulo
 	query_point[0][1] = qp.y;
 	query_point[0][2] = qp.z;
 
+	// Visual Studio won't impicitly convert to ulong
+	// so we use a local vector to preserve the API with ulong
+	// Should be changed some time.
+	vector<int> tmp_ind;
+
 	indices.resize(k);
 	distances.resize(k);
 
-	flann::Matrix<ulong> ind (&indices[0], 1, k);
+	flann::Matrix<int> ind (&tmp_ind[0], 1, k);
 	flann::Matrix<float> dist (&distances[0], 1, k);
 
 	m_tree->knnSearch(query_point, ind, dist, k, flann::SearchParams());
 
-	//for(int i = 0; i < indices.size(); i++) cout << indices[i] << " ";
-	//cout << endl;
+	// Copy tmp indices
+	indices.clear();
+	for (int i = 0; i < tmp_ind.size(); i++)
+	{
+		indices.push_back((ulong)tmp_ind[i]);
+	}
+	
 }
 
 template<typename VertexT>
@@ -65,7 +75,7 @@ void SearchTreeFlann< VertexT >::kSearch(VertexT qp, int k, vector< VertexT > &n
 	m_dst.resize(k);
 	m_ind.resize(k);
 
-	flann::Matrix<ulong> ind (&m_ind[0], 1, k);
+	flann::Matrix<int> ind (&m_ind[0], 1, k);
 	flann::Matrix<float> dist (&m_dst[0], 1, k);
 
 	m_tree->knnSearch(query_point, ind, dist, k, flann::SearchParams());
