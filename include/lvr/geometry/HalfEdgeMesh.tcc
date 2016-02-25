@@ -30,7 +30,7 @@
 
 namespace lvr
 {
-	
+
 template<typename VertexT, typename NormalT>
 HalfEdgeMesh<VertexT, NormalT>::HalfEdgeMesh( )
 {
@@ -42,7 +42,7 @@ HalfEdgeMesh<VertexT, NormalT>::HalfEdgeMesh( )
 }
 
 template<typename VertexT, typename NormalT>
-HalfEdgeMesh<VertexT, NormalT>::HalfEdgeMesh( 
+HalfEdgeMesh<VertexT, NormalT>::HalfEdgeMesh(
         typename PointsetSurface<VertexT>::Ptr pm )
 {
     m_globalIndex = 0;
@@ -73,10 +73,11 @@ HalfEdgeMesh<VertexT, NormalT>::HalfEdgeMesh(
     }
 
     // Initial remaining stuff
-    m_globalIndex = 0;
+    m_globalIndex = this->meshSize();
     m_regionClassifier = ClassifierFactory<VertexT, NormalT>::get("Default", this);
     m_classifierType = "Default";
     m_depth = 100;
+    this->m_meshBuffer = mesh;
 }
 
 template<typename VertexT, typename NormalT>
@@ -134,7 +135,7 @@ void HalfEdgeMesh<VertexT, NormalT>::setClassifier(string name)
 
 	// Create new one
 	m_regionClassifier = ClassifierFactory<VertexT, NormalT>::get(name, this);
-	
+
 	// update name
 	m_classifierType = name;
 
@@ -144,8 +145,8 @@ void HalfEdgeMesh<VertexT, NormalT>::setClassifier(string name)
 		cout << timestamp << "Warning: Unable to create classifier type '"
 			 << name << "'. Using default." << endl;
 
-		m_regionClassifier = ClassifierFactory<VertexT, NormalT>::get("Default", this);
-		m_classifierType = "Default";
+		m_regionClassifier = ClassifierFactory<VertexT, NormalT>::get( "PlaneSimpsons", this);
+		m_classifierType = "PlaneSimpsons";
 	}
 }
 
@@ -154,16 +155,19 @@ template<typename VertexT, typename NormalT>
 void HalfEdgeMesh<VertexT, NormalT>::addVertex(VertexT v)
 {
     // Create new HalfEdgeVertex and increase vertex counter
-    m_vertices.push_back(new HVertex(v));
+    HVertex* h = new HVertex(v);
+    h->m_actIndex = m_vertices.size();
+    m_vertices.push_back(h);
     m_globalIndex++;
 }
+
 
 template<typename VertexT, typename NormalT>
 void HalfEdgeMesh<VertexT, NormalT>::deleteVertex(VertexPtr v)
 {
     // Delete HalfEdgeVertex and decrease vertex counter
-  /*  m_vertices.erase(find(m_vertices.begin(), m_vertices.end(), v));
-    m_globalIndex--;*/
+    m_vertices.erase(find(m_vertices.begin(), m_vertices.end(), v));
+    m_globalIndex--;
 }
 
 template<typename VertexT, typename NormalT>
@@ -303,8 +307,12 @@ void HalfEdgeMesh<VertexT, NormalT>::addTriangle(uint a, uint b, uint c, FacePtr
     face->m_edge = edges[0];
     face->calc_normal();
     face->m_face_index = m_faces.size();
+    face->m_indices[0] = a;
+    face->m_indices[1] = b;
+    face->m_indices[2] = c;
     f = face;
 }
+
 
 template<typename VertexT, typename NormalT>
 void HalfEdgeMesh<VertexT, NormalT>::addTriangle(uint a, uint b, uint c)
@@ -371,8 +379,8 @@ void HalfEdgeMesh<VertexT, NormalT>::cleanContours(int iterations)
 template<typename VertexT, typename NormalT>
 void HalfEdgeMesh<VertexT, NormalT>::deleteFace(FacePtr f, bool erase)
 {
-    f->m_invalid = true;
-    m_regions[f->m_region]->deleteInvalidFaces();
+    //f->m_invalid = true;
+    //m_regions[f->m_region]->deleteInvalidFaces();
 
     //save references to edges and vertices
     HEdge* startEdge = (*f)[0];
@@ -876,7 +884,6 @@ void HalfEdgeMesh<VertexT, NormalT>::optimizePlanes(
     int region_size   = 0;
     int region_number = 0;
     m_regions.clear();
-
     for(int j = 0; j < iterations; j++)
     {
         cout << timestamp << "Optimizing planes. Iteration " <<  j + 1 << " / "  << iterations << endl;
@@ -884,7 +891,8 @@ void HalfEdgeMesh<VertexT, NormalT>::optimizePlanes(
         // Reset all used variables
         for(size_t i = 0; i < m_faces.size(); i++)
         {
-            m_faces[i]->m_used = false;
+            FacePtr face = m_faces[i];
+			face->m_used = false;
         }
 
         // Find all regions by regionGrowing with normal criteria
@@ -953,7 +961,6 @@ void HalfEdgeMesh<VertexT, NormalT>::optimizePlanes(
 template<typename VertexT, typename NormalT>
 void HalfEdgeMesh<VertexT, NormalT>::deleteRegions()
 {
-
     for(int i = 0; i < m_faces.size(); i++)
     {
         if(m_faces[i]->m_region >= 0 && m_regions[m_faces[i]->m_region]->m_toDelete)
@@ -962,7 +969,6 @@ void HalfEdgeMesh<VertexT, NormalT>::deleteRegions()
             m_faces[i] = 0;
         }
     }
-
     typename vector<FacePtr>::iterator f_iter = m_faces.begin();
     while (f_iter != m_faces.end())
     {
@@ -975,7 +981,6 @@ void HalfEdgeMesh<VertexT, NormalT>::deleteRegions()
             ++f_iter;
         }
     }
-
     typename vector<RegionPtr>::iterator r_iter = m_regions.begin();
     while (r_iter != m_regions.end())
     {
@@ -1485,9 +1490,9 @@ void HalfEdgeMesh<VertexT, NormalT>::finalize()
     size_t numVertices = m_vertices.size();
     size_t numFaces    = m_faces.size();
     size_t numRegions  = m_regions.size();
-	float r = 0.0f;
+	float r = 255.0f;
 	float g = 255.0f;
-	float b = 0.0f;
+	float b = 255.0f;
     std::vector<uchar> faceColorBuffer;
 
     floatArr vertexBuffer( new float[3 * numVertices] );
@@ -1589,7 +1594,7 @@ void HalfEdgeMesh<VertexT, NormalT>::finalize()
         this->m_meshBuffer = MeshBufferPtr( new MeshBuffer );
     }
     this->m_meshBuffer->setVertexArray( vertexBuffer, numVertices );
-    this->m_meshBuffer->setVertexColorArray( colorBuffer, numVertices );
+    //this->m_meshBuffer->setVertexColorArray( colorBuffer, numVertices );
     this->m_meshBuffer->setVertexNormalArray( normalBuffer, numVertices  );
     this->m_meshBuffer->setFaceArray( indexBuffer, numFaces );
 	this->m_meshBuffer->setLabeledFacesMap( labeledFaces );
@@ -2023,8 +2028,7 @@ void HalfEdgeMesh<VertexT, NormalT>::finalizeAndRetesselate( bool genTextures, f
     delete texturizer;
     labeledFaces.clear();
     Tesselator<VertexT, NormalT>::clear();
-} 
-
+}
 
 
 template<typename VertexT, typename NormalT>

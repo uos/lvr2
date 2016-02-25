@@ -64,7 +64,7 @@ public:
      */
 	HalfEdgeFace() :
 	    m_invalid(false), m_edge(0),
-	    m_used(false), m_region(-1),
+	    m_used(false),m_fusion_face(false), m_region(-1),
 	    m_texture_index(-1),
 	    m_face_index(-1) {};
 
@@ -165,7 +165,7 @@ public:
 	EdgePtr m_edge;
 
 	/// A vector containing the indices of face vertices (currently redundant)
-	//vector<int> 					m_indices;
+	size_t					        m_indices[3];
 
 	/// A three pointers to the face vertices
 	//int 							m_index[3];
@@ -178,6 +178,8 @@ public:
 
 	/// used for region growing
 	bool							m_used;
+	
+	bool							m_region_used;
 
 	/// The number of the face in the half edge mesh (convenience only, will be removed soon)
 	size_t							m_face_index;
@@ -186,6 +188,7 @@ public:
 	NormalT							m_normal;
 
 	bool                            m_invalid;
+	bool 							m_fusion_face;
 
 private:
 

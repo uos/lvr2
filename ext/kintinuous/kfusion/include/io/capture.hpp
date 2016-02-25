@@ -22,6 +22,8 @@ namespace kfusion
         void open(const std::string& oni_filename);
         void release();
 		void triggerRecord();
+		void triggerPause();
+		bool isRecord(){return isOni_;}
         ~OpenNISource();
 
         int grab(cv::Mat &depth, cv::Mat &image);

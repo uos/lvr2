@@ -118,6 +118,7 @@ const static int HGCreateTable[8][3] = {
   {-1, -1,  0}, 
   {-1, -1, -1},
   { 0, -1, -1}
+ 
 };
 
 
