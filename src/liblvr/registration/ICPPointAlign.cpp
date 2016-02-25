@@ -25,12 +25,8 @@
 #include <lvr/registration/ICPPointAlign.hpp>
 #include <lvr/registration/EigenSVDPointAlign.hpp>
 #include <lvr/io/Timestamp.hpp>
-#ifdef LVR_USE_PCL
 #include <lvr/reconstruction/SearchTreeFlann.hpp>
-#endif
-#ifdef LVR_USE_STANN
-#include <lvr/reconstruction/SearchTreeStann.hpp>
-#endif
+
 
 #include <fstream>
 using std::ofstream;
@@ -46,14 +42,14 @@ ICPPointAlign::ICPPointAlign(PointBufferPtr model, PointBufferPtr data, Matrix4f
     m_maxDistanceMatch      = 25;
     m_maxIterations         = 50;
 
-    size_t numPoints = model->getNumPoints();
+    size_t numPoints = data->getNumPoints();
 
     // Transform data points according to initial pose estimation
     m_dataCloud = PointBufferPtr(new PointBuffer);
     size_t n;
     floatArr o_points = data->getPointArray(n);
     floatArr t_points(new float[3 * n]);
-    
+
     for(size_t i = 0; i < numPoints; i++)
     {
         Vertexf v(o_points[3 * i], o_points[3 * i + 1], o_points[3 * i + 2]);
@@ -65,11 +61,8 @@ ICPPointAlign::ICPPointAlign(PointBufferPtr model, PointBufferPtr data, Matrix4f
     m_dataCloud->setPointArray(t_points, n);
 
     // Create search tree
-#ifdef LVR_USE_PCL
     m_searchTree = SearchTreeFlann<Vertexf>::Ptr(new SearchTreeFlann<Vertexf>(model, numPoints));
-#else
-	m_searchTree = SearchTreeStann<Vertexf>::Ptr(new SearchTreeStann<Vertexf>(model, numPoints));
-#endif
+
 }
 
 Matrix4f ICPPointAlign::match()
@@ -100,13 +93,13 @@ Matrix4f ICPPointAlign::match()
         // Get transformation (if possible)
         ret = align.alignPoints(pairs, centroid_m, centroid_d, transform);
 
-        cout << "CORRECTION" << endl;
+        cout << timestamp << "CORRECTION" << endl;
         cout << transform << endl;
 
         // Apply transformation
         m_transformation *= transform;
 
-        cout << "TRANSFORMATION: " << endl;
+        cout << timestamp << "TRANSFORMATION: " << endl;
         cout << m_transformation << endl;
 
         cout << timestamp << "ICP Error is " << ret << " in iteration " << i << " / " << m_maxIterations << " using " << pairs.size() << " points."<< endl;
@@ -114,6 +107,7 @@ Matrix4f ICPPointAlign::match()
         // Check minimum distance
         if ((fabs(ret - prev_ret) < m_epsilon) && (fabs(ret - prev_prev_ret) < m_epsilon))
         {
+			cout << timestamp << " Error below m_epsilon " << endl;
             break;
         }
     }

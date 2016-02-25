@@ -1,15 +1,12 @@
-include_directories(${CMAKE_SOURCE_DIR}/kfusion/include)
+include_directories(${CMAKE_SOURCE_DIR}/ext/kintinuous/kfusion/include)
 link_directories(${LSSR_LIBRARIES} /usr/lib/x86_64-linux-gnu/)
 
 file(GLOB srcs *.cpp *.hpp)
-add_executable(demo ${srcs})
+add_executable(lvr_kinfu ${srcs})
 
-target_link_libraries(demo 
+target_link_libraries(lvr_kinfu 
 	kfusion
 	lvr_static
-	lvrrply_static
-	lvrlas_static
-	lvrslam6d_static
 	${OpenCV_LIBS}
 	${Boost_SYSTEM_LIBRARY} 
 	${Boost_PROGRAM_OPTIONS_LIBRARY}
@@ -19,10 +16,10 @@ target_link_libraries(demo
 	)
 
 
-set_target_properties(demo PROPERTIES
+set_target_properties(lvr_kinfu PROPERTIES
     DEBUG_POSTFIX "d"
     ARCHIVE_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}/lib"
     RUNTIME_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}/bin")
 
-install(TARGETS demo RUNTIME DESTINATION bin COMPONENT main)
+install(TARGETS lvr_kinfu RUNTIME DESTINATION bin COMPONENT main)
 install(FILES ${srcs} DESTINATION app COMPONENT main)
