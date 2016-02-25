@@ -212,6 +212,20 @@ int main(int argc, char* argv[])
         //leafs.resize(std::distance(nodes.begin(),it));  // shrink container to new size
         cout << lvr::timestamp << "...got leafs, amount = " <<  leafs.size()<< endl;
         originleafs = leafs;
+        for(int i = 0 ; i<originleafs.size() ; i++)
+        {
+            string path = originleafs[i]->getFilePath();
+            boost::algorithm::replace_last(path, "xyz", "bb");
+            //HashGrid<ColorVertex<float, unsigned char>, FastBox<ColorVertex<float, unsigned char>, Normal<float> > > mainGrid(path);
+            float r = originleafs[i]->getLength()/2;
+            Vertexf rr(r,r,r);
+            Vertexf min = originleafs[i]->getCenter()-rr;
+            Vertexf max = originleafs[i]->getCenter()+rr;
+            ofstream ofs(path);
+            ofs << min.x << " " << min.y << " " << min.z  << " " << max.x << " " << max.y << " " << max.z << endl;
+            ofs.close();
+
+        }
         //Creating neighbor map
         std::map<string,vector<std::pair<Vertexf, LargeScaleOctree*> > > nmap;
         for(LargeScaleOctree* OTNode : leafs)
@@ -333,6 +347,7 @@ int main(int argc, char* argv[])
         cout << hg.getQueryPoints().size() << " " << hg.getNumberOfCells() << endl;
         hg.serialize("test.grid");
          */
+
 
         int latticeDirID[6][4] =
         {
@@ -679,9 +694,17 @@ int main(int argc, char* argv[])
                 FastReconstructionBase<ColorVertex<float, unsigned char>, Normal<float> >* reconstruction;
                 if(decomposition == "MC")
                 {
+                    string bbpath = filePath;
+                    boost::algorithm::replace_last(bbpath, "xyz", "bb");
+                    ifstream bbifs(bbpath);
+                    float minx, miny, minz, maxx, maxy, maxz;
+                    bbifs >> minx >> miny >> minz >> maxx >> maxy >> maxz;
+                    BoundingBox<ColorVertex<float, unsigned char> > tmpbb(minx, miny, minz, maxx, maxy, maxz);
+                    cout << tmpbb << endl << "#########" << endl << surface->getBoundingBox() << "--------------" << endl;
                     grid = new PointsetGrid<ColorVertex<float, unsigned char>, FastBox<ColorVertex<float, unsigned char>, Normal<float> > >(resolution, surface, surface->getBoundingBox(), useVoxelsize);
                     grid->setExtrusion(options.extrude());
                     PointsetGrid<ColorVertex<float, unsigned char>, FastBox<ColorVertex<float, unsigned char>, Normal<float> > >* ps_grid = static_cast<PointsetGrid<ColorVertex<float, unsigned char>, FastBox<ColorVertex<float, unsigned char>, Normal<float> > > *>(grid);
+                    ps_grid->getBoundingBox() = tmpbb;
                     ps_grid->calcDistanceValues();
 
                     reconstruction = new FastReconstruction<ColorVertex<float, unsigned char> , Normal<float>, FastBox<ColorVertex<float, unsigned char>, Normal<float> >  >(ps_grid);
