@@ -29,8 +29,10 @@
 //#include <opencv2/highgui/highgui.hpp>
 #include <opencv/cv.h>
 #if CV_MAJOR_VERSION >= 2 && CV_MINOR_VERSION >= 4
+#ifdef LVR_USE_CV_NONFREE
   #include <opencv2/nonfree/features2d.hpp>
   #include <opencv2/legacy/legacy.hpp>
+#endif
 #endif
 
 namespace lvr {
@@ -86,6 +88,8 @@ Transform::Transform(const cv::Mat &t1, const cv::Mat &t2)
 	m_img1 = t1;
 	m_img2 = t2;
 
+#ifdef LVR_USE_CV_NONFREE
+
 	//calculate surf features
 	cv::SurfFeatureDetector* detector = new cv::SurfFeatureDetector(100);
 //	cv::Ptr<cv::FeatureDetector> detector(new cv::DynamicAdaptedFeatureDetector (new cv::SurfAdjuster(), 100, 110, 10));
@@ -108,6 +112,8 @@ Transform::Transform(const cv::Mat &t1, const cv::Mat &t2)
 	calcTransform(t1, t2, keyPoints1, keyPoints2, descriptors1, descriptors2);
 
 	delete detector;
+
+#endif
 }
 
 void Transform::calcTransform(const cv::Mat &t1, const cv::Mat &t2, std::vector<cv::KeyPoint> kp1, std::vector<cv::KeyPoint> kp2, cv::Mat desc1, cv::Mat desc2)
@@ -123,6 +129,7 @@ void Transform::calcTransform(const cv::Mat &t1, const cv::Mat &t2, std::vector<
 	m_trans.at<double>(1,2) = 0;
 	m_mirrored 		= 0;
 
+#ifdef LVR_USE_CV_NONFREE
 	//we need at least three corresponding point pairs!
 	if (kp1.size() > 2 && kp2.size() > 2)
 	{
@@ -216,6 +223,7 @@ void Transform::calcTransform(const cv::Mat &t1, const cv::Mat &t2, std::vector<
 			}
 		}
 	}
+#endif
 }
 
 
