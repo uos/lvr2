@@ -43,6 +43,13 @@ find_package( CUDA )
 ##############################
 find_package( OpenCV 2.4.8 REQUIRED )
 
+option(WITH_CV_NONFREE "Use OpenCV non-free descriptors" OFF)
+if(WITH_CV_NONFREE)
+  message(STATUS "Using OpenCV non-free module")
+  list(APPEND LVR_DEFINITIONS -DLVR_USE_CV_NONFREE)
+endif(WITH_CV_NONFREE)
+
+
 ####
 ## Searching for FLANN
 ##############################
