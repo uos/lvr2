@@ -35,7 +35,9 @@
 
 
 #include "boost/shared_array.hpp"
+
 #include <lvr/display/GlTexture.hpp>
+
 #include <map>
 #include <vector>
 

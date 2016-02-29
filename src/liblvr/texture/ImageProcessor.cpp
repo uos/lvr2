@@ -28,8 +28,10 @@
 #include <opencv/cv.h>
 // #include <opencv2/highgui/highgui.hpp>
 #if CV_MAJOR_VERSION >= 2 && CV_MINOR_VERSION >= 4
+#ifdef LVR_USE_CV_NONFREE
   #include <opencv2/nonfree/features2d.hpp>
   #include <opencv2/legacy/legacy.hpp>
+#endif
 #endif
 
 namespace lvr {
@@ -205,6 +207,8 @@ void ImageProcessor::connectedCompLabeling(cv::Mat input, cv::Mat &output)
 
 void ImageProcessor::calcSURF(Texture* tex)
 {
+
+#ifdef LVR_USE_CV_NONFREE
 	if (tex->m_width >= 8 && tex->m_height >= 8)
 	{
 		//convert texture to cv::Mat
@@ -241,6 +245,7 @@ void ImageProcessor::calcSURF(Texture* tex)
 		delete detector;
 	}
 	else
+#endif
 	{
 		tex->m_numFeatures = 0;
 	}
@@ -262,6 +267,8 @@ void ImageProcessor::floatArrToSURF(Texture* t, std::vector<cv::KeyPoint> &kp, c
 float ImageProcessor::compareTexturesSURF(Texture* tex1, Texture* tex2)
 {
 	float result = FLT_MAX;
+
+#ifdef LVR_USE_CV_NONFREE
 
 	//convert float arrays to cv::Mat
 	cv::Mat descriptors1(tex1->m_numFeatures, tex1->m_numFeatureComponents, CV_32FC1);
@@ -311,6 +318,8 @@ float ImageProcessor::compareTexturesSURF(Texture* tex1, Texture* tex2)
 		}
 		result /= numGoodMatches;
 	}
+
+#endif
 	return result;
 
 }

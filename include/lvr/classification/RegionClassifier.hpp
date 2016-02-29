@@ -24,7 +24,7 @@
  */
 
 #ifndef REGIONCLASSIFIER_H_
-#define REGIONCLASSIFIER_H
+#define REGIONCLASSIFIER_H_
 
 #include <vector>
 #include <lvr/geometry/Region.hpp>

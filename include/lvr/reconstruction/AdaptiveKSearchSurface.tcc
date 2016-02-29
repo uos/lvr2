@@ -88,10 +88,11 @@ AdaptiveKSearchSurface<VertexT, NormalT>::AdaptiveKSearchSurface(
 
     init();
 
+    
 #ifdef LVR_USE_PCL
-    if( searchTreeName == "flann"  || searchTreeName == "FLANN" )
+    if( searchTreeName == "pcl"  || searchTreeName == "PCL" )
     {
-        this->m_searchTree = search_tree::Ptr( new SearchTreeFlann<VertexT>(loader, this->m_numPoints, kn, ki, kd) );
+        this->m_searchTree = search_tree::Ptr( new SearchTreeFlannPCL<VertexT>(loader, this->m_numPoints, kn, ki, kd) );
     }
 #endif
 #ifdef LVR_USE_STANN
@@ -110,10 +111,17 @@ AdaptiveKSearchSurface<VertexT, NormalT>::AdaptiveKSearchSurface(
         this->m_searchTree = search_tree::Ptr( new SearchTreeNabo<VertexT>(loader, this->m_numPoints, kn, ki, kd));
     }
 #endif
+    if( searchTreeName == "flann" || searchTreeName == "FLANN")
+    {
+        this->m_searchTree = search_tree::Ptr( new SearchTreeFlann<VertexT>(loader, this->m_numPoints, kn, ki, kd) );
+    }
+
     if( !this->m_searchTree )
     {
-       cout << timestamp << "No Valid Searchtree class specified!" << endl;
-       cout << timestamp << "Class: " << searchTreeName << endl;
+       this->m_searchTree = search_tree::Ptr( new SearchTreeFlann<VertexT>(loader, this->m_numPoints, kn, ki, kd) );
+       cout << timestamp << "No valid search tree specified (" << searchTreeName << ")." << endl;
+       cout << timestamp << "Maybe you did not install the required library." << endl;
+       cout << timestamp << "Defaulting to flann." << endl;
     }
 
     if(posefile != "")
@@ -127,7 +135,7 @@ template<typename VertexT, typename NormalT>
 void AdaptiveKSearchSurface<VertexT, NormalT>::parseScanPoses(string posefile)
 {
 	cout << timestamp << "Parsing scan poses." << endl;
-	std::fstream in(posefile.c_str());
+	std::ifstream in(posefile.c_str());
 	if(!in.good())
 	{
 		cout << timestamp << "Unable to open scan pose file " << posefile << endl;
@@ -158,10 +166,11 @@ void AdaptiveKSearchSurface<VertexT, NormalT>::parseScanPoses(string posefile)
 		size_t n = v.size();
 
 		cout << timestamp << "Creating pose search tree(" << m_searchTreeName << ") with " << n << " poses." << endl;
+
 #ifdef LVR_USE_PCL
-		if( m_searchTreeName == "flann"  || m_searchTreeName == "FLANN" )
+		if( m_searchTreeName == "pcl"  || m_searchTreeName == "PCL" )
 		{
-			this->m_poseTree = search_tree::Ptr( new SearchTreeFlann<VertexT>(loader, n, 1, 1, 1) );
+			this->m_poseTree = search_tree::Ptr( new SearchTreeFlannPCL<VertexT>(loader, n, 1, 1, 1) );
 		}
 #endif
 #ifdef LVR_USE_STANN
@@ -180,6 +189,11 @@ void AdaptiveKSearchSurface<VertexT, NormalT>::parseScanPoses(string posefile)
 			this->m_poseTree = search_tree::Ptr( new SearchTreeNabo<VertexT>(loader, n, 1, 1, 1));
 		}
 #endif
+	    if( m_searchTreeName == "flann" || m_searchTreeName == "FLANN")
+	    {
+	    	this->m_searchTree = search_tree::Ptr(new SearchTreeFlann<VertexT>(loader, n, 1, 1, 1));
+	    }
+	
 		if( !this->m_poseTree )
 		{
 			cout << timestamp << "No Valid Searchtree class specified!" << endl;
@@ -247,7 +261,7 @@ void AdaptiveKSearchSurface<VertexT, NormalT>::calculateSurfaceNormals()
         // search on the stann kd tree. So we don't use
         // the template parameter T for di
         vector<unsigned long> id;
-        vector<double> di;
+        vector<float> di;
 
         int n = 0;
         size_t k = k_0;
@@ -262,7 +276,6 @@ void AdaptiveKSearchSurface<VertexT, NormalT>::calculateSurfaceNormals()
             k = k * 2;
 
             //T* point = this->m_points[i];
-            if(k > (int)this->m_numPoints) k=m_numPoints;
             this->m_searchTree->kSearch(this->m_points[i], k, id, di);
 
             float min_x = 1e15f;
@@ -299,7 +312,7 @@ void AdaptiveKSearchSurface<VertexT, NormalT>::calculateSurfaceNormals()
                 dz = max_z - min_z;
             }
 
-            if(boundingBoxOK(dx, dy, dz) || (k > (int)this->m_numPoints)) break;
+            if(boundingBoxOK(dx, dy, dz)) break;
             //break;
 
         }
@@ -379,7 +392,7 @@ void AdaptiveKSearchSurface<VertexT, NormalT>::interpolateSurfaceNormals()
     for( int i = 0; i < (int)this->m_numPoints; i++){
 
         vector<unsigned long> id;
-        vector<double> di;
+        vector<float> di;
 
         this->m_searchTree->kSearch(this->m_points[i], this->m_ki, id, di);
 
@@ -439,7 +452,7 @@ bool AdaptiveKSearchSurface<VertexT, NormalT>::boundingBoxOK(const float &dx, co
     else if(dy < e * dx) return false;
     else if(dy < e * dz) return false;
     else if(dz < e * dx) return false;
-    else if(dy < e * dy) return false;
+    else if(dz < e * dy) return false;
     return true;
 }
 
@@ -511,7 +524,7 @@ void AdaptiveKSearchSurface<VertexT, NormalT>::distance(VertexT v, float &projec
     int k = this->m_kd;
 
     vector<unsigned long> id;
-    vector<double> di;
+    vector<float> di;
 
     //Allocate ANN point
     {
@@ -661,52 +674,52 @@ size_t AdaptiveKSearchSurface<VertexT, NormalT>::getNumPoints()
 
            //randomly choose 3 disjoint points
            int c = 0;
-           do{
-              //cout << "AAA" << endl;
-              int index[3];
-              for(int i = 0; i < 3; i++)
-              {
-                  float f = 1.0 * rand() / RAND_MAX;
-                  int r = (int)(f * (id.size() - 1));
-                  index[i] = id[r];
-              }
+           //do{
+           //    //cout << "AAA" << endl;
+           //    int index[3];
+           //    for(int i = 0; i < 3; i++)
+           //    {
+           //        float f = 1.0 * rand() / RAND_MAX;
+           //        int r = (int)(f * (id.size() - 1));
+           //        index[i] = id[r];
+           //    }
 
-              if(index[0] == index[1] || index[1] == index[2] || index[2] == index[0])
-              {
-                  continue;
-              }
+           //    if(index[0] == index[1] || index[1] == index[2] || index[2] == index[0])
+           //    {
+           //        continue;
+           //    }
 
-              point1 = VertexT(this->m_points[index[0]][0],this->m_points[index[0]][1], this->m_points[index[0]][2]);
-              point2 = VertexT(this->m_points[index[1]][0],this->m_points[index[1]][1], this->m_points[index[1]][2]);
-              point3 = VertexT(this->m_points[index[2]][0],this->m_points[index[2]][1], this->m_points[index[2]][2]);
+           //    point1 = VertexT(this->m_points[index[0]][0],this->m_points[index[0]][1], this->m_points[index[0]][2]);
+           //    point2 = VertexT(this->m_points[index[1]][0],this->m_points[index[1]][1], this->m_points[index[1]][2]);
+           //    point3 = VertexT(this->m_points[index[2]][0],this->m_points[index[2]][1], this->m_points[index[2]][2]);
 
-              //compute normal of the plane given by the 3 points
-              n0 = (point1 - point2).cross(point1 - point3);
-              n0.normalize();
+           //    //compute normal of the plane given by the 3 points
+           //    n0 = (point1 - point2).cross(point1 - point3);
+           //    n0.normalize();
 
-              //            if( (point1 != point2) && (point2 != point3) && (point3 != point1) )
-              //            {
-              //                break;
-              //            }
-              c++;
+           //    //            if( (point1 != point2) && (point2 != point3) && (point3 != point1) )
+           //    //            {
+           //    //                break;
+           //    //            }
+           //    c++;
 
-              //            cout << index[0] << " " << index[1] << " " << index[2] << " " << id.size() << endl;
-              //            cout << point1;
-              //            cout << point2;
-              //            cout << point3;
-              //            cout << endl;
+           //    //            cout << index[0] << " " << index[1] << " " << index[2] << " " << id.size() << endl;
+           //    //            cout << point1;
+           //    //            cout << point2;
+           //    //            cout << point3;
+           //    //            cout << endl;
 
-              // Check for deadlock
-              if(c > 50)
-              {
-                  cout << "DL " << k << endl;
-                  ok = false;
-                  return p;
-	      }
-	   } while(true);	   
-	   
-	   
-/*		   std::set<unsigned long> ids;
+           //    // Check for deadlock
+           //    if(c > 50)
+           //    {
+           //        cout << "DL " << k << endl;
+           //        ok = false;
+           //        return p;
+           //    }
+           //}
+           //while(true);
+
+		   std::set<unsigned long> ids;
 		   std::default_random_engine generator;
 		   std::uniform_int_distribution<unsigned long> distribution(0, id.size() - 1);
 		   auto number = std::bind(distribution, generator);
@@ -727,7 +740,6 @@ size_t AdaptiveKSearchSurface<VertexT, NormalT>::getNumPoints()
 
 		   n0 = (point1 - point2).cross(point1 - point3);
 		   n0.normalize();
-*/
 
            //compute error to at most 50 other randomly chosen points
            dist = 0;

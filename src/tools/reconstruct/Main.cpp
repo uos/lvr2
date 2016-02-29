@@ -377,8 +377,15 @@ int main(int argc, char** argv)
 		}
 
 		// Create a point set grid for reconstruction
-
 		string decomposition = options.getDecomposition();
+
+		// Fail safe check
+		if(decomposition != "MC" && decomposition != "PMC" && decomposition != "SF" )
+		{
+			cout << "Unsupported decomposition type " << decomposition << ". Defaulting to PMC." << endl;
+			decomposition = "PMC";
+		}
+
 		GridBase* grid;
 		FastReconstructionBase<ColorVertex<float, unsigned char>, Normal<float> >* reconstruction;
 		if(decomposition == "MC")
@@ -393,12 +400,11 @@ int main(int argc, char** argv)
 		}
 		else if(decomposition == "PMC")
 		{
+			BilinearFastBox<ColorVertex<float, unsigned char>, Normal<float> >::m_surface = surface;
 			grid = new PointsetGrid<ColorVertex<float, unsigned char>, BilinearFastBox<ColorVertex<float, unsigned char>, Normal<float> > >(resolution, surface, surface->getBoundingBox(), useVoxelsize);
 			grid->setExtrusion(options.extrude());
-			BilinearFastBox<ColorVertex<float, unsigned char>, Normal<float> >::m_surface = surface;
 			PointsetGrid<ColorVertex<float, unsigned char>, BilinearFastBox<ColorVertex<float, unsigned char>, Normal<float> > >* ps_grid = static_cast<PointsetGrid<ColorVertex<float, unsigned char>, BilinearFastBox<ColorVertex<float, unsigned char>, Normal<float> > > *>(grid);
 			ps_grid->calcDistanceValues();
-
 			reconstruction = new FastReconstruction<ColorVertex<float, unsigned char> , Normal<float>, BilinearFastBox<ColorVertex<float, unsigned char>, Normal<float> >  >(ps_grid);
 
 		}
@@ -411,6 +417,7 @@ int main(int argc, char** argv)
 			ps_grid->calcDistanceValues();
 			reconstruction = new FastReconstruction<ColorVertex<float, unsigned char> , Normal<float>, SharpBox<ColorVertex<float, unsigned char>, Normal<float> >  >(ps_grid);
 		}
+
 
 		
 		// Create mesh

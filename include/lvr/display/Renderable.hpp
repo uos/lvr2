@@ -32,8 +32,14 @@
 #include <Windows.h>
 #endif
 
+
+#ifndef __APPLE__
 #include <GL/gl.h>
 #include <GL/glut.h>
+#else
+#include <OpenGL/gl.h>
+#include <GLUT/glut.h>
+#endif
 
 #include <string>
 using namespace std;
