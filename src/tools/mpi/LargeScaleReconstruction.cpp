@@ -358,7 +358,7 @@ int main(int argc, char* argv[])
             {4,0,1,5},
             {0,1,2,3}
         };
-
+/*
         for(auto it = nmap.begin() ; it != nmap.end() ; it++)
         {
 
@@ -525,7 +525,7 @@ int main(int argc, char* argv[])
             }
             cout << timestamp <<" saving grid " << mainPath << endl;
             mainGrid.serialize(mainPath);
-        }
+        }*/
 
         std::vector<string> grids(nmap.size());
 
@@ -657,6 +657,16 @@ int main(int argc, char* argv[])
                     return 0;
                 }
 
+                string bbpath = filePath;
+                boost::algorithm::replace_last(bbpath, "xyz", "bb");
+                ifstream bbifs(bbpath);
+                float minx, miny, minz, maxx, maxy, maxz;
+                bbifs >> minx >> miny >> minz >> maxx >> maxy >> maxz;
+                BoundingBox<ColorVertex<float, unsigned char> > tmpbb(minx, miny, minz, maxx, maxy, maxz);
+
+                surface->getBoundingBox().expand(tmpbb.getMin());
+                surface->getBoundingBox().expand(tmpbb.getMax());
+
                 surface->setKd(options.getKd());
                 surface->setKi(options.getKi());
                 surface->setKn(options.getKn());
@@ -694,14 +704,19 @@ int main(int argc, char* argv[])
                 FastReconstructionBase<ColorVertex<float, unsigned char>, Normal<float> >* reconstruction;
                 if(decomposition == "MC")
                 {
-                    string bbpath = filePath;
-                    boost::algorithm::replace_last(bbpath, "xyz", "bb");
-                    ifstream bbifs(bbpath);
-                    float minx, miny, minz, maxx, maxy, maxz;
-                    bbifs >> minx >> miny >> minz >> maxx >> maxy >> maxz;
-                    BoundingBox<ColorVertex<float, unsigned char> > tmpbb(minx, miny, minz, maxx, maxy, maxz);
+
                     cout << tmpbb << endl << "#########" << endl << surface->getBoundingBox() << "--------------" << endl;
-                    grid = new PointsetGrid<ColorVertex<float, unsigned char>, FastBox<ColorVertex<float, unsigned char>, Normal<float> > >(resolution, surface, surface->getBoundingBox(), useVoxelsize);
+
+                    if(surface->getBoundingBox().getMin().x < tmpbb.getMin().x) tmpbb.expand(surface->getBoundingBox().getMin());
+                    if(surface->getBoundingBox().getMin().y < tmpbb.getMin().y) tmpbb.expand(surface->getBoundingBox().getMin());
+                    if(surface->getBoundingBox().getMin().z < tmpbb.getMin().z) tmpbb.expand(surface->getBoundingBox().getMin());
+
+                    if(surface->getBoundingBox().getMax().x > tmpbb.getMax().x) tmpbb.expand(surface->getBoundingBox().getMax());
+                    if(surface->getBoundingBox().getMax().y > tmpbb.getMax().y) tmpbb.expand(surface->getBoundingBox().getMax());
+                    if(surface->getBoundingBox().getMax().z > tmpbb.getMax().z) tmpbb.expand(surface->getBoundingBox().getMax());
+
+
+                    grid = new PointsetGrid<ColorVertex<float, unsigned char>, FastBox<ColorVertex<float, unsigned char>, Normal<float> > >(resolution, surface, tmpbb, useVoxelsize);
                     grid->setExtrusion(options.extrude());
                     PointsetGrid<ColorVertex<float, unsigned char>, FastBox<ColorVertex<float, unsigned char>, Normal<float> > >* ps_grid = static_cast<PointsetGrid<ColorVertex<float, unsigned char>, FastBox<ColorVertex<float, unsigned char>, Normal<float> > > *>(grid);
                     ps_grid->getBoundingBox() = tmpbb;

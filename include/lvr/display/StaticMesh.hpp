@@ -36,12 +36,21 @@
 #include <string.h>
 #include <sstream>
 
-#include <GL/glut.h>
+#ifdef _MSC_VER
+#include <Windows.h>
+#endif
 
-using namespace std;
+#ifndef __APPLE__
+#include <GL/gl.h>
+#else
+#include <OpenGL/gl.h>
+#endif
 
 #include "Renderable.hpp"
 #include <lvr/geometry/BoundingBox.hpp>
+
+using namespace std;
+
 
 namespace lvr
 {

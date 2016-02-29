@@ -43,13 +43,18 @@
 #include <algorithm>
 #include <queue>
 
-#if _MSC_VER
-#include <GL/GLU.h>
-#else
-#include <GL/glu.h>
-#endif
+//#if _MSC_VER
+//#include <GL/GLU.h>
+//#else
+//#include <GL/glu.h>
+//#endif
 
+
+#ifndef __APPLE__
 #include <GL/glut.h>
+#else
+#include <GLUT/glut.h>
+#endif
 
 #include <CGAL/Simple_cartesian.h>
 #include <CGAL/AABB_tree.h>

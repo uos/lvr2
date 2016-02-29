@@ -33,53 +33,6 @@
 namespace lvr
 {
 
-  /// Adaptor class for nanoflann                                                                                                                                                                                                                           
-  template<typename T>
-    class NFPointCloud
-  {
-  public:
-    NFPointCloud(PointBufferPtr ptr) : m_ptr(ptr)
-    {
-      size_t num;
-      m_numPoints = m_ptr->getNumPoints();
-      m_points = m_ptr->getPointArray(num);
-    };
-
-    inline size_t kdtree_get_point_count() const { return m_numPoints;}
-
-    inline T kdtree_get_pt(const size_t i, int dim) const
-    {
-      if(dim == 0)
-	{
-	  return (T)m_points[3 * i];
-	}
-      else if(dim == 1)
-	{
-	  return (T)m_points[3 * i + 1];
-	}
-      else
-	{
-	  return (T)m_points[3 * i + 2];
-	}
-    }
-
-    inline T kdtree_distance(const T *p1, const size_t idx_p2,size_t size) const
-    {
-      const T d0 = p1[0] - m_points[idx_p2 * 3];
-      const T d1 = p1[1] - m_points[idx_p2 * 3 + 1];
-      const T d2 = p1[2] - m_points[idx_p2 * 3 + 2];
-      return d0*d0 + d1*d1 + d2*d2;
-    }
-
-    template <typename BBOX>
-    bool kdtree_get_bbox(BBOX &bb) const { return false; }
-
-    PointBufferPtr  m_ptr;
-    floatArr        m_points;
-    size_t          m_numPoints;
-  };
-
-
 /**
  * @brief SearchClass for point data.
  *
@@ -119,17 +72,17 @@ public:
     virtual void kSearch(
             coord < float >& qp,
             int neighbours, vector< ulong > &indices,
-            vector< double > &distances );
+            vector< float > &distances );
 
 
     virtual void kSearch(VertexT qp, int k, vector< VertexT > &neighbors);
 
 
-    virtual void radiusSearch( float              qp[3], double r, vector< ulong > &indices );
-    virtual void radiusSearch( VertexT&              qp, double r, vector< ulong > &indices );
-    virtual void radiusSearch( const VertexT&        qp, double r, vector< ulong > &indices );
-    virtual void radiusSearch( coord< float >&       qp, double r, vector< ulong > &indices );
-    virtual void radiusSearch( const coord< float >& qp, double r, vector< ulong > &indices );
+    virtual void radiusSearch( float              qp[3], float r, vector< ulong > &indices );
+    virtual void radiusSearch( VertexT&              qp, float r, vector< ulong > &indices );
+    virtual void radiusSearch( const VertexT&        qp, float r, vector< ulong > &indices );
+    virtual void radiusSearch( coord< float >&       qp, float r, vector< ulong > &indices );
+    virtual void radiusSearch( const coord< float >& qp, float r, vector< ulong > &indices );
 
     /// Destructor
     virtual ~SearchTreeNanoflann() {};
@@ -137,7 +90,53 @@ public:
 
 
 private:
-    
+
+    /// Adaptor class for nanoflann
+    template<typename T>
+    class NFPointCloud
+    {
+    public:
+        NFPointCloud(PointBufferPtr ptr) : m_ptr(ptr)
+        {
+            size_t num;
+            m_numPoints = m_ptr->getNumPoints();
+            m_points = m_ptr->getPointArray(num);
+        };
+
+        inline size_t kdtree_get_point_count() const { return m_numPoints;}
+
+        inline T kdtree_get_pt(const size_t i, int dim) const
+        {
+            if(dim == 0)
+            {
+                return (T)m_points[3 * i];
+            }
+            else if(dim == 1)
+            {
+                return (T)m_points[3 * i + 1];
+            }
+            else
+            {
+                return (T)m_points[3 * i + 2];
+            }
+        }
+
+        inline T kdtree_distance(const T *p1, const size_t idx_p2,size_t size) const
+        {
+            const T d0 = p1[0] - m_points[idx_p2 * 3];
+            const T d1 = p1[1] - m_points[idx_p2 * 3 + 1];
+            const T d2 = p1[2] - m_points[idx_p2 * 3 + 2];
+            return d0*d0 + d1*d1 + d2*d2;
+        }
+
+        template <typename BBOX>
+        bool kdtree_get_bbox(BBOX &bb) const { return false; }
+
+        PointBufferPtr  m_ptr;
+        floatArr        m_points;
+        size_t          m_numPoints;
+    };
+
     /// Point cloud adator
     NFPointCloud<float>* m_pointCloud;
 

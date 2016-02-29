@@ -31,14 +31,19 @@ using namespace std;
 
 #include <set>
 #include <vector>
+#include <iomanip>
+
 #if _MSC_VER
 #include <Windows.h>
-#include <GL/GLU.h>
-#else
-#include <GL/glu.h>
 #endif
+
+#ifndef __APPLE__
+#include <GL/glu.h>
 #include <GL/glut.h>
-#include <iomanip>
+#else
+#include <OpenGL/glu.h>
+#include <GLUT/glut.h>
+#endif
 
 #include "Vertex.hpp"
 #include "Normal.hpp"

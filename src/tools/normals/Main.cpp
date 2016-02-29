@@ -28,15 +28,7 @@
 #include <lvr/geometry/Matrix4.hpp>
 #include <lvr/geometry/Normal.hpp>
 #include <lvr/reconstruction/SearchTree.hpp>
-
-// SearchTreePCL
-#ifdef LVR_USE_STANN
-    #include <lvr/reconstruction/SearchTreeStann.hpp>
-#elif LVR_USE_PCL
-    #include <lvr/reconstruction/SearchTreeFlann.hpp>
-#else
-    #error "Neither FLANN nor STANN is available, but one is required"
-#endif
+#include <lvr/reconstruction/SearchTreeFlann.hpp>
 
 #include <boost/filesystem.hpp>
 
@@ -97,11 +89,8 @@ void interpolateNormals(PointBufferPtr pc, size_t numPoints, int n)
     cout << timestamp << "Creating search tree for interpolation" << endl;
 
     SearchTree<Vertex<float> >::Ptr       tree;
-#ifdef LVR_USE_STANN
-        tree = SearchTree<Vertex<float> >::Ptr( new SearchTreeStann<Vertex<float> >(pc, numPoints, n, n, n) );
-#else
-        tree = SearchTree<Vertex<float> >::Ptr( new SearchTreeFlann<Vertex<float> >(pc, numPoints, n, n, n) );
-#endif
+    tree = SearchTree<Vertex<float> >::Ptr( new SearchTreeFlann<Vertex<float> >(pc, numPoints, n, n, n) );
+
 
     size_t count;
     floatArr points = pc->getPointArray(count);
@@ -115,7 +104,7 @@ void interpolateNormals(PointBufferPtr pc, size_t numPoints, int n)
     {
         // Create search tree
         vector< ulong > indices;
-        vector< double > distances;
+        vector< float > distances;
 
         Vertex<float> vertex(points[3 * i], points[3 * i + 1], points[3 * i + 2]);
         tree->kSearch( vertex, n, indices, distances);

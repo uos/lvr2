@@ -50,10 +50,11 @@
 #endif
 
 #include "SearchTreeNanoflann.hpp"
+#include "SearchTreeFlann.hpp"
 
 // SearchTreePCL
 #ifdef LVR_USE_PCL
-    #include "SearchTreeFlann.hpp"
+    #include "SearchTreeFlannPCL.hpp"
 #endif
 
 // SearchTreeNabo
