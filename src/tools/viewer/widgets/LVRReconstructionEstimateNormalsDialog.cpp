@@ -1,12 +1,8 @@
 #include <QFileDialog>
 #include "LVRReconstructionEstimateNormalsDialog.hpp"
 
-#ifdef LVR_USE_PCL
+#include <lvr/reconstruction/SearchTree.hpp>
 #include <lvr/reconstruction/SearchTreeFlann.hpp>
-#endif
-#ifdef LVR_USE_STANN
-#include <lvr/reconstruction/SearchTreeStann.hpp>
-#endif
 
 namespace lvr
 {
@@ -107,20 +103,15 @@ void LVREstimateNormalsDialog::estimateNormals()
     if(interpolateNormals)
     {
         SearchTree<Vertex<float> >::Ptr       tree;
-        #ifdef LVR_USE_PCL
-            tree = SearchTree<Vertex<float> >::Ptr( new SearchTreeFlann<Vertex<float> >(new_pc, numPoints, ki, ki, ki) );
-        #elif LVR_USE_STANN
-            tree = SearchTree<Vertex<float> >::Ptr( new SearchTreeStann<Vertex<float> >(new_pc, numPoints, ki, ki, ki) );
-        #else
-            #error "Neither FLANN nor STANN is supported, but one is required"
-        #endif
+	tree = SearchTree<Vertex<float> >::Ptr( new SearchTreeFlann<Vertex<float> >(new_pc, numPoints, ki, ki, ki) );
+	    
 
         #pragma omp parallel for schedule(static)
         for(int i = 0; i < numPoints; i++)
         {
             // Create search tree
             vector< ulong > indices;
-            vector< double > distances;
+            vector< float > distances;
 
             Vertex<float> vertex(points[3 * i], points[3 * i + 1], points[3 * i + 2]);
             tree->kSearch(vertex, ki, indices, distances);

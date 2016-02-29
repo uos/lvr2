@@ -1,8 +1,7 @@
 cmake_minimum_required(VERSION 2.8)
 project(LAS_VEGAS)
 
-set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++11")
-set_property(GLOBAL PROPERTY USE_FOLDERS On)
+set_property(GLOBAL PROPERTY USE_FOLDERS On) 
 
 include(GNUInstallDirs)
 
@@ -10,7 +9,11 @@ set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/bin)
 set(CMAKE_LIBRARY_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/lib)
 set(CMAKE_ARCHIVE_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/lib)
 
-set(CMAKE_MODULE_PATH ${LAS_VEGAS_SOURCE_DIR}/CMakeModules ${CMAKE_MODULE_PATH})
+set(CMAKE_MODULE_PATH ${LAS_VEGAS_SOURCE_DIR}/CMakeModules ${LAS_VEGAS_SOURCE_DIR}/ext/kintinuous/cmake/Modules ${CMAKE_MODULE_PATH})
+
+message(STATUS ${CMAKE_MODULE_PATH})
+
+include_directories(include)
 
 ##################################################################################
 # Some compiler specific settings
@@ -18,23 +21,42 @@ set(CMAKE_MODULE_PATH ${LAS_VEGAS_SOURCE_DIR}/CMakeModules ${CMAKE_MODULE_PATH})
 
 if(MSVC)
   list(APPEND LVR_DEFINITIONS -DNOMINMAX)
-endif()
-
-if(CMAKE_COMPILER_IS_GNUCC AND CMAKE_COMPILER_IS_GNUCXX)
+else(MSVC)
   add_compile_options(-fmessage-length=0 -fPIC -Wno-deprecated)
   # with cmake 3.3
-  add_compile_options($<$<COMPILE_LANGUAGE:CXX>:-std=c++11>)
+  #add_compile_options($<$<COMPILE_LANGUAGE:CXX>:-std=c++0x>)
   set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++11")
-endif()
+endif(MSVC)
 
 ###############################################################
 # EXTERNAL LIBRARIES
 ###############################################################
 
 ####
+## Searching for CUDA
+##############################
+find_package( CUDA )
+
+
+####
 ## Searching for OpenCV
 ##############################
-find_package( OpenCV REQUIRED )
+find_package( OpenCV 2.4.8 REQUIRED )
+
+option(WITH_CV_NONFREE "Use OpenCV non-free descriptors" OFF)
+if(WITH_CV_NONFREE)
+  message(STATUS "Using OpenCV non-free module")
+  list(APPEND LVR_DEFINITIONS -DLVR_USE_CV_NONFREE)
+endif(WITH_CV_NONFREE)
+
+
+####
+## Searching for FLANN
+##############################
+find_package(  FLANN REQUIRED )
+if(FLANN_FOUND)
+  include_directories(${FLANN_DIR})
+endif(FLANN_FOUND)
 
 ####
 ## Searching for Eigen3
@@ -48,16 +70,17 @@ include_directories(${EIGEN3_INCLUDE_DIR})
 find_package( MPI )
 if(MPI_FOUND)
   include_directories(SYSTEM ${MPI_INCLUDE_PATH})
+  
 endif(MPI_FOUND)
 
 ####
 ## Searching for VTK
 ##############################
-#find_package(VTK REQUIRED)
-#include(${VTK_USE_FILE})
-#if(VTK_MAJOR_VERSION VERSION_LESS "6")
-#  list(APPEND LVR_DEFINITIONS -DLVR_USE_VTK5)
-#endif()
+find_package(VTK REQUIRED)
+include(${VTK_USE_FILE})
+if(VTK_MAJOR_VERSION VERSION_LESS "6")
+  list(APPEND LVR_DEFINITIONS -DLVR_USE_VTK5)
+endif()
 
 ####
 ## Searching for NABO
@@ -73,7 +96,7 @@ endif(NABO_FOUND)
 ## Searching for PCL
 ##############################
 
-find_package(PCL 1.6)
+find_package(PCL 1.7)
 if(PCL_FOUND)
   include_directories(${PCL_INCLUDE_DIRS})
   link_directories(${PCL_LIBRARY_DIRS})
@@ -158,11 +181,11 @@ include_directories(${GLUT_INCLUDE_DIR})
 ## Searching for libfreenect
 ##############################
 
-#find_package(PkgConfig REQUIRED)
-#pkg_check_modules(LIBFREENECT libfreenect)
-#if(LIBFREENECT_FOUND)
-#  include_directories(${LIBFREENECT_INCLUDE_DIRS})
-#endif(LIBFREENECT_FOUND)
+find_package(PkgConfig REQUIRED)
+pkg_check_modules(LIBFREENECT libfreenect)
+if(LIBFREENECT_FOUND)
+  include_directories(${LIBFREENECT_INCLUDE_DIRS})
+endif(LIBFREENECT_FOUND)
 
 ####
 ## Searching for STANN
@@ -204,25 +227,54 @@ add_subdirectory(ext/slam6d)
 include_directories( ${SLAM6D_INCLUDE_DIR} )
 list(APPEND LVR_INSTALL_INCLUDE_DIRS ${SLAM6D_INSTALL_INCLUDE_DIR})
 
-
+# KINTINUOUS
+option(WITH_KINFU "Compile LVR Kinfu" OFF)
+if(CUDA_FOUND AND "${OpenCV_VERSION_PATCH}" VERSION_GREATER "8" AND WITH_KINFU)
+message(STATUS "Building LVR KinFu")
+add_subdirectory(ext/kintinuous)
+include_directories(${LAS_VEGAS_SOURCE_DIR}/ext/kintinuous/kfusion/include)
+endif()
 
 ##############################################################
 # HEADERS
 ##############################################################
 
-include_directories(include)
-
 install(DIRECTORY include/lvr DESTINATION ${CMAKE_INSTALL_INCLUDEDIR})
-
 list(APPEND LVR_INSTALL_INCLUDE_DIRS ${CMAKE_INSTALL_PREFIX}/${CMAKE_INSTALL_INCLUDEDIR})
-
 add_definitions(${LVR_DEFINITIONS})
+
 
 ##############################################################
 # VIEWERS
 ##############################################################
 
+set( QT_USE_QTOPENGL TRUE )
+set( QT_USE_XML TRUE)
+find_package( Qt4 )
+if(QT4_FOUND)
+  include_directories(${QT_INCLUDE_DIR})
+  include_directories(${QT_QTGUI_INCLUDE_DIR})
+  include_directories(${QT_QTOPENGL_INCLUDE_DIR})
+  include_directories(${QT_QTCORE_INCLUDE_DIR})
+  include_directories(${QT_QTXML_INCLUDE_DIR})
 
+  # Try to find libQGLViewer
+  find_library(QGLVIEWER_LIBRARY_RELEASE
+      NAMES qglviewer-qt4 qglviewer QGLViewer QGLViewer2
+      PATHS /usr/lib /usr/local/lib ENV QGLVIEWERROOT ENV LD_LIBRARY_PATH ENV LIBRARY_PATH
+      PATH_SUFFIXES QGLViewer QGLViewer/release)
+  if(QGLVIEWER_LIBRARY_RELEASE)
+    message(STATUS "Found libqglviewer")
+    message(STATUS "Building qglviewer application")
+    add_subdirectory(src/qglviewer)
+  endif(QGLVIEWER_LIBRARY_RELEASE)
+
+  find_package(QVTK)
+  if(QVTK_FOUND)
+    include_directories(${QVTK_INCLUDE_DIR})
+    add_subdirectory(src/tools/viewer)
+  endif(QVTK_FOUND)
+endif(QT4_FOUND)
 
 ##############################################################
 # LIBRARIES
@@ -236,7 +288,7 @@ add_subdirectory(src/liblvr)
 
 add_subdirectory(src/tools/reconstruct)
 add_subdirectory(src/tools/classifier)
-#add_subdirectory(src/tools/colorize)
+add_subdirectory(src/tools/colorize)
 add_subdirectory(src/tools/scanreduce)
 add_subdirectory(src/tools/convert)
 add_subdirectory(src/tools/asciiconverter)
@@ -244,15 +296,19 @@ add_subdirectory(src/tools/texman)
 add_subdirectory(src/tools/tiogen)
 add_subdirectory(src/tools/meshoptimizer)
 add_subdirectory(src/tools/transform)
-#add_subdirectory(src/tools/registration)
-#add_subdirectory(src/tools/normals)
+add_subdirectory(src/tools/registration)
+add_subdirectory(src/tools/normals)
 
 if(MPI_FOUND)
   add_subdirectory(src/tools/mpi)
 endif(MPI_FOUND)
 
 if(CGAL_FOUND)
-  add_subdirectory(src/tools/cgal_reconstruction)
+  # There is a name clash between CGAL and std::pair. Should
+  # be fixed in the next CGAL release
+  if(CMAKE_COMPILER_IS_GNUCC AND CMAKE_COMPILER_IS_GNU)
+    add_subdirectory(src/tools/cgal_reconstruction)
+  endif()
   #add_subdirectory(src/tools/fusion)
   add_subdirectory(src/tools/slicer)
 endif(CGAL_FOUND)
@@ -260,6 +316,9 @@ endif(CGAL_FOUND)
 if(PCL_FOUND)
   add_subdirectory(src/tools/scanfilter)
   add_subdirectory(src/tools/leica_converter)
+  if(LIBFREENECT_FOUND)
+    add_subdirectory(src/tools/kinectgrabber)
+  endif(LIBFREENECT_FOUND)
 endif(PCL_FOUND)
 
 ################################################################
@@ -274,6 +333,12 @@ install(EXPORT lvrTargets
 configure_file(lvrConfig.cmake.in ${CMAKE_BINARY_DIR}/lvrConfig.cmake @ONLY)
 install(FILES ${CMAKE_BINARY_DIR}/lvrConfig.cmake
     DESTINATION ${CMAKE_INSTALL_LIBDIR}/cmake/lvr)
+
+install(FILES
+    CMakeModules/FindEigen3.cmake
+    CMakeModules/FindNabo.cmake
+    CMakeModules/FindSTANN.cmake
+    DESTINATION ${CMAKE_INSTALL_LIBDIR}/cmake/lvr/Modules)
 
 ################################################################
 # DOCUMENTATION
@@ -298,4 +363,3 @@ if( DOXYGEN_FOUND AND DOXYGEN_DOT_FOUND )
       WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}
       COMMENT "Generating API documentation with Doxygen" VERBATIM )
 endif( DOXYGEN_FOUND AND DOXYGEN_DOT_FOUND )
-

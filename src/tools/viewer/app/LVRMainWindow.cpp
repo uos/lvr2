@@ -865,7 +865,8 @@ void LVRMainWindow::parseCommandLine(int argc, char** argv)
 		bridge->addActors(m_renderer);
 
 		// Add item for this model to tree widget
-		QFileInfo info(QString(argv[i]));
+		QString s(argv[i]);
+		QFileInfo info(s);
 		QString base = info.fileName();
 		LVRModelItem* item = new LVRModelItem(bridge, base);
 		this->treeWidget->addTopLevelItem(item);

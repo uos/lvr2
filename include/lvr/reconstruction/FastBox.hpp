@@ -62,7 +62,7 @@ public:
 	 * @brief Constructs a new box at the given center point defined
 	 * 		  by the used \ref{m_voxelsize}.
 	 */
-    FastBox(VertexT &center, bool fusionBox = false, size_t hash = 0);
+    FastBox(VertexT &center);
 
     /**
      * @brief Destructor.
@@ -104,6 +104,7 @@ public:
 
     inline VertexT getCenter(){ return m_center; }
 
+    
     /**
      * @brief Performs a local reconstruction according to the standard
      * 		  Marching Cubes table from Paul Bourke.
@@ -127,10 +128,16 @@ public:
     static uint		   		INVALID_INDEX;
 
     /// The twelve intersection between box and surface
-    size_t                      m_hash;
-    uint*                   	m_intersections;
+    uint                   	m_intersections[12];
     bool 						m_fusionBox;
-    bool 						m_doubleBox;
+    bool 						m_fusedBox;
+    bool                        m_oldfusionBox;
+    bool                        m_fusionNeighborBox;
+     /// The box center
+    VertexT               		m_center;
+
+        /// Pointer to all adjacent cells
+    FastBox<VertexT, NormalT>*  m_neighbors[27];
 
 protected:
 
@@ -173,7 +180,7 @@ protected:
      * @param query_points  The query points of the grid
      */
     void getDistances(float distances[], vector<QueryPoint<VertexT> > &query_points);
-    
+
     /***
      * @brief Interpolates the intersection between x1 and x1.
      *
@@ -185,14 +192,10 @@ protected:
      */
     float calcIntersection(float x1, float x2, float d1, float d2);
 
-    /// The box center
-    VertexT               		m_center;
+
 
     /// The eight box corners
     uint                  		m_vertices[8];
-
-    /// Pointer to all adjacent cells
-    FastBox<VertexT, NormalT>*  m_neighbors[27];
 
     template<typename Q, typename V> friend class BilinearFastBox;
 

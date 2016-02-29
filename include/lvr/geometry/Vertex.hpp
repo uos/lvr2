@@ -242,11 +242,6 @@ class Vertex{
                             && ( this->y - other.y <= 0.00001 ) ) ) );
         }
 
-        virtual bool operator>(const Vertex &other) const
-        {
-            return ! this->operator<(other);
-        }
-
         /**
          * @brief    Indexed coordinate access (reading)
          */

@@ -168,7 +168,6 @@ void loadPointCloud( lvr::PointBufferPtr &pc, PointCloudManagerPtr &pcm, char* f
 int main( int argc, char ** argv )
 {
 
-    omp_set_num_threads( omp_get_num_procs() );
     parseArgs( argc, argv );
 
     /* Read clouds from file. */

@@ -365,6 +365,7 @@ template<typename VertexT, typename BoxT>
 void HashGrid<VertexT, BoxT>::calcIndices()
 {
 	float max_size = m_boundingBox.getLongestSide();
+	cout << "longest side:" << max_size << endl;
 
 	//Save needed grid parameters
 	m_maxIndex = (int)ceil( (max_size + 5 * m_voxelsize) / m_voxelsize);

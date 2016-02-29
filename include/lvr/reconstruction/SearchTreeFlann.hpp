@@ -1,44 +1,21 @@
-/* Copyright (C) 2011 Uni Osnabrück
- * This file is part of the LAS VEGAS Reconstruction Toolkit,
- *
- * LAS VEGAS is free software; you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation; either version 2 of the License, or
- * (at your option) any later version.
- *
- * LAS VEGAS is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public License
- * along with this program; if not, write to the Free Software
- * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA
- */
-
 /*
-*  SearchTreePCL.hpp
-*
-*       Created on: 02.01.2012
-*           Author: Florian Otte
+ * SearchTreeFlann.hpp
+ *
+ *  Created on: Sep 22, 2015
+ *      Author: Thomas Wiemann
  */
 
-#ifndef SEARCHTREEFLANN_H_
-#define SEARCHTREEFLANN_H_
+#ifndef INCLUDE_LIBLVR_RECONSTRUCTION_SEARCHTREEFLANN_HPP_
+#define INCLUDE_LIBLVR_RECONSTRUCTION_SEARCHTREEFLANN_HPP_
 
 // C++ Stl includes
 #include <vector>
 
-// PCL includes
-#include <pcl/point_types.h>
-#include <pcl/point_cloud.h>
-#include <pcl/io/pcd_io.h>
-#include <pcl/features/normal_3d.h>
-#include <pcl/features/normal_3d_omp.h>
+#include <flann/flann.hpp>
+#include <boost/shared_ptr.hpp>
 
 // Superclass
-#include "SearchTree.hpp"
-
+#include <lvr/reconstruction/SearchTree.hpp>
 #include <lvr/io/Timestamp.hpp>
 
 using std::vector;
@@ -48,7 +25,7 @@ namespace lvr {
 /**
  * @brief SearchClass for point data.
  *
- *      This class uses the stann( https://sites.google.com/a/compgeom.com/stann/ )
+ *      This class uses the FLANN ( http://www.cs.ubc.ca/~mariusm/uploads/FLANN )
  *      library to implement a nearest neighbour search for point-data.
  */
 template< typename VertexT >
@@ -89,26 +66,30 @@ public:
      * @param indices     A vector that stores the indices for the neighbours whithin the dataset.
      * @param distances   A vector that stores the distances for the neighbours that are found.
      */
-    virtual void kSearch( coord < float >& qp, int neighbours, vector< ulong > &indices, vector< double > &distances );
+    virtual void kSearch( coord < float >& qp, int neighbours, vector< ulong > &indices, vector< float > &distances );
 
     virtual void kSearch( VertexT qp, int k, vector< VertexT > &neighbors );
 
-    virtual void radiusSearch( float              qp[3], double r, vector< ulong > &indices );
-    virtual void radiusSearch( VertexT&              qp, double r, vector< ulong > &indices );
-    virtual void radiusSearch( const VertexT&        qp, double r, vector< ulong > &indices );
-    virtual void radiusSearch( coord< float >&       qp, double r, vector< ulong > &indices );
-    virtual void radiusSearch( const coord< float >& qp, double r, vector< ulong > &indices );
+    virtual void radiusSearch( float              qp[3], float r, vector< ulong > &indices );
+    virtual void radiusSearch( VertexT&              qp, float r, vector< ulong > &indices );
+    virtual void radiusSearch( const VertexT&        qp, float r, vector< ulong > &indices );
+    virtual void radiusSearch( coord< float >&       qp, float r, vector< ulong > &indices );
+    virtual void radiusSearch( const coord< float >& qp, float r, vector< ulong > &indices );
 
 protected:
 
-    /// Store the pcl kd-tree
-    pcl::PointCloud< pcl::PointXYZRGB >::Ptr       m_pointCloud;
-    pcl::KdTreeFLANN< pcl::PointXYZRGB >::Ptr      m_kdTree;
+    boost::shared_ptr<flann::Index<flann::L2_Simple<float> > > 		m_tree;
+    floatArr 													    m_points;
+    size_t															m_numPoints;
+    flann::Matrix<float>  	 										m_flannPoints;
 
-}; // SearchTreePCL
+    vector<int>														m_ind;
+    vector<float>													m_dst;
 
+}; // SearchTreeFlann
 
-} // namespace lvr
+}
+
 #include "SearchTreeFlann.tcc"
 
-#endif  // include-guard
+#endif /* INCLUDE_LIBLVR_RECONSTRUCTION_SEARCHTREEFLANN_HPP_ */

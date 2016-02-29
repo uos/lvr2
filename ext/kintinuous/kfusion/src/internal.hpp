@@ -4,7 +4,7 @@
 #include <kfusion/tsdf_buffer.h>
 #include "safe_call.hpp"
 
-#define USE_DEPTH
+//#define USE_DEPTH
 
 namespace kfusion
 {
@@ -45,9 +45,9 @@ namespace kfusion
             __kf_device__ const elem_type* operator() (int x, int y, int z) const ;
             __kf_device__ elem_type* beg(int x, int y) const;
             __kf_device__ elem_type* zstep(elem_type *const ptr) const;
-            __kf_device__ elem_type* multzstep(int mult, elem_type *const ptr) const;           
-            
-            
+            __kf_device__ elem_type* multzstep(int mult, elem_type *const ptr) const;
+
+
         private:
             TsdfVolume& operator=(const TsdfVolume&);
         };
@@ -140,7 +140,7 @@ namespace kfusion
 
 
         //exctraction functionality
-        size_t extractSliceAsCloud (const TsdfVolume& volume, const kfusion::tsdf_buffer* buffer, 
+        size_t extractSliceAsCloud (const TsdfVolume& volume, const kfusion::tsdf_buffer* buffer,
 								    const Vec3i minBounds, const Vec3i maxBounds, const Vec3i globalShift
 								    , const Aff3f& aff, PtrSz<Point> output);
         size_t extractCloud(const TsdfVolume& volume, const tsdf_buffer& buffer, const Aff3f& aff, PtrSz<Point> output);
