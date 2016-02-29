@@ -6,6 +6,10 @@
 #include <vtkRendererCollection.h>
 #include <vtkSmartPointer.h>
 
+#ifdef LVR_USE_PCL
+#include <lvr/reconstruction/SearchTreeFlannPCL.hpp>
+#endif
+
 #include <lvr/io/AsciiIO.hpp>
 #include <lvr/io/Timestamp.hpp>
 #include <lvr/io/Progress.hpp>

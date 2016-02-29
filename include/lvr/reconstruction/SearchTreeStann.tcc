@@ -77,9 +77,14 @@ SearchTreeStann< VertexT >::~SearchTreeStann() {
 
 
 template<typename VertexT>
-void SearchTreeStann< VertexT >::kSearch( coord< float > &qp, int neighbours, vector< ulong > &indices, vector< double > &distances )
+void SearchTreeStann< VertexT >::kSearch( coord< float > &qp, int neighbours, vector< ulong > &indices, vector< float > &distances )
 {
-    m_pointTree.ksearch( qp, neighbours, indices, distances, 0);
+	vector<double> dst;
+    m_pointTree.ksearch( qp, neighbours, indices, dst, 0);
+    for(size_t i = 0; i < dst.size(); i++)
+    {
+    	distances.push_back(static_cast<float>(dst[i]));
+    }
 }
 
 	template<typename VertexT>
@@ -117,15 +122,15 @@ void SearchTreeStann< VertexT >::kSearch(VertexT qp, int k, vector< VertexT > &n
    Begin of radiusSearch implementations
  */
 template<typename VertexT>
-void SearchTreeStann< VertexT >::radiusSearch( float qp[3], double r, vector< ulong > &indices )
+void SearchTreeStann< VertexT >::radiusSearch( float qp[3], float r, vector< ulong > &indices )
 {
     // clear possibly old information
     indices.clear();
     // keep track of found distances and indices
-    vector< double > distances;
+    vector< float > distances;
 
- //   double squared_radius = r*r;
-    double max_radius = numeric_limits< double >::min();
+ //   float squared_radius = r*r;
+    float max_radius = numeric_limits< float >::min();
     int k = 10;
     while( max_radius < r ){
         SearchTree< VertexT >::kSearch( qp, k, indices, distances );
@@ -145,7 +150,7 @@ void SearchTreeStann< VertexT >::radiusSearch( float qp[3], double r, vector< ul
 
 
 template<typename VertexT>
-void SearchTreeStann< VertexT >::radiusSearch( VertexT& qp, double r, vector< ulong > &indices )
+void SearchTreeStann< VertexT >::radiusSearch( VertexT& qp, float r, vector< ulong > &indices )
 {
     float qp_arr[3];
     qp_arr[0] = qp[0];
@@ -156,7 +161,7 @@ void SearchTreeStann< VertexT >::radiusSearch( VertexT& qp, double r, vector< ul
 
 
 template<typename VertexT>
-void SearchTreeStann< VertexT >::radiusSearch( const VertexT& qp, double r, vector< ulong > &indices )
+void SearchTreeStann< VertexT >::radiusSearch( const VertexT& qp, float r, vector< ulong > &indices )
 {
     float qp_arr[3];
     qp_arr[0] = qp[0];
@@ -167,7 +172,7 @@ void SearchTreeStann< VertexT >::radiusSearch( const VertexT& qp, double r, vect
 
 
 template<typename VertexT>
-void SearchTreeStann< VertexT >::radiusSearch( coord< float >& qp, double r, vector< ulong > &indices )
+void SearchTreeStann< VertexT >::radiusSearch( coord< float >& qp, float r, vector< ulong > &indices )
 {
     float qp_arr[3];
     qp_arr[0] = qp[0];
@@ -178,7 +183,7 @@ void SearchTreeStann< VertexT >::radiusSearch( coord< float >& qp, double r, vec
 
 
 template<typename VertexT>
-void SearchTreeStann< VertexT >::radiusSearch( const coord< float >& qp, double r, vector< ulong > &indices )
+void SearchTreeStann< VertexT >::radiusSearch( const coord< float >& qp, float r, vector< ulong > &indices )
 {
     float qp_arr[3];
     coord< float > qpcpy = qp;

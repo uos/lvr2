@@ -17,14 +17,14 @@ namespace kfusion
 		{
 		  ///Shift the pointer by (@origin - @start)
 		  *value += (buffer.tsdf_rolling_buff_origin - buffer.tsdf_memory_start);
-		  
+
 		  ///If we land outside of the memory, make sure to "modulo" the new value
 		  if(*value > buffer.tsdf_memory_end)
 		  {
 			*value -= (buffer.tsdf_memory_end - buffer.tsdf_memory_start + 1); /// correction of bug found my qianyizh
-		  }   
+		  }
 	    }
-	    
+
         __global__ void clear_volume_kernel(TsdfVolume tsdf)
         {
             int x = threadIdx.x + blockIdx.x * blockDim.x;
@@ -39,13 +39,13 @@ namespace kfusion
                     *pos = pack_tsdf (0.f, 0);
             }
         }
-        
+
       __global__ void
       clearSliceKernel (TsdfVolume tsdf, const kfusion::tsdf_buffer buffer, int3 minBounds, int3 maxBounds)
       {
         int x = threadIdx.x + blockIdx.x * blockDim.x;
 		int y = threadIdx.y + blockIdx.y * blockDim.y;
-  
+
 		//compute relative indices
 		int idX, idY;
 		if(x <= minBounds.x)
@@ -55,8 +55,8 @@ namespace kfusion
 		if(y <= minBounds.y)
 			idY = y + buffer.voxels_size.y;
 		else
-			idY = y; 
-       
+			idY = y;
+
         if ( x < buffer.voxels_size.x && y < buffer.voxels_size.y)
         {
             if( (idX >= minBounds.x && idX <= maxBounds.x) || (idY >= minBounds.y && idY <= maxBounds.y) )
@@ -71,18 +71,18 @@ namespace kfusion
                 }
             }
             else /* if( idX > maxBounds.x && idY > maxBounds.y) */
-            {          
+            {
                 ///RED ZONE  => clear only appropriate Z
-              
+
                 ///Pointer to the first x,y,0
                 ushort2 *pos = tsdf.beg(x, y);
-                           
-                ///Get the size of the whole TSDF memory 
+
+                ///Get the size of the whole TSDF memory
                 int size = buffer.tsdf_memory_end - buffer.tsdf_memory_start;
-                              
+
                 ///Move pointer to the Z origin
                 pos = tsdf.multzstep(minBounds.z, pos);
-				
+
 				if(maxBounds.z < 0)
 				{
 					pos = tsdf.multzstep(maxBounds.z, pos);
@@ -92,14 +92,14 @@ namespace kfusion
                     pos = pos + size;
 
                 int nbSteps = abs(maxBounds.z);
-                
-				#pragma unroll				
+
+				#pragma unroll
                 for(int z = 0; z < nbSteps; ++z, pos = tsdf.zstep(pos))
                 {
                   ///If we went outside of the memory, make sure we go back to the begining of it
                   if(pos > buffer.tsdf_memory_end)
                     pos = pos - size;
-                  
+
                   if (pos >= buffer.tsdf_memory_start && pos <= buffer.tsdf_memory_end) // quickfix for http://dev.pointclouds.org/issues/894
                     *pos = pack_tsdf (0.f, 0);
                 }
@@ -175,7 +175,7 @@ namespace kfusion
 
                         //read and unpack
                         int weight_prev;
-                        
+
            				ushort2* pos = const_cast<ushort2*> (vptr);
 
 						shift_tsdf_pointer (&pos, buffer);
@@ -576,7 +576,7 @@ namespace kfusion
             {
                 return unpack_tsdf(*volume(x, y, z), weight);
             }*/
-            
+
             __kf_device__ float fetch (const kfusion::tsdf_buffer& buffer, int x, int y, int z, int& weight) const
 			{
 			  const ushort2* tmp_pos = volume(x, y, z);
@@ -761,10 +761,10 @@ namespace kfusion
                     }
                 }
             }
-                        
-			// OPERATOR USED BY EXTRACT_SLICE_AS_CLOUD. 
-			// This operator extracts the cloud as TSDF values and X,Y,Z indices. 
-			// The previous operator generates a regular point cloud in meters. 
+
+			// OPERATOR USED BY EXTRACT_SLICE_AS_CLOUD.
+			// This operator extracts the cloud as TSDF values and X,Y,Z indices.
+			// The previous operator generates a regular point cloud in meters.
 			// This one generates a TSDF Point Cloud in grid indices.
 			//__kf_device__ void operator () (PtrSz<Point> output) const
 			// TODO fix operator for slice download
@@ -773,7 +773,7 @@ namespace kfusion
 			{
 				int x = threadIdx.x + blockIdx.x * CTA_SIZE_X;
 				int y = threadIdx.y + blockIdx.y * CTA_SIZE_Y;
-				
+
 #if __CUDA_ARCH__ < 200
 				__shared__ int cta_buffer[CTA_SIZE];
 #endif
@@ -786,7 +786,7 @@ namespace kfusion
 				return;
 #endif
 				int ftid = Block::flattenedThreadId ();
-	
+
 				for (int z = 0; z < volume.dims.z; ++z)
 				{
 					// The black zone is the name given to the subvolume within the TSDF Volume grid that is shifted out.
@@ -810,7 +810,7 @@ namespace kfusion
 							points[local_count++] = pt;
 						}
 					}/* if (x < VOLUME_X && y < VOLUME_Y) */
-					
+
 #if __CUDA_ARCH__ >= 200
                     ///not we fulfilled points array at current iteration
                     int total_warp = __popc (__ballot (local_count > 0)) + __popc (__ballot (local_count > 1)) + __popc (__ballot (local_count > 2));
@@ -887,7 +887,7 @@ namespace kfusion
         };
 
 		__global__ void
-		extractSliceKernel (const FullScan6 fs, PtrSz<Point> output, kfusion::tsdf_buffer buffer, int3 minBounds, int3 maxBounds, int3 bufferShifts) 
+		extractSliceKernel (const FullScan6 fs, PtrSz<Point> output, kfusion::tsdf_buffer buffer, int3 minBounds, int3 maxBounds, int3 bufferShifts)
 		{
 			fs (buffer, output, minBounds, maxBounds, bufferShifts);
 		}
@@ -1002,7 +1002,7 @@ size_t kfusion::device::extractCloud (const TsdfVolume& volume, const tsdf_buffe
 
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
-size_t kfusion::device::extractSliceAsCloud (const TsdfVolume& volume, const kfusion::tsdf_buffer* buffer, 
+size_t kfusion::device::extractSliceAsCloud (const TsdfVolume& volume, const kfusion::tsdf_buffer* buffer,
 								const Vec3i minBounds, const Vec3i maxBounds, const Vec3i globalShift, const Aff3f& aff,
 								PtrSz<Point> output)
 {
@@ -1012,7 +1012,7 @@ size_t kfusion::device::extractSliceAsCloud (const TsdfVolume& volume, const kfu
 
 	dim3 block (FS::CTA_SIZE_X, FS::CTA_SIZE_Y);
     dim3 grid (divUp (volume.dims.x, block.x), divUp (volume.dims.y, block.y));
-	
+
 	//printf("buffer_origin: x: %d y: %d z: %d \n", buffer->origin_GRID.x, buffer->origin_GRID.y, buffer->origin_GRID.z);
 	// Extraction call
 	extractSliceKernel<<<grid, block>>>(fs, output, *buffer, minBounds, maxBounds, globalShift);
@@ -1021,7 +1021,7 @@ size_t kfusion::device::extractSliceAsCloud (const TsdfVolume& volume, const kfu
 	cudaSafeCall ( cudaDeviceSynchronize () );
 
 	int size;
-	cudaSafeCall ( cudaMemcpyFromSymbol (&size, output_count, sizeof(size)) );  
+	cudaSafeCall ( cudaMemcpyFromSymbol (&size, output_count, sizeof(size)) );
 	return (size_t)size;
 }
 
@@ -1042,7 +1042,7 @@ void kfusion::device::extractNormals (const TsdfVolume& volume, const tsdf_buffe
 }
 
 /////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-void 
+void
 kfusion::device::clearTSDFSlice (const TsdfVolume& volume, const kfusion::tsdf_buffer* buffer, const Vec3i offset)
 {
 	int newX = buffer->origin_GRID.x + offset.x;
@@ -1092,19 +1092,18 @@ kfusion::device::clearTSDFSlice (const TsdfVolume& volume, const kfusion::tsdf_b
 		minBounds.z += 1;
 		maxBounds.z += 1;
 	}*/
-	
-	
+
+
 	//printf("clear minBounds: %d, %d, %d \n", minBounds.x, minBounds.y, minBounds.z);
 	//printf("clear maxBounds: %d, %d, %d \n", maxBounds.x, maxBounds.y, maxBounds.z);
 	// call kernel
 	dim3 block (32, 16);
 	dim3 grid (1, 1, 1);
-	grid.x = divUp (buffer->voxels_size.x, block.x);      
+	grid.x = divUp (buffer->voxels_size.x, block.x);
 	grid.y = divUp (buffer->voxels_size.y, block.y);
 
 	clearSliceKernel<<<grid, block>>>(volume, *buffer, minBounds, maxBounds);
-	
+
 	cudaSafeCall ( cudaGetLastError () );
 	cudaSafeCall (cudaDeviceSynchronize ());
 }
-

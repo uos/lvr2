@@ -143,6 +143,7 @@ public:
 	/// Indicates if the region was dragged into a regression plane
 	bool m_inPlane;
 
+	bool m_unfinished;
 	/// The faces in the region
 	vector<FacePtr>    m_faces;
 

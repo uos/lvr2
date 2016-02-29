@@ -53,7 +53,6 @@ void FastReconstruction<VertexT, NormalT, BoxT>::getMesh(BaseMesh<VertexT, Norma
 	for(it = m_grid->firstCell(); it != m_grid->lastCell(); it++)
 	{
 		b = it->second;
-		//#pragma omp task shared(mesh) // speedup 1/3
 		b->getSurface(mesh, m_grid->getQueryPoints(), global_index);
 		if(!timestamp.isQuiet())
 			++progress;
@@ -98,7 +97,7 @@ void FastReconstruction<VertexT, NormalT, BoxT>::getMesh(BaseMesh<VertexT, Norma
 	    ProgressBar progress(this->m_grid->getNumberOfCells(), comment);
 	    for(it = this->m_grid->firstCell(); it != this->m_grid->lastCell(); it++)
 	    {
-	    	// FUCK type safety. According to traits object this is OK!
+	    	// F... type safety. According to traits object this is OK!
 	        BilinearFastBox<VertexT, NormalT>* box = reinterpret_cast<BilinearFastBox<VertexT, NormalT>*>(it->second);
 	        box->optimizePlanarFaces(5);
 	        ++progress;

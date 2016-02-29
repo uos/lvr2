@@ -25,6 +25,7 @@
  *  @author Florian Otte (fotte@uos.de)
  *  @author Kim Rinnewitz (krinnewitz@uos.de)
  *  @author Sven Schalk (sschalk@uos.de)
+ *  @author Tristan Igelbrink (tigelbri@uos.de)
  */
 
 #ifndef HALFEDGEMESH_H_
@@ -44,8 +45,13 @@
 #include <algorithm>
 #include <queue>
 
+#ifndef __APPLE__
 #include <GL/glu.h>
 #include <GL/glut.h>
+#else
+#include <OpenGL/glu.h>
+#include <GLUT/glut.h>
+#endif
 
 using namespace std;
 
@@ -132,7 +138,7 @@ public:
 	 * 					must support []-access.
 	 */
 	virtual void addVertex(VertexT v);
-	
+
 	/**
 	 * @brief 	This method should be called every time
 	 * 			a new vertex is created to ensure that vertex
@@ -237,7 +243,7 @@ public:
 	 * @param minRegionSize		The minimum size of a region
 	 */
 	virtual void restorePlanes(int minRegionSize);
-	
+
 	virtual size_t meshSize() { return m_vertices.size(); };
 
 	/**
@@ -289,13 +295,25 @@ public:
 	 * @brief returns the RegionVector
 	 */
 	RegionVector getRegions() { return m_regions; }
-	
+
 	/**
 	 * @brief returns a reference to the VertexVector
 	 */
 	VertexVector& getVertices() { return m_vertices; }
-	
-private:
+
+	FaceVector& getFaces() { return m_faces; }
+
+	void setQuiet(bool quiet){timestamp.setQuiet(quiet);}
+
+	void mergeVertex(VertexPtr merge_vert, VertexPtr erase_vert);
+
+	/**
+	 * @brief	Deletes all faces of the regions marked by region->m_toDelete
+	 */
+	virtual void deleteRegions();
+
+
+protected:
 
 	void checkFaceIntegreties();
 
@@ -420,10 +438,6 @@ private:
 	 */
 	virtual int regionGrowing(FacePtr start_face, NormalT &normal, float &angle, RegionPtr region, vector<FacePtr> &leafs, unsigned int depth);
 
-	/**
-	 * @brief	Deletes all faces of the regions marked by region->m_toDelete
-	 */
-	virtual void deleteRegions();
 
 	/**
 	 * @brief 	Tells if the given pointer is a null pointer (needed for fast deletion of regions)
@@ -479,6 +493,7 @@ private:
 	set<EdgePtr>        m_garbageEdges;
 	set<HFace*>         m_garbageFaces;
 	set<RegionPtr>      m_garbageRegions;
+
 };
 
 } // namespace lvr

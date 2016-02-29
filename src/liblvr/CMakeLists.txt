@@ -32,7 +32,6 @@ set(LVR_SOURCES
     display/GlTexture.cpp
     display/TextureFactory.cpp
     display/TexturedMesh.cpp
-    reconstruction/PCLFiltering.cpp
     registration/EigenSVDPointAlign.cpp
     registration/ICPPointAlign.cpp
     texture/Texture.cpp
@@ -99,12 +98,15 @@ endif(UNIX)
 #####################################################################################
 
 if(PCL_FOUND)
-  set(LVR_SOURCES ${LVR_SOURCES} io/PCDIO.cpp)
+  set(LVR_SOURCES ${LVR_SOURCES}
+      io/PCDIO.cpp
+      reconstruction/PCLFiltering.cpp)
+      
   set(LVR_LIB_DEPENDENCIES ${LVR_LIB_DEPENDENCIES} ${PCL_LIBRARIES})
 endif(PCL_FOUND)
 
 if(LIBFREENECT_FOUND)
-  set(LVR_SOURCES ${LVR_SOURCES} io/KinectGrabber.cpp io/KinectIO.cpp ../tools/mpi/LargeScaleOctree.cpp ../tools/mpi/LargeScaleOctree.h ../tools/mpi/LargeScaleOctree.cpp ../tools/mpi/LargeScaleOctree.hpp)
+  set(LVR_SOURCES ${LVR_SOURCES} io/KinectGrabber.cpp io/KinectIO.cpp)
   set(LVR_LIB_DEPENDENCIES ${LVR_LIB_DEPENDENCIES} ${LIBFREENECT_LIBRARIES})
 endif(LIBFREENECT_FOUND)
 
@@ -122,6 +124,7 @@ message(STATUS "Building static library")
 add_library(lvr_static STATIC $<TARGET_OBJECTS:lvrcore>)
 target_link_libraries(lvr_static ${LVR_INTERNAL_DEPENDENCIES_STATIC} ${LVR_LIB_DEPENDENCIES})
 
+
 #####################################################################################
 # Build shared library
 #####################################################################################
@@ -130,10 +133,14 @@ if( NOT MSVC )
   message(STATUS "Building shared library")
   add_library(lvr SHARED $<TARGET_OBJECTS:lvrcore>)
   target_link_libraries(lvr ${LVR_INTERNAL_DEPENDENCIES_SHARED} ${LVR_LIB_DEPENDENCIES})
-endif( NOT MSVC)
 
 install(TARGETS lvr_static lvr
   EXPORT lvrTargets
   LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR}
   ARCHIVE DESTINATION ${CMAKE_INSTALL_LIBDIR}
   )
+endif( NOT MSVC)
+
+
+
+
