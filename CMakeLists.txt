@@ -225,7 +225,8 @@ include_directories( ${SLAM6D_INCLUDE_DIR} )
 list(APPEND LVR_INSTALL_INCLUDE_DIRS ${SLAM6D_INSTALL_INCLUDE_DIR})
 
 # KINTINUOUS
-if(CUDA_FOUND AND "${OpenCV_VERSION_PATCH}" VERSION_GREATER "8")
+option(WITH_KINFU "Compile LVR Kinfu" OFF)
+if(CUDA_FOUND AND "${OpenCV_VERSION_PATCH}" VERSION_GREATER "8" AND WITH_KINFU)
 message(STATUS "Building LVR KinFu")
 add_subdirectory(ext/kintinuous)
 include_directories(${LAS_VEGAS_SOURCE_DIR}/ext/kintinuous/kfusion/include)
