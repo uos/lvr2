@@ -115,8 +115,13 @@ void MeshUpdateThread::computeMeshActor(HMesh* meshbuffer)
 
 
         vtkSmartPointer<vtkPolyDataMapper> mesh_mapper = vtkSmartPointer<vtkPolyDataMapper>::New();
-        //        mesh_mapper->SetInputData(mesh); VTK 6
+
+#ifdef LVR_USE_VTK5
         mesh_mapper->SetInput(mesh);
+#else
+        mesh_mapper->SetInputData(mesh);
+#endif
+
         m_meshActor = vtkActor::New();
         m_meshActor->SetMapper(mesh_mapper);
 
