@@ -42,12 +42,12 @@ void SearchTreeFlann< VertexT >::kSearch( coord< float > &qp, int k, vector< ulo
 	query_point[0][1] = qp.y;
 	query_point[0][2] = qp.z;
 
-	// Visual Studio won't impicitly convert to ulong
+	// Visual Studio won't implicitly convert to ulong
 	// so we use a local vector to preserve the API with ulong
 	// Should be changed some time.
 	vector<int> tmp_ind;
 
-	indices.resize(k);
+	tmp_ind.resize(k);
 	distances.resize(k);
 
 	flann::Matrix<int> ind (&tmp_ind[0], 1, k);

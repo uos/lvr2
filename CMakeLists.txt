@@ -70,7 +70,6 @@ include_directories(${EIGEN3_INCLUDE_DIR})
 find_package( MPI )
 if(MPI_FOUND)
   include_directories(SYSTEM ${MPI_INCLUDE_PATH})
-  
 endif(MPI_FOUND)
 
 ####
