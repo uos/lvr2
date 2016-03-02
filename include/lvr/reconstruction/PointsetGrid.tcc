@@ -39,7 +39,6 @@ PointsetGrid<VertexT, BoxT>::PointsetGrid(float cellSize, typename PointsetSurfa
 }
 
 
-
 template<typename VertexT, typename BoxT>
 void PointsetGrid<VertexT, BoxT>::calcDistanceValues()
 {
