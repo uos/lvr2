@@ -72,17 +72,8 @@ namespace kfusion
 			*/
 			CyclicalBuffer (KinFuParams params): pl_(params)
 			{
-				// Check if options instance exists
-				if(params.cmd_options)
-				{
-					optimize_ = params.cmd_options->optimizePlanes();
-					no_reconstruct_ = params.cmd_options->noReconstruction();
-				}
-				else
-				{
-					optimize_ = false;
-					no_reconstruct_ = false;
-				}
+				optimize_ = params.optimize;
+				no_reconstruct_ = params.no_reconstruct;
 
 				distance_threshold_ = params.shifting_distance;
 				buffer_.volume_size.x = params.volume_size[0];
