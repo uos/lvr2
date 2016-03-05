@@ -1,3 +1,5 @@
+include_directories(src include) 
+
 set(CUDA_NVCC_FLAGS "${CUDA_NVCC_FLAGS} --ftz=true;--prec-div=false;--prec-sqrt=false")
 
 set(KF_CUDA_SRC
@@ -27,7 +29,7 @@ set(KF_LVR_LIB_SRC
     src/PointSave.cpp
     )
     
-cuda_add_library(kfusion ${KF_CUDA_SRC} ${KF_CORE_LIB_SRC} ${KV_LVR_LIB_SRC})
+cuda_add_library(kfusion ${KF_CUDA_SRC} ${KF_CORE_LIB_SRC} ${KF_LVR_LIB_SRC})
 
 target_link_libraries(kfusion 
 	${OpenCV_LIBS}
