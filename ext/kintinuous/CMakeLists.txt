@@ -114,7 +114,6 @@ if(UNIX OR APPLE)
 endif()
 
 #warnings_disable(CMAKE_CXX_FLAGS /wd4985)
-
 add_subdirectory(kfusion)
 
 if(OPENCV_VIZ_FOUND)
