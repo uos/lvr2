@@ -76,7 +76,7 @@ endif(MPI_FOUND)
 ## Searching for VTK
 ##############################
 find_package(VTK REQUIRED)
-include(${VTK_USE_FILE})
+
 if(VTK_MAJOR_VERSION VERSION_LESS "6")
   list(APPEND LVR_DEFINITIONS -DLVR_USE_VTK5)
 endif()
@@ -242,6 +242,13 @@ install(DIRECTORY include/lvr DESTINATION ${CMAKE_INSTALL_INCLUDEDIR})
 list(APPEND LVR_INSTALL_INCLUDE_DIRS ${CMAKE_INSTALL_PREFIX}/${CMAKE_INSTALL_INCLUDEDIR})
 add_definitions(${LVR_DEFINITIONS})
 
+##############################################################
+# VTK use file include. Has to be called after all CUDA code
+# was generated and compiled. The VTK definitions corrupt the 
+# nvcc call
+##############################################################
+
+include(${VTK_USE_FILE})
 
 ##############################################################
 # VIEWERS
