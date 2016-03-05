@@ -74,7 +74,7 @@ class MeshStage : public AbstractStage
 public:
 
 	// default constructor
-	MeshStage(double camera_target_distance, double voxel_size, Options* options);
+	MeshStage(double camera_target_distance, double voxel_size, KinFuParams* params);
 
 	virtual void firstStep();
 	virtual void step();
@@ -87,7 +87,7 @@ private:
 	double camera_target_distance_;
 	double voxel_size_;
 	size_t mesh_count_, fusion_count_;
-	Options* options_;
+	KinFuParams* params_;
 	bool slice_correction_;
 	lvr::Matrix4f global_correction_;
 };
