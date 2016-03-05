@@ -42,44 +42,29 @@ using namespace lvr;
 
 namespace kfusion
 {
-	LVRPipeline::LVRPipeline(KinFuParams params) : slice_count_(0)
+	LVRPipeline::LVRPipeline(KinFuParams* params) : slice_count_(0)
 	{
 		meshPtr_ = new HMesh();
-
-		if(params.cmd_options)
-		{
-			meshPtr_->setQuiet(!params.cmd_options->verbose());
-		}
-		else
-		{
-			meshPtr_->setQuiet(true);
-		}
-
-		//omp_set_num_threads(omp_get_num_procs());
+		meshPtr_->setQuiet(params->verbose);
 
 		// Adding the single processing stages to the pipeline
 		pl_.AddStage(
-			boost::shared_ptr<GridStage>(new GridStage((double)(params.volume_size[0] / params.volume_dims[0]), params.cmd_options))
+			boost::shared_ptr<GridStage>(new GridStage((double)(params->volume_size[0] / params->volume_dims[0]), params))
 			);
 		pl_.AddStage(
-			boost::shared_ptr<MeshStage>(new MeshStage(params.distance_camera_target, (double)(params.volume_size[0] / params.volume_dims[0]), params.cmd_options))
+			boost::shared_ptr<MeshStage>(new MeshStage(params->distance_camera_target, (double)(params->volume_size[0] / params->volume_dims[0]), params))
 			);
 
-		bool optimize_planes = true;
-		if(params.cmd_options)
-		{
-			optimize_planes = params.cmd_options->optimizePlanes();
-		}
 
-		if(optimize_planes)
+		if(params->optimize)
 		{
 			pl_.AddStage(
-				boost::shared_ptr<OptimizeStage>(new OptimizeStage(params.cmd_options))
-				);
+					boost::shared_ptr<OptimizeStage>(new OptimizeStage(params))
+			);
 		}
 		pl_.AddStage(
-			boost::shared_ptr<FusionStage>(new FusionStage(meshPtr_, params.cmd_options))
-			);
+				boost::shared_ptr<FusionStage>(new FusionStage(meshPtr_, params))
+		);
 
 		pl_.Start();
 	}

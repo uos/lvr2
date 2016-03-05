@@ -70,18 +70,18 @@ namespace kfusion
 			* \param[in] cube_size physical size (in meters) of the volume (here, a cube) represented by the TSDF buffer.
 			* \param[in] nb_voxels_per_axis number of voxels per axis of the volume represented by the TSDF buffer.
 			*/
-			CyclicalBuffer (KinFuParams params): pl_(params)
+			CyclicalBuffer (KinFuParams* params): pl_(params)
 			{
-				optimize_ = params.optimize;
-				no_reconstruct_ = params.no_reconstruct;
+				optimize_ = params->optimize;
+				no_reconstruct_ = params->no_reconstruct;
 
-				distance_threshold_ = params.shifting_distance;
-				buffer_.volume_size.x = params.volume_size[0];
-				buffer_.volume_size.y = params.volume_size[1];
-				buffer_.volume_size.z = params.volume_size[2];
-				buffer_.voxels_size.x = params.volume_dims[0];
-				buffer_.voxels_size.y = params.volume_dims[1];
-				buffer_.voxels_size.z = params.volume_dims[2];
+				distance_threshold_ = params->shifting_distance;
+				buffer_.volume_size.x = params->volume_size[0];
+				buffer_.volume_size.y = params->volume_size[1];
+				buffer_.volume_size.z = params->volume_size[2];
+				buffer_.voxels_size.x = params->volume_dims[0];
+				buffer_.voxels_size.y = params->volume_dims[1];
+				buffer_.voxels_size.z = params->volume_dims[2];
 				global_shift_[0] = 0;
 				global_shift_[1] = 0;
 				global_shift_[2] = 0;

@@ -72,7 +72,7 @@ class GridStage : public AbstractStage
 public:
 
 	// default constructor
-	GridStage(double voxel_size = 3.0/512.0, Options* options = NULL);
+	GridStage(double voxel_size = 3.0/512.0, KinFuParams* options = NULL);
 
 	void firstStep();
 	void step();

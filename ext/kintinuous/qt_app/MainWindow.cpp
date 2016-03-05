@@ -32,8 +32,8 @@
 		//intrinsics wrong? changed rows and cols + /2
 		//kinfu.params().cols/2 - 0.5f
 		//kinfu.params().rows/2 - 0.5f
-		cv::Mat intrinsics = (cv::Mat_<float>(3,3) << kinfu.params().intr.fx*2, 0, 1280/2-0.5f + 3,
-												  0, kinfu.params().intr.fx*2, 1024/2-0.5f,
+		cv::Mat intrinsics = (cv::Mat_<float>(3,3) << kinfu.params()->intr.fx*2, 0, 1280/2-0.5f + 3,
+												  0, kinfu.params()->intr.fx*2, 1024/2-0.5f,
 												  0, 0, 1);
 		imgpose->intrinsics = intrinsics;
 		kinfu.cyclical().addImgPose(imgpose);
@@ -45,7 +45,7 @@ MainWindow::MainWindow(QMainWindow* parent) : QMainWindow(parent)
 	setupVTK();
 
 	// Create Kinfu object
-	KinFuParams params = KinFuParams::default_params();
+	KinFuParams* params = KinFuParams::default_params();
 	m_kinfu = KinFu::Ptr( new KinFu(params) );
 
 	// Setup OpenNI Device

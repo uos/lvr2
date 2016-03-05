@@ -41,19 +41,12 @@
 #include <lvr/io/DataStruct.hpp>
 
 // default constructor
-MeshStage::MeshStage(double camera_target_distance, double voxel_size, Options* options) : AbstractStage(),
-					camera_target_distance_(camera_target_distance), voxel_size_(voxel_size), options_(options), fusion_count_(0),
-					slice_correction_(false)
+MeshStage::MeshStage(double camera_target_distance, double voxel_size, KinFuParams* params) : AbstractStage(),
+					camera_target_distance_(camera_target_distance), voxel_size_(voxel_size), fusion_count_(0),
+					slice_correction_(false), params_(params)
 {
 	mesh_count_ = 0;
-	if(options)
-	{
-		timestamp.setQuiet(!options->verbose());
-	}
-	else
-	{
-		timestamp.setQuiet(false);
-	}
+	timestamp.setQuiet(params_->verbose);
 }
 
 void MeshStage::firstStep() { /* skip */ };
@@ -68,14 +61,8 @@ void MeshStage::step()
 	ScopeTime* cube_time = new ScopeTime(mesh_notice.c_str());
 
 	cFastReconstruction* fast_recon =  new cFastReconstruction(act_grid);
-	if(options_)
-	{
-		timestamp.setQuiet(!options_->verbose());
-	}
-	else
-	{
-		timestamp.setQuiet(false);
-	}
+	timestamp.setQuiet(params_->verbose);
+
 	// Create an empty mesh
 	fast_recon->getMesh(*meshPtr);
 	transformMeshBack(meshPtr);
