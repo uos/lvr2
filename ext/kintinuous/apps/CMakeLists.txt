@@ -1,7 +1,8 @@
 include_directories(${CMAKE_SOURCE_DIR}/ext/kintinuous/kfusion/include)
 link_directories(${LSSR_LIBRARIES} /usr/lib/x86_64-linux-gnu/)
 
-file(GLOB srcs *.cpp *.hpp)
+set(LVR_KINFU_SRC
+    src/LVR_KinFu.cpp)
 add_executable(lvr_kinfu ${srcs})
 
 target_link_libraries(lvr_kinfu 

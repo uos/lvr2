@@ -1,7 +1,7 @@
 ################################################################################################
 # short command to setup source group
 function(kf_source_group group)
-  cmake_parse_arguments(VW_SOURCE_GROUP "" "" "GLOB" ${ARGN})
+  cmake_parse_arguments(VW_SOURCE_GROUP "" "" GLOB ${ARGN})
   file(GLOB srcs ${VW_SOURCE_GROUP_GLOB})    
   #list(LENGTH ${srcs} ___size)  
   #if (___size GREATER 0)
@@ -18,7 +18,7 @@ macro(pickup_std_sources)
   kf_source_group("Source" GLOB "src/*.cpp" "src/*.h*")
   kf_source_group("Source\\utils" GLOB "src/utils/*.cpp" "src/utils/*.h*")
   kf_source_group("Source\\cuda" GLOB "src/cuda/*.c*" "src/cuda/*.h*")
-  FILE(GLOB_RECURSE sources "include/${module_name}/*.h* src/*.cpp src/*.h* src/cuda/*.h* src/cuda/*.c*")
+  FILE(GLOB_RECURSE sources include/${module_name}/*.h* src/*.cpp src/*.h* src/cuda/*.h* src/cuda/*.c*)
 endmacro()
 
 
