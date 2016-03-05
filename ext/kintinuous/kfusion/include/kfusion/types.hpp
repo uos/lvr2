@@ -129,7 +129,7 @@ class Options;
 
     struct KF_EXPORTS KinFuParams
     {
-        static KinFuParams default_params();
+        static KinFuParams* default_params();
 
         int cols;  //pixels
         int rows;  //pixels
@@ -165,6 +165,9 @@ class Options;
 
         bool optimize;
         bool no_reconstruct;
+        bool textures;
+        bool verbose;
+
 
 
 

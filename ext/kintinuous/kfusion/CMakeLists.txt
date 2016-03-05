@@ -10,6 +10,7 @@ set(KF_CUDA_SRC
     
 set(KF_CORE_LIB_SRC
     src/capture.cpp
+    src/core.cpp
     src/cyclical_buffer.cpp
     src/device_memory.cpp
     src/imgproc.cpp

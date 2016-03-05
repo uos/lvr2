@@ -68,7 +68,7 @@ class FusionStage : public AbstractStage
 public:
 
 	// default constructor
-	FusionStage(MeshPtr mesh, Options* options);
+	FusionStage(MeshPtr mesh, KinFuParams* params);
 
 	virtual void firstStep();
 	virtual void step();
@@ -76,7 +76,7 @@ public:
 
 private:
 
-	Options* options_;
+	KinFuParams* params_;
 	size_t mesh_count_;
 	MeshPtr mesh_;
 };
