@@ -226,12 +226,34 @@ add_subdirectory(ext/slam6d)
 include_directories( ${SLAM6D_INCLUDE_DIR} )
 list(APPEND LVR_INSTALL_INCLUDE_DIRS ${SLAM6D_INSTALL_INCLUDE_DIR})
 
-# KINTINUOUS
+
+##############################################################
+# LVR-Kinfu Checks
+##############################################################
 option(WITH_KINFU "Compile LVR Kinfu" OFF)
+
+# Check and set CUDA host compiler flags. CUDA 6.5 is only 
+# compatible to gcc4.8. Older CUDA versions require GCC lower 
+# than 4.8
+
+if(WITH_KINFU AND "${CMAKE_CXX_COMPILER_ID}" STREQUAL "GNU" AND CUDA_VERSION VERSION_LESS 7)
+    if (CMAKE_CXX_COMPILER_VERSION VERSION_GREATER 4.8 )
+        message(STATUS "******************************************************************")
+        message(STATUS "* Your gcc version needs to be lower than 4.9 to compile the LVR *")
+        message(STATUS "* KinectFusion library and apps with CUDA 6.5 or less. Please    *") 
+        message(STATUS "* install gcc 4.8 and set the CUDA host compiler accordingly     *")
+        message(STATUS "* by setting the CUDA_HOST_COMPILER to gcc4.8. This can be done  *")
+        message(STATUS "* in your cmake gui program or by manually calling e.g.          *")
+        message(STATUS "* 'cmake <SOURCE_DIR> -DCUDA_HOST_COMPILER=/usr/bin/gcc-4.8'     *")
+        message(STATUS "******************************************************************")
+        message(WARNING "Incompatible CUDA host compiler detected. Fix it manually.")
+    endif()
+endif()
+
 if(CUDA_FOUND AND "${OpenCV_VERSION_PATCH}" VERSION_GREATER "8" AND WITH_KINFU)
-message(STATUS "Building LVR KinFu")
-add_subdirectory(ext/kintinuous)
-include_directories(${LAS_VEGAS_SOURCE_DIR}/ext/kintinuous/kfusion/include)
+    message(STATUS "Building LVR KinFu.")
+    add_subdirectory(ext/kintinuous)
+    include_directories(${LAS_VEGAS_SOURCE_DIR}/ext/kintinuous/kfusion/include)
 endif()
 
 ##############################################################
