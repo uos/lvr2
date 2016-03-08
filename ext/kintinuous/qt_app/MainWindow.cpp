@@ -80,9 +80,9 @@ MainWindow::MainWindow(QMainWindow* parent) : QMainWindow(parent)
 
 	// Create seperate thread for mesh polling
     m_meshThread = new MeshUpdateThread(m_kinfu);
-    m_meshThread->start();
+    //m_meshThread->start();
 
-    connect(m_meshThread, SIGNAL(meshUpdate(vtkActor*)), this, SLOT(updateMesh(vtkActor*)), Qt::DirectConnection);
+    //connect(m_meshThread, SIGNAL(meshUpdate(vtkActor*)), this, SLOT(updateMesh(vtkActor*)), Qt::DirectConnection);
 }
 
 void MainWindow::updateMesh(vtkActor* actor)
