@@ -294,11 +294,11 @@ private:
 	 */
 	Plane<VertexT, NormalT> calcPlane(const VertexT &queryPoint,
 	        const int &k,
-	        const vector<unsigned long> &id);
+	        const vector<int> &id);
 
 	Plane<VertexT, NormalT> calcPlaneRANSAC(const VertexT &queryPoint,
 	        const int &k,
-	        const vector<unsigned long> &id, bool &ok );
+	        const vector<int> &id, bool &ok );
 
 
 	/// The centroid of the point set

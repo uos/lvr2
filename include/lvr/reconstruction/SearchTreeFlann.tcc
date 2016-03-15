@@ -35,33 +35,20 @@ SearchTreeFlann< VertexT >::~SearchTreeFlann() {
 }
 
 template<typename VertexT>
-void SearchTreeFlann< VertexT >::kSearch( coord< float > &qp, int k, vector< ulong > &indices, vector< float > &distances )
+void SearchTreeFlann< VertexT >::kSearch( coord< float > &qp, int k, vector< int > &indices, vector< float > &distances )
 {
 	flann::Matrix<float> query_point(new float[3], 1, 3);
 	query_point[0][0] = qp.x;
 	query_point[0][1] = qp.y;
 	query_point[0][2] = qp.z;
 
-	// Visual Studio won't implicitly convert to ulong
-	// so we use a local vector to preserve the API with ulong
-	// Should be changed some time.
-	vector<int> tmp_ind;
-
-	tmp_ind.resize(k);
+	indices.resize(k);
 	distances.resize(k);
 
-	flann::Matrix<int> ind (&tmp_ind[0], 1, k);
+	flann::Matrix<int> ind (&indices[0], 1, k);
 	flann::Matrix<float> dist (&distances[0], 1, k);
 
 	m_tree->knnSearch(query_point, ind, dist, k, flann::SearchParams());
-
-	// Copy tmp indices
-	indices.clear();
-	for (int i = 0; i < tmp_ind.size(); i++)
-	{
-		indices.push_back((ulong)tmp_ind[i]);
-	}
-	
 }
 
 template<typename VertexT>
@@ -82,7 +69,7 @@ void SearchTreeFlann< VertexT >::kSearch(VertexT qp, int k, vector< VertexT > &n
 
 	for(size_t i = 0; i < k; i++)
 	{
-		ulong index = m_ind[i];
+		int index = m_ind[i];
 		if(index < m_numPoints)
 		{
 			VertexT v(m_points[3 * index], m_points[3 * index + 1], m_points[3 * index + 2]);
@@ -95,14 +82,14 @@ void SearchTreeFlann< VertexT >::kSearch(VertexT qp, int k, vector< VertexT > &n
    Begin of radiusSearch implementations
  */
 template<typename VertexT>
-void SearchTreeFlann< VertexT >::radiusSearch( float qp[3], float r, vector< ulong > &indices )
+void SearchTreeFlann< VertexT >::radiusSearch( float qp[3], float r, vector< int > &indices )
 {
 	cout << "Flann radius search not yet implemented" << endl;
 }
 
 
 template<typename VertexT>
-void SearchTreeFlann< VertexT >::radiusSearch( VertexT& qp, float r, vector< ulong > &indices )
+void SearchTreeFlann< VertexT >::radiusSearch( VertexT& qp, float r, vector< int > &indices )
 {
     float qp_arr[3];
     qp_arr[0] = qp[0];
@@ -113,7 +100,7 @@ void SearchTreeFlann< VertexT >::radiusSearch( VertexT& qp, float r, vector< ulo
 
 
 template<typename VertexT>
-void SearchTreeFlann< VertexT >::radiusSearch( const VertexT& qp, float r, vector< ulong > &indices )
+void SearchTreeFlann< VertexT >::radiusSearch( const VertexT& qp, float r, vector< int > &indices )
 {
     float qp_arr[3];
     qp_arr[0] = qp[0];
@@ -124,7 +111,7 @@ void SearchTreeFlann< VertexT >::radiusSearch( const VertexT& qp, float r, vecto
 
 
 template<typename VertexT>
-void SearchTreeFlann< VertexT >::radiusSearch( coord< float >& qp, float r, vector< ulong > &indices )
+void SearchTreeFlann< VertexT >::radiusSearch( coord< float >& qp, float r, vector< int > &indices )
 {
     float qp_arr[3];
     qp_arr[0] = qp[0];
@@ -135,7 +122,7 @@ void SearchTreeFlann< VertexT >::radiusSearch( coord< float >& qp, float r, vect
 
 
 template<typename VertexT>
-void SearchTreeFlann< VertexT >::radiusSearch( const coord< float >& qp, float r, vector< ulong > &indices )
+void SearchTreeFlann< VertexT >::radiusSearch( const coord< float >& qp, float r, vector< int > &indices )
 {
     float qp_arr[3];
     coord< float > qpcpy = qp;
