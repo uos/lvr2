@@ -24,6 +24,8 @@
  *  @author ristan Igelbrink (tigelbri@uos.de)
  */
 
+#include <opencv2/opencv.hpp>
+#include <kfusion/types.hpp>
 
 namespace lvr
 {

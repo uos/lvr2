@@ -66,15 +66,15 @@ public:
      * @param indices     A vector that stores the indices for the neighbours whithin the dataset.
      * @param distances   A vector that stores the distances for the neighbours that are found.
      */
-    virtual void kSearch( coord < float >& qp, int neighbours, vector< ulong > &indices, vector< float > &distances );
+    virtual void kSearch( coord < float >& qp, int neighbours, vector< int > &indices, vector< float > &distances );
 
     virtual void kSearch( VertexT qp, int k, vector< VertexT > &neighbors );
 
-    virtual void radiusSearch( float              qp[3], float r, vector< ulong > &indices );
-    virtual void radiusSearch( VertexT&              qp, float r, vector< ulong > &indices );
-    virtual void radiusSearch( const VertexT&        qp, float r, vector< ulong > &indices );
-    virtual void radiusSearch( coord< float >&       qp, float r, vector< ulong > &indices );
-    virtual void radiusSearch( const coord< float >& qp, float r, vector< ulong > &indices );
+    virtual void radiusSearch( float              qp[3], float r, vector< int > &indices );
+    virtual void radiusSearch( VertexT&              qp, float r, vector< int > &indices );
+    virtual void radiusSearch( const VertexT&        qp, float r, vector< int > &indices );
+    virtual void radiusSearch( coord< float >&       qp, float r, vector< int > &indices );
+    virtual void radiusSearch( const coord< float >& qp, float r, vector< int > &indices );
 
 protected:
 
@@ -83,7 +83,7 @@ protected:
     size_t															m_numPoints;
     flann::Matrix<float>  	 										m_flannPoints;
 
-    vector<ulong>													m_ind;
+    vector<int>														m_ind;
     vector<float>													m_dst;
 
 }; // SearchTreeFlann

@@ -51,7 +51,7 @@ void PointsetSurface<VertexT>::expandBoundingBox(
 template<typename VertexT>
 VertexT PointsetSurface<VertexT>::getInterpolatedNormal(VertexT position)
 {
-	vector< ulong > indices;
+	vector<int> indices;
 	VertexT result(0,0,0);
 	size_t n;
 	this->searchTree()->kSearch(position, this->m_kn, indices);

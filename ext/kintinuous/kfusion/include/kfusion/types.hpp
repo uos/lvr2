@@ -1,7 +1,6 @@
 #pragma once
 
 #include <kfusion/cuda/device_array.hpp>
-#include <kfusion/Options.hpp>
 #include <opencv2/core/core.hpp>
 #include <opencv2/contrib/contrib.hpp>
 #include <opencv2/core/affine.hpp>
@@ -130,7 +129,7 @@ class Options;
 
     struct KF_EXPORTS KinFuParams
     {
-        static KinFuParams default_params();
+        static KinFuParams* default_params();
 
         int cols;  //pixels
         int rows;  //pixels
@@ -163,7 +162,14 @@ class Options;
 
         Vec3f light_pose; //meters
 
-		kfusion::Options* cmd_options; // cmd_options
+
+        bool optimize;
+        bool no_reconstruct;
+        bool textures;
+        bool verbose;
+
+
+
 
     };
 

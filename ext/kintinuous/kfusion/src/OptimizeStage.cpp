@@ -39,8 +39,8 @@
 #include <kfusion/OptimizeStage.hpp>
 
 // default constructor
-OptimizeStage::OptimizeStage(Options* options) : AbstractStage()
-	,mesh_count_(0), options_(options), bounding_counter(0),texture_counter(0),pic_count_(0)
+OptimizeStage::OptimizeStage(KinFuParams* params) : AbstractStage()
+	,mesh_count_(0), params_(params), bounding_counter(0),texture_counter(0),pic_count_(0)
 {
 	 optiMesh_ = NULL;
 	timestamp.setQuiet(true);

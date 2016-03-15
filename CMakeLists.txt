@@ -21,14 +21,12 @@ include_directories(include)
 
 if(MSVC)
   list(APPEND LVR_DEFINITIONS -DNOMINMAX)
-endif()
-
-#if(CMAKE_COMPILER_IS_GNUCC AND CMAKE_COMPILER_IS_GNUCXX)
+else(MSVC)
   add_compile_options(-fmessage-length=0 -fPIC -Wno-deprecated)
   # with cmake 3.3
   #add_compile_options($<$<COMPILE_LANGUAGE:CXX>:-std=c++0x>)
   set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++11")
-#endif()
+endif(MSVC)
 
 ###############################################################
 # EXTERNAL LIBRARIES
@@ -44,6 +42,21 @@ find_package( CUDA )
 ## Searching for OpenCV
 ##############################
 find_package( OpenCV 2.4.8 REQUIRED )
+
+option(WITH_CV_NONFREE "Use OpenCV non-free descriptors" OFF)
+if(WITH_CV_NONFREE)
+  message(STATUS "Using OpenCV non-free module")
+  list(APPEND LVR_DEFINITIONS -DLVR_USE_CV_NONFREE)
+endif(WITH_CV_NONFREE)
+
+
+####
+## Searching for FLANN
+##############################
+find_package(  FLANN REQUIRED )
+if(FLANN_FOUND)
+  include_directories(${FLANN_DIR})
+endif(FLANN_FOUND)
 
 ####
 ## Searching for Eigen3
@@ -63,7 +76,6 @@ endif(MPI_FOUND)
 ## Searching for VTK
 ##############################
 find_package(VTK REQUIRED)
-include(${VTK_USE_FILE})
 if(VTK_MAJOR_VERSION VERSION_LESS "6")
   list(APPEND LVR_DEFINITIONS -DLVR_USE_VTK5)
 endif()
@@ -121,6 +133,8 @@ find_package( Boost 1.54
     filesystem
     system
     thread
+    mpi
+    serialization
     REQUIRED )
 
 link_directories(${Boost_LIBRARY_DIR})
@@ -132,19 +146,18 @@ add_definitions(${Boost_LIB_DIAGNOSTIC_DEFINITIONS})
 ##############################
 
 find_package(OpenMP)
-if(OpenMP_FOUND)
+if(OPENMP_FOUND)
   link_directories(${OpenMP_LIBRARY_DIRS})
   include_directories(${OpenMP_INCLUDE_DIRS})
   list(APPEND LVR_DEFINITIONS -DLVR_USE_OPEN_MP)
   set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${OpenMP_CXX_FLAGS}")
-endif(OpenMP_FOUND)
+endif(OPENMP_FOUND)
 
 ####
 ## Searching for OpenGL
 ##############################
 
 find_package(OpenGL REQUIRED)
-message( "OPEN GL LIBS : " ${OPENGL_LIBRARIES})
 include_directories(${OPENGL_INCLUDE_DIR})
 
 if(APPLE)
@@ -211,11 +224,39 @@ add_subdirectory(ext/slam6d)
 include_directories( ${SLAM6D_INCLUDE_DIR} )
 list(APPEND LVR_INSTALL_INCLUDE_DIRS ${SLAM6D_INSTALL_INCLUDE_DIR})
 
-# KINTINUOUS
-if(CUDA_FOUND AND "${OpenCV_VERSION_PATCH}" VERSION_GREATER "8")
-message(STATUS "Building LVR KinFu")
-add_subdirectory(ext/kintinuous)
-include_directories(${LAS_VEGAS_SOURCE_DIR}/ext/kintinuous/kfusion/include)
+##############################################################
+# ADD LVR DEFINITIONS
+##############################################################
+
+add_definitions(${LVR_DEFINITIONS})
+
+##############################################################
+# LVR-Kinfu Checks
+##############################################################
+option(WITH_KINFU "Compile LVR Kinfu" OFF)
+
+# Check and set CUDA host compiler flags. CUDA 6.5 is only 
+# compatible to gcc4.8. Older CUDA versions require GCC lower 
+# than 4.8
+
+if(WITH_KINFU AND "${CMAKE_CXX_COMPILER_ID}" STREQUAL "GNU" AND CUDA_VERSION VERSION_LESS 7)
+    if (CMAKE_CXX_COMPILER_VERSION VERSION_GREATER 4.8 )
+        message(STATUS "******************************************************************")
+        message(STATUS "* Your gcc version needs to be lower than 4.9 to compile the LVR *")
+        message(STATUS "* KinectFusion library and apps with CUDA 6.5 or less. Please    *") 
+        message(STATUS "* install gcc 4.8 and set the CUDA host compiler accordingly     *")
+        message(STATUS "* by setting the CUDA_HOST_COMPILER to gcc4.8. This can be done  *")
+        message(STATUS "* in your cmake gui program or by manually calling e.g.          *")
+        message(STATUS "* 'cmake <SOURCE_DIR> -DCUDA_HOST_COMPILER=/usr/bin/gcc-4.8'     *")
+        message(STATUS "******************************************************************")
+        message(WARNING "Incompatible CUDA host compiler detected. Fix it manually.")
+    endif()
+endif()
+
+if(CUDA_FOUND AND "${OpenCV_VERSION_PATCH}" VERSION_GREATER "8" AND WITH_KINFU)
+    message(STATUS "Building LVR KinFu.")
+    add_subdirectory(ext/kintinuous)
+    include_directories(${LAS_VEGAS_SOURCE_DIR}/ext/kintinuous/kfusion/include)
 endif()
 
 ##############################################################
@@ -224,8 +265,15 @@ endif()
 
 install(DIRECTORY include/lvr DESTINATION ${CMAKE_INSTALL_INCLUDEDIR})
 list(APPEND LVR_INSTALL_INCLUDE_DIRS ${CMAKE_INSTALL_PREFIX}/${CMAKE_INSTALL_INCLUDEDIR})
-add_definitions(${LVR_DEFINITIONS})
 
+
+##############################################################
+# VTK use file include. Has to be called after all CUDA code
+# was generated and compiled. The VTK definitions corrupt the 
+# nvcc call
+##############################################################
+
+include(${VTK_USE_FILE})
 
 ##############################################################
 # VIEWERS

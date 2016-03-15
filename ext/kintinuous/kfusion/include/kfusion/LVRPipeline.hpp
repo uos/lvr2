@@ -32,7 +32,7 @@ namespace kfusion
     {
 		public:
 
-			LVRPipeline(KinFuParams params);
+			LVRPipeline(KinFuParams* params);
 
 			~LVRPipeline();
 

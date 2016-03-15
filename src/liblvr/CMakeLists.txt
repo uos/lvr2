@@ -134,7 +134,6 @@ if( NOT MSVC )
   add_library(lvr SHARED $<TARGET_OBJECTS:lvrcore>)
   target_link_libraries(lvr ${LVR_INTERNAL_DEPENDENCIES_SHARED} ${LVR_LIB_DEPENDENCIES})
 
-
 install(TARGETS lvr_static lvr
   EXPORT lvrTargets
   LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR}
