@@ -1,12 +1,8 @@
 #include <QFileDialog>
 #include "LVRReconstructionEstimateNormalsDialog.hpp"
 
-#ifdef LVR_USE_PCL
-#include <lvr/reconstruction/SearchTreeFlannPCL.hpp>
-#endif
-#ifdef LVR_USE_STANN
-#include <lvr/reconstruction/SearchTreeStann.hpp>
-#endif
+#include <lvr/reconstruction/SearchTree.hpp>
+#include <lvr/reconstruction/SearchTreeFlann.hpp>
 
 namespace lvr
 {
@@ -107,14 +103,14 @@ void LVREstimateNormalsDialog::estimateNormals()
     if(interpolateNormals)
     {
         SearchTree<Vertex<float> >::Ptr       tree;
-	tree = SearchTree<Vertex<float> >::Ptr( new SearchTreeFlannPCL<Vertex<float> >(new_pc, numPoints, ki, ki, ki) );
+	tree = SearchTree<Vertex<float> >::Ptr( new SearchTreeFlann<Vertex<float> >(new_pc, numPoints, ki, ki, ki) );
 	    
 
         #pragma omp parallel for schedule(static)
         for(int i = 0; i < numPoints; i++)
         {
             // Create search tree
-            vector< ulong > indices;
+            vector< int > indices;
             vector< float > distances;
 
             Vertex<float> vertex(points[3 * i], points[3 * i + 1], points[3 * i + 2]);

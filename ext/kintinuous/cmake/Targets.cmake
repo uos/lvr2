@@ -1,7 +1,7 @@
 ################################################################################################
 # short command to setup source group
 function(kf_source_group group)
-  cmake_parse_arguments(VW_SOURCE_GROUP "" "" "GLOB" ${ARGN})
+  cmake_parse_arguments(VW_SOURCE_GROUP "" "" GLOB ${ARGN})
   file(GLOB srcs ${VW_SOURCE_GROUP_GLOB})    
   #list(LENGTH ${srcs} ___size)  
   #if (___size GREATER 0)

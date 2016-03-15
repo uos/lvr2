@@ -36,6 +36,10 @@
 #include <string.h>
 #include <sstream>
 
+#ifdef _MSC_VER
+#include <Windows.h>
+#endif
+
 #ifndef __APPLE__
 #include <GL/gl.h>
 #else

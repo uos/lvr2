@@ -39,8 +39,8 @@
 #include <kfusion/FusionStage.hpp>
 
 // default constructor
-FusionStage::FusionStage(MeshPtr mesh, Options* options) : AbstractStage()
-	, mesh_(mesh), mesh_count_(0), options_(options)
+FusionStage::FusionStage(MeshPtr mesh, KinFuParams* params) : AbstractStage()
+	, mesh_(mesh), params_(params), mesh_count_(0)
 {
 
 }
@@ -55,11 +55,7 @@ void FusionStage::step()
 	string mesh_notice = ("#### D:                Mesh Fusion " +  to_string(mesh_count_) + "    ####");
 	ScopeTime* fusion_time = new ScopeTime(mesh_notice.c_str());
 
-	bool textures = true;
-	if(options_)
-	{
-		textures = options_->textures();
-	}
+	bool textures = params_->textures;
 
 
 	if(mesh_count_ == 0)
@@ -79,18 +75,11 @@ void FusionStage::lastStep()
 	std::cout << "Global amount of vertices: " << mesh_->meshSize() << endl;
 	std::cout << "Global amount of faces: " << mesh_->getFaces().size() << endl;
 	mesh_->finalize();
-
-	bool textures = true;
-	if(options_)
-	{
-	    textures = options_->textures();
-	}
-
 	
 	ModelPtr m( new Model( mesh_->meshBuffer() ) );
 	
 	string meshname = "outmesh";
-	if(!textures)
+	if(!params_->textures)
 		ModelFactory::saveModel( m, string(meshname + ".ply"));
 	else
 		ModelFactory::saveModel( m, string(meshname + ".obj"));

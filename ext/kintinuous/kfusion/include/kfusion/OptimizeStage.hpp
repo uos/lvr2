@@ -65,7 +65,7 @@ class OptimizeStage : public AbstractStage
 public:
 
 	// default constructor
-	OptimizeStage(Options* options);
+	OptimizeStage(KinFuParams* params);
 
 	virtual void firstStep();
 	virtual void step();
@@ -75,7 +75,7 @@ private:
 
 	size_t mesh_count_;
 	MeshPtr optiMesh_;
-	Options* options_;
+	KinFuParams* params_;
 
 	MeshBufferPtr meshBufferPtr;
 	size_t bounding_counter,pic_count_,texture_counter;
