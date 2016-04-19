@@ -53,7 +53,7 @@ HashGrid<VertexT, BoxT>::HashGrid(float cellSize, BoundingBox<VertexT> boundingB
 
 	if(!m_boundingBox.isValid())
 	{
-		cout << timestamp << "Waring: Malformed BoundingBox." << endl;
+		cout << timestamp << "Warning: Malformed BoundingBox." << endl;
 	}
 
 	if(!isVoxelsize)
@@ -132,7 +132,7 @@ HashGrid<VertexT, BoxT>::HashGrid(string file)
 
 		m_cells[h] = box;
 	}
-	cout << timestamp << "read cells.." << endl;
+	cout << timestamp << "Reading cells.." << endl;
 	typename HashGrid<VertexT, BoxT>::box_map_it it;
 	typename HashGrid<VertexT, BoxT>::box_map_it neighbor_it;
 
@@ -365,7 +365,6 @@ template<typename VertexT, typename BoxT>
 void HashGrid<VertexT, BoxT>::calcIndices()
 {
 	float max_size = m_boundingBox.getLongestSide();
-	cout << "longest side:" << max_size << endl;
 
 	//Save needed grid parameters
 	m_maxIndex = (int)ceil( (max_size + 5 * m_voxelsize) / m_voxelsize);
