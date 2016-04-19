@@ -42,8 +42,8 @@ namespace lvr
 {
 
 template<typename VertexT, typename BoxT>
-HashGrid<VertexT, BoxT>::HashGrid(float cellSize, BoundingBox<VertexT> boundingBox, bool isVoxelsize) :
-	m_extrude(false),
+HashGrid<VertexT, BoxT>::HashGrid(float cellSize, BoundingBox<VertexT> boundingBox, bool isVoxelsize, bool extrude) :
+	GridBase(extrude),
 	m_boundingBox(boundingBox),
 	m_globalIndex(0)
 {
@@ -90,7 +90,7 @@ HashGrid<VertexT, BoxT>::HashGrid(string file)
 
 	m_boundingBox = BoundingBox<VertexT>(minx, miny, minz, maxx, maxy, maxz);
 	m_globalIndex = 0;
-	m_extrude=false;
+	m_extrude=false; // TODO: ADD TO SERIALIZATION
 	m_coordinateScales[0] = 1.0;
 	m_coordinateScales[1] = 1.0;
 	m_coordinateScales[2] = 1.0;
@@ -174,7 +174,7 @@ HashGrid<VertexT, BoxT>::HashGrid(string file)
 			}
 		}
 	}
-	cout << "finished readhing grid" << endl;
+	cout << "Finished reading grid" << endl;
 
 
 }

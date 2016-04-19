@@ -27,7 +27,7 @@ class GridBase
 {
 public:
 
-	GridBase() : m_extrude(false){}
+	GridBase(bool extrude = true) : m_extrude(extrude){}
 
 	virtual ~GridBase() {}
 
@@ -90,7 +90,7 @@ public:
 	 * @param 	cellSize		Voxel size of the grid cells
 	 * @param	isVoxelSize		Whether to interpret \ref cellSize as voxelsize or intersections
 	 */
-	HashGrid(float cellSize, BoundingBox<VertexT> boundingBox, bool isVoxelSize = true);
+	HashGrid(float cellSize, BoundingBox<VertexT> boundingBox, bool isVoxelSize = true, bool extrude = true);
 
 
 	/***
@@ -239,9 +239,6 @@ protected:
 
     /// True if a local tetraeder decomposition is used for reconstruction
     string                      m_boxType;
-
-    /// True if we want to create extra boxes at the end of the grid
-    bool                        m_extrude;
 
     /// Bounding box of the covered volume
     BoundingBox<VertexT>		m_boundingBox;

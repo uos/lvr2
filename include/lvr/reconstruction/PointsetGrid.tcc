@@ -11,8 +11,8 @@ namespace lvr
 {
 
 template<typename VertexT, typename BoxT>
-PointsetGrid<VertexT, BoxT>::PointsetGrid(float cellSize, typename PointsetSurface<VertexT>::Ptr& surface, BoundingBox<VertexT> bb, bool isVoxelsize)
-	: HashGrid<VertexT, BoxT>(cellSize, bb, isVoxelsize), m_surface(surface)
+PointsetGrid<VertexT, BoxT>::PointsetGrid(float cellSize, typename PointsetSurface<VertexT>::Ptr& surface, BoundingBox<VertexT> bb, bool isVoxelsize, bool extrude)
+	: HashGrid<VertexT, BoxT>(cellSize, bb, isVoxelsize, extrude), m_surface(surface)
 {
 	PointBufferPtr buffer = surface->pointBuffer();
 
