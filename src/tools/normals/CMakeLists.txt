@@ -26,7 +26,7 @@ if(PCL_FOUND)
 endif(PCL_FOUND)
 
 if( ${NABO_FOUND} )
- set(LVR_NORMAL_CONVERSION_DEPENDENCIES  ${LVR_NORMAL_CONVERSION_DEPENDENCIES } ${NABO_LIBRARY} )
+ set(LVR_NORMAL_CONVERSION_DEPENDENCIES  ${LVR_NORMAL_CONVERSION_DEPENDENCIES} ${NABO_LIBRARY} )
 endif( ${NABO_FOUND} )
 
 #####################################################################################
