@@ -133,7 +133,6 @@ find_package( Boost 1.54
     filesystem
     system
     thread
-    mpi
     serialization
     REQUIRED )
 
