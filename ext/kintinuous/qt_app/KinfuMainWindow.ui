@@ -6,8 +6,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>1962</width>
-    <height>1438</height>
+    <width>1280</width>
+    <height>720</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -23,14 +23,14 @@
          <widget class="QLabel" name="m_displayRaycastLabel">
           <property name="minimumSize">
            <size>
-            <width>640</width>
-            <height>480</height>
+            <width>320</width>
+            <height>240</height>
            </size>
           </property>
           <property name="maximumSize">
            <size>
-            <width>640</width>
-            <height>480</height>
+            <width>320</width>
+            <height>240</height>
            </size>
           </property>
           <property name="frameShape">
@@ -54,14 +54,14 @@
          <widget class="QLabel" name="m_displayImageLabel">
           <property name="minimumSize">
            <size>
-            <width>640</width>
-            <height>480</height>
+            <width>320</width>
+            <height>240</height>
            </size>
           </property>
           <property name="maximumSize">
            <size>
-            <width>640</width>
-            <height>480</height>
+            <width>320</width>
+            <height>240</height>
            </size>
           </property>
           <property name="frameShape">
@@ -101,7 +101,7 @@
           </property>
           <property name="maximumSize">
            <size>
-            <width>640</width>
+            <width>320</width>
             <height>16777215</height>
            </size>
           </property>
@@ -171,7 +171,7 @@
             <rect>
              <x>10</x>
              <y>120</y>
-             <width>621</width>
+             <width>320</width>
              <height>49</height>
             </rect>
            </property>
@@ -224,7 +224,7 @@
     <rect>
      <x>0</x>
      <y>0</y>
-     <width>1962</width>
+     <width>1280</width>
      <height>47</height>
     </rect>
    </property>
