@@ -260,6 +260,27 @@ if(CUDA_FOUND AND "${OpenCV_VERSION_PATCH}" VERSION_GREATER "8" AND WITH_KINFU)
 endif()
 
 ##############################################################
+# APPLE OMP OPTION FOR CLANG-OMP
+##############################################################
+
+if(APPLE AND (NOT OPENMP_FOUND))
+        message(STATUS "******************************************************************")
+        message(STATUS "* It seems you are trying to comile on OSX with an compiler that *")
+        message(STATUS "* does not support OpenMP. To get maximum performance consider   *") 
+        message(STATUS "* installing clang-omp from homebrew (brew install clang-omp) and*")
+        message(STATUS "* configure with 'cmake -DWITH_CLANG_OMP ..'                     *")
+        message(STATUS "******************************************************************")
+       
+	option(WITH_CLANG_OMP "Compile with clang-omp")
+
+	if(WITH_CLANG_OMP)
+	  set(CMAKE_C_COMPILER /usr/local/bin/clang-omp CACHE STRING "C compiler" FORCE)
+      set(CMAKE_CXX_COMPILER /usr/local/bin/clang-omp++ CACHE STRING "C++ compiler" FORCE)
+	endif()
+	
+endif()
+
+##############################################################
 # HEADERS
 ##############################################################
 
