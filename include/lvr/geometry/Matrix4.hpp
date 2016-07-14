@@ -390,6 +390,8 @@ public:
 				pose[5]  = atan2( _trY, _trX );
 			}
 
+			cout << pose[3] << " " << pose[4] << " " << pose[5] << endl;
+
 			pose[0] = m[12];
 			pose[1] = m[13];
 			pose[2] = m[14];
