@@ -25,6 +25,8 @@
 #include <algorithm>
 #include <string>
 #include <stdio.h>
+#include <fstream>
+
 using namespace std;
 
 #include <boost/filesystem.hpp>
@@ -136,8 +138,31 @@ int main(int argc, char** argv)
 	vector<float>	 		merge_points;
 	vector<unsigned char>	merge_colors;
 
-	int c = 0;
-	for(vector<boost::filesystem::path>::iterator it = v.begin(); it != v.end(); it++)
+
+    
+    int c = 0;
+
+    if(options.getStart() <= v.size() && options.getStart() > 0)
+    {
+        cout << "Starting with scan number " << options.getStart() << endl;
+        c = options.getStart() - 1;
+    }
+
+    vector<boost::filesystem::path>::iterator endOpt;
+
+    if(options.getEnd() > 0 && options.getEnd() >= options.getStart() && options.getEnd() <= v.size())
+    {
+        cout << "Ending with scan number " << options.getEnd() << endl;
+        endOpt = v.begin() + options.getEnd();
+    }
+    else
+    {
+        endOpt = v.end();
+    }
+    
+    
+
+	for(vector<boost::filesystem::path>::iterator it = v.begin() + c; it != endOpt; it++)
 	{
 		cout << timestamp << "Converting " << it->string() << endl;
 		if(options.getOutputFormat() == "SLAM")
@@ -145,22 +170,27 @@ int main(int argc, char** argv)
 			int reduction = options.getTargetSize();
 			ModelPtr model;
 
-			if(reduction == 0 || (reduction != 0 && options.getInputFormat() == "SLAM"))
+			if(reduction == 0 || (reduction != 0 && options.getInputFormat() == "3D"))
 			{
 				cout << timestamp << "Reading point cloud data from " << it->c_str() << "." << endl;
 				model = ModelFactory::readModel(it->string());
+                std::string fullFileName = it->c_str();
+                
+                std::string shortenedFileName = fullFileName.substr(fullFileName.find_last_of("/"), fullFileName.find_last_of(".") - 1);
 
 				if(model)
 				{
 					char name[1024];
-					sprintf(name, "%s/scan%03d.3d", outputDir.c_str(), c);
+					//sprintf(name, "%s/scan%03d.3d", outputDir.c_str(), c + 1);
+
+                    sprintf(name, "%s/%s.3d", outputDir.c_str(), shortenedFileName.c_str());
 
 					// Check if user wants to reduce. If not, set reduction
 					// to 1 to keep all points
-					if(reduction == 0)
-					{
-						reduction = 1;
-					}
+					//if(reduction == 0)
+					//{
+					//	reduction = 1;
+					//}
 
 					cout << timestamp << "Saving " << name << "..." << endl;
 
@@ -178,7 +208,16 @@ int main(int argc, char** argv)
 					in.close();
 
 					cout << timestamp << "File " << it->string().c_str() << " contains " << n_points << " points." << endl;
-					int modulo = (int)n_points / reduction;
+
+                    int modulo = 1;
+                    // If reduction is less than the number of points it will segfault when
+                    // calculating the modulo 
+                    // and we have to keep all points anyways.
+                    // Same if no targetSize was given.
+                    if(reduction < n_points && reduction != 0)
+                    {
+					    modulo = (int)n_points / reduction;
+                    }
 
 					ofstream out(name);
 					size_t n_ip;
