@@ -53,6 +53,8 @@ Options::Options(int argc, char** argv) : m_descr("Supported options")
 	    ("rPos,r", value<int>()->default_value(-1), "Position of the red color component in the input data lines. (-1) means no color information")
 	    ("gPos,g", value<int>()->default_value(-1), "Position of the green color component in the input data lines. (-1) means no color information")
 	    ("bPos,b", value<int>()->default_value(-1), "Position of the blue color component in the input data lines. (-1) means no color information")
+        ("start,s", value<int>()->default_value(0), "start at scan NR")
+        ("end,e", value<int>()->default_value(0), "end at scan NR")
 	;
 
 	m_pdescr.add("inputFile", -1);

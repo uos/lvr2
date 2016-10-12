@@ -67,6 +67,8 @@ public:
 	float	getSigma() const;
 	int		getTargetSize() const;
 
+    int     getStart() const;
+    int     getEnd() const;
 	/**
 	 * @brief   Returns the position of the x coordinate in the data.
 	 */
@@ -117,7 +119,10 @@ public:
 	 * @brief   Returns the scaling factor for the z coordinates
 	 */
 	float sz() { return m_variables["sz"].as<float>();}
+    
+    int getStart() { return m_variables["start"].as<int>(); }
 
+    int getEnd() { return m_variables["end"].as<int>(); }
 
 private:
 
