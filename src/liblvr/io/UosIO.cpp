@@ -297,8 +297,14 @@ void UosIO::readNewFormat(ModelPtr &model, string dir, int first, int last, size
                 {
                     float euler[6];
                     for(int i = 0; i < 6; i++) pose_in >> euler[i];
+
+                    euler[3] *= 0.017453293;
+                    euler[4] *= 0.017453293;
+                    euler[5] *= 0.017453293;
+
                     Vertex<float> position(euler[0], euler[1], euler[2]);
                     Vertex<float> angle(euler[3], euler[4], euler[5]);
+
                     tf = Matrix4<float>(position, angle);
                 }
                 else

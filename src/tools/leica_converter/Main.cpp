@@ -111,6 +111,10 @@ int main(int argc, char** argv)
 		{
 			extension = ".txt";
 		}
+		else if(options.getInputFormat() == "3D")
+		{
+			extension = ".3d";
+		}
 		else if(options.getOutputFormat() == "ALL")
 		{
 			// Filter supported file formats
@@ -135,20 +139,78 @@ int main(int argc, char** argv)
 	int c = 0;
 	for(vector<boost::filesystem::path>::iterator it = v.begin(); it != v.end(); it++)
 	{
+		cout << timestamp << "Converting " << it->string() << endl;
 		if(options.getOutputFormat() == "SLAM")
 		{
 			int reduction = options.getTargetSize();
 			ModelPtr model;
 
-			if(reduction == 0)
+			if(reduction == 0 || (reduction != 0 && options.getInputFormat() == "SLAM"))
 			{
 				cout << timestamp << "Reading point cloud data from " << it->c_str() << "." << endl;
 				model = ModelFactory::readModel(it->string());
+
 				if(model)
 				{
 					char name[1024];
 					sprintf(name, "%s/scan%03d.3d", outputDir.c_str(), c);
-					cout << name << endl;
+
+					// Check if user wants to reduce. If not, set reduction
+					// to 1 to keep all points
+					if(reduction == 0)
+					{
+						reduction = 1;
+					}
+
+					cout << timestamp << "Saving " << name << "..." << endl;
+
+					ifstream in(it->string().c_str());
+					cout << timestamp << "Counting points in " << it->string().c_str() << "..." << endl;
+
+					// Count lines in file
+					size_t n_points = 0;
+					char line[2048];
+					while(in.good())
+					{
+						in.getline(line, 1024);
+						n_points++;
+					}
+					in.close();
+
+					cout << timestamp << "File " << it->string().c_str() << " contains " << n_points << " points." << endl;
+					int modulo = (int)n_points / reduction;
+
+					ofstream out(name);
+					size_t n_ip;
+					int cntr = 0;
+					floatArr arr = model->m_pointCloud->getPointArray(n_ip);
+					for(int a = 0; a < n_ip; a++)
+					{
+						if(a % modulo == 0)
+						{
+							if(options.sx() != 1)
+							{
+								arr[a * 3] 		*= options.sx();
+							}
+
+							if(options.sy() != 1)
+							{
+								arr[a * 3 + 1] 	*= options.sy();
+							}
+
+							if(options.sz() != 1)
+							{
+								arr[a * 3 + 2] 	*= options.sz();
+							}
+
+							out << arr[a * 3 + options.x()] << " " << arr[a * 3 + options.y()] << " " << arr[a * 3 + options.z()] << endl;
+							cntr++;
+						}
+					}
+					out.close();
+					cout << "Wrote " << cntr << " points to file " << name << endl;
+
+
 				}
 			}
 			else
@@ -196,17 +258,20 @@ int main(int argc, char** argv)
 						}
 					}
 */
-					char name[1024];
-					sprintf(name, "%s/scan%03d.3d", outputDir.c_str(), c);
-					cout << timestamp << "Saving " << name << "..." << endl;
-					AsciiIO outIO;
-					outIO.setModel(model);
-					outIO.save(name);
+
+					if(reduction == 0)
+					{
+						char name[1024];
+						sprintf(name, "%s/scan%03d.3d", outputDir.c_str(), c);
+						cout << timestamp << "Saving " << name << "..." << endl;
+						AsciiIO outIO;
+						outIO.setModel(model);
+						outIO.save(name);
+					}
 				}
 
-
-
 			}
+
 			c++;
 
 		}
