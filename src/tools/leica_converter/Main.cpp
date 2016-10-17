@@ -25,6 +25,7 @@
 #include <algorithm>
 #include <string>
 #include <stdio.h>
+#include <fstream>
 using namespace std;
 
 #include <boost/filesystem.hpp>
