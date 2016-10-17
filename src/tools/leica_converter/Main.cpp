@@ -159,9 +159,7 @@ int main(int argc, char** argv)
     {
         endOpt = v.end();
     }
-    
-    
-
+   
 	for(vector<boost::filesystem::path>::iterator it = v.begin() + c; it != endOpt; it++)
 	{
 		cout << timestamp << "Converting " << it->string() << endl;
