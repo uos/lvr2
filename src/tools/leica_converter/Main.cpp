@@ -141,7 +141,8 @@ int main(int argc, char** argv)
 
     
     int c = 0;
-
+    
+    /* This only works properly if we start with scan001 */
     if(options.getStart() <= v.size() && options.getStart() > 0)
     {
         cout << "Starting with scan number " << options.getStart() << endl;
@@ -159,9 +160,7 @@ int main(int argc, char** argv)
     {
         endOpt = v.end();
     }
-    
-    
-
+   
 	for(vector<boost::filesystem::path>::iterator it = v.begin() + c; it != endOpt; it++)
 	{
 		cout << timestamp << "Converting " << it->string() << endl;
@@ -174,24 +173,16 @@ int main(int argc, char** argv)
 			{
 				cout << timestamp << "Reading point cloud data from " << it->c_str() << "." << endl;
 				model = ModelFactory::readModel(it->string());
-                std::string fullFileName = it->c_str();
                 
-                std::string shortenedFileName = fullFileName.substr(fullFileName.find_last_of("/"), fullFileName.find_last_of(".") - 1);
+                /* Get the filename without fileextension */
+                std::string shortenedFileName = (it->stem()).string();
 
 				if(model)
 				{
 					char name[1024];
-					//sprintf(name, "%s/scan%03d.3d", outputDir.c_str(), c + 1);
-
+                    
                     sprintf(name, "%s/%s.3d", outputDir.c_str(), shortenedFileName.c_str());
-
-					// Check if user wants to reduce. If not, set reduction
-					// to 1 to keep all points
-					//if(reduction == 0)
-					//{
-					//	reduction = 1;
-					//}
-
+            
 					cout << timestamp << "Saving " << name << "..." << endl;
 
 					ifstream in(it->string().c_str());
@@ -209,11 +200,13 @@ int main(int argc, char** argv)
 
 					cout << timestamp << "File " << it->string().c_str() << " contains " << n_points << " points." << endl;
 
+                    /*
+                     * If reduction is less than the number of points it will segfault
+                     * because the modulo operation is not defined for n mod 0
+                     * and we have to keep all points anyways.
+                     * Same if no targetSize was given.
+                     */
                     int modulo = 1;
-                    // If reduction is less than the number of points it will segfault when
-                    // calculating the modulo 
-                    // and we have to keep all points anyways.
-                    // Same if no targetSize was given.
                     if(reduction < n_points && reduction != 0)
                     {
 					    modulo = (int)n_points / reduction;
