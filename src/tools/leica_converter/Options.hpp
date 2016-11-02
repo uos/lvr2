@@ -62,6 +62,9 @@ public:
 	string 	getOutputDir() const;
 	string 	getOutputFormat() const;
 	string 	getInputFormat() const;
+    string 	getInputFile() const;
+    string 	getOutputFile() const;
+
 	bool	filter() const;
 	int		getK() const;
 	float	getSigma() const;
@@ -123,6 +126,8 @@ public:
     int getStart() { return m_variables["start"].as<int>(); }
 
     int getEnd() { return m_variables["end"].as<int>(); }
+
+
 
 private:
 

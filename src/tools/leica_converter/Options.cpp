@@ -36,10 +36,12 @@ Options::Options(int argc, char** argv) : m_descr("Supported options")
 
 	m_descr.add_options()
 		("help", "Produce help message")
-		("in", value<string>()->default_value("./"), "A directory containing scan data for conversion.")
-		("out", value<string>()->default_value("./"), "The target directory for converted data.")
-		("outputFormat", value<string>()->default_value("SLAM"), "Type of target data. Choose from SLAM, MERGE, SLAM_COLOR, PLY, 3D.")
-		("inputFormat", value<string>()->default_value("ALL"), "Type of parsed input data. Choose from ALL, 3D, PLY, DAT, LAS.")
+		("inputDir", value<string>()->default_value("./"), "A directory containing several scan files for batch conversion.")
+		("inputFile", value<string>()->default_value(""), "A single file to convert.")
+		("outputFile", value<string>()->default_value("scan.txt"), "The name of a single output file if scans are merged. If the format can be deduced frim the file extension, the specification of --outputFormat is optional.")
+		("outputDir", value<string>()->default_value("./"), "The target directory for converted data.")
+		("outputFormat", value<string>()->default_value("TXT"), "Type of target data. Choose from SLAM, PLY, TXT.")
+		("inputFormat", value<string>()->default_value("ASCII"), "Parse all files in the given directory. Specify input format by choosing from ASCII (*.txt, *.3d, *.pts), SLAM6D, PLY, DAT, LAS, RXP")
 	    ("filter", value<bool>()->default_value(false), "Filter input data.")
 	    ("k", value<int>()->default_value(1), "k neighborhood for filtering.")
 	    ("sigma", value<float>()->default_value(1.0), "Deviation for outlier filter.")
@@ -71,14 +73,24 @@ Options::Options(int argc, char** argv) : m_descr("Supported options")
 
 }
 
+string Options::getOutputFile() const
+{
+	return m_variables["outputFile"].as<string>();
+}
+
+string Options::getInputFile() const
+{
+	return m_variables["inputFile"].as<string>();
+}
+
 string 	Options::getInputDir() const
 {
-	return m_variables["in"].as<string>();
+	return m_variables["inputDir"].as<string>();
 }
 
 string 	Options::getOutputDir() const
 {
-	return m_variables["out"].as<string>();
+	return m_variables["outputDir"].as<string>();
 }
 
 string 	Options::getOutputFormat() const
