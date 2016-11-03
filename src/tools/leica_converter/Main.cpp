@@ -119,18 +119,45 @@ size_t writeAscii(ModelPtr model, std::ofstream& out, int modulo, const leica_co
 	return cntr;
 }
 
+int asciiReductionFactor(boost::filesystem::path& inFile, const leica_convert::Options& options)
+{
+    
+    int reduction = options.getTargetSize();
+
+    /*
+     * If reduction is less than the number of points it will segfault
+     * because the modulo operation is not defined for n mod 0
+     * and we have to keep all points anyways.
+     * Same if no targetSize was given.
+     */
+    if(reduction != 0)
+    {
+        // Count lines in file
+        size_t n_points = countPointsInFile(inFile);
+    
+        if(reduction < n_points)
+        {
+            return (int)n_points / reduction;
+        }
+    }
+    
+    /* No reduction write all points */
+    return 1;
+    
+}
+
 void processSingleFile(boost::filesystem::path& inFile, const leica_convert::Options& options)
 {
-	cout << timestamp << "Processing " << inFile << endl;
+    cout << timestamp << "Processing " << inFile << endl;
+
+    ModelPtr model;
+
+    cout << timestamp << "Reading point cloud data from file" << inFile.filename().string() << "." << endl;
+
+    model = ModelFactory::readModel(inFile.string());
+
 	if(options.slamOut())
 	{
-		int reduction = options.getTargetSize();
-		ModelPtr model;
-
-
-		cout << timestamp << "Reading point cloud data from file" << inFile.filename().string() << "." << endl;
-		model = ModelFactory::readModel(inFile.string());
-
 		if(model)
 		{
 			static int n = 0;
@@ -141,34 +168,14 @@ void processSingleFile(boost::filesystem::path& inFile, const leica_convert::Opt
 			sprintf(name, "/%s/scan%3d.3d", options.getOutputDir().c_str(), n);
 			sprintf(name, "/%s/scan%3d.pose", options.getOutputDir().c_str(), n);
 
-			/*
-			 * If reduction is less than the number of points it will segfault
-			 * because the modulo operation is not defined for n mod 0
-			 * and we have to keep all points anyways.
-			 * Same if no targetSize was given.
-			 */
-			int modulo;
-			if(reduction < n_points && reduction != 0)
-			{
-				// Count lines in file
-				size_t n_points = countPointsInFile(inFile);
-
-
-				modulo = (int)n_points / reduction;
-			}
-			else
-			{
-				modulo = 1;
-			}
-
-
 			ofstream poseOut(pose);
 
 			poseOut << 0 << " " << 0 << " " << 0 << " " << 0 << " " << 0 << " "<< 0 << endl;
 			poseOut.close();
 
 			ofstream out(name);
-			writeAscii(model, out, modulo, options);
+
+			writeAscii(model, out, asciiReductionFactor(inFile, options), options);
 
 			out.close();
 			cout << "Wrote " << cntr << " points to file " << name << endl;
