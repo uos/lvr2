@@ -41,8 +41,10 @@ using namespace std;
 	#include <lvr/reconstruction/PCLFiltering.hpp>
 #endif
 
-
 using namespace lvr;
+
+const leica_convert::Options* options;
+
 
 ModelPtr filterModel(ModelPtr p, int k, float sigma)
 {
@@ -88,7 +90,7 @@ size_t countPointsInFile(boost::filesystem::path& inFile)
 	return n_points;
 }
 
-size_t writeAscii(ModelPtr model, std::ofstream& out, int modulo, const leica_convert::Options& options)
+size_t writeAscii(ModelPtr model, std::ofstream& out, int modulo)
 {
 	size_t n_ip;
 	size_t cntr = 0;
@@ -97,32 +99,32 @@ size_t writeAscii(ModelPtr model, std::ofstream& out, int modulo, const leica_co
 	{
 		if(a % modulo == 0)
 		{
-			if(options.sx() != 1)
+			if(options->sx() != 1)
 			{
-				arr[a * 3] 		*= options.sx();
+				arr[a * 3] 		*= options->sx();
 			}
 
-			if(options.sy() != 1)
+			if(options->sy() != 1)
 			{
-				arr[a * 3 + 1] 	*= options.sy();
+				arr[a * 3 + 1] 	*= options->sy();
 			}
 
-			if(options.sz() != 1)
+			if(options->sz() != 1)
 			{
-				arr[a * 3 + 2] 	*= options.sz();
+				arr[a * 3 + 2] 	*= options->sz();
 			}
 
-			out << arr[a * 3 + options.x()] << " " << arr[a * 3 + options.y()] << " " << arr[a * 3 + options.z()] << endl;
+			out << arr[a * 3 + options->x()] << " " << arr[a * 3 + options->y()] << " " << arr[a * 3 + options->z()] << endl;
 			cntr++;
 		}
 	}
 	return cntr;
 }
 
-int asciiReductionFactor(boost::filesystem::path& inFile, const leica_convert::Options& options)
+int asciiReductionFactor(boost::filesystem::path& inFile)
 {
     
-    int reduction = options.getTargetSize();
+    int reduction = options->getTargetSize();
 
     /*
      * If reduction is less than the number of points it will segfault
@@ -146,17 +148,17 @@ int asciiReductionFactor(boost::filesystem::path& inFile, const leica_convert::O
     
 }
 
-void processSingleFile(boost::filesystem::path& inFile, const leica_convert::Options& options)
+void processSingleFile(boost::filesystem::path& inFile)
 {
-    cout << timestamp << "Processing " << inFile << endl;
+	cout << timestamp << "Processing " << inFile << endl;
 
-    ModelPtr model;
+	ModelPtr model;
 
-    cout << timestamp << "Reading point cloud data from file" << inFile.filename().string() << "." << endl;
+	cout << timestamp << "Reading point cloud data from file" << inFile.filename().string() << "." << endl;
 
-    model = ModelFactory::readModel(inFile.string());
+	model = ModelFactory::readModel(inFile.string());
 
-	if(options.slamOut())
+	if(options->slamOut())
 	{
 		if(model)
 		{
@@ -165,8 +167,8 @@ void processSingleFile(boost::filesystem::path& inFile, const leica_convert::Opt
 			char name[1024];
 			char pose[1024];
 
-			sprintf(name, "/%s/scan%3d.3d", options.getOutputDir().c_str(), n);
-			sprintf(name, "/%s/scan%3d.pose", options.getOutputDir().c_str(), n);
+			sprintf(name, "/%s/scan%3d.3d", options->getOutputDir().c_str(), n);
+			sprintf(name, "/%s/scan%3d.pose", options->getOutputDir().c_str(), n);
 
 			ofstream poseOut(pose);
 
@@ -175,26 +177,26 @@ void processSingleFile(boost::filesystem::path& inFile, const leica_convert::Opt
 
 			ofstream out(name);
 
-			writeAscii(model, out, asciiReductionFactor(inFile, options), options);
+			size_t points_written = writeAscii(model, out, asciiReductionFactor(inFile));
 
 			out.close();
-			cout << "Wrote " << cntr << " points to file " << name << endl;
+			cout << "Wrote " << points_written << " points to file " << name << endl;
 			n++;
 		}
 	}
 	else
 	{
-		if(options.getOutputFile)
+		if(options->getOutputFile() != "")
 		{
 
 		}
 		else
 		{
-			if(options.getOutputFormat() == "")
+			if(options->getOutputFormat() == "")
 			{
 
 			}
-			else if(options.getOutputFormat() == "ASCII")
+			else if(options->getOutputFormat() == "ASCII")
 			{
 				// Write all data into points.txt
 
@@ -205,16 +207,16 @@ void processSingleFile(boost::filesystem::path& inFile, const leica_convert::Opt
 
 
 
-//		if(options.getInputFormat() == "DAT")
+//		if(options->getInputFormat() == "DAT")
 //		{
 //			DatIO io;
 //			cout << timestamp << "Reading point cloud data from " << it->c_str() << "." << endl;
 //			model = io.read(it->string(), 4, reduction);
 //
-//			if(options.filter())
+//			if(options->filter())
 //			{
 //				cout << timestamp << "Filtering input data..." << endl;
-//				model = filterModel(model, options.getK(), options.getSigma());
+//				model = filterModel(model, options->getK(), options->getSigma());
 //			}
 //		}
 //		else
@@ -260,7 +262,7 @@ void processSingleFile(boost::filesystem::path& inFile, const leica_convert::Opt
 //			}
 //		}
 //	}
-//	else if(options.getOutputFormat() == "MERGE")
+//	else if(options->getOutputFormat() == "MERGE")
 //	{
 //		ModelPtr model = ModelFactory::readModel(it->string());
 //		if(model)
@@ -305,123 +307,124 @@ void processSingleFile(boost::filesystem::path& inFile, const leica_convert::Opt
 int main(int argc, char** argv)
 {
 	// Parse command line arguments
-	leica_convert::Options options(argc, argv);
+	options = new leica_convert::Options(argc, argv);
 
-	boost::filesystem::path inputDir(options.getInputDir());
-	boost::filesystem::path outputDir(options.getOutputDir());
+	boost::filesystem::path inputDir(options->getInputDir());
+	boost::filesystem::path outputDir(options->getOutputDir());
 
 	// Check input directory
 	if(!boost::filesystem::exists(inputDir))
 	{
-		cout << timestamp << "Error: Directory " << options.getInputDir() << " does not exist" << endl;
+		cout << timestamp << "Error: Directory " << options->getInputDir() << " does not exist" << endl;
 		exit(-1);
 	}
 
 	// Check if output dir exists
 	if(!boost::filesystem::exists(outputDir))
 	{
-		cout << timestamp << "Creating directory " << options.getOutputDir() << endl;
+		cout << timestamp << "Creating directory " << options->getOutputDir() << endl;
 		if(!boost::filesystem::create_directory(outputDir))
 		{
-			cout << timestamp << "Error: Unable to create " << options.getOutputDir() << endl;
+			cout << timestamp << "Error: Unable to create " << options->getOutputDir() << endl;
 			exit(-1);
 		}
 	}
 
-	// Create director iterator and parse supported file formats
-	boost::filesystem::directory_iterator end;
-	vector<boost::filesystem::path> v;
-	for(boost::filesystem::directory_iterator it(inputDir); it != end; ++it)
-	{
-		string extension = "";
-		if(options.getInputFormat() == "PLY")
-		{
-			extension = ".ply";
-		}
-		else if(options.getInputFormat() == "DAT")
-		{
-			extension = ".dat";
-		}
-		else if(options.getInputFormat() == "TXT")
-		{
-			extension = ".txt";
-		}
-		else if(options.getInputFormat() == "3D")
-		{
-			extension = ".3d";
-		}
-		else if(options.getOutputFormat() == "ALL")
-		{
-			// Filter supported file formats
-			if(it->path().extension() == ".ply" || it->path().extension() == ".txt" || it->path().extension() == ".dat")
-			{
-				extension = string(it->path().extension().string());
-			}
-		}
-
-		if(it->path().extension() == extension)
-		{
-			v.push_back(it->path());
-		}
-	}
-
-	// Sort entries
-	sort(v.begin(), v.end());
-
-	vector<float>	 		merge_points;
-	vector<unsigned char>	merge_colors;
-
-
-    
-    int c = 0;
-    
-    /* This only works properly if we start with scan001 */
-    if(options.getStart() <= v.size() && options.getStart() > 0)
-    {
-        cout << "Starting with scan number " << options.getStart() << endl;
-        c = options.getStart() - 1;
-    }
-
-    vector<boost::filesystem::path>::iterator endOpt;
-
-    if(options.getEnd() > 0 && options.getEnd() >= options.getStart() && options.getEnd() <= v.size())
-    {
-        cout << "Ending with scan number " << options.getEnd() << endl;
-        endOpt = v.begin() + options.getEnd();
-    }
-    else
-    {
-        endOpt = v.end();
-    }
-   
-	for(vector<boost::filesystem::path>::iterator it = v.begin() + c; it != endOpt; it++)
-	{}
-
-	if(merge_points.size() > 0)
-	{
-		cout << timestamp << "Building merged model..." << endl;
-		cout << timestamp << "Merged model contains " << merge_points.size() << " points." << endl;
-
-		floatArr points (new float[merge_points.size()]);
-		ucharArr colors (new unsigned char[merge_colors.size()]);
-
-		for(size_t i = 0; i < merge_points.size(); i++)
-		{
-			points[i] = merge_points[i];
-			colors[i] = merge_colors[i];
-		}
-
-		PointBufferPtr pBuffer(new PointBuffer);
-		pBuffer->setPointArray(points, merge_points.size() / 3);
-		pBuffer->setPointColorArray(colors, merge_colors.size() / 3);
-
-		ModelPtr model(new Model(pBuffer));
-
-		cout << timestamp << "Writing 'merge.ply'" << endl;
-		ModelFactory::saveModel(model, "merge.3d");
-
-	}
-	cout << timestamp << "Program end." << endl;
+//	// Create director iterator and parse supported file formats
+//	boost::filesystem::directory_iterator end;
+//	vector<boost::filesystem::path> v;
+//	for(boost::filesystem::directory_iterator it(inputDir); it != end; ++it)
+//	{
+//		string extension = "";
+//		if(options->getInputFormat() == "PLY")
+//		{
+//			extension = ".ply";
+//		}
+//		else if(options->getInputFormat() == "DAT")
+//		{
+//			extension = ".dat";
+//		}
+//		else if(options->getInputFormat() == "TXT")
+//		{
+//			extension = ".txt";
+//		}
+//		else if(options->getInputFormat() == "3D")
+//		{
+//			extension = ".3d";
+//		}
+//		else if(options->getOutputFormat() == "ALL")
+//		{
+//			// Filter supported file formats
+//			if(it->path().extension() == ".ply" || it->path().extension() == ".txt" || it->path().extension() == ".dat")
+//			{
+//				extension = string(it->path().extension().string());
+//			}
+//		}
+//
+//		if(it->path().extension() == extension)
+//		{
+//			v.push_back(it->path());
+//		}
+//	}
+//
+//	// Sort entries
+//	sort(v.begin(), v.end());
+//
+//	vector<float>	 		merge_points;
+//	vector<unsigned char>	merge_colors;
+//
+//
+//
+//    int c = 0;
+//
+//    /* This only works properly if we start with scan001 */
+//    if(options->getStart() <= v.size() && options->getStart() > 0)
+//    {
+//        cout << "Starting with scan number " << options->getStart() << endl;
+//        c = options->getStart() - 1;
+//    }
+//
+//    vector<boost::filesystem::path>::iterator endOpt;
+//
+//    if(options->getEnd() > 0 && options->getEnd() >= options->getStart() && options->getEnd() <= v.size())
+//    {
+//        cout << "Ending with scan number " << options->getEnd() << endl;
+//        endOpt = v.begin() + options->getEnd();
+//    }
+//    else
+//    {
+//        endOpt = v.end();
+//    }
+//
+//	for(vector<boost::filesystem::path>::iterator it = v.begin() + c; it != endOpt; it++)
+//	{}
+//
+//	if(merge_points.size() > 0)
+//	{
+//		cout << timestamp << "Building merged model..." << endl;
+//		cout << timestamp << "Merged model contains " << merge_points.size() << " points." << endl;
+//
+//		floatArr points (new float[merge_points.size()]);
+//		ucharArr colors (new unsigned char[merge_colors.size()]);
+//
+//		for(size_t i = 0; i < merge_points.size(); i++)
+//		{
+//			points[i] = merge_points[i];
+//			colors[i] = merge_colors[i];
+//		}
+//
+//		PointBufferPtr pBuffer(new PointBuffer);
+//		pBuffer->setPointArray(points, merge_points.size() / 3);
+//		pBuffer->setPointColorArray(colors, merge_colors.size() / 3);
+//
+//		ModelPtr model(new Model(pBuffer));
+//
+//		cout << timestamp << "Writing 'merge.ply'" << endl;
+//		ModelFactory::saveModel(model, "merge.3d");
+//
+//	}
+//	cout << timestamp << "Program end." << endl;
+//	delete options;
 	return 0;
 }
 
