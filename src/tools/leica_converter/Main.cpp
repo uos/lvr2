@@ -95,29 +95,37 @@ size_t writeModel(ModelPtr model, boost::filesystem::path& outfile, int modulo)
 	size_t n_ip;
 	size_t cntr = 0;
 	floatArr arr = model->m_pointCloud->getPointArray(n_ip);
+
+	size_t new_model_size = n_ip / modulo;
+	floatArr targetPoints(new float[3 * new_model_size]);
+
 	for(int a = 0; a < n_ip; a++)
 	{
 		if(a % modulo == 0)
 		{
 			if(options->sx() != 1)
 			{
-				arr[a * 3] 		*= options->sx();
+				targetPoints[cntr * 3 + options->x()] = arr[a * 3] * options->sx();
 			}
 
 			if(options->sy() != 1)
 			{
-				arr[a * 3 + 1] 	*= options->sy();
+				targetPoints[cntr * 3 + options->y()] = arr[a * 3 + 1] * options->sy();
 			}
 
 			if(options->sz() != 1)
 			{
-				arr[a * 3 + 2] 	*= options->sz();
+				targetPoints[cntr * 3 + options->z()] = arr[a * 3 + 2] * options->sz();
 			}
-
-			out << arr[a * 3 + options->x()] << " " << arr[a * 3 + options->y()] << " " << arr[a * 3 + options->z()] << endl;
 			cntr++;
 		}
 	}
+
+	PointBufferPtr pc(new PointBuffer);
+	pc->setPointArray(targetPoints, new_model_size);
+	ModelPtr outModel(pc);
+	ModelFactory::saveModel(outModel);
+
 	return cntr;
 }
 
@@ -125,7 +133,9 @@ size_t writeAscii(ModelPtr model, std::ofstream& out, int modulo)
 {
 	size_t n_ip;
 	size_t cntr = 0;
+
 	floatArr arr = model->m_pointCloud->getPointArray(n_ip);
+
 	for(int a = 0; a < n_ip; a++)
 	{
 		if(a % modulo == 0)
