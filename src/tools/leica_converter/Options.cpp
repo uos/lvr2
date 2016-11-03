@@ -111,7 +111,7 @@ bool	Options::slamIn() const
 
 bool	Options::slamOut() const
 {
-	urn m_variables["slamOut"].as<bool>();
+	return m_variables["slamOut"].as<bool>();
 }
 
 int		Options::getK() const
