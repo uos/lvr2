@@ -66,7 +66,233 @@ ModelPtr filterModel(ModelPtr p, int k, float sigma)
 			
 		}
 	}
-	p;
+}
+
+size_t countPointsInFile(boost::filesystem::path& inFile)
+{
+	ifstream in(inFile.filename().c_str());
+	cout << timestamp << "Counting points in " << inFile.filename().string() << "..." << endl;
+
+	// Count lines in file
+	size_t n_points = 0;
+	char line[2048];
+	while(in.good())
+	{
+		in.getline(line, 1024);
+		n_points++;
+	}
+	in.close();
+
+	cout << timestamp << "File " << inFile.filename().string() << " contains " << n_points << " points." << endl;
+
+	return n_points;
+}
+
+size_t writeAscii(ModelPtr model, std::ofstream& out, int modulo, const leica_convert::Options& options)
+{
+	size_t n_ip;
+	size_t cntr = 0;
+	floatArr arr = model->m_pointCloud->getPointArray(n_ip);
+	for(int a = 0; a < n_ip; a++)
+	{
+		if(a % modulo == 0)
+		{
+			if(options.sx() != 1)
+			{
+				arr[a * 3] 		*= options.sx();
+			}
+
+			if(options.sy() != 1)
+			{
+				arr[a * 3 + 1] 	*= options.sy();
+			}
+
+			if(options.sz() != 1)
+			{
+				arr[a * 3 + 2] 	*= options.sz();
+			}
+
+			out << arr[a * 3 + options.x()] << " " << arr[a * 3 + options.y()] << " " << arr[a * 3 + options.z()] << endl;
+			cntr++;
+		}
+	}
+	return cntr;
+}
+
+void processSingleFile(boost::filesystem::path& inFile, const leica_convert::Options& options)
+{
+	cout << timestamp << "Processing " << inFile << endl;
+	if(options.slamOut())
+	{
+		int reduction = options.getTargetSize();
+		ModelPtr model;
+
+
+		cout << timestamp << "Reading point cloud data from file" << inFile.filename().string() << "." << endl;
+		model = ModelFactory::readModel(inFile.string());
+
+		if(model)
+		{
+			static int n = 0;
+
+			char name[1024];
+			char pose[1024];
+
+			sprintf(name, "/%s/scan%3d.3d", options.getOutputDir().c_str(), n);
+			sprintf(name, "/%s/scan%3d.pose", options.getOutputDir().c_str(), n);
+
+			/*
+			 * If reduction is less than the number of points it will segfault
+			 * because the modulo operation is not defined for n mod 0
+			 * and we have to keep all points anyways.
+			 * Same if no targetSize was given.
+			 */
+			int modulo;
+			if(reduction < n_points && reduction != 0)
+			{
+				// Count lines in file
+				size_t n_points = countPointsInFile(inFile);
+
+
+				modulo = (int)n_points / reduction;
+			}
+			else
+			{
+				modulo = 1;
+			}
+
+
+			ofstream poseOut(pose);
+
+			poseOut << 0 << " " << 0 << " " << 0 << " " << 0 << " " << 0 << " "<< 0 << endl;
+			poseOut.close();
+
+			ofstream out(name);
+			writeAscii(model, out, modulo, options);
+
+			out.close();
+			cout << "Wrote " << cntr << " points to file " << name << endl;
+			n++;
+		}
+	}
+	else
+	{
+		if(options.getOutputFile)
+		{
+
+		}
+		else
+		{
+			if(options.getOutputFormat() == "")
+			{
+
+			}
+			else if(options.getOutputFormat() == "ASCII")
+			{
+				// Write all data into points.txt
+
+			}
+		}
+	}
+
+
+
+
+//		if(options.getInputFormat() == "DAT")
+//		{
+//			DatIO io;
+//			cout << timestamp << "Reading point cloud data from " << it->c_str() << "." << endl;
+//			model = io.read(it->string(), 4, reduction);
+//
+//			if(options.filter())
+//			{
+//				cout << timestamp << "Filtering input data..." << endl;
+//				model = filterModel(model, options.getK(), options.getSigma());
+//			}
+//		}
+//		else
+//		{
+//			cout << timestamp << "Reduction mode currently only supported for DAT format." << endl;
+//			exit(-1);
+//		}
+//
+//		if(model)
+//		{
+//			/*	// Convert to slam coordinate system
+//				if(model->m_pointCloud)
+//				{
+//					float point[3];
+//					PointBufferPtr p_ptr = model->m_pointCloud;
+//					size_t num;
+//					floatArr points = p_ptr->getPointArray(num);
+//					for(int i = 0; i < num; i++)
+//					{
+//						point[0] = points[3 * i + 1];
+//						point[1] = points[3 * i + 2];
+//						point[2] = points[3 * i];
+//
+//						point[0] *= -100;
+//						point[1] *= 100;
+//						point[2] *= 100;
+//
+//						points[3 * i] = point[0];
+//						points[3 * i + 1] = point[1];
+//						points[3 * i + 2] = point[2];
+//					}
+//				}
+//			 */
+//
+//			if(reduction == 0)
+//			{
+//				char name[1024];
+//				sprintf(name, "%s/scan%03d.3d", outputDir.c_str(), c);
+//				cout << timestamp << "Saving " << name << "..." << endl;
+//				AsciiIO outIO;
+//				outIO.setModel(model);
+//				outIO.save(name);
+//			}
+//		}
+//	}
+//	else if(options.getOutputFormat() == "MERGE")
+//	{
+//		ModelPtr model = ModelFactory::readModel(it->string());
+//		if(model)
+//		{
+//			PointBufferPtr points = model->m_pointCloud;
+//			size_t num_points = 0;
+//			size_t num_colors = 0;
+//			floatArr point_arr = points->getPointArray(num_points);
+//			ucharArr color_arr = points->getPointColorArray(num_colors);
+//
+//			cout << timestamp << "Adding " << it->c_str() << " to merged point cloud" << endl;
+//
+//			for(size_t i = 0; i < num_points; i++)
+//			{
+//				merge_points.push_back(point_arr[3 * i]);
+//				merge_points.push_back(point_arr[3 * i + 1]);
+//				merge_points.push_back(point_arr[3 * i + 2]);
+//
+//				if(num_points == num_colors)
+//				{
+//					merge_colors.push_back(color_arr[3 * i]);
+//					merge_colors.push_back(color_arr[3 * i + 1]);
+//					merge_colors.push_back(color_arr[3 * i + 2]);
+//				}
+//				else
+//				{
+//					for(int j = 0; j < 3; j++)
+//					{
+//						merge_colors.push_back(128);
+//					}
+//				}
+//			}
+//		}
+//		else
+//		{
+//			cout << "Unable to model data from " << it->c_str() << endl;
+//		}
+//	}
+
 }
 
 int main(int argc, char** argv)
@@ -162,191 +388,7 @@ int main(int argc, char** argv)
     }
    
 	for(vector<boost::filesystem::path>::iterator it = v.begin() + c; it != endOpt; it++)
-	{
-		cout << timestamp << "Converting " << it->string() << endl;
-		if(options.getOutputFormat() == "SLAM")
-		{
-			int reduction = options.getTargetSize();
-			ModelPtr model;
-
-			if(reduction == 0 || (reduction != 0 && options.getInputFormat() == "3D"))
-			{
-				cout << timestamp << "Reading point cloud data from " << it->c_str() << "." << endl;
-				model = ModelFactory::readModel(it->string());
-                
-                /* Get the filename without fileextension */
-                std::string shortenedFileName = (it->stem()).string();
-
-				if(model)
-				{
-					char name[1024];
-                    
-                    sprintf(name, "%s/%s.3d", outputDir.c_str(), shortenedFileName.c_str());
-            
-					cout << timestamp << "Saving " << name << "..." << endl;
-
-					ifstream in(it->string().c_str());
-					cout << timestamp << "Counting points in " << it->string().c_str() << "..." << endl;
-
-					// Count lines in file
-					size_t n_points = 0;
-					char line[2048];
-					while(in.good())
-					{
-						in.getline(line, 1024);
-						n_points++;
-					}
-					in.close();
-
-					cout << timestamp << "File " << it->string().c_str() << " contains " << n_points << " points." << endl;
-
-                    /*
-                     * If reduction is less than the number of points it will segfault
-                     * because the modulo operation is not defined for n mod 0
-                     * and we have to keep all points anyways.
-                     * Same if no targetSize was given.
-                     */
-                    int modulo = 1;
-                    if(reduction < n_points && reduction != 0)
-                    {
-					    modulo = (int)n_points / reduction;
-                    }
-
-					ofstream out(name);
-					size_t n_ip;
-					int cntr = 0;
-					floatArr arr = model->m_pointCloud->getPointArray(n_ip);
-					for(int a = 0; a < n_ip; a++)
-					{
-						if(a % modulo == 0)
-						{
-							if(options.sx() != 1)
-							{
-								arr[a * 3] 		*= options.sx();
-							}
-
-							if(options.sy() != 1)
-							{
-								arr[a * 3 + 1] 	*= options.sy();
-							}
-
-							if(options.sz() != 1)
-							{
-								arr[a * 3 + 2] 	*= options.sz();
-							}
-
-							out << arr[a * 3 + options.x()] << " " << arr[a * 3 + options.y()] << " " << arr[a * 3 + options.z()] << endl;
-							cntr++;
-						}
-					}
-					out.close();
-					cout << "Wrote " << cntr << " points to file " << name << endl;
-
-
-				}
-			}
-			else
-			{
-				if(options.getInputFormat() == "DAT")
-				{
-					DatIO io;
-					cout << timestamp << "Reading point cloud data from " << it->c_str() << "." << endl;
-					model = io.read(it->string(), 4, reduction);
-
-					if(options.filter())
-					{
-						cout << timestamp << "Filtering input data..." << endl;
-						model = filterModel(model, options.getK(), options.getSigma());
-					}
-				}
-				else
-				{
-					cout << timestamp << "Reduction mode currently only supported for DAT format." << endl;
-					exit(-1);
-				}
-
-				if(model)
-				{
-				/*	// Convert to slam coordinate system
-					if(model->m_pointCloud)
-					{
-						float point[3];
-						PointBufferPtr p_ptr = model->m_pointCloud;
-						size_t num;
-						floatArr points = p_ptr->getPointArray(num);
-						for(int i = 0; i < num; i++)
-						{
-							point[0] = points[3 * i + 1];
-							point[1] = points[3 * i + 2];
-							point[2] = points[3 * i];
-
-							point[0] *= -100;
-							point[1] *= 100;
-							point[2] *= 100;
-
-							points[3 * i] = point[0];
-							points[3 * i + 1] = point[1];
-							points[3 * i + 2] = point[2];
-						}
-					}
-*/
-
-					if(reduction == 0)
-					{
-						char name[1024];
-						sprintf(name, "%s/scan%03d.3d", outputDir.c_str(), c);
-						cout << timestamp << "Saving " << name << "..." << endl;
-						AsciiIO outIO;
-						outIO.setModel(model);
-						outIO.save(name);
-					}
-				}
-
-			}
-
-			c++;
-
-		}
-		else if(options.getOutputFormat() == "MERGE")
-		{
-			ModelPtr model = ModelFactory::readModel(it->string());
-			if(model)
-			{
-				PointBufferPtr points = model->m_pointCloud;
-				size_t num_points = 0;
-				size_t num_colors = 0;
-				floatArr point_arr = points->getPointArray(num_points);
-				ucharArr color_arr = points->getPointColorArray(num_colors);
-
-				cout << timestamp << "Adding " << it->c_str() << " to merged point cloud" << endl;
-
-				for(size_t i = 0; i < num_points; i++)
-				{
-					merge_points.push_back(point_arr[3 * i]);
-					merge_points.push_back(point_arr[3 * i + 1]);
-					merge_points.push_back(point_arr[3 * i + 2]);
-
-					if(num_points == num_colors)
-					{
-						merge_colors.push_back(color_arr[3 * i]);
-						merge_colors.push_back(color_arr[3 * i + 1]);
-						merge_colors.push_back(color_arr[3 * i + 2]);
-					}
-					else
-					{
-						for(int j = 0; j < 3; j++)
-						{
-							merge_colors.push_back(128);
-						}
-					}
-				}
-			}
-			else
-			{
-				cout << "Unable to model data from " << it->c_str() << endl;
-			}
-		}
-	}
+	{}
 
 	if(merge_points.size() > 0)
 	{

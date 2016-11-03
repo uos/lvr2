@@ -36,12 +36,13 @@ Options::Options(int argc, char** argv) : m_descr("Supported options")
 
 	m_descr.add_options()
 		("help", "Produce help message")
+		("slamIn", "Input directory is searched for scan files according to slam6d naming convention (scanxxx.3d, scanxxx.pose, scanxxx.frames).")
+		("slamOut", "All files in the input directory are processed and stored in the given output directory according to slam6d name convention.")
 		("inputDir", value<string>()->default_value("./"), "A directory containing several scan files for batch conversion.")
 		("inputFile", value<string>()->default_value(""), "A single file to convert.")
 		("outputFile", value<string>()->default_value("scan.txt"), "The name of a single output file if scans are merged. If the format can be deduced frim the file extension, the specification of --outputFormat is optional.")
 		("outputDir", value<string>()->default_value("./"), "The target directory for converted data.")
-		("outputFormat", value<string>()->default_value("TXT"), "Type of target data. Choose from SLAM, PLY, TXT.")
-		("inputFormat", value<string>()->default_value("ASCII"), "Parse all files in the given directory. Specify input format by choosing from ASCII (*.txt, *.3d, *.pts), SLAM6D, PLY, DAT, LAS, RXP")
+		("outputFormat", value<string>()->default_value(""), "Specify the output format. Possible values are ASCII, PLY, DAT, LAS. If left empty, the format is deduced from the extension of the input files.")
 	    ("filter", value<bool>()->default_value(false), "Filter input data.")
 	    ("k", value<int>()->default_value(1), "k neighborhood for filtering.")
 	    ("sigma", value<float>()->default_value(1.0), "Deviation for outlier filter.")
@@ -98,15 +99,19 @@ string 	Options::getOutputFormat() const
 	return m_variables["outputFormat"].as<string>();
 }
 
-
-string 	Options::getInputFormat() const
-{
-	return m_variables["inputFormat"].as<string>();
-}
-
 bool	Options::filter() const
 {
 	return m_variables["filter"].as<bool>();
+}
+
+bool	Options::slamIn() const
+{
+	return m_variables["slamIn"].as<bool>();
+}
+
+bool	Options::slamOut() const
+{
+	urn m_variables["slamOut"].as<bool>();
 }
 
 int		Options::getK() const
