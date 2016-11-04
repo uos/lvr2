@@ -30,6 +30,7 @@
 
 #include <boost/shared_ptr.hpp>
 #include <vector>
+#include <list>
 using namespace std;
 
 #include "Matrix4.hpp"
@@ -109,7 +110,7 @@ public:
 	/// The list of outgoing edges
 	vector<HEdge*> out;
 
-	void getAdjacentFaces(list<FacePtr> &adj);
+	void getAdjacentFaces(std::list<FacePtr> &adj);
 
 	bool isBorderVertex();
 	
