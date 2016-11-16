@@ -123,8 +123,8 @@ size_t writeModel(ModelPtr model, boost::filesystem::path& outfile, int modulo)
 
 	PointBufferPtr pc(new PointBuffer);
 	pc->setPointArray(targetPoints, new_model_size);
-	ModelPtr outModel(pc);
-	ModelFactory::saveModel(outModel);
+	ModelPtr outModel(new Model(pc));
+	ModelFactory::saveModel(outModel, outfile.string());
 
 	return cntr;
 }
