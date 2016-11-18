@@ -3,7 +3,7 @@ link_directories(${LSSR_LIBRARIES} /usr/lib/x86_64-linux-gnu/)
 
 set(LVR_KINFU_SRC
     LVR_KinFu.cpp)
-add_executable(lvr_kinfu ${LVR_KINFU_SRC})
+cuda_add_executable(lvr_kinfu ${LVR_KINFU_SRC})
 
 target_link_libraries(lvr_kinfu 
 	kfusion
@@ -15,7 +15,8 @@ target_link_libraries(lvr_kinfu
 	${Boost_FILESYSTEM_LIBRARY}
 	${OPENGL_LIBRARY} 
 	${GLUT_LIBRARIES}
-	)
+	${CUDA_LIBRARIES}
+)
 
 
 set_target_properties(lvr_kinfu PROPERTIES

@@ -94,16 +94,16 @@ endif(NABO_FOUND)
 ## Searching for PCL
 ##############################
 
-find_package(PCL 1.7)
-if(PCL_FOUND)
-  include_directories(${PCL_INCLUDE_DIRS})
-  link_directories(${PCL_LIBRARY_DIRS})
-  add_definitions(${PCL_DEFINITIONS})
-  list(APPEND LVR_DEFINITIONS -DLVR_USE_PCL)
-else(PCL_FOUND)
-  message( "-- No PCL found." )
-  message( "-- PCL related stuff will be disabled." )
-endif(PCL_FOUND)
+#find_package(PCL 1.7)
+#if(PCL_FOUND)
+#  include_directories(${PCL_INCLUDE_DIRS})
+#  link_directories(${PCL_LIBRARY_DIRS})
+#  add_definitions(${PCL_DEFINITIONS})
+#  list(APPEND LVR_DEFINITIONS -DLVR_USE_PCL)
+#else(PCL_FOUND)
+#  message( "-- No PCL found." )
+#  message( "-- PCL related stuff will be disabled." )
+#endif(PCL_FOUND)
 
 ####
 ## Searching CGAL
@@ -127,6 +127,7 @@ endif(CGAL_FOUND)
 #set(Boost_USE_STATIC_LIBS       ON)
 set(Boost_USE_MULTITHREADED     ON)
 
+if(MPI_FOUND)
 find_package( Boost 1.54
     COMPONENTS
     program_options
@@ -136,6 +137,16 @@ find_package( Boost 1.54
     serialization
     mpi
     REQUIRED )
+else()
+find_package( Boost 1.54
+    COMPONENTS
+    program_options
+    filesystem
+    system
+    thread
+    serialization
+    REQUIRED )
+endif()
 
 link_directories(${Boost_LIBRARY_DIR})
 include_directories(${Boost_INCLUDE_DIRS})
