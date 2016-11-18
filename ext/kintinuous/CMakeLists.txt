@@ -35,3 +35,4 @@ add_subdirectory(apps)
 endif()
 
 add_subdirectory(qt_app)
+
