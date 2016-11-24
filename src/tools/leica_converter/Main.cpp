@@ -571,11 +571,24 @@ int main(int argc, char** argv)
 		}
 	}
 
+	boost::filesystem::path abs_in = boost::filesystem::canonical(inputDir);
+	boost::filesystem::path abs_out = boost::filesystem::canonical(outputDir);
+
+	if(abs_in == abs_out)
+	{
+		cout << timestamp << "Error: We think it is not a good idea to write into the same directory. " << endl;
+		exit(-1);
+	}
+
+
+
+
+
 	//	// Create director iterator and parse supported file formats
-	//	boost::filesystem::directory_iterator end;
-	//	vector<boost::filesystem::path> v;
-	//	for(boost::filesystem::directory_iterator it(inputDir); it != end; ++it)
-	//	{
+	boost::filesystem::directory_iterator end;
+	vector<boost::filesystem::path> v;
+		for(boost::filesystem::directory_iterator it(inputDir); it != end; ++it)
+		{
 	//		string extension = "";
 	//		if(options->getInputFormat() == "PLY")
 	//		{
@@ -601,71 +614,74 @@ int main(int argc, char** argv)
 	//				extension = string(it->path().extension().string());
 	//			}
 	//		}
-	//
-	//		if(it->path().extension() == extension)
-	//		{
-	//			v.push_back(it->path());
-	//		}
-	//	}
-	//
-	//	// Sort entries
-	//	sort(v.begin(), v.end());
-	//
-	//	vector<float>	 		merge_points;
-	//	vector<unsigned char>	merge_colors;
-	//
-	//
-	//
-	//    int c = 0;
-	//
-	//    /* This only works properly if we start with scan001 */
-	//    if(options->getStart() <= v.size() && options->getStart() > 0)
-	//    {
-	//        cout << "Starting with scan number " << options->getStart() << endl;
-	//        c = options->getStart() - 1;
-	//    }
-	//
-	//    vector<boost::filesystem::path>::iterator endOpt;
-	//
-	//    if(options->getEnd() > 0 && options->getEnd() >= options->getStart() && options->getEnd() <= v.size())
-	//    {
-	//        cout << "Ending with scan number " << options->getEnd() << endl;
-	//        endOpt = v.begin() + options->getEnd();
-	//    }
-	//    else
-	//    {
-	//        endOpt = v.end();
-	//    }
-	//
-	//	for(vector<boost::filesystem::path>::iterator it = v.begin() + c; it != endOpt; it++)
-	//	{}
-	//
-	//	if(merge_points.size() > 0)
-	//	{
-	//		cout << timestamp << "Building merged model..." << endl;
-	//		cout << timestamp << "Merged model contains " << merge_points.size() << " points." << endl;
-	//
-	//		floatArr points (new float[merge_points.size()]);
-	//		ucharArr colors (new unsigned char[merge_colors.size()]);
-	//
-	//		for(size_t i = 0; i < merge_points.size(); i++)
-	//		{
-	//			points[i] = merge_points[i];
-	//			colors[i] = merge_colors[i];
-	//		}
-	//
-	//		PointBufferPtr pBuffer(new PointBuffer);
-	//		pBuffer->setPointArray(points, merge_points.size() / 3);
-	//		pBuffer->setPointColorArray(colors, merge_colors.size() / 3);
-	//
-	//		ModelPtr model(new Model(pBuffer));
-	//
-	//		cout << timestamp << "Writing 'merge.ply'" << endl;
-	//		ModelFactory::saveModel(model, "merge.3d");
-	//
-	//	}
-	//	cout << timestamp << "Program end." << endl;
-	//	delete options;
+
+		std::string ext =	it->path().extension().string();
+		if(ext == ".3d" || ext == ".ply" || ext == ".dat" || ext == ".txt" )
+		{
+				v.push_back(it->path());
+			}
+	}
+
+		// Sort entries
+		sort(v.begin(), v.end());
+
+		vector<float>	 		merge_points;
+		vector<unsigned char>	merge_colors;
+
+
+
+	    int c = 0;
+
+	    /* This only works properly if we start with scan001 */
+	    if(options->getStart() <= v.size() && options->getStart() > 0)
+	    {
+	        cout << "Starting with scan number " << options->getStart() << endl;
+	        c = options->getStart() - 1;
+	    }
+
+	    vector<boost::filesystem::path>::iterator endOpt;
+
+	    if(options->getEnd() > 0 && options->getEnd() >= options->getStart() && options->getEnd() <= v.size())
+	    {
+	        cout << "Ending with scan number " << options->getEnd() << endl;
+	        endOpt = v.begin() + options->getEnd();
+	    }
+	    else
+	    {
+	        endOpt = v.end();
+	    }
+
+		for(vector<boost::filesystem::path>::iterator it = v.begin() + c; it != endOpt; it++)
+		{
+			processSingleFile((*it));
+		}
+
+//		if(merge_points.size() > 0)
+//		{
+//			cout << timestamp << "Building merged model..." << endl;
+//			cout << timestamp << "Merged model contains " << merge_points.size() << " points." << endl;
+//
+//			floatArr points (new float[merge_points.size()]);
+//			ucharArr colors (new unsigned char[merge_colors.size()]);
+//
+//			for(size_t i = 0; i < merge_points.size(); i++)
+//			{
+//				points[i] = merge_points[i];
+//				colors[i] = merge_colors[i];
+//			}
+//
+//			PointBufferPtr pBuffer(new PointBuffer);
+//			pBuffer->setPointArray(points, merge_points.size() / 3);
+//			pBuffer->setPointColorArray(colors, merge_colors.size() / 3);
+//
+//			ModelPtr model(new Model(pBuffer));
+//
+//			cout << timestamp << "Writing 'merge.ply'" << endl;
+//			ModelFactory::saveModel(model, "merge.3d");
+//
+//		}
+		cout << timestamp << "Program end." << endl;
+		delete options;
 	return 0;
 }
 
