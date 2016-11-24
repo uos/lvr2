@@ -36,8 +36,6 @@ Options::Options(int argc, char** argv) : m_descr("Supported options")
 
 	m_descr.add_options()
 		("help", "Produce help message")
-		("slamIn", "Input directory is searched for scan files according to slam6d naming convention (scanxxx.3d, scanxxx.pose, scanxxx.frames).")
-		("slamOut", "All files in the input directory are processed and stored in the given output directory according to slam6d name convention.")
 		("inputDir", value<string>()->default_value("./"), "A directory containing several scan files for batch conversion.")
 		("inputFile", value<string>()->default_value(""), "A single file to convert.")
 		("outputFile", value<string>()->default_value("scan.txt"), "The name of a single output file if scans are merged. If the format can be deduced frim the file extension, the specification of --outputFormat is optional.")
@@ -102,16 +100,6 @@ string 	Options::getOutputFormat() const
 bool	Options::filter() const
 {
 	return m_variables["filter"].as<bool>();
-}
-
-bool	Options::slamIn() const
-{
-	return m_variables["slamIn"].as<bool>();
-}
-
-bool	Options::slamOut() const
-{
-	return m_variables["slamOut"].as<bool>();
 }
 
 int		Options::getK() const

@@ -64,9 +64,6 @@ public:
     string 	getInputFile() const;
     string 	getOutputFile() const;
 
-    bool	slamIn() const;
-    bool	slamOut() const;
-
 	bool	filter() const;
 	int		getK() const;
 	float	getSigma() const;
