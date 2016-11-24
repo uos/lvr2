@@ -91,7 +91,7 @@ size_t countPointsInFile(boost::filesystem::path& inFile)
 	return n_points;
 }
 
-size_t writeModel(ModelPtr model, boost::filesystem::path& outfile, int modulo)
+size_t writeModel( ModelPtr model,const  boost::filesystem::path& outfile, int modulo)
 {
 	size_t n_ip;
 	size_t cntr = 0;
@@ -299,10 +299,45 @@ void processSingleFile(boost::filesystem::path& inFile)
 
 	model = ModelFactory::readModel(inFile.string());
 
-	if(options->slamOut())
+
+	if(options->getOutputFile() != "")
 	{
-		if(model)
+		// Merge (only ASCII)
+		char frames[1024];
+		char pose[1024];
+		sprintf(frames, "/%s/%s.frames", inFile.parent_path().c_str(), inFile.stem().c_str());
+		sprintf(pose, "/%s/%s.pose", inFile.parent_path().c_str(), inFile.stem().c_str());
+
+		boost::filesystem::path framesPath(frames);
+		boost::filesystem::path posePath(pose);
+
+		if(boost::filesystem::exists(framesPath))
 		{
+			Eigen::Matrix4d transform = getTransformationFromFrames(framesPath);
+			transformModel(model, transform);
+		}
+		else if(boost::filesystem::exists(posePath))
+		{
+			Eigen::Matrix4d transform = getTransformationFromPose(posePath);
+			transformModel(model, transform);
+		}
+
+		std::ofstream out(options->getOutputFile().c_str(), std::ofstream::out | std::ofstream::app);
+
+		static size_t points_written = 0;
+		points_written += writeAscii(model, out, asciiReductionFactor(inFile));
+
+		out.close();
+	}
+	else
+	{
+		if(options->getOutputFormat() == "")
+		{
+			// Infer format from file extension, convert and write out
+		}
+		else if(options->getOutputFormat() == "SLAM")
+		{
+			// Transform and write in slam format
 			static int n = 0;
 
 			char name[1024];
@@ -318,20 +353,20 @@ void processSingleFile(boost::filesystem::path& inFile)
 			poseOut.close();
 
 			ofstream out(name);
-
 			size_t points_written = writeAscii(model, out, asciiReductionFactor(inFile));
 
 			out.close();
 			cout << "Wrote " << points_written << " points to file " << name << endl;
 			n++;
 		}
-	}
-	else
-	{
-		if(options->getOutputFile() != "")
+		else
 		{
+			// Transform and write to target format.
 			char frames[1024];
 			char pose[1024];
+			char outFile[1024];
+
+			sprintf(outFile, "/%s/%s", options->getOutputDir().c_str(), inFile.filename().c_str());
 			sprintf(frames, "/%s/%s.frames", inFile.parent_path().c_str(), inFile.stem().c_str());
 			sprintf(pose, "/%s/%s.pose", inFile.parent_path().c_str(), inFile.stem().c_str());
 
@@ -349,82 +384,68 @@ void processSingleFile(boost::filesystem::path& inFile)
 				transformModel(model, transform);
 			}
 
-			std::ofstream out(options->getOutputFile().c_str(), std::ofstream::out | std::ofstream::app);
 
-			static size_t points_written = 0;
-			points_written += writeModel(model, out, asciiReductionFactor(inFile));
+			static size_t points_written = writeModel(model, boost::filesystem::path(outFile), asciiReductionFactor(inFile));
 
-			out.close();
-
-		}
-		else
-		{
-			if(options->getOutputFormat() == "")
-			{
-
-				// TO-DO Test if outputdir is inputdir
-				char frames[1024];
-				char pose[1024];
-				char outFile[1024];
-
-				sprintf(outFile, "/%s/%s", options->getOutputDir().c_str(), inFile.filename().c_str());
-				sprintf(frames, "/%s/%s.frames", inFile.parent_path().c_str(), inFile.stem().c_str());
-				sprintf(pose, "/%s/%s.pose", inFile.parent_path().c_str(), inFile.stem().c_str());
-
-				boost::filesystem::path framesPath(frames);
-				boost::filesystem::path posePath(pose);
-
-				if(boost::filesystem::exists(framesPath))
-				{
-					Eigen::Matrix4d transform = getTransformationFromFrames(framesPath);
-					transformModel(model, transform);
-				}
-				else if(boost::filesystem::exists(posePath))
-				{
-					Eigen::Matrix4d transform = getTransformationFromPose(posePath);
-					transformModel(model, transform);
-				}
-
-				std::ofstream out(outFile);
-
-				static size_t points_written = writeModel(model, out, asciiReductionFactor(inFile));
-
-				out.close();
-
-
-			}
-			else if(options->getOutputFormat() == "ASCII")
-			{
-				// Write all data into points.txt
-				char frames[1024];
-				char pose[1024];
-				sprintf(frames, "/%s/%s.frames", inFile.parent_path().c_str(), inFile.stem().c_str());
-				sprintf(pose, "/%s/%s.pose", inFile.parent_path().c_str(), inFile.stem().c_str());
-
-				boost::filesystem::path framesPath(frames);
-				boost::filesystem::path posePath(pose);
-
-				if(boost::filesystem::exists(framesPath))
-				{
-					Eigen::Matrix4d transform = getTransformationFromFrames(framesPath);
-					transformModel(model, transform);
-				}
-				else if(boost::filesystem::exists(posePath))
-				{
-					Eigen::Matrix4d transform = getTransformationFromPose(posePath);
-					transformModel(model, transform);
-				}
-
-				std::ofstream out("points.txt", std::ofstream::out | std::ofstream::app);
-
-				static size_t points_written = 0;
-				points_written += writeModel(model, out, asciiReductionFactor(inFile));
-
-				out.close();
-
-			}
 		}
 	}
+
+
+
+//	if(options->slamOut())
+//	{
+//		if(model)
+//		{
+//
+//		}
+//	}
+//	else
+//	{
+//		if(options->getOutputFile() != "")
+//		{
+//
+//		}
+//		else
+//		{
+//			if(options->getOutputFormat() == "")
+//			{
+//
+//				// TO-DO Test if outputdir is inputdir
+//
+//
+//			}
+//			else if(options->getOutputFormat() == "ASCII")
+//			{
+//				// Write all data into points.txt
+//				char frames[1024];
+//				char pose[1024];
+//				sprintf(frames, "/%s/%s.frames", inFile.parent_path().c_str(), inFile.stem().c_str());
+//				sprintf(pose, "/%s/%s.pose", inFile.parent_path().c_str(), inFile.stem().c_str());
+//
+//				boost::filesystem::path framesPath(frames);
+//				boost::filesystem::path posePath(pose);
+//
+//				if(boost::filesystem::exists(framesPath))
+//				{
+//					Eigen::Matrix4d transform = getTransformationFromFrames(framesPath);
+//					transformModel(model, transform);
+//				}
+//				else if(boost::filesystem::exists(posePath))
+//				{
+//					Eigen::Matrix4d transform = getTransformationFromPose(posePath);
+//					transformModel(model, transform);
+//				}
+//
+//				std::ofstream out("points.txt", std::ofstream::out | std::ofstream::app);
+//
+//				static size_t points_written = 0;
+//				points_written += writeModel(model, out, asciiReductionFactor(inFile));
+//
+//				out.close();
+//
+//			}
+//		}
+//	}
 
 
 	//		if(options->getInputFormat() == "DAT")
