@@ -33,9 +33,9 @@ void FurnitureFeatureClassifier<VertexT, NormalT>::classifyRegion(int r)
 {
 	PlanarClusterFeature pf;
 
-	if(r < m_regions.size())
+	if(r < this->m_regions->size())
 	{
-		Region* region = m_regions[r];
+		Region<VertexT, NormalT>* region = this->m_regions->at(r);
 		if(region)
 		{
 			region->calcArea();
@@ -45,10 +45,11 @@ void FurnitureFeatureClassifier<VertexT, NormalT>::classifyRegion(int r)
 			pf.ny = region->m_normal.y;
 			pf.nz = region->m_normal.z;
 
-			BoundingBox bb = region->getBoundingBox();
-			pf.bbx = bb.getCentroid().x;
-			pf.bby = bb.getCentroid().y;
-			pf.bbz = bb.getCentroid().z;
+			BoundingBox<VertexT> bb = region->getBoundingBox();
+			VertexT centroid = bb.getCentroid();
+			pf.bbx = centroid.x;
+			pf.bby = centroid.y;
+			pf.bbz = centroid.z;
 			pf.bbw = bb.getXSize();
 			pf.bbh = bb.getYSize();
 			pf.bbd = bb.getZSize();
@@ -58,7 +59,7 @@ void FurnitureFeatureClassifier<VertexT, NormalT>::classifyRegion(int r)
 			float radius = sqrt(pf.nx * pf.nx + pf.nz * pf.nz);
 
 			pf.orientation = 0;
-		    if(n_ceil * normal > 0.98 || n_floor * normal > 0.98)
+		    if(n_ceil * region->m_normal > 0.98 || n_floor * region->m_normal > 0.98)
 		    {
 		    	pf.orientation = 1;
 		    }
@@ -67,7 +68,16 @@ void FurnitureFeatureClassifier<VertexT, NormalT>::classifyRegion(int r)
 		    	pf.orientation = 2;
 		    }
 
-		    m_features.push_back(pf);
+		    this->m_features.push_back(pf);
+
+
+		    std::cout << "Index: " << pf.index << std::endl;
+		    std::cout << "Centroid: " << pf.cx << " " << pf.cy << " " << pf.cz << std::endl;
+		    std::cout << "BBOX: " << pf.bbx << " " << pf.bby << " " << pf.bbz << std::endl;
+		    std::cout << "Normal: " << pf.nx << " " << pf.ny << " " << pf.nz << std::endl;
+		    std::cout << "Area: " << pf.area << std::endl;
+		    std::cout << "Orientation: " << pf.orientation << std::endl;
+
 		}
 	}
 	else

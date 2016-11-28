@@ -34,14 +34,7 @@ struct PlanarClusterFeature
     int orientation;
 };
 
-std::ofstream operator<<(const PlanarClusterFeature f, std::ofstream& os)
-{
-	os << "Index: " << f.index << std::endl;
-	os << "Centroid: " << f.cx << " " << f.cy << " " << f.cz << std::endl;
-	os << "Normal: " << f.nx << " " << f.ny << " " << f.nz << std::endl;
-	os << "Area: " << f.area << std::endl;
-	os << "Orientation: " << f.orientation << std::endl;
-}
+
 
 template<typename VertexT, typename NormalT>
 class FurnitureFeatureClassifier : public RegionClassifier<VertexT, NormalT>{
