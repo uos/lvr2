@@ -27,6 +27,9 @@ struct PlanarClusterFeature
 	float bbx;
 	float bby;
 	float bbz;
+	float bbw;
+	float bbh;
+	float bbd;
     int orientation;
 };
 
@@ -56,7 +59,8 @@ public:
 
 private:
 
-	/// A vector containing
+	/// A vector containing the planar feature vectors for all
+	/// classified regions
 	vector<PlanarClusterFeature> m_features;
 };
 
