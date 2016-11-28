@@ -27,7 +27,7 @@
  */
  
 #include <limits>
-
+#include <vector>
 #include <psimpl.h>
 
 namespace lvr
@@ -64,6 +64,23 @@ void Region<VertexT, NormalT>::calcArea()
     {
         m_area += m_faces[i]->getArea();
     }
+}
+
+template<typename VertexT, typename NormalT>
+BoundingBox<VertexT> Region<VertexT, NormalT>::getBoundingBox()
+{
+	BoundingBox<VertexT> bb;
+	for(size_t i = 0; i < m_faces.size(); i++)
+	{
+		std::vector<VertexT> v;
+		m_faces[i].getVertices(v);
+
+		for(typename std::vector<VertexT>::iterator it = v.begin(); it != v.end(); it++)
+		{
+			bb.expand(*it);
+		}
+	}
+	return bb;
 }
 
 
