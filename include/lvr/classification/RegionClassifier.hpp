@@ -1,4 +1,4 @@
-	/* Copyright (C) 2011 Uni Osnabrück
+/* Copyright (C) 2011 Uni Osnabrück
  * This file is part of the LAS VEGAS Reconstruction Toolkit,
  *
  * LAS VEGAS is free software; you can redistribute it and/or modify
@@ -96,6 +96,8 @@ public:
 	 * @brief True if classifier can generate pre-labels
 	 */
 	virtual bool generatesLabel() { return false; }
+
+	virtual void classifyRegion(int region) {};
 
 	/**
 	 * @brief Returns the label for the given region

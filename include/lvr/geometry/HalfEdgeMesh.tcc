@@ -1864,6 +1864,7 @@ void HalfEdgeMesh<VertexT, NormalT>::finalizeAndRetesselate( bool genTextures, f
             g = m_regionClassifier->g(surface_class);
             b = m_regionClassifier->b(surface_class);
 
+            m_regionClassifier->classifyRegion(surface_class);
             //textureBuffer.push_back( m_regions[iRegion]->m_regionNumber );
 
             // get the contours for this region
