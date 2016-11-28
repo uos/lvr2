@@ -63,6 +63,10 @@ RegionClassifier<VertexT, NormalT>*  ClassifierFactory<VertexT, NormalT>::get(st
 	{
 		return new IndoorNormalClassifier<VertexT, NormalT>(&mesh->m_regions);
 	}
+	else if(name == "Furniture")
+	{
+		return new FurnitureFeatureClassifier<VertexT, NormalT>(&mesh->m_regions);
+	}
 
 	return 0;
 }

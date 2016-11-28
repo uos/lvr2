@@ -29,6 +29,7 @@
 #include "ColorGradientPlaneClassifier.hpp"
 #include "IndoorNormalClassifier.hpp"
 #include "NormalClassifier.hpp"
+#include "FurnitureFeatureClassifier.hpp"
 
 namespace lvr
 {

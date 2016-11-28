@@ -73,7 +73,7 @@ BoundingBox<VertexT> Region<VertexT, NormalT>::getBoundingBox()
 	for(size_t i = 0; i < m_faces.size(); i++)
 	{
 		std::vector<VertexT> v;
-		m_faces[i].getVertices(v);
+		m_faces[i]->getVertices(v);
 
 		for(typename std::vector<VertexT>::iterator it = v.begin(); it != v.end(); it++)
 		{
