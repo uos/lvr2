@@ -96,7 +96,7 @@ HalfEdgeMesh<VertexT, NormalT>::~HalfEdgeMesh()
     m_garbageEdges.clear();
 
 
-    if(this->m_regionClassifier != 0)
+    if(this->m_regionClassifier != 0 && this->m_classifierType != "USER_DEFINED")
     {
         delete this->m_regionClassifier;
         this->m_regionClassifier = 0;
@@ -161,8 +161,10 @@ void HalfEdgeMesh<VertexT, NormalT>::setClassifier(RegionClassifier<VertexT, Nor
 	}
 
 	// Usually the classifier would be defined be it's name that was used
-	// in ClassifierFactory. Here we have a user defined type and use that
-	m_classifierType = "User Defined Classifier";
+	// in ClassifierFactory. Here we have a user defined type and use that one.
+	// The name is actually used as a flag to prevent that an externally set
+	// classifier is freed.
+	m_classifierType = "USER_DEFINED";
 
 	m_regionClassifier = c;
 	}

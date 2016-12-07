@@ -252,7 +252,8 @@ public:
 	void setClassifier(string name);
 
 	/**
-	 * @brief 	Sets a classifier for this mesh.
+	 * @brief 	Sets a classifier for this mesh. The Pointer to the classifier is not freed
+	 * 			by the HalfEdgeMesh instance and has to be destroyed manually.
 	 */
 	void setClassifier(RegionClassifier<VertexT, NormalT >* classifier);
 
