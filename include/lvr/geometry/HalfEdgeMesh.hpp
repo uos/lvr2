@@ -301,6 +301,8 @@ public:
 	 */
 	RegionVector getRegions() { return m_regions; }
 
+	RegionVector* getRegionsPtr() {return &m_regions;}
+
 	/**
 	 * @brief returns a reference to the VertexVector
 	 */
