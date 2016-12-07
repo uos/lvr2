@@ -30,6 +30,19 @@ FurnitureFeatureClassifier<VertexT, NormalT>::~FurnitureFeatureClassifier()
 }
 
 template<typename VertexT, typename NormalT>
+PlanarClusterFeature& FurnitureFeatureClassifier<VertexT, NormalT>::getFeature(size_t n)
+{
+	if(n < m_features.size())
+	{
+		return m_features[n];
+	}
+	else
+	{
+		cout << timestamp << "FurnitureFeatureClassifier::getFeature(): Index out of range." << endl;
+	}
+}
+
+template<typename VertexT, typename NormalT>
 void FurnitureFeatureClassifier<VertexT, NormalT>::classifyRegion(int r)
 {
 	PlanarClusterFeature pf;
