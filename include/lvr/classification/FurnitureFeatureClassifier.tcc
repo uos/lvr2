@@ -47,36 +47,35 @@ void FurnitureFeatureClassifier<VertexT, NormalT>::classifyRegion(int r)
 
 			BoundingBox<VertexT> bb = region->getBoundingBox();
 			VertexT centroid = bb.getCentroid();
-			pf.bbx = centroid.x;
-			pf.bby = centroid.y;
-			pf.bbz = centroid.z;
-			pf.bbw = bb.getXSize();
-			pf.bbh = bb.getYSize();
-			pf.bbd = bb.getZSize();
+			pf.cx = centroid.x;
+			pf.cy = centroid.y;
+			pf.cz = centroid.z;
+			pf.w = bb.getXSize();
+			pf.h = bb.getYSize();
+			pf.d = bb.getZSize();
 
 			NormalT n_ceil(0.0, 1.0, 0.0);
 			NormalT n_floor(0.0, -1.0, 0.0);
 			float radius = sqrt(pf.nx * pf.nx + pf.nz * pf.nz);
 
-			pf.orientation = 0;
+			pf.orientation = UNKNOWN;
 		    if(n_ceil * region->m_normal > 0.98 || n_floor * region->m_normal > 0.98)
 		    {
-		    	pf.orientation = 1;
+		    	pf.orientation = HORIZONTAL;
 		    }
 		    else if(radius > 0.95)
 		    {
-		    	pf.orientation = 2;
+		    	pf.orientation = VERTICAL;
 		    }
 
 		    this->m_features.push_back(pf);
 
-
-		    std::cout << "Index: " << pf.index << std::endl;
-		    std::cout << "Centroid: " << pf.cx << " " << pf.cy << " " << pf.cz << std::endl;
-		    std::cout << "BBOX: " << pf.bbx << " " << pf.bby << " " << pf.bbz << std::endl;
-		    std::cout << "Normal: " << pf.nx << " " << pf.ny << " " << pf.nz << std::endl;
-		    std::cout << "Area: " << pf.area << std::endl;
-		    std::cout << "Orientation: " << pf.orientation << std::endl;
+//		    std::cout << "Index: " << pf.index << std::endl;
+//		    std::cout << "Centroid: " << pf.cx << " " << pf.cy << " " << pf.cz << std::endl;
+//		    std::cout << "BBOX: " << pf.w << " " << pf.h << " " << pf.d << std::endl;
+//		    std::cout << "Normal: " << pf.nx << " " << pf.ny << " " << pf.nz << std::endl;
+//		    std::cout << "Area: " << pf.area << std::endl;
+//		    std::cout << "Orientation: " << pf.orientation << std::endl;
 
 		}
 	}

@@ -15,23 +15,22 @@
 
 namespace lvr {
 
+enum PlanarClusterOrientation{ HORIZONTAL, VERTICAL, UNKNOWN};
+
 struct PlanarClusterFeature
 {
-	int index;
-	float cx;
-	float cy;
-	float cz;
-	float nx;
-	float ny;
-	float nz;
-	float area;
-	float bbx;
-	float bby;
-	float bbz;
-	float bbw;
-	float bbh;
-	float bbd;
-    int orientation;
+	int index;			// Index of the plane (all planes are numbered in the clustering state
+	float cx;			// x-coordinate of the center of the bounding box
+	float cy;			// y-coordinate of the center of the bounding box
+	float cz;			// z-coordinate of the center of the bounding box
+	float nx;			// Normal x
+	float ny;			// Normal y
+	float nz;			// Normal z
+	float area;			// Area of the planer region
+	float w;			// Bounding box width (parallel to x axis)
+	float h;			// Bounding box height (parallel to y axis)
+	float d;			// Bounding box depth (parallel to z axis)
+    PlanarClusterOrientation orientation;		// Orientation flag
 };
 
 
@@ -58,7 +57,22 @@ public:
 	 */
 	virtual uchar b(int region) {  return 0; }
 
+	/***
+	 * @brief 	Try generate a classification label for region \ref region
+	 * 			and store it in the feature vector \ref m_features if classification
+	 * 			was successful.
+	 */
 	void classifyRegion(int region);
+
+	/***
+	 * @brief 	Returns the number of generated features in the classification stage
+	 */
+	size_t numFeatures() { return m_features.size();}
+
+	/***
+	 * @brief 	Return the n-th features from the feature vector
+	 */
+	PlanarClusterFeature& getFeature(size_t n);
 
 private:
 
