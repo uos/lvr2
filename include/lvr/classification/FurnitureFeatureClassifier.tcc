@@ -13,6 +13,7 @@
 using std::cout;
 using std::endl;
 
+
 namespace lvr {
 
 template<typename VertexT, typename NormalT>

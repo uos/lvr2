@@ -149,6 +149,29 @@ void HalfEdgeMesh<VertexT, NormalT>::setClassifier(string name)
 	}
 }
 
+template<typename VertexT, typename NormalT>
+void HalfEdgeMesh<VertexT, NormalT>::setClassifier(RegionClassifier<VertexT, NormalT>* c)
+{
+	if(c)
+	{
+	// Delete old classifier
+	if(m_regionClassifier)
+	{
+		delete m_regionClassifier;
+	}
+
+	// Usually the classifier would be defined be it's name that was used
+	// in ClassifierFactory. Here we have a user defined type and use that
+	m_classifierType = "User Defined Classifier";
+
+	m_regionClassifier = c;
+	}
+	else
+	{
+		cout << timestamp << "User defined classifier is 0" << endl;
+	}
+}
+
 
 template<typename VertexT, typename NormalT>
 void HalfEdgeMesh<VertexT, NormalT>::addVertex(VertexT v)

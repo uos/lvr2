@@ -252,6 +252,11 @@ public:
 	void setClassifier(string name);
 
 	/**
+	 * @brief 	Sets a classifier for this mesh.
+	 */
+	void setClassifier(RegionClassifier<VertexT, NormalT >* classifier);
+
+	/**
 	 * TODO write comments
 	 */
 	RegionClassifier<VertexT, NormalT> getClassifier() { return *m_regionClassifier; };
