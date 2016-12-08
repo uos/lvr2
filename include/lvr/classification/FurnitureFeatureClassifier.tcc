@@ -45,7 +45,7 @@ PlanarClusterFeature& FurnitureFeatureClassifier<VertexT, NormalT>::getFeature(s
 template<typename VertexT, typename NormalT>
 Region<VertexT, NormalT>* FurnitureFeatureClassifier<VertexT, NormalT>::getRegion(size_t n)
 {
-	if(n < this->m_regions.size())
+	if(n < this->m_regions->size())
 	{
 		return this->m_regions->at(n);
 	}
