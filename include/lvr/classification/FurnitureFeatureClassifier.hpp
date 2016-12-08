@@ -74,6 +74,13 @@ public:
 	 */
 	PlanarClusterFeature& getFeature(size_t n);
 
+	/**
+	 * @brief 	Returns a pointer to the n-th Region from the internal
+	 * 			region vector. You can get the number of a region from a
+	 * 			\ref PlanarClusterFeature's id field.
+	 */
+	Region<VertexT, NormalT>* getRegion(size_t n);
+
 private:
 
 	/// A vector containing the planar feature vectors for all
