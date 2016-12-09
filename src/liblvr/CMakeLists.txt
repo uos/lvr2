@@ -15,6 +15,7 @@ set(LVR_SOURCES
     io/GridIO.cpp
     io/CoordinateTransform.cpp
     io/BoctreeIO.cpp
+    io/STLIO.cpp
     io/TextureIO.cpp
     io/DatIO.cpp
     config/BaseOption.cpp
