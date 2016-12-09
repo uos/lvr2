@@ -32,6 +32,7 @@
 #include <lvr/io/BoctreeIO.hpp>
 #include <lvr/io/ModelFactory.hpp>
 #include <lvr/io/DatIO.hpp>
+#include <lvr/io/STLIO.hpp>
 
 #include <lvr/io/Timestamp.hpp>
 #include <lvr/io/Progress.hpp>
@@ -216,6 +217,10 @@ void ModelFactory::saveModel( ModelPtr m, std::string filename)
     else if ( extension == ".obj" )
     {
         io = new ObjIO;
+    }
+    else if (extension == ".stl")
+    {
+    	io = new STLIO;
     }
 #ifdef LVR_USE_PCL
     else if (extension == ".pcd")
