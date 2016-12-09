@@ -208,7 +208,6 @@ vector<vector<VertexT> > Region<VertexT, NormalT>::getContours(float epsilon)
         }
     }
 
-
     //  //don't try to find contours of a region which wasn't dragged into a plane
     //  if (!this->m_inPlane)
     //    {
