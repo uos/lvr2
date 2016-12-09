@@ -81,16 +81,16 @@ void FurnitureFeatureClassifier<VertexT, NormalT>::classifyRegion(int r)
 			pf.h = bb.getYSize();
 			pf.d = bb.getZSize();
 
-			NormalT n_ceil(0.0, 1.0, 0.0);
-			NormalT n_floor(0.0, -1.0, 0.0);
-			float radius = sqrt(pf.nx * pf.nx + pf.nz * pf.nz);
+			NormalT n_ceil(0.0, 0.0, 1.0);
+			NormalT n_floor(0.0, 0.0, -1.0);
+			float radius = sqrt(pf.nx * pf.nx + pf.ny * pf.ny);
 
 			pf.orientation = UNKNOWN;
 		    if(n_ceil * region->m_normal > 0.98 || n_floor * region->m_normal > 0.98)
 		    {
 		    	pf.orientation = HORIZONTAL;
 		    }
-		    else if(radius > 0.95)
+		    else if(radius > 0.90)
 		    {
 		    	pf.orientation = VERTICAL;
 		    }
