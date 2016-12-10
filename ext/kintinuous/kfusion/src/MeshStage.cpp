@@ -90,15 +90,18 @@ void MeshStage::step()
 						if(vert_it == verts_map.end() && in2 != cFastBox::INVALID_INDEX && in2 != 0 && in2 != inter && current_neighbor->m_fusionNeighborBox)
 						{
 							inter2 = in2;
-							HMesh::VertexPtr act_vert = meshPtr->getVertices()[inter2];
-							verts_map.insert(pair<HMesh::VertexPtr, HMesh::VertexPtr>(old_vert, act_vert));
-							meshPtr->setOldFusionVertex(inter2);
-							if(act_vert->m_position[0] != old_vert->m_position[0] ||  act_vert->m_position[1] != old_vert->m_position[1]
-								 || act_vert->m_position[2] != old_vert->m_position[2])
+							if(inter2 < meshPtr->getVertices().size()) // Quick fix for segfault. I don't know if it makes sense to just skip these cases
 							{
-								misscount++;
+								HMesh::VertexPtr act_vert = meshPtr->getVertices()[inter2];
+								verts_map.insert(pair<HMesh::VertexPtr, HMesh::VertexPtr>(old_vert, act_vert));
+								meshPtr->setOldFusionVertex(inter2);
+								if(act_vert->m_position[0] != old_vert->m_position[0] ||  act_vert->m_position[1] != old_vert->m_position[1]
+																																		  || act_vert->m_position[2] != old_vert->m_position[2])
+								{
+									misscount++;
+								}
+								current_neighbor->m_fusionNeighborBox = false;
 							}
-							current_neighbor->m_fusionNeighborBox = false;
 						}
 					}
 				}

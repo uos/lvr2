@@ -61,7 +61,7 @@ void HalfEdgeKinFuMesh<VertexT, NormalT>::addMesh(HalfEdgeKinFuMesh<VertexT, Nor
     for(int i = 0; i < slice->m_vertices.size();i++)
     {
 		size_t index = old_vert_size + i - count;
-		if(!slice->m_vertices[i]->m_oldFused)
+		if(!slice->m_vertices[i]->m_oldFused && index < this->m_vertices.size())
 		{
 			this->m_vertices[index] = slice->m_vertices[i];
 			//fused_verts[i] = index;
@@ -184,7 +184,7 @@ void HalfEdgeKinFuMesh<VertexT, NormalT>::mergeVertex(VertexPtr merge_vert, Vert
 		{
 			cout << "Big Vertex missalignment!!!!! " << endl;
 			cout << "distance " << dist << endl;
-            this->m_vertices.push_back(erase_vert);
+           // this->m_vertices.push_back(erase_vert);
             return;
 		}
 	}
@@ -216,7 +216,7 @@ void HalfEdgeKinFuMesh<VertexT, NormalT>::mergeVertex(VertexPtr merge_vert, Vert
 		erase_vert->out[i]->setStart(merge_vert);
 	}
 	merge_vert->m_fused = false;
-	delete erase_vert;
+	//delete erase_vert; <- Quick fix double free ??? /// TODO Fix double free
     erase_vert = NULL;
 }
 
