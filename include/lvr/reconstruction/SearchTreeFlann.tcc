@@ -26,6 +26,7 @@ SearchTreeFlann< VertexT >::SearchTreeFlann( PointBufferPtr buffer, size_t &n_po
 	m_tree = boost::shared_ptr<flann::Index<flann::L2_Simple<float> > >(new flann::Index<flann::L2_Simple<float> >(m_flannPoints, ::flann::KDTreeSingleIndexParams (10, false)));
 	m_tree->buildIndex();
 
+	m_colors = buffer->getPointColorArray(m_numColors);
 }
 
 
@@ -73,6 +74,13 @@ void SearchTreeFlann< VertexT >::kSearch(VertexT qp, int k, vector< VertexT > &n
 		if(index < m_numPoints)
 		{
 			VertexT v(m_points[3 * index], m_points[3 * index + 1], m_points[3 * index + 2]);
+
+			if(m_numColors > 0)
+			{
+				v[3] = m_colors[3 * index];
+				v[4] = m_colors[3 * index + 1];
+				v[5] = m_colors[3 * index + 2];
+			}
 			nb.push_back(v);
 		}
 	}

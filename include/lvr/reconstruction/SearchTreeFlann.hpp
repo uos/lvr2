@@ -86,6 +86,9 @@ protected:
     vector<int>														m_ind;
     vector<float>													m_dst;
 
+    ucharArr														m_colors;
+    size_t															m_numColors;
+
 }; // SearchTreeFlann
 
 }
