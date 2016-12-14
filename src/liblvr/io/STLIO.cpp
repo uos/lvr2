@@ -38,7 +38,7 @@ ModelPtr STLIO::read(string filename)
 
 void STLIO::save( string filename )
 {
-	cout << timestamp << "STLIO: save(string) not yet implemented." << endl;
+	save(this->m_model, filename);
 }
 
 void STLIO::save( ModelPtr model, string filename )
