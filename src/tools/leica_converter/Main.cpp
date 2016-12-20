@@ -73,7 +73,7 @@ ModelPtr filterModel(ModelPtr p, int k, float sigma)
 
 size_t countPointsInFile(boost::filesystem::path& inFile)
 {
-	ifstream in(inFile.filename().c_str());
+	ifstream in(inFile.c_str());
 	cout << timestamp << "Counting points in " << inFile.filename().string() << "..." << endl;
 
 	// Count lines in file
@@ -271,6 +271,7 @@ Eigen::Matrix4d getTransformationFromFrames(boost::filesystem::path& frames)
 
 void transformModel(ModelPtr model, Eigen::Matrix4d transformation)
 {
+	cout << timestamp << "Transforming model." << endl;
 	size_t numPoints;
 	floatArr arr = model->m_pointCloud->getPointArray(numPoints);
 
@@ -310,6 +311,9 @@ void processSingleFile(boost::filesystem::path& inFile)
 
 		boost::filesystem::path framesPath(frames);
 		boost::filesystem::path posePath(pose);
+
+		cout << "Frames " << framesPath << endl;
+		cout << "POSE: " << posePath << endl;
 
 		if(boost::filesystem::exists(framesPath))
 		{
