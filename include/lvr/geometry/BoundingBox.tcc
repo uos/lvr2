@@ -93,10 +93,9 @@ inline void BoundingBox<VertexT>::expand(VertexT v)
     m_ySize = fabs(m_max[1] - m_min[1]);
     m_zSize = fabs(m_max[2] - m_min[2]);
 
-    m_centroid = VertexT(m_max[0] - m_min[0],
-                           m_max[1] - m_min[1],
-                           m_max[2] - m_min[2]);
-
+    m_centroid = VertexT(m_min[0] + 0.5f * m_xSize,
+                         m_min[1] + 0.5f * m_ySize,
+                         m_min[2] + 0.5f * m_zSize);
 }
 
 template<typename VertexT>

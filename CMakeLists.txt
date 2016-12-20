@@ -94,16 +94,16 @@ endif(NABO_FOUND)
 ## Searching for PCL
 ##############################
 
-find_package(PCL 1.7)
-if(PCL_FOUND)
-  include_directories(${PCL_INCLUDE_DIRS})
-  link_directories(${PCL_LIBRARY_DIRS})
-  add_definitions(${PCL_DEFINITIONS})
-  list(APPEND LVR_DEFINITIONS -DLVR_USE_PCL)
-else(PCL_FOUND)
-  message( "-- No PCL found." )
-  message( "-- PCL related stuff will be disabled." )
-endif(PCL_FOUND)
+#find_package(PCL 1.7)
+#if(PCL_FOUND)
+#  include_directories(${PCL_INCLUDE_DIRS})
+#  link_directories(${PCL_LIBRARY_DIRS})
+#  add_definitions(${PCL_DEFINITIONS})
+#  list(APPEND LVR_DEFINITIONS -DLVR_USE_PCL)
+#else(PCL_FOUND)
+#  message( "-- No PCL found." )
+#  message( "-- PCL related stuff will be disabled." )
+#endif(PCL_FOUND)
 
 ####
 ## Searching CGAL
@@ -127,6 +127,7 @@ endif(CGAL_FOUND)
 #set(Boost_USE_STATIC_LIBS       ON)
 set(Boost_USE_MULTITHREADED     ON)
 
+if(MPI_FOUND)
 find_package( Boost 1.54
     COMPONENTS
     program_options
@@ -136,6 +137,17 @@ find_package( Boost 1.54
     serialization
     mpi
     REQUIRED )
+else()
+
+find_package( Boost 1.54
+    COMPONENTS
+    program_options
+    filesystem
+    system
+    thread
+    serialization
+    REQUIRED )
+endif()
 
 link_directories(${Boost_LIBRARY_DIR})
 include_directories(${Boost_INCLUDE_DIRS})
@@ -177,12 +189,13 @@ include_directories(${GLUT_INCLUDE_DIR})
 ####
 ## Searching for libfreenect
 ##############################
+option(WITH_FREENECT "Compile with libfreenect grabber" OFF)
 
 find_package(PkgConfig REQUIRED)
 pkg_check_modules(LIBFREENECT libfreenect)
-if(LIBFREENECT_FOUND)
+if(WITH_FREENECT AND LIBFREENECT_FOUND)
   include_directories(${LIBFREENECT_INCLUDE_DIRS})
-endif(LIBFREENECT_FOUND)
+endif()
 
 ####
 ## Searching for STANN
@@ -314,7 +327,7 @@ if(QT4_FOUND)
 
   # Try to find libQGLViewer
   find_library(QGLVIEWER_LIBRARY_RELEASE
-      NAMES qglviewer-qt4 qglviewer QGLViewer QGLViewer2
+      NAMES qglviewer-qt4 qglviewer QGLViewer QGLViewer2 libQGLViewer-qt4
       PATHS /usr/lib /usr/local/lib ENV QGLVIEWERROOT ENV LD_LIBRARY_PATH ENV LIBRARY_PATH
       PATH_SUFFIXES QGLViewer QGLViewer/release)
   if(QGLVIEWER_LIBRARY_RELEASE)
@@ -384,8 +397,8 @@ install(EXPORT lvrTargets
     NAMESPACE lvr::
     DESTINATION ${CMAKE_INSTALL_LIBDIR}/cmake/lvr)
 
-configure_file(lvrConfig.cmake.in ${CMAKE_BINARY_DIR}/lvrConfig.cmake @ONLY)
-install(FILES ${CMAKE_BINARY_DIR}/lvrConfig.cmake
+configure_file(LVRConfig.cmake.in ${CMAKE_BINARY_DIR}/LVRConfig.cmake @ONLY)
+install(FILES ${CMAKE_BINARY_DIR}/LVRConfig.cmake
     DESTINATION ${CMAKE_INSTALL_LIBDIR}/cmake/lvr)
 
 install(FILES

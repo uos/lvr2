@@ -89,6 +89,7 @@ void FastKinFuBox<VertexT, NormalT>::getSurface(BaseMesh<VertexT, NormalT> &mesh
 				int neighbour_count = 0;
 				for(int i = 0; i < 3; i++)
 				{
+					if(!this->m_neighbors) cout << "BANG!!!" << endl;
 					FastKinFuBox<VertexT, NormalT>* current_neighbor = dynamic_cast< FastKinFuBox<VertexT, NormalT>* >(this->m_neighbors[neighbor_table[edge_index][i]]);
 					if(current_neighbor != 0)
 					{
