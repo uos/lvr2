@@ -7,12 +7,16 @@
 
 #include "SearchTreeFlann.hpp"
 
+#include <lvr/geometry/VertexTraits.hpp>
+#include <lvr/io/Timestamp.hpp>
+
 namespace lvr
 {
 
 template<typename VertexT>
 SearchTreeFlann< VertexT >::SearchTreeFlann( PointBufferPtr buffer, size_t &n_points, const int &kn, const int &ki, const int &kd )
 {
+	m_haveColors = false;
 	m_flannPoints = flann::Matrix<float> (new float[3 * n_points], n_points, 3);
 	m_points = buffer->getPointArray(m_numPoints);
 	for(size_t i = 0; i < n_points; i++)
@@ -22,6 +26,20 @@ SearchTreeFlann< VertexT >::SearchTreeFlann( PointBufferPtr buffer, size_t &n_po
 		m_flannPoints[i][2] = m_points[3 * i + 2];
 	}
 
+	// Check if the template parameter type supports colors
+	if(VertexTraits<VertexT>::HasColor)
+	{
+		// Try to access point color array
+		size_t n_colors;
+		m_colors = buffer->getPointColorArray(n_colors);
+
+		// Check buffer size
+		if(n_colors == m_numPoints)
+		{
+			m_haveColors = true;
+			cout << timestamp << "Building FLANN tree with colors." << endl;
+		}
+	}
 
 	m_tree = boost::shared_ptr<flann::Index<flann::L2_Simple<float> > >(new flann::Index<flann::L2_Simple<float> >(m_flannPoints, ::flann::KDTreeSingleIndexParams (10, false)));
 	m_tree->buildIndex();
@@ -73,6 +91,12 @@ void SearchTreeFlann< VertexT >::kSearch(VertexT qp, int k, vector< VertexT > &n
 		if(index < m_numPoints)
 		{
 			VertexT v(m_points[3 * index], m_points[3 * index + 1], m_points[3 * index + 2]);
+
+			if(m_haveColors)
+			{
+				VertexTraits<VertexT>::setColor(v, m_colors[3 * index], m_colors[3 * index + 1], m_colors[3 * index + 2]);
+			}
+
 			nb.push_back(v);
 		}
 	}
