@@ -32,6 +32,7 @@
 #include "Normal.hpp"
 #include "HalfEdgeVertex.hpp"
 #include "HalfEdgeFace.hpp"
+#include "BoundingBox.hpp"
 #include <vector>
 #include <stack>
 #include <boost/shared_ptr.hpp>
@@ -160,6 +161,8 @@ public:
 	bool m_toDelete;
 
 	void calcArea();
+
+	BoundingBox<VertexT> getBoundingBox();
 private:
 
     /**

@@ -29,7 +29,19 @@ set(KF_LVR_LIB_SRC
     src/Options.cpp
     src/PointSave.cpp
     )
-    
+
+get_directory_property(dir_defs DIRECTORY ${CMAKE_SOURCE_DIR} COMPILE_DEFINITIONS)
+set(vtk_flags)
+foreach(it ${dir_defs})
+    if(it MATCHES "vtk*")
+    list(APPEND vtk_flags ${it})
+    endif()
+endforeach()
+
+foreach(d ${vtk_flags})
+    remove_definitions(-D${d})
+endforeach()
+
 cuda_add_library(kfusion ${KF_CUDA_SRC} ${KF_CORE_LIB_SRC} ${KF_LVR_LIB_SRC})
 
 target_link_libraries(kfusion 

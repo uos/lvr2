@@ -32,7 +32,7 @@ uchar* IndoorNormalClassifier<VertexT, NormalT>::getColor(int index)
 	float fc[3];
 	uchar* c = new uchar[3];
 
-	RegionLabel label = classifyRegion(index);
+	RegionLabel label = _classifyRegion(index);
 	switch(label)
 	{
 	case Ceiling:
@@ -85,7 +85,7 @@ uchar IndoorNormalClassifier<VertexT, NormalT>::b(int i)
 }
 
 template<typename VertexT, typename NormalT>
-RegionLabel IndoorNormalClassifier<VertexT, NormalT>::classifyRegion(int index)
+RegionLabel IndoorNormalClassifier<VertexT, NormalT>::_classifyRegion(int index)
 {
 
 	if((unsigned int) index < this->m_regions->size())
@@ -240,7 +240,7 @@ void IndoorNormalClassifier<VertexT, NormalT>::writeMetaInfo()
 		if(region->m_faces.size() > 20)
 		{
 
-			RegionLabel label = classifyRegion(i);
+			RegionLabel label = _classifyRegion(i);
 
 			// Buffer vectors
 			vector<int> 	indices;
