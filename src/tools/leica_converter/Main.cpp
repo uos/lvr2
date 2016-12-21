@@ -306,35 +306,8 @@ void processSingleFile(boost::filesystem::path& inFile)
 		// Merge (only ASCII)
 		char frames[1024];
 		char pose[1024];
-        if(inFile.is_absolute())
-        {
-            sprintf(frames, "/%s/%s.frames", inFile.parent_path().c_str(), inFile.stem().c_str());
-            sprintf(pose, "/%s/%s.pose", inFile.parent_path().c_str(), inFile.stem().c_str());
-        }
-        else
-        {
-
-            char tmp[1024];
-            sprintf(tmp, "%s", inFile.parent_path().c_str());
-
-            if('~' == tmp[0])
-            {
-                char* home;
-                home = getenv("HOME");
-                if(NULL == HOME)
-                {
-                    // TO-DO throw exception
-                }
-                sprintf(frames, "%s/%s/%s.frames", home, tmp + 1, dir2.stem().c_str());
-                sprintf(frames, "%s/%s/%s.pose", home, tmp + 1, dir2.stem().c_str());
-            }
-            else{
-                sprintf(frames, "%s/%s.frames", inFile.parent_path().c_str(), inFile.stem().c_str());
-                sprintf(pose, "%s/%s.pose", nFile.parent_path().c_str(), inFile.stem().c_str());
-            }
-        }
-
-        
+		sprintf(frames, "/%s/%s.frames", inFile.parent_path().c_str(), inFile.stem().c_str());
+		sprintf(pose, "/%s/%s.pose", inFile.parent_path().c_str(), inFile.stem().c_str());
 
 		boost::filesystem::path framesPath(frames);
 		boost::filesystem::path posePath(pose);
