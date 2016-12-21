@@ -190,9 +190,27 @@ int asciiReductionFactor(boost::filesystem::path& inFile)
 
 }
 
+Eigen::Matrix4d buildTransformation(double* alignxf) 
+{
+    Eigen::Matrix3d rotation;
+	Eigen::Vector4d translation;
+
+	rotation  << alignxf[0],  alignxf[4],  alignxf[8],
+			     alignxf[1],  alignxf[5],  alignxf[9],
+		     	 alignxf[2],  alignxf[6],  alignxf[10];
+
+	translation << alignxf[12], alignxf[13], alignxf[14], 1.0;
+
+	Eigen::Matrix4d transformation;
+	transformation.setIdentity();
+	transformation.block<3,3>(0,0) = rotation;
+	transformation.rightCols<1>() = translation;
+
+    return transformation;
+}
+
 Eigen::Matrix4d getTransformationFromPose(boost::filesystem::path& pose)
 {
-	cout << "Getting transformation from pose" << endl;
 	ifstream poseIn(pose.c_str());
 	if(poseIn.good())
 	{
@@ -233,13 +251,28 @@ Eigen::Matrix4d getTransformationFromPose(boost::filesystem::path& pose)
 		alignxf[14] = rPos[2];
 		alignxf[15] = 1;
 
-		Eigen::Matrix4d transformation;
-		transformation  << alignxf[0],  alignxf[1],  alignxf[2],  alignxf[3],
-				alignxf[4],  alignxf[5],  alignxf[6],  alignxf[7],
-				alignxf[8],  alignxf[9],  alignxf[10], alignxf[11],
-				alignxf[12], alignxf[13], alignxf[14], alignxf[15];
+//		Eigen::Matrix4d transformation;
+//		transformation  << alignxf[0],  alignxf[1],  alignxf[2],  alignxf[3],
+//				alignxf[4],  alignxf[5],  alignxf[6],  alignxf[7],
+//				alignxf[8],  alignxf[9],  alignxf[10], alignxf[11],
+//				alignxf[12], alignxf[13], alignxf[14], alignxf[15];
+/*
+	Eigen::Matrix3d rotation;
+	Eigen::Vector4d translation;
 
-		return transformation;
+	rotation  << alignxf[0],  alignxf[4],  alignxf[8],
+			     alignxf[1],  alignxf[5],  alignxf[9],
+		     	 alignxf[2],  alignxf[6],  alignxf[10];
+
+	translation << alignxf[12], alignxf[13], alignxf[14], 1.0;
+
+	Eigen::Matrix4d transformation;
+	transformation.setIdentity();
+	transformation.block<3,3>(0,0) = rotation;
+	transformation.rightCols<1>() = translation; */
+
+
+		return buildTransformation(alignxf);
 	}
 	else
 	{
@@ -249,7 +282,7 @@ Eigen::Matrix4d getTransformationFromPose(boost::filesystem::path& pose)
 
 Eigen::Matrix4d getTransformationFromFrames(boost::filesystem::path& frames)
 {
-	float alignxf[16];
+    double alignxf[16];
 	int color;
 
 	std::ifstream in(frames.c_str());
@@ -264,14 +297,12 @@ Eigen::Matrix4d getTransformationFromFrames(boost::filesystem::path& frames)
 		in >> color;
 		if(!in.good())
 		{
-			cout << "BREAK " << c << endl;
 			c = 0;
 			break;
 		}
 	}
 
-
-
+/*
 	Eigen::Matrix3d rotation;
 	Eigen::Vector4d translation;
 
@@ -284,9 +315,9 @@ Eigen::Matrix4d getTransformationFromFrames(boost::filesystem::path& frames)
 	Eigen::Matrix4d transformation;
 	transformation.setIdentity();
 	transformation.block<3,3>(0,0) = rotation;
-	transformation.rightCols<1>() = translation;
+	transformation.rightCols<1>() = translation; */
 
-	return transformation;
+	return buildTransformation(alignxf);
 }
 
 void transformModel(ModelPtr model, Eigen::Matrix4d transformation)
@@ -316,7 +347,7 @@ void processSingleFile(boost::filesystem::path& inFile)
 
 	ModelPtr model;
 
-	cout << timestamp << "Reading point cloud data from file" << inFile.filename().string() << "." << endl;
+	cout << timestamp << "Reading point cloud data from file " << inFile.filename().string() << "." << endl;
 
 	model = ModelFactory::readModel(inFile.string());
 
@@ -332,25 +363,34 @@ void processSingleFile(boost::filesystem::path& inFile)
 		boost::filesystem::path framesPath(frames);
 		boost::filesystem::path posePath(pose);
 
-		cout << "Frames " << framesPath << endl;
-		cout << "POSE: " << posePath << endl;
-
 		if(boost::filesystem::exists(framesPath))
 		{
-			cout << "Found frames" << endl;
+            std::cout << timestamp << "Getting transformation from frame: " << framesPath << std::endl;
 			Eigen::Matrix4d transform = getTransformationFromFrames(framesPath);
 			transformModel(model, transform);
 		}
 		else if(boost::filesystem::exists(posePath))
 		{
-			cout << "Found pose" << endl;
+
+            std::cout << timestamp << "Getting transformation from pose: " << posePath << std::endl;
 			Eigen::Matrix4d transform = getTransformationFromPose(posePath);
 			transformModel(model, transform);
 		}
 
-		std::ofstream out(options->getOutputFile().c_str(), std::ofstream::out | std::ofstream::app);
-
 		static size_t points_written = 0;
+        
+        std::ofstream out;
+
+        /* If points were written we want to append the next scans, otherwise we want an empty file */
+        if(points_written != 0)
+        {
+		    out.open(options->getOutputFile().c_str(), std::ofstream::out | std::ofstream::app);
+        }
+        else
+        {
+		    out.open(options->getOutputFile().c_str(), std::ofstream::out | std::ofstream::trunc);
+        }
+
 		points_written += writeAscii(model, out, asciiReductionFactor(inFile));
 
 		out.close();
