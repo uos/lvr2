@@ -192,6 +192,7 @@ int asciiReductionFactor(boost::filesystem::path& inFile)
 
 Eigen::Matrix4d getTransformationFromPose(boost::filesystem::path& pose)
 {
+	cout << "Getting transformation from pose" << endl;
 	ifstream poseIn(pose.c_str());
 	if(poseIn.good())
 	{
@@ -250,21 +251,40 @@ Eigen::Matrix4d getTransformationFromFrames(boost::filesystem::path& frames)
 {
 	float alignxf[16];
 	int color;
+
 	std::ifstream in(frames.c_str());
+	int c = 0;
 	while(in.good())
 	{
+		c++;
 		for(int i = 0; i < 16; i++)
 		{
 			in >> alignxf[i];
 		}
 		in >> color;
+		if(!in.good())
+		{
+			cout << "BREAK " << c << endl;
+			c = 0;
+			break;
+		}
 	}
 
+
+
+	Eigen::Matrix3d rotation;
+	Eigen::Vector4d translation;
+
+	rotation  << alignxf[0],  alignxf[4],  alignxf[8],
+			     alignxf[1],  alignxf[5],  alignxf[9],
+		     	 alignxf[2],  alignxf[6],  alignxf[10];
+
+	translation << alignxf[12], alignxf[13], alignxf[14], 1.0;
+
 	Eigen::Matrix4d transformation;
-	transformation  << alignxf[0],  alignxf[1],  alignxf[2],  alignxf[3],
-			alignxf[4],  alignxf[5],  alignxf[6],  alignxf[7],
-			alignxf[8],  alignxf[9],  alignxf[10], alignxf[11],
-			alignxf[12], alignxf[13], alignxf[14], alignxf[15];
+	transformation.setIdentity();
+	transformation.block<3,3>(0,0) = rotation;
+	transformation.rightCols<1>() = translation;
 
 	return transformation;
 }
@@ -283,11 +303,11 @@ void transformModel(ModelPtr model, Eigen::Matrix4d transformation)
 
 		Eigen::Vector4d v(x,y,z,1);
 		Eigen::Vector4d tv = transformation * v;
+
 		arr[3 * i]     = tv[0];
 		arr[3 * i + 1] = tv[1];
 		arr[3 * i + 2] = tv[2];
 	}
-
 }
 
 void processSingleFile(boost::filesystem::path& inFile)
@@ -306,8 +326,8 @@ void processSingleFile(boost::filesystem::path& inFile)
 		// Merge (only ASCII)
 		char frames[1024];
 		char pose[1024];
-		sprintf(frames, "/%s/%s.frames", inFile.parent_path().c_str(), inFile.stem().c_str());
-		sprintf(pose, "/%s/%s.pose", inFile.parent_path().c_str(), inFile.stem().c_str());
+		sprintf(frames, "%s/%s.frames", inFile.parent_path().c_str(), inFile.stem().c_str());
+		sprintf(pose, "%s/%s.pose", inFile.parent_path().c_str(), inFile.stem().c_str());
 
 		boost::filesystem::path framesPath(frames);
 		boost::filesystem::path posePath(pose);
@@ -317,11 +337,13 @@ void processSingleFile(boost::filesystem::path& inFile)
 
 		if(boost::filesystem::exists(framesPath))
 		{
+			cout << "Found frames" << endl;
 			Eigen::Matrix4d transform = getTransformationFromFrames(framesPath);
 			transformModel(model, transform);
 		}
 		else if(boost::filesystem::exists(posePath))
 		{
+			cout << "Found pose" << endl;
 			Eigen::Matrix4d transform = getTransformationFromPose(posePath);
 			transformModel(model, transform);
 		}
