@@ -20,10 +20,35 @@
  *  SearchTree.tcc
  *
  *       Created on: 02.01.2012
- *           Author: Florian Otte
+ *           Author: Florian Otte, Thomas Wiemann
+ *
  */
 
+#include <lvr/geometry/VertexTraits.hpp>
+#include <lvr/io/Timestamp.hpp>
+
+#include <iostream>
+using std::cout;
+using std::endl;
+
 namespace lvr {
+
+template<typename VertexT>
+void SearchTree< VertexT >::initBuffers(PointBufferPtr buffer)
+{
+	this->m_pointData = buffer->getPointArray(this->m_numPoints);
+	this->m_haveColors = false;
+	if(VertexTraits<VertexT>::HasColor)
+	{
+		size_t numColors = 0;
+		this->m_pointColorData = buffer->getPointColorArray(numColors);
+		if(numColors == m_numPoints)
+		{
+			m_haveColors = true;
+			cout << timestamp << "SearchTree: Found point color data." << endl;
+		}
+	}
+}
 
 template<typename VertexT>
 void SearchTree< VertexT >::kSearch( float qp[3], int neighbours, vector< int > &indices )
