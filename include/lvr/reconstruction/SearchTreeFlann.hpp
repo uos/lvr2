@@ -81,23 +81,12 @@ protected:
     /// Pointer to the FLANN search tree structure
     boost::shared_ptr<flann::Index<flann::L2_Simple<float> > > 		m_tree;
 
-    /// A pointer to the original point cloud data
-    floatArr 													    m_points;
-
-    /// Number of points managed by this class
-    size_t															m_numPoints;
-
     /// FLANN matrix representation of the points
     flann::Matrix<float>  	 										m_flannPoints;
 
     vector<int>														m_ind;
     vector<float>													m_dst;
 
-    /// An array containing the point color information (if available)
-    ucharArr														m_colors;
-
-    /// Indicator whether the used point buffer has color values
-    bool															m_haveColors;
 
 }; // SearchTreeFlann
 

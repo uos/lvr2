@@ -16,29 +16,14 @@ namespace lvr
 template<typename VertexT>
 SearchTreeFlann< VertexT >::SearchTreeFlann( PointBufferPtr buffer, size_t &n_points, const int &kn, const int &ki, const int &kd )
 {
-	m_haveColors = false;
+	this->initBuffers(buffer);
+
 	m_flannPoints = flann::Matrix<float> (new float[3 * n_points], n_points, 3);
-	m_points = buffer->getPointArray(m_numPoints);
 	for(size_t i = 0; i < n_points; i++)
 	{
-		m_flannPoints[i][0] = m_points[3 * i];
-		m_flannPoints[i][1] = m_points[3 * i + 1];
-		m_flannPoints[i][2] = m_points[3 * i + 2];
-	}
-
-	// Check if the template parameter type supports colors
-	if(VertexTraits<VertexT>::HasColor)
-	{
-		// Try to access point color array
-		size_t n_colors;
-		m_colors = buffer->getPointColorArray(n_colors);
-
-		// Check buffer size
-		if(n_colors == m_numPoints)
-		{
-			m_haveColors = true;
-			cout << timestamp << "Building FLANN tree with colors." << endl;
-		}
+		m_flannPoints[i][0] = this->m_pointData[3 * i];
+		m_flannPoints[i][1] = this->m_pointData[3 * i + 1];
+		m_flannPoints[i][2] = this->m_pointData[3 * i + 2];
 	}
 
 	m_tree = boost::shared_ptr<flann::Index<flann::L2_Simple<float> > >(new flann::Index<flann::L2_Simple<float> >(m_flannPoints, ::flann::KDTreeSingleIndexParams (10, false)));
@@ -88,13 +73,17 @@ void SearchTreeFlann< VertexT >::kSearch(VertexT qp, int k, vector< VertexT > &n
 	for(size_t i = 0; i < k; i++)
 	{
 		int index = m_ind[i];
-		if(index < m_numPoints)
+		if(index < this->m_numPoints)
 		{
-			VertexT v(m_points[3 * index], m_points[3 * index + 1], m_points[3 * index + 2]);
+			VertexT v(this->m_pointData[3 * index], this->m_pointData[3 * index + 1], this->m_pointData[3 * index + 2]);
 
-			if(m_haveColors)
+			if(this->m_haveColors)
 			{
-				VertexTraits<VertexT>::setColor(v, m_colors[3 * index], m_colors[3 * index + 1], m_colors[3 * index + 2]);
+				VertexTraits<VertexT>::setColor(
+						v,
+						this->m_pointColorData[3 * index],
+						this->m_pointColorData[3 * index + 1],
+						this->m_pointColorData[3 * index + 2]);
 			}
 
 			nb.push_back(v);
