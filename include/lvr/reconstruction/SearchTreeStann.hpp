@@ -20,7 +20,7 @@
 *  SearchTreeStann.hpp
 *
 *       Created on: 02.01.2012
-*           Author: Florian Otte
+*           Author: Florian Otte, Thomas Wiemann
  */
 
 #ifndef SEARCHTREESTANN_H_

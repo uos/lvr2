@@ -14,9 +14,9 @@
 #include <flann/flann.hpp>
 #include <boost/shared_ptr.hpp>
 
-// Superclass
 #include <lvr/reconstruction/SearchTree.hpp>
 #include <lvr/io/Timestamp.hpp>
+
 
 using std::vector;
 
@@ -78,16 +78,15 @@ public:
 
 protected:
 
+    /// Pointer to the FLANN search tree structure
     boost::shared_ptr<flann::Index<flann::L2_Simple<float> > > 		m_tree;
-    floatArr 													    m_points;
-    size_t															m_numPoints;
+
+    /// FLANN matrix representation of the points
     flann::Matrix<float>  	 										m_flannPoints;
 
     vector<int>														m_ind;
     vector<float>													m_dst;
 
-    ucharArr														m_colors;
-    size_t															m_numColors;
 
 }; // SearchTreeFlann
 

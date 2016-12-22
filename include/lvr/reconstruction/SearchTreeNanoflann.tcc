@@ -23,6 +23,8 @@
  *  @author Thomas Wiemann
  */
 
+#include <lvr/geometry/VertexTraits.hpp>
+
 namespace lvr
 {
 
@@ -35,6 +37,8 @@ SearchTreeNanoflann<VertexT>::SearchTreeNanoflann(
         const int &kd,
         const bool &useRansac )
 {
+	this->initBuffers(points);
+
     // Build adaptor
     m_pointCloud = new SearchTreeNanoflann<VertexT>::NFPointCloud<float>(points);
 
@@ -74,10 +78,21 @@ void SearchTreeNanoflann<VertexT>::kSearch(VertexT qp, int k, vector< VertexT > 
 
     for(size_t i = 0; i < neighbors.size(); i++)
     {
-        nb.push_back(VertexT(
-                m_pointCloud->m_points[3 * neighbors[i]],
-                m_pointCloud->m_points[3 * neighbors[i] + 1],
-                m_pointCloud->m_points[3 * neighbors[i] + 2]));
+
+    	VertexT v(m_pointCloud->m_points[3 * neighbors[i]],
+    			  m_pointCloud->m_points[3 * neighbors[i] + 1],
+                  m_pointCloud->m_points[3 * neighbors[i] + 2]);
+
+        if(this->m_haveColors)
+        {
+        	VertexTraits<VertexT>::setColor(
+        			v,
+					this->m_pointColorData[3 * neighbors[i]],
+					this->m_pointColorData[3 * neighbors[i] + 1],
+					this->m_pointColorData[3 * neighbors[i] + 2]);
+        }
+
+        nb.push_back(v);
     }
 }
 
