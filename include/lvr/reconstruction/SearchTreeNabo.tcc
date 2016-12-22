@@ -44,6 +44,8 @@ namespace lvr {
 template<typename VertexT>
 SearchTreeNabo< VertexT >::SearchTreeNabo(PointBufferPtr buffer , long unsigned int &n_points, const int &kn, const int &ki, const int &kd, const bool &useRansac )
 {
+	this->initBuffer(buffer);
+
     // Store parameters
     this->m_ki = ki;
     this->m_kn = kn;
