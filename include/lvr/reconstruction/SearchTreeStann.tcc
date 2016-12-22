@@ -37,6 +37,7 @@
 // lvr includes
 #include <lvr/io/Timestamp.hpp>
 #include <lvr/config/lvropenmp.hpp>
+#include <lvr/geometry/VertexTraits.hpp>
 
 using std::cout;
 using std::endl;
@@ -54,16 +55,13 @@ SearchTreeStann< VertexT >::SearchTreeStann(
 		const bool &useRansac )
 
 {
+	this->initBuffers(buffer);
+
     // Store parameters
     this->m_ki = ki;
     this->m_kn = kn;
     this->m_kd = kd;
     m_useRansac = useRansac;
-
-    size_t n_colors;
-    m_points = buffer->getIndexedPointArray(n_points);
-    m_colors = buffer->getIndexedPointColorArray(n_colors);
-
 
     // Create Stann Kd-tree
     cout << timestamp << "Creating STANN Kd-Tree" << endl;
@@ -95,25 +93,16 @@ void SearchTreeStann< VertexT >::kSearch(VertexT qp, int k, vector< VertexT > &n
 	SearchTree<VertexT>::kSearch(f_qp, k, indices);
 	for(size_t i = 0; i < indices.size(); i++)
 	{
-		if( m_colors)
-		{
-			neighbors.push_back(
-					VertexT(m_points[indices[i]][0],
-							m_points[indices[i]][1],
-							m_points[indices[i]][2],
-							m_colors[indices[i]][0],
-							m_colors[indices[i]][1],
-							m_colors[indices[i]][2])
-							);
-		} else
-		{
-			neighbors.push_back(
-					VertexT(m_points[indices[i]][0],
-							m_points[indices[i]][1],
-							m_points[indices[i]][2])
-							);
-		}
-
+		VertexT v(m_points[indices[i]][0], m_points[indices[i]][1], m_points[indices[i]][2]);
+        if(this->m_haveColors)
+        {
+        	VertexTraits<VertexT>::setColor(
+        			v,
+					m_pointColorData[indices[i]][0],
+					m_pointColorData[indices[i]][1],
+					m_pointColorData[indices[i]][2])
+        }
+        neighbors.push_back(v);
 	}
 }
 
