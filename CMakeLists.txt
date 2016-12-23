@@ -195,6 +195,7 @@ if(STANN_FOUND)
   include_directories(${STANN_INCLUDE_DIR})
 endif(STANN_FOUND)
 
+
 ##############################################################
 # USED THIRD PARTY STUFF
 ##############################################################
@@ -218,6 +219,7 @@ list(APPEND LVR_INSTALL_INCLUDE_DIRS ${RPLY_INSTALL_INCLUDE_DIR})
 add_subdirectory(ext/laslib)
 include_directories( ${LASLIB_INCLUDE_DIR} )
 list(APPEND LVR_INSTALL_INCLUDE_DIRS ${LASLIB_INSTALL_INCLUDE_DIR})
+
 
 # SLAM6D stuff
 add_subdirectory(ext/slam6d)
