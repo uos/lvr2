@@ -54,7 +54,7 @@ Options::Options(int argc, char** argv) : m_descr("Supported options")
      		    ("mp", value<int>(&m_minPlaneSize)->default_value(7), "Minimum value for plane optimzation")
 		        ("lft", value<float>(&m_lineFusionThreshold)->default_value(0.008), "(Line Fusion Threshold) Threshold for fusing line segments while tesselating.")		        
 		        ("classifier", value<string>(&m_classifier)->default_value("PlaneSimpsons"),"Classfier object used to color the mesh.")
-		        ("depth<", value<int>(&m_depth)->default_value(100), "Maximum recursion depth for region growing.")
+		        ("depth", value<int>(&m_depth)->default_value(100), "Maximum recursion depth for region growing.")
 		        ("verbose", "set for verbose output.")
 		        ("threads", value<int>(&m_numThreads)->default_value( lvr::OpenMPConfig::getNumThreads() ), "Number of threads")
 		        ;

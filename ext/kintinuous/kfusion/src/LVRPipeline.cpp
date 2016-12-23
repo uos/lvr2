@@ -45,17 +45,8 @@ namespace kfusion
 	LVRPipeline::LVRPipeline(KinFuParams params) : slice_count_(0)
 	{
 		meshPtr_ = new HMesh();
-
-		if(params.cmd_options)
-		{
-			meshPtr_->setQuiet(!params.cmd_options->verbose());
-		}
-		else
-		{
-			meshPtr_->setQuiet(true);
-		}
-
-		//omp_set_num_threads(omp_get_num_procs());
+		meshPtr_->setQuiet(!params.cmd_options->verbose());
+		omp_set_num_threads(omp_get_num_procs());
 
 		// Adding the single processing stages to the pipeline
 		pl_.AddStage(
@@ -64,14 +55,7 @@ namespace kfusion
 		pl_.AddStage(
 			boost::shared_ptr<MeshStage>(new MeshStage(params.distance_camera_target, (double)(params.volume_size[0] / params.volume_dims[0]), params.cmd_options))
 			);
-
-		bool optimize_planes = true;
-		if(params.cmd_options)
-		{
-			optimize_planes = params.cmd_options->optimizePlanes();
-		}
-
-		if(optimize_planes)
+		if(params.cmd_options->optimizePlanes())
 		{
 			pl_.AddStage(
 				boost::shared_ptr<OptimizeStage>(new OptimizeStage(params.cmd_options))

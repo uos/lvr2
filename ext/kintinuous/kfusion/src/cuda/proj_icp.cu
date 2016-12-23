@@ -1,5 +1,5 @@
-#include "device.hpp"
-#include "texture_binder.hpp"
+#include <kfusion/cuda/device.hpp>
+#include <kfusion/cuda/texture_binder.hpp>
 
 
 namespace kfusion

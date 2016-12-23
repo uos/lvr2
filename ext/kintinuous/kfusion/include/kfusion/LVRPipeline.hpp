@@ -21,9 +21,10 @@
 #include <kfusion/FusionStage.hpp>
 
 
+using namespace lvr;
 
-typedef lvr::ColorVertex<float, unsigned char> cVertex;
-typedef lvr::HalfEdgeKinFuMesh<cVertex, lvr::Normal<float> > HMesh;
+typedef ColorVertex<float, unsigned char> cVertex;
+typedef HalfEdgeKinFuMesh<cVertex, lvr::Normal<float> > HMesh;
 typedef HMesh* MeshPtr;
 
 namespace kfusion

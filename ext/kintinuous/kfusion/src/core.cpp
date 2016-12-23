@@ -1,5 +1,5 @@
 #include <kfusion/kinfu.hpp>
-#include "safe_call.hpp"
+#include <kfusion/safe_call.hpp>
 
 #include <cuda.h>
 #include <cstdio>

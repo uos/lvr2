@@ -37,7 +37,7 @@
 
 
 #include <kfusion/cyclical_buffer.h>
-#include "precomp.hpp"
+#include <kfusion/precomp.hpp>
 
 bool
 kfusion::cuda::CyclicalBuffer::checkForShift (cv::Ptr<cuda::TsdfVolume> volume, const Affine3f &cam_pose, const double distance_camera_target, const bool perform_shift, const bool last_shift, const bool record_mode)

@@ -1,5 +1,5 @@
-#include "precomp.hpp"
-#include "internal.hpp"
+#include <kfusion/precomp.hpp>
+#include <kfusion/internal.hpp>
 #include <kfusion/kinfu.hpp>
 
 using namespace std;
