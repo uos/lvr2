@@ -48,8 +48,9 @@
 #include <OpenGL/glu.h>
 #include <GLUT/glut.h>
 #endif
+
 //mein zeugs
-//#include <opencv2/opencv.hpp>
+#include <opencv2/opencv.hpp>
 #include <kfusion/types.hpp>
 
 
