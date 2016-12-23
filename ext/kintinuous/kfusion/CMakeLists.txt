@@ -25,11 +25,27 @@ set(KFUSION_CUDA_SRC
 	src/cuda/tsdf_volume.cu
 	)
 	
-	
 set(LVR_KINFU_SRC
 	src/app/LVR_KinFu.cpp
 	src/app/Options.cpp
 	)
+
+##############################################################
+# FIX FOR BROKEN VTK CMAKE STUFF
+##############################################################
+
+get_directory_property(dir_defs DIRECTORY ${CMAKE_SOURCE_DIR} COMPILE_DEFINITIONS)
+set(vtk_flags)
+foreach(it ${dir_defs})
+    if(it MATCHES "vtk*")
+    list(APPEND vtk_flags ${it})
+    endif()
+endforeach()
+
+foreach(d ${vtk_flags})
+    remove_definitions(-D${d})
+endforeach()
+	
 
 cuda_add_library(kfusion ${KFUSION_SRC} ${KFUSION_CUDA_SRC})
 
