@@ -36,8 +36,6 @@ using std::cout;
 using std::endl;
 using std::vector;
 
-typedef unsigned long ulong;
-
 namespace lvr
 {
 
@@ -63,11 +61,11 @@ public:
      * @param k           The number of neighbours that should be searched.
      * @param indices     A vector that stores the indices for the neighbours whithin the dataset.
      */
-    virtual void kSearch( float              qp[3], int k, vector< ulong > &indices );
-    virtual void kSearch( VertexT&              qp, int k, vector< ulong > &indices );
-    virtual void kSearch( const VertexT&        qp, int k, vector< ulong > &indices );
-    virtual void kSearch( const coord< float >& qp, int k, vector< ulong > &indices );
-    virtual void kSearch( coord< float >&       qp, int k, vector< ulong > &indices );
+    virtual void kSearch( float              qp[3], int k, vector< int > &indices );
+    virtual void kSearch( VertexT&              qp, int k, vector< int > &indices );
+    virtual void kSearch( const VertexT&        qp, int k, vector< int > &indices );
+    virtual void kSearch( const coord< float >& qp, int k, vector< int > &indices );
+    virtual void kSearch( coord< float >&       qp, int k, vector< int > &indices );
 
     /**
      * @brief This function performs a k-next-neightbour search on the
@@ -78,22 +76,22 @@ public:
      * @param indices     A vector that stores the indices for the neighbours whithin the dataset.
      * @param distances   A vector that sotres the distances for the neighbours that are found.
      */
-    virtual void kSearch( float               qp[3], int k, vector< ulong > &indices, vector< float > &distances );
-    virtual void kSearch( VertexT&               qp, int k, vector< ulong > &indices, vector< float > &distances );
-    virtual void kSearch( const VertexT&         qp, int k, vector< ulong > &indices, vector< float > &distances );
-    virtual void kSearch( const coord < float >& qp, int k, vector< ulong > &indices, vector< float > &distances );
+    virtual void kSearch( float               qp[3], int k, vector< int > &indices, vector< float > &distances );
+    virtual void kSearch( VertexT&               qp, int k, vector< int > &indices, vector< float > &distances );
+    virtual void kSearch( const VertexT&         qp, int k, vector< int > &indices, vector< float > &distances );
+    virtual void kSearch( const coord < float >& qp, int k, vector< int > &indices, vector< float > &distances );
 
     // Pure virtual. All other search functions map to this. Must be implemented in sub-class.
-    virtual void kSearch( coord < float >&       qp, int k, vector< ulong > &indices, vector< float > &distances ) = 0;
+    virtual void kSearch( coord < float >&       qp, int k, vector< int > &indices, vector< float > &distances ) = 0;
     virtual void kSearch( VertexT      qp, int k, vector< VertexT > &neighbors ) = 0;
 
 
 
-    virtual void radiusSearch( float              qp[3], float r, vector< ulong > &indices ) = 0;
-    virtual void radiusSearch( VertexT&              qp, float r, vector< ulong > &indices ) = 0;
-    virtual void radiusSearch( const VertexT&        qp, float r, vector< ulong > &indices ) = 0;
-    virtual void radiusSearch( coord< float >&       qp, float r, vector< ulong > &indices ) = 0;
-    virtual void radiusSearch( const coord< float >& qp, float r, vector< ulong > &indices ) = 0;
+    virtual void radiusSearch( float              qp[3], float r, vector< int > &indices ) = 0;
+    virtual void radiusSearch( VertexT&              qp, float r, vector< int > &indices ) = 0;
+    virtual void radiusSearch( const VertexT&        qp, float r, vector< int > &indices ) = 0;
+    virtual void radiusSearch( coord< float >&       qp, float r, vector< int > &indices ) = 0;
+    virtual void radiusSearch( const coord< float >& qp, float r, vector< int > &indices ) = 0;
 
 
     /**
@@ -134,6 +132,9 @@ public:
 
 protected:
 
+    /// Initialize internal buffers and attribute flags
+    virtual void initBuffers(PointBufferPtr buffer);
+
     /// The number of neighbors used for initial normal estimation
     int                         m_kn;
 
@@ -142,6 +143,18 @@ protected:
 
     /// The number of tangent planes used for distance determination
     int                         m_kd;
+
+    /// A pointer to the original point cloud data
+    floatArr					m_pointData;
+
+    /// A pointer to color attributes for the point (or zero, if the point clouds contains no color values)
+    ucharArr					m_pointColorData;
+
+    /// Indicator whether point color values are supported by the search tree instance
+    bool						m_haveColors;
+
+    /// Number of points managed by this class
+    size_t						m_numPoints;
 
 }; // SearchTreeClass.
 

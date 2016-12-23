@@ -44,6 +44,8 @@ namespace lvr {
 template<typename VertexT>
 SearchTreeNabo< VertexT >::SearchTreeNabo(PointBufferPtr buffer , long unsigned int &n_points, const int &kn, const int &ki, const int &kd, const bool &useRansac )
 {
+	this->initBuffer(buffer);
+
     // Store parameters
     this->m_ki = ki;
     this->m_kn = kn;
@@ -75,7 +77,7 @@ SearchTreeNabo< VertexT >::~SearchTreeNabo() {
 
 
 template<typename VertexT>
-void SearchTreeNabo< VertexT >::kSearch( coord< float > &qp, int neighbours, vector< ulong > &indices, vector< float > &distances )
+void SearchTreeNabo< VertexT >::kSearch( coord< float > &qp, int neighbours, vector< int > &indices, vector< float > &distances )
 {
     Eigen::Vector3f q;
     q[0] = qp.x;
@@ -112,7 +114,7 @@ void SearchTreeNabo< VertexT >::kSearch( coord< float > &qp, int neighbours, vec
    Begin of radiusSearch implementations
  */
 template<typename VertexT>
-void SearchTreeNabo< VertexT >::radiusSearch( float qp[3], float r, vector< ulong > &indices )
+void SearchTreeNabo< VertexT >::radiusSearch( float qp[3], float r, vector< int > &indices )
 {
     // clear possibly old information
     indices.clear();
@@ -140,7 +142,7 @@ void SearchTreeNabo< VertexT >::radiusSearch( float qp[3], float r, vector< ulon
 
 
 template<typename VertexT>
-void SearchTreeNabo< VertexT >::radiusSearch( VertexT& qp, float r, vector< ulong > &indices )
+void SearchTreeNabo< VertexT >::radiusSearch( VertexT& qp, float r, vector< int > &indices )
 {
     float qp_arr[3];
     qp_arr[0] = qp[0];
@@ -151,7 +153,7 @@ void SearchTreeNabo< VertexT >::radiusSearch( VertexT& qp, float r, vector< ulon
 
 
 template<typename VertexT>
-void SearchTreeNabo< VertexT >::radiusSearch( const VertexT& qp, float r, vector< ulong > &indices )
+void SearchTreeNabo< VertexT >::radiusSearch( const VertexT& qp, float r, vector< int > &indices )
 {
     float qp_arr[3];
     qp_arr[0] = qp[0];
@@ -162,7 +164,7 @@ void SearchTreeNabo< VertexT >::radiusSearch( const VertexT& qp, float r, vector
 
 
 template<typename VertexT>
-void SearchTreeNabo< VertexT >::radiusSearch( coord< float >& qp, float r, vector< ulong > &indices )
+void SearchTreeNabo< VertexT >::radiusSearch( coord< float >& qp, float r, vector< int > &indices )
 {
     float qp_arr[3];
     qp_arr[0] = qp[0];
@@ -173,7 +175,7 @@ void SearchTreeNabo< VertexT >::radiusSearch( coord< float >& qp, float r, vecto
 
 
 template<typename VertexT>
-void SearchTreeNabo< VertexT >::radiusSearch( const coord< float >& qp, float r, vector< ulong > &indices )
+void SearchTreeNabo< VertexT >::radiusSearch( const coord< float >& qp, float r, vector< int > &indices )
 {
     float qp_arr[3];
     coord< float > qpcpy = qp;

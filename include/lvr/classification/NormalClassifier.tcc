@@ -41,7 +41,7 @@ string NormalClassifier<VertexT, NormalT>::getLabel(int index)
 	else
 	{
 
-		NormalLabel label_type = classifyRegion(index);
+		NormalLabel label_type = _classifyRegion(index);
 
 		switch(label_type)
 		{
@@ -70,7 +70,7 @@ uchar* NormalClassifier<VertexT, NormalT>::getColor(int index)
 	float fc[3];
 	uchar* c = new uchar[3];
 
-	NormalLabel label_type = classifyRegion(index);
+	NormalLabel label_type = _classifyRegion(index);
 	switch(label_type)
 	{
 		case VerticalFace:
@@ -123,7 +123,7 @@ uchar NormalClassifier<VertexT, NormalT>::b(int i)
 }
 
 template<typename VertexT, typename NormalT>
-NormalLabel NormalClassifier<VertexT, NormalT>::classifyRegion(int index)
+NormalLabel NormalClassifier<VertexT, NormalT>::_classifyRegion(int index)
 {
 
 	if((unsigned int) index < this->m_regions->size())

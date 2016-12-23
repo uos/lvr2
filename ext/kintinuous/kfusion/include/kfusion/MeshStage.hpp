@@ -53,6 +53,7 @@
 #include <lvr/geometry/HalfEdgeKinFuMesh.hpp>
 #include <lvr/geometry/BoundingBox.hpp>
 #include <lvr/geometry/Matrix4.hpp>
+
 #include <kfusion/types.hpp>
 #include <opencv2/flann/flann.hpp>
 

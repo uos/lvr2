@@ -91,7 +91,7 @@ public:
 
 private:
 
-	NormalLabel classifyRegion(int region);
+	NormalLabel _classifyRegion(int region);
 
 	uchar* getColor(int region);
 

@@ -37,6 +37,7 @@
 // lvr includes
 #include <lvr/io/Timestamp.hpp>
 #include <lvr/config/lvropenmp.hpp>
+#include <lvr/geometry/VertexTraits.hpp>
 
 using std::cout;
 using std::endl;
@@ -54,16 +55,13 @@ SearchTreeStann< VertexT >::SearchTreeStann(
 		const bool &useRansac )
 
 {
+	this->initBuffers(buffer);
+
     // Store parameters
     this->m_ki = ki;
     this->m_kn = kn;
     this->m_kd = kd;
     m_useRansac = useRansac;
-
-    size_t n_colors;
-    m_points = buffer->getIndexedPointArray(n_points);
-    m_colors = buffer->getIndexedPointColorArray(n_colors);
-
 
     // Create Stann Kd-tree
     cout << timestamp << "Creating STANN Kd-Tree" << endl;
@@ -77,7 +75,7 @@ SearchTreeStann< VertexT >::~SearchTreeStann() {
 
 
 template<typename VertexT>
-void SearchTreeStann< VertexT >::kSearch( coord< float > &qp, int neighbours, vector< ulong > &indices, vector< float > &distances )
+void SearchTreeStann< VertexT >::kSearch( coord< float > &qp, int neighbours, vector< int > &indices, vector< float > &distances )
 {
 	vector<double> dst;
     m_pointTree.ksearch( qp, neighbours, indices, dst, 0);
@@ -90,30 +88,21 @@ void SearchTreeStann< VertexT >::kSearch( coord< float > &qp, int neighbours, ve
 	template<typename VertexT>
 void SearchTreeStann< VertexT >::kSearch(VertexT qp, int k, vector< VertexT > &neighbors)
 {
-	vector<ulong> indices;
+	vector<int> indices;
 	float f_qp[3] = {qp.x, qp.y, qp.z};
 	SearchTree<VertexT>::kSearch(f_qp, k, indices);
 	for(size_t i = 0; i < indices.size(); i++)
 	{
-		if( m_colors)
-		{
-			neighbors.push_back(
-					VertexT(m_points[indices[i]][0],
-							m_points[indices[i]][1],
-							m_points[indices[i]][2],
-							m_colors[indices[i]][0],
-							m_colors[indices[i]][1],
-							m_colors[indices[i]][2])
-							);
-		} else
-		{
-			neighbors.push_back(
-					VertexT(m_points[indices[i]][0],
-							m_points[indices[i]][1],
-							m_points[indices[i]][2])
-							);
-		}
-
+		VertexT v(m_points[indices[i]][0], m_points[indices[i]][1], m_points[indices[i]][2]);
+        if(this->m_haveColors)
+        {
+        	VertexTraits<VertexT>::setColor(
+        			v,
+					m_pointColorData[indices[i]][0],
+					m_pointColorData[indices[i]][1],
+					m_pointColorData[indices[i]][2])
+        }
+        neighbors.push_back(v);
 	}
 }
 
@@ -122,7 +111,7 @@ void SearchTreeStann< VertexT >::kSearch(VertexT qp, int k, vector< VertexT > &n
    Begin of radiusSearch implementations
  */
 template<typename VertexT>
-void SearchTreeStann< VertexT >::radiusSearch( float qp[3], float r, vector< ulong > &indices )
+void SearchTreeStann< VertexT >::radiusSearch( float qp[3], float r, vector< int > &indices )
 {
     // clear possibly old information
     indices.clear();
@@ -150,7 +139,7 @@ void SearchTreeStann< VertexT >::radiusSearch( float qp[3], float r, vector< ulo
 
 
 template<typename VertexT>
-void SearchTreeStann< VertexT >::radiusSearch( VertexT& qp, float r, vector< ulong > &indices )
+void SearchTreeStann< VertexT >::radiusSearch( VertexT& qp, float r, vector< int > &indices )
 {
     float qp_arr[3];
     qp_arr[0] = qp[0];
@@ -161,7 +150,7 @@ void SearchTreeStann< VertexT >::radiusSearch( VertexT& qp, float r, vector< ulo
 
 
 template<typename VertexT>
-void SearchTreeStann< VertexT >::radiusSearch( const VertexT& qp, float r, vector< ulong > &indices )
+void SearchTreeStann< VertexT >::radiusSearch( const VertexT& qp, float r, vector< int > &indices )
 {
     float qp_arr[3];
     qp_arr[0] = qp[0];
@@ -172,7 +161,7 @@ void SearchTreeStann< VertexT >::radiusSearch( const VertexT& qp, float r, vecto
 
 
 template<typename VertexT>
-void SearchTreeStann< VertexT >::radiusSearch( coord< float >& qp, float r, vector< ulong > &indices )
+void SearchTreeStann< VertexT >::radiusSearch( coord< float >& qp, float r, vector< int > &indices )
 {
     float qp_arr[3];
     qp_arr[0] = qp[0];
@@ -183,7 +172,7 @@ void SearchTreeStann< VertexT >::radiusSearch( coord< float >& qp, float r, vect
 
 
 template<typename VertexT>
-void SearchTreeStann< VertexT >::radiusSearch( const coord< float >& qp, float r, vector< ulong > &indices )
+void SearchTreeStann< VertexT >::radiusSearch( const coord< float >& qp, float r, vector< int > &indices )
 {
     float qp_arr[3];
     coord< float > qpcpy = qp;

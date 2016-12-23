@@ -20,13 +20,38 @@
  *  SearchTree.tcc
  *
  *       Created on: 02.01.2012
- *           Author: Florian Otte
+ *           Author: Florian Otte, Thomas Wiemann
+ *
  */
+
+#include <lvr/geometry/VertexTraits.hpp>
+#include <lvr/io/Timestamp.hpp>
+
+#include <iostream>
+using std::cout;
+using std::endl;
 
 namespace lvr {
 
 template<typename VertexT>
-void SearchTree< VertexT >::kSearch( float qp[3], int neighbours, vector< ulong > &indices )
+void SearchTree< VertexT >::initBuffers(PointBufferPtr buffer)
+{
+	this->m_pointData = buffer->getPointArray(this->m_numPoints);
+	this->m_haveColors = false;
+	if(VertexTraits<VertexT>::HasColor)
+	{
+		size_t numColors = 0;
+		this->m_pointColorData = buffer->getPointColorArray(numColors);
+		if(numColors == m_numPoints)
+		{
+			m_haveColors = true;
+			cout << timestamp << "SearchTree: Found point color data." << endl;
+		}
+	}
+}
+
+template<typename VertexT>
+void SearchTree< VertexT >::kSearch( float qp[3], int neighbours, vector< int > &indices )
 {
     vector< float > distances;
     this->kSearch( qp, neighbours, indices, distances);
@@ -34,7 +59,7 @@ void SearchTree< VertexT >::kSearch( float qp[3], int neighbours, vector< ulong 
 
 
 template<typename VertexT>
-void SearchTree< VertexT >::kSearch( VertexT &qp, int neighbours, vector< ulong > &indices )
+void SearchTree< VertexT >::kSearch( VertexT &qp, int neighbours, vector< int > &indices )
 {
     vector< float > distances;
     this->kSearch( qp, neighbours, indices, distances);
@@ -42,7 +67,7 @@ void SearchTree< VertexT >::kSearch( VertexT &qp, int neighbours, vector< ulong 
 
 
 template<typename VertexT>
-void SearchTree< VertexT >::kSearch( const VertexT &qp, int neighbours, vector< ulong > &indices )
+void SearchTree< VertexT >::kSearch( const VertexT &qp, int neighbours, vector< int > &indices )
 {
     vector< float > distances;
     this->kSearch( qp, neighbours, indices, distances);
@@ -50,7 +75,7 @@ void SearchTree< VertexT >::kSearch( const VertexT &qp, int neighbours, vector< 
 
 
 template<typename VertexT>
-void SearchTree< VertexT >::kSearch( coord< float > &qp, int neighbours, vector< ulong > &indices )
+void SearchTree< VertexT >::kSearch( coord< float > &qp, int neighbours, vector< int > &indices )
 {
     vector< float > distances;
     this->kSearch( qp, neighbours, indices, distances);
@@ -58,7 +83,7 @@ void SearchTree< VertexT >::kSearch( coord< float > &qp, int neighbours, vector<
 
 
 template<typename VertexT>
-void SearchTree< VertexT >::kSearch( const coord< float > &qp, int neighbours, vector< ulong > &indices )
+void SearchTree< VertexT >::kSearch( const coord< float > &qp, int neighbours, vector< int > &indices )
 {
     vector< float > distances;
     this->kSearch( qp, neighbours, indices, distances);
@@ -69,7 +94,7 @@ void SearchTree< VertexT >::kSearch( const coord< float > &qp, int neighbours, v
    Begin of kSearch implementations with distances
  */
 template<typename VertexT>
-void SearchTree< VertexT >::kSearch( float qp[3], int neighbours, vector< ulong > &indices, vector< float > &distances )
+void SearchTree< VertexT >::kSearch( float qp[3], int neighbours, vector< int > &indices, vector< float > &distances )
 {
     coord< float > Point;
     Point[0] = qp[0];
@@ -80,7 +105,7 @@ void SearchTree< VertexT >::kSearch( float qp[3], int neighbours, vector< ulong 
 
 
 template<typename VertexT>
-void SearchTree< VertexT >::kSearch( VertexT &qp, int neighbours, vector< ulong > &indices, vector< float > &distances )
+void SearchTree< VertexT >::kSearch( VertexT &qp, int neighbours, vector< int > &indices, vector< float > &distances )
 {
     float qp_arr[3];
     qp_arr[0] = qp[0];
@@ -91,7 +116,7 @@ void SearchTree< VertexT >::kSearch( VertexT &qp, int neighbours, vector< ulong 
 
 
 template<typename VertexT>
-void SearchTree< VertexT >::kSearch( const VertexT &qp, int neighbours, vector< ulong > &indices, vector< float > &distances )
+void SearchTree< VertexT >::kSearch( const VertexT &qp, int neighbours, vector< int > &indices, vector< float > &distances )
 {
     float qp_arr[3];
     qp_arr[0] = qp[0];
@@ -102,7 +127,7 @@ void SearchTree< VertexT >::kSearch( const VertexT &qp, int neighbours, vector< 
 
 
 template<typename VertexT>
-void SearchTree< VertexT >::kSearch( const coord< float > &qp, int neighbours, vector< ulong > &indices, vector< float > &distances )
+void SearchTree< VertexT >::kSearch( const coord< float > &qp, int neighbours, vector< int > &indices, vector< float > &distances )
 {
     float qp_arr[3];
     coord< float > qpcpy = qp;

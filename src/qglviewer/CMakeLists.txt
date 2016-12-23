@@ -86,14 +86,14 @@ target_link_libraries(qviewer lvr_static)
 target_link_libraries(qviewer ${OPENGL_LIBRARIES})
 target_link_libraries(qviewer ${GLUT_LIBRARIES})
 target_link_libraries(qviewer ${QGLVIEWER_LIBRARY_RELEASE})
-target_link_libraries(qviewer GLU)
+#target_link_libraries(qviewer GLU)
 target_link_libraries(qviewer ${Boost_FILESYSTEM_LIBRARY}
     ${Boost_SYSTEM_LIBRARY} ${Boost_THREAD_LIBRARY}
     ${Boost_PROGRAM_OPTIONS_LIBRARY})
 target_link_libraries(qviewer pthread)
-target_link_libraries(qviewer GLU)
+#target_link_libraries(qviewer GLU)
 target_link_libraries(qviewer ${PCL_LIBRARIES})
-target_link_libraries(qviewer GLU)
+#target_link_libraries(qviewer GLU)
 
 install(TARGETS qviewer
     RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR})

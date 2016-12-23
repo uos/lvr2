@@ -37,7 +37,6 @@ HalfEdgeMesh<VertexT, NormalT>::HalfEdgeMesh( )
     m_globalIndex = 0;
     m_regionClassifier = ClassifierFactory<VertexT, NormalT>::get("Default", this);
     m_classifierType = "Default";
-    m_pointCloudManager = NULL;
     m_depth = 100;
 }
 
@@ -97,7 +96,7 @@ HalfEdgeMesh<VertexT, NormalT>::~HalfEdgeMesh()
     m_garbageEdges.clear();
 
 
-    if(this->m_regionClassifier != 0)
+    if(this->m_regionClassifier != 0 && this->m_classifierType != "USER_DEFINED")
     {
         delete this->m_regionClassifier;
         this->m_regionClassifier = 0;
@@ -147,6 +146,31 @@ void HalfEdgeMesh<VertexT, NormalT>::setClassifier(string name)
 
 		m_regionClassifier = ClassifierFactory<VertexT, NormalT>::get( "PlaneSimpsons", this);
 		m_classifierType = "PlaneSimpsons";
+	}
+}
+
+template<typename VertexT, typename NormalT>
+void HalfEdgeMesh<VertexT, NormalT>::setClassifier(RegionClassifier<VertexT, NormalT>* c)
+{
+	if(c)
+	{
+	// Delete old classifier
+	if(m_regionClassifier)
+	{
+		delete m_regionClassifier;
+	}
+
+	// Usually the classifier would be defined be it's name that was used
+	// in ClassifierFactory. Here we have a user defined type and use that one.
+	// The name is actually used as a flag to prevent that an externally set
+	// classifier is freed.
+	m_classifierType = "USER_DEFINED";
+
+	m_regionClassifier = c;
+	}
+	else
+	{
+		cout << timestamp << "User defined classifier is 0" << endl;
 	}
 }
 
@@ -1865,6 +1889,7 @@ void HalfEdgeMesh<VertexT, NormalT>::finalizeAndRetesselate( bool genTextures, f
             g = m_regionClassifier->g(surface_class);
             b = m_regionClassifier->b(surface_class);
 
+            m_regionClassifier->classifyRegion(surface_class);
             //textureBuffer.push_back( m_regions[iRegion]->m_regionNumber );
 
             // get the contours for this region
