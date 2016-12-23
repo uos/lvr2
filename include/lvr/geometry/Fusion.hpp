@@ -45,8 +45,13 @@
 #include <algorithm>
 #include <queue>
 
+#ifndef __APPLE__
 #include <GL/glu.h>
 #include <GL/glut.h>
+#else
+#include <OpenGL/glu.h>
+#include <GLUT/glut.h>
+#endif
 
 #include <CGAL/Simple_cartesian.h>
 #include <CGAL/AABB_tree.h>
@@ -77,6 +82,8 @@
 #include <lvr/io/Timestamp.hpp>
 #include <lvr/io/Progress.hpp>
 #include <lvr/io/Model.hpp>
+
+
 
 #define POINT_DIST_EPSILON 1e-4
 
