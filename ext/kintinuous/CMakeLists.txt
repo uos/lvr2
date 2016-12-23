@@ -1,6 +1,9 @@
 cmake_minimum_required(VERSION 2.8.8)
 project(kfusion C CXX)
 
+find_package(OpenNI2 REQUIRED)
+include_directories(OPENNI2_INCLUDE_DIRS)
+
 ##############################################################
 # INCLUDE DIRECTORIES
 ##############################################################

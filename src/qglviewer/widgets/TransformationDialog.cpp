@@ -112,7 +112,7 @@ void TransformationDialog::stepChanged(double value)
 
 void TransformationDialog::save()
 {
-    QString filename = QFileDialog::getSaveFileName(m_parent, "Save tranformation to pose file", "", "*.pose");
+    QString filename = QFileDialog::getSaveFileName(m_parent, "Save transformation to pose file", "", "*.pose");
 
     ofstream out(filename.toStdString().c_str());
     out << m_posX << " " << m_posY << " " << m_posZ << " " << m_rotX << " " << m_rotY << " " << m_rotZ;

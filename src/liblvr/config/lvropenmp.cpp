@@ -30,6 +30,9 @@
 #include <omp.h>
 #endif
 
+#include <iostream>
+using namespace std;
+
 namespace lvr
 {
 

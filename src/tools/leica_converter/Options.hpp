@@ -67,6 +67,63 @@ public:
 	float	getSigma() const;
 	int		getTargetSize() const;
 
+    int     getStart() const;
+    int     getEnd() const;
+	/**
+	 * @brief   Returns the position of the x coordinate in the data.
+	 */
+	int x() { return m_variables["xPos"].as<int>();}
+
+	/**
+	 * @brief   Returns the position of the x coordinate in the data.
+	 */
+	int y() { return m_variables["yPos"].as<int>();}
+
+	/**
+	 * @brief   Returns the position of the x coordinate in the data.
+	 */
+	int z() { return m_variables["zPos"].as<int>();}
+
+	/**
+	 * @brief   Returns the position of the x coordinate in the data.
+	 */
+	int r() { return m_variables["rPos"].as<int>() ;}
+
+	/**
+	 * @brief   Returns the position of the x coordinate in the data.
+	 */
+	int g() { return m_variables["gPos"].as<int>();}
+
+	/**
+	 * @brief   Returns the position of the x coordinate in the data.
+	 */
+	int b() { return m_variables["bPos"].as<int>();}
+
+	/**
+	 * @brief   Returns the position of the x coordinate in the data.
+	 */
+	int i() { return m_variables["iPos"].as<int>();}
+
+
+	/**
+	 * @brief   Returns the scaling factor for the x coordinates
+	 */
+	float sx() { return m_variables["sx"].as<float>();}
+
+	/**
+	 * @brief   Returns the scaling factor for the y coordinates
+	 */
+	float sy() { return m_variables["sy"].as<float>();}
+
+	/**
+	 * @brief   Returns the scaling factor for the z coordinates
+	 */
+	float sz() { return m_variables["sz"].as<float>();}
+    
+    int getStart() { return m_variables["start"].as<int>(); }
+
+    int getEnd() { return m_variables["end"].as<int>(); }
+
 private:
 
 	/// Output file name

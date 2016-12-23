@@ -1,6 +1,6 @@
+#include <kfusion/kinfu.hpp>
 #include <kfusion/precomp.hpp>
 #include <kfusion/internal.hpp>
-#include <kfusion/kinfu.hpp>
 
 using namespace std;
 using namespace kfusion;

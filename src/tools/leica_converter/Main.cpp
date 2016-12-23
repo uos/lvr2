@@ -25,6 +25,8 @@
 #include <algorithm>
 #include <string>
 #include <stdio.h>
+#include <fstream>
+
 using namespace std;
 
 #include <boost/filesystem.hpp>
@@ -111,6 +113,10 @@ int main(int argc, char** argv)
 		{
 			extension = ".txt";
 		}
+		else if(options.getInputFormat() == "3D")
+		{
+			extension = ".3d";
+		}
 		else if(options.getOutputFormat() == "ALL")
 		{
 			// Filter supported file formats
@@ -132,23 +138,111 @@ int main(int argc, char** argv)
 	vector<float>	 		merge_points;
 	vector<unsigned char>	merge_colors;
 
-	int c = 0;
-	for(vector<boost::filesystem::path>::iterator it = v.begin(); it != v.end(); it++)
+
+    
+    int c = 0;
+    
+    /* This only works properly if we start with scan001 */
+    if(options.getStart() <= v.size() && options.getStart() > 0)
+    {
+        cout << "Starting with scan number " << options.getStart() << endl;
+        c = options.getStart() - 1;
+    }
+
+    vector<boost::filesystem::path>::iterator endOpt;
+
+    if(options.getEnd() > 0 && options.getEnd() >= options.getStart() && options.getEnd() <= v.size())
+    {
+        cout << "Ending with scan number " << options.getEnd() << endl;
+        endOpt = v.begin() + options.getEnd();
+    }
+    else
+    {
+        endOpt = v.end();
+    }
+   
+	for(vector<boost::filesystem::path>::iterator it = v.begin() + c; it != endOpt; it++)
 	{
+		cout << timestamp << "Converting " << it->string() << endl;
 		if(options.getOutputFormat() == "SLAM")
 		{
 			int reduction = options.getTargetSize();
 			ModelPtr model;
 
-			if(reduction == 0)
+			if(reduction == 0 || (reduction != 0 && options.getInputFormat() == "3D"))
 			{
 				cout << timestamp << "Reading point cloud data from " << it->c_str() << "." << endl;
 				model = ModelFactory::readModel(it->string());
+                
+                /* Get the filename without fileextension */
+                std::string shortenedFileName = (it->stem()).string();
+
 				if(model)
 				{
 					char name[1024];
-					sprintf(name, "%s/scan%03d.3d", outputDir.c_str(), c);
-					cout << name << endl;
+                    
+                    sprintf(name, "%s/%s.3d", outputDir.c_str(), shortenedFileName.c_str());
+            
+					cout << timestamp << "Saving " << name << "..." << endl;
+
+					ifstream in(it->string().c_str());
+					cout << timestamp << "Counting points in " << it->string().c_str() << "..." << endl;
+
+					// Count lines in file
+					size_t n_points = 0;
+					char line[2048];
+					while(in.good())
+					{
+						in.getline(line, 1024);
+						n_points++;
+					}
+					in.close();
+
+					cout << timestamp << "File " << it->string().c_str() << " contains " << n_points << " points." << endl;
+
+                    /*
+                     * If reduction is less than the number of points it will segfault
+                     * because the modulo operation is not defined for n mod 0
+                     * and we have to keep all points anyways.
+                     * Same if no targetSize was given.
+                     */
+                    int modulo = 1;
+                    if(reduction < n_points && reduction != 0)
+                    {
+					    modulo = (int)n_points / reduction;
+                    }
+
+					ofstream out(name);
+					size_t n_ip;
+					int cntr = 0;
+					floatArr arr = model->m_pointCloud->getPointArray(n_ip);
+					for(int a = 0; a < n_ip; a++)
+					{
+						if(a % modulo == 0)
+						{
+							if(options.sx() != 1)
+							{
+								arr[a * 3] 		*= options.sx();
+							}
+
+							if(options.sy() != 1)
+							{
+								arr[a * 3 + 1] 	*= options.sy();
+							}
+
+							if(options.sz() != 1)
+							{
+								arr[a * 3 + 2] 	*= options.sz();
+							}
+
+							out << arr[a * 3 + options.x()] << " " << arr[a * 3 + options.y()] << " " << arr[a * 3 + options.z()] << endl;
+							cntr++;
+						}
+					}
+					out.close();
+					cout << "Wrote " << cntr << " points to file " << name << endl;
+
+
 				}
 			}
 			else
@@ -196,17 +290,20 @@ int main(int argc, char** argv)
 						}
 					}
 */
-					char name[1024];
-					sprintf(name, "%s/scan%03d.3d", outputDir.c_str(), c);
-					cout << timestamp << "Saving " << name << "..." << endl;
-					AsciiIO outIO;
-					outIO.setModel(model);
-					outIO.save(name);
+
+					if(reduction == 0)
+					{
+						char name[1024];
+						sprintf(name, "%s/scan%03d.3d", outputDir.c_str(), c);
+						cout << timestamp << "Saving " << name << "..." << endl;
+						AsciiIO outIO;
+						outIO.setModel(model);
+						outIO.save(name);
+					}
 				}
 
-
-
 			}
+
 			c++;
 
 		}

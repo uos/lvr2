@@ -1,3 +1,5 @@
+include_directories(src include) 
+
 set(CUDA_NVCC_FLAGS "${CUDA_NVCC_FLAGS} --ftz=true;--prec-div=false;--prec-sqrt=false")
 #add_module_library(kfusion)
 

@@ -44,6 +44,17 @@ Options::Options(int argc, char** argv) : m_descr("Supported options")
 	    ("k", value<int>()->default_value(1), "k neighborhood for filtering.")
 	    ("sigma", value<float>()->default_value(1.0), "Deviation for outlier filter.")
 	    ("targetSize", value<int>()->default_value(100000), "Target size (reduction) for the iput scans.")
+	    ("xPos,x", value<int>()->default_value(0), "Position of the x-coordinates in the input data lines.")
+	    ("yPos,y", value<int>()->default_value(1), "Position of the y-coordinates in the input data lines.")
+	    ("zPos,z", value<int>()->default_value(2), "Position of the z-coordinates in the input data lines.")
+	    ("sx", value<float>()->default_value(1.0), "Scaling factor for the x coordinates.")
+	    ("sy", value<float>()->default_value(1.0), "Scaling factor for the y coordinates.")
+	    ("sz", value<float>()->default_value(1.0), "Scaling factor for the z coordinates.")
+	    ("rPos,r", value<int>()->default_value(-1), "Position of the red color component in the input data lines. (-1) means no color information")
+	    ("gPos,g", value<int>()->default_value(-1), "Position of the green color component in the input data lines. (-1) means no color information")
+	    ("bPos,b", value<int>()->default_value(-1), "Position of the blue color component in the input data lines. (-1) means no color information")
+        ("start,s", value<int>()->default_value(0), "start at scan NR")
+        ("end,e", value<int>()->default_value(0), "end at scan NR")
 	;
 
 	m_pdescr.add("inputFile", -1);

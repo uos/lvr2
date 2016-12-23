@@ -260,7 +260,7 @@ void AdaptiveKSearchSurface<VertexT, NormalT>::calculateSurfaceNormals()
         // correct return values when performing the
         // search on the stann kd tree. So we don't use
         // the template parameter T for di
-        vector<unsigned long> id;
+        vector<int> id;
         vector<float> di;
 
         int n = 0;
@@ -391,7 +391,7 @@ void AdaptiveKSearchSurface<VertexT, NormalT>::interpolateSurfaceNormals()
     #pragma omp parallel for schedule(static)
     for( int i = 0; i < (int)this->m_numPoints; i++){
 
-        vector<unsigned long> id;
+        vector<int> id;
         vector<float> di;
 
         this->m_searchTree->kSearch(this->m_points[i], this->m_ki, id, di);
@@ -460,7 +460,7 @@ template<typename VertexT, typename NormalT>
 void AdaptiveKSearchSurface<VertexT, NormalT>::getkClosestVertices(const VertexT &v,
         const size_t &k, vector<VertexT> &nb)
 {
-    vector<unsigned long> id;
+    vector<int> id;
 
     //Allocate ANN point
     {
@@ -523,7 +523,7 @@ void AdaptiveKSearchSurface<VertexT, NormalT>::distance(VertexT v, float &projec
 {
     int k = this->m_kd;
 
-    vector<unsigned long> id;
+    vector<int> id;
     vector<float> di;
 
     //Allocate ANN point
@@ -575,7 +575,7 @@ VertexT AdaptiveKSearchSurface<VertexT, NormalT>::fromID(int i){
 template<typename VertexT, typename NormalT>
 Plane<VertexT, NormalT> AdaptiveKSearchSurface<VertexT, NormalT>::calcPlane(const VertexT &queryPoint,
         const int &k,
-        const vector<unsigned long> &id)
+        const vector<int> &id)
 {
     /**
      * @todo Think of a better way to code this magic number.
@@ -645,7 +645,7 @@ size_t AdaptiveKSearchSurface<VertexT, NormalT>::getNumPoints()
    template<typename VertexT, typename NormalT>
    Plane<VertexT, NormalT> AdaptiveKSearchSurface<VertexT, NormalT>::calcPlaneRANSAC(const VertexT &queryPoint,
            const int &k,
-           const vector<unsigned long> &id,
+           const vector<int> &id,
            bool &ok)
            {
 

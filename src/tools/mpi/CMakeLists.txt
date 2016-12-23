@@ -1,7 +1,5 @@
-set(CMAKE_CXX_COMPILER "mpic++")
 
-add_executable(lvr_mpi_reconstruct Main.cpp)
-target_link_libraries(lvr_mpi_reconstruct lvr_static)
-
-install(TARGETS lvr_mpi_reconstruct
-  RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR})
+set(CMAKE_CXX_COMPILE_FLAGS ${CMAKE_CXX_COMPILE_FLAGS} ${MPI_COMPILE_FLAGS})
+set(CMAKE_CXX_LINK_FLAGS ${CMAKE_CXX_LINK_FLAGS} ${MPI_LINK_FLAGS})
+add_executable(seg LargeScaleReconstruction.cpp NodeData.cpp LargeScaleOctree.cpp Options.cpp)
+target_link_libraries(seg  ${Boost_LIBRARIES} ${MPI_LIBRARIES} lvr_static )

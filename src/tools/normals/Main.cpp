@@ -103,7 +103,7 @@ void interpolateNormals(PointBufferPtr pc, size_t numPoints, int n)
     for(int i = 0; i < numPoints; i++)
     {
         // Create search tree
-        vector< ulong > indices;
+        vector< int > indices;
         vector< float > distances;
 
         Vertex<float> vertex(points[3 * i], points[3 * i + 1], points[3 * i + 2]);

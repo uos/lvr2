@@ -19,18 +19,10 @@ template<typename VertexT, typename BoxT>
 class PointsetGrid: public HashGrid<VertexT, BoxT>
 {
 public:
-	PointsetGrid(float cellSize, typename PointsetSurface<VertexT>::Ptr& surface, BoundingBox<VertexT> bb, bool isVoxelsize = true);
+	PointsetGrid(float cellSize, typename PointsetSurface<VertexT>::Ptr& surface, BoundingBox<VertexT> bb, bool isVoxelsize = true, bool extrude = true);
 	virtual ~PointsetGrid();
 
-	/**
-	 *
-	 * @param i 		Discrete x position within the grid.
-	 * @param j			Discrete y position within the grid.
-	 * @param k			Discrete z position within the grid.
-	 * @param distance	Signed distance to the represented surface
-	 * 					at the position within the grid.
-	 */
-	virtual void addLatticePoint(int i, int j, int k, float distance = 0.0);
+
 
 	void calcDistanceValues();
 

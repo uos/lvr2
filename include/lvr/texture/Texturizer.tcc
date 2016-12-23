@@ -179,8 +179,14 @@ void Texturizer<VertexT, NormalT>::writePlaneTexels(vector<VertexT> contour, int
 
     //walk through the bounding box and collect color information for each texel
 
+    //create the texture
+    Texture* texture = new Texture(sizeX, sizeY, 3, 1, Texturizer<VertexT, NormalT>::classifyNormal(n), 0, 0, 0, 0, 0, false, 0, 0);
+
+    //create TextureToken
+    TextureToken<VertexT, NormalT>* result = new TextureToken<VertexT, NormalT>(best_v1, best_v2, p, best_a_min, best_b_min, texture);
+
     char buffer[256] = {0};
-    ofstream planeOut;
+ /*   ofstream planeOut;
     if(planeIndex >= 0)
     {
         sprintf(buffer, "plane%03d.txt", planeIndex);
@@ -190,9 +196,9 @@ void Texturizer<VertexT, NormalT>::writePlaneTexels(vector<VertexT> contour, int
         {
             planeOut << sizeX << " x " << sizeY << endl;
         }
-    }
+    } */
 
-    //#pragma omp parallel for
+    #pragma omp parallel for
     for(int y = 0; y < sizeY; y++)
     {
         for(int x = 0; x < sizeX; x++)
@@ -204,10 +210,10 @@ void Texturizer<VertexT, NormalT>::writePlaneTexels(vector<VertexT> contour, int
                 + best_v2
                 * (y * Texture::m_texelSize + best_b_min - Texture::m_texelSize / 2.0);
 
-            planeOut << current_position.x << " " << current_position.y << " " << current_position.z << " ";
-            planeOut << x << " " << y << endl;
+            //planeOut << current_position.x << " " << current_position.y << " " << current_position.z << " ";
+            //planeOut << x << " " << y << endl;
 
-
+	  
         }
     }
 

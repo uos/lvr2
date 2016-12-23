@@ -79,7 +79,7 @@ public:
 
 private:
 
-	RegionLabel classifyRegion(int region);
+	RegionLabel _classifyRegion(int region);
 
 	uchar* getColor(int region);
 
