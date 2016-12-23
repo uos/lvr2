@@ -6,6 +6,8 @@ if (DEFINED CMAKE_BUILD_TYPE)
   set_property(CACHE CMAKE_BUILD_TYPE PROPERTY STRINGS ${CMAKE_CONFIGURATION_TYPES})
 endif()
 
+include_directories(kfusion/include)
+
 if(NOT CMAKE_BUILD_TYPE)
 	set(CMAKE_BUILD_TYPE "Release" CACHE STRING
        "Choose the type of build, options are: Debug Release"
@@ -117,8 +119,6 @@ endif()
 
 add_subdirectory(kfusion)
 
-if(OPENCV_VIZ_FOUND)
-add_subdirectory(apps)
-endif()
 
-add_subdirectory(qt_app)
+
+#add_subdirectory(qt_app)

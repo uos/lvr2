@@ -1,7 +1,7 @@
 #pragma once
 
 #include <kfusion/cuda/device_array.hpp>
-#include <safe_call.hpp>
+#include <kfusion/safe_call.hpp>
 
 namespace kfusion
 {

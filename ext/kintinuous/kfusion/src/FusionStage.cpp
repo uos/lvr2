@@ -54,18 +54,10 @@ void FusionStage::step()
 	MeshPtr opti_mesh = mesh_work.first.first;
 	string mesh_notice = ("#### D:                Mesh Fusion " +  to_string(mesh_count_) + "    ####");
 	ScopeTime* fusion_time = new ScopeTime(mesh_notice.c_str());
-
-	bool textures = true;
-	if(options_)
-	{
-		textures = options_->textures();
-	}
-
-
 	if(mesh_count_ == 0)
 		mesh_ = opti_mesh;
 	else
-		mesh_->addMesh(opti_mesh, textures);
+		mesh_->addMesh(opti_mesh, options_->textures());
 	//mesh_->fillHoles(options_->getFillHoles());
 	//optiMesh_->restorePlanes(options_->getMinPlaneSize());
 	getOutQueue()->Add(mesh_);
@@ -79,20 +71,10 @@ void FusionStage::lastStep()
 	std::cout << "Global amount of vertices: " << mesh_->meshSize() << endl;
 	std::cout << "Global amount of faces: " << mesh_->getFaces().size() << endl;
 	mesh_->finalize();
-
-	bool textures = true;
-	if(options_)
-	{
-	    textures = options_->textures();
-	}
-
-	
 	ModelPtr m( new Model( mesh_->meshBuffer() ) );
-	
-	string meshname = "outmesh";
-	if(!textures)
-		ModelFactory::saveModel( m, string(meshname + ".ply"));
+	if(!options_->textures())
+		ModelFactory::saveModel( m, string(options_->getOutput() + ".ply"));
 	else
-		ModelFactory::saveModel( m, string(meshname + ".obj"));
+		ModelFactory::saveModel( m, string(options_->getOutput() + ".obj"));
 	std::cout << "Finished saving" << std::endl;
 }

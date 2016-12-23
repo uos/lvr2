@@ -46,14 +46,7 @@ MeshStage::MeshStage(double camera_target_distance, double voxel_size, Options* 
 					slice_correction_(false)
 {
 	mesh_count_ = 0;
-	if(options)
-	{
-		timestamp.setQuiet(!options->verbose());
-	}
-	else
-	{
-		timestamp.setQuiet(false);
-	}
+	timestamp.setQuiet(!options->verbose());
 }
 
 void MeshStage::firstStep() { /* skip */ };
@@ -68,14 +61,7 @@ void MeshStage::step()
 	ScopeTime* cube_time = new ScopeTime(mesh_notice.c_str());
 
 	cFastReconstruction* fast_recon =  new cFastReconstruction(act_grid);
-	if(options_)
-	{
-		timestamp.setQuiet(!options_->verbose());
-	}
-	else
-	{
-		timestamp.setQuiet(false);
-	}
+	timestamp.setQuiet(!options_->verbose());
 	// Create an empty mesh
 	fast_recon->getMesh(*meshPtr);
 	transformMeshBack(meshPtr);

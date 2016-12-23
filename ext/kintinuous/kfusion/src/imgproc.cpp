@@ -1,4 +1,4 @@
-#include "precomp.hpp"
+#include <kfusion/precomp.hpp>
 
 void kfusion::cuda::depthBilateralFilter(const Depth& in, Depth& out, int kernel_size, float sigma_spatial, float sigma_depth)
 { 

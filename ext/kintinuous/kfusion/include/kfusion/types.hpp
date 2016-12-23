@@ -5,17 +5,13 @@
 #include <opencv2/core/core.hpp>
 #include <opencv2/contrib/contrib.hpp>
 #include <opencv2/core/affine.hpp>
-//#include <opencv2/viz/vizcore.hpp>
+#include <opencv2/viz/vizcore.hpp>
 #include <iosfwd>
 
 struct CUevent_st;
 
-
-
 namespace kfusion
 {
-class Options;
-
     typedef cv::Matx33f Mat3f;
     typedef cv::Vec3f Vec3f;
     typedef cv::Vec3i Vec3i;
@@ -163,7 +159,7 @@ class Options;
 
         Vec3f light_pose; //meters
 
-		kfusion::Options* cmd_options; // cmd_options
+		Options* cmd_options; // cmd_options
 
     };
 

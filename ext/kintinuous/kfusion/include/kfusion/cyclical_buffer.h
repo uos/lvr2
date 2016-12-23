@@ -70,20 +70,9 @@ namespace kfusion
 			* \param[in] cube_size physical size (in meters) of the volume (here, a cube) represented by the TSDF buffer.
 			* \param[in] nb_voxels_per_axis number of voxels per axis of the volume represented by the TSDF buffer.
 			*/
-			CyclicalBuffer (KinFuParams params): pl_(params)
+			CyclicalBuffer (KinFuParams params): pl_(params),
+			                optimize_(params.cmd_options->optimizePlanes()), no_reconstruct_(params.cmd_options->noReconstruction())
 			{
-				// Check if options instance exists
-				if(params.cmd_options)
-				{
-					optimize_ = params.cmd_options->optimizePlanes();
-					no_reconstruct_ = params.cmd_options->noReconstruction();
-				}
-				else
-				{
-					optimize_ = false;
-					no_reconstruct_ = false;
-				}
-
 				distance_threshold_ = params.shifting_distance;
 				buffer_.volume_size.x = params.volume_size[0];
 				buffer_.volume_size.y = params.volume_size[1];

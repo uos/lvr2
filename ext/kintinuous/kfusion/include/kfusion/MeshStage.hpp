@@ -52,8 +52,8 @@
 #include <lvr/geometry/HalfEdgeVertex.hpp>
 #include <lvr/geometry/HalfEdgeKinFuMesh.hpp>
 #include <lvr/geometry/BoundingBox.hpp>
-#include <kfusion/types.hpp>
 #include <lvr/geometry/Matrix4.hpp>
+#include <kfusion/types.hpp>
 #include <opencv2/flann/flann.hpp>
 
 

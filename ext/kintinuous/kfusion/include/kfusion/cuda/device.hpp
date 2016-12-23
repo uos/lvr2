@@ -1,7 +1,7 @@
 #pragma once
 
-#include "internal.hpp"
-#include "temp_utils.hpp"
+#include <kfusion/internal.hpp>
+#include <kfusion/cuda/temp_utils.hpp>
 //#include "pointer_shift.cu" // contains primitive needed by all cuda functions dealing with rolling tsdf buffer
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////
