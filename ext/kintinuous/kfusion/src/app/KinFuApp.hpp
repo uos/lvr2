@@ -47,12 +47,13 @@ struct KinFuApp
         }
 
         if(event.code == '+')
-        {           kinfu.kinfu_->params()->distance_camera_target += 0.1;
+        {
+           kinfu.kinfu_->params().distance_camera_target += 0.1;
            kinfu.kinfu_->performShift();
         }
         if(event.code == '-')
         {
-           kinfu.kinfu_->params()->distance_camera_target -= 0.1;
+           kinfu.kinfu_->params().distance_camera_target -= 0.1;
            kinfu.kinfu_->performShift();
         }
         if(!event.symbol.compare("Escape"))
@@ -64,14 +65,11 @@ struct KinFuApp
 				exit_ (false),  iteractive_mode_(false), pause_(false), meshRender_(false), no_viz_(options->noVizualisation()),
 				capture_ (source), cube_count_(0), pic_count_(0), mesh_(NULL), garbageMesh_(NULL)
     {
-        KinFuParams* params = KinFuParams::default_params();
-        params->shifting_distance = options->getShiftingDistance();
-        params->distance_camera_target = options->getCameraOffset();
-        params->volume_pose = params->volume_pose.translate(Vec3f(0, 0,  options->getCameraOffset()));
-        params->no_reconstruct = options->noReconstruction();
-        params->optimize = options->optimizePlanes();
-        params->textures = options->textures();
-        params->verbose = options->verbose();
+        KinFuParams params = KinFuParams::default_params();
+        params.shifting_distance = options->getShiftingDistance();
+        params.distance_camera_target = options->getCameraOffset();
+        params.volume_pose = params.volume_pose.translate(Vec3f(0, 0,  options->getCameraOffset()));
+        params.cmd_options = options;
 
         kinfu_ = KinFu::Ptr( new KinFu(params) );
 
@@ -85,11 +83,11 @@ struct KinFuApp
 		viz.showWidget("i", cv::viz::WText("i Interactive mode", cv::Point(5, 75), 20, cv::viz::Color::green()));
 		viz.showWidget("+", cv::viz::WText("+/- Change cam distance", cv::Point(5, 50), 20, cv::viz::Color::green()));
 		viz.showWidget("esc", cv::viz::WText("ESC Quit", cv::Point(5, 25), 20, cv::viz::Color::green()));
-        cv::viz::WCube cube(cv::Vec3d::all(0), cv::Vec3d(params->volume_size), true, cv::viz::Color::red());
+        cv::viz::WCube cube(cv::Vec3d::all(0), cv::Vec3d(params.volume_size), true, cv::viz::Color::red());
         //cv::viz::WArrow arrow(cv::Point3f(0, 0, 0), cv::Point3f(0, 0, options->getCameraOffset()), 0.03, cv::viz::Color::green());
         cv::Vec2d fov(0.64,0.48);
         cv::viz::WCameraPosition arrow(fov, 0.5, cv::viz::Color::silver());
-        cv::viz::WSphere sphere(cv::Point3f(0, 0, 0), params->shifting_distance);
+        cv::viz::WSphere sphere(cv::Point3f(0, 0, 0), params.shifting_distance);
         sphere.setRenderingProperty(cv::viz::OPACITY, 0.2);
         cube.setRenderingProperty(cv::viz::LINE_WIDTH, 2.0);
         arrow.setRenderingProperty(cv::viz::LINE_WIDTH, 2.0);
@@ -282,8 +280,8 @@ struct KinFuApp
 		//intrinsics wrong? changed rows and cols + /2
 		//kinfu.params().cols/2 - 0.5f
 		//kinfu.params().rows/2 - 0.5f
-		cv::Mat intrinsics = (cv::Mat_<float>(3,3) << kinfu.params()->intr.fx*2, 0, 1280/2-0.5f + 3,
-												  0, kinfu.params()->intr.fx*2, 1024/2-0.5f,
+		cv::Mat intrinsics = (cv::Mat_<float>(3,3) << kinfu.params().intr.fx*2, 0, 1280/2-0.5f + 3,
+												  0, kinfu.params().intr.fx*2, 1024/2-0.5f,
 												  0, 0, 1);
 		imgpose->intrinsics = intrinsics;
 		kinfu.cyclical().addImgPose(imgpose);
@@ -308,7 +306,7 @@ struct KinFuApp
     pose_file << rot(2,0) << " " << rot(2,1) << " " << rot(2,2) << endl;
     pose_file << endl;
     pose_file << "Camera Intrinsics: " << endl;
-    pose_file << kinfu.params()->intr.fx << " " <<  kinfu.params()->rows << " " << kinfu.params()->cols << endl;
+    pose_file << kinfu.params().intr.fx << " " <<  kinfu.params().rows << " " << kinfu.params().cols << endl;
     pose_file.close();
   }
 
@@ -387,7 +385,7 @@ struct KinFuApp
 						//std::cout << "better image found, sum rvec distances: " << best_dist << std::endl;
 					}
 					//if(time - 3.0 > 0)
-					if(kinfu.params()->textures && frame_count==7)
+					if(kinfu.params().cmd_options->textures() && frame_count==7)
 					{
 
 						rvecs.push_back(best_rvec);
@@ -437,8 +435,8 @@ struct KinFuApp
 				case 'r': case 'R' : kinfu.triggerRecord(); capture_.triggerRecord(); break;
 				case 'g': case 'G' : extractImage(kinfu, image); break;
 				case 'c': case 'C' : checkForShift(); break;
-				case '+': kinfu.params()->distance_camera_target += 0.1; kinfu.performShift(); break;
-				case '-': kinfu.params()->distance_camera_target -= 0.1; kinfu.performShift(); break;
+				case '+': kinfu.params().distance_camera_target += 0.1; kinfu.performShift(); break;
+				case '-': kinfu.params().distance_camera_target -= 0.1; kinfu.performShift(); break;
 				case 27: case 32: exit_ = true; break;
             }
 			frame_count++;

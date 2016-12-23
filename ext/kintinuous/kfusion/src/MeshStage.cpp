@@ -41,12 +41,12 @@
 #include <lvr/io/DataStruct.hpp>
 
 // default constructor
-MeshStage::MeshStage(double camera_target_distance, double voxel_size, KinFuParams* params) : AbstractStage(),
-					camera_target_distance_(camera_target_distance), voxel_size_(voxel_size), fusion_count_(0),
-					slice_correction_(false), params_(params)
+MeshStage::MeshStage(double camera_target_distance, double voxel_size, Options* options) : AbstractStage(),
+					camera_target_distance_(camera_target_distance), voxel_size_(voxel_size), options_(options), fusion_count_(0),
+					slice_correction_(false)
 {
 	mesh_count_ = 0;
-	timestamp.setQuiet(params_->verbose);
+	timestamp.setQuiet(!options->verbose());
 }
 
 void MeshStage::firstStep() { /* skip */ };
@@ -61,8 +61,7 @@ void MeshStage::step()
 	ScopeTime* cube_time = new ScopeTime(mesh_notice.c_str());
 
 	cFastReconstruction* fast_recon =  new cFastReconstruction(act_grid);
-	timestamp.setQuiet(params_->verbose);
-
+	timestamp.setQuiet(!options_->verbose());
 	// Create an empty mesh
 	fast_recon->getMesh(*meshPtr);
 	transformMeshBack(meshPtr);
@@ -90,18 +89,15 @@ void MeshStage::step()
 						if(vert_it == verts_map.end() && in2 != cFastBox::INVALID_INDEX && in2 != 0 && in2 != inter && current_neighbor->m_fusionNeighborBox)
 						{
 							inter2 = in2;
-							if(inter2 < meshPtr->getVertices().size()) // Quick fix for segfault. I don't know if it makes sense to just skip these cases
+							HMesh::VertexPtr act_vert = meshPtr->getVertices()[inter2];
+							verts_map.insert(pair<HMesh::VertexPtr, HMesh::VertexPtr>(old_vert, act_vert));
+							meshPtr->setOldFusionVertex(inter2);
+							if(act_vert->m_position[0] != old_vert->m_position[0] ||  act_vert->m_position[1] != old_vert->m_position[1]
+								 || act_vert->m_position[2] != old_vert->m_position[2])
 							{
-								HMesh::VertexPtr act_vert = meshPtr->getVertices()[inter2];
-								verts_map.insert(pair<HMesh::VertexPtr, HMesh::VertexPtr>(old_vert, act_vert));
-								meshPtr->setOldFusionVertex(inter2);
-								if(act_vert->m_position[0] != old_vert->m_position[0] ||  act_vert->m_position[1] != old_vert->m_position[1]
-																																		  || act_vert->m_position[2] != old_vert->m_position[2])
-								{
-									misscount++;
-								}
-								current_neighbor->m_fusionNeighborBox = false;
+								misscount++;
 							}
+							current_neighbor->m_fusionNeighborBox = false;
 						}
 					}
 				}

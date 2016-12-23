@@ -52,8 +52,9 @@
 #include <lvr/geometry/HalfEdgeVertex.hpp>
 #include <lvr/geometry/HalfEdgeKinFuMesh.hpp>
 #include <lvr/geometry/BoundingBox.hpp>
-#include <kfusion/types.hpp>
 #include <lvr/geometry/Matrix4.hpp>
+
+#include <kfusion/types.hpp>
 #include <opencv2/flann/flann.hpp>
 
 
@@ -74,7 +75,7 @@ class MeshStage : public AbstractStage
 public:
 
 	// default constructor
-	MeshStage(double camera_target_distance, double voxel_size, KinFuParams* params);
+	MeshStage(double camera_target_distance, double voxel_size, Options* options);
 
 	virtual void firstStep();
 	virtual void step();
@@ -87,7 +88,7 @@ private:
 	double camera_target_distance_;
 	double voxel_size_;
 	size_t mesh_count_, fusion_count_;
-	KinFuParams* params_;
+	Options* options_;
 	bool slice_correction_;
 	lvr::Matrix4f global_correction_;
 };
