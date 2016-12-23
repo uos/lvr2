@@ -39,11 +39,11 @@
 #include <kfusion/OptimizeStage.hpp>
 
 // default constructor
-OptimizeStage::OptimizeStage(KinFuParams* params) : AbstractStage()
-	,mesh_count_(0), params_(params), bounding_counter(0),texture_counter(0),pic_count_(0)
+OptimizeStage::OptimizeStage(Options* options) : AbstractStage()
+	,mesh_count_(0), options_(options), bounding_counter(0),texture_counter(0),pic_count_(0)
 {
 	 optiMesh_ = NULL;
-	timestamp.setQuiet(true);
+	timestamp.setQuiet(!options_->verbose());
 }
 
 void OptimizeStage::firstStep() { }
@@ -55,32 +55,32 @@ void OptimizeStage::step()
 	MeshPtr act_mesh = mesh_work.first.first;
 	string mesh_notice = ("#### C:            Mesh Optimization " +  to_string(mesh_count_) + "    ####");
 	ScopeTime* opti_time = new ScopeTime(mesh_notice.c_str());
-	act_mesh->fillHoles(5);
+	act_mesh->fillHoles(options_->getFillHoles());
 	if(optiMesh_ == NULL)
 		optiMesh_ = act_mesh;
 	else
-		optiMesh_->addMesh(act_mesh, true);
+		optiMesh_->addMesh(act_mesh, options_->textures());
     std::vector<kfusion::ImgPose*> image_poses_buffer = mesh_work.second;
 	//std::cout << "Loaded " << image_poses_buffer.size() << " Images. " << std::endl;
 	// Set recursion depth for region growing
-	if(100)
+	if(options_->getDepth())
 	{
-		optiMesh_->setDepth(100);
+		optiMesh_->setDepth(options_->getDepth());
 	}
-	optiMesh_->setClassifier("PlaneSimpsons");
-	optiMesh_->optimizePlanes(3,
-					0.9,
-					5,
-					0, false);
-	MeshPtr tmp_pointer = optiMesh_->retesselateInHalfEdge(0.008, true, texture_counter);
+	optiMesh_->setClassifier(options_->getClassifier());
+	optiMesh_->optimizePlanes(options_->getPlaneIterations(),
+					options_->getNormalThreshold(),
+					options_->getMinPlaneSize(),
+					options_->getSmallRegionThreshold(), false);
+	MeshPtr tmp_pointer = optiMesh_->retesselateInHalfEdge(options_->getLineFusionThreshold(), options_->textures(), texture_counter);
 	if(tmp_pointer == NULL)
 		return;
-	optiMesh_->restorePlanes(5);
+	optiMesh_->restorePlanes(options_->getMinPlaneSize());
 	delete opti_time;
 	mesh_count_++;
 
     ///texturing
-	if(true)
+	if(options_->textures())
 	{
 		int counter=0;
 		int i;

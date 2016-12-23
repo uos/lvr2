@@ -31,10 +31,10 @@ namespace kfusion
           SceneAndNormals = 3
         };
 
-        KinFu(KinFuParams* params);
+        KinFu(const KinFuParams& params);
 
-        KinFuParams* params() const;
-        KinFuParams* params();
+        const KinFuParams& params() const;
+        KinFuParams& params();
 
         void performLastScan();
 
@@ -75,7 +75,7 @@ namespace kfusion
         void allocate_buffers();
 
         int frame_counter_;
-        KinFuParams* params_;
+        KinFuParams params_;
 
         std::vector<Affine3f> poses_;
 

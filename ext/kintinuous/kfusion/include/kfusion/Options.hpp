@@ -39,10 +39,10 @@ using std::endl;
 using std::string;
 using std::vector;
 
-using namespace boost::program_options;
 
-namespace kfusion
-{
+namespace kfusion{
+
+using namespace boost::program_options;
 
 /**
  * @brief A class to parse the program options for the reconstruction
@@ -278,7 +278,7 @@ inline ostream& operator<<(ostream& os, const Options &o)
 	return os;
 }
 
-} // namespace kfusion
+} // namespace reconstruct
 
 
 #endif /* OPTIONS_H_ */
