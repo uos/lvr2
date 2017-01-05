@@ -618,43 +618,45 @@ void processSingleFile(boost::filesystem::path& inFile)
 
 }
 
-namespace qi = boost::spirit::qi;
+namespace parser 
+{
+    namespace qi = boost::spirit::qi;
+    template <typename Iterator>
+        bool parse_filename(Iterator first, Iterator last, int& i)
+        {   
 
-bool parse_filename(Iterator first, Iterator last, int& i)
-{   
+            using qi::lit;
+            using qi::uint_parser;
+            using qi::parse;
+            using boost::spirit::qi::_1;
+            using boost::phoenix::ref;
 
-    using qi::lit;
-    using qi::uint_parser;
-    using qi::parse;
-    using boost::spirit::qi::_1;
-    using boost::phoenix::ref;
+            uint_parser<unsigned, 10, 3, 3> uint_3_d;
 
-    uint_parser<unsigned, 10, 3, 3> uint_3_d;
+            bool r = parse(
+                    first,                          /*< start iterator >*/
+                    last,                           /*< end iterator >*/
+                    ((lit("scan")|lit("Scan")) >> uint_3_d[ref(i) = _1])   /*< the parser >*/
+                    );
 
-    bool r = parse(
-            first,                          /*< start iterator >*/
-            last,                           /*< end iterator >*/
-            ((lit("scan")|lit("Scan")) >> uint_3_d[ref(i) = _1])   /*< the parser >*/
-            );
-
-    std::cout << "Number: " <<  i << std::endl;
-    if (first != last) // fail if we did not get a full match
-        return false;
-    return r;
+            std::cout << "Number: " <<  i << std::endl;
+            if (first != last) // fail if we did not get a full match
+                return false;
+            return r;
+        }
 }
-
 
 bool sortScans(boost::filesystem::path firstScan, boost::filesystem::path secScan)
 {
-    std::string firstStem = firstScan.stem();
-    std::string secStem   = secScan.stem();
+    std::string firstStem = firstScan.stem().string();
+    std::string secStem   = secScan.stem().string();
 
     int i = 0;
     int j = 0;
-    
-    bool first = parse_filename(firstStem.begin(), firstStem.end(), i);
-    bool sec = parse_filename(secStem.begin(), secStem.end(), j);
-    
+
+    bool first = parser::parse_filename(firstStem.begin(), firstStem.end(), i);
+    bool sec = parser::parse_filename(secStem.begin(), secStem.end(), j);
+
     if(first && sec)
     {
         return (i < j);
@@ -672,11 +674,10 @@ bool sortScans(boost::filesystem::path firstScan, boost::filesystem::path secSca
             std::terminate();
         }
     }
-    
+
 }
 
-int main(int argc, char** argv)
-{
+int main(int argc, char** argv) {
     // Parse command line arguments
     options = new leica_convert::Options(argc, argv);
 
@@ -710,38 +711,11 @@ int main(int argc, char** argv)
         exit(-1);
     }
 
-
-    //	// Create director iterator and parse supported file formats
+    // Create director iterator and parse supported file formats
     boost::filesystem::directory_iterator end;
     vector<boost::filesystem::path> v;
     for(boost::filesystem::directory_iterator it(inputDir); it != end; ++it)
     {
-        //		string extension = "";
-        //		if(options->getInputFormat() == "PLY")
-        //		{
-        //			extension = ".ply";
-        //		}
-        //		else if(options->getInputFormat() == "DAT")
-        //		{
-        //			extension = ".dat";
-        //		}
-        //		else if(options->getInputFormat() == "TXT")
-        //		{
-        //			extension = ".txt";
-        //		}
-        //		else if(options->getInputFormat() == "3D")
-        //		{
-        //			extension = ".3d";
-        //		}
-        //		else if(options->getOutputFormat() == "ALL")
-        //		{
-        //			// Filter supported file formats
-        //			if(it->path().extension() == ".ply" || it->path().extension() == ".txt" || it->path().extension() == ".dat")
-        //			{
-        //				extension = string(it->path().extension().string());
-        //			}
-        //		}
-
         std::string ext =	it->path().extension().string();
         if(ext == ".3d" || ext == ".ply" || ext == ".dat" || ext == ".txt" )
         {
@@ -750,89 +724,48 @@ int main(int argc, char** argv)
     }
 
     // Sort entries
-    sort(v.begin(), v.end(), sorScans);
+    sort(v.begin(), v.end(), sortScans);
 
     vector<float>	 		merge_points;
     vector<unsigned char>	merge_colors;
 
-    int c = 0;
-
-
-    /* This only works properly if we start with scan001 */
-/*    if(options->getStart() <= v.size() && options->getStart() > 0)
-    {
-        cout << "Starting with scan number " << options->getStart() << endl;
-        c = options->getStart() - 1;
-    }
-
-    vector<boost::filesystem::path>::iterator endOpt;
-
-    if(options->getEnd() > 0 && options->getEnd() >= options->getStart() && options->getEnd() <= v.size())
-    {
-        cout << "Ending with scan number " << options->getEnd() << endl;
-        endOpt = v.begin() + options->getEnd();
-    }
-    else
-    {
-        endOpt = v.end();
-    } */
-    
+    int j = -1;
     for(vector<boost::filesystem::path>::iterator it = v.begin(); it != v.end(); ++it)
     {
         int i = 0;
-        int j = 0;
 
-        bool p = parse_filename((it->begin()).stem(), (it->end()).stem(), i);
+        std::string currFile = (it->stem()).string();
+        bool p = parser::parse_filename(currFile.begin(), currFile.end(), i);
 
+        //if parsing failed terminate, this should never happen.
         if(!p)
         {
-            std::cerr << "ERROR " << timestamp << " " << (it)->path() << " does not match the naming convention" << std::endl;
+            std::cerr << "ERROR " << timestamp << " " << *it << " does not match the naming convention" << std::endl;
             break;
         }
 
-        if(it = v.begin())
-        {
-            j = -1;
-        }
-
+        // check if the current scan has the same numbering like the previous, this should not happen.
         if(i == j)
         {
-            std::cerr << "ERROR " << timestamp << " " << (it - 1)->path() << " & " << it->path() << " have identical numbering" << std::endl;
+            std::cerr << "ERROR " << timestamp << " " << *std::prev(it) << " & " << *it << " have identical numbering" << std::endl;
             break;
         }
 
-        if(i >= options->getStart() && i <= options->getEnd()){
-            processSingleFile(*it);
-            j = i;
+        // check if the scan is in the range which should be processed
+        if(i >= options->getStart()){
+            if(i <= options->getEnd())
+            {
+                processSingleFile(*it);
+                j = i;
+            }
+            else
+            {
+                break;
+            }
         }
-        
 
     }
 
-    //		if(merge_points.size() > 0)
-    //		{
-    //			cout << timestamp << "Building merged model..." << endl;
-    //			cout << timestamp << "Merged model contains " << merge_points.size() << " points." << endl;
-    //
-    //			floatArr points (new float[merge_points.size()]);
-    //			ucharArr colors (new unsigned char[merge_colors.size()]);
-    //
-    //			for(size_t i = 0; i < merge_points.size(); i++)
-    //			{
-    //				points[i] = merge_points[i];
-    //				colors[i] = merge_colors[i];
-    //			}
-    //
-    //			PointBufferPtr pBuffer(new PointBuffer);
-    //			pBuffer->setPointArray(points, merge_points.size() / 3);
-    //			pBuffer->setPointColorArray(colors, merge_colors.size() / 3);
-    //
-    //			ModelPtr model(new Model(pBuffer));
-    //
-    //			cout << timestamp << "Writing 'merge.ply'" << endl;
-    //			ModelFactory::saveModel(model, "merge.3d");
-    //
-    //		}
     cout << timestamp << "Program end." << endl;
     delete options;
     return 0;
