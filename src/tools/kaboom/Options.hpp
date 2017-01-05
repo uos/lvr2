@@ -39,7 +39,7 @@ using std::string;
 using std::vector;
 
 
-namespace leica_convert
+namespace kaboom
 {
 
 using namespace boost::program_options;
