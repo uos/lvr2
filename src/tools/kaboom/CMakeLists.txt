@@ -2,7 +2,7 @@
 # Set source files
 #####################################################################################
 
-set(LEICA_SOURCES
+set(KABOOM_SOURCES
     Options.cpp
     Main.cpp
 )
@@ -11,7 +11,7 @@ set(LEICA_SOURCES
 # Setup dependencies to external libraries
 #####################################################################################
 
-set(LVR_LEICA_DEPENDENCIES
+set(LVR_KABOOM_DEPENDENCIES
 	lvr_static
 	lvrlas_static
 	lvrrply_static
@@ -22,15 +22,15 @@ set(LVR_LEICA_DEPENDENCIES
 	)
 
 if(PCL_FOUND)
-  set(LVR_LEICA_DEPENDENCIES ${LVR_LEICA_DEPENDENCIES} ${PCL_LIBRARIES} )
+    set(LVR_KABOOM_DEPENDENCIES ${LVR_LEICA_DEPENDENCIES} ${PCL_LIBRARIES} )
 endif(PCL_FOUND)
 
 #####################################################################################
 # Add executable
 #####################################################################################
 
-add_executable(lvr_leica_convert ${LEICA_SOURCES})
-target_link_libraries(lvr_leica_convert ${LVR_LEICA_DEPENDENCIES})
+add_executable(lvr_kaboom ${KABOOM_SOURCES})
+target_link_libraries(lvr_kaboom ${LVR_KABOOM_DEPENDENCIES})
 
-install(TARGETS lvr_leica_convert
+install(TARGETS lvr_kaboom
   RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR})

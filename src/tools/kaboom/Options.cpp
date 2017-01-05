@@ -26,7 +26,7 @@
 
 #include "Options.hpp"
 
-namespace leica_convert
+namespace kaboom
 {
 
 Options::Options(int argc, char** argv) : m_descr("Supported options")

@@ -51,7 +51,7 @@ using namespace lvr;
 
 namespace qi = boost::spirit::qi;
 
-const leica_convert::Options* options;
+const kaboom::Options* options;
 
 
 ModelPtr filterModel(ModelPtr p, int k, float sigma)
@@ -654,7 +654,7 @@ bool sortScans(boost::filesystem::path firstScan, boost::filesystem::path secSca
 
 int main(int argc, char** argv) {
     // Parse command line arguments
-    options = new leica_convert::Options(argc, argv);
+    options = new kaboom::Options(argc, argv);
 
     boost::filesystem::path inputDir(options->getInputDir());
     boost::filesystem::path outputDir(options->getOutputDir());
