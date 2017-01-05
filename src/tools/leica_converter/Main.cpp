@@ -49,6 +49,8 @@ using namespace std;
 
 using namespace lvr;
 
+namespace qi = boost::spirit::qi;
+
 const leica_convert::Options* options;
 
 
@@ -618,32 +620,27 @@ void processSingleFile(boost::filesystem::path& inFile)
 
 }
 
-namespace parser 
-{
-    namespace qi = boost::spirit::qi;
-    template <typename Iterator>
-        bool parse_filename(Iterator first, Iterator last, int& i)
-        {   
+bool parse_filename(std::string::iterator first, std::string::iterator last, int& i)
+{   
 
-            using qi::lit;
-            using qi::uint_parser;
-            using qi::parse;
-            using boost::spirit::qi::_1;
-            using boost::phoenix::ref;
+    using qi::lit;
+    using qi::uint_parser;
+    using qi::parse;
+    using boost::spirit::qi::_1;
+    using boost::phoenix::ref;
 
-            uint_parser<unsigned, 10, 3, 3> uint_3_d;
+    uint_parser<unsigned, 10, 3, 3> uint_3_d;
 
-            bool r = parse(
-                    first,                          /*< start iterator >*/
-                    last,                           /*< end iterator >*/
-                    ((lit("scan")|lit("Scan")) >> uint_3_d[ref(i) = _1])   /*< the parser >*/
-                    );
+    bool r = parse(
+            first,                          /*< start iterator >*/
+            last,                           /*< end iterator >*/
+            ((lit("scan")|lit("Scan")) >> uint_3_d[ref(i) = _1])   /*< the parser >*/
+            );
 
-            std::cout << "Number: " <<  i << std::endl;
-            if (first != last) // fail if we did not get a full match
-                return false;
-            return r;
-        }
+    std::cout << "Number: " <<  i << std::endl;
+    if (first != last) // fail if we did not get a full match
+        return false;
+    return r;
 }
 
 bool sortScans(boost::filesystem::path firstScan, boost::filesystem::path secScan)
@@ -654,8 +651,8 @@ bool sortScans(boost::filesystem::path firstScan, boost::filesystem::path secSca
     int i = 0;
     int j = 0;
 
-    bool first = parser::parse_filename(firstStem.begin(), firstStem.end(), i);
-    bool sec = parser::parse_filename(secStem.begin(), secStem.end(), j);
+    bool first = parse_filename(firstStem.begin(), firstStem.end(), i);
+    bool sec = parse_filename(secStem.begin(), secStem.end(), j);
 
     if(first && sec)
     {
@@ -735,7 +732,7 @@ int main(int argc, char** argv) {
         int i = 0;
 
         std::string currFile = (it->stem()).string();
-        bool p = parser::parse_filename(currFile.begin(), currFile.end(), i);
+        bool p = parse_filename(currFile.begin(), currFile.end(), i);
 
         //if parsing failed terminate, this should never happen.
         if(!p)
