@@ -333,6 +333,7 @@ void transformModel(ModelPtr model, Eigen::Matrix4d transformation)
 {
     cout << timestamp << "Transforming model." << endl;
     size_t numPoints;
+
     floatArr arr = model->m_pointCloud->getPointArray(numPoints);
 
     for(int i = 0; i < numPoints; i++)
@@ -359,7 +360,11 @@ void processSingleFile(boost::filesystem::path& inFile)
     cout << timestamp << "Reading point cloud data from file " << inFile.filename().string() << "." << endl;
 
     model = ModelFactory::readModel(inFile.string());
-
+    
+    if(0 == model)
+    {
+        throw "ERROR: Could not create Model for: ";
+    }
 
     if(options->getOutputFile() != "")
     {
@@ -620,7 +625,8 @@ void processSingleFile(boost::filesystem::path& inFile)
 
 }
 
-bool parse_filename(std::string::iterator first, std::string::iterator last, int& i)
+    template <typename Iterator>
+bool parse_filename(Iterator first, Iterator last, int& i)
 {   
 
     using qi::lit;
@@ -637,7 +643,6 @@ bool parse_filename(std::string::iterator first, std::string::iterator last, int
             ((lit("scan")|lit("Scan")) >> uint_3_d[ref(i) = _1])   /*< the parser >*/
             );
 
-    std::cout << "Number: " <<  i << std::endl;
     if (first != last) // fail if we did not get a full match
         return false;
     return r;
@@ -660,15 +665,25 @@ bool sortScans(boost::filesystem::path firstScan, boost::filesystem::path secSca
     }
     else
     {
-        if(!first)
+     /*   if(!first)
         {
             std::cerr << timestamp << " " << firstScan << " does not match the naming convention" << std::endl;
             std::terminate();
         }
         else
         {
-            std::cerr << "ERROR: " << timestamp << " " << secScan << " does not match the naming convention" << std::endl;
+            std::cerr << timestamp << "ERROR: " << " " << secScan << " does not match the naming convention" << std::endl;
             std::terminate();
+        } */
+
+        // this causes non valid files being at the beginning of the vector.
+        if(sec)
+        {
+            return true;
+        }
+        else
+        {
+            return false;
         }
     }
 
@@ -725,7 +740,7 @@ int main(int argc, char** argv) {
 
     vector<float>	 		merge_points;
     vector<unsigned char>	merge_colors;
-
+    
     int j = -1;
     for(vector<boost::filesystem::path>::iterator it = v.begin(); it != v.end(); ++it)
     {
@@ -737,22 +752,31 @@ int main(int argc, char** argv) {
         //if parsing failed terminate, this should never happen.
         if(!p)
         {
-            std::cerr << "ERROR " << timestamp << " " << *it << " does not match the naming convention" << std::endl;
+            std::cerr << timestamp << "ERROR " << " " << *it << " does not match the naming convention" << std::endl;
             break;
         }
 
         // check if the current scan has the same numbering like the previous, this should not happen.
         if(i == j)
         {
-            std::cerr << "ERROR " << timestamp << " " << *std::prev(it) << " & " << *it << " have identical numbering" << std::endl;
+            std::cerr << timestamp << "ERROR " << *std::prev(it) << " & " << *it << " have identical numbering" << std::endl;
             break;
         }
 
         // check if the scan is in the range which should be processed
         if(i >= options->getStart()){
-            if(i <= options->getEnd())
+            // when end is default(=0) process the complete vector
+            if(0 == options->getEnd() || i <= options->getEnd()) 
             {
-                processSingleFile(*it);
+                try
+                {
+                    processSingleFile(*it);
+                }
+                catch(const char* msg)
+                {
+                    std::cerr << timestamp << msg << *it << std::endl;
+                    break;
+                }
                 j = i;
             }
             else
