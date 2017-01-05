@@ -258,27 +258,6 @@ Eigen::Matrix4d getTransformationFromPose(boost::filesystem::path& pose)
         alignxf[14] = rPos[2];
         alignxf[15] = 1;
 
-        //		Eigen::Matrix4d transformation;
-        //		transformation  << alignxf[0],  alignxf[1],  alignxf[2],  alignxf[3],
-        //				alignxf[4],  alignxf[5],  alignxf[6],  alignxf[7],
-        //				alignxf[8],  alignxf[9],  alignxf[10], alignxf[11],
-        //				alignxf[12], alignxf[13], alignxf[14], alignxf[15];
-        /*
-           Eigen::Matrix3d rotation;
-           Eigen::Vector4d translation;
-
-           rotation  << alignxf[0],  alignxf[4],  alignxf[8],
-           alignxf[1],  alignxf[5],  alignxf[9],
-           alignxf[2],  alignxf[6],  alignxf[10];
-
-           translation << alignxf[12], alignxf[13], alignxf[14], 1.0;
-
-           Eigen::Matrix4d transformation;
-           transformation.setIdentity();
-           transformation.block<3,3>(0,0) = rotation;
-           transformation.rightCols<1>() = translation; */
-
-
         return buildTransformation(alignxf);
     }
     else
@@ -310,21 +289,6 @@ Eigen::Matrix4d getTransformationFromFrames(boost::filesystem::path& frames)
             break;
         }
     }
-
-    /*
-       Eigen::Matrix3d rotation;
-       Eigen::Vector4d translation;
-
-       rotation  << alignxf[0],  alignxf[4],  alignxf[8],
-       alignxf[1],  alignxf[5],  alignxf[9],
-       alignxf[2],  alignxf[6],  alignxf[10];
-
-       translation << alignxf[12], alignxf[13], alignxf[14], 1.0;
-
-       Eigen::Matrix4d transformation;
-       transformation.setIdentity();
-       transformation.block<3,3>(0,0) = rotation;
-       transformation.rightCols<1>() = translation; */
 
     return buildTransformation(alignxf);
 }
@@ -686,7 +650,6 @@ bool sortScans(boost::filesystem::path firstScan, boost::filesystem::path secSca
             return false;
         }
     }
-
 }
 
 int main(int argc, char** argv) {
