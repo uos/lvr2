@@ -377,7 +377,17 @@ void processSingleFile(boost::filesystem::path& inFile)
     {
         if(options->getOutputFormat() == "")
         {
-            // Infer format from file extension, convert and write out
+            // Infer format from file extension, convert and write out 
+            char name[1024];
+
+            sprintf(name, "/%s/%s", options->getOutputDir().c_str(), inFile.filename().c_str());
+
+            ofstream out(name);
+            size_t points_written = writeAscii(model, out, asciiReductionFactor(inFile));
+
+            out.close();
+            cout << "Wrote " << points_written << " points to file " << name << endl;
+
         }
         else if(options->getOutputFormat() == "SLAM")
         {
