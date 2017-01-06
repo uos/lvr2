@@ -98,6 +98,20 @@ size_t countPointsInFile(boost::filesystem::path& inFile)
     return n_points;
 }
 
+size_t writePose(Eigen::Matrix4d transform, const boost::filesystem::path& poseOut)
+{
+    std::ofstream out(poseOut.c_str());
+
+    out.close();
+}
+
+size_t writeFrames(Eigen::Matrix4d transform, const boost::filesystem::path& framesOut)
+{
+    std::ofstream out(poseOut.c_str());
+
+    out.close();
+}
+
 size_t writeModel( ModelPtr model,const  boost::filesystem::path& outfile, int modulo)
 {
     size_t n_ip;
@@ -194,6 +208,19 @@ int asciiReductionFactor(boost::filesystem::path& inFile)
 
     /* No reduction write all points */
     return 1;
+
+}
+
+Eigen::Matrix4d transformMatrix(Eigen::Matrix4d transformation)
+{
+    Eigen::Matrix3d rotation = transformation.block<3,3>(0,0);
+    Eigen::Vector4d translation = transformation.rightCols<1>();
+
+    Eigen::Matrix4d tmp;
+
+    tmp.setIdentity();
+
+    return NULL; 
 
 }
 
@@ -379,8 +406,33 @@ void processSingleFile(boost::filesystem::path& inFile)
         {
             // Infer format from file extension, convert and write out 
             char name[1024];
+            char frames[1024];
+            char pose[1024];
 
+            sprintf(frames, "%s/%s.frames", inFile.parent_path().c_str(), inFile.stem().c_str());
+            sprintf(pose, "%s/%s.pose", inFile.parent_path().c_str(), inFile.stem().c_str());
             sprintf(name, "/%s/%s", options->getOutputDir().c_str(), inFile.filename().c_str());
+
+            boost::filesystem::path framesPath(frames);
+            boost::filesystem::path posePath(pose);
+            
+            // Transform the frames
+            if(boost::filesystem::exists(framesPath))
+            {
+                std::cout << timestamp << "Transforming frame: " << framesPath << std::endl;
+                Eigen::Matrix4d transform = transformMatrix(getTransformationFromFrames(framesPath));
+
+            }
+
+            // Transform the pose file
+            if(boost::filesystem::exists(posePath))
+            {
+
+                std::cout << timestamp << "Transforming pose: " << posePath << std::endl;
+                Eigen::Matrix4d transform = transformMatrix(getTransformationFromPose(posePath));
+
+            }
+
 
             ofstream out(name);
             size_t points_written = writeAscii(model, out, asciiReductionFactor(inFile));
@@ -438,165 +490,9 @@ void processSingleFile(boost::filesystem::path& inFile)
                 transformModel(model, transform);
             }
 
-
             static size_t points_written = writeModel(model, boost::filesystem::path(outFile), asciiReductionFactor(inFile));
-
         }
     }
-
-
-
-    //	if(options->slamOut())
-    //	{
-    //		if(model)
-    //		{
-    //
-    //		}
-    //	}
-    //	else
-    //	{
-    //		if(options->getOutputFile() != "")
-    //		{
-    //
-    //		}
-    //		else
-    //		{
-    //			if(options->getOutputFormat() == "")
-    //			{
-    //
-    //				// TO-DO Test if outputdir is inputdir
-    //
-    //
-    //			}
-    //			else if(options->getOutputFormat() == "ASCII")
-    //			{
-    //				// Write all data into points.txt
-    //				char frames[1024];
-    //				char pose[1024];
-    //				sprintf(frames, "/%s/%s.frames", inFile.parent_path().c_str(), inFile.stem().c_str());
-    //				sprintf(pose, "/%s/%s.pose", inFile.parent_path().c_str(), inFile.stem().c_str());
-    //
-    //				boost::filesystem::path framesPath(frames);
-    //				boost::filesystem::path posePath(pose);
-    //
-    //				if(boost::filesystem::exists(framesPath))
-    //				{
-    //					Eigen::Matrix4d transform = getTransformationFromFrames(framesPath);
-    //					transformModel(model, transform);
-    //				}
-    //				else if(boost::filesystem::exists(posePath))
-    //				{
-    //					Eigen::Matrix4d transform = getTransformationFromPose(posePath);
-    //					transformModel(model, transform);
-    //				}
-    //
-    //				std::ofstream out("points.txt", std::ofstream::out | std::ofstream::app);
-    //
-    //				static size_t points_written = 0;
-    //				points_written += writeModel(model, out, asciiReductionFactor(inFile));
-    //
-    //				out.close();
-    //
-    //			}
-    //		}
-    //	}
-
-
-    //		if(options->getInputFormat() == "DAT")
-    //		{
-    //			DatIO io;
-    //			cout << timestamp << "Reading point cloud data from " << it->c_str() << "." << endl;
-    //			model = io.read(it->string(), 4, reduction);
-    //
-    //			if(options->filter())
-    //			{
-    //				cout << timestamp << "Filtering input data..." << endl;
-    //				model = filterModel(model, options->getK(), options->getSigma());
-    //			}
-    //		}
-    //		else
-    //		{
-    //			cout << timestamp << "Reduction mode currently only supported for DAT format." << endl;
-    //			exit(-1);
-    //		}
-    //
-    //		if(model)
-    //		{
-    //			/*	// Convert to slam coordinate system
-    //				if(model->m_pointCloud)
-    //				{
-    //					float point[3];
-    //					PointBufferPtr p_ptr = model->m_pointCloud;
-    //					size_t num;
-    //					floatArr points = p_ptr->getPointArray(num);
-    //					for(int i = 0; i < num; i++)
-    //					{
-    //						point[0] = points[3 * i + 1];
-    //						point[1] = points[3 * i + 2];
-    //						point[2] = points[3 * i];
-    //
-    //						point[0] *= -100;
-    //						point[1] *= 100;
-    //						point[2] *= 100;
-    //
-    //						points[3 * i] = point[0];
-    //						points[3 * i + 1] = point[1];
-    //						points[3 * i + 2] = point[2];
-    //					}
-    //				}
-    //			 */
-    //
-    //			if(reduction == 0)
-    //			{
-    //				char name[1024];
-    //				sprintf(name, "%s/scan%03d.3d", outputDir.c_str(), c);
-    //				cout << timestamp << "Saving " << name << "..." << endl;
-    //				AsciiIO outIO;
-    //				outIO.setModel(model);
-    //				outIO.save(name);
-    //			}
-    //		}
-    //	}
-    //	else if(options->getOutputFormat() == "MERGE")
-    //	{
-    //		ModelPtr model = ModelFactory::readModel(it->string());
-    //		if(model)
-    //		{
-    //			PointBufferPtr points = model->m_pointCloud;
-    //			size_t num_points = 0;
-    //			size_t num_colors = 0;
-    //			floatArr point_arr = points->getPointArray(num_points);
-    //			ucharArr color_arr = points->getPointColorArray(num_colors);
-    //
-    //			cout << timestamp << "Adding " << it->c_str() << " to merged point cloud" << endl;
-    //
-    //			for(size_t i = 0; i < num_points; i++)
-    //			{
-    //				merge_points.push_back(point_arr[3 * i]);
-    //				merge_points.push_back(point_arr[3 * i + 1]);
-    //				merge_points.push_back(point_arr[3 * i + 2]);
-    //
-    //				if(num_points == num_colors)
-    //				{
-    //					merge_colors.push_back(color_arr[3 * i]);
-    //					merge_colors.push_back(color_arr[3 * i + 1]);
-    //					merge_colors.push_back(color_arr[3 * i + 2]);
-    //				}
-    //				else
-    //				{
-    //					for(int j = 0; j < 3; j++)
-    //					{
-    //						merge_colors.push_back(128);
-    //					}
-    //				}
-    //			}
-    //		}
-    //		else
-    //		{
-    //			cout << "Unable to model data from " << it->c_str() << endl;
-    //		}
-    //	}
-
 }
 
     template <typename Iterator>
