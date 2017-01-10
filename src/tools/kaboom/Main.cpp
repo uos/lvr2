@@ -107,7 +107,7 @@ size_t writePose(Eigen::Matrix4d transform, const boost::filesystem::path& poseO
 
 size_t writeFrames(Eigen::Matrix4d transform, const boost::filesystem::path& framesOut)
 {
-    std::ofstream out(poseOut.c_str());
+    std::ofstream out(framesOut.c_str());
 
     out.close();
 }
@@ -153,9 +153,10 @@ size_t writeModel( ModelPtr model,const  boost::filesystem::path& outfile, int m
 
 size_t writeAscii(ModelPtr model, std::ofstream& out, int modulo)
 {
-    size_t n_ip;
+    size_t n_ip, n_colors;
     size_t cntr = 0;
     floatArr arr = model->m_pointCloud->getPointArray(n_ip);
+    ucharArr colors = model->m_pointCloud->getPointColorArray(n_colors);
     for(int a = 0; a < n_ip; a++)
     {
         if(a % modulo == 0)
@@ -175,8 +176,16 @@ size_t writeAscii(ModelPtr model, std::ofstream& out, int modulo)
                 arr[a * 3 + 2] 	*= options->sz();
             }
 
-            out << arr[a * 3 + options->x()] << " " << arr[a * 3 + options->y()] << " " << arr[a * 3 + options->z()] << endl;
+            out << arr[a * 3 + options->x()] << " " << arr[a * 3 + options->y()] << " " << arr[a * 3 + options->z()];
+
+            if(n_colors)
+            {
+            	out << " " << (int)colors[a * 3] << " " << (int)colors[a * 3 + 1] << " " << (int)colors[a * 3 + 2];
+            }
+            out << endl;
+
             cntr++;
+
         }
     }
     return cntr;
@@ -220,7 +229,7 @@ Eigen::Matrix4d transformMatrix(Eigen::Matrix4d transformation)
 
     tmp.setIdentity();
 
-    return NULL; 
+    return tmp; 
 
 }
 
