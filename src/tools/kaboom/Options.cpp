@@ -26,7 +26,7 @@
 
 #include "Options.hpp"
 
-namespace leica_convert
+namespace kaboom
 {
 
 Options::Options(int argc, char** argv) : m_descr("Supported options")
@@ -36,14 +36,15 @@ Options::Options(int argc, char** argv) : m_descr("Supported options")
 
 	m_descr.add_options()
 		("help", "Produce help message")
-		("in", value<string>()->default_value("./"), "A directory containing scan data for conversion.")
-		("out", value<string>()->default_value("./"), "The target directory for converted data.")
-		("outputFormat", value<string>()->default_value("SLAM"), "Type of target data. Choose from SLAM, MERGE, SLAM_COLOR, PLY, 3D.")
-		("inputFormat", value<string>()->default_value("ALL"), "Type of parsed input data. Choose from ALL, 3D, PLY, DAT, LAS.")
+		("inputDir", value<string>()->default_value("./"), "A directory containing several scan files for batch conversion.")
+		("inputFile", value<string>()->default_value(""), "A single file to convert.")
+		("outputFile", value<string>()->default_value(""), "The name of a single output file if scans are merged. If the format can be deduced frim the file extension, the specification of --outputFormat is optional.")
+		("outputDir", value<string>()->default_value("./"), "The target directory for converted data.")
+		("outputFormat", value<string>()->default_value(""), "Specify the output format. Possible values are ASCII, PLY, DAT, LAS. If left empty, the format is deduced from the extension of the input files.")
 	    ("filter", value<bool>()->default_value(false), "Filter input data.")
 	    ("k", value<int>()->default_value(1), "k neighborhood for filtering.")
 	    ("sigma", value<float>()->default_value(1.0), "Deviation for outlier filter.")
-	    ("targetSize", value<int>()->default_value(100000), "Target size (reduction) for the iput scans.")
+	    ("targetSize", value<int>()->default_value(0), "Target size (reduction) for the input scans.")
 	    ("xPos,x", value<int>()->default_value(0), "Position of the x-coordinates in the input data lines.")
 	    ("yPos,y", value<int>()->default_value(1), "Position of the y-coordinates in the input data lines.")
 	    ("zPos,z", value<int>()->default_value(2), "Position of the z-coordinates in the input data lines.")
@@ -71,25 +72,29 @@ Options::Options(int argc, char** argv) : m_descr("Supported options")
 
 }
 
+string Options::getOutputFile() const
+{
+	return m_variables["outputFile"].as<string>();
+}
+
+string Options::getInputFile() const
+{
+	return m_variables["inputFile"].as<string>();
+}
+
 string 	Options::getInputDir() const
 {
-	return m_variables["in"].as<string>();
+	return m_variables["inputDir"].as<string>();
 }
 
 string 	Options::getOutputDir() const
 {
-	return m_variables["out"].as<string>();
+	return m_variables["outputDir"].as<string>();
 }
 
 string 	Options::getOutputFormat() const
 {
 	return m_variables["outputFormat"].as<string>();
-}
-
-
-string 	Options::getInputFormat() const
-{
-	return m_variables["inputFormat"].as<string>();
 }
 
 bool	Options::filter() const

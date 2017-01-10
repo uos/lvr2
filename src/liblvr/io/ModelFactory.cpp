@@ -63,7 +63,7 @@ ModelPtr ModelFactory::readModel( std::string filename )
     {
         io = new PLYIO;
     }
-    else if(extension == ".pts" || extension == ".3d" || extension == ".xyz")
+    else if(extension == ".pts" || extension == ".3d" || extension == ".xyz" || extension == ".txt")
     {
         io = new AsciiIO;
     }
@@ -210,7 +210,7 @@ void ModelFactory::saveModel( ModelPtr m, std::string filename)
     {
         io = new PLYIO;
     }
-    else if (extension == ".pts" || extension == ".3d" || extension == ".xyz")
+    else if (extension == ".pts" || extension == ".3d" || extension == ".xyz" || extension == ".txt")
     {
         io = new AsciiIO;
     }

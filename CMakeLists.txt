@@ -367,7 +367,7 @@ add_subdirectory(src/tools/meshoptimizer)
 add_subdirectory(src/tools/transform)
 add_subdirectory(src/tools/registration)
 add_subdirectory(src/tools/normals)
-add_subdirectory(src/tools/leica_converter)
+add_subdirectory(src/tools/kaboom)
 
 if(MPI_FOUND)
   add_subdirectory(src/tools/mpi)
