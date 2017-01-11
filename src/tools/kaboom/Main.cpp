@@ -112,15 +112,11 @@ size_t writeFrames(Eigen::Matrix4d transform, const boost::filesystem::path& fra
     out.close();
 }
 
-size_t writeModel( ModelPtr model,const  boost::filesystem::path& outfile, int modulo)
+size_t writeModel( ModelPtr model,const  boost::filesystem::path& outfile)
 {
     size_t n_ip;
-    size_t cntr = 0;
     floatArr arr = model->m_pointCloud->getPointArray(n_ip);
-
-    size_t new_model_size = n_ip / modulo;
-    floatArr targetPoints(new float[3 * new_model_size]);
-
+/*
     for(int a = 0; a < n_ip; a++)
     {
         if(a % modulo == 0)
@@ -142,53 +138,34 @@ size_t writeModel( ModelPtr model,const  boost::filesystem::path& outfile, int m
             cntr++;
         }
     }
-
-    PointBufferPtr pc(new PointBuffer);
+*/
+ /*   PointBufferPtr pc(new PointBuffer);
     pc->setPointArray(targetPoints, new_model_size);
     ModelPtr outModel(new Model(pc));
-    ModelFactory::saveModel(outModel, outfile.string());
+    ModelFactory::saveModel(outModel, outfile.string());*/
 
-    return cntr;
+    ModelFactory::saveModel(model, outfile.string());
+
+    return n_ip;
 }
 
-size_t writeAscii(ModelPtr model, std::ofstream& out, int modulo)
+size_t writeAscii(ModelPtr model, std::ofstream& out)
 {
     size_t n_ip, n_colors;
-    size_t cntr = 0;
     floatArr arr = model->m_pointCloud->getPointArray(n_ip);
     ucharArr colors = model->m_pointCloud->getPointColorArray(n_colors);
     for(int a = 0; a < n_ip; a++)
     {
-        if(a % modulo == 0)
+        out << arr[a * 3] << " " << arr[a * 3 + 1] << " " << arr[a * 3 + 2]; 
+
+        if(n_colors)
         {
-            if(options->sx() != 1)
-            {
-                arr[a * 3] 		*= options->sx();
-            }
-
-            if(options->sy() != 1)
-            {
-                arr[a * 3 + 1] 	*= options->sy();
-            }
-
-            if(options->sz() != 1)
-            {
-                arr[a * 3 + 2] 	*= options->sz();
-            }
-
-            out << arr[a * 3 + options->x()] << " " << arr[a * 3 + options->y()] << " " << arr[a * 3 + options->z()];
-
-            if(n_colors)
-            {
-            	out << " " << (int)colors[a * 3] << " " << (int)colors[a * 3 + 1] << " " << (int)colors[a * 3 + 2];
-            }
-            out << endl;
-
-            cntr++;
-
+            out << " " << (int)colors[a * 3] << " " << (int)colors[a * 3 + 1] << " " << (int)colors[a * 3 + 2];
         }
+        out << endl;
+
     }
-    return cntr;
+    return n_ip;
 }
 
 
@@ -329,7 +306,7 @@ Eigen::Matrix4d getTransformationFromFrames(boost::filesystem::path& frames)
     return buildTransformation(alignxf);
 }
 
-void optionTransform(ModelPtr model, int modulo)
+void transformFromOptions(ModelPtr model, int modulo)
 {
     size_t n_ip, n_colors;
     size_t cntr = 0;
@@ -339,6 +316,9 @@ void optionTransform(ModelPtr model, int modulo)
 
     std::vector<float> pointsTmp(n_ip);
     std::vector<unsigned char> colorsTmp(n_colors);
+    floatArr newPointsArr(new float(3 * n_ip/modulo));
+    ucharArr newColorsArr(new unsigned char(3 * n_colors/modulo));
+
 
     for(int i = 0; i < n_ip; i++)
     {
@@ -359,26 +339,22 @@ void optionTransform(ModelPtr model, int modulo)
                 arr[i * 3 + 2] 	*= options->sz();
             }
 
-            pointsTmp[cntr * 3]     = arr[i * 3 + options->x()];
-            pointsTmp[cntr * 3 + 1] = arr[i * 3 + options->y()];
-            pointsTmp[cntr * 3 + 1] = arr[i * 3 + options->z()];
+            newPointsArr[cntr * 3]     = arr[i * 3 + options->x()];
+            newPointsArr[cntr * 3 + 1] = arr[i * 3 + options->y()];
+            newPointsArr[cntr * 3 + 1] = arr[i * 3 + options->z()];
 
-            colorsTmp[cntr * 3]     = colors[i * 3];
-            colorsTmp[cntr * 3 + 1] = colors[i * 3 + 1];
-            colorsTmp[cntr * 3 + 2] = colors[i * 3 + 2];
+            newColorsArr[cntr * 3]     = colors[i * 3];
+            newColorsArr[cntr * 3 + 1] = colors[i * 3 + 1];
+            newColorsArr[cntr * 3 + 2] = colors[i * 3 + 2];
 
             cntr++;
         }
 
     }
     
-    if(cntr != pointsTmp.size())
-    {
-        std::cerr << "something went horribly wrong" << std::endl;
-    }
-
-    floatArr newPointsArr(cntr);
-    ucharArr newColorsArr(cntr);
+/*
+    floatArr newPointsArr;
+    ucharArr newColorsArr;
 
     for(int j = 0; j < cntr; j++)
     {
@@ -391,9 +367,9 @@ void optionTransform(ModelPtr model, int modulo)
         newColorsArr[j + 2] = colorsTmp[j + 2];
        
     }
-
+*/
     model->m_pointCloud->setPointArray(newPointsArr, cntr);
-    model->m_pointCloud->setPointColorArray(newColorsArray, cntr);
+    model->m_pointCloud->setPointColorArray(newColorsArr, cntr);
 
 
 }
@@ -447,6 +423,13 @@ void processSingleFile(boost::filesystem::path& inFile)
         boost::filesystem::path framesPath(frames);
         boost::filesystem::path posePath(pose);
 
+        size_t reductionFactor = asciiReductionFactor(inFile);
+
+        if(options->transformBefore())
+        {
+            transformFromOptions(model, reductionFactor);
+        }
+
         if(boost::filesystem::exists(framesPath))
         {
             std::cout << timestamp << "Getting transformation from frame: " << framesPath << std::endl;
@@ -459,6 +442,11 @@ void processSingleFile(boost::filesystem::path& inFile)
             std::cout << timestamp << "Getting transformation from pose: " << posePath << std::endl;
             Eigen::Matrix4d transform = getTransformationFromPose(posePath);
             transformModel(model, transform);
+        }
+
+        if(!options->transformBefore())
+        {
+            transformFromOptions(model, reductionFactor);
         }
 
         static size_t points_written = 0;
@@ -475,7 +463,7 @@ void processSingleFile(boost::filesystem::path& inFile)
             out.open(options->getOutputFile().c_str(), std::ofstream::out | std::ofstream::trunc);
         }
 
-        points_written += writeAscii(model, out, asciiReductionFactor(inFile));
+        points_written += writeAscii(model, out);
 
         out.close();
     }
@@ -514,7 +502,8 @@ void processSingleFile(boost::filesystem::path& inFile)
 
 
             ofstream out(name);
-            size_t points_written = writeAscii(model, out, asciiReductionFactor(inFile));
+            transformFromOptions(model, asciiReductionFactor(inFile));
+            size_t points_written = writeAscii(model, out);
 
             out.close();
             cout << "Wrote " << points_written << " points to file " << name << endl;
@@ -538,7 +527,9 @@ void processSingleFile(boost::filesystem::path& inFile)
             poseOut.close();
 
             ofstream out(name);
-            size_t points_written = writeAscii(model, out, asciiReductionFactor(inFile));
+            
+            transformFromOptions(model, asciiReductionFactor(inFile));
+            size_t points_written = writeAscii(model, out);
 
             out.close();
             cout << "Wrote " << points_written << " points to file " << name << endl;
@@ -558,6 +549,12 @@ void processSingleFile(boost::filesystem::path& inFile)
             boost::filesystem::path framesPath(frames);
             boost::filesystem::path posePath(pose);
 
+            size_t reductionFactor = asciiReductionFactor(inFile);
+            if(options->transformBefore())
+            {
+                transformFromOptions(model, reductionFactor);
+            }
+
             if(boost::filesystem::exists(framesPath))
             {
                 Eigen::Matrix4d transform = getTransformationFromFrames(framesPath);
@@ -569,7 +566,12 @@ void processSingleFile(boost::filesystem::path& inFile)
                 transformModel(model, transform);
             }
 
-            static size_t points_written = writeModel(model, boost::filesystem::path(outFile), asciiReductionFactor(inFile));
+            if(options->transformBefore())
+            {
+                transformFromOptions(model, reductionFactor);
+            }
+
+            static size_t points_written = writeModel(model, boost::filesystem::path(outFile));
         }
     }
 }

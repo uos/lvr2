@@ -51,6 +51,7 @@ Options::Options(int argc, char** argv) : m_descr("Supported options")
 	    ("sx", value<float>()->default_value(1.0), "Scaling factor for the x coordinates.")
 	    ("sy", value<float>()->default_value(1.0), "Scaling factor for the y coordinates.")
 	    ("sz", value<float>()->default_value(1.0), "Scaling factor for the z coordinates.")
+        ("transformBefore", value<bool>()->default_value(false), "Transform the scans before frames/pose-transformation.")
 	    ("rPos,r", value<int>()->default_value(-1), "Position of the red color component in the input data lines. (-1) means no color information")
 	    ("gPos,g", value<int>()->default_value(-1), "Position of the green color component in the input data lines. (-1) means no color information")
 	    ("bPos,b", value<int>()->default_value(-1), "Position of the blue color component in the input data lines. (-1) means no color information")
@@ -100,6 +101,11 @@ string 	Options::getOutputFormat() const
 bool	Options::filter() const
 {
 	return m_variables["filter"].as<bool>();
+}
+
+bool    Options::transformBefore() const
+{
+    return m_variables["transformBefore"].as<bool>();
 }
 
 int		Options::getK() const
