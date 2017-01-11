@@ -65,6 +65,7 @@ public:
     string 	getOutputFile() const;
 
 	bool	filter() const;
+    bool    transformBefore() const;
 	int		getK() const;
 	float	getSigma() const;
 	int		getTargetSize() const;
