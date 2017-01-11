@@ -329,6 +329,76 @@ Eigen::Matrix4d getTransformationFromFrames(boost::filesystem::path& frames)
     return buildTransformation(alignxf);
 }
 
+void optionTransform(ModelPtr model, int modulo)
+{
+    size_t n_ip, n_colors;
+    size_t cntr = 0;
+
+    floatArr arr = model->m_pointCloud->getPointArray(n_ip);
+    ucharArr colors = model->m_pointCloud->getPointColorArray(n_colors);
+
+    std::vector<float> pointsTmp(n_ip);
+    std::vector<unsigned char> colorsTmp(n_colors);
+
+    for(int i = 0; i < n_ip; i++)
+    {
+        if(i % modulo == 0)
+        {
+            if(options->sx() != 1)
+            {
+                arr[i * 3] 		*= options->sx();
+            }
+
+            if(options->sy() != 1)
+            {
+                arr[i * 3 + 1] 	*= options->sy();
+            }
+
+            if(options->sz() != 1)
+            {
+                arr[i * 3 + 2] 	*= options->sz();
+            }
+
+            pointsTmp[cntr * 3]     = arr[i * 3 + options->x()];
+            pointsTmp[cntr * 3 + 1] = arr[i * 3 + options->y()];
+            pointsTmp[cntr * 3 + 1] = arr[i * 3 + options->z()];
+
+            colorsTmp[cntr * 3]     = colors[i * 3];
+            colorsTmp[cntr * 3 + 1] = colors[i * 3 + 1];
+            colorsTmp[cntr * 3 + 2] = colors[i * 3 + 2];
+
+            cntr++;
+        }
+
+    }
+    
+    if(cntr != pointsTmp.size())
+    {
+        std::cerr << "something went horribly wrong" << std::endl;
+    }
+
+    floatArr newPointsArr(cntr);
+    ucharArr newColorsArr(cntr);
+
+    for(int j = 0; j < cntr; j++)
+    {
+        newPointsArr[j]     = pointsTmp[j];
+        newPointsArr[j + 1] = pointsTmp[j + 1];
+        newPointsArr[j + 2] = pointsTmp[j + 2];
+        
+        newColorsArr[j]     = colorsTmp[j];
+        newColorsArr[j + 1] = colorsTmp[j + 1];
+        newColorsArr[j + 2] = colorsTmp[j + 2];
+       
+    }
+
+    model->m_pointCloud->setPointArray(newPointsArr, cntr);
+    model->m_pointCloud->setPointColorArray(newColorsArray, cntr);
+
+
+}
+
+// transforming with Matrix from frames/pose
 void transformModel(ModelPtr model, Eigen::Matrix4d transformation)
 {
     cout << timestamp << "Transforming model." << endl;
