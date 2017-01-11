@@ -314,11 +314,11 @@ void transformFromOptions(ModelPtr model, int modulo)
     floatArr arr = model->m_pointCloud->getPointArray(n_ip);
     ucharArr colors = model->m_pointCloud->getPointColorArray(n_colors);
 
-    std::vector<float> pointsTmp(n_ip);
-    std::vector<unsigned char> colorsTmp(n_colors);
-    floatArr newPointsArr(new float(3 * n_ip/modulo));
-    ucharArr newColorsArr(new unsigned char(3 * n_colors/modulo));
+    floatArr newPointsArr(new float[3 * (n_ip/modulo)]);
+    ucharArr newColorsArr(new unsigned char[3 * (n_colors/modulo)]);
 
+    newPointsArr[0] = 13.0;
+    std::cout << "calc size:" << (n_ip/modulo) * 3 << std::endl;
 
     for(int i = 0; i < n_ip; i++)
     {
@@ -338,20 +338,28 @@ void transformFromOptions(ModelPtr model, int modulo)
             {
                 arr[i * 3 + 2] 	*= options->sz();
             }
+            
+    
+            float x = arr[i * 3 + options->x()];
+            float y = arr[i * 3 + options->y()];
+            float z = arr[i * 3 + options->z()];
+            newPointsArr[cntr * 3]     = x;
+            newPointsArr[cntr * 3 + 1] = y;
+            newPointsArr[cntr * 3 + 2] = z;
 
-            newPointsArr[cntr * 3]     = arr[i * 3 + options->x()];
-            newPointsArr[cntr * 3 + 1] = arr[i * 3 + options->y()];
-            newPointsArr[cntr * 3 + 1] = arr[i * 3 + options->z()];
-
-            newColorsArr[cntr * 3]     = colors[i * 3];
-            newColorsArr[cntr * 3 + 1] = colors[i * 3 + 1];
-            newColorsArr[cntr * 3 + 2] = colors[i * 3 + 2];
+            if(n_colors)
+            {
+                newColorsArr[cntr * 3]     = colors[i * 3];
+                newColorsArr[cntr * 3 + 1] = colors[i * 3 + 1];
+                newColorsArr[cntr * 3 + 2] = colors[i * 3 + 2];
+            }
 
             cntr++;
         }
 
     }
     
+    std::cout << cntr << std::endl;
 /*
     floatArr newPointsArr;
     ucharArr newColorsArr;
@@ -369,7 +377,11 @@ void transformFromOptions(ModelPtr model, int modulo)
     }
 */
     model->m_pointCloud->setPointArray(newPointsArr, cntr);
-    model->m_pointCloud->setPointColorArray(newColorsArr, cntr);
+
+    if(n_colors) 
+    {
+        model->m_pointCloud->setPointColorArray(newColorsArr, cntr);
+    }
 
 
 }
