@@ -312,9 +312,24 @@ Eigen::Matrix4d transformFrames(Eigen::Matrix4d frames, boost::filesystem::path&
     Eigen::Vector4d tmp;
 
     // We are always transforming from the canonical base => T = (B')^(-1)
+    
     basisTrans.col(options->x()) = Eigen::Vector3d(1,0,0);
+    if(options->sx() < 0)
+    {
+        basisTrans.col(options->x()) *= (-1);
+    }
+    
     basisTrans.col(options->y()) = Eigen::Vector3d(0,1,0);
+    if(options->sy() < 0)
+    {
+        basisTrans.col(options->y()) *= (-1);
+    }
+
     basisTrans.col(options->z()) = Eigen::Vector3d(0,0,1);
+    if(options->sz() < 0)
+    {
+        basisTrans.col(options->z()) *= (-1);
+    }
     
     // Transform the rotation matrix
     frames.block<3,3>(0,0) *= basisTrans.inverse();
