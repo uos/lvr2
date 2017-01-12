@@ -306,6 +306,28 @@ Eigen::Matrix4d getTransformationFromFrames(boost::filesystem::path& frames)
     return buildTransformation(alignxf);
 }
 
+Eigen::Matrix4d transformFrames(Eigen::Matrix4d frames, boost::filesystem::path& framesOut)
+{
+    Eigen::Matrix3d basisTrans;
+    Eigen::Vector4d tmp;
+
+    // We are always transforming from the canonical base => T = (B')^(-1)
+    basisTrans.col(options->x()) = Eigen::Vector3d(1,0,0);
+    basisTrans.col(options->y()) = Eigen::Vector3d(0,1,0);
+    basisTrans.col(options->z()) = Eigen::Vector3d(0,0,1);
+    
+    // Transform the rotation matrix
+    frames.block<3,3>(0,0) *= basisTrans.inverse();
+    
+    // Setting translation vector
+    tmp = frames.rightCols<1>();
+    (frames.rightCols<1>())(options->x()) = tmp(0) * options->sx();
+    (frames.rightCols<1>())(options->y()) = tmp(1) * options->sy();
+    (frames.rightCols<1>())(options->z()) = tmp(2) * options->sz();
+
+    return frames;
+}
+
 void transformFromOptions(ModelPtr model, int modulo)
 {
     size_t n_ip, n_colors;
