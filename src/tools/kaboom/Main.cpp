@@ -326,9 +326,11 @@ Eigen::Matrix4d transformFrames(Eigen::Matrix4d frames)
     
     // Setting translation vector
     tmp = frames.rightCols<1>();
-    (frames.rightCols<1>())(options->x()) = tmp(0) * options->sx();
-    (frames.rightCols<1>())(options->y()) = tmp(1) * options->sy();
-    (frames.rightCols<1>())(options->z()) = tmp(2) * options->sz();
+
+    std::cout << options->x() << " " << options->y() << " " << options->z() << std::endl;
+    (frames.rightCols<1>())(0) = tmp(options->x()) * options->sx();
+    (frames.rightCols<1>())(1) = tmp(options->y()) * options->sy();
+    (frames.rightCols<1>())(2) = tmp(options->z()) * options->sz();
 
     return frames;
 }
@@ -343,9 +345,6 @@ void transformFromOptions(ModelPtr model, int modulo)
 
     floatArr newPointsArr(new float[3 * (n_ip/modulo)]);
     ucharArr newColorsArr(new unsigned char[3 * (n_colors/modulo)]);
-
-    newPointsArr[0] = 13.0;
-    std::cout << "calc size:" << (n_ip/modulo) * 3 << std::endl;
 
     for(int i = 0; i < n_ip; i++)
     {
@@ -517,9 +516,7 @@ void processSingleFile(boost::filesystem::path& inFile)
             if(boost::filesystem::exists(posePath))
             {
                 std::cout << timestamp << "Transforming pose: " << posePath << std::endl;
-
             }
-
 
             ofstream out(name);
             transformFromOptions(model, asciiReductionFactor(inFile));
