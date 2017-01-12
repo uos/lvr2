@@ -110,10 +110,10 @@ void writeFrames(Eigen::Matrix4d transform, const boost::filesystem::path& frame
 {
     std::ofstream out(framesOut.c_str());
 
-    out << transform.col(0)(0) <<  " " << transform.col(0)(1) << " " <<  transform.col(0)(2) << " "  << transform.col(0)(3)
-        << " " << transform.col(1)(0) << " " << transform.col(1)(1) << " " << transform.col(1)(2) << " " << transform.col(1)(0)
-        << " " << transform.col(2)(0) << " " << transform.col(2)(1) << " " << transform.col(2)(2) << " " << transform.col(2)(3)
-        << " " << transform.col(3)(0) << " " << transform.col(3)(1) << " " << transform.col(3)(2) << " " << transform.col(3)(3);
+    out << transform.col(0)(0) << " " << transform.col(0)(1) << " " << transform.col(0)(2) << " " << transform.col(0)(3) << " " 
+        << transform.col(1)(0) << " " << transform.col(1)(1) << " " << transform.col(1)(2) << " " << transform.col(1)(3) << " " 
+        << transform.col(2)(0) << " " << transform.col(2)(1) << " " << transform.col(2)(2) << " " << transform.col(2)(3) << " "
+        << transform.col(3)(0) << " " << transform.col(3)(1) << " " << transform.col(3)(2) << " " << transform.col(3)(3);
 
     out.close();
 }
