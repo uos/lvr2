@@ -98,16 +98,22 @@ size_t countPointsInFile(boost::filesystem::path& inFile)
     return n_points;
 }
 
-size_t writePose(Eigen::Matrix4d transform, const boost::filesystem::path& poseOut)
+void writePose(Eigen::Matrix4d transform, const boost::filesystem::path& poseOut)
 {
     std::ofstream out(poseOut.c_str());
+    
 
     out.close();
 }
 
-size_t writeFrames(Eigen::Matrix4d transform, const boost::filesystem::path& framesOut)
+void writeFrames(Eigen::Matrix4d transform, const boost::filesystem::path& framesOut)
 {
     std::ofstream out(framesOut.c_str());
+
+    out << transform.col(0)(0) <<  " " << transform.col(0)(1) << " " <<  transform.col(0)(2) << " "  << transform.col(0)(3)
+        << " " << transform.col(1)(0) << " " << transform.col(1)(1) << " " << transform.col(1)(2) << " " << transform.col(1)(0)
+        << " " << transform.col(2)(0) << " " << transform.col(2)(1) << " " << transform.col(2)(2) << " " << transform.col(2)(3)
+        << " " << transform.col(3)(0) << " " << transform.col(3)(1) << " " << transform.col(3)(2) << " " << transform.col(3)(3);
 
     out.close();
 }
@@ -168,8 +174,6 @@ size_t writeAscii(ModelPtr model, std::ofstream& out)
     return n_ip;
 }
 
-
-
 int asciiReductionFactor(boost::filesystem::path& inFile)
 {
 
@@ -194,19 +198,6 @@ int asciiReductionFactor(boost::filesystem::path& inFile)
 
     /* No reduction write all points */
     return 1;
-
-}
-
-Eigen::Matrix4d transformMatrix(Eigen::Matrix4d transformation)
-{
-    Eigen::Matrix3d rotation = transformation.block<3,3>(0,0);
-    Eigen::Vector4d translation = transformation.rightCols<1>();
-
-    Eigen::Matrix4d tmp;
-
-    tmp.setIdentity();
-
-    return tmp; 
 
 }
 
@@ -306,13 +297,12 @@ Eigen::Matrix4d getTransformationFromFrames(boost::filesystem::path& frames)
     return buildTransformation(alignxf);
 }
 
-Eigen::Matrix4d transformFrames(Eigen::Matrix4d frames, boost::filesystem::path& framesOut)
+Eigen::Matrix4d transformFrames(Eigen::Matrix4d frames)
 {
     Eigen::Matrix3d basisTrans;
     Eigen::Vector4d tmp;
 
     // We are always transforming from the canonical base => T = (B')^(-1)
-    
     basisTrans.col(options->x()) = Eigen::Vector3d(1,0,0);
     if(options->sx() < 0)
     {
@@ -376,13 +366,9 @@ void transformFromOptions(ModelPtr model, int modulo)
                 arr[i * 3 + 2] 	*= options->sz();
             }
             
-    
-            float x = arr[i * 3 + options->x()];
-            float y = arr[i * 3 + options->y()];
-            float z = arr[i * 3 + options->z()];
-            newPointsArr[cntr * 3]     = x;
-            newPointsArr[cntr * 3 + 1] = y;
-            newPointsArr[cntr * 3 + 2] = z;
+            newPointsArr[cntr * 3]     = arr[i * 3 + options->x()];
+            newPointsArr[cntr * 3 + 1] = arr[i * 3 + options->y()];
+            newPointsArr[cntr * 3 + 2] = arr[i * 3 + options->z()];
 
             if(n_colors)
             {
@@ -396,23 +382,6 @@ void transformFromOptions(ModelPtr model, int modulo)
 
     }
     
-    std::cout << cntr << std::endl;
-/*
-    floatArr newPointsArr;
-    ucharArr newColorsArr;
-
-    for(int j = 0; j < cntr; j++)
-    {
-        newPointsArr[j]     = pointsTmp[j];
-        newPointsArr[j + 1] = pointsTmp[j + 1];
-        newPointsArr[j + 2] = pointsTmp[j + 2];
-        
-        newColorsArr[j]     = colorsTmp[j];
-        newColorsArr[j + 1] = colorsTmp[j + 1];
-        newColorsArr[j + 2] = colorsTmp[j + 2];
-       
-    }
-*/
     model->m_pointCloud->setPointArray(newPointsArr, cntr);
 
     if(n_colors) 
@@ -524,10 +493,14 @@ void processSingleFile(boost::filesystem::path& inFile)
             char name[1024];
             char frames[1024];
             char pose[1024];
+            char framesOut[1024];
+            char poseOut[1024];
 
             sprintf(frames, "%s/%s.frames", inFile.parent_path().c_str(), inFile.stem().c_str());
             sprintf(pose, "%s/%s.pose", inFile.parent_path().c_str(), inFile.stem().c_str());
-            sprintf(name, "/%s/%s", options->getOutputDir().c_str(), inFile.filename().c_str());
+            sprintf(framesOut, "%s/%s.frames", options->getOutputDir().c_str(), inFile.stem().c_str());
+            sprintf(poseOut, "%s/%s.pose", options->getOutputDir().c_str(), inFile.stem().c_str());
+            sprintf(name, "%s/%s", options->getOutputDir().c_str(), inFile.filename().c_str());
 
             boost::filesystem::path framesPath(frames);
             boost::filesystem::path posePath(pose);
@@ -536,16 +509,14 @@ void processSingleFile(boost::filesystem::path& inFile)
             if(boost::filesystem::exists(framesPath))
             {
                 std::cout << timestamp << "Transforming frame: " << framesPath << std::endl;
-                Eigen::Matrix4d transform = transformMatrix(getTransformationFromFrames(framesPath));
-
+                Eigen::Matrix4d transformed = transformFrames(getTransformationFromFrames(framesPath));
+                writeFrames(transformed, framesOut);
             }
 
             // Transform the pose file
             if(boost::filesystem::exists(posePath))
             {
-
                 std::cout << timestamp << "Transforming pose: " << posePath << std::endl;
-                Eigen::Matrix4d transform = transformMatrix(getTransformationFromPose(posePath));
 
             }
 
@@ -620,7 +591,8 @@ void processSingleFile(boost::filesystem::path& inFile)
                 transformFromOptions(model, reductionFactor);
             }
 
-            static size_t points_written = writeModel(model, boost::filesystem::path(outFile));
+            static size_t points_written = 0;
+            points_written = writeModel(model, boost::filesystem::path(outFile));
         }
     }
 }
