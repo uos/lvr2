@@ -27,6 +27,7 @@
  *  @author Thomas Wiemann (twiemann@uos.de)
  */
 
+#include "../display/Color.hpp"
 
 namespace lvr
 {
@@ -1731,7 +1732,7 @@ void HalfEdgeMesh<VertexT, NormalT>::finalizeAndRetesselate( bool genTextures, f
     // default colors
     float r=0, g=200, b=0;
 
-    map<Vertex<uchar>, unsigned int> materialMap;
+    map<unsigned long, unsigned int> materialMap;
 
     // Since all buffer sizes are unknown when retesselating
     // all buffers are instantiated as vectors, to avoid manual reallocation
@@ -1833,10 +1834,12 @@ void HalfEdgeMesh<VertexT, NormalT>::finalizeAndRetesselate( bool genTextures, f
                 r = *((uchar*) &(cv[0][3])); /* red */
                 g = *((uchar*) &(cv[0][4])); /* green */
                 b = *((uchar*) &(cv[0][5])); /* blue */
+
             }
 
             // Try to find a material with the same color
-            map<Vertex<uchar>, unsigned int >::iterator it = materialMap.find(Vertex<uchar>(r, g, b));
+            unsigned long colorKey = Colors::getRGBIndex(r, g, b);
+            map<unsigned long, unsigned int >::iterator it = materialMap.find(colorKey);
             if(it != materialMap.end())
             {
             	// If found, put material index into buffer
@@ -1855,6 +1858,7 @@ void HalfEdgeMesh<VertexT, NormalT>::finalizeAndRetesselate( bool genTextures, f
                 // Save material index
                 materialBuffer.push_back(m);
                 materialIndexBuffer.push_back(globalMaterialIndex);
+                materialMap[colorKey] = globalMaterialIndex;
                 globalMaterialIndex++;
             }
 
