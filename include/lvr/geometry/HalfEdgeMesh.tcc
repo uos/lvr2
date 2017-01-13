@@ -1843,7 +1843,6 @@ void HalfEdgeMesh<VertexT, NormalT>::finalizeAndRetesselate( bool genTextures, f
             if(it != materialMap.end())
             {
             	// If found, put material index into buffer
-            	cout << "RE-USING MAT" << endl;
             	unsigned int position = it->second;
             	materialIndexBuffer.push_back(position);
             }
