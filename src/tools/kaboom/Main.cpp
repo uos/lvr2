@@ -343,11 +343,6 @@ Eigen::Matrix4d transformFrames(Eigen::Matrix4d frames)
 
     // Setting translation vector
     tmp = frames.block<3,1>(0,3);
-
-    tmp(0) *= options->sx();
-    tmp(1) *= options->sy();
-    tmp(2) *= options->sz();
-
     tmp = basisTrans.inverse() * tmp;
 
     (frames.rightCols<1>())(0) = tmp(0);
