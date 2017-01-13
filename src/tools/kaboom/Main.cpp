@@ -110,10 +110,15 @@ void writeFrames(Eigen::Matrix4d transform, const boost::filesystem::path& frame
 {
     std::ofstream out(framesOut.c_str());
 
-    out << transform.col(0)(0) << " " << transform.col(0)(1) << " " << transform.col(0)(2) << " " << transform.col(0)(3) << " " 
-        << transform.col(1)(0) << " " << transform.col(1)(1) << " " << transform.col(1)(2) << " " << transform.col(1)(3) << " " 
-        << transform.col(2)(0) << " " << transform.col(2)(1) << " " << transform.col(2)(2) << " " << transform.col(2)(3) << " "
-        << transform.col(3)(0) << " " << transform.col(3)(1) << " " << transform.col(3)(2) << " " << transform.col(3)(3);
+    out << transform.col(0)(0) << " " << transform.col(0)(1) << " " << transform.col(0)(2) << " " << 0 << " "
+        << transform.col(1)(0) << " " << transform.col(1)(1) << " " << transform.col(1)(2) << " " << 0 << " "
+        << transform.col(2)(0) << " " << transform.col(2)(1) << " " << transform.col(2)(2) << " " << 0 << " ";
+        //<< transform.col(0)(0) << " " << transform.col(3)(1) << " " << transform.col(3)(2) << " ";
+
+    out << transform.col(3)(0) << " "
+        << transform.col(3)(1) << " "
+        << transform.col(3)(2) << " "
+        << transform.col(3)(3);
 
     out.close();
 }
@@ -207,8 +212,8 @@ Eigen::Matrix4d buildTransformation(double* alignxf)
     Eigen::Vector4d translation;
 
     rotation  << alignxf[0],  alignxf[4],  alignxf[8],
-    alignxf[1],  alignxf[5],  alignxf[9],
-    alignxf[2],  alignxf[6],  alignxf[10];
+                 alignxf[1],  alignxf[5],  alignxf[9],
+                 alignxf[2],  alignxf[6],  alignxf[10];
 
     translation << alignxf[12], alignxf[13], alignxf[14], 1.0;
 
@@ -300,38 +305,50 @@ Eigen::Matrix4d getTransformationFromFrames(boost::filesystem::path& frames)
 Eigen::Matrix4d transformFrames(Eigen::Matrix4d frames)
 {
     Eigen::Matrix3d basisTrans;
-    Eigen::Vector4d tmp;
+    Eigen::Vector3d tmp;
+    std::vector<Eigen::Vector3d> xyz;
+    xyz.push_back(Eigen::Vector3d(1,0,0));
+    xyz.push_back(Eigen::Vector3d(0,1,0));
+    xyz.push_back(Eigen::Vector3d(0,0,1));
 
     // We are always transforming from the canonical base => T = (B')^(-1)
-    basisTrans.col(options->x()) = Eigen::Vector3d(1,0,0);
+    basisTrans.col(0) = xyz[options->x()];
     if(options->sx() < 0)
     {
         basisTrans.col(options->x()) *= (-1);
     }
     
-    basisTrans.col(options->y()) = Eigen::Vector3d(0,1,0);
+    basisTrans.col(1) = xyz[options->y()];
     if(options->sy() < 0)
     {
         basisTrans.col(options->y()) *= (-1);
     }
 
-    basisTrans.col(options->z()) = Eigen::Vector3d(0,0,1);
+    basisTrans.col(2) = xyz[options->z()];
     if(options->sz() < 0)
     {
         basisTrans.col(options->z()) *= (-1);
     }
     
+    std::cout << frames << std::endl;
     // Transform the rotation matrix
-    frames.block<3,3>(0,0) *= basisTrans.inverse();
+    frames.block<3,3>(0,0) = basisTrans.inverse() * frames.block<3,3>(0,0) * basisTrans;
     
     // Setting translation vector
-    tmp = frames.rightCols<1>();
+    tmp = frames.block<3,1>(0,3);
+
+    tmp(0) *= options->sx();
+    tmp(1) *= options->sy();
+    tmp(2) *= options->sz();
+    
+    tmp = basisTrans.inverse() * tmp; 
 
     std::cout << options->x() << " " << options->y() << " " << options->z() << std::endl;
-    (frames.rightCols<1>())(0) = tmp(options->x()) * options->sx();
-    (frames.rightCols<1>())(1) = tmp(options->y()) * options->sy();
-    (frames.rightCols<1>())(2) = tmp(options->z()) * options->sz();
-
+    (frames.rightCols<1>())(0) = tmp(0);
+    (frames.rightCols<1>())(1) = tmp(1);
+    (frames.rightCols<1>())(2) = tmp(2);
+    (frames.rightCols<1>())(3) = 1.0;
+    std::cout << frames << std::endl;
     return frames;
 }
 
