@@ -98,11 +98,14 @@ size_t countPointsInFile(boost::filesystem::path& inFile)
     return n_points;
 }
 
-void writePose(Eigen::Matrix4d transform, const boost::filesystem::path& poseOut)
+void writePose(double* pose, const boost::filesystem::path& poseOut)
 {
     std::ofstream out(poseOut.c_str());
-
-
+    
+    // write rotation
+    out << pose[0] << pose[1] << pose[2]
+        << pose[3] << pose[4] << pose[5];
+    
     out.close();
 }
 
@@ -224,6 +227,55 @@ Eigen::Matrix4d buildTransformation(double* alignxf)
     transformation.rightCols<1>() = translation;
 
     return transformation;
+}
+
+
+
+double* transformPose(boost::filesystem::path& poseIn)
+{
+    ifstream in(poseIn.c_str());
+    double* poseTrans = new double[6];
+    double  pose[6];
+    if(in.good())
+    {
+        in >> pose[0] >> pose[1] >> pose[2]
+           >> pose[3] >> pose[4] >> pose[5];
+    }
+    
+    // scaling translation
+    pose[0] *= options->sx();
+    pose[1] *= options->sy();
+    pose[2] *= options->sz();
+
+    // check for axis reflection
+    if(options->sx())
+    {
+    
+    }
+
+    if(options->sy())
+    {
+    
+    }
+
+    if(options->sz())
+    {
+    
+    }
+
+    // change axis
+    // translation
+    poseTrans[options->x()] = pose[0];
+    poseTrans[options->y()] = pose[1];
+    poseTrans[options->z()] = pose[2];
+    
+    // rotation
+    poseTrans[3 + options->x()] = pose[3];
+    poseTrans[3 + options->y()] = pose[4];
+    poseTrans[3 + options->z()] = pose[5];
+
+
+    return poseTrans;
 }
 
 Eigen::Matrix4d getTransformationFromPose(boost::filesystem::path& pose)
@@ -534,6 +586,9 @@ void processSingleFile(boost::filesystem::path& inFile)
             if(boost::filesystem::exists(posePath))
             {
                 std::cout << timestamp << "Transforming pose: " << posePath << std::endl;
+                double* transformed = transformPose(posePath);
+                writePose(transformed, poseOut);
+                delete transformed;
             }
 
             ofstream out(name);
