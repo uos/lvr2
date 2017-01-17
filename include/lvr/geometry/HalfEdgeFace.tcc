@@ -144,19 +144,12 @@ template<typename VertexT, typename NormalT>
 void HalfEdgeFace<VertexT, NormalT>::getAdjacentFaces(FaceVector &adj){
 
     EdgePtr current = m_edge;
-    EdgePtr pair;
-    FacePtr neighbor;
 
     do
     {
-        pair = current->pair();
-        if(pair != 0)
+        if(current->hasNeighborFace())
         {
-            neighbor = pair->face();
-            if(neighbor != 0)
-            {
-                adj.push_back(neighbor);
-            }
+            adj.push_back(current->pair()->face());
         }
         current = current->next();
     } while(m_edge != current);
