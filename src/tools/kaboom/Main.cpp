@@ -69,7 +69,7 @@ ModelPtr filterModel(ModelPtr p, int k, float sigma)
             ModelPtr out_model( new Model( pb ) );
             cout << timestamp << "Filtered out " << original_size - out_model->m_pointCloud->getNumPoints() << " points." << endl;
             return out_model;
-#else 
+#else
             cout << timestamp << "Can't create a PCL Filter without PCL installed." << endl;
             return NULL;
 #endif
@@ -101,7 +101,7 @@ size_t countPointsInFile(boost::filesystem::path& inFile)
 void writePose(Eigen::Matrix4d transform, const boost::filesystem::path& poseOut)
 {
     std::ofstream out(poseOut.c_str());
-    
+
 
     out.close();
 }
@@ -110,10 +110,16 @@ void writeFrames(Eigen::Matrix4d transform, const boost::filesystem::path& frame
 {
     std::ofstream out(framesOut.c_str());
 
-    out << transform.col(0)(0) << " " << transform.col(0)(1) << " " << transform.col(0)(2) << " " << transform.col(0)(3) << " " 
-        << transform.col(1)(0) << " " << transform.col(1)(1) << " " << transform.col(1)(2) << " " << transform.col(1)(3) << " " 
-        << transform.col(2)(0) << " " << transform.col(2)(1) << " " << transform.col(2)(2) << " " << transform.col(2)(3) << " "
-        << transform.col(3)(0) << " " << transform.col(3)(1) << " " << transform.col(3)(2) << " " << transform.col(3)(3);
+    // write the rotation matrix
+    out << transform.col(0)(0) << " " << transform.col(0)(1) << " " << transform.col(0)(2) << " " << 0 << " "
+        << transform.col(1)(0) << " " << transform.col(1)(1) << " " << transform.col(1)(2) << " " << 0 << " "
+        << transform.col(2)(0) << " " << transform.col(2)(1) << " " << transform.col(2)(2) << " " << 0 << " ";
+
+    // write the translation vector
+    out << transform.col(3)(0) << " "
+        << transform.col(3)(1) << " "
+        << transform.col(3)(2) << " "
+        << transform.col(3)(3);
 
     out.close();
 }
@@ -162,7 +168,7 @@ size_t writeAscii(ModelPtr model, std::ofstream& out)
     ucharArr colors = model->m_pointCloud->getPointColorArray(n_colors);
     for(int a = 0; a < n_ip; a++)
     {
-        out << arr[a * 3] << " " << arr[a * 3 + 1] << " " << arr[a * 3 + 2]; 
+        out << arr[a * 3] << " " << arr[a * 3 + 1] << " " << arr[a * 3 + 2];
 
         if(n_colors)
         {
@@ -201,14 +207,14 @@ int asciiReductionFactor(boost::filesystem::path& inFile)
 
 }
 
-Eigen::Matrix4d buildTransformation(double* alignxf) 
+Eigen::Matrix4d buildTransformation(double* alignxf)
 {
     Eigen::Matrix3d rotation;
     Eigen::Vector4d translation;
 
     rotation  << alignxf[0],  alignxf[4],  alignxf[8],
-    alignxf[1],  alignxf[5],  alignxf[9],
-    alignxf[2],  alignxf[6],  alignxf[10];
+                 alignxf[1],  alignxf[5],  alignxf[9],
+                 alignxf[2],  alignxf[6],  alignxf[10];
 
     translation << alignxf[12], alignxf[13], alignxf[14], 1.0;
 
@@ -300,37 +306,49 @@ Eigen::Matrix4d getTransformationFromFrames(boost::filesystem::path& frames)
 Eigen::Matrix4d transformFrames(Eigen::Matrix4d frames)
 {
     Eigen::Matrix3d basisTrans;
-    Eigen::Vector4d tmp;
+    Eigen::Matrix3d reflection;
+    Eigen::Vector3d tmp;
+    std::vector<Eigen::Vector3d> xyz;
+    xyz.push_back(Eigen::Vector3d(1,0,0));
+    xyz.push_back(Eigen::Vector3d(0,1,0));
+    xyz.push_back(Eigen::Vector3d(0,0,1));
 
-    // We are always transforming from the canonical base => T = (B')^(-1)
-    basisTrans.col(options->x()) = Eigen::Vector3d(1,0,0);
+    reflection.setIdentity();
+
     if(options->sx() < 0)
     {
-        basisTrans.col(options->x()) *= (-1);
+        reflection.block<3,1>(0,0) = (-1) * xyz[0];
     }
-    
-    basisTrans.col(options->y()) = Eigen::Vector3d(0,1,0);
+
     if(options->sy() < 0)
     {
-        basisTrans.col(options->y()) *= (-1);
+        reflection.block<3,1>(0,1) = (-1) * xyz[1];
     }
 
-    basisTrans.col(options->z()) = Eigen::Vector3d(0,0,1);
     if(options->sz() < 0)
     {
-        basisTrans.col(options->z()) *= (-1);
+        reflection.block<3,1>(0,2) = (-1) * xyz[2];
     }
-    
-    // Transform the rotation matrix
-    frames.block<3,3>(0,0) *= basisTrans.inverse();
-    
-    // Setting translation vector
-    tmp = frames.rightCols<1>();
 
-    std::cout << options->x() << " " << options->y() << " " << options->z() << std::endl;
-    (frames.rightCols<1>())(0) = tmp(options->x()) * options->sx();
-    (frames.rightCols<1>())(1) = tmp(options->y()) * options->sy();
-    (frames.rightCols<1>())(2) = tmp(options->z()) * options->sz();
+    // axis reflection
+    frames.block<3,3>(0,0) *= reflection;
+
+    // We are always transforming from the canonical base => T = (B')^(-1)
+    basisTrans.col(0) = xyz[options->x()];
+    basisTrans.col(1) = xyz[options->y()];
+    basisTrans.col(2) = xyz[options->z()];
+
+    // Transform the rotation matrix
+    frames.block<3,3>(0,0) = basisTrans.inverse() * frames.block<3,3>(0,0) * basisTrans;
+
+    // Setting translation vector
+    tmp = frames.block<3,1>(0,3);
+    tmp = basisTrans.inverse() * tmp;
+
+    (frames.rightCols<1>())(0) = tmp(0);
+    (frames.rightCols<1>())(1) = tmp(1);
+    (frames.rightCols<1>())(2) = tmp(2);
+    (frames.rightCols<1>())(3) = 1.0;
 
     return frames;
 }
@@ -364,7 +382,7 @@ void transformFromOptions(ModelPtr model, int modulo)
             {
                 arr[i * 3 + 2] 	*= options->sz();
             }
-            
+
             newPointsArr[cntr * 3]     = arr[i * 3 + options->x()];
             newPointsArr[cntr * 3 + 1] = arr[i * 3 + options->y()];
             newPointsArr[cntr * 3 + 2] = arr[i * 3 + options->z()];
@@ -380,10 +398,10 @@ void transformFromOptions(ModelPtr model, int modulo)
         }
 
     }
-    
+
     model->m_pointCloud->setPointArray(newPointsArr, cntr);
 
-    if(n_colors) 
+    if(n_colors)
     {
         model->m_pointCloud->setPointColorArray(newColorsArr, cntr);
     }
@@ -423,7 +441,7 @@ void processSingleFile(boost::filesystem::path& inFile)
     cout << timestamp << "Reading point cloud data from file " << inFile.filename().string() << "." << endl;
 
     model = ModelFactory::readModel(inFile.string());
-    
+
     if(0 == model)
     {
         throw "ERROR: Could not create Model for: ";
@@ -488,7 +506,7 @@ void processSingleFile(boost::filesystem::path& inFile)
     {
         if(options->getOutputFormat() == "")
         {
-            // Infer format from file extension, convert and write out 
+            // Infer format from file extension, convert and write out
             char name[1024];
             char frames[1024];
             char pose[1024];
@@ -503,7 +521,7 @@ void processSingleFile(boost::filesystem::path& inFile)
 
             boost::filesystem::path framesPath(frames);
             boost::filesystem::path posePath(pose);
-            
+
             // Transform the frames
             if(boost::filesystem::exists(framesPath))
             {
@@ -544,7 +562,7 @@ void processSingleFile(boost::filesystem::path& inFile)
             poseOut.close();
 
             ofstream out(name);
-            
+
             transformFromOptions(model, asciiReductionFactor(inFile));
             size_t points_written = writeAscii(model, out);
 
@@ -596,7 +614,7 @@ void processSingleFile(boost::filesystem::path& inFile)
 
     template <typename Iterator>
 bool parse_filename(Iterator first, Iterator last, int& i)
-{   
+{
 
     using qi::lit;
     using qi::uint_parser;
@@ -708,7 +726,7 @@ int main(int argc, char** argv) {
 
     vector<float>	 		merge_points;
     vector<unsigned char>	merge_colors;
-    
+
     int j = -1;
     for(vector<boost::filesystem::path>::iterator it = v.begin(); it != v.end(); ++it)
     {
@@ -734,7 +752,7 @@ int main(int argc, char** argv) {
         // check if the scan is in the range which should be processed
         if(i >= options->getStart()){
             // when end is default(=0) process the complete vector
-            if(0 == options->getEnd() || i <= options->getEnd()) 
+            if(0 == options->getEnd() || i <= options->getEnd())
             {
                 try
                 {
