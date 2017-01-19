@@ -98,17 +98,6 @@ size_t countPointsInFile(boost::filesystem::path& inFile)
     return n_points;
 }
 
-void writePose(double* pose, const boost::filesystem::path& poseOut)
-{
-    std::ofstream out(poseOut.c_str());
-    
-    // write rotation
-    out << pose[0] << pose[1] << pose[2]
-        << pose[3] << pose[4] << pose[5];
-    
-    out.close();
-}
-
 void writeFrames(Eigen::Matrix4d transform, const boost::filesystem::path& framesOut)
 {
     std::ofstream out(framesOut.c_str());
@@ -131,33 +120,6 @@ size_t writeModel( ModelPtr model,const  boost::filesystem::path& outfile)
 {
     size_t n_ip;
     floatArr arr = model->m_pointCloud->getPointArray(n_ip);
-/*
-    for(int a = 0; a < n_ip; a++)
-    {
-        if(a % modulo == 0)
-        {
-            if(options->sx() != 1)
-            {
-                targetPoints[cntr * 3 + options->x()] = arr[a * 3] * options->sx();
-            }
-
-            if(options->sy() != 1)
-            {
-                targetPoints[cntr * 3 + options->y()] = arr[a * 3 + 1] * options->sy();
-            }
-
-            if(options->sz() != 1)
-            {
-                targetPoints[cntr * 3 + options->z()] = arr[a * 3 + 2] * options->sz();
-            }
-            cntr++;
-        }
-    }
-*/
- /*   PointBufferPtr pc(new PointBuffer);
-    pc->setPointArray(targetPoints, new_model_size);
-    ModelPtr outModel(new Model(pc));
-    ModelFactory::saveModel(outModel, outfile.string());*/
 
     ModelFactory::saveModel(model, outfile.string());
 
@@ -227,55 +189,6 @@ Eigen::Matrix4d buildTransformation(double* alignxf)
     transformation.rightCols<1>() = translation;
 
     return transformation;
-}
-
-
-
-double* transformPose(boost::filesystem::path& poseIn)
-{
-    ifstream in(poseIn.c_str());
-    double* poseTrans = new double[6];
-    double  pose[6];
-    if(in.good())
-    {
-        in >> pose[0] >> pose[1] >> pose[2]
-           >> pose[3] >> pose[4] >> pose[5];
-    }
-    
-    // scaling translation
-    pose[0] *= options->sx();
-    pose[1] *= options->sy();
-    pose[2] *= options->sz();
-
-    // check for axis reflection
-    if(options->sx())
-    {
-    
-    }
-
-    if(options->sy())
-    {
-    
-    }
-
-    if(options->sz())
-    {
-    
-    }
-
-    // change axis
-    // translation
-    poseTrans[options->x()] = pose[0];
-    poseTrans[options->y()] = pose[1];
-    poseTrans[options->z()] = pose[2];
-    
-    // rotation
-    poseTrans[3 + options->x()] = pose[3];
-    poseTrans[3 + options->y()] = pose[4];
-    poseTrans[3 + options->z()] = pose[5];
-
-
-    return poseTrans;
 }
 
 Eigen::Matrix4d getTransformationFromPose(boost::filesystem::path& pose)
@@ -448,7 +361,6 @@ void transformFromOptions(ModelPtr model, int modulo)
 
             cntr++;
         }
-
     }
 
     model->m_pointCloud->setPointArray(newPointsArr, cntr);
@@ -585,10 +497,6 @@ void processSingleFile(boost::filesystem::path& inFile)
             // Transform the pose file
             if(boost::filesystem::exists(posePath))
             {
-                std::cout << timestamp << "Transforming pose: " << posePath << std::endl;
-                double* transformed = transformPose(posePath);
-                writePose(transformed, poseOut);
-                delete transformed;
             }
 
             ofstream out(name);
@@ -707,17 +615,6 @@ bool sortScans(boost::filesystem::path firstScan, boost::filesystem::path secSca
     }
     else
     {
-     /*   if(!first)
-        {
-            std::cerr << timestamp << " " << firstScan << " does not match the naming convention" << std::endl;
-            std::terminate();
-        }
-        else
-        {
-            std::cerr << timestamp << "ERROR: " << " " << secScan << " does not match the naming convention" << std::endl;
-            std::terminate();
-        } */
-
         // this causes non valid files being at the beginning of the vector.
         if(sec)
         {
