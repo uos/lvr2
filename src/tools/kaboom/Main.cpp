@@ -323,7 +323,11 @@ void transformFromOptions(ModelPtr model, int modulo)
     size_t n_ip, n_colors;
     size_t cntr = 0;
 
+
     floatArr arr = model->m_pointCloud->getPointArray(n_ip);
+
+    std::cout << model.use_count() << "model 2 " << std::endl;
+    std::cout << arr.use_count() << "arr 1 " << std::endl;
     ucharArr colors = model->m_pointCloud->getPointColorArray(n_colors);
 
     floatArr newPointsArr(new float[3 * (n_ip/modulo)]);
@@ -363,7 +367,10 @@ void transformFromOptions(ModelPtr model, int modulo)
         }
     }
 
+    std::cout << newPointsArr.use_count() << "new 1 " << std::endl;
     model->m_pointCloud->setPointArray(newPointsArr, cntr);
+    std::cout << newPointsArr.use_count() << "new 2 " << std::endl;
+    std::cout << arr.use_count() << "arr 2 " << std::endl;
 
     if(n_colors)
     {
@@ -500,11 +507,16 @@ void processSingleFile(boost::filesystem::path& inFile)
             }
 
             ofstream out(name);
+            std::cout << model.use_count() << "model 1 " << std::endl;
             transformFromOptions(model, asciiReductionFactor(inFile));
             size_t points_written = writeAscii(model, out);
 
             out.close();
             cout << "Wrote " << points_written << " points to file " << name << endl;
+            std::cout << model.use_count() << "model 3 " << std::endl;
+            size_t bla;
+            floatArr arr = model->m_pointCloud->getPointArray(bla);
+            std::cout << " bla: " << bla << std::endl;
 
         }
         else if(options->getOutputFormat() == "SLAM")
@@ -573,6 +585,13 @@ void processSingleFile(boost::filesystem::path& inFile)
             points_written = writeModel(model, boost::filesystem::path(outFile));
         }
     }
+         size_t bla;
+            floatArr arr = model->m_pointCloud->getPointArray(bla);
+
+
+    std::cout << arr.use_count() << " arr 8 " << std::endl;
+        model = NULL;
+    std::cout << model.use_count() << " model 8 " << std::endl;
 }
 
     template <typename Iterator>
