@@ -27,7 +27,7 @@
 #include <stdio.h>
 #include <fstream>
 #include <Eigen/Dense>
-
+#include <utility>
 using namespace std;
 
 #include <boost/filesystem.hpp>
@@ -53,6 +53,14 @@ namespace qi = boost::spirit::qi;
 
 const kaboom::Options* options;
 
+template< typename T >
+struct array_deleter
+{
+  void operator ()( T const * p)
+  { 
+    delete[] p; 
+  }
+};
 
 ModelPtr filterModel(ModelPtr p, int k, float sigma)
 {
@@ -121,7 +129,7 @@ size_t writeModel( ModelPtr model,const  boost::filesystem::path& outfile)
     size_t n_ip;
     floatArr arr = model->m_pointCloud->getPointArray(n_ip);
 
-    ModelFactory::saveModel(model, outfile.string());
+    // ModelFactory::saveModel(model, outfile.string());
 
     return n_ip;
 }
@@ -129,7 +137,13 @@ size_t writeModel( ModelPtr model,const  boost::filesystem::path& outfile)
 size_t writeAscii(ModelPtr model, std::ofstream& out)
 {
     size_t n_ip, n_colors;
+
+    std::cout << model.use_count() << "ascii model 1 " << std::endl;
+
     floatArr arr = model->m_pointCloud->getPointArray(n_ip);
+
+    std::cout << arr.use_count() << "ascii floatarr 1 " << std::endl;
+
     ucharArr colors = model->m_pointCloud->getPointColorArray(n_colors);
     for(int a = 0; a < n_ip; a++)
     {
@@ -142,6 +156,8 @@ size_t writeAscii(ModelPtr model, std::ofstream& out)
         out << endl;
 
     }
+
+    std::cout << model.use_count() << "ascii model 2 " << std::endl;
     return n_ip;
 }
 
@@ -178,8 +194,8 @@ Eigen::Matrix4d buildTransformation(double* alignxf)
     Eigen::Vector4d translation;
 
     rotation  << alignxf[0],  alignxf[4],  alignxf[8],
-                 alignxf[1],  alignxf[5],  alignxf[9],
-                 alignxf[2],  alignxf[6],  alignxf[10];
+    alignxf[1],  alignxf[5],  alignxf[9],
+    alignxf[2],  alignxf[6],  alignxf[10];
 
     translation << alignxf[12], alignxf[13], alignxf[14], 1.0;
 
@@ -323,16 +339,17 @@ void transformFromOptions(ModelPtr model, int modulo)
     size_t n_ip, n_colors;
     size_t cntr = 0;
 
-
+    
+    std::cout << (model->m_pointCloud).use_count() << std::endl;
     floatArr arr = model->m_pointCloud->getPointArray(n_ip);
 
-    std::cout << model.use_count() << "model 2 " << std::endl;
-    std::cout << arr.use_count() << "arr 1 " << std::endl;
     ucharArr colors = model->m_pointCloud->getPointColorArray(n_colors);
-
-    floatArr newPointsArr(new float[3 * (n_ip/modulo)]);
+    
+    floatArr newPointsArr;
+    newPointsArr = floatArr( new float[ 3 * (n_ip/modulo)] );
     ucharArr newColorsArr(new unsigned char[3 * (n_colors/modulo)]);
-
+    
+    std::cout << newPointsArr.use_count() << " " << 3 * (n_ip/modulo) << std::endl;
     for(int i = 0; i < n_ip; i++)
     {
         if(i % modulo == 0)
@@ -367,17 +384,16 @@ void transformFromOptions(ModelPtr model, int modulo)
         }
     }
 
-    std::cout << newPointsArr.use_count() << "new 1 " << std::endl;
-    model->m_pointCloud->setPointArray(newPointsArr, cntr);
-    std::cout << newPointsArr.use_count() << "new 2 " << std::endl;
-    std::cout << arr.use_count() << "arr 2 " << std::endl;
-
+    //model->m_pointCloud->setPointArray(std::move(newPointsArr), cntr);
+    
     if(n_colors)
     {
         model->m_pointCloud->setPointColorArray(newColorsArr, cntr);
     }
 
-
+    std::cout << newPointsArr.use_count() << std::endl;
+    std::cout << (model->m_pointCloud).use_count() << std::endl;
+    model->m_pointCloud.reset();
 }
 
 // transforming with Matrix from frames/pose
@@ -484,6 +500,7 @@ void processSingleFile(boost::filesystem::path& inFile)
             char framesOut[1024];
             char poseOut[1024];
 
+            model = ModelFactory::readModel(inFile.string());
             sprintf(frames, "%s/%s.frames", inFile.parent_path().c_str(), inFile.stem().c_str());
             sprintf(pose, "%s/%s.pose", inFile.parent_path().c_str(), inFile.stem().c_str());
             sprintf(framesOut, "%s/%s.frames", options->getOutputDir().c_str(), inFile.stem().c_str());
@@ -507,91 +524,15 @@ void processSingleFile(boost::filesystem::path& inFile)
             }
 
             ofstream out(name);
-            std::cout << model.use_count() << "model 1 " << std::endl;
             transformFromOptions(model, asciiReductionFactor(inFile));
-            size_t points_written = writeAscii(model, out);
+           // size_t points_written = writeAscii(model, out);
 
             out.close();
-            cout << "Wrote " << points_written << " points to file " << name << endl;
+            //cout << "Wrote " << points_written << " points to file " << name << endl;
             std::cout << model.use_count() << "model 3 " << std::endl;
-            size_t bla;
-            floatArr arr = model->m_pointCloud->getPointArray(bla);
-            std::cout << " bla: " << bla << std::endl;
-
-        }
-        else if(options->getOutputFormat() == "SLAM")
-        {
-            // Transform and write in slam format
-            static int n = 0;
-
-            char name[1024];
-            char pose[1024];
-
-            sprintf(name, "/%s/scan%3d.3d", options->getOutputDir().c_str(), n);
-            sprintf(name, "/%s/scan%3d.pose", options->getOutputDir().c_str(), n);
-
-            ofstream poseOut(pose);
-
-            // TO-DO Pose or frame existing
-            poseOut << 0 << " " << 0 << " " << 0 << " " << 0 << " " << 0 << " "<< 0 << endl;
-            poseOut.close();
-
-            ofstream out(name);
-
-            transformFromOptions(model, asciiReductionFactor(inFile));
-            size_t points_written = writeAscii(model, out);
-
-            out.close();
-            cout << "Wrote " << points_written << " points to file " << name << endl;
-            n++;
-        }
-        else
-        {
-            // Transform and write to target format.
-            char frames[1024];
-            char pose[1024];
-            char outFile[1024];
-
-            sprintf(outFile, "/%s/%s", options->getOutputDir().c_str(), inFile.filename().c_str());
-            sprintf(frames, "/%s/%s.frames", inFile.parent_path().c_str(), inFile.stem().c_str());
-            sprintf(pose, "/%s/%s.pose", inFile.parent_path().c_str(), inFile.stem().c_str());
-
-            boost::filesystem::path framesPath(frames);
-            boost::filesystem::path posePath(pose);
-
-            size_t reductionFactor = asciiReductionFactor(inFile);
-            if(options->transformBefore())
-            {
-                transformFromOptions(model, reductionFactor);
-            }
-
-            if(boost::filesystem::exists(framesPath))
-            {
-                Eigen::Matrix4d transform = getTransformationFromFrames(framesPath);
-                transformModel(model, transform);
-            }
-            else if(boost::filesystem::exists(posePath))
-            {
-                Eigen::Matrix4d transform = getTransformationFromPose(posePath);
-                transformModel(model, transform);
-            }
-
-            if(options->transformBefore())
-            {
-                transformFromOptions(model, reductionFactor);
-            }
-
-            static size_t points_written = 0;
-            points_written = writeModel(model, boost::filesystem::path(outFile));
         }
     }
-         size_t bla;
-            floatArr arr = model->m_pointCloud->getPointArray(bla);
 
-
-    std::cout << arr.use_count() << " arr 8 " << std::endl;
-        model = NULL;
-    std::cout << model.use_count() << " model 8 " << std::endl;
 }
 
     template <typename Iterator>
@@ -748,3 +689,4 @@ int main(int argc, char** argv) {
     delete options;
     return 0;
 }
+
