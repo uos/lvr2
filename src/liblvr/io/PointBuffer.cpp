@@ -162,9 +162,7 @@ void PointBuffer::setPointArray( floatArr array, size_t n )
 {
 
     m_numPoints = n;
-    std::cout << m_points.use_count() << "set 1 " << std::endl;
     m_points = array;
-    std::cout << m_points.use_count() << "set 2 " << std::endl;
 
 }
 
