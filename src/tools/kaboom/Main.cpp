@@ -52,13 +52,18 @@ using namespace lvr;
 namespace qi = boost::spirit::qi;
 
 const kaboom::Options* options;
+float a = 1.0;
+float b = 2.0;
+float c = 3.0;
 
 template< typename T >
-struct array_deleter
+struct arry_deleter
 {
   void operator ()( T const * p)
   { 
+    std::cout << " pc delete in kaboom " << p << std::endl;
     delete[] p; 
+    std::cout << " deletion did not fail " << std::endl;
   }
 };
 
@@ -143,6 +148,7 @@ size_t writeAscii(ModelPtr model, std::ofstream& out)
     floatArr arr = model->m_pointCloud->getPointArray(n_ip);
 
     std::cout << arr.use_count() << "ascii floatarr 1 " << std::endl;
+
 
     ucharArr colors = model->m_pointCloud->getPointColorArray(n_colors);
     for(int a = 0; a < n_ip; a++)
@@ -345,11 +351,11 @@ void transformFromOptions(ModelPtr model, int modulo)
 
     ucharArr colors = model->m_pointCloud->getPointColorArray(n_colors);
     
-    floatArr newPointsArr;
-    newPointsArr = floatArr( new float[ 3 * (n_ip/modulo)] );
+    boost::shared_array<float> points( new float[ 3 * (n_ip/modulo)], arry_deleter<float>() );
+    //floatArr points(new float[ 3 * (n_ip/modulo)]);
     ucharArr newColorsArr(new unsigned char[3 * (n_colors/modulo)]);
     
-    std::cout << newPointsArr.use_count() << " " << 3 * (n_ip/modulo) << std::endl;
+    std::cout << points.use_count() << " " << 3 * (n_ip/modulo) << std::endl;
     for(int i = 0; i < n_ip; i++)
     {
         if(i % modulo == 0)
@@ -369,9 +375,47 @@ void transformFromOptions(ModelPtr model, int modulo)
                 arr[i * 3 + 2] 	*= options->sz();
             }
 
-            newPointsArr[cntr * 3]     = arr[i * 3 + options->x()];
-            newPointsArr[cntr * 3 + 1] = arr[i * 3 + options->y()];
-            newPointsArr[cntr * 3 + 2] = arr[i * 3 + options->z()];
+            if( (points.get()  + (cntr * 3 ))== NULL)
+            {
+                std::cout << 1 << std::endl;
+            }
+
+            if( (points.get()  + (cntr * 3  + 1))== NULL)
+            {
+                std::cout << 2 << std::endl;
+            }
+
+
+            if( (points.get()  + (cntr * 3  + 3))== NULL)
+            {
+                std::cout << 3 << std::endl;
+            }
+            volatile float x =  arr[i * 3 + options->x()];
+            volatile float y = arr[i * 3 + options->y()];
+            volatile float z =  arr[i * 3 + options->z()];
+            
+          //  *(points.get() + (cntr * 3))     = 0;
+           // *(points.get() + (cntr * 3 + 1))     = 0;
+            //*(points.get() + (cntr * 3 + 2))    = 0;
+            points[cntr * 3]     = x;
+            points[cntr * 3 + 1] = y;
+            points[cntr * 3 + 2] = z;
+            
+            if(&x == (points.get() + cntr * 3))
+            {
+                std::cout << " WHYYYYY" << std::endl;
+            }
+            
+            if(&y == (points.get() + cntr * 3 + 1))
+            {
+                std::cout << " WHYYYYY2" << std::endl;
+            } 
+
+            if(&z == (points.get() + cntr * 3 + 2))
+            {
+                std::cout << " WHYYYYY3" << std::endl;
+            }
+
 
             if(n_colors)
             {
@@ -384,16 +428,19 @@ void transformFromOptions(ModelPtr model, int modulo)
         }
     }
 
-    //model->m_pointCloud->setPointArray(std::move(newPointsArr), cntr);
-    
+    model->m_pointCloud->setPointArray(points, cntr);
+   
+    std::cout << "use count new points " << points.use_count() << std::endl;
     if(n_colors)
     {
         model->m_pointCloud->setPointColorArray(newColorsArr, cntr);
     }
 
-    std::cout << newPointsArr.use_count() << std::endl;
+    std::cout << points.use_count() << std::endl;
     std::cout << (model->m_pointCloud).use_count() << std::endl;
-    model->m_pointCloud.reset();
+
+
+    //model->m_pointCloud.reset();
 }
 
 // transforming with Matrix from frames/pose
@@ -532,7 +579,7 @@ void processSingleFile(boost::filesystem::path& inFile)
             std::cout << model.use_count() << "model 3 " << std::endl;
         }
     }
-
+    std::cout << " check" << std::endl;
 }
 
     template <typename Iterator>

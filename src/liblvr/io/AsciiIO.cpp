@@ -39,6 +39,34 @@ using std::ifstream;
 namespace lvr
 {
 
+
+template< typename T >
+struct array_deleter
+{
+  void operator ()( T const * p)
+  { 
+    
+    size_t n;
+    std::cout << " PB delete " << p << " PC of PB address " << (((PointBuffer*)p)->getPointArray(n)).get() << std::endl;
+    delete p;
+    std::cout << " PB deletion succesful " << std::endl;
+//    delete[] p; 
+  }
+};
+template< typename T >
+struct pc_deleter
+{
+  void operator ()( T const * p)
+  { 
+
+    std::cout << " PC delete " << p << std::endl;
+    delete[] p; 
+    std::cout << " PC deletion succesful " << std::endl;
+  }
+};
+
+
+
 ModelPtr AsciiIO::read(string filename)
 {
     // Check extension
@@ -107,7 +135,7 @@ ModelPtr AsciiIO::read(string filename)
 
     // Alloc memory for points
     numPoints = lines_in_file - 1;
-    points = floatArr( new float[ numPoints * 3 ] );
+    points = floatArr( new float[ numPoints * 3 ], pc_deleter<float>() );
 
     // Alloc buffer memory for additional attributes
     if ( has_color )
@@ -198,7 +226,7 @@ ModelPtr AsciiIO::read(string filename)
         numConfidences = numPoints;
     }
 
-    ModelPtr model( new Model( PointBufferPtr( new PointBuffer)));
+    ModelPtr model( new Model( PointBufferPtr( new PointBuffer, array_deleter<PointBuffer>())));
     model->m_pointCloud->setPointArray(           points,           numPoints );
     model->m_pointCloud->setPointColorArray(      pointColors,      numColors );
     model->m_pointCloud->setPointIntensityArray(  pointIntensities, numIntensities );
