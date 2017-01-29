@@ -56,17 +56,6 @@ float a = 1.0;
 float b = 2.0;
 float c = 3.0;
 
-template< typename T >
-struct arry_deleter
-{
-  void operator ()( T const * p)
-  { 
-    std::cout << " pc delete in kaboom " << p << std::endl;
-    delete[] p; 
-    std::cout << " deletion did not fail " << std::endl;
-  }
-};
-
 ModelPtr filterModel(ModelPtr p, int k, float sigma)
 {
     if(p)
@@ -89,6 +78,7 @@ ModelPtr filterModel(ModelPtr p, int k, float sigma)
 
         }
     }
+    return NULL;
 }
 
 size_t countPointsInFile(boost::filesystem::path& inFile)
@@ -143,12 +133,7 @@ size_t writeAscii(ModelPtr model, std::ofstream& out)
 {
     size_t n_ip, n_colors;
 
-    std::cout << model.use_count() << "ascii model 1 " << std::endl;
-
     floatArr arr = model->m_pointCloud->getPointArray(n_ip);
-
-    std::cout << arr.use_count() << "ascii floatarr 1 " << std::endl;
-
 
     ucharArr colors = model->m_pointCloud->getPointColorArray(n_colors);
     for(int a = 0; a < n_ip; a++)
@@ -163,7 +148,6 @@ size_t writeAscii(ModelPtr model, std::ofstream& out)
 
     }
 
-    std::cout << model.use_count() << "ascii model 2 " << std::endl;
     return n_ip;
 }
 
@@ -345,17 +329,16 @@ void transformFromOptions(ModelPtr model, int modulo)
     size_t n_ip, n_colors;
     size_t cntr = 0;
 
-    
-    std::cout << (model->m_pointCloud).use_count() << std::endl;
     floatArr arr = model->m_pointCloud->getPointArray(n_ip);
-
     ucharArr colors = model->m_pointCloud->getPointColorArray(n_colors);
-    
-    boost::shared_array<float> points( new float[ 3 * (n_ip/modulo)], arry_deleter<float>() );
-    //floatArr points(new float[ 3 * (n_ip/modulo)]);
-    ucharArr newColorsArr(new unsigned char[3 * (n_colors/modulo)]);
-    
-    std::cout << points.use_count() << " " << 3 * (n_ip/modulo) << std::endl;
+
+    // Plus one because it might differ because of the 0-index
+    // better waste memory for one float than having not enough space.
+    // TO-DO think about exact calculation.
+    size_t targetSize = (3 * ((n_ip)/modulo)) + 1;
+    floatArr points( new float[ targetSize ] );
+    ucharArr newColorsArr(new unsigned char[ ((3 * ((n_colors)/modulo)) + 1) ]);
+
     for(int i = 0; i < n_ip; i++)
     {
         if(i % modulo == 0)
@@ -375,47 +358,21 @@ void transformFromOptions(ModelPtr model, int modulo)
                 arr[i * 3 + 2] 	*= options->sz();
             }
 
-            if( (points.get()  + (cntr * 3 ))== NULL)
+            if((cntr * 3) < targetSize)
             {
-                std::cout << 1 << std::endl;
+                points[cntr * 3]     = arr[i * 3 + options->x()];
+                points[cntr * 3 + 1] = arr[i * 3 + options->y()];
+                points[cntr * 3 + 2] = arr[i * 3 + options->z()];
             }
-
-            if( (points.get()  + (cntr * 3  + 1))== NULL)
+            else
             {
-                std::cout << 2 << std::endl;
-            }
-
-
-            if( (points.get()  + (cntr * 3  + 3))== NULL)
-            {
-                std::cout << 3 << std::endl;
-            }
-            volatile float x =  arr[i * 3 + options->x()];
-            volatile float y = arr[i * 3 + options->y()];
-            volatile float z =  arr[i * 3 + options->z()];
-            
-          //  *(points.get() + (cntr * 3))     = 0;
-           // *(points.get() + (cntr * 3 + 1))     = 0;
-            //*(points.get() + (cntr * 3 + 2))    = 0;
-            points[cntr * 3]     = x;
-            points[cntr * 3 + 1] = y;
-            points[cntr * 3 + 2] = z;
-            
-            if(&x == (points.get() + cntr * 3))
-            {
-                std::cout << " WHYYYYY" << std::endl;
+                std::cout << "The following is for debugging purpose" << std::endl;
+                std::cout << "Cntr: " << (cntr * 3) << " targetSize: " << targetSize << std::endl;
+                std::cout << "nip : " << n_ip << " modulo " << modulo << std::endl;
+                break;
             }
             
-            if(&y == (points.get() + cntr * 3 + 1))
-            {
-                std::cout << " WHYYYYY2" << std::endl;
-            } 
-
-            if(&z == (points.get() + cntr * 3 + 2))
-            {
-                std::cout << " WHYYYYY3" << std::endl;
-            }
-
+            
 
             if(n_colors)
             {
@@ -428,19 +385,14 @@ void transformFromOptions(ModelPtr model, int modulo)
         }
     }
 
+    // Pass counter because it is the actual number of points used after reduction
+    // it might be 1 less than the size
     model->m_pointCloud->setPointArray(points, cntr);
-   
-    std::cout << "use count new points " << points.use_count() << std::endl;
+
     if(n_colors)
     {
         model->m_pointCloud->setPointColorArray(newColorsArr, cntr);
     }
-
-    std::cout << points.use_count() << std::endl;
-    std::cout << (model->m_pointCloud).use_count() << std::endl;
-
-
-    //model->m_pointCloud.reset();
 }
 
 // transforming with Matrix from frames/pose
@@ -572,14 +524,20 @@ void processSingleFile(boost::filesystem::path& inFile)
 
             ofstream out(name);
             transformFromOptions(model, asciiReductionFactor(inFile));
-           // size_t points_written = writeAscii(model, out);
+            size_t points_written = writeAscii(model, out);
 
             out.close();
-            //cout << "Wrote " << points_written << " points to file " << name << endl;
-            std::cout << model.use_count() << "model 3 " << std::endl;
+            cout << timestamp << "Wrote " << points_written << " points to file " << name << endl;
+        }
+        else if(options->getOutputFormat() == "SLAM")
+        {
+            std::cerr << "I am sorry! This is not implemented yet" << std::endl;
+        }
+        else
+        {
+            std::cerr << "I am sorry! This is not implemented yet" << std::endl;
         }
     }
-    std::cout << " check" << std::endl;
 }
 
     template <typename Iterator>
