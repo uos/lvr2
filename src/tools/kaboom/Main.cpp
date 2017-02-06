@@ -353,7 +353,7 @@ Eigen::Matrix4d transformFrames(Eigen::Matrix4d frames)
     return frames;
 }
 
-void transformFromOptions(ModelPtr model, int modulo)
+void transformFromOptions(ModelPtr& model, int modulo)
 {
     size_t n_ip, n_colors;
     size_t cntr = 0;
@@ -436,11 +436,11 @@ void processSingleFile(boost::filesystem::path& inFile)
 {
     cout << timestamp << "Processing " << inFile << endl;
 
-    ModelPtr model;
+
 
     cout << timestamp << "Reading point cloud data from file " << inFile.filename().string() << "." << endl;
 
-    model = ModelFactory::readModel(inFile.string());
+    ModelPtr model = ModelFactory::readModel(inFile.string());
 
     if(0 == model)
     {
@@ -537,11 +537,14 @@ void processSingleFile(boost::filesystem::path& inFile)
             }
 
             ofstream out(name);
+            cout << " 1 " << endl;
             transformFromOptions(model, asciiReductionFactor(inFile));
+            cout << " 2 " << endl;
             size_t points_written = writeAscii(model, out);
 
             out.close();
             cout << "Wrote " << points_written << " points to file " << name << endl;
+            cout << " 3 " << endl;
 
         }
         else if(options->getOutputFormat() == "SLAM")
@@ -610,6 +613,7 @@ void processSingleFile(boost::filesystem::path& inFile)
             points_written = writeModel(model, boost::filesystem::path(outFile));
         }
     }
+    cout << 4 << endl;
 }
 
     template <typename Iterator>
@@ -757,6 +761,7 @@ int main(int argc, char** argv) {
                 try
                 {
                     processSingleFile(*it);
+                    std::cout << " finished" << std::endl;
                 }
                 catch(const char* msg)
                 {

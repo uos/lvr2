@@ -33,11 +33,22 @@ ModelToImage::ModelToImage(ModelPtr model)
 
 }
 
-ModelToImage::ModelToImage(PointBufferPtr model)
+ModelToImage::ModelToImage(
+        PointBufferPtr buffer,
+        ModelToImage::ProjectionType projection,
+        int width, int height,
+        int minZ, int maxZ,
+        int minHorizontenAngle, int maxHorizontalAngle,
+        int mainVerticalAngle, int maxVerticalAngle,
+        bool imageOptimization)
 {
-	// TODO Auto-generated constructor stub
+    m_width = width;
+    m_height = height;
+
 
 }
+
+
 
 ModelToImage::~ModelToImage()
 {

@@ -32,25 +32,31 @@
 
 namespace lvr {
 
+
 class ModelToImage {
 public:
 
-	enum {CYLINDRIC} ProjectionType;
+    enum ProjectionType {CYLINDRICAL, CONICAL, EQUALAREACYLINDRICAL,
+                         RECTILINEAR, PANNINI, STEREOGRAPHIC,
+                         ZAXIS, AZIMUTHAL};
 
 	ModelToImage(ModelPtr model);
 	ModelToImage(
 			PointBufferPtr buffer,
-			ProjectionType procetion,
+            ProjectionType projection,
 			int width, int height,
+            int minZ, int maxZ,
 			int minHorizontenAngle, int maxHorizontalAngle,
 			int mainVerticalAngle, int maxVerticalAngle,
-			bool imageOptimization)
+            bool imageOptimization);
 
 	virtual ~ModelToImage();
 
 	void getCVMatrix(cv::Mat& image);
 
 private:
+
+
 
 	/// Pointer to the initial point cloud
 	PointBufferPtr 	m_points;
@@ -75,6 +81,20 @@ private:
 
 	/// Image optimization flag
 	bool			m_optimize;
+
+    int             m_xSize;
+
+    int             m_ySize;
+
+    int             m_maxWidth;
+
+    int             m_maxHeight;
+
+    int             m_minHeight;
+
+    float           m_xFactor;
+
+    float           m_yFactor;
 };
 
 } /* namespace lvr */
