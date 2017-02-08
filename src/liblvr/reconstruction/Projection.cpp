@@ -1,4 +1,4 @@
-#include "Projection.hpp"
+#include <lvr/reconstruction/Projection.hpp>
 
 namespace lvr
 {
