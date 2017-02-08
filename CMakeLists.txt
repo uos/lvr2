@@ -368,6 +368,7 @@ add_subdirectory(src/tools/transform)
 add_subdirectory(src/tools/registration)
 add_subdirectory(src/tools/normals)
 add_subdirectory(src/tools/kaboom)
+add_subdirectory(src/tools/image_normals)
 
 if(MPI_FOUND)
   add_subdirectory(src/tools/mpi)

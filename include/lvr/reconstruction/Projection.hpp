@@ -183,8 +183,9 @@ protected:
     int         m_maxHeight;
 };
 
-#include "Projection.tcc"
 
 } // namespace lvr
+
+#include "Projection.tcc"
 
 #endif // PROJECTION_H

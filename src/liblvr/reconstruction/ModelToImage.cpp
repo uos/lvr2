@@ -23,7 +23,11 @@
  *      Author: Thomas Wiemann (twiemann@uos.de)
  */
 
-#include "ModelToImage.hpp"
+#include <lvr/reconstruction/ModelToImage.hpp>
+#include <lvr/reconstruction/Projection.hpp>
+
+#include <iostream>
+using namespace std;
 
 namespace lvr {
 
@@ -45,7 +49,17 @@ ModelToImage::ModelToImage(
     m_width = width;
     m_height = height;
 
+    Projection* p = new EquirectangularProjection(3600, 1000, 0, 360, -40, 60, true);
 
+    size_t n_points;
+    floatArr points = buffer->getPointArray(n_points);
+
+    for(int i = 0; i < n_points; i++)
+    {
+        int img_x, img_y, range;
+        p->project(img_x, img_y, range, points[3 * i], points[3 * i + 1], points[3 * i + 2]);
+        cout << img_x << " " << img_y << " " << range << endl;
+    }
 }
 
 

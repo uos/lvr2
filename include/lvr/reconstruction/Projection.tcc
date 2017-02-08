@@ -1,3 +1,5 @@
+namespace lvr
+{
 
 float Projection::toPolar(const float _cartesian[], float polar[])
 {
@@ -65,4 +67,6 @@ float Projection::toPolar(const float _cartesian[], float polar[])
     polar[0] = phi;
     polar[1] = theta;
     polar[2] = rho;
+}
+
 }
