@@ -27,8 +27,14 @@
 #define SRC_LIBLVR_RECONSTRUCTION_MODELTOIMAGE_HPP_
 
 #include <lvr/io/Model.hpp>
+#include <lvr/reconstruction/Projection.hpp>
 
 #include <opencv/cv.h>
+#include <algorithm>
+#include <vector>
+
+using std::vector;
+using std::tuple;
 
 namespace lvr {
 
@@ -36,11 +42,58 @@ namespace lvr {
 class ModelToImage {
 public:
 
-    enum ProjectionType {CYLINDRICAL, CONICAL, EQUALAREACYLINDRICAL,
-                         RECTILINEAR, PANNINI, STEREOGRAPHIC,
-                         ZAXIS, AZIMUTHAL};
+    /// Pixelcoordinates with depth value
+    typedef struct
+    {
+        int i;
+        int j;
+        float depth;
+    } DepthPixel;
 
-	ModelToImage(ModelPtr model);
+    typedef struct
+    {
+        float x;
+        float y;
+        float z;
+    } PanoramaPoint;
+
+    /// Image with single depth information
+    typedef vector<vector<float> > DepthImage;
+
+    /// Image with list of projected points at each pixel
+    typedef vector<vector<PanoramaPoint> > PointListImage;
+
+
+
+    ///
+    /// \brief The ProjectionType enum
+    ///
+    enum ProjectionType {
+        CYLINDRICAL, CONICAL, EQUALAREACYLINDRICAL,
+        RECTILINEAR, PANNINI, STEREOGRAPHIC,
+        ZAXIS, AZIMUTHAL
+    };
+
+
+    ///
+    /// \brief Constructor
+    /// \param buffer               A point buffer containing a point cloud
+    /// \param projection           Type of used projection
+    /// \param width                Desired image with. May be changed to fit
+    ///                             panorama angles
+    /// \param height               Desired image height. May be changed to fit
+    ///                             panorama angles
+    /// \param minZ                 Minimum depth value
+    /// \param maxZ                 Maximum depth value
+    /// \param minHorizontenAngle   Start of horizontal field of view in degrees
+    /// \param maxHorizontalAngle   End of horizontal field of view in degrees
+    /// \param mainVerticalAngle    Start of vertical field of view in degrees
+    /// \param maxVerticalAngle     End of vertical field of view in degrees
+    /// \param imageOptimization    If true, the aspect ration will be adapted to
+    ///                             the chosen field of view
+    /// \param leftHandedInputData  Set this to true of the scan points are in a
+    ///                             left handed coordinate system (like 3dtk)
+    ///
 	ModelToImage(
 			PointBufferPtr buffer,
             ProjectionType projection,
@@ -48,15 +101,29 @@ public:
             int minZ, int maxZ,
 			int minHorizontenAngle, int maxHorizontalAngle,
 			int mainVerticalAngle, int maxVerticalAngle,
-            bool imageOptimization);
+            bool imageOptimization,
+            bool leftHandedInputData);
 
+    ///
+    /// \brief Writes the scan panaroma to an pgm file
+    ///
+    /// \param filename     Filename of the bitmap
+    /// \param cutoff       Max range cutoff. Reduce this to enhance contrast on
+    ///                     pixels with low depths.
+    ///
+    void writePGM(string filename, float cutoff);
+
+    /// Destructor
 	virtual ~ModelToImage();
 
+    //// Returns an OpenCV image representation of the panarama
 	void getCVMatrix(cv::Mat& image);
 
 private:
 
 
+    /// Pointer to projection
+    Projection*     m_projection;
 
 	/// Pointer to the initial point cloud
 	PointBufferPtr 	m_points;
@@ -95,6 +162,8 @@ private:
     float           m_xFactor;
 
     float           m_yFactor;
+
+    bool            m_leftHanded;
 };
 
 } /* namespace lvr */
