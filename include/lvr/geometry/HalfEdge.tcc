@@ -50,45 +50,23 @@ bool  HalfEdge<HVertexT, FaceT>::isBorderEdge()
 template<typename HVertexT, typename FaceT>
 bool HalfEdge<HVertexT, FaceT>::hasNeighborFace()
 {
-    try
+    if(hasPair())
     {
-        pair()->face();
+        return pair()->hasFace();
     }
-    catch(HalfEdgeAccessException )
-    {
-        // Face has no neighbor if no pair edge
-        // or pair->face exists
-        return false;
-    }
-    return true;
+    return false;
 }
 
 template<typename HVertexT, typename FaceT>
 bool HalfEdge<HVertexT, FaceT>::hasPair()
 {
-    try
-    {
-        pair();
-    }
-    catch(HalfEdgeAccessException )
-    {
-        return false;
-    }
-    return true;
+   return p != 0;
 }
 
 template<typename HVertexT, typename FaceT>
 bool HalfEdge<HVertexT, FaceT>::hasFace()
 {
-    try
-    {
-        face();
-    }
-    catch(HalfEdgeAccessException)
-    {
-        return false;
-    }
-    return true;
+    return f != 0;
 }
 
 template<typename HVertexT, typename FaceT>

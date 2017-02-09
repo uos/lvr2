@@ -1140,6 +1140,7 @@ void HalfEdgeKinFuMesh<VertexT,NormalT>::fillInitialTextures(std::vector<std::ve
 					//shadow magic
 
 					cv::Point pointarr[image_points2D_br.size()];
+
 					for(int i=0;i<image_points2D_br.size();i++)
 						pointarr[i]=cv::Point(image_points2D_br[i].x,image_points2D_br[i].y);
 
