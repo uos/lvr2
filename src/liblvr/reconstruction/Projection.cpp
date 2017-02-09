@@ -1,5 +1,8 @@
 #include <lvr/reconstruction/Projection.hpp>
 
+#include <iostream>
+using namespace std;
+
 namespace lvr
 {
 
@@ -17,7 +20,7 @@ Projection::Projection(int width, int height, int minH, int maxH, int minV, int 
 
 void Projection::setImageRatio()
 {
-    if((m_xSize / m_ySize) != ((double)m_width / m_height))
+    if(((double)m_xSize / m_ySize) != ((double)m_width / m_height))
     {
         if(m_optimize)
         {
@@ -75,7 +78,7 @@ EquirectangularProjection::EquirectangularProjection(int width, int height, int 
     setImageRatio();
 
     m_xFactor = (float)m_width / m_xSize;
-    m_yFactor = (double) m_height / m_ySize;
+    m_yFactor = (float)m_height / m_ySize;
 
     m_maxWidth = m_width - 1;
     m_maxHeight = m_height - 1;
@@ -87,7 +90,7 @@ EquirectangularProjection::EquirectangularProjection(int width, int height, int 
 
 void EquirectangularProjection::project(int& i, int& j, int& range, float x, float y, float z)
 {
-    float kart[3] = { x, y, z};
+    float kart[3] = { z, -x, y};
     float polar[3] = {0, 0, 0};
 
     // Convert to polar coordinates
@@ -122,9 +125,9 @@ void EquirectangularProjection::project(int& i, int& j, int& range, float x, flo
         i = 0;
     }
 
-    if (x > m_maxWidth)
+    if (i > m_maxWidth)
     {
-        x = m_maxWidth;
+        i = m_maxWidth;
     }
 
     j = (int) ( m_yFactor * (theta - m_lowShift) );
@@ -139,6 +142,7 @@ void EquirectangularProjection::project(int& i, int& j, int& range, float x, flo
     {
         j = m_maxHeight;
     }
+    //cout << i << " " << j <<  " " << range << " / " << m_maxWidth << " " << m_maxHeight << endl;
 }
 
 ConicProjection::ConicProjection(int width, int height, int minH, int maxH, int minV, int maxV, bool optimize)

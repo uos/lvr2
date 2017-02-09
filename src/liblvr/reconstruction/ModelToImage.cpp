@@ -27,15 +27,13 @@
 #include <lvr/reconstruction/Projection.hpp>
 
 #include <iostream>
+#include <fstream>
+#include <algorithm>
+#include <list>
 using namespace std;
 
 namespace lvr {
 
-ModelToImage::ModelToImage(ModelPtr model)
-{
-	// TODO Auto-generated constructor stub
-
-}
 
 ModelToImage::ModelToImage(
         PointBufferPtr buffer,
@@ -44,22 +42,85 @@ ModelToImage::ModelToImage(
         int minZ, int maxZ,
         int minHorizontenAngle, int maxHorizontalAngle,
         int mainVerticalAngle, int maxVerticalAngle,
-        bool imageOptimization)
+        bool imageOptimization,
+        bool leftHandedInputData)
 {
     m_width = width;
     m_height = height;
+    m_leftHanded = leftHandedInputData;
 
-    Projection* p = new EquirectangularProjection(3600, 1000, 0, 360, -40, 60, true);
+
+    int min_range = + 1e7;
+    int max_range = - 1e7;
+
+    Projection* p = new EquirectangularProjection(14800, 1000, -360, 360, -90, 120, true);
+
+    int** img = new int*[p->h()];
+    for(int i = 0; i < p->h(); i++)
+    {
+        img[i] = new int[p->w()];
+    }
+
+    for(int i = 0; i < p->h(); i++)
+    {
+        for(int j = 0; j < p->w(); j++)
+        {
+            img[i][j] = 0;
+        }
+    }
 
     size_t n_points;
     floatArr points = buffer->getPointArray(n_points);
 
+    std::list<std::tuple<int, int, int> >pixels;
+
+    int img_x, img_y, range;
     for(int i = 0; i < n_points; i++)
     {
-        int img_x, img_y, range;
         p->project(img_x, img_y, range, points[3 * i], points[3 * i + 1], points[3 * i + 2]);
-        cout << img_x << " " << img_y << " " << range << endl;
+        if(range > max_range)
+        {
+            max_range = range;
+        }
+
+        if(range < min_range)
+        {
+            min_range = range;
+        }
+        //cout << img_x << " " << img_y << " " << range << endl;
+        pixels.push_back(std::tuple<int, int, int>(img_x, img_y, range));
     }
+
+    if(max_range > 3000) max_range = 3000;
+
+    int interval = max_range - min_range;
+    //cout << max_range << " " << min_range << " " << interval << endl;
+
+    for(auto it : pixels)
+    {
+        int i = std::get<0>(it);
+        int j = std::get<1>(it);
+        int r = std::get<2>(it);
+
+        if(r > max_range) r = max_range;
+
+        int val = (float)(r - min_range) / interval * 255;
+        //cout << i << " " << j <<  " " << val << endl;
+        img[j][i] = val;
+    }
+
+    std::ofstream out("img.pgm");
+    out << "P2" << endl;
+    out << p->w() << " " << p->h() << " 255" << endl;
+    for(int i = 0; i < p->h(); i++)
+    {
+        for(int j = 0; j < p->w(); j++)
+        {
+            out << img[i][j] << " ";
+        }
+    }
+    out.close();
+    delete p;
 }
 
 

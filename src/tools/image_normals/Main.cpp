@@ -26,6 +26,7 @@
 
 using namespace lvr;
 
+
 /**
  * @brief   Main entry point for the LSSR surface executable
  */
@@ -33,6 +34,8 @@ int main(int argc, char** argv)
 {
 
     ModelPtr model = ModelFactory::readModel(string(argv[1]));
+
+    ModelToImage mti(model->m_pointCloud, ModelToImage::CYLINDRICAL, 0, 0, 0, 0, 0, 0, 0, 0, true, true);
 
 }
 

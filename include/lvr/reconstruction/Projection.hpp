@@ -13,6 +13,9 @@ public:
 
     virtual void project(int&i , int&j, int& r, float x, float y, float z) = 0;
 
+    int w() { return m_width;}
+    int h() { return m_height;}
+
 protected:
 
     inline float toPolar(const float point[], float polar[]);
