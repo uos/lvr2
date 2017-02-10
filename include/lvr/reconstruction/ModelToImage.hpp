@@ -38,7 +38,10 @@ using std::tuple;
 
 namespace lvr {
 
-
+///
+/// \brief  The ModelToImage class provides methods to re-project 3D laser scans
+///         to image planes.
+///
 class ModelToImage {
 public:
 
@@ -58,10 +61,27 @@ public:
     } PanoramaPoint;
 
     /// Image with single depth information
-    typedef vector<vector<float> > DepthImage;
+    typedef struct DI
+    {
+        vector<vector<float> > pixels;
+        float   maxRange;
+        float   minRange;
+        DI() :
+            maxRange(std::numeric_limits<float>::lowest()),
+            minRange(std::numeric_limits<float>::max()) {}
+
+    } DepthImage;
 
     /// Image with list of projected points at each pixel
-    typedef vector<vector<PanoramaPoint> > PointListImage;
+    typedef struct PLI
+    {
+        vector<vector<PanoramaPoint> > pixels;
+        float   maxRange;
+        float   minRange;
+        PLI() :
+            maxRange(std::numeric_limits<float>::lowest()),
+            minRange(std::numeric_limits<float>::max()) {}
+    } PointListImage;
 
 
 
@@ -72,6 +92,11 @@ public:
         CYLINDRICAL, CONICAL, EQUALAREACYLINDRICAL,
         RECTILINEAR, PANNINI, STEREOGRAPHIC,
         ZAXIS, AZIMUTHAL
+    };
+
+    enum ProjectionPolicy
+    {
+        FIRST, LAST, MINRANGE, MAXRANGE, AVERAGE, COLOR, INTENSITY
     };
 
 
@@ -98,7 +123,7 @@ public:
 			PointBufferPtr buffer,
             ProjectionType projection,
 			int width, int height,
-            int minZ, int maxZ,
+            float minZ, float maxZ,
 			int minHorizontenAngle, int maxHorizontalAngle,
 			int mainVerticalAngle, int maxVerticalAngle,
             bool imageOptimization,
@@ -118,6 +143,28 @@ public:
 
     //// Returns an OpenCV image representation of the panarama
 	void getCVMatrix(cv::Mat& image);
+
+    ///
+    /// \brief  Computes an 2D matrix (image) where each entry (i,j) contains
+    ///         a list of all 3D points that where projected to that pixel
+    ///
+    /// \param img          The PointListImage structure in which the projection
+    ///                     result is stored
+    ///
+    void computePointListImage(PointListImage& img);
+
+
+    ///
+    /// \brief  Computes a depth image from the given scan using the specified
+    ///         policy
+    /// \param img          A DepthImage to store the projection result.
+    ///
+    /// \param policy       Specifies how the entries are generated. FIRST stores the
+    ///                     first projected distance. LAST the last distance. MINRANGE and
+    ///                     MAXRANGE the minimal and maximal projected distances. AVERAGE
+    ///                     averages over all encountered distances.
+    ///
+    void computeDepthImage(DepthImage& img, ProjectionPolicy policy = LAST);
 
 private:
 
@@ -149,21 +196,16 @@ private:
 	/// Image optimization flag
 	bool			m_optimize;
 
-    int             m_xSize;
-
-    int             m_ySize;
-
-    int             m_maxWidth;
-
-    int             m_maxHeight;
-
-    int             m_minHeight;
-
-    float           m_xFactor;
-
-    float           m_yFactor;
-
+    /// Set this to true if you are using a left-handed coordinate system
     bool            m_leftHanded;
+
+    /// Maximal z value that will be projected
+    float           m_maxZ;
+
+    /// Minimal z value that will be projected
+    float           m_minZ;
+
+
 };
 
 } /* namespace lvr */

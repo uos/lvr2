@@ -25,6 +25,8 @@
 
 #include <lvr/reconstruction/ModelToImage.hpp>
 #include <lvr/reconstruction/Projection.hpp>
+#include <lvr/io/Progress.hpp>
+#include <lvr/io/Timestamp.hpp>
 
 #include <iostream>
 #include <fstream>
@@ -39,95 +41,124 @@ ModelToImage::ModelToImage(
         PointBufferPtr buffer,
         ModelToImage::ProjectionType projection,
         int width, int height,
-        int minZ, int maxZ,
+        float minZ, float maxZ,
         int minHorizontenAngle, int maxHorizontalAngle,
-        int mainVerticalAngle, int maxVerticalAngle,
+        int minVerticalAngle, int maxVerticalAngle,
         bool imageOptimization,
         bool leftHandedInputData)
 {
+
+    // Initialize global members
     m_width = width;
     m_height = height;
     m_leftHanded = leftHandedInputData;
+    m_minZ = minZ;
+    m_maxZ = maxZ;
+    m_minHAngle = minHorizontenAngle;
+    m_maxHAngle = maxHorizontalAngle;
+    m_minVAngle = minVerticalAngle;
+    m_maxVAngle = maxVerticalAngle;
+    m_points = buffer;
 
+    // Create the projection representation
+    m_projection = new EquirectangularProjection(
+                            m_width, m_height,
+                            minHorizontenAngle, maxHorizontalAngle,
+                            minVerticalAngle, maxVerticalAngle, imageOptimization);
 
-    int min_range = + 1e7;
-    int max_range = - 1e7;
-
-    Projection* p = new EquirectangularProjection(14800, 1000, -360, 360, -90, 120, true);
-
-    int** img = new int*[p->h()];
-    for(int i = 0; i < p->h(); i++)
-    {
-        img[i] = new int[p->w()];
-    }
-
-    for(int i = 0; i < p->h(); i++)
-    {
-        for(int j = 0; j < p->w(); j++)
-        {
-            img[i][j] = 0;
-        }
-    }
-
-    size_t n_points;
-    floatArr points = buffer->getPointArray(n_points);
-
-    std::list<std::tuple<int, int, int> >pixels;
-
-    int img_x, img_y, range;
-    for(int i = 0; i < n_points; i++)
-    {
-        p->project(img_x, img_y, range, points[3 * i], points[3 * i + 1], points[3 * i + 2]);
-        if(range > max_range)
-        {
-            max_range = range;
-        }
-
-        if(range < min_range)
-        {
-            min_range = range;
-        }
-        //cout << img_x << " " << img_y << " " << range << endl;
-        pixels.push_back(std::tuple<int, int, int>(img_x, img_y, range));
-    }
-
-    if(max_range > 3000) max_range = 3000;
-
-    int interval = max_range - min_range;
-    //cout << max_range << " " << min_range << " " << interval << endl;
-
-    for(auto it : pixels)
-    {
-        int i = std::get<0>(it);
-        int j = std::get<1>(it);
-        int r = std::get<2>(it);
-
-        if(r > max_range) r = max_range;
-
-        int val = (float)(r - min_range) / interval * 255;
-        //cout << i << " " << j <<  " " << val << endl;
-        img[j][i] = val;
-    }
-
-    std::ofstream out("img.pgm");
-    out << "P2" << endl;
-    out << p->w() << " " << p->h() << " 255" << endl;
-    for(int i = 0; i < p->h(); i++)
-    {
-        for(int j = 0; j < p->w(); j++)
-        {
-            out << img[i][j] << " ";
-        }
-    }
-    out.close();
-    delete p;
 }
 
 
 
 ModelToImage::~ModelToImage()
 {
-	// TODO Auto-generated destructor stub
+    // TODO Auto-generated destructor stub
+}
+
+void lvr::ModelToImage::computeDepthImage(lvr::ModelToImage::DepthImage& img, lvr::ModelToImage::ProjectionPolicy policy)
+{
+    cout << timestamp << "Computing depth image." << endl;
+
+    // Set correct image width and height
+    for(int i = 0; i < m_height; i++)
+    {
+        img.pixels.emplace_back(vector<float>(m_width));
+        for(int j = 0; j < m_width; j++)
+        {
+            img.pixels[i].push_back(0.0f);
+        }
+    }
+
+
+    // Get point array and size from buffer
+    size_t n_points;
+    floatArr points = m_points->getPointArray(n_points);
+
+    // Create progress output
+    string comment = timestamp.getElapsedTime() + "Projecting points ";
+    ProgressBar progress(n_points, comment);
+
+    float range;
+    int img_x, img_y;
+    for(int i = 0; i < n_points; i++)
+    {
+        m_projection->project(
+                    img_x, img_y, range,
+                    points[3 * i], points[3 * i + 1], points[3 * i + 2]);
+
+        // Update min and max ranges
+        if(range > img.maxRange)
+        {
+            img.maxRange = range;
+        }
+
+        if(range < img.minRange)
+        {
+            img.minRange = range;
+        }
+
+        img.pixels[img_y][img_x] = range;
+        ++progress;
+    }
+    cout << endl;
+    cout << timestamp << "Min / Max range: " << img.minRange << " / " << img.maxRange << endl;
+}
+
+void lvr::ModelToImage::writePGM(string filename, float cutoff)
+{
+    // Compute panorama image
+    ModelToImage::DepthImage img;
+    computeDepthImage(img);
+
+    // Clamp range values
+    float min_r = std::min(m_minZ, img.minRange);
+    float max_r = std::min(m_maxZ, img.maxRange);
+    float interval = max_r - min_r;
+
+    cout << min_r << " " << max_r << " " << interval << endl;
+
+    // Open file, write header and pixel values
+    std::ofstream out(filename);
+    out << "P2" << endl;
+    out << img.pixels[0].size() << " " << img.pixels.size() << " 255" << endl;
+
+    for(int i = 0; i < img.pixels.size(); i++)
+    {
+        for(int j = 0; j < img.pixels[i].size(); j++)
+        {
+            int val = img.pixels[i][j];
+
+            // Image was initialized with zeros. Fix that to
+            // the measured min value
+            if(val < min_r)
+            {
+                val = min_r;
+            }
+
+            val = (int)((float)(val - min_r) / interval * 255);
+            out << val << " ";
+        }
+    }
 }
 
 } /* namespace lvr */

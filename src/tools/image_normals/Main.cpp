@@ -35,7 +35,8 @@ int main(int argc, char** argv)
 
     ModelPtr model = ModelFactory::readModel(string(argv[1]));
 
-    ModelToImage mti(model->m_pointCloud, ModelToImage::CYLINDRICAL, 0, 0, 0, 0, 0, 0, 0, 0, true, true);
+    ModelToImage mti(model->m_pointCloud, ModelToImage::CYLINDRICAL, 6000, 1000, 0, 3000, -360, 360, -90, 90, true, true);
 
+    mti.writePGM("test.pgm", 3000);
 }
 
