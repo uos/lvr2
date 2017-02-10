@@ -11,7 +11,7 @@ class Projection
 public:
     Projection(int width, int height, int minH, int maxH, int minV, int maxV, bool optimize);
 
-    virtual void project(int&i , int&j, int& r, float x, float y, float z) = 0;
+    virtual void project(int&i , int&j, float& r, float x, float y, float z) = 0;
 
     int w() { return m_width;}
     int h() { return m_height;}
@@ -45,7 +45,7 @@ public:
                               int minH, int maxH,
                               int minV, int maxV, bool optimize);
 
-    virtual void project(int&i , int&j, int& r, float x, float y, float z) override;
+    virtual void project(int&i , int&j, float& r, float x, float y, float z) override;
 
 protected:
     float       m_xFactor;

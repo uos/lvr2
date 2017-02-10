@@ -88,7 +88,7 @@ EquirectangularProjection::EquirectangularProjection(int width, int height, int 
 
 }
 
-void EquirectangularProjection::project(int& i, int& j, int& range, float x, float y, float z)
+void EquirectangularProjection::project(int& i, int& j, float& range, float x, float y, float z)
 {
     float kart[3] = { z, -x, y};
     float polar[3] = {0, 0, 0};
