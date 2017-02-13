@@ -77,12 +77,12 @@ ModelToImage::~ModelToImage()
 
 void lvr::ModelToImage::computeDepthImage(lvr::ModelToImage::DepthImage& img, lvr::ModelToImage::ProjectionPolicy policy)
 {
-    cout << timestamp << "Computing depth image." << endl;
+    cout << timestamp << "Computing depth image. Image dimensions: " << m_width << " x " << m_height << endl;
 
     // Set correct image width and height
     for(int i = 0; i < m_height; i++)
     {
-        img.pixels.emplace_back(vector<float>(m_width));
+        img.pixels.emplace_back(vector<float>());
         for(int j = 0; j < m_width; j++)
         {
             img.pixels[i].push_back(0.0f);
