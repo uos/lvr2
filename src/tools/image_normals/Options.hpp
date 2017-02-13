@@ -56,7 +56,7 @@ public:
 
     string  inputFile() const
 	{
-        return m_variables["inputFile"].as<string>();
+        return (m_variables["inputFile"].as< vector<string> >())[0];
 	}
 
 
@@ -99,12 +99,12 @@ public:
 
     float    maxZ() const
     {
-         return m_variables["imageWidth"].as<float>();
+         return m_variables["maxZ"].as<float>();
     }
 
     float    minZ() const
     {
-         return m_variables["imageWidth"].as<float>();
+         return m_variables["minZ"].as<float>();
     }
 
     float    maxZimg() const
@@ -114,12 +114,17 @@ public:
 
     float    minZimg() const
     {
-         return m_variables["maxZimg"].as<float>();
+         return m_variables["minZimg"].as<float>();
     }
 
     bool    optimize() const
     {
         return m_variables.count("optimize");
+    }
+
+    bool    optimize() const
+    {
+        return m_variables.count("leftHanded");
     }
 
 private:
@@ -148,13 +153,13 @@ private:
 
 inline ostream& operator<<(ostream& os, const Options& o)
 {
-    os << "##### Panorama normal estimation setting #####" << endl;
-    os << "Horizontal field of view:\t "   << o.minH() << " x " << o.maxH() << endl;
-    os << "Vertical field of view:\t "   << o.minV() << " x " << o.maxV() << endl;
-    os << "Image Dimensions\t: " << o.imageWidth() << " x " << o.imageHeight() << endl;
-    os << "Z range (scan) \t\t: " << o.minZ() << " to " << o.maxZ() << endl;
-    os << "Z range (img)\t\t: " << o.minZimg() << " to " << o.maxZimg() << endl;
-    os << "Optimize aspect\t\t: " << o.optimize() << endl;
+    os << "##### Panorama normal estimation settings #####" << endl;
+    os << "Horizontal field of view\t: "   << o.minH() << " x " << o.maxH() << endl;
+    os << "Vertical field of view\t\t: "   << o.minV() << " x " << o.maxV() << endl;
+    os << "Image Dimensions\t\t: " << o.imageWidth() << " x " << o.imageHeight() << endl;
+    os << "Z range (scan) \t\t\t: " << o.minZ() << " to " << o.maxZ() << endl;
+    os << "Z range (img)\t\t\t: " << o.minZimg() << " to " << o.maxZimg() << endl;
+    os << "Optimize aspect\t\t\t: " << o.optimize() << endl;
     return os;
 }
 
