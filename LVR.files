@@ -888,3 +888,5 @@ include/lvr/reconstruction/BilinearFastBox.tcc
 include/lvr/reconstruction/BilinearFastBox.hpp
 include/lvr/reconstruction/AdaptiveKSearchSurface.tcc
 include/lvr/reconstruction/AdaptiveKSearchSurface.hpp
+src/tools/image_normals/Options.hpp
+src/tools/image_normals/Options.cpp
