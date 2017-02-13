@@ -31,6 +31,7 @@ Options::Options(int argc, char** argv) : m_descr("Supported options")
 
 	m_descr.add_options()
 	("help", "Produce help message")
+    ("inputFile", value< vector<string> >(), "Input file name. ")
     ("minH",            value<int>(&m_minH)->default_value(0),          "Minimal horizontal opening angle.")
     ("maxH",            value<int>(&m_maxH)->default_value(360),        "Maximal horizontal opening angle.")
     ("minV",            value<int>(&m_minV)->default_value(-90),        "Minimal vertical opening angle.")
@@ -42,7 +43,8 @@ Options::Options(int argc, char** argv) : m_descr("Supported options")
     ("img",             value<string>(&m_imageOut)->default_value("panorama.pgm"), "Output file for projection image.")
     ("imageWidth,w",    value<int>(&m_width)->default_value(2800),      "Image width.")
     ("imageHeight,h",   value<int>(&m_height)->default_value(1000),     "Image height.")
-    ("optimize,o",      "Optimize image aspect ration.")
+    ("optimize,o",      "Optimize image aspect ratio.")
+    ("leftHanded,l",    "Set this for left handed coordinate systems.")
 	;
 
     m_pdescr.add("inputFile", -1);

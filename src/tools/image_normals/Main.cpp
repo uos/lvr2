@@ -23,7 +23,7 @@
 
 #include <lvr/io/ModelFactory.hpp>
 #include <lvr/reconstruction/ModelToImage.hpp>
-
+#include "Options.hpp"
 using namespace lvr;
 
 
@@ -32,11 +32,21 @@ using namespace lvr;
  */
 int main(int argc, char** argv)
 {
+    image_normals::Options opt(argc, argv);
+    cout << opt << endl;
 
-    ModelPtr model = ModelFactory::readModel(string(argv[1]));
 
-    ModelToImage mti(model->m_pointCloud, ModelToImage::CYLINDRICAL, 6000, 1000, 0, 3000, -360, 360, -90, 90, true, true);
+    ModelPtr model = ModelFactory::readModel(opt.inputFile());
 
-    mti.writePGM("test.pgm", 3000);
+    ModelToImage mti(
+                model->m_pointCloud,
+                ModelToImage::CYLINDRICAL,
+                opt.imageWidth(), opt.imageHeight(),
+                opt.minZ(), opt.maxZ(),
+                opt.minH(), opt.maxH(),
+                opt.minV(), opt.maxV(),
+                opt.optimize(), true);
+
+    mti.writePGM(opt.imageFile(), 3000);
 }
 
