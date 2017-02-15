@@ -122,7 +122,7 @@ public:
         return m_variables.count("optimize");
     }
 
-    bool    optimize() const
+    bool    leftHanded() const
     {
         return m_variables.count("leftHanded");
     }

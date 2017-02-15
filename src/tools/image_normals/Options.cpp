@@ -56,6 +56,7 @@ Options::Options(int argc, char** argv) : m_descr("Supported options")
 	if(m_variables.count("help"))
 	{
 		::std::cout << m_descr << ::std::endl;
+        exit(-1);
 	}
 
 }
