@@ -23,6 +23,7 @@
 
 #include <lvr/io/ModelFactory.hpp>
 #include <lvr/reconstruction/ModelToImage.hpp>
+#include <lvr/reconstruction/PanoramaNormals.hpp>
 #include "Options.hpp"
 using namespace lvr;
 
@@ -61,15 +62,11 @@ int main(int argc, char** argv)
 
     mti.writePGM(opt.imageFile(), 3000);
 
-    ModelToImage::DepthListMatrix mat;
-    mti.computeDepthListMatrix(mat);
+    PanoramaNormals normals(&mti);
+    PointBufferPtr buffer = normals.computeNormals(3, 3, true);
 
-    for(int i = 0; i < mat.pixels.size(); i++)
-    {
-        for(int j = 0; j < mat.pixels[i].size(); j++)
-        {
-            cout << mat.pixels[i][j].size() << endl;
-        }
-    }
+    ModelPtr out_model(new Model(buffer));
+
+    ModelFactory::saveModel(out_model, "normals.ply");
 }
 

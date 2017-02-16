@@ -59,6 +59,12 @@ if(FLANN_FOUND)
 endif(FLANN_FOUND)
 
 ####
+## Searching for GSL
+##############################
+find_package(GSL REQUIRED)
+include_directories(${GSL_INCLUDE_DIRS})
+
+####
 ## Searching for Eigen3
 ##############################
 find_package(Eigen3 REQUIRED)
