@@ -97,6 +97,16 @@ public:
         return m_variables["imageHeight"].as<int>();
     }
 
+    int     regionWidth() const
+    {
+        return m_variables["regionWidth"].as<int>();
+    }
+
+    int     regionHeight() const
+    {
+        return m_variables["regionHeight"].as<int>();
+    }
+
     float    maxZ() const
     {
          return m_variables["maxZ"].as<float>();
@@ -144,6 +154,8 @@ private:
     int         m_maxV;
     int         m_width;
     int         m_height;
+    int         m_windowWidth;
+    int         m_windowHeight;
     float       m_minZ;
     float       m_maxZ;
     float       m_minZimg;

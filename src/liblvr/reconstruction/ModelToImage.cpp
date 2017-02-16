@@ -118,7 +118,10 @@ void ModelToImage::computeDepthListMatrix(DepthListMatrix& mat)
             mat.minRange = range;
         }
 
-        mat.pixels[img_y][img_x].push_back(ppt);
+        if(range < m_maxZ)
+        {
+            mat.pixels[img_y][img_x].push_back(ppt);
+        }
         ++progress;
     }
     cout << endl;

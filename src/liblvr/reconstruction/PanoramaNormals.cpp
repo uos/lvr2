@@ -1,5 +1,7 @@
 #include <lvr/reconstruction/PanoramaNormals.hpp>
 #include <lvr/geometry/Normal.hpp>
+#include <lvr/io/Progress.hpp>
+#include <lvr/io/Timestamp.hpp>
 
 #include <Eigen/Dense>
 
@@ -49,6 +51,10 @@ PointBufferPtr PanoramaNormals::computeNormals(int width, int height, bool inter
     }
 
     // Compute normals
+    // Create progress output
+    string comment = timestamp.getElapsedTime() + "Computing normals ";
+    ProgressBar progress(mat.pixels.size(), comment);
+
     for(size_t i = 0; i < mat.pixels.size(); i++)
     {
         for(size_t j = 0; j < mat.pixels[i].size(); j++)
@@ -219,7 +225,7 @@ PointBufferPtr PanoramaNormals::computeNormals(int width, int height, bool inter
                 Normal<float> np(mat.pixels[i][j][0].x, mat.pixels[i][j][0].y, mat.pixels[i][j][0].z);
                 Normal<float> nn(nx, ny, nz);
 
-                Vertex<float> center(0, 0, 0);
+                Vertex<float> center(1e6, 1e6, 1e6);
                 Vertex<float> p1 = center - Vertex<float>(mat.pixels[i][j][0].x, mat.pixels[i][j][0].y, mat.pixels[i][j][0].z);
                 float angle = atan2(p1.cross(nn).length(), p1 * nn);
 
@@ -242,6 +248,7 @@ PointBufferPtr PanoramaNormals::computeNormals(int width, int height, bool inter
                 }
             }
         }
+        ++progress;
     }
 
     // Generate point buffer
@@ -255,8 +262,10 @@ PointBufferPtr PanoramaNormals::computeNormals(int width, int height, bool inter
         n_arr[i] = normals[i];
     }
 
-    buffer->setPointArray(p_arr, pts.size());
-    buffer->setPointNormalArray(n_arr, normals.size());
+    cout << pts.size() << endl;
+
+    buffer->setPointArray(p_arr, pts.size() / 3);
+    buffer->setPointNormalArray(n_arr, normals.size() / 3);
 
     return buffer;
 
