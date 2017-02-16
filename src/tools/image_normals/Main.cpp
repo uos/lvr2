@@ -60,5 +60,16 @@ int main(int argc, char** argv)
                 opt.optimize(), system);
 
     mti.writePGM(opt.imageFile(), 3000);
+
+    ModelToImage::DepthListMatrix mat;
+    mti.computeDepthListMatrix(mat);
+
+    for(int i = 0; i < mat.pixels.size(); i++)
+    {
+        for(int j = 0; j < mat.pixels[i].size(); j++)
+        {
+            cout << mat.pixels[i][j].size() << endl;
+        }
+    }
 }
 

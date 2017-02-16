@@ -54,8 +54,9 @@ public:
         float depth;
     } DepthPixel;
 
-    typedef struct
+    typedef struct PanoPoint
     {
+        PanoPoint(float x_, float y_, float z_) : x(x_), y(y_), z(z_) {}
         float x;
         float y;
         float z;
@@ -76,13 +77,13 @@ public:
     /// Image with list of projected points at each pixel
     typedef struct PLI
     {
-        vector<vector<PanoramaPoint> > pixels;
+        vector<vector<vector<PanoramaPoint> > > pixels;
         float   maxRange;
         float   minRange;
         PLI() :
             maxRange(std::numeric_limits<float>::lowest()),
             minRange(std::numeric_limits<float>::max()) {}
-    } PointListImage;
+    } DepthListMatrix;
 
 
 
@@ -150,15 +151,6 @@ public:
     //// Returns an OpenCV image representation of the panarama
 	void getCVMatrix(cv::Mat& image);
 
-    ///
-    /// \brief  Computes an 2D matrix (image) where each entry (i,j) contains
-    ///         a list of all 3D points that where projected to that pixel
-    ///
-    /// \param img          The PointListImage structure in which the projection
-    ///                     result is stored
-    ///
-    void computePointListImage(PointListImage& img);
-
 
     ///
     /// \brief  Computes a depth image from the given scan using the specified
@@ -171,6 +163,15 @@ public:
     ///                     averages over all encountered distances.
     ///
     void computeDepthImage(DepthImage& img, ProjectionPolicy policy = LAST);
+
+    ///
+    /// \brief  Computes a DepthListMatrix, i.e., an image matrix where each
+    ///         entry holds a vector of all points that where projected to that
+    ///         image position.
+    ///
+    /// \param mat          The generated DepthListMatrix
+    ///
+    void computeDepthListMatrix(DepthListMatrix& mat);
 
 private:
 
