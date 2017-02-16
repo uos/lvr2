@@ -1,13 +1,14 @@
 #include <lvr/reconstruction/Projection.hpp>
 
+
 #include <iostream>
 using namespace std;
 
 namespace lvr
 {
 
-Projection::Projection(int width, int height, int minH, int maxH, int minV, int maxV, bool optimize)
-    : m_width(width), m_height(height), m_optimize(optimize)
+Projection::Projection(int width, int height, int minH, int maxH, int minV, int maxV, bool optimize, ModelToImage::CoordinateSystem system)
+    : m_width(width), m_height(height), m_optimize(optimize), m_system(system)
 {
     // Convert degrees to radians
     m_maxH = maxH / 180.0 * m_ph;
@@ -68,8 +69,8 @@ void Projection::setImageRatio()
 
 
 
-EquirectangularProjection::EquirectangularProjection(int width, int height, int minH, int maxH, int minV, int maxV, bool optimize)
-    : Projection(width, height, minH, maxH, minV, maxV, optimize)
+EquirectangularProjection::EquirectangularProjection(int width, int height, int minH, int maxH, int minV, int maxV, bool optimize, ModelToImage::CoordinateSystem system)
+    : Projection(width, height, minH, maxH, minV, maxV, optimize, system)
 {
     //adding the longitude to x axis and latitude to y axis
     m_xSize = m_maxH - m_minH;
@@ -90,7 +91,48 @@ EquirectangularProjection::EquirectangularProjection(int width, int height, int 
 
 void EquirectangularProjection::project(int& i, int& j, float& range, float x, float y, float z)
 {
-    float kart[3] = { z, -x, y};
+    float kart[3];
+
+    switch(m_system)
+    {
+        case ModelToImage::SLAM6D:
+            kart[0] = z;
+            kart[1] = -x;
+            kart[2] = y;
+            break;
+        case ModelToImage::UOS:
+            kart[0] = x;
+            kart[1] = -z;
+            kart[2] = y;
+            break;
+        case ModelToImage::NATIVE:
+        default:
+            kart[0] = x;
+            kart[1] = y;
+            kart[2] = z;
+
+    }
+
+
+//    if(m_system)
+//    {
+//        kart[0] = z;
+//        kart[1] = -x;
+//        kart[2] = y;
+//    }
+//    else
+//    {
+////        kart[0] = x;
+////        kart[1] = -z;
+////        kart[2] = y;
+
+//        kart[0] = x;
+//        kart[1] = y;
+//        kart[2] = z;
+
+//    }
+
+
     float polar[3] = {0, 0, 0};
 
     // Convert to polar coordinates
@@ -145,8 +187,8 @@ void EquirectangularProjection::project(int& i, int& j, float& range, float x, f
     //cout << i << " " << j <<  " " << range << " / " << m_maxWidth << " " << m_maxHeight << endl;
 }
 
-ConicProjection::ConicProjection(int width, int height, int minH, int maxH, int minV, int maxV, bool optimize)
-    : Projection(width, height, minH, maxH, minV, maxV, optimize)
+ConicProjection::ConicProjection(int width, int height, int minH, int maxH, int minV, int maxV, bool optimize, ModelToImage::CoordinateSystem system)
+    : Projection(width, height, minH, maxH, minV, maxV, optimize, system)
 {
     // Set up initial parameters according to MathWorld:
     // http://mathworld.wolfram.com/AlbersEqual-AreaConicProjection.html
@@ -178,8 +220,8 @@ ConicProjection::ConicProjection(int width, int height, int minH, int maxH, int 
     m_maxHeight = m_height - 1;
 }
 
-CylindricalProjection::CylindricalProjection(int width, int height, int minH, int maxH, int minV, int maxV, bool optimize)
-    : Projection(width, height, minH, maxH, minV, maxV, optimize)
+CylindricalProjection::CylindricalProjection(int width, int height, int minH, int maxH, int minV, int maxV, bool optimize, ModelToImage::CoordinateSystem system)
+    : Projection(width, height, minH, maxH, minV, maxV, optimize, system)
 {
     //adding the longitude to x and tan(latitude) to y
     m_xSize = m_maxH - m_minH;
@@ -195,8 +237,8 @@ CylindricalProjection::CylindricalProjection(int width, int height, int minH, in
     m_maxHeight = m_height - 1;
 }
 
-MercatorProjection::MercatorProjection(int width, int height, int minH, int maxH, int minV, int maxV, bool optimize)
-    : Projection(width, height, minH, maxH, minV, maxV, optimize)
+MercatorProjection::MercatorProjection(int width, int height, int minH, int maxH, int minV, int maxV, bool optimize, ModelToImage::CoordinateSystem system)
+    : Projection(width, height, minH, maxH, minV, maxV, optimize, system)
 {
     //find the x and y range
     m_xSize = m_maxH - m_minH;
@@ -211,8 +253,8 @@ MercatorProjection::MercatorProjection(int width, int height, int minH, int maxH
     m_maxHeight = m_height - 1;
 }
 
-RectilinearProjection::RectilinearProjection(int width, int height, int minH, int maxH, int minV, int maxV, bool optimize)
-    : Projection(width, height, minH, maxH, minV, maxV, optimize)
+RectilinearProjection::RectilinearProjection(int width, int height, int minH, int maxH, int minV, int maxV, bool optimize, ModelToImage::CoordinateSystem system)
+    : Projection(width, height, minH, maxH, minV, maxV, optimize, system)
 {
     int numberOfImages = 3;
     m_interval = (m_maxH - m_minH) / numberOfImages;
@@ -245,8 +287,8 @@ RectilinearProjection::RectilinearProjection(int width, int height, int minH, in
     setImageRatio();
 }
 
-PanniniProjection::PanniniProjection(int width, int height, int minH, int maxH, int minV, int maxV, bool optimize)
-    : Projection(width, height, minH, maxH, minV, maxV, optimize)
+PanniniProjection::PanniniProjection(int width, int height, int minH, int maxH, int minV, int maxV, bool optimize, ModelToImage::CoordinateSystem system)
+    : Projection(width, height, minH, maxH, minV, maxV, optimize, system)
 {
     //default values for numberOfIMages and dPannini==param
     int param = 1;
@@ -280,8 +322,8 @@ PanniniProjection::PanniniProjection(int width, int height, int minH, int maxH, 
     setImageRatio();
 }
 
-StereographicProjection::StereographicProjection(int width, int height, int minH, int maxH, int minV, int maxV, bool optimize)
-    : Projection(width, height, minH, maxH, minV, maxV, optimize)
+StereographicProjection::StereographicProjection(int width, int height, int minH, int maxH, int minV, int maxV, bool optimize, ModelToImage::CoordinateSystem system)
+    : Projection(width, height, minH, maxH, minV, maxV, optimize, system)
 {
     // Default values for numberOfIMages and rStereographic==param
     int param = 2;
@@ -319,8 +361,8 @@ StereographicProjection::StereographicProjection(int width, int height, int minH
     setImageRatio();
 }
 
-AzimuthalProjection::AzimuthalProjection(int width, int height, int minH, int maxH, int minV, int maxV, bool optimize)
-   : Projection(width, height, minH, maxH, minV, maxV, optimize)
+AzimuthalProjection::AzimuthalProjection(int width, int height, int minH, int maxH, int minV, int maxV, bool optimize, ModelToImage::CoordinateSystem system)
+   : Projection(width, height, minH, maxH, minV, maxV, optimize, system)
 {
     // set up initial parameters according to MathWorld: http://mathworld.wolfram.com/LambertAzimuthalEqual-AreaProjection.html
     m_long0 = (m_minH + m_maxH) / 2;

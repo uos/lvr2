@@ -45,13 +45,13 @@ ModelToImage::ModelToImage(
         int minHorizontenAngle, int maxHorizontalAngle,
         int minVerticalAngle, int maxVerticalAngle,
         bool imageOptimization,
-        bool leftHandedInputData)
+        CoordinateSystem system)
 {
 
     // Initialize global members
     m_width = width;
     m_height = height;
-    m_leftHanded = leftHandedInputData;
+    m_coordinateSystem = system;
     m_minZ = minZ;
     m_maxZ = maxZ;
     m_minHAngle = minHorizontenAngle;
@@ -62,9 +62,10 @@ ModelToImage::ModelToImage(
 
     // Create the projection representation
     m_projection = new EquirectangularProjection(
-                            m_width, m_height,
-                            minHorizontenAngle, maxHorizontalAngle,
-                            minVerticalAngle, maxVerticalAngle, imageOptimization);
+                m_width, m_height,
+                minHorizontenAngle, maxHorizontalAngle,
+                minVerticalAngle, maxVerticalAngle,
+                imageOptimization, system);
 
 }
 

@@ -38,6 +38,18 @@ int main(int argc, char** argv)
 
     ModelPtr model = ModelFactory::readModel(opt.inputFile());
 
+    // Determine coordinate system
+    ModelToImage::CoordinateSystem system = ModelToImage::NATIVE;
+
+    if(opt.coordinateSystem() == "SLAM6D")
+    {
+        system = ModelToImage::SLAM6D;
+    }
+    else if(opt.coordinateSystem() == "UOS")
+    {
+        system = ModelToImage::UOS;
+    }
+
     ModelToImage mti(
                 model->m_pointCloud,
                 ModelToImage::CYLINDRICAL,
@@ -45,7 +57,7 @@ int main(int argc, char** argv)
                 opt.minZ(), opt.maxZ(),
                 opt.minH(), opt.maxH(),
                 opt.minV(), opt.maxV(),
-                opt.optimize(), true);
+                opt.optimize(), system);
 
     mti.writePGM(opt.imageFile(), 3000);
 }

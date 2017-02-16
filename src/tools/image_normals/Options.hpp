@@ -122,9 +122,9 @@ public:
         return m_variables.count("optimize");
     }
 
-    bool    leftHanded() const
+    string    coordinateSystem() const
     {
-        return m_variables.count("leftHanded");
+        return m_variables["system"].as<string>();
     }
 
 private:
@@ -149,6 +149,7 @@ private:
     float       m_minZimg;
     float       m_maxZimg;
     string      m_imageOut;
+    string      m_system;
 };
 
 inline ostream& operator<<(ostream& os, const Options& o)
@@ -160,6 +161,7 @@ inline ostream& operator<<(ostream& os, const Options& o)
     os << "Z range (scan) \t\t\t: " << o.minZ() << " to " << o.maxZ() << endl;
     os << "Z range (img)\t\t\t: " << o.minZimg() << " to " << o.maxZimg() << endl;
     os << "Optimize aspect\t\t\t: " << o.optimize() << endl;
+    os << "Coordinate system\t\t: " << o.coordinateSystem() << endl;
     return os;
 }
 

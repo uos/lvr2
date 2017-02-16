@@ -2,6 +2,7 @@
 #define PROJECTION_H
 #include <cmath>
 
+#include <lvr/reconstruction/ModelToImage.hpp>
 
 namespace lvr
 {
@@ -9,7 +10,8 @@ namespace lvr
 class Projection
 {
 public:
-    Projection(int width, int height, int minH, int maxH, int minV, int maxV, bool optimize);
+
+    Projection(int width, int height, int minH, int maxH, int minV, int maxV, bool optimize, ModelToImage::CoordinateSystem system = ModelToImage::NATIVE);
 
     virtual void project(int&i , int&j, float& r, float x, float y, float z) = 0;
 
@@ -32,6 +34,7 @@ protected:
     float       m_maxV;
 
     bool        m_optimize;
+    ModelToImage::CoordinateSystem        m_system;
 
     void setImageRatio();
 
@@ -43,7 +46,8 @@ class EquirectangularProjection: public Projection
 public:
     EquirectangularProjection(int width, int height,
                               int minH, int maxH,
-                              int minV, int maxV, bool optimize);
+                              int minV, int maxV,
+                              bool optimize, ModelToImage::CoordinateSystem system = ModelToImage::NATIVE);
 
     virtual void project(int&i , int&j, float& r, float x, float y, float z) override;
 
@@ -60,7 +64,8 @@ class MercatorProjection: public Projection
 public:
     MercatorProjection(int width, int height,
                        int minH, int maxH,
-                       int minV, int maxV, bool optimize);
+                       int minV, int maxV,
+                       bool optimize, ModelToImage::CoordinateSystem system = ModelToImage::NATIVE);
 protected:
     float       m_heightLow;
     int         m_maxWidth;
@@ -72,7 +77,8 @@ class CylindricalProjection: public Projection
 public:
     CylindricalProjection(int width, int height,
                           int minH, int maxH,
-                          int minV, int maxV, bool optimize);
+                          int minV, int maxV,
+                          bool optimize, ModelToImage::CoordinateSystem system = ModelToImage::NATIVE);
 
 protected:
     float       m_heightLow;
@@ -86,7 +92,8 @@ class ConicProjection : public Projection
 public:
     ConicProjection(int width, int height,
                     int minH, int maxH,
-                    int minV, int maxV, bool optimize);
+                    int minV, int maxV,
+                    bool optimize, ModelToImage::CoordinateSystem system = ModelToImage::NATIVE);
 
 protected:
     float       m_lat0;
@@ -111,7 +118,8 @@ class RectilinearProjection : public Projection
 public:
     RectilinearProjection(int width, int height,
                           int minH, int maxH,
-                          int minV, int maxV, bool optimize);
+                          int minV, int maxV,
+                          bool optimize, ModelToImage::CoordinateSystem system = ModelToImage::NATIVE);
 protected:
     float       m_interval;
     float       m_iMinY;
@@ -132,7 +140,8 @@ class PanniniProjection: public Projection
 public:
     PanniniProjection(int width, int height,
                       int minH, int maxH,
-                      int minV, int maxV, bool optimize);
+                      int minV, int maxV,
+                      bool optimize, ModelToImage::CoordinateSystem system = ModelToImage::NATIVE);
 
 protected:
     float       m_interval;
@@ -152,7 +161,8 @@ class StereographicProjection: public Projection
 public:
     StereographicProjection(int width, int height,
                             int minH, int maxH,
-                            int minV, int maxV, bool optimize);
+                            int minV, int maxV,
+                            bool optimize, ModelToImage::CoordinateSystem system = ModelToImage::NATIVE);
 
 protected:
     float       m_interval;
@@ -172,7 +182,8 @@ class AzimuthalProjection: public Projection
 public:
     AzimuthalProjection(int width, int height,
                         int minH, int maxH,
-                        int minV, int maxV, bool optimize);
+                        int minV, int maxV,
+                        bool optimize, ModelToImage::CoordinateSystem system = ModelToImage::NATIVE);
 
 protected:
     float       m_kPrime;
