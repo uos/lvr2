@@ -44,7 +44,7 @@ Options::Options(int argc, char** argv) : m_descr("Supported options")
     ("imageWidth,w",    value<int>(&m_width)->default_value(2800),      "Image width.")
     ("imageHeight,h",   value<int>(&m_height)->default_value(1000),     "Image height.")
     ("optimize,o",      "Optimize image aspect ratio.")
-    ("leftHanded,l",    "Set this for left handed coordinate systems.")
+    ("system,s",        value<string>(&m_system)->default_value("NATIVE"), "The coordinate system in which the points are stored. Use NATIVE to interpret the points as they are. Use SLAM6D for scans in 3dtk's coordinate system and UOS for scans that where taken with a tilting laser scanner at Osnabrueck University.")
 	;
 
     m_pdescr.add("inputFile", -1);

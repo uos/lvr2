@@ -27,7 +27,6 @@
 #define SRC_LIBLVR_RECONSTRUCTION_MODELTOIMAGE_HPP_
 
 #include <lvr/io/Model.hpp>
-#include <lvr/reconstruction/Projection.hpp>
 
 #include <opencv/cv.h>
 #include <algorithm>
@@ -37,6 +36,8 @@ using std::vector;
 using std::tuple;
 
 namespace lvr {
+
+class Projection;
 
 ///
 /// \brief  The ModelToImage class provides methods to re-project 3D laser scans
@@ -99,6 +100,11 @@ public:
         FIRST, LAST, MINRANGE, MAXRANGE, AVERAGE, COLOR, INTENSITY
     };
 
+    enum CoordinateSystem
+    {
+        NATIVE, SLAM6D, UOS
+    };
+
 
     ///
     /// \brief Constructor
@@ -126,8 +132,8 @@ public:
             float minZ, float maxZ,
 			int minHorizontenAngle, int maxHorizontalAngle,
 			int mainVerticalAngle, int maxVerticalAngle,
-            bool imageOptimization,
-            bool leftHandedInputData);
+            bool imageOptimization = true,
+            CoordinateSystem system = NATIVE);
 
     ///
     /// \brief Writes the scan panaroma to an pgm file
@@ -170,40 +176,40 @@ private:
 
 
     /// Pointer to projection
-    Projection*     m_projection;
+    Projection*         m_projection;
 
 	/// Pointer to the initial point cloud
-	PointBufferPtr 	m_points;
+    PointBufferPtr      m_points;
 
 	/// Image width
-	int				m_width;
+    int                 m_width;
 
 	/// Image height
-	int				m_height;
+    int                 m_height;
 
 	/// Min horizontal opening angle
-	int				m_minHAngle;
+    int                 m_minHAngle;
 
 	/// Max horizontal opening angle
-	int				m_maxHAngle;
+    int                 m_maxHAngle;
 
 	/// Min horizontal opening angle
-	int				m_minVAngle;
+    int                 m_minVAngle;
 
 	/// Max horizontal opening angle
-	int				m_maxVAngle;
+    int                 m_maxVAngle;
 
 	/// Image optimization flag
-	bool			m_optimize;
+    bool                m_optimize;
 
     /// Set this to true if you are using a left-handed coordinate system
-    bool            m_leftHanded;
+    CoordinateSystem    m_coordinateSystem;
 
     /// Maximal z value that will be projected
-    float           m_maxZ;
+    float               m_maxZ;
 
     /// Minimal z value that will be projected
-    float           m_minZ;
+    float               m_minZ;
 
 
 };
