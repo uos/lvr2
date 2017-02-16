@@ -34,3 +34,5 @@ src/tools/viewer/vtkBridge
 src/tools/transform
 src/tools/image_normals
 include/lvr/io
+src/liblvr/reconstruction
+include/lvr/geometry
