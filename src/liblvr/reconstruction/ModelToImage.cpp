@@ -76,7 +76,56 @@ ModelToImage::~ModelToImage()
     // TODO Auto-generated destructor stub
 }
 
-void lvr::ModelToImage::computeDepthImage(lvr::ModelToImage::DepthImage& img, lvr::ModelToImage::ProjectionPolicy policy)
+void ModelToImage::computeDepthListMatrix(DepthListMatrix& mat)
+{
+    cout << timestamp << "Initializting DepthListMatrix with dimensions " << m_width << " x " << m_height << endl;
+    // Set correct image width and height
+    for(int i = 0; i < m_height; i++)
+    {
+        mat.pixels.emplace_back(vector<vector<PanoramaPoint> >());
+        for(int j = 0; j < m_width; j++)
+        {
+            mat.pixels[i].push_back(vector<PanoramaPoint>());
+        }
+    }
+
+    // Get point array and size from buffer
+    size_t n_points;
+    floatArr points = m_points->getPointArray(n_points);
+
+    // Create progress output
+    string comment = timestamp.getElapsedTime() + "Projecting points ";
+    ProgressBar progress(n_points, comment);
+
+    float range;
+    int img_x, img_y;
+    for(int i = 0; i < n_points; i++)
+    {
+        PanoramaPoint ppt(points[3 * i], points[3 * i + 1], points[3 * i + 2]);
+
+        m_projection->project(
+                    img_x, img_y, range,
+                    ppt.x, ppt.y, ppt.z);
+
+        // Update min and max ranges
+        if(range > mat.maxRange)
+        {
+            mat.maxRange = range;
+        }
+
+        if(range < mat.minRange)
+        {
+            mat.minRange = range;
+        }
+
+        mat.pixels[img_y][img_x].push_back(ppt);
+        ++progress;
+    }
+    cout << endl;
+
+}
+
+void ModelToImage::computeDepthImage(lvr::ModelToImage::DepthImage& img, lvr::ModelToImage::ProjectionPolicy policy)
 {
     cout << timestamp << "Computing depth image. Image dimensions: " << m_width << " x " << m_height << endl;
 
@@ -125,7 +174,7 @@ void lvr::ModelToImage::computeDepthImage(lvr::ModelToImage::DepthImage& img, lv
     cout << timestamp << "Min / Max range: " << img.minRange << " / " << img.maxRange << endl;
 }
 
-void lvr::ModelToImage::writePGM(string filename, float cutoff)
+void ModelToImage::writePGM(string filename, float cutoff)
 {
     // Compute panorama image
     ModelToImage::DepthImage img;
