@@ -117,10 +117,6 @@ PointBufferPtr PanoramaNormals::computeNormals(int width, int height, bool inter
                                                    nb[i].y - mean.y,
                                                    nb[i].z - mean.z);
 
-                    //                    covariance(1, 1) += pt.y * pt.y;
-                    //                    covariance(1, 2) += pt.y * pt.z;
-                    //                    covariance(2, 2) += pt.z * pt.z;
-
                     covariance[4] += pt.y * pt.y;
                     covariance[7] += pt.y * pt.z;
                     covariance[8] += pt.z * pt.z;
@@ -129,18 +125,11 @@ PointBufferPtr PanoramaNormals::computeNormals(int width, int height, bool inter
                     pt.y *= pt.x;
                     pt.z *= pt.x;
 
-                    //                    covariance(0, 0) += pt.x;
-                    //                    covariance(0, 1) += pt.y;
-                    //                    covariance(0, 2) += pt.z;
-
                     covariance[0] += pt.x;
                     covariance[1] += pt.y;
                     covariance[6] += pt.z;
 
                 }
-                //                covariance(1, 0) = covariance(0, 1);
-                //                covariance(2, 0) = covariance(0, 2);
-                //                covariance(2, 1) = covariance(1, 2);
 
                 covariance[3] = covariance[1];
                 covariance[2] = covariance[6];
@@ -150,11 +139,6 @@ PointBufferPtr PanoramaNormals::computeNormals(int width, int height, bool inter
                 {
                     covariance[i] /= nb.size();
                 }
-
-
-
-//                Eigen::EigenSolver<Eigen::Matrix3f> es;
-//                es.compute(covariance, true);
 
                 gsl_matrix_view m = gsl_matrix_view_array(covariance, 3, 3);
                 gsl_matrix* evec = gsl_matrix_alloc(3, 3);
@@ -167,64 +151,12 @@ PointBufferPtr PanoramaNormals::computeNormals(int width, int height, bool inter
                 gsl_eigen_symmv_free (w);
                 gsl_eigen_symmv_sort (eval, evec, GSL_EIGEN_SORT_ABS_ASC);
 
-//                float r1 = std::abs(es.eigenvalues()[0].real());
-//                float r2 = std::abs(es.eigenvalues()[1].real());
-//                float r3 = std::abs(es.eigenvalues()[2].real());
-
-
-//                // Find eigenvector corresponding to smallest eigenvalue
-//                float nx, ny, nz;
-
-//                auto evec = es.eigenvectors();
-
-//                if(r1 < r2)
-//                {
-//                    if(r1 < r3)
-//                    {
-//                        // r1 wins
-
-//                        nx = evec(0,0).real();
-//                        ny = evec(0,1).real();
-//                        nz = evec(0,2).real();
-//                    }
-//                    else
-//                    {
-//                        // r3 wins
-//                        nx = evec(2,0).real();
-//                        ny = evec(2,1).real();
-//                        nz = evec(2,2).real();
-//                    }
-//                }
-//                else
-//                {
-//                    if(r2 < r3)
-//                    {
-//                        // r2 wins
-//                        nx = evec(1,0).real();
-//                        ny = evec(1,1).real();
-//                        nz = evec(1,2).real();
-
-//                    }
-//                    else
-//                    {
-//                        // r3 wins
-//                        nx = evec(2,0).real();
-//                        ny = evec(2,1).real();
-//                        nz = evec(2,2).real();
-//                    }
-//                }
-                //cout << nx << " " << ny << " " << nz <<  " " << nx * nx + ny * ny + nz * nz << endl;
-
                 gsl_vector_view evec_0 = gsl_matrix_column(evec, 0);
                 float nx = gsl_vector_get(&evec_0.vector, 0);
                 float ny = gsl_vector_get(&evec_0.vector, 1);
                 float nz = gsl_vector_get(&evec_0.vector, 2);
 
-
-
-                Normal<float> np(mat.pixels[i][j][0].x, mat.pixels[i][j][0].y, mat.pixels[i][j][0].z);
                 Normal<float> nn(nx, ny, nz);
-
                 Vertex<float> center(1e6, 1e6, 1e6);
                 Vertex<float> p1 = center - Vertex<float>(mat.pixels[i][j][0].x, mat.pixels[i][j][0].y, mat.pixels[i][j][0].z);
                 float angle = atan2(p1.cross(nn).length(), p1 * nn);
