@@ -43,6 +43,8 @@ Options::Options(int argc, char** argv) : m_descr("Supported options")
     ("img",             value<string>(&m_imageOut)->default_value("panorama.pgm"), "Output file for projection image.")
     ("imageWidth,w",    value<int>(&m_width)->default_value(2800),      "Image width.")
     ("imageHeight,h",   value<int>(&m_height)->default_value(1000),     "Image height.")
+    ("regionWidth,i",    value<int>(&m_width)->default_value(5),      "Width of the nearest neighbor region of a pixel for normal estimation.")
+    ("regionHeight,j",   value<int>(&m_height)->default_value(5),     "Height of the nearest neighbor region of a pixel for normal estimation.")
     ("optimize,o",      "Optimize image aspect ratio.")
     ("system,s",        value<string>(&m_system)->default_value("NATIVE"), "The coordinate system in which the points are stored. Use NATIVE to interpret the points as they are. Use SLAM6D for scans in 3dtk's coordinate system and UOS for scans that where taken with a tilting laser scanner at Osnabrueck University.")
 	;

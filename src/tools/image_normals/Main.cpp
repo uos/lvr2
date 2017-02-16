@@ -63,7 +63,7 @@ int main(int argc, char** argv)
     mti.writePGM(opt.imageFile(), 3000);
 
     PanoramaNormals normals(&mti);
-    PointBufferPtr buffer = normals.computeNormals(3, 3, true);
+    PointBufferPtr buffer = normals.computeNormals(opt.regionWidth(), opt.regionHeight(), true);
 
     ModelPtr out_model(new Model(buffer));
 
