@@ -62,6 +62,17 @@ public:
         float z;
     } PanoramaPoint;
 
+    struct PanoramaPointNormal : public PanoramaPoint
+    {
+        PanoramaPointNormal(float x, float y, float z, float nx_, float ny_, float nz_)
+            : PanoramaPoint(x, y, z), nx(nx_), ny(ny_), nz(nz_) {}
+
+        float nx;
+        float ny;
+        float nz;
+    };
+
+
     /// Image with single depth information
     typedef struct DI
     {
@@ -85,7 +96,15 @@ public:
             minRange(std::numeric_limits<float>::max()) {}
     } DepthListMatrix;
 
-
+    struct DepthListMatrixNormals
+    {
+        vector<vector<vector<PanoramaPointNormal> > > pixels;
+        float   maxRange;
+        float   minRange;
+        DepthListMatrixNormals() :
+            maxRange(std::numeric_limits<float>::lowest()),
+            minRange(std::numeric_limits<float>::max()) {}
+    };
 
     ///
     /// \brief The ProjectionType enum
@@ -171,7 +190,7 @@ public:
     ///
     /// \param mat          The generated DepthListMatrix
     ///
-    void computeDepthListMatrix(DepthListMatrix& mat);
+    void computeDepthListMatrix(DepthListMatrixNormals& mat);
 
 private:
 
