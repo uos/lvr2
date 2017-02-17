@@ -335,7 +335,7 @@ void transformFromOptions(ModelPtr model, int modulo)
     // Plus one because it might differ because of the 0-index
     // better waste memory for one float than having not enough space.
     // TO-DO think about exact calculation.
-    size_t targetSize = (3 * ((n_ip)/modulo)) + 1;
+    size_t targetSize = (3 * ((n_ip)/modulo)) + modulo;
     floatArr points( new float[ targetSize ] );
     ucharArr newColorsArr(new unsigned char[ ((3 * ((n_colors)/modulo)) + 1) ]);
 
