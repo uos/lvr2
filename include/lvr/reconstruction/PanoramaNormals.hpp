@@ -21,6 +21,7 @@ public:
 
 private:
     ModelToImage*       m_mti;
+    PointBufferPtr      m_buffer;
 };
 
 } // namespace lvr

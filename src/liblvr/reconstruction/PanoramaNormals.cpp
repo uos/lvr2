@@ -21,7 +21,7 @@ namespace lvr
 PanoramaNormals::PanoramaNormals(ModelToImage* mti)
     : m_mti(mti)
 {
-
+    m_buffer = mti->pointBuffer();
 }
 
 PointBufferPtr PanoramaNormals::computeNormals(int width, int height, bool interpolate)
@@ -35,6 +35,10 @@ PointBufferPtr PanoramaNormals::computeNormals(int width, int height, bool inter
     PointBufferPtr in_buffer = m_mti->pointBuffer();
     size_t n_inPoints;
     floatArr in_points = in_buffer->getPointArray(n_inPoints);
+
+    // Reserve memory for output buffers (we need a deep copy)
+    floatArr p_arr(new float[n_inPoints * 3]);
+    floatArr n_arr(new float[n_inPoints * 3]);
 
     // Get panorama
     ModelToImage::DepthListMatrix mat;
@@ -132,7 +136,7 @@ PointBufferPtr PanoramaNormals::computeNormals(int width, int height, bool inter
                 {
                     size_t index = nb[i].index * 3;
 
-                    Vertex<float> pt(in_points[index] - mean.x,
+                    Vertex<float> pt(in_points[index    ] - mean.x,
                                      in_points[index + 1] - mean.y,
                                      in_points[index + 3] - mean.z);
 
@@ -159,6 +163,7 @@ PointBufferPtr PanoramaNormals::computeNormals(int width, int height, bool inter
                     covariance[i] /= nb.size();
                 }
 
+                // Compute eigenvalues and eigenvectors using GSL
                 gsl_matrix_view m = gsl_matrix_view_array(covariance, 3, 3);
                 gsl_matrix* evec = gsl_matrix_alloc(3, 3);
                 gsl_vector* eval = gsl_vector_alloc(3);
@@ -175,19 +180,12 @@ PointBufferPtr PanoramaNormals::computeNormals(int width, int height, bool inter
                 float ny = gsl_vector_get(&evec_0.vector, 1);
                 float nz = gsl_vector_get(&evec_0.vector, 2);
 
+                // Flip normals towards reference point
                 Normal<float> nn(nx, ny, nz);
                 Vertex<float> center(0, 0, 0);
 
                 size_t index = mat.pixels[i][j][0].index * 3;
                 Vertex<float> p1 = center - Vertex<float>(in_points[index], in_points[index + 1], in_points[index + 2]);
-//                float angle = atan2(p1.cross(nn).length(), p1 * nn);
-
-//                if(angle > M_PI/2 || angle < -M_PI/2)
-//                {
-//                    nx *= -1;
-//                    ny *= -1;
-//                    nz *= -1;
-//                }
 
                 if(Normal<float>(p1) * nn < 0)
                 {
@@ -203,16 +201,16 @@ PointBufferPtr PanoramaNormals::computeNormals(int width, int height, bool inter
                     // point cloud
                     size_t index = mat.pixels[i][j][k].index * 3;
 
-
-                    pts.push_back(in_points[index]);
-                    pts.push_back(in_points[index + 1]);
-                    pts.push_back(in_points[index + 2]);
+                    // Copy point and normal to target buffer
+                    p_arr[index    ] = in_points[index];
+                    p_arr[index + 1] = in_points[index + 1];
+                    p_arr[index + 2] = in_points[index + 2];
 
                     if(!interpolate)
                     {
-                        normals.push_back(nx);
-                        normals.push_back(ny);
-                        normals.push_back(nz);
+                        n_arr[index    ] = nx;
+                        n_arr[index + 1] = ny;
+                        n_arr[index + 2] = nz;
                     }
                 }
             }
@@ -221,71 +219,60 @@ PointBufferPtr PanoramaNormals::computeNormals(int width, int height, bool inter
     }
     cout << endl;
 
-    if(interpolate)
-    {
-        cout << timestamp << " Interpolating normals" << endl;
-        for(size_t i = 0; i < mat.pixels.size(); i++)
-        {
-            for(size_t j = 0; j < mat.pixels[i].size(); j++)
-            {
-                float x = 0.0f;
-                float y = 0.0f;
-                float z = 0.0f;
-                int np = 0;
-                for(int off_i = -di; off_i <= di; off_i++)
-                {
-                    for(int off_j = -dj; off_j <= dj; off_j++)
-                    {
-                        int p_i = i + off_i;
-                        int p_j = j + off_j;
+//    if(interpolate)
+//    {
+//        cout << timestamp << " Interpolating normals" << endl;
+//        for(size_t i = 0; i < mat.pixels.size(); i++)
+//        {
+//            for(size_t j = 0; j < mat.pixels[i].size(); j++)
+//            {
+//                float x = 0.0f;
+//                float y = 0.0f;
+//                float z = 0.0f;
+//                int np = 0;
+//                for(int off_i = -di; off_i <= di; off_i++)
+//                {
+//                    for(int off_j = -dj; off_j <= dj; off_j++)
+//                    {
+//                        int p_i = i + off_i;
+//                        int p_j = j + off_j;
 
 
-                        if(p_i >= 0 && p_i < mat.pixels.size() &&
-                           p_j >= 0 && p_j < mat.pixels[i].size())
-                        {
-                            for(size_t k = 0; k < mat.pixels[p_i][p_j].size(); k++)
-                            {
-                                size_t index = mat.pixels[p_i][p_j][k].index;
-                                x += in_points[index];
-                                y += in_points[index + 1];
-                                z += in_points[index + 2];
-                                np++;
-                            }
-                        }
-                    }
-                }
-                if(np > 3) // Same condition as above
-                {
-                    x /= np;
-                    y /= np;
-                    z /= np;
-                    normals.push_back(x);
-                    normals.push_back(y);
-                    normals.push_back(z);
-                }
+//                        if(p_i >= 0 && p_i < mat.pixels.size() &&
+//                           p_j >= 0 && p_j < mat.pixels[i].size())
+//                        {
+//                            for(size_t k = 0; k < mat.pixels[p_i][p_j].size(); k++)
+//                            {
+//                                size_t index = mat.pixels[p_i][p_j][k].index;
+//                                x += in_points[index];
+//                                y += in_points[index + 1];
+//                                z += in_points[index + 2];
+//                                np++;
+//                            }
+//                        }
+//                    }
+//                }
+//                if(np > 3) // Same condition as above
+//                {
+//                    x /= np;
+//                    y /= np;
+//                    z /= np;
+//                    normals.push_back(x);
+//                    normals.push_back(y);
+//                    normals.push_back(z);
+//                }
 
-            }
-        }
+//            }
+//        }
 
-        cout << normals.size() << " " << pts.size() << endl;
-    }
-
-
-    // Generate point buffer
-    floatArr p_arr(new float[pts.size()]);
-    floatArr n_arr(new float[normals.size()]);
+//        cout << normals.size() << " " << pts.size() << endl;
+//    }
 
 
-    for(size_t i = 0; i < pts.size(); i++)
-    {
-        p_arr[i] = pts[i];
-        n_arr[i] = normals[i];
-    }
+    cout << pts.size() << " " << n_inPoints * 3 << endl;
 
-    cout << pts.size() << endl;
-
-    out_buffer->setPointArray(p_arr, pts.size() / 3);
-    out_buffer->setPointNormalArray(n_arr, normals.size() / 3);
+    out_buffer->setPointArray(p_arr, n_inPoints);
+    out_buffer->setPointNormalArray(n_arr, n_inPoints);
 
     return out_buffer;
 
