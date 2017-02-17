@@ -27,6 +27,7 @@
 #include <lvr/reconstruction/Projection.hpp>
 #include <lvr/io/Progress.hpp>
 #include <lvr/io/Timestamp.hpp>
+#include <lvr/geometry/Vertex.hpp>
 
 #include <iostream>
 #include <fstream>
@@ -76,16 +77,16 @@ ModelToImage::~ModelToImage()
     // TODO Auto-generated destructor stub
 }
 
-void ModelToImage::computeDepthListMatrix(DepthListMatrixNormals& mat)
+void ModelToImage::computeDepthListMatrix(DepthListMatrix& mat)
 {
     cout << timestamp << "Initializting DepthListMatrix with dimensions " << m_width << " x " << m_height << endl;
     // Set correct image width and height
     for(int i = 0; i < m_height; i++)
     {
-        mat.pixels.emplace_back(vector<vector<PanoramaPointNormal> >());
+        mat.pixels.emplace_back(vector<vector<PanoramaPoint> >());
         for(int j = 0; j < m_width; j++)
         {
-            mat.pixels[i].push_back(vector<PanoramaPointNormal>());
+            mat.pixels[i].push_back(vector<PanoramaPoint>());
         }
     }
 
@@ -100,10 +101,8 @@ void ModelToImage::computeDepthListMatrix(DepthListMatrixNormals& mat)
     float range;
     int img_x, img_y;
     for(int i = 0; i < n_points; i++)
-    {
-        PanoramaPointNormal ppt(
-                    points[3 * i], points[3 * i + 1], points[3 * i + 2],
-                    0.0f, 0.0f, 0.0f);
+    {        
+        Vertex<float> ppt(points[3 * i], points[3 * i + 1], points[3 * i + 2]);
 
         m_projection->project(
                     img_x, img_y, range,
@@ -122,7 +121,8 @@ void ModelToImage::computeDepthListMatrix(DepthListMatrixNormals& mat)
 
         if(range < m_maxZ)
         {
-            mat.pixels[img_y][img_x].push_back(ppt);
+            // Add point index to image pixel
+            mat.pixels[img_y][img_x].emplace_back(PanoramaPoint(i));
         }
         ++progress;
     }

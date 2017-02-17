@@ -27,12 +27,17 @@ PanoramaNormals::PanoramaNormals(ModelToImage* mti)
 PointBufferPtr PanoramaNormals::computeNormals(int width, int height, bool interpolate)
 {
     // Create new point buffer and tmp storages
-    PointBufferPtr buffer(new PointBuffer);
+    PointBufferPtr out_buffer(new PointBuffer);
     vector<float> pts;
     vector<float> normals;
 
+    // Get input buffer's points
+    PointBufferPtr in_buffer = m_mti->pointBuffer();
+    size_t n_inPoints;
+    floatArr in_points = in_buffer->getPointArray(n_inPoints);
+
     // Get panorama
-    ModelToImage::DepthListMatrixNormals mat;
+    ModelToImage::DepthListMatrix mat;
     m_mti->computeDepthListMatrix(mat);
 
     // If the desired neighborhood is larger than 2 x 2 pixels
@@ -66,7 +71,7 @@ PointBufferPtr PanoramaNormals::computeNormals(int width, int height, bool inter
             }
 
             // Collect 'neighboring' points
-            vector<ModelToImage::PanoramaPointNormal> nb;
+            vector<ModelToImage::PanoramaPoint> nb;
 
             // The points at the current position are part of the neighborhood
             std::copy(mat.pixels[i][j].begin(), mat.pixels[i][j].end(), std::back_inserter(nb));
@@ -100,12 +105,21 @@ PointBufferPtr PanoramaNormals::computeNormals(int width, int height, bool inter
 
 
                 // Compute mean
-                ModelToImage::PanoramaPoint mean(0, 0, 0);
+                Vertex<float> mean;
                 for(int i = 0; i < nb.size(); i++)
                 {
-                    mean.x += nb[i].x;
-                    mean.y += nb[i].y;
-                    mean.z += nb[i].z;
+                    // Determine position of geometry in point array
+                    size_t index = nb[i].index * 3;
+
+                    // Get point coordinates
+                    Vertex<float> neighbor(in_points[index],
+                                           in_points[index + 1],
+                                           in_points[index + 2]);
+
+                    // Add to mean
+                    mean.x += neighbor.x;
+                    mean.y += neighbor.y;
+                    mean.z += neighbor.z;
                 }
                 mean.x /= nb.size();
                 mean.y /= nb.size();
@@ -116,9 +130,11 @@ PointBufferPtr PanoramaNormals::computeNormals(int width, int height, bool inter
 
                 for(int i = 0; i < nb.size(); i++)
                 {
-                    ModelToImage::PanoramaPoint pt(nb[i].x - mean.x,
-                                                   nb[i].y - mean.y,
-                                                   nb[i].z - mean.z);
+                    size_t index = nb[i].index * 3;
+
+                    Vertex<float> pt(in_points[index] - mean.x,
+                                     in_points[index + 1] - mean.y,
+                                     in_points[index + 3] - mean.z);
 
                     covariance[4] += pt.y * pt.y;
                     covariance[7] += pt.y * pt.z;
@@ -161,7 +177,9 @@ PointBufferPtr PanoramaNormals::computeNormals(int width, int height, bool inter
 
                 Normal<float> nn(nx, ny, nz);
                 Vertex<float> center(0, 0, 0);
-                Vertex<float> p1 = center - Vertex<float>(mat.pixels[i][j][0].x, mat.pixels[i][j][0].y, mat.pixels[i][j][0].z);
+
+                size_t index = mat.pixels[i][j][0].index * 3;
+                Vertex<float> p1 = center - Vertex<float>(in_points[index], in_points[index + 1], in_points[index + 2]);
 //                float angle = atan2(p1.cross(nn).length(), p1 * nn);
 
 //                if(angle > M_PI/2 || angle < -M_PI/2)
@@ -183,13 +201,12 @@ PointBufferPtr PanoramaNormals::computeNormals(int width, int height, bool inter
                     // Assign the same normal to all points
                     // behind this pixel to preserve the complete
                     // point cloud
-                    mat.pixels[i][j][k].nx = nx;
-                    mat.pixels[i][j][k].ny = ny;
-                    mat.pixels[i][j][k].nz = nz;
+                    size_t index = mat.pixels[i][j][k].index * 3;
 
-                    pts.push_back(mat.pixels[i][j][k].x);
-                    pts.push_back(mat.pixels[i][j][k].y);
-                    pts.push_back(mat.pixels[i][j][k].z);
+
+                    pts.push_back(in_points[index]);
+                    pts.push_back(in_points[index + 1]);
+                    pts.push_back(in_points[index + 2]);
 
                     if(!interpolate)
                     {
@@ -228,9 +245,10 @@ PointBufferPtr PanoramaNormals::computeNormals(int width, int height, bool inter
                         {
                             for(size_t k = 0; k < mat.pixels[p_i][p_j].size(); k++)
                             {
-                                x += mat.pixels[p_i][p_j][k].nx;
-                                y += mat.pixels[p_i][p_j][k].ny;
-                                z += mat.pixels[p_i][p_j][k].nz;
+                                size_t index = mat.pixels[p_i][p_j][k].index;
+                                x += in_points[index];
+                                y += in_points[index + 1];
+                                z += in_points[index + 2];
                                 np++;
                             }
                         }
@@ -266,10 +284,10 @@ PointBufferPtr PanoramaNormals::computeNormals(int width, int height, bool inter
 
     cout << pts.size() << endl;
 
-    buffer->setPointArray(p_arr, pts.size() / 3);
-    buffer->setPointNormalArray(n_arr, normals.size() / 3);
+    out_buffer->setPointArray(p_arr, pts.size() / 3);
+    out_buffer->setPointNormalArray(n_arr, normals.size() / 3);
 
-    return buffer;
+    return out_buffer;
 
 }
 
