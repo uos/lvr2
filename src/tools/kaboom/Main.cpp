@@ -336,8 +336,12 @@ void transformFromOptions(ModelPtr model, int modulo)
     // better waste memory for one float than having not enough space.
     // TO-DO think about exact calculation.
     size_t targetSize = (3 * ((n_ip)/modulo)) + modulo;
-    floatArr points( new float[ targetSize ] );
-    ucharArr newColorsArr(new unsigned char[ ((3 * ((n_colors)/modulo)) + 1) ]);
+    floatArr points(new float[targetSize ]);
+    ucharArr newColorsArr;
+    if(n_colors)
+    {
+        newColorsArr = ucharArr(new unsigned char[targetSize]);
+    }
 
     for(int i = 0; i < n_ip; i++)
     {
@@ -694,4 +698,3 @@ int main(int argc, char** argv) {
     delete options;
     return 0;
 }
-
