@@ -76,16 +76,16 @@ ModelToImage::~ModelToImage()
     // TODO Auto-generated destructor stub
 }
 
-void ModelToImage::computeDepthListMatrix(DepthListMatrix& mat)
+void ModelToImage::computeDepthListMatrix(DepthListMatrixNormals& mat)
 {
     cout << timestamp << "Initializting DepthListMatrix with dimensions " << m_width << " x " << m_height << endl;
     // Set correct image width and height
     for(int i = 0; i < m_height; i++)
     {
-        mat.pixels.emplace_back(vector<vector<PanoramaPoint> >());
+        mat.pixels.emplace_back(vector<vector<PanoramaPointNormal> >());
         for(int j = 0; j < m_width; j++)
         {
-            mat.pixels[i].push_back(vector<PanoramaPoint>());
+            mat.pixels[i].push_back(vector<PanoramaPointNormal>());
         }
     }
 
@@ -101,7 +101,9 @@ void ModelToImage::computeDepthListMatrix(DepthListMatrix& mat)
     int img_x, img_y;
     for(int i = 0; i < n_points; i++)
     {
-        PanoramaPoint ppt(points[3 * i], points[3 * i + 1], points[3 * i + 2]);
+        PanoramaPointNormal ppt(
+                    points[3 * i], points[3 * i + 1], points[3 * i + 2],
+                    0.0f, 0.0f, 0.0f);
 
         m_projection->project(
                     img_x, img_y, range,
@@ -125,7 +127,6 @@ void ModelToImage::computeDepthListMatrix(DepthListMatrix& mat)
         ++progress;
     }
     cout << endl;
-
 }
 
 void ModelToImage::computeDepthImage(lvr::ModelToImage::DepthImage& img, lvr::ModelToImage::ProjectionPolicy policy)

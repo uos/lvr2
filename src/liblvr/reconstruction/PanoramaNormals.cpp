@@ -32,7 +32,7 @@ PointBufferPtr PanoramaNormals::computeNormals(int width, int height, bool inter
     vector<float> normals;
 
     // Get panorama
-    ModelToImage::DepthListMatrix mat;
+    ModelToImage::DepthListMatrixNormals mat;
     m_mti->computeDepthListMatrix(mat);
 
     // If the desired neighborhood is larger than 2 x 2 pixels
@@ -66,7 +66,7 @@ PointBufferPtr PanoramaNormals::computeNormals(int width, int height, bool inter
             }
 
             // Collect 'neighboring' points
-            vector<ModelToImage::PanoramaPoint> nb;
+            vector<ModelToImage::PanoramaPointNormal> nb;
 
             // The points at the current position are part of the neighborhood
             std::copy(mat.pixels[i][j].begin(), mat.pixels[i][j].end(), std::back_inserter(nb));
@@ -76,16 +76,19 @@ PointBufferPtr PanoramaNormals::computeNormals(int width, int height, bool inter
                 for(int off_j = -dj; off_j <= dj; off_j++)
                 {
                     int p_i = i + off_i;
-                    int p_j = i + off_j;
+                    int p_j = j + off_j;
 
 
                     if(p_i >= 0 && p_i < mat.pixels.size() &&
                        p_j >= 0 && p_j < mat.pixels[i].size())
                     {
-                        for(size_t k = 0; k < mat.pixels[p_i][p_j].size(); k++)
+                        // We only save the first point as representative
+                        // because using all points from list will likely
+                        // result in undesirable configurations for local
+                        // normal estimation
+                        if(mat.pixels[p_i][p_j].size() > 0)
                         {
-                            nb.push_back(mat.pixels[i][j][k]);
-
+                            nb.push_back(mat.pixels[p_i][p_j][0]);
                         }
                     }
                 }
@@ -157,11 +160,18 @@ PointBufferPtr PanoramaNormals::computeNormals(int width, int height, bool inter
                 float nz = gsl_vector_get(&evec_0.vector, 2);
 
                 Normal<float> nn(nx, ny, nz);
-                Vertex<float> center(1e6, 1e6, 1e6);
+                Vertex<float> center(0, 0, 0);
                 Vertex<float> p1 = center - Vertex<float>(mat.pixels[i][j][0].x, mat.pixels[i][j][0].y, mat.pixels[i][j][0].z);
-                float angle = atan2(p1.cross(nn).length(), p1 * nn);
+//                float angle = atan2(p1.cross(nn).length(), p1 * nn);
 
-                if(angle > M_PI/2 || angle < -M_PI/2)
+//                if(angle > M_PI/2 || angle < -M_PI/2)
+//                {
+//                    nx *= -1;
+//                    ny *= -1;
+//                    nz *= -1;
+//                }
+
+                if(Normal<float>(p1) * nn < 0)
                 {
                     nx *= -1;
                     ny *= -1;
@@ -170,18 +180,78 @@ PointBufferPtr PanoramaNormals::computeNormals(int width, int height, bool inter
 
                 for(size_t k = 0; k < mat.pixels[i][j].size(); k++)
                 {
+                    // Assign the same normal to all points
+                    // behind this pixel to preserve the complete
+                    // point cloud
+                    mat.pixels[i][j][k].nx = nx;
+                    mat.pixels[i][j][k].ny = ny;
+                    mat.pixels[i][j][k].nz = nz;
+
                     pts.push_back(mat.pixels[i][j][k].x);
                     pts.push_back(mat.pixels[i][j][k].y);
                     pts.push_back(mat.pixels[i][j][k].z);
 
-                    normals.push_back(nx);
-                    normals.push_back(ny);
-                    normals.push_back(nz);
+                    if(!interpolate)
+                    {
+                        normals.push_back(nx);
+                        normals.push_back(ny);
+                        normals.push_back(nz);
+                    }
                 }
             }
         }
         ++progress;
     }
+    cout << endl;
+
+    if(interpolate)
+    {
+        cout << timestamp << " Interpolating normals" << endl;
+        for(size_t i = 0; i < mat.pixels.size(); i++)
+        {
+            for(size_t j = 0; j < mat.pixels[i].size(); j++)
+            {
+                float x = 0.0f;
+                float y = 0.0f;
+                float z = 0.0f;
+                int np = 0;
+                for(int off_i = -di; off_i <= di; off_i++)
+                {
+                    for(int off_j = -dj; off_j <= dj; off_j++)
+                    {
+                        int p_i = i + off_i;
+                        int p_j = j + off_j;
+
+
+                        if(p_i >= 0 && p_i < mat.pixels.size() &&
+                           p_j >= 0 && p_j < mat.pixels[i].size())
+                        {
+                            for(size_t k = 0; k < mat.pixels[p_i][p_j].size(); k++)
+                            {
+                                x += mat.pixels[p_i][p_j][k].nx;
+                                y += mat.pixels[p_i][p_j][k].ny;
+                                z += mat.pixels[p_i][p_j][k].nz;
+                                np++;
+                            }
+                        }
+                    }
+                }
+                if(np > 3) // Same condition as above
+                {
+                    x /= np;
+                    y /= np;
+                    z /= np;
+                    normals.push_back(x);
+                    normals.push_back(y);
+                    normals.push_back(z);
+                }
+
+            }
+        }
+
+        cout << normals.size() << " " << pts.size() << endl;
+    }
+
 
     // Generate point buffer
     floatArr p_arr(new float[pts.size()]);
