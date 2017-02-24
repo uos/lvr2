@@ -26,8 +26,8 @@
 #include <string>
 #include <stdio.h>
 #include <fstream>
-#include <Eigen/Dense>
 #include <utility>
+#include <iterator>
 using namespace std;
 
 #include <boost/filesystem.hpp>
@@ -36,6 +36,8 @@ using namespace std;
 #include <boost/spirit/include/qi_lit.hpp>
 #include <boost/spirit/include/phoenix_core.hpp>
 #include <boost/spirit/include/phoenix_operator.hpp>
+
+#include <Eigen/Dense>
 
 #include "Options.hpp"
 #include <lvr/io/BaseIO.hpp>
@@ -47,14 +49,16 @@ using namespace std;
 #include <lvr/reconstruction/PCLFiltering.hpp>
 #endif
 
+#define BUF_SIZE 1024
+
 using namespace lvr;
 
 namespace qi = boost::spirit::qi;
 
 const kaboom::Options* options;
-float a = 1.0;
-float b = 2.0;
-float c = 3.0;
+
+// This is dirty 
+bool lastScan = false;
 
 ModelPtr filterModel(ModelPtr p, int k, float sigma)
 {
@@ -150,6 +154,53 @@ size_t writeAscii(ModelPtr model, std::ofstream& out)
 
     return n_ip;
 }
+
+size_t writePlyHeader(std::ofstream& out, size_t n_points, bool colors)
+{
+    out << "ply" << std::endl;
+    out << "format binary_little_endian 1.0" << std::endl;
+
+    out << "element vertex " << n_points << std::endl;
+    out << "property float32 x" << std::endl;
+    out << "property float32 y" << std::endl;
+    out << "property float32 z" << std::endl;
+
+    if(colors)
+    {
+        out << "property uchar r" << std::endl;
+        out << "property uchar g" << std::endl;
+        out << "property uchar b" << std::endl;
+    }
+}
+
+size_t writePly(ModelPtr model, std::fstream& out) 
+{
+    size_t n_ip, n_colors;
+
+    floatArr arr = model->m_pointCloud->getPointArray(n_ip);
+
+    ucharArr colors = model->m_pointCloud->getPointColorArray(n_colors);
+
+    if(n_colors)
+    {
+        for(int a = 0; a < n_ip; a++)
+        {
+            // x y z
+            out.write((char*) arr.get(), sizeof(float) * 3);
+
+            // r g b
+            out.write((char*) colors.get(), sizeof(unsigned char) * 3);
+        }
+    }
+    else
+    {
+        out.write((char*) arr.get(), sizeof(float) * n_ip);
+    }
+
+    return n_ip;
+
+}
+
 
 int asciiReductionFactor(boost::filesystem::path& inFile)
 {
@@ -341,6 +392,7 @@ void transformFromOptions(ModelPtr model, int modulo)
     if(n_colors)
     {
         newColorsArr = ucharArr(new unsigned char[targetSize]);
+        std::cout << "blaaaa" << std::endl;
     }
 
     for(int i = 0; i < n_ip; i++)
@@ -438,8 +490,7 @@ void processSingleFile(boost::filesystem::path& inFile)
     }
 
     if(options->getOutputFile() != "")
-    {
-        // Merge (only ASCII)
+    { 
         char frames[1024];
         char pose[1024];
         sprintf(frames, "%s/%s.frames", inFile.parent_path().c_str(), inFile.stem().c_str());
@@ -476,21 +527,106 @@ void processSingleFile(boost::filesystem::path& inFile)
 
         static size_t points_written = 0;
 
-        std::ofstream out;
 
-        /* If points were written we want to append the next scans, otherwise we want an empty file */
-        if(points_written != 0)
+        if(options->getOutputFormat() == "ASCII" || options->getOutputFormat() == "")
         {
-            out.open(options->getOutputFile().c_str(), std::ofstream::out | std::ofstream::app);
+            // Merge (only ASCII)
+            std::ofstream out;
+
+            /* If points were written we want to append the next scans, otherwise we want an empty file */
+            if(points_written != 0)
+            {
+                out.open(options->getOutputFile().c_str(), std::ofstream::out | std::ofstream::app);
+            }
+            else
+            {
+                out.open(options->getOutputFile().c_str(), std::ofstream::out | std::ofstream::trunc);
+            }
+
+            points_written += writeAscii(model, out);
+
+            out.close();
         }
-        else
+        else if(options->getOutputFormat() == "PLY")
         {
-            out.open(options->getOutputFile().c_str(), std::ofstream::out | std::ofstream::trunc);
+            char tmp_file[1024];
+
+            sprintf(tmp_file, "%s/tmp.ply", inFile.parent_path().c_str());
+
+            std::fstream tmp;
+
+            if(points_written != 0)
+            {
+                tmp.open(tmp_file, std::fstream::in | std::fstream::out | std::fstream::app | std::fstream::binary);
+            }
+            else
+            {
+                tmp.open(tmp_file, std::fstream::in | std::fstream::out | std::fstream::trunc | std::fstream::binary);
+            }
+            
+            if(tmp.is_open())
+            {
+                points_written += writePly(model, tmp);
+            }
+            else
+            {
+                std::cout << "could not open " << tmp_file << std::endl;
+            }
+            
+            if(true == lastScan)
+            {
+                std::ofstream out;
+
+                // write the header -> open in text_mode 
+                out.open(options->getOutputFile().c_str(), std::ofstream::out | std::ofstream::trunc);
+                size_t n_colors;
+                ucharArr colors = model->m_pointCloud->getPointColorArray(n_colors);
+                if(n_colors)
+                {
+                    writePlyHeader(out, points_written, true);
+                }
+                else
+                {
+                    writePlyHeader(out, points_written, false);
+                }
+
+                out.close();
+
+                // determine size of the complete binary blob
+                tmp.seekg(0, std::fstream::end);
+                size_t blob_size = tmp.tellg();
+                tmp.seekg(0, std::fstream::beg);
+
+                // open the actual output file for binary blob write
+                out.open(options->getOutputFile(), std::ofstream::out | std::ofstream::app | std::ofstream::binary);
+                
+                char buffer[BUF_SIZE];
+                
+                while(blob_size)
+                {
+                    if(blob_size < BUF_SIZE)
+                    { 
+                        // read the rest from tmp file (binary blob)
+                        tmp.read(buffer, blob_size);
+                        // write the rest to actual ply file
+                        out.write(buffer, blob_size);
+
+                        blob_size -= blob_size;
+                    }
+                    else
+                    {
+                        // reading from tmp file (binary blob)
+                        tmp.read(buffer, BUF_SIZE);
+                        // write to actual ply file
+                        out.write(buffer, BUF_SIZE);
+
+                        blob_size -= BUF_SIZE;
+                    }
+                }
+
+            }
+
         }
-
-        points_written += writeAscii(model, out);
-
-        out.close();
     }
     else
     {
@@ -677,6 +813,14 @@ int main(int argc, char** argv) {
             {
                 try
                 {
+                    // This is dirty and bad designed.
+                    // We need to know when we advanced to the last scan
+                    // for ply merging. Which originally was not planned.
+                    // Two cases end option set or not.
+                    if((i  == options->getEnd()) || std::next(it, 1) == v.end())
+                    {
+                        lastScan = true;
+                    }
                     processSingleFile(*it);
                 }
                 catch(const char* msg)
