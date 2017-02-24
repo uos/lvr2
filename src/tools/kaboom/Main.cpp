@@ -166,6 +166,12 @@ size_t writePly(ModelPtr model, std::fstream& out)
 
     if(n_colors)
     {
+        if(n_colors != n_ip)
+        {
+            std::cout << "Numbers of points and colors needs to be identical" << std::endl;
+            return 0;
+        }
+
         for(int a = 0; a < n_ip; a++)
         {
             // x y z
@@ -197,9 +203,9 @@ size_t writePlyHeader(std::ofstream& out, size_t n_points, bool colors)
 
     if(colors)
     {
-        out << "property uchar r" << std::endl;
-        out << "property uchar g" << std::endl;
-        out << "property uchar b" << std::endl;
+        out << "property uchar red" << std::endl;
+        out << "property uchar green" << std::endl;
+        out << "property uchar blue" << std::endl;
     }
     out << "end_header" << std::endl;
 }
