@@ -169,10 +169,10 @@ size_t writePly(ModelPtr model, std::fstream& out)
         for(int a = 0; a < n_ip; a++)
         {
             // x y z
-            out.write((char*) arr.get(), sizeof(float) * 3);
+            out.write((char*) (arr.get() + (3 * a)), sizeof(float) * 3);
 
             // r g b
-            out.write((char*) colors.get(), sizeof(unsigned char) * 3);
+            out.write((char*) (colors.get() + (3 * a)), sizeof(unsigned char) * 3);
         }
     }
     else
