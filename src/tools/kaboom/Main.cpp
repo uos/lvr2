@@ -155,24 +155,6 @@ size_t writeAscii(ModelPtr model, std::ofstream& out)
     return n_ip;
 }
 
-size_t writePlyHeader(std::ofstream& out, size_t n_points, bool colors)
-{
-    out << "ply" << std::endl;
-    out << "format binary_little_endian 1.0" << std::endl;
-
-    out << "element vertex " << n_points << std::endl;
-    out << "property float32 x" << std::endl;
-    out << "property float32 y" << std::endl;
-    out << "property float32 z" << std::endl;
-
-    if(colors)
-    {
-        out << "property uchar r" << std::endl;
-        out << "property uchar g" << std::endl;
-        out << "property uchar b" << std::endl;
-    }
-}
-
 size_t writePly(ModelPtr model, std::fstream& out) 
 {
     size_t n_ip, n_colors;
@@ -194,13 +176,32 @@ size_t writePly(ModelPtr model, std::fstream& out)
     }
     else
     {
-        out.write((char*) arr.get(), sizeof(float) * n_ip);
+        // simply write whole points array
+        out.write((char*) arr.get(), sizeof(float) * n_ip * 3);
     }
 
     return n_ip;
 
 }
 
+size_t writePlyHeader(std::ofstream& out, size_t n_points, bool colors)
+{
+    out << "ply" << std::endl;
+    out << "format binary_little_endian 1.0" << std::endl;
+
+    out << "element point " << n_points << std::endl;
+    out << "property float32 x" << std::endl;
+    out << "property float32 y" << std::endl;
+    out << "property float32 z" << std::endl;
+
+    if(colors)
+    {
+        out << "property uchar r" << std::endl;
+        out << "property uchar g" << std::endl;
+        out << "property uchar b" << std::endl;
+    }
+    out << "end_header" << std::endl;
+}
 
 int asciiReductionFactor(boost::filesystem::path& inFile)
 {
@@ -389,10 +390,10 @@ void transformFromOptions(ModelPtr model, int modulo)
     size_t targetSize = (3 * ((n_ip)/modulo)) + modulo;
     floatArr points(new float[targetSize ]);
     ucharArr newColorsArr;
+
     if(n_colors)
     {
         newColorsArr = ucharArr(new unsigned char[targetSize]);
-        std::cout << "blaaaa" << std::endl;
     }
 
     for(int i = 0; i < n_ip; i++)
@@ -428,8 +429,6 @@ void transformFromOptions(ModelPtr model, int modulo)
                 break;
             }
             
-            
-
             if(n_colors)
             {
                 newColorsArr[cntr * 3]     = colors[i * 3];
@@ -579,6 +578,7 @@ void processSingleFile(boost::filesystem::path& inFile)
 
                 // write the header -> open in text_mode 
                 out.open(options->getOutputFile().c_str(), std::ofstream::out | std::ofstream::trunc);
+                // check if we have color information
                 size_t n_colors;
                 ucharArr colors = model->m_pointCloud->getPointColorArray(n_colors);
                 if(n_colors)
@@ -624,6 +624,16 @@ void processSingleFile(boost::filesystem::path& inFile)
                     }
                 }
 
+                out.close();
+                tmp.close();
+
+                std::remove(tmp_file);
+
+                std::cout << timestamp << "Wrote " << points_written << " points." << std::endl;
+            }
+            else
+            {
+                tmp.close();
             }
 
         }
