@@ -33,12 +33,19 @@ PointBufferPtr PanoramaNormals::computeNormals(int width, int height, bool inter
 
     // Get input buffer's points
     PointBufferPtr in_buffer = m_mti->pointBuffer();
-    size_t n_inPoints;
+    size_t n_inPoints = 0;
+    size_t n_inColors = 0;
     floatArr in_points = in_buffer->getPointArray(n_inPoints);
+    ucharArr in_colors = in_buffer->getPointColorArray(n_inColors);
 
     // Reserve memory for output buffers (we need a deep copy)
     floatArr p_arr(new float[n_inPoints * 3]);
     floatArr n_arr(new float[n_inPoints * 3]);
+    ucharArr c_arr;
+    if(n_inColors)
+    {
+        c_arr = ucharArr(new unsigned char[n_inPoints * 3]);
+    }
 
     // Get panorama
     ModelToImage::DepthListMatrix mat;
@@ -64,8 +71,11 @@ PointBufferPtr PanoramaNormals::computeNormals(int width, int height, bool inter
     string comment = timestamp.getElapsedTime() + "Computing normals ";
     ProgressBar progress(mat.pixels.size(), comment);
 
+
+
     for(size_t i = 0; i < mat.pixels.size(); i++)
     {
+        #pragma omp parallel for
         for(size_t j = 0; j < mat.pixels[i].size(); j++)
         {
             // Check if image entry is empty
@@ -206,6 +216,13 @@ PointBufferPtr PanoramaNormals::computeNormals(int width, int height, bool inter
                     p_arr[index + 1] = in_points[index + 1];
                     p_arr[index + 2] = in_points[index + 2];
 
+                    if(n_inColors)
+                    {
+                        c_arr[index    ] = in_colors[index];
+                        c_arr[index + 1] = in_colors[index + 1];
+                        c_arr[index + 2] = in_colors[index + 2];
+                    }
+
                     if(!interpolate)
                     {
                         n_arr[index    ] = nx;
@@ -268,11 +285,16 @@ PointBufferPtr PanoramaNormals::computeNormals(int width, int height, bool inter
 //        cout << normals.size() << " " << pts.size() << endl;
 //    }
 
+    cout << timestamp << "Finished normal estimation" << endl;
 
-    cout << pts.size() << " " << n_inPoints * 3 << endl;
-
+    if(n_inColors)
+    {
+        out_buffer->setPointColorArray(c_arr, n_inPoints);
+    }
     out_buffer->setPointArray(p_arr, n_inPoints);
     out_buffer->setPointNormalArray(n_arr, n_inPoints);
+
+
 
     return out_buffer;
 
