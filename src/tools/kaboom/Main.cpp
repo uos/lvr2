@@ -25,9 +25,10 @@
 #include <algorithm>
 #include <string>
 #include <stdio.h>
+#include <cstdio>
 #include <fstream>
-#include <Eigen/Dense>
-
+#include <utility>
+#include <iterator>
 using namespace std;
 
 #include <boost/filesystem.hpp>
@@ -36,6 +37,8 @@ using namespace std;
 #include <boost/spirit/include/qi_lit.hpp>
 #include <boost/spirit/include/phoenix_core.hpp>
 #include <boost/spirit/include/phoenix_operator.hpp>
+
+#include <Eigen/Dense>
 
 #include "Options.hpp"
 #include <lvr/io/BaseIO.hpp>
@@ -47,12 +50,16 @@ using namespace std;
 #include <lvr/reconstruction/PCLFiltering.hpp>
 #endif
 
+#define BUF_SIZE 1024
+
 using namespace lvr;
 
 namespace qi = boost::spirit::qi;
 
 const kaboom::Options* options;
 
+// This is dirty 
+bool lastScan = false;
 
 ModelPtr filterModel(ModelPtr p, int k, float sigma)
 {
@@ -76,6 +83,7 @@ ModelPtr filterModel(ModelPtr p, int k, float sigma)
 
         }
     }
+    return NULL;
 }
 
 size_t countPointsInFile(boost::filesystem::path& inFile)
@@ -96,14 +104,6 @@ size_t countPointsInFile(boost::filesystem::path& inFile)
     cout << timestamp << "File " << inFile.filename().string() << " contains " << n_points << " points." << endl;
 
     return n_points;
-}
-
-void writePose(Eigen::Matrix4d transform, const boost::filesystem::path& poseOut)
-{
-    std::ofstream out(poseOut.c_str());
-
-
-    out.close();
 }
 
 void writeFrames(Eigen::Matrix4d transform, const boost::filesystem::path& framesOut)
@@ -128,35 +128,8 @@ size_t writeModel( ModelPtr model,const  boost::filesystem::path& outfile)
 {
     size_t n_ip;
     floatArr arr = model->m_pointCloud->getPointArray(n_ip);
-/*
-    for(int a = 0; a < n_ip; a++)
-    {
-        if(a % modulo == 0)
-        {
-            if(options->sx() != 1)
-            {
-                targetPoints[cntr * 3 + options->x()] = arr[a * 3] * options->sx();
-            }
 
-            if(options->sy() != 1)
-            {
-                targetPoints[cntr * 3 + options->y()] = arr[a * 3 + 1] * options->sy();
-            }
-
-            if(options->sz() != 1)
-            {
-                targetPoints[cntr * 3 + options->z()] = arr[a * 3 + 2] * options->sz();
-            }
-            cntr++;
-        }
-    }
-*/
- /*   PointBufferPtr pc(new PointBuffer);
-    pc->setPointArray(targetPoints, new_model_size);
-    ModelPtr outModel(new Model(pc));
-    ModelFactory::saveModel(outModel, outfile.string());*/
-
-    ModelFactory::saveModel(model, outfile.string());
+    // ModelFactory::saveModel(model, outfile.string());
 
     return n_ip;
 }
@@ -164,7 +137,9 @@ size_t writeModel( ModelPtr model,const  boost::filesystem::path& outfile)
 size_t writeAscii(ModelPtr model, std::ofstream& out)
 {
     size_t n_ip, n_colors;
+
     floatArr arr = model->m_pointCloud->getPointArray(n_ip);
+
     ucharArr colors = model->m_pointCloud->getPointColorArray(n_colors);
     for(int a = 0; a < n_ip; a++)
     {
@@ -177,7 +152,62 @@ size_t writeAscii(ModelPtr model, std::ofstream& out)
         out << endl;
 
     }
+
     return n_ip;
+}
+
+size_t writePly(ModelPtr model, std::fstream& out) 
+{
+    size_t n_ip, n_colors;
+
+    floatArr arr = model->m_pointCloud->getPointArray(n_ip);
+
+    ucharArr colors = model->m_pointCloud->getPointColorArray(n_colors);
+
+    if(n_colors)
+    {
+        if(n_colors != n_ip)
+        {
+            std::cout << timestamp << "Numbers of points and colors needs to be identical" << std::endl;
+            return 0;
+        }
+
+        for(int a = 0; a < n_ip; a++)
+        {
+            // x y z
+            out.write((char*) (arr.get() + (3 * a)), sizeof(float) * 3);
+
+            // r g b
+            out.write((char*) (colors.get() + (3 * a)), sizeof(unsigned char) * 3);
+        }
+    }
+    else
+    {
+        // simply write whole points array
+        out.write((char*) arr.get(), sizeof(float) * n_ip * 3);
+    }
+
+    return n_ip;
+
+}
+
+size_t writePlyHeader(std::ofstream& out, size_t n_points, bool colors)
+{
+    out << "ply" << std::endl;
+    out << "format binary_little_endian 1.0" << std::endl;
+
+    out << "element point " << n_points << std::endl;
+    out << "property float32 x" << std::endl;
+    out << "property float32 y" << std::endl;
+    out << "property float32 z" << std::endl;
+
+    if(colors)
+    {
+        out << "property uchar red" << std::endl;
+        out << "property uchar green" << std::endl;
+        out << "property uchar blue" << std::endl;
+    }
+    out << "end_header" << std::endl;
 }
 
 int asciiReductionFactor(boost::filesystem::path& inFile)
@@ -213,8 +243,8 @@ Eigen::Matrix4d buildTransformation(double* alignxf)
     Eigen::Vector4d translation;
 
     rotation  << alignxf[0],  alignxf[4],  alignxf[8],
-                 alignxf[1],  alignxf[5],  alignxf[9],
-                 alignxf[2],  alignxf[6],  alignxf[10];
+    alignxf[1],  alignxf[5],  alignxf[9],
+    alignxf[2],  alignxf[6],  alignxf[10];
 
     translation << alignxf[12], alignxf[13], alignxf[14], 1.0;
 
@@ -361,8 +391,17 @@ void transformFromOptions(ModelPtr& model, int modulo)
     floatArr arr = model->m_pointCloud->getPointArray(n_ip);
     ucharArr colors = model->m_pointCloud->getPointColorArray(n_colors);
 
-    floatArr newPointsArr(new float[3 * (n_ip/modulo)]);
-    ucharArr newColorsArr(new unsigned char[3 * (n_colors/modulo)]);
+    // Plus one because it might differ because of the 0-index
+    // better waste memory for one float than having not enough space.
+    // TO-DO think about exact calculation.
+    size_t targetSize = (3 * ((n_ip)/modulo)) + modulo;
+    floatArr points(new float[targetSize ]);
+    ucharArr newColorsArr;
+
+    if(n_colors)
+    {
+        newColorsArr = ucharArr(new unsigned char[targetSize]);
+    }
 
     for(int i = 0; i < n_ip; i++)
     {
@@ -383,10 +422,20 @@ void transformFromOptions(ModelPtr& model, int modulo)
                 arr[i * 3 + 2] 	*= options->sz();
             }
 
-            newPointsArr[cntr * 3]     = arr[i * 3 + options->x()];
-            newPointsArr[cntr * 3 + 1] = arr[i * 3 + options->y()];
-            newPointsArr[cntr * 3 + 2] = arr[i * 3 + options->z()];
-
+            if((cntr * 3) < targetSize)
+            {
+                points[cntr * 3]     = arr[i * 3 + options->x()];
+                points[cntr * 3 + 1] = arr[i * 3 + options->y()];
+                points[cntr * 3 + 2] = arr[i * 3 + options->z()];
+            }
+            else
+            {
+                std::cout << "The following is for debugging purpose" << std::endl;
+                std::cout << "Cntr: " << (cntr * 3) << " targetSize: " << targetSize << std::endl;
+                std::cout << "nip : " << n_ip << " modulo " << modulo << std::endl;
+                break;
+            }
+            
             if(n_colors)
             {
                 newColorsArr[cntr * 3]     = colors[i * 3];
@@ -396,17 +445,16 @@ void transformFromOptions(ModelPtr& model, int modulo)
 
             cntr++;
         }
-
     }
 
-    model->m_pointCloud->setPointArray(newPointsArr, cntr);
+    // Pass counter because it is the actual number of points used after reduction
+    // it might be 1 less than the size
+    model->m_pointCloud->setPointArray(points, cntr);
 
     if(n_colors)
     {
         model->m_pointCloud->setPointColorArray(newColorsArr, cntr);
     }
-
-
 }
 
 // transforming with Matrix from frames/pose
@@ -448,8 +496,7 @@ void processSingleFile(boost::filesystem::path& inFile)
     }
 
     if(options->getOutputFile() != "")
-    {
-        // Merge (only ASCII)
+    { 
         char frames[1024];
         char pose[1024];
         sprintf(frames, "%s/%s.frames", inFile.parent_path().c_str(), inFile.stem().c_str());
@@ -486,21 +533,117 @@ void processSingleFile(boost::filesystem::path& inFile)
 
         static size_t points_written = 0;
 
-        std::ofstream out;
 
-        /* If points were written we want to append the next scans, otherwise we want an empty file */
-        if(points_written != 0)
+        if(options->getOutputFormat() == "ASCII" || options->getOutputFormat() == "")
         {
-            out.open(options->getOutputFile().c_str(), std::ofstream::out | std::ofstream::app);
+            // Merge (only ASCII)
+            std::ofstream out;
+
+            /* If points were written we want to append the next scans, otherwise we want an empty file */
+            if(points_written != 0)
+            {
+                out.open(options->getOutputFile().c_str(), std::ofstream::out | std::ofstream::app);
+            }
+            else
+            {
+                out.open(options->getOutputFile().c_str(), std::ofstream::out | std::ofstream::trunc);
+            }
+
+            points_written += writeAscii(model, out);
+
+            out.close();
         }
-        else
+        else if(options->getOutputFormat() == "PLY")
         {
-            out.open(options->getOutputFile().c_str(), std::ofstream::out | std::ofstream::trunc);
+            char tmp_file[1024];
+
+            sprintf(tmp_file, "%s/tmp.ply", inFile.parent_path().c_str());
+
+            std::fstream tmp;
+
+            if(points_written != 0)
+            {
+                tmp.open(tmp_file, std::fstream::in | std::fstream::out | std::fstream::app | std::fstream::binary);
+            }
+            else
+            {
+                tmp.open(tmp_file, std::fstream::in | std::fstream::out | std::fstream::trunc | std::fstream::binary);
+            }
+            
+            if(tmp.is_open())
+            {
+                points_written += writePly(model, tmp);
+            }
+            else
+            {
+                std::cout << "could not open " << tmp_file << std::endl;
+            }
+            
+            if(true == lastScan)
+            {
+                std::ofstream out;
+
+                // write the header -> open in text_mode 
+                out.open(options->getOutputFile().c_str(), std::ofstream::out | std::ofstream::trunc);
+                // check if we have color information
+                size_t n_colors;
+                ucharArr colors = model->m_pointCloud->getPointColorArray(n_colors);
+                if(n_colors)
+                {
+                    writePlyHeader(out, points_written, true);
+                }
+                else
+                {
+                    writePlyHeader(out, points_written, false);
+                }
+
+                out.close();
+
+                // determine size of the complete binary blob
+                tmp.seekg(0, std::fstream::end);
+                size_t blob_size = tmp.tellg();
+                tmp.seekg(0, std::fstream::beg);
+
+                // open the actual output file for binary blob write
+                out.open(options->getOutputFile(), std::ofstream::out | std::ofstream::app | std::ofstream::binary);
+                
+                char buffer[BUF_SIZE];
+                
+                while(blob_size)
+                {
+                    if(blob_size < BUF_SIZE)
+                    { 
+                        // read the rest from tmp file (binary blob)
+                        tmp.read(buffer, blob_size);
+                        // write the rest to actual ply file
+                        out.write(buffer, blob_size);
+
+                        blob_size -= blob_size;
+                    }
+                    else
+                    {
+                        // reading from tmp file (binary blob)
+                        tmp.read(buffer, BUF_SIZE);
+                        // write to actual ply file
+                        out.write(buffer, BUF_SIZE);
+
+                        blob_size -= BUF_SIZE;
+                    }
+                }
+
+                out.close();
+                tmp.close();
+
+                std::remove(tmp_file);
+
+                std::cout << timestamp << "Wrote " << points_written << " points." << std::endl;
+            }
+            else
+            {
+                tmp.close();
+            }
+
         }
-
-        points_written += writeAscii(model, out);
-
-        out.close();
     }
     else
     {
@@ -513,6 +656,7 @@ void processSingleFile(boost::filesystem::path& inFile)
             char framesOut[1024];
             char poseOut[1024];
 
+            model = ModelFactory::readModel(inFile.string());
             sprintf(frames, "%s/%s.frames", inFile.parent_path().c_str(), inFile.stem().c_str());
             sprintf(pose, "%s/%s.pose", inFile.parent_path().c_str(), inFile.stem().c_str());
             sprintf(framesOut, "%s/%s.frames", options->getOutputDir().c_str(), inFile.stem().c_str());
@@ -530,90 +674,23 @@ void processSingleFile(boost::filesystem::path& inFile)
                 writeFrames(transformed, framesOut);
             }
 
-            // Transform the pose file
-            if(boost::filesystem::exists(posePath))
-            {
-                std::cout << timestamp << "Transforming pose: " << posePath << std::endl;
-            }
-
             ofstream out(name);
-            cout << " 1 " << endl;
             transformFromOptions(model, asciiReductionFactor(inFile));
-            cout << " 2 " << endl;
             size_t points_written = writeAscii(model, out);
 
             out.close();
-            cout << "Wrote " << points_written << " points to file " << name << endl;
-            cout << " 3 " << endl;
 
-        }
+            cout << "Wrote " << points_written << " points to file " << name << endl;
+         }
         else if(options->getOutputFormat() == "SLAM")
         {
-            // Transform and write in slam format
-            static int n = 0;
-
-            char name[1024];
-            char pose[1024];
-
-            sprintf(name, "/%s/scan%3d.3d", options->getOutputDir().c_str(), n);
-            sprintf(name, "/%s/scan%3d.pose", options->getOutputDir().c_str(), n);
-
-            ofstream poseOut(pose);
-
-            // TO-DO Pose or frame existing
-            poseOut << 0 << " " << 0 << " " << 0 << " " << 0 << " " << 0 << " "<< 0 << endl;
-            poseOut.close();
-
-            ofstream out(name);
-
-            transformFromOptions(model, asciiReductionFactor(inFile));
-            size_t points_written = writeAscii(model, out);
-
-            out.close();
-            cout << "Wrote " << points_written << " points to file " << name << endl;
-            n++;
+            std::cerr << "I am sorry! This is not implemented yet" << std::endl;
         }
         else
         {
-            // Transform and write to target format.
-            char frames[1024];
-            char pose[1024];
-            char outFile[1024];
-
-            sprintf(outFile, "/%s/%s", options->getOutputDir().c_str(), inFile.filename().c_str());
-            sprintf(frames, "/%s/%s.frames", inFile.parent_path().c_str(), inFile.stem().c_str());
-            sprintf(pose, "/%s/%s.pose", inFile.parent_path().c_str(), inFile.stem().c_str());
-
-            boost::filesystem::path framesPath(frames);
-            boost::filesystem::path posePath(pose);
-
-            size_t reductionFactor = asciiReductionFactor(inFile);
-            if(options->transformBefore())
-            {
-                transformFromOptions(model, reductionFactor);
-            }
-
-            if(boost::filesystem::exists(framesPath))
-            {
-                Eigen::Matrix4d transform = getTransformationFromFrames(framesPath);
-                transformModel(model, transform);
-            }
-            else if(boost::filesystem::exists(posePath))
-            {
-                Eigen::Matrix4d transform = getTransformationFromPose(posePath);
-                transformModel(model, transform);
-            }
-
-            if(options->transformBefore())
-            {
-                transformFromOptions(model, reductionFactor);
-            }
-
-            static size_t points_written = 0;
-            points_written = writeModel(model, boost::filesystem::path(outFile));
+            std::cerr << "I am sorry! This is not implemented yet" << std::endl;
         }
     }
-    cout << 4 << endl;
 }
 
     template <typename Iterator>
@@ -656,17 +733,6 @@ bool sortScans(boost::filesystem::path firstScan, boost::filesystem::path secSca
     }
     else
     {
-     /*   if(!first)
-        {
-            std::cerr << timestamp << " " << firstScan << " does not match the naming convention" << std::endl;
-            std::terminate();
-        }
-        else
-        {
-            std::cerr << timestamp << "ERROR: " << " " << secScan << " does not match the naming convention" << std::endl;
-            std::terminate();
-        } */
-
         // this causes non valid files being at the beginning of the vector.
         if(sec)
         {
@@ -760,6 +826,14 @@ int main(int argc, char** argv) {
             {
                 try
                 {
+                    // This is dirty and bad designed.
+                    // We need to know when we advanced to the last scan
+                    // for ply merging. Which originally was not planned.
+                    // Two cases end option set or not.
+                    if((i  == options->getEnd()) || std::next(it, 1) == v.end())
+                    {
+                        lastScan = true;
+                    }
                     processSingleFile(*it);
                     std::cout << " finished" << std::endl;
                 }
