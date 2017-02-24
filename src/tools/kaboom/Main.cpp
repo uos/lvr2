@@ -25,6 +25,7 @@
 #include <algorithm>
 #include <string>
 #include <stdio.h>
+#include <cstdio>
 #include <fstream>
 #include <utility>
 #include <iterator>
