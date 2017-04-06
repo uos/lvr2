@@ -35,6 +35,9 @@ set(LVR_SOURCES
     display/TexturedMesh.cpp
     registration/EigenSVDPointAlign.cpp
     registration/ICPPointAlign.cpp
+    reconstruction/ModelToImage.cpp
+    reconstruction/Projection.cpp
+    reconstruction/PanoramaNormals.cpp
     texture/Texture.cpp
     texture/ImageProcessor.cpp
     texture/Statistics.cpp
@@ -76,7 +79,8 @@ set(LVR_LIB_DEPENDENCIES
     ${Boost_FILESYSTEM_LIBRARY}
     ${OPENGL_LIBRARIES}
     ${GLUT_LIBRARIES}
-    ${OpenCV_LIBS})
+    ${OpenCV_LIBS}
+    ${GSL_LIBRARIES})
 
 #####################################################################################
 # On Unix/Linux we need to link against pthreads
