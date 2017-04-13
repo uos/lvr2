@@ -22,7 +22,6 @@ public:
 	STLIO();
 	virtual ~STLIO();
 
-	virtual ModelPtr read(string filename);
 	virtual void save( string filename );
 	virtual void save( ModelPtr model, string filename );
     /**
