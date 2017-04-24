@@ -1,0 +1,11 @@
+check_basic_style:
+  script:
+    - ./ci/check-basic-style.sh
+  tags:
+    - plutogo_ws
+
+build_lvr:
+  script:
+    - ./ci/build.sh
+  tags:
+    - plutogo_ws
