@@ -1,0 +1,12 @@
+check_basic_style:
+  script:
+    - ./ci/check-basic-style.sh
+
+build_lvr:
+  script:
+    - echo $PWD
+    - printenv
+    - ls /
+    - ./ci/build.sh
+  tags:
+    - plutogo_ws
