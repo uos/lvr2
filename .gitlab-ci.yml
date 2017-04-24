@@ -6,9 +6,6 @@ check_basic_style:
 
 build_lvr:
   script:
-    - echo $PWD
-    - printenv
-    - ls /
     - ./ci/build.sh
   tags:
     - plutogo_ws
