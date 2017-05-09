@@ -1,11 +1,21 @@
-check_basic_style:
+required_checks:
   script:
-    - ./ci/check-basic-style.sh
+    - /ws_scripts/ci/module-required-checks.sh
   tags:
     - plutogo_ws
 
-build_lvr:
+optional_checks:
   script:
-    - ./ci/build.sh
+    - /ws_scripts/ci/module-optional-checks.sh
+  tags:
+    - plutogo_ws
+  allow_failure: true
+
+build_lvr:
+  script: |
+    mkdir build && \
+    cd build && \
+    cmake .. && \
+    make -j4
   tags:
     - plutogo_ws
