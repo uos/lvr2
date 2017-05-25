@@ -28,7 +28,7 @@
 #define DATACOLLECTORFACTORY_H_
 
 #include <string>
-#include <QtGui>
+#include <QtWidgets>
 
 using std::string;
 

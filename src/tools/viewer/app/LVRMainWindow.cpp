@@ -160,36 +160,36 @@ LVRMainWindow::~LVRMainWindow()
 
 void LVRMainWindow::connectSignalsAndSlots()
 {
-    QObject::connect(m_actionOpen, SIGNAL(activated()), this, SLOT(loadModel()));
-    QObject::connect(m_actionExport, SIGNAL(activated()), this, SLOT(exportSelectedModel()));
+    QObject::connect(m_actionOpen, SIGNAL(triggered()), this, SLOT(loadModel()));
+    QObject::connect(m_actionExport, SIGNAL(triggered()), this, SLOT(exportSelectedModel()));
     QObject::connect(treeWidget, SIGNAL(customContextMenuRequested(const QPoint&)), this, SLOT(showTreeContextMenu(const QPoint&)));
     QObject::connect(treeWidget, SIGNAL(itemClicked(QTreeWidgetItem*, int)), this, SLOT(restoreSliders(QTreeWidgetItem*, int)));
     QObject::connect(treeWidget, SIGNAL(itemChanged(QTreeWidgetItem*, int)), this, SLOT(setModelVisibility(QTreeWidgetItem*, int)));
 
-    QObject::connect(m_actionQuit, SIGNAL(activated()), qApp, SLOT(quit()));
+    QObject::connect(m_actionQuit, SIGNAL(triggered()), qApp, SLOT(quit()));
 
-    QObject::connect(m_actionShowColorDialog, SIGNAL(activated()), this, SLOT(showColorDialog()));
-    QObject::connect(m_actionRenameModelItem, SIGNAL(activated()), this, SLOT(renameModelItem()));
-    QObject::connect(m_actionDeleteModelItem, SIGNAL(activated()), this, SLOT(deleteModelItem()));
-    QObject::connect(m_actionExportModelTransformed, SIGNAL(activated()), this, SLOT(exportSelectedModel()));
+    QObject::connect(m_actionShowColorDialog, SIGNAL(triggered()), this, SLOT(showColorDialog()));
+    QObject::connect(m_actionRenameModelItem, SIGNAL(triggered()), this, SLOT(renameModelItem()));
+    QObject::connect(m_actionDeleteModelItem, SIGNAL(triggered()), this, SLOT(deleteModelItem()));
+    QObject::connect(m_actionExportModelTransformed, SIGNAL(triggered()), this, SLOT(exportSelectedModel()));
 
-    QObject::connect(m_actionReset_Camera, SIGNAL(activated()), this, SLOT(updateView()));
-    QObject::connect(m_actionStore_Current_View, SIGNAL(activated()), this, SLOT(saveCamera()));
-    QObject::connect(m_actionRecall_Stored_View, SIGNAL(activated()), this, SLOT(loadCamera()));
-    QObject::connect(m_actionCameraPathTool, SIGNAL(activated()), this, SLOT(openCameraPathTool()));
+    QObject::connect(m_actionReset_Camera, SIGNAL(triggered()), this, SLOT(updateView()));
+    QObject::connect(m_actionStore_Current_View, SIGNAL(triggered()), this, SLOT(saveCamera()));
+    QObject::connect(m_actionRecall_Stored_View, SIGNAL(triggered()), this, SLOT(loadCamera()));
+    QObject::connect(m_actionCameraPathTool, SIGNAL(triggered()), this, SLOT(openCameraPathTool()));
 
-    QObject::connect(m_actionEstimate_Normals, SIGNAL(activated()), this, SLOT(estimateNormals()));
-    QObject::connect(m_actionMarching_Cubes, SIGNAL(activated()), this, SLOT(reconstructUsingMarchingCubes()));
-    QObject::connect(m_actionPlanar_Marching_Cubes, SIGNAL(activated()), this, SLOT(reconstructUsingPlanarMarchingCubes()));
-    QObject::connect(m_actionExtended_Marching_Cubes, SIGNAL(activated()), this, SLOT(reconstructUsingExtendedMarchingCubes()));
+    QObject::connect(m_actionEstimate_Normals, SIGNAL(triggered()), this, SLOT(estimateNormals()));
+    QObject::connect(m_actionMarching_Cubes, SIGNAL(triggered()), this, SLOT(reconstructUsingMarchingCubes()));
+    QObject::connect(m_actionPlanar_Marching_Cubes, SIGNAL(triggered()), this, SLOT(reconstructUsingPlanarMarchingCubes()));
+    QObject::connect(m_actionExtended_Marching_Cubes, SIGNAL(triggered()), this, SLOT(reconstructUsingExtendedMarchingCubes()));
 
-    QObject::connect(m_actionPlanar_Optimization, SIGNAL(activated()), this, SLOT(optimizePlanes()));
-    QObject::connect(m_actionRemove_Artifacts, SIGNAL(activated()), this, SLOT(removeArtifacts()));
+    QObject::connect(m_actionPlanar_Optimization, SIGNAL(triggered()), this, SLOT(optimizePlanes()));
+    QObject::connect(m_actionRemove_Artifacts, SIGNAL(triggered()), this, SLOT(removeArtifacts()));
 
-    QObject::connect(m_actionRemove_Outliers, SIGNAL(activated()), this, SLOT(removeOutliers()));
-    QObject::connect(m_actionMLS_Projection, SIGNAL(activated()), this, SLOT(applyMLSProjection()));
+    QObject::connect(m_actionRemove_Outliers, SIGNAL(triggered()), this, SLOT(removeOutliers()));
+    QObject::connect(m_actionMLS_Projection, SIGNAL(triggered()), this, SLOT(applyMLSProjection()));
 
-    QObject::connect(m_actionICP_Using_Manual_Correspondance, SIGNAL(activated()), this, SLOT(manualICP()));
+    QObject::connect(m_actionICP_Using_Manual_Correspondance, SIGNAL(triggered()), this, SLOT(manualICP()));
 
     QObject::connect(m_menuAbout, SIGNAL(triggered(QAction*)), this, SLOT(showAboutDialog(QAction*)));
 
@@ -205,7 +205,7 @@ void LVRMainWindow::connectSignalsAndSlots()
     QObject::connect(m_actionShow_Normals, SIGNAL(toggled(bool)), this, SLOT(toggleNormals(bool)));
     QObject::connect(m_actionShow_Mesh, SIGNAL(toggled(bool)), this, SLOT(toggleMeshes(bool)));
     QObject::connect(m_actionShow_Wireframe, SIGNAL(toggled(bool)), this, SLOT(toggleWireframe(bool)));
-    QObject::connect(m_actionShowBackgroundSettings, SIGNAL(activated()), this, SLOT(showBackgroundDialog()));
+    QObject::connect(m_actionShowBackgroundSettings, SIGNAL(triggered()), this, SLOT(showBackgroundDialog()));
 
     QObject::connect(m_horizontalSliderPointSize, SIGNAL(valueChanged(int)), this, SLOT(changePointSize(int)));
     QObject::connect(m_horizontalSliderTransparency, SIGNAL(valueChanged(int)), this, SLOT(changeTransparency(int)));

@@ -20,7 +20,7 @@
 
 #include "../vtkBridge/LVRModelBridge.hpp"
 
-#include "LVRReconstructionMarchingCubesDialogUI.h"
+#include "ui_LVRReconstructionMarchingCubesDialogUI.h"
 #include "LVRPointCloudItem.hpp"
 #include "LVRModelItem.hpp"
 

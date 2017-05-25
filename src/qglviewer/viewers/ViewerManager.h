@@ -30,7 +30,7 @@
 #include "Viewer.h"
 #include "../data/Visualizer.hpp"
 
-#include <QtGui>
+#include <QtWidgets>
 #include <list>
 using std::list;
 

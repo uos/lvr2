@@ -25,7 +25,7 @@
 #ifndef LVRCORRESPONDANCEDIALOG_HPP_
 #define LVRCORRESPONDANCEDIALOG_HPP_
 
-#include "LVRRegistrationPickCorrespondancesDialogUI.h"
+#include "ui_LVRRegistrationPickCorrespondancesDialogUI.h"
 #include "../vtkBridge/LVRVtkArrow.hpp"
 
 #include <lvr/geometry/Matrix4.hpp>

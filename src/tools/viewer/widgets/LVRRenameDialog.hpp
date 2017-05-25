@@ -6,7 +6,7 @@
 #include <vtkRendererCollection.h>
 #include <vtkSmartPointer.h>
 
-#include "LVRRenameDialogUI.h"
+#include "ui_LVRRenameDialogUI.h"
 #include "LVRModelItem.hpp"
 
 using Ui::RenameDialog;
