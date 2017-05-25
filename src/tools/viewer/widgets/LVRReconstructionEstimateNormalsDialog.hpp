@@ -19,7 +19,7 @@
 #include <lvr/geometry/Normal.hpp>
 #include <lvr/reconstruction/SearchTree.hpp>
 
-#include "LVRReconstructionEstimateNormalsDialogUI.h"
+#include "ui_LVRReconstructionEstimateNormalsDialogUI.h"
 #include "LVRPointCloudItem.hpp"
 #include "LVRModelItem.hpp"
 

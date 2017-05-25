@@ -23,7 +23,7 @@ using namespace std;
 #include <QApplication>
 #include <QMainWindow>
 
-#include "MainWindow.h"
+#include "ui_MainWindow.h"
 
 #include "ViewerApplication.h"
 

@@ -113,31 +113,31 @@ void ViewerApplication::connectEvents()
     QTreeWidget* treeWidget = m_sceneDockWidgetUi->treeWidget;
 
 	// File operations
-	QObject::connect(m_mainWindowUi->action_Open , SIGNAL(activated()), this, SLOT(openFile()));
+	QObject::connect(m_mainWindowUi->action_Open , SIGNAL(triggered()), this, SLOT(openFile()));
 
 	// Scene views
-    connect(m_mainWindowUi->actionShow_entire_scene, SIGNAL(activated()), m_viewer, SLOT(resetCamera()));
-    connect(m_mainWindowUi->actionShowSelection, SIGNAL(activated()), this, SLOT(centerOnSelection()));
+    connect(m_mainWindowUi->actionShow_entire_scene, SIGNAL(triggered()), m_viewer, SLOT(resetCamera()));
+    connect(m_mainWindowUi->actionShowSelection, SIGNAL(triggered()), this, SLOT(centerOnSelection()));
 
     // Projections
-    connect(m_mainWindowUi->actionXZ_ortho_projection,    SIGNAL(activated()), this, SLOT(setViewerModeOrthoXZ()));
-    connect(m_mainWindowUi->actionXY_ortho_projection,    SIGNAL(activated()), this, SLOT(setViewerModeOrthoXY()));
-	connect(m_mainWindowUi->actionYZ_ortho_projection,    SIGNAL(activated()), this, SLOT(setViewerModeOrthoYZ()));
-    connect(m_mainWindowUi->actionPerspective_projection, SIGNAL(activated()), this, SLOT(setViewerModePerspective()));
+    connect(m_mainWindowUi->actionXZ_ortho_projection,    SIGNAL(triggered()), this, SLOT(setViewerModeOrthoXZ()));
+    connect(m_mainWindowUi->actionXY_ortho_projection,    SIGNAL(triggered()), this, SLOT(setViewerModeOrthoXY()));
+	connect(m_mainWindowUi->actionYZ_ortho_projection,    SIGNAL(triggered()), this, SLOT(setViewerModeOrthoYZ()));
+    connect(m_mainWindowUi->actionPerspective_projection, SIGNAL(triggered()), this, SLOT(setViewerModePerspective()));
 
 	// Render Modes
-	connect(m_mainWindowUi->actionVertexView,     SIGNAL(activated()), this, SLOT(meshRenderModeChanged()));
-	connect(m_mainWindowUi->actionSurfaceView,    SIGNAL(activated()), this, SLOT(meshRenderModeChanged()));
-	connect(m_mainWindowUi->actionWireframeView,  SIGNAL(activated()), this, SLOT(meshRenderModeChanged()));
+	connect(m_mainWindowUi->actionVertexView,     SIGNAL(triggered()), this, SLOT(meshRenderModeChanged()));
+	connect(m_mainWindowUi->actionSurfaceView,    SIGNAL(triggered()), this, SLOT(meshRenderModeChanged()));
+	connect(m_mainWindowUi->actionWireframeView,  SIGNAL(triggered()), this, SLOT(meshRenderModeChanged()));
 
-	connect(m_mainWindowUi->actionPointCloudView, SIGNAL(activated()), this, SLOT(pointRenderModeChanged()));
-	connect(m_mainWindowUi->actionPointNormalView, SIGNAL(activated()), this, SLOT(pointRenderModeChanged()));
+	connect(m_mainWindowUi->actionPointCloudView, SIGNAL(triggered()), this, SLOT(pointRenderModeChanged()));
+	connect(m_mainWindowUi->actionPointNormalView, SIGNAL(triggered()), this, SLOT(pointRenderModeChanged()));
 
-	connect(m_mainWindowUi->actionRenderingSettings, SIGNAL(activated()), this, SLOT(displayRenderingSettings()));
+	connect(m_mainWindowUi->actionRenderingSettings, SIGNAL(triggered()), this, SLOT(displayRenderingSettings()));
 
 	// Fog settings
-	connect(m_mainWindowUi->actionToggle_fog, SIGNAL(activated()),  this, SLOT(toggleFog()));
-	connect(m_mainWindowUi->actionFog_settings, SIGNAL(activated()),this, SLOT(displayFogSettingsDialog()));
+	connect(m_mainWindowUi->actionToggle_fog, SIGNAL(triggered()),  this, SLOT(toggleFog()));
+	connect(m_mainWindowUi->actionFog_settings, SIGNAL(triggered()),this, SLOT(displayFogSettingsDialog()));
 
 	// Communication between the manager objects
     connect(m_factory, SIGNAL(visualizerCreated(Visualizer*)), m_viewerManager, SLOT(addDataCollector(Visualizer*)));
@@ -163,7 +163,7 @@ void ViewerApplication::connectEvents()
     connect(m_actionDockWidgetUi->buttonExport,     SIGNAL(clicked()), this, SLOT(saveSelectedObject()));
     connect(m_actionDockWidgetUi->buttonAnimation,  SIGNAL(clicked()), this, SLOT(createAnimation()));
 
-    connect(m_zoomAction, SIGNAL(activated()), this, SLOT(zoomChanged()));
+    connect(m_zoomAction, SIGNAL(triggered()), this, SLOT(zoomChanged()));
 }
 
 void ViewerApplication::zoomChanged()
@@ -373,7 +373,7 @@ void ViewerApplication::openFile()
     //Set Title
     file_dialog.setWindowTitle("Open File");
     file_dialog.setFileMode(QFileDialog::ExistingFile);
-    file_dialog.setFilters(file_types);
+    file_dialog.setNameFilters(file_types);
 
     if(file_dialog.exec()){
         file_names = file_dialog.selectedFiles();
@@ -573,7 +573,7 @@ void ViewerApplication::saveSelectedObject()
 
         //Set Title
         file_dialog.setWindowTitle("Save selected object");
-        file_dialog.setFilters(file_types);
+        file_dialog.setNameFilters(file_types);
 
         if(file_dialog.exec()){
             file_names = file_dialog.selectedFiles();

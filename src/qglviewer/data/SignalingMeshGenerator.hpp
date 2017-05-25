@@ -26,7 +26,7 @@
 #ifndef SIGNALINGMESHGENERATOR_HPP_
 #define SIGNALINGMESHGENERATOR_HPP_
 
-#include <QtGui>
+#include <QtWidgets>
 
 #include <lvr/io/PointBuffer.hpp>
 #include <lvr/reconstruction/AdaptiveKSearchSurface.hpp>
