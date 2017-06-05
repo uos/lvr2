@@ -27,6 +27,7 @@
 #ifndef LVR2_GEOMETRY_HALFEDGEVERTEX_H_
 #define LVR2_GEOMETRY_HALFEDGEVERTEX_H_
 
+#include "Point.hpp"
 
 namespace lvr2
 {
