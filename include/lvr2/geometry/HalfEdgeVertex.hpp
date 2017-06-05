@@ -32,19 +32,21 @@ namespace lvr2
 {
 
 // Forward definitions
-template <typename VectorT> struct HalfEdge;
-template <typename VectorT> struct HalfEdgeFace;
+template <typename BaseVecT> struct HalfEdge;
+template <typename BaseVecT> struct HalfEdgeFace;
 
-template <typename VectorT>
+template <typename BaseVecT>
 struct HalfEdgeVertex
 {
-    using Edge = HalfEdge<VectorT>;
-    using Face = HalfEdgeFace<VectorT>;
-    using Vertex = HalfEdgeVertex<VectorT>;
+    using Edge = HalfEdge<BaseVecT>;
+    using Face = HalfEdgeFace<BaseVecT>;
+    using Vertex = HalfEdgeVertex<BaseVecT>;
 
     /// The edge starting at this vertex.
     Edge* outgoing;
 
+    /// The 3D position of this vertex.
+    Point<BaseVecT> pos;
 };
 
 } // namespace lvr

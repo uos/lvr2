@@ -32,15 +32,15 @@ namespace lvr2
 {
 
 // Forward definitions
-template <typename VectorT> struct HalfEdgeFace;
-template <typename VectorT> struct HalfEdgeVertex;
+template <typename BaseVecT> struct HalfEdgeFace;
+template <typename BaseVecT> struct HalfEdgeVertex;
 
-template <typename VectorT>
+template <typename BaseVecT>
 struct HalfEdge
 {
-    using Edge = HalfEdge<VectorT>;
-    using Face = HalfEdgeFace<VectorT>;
-    using Vertex = HalfEdgeVertex<VectorT>;
+    using Edge = HalfEdge<BaseVecT>;
+    using Face = HalfEdgeFace<BaseVecT>;
+    using Vertex = HalfEdgeVertex<BaseVecT>;
 
 
     /// The face this edge belongs to.
