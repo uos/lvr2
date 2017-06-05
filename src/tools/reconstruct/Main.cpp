@@ -159,6 +159,9 @@
 #include <lvr/reconstruction/SharpBox.hpp>
 
 #include <lvr2/geometry/HalfEdgeMesh.hpp>
+#include <lvr2/geometry/BaseVector.hpp>
+#include <lvr2/geometry/Vector.hpp>
+#include <lvr2/geometry/Point.hpp>
 
 // PCL related includes
 #ifdef LVR_USE_PCL
@@ -185,6 +188,22 @@ typedef PCLKSurface<ColorVertex<float, unsigned char> , Normal<float> > pclSurfa
  */
 int main(int argc, char** argv)
 {
+	using Vec = lvr2::Vector<lvr2::BaseVector<float>>;
+	using Poi = lvr2::Point<lvr2::BaseVector<float>>;
+
+	Vec v1, v2;
+	Poi p1, p2;
+
+	v1 + p1;
+	v1 + v2;
+	// p1 + p2;
+
+	v1.length();
+	// v1.distance(v2);
+
+	// p1.length();
+	p1.distance(p2);
+
 	try
 	{
 		// Parse command line arguments
