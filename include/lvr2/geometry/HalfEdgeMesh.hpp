@@ -37,13 +37,13 @@ namespace lvr2
 /**
  * @brief
  */
-template<typename VectorT>
+template<typename BaseVecT>
 class HalfEdgeMesh
 {
 public:
-    using Edge = HalfEdge<VectorT>;
-    using Face = HalfEdgeFace<VectorT>;
-    using Vertex = HalfEdgeVertex<VectorT>;
+    using Edge = HalfEdge<BaseVecT>;
+    using Face = HalfEdgeFace<BaseVecT>;
+    using Vertex = HalfEdgeVertex<BaseVecT>;
 
 
 };

@@ -188,6 +188,7 @@ typedef PCLKSurface<ColorVertex<float, unsigned char> , Normal<float> > pclSurfa
  */
 int main(int argc, char** argv)
 {
+	// TODO: remove
 	using Vec = lvr2::Vector<lvr2::BaseVector<float>>;
 	using Poi = lvr2::Point<lvr2::BaseVector<float>>;
 
