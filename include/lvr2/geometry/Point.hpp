@@ -33,6 +33,21 @@ namespace lvr2
 
 template <typename> struct Vector;
 
+/**
+ * @brief A strongly-typed vector, representing a position vector.
+ *
+ * This type represents a position vector as opposed to a direction vector.
+ * This is a subtle but important difference. There are operations that don't
+ * make sense for certain combinations of position/direction vectors. In order
+ * to avoid logic bugs, this type and `Vector` delete certain operations from
+ * the backing type.
+ *
+ * For more information and intuitive examples why this type safety makes
+ * sense, see [1].
+ *
+ *
+ * [1]: https://math.stackexchange.com/a/645827/340615
+ */
 template <typename BaseVecT>
 struct Point : public BaseVecT
 {
