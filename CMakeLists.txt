@@ -292,14 +292,14 @@ if(APPLE AND (NOT OPENMP_FOUND))
         message(STATUS "* configure with 'cmake -DWITH_CLANG_OMP ..'                     *")
         message(STATUS "******************************************************************")
 
-	option(WITH_CLANG_OMP "Compile with clang-omp")
+  option(WITH_CLANG_OMP "Compile with clang-omp")
 
-	if(WITH_CLANG_OMP)
-	  set(CMAKE_C_COMPILER /usr/local/bin/clang-omp CACHE STRING "C compiler" FORCE)
+  if(WITH_CLANG_OMP)
+    set(CMAKE_C_COMPILER /usr/local/bin/clang-omp CACHE STRING "C compiler" FORCE)
       set(CMAKE_CXX_COMPILER /usr/local/bin/clang-omp++ CACHE STRING "C++ compiler" FORCE)
       list(APPEND LVR_DEFINITIONS -DLVR_USE_OPEN_MP)
       set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -fopenmp")
-	endif()
+  endif()
 
 endif()
 
