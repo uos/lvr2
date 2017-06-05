@@ -158,6 +158,8 @@
 #include <lvr/geometry/QuadricVertexCosts.hpp>
 #include <lvr/reconstruction/SharpBox.hpp>
 
+#include <lvr2/geometry/HalfEdgeMesh.hpp>
+
 // PCL related includes
 #ifdef LVR_USE_PCL
 #include <lvr/reconstruction/PCLKSurface.hpp>
@@ -220,7 +222,7 @@ int main(int argc, char** argv)
 		{
 #ifdef LVR_USE_PCL
 			surface = psSurface::Ptr( new pclSurface(p_loader));
-#else 
+#else
 			cout << timestamp << "Can't create a PCL point set surface without PCL installed." << endl;
 			exit(-1);
 #endif
@@ -297,12 +299,12 @@ int main(int argc, char** argv)
 		{
 			Texture::m_texelSize = options.getTexelSize();
 		}
-		
+
 		if(options.getTexturePack() != "")
 		{
 			Texturizer<Vertex<float> , Normal<float> >::m_filename = options.getTexturePack();
 			if(options.getStatsCoeffs())
-			{	
+			{
 				float* sc = options.getStatsCoeffs();
 				for (int i = 0; i < 14; i++)
 				{
@@ -415,10 +417,10 @@ int main(int argc, char** argv)
 		}
 
 
-		
+
 		// Create mesh
 		reconstruction->getMesh(mesh);
-		
+
 		// Save grid to file
 		if(options.saveGrid())
 		{
@@ -489,7 +491,7 @@ int main(int argc, char** argv)
 		if(options.generateTextures())
 		{
 			ModelFactory::saveModel( m, "triangle_mesh.obj");
-		}		
+		}
 		cout << timestamp << "Program end." << endl;
 
 	}
@@ -499,4 +501,3 @@ int main(int argc, char** argv)
 	}
 	return 0;
 }
-

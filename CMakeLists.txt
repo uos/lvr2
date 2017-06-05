@@ -1,7 +1,7 @@
 cmake_minimum_required(VERSION 2.8)
 project(LAS_VEGAS)
 
-set_property(GLOBAL PROPERTY USE_FOLDERS On) 
+set_property(GLOBAL PROPERTY USE_FOLDERS On)
 
 include(GNUInstallDirs)
 
@@ -256,15 +256,15 @@ add_definitions(${LVR_DEFINITIONS})
 ##############################################################
 option(WITH_KINFU "Compile LVR Kinfu" OFF)
 
-# Check and set CUDA host compiler flags. CUDA 6.5 is only 
-# compatible to gcc4.8. Older CUDA versions require GCC lower 
+# Check and set CUDA host compiler flags. CUDA 6.5 is only
+# compatible to gcc4.8. Older CUDA versions require GCC lower
 # than 4.8
 
 if(WITH_KINFU AND "${CMAKE_CXX_COMPILER_ID}" STREQUAL "GNU" AND CUDA_VERSION VERSION_LESS 7)
     if (CMAKE_CXX_COMPILER_VERSION VERSION_GREATER 4.8 )
         message(STATUS "******************************************************************")
         message(STATUS "* Your gcc version needs to be lower than 4.9 to compile the LVR *")
-        message(STATUS "* KinectFusion library and apps with CUDA 6.5 or less. Please    *") 
+        message(STATUS "* KinectFusion library and apps with CUDA 6.5 or less. Please    *")
         message(STATUS "* install gcc 4.8 and set the CUDA host compiler accordingly     *")
         message(STATUS "* by setting the CUDA_HOST_COMPILER to gcc4.8. This can be done  *")
         message(STATUS "* in your cmake gui program or by manually calling e.g.          *")
@@ -287,11 +287,11 @@ endif()
 if(APPLE AND (NOT OPENMP_FOUND))
         message(STATUS "******************************************************************")
         message(STATUS "* It seems you are trying to comile on OSX with an compiler that *")
-        message(STATUS "* does not support OpenMP. To get maximum performance consider   *") 
+        message(STATUS "* does not support OpenMP. To get maximum performance consider   *")
         message(STATUS "* installing clang-omp from homebrew (brew install clang-omp) and*")
         message(STATUS "* configure with 'cmake -DWITH_CLANG_OMP ..'                     *")
         message(STATUS "******************************************************************")
-       
+
 	option(WITH_CLANG_OMP "Compile with clang-omp")
 
 	if(WITH_CLANG_OMP)
@@ -300,7 +300,7 @@ if(APPLE AND (NOT OPENMP_FOUND))
       list(APPEND LVR_DEFINITIONS -DLVR_USE_OPEN_MP)
       set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -fopenmp")
 	endif()
-	
+
 endif()
 
 ##############################################################
@@ -308,12 +308,13 @@ endif()
 ##############################################################
 
 install(DIRECTORY include/lvr DESTINATION ${CMAKE_INSTALL_INCLUDEDIR})
+install(DIRECTORY include/lvr2 DESTINATION ${CMAKE_INSTALL_INCLUDEDIR})
 list(APPEND LVR_INSTALL_INCLUDE_DIRS ${CMAKE_INSTALL_PREFIX}/${CMAKE_INSTALL_INCLUDEDIR})
 
 
 ##############################################################
 # VTK use file include. Has to be called after all CUDA code
-# was generated and compiled. The VTK definitions corrupt the 
+# was generated and compiled. The VTK definitions corrupt the
 # nvcc call
 ##############################################################
 
