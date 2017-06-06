@@ -27,6 +27,8 @@
 #ifndef LVR2_GEOMETRY_HALFEDGEFACE_H_
 #define LVR2_GEOMETRY_HALFEDGEFACE_H_
 
+#include "Normal.hpp"
+
 namespace lvr2
 {
 
@@ -49,7 +51,10 @@ struct HalfEdgeFace
     /// One of the edges bounding this face.
     EdgeHandle edge;
 
-    // Normal<BaseVecT> normal;
+    /// The normal of this face. This can be (and is) calculated from the
+    /// face's vertices, but the value is so frequently used, that it's worth
+    /// calculating once and putting it here.
+    Normal<BaseVecT> normal;
 };
 
 } // namespace lvr
