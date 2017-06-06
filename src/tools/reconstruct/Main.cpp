@@ -206,6 +206,8 @@ int main(int argc, char** argv)
     // p1.length();
     p1.distance(p2);
 
+    lvr2::HalfEdgeMesh<lvr2::BaseVector<float>> mesh;
+
     try
     {
         // Parse command line arguments

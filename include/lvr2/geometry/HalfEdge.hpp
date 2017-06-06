@@ -34,6 +34,7 @@ namespace lvr2
 // Forward definitions
 template <typename BaseVecT> struct HalfEdgeFace;
 template <typename BaseVecT> struct HalfEdgeVertex;
+template <typename BaseVecT> struct HalfEdgeMesh;
 
 template <typename BaseVecT>
 struct HalfEdge
@@ -42,18 +43,21 @@ struct HalfEdge
     using Face = HalfEdgeFace<BaseVecT>;
     using Vertex = HalfEdgeVertex<BaseVecT>;
 
+    using EdgeHandle = typename HalfEdgeMesh<BaseVecT>::EdgeHandle;
+    using FaceHandle = typename HalfEdgeMesh<BaseVecT>::FaceHandle;
+    using VertexHandle = typename HalfEdgeMesh<BaseVecT>::VertexHandle;
 
     /// The face this edge belongs to.
-    Face* face;
+    FaceHandle face;
 
     /// The vertex this edge points to.
-    Vertex* target;
+    VertexHandle target;
 
     /// The next edge of the face, ordered counter-clockwise. Is equal to `this->target->outgoing`.
-    Edge* next;
+    EdgeHandle next;
 
     /// The pair edge.
-    Edge* pair;
+    EdgeHandle pair;
 };
 
 } // namespace lvr

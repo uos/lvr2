@@ -35,6 +35,7 @@ namespace lvr2
 // Forward definitions
 template <typename BaseVecT> struct HalfEdge;
 template <typename BaseVecT> struct HalfEdgeFace;
+template <typename BaseVecT> struct HalfEdgeMesh;
 
 template <typename BaseVecT>
 struct HalfEdgeVertex
@@ -43,8 +44,12 @@ struct HalfEdgeVertex
     using Face = HalfEdgeFace<BaseVecT>;
     using Vertex = HalfEdgeVertex<BaseVecT>;
 
+    using EdgeHandle = typename HalfEdgeMesh<BaseVecT>::EdgeHandle;
+    using FaceHandle = typename HalfEdgeMesh<BaseVecT>::FaceHandle;
+    using VertexHandle = typename HalfEdgeMesh<BaseVecT>::VertexHandle;
+
     /// The edge starting at this vertex.
-    Edge* outgoing;
+    EdgeHandle outgoing;
 
     /// The 3D position of this vertex.
     Point<BaseVecT> pos;

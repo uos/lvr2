@@ -27,13 +27,13 @@
 #ifndef LVR2_GEOMETRY_HALFEDGEFACE_H_
 #define LVR2_GEOMETRY_HALFEDGEFACE_H_
 
-
 namespace lvr2
 {
 
 // Forward definitions
 template <typename BaseVecT> struct HalfEdge;
 template <typename BaseVecT> struct HalfEdgeVertex;
+template <typename BaseVecT> struct HalfEdgeMesh;
 
 template <typename BaseVecT>
 struct HalfEdgeFace
@@ -42,8 +42,12 @@ struct HalfEdgeFace
     using Face = HalfEdgeFace<BaseVecT>;
     using Vertex = HalfEdgeVertex<BaseVecT>;
 
+    using EdgeHandle = typename HalfEdgeMesh<BaseVecT>::EdgeHandle;
+    using FaceHandle = typename HalfEdgeMesh<BaseVecT>::FaceHandle;
+    using VertexHandle = typename HalfEdgeMesh<BaseVecT>::VertexHandle;
+
     /// One of the edges bounding this face.
-    Edge* edge;
+    EdgeHandle edge;
 
     // Normal<BaseVecT> normal;
 };
