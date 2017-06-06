@@ -96,8 +96,8 @@ struct Normal : private Vector<BaseVecT>
 
     // While already private, we delete these functions as they don't make
     // sense.
-    BaseVecT& operator*=(const typename BaseVecT::CoordT &scale) = delete;
-    BaseVecT& operator/=(const typename BaseVecT::CoordT &scale) = delete;
+    BaseVecT& operator*=(const typename BaseVecT::CoordType &scale) = delete;
+    BaseVecT& operator/=(const typename BaseVecT::CoordType &scale) = delete;
 };
 
 } // namespace lvr
