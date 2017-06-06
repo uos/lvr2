@@ -31,6 +31,8 @@
 namespace lvr2
 {
 
+// Forward declarations
+template <typename> struct Normal;
 template <typename> struct Point;
 
 /**
@@ -53,6 +55,26 @@ struct Vector : public BaseVecT
 {
     Vector() {}
     Vector(BaseVecT base) : BaseVecT(base) {}
+
+    /**
+     * @brief Returns a normalized version of this vector.
+     *
+     * Note that `this` must not be the null vector, or else the behavior is
+     * undefined.
+     */
+    Normal<BaseVecT> normalized() const;
+
+    /**
+     * @brief Normalizes the vector in place.
+     *
+     * Consider using `normalized()` and the `Normal` type to incrase type
+     * safety when dealing with normalized vectors.
+     *
+     * Note that `this` must not be the null vector, or else the behavior is
+     * undefined.
+     */
+    void normalize();
+
 
     // It doesn't make sense to talk about the distance between two direction
     // vectors. It's the same as asking: "What is the distance between
