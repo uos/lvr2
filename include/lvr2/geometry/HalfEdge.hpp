@@ -27,6 +27,7 @@
 #ifndef LVR2_GEOMETRY_HALFEDGE_H_
 #define LVR2_GEOMETRY_HALFEDGE_H_
 
+#include "BaseMesh.hpp"
 
 namespace lvr2
 {
@@ -43,9 +44,9 @@ struct HalfEdge
     using Face = HalfEdgeFace<BaseVecT>;
     using Vertex = HalfEdgeVertex<BaseVecT>;
 
-    using EdgeHandle = typename HalfEdgeMesh<BaseVecT>::EdgeHandle;
-    using FaceHandle = typename HalfEdgeMesh<BaseVecT>::FaceHandle;
-    using VertexHandle = typename HalfEdgeMesh<BaseVecT>::VertexHandle;
+    using EdgeHandle = typename BaseMesh<BaseVecT>::EdgeHandle;
+    using FaceHandle = typename BaseMesh<BaseVecT>::FaceHandle;
+    using VertexHandle = typename BaseMesh<BaseVecT>::VertexHandle;
 
     /// The face this edge belongs to.
     FaceHandle face;

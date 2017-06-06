@@ -32,6 +32,7 @@
 
 using std::vector;
 
+#include "BaseMesh.hpp"
 #include "HalfEdge.hpp"
 #include "HalfEdgeFace.hpp"
 #include "HalfEdgeVertex.hpp"
@@ -43,85 +44,30 @@ namespace lvr2
  * @brief
  */
 template<typename BaseVecT>
-class HalfEdgeMesh
+class HalfEdgeMesh : public BaseMesh<BaseVecT>
 {
 public:
     using Edge = HalfEdge<BaseVecT>;
     using Face = HalfEdgeFace<BaseVecT>;
     using Vertex = HalfEdgeVertex<BaseVecT>;
 
-    /**
-     * @brief Datatype used as index for each vertex, face and edge.
-     *
-     * This index is used within {Edge, Face, Vertex}-Handles. Since those
-     * handles are also used within each {Edge, Face, Vertex} reducing the
-     * size of this type can greatly decrease memory usage, which in
-     * turn might increase performance due to cache locality.
-     *
-     * When we assume a basic half-edge structure, we have to deal with the
-     * following struct sizes:
-     * - Edge: 4 handles
-     * - Face: 1 handle + 1 vector
-     * - Vertex: 1 handle + 1 vector
-     *
-     * Assuming the most common case of `float` vectors, this results in the
-     * following sizes (in bytes):
-     * - 16 bit handles: Edge (8), Face (14), Vertex (14)
-     * - 32 bit handles: Edge (16), Face (16), Vertex (16)
-     * - 64 bit handles: Edge (32), Face (20), Vertex (20)
-     *
-     * Using another approximation of the number of faces, edges and vertices
-     * in a triangle-mesh described at [1], we can calculate how much RAM we
-     * would need in order to run out of handles. The approximation: for each
-     * vertex, we have three edges and two faces. The de-facto cost per vertex
-     * can be calculated from that resulting in
-     *
-     * - 16 bit handles: 14 + 2*14 + 3*8 = 66 bytes/vertex = 22 bytes/edge
-     *   ==> 22 * 2^16 = 1.4 MiB RAM necessary to exhaust handle space
-     *
-     * - 32 bit handles: 16 + 2*16 + 3*16 = 96 bytes/vertex = 32 bytes/edge
-     *   ==> 32 * 2^32 = 137 GiB RAM necessary to exhaust handle space
-     *
-     * - 16 bit handles: 20 + 2*20 + 3*32 = 156 bytes/vertex = 52 bytes/edge
-     *   ==> 52 * 2^64 = 1.1 ZiB RAM necessary to exhaust handle space
-     *       (it's called zetta or zebi and is ≈ 1 million tera bytes)
-     *   ==> Note: funnily enough, the estimated disk (not RAM!) capacity of
-     *       the whole  world (around 2015) comes very close to this number.
-     *
-     *
-     * Also note that this accounts for the mesh only and ignores all other
-     * data that might need to be stored in RAM. So you will need even more
-     * RAM.
-     *
-     * From this, I think, we can safely conclude: 16 bit handles are way too
-     * small; 32 bit handles are probably fine for the next few years, even
-     * when working on a medium-sized cluster and 64 bit handles will be fine
-     * until after the singularity. And by then, I probably don't care anymore.
-     *
-     * [1]: https://math.stackexchange.com/q/425968/340615
-     */
-    using Index = uint32_t;
+    using Index = typename BaseMesh<BaseVecT>::Index;
 
-    class EdgeHandle
-    {
-        Index idx;
-    };
+    using EdgeHandle = typename BaseMesh<BaseVecT>::EdgeHandle;
+    using FaceHandle = typename BaseMesh<BaseVecT>::FaceHandle;
+    using VertexHandle = typename BaseMesh<BaseVecT>::VertexHandle;
 
-    class FaceHandle
-    {
-        Index idx;
-    };
+    using OptionalEdgeHandle = typename BaseMesh<BaseVecT>::OptionalEdgeHandle;
+    using OptionalFaceHandle = typename BaseMesh<BaseVecT>::OptionalFaceHandle;
+    using OptionalVertexHandle = typename BaseMesh<BaseVecT>::OptionalVertexHandle;
 
-    class VertexHandle
-    {
-        Index idx;
-    };
+
+    VertexHandle addVertex(Point<BaseVecT> pos) final;
 
 private:
     vector<Edge> m_edges;
     vector<Face> m_faces;
     vector<Vertex> m_vertices;
-
 };
 
 } // namespace lvr

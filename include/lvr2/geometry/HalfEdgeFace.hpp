@@ -27,6 +27,7 @@
 #ifndef LVR2_GEOMETRY_HALFEDGEFACE_H_
 #define LVR2_GEOMETRY_HALFEDGEFACE_H_
 
+#include "BaseMesh.hpp"
 #include "Normal.hpp"
 
 namespace lvr2
@@ -40,16 +41,14 @@ template <typename BaseVecT> struct HalfEdgeMesh;
 template <typename BaseVecT>
 struct HalfEdgeFace
 {
+private:
     using Edge = HalfEdge<BaseVecT>;
     using Face = HalfEdgeFace<BaseVecT>;
     using Vertex = HalfEdgeVertex<BaseVecT>;
 
-    using EdgeHandle = typename HalfEdgeMesh<BaseVecT>::EdgeHandle;
-    using FaceHandle = typename HalfEdgeMesh<BaseVecT>::FaceHandle;
-    using VertexHandle = typename HalfEdgeMesh<BaseVecT>::VertexHandle;
-
+public:
     /// One of the edges bounding this face.
-    EdgeHandle edge;
+    typename BaseMesh<BaseVecT>::EdgeHandle edge;
 
     /// The normal of this face. This can be (and is) calculated from the
     /// face's vertices, but the value is so frequently used, that it's worth
