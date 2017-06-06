@@ -31,6 +31,7 @@
 namespace lvr2
 {
 
+// Forward declarations
 template <typename> struct Vector;
 
 /**

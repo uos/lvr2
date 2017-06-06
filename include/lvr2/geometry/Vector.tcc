@@ -23,8 +23,30 @@
  *  @author Lukas Kalbertodt <lukas.kalbertodt@gmail.com>
  */
 
+#include <cassert>
+
 namespace lvr2
 {
+
+template <typename BaseVecT>
+Normal<BaseVecT> Vector<BaseVecT>::normalized() const
+{
+    return Normal<BaseVecT>(*this);
+}
+
+template <typename BaseVecT>
+void Vector<BaseVecT>::normalize()
+{
+    // Check for invalid vector. This check can be disabled in release mode,
+    // which will probably lead to +inf and -inf values. In the documentation
+    // for this function we require the vector to not be the null-vector.
+    assert(!(this->x == 0 && this->y == 0 && this->z == 0));
+
+    auto len = this->length();
+    this->x /= len;
+    this->y /= len;
+    this->z /= len;
+}
 
 template <typename BaseVecT>
 Vector<BaseVecT> Vector<BaseVecT>::operator+(const Vector<BaseVecT> &other) const
