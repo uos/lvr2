@@ -18,25 +18,56 @@
 
 
 /*
- * HalfEdgeMesh.tcc
+ * BaseHandle.hpp
  *
  *  @date 02.06.2017
  *  @author Lukas Kalbertodt <lukas.kalbertodt@gmail.com>
  */
 
+#ifndef LVR2_GEOMETRY_BASEHANDLE_H_
+#define LVR2_GEOMETRY_BASEHANDLE_H_
+
+#include <boost/optional.hpp>
 
 namespace lvr2
 {
 
-template <typename BaseVecT>
-typename BaseMesh<BaseVecT>::VertexHandle
-    HalfEdgeMesh<BaseVecT>::addVertex(Point<BaseVecT> pos)
+/**
+ * @brief
+ */
+template<typename IdxT>
+class BaseHandle
 {
-    Vertex v;
-    v.pos = pos;
-    m_vertices.push_back(v);
-    return VertexHandle(static_cast<Index>(m_vertices.size()));
-}
+public:
+    BaseHandle(IdxT idx);
 
+    IdxT idx() const;
+    void setIdx(IdxT idx);
 
-} // namespace lvr
+protected:
+    IdxT m_idx;
+};
+
+template <typename IdxT, typename NonOptionalT>
+class BaseOptionalHandle
+{
+public:
+    BaseOptionalHandle();
+    BaseOptionalHandle(BaseHandle<IdxT> handle);
+    explicit BaseOptionalHandle(IdxT idx);
+
+    explicit operator bool() const;
+
+    bool operator!() const;
+
+    NonOptionalT unwrap() const;
+
+private:
+    IdxT m_idx;
+};
+
+} // namespace lvr2
+
+#include "BaseHandle.tcc"
+
+#endif /* LVR2_GEOMETRY_BASEHANDLE_H_ */

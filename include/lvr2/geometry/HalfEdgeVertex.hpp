@@ -27,6 +27,7 @@
 #ifndef LVR2_GEOMETRY_HALFEDGEVERTEX_H_
 #define LVR2_GEOMETRY_HALFEDGEVERTEX_H_
 
+#include "BaseMesh.hpp"
 #include "Point.hpp"
 
 namespace lvr2
@@ -40,16 +41,14 @@ template <typename BaseVecT> struct HalfEdgeMesh;
 template <typename BaseVecT>
 struct HalfEdgeVertex
 {
+private:
     using Edge = HalfEdge<BaseVecT>;
     using Face = HalfEdgeFace<BaseVecT>;
     using Vertex = HalfEdgeVertex<BaseVecT>;
 
-    using EdgeHandle = typename HalfEdgeMesh<BaseVecT>::EdgeHandle;
-    using FaceHandle = typename HalfEdgeMesh<BaseVecT>::FaceHandle;
-    using VertexHandle = typename HalfEdgeMesh<BaseVecT>::VertexHandle;
-
+public:
     /// The edge starting at this vertex.
-    EdgeHandle outgoing;
+    typename BaseMesh<BaseVecT>::OptionalEdgeHandle outgoing;
 
     /// The 3D position of this vertex.
     Point<BaseVecT> pos;
