@@ -28,10 +28,13 @@
 #define LVR2_GEOMETRY_HALFEDGEMESH_H_
 
 #include <cstdint>
+#include <vector>
 
-#include "lvr2/geometry/HalfEdge.hpp"
-#include "lvr2/geometry/HalfEdgeFace.hpp"
-#include "lvr2/geometry/HalfEdgeVertex.hpp"
+using std::vector;
+
+#include "HalfEdge.hpp"
+#include "HalfEdgeFace.hpp"
+#include "HalfEdgeVertex.hpp"
 
 namespace lvr2
 {
@@ -114,6 +117,10 @@ public:
         Index idx;
     };
 
+private:
+    vector<Edge> m_edges;
+    vector<Face> m_faces;
+    vector<Vertex> m_vertices;
 
 };
 
