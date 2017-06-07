@@ -24,6 +24,8 @@
  *  @author Lukas Kalbertodt <lukas.kalbertodt@gmail.com>
  */
 
+#include <utility>
+#include <array>
 
 namespace lvr2
 {
@@ -35,8 +37,186 @@ typename BaseMesh<BaseVecT>::VertexHandle
     Vertex v;
     v.pos = pos;
     m_vertices.push_back(v);
-    return VertexHandle(static_cast<Index>(m_vertices.size()));
+    return VertexHandle(static_cast<Index>(m_vertices.size() - 1));
 }
+
+template <typename BaseVecT>
+typename BaseMesh<BaseVecT>::FaceHandle
+    HalfEdgeMesh<BaseVecT>::addFace(VertexHandle v1, VertexHandle v2, VertexHandle v3)
+{
+    using std::array;
+    using std::pair;
+    using std::make_pair;
+
+    // array<EdgeHandle, 3> innerEdges;
+    // array<pair<EdgeHandle, EdgeHandle>, 3> edgeEndpoints = {
+    //     make_pair(v1, v2),
+    //     make_pair(v2, v3),
+    //     make_pair(v3, v1)
+    // };
+
+    // for (auto i : {0, 1, 2})
+    // {
+    //     auto endpoints = edgeEndpoints[i];
+    //     auto edgeH = edgeBetween(endpoints.first, endpoints.second);
+    //     if (!edgeH)
+    //     {
+    //         auto pair = addEdgePair();
+    //         getE(pair.first).target = endpoints.first;
+    //         getE(pair.second).target = endpoints.second;
+    //         edgeH = pair.second;
+    //     }
+    //     innerEdges[i] = edgeH;
+    // }
+
+    for (auto i : {0, 1, 2})
+    {
+        // auto innerEdgeH = innerEdges[i];
+        // auto nextInnerEdgeH = innerEdges[(i + 1) % 3];
+        // auto vertexH = getE(innerEdgeH).target;
+
+        // getE(innerEdgeH).next = nextInnerEdgeH;
+
+        // We need to add two edges to the vertex such that you can iterate
+        // over all edges leaving or entering the vertex using the `next`
+        // handles. This is possible in a non-broken HEM.
+        //
+        // Let's take a look at this example (I'm sorry for ugly ascii art):
+        //
+        //        x  y      z  w        |  where:
+        //         ^ \      ^ /         |  x = innerEdge.twin
+        //          \ \    / /          |  y = innerEdge
+        //           \ v  / v           |  z = nextInnerEdge
+        //              ()              |  w = nextInnerEdge.twin
+        //           ^ /  ^ \           |
+        //          / /    \ \          |  And a, b, c and d already existed
+        //         / v      \ v         |  before.
+        //        a  b      c  d        |
+        //
+        //
+        // Note that (before we change anything) these statements are true:
+        // - a.next == d
+        // - c.next == b
+        //
+        // What we want to achieve is:
+        // - a.next = x
+        // - y.next = z  (this was already done above!)
+        // - w.next = d
+        // - c.next = b  (this is exactly like before)
+        //
+        // Of course, this example is a special case: there might be more than
+        // two edges connected to that one vertex. We need to insert our two
+        // edges somewhere into the cycle around the vertex. Again, to make
+        // this clear, the cycle means:
+        //
+        //     v.outgoing == v.outgoing.twin.next.twin.next ... .twin.next
+        //
+        // We have to pay attention to where we insert our two edges. We can't
+        // do it between two edges belonging to one face. We can only change
+        // `next` handles of edges that don't belong to a face!
+        //
+        // And in fact, here the case of non-manifold vertices can occur.
+        // Maybe. I really don't know if this case can ever occur when using
+        // marching cubes. It might not. So for now, we will assert that it
+        // doesn't happen. But we need to...
+        //
+        // TODO: understand and fix this stuff!
+        // auto aH = getV(vertexH).outgoing;
+        // while (getE(aH).face)
+        // {
+        //     aH = getE(getE(aH).next).twin;
+
+        //     // Test if we reached the start edge again
+        //     if (aH == getV(vertexH).outgoing)
+        //     {
+        //         // In this case a non-manifold vertex would be created. We
+        //         // could potentially easily fix it by duplicating the vertex
+        //         // and treating both vertices as distinct ones. But for now,
+        //         // we simply assert that this never happens.
+        //         assert(false);
+        //     }
+        // }
+
+        // auto dH = getE(aH).next;
+        // getE(aH).next = getE(innerEdgeH).twin;
+        // getE(nextInnerEdgeH).next = dH;
+    }
+}
+
+// ========================================================================
+// = Private helper methods
+// ========================================================================
+
+template<typename BaseVecT>
+typename HalfEdgeMesh<BaseVecT>::Edge&
+    HalfEdgeMesh<BaseVecT>::getE(EdgeHandle handle)
+{
+    return m_edges[handle.idx()];
+}
+
+template<typename BaseVecT>
+typename HalfEdgeMesh<BaseVecT>::Face&
+    HalfEdgeMesh<BaseVecT>::getF(FaceHandle handle)
+{
+    return m_faces[handle.idx()];
+}
+
+template<typename BaseVecT>
+typename HalfEdgeMesh<BaseVecT>::Vertex&
+    HalfEdgeMesh<BaseVecT>::getV(VertexHandle handle)
+{
+    return m_vertices[handle.idx()];
+}
+
+template <typename BaseVecT>
+typename BaseMesh<BaseVecT>::OptionalEdgeHandle
+    HalfEdgeMesh<BaseVecT>::edgeBetween(VertexHandle fromH, VertexHandle toH)
+{
+    auto& from = getV(fromH);
+
+    // Is there even a single outgoing edge?
+    if (from.outgoing)
+    {
+        auto startH = from.outgoing.unwrap();
+
+        auto edgeH = startH;
+        do
+        {
+            auto& edge = getE(edgeH);
+            if (edge.target == toH)
+            {
+                return edgeH;
+            }
+            edgeH = getE(edge.twin).next;
+        } while(edgeH != startH);
+    }
+
+    // Return none.
+    return OptionalEdgeHandle();
+}
+
+template <typename BaseVecT>
+pair<typename BaseMesh<BaseVecT>::EdgeHandle, typename BaseMesh<BaseVecT>::EdgeHandle>
+    HalfEdgeMesh<BaseVecT>::addEdgePair()
+{
+    // Create incomplete/broken edges and edge handles. By the end of this
+    // method, they are less invalid.
+    Edge forward;
+    Edge backward;
+    EdgeHandle forwardH(m_edges.size());
+    EdgeHandle backwardH(m_edges.size() + 1);
+
+    // Assign twins to each other
+    forward.twin = backwardH;
+    backward.twin = forwardH;
+
+    // Add edges to vector.
+    m_edges.push_back(forward);
+    m_edges.push_back(backward);
+
+    return std::make_pair(forwardH, backwardH);
+}
+
 
 
 } // namespace lvr

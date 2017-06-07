@@ -28,9 +28,11 @@
 #define LVR2_GEOMETRY_HALFEDGEMESH_H_
 
 #include <cstdint>
+#include <utility>
 #include <vector>
 
 using std::vector;
+using std::pair;
 
 #include "BaseMesh.hpp"
 #include "HalfEdge.hpp"
@@ -63,16 +65,41 @@ public:
 
 
     VertexHandle addVertex(Point<BaseVecT> pos) final;
+    FaceHandle addFace(VertexHandle v1, VertexHandle v2, VertexHandle v3) final;
 
 private:
     vector<Edge> m_edges;
     vector<Face> m_faces;
     vector<Vertex> m_vertices;
+
+    // ========================================================================
+    // = Private helper methods
+    // ========================================================================
+    Edge& getE(EdgeHandle handle);
+    Face& getF(FaceHandle handle);
+    Vertex& getV(VertexHandle handle);
+
+    /**
+     * @brief Given two vertices, find the edge pointing from one to the other.
+     *
+     * @return None, if there exists no such edge.
+     */
+    OptionalEdgeHandle edgeBetween(VertexHandle fromH, VertexHandle toH);
+
+    /**
+     * @brief Adds a new edge-pair with invalid `next` and `target` fields.
+     *
+     * @return The handles of both inserted edges. Those edges are not
+     *         connected to a vertex yet and have an invalid `next` handle.
+     *         Every calling method need to fix those two fields to avoid
+     *         a corrupted mesh.
+     */
+    pair<EdgeHandle, EdgeHandle> addEdgePair();
 };
 
 } // namespace lvr
 
-
-#include "HalfEdgeMesh.tcc"
+// #include <lvr2/geometry/HalfEdgeMesh.tcc>
+#include <lvr2/geometry/HalfEdgeMesh.tcc>
 
 #endif /* LVR2_GEOMETRY_HALFEDGEMESH_H_ */

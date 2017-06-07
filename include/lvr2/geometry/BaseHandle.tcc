@@ -23,6 +23,7 @@
  *  @author Lukas Kalbertodt <lukas.kalbertodt@gmail.com>
  */
 
+
 #include <limits>
 
 using std::numeric_limits;
@@ -49,6 +50,17 @@ void BaseHandle<IdxT>::setIdx(IdxT idx)
     m_idx = idx;
 }
 
+template <typename IdxT>
+bool BaseHandle<IdxT>::operator==(const BaseHandle& other) const
+{
+    return m_idx == other.m_idx;
+}
+
+template <typename IdxT>
+bool BaseHandle<IdxT>::operator!=(const BaseHandle& other) const
+{
+    return m_idx != other.m_idx;
+}
 
 template <typename IdxT, typename NonOptionalT>
 BaseOptionalHandle<IdxT, NonOptionalT>::BaseOptionalHandle()
@@ -78,10 +90,28 @@ bool BaseOptionalHandle<IdxT, NonOptionalT>::operator!() const
 }
 
 template <typename IdxT, typename NonOptionalT>
+bool BaseOptionalHandle<IdxT, NonOptionalT>::operator==(const BaseOptionalHandle& other) const
+{
+    return m_idx == other.m_idx;
+}
+
+template <typename IdxT, typename NonOptionalT>
+bool BaseOptionalHandle<IdxT, NonOptionalT>::operator!=(const BaseOptionalHandle& other) const
+{
+    return m_idx != other.m_idx;
+}
+
+template <typename IdxT, typename NonOptionalT>
 NonOptionalT BaseOptionalHandle<IdxT, NonOptionalT>::unwrap() const
 {
     return NonOptionalT(m_idx);
 }
 
+template <typename IdxT, typename NonOptionalT>
+void BaseOptionalHandle<IdxT, NonOptionalT>::setIdx(IdxT idx)
+{
+    assert(idx != numeric_limits<IdxT>::max());
+    m_idx = idx;
+}
 
 } // namespace lvr2

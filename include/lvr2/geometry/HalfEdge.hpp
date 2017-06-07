@@ -27,6 +27,8 @@
 #ifndef LVR2_GEOMETRY_HALFEDGE_H_
 #define LVR2_GEOMETRY_HALFEDGE_H_
 
+#include <utility>
+
 #include "BaseMesh.hpp"
 
 namespace lvr2
@@ -45,22 +47,36 @@ struct HalfEdge
     using Vertex = HalfEdgeVertex<BaseVecT>;
 
     using EdgeHandle = typename BaseMesh<BaseVecT>::EdgeHandle;
-    using FaceHandle = typename BaseMesh<BaseVecT>::FaceHandle;
+    using OptionalFaceHandle = typename BaseMesh<BaseVecT>::OptionalFaceHandle;
     using VertexHandle = typename BaseMesh<BaseVecT>::VertexHandle;
 
-    /// The face this edge belongs to.
-    FaceHandle face;
+    /// The face this edge belongs to (or none, if this edge lies on the
+    /// boundary).
+    OptionalFaceHandle face;
 
     /// The vertex this edge points to.
     VertexHandle target;
 
-    /// The next edge of the face, ordered counter-clockwise. Is equal to `this->target->outgoing`.
+    /// The next edge of the face, ordered counter-clockwise. Viewed a different
+    /// way: it's the next edge when walking clockwise around the source
+    /// vertex.
     EdgeHandle next;
 
-    /// The pair edge.
-    EdgeHandle pair;
+    /// The twin edge.
+    EdgeHandle twin;
+
+private:
+    /**
+     * @brief Initializes all fields with dummy values (unsafe, thus private).
+     */
+    HalfEdge();
+
+    /// Several methods of HEM need to invoke the unsafe ctor.
+    friend HalfEdgeMesh<BaseVecT>;
 };
 
 } // namespace lvr
+
+#include <lvr2/geometry/HalfEdge.tcc>
 
 #endif /* LVR2_GEOMETRY_HALFEDGE_H_ */

@@ -36,12 +36,22 @@ namespace lvr2
 {
 
 /**
- * @brief
+ * @brief Interface for triangle-meshes with information about face neighborhood.
+ *
+ * This interface represents meshes that contain information about the
+ * conectivity of their faces, edges and vertices. They make it possible to
+ * access adjacent faces/edges/vertices in constant time.
+ *
+ * TODO: extend this documentation once the interface is more fleshed out!
  */
 template<typename BaseVecT>
 class BaseMesh
 {
 public:
+    // ========================================================================
+    // = Type definitions
+    // ========================================================================
+
     /**
      * @brief Datatype used as index for each vertex, face and edge.
      *
@@ -94,24 +104,71 @@ public:
      */
     using Index = uint32_t;
 
-    class EdgeHandle : public BaseHandle<Index> {
-        using BaseHandle<Index>::BaseHandle;
-    };
-    class FaceHandle : public BaseHandle<Index> {
-        using BaseHandle<Index>::BaseHandle;
-    };
-    class VertexHandle : public BaseHandle<Index> {
+    /// Handle to access edges of the mesh.
+    class EdgeHandle : public BaseHandle<Index>
+    {
         using BaseHandle<Index>::BaseHandle;
     };
 
-    class OptionalEdgeHandle : public BaseOptionalHandle<Index, EdgeHandle> {};
-    class OptionalFaceHandle : public BaseOptionalHandle<Index, FaceHandle> {};
-    class OptionalVertexHandle : public BaseOptionalHandle<Index, VertexHandle> {};
+    /// Handle to access faces of the mesh.
+    class FaceHandle : public BaseHandle<Index>
+    {
+        using BaseHandle<Index>::BaseHandle;
+    };
 
+    /// Handle to access vertices of the mesh.
+    class VertexHandle : public BaseHandle<Index>
+    {
+        using BaseHandle<Index>::BaseHandle;
+    };
+
+    /// Semantically equivalent to `boost::optional<EdgeHandle>`
+    class OptionalEdgeHandle : public BaseOptionalHandle<Index, EdgeHandle>
+    {
+        using BaseOptionalHandle<Index, EdgeHandle>::BaseOptionalHandle;
+    };
+
+    /// Semantically equivalent to `boost::optional<FaceHandle>`
+    class OptionalFaceHandle : public BaseOptionalHandle<Index, FaceHandle>
+    {
+        using BaseOptionalHandle<Index, FaceHandle>::BaseOptionalHandle;
+    };
+
+    /// Semantically equivalent to `boost::optional<VertexHandle>`
+    class OptionalVertexHandle : public BaseOptionalHandle<Index, VertexHandle>
+    {
+        using BaseOptionalHandle<Index, VertexHandle>::BaseOptionalHandle;
+    };
+
+
+    // ========================================================================
+    // = Abstract methods (and virtual dtor)
+    // ========================================================================
 
     virtual ~BaseMesh() {}
 
+    /**
+     * @brief Adds a vertex with the given position to the mesh.
+     *
+     * The vertex is not connected to anything after calling this method. To
+     * add this vertex to a face, use `addFace()`.
+     *
+     * @return A handle to access the inserted vertex later.
+     */
     virtual VertexHandle addVertex(Point<BaseVecT> pos) = 0;
+
+    /**
+     * @brief Creates a face connecting the three given vertices.
+     *
+     * Important: The face's vertices have to be given in front-face counter-
+     * clockwise order. This means that, when looking at the face's front, the
+     * vertices would appear in counter-clockwise order. Or in more mathy
+     * terms: the face's normal is equal to (v1 - v2) x (v1 - v3) in the
+     * right-handed coordinate system (where `x` is cross-product).
+     *
+     * @return A handle to access the inserted face later.
+     */
+    virtual FaceHandle addFace(VertexHandle v1, VertexHandle v2, VertexHandle v3) = 0;
 };
 
 } // namespace lvr2

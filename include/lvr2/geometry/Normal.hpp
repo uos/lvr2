@@ -102,6 +102,6 @@ struct Normal : private Vector<BaseVecT>
 
 } // namespace lvr
 
-#include "Normal.tcc"
+#include <lvr2/geometry/Normal.tcc>
 
 #endif /* LVR2_GEOMETRY_NORMAL_H_ */

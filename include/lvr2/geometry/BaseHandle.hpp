@@ -44,6 +44,9 @@ public:
     IdxT idx() const;
     void setIdx(IdxT idx);
 
+    bool operator==(const BaseHandle& other) const;
+    bool operator!=(const BaseHandle& other) const;
+
 protected:
     IdxT m_idx;
 };
@@ -60,7 +63,11 @@ public:
 
     bool operator!() const;
 
+    bool operator==(const BaseOptionalHandle& other) const;
+    bool operator!=(const BaseOptionalHandle& other) const;
+
     NonOptionalT unwrap() const;
+    void setIdx(IdxT idx);
 
 private:
     IdxT m_idx;
@@ -68,6 +75,6 @@ private:
 
 } // namespace lvr2
 
-#include "BaseHandle.tcc"
+#include <lvr2/geometry/BaseHandle.tcc>
 
 #endif /* LVR2_GEOMETRY_BASEHANDLE_H_ */

@@ -101,6 +101,6 @@ struct Vector : public BaseVecT
 
 } // namespace lvr
 
-#include "Vector.tcc"
+#include <lvr2/geometry/Vector.tcc>
 
 #endif /* LVR2_GEOMETRY_VECTOR_H_ */
