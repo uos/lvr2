@@ -67,6 +67,18 @@ struct Normal : private Vector<BaseVecT>
      */
     explicit Normal(Vector<BaseVecT> vec);
 
+    /**
+     * @brief Initializes the normal with the given coordinates
+     *
+     * Note that the given coordinates must not form the null-vector, else the
+     * behavior is undefined.
+     */
+    Normal(
+        typename BaseVecT::CoordType x,
+        typename BaseVecT::CoordType y,
+        typename BaseVecT::CoordType z
+    );
+
 
     // Since the fields x, y and z can't be access directly anymore (else the
     // user could invalidate this *normal*), we provide getter methods.

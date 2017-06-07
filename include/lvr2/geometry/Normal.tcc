@@ -43,4 +43,15 @@ Normal<BaseVecT>::Normal(Vector<BaseVecT> vec)
     this->normalize();
 }
 
+template <typename BaseVecT>
+Normal<BaseVecT>::Normal(
+    typename BaseVecT::CoordType x,
+    typename BaseVecT::CoordType y,
+    typename BaseVecT::CoordType z
+)
+    : Vector<BaseVecT>(x, y, z)
+{
+    this->normalize();
+}
+
 } // namespace lvr2

@@ -47,6 +47,12 @@ private:
     using Vertex = HalfEdgeVertex<BaseVecT>;
 
 public:
+    HalfEdgeFace(
+        typename BaseMesh<BaseVecT>::EdgeHandle edge,
+        Normal<BaseVecT> normal
+    )
+        : edge(edge), normal(normal) {}
+
     /// One of the edges bounding this face.
     typename BaseMesh<BaseVecT>::EdgeHandle edge;
 

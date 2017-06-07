@@ -86,15 +86,17 @@ private:
      */
     OptionalEdgeHandle edgeBetween(VertexHandle fromH, VertexHandle toH);
 
+    EdgeHandle findOrCreateEdgeBetween(VertexHandle fromH, VertexHandle toH);
+
     /**
-     * @brief Adds a new edge-pair with invalid `next` and `target` fields.
+     * @brief Adds a new edge-pair.
      *
-     * @return The handles of both inserted edges. Those edges are not
-     *         connected to a vertex yet and have an invalid `next` handle.
-     *         Every calling method need to fix those two fields to avoid
-     *         a corrupted mesh.
+     * @return Both edge handles. The first edge points from v1H to v2H, the
+     *         second one points from v2H to v1H.
      */
-    pair<EdgeHandle, EdgeHandle> addEdgePair();
+    pair<EdgeHandle, EdgeHandle> addEdgePair(VertexHandle v1H, VertexHandle v2H);
+
+    OptionalEdgeHandle boundaryEdgeOf(VertexHandle vH);
 };
 
 } // namespace lvr

@@ -54,6 +54,7 @@ struct Point : public BaseVecT
 {
     Point() {}
     Point(BaseVecT base) : BaseVecT(base) {}
+    using BaseVecT::BaseVecT;
 
 
     // It doesn't make sense to talk about the length of a position vector.

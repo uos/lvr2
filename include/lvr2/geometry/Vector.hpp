@@ -55,6 +55,7 @@ struct Vector : public BaseVecT
 {
     Vector() {}
     Vector(BaseVecT base) : BaseVecT(base) {}
+    using BaseVecT::BaseVecT;
 
     /**
      * @brief Returns a normalized version of this vector.
