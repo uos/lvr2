@@ -80,6 +80,6 @@ struct Point : public BaseVecT
 
 } // namespace lvr
 
-#include "Point.tcc"
+#include <lvr2/geometry/Point.tcc>
 
 #endif /* LVR2_GEOMETRY_POINT_H_ */

@@ -139,6 +139,6 @@ public:
 
 } // namespace lvr
 
-#include "BaseVector.tcc"
+#include <lvr2/geometry/BaseVector.tcc>
 
 #endif /* LVR2_GEOMETRY_BASEVECTOR_H_ */
