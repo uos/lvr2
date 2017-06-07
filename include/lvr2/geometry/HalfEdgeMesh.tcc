@@ -42,11 +42,42 @@ typename BaseMesh<BaseVecT>::VertexHandle
 
 template <typename BaseVecT>
 typename BaseMesh<BaseVecT>::FaceHandle
-    HalfEdgeMesh<BaseVecT>::addFace(VertexHandle v1, VertexHandle v2, VertexHandle v3)
+    HalfEdgeMesh<BaseVecT>::addFace(VertexHandle v1H, VertexHandle v2H, VertexHandle v3H)
 {
     using std::array;
     using std::pair;
     using std::make_pair;
+
+    // The order here matters! This way, only the next-handles of the last
+    // edge might be broken.
+    auto e1H = findOrCreateEdgeBetween(v1H, v2H);
+    auto e2H = findOrCreateEdgeBetween(v2H, v3H);
+    auto e3H = findOrCreateEdgeBetween(v3H, v1H);
+
+    // Create face
+    FaceHandle newFaceH = m_faces.size();
+    // TODO: use real normal
+    Face f(e1H, Normal<BaseVecT>(1, 0, 0));
+    m_faces.push_back(f);
+
+    // Set face
+    getE(e1H).face = newFaceH;
+    getE(e2H).face = newFaceH;
+    getE(e3H).face = newFaceH;
+
+    // Fix `next` handles that might be invalid after adding all edges
+    // independent from another.
+    if (getE(e3H).next != e1H)
+    {
+        // We know that after we added the edges, `v1` has at least one
+        // outgoing edge.
+        auto boundaryEdgeH = boundaryEdgeOf(v1H).unwrap();
+
+        auto prevNextH = getE(e3H).next;
+        getE(e3H).next = e1H;
+        getE(getE(e1H).twin).next = prevNextH;
+        getE(boundaryEdgeH).next = getE(e3H).twin;
+    }
 
     // array<EdgeHandle, 3> innerEdges;
     // array<pair<EdgeHandle, EdgeHandle>, 3> edgeEndpoints = {
@@ -196,26 +227,145 @@ typename BaseMesh<BaseVecT>::OptionalEdgeHandle
 }
 
 template <typename BaseVecT>
-pair<typename BaseMesh<BaseVecT>::EdgeHandle, typename BaseMesh<BaseVecT>::EdgeHandle>
-    HalfEdgeMesh<BaseVecT>::addEdgePair()
+typename BaseMesh<BaseVecT>::EdgeHandle
+    HalfEdgeMesh<BaseVecT>::findOrCreateEdgeBetween(VertexHandle fromH, VertexHandle toH)
 {
+    auto foundEdge = edgeBetween(fromH, toH);
+    if (foundEdge)
+    {
+        return foundEdge.unwrap();
+    }
+    else
+    {
+        return addEdgePair(fromH, toH).first;
+    }
+}
+
+
+template <typename BaseVecT>
+pair<typename BaseMesh<BaseVecT>::EdgeHandle, typename BaseMesh<BaseVecT>::EdgeHandle>
+    HalfEdgeMesh<BaseVecT>::addEdgePair(VertexHandle v1H, VertexHandle v2H)
+{
+    //
+    // This method adds two new half edges, called "a" and "b".
+    //
+    //  +----+  --------(a)-------->  +----+
+    //  | v1 |                        | v2 |
+    //  +----+  <-------(b)---------  +----+
+    //
+    //
+    //
+    //
+    //
+    //        x  y      z  w        |
+    //         ^ \      ^ /         |
+    //          \ \    / /          |
+    //           \ v  / v           |
+    //             [v1]
+    //                              |
+    //           ^ /  ^ \           |
+    //          / /    \ \          |  And a, b, c and d already existed
+    //         / v      \ v         |  before.
+    //        a  b      c  d        |
+    //
+    //
+
+
     // Create incomplete/broken edges and edge handles. By the end of this
     // method, they are less invalid.
-    Edge forward;
-    Edge backward;
-    EdgeHandle forwardH(m_edges.size());
-    EdgeHandle backwardH(m_edges.size() + 1);
+    Edge a;
+    Edge b;
+    EdgeHandle aH(m_edges.size());
+    EdgeHandle bH(m_edges.size() + 1);
 
     // Assign twins to each other
-    forward.twin = backwardH;
-    backward.twin = forwardH;
+    a.twin = bH;
+    b.twin = aH;
+
+    // Assign half-edge targets
+    a.target = v2H;
+    b.target = v1H;
+
+    auto fixNextHandles = [&](VertexHandle vH, EdgeHandle ingoingH, EdgeHandle outgoingH)
+    {
+        auto& v = getV(vH);
+        if (v.outgoing)
+        {
+            // We already checked that `v` has an outgoing edge, so we can
+            // unwrap.
+            auto boundaryEdgeH = boundaryEdgeOf(vH).unwrap();
+
+            // Visualization:
+            //
+            //
+            //             ^  ...  /
+            //  (prevNext)  \     /  (boundaryEdge)
+            //               \   /
+            //                \ v
+            //                [v]
+            //                ^ |
+            //                | |
+            //           (in) | | (out)
+            //                | v
+            //
+            //
+            auto prevNextH = getE(boundaryEdgeH).next;
+            getE(boundaryEdgeH).next = outgoingH;
+            getE(ingoingH).next = prevNextH;
+        }
+        else
+        {
+            // This is the easy case: the vertex was not connected before, so
+            // we don't need to change any handles of other edges.
+            //
+            //         [v]
+            //         ^ |
+            //         | |
+            //    (in) | | (out)
+            //         | v
+            //
+            v.outgoing = outgoingH;
+            getE(ingoingH).next = outgoingH;
+        }
+    };
+
+    fixNextHandles(v1H, bH, aH);
+    fixNextHandles(v2H, aH, bH);
 
     // Add edges to vector.
-    m_edges.push_back(forward);
-    m_edges.push_back(backward);
+    m_edges.push_back(a);
+    m_edges.push_back(b);
 
-    return std::make_pair(forwardH, backwardH);
+    return std::make_pair(aH, bH);
 }
+
+
+template <typename BaseVecT>
+typename BaseMesh<BaseVecT>::OptionalEdgeHandle
+    HalfEdgeMesh<BaseVecT>::boundaryEdgeOf(VertexHandle vH)
+{
+    auto& v = getV(vH);
+    if (v.outgoing)
+    {
+        const auto startEdgeH = getE(v.outgoing.unwrap()).twin;
+        auto boundaryEdgeH = startEdgeH;
+        while (getE(boundaryEdgeH).face)
+        {
+            boundaryEdgeH = getE(getE(boundaryEdgeH).next).twin;
+            if (boundaryEdgeH == startEdgeH)
+            {
+                // In this case a non-manifold vertex would be created. We
+                // could potentially easily fix it by duplicating the vertex
+                // and treating both vertices as distinct ones. But for now,
+                // we simply assert that this never happens.
+                assert(false);
+            }
+        }
+        return boundaryEdgeH;
+    }
+    return OptionalEdgeHandle();
+}
+
 
 
 
