@@ -163,6 +163,7 @@
 #include <lvr2/geometry/Vector.hpp>
 #include <lvr2/geometry/Point.hpp>
 #include <lvr2/geometry/Normal.hpp>
+#include <lvr2/util/StableVector.hpp>
 
 // PCL related includes
 #ifdef LVR_USE_PCL
@@ -207,6 +208,23 @@ int main(int argc, char** argv)
     p1.distance(p2);
 
     lvr2::HalfEdgeMesh<lvr2::BaseVector<float>> mesh;
+
+    lvr2::StableVector<Vec, lvr2::BaseMesh<float>::VertexHandle> vec;
+    lvr2::BaseMesh<float>::VertexHandle handle1(1);
+    lvr2::BaseMesh<float>::VertexHandle handle2(0);
+    cout << vec.sizeUsed() << std::endl;
+    vec.push_back(v1);
+    cout << vec.sizeUsed() << std::endl;
+    vec.push_back(v2);
+    cout << vec.sizeUsed() << std::endl;
+    vec.erase(handle1);
+    cout << vec.sizeUsed() << std::endl;
+    auto vec1 = vec[handle2];
+
+    cout << vec.size() << std::endl;
+    cout << vec1.x << std::endl;
+
+    return 0;
 
     try
     {
