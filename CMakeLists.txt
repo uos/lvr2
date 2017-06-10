@@ -25,7 +25,7 @@ else(MSVC)
   add_compile_options(-fmessage-length=0 -fPIC -Wno-deprecated)
   # with cmake 3.3
   #add_compile_options($<$<COMPILE_LANGUAGE:CXX>:-std=c++0x>)
-  set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++11")
+  set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++14")
 endif(MSVC)
 
 ###############################################################
@@ -363,6 +363,7 @@ add_subdirectory(src/liblvr)
 ##############################################################
 
 add_subdirectory(src/tools/reconstruct)
+add_subdirectory(src/tools/reconstruct2)
 add_subdirectory(src/tools/classifier)
 add_subdirectory(src/tools/colorize)
 add_subdirectory(src/tools/scanreduce)
