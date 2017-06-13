@@ -60,7 +60,7 @@ public:
         const Point<BaseVecT>& qp,
         int k,
         vector<size_t>& indices,
-        vector<float>& distances
+        vector<typename BaseVecT::CoordType>& distances
     ) = 0;
 
     /**
@@ -70,23 +70,17 @@ public:
      * @param r           Radius.
      * @param indices     A vector that will be filled with the indices of
      *                    the points that were found.
-     * @param distances   A vector that will be filled with the distances of
-     *                    the points that were found.
      */
     virtual void radiusSearch(
         const Point<BaseVecT>& qp,
         typename BaseVecT::CoordType r,
-        vector<size_t>& indices,
-        vector<float>& distances
+        vector<size_t>& indices
     ) = 0;
 
     /// Like the other overload, but ignoring the `distances` vector.
-    virtual void kSearch(const Point<BaseVecT>& qp, int k, vector<int>& indices);
-
-    /// Like the other overload, but ignoring the `distances` vector.
-    virtual void radiusSearch(
+    virtual void kSearch(
         const Point<BaseVecT>& qp,
-        typename BaseVecT::CoordType r,
+        int k,
         vector<size_t>& indices
     );
 

@@ -32,18 +32,12 @@ using std::endl;
 
 namespace lvr2 {
 
-// template<typename BaseVecT>
-// void SearchTree<BaseVecT>::initBuffers(PointBufferPtr buffer)
-// {
-//     this->m_pointData = buffer->getPointArray(this->m_numPoints);
-//     this->m_haveColors = false;
-// }
 
 template<typename BaseVecT>
 void SearchTree<BaseVecT>::kSearch(
     const Point<BaseVecT> &qp,
     int neighbours,
-    vector<int>& indices
+    vector<size_t>& indices
 )
 {
     vector<float> distances;

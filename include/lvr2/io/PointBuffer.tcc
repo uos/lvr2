@@ -42,29 +42,27 @@ PointBuffer::PointBuffer(lvr::PointBuffer& oldBuffer)
 template <typename BaseVecT>
 size_t PointBuffer::getNumPoints() const
 {
-    return m_points.size() / (sizeof(typename BaseVecT::CoordT) * 3);
+    return m_points.size() / (sizeof(typename BaseVecT::CoordType) * 3);
 }
 
 template <typename BaseVecT>
 Point<BaseVecT> PointBuffer::getPoint(size_t idx) const
 {
-    using CoordT = typename BaseVecT::CoordType;
-
-    // This class currently only supports coordinate types that don't require
-    // an alignment bigger than 8.
-    static_assert(alignof(CoordT) <= 8, "unsupported vector type");
-
-    auto step = sizeof(CoordT);
-    auto offset = idx * 3;
-    auto x = *reinterpret_cast<CoordT*>(m_points[offset + 0 * step]);
-    auto y = *reinterpret_cast<CoordT*>(m_points[offset + 1 * step]);
-    auto z = *reinterpret_cast<CoordT*>(m_points[offset + 2 * step]);
-
-    return Point<BaseVecT>(x, y, z);
+    return Point<BaseVecT>(getBaseVec<BaseVecT>(idx));
 }
 
 template <typename BaseVecT>
 optional<Normal<BaseVecT>> PointBuffer::getNormal(size_t idx) const
+{
+    if (!hasNormals())
+    {
+        return boost::none;
+    }
+    return Normal<BaseVecT>(getBaseVec<BaseVecT>(idx));
+}
+
+template <typename BaseVecT>
+BaseVecT PointBuffer::getBaseVec(size_t idx) const
 {
     using CoordT = typename BaseVecT::CoordType;
 
@@ -74,11 +72,15 @@ optional<Normal<BaseVecT>> PointBuffer::getNormal(size_t idx) const
 
     auto step = sizeof(CoordT);
     auto offset = idx * 3;
-    auto x = *reinterpret_cast<CoordT*>(m_points[offset + 0 * step]);
-    auto y = *reinterpret_cast<CoordT*>(m_points[offset + 1 * step]);
-    auto z = *reinterpret_cast<CoordT*>(m_points[offset + 2 * step]);
+    auto x = *reinterpret_cast<const CoordT*>(&m_points[offset + 0 * step]);
+    auto y = *reinterpret_cast<const CoordT*>(&m_points[offset + 1 * step]);
+    auto z = *reinterpret_cast<const CoordT*>(&m_points[offset + 2 * step]);
 
-    return Normal<BaseVecT>(x, y, z);
+    return BaseVecT(x, y, z);
+}
+
+bool PointBuffer::empty() const {
+    return m_points.empty();
 }
 
 bool PointBuffer::hasNormals() const {
