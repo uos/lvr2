@@ -56,8 +56,15 @@ typename BaseMesh<BaseVecT>::FaceHandle
 
     // Create face
     FaceHandle newFaceH = m_faces.size();
-    // TODO: use real normal
-    Face f(e1H, Normal<BaseVecT>(1, 0, 0));
+
+    // Calc normal
+    // TODO: move to seperate method
+    auto v1 = getV(v1H).pos;
+    auto v2 = getV(v1H).pos;
+    auto v3 = getV(v1H).pos;
+    auto normal = (v1 - v2).cross(v1 - v3);
+
+    Face f(e1H, Normal<BaseVecT>(normal));
     m_faces.push_back(f);
 
     // Set face
