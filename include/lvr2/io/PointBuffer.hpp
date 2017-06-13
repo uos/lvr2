@@ -66,6 +66,7 @@ namespace lvr2
 class PointBuffer
 {
 public:
+    PointBuffer() {}
     PointBuffer(lvr::PointBuffer& oldBuffer);
 
     /**
@@ -86,6 +87,7 @@ public:
      */
     bool hasNormals() const;
 
+    bool empty() const;
 
 private:
     struct alignas(8) AlignedByte
@@ -104,6 +106,9 @@ private:
 
     /// Point confidence buffer.
     vector<AlignedByte> m_confidences;
+
+    template <typename BaseVecT>
+    BaseVecT getBaseVec(size_t idx) const;
 };
 
 typedef boost::shared_ptr<PointBuffer> PointBufferPtr;
