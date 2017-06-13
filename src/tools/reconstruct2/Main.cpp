@@ -180,6 +180,12 @@
 #include <lvr2/algorithm/FinalizeAlgorithm.hpp>
 #include <lvr2/geometry/BoundingBox.hpp>
 
+// #include <lvr2/reconstruction/PointsetSurface.hpp>
+#include <lvr2/reconstruction/SearchTree.hpp>
+#include <lvr2/reconstruction/SearchTreeFlann.hpp>
+#include <lvr2/io/PointBuffer.hpp>
+
+
 // PCL related includes
 #ifdef LVR_USE_PCL
 #include <lvr/reconstruction/PCLKSurface.hpp>
@@ -210,6 +216,9 @@ using PsSurface = lvr::PointsetSurface<BaseVecT>;
 
 void lvr2Playground()
 {
+    PointBuffer buf;
+    SearchTreeFlann<BaseVector<float>> flann(buf);
+
     using Vec = lvr2::Vector<lvr2::BaseVector<float>>;
     using Poi = lvr2::Point<lvr2::BaseVector<float>>;
 
@@ -406,24 +415,24 @@ optional<PsSurface::Ptr> loadPointCloud(const reconstruct::Options& options)
 //         return boost::none;
 // #endif
     }
-    // else if(pcm_name == "STANN" || pcm_name == "FLANN" || pcm_name == "NABO" || pcm_name == "NANOFLANN")
-    // {
-    //     AkSurface* aks = new AkSurface(
-    //             p_loader, pcm_name,
-    //             options.getKn(),
-    //             options.getKi(),
-    //             options.getKd(),
-    //             options.useRansac(),
-    //             options.getScanPoseFile()
-    //     );
+    else if(pcm_name == "STANN" || pcm_name == "FLANN" || pcm_name == "NABO" || pcm_name == "NANOFLANN")
+    {
+        // AkSurface* aks = new AkSurface(
+        //         p_loader, pcm_name,
+        //         options.getKn(),
+        //         options.getKi(),
+        //         options.getKd(),
+        //         options.useRansac(),
+        //         options.getScanPoseFile()
+        // );
 
-    //     surface = PsSurface::Ptr(aks);
-    //     // Set RANSAC flag
-    //     if(options.useRansac())
-    //     {
-    //         aks->useRansac(true);
-    //     }
-    // }
+        // surface = PsSurface::Ptr(aks);
+        // // Set RANSAC flag
+        // if(options.useRansac())
+        // {
+        //     aks->useRansac(true);
+        // }
+    }
     else
     {
         cout << timestamp << "Unable to create PointCloudManager." << endl;
