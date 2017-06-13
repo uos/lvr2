@@ -158,13 +158,6 @@
 #include <lvr/geometry/QuadricVertexCosts.hpp>
 #include <lvr/reconstruction/SharpBox.hpp>
 
-#include <lvr2/geometry/HalfEdgeMesh.hpp>
-#include <lvr2/geometry/BaseVector.hpp>
-#include <lvr2/geometry/Vector.hpp>
-#include <lvr2/geometry/Point.hpp>
-#include <lvr2/geometry/Normal.hpp>
-#include <lvr2/util/StableVector.hpp>
-
 // PCL related includes
 #ifdef LVR_USE_PCL
 #include <lvr/reconstruction/PCLKSurface.hpp>
@@ -190,355 +183,320 @@ typedef PCLKSurface<ColorVertex<float, unsigned char> , Normal<float> > pclSurfa
  */
 int main(int argc, char** argv)
 {
-    // TODO: remove
-    using Vec = lvr2::Vector<lvr2::BaseVector<float>>;
-    using Poi = lvr2::Point<lvr2::BaseVector<float>>;
+	try
+	{
+		// Parse command line arguments
+		reconstruct::Options options(argc, argv);
 
-    Vec v1, v2;
-    Poi p1, p2;
+		// Exit if options had to generate a usage message
+		// (this means required parameters are missing)
+		if ( options.printUsage() )
+		{
+			return 0;
+		}
 
-    v1 + p1;
-    v1 + v2;
-    // p1 + p2;
+		OpenMPConfig::setNumThreads(options.getNumThreads());
 
-    v1.length();
-    // v1.distance(v2);
+		std::cout << options << std::endl;
 
-    // p1.length();
-    p1.distance(p2);
+		// Create a point loader object
+		ModelPtr model = ModelFactory::readModel( options.getInputFileName() );
+		PointBufferPtr p_loader;
 
-    lvr2::HalfEdgeMesh<lvr2::BaseVector<float>> mesh;
+		// Parse loaded data
+		if ( !model )
+		{
+			cout << timestamp << "IO Error: Unable to parse " << options.getInputFileName() << endl;
+			exit(-1);
+		}
+		p_loader = model->m_pointCloud;
 
-    lvr2::StableVector<Vec, lvr2::BaseMesh<float>::VertexHandle> vec;
-    lvr2::BaseMesh<float>::VertexHandle handle1(1);
-    lvr2::BaseMesh<float>::VertexHandle handle2(0);
-    cout << vec.sizeUsed() << std::endl;
-    vec.push_back(v1);
-    cout << vec.sizeUsed() << std::endl;
-    vec.push_back(v2);
-    cout << vec.sizeUsed() << std::endl;
-    vec.erase(handle1);
-    cout << vec.sizeUsed() << std::endl;
-    auto vec1 = vec[handle2];
+		// Create a point cloud manager
+		string pcm_name = options.getPCM();
+		psSurface::Ptr surface;
 
-    cout << vec.size() << std::endl;
-    cout << vec1.x << std::endl;
-
-    return 0;
-
-    try
-    {
-        // Parse command line arguments
-        reconstruct::Options options(argc, argv);
-
-        // Exit if options had to generate a usage message
-        // (this means required parameters are missing)
-        if ( options.printUsage() )
-        {
-            return 0;
-        }
-
-        OpenMPConfig::setNumThreads(options.getNumThreads());
-
-        std::cout << options << std::endl;
-
-        // Create a point loader object
-        ModelPtr model = ModelFactory::readModel( options.getInputFileName() );
-        PointBufferPtr p_loader;
-
-        // Parse loaded data
-        if ( !model )
-        {
-            cout << timestamp << "IO Error: Unable to parse " << options.getInputFileName() << endl;
-            exit(-1);
-        }
-        p_loader = model->m_pointCloud;
-
-        // Create a point cloud manager
-        string pcm_name = options.getPCM();
-        psSurface::Ptr surface;
-
-        // Create point set surface object
-        if(pcm_name == "PCL")
-        {
+		// Create point set surface object
+		if(pcm_name == "PCL")
+		{
 #ifdef LVR_USE_PCL
-            surface = psSurface::Ptr( new pclSurface(p_loader));
-#else
-            cout << timestamp << "Can't create a PCL point set surface without PCL installed." << endl;
-            exit(-1);
+			surface = psSurface::Ptr( new pclSurface(p_loader));
+#else 
+			cout << timestamp << "Can't create a PCL point set surface without PCL installed." << endl;
+			exit(-1);
 #endif
-        }
-        else if(pcm_name == "STANN" || pcm_name == "FLANN" || pcm_name == "NABO" || pcm_name == "NANOFLANN")
-        {
-            akSurface* aks = new akSurface(
-                    p_loader, pcm_name,
-                    options.getKn(),
-                    options.getKi(),
-                    options.getKd(),
-                    options.useRansac(),
-                    options.getScanPoseFile()
-            );
+		}
+		else if(pcm_name == "STANN" || pcm_name == "FLANN" || pcm_name == "NABO" || pcm_name == "NANOFLANN")
+		{
+			akSurface* aks = new akSurface(
+					p_loader, pcm_name,
+					options.getKn(),
+					options.getKi(),
+					options.getKd(),
+					options.useRansac(),
+					options.getScanPoseFile()
+			);
 
-            surface = psSurface::Ptr(aks);
-            // Set RANSAC flag
-            if(options.useRansac())
-            {
-                aks->useRansac(true);
-            }
-        }
-        else
-        {
-            cout << timestamp << "Unable to create PointCloudManager." << endl;
-            cout << timestamp << "Unknown option '" << pcm_name << "'." << endl;
-            cout << timestamp << "Available PCMs are: " << endl;
-            cout << timestamp << "STANN, STANN_RANSAC";
+			surface = psSurface::Ptr(aks);
+			// Set RANSAC flag
+			if(options.useRansac())
+			{
+				aks->useRansac(true);
+			}
+		}
+		else
+		{
+			cout << timestamp << "Unable to create PointCloudManager." << endl;
+			cout << timestamp << "Unknown option '" << pcm_name << "'." << endl;
+			cout << timestamp << "Available PCMs are: " << endl;
+			cout << timestamp << "STANN, STANN_RANSAC";
 #ifdef LVR_USE_PCL
-            cout << ", PCL";
+			cout << ", PCL";
 #endif
 #ifdef LVR_USE_NABO
-            cout << ", Nabo";
+			cout << ", Nabo";
 #endif
-            cout << endl;
-            return 0;
-        }
+			cout << endl;
+			return 0;
+		}
 
-        // Set search options for normal estimation and distance evaluation
-        surface->setKd(options.getKd());
-        surface->setKi(options.getKi());
-        surface->setKn(options.getKn());
+		// Set search options for normal estimation and distance evaluation
+		surface->setKd(options.getKd());
+		surface->setKi(options.getKi());
+		surface->setKn(options.getKn());
 
-        // Calculate normals if necessary
-        if(!surface->pointBuffer()->hasPointNormals()
-                || (surface->pointBuffer()->hasPointNormals() && options.recalcNormals()))
-        {
-            Timestamp ts;
-            surface->calculateSurfaceNormals();
-        }
-        else
-        {
-            cout << timestamp << "Using given normals." << endl;
-        }
+		// Calculate normals if necessary
+		if(!surface->pointBuffer()->hasPointNormals()
+				|| (surface->pointBuffer()->hasPointNormals() && options.recalcNormals()))
+		{
+		    Timestamp ts;
+			surface->calculateSurfaceNormals();
+		}
+		else
+		{
+			cout << timestamp << "Using given normals." << endl;
+		}
 
-        // Save points and normals only
-        if(options.savePointNormals())
-        {
-            ModelPtr pn( new Model);
-            pn->m_pointCloud = surface->pointBuffer();
-            ModelFactory::saveModel(pn, "pointnormals.ply");
-        }
+		// Save points and normals only
+		if(options.savePointNormals())
+		{
+			ModelPtr pn( new Model);
+			pn->m_pointCloud = surface->pointBuffer();
+			ModelFactory::saveModel(pn, "pointnormals.ply");
+		}
 
-        // Create an empty mesh
-        HalfEdgeMesh<ColorVertex<float, unsigned char> , Normal<float> > mesh( surface );
+		// Create an empty mesh
+		HalfEdgeMesh<ColorVertex<float, unsigned char> , Normal<float> > mesh( surface );
 
-        // Set recursion depth for region growing
-        if(options.getDepth())
-        {
-            mesh.setDepth(options.getDepth());
-        }
+		// Set recursion depth for region growing
+		if(options.getDepth())
+		{
+			mesh.setDepth(options.getDepth());
+		}
 
-        if(options.getTexelSize())
-        {
-            Texture::m_texelSize = options.getTexelSize();
-        }
+		if(options.getTexelSize())
+		{
+			Texture::m_texelSize = options.getTexelSize();
+		}
+		
+		if(options.getTexturePack() != "")
+		{
+			Texturizer<Vertex<float> , Normal<float> >::m_filename = options.getTexturePack();
+			if(options.getStatsCoeffs())
+			{	
+				float* sc = options.getStatsCoeffs();
+				for (int i = 0; i < 14; i++)
+				{
+					Statistics::m_coeffs[i] = sc[i];
+				}
+				delete sc;
+			}
+			if(options.getNumStatsColors())
+			{
+				Texturizer<Vertex<float> , Normal<float> >::m_numStatsColors = options.getNumStatsColors();
+			}
+			if(options.getNumCCVColors())
+			{
+				Texturizer<Vertex<float> , Normal<float> >::m_numCCVColors = options.getNumCCVColors();
+			}
+			if(options.getCoherenceThreshold())
+			{
+				Texturizer<Vertex<float> , Normal<float> >::m_coherenceThreshold = options.getCoherenceThreshold();
+			}
 
-        if(options.getTexturePack() != "")
-        {
-            Texturizer<Vertex<float> , Normal<float> >::m_filename = options.getTexturePack();
-            if(options.getStatsCoeffs())
-            {
-                float* sc = options.getStatsCoeffs();
-                for (int i = 0; i < 14; i++)
-                {
-                    Statistics::m_coeffs[i] = sc[i];
-                }
-                delete sc;
-            }
-            if(options.getNumStatsColors())
-            {
-                Texturizer<Vertex<float> , Normal<float> >::m_numStatsColors = options.getNumStatsColors();
-            }
-            if(options.getNumCCVColors())
-            {
-                Texturizer<Vertex<float> , Normal<float> >::m_numCCVColors = options.getNumCCVColors();
-            }
-            if(options.getCoherenceThreshold())
-            {
-                Texturizer<Vertex<float> , Normal<float> >::m_coherenceThreshold = options.getCoherenceThreshold();
-            }
+			if(options.getColorThreshold())
+			{
+				Texturizer<Vertex<float> , Normal<float> >::m_colorThreshold = options.getColorThreshold();
+			}
+			if(options.getStatsThreshold())
+			{
+				Texturizer<Vertex<float> , Normal<float> >::m_statsThreshold = options.getStatsThreshold();
+			}
+			if(options.getUseCrossCorr())
+			{
+				Texturizer<Vertex<float> , Normal<float> >::m_useCrossCorr = options.getUseCrossCorr();
+			}
+			if(options.getFeatureThreshold())
+			{
+				Texturizer<Vertex<float> , Normal<float> >::m_featureThreshold = options.getFeatureThreshold();
+			}
+			if(options.getPatternThreshold())
+			{
+				Texturizer<Vertex<float> , Normal<float> >::m_patternThreshold = options.getPatternThreshold();
+			}
+			if(options.doTextureAnalysis())
+			{
+			    Texturizer<Vertex<float> , Normal<float> >::m_doAnalysis = true;
+			}
+			if(options.getMinimumTransformationVotes())
+			{
+				Transform::m_minimumVotes = options.getMinimumTransformationVotes();
+			}
+		}
 
-            if(options.getColorThreshold())
-            {
-                Texturizer<Vertex<float> , Normal<float> >::m_colorThreshold = options.getColorThreshold();
-            }
-            if(options.getStatsThreshold())
-            {
-                Texturizer<Vertex<float> , Normal<float> >::m_statsThreshold = options.getStatsThreshold();
-            }
-            if(options.getUseCrossCorr())
-            {
-                Texturizer<Vertex<float> , Normal<float> >::m_useCrossCorr = options.getUseCrossCorr();
-            }
-            if(options.getFeatureThreshold())
-            {
-                Texturizer<Vertex<float> , Normal<float> >::m_featureThreshold = options.getFeatureThreshold();
-            }
-            if(options.getPatternThreshold())
-            {
-                Texturizer<Vertex<float> , Normal<float> >::m_patternThreshold = options.getPatternThreshold();
-            }
-            if(options.doTextureAnalysis())
-            {
-                Texturizer<Vertex<float> , Normal<float> >::m_doAnalysis = true;
-            }
-            if(options.getMinimumTransformationVotes())
-            {
-                Transform::m_minimumVotes = options.getMinimumTransformationVotes();
-            }
-        }
+		if(options.getSharpFeatureThreshold())
+		{
+			SharpBox<Vertex<float> , Normal<float> >::m_theta_sharp = options.getSharpFeatureThreshold();
+		}
+		if(options.getSharpCornerThreshold())
+		{
+			SharpBox<Vertex<float> , Normal<float> >::m_phi_corner = options.getSharpCornerThreshold();
+		}
 
-        if(options.getSharpFeatureThreshold())
-        {
-            SharpBox<Vertex<float> , Normal<float> >::m_theta_sharp = options.getSharpFeatureThreshold();
-        }
-        if(options.getSharpCornerThreshold())
-        {
-            SharpBox<Vertex<float> , Normal<float> >::m_phi_corner = options.getSharpCornerThreshold();
-        }
+		// Determine whether to use intersections or voxelsize
+		float resolution;
+		bool useVoxelsize;
+		if(options.getIntersections() > 0)
+		{
+			resolution = options.getIntersections();
+			useVoxelsize = false;
+		}
+		else
+		{
+			resolution = options.getVoxelsize();
+			useVoxelsize = true;
+		}
 
-        // Determine whether to use intersections or voxelsize
-        float resolution;
-        bool useVoxelsize;
-        if(options.getIntersections() > 0)
-        {
-            resolution = options.getIntersections();
-            useVoxelsize = false;
-        }
-        else
-        {
-            resolution = options.getVoxelsize();
-            useVoxelsize = true;
-        }
+		// Create a point set grid for reconstruction
+		string decomposition = options.getDecomposition();
 
-        // Create a point set grid for reconstruction
-        string decomposition = options.getDecomposition();
+		// Fail safe check
+		if(decomposition != "MC" && decomposition != "PMC" && decomposition != "SF" )
+		{
+			cout << "Unsupported decomposition type " << decomposition << ". Defaulting to PMC." << endl;
+			decomposition = "PMC";
+		}
 
-        // Fail safe check
-        if(decomposition != "MC" && decomposition != "PMC" && decomposition != "SF" )
-        {
-            cout << "Unsupported decomposition type " << decomposition << ". Defaulting to PMC." << endl;
-            decomposition = "PMC";
-        }
+		GridBase* grid;
+		FastReconstructionBase<ColorVertex<float, unsigned char>, Normal<float> >* reconstruction;
+		if(decomposition == "MC")
+		{
+			grid = new PointsetGrid<ColorVertex<float, unsigned char>, FastBox<ColorVertex<float, unsigned char>, Normal<float> > >(resolution, surface, surface->getBoundingBox(), useVoxelsize, options.extrude());
+			PointsetGrid<ColorVertex<float, unsigned char>, FastBox<ColorVertex<float, unsigned char>, Normal<float> > >* ps_grid = static_cast<PointsetGrid<ColorVertex<float, unsigned char>, FastBox<ColorVertex<float, unsigned char>, Normal<float> > > *>(grid);
+			ps_grid->calcDistanceValues();
+			reconstruction = new FastReconstruction<ColorVertex<float, unsigned char> , Normal<float>, FastBox<ColorVertex<float, unsigned char>, Normal<float> >  >(ps_grid);
 
-        GridBase* grid;
-        FastReconstructionBase<ColorVertex<float, unsigned char>, Normal<float> >* reconstruction;
-        if(decomposition == "MC")
-        {
-            grid = new PointsetGrid<ColorVertex<float, unsigned char>, FastBox<ColorVertex<float, unsigned char>, Normal<float> > >(resolution, surface, surface->getBoundingBox(), useVoxelsize, options.extrude());
-            PointsetGrid<ColorVertex<float, unsigned char>, FastBox<ColorVertex<float, unsigned char>, Normal<float> > >* ps_grid = static_cast<PointsetGrid<ColorVertex<float, unsigned char>, FastBox<ColorVertex<float, unsigned char>, Normal<float> > > *>(grid);
-            ps_grid->calcDistanceValues();
-            reconstruction = new FastReconstruction<ColorVertex<float, unsigned char> , Normal<float>, FastBox<ColorVertex<float, unsigned char>, Normal<float> >  >(ps_grid);
+		}
+		else if(decomposition == "PMC")
+		{
+			BilinearFastBox<ColorVertex<float, unsigned char>, Normal<float> >::m_surface = surface;
+			grid = new PointsetGrid<ColorVertex<float, unsigned char>, BilinearFastBox<ColorVertex<float, unsigned char>, Normal<float> > >(resolution, surface, surface->getBoundingBox(), useVoxelsize, options.extrude());
+			PointsetGrid<ColorVertex<float, unsigned char>, BilinearFastBox<ColorVertex<float, unsigned char>, Normal<float> > >* ps_grid = static_cast<PointsetGrid<ColorVertex<float, unsigned char>, BilinearFastBox<ColorVertex<float, unsigned char>, Normal<float> > > *>(grid);
+			ps_grid->calcDistanceValues();
+			reconstruction = new FastReconstruction<ColorVertex<float, unsigned char> , Normal<float>, BilinearFastBox<ColorVertex<float, unsigned char>, Normal<float> >  >(ps_grid);
 
-        }
-        else if(decomposition == "PMC")
-        {
-            BilinearFastBox<ColorVertex<float, unsigned char>, Normal<float> >::m_surface = surface;
-            grid = new PointsetGrid<ColorVertex<float, unsigned char>, BilinearFastBox<ColorVertex<float, unsigned char>, Normal<float> > >(resolution, surface, surface->getBoundingBox(), useVoxelsize, options.extrude());
-            PointsetGrid<ColorVertex<float, unsigned char>, BilinearFastBox<ColorVertex<float, unsigned char>, Normal<float> > >* ps_grid = static_cast<PointsetGrid<ColorVertex<float, unsigned char>, BilinearFastBox<ColorVertex<float, unsigned char>, Normal<float> > > *>(grid);
-            ps_grid->calcDistanceValues();
-            reconstruction = new FastReconstruction<ColorVertex<float, unsigned char> , Normal<float>, BilinearFastBox<ColorVertex<float, unsigned char>, Normal<float> >  >(ps_grid);
-
-        }
-        else if(decomposition == "SF")
-        {
-            SharpBox<ColorVertex<float, unsigned char>, Normal<float> >::m_surface = surface;
-            grid = new PointsetGrid<ColorVertex<float, unsigned char>, SharpBox<ColorVertex<float, unsigned char>, Normal<float> > >(resolution, surface, surface->getBoundingBox(), useVoxelsize, options.extrude());
-            PointsetGrid<ColorVertex<float, unsigned char>, SharpBox<ColorVertex<float, unsigned char>, Normal<float> > >* ps_grid = static_cast<PointsetGrid<ColorVertex<float, unsigned char>, SharpBox<ColorVertex<float, unsigned char>, Normal<float> > > *>(grid);
-            ps_grid->calcDistanceValues();
-            reconstruction = new FastReconstruction<ColorVertex<float, unsigned char> , Normal<float>, SharpBox<ColorVertex<float, unsigned char>, Normal<float> >  >(ps_grid);
-        }
+		}
+		else if(decomposition == "SF")
+		{
+			SharpBox<ColorVertex<float, unsigned char>, Normal<float> >::m_surface = surface;
+			grid = new PointsetGrid<ColorVertex<float, unsigned char>, SharpBox<ColorVertex<float, unsigned char>, Normal<float> > >(resolution, surface, surface->getBoundingBox(), useVoxelsize, options.extrude());
+			PointsetGrid<ColorVertex<float, unsigned char>, SharpBox<ColorVertex<float, unsigned char>, Normal<float> > >* ps_grid = static_cast<PointsetGrid<ColorVertex<float, unsigned char>, SharpBox<ColorVertex<float, unsigned char>, Normal<float> > > *>(grid);
+			ps_grid->calcDistanceValues();
+			reconstruction = new FastReconstruction<ColorVertex<float, unsigned char> , Normal<float>, SharpBox<ColorVertex<float, unsigned char>, Normal<float> >  >(ps_grid);
+		}
 
 
+		
+		// Create mesh
+		reconstruction->getMesh(mesh);
+		
+		// Save grid to file
+		if(options.saveGrid())
+		{
+			grid->saveGrid("fastgrid.grid");
+		}
 
-        // Create mesh
-        reconstruction->getMesh(mesh);
+		if(options.getDanglingArtifacts())
+ 		{
+			mesh.removeDanglingArtifacts(options.getDanglingArtifacts());
+		}
 
-        // Save grid to file
-        if(options.saveGrid())
-        {
-            grid->saveGrid("fastgrid.grid");
-        }
+		// Optimize mesh
+		mesh.cleanContours(options.getCleanContourIterations());
+		mesh.setClassifier(options.getClassifier());
+		mesh.getClassifier().setMinRegionSize(options.getSmallRegionThreshold());
 
-        if(options.getDanglingArtifacts())
-        {
-            mesh.removeDanglingArtifacts(options.getDanglingArtifacts());
-        }
+		if(options.optimizePlanes())
+		{
+			mesh.optimizePlanes(options.getPlaneIterations(),
+					options.getNormalThreshold(),
+					options.getMinPlaneSize(),
+					options.getSmallRegionThreshold(),
+					true);
 
-        // Optimize mesh
-        mesh.cleanContours(options.getCleanContourIterations());
-        mesh.setClassifier(options.getClassifier());
-        mesh.getClassifier().setMinRegionSize(options.getSmallRegionThreshold());
+			mesh.fillHoles(options.getFillHoles());
+			mesh.optimizePlaneIntersections();
+			mesh.restorePlanes(options.getMinPlaneSize());
 
-        if(options.optimizePlanes())
-        {
-            mesh.optimizePlanes(options.getPlaneIterations(),
-                    options.getNormalThreshold(),
-                    options.getMinPlaneSize(),
-                    options.getSmallRegionThreshold(),
-                    true);
+			if(options.getNumEdgeCollapses())
+			{
+				QuadricVertexCosts<ColorVertex<float, unsigned char> , Normal<float> > c = QuadricVertexCosts<ColorVertex<float, unsigned char> , Normal<float> >(true);
+				mesh.reduceMeshByCollapse(options.getNumEdgeCollapses(), c);
+			}
+		}
+		else if(options.clusterPlanes())
+		{
+			mesh.clusterRegions(options.getNormalThreshold(), options.getMinPlaneSize());
+			mesh.fillHoles(options.getFillHoles());
+		}
 
-            mesh.fillHoles(options.getFillHoles());
-            mesh.optimizePlaneIntersections();
-            mesh.restorePlanes(options.getMinPlaneSize());
+		// Save triangle mesh
+		if ( options.retesselate() )
+		{
+			mesh.finalizeAndRetesselate(options.generateTextures(), options.getLineFusionThreshold());
+		}
+		else
+		{
+			mesh.finalize();
+		}
 
-            if(options.getNumEdgeCollapses())
-            {
-                QuadricVertexCosts<ColorVertex<float, unsigned char> , Normal<float> > c = QuadricVertexCosts<ColorVertex<float, unsigned char> , Normal<float> >(true);
-                mesh.reduceMeshByCollapse(options.getNumEdgeCollapses(), c);
-            }
-        }
-        else if(options.clusterPlanes())
-        {
-            mesh.clusterRegions(options.getNormalThreshold(), options.getMinPlaneSize());
-            mesh.fillHoles(options.getFillHoles());
-        }
+		// Write classification to file
+		if ( options.writeClassificationResult() )
+		{
+			mesh.writeClassificationResult();
+		}
 
-        // Save triangle mesh
-        if ( options.retesselate() )
-        {
-            mesh.finalizeAndRetesselate(options.generateTextures(), options.getLineFusionThreshold());
-        }
-        else
-        {
-            mesh.finalize();
-        }
+		// Create output model and save to file
+		ModelPtr m( new Model( mesh.meshBuffer() ) );
 
-        // Write classification to file
-        if ( options.writeClassificationResult() )
-        {
-            mesh.writeClassificationResult();
-        }
+		if(options.saveOriginalData())
+		{
+			m->m_pointCloud = model->m_pointCloud;
+		}
+		cout << timestamp << "Saving mesh." << endl;
+		ModelFactory::saveModel( m, "triangle_mesh.ply");
 
-        // Create output model and save to file
-        ModelPtr m( new Model( mesh.meshBuffer() ) );
+		// Save obj model if textures were generated
+		if(options.generateTextures())
+		{
+			ModelFactory::saveModel( m, "triangle_mesh.obj");
+		}		
+		cout << timestamp << "Program end." << endl;
 
-        if(options.saveOriginalData())
-        {
-            m->m_pointCloud = model->m_pointCloud;
-        }
-        cout << timestamp << "Saving mesh." << endl;
-        ModelFactory::saveModel( m, "triangle_mesh.ply");
-
-        // Save obj model if textures were generated
-        if(options.generateTextures())
-        {
-            ModelFactory::saveModel( m, "triangle_mesh.obj");
-        }
-        cout << timestamp << "Program end." << endl;
-
-    }
-    catch(...)
-    {
-        std::cout << "Unable to parse options. Call 'reconstruct --help' for more information." << std::endl;
-    }
-    return 0;
+	}
+	catch(...)
+	{
+		std::cout << "Unable to parse options. Call 'reconstruct --help' for more information." << std::endl;
+	}
+	return 0;
 }
+
