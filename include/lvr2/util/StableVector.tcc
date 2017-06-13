@@ -42,7 +42,7 @@ void StableVector<ElemT, HandleT>::push_back(const ElementType& elem)
     m_elements.push_back(elem);
     m_deleted.push_back(false);
     ++m_usedCount;
-};
+}
 
 template <typename ElemT, typename HandleT>
 void StableVector<ElemT, HandleT>::erase(const HandleType& handle)
