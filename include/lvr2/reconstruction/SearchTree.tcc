@@ -44,45 +44,29 @@ void SearchTree<BaseVecT>::kSearch(
     this->kSearch(qp, neighbours, indices, distances);
 }
 
+// template<typename BaseVecT>
+// void SearchTree<BaseVecT>::setKi(int ki)
+// {
+//     m_ki = ki;
+// }
 
 
-template<typename BaseVecT>
-void SearchTree<BaseVecT>::setKn(int kn)
-{
-    m_kn = kn;
-}
+// template<typename BaseVecT>
+// void SearchTree<BaseVecT>::setKd(int kd)
+// {
+//     m_kd = kd;
+// }
 
+// template<typename BaseVecT>
+// int SearchTree<BaseVecT>::getKi()
+// {
+//     return m_ki;
+// }
 
-template<typename BaseVecT>
-void SearchTree<BaseVecT>::setKi(int ki)
-{
-    m_ki = ki;
-}
-
-
-template<typename BaseVecT>
-void SearchTree<BaseVecT>::setKd(int kd)
-{
-    m_kd = kd;
-}
-
-template<typename BaseVecT>
-int SearchTree<BaseVecT>::getKn()
-{
-    return m_kn;
-}
-
-
-template<typename BaseVecT>
-int SearchTree<BaseVecT>::getKi()
-{
-    return m_ki;
-}
-
-template<typename BaseVecT>
-int SearchTree<BaseVecT>::getKd()
-{
-    return m_kd;
-}
+// template<typename BaseVecT>
+// int SearchTree<BaseVecT>::getKd()
+// {
+//     return m_kd;
+// }
 
 } // namespace
