@@ -84,67 +84,35 @@ public:
         vector<size_t>& indices
     );
 
-    /**
-     * @brief Set the number of neighbours used to estimate and interpolate normals.
-     */
-    virtual void setKn(int kn);
+    // /**
+    //  * @brief Set the number of neighbours used to estimate and interpolate normals.
+    //  */
+    // virtual void setKi(int ki);
 
 
-    /**
-     * @brief Set the number of neighbours used to estimate and interpolate normals.
-     */
-    virtual void setKi(int ki);
+    // /**
+    //  * @brief Set the number of neighbours used for normal estimation
+    //  */
+    // virtual void setKd(int kd);
+
+    // /**
+    //  * @brief Get the number of tangent planes used for distance determination
+    //  */
+    // virtual int getKi();
 
 
-    /**
-     * @brief Set the number of neighbours used for normal estimation
-     */
-    virtual void setKd(int kd);
-
-
-    /**
-     * @brief Get the number of neighbours used for normal interpolation
-     */
-    virtual int getKn();
-
-
-    /**
-     * @brief Get the number of tangent planes used for distance determination
-     */
-    virtual int getKi();
-
-
-    /**
-     * @brief Get the number of neighbours used to estimate and interpolate normals.
-     */
-    virtual int getKd();
+    // /**
+    //  * @brief Get the number of neighbours used to estimate and interpolate normals.
+    //  */
+    // virtual int getKd();
 
 
 protected:
-
-    // /// Initialize internal buffers and attribute flags
-    // virtual void initBuffers(PointBufferPtr buffer);
-
-    /// The number of neighbors used for initial normal estimation
-    int                         m_kn;
-
     /// The number of neighbors used for normal interpolation
     int                         m_ki;
 
     /// The number of tangent planes used for distance determination
     int                         m_kd;
-
-    // /// A pointer to the original point cloud data
-    // floatArr                    m_pointData;
-
-    // /// A pointer to color attributes for the point (or zero, if the point clouds contains no color values)
-    // ucharArr                    m_pointColorData;
-
-    // /// Indicator whether point color values are supported by the search tree instance
-    // bool                        m_haveColors;
-
-    // /// Number of points managed by this class
-    // size_t                      m_numPoints;
 };
 
 } // namespace lvr2

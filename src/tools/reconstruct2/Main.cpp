@@ -180,7 +180,7 @@
 #include <lvr2/algorithm/FinalizeAlgorithm.hpp>
 #include <lvr2/geometry/BoundingBox.hpp>
 
-// #include <lvr2/reconstruction/PointsetSurface.hpp>
+#include <lvr2/reconstruction/PointsetSurface.hpp>
 #include <lvr2/reconstruction/SearchTree.hpp>
 #include <lvr2/reconstruction/SearchTreeFlann.hpp>
 #include <lvr2/io/PointBuffer.hpp>
