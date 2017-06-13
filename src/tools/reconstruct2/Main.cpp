@@ -199,6 +199,11 @@ using BaseVecT = BaseVector<float>;
 // typedef PCLKSurface<ColorVertex<float, unsigned char> , Normal<float> > pclSurface;
 // #endif
 
+
+/*
+ * DUMMY TEST CODE STARTS HERE!!!
+ */
+
 void lvr2Playground()
 {
     using Vec = lvr2::Vector<lvr2::BaseVector<float>>;
@@ -219,6 +224,53 @@ void lvr2Playground()
 
     lvr2::HalfEdgeMesh<lvr2::BaseVector<float>> mesh;
 }
+
+void createHouseFromNikolaus(lvr2::HalfEdgeMesh<lvr2::BaseVector<float>>& mesh)
+{
+    // scale
+    float s = 1;
+
+    // create house from nikolaus
+    auto p0 = mesh.addVertex(BaseVector<float>(0, 0, 0));
+    auto p1 = mesh.addVertex(BaseVector<float>(s, 0, 0));
+    auto p2 = mesh.addVertex(BaseVector<float>(s, s, 0));
+    auto p3 = mesh.addVertex(BaseVector<float>(0, s, 0));
+    auto p4 = mesh.addVertex(BaseVector<float>(0, 0, s));
+    auto p5 = mesh.addVertex(BaseVector<float>(s, 0, s));
+    auto p6 = mesh.addVertex(BaseVector<float>(s, s, s));
+    auto p7 = mesh.addVertex(BaseVector<float>(0, s, s));
+    auto p8 = mesh.addVertex(BaseVector<float>(s/2, s/2, s+(s/2)));
+
+    auto bottomFace1 = mesh.addFace(p0, p1, p2);
+    auto bottomFace2 = mesh.addFace(p0, p2, p3);
+
+    auto rightFace1 = mesh.addFace(p1, p5, p6);
+    auto rightFace2 = mesh.addFace(p1, p6, p2);
+
+    auto leftFace1 = mesh.addFace(p3, p7, p4);
+    auto leftFace2 = mesh.addFace(p4, p0, p3);
+
+    auto frontFace1 = mesh.addFace(p7, p3, p2);
+    auto frontFace2 = mesh.addFace(p2, p6, p7);
+
+    auto backFace1 = mesh.addFace(p0, p4, p5);
+    auto backFace2 = mesh.addFace(p5, p1, p0);
+
+    auto roofFaceFront  = mesh.addFace(p7, p6, p8);
+    auto roofFaceLeft   = mesh.addFace(p4, p7, p8);
+    auto roofFaceBack   = mesh.addFace(p5, p4, p8);
+    auto roofFaceRight  = mesh.addFace(p6, p5, p8);
+}
+
+void testFinalize(lvr2::HalfEdgeMesh<lvr2::BaseVector<float>>& mesh)
+{
+    createHouseFromNikolaus(mesh);
+
+}
+
+/*
+ * DUMMY TEST CODE ENDS HERE!!!
+ */
 
 // optional<PsSurface::Ptr> loadPointCloud(const reconstruct::Options& options)
 // {
@@ -407,6 +459,7 @@ int main(int argc, char** argv)
 
         // Create an empty mesh
         lvr2::HalfEdgeMesh<lvr2::BaseVector<float>> mesh;
+        testFinalize(mesh);
 
         // Set recursion depth for region growing
         // if(options.getDepth())
