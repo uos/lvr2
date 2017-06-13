@@ -148,7 +148,6 @@
 
 
 // Local includes
-// #include <lvr/reconstruction/AdaptiveKSearchSurface.hpp>
 // #include <lvr/reconstruction/FastReconstruction.hpp>
 // #include <lvr/reconstruction/PointsetGrid.hpp>
 // #include <lvr/reconstruction/FastBox.hpp>
@@ -168,6 +167,7 @@
 #include <lvr/io/Model.hpp>
 #include <lvr/io/ModelFactory.hpp>
 #include <lvr/io/PointBuffer.hpp>
+#include <lvr/reconstruction/AdaptiveKSearchSurface.hpp>
 #include <lvr/reconstruction/PointsetSurface.hpp>
 
 #include <lvr2/geometry/HalfEdgeMesh.hpp>
@@ -178,11 +178,12 @@
 #include <lvr2/util/StableVector.hpp>
 #include <lvr2/util/VectorMap.hpp>
 #include <lvr2/algorithm/FinalizeAlgorithm.hpp>
+#include <lvr2/geometry/BoundingBox.hpp>
 
-// // PCL related includes
-// #ifdef LVR_USE_PCL
-// #include <lvr/reconstruction/PCLKSurface.hpp>
-// #endif
+// PCL related includes
+#ifdef LVR_USE_PCL
+#include <lvr/reconstruction/PCLKSurface.hpp>
+#endif
 
 
 
@@ -195,11 +196,11 @@ using lvr::timestamp;
 using namespace lvr2;
 
 using BaseVecT = BaseVector<float>;
-// using PsSurface = lvr::PointsetSurface<BaseVecT>;
-// using AkSurface = AdaptiveKSearchSurface<ColorVertex<float, unsigned char>, Normal<float> >;
+using PsSurface = lvr::PointsetSurface<BaseVecT>;
+// using AkSurface = lvr::AdaptiveKSearchSurface<BaseVecT, Normal<float>>;
 
 // #ifdef LVR_USE_PCL
-// typedef PCLKSurface<ColorVertex<float, unsigned char> , Normal<float> > pclSurface;
+// using PclSurface = lvr::PCLKSurface<BaseVecT, Normal<float>>;
 // #endif
 
 
@@ -378,87 +379,91 @@ void testFinalize(lvr2::HalfEdgeMesh<lvr2::BaseVector<float>>& mesh)
 //     // Create a point loader object
 //     lvr::ModelPtr model = lvr::ModelFactory::readModel(options.getInputFileName());
 
-//     // Parse loaded data
-//     if (!model)
-//     {
-//         cout << timestamp << "IO Error: Unable to parse " << options.getInputFileName() << endl;
-//         return boost::none;
-//     }
-//     lvr::PointBufferPtr p_loader = model->m_pointCloud;
+optional<PsSurface::Ptr> loadPointCloud(const reconstruct::Options& options)
+{
+    // Create a point loader object
+    lvr::ModelPtr model = lvr::ModelFactory::readModel(options.getInputFileName());
 
-//     // Create a point cloud manager
-//     string pcm_name = options.getPCM();
-//     PsSurface::Ptr surface;
+    // Parse loaded data
+    if (!model)
+    {
+        cout << timestamp << "IO Error: Unable to parse " << options.getInputFileName() << endl;
+        return boost::none;
+    }
+    lvr::PointBufferPtr p_loader = model->m_pointCloud;
 
-//     // Create point set surface object
-//     if(pcm_name == "PCL")
-//     {
+    // Create a point cloud manager
+    string pcm_name = options.getPCM();
+    PsSurface::Ptr surface;
+
+    // Create point set surface object
+    if(pcm_name == "PCL")
+    {
 // #ifdef LVR_USE_PCL
 //         surface = PsSurface::Ptr(new pclSurface(p_loader));
 // #else
 //         cout << timestamp << "Can't create a PCL point set surface without PCL installed." << endl;
 //         return boost::none;
 // #endif
-//     }
-//     else if(pcm_name == "STANN" || pcm_name == "FLANN" || pcm_name == "NABO" || pcm_name == "NANOFLANN")
-//     {
-//         akSurface* aks = new akSurface(
-//                 p_loader, pcm_name,
-//                 options.getKn(),
-//                 options.getKi(),
-//                 options.getKd(),
-//                 options.useRansac(),
-//                 options.getScanPoseFile()
-//         );
+    }
+    // else if(pcm_name == "STANN" || pcm_name == "FLANN" || pcm_name == "NABO" || pcm_name == "NANOFLANN")
+    // {
+    //     AkSurface* aks = new AkSurface(
+    //             p_loader, pcm_name,
+    //             options.getKn(),
+    //             options.getKi(),
+    //             options.getKd(),
+    //             options.useRansac(),
+    //             options.getScanPoseFile()
+    //     );
 
-//         surface = PsSurface::Ptr(aks);
-//         // Set RANSAC flag
-//         if(options.useRansac())
-//         {
-//             aks->useRansac(true);
-//         }
-//     }
-//     else
-//     {
-//         cout << timestamp << "Unable to create PointCloudManager." << endl;
-//         cout << timestamp << "Unknown option '" << pcm_name << "'." << endl;
-//         cout << timestamp << "Available PCMs are: " << endl;
-//         cout << timestamp << "STANN, STANN_RANSAC";
-// #ifdef LVR_USE_PCL
-//         cout << ", PCL";
-// #endif
-// #ifdef LVR_USE_NABO
-//         cout << ", Nabo";
-// #endif
-//         cout << endl;
-//         return boost::none;
-//     }
+    //     surface = PsSurface::Ptr(aks);
+    //     // Set RANSAC flag
+    //     if(options.useRansac())
+    //     {
+    //         aks->useRansac(true);
+    //     }
+    // }
+    else
+    {
+        cout << timestamp << "Unable to create PointCloudManager." << endl;
+        cout << timestamp << "Unknown option '" << pcm_name << "'." << endl;
+        cout << timestamp << "Available PCMs are: " << endl;
+        cout << timestamp << "STANN, STANN_RANSAC";
+#ifdef LVR_USE_PCL
+        cout << ", PCL";
+#endif
+#ifdef LVR_USE_NABO
+        cout << ", Nabo";
+#endif
+        cout << endl;
+        return boost::none;
+    }
 
-//     // Set search options for normal estimation and distance evaluation
-//     surface->setKd(options.getKd());
-//     surface->setKi(options.getKi());
-//     surface->setKn(options.getKn());
+    // Set search options for normal estimation and distance evaluation
+    surface->setKd(options.getKd());
+    surface->setKi(options.getKi());
+    surface->setKn(options.getKn());
 
-//     // Calculate normals if necessary
-//     if(!surface->pointBuffer()->hasPointNormals()
-//             || (surface->pointBuffer()->hasPointNormals() && options.recalcNormals()))
-//     {
-//         Timestamp ts;
-//         surface->calculateSurfaceNormals();
-//     }
-//     else
-//     {
-//         cout << timestamp << "Using given normals." << endl;
-//     }
+    // Calculate normals if necessary
+    if(!surface->pointBuffer()->hasPointNormals()
+            || (surface->pointBuffer()->hasPointNormals() && options.recalcNormals()))
+    {
+        surface->calculateSurfaceNormals();
+    }
+    else
+    {
+        cout << timestamp << "Using given normals." << endl;
+    }
 
-//     // Save points and normals only
-//     if(options.savePointNormals())
-//     {
-//         lvr::ModelPtr pn( new Model);
-//         pn->m_pointCloud = surface->pointBuffer();
-//         ModelFactory::saveModel(pn, "pointnormals.ply");
-//     }
-// }
+    // // Save points and normals only
+    // if(options.savePointNormals())
+    // {
+    //     lvr::ModelPtr pn( new Model);
+    //     pn->m_pointCloud = surface->pointBuffer();
+    //     ModelFactory::saveModel(pn, "pointnormals.ply");
+    // }
+}
 
 // void setTextureOptions(const reconstruct::Options& options)
 // {
