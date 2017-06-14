@@ -35,7 +35,7 @@ VectorMap<KeyT, ValT>::VectorMap(size_t countElements, const ValueType& defaultV
 {}
 
 template<typename KeyT, typename ValT>
-void VectorMap<KeyT, ValT>::checkAccess(const KeyType& key)
+void VectorMap<KeyT, ValT>::checkAccess(const KeyType& key) const
 {
     // You cannot access deleted or uninitialized elements!
     if (m_deleted[key.idx()])

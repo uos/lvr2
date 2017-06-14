@@ -27,7 +27,7 @@ namespace lvr2
 {
 
 template<typename ElemT, typename HandleT>
-void StableVector<ElemT, HandleT>::checkAccess(const HandleType& handle)
+void StableVector<ElemT, HandleT>::checkAccess(const HandleType& handle) const
 {
     // You cannot access deleted or uninitialized elements!
     if (m_deleted[handle.idx()])

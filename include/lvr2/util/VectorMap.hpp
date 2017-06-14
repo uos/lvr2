@@ -77,7 +77,7 @@ private:
     /**
      * @brief Check, if the requested handle is not deleted
      */
-    void checkAccess(const KeyType& key);
+    void checkAccess(const KeyType& key) const;
 
 public:
     VectorMap() : m_usedCount(0) {};
