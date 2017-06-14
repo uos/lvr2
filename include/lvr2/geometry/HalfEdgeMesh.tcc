@@ -77,10 +77,9 @@ typename BaseMesh<BaseVecT>::FaceHandle
 
     // Calc normal
     // TODO: move to seperate method
-    // TODO: fix copy&paste bug
     auto v1 = getV(v1H).pos;
-    auto v2 = getV(v1H).pos;
-    auto v3 = getV(v1H).pos;
+    auto v2 = getV(v2H).pos;
+    auto v3 = getV(v3H).pos;
     auto normal = (v1 - v2).cross(v1 - v3);
 
     Face f(eInner1H, Normal<BaseVecT>(normal));
