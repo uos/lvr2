@@ -169,6 +169,16 @@ public:
      * @return A handle to access the inserted face later.
      */
     virtual FaceHandle addFace(VertexHandle v1, VertexHandle v2, VertexHandle v3) = 0;
+
+    /**
+     * @brief Count vertices in the mesh.
+     */
+    virtual size_t countVertices() = 0;
+
+    /**
+     * @brief Get the point of the requested vertex index.
+     */
+    virtual Point<BaseVecT> getPoint(size_t vertexIdx) = 0;
 };
 
 } // namespace lvr2
