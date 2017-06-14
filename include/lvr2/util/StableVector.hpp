@@ -89,6 +89,8 @@ public:
 
     /// Number of not delete-marked elements
     size_t sizeUsed() const;
+
+    // TODO: add reserve method to reserve vector memory
 };
 
 } // namespace lvr2

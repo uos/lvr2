@@ -101,7 +101,11 @@ public:
     /// Request the value behind the given key
     boost::optional<const ValueType&> get(const KeyType& key) const;
 
-    /// Request the value behind the given key
+    /**
+     * @brief Request the value behind the given key
+     *
+     * Important: Do not use this to store values! Use insert instead.
+     */
     ValueType& operator[](const KeyType& key);
 
     /// Request the value behind the given key
@@ -109,6 +113,8 @@ public:
 
     /// Number of not delete-marked values
     size_t sizeUsed() const;
+
+    // TODO: add reserve method to reserve vector memory
 };
 
 template <typename BaseVecT, typename ValT>
