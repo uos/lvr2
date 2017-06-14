@@ -69,6 +69,8 @@ public:
     size_t countVertices() final;
     Point<BaseVecT> getPoint(size_t vertexIdx) final;
 
+    bool debugCheckMeshIntegrity() const;
+
 private:
     vector<Edge> m_edges;
     vector<Face> m_faces;
