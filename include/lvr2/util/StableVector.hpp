@@ -44,9 +44,9 @@ namespace lvr2
  * @tparam ElemT Type of elements in the vector
  * @tparam HandleT Type of the index for the vector
  */
-template <typename ElemT, typename HandleT>
-class StableVector {
-
+template<typename ElemT, typename HandleT>
+class StableVector
+{
 private:
     using ElementType = ElemT;
     using HandleType = HandleT;
@@ -64,6 +64,7 @@ private:
      * @brief Check, if the requested handle is not deleted
      */
     void checkAccess(const HandleType& handle);
+
 public:
     StableVector() : m_usedCount(0) {};
 

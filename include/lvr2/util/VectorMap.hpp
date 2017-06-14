@@ -44,15 +44,16 @@ namespace lvr2
  * @tparam KeyT Type of keys for this map. Needs to be a subclass of BaseHandle!
  * @tparam ValT Type of values of this map
  */
-template <typename KeyT, typename ValT>
-class VectorMap {
-
+template<typename KeyT, typename ValT>
+class VectorMap
+{
 private:
     using KeyType = KeyT;
     using ValueType = ValT;
 
     /// Wrapper for dummy elements
-    union Wrapper {
+    union Wrapper
+    {
         ValueType data;
 
         Wrapper() {};
@@ -76,11 +77,12 @@ private:
      * @brief Check, if the requested handle is not deleted
      */
     void checkAccess(const KeyType& key);
+
 public:
     VectorMap() : m_usedCount(0) {};
 
-    /// Creates a map of size countElements with countElements copies of dummy in it
-    VectorMap(size_t countElements, const ValueType& dummy);
+    /// Creates a map of size countElements with countElements copies of defaultValue in it
+    VectorMap(size_t countElements, const ValueType& defaultValue);
 
     /// Insert the given element
     void insert(const KeyType& key, const ValueType& value);

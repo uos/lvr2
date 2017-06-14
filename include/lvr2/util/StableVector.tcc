@@ -26,17 +26,17 @@
 namespace lvr2
 {
 
-template <typename ElemT, typename HandleT>
-void StableVector<ElemT, HandleT>::checkAccess(const HandleType &handle)
+template<typename ElemT, typename HandleT>
+void StableVector<ElemT, HandleT>::checkAccess(const HandleType& handle)
 {
-    // You cannot access deleted elements!
+    // You cannot access deleted or uninitialized elements!
     if (m_deleted[handle.idx()])
     {
         assert(false);
     }
 }
 
-template <typename ElemT, typename HandleT>
+template<typename ElemT, typename HandleT>
 void StableVector<ElemT, HandleT>::push_back(const ElementType& elem)
 {
     m_elements.push_back(elem);
@@ -44,7 +44,7 @@ void StableVector<ElemT, HandleT>::push_back(const ElementType& elem)
     ++m_usedCount;
 }
 
-template <typename ElemT, typename HandleT>
+template<typename ElemT, typename HandleT>
 void StableVector<ElemT, HandleT>::erase(const HandleType& handle)
 {
     checkAccess(handle);
@@ -53,7 +53,7 @@ void StableVector<ElemT, HandleT>::erase(const HandleType& handle)
     --m_usedCount;
 }
 
-template <typename ElemT, typename HandleT>
+template<typename ElemT, typename HandleT>
 ElemT& StableVector<ElemT, HandleT>::operator[](const HandleType& handle)
 {
     checkAccess(handle);
@@ -61,7 +61,7 @@ ElemT& StableVector<ElemT, HandleT>::operator[](const HandleType& handle)
     return m_elements[handle.idx()];
 }
 
-template <typename ElemT, typename HandleT>
+template<typename ElemT, typename HandleT>
 const ElemT& StableVector<ElemT, HandleT>::operator[](const HandleType& handle) const
 {
     checkAccess(handle);
@@ -69,13 +69,13 @@ const ElemT& StableVector<ElemT, HandleT>::operator[](const HandleType& handle) 
     return m_elements[handle.idx()];
 }
 
-template <typename ElemT, typename HandleT>
+template<typename ElemT, typename HandleT>
 size_t StableVector<ElemT, HandleT>::size() const
 {
     return m_deleted.size();
 }
 
-template <typename ElemT, typename HandleT>
+template<typename ElemT, typename HandleT>
 size_t StableVector<ElemT, HandleT>::sizeUsed() const
 {
     return m_usedCount;
