@@ -94,14 +94,30 @@ private:
     EdgeHandle findOrCreateEdgeBetween(VertexHandle fromH, VertexHandle toH);
 
     /**
-     * @brief Adds a new edge-pair.
+     * @brief Adds a new, incomplete edge-pair.
+     *
+     * This method is private and unsafe, because it leaves some fields
+     * uninitialized. The invariants of this mesh are broken after calling this
+     * method and the caller has to fix those broken invariants.
+     *
+     * In particular, no `next` handle is set or changed. The `outgoing` handle
+     * of the vertices is not changed (or set) either.
      *
      * @return Both edge handles. The first edge points from v1H to v2H, the
      *         second one points from v2H to v1H.
      */
     pair<EdgeHandle, EdgeHandle> addEdgePair(VertexHandle v1H, VertexHandle v2H);
 
-    OptionalEdgeHandle boundaryEdgeOf(VertexHandle vH);
+
+    /**
+     * @brief Iterates over all ingoing edges of one vertex, returning the
+     *        first edge that satisfies the given predicate.
+     *
+     * @return Returns None if `v` does not have an outgoing edge or if no
+     *         edge satisfies the predicate.
+     */
+    template <typename Pred>
+    OptionalEdgeHandle findEdgeAroundVertex(VertexHandle vH, Pred pred) const;
 };
 
 } // namespace lvr
