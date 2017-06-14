@@ -39,6 +39,8 @@ namespace lvr2
  *
  * This is basically a wrapper for the std::vector, which marks an element as deleted but does not delete it.
  *
+ * USE WITH CAUTION: This NEVER deletes values and can get very large!
+ *
  * @tparam ElemT Type of elements in the vector
  * @tparam HandleT Type of the index for the vector
  */
