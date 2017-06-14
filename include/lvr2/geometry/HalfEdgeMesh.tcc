@@ -293,6 +293,10 @@ pair<typename BaseMesh<BaseVecT>::EdgeHandle, typename BaseMesh<BaseVecT>::EdgeH
     a.target = v2H;
     b.target = v1H;
 
+    // Add edges to vector.
+    m_edges.push_back(a);
+    m_edges.push_back(b);
+
     auto fixNextHandles = [&](VertexHandle vH, EdgeHandle ingoingH, EdgeHandle outgoingH)
     {
         auto& v = getV(vH);
@@ -338,10 +342,6 @@ pair<typename BaseMesh<BaseVecT>::EdgeHandle, typename BaseMesh<BaseVecT>::EdgeH
 
     fixNextHandles(v1H, bH, aH);
     fixNextHandles(v2H, aH, bH);
-
-    // Add edges to vector.
-    m_edges.push_back(a);
-    m_edges.push_back(b);
 
     return std::make_pair(aH, bH);
 }
