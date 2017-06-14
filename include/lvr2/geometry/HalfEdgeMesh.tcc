@@ -28,7 +28,8 @@
 #include <array>
 #include <iostream>
 
-using namespace std;
+#include <lvr2/util/VectorMap.hpp>
+
 
 namespace lvr2
 {
@@ -465,17 +466,17 @@ bool HalfEdgeMesh<BaseVecT>::debugCheckMeshIntegrity() const
     cout << "| Trying to walk on boundary edges... |" << endl;
     cout << "+-------------------------------------+" << endl;
 
-    vector<bool> visited(m_edges.size(), false);
+    EdgeMap<BaseVecT, bool> visited(m_edges.size(), false);
     for (int i = 0; i < m_edges.size(); i++)
     {
         const auto startEdgeH = EdgeHandle(i);
         auto loopEdgeH = startEdgeH;
 
-        if (visited[i] || getE(startEdgeH).face)
+        if (visited[startEdgeH] || getE(startEdgeH).face)
         {
             continue;
         }
-        visited[i] = true;
+        visited[startEdgeH] = true;
 
         cout << "== Starting at " << startEdgeH << endl;
 
@@ -502,7 +503,6 @@ bool HalfEdgeMesh<BaseVecT>::debugCheckMeshIntegrity() const
             cout << "== " << vH << endl;
         }
     }
-
 
     return error;
 }
