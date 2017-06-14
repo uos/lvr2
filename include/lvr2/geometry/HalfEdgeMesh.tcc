@@ -408,6 +408,11 @@ bool HalfEdgeMesh<BaseVecT>::debugCheckMeshIntegrity() const
     using std::cout;
     using std::endl;
 
+    cout << endl;
+    cout << "===============================" << endl;
+    cout << "===     Integrity check     ===" << endl;
+    cout << "===============================" << endl;
+
     bool error = false;
 
     // First: let's visit all faces
@@ -485,9 +490,9 @@ bool HalfEdgeMesh<BaseVecT>::debugCheckMeshIntegrity() const
 
     // Next, we list all vertices that are not connected to anything yet
     cout << endl;
-    cout << "+------------------------------+" << endl;
-    cout << "| List unconnected vertices... |" << endl;
-    cout << "+------------------------------+" << endl;
+    cout << "+-------------------------------+" << endl;
+    cout << "| List of unconnected vertices: |" << endl;
+    cout << "+-------------------------------+" << endl;
 
     for (int i = 0; i < m_vertices.size(); i++)
     {
