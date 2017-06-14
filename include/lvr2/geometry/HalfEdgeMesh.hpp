@@ -29,9 +29,8 @@
 
 #include <cstdint>
 #include <utility>
-#include <vector>
+#include <lvr2/util/StableVector.hpp>
 
-using std::vector;
 using std::pair;
 
 #include "BaseMesh.hpp"
@@ -72,9 +71,9 @@ public:
     bool debugCheckMeshIntegrity() const;
 
 private:
-    vector<Edge> m_edges;
-    vector<Face> m_faces;
-    vector<Vertex> m_vertices;
+    StableVector<Edge, EdgeHandle> m_edges;
+    StableVector<Face, FaceHandle> m_faces;
+    StableVector<Vertex, VertexHandle> m_vertices;
 
     // ========================================================================
     // = Private helper methods
