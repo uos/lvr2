@@ -226,6 +226,11 @@ void lvr2Playground()
     p1.distance(p2);
 
     lvr2::HalfEdgeMesh<lvr2::BaseVector<float>> mesh;
+    auto v0H = mesh.addVertex(BaseVector<float>(0, 0, 0));
+    auto v1H = mesh.addVertex(BaseVector<float>(1, 0, 0));
+    auto v2H = mesh.addVertex(BaseVector<float>(1, 0, 1));
+    auto bottomFace1 = mesh.addFace(v0H, v1H, v2H);
+    mesh.getPointsOfFace(bottomFace1);
 
     // StableVector stuff
     lvr2::StableVector<Vec, lvr2::BaseMesh<float>::VertexHandle> vec;
@@ -243,8 +248,6 @@ void lvr2Playground()
     cout << vec.size() << std::endl;
     cout << vec1.x << std::endl;
 
-    lvr2::BaseMesh<float>::FaceHandle faceHandle(0);
-    mesh.getPointsOfFace(faceHandle);
 
     // VectorMap stuff 2
     cout << "VectorMap" << endl;
