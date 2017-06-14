@@ -233,13 +233,13 @@ void createHouseFromNikolaus(lvr2::HalfEdgeMesh<lvr2::BaseVector<float>>& mesh)
     // create house from nikolaus
     auto p0 = mesh.addVertex(BaseVector<float>(0, 0, 0));
     auto p1 = mesh.addVertex(BaseVector<float>(s, 0, 0));
-    auto p2 = mesh.addVertex(BaseVector<float>(s, s, 0));
-    auto p3 = mesh.addVertex(BaseVector<float>(0, s, 0));
-    auto p4 = mesh.addVertex(BaseVector<float>(0, 0, s));
-    auto p5 = mesh.addVertex(BaseVector<float>(s, 0, s));
+    auto p2 = mesh.addVertex(BaseVector<float>(s, 0, s));
+    auto p3 = mesh.addVertex(BaseVector<float>(0, 0, s));
+    auto p4 = mesh.addVertex(BaseVector<float>(0, s, 0));
+    auto p5 = mesh.addVertex(BaseVector<float>(s, s, 0));
     auto p6 = mesh.addVertex(BaseVector<float>(s, s, s));
     auto p7 = mesh.addVertex(BaseVector<float>(0, s, s));
-    auto p8 = mesh.addVertex(BaseVector<float>(s/2, s/2, s+(s/2)));
+    auto p8 = mesh.addVertex(BaseVector<float>(s/2, s+(s/2), s/2));
 
     auto bottomFace1 = mesh.addFace(p0, p1, p2);
     auto bottomFace2 = mesh.addFace(p0, p2, p3);
