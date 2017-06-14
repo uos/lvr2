@@ -28,6 +28,7 @@
 #define LVR2_UTIL_VECTORMAP_H_
 
 #include <vector>
+#include <boost/optional.hpp>
 
 using std::vector;
 
@@ -95,6 +96,12 @@ public:
     void erase(const KeyType& key);
 
     /// Request the value behind the given key
+    boost::optional<ValueType&> get(const KeyType& key);
+
+    /// Request the value behind the given key
+    boost::optional<const ValueType&> get(const KeyType& key) const;
+
+    /// Request the value behind the given key
     ValueType& operator[](const KeyType& key);
 
     /// Request the value behind the given key
@@ -103,6 +110,13 @@ public:
     /// Number of not delete-marked values
     size_t sizeUsed() const;
 };
+
+template <typename BaseVecT, typename ValT>
+using EdgeMap = VectorMap<typename BaseMesh<BaseVecT>::EdgeHandle, ValT>;
+template <typename BaseVecT, typename ValT>
+using FaceMap = VectorMap<typename BaseMesh<BaseVecT>::FaceHandle, ValT>;
+template <typename BaseVecT, typename ValT>
+using VertexMap = VectorMap<typename BaseMesh<BaseVecT>::VertexHandle, ValT>;
 
 } // namespace lvr2
 

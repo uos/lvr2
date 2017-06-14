@@ -81,6 +81,18 @@ ValT& VectorMap<KeyT, ValT>::operator[](const KeyType& key)
 }
 
 template<typename KeyT, typename ValT>
+boost::optional<const ValT&> VectorMap<KeyT, ValT>::get(const KeyType& key) const
+{
+    return !m_deleted[key.idx()] ? m_elements[key.idx()].data : boost::optional<const ValT&>();
+}
+
+template<typename KeyT, typename ValT>
+boost::optional<ValT&> VectorMap<KeyT, ValT>::get(const KeyType& key)
+{
+    return !m_deleted[key.idx()] ? m_elements[key.idx()].data : boost::optional<ValT&>();
+}
+
+template<typename KeyT, typename ValT>
 const ValT& VectorMap<KeyT, ValT>::operator[](const KeyType& key) const
 {
     checkAccess(key);
