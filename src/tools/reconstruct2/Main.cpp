@@ -177,6 +177,7 @@
 #include <lvr2/geometry/Normal.hpp>
 #include <lvr2/util/StableVector.hpp>
 #include <lvr2/util/VectorMap.hpp>
+#include <lvr2/algorithm/FinalizeAlgorithm.hpp>
 
 // // PCL related includes
 // #ifdef LVR_USE_PCL
@@ -289,7 +290,7 @@ void lvr2Playground()
 void createHouseFromNikolaus(lvr2::HalfEdgeMesh<lvr2::BaseVector<float>>& mesh)
 {
     // scale
-    float s = 1;
+    float s = 5;
 
     // create house from nikolaus
     auto p0 = mesh.addVertex(BaseVector<float>(0, 0, 0));
@@ -327,6 +328,15 @@ void testFinalize(lvr2::HalfEdgeMesh<lvr2::BaseVector<float>>& mesh)
 {
     createHouseFromNikolaus(mesh);
     mesh.debugCheckMeshIntegrity();
+
+    FinalizeAlgorithm<BaseVector<float>> finalize;
+    auto buffer = finalize.apply(std::move(mesh));
+
+    // Create output model and save to file
+    auto model = new lvr::Model(buffer);
+    lvr::ModelPtr m(model);
+    cout << timestamp << "Saving mesh." << endl;
+    lvr::ModelFactory::saveModel( m, "triangle_mesh.ply");
 }
 
 /*
