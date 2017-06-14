@@ -28,18 +28,16 @@ namespace lvr2
 {
 
 template<typename KeyT, typename ValT>
-VectorMap<KeyT, ValT>::VectorMap(size_t countElements, const ValueType& dummy) :
-    m_usedCount(countElements),
-    m_elements(countElements, Wrapper(dummy)),
-    m_deleted(countElements, false)
-{
-
-}
+VectorMap<KeyT, ValT>::VectorMap(size_t countElements, const ValueType& defaultValue) :
+        m_usedCount(countElements),
+        m_elements(countElements, Wrapper(defaultValue)),
+        m_deleted(countElements, false)
+{}
 
 template<typename KeyT, typename ValT>
 void VectorMap<KeyT, ValT>::checkAccess(const KeyType& key)
 {
-    // You cannot access deleted elements!
+    // You cannot access deleted or uninitialized elements!
     if (m_deleted[key.idx()])
     {
         assert(false);
@@ -50,12 +48,13 @@ template<typename KeyT, typename ValT>
 void VectorMap<KeyT, ValT>::insert(const KeyType& key, const ValueType& value)
 {
     // Check if elements vector is large enough
-    if (m_elements.size() <= key.idx()) {
+    if (m_elements.size() <= key.idx())
+    {
         m_elements.resize(key.idx() + 1);
         m_deleted.resize(key.idx() + 1, true);
     }
 
-    m_elements[key.idx()].data = value;
+    m_elements[key.idx()] = Wrapper(value);
     m_deleted[key.idx()] = false;
     ++m_usedCount;
 }
@@ -63,7 +62,8 @@ void VectorMap<KeyT, ValT>::insert(const KeyType& key, const ValueType& value)
 template<typename KeyT, typename ValT>
 typename VectorMap<KeyT, ValT>::Wrapper& VectorMap<KeyT, ValT>::Wrapper::operator=(const Wrapper& value)
 {
-    new (&data) ValueType(value);
+    new(&data) ValueType(value.data);
+    return *this;
 }
 
 template<typename KeyT, typename ValT>
@@ -87,7 +87,7 @@ const ValT& VectorMap<KeyT, ValT>::operator[](const KeyType& key) const
     return m_elements[key.idx()].data;
 }
 
-template <typename KeyT, typename ValT>
+template<typename KeyT, typename ValT>
 size_t VectorMap<KeyT, ValT>::sizeUsed() const
 {
     return m_usedCount;
