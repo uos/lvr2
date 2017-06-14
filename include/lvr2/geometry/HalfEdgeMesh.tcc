@@ -398,9 +398,9 @@ size_t HalfEdgeMesh<BaseVecT>::countVertices()
 }
 
 template <typename BaseVecT>
-Point<BaseVecT> HalfEdgeMesh<BaseVecT>::getPoint(size_t vertexIdx)
+Point<BaseVecT> HalfEdgeMesh<BaseVecT>::getPoint(VertexHandle handle)
 {
-    return m_vertices[vertexIdx].pos;
+    return getV(handle).pos;
 }
 
 template <typename BaseVecT>
@@ -507,6 +507,38 @@ bool HalfEdgeMesh<BaseVecT>::debugCheckMeshIntegrity() const
     return error;
 }
 
+template <typename BaseVecT>
+size_t HalfEdgeMesh<BaseVecT>::countFaces()
+{
+    return m_faces.size();
+}
 
+template <typename BaseVecT>
+std::array<Point<BaseVecT>, 3> HalfEdgeMesh<BaseVecT>::getPointsOfFace(FaceHandle handle)
+{
+    auto face = getF(handle);
+
+    auto e1 = getE(face.edge);
+    auto e2 = getE(e1.next);
+    auto e3 = getE(e2.next);
+
+    auto v1 = getV(e1.target);
+    auto v2 = getV(e2.target);
+    auto v3 = getV(e3.target);
+
+    return {v1.pos, v2.pos, v3.pos};
+}
+
+template <typename BaseVecT>
+std::array<typename BaseMesh<BaseVecT>::VertexHandle, 3> HalfEdgeMesh<BaseVecT>::getVertexHandlesOfFace(FaceHandle handle)
+{
+    auto face = getF(handle);
+
+    auto e1 = getE(face.edge);
+    auto e2 = getE(e1.next);
+    auto e3 = getE(e2.next);
+
+    return {e1.target, e2.target, e3.target};
+}
 
 } // namespace lvr
