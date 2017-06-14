@@ -41,11 +41,12 @@ namespace lvr2
 template<typename BaseVecT>
 class FinalizeAlgorithm
 {
-public:
+private:
     using VertexHandle = typename BaseMesh<BaseVecT>::VertexHandle;
     using FaceHandle = typename BaseMesh<BaseVecT>::FaceHandle;
 
-    boost::shared_ptr<lvr::MeshBuffer> apply(BaseMesh<BaseVecT>&& mesh);
+public:
+    boost::shared_ptr<lvr::MeshBuffer> apply(const BaseMesh<BaseVecT>& mesh);
 };
 
 } // namespace lvr2

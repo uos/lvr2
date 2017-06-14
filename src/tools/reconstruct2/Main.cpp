@@ -243,6 +243,8 @@ void lvr2Playground()
     cout << vec.size() << std::endl;
     cout << vec1.x << std::endl;
 
+    mesh.getPointsOfFace(lvr2::BaseMesh<float>::FaceHandle(1));
+
     // VectorMap stuff 2
     cout << "VectorMap" << endl;
     lvr2::VectorMap<lvr2::BaseMesh<float>::VertexHandle, std::string> map;

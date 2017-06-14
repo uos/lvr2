@@ -104,7 +104,7 @@ public:
     /**
      * @brief Request the value behind the given key
      *
-     * Important: Do not use this to store values! Use insert instead.
+     * Important: Do not use this to insert new values! Use insert instead.
      */
     ValueType& operator[](const KeyType& key);
 

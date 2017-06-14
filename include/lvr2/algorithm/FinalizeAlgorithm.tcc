@@ -23,28 +23,25 @@
  *  @author Johan M. von Behren <johan@vonbehren.eu>
  */
 
-#include <boost/unordered_map.hpp>
-
 #include <lvr2/geometry/Normal.hpp>
-#include <lvr2/geometry/BaseVector.hpp>
 #include <lvr2/util/VectorMap.hpp>
 
 namespace lvr2
 {
 
 template<typename BaseVecT>
-boost::shared_ptr<lvr::MeshBuffer> FinalizeAlgorithm<BaseVecT>::apply(BaseMesh <BaseVecT>&& mesh)
+boost::shared_ptr<lvr::MeshBuffer> FinalizeAlgorithm<BaseVecT>::apply(const BaseMesh <BaseVecT>& mesh)
 {
     // Create vertex and normal buffer
     std::vector<float> vertices;
-    vertices.reserve(mesh.countVertices() * 3);
+    vertices.reserve(mesh.numVertices() * 3);
     std::vector<float> normals;
-    normals.reserve(mesh.countVertices() * 3);
+    normals.reserve(mesh.numVertices() * 3);
     VertexMap<BaseVecT, size_t> idxMap;
 
     // TODO: use real normal
-    Normal<BaseVector<float>> normal(0, 1, 0);
-    for (size_t i = 0; i < mesh.countVertices(); i++)
+    Normal<BaseVecT> normal(0, 1, 0);
+    for (size_t i = 0; i < mesh.numVertices(); i++)
     {
         // TODO: Don't create handle by yourself! This is extremly unsafe...
         VertexHandle handle(i);
@@ -64,8 +61,8 @@ boost::shared_ptr<lvr::MeshBuffer> FinalizeAlgorithm<BaseVecT>::apply(BaseMesh <
 
     // Create face buffer
     std::vector<unsigned int> faces;
-    faces.reserve(mesh.countFaces() * 3);
-    for (size_t i = 0; i < mesh.countFaces(); i++)
+    faces.reserve(mesh.numFaces() * 3);
+    for (size_t i = 0; i < mesh.numFaces(); i++)
     {
         // TODO: Don't create handle by yourself! This is extremly unsafe...
         auto handles = mesh.getVertexHandlesOfFace(FaceHandle(i));

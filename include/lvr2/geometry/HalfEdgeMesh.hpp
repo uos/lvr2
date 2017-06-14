@@ -66,11 +66,11 @@ public:
 
     VertexHandle addVertex(Point<BaseVecT> pos) final;
     FaceHandle addFace(VertexHandle v1, VertexHandle v2, VertexHandle v3) final;
-    size_t countVertices() final;
-    Point<BaseVecT> getPoint(VertexHandle handle) final;
-    size_t countFaces() final;
-    std::array<Point<BaseVecT>, 3> getPointsOfFace(FaceHandle handle) final;
-    std::array<VertexHandle, 3> getVertexHandlesOfFace(FaceHandle handle) final;
+    size_t numVertices() const final;
+    Point<BaseVecT> getPoint(VertexHandle handle) const final;
+    size_t numFaces() const final;
+    std::array<Point<BaseVecT>, 3> getPointsOfFace(FaceHandle handle) const final;
+    std::array<VertexHandle, 3> getVertexHandlesOfFace(FaceHandle handle) const final;
 
     bool debugCheckMeshIntegrity() const;
 
