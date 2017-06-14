@@ -81,7 +81,6 @@ typename BaseMesh<BaseVecT>::FaceHandle
     FaceHandle newFaceH = m_faces.size();
 
     // Calc normal
-    // TODO: move to seperate method
     auto normal = (v1.pos - v2.pos).cross(v1.pos - v3.pos);
 
     Face f(eInner1H, Normal<BaseVecT>(normal));
@@ -392,13 +391,13 @@ pair<typename BaseMesh<BaseVecT>::EdgeHandle, typename BaseMesh<BaseVecT>::EdgeH
 }
 
 template <typename BaseVecT>
-size_t HalfEdgeMesh<BaseVecT>::countVertices()
+size_t HalfEdgeMesh<BaseVecT>::numVertices() const
 {
-    return m_vertices.size();
+    return m_vertices.sizeUsed();
 }
 
 template <typename BaseVecT>
-Point<BaseVecT> HalfEdgeMesh<BaseVecT>::getPoint(VertexHandle handle)
+Point<BaseVecT> HalfEdgeMesh<BaseVecT>::getPoint(VertexHandle handle) const
 {
     return getV(handle).pos;
 }
@@ -508,30 +507,26 @@ bool HalfEdgeMesh<BaseVecT>::debugCheckMeshIntegrity() const
 }
 
 template <typename BaseVecT>
-size_t HalfEdgeMesh<BaseVecT>::countFaces()
+size_t HalfEdgeMesh<BaseVecT>::numFaces() const
 {
-    return m_faces.size();
+    return m_faces.sizeUsed();
 }
 
 template <typename BaseVecT>
-std::array<Point<BaseVecT>, 3> HalfEdgeMesh<BaseVecT>::getPointsOfFace(FaceHandle handle)
+std::array<Point<BaseVecT>, 3> HalfEdgeMesh<BaseVecT>::getPointsOfFace(FaceHandle handle) const
 {
-    auto face = getF(handle);
+    auto handles = getVertexHandlesOfFace(handle);
 
-    auto e1 = getE(face.edge);
-    auto e2 = getE(e1.next);
-    auto e3 = getE(e2.next);
-
-    auto v1 = getV(e1.target);
-    auto v2 = getV(e2.target);
-    auto v3 = getV(e3.target);
+    auto v1 = getV(handles[0]);
+    auto v2 = getV(handles[1]);
+    auto v3 = getV(handles[2]);
 
     return {v1.pos, v2.pos, v3.pos};
 }
 
 template <typename BaseVecT>
 std::array<typename BaseMesh<BaseVecT>::VertexHandle, 3>
-HalfEdgeMesh<BaseVecT>::getVertexHandlesOfFace(FaceHandle handle)
+HalfEdgeMesh<BaseVecT>::getVertexHandlesOfFace(FaceHandle handle) const
 {
     auto face = getF(handle);
 

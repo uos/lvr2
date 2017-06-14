@@ -174,27 +174,27 @@ public:
     /**
      * @brief Count vertices in the mesh.
      */
-    virtual size_t countVertices() = 0;
+    virtual size_t numVertices() const = 0;
 
     /**
      * @brief Get the point of the requested vertex.
      */
-    virtual Point<BaseVecT> getPoint(VertexHandle handle) = 0;
+    virtual Point<BaseVecT> getPoint(VertexHandle handle) const = 0;
 
     /**
      * @brief Count faces in the mesh.
      */
-    virtual size_t countFaces() = 0;
+    virtual size_t numFaces() const = 0;
 
     /**
      * @brief Get the points of the requested face.
      */
-    virtual std::array<Point<BaseVecT>, 3> getPointsOfFace(FaceHandle handle) = 0;
+    virtual std::array<Point<BaseVecT>, 3> getPointsOfFace(FaceHandle handle) const = 0;
 
     /**
      * @brief Get vertex handles of the requested face.
      */
-    virtual std::array<VertexHandle, 3> getVertexHandlesOfFace(FaceHandle handle) = 0;
+    virtual std::array<VertexHandle, 3> getVertexHandlesOfFace(FaceHandle handle) const = 0;
 
     friend std::ostream& operator<<(
         std::ostream& os,
