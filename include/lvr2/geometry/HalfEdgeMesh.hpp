@@ -78,8 +78,11 @@ private:
     // = Private helper methods
     // ========================================================================
     Edge& getE(EdgeHandle handle);
+    const Edge& getE(EdgeHandle handle) const;
     Face& getF(FaceHandle handle);
+    const Face& getF(FaceHandle handle) const;
     Vertex& getV(VertexHandle handle);
+    const Vertex& getV(VertexHandle handle) const;
 
     /**
      * @brief Given two vertices, find the edge pointing from one to the other.

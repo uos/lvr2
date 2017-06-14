@@ -367,6 +367,13 @@ typename HalfEdgeMesh<BaseVecT>::Edge&
 }
 
 template<typename BaseVecT>
+const typename HalfEdgeMesh<BaseVecT>::Edge&
+    HalfEdgeMesh<BaseVecT>::getE(EdgeHandle handle) const
+{
+    return m_edges[handle.idx()];
+}
+
+template<typename BaseVecT>
 typename HalfEdgeMesh<BaseVecT>::Face&
     HalfEdgeMesh<BaseVecT>::getF(FaceHandle handle)
 {
@@ -374,8 +381,22 @@ typename HalfEdgeMesh<BaseVecT>::Face&
 }
 
 template<typename BaseVecT>
+const typename HalfEdgeMesh<BaseVecT>::Face&
+    HalfEdgeMesh<BaseVecT>::getF(FaceHandle handle) const
+{
+    return m_faces[handle.idx()];
+}
+
+template<typename BaseVecT>
 typename HalfEdgeMesh<BaseVecT>::Vertex&
     HalfEdgeMesh<BaseVecT>::getV(VertexHandle handle)
+{
+    return m_vertices[handle.idx()];
+}
+
+template<typename BaseVecT>
+const typename HalfEdgeMesh<BaseVecT>::Vertex&
+    HalfEdgeMesh<BaseVecT>::getV(VertexHandle handle) const
 {
     return m_vertices[handle.idx()];
 }
