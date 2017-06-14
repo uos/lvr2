@@ -530,7 +530,8 @@ std::array<Point<BaseVecT>, 3> HalfEdgeMesh<BaseVecT>::getPointsOfFace(FaceHandl
 }
 
 template <typename BaseVecT>
-std::array<typename BaseMesh<BaseVecT>::VertexHandle, 3> HalfEdgeMesh<BaseVecT>::getVertexHandlesOfFace(FaceHandle handle)
+std::array<typename BaseMesh<BaseVecT>::VertexHandle, 3>
+HalfEdgeMesh<BaseVecT>::getVertexHandlesOfFace(FaceHandle handle)
 {
     auto face = getF(handle);
 
