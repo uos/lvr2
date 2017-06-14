@@ -373,7 +373,17 @@ typename BaseMesh<BaseVecT>::OptionalEdgeHandle
     return OptionalEdgeHandle();
 }
 
+template <typename BaseVecT>
+size_t HalfEdgeMesh<BaseVecT>::countVertices()
+{
+    return m_vertices.size();
+}
 
+template <typename BaseVecT>
+Point<BaseVecT> HalfEdgeMesh<BaseVecT>::getPoint(size_t vertexIdx)
+{
+    return m_vertices[vertexIdx].pos;
+}
 
 
 } // namespace lvr

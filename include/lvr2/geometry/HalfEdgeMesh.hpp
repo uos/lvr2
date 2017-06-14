@@ -66,6 +66,8 @@ public:
 
     VertexHandle addVertex(Point<BaseVecT> pos) final;
     FaceHandle addFace(VertexHandle v1, VertexHandle v2, VertexHandle v3) final;
+    size_t countVertices() final;
+    Point<BaseVecT> getPoint(size_t vertexIdx) final;
 
 private:
     vector<Edge> m_edges;
