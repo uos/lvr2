@@ -51,10 +51,10 @@ typename BaseMesh<BaseVecT>::FaceHandle
     cout << "##### addFace(): " << v1H << " -> " << v2H << " -> " << v3H << endl;
 
     using std::array;
-    using std::pair;
-    using std::make_pair;
+    using std::make_tuple;
 
-    // Handles for the inner edges of the face
+    // Handles for the inner edges of the face. The edges represented by those
+    // handles do not contain a valid `next` pointer yet.
     auto eInner1H = findOrCreateEdgeBetween(v1H, v2H);
     auto eInner2H = findOrCreateEdgeBetween(v2H, v3H);
     auto eInner3H = findOrCreateEdgeBetween(v3H, v1H);
@@ -71,16 +71,17 @@ typename BaseMesh<BaseVecT>::FaceHandle
     auto& eOuter2 = getE(eOuter2H);
     auto& eOuter3 = getE(eOuter3H);
 
+    auto v1 = getV(v1H);
+    auto v2 = getV(v2H);
+    auto v3 = getV(v3H);
+
 
     // Create face
     FaceHandle newFaceH = m_faces.size();
 
     // Calc normal
     // TODO: move to seperate method
-    auto v1 = getV(v1H).pos;
-    auto v2 = getV(v2H).pos;
-    auto v3 = getV(v3H).pos;
-    auto normal = (v1 - v2).cross(v1 - v3);
+    auto normal = (v1.pos - v2.pos).cross(v1.pos - v3.pos);
 
     Face f(eInner1H, Normal<BaseVecT>(normal));
     m_faces.push_back(f);
@@ -108,55 +109,30 @@ typename BaseMesh<BaseVecT>::FaceHandle
         auto& v = getV(vH);
         auto& eOut = getE(eOutH);
 
-        // --> Case (D): both edges are already part of another face
-        if (eIn.face && eOut.face)
-        {
-            // Nothing needs to be done: ...
-        }
         // --> Case (A): neither edge is part of a face (both edges are new)
-        else if (!eIn.face && !eOut.face)
+        if (!eIn.face && !eOut.face)
         {
-            // First we need to find two boundary edges adjacent to `v`. One
-            // ending at `v`, called eEnd, and one starting at `v`, called
-            // eStart. Note that `eEnd.next == eStart`.
-            //
-            // We search by starting at `v.outgoing` and iterating by following
-            // the `.twin.next` handles. However, we need to handle the special
-            // case of `v` not having an outgoing edge.
+            // We need to handle the special case of `v` not having an
+            // outgoing edge.
             if (v.outgoing)
             {
-                const auto startEdgeH = getE(v.outgoing.unwrap()).twin;
-                auto loopEdgeH = startEdgeH;
-                // auto loopEdgeNextH = getE(loopEdgeH).next;
-
-                cout << ">> start search at outgoing " << v.outgoing.unwrap() << endl;
-                cout << ">> startEdgeH: " << startEdgeH << endl;
-
-                while (getE(loopEdgeH).face)
+                // First we need to find two boundary edges adjacent to `v`. One
+                // ending at `v`, called eEnd, and one starting at `v`, called
+                // eStart. Note that `eEnd.next == eStart`.
+                //
+                // Since we already know that `v.outgoing` does exist,
+                // `findEdgeAroundVertex` returning `none` means that `v` does
+                // not have an adjacent boundary edge.
+                //
+                // A classical HEM can't deal with these kind of so called
+                // non-manifold meshes. Marching cube won't create non-manifold
+                // meshes, so for now we just panic. Having this restriction to
+                // manifold meshes is probably not too bad.
+                auto eEndH = findEdgeAroundVertex(vH, [this](auto edgeH)
                 {
-                    cout << ">>>> LOOP: loop-" << loopEdgeH << " @ "
-                         << getE(loopEdgeH).face.unwrap().idx()
-                         << " with next: " << getE(loopEdgeH).next << endl;
-                    // auto target = getE(boundaryEdgeH).target;
-                    // auto source = getE(getE(boundaryEdgeH).twin).target;
-                    // cout << ">> visiting " << boundaryEdgeH
-                    //      << " (" << source.idx()  << " <-> " << vH << ")" << endl;
-                    loopEdgeH = getE(getE(loopEdgeH).next).twin;
-                    // loopEdgeH = getE(loopEdgeNextH).twin;
-                    // loopEdgeNextH = getE(loopEdgeH).next;
-                    if (loopEdgeH == startEdgeH)
-                    {
-                        // In this case a non-manifold vertex would be created. We
-                        // could potentially easily fix it by duplicating the vertex
-                        // and treating both vertices as distinct ones. But for now,
-                        // we simply assert that this never happens.
-                        assert(false);
-                        throw false;
-                    }
-                }
-                cout << ">> found " << loopEdgeH << endl;
+                    return static_cast<bool>(getE(edgeH).face);
+                }).unwrap();
 
-                auto eEndH = loopEdgeH;
                 auto eStartH = getE(eEndH).next;
                 eIn.next = eStartH;
                 getE(eEndH).next = eOutH;
@@ -168,74 +144,67 @@ typename BaseMesh<BaseVecT>::FaceHandle
             }
 
         }
-        // --> Case (B):
+        // --> Case (B): only the ingoing edge is part of a face
         else if (eIn.face && !eOut.face)
         {
-            // We know that `v` has at least two outgoing edges (since there
-            // is a face adjacent to it).
+            // We know that `v` has at least two outgoing edges (since
+            // there is a face adjacent to it).
             //
-            // We have to find the edge which `next` handled pointed to the
-            // one face we are adjacent to.
-            auto expected = eIn.twin;
-
-            const auto startEdgeH = getE(v.outgoing.unwrap()).twin;
-            auto loopEdgeH = startEdgeH;
-
-            cout << ">> start search at outgoing " << v.outgoing.unwrap() << endl;
-            cout << ">> startEdgeH: " << startEdgeH << endl;
-
-            while (!(!getE(loopEdgeH).face && getE(loopEdgeH).next == expected))
+            // We have to find the edge which `next` handle pointed to the
+            // outer edge of the one face we are adjacent to (called
+            // `oldNext`. This is an inner edge of our face. This edge also
+            // has to be a boundary edge or else we are dealing with a
+            // non-manifold mesh again.
+            //
+            // Since we already know that `v.outgoing` does exist,
+            // `findEdgeAroundVertex` returning `none` means that `v` does
+            // not an edge which `next` handle points to `oldNext`. But this
+            // has to be true in a non-broken HEM. So we will panic if this
+            // condition is violated.
+            auto eH = findEdgeAroundVertex(vH, [&, this](auto edgeH)
             {
-                cout << ">>>> LOOP: loop-" << loopEdgeH << " @ "
-                     << getE(loopEdgeH).face.unwrap().idx()
-                     << " with next: " << getE(loopEdgeH).next << endl;
-                loopEdgeH = getE(getE(loopEdgeH).next).twin;
 
-                if (loopEdgeH == startEdgeH)
-                {
-                    // In this case a non-manifold vertex would be created. We
-                    // could potentially easily fix it by duplicating the vertex
-                    // and treating both vertices as distinct ones. But for now,
-                    // we simply assert that this never happens.
-                    assert(false);
-                    throw false;
-                }
-            }
-            cout << ">> found " << loopEdgeH << endl;
+                auto oldNext = eIn.twin;
+                return !getE(edgeH).face && getE(edgeH).next == oldNext;
+            }).unwrap();
 
-            getE(loopEdgeH).next = eOutH;
+            getE(eH).next = eOutH;
         }
+        // --> Case (C): only the outgoing edge is part of a face
         else if (!eIn.face && eOut.face)
         {
             eIn.next = getE(eOut.twin).next;
         }
+        // --> Case (D): both edges are already part of another face
+        if (eIn.face && eOut.face)
+        {
+            // Nothing needs to be done!
+        }
     }
 
-
-    // Set `next` handle of inner edges
+    // Set `next` handle of inner edges. This is an easy step, but we can't
+    // do it earlier, since the old `next` handles are required by the
+    // previous "fix next handles" step.
     eInner1.next = eInner2H;
     eInner2.next = eInner3H;
     eInner3.next = eInner1H;
 
+    // Set outgoing-handles if they are not set yet.
+    if (!v1.outgoing)
+    {
+        v1.outgoing = eInner1H;
+    }
+    if (!v2.outgoing)
+    {
+        v2.outgoing = eInner2H;
+    }
+    if (!v3.outgoing)
+    {
+        v3.outgoing = eInner3H;
+    }
 
-    // // Fix `next` handles that might be invalid after adding all edges
-    // // independent from another.
-    // if (getE(e3H).next != e1H)
-    // {
-    //     // We know that after we added the edges, `v1` has at least one
-    //     // outgoing edge.
-    //     auto boundaryEdgeH = boundaryEdgeOf(v1H).unwrap();
 
-    //     auto prevNextH = getE(e3H).next;
-    //     cout << "FIXING..." << endl
-    //          << ">>> setting " << e3H << ".next = " << e1H << endl
-    //          << ">>> setting " << getE(e1H).twin << ".next = " << prevNextH << endl
-    //          << ">>> setting " << boundaryEdgeH << ".next = " << getE(e3H).twin << endl;
-    //     getE(e3H).next = e1H;
-    //     getE(getE(e1H).twin).next = prevNextH;
-    //     getE(boundaryEdgeH).next = getE(e3H).twin;
-    // }
-
+    // Debug output
     cout << "+------ Summary face " << newFaceH << " ------+" << endl;
     auto startEdgeH = f.edge;
     auto eH = startEdgeH;
@@ -259,100 +228,6 @@ typename BaseMesh<BaseVecT>::FaceHandle
         }
     } while(eH != startEdgeH);
     cout << "+-----------------------------+" << endl;
-
-    // array<EdgeHandle, 3> innerEdges;
-    // array<pair<EdgeHandle, EdgeHandle>, 3> edgeEndpoints = {
-    //     make_pair(v1, v2),
-    //     make_pair(v2, v3),
-    //     make_pair(v3, v1)
-    // };
-
-    // for (auto i : {0, 1, 2})
-    // {
-    //     auto endpoints = edgeEndpoints[i];
-    //     auto edgeH = edgeBetween(endpoints.first, endpoints.second);
-    //     if (!edgeH)
-    //     {
-    //         auto pair = addEdgePair();
-    //         getE(pair.first).target = endpoints.first;
-    //         getE(pair.second).target = endpoints.second;
-    //         edgeH = pair.second;
-    //     }
-    //     innerEdges[i] = edgeH;
-    // }
-
-    for (auto i : {0, 1, 2})
-    {
-        // auto innerEdgeH = innerEdges[i];
-        // auto nextInnerEdgeH = innerEdges[(i + 1) % 3];
-        // auto vertexH = getE(innerEdgeH).target;
-
-        // getE(innerEdgeH).next = nextInnerEdgeH;
-
-        // We need to add two edges to the vertex such that you can iterate
-        // over all edges leaving or entering the vertex using the `next`
-        // handles. This is possible in a non-broken HEM.
-        //
-        // Let's take a look at this example (I'm sorry for ugly ascii art):
-        //
-        //        x  y      z  w        |  where:
-        //         ^ \      ^ /         |  x = innerEdge.twin
-        //          \ \    / /          |  y = innerEdge
-        //           \ v  / v           |  z = nextInnerEdge
-        //              ()              |  w = nextInnerEdge.twin
-        //           ^ /  ^ \           |
-        //          / /    \ \          |  And a, b, c and d already existed
-        //         / v      \ v         |  before.
-        //        a  b      c  d        |
-        //
-        //
-        // Note that (before we change anything) these statements are true:
-        // - a.next == d
-        // - c.next == b
-        //
-        // What we want to achieve is:
-        // - a.next = x
-        // - y.next = z  (this was already done above!)
-        // - w.next = d
-        // - c.next = b  (this is exactly like before)
-        //
-        // Of course, this example is a special case: there might be more than
-        // two edges connected to that one vertex. We need to insert our two
-        // edges somewhere into the cycle around the vertex. Again, to make
-        // this clear, the cycle means:
-        //
-        //     v.outgoing == v.outgoing.twin.next.twin.next ... .twin.next
-        //
-        // We have to pay attention to where we insert our two edges. We can't
-        // do it between two edges belonging to one face. We can only change
-        // `next` handles of edges that don't belong to a face!
-        //
-        // And in fact, here the case of non-manifold vertices can occur.
-        // Maybe. I really don't know if this case can ever occur when using
-        // marching cubes. It might not. So for now, we will assert that it
-        // doesn't happen. But we need to...
-        //
-        // TODO: understand and fix this stuff!
-        // auto aH = getV(vertexH).outgoing;
-        // while (getE(aH).face)
-        // {
-        //     aH = getE(getE(aH).next).twin;
-
-        //     // Test if we reached the start edge again
-        //     if (aH == getV(vertexH).outgoing)
-        //     {
-        //         // In this case a non-manifold vertex would be created. We
-        //         // could potentially easily fix it by duplicating the vertex
-        //         // and treating both vertices as distinct ones. But for now,
-        //         // we simply assert that this never happens.
-        //         assert(false);
-        //     }
-        // }
-
-        // auto dH = getE(aH).next;
-        // getE(aH).next = getE(innerEdgeH).twin;
-        // getE(nextInnerEdgeH).next = dH;
-    }
 }
 
 // ========================================================================
@@ -405,27 +280,11 @@ template <typename BaseVecT>
 typename BaseMesh<BaseVecT>::OptionalEdgeHandle
     HalfEdgeMesh<BaseVecT>::edgeBetween(VertexHandle fromH, VertexHandle toH)
 {
-    auto& from = getV(fromH);
-
-    // Is there even a single outgoing edge?
-    if (from.outgoing)
+    return findEdgeAroundVertex(fromH, [&, this](auto edgeH)
     {
-        auto startH = from.outgoing.unwrap();
-
-        auto edgeH = startH;
-        do
-        {
-            auto& edge = getE(edgeH);
-            if (edge.target == toH)
-            {
-                return edgeH;
-            }
-            edgeH = getE(edge.twin).next;
-        } while(edgeH != startH);
-    }
-
-    // Return none.
-    return OptionalEdgeHandle();
+        return getE(getE(edgeH).twin).target == toH;
+    });
+    auto& from = getV(fromH);
 }
 
 template <typename BaseVecT>
@@ -446,35 +305,54 @@ typename BaseMesh<BaseVecT>::EdgeHandle
     }
 }
 
+template <typename BaseVecT>
+template <typename Pred>
+typename BaseMesh<BaseVecT>::OptionalEdgeHandle
+    HalfEdgeMesh<BaseVecT>::findEdgeAroundVertex(VertexHandle vH, Pred pred) const
+{
+    // This function simply follows `next` and `twin` handles to visit all
+    // edges around a vertex.
+    cout << ">> Trying to find an edge around " << vH << " ..." << endl;
+
+    auto& v = getV(vH);
+    if (!v.outgoing)
+    {
+        cout << ">> ... " << vH << " has no outgoing edge, returning none." << endl;
+        return OptionalEdgeHandle();
+    }
+
+    const auto startEdgeH = getE(v.outgoing.unwrap()).twin;
+    auto loopEdgeH = startEdgeH;
+
+    cout << ">> ... start search at outgoing " << v.outgoing.unwrap() << endl;
+    cout << ">> ... startEdgeH: " << startEdgeH << endl;
+
+    while (!pred(loopEdgeH))
+    {
+        cout << ">> ... >> LOOP: loop-" << loopEdgeH << " @ "
+             << getE(loopEdgeH).face
+             << " with next: " << getE(loopEdgeH).next << endl;
+
+        loopEdgeH = getE(getE(loopEdgeH).next).twin;
+        if (loopEdgeH == startEdgeH)
+        {
+            cout << ">> ... we visited all edges once without success, returning none." << endl;
+            return OptionalEdgeHandle();
+        }
+    }
+    cout << ">> ... found " << loopEdgeH << "." << endl;
+    return loopEdgeH;
+}
 
 template <typename BaseVecT>
 pair<typename BaseMesh<BaseVecT>::EdgeHandle, typename BaseMesh<BaseVecT>::EdgeHandle>
     HalfEdgeMesh<BaseVecT>::addEdgePair(VertexHandle v1H, VertexHandle v2H)
 {
-    //
     // This method adds two new half edges, called "a" and "b".
     //
     //  +----+  --------(a)-------->  +----+
     //  | v1 |                        | v2 |
     //  +----+  <-------(b)---------  +----+
-    //
-    //
-    //
-    //
-    //
-    //        x  y      z  w        |
-    //         ^ \      ^ /         |
-    //          \ \    / /          |
-    //           \ v  / v           |
-    //             [v1]
-    //                              |
-    //           ^ /  ^ \           |
-    //          / /    \ \          |  And a, b, c and d already existed
-    //         / v      \ v         |  before.
-    //        a  b      c  d        |
-    //
-    //
-
 
     // Create incomplete/broken edges and edge handles. By the end of this
     // method, they are less invalid.
@@ -491,117 +369,12 @@ pair<typename BaseMesh<BaseVecT>::EdgeHandle, typename BaseMesh<BaseVecT>::EdgeH
     a.target = v2H;
     b.target = v1H;
 
-    // if (!getV(v1H).outgoing)
-    // {
-    //     getV(v1H).outgoing = aH;
-    // }
-    // if (!getV(v2H).outgoing)
-    // {
-    //     getV(v2H).outgoing = bH;
-    // }
-
-    // Add edges to vector.
+    // Add edges to our edge list.
     m_edges.push_back(a);
     m_edges.push_back(b);
 
-    // auto fixNextHandles = [&](VertexHandle vH, EdgeHandle ingoingH, EdgeHandle outgoingH)
-    // {
-    //     auto& v = getV(vH);
-    //     if (v.outgoing)
-    //     {
-    //         // We already checked that `v` has an outgoing edge, so we can
-    //         // unwrap.
-    //         auto boundaryEdgeH = boundaryEdgeOf(vH).unwrap();
-
-    //         // Visualization:
-    //         //
-    //         //
-    //         //             ^  ...  /
-    //         //  (prevNext)  \     /  (boundaryEdge)
-    //         //               \   /
-    //         //                \ v
-    //         //                [v]
-    //         //                ^ |
-    //         //                | |
-    //         //           (in) | | (out)
-    //         //                | v
-    //         //
-    //         //
-    //         auto prevNextH = getE(boundaryEdgeH).next;
-    //         cout << ">>>> setting " << boundaryEdgeH << ".next = " << outgoingH << endl;
-    //         cout << ">>>> setting " << ingoingH << ".next = " << prevNextH << endl;
-    //         getE(boundaryEdgeH).next = outgoingH;
-    //         getE(ingoingH).next = prevNextH;
-    //     }
-    //     else
-    //     {
-    //         // This is the easy case: the vertex was not connected before, so
-    //         // we don't need to change any handles of other edges.
-    //         //
-    //         //         [v]
-    //         //         ^ |
-    //         //         | |
-    //         //    (in) | | (out)
-    //         //         | v
-    //         //
-    //         v.outgoing = outgoingH;
-    //         getE(ingoingH).next = outgoingH;
-    //     }
-    // };
-
-    // fixNextHandles(v1H, bH, aH);
-    // fixNextHandles(v2H, aH, bH);
-
     return std::make_pair(aH, bH);
 }
-
-
-// template <typename BaseVecT>
-// typename BaseMesh<BaseVecT>::OptionalEdgeHandle
-//     HalfEdgeMesh<BaseVecT>::boundaryEdgeOf(VertexHandle vH)
-// {
-//     cout << "trying to find boundary edge of " << vH << endl;
-//     auto& v = getV(vH);
-//     if (v.outgoing)
-//     {
-//         cout << ">> start search at outgoing " << v.outgoing.unwrap() << endl;
-//         const auto startEdgeH = getE(v.outgoing.unwrap()).twin;
-//         cout << ">> startEdgeH: " << startEdgeH << endl;
-//         auto boundaryEdgeH = startEdgeH;
-
-//         auto continueSearch = [this](auto iEdgeH)
-//         {
-//             auto& e = getE(iEdgeH);
-//             auto nextTwinH = getE(e.next).twin;
-//             return e.face || (nextTwinH != iEdgeH && !getE(nextTwinH).face);
-//         };
-
-//         while (continueSearch(boundaryEdgeH))
-//         {
-//             cout << ">>>> LOOP: i-" << boundaryEdgeH << " @ "
-//                  << getE(boundaryEdgeH).face.unwrap().idx()
-//                  << " with next: " << getE(boundaryEdgeH).next << endl;
-//             // auto target = getE(boundaryEdgeH).target;
-//             // auto source = getE(getE(boundaryEdgeH).twin).target;
-//             // cout << ">> visiting " << boundaryEdgeH
-//             //      << " (" << source.idx()  << " <-> " << vH << ")" << endl;
-//             boundaryEdgeH = getE(getE(boundaryEdgeH).next).twin;
-//             if (boundaryEdgeH == startEdgeH)
-//             {
-//                 // In this case a non-manifold vertex would be created. We
-//                 // could potentially easily fix it by duplicating the vertex
-//                 // and treating both vertices as distinct ones. But for now,
-//                 // we simply assert that this never happens.
-//                 assert(false);
-//                 throw false;
-//             }
-//         }
-//         cout << ">> found " << boundaryEdgeH << endl;
-//         return boundaryEdgeH;
-//     }
-//     cout << ">> none found" << endl;
-//     return OptionalEdgeHandle();
-// }
 
 template <typename BaseVecT>
 size_t HalfEdgeMesh<BaseVecT>::countVertices()
