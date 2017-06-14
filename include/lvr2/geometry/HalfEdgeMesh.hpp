@@ -30,6 +30,7 @@
 #include <cstdint>
 #include <utility>
 #include <lvr2/util/StableVector.hpp>
+#include <array>
 
 using std::pair;
 
@@ -66,7 +67,10 @@ public:
     VertexHandle addVertex(Point<BaseVecT> pos) final;
     FaceHandle addFace(VertexHandle v1, VertexHandle v2, VertexHandle v3) final;
     size_t countVertices() final;
-    Point<BaseVecT> getPoint(size_t vertexIdx) final;
+    Point<BaseVecT> getPoint(VertexHandle handle) final;
+    size_t countFaces() final;
+    std::array<Point<BaseVecT>, 3> getPointsOfFace(FaceHandle handle) final;
+    std::array<VertexHandle, 3> getVertexHandlesOfFace(FaceHandle handle) final;
 
     bool debugCheckMeshIntegrity() const;
 

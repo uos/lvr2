@@ -28,6 +28,7 @@
 #define LVR2_GEOMETRY_BASEMESH_H_
 
 #include <cstdint>
+#include <array>
 
 #include "BaseHandle.hpp"
 #include "Point.hpp"
@@ -176,9 +177,24 @@ public:
     virtual size_t countVertices() = 0;
 
     /**
-     * @brief Get the point of the requested vertex index.
+     * @brief Get the point of the requested vertex.
      */
-    virtual Point<BaseVecT> getPoint(size_t vertexIdx) = 0;
+    virtual Point<BaseVecT> getPoint(VertexHandle handle) = 0;
+
+    /**
+     * @brief Count faces in the mesh.
+     */
+    virtual size_t countFaces() = 0;
+
+    /**
+     * @brief Get the points of the requested face.
+     */
+    virtual std::array<Point<BaseVecT>, 3> getPointsOfFace(FaceHandle handle) = 0;
+
+    /**
+     * @brief Get vertex handles of the requested face.
+     */
+    virtual std::array<VertexHandle, 3> getVertexHandlesOfFace(FaceHandle handle) = 0;
 
     friend std::ostream& operator<<(
         std::ostream& os,
