@@ -71,9 +71,9 @@ typename BaseMesh<BaseVecT>::FaceHandle
     auto& eOuter2 = getE(eOuter2H);
     auto& eOuter3 = getE(eOuter3H);
 
-    auto v1 = getV(v1H);
-    auto v2 = getV(v2H);
-    auto v3 = getV(v3H);
+    auto& v1 = getV(v1H);
+    auto& v2 = getV(v2H);
+    auto& v3 = getV(v3H);
 
 
     // Create face
@@ -87,9 +87,9 @@ typename BaseMesh<BaseVecT>::FaceHandle
     m_faces.push_back(f);
 
     // Set face
-    getE(eInner1H).face = newFaceH;
-    getE(eInner2H).face = newFaceH;
-    getE(eInner3H).face = newFaceH;
+    eInner1.face = newFaceH;
+    eInner2.face = newFaceH;
+    eInner3.face = newFaceH;
 
 
     // Fix next handles and set outgoing handles if net set yet
@@ -112,6 +112,7 @@ typename BaseMesh<BaseVecT>::FaceHandle
         // --> Case (A): neither edge is part of a face (both edges are new)
         if (!eIn.face && !eOut.face)
         {
+            cout << "Case (A) for " << vH << endl;
             // We need to handle the special case of `v` not having an
             // outgoing edge.
             if (v.outgoing)
@@ -130,12 +131,15 @@ typename BaseMesh<BaseVecT>::FaceHandle
                 // manifold meshes is probably not too bad.
                 auto eEndH = findEdgeAroundVertex(vH, [this](auto edgeH)
                 {
-                    return static_cast<bool>(getE(edgeH).face);
+                    return !getE(edgeH).face;
                 }).unwrap();
 
                 auto eStartH = getE(eEndH).next;
                 eIn.next = eStartH;
                 getE(eEndH).next = eOutH;
+
+                cout << "(A) ... setting " << eInH << ".next = " << eStartH << endl;
+                cout << "(A) ... setting " << eEndH << ".next = " << eOutH << endl;
             }
             else
             {
@@ -147,6 +151,7 @@ typename BaseMesh<BaseVecT>::FaceHandle
         // --> Case (B): only the ingoing edge is part of a face
         else if (eIn.face && !eOut.face)
         {
+            cout << "Case (B) for " << vH << endl;
             // We know that `v` has at least two outgoing edges (since
             // there is a face adjacent to it).
             //
@@ -173,11 +178,13 @@ typename BaseMesh<BaseVecT>::FaceHandle
         // --> Case (C): only the outgoing edge is part of a face
         else if (!eIn.face && eOut.face)
         {
+            cout << "Case (C) for " << vH << endl;
             eIn.next = getE(eOut.twin).next;
         }
         // --> Case (D): both edges are already part of another face
         if (eIn.face && eOut.face)
         {
+            cout << "Case (D) for " << vH << endl;
             // Nothing needs to be done!
         }
     }
@@ -280,11 +287,18 @@ template <typename BaseVecT>
 typename BaseMesh<BaseVecT>::OptionalEdgeHandle
     HalfEdgeMesh<BaseVecT>::edgeBetween(VertexHandle fromH, VertexHandle toH)
 {
-    return findEdgeAroundVertex(fromH, [&, this](auto edgeH)
+    auto twinOut = findEdgeAroundVertex(fromH, [&, this](auto edgeH)
     {
         return getE(getE(edgeH).twin).target == toH;
     });
-    auto& from = getV(fromH);
+    if (twinOut)
+    {
+        return getE(twinOut.unwrap()).twin;
+    }
+    else
+    {
+        return OptionalEdgeHandle();
+    }
 }
 
 template <typename BaseVecT>
@@ -414,7 +428,8 @@ bool HalfEdgeMesh<BaseVecT>::debugCheckMeshIntegrity() const
             auto source = getE(e.twin).target;
             auto target = e.target;
             cout << "   | " << eH << ": " << source << " ==> " << target
-                 << " [next: " << e.next << ", twin: " << e.twin << "]"
+                 << " [next: " << e.next << ", twin: " << e.twin
+                 << ", twin-face: " << getE(e.twin).face << "]"
                  << endl;
 
             if (getE(eH).face != fH)
@@ -445,7 +460,44 @@ bool HalfEdgeMesh<BaseVecT>::debugCheckMeshIntegrity() const
     cout << "| Trying to walk on boundary edges... |" << endl;
     cout << "+-------------------------------------+" << endl;
 
-    // TODO
+    vector<bool> visited(m_edges.size(), false);
+    for (int i = 0; i < m_edges.size(); i++)
+    {
+        const auto startEdgeH = EdgeHandle(i);
+        auto loopEdgeH = startEdgeH;
+
+        if (visited[i] || getE(startEdgeH).face)
+        {
+            continue;
+        }
+        visited[i] = true;
+
+        cout << "== Starting at " << startEdgeH << endl;
+
+        do
+        {
+            loopEdgeH = getE(loopEdgeH).next;
+            visited[loopEdgeH.idx()] = true;
+            cout << "   | -> " << loopEdgeH
+                 << " [twin: " << getE(loopEdgeH).twin << "]" << endl;
+        } while(loopEdgeH != startEdgeH);
+    }
+
+    // Next, we list all vertices that are not connected to anything yet
+    cout << endl;
+    cout << "+------------------------------+" << endl;
+    cout << "| List unconnected vertices... |" << endl;
+    cout << "+------------------------------+" << endl;
+
+    for (int i = 0; i < m_vertices.size(); i++)
+    {
+        auto vH = VertexHandle(i);
+        if (!getV(vH).outgoing)
+        {
+            cout << "== " << vH << endl;
+        }
+    }
+
 
     return error;
 }
