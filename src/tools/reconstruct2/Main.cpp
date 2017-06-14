@@ -265,7 +265,7 @@ void createHouseFromNikolaus(lvr2::HalfEdgeMesh<lvr2::BaseVector<float>>& mesh)
 void testFinalize(lvr2::HalfEdgeMesh<lvr2::BaseVector<float>>& mesh)
 {
     createHouseFromNikolaus(mesh);
-
+    mesh.debugCheckMeshIntegrity();
 }
 
 /*

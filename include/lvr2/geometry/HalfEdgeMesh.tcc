@@ -388,5 +388,68 @@ Point<BaseVecT> HalfEdgeMesh<BaseVecT>::getPoint(size_t vertexIdx)
     return m_vertices[vertexIdx].pos;
 }
 
+template <typename BaseVecT>
+bool HalfEdgeMesh<BaseVecT>::debugCheckMeshIntegrity() const
+{
+    using std::cout;
+    using std::endl;
+
+    bool error = false;
+
+    // First: let's visit all faces
+    cout << endl;
+    cout << "+--------------------+" << endl;
+    cout << "| Checking all faces |" << endl;
+    cout << "+--------------------+" << endl;
+    for (int i = 0; i < m_faces.size(); i++)
+    {
+        FaceHandle fH(i);
+        cout << "== Checking Face " << fH << "..." << endl;
+        auto startEdgeH = getF(fH).edge;
+        auto eH = startEdgeH;
+        int edgeCount = 0;
+        do
+        {
+            auto& e = getE(eH);
+            auto source = getE(e.twin).target;
+            auto target = e.target;
+            cout << "   | " << eH << ": " << source << " ==> " << target
+                 << " [next: " << e.next << ", twin: " << e.twin << "]"
+                 << endl;
+
+            if (getE(eH).face != fH)
+            {
+                cout << "!!!!! Face handle of " << eH << " is " << getE(eH).face
+                     << " instead of " << fH << "!!!!!" << endl;
+                error = true;
+            }
+
+            eH = e.next;
+            edgeCount++;
+            if (edgeCount >= 20)
+            {
+                cout << "   ... stopping iteration after 20 edges." << endl;
+            }
+        } while(eH != startEdgeH);
+
+        if (edgeCount != 3)
+        {
+            cout << "!!!!! More than 3 edges reached from " << fH << endl;
+            error = true;
+        }
+    }
+
+    // Next, we try to reach all boundary edges
+    cout << endl;
+    cout << "+-------------------------------------+" << endl;
+    cout << "| Trying to walk on boundary edges... |" << endl;
+    cout << "+-------------------------------------+" << endl;
+
+    // TODO
+
+    return error;
+}
+
+
 
 } // namespace lvr
