@@ -169,7 +169,88 @@ public:
      * @return A handle to access the inserted face later.
      */
     virtual FaceHandle addFace(VertexHandle v1, VertexHandle v2, VertexHandle v3) = 0;
+
+
+
+
+
+    friend std::ostream& operator<<(
+        std::ostream& os,
+        const EdgeHandle& h
+    )
+    {
+        os << "E" << h.idx();
+        return os;
+    }
+
+    friend std::ostream& operator<<(
+        std::ostream& os,
+        const FaceHandle& h
+    )
+    {
+        os << "F" << h.idx();
+        return os;
+    }
+
+    friend std::ostream& operator<<(
+        std::ostream& os,
+        const VertexHandle& h
+    )
+    {
+        os << "V" << h.idx();
+        return os;
+    }
+
+    friend std::ostream& operator<<(
+        std::ostream& os,
+        const OptionalEdgeHandle& h
+    )
+    {
+        if (h)
+        {
+            os << "E" << h.unwrap().idx();
+        }
+        else
+        {
+            os << "E⊥";
+        }
+        return os;
+    }
+
+    friend std::ostream& operator<<(
+        std::ostream& os,
+        const OptionalFaceHandle& h
+    )
+    {
+        if (h)
+        {
+            os << "F" << h.unwrap().idx();
+        }
+        else
+        {
+            os << "F⊥";
+        }
+        return os;
+    }
+
+    friend std::ostream& operator<<(
+        std::ostream& os,
+        const OptionalVertexHandle& h
+    )
+    {
+        if (h)
+        {
+            os << "V" << h.unwrap().idx();
+        }
+        else
+        {
+            os << "V⊥";
+        }
+        return os;
+    }
 };
+
+
 
 } // namespace lvr2
 
