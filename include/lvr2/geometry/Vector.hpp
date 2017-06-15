@@ -100,7 +100,14 @@ struct Vector : public BaseVecT
     Point<BaseVecT> operator-(const Point<BaseVecT> &other) const;
 };
 
-} // namespace lvr
+template<typename BaseVecT>
+std::ostream& operator<<(std::ostream& os, const Vector<BaseVecT>& v)
+{
+    os << "Vector[" << v.x << ", " << v.y << ", " << v.z << "]" << endl;
+    return os;
+}
+
+} // namespace lvr2
 
 #include <lvr2/geometry/Vector.tcc>
 

@@ -61,13 +61,16 @@ public:
      *         to the isosurface. The second value is the euclidian distance to
      *         the nearest data point.
      */
-    virtual pair<float, float> distance(Point<BaseVecT> v) const = 0;
+    virtual pair<typename BaseVecT::CoordType, typename BaseVecT::CoordType>
+        distance(Point<BaseVecT> v) const = 0;
     /**
      * @brief   Calculates surface normals for each data point in the given
      *          PointBuffeer. If the buffer alreay contains normal information
      *          it will be overwritten with the new normals.
      */
     virtual void calculateSurfaceNormals() = 0;
+
+
 
     /**
      * @brief   Interpolates a surface normal at the given position
@@ -122,15 +125,15 @@ protected:
      *          buffer does not contain surface normals, you will have to call
      *          @ref calculateSurfaceNormals before the first call @distance.
      */
-    PointsetSurface(const PointBuffer& pointcloud);
+    PointsetSurface(PointBufferPtr<BaseVecT> pointcloud);
 
     PointsetSurface() {};
 
     /// The point cloud used for surface approximation
-    const PointBuffer& m_pointBuffer;
+    PointBufferPtr<BaseVecT> m_pointBuffer;
 
     /// The search tree that is built from the point cloud data
-    unique_ptr<SearchTree<BaseVecT>> m_searchTree;
+    std::shared_ptr<SearchTree<BaseVecT>> m_searchTree;
 
     /// The bounding box of the point cloud
     BoundingBox<BaseVecT> m_boundingBox;

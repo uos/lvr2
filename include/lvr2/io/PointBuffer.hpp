@@ -42,8 +42,9 @@
 
 // #include <gsl/gsl>
 
-#include <vector>
 #include <cstdio>
+#include <memory>
+#include <vector>
 
 #include <boost/optional.hpp>
 
@@ -63,6 +64,7 @@ namespace lvr2
 /**
  * \brief Stores points with various additional data channels.
  **/
+template <typename BaseVecT>
 class PointBuffer
 {
 public:
@@ -72,46 +74,58 @@ public:
     /**
      * \brief Get the number of points.
      **/
-    template <typename BaseVecT>
     size_t getNumPoints() const;
 
-    template <typename BaseVecT>
-    Point<BaseVecT> getPoint(size_t idx) const;
+    const Point<BaseVecT>& getPoint(size_t idx) const;
+    // Point<BaseVecT>& getPoint(size_t idx);
 
-    template <typename BaseVecT>
-    optional<Normal<BaseVecT>> getNormal(size_t idx) const;
+
 
     /**
-     * @brief   Returns true if the stored data contains point normal
-     *          information
+     * @brief Returns true if the stored data contains normal information.
      */
     bool hasNormals() const;
+
+    /**
+     * @brief Adds normal information for all points.
+     *
+     * All normals are initialized with the given value or with a dummy
+     * value. Correct normals can later be set via `getNormal()`.
+     */
+    void addNormalChannel(Normal<BaseVecT> def = Normal<BaseVecT>(0, 0, 1));
+
+    /**
+     * @brief Returns the normal with the given index.
+     */
+    optional<const Normal<BaseVecT>&> getNormal(size_t idx) const;
+    optional<Normal<BaseVecT>&> getNormal(size_t idx);
 
     bool empty() const;
 
 private:
-    struct alignas(8) AlignedByte
-    {
-        uint8_t data;
-    };
+    // struct alignas(8) AlignedByte
+    // {
+    //     uint8_t data;
+    // };
 
     /// Point buffer.
-    vector<AlignedByte> m_points;
+    vector<Point<BaseVecT>> m_points;
 
     /// Point normal buffer.
-    vector<AlignedByte> m_normals;
+    optional<vector<Normal<BaseVecT>>> m_normals;
 
-    /// Point intensity buffer.
-    vector<AlignedByte> m_intensities;
+    // /// Point intensity buffer.
+    // vector<AlignedByte> m_intensities;
 
-    /// Point confidence buffer.
-    vector<AlignedByte> m_confidences;
+    // /// Point confidence buffer.
+    // vector<AlignedByte> m_confidences;
 
-    template <typename BaseVecT>
-    BaseVecT getBaseVec(size_t idx) const;
+    // template <typename BaseVecT>
+    // BaseVecT getBaseVec(size_t idx) const;
 };
 
-typedef boost::shared_ptr<PointBuffer> PointBufferPtr;
+template <typename BaseVecT>
+using PointBufferPtr = std::shared_ptr<PointBuffer<BaseVecT>>;
 
 } // namespace lvr2
 

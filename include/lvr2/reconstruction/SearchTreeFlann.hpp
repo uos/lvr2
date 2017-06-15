@@ -48,7 +48,7 @@ public:
      *
      *  @param buffer  A PointBuffer point that holds the data.
      */
-    SearchTreeFlann(const PointBuffer& buffer);
+    SearchTreeFlann(PointBufferPtr<BaseVecT> buffer);
 
     /// See interface documentation.
     virtual void kSearch(

@@ -26,14 +26,14 @@ namespace lvr2
 {
 
 template<typename BaseVecT>
-PointsetSurface<BaseVecT>::PointsetSurface(const PointBuffer& pointBuffer)
+PointsetSurface<BaseVecT>::PointsetSurface(PointBufferPtr<BaseVecT> pointBuffer)
     : m_pointBuffer(pointBuffer)
 {
     // Calculate bounding box
-    auto numPoints = m_pointBuffer.getNumPoints<BaseVecT>();
+    auto numPoints = m_pointBuffer->getNumPoints();
     for(size_t i = 0; i < numPoints; i++)
     {
-        this->m_boundingBox.expand(m_pointBuffer.getPoint<BaseVecT>(i));
+        this->m_boundingBox.expand(m_pointBuffer->getPoint(i));
     }
 }
 
@@ -45,7 +45,7 @@ Normal<BaseVecT> PointsetSurface<BaseVecT>::getInterpolatedNormal(Point<BaseVecT
     m_searchTree->kSearch(position, m_ki, indices);
     for (int i = 0; i < m_ki; i++)
     {
-        result += *m_pointBuffer.getNormal<BaseVecT>(indices[i]);
+        result += m_pointBuffer->getNormal(indices[i])->asVector();
     }
     result /= m_ki;
     return Normal<BaseVecT>(result);

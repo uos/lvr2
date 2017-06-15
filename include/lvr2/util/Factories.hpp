@@ -16,49 +16,35 @@
  * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA
  */
 
-/*
- * Vector.tcc
+/**
+ *  Factories.hpp
  *
- *  @date 03.06.2017
- *  @author Lukas Kalbertodt <lukas.kalbertodt@gmail.com>
  */
 
-#include "Vector.hpp"
+#ifndef LVR2_UTIL_FACTORIES_H_
+#define LVR2_UTIL_FACTORIES_H_
+
+#include <algorithm>
+#include <memory>
+#include <string>
+
+#include <lvr2/reconstruction/SearchTree.hpp>
+#include <lvr2/io/PointBuffer.hpp>
+
+using std::string;
 
 
 namespace lvr2
 {
 
 template <typename BaseVecT>
-Normal<BaseVecT>::Normal(BaseVecT base)
-    : Vector<BaseVecT>(base)
-{
-    this->normalize();
-}
+SearchTreePtr<BaseVecT> getSearchTree(string name, PointBufferPtr<BaseVecT> buffer);
 
 template <typename BaseVecT>
-Normal<BaseVecT>::Normal(Vector<BaseVecT> vec)
-    : Vector<BaseVecT>(vec)
-{
-    this->normalize();
-}
-
-template <typename BaseVecT>
-Normal<BaseVecT>::Normal(
-    typename BaseVecT::CoordType x,
-    typename BaseVecT::CoordType y,
-    typename BaseVecT::CoordType z
-)
-    : Vector<BaseVecT>(x, y, z)
-{
-    this->normalize();
-}
-
-template <typename BaseVecT>
-Vector<BaseVecT> Normal<BaseVecT>::asVector() const
-{
-    return static_cast<BaseVecT>(*this);
-}
-
+std::shared_ptr<PointsetSurface<BaseVecT>> getPointsetSurface(string name);
 
 } // namespace lvr2
+
+#include <lvr2/util/Factories.tcc>
+
+#endif // LVR2_UTIL_FACTORIES_H_

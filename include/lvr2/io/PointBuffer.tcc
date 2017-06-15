@@ -28,63 +28,103 @@
 namespace lvr2
 {
 
-PointBuffer::PointBuffer(lvr::PointBuffer& oldBuffer)
+template <typename BaseVecT>
+PointBuffer<BaseVecT>::PointBuffer(lvr::PointBuffer& oldBuffer)
 {
     // This method is temporary only, until the old `PointBuffer` can be
     // discarded.
     size_t len;
     auto buf = oldBuffer.getPointArray(len);
-    m_points.resize(len * 4);
-    memcpy(m_points.data(), buf.get(), len * 4);
+    for (int i = 0; i < len; i += 3)
+    {
+        auto p = Point<BaseVecT>(buf[i], buf[i + 1], buf[i + 2]);
+        m_points.push_back(p);
+    }
+
+    if (oldBuffer.hasPointNormals())
+    {
+        size_t normals_len;
+        auto normal_buf = oldBuffer.getPointNormalArray(normals_len);
+        for (int i = 0; i < normals_len; i += 3)
+        {
+            auto p = Normal<BaseVecT>(normal_buf[i], normal_buf[i + 1], normal_buf[i + 2]);
+            m_normals->push_back(p);
+        }
+    }
 }
 
 
 template <typename BaseVecT>
-size_t PointBuffer::getNumPoints() const
+size_t PointBuffer<BaseVecT>::getNumPoints() const
 {
-    return m_points.size() / (sizeof(typename BaseVecT::CoordType) * 3);
+    return m_points.size();
 }
 
 template <typename BaseVecT>
-Point<BaseVecT> PointBuffer::getPoint(size_t idx) const
+const Point<BaseVecT>& PointBuffer<BaseVecT>::getPoint(size_t idx) const
 {
-    return Point<BaseVecT>(getBaseVec<BaseVecT>(idx));
+    return m_points[idx];
+}
+
+// template <typename BaseVecT>
+// Point<BaseVecT>& PointBuffer<BaseVecT>::getPoint(size_t idx)
+// {
+//     return m_points[idx];
+// }
+
+
+template <typename BaseVecT>
+bool PointBuffer<BaseVecT>::hasNormals() const {
+    return static_cast<bool>(m_normals);
 }
 
 template <typename BaseVecT>
-optional<Normal<BaseVecT>> PointBuffer::getNormal(size_t idx) const
+void PointBuffer<BaseVecT>::addNormalChannel(Normal<BaseVecT> def)
+{
+    m_normals = vector<Normal<BaseVecT>>(getNumPoints(), def);
+}
+
+template <typename BaseVecT>
+optional<const Normal<BaseVecT>&> PointBuffer<BaseVecT>::getNormal(size_t idx) const
 {
     if (!hasNormals())
     {
         return boost::none;
     }
-    return Normal<BaseVecT>(getBaseVec<BaseVecT>(idx));
+    return (*m_normals)[idx];
 }
 
 template <typename BaseVecT>
-BaseVecT PointBuffer::getBaseVec(size_t idx) const
+optional<Normal<BaseVecT>&> PointBuffer<BaseVecT>::getNormal(size_t idx)
 {
-    using CoordT = typename BaseVecT::CoordType;
-
-    // This class currently only supports coordinate types that don't require
-    // an alignment bigger than 8.
-    static_assert(alignof(CoordT) <= 8, "unsupported vector type");
-
-    auto step = sizeof(CoordT);
-    auto offset = idx * 3;
-    auto x = *reinterpret_cast<const CoordT*>(&m_points[offset + 0 * step]);
-    auto y = *reinterpret_cast<const CoordT*>(&m_points[offset + 1 * step]);
-    auto z = *reinterpret_cast<const CoordT*>(&m_points[offset + 2 * step]);
-
-    return BaseVecT(x, y, z);
+    if (!hasNormals())
+    {
+        return boost::none;
+    }
+    return (*m_normals)[idx];
 }
 
-bool PointBuffer::empty() const {
+// template <typename BaseVecT>
+// BaseVecT PointBuffer<BaseVecT>::getBaseVec(size_t idx) const
+// {
+//     using CoordT = typename BaseVecT::CoordType;
+
+//     // This class currently only supports coordinate types that don't require
+//     // an alignment bigger than 8.
+//     static_assert(alignof(CoordT) <= 8, "unsupported vector type");
+
+//     auto step = sizeof(CoordT);
+//     auto offset = idx * 3;
+//     auto x = *reinterpret_cast<const CoordT*>(&m_points[offset + 0 * step]);
+//     auto y = *reinterpret_cast<const CoordT*>(&m_points[offset + 1 * step]);
+//     auto z = *reinterpret_cast<const CoordT*>(&m_points[offset + 2 * step]);
+
+//     return BaseVecT(x, y, z);
+// }
+
+template <typename BaseVecT>
+bool PointBuffer<BaseVecT>::empty() const {
     return m_points.empty();
-}
-
-bool PointBuffer::hasNormals() const {
-    return !m_normals.empty();
 }
 
 } // namespace lvr2

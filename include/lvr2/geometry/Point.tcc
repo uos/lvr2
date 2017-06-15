@@ -41,13 +41,13 @@ Point<BaseVecT> Point<BaseVecT>::operator-(const Vector<BaseVecT> &other) const
 template <typename BaseVecT>
 Point<BaseVecT>& Point<BaseVecT>::operator+=(const Vector<BaseVecT> &other)
 {
-    return BaseVecT::operator+=(other);
+    return static_cast<Point<BaseVecT>&>(BaseVecT::operator+=(other));
 }
 
 template <typename BaseVecT>
 Point<BaseVecT>& Point<BaseVecT>::operator-=(const Vector<BaseVecT> &other)
 {
-    return BaseVecT::operator-=(other);
+    return static_cast<Point<BaseVecT>&>(BaseVecT::operator-=(other));
 }
 
 template <typename BaseVecT>
