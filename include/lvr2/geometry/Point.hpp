@@ -82,6 +82,13 @@ struct Point : public BaseVecT
     Point<BaseVecT>& operator-=(const Vector<BaseVecT> &other);
 };
 
+template<typename BaseVecT>
+std::ostream& operator<<(std::ostream& os, const Point<BaseVecT>& p)
+{
+    os << "Point[" << p.x << ", " << p.y << ", " << p.z << "]" << endl;
+    return os;
+}
+
 } // namespace lvr
 
 #include <lvr2/geometry/Point.tcc>
