@@ -63,7 +63,7 @@ private:
     /**
      * @brief Check, if the requested handle is not deleted
      */
-    void checkAccess(const HandleType& handle);
+    void checkAccess(const HandleType& handle) const;
 
 public:
     StableVector() : m_usedCount(0) {};
@@ -89,6 +89,8 @@ public:
 
     /// Number of not delete-marked elements
     size_t sizeUsed() const;
+
+    // TODO: add reserve method to reserve vector memory
 };
 
 } // namespace lvr2
