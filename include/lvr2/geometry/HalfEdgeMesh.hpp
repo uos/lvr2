@@ -117,7 +117,6 @@ private:
 
 } // namespace lvr
 
-// #include <lvr2/geometry/HalfEdgeMesh.tcc>
 #include <lvr2/geometry/HalfEdgeMesh.tcc>
 
 #endif /* LVR2_GEOMETRY_HALFEDGEMESH_H_ */
