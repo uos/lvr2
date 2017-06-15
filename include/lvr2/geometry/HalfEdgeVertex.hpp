@@ -48,7 +48,7 @@ private:
 
 public:
     /// The edge starting at this vertex.
-    typename BaseMesh<BaseVecT>::OptionalEdgeHandle outgoing;
+    OptionalEdgeHandle outgoing;
 
     /// The 3D position of this vertex.
     Point<BaseVecT> pos;

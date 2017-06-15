@@ -233,9 +233,9 @@ void lvr2Playground()
     mesh.getPointsOfFace(bottomFace1);
 
     // StableVector stuff
-    lvr2::StableVector<Vec, lvr2::BaseMesh<float>::VertexHandle> vec;
-    lvr2::BaseMesh<float>::VertexHandle handle1(1);
-    lvr2::BaseMesh<float>::VertexHandle handle2(0);
+    lvr2::StableVector<Vec, VertexHandle> vec;
+    VertexHandle handle1(1);
+    VertexHandle handle2(0);
     cout << vec.sizeUsed() << std::endl;
     vec.push_back(v1);
     cout << vec.sizeUsed() << std::endl;
@@ -251,28 +251,28 @@ void lvr2Playground()
 
     // VectorMap stuff 2
     cout << "VectorMap" << endl;
-    lvr2::VectorMap<lvr2::BaseMesh<float>::VertexHandle, std::string> map;
+    lvr2::VectorMap<VertexHandle, std::string> map;
     cout << map.sizeUsed() << endl;
     map.insert(handle1, "test1");
     cout << map[handle1] << std::endl;
     cout << map.sizeUsed() << endl;
 
-    lvr2::VectorMap<lvr2::BaseMesh<float>::VertexHandle, std::string> map2(10, "test");
+    lvr2::VectorMap<VertexHandle, std::string> map2(10, "test");
     for (auto i = 0; i < 10; i++) {
-        lvr2::BaseMesh<float>::VertexHandle handleLoop(i);
+        VertexHandle handleLoop(i);
         cout << map2[handleLoop] << endl;
     }
     cout << map2.sizeUsed() << endl;
 
-    lvr2::BaseMesh<float>::VertexHandle handleLoop(5);
+    VertexHandle handleLoop(5);
     map2[handleLoop] = "lalala";
     for (auto i = 0; i < 10; i++) {
-        lvr2::BaseMesh<float>::VertexHandle handleLoop(i);
+        VertexHandle handleLoop(i);
         cout << map2[handleLoop] << endl;
     }
     cout << map2.sizeUsed() << endl;
 
-    handle1 = lvr2::BaseMesh<float>::VertexHandle(42);
+    handle1 = VertexHandle(42);
     map2.insert(handle1, "42 !!");
     cout << map2.sizeUsed() << endl;
     auto opt = map2.get(handle1);
@@ -280,14 +280,14 @@ void lvr2Playground()
         cout << "found value! " << *opt << endl;
     }
 
-    handle1 = lvr2::BaseMesh<float>::VertexHandle(39);
+    handle1 = VertexHandle(39);
     opt = map2.get(handle1);
     if (!opt) {
         cout << "found no value!" << endl;
     }
 //    map2[handle1];
 
-    handle1 = lvr2::BaseMesh<float>::VertexHandle(42);
+    handle1 = VertexHandle(42);
     map2.erase(handle1);
     cout << map2.sizeUsed() << endl;
 //    cout << map2[handle1] << endl;

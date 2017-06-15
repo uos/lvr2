@@ -37,7 +37,7 @@ boost::shared_ptr<lvr::MeshBuffer> FinalizeAlgorithm<BaseVecT>::apply(const Base
     vertices.reserve(mesh.numVertices() * 3);
     std::vector<float> normals;
     normals.reserve(mesh.numVertices() * 3);
-    VertexMap<BaseVecT, size_t> idxMap;
+    VertexMap<size_t> idxMap;
 
     // TODO: use real normal
     Normal<BaseVecT> normal(0, 1, 0);

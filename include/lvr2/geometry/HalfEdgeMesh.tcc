@@ -35,7 +35,7 @@ namespace lvr2
 {
 
 template <typename BaseVecT>
-typename BaseMesh<BaseVecT>::VertexHandle
+VertexHandle
     HalfEdgeMesh<BaseVecT>::addVertex(Point<BaseVecT> pos)
 {
     Vertex v;
@@ -45,7 +45,7 @@ typename BaseMesh<BaseVecT>::VertexHandle
 }
 
 template <typename BaseVecT>
-typename BaseMesh<BaseVecT>::FaceHandle
+FaceHandle
     HalfEdgeMesh<BaseVecT>::addFace(VertexHandle v1H, VertexHandle v2H, VertexHandle v3H)
 {
     cout << "##################################################" << endl;
@@ -284,7 +284,7 @@ const typename HalfEdgeMesh<BaseVecT>::Vertex&
 }
 
 template <typename BaseVecT>
-typename BaseMesh<BaseVecT>::OptionalEdgeHandle
+OptionalEdgeHandle
     HalfEdgeMesh<BaseVecT>::edgeBetween(VertexHandle fromH, VertexHandle toH)
 {
     auto twinOut = findEdgeAroundVertex(fromH, [&, this](auto edgeH)
@@ -302,7 +302,7 @@ typename BaseMesh<BaseVecT>::OptionalEdgeHandle
 }
 
 template <typename BaseVecT>
-typename BaseMesh<BaseVecT>::EdgeHandle
+EdgeHandle
     HalfEdgeMesh<BaseVecT>::findOrCreateEdgeBetween(VertexHandle fromH, VertexHandle toH)
 {
     cout << "# findOrCreateEdgeBetween: " << fromH << " --> " << toH << endl;
@@ -321,7 +321,7 @@ typename BaseMesh<BaseVecT>::EdgeHandle
 
 template <typename BaseVecT>
 template <typename Pred>
-typename BaseMesh<BaseVecT>::OptionalEdgeHandle
+OptionalEdgeHandle
     HalfEdgeMesh<BaseVecT>::findEdgeAroundVertex(VertexHandle vH, Pred pred) const
 {
     // This function simply follows `next` and `twin` handles to visit all
@@ -359,7 +359,7 @@ typename BaseMesh<BaseVecT>::OptionalEdgeHandle
 }
 
 template <typename BaseVecT>
-pair<typename BaseMesh<BaseVecT>::EdgeHandle, typename BaseMesh<BaseVecT>::EdgeHandle>
+pair<EdgeHandle, EdgeHandle>
     HalfEdgeMesh<BaseVecT>::addEdgePair(VertexHandle v1H, VertexHandle v2H)
 {
     // This method adds two new half edges, called "a" and "b".
@@ -465,7 +465,7 @@ bool HalfEdgeMesh<BaseVecT>::debugCheckMeshIntegrity() const
     cout << "| Trying to walk on boundary edges... |" << endl;
     cout << "+-------------------------------------+" << endl;
 
-    EdgeMap<BaseVecT, bool> visited(m_edges.size(), false);
+    EdgeMap<bool> visited(m_edges.size(), false);
     for (int i = 0; i < m_edges.size(); i++)
     {
         const auto startEdgeH = EdgeHandle(i);
@@ -525,7 +525,7 @@ std::array<Point<BaseVecT>, 3> HalfEdgeMesh<BaseVecT>::getPointsOfFace(FaceHandl
 }
 
 template <typename BaseVecT>
-std::array<typename BaseMesh<BaseVecT>::VertexHandle, 3>
+std::array<VertexHandle, 3>
 HalfEdgeMesh<BaseVecT>::getVertexHandlesOfFace(FaceHandle handle) const
 {
     auto face = getF(handle);
