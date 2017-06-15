@@ -82,15 +82,15 @@ struct Normal : private Vector<BaseVecT>
 
     // Since the fields x, y and z can't be access directly anymore (else the
     // user could invalidate this *normal*), we provide getter methods.
-    typename BaseVecT::CoordType x() const
+    typename BaseVecT::CoordType getX() const
     {
         return this->x;
     }
-    typename BaseVecT::CoordType y() const
+    typename BaseVecT::CoordType getY() const
     {
         return this->y;
     }
-    typename BaseVecT::CoordType z() const
+    typename BaseVecT::CoordType getZ() const
     {
         return this->z;
     }

@@ -177,6 +177,7 @@
 #include <lvr2/geometry/Normal.hpp>
 #include <lvr2/util/StableVector.hpp>
 #include <lvr2/util/VectorMap.hpp>
+#include <lvr2/algorithm/FinalizeAlgorithm.hpp>
 
 // // PCL related includes
 // #ifdef LVR_USE_PCL
@@ -201,6 +202,11 @@ using BaseVecT = BaseVector<float>;
 // typedef PCLKSurface<ColorVertex<float, unsigned char> , Normal<float> > pclSurface;
 // #endif
 
+
+/*
+ * DUMMY TEST CODE STARTS HERE!!!
+ */
+
 void lvr2Playground()
 {
     using Vec = lvr2::Vector<lvr2::BaseVector<float>>;
@@ -220,11 +226,16 @@ void lvr2Playground()
     p1.distance(p2);
 
     lvr2::HalfEdgeMesh<lvr2::BaseVector<float>> mesh;
+    auto v0H = mesh.addVertex(BaseVector<float>(0, 0, 0));
+    auto v1H = mesh.addVertex(BaseVector<float>(1, 0, 0));
+    auto v2H = mesh.addVertex(BaseVector<float>(1, 0, 1));
+    auto bottomFace1 = mesh.addFace(v0H, v1H, v2H);
+    mesh.getPointsOfFace(bottomFace1);
 
     // StableVector stuff
-    lvr2::StableVector<Vec, lvr2::BaseMesh<float>::VertexHandle> vec;
-    lvr2::BaseMesh<float>::VertexHandle handle1(1);
-    lvr2::BaseMesh<float>::VertexHandle handle2(0);
+    lvr2::StableVector<Vec, VertexHandle> vec;
+    VertexHandle handle1(1);
+    VertexHandle handle2(0);
     cout << vec.sizeUsed() << std::endl;
     vec.push_back(v1);
     cout << vec.sizeUsed() << std::endl;
@@ -237,30 +248,31 @@ void lvr2Playground()
     cout << vec.size() << std::endl;
     cout << vec1.x << std::endl;
 
+
     // VectorMap stuff 2
     cout << "VectorMap" << endl;
-    lvr2::VectorMap<lvr2::BaseMesh<float>::VertexHandle, std::string> map;
+    lvr2::VectorMap<VertexHandle, std::string> map;
     cout << map.sizeUsed() << endl;
     map.insert(handle1, "test1");
     cout << map[handle1] << std::endl;
     cout << map.sizeUsed() << endl;
 
-    lvr2::VectorMap<lvr2::BaseMesh<float>::VertexHandle, std::string> map2(10, "test");
+    lvr2::VectorMap<VertexHandle, std::string> map2(10, "test");
     for (auto i = 0; i < 10; i++) {
-        lvr2::BaseMesh<float>::VertexHandle handleLoop(i);
+        VertexHandle handleLoop(i);
         cout << map2[handleLoop] << endl;
     }
     cout << map2.sizeUsed() << endl;
 
-    lvr2::BaseMesh<float>::VertexHandle handleLoop(5);
+    VertexHandle handleLoop(5);
     map2[handleLoop] = "lalala";
     for (auto i = 0; i < 10; i++) {
-        lvr2::BaseMesh<float>::VertexHandle handleLoop(i);
+        VertexHandle handleLoop(i);
         cout << map2[handleLoop] << endl;
     }
     cout << map2.sizeUsed() << endl;
 
-    handle1 = lvr2::BaseMesh<float>::VertexHandle(42);
+    handle1 = VertexHandle(42);
     map2.insert(handle1, "42 !!");
     cout << map2.sizeUsed() << endl;
     auto opt = map2.get(handle1);
@@ -268,18 +280,74 @@ void lvr2Playground()
         cout << "found value! " << *opt << endl;
     }
 
-    handle1 = lvr2::BaseMesh<float>::VertexHandle(39);
+    handle1 = VertexHandle(39);
     opt = map2.get(handle1);
     if (!opt) {
         cout << "found no value!" << endl;
     }
 //    map2[handle1];
 
-    handle1 = lvr2::BaseMesh<float>::VertexHandle(42);
+    handle1 = VertexHandle(42);
     map2.erase(handle1);
     cout << map2.sizeUsed() << endl;
 //    cout << map2[handle1] << endl;
 }
+
+void createHouseFromNikolaus(lvr2::HalfEdgeMesh<lvr2::BaseVector<float>>& mesh)
+{
+    // scale
+    float s = 5;
+
+    // create house from nikolaus
+    auto p0 = mesh.addVertex(BaseVector<float>(0, 0, 0));
+    auto p1 = mesh.addVertex(BaseVector<float>(s, 0, 0));
+    auto p2 = mesh.addVertex(BaseVector<float>(s, 0, s));
+    auto p3 = mesh.addVertex(BaseVector<float>(0, 0, s));
+    auto p4 = mesh.addVertex(BaseVector<float>(0, s, 0));
+    auto p5 = mesh.addVertex(BaseVector<float>(s, s, 0));
+    auto p6 = mesh.addVertex(BaseVector<float>(s, s, s));
+    auto p7 = mesh.addVertex(BaseVector<float>(0, s, s));
+    auto p8 = mesh.addVertex(BaseVector<float>(s/2, s+(s/2), s/2));
+
+    auto bottomFace1 = mesh.addFace(p0, p1, p2);
+    auto bottomFace2 = mesh.addFace(p0, p2, p3);
+
+    auto rightFace1 = mesh.addFace(p1, p5, p6);
+    auto rightFace2 = mesh.addFace(p1, p6, p2);
+
+    auto leftFace1 = mesh.addFace(p3, p7, p4);
+    auto leftFace2 = mesh.addFace(p4, p0, p3);
+
+    auto frontFace1 = mesh.addFace(p7, p3, p2);
+    auto frontFace2 = mesh.addFace(p2, p6, p7);
+
+    auto backFace1 = mesh.addFace(p0, p4, p5);
+    auto backFace2 = mesh.addFace(p5, p1, p0);
+
+    auto roofFaceFront  = mesh.addFace(p7, p6, p8);
+    auto roofFaceLeft   = mesh.addFace(p4, p7, p8);
+    auto roofFaceBack   = mesh.addFace(p5, p4, p8);
+    auto roofFaceRight  = mesh.addFace(p6, p5, p8);
+}
+
+void testFinalize(lvr2::HalfEdgeMesh<lvr2::BaseVector<float>>& mesh)
+{
+    createHouseFromNikolaus(mesh);
+    mesh.debugCheckMeshIntegrity();
+
+    FinalizeAlgorithm<BaseVector<float>> finalize;
+    auto buffer = finalize.apply(std::move(mesh));
+
+    // Create output model and save to file
+    auto model = new lvr::Model(buffer);
+    lvr::ModelPtr m(model);
+    cout << timestamp << "Saving mesh." << endl;
+    lvr::ModelFactory::saveModel( m, "triangle_mesh.ply");
+}
+
+/*
+ * DUMMY TEST CODE ENDS HERE!!!
+ */
 
 // optional<PsSurface::Ptr> loadPointCloud(const reconstruct::Options& options)
 // {
@@ -468,6 +536,7 @@ int main(int argc, char** argv)
 
         // Create an empty mesh
         lvr2::HalfEdgeMesh<lvr2::BaseVector<float>> mesh;
+        testFinalize(mesh);
 
         // Set recursion depth for region growing
         // if(options.getDepth())

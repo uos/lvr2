@@ -50,4 +50,10 @@ Point<BaseVecT>& Point<BaseVecT>::operator-=(const Vector<BaseVecT> &other)
     return BaseVecT::operator-=(other);
 }
 
+template <typename BaseVecT>
+Vector<BaseVecT> Point<BaseVecT>::operator-(const Point<BaseVecT> &other) const
+{
+    return BaseVecT::operator-(other);
+}
+
 } // namespace lvr2

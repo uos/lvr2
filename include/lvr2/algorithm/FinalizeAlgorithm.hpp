@@ -16,44 +16,37 @@
  * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA
  */
 
-
 /*
- * HalfEdgeVertex.hpp
+ * FinalizeAlgorithm.hpp
  *
- *  @date 02.06.2017
- *  @author Lukas Kalbertodt <lukas.kalbertodt@gmail.com>
+ *  @date 13.06.2017
+ *  @author Johan M. von Behren <johan@vonbehren.eu>
  */
 
-#ifndef LVR2_GEOMETRY_HALFEDGEVERTEX_H_
-#define LVR2_GEOMETRY_HALFEDGEVERTEX_H_
+#ifndef LVR2_ALGORITHM_FINALIZEALGORITHM_H_
+#define LVR2_ALGORITHM_FINALIZEALGORITHM_H_
 
-#include "BaseMesh.hpp"
-#include "Point.hpp"
+#include <boost/shared_ptr.hpp>
+#include <boost/smart_ptr/make_shared.hpp>
+
+#include <lvr2/geometry/BaseMesh.hpp>
+#include <lvr/io/MeshBuffer.hpp>
 
 namespace lvr2
 {
 
-// Forward definitions
-template <typename BaseVecT> struct HalfEdge;
-template <typename BaseVecT> struct HalfEdgeFace;
-template <typename BaseVecT> struct HalfEdgeMesh;
-
-template <typename BaseVecT>
-struct HalfEdgeVertex
+/**
+ * @brief
+ */
+template<typename BaseVecT>
+class FinalizeAlgorithm
 {
-private:
-    using Edge = HalfEdge<BaseVecT>;
-    using Face = HalfEdgeFace<BaseVecT>;
-    using Vertex = HalfEdgeVertex<BaseVecT>;
-
 public:
-    /// The edge starting at this vertex.
-    OptionalEdgeHandle outgoing;
-
-    /// The 3D position of this vertex.
-    Point<BaseVecT> pos;
+    boost::shared_ptr<lvr::MeshBuffer> apply(const BaseMesh<BaseVecT>& mesh);
 };
 
-} // namespace lvr
+} // namespace lvr2
 
-#endif /* LVR2_GEOMETRY_HALFEDGEVERTEX_H_ */
+#include <lvr2/algorithm/FinalizeAlgorithm.tcc>
+
+#endif /* LVR2_ALGORITHM_FINALIZEALGORITHM_H_ */
