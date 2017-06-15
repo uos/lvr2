@@ -89,7 +89,7 @@ std::ostream& operator<<(std::ostream& os, const Point<BaseVecT>& p)
     return os;
 }
 
-} // namespace lvr
+} // namespace lvr2
 
 #include <lvr2/geometry/Point.tcc>
 

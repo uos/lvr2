@@ -180,10 +180,12 @@
 #include <lvr2/algorithm/FinalizeAlgorithm.hpp>
 #include <lvr2/geometry/BoundingBox.hpp>
 
+#include <lvr2/reconstruction/AdaptiveKSearchSurface.hpp>
 #include <lvr2/reconstruction/PointsetSurface.hpp>
 #include <lvr2/reconstruction/SearchTree.hpp>
 #include <lvr2/reconstruction/SearchTreeFlann.hpp>
 #include <lvr2/io/PointBuffer.hpp>
+#include <lvr2/util/Factories.hpp>
 
 
 // PCL related includes
@@ -209,15 +211,16 @@ using PsSurface = lvr::PointsetSurface<BaseVecT>;
 // using PclSurface = lvr::PCLKSurface<BaseVecT, Normal<float>>;
 // #endif
 
-
 /*
  * DUMMY TEST CODE STARTS HERE!!!
  */
+using Vec = BaseVector<float>;
+
 
 void lvr2Playground()
 {
-    PointBuffer buf;
-    SearchTreeFlann<BaseVector<float>> flann(buf);
+    auto buf = make_shared<PointBuffer<Vec>>();
+    SearchTreeFlann<Vec> flann(buf);
 
     using Vec = lvr2::Vector<lvr2::BaseVector<float>>;
     using Poi = lvr2::Point<lvr2::BaseVector<float>>;
@@ -383,12 +386,8 @@ void testFinalize(lvr2::HalfEdgeMesh<lvr2::BaseVector<float>>& mesh)
  * DUMMY TEST CODE ENDS HERE!!!
  */
 
-// optional<PsSurface::Ptr> loadPointCloud(const reconstruct::Options& options)
-// {
-//     // Create a point loader object
-//     lvr::ModelPtr model = lvr::ModelFactory::readModel(options.getInputFileName());
-
-optional<PsSurface::Ptr> loadPointCloud(const reconstruct::Options& options)
+template <typename BaseVecT>
+std::shared_ptr<PointsetSurface<BaseVecT>> loadPointCloud(const reconstruct::Options& options)
 {
     // Create a point loader object
     lvr::ModelPtr model = lvr::ModelFactory::readModel(options.getInputFileName());
@@ -397,13 +396,13 @@ optional<PsSurface::Ptr> loadPointCloud(const reconstruct::Options& options)
     if (!model)
     {
         cout << timestamp << "IO Error: Unable to parse " << options.getInputFileName() << endl;
-        return boost::none;
+        return nullptr;
     }
-    lvr::PointBufferPtr p_loader = model->m_pointCloud;
+    auto buffer = make_shared<PointBuffer<Vec>>(*model->m_pointCloud);
 
     // Create a point cloud manager
     string pcm_name = options.getPCM();
-    PsSurface::Ptr surface;
+    unique_ptr<PointsetSurface<Vec>> surface;
 
     // Create point set surface object
     if(pcm_name == "PCL")
@@ -417,14 +416,15 @@ optional<PsSurface::Ptr> loadPointCloud(const reconstruct::Options& options)
     }
     else if(pcm_name == "STANN" || pcm_name == "FLANN" || pcm_name == "NABO" || pcm_name == "NANOFLANN")
     {
-        // AkSurface* aks = new AkSurface(
-        //         p_loader, pcm_name,
-        //         options.getKn(),
-        //         options.getKi(),
-        //         options.getKd(),
-        //         options.useRansac(),
-        //         options.getScanPoseFile()
-        // );
+        auto aks = make_unique<AdaptiveKSearchSurface<BaseVecT>>(
+            buffer,
+            pcm_name,
+            options.getKn(),
+            options.getKi(),
+            options.getKd(),
+            options.useRansac(),
+            options.getScanPoseFile()
+        );
 
         // surface = PsSurface::Ptr(aks);
         // // Set RANSAC flag
@@ -446,24 +446,24 @@ optional<PsSurface::Ptr> loadPointCloud(const reconstruct::Options& options)
         cout << ", Nabo";
 #endif
         cout << endl;
-        return boost::none;
+        return nullptr;
     }
 
-    // Set search options for normal estimation and distance evaluation
-    surface->setKd(options.getKd());
-    surface->setKi(options.getKi());
-    surface->setKn(options.getKn());
+    // // Set search options for normal estimation and distance evaluation
+    // surface->setKd(options.getKd());
+    // surface->setKi(options.getKi());
+    // surface->setKn(options.getKn());
 
-    // Calculate normals if necessary
-    if(!surface->pointBuffer()->hasPointNormals()
-            || (surface->pointBuffer()->hasPointNormals() && options.recalcNormals()))
-    {
-        surface->calculateSurfaceNormals();
-    }
-    else
-    {
-        cout << timestamp << "Using given normals." << endl;
-    }
+    // // Calculate normals if necessary
+    // if(!surface->pointBuffer()->hasPointNormals()
+    //         || (surface->pointBuffer()->hasPointNormals() && options.recalcNormals()))
+    // {
+    //     surface->calculateSurfaceNormals();
+    // }
+    // else
+    // {
+    //     cout << timestamp << "Using given normals." << endl;
+    // }
 
     // // Save points and normals only
     // if(options.savePointNormals())
@@ -548,6 +548,7 @@ optional<PsSurface::Ptr> loadPointCloud(const reconstruct::Options& options)
 
 int main(int argc, char** argv)
 {
+
     try
     {
         // Parse command line arguments
@@ -564,7 +565,7 @@ int main(int argc, char** argv)
 
         std::cout << options << std::endl;
 
-        // auto surfaceRes = loadPointCloud(options);
+        auto surface = loadPointCloud<Vec>(options);
 
         // auto surface = surfaceRes ? *surfaceRes : return EXIT_FAILURE;
         // if (pcResult != 0)
@@ -573,8 +574,8 @@ int main(int argc, char** argv)
         // }
 
         // Create an empty mesh
-        lvr2::HalfEdgeMesh<lvr2::BaseVector<float>> mesh;
-        testFinalize(mesh);
+        lvr2::HalfEdgeMesh<Vec> mesh;
+        // testFinalize(mesh);
 
         // Set recursion depth for region growing
         // if(options.getDepth())

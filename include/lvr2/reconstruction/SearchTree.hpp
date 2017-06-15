@@ -115,6 +115,9 @@ protected:
     int                         m_kd;
 };
 
+template <typename BaseVecT>
+using SearchTreePtr = std::shared_ptr<SearchTree<BaseVecT>>;
+
 } // namespace lvr2
 
 #include "SearchTree.tcc"

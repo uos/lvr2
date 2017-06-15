@@ -49,37 +49,37 @@ void Vector<BaseVecT>::normalize()
 }
 
 template <typename BaseVecT>
-Vector<BaseVecT> Vector<BaseVecT>::operator+(const Vector<BaseVecT> &other) const
+Vector<BaseVecT> Vector<BaseVecT>::operator+(const Vector<BaseVecT>& other) const
 {
     return BaseVecT::operator+(other);
 }
 
 template <typename BaseVecT>
-Vector<BaseVecT> Vector<BaseVecT>::operator-(const Vector<BaseVecT> &other) const
+Vector<BaseVecT> Vector<BaseVecT>::operator-(const Vector<BaseVecT>& other) const
 {
     return BaseVecT::operator-(other);
 }
 
 template <typename BaseVecT>
-Vector<BaseVecT>& Vector<BaseVecT>::operator+=(const Vector<BaseVecT> &other)
+Vector<BaseVecT>& Vector<BaseVecT>::operator+=(const Vector<BaseVecT>& other)
 {
-    return BaseVecT::operator+=(other);
+    return static_cast<Vector<BaseVecT>&>(BaseVecT::operator+=(other));
 }
 
 template <typename BaseVecT>
-Vector<BaseVecT>& Vector<BaseVecT>::operator-=(const Vector<BaseVecT> &other)
+Vector<BaseVecT>& Vector<BaseVecT>::operator-=(const Vector<BaseVecT>& other)
 {
-    return BaseVecT::operator-=(other);
+    return static_cast<Vector<BaseVecT>&>(BaseVecT::operator-=(other));
 }
 
 template <typename BaseVecT>
-Point<BaseVecT> Vector<BaseVecT>::operator+(const Point<BaseVecT> &other) const
+Point<BaseVecT> Vector<BaseVecT>::operator+(const Point<BaseVecT>& other) const
 {
     return BaseVecT::operator+(other);
 }
 
 template <typename BaseVecT>
-Point<BaseVecT> Vector<BaseVecT>::operator-(const Point<BaseVecT> &other) const
+Point<BaseVecT> Vector<BaseVecT>::operator-(const Point<BaseVecT>& other) const
 {
     return BaseVecT::operator-(other);
 }

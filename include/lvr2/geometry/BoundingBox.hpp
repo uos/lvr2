@@ -41,7 +41,8 @@ namespace lvr2
  * @brief A dynamic bounding box class.
  */
 template<typename BaseVecT>
-class BoundingBox {
+class BoundingBox
+{
 public:
 
     /**

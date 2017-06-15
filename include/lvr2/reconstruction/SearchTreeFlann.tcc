@@ -17,13 +17,13 @@ namespace lvr2
 {
 
 template<typename BaseVecT>
-SearchTreeFlann<BaseVecT>::SearchTreeFlann(const PointBuffer& buffer)
+SearchTreeFlann<BaseVecT>::SearchTreeFlann(PointBufferPtr<BaseVecT> buffer)
 {
-    auto n = buffer.getNumPoints<BaseVecT>();
+    auto n = buffer->getNumPoints();
     auto flannPoints = flann::Matrix<CoordT>(new CoordT[3 * n], n, 3);
     for(size_t i = 0; i < n; i++)
     {
-        auto p = buffer.getPoint<BaseVecT>(i);
+        auto p = buffer->getPoint(i);
         flannPoints[i][0] = p.x;
         flannPoints[i][1] = p.y;
         flannPoints[i][2] = p.z;
