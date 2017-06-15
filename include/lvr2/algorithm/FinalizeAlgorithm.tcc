@@ -41,31 +41,32 @@ boost::shared_ptr<lvr::MeshBuffer> FinalizeAlgorithm<BaseVecT>::apply(const Base
 
     // TODO: use real normal
     Normal<BaseVecT> normal(0, 1, 0);
-    for (size_t i = 0; i < mesh.numVertices(); i++)
     {
-        // TODO: Don't create handle by yourself! This is extremly unsafe...
-        VertexHandle handle(i);
-        auto point = mesh.getPoint(handle);
+        size_t i = 0;
 
-        vertices.push_back(point.x);
-        vertices.push_back(point.y);
-        vertices.push_back(point.z);
+        for (auto iter = mesh.verticesBegin(); iter != mesh.verticesEnd(); iter++, ++i)
+        {
+            auto point = mesh.getPoint(*iter);
 
-        normals.push_back(normal.getX());
-        normals.push_back(normal.getY());
-        normals.push_back(normal.getZ());
+            vertices.push_back(point.x);
+            vertices.push_back(point.y);
+            vertices.push_back(point.z);
 
-        // Save index of vertex for face mapping
-        idxMap.insert(handle, i);
+            normals.push_back(normal.getX());
+            normals.push_back(normal.getY());
+            normals.push_back(normal.getZ());
+
+            // Save index of vertex for face mapping
+            idxMap.insert(*iter, i);
+        }
     }
 
     // Create face buffer
     std::vector<unsigned int> faces;
     faces.reserve(mesh.numFaces() * 3);
-    for (size_t i = 0; i < mesh.numFaces(); i++)
+    for (auto iter = mesh.facesBegin(); iter != mesh.facesEnd(); iter++)
     {
-        // TODO: Don't create handle by yourself! This is extremly unsafe...
-        auto handles = mesh.getVertexHandlesOfFace(FaceHandle(i));
+        auto handles = mesh.getVertexHandlesOfFace(*iter);
         for (auto handle: handles)
         {
             faces.push_back(idxMap[handle]);
