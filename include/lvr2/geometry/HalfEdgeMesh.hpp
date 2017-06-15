@@ -42,6 +42,21 @@ using std::pair;
 namespace lvr2
 {
 
+/// Implementation of the MeshHandleIterator for the HalfEdgeMesh
+template<typename HandleT>
+class HemVertexIterator : public MeshHandleIterator<HandleT>
+{
+public:
+    HemVertexIterator(StableVectorIterator<HandleT> iterator) : m_iterator(iterator) {};
+    HemVertexIterator& operator++(int);
+    bool operator==(const MeshHandleIterator<HandleT>& other) const;
+    bool operator!=(const MeshHandleIterator<HandleT>& other) const;
+    HandleT operator*() const;
+
+private:
+    StableVectorIterator<HandleT> m_iterator;
+};
+
 /**
  * @brief
  */
@@ -113,6 +128,13 @@ private:
      */
     template <typename Pred>
     OptionalEdgeHandle findEdgeAroundVertex(VertexHandle vH, Pred pred) const;
+
+    MeshHandleIteratorPtr<VertexHandle> verticesBegin() const;
+    MeshHandleIteratorPtr<VertexHandle> verticesEnd() const;
+    MeshHandleIteratorPtr<FaceHandle> facesBegin() const;
+    MeshHandleIteratorPtr<FaceHandle> facesEnd() const;
+    MeshHandleIteratorPtr<EdgeHandle> edgesBegin() const;
+    MeshHandleIteratorPtr<EdgeHandle> edgesEnd() const;
 };
 
 } // namespace lvr
