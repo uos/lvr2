@@ -172,9 +172,14 @@ public:
     virtual FaceHandle addFace(VertexHandle v1, VertexHandle v2, VertexHandle v3) = 0;
 
     /**
-     * @brief Count vertices in the mesh.
+     * @brief Return the number of vertices in the mesh.
      */
     virtual size_t numVertices() const = 0;
+
+    /**
+     * @brief Return the number of faces in the mesh.
+     */
+    virtual size_t numFaces() const = 0;
 
     /**
      * @brief Get the point of the requested vertex.
@@ -182,17 +187,16 @@ public:
     virtual Point<BaseVecT> getPoint(VertexHandle handle) const = 0;
 
     /**
-     * @brief Count faces in the mesh.
-     */
-    virtual size_t numFaces() const = 0;
-
-    /**
      * @brief Get the points of the requested face.
+     *
+     * @return The points of the vertices in counter-clockwise order.
      */
     virtual std::array<Point<BaseVecT>, 3> getPointsOfFace(FaceHandle handle) const = 0;
 
     /**
      * @brief Get vertex handles of the requested face.
+     *
+     * @return The vertex-handles in counter-clockwise order.
      */
     virtual std::array<VertexHandle, 3> getVertexHandlesOfFace(FaceHandle handle) const = 0;
 

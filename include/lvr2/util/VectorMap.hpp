@@ -36,9 +36,10 @@ namespace lvr2
 {
 
 /**
- * @brief A map with constant lookup overhead
+ * @brief A map with constant lookup overhead using small-ish integer-keys.
  *
- * It stores the given values in a vector, where the given key is the key in the vector
+ * It stores the given values in a vector, they key is simply the index within
+ * the vector.
  *
  * USE WITH CAUTION: This NEVER deletes values and can get very large!
  *
@@ -52,7 +53,8 @@ private:
     using KeyType = KeyT;
     using ValueType = ValT;
 
-    /// Wrapper for dummy elements
+    /// Wrapper for the actual data to avoid calling the constructor or
+    /// destructor in certain situations.
     union Wrapper
     {
         ValueType data;
@@ -75,21 +77,28 @@ private:
     vector<bool> m_deleted;
 
     /**
-     * @brief Check, if the requested handle is not deleted
+     * @brief Assert that the key is not out of bounds.
      */
     void checkAccess(const KeyType& key) const;
 
 public:
     VectorMap() : m_usedCount(0) {};
 
-    /// Creates a map of size countElements with countElements copies of defaultValue in it
+    /// Creates a map of size `countElements` with `countElements` copies of
+    /// `defaultValue` in it.
     VectorMap(size_t countElements, const ValueType& defaultValue);
 
-    /// Insert the given element
+    /**
+     * @brief Insert the given element with the given key.
+     *
+     * Note that this might allocate a lot of memory. After calling this
+     * method, the internal vector used for storing the values is at least
+     * `key` elements long.
+     */
     void insert(const KeyType& key, const ValueType& value);
 
     /**
-     * @brief Mark the value behind the given key as deleted
+     * @brief Mark the value behind the given key as deleted.
      *
      * This does NOT call the DESTRUCTOR of the marked value!
      */
@@ -104,7 +113,7 @@ public:
     /**
      * @brief Request the value behind the given key
      *
-     * Important: Do not use this to insert new values! Use insert instead.
+     * Important: Do not use this to insert new values! Use `insert()` instead.
      */
     ValueType& operator[](const KeyType& key);
 
