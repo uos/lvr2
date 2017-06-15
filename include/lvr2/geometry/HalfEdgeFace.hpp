@@ -48,13 +48,13 @@ private:
 
 public:
     HalfEdgeFace(
-        typename BaseMesh<BaseVecT>::EdgeHandle edge,
+        EdgeHandle edge,
         Normal<BaseVecT> normal
     )
         : edge(edge), normal(normal) {}
 
     /// One of the edges bounding this face.
-    typename BaseMesh<BaseVecT>::EdgeHandle edge;
+    EdgeHandle edge;
 
     /// The normal of this face. This can be (and is) calculated from the
     /// face's vertices, but the value is so frequently used, that it's worth

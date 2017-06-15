@@ -126,12 +126,12 @@ public:
     // TODO: add reserve method to reserve vector memory
 };
 
-template <typename BaseVecT, typename ValT>
-using EdgeMap = VectorMap<typename BaseMesh<BaseVecT>::EdgeHandle, ValT>;
-template <typename BaseVecT, typename ValT>
-using FaceMap = VectorMap<typename BaseMesh<BaseVecT>::FaceHandle, ValT>;
-template <typename BaseVecT, typename ValT>
-using VertexMap = VectorMap<typename BaseMesh<BaseVecT>::VertexHandle, ValT>;
+template <typename ValT>
+using EdgeMap = VectorMap<EdgeHandle, ValT>;
+template <typename ValT>
+using FaceMap = VectorMap<FaceHandle, ValT>;
+template <typename ValT>
+using VertexMap = VectorMap<VertexHandle, ValT>;
 
 } // namespace lvr2
 

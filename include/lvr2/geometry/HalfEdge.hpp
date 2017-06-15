@@ -46,10 +46,6 @@ struct HalfEdge
     using Face = HalfEdgeFace<BaseVecT>;
     using Vertex = HalfEdgeVertex<BaseVecT>;
 
-    using EdgeHandle = typename BaseMesh<BaseVecT>::EdgeHandle;
-    using OptionalFaceHandle = typename BaseMesh<BaseVecT>::OptionalFaceHandle;
-    using VertexHandle = typename BaseMesh<BaseVecT>::VertexHandle;
-
     /// The face this edge belongs to (or none, if this edge lies on the
     /// boundary).
     OptionalFaceHandle face;

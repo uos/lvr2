@@ -53,16 +53,6 @@ public:
     using Face = HalfEdgeFace<BaseVecT>;
     using Vertex = HalfEdgeVertex<BaseVecT>;
 
-    using Index = typename BaseMesh<BaseVecT>::Index;
-
-    using EdgeHandle = typename BaseMesh<BaseVecT>::EdgeHandle;
-    using FaceHandle = typename BaseMesh<BaseVecT>::FaceHandle;
-    using VertexHandle = typename BaseMesh<BaseVecT>::VertexHandle;
-
-    using OptionalEdgeHandle = typename BaseMesh<BaseVecT>::OptionalEdgeHandle;
-    using OptionalFaceHandle = typename BaseMesh<BaseVecT>::OptionalFaceHandle;
-    using OptionalVertexHandle = typename BaseMesh<BaseVecT>::OptionalVertexHandle;
-
 
     VertexHandle addVertex(Point<BaseVecT> pos) final;
     FaceHandle addFace(VertexHandle v1, VertexHandle v2, VertexHandle v3) final;
