@@ -60,5 +60,12 @@ Vector<BaseVecT> Normal<BaseVecT>::asVector() const
     return static_cast<BaseVecT>(*this);
 }
 
+template <typename BaseVecT>
+Normal<BaseVecT> Normal<BaseVecT>::operator-() const
+{
+    return Normal(-this->x, -this->y, -this->z);
+}
+
+
 
 } // namespace lvr2

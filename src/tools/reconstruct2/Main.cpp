@@ -416,7 +416,7 @@ std::shared_ptr<PointsetSurface<BaseVecT>> loadPointCloud(const reconstruct::Opt
     }
     else if(pcm_name == "STANN" || pcm_name == "FLANN" || pcm_name == "NABO" || pcm_name == "NANOFLANN")
     {
-        auto aks = make_unique<AdaptiveKSearchSurface<BaseVecT>>(
+        surface = make_unique<AdaptiveKSearchSurface<BaseVecT>>(
             buffer,
             pcm_name,
             options.getKn(),
@@ -425,13 +425,6 @@ std::shared_ptr<PointsetSurface<BaseVecT>> loadPointCloud(const reconstruct::Opt
             options.useRansac(),
             options.getScanPoseFile()
         );
-
-        // surface = PsSurface::Ptr(aks);
-        // // Set RANSAC flag
-        // if(options.useRansac())
-        // {
-        //     aks->useRansac(true);
-        // }
     }
     else
     {
@@ -449,29 +442,31 @@ std::shared_ptr<PointsetSurface<BaseVecT>> loadPointCloud(const reconstruct::Opt
         return nullptr;
     }
 
-    // // Set search options for normal estimation and distance evaluation
-    // surface->setKd(options.getKd());
-    // surface->setKi(options.getKi());
-    // surface->setKn(options.getKn());
+    // Set search options for normal estimation and distance evaluation
+    surface->setKd(options.getKd());
+    surface->setKi(options.getKi());
+    surface->setKn(options.getKn());
 
-    // // Calculate normals if necessary
-    // if(!surface->pointBuffer()->hasPointNormals()
-    //         || (surface->pointBuffer()->hasPointNormals() && options.recalcNormals()))
-    // {
-    //     surface->calculateSurfaceNormals();
-    // }
-    // else
-    // {
-    //     cout << timestamp << "Using given normals." << endl;
-    // }
+    // Calculate normals if necessary
+    if(!buffer->hasNormals() || options.recalcNormals())
+    {
+        surface->calculateSurfaceNormals();
+    }
+    else
+    {
+        cout << timestamp << "Using given normals." << endl;
+    }
 
+    // TODO2: add again, right now it's boost vs std shared_ptr
     // // Save points and normals only
     // if(options.savePointNormals())
     // {
-    //     lvr::ModelPtr pn( new Model);
-    //     pn->m_pointCloud = surface->pointBuffer();
-    //     ModelFactory::saveModel(pn, "pointnormals.ply");
+    //     lvr::ModelPtr pn(new lvr::Model);
+    //     pn->m_pointCloud = buffer;
+    //     lvr::ModelFactory::saveModel(pn, "pointnormals.ply");
     // }
+
+    return surface;
 }
 
 // void setTextureOptions(const reconstruct::Options& options)
@@ -566,12 +561,11 @@ int main(int argc, char** argv)
         std::cout << options << std::endl;
 
         auto surface = loadPointCloud<Vec>(options);
-
-        // auto surface = surfaceRes ? *surfaceRes : return EXIT_FAILURE;
-        // if (pcResult != 0)
-        // {
-        //     return EXIT_FAILURE;
-        // }
+        if (!surface)
+        {
+            cout << "Failed to create pointcloud. Exiting." << endl;
+            return EXIT_FAILURE;
+        }
 
         // Create an empty mesh
         lvr2::HalfEdgeMesh<Vec> mesh;

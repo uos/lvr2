@@ -113,6 +113,8 @@ struct Normal : private Vector<BaseVecT>
     // sense.
     BaseVecT& operator*=(const typename BaseVecT::CoordType &scale) = delete;
     BaseVecT& operator/=(const typename BaseVecT::CoordType &scale) = delete;
+
+    Normal<BaseVecT> operator-() const;
 };
 
 } // namespace lvr

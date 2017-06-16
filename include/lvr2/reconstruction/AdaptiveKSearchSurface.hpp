@@ -88,6 +88,10 @@ namespace lvr2
 template<typename BaseVecT>
 struct Plane
 {
+    /// This is a dummy ctor with dummy values, but `Plane` is only used
+    /// in this class, right?
+    Plane() : n(0, 0, 1) {}
+
     // float a, b, c;
     Normal<BaseVecT> n;
     Point<BaseVecT> p;
@@ -203,10 +207,10 @@ public:
     // /// Color information for points public: TODO: This is not the best idea!
     // color3bArr                  m_colors;
 
-    // /**
-    //      * @brief Interpolate the initial normals with the \ref m_ki neighbors
-    //      */
-    // void interpolateSurfaceNormals();
+    /**
+     * @brief Interpolate the initial normals with the \ref m_ki neighbors
+     */
+    void interpolateSurfaceNormals();
 
 private:
 
@@ -232,18 +236,18 @@ private:
      */
     void init();
 
-    // /**
-    //  * @brief Checks if the bounding box of a point set is "well formed",
-    //  *        i.e. no dimension is significantly larger than the other.
-    //  *
-    //  * This method is needed to achieve a better quality of the initial normal
-    //  * estimation in sparse scans. Details are described in the SRR2010 paper.
-    //  *
-    //  * @param dx, dy, dz The side lengths of the bounding box
-    //  *
-    //  * @return true if the given box has valid dimensions.
-    //  */
-    // bool boundingBoxOK(const float &dx, const float &dy, const float &dz);
+    /**
+     * @brief Checks if the bounding box of a point set is "well formed",
+     *        i.e. no dimension is significantly larger than the other.
+     *
+     * This method is needed to achieve a better quality of the initial normal
+     * estimation in sparse scans. Details are described in the SRR2010 paper.
+     *
+     * @param dx, dy, dz The side lengths of the bounding box
+     *
+     * @return true if the given box has valid dimensions.
+     */
+    bool boundingBoxOK(float dx, float dy, float dz);
 
     // /**
     //  * @brief Returns the mean distance of the given point set from
@@ -272,22 +276,27 @@ private:
 
     // void radiusSearch(const VertexT &v, double r, vector<VertexT> &resV, vector<NormalT> &resN){};
 
-    // /**
-    //  * @brief Calculates a tangent plane for the query point using the provided
-    //  *        k-neighborhood
-    //  *
-    //  * @param queryPoint    The point for which the tangent plane is created
-    //  * @param k             The size of the used k-neighborhood
-    //  * @param id            The positions of the neighborhood points in \ref m_points
-    //  * @param ok            True, if RANSAC interpolation was succesfull
-    //  */
-    // Plane<VertexT, NormalT> calcPlane(const VertexT &queryPoint,
-    //         const int &k,
-    //         const vector<int> &id);
+    /**
+     * @brief Calculates a tangent plane for the query point using the provided
+     *        k-neighborhood
+     *
+     * @param queryPoint    The point for which the tangent plane is created
+     * @param k             The size of the used k-neighborhood
+     * @param id            The positions of the neighborhood points in \ref m_points
+     * @param ok            True, if RANSAC interpolation was succesfull
+     */
+    Plane<BaseVecT> calcPlane(
+        const Point<BaseVecT> &queryPoint,
+        int k,
+        const vector<size_t> &id
+    );
 
-    // Plane<VertexT, NormalT> calcPlaneRANSAC(const VertexT &queryPoint,
-    //         const int &k,
-    //         const vector<int> &id, bool &ok );
+    Plane<BaseVecT> calcPlaneRANSAC(
+        const Point<BaseVecT> &queryPoint,
+        int k,
+        const vector<size_t> &id,
+        bool &ok
+    );
 
 
     /// The centroid of the point set
@@ -318,6 +327,6 @@ private:
 
 } // namespace lvr2
 
-#include "AdaptiveKSearchSurface.tcc"
+#include <lvr2/reconstruction/AdaptiveKSearchSurface.tcc>
 
 #endif // LVR2_RECONSTRUCTION_ADAPTIVEKSEARCHSURFACE_H_

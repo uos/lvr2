@@ -28,6 +28,13 @@
 namespace lvr2
 {
 
+
+template <typename BaseVecT>
+Vector<BaseVecT> Vector<BaseVecT>::cross(const Vector<BaseVecT> &other) const
+{
+    return BaseVecT::cross(other);
+}
+
 template <typename BaseVecT>
 Normal<BaseVecT> Vector<BaseVecT>::normalized() const
 {
