@@ -80,12 +80,12 @@ public:
      */
     virtual Normal<BaseVecT> getInterpolatedNormal(Point<BaseVecT> position) const;
 
-    // /**
-    //  * @brief   Returns the internal point buffer. After a call of
-    //  *          @ref calculateSurfaceNormals the buffer will contain
-    //  *          normal information.
-    //  */
-    // virtual const PointBuffer& pointBuffer();
+    /**
+     * @brief   Returns the internal point buffer. After a call of
+     *          @ref calculateSurfaceNormals the buffer will contain
+     *          normal information.
+     */
+    virtual PointBufferPtr<BaseVecT> pointBuffer() const;
 
     /**
      * @brief   Returns a pointer to the search tree
@@ -147,6 +147,9 @@ protected:
     /// The number of points used for distance function evaluation
     int m_kd;
 };
+
+template <typename BaseVecT>
+using PointsetSurfacePtr = std::shared_ptr<PointsetSurface<BaseVecT>>;
 
 } // namespace lvr2
 

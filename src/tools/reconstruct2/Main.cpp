@@ -181,9 +181,12 @@
 #include <lvr2/geometry/BoundingBox.hpp>
 
 #include <lvr2/reconstruction/AdaptiveKSearchSurface.hpp>
+#include <lvr2/reconstruction/BilinearFastBox.hpp>
 #include <lvr2/reconstruction/PointsetSurface.hpp>
 #include <lvr2/reconstruction/SearchTree.hpp>
 #include <lvr2/reconstruction/SearchTreeFlann.hpp>
+#include <lvr2/reconstruction/HashGrid.hpp>
+#include <lvr2/reconstruction/PointsetGrid.hpp>
 #include <lvr2/io/PointBuffer.hpp>
 #include <lvr2/util/Factories.hpp>
 
@@ -387,7 +390,7 @@ void testFinalize(lvr2::HalfEdgeMesh<lvr2::BaseVector<float>>& mesh)
  */
 
 template <typename BaseVecT>
-std::shared_ptr<PointsetSurface<BaseVecT>> loadPointCloud(const reconstruct::Options& options)
+PointsetSurfacePtr<BaseVecT> loadPointCloud(const reconstruct::Options& options)
 {
     // Create a point loader object
     lvr::ModelPtr model = lvr::ModelFactory::readModel(options.getInputFileName());
@@ -402,7 +405,7 @@ std::shared_ptr<PointsetSurface<BaseVecT>> loadPointCloud(const reconstruct::Opt
 
     // Create a point cloud manager
     string pcm_name = options.getPCM();
-    unique_ptr<PointsetSurface<Vec>> surface;
+    PointsetSurfacePtr<Vec> surface;
 
     // Create point set surface object
     if(pcm_name == "PCL")
@@ -416,7 +419,7 @@ std::shared_ptr<PointsetSurface<BaseVecT>> loadPointCloud(const reconstruct::Opt
     }
     else if(pcm_name == "STANN" || pcm_name == "FLANN" || pcm_name == "NABO" || pcm_name == "NANOFLANN")
     {
-        surface = make_unique<AdaptiveKSearchSurface<BaseVecT>>(
+        surface = make_shared<AdaptiveKSearchSurface<BaseVecT>>(
             buffer,
             pcm_name,
             options.getKn(),
@@ -603,7 +606,7 @@ int main(int argc, char** argv)
             decomposition = "PMC";
         }
 
-        // unique_ptr<GridBase> grid;
+        shared_ptr<GridBase> grid;
         // FastReconstructionBase<ColorVertex<float, unsigned char>, Normal<float> >* reconstruction;
         if(decomposition == "MC")
         {
@@ -623,16 +626,21 @@ int main(int argc, char** argv)
         }
         else if(decomposition == "PMC")
         {
-    //         BilinearFastBox<ColorVertex<float, unsigned char>, Normal<float> >::m_surface = surface;
-    //         grid = new PointsetGrid<ColorVertex<float, unsigned char>, BilinearFastBox<ColorVertex<float, unsigned char>, Normal<float> > >(resolution, surface, surface->getBoundingBox(), useVoxelsize, options.extrude());
-    //         PointsetGrid<ColorVertex<float, unsigned char>, BilinearFastBox<ColorVertex<float, unsigned char>, Normal<float> > >* ps_grid = static_cast<PointsetGrid<ColorVertex<float, unsigned char>, BilinearFastBox<ColorVertex<float, unsigned char>, Normal<float> > > *>(grid);
-    //         ps_grid->calcDistanceValues();
-    //         reconstruction = new FastReconstruction<
-    //             ColorVertex<float, unsigned char>,
-    //             Normal<float>,
-    //             BilinearFastBox<ColorVertex<float, unsigned char>, Normal<float>>
-    //         >(ps_grid);
-
+            // BilinearFastBox<ColorVertex<float, unsigned char>, Normal<float> >::m_surface = surface;
+            grid = std::make_shared<PointsetGrid<Vec, BilinearFastBox<Vec>>>(
+                resolution,
+                surface,
+                surface->getBoundingBox(),
+                useVoxelsize,
+                options.extrude()
+            );
+            // PointsetGrid<ColorVertex<float, unsigned char>, BilinearFastBox<ColorVertex<float, unsigned char>, Normal<float> > >* ps_grid = static_cast<PointsetGrid<ColorVertex<float, unsigned char>, BilinearFastBox<ColorVertex<float, unsigned char>, Normal<float> > > *>(grid);
+            // ps_grid->calcDistanceValues();
+            // reconstruction = new FastReconstruction<
+            //     ColorVertex<float, unsigned char>,
+            //     Normal<float>,
+            //     BilinearFastBox<ColorVertex<float, unsigned char>, Normal<float>>
+            // >(ps_grid);
         }
         else if(decomposition == "SF")
         {
