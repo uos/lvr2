@@ -49,67 +49,70 @@ void BilinearFastBox<BaseVecT>::getSurface(
         vector<QueryPoint<BaseVecT>> &qp,
         uint &globalIndex)
 {
-    Point<BaseVecT> corners[8];
-    Point<BaseVecT> vertex_positions[12];
+    FastBox<BaseVecT>::getSurface(mesh, qp, globalIndex);
+    // Point<BaseVecT> corners[8];
+    // Point<BaseVecT> vertex_positions[12];
 
-    float distances[8];
+    // float distances[8];
 
-    this->getCorners(corners, qp);
-    this->getDistances(distances, qp);
-    this->getIntersections(corners, distances, vertex_positions);
+    // this->getCorners(corners, qp);
+    // this->getDistances(distances, qp);
+    // this->getIntersections(corners, distances, vertex_positions);
 
-    int index = this->getIndex(qp);
-    m_mcIndex = index;
+    // int index = this->getIndex(qp);
 
-    // Do not create triangles for invalid boxes
-    for (int i = 0; i < 8; i++)
-    {
-        if (qp[this->m_vertices[i]].m_invalid)
-        {
-            return;
-        }
-    }
+    // // Do not create triangles for invalid boxes
+    // for (int i = 0; i < 8; i++)
+    // {
+    //     if (qp[this->m_vertices[i]].m_invalid)
+    //     {
+    //         return;
+    //     }
+    // }
 
-    // Generate the local approximation surface according to the marching
-    // cubes table for Paul Burke.
-    for(int a = 0; lvr::MCTable[index][a] != -1; a+= 3)
-    {
-        VertexHandle vertices[3] = { VertexHandle(0), VertexHandle(0), VertexHandle(0) };
+    // // Generate the local approximation surface according to the marching
+    // // cubes table for Paul Burke.
+    // for(int a = 0; lvr::MCTable[index][a] != -1; a+= 3)
+    // {
+    //     OptionalVertexHandle vertex_indices[3];
 
-        for(int b = 0; b < 3; b++)
-        {
-            auto edge_index = lvr::MCTable[index][a + b];
+    //     for(int b = 0; b < 3; b++)
+    //     {
+    //         auto edge_index = lvr::MCTable[index][a + b];
 
-            //If no index was found generate new index and vertex
-            //and update all neighbor boxes
-            if(this->m_intersections[edge_index] == this->INVALID_INDEX)
-            {
-                this->m_intersections[edge_index] = globalIndex;
-                auto v = vertex_positions[edge_index];
+    //         //If no index was found generate new index and vertex
+    //         //and update all neighbor boxes
+    //         if(!this->m_intersections[edge_index])
+    //         {
+    //             auto p = vertex_positions[edge_index];
+    //             this->m_intersections[edge_index] = mesh->addVertex(p);
 
-                // Insert vertex and a new temp normal into mesh.
-                // The normal is inserted to assure that vertex
-                // and normal array always have the same size.
-                // The actual normal is interpolated later.
-                vertices[b] = mesh.addVertex(v);
-                for(int i = 0; i < 3; i++)
-                {
-                    auto current_neighbor = this->m_neighbors[lvr::neighbor_table[edge_index][i]];
-                    if(current_neighbor != 0)
-                    {
-                        current_neighbor->m_intersections[lvr::neighbor_vertex_table[edge_index][i]] = globalIndex;
-                    }
-                }
-                // Increase the global vertex counter to save the buffer
-                // position were the next new vertex has to be inserted
-                globalIndex++;
-            }
-        }
+    //             for(int i = 0; i < 3; i++)
+    //             {
+    //                 auto current_neighbor = this->m_neighbors[lvr::neighbor_table[edge_index][i]];
+    //                 if(current_neighbor != 0)
+    //                 {
+    //                     current_neighbor->m_intersections[lvr::neighbor_vertex_table[edge_index][i]] = m_intersections[edge_index];
+    //                 }
+    //             }
 
-        // Add triangle actually does the normal interpolation for us.
-        auto f = mesh.addFace(vertices[0], vertices[1], vertices[2]);
-        m_faces.push_back(f);
-    }
+    //             // Increase the global vertex counter to save the buffer
+    //             // position were the next new vertex has to be inserted
+    //             globalIndex++;
+    //         }
+
+    //         //Save vertex index in mesh
+    //         vertex_indices[b] = this->m_intersections[edge_index];
+    //     }
+
+    //     // Add triangle actually does the normal interpolation for us.
+    //     auto f = mesh.addFace(
+    //         vertex_indices[0].unwrap(),
+    //         vertex_indices[1].unwrap(),
+    //         vertex_indices[2].unwrap()
+    //     );
+    //     m_faces.push_back(f); // THIS IS THE ONLY LINE DIFFERENT FROM BASE IMPL
+    // }
 }
 
 // template<typename BaseVecT>
@@ -199,9 +202,6 @@ void BilinearFastBox<BaseVecT>::getSurface(
 
 template<typename BaseVecT>
 BilinearFastBox<BaseVecT>::~BilinearFastBox()
-{
-    //for(int i = 0; i < m_faces.size(); i++) delete[] m_faces[i];
-    m_faces.clear();
-}
+{}
 
 } // namespace lvr2

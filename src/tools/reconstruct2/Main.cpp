@@ -182,6 +182,7 @@
 
 #include <lvr2/reconstruction/AdaptiveKSearchSurface.hpp>
 #include <lvr2/reconstruction/BilinearFastBox.hpp>
+#include <lvr2/reconstruction/FastReconstruction.hpp>
 #include <lvr2/reconstruction/PointsetSurface.hpp>
 #include <lvr2/reconstruction/SearchTree.hpp>
 #include <lvr2/reconstruction/SearchTreeFlann.hpp>
@@ -607,7 +608,7 @@ int main(int argc, char** argv)
         }
 
         shared_ptr<GridBase> grid;
-        // FastReconstructionBase<ColorVertex<float, unsigned char>, Normal<float> >* reconstruction;
+        unique_ptr<FastReconstructionBase<Vec>> reconstruction;
         if(decomposition == "MC")
         {
             // grid = make_shared<PointsetGrid<
@@ -626,21 +627,17 @@ int main(int argc, char** argv)
         }
         else if(decomposition == "PMC")
         {
-            // BilinearFastBox<ColorVertex<float, unsigned char>, Normal<float> >::m_surface = surface;
-            grid = std::make_shared<PointsetGrid<Vec, BilinearFastBox<Vec>>>(
+            BilinearFastBox<Vec>::m_surface = surface;
+            auto ps_grid = std::make_shared<PointsetGrid<Vec, BilinearFastBox<Vec>>>(
                 resolution,
                 surface,
                 surface->getBoundingBox(),
                 useVoxelsize,
                 options.extrude()
             );
-            // PointsetGrid<ColorVertex<float, unsigned char>, BilinearFastBox<ColorVertex<float, unsigned char>, Normal<float> > >* ps_grid = static_cast<PointsetGrid<ColorVertex<float, unsigned char>, BilinearFastBox<ColorVertex<float, unsigned char>, Normal<float> > > *>(grid);
-            // ps_grid->calcDistanceValues();
-            // reconstruction = new FastReconstruction<
-            //     ColorVertex<float, unsigned char>,
-            //     Normal<float>,
-            //     BilinearFastBox<ColorVertex<float, unsigned char>, Normal<float>>
-            // >(ps_grid);
+            ps_grid->calcDistanceValues();
+            grid = ps_grid;
+            reconstruction = make_unique<FastReconstruction<Vec, BilinearFastBox<Vec>>>(ps_grid);
         }
         else if(decomposition == "SF")
         {
@@ -657,19 +654,19 @@ int main(int argc, char** argv)
 
 
 
-    //     // Create mesh
-    //     reconstruction->getMesh(mesh);
+        // Create mesh
+        reconstruction->getMesh(mesh);
 
-    //     // Save grid to file
-    //     if(options.saveGrid())
-    //     {
-    //         grid->saveGrid("fastgrid.grid");
-    //     }
+        // Save grid to file
+        if(true || options.saveGrid())
+        {
+            grid->saveGrid("fastgrid.grid");
+        }
 
-    //     if(options.getDanglingArtifacts())
-    //     {
-    //         mesh.removeDanglingArtifacts(options.getDanglingArtifacts());
-    //     }
+        // if(options.getDanglingArtifacts())
+        // {
+        //     mesh.removeDanglingArtifacts(options.getDanglingArtifacts());
+        // }
 
     //     // Optimize mesh
     //     mesh.cleanContours(options.getCleanContourIterations());
@@ -700,6 +697,15 @@ int main(int argc, char** argv)
     //         mesh.fillHoles(options.getFillHoles());
     //     }
 
+
+        FinalizeAlgorithm<Vec> finalize;
+        auto buffer = finalize.apply(mesh);
+
+        // Create output model and save to file
+        auto model = new lvr::Model(buffer);
+        lvr::ModelPtr m(model);
+        cout << timestamp << "Saving mesh." << endl;
+        lvr::ModelFactory::saveModel( m, "triangle_mesh.ply");
     //     // Save triangle mesh
     //     if ( options.retesselate() )
     //     {

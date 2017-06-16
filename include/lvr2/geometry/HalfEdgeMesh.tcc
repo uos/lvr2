@@ -48,8 +48,8 @@ template <typename BaseVecT>
 FaceHandle
     HalfEdgeMesh<BaseVecT>::addFace(VertexHandle v1H, VertexHandle v2H, VertexHandle v3H)
 {
-    cout << "##################################################" << endl;
-    cout << "##### addFace(): " << v1H << " -> " << v2H << " -> " << v3H << endl;
+    // cout << "##################################################" << endl;
+    // cout << "##### addFace(): " << v1H << " -> " << v2H << " -> " << v3H << endl;
 
     using std::array;
     using std::make_tuple;
@@ -112,7 +112,7 @@ FaceHandle
         // --> Case (A): neither edge is part of a face (both edges are new)
         if (!eIn.face && !eOut.face)
         {
-            cout << "Case (A) for " << vH << endl;
+            // cout << "Case (A) for " << vH << endl;
             // We need to handle the special case of `v` not having an
             // outgoing edge.
             if (v.outgoing)
@@ -138,8 +138,8 @@ FaceHandle
                 eIn.next = eStartH;
                 getE(eEndH).next = eOutH;
 
-                cout << "(A) ... setting " << eInH << ".next = " << eStartH << endl;
-                cout << "(A) ... setting " << eEndH << ".next = " << eOutH << endl;
+                // cout << "(A) ... setting " << eInH << ".next = " << eStartH << endl;
+                // cout << "(A) ... setting " << eEndH << ".next = " << eOutH << endl;
             }
             else
             {
@@ -151,7 +151,7 @@ FaceHandle
         // --> Case (B): only the ingoing edge is part of a face
         else if (eIn.face && !eOut.face)
         {
-            cout << "Case (B) for " << vH << endl;
+            // cout << "Case (B) for " << vH << endl;
             // We know that `v` has at least two outgoing edges (since
             // there is a face adjacent to it).
             //
@@ -178,13 +178,13 @@ FaceHandle
         // --> Case (C): only the outgoing edge is part of a face
         else if (!eIn.face && eOut.face)
         {
-            cout << "Case (C) for " << vH << endl;
+            // cout << "Case (C) for " << vH << endl;
             eIn.next = getE(eOut.twin).next;
         }
         // --> Case (D): both edges are already part of another face
         if (eIn.face && eOut.face)
         {
-            cout << "Case (D) for " << vH << endl;
+            // cout << "Case (D) for " << vH << endl;
             // Nothing needs to be done!
         }
     }
@@ -209,7 +209,6 @@ FaceHandle
     {
         v3.outgoing = eInner3H;
     }
-
 
     // Debug output
     cout << "+------ Summary face " << newFaceH << " ------+" << endl;
@@ -307,16 +306,16 @@ template <typename BaseVecT>
 EdgeHandle
     HalfEdgeMesh<BaseVecT>::findOrCreateEdgeBetween(VertexHandle fromH, VertexHandle toH)
 {
-    cout << "# findOrCreateEdgeBetween: " << fromH << " --> " << toH << endl;
+    // cout << "# findOrCreateEdgeBetween: " << fromH << " --> " << toH << endl;
     auto foundEdge = edgeBetween(fromH, toH);
     if (foundEdge)
     {
-        cout << ">> found: " << foundEdge << endl;
+        // cout << ">> found: " << foundEdge << endl;
         return foundEdge.unwrap();
     }
     else
     {
-        cout << ">> adding pair..." << endl;
+        // cout << ">> adding pair..." << endl;
         return addEdgePair(fromH, toH).first;
     }
 }
@@ -328,35 +327,35 @@ OptionalEdgeHandle
 {
     // This function simply follows `next` and `twin` handles to visit all
     // edges around a vertex.
-    cout << ">> Trying to find an edge around " << vH << " ..." << endl;
+    // cout << ">> Trying to find an edge around " << vH << " ..." << endl;
 
     auto& v = getV(vH);
     if (!v.outgoing)
     {
-        cout << ">> ... " << vH << " has no outgoing edge, returning none." << endl;
+        // cout << ">> ... " << vH << " has no outgoing edge, returning none." << endl;
         return OptionalEdgeHandle();
     }
 
     const auto startEdgeH = getE(v.outgoing.unwrap()).twin;
     auto loopEdgeH = startEdgeH;
 
-    cout << ">> ... start search at outgoing " << v.outgoing.unwrap() << endl;
-    cout << ">> ... startEdgeH: " << startEdgeH << endl;
+    // cout << ">> ... start search at outgoing " << v.outgoing.unwrap() << endl;
+    // cout << ">> ... startEdgeH: " << startEdgeH << endl;
 
     while (!pred(loopEdgeH))
     {
-        cout << ">> ... >> LOOP: loop-" << loopEdgeH << " @ "
-             << getE(loopEdgeH).face
-             << " with next: " << getE(loopEdgeH).next << endl;
+        // cout << ">> ... >> LOOP: loop-" << loopEdgeH << " @ "
+             // << getE(loopEdgeH).face
+             // << " with next: " << getE(loopEdgeH).next << endl;
 
         loopEdgeH = getE(getE(loopEdgeH).next).twin;
         if (loopEdgeH == startEdgeH)
         {
-            cout << ">> ... we visited all edges once without success, returning none." << endl;
+            // cout << ">> ... we visited all edges once without success, returning none." << endl;
             return OptionalEdgeHandle();
         }
     }
-    cout << ">> ... found " << loopEdgeH << "." << endl;
+    // cout << ">> ... found " << loopEdgeH << "." << endl;
     return loopEdgeH;
 }
 
