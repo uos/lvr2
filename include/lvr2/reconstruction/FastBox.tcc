@@ -40,13 +40,6 @@ uint FastBox<BaseVecT>::INVALID_INDEX = numeric_limits<uint>::max();
 template<typename BaseVecT>
 FastBox<BaseVecT>::FastBox(Point<BaseVecT> center)
 {
-	//m_intersections = new uint[12];
-    // Init members
-    for(int i = 0; i < 12; i++)
-    {
-    	m_intersections[i] = INVALID_INDEX;
-    }
-
     for(int i = 0; i < 8; i++)
     {
     	m_vertices[i] = INVALID_INDEX;
@@ -220,32 +213,29 @@ void FastBox<BaseVecT>::getSurface(
 		}
 	}
 
-	uint edge_index = 0;
+    // Generate the local approximation surface according to the marching
+    // cubes table for Paul Burke.
+    for(int a = 0; lvr::MCTable[index][a] != -1; a+= 3)
+    {
+	    OptionalVertexHandle vertex_indices[3];
 
-	int triangle_indices[3];
-	// Generate the local approximation surface according to the marching
-	// cubes table for Paul Burke.
-	for(int a = 0; lvr::MCTable[index][a] != -1; a+= 3){
-		for(int b = 0; b < 3; b++){
-			edge_index = lvr::MCTable[index][a + b];
+        for(int b = 0; b < 3; b++)
+        {
+			auto edge_index = lvr::MCTable[index][a + b];
 
 			//If no index was found generate new index and vertex
 			//and update all neighbor boxes
-			if(m_intersections[edge_index] == INVALID_INDEX)
+			if(!m_intersections[edge_index])
 			{
-				m_intersections[edge_index] = globalIndex;
 				auto v = vertex_positions[edge_index];
-				// Insert vertex and a new temp normal into mesh.
-				// The normal is inserted to assure that vertex
-				// and normal array always have the same size.
-				// The actual normal is interpolated later.
-				mesh.addVertex(v);
+				m_intersections[edge_index] = mesh.addVertex(v);
+
 				for(int i = 0; i < 3; i++)
 				{
-					FastBox<BaseVecT>* current_neighbor = m_neighbors[lvr::neighbor_table[edge_index][i]];
+					auto current_neighbor = m_neighbors[lvr::neighbor_table[edge_index][i]];
 					if(current_neighbor != 0)
 					{
-						current_neighbor->m_intersections[lvr::neighbor_vertex_table[edge_index][i]] = globalIndex;
+						current_neighbor->m_intersections[lvr::neighbor_vertex_table[edge_index][i]] = m_intersections[edge_index];
 					}
 				}
 
@@ -255,11 +245,15 @@ void FastBox<BaseVecT>::getSurface(
 			}
 
 			//Save vertex index in mesh
-			triangle_indices[b] = m_intersections[edge_index];
+			vertex_indices[b] = m_intersections[edge_index];
 		}
 
 		// Add triangle actually does the normal interpolation for us.
-		mesh.addFace(triangle_indices[0], triangle_indices[1], triangle_indices[2]);
+		mesh.addFace(
+            vertex_indices[0].unwrap(),
+            vertex_indices[1].unwrap(),
+            vertex_indices[2].unwrap()
+        );
 	}
 }
 

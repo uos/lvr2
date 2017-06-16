@@ -35,7 +35,7 @@ PointBuffer<BaseVecT>::PointBuffer(lvr::PointBuffer& oldBuffer)
     // discarded.
     size_t len;
     auto buf = oldBuffer.getPointArray(len);
-    for (int i = 0; i < len; i += 3)
+    for (int i = 0; i < len * 3; i += 3)
     {
         auto p = Point<BaseVecT>(buf[i], buf[i + 1], buf[i + 2]);
         m_points.push_back(p);

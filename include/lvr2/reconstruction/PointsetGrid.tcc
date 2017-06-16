@@ -53,7 +53,8 @@ void PointsetGrid<BaseVecT, BoxT>::calcDistanceValues()
 
         //cout << euklideanDistance << " " << projectedDistance << endl;
 
-        this->m_surface->distance(this->m_queryPoints[i].m_position, projectedDistance, euklideanDistance);
+        std::tie(projectedDistance, euklideanDistance) =
+            this->m_surface->distance(this->m_queryPoints[i].m_position);
         if (euklideanDistance > 1.7320 * this->m_voxelsize)
         {
             this->m_queryPoints[i].m_invalid = true;

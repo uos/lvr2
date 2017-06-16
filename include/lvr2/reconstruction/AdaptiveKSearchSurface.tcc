@@ -68,7 +68,6 @@ AdaptiveKSearchSurface<BaseVecT>::AdaptiveKSearchSurface(
     this->setKn(kn);
     this->setKd(kd);
 
-    // TODO2
     init();
 
 
@@ -452,49 +451,41 @@ template<typename BaseVecT>
 pair<typename BaseVecT::CoordType, typename BaseVecT::CoordType>
     AdaptiveKSearchSurface<BaseVecT>::distance(Point<BaseVecT> p) const
 {
-    // TODO2
-    // int k = this->m_kd;
+    int k = this->m_kd;
 
-    // vector<int> id;
-    // vector<float> di;
+    vector<size_t> id;
+    vector<float> di;
 
-    // //Allocate ANN point
-    // {
-    //     coord<float> p;
-    //     p[0] = v[0];
-    //     p[1] = v[1];
-    //     p[2] = v[2];
+    //Allocate ANN point
+    {
+        // Find nearest tangent plane
+        this->m_searchTree->kSearch( p, k, id, di );
+    }
 
-    //     // Find nearest tangent plane
-    //     // m_pointTree.ksearch( p, k, id, di, 0 );
-    //     this->m_searchTree->kSearch( p, k, id, di );
-    // }
+    BaseVecT nearest;
+    Vector<BaseVecT> avg_normal;
 
-    // VertexT nearest;
-    // Normal<BaseVecT> normal;
+    for ( int i = 0; i < k; i++ )
+    {
+        //Get nearest tangent plane
+        auto vq = this->m_pointBuffer->getPoint(id[i]);
 
-    // for ( int i = 0; i < k; i++ )
-    // {
-    //     //Get nearest tangent plane
-    //     VertexT vq( this->m_points[id[i]][0], this->m_points[id[i]][1], this->m_points[id[i]][2] );
+        //Get normal
+        auto n = *this->m_pointBuffer->getNormal(id[i]);
 
-    //     //Get normal
-    //     Normal<BaseVecT> n( this->m_normals[id[i]][0], this->m_normals[id[i]][1], this->m_normals[id[i]][2] );
+        nearest += vq;
+        avg_normal += n.asVector();
+    }
 
-    //     nearest += vq;
-    //     normal += n;
+    avg_normal /= k;
+    nearest /= k;
+    auto normal = avg_normal.normalized();
 
-    // }
+    //Calculate distance
+    auto projectedDistance = (p - Point<BaseVecT>(nearest)).dot(normal.asVector());
+    auto euklideanDistance = (p - Point<BaseVecT>(nearest)).length();
 
-    // normal /= k;
-    // nearest /= k;
-    // normal.normalize();
-
-    // //Calculate distance
-    // typename BaseVecT::CoordType projectedDistance = (v - nearest) * normal;
-    // typename BaseVecT::CoordType euklideanDistance = (v - nearest).length();
-
-    // return make_pair(projectedDistance, euklideanDistance);
+    return make_pair(projectedDistance, euklideanDistance);
 }
 
 // template<typename BaseVecT>
