@@ -93,11 +93,11 @@ AdaptiveKSearchSurface<BaseVecT>::AdaptiveKSearchSurface(
 // template<typename BaseVecT>
 // void AdaptiveKSearchSurface<BaseVecT>::parseScanPoses(string posefile)
 // {
-//     cout << timestamp << "Parsing scan poses." << endl;
+//     cout << lvr::timestamp << "Parsing scan poses." << endl;
 //     std::ifstream in(posefile.c_str());
 //     if(!in.good())
 //     {
-//         cout << timestamp << "Unable to open scan pose file " << posefile << endl;
+//         cout << lvr::timestamp << "Unable to open scan pose file " << posefile << endl;
 //         return;
 //     }
 
@@ -124,7 +124,7 @@ AdaptiveKSearchSurface<BaseVecT>::AdaptiveKSearchSurface(
 //         loader->setPointArray(points, v.size());
 //         size_t n = v.size();
 
-//         cout << timestamp << "Creating pose search tree(" << m_searchTreeName << ") with " << n << " poses." << endl;
+//         cout << lvr::timestamp << "Creating pose search tree(" << m_searchTreeName << ") with " << n << " poses." << endl;
 
 // #ifdef LVR_USE_PCL
 //         if( m_searchTreeName == "pcl"  || m_searchTreeName == "PCL" )
@@ -155,8 +155,8 @@ AdaptiveKSearchSurface<BaseVecT>::AdaptiveKSearchSurface(
 
 //         if( !this->m_poseTree )
 //         {
-//             cout << timestamp << "No Valid Searchtree class specified!" << endl;
-//             cout << timestamp << "Class: " << m_searchTreeName << endl;
+//             cout << lvr::timestamp << "No Valid Searchtree class specified!" << endl;
+//             cout << lvr::timestamp << "Class: " << m_searchTreeName << endl;
 //         }
 //     }
 // }
@@ -176,224 +176,215 @@ void AdaptiveKSearchSurface<BaseVecT>::init()
 template<typename BaseVecT>
 void AdaptiveKSearchSurface<BaseVecT>::calculateSurfaceNormals()
 {
-//     int k_0 = this->m_kn;
+    int k_0 = this->m_kn;
 
-//     cout << lvr::timestamp << "Initializing normal array..." << endl;
+    cout << lvr::timestamp << "Initializing normal array..." << endl;
 
-//     //Initialize normal array
-//     this->m_normals = coord3fArr( new coord<float>[this->m_numPoints] );
-//     this->m_pointBuffer->setIndexedPointNormalArray(this->m_normals, this->m_numPoints);
+    this->m_pointBuffer->addNormalChannel();
 
-//     //float mean_distance;
-//     // Create a progress counter
-//     string comment = lvr::timestamp.getElapsedTime() + "Estimating normals ";
-//     lvr::ProgressBar progress(this->m_numPoints, comment);
+    // Create a progress counter
+    string comment = lvr::timestamp.getElapsedTime() + "Estimating normals ";
+    lvr::ProgressBar progress(this->m_pointBuffer->getNumPoints(), comment);
 
-//     #pragma omp parallel for schedule(static)
-//     for( int i = 0; i < (int)this->m_numPoints; i++){
+    #pragma omp parallel for schedule(static)
+    for(size_t i = 0; i < this->m_pointBuffer->getNumPoints(); i++) {
+        // We have to fit these vector to have the
+        // correct return values when performing the
+        // search on the stann kd tree. So we don't use
+        // the template parameter T for di
+        vector<size_t> id;
+        vector<float> di;
 
-//         Vertexf query_point;
-//         Normalf normal;
+        int n = 0;
+        size_t k = k_0;
 
-//         // We have to fit these vector to have the
-//         // correct return values when performing the
-//         // search on the stann kd tree. So we don't use
-//         // the template parameter T for di
-//         vector<int> id;
-//         vector<float> di;
+        while(n < 5)
+        {
+            n++;
+            /**
+             *  @todo Maybe this should be done at the end of the loop
+             *        after the bounding box check
+             */
+            k = k * 2;
 
-//         int n = 0;
-//         size_t k = k_0;
+            //T* point = this->m_points[i];
+            this->m_searchTree->kSearch(this->m_pointBuffer->getPoint(i), k, id, di);
 
-//         while(n < 5){
+            float min_x = 1e15f;
+            float min_y = 1e15f;
+            float min_z = 1e15f;
+            float max_x = - min_x;
+            float max_y = - min_y;
+            float max_z = - min_z;
 
-//             n++;
-//             /**
-//              *  @todo Maybe this should be done at the end of the loop
-//              *        after the bounding box check
-//              */
-//             k = k * 2;
+            float dx, dy, dz;
+            dx = dy = dz = 0;
 
-//             //T* point = this->m_points[i];
-//             this->m_searchTree->kSearch(this->m_points[i], k, id, di);
+            // Calculate the bounding box of found point set
+            /**
+             * @todo Use the bounding box object from the old model3d
+             *       library for bounding box calculation...
+             */
+            for(size_t j = 0; j < k; j++) {
+                min_x = min(min_x, this->m_pointBuffer->getPoint(id[j]).x);
+                min_y = min(min_y, this->m_pointBuffer->getPoint(id[j]).y);
+                min_z = min(min_z, this->m_pointBuffer->getPoint(id[j]).z);
 
-//             float min_x = 1e15f;
-//             float min_y = 1e15f;
-//             float min_z = 1e15f;
-//             float max_x = - min_x;
-//             float max_y = - min_y;
-//             float max_z = - min_z;
+                max_x = max(max_x, this->m_pointBuffer->getPoint(id[j]).x);
+                max_y = max(max_y, this->m_pointBuffer->getPoint(id[j]).y);
+                max_z = max(max_z, this->m_pointBuffer->getPoint(id[j]).z);
 
-//             float dx, dy, dz;
-//             dx = dy = dz = 0;
+                dx = max_x - min_x;
+                dy = max_y - min_y;
+                dz = max_z - min_z;
+            }
 
-//             // Calculate the bounding box of found point set
-//             /**
-//              * @todo Use the bounding box object from the old model3d
-//              *       library for bounding box calculation...
-//              */
-//             for(size_t j = 0; j < k; j++){
-//                 min_x = min(min_x, this->m_points[id[j]][0]);
-//                 min_y = min(min_y, this->m_points[id[j]][1]);
-//                 min_z = min(min_z, this->m_points[id[j]][2]);
+            if(boundingBoxOK(dx, dy, dz))
+            {
+                break;
+            }
+        }
 
-//                 max_x = max(max_x, this->m_points[id[j]][0]);
-//                 max_y = max(max_y, this->m_points[id[j]][1]);
-//                 max_z = max(max_z, this->m_points[id[j]][2]);
+        // Create a query point for the current point
+        auto queryPoint = this->m_pointBuffer->getPoint(i);
 
-// //                cout << "Points: " << this->m_numPoints << "Point[" << id[j] << "].x: " <<  this->m_points[id[j]][0] << endl ;
-// //                cout << "Points: " << this->m_numPoints << "Point[" << id[j] << "].y: " <<  this->m_points[id[j]][1] << endl ;
-// //                cout << "Points: " << this->m_numPoints << "Point[" << id[j] << "].z: " <<  this->m_points[id[j]][2] << endl ;
+        // Interpolate a plane based on the k-neighborhood
+        Plane<BaseVecT> p;
+        bool ransac_ok;
+        if(m_useRANSAC)
+        {
+            p = calcPlaneRANSAC(queryPoint, k, id, ransac_ok);
+            // Fallback if RANSAC failed
+            if(!ransac_ok)
+            {
+                p = calcPlane(queryPoint, k, id);
+            }
+        }
+        else
+        {
+            p = calcPlane(queryPoint, k, id);
+        }
+        // Get the mean distance to the tangent plane
+        //mean_distance = meanDistance(p, id, k);
+        Normal<BaseVecT> normal(0, 0, 1);
 
+        // Flip normals towards the center of the scene or nearest scan pose
+        if(m_poseTree)
+        {
+            vector<size_t> nearestPoseIds;
+            m_poseTree->kSearch(queryPoint, 1, nearestPoseIds);
+            if(nearestPoseIds.size() == 1)
+            {
+                auto nearest = this->m_pointBuffer->getPoint(nearestPoseIds[0]);
+                normal = p.n;
+                if(normal.dot(queryPoint - nearest) < 0)
+                {
+                    normal = -normal;
+                }
+            }
+            else
+            {
+                cout << lvr::timestamp << "Could not get nearest scan pose. Defaulting to centroid." << endl;
+                normal =  p.n;
+                if(normal.dot(queryPoint - m_centroid) < 0)
+                {
+                    normal = -normal;
+                }
+            }
+        }
+        else
+        {
+            normal =  p.n;
+            if(normal.dot(queryPoint - m_centroid) < 0)
+            {
+                normal = -normal;
+            }
+        }
 
-//                 dx = max_x - min_x;
-//                 dy = max_y - min_y;
-//                 dz = max_z - min_z;
-//             }
+        // Save result in normal array
+        this->m_pointBuffer->getNormal(i) = normal;
+        ++progress;
+    }
+    cout << endl;
 
-//             if(boundingBoxOK(dx, dy, dz)) break;
-//             //break;
-
-//         }
-
-//         // Create a query point for the current point
-//         query_point = VertexT(this->m_points[i][0],
-//                               this->m_points[i][1],
-//                               this->m_points[i][2]);
-
-//         // Interpolate a plane based on the k-neighborhood
-//         Plane<VertexT, NormalT> p;
-//         bool ransac_ok;
-//         if(m_useRANSAC)
-//         {
-//             p = calcPlaneRANSAC(query_point, k, id, ransac_ok);
-//             // Fallback if RANSAC failed
-//             if(!ransac_ok)
-//             {
-//                 p = calcPlane(query_point, k, id);
-//             }
-//         }
-//         else
-//         {
-//             p = calcPlane(query_point, k, id);
-//         }
-//         // Get the mean distance to the tangent plane
-//         //mean_distance = meanDistance(p, id, k);
-
-//         // Flip normals towards the center of the scene or nearest scan pose
-//         if(m_poseTree)
-//         {
-//             vector<VertexT> nearestPoses;
-//             m_poseTree->kSearch(query_point, 1, nearestPoses);
-//             if(nearestPoses.size() == 1)
-//             {
-//                 VertexT nearest = nearestPoses[0];
-//                 normal = p.n;
-//                 if(normal * (query_point - nearest) < 0) normal = normal * -1;
-//             }
-//             else
-//             {
-//                 cout << timestamp << "Could not get nearest scan pose. Defaulting to centroid." << endl;
-//                 normal =  p.n;
-//                 if(normal * (query_point - m_centroid) < 0) normal = normal * -1;
-//             }
-//         }
-//         else
-//         {
-//             normal =  p.n;
-//             if(normal * (query_point - m_centroid) < 0) normal = normal * -1;
-//         }
-
-//         // Save result in normal array
-//         this->m_normals[i][0] = normal[0];
-//         this->m_normals[i][1] = normal[1];
-//         this->m_normals[i][2] = normal[2];
-//         ++progress;
-//     }
-//     cout << endl;
-
-//     if(this->m_ki) interpolateSurfaceNormals();
+    if(this->m_ki)
+    {
+        interpolateSurfaceNormals();
+    }
 }
 
 
-// template<typename BaseVecT>
-// void AdaptiveKSearchSurface<BaseVecT>::interpolateSurfaceNormals()
-// {
-//     // Create a temporal normal array for the
-//     vector<NormalT> tmp(this->m_numPoints, NormalT());
+template<typename BaseVecT>
+void AdaptiveKSearchSurface<BaseVecT>::interpolateSurfaceNormals()
+{
+    // Create a temporal normal array for the
+    vector<Normal<BaseVecT>> tmp(
+        this->m_pointBuffer->getNumPoints(),
+        Normal<BaseVecT>(0, 0, 1)
+    );
 
-//     // Create progress output
-//     string comment = timestamp.getElapsedTime() + "Interpolating normals ";
-//     ProgressBar progress(this->m_numPoints, comment);
+    // Create progress output
+    string comment = lvr::timestamp.getElapsedTime() + "Interpolating normals ";
+    lvr::ProgressBar progress(this->m_pointBuffer->getNumPoints(), comment);
 
-//     // Interpolate normals
-//     #pragma omp parallel for schedule(static)
-//     for( int i = 0; i < (int)this->m_numPoints; i++){
+    // Interpolate normals
+    #pragma omp parallel for schedule(static)
+    for( int i = 0; i < (int)this->m_pointBuffer->getNumPoints(); i++){
 
-//         vector<int> id;
-//         vector<float> di;
+        vector<size_t> id;
+        vector<float> di;
 
-//         this->m_searchTree->kSearch(this->m_points[i], this->m_ki, id, di);
+        this->m_searchTree->kSearch(this->m_pointBuffer->getPoint(i), this->m_ki, id, di);
 
-//         VertexT mean;
-//         NormalT mean_normal;
+        Vector<BaseVecT> mean;
 
-//         for(int j = 0; j < this->m_ki; j++)
-//         {
-//             mean += VertexT(this->m_normals[id[j]][0],
-//                             this->m_normals[id[j]][1],
-//                             this->m_normals[id[j]][2]);
-//         }
-//         mean_normal = NormalT(mean);
+        for(int j = 0; j < this->m_ki; j++)
+        {
+            mean += this->m_pointBuffer->getNormal(id[j])->asVector();
+        }
+        auto mean_normal = mean.normalized();
 
-//         tmp[i] = mean;
+        tmp[i] = mean_normal;
 
-//         ///todo Try to remove this code. Should improve the results at all.
-//         for(int j = 0; j < this->m_ki; j++)
-//         {
-//             NormalT n(this->m_normals[id[j]][0],
-//                       this->m_normals[id[j]][1],
-//                       this->m_normals[id[j]][2]);
+        ///todo Try to remove this code. Should improve the results at all.
+        for(int j = 0; j < this->m_ki; j++)
+        {
+            auto n = this->m_pointBuffer->getNormal(id[j]);
 
+            // Only override existing normals if the interpolated
+            // normals is significantly different from the initial
+            // estimation. This helps to avoid a too smooth normal
+            // field
+            if(fabs(n->dot(mean_normal.asVector())) > 0.2 )
+            {
+                this->m_pointBuffer->getNormal(id[j]) = mean_normal;
+            }
+        }
+        ++progress;
+    }
+    cout << endl;
+    cout << lvr::timestamp << "Copying normals..." << endl;
 
-//             // Only override existing normals if the interpolated
-//             // normals is significantly different from the initial
-//             // estimation. This helps to avoid a too smooth normal
-//             // field
-//             if(fabs(n * mean_normal) > 0.2 )
-//             {
-//                 this->m_normals[id[j]][0] = mean_normal[0];
-//                 this->m_normals[id[j]][1] = mean_normal[1];
-//                 this->m_normals[id[j]][2] = mean_normal[2];
-//             }
-//         }
-//         ++progress;
-//     }
-//     cout << endl;
-//     cout << timestamp << "Copying normals..." << endl;
+    for(size_t i = 0; i < this->m_pointBuffer->getNumPoints(); i++){
+        this->m_pointBuffer->getNormal(i) = tmp[i];
+    }
+}
 
-//     for(size_t i = 0; i < this->m_numPoints; i++){
-//         this->m_normals[i][0] = tmp[i][0];
-//         this->m_normals[i][1] = tmp[i][1];
-//         this->m_normals[i][2] = tmp[i][2];
-//     }
-// }
-
-// template<typename BaseVecT>
-// bool AdaptiveKSearchSurface<BaseVecT>::boundingBoxOK(const float &dx, const float &dy, const float &dz)
-// {
-//     /**
-//      * @todo Replace magic number here.
-//      */
-//     float e = 0.05f;
-//     if(dx < e * dy) return false;
-//     else if(dx < e * dz) return false;
-//     else if(dy < e * dx) return false;
-//     else if(dy < e * dz) return false;
-//     else if(dz < e * dx) return false;
-//     else if(dz < e * dy) return false;
-//     return true;
-// }
+template<typename BaseVecT>
+bool AdaptiveKSearchSurface<BaseVecT>::boundingBoxOK(float dx, float dy, float dz)
+{
+    /**
+     * @todo Replace magic number here.
+     */
+    float e = 0.05f;
+    if(dx < e * dy) return false;
+    else if(dx < e * dz) return false;
+    else if(dy < e * dx) return false;
+    else if(dy < e * dz) return false;
+    else if(dz < e * dx) return false;
+    else if(dz < e * dy) return false;
+    return true;
+}
 
 // template<typename BaseVecT>
 // void AdaptiveKSearchSurface<BaseVecT>::getkClosestVertices(const VertexT &v,
@@ -440,7 +431,7 @@ void AdaptiveKSearchSurface<BaseVecT>::calculateSurfaceNormals()
 // }
 
 // template<typename BaseVecT>
-// float AdaptiveKSearchSurface<BaseVecT>::meanDistance(const Plane<VertexT, NormalT> &p,
+// float AdaptiveKSearchSurface<BaseVecT>::meanDistance(const Plane<BaseVecT> &p,
 //         const vector<unsigned long> &id, const int &k)
 // {
 //     float sum = 0;
@@ -452,7 +443,7 @@ void AdaptiveKSearchSurface<BaseVecT>::calculateSurfaceNormals()
 // }
 
 // template<typename BaseVecT>
-// float AdaptiveKSearchSurface<BaseVecT>::distance(VertexT v, Plane<VertexT, NormalT> p)
+// float AdaptiveKSearchSurface<BaseVecT>::distance(VertexT v, Plane<BaseVecT> p)
 // {
 //     return fabs((v - p.p) * p.n);
 // }
@@ -480,7 +471,7 @@ pair<typename BaseVecT::CoordType, typename BaseVecT::CoordType>
     // }
 
     // VertexT nearest;
-    // NormalT normal;
+    // Normal<BaseVecT> normal;
 
     // for ( int i = 0; i < k; i++ )
     // {
@@ -488,7 +479,7 @@ pair<typename BaseVecT::CoordType, typename BaseVecT::CoordType>
     //     VertexT vq( this->m_points[id[i]][0], this->m_points[id[i]][1], this->m_points[id[i]][2] );
 
     //     //Get normal
-    //     NormalT n( this->m_normals[id[i]][0], this->m_normals[id[i]][1], this->m_normals[id[i]][2] );
+    //     Normal<BaseVecT> n( this->m_normals[id[i]][0], this->m_normals[id[i]][1], this->m_normals[id[i]][2] );
 
     //     nearest += vq;
     //     normal += n;
@@ -514,61 +505,58 @@ pair<typename BaseVecT::CoordType, typename BaseVecT::CoordType>
 //             this->m_points[i][2]);
 // }
 
-// template<typename BaseVecT>
-// Plane<VertexT, NormalT> AdaptiveKSearchSurface<BaseVecT>::calcPlane(const VertexT &queryPoint,
-//         const int &k,
-//         const vector<int> &id)
-// {
-//     /**
-//      * @todo Think of a better way to code this magic number.
-//      */
-//     float epsilon = 100.0;
+template<typename BaseVecT>
+Plane<BaseVecT> AdaptiveKSearchSurface<BaseVecT>::calcPlane(
+    const Point<BaseVecT> &queryPoint,
+    int k,
+    const vector<size_t> &id
+)
+{
+    /**
+     * @todo Think of a better way to code this magic number.
+     */
+    const float epsilon = 100.0;
 
-//     VertexT diff1, diff2;
-//     NormalT normal;
+    // Calculate a least sqaures fit to the given points
+    Eigen::Vector3f C;
+    Eigen::VectorXf F(k);
+    Eigen::MatrixXf B(k, 3);
 
-//     float z1 = 0;
-//     float z2 = 0;
+    for(int j = 0; j < k; j++) {
+        auto p = this->m_pointBuffer->getPoint(id[j]);
+        F(j)    = p.y;
+        B(j, 0) = 1.0f;
+        B(j, 1) = p.x;
+        B(j, 2) = p.z;
+    }
 
-//     // Calculate a least sqaures fit to the given points
-//     Eigen::Vector3f C;
-//     Eigen::VectorXf F(k);
-//     Eigen::MatrixXf B(k,3);
+    C = B.jacobiSvd(Eigen::ComputeThinU | Eigen::ComputeThinV).solve(F);
 
-//     for(int j = 0; j < k; j++){
-//         F(j)    =  this->m_points[id[j]][1];
-//         B(j, 0) = 1.0f;
-//         B(j, 1) = this->m_points[id[j]][0];
-//         B(j, 2) = this->m_points[id[j]][2];
-//     }
+    // Calculate to vectors in the fitted plane
+    auto z1 = C(0) + C(1) * (queryPoint.x + epsilon) + C(2) * queryPoint.z;
+    auto z2 = C(0) + C(1) * queryPoint.x + C(2) * (queryPoint.z + epsilon);
 
-//     C = B.jacobiSvd(Eigen::ComputeThinU | Eigen::ComputeThinV).solve(F);
+    // Calculcate the plane's normal via the cross product
+    auto diff1 = Point<BaseVecT>(queryPoint.x + epsilon, z1, queryPoint.z) - queryPoint;
+    auto diff2 = Point<BaseVecT>(queryPoint.x, z2, queryPoint.z + epsilon) - queryPoint;
 
-//     // Calculate to vectors in the fitted plane
-//     z1 = C(0) + C(1) * (queryPoint[0] + epsilon) + C(2) * queryPoint[2];
-//     z2 = C(0) + C(1) * queryPoint[0] + C(2) * (queryPoint[2] + epsilon);
+    auto normal = diff1.cross(diff2).normalized();
 
-//     // Calculcate the plane's normal via the cross product
-//     diff1 = VertexT(queryPoint[0] + epsilon, z1, queryPoint[2]) - queryPoint;
-//     diff2 = VertexT(queryPoint[0], z2, queryPoint[2] + epsilon) - queryPoint;
+    if(isnan(normal.getX()) || isnan(normal.getY()) || isnan(normal.getZ()))
+    {
+        cout << "Warning: Nan-coordinate in plane normal." << endl;
+    }
 
-//     normal = diff1.cross(diff2);
+    // Create a plane representation and return the result
+    Plane<BaseVecT> p;
+    // p.a = C(0);
+    // p.b = C(1);
+    // p.c = C(2);
+    p.n = normal;
+    p.p = queryPoint;
 
-//     if(isnan(normal[0]) || isnan(normal[1]) || isnan(normal[2]))
-//     {
-//         cout << "Warning: Nan-coordinate in plane normal." << endl;
-//     }
-
-//     // Create a plane representation and return the result
-//     Plane<VertexT, NormalT> p;
-//     p.a = C(0);
-//     p.b = C(1);
-//     p.c = C(2);
-//     p.n = normal;
-//     p.p = queryPoint;
-
-//     return p;
-// }
+    return p;
+}
 
 // template<typename BaseVecT>
 // const VertexT AdaptiveKSearchSurface<BaseVecT>::operator[]( const size_t& index ) const
@@ -584,154 +572,106 @@ pair<typename BaseVecT::CoordType, typename BaseVecT::CoordType>
 //     return m_numPoints;
 // }
 
-   // template<typename BaseVecT>
-   // Plane<VertexT, NormalT> AdaptiveKSearchSurface<BaseVecT>::calcPlaneRANSAC(const VertexT &queryPoint,
-   //         const int &k,
-   //         const vector<int> &id,
-   //         bool &ok)
-   //         {
+template<typename BaseVecT>
+Plane<BaseVecT> AdaptiveKSearchSurface<BaseVecT>::calcPlaneRANSAC(
+    const Point<BaseVecT> &queryPoint,
+    int k,
+    const vector<size_t> &id,
+    bool &ok
+)
+{
 
-   //     Plane<VertexT, NormalT> p;
+   Plane<BaseVecT> p;
 
-   //     VertexT point1;
-   //     VertexT point2;
-   //     VertexT point3;
+   //representation of best regression plane by point and normal
+   Point<BaseVecT> bestPoint;
+   Normal<BaseVecT> bestNorm(0, 0, 1);
 
-   //     //representation of best regression plane by point and normal
-   //     VertexT bestpoint;
-   //     NormalT bestNorm;
+   float bestdist = numeric_limits<float>::max();
+   float dist     = 0;
 
-   //     float bestdist = numeric_limits<float>::max();
-   //     float dist     = 0;
+   int iterations              = 0;
+   int nonimproving_iterations = 0;
 
-   //     int iterations              = 0;
-   //     int nonimproving_iterations = 0;
+   //  int max_nonimproving = max(5, k / 2);
+   int max_interations  = 10;
 
-   //     //  int max_nonimproving = max(5, k / 2);
-   //     int max_interations  = 10;
+   while((nonimproving_iterations < 5) && (iterations < max_interations))
+   {
+       // randomly choose 3 disjoint points
+       int c = 0;
 
-   //     while((nonimproving_iterations < 5) && (iterations < max_interations))
-   //     {
-   //         NormalT n0;
+       std::set<unsigned long> ids;
+       std::default_random_engine generator;
+       std::uniform_int_distribution<unsigned long> distribution(0, id.size() - 1);
+       auto number = std::bind(distribution, generator);
+       do
+       {
+           ids.insert(number());
+           c++;
+           if (c == 20) cout << "Deadlock" << endl;
+       }
+       while (ids.size() < 3 && c <= 20);
 
-   //         //randomly choose 3 disjoint points
-   //         int c = 0;
-   //         //do{
-   //         //    //cout << "AAA" << endl;
-   //         //    int index[3];
-   //         //    for(int i = 0; i < 3; i++)
-   //         //    {
-   //         //        float f = 1.0 * rand() / RAND_MAX;
-   //         //        int r = (int)(f * (id.size() - 1));
-   //         //        index[i] = id[r];
-   //         //    }
+       vector<unsigned long> sample_ids(ids.size());
+       std::copy(ids.begin(), ids.end(), sample_ids.begin());
 
-   //         //    if(index[0] == index[1] || index[1] == index[2] || index[2] == index[0])
-   //         //    {
-   //         //        continue;
-   //         //    }
+       auto point1 = this->m_pointBuffer->getPoint(sample_ids[0]);
+       auto point2 = this->m_pointBuffer->getPoint(sample_ids[1]);
+       auto point3 = this->m_pointBuffer->getPoint(sample_ids[2]);
 
-   //         //    point1 = VertexT(this->m_points[index[0]][0],this->m_points[index[0]][1], this->m_points[index[0]][2]);
-   //         //    point2 = VertexT(this->m_points[index[1]][0],this->m_points[index[1]][1], this->m_points[index[1]][2]);
-   //         //    point3 = VertexT(this->m_points[index[2]][0],this->m_points[index[2]][1], this->m_points[index[2]][2]);
+       auto n0 = (point1 - point2).cross(point1 - point3).normalized();
 
-   //         //    //compute normal of the plane given by the 3 points
-   //         //    n0 = (point1 - point2).cross(point1 - point3);
-   //         //    n0.normalize();
+       //compute error to at most 50 other randomly chosen points
+       dist = 0;
+       int n = min(50, k);
+       for(int i = 0; i < n; i++)
+       {
+           int index = id[rand() % k];
+           auto refpoint = this->m_pointBuffer->getPoint(index);
+           dist += fabs(refpoint.dot(n0.asVector()) - point1.dot(n0.asVector()));
+       }
+       if(n != 0) dist /= n;
 
-   //         //    //            if( (point1 != point2) && (point2 != point3) && (point3 != point1) )
-   //         //    //            {
-   //         //    //                break;
-   //         //    //            }
-   //         //    c++;
+       //a new optimum is found
+       if(dist < bestdist)
+       {
+           bestdist = dist;
 
-   //         //    //            cout << index[0] << " " << index[1] << " " << index[2] << " " << id.size() << endl;
-   //         //    //            cout << point1;
-   //         //    //            cout << point2;
-   //         //    //            cout << point3;
-   //         //    //            cout << endl;
+           bestPoint = point1;
+           bestNorm = n0;
 
-   //         //    // Check for deadlock
-   //         //    if(c > 50)
-   //         //    {
-   //         //        cout << "DL " << k << endl;
-   //         //        ok = false;
-   //         //        return p;
-   //         //    }
-   //         //}
-   //         //while(true);
+           nonimproving_iterations = 0;
+       }
+       else
+       {
+           nonimproving_iterations++;
+       }
 
-   //         std::set<unsigned long> ids;
-   //         std::default_random_engine generator;
-   //         std::uniform_int_distribution<unsigned long> distribution(0, id.size() - 1);
-   //         auto number = std::bind(distribution, generator);
-   //         do
-   //         {
-   //             ids.insert(number());
-   //             c++;
-   //             if (c == 20) cout << "Deadlock" << endl;
-   //         }
-   //         while (ids.size() < 3 && c <= 20);
+       iterations++;
+   }
 
-   //         vector<unsigned long> sample_ids(ids.size());
-   //         std::copy(ids.begin(), ids.end(), sample_ids.begin());
-
-   //         point1 = VertexT(this->m_points[sample_ids[0]][0], this->m_points[sample_ids[0]][1], this->m_points[sample_ids[0]][2]);
-   //         point2 = VertexT(this->m_points[sample_ids[1]][0], this->m_points[sample_ids[1]][1], this->m_points[sample_ids[1]][2]);
-   //         point3 = VertexT(this->m_points[sample_ids[2]][0], this->m_points[sample_ids[2]][1], this->m_points[sample_ids[2]][2]);
-
-   //         n0 = (point1 - point2).cross(point1 - point3);
-   //         n0.normalize();
-
-   //         //compute error to at most 50 other randomly chosen points
-   //         dist = 0;
-   //         int n = min(50,k);
-   //         for(int i = 0; i < n; i++)
-   //         {
-   //             int index = id[rand() % k];
-   //             VertexT refpoint = VertexT(this->m_points[index][0], this->m_points[index][1] ,this->m_points[index][2]);
-   //             dist += fabs(refpoint * n0 - point1 * n0);
-   //         }
-   //         if(n != 0) dist /= n;
-
-   //         //a new optimum is found
-   //         if(dist < bestdist)
-   //         {
-   //             bestdist = dist;
-
-   //             bestpoint = point1;
-   //             bestNorm = n0;
-
-   //             nonimproving_iterations = 0;
-   //         }
-   //         else
-   //         {
-   //             nonimproving_iterations++;
-   //         }
-
-   //         iterations++;
-   //     }
-
-   //     // Save plane parameters
-   //     p.a = 0;
-   //     p.b = 0;
-   //     p.c = 0;
-   //     p.n = bestNorm;
-   //     p.p = bestpoint;
+   // Save plane parameters
+   // p.a = 0;
+   // p.b = 0;
+   // p.c = 0;
+   p.n = bestNorm;
+   p.p = bestPoint;
 
 
-   //     return p;
-   //         }
+   return p;
+}
+
 
 // template<typename BaseVecT>
-// Plane<VertexT, NormalT> AdaptiveKSearchSurface<BaseVecT>::calcPlaneRANSACfromPoints(const VertexT &queryPoint,
+// Plane<BaseVecT> AdaptiveKSearchSurface<BaseVecT>::calcPlaneRANSACfromPoints(const VertexT &queryPoint,
 //         const int &k,
 //         const vector<VertexT> points,
-//         NormalT c_normal,
+//         Normal<BaseVecT> c_normal,
 //         bool &ok)
 // {
 //     // the resulting plane
-//     Plane<VertexT, NormalT> p;
+//     Plane<BaseVecT> p;
 
 //     VertexT point1;
 //     VertexT point2;
@@ -739,7 +679,7 @@ pair<typename BaseVecT::CoordType, typename BaseVecT::CoordType>
 
 //     //representation of best regression plane by point and normal
 //     VertexT bestpoint;
-//     NormalT bestNorm;
+//     Normal<BaseVecT> bestNorm;
 
 //     float bestdist = numeric_limits<float>::max();
 //     float dist     = 0;
@@ -753,7 +693,7 @@ pair<typename BaseVecT::CoordType, typename BaseVecT::CoordType>
 //     bool first_it = true;
 //     while((nonimproving_iterations < 5) && (iterations < max_interations))
 //     {
-//         NormalT n0;
+//         Normal<BaseVecT> n0;
 //         //randomly choose 3 disjoint points
 //         int c = 0;
 //         do{
@@ -778,7 +718,7 @@ pair<typename BaseVecT::CoordType, typename BaseVecT::CoordType>
 //             if( (point1 != point2) && (point2 != point3) && (point3 != point1) )
 //             {
 //                 // at first, use interpolated normal
-//                 NormalT check(0.0, 0.0, 0.0);
+//                 Normal<BaseVecT> check(0.0, 0.0, 0.0);
 //                 if(first_it && !(check == c_normal))
 //                 {
 //                     n0 = c_normal;

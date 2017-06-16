@@ -83,6 +83,9 @@ struct Vector : public BaseVecT
     typename BaseVecT::CoordType distance(const BaseVecT &other) const = delete;
     typename BaseVecT::CoordType distance2(const BaseVecT &other) const = delete;
 
+    // More type safe overwrite
+    Vector<BaseVecT> cross(const Vector<BaseVecT> &other) const;
+
     // The standard operators are deleted and replaced by strongly typed ones.
     BaseVecT operator+(const BaseVecT &other) const = delete;
     BaseVecT operator-(const BaseVecT &other) const = delete;

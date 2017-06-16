@@ -87,7 +87,7 @@ public:
     bool hasNormals() const;
 
     /**
-     * @brief Adds normal information for all points.
+     * @brief Adds (or overwrites) normal information for all points.
      *
      * All normals are initialized with the given value or with a dummy
      * value. Correct normals can later be set via `getNormal()`.
