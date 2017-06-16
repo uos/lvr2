@@ -63,4 +63,10 @@ const BoundingBox<BaseVecT>& PointsetSurface<BaseVecT>::getBoundingBox() const
     return m_boundingBox;
 }
 
+template<typename BaseVecT>
+PointBufferPtr<BaseVecT> PointsetSurface<BaseVecT>::pointBuffer() const
+{
+    return m_pointBuffer;
+}
+
 } // namespace lvr2
