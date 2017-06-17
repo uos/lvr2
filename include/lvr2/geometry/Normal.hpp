@@ -97,7 +97,6 @@ struct Normal : private Vector<BaseVecT>
 
     Vector<BaseVecT> asVector() const;
 
-
     // Publicly re-export methods that do not modify the vector and thus are
     // safe to use.
     using Vector<BaseVecT>::length;
