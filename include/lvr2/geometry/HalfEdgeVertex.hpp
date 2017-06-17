@@ -54,6 +54,6 @@ public:
     Point<BaseVecT> pos;
 };
 
-} // namespace lvr
+} // namespace lvr2
 
 #endif /* LVR2_GEOMETRY_HALFEDGEVERTEX_H_ */
