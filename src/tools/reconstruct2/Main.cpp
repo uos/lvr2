@@ -230,7 +230,7 @@ void lvr2Playground()
     auto v1H = mesh.addVertex(BaseVector<float>(1, 0, 0));
     auto v2H = mesh.addVertex(BaseVector<float>(1, 0, 1));
     auto bottomFace1 = mesh.addFace(v0H, v1H, v2H);
-    mesh.getPointsOfFace(bottomFace1);
+    mesh.getVertexPositionsOfFace(bottomFace1);
 
     using StableVector = lvr2::StableVector<Vec, VertexHandle>;
 

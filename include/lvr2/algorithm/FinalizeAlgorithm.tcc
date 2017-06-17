@@ -41,24 +41,23 @@ boost::shared_ptr<lvr::MeshBuffer> FinalizeAlgorithm<BaseVecT>::apply(const Base
 
     // TODO: use real normal
     Normal<BaseVecT> normal(0, 1, 0);
+
+    size_t vertexCount = 0;
+    for (auto vH : mesh.vertices())
     {
-        size_t i = 0;
+        auto point = mesh.getVertexPosition(vH);
 
-        for (auto iter = mesh.verticesBegin(); iter != mesh.verticesEnd(); ++iter, ++i)
-        {
-            auto point = mesh.getPoint(*iter);
+        vertices.push_back(point.x);
+        vertices.push_back(point.y);
+        vertices.push_back(point.z);
 
-            vertices.push_back(point.x);
-            vertices.push_back(point.y);
-            vertices.push_back(point.z);
+        normals.push_back(normal.getX());
+        normals.push_back(normal.getY());
+        normals.push_back(normal.getZ());
 
-            normals.push_back(normal.getX());
-            normals.push_back(normal.getY());
-            normals.push_back(normal.getZ());
-
-            // Save index of vertex for face mapping
-            idxMap.insert(*iter, i);
-        }
+        // Save index of vertex for face mapping
+        idxMap.insert(vH, vertexCount);
+        vertexCount++;
     }
 
     // Create face buffer
