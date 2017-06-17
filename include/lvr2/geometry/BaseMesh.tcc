@@ -28,9 +28,9 @@ namespace lvr2
 {
 
 template<typename HandleT>
-MeshHandleIteratorPtr<HandleT>& MeshHandleIteratorPtr<HandleT>::operator++(int)
+MeshHandleIteratorPtr<HandleT>& MeshHandleIteratorPtr<HandleT>::operator++()
 {
-    (*m_iter)++;
+    ++(*m_iter);
     return *this;
 }
 

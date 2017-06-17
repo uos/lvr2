@@ -40,8 +40,8 @@ namespace lvr2
 /**
  * @brief An iterator for handles in the BaseMesh.
  *
- * Important: This is not a fail fast iterator! If the mesh is changed while using an instance of this
- * iterator the behavior is undefined!
+ * Important: This is not a fail fast iterator! If the mesh struct is changed
+ * while using an instance of this iterator the behavior is undefined!
  *
  * @tparam HandleT The type of the requested handle
  */
@@ -50,12 +50,13 @@ class MeshHandleIterator
 {
     static_assert(std::is_base_of<BaseHandle<Index>, HandleT>::value, "HandleT must inherit from BaseHandle!");
 public:
-    /// Iterates to next vertex in the mesh
-    virtual MeshHandleIterator& operator++(int) = 0;
+    /// Advances the iterator once. Using the dereference operator afterwards
+    /// will yield the next handle.
+    virtual MeshHandleIterator& operator++() = 0;
     virtual bool operator==(const MeshHandleIterator& other) const = 0;
     virtual bool operator!=(const MeshHandleIterator& other) const = 0;
 
-    /// Returns the handle of the current vertex
+    /// Returns the current handle.
     virtual HandleT operator*() const = 0;
 };
 
@@ -65,7 +66,7 @@ class MeshHandleIteratorPtr
 {
 public:
     MeshHandleIteratorPtr(std::unique_ptr<MeshHandleIterator<HandleT>> iter) : m_iter(std::move(iter)) {};
-    MeshHandleIteratorPtr& operator++(int);
+    MeshHandleIteratorPtr& operator++();
     bool operator==(const MeshHandleIteratorPtr& other) const;
     bool operator!=(const MeshHandleIteratorPtr& other) const;
     HandleT operator*() const;
@@ -141,37 +142,43 @@ public:
     virtual std::array<VertexHandle, 3> getVertexHandlesOfFace(FaceHandle handle) const = 0;
 
     /**
-     * @brief Create an iterator at the start of the vertices of the current mesh
+     * @brief Returns an iterator to the first vertex of this mesh.
+     *
      * @return When dereferenced, this iterator returns a handle to the current vertex
      */
     virtual MeshHandleIteratorPtr<VertexHandle> verticesBegin() const = 0;
 
     /**
-     * @brief Create an iterator at the end of the vertices of the current mesh
+     * @brief Returns an iterator to the element following the last vertex of this mesh.
+     *
      * @return When dereferenced, this iterator returns a handle to the current vertex
      */
     virtual MeshHandleIteratorPtr<VertexHandle> verticesEnd() const = 0;
 
     /**
-     * @brief Create an iterator at the start of the faces of the current mesh
+     * @brief Returns an iterator to the first face of this mesh.
+     *
      * @return When dereferenced, this iterator returns a handle to the current face
      */
     virtual MeshHandleIteratorPtr<FaceHandle> facesBegin() const = 0;
 
     /**
-     * @brief Create an iterator at the end of the faces of the current mesh
+     * @brief Returns an iterator to the element following the last face of this mesh.
+     *
      * @return When dereferenced, this iterator returns a handle to the current face
      */
     virtual MeshHandleIteratorPtr<FaceHandle> facesEnd() const = 0;
 
     /**
-     * @brief Create an iterator at the start of the edges of the current mesh
+     * @brief Returns an iterator to the first edge of this mesh.
+     *
      * @return When dereferenced, this iterator returns a handle to the current edge
      */
     virtual MeshHandleIteratorPtr<EdgeHandle> edgesBegin() const = 0;
 
     /**
-     * @brief Create an iterator at the end of the edges of the current mesh
+     * @brief Returns an iterator to the element following the last edge of this mesh.
+     *
      * @return When dereferenced, this iterator returns a handle to the current edge
      */
     virtual MeshHandleIteratorPtr<EdgeHandle> edgesEnd() const = 0;

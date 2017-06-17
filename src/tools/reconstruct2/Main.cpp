@@ -263,9 +263,9 @@ void lvr2Playground()
         vec.erase(VertexHandle(i));
     }
 
-    for (auto iter = vec.begin(); iter != vec.end(); iter++)
+    for (auto handle : vec)
     {
-        cout << *iter << ": " << vec[*iter] << endl;
+        cout << handle << ": " << vec[handle] << endl;
     }
 
     // VectorMap stuff 2
