@@ -81,4 +81,66 @@ size_t StableVector<ElemT, HandleT>::sizeUsed() const
     return m_usedCount;
 }
 
+template<typename ElemT, typename HandleT>
+StableVectorIterator<HandleT> StableVector<ElemT, HandleT>::begin() const
+{
+    return StableVectorIterator<HandleT>(&this->m_deleted);
+}
+
+template<typename ElemT, typename HandleT>
+StableVectorIterator<HandleT> StableVector<ElemT, HandleT>::end() const
+{
+    return StableVectorIterator<HandleT>(&this->m_deleted, true);
+}
+
+template<typename HandleT>
+StableVectorIterator<HandleT>& StableVectorIterator<HandleT>::operator=(const StableVectorIterator<HandleT>& other)
+{
+    if (&other == this)
+    {
+        return *this;
+    }
+    m_pos = other.m_pos;
+    m_deleted = other.m_deleted;
+
+    return *this;
+}
+
+template<typename HandleT>
+bool StableVectorIterator<HandleT>::operator==(const StableVectorIterator<HandleT>& other) const
+{
+    return m_pos == other.m_pos && m_deleted == other.m_deleted;
+}
+
+template<typename HandleT>
+bool StableVectorIterator<HandleT>::operator!=(const StableVectorIterator<HandleT>& other) const
+{
+    return !(*this == other);
+}
+
+template<typename HandleT>
+StableVectorIterator<HandleT>& StableVectorIterator<HandleT>::operator++()
+{
+    // If not at the end, advance by one element
+    if (m_pos < m_deleted->size())
+    {
+        m_pos++;
+    }
+
+    // Advance until the next element, at least 1 element behind the vector, to
+    // indicate the end of iteration.
+    while (m_pos < m_deleted->size() && (*m_deleted)[m_pos])
+    {
+        m_pos++;
+    }
+
+    return *this;
+}
+
+template<typename HandleT>
+HandleT StableVectorIterator<HandleT>::operator*() const
+{
+    return HandleT(m_pos);
+}
+
 } // namespace lvr2

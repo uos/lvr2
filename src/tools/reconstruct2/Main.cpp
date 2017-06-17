@@ -230,10 +230,13 @@ void lvr2Playground()
     auto v1H = mesh.addVertex(BaseVector<float>(1, 0, 0));
     auto v2H = mesh.addVertex(BaseVector<float>(1, 0, 1));
     auto bottomFace1 = mesh.addFace(v0H, v1H, v2H);
-    mesh.getPointsOfFace(bottomFace1);
+    mesh.getVertexPositionsOfFace(bottomFace1);
+
+    using StableVector = lvr2::StableVector<Vec, VertexHandle>;
 
     // StableVector stuff
-    lvr2::StableVector<Vec, VertexHandle> vec;
+    cout << "========= StableVector =========" << endl;
+    StableVector vec;
     VertexHandle handle1(1);
     VertexHandle handle2(0);
     cout << vec.sizeUsed() << std::endl;
@@ -248,9 +251,25 @@ void lvr2Playground()
     cout << vec.size() << std::endl;
     cout << vec1.x << std::endl;
 
+    vec = StableVector();
+
+    for (int i = 0; i < 10; i++)
+    {
+        vec.push_back(Vec(i, 0, 0));
+    }
+
+    for (uint32_t i = 2; i < 12; i += 2)
+    {
+        vec.erase(VertexHandle(i));
+    }
+
+    for (auto handle : vec)
+    {
+        cout << handle << ": " << vec[handle] << endl;
+    }
 
     // VectorMap stuff 2
-    cout << "VectorMap" << endl;
+    cout << "========= VectorMap =========" << endl;
     lvr2::VectorMap<VertexHandle, std::string> map;
     cout << map.sizeUsed() << endl;
     map.insert(handle1, "test1");
@@ -335,8 +354,13 @@ void testFinalize(lvr2::HalfEdgeMesh<lvr2::BaseVector<float>>& mesh)
     createHouseFromNikolaus(mesh);
     mesh.debugCheckMeshIntegrity();
 
+    // Check all for loops
+    for (auto h : mesh.faces()) {}
+    for (auto h : mesh.edges()) {}
+    for (auto h : mesh.vertices()) {}
+
     FinalizeAlgorithm<BaseVector<float>> finalize;
-    auto buffer = finalize.apply(std::move(mesh));
+    auto buffer = finalize.apply(mesh);
 
     // Create output model and save to file
     auto model = new lvr::Model(buffer);

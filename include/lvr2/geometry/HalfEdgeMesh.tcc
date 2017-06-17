@@ -235,6 +235,8 @@ FaceHandle
         }
     } while(eH != startEdgeH);
     cout << "+-----------------------------+" << endl;
+
+    return newFaceH;
 }
 
 // ========================================================================
@@ -397,7 +399,7 @@ size_t HalfEdgeMesh<BaseVecT>::numVertices() const
 }
 
 template <typename BaseVecT>
-Point<BaseVecT> HalfEdgeMesh<BaseVecT>::getPoint(VertexHandle handle) const
+Point<BaseVecT> HalfEdgeMesh<BaseVecT>::getVertexPosition(VertexHandle handle) const
 {
     return getV(handle).pos;
 }
@@ -420,9 +422,9 @@ bool HalfEdgeMesh<BaseVecT>::debugCheckMeshIntegrity() const
     cout << "+--------------------+" << endl;
     cout << "| Checking all faces |" << endl;
     cout << "+--------------------+" << endl;
-    for (int i = 0; i < m_faces.size(); i++)
+    for (auto fH : m_faces)
     {
-        FaceHandle fH(i);
+        // FaceHandle fH = *iter;
         cout << "== Checking Face " << fH << "..." << endl;
         auto startEdgeH = getF(fH).edge;
         auto eH = startEdgeH;
@@ -466,9 +468,8 @@ bool HalfEdgeMesh<BaseVecT>::debugCheckMeshIntegrity() const
     cout << "+-------------------------------------+" << endl;
 
     EdgeMap<bool> visited(m_edges.size(), false);
-    for (int i = 0; i < m_edges.size(); i++)
+    for (auto startEdgeH : m_edges)
     {
-        const auto startEdgeH = EdgeHandle(i);
         auto loopEdgeH = startEdgeH;
 
         if (visited[startEdgeH] || getE(startEdgeH).face)
@@ -494,9 +495,8 @@ bool HalfEdgeMesh<BaseVecT>::debugCheckMeshIntegrity() const
     cout << "| List of unconnected vertices: |" << endl;
     cout << "+-------------------------------+" << endl;
 
-    for (int i = 0; i < m_vertices.size(); i++)
+    for (auto vH : m_vertices)
     {
-        auto vH = VertexHandle(i);
         if (!getV(vH).outgoing)
         {
             cout << "== " << vH << endl;
@@ -513,7 +513,7 @@ size_t HalfEdgeMesh<BaseVecT>::numFaces() const
 }
 
 template <typename BaseVecT>
-std::array<Point<BaseVecT>, 3> HalfEdgeMesh<BaseVecT>::getPointsOfFace(FaceHandle handle) const
+std::array<Point<BaseVecT>, 3> HalfEdgeMesh<BaseVecT>::getVertexPositionsOfFace(FaceHandle handle) const
 {
     auto handles = getVertexHandlesOfFace(handle);
 
@@ -535,6 +535,81 @@ HalfEdgeMesh<BaseVecT>::getVertexHandlesOfFace(FaceHandle handle) const
     auto e3 = getE(e2.next);
 
     return {e1.target, e2.target, e3.target};
+}
+
+template<typename HandleT>
+HemVertexIterator<HandleT>& HemVertexIterator<HandleT>::operator++()
+{
+    ++m_iterator;
+    return *this;
+}
+
+template<typename HandleT>
+bool HemVertexIterator<HandleT>::operator==(const MeshHandleIterator<HandleT>& other) const
+{
+    auto cast = dynamic_cast<const HemVertexIterator<HandleT>*>(&other);
+    return cast && m_iterator == cast->m_iterator;
+}
+
+template<typename HandleT>
+bool HemVertexIterator<HandleT>::operator!=(const MeshHandleIterator<HandleT>& other) const
+{
+    auto cast = dynamic_cast<const HemVertexIterator<HandleT>*>(&other);
+    return !cast || m_iterator != cast->m_iterator;
+}
+
+template<typename HandleT>
+HandleT HemVertexIterator<HandleT>::operator*() const
+{
+    return *m_iterator;
+}
+
+template <typename BaseVecT>
+MeshHandleIteratorPtr<VertexHandle> HalfEdgeMesh<BaseVecT>::verticesBegin() const
+{
+    return MeshHandleIteratorPtr<VertexHandle>(
+        std::make_unique<HemVertexIterator<VertexHandle>>(this->m_vertices.begin())
+    );
+}
+
+template <typename BaseVecT>
+MeshHandleIteratorPtr<VertexHandle> HalfEdgeMesh<BaseVecT>::verticesEnd() const
+{
+    return MeshHandleIteratorPtr<VertexHandle>(
+        std::make_unique<HemVertexIterator<VertexHandle>>(this->m_vertices.end())
+    );
+}
+
+template <typename BaseVecT>
+MeshHandleIteratorPtr<FaceHandle> HalfEdgeMesh<BaseVecT>::facesBegin() const
+{
+    return MeshHandleIteratorPtr<FaceHandle>(
+        std::make_unique<HemVertexIterator<FaceHandle>>(this->m_faces.begin())
+    );
+}
+
+template <typename BaseVecT>
+MeshHandleIteratorPtr<FaceHandle> HalfEdgeMesh<BaseVecT>::facesEnd() const
+{
+    return MeshHandleIteratorPtr<FaceHandle>(
+        std::make_unique<HemVertexIterator<FaceHandle>>(this->m_faces.end())
+    );
+}
+
+template <typename BaseVecT>
+MeshHandleIteratorPtr<EdgeHandle> HalfEdgeMesh<BaseVecT>::edgesBegin() const
+{
+    return MeshHandleIteratorPtr<EdgeHandle>(
+        std::make_unique<HemVertexIterator<EdgeHandle>>(this->m_edges.begin())
+    );
+}
+
+template <typename BaseVecT>
+MeshHandleIteratorPtr<EdgeHandle> HalfEdgeMesh<BaseVecT>::edgesEnd() const
+{
+    return MeshHandleIteratorPtr<EdgeHandle>(
+        std::make_unique<HemVertexIterator<EdgeHandle>>(this->m_edges.end())
+    );
 }
 
 } // namespace lvr
