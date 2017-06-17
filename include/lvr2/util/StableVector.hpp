@@ -65,9 +65,14 @@ public:
 /**
  * @brief A vector, which preserves its indices even when an element is deleted
  *
- * This is basically a wrapper for the std::vector, which marks an element as deleted but does not delete it.
+ * This is basically a wrapper for the std::vector, which marks an element as
+ * deleted but does not actually delete it.
  *
- * USE WITH CAUTION: This NEVER deletes values and can get very large!
+ * USE WITH CAUTION: This NEVER deletes values (except on its own destruction)
+ * and can get very large if used incorrectly! This class is designed for
+ * situations where the number deletes are not greatly more than the number
+ * of insertions. The memory requirements of this class are O(n_pb) where n_pb
+ * is the number of `push_back()` calls.
  *
  * @tparam ElemT Type of elements in the vector
  * @tparam HandleT Type of the index for the vector
