@@ -422,9 +422,9 @@ bool HalfEdgeMesh<BaseVecT>::debugCheckMeshIntegrity() const
     cout << "+--------------------+" << endl;
     cout << "| Checking all faces |" << endl;
     cout << "+--------------------+" << endl;
-    for (auto iter = m_faces.begin(); iter != m_faces.end(); iter++)
+    for (auto fH : m_faces)
     {
-        FaceHandle fH = *iter;
+        // FaceHandle fH = *iter;
         cout << "== Checking Face " << fH << "..." << endl;
         auto startEdgeH = getF(fH).edge;
         auto eH = startEdgeH;
@@ -468,9 +468,8 @@ bool HalfEdgeMesh<BaseVecT>::debugCheckMeshIntegrity() const
     cout << "+-------------------------------------+" << endl;
 
     EdgeMap<bool> visited(m_edges.size(), false);
-    for (auto iter = m_edges.begin(); iter != m_edges.end(); iter++)
+    for (auto startEdgeH : m_edges)
     {
-        const auto startEdgeH = *iter;
         auto loopEdgeH = startEdgeH;
 
         if (visited[startEdgeH] || getE(startEdgeH).face)
@@ -496,9 +495,8 @@ bool HalfEdgeMesh<BaseVecT>::debugCheckMeshIntegrity() const
     cout << "| List of unconnected vertices: |" << endl;
     cout << "+-------------------------------+" << endl;
 
-    for (auto iter = m_vertices.begin(); iter != m_vertices.end(); iter++)
+    for (auto vH : m_vertices)
     {
-        auto vH = *iter;
         if (!getV(vH).outgoing)
         {
             cout << "== " << vH << endl;
@@ -540,9 +538,9 @@ HalfEdgeMesh<BaseVecT>::getVertexHandlesOfFace(FaceHandle handle) const
 }
 
 template<typename HandleT>
-HemVertexIterator<HandleT>& HemVertexIterator<HandleT>::operator++(int)
+HemVertexIterator<HandleT>& HemVertexIterator<HandleT>::operator++()
 {
-    m_iterator++;
+    ++m_iterator;
     return *this;
 }
 

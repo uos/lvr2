@@ -44,7 +44,7 @@ boost::shared_ptr<lvr::MeshBuffer> FinalizeAlgorithm<BaseVecT>::apply(const Base
     {
         size_t i = 0;
 
-        for (auto iter = mesh.verticesBegin(); iter != mesh.verticesEnd(); iter++, ++i)
+        for (auto iter = mesh.verticesBegin(); iter != mesh.verticesEnd(); ++iter, ++i)
         {
             auto point = mesh.getPoint(*iter);
 
@@ -64,7 +64,7 @@ boost::shared_ptr<lvr::MeshBuffer> FinalizeAlgorithm<BaseVecT>::apply(const Base
     // Create face buffer
     std::vector<unsigned int> faces;
     faces.reserve(mesh.numFaces() * 3);
-    for (auto iter = mesh.facesBegin(); iter != mesh.facesEnd(); iter++)
+    for (auto iter = mesh.facesBegin(); iter != mesh.facesEnd(); ++iter)
     {
         auto handles = mesh.getVertexHandlesOfFace(*iter);
         for (auto handle: handles)

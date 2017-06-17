@@ -48,7 +48,7 @@ class HemVertexIterator : public MeshHandleIterator<HandleT>
 {
 public:
     HemVertexIterator(StableVectorIterator<HandleT> iterator) : m_iterator(iterator) {};
-    HemVertexIterator& operator++(int);
+    HemVertexIterator& operator++();
     bool operator==(const MeshHandleIterator<HandleT>& other) const;
     bool operator!=(const MeshHandleIterator<HandleT>& other) const;
     HandleT operator*() const;
@@ -69,13 +69,31 @@ public:
     using Vertex = HalfEdgeVertex<BaseVecT>;
 
 
+    // ========================================================================
+    // = Implementing the `BaseMesh` interface
+    // ========================================================================
+
+    // We declare all metods as `final` to make devirtualization optimizations
+    // more likely and effective.
     VertexHandle addVertex(Point<BaseVecT> pos) final;
-    FaceHandle addFace(VertexHandle v1, VertexHandle v2, VertexHandle v3) final;
+    FaceHandle addFace(VertexHandle v1H, VertexHandle v2H, VertexHandle v3H) final;
     size_t numVertices() const final;
-    Point<BaseVecT> getPoint(VertexHandle handle) const final;
     size_t numFaces() const final;
+    Point<BaseVecT> getPoint(VertexHandle handle) const final;
     std::array<Point<BaseVecT>, 3> getPointsOfFace(FaceHandle handle) const final;
     std::array<VertexHandle, 3> getVertexHandlesOfFace(FaceHandle handle) const final;
+
+    MeshHandleIteratorPtr<VertexHandle> verticesBegin() const final;
+    MeshHandleIteratorPtr<VertexHandle> verticesEnd() const final;
+    MeshHandleIteratorPtr<FaceHandle> facesBegin() const final;
+    MeshHandleIteratorPtr<FaceHandle> facesEnd() const final;
+    MeshHandleIteratorPtr<EdgeHandle> edgesBegin() const final;
+    MeshHandleIteratorPtr<EdgeHandle> edgesEnd() const final;
+
+
+    // ========================================================================
+    // = Other public methods
+    // ========================================================================
 
     bool debugCheckMeshIntegrity() const;
 
@@ -128,13 +146,6 @@ private:
      */
     template <typename Pred>
     OptionalEdgeHandle findEdgeAroundVertex(VertexHandle vH, Pred pred) const;
-
-    MeshHandleIteratorPtr<VertexHandle> verticesBegin() const;
-    MeshHandleIteratorPtr<VertexHandle> verticesEnd() const;
-    MeshHandleIteratorPtr<FaceHandle> facesBegin() const;
-    MeshHandleIteratorPtr<FaceHandle> facesEnd() const;
-    MeshHandleIteratorPtr<EdgeHandle> edgesBegin() const;
-    MeshHandleIteratorPtr<EdgeHandle> edgesEnd() const;
 };
 
 } // namespace lvr

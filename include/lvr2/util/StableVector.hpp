@@ -57,7 +57,7 @@ public:
     bool operator==(const StableVectorIterator& other) const;
     bool operator!=(const StableVectorIterator& other) const;
 
-    StableVectorIterator& operator++(int);
+    StableVectorIterator& operator++();
 
     HandleT operator*() const;
 };

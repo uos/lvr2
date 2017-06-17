@@ -119,15 +119,16 @@ bool StableVectorIterator<HandleT>::operator!=(const StableVectorIterator<Handle
 }
 
 template<typename HandleT>
-StableVectorIterator<HandleT>& StableVectorIterator<HandleT>::operator++(int)
+StableVectorIterator<HandleT>& StableVectorIterator<HandleT>::operator++()
 {
-    // If not at the end, enhance by one element
+    // If not at the end, advance by one element
     if (m_pos < m_deleted->size())
     {
         m_pos++;
     }
 
-    // Enhance until the next element, at least 1 element behind the vector, to indicate end
+    // Advance until the next element, at least 1 element behind the vector, to
+    // indicate the end of iteration.
     while (m_pos < m_deleted->size() && (*m_deleted)[m_pos])
     {
         m_pos++;
