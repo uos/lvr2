@@ -117,7 +117,7 @@ struct Normal : private Vector<BaseVecT>
     Normal<BaseVecT> operator-() const;
 };
 
-} // namespace lvr
+} // namespace lvr2
 
 #include <lvr2/geometry/Normal.tcc>
 

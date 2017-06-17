@@ -739,4 +739,4 @@ MeshHandleIteratorPtr<EdgeHandle> HalfEdgeMesh<BaseVecT>::edgesEnd() const
     );
 }
 
-} // namespace lvr
+} // namespace lvr2

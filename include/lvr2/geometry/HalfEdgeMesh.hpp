@@ -160,7 +160,7 @@ private:
     std::ostream& dout() const;
 };
 
-} // namespace lvr
+} // namespace lvr2
 
 #include <lvr2/geometry/HalfEdgeMesh.tcc>
 
