@@ -399,7 +399,7 @@ size_t HalfEdgeMesh<BaseVecT>::numVertices() const
 }
 
 template <typename BaseVecT>
-Point<BaseVecT> HalfEdgeMesh<BaseVecT>::getPoint(VertexHandle handle) const
+Point<BaseVecT> HalfEdgeMesh<BaseVecT>::getVertexPosition(VertexHandle handle) const
 {
     return getV(handle).pos;
 }
@@ -513,7 +513,7 @@ size_t HalfEdgeMesh<BaseVecT>::numFaces() const
 }
 
 template <typename BaseVecT>
-std::array<Point<BaseVecT>, 3> HalfEdgeMesh<BaseVecT>::getPointsOfFace(FaceHandle handle) const
+std::array<Point<BaseVecT>, 3> HalfEdgeMesh<BaseVecT>::getVertexPositionsOfFace(FaceHandle handle) const
 {
     auto handles = getVertexHandlesOfFace(handle);
 

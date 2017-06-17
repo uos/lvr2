@@ -130,14 +130,14 @@ public:
     /**
      * @brief Get the point of the requested vertex.
      */
-    virtual Point<BaseVecT> getPoint(VertexHandle handle) const = 0;
+    virtual Point<BaseVecT> getVertexPosition(VertexHandle handle) const = 0;
 
     /**
      * @brief Get the points of the requested face.
      *
      * @return The points of the vertices in counter-clockwise order.
      */
-    virtual std::array<Point<BaseVecT>, 3> getPointsOfFace(FaceHandle handle) const = 0;
+    virtual std::array<Point<BaseVecT>, 3> getVertexPositionsOfFace(FaceHandle handle) const = 0;
 
     /**
      * @brief Get vertex handles of the requested face.

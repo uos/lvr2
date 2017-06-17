@@ -79,8 +79,8 @@ public:
     FaceHandle addFace(VertexHandle v1H, VertexHandle v2H, VertexHandle v3H) final;
     size_t numVertices() const final;
     size_t numFaces() const final;
-    Point<BaseVecT> getPoint(VertexHandle handle) const final;
-    std::array<Point<BaseVecT>, 3> getPointsOfFace(FaceHandle handle) const final;
+    Point<BaseVecT> getVertexPosition(VertexHandle handle) const final;
+    std::array<Point<BaseVecT>, 3> getVertexPositionsOfFace(FaceHandle handle) const final;
     std::array<VertexHandle, 3> getVertexHandlesOfFace(FaceHandle handle) const final;
 
     MeshHandleIteratorPtr<VertexHandle> verticesBegin() const final;
