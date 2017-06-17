@@ -66,6 +66,4 @@ Normal<BaseVecT> Normal<BaseVecT>::operator-() const
     return Normal(-this->x, -this->y, -this->z);
 }
 
-
-
 } // namespace lvr2
