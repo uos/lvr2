@@ -369,6 +369,10 @@ void AdaptiveKSearchSurface<VertexT, NormalT>::calculateSurfaceNormals()
         this->m_normals[i][0] = normal[0];
         this->m_normals[i][1] = normal[1];
         this->m_normals[i][2] = normal[2];
+        if (i == 16261)
+        {
+            cout << "just set normal to " << normal << endl;
+        }
         ++progress;
     }
     cout << endl;
@@ -521,6 +525,7 @@ float AdaptiveKSearchSurface<VertexT, NormalT>::distance(VertexT v, Plane<Vertex
 template<typename VertexT, typename NormalT>
 void AdaptiveKSearchSurface<VertexT, NormalT>::distance(VertexT v, float &projectedDistance, float &euklideanDistance)
 {
+    static int counter = 0;
     int k = this->m_kd;
 
     vector<int> id;
@@ -552,6 +557,10 @@ void AdaptiveKSearchSurface<VertexT, NormalT>::distance(VertexT v, float &projec
         nearest += vq;
         normal += n;
 
+        if (counter < 1)
+        {
+            cout << "normal: " << normal << "| adding: " << n << endl;
+        }
     }
 
     normal /= k;
@@ -562,7 +571,6 @@ void AdaptiveKSearchSurface<VertexT, NormalT>::distance(VertexT v, float &projec
     projectedDistance = (v - nearest) * normal;
     euklideanDistance = (v - nearest).length();
 
-    static int counter = 0;
     if (counter < 10)
     {
         cout << "DIST: " << v << " ===> (" << projectedDistance << ", " << euklideanDistance << ") | ";
@@ -571,6 +579,7 @@ void AdaptiveKSearchSurface<VertexT, NormalT>::distance(VertexT v, float &projec
             cout << x << " ";
         }
         cout << endl;
+        cout << "     @ " << normal << ", " << nearest << endl;
         counter++;
     }
 }
