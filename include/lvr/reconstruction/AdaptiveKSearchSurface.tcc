@@ -544,7 +544,7 @@ void AdaptiveKSearchSurface<VertexT, NormalT>::distance(VertexT v, float &projec
     }
 
     VertexT nearest;
-    NormalT normal;
+    VertexT avgNormal;
 
     for ( int i = 0; i < k; i++ )
     {
@@ -552,20 +552,20 @@ void AdaptiveKSearchSurface<VertexT, NormalT>::distance(VertexT v, float &projec
         VertexT vq( this->m_points[id[i]][0], this->m_points[id[i]][1], this->m_points[id[i]][2] );
 
         //Get normal
-        NormalT n( this->m_normals[id[i]][0], this->m_normals[id[i]][1], this->m_normals[id[i]][2] );
+        VertexT n( this->m_normals[id[i]][0], this->m_normals[id[i]][1], this->m_normals[id[i]][2] );
 
         nearest += vq;
-        normal += n;
+        avgNormal += n;
 
         if (counter < 1)
         {
-            cout << "normal: " << normal << "| adding: " << n << endl;
+            cout << "normal: " << avgNormal << "| adding: " << n << endl;
         }
     }
 
-    normal /= k;
+    avgNormal /= k;
     nearest /= k;
-    normal.normalize();
+    NormalT normal(avgNormal);
 
     //Calculate distance
     projectedDistance = (v - nearest) * normal;
