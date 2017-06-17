@@ -74,6 +74,11 @@ private:
     std::unique_ptr<MeshHandleIterator<HandleT>> m_iter;
 };
 
+// Forward declaration
+template <typename> class FaceIteratorProxy;
+template <typename> class EdgeIteratorProxy;
+template <typename> class VertexIteratorProxy;
+
 /**
  * @brief Interface for triangle-meshes with information about face neighborhood.
  *
@@ -182,6 +187,66 @@ public:
      * @return When dereferenced, this iterator returns a handle to the current edge
      */
     virtual MeshHandleIteratorPtr<EdgeHandle> edgesEnd() const = 0;
+
+    /**
+     * @brief Method for usage in range-based for-loops.
+     *
+     * Returns a simple proxy object that uses `facesBegin()` and `facesEnd()`.
+     */
+    virtual FaceIteratorProxy<BaseVecT> faces() const;
+
+    /**
+     * @brief Method for usage in range-based for-loops.
+     *
+     * Returns a simple proxy object that uses `edgesBegin()` and `edgesEnd()`.
+     */
+    virtual EdgeIteratorProxy<BaseVecT> edges() const;
+
+    /**
+     * @brief Method for usage in range-based for-loops.
+     *
+     * Returns a simple proxy object that uses `verticesBegin()` and `verticesEnd()`.
+     */
+    virtual VertexIteratorProxy<BaseVecT> vertices() const;
+};
+
+template <typename BaseVecT>
+class FaceIteratorProxy
+{
+public:
+    MeshHandleIteratorPtr<FaceHandle> begin() const;
+    MeshHandleIteratorPtr<FaceHandle> end() const;
+
+private:
+    FaceIteratorProxy(const BaseMesh<BaseVecT>& mesh) : m_mesh(mesh) {}
+    const BaseMesh<BaseVecT>& m_mesh;
+    friend BaseMesh<BaseVecT>;
+};
+
+template <typename BaseVecT>
+class EdgeIteratorProxy
+{
+public:
+    MeshHandleIteratorPtr<EdgeHandle> begin() const;
+    MeshHandleIteratorPtr<EdgeHandle> end() const;
+
+private:
+    EdgeIteratorProxy(const BaseMesh<BaseVecT>& mesh) : m_mesh(mesh) {}
+    const BaseMesh<BaseVecT>& m_mesh;
+    friend BaseMesh<BaseVecT>;
+};
+
+template <typename BaseVecT>
+class VertexIteratorProxy
+{
+public:
+    MeshHandleIteratorPtr<VertexHandle> begin() const;
+    MeshHandleIteratorPtr<VertexHandle> end() const;
+
+private:
+    VertexIteratorProxy(const BaseMesh<BaseVecT>& mesh) : m_mesh(mesh) {}
+    const BaseMesh<BaseVecT>& m_mesh;
+    friend BaseMesh<BaseVecT>;
 };
 
 } // namespace lvr2

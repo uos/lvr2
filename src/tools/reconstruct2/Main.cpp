@@ -354,6 +354,11 @@ void testFinalize(lvr2::HalfEdgeMesh<lvr2::BaseVector<float>>& mesh)
     createHouseFromNikolaus(mesh);
     mesh.debugCheckMeshIntegrity();
 
+    // Check all for loops
+    for (auto h : mesh.faces()) {}
+    for (auto h : mesh.edges()) {}
+    for (auto h : mesh.vertices()) {}
+
     FinalizeAlgorithm<BaseVector<float>> finalize;
     auto buffer = finalize.apply(mesh);
 
