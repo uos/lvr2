@@ -75,10 +75,4 @@ SearchTreePtr<BaseVecT> getSearchTree(string name, PointBufferPtr<BaseVecT> buff
     return nullptr;
 }
 
-template <typename BaseVecT>
-std::shared_ptr<PointsetSurface<BaseVecT>> getPointsetSurface(string name)
-{
-    panic_unimplemented("");
-}
-
 } // namespace lvr2
