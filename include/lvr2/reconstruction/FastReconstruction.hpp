@@ -73,7 +73,7 @@ public:
     /**
      * @brief Constructor.
      *
-     * @param grid	A HashGrid instance on which the reconstruction is performed.
+     * @param grid  A HashGrid instance on which the reconstruction is performed.
      */
     FastReconstruction(shared_ptr<HashGrid<BaseVecT, BoxT>> grid);
 

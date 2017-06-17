@@ -42,7 +42,7 @@ FastBox<BaseVecT>::FastBox(Point<BaseVecT> center)
 {
     for(int i = 0; i < 8; i++)
     {
-    	m_vertices[i] = INVALID_INDEX;
+        m_vertices[i] = INVALID_INDEX;
     }
 
     for(int i = 0; i < 27; i++)
@@ -119,22 +119,22 @@ float FastBox<BaseVecT>::calcIntersection(float x1, float x2, float d1, float d2
 {
 
     // Calculate the surface intersection using linear interpolation
-	// and check for different signs of the given distance values.
-	// If for some reason there was no sign change, return the
-	// middle point
-	if( (d1 < 0 && d2 >= 0) || (d2 < 0 && d1 >= 0) )
-	{
-	  float interpolation = x2 - d2 * (x1 - x2) / (d1 - d2);
-	  if(compareFloat(interpolation, x1))
-		interpolation += 0.01;
-	  else if(compareFloat(interpolation, x2))
-		interpolation -= 0.01;
-	  return  interpolation;
-	}
-	else
-	{
-	  return  (x2 + x1) / 2.0;
-	}
+    // and check for different signs of the given distance values.
+    // If for some reason there was no sign change, return the
+    // middle point
+    if( (d1 < 0 && d2 >= 0) || (d2 < 0 && d1 >= 0) )
+    {
+      float interpolation = x2 - d2 * (x1 - x2) / (d1 - d2);
+      if(compareFloat(interpolation, x1))
+        interpolation += 0.01;
+      else if(compareFloat(interpolation, x2))
+        interpolation -= 0.01;
+      return  interpolation;
+    }
+    else
+    {
+      return  (x2 + x1) / 2.0;
+    }
 }
 
 template<typename BaseVecT>
@@ -193,68 +193,68 @@ void FastBox<BaseVecT>::getSurface(
     uint &globalIndex
 )
 {
-	Point<BaseVecT> corners[8];
-	Point<BaseVecT> vertex_positions[12];
+    Point<BaseVecT> corners[8];
+    Point<BaseVecT> vertex_positions[12];
 
-	float distances[8];
+    float distances[8];
 
-	getCorners(corners, qp);
-	getDistances(distances, qp);
-	getIntersections(corners, distances, vertex_positions);
+    getCorners(corners, qp);
+    getDistances(distances, qp);
+    getIntersections(corners, distances, vertex_positions);
 
-	int index = getIndex(qp);
+    int index = getIndex(qp);
 
-	// Do not create traingles for invalid boxes
-	for (int i = 0; i < 8; i++)
-	{
-		if (qp[m_vertices[i]].m_invalid)
-		{
-			return;
-		}
-	}
+    // Do not create traingles for invalid boxes
+    for (int i = 0; i < 8; i++)
+    {
+        if (qp[m_vertices[i]].m_invalid)
+        {
+            return;
+        }
+    }
 
     // Generate the local approximation surface according to the marching
     // cubes table for Paul Burke.
     for(int a = 0; lvr::MCTable[index][a] != -1; a+= 3)
     {
-	    OptionalVertexHandle vertex_indices[3];
+        OptionalVertexHandle vertex_indices[3];
 
         for(int b = 0; b < 3; b++)
         {
-			auto edge_index = lvr::MCTable[index][a + b];
+            auto edge_index = lvr::MCTable[index][a + b];
 
-			//If no index was found generate new index and vertex
-			//and update all neighbor boxes
-			if(!m_intersections[edge_index])
-			{
-				auto v = vertex_positions[edge_index];
-				m_intersections[edge_index] = mesh.addVertex(v);
+            //If no index was found generate new index and vertex
+            //and update all neighbor boxes
+            if(!m_intersections[edge_index])
+            {
+                auto v = vertex_positions[edge_index];
+                m_intersections[edge_index] = mesh.addVertex(v);
 
-				for(int i = 0; i < 3; i++)
-				{
-					auto current_neighbor = m_neighbors[lvr::neighbor_table[edge_index][i]];
-					if(current_neighbor != 0)
-					{
-						current_neighbor->m_intersections[lvr::neighbor_vertex_table[edge_index][i]] = m_intersections[edge_index];
-					}
-				}
+                for(int i = 0; i < 3; i++)
+                {
+                    auto current_neighbor = m_neighbors[lvr::neighbor_table[edge_index][i]];
+                    if(current_neighbor != 0)
+                    {
+                        current_neighbor->m_intersections[lvr::neighbor_vertex_table[edge_index][i]] = m_intersections[edge_index];
+                    }
+                }
 
-				// Increase the global vertex counter to save the buffer
-				// position were the next new vertex has to be inserted
-				globalIndex++;
-			}
+                // Increase the global vertex counter to save the buffer
+                // position were the next new vertex has to be inserted
+                globalIndex++;
+            }
 
-			//Save vertex index in mesh
-			vertex_indices[b] = m_intersections[edge_index];
-		}
+            //Save vertex index in mesh
+            vertex_indices[b] = m_intersections[edge_index];
+        }
 
-		// Add triangle actually does the normal interpolation for us.
-		mesh.addFace(
+        // Add triangle actually does the normal interpolation for us.
+        mesh.addFace(
             vertex_indices[0].unwrap(),
             vertex_indices[1].unwrap(),
             vertex_indices[2].unwrap()
         );
-	}
+    }
 }
 
 } // namespace lvr2
