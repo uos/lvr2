@@ -61,7 +61,7 @@ void SearchTreeFlann<BaseVecT>::kSearch(
     for (int i = 0; i < k; i++)
     {
         indices.push_back(static_cast<size_t>(flann_indices[i]));
-        indices.push_back(CoordT(flann_distances[i]));
+        distances.push_back(CoordT(flann_distances[i]));
     }
 }
 

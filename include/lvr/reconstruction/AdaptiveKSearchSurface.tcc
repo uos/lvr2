@@ -88,7 +88,7 @@ AdaptiveKSearchSurface<VertexT, NormalT>::AdaptiveKSearchSurface(
 
     init();
 
-    
+
 #ifdef LVR_USE_PCL
     if( searchTreeName == "pcl"  || searchTreeName == "PCL" )
     {
@@ -193,7 +193,7 @@ void AdaptiveKSearchSurface<VertexT, NormalT>::parseScanPoses(string posefile)
 	    {
 	    	this->m_searchTree = search_tree::Ptr(new SearchTreeFlann<VertexT>(loader, n, 1, 1, 1));
 	    }
-	
+
 		if( !this->m_poseTree )
 		{
 			cout << timestamp << "No Valid Searchtree class specified!" << endl;
@@ -562,6 +562,17 @@ void AdaptiveKSearchSurface<VertexT, NormalT>::distance(VertexT v, float &projec
     projectedDistance = (v - nearest) * normal;
     euklideanDistance = (v - nearest).length();
 
+    static int counter = 0;
+    if (counter < 10)
+    {
+        cout << "DIST: " << v << " ===> (" << projectedDistance << ", " << euklideanDistance << ") | ";
+        for (auto x : id)
+        {
+            cout << x << " ";
+        }
+        cout << endl;
+        counter++;
+    }
 }
 
 template<typename VertexT, typename NormalT>
@@ -728,7 +739,7 @@ size_t AdaptiveKSearchSurface<VertexT, NormalT>::getNumPoints()
 			   ids.insert(number());
 			   c++;
 			   if (c == 20) cout << "Deadlock" << endl;
-		   } 
+		   }
 		   while (ids.size() < 3 && c <= 20);
 
 		   vector<unsigned long> sample_ids(ids.size());
@@ -932,5 +943,3 @@ void AdaptiveKSearchSurface<VertexT, NormalT>::colorizePointCloud(
 
 
 } // namespace lvr
-
-

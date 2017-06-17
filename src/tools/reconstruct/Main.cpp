@@ -220,7 +220,7 @@ int main(int argc, char** argv)
 		{
 #ifdef LVR_USE_PCL
 			surface = psSurface::Ptr( new pclSurface(p_loader));
-#else 
+#else
 			cout << timestamp << "Can't create a PCL point set surface without PCL installed." << endl;
 			exit(-1);
 #endif
@@ -297,12 +297,12 @@ int main(int argc, char** argv)
 		{
 			Texture::m_texelSize = options.getTexelSize();
 		}
-		
+
 		if(options.getTexturePack() != "")
 		{
 			Texturizer<Vertex<float> , Normal<float> >::m_filename = options.getTexturePack();
 			if(options.getStatsCoeffs())
-			{	
+			{
 				float* sc = options.getStatsCoeffs();
 				for (int i = 0; i < 14; i++)
 				{
@@ -415,52 +415,52 @@ int main(int argc, char** argv)
 		}
 
 
-		
+
 		// Create mesh
 		reconstruction->getMesh(mesh);
-		
+
 		// Save grid to file
 		if(options.saveGrid())
 		{
 			grid->saveGrid("fastgrid.grid");
 		}
 
-		if(options.getDanglingArtifacts())
- 		{
-			mesh.removeDanglingArtifacts(options.getDanglingArtifacts());
-		}
+		// if(options.getDanglingArtifacts())
+ 	// 	{
+		// 	mesh.removeDanglingArtifacts(options.getDanglingArtifacts());
+		// }
 
-		// Optimize mesh
-		mesh.cleanContours(options.getCleanContourIterations());
-		mesh.setClassifier(options.getClassifier());
-		mesh.getClassifier().setMinRegionSize(options.getSmallRegionThreshold());
+		// // Optimize mesh
+		// mesh.cleanContours(options.getCleanContourIterations());
+		// mesh.setClassifier(options.getClassifier());
+		// mesh.getClassifier().setMinRegionSize(options.getSmallRegionThreshold());
 
-		if(options.optimizePlanes())
-		{
-			mesh.optimizePlanes(options.getPlaneIterations(),
-					options.getNormalThreshold(),
-					options.getMinPlaneSize(),
-					options.getSmallRegionThreshold(),
-					true);
+		// if(options.optimizePlanes())
+		// {
+		// 	mesh.optimizePlanes(options.getPlaneIterations(),
+		// 			options.getNormalThreshold(),
+		// 			options.getMinPlaneSize(),
+		// 			options.getSmallRegionThreshold(),
+		// 			true);
 
-			mesh.fillHoles(options.getFillHoles());
-			mesh.optimizePlaneIntersections();
-			mesh.restorePlanes(options.getMinPlaneSize());
+		// 	mesh.fillHoles(options.getFillHoles());
+		// 	mesh.optimizePlaneIntersections();
+		// 	mesh.restorePlanes(options.getMinPlaneSize());
 
-			if(options.getNumEdgeCollapses())
-			{
-				QuadricVertexCosts<ColorVertex<float, unsigned char> , Normal<float> > c = QuadricVertexCosts<ColorVertex<float, unsigned char> , Normal<float> >(true);
-				mesh.reduceMeshByCollapse(options.getNumEdgeCollapses(), c);
-			}
-		}
-		else if(options.clusterPlanes())
-		{
-			mesh.clusterRegions(options.getNormalThreshold(), options.getMinPlaneSize());
-			mesh.fillHoles(options.getFillHoles());
-		}
+		// 	if(options.getNumEdgeCollapses())
+		// 	{
+		// 		QuadricVertexCosts<ColorVertex<float, unsigned char> , Normal<float> > c = QuadricVertexCosts<ColorVertex<float, unsigned char> , Normal<float> >(true);
+		// 		mesh.reduceMeshByCollapse(options.getNumEdgeCollapses(), c);
+		// 	}
+		// }
+		// else if(options.clusterPlanes())
+		// {
+		// 	mesh.clusterRegions(options.getNormalThreshold(), options.getMinPlaneSize());
+		// 	mesh.fillHoles(options.getFillHoles());
+		// }
 
 		// Save triangle mesh
-		if ( options.retesselate() )
+		if ( false && options.retesselate() )
 		{
 			mesh.finalizeAndRetesselate(options.generateTextures(), options.getLineFusionThreshold());
 		}
@@ -489,7 +489,7 @@ int main(int argc, char** argv)
 		if(options.generateTextures())
 		{
 			ModelFactory::saveModel( m, "triangle_mesh.obj");
-		}		
+		}
 		cout << timestamp << "Program end." << endl;
 
 	}
@@ -499,4 +499,3 @@ int main(int argc, char** argv)
 	}
 	return 0;
 }
-
