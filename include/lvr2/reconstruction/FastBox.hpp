@@ -47,22 +47,22 @@ namespace lvr2
 template<typename BoxT>
 struct BoxTraits
 {
-	const static string type;
+    const static string type;
 };
 
 /**
  * @brief A volume representation used by the standard Marching Cubes
- * 		  implementation.
+ *        implementation.
  */
 template<typename BaseVecT>
 class FastBox
 {
 public:
 
-	/**
-	 * @brief Constructs a new box at the given center point defined
-	 * 		  by the used \ref{m_voxelsize}.
-	 */
+    /**
+     * @brief Constructs a new box at the given center point defined
+     *        by the used \ref{m_voxelsize}.
+     */
     FastBox(Point<BaseVecT> center);
 
     /**
@@ -75,28 +75,28 @@ public:
      *        in the reconstruction grid. This methods assigns the
      *        index \ref{value} to the \ref{index}th cell corner.
      *
-     * @param index			One of the eight cell corners.
-     * @param value			An index in the reconstruction grid.
+     * @param index         One of the eight cell corners.
+     * @param value         An index in the reconstruction grid.
      */
     void setVertex(int index, uint value);
 
-	void setFusion(bool fusionBox);
+    void setFusion(bool fusionBox);
 
     /**
      * @brief Adjacent cells in the grid should use common vertices.
-     * 		  This functions assigns the value of corner[index] to
-     * 		  the corresponding corner of the give neighbor cell.
+     *        This functions assigns the value of corner[index] to
+     *        the corresponding corner of the give neighbor cell.
      *
-     * @param index			One of the eight cell corners.
-     * @param cell			A neighbor cell.
+     * @param index         One of the eight cell corners.
+     * @param cell          A neighbor cell.
      */
     void setNeighbor(int index, FastBox<BaseVecT>* cell);
 
     /**
      * @brief Gets the vertex index of the queried cell corner.
      *
-     * @param index			One of the eight cell corners
-     * @return				A vertex index.
+     * @param index         One of the eight cell corners
+     * @return              A vertex index.
      */
     uint getVertex(int index);
 
@@ -108,14 +108,14 @@ public:
 
     /**
      * @brief Performs a local reconstruction according to the standard
-     * 		  Marching Cubes table from Paul Bourke.
+     *        Marching Cubes table from Paul Bourke.
      *
-     * @param mesh			The reconstructed mesh
-     * @param query_points	A vector containing the query points of the
-     * 						reconstruction grid
-     * @param globalIndex	The index of the newest vertex in the mesh, i.e.
-     * 						a newly generated vertex shout have the index
-     * 						globalIndex + 1.
+     * @param mesh          The reconstructed mesh
+     * @param query_points  A vector containing the query points of the
+     *                      reconstruction grid
+     * @param globalIndex   The index of the newest vertex in the mesh, i.e.
+     *                      a newly generated vertex shout have the index
+     *                      globalIndex + 1.
      */
     virtual void getSurface(
         BaseMesh<BaseVecT>& mesh,
@@ -127,12 +127,12 @@ public:
     static float             m_voxelsize;
 
     /// An index value that is used to reference vertices that are not in the grid
-    static uint		   		INVALID_INDEX;
+    static uint             INVALID_INDEX;
 
     /// The twelve intersection between box and surface
     OptionalVertexHandle        m_intersections[12];
-    bool 						m_fusionBox;
-    bool 						m_fusedBox;
+    bool                        m_fusionBox;
+    bool                        m_fusedBox;
     bool                        m_oldfusionBox;
     bool                        m_fusionNeighborBox;
      /// The box center
@@ -144,13 +144,13 @@ public:
 protected:
 
 
-	inline bool compareFloat(double num1, double num2)
-	{
-		if(fabs(num1 - num2) < std::numeric_limits<double>::epsilon())
-			return true;
-		else
-			return false;
-	}
+    inline bool compareFloat(double num1, double num2)
+    {
+        if(fabs(num1 - num2) < std::numeric_limits<double>::epsilon())
+            return true;
+        else
+            return false;
+    }
 
     /**
      * @brief Calculated the index for the MC table
@@ -197,7 +197,7 @@ protected:
 
 
     /// The eight box corners
-    uint                  		m_vertices[8];
+    uint                        m_vertices[8];
 
     template <typename T> friend class BilinearFastBox;
 
