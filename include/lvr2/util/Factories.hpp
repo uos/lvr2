@@ -40,9 +40,6 @@ namespace lvr2
 template <typename BaseVecT>
 SearchTreePtr<BaseVecT> getSearchTree(string name, PointBufferPtr<BaseVecT> buffer);
 
-template <typename BaseVecT>
-std::shared_ptr<PointsetSurface<BaseVecT>> getPointsetSurface(string name);
-
 } // namespace lvr2
 
 #include <lvr2/util/Factories.tcc>
