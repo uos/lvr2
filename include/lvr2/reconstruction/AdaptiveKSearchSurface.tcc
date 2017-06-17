@@ -301,7 +301,11 @@ void AdaptiveKSearchSurface<BaseVecT>::calculateSurfaceNormals()
         }
 
         // Save result in normal array
-        this->m_pointBuffer->getNormal(i) = normal;
+        *this->m_pointBuffer->getNormal(i) = normal;
+        if (i == 16261)
+        {
+            cout << "just set normal to " << normal.asVector() << endl;
+        }
         ++progress;
     }
     cout << endl;
@@ -356,7 +360,7 @@ void AdaptiveKSearchSurface<BaseVecT>::interpolateSurfaceNormals()
             // field
             if(fabs(n->dot(mean_normal.asVector())) > 0.2 )
             {
-                this->m_pointBuffer->getNormal(id[j]) = mean_normal;
+                *this->m_pointBuffer->getNormal(id[j]) = mean_normal;
             }
         }
         ++progress;
@@ -365,7 +369,7 @@ void AdaptiveKSearchSurface<BaseVecT>::interpolateSurfaceNormals()
     cout << lvr::timestamp << "Copying normals..." << endl;
 
     for(size_t i = 0; i < this->m_pointBuffer->getNumPoints(); i++){
-        this->m_pointBuffer->getNormal(i) = tmp[i];
+        *this->m_pointBuffer->getNormal(i) = tmp[i];
     }
 }
 
@@ -451,6 +455,8 @@ template<typename BaseVecT>
 pair<typename BaseVecT::CoordType, typename BaseVecT::CoordType>
     AdaptiveKSearchSurface<BaseVecT>::distance(Point<BaseVecT> p) const
 {
+    static int counter = 0;
+
     int k = this->m_kd;
 
     vector<size_t> id;
@@ -477,6 +483,11 @@ pair<typename BaseVecT::CoordType, typename BaseVecT::CoordType>
 
         nearest += vq;
         avg_normal += n.asVector();
+
+        if (counter < 1)
+        {
+            cout << "avg_normal: " << avg_normal << "| adding:" << n.asVector() << endl;
+        }
     }
 
     avg_normal /= k;
@@ -487,15 +498,15 @@ pair<typename BaseVecT::CoordType, typename BaseVecT::CoordType>
     auto projectedDistance = (p - Point<BaseVecT>(nearest)).dot(normal.asVector());
     auto euklideanDistance = (p - Point<BaseVecT>(nearest)).length();
 
-    static int counter = 0;
     if (counter < 10)
     {
-        cout << "DIST: " << p << " ===> (" << projectedDistance << ", " << euklideanDistance << ") | ";
+        cout << "DIST: " << p << endl << " ===> (" << projectedDistance << ", " << euklideanDistance << ") | ";
         for (auto x : id)
         {
             cout << x << " ";
         }
         cout << endl;
+        cout << "     @ " << normal.asVector() << ", " << Point<BaseVecT>(nearest) << endl;
         counter++;
     }
 
