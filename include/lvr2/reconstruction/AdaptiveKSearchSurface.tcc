@@ -462,6 +462,8 @@ pair<typename BaseVecT::CoordType, typename BaseVecT::CoordType>
         this->m_searchTree->kSearch( p, k, id, di );
     }
 
+
+
     BaseVecT nearest;
     Vector<BaseVecT> avg_normal;
 
@@ -485,7 +487,20 @@ pair<typename BaseVecT::CoordType, typename BaseVecT::CoordType>
     auto projectedDistance = (p - Point<BaseVecT>(nearest)).dot(normal.asVector());
     auto euklideanDistance = (p - Point<BaseVecT>(nearest)).length();
 
+    static int counter = 0;
+    if (counter < 10)
+    {
+        cout << "DIST: " << p << " ===> (" << projectedDistance << ", " << euklideanDistance << ") | ";
+        for (auto x : id)
+        {
+            cout << x << " ";
+        }
+        cout << endl;
+        counter++;
+    }
+
     return make_pair(projectedDistance, euklideanDistance);
+    // return make_pair(euklideanDistance, projectedDistance);
 }
 
 // template<typename BaseVecT>

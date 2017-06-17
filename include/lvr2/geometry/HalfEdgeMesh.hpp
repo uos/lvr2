@@ -142,10 +142,22 @@ private:
      *        first edge that satisfies the given predicate.
      *
      * @return Returns None if `v` does not have an outgoing edge or if no
-     *         edge satisfies the predicate.
+     *         edge in the circle satisfies the predicate.
      */
     template <typename Pred>
     OptionalEdgeHandle findEdgeAroundVertex(VertexHandle vH, Pred pred) const;
+
+    /**
+     * @brief Iterates over all ingoing edges of the vertex `startEdge.target`,
+     *        starting at the edge `startEdgeH`, returning the first edge that
+     *        satisfies the given predicate.
+     *
+     * @return Returns None if no edge in the circle satisfies the predicate.
+     */
+    template <typename Pred>
+    OptionalEdgeHandle findEdgeAroundVertex(EdgeHandle startEdgeH, Pred pred) const;
+
+    std::ostream& dout() const;
 };
 
 } // namespace lvr

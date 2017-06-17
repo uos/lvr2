@@ -48,8 +48,8 @@ template <typename BaseVecT>
 FaceHandle
     HalfEdgeMesh<BaseVecT>::addFace(VertexHandle v1H, VertexHandle v2H, VertexHandle v3H)
 {
-    // cout << "##################################################" << endl;
-    // cout << "##### addFace(): " << v1H << " -> " << v2H << " -> " << v3H << endl;
+    dout() << "##################################################" << endl;
+    dout() << "##### addFace(): " << v1H << " -> " << v2H << " -> " << v3H << endl;
 
     using std::array;
     using std::make_tuple;
@@ -112,7 +112,8 @@ FaceHandle
         // --> Case (A): neither edge is part of a face (both edges are new)
         if (!eIn.face && !eOut.face)
         {
-            // cout << "Case (A) for " << vH << endl;
+            dout() << "Case (A) for " << vH << endl;
+
             // We need to handle the special case of `v` not having an
             // outgoing edge.
             if (v.outgoing)
@@ -138,8 +139,8 @@ FaceHandle
                 eIn.next = eStartH;
                 getE(eEndH).next = eOutH;
 
-                // cout << "(A) ... setting " << eInH << ".next = " << eStartH << endl;
-                // cout << "(A) ... setting " << eEndH << ".next = " << eOutH << endl;
+                dout() << "(A) ... setting " << eInH << ".next = " << eStartH << endl;
+                dout() << "(A) ... setting " << eEndH << ".next = " << eOutH << endl;
             }
             else
             {
@@ -151,7 +152,8 @@ FaceHandle
         // --> Case (B): only the ingoing edge is part of a face
         else if (eIn.face && !eOut.face)
         {
-            // cout << "Case (B) for " << vH << endl;
+            dout() << "Case (B) for " << vH << endl;
+
             // We know that `v` has at least two outgoing edges (since
             // there is a face adjacent to it).
             //
@@ -173,19 +175,75 @@ FaceHandle
                 return !getE(edgeH).face && getE(edgeH).next == oldNext;
             }).unwrap();
 
+            dout() << "(B) ... setting " << eH << ".next = " << eOutH << endl;
             getE(eH).next = eOutH;
         }
         // --> Case (C): only the outgoing edge is part of a face
         else if (!eIn.face && eOut.face)
         {
-            // cout << "Case (C) for " << vH << endl;
+            dout() << "Case (C) for " << vH << endl;
+            dout() << "(C) ... setting " << eInH << ".next = " << getE(eOut.twin).next << endl;
             eIn.next = getE(eOut.twin).next;
         }
         // --> Case (D): both edges are already part of another face
         if (eIn.face && eOut.face)
         {
-            // cout << "Case (D) for " << vH << endl;
-            // Nothing needs to be done!
+            dout() << "Case (D) for " << vH
+                 << "(eIn = " << eInH << ", eOut = " << eOutH << ")" << endl;
+
+            // Here, two fan blades around `v` will be connected. Both blades
+            // need to be in the right order for this to work. The order is
+            // given by the `next` handles of the edges with the target `v`.
+            // By following those handles (and `twin` handles), we can
+            // circulate around `v`.
+            //
+            // When circulating, both fan blades need to be next to each other.
+            // If that's not the case, we need to fix a few `next` handles. Not
+            // being in the right order is caused by case (A), but it can't be
+            // avoided there. Only when connecting the blades here, we can know
+            // how to create the `next` circle.
+            if (getE(eOut.twin).next != eIn.twin)
+            {
+                // Here we need to conceptually delete one fan blade from the
+                // `next` circle around `v` and re-insert it into the right
+                // position. We choose to "move" the fan blade starting with
+                // `eIn`.
+                //
+                // The most difficult part is to find the edge that points to
+                // `eIn.twin`. We could reach it easily if we would store
+                // `previous` handles; finding it without those handles is
+                // possible by circulating around the vertex.
+                auto inactiveBladeEndH = findEdgeAroundVertex(vH, [&, this](auto edgeH)
+                {
+                    return getE(edgeH).next == eIn.twin;
+                }).unwrap();
+
+                // Instead of pointing to `eIn.twin`, it needs to "skip" the
+                // `eIn` blade and point to the blade afterwards. So we need to
+                // find the end of the `eIn` blade. Its next handle is the one
+                // `inactiveBladeEnd` needs to point to.
+                auto eInBladeEndH = findEdgeAroundVertex(
+                    eInH,
+                    [&, this](auto edgeH)
+                    {
+                        return !getE(edgeH).face;
+                    }
+                ).unwrap();
+
+                // We can finally set the next pointer to skip the `eIn`
+                // blade. After this line, circulating around `v` will work
+                // but skip the whole `eIn` blade.
+                getE(inactiveBladeEndH).next = getE(eInBladeEndH).next;
+
+                // Now we need to re-insert it again. Fortunately, this is
+                // easier. After this line, the circle is broken, but it will
+                // be repaired by repairing the `next` handles within the face
+                // later.
+                getE(eInBladeEndH).next = getE(eOut.twin).next;
+
+                dout() << "(D) ... setting " << inactiveBladeEndH << ".next = " << getE(eInBladeEndH).next << endl;
+                dout() << "(D) ... setting " << eInBladeEndH << ".next = " << getE(eOut.twin).next << endl;
+            }
         }
     }
 
@@ -211,29 +269,32 @@ FaceHandle
     }
 
     // Debug output
-    cout << "+------ Summary face " << newFaceH << " ------+" << endl;
-    auto startEdgeH = f.edge;
-    auto eH = startEdgeH;
-    int i = 0;
-    do
+    if (v1H.idx() == 33 || v2H.idx() == 33 || v3H.idx() == 33)
     {
-        auto& e = getE(eH);
-        auto source = getE(e.twin).target;
-        auto target = e.target;
-        cout << "| " << source.idx() << " ==> " << eH
-             << " ==> " << target.idx() << " [next: " << e.next
-             << ", twin-next: " << getE(e.twin).next << "]"
-             << endl;
-
-        eH = e.next;
-        i++;
-        if (i >= 4)
+        dout() << "+------ Summary face " << newFaceH << " ------+" << endl;
+        auto startEdgeH = f.edge;
+        auto eH = startEdgeH;
+        int i = 0;
+        do
         {
-            cout << "DETECTED BUG" << endl;
-            throw false;
-        }
-    } while(eH != startEdgeH);
-    cout << "+-----------------------------+" << endl;
+            auto& e = getE(eH);
+            auto source = getE(e.twin).target;
+            auto target = e.target;
+            dout() << "| " << source.idx() << " ==> " << eH
+                 << " ==> " << target.idx() << " [next: " << e.next
+                 << ", twin-next: " << getE(e.twin).next << "]"
+                 << endl;
+
+            eH = e.next;
+            i++;
+            if (i >= 4)
+            {
+                dout() << "DETECTED BUG" << endl;
+                throw false;
+            }
+        } while(eH != startEdgeH);
+        dout() << "+-----------------------------+" << endl;
+    }
 
     return newFaceH;
 }
@@ -306,16 +367,16 @@ template <typename BaseVecT>
 EdgeHandle
     HalfEdgeMesh<BaseVecT>::findOrCreateEdgeBetween(VertexHandle fromH, VertexHandle toH)
 {
-    // cout << "# findOrCreateEdgeBetween: " << fromH << " --> " << toH << endl;
+    dout() << "# findOrCreateEdgeBetween: " << fromH << " --> " << toH << endl;
     auto foundEdge = edgeBetween(fromH, toH);
     if (foundEdge)
     {
-        // cout << ">> found: " << foundEdge << endl;
+        dout() << ">> found: " << foundEdge << endl;
         return foundEdge.unwrap();
     }
     else
     {
-        // cout << ">> adding pair..." << endl;
+        dout() << ">> adding pair..." << endl;
         return addEdgePair(fromH, toH).first;
     }
 }
@@ -327,35 +388,51 @@ OptionalEdgeHandle
 {
     // This function simply follows `next` and `twin` handles to visit all
     // edges around a vertex.
-    // cout << ">> Trying to find an edge around " << vH << " ..." << endl;
+    dout() << ">> Trying to find an edge around " << vH << " ..." << endl;
 
     auto& v = getV(vH);
     if (!v.outgoing)
     {
-        // cout << ">> ... " << vH << " has no outgoing edge, returning none." << endl;
+        dout() << ">> ... " << vH << " has no outgoing edge, returning none." << endl;
         return OptionalEdgeHandle();
     }
 
-    const auto startEdgeH = getE(v.outgoing.unwrap()).twin;
+    return findEdgeAroundVertex(getE(v.outgoing.unwrap()).twin, pred);
+}
+
+template <typename BaseVecT>
+template <typename Pred>
+OptionalEdgeHandle
+    HalfEdgeMesh<BaseVecT>::findEdgeAroundVertex(EdgeHandle startEdgeH, Pred pred) const
+{
+    // This function simply follows `next` and `twin` handles to visit all
+    // edges around a vertex.
+    dout() << ">> Trying to find an edge starting from " << startEdgeH << " ..." << endl;
+
     auto loopEdgeH = startEdgeH;
 
-    // cout << ">> ... start search at outgoing " << v.outgoing.unwrap() << endl;
-    // cout << ">> ... startEdgeH: " << startEdgeH << endl;
-
+    int count = 0;
     while (!pred(loopEdgeH))
     {
-        // cout << ">> ... >> LOOP: loop-" << loopEdgeH << " @ "
-             // << getE(loopEdgeH).face
-             // << " with next: " << getE(loopEdgeH).next << endl;
+        dout() << ">> ... >> LOOP: loop-" << loopEdgeH << " @ "
+             << getE(loopEdgeH).face
+             << " with next: " << getE(loopEdgeH).next << endl;
 
         loopEdgeH = getE(getE(loopEdgeH).next).twin;
         if (loopEdgeH == startEdgeH)
         {
-            // cout << ">> ... we visited all edges once without success, returning none." << endl;
+            dout() << ">> ... we visited all edges once without success, returning none." << endl;
             return OptionalEdgeHandle();
         }
+
+        count++;
+        if (count > 30)
+        {
+            dout() << "... breaking probably endless loop" << endl;
+            throw false;
+        }
     }
-    // cout << ">> ... found " << loopEdgeH << "." << endl;
+    dout() << ">> ... found " << loopEdgeH << "." << endl;
     return loopEdgeH;
 }
 
@@ -406,25 +483,23 @@ Point<BaseVecT> HalfEdgeMesh<BaseVecT>::getVertexPosition(VertexHandle handle) c
 template <typename BaseVecT>
 bool HalfEdgeMesh<BaseVecT>::debugCheckMeshIntegrity() const
 {
-    using std::cout;
     using std::endl;
 
-    cout << endl;
-    cout << "===============================" << endl;
-    cout << "===     Integrity check     ===" << endl;
-    cout << "===============================" << endl;
+    dout() << endl;
+    dout() << "===============================" << endl;
+    dout() << "===     Integrity check     ===" << endl;
+    dout() << "===============================" << endl;
 
     bool error = false;
 
     // First: let's visit all faces
-    cout << endl;
-    cout << "+--------------------+" << endl;
-    cout << "| Checking all faces |" << endl;
-    cout << "+--------------------+" << endl;
+    dout() << endl;
+    dout() << "+--------------------+" << endl;
+    dout() << "| Checking all faces |" << endl;
+    dout() << "+--------------------+" << endl;
     for (auto fH : m_faces)
     {
-        // FaceHandle fH = *iter;
-        cout << "== Checking Face " << fH << "..." << endl;
+        dout() << "== Checking Face " << fH << "..." << endl;
         auto startEdgeH = getF(fH).edge;
         auto eH = startEdgeH;
         int edgeCount = 0;
@@ -433,14 +508,14 @@ bool HalfEdgeMesh<BaseVecT>::debugCheckMeshIntegrity() const
             auto& e = getE(eH);
             auto source = getE(e.twin).target;
             auto target = e.target;
-            cout << "   | " << eH << ": " << source << " ==> " << target
+            dout() << "   | " << eH << ": " << source << " ==> " << target
                  << " [next: " << e.next << ", twin: " << e.twin
                  << ", twin-face: " << getE(e.twin).face << "]"
                  << endl;
 
             if (getE(eH).face != fH)
             {
-                cout << "!!!!! Face handle of " << eH << " is " << getE(eH).face
+                dout() << "!!!!! Face handle of " << eH << " is " << getE(eH).face
                      << " instead of " << fH << "!!!!!" << endl;
                 error = true;
             }
@@ -449,22 +524,22 @@ bool HalfEdgeMesh<BaseVecT>::debugCheckMeshIntegrity() const
             edgeCount++;
             if (edgeCount >= 20)
             {
-                cout << "   ... stopping iteration after 20 edges." << endl;
+                dout() << "   ... stopping iteration after 20 edges." << endl;
             }
         } while(eH != startEdgeH);
 
         if (edgeCount != 3)
         {
-            cout << "!!!!! More than 3 edges reached from " << fH << endl;
+            dout() << "!!!!! More than 3 edges reached from " << fH << endl;
             error = true;
         }
     }
 
     // Next, we try to reach all boundary edges
-    cout << endl;
-    cout << "+-------------------------------------+" << endl;
-    cout << "| Trying to walk on boundary edges... |" << endl;
-    cout << "+-------------------------------------+" << endl;
+    dout() << endl;
+    dout() << "+-------------------------------------+" << endl;
+    dout() << "| Trying to walk on boundary edges... |" << endl;
+    dout() << "+-------------------------------------+" << endl;
 
     EdgeMap<bool> visited(m_edges.size(), false);
     for (auto startEdgeH : m_edges)
@@ -477,28 +552,28 @@ bool HalfEdgeMesh<BaseVecT>::debugCheckMeshIntegrity() const
         }
         visited[startEdgeH] = true;
 
-        cout << "== Starting at " << startEdgeH << endl;
+        dout() << "== Starting at " << startEdgeH << endl;
 
         do
         {
             loopEdgeH = getE(loopEdgeH).next;
             visited[loopEdgeH.idx()] = true;
-            cout << "   | -> " << loopEdgeH
+            dout() << "   | -> " << loopEdgeH
                  << " [twin: " << getE(loopEdgeH).twin << "]" << endl;
         } while(loopEdgeH != startEdgeH);
     }
 
     // Next, we list all vertices that are not connected to anything yet
-    cout << endl;
-    cout << "+-------------------------------+" << endl;
-    cout << "| List of unconnected vertices: |" << endl;
-    cout << "+-------------------------------+" << endl;
+    dout() << endl;
+    dout() << "+-------------------------------+" << endl;
+    dout() << "| List of unconnected vertices: |" << endl;
+    dout() << "+-------------------------------+" << endl;
 
     for (auto vH : m_vertices)
     {
         if (!getV(vH).outgoing)
         {
-            cout << "== " << vH << endl;
+            dout() << "== " << vH << endl;
         }
     }
 
@@ -534,6 +609,27 @@ HalfEdgeMesh<BaseVecT>::getVertexHandlesOfFace(FaceHandle handle) const
     auto e3 = getE(e2.next);
 
     return {e1.target, e2.target, e3.target};
+}
+
+template <typename BaseVecT>
+std::ostream& HalfEdgeMesh<BaseVecT>::dout() const
+{
+    static std::ostringstream fake;
+
+    if (getenv("LVR_MESH_DEBUG") != nullptr)
+    {
+        return cout;
+    }
+    else
+    {
+        // This is a rather hacky solution. We just want to hide the output.
+        // Ideally we would write our own "null" implementation of `ostream`,
+        // but using a stringstream and deleting its contents from time to time
+        // works too.
+        fake.str("");
+        fake.clear();
+        return fake;
+    }
 }
 
 template<typename HandleT>
