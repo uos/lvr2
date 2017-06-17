@@ -35,11 +35,44 @@ namespace lvr2
 {
 
 /**
+ * @brief Iterator over handles in this vector, which skips deleted elements
+ *
+ * Important: This is NOT a fail fast iterator. If the vector is changed while using an instance of this
+ * iterator the behavior is undefined!
+ */
+template<typename HandleT>
+class StableVectorIterator
+{
+private:
+    /// Reference to the deleted marker array this iterator belongs to
+    const vector<bool>* m_deleted;
+
+    /// Current position in the vector
+    size_t m_pos;
+public:
+    StableVectorIterator(const vector<bool>* deleted, bool startAtEnd = false)
+            : m_deleted(deleted), m_pos(startAtEnd ? deleted->size() : 0) {};
+
+    StableVectorIterator& operator=(const StableVectorIterator& other);
+    bool operator==(const StableVectorIterator& other) const;
+    bool operator!=(const StableVectorIterator& other) const;
+
+    StableVectorIterator& operator++();
+
+    HandleT operator*() const;
+};
+
+/**
  * @brief A vector, which preserves its indices even when an element is deleted
  *
- * This is basically a wrapper for the std::vector, which marks an element as deleted but does not delete it.
+ * This is basically a wrapper for the std::vector, which marks an element as
+ * deleted but does not actually delete it.
  *
- * USE WITH CAUTION: This NEVER deletes values and can get very large!
+ * USE WITH CAUTION: This NEVER deletes values (except on its own destruction)
+ * and can get very large if used incorrectly! This class is designed for
+ * situations where the number deletes are not greatly more than the number
+ * of insertions. The memory requirements of this class are O(n_pb) where n_pb
+ * is the number of `push_back()` calls.
  *
  * @tparam ElemT Type of elements in the vector
  * @tparam HandleT Type of the index for the vector
@@ -89,6 +122,20 @@ public:
 
     /// Number of not delete-marked elements
     size_t sizeUsed() const;
+
+    /**
+     * @brief Returns an iterator which starts at the beginning of the vector
+     *
+     * This iterator auto skips deleted elements and returns handles to the valid elements
+     */
+    StableVectorIterator<HandleT> begin() const;
+
+    /**
+     * @brief Returns an iterator which starts at the end of the vector
+     *
+     * This iterator auto skips deleted elements and returns handles to the valid elements
+     */
+    StableVectorIterator<HandleT> end() const;
 
     // TODO: add reserve method to reserve vector memory
 };
