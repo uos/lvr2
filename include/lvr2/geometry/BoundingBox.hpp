@@ -31,8 +31,6 @@
 
 #include "Point.hpp"
 
-using std::numeric_limits;
-
 
 namespace lvr2
 {
@@ -124,7 +122,6 @@ public:
     Point<BaseVecT> getMin() const;
 
 private:
-
     /// The lower right point of the bounding box
     Point<BaseVecT> m_min;
 
@@ -138,15 +135,14 @@ private:
 template<typename BaseVecT>
 std::ostream& operator<<(std::ostream& os, const BoundingBox<BaseVecT>& bb)
 {
-    os << "Bounding Box: " << endl;
-    os << "Min \t\t: " << bb.getMin();
-    os << "Max \t\t: " << bb.getMax();
-    os << "Dimensions \t: " << bb.getXSize() << " " << bb.getYSize() << " " << bb.getZSize();
+    os << "Bounding Box[min: " << bb.getMin() << ", max: " <<  bb.getMax();
+    os << ", dimension: " << bb.getXSize() << ", " << bb.getYSize() << ", "
+       << bb.getZSize() << "]" << endl;
     return os;
 }
 
 } // namespace lvr2
 
-#include "BoundingBox.tcc"
+#include <lvr2/geometry/BoundingBox.tcc>
 
 #endif /* LVR2_GEOMETRY_BOUNDINGBOX_H_ */
