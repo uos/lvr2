@@ -64,10 +64,10 @@ boost::shared_ptr<lvr::MeshBuffer> FinalizeAlgorithm<BaseVecT>::apply(const Base
     // Create face buffer
     std::vector<unsigned int> faces;
     faces.reserve(mesh.numFaces() * 3);
-    for (auto iter = mesh.facesBegin(); iter != mesh.facesEnd(); ++iter)
+    for (auto fH : mesh.faces())
     {
-        auto handles = mesh.getVertexHandlesOfFace(*iter);
-        for (auto handle: handles)
+        auto handles = mesh.getVertexHandlesOfFace(fH);
+        for (auto handle : handles)
         {
             faces.push_back(idxMap[handle]);
         }

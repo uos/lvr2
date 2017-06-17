@@ -52,4 +52,59 @@ HandleT MeshHandleIteratorPtr<HandleT>::operator*() const
     return **m_iter;
 }
 
+template <typename BaseVecT>
+FaceIteratorProxy<BaseVecT> BaseMesh<BaseVecT>::faces() const
+{
+    return FaceIteratorProxy<BaseVecT>(*this);
+}
+
+template <typename BaseVecT>
+EdgeIteratorProxy<BaseVecT> BaseMesh<BaseVecT>::edges() const
+{
+    return EdgeIteratorProxy<BaseVecT>(*this);
+}
+
+template <typename BaseVecT>
+VertexIteratorProxy<BaseVecT> BaseMesh<BaseVecT>::vertices() const
+{
+    return VertexIteratorProxy<BaseVecT>(*this);
+}
+
+
+template <typename BaseVecT>
+MeshHandleIteratorPtr<FaceHandle> FaceIteratorProxy<BaseVecT>::begin() const
+{
+    return m_mesh.facesBegin();
+}
+
+template <typename BaseVecT>
+MeshHandleIteratorPtr<FaceHandle> FaceIteratorProxy<BaseVecT>::end() const
+{
+    return m_mesh.facesEnd();
+}
+
+template <typename BaseVecT>
+MeshHandleIteratorPtr<EdgeHandle> EdgeIteratorProxy<BaseVecT>::begin() const
+{
+    return m_mesh.edgesBegin();
+}
+
+template <typename BaseVecT>
+MeshHandleIteratorPtr<EdgeHandle> EdgeIteratorProxy<BaseVecT>::end() const
+{
+    return m_mesh.edgesEnd();
+}
+
+template <typename BaseVecT>
+MeshHandleIteratorPtr<VertexHandle> VertexIteratorProxy<BaseVecT>::begin() const
+{
+    return m_mesh.verticesBegin();
+}
+
+template <typename BaseVecT>
+MeshHandleIteratorPtr<VertexHandle> VertexIteratorProxy<BaseVecT>::end() const
+{
+    return m_mesh.verticesEnd();
+}
+
 } // namespace lvr2
