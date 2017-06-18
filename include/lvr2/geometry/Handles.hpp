@@ -104,6 +104,12 @@ class VertexHandle : public BaseHandle<Index>
     using BaseHandle<Index>::BaseHandle;
 };
 
+/// Handle to access Cluster of the ClusterSet.
+class ClusterHandle : public BaseHandle<Index>
+{
+    using BaseHandle<Index>::BaseHandle;
+};
+
 /// Semantically equivalent to `boost::optional<EdgeHandle>`
 class OptionalEdgeHandle : public BaseOptionalHandle<Index, EdgeHandle>
 {

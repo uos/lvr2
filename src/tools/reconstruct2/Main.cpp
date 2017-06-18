@@ -167,7 +167,6 @@
 #include <lvr/io/Model.hpp>
 #include <lvr/io/ModelFactory.hpp>
 #include <lvr/io/PointBuffer.hpp>
-#include <lvr/reconstruction/AdaptiveKSearchSurface.hpp>
 #include <lvr/reconstruction/PointsetSurface.hpp>
 
 #include <lvr2/geometry/HalfEdgeMesh.hpp>
@@ -179,6 +178,7 @@
 #include <lvr2/util/VectorMap.hpp>
 #include <lvr2/algorithm/FinalizeAlgorithm.hpp>
 #include <lvr2/geometry/BoundingBox.hpp>
+#include <lvr2/algorithm/ClusterGrowingAlgorithm.hpp>
 
 #include <lvr2/reconstruction/AdaptiveKSearchSurface.hpp>
 #include <lvr2/reconstruction/BilinearFastBox.hpp>
@@ -386,6 +386,15 @@ void testFinalize(lvr2::HalfEdgeMesh<lvr2::BaseVector<float>>& mesh)
     lvr::ModelFactory::saveModel( m, "triangle_mesh.ply");
 }
 
+void testClusterGrowing()
+{
+    lvr2::HalfEdgeMesh<lvr2::BaseVector<float>> mesh;
+    createHouseFromNikolaus(mesh);
+    lvr2::ClusterGrowingAlgorithm<BaseVector<float>> clusterGrowing;
+    auto clusterSet = clusterGrowing.apply(mesh);
+    cout << "Generated " << clusterSet.numCluster() << " clusters." << endl;
+}
+
 /*
  * DUMMY TEST CODE ENDS HERE!!!
  */
@@ -573,6 +582,7 @@ int main(int argc, char** argv)
 
         // Create an empty mesh
         lvr2::HalfEdgeMesh<Vec> mesh;
+        // testClusterGrowing();
         // testFinalize(mesh);
 
         // Set recursion depth for region growing

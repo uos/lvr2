@@ -31,9 +31,13 @@
 #include <utility>
 #include <lvr2/util/StableVector.hpp>
 #include <array>
+#include <vector>
 
 using std::pair;
+using std::vector;
 
+#include "Point.hpp"
+#include "Vector.hpp"
 #include "BaseMesh.hpp"
 #include "HalfEdge.hpp"
 #include "HalfEdgeFace.hpp"
@@ -80,8 +84,10 @@ public:
     size_t numVertices() const final;
     size_t numFaces() const final;
     Point<BaseVecT> getVertexPosition(VertexHandle handle) const final;
+    Normal<BaseVecT> getFaceNormal(FaceHandle handle) const final;
     std::array<Point<BaseVecT>, 3> getVertexPositionsOfFace(FaceHandle handle) const final;
     std::array<VertexHandle, 3> getVertexHandlesOfFace(FaceHandle handle) const final;
+    std::vector<FaceHandle> getNeighboursOfFace(FaceHandle handle) const final;
 
     MeshHandleIteratorPtr<VertexHandle> verticesBegin() const final;
     MeshHandleIteratorPtr<VertexHandle> verticesEnd() const final;
