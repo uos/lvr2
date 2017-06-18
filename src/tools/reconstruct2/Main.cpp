@@ -148,7 +148,6 @@
 
 
 // Local includes
-// #include <lvr/reconstruction/AdaptiveKSearchSurface.hpp>
 // #include <lvr/reconstruction/FastReconstruction.hpp>
 // #include <lvr/reconstruction/PointsetGrid.hpp>
 // #include <lvr/reconstruction/FastBox.hpp>
@@ -168,6 +167,7 @@
 #include <lvr/io/Model.hpp>
 #include <lvr/io/ModelFactory.hpp>
 #include <lvr/io/PointBuffer.hpp>
+#include <lvr/reconstruction/AdaptiveKSearchSurface.hpp>
 #include <lvr/reconstruction/PointsetSurface.hpp>
 
 #include <lvr2/geometry/HalfEdgeMesh.hpp>
@@ -178,11 +178,24 @@
 #include <lvr2/util/StableVector.hpp>
 #include <lvr2/util/VectorMap.hpp>
 #include <lvr2/algorithm/FinalizeAlgorithm.hpp>
+#include <lvr2/geometry/BoundingBox.hpp>
 
-// // PCL related includes
-// #ifdef LVR_USE_PCL
-// #include <lvr/reconstruction/PCLKSurface.hpp>
-// #endif
+#include <lvr2/reconstruction/AdaptiveKSearchSurface.hpp>
+#include <lvr2/reconstruction/BilinearFastBox.hpp>
+#include <lvr2/reconstruction/FastReconstruction.hpp>
+#include <lvr2/reconstruction/PointsetSurface.hpp>
+#include <lvr2/reconstruction/SearchTree.hpp>
+#include <lvr2/reconstruction/SearchTreeFlann.hpp>
+#include <lvr2/reconstruction/HashGrid.hpp>
+#include <lvr2/reconstruction/PointsetGrid.hpp>
+#include <lvr2/io/PointBuffer.hpp>
+#include <lvr2/util/Factories.hpp>
+
+
+// PCL related includes
+#ifdef LVR_USE_PCL
+#include <lvr/reconstruction/PCLKSurface.hpp>
+#endif
 
 
 
@@ -195,20 +208,24 @@ using lvr::timestamp;
 using namespace lvr2;
 
 using BaseVecT = BaseVector<float>;
-// using PsSurface = lvr::PointsetSurface<BaseVecT>;
-// using AkSurface = AdaptiveKSearchSurface<ColorVertex<float, unsigned char>, Normal<float> >;
+using PsSurface = lvr::PointsetSurface<BaseVecT>;
+// using AkSurface = lvr::AdaptiveKSearchSurface<BaseVecT, Normal<float>>;
 
 // #ifdef LVR_USE_PCL
-// typedef PCLKSurface<ColorVertex<float, unsigned char> , Normal<float> > pclSurface;
+// using PclSurface = lvr::PCLKSurface<BaseVecT, Normal<float>>;
 // #endif
-
 
 /*
  * DUMMY TEST CODE STARTS HERE!!!
  */
+using Vec = BaseVector<float>;
+
 
 void lvr2Playground()
 {
+    auto buf = make_shared<PointBuffer<Vec>>();
+    SearchTreeFlann<Vec> flann(buf);
+
     using Vec = lvr2::Vector<lvr2::BaseVector<float>>;
     using Poi = lvr2::Point<lvr2::BaseVector<float>>;
 
@@ -373,92 +390,88 @@ void testFinalize(lvr2::HalfEdgeMesh<lvr2::BaseVector<float>>& mesh)
  * DUMMY TEST CODE ENDS HERE!!!
  */
 
-// optional<PsSurface::Ptr> loadPointCloud(const reconstruct::Options& options)
-// {
-//     // Create a point loader object
-//     lvr::ModelPtr model = lvr::ModelFactory::readModel(options.getInputFileName());
+template <typename BaseVecT>
+PointsetSurfacePtr<BaseVecT> loadPointCloud(const reconstruct::Options& options)
+{
+    // Create a point loader object
+    lvr::ModelPtr model = lvr::ModelFactory::readModel(options.getInputFileName());
 
-//     // Parse loaded data
-//     if (!model)
-//     {
-//         cout << timestamp << "IO Error: Unable to parse " << options.getInputFileName() << endl;
-//         return boost::none;
-//     }
-//     lvr::PointBufferPtr p_loader = model->m_pointCloud;
+    // Parse loaded data
+    if (!model)
+    {
+        cout << timestamp << "IO Error: Unable to parse " << options.getInputFileName() << endl;
+        return nullptr;
+    }
+    auto buffer = make_shared<PointBuffer<Vec>>(*model->m_pointCloud);
 
-//     // Create a point cloud manager
-//     string pcm_name = options.getPCM();
-//     PsSurface::Ptr surface;
+    // Create a point cloud manager
+    string pcm_name = options.getPCM();
+    PointsetSurfacePtr<Vec> surface;
 
-//     // Create point set surface object
-//     if(pcm_name == "PCL")
-//     {
+    // Create point set surface object
+    if(pcm_name == "PCL")
+    {
 // #ifdef LVR_USE_PCL
 //         surface = PsSurface::Ptr(new pclSurface(p_loader));
 // #else
 //         cout << timestamp << "Can't create a PCL point set surface without PCL installed." << endl;
 //         return boost::none;
 // #endif
-//     }
-//     else if(pcm_name == "STANN" || pcm_name == "FLANN" || pcm_name == "NABO" || pcm_name == "NANOFLANN")
-//     {
-//         akSurface* aks = new akSurface(
-//                 p_loader, pcm_name,
-//                 options.getKn(),
-//                 options.getKi(),
-//                 options.getKd(),
-//                 options.useRansac(),
-//                 options.getScanPoseFile()
-//         );
+    }
+    else if(pcm_name == "STANN" || pcm_name == "FLANN" || pcm_name == "NABO" || pcm_name == "NANOFLANN")
+    {
+        surface = make_shared<AdaptiveKSearchSurface<BaseVecT>>(
+            buffer,
+            pcm_name,
+            options.getKn(),
+            options.getKi(),
+            options.getKd(),
+            options.useRansac(),
+            options.getScanPoseFile()
+        );
+    }
+    else
+    {
+        cout << timestamp << "Unable to create PointCloudManager." << endl;
+        cout << timestamp << "Unknown option '" << pcm_name << "'." << endl;
+        cout << timestamp << "Available PCMs are: " << endl;
+        cout << timestamp << "STANN, STANN_RANSAC";
+#ifdef LVR_USE_PCL
+        cout << ", PCL";
+#endif
+#ifdef LVR_USE_NABO
+        cout << ", Nabo";
+#endif
+        cout << endl;
+        return nullptr;
+    }
 
-//         surface = PsSurface::Ptr(aks);
-//         // Set RANSAC flag
-//         if(options.useRansac())
-//         {
-//             aks->useRansac(true);
-//         }
-//     }
-//     else
-//     {
-//         cout << timestamp << "Unable to create PointCloudManager." << endl;
-//         cout << timestamp << "Unknown option '" << pcm_name << "'." << endl;
-//         cout << timestamp << "Available PCMs are: " << endl;
-//         cout << timestamp << "STANN, STANN_RANSAC";
-// #ifdef LVR_USE_PCL
-//         cout << ", PCL";
-// #endif
-// #ifdef LVR_USE_NABO
-//         cout << ", Nabo";
-// #endif
-//         cout << endl;
-//         return boost::none;
-//     }
+    // Set search options for normal estimation and distance evaluation
+    surface->setKd(options.getKd());
+    surface->setKi(options.getKi());
+    surface->setKn(options.getKn());
 
-//     // Set search options for normal estimation and distance evaluation
-//     surface->setKd(options.getKd());
-//     surface->setKi(options.getKi());
-//     surface->setKn(options.getKn());
+    // Calculate normals if necessary
+    if(!buffer->hasNormals() || options.recalcNormals())
+    {
+        surface->calculateSurfaceNormals();
+    }
+    else
+    {
+        cout << timestamp << "Using given normals." << endl;
+    }
 
-//     // Calculate normals if necessary
-//     if(!surface->pointBuffer()->hasPointNormals()
-//             || (surface->pointBuffer()->hasPointNormals() && options.recalcNormals()))
-//     {
-//         Timestamp ts;
-//         surface->calculateSurfaceNormals();
-//     }
-//     else
-//     {
-//         cout << timestamp << "Using given normals." << endl;
-//     }
+    // TODO2: add again, right now it's boost vs std shared_ptr
+    // // Save points and normals only
+    // if(options.savePointNormals())
+    // {
+    //     lvr::ModelPtr pn(new lvr::Model);
+    //     pn->m_pointCloud = buffer;
+    //     lvr::ModelFactory::saveModel(pn, "pointnormals.ply");
+    // }
 
-//     // Save points and normals only
-//     if(options.savePointNormals())
-//     {
-//         lvr::ModelPtr pn( new Model);
-//         pn->m_pointCloud = surface->pointBuffer();
-//         ModelFactory::saveModel(pn, "pointnormals.ply");
-//     }
-// }
+    return surface;
+}
 
 // void setTextureOptions(const reconstruct::Options& options)
 // {
@@ -534,6 +547,7 @@ void testFinalize(lvr2::HalfEdgeMesh<lvr2::BaseVector<float>>& mesh)
 
 int main(int argc, char** argv)
 {
+
     try
     {
         // Parse command line arguments
@@ -550,17 +564,16 @@ int main(int argc, char** argv)
 
         std::cout << options << std::endl;
 
-        // auto surfaceRes = loadPointCloud(options);
-
-        // auto surface = surfaceRes ? *surfaceRes : return EXIT_FAILURE;
-        // if (pcResult != 0)
-        // {
-        //     return EXIT_FAILURE;
-        // }
+        auto surface = loadPointCloud<Vec>(options);
+        if (!surface)
+        {
+            cout << "Failed to create pointcloud. Exiting." << endl;
+            return EXIT_FAILURE;
+        }
 
         // Create an empty mesh
-        lvr2::HalfEdgeMesh<lvr2::BaseVector<float>> mesh;
-        testFinalize(mesh);
+        lvr2::HalfEdgeMesh<Vec> mesh;
+        // testFinalize(mesh);
 
         // Set recursion depth for region growing
         // if(options.getDepth())
@@ -594,8 +607,8 @@ int main(int argc, char** argv)
             decomposition = "PMC";
         }
 
-        // unique_ptr<GridBase> grid;
-        // FastReconstructionBase<ColorVertex<float, unsigned char>, Normal<float> >* reconstruction;
+        shared_ptr<GridBase> grid;
+        unique_ptr<FastReconstructionBase<Vec>> reconstruction;
         if(decomposition == "MC")
         {
             // grid = make_shared<PointsetGrid<
@@ -614,16 +627,17 @@ int main(int argc, char** argv)
         }
         else if(decomposition == "PMC")
         {
-    //         BilinearFastBox<ColorVertex<float, unsigned char>, Normal<float> >::m_surface = surface;
-    //         grid = new PointsetGrid<ColorVertex<float, unsigned char>, BilinearFastBox<ColorVertex<float, unsigned char>, Normal<float> > >(resolution, surface, surface->getBoundingBox(), useVoxelsize, options.extrude());
-    //         PointsetGrid<ColorVertex<float, unsigned char>, BilinearFastBox<ColorVertex<float, unsigned char>, Normal<float> > >* ps_grid = static_cast<PointsetGrid<ColorVertex<float, unsigned char>, BilinearFastBox<ColorVertex<float, unsigned char>, Normal<float> > > *>(grid);
-    //         ps_grid->calcDistanceValues();
-    //         reconstruction = new FastReconstruction<
-    //             ColorVertex<float, unsigned char>,
-    //             Normal<float>,
-    //             BilinearFastBox<ColorVertex<float, unsigned char>, Normal<float>>
-    //         >(ps_grid);
-
+            BilinearFastBox<Vec>::m_surface = surface;
+            auto ps_grid = std::make_shared<PointsetGrid<Vec, BilinearFastBox<Vec>>>(
+                resolution,
+                surface,
+                surface->getBoundingBox(),
+                useVoxelsize,
+                options.extrude()
+            );
+            ps_grid->calcDistanceValues();
+            grid = ps_grid;
+            reconstruction = make_unique<FastReconstruction<Vec, BilinearFastBox<Vec>>>(ps_grid);
         }
         else if(decomposition == "SF")
         {
@@ -640,19 +654,19 @@ int main(int argc, char** argv)
 
 
 
-    //     // Create mesh
-    //     reconstruction->getMesh(mesh);
+        // Create mesh
+        reconstruction->getMesh(mesh);
 
-    //     // Save grid to file
-    //     if(options.saveGrid())
-    //     {
-    //         grid->saveGrid("fastgrid.grid");
-    //     }
+        // Save grid to file
+        if(true || options.saveGrid())
+        {
+            grid->saveGrid("fastgrid.grid");
+        }
 
-    //     if(options.getDanglingArtifacts())
-    //     {
-    //         mesh.removeDanglingArtifacts(options.getDanglingArtifacts());
-    //     }
+        // if(options.getDanglingArtifacts())
+        // {
+        //     mesh.removeDanglingArtifacts(options.getDanglingArtifacts());
+        // }
 
     //     // Optimize mesh
     //     mesh.cleanContours(options.getCleanContourIterations());
@@ -683,6 +697,15 @@ int main(int argc, char** argv)
     //         mesh.fillHoles(options.getFillHoles());
     //     }
 
+
+        FinalizeAlgorithm<Vec> finalize;
+        auto buffer = finalize.apply(mesh);
+
+        // Create output model and save to file
+        auto model = new lvr::Model(buffer);
+        lvr::ModelPtr m(model);
+        cout << timestamp << "Saving mesh." << endl;
+        lvr::ModelFactory::saveModel( m, "triangle_mesh.ply");
     //     // Save triangle mesh
     //     if ( options.retesselate() )
     //     {

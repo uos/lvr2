@@ -23,6 +23,8 @@
  *  @author Johan M. von Behren <johan@vonbehren.eu>
  */
 
+#include <lvr2/util/Panic.hpp>
+
 namespace lvr2
 {
 
@@ -32,7 +34,7 @@ void StableVector<ElemT, HandleT>::checkAccess(const HandleType& handle) const
     // You cannot access deleted or uninitialized elements!
     if (m_deleted[handle.idx()])
     {
-        assert(false);
+        panic("attempt to access a deleted value in StableVector");
     }
 }
 

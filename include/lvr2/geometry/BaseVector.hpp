@@ -137,13 +137,6 @@ public:
     bool operator!=(const BaseVector &other) const;
 };
 
-template<typename BaseVecT>
-std::ostream& operator<<(std::ostream& os, const Vector<BaseVecT>& v)
-{
-    os << "Vector[" << v.x << ", " << v.y << ", " << v.z << "]" << endl;
-    return os;
-}
-
 } // namespace lvr
 
 #include <lvr2/geometry/BaseVector.tcc>

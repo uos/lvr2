@@ -16,54 +16,46 @@
  * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA
  */
 
-/*
- * Vector.tcc
+/**
+ *  Panic.hpp
  *
- *  @date 03.06.2017
- *  @author Lukas Kalbertodt <lukas.kalbertodt@gmail.com>
  */
 
-#include "Vector.hpp"
+#ifndef LVR2_UTIL_PANIC_H_
+#define LVR2_UTIL_PANIC_H_
 
+#include <exception>
+#include <iostream>
+#include <string>
 
 namespace lvr2
 {
 
-template <typename BaseVecT>
-Normal<BaseVecT>::Normal(BaseVecT base)
-    : Vector<BaseVecT>(base)
+struct PanicException : public std::exception
 {
-    this->normalize();
+    PanicException(std::string msg) : m_msg(msg) {}
+
+    virtual const char* what() const noexcept
+    {
+        return m_msg.c_str();
+    }
+
+private:
+    std::string m_msg;
+};
+
+void panic(std::string msg)
+{
+    throw PanicException("Program panicked: " + msg);
 }
 
-template <typename BaseVecT>
-Normal<BaseVecT>::Normal(Vector<BaseVecT> vec)
-    : Vector<BaseVecT>(vec)
+void panic_unimplemented(std::string msg)
 {
-    this->normalize();
+    throw PanicException("Program panicked due to missing implementation: " + msg);
 }
 
-template <typename BaseVecT>
-Normal<BaseVecT>::Normal(
-    typename BaseVecT::CoordType x,
-    typename BaseVecT::CoordType y,
-    typename BaseVecT::CoordType z
-)
-    : Vector<BaseVecT>(x, y, z)
-{
-    this->normalize();
-}
-
-template <typename BaseVecT>
-Vector<BaseVecT> Normal<BaseVecT>::asVector() const
-{
-    return static_cast<BaseVecT>(*this);
-}
-
-template <typename BaseVecT>
-Normal<BaseVecT> Normal<BaseVecT>::operator-() const
-{
-    return Normal(-this->x, -this->y, -this->z);
-}
 
 } // namespace lvr2
+
+
+#endif // LVR2_UTIL_PANIC_H_

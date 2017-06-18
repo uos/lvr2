@@ -83,6 +83,9 @@ struct Vector : public BaseVecT
     typename BaseVecT::CoordType distance(const BaseVecT &other) const = delete;
     typename BaseVecT::CoordType distance2(const BaseVecT &other) const = delete;
 
+    // More type safe overwrite
+    Vector<BaseVecT> cross(const Vector<BaseVecT> &other) const;
+
     // The standard operators are deleted and replaced by strongly typed ones.
     BaseVecT operator+(const BaseVecT &other) const = delete;
     BaseVecT operator-(const BaseVecT &other) const = delete;
@@ -100,7 +103,14 @@ struct Vector : public BaseVecT
     Point<BaseVecT> operator-(const Point<BaseVecT> &other) const;
 };
 
-} // namespace lvr
+template<typename BaseVecT>
+std::ostream& operator<<(std::ostream& os, const Vector<BaseVecT>& v)
+{
+    os << "Vector[" << v.x << ", " << v.y << ", " << v.z << "]";
+    return os;
+}
+
+} // namespace lvr2
 
 #include <lvr2/geometry/Vector.tcc>
 
