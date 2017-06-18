@@ -102,4 +102,49 @@ size_t ClusterSet<HandleT>::numInCluster(ClusterHandle clusterHandle) const
     return getC(clusterHandle).m_handles.size();
 }
 
+ClusterSetIterator& ClusterSetIterator::operator++()
+{
+    ++m_iterator;
+    return *this;
+}
+
+bool ClusterSetIterator::operator==(const ClusterSetIterator& other) const
+{
+    return m_iterator == other.m_iterator;
+}
+
+bool ClusterSetIterator::operator!=(const ClusterSetIterator& other) const
+{
+    return m_iterator != other.m_iterator;
+}
+
+ClusterHandle ClusterSetIterator::operator*() const
+{
+    return *m_iterator;
+}
+
+template <typename HandleT>
+ClusterSetIterator ClusterSet<HandleT>::begin() const
+{
+    return m_cluster.begin();
+}
+
+template <typename HandleT>
+ClusterSetIterator ClusterSet<HandleT>::end() const
+{
+    return m_cluster.end();
+}
+
+template<typename HandleT>
+decltype(auto) ClusterSet<HandleT>::clusterBegin(ClusterHandle clusterHandle) const
+{
+    return getC(clusterHandle).begin();
+}
+
+template<typename HandleT>
+decltype(auto) ClusterSet<HandleT>::clusterEnd(ClusterHandle clusterHandle) const
+{
+    return getC(clusterHandle).end();
+}
+
 } // namespace lvr2
