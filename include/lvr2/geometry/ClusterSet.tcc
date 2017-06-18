@@ -34,13 +34,13 @@ namespace lvr2
 template <typename HandleT>
 Cluster<HandleT>& ClusterSet<HandleT>::getC(ClusterHandle clusterHandle)
 {
-    return m_cluster[clusterHandle.idx()];
+    return m_cluster[clusterHandle];
 }
 
 template <typename HandleT>
 const Cluster<HandleT>& ClusterSet<HandleT>::getC(ClusterHandle clusterHandle) const
 {
-    return m_cluster[clusterHandle.idx()];
+    return m_cluster[clusterHandle];
 }
 
 template <typename HandleT>

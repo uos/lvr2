@@ -46,6 +46,12 @@ public:
     vector<HandleT> m_handles;
 };
 
+/// Handle to access Cluster of the ClusterSet.
+class ClusterHandle : public BaseHandle<Index>
+{
+    using BaseHandle<Index>::BaseHandle;
+};
+
 } // namespace lvr2
 
 #endif /* LVR2_GEOMETRY_CLUSTER_H_ */

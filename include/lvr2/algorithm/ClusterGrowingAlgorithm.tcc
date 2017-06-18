@@ -37,7 +37,7 @@ template<typename BaseVecT>
 ClusterSet<FaceHandle> ClusterGrowingAlgorithm<BaseVecT>::apply(const BaseMesh <BaseVecT>& mesh)
 {
     ClusterSet<FaceHandle> clusterSet;
-    VectorMap<FaceHandle, bool> visited(mesh.numFaces(), false);
+    FaceMap<bool> visited(mesh.numFaces(), false);
 
     // Iterate over all faces
     for (auto faceH: mesh.faces())
@@ -45,11 +45,11 @@ ClusterSet<FaceHandle> ClusterGrowingAlgorithm<BaseVecT>::apply(const BaseMesh <
         // Check if face is in a cluster (e.g. we have not visited it)
         if (!visited[faceH])
         {
-            // We found a not visited face. Prepare things for growing.
+            // We found a face yet to be visited. Prepare things for growing.
             vector<FaceHandle> stack;
             stack.push_back(faceH);
             auto cluster = clusterSet.createCluster();
-            auto normal = mesh.getFaceNormal(faceH);
+            auto referenceNormal = mesh.getFaceNormal(faceH);
 
             // Grow my cluster, groOW!
             while (!stack.empty())
@@ -58,11 +58,12 @@ ClusterSet<FaceHandle> ClusterGrowingAlgorithm<BaseVecT>::apply(const BaseMesh <
                 stack.pop_back();
 
                 // Check if the last faces from stack and starting face are in the "same" plane
-                if (mesh.getFaceNormal(currentFace).dot(normal.asVector()) > m_almostOne)
+                if (mesh.getFaceNormal(currentFace).dot(referenceNormal.asVector()) > m_minSinAngle)
                 {
-                    // The face is in the "same" plane as the starting face => add it to cluster and mark as visited
+                    // The face is in the "same" plane as the starting face => add it to cluster
+                    // and mark as visited.
                     clusterSet.addToCluster(cluster, currentFace);
-                    visited.insert(currentFace, true);
+                    visited[currentFace] = true;
 
                     // Find all unvisited neighbours of the current face and them to the stack
                     for (auto neighbour: mesh.getNeighboursOfFace(currentFace))
