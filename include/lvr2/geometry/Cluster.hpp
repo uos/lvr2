@@ -18,42 +18,40 @@
 
 
 /*
- * HalfEdgeVertex.hpp
+ * Cluster.hpp
  *
- *  @date 02.06.2017
- *  @author Lukas Kalbertodt <lukas.kalbertodt@gmail.com>
+ *  @date 17.06.2017
+ *  @author Johan M. von Behren <johan@vonbehren.eu>
  */
 
-#ifndef LVR2_GEOMETRY_HALFEDGEVERTEX_H_
-#define LVR2_GEOMETRY_HALFEDGEVERTEX_H_
+#ifndef LVR2_GEOMETRY_CLUSTER_H_
+#define LVR2_GEOMETRY_CLUSTER_H_
 
-#include "BaseMesh.hpp"
-#include "Point.hpp"
+#include <vector>
+
+using std::vector;
 
 namespace lvr2
 {
 
-// Forward definitions
-template <typename BaseVecT> struct HalfEdge;
-template <typename BaseVecT> struct HalfEdgeFace;
-template <typename BaseVecT> struct HalfEdgeMesh;
-
-template <typename BaseVecT>
-struct HalfEdgeVertex
+/**
+ * @brief Represents a group of handles, which are somehow connected.
+ * @tparam HandleT Type of handles, which are connected by this cluster.
+ */
+template <typename HandleT>
+struct Cluster
 {
-private:
-    using Edge = HalfEdge<BaseVecT>;
-    using Face = HalfEdgeFace<BaseVecT>;
-    using Vertex = HalfEdgeVertex<BaseVecT>;
-
 public:
-    /// The edge starting at this vertex.
-    OptionalEdgeHandle outgoing;
+    Cluster() {}
+    vector<HandleT> m_handles;
+};
 
-    /// The 3D position of this vertex.
-    Point<BaseVecT> pos;
+/// Handle to access Cluster of the ClusterSet.
+class ClusterHandle : public BaseHandle<Index>
+{
+    using BaseHandle<Index>::BaseHandle;
 };
 
 } // namespace lvr2
 
-#endif /* LVR2_GEOMETRY_HALFEDGEVERTEX_H_ */
+#endif /* LVR2_GEOMETRY_CLUSTER_H_ */

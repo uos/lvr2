@@ -16,44 +16,42 @@
  * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA
  */
 
-
 /*
- * HalfEdgeVertex.hpp
+ * ClusterGrowingAlgorithm.hpp
  *
- *  @date 02.06.2017
- *  @author Lukas Kalbertodt <lukas.kalbertodt@gmail.com>
+ *  @date 17.06.2017
+ *  @author Johan M. von Behren <johan@vonbehren.eu>
  */
 
-#ifndef LVR2_GEOMETRY_HALFEDGEVERTEX_H_
-#define LVR2_GEOMETRY_HALFEDGEVERTEX_H_
+#ifndef LVR2_ALGORITHM_CLUSTERGROWINGALGORITHM_H_
+#define LVR2_ALGORITHM_CLUSTERGROWINGALGORITHM_H_
 
-#include "BaseMesh.hpp"
-#include "Point.hpp"
+#include <lvr2/geometry/Cluster.hpp>
+#include <lvr2/geometry/ClusterSet.hpp>
 
 namespace lvr2
 {
 
-// Forward definitions
-template <typename BaseVecT> struct HalfEdge;
-template <typename BaseVecT> struct HalfEdgeFace;
-template <typename BaseVecT> struct HalfEdgeMesh;
-
-template <typename BaseVecT>
-struct HalfEdgeVertex
+/**
+ * @brief Algorithm which generates plane clusters from the given mesh.
+ */
+template<typename BaseVecT>
+class ClusterGrowingAlgorithm
 {
 private:
-    using Edge = HalfEdge<BaseVecT>;
-    using Face = HalfEdgeFace<BaseVecT>;
-    using Vertex = HalfEdgeVertex<BaseVecT>;
+    /**
+     * `1 - m_minSinAngle` is the allowed difference between the sin of the
+     * angle of the starting face and all other faces in one cluster.
+     */
+    float m_minSinAngle;
 
 public:
-    /// The edge starting at this vertex.
-    OptionalEdgeHandle outgoing;
-
-    /// The 3D position of this vertex.
-    Point<BaseVecT> pos;
+    ClusterGrowingAlgorithm() : m_minSinAngle(0.999) {};
+    ClusterSet<FaceHandle> apply(const BaseMesh<BaseVecT>& mesh);
 };
 
 } // namespace lvr2
 
-#endif /* LVR2_GEOMETRY_HALFEDGEVERTEX_H_ */
+#include <lvr2/algorithm/ClusterGrowingAlgorithm.tcc>
+
+#endif /* LVR2_ALGORITHM_CLUSTERGROWINGALGORITHM_H_ */

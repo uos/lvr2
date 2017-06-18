@@ -62,6 +62,6 @@ public:
     Normal<BaseVecT> normal;
 };
 
-} // namespace lvr
+} // namespace lvr2
 
 #endif /* LVR2_GEOMETRY_HALFEDGEFACE_H_ */
