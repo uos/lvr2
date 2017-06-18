@@ -43,6 +43,7 @@ PointBuffer<BaseVecT>::PointBuffer(lvr::PointBuffer& oldBuffer)
 
     if (oldBuffer.hasPointNormals())
     {
+        m_normals = vector<Normal<BaseVecT>>();
         size_t normals_len;
         auto normal_buf = oldBuffer.getPointNormalArray(normals_len);
         for (int i = 0; i < normals_len; i += 3)
