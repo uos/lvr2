@@ -85,11 +85,11 @@ struct Point : public BaseVecT
 template<typename BaseVecT>
 std::ostream& operator<<(std::ostream& os, const Point<BaseVecT>& p)
 {
-    os << "Point[" << p.x << ", " << p.y << ", " << p.z << "]" << endl;
+    os << "Point[" << p.x << ", " << p.y << ", " << p.z << "]";
     return os;
 }
 
-} // namespace lvr
+} // namespace lvr2
 
 #include <lvr2/geometry/Point.tcc>
 

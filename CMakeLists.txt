@@ -243,6 +243,8 @@ add_subdirectory(ext/laslib)
 include_directories( ${LASLIB_INCLUDE_DIR} )
 list(APPEND LVR_INSTALL_INCLUDE_DIRS ${LASLIB_INSTALL_INCLUDE_DIR})
 
+# GSL
+include_directories("ext/gsl/include")
 
 # SLAM6D stuff
 add_subdirectory(ext/slam6d)
