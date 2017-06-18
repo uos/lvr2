@@ -29,10 +29,14 @@
 
 #include <cstdint>
 #include <array>
+#include <vector>
 #include <type_traits>
+
+using std::vector;
 
 #include "Handles.hpp"
 #include "Point.hpp"
+#include "Normal.hpp"
 
 namespace lvr2
 {
@@ -133,6 +137,11 @@ public:
     virtual Point<BaseVecT> getVertexPosition(VertexHandle handle) const = 0;
 
     /**
+     * @brief Get the normal of the requested face.
+     */
+    virtual Normal<BaseVecT> getFaceNormal(FaceHandle handle) const = 0;
+
+    /**
      * @brief Get the points of the requested face.
      *
      * @return The points of the vertices in counter-clockwise order.
@@ -145,6 +154,13 @@ public:
      * @return The vertex-handles in counter-clockwise order.
      */
     virtual std::array<VertexHandle, 3> getVertexHandlesOfFace(FaceHandle handle) const = 0;
+
+    /**
+     * @brief Get face handles of the neighbours of the requested face.
+     *
+     * @return The face-handles of the neighbours in counter-clockwise order.
+     */
+    virtual vector<FaceHandle> getNeighboursOfFace(FaceHandle handle) const = 0;
 
     /**
      * @brief Returns an iterator to the first vertex of this mesh.

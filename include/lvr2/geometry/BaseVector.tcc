@@ -155,4 +155,4 @@ bool BaseVector<CoordT>::operator!=(const BaseVector &other) const
     return !(this == other);
 }
 
-} // namespace lvr
+} // namespace lvr2

@@ -71,7 +71,7 @@ private:
     friend HalfEdgeMesh<BaseVecT>;
 };
 
-} // namespace lvr
+} // namespace lvr2
 
 #include <lvr2/geometry/HalfEdge.tcc>
 
