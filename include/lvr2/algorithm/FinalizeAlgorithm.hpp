@@ -31,6 +31,7 @@
 
 #include <lvr2/geometry/BaseMesh.hpp>
 #include <lvr/io/MeshBuffer.hpp>
+#include "ClusterPainter.hpp"
 
 namespace lvr2
 {
@@ -41,8 +42,13 @@ namespace lvr2
 template<typename BaseVecT>
 class FinalizeAlgorithm
 {
+private:
+    const VertexMap<ClusterPainter::Rgb8Color>* m_colorData;
 public:
+    FinalizeAlgorithm() : m_colorData(nullptr) {};
+
     boost::shared_ptr<lvr::MeshBuffer> apply(const BaseMesh<BaseVecT>& mesh);
+    void setColorData(const VertexMap<ClusterPainter::Rgb8Color>* colorData);
 };
 
 } // namespace lvr2
