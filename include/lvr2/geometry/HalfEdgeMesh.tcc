@@ -356,6 +356,46 @@ HalfEdgeMesh<BaseVecT>::getVertexHandlesOfFace(FaceHandle handle) const
     return {e1.target, e2.target, e3.target};
 }
 
+template <typename BaseVecT>
+Normal<BaseVecT> HalfEdgeMesh<BaseVecT>::getFaceNormal(FaceHandle handle) const
+{
+    return getF(handle).normal;
+}
+
+template <typename BaseVecT>
+std::vector<FaceHandle>
+HalfEdgeMesh<BaseVecT>::getNeighboursOfFace(FaceHandle handle) const
+{
+    auto face = getF(handle);
+
+    // Get inner edges in counter clockwise order
+    auto e1 = getE(face.edge);
+    auto e2 = getE(e1.next);
+    auto e3 = getE(e2.next);
+
+    // Get twins of inner edges
+    auto e1t = getE(e1.twin);
+    auto e2t = getE(e2.twin);
+    auto e3t = getE(e3.twin);
+
+    // Get neighbour faces
+    vector<FaceHandle> neighbours;
+    if (e1t.face)
+    {
+        neighbours.push_back(e1t.face.unwrap());
+    }
+    if (e2t.face)
+    {
+        neighbours.push_back(e2t.face.unwrap());
+    }
+    if (e3t.face)
+    {
+        neighbours.push_back(e3t.face.unwrap());
+    }
+
+    return neighbours;
+}
+
 // ========================================================================
 // = Other public methods
 // ========================================================================
