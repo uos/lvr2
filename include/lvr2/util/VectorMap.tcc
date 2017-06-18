@@ -24,6 +24,8 @@
  *  @author Johan M. von Behren <johan@vonbehren.eu>
  */
 
+#include <lvr2/util/Panic.hpp>
+
 namespace lvr2
 {
 
@@ -40,7 +42,7 @@ void VectorMap<KeyT, ValT>::checkAccess(const KeyType& key) const
     // You cannot access deleted or uninitialized elements!
     if (m_deleted[key.idx()])
     {
-        assert(false);
+        panic("attempt to access a deleted value in VectorMap");
     }
 }
 
