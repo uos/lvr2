@@ -18,44 +18,25 @@
 
 
 /*
- * Cluster.hpp
+ * Cluster.tcc
  *
- *  @date 17.06.2017
+ *  @date 18.06.2017
  *  @author Johan M. von Behren <johan@vonbehren.eu>
  */
-
-#ifndef LVR2_GEOMETRY_CLUSTER_H_
-#define LVR2_GEOMETRY_CLUSTER_H_
-
-#include <vector>
-
-using std::vector;
 
 namespace lvr2
 {
 
-/**
- * @brief Represents a group of handles, which are somehow connected.
- * @tparam HandleT Type of handles, which are connected by this cluster.
- */
 template <typename HandleT>
-struct Cluster
+decltype(auto) Cluster<HandleT>::begin() const
 {
-public:
-    Cluster() {}
-    vector<HandleT> m_handles;
-    decltype(auto) begin() const;
-    decltype(auto) end() const;
-};
+    return m_handles.begin();
+}
 
-/// Handle to access Cluster of the ClusterSet.
-class ClusterHandle : public BaseHandle<Index>
+template <typename HandleT>
+decltype(auto) Cluster<HandleT>::end() const
 {
-    using BaseHandle<Index>::BaseHandle;
-};
+    return m_handles.end();
+}
 
 } // namespace lvr2
-
-#include <lvr2/geometry/Cluster.tcc>
-
-#endif /* LVR2_GEOMETRY_CLUSTER_H_ */

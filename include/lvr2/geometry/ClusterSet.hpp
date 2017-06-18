@@ -36,7 +36,24 @@
 namespace lvr2
 {
 
-// TODO: Implement ClusterSetIterator to iterate over cluster handles in ClusterSet
+/**
+ * @brief Iterator over cluster handles in this cluster set
+ *
+ * Important: This is NOT a fail fast iterator. If the cluster set is changed while using an instance of this
+ * iterator the behavior is undefined!
+ */
+class ClusterSetIterator
+{
+public:
+    ClusterSetIterator(StableVectorIterator<ClusterHandle> iterator) : m_iterator(iterator) {};
+    ClusterSetIterator& operator++();
+    bool operator==(const ClusterSetIterator& other) const;
+    bool operator!=(const ClusterSetIterator& other) const;
+    ClusterHandle operator*() const;
+
+private:
+    StableVectorIterator<ClusterHandle> m_iterator;
+};
 
 /**
  * @brief A set of clusters, which also saves a back-reference from handle to cluster.
@@ -95,6 +112,12 @@ public:
      * Important: If the given cluster handle does not exist, the behavior of this method is undefined!
      */
     size_t numInCluster(ClusterHandle clusterHandle) const;
+
+    ClusterSetIterator begin() const;
+    ClusterSetIterator end() const;
+
+    decltype(auto) clusterBegin(ClusterHandle clusterHandle) const;
+    decltype(auto) clusterEnd(ClusterHandle clusterHandle) const;
 
 private:
     /// Clusters
