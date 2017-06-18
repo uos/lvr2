@@ -302,10 +302,6 @@ void AdaptiveKSearchSurface<BaseVecT>::calculateSurfaceNormals()
 
         // Save result in normal array
         *this->m_pointBuffer->getNormal(i) = normal;
-        if (i == 16261)
-        {
-            cout << "just set normal to " << normal.asVector() << endl;
-        }
         ++progress;
     }
     cout << endl;
@@ -455,8 +451,6 @@ template<typename BaseVecT>
 pair<typename BaseVecT::CoordType, typename BaseVecT::CoordType>
     AdaptiveKSearchSurface<BaseVecT>::distance(Point<BaseVecT> p) const
 {
-    static int counter = 0;
-
     int k = this->m_kd;
 
     vector<size_t> id;
@@ -467,8 +461,6 @@ pair<typename BaseVecT::CoordType, typename BaseVecT::CoordType>
         // Find nearest tangent plane
         this->m_searchTree->kSearch( p, k, id, di );
     }
-
-
 
     BaseVecT nearest;
     Vector<BaseVecT> avg_normal;
@@ -483,11 +475,6 @@ pair<typename BaseVecT::CoordType, typename BaseVecT::CoordType>
 
         nearest += vq;
         avg_normal += n.asVector();
-
-        if (counter < 1)
-        {
-            cout << "avg_normal: " << avg_normal << "| adding:" << n.asVector() << endl;
-        }
     }
 
     avg_normal /= k;
@@ -497,18 +484,6 @@ pair<typename BaseVecT::CoordType, typename BaseVecT::CoordType>
     //Calculate distance
     auto projectedDistance = (p - Point<BaseVecT>(nearest)).dot(normal.asVector());
     auto euklideanDistance = (p - Point<BaseVecT>(nearest)).length();
-
-    if (counter < 10)
-    {
-        cout << "DIST: " << p << endl << " ===> (" << projectedDistance << ", " << euklideanDistance << ") | ";
-        for (auto x : id)
-        {
-            cout << x << " ";
-        }
-        cout << endl;
-        cout << "     @ " << normal.asVector() << ", " << Point<BaseVecT>(nearest) << endl;
-        counter++;
-    }
 
     return make_pair(projectedDistance, euklideanDistance);
     // return make_pair(euklideanDistance, projectedDistance);
