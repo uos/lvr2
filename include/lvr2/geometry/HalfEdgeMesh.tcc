@@ -345,7 +345,7 @@ std::array<Point<BaseVecT>, 3> HalfEdgeMesh<BaseVecT>::getVertexPositionsOfFace(
 
 template <typename BaseVecT>
 std::array<VertexHandle, 3>
-HalfEdgeMesh<BaseVecT>::getVertexHandlesOfFace(FaceHandle handle) const
+    HalfEdgeMesh<BaseVecT>::getVertexHandlesOfFace(FaceHandle handle) const
 {
     auto face = getF(handle);
 
@@ -364,7 +364,7 @@ Normal<BaseVecT> HalfEdgeMesh<BaseVecT>::getFaceNormal(FaceHandle handle) const
 
 template <typename BaseVecT>
 std::vector<FaceHandle>
-HalfEdgeMesh<BaseVecT>::getNeighboursOfFace(FaceHandle handle) const
+    HalfEdgeMesh<BaseVecT>::getNeighboursOfFace(FaceHandle handle) const
 {
     auto face = getF(handle);
 
@@ -703,7 +703,6 @@ std::ostream& HalfEdgeMesh<BaseVecT>::dout() const
 // ========================================================================
 // = Iterator stuff
 // ========================================================================
-
 template<typename HandleT>
 HemVertexIterator<HandleT>& HemVertexIterator<HandleT>::operator++()
 {

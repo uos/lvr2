@@ -26,8 +26,8 @@
 #ifndef LVR2_ALGORITHM_CLUSTERGROWINGALGORITHM_H_
 #define LVR2_ALGORITHM_CLUSTERGROWINGALGORITHM_H_
 
+#include <lvr2/geometry/Cluster.hpp>
 #include <lvr2/geometry/ClusterSet.hpp>
-#include <lvr2/geometry/Handles.hpp>
 
 namespace lvr2
 {
@@ -40,12 +40,13 @@ class ClusterGrowingAlgorithm
 {
 private:
     /**
-     * 1 - m_almostOne Is the allowed difference between the scalar product of the starting face and all other
-     * faces in one cluster.
+     * `1 - m_minSinAngle` is the allowed difference between the sin of the
+     * angle of the starting face and all other faces in one cluster.
      */
-    float m_almostOne;
+    float m_minSinAngle;
+
 public:
-    ClusterGrowingAlgorithm() : m_almostOne(0.999) {};
+    ClusterGrowingAlgorithm() : m_minSinAngle(0.999) {};
     ClusterSet<FaceHandle> apply(const BaseMesh<BaseVecT>& mesh);
 };
 
