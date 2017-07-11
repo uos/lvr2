@@ -26,12 +26,13 @@
  *  @author Thomas Wiemann (twiemann@uos.de)
  */
 
+namespace lvr
+{
+
 // Forward declaration
 template<typename A, typename B>
 class HalfEdgeVertex;
 
-namespace lvr
-{
 
 template<typename VertexT, typename NormalT>
 HalfEdgeFace<VertexT, NormalT>::HalfEdgeFace(const HalfEdgeFace<VertexT, NormalT> &o)
@@ -292,4 +293,3 @@ void HalfEdgeFace<VertexT, NormalT>::setBufferID(unsigned int id)
 }
 
 } // namespace lvr
-
