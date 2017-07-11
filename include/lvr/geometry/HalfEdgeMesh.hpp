@@ -78,14 +78,14 @@ using namespace std;
 #include <lvr/reconstruction/PointsetSurface.hpp>
 #include <lvr/classification/ClassifierFactory.hpp>
 
+namespace lvr
+{
+
 template<typename VertexT, typename NormalT>
 class HalfEdgeVertex;
 
 template<typename VertexT, typename NormalT>
 class HalfEdgeFace;
-
-namespace lvr
-{
 
 /**
  * @brief A implementation of a half edge triangle mesh.
