@@ -43,9 +43,7 @@ struct Cluster
 {
 public:
     Cluster() {}
-    vector<HandleT> m_handles;
-    decltype(auto) begin() const;
-    decltype(auto) end() const;
+    vector<HandleT> handles;
 };
 
 /// Handle to access Cluster of the ClusterSet.
@@ -55,7 +53,5 @@ class ClusterHandle : public BaseHandle<Index>
 };
 
 } // namespace lvr2
-
-#include <lvr2/geometry/Cluster.tcc>
 
 #endif /* LVR2_GEOMETRY_CLUSTER_H_ */

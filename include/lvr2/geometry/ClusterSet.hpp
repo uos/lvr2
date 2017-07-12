@@ -106,18 +106,14 @@ public:
     /// Returns the number of cluster in this set.
     size_t numCluster() const;
 
-    /**
-     * @brief Returns the number of handles in the cluster behind the given cluster handle.
-     *
-     * Important: If the given cluster handle does not exist, the behavior of this method is undefined!
-     */
-    size_t numInCluster(ClusterHandle clusterHandle) const;
-
     ClusterSetIterator begin() const;
     ClusterSetIterator end() const;
 
-    decltype(auto) clusterBegin(ClusterHandle clusterHandle) const;
-    decltype(auto) clusterEnd(ClusterHandle clusterHandle) const;
+    /// Get cluster behind the cluster handle.
+    const Cluster<HandleT>& getCluster(const ClusterHandle& clusterHandle) const;
+
+    /// Request the value behind the given key
+    const Cluster<HandleT>& operator[](const ClusterHandle& clusterHandle) const;
 
 private:
     /// Clusters
@@ -127,10 +123,7 @@ private:
     VectorMap<HandleT, ClusterHandle> m_clusterMap;
 
     /// Private helper to get cluster behind the cluster handle.
-    Cluster<HandleT>& getC(ClusterHandle clusterHandle);
-
-    /// Private helper to get cluster behind the cluster handle.
-    const Cluster<HandleT>& getC(ClusterHandle clusterHandle) const;
+    Cluster<HandleT>& getC(const ClusterHandle& clusterHandle);
 };
 
 } // namespace lvr2

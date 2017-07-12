@@ -32,13 +32,19 @@ namespace lvr2
 {
 
 template <typename HandleT>
-Cluster<HandleT>& ClusterSet<HandleT>::getC(ClusterHandle clusterHandle)
+Cluster<HandleT>& ClusterSet<HandleT>::getC(const ClusterHandle& clusterHandle)
 {
     return m_cluster[clusterHandle];
 }
 
 template <typename HandleT>
-const Cluster<HandleT>& ClusterSet<HandleT>::getC(ClusterHandle clusterHandle) const
+const Cluster<HandleT>& ClusterSet<HandleT>::getCluster(const ClusterHandle& clusterHandle) const
+{
+    return m_cluster[clusterHandle];
+}
+
+template <typename HandleT>
+const Cluster<HandleT>& ClusterSet<HandleT>::operator[](const ClusterHandle& clusterHandle) const
 {
     return m_cluster[clusterHandle];
 }
@@ -56,7 +62,7 @@ template <typename HandleT>
 void ClusterSet<HandleT>::removeCluster(ClusterHandle clusterHandle)
 {
     // Remove handles in cluster from cluster map
-    for (auto handle: getC(clusterHandle).m_handles)
+    for (auto handle: getC(clusterHandle).handles)
     {
         m_clusterMap.erase(handle);
     }
@@ -68,7 +74,7 @@ void ClusterSet<HandleT>::removeCluster(ClusterHandle clusterHandle)
 template <typename HandleT>
 ClusterHandle ClusterSet<HandleT>::addToCluster(ClusterHandle clusterHandle, HandleT handle)
 {
-    getC(clusterHandle).m_handles.push_back(handle);
+    getC(clusterHandle).handles.push_back(handle);
     m_clusterMap.insert(handle, clusterHandle);
 
     return clusterHandle;
@@ -77,7 +83,7 @@ ClusterHandle ClusterSet<HandleT>::addToCluster(ClusterHandle clusterHandle, Han
 template <typename HandleT>
 ClusterHandle ClusterSet<HandleT>::removeFromCluster(ClusterHandle clusterHandle, HandleT handle)
 {
-    auto handles = getC(clusterHandle).m_handles;
+    auto handles = getC(clusterHandle).handles;
     handles.erase(remove(handles.begin(), handles.end(), handle), handles.end());
     m_clusterMap.erase(handle);
 
@@ -94,12 +100,6 @@ template <typename HandleT>
 size_t ClusterSet<HandleT>::numCluster() const
 {
     return m_cluster.sizeUsed();
-}
-
-template <typename HandleT>
-size_t ClusterSet<HandleT>::numInCluster(ClusterHandle clusterHandle) const
-{
-    return getC(clusterHandle).m_handles.size();
 }
 
 ClusterSetIterator& ClusterSetIterator::operator++()
@@ -133,18 +133,6 @@ template <typename HandleT>
 ClusterSetIterator ClusterSet<HandleT>::end() const
 {
     return m_cluster.end();
-}
-
-template<typename HandleT>
-decltype(auto) ClusterSet<HandleT>::clusterBegin(ClusterHandle clusterHandle) const
-{
-    return getC(clusterHandle).begin();
-}
-
-template<typename HandleT>
-decltype(auto) ClusterSet<HandleT>::clusterEnd(ClusterHandle clusterHandle) const
-{
-    return getC(clusterHandle).end();
 }
 
 } // namespace lvr2

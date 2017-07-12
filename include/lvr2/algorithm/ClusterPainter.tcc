@@ -41,9 +41,8 @@ VertexMap<ClusterPainter::Rgb8Color> ClusterPainter::simpsons(const BaseMesh<Bas
     {
         auto color = getSimpsonColorForIdx(clusterIdx);
 
-        for (auto iter = m_clusterSet.clusterBegin(clusterH); iter != m_clusterSet.clusterEnd(clusterH); ++iter)
+        for (auto faceH: m_clusterSet[clusterH].handles)
         {
-            auto faceH = *iter;
             auto vertices = mesh.getVertexHandlesOfFace(faceH);
 
             colorMap.insert(vertices[0], color);
