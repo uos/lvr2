@@ -27,14 +27,14 @@
 #ifndef VIEWERAPPLICATION_H_
 #define VIEWERAPPLICATION_H_
 
-#include <QtGui>
+#include <QtWidgets>
 
-#include "MainWindow.h"
-#include "FogDensityDialog.h"
-#include "SceneDockWidgetUI.h"
-#include "ActionDockWidgetUI.h"
-#include "MeshingOptionsDialogUI.h"
-#include "RenderingDialogUI.h"
+#include "ui_MainWindow.h"
+#include "ui_FogDensityDialog.h"
+#include "ui_SceneDockWidgetUI.h"
+#include "ui_ActionDockWidgetUI.h"
+#include "ui_MeshingOptionsDialogUI.h"
+#include "ui_RenderingDialogUI.h"
 
 #include "../data/VisualizerFactory.hpp"
 #include "../data/SignalingMeshGenerator.hpp"

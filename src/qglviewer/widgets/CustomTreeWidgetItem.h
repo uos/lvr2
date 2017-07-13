@@ -27,7 +27,7 @@
 #ifndef CUSTOMTREEWIDGETITEM_H_
 #define CUSTOMTREEWIDGETITEM_H_
 
-#include <QtGui>
+#include <QtWidgets>
 
 #include <lvr/display/Renderable.hpp>
 
