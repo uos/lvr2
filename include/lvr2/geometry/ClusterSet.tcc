@@ -32,19 +32,19 @@ namespace lvr2
 {
 
 template <typename HandleT>
-Cluster<HandleT>& ClusterSet<HandleT>::getC(const ClusterHandle& clusterHandle)
+Cluster<HandleT>& ClusterSet<HandleT>::getC(ClusterHandle clusterHandle)
 {
     return m_cluster[clusterHandle];
 }
 
 template <typename HandleT>
-const Cluster<HandleT>& ClusterSet<HandleT>::getCluster(const ClusterHandle& clusterHandle) const
+const Cluster<HandleT>& ClusterSet<HandleT>::getCluster(ClusterHandle clusterHandle) const
 {
     return m_cluster[clusterHandle];
 }
 
 template <typename HandleT>
-const Cluster<HandleT>& ClusterSet<HandleT>::operator[](const ClusterHandle& clusterHandle) const
+const Cluster<HandleT>& ClusterSet<HandleT>::operator[](ClusterHandle clusterHandle) const
 {
     return m_cluster[clusterHandle];
 }
