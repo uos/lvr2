@@ -38,12 +38,12 @@ template<typename VertexT, typename NormalT>
 HalfEdgeFace<VertexT, NormalT>::HalfEdgeFace(const HalfEdgeFace<VertexT, NormalT> &o)
 {
     m_used          = o.m_used;
-	m_edge          = o.m_edge;
-	m_region        = o.m_region;
-	m_texture_index = o.m_texture_index;
-	m_face_index    = o.m_face_index;
-	m_invalid       = o.m_invalid;
-	buffer_id       = 0;
+    m_edge          = o.m_edge;
+    m_region        = o.m_region;
+    m_texture_index = o.m_texture_index;
+    m_face_index    = o.m_face_index;
+    m_invalid       = o.m_invalid;
+    buffer_id       = 0;
 }
 
 template<typename VertexT, typename NormalT>
@@ -228,16 +228,16 @@ HalfEdge<HalfEdgeVertex<VertexT, NormalT>, HalfEdgeFace<VertexT, NormalT> >* Hal
         cout << "!m_edge[]" << endl;
     }
 
-	switch(index)
-	{
-	case 0:
-		return this->m_edge;
-	case 1:
-		return this->m_edge->next();
-	case 2:
-		return this->m_edge->next()->next();
-	}
-	return 0;
+    switch(index)
+    {
+    case 0:
+        return this->m_edge;
+    case 1:
+        return this->m_edge->next();
+    case 2:
+        return this->m_edge->next()->next();
+    }
+    return 0;
 }
 
 template<typename VertexT, typename NormalT>
@@ -264,32 +264,32 @@ HalfEdgeVertex<VertexT, NormalT>* HalfEdgeFace<VertexT, NormalT>::operator()(con
 template<typename VertexT, typename NormalT>
 float HalfEdgeFace<VertexT, NormalT>::getD()
 {
-	NormalT normal = getFaceNormal();
-	VertexT vertex = this->m_edge->end()->m_position;
+    NormalT normal = getFaceNormal();
+    VertexT vertex = this->m_edge->end()->m_position;
 
-	return -(normal * vertex);
+    return -(normal * vertex);
 }
 
 
 template<typename VertexT, typename NormalT>
 bool HalfEdgeFace<VertexT, NormalT>::isBorderFace()
 {
-	if(this->m_edge->pair()->face() == 0) return true;
-	if(this->m_edge->next()->pair()->face() == 0) return true;
-	if(this->m_edge->next()->next()->pair()->face() == 0) return true;
-	return false;
+    if(this->m_edge->pair()->face() == 0) return true;
+    if(this->m_edge->next()->pair()->face() == 0) return true;
+    if(this->m_edge->next()->next()->pair()->face() == 0) return true;
+    return false;
 }
 
 template<typename VertexT, typename NormalT>
 int HalfEdgeFace<VertexT, NormalT>::getBufferID()
 {
-	return this->buffer_id;
+    return this->buffer_id;
 }
 
 template<typename VertexT, typename NormalT>
 void HalfEdgeFace<VertexT, NormalT>::setBufferID(unsigned int id)
 {
-	this->buffer_id = id;
+    this->buffer_id = id;
 }
 
 } // namespace lvr
