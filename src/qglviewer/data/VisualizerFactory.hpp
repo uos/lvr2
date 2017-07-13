@@ -40,8 +40,8 @@ class VisualizerFactory : public QObject
 public:
     VisualizerFactory();
 
-	virtual ~VisualizerFactory() {};
-	void create(string filename);
+    virtual ~VisualizerFactory() {};
+    void create(string filename);
 
 Q_SIGNALS:
     void visualizerCreated(Visualizer *);
