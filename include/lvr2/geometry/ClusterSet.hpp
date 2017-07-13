@@ -110,10 +110,10 @@ public:
     ClusterSetIterator end() const;
 
     /// Get cluster behind the cluster handle.
-    const Cluster<HandleT>& getCluster(const ClusterHandle& clusterHandle) const;
+    const Cluster<HandleT>& getCluster(ClusterHandle clusterHandle) const;
 
     /// Request the value behind the given key
-    const Cluster<HandleT>& operator[](const ClusterHandle& clusterHandle) const;
+    const Cluster<HandleT>& operator[](ClusterHandle clusterHandle) const;
 
 private:
     /// Clusters
@@ -123,7 +123,7 @@ private:
     VectorMap<HandleT, ClusterHandle> m_clusterMap;
 
     /// Private helper to get cluster behind the cluster handle.
-    Cluster<HandleT>& getC(const ClusterHandle& clusterHandle);
+    Cluster<HandleT>& getC(ClusterHandle clusterHandle);
 };
 
 } // namespace lvr2
