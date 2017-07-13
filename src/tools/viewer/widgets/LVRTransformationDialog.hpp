@@ -29,7 +29,7 @@
 
 #include <vtkRenderWindow.h>
 
-#include "LVRTransformationDialogUI.h"
+#include "ui_LVRTransformationDialogUI.h"
 #include "LVRModelItem.hpp"
 
 using Ui::TransformationDialogUI;

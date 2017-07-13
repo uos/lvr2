@@ -31,7 +31,7 @@
 
 #include <QColorDialog>
 
-#include "LVRBackgroundDialogUI.h"
+#include "ui_LVRBackgroundDialogUI.h"
 
 using Ui::BackgroundDialogUI;
 

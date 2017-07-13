@@ -26,7 +26,7 @@
 #ifndef PLAYERDIALOG_H_
 #define PLAYERDIALOG_H_
 
-#include "PlayerDialogUI.h"
+#include "ui_PlayerDialogUI.h"
 
 #include "AnimationListItem.hpp"
 #include "../viewers/Viewer.h"

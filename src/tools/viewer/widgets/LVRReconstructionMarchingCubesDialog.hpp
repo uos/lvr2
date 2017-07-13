@@ -20,7 +20,7 @@
 
 #include "../vtkBridge/LVRModelBridge.hpp"
 
-#include "LVRReconstructionMarchingCubesDialogUI.h"
+#include "ui_LVRReconstructionMarchingCubesDialogUI.h"
 #include "LVRPointCloudItem.hpp"
 #include "LVRModelItem.hpp"
 
@@ -38,7 +38,7 @@ class LVRReconstructViaMarchingCubesDialog : public QObject
 public:
     LVRReconstructViaMarchingCubesDialog(string decomposition, LVRPointCloudItem* pc, LVRModelItem* parent, QTreeWidget* treeWidget, vtkRenderWindow* renderer);
     virtual ~LVRReconstructViaMarchingCubesDialog();
-    typedef ColorVertex<float, unsigned char>         	cVertex;
+    typedef ColorVertex<float, unsigned char>           cVertex;
     typedef Normal<float>                               cNormal;
     typedef PointsetSurface<cVertex>                    psSurface;
     typedef AdaptiveKSearchSurface<cVertex, cNormal>    akSurface;
@@ -63,15 +63,15 @@ Q_SIGNALS:
 private:
     void connectSignalsAndSlots();
 
-    string                                  		m_decomposition;
-    ReconstructViaMarchingCubesDialog*      		m_dialog;
-    LVRPointCloudItem*                      		m_pc;
-    LVRModelItem*                           		m_parent;
-    QTreeWidget*                            		m_treeWidget;
-    LVRModelItem*                          			m_generatedModel;
-    vtkRenderWindow*                        		m_renderWindow;
-    QProgressDialog*								m_progressDialog;
-    static LVRReconstructViaMarchingCubesDialog* 	m_master;
+    string                                          m_decomposition;
+    ReconstructViaMarchingCubesDialog*              m_dialog;
+    LVRPointCloudItem*                              m_pc;
+    LVRModelItem*                                   m_parent;
+    QTreeWidget*                                    m_treeWidget;
+    LVRModelItem*                                   m_generatedModel;
+    vtkRenderWindow*                                m_renderWindow;
+    QProgressDialog*                                m_progressDialog;
+    static LVRReconstructViaMarchingCubesDialog*    m_master;
 
 
 };
