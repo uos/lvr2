@@ -39,21 +39,21 @@ typedef PointsetSurface<cVertex>                        psSurface;
 
 class SignalingMeshGenerator : public QThread
 {
-	Q_OBJECT
+    Q_OBJECT
 public:
-	SignalingMeshGenerator();
-	virtual ~SignalingMeshGenerator();
+    SignalingMeshGenerator();
+    virtual ~SignalingMeshGenerator();
 
-	virtual void run();
+    virtual void run();
 
 public Q_SLOTS:
-	void newPointCloud(PointBufferPtr *buffer);
+    void newPointCloud(PointBufferPtr *buffer);
 
 private:
-	QMutex			m_mutex;
-	PointBufferPtr	m_pointBuffer;
+    QMutex          m_mutex;
+    PointBufferPtr  m_pointBuffer;
 
-	bool			m_newData;
+    bool            m_newData;
 };
 
 #endif /* SIGNALINGMESHGENERATOR_HPP_ */

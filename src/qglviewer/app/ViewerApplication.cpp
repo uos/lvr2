@@ -30,18 +30,18 @@
 
 ViewerApplication::ViewerApplication( int argc, char ** argv )
 {
-	// Setup main window
-	m_qMainWindow = new QMainWindow;
-	m_mainWindowUi = new MainWindow;
+    // Setup main window
+    m_qMainWindow = new QMainWindow;
+    m_mainWindowUi = new MainWindow;
 
 
-	m_mainWindowUi->setupUi(m_qMainWindow);
+    m_mainWindowUi->setupUi(m_qMainWindow);
 
-	// Add a spinbox for scene zoom to toolbar (cool ;-)
-	QLabel* label = new QLabel(m_mainWindowUi->toolBar);
-	label->setText("Zoom Scene: ");
-	QAction* label_action = m_mainWindowUi->toolBar->addWidget(label);
-	label_action->setVisible(true);
+    // Add a spinbox for scene zoom to toolbar (cool ;-)
+    QLabel* label = new QLabel(m_mainWindowUi->toolBar);
+    label->setText("Zoom Scene: ");
+    QAction* label_action = m_mainWindowUi->toolBar->addWidget(label);
+    label_action->setVisible(true);
 
     QDoubleSpinBox* m_zoomSpinBox = new QDoubleSpinBox(m_mainWindowUi->toolBar);
     m_zoomSpinBox->setMinimum(0.01);
@@ -62,11 +62,11 @@ ViewerApplication::ViewerApplication( int argc, char ** argv )
     m_zoomAction->setEnabled(true);
     m_mainWindowUi->toolBar->addAction(m_zoomAction);
 
-	// Add dock widget for currently active objects in viewer
-	m_sceneDockWidget = new QDockWidget(m_qMainWindow);
-	m_sceneDockWidgetUi = new SceneDockWidgetUI;
-	m_sceneDockWidgetUi->setupUi(m_sceneDockWidget);
-	m_qMainWindow->addDockWidget(Qt::LeftDockWidgetArea, m_sceneDockWidget);
+    // Add dock widget for currently active objects in viewer
+    m_sceneDockWidget = new QDockWidget(m_qMainWindow);
+    m_sceneDockWidgetUi = new SceneDockWidgetUI;
+    m_sceneDockWidgetUi->setupUi(m_sceneDockWidget);
+    m_qMainWindow->addDockWidget(Qt::LeftDockWidgetArea, m_sceneDockWidget);
 
     // Add tool box widget to dock area
     m_actionDockWidget = new QDockWidget(m_qMainWindow);
@@ -74,36 +74,36 @@ ViewerApplication::ViewerApplication( int argc, char ** argv )
     m_actionDockWidgetUi->setupUi(m_actionDockWidget);
     m_qMainWindow->addDockWidget(Qt::LeftDockWidgetArea, m_actionDockWidget);
 
-	// Setup event manager objects
-	m_viewerManager = new ViewerManager(m_qMainWindow);
-	m_viewer = m_viewerManager->current();
+    // Setup event manager objects
+    m_viewerManager = new ViewerManager(m_qMainWindow);
+    m_viewer = m_viewerManager->current();
 
-	m_factory = new VisualizerFactory;
-
-
-	// Show window
-	m_qMainWindow->show();
+    m_factory = new VisualizerFactory;
 
 
-	connectEvents();
+    // Show window
+    m_qMainWindow->show();
 
-	/* Load files given as command line arguments. */
-	int i;
-	for ( i = 1; i < argc; i++ ) {
-		printf( "Loading »%s«…\n", argv[i] );
-		openFile(string(argv[i]));
-	}
 
-	// Call a resize to fit viewers to their parent widgets
-	m_viewer->setGeometry(m_qMainWindow->centralWidget()->geometry());
-	m_viewer->setBackgroundColor(QColor(255, 255, 255));
-	m_qMainWindow->setCentralWidget(m_viewer);
+    connectEvents();
 
-	// Initalize dialogs
-	m_fogSettingsUI = 0;
-	m_fogSettingsDialog = 0;
+    /* Load files given as command line arguments. */
+    int i;
+    for ( i = 1; i < argc; i++ ) {
+        printf( "Loading »%s«…\n", argv[i] );
+        openFile(string(argv[i]));
+    }
 
-	m_playerDialog = new AnimationDialog(m_viewer);
+    // Call a resize to fit viewers to their parent widgets
+    m_viewer->setGeometry(m_qMainWindow->centralWidget()->geometry());
+    m_viewer->setBackgroundColor(QColor(255, 255, 255));
+    m_qMainWindow->setCentralWidget(m_viewer);
+
+    // Initalize dialogs
+    m_fogSettingsUI = 0;
+    m_fogSettingsDialog = 0;
+
+    m_playerDialog = new AnimationDialog(m_viewer);
 
 
 }
@@ -112,52 +112,52 @@ void ViewerApplication::connectEvents()
 {
     QTreeWidget* treeWidget = m_sceneDockWidgetUi->treeWidget;
 
-	// File operations
-	QObject::connect(m_mainWindowUi->action_Open , SIGNAL(triggered()), this, SLOT(openFile()));
+    // File operations
+    QObject::connect(m_mainWindowUi->action_Open , SIGNAL(triggered()), this, SLOT(openFile()));
 
-	// Scene views
+    // Scene views
     connect(m_mainWindowUi->actionShow_entire_scene, SIGNAL(triggered()), m_viewer, SLOT(resetCamera()));
     connect(m_mainWindowUi->actionShowSelection, SIGNAL(triggered()), this, SLOT(centerOnSelection()));
 
     // Projections
     connect(m_mainWindowUi->actionXZ_ortho_projection,    SIGNAL(triggered()), this, SLOT(setViewerModeOrthoXZ()));
     connect(m_mainWindowUi->actionXY_ortho_projection,    SIGNAL(triggered()), this, SLOT(setViewerModeOrthoXY()));
-	connect(m_mainWindowUi->actionYZ_ortho_projection,    SIGNAL(triggered()), this, SLOT(setViewerModeOrthoYZ()));
+    connect(m_mainWindowUi->actionYZ_ortho_projection,    SIGNAL(triggered()), this, SLOT(setViewerModeOrthoYZ()));
     connect(m_mainWindowUi->actionPerspective_projection, SIGNAL(triggered()), this, SLOT(setViewerModePerspective()));
 
-	// Render Modes
-	connect(m_mainWindowUi->actionVertexView,     SIGNAL(triggered()), this, SLOT(meshRenderModeChanged()));
-	connect(m_mainWindowUi->actionSurfaceView,    SIGNAL(triggered()), this, SLOT(meshRenderModeChanged()));
-	connect(m_mainWindowUi->actionWireframeView,  SIGNAL(triggered()), this, SLOT(meshRenderModeChanged()));
+    // Render Modes
+    connect(m_mainWindowUi->actionVertexView,     SIGNAL(triggered()), this, SLOT(meshRenderModeChanged()));
+    connect(m_mainWindowUi->actionSurfaceView,    SIGNAL(triggered()), this, SLOT(meshRenderModeChanged()));
+    connect(m_mainWindowUi->actionWireframeView,  SIGNAL(triggered()), this, SLOT(meshRenderModeChanged()));
 
-	connect(m_mainWindowUi->actionPointCloudView, SIGNAL(triggered()), this, SLOT(pointRenderModeChanged()));
-	connect(m_mainWindowUi->actionPointNormalView, SIGNAL(triggered()), this, SLOT(pointRenderModeChanged()));
+    connect(m_mainWindowUi->actionPointCloudView, SIGNAL(triggered()), this, SLOT(pointRenderModeChanged()));
+    connect(m_mainWindowUi->actionPointNormalView, SIGNAL(triggered()), this, SLOT(pointRenderModeChanged()));
 
-	connect(m_mainWindowUi->actionRenderingSettings, SIGNAL(triggered()), this, SLOT(displayRenderingSettings()));
+    connect(m_mainWindowUi->actionRenderingSettings, SIGNAL(triggered()), this, SLOT(displayRenderingSettings()));
 
-	// Fog settings
-	connect(m_mainWindowUi->actionToggle_fog, SIGNAL(triggered()),  this, SLOT(toggleFog()));
-	connect(m_mainWindowUi->actionFog_settings, SIGNAL(triggered()),this, SLOT(displayFogSettingsDialog()));
+    // Fog settings
+    connect(m_mainWindowUi->actionToggle_fog, SIGNAL(triggered()),  this, SLOT(toggleFog()));
+    connect(m_mainWindowUi->actionFog_settings, SIGNAL(triggered()),this, SLOT(displayFogSettingsDialog()));
 
-	// Communication between the manager objects
+    // Communication between the manager objects
     connect(m_factory, SIGNAL(visualizerCreated(Visualizer*)), m_viewerManager, SLOT(addDataCollector(Visualizer*)));
     connect(m_factory, SIGNAL(visualizerCreated(Visualizer*)), this,            SLOT(dataCollectorAdded(Visualizer*)));
 
-	// Communication between tree widget items
-	connect(treeWidget, SIGNAL(itemClicked(QTreeWidgetItem*, int)),         this, SLOT(treeItemClicked(QTreeWidgetItem*, int)));
-	connect(treeWidget, SIGNAL(itemChanged(QTreeWidgetItem*, int)),         this, SLOT(treeItemChanged(QTreeWidgetItem*, int)));
-	connect(treeWidget, SIGNAL(itemSelectionChanged()),                     this, SLOT(treeSelectionChanged()));
-	connect(treeWidget, SIGNAL(customContextMenuRequested(const QPoint &)), this, SLOT(treeContextMenuRequested(const QPoint &)));
+    // Communication between tree widget items
+    connect(treeWidget, SIGNAL(itemClicked(QTreeWidgetItem*, int)),         this, SLOT(treeItemClicked(QTreeWidgetItem*, int)));
+    connect(treeWidget, SIGNAL(itemChanged(QTreeWidgetItem*, int)),         this, SLOT(treeItemChanged(QTreeWidgetItem*, int)));
+    connect(treeWidget, SIGNAL(itemSelectionChanged()),                     this, SLOT(treeSelectionChanged()));
+    connect(treeWidget, SIGNAL(customContextMenuRequested(const QPoint &)), this, SLOT(treeContextMenuRequested(const QPoint &)));
 
-	// Actions
-	connect(m_sceneDockWidgetUi->actionExport, SIGNAL(triggered()), this, SLOT(saveSelectedObject()));
-	connect(m_sceneDockWidgetUi->actionChangeName, SIGNAL(triggered()), this, SLOT(changeSelectedName()));
+    // Actions
+    connect(m_sceneDockWidgetUi->actionExport, SIGNAL(triggered()), this, SLOT(saveSelectedObject()));
+    connect(m_sceneDockWidgetUi->actionChangeName, SIGNAL(triggered()), this, SLOT(changeSelectedName()));
 
 
-	connect(m_mainWindowUi->actionGenerateMesh,               SIGNAL(triggered()), this, SLOT(createMeshFromPointcloud()));
+    connect(m_mainWindowUi->actionGenerateMesh,               SIGNAL(triggered()), this, SLOT(createMeshFromPointcloud()));
 
-	// Action dock functions
-	connect(m_actionDockWidgetUi->buttonCreateMesh, SIGNAL(clicked()), this, SLOT(createMeshFromPointcloud()));
+    // Action dock functions
+    connect(m_actionDockWidgetUi->buttonCreateMesh, SIGNAL(clicked()), this, SLOT(createMeshFromPointcloud()));
     connect(m_actionDockWidgetUi->buttonTransform,  SIGNAL(clicked()), this, SLOT(transformObject()));
     connect(m_actionDockWidgetUi->buttonDelete,     SIGNAL(clicked()), this, SLOT(deleteObject()));
     connect(m_actionDockWidgetUi->buttonExport,     SIGNAL(clicked()), this, SLOT(saveSelectedObject()));
@@ -455,7 +455,7 @@ void ViewerApplication::transformObject()
         if(item->type() > 1000)
         {
             CustomTreeWidgetItem* c_item = static_cast<CustomTreeWidgetItem*>(item);
-	        TransformationDialog* d = new TransformationDialog(m_viewer, c_item->renderable());
+            TransformationDialog* d = new TransformationDialog(m_viewer, c_item->renderable());
         }
     }
 }
@@ -545,22 +545,22 @@ void ViewerApplication::saveSelectedObject()
         if(item->type() == PointCloudItem || item->type() == MultiPointCloudItem)
         {
             file_types
-	      << "PLY Models (*.ply)"
-	      << "Point Clouds (*.pts)"
-	      << "All Files (*.*)";
+          << "PLY Models (*.ply)"
+          << "Point Clouds (*.pts)"
+          << "All Files (*.*)";
         }
         else if (item->type() == TriangleMeshItem)
         {
             file_types
-	      << "OBJ Models (*.obj)"
-	      << "PLY Models (*.ply)"
-	      << "All Files (*.*)";
+          << "OBJ Models (*.obj)"
+          << "PLY Models (*.ply)"
+          << "All Files (*.*)";
         }
         else if (item->type() == ClusterItem)
         {
-        	cout << "CLUSTER" << endl;
-        	ClusterTreeWidgetItem* c_item = static_cast<ClusterTreeWidgetItem*>(item);
-        	c_item->saveCluster("export.clu");
+            cout << "CLUSTER" << endl;
+            ClusterTreeWidgetItem* c_item = static_cast<ClusterTreeWidgetItem*>(item);
+            c_item->saveCluster("export.clu");
         }
         else
         {
@@ -605,17 +605,17 @@ void ViewerApplication::changeSelectedName()
         // Test for custom item
         if(item->type() > 1000)
         {
-        	CustomTreeWidgetItem* c_item = static_cast<CustomTreeWidgetItem*>(item);
-        	QString new_name = QInputDialog::getText(
-        			0,
-        			QString("Input new label"),
-        			QString("Name:"),
-        			QLineEdit::Normal,
-        			QString(c_item->name().c_str()), 0, 0);
-        	c_item->setName(new_name.toStdString());
-        	c_item->renderable()->setName(new_name.toStdString());
+            CustomTreeWidgetItem* c_item = static_cast<CustomTreeWidgetItem*>(item);
+            QString new_name = QInputDialog::getText(
+                    0,
+                    QString("Input new label"),
+                    QString("Name:"),
+                    QLineEdit::Normal,
+                    QString(c_item->name().c_str()), 0, 0);
+            c_item->setName(new_name.toStdString());
+            c_item->renderable()->setName(new_name.toStdString());
 
-        	m_viewer->updateGL();
+            m_viewer->updateGL();
         }
 
     }
@@ -754,36 +754,36 @@ void ViewerApplication::updateActionDock(CustomTreeWidgetItem* item)
 
 void ViewerApplication::toggleFog()
 {
-	if(m_viewer->type() == PERSPECTIVE_VIEWER)
-	{
-		(static_cast<PerspectiveViewer*>(m_viewer))->toggleFog();
-	}
+    if(m_viewer->type() == PERSPECTIVE_VIEWER)
+    {
+        (static_cast<PerspectiveViewer*>(m_viewer))->toggleFog();
+    }
 }
 
 void ViewerApplication::displayFogSettingsDialog()
 {
-	if(!m_fogSettingsUI)
-	{
-		m_fogSettingsUI = new Fogsettings;
-		m_fogSettingsDialog = new QDialog(m_qMainWindow);
-		m_fogSettingsUI->setupUi(m_fogSettingsDialog);
+    if(!m_fogSettingsUI)
+    {
+        m_fogSettingsUI = new Fogsettings;
+        m_fogSettingsDialog = new QDialog(m_qMainWindow);
+        m_fogSettingsUI->setupUi(m_fogSettingsDialog);
 
-//		QObject::connect(m_fogSettingsUI->sliderDensity, SIGNAL(valueChanged(int)),
-//						this, SLOT(fogDensityChanged(int)));
-		QObject::connect(m_fogSettingsUI->sliderDensity, SIGNAL(sliderMoved(int)),
-						this, SLOT(fogDensityChanged(int)));
-		QObject::connect(m_fogSettingsUI->radioButtonLinear , SIGNAL(clicked()),
-						this, SLOT(fogLinear()));
-		QObject::connect(m_fogSettingsUI->radioButtonExp , SIGNAL(clicked()),
-						this, SLOT(fogExp()));
-		QObject::connect(m_fogSettingsUI->radioButtonExp2 , SIGNAL(clicked()),
-						this, SLOT(fogExp2()));
+//      QObject::connect(m_fogSettingsUI->sliderDensity, SIGNAL(valueChanged(int)),
+//                      this, SLOT(fogDensityChanged(int)));
+        QObject::connect(m_fogSettingsUI->sliderDensity, SIGNAL(sliderMoved(int)),
+                        this, SLOT(fogDensityChanged(int)));
+        QObject::connect(m_fogSettingsUI->radioButtonLinear , SIGNAL(clicked()),
+                        this, SLOT(fogLinear()));
+        QObject::connect(m_fogSettingsUI->radioButtonExp , SIGNAL(clicked()),
+                        this, SLOT(fogExp()));
+        QObject::connect(m_fogSettingsUI->radioButtonExp2 , SIGNAL(clicked()),
+                        this, SLOT(fogExp2()));
 
-	}
+    }
 
-	m_fogSettingsDialog->show();
-	m_fogSettingsDialog->raise();
-	m_fogSettingsDialog->activateWindow();
+    m_fogSettingsDialog->show();
+    m_fogSettingsDialog->raise();
+    m_fogSettingsDialog->activateWindow();
 
 }
 
@@ -792,66 +792,66 @@ void ViewerApplication::displayFogSettingsDialog()
 
 void ViewerApplication::fogDensityChanged(int i)
 {
-	if(m_viewer->type() == PERSPECTIVE_VIEWER)
-	{
-		(static_cast<PerspectiveViewer*>(m_viewer))->setFogDensity(1.0f * i / 2000.0f);
-	}
+    if(m_viewer->type() == PERSPECTIVE_VIEWER)
+    {
+        (static_cast<PerspectiveViewer*>(m_viewer))->setFogDensity(1.0f * i / 2000.0f);
+    }
 }
 
 void ViewerApplication::fogLinear()
 {
-	if(m_viewer->type() == PERSPECTIVE_VIEWER)
-	{
-		(static_cast<PerspectiveViewer*>(m_viewer))->setFogType(FOG_LINEAR);
-	}
+    if(m_viewer->type() == PERSPECTIVE_VIEWER)
+    {
+        (static_cast<PerspectiveViewer*>(m_viewer))->setFogType(FOG_LINEAR);
+    }
 }
 
 void ViewerApplication::fogExp2()
 {
-	if(m_viewer->type() == PERSPECTIVE_VIEWER)
-	{
-		(static_cast<PerspectiveViewer*>(m_viewer))->setFogType(FOG_EXP2);
-	}
+    if(m_viewer->type() == PERSPECTIVE_VIEWER)
+    {
+        (static_cast<PerspectiveViewer*>(m_viewer))->setFogType(FOG_EXP2);
+    }
 }
 
 void ViewerApplication::fogExp()
 {
-	if(m_viewer->type() == PERSPECTIVE_VIEWER)
-	{
-		(static_cast<PerspectiveViewer*>(m_viewer))->setFogType(FOG_EXP);
-	}
+    if(m_viewer->type() == PERSPECTIVE_VIEWER)
+    {
+        (static_cast<PerspectiveViewer*>(m_viewer))->setFogType(FOG_EXP);
+    }
 }
 
 void ViewerApplication::setViewerModePerspective()
 {
-	if(m_viewer->type() == PERSPECTIVE_VIEWER)
-	{
-		(static_cast<PerspectiveViewer*>(m_viewer))->setProjectionMode(PERSPECTIVE);
-	}
+    if(m_viewer->type() == PERSPECTIVE_VIEWER)
+    {
+        (static_cast<PerspectiveViewer*>(m_viewer))->setProjectionMode(PERSPECTIVE);
+    }
 }
 
 void ViewerApplication::setViewerModeOrthoXY()
 {
-	if(m_viewer->type() == PERSPECTIVE_VIEWER)
-	{
-		(static_cast<PerspectiveViewer*>(m_viewer))->setProjectionMode(ORTHOXY);
-	}
+    if(m_viewer->type() == PERSPECTIVE_VIEWER)
+    {
+        (static_cast<PerspectiveViewer*>(m_viewer))->setProjectionMode(ORTHOXY);
+    }
 }
 
 void ViewerApplication::setViewerModeOrthoXZ()
 {
-	if(m_viewer->type() == PERSPECTIVE_VIEWER)
-	{
-		(static_cast<PerspectiveViewer*>(m_viewer))->setProjectionMode(ORTHOXZ);
-	}
+    if(m_viewer->type() == PERSPECTIVE_VIEWER)
+    {
+        (static_cast<PerspectiveViewer*>(m_viewer))->setProjectionMode(ORTHOXZ);
+    }
 }
 
 void ViewerApplication::setViewerModeOrthoYZ()
 {
-	if(m_viewer->type() == PERSPECTIVE_VIEWER)
-	{
-		(static_cast<PerspectiveViewer*>(m_viewer))->setProjectionMode(ORTHOYZ);
-	}
+    if(m_viewer->type() == PERSPECTIVE_VIEWER)
+    {
+        (static_cast<PerspectiveViewer*>(m_viewer))->setProjectionMode(ORTHOYZ);
+    }
 }
 
 void ViewerApplication::centerOnSelection()
@@ -869,7 +869,7 @@ void ViewerApplication::centerOnSelection()
 
 ViewerApplication::~ViewerApplication()
 {
-	//if(m_qMainWindow != 0) delete m_qMainWindow;
-	//if(m_mainWindowUI != 0) delete m_mainWindowUI;
-	if(m_viewer != 0) delete m_viewer;
+    //if(m_qMainWindow != 0) delete m_qMainWindow;
+    //if(m_mainWindowUI != 0) delete m_mainWindowUI;
+    if(m_viewer != 0) delete m_viewer;
 }

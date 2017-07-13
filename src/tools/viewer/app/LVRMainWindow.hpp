@@ -145,26 +145,26 @@ private:
     QMessageBox*                                m_incompatibilityBox;
     vtkSmartPointer<vtkRenderer>                m_renderer;
     vtkSmartPointer<vtkRenderWindowInteractor>  m_renderWindowInteractor;
-    vtkSmartPointer<vtkCamera>			        m_camera;
+    vtkSmartPointer<vtkCamera>                  m_camera;
     vtkSmartPointer<vtkCameraRepresentation>    m_pathCamera;
     vtkSmartPointer<vtkOrientationMarkerWidget> m_axesWidget;
-    vtkSmartPointer<vtkAxesActor> 				m_axes;
+    vtkSmartPointer<vtkAxesActor>               m_axes;
 
-    QMenu*				                        m_treeParentItemContextMenu;
+    QMenu*                                      m_treeParentItemContextMenu;
     QMenu*                                      m_treeChildItemContextMenu;
 
     // Toolbar item "File"
-	QAction*							m_actionOpen;
-	QAction*							m_actionExport;
-	QAction*							m_actionQuit;
-	// Toolbar item "Views"
-	QAction*							m_actionReset_Camera;
-	QAction*							m_actionStore_Current_View;
-	QAction*							m_actionRecall_Stored_View;
-	QAction*                            m_actionCameraPathTool;
+    QAction*                            m_actionOpen;
+    QAction*                            m_actionExport;
+    QAction*                            m_actionQuit;
+    // Toolbar item "Views"
+    QAction*                            m_actionReset_Camera;
+    QAction*                            m_actionStore_Current_View;
+    QAction*                            m_actionRecall_Stored_View;
+    QAction*                            m_actionCameraPathTool;
     // Toolbar item "Reconstruction"
-	QAction*                            m_actionEstimate_Normals;
-	QAction*                            m_actionMarching_Cubes;
+    QAction*                            m_actionEstimate_Normals;
+    QAction*                            m_actionMarching_Cubes;
     QAction*                            m_actionPlanar_Marching_Cubes;
     QAction*                            m_actionExtended_Marching_Cubes;
     QAction*                            m_actionCompute_Textures;
@@ -183,30 +183,30 @@ private:
     // Toolbar item "Classification"
     QAction*                            m_actionSimple_Plane_Classification;
     QAction*                            m_actionFurniture_Recognition;
-	// Toolbar item "About"
-	QMenu*                              m_menuAbout;
-	// QToolbar below toolbar
-	QAction*							m_actionShow_Points;
-	QAction*							m_actionShow_Normals;
-	QAction*							m_actionShow_Mesh;
-	QAction*							m_actionShow_Wireframe;
-	QAction*                            m_actionShowBackgroundSettings;
+    // Toolbar item "About"
+    QMenu*                              m_menuAbout;
+    // QToolbar below toolbar
+    QAction*                            m_actionShow_Points;
+    QAction*                            m_actionShow_Normals;
+    QAction*                            m_actionShow_Mesh;
+    QAction*                            m_actionShow_Wireframe;
+    QAction*                            m_actionShowBackgroundSettings;
     // Sliders below tree widget
-    QSlider*							m_horizontalSliderPointSize;
-    QSlider*							m_horizontalSliderTransparency;
+    QSlider*                            m_horizontalSliderPointSize;
+    QSlider*                            m_horizontalSliderTransparency;
     // Combo boxes below sliders
-    QComboBox*							m_comboBoxGradient;
-    QComboBox*							m_comboBoxShading;
+    QComboBox*                          m_comboBoxGradient;
+    QComboBox*                          m_comboBoxShading;
     // Buttons below combo boxes
-    QPushButton*						m_buttonCameraPathTool;
-    QPushButton*						m_buttonCreateMesh;
-    QPushButton*						m_buttonExportData;
-    QPushButton*						m_buttonTransformModel;
+    QPushButton*                        m_buttonCameraPathTool;
+    QPushButton*                        m_buttonCreateMesh;
+    QPushButton*                        m_buttonExportData;
+    QPushButton*                        m_buttonTransformModel;
 
-	QAction*				            m_actionShowColorDialog;
+    QAction*                            m_actionShowColorDialog;
     QAction*                            m_actionRenameModelItem;
-	QAction*			                m_actionDeleteModelItem;
-	QAction*                            m_actionExportModelTransformed;
+    QAction*                            m_actionDeleteModelItem;
+    QAction*                            m_actionExportModelTransformed;
 
     LVRPickingInteractor*               m_pickingInteractor;
     LVRTreeWidgetHelper*                m_treeWidgetHelper;
