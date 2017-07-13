@@ -39,6 +39,12 @@ boost::shared_ptr<lvr::MeshBuffer> FinalizeAlgorithm<BaseVecT>::apply(const Base
     normals.reserve(mesh.numVertices() * 3);
     VertexMap<size_t> idxMap;
 
+    std::vector<unsigned char> colors;
+    if (m_colorData)
+    {
+        colors.reserve(mesh.numVertices() * 3);
+    }
+
     // TODO: use real normal
     Normal<BaseVecT> normal(0, 1, 0);
 
@@ -54,6 +60,13 @@ boost::shared_ptr<lvr::MeshBuffer> FinalizeAlgorithm<BaseVecT>::apply(const Base
         normals.push_back(normal.getX());
         normals.push_back(normal.getY());
         normals.push_back(normal.getZ());
+
+        if (m_colorData)
+        {
+            colors.push_back(static_cast<unsigned char>((*m_colorData)[vH][0]));
+            colors.push_back(static_cast<unsigned char>((*m_colorData)[vH][1]));
+            colors.push_back(static_cast<unsigned char>((*m_colorData)[vH][2]));
+        }
 
         // Save index of vertex for face mapping
         idxMap.insert(vH, vertexCount);
@@ -77,7 +90,18 @@ boost::shared_ptr<lvr::MeshBuffer> FinalizeAlgorithm<BaseVecT>::apply(const Base
     buffer->setVertexNormalArray(normals);
     buffer->setFaceArray(faces);
 
+    if (m_colorData)
+    {
+        buffer->setVertexColorArray(colors);
+    }
+
     return buffer;
+}
+
+template<typename BaseVecT>
+void FinalizeAlgorithm<BaseVecT>::setColorData(const VertexMap<ClusterPainter::Rgb8Color>* colorData)
+{
+    m_colorData = colorData;
 }
 
 } // namespace lvr2

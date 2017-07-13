@@ -38,7 +38,13 @@ Cluster<HandleT>& ClusterSet<HandleT>::getC(ClusterHandle clusterHandle)
 }
 
 template <typename HandleT>
-const Cluster<HandleT>& ClusterSet<HandleT>::getC(ClusterHandle clusterHandle) const
+const Cluster<HandleT>& ClusterSet<HandleT>::getCluster(ClusterHandle clusterHandle) const
+{
+    return m_cluster[clusterHandle];
+}
+
+template <typename HandleT>
+const Cluster<HandleT>& ClusterSet<HandleT>::operator[](ClusterHandle clusterHandle) const
 {
     return m_cluster[clusterHandle];
 }
@@ -56,7 +62,7 @@ template <typename HandleT>
 void ClusterSet<HandleT>::removeCluster(ClusterHandle clusterHandle)
 {
     // Remove handles in cluster from cluster map
-    for (auto handle: getC(clusterHandle).m_handles)
+    for (auto handle: getC(clusterHandle).handles)
     {
         m_clusterMap.erase(handle);
     }
@@ -68,7 +74,7 @@ void ClusterSet<HandleT>::removeCluster(ClusterHandle clusterHandle)
 template <typename HandleT>
 ClusterHandle ClusterSet<HandleT>::addToCluster(ClusterHandle clusterHandle, HandleT handle)
 {
-    getC(clusterHandle).m_handles.push_back(handle);
+    getC(clusterHandle).handles.push_back(handle);
     m_clusterMap.insert(handle, clusterHandle);
 
     return clusterHandle;
@@ -77,7 +83,7 @@ ClusterHandle ClusterSet<HandleT>::addToCluster(ClusterHandle clusterHandle, Han
 template <typename HandleT>
 ClusterHandle ClusterSet<HandleT>::removeFromCluster(ClusterHandle clusterHandle, HandleT handle)
 {
-    auto handles = getC(clusterHandle).m_handles;
+    auto handles = getC(clusterHandle).handles;
     handles.erase(remove(handles.begin(), handles.end(), handle), handles.end());
     m_clusterMap.erase(handle);
 
@@ -96,10 +102,37 @@ size_t ClusterSet<HandleT>::numCluster() const
     return m_cluster.sizeUsed();
 }
 
-template <typename HandleT>
-size_t ClusterSet<HandleT>::numInCluster(ClusterHandle clusterHandle) const
+ClusterSetIterator& ClusterSetIterator::operator++()
 {
-    return getC(clusterHandle).m_handles.size();
+    ++m_iterator;
+    return *this;
+}
+
+bool ClusterSetIterator::operator==(const ClusterSetIterator& other) const
+{
+    return m_iterator == other.m_iterator;
+}
+
+bool ClusterSetIterator::operator!=(const ClusterSetIterator& other) const
+{
+    return m_iterator != other.m_iterator;
+}
+
+ClusterHandle ClusterSetIterator::operator*() const
+{
+    return *m_iterator;
+}
+
+template <typename HandleT>
+ClusterSetIterator ClusterSet<HandleT>::begin() const
+{
+    return m_cluster.begin();
+}
+
+template <typename HandleT>
+ClusterSetIterator ClusterSet<HandleT>::end() const
+{
+    return m_cluster.end();
 }
 
 } // namespace lvr2

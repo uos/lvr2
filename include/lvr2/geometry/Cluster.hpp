@@ -43,7 +43,7 @@ struct Cluster
 {
 public:
     Cluster() {}
-    vector<HandleT> m_handles;
+    vector<HandleT> handles;
 };
 
 /// Handle to access Cluster of the ClusterSet.
