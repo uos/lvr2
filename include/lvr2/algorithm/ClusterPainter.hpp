@@ -17,42 +17,45 @@
  */
 
 /*
- * FinalizeAlgorithm.hpp
+ * ClusterPainter.hpp
  *
- *  @date 13.06.2017
+ *  @date 18.06.2017
  *  @author Johan M. von Behren <johan@vonbehren.eu>
  */
 
-#ifndef LVR2_ALGORITHM_FINALIZEALGORITHM_H_
-#define LVR2_ALGORITHM_FINALIZEALGORITHM_H_
+#ifndef LVR2_ALGORITHM_CLUSTERPAINTER_H_
+#define LVR2_ALGORITHM_CLUSTERPAINTER_H_
 
-#include <boost/shared_ptr.hpp>
-#include <boost/smart_ptr/make_shared.hpp>
+#include <cstdint>
+#include <array>
 
-#include <lvr2/geometry/BaseMesh.hpp>
-#include <lvr/io/MeshBuffer.hpp>
-#include "ClusterPainter.hpp"
+using std::array;
+
+#include <lvr2/geometry/Handles.hpp>
+#include <lvr2/geometry/ClusterSet.hpp>
+#include <lvr2/util/VectorMap.hpp>
 
 namespace lvr2
 {
 
 /**
- * @brief
+ * @brief Algorithm which generates the same color for all vertices, which are in the same cluster.
  */
-template<typename BaseVecT>
-class FinalizeAlgorithm
+class ClusterPainter
 {
-private:
-    const VertexMap<ClusterPainter::Rgb8Color>* m_colorData;
 public:
-    FinalizeAlgorithm() : m_colorData(nullptr) {};
+    using Rgb8Color = array<uint8_t, 3>;
+    ClusterPainter(const ClusterSet<FaceHandle>& clusterSet) : m_clusterSet(clusterSet) {};
 
-    boost::shared_ptr<lvr::MeshBuffer> apply(const BaseMesh<BaseVecT>& mesh);
-    void setColorData(const VertexMap<ClusterPainter::Rgb8Color>* colorData);
+    template<typename BaseVecT>
+    VertexMap<Rgb8Color> simpsons(const BaseMesh<BaseVecT>& mesh) const;
+private:
+    ClusterSet<FaceHandle> m_clusterSet;
+    Rgb8Color getSimpsonColorForIdx(size_t idx) const;
 };
 
 } // namespace lvr2
 
-#include <lvr2/algorithm/FinalizeAlgorithm.tcc>
+#include <lvr2/algorithm/ClusterPainter.tcc>
 
-#endif /* LVR2_ALGORITHM_FINALIZEALGORITHM_H_ */
+#endif /* LVR2_ALGORITHM_CLUSTERPAINTER_H_ */

@@ -179,6 +179,7 @@
 #include <lvr2/algorithm/FinalizeAlgorithm.hpp>
 #include <lvr2/geometry/BoundingBox.hpp>
 #include <lvr2/algorithm/ClusterGrowingAlgorithm.hpp>
+#include <lvr2/algorithm/ClusterPainter.hpp>
 
 #include <lvr2/reconstruction/AdaptiveKSearchSurface.hpp>
 #include <lvr2/reconstruction/BilinearFastBox.hpp>
@@ -557,8 +558,6 @@ PointsetSurfacePtr<BaseVecT> loadPointCloud(const reconstruct::Options& options)
 int main(int argc, char** argv)
 {
 
-    try
-    {
         // Parse command line arguments
         reconstruct::Options options(argc, argv);
 
@@ -668,7 +667,7 @@ int main(int argc, char** argv)
         reconstruction->getMesh(mesh);
 
         // Save grid to file
-        if(true || options.saveGrid())
+        if(options.saveGrid())
         {
             grid->saveGrid("fastgrid.grid");
         }
@@ -707,8 +706,14 @@ int main(int argc, char** argv)
     //         mesh.fillHoles(options.getFillHoles());
     //     }
 
+//        ClusterGrowingAlgorithm<BaseVector<float>> clusterGrowing;
+//        auto clusterSet = clusterGrowing.apply(mesh);
+
+//        ClusterPainter painter(clusterSet);
+//        auto colorMap = painter.simpsons(mesh);
 
         FinalizeAlgorithm<Vec> finalize;
+//        finalize.setColorData(&colorMap);
         auto buffer = finalize.apply(mesh);
 
         // Create output model and save to file
@@ -749,10 +754,5 @@ int main(int argc, char** argv)
     //     }
     //     cout << timestamp << "Program end." << endl;
 
-    }
-    catch(...)
-    {
-        std::cout << "Unable to parse options. Call 'reconstruct --help' for more information." << std::endl;
-    }
     return 0;
 }
