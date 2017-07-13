@@ -56,6 +56,7 @@
 
 using boost::optional;
 using std::size_t;
+using std::vector;
 
 
 namespace lvr2
