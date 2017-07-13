@@ -1,6 +1,7 @@
 # Objects that use Qt's signals and slots
 
 add_definitions(-DQT_NO_KEYWORDS )
+set(CMAKE_AUTOMOC ON)
 
 set(QVIEWER_MOCS
     app/ViewerApplication.h
@@ -63,9 +64,8 @@ set(QVIEWER_RESOURCES
 
 # Generate mocs and header files for qt objects
 # and forms
-qt_wrap_cpp(qviewer QVIEWER_MOC_SRC ${QVIEWER_MOCS})
-qt_wrap_ui(qviewer QVIEWER_UI_HDRS QVIEWER_UI_SRC ${QVIEWER_UIS})
-qt4_add_resources(QVIEWER_RES_SRC ${QVIEWER_RESOURCES})
+qt5_wrap_ui(QVIEWER_UI_HDRS ${QVIEWER_UIS})
+qt5_add_resources(QVIEWER_RES_SRC ${QVIEWER_RESOURCES})
 
 add_definitions(${QT_DEFINITIONS})
 
@@ -74,14 +74,11 @@ add_definitions(${QT_DEFINITIONS})
 include_directories(${CMAKE_CURRENT_BINARY_DIR})
 
 # Create a new targer
-add_executable(qviewer ${QVIEWER_SOURCES} ${QVIEWER_MOC_SRC} ${QVIEWER_UI_HDRS}
+add_executable(qviewer ${QVIEWER_SOURCES} ${QVIEWER_UI_HDRS} ${QVIEWER_MOCS}
     ${QVIEWER_RES_SRC})
 
 # Add needed libraries
-target_link_libraries(qviewer ${QT_QTCORE_LIBRARIES})
-target_link_libraries(qviewer ${QT_QTGUI_LIBRARIES})
-target_link_libraries(qviewer ${QT_QTOPENGL_LIBRARIES})
-target_link_libraries(qviewer ${QT_QTXML_LIBRARY})
+target_link_libraries(qviewer Qt5::Core Qt5::Xml Qt5::Widgets Qt5::OpenGL)
 target_link_libraries(qviewer lvr_static)
 target_link_libraries(qviewer ${OPENGL_LIBRARIES})
 target_link_libraries(qviewer ${GLUT_LIBRARIES})

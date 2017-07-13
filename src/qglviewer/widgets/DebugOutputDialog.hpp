@@ -26,7 +26,7 @@
 #ifndef DEBUGOUTPUTDIALOG_H_
 #define DEBUGOUTPUTDIALOG_H_
 
-#include "DebugOutputDialogUI.h"
+#include "ui_DebugOutputDialogUI.h"
 #include "QDebugStream.hpp"
 
 using Ui::DebugOutputDialogUI;

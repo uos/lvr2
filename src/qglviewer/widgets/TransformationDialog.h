@@ -27,7 +27,7 @@
 #ifndef TRANSFORMATIONDIALOG_H_
 #define TRANSFORMATIONDIALOG_H_
 
-#include "TransformationDialogUI.h"
+#include "ui_TransformationDialogUI.h"
 
 #include <lvr/display/Renderable.hpp>
 

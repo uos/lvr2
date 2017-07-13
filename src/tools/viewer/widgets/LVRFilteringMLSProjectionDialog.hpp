@@ -9,7 +9,7 @@
 #include <lvr/io/ModelFactory.hpp>
 #include <lvr/reconstruction/PCLFiltering.hpp>
 
-#include "LVRFilteringMLSProjectionDialogUI.h"
+#include "ui_LVRFilteringMLSProjectionDialogUI.h"
 #include "LVRPointCloudItem.hpp"
 #include "LVRModelItem.hpp"
 

@@ -29,7 +29,7 @@ else(MSVC)
   add_compile_options(-fmessage-length=0 -fPIC -Wno-deprecated)
   # with cmake 3.3
   #add_compile_options($<$<COMPILE_LANGUAGE:CXX>:-std=c++0x>)
-  set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++14")
+  set(CMAKE_CXX_STANDARD 14)
 endif(MSVC)
 
 ###############################################################
@@ -85,6 +85,7 @@ endif(MPI_FOUND)
 ####
 ## Searching for VTK
 ##############################
+set(VTK_QT_VERSION 5)
 find_package(VTK REQUIRED)
 if(VTK_MAJOR_VERSION VERSION_LESS "6")
   list(APPEND LVR_DEFINITIONS -DLVR_USE_VTK5)
@@ -330,16 +331,8 @@ include(${VTK_USE_FILE})
 # VIEWERS
 ##############################################################
 
-set( QT_USE_QTOPENGL TRUE )
-set( QT_USE_XML TRUE)
-find_package( Qt4 )
-if(QT4_FOUND)
-  include_directories(${QT_INCLUDE_DIR})
-  include_directories(${QT_QTGUI_INCLUDE_DIR})
-  include_directories(${QT_QTOPENGL_INCLUDE_DIR})
-  include_directories(${QT_QTCORE_INCLUDE_DIR})
-  include_directories(${QT_QTXML_INCLUDE_DIR})
-
+find_package(Qt5 COMPONENTS Core Widgets Xml OpenGL)
+if(Qt5_FOUND)
   # Try to find libQGLViewer
   find_library(QGLVIEWER_LIBRARY_RELEASE
       NAMES qglviewer-qt4 qglviewer QGLViewer QGLViewer2 libQGLViewer-qt4
@@ -356,7 +349,7 @@ if(QT4_FOUND)
     include_directories(${QVTK_INCLUDE_DIR})
     add_subdirectory(src/tools/viewer)
   endif(QVTK_FOUND)
-endif(QT4_FOUND)
+endif(Qt5_FOUND)
 
 ##############################################################
 # LIBRARIES

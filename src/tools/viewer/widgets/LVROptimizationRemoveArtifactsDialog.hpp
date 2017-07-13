@@ -20,7 +20,7 @@
 
 #include "../vtkBridge/LVRModelBridge.hpp"
 
-#include "LVROptimizationRemoveArtifactsDialogUI.h"
+#include "ui_LVROptimizationRemoveArtifactsDialogUI.h"
 #include "LVRMeshItem.hpp"
 #include "LVRModelItem.hpp"
 
