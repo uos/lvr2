@@ -20,7 +20,7 @@
 
 #include "../vtkBridge/LVRModelBridge.hpp"
 
-#include "LVRReconstructionExtendedMarchingCubesDialogUI.h"
+#include "ui_LVRReconstructionExtendedMarchingCubesDialogUI.h"
 #include "LVRPointCloudItem.hpp"
 #include "LVRModelItem.hpp"
 
@@ -49,13 +49,13 @@ public Q_SLOTS:
 private:
     void connectSignalsAndSlots();
 
-    string                                  		m_decomposition;
+    string                                          m_decomposition;
     ReconstructViaExtendedMarchingCubesDialog*      m_dialog;
-    LVRPointCloudItem*                     		    m_pc;
-    LVRModelItem*                           		m_parent;
-    QTreeWidget*                           		 	m_treeWidget;
-    LVRModelItem*                           		m_generatedModel;
-    vtkRenderWindow*                        		m_renderWindow;
+    LVRPointCloudItem*                              m_pc;
+    LVRModelItem*                                   m_parent;
+    QTreeWidget*                                    m_treeWidget;
+    LVRModelItem*                                   m_generatedModel;
+    vtkRenderWindow*                                m_renderWindow;
 
 };
 

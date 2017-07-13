@@ -9,7 +9,7 @@
 #include <lvr/io/ModelFactory.hpp>
 #include <lvr/reconstruction/PCLFiltering.hpp>
 
-#include "LVRFilteringRemoveOutliersDialogUI.h"
+#include "ui_LVRFilteringRemoveOutliersDialogUI.h"
 #include "LVRPointCloudItem.hpp"
 #include "LVRModelItem.hpp"
 

@@ -26,7 +26,7 @@
 #ifndef ANIMATIONLISTITEM_HPP_
 #define ANIMATIONLISTITEM_HPP_
 
-#include <QtGui>
+#include <QtWidgets>
 #include <QGLViewer/qglviewer.h>
 
 enum
