@@ -1,0 +1,3 @@
+[submodule "ext/gsl"]
+	path = ext/gsl
+	url = https://github.com/Microsoft/GSL.git

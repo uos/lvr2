@@ -9,7 +9,11 @@ set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/bin)
 set(CMAKE_LIBRARY_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/lib)
 set(CMAKE_ARCHIVE_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/lib)
 
-set(CMAKE_MODULE_PATH ${LAS_VEGAS_SOURCE_DIR}/CMakeModules ${LAS_VEGAS_SOURCE_DIR}/ext/kintinuous/cmake/Modules ${CMAKE_MODULE_PATH})
+set(CMAKE_MODULE_PATH
+  ${LAS_VEGAS_SOURCE_DIR}/CMakeModules
+  ${LAS_VEGAS_SOURCE_DIR}/ext/kintinuous/cmake/Modules
+  ${CMAKE_MODULE_PATH}
+)
 
 message(STATUS ${CMAKE_MODULE_PATH})
 
@@ -240,6 +244,8 @@ add_subdirectory(ext/laslib)
 include_directories( ${LASLIB_INCLUDE_DIR} )
 list(APPEND LVR_INSTALL_INCLUDE_DIRS ${LASLIB_INSTALL_INCLUDE_DIR})
 
+# GSL
+include_directories("ext/gsl/include")
 
 # SLAM6D stuff
 add_subdirectory(ext/slam6d)
@@ -309,6 +315,7 @@ endif()
 ##############################################################
 
 install(DIRECTORY include/lvr DESTINATION ${CMAKE_INSTALL_INCLUDEDIR})
+install(DIRECTORY include/lvr2 DESTINATION ${CMAKE_INSTALL_INCLUDEDIR})
 list(APPEND LVR_INSTALL_INCLUDE_DIRS ${CMAKE_INSTALL_PREFIX}/${CMAKE_INSTALL_INCLUDEDIR})
 
 
@@ -355,6 +362,7 @@ add_subdirectory(src/liblvr)
 ##############################################################
 
 add_subdirectory(src/tools/reconstruct)
+add_subdirectory(src/tools/reconstruct2)
 add_subdirectory(src/tools/classifier)
 add_subdirectory(src/tools/colorize)
 add_subdirectory(src/tools/scanreduce)
