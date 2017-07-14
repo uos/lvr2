@@ -107,4 +107,4 @@ void FastReconstruction<BaseVecT, BoxT>::getMesh(BaseMesh<BaseVecT> &mesh)
 
 }
 
-} //namespace lvr2
+} // namespace lvr2
