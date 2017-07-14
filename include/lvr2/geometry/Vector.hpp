@@ -98,6 +98,11 @@ struct Vector : public BaseVecT
     Vector<BaseVecT>& operator+=(const Vector<BaseVecT> &other);
     Vector<BaseVecT>& operator-=(const Vector<BaseVecT> &other);
 
+    /// Scalar multiplication.
+    Vector<BaseVecT> operator*(const typename BaseVecT::CoordType &scale) const;
+    /// Scalar division.
+    Vector<BaseVecT> operator/(const typename BaseVecT::CoordType &scale) const;
+
     // Addition/subtraction between point and vector
     Point<BaseVecT> operator+(const Point<BaseVecT> &other) const;
     Point<BaseVecT> operator-(const Point<BaseVecT> &other) const;
