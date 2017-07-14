@@ -56,4 +56,10 @@ Vector<BaseVecT> Point<BaseVecT>::operator-(const Point<BaseVecT> &other) const
     return BaseVecT::operator-(other);
 }
 
+template <typename BaseVecT>
+Vector<BaseVecT> Point<BaseVecT>::asVector() const
+{
+    return static_cast<BaseVecT>(*this);
+}
+
 } // namespace lvr2

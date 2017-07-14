@@ -71,6 +71,8 @@ struct Point : public BaseVecT
     BaseVecT& operator-=(const BaseVecT &other) = delete;
     BaseVecT& operator+=(const BaseVecT &other) = delete;
 
+    Vector<BaseVecT> asVector() const;
+
     // Subtracting two points makes sense, too
     Vector<BaseVecT> operator-(const Point<BaseVecT> &other) const;
 
