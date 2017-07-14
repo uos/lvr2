@@ -76,6 +76,8 @@ public:
      **/
     size_t getNumPoints() const;
 
+    lvr::PointBuffer toOldBuffer() const;
+
     const Point<BaseVecT>& getPoint(size_t idx) const;
     // Point<BaseVecT>& getPoint(size_t idx);
 
