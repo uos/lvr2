@@ -142,6 +142,11 @@ public:
     virtual Normal<BaseVecT> getFaceNormal(FaceHandle handle) const = 0;
 
     /**
+     * @brief Calc and return the centroid of the requested face.
+     */
+    Point<BaseVecT> calcFaceCentroid(FaceHandle handle) const;
+
+    /**
      * @brief Get the points of the requested face.
      *
      * @return The points of the vertices in counter-clockwise order.
