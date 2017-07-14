@@ -46,6 +46,13 @@ struct Plane
     Point<BaseVecT> pos;
 };
 
+template<typename BaseVecT>
+std::ostream& operator<<(std::ostream& os, const Plane<BaseVecT>& p)
+{
+    os << "Plane[" << p.normal << ", " << p.pos << "]";
+    return os;
+}
+
 } // namespace lvr2
 
 #endif /* LVR2_GEOMETRY_PLANE_H_ */
