@@ -180,23 +180,37 @@ optional<typename BaseVecT::CoordType&> PointBuffer<BaseVecT>::getIntensity(size
     return (*m_intensities)[idx];
 }
 
-// template <typename BaseVecT>
-// BaseVecT PointBuffer<BaseVecT>::getBaseVec(size_t idx) const
-// {
-//     using CoordT = typename BaseVecT::CoordType;
+template <typename BaseVecT>
+bool PointBuffer<BaseVecT>::hasConfidences() const {
+    return static_cast<bool>(m_confidences);
+}
 
-//     // This class currently only supports coordinate types that don't require
-//     // an alignment bigger than 8.
-//     static_assert(alignof(CoordT) <= 8, "unsupported vector type");
+template <typename BaseVecT>
+void PointBuffer<BaseVecT>::addConfidenceChannel(typename BaseVecT::CoordType def)
+{
+    m_confidences = vector<typename BaseVecT::CoordType>(getNumPoints(), def);
+}
 
-//     auto step = sizeof(CoordT);
-//     auto offset = idx * 3;
-//     auto x = *reinterpret_cast<const CoordT*>(&m_points[offset + 0 * step]);
-//     auto y = *reinterpret_cast<const CoordT*>(&m_points[offset + 1 * step]);
-//     auto z = *reinterpret_cast<const CoordT*>(&m_points[offset + 2 * step]);
+template <typename BaseVecT>
+optional<const typename BaseVecT::CoordType&> PointBuffer<BaseVecT>::getConfidence(size_t idx) const
+{
+    if (!hasConfidences())
+    {
+        return boost::none;
+    }
+    return (*m_confidences)[idx];
+}
 
-//     return BaseVecT(x, y, z);
-// }
+template <typename BaseVecT>
+optional<typename BaseVecT::CoordType&> PointBuffer<BaseVecT>::getConfidence(size_t idx)
+{
+    if (!hasIntensities())
+    {
+        return boost::none;
+    }
+    return (*m_confidences)[idx];
+}
+
 
 template <typename BaseVecT>
 bool PointBuffer<BaseVecT>::empty() const {
