@@ -671,7 +671,8 @@ int main(int argc, char** argv)
 
     //     if(options.getNumEdgeCollapses())
     //     {
-    //         QuadricVertexCosts<ColorVertex<float, unsigned char> , Normal<float> > c = QuadricVertexCosts<ColorVertex<float, unsigned char> , Normal<float> >(true);
+    //         QuadricVertexCosts<ColorVertex<float, unsigned char> , Normal<float> > c
+    //             = QuadricVertexCosts<ColorVertex<float, unsigned char> , Normal<float> >(true);
     //         mesh.reduceMeshByCollapse(options.getNumEdgeCollapses(), c);
     //     }
     // }
