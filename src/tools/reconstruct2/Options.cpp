@@ -280,7 +280,7 @@ bool Options::extrude() const
     }
 }
 
-bool  Options::colorRegions() const
+bool Options::colorRegions() const
 {
     return m_variables.count("colorRegions");
 }
@@ -300,19 +300,14 @@ float Options::getNormalThreshold() const
     return m_variables["pnt"].as<float>();
 }
 
-int   Options::getSmallRegionThreshold() const
+int Options::getSmallRegionThreshold() const
 {
     return m_variables["smallRegionThreshold"].as<int>();
 }
 
-int   Options::getCleanContourIterations() const
+int Options::getCleanContourIterations() const
 {
     return m_variables["cleanContours"].as<int>();
-}
-
-int Options::getDepth() const
-{
-    return m_depth;
 }
 
 float Options::getTexelSize() const

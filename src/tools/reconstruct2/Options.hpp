@@ -246,11 +246,6 @@ public:
     int   getFillHoles() const;
 
     /**
-     * @brief   Returns the maximum recursion depth for region growing
-     */
-    int getDepth() const;
-
-    /**
      * @brief   Returns the texel size for texture resolution
      */
     float getTexelSize() const;
@@ -366,9 +361,6 @@ private:
 
     /// Threshold for plane optimization
     int                             m_minPlaneSize;
-
-    /// Maximum recursion depth for region growing
-    int                             m_depth;
 
     int                             m_cleanContourIterations;
 
@@ -537,10 +529,6 @@ inline ostream& operator<<(ostream& os, const Options &o)
         {
             cout << "##### Texture Analysis \t\t: OFF" << endl;
         }
-    }
-    if(o.getDepth())
-    {
-        cout << "##### Recursion depth \t\t: " << o.getDepth() << endl;
     }
     if(o.getNumEdgeCollapses())
     {

@@ -705,12 +705,13 @@ int main(int argc, char** argv)
     // }
 
     // Create output model and save to file
-    auto model = new lvr::Model(buffer);
-    lvr::ModelPtr m(model);
+    auto m = boost::make_shared<lvr::Model>(buffer);
 
     if(options.saveOriginalData())
     {
-        m->m_pointCloud = model->m_pointCloud;
+        m->m_pointCloud = boost::make_shared<lvr::PointBuffer>(
+            surface->pointBuffer()->toOldBuffer()
+        );
     }
     cout << timestamp << "Saving mesh." << endl;
     lvr::ModelFactory::saveModel(m, "triangle_mesh.ply");

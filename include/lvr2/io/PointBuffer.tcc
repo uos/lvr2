@@ -73,7 +73,7 @@ lvr::PointBuffer PointBuffer<BaseVecT>::toOldBuffer() const
         pointData[i + 1] = p.y;
         pointData[i + 2] = p.z;
     }
-    out.setPointArray(pointData, m_points.size() * 3);
+    out.setPointArray(pointData, m_points.size());
 
     if (m_normals)
     {
@@ -84,7 +84,7 @@ lvr::PointBuffer PointBuffer<BaseVecT>::toOldBuffer() const
             normalData[i + 1] = p.getY();
             normalData[i + 2] = p.getZ();
         }
-        out.setPointNormalArray(normalData, m_normals->size() * 3);
+        out.setPointNormalArray(normalData, m_normals->size());
     }
 
     // TODO the remaining stuff
