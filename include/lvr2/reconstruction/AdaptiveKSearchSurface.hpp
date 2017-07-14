@@ -44,6 +44,7 @@
 
 #include <lvr2/geometry/Point.hpp>
 #include <lvr2/geometry/Normal.hpp>
+#include <lvr2/geometry/Plane.hpp>
 // #include <lvr/geometry/ColorVertex.hpp>
 // #include <lvr/geometry/BoundingBox.hpp>
 
@@ -80,22 +81,6 @@ using std::unique_ptr;
 
 namespace lvr2
 {
-
-/**
- * @brief A helper struct to represent a tangent plane
- *        of a query point. Used for normal estimation.
- */
-template<typename BaseVecT>
-struct Plane
-{
-    /// This is a dummy ctor with dummy values, but `Plane` is only used
-    /// in this class, right?
-    Plane() : n(0, 0, 1) {}
-
-    // float a, b, c;
-    Normal<BaseVecT> n;
-    Point<BaseVecT> p;
-};
 
 /**
  * @brief A point cloud manager class that uses the STANN
