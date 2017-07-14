@@ -17,24 +17,24 @@
  */
 
 /*
- * PlanarClusterGrowingAlgorithm.hpp
+ * Planar.hpp
  *
- *  @date 17.06.2017
+ *  @date 14.07.2017
  *  @author Johan M. von Behren <johan@vonbehren.eu>
  */
 
 #include <vector>
 
-using std::vector;
-
 #include <lvr2/geometry/Normal.hpp>
 #include <lvr2/util/VectorMap.hpp>
+
+using std::vector;
 
 namespace lvr2
 {
 
 template<typename BaseVecT>
-ClusterSet<FaceHandle> PlanarClusterGrowingAlgorithm<BaseVecT>::apply(const BaseMesh <BaseVecT>& mesh)
+ClusterSet<FaceHandle> planarClusterGrowing(const BaseMesh<BaseVecT>& mesh, float minSinAngle)
 {
     ClusterSet<FaceHandle> clusterSet;
     FaceMap<bool> visited(mesh.numFaces(), false);
@@ -58,7 +58,7 @@ ClusterSet<FaceHandle> PlanarClusterGrowingAlgorithm<BaseVecT>::apply(const Base
                 stack.pop_back();
 
                 // Check if the last faces from stack and starting face are in the "same" plane
-                if (mesh.getFaceNormal(currentFace).dot(referenceNormal.asVector()) > m_minSinAngle)
+                if (mesh.getFaceNormal(currentFace).dot(referenceNormal.asVector()) > minSinAngle)
                 {
                     // The face is in the "same" plane as the starting face => add it to cluster
                     // and mark as visited.

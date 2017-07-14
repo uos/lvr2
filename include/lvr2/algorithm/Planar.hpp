@@ -17,41 +17,41 @@
  */
 
 /*
- * PlanarClusterGrowingAlgorithm.hpp
+ * Planar.hpp
  *
- *  @date 17.06.2017
+ *  @date 14.07.2017
  *  @author Johan M. von Behren <johan@vonbehren.eu>
  */
 
-#ifndef LVR2_ALGORITHM_PLANARCLUSTERGROWINGALGORITHM_H_
-#define LVR2_ALGORITHM_PLANARCLUSTERGROWINGALGORITHM_H_
+#ifndef LVR2_ALGORITHM_PLANAR_H_
+#define LVR2_ALGORITHM_PLANAR_H_
 
-#include <lvr2/geometry/Cluster.hpp>
 #include <lvr2/geometry/ClusterSet.hpp>
+#include <lvr2/geometry/Handles.hpp>
+#include <lvr2/geometry/BaseMesh.hpp>
 
 namespace lvr2
 {
 
+// ==========================================================================
+// Collection of algorithms for planar cluster growing.
+// ==========================================================================
+
 /**
  * @brief Algorithm which generates plane clusters from the given mesh.
+ * @param minSinAngle `1 - m_minSinAngle` is the allowed difference between the sin of the angle of the starting
+ *                    face and all other faces in one cluster.
  */
 template<typename BaseVecT>
-class PlanarClusterGrowingAlgorithm
-{
-private:
-    /**
-     * `1 - m_minSinAngle` is the allowed difference between the sin of the
-     * angle of the starting face and all other faces in one cluster.
-     */
-    float m_minSinAngle;
+ClusterSet<FaceHandle> planarClusterGrowing(const BaseMesh<BaseVecT>& mesh, float minSinAngle);
 
-public:
-    PlanarClusterGrowingAlgorithm() : m_minSinAngle(0.999) {};
-    ClusterSet<FaceHandle> apply(const BaseMesh<BaseVecT>& mesh);
-};
+void iterativePlanarClusterGrowing();
+void calcRegressionPlanes();
+void dragToRegressionPlane();
+void dragToRegressionPlanes();
 
 } // namespace lvr2
 
-#include <lvr2/algorithm/PlanarClusterGrowingAlgorithm.tcc>
+#include <lvr2/algorithm/Planar.tcc>
 
-#endif /* LVR2_ALGORITHM_PLANARCLUSTERGROWINGALGORITHM_H_ */
+#endif /* LVR2_ALGORITHM_PLANAR_H_ */
