@@ -17,14 +17,14 @@
  */
 
 /*
- * ClusterGrowingAlgorithm.hpp
+ * PlanarClusterGrowingAlgorithm.hpp
  *
  *  @date 17.06.2017
  *  @author Johan M. von Behren <johan@vonbehren.eu>
  */
 
-#ifndef LVR2_ALGORITHM_CLUSTERGROWINGALGORITHM_H_
-#define LVR2_ALGORITHM_CLUSTERGROWINGALGORITHM_H_
+#ifndef LVR2_ALGORITHM_PLANARCLUSTERGROWINGALGORITHM_H_
+#define LVR2_ALGORITHM_PLANARCLUSTERGROWINGALGORITHM_H_
 
 #include <lvr2/geometry/Cluster.hpp>
 #include <lvr2/geometry/ClusterSet.hpp>
@@ -36,7 +36,7 @@ namespace lvr2
  * @brief Algorithm which generates plane clusters from the given mesh.
  */
 template<typename BaseVecT>
-class ClusterGrowingAlgorithm
+class PlanarClusterGrowingAlgorithm
 {
 private:
     /**
@@ -46,12 +46,12 @@ private:
     float m_minSinAngle;
 
 public:
-    ClusterGrowingAlgorithm() : m_minSinAngle(0.999) {};
+    PlanarClusterGrowingAlgorithm() : m_minSinAngle(0.999) {};
     ClusterSet<FaceHandle> apply(const BaseMesh<BaseVecT>& mesh);
 };
 
 } // namespace lvr2
 
-#include <lvr2/algorithm/ClusterGrowingAlgorithm.tcc>
+#include <lvr2/algorithm/PlanarClusterGrowingAlgorithm.tcc>
 
-#endif /* LVR2_ALGORITHM_CLUSTERGROWINGALGORITHM_H_ */
+#endif /* LVR2_ALGORITHM_PLANARCLUSTERGROWINGALGORITHM_H_ */

@@ -17,7 +17,7 @@
  */
 
 /*
- * ClusterGrowingAlgorithm.hpp
+ * PlanarClusterGrowingAlgorithm.hpp
  *
  *  @date 17.06.2017
  *  @author Johan M. von Behren <johan@vonbehren.eu>
@@ -34,7 +34,7 @@ namespace lvr2
 {
 
 template<typename BaseVecT>
-ClusterSet<FaceHandle> ClusterGrowingAlgorithm<BaseVecT>::apply(const BaseMesh <BaseVecT>& mesh)
+ClusterSet<FaceHandle> PlanarClusterGrowingAlgorithm<BaseVecT>::apply(const BaseMesh <BaseVecT>& mesh)
 {
     ClusterSet<FaceHandle> clusterSet;
     FaceMap<bool> visited(mesh.numFaces(), false);
