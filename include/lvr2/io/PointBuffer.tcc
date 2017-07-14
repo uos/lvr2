@@ -62,6 +62,38 @@ size_t PointBuffer<BaseVecT>::getNumPoints() const
 }
 
 template <typename BaseVecT>
+lvr::PointBuffer PointBuffer<BaseVecT>::toOldBuffer() const
+{
+    auto out = lvr::PointBuffer();
+
+    auto pointData = boost::shared_array<float>(new float[m_points.size() * 3]);
+    for (size_t i = 0; i < m_points.size(); i++) {
+        auto p = m_points[i];
+        pointData[i + 0] = p.x;
+        pointData[i + 1] = p.y;
+        pointData[i + 2] = p.z;
+    }
+    out.setPointArray(pointData, m_points.size());
+
+    if (m_normals)
+    {
+        auto normalData = boost::shared_array<float>(new float[m_normals->size() * 3]);
+        for (size_t i = 0; i < m_normals->size(); i++) {
+            auto p = (*m_normals)[i];
+            normalData[i + 0] = p.getX();
+            normalData[i + 1] = p.getY();
+            normalData[i + 2] = p.getZ();
+        }
+        out.setPointNormalArray(normalData, m_normals->size());
+    }
+
+    // TODO the remaining stuff
+
+    return out;
+}
+
+
+template <typename BaseVecT>
 const Point<BaseVecT>& PointBuffer<BaseVecT>::getPoint(size_t idx) const
 {
     return m_points[idx];
