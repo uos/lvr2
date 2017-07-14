@@ -339,6 +339,12 @@ Point<BaseVecT> HalfEdgeMesh<BaseVecT>::getVertexPosition(VertexHandle handle) c
 }
 
 template <typename BaseVecT>
+Point<BaseVecT>& HalfEdgeMesh<BaseVecT>::vertexPosition(VertexHandle handle)
+{
+    return getV(handle).pos;
+}
+
+template <typename BaseVecT>
 size_t HalfEdgeMesh<BaseVecT>::numFaces() const
 {
     return m_faces.sizeUsed();
