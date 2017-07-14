@@ -122,6 +122,27 @@ public:
     optional<const typename BaseVecT::CoordType&> getIntensity(size_t idx) const;
     optional<typename BaseVecT::CoordType&> getIntensity(size_t idx);
 
+
+    /**
+     * @brief Returns true if the stored data contains confidence information.
+     */
+    bool hasConfidences() const;
+
+    /**
+     * @brief Adds (or overwrites) confidence information for all points.
+     *
+     * All confidences are initialized with the given value or with 0. Correct
+     * values can later be set via `getConfidence()`.
+     */
+    void addConfidenceChannel(typename BaseVecT::CoordType def = 0);
+
+    /**
+     * @brief Returns the intensity with the given index.
+     */
+    optional<const typename BaseVecT::CoordType&> getConfidence(size_t idx) const;
+    optional<typename BaseVecT::CoordType&> getConfidence(size_t idx);
+
+
     bool empty() const;
 
 private:
@@ -134,8 +155,8 @@ private:
     /// Point intensity buffer.
     optional<vector<typename BaseVecT::CoordType>> m_intensities;
 
-    // /// Point confidence buffer.
-    // vector<AlignedByte> m_confidences;
+    /// Point confidence buffer.
+    optional<vector<typename BaseVecT::CoordType>> m_confidences;
 
     // template <typename BaseVecT>
     // BaseVecT getBaseVec(size_t idx) const;
