@@ -30,6 +30,9 @@
 #include <vector>
 #include <boost/optional.hpp>
 
+#include <lvr2/geometry/Handles.hpp>
+#include <lvr2/geometry/Cluster.hpp>
+
 using std::vector;
 
 namespace lvr2
@@ -123,6 +126,8 @@ template <typename ValT>
 using FaceMap = VectorMap<FaceHandle, ValT>;
 template <typename ValT>
 using VertexMap = VectorMap<VertexHandle, ValT>;
+template <typename ValT>
+using ClusterMap = VectorMap<ClusterHandle, ValT>;
 
 } // namespace lvr2
 
