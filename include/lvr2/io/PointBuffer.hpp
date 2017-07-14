@@ -103,22 +103,36 @@ public:
     optional<const Normal<BaseVecT>&> getNormal(size_t idx) const;
     optional<Normal<BaseVecT>&> getNormal(size_t idx);
 
+    /**
+     * @brief Returns true if the stored data contains intensity information.
+     */
+    bool hasIntensities() const;
+
+    /**
+     * @brief Adds (or overwrites) intensity information for all points.
+     *
+     * All intensities are initialized with the given value or with 0. Correct
+     * values can later be set via `getIntensity()`.
+     */
+    void addIntensityChannel(typename BaseVecT::CoordType def = 0);
+
+    /**
+     * @brief Returns the intensity with the given index.
+     */
+    optional<const typename BaseVecT::CoordType&> getIntensity(size_t idx) const;
+    optional<typename BaseVecT::CoordType&> getIntensity(size_t idx);
+
     bool empty() const;
 
 private:
-    // struct alignas(8) AlignedByte
-    // {
-    //     uint8_t data;
-    // };
-
     /// Point buffer.
     vector<Point<BaseVecT>> m_points;
 
     /// Point normal buffer.
     optional<vector<Normal<BaseVecT>>> m_normals;
 
-    // /// Point intensity buffer.
-    // vector<AlignedByte> m_intensities;
+    /// Point intensity buffer.
+    optional<vector<typename BaseVecT::CoordType>> m_intensities;
 
     // /// Point confidence buffer.
     // vector<AlignedByte> m_confidences;
