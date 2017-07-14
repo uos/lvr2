@@ -52,6 +52,18 @@ PointBuffer<BaseVecT>::PointBuffer(lvr::PointBuffer& oldBuffer)
             m_normals->push_back(p);
         }
     }
+
+    size_t intensities_len;
+    auto intensities_buf = oldBuffer.getPointIntensityArray(intensities_len);
+    if (intensities_len > 0)
+    {
+        m_intensities->reserve(intensities_len);
+        std::copy(
+            intensities_buf.get(),
+            intensities_buf.get() + intensities_len,
+            std::back_inserter(*m_intensities)
+        );
+    }
 }
 
 
@@ -135,6 +147,37 @@ optional<Normal<BaseVecT>&> PointBuffer<BaseVecT>::getNormal(size_t idx)
         return boost::none;
     }
     return (*m_normals)[idx];
+}
+
+template <typename BaseVecT>
+bool PointBuffer<BaseVecT>::hasIntensities() const {
+    return static_cast<bool>(m_intensities);
+}
+
+template <typename BaseVecT>
+void PointBuffer<BaseVecT>::addIntensityChannel(typename BaseVecT::CoordType def)
+{
+    m_intensities = vector<typename BaseVecT::CoordType>(getNumPoints(), def);
+}
+
+template <typename BaseVecT>
+optional<const typename BaseVecT::CoordType&> PointBuffer<BaseVecT>::getIntensity(size_t idx) const
+{
+    if (!hasIntensities())
+    {
+        return boost::none;
+    }
+    return (*m_intensities)[idx];
+}
+
+template <typename BaseVecT>
+optional<typename BaseVecT::CoordType&> PointBuffer<BaseVecT>::getIntensity(size_t idx)
+{
+    if (!hasIntensities())
+    {
+        return boost::none;
+    }
+    return (*m_intensities)[idx];
 }
 
 // template <typename BaseVecT>
