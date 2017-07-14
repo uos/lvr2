@@ -91,4 +91,16 @@ Point<BaseVecT> Vector<BaseVecT>::operator-(const Point<BaseVecT>& other) const
     return BaseVecT::operator-(other);
 }
 
+template <typename BaseVecT>
+Vector<BaseVecT> Vector<BaseVecT>::operator*(const typename BaseVecT::CoordType &scale) const
+{
+    return static_cast<Vector<BaseVecT>>(BaseVecT::operator*(scale));
+}
+
+template <typename BaseVecT>
+Vector<BaseVecT> Vector<BaseVecT>::operator/(const typename BaseVecT::CoordType &scale) const
+{
+    return static_cast<Vector<BaseVecT>>(BaseVecT::operator/(scale));
+}
+
 } // namespace lvr2
