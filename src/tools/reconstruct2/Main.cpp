@@ -178,7 +178,7 @@
 #include <lvr2/util/VectorMap.hpp>
 #include <lvr2/algorithm/FinalizeAlgorithm.hpp>
 #include <lvr2/geometry/BoundingBox.hpp>
-#include <lvr2/algorithm/ClusterGrowingAlgorithm.hpp>
+#include <lvr2/algorithm/PlanarClusterGrowingAlgorithm.hpp>
 #include <lvr2/algorithm/ClusterPainter.hpp>
 
 #include <lvr2/reconstruction/AdaptiveKSearchSurface.hpp>
@@ -391,7 +391,7 @@ void testClusterGrowing()
 {
     lvr2::HalfEdgeMesh<lvr2::BaseVector<float>> mesh;
     createHouseFromNikolaus(mesh);
-    lvr2::ClusterGrowingAlgorithm<BaseVector<float>> clusterGrowing;
+    lvr2::PlanarClusterGrowingAlgorithm<BaseVector<float>> clusterGrowing;
     auto clusterSet = clusterGrowing.apply(mesh);
     cout << "Generated " << clusterSet.numCluster() << " clusters." << endl;
 }
@@ -682,7 +682,7 @@ int main(int argc, char** argv)
     //     mesh.fillHoles(options.getFillHoles());
     // }
 
-    // ClusterGrowingAlgorithm<BaseVector<float>> clusterGrowing;
+    // PlanarClusterGrowingAlgorithm<BaseVector<float>> clusterGrowing;
     // auto clusterSet = clusterGrowing.apply(mesh);
 
     // ClusterPainter painter(clusterSet);
