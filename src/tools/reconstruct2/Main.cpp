@@ -421,12 +421,8 @@ PointsetSurfacePtr<BaseVecT> loadPointCloud(const reconstruct::Options& options)
     // Create point set surface object
     if(pcm_name == "PCL")
     {
-// #ifdef LVR_USE_PCL
-//         surface = PsSurface::Ptr(new pclSurface(p_loader));
-// #else
-//         cout << timestamp << "Can't create a PCL point set surface without PCL installed." << endl;
-//         return boost::none;
-// #endif
+        cout << timestamp << "Using PCL as point cloud manager is not implemented yet!" << endl;
+        panic_unimplemented("PCL as point cloud manager");
     }
     else if(pcm_name == "STANN" || pcm_name == "FLANN" || pcm_name == "NABO" || pcm_name == "NANOFLANN")
     {
@@ -444,15 +440,6 @@ PointsetSurfacePtr<BaseVecT> loadPointCloud(const reconstruct::Options& options)
     {
         cout << timestamp << "Unable to create PointCloudManager." << endl;
         cout << timestamp << "Unknown option '" << pcm_name << "'." << endl;
-        cout << timestamp << "Available PCMs are: " << endl;
-        cout << timestamp << "STANN, STANN_RANSAC";
-#ifdef LVR_USE_PCL
-        cout << ", PCL";
-#endif
-#ifdef LVR_USE_NABO
-        cout << ", Nabo";
-#endif
-        cout << endl;
         return nullptr;
     }
 
@@ -471,288 +458,271 @@ PointsetSurfacePtr<BaseVecT> loadPointCloud(const reconstruct::Options& options)
         cout << timestamp << "Using given normals." << endl;
     }
 
-    // TODO2: add again, right now it's boost vs std shared_ptr
-    // // Save points and normals only
-    // if(options.savePointNormals())
-    // {
-    //     lvr::ModelPtr pn(new lvr::Model);
-    //     pn->m_pointCloud = buffer;
-    //     lvr::ModelFactory::saveModel(pn, "pointnormals.ply");
-    // }
-
     return surface;
 }
 
-// void setTextureOptions(const reconstruct::Options& options)
-// {
-//     if(options.getTexelSize())
-//     {
-//         Texture::m_texelSize = options.getTexelSize();
-//     }
+std::pair<shared_ptr<GridBase>, unique_ptr<FastReconstructionBase<Vec>>>
+    createGridAndReconstruction(
+        const reconstruct::Options& options,
+        PointsetSurfacePtr<BaseVecT> surface
+    )
+{
+    // Determine whether to use intersections or voxelsize
+    bool useVoxelsize = options.getIntersections() <= 0;
+    float resolution = useVoxelsize ? options.getVoxelsize() : options.getIntersections();
 
-//     if(options.getTexturePack() != "")
-//     {
-//         Texturizer<Vertex<float> , Normal<float> >::m_filename = options.getTexturePack();
-//         if(options.getStatsCoeffs())
-//         {
-//             float* sc = options.getStatsCoeffs();
-//             for (int i = 0; i < 14; i++)
-//             {
-//                 Statistics::m_coeffs[i] = sc[i];
-//             }
-//             delete sc;
-//         }
-//         if(options.getNumStatsColors())
-//         {
-//             Texturizer<Vertex<float> , Normal<float> >::m_numStatsColors = options.getNumStatsColors();
-//         }
-//         if(options.getNumCCVColors())
-//         {
-//             Texturizer<Vertex<float> , Normal<float> >::m_numCCVColors = options.getNumCCVColors();
-//         }
-//         if(options.getCoherenceThreshold())
-//         {
-//             Texturizer<Vertex<float> , Normal<float> >::m_coherenceThreshold = options.getCoherenceThreshold();
-//         }
+    // Create a point set grid for reconstruction
+    string decompositionType = options.getDecomposition();
 
-//         if(options.getColorThreshold())
-//         {
-//             Texturizer<Vertex<float> , Normal<float> >::m_colorThreshold = options.getColorThreshold();
-//         }
-//         if(options.getStatsThreshold())
-//         {
-//             Texturizer<Vertex<float> , Normal<float> >::m_statsThreshold = options.getStatsThreshold();
-//         }
-//         if(options.getUseCrossCorr())
-//         {
-//             Texturizer<Vertex<float> , Normal<float> >::m_useCrossCorr = options.getUseCrossCorr();
-//         }
-//         if(options.getFeatureThreshold())
-//         {
-//             Texturizer<Vertex<float> , Normal<float> >::m_featureThreshold = options.getFeatureThreshold();
-//         }
-//         if(options.getPatternThreshold())
-//         {
-//             Texturizer<Vertex<float> , Normal<float> >::m_patternThreshold = options.getPatternThreshold();
-//         }
-//         if(options.doTextureAnalysis())
-//         {
-//             Texturizer<Vertex<float> , Normal<float> >::m_doAnalysis = true;
-//         }
-//         if(options.getMinimumTransformationVotes())
-//         {
-//             Transform::m_minimumVotes = options.getMinimumTransformationVotes();
-//         }
-//     }
+    // Fail safe check
+    if(decompositionType != "MC" && decompositionType != "PMC" && decompositionType != "SF" )
+    {
+        cout << "Unsupported decomposition type " << decompositionType << ". Defaulting to PMC." << endl;
+        decompositionType = "PMC";
+    }
 
-//     if(options.getSharpFeatureThreshold())
-//     {
-//         SharpBox<Vertex<float> , Normal<float> >::m_theta_sharp = options.getSharpFeatureThreshold();
-//     }
-//     if(options.getSharpCornerThreshold())
-//     {
-//         SharpBox<Vertex<float> , Normal<float> >::m_phi_corner = options.getSharpCornerThreshold();
-//     }
-// }
+    if(decompositionType == "MC")
+    {
+        cout << "Decomposition type 'MC' is not implemented yet!" << endl;
+        panic_unimplemented("decomposition type 'MC'");
+    }
+    else if(decompositionType == "PMC")
+    {
+        BilinearFastBox<Vec>::m_surface = surface;
+        auto grid = std::make_shared<PointsetGrid<Vec, BilinearFastBox<Vec>>>(
+            resolution,
+            surface,
+            surface->getBoundingBox(),
+            useVoxelsize,
+            options.extrude()
+        );
+        grid->calcDistanceValues();
+        auto reconstruction = make_unique<FastReconstruction<Vec, BilinearFastBox<Vec>>>(grid);
+        return make_pair(grid, std::move(reconstruction));
+    }
+    else if(decompositionType == "SF")
+    {
+        cout << "Decomposition type 'SF' is not implemented yet!" << endl;
+        panic_unimplemented("decomposition type 'SF'");
+    }
+}
+
+void setTextureOptions(const reconstruct::Options& options)
+{
+    // if(options.getTexelSize())
+    // {
+    //     Texture::m_texelSize = options.getTexelSize();
+    // }
+
+    // if(options.getTexturePack() != "")
+    // {
+    //     Texturizer<Vertex<float> , Normal<float> >::m_filename = options.getTexturePack();
+    //     if(options.getStatsCoeffs())
+    //     {
+    //         float* sc = options.getStatsCoeffs();
+    //         for (int i = 0; i < 14; i++)
+    //         {
+    //             Statistics::m_coeffs[i] = sc[i];
+    //         }
+    //         delete sc;
+    //     }
+    //     if(options.getNumStatsColors())
+    //     {
+    //         Texturizer<Vertex<float> , Normal<float> >::m_numStatsColors = options.getNumStatsColors();
+    //     }
+    //     if(options.getNumCCVColors())
+    //     {
+    //         Texturizer<Vertex<float> , Normal<float> >::m_numCCVColors = options.getNumCCVColors();
+    //     }
+    //     if(options.getCoherenceThreshold())
+    //     {
+    //         Texturizer<Vertex<float> , Normal<float> >::m_coherenceThreshold = options.getCoherenceThreshold();
+    //     }
+
+    //     if(options.getColorThreshold())
+    //     {
+    //         Texturizer<Vertex<float> , Normal<float> >::m_colorThreshold = options.getColorThreshold();
+    //     }
+    //     if(options.getStatsThreshold())
+    //     {
+    //         Texturizer<Vertex<float> , Normal<float> >::m_statsThreshold = options.getStatsThreshold();
+    //     }
+    //     if(options.getUseCrossCorr())
+    //     {
+    //         Texturizer<Vertex<float> , Normal<float> >::m_useCrossCorr = options.getUseCrossCorr();
+    //     }
+    //     if(options.getFeatureThreshold())
+    //     {
+    //         Texturizer<Vertex<float> , Normal<float> >::m_featureThreshold = options.getFeatureThreshold();
+    //     }
+    //     if(options.getPatternThreshold())
+    //     {
+    //         Texturizer<Vertex<float> , Normal<float> >::m_patternThreshold = options.getPatternThreshold();
+    //     }
+    //     if(options.doTextureAnalysis())
+    //     {
+    //         Texturizer<Vertex<float> , Normal<float> >::m_doAnalysis = true;
+    //     }
+    //     if(options.getMinimumTransformationVotes())
+    //     {
+    //         Transform::m_minimumVotes = options.getMinimumTransformationVotes();
+    //     }
+    // }
+
+    // if(options.getSharpFeatureThreshold())
+    // {
+    //     SharpBox<Vertex<float> , Normal<float> >::m_theta_sharp = options.getSharpFeatureThreshold();
+    // }
+    // if(options.getSharpCornerThreshold())
+    // {
+    //     SharpBox<Vertex<float> , Normal<float> >::m_phi_corner = options.getSharpCornerThreshold();
+    // }
+}
 
 int main(int argc, char** argv)
 {
+    // =======================================================================
+    // Parse and print command line parameters
+    // =======================================================================
+    // Parse command line arguments
+    reconstruct::Options options(argc, argv);
 
-        // Parse command line arguments
-        reconstruct::Options options(argc, argv);
+    // Exit if options had to generate a usage message
+    // (this means required parameters are missing)
+    if (options.printUsage())
+    {
+        return EXIT_SUCCESS;
+    }
 
-        // Exit if options had to generate a usage message
-        // (this means required parameters are missing)
-        if (options.printUsage())
-        {
-            return EXIT_SUCCESS;
-        }
-
-        lvr::OpenMPConfig::setNumThreads(options.getNumThreads());
-
-        std::cout << options << std::endl;
-
-        auto surface = loadPointCloud<Vec>(options);
-        if (!surface)
-        {
-            cout << "Failed to create pointcloud. Exiting." << endl;
-            return EXIT_FAILURE;
-        }
-
-        // Create an empty mesh
-        lvr2::HalfEdgeMesh<Vec> mesh;
-        // testClusterGrowing();
-        // testFinalize(mesh);
-
-        // Set recursion depth for region growing
-        // if(options.getDepth())
-        // {
-        //     mesh.setDepth(options.getDepth());
-        // }
-
-        // setTextureOptions(options);
-
-        // Determine whether to use intersections or voxelsize
-        float resolution;
-        bool useVoxelsize;
-        if(options.getIntersections() > 0)
-        {
-            resolution = options.getIntersections();
-            useVoxelsize = false;
-        }
-        else
-        {
-            resolution = options.getVoxelsize();
-            useVoxelsize = true;
-        }
-
-        // Create a point set grid for reconstruction
-        string decomposition = options.getDecomposition();
-
-        // Fail safe check
-        if(decomposition != "MC" && decomposition != "PMC" && decomposition != "SF" )
-        {
-            cout << "Unsupported decomposition type " << decomposition << ". Defaulting to PMC." << endl;
-            decomposition = "PMC";
-        }
-
-        shared_ptr<GridBase> grid;
-        unique_ptr<FastReconstructionBase<Vec>> reconstruction;
-        if(decomposition == "MC")
-        {
-            // grid = make_shared<PointsetGrid<
-            //     ColorVertex<float, unsigned char>,
-            //     FastBox<ColorVertex<float, unsigned char>,
-            //     Normal<float>
-            // >>(resolution, surface, surface->getBoundingBox(), useVoxelsize, options.extrude());
-    //         PointsetGrid<ColorVertex<float, unsigned char>, FastBox<ColorVertex<float, unsigned char>, Normal<float> > >* ps_grid = static_cast<PointsetGrid<ColorVertex<float, unsigned char>, FastBox<ColorVertex<float, unsigned char>, Normal<float> > > *>(grid);
-    //         ps_grid->calcDistanceValues();
-    //         reconstruction = new FastReconstruction<
-    //             ColorVertex<float, unsigned char>,
-    //             Normal<float>,
-    //             FastBox<ColorVertex<float, unsigned char>, Normal<float>>
-    //         >(ps_grid);
-
-        }
-        else if(decomposition == "PMC")
-        {
-            BilinearFastBox<Vec>::m_surface = surface;
-            auto ps_grid = std::make_shared<PointsetGrid<Vec, BilinearFastBox<Vec>>>(
-                resolution,
-                surface,
-                surface->getBoundingBox(),
-                useVoxelsize,
-                options.extrude()
-            );
-            ps_grid->calcDistanceValues();
-            grid = ps_grid;
-            reconstruction = make_unique<FastReconstruction<Vec, BilinearFastBox<Vec>>>(ps_grid);
-        }
-        else if(decomposition == "SF")
-        {
-    //         SharpBox<ColorVertex<float, unsigned char>, Normal<float> >::m_surface = surface;
-    //         grid = new PointsetGrid<ColorVertex<float, unsigned char>, SharpBox<ColorVertex<float, unsigned char>, Normal<float> > >(resolution, surface, surface->getBoundingBox(), useVoxelsize, options.extrude());
-    //         PointsetGrid<ColorVertex<float, unsigned char>, SharpBox<ColorVertex<float, unsigned char>, Normal<float> > >* ps_grid = static_cast<PointsetGrid<ColorVertex<float, unsigned char>, SharpBox<ColorVertex<float, unsigned char>, Normal<float> > > *>(grid);
-    //         ps_grid->calcDistanceValues();
-    //         reconstruction = new FastReconstruction<
-    //             ColorVertex<float, unsigned char>,
-    //             Normal<float>,
-    //             SharpBox<ColorVertex<float, unsigned char>, Normal<float>>
-    //         >(ps_grid);
-        }
+    std::cout << options << std::endl;
 
 
+    // =======================================================================
+    // Load (and potentially store) point cloud
+    // =======================================================================
+    lvr::OpenMPConfig::setNumThreads(options.getNumThreads());
 
-        // Create mesh
-        reconstruction->getMesh(mesh);
+    auto surface = loadPointCloud<Vec>(options);
+    if (!surface)
+    {
+        cout << "Failed to create pointcloud. Exiting." << endl;
+        return EXIT_FAILURE;
+    }
 
-        // Save grid to file
-        if(options.saveGrid())
-        {
-            grid->saveGrid("fastgrid.grid");
-        }
+    // Save points and normals only
+    if(options.savePointNormals())
+    {
+        lvr::ModelPtr pn(new lvr::Model);
+        auto oldBuffer = boost::make_shared<lvr::PointBuffer>(
+            surface->pointBuffer()->toOldBuffer()
+        );
+        pn->m_pointCloud = oldBuffer;
+        lvr::ModelFactory::saveModel(pn, "pointnormals.ply");
+    }
 
-        // if(options.getDanglingArtifacts())
-        // {
-        //     mesh.removeDanglingArtifacts(options.getDanglingArtifacts());
-        // }
 
-    //     // Optimize mesh
-    //     mesh.cleanContours(options.getCleanContourIterations());
-    //     mesh.setClassifier(options.getClassifier());
-    //     mesh.getClassifier().setMinRegionSize(options.getSmallRegionThreshold());
+    // =======================================================================
+    // Reconstruct mesh from point cloud data
+    // =======================================================================
+    // Create an empty mesh
+    lvr2::HalfEdgeMesh<Vec> mesh;
 
-    //     if(options.optimizePlanes())
+    // TODO2
+    setTextureOptions(options);
+
+    shared_ptr<GridBase> grid;
+    unique_ptr<FastReconstructionBase<Vec>> reconstruction;
+    std::tie(grid, reconstruction) = createGridAndReconstruction(options, surface);
+
+    // Reconstruct mesh
+    reconstruction->getMesh(mesh);
+
+    // Save grid to file
+    if(options.saveGrid())
+    {
+        grid->saveGrid("fastgrid.grid");
+    }
+
+
+    // =======================================================================
+    // Optimize and finalize mesh
+    // =======================================================================
+    // if(options.getDanglingArtifacts())
+    // {
+    //     mesh.removeDanglingArtifacts(options.getDanglingArtifacts());
+    // }
+
+    // // Optimize mesh
+    // mesh.cleanContours(options.getCleanContourIterations());
+    // mesh.setClassifier(options.getClassifier());
+    // mesh.getClassifier().setMinRegionSize(options.getSmallRegionThreshold());
+
+    // if(options.optimizePlanes())
+    // {
+    //     mesh.optimizePlanes(options.getPlaneIterations(),
+    //             options.getNormalThreshold(),
+    //             options.getMinPlaneSize(),
+    //             options.getSmallRegionThreshold(),
+    //             true);
+
+    //     mesh.fillHoles(options.getFillHoles());
+    //     mesh.optimizePlaneIntersections();
+    //     mesh.restorePlanes(options.getMinPlaneSize());
+
+    //     if(options.getNumEdgeCollapses())
     //     {
-    //         mesh.optimizePlanes(options.getPlaneIterations(),
-    //                 options.getNormalThreshold(),
-    //                 options.getMinPlaneSize(),
-    //                 options.getSmallRegionThreshold(),
-    //                 true);
-
-    //         mesh.fillHoles(options.getFillHoles());
-    //         mesh.optimizePlaneIntersections();
-    //         mesh.restorePlanes(options.getMinPlaneSize());
-
-    //         if(options.getNumEdgeCollapses())
-    //         {
-    //             QuadricVertexCosts<ColorVertex<float, unsigned char> , Normal<float> > c = QuadricVertexCosts<ColorVertex<float, unsigned char> , Normal<float> >(true);
-    //             mesh.reduceMeshByCollapse(options.getNumEdgeCollapses(), c);
-    //         }
+    //         QuadricVertexCosts<ColorVertex<float, unsigned char> , Normal<float> > c
+    //             = QuadricVertexCosts<ColorVertex<float, unsigned char> , Normal<float> >(true);
+    //         mesh.reduceMeshByCollapse(options.getNumEdgeCollapses(), c);
     //     }
-    //     else if(options.clusterPlanes())
-    //     {
-    //         mesh.clusterRegions(options.getNormalThreshold(), options.getMinPlaneSize());
-    //         mesh.fillHoles(options.getFillHoles());
-    //     }
+    // }
+    // else if(options.clusterPlanes())
+    // {
+    //     mesh.clusterRegions(options.getNormalThreshold(), options.getMinPlaneSize());
+    //     mesh.fillHoles(options.getFillHoles());
+    // }
 
-//        ClusterGrowingAlgorithm<BaseVector<float>> clusterGrowing;
-//        auto clusterSet = clusterGrowing.apply(mesh);
+    // ClusterGrowingAlgorithm<BaseVector<float>> clusterGrowing;
+    // auto clusterSet = clusterGrowing.apply(mesh);
 
-//        ClusterPainter painter(clusterSet);
-//        auto colorMap = painter.simpsons(mesh);
+    // ClusterPainter painter(clusterSet);
+    // auto colorMap = painter.simpsons(mesh);
 
-        FinalizeAlgorithm<Vec> finalize;
-//        finalize.setColorData(&colorMap);
-        auto buffer = finalize.apply(mesh);
+    // Finalize mesh (convert it to simple `MeshBuffer`)
+    FinalizeAlgorithm<Vec> finalize;
+    // finalize.setColorData(&colorMap);
+    auto buffer = finalize.apply(mesh);
 
-        // Create output model and save to file
-        auto model = new lvr::Model(buffer);
-        lvr::ModelPtr m(model);
-        cout << timestamp << "Saving mesh." << endl;
-        lvr::ModelFactory::saveModel( m, "triangle_mesh.ply");
-    //     // Save triangle mesh
-    //     if ( options.retesselate() )
-    //     {
-    //         mesh.finalizeAndRetesselate(options.generateTextures(), options.getLineFusionThreshold());
-    //     }
-    //     else
-    //     {
-    //         mesh.finalize();
-    //     }
 
-    //     // Write classification to file
-    //     if ( options.writeClassificationResult() )
-    //     {
-    //         mesh.writeClassificationResult();
-    //     }
+    // =======================================================================
+    // Write all results (including the mesh) to file
+    // =======================================================================
+    // TODO2
+    // // Write classification to file
+    // if ( options.writeClassificationResult() )
+    // {
+    //     mesh.writeClassificationResult();
+    // }
 
-    //     // Create output model and save to file
-    //     lvr::ModelPtr m( new Model( mesh.meshBuffer() ) );
+    // Create output model and save to file
+    auto m = boost::make_shared<lvr::Model>(buffer);
 
-    //     if(options.saveOriginalData())
-    //     {
-    //         m->m_pointCloud = model->m_pointCloud;
-    //     }
-    //     cout << timestamp << "Saving mesh." << endl;
-    //     ModelFactory::saveModel( m, "triangle_mesh.ply");
+    if(options.saveOriginalData())
+    {
+        m->m_pointCloud = boost::make_shared<lvr::PointBuffer>(
+            surface->pointBuffer()->toOldBuffer()
+        );
+    }
+    cout << timestamp << "Saving mesh." << endl;
+    lvr::ModelFactory::saveModel(m, "triangle_mesh.ply");
 
-    //     // Save obj model if textures were generated
-    //     if(options.generateTextures())
-    //     {
-    //         ModelFactory::saveModel( m, "triangle_mesh.obj");
-    //     }
-    //     cout << timestamp << "Program end." << endl;
+    // TODO2
+    // // Save obj model if textures were generated
+    // if(options.generateTextures())
+    // {
+    //     ModelFactory::saveModel( m, "triangle_mesh.obj");
+    // }
+    // cout << timestamp << "Program end." << endl;
 
     return 0;
 }
