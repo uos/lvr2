@@ -113,8 +113,17 @@ struct Normal : private Vector<BaseVecT>
     BaseVecT& operator*=(const typename BaseVecT::CoordType &scale) = delete;
     BaseVecT& operator/=(const typename BaseVecT::CoordType &scale) = delete;
 
+
+
     Normal<BaseVecT> operator-() const;
 };
+
+template<typename BaseVecT>
+std::ostream& operator<<(std::ostream& os, const Normal<BaseVecT>& n)
+{
+    os << "Normal[" << n.getX() << ", " << n.getY() << ", " << n.getZ() << "]";
+    return os;
+}
 
 } // namespace lvr2
 
