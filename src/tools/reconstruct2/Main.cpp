@@ -681,7 +681,14 @@ int main(int argc, char** argv)
     //     mesh.fillHoles(options.getFillHoles());
     // }
 
-    auto clusterSet = planarClusterGrowing(mesh, options.getNormalThreshold());
+    auto clusterSet = iterativePlanarClusterGrowing(
+        mesh,
+        options.getNormalThreshold(),
+        options.getPlaneIterations(),
+        options.getMinPlaneSize()
+    );
+
+    //auto clusterSet = planarClusterGrowing(mesh, options.getNormalThreshold());
 
     ClusterPainter painter(clusterSet);
     auto colorMap = painter.simpsons(mesh);
