@@ -64,6 +64,35 @@ PointBuffer<BaseVecT>::PointBuffer(lvr::PointBuffer& oldBuffer)
             std::back_inserter(*m_intensities)
         );
     }
+
+    size_t confidences_len;
+    auto confidences_buf = oldBuffer.getPointConfidenceArray(confidences_len);
+    if (confidences_len > 0)
+    {
+        m_confidences->reserve(confidences_len);
+        std::copy(
+            confidences_buf.get(),
+            confidences_buf.get() + confidences_len,
+            std::back_inserter(*m_confidences)
+        );
+    }
+
+    size_t rgb_color_len;
+    auto rgb_color_buf = oldBuffer.getPointColorArray(rgb_color_len);
+    if (rgb_color_len > 0)
+    {
+        m_rgbColors = vector<array<uint8_t, 3>>();
+        for (int i = 0; i < rgb_color_len * 3; i += 3)
+        {
+            m_rgbColors->push_back({
+                rgb_color_buf[i],
+                rgb_color_buf[i + 1],
+                rgb_color_buf[i + 2]
+            });
+        }
+    }
+
+    // TODO: call reserve
 }
 
 
@@ -110,13 +139,6 @@ const Point<BaseVecT>& PointBuffer<BaseVecT>::getPoint(size_t idx) const
 {
     return m_points[idx];
 }
-
-// template <typename BaseVecT>
-// Point<BaseVecT>& PointBuffer<BaseVecT>::getPoint(size_t idx)
-// {
-//     return m_points[idx];
-// }
-
 
 template <typename BaseVecT>
 bool PointBuffer<BaseVecT>::hasNormals() const {
@@ -204,16 +226,47 @@ optional<const typename BaseVecT::CoordType&> PointBuffer<BaseVecT>::getConfiden
 template <typename BaseVecT>
 optional<typename BaseVecT::CoordType&> PointBuffer<BaseVecT>::getConfidence(size_t idx)
 {
-    if (!hasIntensities())
+    if (!hasConfidences())
     {
         return boost::none;
     }
     return (*m_confidences)[idx];
 }
 
+template <typename BaseVecT>
+bool PointBuffer<BaseVecT>::hasRgbColor() const
+{
+    return static_cast<bool>(m_rgbColors);
+}
 
 template <typename BaseVecT>
-bool PointBuffer<BaseVecT>::empty() const {
+void PointBuffer<BaseVecT>::addRgbColorChannel(array<uint8_t, 3> init)
+{
+    m_rgbColors = vector<array<uint8_t, 3>>(getNumPoints(), init);
+}
+
+template <typename BaseVecT>
+optional<const typename BaseVecT::CoordType&> PointBuffer<BaseVecT>::getRgbColor(size_t idx) const
+{
+    if (!hasRgbColor())
+    {
+        return boost::none;
+    }
+    return (*m_rgbColors)[idx];
+}
+template <typename BaseVecT>
+optional<typename BaseVecT::CoordType&> PointBuffer<BaseVecT>::getRgbColor(size_t idx)
+{
+    if (!hasRgbColor())
+    {
+        return boost::none;
+    }
+    return (*m_rgbColors)[idx];
+}
+
+template <typename BaseVecT>
+bool PointBuffer<BaseVecT>::empty() const
+{
     return m_points.empty();
 }
 
