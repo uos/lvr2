@@ -45,53 +45,55 @@ PointBuffer<BaseVecT>::PointBuffer(lvr::PointBuffer& oldBuffer)
     if (oldBuffer.hasPointNormals())
     {
         m_normals = vector<Normal<BaseVecT>>();
-        size_t normals_len;
-        auto normal_buf = oldBuffer.getPointNormalArray(normals_len);
-        m_normals->reserve(normals_len);
+        size_t normalsLen;
+        auto normalBuf = oldBuffer.getPointNormalArray(normalsLen);
+        m_normals->reserve(normalsLen);
 
-        for (int i = 0; i < normals_len * 3; i += 3)
+        for (int i = 0; i < normalsLen * 3; i += 3)
         {
-            auto p = Normal<BaseVecT>(normal_buf[i], normal_buf[i + 1], normal_buf[i + 2]);
+            auto p = Normal<BaseVecT>(normalBuf[i], normalBuf[i + 1], normalBuf[i + 2]);
             m_normals->push_back(p);
         }
     }
 
-    size_t intensities_len;
-    auto intensities_buf = oldBuffer.getPointIntensityArray(intensities_len);
-    if (intensities_len > 0)
+    size_t intensitiesLen;
+    auto intensitiesBuf = oldBuffer.getPointIntensityArray(intensitiesLen);
+    if (intensitiesLen > 0)
     {
-        m_intensities->reserve(intensities_len);
+        m_intensities = vector<float>();
+        m_intensities->reserve(intensitiesLen);
         std::copy(
-            intensities_buf.get(),
-            intensities_buf.get() + intensities_len,
+            intensitiesBuf.get(),
+            intensitiesBuf.get() + intensitiesLen,
             std::back_inserter(*m_intensities)
         );
     }
 
-    size_t confidences_len;
-    auto confidences_buf = oldBuffer.getPointConfidenceArray(confidences_len);
-    if (confidences_len > 0)
+    size_t confidencesLen;
+    auto confidencesBuf = oldBuffer.getPointConfidenceArray(confidencesLen);
+    if (confidencesLen > 0)
     {
-        m_confidences->reserve(confidences_len);
+        m_confidences = vector<float>();
+        m_confidences->reserve(confidencesLen);
         std::copy(
-            confidences_buf.get(),
-            confidences_buf.get() + confidences_len,
+            confidencesBuf.get(),
+            confidencesBuf.get() + confidencesLen,
             std::back_inserter(*m_confidences)
         );
     }
 
-    size_t rgb_color_len;
-    auto rgb_color_buf = oldBuffer.getPointColorArray(rgb_color_len);
-    if (rgb_color_len > 0)
+    size_t rgbColorLen;
+    auto rgbColorBuf = oldBuffer.getPointColorArray(rgbColorLen);
+    if (rgbColorLen > 0)
     {
         m_rgbColors = vector<array<uint8_t, 3>>();
-        m_rgbColors->reserve(rgb_color_len);
-        for (int i = 0; i < rgb_color_len * 3; i += 3)
+        m_rgbColors->reserve(rgbColorLen);
+        for (int i = 0; i < rgbColorLen * 3; i += 3)
         {
             m_rgbColors->push_back({
-                rgb_color_buf[i],
-                rgb_color_buf[i + 1],
-                rgb_color_buf[i + 2]
+                rgbColorBuf[i],
+                rgbColorBuf[i + 1],
+                rgbColorBuf[i + 2]
             });
         }
     }

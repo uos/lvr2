@@ -42,6 +42,7 @@
 
 // #include <gsl/gsl>
 
+#include <array>
 #include <cstdio>
 #include <memory>
 #include <vector>
@@ -57,6 +58,7 @@
 using boost::optional;
 using std::size_t;
 using std::vector;
+using std::array;
 
 
 namespace lvr2
