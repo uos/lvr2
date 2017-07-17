@@ -67,22 +67,10 @@ private:
         Wrapper& operator=(const Wrapper& value);
     };
 
-    /// Count of used values in elements vector
-    size_t m_usedCount;
-
-    /// Vector for stored values
-    vector<Wrapper> m_elements;
-
-    /// Vector for flags, if the same position in the elements vector is deleted
-    vector<bool> m_deleted;
-
-    /**
-     * @brief Assert that the key is not out of bounds.
-     */
-    void checkAccess(const KeyType& key) const;
+    StableVector<KeyT, Wrapper> m_vec;
 
 public:
-    VectorMap() : m_usedCount(0) {};
+    VectorMap() {};
 
     /// Creates a map of size `countElements` with `countElements` copies of
     /// `defaultValue` in it.
@@ -122,6 +110,9 @@ public:
 
     /// Number of not delete-marked values
     size_t sizeUsed() const;
+
+    decltype(auto) begin() const;
+    decltype(auto) end() const;
 
     // TODO: add reserve method to reserve vector memory
 };
