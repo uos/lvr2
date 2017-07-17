@@ -35,6 +35,7 @@ PointBuffer<BaseVecT>::PointBuffer(lvr::PointBuffer& oldBuffer)
     // discarded.
     size_t len;
     auto buf = oldBuffer.getPointArray(len);
+    m_points.reserve(len);
     for (int i = 0; i < len * 3; i += 3)
     {
         auto p = Point<BaseVecT>(buf[i], buf[i + 1], buf[i + 2]);
@@ -46,6 +47,8 @@ PointBuffer<BaseVecT>::PointBuffer(lvr::PointBuffer& oldBuffer)
         m_normals = vector<Normal<BaseVecT>>();
         size_t normals_len;
         auto normal_buf = oldBuffer.getPointNormalArray(normals_len);
+        m_normals->reserve(normals_len);
+
         for (int i = 0; i < normals_len * 3; i += 3)
         {
             auto p = Normal<BaseVecT>(normal_buf[i], normal_buf[i + 1], normal_buf[i + 2]);
@@ -82,6 +85,7 @@ PointBuffer<BaseVecT>::PointBuffer(lvr::PointBuffer& oldBuffer)
     if (rgb_color_len > 0)
     {
         m_rgbColors = vector<array<uint8_t, 3>>();
+        m_rgbColors->reserve(rgb_color_len);
         for (int i = 0; i < rgb_color_len * 3; i += 3)
         {
             m_rgbColors->push_back({
@@ -91,8 +95,6 @@ PointBuffer<BaseVecT>::PointBuffer(lvr::PointBuffer& oldBuffer)
             });
         }
     }
-
-    // TODO: call reserve
 }
 
 
