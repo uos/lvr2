@@ -40,7 +40,8 @@ void VectorMap<KeyT, ValT>::insert(const KeyType& key, const ValueType& value)
     // Check if elements vector is large enough
     while (m_vec.size() < key.idx())
     {
-        m_vec.push_back(Wrapper());
+        auto h = m_vec.push_back(Wrapper());
+        m_vec.erase(h);
     }
     m_vec.push_back(Wrapper(value));
 }
