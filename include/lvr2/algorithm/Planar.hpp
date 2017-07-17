@@ -26,9 +26,11 @@
 #ifndef LVR2_ALGORITHM_PLANAR_H_
 #define LVR2_ALGORITHM_PLANAR_H_
 
+#include <lvr2/util/VectorMap.hpp>
 #include <lvr2/geometry/ClusterSet.hpp>
 #include <lvr2/geometry/Handles.hpp>
 #include <lvr2/geometry/BaseMesh.hpp>
+#include <lvr2/geometry/Plane.hpp>
 
 namespace lvr2
 {
@@ -39,16 +41,57 @@ namespace lvr2
 
 /**
  * @brief Algorithm which generates plane clusters from the given mesh.
- * @param minSinAngle `1 - m_minSinAngle` is the allowed difference between the sin of the angle of the starting
+ * @param minSinAngle `1 - minSinAngle` is the allowed difference between the sin of the angle of the starting
  *                    face and all other faces in one cluster.
  */
 template<typename BaseVecT>
 ClusterSet<FaceHandle> planarClusterGrowing(const BaseMesh<BaseVecT>& mesh, float minSinAngle);
 
-void iterativePlanarClusterGrowing();
-void calcRegressionPlanes();
-void dragToRegressionPlane();
-void dragToRegressionPlanes();
+/**
+ * @brief Algorithm which generates plane clusters from the given mesh, drags points in clusters into regression planes
+ *        and improves clusters iteratively.
+ * @param mesh
+ * @param minSinAngle `1 - minSinAngle` is the allowed difference between the sin of the angle of the starting
+ *                    face and all other faces in one cluster.
+ * @param numIterations for cluster improvement
+ */
+template<typename BaseVecT>
+ClusterSet<FaceHandle>
+    iterativePlanarClusterGrowing(
+        BaseMesh<BaseVecT>& mesh,
+        float minSinAngle,
+        int numIterations,
+        int minRegionSize
+    );
+
+template<typename BaseVecT>
+Plane<BaseVecT>
+    calcRegressionPlane(
+        const BaseMesh<BaseVecT>& mesh,
+        const Cluster<FaceHandle>& cluster
+    );
+
+template<typename BaseVecT>
+ClusterMap<Plane<BaseVecT>>
+    calcRegressionPlanes(
+        const BaseMesh<BaseVecT>& mesh,
+        const ClusterSet<FaceHandle>& clusterSet,
+        int minRegionSize
+    );
+
+template<typename BaseVecT>
+void dragToRegressionPlane(
+    BaseMesh<BaseVecT>& mesh,
+    const Cluster<FaceHandle>& cluster,
+    const Plane<BaseVecT>& plane
+);
+
+template<typename BaseVecT>
+void dragToRegressionPlanes(
+    BaseMesh<BaseVecT>& mesh,
+    const ClusterSet<FaceHandle>& clusterSet,
+    const ClusterMap<Plane<BaseVecT>>& clusterMap
+);
 
 } // namespace lvr2
 
