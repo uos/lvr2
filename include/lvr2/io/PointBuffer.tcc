@@ -112,9 +112,9 @@ lvr::PointBuffer PointBuffer<BaseVecT>::toOldBuffer() const
     auto pointData = boost::shared_array<float>(new float[m_points.size() * 3]);
     for (size_t i = 0; i < m_points.size(); i++) {
         auto p = m_points[i];
-        pointData[i + 0] = p.x;
-        pointData[i + 1] = p.y;
-        pointData[i + 2] = p.z;
+        pointData[3 * i + 0] = p.x;
+        pointData[3 * i + 1] = p.y;
+        pointData[3 * i + 2] = p.z;
     }
     out.setPointArray(pointData, m_points.size());
 
@@ -123,14 +123,46 @@ lvr::PointBuffer PointBuffer<BaseVecT>::toOldBuffer() const
         auto normalData = boost::shared_array<float>(new float[m_normals->size() * 3]);
         for (size_t i = 0; i < m_normals->size(); i++) {
             auto p = (*m_normals)[i];
-            normalData[i + 0] = p.getX();
-            normalData[i + 1] = p.getY();
-            normalData[i + 2] = p.getZ();
+            normalData[3 * i + 0] = p.getX();
+            normalData[3 * i + 1] = p.getY();
+            normalData[3 * i + 2] = p.getZ();
         }
         out.setPointNormalArray(normalData, m_normals->size());
     }
 
-    // TODO the remaining stuff
+    if (m_intensities)
+    {
+        auto intensityData = boost::shared_array<float>(new float[m_intensities->size()]);
+        std::copy(
+            m_intensities->begin(),
+            m_intensities->end(),
+            intensityData.get()
+        );
+        out.setPointIntensityArray(intensityData, m_intensities->size());
+    }
+
+    if (m_confidences)
+    {
+        auto confidenceData = boost::shared_array<float>(new float[m_confidences->size()]);
+        std::copy(
+            m_confidences->begin(),
+            m_confidences->end(),
+            confidenceData.get()
+        );
+        out.setPointConfidenceArray(confidenceData, m_confidences->size());
+    }
+
+    if (m_rgbColors)
+    {
+        auto colorData = boost::shared_array<uint8_t>(new uint8_t[m_rgbColors->size() * 3]);
+        for (size_t i = 0; i < m_rgbColors->size(); i++) {
+            auto c = (*m_rgbColors)[i];
+            colorData[3 * i + 0] = c[0];
+            colorData[3 * i + 1] = c[1];
+            colorData[3 * i + 2] = c[2];
+        }
+        out.setPointColorArray(colorData, m_rgbColors->size());
+    }
 
     return out;
 }
