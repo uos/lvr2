@@ -46,8 +46,7 @@ VertexHandle HalfEdgeMesh<BaseVecT>::addVertex(Point<BaseVecT> pos)
 {
     Vertex v;
     v.pos = pos;
-    m_vertices.push_back(v);
-    return VertexHandle(static_cast<Index>(m_vertices.size() - 1));
+    return m_vertices.push_back(v);
 }
 
 template <typename BaseVecT>
@@ -87,7 +86,7 @@ FaceHandle HalfEdgeMesh<BaseVecT>::addFace(VertexHandle v1H, VertexHandle v2H, V
     // Calc normal
     auto normal = (v1.pos - v2.pos).cross(v1.pos - v3.pos);
 
-    FaceHandle newFaceH = m_faces.size();
+    FaceHandle newFaceH = m_faces.nextHandle();
     Face f(eInner1H, Normal<BaseVecT>(normal));
     m_faces.push_back(f);
 
@@ -476,7 +475,7 @@ bool HalfEdgeMesh<BaseVecT>::debugCheckMeshIntegrity() const
         do
         {
             loopEdgeH = getE(loopEdgeH).next;
-            visited[loopEdgeH.idx()] = true;
+            visited[loopEdgeH] = true;
             dout() << "   | -> " << loopEdgeH
                  << " [twin: " << getE(loopEdgeH).twin << "]" << endl;
         } while(loopEdgeH != startEdgeH);
@@ -508,42 +507,42 @@ template<typename BaseVecT>
 typename HalfEdgeMesh<BaseVecT>::Edge&
     HalfEdgeMesh<BaseVecT>::getE(EdgeHandle handle)
 {
-    return m_edges[handle.idx()];
+    return m_edges[handle];
 }
 
 template<typename BaseVecT>
 const typename HalfEdgeMesh<BaseVecT>::Edge&
     HalfEdgeMesh<BaseVecT>::getE(EdgeHandle handle) const
 {
-    return m_edges[handle.idx()];
+    return m_edges[handle];
 }
 
 template<typename BaseVecT>
 typename HalfEdgeMesh<BaseVecT>::Face&
     HalfEdgeMesh<BaseVecT>::getF(FaceHandle handle)
 {
-    return m_faces[handle.idx()];
+    return m_faces[handle];
 }
 
 template<typename BaseVecT>
 const typename HalfEdgeMesh<BaseVecT>::Face&
     HalfEdgeMesh<BaseVecT>::getF(FaceHandle handle) const
 {
-    return m_faces[handle.idx()];
+    return m_faces[handle];
 }
 
 template<typename BaseVecT>
 typename HalfEdgeMesh<BaseVecT>::Vertex&
     HalfEdgeMesh<BaseVecT>::getV(VertexHandle handle)
 {
-    return m_vertices[handle.idx()];
+    return m_vertices[handle];
 }
 
 template<typename BaseVecT>
 const typename HalfEdgeMesh<BaseVecT>::Vertex&
     HalfEdgeMesh<BaseVecT>::getV(VertexHandle handle) const
 {
-    return m_vertices[handle.idx()];
+    return m_vertices[handle];
 }
 
 template <typename BaseVecT>

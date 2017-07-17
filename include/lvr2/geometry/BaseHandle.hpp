@@ -39,7 +39,7 @@ template<typename IdxT>
 class BaseHandle
 {
 public:
-    BaseHandle(IdxT idx);
+    explicit BaseHandle(IdxT idx);
 
     IdxT idx() const;
     void setIdx(IdxT idx);
