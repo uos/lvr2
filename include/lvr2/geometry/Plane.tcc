@@ -17,46 +17,23 @@
  */
 
 /*
- * Plane.hpp
+ * Plane.tcc
  *
- *  @date 14.07.2017
- *  @author Johan M. von Behren <johan@vonbehren.eu>
+ *  @date 17.07.2017
+ *  @author @author Johan M. von Behren <johan@vonbehren.eu>
  */
 
-#ifndef LVR2_GEOMETRY_PLANE_H_
-#define LVR2_GEOMETRY_PLANE_H_
-
-#include "Normal.hpp"
-#include "Point.hpp"
+#include "Plane.hpp"
 
 namespace lvr2
 {
 
-/**
- * @brief A plane.
- *
- * A plane represented by a normal and a position vector.
- */
-template <typename BaseVecT>
-struct Plane
-{
-    Plane() : normal(0, 0, 1) {}
-
-    Normal<BaseVecT> normal;
-    Point<BaseVecT> pos;
-
-    float distance(const Point<BaseVecT>& other) const;
-};
-
 template<typename BaseVecT>
-std::ostream& operator<<(std::ostream& os, const Plane<BaseVecT>& p)
+float Plane<BaseVecT>::distance(const Point<BaseVecT>& other) const
 {
-    os << "Plane[" << p.normal << ", " << p.pos << "]";
-    return os;
+    // Distance betweeen plane and query point (calculated by hesse normal form)
+    // Credits: https://oberprima.com/mathematik/abstand-berechnen/
+    return (other - this->pos).dot(this->normal.asVector());
 }
 
 } // namespace lvr2
-
-#include <lvr2/geometry/Plane.tcc>
-
-#endif /* LVR2_GEOMETRY_PLANE_H_ */
