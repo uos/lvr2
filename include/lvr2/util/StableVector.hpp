@@ -104,7 +104,10 @@ public:
     StableVector(size_t countElements, const ElementType& defaultValue);
 
     /// Add the given element
-    void push_back(const ElementType& elem);
+    HandleT push_back(const ElementType& elem);
+
+    /// The handle which would be returned by calling `push_back` now.
+    HandleT nextHandle() const;
 
     /**
      * @brief Mark the element behind the given handle as deleted
