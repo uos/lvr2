@@ -50,8 +50,7 @@ private:
     /// Current position in the vector
     size_t m_pos;
 public:
-    StableVectorIterator(const vector<bool>* deleted, bool startAtEnd = false)
-            : m_deleted(deleted), m_pos(startAtEnd ? deleted->size() : 0) {};
+    StableVectorIterator(const vector<bool>* deleted, bool startAtEnd = false);
 
     StableVectorIterator& operator=(const StableVectorIterator& other);
     bool operator==(const StableVectorIterator& other) const;
