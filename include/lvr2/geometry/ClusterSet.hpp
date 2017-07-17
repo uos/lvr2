@@ -117,7 +117,7 @@ public:
 
 private:
     /// Clusters
-    StableVector<Cluster<HandleT>, ClusterHandle> m_cluster;
+    StableVector<ClusterHandle, Cluster<HandleT>> m_cluster;
 
     /// Map from handle -> cluster to save the back-reference for stored handles.
     VectorMap<HandleT, ClusterHandle> m_clusterMap;

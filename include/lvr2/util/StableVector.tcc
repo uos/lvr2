@@ -28,8 +28,8 @@
 namespace lvr2
 {
 
-template<typename ElemT, typename HandleT>
-void StableVector<ElemT, HandleT>::checkAccess(const HandleType& handle) const
+template<typename HandleT, typename ElemT>
+void StableVector<HandleT, ElemT>::checkAccess(const HandleType& handle) const
 {
     // You cannot access deleted or uninitialized elements!
     if (m_deleted[handle.idx()])
@@ -38,16 +38,23 @@ void StableVector<ElemT, HandleT>::checkAccess(const HandleType& handle) const
     }
 }
 
-template<typename ElemT, typename HandleT>
-void StableVector<ElemT, HandleT>::push_back(const ElementType& elem)
+template<typename HandleT, typename ElemT>
+StableVector<HandleT, ElemT>::StableVector(size_t countElements, const ElemT& defaultValue)
+    : m_elements(countElements, defaultValue),
+      m_deleted(countElements, false)
+{}
+
+
+template<typename HandleT, typename ElemT>
+void StableVector<HandleT, ElemT>::push_back(const ElementType& elem)
 {
     m_elements.push_back(elem);
     m_deleted.push_back(false);
     ++m_usedCount;
 }
 
-template<typename ElemT, typename HandleT>
-void StableVector<ElemT, HandleT>::erase(const HandleType& handle)
+template<typename HandleT, typename ElemT>
+void StableVector<HandleT, ElemT>::erase(const HandleType& handle)
 {
     checkAccess(handle);
 
@@ -55,42 +62,62 @@ void StableVector<ElemT, HandleT>::erase(const HandleType& handle)
     --m_usedCount;
 }
 
-template<typename ElemT, typename HandleT>
-ElemT& StableVector<ElemT, HandleT>::operator[](const HandleType& handle)
+template<typename HandleT, typename ElemT>
+boost::optional<ElemT&> StableVector<HandleT, ElemT>::get(const HandleType& key)
+{
+    if (m_deleted[key.idx()])
+    {
+        return boost::none;
+    }
+    return m_elements[key.idx()];
+}
+
+template<typename HandleT, typename ElemT>
+boost::optional<const ElemT&> StableVector<HandleT, ElemT>::get(const HandleType& key) const
+{
+    if (m_deleted[key.idx()])
+    {
+        return boost::none;
+    }
+    return m_elements[key.idx()];
+}
+
+template<typename HandleT, typename ElemT>
+ElemT& StableVector<HandleT, ElemT>::operator[](const HandleType& handle)
 {
     checkAccess(handle);
 
     return m_elements[handle.idx()];
 }
 
-template<typename ElemT, typename HandleT>
-const ElemT& StableVector<ElemT, HandleT>::operator[](const HandleType& handle) const
+template<typename HandleT, typename ElemT>
+const ElemT& StableVector<HandleT, ElemT>::operator[](const HandleType& handle) const
 {
     checkAccess(handle);
 
     return m_elements[handle.idx()];
 }
 
-template<typename ElemT, typename HandleT>
-size_t StableVector<ElemT, HandleT>::size() const
+template<typename HandleT, typename ElemT>
+size_t StableVector<HandleT, ElemT>::size() const
 {
     return m_deleted.size();
 }
 
-template<typename ElemT, typename HandleT>
-size_t StableVector<ElemT, HandleT>::sizeUsed() const
+template<typename HandleT, typename ElemT>
+size_t StableVector<HandleT, ElemT>::sizeUsed() const
 {
     return m_usedCount;
 }
 
-template<typename ElemT, typename HandleT>
-StableVectorIterator<HandleT> StableVector<ElemT, HandleT>::begin() const
+template<typename HandleT, typename ElemT>
+StableVectorIterator<HandleT> StableVector<HandleT, ElemT>::begin() const
 {
     return StableVectorIterator<HandleT>(&this->m_deleted);
 }
 
-template<typename ElemT, typename HandleT>
-StableVectorIterator<HandleT> StableVector<ElemT, HandleT>::end() const
+template<typename HandleT, typename ElemT>
+StableVectorIterator<HandleT> StableVector<HandleT, ElemT>::end() const
 {
     return StableVectorIterator<HandleT>(&this->m_deleted, true);
 }
