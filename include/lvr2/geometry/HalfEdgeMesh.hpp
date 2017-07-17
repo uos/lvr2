@@ -104,9 +104,9 @@ public:
     bool debugCheckMeshIntegrity() const;
 
 private:
-    StableVector<Edge, EdgeHandle> m_edges;
-    StableVector<Face, FaceHandle> m_faces;
-    StableVector<Vertex, VertexHandle> m_vertices;
+    StableVector<EdgeHandle, Edge> m_edges;
+    StableVector<FaceHandle, Face> m_faces;
+    StableVector<VertexHandle, Vertex> m_vertices;
 
     // ========================================================================
     // = Private helper methods

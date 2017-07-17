@@ -250,7 +250,7 @@ void lvr2Playground()
     auto bottomFace1 = mesh.addFace(v0H, v1H, v2H);
     mesh.getVertexPositionsOfFace(bottomFace1);
 
-    using StableVector = lvr2::StableVector<Vec, VertexHandle>;
+    using StableVector = lvr2::StableVector<VertexHandle, Vec>;
 
     // StableVector stuff
     cout << "========= StableVector =========" << endl;

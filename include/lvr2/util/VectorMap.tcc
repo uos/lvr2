@@ -30,35 +30,19 @@ namespace lvr2
 {
 
 template<typename KeyT, typename ValT>
-VectorMap<KeyT, ValT>::VectorMap(size_t countElements, const ValueType& defaultValue) :
-        m_usedCount(countElements),
-        m_elements(countElements, Wrapper(defaultValue)),
-        m_deleted(countElements, false)
+VectorMap<KeyT, ValT>::VectorMap(size_t countElements, const ValueType& defaultValue)
+    : m_vec(countElements, Wrapper(defaultValue))
 {}
-
-template<typename KeyT, typename ValT>
-void VectorMap<KeyT, ValT>::checkAccess(const KeyType& key) const
-{
-    // You cannot access deleted or uninitialized elements!
-    if (m_deleted[key.idx()])
-    {
-        panic("attempt to access a deleted value in VectorMap");
-    }
-}
 
 template<typename KeyT, typename ValT>
 void VectorMap<KeyT, ValT>::insert(const KeyType& key, const ValueType& value)
 {
     // Check if elements vector is large enough
-    if (m_elements.size() <= key.idx())
+    while (m_vec.size() < key.idx())
     {
-        m_elements.resize(key.idx() + 1);
-        m_deleted.resize(key.idx() + 1, true);
+        m_vec.push_back(Wrapper());
     }
-
-    m_elements[key.idx()] = Wrapper(value);
-    m_deleted[key.idx()] = false;
-    ++m_usedCount;
+    m_vec.push_back(Wrapper(value));
 }
 
 template<typename KeyT, typename ValT>
@@ -71,40 +55,59 @@ typename VectorMap<KeyT, ValT>::Wrapper& VectorMap<KeyT, ValT>::Wrapper::operato
 template<typename KeyT, typename ValT>
 void VectorMap<KeyT, ValT>::erase(const KeyType& key)
 {
-    m_deleted[key.idx()] = true;
-    --m_usedCount;
-}
-
-template<typename KeyT, typename ValT>
-ValT& VectorMap<KeyT, ValT>::operator[](const KeyType& key)
-{
-    checkAccess(key);
-    return m_elements[key.idx()].data;
+    m_vec.erase(key);
 }
 
 template<typename KeyT, typename ValT>
 boost::optional<const ValT&> VectorMap<KeyT, ValT>::get(const KeyType& key) const
 {
-    return !m_deleted[key.idx()] ? m_elements[key.idx()].data : boost::optional<const ValT&>();
+    auto maybe = m_vec.get(key);
+    if (maybe)
+    {
+        return maybe->data;
+    }
+    return boost::none;
 }
 
 template<typename KeyT, typename ValT>
 boost::optional<ValT&> VectorMap<KeyT, ValT>::get(const KeyType& key)
 {
-    return !m_deleted[key.idx()] ? m_elements[key.idx()].data : boost::optional<ValT&>();
+    auto maybe = m_vec.get(key);
+    if (maybe)
+    {
+        return maybe->data;
+    }
+    return boost::none;
+}
+
+template<typename KeyT, typename ValT>
+ValT& VectorMap<KeyT, ValT>::operator[](const KeyType& key)
+{
+    return m_vec[key].data;
 }
 
 template<typename KeyT, typename ValT>
 const ValT& VectorMap<KeyT, ValT>::operator[](const KeyType& key) const
 {
-    checkAccess(key);
-    return m_elements[key.idx()].data;
+    return m_vec[key].data;
 }
 
 template<typename KeyT, typename ValT>
 size_t VectorMap<KeyT, ValT>::sizeUsed() const
 {
-    return m_usedCount;
+    return m_vec.sizeUsed();
 }
+
+template<typename KeyT, typename ValT>
+decltype(auto) VectorMap<KeyT, ValT>::begin() const
+{
+    return m_vec.begin();
+}
+template<typename KeyT, typename ValT>
+decltype(auto) VectorMap<KeyT, ValT>::end() const
+{
+    return m_vec.end();
+}
+
 
 } // namespace lvr2

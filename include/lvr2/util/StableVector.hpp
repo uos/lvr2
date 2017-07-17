@@ -77,7 +77,7 @@ public:
  * @tparam ElemT Type of elements in the vector
  * @tparam HandleT Type of the index for the vector
  */
-template<typename ElemT, typename HandleT>
+template<typename HandleT, typename ElemT>
 class StableVector
 {
 private:
@@ -101,6 +101,8 @@ private:
 public:
     StableVector() : m_usedCount(0) {};
 
+    StableVector(size_t countElements, const ElementType& defaultValue);
+
     /// Add the given element
     void push_back(const ElementType& elem);
 
@@ -110,6 +112,12 @@ public:
      * This does NOT call the DESTRUCTOR of the marked element!
      */
     void erase(const HandleType& handle);
+
+    /// Request the value behind the given key
+    boost::optional<ElemT&> get(const HandleType& key);
+
+    /// Request the value behind the given key
+    boost::optional<const ElemT&> get(const HandleType& key) const;
 
     /// Request the element behind the given handle
     ElemT& operator[](const HandleType& handle);
