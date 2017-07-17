@@ -137,11 +137,29 @@ public:
     void addConfidenceChannel(typename BaseVecT::CoordType def = 0);
 
     /**
-     * @brief Returns the intensity with the given index.
+     * @brief Returns the confidence with the given index.
      */
     optional<const typename BaseVecT::CoordType&> getConfidence(size_t idx) const;
     optional<typename BaseVecT::CoordType&> getConfidence(size_t idx);
 
+    /**
+     * @brief Returns true if the stored data contains RGB color information.
+     */
+    bool hasRgbColor() const;
+
+    /**
+     * @brief Adds (or overwrites) RGB color information for all points.
+     *
+     * All colors are initialized with the given value or with (0, 0, 0).
+     * Correct values can later be set via `getRgbColor()`.
+     */
+    void addRgbColorChannel(array<uint8_t, 3> init = {0, 0, 0});
+
+    /**
+     * @brief Returns the RGB color with the given index.
+     */
+    optional<const typename BaseVecT::CoordType&> getRgbColor(size_t idx) const;
+    optional<typename BaseVecT::CoordType&> getRgbColor(size_t idx);
 
     bool empty() const;
 
@@ -158,8 +176,8 @@ private:
     /// Point confidence buffer.
     optional<vector<typename BaseVecT::CoordType>> m_confidences;
 
-    // template <typename BaseVecT>
-    // BaseVecT getBaseVec(size_t idx) const;
+    /// Point RGB colors.
+    optional<vector<array<uint8_t, 3>>> m_rgbColors;
 };
 
 template <typename BaseVecT>
