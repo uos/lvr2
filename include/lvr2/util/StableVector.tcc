@@ -46,12 +46,20 @@ StableVector<HandleT, ElemT>::StableVector(size_t countElements, const ElemT& de
 
 
 template<typename HandleT, typename ElemT>
-void StableVector<HandleT, ElemT>::push_back(const ElementType& elem)
+HandleT StableVector<HandleT, ElemT>::push_back(const ElementType& elem)
 {
     m_elements.push_back(elem);
     m_deleted.push_back(false);
     ++m_usedCount;
+    return HandleT(size() - 1);
 }
+
+template <typename HandleT, typename ElemT>
+HandleT StableVector<HandleT, ElemT>::nextHandle() const
+{
+    return HandleT(size());
+}
+
 
 template<typename HandleT, typename ElemT>
 void StableVector<HandleT, ElemT>::erase(const HandleType& handle)
