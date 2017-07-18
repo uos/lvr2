@@ -27,6 +27,7 @@
 #include <algorithm>
 #include <complex>
 #include <vector>
+#include <sstream>
 
 #include <lvr2/util/Random.hpp>
 #include <lvr2/geometry/Normal.hpp>
@@ -109,6 +110,14 @@ iterativePlanarClusterGrowing(
 
         // Calc regression planes
         auto planes = calcRegressionPlanes(mesh, clusterSet, minRegionSize);
+
+        // Debug planes
+        // std::stringstream ss;
+        // ss << "debug" << i << ".ply";
+        // debugPlanes(mesh, clusterSet, planes, ss.str(), 10000);
+        // ss.str("");
+        // ss << "debug-mesh" << i << ".ply";
+        // writeDebugMesh(mesh, ss.str(), {0, 255, 0});
 
         // Drag vertices into planes
         dragToRegressionPlanes(mesh, clusterSet, planes);
