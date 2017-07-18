@@ -31,6 +31,7 @@
 
 #include <lvr2/util/VectorMap.hpp>
 #include <lvr2/util/Panic.hpp>
+#include <lvr2/util/Debug.hpp>
 
 
 namespace lvr2
@@ -403,21 +404,21 @@ bool HalfEdgeMesh<BaseVecT>::debugCheckMeshIntegrity() const
 {
     using std::endl;
 
-    dout() << endl;
-    dout() << "===============================" << endl;
-    dout() << "===     Integrity check     ===" << endl;
-    dout() << "===============================" << endl;
+    cout << endl;
+    cout << "===============================" << endl;
+    cout << "===     Integrity check     ===" << endl;
+    cout << "===============================" << endl;
 
     bool error = false;
 
     // First: let's visit all faces
-    dout() << endl;
-    dout() << "+--------------------+" << endl;
-    dout() << "| Checking all faces |" << endl;
-    dout() << "+--------------------+" << endl;
+    cout << endl;
+    cout << "+--------------------+" << endl;
+    cout << "| Checking all faces |" << endl;
+    cout << "+--------------------+" << endl;
     for (auto fH : m_faces)
     {
-        dout() << "== Checking Face " << fH << "..." << endl;
+        cout << "== Checking Face " << fH << "..." << endl;
         auto startEdgeH = getF(fH).edge;
         auto eH = startEdgeH;
         int edgeCount = 0;
@@ -426,14 +427,14 @@ bool HalfEdgeMesh<BaseVecT>::debugCheckMeshIntegrity() const
             auto& e = getE(eH);
             auto source = getE(e.twin).target;
             auto target = e.target;
-            dout() << "   | " << eH << ": " << source << " ==> " << target
+            cout << "   | " << eH << ": " << source << " ==> " << target
                  << " [next: " << e.next << ", twin: " << e.twin
                  << ", twin-face: " << getE(e.twin).face << "]"
                  << endl;
 
             if (getE(eH).face != fH)
             {
-                dout() << "!!!!! Face handle of " << eH << " is " << getE(eH).face
+                cout << "!!!!! Face handle of " << eH << " is " << getE(eH).face
                      << " instead of " << fH << "!!!!!" << endl;
                 error = true;
             }
@@ -442,22 +443,22 @@ bool HalfEdgeMesh<BaseVecT>::debugCheckMeshIntegrity() const
             edgeCount++;
             if (edgeCount >= 20)
             {
-                dout() << "   ... stopping iteration after 20 edges." << endl;
+                cout << "   ... stopping iteration after 20 edges." << endl;
             }
         } while(eH != startEdgeH);
 
         if (edgeCount != 3)
         {
-            dout() << "!!!!! More than 3 edges reached from " << fH << endl;
+            cout << "!!!!! More than 3 edges reached from " << fH << endl;
             error = true;
         }
     }
 
     // Next, we try to reach all boundary edges
-    dout() << endl;
-    dout() << "+-------------------------------------+" << endl;
-    dout() << "| Trying to walk on boundary edges... |" << endl;
-    dout() << "+-------------------------------------+" << endl;
+    cout << endl;
+    cout << "+-------------------------------------+" << endl;
+    cout << "| Trying to walk on boundary edges... |" << endl;
+    cout << "+-------------------------------------+" << endl;
 
     EdgeMap<bool> visited(m_edges.size(), false);
     for (auto startEdgeH : m_edges)
@@ -470,28 +471,28 @@ bool HalfEdgeMesh<BaseVecT>::debugCheckMeshIntegrity() const
         }
         visited[startEdgeH] = true;
 
-        dout() << "== Starting at " << startEdgeH << endl;
+        cout << "== Starting at " << startEdgeH << endl;
 
         do
         {
             loopEdgeH = getE(loopEdgeH).next;
             visited[loopEdgeH] = true;
-            dout() << "   | -> " << loopEdgeH
+            cout << "   | -> " << loopEdgeH
                  << " [twin: " << getE(loopEdgeH).twin << "]" << endl;
         } while(loopEdgeH != startEdgeH);
     }
 
     // Next, we list all vertices that are not connected to anything yet
-    dout() << endl;
-    dout() << "+-------------------------------+" << endl;
-    dout() << "| List of unconnected vertices: |" << endl;
-    dout() << "+-------------------------------+" << endl;
+    cout << endl;
+    cout << "+-------------------------------+" << endl;
+    cout << "| List of unconnected vertices: |" << endl;
+    cout << "+-------------------------------+" << endl;
 
     for (auto vH : m_vertices)
     {
         if (!getV(vH).outgoing)
         {
-            dout() << "== " << vH << endl;
+            cout << "== " << vH << endl;
         }
     }
 
@@ -675,27 +676,6 @@ pair<EdgeHandle, EdgeHandle> HalfEdgeMesh<BaseVecT>::addEdgePair(VertexHandle v1
     m_edges.push_back(b);
 
     return std::make_pair(aH, bH);
-}
-
-template <typename BaseVecT>
-std::ostream& HalfEdgeMesh<BaseVecT>::dout() const
-{
-    static std::ostringstream fake;
-
-    if (getenv("LVR_MESH_DEBUG") != nullptr)
-    {
-        return cout;
-    }
-    else
-    {
-        // This is a rather hacky solution. We just want to hide the output.
-        // Ideally we would write our own "null" implementation of `ostream`,
-        // but using a stringstream and deleting its contents from time to time
-        // works too.
-        fake.str("");
-        fake.clear();
-        return fake;
-    }
 }
 
 
