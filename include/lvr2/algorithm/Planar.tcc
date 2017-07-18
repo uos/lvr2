@@ -31,6 +31,9 @@
 #include <lvr2/util/Random.hpp>
 #include <lvr2/geometry/Normal.hpp>
 #include <lvr2/util/VectorMap.hpp>
+#include <lvr2/geometry/HalfEdgeMesh.hpp>
+#include <lvr2/geometry/BoundingBox.hpp>
+#include <lvr2/util/Debug.hpp>
 
 using std::vector;
 using std::max;
@@ -246,6 +249,68 @@ void dragToRegressionPlane(
             mesh.vertexPosition(vertexH) -= plane.normal.asVector() * distance;
         }
     }
+}
+
+template<typename BaseVecT>
+void debugPlanes(
+    const BaseMesh<BaseVecT>& mesh,
+    const ClusterSet<FaceHandle>& clusterSet,
+    const ClusterMap<Plane<BaseVecT>>& clusterMap,
+    string filename,
+    size_t minClusterSize
+)
+{
+    HalfEdgeMesh<BaseVecT> debugMesh;
+
+    // For all clusters in cluster set
+    for (auto clusterH: clusterMap)
+    {
+        auto cluster = clusterSet[clusterH];
+        auto plane = clusterMap[clusterH];
+
+        if (cluster.handles.size() < minClusterSize)
+        {
+            continue;
+        }
+
+        // Get bounding box for cluster
+        BoundingBox<BaseVecT> bBox;
+        for (auto faceH: cluster.handles)
+        {
+            auto vertices = mesh.getVertexPositionsOfFace(faceH);
+            for (auto vertex: vertices)
+            {
+                bBox.expand(vertex);
+            }
+        }
+
+        // Get intersection with bounding box and plane
+        auto centroid = plane.project(bBox.getCentroid());
+        auto point = plane.project(bBox.getMin());
+        if (centroid == point)
+        {
+            point = plane.project(bBox.getMax());
+        }
+        auto tangent1 = Normal<BaseVecT>(point - centroid);
+        auto tangent2 = Normal<BaseVecT>(plane.normal.asVector().cross(tangent1.asVector()));
+
+        auto v1 = plane.pos + tangent1.asVector() * bBox.getLongestSide();
+        auto v2 = plane.pos - tangent1.asVector() * bBox.getLongestSide();
+        auto v3 = plane.pos + tangent2.asVector() * bBox.getLongestSide();
+        auto v4 = plane.pos - tangent2.asVector() * bBox.getLongestSide();
+
+        // Add intersection plane to mesh
+        auto vH1 = debugMesh.addVertex(v1);
+        auto vH2 = debugMesh.addVertex(v2);
+        auto vH3 = debugMesh.addVertex(v3);
+        auto vH4 = debugMesh.addVertex(v4);
+
+        debugMesh.addFace(vH1, vH3, vH2);
+        debugMesh.addFace(vH1, vH2, vH4);
+    }
+
+    // Save debug mesh
+    writeDebugMesh(debugMesh, filename);
 }
 
 } // namespace lvr2

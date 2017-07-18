@@ -93,6 +93,15 @@ void dragToRegressionPlanes(
     const ClusterMap<Plane<BaseVecT>>& clusterMap
 );
 
+template<typename BaseVecT>
+void debugPlanes(
+    const BaseMesh<BaseVecT>& mesh,
+    const ClusterSet<FaceHandle>& clusterSet,
+    const ClusterMap<Plane<BaseVecT>>& clusterMap,
+    string filename,
+    size_t minClusterSize
+);
+
 } // namespace lvr2
 
 #include <lvr2/algorithm/Planar.tcc>
