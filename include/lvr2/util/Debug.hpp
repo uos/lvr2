@@ -13,27 +13,35 @@
  *
  * You should have received a copy of the GNU General Public License
  * along with this program; if not, write to the Free Software
- * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USAc
+ * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA
  */
-
 
 /*
- * HalfEdgeMesh.hpp
+ * Debug.hpp
  *
- *  @date 20.07.2017
- *  @author Lukas Kalbertodt <lukas.kalbertodt@gmail.com>
+ *  @date 18.07.2017
+ *  @author Johan M. von Behren <johan@vonbehren.eu>
  */
 
+#ifndef LVR2_UTIL_DEBUG_H_
+#define LVR2_UTIL_DEBUG_H_
+
 #include <boost/iostreams/device/null.hpp>
+#include <array>
 #include <fstream>
 
+using std::array;
+using std::string;
 
-#ifndef LVR2_UTIL_DEBUG
-#define LVR2_UTIL_DEBUG
+#include <lvr2/geometry/BaseMesh.hpp>
+#include <lvr2/algorithm/ClusterPainter.hpp>
 
 namespace lvr2
 {
 
+// ==========================================================================
+// Collection of functions to debug mesh generation.
+// ==========================================================================
 inline std::ostream& dout()
 {
     // To have a "null" ostream, it's apparently a good idea to use an
@@ -46,6 +54,13 @@ inline std::ostream& dout()
     return isDebug ? cout : unopenedFile;
 }
 
+template<typename BaseVecT>
+void writeDebugMesh(
+    const BaseMesh<BaseVecT>& mesh,
+    string filename = "debug.ply",
+    ClusterPainter::Rgb8Color color = {255, 0, 0}
+);
+
 #ifdef NDEBUG
 #define DOINDEBUG(...) ;
 #else
@@ -54,4 +69,6 @@ inline std::ostream& dout()
 
 } // namespace lvr2
 
-#endif /* LVR2_UTIL_DEBUG */
+#include <lvr2/util/Debug.tcc>
+
+#endif /* LVR2_UTIL_DEBUG_H_ */
