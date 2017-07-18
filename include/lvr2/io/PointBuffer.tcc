@@ -35,6 +35,7 @@ PointBuffer<BaseVecT>::PointBuffer(lvr::PointBuffer& oldBuffer)
     // discarded.
     size_t len;
     auto buf = oldBuffer.getPointArray(len);
+    m_points.reserve(len);
     for (int i = 0; i < len * 3; i += 3)
     {
         auto p = Point<BaseVecT>(buf[i], buf[i + 1], buf[i + 2]);
@@ -44,12 +45,56 @@ PointBuffer<BaseVecT>::PointBuffer(lvr::PointBuffer& oldBuffer)
     if (oldBuffer.hasPointNormals())
     {
         m_normals = vector<Normal<BaseVecT>>();
-        size_t normals_len;
-        auto normal_buf = oldBuffer.getPointNormalArray(normals_len);
-        for (int i = 0; i < normals_len * 3; i += 3)
+        size_t normalsLen;
+        auto normalBuf = oldBuffer.getPointNormalArray(normalsLen);
+        m_normals->reserve(normalsLen);
+
+        for (int i = 0; i < normalsLen * 3; i += 3)
         {
-            auto p = Normal<BaseVecT>(normal_buf[i], normal_buf[i + 1], normal_buf[i + 2]);
+            auto p = Normal<BaseVecT>(normalBuf[i], normalBuf[i + 1], normalBuf[i + 2]);
             m_normals->push_back(p);
+        }
+    }
+
+    size_t intensitiesLen;
+    auto intensitiesBuf = oldBuffer.getPointIntensityArray(intensitiesLen);
+    if (intensitiesLen > 0)
+    {
+        m_intensities = vector<float>();
+        m_intensities->reserve(intensitiesLen);
+        std::copy(
+            intensitiesBuf.get(),
+            intensitiesBuf.get() + intensitiesLen,
+            std::back_inserter(*m_intensities)
+        );
+    }
+
+    size_t confidencesLen;
+    auto confidencesBuf = oldBuffer.getPointConfidenceArray(confidencesLen);
+    if (confidencesLen > 0)
+    {
+        m_confidences = vector<float>();
+        m_confidences->reserve(confidencesLen);
+        std::copy(
+            confidencesBuf.get(),
+            confidencesBuf.get() + confidencesLen,
+            std::back_inserter(*m_confidences)
+        );
+    }
+
+    size_t rgbColorLen;
+    auto rgbColorBuf = oldBuffer.getPointColorArray(rgbColorLen);
+    if (rgbColorLen > 0)
+    {
+        m_rgbColors = vector<array<uint8_t, 3>>();
+        m_rgbColors->reserve(rgbColorLen);
+        for (int i = 0; i < rgbColorLen * 3; i += 3)
+        {
+            m_rgbColors->push_back({
+                rgbColorBuf[i],
+                rgbColorBuf[i + 1],
+                rgbColorBuf[i + 2]
+            });
         }
     }
 }
@@ -69,9 +114,9 @@ lvr::PointBuffer PointBuffer<BaseVecT>::toOldBuffer() const
     auto pointData = boost::shared_array<float>(new float[m_points.size() * 3]);
     for (size_t i = 0; i < m_points.size(); i++) {
         auto p = m_points[i];
-        pointData[i + 0] = p.x;
-        pointData[i + 1] = p.y;
-        pointData[i + 2] = p.z;
+        pointData[3 * i + 0] = p.x;
+        pointData[3 * i + 1] = p.y;
+        pointData[3 * i + 2] = p.z;
     }
     out.setPointArray(pointData, m_points.size());
 
@@ -80,14 +125,46 @@ lvr::PointBuffer PointBuffer<BaseVecT>::toOldBuffer() const
         auto normalData = boost::shared_array<float>(new float[m_normals->size() * 3]);
         for (size_t i = 0; i < m_normals->size(); i++) {
             auto p = (*m_normals)[i];
-            normalData[i + 0] = p.getX();
-            normalData[i + 1] = p.getY();
-            normalData[i + 2] = p.getZ();
+            normalData[3 * i + 0] = p.getX();
+            normalData[3 * i + 1] = p.getY();
+            normalData[3 * i + 2] = p.getZ();
         }
         out.setPointNormalArray(normalData, m_normals->size());
     }
 
-    // TODO the remaining stuff
+    if (m_intensities)
+    {
+        auto intensityData = boost::shared_array<float>(new float[m_intensities->size()]);
+        std::copy(
+            m_intensities->begin(),
+            m_intensities->end(),
+            intensityData.get()
+        );
+        out.setPointIntensityArray(intensityData, m_intensities->size());
+    }
+
+    if (m_confidences)
+    {
+        auto confidenceData = boost::shared_array<float>(new float[m_confidences->size()]);
+        std::copy(
+            m_confidences->begin(),
+            m_confidences->end(),
+            confidenceData.get()
+        );
+        out.setPointConfidenceArray(confidenceData, m_confidences->size());
+    }
+
+    if (m_rgbColors)
+    {
+        auto colorData = boost::shared_array<uint8_t>(new uint8_t[m_rgbColors->size() * 3]);
+        for (size_t i = 0; i < m_rgbColors->size(); i++) {
+            auto c = (*m_rgbColors)[i];
+            colorData[3 * i + 0] = c[0];
+            colorData[3 * i + 1] = c[1];
+            colorData[3 * i + 2] = c[2];
+        }
+        out.setPointColorArray(colorData, m_rgbColors->size());
+    }
 
     return out;
 }
@@ -98,13 +175,6 @@ const Point<BaseVecT>& PointBuffer<BaseVecT>::getPoint(size_t idx) const
 {
     return m_points[idx];
 }
-
-// template <typename BaseVecT>
-// Point<BaseVecT>& PointBuffer<BaseVecT>::getPoint(size_t idx)
-// {
-//     return m_points[idx];
-// }
-
 
 template <typename BaseVecT>
 bool PointBuffer<BaseVecT>::hasNormals() const {
@@ -137,26 +207,102 @@ optional<Normal<BaseVecT>&> PointBuffer<BaseVecT>::getNormal(size_t idx)
     return (*m_normals)[idx];
 }
 
-// template <typename BaseVecT>
-// BaseVecT PointBuffer<BaseVecT>::getBaseVec(size_t idx) const
-// {
-//     using CoordT = typename BaseVecT::CoordType;
-
-//     // This class currently only supports coordinate types that don't require
-//     // an alignment bigger than 8.
-//     static_assert(alignof(CoordT) <= 8, "unsupported vector type");
-
-//     auto step = sizeof(CoordT);
-//     auto offset = idx * 3;
-//     auto x = *reinterpret_cast<const CoordT*>(&m_points[offset + 0 * step]);
-//     auto y = *reinterpret_cast<const CoordT*>(&m_points[offset + 1 * step]);
-//     auto z = *reinterpret_cast<const CoordT*>(&m_points[offset + 2 * step]);
-
-//     return BaseVecT(x, y, z);
-// }
+template <typename BaseVecT>
+bool PointBuffer<BaseVecT>::hasIntensities() const {
+    return static_cast<bool>(m_intensities);
+}
 
 template <typename BaseVecT>
-bool PointBuffer<BaseVecT>::empty() const {
+void PointBuffer<BaseVecT>::addIntensityChannel(typename BaseVecT::CoordType def)
+{
+    m_intensities = vector<typename BaseVecT::CoordType>(getNumPoints(), def);
+}
+
+template <typename BaseVecT>
+optional<const typename BaseVecT::CoordType&> PointBuffer<BaseVecT>::getIntensity(size_t idx) const
+{
+    if (!hasIntensities())
+    {
+        return boost::none;
+    }
+    return (*m_intensities)[idx];
+}
+
+template <typename BaseVecT>
+optional<typename BaseVecT::CoordType&> PointBuffer<BaseVecT>::getIntensity(size_t idx)
+{
+    if (!hasIntensities())
+    {
+        return boost::none;
+    }
+    return (*m_intensities)[idx];
+}
+
+template <typename BaseVecT>
+bool PointBuffer<BaseVecT>::hasConfidences() const {
+    return static_cast<bool>(m_confidences);
+}
+
+template <typename BaseVecT>
+void PointBuffer<BaseVecT>::addConfidenceChannel(typename BaseVecT::CoordType def)
+{
+    m_confidences = vector<typename BaseVecT::CoordType>(getNumPoints(), def);
+}
+
+template <typename BaseVecT>
+optional<const typename BaseVecT::CoordType&> PointBuffer<BaseVecT>::getConfidence(size_t idx) const
+{
+    if (!hasConfidences())
+    {
+        return boost::none;
+    }
+    return (*m_confidences)[idx];
+}
+
+template <typename BaseVecT>
+optional<typename BaseVecT::CoordType&> PointBuffer<BaseVecT>::getConfidence(size_t idx)
+{
+    if (!hasConfidences())
+    {
+        return boost::none;
+    }
+    return (*m_confidences)[idx];
+}
+
+template <typename BaseVecT>
+bool PointBuffer<BaseVecT>::hasRgbColor() const
+{
+    return static_cast<bool>(m_rgbColors);
+}
+
+template <typename BaseVecT>
+void PointBuffer<BaseVecT>::addRgbColorChannel(array<uint8_t, 3> init)
+{
+    m_rgbColors = vector<array<uint8_t, 3>>(getNumPoints(), init);
+}
+
+template <typename BaseVecT>
+optional<const typename BaseVecT::CoordType&> PointBuffer<BaseVecT>::getRgbColor(size_t idx) const
+{
+    if (!hasRgbColor())
+    {
+        return boost::none;
+    }
+    return (*m_rgbColors)[idx];
+}
+template <typename BaseVecT>
+optional<typename BaseVecT::CoordType&> PointBuffer<BaseVecT>::getRgbColor(size_t idx)
+{
+    if (!hasRgbColor())
+    {
+        return boost::none;
+    }
+    return (*m_rgbColors)[idx];
+}
+
+template <typename BaseVecT>
+bool PointBuffer<BaseVecT>::empty() const
+{
     return m_points.empty();
 }
 

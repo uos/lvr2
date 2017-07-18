@@ -42,6 +42,7 @@
 
 // #include <gsl/gsl>
 
+#include <array>
 #include <cstdio>
 #include <memory>
 #include <vector>
@@ -57,6 +58,7 @@
 using boost::optional;
 using std::size_t;
 using std::vector;
+using std::array;
 
 
 namespace lvr2
@@ -103,28 +105,81 @@ public:
     optional<const Normal<BaseVecT>&> getNormal(size_t idx) const;
     optional<Normal<BaseVecT>&> getNormal(size_t idx);
 
+    /**
+     * @brief Returns true if the stored data contains intensity information.
+     */
+    bool hasIntensities() const;
+
+    /**
+     * @brief Adds (or overwrites) intensity information for all points.
+     *
+     * All intensities are initialized with the given value or with 0. Correct
+     * values can later be set via `getIntensity()`.
+     */
+    void addIntensityChannel(typename BaseVecT::CoordType def = 0);
+
+    /**
+     * @brief Returns the intensity with the given index.
+     */
+    optional<const typename BaseVecT::CoordType&> getIntensity(size_t idx) const;
+    optional<typename BaseVecT::CoordType&> getIntensity(size_t idx);
+
+
+    /**
+     * @brief Returns true if the stored data contains confidence information.
+     */
+    bool hasConfidences() const;
+
+    /**
+     * @brief Adds (or overwrites) confidence information for all points.
+     *
+     * All confidences are initialized with the given value or with 0. Correct
+     * values can later be set via `getConfidence()`.
+     */
+    void addConfidenceChannel(typename BaseVecT::CoordType def = 0);
+
+    /**
+     * @brief Returns the confidence with the given index.
+     */
+    optional<const typename BaseVecT::CoordType&> getConfidence(size_t idx) const;
+    optional<typename BaseVecT::CoordType&> getConfidence(size_t idx);
+
+    /**
+     * @brief Returns true if the stored data contains RGB color information.
+     */
+    bool hasRgbColor() const;
+
+    /**
+     * @brief Adds (or overwrites) RGB color information for all points.
+     *
+     * All colors are initialized with the given value or with (0, 0, 0).
+     * Correct values can later be set via `getRgbColor()`.
+     */
+    void addRgbColorChannel(array<uint8_t, 3> init = {0, 0, 0});
+
+    /**
+     * @brief Returns the RGB color with the given index.
+     */
+    optional<const typename BaseVecT::CoordType&> getRgbColor(size_t idx) const;
+    optional<typename BaseVecT::CoordType&> getRgbColor(size_t idx);
+
     bool empty() const;
 
 private:
-    // struct alignas(8) AlignedByte
-    // {
-    //     uint8_t data;
-    // };
-
     /// Point buffer.
     vector<Point<BaseVecT>> m_points;
 
     /// Point normal buffer.
     optional<vector<Normal<BaseVecT>>> m_normals;
 
-    // /// Point intensity buffer.
-    // vector<AlignedByte> m_intensities;
+    /// Point intensity buffer.
+    optional<vector<typename BaseVecT::CoordType>> m_intensities;
 
-    // /// Point confidence buffer.
-    // vector<AlignedByte> m_confidences;
+    /// Point confidence buffer.
+    optional<vector<typename BaseVecT::CoordType>> m_confidences;
 
-    // template <typename BaseVecT>
-    // BaseVecT getBaseVec(size_t idx) const;
+    /// Point RGB colors.
+    optional<vector<array<uint8_t, 3>>> m_rgbColors;
 };
 
 template <typename BaseVecT>
