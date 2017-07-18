@@ -162,8 +162,6 @@ private:
      */
     template <typename Pred>
     OptionalEdgeHandle findEdgeAroundVertex(EdgeHandle startEdgeH, Pred pred) const;
-
-    std::ostream& dout() const;
 };
 
 } // namespace lvr2
