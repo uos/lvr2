@@ -45,6 +45,7 @@ struct Plane
     Normal<BaseVecT> normal;
     Point<BaseVecT> pos;
 
+    Point<BaseVecT> project(const Point<BaseVecT>& other) const;
     float distance(const Point<BaseVecT>& other) const;
 };
 

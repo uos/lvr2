@@ -36,4 +36,11 @@ float Plane<BaseVecT>::distance(const Point<BaseVecT>& other) const
     return (other - this->pos).dot(this->normal.asVector());
 }
 
+template<typename BaseVecT>
+Point<BaseVecT> Plane<BaseVecT>::project(const Point<BaseVecT>& other) const
+{
+    // Credits to: https://stackoverflow.com/questions/9605556/#answer-41897378
+    return other - (this->normal.asVector() * (this->normal.dot(other - this->pos)));
+}
+
 } // namespace lvr2
