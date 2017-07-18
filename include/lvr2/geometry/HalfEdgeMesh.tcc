@@ -55,8 +55,8 @@ FaceHandle HalfEdgeMesh<BaseVecT>::addFace(VertexHandle v1H, VertexHandle v2H, V
 {
     using std::make_tuple;
 
-    dout() << "##################################################" << endl;
-    dout() << "##### addFace(): " << v1H << " -> " << v2H << " -> " << v3H << endl;
+    DOINDEBUG(dout() << "##################################################" << endl);
+    DOINDEBUG(dout() << "##### addFace(): " << v1H << " -> " << v2H << " -> " << v3H << endl);
 
 
     // =======================================================================
@@ -126,7 +126,7 @@ FaceHandle HalfEdgeMesh<BaseVecT>::addFace(VertexHandle v1H, VertexHandle v2H, V
         // --> Case (A): neither edge is part of a face (both edges are new)
         if (!eIn.face && !eOut.face)
         {
-            dout() << "Case (A) for " << vH << endl;
+            DOINDEBUG(dout() << "Case (A) for " << vH << endl);
 
             // We need to handle the special case of `v` not having an
             // outgoing edge.
@@ -153,8 +153,8 @@ FaceHandle HalfEdgeMesh<BaseVecT>::addFace(VertexHandle v1H, VertexHandle v2H, V
                 eIn.next = eStartH;
                 getE(eEndH).next = eOutH;
 
-                dout() << "(A) ... setting " << eInH << ".next = " << eStartH << endl;
-                dout() << "(A) ... setting " << eEndH << ".next = " << eOutH << endl;
+                DOINDEBUG(dout() << "(A) ... setting " << eInH << ".next = " << eStartH << endl);
+                DOINDEBUG(dout() << "(A) ... setting " << eEndH << ".next = " << eOutH << endl);
             }
             else
             {
@@ -166,7 +166,7 @@ FaceHandle HalfEdgeMesh<BaseVecT>::addFace(VertexHandle v1H, VertexHandle v2H, V
         // --> Case (B): only the ingoing edge is part of a face
         else if (eIn.face && !eOut.face)
         {
-            dout() << "Case (B) for " << vH << endl;
+            DOINDEBUG(dout() << "Case (B) for " << vH << endl);
 
             // We know that `v` has at least two outgoing edges (since
             // there is a face adjacent to it).
@@ -189,21 +189,26 @@ FaceHandle HalfEdgeMesh<BaseVecT>::addFace(VertexHandle v1H, VertexHandle v2H, V
                 return !getE(edgeH).face && getE(edgeH).next == oldNext;
             }).unwrap();
 
-            dout() << "(B) ... setting " << eH << ".next = " << eOutH << endl;
+            DOINDEBUG(dout() << "(B) ... setting " << eH << ".next = " << eOutH << endl);
             getE(eH).next = eOutH;
         }
         // --> Case (C): only the outgoing edge is part of a face
         else if (!eIn.face && eOut.face)
         {
-            dout() << "Case (C) for " << vH << endl;
-            dout() << "(C) ... setting " << eInH << ".next = " << getE(eOut.twin).next << endl;
+            DOINDEBUG(dout() << "Case (C) for " << vH << endl);
+            DOINDEBUG(
+                dout() << "(C) ... setting " << eInH << ".next = "
+                    << getE(eOut.twin).next << endl
+            );
             eIn.next = getE(eOut.twin).next;
         }
         // --> Case (D): both edges are already part of another face
         if (eIn.face && eOut.face)
         {
-            dout() << "Case (D) for " << vH
-                   << "(eIn = " << eInH << ", eOut = " << eOutH << ")" << endl;
+            DOINDEBUG(
+                dout() << "Case (D) for " << vH
+                   << "(eIn = " << eInH << ", eOut = " << eOutH << ")" << endl
+            );
 
             // Here, two fan blades around `v` will be connected. Both blades
             // need to be in the right order for this to work. The order is
@@ -255,8 +260,14 @@ FaceHandle HalfEdgeMesh<BaseVecT>::addFace(VertexHandle v1H, VertexHandle v2H, V
                 // later.
                 getE(eInBladeEndH).next = getE(eOut.twin).next;
 
-                dout() << "(D) ... setting " << inactiveBladeEndH << ".next = " << getE(eInBladeEndH).next << endl;
-                dout() << "(D) ... setting " << eInBladeEndH << ".next = " << getE(eOut.twin).next << endl;
+                DOINDEBUG(
+                    dout() << "(D) ... setting " << inactiveBladeEndH << ".next = "
+                    << getE(eInBladeEndH).next << endl
+                );
+                DOINDEBUG(
+                    dout() << "(D) ... setting " << eInBladeEndH << ".next = "
+                    << getE(eOut.twin).next << endl
+                );
             }
         }
     }
@@ -286,7 +297,7 @@ FaceHandle HalfEdgeMesh<BaseVecT>::addFace(VertexHandle v1H, VertexHandle v2H, V
     // =======================================================================
     // = Debug output
     // =======================================================================
-    dout() << "+------ Summary face " << newFaceH << " ------+" << endl;
+    DOINDEBUG(dout() << "+------ Summary face " << newFaceH << " ------+" << endl);
     auto startEdgeH = f.edge;
     auto eH = startEdgeH;
     int i = 0;
@@ -295,10 +306,12 @@ FaceHandle HalfEdgeMesh<BaseVecT>::addFace(VertexHandle v1H, VertexHandle v2H, V
         auto& e = getE(eH);
         auto source = getE(e.twin).target;
         auto target = e.target;
-        dout() << "| " << source.idx() << " ==> " << eH
+        DOINDEBUG(
+            dout() << "| " << source.idx() << " ==> " << eH
                << " ==> " << target.idx() << " [next: " << e.next
                << ", twin-next: " << getE(e.twin).next << "]"
-               << endl;
+               << endl
+        );
 
         eH = e.next;
         i++;
@@ -307,7 +320,7 @@ FaceHandle HalfEdgeMesh<BaseVecT>::addFace(VertexHandle v1H, VertexHandle v2H, V
             panic("bug in HEM: face with invalid internal next handles added");
         }
     } while(eH != startEdgeH);
-    dout() << "+-----------------------------+" << endl;
+    DOINDEBUG(dout() << "+-----------------------------+" << endl);
 
     return newFaceH;
 }
@@ -568,16 +581,16 @@ template <typename BaseVecT>
 EdgeHandle
     HalfEdgeMesh<BaseVecT>::findOrCreateEdgeBetween(VertexHandle fromH, VertexHandle toH)
 {
-    dout() << "# findOrCreateEdgeBetween: " << fromH << " --> " << toH << endl;
+    DOINDEBUG(dout() << "# findOrCreateEdgeBetween: " << fromH << " --> " << toH << endl);
     auto foundEdge = edgeBetween(fromH, toH);
     if (foundEdge)
     {
-        dout() << ">> found: " << foundEdge << endl;
+        DOINDEBUG(dout() << ">> found: " << foundEdge << endl);
         return foundEdge.unwrap();
     }
     else
     {
-        dout() << ">> adding pair..." << endl;
+        DOINDEBUG(dout() << ">> adding pair..." << endl);
         return addEdgePair(fromH, toH).first;
     }
 }
@@ -589,12 +602,12 @@ OptionalEdgeHandle
 {
     // This function simply follows `next` and `twin` handles to visit all
     // edges around a vertex.
-    dout() << ">> Trying to find an edge around " << vH << " ..." << endl;
+    DOINDEBUG(dout() << ">> Trying to find an edge around " << vH << " ..." << endl);
 
     auto& v = getV(vH);
     if (!v.outgoing)
     {
-        dout() << ">> ... " << vH << " has no outgoing edge, returning none." << endl;
+        DOINDEBUG(dout() << ">> ... " << vH << " has no outgoing edge, returning none." << endl);
         return OptionalEdgeHandle();
     }
 
@@ -608,7 +621,7 @@ OptionalEdgeHandle
 {
     // This function simply follows `next` and `twin` handles to visit all
     // edges around a vertex.
-    dout() << ">> Trying to find an edge starting from " << startEdgeH << " ..." << endl;
+    DOINDEBUG(dout() << ">> Trying to find an edge starting from " << startEdgeH << " ..." << endl);
 
     auto loopEdgeH = startEdgeH;
 
@@ -617,14 +630,19 @@ OptionalEdgeHandle
 
     while (!pred(loopEdgeH))
     {
-        dout() << ">> ... >> LOOP: loop-" << loopEdgeH << " @ "
+        DOINDEBUG(
+            dout() << ">> ... >> LOOP: loop-" << loopEdgeH << " @ "
                << getE(loopEdgeH).face
-               << " with next: " << getE(loopEdgeH).next << endl;
+               << " with next: " << getE(loopEdgeH).next << endl
+        );
 
         loopEdgeH = getE(getE(loopEdgeH).next).twin;
         if (loopEdgeH == startEdgeH)
         {
-            dout() << ">> ... we visited all edges once without success, returning none." << endl;
+            DOINDEBUG(
+                dout() << ">> ... we visited all edges once without success, returning none."
+                    << endl
+            );
             return OptionalEdgeHandle();
         }
 
@@ -643,7 +661,7 @@ OptionalEdgeHandle
             visited.push_back(loopEdgeH);
         }
     }
-    dout() << ">> ... found " << loopEdgeH << "." << endl;
+    DOINDEBUG(dout() << ">> ... found " << loopEdgeH << "." << endl);
     return loopEdgeH;
 }
 

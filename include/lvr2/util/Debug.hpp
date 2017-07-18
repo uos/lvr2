@@ -46,6 +46,12 @@ inline std::ostream& dout()
     return isDebug ? cout : unopenedFile;
 }
 
+#ifdef NDEBUG
+#define DOINDEBUG(...) ;
+#else
+#define DOINDEBUG(...) __VA_ARGS__
+#endif
+
 } // namespace lvr2
 
 #endif /* LVR2_UTIL_DEBUG */
