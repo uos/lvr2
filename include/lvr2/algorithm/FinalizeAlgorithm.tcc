@@ -34,6 +34,8 @@ boost::shared_ptr<lvr::MeshBuffer> FinalizeAlgorithm<BaseVecT>::apply(const Base
 {
     // Create vertex and normal buffer
     VertexMap<size_t> idxMap;
+    idxMap.reserve(mesh.numVertices());
+
     std::vector<float> vertices;
     vertices.reserve(mesh.numVertices() * 3);
 

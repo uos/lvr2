@@ -39,6 +39,8 @@ VertexMap<Normal<BaseVecT>> calcNormalsForMesh(
 )
 {
     VertexMap<Normal<BaseVecT>> normalMap;
+    normalMap.reserve(mesh.numVertices());
+
     for (auto vH: mesh.vertices())
     {
         // Use averaged normals from adjacent faces
