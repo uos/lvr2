@@ -276,6 +276,7 @@ void dragToRegressionPlane(
             auto distance = plane.distance(pos);
             mesh.vertexPosition(vertexH) -= plane.normal.asVector() * distance;
         }
+        normals[faceH] = plane.normal;
     }
 }
 
