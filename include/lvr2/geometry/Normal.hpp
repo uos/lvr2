@@ -95,6 +95,7 @@ struct Normal : private Vector<BaseVecT>
         return this->z;
     }
 
+    // Cast normal to vector
     Vector<BaseVecT> asVector() const;
 
     // Publicly re-export methods that do not modify the vector and thus are
@@ -112,8 +113,6 @@ struct Normal : private Vector<BaseVecT>
     // sense.
     BaseVecT& operator*=(const typename BaseVecT::CoordType &scale) = delete;
     BaseVecT& operator/=(const typename BaseVecT::CoordType &scale) = delete;
-
-
 
     Normal<BaseVecT> operator-() const;
 };

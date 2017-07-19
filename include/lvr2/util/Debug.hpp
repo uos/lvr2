@@ -54,6 +54,9 @@ inline std::ostream& dout()
     return isDebug ? cout : unopenedFile;
 }
 
+/**
+ * @brief Write a mesh to the given filename and color it with the given color
+ */
 template<typename BaseVecT>
 void writeDebugMesh(
     const BaseMesh<BaseVecT>& mesh,
