@@ -44,7 +44,10 @@ namespace lvr2
 {
 
 template<typename BaseVecT>
-ClusterSet<FaceHandle> planarClusterGrowing(const BaseMesh<BaseVecT>& mesh, float minSinAngle)
+ClusterSet<FaceHandle> planarClusterGrowing(
+    const BaseMesh<BaseVecT>& mesh,
+    float minSinAngle
+)
 {
     ClusterSet<FaceHandle> clusters;
     FaceMap<bool> visited(mesh.numFaces(), false);
@@ -92,8 +95,7 @@ ClusterSet<FaceHandle> planarClusterGrowing(const BaseMesh<BaseVecT>& mesh, floa
 }
 
 template<typename BaseVecT>
-ClusterSet<FaceHandle>
-iterativePlanarClusterGrowing(
+ClusterSet<FaceHandle> iterativePlanarClusterGrowing(
     BaseMesh<BaseVecT>& mesh,
     float minSinAngle,
     int numIterations,
@@ -127,12 +129,11 @@ iterativePlanarClusterGrowing(
 }
 
 template<typename BaseVecT>
-ClusterMap<Plane<BaseVecT>>
-    calcRegressionPlanes(
-        const BaseMesh<BaseVecT>& mesh,
-        const ClusterSet<FaceHandle>& clusters,
-        int minClusterSize
-    )
+ClusterMap<Plane<BaseVecT>> calcRegressionPlanes(
+    const BaseMesh<BaseVecT>& mesh,
+    const ClusterSet<FaceHandle>& clusters,
+    int minClusterSize
+)
 {
     ClusterMap<Plane<BaseVecT>> planes;
     size_t defaultClusterThreshold = 10 * log(mesh.numFaces());
@@ -154,7 +155,10 @@ ClusterMap<Plane<BaseVecT>>
 }
 
 template<typename BaseVecT>
-Plane<BaseVecT> calcRegressionPlane(const BaseMesh<BaseVecT>& mesh, const Cluster<FaceHandle>& cluster)
+Plane<BaseVecT> calcRegressionPlane(
+    const BaseMesh<BaseVecT>& mesh,
+    const Cluster<FaceHandle>& cluster
+)
 {
     // Calc normal of plane
     size_t countFirst = 0;
