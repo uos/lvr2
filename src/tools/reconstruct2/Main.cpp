@@ -186,6 +186,7 @@
 #include <lvr2/algorithm/ClusterAlgorithms.hpp>
 #include <lvr2/algorithm/CleanupAlgorithms.hpp>
 #include <lvr2/algorithm/ReductionAlgorithms.hpp>
+#include <lvr2/algorithm/Texturizer.hpp>
 
 #include <lvr2/reconstruction/AdaptiveKSearchSurface.hpp>
 #include <lvr2/reconstruction/BilinearFastBox.hpp>
@@ -1022,6 +1023,10 @@ int main(int argc, char** argv)
     // Debug mesh
     //auto duplicateVertices = getDuplicateVertices(mesh);
     //cout << "duplicate vertices: " << duplicateVertices.size() << endl;
+
+    // TODO: use config
+    TexturizerResult texturizerResult = generateTextures(mesh, clusterSet, surface);
+    // TODO: use result
 
     // Finalize mesh (convert it to simple `MeshBuffer`)
     // FinalizeAlgorithm<Vec> finalize;
