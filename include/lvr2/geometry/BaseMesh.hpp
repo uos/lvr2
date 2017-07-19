@@ -137,9 +137,19 @@ public:
     virtual Point<BaseVecT> getVertexPosition(VertexHandle handle) const = 0;
 
     /**
+     * @brief Get a ref to the point of the requested vertex.
+     */
+    virtual Point<BaseVecT>& vertexPosition(VertexHandle handle) = 0;
+
+    /**
      * @brief Get the normal of the requested face.
      */
     virtual Normal<BaseVecT> getFaceNormal(FaceHandle handle) const = 0;
+
+    /**
+     * @brief Calc and return the centroid of the requested face.
+     */
+    Point<BaseVecT> calcFaceCentroid(FaceHandle handle) const;
 
     /**
      * @brief Get the points of the requested face.

@@ -50,8 +50,7 @@ private:
     /// Current position in the vector
     size_t m_pos;
 public:
-    StableVectorIterator(const vector<bool>* deleted, bool startAtEnd = false)
-            : m_deleted(deleted), m_pos(startAtEnd ? deleted->size() : 0) {};
+    StableVectorIterator(const vector<bool>* deleted, bool startAtEnd = false);
 
     StableVectorIterator& operator=(const StableVectorIterator& other);
     bool operator==(const StableVectorIterator& other) const;
@@ -121,6 +120,9 @@ public:
 
     /// Request the value behind the given key
     boost::optional<const ElemT&> get(const HandleType& key) const;
+
+    /// Set value for existing key. Use push_pack to append NEW element
+    void set(const HandleType& key, const ElementType& elem);
 
     /// Request the element behind the given handle
     ElemT& operator[](const HandleType& handle);

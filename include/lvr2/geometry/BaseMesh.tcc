@@ -107,4 +107,20 @@ MeshHandleIteratorPtr<VertexHandle> VertexIteratorProxy<BaseVecT>::end() const
     return m_mesh.verticesEnd();
 }
 
+template <typename BaseVecT>
+Point<BaseVecT> BaseMesh<BaseVecT>::calcFaceCentroid(FaceHandle handle) const
+{
+    auto points = this->getVertexPositionsOfFace(handle);
+
+    Vector<BaseVecT> centroid;
+    for (auto point: points)
+    {
+        centroid += point.asVector();
+    }
+    centroid /= points.size();
+
+    // Convert to point
+    return Point<BaseVecT>(centroid);
+}
+
 } // namespace lvr2

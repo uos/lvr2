@@ -95,6 +95,7 @@ struct Normal : private Vector<BaseVecT>
         return this->z;
     }
 
+    // Cast normal to vector
     Vector<BaseVecT> asVector() const;
 
     // Publicly re-export methods that do not modify the vector and thus are
@@ -115,6 +116,13 @@ struct Normal : private Vector<BaseVecT>
 
     Normal<BaseVecT> operator-() const;
 };
+
+template<typename BaseVecT>
+std::ostream& operator<<(std::ostream& os, const Normal<BaseVecT>& n)
+{
+    os << "Normal[" << n.getX() << ", " << n.getY() << ", " << n.getZ() << "]";
+    return os;
+}
 
 } // namespace lvr2
 

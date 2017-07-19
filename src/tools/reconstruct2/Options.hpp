@@ -499,6 +499,7 @@ inline ostream& operator<<(ostream& os, const Options &o)
         cout << "##### Plane iterations\t\t: " << o.getPlaneIterations() << endl;
         cout << "##### Normal threshold \t\t: " << o.getNormalThreshold() << endl;
         cout << "##### Region threshold\t\t: " << o.getSmallRegionThreshold() << endl;
+        cout << "##### Region min size\t\t: " << o.getMinPlaneSize() << endl;
     }
     if(o.saveNormals())
     {

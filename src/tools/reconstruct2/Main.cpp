@@ -178,7 +178,7 @@
 #include <lvr2/util/VectorMap.hpp>
 #include <lvr2/algorithm/FinalizeAlgorithm.hpp>
 #include <lvr2/geometry/BoundingBox.hpp>
-#include <lvr2/algorithm/ClusterGrowingAlgorithm.hpp>
+#include <lvr2/algorithm/Planar.hpp>
 #include <lvr2/algorithm/ClusterPainter.hpp>
 
 #include <lvr2/reconstruction/AdaptiveKSearchSurface.hpp>
@@ -391,8 +391,7 @@ void testClusterGrowing()
 {
     lvr2::HalfEdgeMesh<lvr2::BaseVector<float>> mesh;
     createHouseFromNikolaus(mesh);
-    lvr2::ClusterGrowingAlgorithm<BaseVector<float>> clusterGrowing;
-    auto clusterSet = clusterGrowing.apply(mesh);
+    auto clusterSet = planarClusterGrowing(mesh, 0.999);
     cout << "Generated " << clusterSet.numCluster() << " clusters." << endl;
 }
 
@@ -682,17 +681,21 @@ int main(int argc, char** argv)
     //     mesh.fillHoles(options.getFillHoles());
     // }
 
-    // ClusterGrowingAlgorithm<BaseVector<float>> clusterGrowing;
-    // auto clusterSet = clusterGrowing.apply(mesh);
+    auto clusterSet = iterativePlanarClusterGrowing(
+        mesh,
+        options.getNormalThreshold(),
+        options.getPlaneIterations(),
+        options.getMinPlaneSize()
+    );
 
-    // ClusterPainter painter(clusterSet);
-    // auto colorMap = painter.simpsons(mesh);
+    //auto clusterSet = planarClusterGrowing(mesh, options.getNormalThreshold());
 
-    // Finalize mesh (convert it to simple `MeshBuffer`)
+    ClusterPainter painter(clusterSet);
+    auto colorMap = painter.simpsons(mesh);
+
     FinalizeAlgorithm<Vec> finalize;
-    // finalize.setColorData(&colorMap);
+    finalize.setColorData(&colorMap);
     auto buffer = finalize.apply(mesh);
-
 
     // =======================================================================
     // Write all results (including the mesh) to file

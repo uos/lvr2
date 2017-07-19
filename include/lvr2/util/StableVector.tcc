@@ -41,7 +41,8 @@ void StableVector<HandleT, ElemT>::checkAccess(const HandleType& handle) const
 template<typename HandleT, typename ElemT>
 StableVector<HandleT, ElemT>::StableVector(size_t countElements, const ElemT& defaultValue)
     : m_elements(countElements, defaultValue),
-      m_deleted(countElements, false)
+      m_deleted(countElements, false),
+      m_usedCount(countElements)
 {}
 
 
@@ -119,6 +120,24 @@ size_t StableVector<HandleT, ElemT>::sizeUsed() const
 }
 
 template<typename HandleT, typename ElemT>
+void StableVector<HandleT, ElemT>::set(const HandleType& key, const ElementType& elem)
+{
+    // check access
+    if (key.idx() >= m_elements.size())
+    {
+        panic("attempt to append new element in StableVector with set -> use push_back!");
+    }
+
+    // insert element
+    if (m_deleted[key.idx()])
+    {
+        ++m_usedCount;
+    }
+    m_elements[key.idx()] = elem;
+    m_deleted[key.idx()] = false;
+};
+
+template<typename HandleT, typename ElemT>
 StableVectorIterator<HandleT> StableVector<HandleT, ElemT>::begin() const
 {
     return StableVectorIterator<HandleT>(&this->m_deleted);
@@ -128,6 +147,16 @@ template<typename HandleT, typename ElemT>
 StableVectorIterator<HandleT> StableVector<HandleT, ElemT>::end() const
 {
     return StableVectorIterator<HandleT>(&this->m_deleted, true);
+}
+
+template <typename HandleT>
+StableVectorIterator<HandleT>::StableVectorIterator(const vector<bool>* deleted, bool startAtEnd)
+    : m_deleted(deleted), m_pos(startAtEnd ? deleted->size() : 0)
+{
+    if (m_pos == 0 && !m_deleted->empty() && (*m_deleted)[0])
+    {
+        ++(*this);
+    }
 }
 
 template<typename HandleT>

@@ -275,7 +275,7 @@ void AdaptiveKSearchSurface<BaseVecT>::calculateSurfaceNormals()
             if(nearestPoseIds.size() == 1)
             {
                 auto nearest = this->m_pointBuffer->getPoint(nearestPoseIds[0]);
-                normal = p.n;
+                normal = p.normal;
                 if(normal.dot(queryPoint - nearest) < 0)
                 {
                     normal = -normal;
@@ -284,7 +284,7 @@ void AdaptiveKSearchSurface<BaseVecT>::calculateSurfaceNormals()
             else
             {
                 cout << lvr::timestamp << "Could not get nearest scan pose. Defaulting to centroid." << endl;
-                normal =  p.n;
+                normal =  p.normal;
                 if(normal.dot(queryPoint - m_centroid) < 0)
                 {
                     normal = -normal;
@@ -293,7 +293,7 @@ void AdaptiveKSearchSurface<BaseVecT>::calculateSurfaceNormals()
         }
         else
         {
-            normal =  p.n;
+            normal =  p.normal;
             if(normal.dot(queryPoint - m_centroid) < 0)
             {
                 normal = -normal;
@@ -544,8 +544,8 @@ Plane<BaseVecT> AdaptiveKSearchSurface<BaseVecT>::calcPlane(
     // p.a = C(0);
     // p.b = C(1);
     // p.c = C(2);
-    p.n = normal;
-    p.p = queryPoint;
+    p.normal = normal;
+    p.pos = queryPoint;
 
     return p;
 }
@@ -647,8 +647,8 @@ Plane<BaseVecT> AdaptiveKSearchSurface<BaseVecT>::calcPlaneRANSAC(
    // p.a = 0;
    // p.b = 0;
    // p.c = 0;
-   p.n = bestNorm;
-   p.p = bestPoint;
+   p.normal = bestNorm;
+   p.pos = bestPoint;
 
 
    return p;
