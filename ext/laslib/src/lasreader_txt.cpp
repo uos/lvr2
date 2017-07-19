@@ -475,7 +475,6 @@ BOOL LASreaderTXT::seek(const I64 p_index)
     int i;
     char* fg_skip;
     for (i = 0; i < skip_lines; i++) fg_skip = fgets(line, 512, file);
-    this->skip_lines = skip_lines;
     // read the first line with full parse_string
     i = 0;
     while (fgets(line, 512, file))

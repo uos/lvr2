@@ -12,7 +12,7 @@
 //! Start-of-the-program initializer for the sequence map.
 struct Initializer {
   Initializer() {
-    for(unsigned char mask = 0; mask < 256; mask++) {
+    for(unsigned char mask = 0; mask <= 255; mask++) {
       for(unsigned char index = 0; index < 8; index++) {
         char c = 0;
         char *mimap = imap[index];  // maps area index to preference

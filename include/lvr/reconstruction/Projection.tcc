@@ -1,7 +1,7 @@
 namespace lvr
 {
 
-float Projection::toPolar(const float _cartesian[], float polar[])
+void Projection::toPolar(const float _cartesian[], float polar[])
 {
     float phi, theta, rho;
 
