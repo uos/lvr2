@@ -153,13 +153,6 @@ public:
     virtual Normal<BaseVecT> getFaceNormal(FaceHandle handle) const = 0;
 
     /**
-     * @brief Get the points of the requested face.
-     *
-     * @return The points of the vertices in counter-clockwise order.
-     */
-    virtual std::array<Point<BaseVecT>, 3> getVertexPositionsOfFace(FaceHandle handle) const = 0;
-
-    /**
      * @brief Get vertex handles of the requested face.
      *
      * @return The vertex-handles in counter-clockwise order.
@@ -225,6 +218,13 @@ public:
     // =======================================================================
     // Provided methods (already implemented)
     // =======================================================================
+
+    /**
+     * @brief Get the points of the requested face.
+     *
+     * @return The points of the vertices in counter-clockwise order.
+     */
+    virtual std::array<Point<BaseVecT>, 3> getVertexPositionsOfFace(FaceHandle handle) const;
 
     /**
      * @brief Calc and return the centroid of the requested face.
