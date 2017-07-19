@@ -63,7 +63,7 @@ template<typename HandleT>
 class ClusterSet
 {
 public:
-    ClusterSet() {};
+    ClusterSet() : m_numHandles(0) {};
 
     /// Creates a cluster and returns its handle.
     ClusterHandle createCluster();
@@ -115,7 +115,18 @@ public:
     /// Request the value behind the given key
     const Cluster<HandleT>& operator[](ClusterHandle clusterHandle) const;
 
+    /**
+     * @see StableVector::reserve(size_t)
+     */
+    void reserve(size_t newCap);
+
+    /// Returns the number of handles in all clusters in the set.
+    size_t numHandles() const;
+
 private:
+    /// Number of handels in all clusters
+    size_t m_numHandles;
+
     /// Clusters
     StableVector<ClusterHandle, Cluster<HandleT>> m_cluster;
 

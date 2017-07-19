@@ -39,6 +39,8 @@ void writeDebugMesh(
 {
     // Generate color map
     VertexMap<ClusterPainter::Rgb8Color> colorMap;
+    colorMap.reserve(mesh.numVertices());
+
     for (auto vH: mesh.vertices())
     {
         colorMap.insert(vH, color);

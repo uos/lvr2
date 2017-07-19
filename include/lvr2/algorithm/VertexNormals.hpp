@@ -17,50 +17,44 @@
  */
 
 /*
- * FinalizeAlgorithm.hpp
+ * VertexNormals.hpp
  *
- *  @date 13.06.2017
+ *  @date 19.07.2017
  *  @author Johan M. von Behren <johan@vonbehren.eu>
  */
 
-#ifndef LVR2_ALGORITHM_FINALIZEALGORITHM_H_
-#define LVR2_ALGORITHM_FINALIZEALGORITHM_H_
-
-#include <boost/shared_ptr.hpp>
-#include <boost/smart_ptr/make_shared.hpp>
-#include <boost/optional.hpp>
-
-using boost::optional;
+#ifndef LVR2_ALGORITHM_VERTEXNORMALS_H_
+#define LVR2_ALGORITHM_VERTEXNORMALS_H_
 
 #include <lvr2/geometry/BaseMesh.hpp>
-#include <lvr/io/MeshBuffer.hpp>
-#include "ClusterPainter.hpp"
 #include <lvr2/geometry/Normal.hpp>
 #include <lvr2/util/VectorMap.hpp>
+#include <lvr2/reconstruction/PointsetSurface.hpp>
 
 namespace lvr2
 {
 
+// ==========================================================================
+// Collection of algorithms for normal calculation for vertices in a mesh
+// ==========================================================================
+
 /**
- * @brief
+ * @brief Calculates a normal for each vertex in the mesh.
+ *
+ * The normal is calculated by first attempting to interpolate from the
+ * adjacent faces. If a vertex doesn't have adjacent faces, the normal from
+ * the nearest point in the point cloud is used.
+ *
+ * @param surface A point cloud with normal information
  */
 template<typename BaseVecT>
-class FinalizeAlgorithm
-{
-private:
-    optional<const VertexMap<ClusterPainter::Rgb8Color>&> m_colorData;
-    optional<const VertexMap<Normal<BaseVecT>>&> m_normalData;
-
-public:
-    FinalizeAlgorithm() {};
-
-    boost::shared_ptr<lvr::MeshBuffer> apply(const BaseMesh<BaseVecT>& mesh);
-    void setColorData(const VertexMap<ClusterPainter::Rgb8Color>& colorData);
-    void setNormalData(const VertexMap<Normal<BaseVecT>>& normalData);
-};
+VertexMap<Normal<BaseVecT>> calcNormalsForMesh(
+    const BaseMesh<BaseVecT>& mesh,
+    const PointsetSurface<BaseVecT>& surface
+);
 
 } // namespace lvr2
 
-#include <lvr2/algorithm/FinalizeAlgorithm.tcc>
+#include <lvr2/algorithm/VertexNormals.tcc>
 
-#endif /* LVR2_ALGORITHM_FINALIZEALGORITHM_H_ */
+#endif /* LVR2_ALGORITHM_VERTEXNORMALS_H_ */

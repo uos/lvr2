@@ -123,7 +123,8 @@ AdaptiveKSearchSurface<BaseVecT>::AdaptiveKSearchSurface(
 //         loader->setPointArray(points, v.size());
 //         size_t n = v.size();
 
-//         cout << lvr::timestamp << "Creating pose search tree(" << m_searchTreeName << ") with " << n << " poses." << endl;
+//         cout << lvr::timestamp << "Creating pose search tree(" << m_searchTreeName << ") with "
+//             << n << " poses." << endl;
 
 // #ifdef LVR_USE_PCL
 //         if( m_searchTreeName == "pcl"  || m_searchTreeName == "PCL" )
@@ -276,7 +277,7 @@ void AdaptiveKSearchSurface<BaseVecT>::calculateSurfaceNormals()
             {
                 auto nearest = this->m_pointBuffer->getPoint(nearestPoseIds[0]);
                 normal = p.normal;
-                if(normal.dot(queryPoint - nearest) < 0)
+                if(normal.dot(queryPoint - nearest) > 0)
                 {
                     normal = -normal;
                 }
@@ -285,7 +286,7 @@ void AdaptiveKSearchSurface<BaseVecT>::calculateSurfaceNormals()
             {
                 cout << lvr::timestamp << "Could not get nearest scan pose. Defaulting to centroid." << endl;
                 normal =  p.normal;
-                if(normal.dot(queryPoint - m_centroid) < 0)
+                if(normal.dot(queryPoint - m_centroid) > 0)
                 {
                     normal = -normal;
                 }
@@ -294,7 +295,7 @@ void AdaptiveKSearchSurface<BaseVecT>::calculateSurfaceNormals()
         else
         {
             normal =  p.normal;
-            if(normal.dot(queryPoint - m_centroid) < 0)
+            if(normal.dot(queryPoint - m_centroid) > 0)
             {
                 normal = -normal;
             }

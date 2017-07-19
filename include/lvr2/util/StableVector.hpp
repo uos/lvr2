@@ -150,7 +150,14 @@ public:
      */
     StableVectorIterator<HandleT> end() const;
 
-    // TODO: add reserve method to reserve vector memory
+    /**
+     * @brief Increase the capacity of the vector to a value that's greater or equal to newCap.
+     *
+     * If newCap is greater than the current capacity, new storage is allocated, otherwise the method does nothing.
+     *
+     * @param newCap new capacity of the vector
+     */
+    void reserve(size_t newCap);
 };
 
 } // namespace lvr2

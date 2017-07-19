@@ -351,18 +351,6 @@ size_t HalfEdgeMesh<BaseVecT>::numFaces() const
 }
 
 template <typename BaseVecT>
-std::array<Point<BaseVecT>, 3> HalfEdgeMesh<BaseVecT>::getVertexPositionsOfFace(FaceHandle handle) const
-{
-    auto handles = getVertexHandlesOfFace(handle);
-
-    auto v1 = getV(handles[0]);
-    auto v2 = getV(handles[1]);
-    auto v3 = getV(handles[2]);
-
-    return {v1.pos, v2.pos, v3.pos};
-}
-
-template <typename BaseVecT>
 std::array<VertexHandle, 3>
     HalfEdgeMesh<BaseVecT>::getVertexHandlesOfFace(FaceHandle handle) const
 {
@@ -413,6 +401,27 @@ std::vector<FaceHandle>
     }
 
     return neighbours;
+}
+
+// TODO: Maybe we want to change the interface here. Passing a mutable ref to a
+// vector into the method can improve performance a lot. With the current
+// design, each function call implies a heap allocation.
+template <typename BaseVecT>
+vector<FaceHandle> HalfEdgeMesh<BaseVecT>::getFacesOfVertex(VertexHandle handle) const
+{
+    vector<FaceHandle> faces;
+
+    // Iterate over all
+    findEdgeAroundVertex(handle, [&faces, this](auto eH)
+    {
+        auto edge = getE(eH);
+        if (edge.face)
+        {
+            faces.push_back(edge.face.unwrap());
+        }
+        return false;
+    });
+    return faces;
 }
 
 // ========================================================================
