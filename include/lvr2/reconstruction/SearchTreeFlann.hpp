@@ -56,14 +56,14 @@ public:
         int k,
         vector<size_t>& indices,
         vector<CoordT>& distances
-    ) ;
+    ) const;
 
     /// See interface documentation.
     virtual void radiusSearch(
         const Point<BaseVecT>& qp,
         CoordT r,
         vector<size_t>& indices
-    );
+    ) const;
 
 protected:
 

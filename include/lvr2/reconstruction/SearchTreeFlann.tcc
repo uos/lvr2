@@ -43,7 +43,7 @@ void SearchTreeFlann<BaseVecT>::kSearch(
     int k,
     vector<size_t>& indices,
     vector<CoordT>& distances
-)
+) const
 {
     flann::Matrix<float> query_point(new float[3], 1, 3);
     query_point[0][0] = qp.x;
@@ -70,7 +70,7 @@ void SearchTreeFlann<BaseVecT>::radiusSearch(
     const Point<BaseVecT>& qp,
     CoordT r,
     vector<size_t>& indices
-)
+) const
 {
     panic_unimplemented("radiusSearch() is not implemented for FLANN yet");
 }
