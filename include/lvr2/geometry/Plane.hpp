@@ -45,7 +45,16 @@ struct Plane
     Normal<BaseVecT> normal;
     Point<BaseVecT> pos;
 
+    /// Projects the given point onto the plane and returns the projection point.
     Point<BaseVecT> project(const Point<BaseVecT>& other) const;
+
+    /**
+     * @brief Calculates the distance between the plane and the given point.
+     * @return This can be < 0, == 0 or > 0 the cases mean:
+     *         < 0: The point lies between the plane and the origin
+     *         == 0: The point lies in the plane
+     *         > 0: The point lies behind the plane, oberserved from the origin
+     */
     float distance(const Point<BaseVecT>& other) const;
 };
 

@@ -46,7 +46,7 @@ namespace lvr2
 template<typename BaseVecT>
 ClusterSet<FaceHandle> planarClusterGrowing(const BaseMesh<BaseVecT>& mesh, float minSinAngle)
 {
-    ClusterSet<FaceHandle> clusterSet;
+    ClusterSet<FaceHandle> clusters;
     FaceMap<bool> visited(mesh.numFaces(), false);
 
     // Iterate over all faces
@@ -58,7 +58,7 @@ ClusterSet<FaceHandle> planarClusterGrowing(const BaseMesh<BaseVecT>& mesh, floa
             // We found a face yet to be visited. Prepare things for growing.
             vector<FaceHandle> stack;
             stack.push_back(faceH);
-            auto cluster = clusterSet.createCluster();
+            auto cluster = clusters.createCluster();
             auto referenceNormal = mesh.getFaceNormal(faceH);
 
             // Grow my cluster, groOW!
@@ -72,7 +72,7 @@ ClusterSet<FaceHandle> planarClusterGrowing(const BaseMesh<BaseVecT>& mesh, floa
                 {
                     // The face is in the "same" plane as the starting face => add it to cluster
                     // and mark as visited.
-                    clusterSet.addToCluster(cluster, currentFace);
+                    clusters.addToCluster(cluster, currentFace);
                     visited[currentFace] = true;
 
                     // Find all unvisited neighbours of the current face and them to the stack
@@ -88,7 +88,7 @@ ClusterSet<FaceHandle> planarClusterGrowing(const BaseMesh<BaseVecT>& mesh, floa
         }
     }
 
-    return clusterSet;
+    return clusters;
 }
 
 template<typename BaseVecT>
@@ -97,58 +97,60 @@ iterativePlanarClusterGrowing(
     BaseMesh<BaseVecT>& mesh,
     float minSinAngle,
     int numIterations,
-    int minRegionSize
+    int minClusterSize
 )
 {
-    ClusterSet<FaceHandle> clusterSet;
+    ClusterSet<FaceHandle> clusters;
 
     // Iterate numIterations times
     for (int i = 0; i < numIterations; ++i)
     {
         // Generate clusters
-        clusterSet = planarClusterGrowing(mesh, minSinAngle);
+        clusters = planarClusterGrowing(mesh, minSinAngle);
 
         // Calc regression planes
-        auto planes = calcRegressionPlanes(mesh, clusterSet, minRegionSize);
+        auto planes = calcRegressionPlanes(mesh, clusters, minClusterSize);
 
         // Debug planes
         // std::stringstream ss;
         // ss << "debug" << i << ".ply";
-        // debugPlanes(mesh, clusterSet, planes, ss.str(), 10000);
+        // debugPlanes(mesh, clusters, planes, ss.str(), 10000);
         // ss.str("");
         // ss << "debug-mesh" << i << ".ply";
         // writeDebugMesh(mesh, ss.str(), {0, 255, 0});
 
         // Drag vertices into planes
-        dragToRegressionPlanes(mesh, clusterSet, planes);
+        dragToRegressionPlanes(mesh, clusters, planes);
     }
 
-    return clusterSet;
+    return clusters;
 }
 
 template<typename BaseVecT>
 ClusterMap<Plane<BaseVecT>>
     calcRegressionPlanes(
         const BaseMesh<BaseVecT>& mesh,
-        const ClusterSet<FaceHandle>& clusterSet,
-        int minRegionSize
+        const ClusterSet<FaceHandle>& clusters,
+        int minClusterSize
     )
 {
-    ClusterMap<Plane<BaseVecT>> clusterMap;
-    size_t defaultRegionThreshold = 10 * log(mesh.numFaces());
-    size_t minRegionThresholdSize = max(static_cast<size_t>(minRegionSize), defaultRegionThreshold);
+    ClusterMap<Plane<BaseVecT>> planes;
+    size_t defaultClusterThreshold = 10 * log(mesh.numFaces());
+    size_t minClusterThresholdSize = max(static_cast<size_t>(minClusterSize), defaultClusterThreshold);
 
     // For all clusters in cluster set
-    for (auto clusterH: clusterSet)
+    for (auto clusterH: clusters)
     {
-        if (clusterSet[clusterH].handles.size() > minRegionThresholdSize)
+        // Get current cluster
+        auto cluster = clusters[clusterH];
+        if (cluster.handles.size() > minClusterThresholdSize)
         {
             // Calc regression plane for current cluster and add to cluster map: cluster -> plane
-            clusterMap.insert(clusterH, calcRegressionPlane(mesh, clusterSet[clusterH]));
+            planes.insert(clusterH, calcRegressionPlane(mesh, cluster));
         }
     }
 
-    return clusterMap;
+    return planes;
 }
 
 template<typename BaseVecT>
@@ -230,15 +232,15 @@ Plane<BaseVecT> calcRegressionPlane(const BaseMesh<BaseVecT>& mesh, const Cluste
 template<typename BaseVecT>
 void dragToRegressionPlanes(
     BaseMesh<BaseVecT>& mesh,
-    const ClusterSet<FaceHandle>& clusterSet,
-    const ClusterMap<Plane<BaseVecT>>& clusterMap
+    const ClusterSet<FaceHandle>& clusters,
+    const ClusterMap<Plane<BaseVecT>>& planes
 )
 {
     // For all clusters in cluster set
-    for (auto clusterH: clusterMap)
+    for (auto clusterH: planes)
     {
         // Drag all vertices of current cluster into regression plane
-        dragToRegressionPlane(mesh, clusterSet[clusterH], clusterMap[clusterH]);
+        dragToRegressionPlane(mesh, clusters[clusterH], planes[clusterH]);
     }
 }
 
@@ -263,8 +265,8 @@ void dragToRegressionPlane(
 template<typename BaseVecT>
 void debugPlanes(
     const BaseMesh<BaseVecT>& mesh,
-    const ClusterSet<FaceHandle>& clusterSet,
-    const ClusterMap<Plane<BaseVecT>>& clusterMap,
+    const ClusterSet<FaceHandle>& clusters,
+    const ClusterMap<Plane<BaseVecT>>& planes,
     string filename,
     size_t minClusterSize
 )
@@ -272,10 +274,10 @@ void debugPlanes(
     HalfEdgeMesh<BaseVecT> debugMesh;
 
     // For all clusters in cluster set
-    for (auto clusterH: clusterMap)
+    for (auto clusterH: planes)
     {
-        auto cluster = clusterSet[clusterH];
-        auto plane = clusterMap[clusterH];
+        auto cluster = clusters[clusterH];
+        auto plane = planes[clusterH];
 
         if (cluster.handles.size() < minClusterSize)
         {

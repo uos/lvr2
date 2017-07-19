@@ -17,7 +17,7 @@
  */
 
 /*
- * Debug.hpp
+ * Debug.tcc
  *
  *  @date 18.07.2017
  *  @author Johan M. von Behren <johan@vonbehren.eu>

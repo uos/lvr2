@@ -48,37 +48,42 @@ template<typename BaseVecT>
 ClusterSet<FaceHandle> planarClusterGrowing(const BaseMesh<BaseVecT>& mesh, float minSinAngle);
 
 /**
- * @brief Algorithm which generates plane clusters from the given mesh, drags points in clusters into regression planes
- *        and improves clusters iteratively.
+ * @brief Algorithm which generates planar clusters from the given mesh, drags points in clusters into regression
+ *        planes and improves clusters iteratively.
  * @param mesh
  * @param minSinAngle `1 - minSinAngle` is the allowed difference between the sin of the angle of the starting
  *                    face and all other faces in one cluster.
  * @param numIterations for cluster improvement
+ * @param minClusterSize minimum size for clusters (number of faces) for which a regression plane should be generated
  */
 template<typename BaseVecT>
-ClusterSet<FaceHandle>
-    iterativePlanarClusterGrowing(
-        BaseMesh<BaseVecT>& mesh,
-        float minSinAngle,
-        int numIterations,
-        int minRegionSize
-    );
+ClusterSet<FaceHandle> iterativePlanarClusterGrowing(
+    BaseMesh<BaseVecT>& mesh,
+    float minSinAngle,
+    int numIterations,
+    int minClusterSize
+);
 
+/// Calcs a regression plane for the given cluster
 template<typename BaseVecT>
-Plane<BaseVecT>
-    calcRegressionPlane(
-        const BaseMesh<BaseVecT>& mesh,
-        const Cluster<FaceHandle>& cluster
-    );
+Plane<BaseVecT> calcRegressionPlane(
+    const BaseMesh<BaseVecT>& mesh,
+    const Cluster<FaceHandle>& cluster
+);
 
+/**
+ * @brief Calcs regression planes for all cluster in clusters
+ * @param minClusterSize minimum size for clusters (number of faces) for which a regression plane should be generated
+ * @return map from cluster handle to its regression plane (clusterH -> Plane)
+ */
 template<typename BaseVecT>
-ClusterMap<Plane<BaseVecT>>
-    calcRegressionPlanes(
-        const BaseMesh<BaseVecT>& mesh,
-        const ClusterSet<FaceHandle>& clusterSet,
-        int minRegionSize
-    );
+ClusterMap<Plane<BaseVecT>> calcRegressionPlanes(
+    const BaseMesh<BaseVecT>& mesh,
+    const ClusterSet<FaceHandle>& clusters,
+    int minClusterSize
+);
 
+/// Drags all points from the given cluster into the given plane
 template<typename BaseVecT>
 void dragToRegressionPlane(
     BaseMesh<BaseVecT>& mesh,
@@ -86,18 +91,25 @@ void dragToRegressionPlane(
     const Plane<BaseVecT>& plane
 );
 
+/// Drags all points from the given clusters into their regression planes
 template<typename BaseVecT>
 void dragToRegressionPlanes(
     BaseMesh<BaseVecT>& mesh,
-    const ClusterSet<FaceHandle>& clusterSet,
-    const ClusterMap<Plane<BaseVecT>>& clusterMap
+    const ClusterSet<FaceHandle>& clusters,
+    const ClusterMap<Plane<BaseVecT>>& planes
 );
 
+/**
+ * @brief Creates a mesh containing the given regression planes (which match the given minimum cluster size)
+ *        as planes and saves it to a file with the given filename
+ * @param filename name for the file where the mesh containing the planes will be stored in
+ * @param minClusterSize minimum size of clusters for which the planes will be added to the mesh
+ */
 template<typename BaseVecT>
 void debugPlanes(
     const BaseMesh<BaseVecT>& mesh,
-    const ClusterSet<FaceHandle>& clusterSet,
-    const ClusterMap<Plane<BaseVecT>>& clusterMap,
+    const ClusterSet<FaceHandle>& clusters,
+    const ClusterMap<Plane<BaseVecT>>& planes,
     string filename,
     size_t minClusterSize
 );
