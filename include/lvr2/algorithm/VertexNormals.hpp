@@ -50,6 +50,7 @@ namespace lvr2
 template<typename BaseVecT>
 VertexMap<Normal<BaseVecT>> calcNormalsForMesh(
     const BaseMesh<BaseVecT>& mesh,
+    const FaceMap<Normal<BaseVecT>>& normals,
     const PointsetSurface<BaseVecT>& surface
 );
 

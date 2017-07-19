@@ -16,43 +16,33 @@
  * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA
  */
 
-
 /*
- * HalfEdgeFace.hpp
+ * Normals.hpp
  *
- *  @date 02.06.2017
- *  @author Lukas Kalbertodt <lukas.kalbertodt@gmail.com>
+ *  @date 17.06.2017
  */
 
-#ifndef LVR2_GEOMETRY_HALFEDGEFACE_H_
-#define LVR2_GEOMETRY_HALFEDGEFACE_H_
+#ifndef LVR2_ALGORITHM_NORMALS_H_
+#define LVR2_ALGORITHM_NORMALS_H_
 
-#include "BaseMesh.hpp"
+#include <lvr2/geometry/Cluster.hpp>
+#include <lvr2/geometry/ClusterSet.hpp>
 
 namespace lvr2
 {
 
-// Forward definitions
-template <typename BaseVecT> struct HalfEdge;
-template <typename BaseVecT> struct HalfEdgeVertex;
-template <typename BaseVecT> struct HalfEdgeMesh;
+template <typename BaseVecT>
+FaceMap<Normal<BaseVecT>> calcFaceNormals(const BaseMesh<BaseVecT>& mesh);
 
 template <typename BaseVecT>
-struct HalfEdgeFace
-{
-private:
-    using Edge = HalfEdge<BaseVecT>;
-    using Face = HalfEdgeFace<BaseVecT>;
-    using Vertex = HalfEdgeVertex<BaseVecT>;
-
-public:
-    HalfEdgeFace(EdgeHandle edge)
-        : edge(edge) {}
-
-    /// One of the edges bounding this face.
-    EdgeHandle edge;
-};
+optional<Normal<BaseVecT>> interpolatedVertexNormal(
+    const BaseMesh<BaseVecT>& mesh,
+    const FaceMap<Normal<BaseVecT>>& normals,
+    VertexHandle handle
+);
 
 } // namespace lvr2
 
-#endif /* LVR2_GEOMETRY_HALFEDGEFACE_H_ */
+#include <lvr2/algorithm/Normals.tcc>
+
+#endif /* LVR2_ALGORITHM_NORMALS_H_ */
