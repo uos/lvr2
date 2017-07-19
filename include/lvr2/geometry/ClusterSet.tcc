@@ -61,8 +61,13 @@ ClusterHandle ClusterSet<HandleT>::createCluster()
 template <typename HandleT>
 void ClusterSet<HandleT>::removeCluster(ClusterHandle clusterHandle)
 {
+    auto cluster = getC(clusterHandle);
+
+    // Substract number of handles in removed cluster from number of all handles in set
+    m_numHandles -= cluster.handles.size();
+
     // Remove handles in cluster from cluster map
-    for (auto handle: getC(clusterHandle).handles)
+    for (auto handle: cluster.handles)
     {
         m_clusterMap.erase(handle);
     }
@@ -77,6 +82,8 @@ ClusterHandle ClusterSet<HandleT>::addToCluster(ClusterHandle clusterHandle, Han
     getC(clusterHandle).handles.push_back(handle);
     m_clusterMap.insert(handle, clusterHandle);
 
+    ++m_numHandles;
+
     return clusterHandle;
 }
 
@@ -86,6 +93,8 @@ ClusterHandle ClusterSet<HandleT>::removeFromCluster(ClusterHandle clusterHandle
     auto handles = getC(clusterHandle).handles;
     handles.erase(remove(handles.begin(), handles.end(), handle), handles.end());
     m_clusterMap.erase(handle);
+
+    --m_numHandles;
 
     return clusterHandle;
 }
@@ -100,6 +109,19 @@ template <typename HandleT>
 size_t ClusterSet<HandleT>::numCluster() const
 {
     return m_cluster.sizeUsed();
+}
+
+template <typename HandleT>
+size_t ClusterSet<HandleT>::numHandles() const
+{
+    return m_numHandles;
+}
+
+template <typename HandleT>
+void ClusterSet<HandleT>::reserve(size_t newCap)
+{
+    m_cluster.reserve(newCap);
+    m_clusterMap.reserve(newCap);
 }
 
 ClusterSetIterator& ClusterSetIterator::operator++()

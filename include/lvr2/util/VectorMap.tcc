@@ -102,6 +102,12 @@ size_t VectorMap<KeyT, ValT>::sizeUsed() const
 }
 
 template<typename KeyT, typename ValT>
+void VectorMap<KeyT, ValT>::reserve(size_t newCap)
+{
+    m_vec.reserve(newCap);
+};
+
+template<typename KeyT, typename ValT>
 decltype(auto) VectorMap<KeyT, ValT>::begin() const
 {
     return m_vec.begin();

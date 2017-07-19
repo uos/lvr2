@@ -36,6 +36,7 @@ template<typename BaseVecT>
 VertexMap<ClusterPainter::Rgb8Color> ClusterPainter::simpsons(const BaseMesh<BaseVecT>& mesh) const
 {
     VertexMap<Rgb8Color> colorMap;
+    colorMap.reserve(m_clusterSet.numHandles() * 3);
     size_t clusterIdx = 0;
     for (auto clusterH: m_clusterSet)
     {
@@ -43,11 +44,10 @@ VertexMap<ClusterPainter::Rgb8Color> ClusterPainter::simpsons(const BaseMesh<Bas
 
         for (auto faceH: m_clusterSet[clusterH].handles)
         {
-            auto vertices = mesh.getVertexHandlesOfFace(faceH);
-
-            colorMap.insert(vertices[0], color);
-            colorMap.insert(vertices[1], color);
-            colorMap.insert(vertices[2], color);
+            for (auto vertex: mesh.getVertexHandlesOfFace(faceH))
+            {
+                colorMap.insert(vertex, color);
+            }
         }
 
         clusterIdx++;
@@ -69,6 +69,7 @@ optional<VertexMap<ClusterPainter::Rgb8Color>> ClusterPainter::fromPointCloud(
     }
 
     VertexMap<Rgb8Color> vertexMap;
+    vertexMap.reserve(mesh.numVertices());
 
     int k = 1; // k-nearest-neighbors
 

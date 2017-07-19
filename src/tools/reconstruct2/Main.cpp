@@ -180,6 +180,7 @@
 #include <lvr2/geometry/BoundingBox.hpp>
 #include <lvr2/algorithm/Planar.hpp>
 #include <lvr2/algorithm/ClusterPainter.hpp>
+#include <lvr2/algorithm/VertexNormals.hpp>
 
 #include <lvr2/reconstruction/AdaptiveKSearchSurface.hpp>
 #include <lvr2/reconstruction/BilinearFastBox.hpp>
@@ -693,19 +694,18 @@ int main(int argc, char** argv)
     //auto clusterSet = planarClusterGrowing(mesh, options.getNormalThreshold());
 
     ClusterPainter painter(clusterSet);
+    //auto colorMap = optional<VertexMap<ClusterPainter::Rgb8Color>>(painter.simpsons(mesh));
     auto colorMap = painter.fromPointCloud(mesh, surface);
 
-    // TODO: use config
-    // Texturizer texturizer(mesh, clusterSet, surface);
-    // TexturizerResult texturizerResult = texturizer.generateTextures();
-    // TODO: use result
-
+    // Calc normals for vertices
+    auto normalMap = calcNormalsForMesh(mesh, *surface);
 
     // Finalize mesh (convert it to simple `MeshBuffer`)
     FinalizeAlgorithm<Vec> finalize;
+    finalize.setNormalData(normalMap);
     if (colorMap)
     {
-        finalize.setColorData(&(colorMap.get()));
+        finalize.setColorData(*colorMap);
     }
     auto buffer = finalize.apply(mesh);
 

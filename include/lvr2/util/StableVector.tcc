@@ -138,6 +138,13 @@ void StableVector<HandleT, ElemT>::set(const HandleType& key, const ElementType&
 };
 
 template<typename HandleT, typename ElemT>
+void StableVector<HandleT, ElemT>::reserve(size_t newCap)
+{
+    m_elements.reserve(newCap);
+    m_deleted.reserve(newCap);
+};
+
+template<typename HandleT, typename ElemT>
 StableVectorIterator<HandleT> StableVector<HandleT, ElemT>::begin() const
 {
     return StableVectorIterator<HandleT>(&this->m_deleted);

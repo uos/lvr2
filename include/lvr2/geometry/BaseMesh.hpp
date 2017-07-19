@@ -31,8 +31,10 @@
 #include <array>
 #include <vector>
 #include <type_traits>
+#include <boost/optional.hpp>
 
 using std::vector;
+using boost::optional;
 
 #include "Handles.hpp"
 #include "Point.hpp"
@@ -98,6 +100,10 @@ class BaseMesh
 public:
     virtual ~BaseMesh() {}
 
+    // =======================================================================
+    // Pure virtual methods
+    // =======================================================================
+
     /**
      * @brief Adds a vertex with the given position to the mesh.
      *
@@ -147,18 +153,6 @@ public:
     virtual Normal<BaseVecT> getFaceNormal(FaceHandle handle) const = 0;
 
     /**
-     * @brief Calc and return the centroid of the requested face.
-     */
-    Point<BaseVecT> calcFaceCentroid(FaceHandle handle) const;
-
-    /**
-     * @brief Get the points of the requested face.
-     *
-     * @return The points of the vertices in counter-clockwise order.
-     */
-    virtual std::array<Point<BaseVecT>, 3> getVertexPositionsOfFace(FaceHandle handle) const = 0;
-
-    /**
      * @brief Get vertex handles of the requested face.
      *
      * @return The vertex-handles in counter-clockwise order.
@@ -171,6 +165,13 @@ public:
      * @return The face-handles of the neighbours in counter-clockwise order.
      */
     virtual vector<FaceHandle> getNeighboursOfFace(FaceHandle handle) const = 0;
+
+    /**
+     * @brief Get face handles of the faces the given vertex belongs to.
+     *
+     * @return The face-handles of the faces the given vertex belongs in counter-clockwise order.
+     */
+    virtual vector<FaceHandle> getFacesOfVertex(VertexHandle handle) const = 0;
 
     /**
      * @brief Returns an iterator to the first vertex of this mesh.
@@ -213,6 +214,29 @@ public:
      * @return When dereferenced, this iterator returns a handle to the current edge
      */
     virtual MeshHandleIteratorPtr<EdgeHandle> edgesEnd() const = 0;
+
+    // =======================================================================
+    // Provided methods (already implemented)
+    // =======================================================================
+
+    /**
+     * @brief Get the points of the requested face.
+     *
+     * @return The points of the vertices in counter-clockwise order.
+     */
+    virtual std::array<Point<BaseVecT>, 3> getVertexPositionsOfFace(FaceHandle handle) const;
+
+    /**
+     * @brief Calc and return the centroid of the requested face.
+     */
+    Point<BaseVecT> calcFaceCentroid(FaceHandle handle) const;
+
+    /**
+     * @brief Calc and return the normal of the requested vertex.
+     *
+     * The normal is calculated by averaging over the connected face normals.
+     */
+    optional<Normal<BaseVecT>> calcVertexNormal(VertexHandle handle) const;
 
     /**
      * @brief Method for usage in range-based for-loops.

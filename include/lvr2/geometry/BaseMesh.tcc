@@ -108,6 +108,18 @@ MeshHandleIteratorPtr<VertexHandle> VertexIteratorProxy<BaseVecT>::end() const
 }
 
 template <typename BaseVecT>
+std::array<Point<BaseVecT>, 3> BaseMesh<BaseVecT>::getVertexPositionsOfFace(FaceHandle handle) const
+{
+    auto handles = getVertexHandlesOfFace(handle);
+
+    auto v1 = getVertexPosition(handles[0]);
+    auto v2 = getVertexPosition(handles[1]);
+    auto v3 = getVertexPosition(handles[2]);
+
+    return {v1, v2, v3};
+}
+
+template <typename BaseVecT>
 Point<BaseVecT> BaseMesh<BaseVecT>::calcFaceCentroid(FaceHandle handle) const
 {
     auto points = this->getVertexPositionsOfFace(handle);
@@ -121,6 +133,27 @@ Point<BaseVecT> BaseMesh<BaseVecT>::calcFaceCentroid(FaceHandle handle) const
 
     // Convert to point
     return Point<BaseVecT>(centroid);
+}
+
+template <typename BaseVecT>
+optional<Normal<BaseVecT>> BaseMesh<BaseVecT>::calcVertexNormal(VertexHandle handle) const
+{
+    auto faces = getFacesOfVertex(handle);
+
+    // Return none, if vertex does not have connected faces
+    if (faces.empty())
+    {
+        return boost::none;
+    }
+
+    // Average normal over all connected faces
+    Vector<BaseVecT> v(0, 0, 0);
+    for (auto face: faces)
+    {
+        v += getFaceNormal(face).asVector();
+    }
+
+    return v.normalized();
 }
 
 } // namespace lvr2
