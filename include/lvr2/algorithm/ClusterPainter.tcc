@@ -76,12 +76,15 @@ VertexMap<ClusterPainter::Rgb8Color> ClusterPainter::fromPointCloud(
 
         for (size_t pointIdx : cv)
         {
-            // TODO: optional?? was passiert wenn keine farbe da ist?
+           // TODO: optional?? was passiert wenn keine farbe da ist?
 
-            array<uint8_t,3> colors = *(surface->pointBuffer()->getRgbColor(pointIdx));
-            r += colors[0];
-            g += colors[1];
-            b += colors[2];
+            if (surface->pointBuffer()->hasRgbColor())
+            {
+                array<uint8_t,3> colors = *(surface->pointBuffer()->getRgbColor(pointIdx));
+                r += colors[0];
+                g += colors[1];
+                b += colors[2];
+            }
         }
 
         r /= k;
