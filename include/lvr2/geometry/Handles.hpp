@@ -28,6 +28,7 @@
 #define LVR2_GEOMETRY_HANDLES_H_
 
 #include <cstdint>
+#include <functional>
 
 #include "BaseHandle.hpp"
 
@@ -180,5 +181,18 @@ std::ostream& operator<<(std::ostream& os, const OptionalVertexHandle& h)
 }
 
 } // namespace lvr2
+
+namespace std
+{
+
+template<>
+struct hash<lvr2::VertexHandle> {
+    size_t operator()(const lvr2::VertexHandle& h) const
+    {
+        return std::hash<lvr2::Index >()(h.idx());
+    }
+};
+
+} // namespace std
 
 #endif /* LVR2_GEOMETRY_HANDLES_H_ */

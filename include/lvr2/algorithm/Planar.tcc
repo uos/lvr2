@@ -28,6 +28,7 @@
 #include <complex>
 #include <vector>
 #include <sstream>
+#include <unordered_set>
 
 #include <lvr2/util/Random.hpp>
 #include <lvr2/geometry/Normal.hpp>
@@ -36,6 +37,7 @@
 #include <lvr2/geometry/BoundingBox.hpp>
 #include <lvr2/util/Debug.hpp>
 
+using std::unordered_set;
 using std::vector;
 using std::max;
 using std::log;
@@ -215,18 +217,23 @@ Plane<BaseVecT> calcRegressionPlane(
 
     // Calc average distance from plane to all points
     float planeDistance = 0;
-    size_t countVertices = 0;
+    unordered_set<VertexHandle> vertices;
+
+    // Iterate over all faces in cluster to get all vertices in plane
     for (auto faceH: cluster.handles)
     {
-        // TODO: fix double point usage
-        auto points = mesh.getVertexPositionsOfFace(faceH);
-        for (auto point: points)
+        // Iterate over all vertices of current face
+        for (auto vH: mesh.getVertexHandlesOfFace(faceH))
         {
-            planeDistance += plane.distance(point);
-            ++countVertices;
+            // If current vertex is not visited, add distance
+            if (!vertices.count(vH))
+            {
+                vertices.insert(vH);
+                planeDistance += plane.distance(mesh.getVertexPosition(vH));
+            }
         }
     }
-    float avgDistance = planeDistance / countVertices;
+    float avgDistance = planeDistance / vertices.size();
 
     // Move pos of plane to best fit
     plane.pos += (plane.normal.asVector() * avgDistance);
