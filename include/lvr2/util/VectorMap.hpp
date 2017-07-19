@@ -117,7 +117,10 @@ public:
     decltype(auto) begin() const;
     decltype(auto) end() const;
 
-    // TODO: add reserve method to reserve vector memory
+    /**
+     * @see StableVector::reserve(size_t)
+     */
+    void reserve(size_t newCap);
 };
 
 template <typename ValT>
