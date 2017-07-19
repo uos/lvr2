@@ -153,9 +153,7 @@ public:
     /**
      * @brief Increase the capacity of the vector to a value that's greater or equal to newCap.
      *
-     * If new_cap is greater than the current capacity(), new storage is allocated, otherwise the method does nothing.
-     * If newCap is greater than capacity(), all iterators are invalidated. Otherwise, no iterators or references
-     * are invalidated.
+     * If newCap is greater than the current capacity, new storage is allocated, otherwise the method does nothing.
      *
      * @param newCap new capacity of the vector
      */

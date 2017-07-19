@@ -123,7 +123,8 @@ AdaptiveKSearchSurface<BaseVecT>::AdaptiveKSearchSurface(
 //         loader->setPointArray(points, v.size());
 //         size_t n = v.size();
 
-//         cout << lvr::timestamp << "Creating pose search tree(" << m_searchTreeName << ") with " << n << " poses." << endl;
+//         cout << lvr::timestamp << "Creating pose search tree(" << m_searchTreeName << ") with "
+//             << n << " poses." << endl;
 
 // #ifdef LVR_USE_PCL
 //         if( m_searchTreeName == "pcl"  || m_searchTreeName == "PCL" )
