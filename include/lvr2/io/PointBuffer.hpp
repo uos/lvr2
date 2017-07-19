@@ -160,8 +160,8 @@ public:
     /**
      * @brief Returns the RGB color with the given index.
      */
-    optional<const typename BaseVecT::CoordType&> getRgbColor(size_t idx) const;
-    optional<typename BaseVecT::CoordType&> getRgbColor(size_t idx);
+    optional<const array<uint8_t,3>&> getRgbColor(size_t idx) const;
+    optional<array<uint8_t,3>&> getRgbColor(size_t idx);
 
     bool empty() const;
 
