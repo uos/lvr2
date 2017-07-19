@@ -2,17 +2,17 @@
 ===============================================================================
 
   FILE:  lasreader_txt.cpp
-  
+
   CONTENTS:
-  
+
     see corresponding header file
-  
+
   PROGRAMMERS:
-  
+
     martin.isenburg@gmail.com
-  
+
   COPYRIGHT:
-  
+
     (c) 2007-2011, Martin Isenburg, LASSO - tools to catch reality
 
     This is free software; you can redistribute and/or modify it under the
@@ -21,11 +21,11 @@
 
     This software is distributed WITHOUT ANY WARRANTY and without even the
     implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
-  
+
   CHANGE HISTORY:
-  
+
     see corresponding header file
-  
+
 ===============================================================================
 */
 #include "lasreader_txt.hpp"
@@ -102,9 +102,9 @@ BOOL LASreaderTXT::open(const char* file_name, const char* parse_string, I32 ski
 
 #ifdef _WIN32
   WIN32_FILE_ATTRIBUTE_DATA attr;
-	SYSTEMTIME creation;
+  SYSTEMTIME creation;
   GetFileAttributesEx(file_name, GetFileExInfoStandard, &attr);
-	FileTimeToSystemTime(&attr.ftCreationTime, &creation);
+  FileTimeToSystemTime(&attr.ftCreationTime, &creation);
   int startday[13] = {-1, 0, 31, 59, 90, 120, 151, 181, 212, 243, 273, 304, 334};
   header.file_creation_day = startday[creation.wMonth] + creation.wDay;
   header.file_creation_year = creation.wYear;
@@ -162,7 +162,7 @@ BOOL LASreaderTXT::open(const char* file_name, const char* parse_string, I32 ski
   point.init(&header, header.point_data_format, header.point_data_record_length, &header);
 
   // we do not know yet how many points to expect
-  
+
   npoints = 0;
 
   // should we perform an extra pass to fully populate the header
@@ -181,7 +181,7 @@ BOOL LASreaderTXT::open(const char* file_name, const char* parse_string, I32 ski
       parse_less = strdup(parse_string);
       for (i = 0; i < (int)strlen(parse_string); i++)
       {
-        if (parse_less[i] != 'x' && parse_less[i] != 'y' && parse_less[i] != 'z' && parse_less[i] != 'r' && (parse_less[i] < '0' || parse_less[i] > '0')) 
+        if (parse_less[i] != 'x' && parse_less[i] != 'y' && parse_less[i] != 'z' && parse_less[i] != 'r' && (parse_less[i] < '0' || parse_less[i] > '0'))
         {
           parse_less[i] = 's';
         }
@@ -222,7 +222,7 @@ BOOL LASreaderTXT::open(const char* file_name, const char* parse_string, I32 ski
       fprintf(stderr, "ERROR: could not parse any lines with '%s'\n", parse_less);
       fclose(file);
       file = 0;
-      free(parse_less);    
+      free(parse_less);
       return FALSE;
     }
 
@@ -284,9 +284,9 @@ BOOL LASreaderTXT::open(const char* file_name, const char* parse_string, I32 ski
     free(parse_less);
 
     // close the input file
-    
+
     fclose(file);
-    
+
     // populate scale and offset
 
     populate_scale_and_offset();
@@ -352,7 +352,7 @@ BOOL LASreaderTXT::open(const char* file_name, const char* parse_string, I32 ski
     this->parse_string = 0;
     return FALSE;
   }
-  
+
   if (!populated_header)
   {
     // init the bounding box that we will incrementally compute
