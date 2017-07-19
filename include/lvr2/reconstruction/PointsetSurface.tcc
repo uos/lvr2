@@ -54,7 +54,7 @@ Normal<BaseVecT> PointsetSurface<BaseVecT>::getInterpolatedNormal(Point<BaseVecT
 template<typename BaseVecT>
 const SearchTree<BaseVecT>& PointsetSurface<BaseVecT>::searchTree() const
 {
-    return m_searchTree;
+    return *m_searchTree;
 }
 
 template<typename BaseVecT>
