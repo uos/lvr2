@@ -691,8 +691,15 @@ int main(int argc, char** argv)
     //auto clusterSet = planarClusterGrowing(mesh, options.getNormalThreshold());
 
     ClusterPainter painter(clusterSet);
-    auto colorMap = painter.simpsons(mesh);
+    auto colorMap = painter.fromPointCloud(mesh, surface);
 
+    // TODO: use config
+    // Texturizer texturizer(mesh, clusterSet, surface);
+    // TexturizerResult texturizerResult = texturizer.generateTextures();
+    // TODO: use result
+
+
+    // Finalize mesh (convert it to simple `MeshBuffer`)
     FinalizeAlgorithm<Vec> finalize;
     finalize.setColorData(&colorMap);
     auto buffer = finalize.apply(mesh);
