@@ -57,14 +57,19 @@ VertexMap<ClusterPainter::Rgb8Color> ClusterPainter::simpsons(const BaseMesh<Bas
 }
 
 template<typename BaseVecT>
-VertexMap<ClusterPainter::Rgb8Color> ClusterPainter::fromPointCloud(
+optional<VertexMap<ClusterPainter::Rgb8Color>> ClusterPainter::fromPointCloud(
     const BaseMesh<BaseVecT>& mesh,
     const PointsetSurfacePtr<BaseVecT> surface) const
 {
 
-    int k = 1; // k-nearest-neighbors
+    if (!surface->pointBuffer()->hasRgbColor())
+    {
+        return boost::none;
+    }
 
     VertexMap<Rgb8Color> vertexMap;
+
+    int k = 1; // k-nearest-neighbors
 
     for (auto vertexH: mesh.vertices())
     {
@@ -76,15 +81,12 @@ VertexMap<ClusterPainter::Rgb8Color> ClusterPainter::fromPointCloud(
 
         for (size_t pointIdx : cv)
         {
-           // TODO: optional?? was passiert wenn keine farbe da ist?
 
-            if (surface->pointBuffer()->hasRgbColor())
-            {
-                array<uint8_t,3> colors = *(surface->pointBuffer()->getRgbColor(pointIdx));
-                r += colors[0];
-                g += colors[1];
-                b += colors[2];
-            }
+            array<uint8_t,3> colors = *(surface->pointBuffer()->getRgbColor(pointIdx));
+            r += colors[0];
+            g += colors[1];
+            b += colors[2];
+
         }
 
         r /= k;
@@ -97,6 +99,7 @@ VertexMap<ClusterPainter::Rgb8Color> ClusterPainter::fromPointCloud(
                 static_cast<uint8_t>(b)
             });
     }
+
 
     return vertexMap;
 }

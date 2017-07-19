@@ -701,7 +701,10 @@ int main(int argc, char** argv)
 
     // Finalize mesh (convert it to simple `MeshBuffer`)
     FinalizeAlgorithm<Vec> finalize;
-    finalize.setColorData(&colorMap);
+    if (colorMap)
+    {
+        finalize.setColorData(&(colorMap.get()));
+    }
     auto buffer = finalize.apply(mesh);
 
     // =======================================================================
