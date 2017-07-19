@@ -20,7 +20,7 @@ public:
 
 protected:
 
-    inline float toPolar(const float point[], float polar[]);
+    inline void toPolar(const float point[], float polar[]);
 
     float       m_xSize;
     float       m_ySize;

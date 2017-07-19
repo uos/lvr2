@@ -90,6 +90,7 @@ ModelPtr LasIO::read(string filename )
     else
     {
         cout << timestamp << "LasIO::read(): Unable to open file " << filename << endl;
+        return ModelPtr();
     }
 }
 

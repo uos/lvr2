@@ -142,7 +142,7 @@ public:
   inline void transform(LASpoint* point) const {
     point->set_x((point->get_x()+offset)*scale);
   };
-  LASoperationTranslateThenScaleX(F64 offset, F64 scale_factor) { this->offset = offset; this->scale = scale; };
+  LASoperationTranslateThenScaleX(F64 offset, F64 scale_factor) { this->offset = offset; };
 private:
   F64 offset;
   F64 scale;

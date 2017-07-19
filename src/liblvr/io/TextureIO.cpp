@@ -72,7 +72,7 @@ TextureIO::TextureIO(string filename)
 			in.read((char*)&ui8buf, 1);	
 			t->m_numChannels = (ui8buf & 0xf0) >> 4;
 			t->m_numBytesPerChan = (ui8buf & 0x0e) >> 1;
-			t->m_isPattern = ui8buf & 0x01 == 1;
+			t->m_isPattern = (ui8buf & 0x01) == 1;
 			
 			//allocate memory for the image data
 			t->m_data = new unsigned char[t->m_width * t->m_height * t->m_numChannels * t->m_numBytesPerChan];

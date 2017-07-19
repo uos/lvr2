@@ -51,6 +51,7 @@ class BaseIO
 {
     public:
         BaseIO() {}
+        virtual ~BaseIO() {};
 
         /**
          * \brief Parse the given file and load supported elements.
