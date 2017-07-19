@@ -17,7 +17,7 @@
  */
 
 /*
- * Planar.hpp
+ * Planar.tcc
  *
  *  @date 14.07.2017
  *  @author Johan M. von Behren <johan@vonbehren.eu>
