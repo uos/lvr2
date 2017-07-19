@@ -45,7 +45,10 @@ namespace lvr2
  *                    face and all other faces in one cluster.
  */
 template<typename BaseVecT>
-ClusterSet<FaceHandle> planarClusterGrowing(const BaseMesh<BaseVecT>& mesh, float minSinAngle);
+ClusterSet<FaceHandle> planarClusterGrowing(
+    const BaseMesh<BaseVecT>& mesh,
+    float minSinAngle
+);
 
 /**
  * @brief Algorithm which generates planar clusters from the given mesh, drags points in clusters into regression
