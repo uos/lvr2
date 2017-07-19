@@ -100,6 +100,10 @@ class BaseMesh
 public:
     virtual ~BaseMesh() {}
 
+    // =======================================================================
+    // Pure virtual methods
+    // =======================================================================
+
     /**
      * @brief Adds a vertex with the given position to the mesh.
      *
@@ -147,18 +151,6 @@ public:
      * @brief Get the normal of the requested face.
      */
     virtual Normal<BaseVecT> getFaceNormal(FaceHandle handle) const = 0;
-
-    /**
-     * @brief Calc and return the centroid of the requested face.
-     */
-    Point<BaseVecT> calcFaceCentroid(FaceHandle handle) const;
-
-    /**
-     * @brief Calc and return the normal of the requested vertex.
-     *
-     * The normal is calculated by averaging over the connected face normals.
-     */
-    optional<Normal<BaseVecT>> calcVertexNormal(VertexHandle handle) const;
 
     /**
      * @brief Get the points of the requested face.
@@ -229,6 +221,22 @@ public:
      * @return When dereferenced, this iterator returns a handle to the current edge
      */
     virtual MeshHandleIteratorPtr<EdgeHandle> edgesEnd() const = 0;
+
+    // =======================================================================
+    // Provided methods (already implemented)
+    // =======================================================================
+
+    /**
+     * @brief Calc and return the centroid of the requested face.
+     */
+    Point<BaseVecT> calcFaceCentroid(FaceHandle handle) const;
+
+    /**
+     * @brief Calc and return the normal of the requested vertex.
+     *
+     * The normal is calculated by averaging over the connected face normals.
+     */
+    optional<Normal<BaseVecT>> calcVertexNormal(VertexHandle handle) const;
 
     /**
      * @brief Method for usage in range-based for-loops.
