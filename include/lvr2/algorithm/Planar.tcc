@@ -55,7 +55,7 @@ ClusterSet<FaceHandle> planarClusterGrowing(
     // Iterate over all faces
     for (auto faceH: mesh.faces())
     {
-        // Check if face is in a cluster (e.g. we have not visited it)
+        // Check if face is in a cluster (i.e. we have not visited it)
         if (!visited[faceH])
         {
             // We found a face yet to be visited. Prepare things for growing.
