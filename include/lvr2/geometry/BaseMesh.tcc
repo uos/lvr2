@@ -123,4 +123,25 @@ Point<BaseVecT> BaseMesh<BaseVecT>::calcFaceCentroid(FaceHandle handle) const
     return Point<BaseVecT>(centroid);
 }
 
+template <typename BaseVecT>
+optional<Normal<BaseVecT>> BaseMesh<BaseVecT>::calcVertexNormal(VertexHandle handle) const
+{
+    auto faces = getFacesOfVertex(handle);
+
+    // Return none, if vertex does not have connected faces
+    if (faces.empty())
+    {
+        return boost::none;
+    }
+
+    // Average normal over all connected faces
+    Vector<BaseVecT> v(0, 0, 0);
+    for (auto face: faces)
+    {
+        v += getFaceNormal(face).asVector();
+    }
+
+    return v.normalized();
+}
+
 } // namespace lvr2

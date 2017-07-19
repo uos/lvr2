@@ -415,6 +415,24 @@ std::vector<FaceHandle>
     return neighbours;
 }
 
+template <typename BaseVecT>
+vector<FaceHandle> HalfEdgeMesh<BaseVecT>::getFacesOfVertex(VertexHandle handle) const
+{
+    vector<FaceHandle> faces;
+
+    // Iterate over all
+    findEdgeAroundVertex(handle, [&faces, this](auto eH)
+    {
+        auto edge = getE(eH);
+        if (edge.face)
+        {
+            faces.push_back(edge.face.unwrap());
+        }
+        return true;
+    });
+    return faces;
+}
+
 // ========================================================================
 // = Other public methods
 // ========================================================================

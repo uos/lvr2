@@ -31,8 +31,10 @@
 #include <array>
 #include <vector>
 #include <type_traits>
+#include <boost/optional.hpp>
 
 using std::vector;
+using boost::optional;
 
 #include "Handles.hpp"
 #include "Point.hpp"
@@ -152,6 +154,13 @@ public:
     Point<BaseVecT> calcFaceCentroid(FaceHandle handle) const;
 
     /**
+     * @brief Calc and return the normal of the requested vertex.
+     *
+     * The normal is calculated by averaging over the connected face normals.
+     */
+    optional<Normal<BaseVecT>> calcVertexNormal(VertexHandle handle) const;
+
+    /**
      * @brief Get the points of the requested face.
      *
      * @return The points of the vertices in counter-clockwise order.
@@ -171,6 +180,13 @@ public:
      * @return The face-handles of the neighbours in counter-clockwise order.
      */
     virtual vector<FaceHandle> getNeighboursOfFace(FaceHandle handle) const = 0;
+
+    /**
+     * @brief Get face handles of the faces the given vertex belongs to.
+     *
+     * @return The face-handles of the faces the given vertex belongs in counter-clockwise order.
+     */
+    virtual vector<FaceHandle> getFacesOfVertex(VertexHandle handle) const = 0;
 
     /**
      * @brief Returns an iterator to the first vertex of this mesh.
