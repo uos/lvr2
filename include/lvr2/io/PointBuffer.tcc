@@ -282,7 +282,7 @@ void PointBuffer<BaseVecT>::addRgbColorChannel(array<uint8_t, 3> init)
 }
 
 template <typename BaseVecT>
-optional<const typename BaseVecT::CoordType&> PointBuffer<BaseVecT>::getRgbColor(size_t idx) const
+optional<const array<uint8_t,3>&> PointBuffer<BaseVecT>::getRgbColor(size_t idx) const
 {
     if (!hasRgbColor())
     {
@@ -291,7 +291,7 @@ optional<const typename BaseVecT::CoordType&> PointBuffer<BaseVecT>::getRgbColor
     return (*m_rgbColors)[idx];
 }
 template <typename BaseVecT>
-optional<typename BaseVecT::CoordType&> PointBuffer<BaseVecT>::getRgbColor(size_t idx)
+optional<array<uint8_t,3>&> PointBuffer<BaseVecT>::getRgbColor(size_t idx)
 {
     if (!hasRgbColor())
     {
