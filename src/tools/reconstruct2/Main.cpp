@@ -504,6 +504,8 @@ std::pair<shared_ptr<GridBase>, unique_ptr<FastReconstructionBase<Vec>>>
         cout << "Decomposition type 'SF' is not implemented yet!" << endl;
         panic_unimplemented("decomposition type 'SF'");
     }
+
+    return make_pair(nullptr, nullptr);
 }
 
 void setTextureOptions(const reconstruct::Options& options)

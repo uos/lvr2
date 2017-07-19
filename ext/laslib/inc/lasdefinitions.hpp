@@ -2,9 +2,9 @@
 ===============================================================================
 
   FILE:  LASdefinitions.hpp
-  
+
   CONTENTS:
-  
+
     Contains the Header and Point classes for reading and writing LIDAR points
     in the LAS format
 
@@ -15,9 +15,9 @@
       Version 1.0,   May 09, 2003
 
   PROGRAMMERS:
-  
+
     martin.isenburg@gmail.com
-  
+
   COPYRIGHT:
 
     (c) 2005-2011, Martin Isenburg, LASSO - tools to catch reality
@@ -28,17 +28,17 @@
 
     This software is distributed WITHOUT ANY WARRANTY and without even the
     implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
-  
+
   CHANGE HISTORY:
-  
-    21 December 2011 -- support for LAS 1.4 and attributed extra bytes 
+
+    21 December 2011 -- support for LAS 1.4 and attributed extra bytes
     10 January 2011 -- licensing change for LGPL release and liblas integration
     16 December 2010 -- updated to support generic LASitem point formats
     3 December 2010 -- updated to (somewhat) support LAS format 1.3
-    7 September 2008 -- updated to support LAS format 1.2 
+    7 September 2008 -- updated to support LAS format 1.2
     11 June 2007 -- number of return / scan direction bitfield order was wrong
     18 February 2007 -- created after repairing 2 vacuum cleaners in the garden
-  
+
 ===============================================================================
 */
 #ifndef LAS_DEFINITIONS_HPP
@@ -454,13 +454,15 @@ public:
       free(extra_attribute_array_offsets); extra_attribute_array_offsets = 0;
       free(extra_attribute_sizes); extra_attribute_sizes = 0;
     }
+
+    return TRUE;
   }
 
   BOOL remove_extra_attribute(const char* name)
   {
     I32 index = get_extra_attribute_index(name);
     if (index != -1)
-    { 
+    {
       return remove_extra_attribute(index);
     }
     return FALSE;
@@ -792,7 +794,7 @@ public:
     have_wavepacket = FALSE;
     extra_bytes_number = 0;
     total_point_size = 0;
-    
+
     num_items = 0;
     if (items) delete [] items;
     items = 0;
@@ -842,7 +844,7 @@ public:
     memcpy(data, extra_bytes + attributer->extra_attribute_array_offsets[index], attributer->extra_attribute_sizes[index]);
   }
 
-  inline void set_extra_attribute(I32 index, const U8* data) 
+  inline void set_extra_attribute(I32 index, const U8* data)
   {
     memcpy(extra_bytes + attributer->extra_attribute_array_offsets[index], data, attributer->extra_attribute_sizes[index]);
   }
@@ -880,7 +882,7 @@ class LASvlr
 {
 public:
   U16 reserved;
-  I8 user_id[16]; 
+  I8 user_id[16];
   U16 record_id;
   U16 record_length_after_header;
   I8 description[32];

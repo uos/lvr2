@@ -186,7 +186,9 @@ include_directories(${OPENGL_INCLUDE_DIR})
 if(APPLE)
   include_directories(/System/Library/Frameworks/GLUT.framework/Headers)
   include_directories(/System/Library/Frameworks/OpenGL.framework/Headers)
-  link_directories(/opt/local/lib)
+  IF(EXISTS "/opt/local/lib")
+    link_directories(/opt/local/lib)
+  endif()
 endif(APPLE)
 
 ####
