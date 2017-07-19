@@ -38,12 +38,14 @@ template<typename KeyT, typename ValT>
 void VectorMap<KeyT, ValT>::insert(const KeyType& key, const ValueType& value)
 {
     // Check if elements vector is large enough
-    while (m_vec.size() < key.idx())
+    // TODO: enhance insert -> delete stuff
+    while (m_vec.size() <= key.idx())
     {
         auto h = m_vec.push_back(Wrapper());
         m_vec.erase(h);
     }
-    m_vec.push_back(Wrapper(value));
+
+    m_vec.set(key, value);
 }
 
 template<typename KeyT, typename ValT>

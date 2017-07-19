@@ -84,6 +84,7 @@ public:
     size_t numVertices() const final;
     size_t numFaces() const final;
     Point<BaseVecT> getVertexPosition(VertexHandle handle) const final;
+    Point<BaseVecT>& vertexPosition(VertexHandle handle) final;
     Normal<BaseVecT> getFaceNormal(FaceHandle handle) const final;
     std::array<Point<BaseVecT>, 3> getVertexPositionsOfFace(FaceHandle handle) const final;
     std::array<VertexHandle, 3> getVertexHandlesOfFace(FaceHandle handle) const final;
