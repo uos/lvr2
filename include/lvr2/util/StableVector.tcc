@@ -153,7 +153,7 @@ template <typename HandleT>
 StableVectorIterator<HandleT>::StableVectorIterator(const vector<bool>* deleted, bool startAtEnd)
     : m_deleted(deleted), m_pos(startAtEnd ? deleted->size() : 0)
 {
-    if (m_pos == 0 && (*m_deleted)[0])
+    if (m_pos == 0 && !m_deleted->empty() && (*m_deleted)[0])
     {
         ++(*this);
     }
