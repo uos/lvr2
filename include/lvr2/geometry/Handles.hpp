@@ -189,7 +189,23 @@ template<>
 struct hash<lvr2::VertexHandle> {
     size_t operator()(const lvr2::VertexHandle& h) const
     {
-        return std::hash<lvr2::Index >()(h.idx());
+        return std::hash<lvr2::Index>()(h.idx());
+    }
+};
+
+template<>
+struct hash<lvr2::EdgeHandle> {
+    size_t operator()(const lvr2::EdgeHandle& h) const
+    {
+        return std::hash<lvr2::Index>()(h.idx());
+    }
+};
+
+template<>
+struct hash<lvr2::FaceHandle> {
+    size_t operator()(const lvr2::FaceHandle& h) const
+    {
+        return std::hash<lvr2::Index>()(h.idx());
     }
 };
 
