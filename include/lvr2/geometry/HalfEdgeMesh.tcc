@@ -416,7 +416,7 @@ vector<FaceHandle> HalfEdgeMesh<BaseVecT>::getFacesOfVertex(VertexHandle handle)
         {
             faces.push_back(edge.face.unwrap());
         }
-        return true;
+        return false;
     });
     return faces;
 }
