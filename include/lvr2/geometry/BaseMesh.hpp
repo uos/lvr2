@@ -38,7 +38,6 @@ using boost::optional;
 
 #include "Handles.hpp"
 #include "Point.hpp"
-#include "Normal.hpp"
 
 namespace lvr2
 {
@@ -148,11 +147,6 @@ public:
     virtual Point<BaseVecT>& vertexPosition(VertexHandle handle) = 0;
 
     /**
-     * @brief Get the normal of the requested face.
-     */
-    virtual Normal<BaseVecT> getFaceNormal(FaceHandle handle) const = 0;
-
-    /**
      * @brief Get vertex handles of the requested face.
      *
      * @return The vertex-handles in counter-clockwise order.
@@ -230,13 +224,6 @@ public:
      * @brief Calc and return the centroid of the requested face.
      */
     Point<BaseVecT> calcFaceCentroid(FaceHandle handle) const;
-
-    /**
-     * @brief Calc and return the normal of the requested vertex.
-     *
-     * The normal is calculated by averaging over the connected face normals.
-     */
-    optional<Normal<BaseVecT>> calcVertexNormal(VertexHandle handle) const;
 
     /**
      * @brief Method for usage in range-based for-loops.

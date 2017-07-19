@@ -177,6 +177,7 @@
 #include <lvr2/util/StableVector.hpp>
 #include <lvr2/util/VectorMap.hpp>
 #include <lvr2/algorithm/FinalizeAlgorithm.hpp>
+#include <lvr2/algorithm/Normals.hpp>
 #include <lvr2/geometry/BoundingBox.hpp>
 #include <lvr2/algorithm/Planar.hpp>
 #include <lvr2/algorithm/ClusterPainter.hpp>
@@ -392,7 +393,8 @@ void testClusterGrowing()
 {
     lvr2::HalfEdgeMesh<lvr2::BaseVector<float>> mesh;
     createHouseFromNikolaus(mesh);
-    auto clusterSet = planarClusterGrowing(mesh, 0.999);
+    auto normals = calcFaceNormals(mesh);
+    auto clusterSet = planarClusterGrowing(mesh, normals, 0.999);
     cout << "Generated " << clusterSet.numCluster() << " clusters." << endl;
 }
 
@@ -684,8 +686,10 @@ int main(int argc, char** argv)
     //     mesh.fillHoles(options.getFillHoles());
     // }
 
+    auto normals = calcFaceNormals(mesh);
     auto clusterSet = iterativePlanarClusterGrowing(
         mesh,
+        normals,
         options.getNormalThreshold(),
         options.getPlaneIterations(),
         options.getMinPlaneSize()
@@ -698,7 +702,7 @@ int main(int argc, char** argv)
     auto colorMap = painter.fromPointCloud(mesh, surface);
 
     // Calc normals for vertices
-    auto normalMap = calcNormalsForMesh(mesh, *surface);
+    auto normalMap = calcNormalsForMesh(mesh, normals, *surface);
 
     // Finalize mesh (convert it to simple `MeshBuffer`)
     FinalizeAlgorithm<Vec> finalize;

@@ -28,6 +28,7 @@
 using std::vector;
 
 #include <lvr2/util/Panic.hpp>
+#include <lvr2/algorithm/Normals.hpp>
 
 namespace lvr2
 {
@@ -35,6 +36,7 @@ namespace lvr2
 template<typename BaseVecT>
 VertexMap<Normal<BaseVecT>> calcNormalsForMesh(
     const BaseMesh<BaseVecT>& mesh,
+    const FaceMap<Normal<BaseVecT>>& normals,
     const PointsetSurface<BaseVecT>& surface
 )
 {
@@ -44,7 +46,7 @@ VertexMap<Normal<BaseVecT>> calcNormalsForMesh(
     for (auto vH: mesh.vertices())
     {
         // Use averaged normals from adjacent faces
-        if (auto normal = mesh.calcVertexNormal(vH))
+        if (auto normal = interpolatedVertexNormal(mesh, normals, vH))
         {
             normalMap.insert(vH, *normal);
         }

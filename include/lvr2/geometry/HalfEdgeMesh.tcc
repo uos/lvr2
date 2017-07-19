@@ -84,11 +84,8 @@ FaceHandle HalfEdgeMesh<BaseVecT>::addFace(VertexHandle v1H, VertexHandle v2H, V
     // =======================================================================
     // = Create face
     // =======================================================================
-    // Calc normal
-    auto normal = (v1.pos - v2.pos).cross(v1.pos - v3.pos);
-
     FaceHandle newFaceH = m_faces.nextHandle();
-    Face f(eInner1H, Normal<BaseVecT>(normal));
+    Face f(eInner1H);
     m_faces.push_back(f);
 
     // Set face handle of edges
@@ -361,12 +358,6 @@ std::array<VertexHandle, 3>
     auto e3 = getE(e2.next);
 
     return {e1.target, e2.target, e3.target};
-}
-
-template <typename BaseVecT>
-Normal<BaseVecT> HalfEdgeMesh<BaseVecT>::getFaceNormal(FaceHandle handle) const
-{
-    return getF(handle).normal;
 }
 
 template <typename BaseVecT>
