@@ -33,20 +33,21 @@ template<typename BaseVecT>
 boost::shared_ptr<lvr::MeshBuffer> FinalizeAlgorithm<BaseVecT>::apply(const BaseMesh <BaseVecT>& mesh)
 {
     // Create vertex and normal buffer
+    VertexMap<size_t> idxMap;
     std::vector<float> vertices;
     vertices.reserve(mesh.numVertices() * 3);
+
     std::vector<float> normals;
-    normals.reserve(mesh.numVertices() * 3);
-    VertexMap<size_t> idxMap;
+    if (m_normalData)
+    {
+        normals.reserve(mesh.numVertices() * 3);
+    }
 
     std::vector<unsigned char> colors;
     if (m_colorData)
     {
         colors.reserve(mesh.numVertices() * 3);
     }
-
-    // TODO: use real normal
-    Normal<BaseVecT> normal(0, 1, 0);
 
     size_t vertexCount = 0;
     for (auto vH : mesh.vertices())
@@ -57,9 +58,13 @@ boost::shared_ptr<lvr::MeshBuffer> FinalizeAlgorithm<BaseVecT>::apply(const Base
         vertices.push_back(point.y);
         vertices.push_back(point.z);
 
-        normals.push_back(normal.getX());
-        normals.push_back(normal.getY());
-        normals.push_back(normal.getZ());
+        if (m_normalData)
+        {
+            auto normal = (*m_normalData)[vH];
+            normals.push_back(normal.getX());
+            normals.push_back(normal.getY());
+            normals.push_back(normal.getZ());
+        }
 
         if (m_colorData)
         {
@@ -87,8 +92,12 @@ boost::shared_ptr<lvr::MeshBuffer> FinalizeAlgorithm<BaseVecT>::apply(const Base
 
     auto buffer = boost::make_shared<lvr::MeshBuffer>();
     buffer->setVertexArray(vertices);
-    buffer->setVertexNormalArray(normals);
     buffer->setFaceArray(faces);
+
+    if (m_normalData)
+    {
+        buffer->setVertexNormalArray(normals);
+    }
 
     if (m_colorData)
     {
@@ -99,9 +108,15 @@ boost::shared_ptr<lvr::MeshBuffer> FinalizeAlgorithm<BaseVecT>::apply(const Base
 }
 
 template<typename BaseVecT>
-void FinalizeAlgorithm<BaseVecT>::setColorData(const VertexMap<ClusterPainter::Rgb8Color>* colorData)
+void FinalizeAlgorithm<BaseVecT>::setColorData(const VertexMap<ClusterPainter::Rgb8Color>& colorData)
 {
     m_colorData = colorData;
+}
+
+template<typename BaseVecT>
+void FinalizeAlgorithm<BaseVecT>::setNormalData(const VertexMap<Normal<BaseVecT>>& normalData)
+{
+    m_normalData = normalData;
 }
 
 } // namespace lvr2

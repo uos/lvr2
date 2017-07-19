@@ -28,10 +28,15 @@
 
 #include <boost/shared_ptr.hpp>
 #include <boost/smart_ptr/make_shared.hpp>
+#include <boost/optional.hpp>
+
+using boost::optional;
 
 #include <lvr2/geometry/BaseMesh.hpp>
 #include <lvr/io/MeshBuffer.hpp>
 #include "ClusterPainter.hpp"
+#include <lvr2/geometry/Normal.hpp>
+#include <lvr2/util/VectorMap.hpp>
 
 namespace lvr2
 {
@@ -43,12 +48,15 @@ template<typename BaseVecT>
 class FinalizeAlgorithm
 {
 private:
-    const VertexMap<ClusterPainter::Rgb8Color>* m_colorData;
+    optional<const VertexMap<ClusterPainter::Rgb8Color>&> m_colorData;
+    optional<const VertexMap<Normal<BaseVecT>>&> m_normalData;
+
 public:
-    FinalizeAlgorithm() : m_colorData(nullptr) {};
+    FinalizeAlgorithm() {};
 
     boost::shared_ptr<lvr::MeshBuffer> apply(const BaseMesh<BaseVecT>& mesh);
-    void setColorData(const VertexMap<ClusterPainter::Rgb8Color>* colorData);
+    void setColorData(const VertexMap<ClusterPainter::Rgb8Color>& colorData);
+    void setNormalData(const VertexMap<Normal<BaseVecT>>& normalData);
 };
 
 } // namespace lvr2
