@@ -38,7 +38,7 @@ void SearchTree<BaseVecT>::kSearch(
     const Point<BaseVecT> &qp,
     int neighbours,
     vector<size_t>& indices
-)
+) const
 {
     vector<float> distances;
     this->kSearch(qp, neighbours, indices, distances);
