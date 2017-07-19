@@ -57,17 +57,17 @@ VertexMap<ClusterPainter::Rgb8Color> ClusterPainter::simpsons(const BaseMesh<Bas
 }
 
 template<typename BaseVecT>
-VertexMap<ClusterPainter::Rgb8Color> ClusterPainter::fromPointCloud(const BaseMesh<BaseVecT>& mesh, const PointsetSurfacePtr<BaseVecT> surface) const
+VertexMap<ClusterPainter::Rgb8Color> ClusterPainter::fromPointCloud(
+    const BaseMesh<BaseVecT>& mesh,
+    const PointsetSurfacePtr<BaseVecT> surface) const
 {
 
     int k = 1; // k-nearest-neighbors
 
     VertexMap<Rgb8Color> vertexMap;
 
-    // for each cluster
     for (auto vertexH: mesh.vertices())
     {
-
         vector<size_t> cv;
         Point<BaseVecT> p = mesh.getVertexPosition(vertexH);
         surface->searchTree().kSearch(p, k, cv);
@@ -88,10 +88,11 @@ VertexMap<ClusterPainter::Rgb8Color> ClusterPainter::fromPointCloud(const BaseMe
         g /= k;
         b /= k;
 
-        vertexMap.insert(vertexH, {static_cast<uint8_t>(r),static_cast<uint8_t>(g),static_cast<uint8_t>(b)});
-
-        // cout << "RGB: " << r << " " << g << " " << b << endl;
-
+        vertexMap.insert(vertexH, {
+                static_cast<uint8_t>(r),
+                static_cast<uint8_t>(g),
+                static_cast<uint8_t>(b)
+            });
     }
 
     return vertexMap;
