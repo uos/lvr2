@@ -54,7 +54,8 @@ public:
     template<typename BaseVecT>
     optional<VertexMap<Rgb8Color>> fromPointCloud(
         const BaseMesh<BaseVecT>& mesh,
-        const PointsetSurfacePtr<BaseVecT> surface) const;
+        const PointsetSurfacePtr<BaseVecT> surface
+    ) const;
 
 private:
     ClusterSet<FaceHandle> m_clusterSet;
