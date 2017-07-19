@@ -102,6 +102,13 @@ size_t ClusterSet<HandleT>::numCluster() const
     return m_cluster.sizeUsed();
 }
 
+template <typename HandleT>
+void ClusterSet<HandleT>::reserve(size_t newCap)
+{
+    m_cluster.reserve(newCap);
+    m_clusterMap.reserve(newCap);
+}
+
 ClusterSetIterator& ClusterSetIterator::operator++()
 {
     ++m_iterator;
