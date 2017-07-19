@@ -403,6 +403,9 @@ std::vector<FaceHandle>
     return neighbours;
 }
 
+// TODO: Maybe we want to change the interface here. Passing a mutable ref to a
+// vector into the method can improve performance a lot. With the current
+// design, each function call implies a heap allocation.
 template <typename BaseVecT>
 vector<FaceHandle> HalfEdgeMesh<BaseVecT>::getFacesOfVertex(VertexHandle handle) const
 {
