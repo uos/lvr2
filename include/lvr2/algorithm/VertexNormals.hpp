@@ -39,11 +39,13 @@ namespace lvr2
 // ==========================================================================
 
 /**
- * @brief
- * @tparam BaseVecT
- * @param mesh
- * @param normal
- * @return
+ * @brief Calculates a normal for each vertex in the mesh.
+ *
+ * The normal is calculated by first attempting to interpolate from the
+ * adjacent faces. If a vertex doesn't have adjacent faces, the normal from
+ * the nearest point in the point cloud is used.
+ *
+ * @param surface A point cloud with normal information
  */
 template<typename BaseVecT>
 VertexMap<Normal<BaseVecT>> calcNormalsForMesh(

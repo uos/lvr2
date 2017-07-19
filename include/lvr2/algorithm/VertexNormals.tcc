@@ -51,6 +51,9 @@ VertexMap<Normal<BaseVecT>> calcNormalsForMesh(
             // Fall back to normals from point cloud
             if (!surface.pointBuffer()->hasNormals())
             {
+                // The panic is justified here: in the process of creating the
+                // mesh, normals have to be estimated. These normals are
+                // written to the point buffer.
                 panic("the point buffer needs normals!");
             }
 
