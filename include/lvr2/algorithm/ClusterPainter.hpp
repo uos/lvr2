@@ -33,6 +33,7 @@ using std::array;
 
 #include <lvr2/geometry/Handles.hpp>
 #include <lvr2/geometry/ClusterSet.hpp>
+#include <lvr2/reconstruction/PointsetSurface.hpp>
 #include <lvr2/util/VectorMap.hpp>
 
 namespace lvr2
@@ -49,6 +50,13 @@ public:
 
     template<typename BaseVecT>
     VertexMap<Rgb8Color> simpsons(const BaseMesh<BaseVecT>& mesh) const;
+
+    template<typename BaseVecT>
+    optional<VertexMap<Rgb8Color>> fromPointCloud(
+        const BaseMesh<BaseVecT>& mesh,
+        const PointsetSurfacePtr<BaseVecT> surface
+    ) const;
+
 private:
     ClusterSet<FaceHandle> m_clusterSet;
     Rgb8Color getSimpsonColorForIdx(size_t idx) const;

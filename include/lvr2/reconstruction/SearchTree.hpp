@@ -61,7 +61,7 @@ public:
         int k,
         vector<size_t>& indices,
         vector<typename BaseVecT::CoordType>& distances
-    ) = 0;
+    ) const = 0;
 
     /**
      * @brief Returns all points within the radius `r` of `qp`.
@@ -75,14 +75,14 @@ public:
         const Point<BaseVecT>& qp,
         typename BaseVecT::CoordType r,
         vector<size_t>& indices
-    ) = 0;
+    ) const = 0;
 
     /// Like the other overload, but ignoring the `distances` vector.
     virtual void kSearch(
         const Point<BaseVecT>& qp,
         int k,
         vector<size_t>& indices
-    );
+    ) const;
 
     // /**
     //  * @brief Set the number of neighbours used to estimate and interpolate normals.
