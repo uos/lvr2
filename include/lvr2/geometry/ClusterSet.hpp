@@ -115,6 +115,11 @@ public:
     /// Request the value behind the given key
     const Cluster<HandleT>& operator[](ClusterHandle clusterHandle) const;
 
+    /**
+     * @see StableVector::reserve(size_t)
+     */
+    void reserve(size_t newCap);
+
 private:
     /// Clusters
     StableVector<ClusterHandle, Cluster<HandleT>> m_cluster;
