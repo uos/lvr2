@@ -111,6 +111,12 @@ class ClusterHandle : public BaseHandle<Index>
     using BaseHandle<Index>::BaseHandle;
 };
 
+/// Handle to access textures of the mesh
+class TextureHandle : public BaseHandle<Index>
+{
+    using BaseHandle<Index>::BaseHandle;
+};
+
 /// Semantically equivalent to `boost::optional<EdgeHandle>`
 class OptionalEdgeHandle : public BaseOptionalHandle<Index, EdgeHandle>
 {
