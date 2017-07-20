@@ -21,7 +21,9 @@
  *
  * Collection of algorithms for normal calculation.
  *
- *  @date 17.06.2017
+ * @date 19.07.2017
+ * @author Lukas Kalbertodt <lukas.kalbertodt@gmail.com>
+ * @author Johan M. von Behren <johan@vonbehren.eu>
  */
 
 #ifndef LVR2_ALGORITHM_NORMALS_H_
@@ -42,15 +44,14 @@ namespace lvr2
  *
  * A face's normal is calculated based on the position of its three vertices.
  */
-template <typename BaseVecT>
+template<typename BaseVecT>
 FaceMap<Normal<BaseVecT>> calcFaceNormals(const BaseMesh<BaseVecT>& mesh);
-
 
 /**
  * @brief Returns a vertex normal for the given vertex interpolated from the
  *        normals of its adjacent faces.
  */
-template <typename BaseVecT>
+template<typename BaseVecT>
 optional<Normal<BaseVecT>> interpolatedVertexNormal(
     const BaseMesh<BaseVecT>& mesh,
     const FaceMap<Normal<BaseVecT>>& normals,

@@ -19,8 +19,10 @@
 /*
  * Debug.hpp
  *
- *  @date 18.07.2017
- *  @author Johan M. von Behren <johan@vonbehren.eu>
+ * Collection of functions to debug mesh generation.
+ *
+ * @date 18.07.2017
+ * @author Johan M. von Behren <johan@vonbehren.eu>
  */
 
 #ifndef LVR2_UTIL_DEBUG_H_
@@ -39,9 +41,6 @@ using std::string;
 namespace lvr2
 {
 
-// ==========================================================================
-// Collection of functions to debug mesh generation.
-// ==========================================================================
 inline std::ostream& dout()
 {
     // To have a "null" ostream, it's apparently a good idea to use an
