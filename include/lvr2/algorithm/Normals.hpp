@@ -37,9 +37,19 @@
 namespace lvr2
 {
 
+/**
+ * @brief Calculates a normal for each face in the mesh.
+ *
+ * A face's normal is calculated based on the position of its three vertices.
+ */
 template <typename BaseVecT>
 FaceMap<Normal<BaseVecT>> calcFaceNormals(const BaseMesh<BaseVecT>& mesh);
 
+
+/**
+ * @brief Returns a vertex normal for the given vertex interpolated from the
+ *        normals of its adjacent faces.
+ */
 template <typename BaseVecT>
 optional<Normal<BaseVecT>> interpolatedVertexNormal(
     const BaseMesh<BaseVecT>& mesh,
