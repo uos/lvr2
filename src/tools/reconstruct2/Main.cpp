@@ -701,11 +701,11 @@ int main(int argc, char** argv)
     auto colorMap = painter.fromPointCloud(mesh, surface);
 
     // Calc normals for vertices
-    auto vertexNormal = calcVertexNormals(mesh, faceNormals, *surface);
+    auto vertexNormals = calcVertexNormals(mesh, faceNormals, *surface);
 
     // Finalize mesh (convert it to simple `MeshBuffer`)
     FinalizeAlgorithm<Vec> finalize;
-    finalize.setNormalData(vertexNormal);
+    finalize.setNormalData(vertexNormals);
     if (colorMap)
     {
         finalize.setColorData(*colorMap);
