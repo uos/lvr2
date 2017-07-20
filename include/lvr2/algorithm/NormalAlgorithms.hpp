@@ -17,7 +17,7 @@
  */
 
 /*
- * Normals.hpp
+ * NormalAlgorithms.hpp
  *
  * Collection of algorithms for normal calculation.
  *
@@ -26,8 +26,8 @@
  * @author Johan M. von Behren <johan@vonbehren.eu>
  */
 
-#ifndef LVR2_ALGORITHM_NORMALS_H_
-#define LVR2_ALGORITHM_NORMALS_H_
+#ifndef LVR2_ALGORITHM_NORMALALGORITHMS_H_
+#define LVR2_ALGORITHM_NORMALALGORITHMS_H_
 
 #include <lvr2/geometry/BaseMesh.hpp>
 #include <lvr2/geometry/Cluster.hpp>
@@ -76,6 +76,6 @@ VertexMap<Normal<BaseVecT>> calcVertexNormals(
 
 } // namespace lvr2
 
-#include <lvr2/algorithm/Normals.tcc>
+#include <lvr2/algorithm/NormalAlgorithms.tcc>
 
-#endif /* LVR2_ALGORITHM_NORMALS_H_ */
+#endif /* LVR2_ALGORITHM_NORMALALGORITHMS_H_ */
