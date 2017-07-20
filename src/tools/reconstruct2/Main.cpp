@@ -181,7 +181,6 @@
 #include <lvr2/geometry/BoundingBox.hpp>
 #include <lvr2/algorithm/Planar.hpp>
 #include <lvr2/algorithm/ClusterPainter.hpp>
-#include <lvr2/algorithm/VertexNormals.hpp>
 
 #include <lvr2/reconstruction/AdaptiveKSearchSurface.hpp>
 #include <lvr2/reconstruction/BilinearFastBox.hpp>
@@ -686,10 +685,10 @@ int main(int argc, char** argv)
     //     mesh.fillHoles(options.getFillHoles());
     // }
 
-    auto normals = calcFaceNormals(mesh);
+    auto faceNormals = calcFaceNormals(mesh);
     auto clusterSet = iterativePlanarClusterGrowing(
         mesh,
-        normals,
+        faceNormals,
         options.getNormalThreshold(),
         options.getPlaneIterations(),
         options.getMinPlaneSize()
@@ -702,11 +701,11 @@ int main(int argc, char** argv)
     auto colorMap = painter.fromPointCloud(mesh, surface);
 
     // Calc normals for vertices
-    auto normalMap = calcNormalsForMesh(mesh, normals, *surface);
+    auto vertexNormal = calcVertexNormals(mesh, faceNormals, *surface);
 
     // Finalize mesh (convert it to simple `MeshBuffer`)
     FinalizeAlgorithm<Vec> finalize;
-    finalize.setNormalData(normalMap);
+    finalize.setNormalData(vertexNormal);
     if (colorMap)
     {
         finalize.setColorData(*colorMap);
