@@ -209,6 +209,14 @@ private:
     OptionalHalfEdgeHandle findEdgeAroundVertex(HalfEdgeHandle startEdgeH, Pred pred) const;
 
     /**
+     * @brief Method for finding contour edges of given face.
+     *
+     * Returns all edge handles that are contours
+     */
+    template <typename Pred>
+    vector<EdgeHandle> getContourEdgesOfFace(FaceHandle faceH, Pred pred) const;
+
+    /**
      * @brief Get inner edges in counter clockwise order
      */
     array<HalfEdgeHandle, 3> getInnerEdges(FaceHandle handle) const;
