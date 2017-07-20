@@ -19,8 +19,10 @@
 /*
  * Planar.hpp
  *
- *  @date 14.07.2017
- *  @author Johan M. von Behren <johan@vonbehren.eu>
+ * Collection of algorithms for planar cluster growing.
+ *
+ * @date 14.07.2017
+ * @author Johan M. von Behren <johan@vonbehren.eu>
  */
 
 #ifndef LVR2_ALGORITHM_PLANAR_H_
@@ -35,10 +37,6 @@
 namespace lvr2
 {
 
-// ==========================================================================
-// Collection of algorithms for planar cluster growing.
-// ==========================================================================
-
 /**
  * @brief Algorithm which generates plane clusters from the given mesh.
  * @param minSinAngle `1 - minSinAngle` is the allowed difference between the sin of the angle of the starting
@@ -47,6 +45,7 @@ namespace lvr2
 template<typename BaseVecT>
 ClusterSet<FaceHandle> planarClusterGrowing(
     const BaseMesh<BaseVecT>& mesh,
+    const FaceMap<Normal<BaseVecT>>& normals,
     float minSinAngle
 );
 
@@ -71,7 +70,8 @@ ClusterSet<FaceHandle> iterativePlanarClusterGrowing(
 template<typename BaseVecT>
 Plane<BaseVecT> calcRegressionPlane(
     const BaseMesh<BaseVecT>& mesh,
-    const Cluster<FaceHandle>& cluster
+    const Cluster<FaceHandle>& cluster,
+    const FaceMap<Normal<BaseVecT>>& normals
 );
 
 /**
@@ -83,6 +83,7 @@ template<typename BaseVecT>
 ClusterMap<Plane<BaseVecT>> calcRegressionPlanes(
     const BaseMesh<BaseVecT>& mesh,
     const ClusterSet<FaceHandle>& clusters,
+    const FaceMap<Normal<BaseVecT>>& normals,
     int minClusterSize
 );
 
@@ -91,7 +92,8 @@ template<typename BaseVecT>
 void dragToRegressionPlane(
     BaseMesh<BaseVecT>& mesh,
     const Cluster<FaceHandle>& cluster,
-    const Plane<BaseVecT>& plane
+    const Plane<BaseVecT>& plane,
+    FaceMap<Normal<BaseVecT>>& normals
 );
 
 /// Drags all points from the given clusters into their regression planes
@@ -99,7 +101,8 @@ template<typename BaseVecT>
 void dragToRegressionPlanes(
     BaseMesh<BaseVecT>& mesh,
     const ClusterSet<FaceHandle>& clusters,
-    const ClusterMap<Plane<BaseVecT>>& planes
+    const ClusterMap<Plane<BaseVecT>>& planes,
+    FaceMap<Normal<BaseVecT>>& normals
 );
 
 /**

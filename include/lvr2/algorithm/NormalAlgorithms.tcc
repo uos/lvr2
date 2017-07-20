@@ -17,24 +17,71 @@
  */
 
 /*
- * VertexNormals.tcc
+ * NormalAlgorithms.hpp
  *
- *  @date 19.07.2017
- *  @author Johan M. von Behren <johan@vonbehren.eu>
+ * @date 19.07.2017
+ * @author Lukas Kalbertodt <lukas.kalbertodt@gmail.com>
+ * @author Johan M. von Behren <johan@vonbehren.eu>
  */
 
 #include <vector>
 
 using std::vector;
 
-#include <lvr2/util/Panic.hpp>
+#include <lvr2/geometry/Normal.hpp>
+#include <lvr2/util/VectorMap.hpp>
 
 namespace lvr2
 {
 
-template<typename BaseVecT>
-VertexMap<Normal<BaseVecT>> calcNormalsForMesh(
+template <typename BaseVecT>
+FaceMap<Normal<BaseVecT>> calcFaceNormals(const BaseMesh<BaseVecT>& mesh)
+{
+    FaceMap<Normal<BaseVecT>> out;
+    out.reserve(mesh.numFaces());
+
+    for (auto faceH: mesh.faces())
+    {
+        auto vertexPositions = mesh.getVertexPositionsOfFace(faceH);
+
+        auto v1 = vertexPositions[0];
+        auto v2 = vertexPositions[1];
+        auto v3 = vertexPositions[2];
+        auto normal = (v1 - v2).cross(v1 - v3);
+        out.insert(faceH, Normal<BaseVecT>(normal));
+    }
+    return out;
+}
+
+template <typename BaseVecT>
+optional<Normal<BaseVecT>> interpolatedVertexNormal(
     const BaseMesh<BaseVecT>& mesh,
+    const FaceMap<Normal<BaseVecT>>& normals,
+    VertexHandle handle
+)
+{
+    auto faces = mesh.getFacesOfVertex(handle);
+
+    // Return none, if vertex does not have connected faces
+    if (faces.empty())
+    {
+        return boost::none;
+    }
+
+    // Average normal over all connected faces
+    Vector<BaseVecT> v(0, 0, 0);
+    for (auto face: faces)
+    {
+        v += normals[face].asVector();
+    }
+
+    return v.normalized();
+}
+
+template<typename BaseVecT>
+VertexMap<Normal<BaseVecT>> calcVertexNormals(
+    const BaseMesh<BaseVecT>& mesh,
+    const FaceMap<Normal<BaseVecT>>& normals,
     const PointsetSurface<BaseVecT>& surface
 )
 {
@@ -44,7 +91,7 @@ VertexMap<Normal<BaseVecT>> calcNormalsForMesh(
     for (auto vH: mesh.vertices())
     {
         // Use averaged normals from adjacent faces
-        if (auto normal = mesh.calcVertexNormal(vH))
+        if (auto normal = interpolatedVertexNormal(mesh, normals, vH))
         {
             normalMap.insert(vH, *normal);
         }
