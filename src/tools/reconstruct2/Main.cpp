@@ -177,7 +177,7 @@
 #include <lvr2/util/StableVector.hpp>
 #include <lvr2/util/VectorMap.hpp>
 #include <lvr2/algorithm/FinalizeAlgorithm.hpp>
-#include <lvr2/algorithm/Normals.hpp>
+#include <lvr2/algorithm/NormalAlgorithms.hpp>
 #include <lvr2/geometry/BoundingBox.hpp>
 #include <lvr2/algorithm/Planar.hpp>
 #include <lvr2/algorithm/ClusterPainter.hpp>
