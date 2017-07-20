@@ -19,7 +19,9 @@
 /*
  * Normals.hpp
  *
- *  @date 17.06.2017
+ * @date 19.07.2017
+ * @author Lukas Kalbertodt <lukas.kalbertodt@gmail.com>
+ * @author Johan M. von Behren <johan@vonbehren.eu>
  */
 
 #include <vector>

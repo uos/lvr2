@@ -19,8 +19,10 @@
 /*
  * Planar.hpp
  *
- *  @date 14.07.2017
- *  @author Johan M. von Behren <johan@vonbehren.eu>
+ * Collection of algorithms for planar cluster growing.
+ *
+ * @date 14.07.2017
+ * @author Johan M. von Behren <johan@vonbehren.eu>
  */
 
 #ifndef LVR2_ALGORITHM_PLANAR_H_
@@ -34,10 +36,6 @@
 
 namespace lvr2
 {
-
-// ==========================================================================
-// Collection of algorithms for planar cluster growing.
-// ==========================================================================
 
 /**
  * @brief Algorithm which generates plane clusters from the given mesh.
