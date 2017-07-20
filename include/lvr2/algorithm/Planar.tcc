@@ -48,6 +48,7 @@ namespace lvr2
 template<typename BaseVecT>
 ClusterSet<FaceHandle> planarClusterGrowing(
     const BaseMesh<BaseVecT>& mesh,
+    const FaceMap<Normal<BaseVecT>>& normals,
     float minSinAngle
 )
 {
@@ -64,7 +65,7 @@ ClusterSet<FaceHandle> planarClusterGrowing(
             vector<FaceHandle> stack;
             stack.push_back(faceH);
             auto cluster = clusters.createCluster();
-            auto referenceNormal = mesh.getFaceNormal(faceH);
+            auto referenceNormal = normals[faceH];
 
             // Grow my cluster, groOW!
             while (!stack.empty())
@@ -73,7 +74,7 @@ ClusterSet<FaceHandle> planarClusterGrowing(
                 stack.pop_back();
 
                 // Check if the last faces from stack and starting face are in the "same" plane
-                if (mesh.getFaceNormal(currentFace).dot(referenceNormal.asVector()) > minSinAngle)
+                if (normals[currentFace].dot(referenceNormal.asVector()) > minSinAngle)
                 {
                     // The face is in the "same" plane as the starting face => add it to cluster
                     // and mark as visited.
@@ -99,6 +100,7 @@ ClusterSet<FaceHandle> planarClusterGrowing(
 template<typename BaseVecT>
 ClusterSet<FaceHandle> iterativePlanarClusterGrowing(
     BaseMesh<BaseVecT>& mesh,
+    FaceMap<Normal<BaseVecT>>& normals,
     float minSinAngle,
     int numIterations,
     int minClusterSize
@@ -110,10 +112,10 @@ ClusterSet<FaceHandle> iterativePlanarClusterGrowing(
     for (int i = 0; i < numIterations; ++i)
     {
         // Generate clusters
-        clusters = planarClusterGrowing(mesh, minSinAngle);
+        clusters = planarClusterGrowing(mesh, normals, minSinAngle);
 
         // Calc regression planes
-        auto planes = calcRegressionPlanes(mesh, clusters, minClusterSize);
+        auto planes = calcRegressionPlanes(mesh, clusters, normals, minClusterSize);
 
         // Debug planes
         // std::stringstream ss;
@@ -124,7 +126,7 @@ ClusterSet<FaceHandle> iterativePlanarClusterGrowing(
         // writeDebugMesh(mesh, ss.str(), {0, 255, 0});
 
         // Drag vertices into planes
-        dragToRegressionPlanes(mesh, clusters, planes);
+        dragToRegressionPlanes(mesh, clusters, planes, normals);
     }
 
     return clusters;
@@ -134,6 +136,7 @@ template<typename BaseVecT>
 ClusterMap<Plane<BaseVecT>> calcRegressionPlanes(
     const BaseMesh<BaseVecT>& mesh,
     const ClusterSet<FaceHandle>& clusters,
+    const FaceMap<Normal<BaseVecT>>& normals,
     int minClusterSize
 )
 {
@@ -149,7 +152,7 @@ ClusterMap<Plane<BaseVecT>> calcRegressionPlanes(
         if (cluster.handles.size() > minClusterThresholdSize)
         {
             // Calc regression plane for current cluster and add to cluster map: cluster -> plane
-            planes.insert(clusterH, calcRegressionPlane(mesh, cluster));
+            planes.insert(clusterH, calcRegressionPlane(mesh, cluster, normals));
         }
     }
 
@@ -159,7 +162,8 @@ ClusterMap<Plane<BaseVecT>> calcRegressionPlanes(
 template<typename BaseVecT>
 Plane<BaseVecT> calcRegressionPlane(
     const BaseMesh<BaseVecT>& mesh,
-    const Cluster<FaceHandle>& cluster
+    const Cluster<FaceHandle>& cluster,
+    const FaceMap<Normal<BaseVecT>>& normals
 )
 {
     // Calc normal of plane
@@ -172,7 +176,7 @@ Plane<BaseVecT> calcRegressionPlane(
     // Average Normals for both normal directions
     for (auto faceH: cluster.handles)
     {
-        auto normal = mesh.getFaceNormal(faceH).asVector();
+        auto normal = normals[faceH].asVector();
 
         // If first iteration
         if (countFirst == 0)
@@ -244,14 +248,15 @@ template<typename BaseVecT>
 void dragToRegressionPlanes(
     BaseMesh<BaseVecT>& mesh,
     const ClusterSet<FaceHandle>& clusters,
-    const ClusterMap<Plane<BaseVecT>>& planes
+    const ClusterMap<Plane<BaseVecT>>& planes,
+    FaceMap<Normal<BaseVecT>>& normals
 )
 {
     // For all clusters in cluster set
     for (auto clusterH: planes)
     {
         // Drag all vertices of current cluster into regression plane
-        dragToRegressionPlane(mesh, clusters[clusterH], planes[clusterH]);
+        dragToRegressionPlane(mesh, clusters[clusterH], planes[clusterH], normals);
     }
 }
 
@@ -259,7 +264,8 @@ template<typename BaseVecT>
 void dragToRegressionPlane(
     BaseMesh<BaseVecT>& mesh,
     const Cluster<FaceHandle>& cluster,
-    const Plane<BaseVecT>& plane
+    const Plane<BaseVecT>& plane,
+    FaceMap<Normal<BaseVecT>>& normals
 )
 {
     for (auto faceH: cluster.handles)
@@ -270,6 +276,7 @@ void dragToRegressionPlane(
             auto distance = plane.distance(pos);
             mesh.vertexPosition(vertexH) -= plane.normal.asVector() * distance;
         }
+        normals[faceH] = plane.normal;
     }
 }
 

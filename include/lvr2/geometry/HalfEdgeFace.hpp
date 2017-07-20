@@ -28,7 +28,6 @@
 #define LVR2_GEOMETRY_HALFEDGEFACE_H_
 
 #include "BaseMesh.hpp"
-#include "Normal.hpp"
 
 namespace lvr2
 {
@@ -47,19 +46,11 @@ private:
     using Vertex = HalfEdgeVertex<BaseVecT>;
 
 public:
-    HalfEdgeFace(
-        EdgeHandle edge,
-        Normal<BaseVecT> normal
-    )
-        : edge(edge), normal(normal) {}
+    HalfEdgeFace(EdgeHandle edge)
+        : edge(edge) {}
 
     /// One of the edges bounding this face.
     EdgeHandle edge;
-
-    /// The normal of this face. This can be (and is) calculated from the
-    /// face's vertices, but the value is so frequently used, that it's worth
-    /// calculating once and putting it here.
-    Normal<BaseVecT> normal;
 };
 
 } // namespace lvr2

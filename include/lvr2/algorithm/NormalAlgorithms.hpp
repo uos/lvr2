@@ -17,26 +17,46 @@
  */
 
 /*
- * VertexNormals.hpp
+ * NormalAlgorithms.hpp
  *
- *  @date 19.07.2017
- *  @author Johan M. von Behren <johan@vonbehren.eu>
+ * Collection of algorithms for normal calculation.
+ *
+ * @date 19.07.2017
+ * @author Lukas Kalbertodt <lukas.kalbertodt@gmail.com>
+ * @author Johan M. von Behren <johan@vonbehren.eu>
  */
 
-#ifndef LVR2_ALGORITHM_VERTEXNORMALS_H_
-#define LVR2_ALGORITHM_VERTEXNORMALS_H_
+#ifndef LVR2_ALGORITHM_NORMALALGORITHMS_H_
+#define LVR2_ALGORITHM_NORMALALGORITHMS_H_
 
 #include <lvr2/geometry/BaseMesh.hpp>
+#include <lvr2/geometry/Cluster.hpp>
+#include <lvr2/geometry/ClusterSet.hpp>
 #include <lvr2/geometry/Normal.hpp>
-#include <lvr2/util/VectorMap.hpp>
 #include <lvr2/reconstruction/PointsetSurface.hpp>
+#include <lvr2/util/VectorMap.hpp>
 
 namespace lvr2
 {
 
-// ==========================================================================
-// Collection of algorithms for normal calculation for vertices in a mesh
-// ==========================================================================
+/**
+ * @brief Calculates a normal for each face in the mesh.
+ *
+ * A face's normal is calculated based on the position of its three vertices.
+ */
+template<typename BaseVecT>
+FaceMap<Normal<BaseVecT>> calcFaceNormals(const BaseMesh<BaseVecT>& mesh);
+
+/**
+ * @brief Returns a vertex normal for the given vertex interpolated from the
+ *        normals of its adjacent faces.
+ */
+template<typename BaseVecT>
+optional<Normal<BaseVecT>> interpolatedVertexNormal(
+    const BaseMesh<BaseVecT>& mesh,
+    const FaceMap<Normal<BaseVecT>>& normals,
+    VertexHandle handle
+);
 
 /**
  * @brief Calculates a normal for each vertex in the mesh.
@@ -48,13 +68,14 @@ namespace lvr2
  * @param surface A point cloud with normal information
  */
 template<typename BaseVecT>
-VertexMap<Normal<BaseVecT>> calcNormalsForMesh(
+VertexMap<Normal<BaseVecT>> calcVertexNormals(
     const BaseMesh<BaseVecT>& mesh,
+    const FaceMap<Normal<BaseVecT>>& normals,
     const PointsetSurface<BaseVecT>& surface
 );
 
 } // namespace lvr2
 
-#include <lvr2/algorithm/VertexNormals.tcc>
+#include <lvr2/algorithm/NormalAlgorithms.tcc>
 
-#endif /* LVR2_ALGORITHM_VERTEXNORMALS_H_ */
+#endif /* LVR2_ALGORITHM_NORMALALGORITHMS_H_ */
