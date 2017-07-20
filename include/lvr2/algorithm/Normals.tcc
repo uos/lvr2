@@ -38,6 +38,8 @@ template <typename BaseVecT>
 FaceMap<Normal<BaseVecT>> calcFaceNormals(const BaseMesh<BaseVecT>& mesh)
 {
     FaceMap<Normal<BaseVecT>> out;
+    out.reserve(mesh.numFaces());
+
     for (auto faceH: mesh.faces())
     {
         auto vertexPositions = mesh.getVertexPositionsOfFace(faceH);
