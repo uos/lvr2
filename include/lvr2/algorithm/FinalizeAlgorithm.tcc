@@ -112,7 +112,7 @@ boost::shared_ptr<lvr::MeshBuffer> FinalizeAlgorithm<BaseVecT>::apply(const Base
 }
 
 template<typename BaseVecT>
-void FinalizeAlgorithm<BaseVecT>::setColorData(const VertexMap<ClusterPainter::Rgb8Color>& colorData)
+void FinalizeAlgorithm<BaseVecT>::setColorData(const VertexMap<Rgb8Color>& colorData)
 {
     m_colorData = colorData;
 }

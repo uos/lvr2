@@ -33,7 +33,7 @@ namespace lvr2
 {
 
 template<typename BaseVecT>
-ClusterMap<ClusterPainter::Rgb8Color> ClusterPainter::simpsons(const BaseMesh<BaseVecT>& mesh) const
+ClusterMap<Rgb8Color> ClusterPainter::simpsons(const BaseMesh<BaseVecT>& mesh) const
 {
     ClusterMap<Rgb8Color> colorMap;
     colorMap.reserve(m_clusterSet.numHandles() * 3);
@@ -49,7 +49,7 @@ ClusterMap<ClusterPainter::Rgb8Color> ClusterPainter::simpsons(const BaseMesh<Ba
     return colorMap;
 }
 
-ClusterPainter::Rgb8Color ClusterPainter::getSimpsonColorForIdx(size_t idx) const
+Rgb8Color ClusterPainter::getSimpsonColorForIdx(size_t idx) const
 {
     return {
         static_cast<uint8_t>(fabs(cos(idx)) * 255),

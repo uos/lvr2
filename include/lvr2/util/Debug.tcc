@@ -38,11 +38,11 @@ template<typename BaseVecT>
 void writeDebugMesh(
     const BaseMesh<BaseVecT>& mesh,
     string filename,
-    ClusterPainter::Rgb8Color color
+    Rgb8Color color
 )
 {
     // Generate color map
-    VertexMap<ClusterPainter::Rgb8Color> colorMap;
+    VertexMap<Rgb8Color> colorMap;
     colorMap.reserve(mesh.numVertices());
 
     for (auto vH: mesh.vertices())
