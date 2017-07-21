@@ -30,29 +30,172 @@
 namespace lvr2
 {
 
+
 template<typename BaseVecT>
-std::vector<BaseVecT> calculateContour(ClusterHandle clusterH, HalfEdgeMesh<BaseVecT>& mesh, ClusterSet<FaceHandle>& clusterSet)
+vector<Point<BaseVecT>> calculateAllContourVertices(
+    ClusterHandle clusterH,
+    HalfEdgeMesh<BaseVecT>& mesh,
+    ClusterSet<FaceHandle>& clusterSet
+)
 {
-    std::vector<BaseVecT> result;
+    std::vector<VertexHandle> allContours;
+    std::vector<Point<BaseVecT>> allContourVertices;
+
     auto cluster = clusterSet.getCluster(clusterH);
 
-    for (auto faceH: cluster.handles)
+    // iterate all faces in cluster
+    for (auto faceH : cluster.handles)
     {
+        // find contours of each face
         std::vector<EdgeHandle> contours = mesh.getContourEdgesOfFace(
             faceH,
             [&](auto neighbourFaceH)
             {
+                // pred must return true when faces are not in the same cluster
                 return (clusterH != clusterSet.getClusterH(neighbourFaceH));
             }
         );
 
-        for (EdgeHandle edgeH: contours)
+        // find all vertices from contour edges
+        for (auto edgeH : contours)
         {
-            // TODO get vertices and store in result
+            for (auto vertexH : mesh.getVerticesOfEdge(edgeH))
+            {
+                allContourVertices.push_back(mesh.getVertexPosition(vertexH));
+            }
         }
     }
 
+    // remove duplicates from result
+    std::sort(
+        allContourVertices.begin(),
+        allContourVertices.end(),
+        [] ( const Point<BaseVecT>& lhs, const Point<BaseVecT>& rhs) {
+            return lhs.x < rhs.x && lhs.y < rhs.y && lhs.z < rhs.z;
+        }
+    );
+    auto comp =
+        [] ( const Point<BaseVecT>& lhs, const Point<BaseVecT>& rhs) {
+            return lhs == rhs;
+        };
+    allContourVertices.erase(
+        std::unique(allContourVertices.begin(), allContourVertices.end(), comp),
+        allContourVertices.end()
+    );
+
+    return allContourVertices;
+}
+
+
+
+template<typename BaseVecT>
+vector<vector<VertexHandle>> calculateContour(
+    ClusterHandle clusterH,
+    HalfEdgeMesh<BaseVecT>& mesh,
+    ClusterSet<FaceHandle>& clusterSet
+)
+{
+    // nothing works
+
+    vector<vector<VertexHandle>> result;
+
+    auto cluster = clusterSet.getCluster(clusterH);
+
+    size_t numFaces = cluster.handles.size();
+    FaceMap<bool> visitedFaces(numFaces, false);
+    EdgeMap<bool> visitedContourEdges(numFaces * 3, false); // TODO: use native hashmap
+
+
+    // iterate all faces
+    for (auto faceH : cluster.handles)
+    {
+        // mark current face as visited
+        visitedFaces[faceH] = true;
+
+        // find contours of face
+        std::vector<EdgeHandle> contours = mesh.getContourEdgesOfFace(
+            faceH,
+            [&](auto neighbourFaceH)
+            {
+                // pred must return true when faces are not in the same cluster
+                return (clusterH != clusterSet.getClusterH(neighbourFaceH));
+            }
+        );
+
+        vector<VertexHandle> innerResult;
+
+        // iterate all edges in contour of this face
+        for (auto edgeH : contours)
+        {
+            auto currentEdgeH = edgeH;
+            do
+            {
+                // if not visited yet
+                if (!visitedContourEdges[currentEdgeH])
+                {
+                    // mark edge as visited
+                    visitedContourEdges[currentEdgeH] = true;
+
+                    auto edgeHVertices = mesh.getVerticesOfEdge(currentEdgeH);
+                    // alle edges am vertex
+                    auto targetEdges = mesh.getEdgesOfVertex(edgeHVertices[0]);
+
+                    for (auto nextEdgeH : targetEdges)
+                    {
+                        // wenn nicht OG edge
+                        if (mesh.getVerticesOfEdge(nextEdgeH)[0] != edgeHVertices[1])
+                        {
+                            auto faceOfEdgeHOptional = mesh.getFacesOfEdge(nextEdgeH)[0];
+                            if (faceOfEdgeHOptional)
+                            {
+                                bool isContourFace = clusterH != clusterSet.getClusterH(faceOfEdgeHOptional.unwrap());
+                                if (isContourFace)
+                                {
+                                    innerResult.push_back(edgeHVertices[0]);
+                                    currentEdgeH = nextEdgeH;
+                                }
+                            }
+                        }
+                    }
+                }
+            } while(currentEdgeH != edgeH);
+        }
+
+        result.push_back(innerResult);
+    }
+
+
+    // unordered_set<VertexHandle> set;
+
+    // std::vector<EdgeHandle> allContours;
+    // auto cluster = clusterSet.getCluster(clusterH);
+
+    // // iterate all faces in cluster
+    // for (auto faceH : cluster.handles)
+    // {
+    //     // find contours of each face
+    //     std::vector<EdgeHandle> contours = mesh.getContourEdgesOfFace(
+    //         faceH,
+    //         [&](auto neighbourFaceH)
+    //         {
+    //             // pred must return true when faces are not in the same cluster
+    //             return (clusterH != clusterSet.getClusterH(neighbourFaceH));
+    //         }
+    //     );
+
+    //     // find all vertices from contour edges
+    //     for (auto edgeH : contours)
+    //     {
+    //         allContours.push_back(edgeH);
+    //     }
+    // }
+
+
+
+
+
     return result;
+
 }
 
 
