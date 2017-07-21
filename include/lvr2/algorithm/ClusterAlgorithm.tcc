@@ -24,18 +24,21 @@
  *  @author Kristin Schmidt <krschmidt@uni-osnabrueck.de>
  */
 
+#include <lvr2/geometry/Cluster.hpp>
+#include <lvr2/geometry/HalfEdgeMesh.hpp>
+
 namespace lvr2
 {
 
 template<typename BaseVecT>
-vector<BaseVecT> calculateContour(ClusterHandle clusterH, HalfEdgeMesh<BaseVecT>& mesh, ClusterSet<FaceHandle>& clusterSet)
+std::vector<BaseVecT> calculateContour(ClusterHandle clusterH, HalfEdgeMesh<BaseVecT>& mesh, ClusterSet<FaceHandle>& clusterSet)
 {
-    vector<BaseVecT> result;
+    std::vector<BaseVecT> result;
     auto cluster = clusterSet.getCluster(clusterH);
 
     for (auto faceH: cluster.handles)
     {
-        vector<EdgeHandle> contours = mesh.getContourEdgesOfFace(
+        std::vector<EdgeHandle> contours = mesh.getContourEdgesOfFace(
             faceH,
             [&, this](auto neighbourFaceH)
             {

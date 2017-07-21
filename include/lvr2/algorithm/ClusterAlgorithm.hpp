@@ -29,6 +29,7 @@
 
 #include <lvr2/geometry/Cluster.hpp>
 #include <lvr2/geometry/Handles.hpp>
+#include <lvr2/geometry/HalfEdgeMesh.hpp>
 
 #include <vector>
 
@@ -37,8 +38,8 @@ using std::vector;
 namespace lvr2
 {
 
-template<typename BaseVecT>
-vector<BaseVecT> calculateContour(ClusterHandle clusterH, HalfEdgeMesh<BaseVecT>& mesh, ClusterSet<FaceHandle>& clusterSet);
+template<typename BaseVecT, typename VertexT>
+std::vector<VertexT> calculateContour(ClusterHandle clusterH, HalfEdgeMesh<BaseVecT>& mesh, ClusterSet<FaceHandle>& clusterSet);
 
 
 } // namespace lvr2
