@@ -221,6 +221,13 @@ public:
     virtual vector<FaceHandle> getFacesOfVertex(VertexHandle handle) const = 0;
 
     /**
+     * @brief Get a list of edges around the given vertex.
+     *
+     * @return The edge-handles in counter-clockwise order.
+     */
+    virtual vector<EdgeHandle> getEdgesOfVertex(VertexHandle handle) const = 0;
+
+    /**
      * @brief Returns an iterator to the first vertex of this mesh.
      *
      * @return When dereferenced, this iterator returns a handle to the current vertex.

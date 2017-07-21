@@ -107,6 +107,7 @@ public:
     std::array<VertexHandle, 2> getVerticesOfEdge(EdgeHandle edgeH) const final;
     std::array<OptionalFaceHandle, 2> getFacesOfEdge(EdgeHandle edgeH) const final;
     vector<FaceHandle> getFacesOfVertex(VertexHandle handle) const final;
+    vector<EdgeHandle> getEdgesOfVertex(VertexHandle handle) const final;
 
     MeshHandleIteratorPtr<VertexHandle> verticesBegin() const final;
     MeshHandleIteratorPtr<VertexHandle> verticesEnd() const final;
