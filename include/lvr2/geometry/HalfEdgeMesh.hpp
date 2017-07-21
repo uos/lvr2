@@ -87,7 +87,7 @@ public:
 
 
     // ========================================================================
-    // = Implementing the `BaseMesh` interface
+    // = Implementing the `BaseMesh` interface (see BaseMesh for docs)
     // ========================================================================
 
     // We declare all metods as `final` to make devirtualization optimizations
@@ -101,6 +101,7 @@ public:
 
     Point<BaseVecT> getVertexPosition(VertexHandle handle) const final;
     Point<BaseVecT>& getVertexPosition(VertexHandle handle) final;
+
     std::array<VertexHandle, 3> getVerticesOfFace(FaceHandle handle) const final;
     std::array<EdgeHandle, 3> getEdgesOfFace(FaceHandle handle) const final;
     std::vector<FaceHandle> getNeighboursOfFace(FaceHandle handle) const final;
