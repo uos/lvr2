@@ -81,11 +81,14 @@ public:
     // more likely and effective.
     VertexHandle addVertex(Point<BaseVecT> pos) final;
     FaceHandle addFace(VertexHandle v1H, VertexHandle v2H, VertexHandle v3H) final;
+
     size_t numVertices() const final;
     size_t numFaces() const final;
+    size_t numEdges() const final;
+
     Point<BaseVecT> getVertexPosition(VertexHandle handle) const final;
-    Point<BaseVecT>& vertexPosition(VertexHandle handle) final;
-    std::array<VertexHandle, 3> getVertexHandlesOfFace(FaceHandle handle) const final;
+    Point<BaseVecT>& getVertexPosition(VertexHandle handle) final;
+    std::array<VertexHandle, 3> getVerticesOfFace(FaceHandle handle) const final;
     std::vector<FaceHandle> getNeighboursOfFace(FaceHandle handle) const final;
     vector<FaceHandle> getFacesOfVertex(VertexHandle handle) const final;
 
