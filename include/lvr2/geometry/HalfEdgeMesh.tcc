@@ -411,6 +411,20 @@ std::vector<FaceHandle>
     return neighbours;
 }
 
+template <typename BaseVecT>
+std::array<VertexHandle, 2> HalfEdgeMesh<BaseVecT>::getVerticesOfEdge(EdgeHandle edgeH) const
+{
+    auto oneEdge = getE(edgeH);
+    return { oneEdge.target, getE(oneEdge.twin).target };
+}
+
+template <typename BaseVecT>
+std::array<OptionalFaceHandle, 2> HalfEdgeMesh<BaseVecT>::getFacesOfEdge(EdgeHandle edgeH) const
+{
+    auto oneEdge = getE(edgeH);
+    return { oneEdge.face, getE(oneEdge.twin).face };
+}
+
 // TODO: Maybe we want to change the interface here. Passing a mutable ref to a
 // vector into the method can improve performance a lot. With the current
 // design, each function call implies a heap allocation.
