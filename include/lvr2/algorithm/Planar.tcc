@@ -46,13 +46,13 @@ namespace lvr2
 {
 
 template<typename BaseVecT>
-ClusterSet<FaceHandle> planarClusterGrowing(
+ClusterBiMap<FaceHandle> planarClusterGrowing(
     const BaseMesh<BaseVecT>& mesh,
     const FaceMap<Normal<BaseVecT>>& normals,
     float minSinAngle
 )
 {
-    ClusterSet<FaceHandle> clusters;
+    ClusterBiMap<FaceHandle> clusters;
     FaceMap<bool> visited(mesh.numFaces(), false);
 
     // Iterate over all faces
@@ -98,7 +98,7 @@ ClusterSet<FaceHandle> planarClusterGrowing(
 }
 
 template<typename BaseVecT>
-ClusterSet<FaceHandle> iterativePlanarClusterGrowing(
+ClusterBiMap<FaceHandle> iterativePlanarClusterGrowing(
     BaseMesh<BaseVecT>& mesh,
     FaceMap<Normal<BaseVecT>>& normals,
     float minSinAngle,
@@ -106,7 +106,7 @@ ClusterSet<FaceHandle> iterativePlanarClusterGrowing(
     int minClusterSize
 )
 {
-    ClusterSet<FaceHandle> clusters;
+    ClusterBiMap<FaceHandle> clusters;
 
     // Iterate numIterations times
     for (int i = 0; i < numIterations; ++i)
@@ -135,7 +135,7 @@ ClusterSet<FaceHandle> iterativePlanarClusterGrowing(
 template<typename BaseVecT>
 ClusterMap<Plane<BaseVecT>> calcRegressionPlanes(
     const BaseMesh<BaseVecT>& mesh,
-    const ClusterSet<FaceHandle>& clusters,
+    const ClusterBiMap<FaceHandle>& clusters,
     const FaceMap<Normal<BaseVecT>>& normals,
     int minClusterSize
 )
@@ -144,7 +144,7 @@ ClusterMap<Plane<BaseVecT>> calcRegressionPlanes(
     size_t defaultClusterThreshold = 10 * log(mesh.numFaces());
     size_t minClusterThresholdSize = max(static_cast<size_t>(minClusterSize), defaultClusterThreshold);
 
-    // For all clusters in cluster set
+    // For all clusters in cluster map
     for (auto clusterH: clusters)
     {
         // Get current cluster
@@ -247,12 +247,12 @@ Plane<BaseVecT> calcRegressionPlane(
 template<typename BaseVecT>
 void dragToRegressionPlanes(
     BaseMesh<BaseVecT>& mesh,
-    const ClusterSet<FaceHandle>& clusters,
+    const ClusterBiMap<FaceHandle>& clusters,
     const ClusterMap<Plane<BaseVecT>>& planes,
     FaceMap<Normal<BaseVecT>>& normals
 )
 {
-    // For all clusters in cluster set
+    // For all clusters in cluster map
     for (auto clusterH: planes)
     {
         // Drag all vertices of current cluster into regression plane
@@ -283,7 +283,7 @@ void dragToRegressionPlane(
 template<typename BaseVecT>
 void debugPlanes(
     const BaseMesh<BaseVecT>& mesh,
-    const ClusterSet<FaceHandle>& clusters,
+    const ClusterBiMap<FaceHandle>& clusters,
     const ClusterMap<Plane<BaseVecT>>& planes,
     string filename,
     size_t minClusterSize
@@ -291,7 +291,7 @@ void debugPlanes(
 {
     HalfEdgeMesh<BaseVecT> debugMesh;
 
-    // For all clusters in cluster set
+    // For all clusters in cluster map
     for (auto clusterH: planes)
     {
         auto cluster = clusters[clusterH];

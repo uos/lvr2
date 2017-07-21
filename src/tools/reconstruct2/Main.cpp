@@ -687,7 +687,7 @@ int main(int argc, char** argv)
     // }
 
     auto faceNormals = calcFaceNormals(mesh);
-    ClusterSet<FaceHandle> clusterSet;
+    ClusterBiMap<FaceHandle> clusterSet;
     if(options.optimizePlanes())
     {
         clusterSet = iterativePlanarClusterGrowing(
