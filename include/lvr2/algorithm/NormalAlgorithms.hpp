@@ -31,7 +31,7 @@
 
 #include <lvr2/geometry/BaseMesh.hpp>
 #include <lvr2/geometry/Cluster.hpp>
-#include <lvr2/geometry/ClusterSet.hpp>
+#include <lvr2/geometry/ClusterBiMap.hpp>
 #include <lvr2/geometry/Normal.hpp>
 #include <lvr2/reconstruction/PointsetSurface.hpp>
 #include <lvr2/util/VectorMap.hpp>

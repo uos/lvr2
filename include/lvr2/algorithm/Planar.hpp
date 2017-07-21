@@ -29,7 +29,7 @@
 #define LVR2_ALGORITHM_PLANAR_H_
 
 #include <lvr2/util/VectorMap.hpp>
-#include <lvr2/geometry/ClusterSet.hpp>
+#include <lvr2/geometry/ClusterBiMap.hpp>
 #include <lvr2/geometry/Handles.hpp>
 #include <lvr2/geometry/BaseMesh.hpp>
 #include <lvr2/geometry/Plane.hpp>
@@ -43,7 +43,7 @@ namespace lvr2
  *                    face and all other faces in one cluster.
  */
 template<typename BaseVecT>
-ClusterSet<FaceHandle> planarClusterGrowing(
+ClusterBiMap<FaceHandle> planarClusterGrowing(
     const BaseMesh<BaseVecT>& mesh,
     const FaceMap<Normal<BaseVecT>>& normals,
     float minSinAngle
@@ -59,7 +59,7 @@ ClusterSet<FaceHandle> planarClusterGrowing(
  * @param minClusterSize minimum size for clusters (number of faces) for which a regression plane should be generated
  */
 template<typename BaseVecT>
-ClusterSet<FaceHandle> iterativePlanarClusterGrowing(
+ClusterBiMap<FaceHandle> iterativePlanarClusterGrowing(
     BaseMesh<BaseVecT>& mesh,
     float minSinAngle,
     int numIterations,
@@ -82,7 +82,7 @@ Plane<BaseVecT> calcRegressionPlane(
 template<typename BaseVecT>
 ClusterMap<Plane<BaseVecT>> calcRegressionPlanes(
     const BaseMesh<BaseVecT>& mesh,
-    const ClusterSet<FaceHandle>& clusters,
+    const ClusterBiMap<FaceHandle>& clusters,
     const FaceMap<Normal<BaseVecT>>& normals,
     int minClusterSize
 );
@@ -100,7 +100,7 @@ void dragToRegressionPlane(
 template<typename BaseVecT>
 void dragToRegressionPlanes(
     BaseMesh<BaseVecT>& mesh,
-    const ClusterSet<FaceHandle>& clusters,
+    const ClusterBiMap<FaceHandle>& clusters,
     const ClusterMap<Plane<BaseVecT>>& planes,
     FaceMap<Normal<BaseVecT>>& normals
 );
@@ -114,7 +114,7 @@ void dragToRegressionPlanes(
 template<typename BaseVecT>
 void debugPlanes(
     const BaseMesh<BaseVecT>& mesh,
-    const ClusterSet<FaceHandle>& clusters,
+    const ClusterBiMap<FaceHandle>& clusters,
     const ClusterMap<Plane<BaseVecT>>& planes,
     string filename,
     size_t minClusterSize
