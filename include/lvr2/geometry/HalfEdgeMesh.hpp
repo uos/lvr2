@@ -76,7 +76,13 @@ private:
 };
 
 /**
- * @brief
+ * @brief Half-edge data structure implementing the `BaseMesh` interface.
+ *
+ * This implementation uses a half-edge structure. This encodes many
+ * connectivity details explicitly, enabling fast lookup. However, HEMs are
+ * primarily intended for non-triangle meshes (variable number of edges per
+ * face). Using it for triangle meshes might be overkill and results in a
+ * memory overhead.
  */
 template<typename BaseVecT>
 class HalfEdgeMesh : public BaseMesh<BaseVecT>
@@ -85,7 +91,6 @@ public:
     using Edge = HalfEdge<BaseVecT>;
     using Face = HalfEdgeFace<BaseVecT>;
     using Vertex = HalfEdgeVertex<BaseVecT>;
-
 
     // ========================================================================
     // = Implementing the `BaseMesh` interface (see BaseMesh for docs)
@@ -147,6 +152,12 @@ private:
      */
     OptionalHalfEdgeHandle edgeBetween(VertexHandle fromH, VertexHandle toH);
 
+    /**
+     * @brief Attempts to find an edge between the given vertices and, if none
+     *        is found, creates a new edge with `addEdgePair()`
+     *
+     * @return The half edge from `fromH` to `toH`
+     */
     HalfEdgeHandle findOrCreateEdgeBetween(VertexHandle fromH, VertexHandle toH);
 
     /**
