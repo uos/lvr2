@@ -103,7 +103,7 @@ public:
      * Returns all edge handles that are contours
      */
     template <typename Pred>
-    vector<EdgeHandle> getContourEdgesOfFace(FaceHandle faceH, Pred pred) const;
+    std::vector<EdgeHandle> getContourEdgesOfFace(FaceHandle faceH, Pred pred) const;
 
 
     MeshHandleIteratorPtr<VertexHandle> verticesBegin() const final;
