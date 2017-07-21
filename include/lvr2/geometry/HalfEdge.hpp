@@ -55,6 +55,8 @@ public:
     HalfEdgeHandle(EdgeHandle eH) : HalfEdgeHandle(eH.idx()) {}
 
     EdgeHandle toFullEdgeHandle() const {
+        // This is equivalent to `(m_idx / 2) * 2` essentially making the
+        // index even and "rounding down".
         return EdgeHandle(m_idx & ~1);
     }
 };
