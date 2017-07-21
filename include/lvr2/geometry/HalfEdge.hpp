@@ -30,6 +30,7 @@
 #include <utility>
 
 #include "BaseMesh.hpp"
+#include "Handles.hpp"
 
 namespace lvr2
 {
@@ -38,6 +39,47 @@ namespace lvr2
 template <typename BaseVecT> struct HalfEdgeFace;
 template <typename BaseVecT> struct HalfEdgeVertex;
 template <typename BaseVecT> struct HalfEdgeMesh;
+
+// We need a specific handle for half edges. The `BaseMesh` interface talks
+// about simple (full) edges. To avoid confusion, this HalfEdgeHandle is used
+// internally in the HEM. The edge handles given out by the HEM implementation
+// are handle to the half edge with the lower index. Luckily a half edge pair
+// always sits next to each other in the vector of all half edges. The half
+// edge with lower index always has an even index.
+
+/// Handle to access half edges of the HEM.
+class HalfEdgeHandle : public BaseHandle<Index>
+{
+public:
+    using BaseHandle<Index>::BaseHandle;
+    HalfEdgeHandle(EdgeHandle eH) : HalfEdgeHandle(eH.idx()) {}
+
+    EdgeHandle toFullEdgeHandle() const {
+        // This is equivalent to `(m_idx / 2) * 2` essentially making the
+        // index even and "rounding down".
+        return EdgeHandle(m_idx & ~1);
+    }
+};
+
+/// Semantically equivalent to `boost::optional<HalfEdgeHandle>`
+class OptionalHalfEdgeHandle : public BaseOptionalHandle<Index, HalfEdgeHandle>
+{
+public:
+    using BaseOptionalHandle<Index, HalfEdgeHandle>::BaseOptionalHandle;
+    OptionalHalfEdgeHandle() : BaseOptionalHandle() {}
+    OptionalHalfEdgeHandle(EdgeHandle eH) : OptionalHalfEdgeHandle(eH.idx()) {}
+
+    OptionalEdgeHandle toFullEdgeHandle() const {
+        if (*this)
+        {
+            return EdgeHandle(this->unwrap().idx() & ~1);
+        }
+        else
+        {
+            return OptionalEdgeHandle();
+        }
+    }
+};
 
 template <typename BaseVecT>
 struct HalfEdge
@@ -56,10 +98,10 @@ struct HalfEdge
     /// The next edge of the face, ordered counter-clockwise. Viewed a different
     /// way: it's the next edge when walking clockwise around the source
     /// vertex.
-    EdgeHandle next;
+    HalfEdgeHandle next;
 
     /// The twin edge.
-    EdgeHandle twin;
+    HalfEdgeHandle twin;
 
 private:
     /**
@@ -70,6 +112,26 @@ private:
     /// Several methods of HEM need to invoke the unsafe ctor.
     friend HalfEdgeMesh<BaseVecT>;
 };
+
+
+std::ostream& operator<<(std::ostream& os, const HalfEdgeHandle& h)
+{
+    os << "HE" << h.idx();
+    return os;
+}
+
+std::ostream& operator<<(std::ostream& os, const OptionalHalfEdgeHandle& h)
+{
+    if (h)
+    {
+        os << "HE" << h.unwrap().idx();
+    }
+    else
+    {
+        os << "HE⊥";
+    }
+    return os;
+}
 
 } // namespace lvr2
 

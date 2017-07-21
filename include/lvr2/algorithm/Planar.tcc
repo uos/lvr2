@@ -227,7 +227,7 @@ Plane<BaseVecT> calcRegressionPlane(
     for (auto faceH: cluster.handles)
     {
         // Iterate over all vertices of current face
-        for (auto vH: mesh.getVertexHandlesOfFace(faceH))
+        for (auto vH: mesh.getVerticesOfFace(faceH))
         {
             // If current vertex is not visited, add distance
             if (!vertices.count(vH))
@@ -270,11 +270,11 @@ void dragToRegressionPlane(
 {
     for (auto faceH: cluster.handles)
     {
-        for (auto vertexH: mesh.getVertexHandlesOfFace(faceH))
+        for (auto vertexH: mesh.getVerticesOfFace(faceH))
         {
             auto pos = mesh.getVertexPosition(vertexH);
             auto distance = plane.distance(pos);
-            mesh.vertexPosition(vertexH) -= plane.normal.asVector() * distance;
+            mesh.getVertexPosition(vertexH) -= plane.normal.asVector() * distance;
         }
         normals[faceH] = plane.normal;
     }

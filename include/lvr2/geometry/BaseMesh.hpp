@@ -34,6 +34,7 @@
 #include <boost/optional.hpp>
 
 using std::vector;
+using std::array;
 using boost::optional;
 
 #include "Handles.hpp"
@@ -85,13 +86,40 @@ template <typename> class EdgeIteratorProxy;
 template <typename> class VertexIteratorProxy;
 
 /**
- * @brief Interface for triangle-meshes with information about face neighborhood.
+ * @brief Interface for triangle-meshes with adjacency information.
  *
  * This interface represents meshes that contain information about the
  * conectivity of their faces, edges and vertices. They make it possible to
  * access adjacent faces/edges/vertices in constant time.
  *
- * TODO: extend this documentation once the interface is more fleshed out!
+ * Faces, edges and vertices in these meshes are explicitly represented (the
+ * phrase "faces, edge or vertex" is often abbreviated "FEV"). To talk about
+ * one specific FEV, so called handles are used. A handle is basically an index
+ * which is used to identify a FEV. Note that the internal structures used to
+ * represent FEVs are not exposed in this interface. This means you'll never
+ * write something like `vertex.outgoingEdge`, but you'll always use methods
+ * of this interface to get information about a FEV.
+ *
+ * Meshes are mainly used to store connectivity information. They are not used
+ * to store arbitrary data for each FEV. To do that, you should use FEV maps
+ * which allow you to associate arbitrary data with a FEV (and more). For more
+ * information about that, please refer to the documentation in `VectorMap`.
+ * There is one important exception, though: the 3D position of vertices is
+ * stored inside the mesh directly. This is actually rather inconsistent with
+ * the whole design, but positions are used a lot -- so it is convenient to
+ * store them in the mesh. But this might change in the future.
+ *
+ * This interface cannot be used for arbitrarily connected meshes. Instead,
+ * only manifold meshes can be represented. In particular, this means that each
+ * connected component of the mesh has to be a planar graph (you could draw it
+ * on a piece of paper without edges crossing). As a consequence we can use
+ * terms like "clockwise" and "counter-clockwise" (a property that I think is
+ * called "orientable"). When doing that, we assume a planar embedding that
+ * shows the face's normals sticking "out of the paper". In easier terms: draw
+ * the graph (represented by the mesh) on a paper and  draw it in the way such
+ * that you can see the front of all faces. When we talk about "clockwise" and
+ * "counter-clockwise" we are talking about this embedding -- when looking at
+ * the face.
  */
 template<typename BaseVecT>
 class BaseMesh
@@ -100,7 +128,7 @@ public:
     virtual ~BaseMesh() {}
 
     // =======================================================================
-    // Pure virtual methods
+    // Pure virtual methods (need to be implemented)
     // =======================================================================
 
     /**
@@ -127,31 +155,43 @@ public:
     virtual FaceHandle addFace(VertexHandle v1, VertexHandle v2, VertexHandle v3) = 0;
 
     /**
-     * @brief Return the number of vertices in the mesh.
+     * @brief Returns the number of vertices in the mesh.
      */
     virtual size_t numVertices() const = 0;
 
     /**
-     * @brief Return the number of faces in the mesh.
+     * @brief Returns the number of faces in the mesh.
      */
     virtual size_t numFaces() const = 0;
 
     /**
-     * @brief Get the point of the requested vertex.
+     * @brief Returns the number of edges in the mesh.
+     */
+    virtual size_t numEdges() const = 0;
+
+    /**
+     * @brief Get the position of the given vertex.
      */
     virtual Point<BaseVecT> getVertexPosition(VertexHandle handle) const = 0;
 
     /**
-     * @brief Get a ref to the point of the requested vertex.
+     * @brief Get a ref to the position of the given vertex.
      */
-    virtual Point<BaseVecT>& vertexPosition(VertexHandle handle) = 0;
+    virtual Point<BaseVecT>& getVertexPosition(VertexHandle handle) = 0;
 
     /**
-     * @brief Get vertex handles of the requested face.
+     * @brief Get the three vertices surrounding the given face.
      *
      * @return The vertex-handles in counter-clockwise order.
      */
-    virtual std::array<VertexHandle, 3> getVertexHandlesOfFace(FaceHandle handle) const = 0;
+    virtual array<VertexHandle, 3> getVerticesOfFace(FaceHandle handle) const = 0;
+
+    /**
+     * @brief Get the three edges surrounding the given face.
+     *
+     * @return The edge-handles in counter-clockwise order.
+     */
+    virtual array<EdgeHandle, 3> getEdgesOfFace(FaceHandle handle) const = 0;
 
     /**
      * @brief Get face handles of the neighbours of the requested face.
@@ -161,51 +201,66 @@ public:
     virtual vector<FaceHandle> getNeighboursOfFace(FaceHandle handle) const = 0;
 
     /**
-     * @brief Get face handles of the faces the given vertex belongs to.
+     * @brief Get the two vertices of an edge.
      *
-     * @return The face-handles of the faces the given vertex belongs in counter-clockwise order.
+     * The order of the vertices is not specified
+     */
+    virtual array<VertexHandle, 2> getVerticesOfEdge(EdgeHandle edgeH) const = 0;
+
+    /**
+     * @brief Get the two faces of an edge.
+     *
+     * The order of the faces is not specified
+     */
+    virtual array<OptionalFaceHandle, 2> getFacesOfEdge(EdgeHandle edgeH) const = 0;
+
+    /**
+     * @brief Get a list of faces the given vertex belongs to.
+     *
+     * @return The face-handles in counter-clockwise order.
      */
     virtual vector<FaceHandle> getFacesOfVertex(VertexHandle handle) const = 0;
 
     /**
+     * @brief Get a list of edges around the given vertex.
+     *
+     * @return The edge-handles in counter-clockwise order.
+     */
+    virtual vector<EdgeHandle> getEdgesOfVertex(VertexHandle handle) const = 0;
+
+    /**
      * @brief Returns an iterator to the first vertex of this mesh.
      *
-     * @return When dereferenced, this iterator returns a handle to the current vertex
+     * @return When dereferenced, this iterator returns a handle to the current vertex.
      */
     virtual MeshHandleIteratorPtr<VertexHandle> verticesBegin() const = 0;
 
     /**
      * @brief Returns an iterator to the element following the last vertex of this mesh.
-     *
-     * @return When dereferenced, this iterator returns a handle to the current vertex
      */
     virtual MeshHandleIteratorPtr<VertexHandle> verticesEnd() const = 0;
 
     /**
      * @brief Returns an iterator to the first face of this mesh.
      *
-     * @return When dereferenced, this iterator returns a handle to the current face
+     * @return When dereferenced, this iterator returns a handle to the current face.
      */
     virtual MeshHandleIteratorPtr<FaceHandle> facesBegin() const = 0;
 
     /**
      * @brief Returns an iterator to the element following the last face of this mesh.
-     *
-     * @return When dereferenced, this iterator returns a handle to the current face
      */
     virtual MeshHandleIteratorPtr<FaceHandle> facesEnd() const = 0;
 
     /**
      * @brief Returns an iterator to the first edge of this mesh.
      *
-     * @return When dereferenced, this iterator returns a handle to the current edge
+     * @return When dereferenced, this iterator returns a handle to the current edge.
      */
     virtual MeshHandleIteratorPtr<EdgeHandle> edgesBegin() const = 0;
 
     /**
      * @brief Returns an iterator to the element following the last edge of this mesh.
-     *
-     * @return When dereferenced, this iterator returns a handle to the current edge
      */
     virtual MeshHandleIteratorPtr<EdgeHandle> edgesEnd() const = 0;
 
@@ -218,7 +273,7 @@ public:
      *
      * @return The points of the vertices in counter-clockwise order.
      */
-    virtual std::array<Point<BaseVecT>, 3> getVertexPositionsOfFace(FaceHandle handle) const;
+    virtual array<Point<BaseVecT>, 3> getVertexPositionsOfFace(FaceHandle handle) const;
 
     /**
      * @brief Calc and return the centroid of the requested face.

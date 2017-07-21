@@ -23,6 +23,8 @@
  *  @author Johan M. von Behren <johan@vonbehren.eu>
  */
 
+#include <vector>
+
 #include <lvr2/geometry/Normal.hpp>
 #include <lvr2/util/VectorMap.hpp>
 
@@ -36,16 +38,16 @@ boost::shared_ptr<lvr::MeshBuffer> FinalizeAlgorithm<BaseVecT>::apply(const Base
     VertexMap<size_t> idxMap;
     idxMap.reserve(mesh.numVertices());
 
-    std::vector<float> vertices;
+    vector<float> vertices;
     vertices.reserve(mesh.numVertices() * 3);
 
-    std::vector<float> normals;
+    vector<float> normals;
     if (m_normalData)
     {
         normals.reserve(mesh.numVertices() * 3);
     }
 
-    std::vector<unsigned char> colors;
+    vector<unsigned char> colors;
     if (m_colorData)
     {
         colors.reserve(mesh.numVertices() * 3);
@@ -81,11 +83,11 @@ boost::shared_ptr<lvr::MeshBuffer> FinalizeAlgorithm<BaseVecT>::apply(const Base
     }
 
     // Create face buffer
-    std::vector<unsigned int> faces;
+    vector<unsigned int> faces;
     faces.reserve(mesh.numFaces() * 3);
     for (auto fH : mesh.faces())
     {
-        auto handles = mesh.getVertexHandlesOfFace(fH);
+        auto handles = mesh.getVerticesOfFace(fH);
         for (auto handle : handles)
         {
             faces.push_back(idxMap[handle]);
