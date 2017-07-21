@@ -48,17 +48,30 @@ namespace lvr2
 
 /// Implementation of the MeshHandleIterator for the HalfEdgeMesh
 template<typename HandleT>
-class HemVertexIterator : public MeshHandleIterator<HandleT>
+class HemFevIterator : public MeshHandleIterator<HandleT>
 {
 public:
-    HemVertexIterator(StableVectorIterator<HandleT> iterator) : m_iterator(iterator) {};
-    HemVertexIterator& operator++();
+    HemFevIterator(StableVectorIterator<HandleT> iterator) : m_iterator(iterator) {};
+    HemFevIterator& operator++();
     bool operator==(const MeshHandleIterator<HandleT>& other) const;
     bool operator!=(const MeshHandleIterator<HandleT>& other) const;
     HandleT operator*() const;
 
 private:
     StableVectorIterator<HandleT> m_iterator;
+};
+
+class HemEdgeIterator : public MeshHandleIterator<EdgeHandle>
+{
+public:
+    HemEdgeIterator(StableVectorIterator<HalfEdgeHandle> iterator) : m_iterator(iterator) {};
+    HemEdgeIterator& operator++();
+    bool operator==(const MeshHandleIterator<EdgeHandle>& other) const;
+    bool operator!=(const MeshHandleIterator<EdgeHandle>& other) const;
+    EdgeHandle operator*() const;
+
+private:
+    StableVectorIterator<HalfEdgeHandle> m_iterator;
 };
 
 /**
@@ -108,15 +121,15 @@ public:
     bool debugCheckMeshIntegrity() const;
 
 private:
-    StableVector<EdgeHandle, Edge> m_edges;
+    StableVector<HalfEdgeHandle, Edge> m_edges;
     StableVector<FaceHandle, Face> m_faces;
     StableVector<VertexHandle, Vertex> m_vertices;
 
     // ========================================================================
     // = Private helper methods
     // ========================================================================
-    Edge& getE(EdgeHandle handle);
-    const Edge& getE(EdgeHandle handle) const;
+    Edge& getE(HalfEdgeHandle handle);
+    const Edge& getE(HalfEdgeHandle handle) const;
     Face& getF(FaceHandle handle);
     const Face& getF(FaceHandle handle) const;
     Vertex& getV(VertexHandle handle);
@@ -127,9 +140,9 @@ private:
      *
      * @return None, if there exists no such edge.
      */
-    OptionalEdgeHandle edgeBetween(VertexHandle fromH, VertexHandle toH);
+    OptionalHalfEdgeHandle edgeBetween(VertexHandle fromH, VertexHandle toH);
 
-    EdgeHandle findOrCreateEdgeBetween(VertexHandle fromH, VertexHandle toH);
+    HalfEdgeHandle findOrCreateEdgeBetween(VertexHandle fromH, VertexHandle toH);
 
     /**
      * @brief Adds a new, incomplete edge-pair.
@@ -144,7 +157,7 @@ private:
      * @return Both edge handles. The first edge points from v1H to v2H, the
      *         second one points from v2H to v1H.
      */
-    pair<EdgeHandle, EdgeHandle> addEdgePair(VertexHandle v1H, VertexHandle v2H);
+    pair<HalfEdgeHandle, HalfEdgeHandle> addEdgePair(VertexHandle v1H, VertexHandle v2H);
 
 
     /**
@@ -155,7 +168,7 @@ private:
      *         edge in the circle satisfies the predicate.
      */
     template <typename Pred>
-    OptionalEdgeHandle findEdgeAroundVertex(VertexHandle vH, Pred pred) const;
+    OptionalHalfEdgeHandle findEdgeAroundVertex(VertexHandle vH, Pred pred) const;
 
     /**
      * @brief Iterates over all ingoing edges of the vertex `startEdge.target`,
@@ -165,7 +178,7 @@ private:
      * @return Returns None if no edge in the circle satisfies the predicate.
      */
     template <typename Pred>
-    OptionalEdgeHandle findEdgeAroundVertex(EdgeHandle startEdgeH, Pred pred) const;
+    OptionalHalfEdgeHandle findEdgeAroundVertex(HalfEdgeHandle startEdgeH, Pred pred) const;
 };
 
 } // namespace lvr2

@@ -330,6 +330,18 @@ size_t HalfEdgeMesh<BaseVecT>::numVertices() const
 }
 
 template <typename BaseVecT>
+size_t HalfEdgeMesh<BaseVecT>::numFaces() const
+{
+    return m_faces.sizeUsed();
+}
+
+template <typename BaseVecT>
+size_t HalfEdgeMesh<BaseVecT>::numEdges() const
+{
+    return m_edges.sizeUsed() / 2;
+}
+
+template <typename BaseVecT>
 Point<BaseVecT> HalfEdgeMesh<BaseVecT>::getVertexPosition(VertexHandle handle) const
 {
     return getV(handle).pos;
@@ -342,22 +354,15 @@ Point<BaseVecT>& HalfEdgeMesh<BaseVecT>::getVertexPosition(VertexHandle handle)
 }
 
 template <typename BaseVecT>
-size_t HalfEdgeMesh<BaseVecT>::numFaces() const
-{
-    return m_faces.sizeUsed();
-}
-
-template <typename BaseVecT>
-size_t HalfEdgeMesh<BaseVecT>::numEdges() const
-{
-    return m_edges.sizeUsed();
-}
-
-template <typename BaseVecT>
 std::array<VertexHandle, 3> HalfEdgeMesh<BaseVecT>::getVerticesOfFace(FaceHandle handle) const
 {
-    auto edges = getEdgesOfFace(handle);
-    return {getE(edges[0]).target, getE(edges[1]).target, getE(edges[2]).target};
+    auto face = getF(handle);
+
+    auto e1 = getE(face.edge);
+    auto e2 = getE(e1.next);
+    auto e3 = getE(e2.next);
+
+    return {e1.target, e2.target, e3.target};
 }
 
 template <typename BaseVecT>
@@ -369,7 +374,7 @@ std::array<EdgeHandle, 3> HalfEdgeMesh<BaseVecT>::getEdgesOfFace(FaceHandle hand
     auto e2 = getE(e1).next;
     auto e3 = getE(e2).next;
 
-    return {e1, e2, e3};
+    return {e1.toFullEdgeHandle(), e2.toFullEdgeHandle(), e3.toFullEdgeHandle()};
 }
 
 template <typename BaseVecT>
@@ -491,7 +496,7 @@ bool HalfEdgeMesh<BaseVecT>::debugCheckMeshIntegrity() const
     cout << "| Trying to walk on boundary edges... |" << endl;
     cout << "+-------------------------------------+" << endl;
 
-    EdgeMap<bool> visited(m_edges.size(), false);
+    VectorMap<HalfEdgeHandle, bool> visited(m_edges.size(), false);
     for (auto startEdgeH : m_edges)
     {
         auto loopEdgeH = startEdgeH;
@@ -537,14 +542,14 @@ bool HalfEdgeMesh<BaseVecT>::debugCheckMeshIntegrity() const
 
 template<typename BaseVecT>
 typename HalfEdgeMesh<BaseVecT>::Edge&
-    HalfEdgeMesh<BaseVecT>::getE(EdgeHandle handle)
+    HalfEdgeMesh<BaseVecT>::getE(HalfEdgeHandle handle)
 {
     return m_edges[handle];
 }
 
 template<typename BaseVecT>
 const typename HalfEdgeMesh<BaseVecT>::Edge&
-    HalfEdgeMesh<BaseVecT>::getE(EdgeHandle handle) const
+    HalfEdgeMesh<BaseVecT>::getE(HalfEdgeHandle handle) const
 {
     return m_edges[handle];
 }
@@ -578,7 +583,7 @@ const typename HalfEdgeMesh<BaseVecT>::Vertex&
 }
 
 template <typename BaseVecT>
-OptionalEdgeHandle
+OptionalHalfEdgeHandle
     HalfEdgeMesh<BaseVecT>::edgeBetween(VertexHandle fromH, VertexHandle toH)
 {
     auto twinOut = findEdgeAroundVertex(fromH, [&, this](auto edgeH)
@@ -591,12 +596,12 @@ OptionalEdgeHandle
     }
     else
     {
-        return OptionalEdgeHandle();
+        return OptionalHalfEdgeHandle();
     }
 }
 
 template <typename BaseVecT>
-EdgeHandle
+HalfEdgeHandle
     HalfEdgeMesh<BaseVecT>::findOrCreateEdgeBetween(VertexHandle fromH, VertexHandle toH)
 {
     DOINDEBUG(dout() << "# findOrCreateEdgeBetween: " << fromH << " --> " << toH << endl);
@@ -615,7 +620,7 @@ EdgeHandle
 
 template <typename BaseVecT>
 template <typename Pred>
-OptionalEdgeHandle
+OptionalHalfEdgeHandle
     HalfEdgeMesh<BaseVecT>::findEdgeAroundVertex(VertexHandle vH, Pred pred) const
 {
     // This function simply follows `next` and `twin` handles to visit all
@@ -626,7 +631,7 @@ OptionalEdgeHandle
     if (!v.outgoing)
     {
         DOINDEBUG(dout() << ">> ... " << vH << " has no outgoing edge, returning none." << endl);
-        return OptionalEdgeHandle();
+        return OptionalHalfEdgeHandle();
     }
 
     return findEdgeAroundVertex(getE(v.outgoing.unwrap()).twin, pred);
@@ -634,8 +639,8 @@ OptionalEdgeHandle
 
 template <typename BaseVecT>
 template <typename Pred>
-OptionalEdgeHandle
-    HalfEdgeMesh<BaseVecT>::findEdgeAroundVertex(EdgeHandle startEdgeH, Pred pred) const
+OptionalHalfEdgeHandle
+    HalfEdgeMesh<BaseVecT>::findEdgeAroundVertex(HalfEdgeHandle startEdgeH, Pred pred) const
 {
     // This function simply follows `next` and `twin` handles to visit all
     // edges around a vertex.
@@ -644,7 +649,7 @@ OptionalEdgeHandle
     auto loopEdgeH = startEdgeH;
 
     int iterCount = 0;
-    vector<EdgeHandle> visited;
+    vector<HalfEdgeHandle> visited;
 
     while (!pred(loopEdgeH))
     {
@@ -661,7 +666,7 @@ OptionalEdgeHandle
                 dout() << ">> ... we visited all edges once without success, returning none."
                     << endl
             );
-            return OptionalEdgeHandle();
+            return OptionalHalfEdgeHandle();
         }
 
         iterCount++;
@@ -684,7 +689,7 @@ OptionalEdgeHandle
 }
 
 template <typename BaseVecT>
-pair<EdgeHandle, EdgeHandle> HalfEdgeMesh<BaseVecT>::addEdgePair(VertexHandle v1H, VertexHandle v2H)
+pair<HalfEdgeHandle, HalfEdgeHandle> HalfEdgeMesh<BaseVecT>::addEdgePair(VertexHandle v1H, VertexHandle v2H)
 {
     // This method adds two new half edges, called "a" and "b".
     //
@@ -696,8 +701,8 @@ pair<EdgeHandle, EdgeHandle> HalfEdgeMesh<BaseVecT>::addEdgePair(VertexHandle v1
     // method, they are less invalid.
     Edge a;
     Edge b;
-    EdgeHandle aH(m_edges.size());
-    EdgeHandle bH(m_edges.size() + 1);
+    HalfEdgeHandle aH(m_edges.size());
+    HalfEdgeHandle bH(m_edges.size() + 1);
 
     // Assign twins to each other
     a.twin = bH;
@@ -719,37 +724,61 @@ pair<EdgeHandle, EdgeHandle> HalfEdgeMesh<BaseVecT>::addEdgePair(VertexHandle v1
 // = Iterator stuff
 // ========================================================================
 template<typename HandleT>
-HemVertexIterator<HandleT>& HemVertexIterator<HandleT>::operator++()
+HemFevIterator<HandleT>& HemFevIterator<HandleT>::operator++()
 {
     ++m_iterator;
     return *this;
 }
 
 template<typename HandleT>
-bool HemVertexIterator<HandleT>::operator==(const MeshHandleIterator<HandleT>& other) const
+bool HemFevIterator<HandleT>::operator==(const MeshHandleIterator<HandleT>& other) const
 {
-    auto cast = dynamic_cast<const HemVertexIterator<HandleT>*>(&other);
+    auto cast = dynamic_cast<const HemFevIterator<HandleT>*>(&other);
     return cast && m_iterator == cast->m_iterator;
 }
 
 template<typename HandleT>
-bool HemVertexIterator<HandleT>::operator!=(const MeshHandleIterator<HandleT>& other) const
+bool HemFevIterator<HandleT>::operator!=(const MeshHandleIterator<HandleT>& other) const
 {
-    auto cast = dynamic_cast<const HemVertexIterator<HandleT>*>(&other);
+    auto cast = dynamic_cast<const HemFevIterator<HandleT>*>(&other);
     return !cast || m_iterator != cast->m_iterator;
 }
 
 template<typename HandleT>
-HandleT HemVertexIterator<HandleT>::operator*() const
+HandleT HemFevIterator<HandleT>::operator*() const
 {
     return *m_iterator;
+}
+
+HemEdgeIterator& HemEdgeIterator::operator++()
+{
+    ++m_iterator;
+    ++m_iterator;
+    return *this;
+}
+
+bool HemEdgeIterator::operator==(const MeshHandleIterator<EdgeHandle>& other) const
+{
+    auto cast = dynamic_cast<const HemEdgeIterator*>(&other);
+    return cast && m_iterator == cast->m_iterator;
+}
+
+bool HemEdgeIterator::operator!=(const MeshHandleIterator<EdgeHandle>& other) const
+{
+    auto cast = dynamic_cast<const HemEdgeIterator*>(&other);
+    return !cast || m_iterator != cast->m_iterator;
+}
+
+EdgeHandle HemEdgeIterator::operator*() const
+{
+    return (*m_iterator).toFullEdgeHandle();
 }
 
 template <typename BaseVecT>
 MeshHandleIteratorPtr<VertexHandle> HalfEdgeMesh<BaseVecT>::verticesBegin() const
 {
     return MeshHandleIteratorPtr<VertexHandle>(
-        std::make_unique<HemVertexIterator<VertexHandle>>(this->m_vertices.begin())
+        std::make_unique<HemFevIterator<VertexHandle>>(this->m_vertices.begin())
     );
 }
 
@@ -757,7 +786,7 @@ template <typename BaseVecT>
 MeshHandleIteratorPtr<VertexHandle> HalfEdgeMesh<BaseVecT>::verticesEnd() const
 {
     return MeshHandleIteratorPtr<VertexHandle>(
-        std::make_unique<HemVertexIterator<VertexHandle>>(this->m_vertices.end())
+        std::make_unique<HemFevIterator<VertexHandle>>(this->m_vertices.end())
     );
 }
 
@@ -765,7 +794,7 @@ template <typename BaseVecT>
 MeshHandleIteratorPtr<FaceHandle> HalfEdgeMesh<BaseVecT>::facesBegin() const
 {
     return MeshHandleIteratorPtr<FaceHandle>(
-        std::make_unique<HemVertexIterator<FaceHandle>>(this->m_faces.begin())
+        std::make_unique<HemFevIterator<FaceHandle>>(this->m_faces.begin())
     );
 }
 
@@ -773,7 +802,7 @@ template <typename BaseVecT>
 MeshHandleIteratorPtr<FaceHandle> HalfEdgeMesh<BaseVecT>::facesEnd() const
 {
     return MeshHandleIteratorPtr<FaceHandle>(
-        std::make_unique<HemVertexIterator<FaceHandle>>(this->m_faces.end())
+        std::make_unique<HemFevIterator<FaceHandle>>(this->m_faces.end())
     );
 }
 
@@ -781,7 +810,7 @@ template <typename BaseVecT>
 MeshHandleIteratorPtr<EdgeHandle> HalfEdgeMesh<BaseVecT>::edgesBegin() const
 {
     return MeshHandleIteratorPtr<EdgeHandle>(
-        std::make_unique<HemVertexIterator<EdgeHandle>>(this->m_edges.begin())
+        std::make_unique<HemEdgeIterator>(this->m_edges.begin())
     );
 }
 
@@ -789,7 +818,7 @@ template <typename BaseVecT>
 MeshHandleIteratorPtr<EdgeHandle> HalfEdgeMesh<BaseVecT>::edgesEnd() const
 {
     return MeshHandleIteratorPtr<EdgeHandle>(
-        std::make_unique<HemVertexIterator<EdgeHandle>>(this->m_edges.end())
+        std::make_unique<HemEdgeIterator>(this->m_edges.end())
     );
 }
 

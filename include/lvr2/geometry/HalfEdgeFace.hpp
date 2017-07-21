@@ -36,6 +36,7 @@ namespace lvr2
 template <typename BaseVecT> struct HalfEdge;
 template <typename BaseVecT> struct HalfEdgeVertex;
 template <typename BaseVecT> struct HalfEdgeMesh;
+struct HalfEdgeHandle;
 
 template <typename BaseVecT>
 struct HalfEdgeFace
@@ -46,11 +47,11 @@ private:
     using Vertex = HalfEdgeVertex<BaseVecT>;
 
 public:
-    HalfEdgeFace(EdgeHandle edge)
+    HalfEdgeFace(HalfEdgeHandle edge)
         : edge(edge) {}
 
     /// One of the edges bounding this face.
-    EdgeHandle edge;
+    HalfEdgeHandle edge;
 };
 
 } // namespace lvr2
