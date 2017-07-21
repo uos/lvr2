@@ -24,6 +24,8 @@
 *  @author Kristin Schmidt <krschmidt@uni-osnabrueck.de>
 */
 
+#include "ClusterAlgorithm.hpp"
+
 namespace lvr2
 {
 
@@ -45,6 +47,7 @@ TexturizerResult generateTextures(
         if (numFacesInCluster >= numFacesThreshold)
         {
             // contour
+            std::vector<BaseVecT> contour = calculateContour(clusterH, mesh, faceHandleClusterSet);
 
             // initial texture
 
