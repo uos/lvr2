@@ -40,7 +40,7 @@ std::vector<BaseVecT> calculateContour(ClusterHandle clusterH, HalfEdgeMesh<Base
     {
         std::vector<EdgeHandle> contours = mesh.getContourEdgesOfFace(
             faceH,
-            [&, this](auto neighbourFaceH)
+            [&](auto neighbourFaceH)
             {
                 return (clusterH != clusterSet.getClusterH(neighbourFaceH));
             }
