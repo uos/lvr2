@@ -706,8 +706,8 @@ int main(int argc, char** argv)
     //auto clusterSet = planarClusterGrowing(mesh, options.getNormalThreshold());
 
     ClusterPainter painter(clusterSet);
-    auto clusterColors = optional<ClusterMap<ClusterPainter::Rgb8Color>>(painter.simpsons(mesh));
-    // auto colorMap = painter.fromPointCloud(mesh, surface);
+    auto clusterColors = optional<ClusterMap<Rgb8Color>>(painter.simpsons(mesh));
+    // auto colorMap = calcColorFromPointCloud(mesh, surface);
 
     // Calc normals for vertices
     auto vertexNormals = calcVertexNormals(mesh, faceNormals, *surface);
