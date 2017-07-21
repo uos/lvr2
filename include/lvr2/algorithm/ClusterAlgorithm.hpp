@@ -38,8 +38,23 @@ using std::vector;
 namespace lvr2
 {
 
+
+// TODO: Refactoring auf BaseMesh
+
+
+template<typename BaseVecT>
+vector<Point<BaseVecT>> calculateAllContourVertices(
+    ClusterHandle clusterH,
+    HalfEdgeMesh<BaseVecT>& mesh,
+    ClusterSet<FaceHandle>& clusterSet
+);
+
 template<typename BaseVecT, typename VertexT>
-std::vector<VertexT> calculateContour(ClusterHandle clusterH, HalfEdgeMesh<BaseVecT>& mesh, ClusterSet<FaceHandle>& clusterSet);
+vector<vector<Point<VertexT>>> calculateContour(
+    ClusterHandle clusterH,
+    HalfEdgeMesh<BaseVecT>& mesh,
+    ClusterSet<FaceHandle>& clusterSet
+); // TODO/FIXME
 
 
 } // namespace lvr2

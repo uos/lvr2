@@ -36,7 +36,7 @@ TexturizerResult generateTextures(
     PointsetSurfacePtr<BaseVecT> surface
 )
 {
-    int numFacesThreshold = 5;
+    int numFacesThreshold = 5; // TODO: read from config
 
     for (auto clusterH: faceHandleClusterSet)
     {
@@ -47,7 +47,13 @@ TexturizerResult generateTextures(
         if (numFacesInCluster >= numFacesThreshold)
         {
             // contour
-            std::vector<BaseVecT> contour = calculateContour(clusterH, mesh, faceHandleClusterSet);
+            // TODO: use better contour function
+            std::vector<Point<BaseVecT>> contour = calculateAllContourVertices(clusterH, mesh, faceHandleClusterSet);
+
+            for (auto point : contour)
+            {
+                cout << point << endl;
+            }
 
             // initial texture
 
