@@ -23,6 +23,10 @@
  *  @author Johan M. von Behren <johan@vonbehren.eu>
  */
 
+#include <unordered_map>
+
+using std::unordered_map;
+
 #include <lvr2/algorithm/FinalizeAlgorithm.hpp>
 #include <lvr/io/Model.hpp>
 #include <lvr/io/ModelFactory.hpp>
@@ -56,6 +60,31 @@ void writeDebugMesh(
     // Save mesh
     auto m = boost::make_shared<lvr::Model>(buffer);
     lvr::ModelFactory::saveModel(m, filename);
+}
+
+template<typename BaseVecT>
+vector<vector<VertexHandle>> getDuplicateVertices(const BaseMesh<BaseVecT>& mesh)
+{
+    // Save vertex handles "behind" equal points
+    unordered_map<Point<BaseVecT>, vector<VertexHandle>> uniquePoints;
+    for (auto vH: mesh.vertices())
+    {
+        auto point = mesh.getVertexPosition(vH);
+        uniquePoints[point].push_back(vH);
+    }
+
+    // Extract all vertex handles, where one point has more than one vertex handle
+    vector<vector<VertexHandle>> duplicateVertices;
+    for (auto elem: uniquePoints)
+    {
+        auto vec = elem.second;
+        if (vec.size() > 1)
+        {
+            duplicateVertices.push_back(vec);
+        }
+    }
+
+    return duplicateVertices;
 }
 
 } // namespace lvr2
