@@ -89,6 +89,7 @@ public:
     Point<BaseVecT> getVertexPosition(VertexHandle handle) const final;
     Point<BaseVecT>& getVertexPosition(VertexHandle handle) final;
     std::array<VertexHandle, 3> getVerticesOfFace(FaceHandle handle) const final;
+    std::array<EdgeHandle, 3> getEdgesOfFace(FaceHandle handle) const final;
     std::vector<FaceHandle> getNeighboursOfFace(FaceHandle handle) const final;
     vector<FaceHandle> getFacesOfVertex(VertexHandle handle) const final;
 

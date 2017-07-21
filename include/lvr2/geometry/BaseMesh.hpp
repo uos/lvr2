@@ -186,6 +186,13 @@ public:
     virtual std::array<VertexHandle, 3> getVerticesOfFace(FaceHandle handle) const = 0;
 
     /**
+     * @brief Get the three edges surrounding the given face.
+     *
+     * @return The edge-handles in counter-clockwise order.
+     */
+    virtual std::array<EdgeHandle, 3> getEdgesOfFace(FaceHandle handle) const = 0;
+
+    /**
      * @brief Get face handles of the neighbours of the requested face.
      *
      * @return The face-handles of the neighbours in counter-clockwise order.
