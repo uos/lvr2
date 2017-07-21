@@ -354,16 +354,22 @@ size_t HalfEdgeMesh<BaseVecT>::numEdges() const
 }
 
 template <typename BaseVecT>
-std::array<VertexHandle, 3>
-    HalfEdgeMesh<BaseVecT>::getVerticesOfFace(FaceHandle handle) const
+std::array<VertexHandle, 3> HalfEdgeMesh<BaseVecT>::getVerticesOfFace(FaceHandle handle) const
+{
+    auto edges = getEdgesOfFace(handle);
+    return {getE(edges[0]).target, getE(edges[1]).target, getE(edges[2]).target};
+}
+
+template <typename BaseVecT>
+std::array<EdgeHandle, 3> HalfEdgeMesh<BaseVecT>::getEdgesOfFace(FaceHandle handle) const
 {
     auto face = getF(handle);
 
-    auto e1 = getE(face.edge);
-    auto e2 = getE(e1.next);
-    auto e3 = getE(e2.next);
+    auto e1 = face.edge;
+    auto e2 = getE(e1).next;
+    auto e3 = getE(e2).next;
 
-    return {e1.target, e2.target, e3.target};
+    return {e1, e2, e3};
 }
 
 template <typename BaseVecT>
