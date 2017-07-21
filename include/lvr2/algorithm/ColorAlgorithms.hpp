@@ -17,47 +17,40 @@
  */
 
 /*
- * ClusterPainter.hpp
+ * ColorAlgorithms.hpp
  *
- *  @date 18.06.2017
- *  @author Johan M. von Behren <johan@vonbehren.eu>
+ * Collection of algorithms for color calculation.
+ *
+ * @date 21.07.2017
+ * @author Johan M. von Behren <johan@vonbehren.eu>
  */
 
-#ifndef LVR2_ALGORITHM_CLUSTERPAINTER_H_
-#define LVR2_ALGORITHM_CLUSTERPAINTER_H_
+#ifndef LVR2_ALGORITHM_COLORALGORITHMS_H_
+#define LVR2_ALGORITHM_COLORALGORITHMS_H_
 
-#include <cstdint>
-#include <array>
+#include <vector>
+#include <boost/optional.hpp>
 
-using std::array;
+using std::vector;
+using boost::optional;
 
-#include <lvr2/geometry/Handles.hpp>
-#include <lvr2/geometry/ClusterSet.hpp>
+#include <lvr2/geometry/BaseMesh.hpp>
 #include <lvr2/reconstruction/PointsetSurface.hpp>
 #include <lvr2/util/VectorMap.hpp>
 
 namespace lvr2
 {
 
-/**
- * @brief Algorithm which generates the same color for all vertices, which are in the same cluster.
- */
-class ClusterPainter
-{
-public:
-    using Rgb8Color = array<uint8_t, 3>;
-    ClusterPainter(const ClusterSet<FaceHandle>& clusterSet) : m_clusterSet(clusterSet) {};
+using Rgb8Color = array<uint8_t, 3>;
 
-    template<typename BaseVecT>
-    ClusterMap<Rgb8Color> simpsons(const BaseMesh<BaseVecT>& mesh) const;
-
-private:
-    ClusterSet<FaceHandle> m_clusterSet;
-    Rgb8Color getSimpsonColorForIdx(size_t idx) const;
-};
+template<typename BaseVecT>
+optional<VertexMap<Rgb8Color>> calcColorFromPointCloud(
+    const BaseMesh<BaseVecT>& mesh,
+    const PointsetSurfacePtr<BaseVecT> surface
+);
 
 } // namespace lvr2
 
-#include <lvr2/algorithm/ClusterPainter.tcc>
+#include <lvr2/algorithm/ColorAlgorithms.tcc>
 
-#endif /* LVR2_ALGORITHM_CLUSTERPAINTER_H_ */
+#endif /* LVR2_ALGORITHM_COLORALGORITHMS_H_ */
