@@ -686,13 +686,21 @@ int main(int argc, char** argv)
     // }
 
     auto faceNormals = calcFaceNormals(mesh);
-    auto clusterSet = iterativePlanarClusterGrowing(
-        mesh,
-        faceNormals,
-        options.getNormalThreshold(),
-        options.getPlaneIterations(),
-        options.getMinPlaneSize()
-    );
+    ClusterSet<FaceHandle> clusterSet;
+    if(options.optimizePlanes())
+    {
+        clusterSet = iterativePlanarClusterGrowing(
+            mesh,
+            faceNormals,
+            options.getNormalThreshold(),
+            options.getPlaneIterations(),
+            options.getMinPlaneSize()
+        );
+    }
+    else
+    {
+        clusterSet = planarClusterGrowing(mesh, faceNormals, options.getNormalThreshold());
+    }
 
     //auto clusterSet = planarClusterGrowing(mesh, options.getNormalThreshold());
 
@@ -702,6 +710,10 @@ int main(int argc, char** argv)
 
     // Calc normals for vertices
     auto vertexNormals = calcVertexNormals(mesh, faceNormals, *surface);
+
+    // Debug mesh
+    //auto duplicateVertices = getDuplicateVertices(mesh);
+    //cout << "duplicate vertices: " << duplicateVertices.size() << endl;
 
     // Finalize mesh (convert it to simple `MeshBuffer`)
     FinalizeAlgorithm<Vec> finalize;
