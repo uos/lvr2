@@ -52,6 +52,8 @@ class HalfEdgeHandle : public BaseHandle<Index>
 {
 public:
     using BaseHandle<Index>::BaseHandle;
+    HalfEdgeHandle(EdgeHandle eH) : HalfEdgeHandle(eH.idx()) {}
+
     EdgeHandle toFullEdgeHandle() const {
         return EdgeHandle(m_idx & ~1);
     }
@@ -60,7 +62,11 @@ public:
 /// Semantically equivalent to `boost::optional<HalfEdgeHandle>`
 class OptionalHalfEdgeHandle : public BaseOptionalHandle<Index, HalfEdgeHandle>
 {
+public:
     using BaseOptionalHandle<Index, HalfEdgeHandle>::BaseOptionalHandle;
+    OptionalHalfEdgeHandle() : BaseOptionalHandle() {}
+    OptionalHalfEdgeHandle(EdgeHandle eH) : OptionalHalfEdgeHandle(eH.idx()) {}
+
     OptionalEdgeHandle toFullEdgeHandle() const {
         if (*this)
         {

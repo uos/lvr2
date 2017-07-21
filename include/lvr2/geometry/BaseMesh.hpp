@@ -199,11 +199,19 @@ public:
      */
     virtual vector<FaceHandle> getNeighboursOfFace(FaceHandle handle) const = 0;
 
-    // /**
-    //  * @brief Get the two vertices of an edge.
-    //  */
-    // virtual std::array<VertexHandle, 2> getVerticesOfEdge(EdgeHandle edgeH) const = 0;
-    // virtual std::array<FaceHandle, 2> getFacesOfEdge(EdgeHandle edgeH) const = 0;
+    /**
+     * @brief Get the two vertices of an edge.
+     *
+     * The order of the vertices is not specified
+     */
+    virtual std::array<VertexHandle, 2> getVerticesOfEdge(EdgeHandle edgeH) const = 0;
+
+    /**
+     * @brief Get the two faces of an edge.
+     *
+     * The order of the faces is not specified
+     */
+    virtual std::array<OptionalFaceHandle, 2> getFacesOfEdge(EdgeHandle edgeH) const = 0;
 
     /**
      * @brief Get a list of faces the given vertex belongs to.
