@@ -97,6 +97,14 @@ public:
     using BaseMesh<BaseVecT>::getEdgesOfVertex;
     using BaseMesh<BaseVecT>::getNeighboursOfVertex;
 
+    /**
+     * @brief Method for finding contour edges of given face.
+     *
+     * Returns all edge handles that are contours
+     */
+    template <typename Pred>
+    vector<EdgeHandle> getContourEdgesOfFace(FaceHandle faceH, Pred pred) const;
+
 
     MeshHandleIteratorPtr<VertexHandle> verticesBegin() const final;
     MeshHandleIteratorPtr<VertexHandle> verticesEnd() const final;
@@ -207,14 +215,6 @@ private:
      */
     template <typename Pred>
     OptionalHalfEdgeHandle findEdgeAroundVertex(HalfEdgeHandle startEdgeH, Pred pred) const;
-
-    /**
-     * @brief Method for finding contour edges of given face.
-     *
-     * Returns all edge handles that are contours
-     */
-    template <typename Pred>
-    vector<EdgeHandle> getContourEdgesOfFace(FaceHandle faceH, Pred pred) const;
 
     /**
      * @brief Get inner edges in counter clockwise order
