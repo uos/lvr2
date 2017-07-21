@@ -446,6 +446,23 @@ vector<FaceHandle> HalfEdgeMesh<BaseVecT>::getFacesOfVertex(VertexHandle handle)
     return faces;
 }
 
+// TODO: Maybe we want to change the interface here. Passing a mutable ref to a
+// vector into the method can improve performance a lot. With the current
+// design, each function call implies a heap allocation.
+template <typename BaseVecT>
+vector<EdgeHandle> HalfEdgeMesh<BaseVecT>::getEdgesOfVertex(VertexHandle handle) const
+{
+    vector<EdgeHandle> edges;
+
+    // Iterate over all
+    findEdgeAroundVertex(handle, [&edges, this](auto eH)
+    {
+        edges.push_back(eH.toFullEdgeHandle());
+        return false;
+    });
+    return edges;
+}
+
 // ========================================================================
 // = Other public methods
 // ========================================================================
