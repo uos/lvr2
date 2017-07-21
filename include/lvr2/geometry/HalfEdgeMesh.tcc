@@ -1333,25 +1333,25 @@ pair<HalfEdgeHandle, HalfEdgeHandle> HalfEdgeMesh<BaseVecT>::addEdgePair(VertexH
 
 template <typename BaseVecT>
 template <typename Pred>
-vector<EdgeHandle> HalfEdgeMesh<BaseVecT>::getContourEdgesOfFace(FaceHandle faceH, Pred pred) const
+std::vector<EdgeHandle> HalfEdgeMesh<BaseVecT>::getContourEdgesOfFace(FaceHandle faceH, Pred pred) const
 {
-    vector<EdgeHandle> contours;
+    std::vector<EdgeHandle> contours;
 
     auto face = this->getF(faceH);
-    EdgeHandle edgeH = face->edge;
-    Edge edge;
+    auto edgeH = face.edge;
 
     for (int i = 0; i < 3; i++)
     {
-        edge = this->getE(edgeH);
+        auto& edge = this->getE(edgeH);
         if (!this->getE(edge.twin).face)
         {
             contours.push_back(edgeH);
-        } else if (pred(*this->getE(edge.twin).face))
+        } else if (pred(this->getE(edge.twin).face.unwrap()))
         {
             contours.push_back(edgeH);
         }
-        edgeH = edge.next();
+
+        edgeH = edge.next;
     }
 
     return contours;
