@@ -17,7 +17,7 @@
  */
 
 /*
- * ClusterPainter.hpp
+ * ClusterPainter.tcc
  *
  *  @date 18.06.2017
  *  @author Johan M. von Behren <johan@vonbehren.eu>
@@ -47,53 +47,6 @@ ClusterMap<ClusterPainter::Rgb8Color> ClusterPainter::simpsons(const BaseMesh<Ba
     }
 
     return colorMap;
-}
-
-template<typename BaseVecT>
-optional<VertexMap<ClusterPainter::Rgb8Color>> ClusterPainter::fromPointCloud(
-    const BaseMesh<BaseVecT>& mesh,
-    const PointsetSurfacePtr<BaseVecT> surface
-) const
-{
-
-    if (!surface->pointBuffer()->hasRgbColor())
-    {
-        return boost::none;
-    }
-
-    VertexMap<Rgb8Color> vertexMap;
-    vertexMap.reserve(mesh.numVertices());
-
-    int k = 1; // k-nearest-neighbors
-
-    for (auto vertexH: mesh.vertices())
-    {
-        vector<size_t> cv;
-        Point<BaseVecT> p = mesh.getVertexPosition(vertexH);
-        surface->searchTree().kSearch(p, k, cv);
-
-        float r = 0.0f, g = 0.0f, b = 0.0f;
-
-        for (size_t pointIdx : cv)
-        {
-            array<uint8_t,3> colors = *(surface->pointBuffer()->getRgbColor(pointIdx));
-            r += colors[0];
-            g += colors[1];
-            b += colors[2];
-        }
-
-        r /= k;
-        g /= k;
-        b /= k;
-
-        vertexMap.insert(vertexH, {
-            static_cast<uint8_t>(r),
-            static_cast<uint8_t>(g),
-            static_cast<uint8_t>(b)
-        });
-    }
-
-    return vertexMap;
 }
 
 ClusterPainter::Rgb8Color ClusterPainter::getSimpsonColorForIdx(size_t idx) const
