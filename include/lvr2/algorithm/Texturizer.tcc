@@ -50,11 +50,6 @@ TexturizerResult generateTextures(
             // TODO: use better contour function
             std::vector<Point<BaseVecT>> contour = calculateAllContourVertices(clusterH, mesh, faceHandleClusterSet);
 
-            for (auto point : contour)
-            {
-                cout << point << endl;
-            }
-
             // initial texture
 
             // zuordnen & speichern
