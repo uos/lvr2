@@ -127,14 +127,19 @@ public:
     virtual FaceHandle addFace(VertexHandle v1, VertexHandle v2, VertexHandle v3) = 0;
 
     /**
-     * @brief Return the number of vertices in the mesh.
+     * @brief Returns the number of vertices in the mesh.
      */
     virtual size_t numVertices() const = 0;
 
     /**
-     * @brief Return the number of faces in the mesh.
+     * @brief Returns the number of faces in the mesh.
      */
     virtual size_t numFaces() const = 0;
+
+    /**
+     * @brief Returns the number of edges in the mesh.
+     */
+    virtual size_t numEdges() const = 0;
 
     /**
      * @brief Get the point of the requested vertex.
@@ -144,14 +149,14 @@ public:
     /**
      * @brief Get a ref to the point of the requested vertex.
      */
-    virtual Point<BaseVecT>& vertexPosition(VertexHandle handle) = 0;
+    virtual Point<BaseVecT>& getVertexPosition(VertexHandle handle) = 0;
 
     /**
      * @brief Get vertex handles of the requested face.
      *
      * @return The vertex-handles in counter-clockwise order.
      */
-    virtual std::array<VertexHandle, 3> getVertexHandlesOfFace(FaceHandle handle) const = 0;
+    virtual std::array<VertexHandle, 3> getVerticesOfFace(FaceHandle handle) const = 0;
 
     /**
      * @brief Get face handles of the neighbours of the requested face.

@@ -85,7 +85,7 @@ boost::shared_ptr<lvr::MeshBuffer> FinalizeAlgorithm<BaseVecT>::apply(const Base
     faces.reserve(mesh.numFaces() * 3);
     for (auto fH : mesh.faces())
     {
-        auto handles = mesh.getVertexHandlesOfFace(fH);
+        auto handles = mesh.getVerticesOfFace(fH);
         for (auto handle : handles)
         {
             faces.push_back(idxMap[handle]);
