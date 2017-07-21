@@ -1337,21 +1337,23 @@ std::vector<EdgeHandle> HalfEdgeMesh<BaseVecT>::getContourEdgesOfFace(FaceHandle
 {
     std::vector<EdgeHandle> contours;
 
-    auto face = this->getF(faceH);
-    auto edgeH = face.edge;
-
-    for (int i = 0; i < 3; i++)
+    // iterate all edges of given face
+    for (auto edgeH : this->getEdgesOfFace(faceH))
     {
-        auto& edge = this->getE(edgeH);
-        if (!this->getE(edge.twin).face)
+        auto edge = this->getE(edgeH);
+        auto twinFaceHOptional = this->getE(edge.twin).face;
+        // if edge has face
+        if (twinFaceHOptional)
         {
-            contours.push_back(edgeH);
-        } else if (pred(this->getE(edge.twin).face.unwrap()))
-        {
-            contours.push_back(edgeH);
+            // pred will check whether face is in the same cluster
+            // returns true, if faces are not in the same cluster
+            if (pred(twinFaceHOptional.unwrap()))
+            {
+                // faces are not in the same cluster
+                // => this edge is a contour edge
+                contours.push_back(edgeH);
+            }
         }
-
-        edgeH = edge.next;
     }
 
     return contours;
