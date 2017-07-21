@@ -34,6 +34,7 @@
 #include <boost/optional.hpp>
 
 using std::vector;
+using std::array;
 using boost::optional;
 
 #include "Handles.hpp"
@@ -183,14 +184,14 @@ public:
      *
      * @return The vertex-handles in counter-clockwise order.
      */
-    virtual std::array<VertexHandle, 3> getVerticesOfFace(FaceHandle handle) const = 0;
+    virtual array<VertexHandle, 3> getVerticesOfFace(FaceHandle handle) const = 0;
 
     /**
      * @brief Get the three edges surrounding the given face.
      *
      * @return The edge-handles in counter-clockwise order.
      */
-    virtual std::array<EdgeHandle, 3> getEdgesOfFace(FaceHandle handle) const = 0;
+    virtual array<EdgeHandle, 3> getEdgesOfFace(FaceHandle handle) const = 0;
 
     /**
      * @brief Get face handles of the neighbours of the requested face.
@@ -204,14 +205,14 @@ public:
      *
      * The order of the vertices is not specified
      */
-    virtual std::array<VertexHandle, 2> getVerticesOfEdge(EdgeHandle edgeH) const = 0;
+    virtual array<VertexHandle, 2> getVerticesOfEdge(EdgeHandle edgeH) const = 0;
 
     /**
      * @brief Get the two faces of an edge.
      *
      * The order of the faces is not specified
      */
-    virtual std::array<OptionalFaceHandle, 2> getFacesOfEdge(EdgeHandle edgeH) const = 0;
+    virtual array<OptionalFaceHandle, 2> getFacesOfEdge(EdgeHandle edgeH) const = 0;
 
     /**
      * @brief Get a list of faces the given vertex belongs to.
@@ -272,7 +273,7 @@ public:
      *
      * @return The points of the vertices in counter-clockwise order.
      */
-    virtual std::array<Point<BaseVecT>, 3> getVertexPositionsOfFace(FaceHandle handle) const;
+    virtual array<Point<BaseVecT>, 3> getVertexPositionsOfFace(FaceHandle handle) const;
 
     /**
      * @brief Calc and return the centroid of the requested face.

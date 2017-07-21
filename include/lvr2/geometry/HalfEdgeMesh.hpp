@@ -34,6 +34,7 @@
 #include <vector>
 
 using std::pair;
+using std::array;
 using std::vector;
 
 #include "Point.hpp"
@@ -102,11 +103,11 @@ public:
     Point<BaseVecT> getVertexPosition(VertexHandle handle) const final;
     Point<BaseVecT>& getVertexPosition(VertexHandle handle) final;
 
-    std::array<VertexHandle, 3> getVerticesOfFace(FaceHandle handle) const final;
-    std::array<EdgeHandle, 3> getEdgesOfFace(FaceHandle handle) const final;
-    std::vector<FaceHandle> getNeighboursOfFace(FaceHandle handle) const final;
-    std::array<VertexHandle, 2> getVerticesOfEdge(EdgeHandle edgeH) const final;
-    std::array<OptionalFaceHandle, 2> getFacesOfEdge(EdgeHandle edgeH) const final;
+    array<VertexHandle, 3> getVerticesOfFace(FaceHandle handle) const final;
+    array<EdgeHandle, 3> getEdgesOfFace(FaceHandle handle) const final;
+    vector<FaceHandle> getNeighboursOfFace(FaceHandle handle) const final;
+    array<VertexHandle, 2> getVerticesOfEdge(EdgeHandle edgeH) const final;
+    array<OptionalFaceHandle, 2> getFacesOfEdge(EdgeHandle edgeH) const final;
     vector<FaceHandle> getFacesOfVertex(VertexHandle handle) const final;
     vector<EdgeHandle> getEdgesOfVertex(VertexHandle handle) const final;
 

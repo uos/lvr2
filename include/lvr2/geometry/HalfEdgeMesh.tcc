@@ -354,7 +354,7 @@ Point<BaseVecT>& HalfEdgeMesh<BaseVecT>::getVertexPosition(VertexHandle handle)
 }
 
 template <typename BaseVecT>
-std::array<VertexHandle, 3> HalfEdgeMesh<BaseVecT>::getVerticesOfFace(FaceHandle handle) const
+array<VertexHandle, 3> HalfEdgeMesh<BaseVecT>::getVerticesOfFace(FaceHandle handle) const
 {
     auto face = getF(handle);
 
@@ -366,7 +366,7 @@ std::array<VertexHandle, 3> HalfEdgeMesh<BaseVecT>::getVerticesOfFace(FaceHandle
 }
 
 template <typename BaseVecT>
-std::array<EdgeHandle, 3> HalfEdgeMesh<BaseVecT>::getEdgesOfFace(FaceHandle handle) const
+array<EdgeHandle, 3> HalfEdgeMesh<BaseVecT>::getEdgesOfFace(FaceHandle handle) const
 {
     auto face = getF(handle);
 
@@ -378,7 +378,7 @@ std::array<EdgeHandle, 3> HalfEdgeMesh<BaseVecT>::getEdgesOfFace(FaceHandle hand
 }
 
 template <typename BaseVecT>
-std::vector<FaceHandle>
+vector<FaceHandle>
     HalfEdgeMesh<BaseVecT>::getNeighboursOfFace(FaceHandle handle) const
 {
     auto face = getF(handle);
@@ -412,14 +412,14 @@ std::vector<FaceHandle>
 }
 
 template <typename BaseVecT>
-std::array<VertexHandle, 2> HalfEdgeMesh<BaseVecT>::getVerticesOfEdge(EdgeHandle edgeH) const
+array<VertexHandle, 2> HalfEdgeMesh<BaseVecT>::getVerticesOfEdge(EdgeHandle edgeH) const
 {
     auto oneEdge = getE(edgeH);
     return { oneEdge.target, getE(oneEdge.twin).target };
 }
 
 template <typename BaseVecT>
-std::array<OptionalFaceHandle, 2> HalfEdgeMesh<BaseVecT>::getFacesOfEdge(EdgeHandle edgeH) const
+array<OptionalFaceHandle, 2> HalfEdgeMesh<BaseVecT>::getFacesOfEdge(EdgeHandle edgeH) const
 {
     auto oneEdge = getE(edgeH);
     return { oneEdge.face, getE(oneEdge.twin).face };

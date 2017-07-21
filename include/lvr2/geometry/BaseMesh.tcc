@@ -108,7 +108,7 @@ MeshHandleIteratorPtr<VertexHandle> VertexIteratorProxy<BaseVecT>::end() const
 }
 
 template <typename BaseVecT>
-std::array<Point<BaseVecT>, 3> BaseMesh<BaseVecT>::getVertexPositionsOfFace(FaceHandle handle) const
+array<Point<BaseVecT>, 3> BaseMesh<BaseVecT>::getVertexPositionsOfFace(FaceHandle handle) const
 {
     auto handles = getVerticesOfFace(handle);
 
