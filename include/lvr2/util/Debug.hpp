@@ -31,10 +31,13 @@
 #include <boost/iostreams/device/null.hpp>
 #include <array>
 #include <fstream>
+#include <vector>
 
 using std::array;
 using std::string;
+using std::vector;
 
+#include <lvr2/geometry/Handles.hpp>
 #include <lvr2/geometry/BaseMesh.hpp>
 #include <lvr2/algorithm/ClusterPainter.hpp>
 
@@ -62,6 +65,18 @@ void writeDebugMesh(
     string filename = "debug.ply",
     ClusterPainter::Rgb8Color color = {255, 0, 0}
 );
+
+/**
+ * @brief Returns all handles of duplicate vertices from the given mesh
+ *
+ * The equality of two points is check via Point::operator==().
+ *
+ * @return duplicate vertex handles. The vertex handles for each duplicate point are stored in a seperate vector. The
+ *         return value is a vector which consists of these vectors. In other words: each vector in the result vector
+ *         is a set of vertex handles, which points to points with the same coordinates.
+ */
+template<typename BaseVecT>
+vector<vector<VertexHandle>> getDuplicateVertices(const BaseMesh<BaseVecT>& mesh);
 
 #ifdef NDEBUG
 #define DOINDEBUG(...) ;

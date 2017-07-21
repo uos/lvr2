@@ -23,6 +23,8 @@
  *  @author Lukas Kalbertodt <lukas.kalbertodt@gmail.com>
  */
 
+#include <functional>
+
 namespace lvr2
 {
 
@@ -63,3 +65,18 @@ Vector<BaseVecT> Point<BaseVecT>::asVector() const
 }
 
 } // namespace lvr2
+
+namespace std
+{
+
+template<typename BaseVecT>
+struct hash<lvr2::Point<BaseVecT>> {
+    size_t operator()(const lvr2::Point<BaseVecT>& point) const
+    {
+        return std::hash<typename BaseVecT::CoordType>()(point.x)
+               ^ std::hash<typename BaseVecT::CoordType>()(point.y)
+               ^ std::hash<typename BaseVecT::CoordType>()(point.z);
+    }
+};
+
+} // namespace std
