@@ -27,9 +27,10 @@
 #ifndef LVR2_ALGORITHM_CLUSTERALGORITHM_H_
 #define LVR2_ALGORITHM_CLUSTERALGORITHM_H_
 
+#include <lvr2/algorithm/Texturizer.hpp>
 #include <lvr2/geometry/Cluster.hpp>
-#include <lvr2/geometry/Handles.hpp>
 #include <lvr2/geometry/HalfEdgeMesh.hpp>
+#include <lvr2/geometry/Handles.hpp>
 
 #include <vector>
 
@@ -56,6 +57,14 @@ vector<vector<Point<VertexT>>> calculateContour(
     ClusterSet<FaceHandle>& clusterSet
 ); // TODO/FIXME
 
+template<typename BaseVecT>
+BoundingRectangle<BaseVecT> calculateBoundingBox(
+    const std::vector<Point<BaseVecT>> contour,
+    const BaseMesh<BaseVecT>& mesh,
+    const Cluster<FaceHandle>& cluster,
+    const FaceMap<Normal<BaseVecT>>& normals,
+    float texelSize
+);
 
 } // namespace lvr2
 

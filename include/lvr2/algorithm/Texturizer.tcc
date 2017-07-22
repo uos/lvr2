@@ -33,7 +33,8 @@ template<typename BaseVecT>
 TexturizerResult generateTextures(
     HalfEdgeMesh<BaseVecT>& mesh,
     ClusterSet<FaceHandle>& faceHandleClusterSet,
-    PointsetSurfacePtr<BaseVecT> surface
+    PointsetSurfacePtr<BaseVecT> surface,
+    const FaceMap<Normal<BaseVecT>>& normals
 )
 {
     int numFacesThreshold = 5; // TODO: read from config
@@ -49,6 +50,9 @@ TexturizerResult generateTextures(
             // contour
             // TODO: use better contour function
             std::vector<Point<BaseVecT>> contour = calculateAllContourVertices(clusterH, mesh, faceHandleClusterSet);
+
+            // bounding box
+            BoundingRectangle<BaseVecT> br = calculateBoundingBox(contour, mesh, cluster, normals, 1.0f);
 
             // initial texture
 
