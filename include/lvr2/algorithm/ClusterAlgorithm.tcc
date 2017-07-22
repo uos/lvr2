@@ -47,7 +47,7 @@ vector<Point<BaseVecT>> calculateAllContourVertices(
     for (auto faceH : cluster.handles)
     {
         // find contours of each face
-        std::vector<EdgeHandle> contours = mesh.getContourEdgesOfFace(
+        std::vector<EdgeHandle> contours = mesh.getContourEdgesOfFaceDebug(
             faceH,
             [&](auto neighbourFaceH)
             {

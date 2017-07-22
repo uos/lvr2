@@ -105,6 +105,9 @@ public:
     template <typename Pred>
     std::vector<EdgeHandle> getContourEdgesOfFace(FaceHandle faceH, Pred pred) const;
 
+    template <typename Pred>
+    std::vector<EdgeHandle> getContourEdgesOfFaceDebug(FaceHandle faceH, Pred pred) const;
+
 
     MeshHandleIteratorPtr<VertexHandle> verticesBegin() const final;
     MeshHandleIteratorPtr<VertexHandle> verticesEnd() const final;
