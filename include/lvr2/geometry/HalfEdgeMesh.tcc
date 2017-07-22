@@ -1341,6 +1341,7 @@ std::vector<EdgeHandle> HalfEdgeMesh<BaseVecT>::getContourEdgesOfFace(FaceHandle
     for (auto edgeH : this->getEdgesOfFace(faceH))
     {
         auto edge = this->getE(edgeH);
+        // TODO does twin still work after converting the half edge handle to a full edge handle?
         auto twinFaceHOptional = this->getE(edge.twin).face;
         // if edge has face
         if (twinFaceHOptional)
@@ -1353,6 +1354,11 @@ std::vector<EdgeHandle> HalfEdgeMesh<BaseVecT>::getContourEdgesOfFace(FaceHandle
                 // => this edge is a contour edge
                 contours.push_back(edgeH);
             }
+        } else
+        {
+            // twin edge has no face
+            // => this edge is a contour edge
+            contours.push_back(edgeH);
         }
     }
 
