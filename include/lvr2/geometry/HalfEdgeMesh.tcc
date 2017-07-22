@@ -1365,6 +1365,32 @@ std::vector<EdgeHandle> HalfEdgeMesh<BaseVecT>::getContourEdgesOfFace(FaceHandle
     return contours;
 }
 
+template <typename BaseVecT>
+template <typename Pred>
+std::vector<EdgeHandle> HalfEdgeMesh<BaseVecT>::getContourEdgesOfFaceDebug(FaceHandle faceH, Pred pred) const
+{
+    std::vector<EdgeHandle> contours;
+
+    auto face = this->getF(faceH);
+    auto edgeH = face.edge;
+
+    for (int i = 0; i < 3; i++)
+    {
+        auto edge = this->getE(edgeH);
+        if (!this->getE(edge.twin).face)
+        {
+            contours.push_back(edgeH.toFullEdgeHandle());
+        } else if (pred(this->getE(edge.twin).face.unwrap()))
+        {
+            contours.push_back(edgeH.toFullEdgeHandle());
+        }
+
+        edgeH = edge.next;
+    }
+
+    return contours;
+}
+
 
 // ========================================================================
 // = Iterator stuff
