@@ -58,11 +58,11 @@ public:
      *
      */
     Texture(
-        unsigned short int width, 
-        unsigned short int height, 
-        unsigned char numChannels, 
-        unsigned char numBytesPerChan, 
-        unsigned short int textureClass, 
+        unsigned short int width,
+        unsigned short int height,
+        unsigned char numChannels,
+        unsigned char numBytesPerChan,
+        unsigned short int textureClass,
         bool isPattern
     );
 
@@ -83,7 +83,7 @@ public:
 
     ///The dimensions of the texture
     unsigned short int m_width, m_height;
-    
+
     ///The texture data
     unsigned char* m_data;
 
@@ -94,20 +94,20 @@ public:
     unsigned char m_numBytesPerChan;
 
     ///The class of the texture
-    // unsigned short int m_textureClass;    
+    // unsigned short int m_textureClass;
 
     // ///The precalculated feature descriptors (SIFT/SURF/...)
     // float* m_featureDescriptors;
 
     // ///The positions of the precalculated features
     // float* m_keyPoints;
-    
+
     // ///The number of entries of each feature descriptor
     // unsigned char m_numFeatureComponents;
 
     // ///The number of feature descriptors
     // unsigned short int m_numFeatures;
-    
+
     // ///14 statistical values characterizing the texture
     // float* m_stats;
 
@@ -123,7 +123,7 @@ public:
     ///value indicating how well this texture fits the reference texture
     float m_distance;
 
-    
+
 };
 
 }

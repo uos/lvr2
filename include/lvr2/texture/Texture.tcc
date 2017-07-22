@@ -53,7 +53,7 @@ Texture::Texture()
 
 // Texture::Texture(unsigned short int width, unsigned short int height, unsigned char numChannels,
 //          unsigned char numBytesPerChan, unsigned short int textureClass, unsigned short int numFeatures,
-//          unsigned char numFeatureComponents, float* features, float* keyPoints, float* stats, bool isPattern, 
+//          unsigned char numFeatureComponents, float* features, float* keyPoints, float* stats, bool isPattern,
 //          unsigned char numCCVColors, unsigned long* CCV)
 // {
 //     this->m_width                = width;
@@ -64,7 +64,7 @@ Texture::Texture()
 //     this->m_textureClass         = textureClass;
 //     this->m_numFeatures          = numFeatures;
 //     this->m_numFeatureComponents = numFeatureComponents;
-//     this->m_featureDescriptors   = features; 
+//     this->m_featureDescriptors   = features;
 //     this->m_stats                = stats;
 //     this->m_isPattern            = isPattern;
 //     this->m_numCCVColors         = numCCVColors;
@@ -74,11 +74,11 @@ Texture::Texture()
 // }
 
 Texture::Texture(
-    unsigned short int width, 
-    unsigned short int height, 
-    unsigned char numChannels, 
-    unsigned char numBytesPerChan, 
-    unsigned short int textureClass, 
+    unsigned short int width,
+    unsigned short int height,
+    unsigned char numChannels,
+    unsigned char numBytesPerChan,
+    unsigned short int textureClass,
     bool isPattern
 ) : m_width(width),
     m_height(height),
