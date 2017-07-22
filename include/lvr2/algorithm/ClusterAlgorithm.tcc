@@ -27,6 +27,10 @@
 #include <lvr2/geometry/Cluster.hpp>
 #include <lvr2/geometry/HalfEdgeMesh.hpp>
 
+#include <boost/math/constants/constants.hpp>
+#include <cmath>
+#include <limits>
+
 namespace lvr2
 {
 
@@ -195,6 +199,111 @@ vector<vector<VertexHandle>> calculateContour(
 
 
     return result;
+
+}
+
+template<typename BaseVecT>
+BoundingRectangle<BaseVecT> calculateBoundingBox(
+    const std::vector<Point<BaseVecT>> contour,
+    const BaseMesh<BaseVecT>& mesh,
+    const Cluster<FaceHandle>& cluster,
+    const FaceMap<Normal<BaseVecT>>& normals,
+    float texelSize
+)
+{
+    // TODO reasonable error handling necessary for empty contour vector
+    if (contour.size() == 0)
+    {
+        cout << "Empty contour array." << endl;
+    }
+    int minArea = std::numeric_limits<int>::max();
+
+    float bestMinA, bestMaxA, bestMinB, bestMaxB;
+    Vector<BaseVecT> bestVec1, bestVec2;
+
+    // calculate regression plane for the cluster
+    Plane<BaseVecT> regressionPlane = calcRegressionPlane(mesh, cluster, normals);
+
+    // support vector for the plane
+    Vector<BaseVecT> supportVector = regressionPlane.pos.asVector();
+
+    // calculate two orthogonal vectors in the plane
+    auto normal = regressionPlane.normal;
+    auto vec1 = normal.cross(Vector<BaseVecT>(-normal.getY(), normal.getX(), 0) + normal.asVector());
+    Vector<BaseVecT> vec2 = normal.cross(vec1);
+
+    const float pi = boost::math::constants::pi<float>();
+
+    // resolution of iterative improvement steps for a fourth rotation
+    float delta = (pi / 2) / 90;
+
+    for(float theta = 0; theta < M_PI / 2; theta += delta)
+    {
+        // rotate the bounding box
+        vec1 = vec1 * cos(theta) + vec2 * sin(theta);
+        vec2 = vec1.cross(normal.asVector());
+
+        // calculate hessian normal forms for both planes to which the distances will be calculated
+        Normal<BaseVecT> planeNormal1 = (supportVector.dot(vec1) >= 0)? vec1.normalized() : -vec1.normalized();
+        float planeDist1 = planeNormal1.dot(supportVector);
+        Normal<BaseVecT> planeNormal2 = (supportVector.dot(vec2) >= 0)? vec2.normalized() : -vec2.normalized();
+        float planeDist2 = planeNormal2.dot(supportVector);
+
+        float minA = std::numeric_limits<float>::max();
+        float maxA = std::numeric_limits<float>::lowest();
+        float minB = std::numeric_limits<float>::max();
+        float maxB = std::numeric_limits<float>::lowest();
+
+
+        // calculate the bounding box
+
+        for(auto contourPoint: contour)
+        {
+            // calculate distance to plane1
+            float dist1 = planeNormal1.dot(contourPoint) - planeDist1;
+            // calculate distance to plane2
+            float dist2 = planeNormal2.dot(contourPoint) - planeDist2;
+
+            float a = dist1;
+            float b = dist2;
+
+            // memorize largest positive and negative distance to both planes
+            if (a > maxA)
+            {
+                maxA = a;
+            }
+            if (a < minA)
+            {
+                minA = a;
+            }
+            if (b > maxB)
+            {
+                maxB = b;
+            }
+            if (b < minB)
+            {
+                minB = b;
+            }
+        }
+
+        // calculate predicted number of texels for both dimesions
+        int texelsX = std::ceil((maxA - minA) / texelSize);
+        int texelsY = std::ceil((maxB - minB) / texelSize);
+
+        //iterative improvement of the area
+        if(texelsX * texelsY < minArea)
+        {
+            minArea = texelsX * texelsY;
+            bestMinA = minA;
+            bestMaxA = maxA;
+            bestMinB = minB;
+            bestMaxB = maxB;
+            bestVec1 = vec1;
+            bestVec2 = vec2;
+        }
+    }
+
+    return BoundingRectangle<BaseVecT>(supportVector, vec1, vec2, normal, bestMinA, bestMaxA, bestMinB, bestMaxB);
 
 }
 

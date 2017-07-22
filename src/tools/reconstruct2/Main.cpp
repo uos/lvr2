@@ -1025,7 +1025,7 @@ int main(int argc, char** argv)
     //cout << "duplicate vertices: " << duplicateVertices.size() << endl;
 
     // TODO: use config
-    TexturizerResult texturizerResult = generateTextures(mesh, clusterSet, surface);
+    TexturizerResult texturizerResult = generateTextures(mesh, clusterSet, surface, faceNormals);
     // TODO: use result
 
     // Finalize mesh (convert it to simple `MeshBuffer`)

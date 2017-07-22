@@ -52,10 +52,45 @@ struct TexturizerResult
 };
 
 template<typename BaseVecT>
+struct BoundingRectangle
+{
+    Vector<BaseVecT> supportVector;
+    Vector<BaseVecT> vec1;
+    Vector<BaseVecT> vec2;
+    Normal<BaseVecT> normal;
+    float minDistA;
+    float maxDistA;
+    float minDistB;
+    float maxDistB;
+
+    BoundingRectangle(
+        Vector<BaseVecT> supportVector,
+        Vector<BaseVecT> vec1,
+        Vector<BaseVecT> vec2,
+        Normal<BaseVecT> normal,
+        float minDistA,
+        float maxDistA,
+        float minDistB,
+        float maxDistB
+    ) :
+        supportVector(supportVector),
+        vec1(vec1),
+        vec2(vec2),
+        normal(normal),
+        minDistA(minDistA),
+        maxDistA(maxDistA),
+        minDistB(minDistB),
+        maxDistB(maxDistB)
+    {
+    }
+};
+
+template<typename BaseVecT>
 TexturizerResult generateTextures(
     HalfEdgeMesh<BaseVecT>& mesh,
     ClusterSet<FaceHandle>& faceHandleClusterSet,
-    PointsetSurfacePtr<BaseVecT> surface
+    PointsetSurfacePtr<BaseVecT> surface,
+    const FaceMap<Normal<BaseVecT>>& normals
 );
 
 } // namespace lvr2
