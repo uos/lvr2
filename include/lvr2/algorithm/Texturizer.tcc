@@ -32,21 +32,20 @@ namespace lvr2
 template<typename BaseVecT>
 TexturizerResult generateTextures(
     float texelSize,
+    int textureThreshold,
     HalfEdgeMesh<BaseVecT>& mesh,
     ClusterSet<FaceHandle>& faceHandleClusterSet,
     PointsetSurfacePtr<BaseVecT> surface,
     const FaceMap<Normal<BaseVecT>>& normals
 )
 {
-    int numFacesThreshold = 5; // TODO: read from config
-
     for (auto clusterH: faceHandleClusterSet)
     {
         const Cluster<FaceHandle> cluster = faceHandleClusterSet.getCluster(clusterH);
         int numFacesInCluster = cluster.handles.size();
 
         // only create textures for clusters that are large enough
-        if (numFacesInCluster >= numFacesThreshold)
+        if (numFacesInCluster >= textureThreshold)
         {
             // contour
             // TODO: use better contour function

@@ -88,6 +88,7 @@ struct BoundingRectangle
 template<typename BaseVecT>
 TexturizerResult generateTextures(
     float texelSize,
+    int textureThreshold,
     HalfEdgeMesh<BaseVecT>& mesh,
     ClusterSet<FaceHandle>& faceHandleClusterSet,
     PointsetSurfacePtr<BaseVecT> surface,

@@ -1025,12 +1025,21 @@ int main(int argc, char** argv)
     //cout << "duplicate vertices: " << duplicateVertices.size() << endl;
 
     // generate textures
-    bool generateTextures = options.generateTextures();
-    bool textureDebug = true; // TODO/FIXME
-    if (generateTextures || textureDebug)
+    bool generateTexturesOption = options.generateTextures();
+    generateTexturesOption = true; // FIXME/TODO
+    if (generateTexturesOption)
     {
         float texelSize = options.getTexelSize();
-        TexturizerResult texturizerResult = generateTextures(texelSize, mesh, clusterSet, surface, faceNormals);
+        int textureThreshold = options.getTextureThreshold();
+
+        TexturizerResult texturizerResult = generateTextures(
+            texelSize,
+            textureThreshold,
+            mesh,
+            clusterSet,
+            surface,
+            faceNormals
+        );
         // TODO: use result
     }
 
