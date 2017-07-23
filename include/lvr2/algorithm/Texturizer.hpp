@@ -40,6 +40,11 @@
 #include <lvr2/geometry/Point.hpp>
 #include <lvr2/geometry/Vector.hpp>
 #include <lvr2/reconstruction/PointsetSurface.hpp>
+#include <lvr2/texture/Texture.hpp>
+#include <lvr2/texture/TextureToken.hpp>
+
+#include <lvr/io/Progress.hpp>
+#include <lvr/io/Timestamp.hpp>
 
 namespace lvr2
 {
