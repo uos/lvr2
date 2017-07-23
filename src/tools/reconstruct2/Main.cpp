@@ -1024,9 +1024,15 @@ int main(int argc, char** argv)
     //auto duplicateVertices = getDuplicateVertices(mesh);
     //cout << "duplicate vertices: " << duplicateVertices.size() << endl;
 
-    // TODO: use config
-    TexturizerResult texturizerResult = generateTextures(mesh, clusterSet, surface, faceNormals);
-    // TODO: use result
+    // generate textures
+    bool generateTextures = options.generateTextures();
+    bool textureDebug = true; // TODO/FIXME
+    if (generateTextures || textureDebug)
+    {
+        float texelSize = options.getTexelSize();
+        TexturizerResult texturizerResult = generateTextures(texelSize, mesh, clusterSet, surface, faceNormals);
+        // TODO: use result
+    }
 
     // Finalize mesh (convert it to simple `MeshBuffer`)
     // FinalizeAlgorithm<Vec> finalize;
