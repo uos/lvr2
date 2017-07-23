@@ -31,6 +31,7 @@ namespace lvr2
 
 template<typename BaseVecT>
 TexturizerResult generateTextures(
+    float texelSize,
     HalfEdgeMesh<BaseVecT>& mesh,
     ClusterSet<FaceHandle>& faceHandleClusterSet,
     PointsetSurfacePtr<BaseVecT> surface,
@@ -52,7 +53,7 @@ TexturizerResult generateTextures(
             std::vector<Point<BaseVecT>> contour = calculateAllContourVertices(clusterH, mesh, faceHandleClusterSet);
 
             // bounding box
-            BoundingRectangle<BaseVecT> br = calculateBoundingBox(contour, mesh, cluster, normals, 1.0f);
+            BoundingRectangle<BaseVecT> br = calculateBoundingBox(contour, mesh, cluster, normals, texelSize);
 
             // initial texture
 
