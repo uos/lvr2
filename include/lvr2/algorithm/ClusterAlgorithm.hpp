@@ -58,7 +58,7 @@ vector<vector<Point<VertexT>>> calculateContour(
 ); // TODO/FIXME
 
 template<typename BaseVecT>
-BoundingRectangle<BaseVecT> calculateBoundingBox(
+BoundingRectangle<BaseVecT> calculateBoundingRectangle(
     const std::vector<Point<BaseVecT>> contour,
     const BaseMesh<BaseVecT>& mesh,
     const Cluster<FaceHandle>& cluster,

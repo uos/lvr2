@@ -203,7 +203,7 @@ vector<vector<VertexHandle>> calculateContour(
 }
 
 template<typename BaseVecT>
-BoundingRectangle<BaseVecT> calculateBoundingBox(
+BoundingRectangle<BaseVecT> calculateBoundingRectangle(
     const std::vector<Point<BaseVecT>> contour,
     const BaseMesh<BaseVecT>& mesh,
     const Cluster<FaceHandle>& cluster,
@@ -211,6 +211,7 @@ BoundingRectangle<BaseVecT> calculateBoundingBox(
     float texelSize
 )
 {
+    // TODO error handling for texelSize = 0
     // TODO reasonable error handling necessary for empty contour vector
     if (contour.size() == 0)
     {
@@ -303,7 +304,16 @@ BoundingRectangle<BaseVecT> calculateBoundingBox(
         }
     }
 
-    return BoundingRectangle<BaseVecT>(supportVector, vec1, vec2, normal, bestMinA, bestMaxA, bestMinB, bestMaxB);
+    return BoundingRectangle<BaseVecT>(
+        supportVector,
+        bestVec1,
+        bestVec2,
+        normal,
+        bestMinA,
+        bestMaxA,
+        bestMinB,
+        bestMaxB
+    );
 
 }
 
