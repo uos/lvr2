@@ -49,7 +49,7 @@ public:
     ClusterPainter(const ClusterSet<FaceHandle>& clusterSet) : m_clusterSet(clusterSet) {};
 
     template<typename BaseVecT>
-    VertexMap<Rgb8Color> simpsons(const BaseMesh<BaseVecT>& mesh) const;
+    ClusterMap<Rgb8Color> simpsons(const BaseMesh<BaseVecT>& mesh) const;
 
     template<typename BaseVecT>
     optional<VertexMap<Rgb8Color>> fromPointCloud(
