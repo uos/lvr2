@@ -123,4 +123,123 @@ void FinalizeAlgorithm<BaseVecT>::setNormalData(const VertexMap<Normal<BaseVecT>
     m_normalData = normalData;
 }
 
+template<typename BaseVecT>
+ClusterFlatteningFinalizer<BaseVecT>::ClusterFlatteningFinalizer(
+    const ClusterSet<FaceHandle>& cluster
+)
+    : m_cluster(cluster)
+{}
+
+template<typename BaseVecT>
+void ClusterFlatteningFinalizer<BaseVecT>::setVertexNormals(const VertexMap<Normal<BaseVecT>>& normals)
+{
+    m_vertexNormals = normals;
+}
+
+template<typename BaseVecT>
+void ClusterFlatteningFinalizer<BaseVecT>::setClusterColors(const ClusterMap<ClusterPainter::Rgb8Color>& colors)
+{
+    m_clusterColors = colors;
+}
+
+template<typename BaseVecT>
+boost::shared_ptr<lvr::MeshBuffer>
+    ClusterFlatteningFinalizer<BaseVecT>::apply(const BaseMesh<BaseVecT>& mesh)
+{
+    // Create vertex buffer and all buffers holding vertex attributes
+    vector<float> vertices;
+    vertices.reserve(mesh.numVertices() * 3);
+
+    vector<float> normals;
+    if (m_vertexNormals)
+    {
+        normals.reserve(mesh.numVertices() * 3);
+    }
+
+    vector<unsigned char> colors;
+    if (m_clusterColors)
+    {
+        colors.reserve(mesh.numVertices() * 3);
+    }
+
+    // Create face buffer
+    vector<unsigned int> faces;
+    faces.reserve(mesh.numFaces() * 3);
+
+    // This counter is used to determine the index of a newly inserted vertex
+    size_t vertexCount = 0;
+
+    // Loop over all clusters
+    for (auto clusterH: m_cluster)
+    {
+        // TODO: vertex map here is not space efficient
+        // This map remembers which vertex we already inserted and at what
+        // position. This is important to create the face map.
+        VertexMap<size_t> idxMap;
+        idxMap.reserve(mesh.numVertices());
+
+        auto& cluster = m_cluster.getCluster(clusterH);
+
+        // Loop over all faces of the cluster
+        for (auto faceH: cluster.handles)
+        {
+            for (auto vertexH: mesh.getVerticesOfFace(faceH))
+            {
+                // Check if we already inserted this vertex. If not...
+                if (!idxMap.get(vertexH))
+                {
+                    // ... insert it into the buffers (with all its attributes)
+                    auto point = mesh.getVertexPosition(vertexH);
+
+                    vertices.push_back(point.x);
+                    vertices.push_back(point.y);
+                    vertices.push_back(point.z);
+
+                    if (m_vertexNormals)
+                    {
+                        auto normal = (*m_vertexNormals)[vertexH];
+                        normals.push_back(normal.getX());
+                        normals.push_back(normal.getY());
+                        normals.push_back(normal.getZ());
+                    }
+
+                    if (m_clusterColors)
+                    {
+                        colors.push_back(static_cast<unsigned char>((*m_clusterColors)[clusterH][0]));
+                        colors.push_back(static_cast<unsigned char>((*m_clusterColors)[clusterH][1]));
+                        colors.push_back(static_cast<unsigned char>((*m_clusterColors)[clusterH][2]));
+                    }
+
+                    // Save index of vertex for face mapping
+                    idxMap.insert(vertexH, vertexCount);
+                    vertexCount++;
+                }
+
+                // At this point we know that the vertex is certainly in the
+                // map (and the buffers).
+                faces.push_back(idxMap[vertexH]);
+            }
+        }
+    }
+
+
+
+    auto buffer = boost::make_shared<lvr::MeshBuffer>();
+    buffer->setVertexArray(vertices);
+    buffer->setFaceArray(faces);
+
+    if (m_vertexNormals)
+    {
+        buffer->setVertexNormalArray(normals);
+    }
+
+    if (m_clusterColors)
+    {
+        buffer->setVertexColorArray(colors);
+    }
+
+    return buffer;
+}
+
+
 } // namespace lvr2

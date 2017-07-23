@@ -33,22 +33,15 @@ namespace lvr2
 {
 
 template<typename BaseVecT>
-VertexMap<ClusterPainter::Rgb8Color> ClusterPainter::simpsons(const BaseMesh<BaseVecT>& mesh) const
+ClusterMap<ClusterPainter::Rgb8Color> ClusterPainter::simpsons(const BaseMesh<BaseVecT>& mesh) const
 {
-    VertexMap<Rgb8Color> colorMap;
+    ClusterMap<Rgb8Color> colorMap;
     colorMap.reserve(m_clusterSet.numHandles() * 3);
     size_t clusterIdx = 0;
     for (auto clusterH: m_clusterSet)
     {
         auto color = getSimpsonColorForIdx(clusterIdx);
-
-        for (auto faceH: m_clusterSet[clusterH].handles)
-        {
-            for (auto vertex: mesh.getVerticesOfFace(faceH))
-            {
-                colorMap.insert(vertex, color);
-            }
-        }
+        colorMap.insert(clusterH, color);
 
         clusterIdx++;
     }

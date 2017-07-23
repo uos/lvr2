@@ -705,8 +705,8 @@ int main(int argc, char** argv)
     //auto clusterSet = planarClusterGrowing(mesh, options.getNormalThreshold());
 
     ClusterPainter painter(clusterSet);
-    //auto colorMap = optional<VertexMap<ClusterPainter::Rgb8Color>>(painter.simpsons(mesh));
-    auto colorMap = painter.fromPointCloud(mesh, surface);
+    auto clusterColors = optional<ClusterMap<ClusterPainter::Rgb8Color>>(painter.simpsons(mesh));
+    // auto colorMap = painter.fromPointCloud(mesh, surface);
 
     // Calc normals for vertices
     auto vertexNormals = calcVertexNormals(mesh, faceNormals, *surface);
@@ -716,11 +716,19 @@ int main(int argc, char** argv)
     //cout << "duplicate vertices: " << duplicateVertices.size() << endl;
 
     // Finalize mesh (convert it to simple `MeshBuffer`)
-    FinalizeAlgorithm<Vec> finalize;
-    finalize.setNormalData(vertexNormals);
-    if (colorMap)
+    // FinalizeAlgorithm<Vec> finalize;
+    // finalize.setNormalData(vertexNormals);
+    // if (colorMap)
+    // {
+    //     finalize.setColorData(*colorMap);
+    // }
+    // auto buffer = finalize.apply(mesh);
+
+    ClusterFlatteningFinalizer<Vec> finalize(clusterSet);
+    finalize.setVertexNormals(vertexNormals);
+    if (clusterColors)
     {
-        finalize.setColorData(*colorMap);
+        finalize.setClusterColors(*clusterColors);
     }
     auto buffer = finalize.apply(mesh);
 
