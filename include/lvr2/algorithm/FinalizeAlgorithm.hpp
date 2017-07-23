@@ -59,6 +59,23 @@ public:
     void setNormalData(const VertexMap<Normal<BaseVecT>>& normalData);
 };
 
+template<typename BaseVecT>
+class ClusterFlatteningFinalizer
+{
+public:
+    ClusterFlatteningFinalizer(const ClusterSet<FaceHandle>& cluster);
+
+    void setVertexNormals(const VertexMap<Normal<BaseVecT>>& normals);
+    void setClusterColors(const ClusterMap<ClusterPainter::Rgb8Color>& colors);
+
+    boost::shared_ptr<lvr::MeshBuffer> apply(const BaseMesh<BaseVecT>& mesh);
+
+private:
+    const ClusterSet<FaceHandle>& m_cluster;
+    optional<const ClusterMap<ClusterPainter::Rgb8Color>&> m_clusterColors;
+    optional<const VertexMap<Normal<BaseVecT>>&> m_vertexNormals;
+};
+
 } // namespace lvr2
 
 #include <lvr2/algorithm/FinalizeAlgorithm.tcc>
