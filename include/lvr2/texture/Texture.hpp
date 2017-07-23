@@ -27,13 +27,13 @@
  *  @author Kristin Schmidt (krschmidt@uos.de)
  */
 
-#ifndef TEXTURE_HPP_
-#define TEXTURE_HPP_
+#ifndef LVR2_TEXTURE_TEXTURE_HPP_
+#define LVR2_TEXTURE_TEXTURE_HPP_
 
 #include <cstring>
 #include <math.h>
 #include <cstdio>
-// #include <lvr/io/PPMIO.hpp>
+#include <lvr/io/PPMIO.hpp>
 
 namespace lvr2 {
 
@@ -62,9 +62,17 @@ public:
         unsigned short int height,
         unsigned char numChannels,
         unsigned char numBytesPerChan,
-        unsigned short int textureClass,
+        // unsigned short int textureClass,
         bool isPattern
     );
+
+    /**
+     * @brief   write the texture to an image file
+     *
+     * @param   i   The number to use in the filename
+     *
+     */
+    void save(int i);
 
     /**
      * \brief   Compares two textures based on their distance values
@@ -128,6 +136,6 @@ public:
 
 }
 
-#include "Texture.tcc"
+#include <lvr2/texture/Texture.tcc>
 
-#endif /* TEXTURE_HPP_ */
+#endif /* LVR2_TEXTURE_TEXTURE_HPP_ */

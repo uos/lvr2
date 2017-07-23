@@ -78,7 +78,7 @@ Texture::Texture(
     unsigned short int height,
     unsigned char numChannels,
     unsigned char numBytesPerChan,
-    unsigned short int textureClass,
+    // unsigned short int textureClass,
     bool isPattern
 ) : m_width(width),
     m_height(height),
@@ -89,6 +89,17 @@ Texture::Texture(
     m_distance(0)
 
 {
+}
+
+void Texture::save(int i)
+{
+    //write image file
+    char fn[255];
+    sprintf(fn, "texture_%d.ppm", i);
+    lvr::PPMIO* pio = new lvr::PPMIO;
+    pio->setDataArray(this->m_data, m_width, m_height);
+    pio->write(string(fn));
+    delete pio;
 }
 
 bool Texture::cmpTextures(Texture* t1, Texture* t2)
