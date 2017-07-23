@@ -74,7 +74,7 @@ void StableVector<HandleT, ElemT>::erase(const HandleType& handle)
 template<typename HandleT, typename ElemT>
 boost::optional<ElemT&> StableVector<HandleT, ElemT>::get(const HandleType& key)
 {
-    if (m_deleted[key.idx()])
+    if (key.idx() >= m_deleted.size() || m_deleted[key.idx()])
     {
         return boost::none;
     }
@@ -84,7 +84,7 @@ boost::optional<ElemT&> StableVector<HandleT, ElemT>::get(const HandleType& key)
 template<typename HandleT, typename ElemT>
 boost::optional<const ElemT&> StableVector<HandleT, ElemT>::get(const HandleType& key) const
 {
-    if (m_deleted[key.idx()])
+    if (key.idx() >= m_deleted.size() || m_deleted[key.idx()])
     {
         return boost::none;
     }
