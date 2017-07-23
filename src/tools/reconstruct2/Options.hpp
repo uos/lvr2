@@ -298,6 +298,8 @@ public:
 
     int getMinimumTransformationVotes() const;
 
+    int getTextureThreshold() const;
+
 private:
 
     /// The set voxelsize
@@ -409,6 +411,9 @@ private:
     ///Minimum number of vote to consider a texture transformation as "correct"
     int m_minimumTransformationVotes;
 
+    ///Minimum number of textures of a cluster needed for generating textures
+    int m_textureThreshold;
+
 };
 
 
@@ -512,6 +517,7 @@ inline ostream& operator<<(ostream& os, const Options &o)
     {
         cout << "##### Generate Textures \t: YES" << endl;
         cout << "##### Texel size \t\t: " << o.getTexelSize() << endl;
+        cout << "##### Texture Threshold \t: " << o.getTextureThreshold() << endl;
         if(o.doTextureAnalysis())
         {
             cout << "##### Texture Analysis \t: OFF" << endl;
