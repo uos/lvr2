@@ -24,44 +24,35 @@
 *  @author Kristin Schmidt <krschmidt@uni-osnabrueck.de>
 */
 
-#ifndef LVR2_TEXTURE_CLUSTER_TEXCOORD_MAPPING_H_
-#define LVR2_TEXTURE_CLUSTER_TEXCOORD_MAPPING_H_
-
-#include <lvr2/geometry/Handles.hpp>
-
-#include <vector>
-#include <utility>
-
-using std::vector;
-using std::pair;
 
 namespace lvr2
 {
 
-struct TexCoords
+void ClusterTexCoordMapping::push(ClusterHandle handle, TexCoords tex)
 {
-    float u, v;
+    if (m_len == m_mapping.size())
+    {
+        cout << "Oppsie doopsie, pushed but full :(" << endl;
+    }
+    else
+    {
+        m_mapping[m_len] = make_pair(handle, tex);
+        m_len++;
+    }
+}
 
-    TexCoords(float u, float v) : u(u), v(v) {}
-
-};
-
-class ClusterTexCoordMapping
+TexCoords ClusterTexCoordMapping::getTexCoords(ClusterHandle clusterH)
 {
-private:
-    // vector<pair<ClusterHandle, TexCoords>> mapping;
-    array<optional<pair<ClusterHandle, TexCoords>>, 10> m_mapping;
-    size_t m_len;
+    for (size_t i = 0; i < m_len; i++)
+    {
+        if (m_mapping[i]->first == clusterH)
+        {
+            return m_mapping[i]->second;
+        }
+    }
+}
 
-public:
-    ClusterTexCoordMapping() : m_len(0) {}
 
-    void push(ClusterHandle handle, TexCoords tex);
-    TexCoords getTexCoords(ClusterHandle clusterH);
-};
+
 
 } // namespace lvr2
-
-#include "ClusterTexCoordMapping.tcc"
-
-#endif /* LVR2_TEXTURE_CLUSTER_TEXCOORD_MAPPING_H_ */
