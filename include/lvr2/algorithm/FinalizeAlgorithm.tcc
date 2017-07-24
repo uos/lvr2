@@ -26,6 +26,7 @@
 #include <vector>
 #include <utility>
 
+#include <lvr/io/Progress.hpp>
 #include <lvr2/geometry/Normal.hpp>
 #include <lvr2/attrmaps/AttrMaps.hpp>
 
@@ -173,11 +174,15 @@ boost::shared_ptr<lvr::MeshBuffer>
     // This map remembers which vertex we already inserted and at what
     // position. This is important to create the face map.
     SparseVertexMap<size_t> idxMap;
+    string comment = lvr::timestamp.getElapsedTime() + "Finalizing mesh ";
+    lvr::ProgressBar progress(m_cluster.numCluster(), comment);
 
     // Loop over all clusters
     for (auto clusterH: m_cluster)
     {
         idxMap.clear();
+        ++progress;
+
         auto& cluster = m_cluster.getCluster(clusterH);
 
         // Loop over all faces of the cluster
