@@ -48,19 +48,37 @@ struct TexCoords
 
 struct ClusterTexCoordMapping
 {
-    vector<pair<ClusterHandle, TexCoords>> mapping;
+private:
+    // vector<pair<ClusterHandle, TexCoords>> mapping;
+    array<optional<pair<ClusterHandle, TexCoords>>, 10> m_mapping;
+    size_t m_len;
 
-    TexCoords getTexCoords(ClusterHandle clusterH)
+public:
+    ClusterTexCoordMapping() : m_len(0) {}
+
+    void push(ClusterHandle handle, TexCoords tex)
     {
-        for (auto pairInMapping: mapping)
+        if (m_len == m_mapping.size())
         {
-            if (pairInMapping.first == clusterH)
-            {
-                return pairInMapping.second;
-            }
+            cout << "Oppsie doopsie, pushed but full :(" << endl;
+        }
+        else
+        {
+            m_mapping[m_len] = make_pair(handle, tex);
+            m_len++;
         }
     }
 
+    TexCoords getTexCoords(ClusterHandle clusterH)
+    {
+        for (size_t i = 0; i < m_len; i++)
+        {
+            if (m_mapping[i]->first == clusterH)
+            {
+                return m_mapping[i]->second;
+            }
+        }
+    }
 };
 
 } // namespace lvr2
