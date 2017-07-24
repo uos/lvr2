@@ -44,6 +44,7 @@ TexturizerResult<BaseVecT> generateTextures(
     int textureIndex = 1;
 
     TexturizerResult<BaseVecT> result;
+    result.tcMap.reserve(mesh.numVertices());
 
     for (auto clusterH: faceHandleClusterSet)
     {
@@ -73,7 +74,7 @@ TexturizerResult<BaseVecT> generateTextures(
             texToken.m_texture->save(texToken.m_textureIndex);
 
             // save textoken & texture
-            result.texTokenClusterMap[clusterH] = texToken;
+            result.texTokenClusterMap.insert(clusterH, texToken);
             result.textures.push_back(texToken.m_texture);
 
             // find unique vertices in cluster
@@ -104,8 +105,17 @@ TexturizerResult<BaseVecT> generateTextures(
 
             for (auto vertexH : verticesOfCluster)
             {
-                TexCoords texCoords(0.0f, 0.0f);
-                result.tcMap[vertexH].mapping.push_back(std::make_pair(clusterH, texCoords));
+                TexCoords texCoords(0.0f, 0.0f); // TODO
+                if (result.tcMap.get(vertexH))
+                {
+                    result.tcMap[vertexH].push(clusterH, texCoords);
+                }
+                else
+                {
+                    ClusterTexCoordMapping tcMap;
+                    tcMap.push(clusterH, texCoords);
+                    result.tcMap.insert(vertexH, tcMap);
+                }
             }
 
         }
