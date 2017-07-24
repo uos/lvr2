@@ -29,8 +29,9 @@
 #ifndef LVR2_TEXTURE_TEXTURETOKEN_HPP_
 #define LVR2_TEXTURE_TEXTURETOKEN_HPP_
 
-#include <lvr2/texture/Texture.hpp>
 #include <lvr2/algorithm/Texturizer.hpp>
+#include <lvr2/texture/ClusterTexCoordMapping.hpp>
+#include <lvr2/texture/Texture.hpp>
 
 namespace lvr2 {
 
@@ -70,19 +71,18 @@ public:
         float minDistA,
         float minDistB,
         Texture* t,
-        int index
+        int index,
+        float texelSize
     );
 
     /**
-     * @brief   computes texture coordinates corresponding to the give Vertex
+     * @brief   computes texture coordinates corresponding to the given Vertex
      *
      * @param   v   the vertex to generate texture coordinates for
      *
-     * @param   x   returns texture coordinates in x direction
-     *
-     * @param   y   returns texture coordinates in y direction
+     * @return  returns texture coordinates
      */
-    void textureCoords(Vector<BaseVecT> v, float &x, float &y);
+    TexCoords textureCoords(Vector<BaseVecT> v);
 
     /**
      * @brief   Destructor.
@@ -107,6 +107,8 @@ public:
 
     ///index of the texture in the texture pack
     size_t m_textureIndex;
+
+    float m_texelSize;
 
     // ///Matrix that stores an affine transform that will be applied to the texture coordinates
     // double m_transformationMatrix[6];
