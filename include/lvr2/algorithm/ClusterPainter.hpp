@@ -52,7 +52,8 @@ public:
     DenseClusterMap<Rgb8Color> simpsons(const BaseMesh<BaseVecT>& mesh) const;
 
 private:
-    ClusterBiMap<FaceHandle> m_clusterBiMap;
+    const ClusterBiMap<FaceHandle>& m_clusterBiMap;
+
     Rgb8Color getSimpsonColorForIdx(size_t idx) const;
 };
 
