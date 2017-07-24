@@ -1032,7 +1032,7 @@ int main(int argc, char** argv)
         float texelSize = options.getTexelSize();
         int textureThreshold = options.getTextureThreshold();
 
-        TexturizerResult texturizerResult = generateTextures(
+        TexturizerResult<BaseVecT> texturizerResult = generateTextures(
             texelSize,
             textureThreshold,
             mesh,
@@ -1041,6 +1041,8 @@ int main(int argc, char** argv)
             faceNormals
         );
         // TODO: use result
+
+        std::cout << "Texturizing finished. " << std::endl;
     }
 
     // Finalize mesh (convert it to simple `MeshBuffer`)

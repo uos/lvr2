@@ -19,7 +19,7 @@
 /*
 * Texturizer.tcc
 *
-*  @date 17.06.2017
+*  @date 17.07.2017
 *  @author Jan Philipp Vogtherr <jvogtherr@uni-osnabrueck.de>
 *  @author Kristin Schmidt <krschmidt@uni-osnabrueck.de>
 */
@@ -31,7 +31,7 @@ namespace lvr2
 {
 
 template<typename BaseVecT>
-TexturizerResult generateTextures(
+TexturizerResult<BaseVecT> generateTextures(
     float texelSize,
     int textureThreshold,
     HalfEdgeMesh<BaseVecT>& mesh,
@@ -42,6 +42,8 @@ TexturizerResult generateTextures(
 {
     int numFacesThreshold = 20000; // TODO: read from config
     int textureIndex = 1;
+
+    TexturizerResult<BaseVecT> result;
 
     for (auto clusterH: faceHandleClusterSet)
     {
@@ -67,19 +69,53 @@ TexturizerResult generateTextures(
             cout << "vec1: " << br.vec1 << "  vec2: " << br.vec2 << endl;
 
             // initial texture
-            TextureToken<BaseVecT>* t = generateTexture(br, surface, texelSize, textureIndex++);
-            t->m_texture->save(t->m_textureIndex);
+            TextureToken<BaseVecT> texToken = generateTexture(br, surface, texelSize, textureIndex++);
+            texToken.m_texture->save(texToken.m_textureIndex);
 
-            // TODO:
-            // zuordnen & speichern
+            // save textoken & texture
+            result.texTokenClusterMap[clusterH] = texToken;
+            result.textures.push_back(texToken.m_texture);
+
+            // find unique vertices in cluster
+            //FIXME/TODO
+            std::vector<VertexHandle> verticesOfCluster;
+            for (auto faceH : cluster.handles)
+            {
+                for (auto vertexH : mesh.getVerticesOfFace(faceH))
+                {
+                    verticesOfCluster.push_back(vertexH);
+                }
+            }
+            std::sort(
+                verticesOfCluster.begin(),
+                verticesOfCluster.end(),
+                [] (const VertexHandle& lhs, const VertexHandle& rhs)
+                {
+                    return lhs.idx() < rhs.idx();
+                }
+            );
+            verticesOfCluster.erase(
+                std::unique(
+                    verticesOfCluster.begin(),
+                    verticesOfCluster.end()
+                ),
+                verticesOfCluster.end()
+            );
+
+            for (auto vertexH : verticesOfCluster)
+            {
+                TexCoords texCoords(0.0f, 0.0f);
+                result.tcMap[vertexH].mapping.push_back(std::make_pair(clusterH, texCoords));
+            }
+
         }
     }
 
-    return TexturizerResult();
+    return result;
 }
 
 template <typename BaseVecT>
-TextureToken<BaseVecT>* generateTexture(
+TextureToken<BaseVecT> generateTexture(
     BoundingRectangle<BaseVecT>& boundingRect,
     PointsetSurfacePtr<BaseVecT> surface,
     float texelSize,
@@ -95,14 +131,17 @@ TextureToken<BaseVecT>* generateTexture(
 
     // create TextureToken
     // TODO TextureToken<BaseVecT>* result = new TextureToken<BaseVecT>(boundingRect, texture, textureIndex);
-    TextureToken<BaseVecT>* result = new TextureToken<BaseVecT>(
+    // TextureToken<BaseVecT>* result = new TextureToken<BaseVecT>(texture, textureIndex);
+
+    TextureToken<BaseVecT> result = TextureToken<BaseVecT>(
         boundingRect.vec1,
         boundingRect.vec2,
         boundingRect.supportVector,
         boundingRect.minDistA,
         boundingRect.minDistB,
         texture,
-        textureIndex
+        textureIndex,
+        texelSize
     );
 
     //cout << "PIXELS IN TEXTURE: " << sizeX * sizeY << endl;
@@ -126,7 +165,7 @@ TextureToken<BaseVecT>* generateTexture(
                 boundingRect.vec1 * ((boundingRect.minDistA + x * texelSize) + texelSize / 2) +
                 boundingRect.vec2 * ((boundingRect.minDistB + y * texelSize) + texelSize / 2);
 
-            // Point<BaseVecT> currentPosition = boundingRect.supportVector + boundingRect.vec1
+            // Point<BaseVecT> currentPos = boundingRect.supportVector + boundingRect.vec1
             //     * (x * texelSize + boundingRect.minDistA - texelSize / 2.0)
             //     + boundingRect.vec2
             //     * (y * texelSize + boundingRect.minDistB - texelSize / 2.0);
@@ -147,12 +186,12 @@ TextureToken<BaseVecT>* generateTexture(
             g /= k;
             b /= k;
 
-            // texture->m_data[(sizeY - y - 1) * (sizeX * 3) + 3 * x + 0] = r;
-            // texture->m_data[(sizeY - y - 1) * (sizeX * 3) + 3 * x + 1] = g;
-            // texture->m_data[(sizeY - y - 1) * (sizeX * 3) + 3 * x + 2] = b;
-            texture->m_data[(y) * (sizeX * 3) + 3 * x + 0] = r;
-            texture->m_data[(y) * (sizeX * 3) + 3 * x + 1] = g;
-            texture->m_data[(y) * (sizeX * 3) + 3 * x + 2] = b;
+            texture->m_data[(sizeY - y - 1) * (sizeX * 3) + 3 * x + 0] = r;
+            texture->m_data[(sizeY - y - 1) * (sizeX * 3) + 3 * x + 1] = g;
+            texture->m_data[(sizeY - y - 1) * (sizeX * 3) + 3 * x + 2] = b;
+            // texture->m_data[(y) * (sizeX * 3) + 3 * x + 0] = r;
+            // texture->m_data[(y) * (sizeX * 3) + 3 * x + 1] = g;
+            // texture->m_data[(y) * (sizeX * 3) + 3 * x + 2] = b;
             // texture->m_data[(sizeX - x - 1) * (sizeY * 3) + 3 * y] = r;
             // texture->m_data[(sizeX - x - 1) * (sizeY * 3) + 3 * y + 1] = g;
             // texture->m_data[(sizeX - x - 1) * (sizeY * 3) + 3 * y + 2] = b;
@@ -161,9 +200,10 @@ TextureToken<BaseVecT>* generateTexture(
             // texture->m_data[(dataCounter * 3) + 2] = b;
             // dataCounter++;
 
+            ++progress;
         }
-        ++progress;
     }
+    cout << endl;
 
     return result;
 

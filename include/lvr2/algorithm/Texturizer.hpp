@@ -19,7 +19,7 @@
 /*
 * Texturizer.hpp
 *
-*  @date 17.06.2017
+*  @date 17.07.2017
 *  @author Jan Philipp Vogtherr <jvogtherr@uni-osnabrueck.de>
 *  @author Kristin Schmidt <krschmidt@uni-osnabrueck.de>
 */
@@ -40,6 +40,7 @@
 #include <lvr2/geometry/Point.hpp>
 #include <lvr2/geometry/Vector.hpp>
 #include <lvr2/reconstruction/PointsetSurface.hpp>
+#include <lvr2/texture/ClusterTexCoordMapping.hpp>
 #include <lvr2/texture/Texture.hpp>
 #include <lvr2/texture/TextureToken.hpp>
 
@@ -49,11 +50,12 @@
 namespace lvr2
 {
 
+template <typename BaseVecT>
 struct TexturizerResult
 {
-    // TODO: ClusterMap<TexHandle> texHandleClusterMap;
-    // TODO: liste von texturen
-    // TODO: texture coords map
+    ClusterMap<TextureToken<BaseVecT>> texTokenClusterMap;
+    std::vector<Texture*> textures;
+    VertexMap<ClusterTexCoordMapping> tcMap;
 };
 
 template<typename BaseVecT>
@@ -91,7 +93,7 @@ struct BoundingRectangle
 };
 
 template<typename BaseVecT>
-TexturizerResult generateTextures(
+TexturizerResult<BaseVecT> generateTextures(
     float texelSize,
     int textureThreshold,
     HalfEdgeMesh<BaseVecT>& mesh,
