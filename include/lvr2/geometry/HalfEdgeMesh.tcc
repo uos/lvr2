@@ -47,7 +47,7 @@ VertexHandle HalfEdgeMesh<BaseVecT>::addVertex(Point<BaseVecT> pos)
 {
     Vertex v;
     v.pos = pos;
-    return m_vertices.push_back(v);
+    return m_vertices.push(v);
 }
 
 template <typename BaseVecT>
@@ -86,7 +86,7 @@ FaceHandle HalfEdgeMesh<BaseVecT>::addFace(VertexHandle v1H, VertexHandle v2H, V
     // =======================================================================
     FaceHandle newFaceH = m_faces.nextHandle();
     Face f(eInner1H);
-    m_faces.push_back(f);
+    m_faces.push(f);
 
     // Set face handle of edges
     eInner1.face = newFaceH;
@@ -326,19 +326,19 @@ FaceHandle HalfEdgeMesh<BaseVecT>::addFace(VertexHandle v1H, VertexHandle v2H, V
 template <typename BaseVecT>
 size_t HalfEdgeMesh<BaseVecT>::numVertices() const
 {
-    return m_vertices.sizeUsed();
+    return m_vertices.numUsed();
 }
 
 template <typename BaseVecT>
 size_t HalfEdgeMesh<BaseVecT>::numFaces() const
 {
-    return m_faces.sizeUsed();
+    return m_faces.numUsed();
 }
 
 template <typename BaseVecT>
 size_t HalfEdgeMesh<BaseVecT>::numEdges() const
 {
-    return m_edges.sizeUsed() / 2;
+    return m_edges.numUsed() / 2;
 }
 
 template <typename BaseVecT>
@@ -744,8 +744,8 @@ pair<HalfEdgeHandle, HalfEdgeHandle> HalfEdgeMesh<BaseVecT>::addEdgePair(VertexH
     b.target = v1H;
 
     // Add edges to our edge list.
-    m_edges.push_back(a);
-    m_edges.push_back(b);
+    m_edges.push(a);
+    m_edges.push(b);
 
     return std::make_pair(aH, bH);
 }

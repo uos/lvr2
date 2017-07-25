@@ -53,7 +53,7 @@ template <typename HandleT>
 ClusterHandle ClusterBiMap<HandleT>::createCluster()
 {
     ClusterHandle newHandle(m_cluster.size());
-    m_cluster.push_back(Cluster<HandleT>());
+    m_cluster.push(Cluster<HandleT>());
 
     return newHandle;
 }
@@ -108,7 +108,7 @@ ClusterHandle ClusterBiMap<HandleT>::getClusterH(HandleT handle) const
 template <typename HandleT>
 size_t ClusterBiMap<HandleT>::numCluster() const
 {
-    return m_cluster.sizeUsed();
+    return m_cluster.numUsed();
 }
 
 template <typename HandleT>

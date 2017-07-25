@@ -259,13 +259,13 @@ void lvr2Playground()
     StableVector vec;
     VertexHandle handle1(1);
     VertexHandle handle2(0);
-    cout << vec.sizeUsed() << std::endl;
-    vec.push_back(v1);
-    cout << vec.sizeUsed() << std::endl;
-    vec.push_back(v2);
-    cout << vec.sizeUsed() << std::endl;
+    cout << vec.numUsed() << std::endl;
+    vec.push(v1);
+    cout << vec.numUsed() << std::endl;
+    vec.push(v2);
+    cout << vec.numUsed() << std::endl;
     vec.erase(handle1);
-    cout << vec.sizeUsed() << std::endl;
+    cout << vec.numUsed() << std::endl;
     auto vec1 = vec[handle2];
 
     cout << vec.size() << std::endl;
@@ -275,7 +275,7 @@ void lvr2Playground()
 
     for (int i = 0; i < 10; i++)
     {
-        vec.push_back(Vec(i, 0, 0));
+        vec.push(Vec(i, 0, 0));
     }
 
     for (uint32_t i = 2; i < 12; i += 2)
@@ -291,17 +291,17 @@ void lvr2Playground()
     // VectorMap stuff 2
     cout << "========= VectorMap =========" << endl;
     lvr2::VectorMap<VertexHandle, std::string> map;
-    cout << map.sizeUsed() << endl;
+    cout << map.numUsed() << endl;
     map.insert(handle1, "test1");
     cout << map[handle1] << std::endl;
-    cout << map.sizeUsed() << endl;
+    cout << map.numUsed() << endl;
 
     lvr2::VectorMap<VertexHandle, std::string> map2(10, "test");
     for (auto i = 0; i < 10; i++) {
         VertexHandle handleLoop(i);
         cout << map2[handleLoop] << endl;
     }
-    cout << map2.sizeUsed() << endl;
+    cout << map2.numUsed() << endl;
 
     VertexHandle handleLoop(5);
     map2[handleLoop] = "lalala";
@@ -309,11 +309,11 @@ void lvr2Playground()
         VertexHandle handleLoop(i);
         cout << map2[handleLoop] << endl;
     }
-    cout << map2.sizeUsed() << endl;
+    cout << map2.numUsed() << endl;
 
     handle1 = VertexHandle(42);
     map2.insert(handle1, "42 !!");
-    cout << map2.sizeUsed() << endl;
+    cout << map2.numUsed() << endl;
     auto opt = map2.get(handle1);
     if (opt) {
         cout << "found value! " << *opt << endl;
@@ -328,7 +328,7 @@ void lvr2Playground()
 
     handle1 = VertexHandle(42);
     map2.erase(handle1);
-    cout << map2.sizeUsed() << endl;
+    cout << map2.numUsed() << endl;
 //    cout << map2[handle1] << endl;
 }
 

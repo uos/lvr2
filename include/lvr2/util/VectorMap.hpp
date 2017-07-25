@@ -112,7 +112,7 @@ public:
     const ValueType& operator[](const KeyType& key) const;
 
     /// Number of not delete-marked values
-    size_t sizeUsed() const;
+    size_t numUsed() const;
 
     decltype(auto) begin() const;
     decltype(auto) end() const;

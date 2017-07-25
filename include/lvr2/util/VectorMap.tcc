@@ -41,7 +41,7 @@ void VectorMap<KeyT, ValT>::insert(const KeyType& key, const ValueType& value)
     // TODO: enhance insert -> delete stuff
     while (m_vec.size() <= key.idx())
     {
-        auto h = m_vec.push_back(Wrapper());
+        auto h = m_vec.push(Wrapper());
         m_vec.erase(h);
     }
 
@@ -96,9 +96,9 @@ const ValT& VectorMap<KeyT, ValT>::operator[](const KeyType& key) const
 }
 
 template<typename KeyT, typename ValT>
-size_t VectorMap<KeyT, ValT>::sizeUsed() const
+size_t VectorMap<KeyT, ValT>::numUsed() const
 {
-    return m_vec.sizeUsed();
+    return m_vec.numUsed();
 }
 
 template<typename KeyT, typename ValT>
