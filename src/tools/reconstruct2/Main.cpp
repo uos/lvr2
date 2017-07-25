@@ -1026,7 +1026,7 @@ int main(int argc, char** argv)
 
     // generate textures
     bool generateTexturesOption = options.generateTextures();
-    generateTexturesOption = true; // FIXME/TODO
+    // generateTexturesOption = true; // FIXME/TODO
     if (generateTexturesOption)
     {
         float texelSize = options.getTexelSize();
