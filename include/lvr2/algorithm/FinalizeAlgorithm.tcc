@@ -174,13 +174,14 @@ boost::shared_ptr<lvr::MeshBuffer>
     // This counter is used to determine the index of a newly inserted vertex
     size_t vertexCount = 0;
 
+    // This map remembers which vertex we already inserted and at what
+    // position. This is important to create the face map.
+    unordered_map<VertexHandle, size_t> idxMap;
+
     // Loop over all clusters
     for (auto clusterH: m_cluster)
     {
-        // This map remembers which vertex we already inserted and at what
-        // position. This is important to create the face map.
-        unordered_map<VertexHandle, size_t> idxMap;
-
+        idxMap.clear();
         auto& cluster = m_cluster.getCluster(clusterH);
 
         // Loop over all faces of the cluster
