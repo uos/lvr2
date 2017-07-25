@@ -29,7 +29,7 @@ namespace lvr2
 {
 
 template<typename HandleT, typename ElemT>
-void StableVector<HandleT, ElemT>::checkAccess(const HandleType& handle) const
+void StableVector<HandleT, ElemT>::checkAccess(HandleType handle) const
 {
     // You cannot access deleted or uninitialized elements!
     if (m_deleted[handle.idx()])
@@ -39,7 +39,7 @@ void StableVector<HandleT, ElemT>::checkAccess(const HandleType& handle) const
 }
 
 template<typename HandleT, typename ElemT>
-StableVector<HandleT, ElemT>::StableVector(size_t countElements, const ElemT& defaultValue)
+StableVector<HandleT, ElemT>::StableVector(size_t countElements, const ElementType& defaultValue)
     : m_elements(countElements, defaultValue),
       m_deleted(countElements, false),
       m_usedCount(countElements)
@@ -47,7 +47,7 @@ StableVector<HandleT, ElemT>::StableVector(size_t countElements, const ElemT& de
 
 
 template<typename HandleT, typename ElemT>
-HandleT StableVector<HandleT, ElemT>::push_back(const ElementType& elem)
+HandleT StableVector<HandleT, ElemT>::push(ElementType elem)
 {
     m_elements.push_back(elem);
     m_deleted.push_back(false);
@@ -63,7 +63,7 @@ HandleT StableVector<HandleT, ElemT>::nextHandle() const
 
 
 template<typename HandleT, typename ElemT>
-void StableVector<HandleT, ElemT>::erase(const HandleType& handle)
+void StableVector<HandleT, ElemT>::erase(HandleType handle)
 {
     checkAccess(handle);
 
@@ -72,27 +72,27 @@ void StableVector<HandleT, ElemT>::erase(const HandleType& handle)
 }
 
 template<typename HandleT, typename ElemT>
-boost::optional<ElemT&> StableVector<HandleT, ElemT>::get(const HandleType& key)
+boost::optional<ElemT&> StableVector<HandleT, ElemT>::get(HandleType handle)
 {
-    if (key.idx() >= m_deleted.size() || m_deleted[key.idx()])
+    if (handle.idx() >= m_deleted.size() || m_deleted[handle.idx()])
     {
         return boost::none;
     }
-    return m_elements[key.idx()];
+    return m_elements[handle.idx()];
 }
 
 template<typename HandleT, typename ElemT>
-boost::optional<const ElemT&> StableVector<HandleT, ElemT>::get(const HandleType& key) const
+boost::optional<const ElemT&> StableVector<HandleT, ElemT>::get(HandleType handle) const
 {
-    if (key.idx() >= m_deleted.size() || m_deleted[key.idx()])
+    if (handle.idx() >= m_deleted.size() || m_deleted[handle.idx()])
     {
         return boost::none;
     }
-    return m_elements[key.idx()];
+    return m_elements[handle.idx()];
 }
 
 template<typename HandleT, typename ElemT>
-ElemT& StableVector<HandleT, ElemT>::operator[](const HandleType& handle)
+ElemT& StableVector<HandleT, ElemT>::operator[](HandleType handle)
 {
     checkAccess(handle);
 
@@ -100,7 +100,7 @@ ElemT& StableVector<HandleT, ElemT>::operator[](const HandleType& handle)
 }
 
 template<typename HandleT, typename ElemT>
-const ElemT& StableVector<HandleT, ElemT>::operator[](const HandleType& handle) const
+const ElemT& StableVector<HandleT, ElemT>::operator[](HandleType handle) const
 {
     checkAccess(handle);
 
@@ -114,27 +114,27 @@ size_t StableVector<HandleT, ElemT>::size() const
 }
 
 template<typename HandleT, typename ElemT>
-size_t StableVector<HandleT, ElemT>::sizeUsed() const
+size_t StableVector<HandleT, ElemT>::numUsed() const
 {
     return m_usedCount;
 }
 
 template<typename HandleT, typename ElemT>
-void StableVector<HandleT, ElemT>::set(const HandleType& key, const ElementType& elem)
+void StableVector<HandleT, ElemT>::set(HandleType handle, const ElementType& elem)
 {
     // check access
-    if (key.idx() >= m_elements.size())
+    if (handle.idx() >= m_elements.size())
     {
-        panic("attempt to append new element in StableVector with set -> use push_back!");
+        panic("attempt to append new element in StableVector with set() -> use push()!");
     }
 
     // insert element
-    if (m_deleted[key.idx()])
+    if (m_deleted[handle.idx()])
     {
         ++m_usedCount;
     }
-    m_elements[key.idx()] = elem;
-    m_deleted[key.idx()] = false;
+    m_elements[handle.idx()] = elem;
+    m_deleted[handle.idx()] = false;
 };
 
 template<typename HandleT, typename ElemT>

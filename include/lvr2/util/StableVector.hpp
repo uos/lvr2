@@ -31,6 +31,9 @@
 
 using std::vector;
 
+#include <lvr2/geometry/BaseHandle.hpp>
+#include <lvr2/geometry/Handles.hpp>
+
 namespace lvr2
 {
 
@@ -62,10 +65,14 @@ public:
 };
 
 /**
- * @brief A vector, which preserves its indices even when an element is deleted
+ * @brief A vector which guarantees stable indices and features O(1) deletion.
  *
  * This is basically a wrapper for the std::vector, which marks an element as
- * deleted but does not actually delete it.
+ * deleted but does not actually delete it. This means that indices are never
+ * invalidated. When inserting an element, you get its index (its so called
+ * "handle") back. This handle can later be used to access the element. This
+ * remains true regardless of other insertions and deletions happening in
+ * between.
  *
  * USE WITH CAUTION: This NEVER deletes values (except on its own destruction)
  * and can get very large if used incorrectly! This class is designed for
@@ -73,16 +80,135 @@ public:
  * of insertions. The memory requirements of this class are O(n_pb) where n_pb
  * is the number of `push_back()` calls.
  *
- * @tparam ElemT Type of elements in the vector
- * @tparam HandleT Type of the index for the vector
+ * @tparam HandleT This handle type contains the actual index. It has to be
+ *                 derived from `BaseHandle`!
+ * @tparam ElemT Type of elements in the vector.
  */
 template<typename HandleT, typename ElemT>
 class StableVector
 {
-private:
+    static_assert(
+        std::is_base_of<BaseHandle<Index>, HandleT>::value,
+        "HandleT must inherit from BaseHandle!"
+    );
+
+public:
+
     using ElementType = ElemT;
     using HandleType = HandleT;
 
+    /**
+     * @brief Creates an empty StableVector.
+     */
+    StableVector() : m_usedCount(0) {};
+
+    /**
+     * @brief Creates a StableVector with `countElements` many copies of
+     *        `defaultValue`.
+     *
+     * The elements are stored contiguously in the vectors, thus the valid
+     * indices of these elements are 0 to `countElements` - 1.
+     */
+    StableVector(size_t countElements, const ElementType& defaultValue);
+
+    /**
+     * @brief Adds the given element to the vector.
+     *
+     * @return The handle referring to the inserted element.
+     */
+    HandleType push(ElementType elem);
+
+    /**
+     * @brief The handle which would be returned by calling `push` now.
+     */
+    HandleType nextHandle() const;
+
+    /**
+     * @brief Mark the element behind the given handle as deleted.
+     *
+     * While the element is deleted, the handle stays valid. This means that
+     * trying to obtain the element with this handle later, will always result
+     * in `none` (if `get()` was used). Additionally, the handle can also be
+     * used with the `set()` method.
+     *
+     * This does NOT call the DESTRUCTOR of the marked element!
+     */
+    void erase(HandleType handle);
+
+    /**
+     * @brief Returns the element referred to by `handle`.
+     *
+     * Returns `none` if the element was deleted or if the handle is out of
+     * bounds.
+     */
+    boost::optional<ElementType&> get(HandleType handle);
+
+    /**
+     * @brief Returns the element referred to by `handle`.
+     *
+     * Returns `none` if the element was deleted or if the handle is out of
+     * bounds.
+     */
+    boost::optional<const ElementType&> get(HandleType handle) const;
+
+    /**
+     * @brief Set a value for the existing `handle`.
+     *
+     * Use `push` to insert a new element. The given `handle` has to exist
+     * already.
+     */
+    void set(HandleType handle, const ElementType& elem);
+
+    /**
+     * @brief Returns the element referred to by `handle`.
+     *
+     * If `handle` is out of bounds or the element was deleted, this method
+     * will throw an exception in debug mode and has UB in release mode. Use
+     * `get()` instead to gracefully handle the absence of an element.
+     */
+    ElementType& operator[](HandleType handle);
+
+    /**
+     * @brief Returns the element referred to by `handle`.
+     *
+     * If `handle` is out of bounds or the element was deleted, this method
+     * will throw an exception in debug mode and has UB in release mode. Use
+     * `get()` instead to gracefully handle the absence of an element.
+     */
+    const ElementType& operator[](HandleType handle) const;
+
+    /**
+     * @brief Absolute size of the vector (including deleted elements).
+     */
+    size_t size() const;
+
+    /**
+     * @brief Number of non-deleted elements.
+     */
+    size_t numUsed() const;
+
+    /**
+     * @brief Returns an iterator to the first element of this vector.
+     *
+     * This iterator auto skips deleted elements and returns handles to the valid elements.
+     */
+    StableVectorIterator<HandleType> begin() const;
+
+    /**
+     * @brief Returns an iterator to the element after the last element of this vector.
+     */
+    StableVectorIterator<HandleType> end() const;
+
+    /**
+     * @brief Increase the capacity of the vector to a value that's greater or equal to newCap.
+     *
+     * If newCap is greater than the current capacity, new storage is allocated, otherwise the method does nothing.
+     *
+     * @param newCap new capacity of the vector
+     */
+    void reserve(size_t newCap);
+
+private:
     /// Count of used elements in elements vector
     size_t m_usedCount;
 
@@ -93,71 +219,10 @@ private:
     vector<bool> m_deleted;
 
     /**
-     * @brief Check, if the requested handle is not deleted
+     * @brief Assert that the requested handle is not deleted or throw an
+     *        exception otherwise.
      */
-    void checkAccess(const HandleType& handle) const;
-
-public:
-    StableVector() : m_usedCount(0) {};
-
-    StableVector(size_t countElements, const ElementType& defaultValue);
-
-    /// Add the given element
-    HandleT push_back(const ElementType& elem);
-
-    /// The handle which would be returned by calling `push_back` now.
-    HandleT nextHandle() const;
-
-    /**
-     * @brief Mark the element behind the given handle as deleted
-     *
-     * This does NOT call the DESTRUCTOR of the marked element!
-     */
-    void erase(const HandleType& handle);
-
-    /// Request the value behind the given key
-    boost::optional<ElemT&> get(const HandleType& key);
-
-    /// Request the value behind the given key
-    boost::optional<const ElemT&> get(const HandleType& key) const;
-
-    /// Set value for existing key. Use push_pack to append NEW element
-    void set(const HandleType& key, const ElementType& elem);
-
-    /// Request the element behind the given handle
-    ElemT& operator[](const HandleType& handle);
-
-    /// Request the element behind the given handle
-    const ElemT& operator[](const HandleType& handle) const;
-
-    /// Absolute size of the vector (with delete-marked elements)
-    size_t size() const;
-
-    /// Number of not delete-marked elements
-    size_t sizeUsed() const;
-
-    /**
-     * @brief Returns an iterator which starts at the beginning of the vector
-     *
-     * This iterator auto skips deleted elements and returns handles to the valid elements
-     */
-    StableVectorIterator<HandleT> begin() const;
-
-    /**
-     * @brief Returns an iterator which starts at the end of the vector
-     *
-     * This iterator auto skips deleted elements and returns handles to the valid elements
-     */
-    StableVectorIterator<HandleT> end() const;
-
-    /**
-     * @brief Increase the capacity of the vector to a value that's greater or equal to newCap.
-     *
-     * If newCap is greater than the current capacity, new storage is allocated, otherwise the method does nothing.
-     *
-     * @param newCap new capacity of the vector
-     */
-    void reserve(size_t newCap);
+    void checkAccess(HandleType handle) const;
 };
 
 } // namespace lvr2
