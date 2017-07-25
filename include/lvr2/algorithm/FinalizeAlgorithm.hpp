@@ -67,13 +67,13 @@ public:
     ClusterFlatteningFinalizer(const ClusterSet<FaceHandle>& cluster);
 
     void setVertexNormals(const VertexMap<Normal<BaseVecT>>& normals);
-    void setClusterColors(const ClusterMap<ClusterPainter::Rgb8Color>& colors);
+    void setClusterColors(const ClusterMap<Rgb8Color>& colors);
 
     boost::shared_ptr<lvr::MeshBuffer> apply(const BaseMesh<BaseVecT>& mesh);
 
 private:
     const ClusterSet<FaceHandle>& m_cluster;
-    optional<const ClusterMap<ClusterPainter::Rgb8Color>&> m_clusterColors;
+    optional<const ClusterMap<Rgb8Color>&> m_clusterColors;
     optional<const VertexMap<Normal<BaseVecT>>&> m_vertexNormals;
 };
 
