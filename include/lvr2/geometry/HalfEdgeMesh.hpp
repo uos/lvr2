@@ -124,6 +124,8 @@ public:
     MeshHandleIteratorPtr<EdgeHandle> edgesBegin() const final;
     MeshHandleIteratorPtr<EdgeHandle> edgesEnd() const final;
 
+    VertexHandle collapseEdge(EdgeHandle edgeH) final;
+
 
     // ========================================================================
     // = Other public methods

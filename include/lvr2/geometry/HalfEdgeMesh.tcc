@@ -577,6 +577,177 @@ void HalfEdgeMesh<BaseVecT>::getEdgesOfVertex(
     });
 }
 
+template <typename BaseVecT>
+VertexHandle HalfEdgeMesh<BaseVecT>::collapseEdge(EdgeHandle edgeH)
+{
+    //             [C]                | Vertices:
+    //             / ^                | [A]: vertexToRemove
+    //            /   \               | [B]: vertexToKeep
+    //         c /     \ b            | [C]: vertexAbove
+    //          /       \             | [D]: vertexBelow
+    //         V    a    \            |
+    //           ------>              | Edges:
+    //      [A]            [B]        | a: startEdge
+    //           <------              | b: edgeToRemoveAR (AboveRight)
+    //         \    d    ^            | c: edgeToRemoveAL (AboveLeft)
+    //          \       /             | d: startEdgeTwin
+    //         e \     / f            | e: edgeToRemoveBR (BelowLeft)
+    //            \   /               | f: edgeToRemoveBL (BelowRight)
+    //             V /                |
+    //             [D]                |
+
+    // The variable naming in this method imagines that the given edge points to
+    // the right and there might be one face above and one face below.
+    // The start edges and the inner edges of those faces will be removed and
+    // for each face the remaining two edges become twins.
+
+    auto startEdgeH = HalfEdgeHandle::oneHalfOf(edgeH);
+    auto startEdge = getE(startEdgeH);
+    auto startEdgeTwin = getE(startEdge.twin);
+
+    // the two vertices that are merged
+    auto vertexToRemove = startEdge.target;
+    auto vertexToKeep = startEdgeTwin.target;
+
+    // the two faces next to the given edge
+    OptionalFaceHandle faceAbove = startEdge.face;
+    OptionalFaceHandle faceBelow = startEdgeTwin.face;
+
+    // edges above the start edge
+    auto edgeToRemoveAR = startEdge.next;
+    auto edgeToKeepAR = getE(edgeToRemoveAR).twin;
+    auto edgeToRemoveAL = getE(edgeToRemoveAR).next;
+    auto edgeToKeepAL = getE(edgeToRemoveAL).twin;
+
+    // edges below the start edge
+    auto edgeToRemoveBL = startEdgeTwin.next;
+    auto edgeToKeepBL = getE(edgeToRemoveBL).twin;
+    auto edgeToRemoveBR = getE(edgeToRemoveBL).next;
+    auto edgeToKeepBR = getE(edgeToRemoveBR).twin;
+
+    // vertices above and below
+    auto vertexAbove = getE(edgeToKeepAR).target;
+    auto vertexBelow = getE(edgeToKeepBL).target;
+
+    // check if there are closed triangles next to the start edge
+    // bool hasTriangleAbove = getE(getE(startEdge.next).next).next == startEdgeH;
+    // bool hasTriangleBelow = getE(getE(startEdgeTwin.next).next).next == startEdge.twin;
+    bool hasTriangleAbove = getE(edgeToRemoveAL).next == startEdgeH;
+    bool hasTriangleBelow = getE(edgeToRemoveBR).next == startEdge.twin;
+
+
+    // fix targets for ingoing edges of the vertex that will be deleted
+    // this has to be done before changing the twin edges
+    auto checkTargetIsVertexToRemoveLambda = [&, this](auto eH)
+    {
+        return getE(eH).target == vertexToRemove;
+    };
+
+    auto edgeOfVertexToRemove = findEdgeAroundVertex(vertexToRemove, checkTargetIsVertexToRemoveLambda);
+    while(edgeOfVertexToRemove)
+    {
+        getE(edgeOfVertexToRemove.unwrap()).target = vertexToKeep;
+
+        edgeOfVertexToRemove = findEdgeAroundVertex(vertexToRemove, checkTargetIsVertexToRemoveLambda);
+    }
+
+    // if there is a face or a closed triangle without a face above, collapse it
+    if (faceAbove || hasTriangleAbove)
+    {
+        // fix twin edges
+        getE(edgeToKeepAL).twin = edgeToKeepAR;
+        getE(edgeToKeepAR).twin = edgeToKeepAL;
+
+        // fix outgoing edges of vertices because they might be deleted
+        getV(vertexToKeep).outgoing = edgeToKeepAL;
+        getV(vertexAbove).outgoing = edgeToKeepAR;
+    }
+    else
+    {
+        // if there is no triangle above, the edge whose next is the start edge
+        // needs the correct new next edge
+        auto startEdgePrecursor = findEdgeAroundVertex(startEdge.twin, [&, this](auto eH)
+        {
+            return getE(eH).next == startEdgeH;
+        });
+        if (startEdgePrecursor)
+        {
+            getE(startEdgePrecursor.unwrap()).next = startEdge.next;
+        }
+
+        // fix outgoing edge of vertexToKeep because it might be deleted
+        getV(vertexToKeep).outgoing = startEdge.next;
+
+    }
+
+    if (faceBelow || hasTriangleBelow)
+    {
+        // fix twin edges
+        getE(edgeToKeepBL).twin = edgeToKeepBR;
+        getE(edgeToKeepBR).twin = edgeToKeepBL;
+
+        // fix outgoing edge of vertexBelow because it might be deleted
+        getV(vertexBelow).outgoing = edgeToKeepBL;
+    }
+    else
+    {
+        // if there is no triangle below, the edge whose next is the twin of the
+        // start edge needs the correct new next edge
+        auto startEdgeTwinPrecursor = findEdgeAroundVertex(startEdgeH, [&, this](auto eH)
+        {
+            return getE(eH).next == startEdge.twin;
+        });
+        if (startEdgeTwinPrecursor)
+        {
+            getE(startEdgeTwinPrecursor.unwrap()).next = startEdgeTwin.next;
+        }
+    }
+
+    // check for the special case that the mesh consists of only one triangle
+    // to make sure edges are not deleted twice
+    if (edgeToKeepAL == edgeToKeepBL)
+    {
+        hasTriangleBelow == false;
+    }
+
+
+    // calculate and set new position of the vertex that is kept
+    auto position1 = getV(vertexToRemove).pos;
+    auto position2 = getV(vertexToKeep).pos;
+
+    auto newPosition = position1 + (position2 - position1) / 2;
+    getV(vertexToKeep).pos = newPosition;
+
+    // delete one vertex, the two faces besides the given edge and their inner edges
+    m_vertices.erase(vertexToRemove);
+
+    if (faceAbove)
+    {
+        m_faces.erase(faceAbove.unwrap());
+    }
+    if (faceBelow)
+    {
+        m_faces.erase(faceBelow.unwrap());
+    }
+
+    if (hasTriangleAbove)
+    {
+        m_edges.erase(edgeToRemoveAL);
+        m_edges.erase(edgeToRemoveAR);
+    }
+    if (hasTriangleBelow)
+    {
+        m_edges.erase(edgeToRemoveBL);
+        m_edges.erase(edgeToRemoveBR);
+    }
+
+    m_edges.erase(startEdgeH);
+    m_edges.erase(startEdge.twin);
+
+
+    return vertexToKeep;
+}
+
 // ========================================================================
 // = Other public methods
 // ========================================================================
