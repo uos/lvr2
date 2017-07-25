@@ -302,6 +302,13 @@ public:
      */
     virtual MeshHandleIteratorPtr<EdgeHandle> edgesEnd() const = 0;
 
+    /**
+     * @brief Merges the two vertices connected by the given edge.
+     *
+     * @return The vertex-handle of the new vertex.
+     */
+    virtual VertexHandle collapseEdge(EdgeHandle edgeH) = 0;
+
     // =======================================================================
     // Provided methods (already implemented)
     // =======================================================================
