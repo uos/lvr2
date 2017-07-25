@@ -130,7 +130,7 @@ void FinalizeAlgorithm<BaseVecT>::setNormalData(const VertexMap<Normal<BaseVecT>
 
 template<typename BaseVecT>
 ClusterFlatteningFinalizer<BaseVecT>::ClusterFlatteningFinalizer(
-    const ClusterSet<FaceHandle>& cluster
+    const ClusterBiMap<FaceHandle>& cluster
 )
     : m_cluster(cluster)
 {}

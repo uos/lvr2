@@ -46,7 +46,7 @@ public:
     vector<HandleT> handles;
 };
 
-/// Handle to access Cluster of the ClusterSet.
+/// Handle to access Cluster of the ClusterBiMap.
 class ClusterHandle : public BaseHandle<Index>
 {
     using BaseHandle<Index>::BaseHandle;

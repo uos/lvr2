@@ -18,14 +18,14 @@
 
 
 /*
- * ClusterSet.hpp
+ * ClusterBiMap.hpp
  *
  *  @date 17.06.2017
  *  @author Johan M. von Behren <johan@vonbehren.eu>
  */
 
-#ifndef LVR2_GEOMETRY_CLUSTERSET_H_
-#define LVR2_GEOMETRY_CLUSTERSET_H_
+#ifndef LVR2_GEOMETRY_CLUSTERBIMAP_H_
+#define LVR2_GEOMETRY_CLUSTERBIMAP_H_
 
 #include "Handles.hpp"
 #include "Cluster.hpp"
@@ -37,18 +37,18 @@ namespace lvr2
 {
 
 /**
- * @brief Iterator over cluster handles in this cluster set
+ * @brief Iterator over cluster handles in this cluster map
  *
- * Important: This is NOT a fail fast iterator. If the cluster set is changed while using an instance of this
+ * Important: This is NOT a fail fast iterator. If the cluster map is changed while using an instance of this
  * iterator the behavior is undefined!
  */
-class ClusterSetIterator
+class ClusterBiMapIterator
 {
 public:
-    ClusterSetIterator(StableVectorIterator<ClusterHandle> iterator) : m_iterator(iterator) {};
-    ClusterSetIterator& operator++();
-    bool operator==(const ClusterSetIterator& other) const;
-    bool operator!=(const ClusterSetIterator& other) const;
+    ClusterBiMapIterator(StableVectorIterator<ClusterHandle> iterator) : m_iterator(iterator) {};
+    ClusterBiMapIterator& operator++();
+    bool operator==(const ClusterBiMapIterator& other) const;
+    bool operator!=(const ClusterBiMapIterator& other) const;
     ClusterHandle operator*() const;
 
 private:
@@ -56,14 +56,14 @@ private:
 };
 
 /**
- * @brief A set of clusters, which also saves a back-reference from handle to cluster.
- * @tparam Type of handles in the cluster set.
+ * @brief A map of clusters, which also saves a back-reference from handle to cluster.
+ * @tparam Type of handles in the cluster map.
  */
 template<typename HandleT>
-class ClusterSet
+class ClusterBiMap
 {
 public:
-    ClusterSet() : m_numHandles(0) {};
+    ClusterBiMap() : m_numHandles(0) {};
 
     /// Creates a cluster and returns its handle.
     ClusterHandle createCluster();
@@ -106,8 +106,8 @@ public:
     /// Returns the number of cluster in this set.
     size_t numCluster() const;
 
-    ClusterSetIterator begin() const;
-    ClusterSetIterator end() const;
+    ClusterBiMapIterator begin() const;
+    ClusterBiMapIterator end() const;
 
     /// Get cluster behind the cluster handle.
     const Cluster<HandleT>& getCluster(ClusterHandle clusterHandle) const;
@@ -139,6 +139,6 @@ private:
 
 } // namespace lvr2
 
-#include <lvr2/geometry/ClusterSet.tcc>
+#include <lvr2/geometry/ClusterBiMap.tcc>
 
-#endif /* LVR2_GEOMETRY_CLUSTERSET_H_ */
+#endif /* LVR2_GEOMETRY_CLUSTERBIMAP_H_ */

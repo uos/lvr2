@@ -36,9 +36,9 @@ template<typename BaseVecT>
 ClusterMap<Rgb8Color> ClusterPainter::simpsons(const BaseMesh<BaseVecT>& mesh) const
 {
     ClusterMap<Rgb8Color> colorMap;
-    colorMap.reserve(m_clusterSet.numHandles() * 3);
+    colorMap.reserve(m_clusterBiMap.numHandles() * 3);
     size_t clusterIdx = 0;
-    for (auto clusterH: m_clusterSet)
+    for (auto clusterH: m_clusterBiMap)
     {
         auto color = getSimpsonColorForIdx(clusterIdx);
         colorMap.insert(clusterH, color);
