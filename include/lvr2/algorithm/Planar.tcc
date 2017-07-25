@@ -44,12 +44,8 @@ using std::log;
 namespace lvr2
 {
 
-template<typename BaseVecT>
-ClusterBiMap<FaceHandle> planarClusterGrowing(
-    const BaseMesh<BaseVecT>& mesh,
-    const FaceMap<Normal<BaseVecT>>& normals,
-    float minSinAngle
-)
+template<typename BaseVecT, typename Pred>
+ClusterBiMap<FaceHandle> clusterGrowing(const BaseMesh<BaseVecT>& mesh, Pred pred)
 {
     ClusterBiMap<FaceHandle> clusters;
     DenseFaceMap<bool> visited(mesh.numFaces(), false);
@@ -64,7 +60,6 @@ ClusterBiMap<FaceHandle> planarClusterGrowing(
             vector<FaceHandle> stack;
             stack.push_back(faceH);
             auto cluster = clusters.createCluster();
-            auto referenceNormal = normals[faceH];
 
             // Grow my cluster, groOW!
             while (!stack.empty())
@@ -72,11 +67,10 @@ ClusterBiMap<FaceHandle> planarClusterGrowing(
                 auto currentFace = stack.back();
                 stack.pop_back();
 
-                // Check if the last faces from stack and starting face are in the "same" plane
-                if (normals[currentFace].dot(referenceNormal.asVector()) > minSinAngle)
+                // Check if the last faces from stack and starting face match the creatia to join the same cluster
+                if (pred(faceH, currentFace))
                 {
-                    // The face is in the "same" plane as the starting face => add it to cluster
-                    // and mark as visited.
+                    // The face matched the criteria => add it to cluster and mark as visited.
                     clusters.addToCluster(cluster, currentFace);
                     visited[currentFace] = true;
 
