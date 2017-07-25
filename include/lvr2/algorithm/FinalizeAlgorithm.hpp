@@ -38,6 +38,7 @@ using boost::optional;
 #include <lvr2/geometry/Normal.hpp>
 #include <lvr2/util/VectorMap.hpp>
 #include <lvr2/algorithm/ColorAlgorithms.hpp>
+#include <lvr2/geometry/ClusterBiMap.hpp>
 
 namespace lvr2
 {
@@ -64,7 +65,7 @@ template<typename BaseVecT>
 class ClusterFlatteningFinalizer
 {
 public:
-    ClusterFlatteningFinalizer(const ClusterSet<FaceHandle>& cluster);
+    ClusterFlatteningFinalizer(const ClusterBiMap<FaceHandle>& cluster);
 
     void setVertexNormals(const VertexMap<Normal<BaseVecT>>& normals);
     void setClusterColors(const ClusterMap<Rgb8Color>& colors);
@@ -72,7 +73,7 @@ public:
     boost::shared_ptr<lvr::MeshBuffer> apply(const BaseMesh<BaseVecT>& mesh);
 
 private:
-    const ClusterSet<FaceHandle>& m_cluster;
+    const ClusterBiMap<FaceHandle>& m_cluster;
     optional<const ClusterMap<Rgb8Color>&> m_clusterColors;
     optional<const VertexMap<Normal<BaseVecT>>&> m_vertexNormals;
 };

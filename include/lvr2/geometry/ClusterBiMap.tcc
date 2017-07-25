@@ -18,7 +18,7 @@
 
 
 /*
- * ClusterSet.tcc
+ * ClusterBiMap.tcc
  *
  *  @date 17.06.2017
  *  @author Johan M. von Behren <johan@vonbehren.eu>
@@ -32,25 +32,25 @@ namespace lvr2
 {
 
 template <typename HandleT>
-Cluster<HandleT>& ClusterSet<HandleT>::getC(ClusterHandle clusterHandle)
+Cluster<HandleT>& ClusterBiMap<HandleT>::getC(ClusterHandle clusterHandle)
 {
     return m_cluster[clusterHandle];
 }
 
 template <typename HandleT>
-const Cluster<HandleT>& ClusterSet<HandleT>::getCluster(ClusterHandle clusterHandle) const
+const Cluster<HandleT>& ClusterBiMap<HandleT>::getCluster(ClusterHandle clusterHandle) const
 {
     return m_cluster[clusterHandle];
 }
 
 template <typename HandleT>
-const Cluster<HandleT>& ClusterSet<HandleT>::operator[](ClusterHandle clusterHandle) const
+const Cluster<HandleT>& ClusterBiMap<HandleT>::operator[](ClusterHandle clusterHandle) const
 {
     return m_cluster[clusterHandle];
 }
 
 template <typename HandleT>
-ClusterHandle ClusterSet<HandleT>::createCluster()
+ClusterHandle ClusterBiMap<HandleT>::createCluster()
 {
     ClusterHandle newHandle(m_cluster.size());
     m_cluster.push_back(Cluster<HandleT>());
@@ -59,7 +59,7 @@ ClusterHandle ClusterSet<HandleT>::createCluster()
 }
 
 template <typename HandleT>
-void ClusterSet<HandleT>::removeCluster(ClusterHandle clusterHandle)
+void ClusterBiMap<HandleT>::removeCluster(ClusterHandle clusterHandle)
 {
     auto cluster = getC(clusterHandle);
 
@@ -77,7 +77,7 @@ void ClusterSet<HandleT>::removeCluster(ClusterHandle clusterHandle)
 }
 
 template <typename HandleT>
-ClusterHandle ClusterSet<HandleT>::addToCluster(ClusterHandle clusterHandle, HandleT handle)
+ClusterHandle ClusterBiMap<HandleT>::addToCluster(ClusterHandle clusterHandle, HandleT handle)
 {
     getC(clusterHandle).handles.push_back(handle);
     m_clusterMap.insert(handle, clusterHandle);
@@ -88,7 +88,7 @@ ClusterHandle ClusterSet<HandleT>::addToCluster(ClusterHandle clusterHandle, Han
 }
 
 template <typename HandleT>
-ClusterHandle ClusterSet<HandleT>::removeFromCluster(ClusterHandle clusterHandle, HandleT handle)
+ClusterHandle ClusterBiMap<HandleT>::removeFromCluster(ClusterHandle clusterHandle, HandleT handle)
 {
     auto handles = getC(clusterHandle).handles;
     handles.erase(remove(handles.begin(), handles.end(), handle), handles.end());
@@ -100,59 +100,59 @@ ClusterHandle ClusterSet<HandleT>::removeFromCluster(ClusterHandle clusterHandle
 }
 
 template <typename HandleT>
-ClusterHandle ClusterSet<HandleT>::getClusterH(HandleT handle) const
+ClusterHandle ClusterBiMap<HandleT>::getClusterH(HandleT handle) const
 {
     return m_clusterMap[handle];
 }
 
 template <typename HandleT>
-size_t ClusterSet<HandleT>::numCluster() const
+size_t ClusterBiMap<HandleT>::numCluster() const
 {
     return m_cluster.sizeUsed();
 }
 
 template <typename HandleT>
-size_t ClusterSet<HandleT>::numHandles() const
+size_t ClusterBiMap<HandleT>::numHandles() const
 {
     return m_numHandles;
 }
 
 template <typename HandleT>
-void ClusterSet<HandleT>::reserve(size_t newCap)
+void ClusterBiMap<HandleT>::reserve(size_t newCap)
 {
     m_cluster.reserve(newCap);
     m_clusterMap.reserve(newCap);
 }
 
-ClusterSetIterator& ClusterSetIterator::operator++()
+ClusterBiMapIterator& ClusterBiMapIterator::operator++()
 {
     ++m_iterator;
     return *this;
 }
 
-bool ClusterSetIterator::operator==(const ClusterSetIterator& other) const
+bool ClusterBiMapIterator::operator==(const ClusterBiMapIterator& other) const
 {
     return m_iterator == other.m_iterator;
 }
 
-bool ClusterSetIterator::operator!=(const ClusterSetIterator& other) const
+bool ClusterBiMapIterator::operator!=(const ClusterBiMapIterator& other) const
 {
     return m_iterator != other.m_iterator;
 }
 
-ClusterHandle ClusterSetIterator::operator*() const
+ClusterHandle ClusterBiMapIterator::operator*() const
 {
     return *m_iterator;
 }
 
 template <typename HandleT>
-ClusterSetIterator ClusterSet<HandleT>::begin() const
+ClusterBiMapIterator ClusterBiMap<HandleT>::begin() const
 {
     return m_cluster.begin();
 }
 
 template <typename HandleT>
-ClusterSetIterator ClusterSet<HandleT>::end() const
+ClusterBiMapIterator ClusterBiMap<HandleT>::end() const
 {
     return m_cluster.end();
 }
