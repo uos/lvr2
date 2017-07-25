@@ -687,10 +687,10 @@ int main(int argc, char** argv)
     // }
 
     auto faceNormals = calcFaceNormals(mesh);
-    ClusterBiMap<FaceHandle> clusterMap;
+    ClusterBiMap<FaceHandle> clusterBiMap;
     if(options.optimizePlanes())
     {
-        clusterMap = iterativePlanarClusterGrowing(
+        clusterBiMap = iterativePlanarClusterGrowing(
             mesh,
             faceNormals,
             options.getNormalThreshold(),
@@ -700,12 +700,12 @@ int main(int argc, char** argv)
     }
     else
     {
-        clusterMap = planarClusterGrowing(mesh, faceNormals, options.getNormalThreshold());
+        clusterBiMap = planarClusterGrowing(mesh, faceNormals, options.getNormalThreshold());
     }
 
-    //auto clusterMap = planarClusterGrowing(mesh, options.getNormalThreshold());
+    //auto clusterBiMap = planarClusterGrowing(mesh, options.getNormalThreshold());
 
-    ClusterPainter painter(clusterMap);
+    ClusterPainter painter(clusterBiMap);
     auto clusterColors = optional<ClusterMap<Rgb8Color>>(painter.simpsons(mesh));
     // auto colorMap = calcColorFromPointCloud(mesh, surface);
 
@@ -725,7 +725,7 @@ int main(int argc, char** argv)
     // }
     // auto buffer = finalize.apply(mesh);
 
-    ClusterFlatteningFinalizer<Vec> finalize(clusterMap);
+    ClusterFlatteningFinalizer<Vec> finalize(clusterBiMap);
     finalize.setVertexNormals(vertexNormals);
     if (clusterColors)
     {
