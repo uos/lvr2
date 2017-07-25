@@ -38,6 +38,18 @@ namespace lvr2
 {
 
 /**
+ * @brief Algorithm which generates clusters from the given mesh. The given predicate decides which faces will be in
+ *        the same clusters.
+ * @tparam Pred a predicate which decides, which faces will be in the same cluster. It gets the following parameters:
+ *         (FaceHandle referenceFaceH, FaceHandle currentFaceH) and returs a bool. The referenceFaceH is the first
+ *         FaceHandle, which was added to the current cluster. currentFaceH is the current FaceHandle for which the
+ *         predicate has to decide, wether it should be added to the current cluster or not. The decision is done
+ *         by returing true = add currentFaceH to cluster or false = don't add currentFaceH to cluster.
+ */
+template<typename BaseVecT, typename Pred>
+ClusterSet<FaceHandle> clusterGrowing(const BaseMesh<BaseVecT>& mesh, Pred pred);
+
+/**
  * @brief Algorithm which generates plane clusters from the given mesh.
  * @param minSinAngle `1 - minSinAngle` is the allowed difference between the sin of the angle of the starting
  *                    face and all other faces in one cluster.
