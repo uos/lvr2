@@ -17,7 +17,7 @@
  */
 
 /*
- * NormalAlgorithms.hpp
+ * NormalAlgorithms.tcc
  *
  * @date 19.07.2017
  * @author Lukas Kalbertodt <lukas.kalbertodt@gmail.com>

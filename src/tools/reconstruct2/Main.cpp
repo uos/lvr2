@@ -178,6 +178,7 @@
 #include <lvr2/util/VectorMap.hpp>
 #include <lvr2/algorithm/FinalizeAlgorithm.hpp>
 #include <lvr2/algorithm/NormalAlgorithms.hpp>
+#include <lvr2/algorithm/ColorAlgorithms.hpp>
 #include <lvr2/geometry/BoundingBox.hpp>
 #include <lvr2/algorithm/Planar.hpp>
 #include <lvr2/algorithm/ClusterPainter.hpp>
@@ -705,8 +706,8 @@ int main(int argc, char** argv)
     //auto clusterSet = planarClusterGrowing(mesh, options.getNormalThreshold());
 
     ClusterPainter painter(clusterSet);
-    auto clusterColors = optional<ClusterMap<ClusterPainter::Rgb8Color>>(painter.simpsons(mesh));
-    // auto colorMap = painter.fromPointCloud(mesh, surface);
+    auto clusterColors = optional<ClusterMap<Rgb8Color>>(painter.simpsons(mesh));
+    // auto colorMap = calcColorFromPointCloud(mesh, surface);
 
     // Calc normals for vertices
     auto vertexNormals = calcVertexNormals(mesh, faceNormals, *surface);

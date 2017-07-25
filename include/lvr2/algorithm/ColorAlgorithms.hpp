@@ -17,45 +17,40 @@
  */
 
 /*
- * ClusterPainter.tcc
+ * ColorAlgorithms.hpp
  *
- *  @date 18.06.2017
- *  @author Johan M. von Behren <johan@vonbehren.eu>
+ * Collection of algorithms for color calculation.
+ *
+ * @date 21.07.2017
+ * @author Johan M. von Behren <johan@vonbehren.eu>
  */
 
-#include <cmath>
+#ifndef LVR2_ALGORITHM_COLORALGORITHMS_H_
+#define LVR2_ALGORITHM_COLORALGORITHMS_H_
 
-using std::cos;
-using std::sin;
-using std::fabs;
+#include <vector>
+#include <boost/optional.hpp>
+
+using std::vector;
+using boost::optional;
+
+#include <lvr2/geometry/BaseMesh.hpp>
+#include <lvr2/reconstruction/PointsetSurface.hpp>
+#include <lvr2/util/VectorMap.hpp>
 
 namespace lvr2
 {
 
+using Rgb8Color = array<uint8_t, 3>;
+
 template<typename BaseVecT>
-ClusterMap<Rgb8Color> ClusterPainter::simpsons(const BaseMesh<BaseVecT>& mesh) const
-{
-    ClusterMap<Rgb8Color> colorMap;
-    colorMap.reserve(m_clusterSet.numHandles() * 3);
-    size_t clusterIdx = 0;
-    for (auto clusterH: m_clusterSet)
-    {
-        auto color = getSimpsonColorForIdx(clusterIdx);
-        colorMap.insert(clusterH, color);
-
-        clusterIdx++;
-    }
-
-    return colorMap;
-}
-
-Rgb8Color ClusterPainter::getSimpsonColorForIdx(size_t idx) const
-{
-    return {
-        static_cast<uint8_t>(fabs(cos(idx)) * 255),
-        static_cast<uint8_t>(fabs(sin(idx * 30)) * 255),
-        static_cast<uint8_t>(fabs(sin(idx * 2)) * 255)
-    };
-}
+optional<VertexMap<Rgb8Color>> calcColorFromPointCloud(
+    const BaseMesh<BaseVecT>& mesh,
+    const PointsetSurfacePtr<BaseVecT> surface
+);
 
 } // namespace lvr2
+
+#include <lvr2/algorithm/ColorAlgorithms.tcc>
+
+#endif /* LVR2_ALGORITHM_COLORALGORITHMS_H_ */

@@ -35,6 +35,7 @@ using std::array;
 #include <lvr2/geometry/ClusterSet.hpp>
 #include <lvr2/reconstruction/PointsetSurface.hpp>
 #include <lvr2/util/VectorMap.hpp>
+#include <lvr2/algorithm/ColorAlgorithms.hpp>
 
 namespace lvr2
 {
@@ -45,17 +46,10 @@ namespace lvr2
 class ClusterPainter
 {
 public:
-    using Rgb8Color = array<uint8_t, 3>;
     ClusterPainter(const ClusterSet<FaceHandle>& clusterSet) : m_clusterSet(clusterSet) {};
 
     template<typename BaseVecT>
     ClusterMap<Rgb8Color> simpsons(const BaseMesh<BaseVecT>& mesh) const;
-
-    template<typename BaseVecT>
-    optional<VertexMap<Rgb8Color>> fromPointCloud(
-        const BaseMesh<BaseVecT>& mesh,
-        const PointsetSurfacePtr<BaseVecT> surface
-    ) const;
 
 private:
     ClusterSet<FaceHandle> m_clusterSet;
