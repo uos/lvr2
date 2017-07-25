@@ -533,14 +533,16 @@ void HalfEdgeMesh<BaseVecT>::getNeighboursOfFace(
 template <typename BaseVecT>
 array<VertexHandle, 2> HalfEdgeMesh<BaseVecT>::getVerticesOfEdge(EdgeHandle edgeH) const
 {
-    auto oneEdge = getE(edgeH);
+    auto oneEdgeH = HalfEdgeHandle::oneHalfOf(edgeH);
+    auto oneEdge = getE(oneEdgeH);
     return { oneEdge.target, getE(oneEdge.twin).target };
 }
 
 template <typename BaseVecT>
 array<OptionalFaceHandle, 2> HalfEdgeMesh<BaseVecT>::getFacesOfEdge(EdgeHandle edgeH) const
 {
-    auto oneEdge = getE(edgeH);
+    auto oneEdgeH = HalfEdgeHandle::oneHalfOf(edgeH);
+    auto oneEdge = getE(oneEdgeH);
     return { oneEdge.face, getE(oneEdge.twin).face };
 }
 

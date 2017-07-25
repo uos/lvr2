@@ -47,7 +47,11 @@ class HalfEdgeHandle : public BaseHandle<Index>
 {
 public:
     using BaseHandle<Index>::BaseHandle;
-    HalfEdgeHandle(EdgeHandle eH) : HalfEdgeHandle(eH.idx()) {}
+
+    static HalfEdgeHandle oneHalfOf(EdgeHandle eH)
+    {
+        return HalfEdgeHandle(eH.idx());
+    }
 
     EdgeHandle toFullEdgeHandle() const {
         // This is equivalent to `(m_idx / 2) * 2` essentially making the
