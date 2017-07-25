@@ -91,6 +91,19 @@ ClusterBiMap<FaceHandle> clusterGrowing(const BaseMesh<BaseVecT>& mesh, Pred pre
 }
 
 template<typename BaseVecT>
+ClusterBiMap<FaceHandle> planarClusterGrowing(
+    const BaseMesh<BaseVecT>& mesh,
+    const FaceMap<Normal<BaseVecT>>& normals,
+    float minSinAngle
+)
+{
+    return clusterGrowing(mesh, [&](auto referenceFaceH, auto currentFaceH)
+    {
+        return normals[currentFaceH].dot(normals[referenceFaceH].asVector()) > minSinAngle;
+    });
+}
+
+template<typename BaseVecT>
 ClusterBiMap<FaceHandle> iterativePlanarClusterGrowing(
     BaseMesh<BaseVecT>& mesh,
     FaceMap<Normal<BaseVecT>>& normals,

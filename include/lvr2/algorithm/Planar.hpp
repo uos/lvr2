@@ -47,7 +47,7 @@ namespace lvr2
  *         by returing true = add currentFaceH to cluster or false = don't add currentFaceH to cluster.
  */
 template<typename BaseVecT, typename Pred>
-ClusterSet<FaceHandle> clusterGrowing(const BaseMesh<BaseVecT>& mesh, Pred pred);
+ClusterBiMap<FaceHandle> clusterGrowing(const BaseMesh<BaseVecT>& mesh, Pred pred);
 
 /**
  * @brief Algorithm which generates plane clusters from the given mesh.
