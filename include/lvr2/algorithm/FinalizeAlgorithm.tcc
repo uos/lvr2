@@ -137,7 +137,7 @@ void ClusterFlatteningFinalizer<BaseVecT>::setVertexNormals(const VertexMap<Norm
 }
 
 template<typename BaseVecT>
-void ClusterFlatteningFinalizer<BaseVecT>::setClusterColors(const ClusterMap<ClusterPainter::Rgb8Color>& colors)
+void ClusterFlatteningFinalizer<BaseVecT>::setClusterColors(const ClusterMap<Rgb8Color>& colors)
 {
     m_clusterColors = colors;
 }
