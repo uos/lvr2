@@ -46,13 +46,13 @@ namespace lvr2
 class ClusterPainter
 {
 public:
-    ClusterPainter(const ClusterBiMap<FaceHandle>& clusterMap) : m_clusterMap(clusterMap) {};
+    ClusterPainter(const ClusterBiMap<FaceHandle>& clusterBiMap) : m_clusterBiMap(clusterBiMap) {};
 
     template<typename BaseVecT>
     ClusterMap<Rgb8Color> simpsons(const BaseMesh<BaseVecT>& mesh) const;
 
 private:
-    ClusterBiMap<FaceHandle> m_clusterMap;
+    ClusterBiMap<FaceHandle> m_clusterBiMap;
     Rgb8Color getSimpsonColorForIdx(size_t idx) const;
 };
 
