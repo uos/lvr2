@@ -461,6 +461,28 @@ void testClusterGrowing()
     cout << "Generated " << clusterSet.numCluster() << " clusters." << endl;
 }
 
+void testCollapseEdge()
+{
+    lvr2::HalfEdgeMesh<lvr2::BaseVector<float>> mesh;
+    createHouseFromNikolaus(mesh);
+    cout << "CheckMeshIntegrity: " << mesh.debugCheckMeshIntegrity() << endl;
+    for (auto edgeH: mesh.edges())
+    {
+        auto vertex = mesh.collapseEdge(edgeH);
+        cout << "CheckMeshIntegrity: " << mesh.debugCheckMeshIntegrity() << endl;
+        break;
+    }
+
+    FinalizeAlgorithm<BaseVector<float>> finalize;
+    auto buffer = finalize.apply(mesh);
+
+    // Create output model and save to file
+    auto model = new lvr::Model(buffer);
+    lvr::ModelPtr m(model);
+    cout << timestamp << "Saving mesh." << endl;
+    lvr::ModelFactory::saveModel( m, "triangle_mesh.ply");
+}
+
 /*
  * DUMMY TEST CODE ENDS HERE!!!
  */
