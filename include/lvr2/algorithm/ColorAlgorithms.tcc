@@ -46,19 +46,21 @@ optional<VertexMap<Rgb8Color>> calcColorFromPointCloud(
     VertexMap<Rgb8Color> vertexMap;
     vertexMap.reserve(mesh.numVertices());
 
-    int k = 1; // k-nearest-neighbors
+    // k-nearest-neighbors
+    const int k = 1;
 
+    vector<size_t> cv;
     for (auto vertexH: mesh.vertices())
     {
-        vector<size_t> cv;
-        Point<BaseVecT> p = mesh.getVertexPosition(vertexH);
+        cv.clear();
+        auto p = mesh.getVertexPosition(vertexH);
         surface->searchTree().kSearch(p, k, cv);
 
         float r = 0.0f, g = 0.0f, b = 0.0f;
 
         for (size_t pointIdx : cv)
         {
-            array<uint8_t,3> colors = *(surface->pointBuffer()->getRgbColor(pointIdx));
+            auto colors = *(surface->pointBuffer()->getRgbColor(pointIdx));
             r += colors[0];
             g += colors[1];
             b += colors[2];
