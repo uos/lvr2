@@ -40,6 +40,7 @@ using std::vector;
 #include <lvr2/geometry/Handles.hpp>
 #include <lvr2/geometry/BaseMesh.hpp>
 #include <lvr2/algorithm/ClusterPainter.hpp>
+#include <lvr2/algorithm/ColorAlgorithms.hpp>
 
 namespace lvr2
 {
@@ -63,7 +64,7 @@ template<typename BaseVecT>
 void writeDebugMesh(
     const BaseMesh<BaseVecT>& mesh,
     string filename = "debug.ply",
-    ClusterPainter::Rgb8Color color = {255, 0, 0}
+    Rgb8Color color = {255, 0, 0}
 );
 
 /**

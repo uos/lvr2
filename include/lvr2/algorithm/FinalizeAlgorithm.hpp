@@ -37,6 +37,7 @@ using boost::optional;
 #include "ClusterPainter.hpp"
 #include <lvr2/geometry/Normal.hpp>
 #include <lvr2/util/VectorMap.hpp>
+#include <lvr2/algorithm/ColorAlgorithms.hpp>
 
 namespace lvr2
 {
@@ -48,14 +49,14 @@ template<typename BaseVecT>
 class FinalizeAlgorithm
 {
 private:
-    optional<const VertexMap<ClusterPainter::Rgb8Color>&> m_colorData;
+    optional<const VertexMap<Rgb8Color>&> m_colorData;
     optional<const VertexMap<Normal<BaseVecT>>&> m_normalData;
 
 public:
     FinalizeAlgorithm() {};
 
     boost::shared_ptr<lvr::MeshBuffer> apply(const BaseMesh<BaseVecT>& mesh);
-    void setColorData(const VertexMap<ClusterPainter::Rgb8Color>& colorData);
+    void setColorData(const VertexMap<Rgb8Color>& colorData);
     void setNormalData(const VertexMap<Normal<BaseVecT>>& normalData);
 };
 
@@ -66,13 +67,13 @@ public:
     ClusterFlatteningFinalizer(const ClusterSet<FaceHandle>& cluster);
 
     void setVertexNormals(const VertexMap<Normal<BaseVecT>>& normals);
-    void setClusterColors(const ClusterMap<ClusterPainter::Rgb8Color>& colors);
+    void setClusterColors(const ClusterMap<Rgb8Color>& colors);
 
     boost::shared_ptr<lvr::MeshBuffer> apply(const BaseMesh<BaseVecT>& mesh);
 
 private:
     const ClusterSet<FaceHandle>& m_cluster;
-    optional<const ClusterMap<ClusterPainter::Rgb8Color>&> m_clusterColors;
+    optional<const ClusterMap<Rgb8Color>&> m_clusterColors;
     optional<const VertexMap<Normal<BaseVecT>>&> m_vertexNormals;
 };
 

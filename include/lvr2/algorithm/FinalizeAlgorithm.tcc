@@ -24,6 +24,11 @@
  */
 
 #include <vector>
+#include <unordered_map>
+#include <utility>
+
+using std::unordered_map;
+using std::make_pair;
 
 #include <lvr2/geometry/Normal.hpp>
 #include <lvr2/util/VectorMap.hpp>
@@ -112,7 +117,7 @@ boost::shared_ptr<lvr::MeshBuffer> FinalizeAlgorithm<BaseVecT>::apply(const Base
 }
 
 template<typename BaseVecT>
-void FinalizeAlgorithm<BaseVecT>::setColorData(const VertexMap<ClusterPainter::Rgb8Color>& colorData)
+void FinalizeAlgorithm<BaseVecT>::setColorData(const VertexMap<Rgb8Color>& colorData)
 {
     m_colorData = colorData;
 }
@@ -137,7 +142,7 @@ void ClusterFlatteningFinalizer<BaseVecT>::setVertexNormals(const VertexMap<Norm
 }
 
 template<typename BaseVecT>
-void ClusterFlatteningFinalizer<BaseVecT>::setClusterColors(const ClusterMap<ClusterPainter::Rgb8Color>& colors)
+void ClusterFlatteningFinalizer<BaseVecT>::setClusterColors(const ClusterMap<Rgb8Color>& colors)
 {
     m_clusterColors = colors;
 }
@@ -169,15 +174,14 @@ boost::shared_ptr<lvr::MeshBuffer>
     // This counter is used to determine the index of a newly inserted vertex
     size_t vertexCount = 0;
 
+    // This map remembers which vertex we already inserted and at what
+    // position. This is important to create the face map.
+    unordered_map<VertexHandle, size_t> idxMap;
+
     // Loop over all clusters
     for (auto clusterH: m_cluster)
     {
-        // TODO: vertex map here is not space efficient
-        // This map remembers which vertex we already inserted and at what
-        // position. This is important to create the face map.
-        VertexMap<size_t> idxMap;
-        idxMap.reserve(mesh.numVertices());
-
+        idxMap.clear();
         auto& cluster = m_cluster.getCluster(clusterH);
 
         // Loop over all faces of the cluster
@@ -186,7 +190,7 @@ boost::shared_ptr<lvr::MeshBuffer>
             for (auto vertexH: mesh.getVerticesOfFace(faceH))
             {
                 // Check if we already inserted this vertex. If not...
-                if (!idxMap.get(vertexH))
+                if (idxMap.count(vertexH) == 0)
                 {
                     // ... insert it into the buffers (with all its attributes)
                     auto point = mesh.getVertexPosition(vertexH);
@@ -211,7 +215,7 @@ boost::shared_ptr<lvr::MeshBuffer>
                     }
 
                     // Save index of vertex for face mapping
-                    idxMap.insert(vertexH, vertexCount);
+                    idxMap.insert(make_pair(vertexH, vertexCount));
                     vertexCount++;
                 }
 
