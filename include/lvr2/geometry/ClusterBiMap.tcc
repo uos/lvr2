@@ -124,35 +124,39 @@ void ClusterBiMap<HandleT>::reserve(size_t newCap)
     m_clusterMap.reserve(newCap);
 }
 
-ClusterBiMapIterator& ClusterBiMapIterator::operator++()
+template<typename HandleT>
+ClusterBiMapIterator<HandleT>& ClusterBiMapIterator<HandleT>::operator++()
 {
     ++m_iterator;
     return *this;
 }
 
-bool ClusterBiMapIterator::operator==(const ClusterBiMapIterator& other) const
+template<typename HandleT>
+bool ClusterBiMapIterator<HandleT>::operator==(const ClusterBiMapIterator& other) const
 {
     return m_iterator == other.m_iterator;
 }
 
-bool ClusterBiMapIterator::operator!=(const ClusterBiMapIterator& other) const
+template<typename HandleT>
+bool ClusterBiMapIterator<HandleT>::operator!=(const ClusterBiMapIterator& other) const
 {
     return m_iterator != other.m_iterator;
 }
 
-ClusterHandle ClusterBiMapIterator::operator*() const
+template<typename HandleT>
+ClusterHandle ClusterBiMapIterator<HandleT>::operator*() const
 {
     return *m_iterator;
 }
 
 template <typename HandleT>
-ClusterBiMapIterator ClusterBiMap<HandleT>::begin() const
+ClusterBiMapIterator<HandleT> ClusterBiMap<HandleT>::begin() const
 {
     return m_cluster.begin();
 }
 
 template <typename HandleT>
-ClusterBiMapIterator ClusterBiMap<HandleT>::end() const
+ClusterBiMapIterator<HandleT> ClusterBiMap<HandleT>::end() const
 {
     return m_cluster.end();
 }

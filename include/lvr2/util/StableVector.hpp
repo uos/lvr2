@@ -29,9 +29,11 @@
 
 #include <vector>
 #include <utility>
+#include <boost/optional.hpp>
 
 using std::move;
 using std::vector;
+using boost::optional;
 
 #include <lvr2/geometry/BaseHandle.hpp>
 #include <lvr2/geometry/Handles.hpp>
@@ -46,17 +48,17 @@ namespace lvr2
  * Important: This is NOT a fail fast iterator. If the vector is changed while using an instance of this
  * iterator the behavior is undefined!
  */
-template<typename HandleT>
+template<typename HandleT, typename ElemT>
 class StableVectorIterator
 {
 private:
     /// Reference to the deleted marker array this iterator belongs to
-    const vector<bool>* m_deleted;
+    const vector<optional<ElemT>>* m_elements;
 
     /// Current position in the vector
     size_t m_pos;
 public:
-    StableVectorIterator(const vector<bool>* deleted, bool startAtEnd = false);
+    StableVectorIterator(const vector<optional<ElemT>>* deleted, bool startAtEnd = false);
 
     StableVectorIterator& operator=(const StableVectorIterator& other);
     bool operator==(const StableVectorIterator& other) const;
@@ -105,8 +107,6 @@ public:
      */
     StableVector() : m_usedCount(0) {};
 
-    ~StableVector();
-
     /**
      * @brief Creates a StableVector with `countElements` many copies of
      *        `defaultValue`.
@@ -115,25 +115,6 @@ public:
      * indices of these elements are 0 to `countElements` - 1.
      */
     StableVector(size_t countElements, const ElementType& defaultValue);
-
-    /**
-     * @brief Copy constructor deep clones the `other` vector.
-     */
-    StableVector(const StableVector& other);
-
-    /**
-     * @brief Move constructor salvages the `other` vector to copy contents.
-     */
-    StableVector(StableVector&& other);
-
-    /**
-     * @brief Copy assignment operator (does nothing special).
-     */
-    StableVector<HandleT, ElemT>& operator=(const StableVector& other);
-    /**
-     * @brief Move assignment operator (does nothing special).
-     */
-    StableVector<HandleT, ElemT>& operator=(StableVector&& other);
 
     /**
      * @brief Adds the given element to the vector.
@@ -255,13 +236,13 @@ public:
      * This iterator auto skips deleted elements and returns handles to the
      * valid elements.
      */
-    StableVectorIterator<HandleType> begin() const;
+    StableVectorIterator<HandleType, ElementType> begin() const;
 
     /**
      * @brief Returns an iterator to the element after the last element of
      *        this vector.
      */
-    StableVectorIterator<HandleType> end() const;
+    StableVectorIterator<HandleType, ElementType> end() const;
 
     /**
      * @brief Increase the capacity of the vector to a value that's greater or
@@ -275,76 +256,11 @@ public:
     void reserve(size_t newCap);
 
 private:
-    /// Wrapper for the actual data to avoid calling the constructor or
-    /// destructor in certain situations.
-    union UnsafeWrapper
-    {
-        ElementType data;
-
-        // Empty constructor and destructor. The StableVector takes care of
-        // initialization and destruction.
-        UnsafeWrapper() {}
-        ~UnsafeWrapper() {}
-
-        // UnsafeWrapper(const ElementType& data) : data(data) {}
-        // UnsafeWrapper(ElementType&& data) : data(data) {}
-
-        void set(const ElementType& value)
-        {
-            // This funky expression is the placement-new operator. It
-            // constructs an object at the given memory location (meaning: it
-            // does not allocate). It won't attempt to destruct the object
-            // living at the location, which is good because it's probably
-            // only garbage!
-            cout << "# UnsafeWrapper::set() copy, data @ " << &data << ", this @ " << this << endl;
-            new (&data) ElementType(value);
-        }
-        void set(ElementType&& value)
-        {
-            // See above for explanation of the placement-new operator. Here we
-            // use the move constructor of `ElementType`.
-            cout << "# UnsafeWrapper::set() move, data @ " << &data << ", this @ " << this << endl;
-            new (&data) ElementType(move(value));
-        }
-
-        // Copy and move constructor/assignment operator don't do anything. The
-        // StableVector has to take care of copying elements!
-        UnsafeWrapper(const UnsafeWrapper& other) : data(other.data) {
-            cout << "unsafe copy ctor" << endl;
-        }
-        UnsafeWrapper(UnsafeWrapper&& other)
-            // This beauty declares this function `noexcept` if the move ctor
-            // of `ElementType` is `noexcept`. This is actually important as
-            // the reallocation of `std::vector` is faster for types with
-            // noexcept move ctor.
-            noexcept(noexcept(ElementType(std::declval<ElementType>())))
-            : data(move(other.data))
-
-        {
-            cout << "unsafe move ctor" << endl;
-        }
-
-        UnsafeWrapper& operator=(const UnsafeWrapper& other) {
-            cout << "unsafe copy assignment" << endl;
-        }
-        UnsafeWrapper& operator=(UnsafeWrapper&& other) {
-            cout << "unsafe move assignment" << endl;
-        }
-    };
-
-    // static_assert(!(std::is_same<ElementType, string>::value
-    //     && !std::is_nothrow_move_constructible<UnsafeWrapper>::value), "ahh");
-    static_assert(std::is_nothrow_move_constructible<UnsafeWrapper>::value, "ahh2");
-
     /// Count of used elements in elements vector
     size_t m_usedCount;
 
     /// Vector for stored elements
-    vector<UnsafeWrapper> m_elements;
-
-    /// Stores whether an element in `m_elements` is deleted or not. Always has
-    /// the same length as `m_elements`.
-    vector<bool> m_deleted;
+    vector<optional<ElementType>> m_elements;
 
     /**
      * @brief Assert that the requested handle is not deleted or throw an

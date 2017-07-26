@@ -35,11 +35,6 @@
 namespace lvr2
 {
 
-// Forward definitions
-template <typename BaseVecT> struct HalfEdgeFace;
-template <typename BaseVecT> struct HalfEdgeVertex;
-template <typename BaseVecT> struct HalfEdgeMesh;
-
 // We need a specific handle for half edges. The `BaseMesh` interface talks
 // about simple (full) edges. To avoid confusion, this HalfEdgeHandle is used
 // internally in the HEM. The edge handles given out by the HEM implementation
@@ -81,13 +76,8 @@ public:
     }
 };
 
-template <typename BaseVecT>
 struct HalfEdge
 {
-    using Edge = HalfEdge<BaseVecT>;
-    using Face = HalfEdgeFace<BaseVecT>;
-    using Vertex = HalfEdgeVertex<BaseVecT>;
-
     /// The face this edge belongs to (or none, if this edge lies on the
     /// boundary).
     OptionalFaceHandle face;
@@ -107,10 +97,11 @@ private:
     /**
      * @brief Initializes all fields with dummy values (unsafe, thus private).
      */
-    HalfEdge();
+    HalfEdge() : target(0), next(0), twin(0) {}
 
     /// Several methods of HEM need to invoke the unsafe ctor.
-    friend HalfEdgeMesh<BaseVecT>;
+    template <typename BaseVecT>
+    friend class HalfEdgeMesh;
 };
 
 
@@ -134,7 +125,5 @@ std::ostream& operator<<(std::ostream& os, const OptionalHalfEdgeHandle& h)
 }
 
 } // namespace lvr2
-
-#include <lvr2/geometry/HalfEdge.tcc>
 
 #endif /* LVR2_GEOMETRY_HALFEDGE_H_ */
