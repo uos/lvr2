@@ -100,6 +100,7 @@ public:
     // more likely and effective.
     VertexHandle addVertex(Point<BaseVecT> pos) final;
     FaceHandle addFace(VertexHandle v1H, VertexHandle v2H, VertexHandle v3H) final;
+    void removeFace(FaceHandle handle) final;
 
     size_t numVertices() const final;
     size_t numFaces() const final;
@@ -195,6 +196,11 @@ private:
      */
     template <typename Pred>
     OptionalHalfEdgeHandle findEdgeAroundVertex(HalfEdgeHandle startEdgeH, Pred pred) const;
+
+    /**
+     * @brief Get inner edges in counter clockwise order
+     */
+    array<HalfEdgeHandle, 3> getInnerEdges(FaceHandle handle) const;
 };
 
 } // namespace lvr2

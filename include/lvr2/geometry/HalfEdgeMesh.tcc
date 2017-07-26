@@ -322,6 +322,67 @@ FaceHandle HalfEdgeMesh<BaseVecT>::addFace(VertexHandle v1H, VertexHandle v2H, V
     return newFaceH;
 }
 
+template <typename BaseVecT>
+void HalfEdgeMesh<BaseVecT>::removeFace(FaceHandle handle)
+{
+    vector<HalfEdgeHandle> edgesToRemove;
+    vector<VertexHandle> verticesToRemove;
+
+    // Walk around inner edges of face and check connected edges and vertices. If they are connected to other
+    // faces or edges, fix their links otherwise mark them to be deleted.
+    auto innerEdges = getInnerEdges(handle);
+    for (auto edgeH: innerEdges)
+    {
+        auto edge = getE(edgeH);
+
+        // Check if target vertex can be deleted
+        auto nextIngoingEdgeH = getE(getE(getE(edge.next).twin).next).twin;
+        if (nextIngoingEdgeH == edgeH)
+        {
+            verticesToRemove.push_back(edge.target);
+        }
+        else
+        {
+            auto target = getV(edge.target);
+            target.outgoing = getE(nextIngoingEdgeH).twin;
+        }
+
+        // Check if edge pair can be deleted
+        if (!getE(edge.twin).face)
+        {
+            edgesToRemove.push_back(edgeH);
+            edgesToRemove.push_back(edge.twin);
+
+            // Fix next pointer of edges, which point to the removed edges
+            findEdgeAroundVertex(edge.target, [&, this](auto eH)
+            {
+                auto findEdge = getE(eH);
+                if (findEdge.next == edge.twin)
+                {
+                    findEdge.next = edge.next;
+                    return true;
+                }
+                return false;
+            });
+        }
+        else
+        {
+            // Neighbour face -> remove link to current face
+            edge.face = OptionalFaceHandle();
+        }
+    }
+
+    // Actually remove the face and connected edges and vertices
+    for (auto vertexH: verticesToRemove)
+    {
+        m_vertices.erase(vertexH);
+    }
+    for (auto edgeH: edgesToRemove)
+    {
+        m_edges.erase(edgeH);
+    }
+    m_faces.erase(handle);
+}
 
 template <typename BaseVecT>
 size_t HalfEdgeMesh<BaseVecT>::numVertices() const
@@ -375,6 +436,18 @@ array<EdgeHandle, 3> HalfEdgeMesh<BaseVecT>::getEdgesOfFace(FaceHandle handle) c
     auto e3 = getE(e2).next;
 
     return {e1.toFullEdgeHandle(), e2.toFullEdgeHandle(), e3.toFullEdgeHandle()};
+}
+
+template <typename BaseVecT>
+array<HalfEdgeHandle, 3> HalfEdgeMesh<BaseVecT>::getInnerEdges(FaceHandle handle) const
+{
+    auto face = getF(handle);
+
+    // Get inner edges in counter clockwise order
+    auto e1 = getE(face.edge);
+    auto e2 = getE(e1.next);
+
+    return {face.edge, e1.next, e2.next};
 }
 
 template <typename BaseVecT>

@@ -37,13 +37,16 @@ void removeDanglingCluster(BaseMesh<BaseVecT>& mesh, size_t sizeThreshold)
         return true;
     });
 
-    // Remove all small clusters
+    // Remove all faces in too small clusters
     for (auto clusterH: clusterSet)
     {
         auto cluster = clusterSet.getCluster(clusterH);
         if (cluster.handles.size() < sizeThreshold)
         {
-
+            for (auto faceH: cluster.handles)
+            {
+                mesh.removeFace(faceH);
+            }
         }
     }
 }
