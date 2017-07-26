@@ -771,6 +771,8 @@ int main(int argc, char** argv)
         removeDanglingCluster(mesh, static_cast<size_t>(options.getDanglingArtifacts()));
     }
 
+    mesh.debugCheckMeshIntegrity();
+
     ClusterPainter painter(clusterBiMap);
     auto clusterColors = optional<DenseClusterMap<Rgb8Color>>(painter.simpsons(mesh));
     // auto colorMap = calcColorFromPointCloud(mesh, surface);
