@@ -635,9 +635,6 @@ void setTextureOptions(const reconstruct::Options& options)
 
 int main(int argc, char** argv)
 {
-    testStableVector();
-    return 0;
-
     // =======================================================================
     // Parse and print command line parameters
     // =======================================================================

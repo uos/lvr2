@@ -59,9 +59,7 @@ StableVector<HandleT, ElemT>::StableVector(size_t countElements, const ElementTy
 template<typename HandleT, typename ElemT>
 HandleT StableVector<HandleT, ElemT>::push(const ElementType& elem)
 {
-    cout << "--- 1c" << endl;
     m_elements.emplace_back(elem);
-    cout << "--- 2c" << endl;
     ++m_usedCount;
     return HandleT(size() - 1);
 }
@@ -69,10 +67,7 @@ HandleT StableVector<HandleT, ElemT>::push(const ElementType& elem)
 template<typename HandleT, typename ElemT>
 HandleT StableVector<HandleT, ElemT>::push(ElementType&& elem)
 {
-    cout << "--- 1m" << endl;
     m_elements.emplace_back(move(elem));
-    // m_elements.push_back(move(elem));
-    cout << "--- 2m" << endl;
     ++m_usedCount;
     return HandleT(size() - 1);
 }
@@ -216,7 +211,7 @@ template<typename HandleT, typename ElemT>
 StableVectorIterator<HandleT, ElemT>::StableVectorIterator(const vector<optional<ElemT>>* deleted, bool startAtEnd)
     : m_elements(deleted), m_pos(startAtEnd ? deleted->size() : 0)
 {
-    if (m_pos == 0 && !m_elements->empty() && (*m_elements)[0])
+    if (m_pos == 0 && !m_elements->empty() && !(*m_elements)[0])
     {
         ++(*this);
     }
@@ -256,9 +251,9 @@ StableVectorIterator<HandleT, ElemT>& StableVectorIterator<HandleT, ElemT>::oper
         m_pos++;
     }
 
-    // Advance until the next element, at least 1 element behind the vector, to
+    // Advance until the next element, at most 1 element behind the vector, to
     // indicate the end of iteration.
-    while (m_pos < m_elements->size() && (*m_elements)[m_pos])
+    while (m_pos < m_elements->size() && !(*m_elements)[m_pos])
     {
         m_pos++;
     }
