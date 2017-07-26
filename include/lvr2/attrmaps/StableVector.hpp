@@ -24,8 +24,8 @@
  *  @author Johan M. von Behren <johan@vonbehren.eu>
  */
 
-#ifndef LVR2_UTIL_STABLEVECTOR_H_
-#define LVR2_UTIL_STABLEVECTOR_H_
+#ifndef LVR2_ATTRMAPS_STABLEVECTOR_H_
+#define LVR2_ATTRMAPS_STABLEVECTOR_H_
 
 #include <vector>
 #include <utility>
@@ -273,4 +273,4 @@ private:
 
 #include <lvr2/attrmaps/StableVector.tcc>
 
-#endif /* LVR2_UTIL_STABLEVECTOR_H_ */
+#endif /* LVR2_ATTRMAPS_STABLEVECTOR_H_ */

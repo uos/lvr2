@@ -24,8 +24,8 @@
  *  @author Johan M. von Behren <johan@vonbehren.eu>
  */
 
-#ifndef LVR2_UTIL_VECTORMAP_H_
-#define LVR2_UTIL_VECTORMAP_H_
+#ifndef LVR2_ATTRMAPS_VECTORMAP_H_
+#define LVR2_ATTRMAPS_VECTORMAP_H_
 
 #include <vector>
 #include <boost/optional.hpp>
@@ -122,4 +122,4 @@ using ClusterMap = VectorMap<ClusterHandle, ValT>;
 
 #include <lvr2/attrmaps/VectorMap.tcc>
 
-#endif /* LVR2_UTIL_VECTORMAP_H_ */
+#endif /* LVR2_ATTRMAPS_VECTORMAP_H_ */

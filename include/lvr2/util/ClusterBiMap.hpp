@@ -24,8 +24,8 @@
  *  @author Johan M. von Behren <johan@vonbehren.eu>
  */
 
-#ifndef LVR2_GEOMETRY_CLUSTERBIMAP_H_
-#define LVR2_GEOMETRY_CLUSTERBIMAP_H_
+#ifndef LVR2_UTIL_CLUSTERBIMAP_H_
+#define LVR2_UTIL_CLUSTERBIMAP_H_
 
 #include <lvr2/geometry/Handles.hpp>
 #include <lvr2/util/Cluster.hpp>
@@ -142,4 +142,4 @@ private:
 
 #include <lvr2/util/ClusterBiMap.tcc>
 
-#endif /* LVR2_GEOMETRY_CLUSTERBIMAP_H_ */
+#endif /* LVR2_UTIL_CLUSTERBIMAP_H_ */
