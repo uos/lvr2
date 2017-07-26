@@ -56,21 +56,7 @@ private:
     using KeyType = KeyT;
     using ValueType = ValT;
 
-    /// Wrapper for the actual data to avoid calling the constructor or
-    /// destructor in certain situations.
-    union Wrapper
-    {
-        ValueType data;
-
-        Wrapper() {};
-        Wrapper(const ValueType& data) : data(data) {};
-        Wrapper(const Wrapper& wrapper) : data(wrapper.data) {};
-        ~Wrapper() {};
-
-        Wrapper& operator=(const Wrapper& value);
-    };
-
-    StableVector<KeyT, Wrapper> m_vec;
+    StableVector<KeyT, ValueType> m_vec;
 
 public:
     VectorMap() {};
