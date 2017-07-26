@@ -327,13 +327,15 @@ void HalfEdgeMesh<BaseVecT>::removeFace(FaceHandle handle)
 {
     vector<HalfEdgeHandle> edgesToRemove;
     vector<VertexHandle> verticesToRemove;
+    vector<pair<HalfEdgeHandle, HalfEdgeHandle>> fixNext;
 
     // Walk around inner edges of face and check connected edges and vertices. If they are connected to other
     // faces or edges, fix their links otherwise mark them to be deleted.
     auto innerEdges = getInnerEdges(handle);
     for (auto edgeH: innerEdges)
     {
-        auto edge = getE(edgeH);
+        auto& edge = getE(edgeH);
+        auto twin = getE(edge.twin);
 
         // Check if target vertex can be deleted
         auto nextIngoingEdgeH = getE(getE(getE(edge.next).twin).next).twin;
@@ -343,12 +345,12 @@ void HalfEdgeMesh<BaseVecT>::removeFace(FaceHandle handle)
         }
         else
         {
-            auto target = getV(edge.target);
+            auto& target = getV(edge.target);
             target.outgoing = getE(nextIngoingEdgeH).twin;
         }
 
         // Check if edge pair can be deleted
-        if (!getE(edge.twin).face)
+        if (!twin.face)
         {
             edgesToRemove.push_back(edgeH);
             edgesToRemove.push_back(edge.twin);
@@ -359,7 +361,37 @@ void HalfEdgeMesh<BaseVecT>::removeFace(FaceHandle handle)
                 auto findEdge = getE(eH);
                 if (findEdge.next == edge.twin)
                 {
-                    findEdge.next = edge.next;
+                    //auto next = getE(edge.next);
+                    //if (next.face && next.face.unwrap() == handle)
+                    //{
+                    //    fixNext.push_back(make_pair(eH, getE(next.twin).next));
+                    //}
+                    //else
+                    //{
+                    //    fixNext.push_back(make_pair(eH, edge.next));
+                    //}
+
+                    auto next = getE(edge.next);
+                    auto nextTwin = getE(next.twin);
+                    if (!nextTwin.face)
+                    {
+                        fixNext.push_back(make_pair(eH, nextTwin.next));
+                    }
+                    else
+                    {
+                        fixNext.push_back(make_pair(eH, edge.next));
+                    }
+
+                    return true;
+                }
+                return false;
+            });
+            findEdgeAroundVertex(twin.target, [&, this](auto eH)
+            {
+                auto findEdge = getE(eH);
+                if (findEdge.next == edgeH)
+                {
+                    fixNext.push_back(make_pair(eH, twin.next));
                     return true;
                 }
                 return false;
@@ -370,6 +402,13 @@ void HalfEdgeMesh<BaseVecT>::removeFace(FaceHandle handle)
             // Neighbour face -> remove link to current face
             edge.face = OptionalFaceHandle();
         }
+    }
+
+    // Fix next pointer
+    for (auto pair: fixNext)
+    {
+        auto& edgeToFix = getE(pair.first);
+        edgeToFix.next = pair.second;
     }
 
     // Actually remove the face and connected edges and vertices
