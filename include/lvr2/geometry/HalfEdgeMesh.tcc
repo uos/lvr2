@@ -29,7 +29,7 @@
 #include <utility>
 #include <iostream>
 
-#include <lvr2/util/VectorMap.hpp>
+#include <lvr2/attrmaps/VectorMap.hpp>
 #include <lvr2/util/Panic.hpp>
 #include <lvr2/util/Debug.hpp>
 

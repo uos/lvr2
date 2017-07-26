@@ -36,7 +36,7 @@ using boost::optional;
 
 #include <lvr2/geometry/BaseMesh.hpp>
 #include <lvr2/reconstruction/PointsetSurface.hpp>
-#include <lvr2/util/VectorMap.hpp>
+#include <lvr2/attrmaps/VectorMap.hpp>
 
 namespace lvr2
 {

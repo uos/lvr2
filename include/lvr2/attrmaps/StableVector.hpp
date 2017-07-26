@@ -35,7 +35,7 @@ using std::move;
 using std::vector;
 using boost::optional;
 
-#include <lvr2/geometry/BaseHandle.hpp>
+#include <lvr2/util/BaseHandle.hpp>
 #include <lvr2/geometry/Handles.hpp>
 
 
@@ -271,6 +271,6 @@ private:
 
 } // namespace lvr2
 
-#include <lvr2/util/StableVector.tcc>
+#include <lvr2/attrmaps/StableVector.tcc>
 
 #endif /* LVR2_UTIL_STABLEVECTOR_H_ */

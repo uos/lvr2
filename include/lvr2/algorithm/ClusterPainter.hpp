@@ -32,9 +32,9 @@
 using std::array;
 
 #include <lvr2/geometry/Handles.hpp>
-#include <lvr2/geometry/ClusterBiMap.hpp>
+#include <lvr2/util/ClusterBiMap.hpp>
 #include <lvr2/reconstruction/PointsetSurface.hpp>
-#include <lvr2/util/VectorMap.hpp>
+#include <lvr2/attrmaps/VectorMap.hpp>
 #include <lvr2/algorithm/ColorAlgorithms.hpp>
 
 namespace lvr2

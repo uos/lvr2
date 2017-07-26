@@ -31,7 +31,7 @@
 #include <boost/optional.hpp>
 
 #include <lvr2/geometry/Handles.hpp>
-#include <lvr2/geometry/Cluster.hpp>
+#include <lvr2/util/Cluster.hpp>
 
 using std::vector;
 
@@ -120,6 +120,6 @@ using ClusterMap = VectorMap<ClusterHandle, ValT>;
 
 } // namespace lvr2
 
-#include <lvr2/util/VectorMap.tcc>
+#include <lvr2/attrmaps/VectorMap.tcc>
 
 #endif /* LVR2_UTIL_VECTORMAP_H_ */
