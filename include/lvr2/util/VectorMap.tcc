@@ -39,7 +39,10 @@ void VectorMap<KeyT, ValT>::insert(const KeyType& key, const ValueType& value)
 {
     // Check if elements vector is large enough
     // TODO: what if `key` exists already?
-    m_vec.increaseSize(key);
+    if (key.idx() >= m_vec.size())
+    {
+        m_vec.increaseSize(key);
+    }
     m_vec.push(value);
 }
 
