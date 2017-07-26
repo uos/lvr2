@@ -24,8 +24,8 @@
  *  @author Johan M. von Behren <johan@vonbehren.eu>
  */
 
-#ifndef LVR2_GEOMETRY_CLUSTER_H_
-#define LVR2_GEOMETRY_CLUSTER_H_
+#ifndef LVR2_UTIL_CLUSTER_H_
+#define LVR2_UTIL_CLUSTER_H_
 
 #include <vector>
 
@@ -54,4 +54,4 @@ class ClusterHandle : public BaseHandle<Index>
 
 } // namespace lvr2
 
-#endif /* LVR2_GEOMETRY_CLUSTER_H_ */
+#endif /* LVR2_UTIL_CLUSTER_H_ */
