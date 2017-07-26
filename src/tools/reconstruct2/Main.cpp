@@ -291,17 +291,17 @@ void lvr2Playground()
     // VectorMap stuff 2
     cout << "========= VectorMap =========" << endl;
     lvr2::VectorMap<VertexHandle, std::string> map;
-    cout << map.numUsed() << endl;
+    cout << map.numValues() << endl;
     map.insert(handle1, "test1");
     cout << map[handle1] << std::endl;
-    cout << map.numUsed() << endl;
+    cout << map.numValues() << endl;
 
     lvr2::VectorMap<VertexHandle, std::string> map2(10, "test");
     for (auto i = 0; i < 10; i++) {
         VertexHandle handleLoop(i);
         cout << map2[handleLoop] << endl;
     }
-    cout << map2.numUsed() << endl;
+    cout << map2.numValues() << endl;
 
     VertexHandle handleLoop(5);
     map2[handleLoop] = "lalala";
@@ -309,11 +309,11 @@ void lvr2Playground()
         VertexHandle handleLoop(i);
         cout << map2[handleLoop] << endl;
     }
-    cout << map2.numUsed() << endl;
+    cout << map2.numValues() << endl;
 
     handle1 = VertexHandle(42);
     map2.insert(handle1, "42 !!");
-    cout << map2.numUsed() << endl;
+    cout << map2.numValues() << endl;
     auto opt = map2.get(handle1);
     if (opt) {
         cout << "found value! " << *opt << endl;
@@ -327,8 +327,8 @@ void lvr2Playground()
 //    map2[handle1];
 
     handle1 = VertexHandle(42);
-    map2.erase(handle1);
-    cout << map2.numUsed() << endl;
+    map2.remove(handle1);
+    cout << map2.numValues() << endl;
 //    cout << map2[handle1] << endl;
 }
 

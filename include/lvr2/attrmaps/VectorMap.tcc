@@ -24,85 +24,165 @@
  *  @author Johan M. von Behren <johan@vonbehren.eu>
  */
 
+#include <utility>
+
+using std::move;
+
 #include <lvr2/util/Panic.hpp>
 
 namespace lvr2
 {
 
-template<typename KeyT, typename ValT>
-VectorMap<KeyT, ValT>::VectorMap(size_t countElements, const ValueType& defaultValue)
+template<typename HandleT, typename ValueT>
+VectorMap<HandleT, ValueT>::VectorMap(size_t countElements, const ValueT& defaultValue)
     : m_vec(countElements, defaultValue)
 {}
 
-template<typename KeyT, typename ValT>
-void VectorMap<KeyT, ValT>::insert(const KeyType& key, const ValueType& value)
+
+template<typename HandleT, typename ValueT>
+bool VectorMap<HandleT, ValueT>::containsKey(HandleT key) const
 {
-    // Check if elements vector is large enough
-    // TODO: what if `key` exists already?
+    return static_cast<bool>(m_vec.get(key));
+}
+
+template<typename HandleT, typename ValueT>
+optional<ValueT> VectorMap<HandleT, ValueT>::insert(HandleT key, const ValueT& value)
+{
+    // If the vector isn't large enough yet, we allocate additional space.
     if (key.idx() >= m_vec.size())
     {
         m_vec.increaseSize(key);
+        m_vec.push(value);
+        return boost::none;
     }
-    m_vec.push(value);
-}
-
-template<typename KeyT, typename ValT>
-void VectorMap<KeyT, ValT>::erase(const KeyType& key)
-{
-    m_vec.erase(key);
-}
-
-template<typename KeyT, typename ValT>
-boost::optional<const ValT&> VectorMap<KeyT, ValT>::get(const KeyType& key) const
-{
-    auto maybe = m_vec.get(key);
-    if (maybe)
+    else
     {
-        return maybe->data;
+        auto out = remove(key);
+        m_vec.set(key, value);
+        return out;
     }
-    return boost::none;
 }
 
-template<typename KeyT, typename ValT>
-boost::optional<ValT&> VectorMap<KeyT, ValT>::get(const KeyType& key)
+template<typename HandleT, typename ValueT>
+optional<ValueT> VectorMap<HandleT, ValueT>::remove(HandleT key)
+{
+    auto val = m_vec.get(key);
+    if (val)
+    {
+        auto out = ValueT(move(*val));
+        m_vec.erase(key);
+        return out;
+    }
+    else
+    {
+        return boost::none;
+    }
+}
+
+template<typename HandleT, typename ValueT>
+void VectorMap<HandleT, ValueT>::clear()
+{
+    for (auto handle: m_vec)
+    {
+        m_vec.erase(handle);
+    }
+}
+
+template<typename HandleT, typename ValueT>
+optional<ValueT&> VectorMap<HandleT, ValueT>::get(HandleT key)
 {
     return m_vec.get(key);
 }
 
-template<typename KeyT, typename ValT>
-ValT& VectorMap<KeyT, ValT>::operator[](const KeyType& key)
+template<typename HandleT, typename ValueT>
+optional<const ValueT&> VectorMap<HandleT, ValueT>::get(HandleT key) const
 {
-    return m_vec[key];
+    return m_vec.get(key);
 }
 
-template<typename KeyT, typename ValT>
-const ValT& VectorMap<KeyT, ValT>::operator[](const KeyType& key) const
-{
-    return m_vec[key];
-}
-
-template<typename KeyT, typename ValT>
-size_t VectorMap<KeyT, ValT>::numUsed() const
+template<typename HandleT, typename ValueT>
+size_t VectorMap<HandleT, ValueT>::numValues() const
 {
     return m_vec.numUsed();
 }
 
-template<typename KeyT, typename ValT>
-void VectorMap<KeyT, ValT>::reserve(size_t newCap)
+
+template<typename HandleT, typename ValueT>
+AttributeMapHandleIteratorPtr<HandleT> VectorMap<HandleT, ValueT>::begin() const
+{
+
+}
+
+template<typename HandleT, typename ValueT>
+AttributeMapHandleIteratorPtr<HandleT> VectorMap<HandleT, ValueT>::end() const
+{
+
+}
+
+
+// template<typename HandleT, typename ValueT>
+// ValueT& VectorMap<HandleT, ValueT>::operator[](const HandleType& key)
+// {
+//     return m_vec[key];
+// }
+
+// template<typename HandleT, typename ValueT>
+// const ValueT& VectorMap<HandleT, ValueT>::operator[](const HandleType& key) const
+// {
+//     return m_vec[key];
+// }
+
+
+template<typename HandleT, typename ValueT>
+void VectorMap<HandleT, ValueT>::reserve(size_t newCap)
 {
     m_vec.reserve(newCap);
 };
 
-template<typename KeyT, typename ValT>
-decltype(auto) VectorMap<KeyT, ValT>::begin() const
+
+template<typename HandleT, typename ValueT>
+AttributeMapHandleIterator<HandleT>& VectorMapIterator<HandleT, ValueT>::operator++()
 {
-    return m_vec.begin();
+    ++m_iter;
+    return *this;
 }
-template<typename KeyT, typename ValT>
-decltype(auto) VectorMap<KeyT, ValT>::end() const
+
+template<typename HandleT, typename ValueT>
+VectorMapIterator<HandleT, ValueT>::VectorMapIterator(StableVectorIterator<HandleT, ValueT> iter)
+    : m_iter(iter)
+{}
+
+template<typename HandleT, typename ValueT>
+bool VectorMapIterator<HandleT, ValueT>::operator==(const AttributeMapHandleIterator<HandleT>& other) const
 {
-    return m_vec.end();
+    auto cast = dynamic_cast<const VectorMapIterator<HandleT, ValueT>*>(&other);
+    return cast && m_iter == cast->m_iter;
 }
+
+template<typename HandleT, typename ValueT>
+bool VectorMapIterator<HandleT, ValueT>::operator!=(const AttributeMapHandleIterator<HandleT>& other) const
+{
+    auto cast = dynamic_cast<const VectorMapIterator<HandleT, ValueT>*>(&other);
+    return cast && m_iter != cast->m_iter;
+}
+
+template<typename HandleT, typename ValueT>
+HandleT VectorMapIterator<HandleT, ValueT>::operator*() const
+{
+    return ++m_iter;
+}
+
+
+// template<typename HandleT, typename ValueT>
+// decltype(auto) VectorMap<HandleT, ValueT>::begin() const
+// {
+//     return m_vec.begin();
+// }
+// template<typename HandleT, typename ValueT>
+// decltype(auto) VectorMap<HandleT, ValueT>::end() const
+// {
+//     return m_vec.end();
+// }
 
 
 } // namespace lvr2

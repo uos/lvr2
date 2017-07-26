@@ -42,7 +42,8 @@ void writeDebugMesh(
 )
 {
     // Generate color map
-    VertexMap<Rgb8Color> colorMap;
+    // TODO: replace with better impl of attr map
+    DenseVertexMap<Rgb8Color> colorMap;
     colorMap.reserve(mesh.numVertices());
 
     for (auto vH: mesh.vertices())
