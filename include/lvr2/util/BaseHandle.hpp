@@ -75,6 +75,6 @@ private:
 
 } // namespace lvr2
 
-#include <lvr2/geometry/BaseHandle.tcc>
+#include <lvr2/util/BaseHandle.tcc>
 
 #endif /* LVR2_GEOMETRY_BASEHANDLE_H_ */

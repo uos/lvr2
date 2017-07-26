@@ -29,7 +29,7 @@
 
 #include <cstdint>
 #include <utility>
-#include <lvr2/util/StableVector.hpp>
+#include <lvr2/attrmaps/StableVector.hpp>
 #include <array>
 #include <vector>
 

@@ -36,9 +36,9 @@ using boost::optional;
 #include <lvr/io/MeshBuffer.hpp>
 #include "ClusterPainter.hpp"
 #include <lvr2/geometry/Normal.hpp>
-#include <lvr2/util/VectorMap.hpp>
+#include <lvr2/attrmaps/VectorMap.hpp>
 #include <lvr2/algorithm/ColorAlgorithms.hpp>
-#include <lvr2/geometry/ClusterBiMap.hpp>
+#include <lvr2/util/ClusterBiMap.hpp>
 
 namespace lvr2
 {

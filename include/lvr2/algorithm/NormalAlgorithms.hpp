@@ -30,11 +30,11 @@
 #define LVR2_ALGORITHM_NORMALALGORITHMS_H_
 
 #include <lvr2/geometry/BaseMesh.hpp>
-#include <lvr2/geometry/Cluster.hpp>
-#include <lvr2/geometry/ClusterBiMap.hpp>
+#include <lvr2/util/Cluster.hpp>
+#include <lvr2/util/ClusterBiMap.hpp>
 #include <lvr2/geometry/Normal.hpp>
 #include <lvr2/reconstruction/PointsetSurface.hpp>
-#include <lvr2/util/VectorMap.hpp>
+#include <lvr2/attrmaps/VectorMap.hpp>
 
 namespace lvr2
 {

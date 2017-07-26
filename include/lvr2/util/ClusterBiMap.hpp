@@ -27,11 +27,11 @@
 #ifndef LVR2_GEOMETRY_CLUSTERBIMAP_H_
 #define LVR2_GEOMETRY_CLUSTERBIMAP_H_
 
-#include "Handles.hpp"
-#include "Cluster.hpp"
+#include <lvr2/geometry/Handles.hpp>
+#include <lvr2/util/Cluster.hpp>
 
-#include <lvr2/util/VectorMap.hpp>
-#include <lvr2/util/StableVector.hpp>
+#include <lvr2/attrmaps/VectorMap.hpp>
+#include <lvr2/attrmaps/StableVector.hpp>
 
 namespace lvr2
 {
@@ -140,6 +140,6 @@ private:
 
 } // namespace lvr2
 
-#include <lvr2/geometry/ClusterBiMap.tcc>
+#include <lvr2/util/ClusterBiMap.tcc>
 
 #endif /* LVR2_GEOMETRY_CLUSTERBIMAP_H_ */
