@@ -749,6 +749,11 @@ int main(int argc, char** argv)
     //     mesh.fillHoles(options.getFillHoles());
     // }
 
+    if(options.getDanglingArtifacts())
+    {
+        removeDanglingCluster(mesh, static_cast<size_t>(options.getDanglingArtifacts()));
+    }
+
     auto faceNormals = calcFaceNormals(mesh);
     ClusterBiMap<FaceHandle> clusterBiMap;
     if(options.optimizePlanes())
@@ -765,13 +770,6 @@ int main(int argc, char** argv)
     {
         clusterBiMap = planarClusterGrowing(mesh, faceNormals, options.getNormalThreshold());
     }
-
-    if(options.getDanglingArtifacts())
-    {
-        removeDanglingCluster(mesh, static_cast<size_t>(options.getDanglingArtifacts()));
-    }
-
-    mesh.debugCheckMeshIntegrity();
 
     ClusterPainter painter(clusterBiMap);
     auto clusterColors = optional<DenseClusterMap<Rgb8Color>>(painter.simpsons(mesh));
