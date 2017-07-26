@@ -31,28 +31,16 @@ namespace lvr2
 
 template<typename KeyT, typename ValT>
 VectorMap<KeyT, ValT>::VectorMap(size_t countElements, const ValueType& defaultValue)
-    : m_vec(countElements, Wrapper(defaultValue))
+    : m_vec(countElements, defaultValue)
 {}
 
 template<typename KeyT, typename ValT>
 void VectorMap<KeyT, ValT>::insert(const KeyType& key, const ValueType& value)
 {
     // Check if elements vector is large enough
-    // TODO: enhance insert -> delete stuff
-    while (m_vec.size() <= key.idx())
-    {
-        auto h = m_vec.push(Wrapper());
-        m_vec.erase(h);
-    }
-
-    m_vec.set(key, value);
-}
-
-template<typename KeyT, typename ValT>
-typename VectorMap<KeyT, ValT>::Wrapper& VectorMap<KeyT, ValT>::Wrapper::operator=(const Wrapper& value)
-{
-    new(&data) ValueType(value.data);
-    return *this;
+    // TODO: what if `key` exists already?
+    m_vec.increaseSize(key);
+    m_vec.push(value);
 }
 
 template<typename KeyT, typename ValT>
@@ -75,24 +63,19 @@ boost::optional<const ValT&> VectorMap<KeyT, ValT>::get(const KeyType& key) cons
 template<typename KeyT, typename ValT>
 boost::optional<ValT&> VectorMap<KeyT, ValT>::get(const KeyType& key)
 {
-    auto maybe = m_vec.get(key);
-    if (maybe)
-    {
-        return maybe->data;
-    }
-    return boost::none;
+    return m_vec.get(key);
 }
 
 template<typename KeyT, typename ValT>
 ValT& VectorMap<KeyT, ValT>::operator[](const KeyType& key)
 {
-    return m_vec[key].data;
+    return m_vec[key];
 }
 
 template<typename KeyT, typename ValT>
 const ValT& VectorMap<KeyT, ValT>::operator[](const KeyType& key) const
 {
-    return m_vec[key].data;
+    return m_vec[key];
 }
 
 template<typename KeyT, typename ValT>

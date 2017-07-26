@@ -332,6 +332,45 @@ void lvr2Playground()
 //    cout << map2[handle1] << endl;
 }
 
+/// Dummy type that prints stuff when important methods are called.
+struct Verbosi
+{
+    std::string s;
+    Verbosi(std::string s) : s(s) {}
+    Verbosi(const Verbosi& other) : s(other.s) { cout << "Verbosi: Copy-Ctor - " << s << " from " << other.s << endl; }
+    Verbosi(Verbosi&& other) noexcept : s(move(other.s)) { cout << "Verbosi: Move-Ctor - " << s << endl; }
+
+    ~Verbosi() { cout << "Verbosi: Dtor - " << s << endl; }
+
+    Verbosi& operator=(const Verbosi& other)
+    {
+        this->s = other.s;
+        cout << "Verbosi: copy-assignment - " << s << "=" << other.s << endl;
+    }
+    Verbosi& operator=(Verbosi&& other)
+    {
+        this->s = move(other.s);
+        cout << "Verbosi: move-assignment - " << s << "=" << other.s << endl;
+    }
+};
+
+void testStableVector()
+{
+    {
+        StableVector<VertexHandle, Verbosi> sv1;
+        {
+            cout << "### pushing 'a'" << endl;
+            auto va = Verbosi("a");
+            sv1.push(va);
+            cout << "### pushing 'b' with move" << endl;
+            sv1.push(std::move(Verbosi("b")));
+            cout << "### end of inner scope" << endl;
+        }
+        cout << "### end of outer scope" << endl;
+    }
+
+}
+
 void createHouseFromNikolaus(lvr2::HalfEdgeMesh<lvr2::BaseVector<float>>& mesh)
 {
     // scale
@@ -585,6 +624,9 @@ void setTextureOptions(const reconstruct::Options& options)
 
 int main(int argc, char** argv)
 {
+    testStableVector();
+    return 0;
+
     // =======================================================================
     // Parse and print command line parameters
     // =======================================================================

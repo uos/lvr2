@@ -28,11 +28,14 @@
 #define LVR2_UTIL_STABLEVECTOR_H_
 
 #include <vector>
+#include <utility>
 
+using std::move;
 using std::vector;
 
 #include <lvr2/geometry/BaseHandle.hpp>
 #include <lvr2/geometry/Handles.hpp>
+
 
 namespace lvr2
 {
@@ -74,11 +77,11 @@ public:
  * remains true regardless of other insertions and deletions happening in
  * between.
  *
- * USE WITH CAUTION: This NEVER deletes values (except on its own destruction)
- * and can get very large if used incorrectly! This class is designed for
- * situations where the number deletes are not greatly more than the number
- * of insertions. The memory requirements of this class are O(n_pb) where n_pb
- * is the number of `push_back()` calls.
+ * USE WITH CAUTION: This NEVER frees memory of deleted values (except on its
+ * own destruction and can get very large if used incorrectly! If deletions in
+ * your use-case are far more numerous than insertions, this data structure is
+ * probably not fitting your needs. The memory requirement of this class is
+ * O(n_p) where n_p is the number of `push()` calls.
  *
  * @tparam HandleT This handle type contains the actual index. It has to be
  *                 derived from `BaseHandle`!
@@ -102,6 +105,8 @@ public:
      */
     StableVector() : m_usedCount(0) {};
 
+    ~StableVector();
+
     /**
      * @brief Creates a StableVector with `countElements` many copies of
      *        `defaultValue`.
@@ -112,11 +117,60 @@ public:
     StableVector(size_t countElements, const ElementType& defaultValue);
 
     /**
+     * @brief Copy constructor deep clones the `other` vector.
+     */
+    StableVector(const StableVector& other);
+
+    /**
+     * @brief Move constructor salvages the `other` vector to copy contents.
+     */
+    StableVector(StableVector&& other);
+
+    /**
+     * @brief Copy assignment operator (does nothing special).
+     */
+    StableVector<HandleT, ElemT>& operator=(const StableVector& other);
+    /**
+     * @brief Move assignment operator (does nothing special).
+     */
+    StableVector<HandleT, ElemT>& operator=(StableVector&& other);
+
+    /**
      * @brief Adds the given element to the vector.
      *
      * @return The handle referring to the inserted element.
      */
-    HandleType push(ElementType elem);
+    HandleType push(const ElementType& elem);
+
+    /**
+     * @brief Adds the given element by moving from it.
+     *
+     * @return The handle referring to the inserted element.
+     */
+    HandleType push(ElementType&& elem);
+
+    /**
+     * @brief Increases the size of the vector to the length of `upTo`.
+     *
+     * This means that the next call to `push()` after calling `resize(upTo)`
+     * will return exactly the `upTo` handle. All elements that are inserted
+     * by this method are marked as deleted and thus aren't initialized. They
+     * can be set later with `set()`.
+     *
+     * If `upTo` is already a valid handle, this method will panic!
+     */
+    void increaseSize(HandleType upTo);
+
+    /**
+     * @brief Increases the size of the vector to the length of `upTo` by
+     *        inserting copies of `elem`.
+     *
+     * This means that the next call to `push()` after calling `resize(upTo)`
+     * will return exactly the `upTo` handle.
+     *
+     * If `upTo` is already a valid handle, this method will panic!
+     */
+    void increaseSize(HandleType upTo, const ElementType& elem);
 
     /**
      * @brief The handle which would be returned by calling `push` now.
@@ -130,8 +184,6 @@ public:
      * trying to obtain the element with this handle later, will always result
      * in `none` (if `get()` was used). Additionally, the handle can also be
      * used with the `set()` method.
-     *
-     * This does NOT call the DESTRUCTOR of the marked element!
      */
     void erase(HandleType handle);
 
@@ -154,10 +206,20 @@ public:
     /**
      * @brief Set a value for the existing `handle`.
      *
-     * Use `push` to insert a new element. The given `handle` has to exist
-     * already.
+     * In this method, the `handle` has to be valid: it has to be obtained by
+     * a prior `push()` call. If you want to insert a new element, use `push()`
+     * instead of this `set()` method!
      */
     void set(HandleType handle, const ElementType& elem);
+
+    /**
+     * @brief Set a value for the existing `handle` by moving from `elem`.
+     *
+     * In this method, the `handle` has to be valid: it has to be obtained by
+     * a prior `push()` call. If you want to insert a new element, use `push()`
+     * instead of this `set()` method!
+     */
+    void set(HandleType handle, ElementType&& elem);
 
     /**
      * @brief Returns the element referred to by `handle`.
@@ -190,32 +252,98 @@ public:
     /**
      * @brief Returns an iterator to the first element of this vector.
      *
-     * This iterator auto skips deleted elements and returns handles to the valid elements.
+     * This iterator auto skips deleted elements and returns handles to the
+     * valid elements.
      */
     StableVectorIterator<HandleType> begin() const;
 
     /**
-     * @brief Returns an iterator to the element after the last element of this vector.
+     * @brief Returns an iterator to the element after the last element of
+     *        this vector.
      */
     StableVectorIterator<HandleType> end() const;
 
     /**
-     * @brief Increase the capacity of the vector to a value that's greater or equal to newCap.
+     * @brief Increase the capacity of the vector to a value that's greater or
+     *        equal to newCap.
      *
-     * If newCap is greater than the current capacity, new storage is allocated, otherwise the method does nothing.
+     * If newCap is greater than the current capacity, new storage is
+     * allocated, otherwise the method does nothing.
      *
      * @param newCap new capacity of the vector
      */
     void reserve(size_t newCap);
 
 private:
+    /// Wrapper for the actual data to avoid calling the constructor or
+    /// destructor in certain situations.
+    union UnsafeWrapper
+    {
+        ElementType data;
+
+        // Empty constructor and destructor. The StableVector takes care of
+        // initialization and destruction.
+        UnsafeWrapper() {}
+        ~UnsafeWrapper() {}
+
+        // UnsafeWrapper(const ElementType& data) : data(data) {}
+        // UnsafeWrapper(ElementType&& data) : data(data) {}
+
+        void set(const ElementType& value)
+        {
+            // This funky expression is the placement-new operator. It
+            // constructs an object at the given memory location (meaning: it
+            // does not allocate). It won't attempt to destruct the object
+            // living at the location, which is good because it's probably
+            // only garbage!
+            cout << "# UnsafeWrapper::set() copy, data @ " << &data << ", this @ " << this << endl;
+            new (&data) ElementType(value);
+        }
+        void set(ElementType&& value)
+        {
+            // See above for explanation of the placement-new operator. Here we
+            // use the move constructor of `ElementType`.
+            cout << "# UnsafeWrapper::set() move, data @ " << &data << ", this @ " << this << endl;
+            new (&data) ElementType(move(value));
+        }
+
+        // Copy and move constructor/assignment operator don't do anything. The
+        // StableVector has to take care of copying elements!
+        UnsafeWrapper(const UnsafeWrapper& other) : data(other.data) {
+            cout << "unsafe copy ctor" << endl;
+        }
+        UnsafeWrapper(UnsafeWrapper&& other)
+            // This beauty declares this function `noexcept` if the move ctor
+            // of `ElementType` is `noexcept`. This is actually important as
+            // the reallocation of `std::vector` is faster for types with
+            // noexcept move ctor.
+            noexcept(noexcept(ElementType(std::declval<ElementType>())))
+            : data(move(other.data))
+
+        {
+            cout << "unsafe move ctor" << endl;
+        }
+
+        UnsafeWrapper& operator=(const UnsafeWrapper& other) {
+            cout << "unsafe copy assignment" << endl;
+        }
+        UnsafeWrapper& operator=(UnsafeWrapper&& other) {
+            cout << "unsafe move assignment" << endl;
+        }
+    };
+
+    // static_assert(!(std::is_same<ElementType, string>::value
+    //     && !std::is_nothrow_move_constructible<UnsafeWrapper>::value), "ahh");
+    static_assert(std::is_nothrow_move_constructible<UnsafeWrapper>::value, "ahh2");
+
     /// Count of used elements in elements vector
     size_t m_usedCount;
 
     /// Vector for stored elements
-    vector<ElementType> m_elements;
+    vector<UnsafeWrapper> m_elements;
 
-    /// Vector for flags, if the same position in the elements vector is deleted
+    /// Stores whether an element in `m_elements` is deleted or not. Always has
+    /// the same length as `m_elements`.
     vector<bool> m_deleted;
 
     /**
