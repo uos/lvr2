@@ -48,7 +48,8 @@ template<typename BaseVecT, typename Pred>
 ClusterBiMap<FaceHandle> clusterGrowing(const BaseMesh<BaseVecT>& mesh, Pred pred)
 {
     ClusterBiMap<FaceHandle> clusters;
-    DenseFaceMap<bool> visited(mesh.numFaces(), false);
+    // TODO remove `mesh.numFaces() * 5` and make use of new default value
+    DenseFaceMap<bool> visited(mesh.numFaces() * 5, false);
 
     // Iterate over all faces
     for (auto faceH: mesh.faces())
@@ -68,7 +69,7 @@ ClusterBiMap<FaceHandle> clusterGrowing(const BaseMesh<BaseVecT>& mesh, Pred pre
                 stack.pop_back();
 
                 // Check if the last faces from stack and starting face match the creatia to join the same cluster
-                if (pred(faceH, currentFace))
+                if (!visited[currentFace] && pred(faceH, currentFace))
                 {
                     // The face matched the criteria => add it to cluster and mark as visited.
                     clusters.addToCluster(cluster, currentFace);
