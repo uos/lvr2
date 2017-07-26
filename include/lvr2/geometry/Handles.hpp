@@ -105,6 +105,12 @@ class VertexHandle : public BaseHandle<Index>
     using BaseHandle<Index>::BaseHandle;
 };
 
+/// Handle to access Cluster of the ClusterBiMap.
+class ClusterHandle : public BaseHandle<Index>
+{
+    using BaseHandle<Index>::BaseHandle;
+};
+
 /// Semantically equivalent to `boost::optional<EdgeHandle>`
 class OptionalEdgeHandle : public BaseOptionalHandle<Index, EdgeHandle>
 {
@@ -123,6 +129,12 @@ class OptionalVertexHandle : public BaseOptionalHandle<Index, VertexHandle>
     using BaseOptionalHandle<Index, VertexHandle>::BaseOptionalHandle;
 };
 
+/// Semantically equivalent to `boost::optional<ClusterHandle>`
+class OptionalClusterHandle : public BaseOptionalHandle<Index, ClusterHandle>
+{
+    using BaseOptionalHandle<Index, ClusterHandle>::BaseOptionalHandle;
+};
+
 std::ostream& operator<<(std::ostream& os, const EdgeHandle& h)
 {
     os << "E" << h.idx();
@@ -138,6 +150,12 @@ std::ostream& operator<<(std::ostream& os, const FaceHandle& h)
 std::ostream& operator<<(std::ostream& os, const VertexHandle& h)
 {
     os << "V" << h.idx();
+    return os;
+}
+
+std::ostream& operator<<(std::ostream& os, const ClusterHandle& h)
+{
+    os << "C" << h.idx();
     return os;
 }
 
@@ -180,18 +198,23 @@ std::ostream& operator<<(std::ostream& os, const OptionalVertexHandle& h)
     return os;
 }
 
+std::ostream& operator<<(std::ostream& os, const OptionalClusterHandle& h)
+{
+    if (h)
+    {
+        os << "C" << h.unwrap().idx();
+    }
+    else
+    {
+        os << "C⊥";
+    }
+    return os;
+}
+
 } // namespace lvr2
 
 namespace std
 {
-
-template<>
-struct hash<lvr2::VertexHandle> {
-    size_t operator()(const lvr2::VertexHandle& h) const
-    {
-        return std::hash<lvr2::Index>()(h.idx());
-    }
-};
 
 template<>
 struct hash<lvr2::EdgeHandle> {
@@ -204,6 +227,22 @@ struct hash<lvr2::EdgeHandle> {
 template<>
 struct hash<lvr2::FaceHandle> {
     size_t operator()(const lvr2::FaceHandle& h) const
+    {
+        return std::hash<lvr2::Index>()(h.idx());
+    }
+};
+
+template<>
+struct hash<lvr2::VertexHandle> {
+    size_t operator()(const lvr2::VertexHandle& h) const
+    {
+        return std::hash<lvr2::Index>()(h.idx());
+    }
+};
+
+template<>
+struct hash<lvr2::ClusterHandle> {
+    size_t operator()(const lvr2::ClusterHandle& h) const
     {
         return std::hash<lvr2::Index>()(h.idx());
     }

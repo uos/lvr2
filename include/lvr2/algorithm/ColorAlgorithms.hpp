@@ -36,7 +36,7 @@ using boost::optional;
 
 #include <lvr2/geometry/BaseMesh.hpp>
 #include <lvr2/reconstruction/PointsetSurface.hpp>
-#include <lvr2/attrmaps/VectorMap.hpp>
+#include <lvr2/attrmaps/AttrMaps.hpp>
 
 namespace lvr2
 {
@@ -44,7 +44,7 @@ namespace lvr2
 using Rgb8Color = array<uint8_t, 3>;
 
 template<typename BaseVecT>
-optional<VertexMap<Rgb8Color>> calcColorFromPointCloud(
+optional<DenseVertexMap<Rgb8Color>> calcColorFromPointCloud(
     const BaseMesh<BaseVecT>& mesh,
     const PointsetSurfacePtr<BaseVecT> surface
 );

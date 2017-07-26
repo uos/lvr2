@@ -53,7 +53,7 @@ ClusterBiMap<FaceHandle> planarClusterGrowing(
 )
 {
     ClusterBiMap<FaceHandle> clusters;
-    FaceMap<bool> visited(mesh.numFaces(), false);
+    DenseFaceMap<bool> visited(mesh.numFaces(), false);
 
     // Iterate over all faces
     for (auto faceH: mesh.faces())

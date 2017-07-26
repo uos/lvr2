@@ -30,6 +30,7 @@
 #include <vector>
 #include <boost/optional.hpp>
 
+#include <lvr2/attrmaps/AttributeMap.hpp>
 #include <lvr2/geometry/Handles.hpp>
 #include <lvr2/util/Cluster.hpp>
 
@@ -46,77 +47,61 @@ namespace lvr2
  *
  * USE WITH CAUTION: This NEVER deletes values and can get very large!
  *
- * @tparam KeyT Type of keys for this map. Needs to be a subclass of BaseHandle!
- * @tparam ValT Type of values of this map
  */
-template<typename KeyT, typename ValT>
-class VectorMap
+template<typename HandleT, typename ValueT>
+class VectorMap : public AttributeMap<HandleT, ValueT>
 {
-private:
-    using KeyType = KeyT;
-    using ValueType = ValT;
-
-    StableVector<KeyT, ValueType> m_vec;
-
 public:
-    VectorMap() {};
+    VectorMap() {}
 
     /// Creates a map of size `countElements` with `countElements` copies of
     /// `defaultValue` in it.
-    VectorMap(size_t countElements, const ValueType& defaultValue);
+    VectorMap(size_t countElements, const ValueT& defaultValue);
 
-    /**
-     * @brief Insert the given element with the given key.
-     *
-     * Note that this might allocate a lot of memory. After calling this
-     * method, the internal vector used for storing the values is at least
-     * `key` elements long.
-     */
-    void insert(const KeyType& key, const ValueType& value);
+    // =======================================================================
+    // Implemented methods from the interface (check interface for docs)
+    // =======================================================================
+    bool containsKey(HandleT key) const final;
+    optional<ValueT> insert(HandleT key, const ValueT& value) final;
+    optional<ValueT> remove(HandleT key) final;
+    void clear() final;
+    optional<ValueT&> get(HandleT key) final;
+    optional<const ValueT&> get(HandleT key) const final;
+    size_t numValues() const final;
 
-    /**
-     * @brief Mark the value behind the given key as deleted.
-     *
-     * This does NOT call the DESTRUCTOR of the marked value!
-     */
-    void erase(const KeyType& key);
-
-    /// Request the value behind the given key
-    boost::optional<ValueType&> get(const KeyType& key);
-
-    /// Request the value behind the given key
-    boost::optional<const ValueType&> get(const KeyType& key) const;
-
-    /**
-     * @brief Request the value behind the given key
-     *
-     * Important: Do not use this to insert new values! Use `insert()` instead.
-     */
-    ValueType& operator[](const KeyType& key);
-
-    /// Request the value behind the given key
-    const ValueType& operator[](const KeyType& key) const;
-
-    /// Number of not delete-marked values
-    size_t numUsed() const;
-
-    decltype(auto) begin() const;
-    decltype(auto) end() const;
+    AttributeMapHandleIteratorPtr<HandleT> begin() const final;
+    AttributeMapHandleIteratorPtr<HandleT> end() const final;
 
     /**
      * @see StableVector::reserve(size_t)
      */
     void reserve(size_t newCap);
+
+
+private:
+    /// The underlying storage
+    StableVector<HandleT, ValueT> m_vec;
 };
 
-template <typename ValT>
-using EdgeMap = VectorMap<EdgeHandle, ValT>;
-template <typename ValT>
-using FaceMap = VectorMap<FaceHandle, ValT>;
-template <typename ValT>
-using VertexMap = VectorMap<VertexHandle, ValT>;
-template <typename ValT>
-using ClusterMap = VectorMap<ClusterHandle, ValT>;
+template<typename HandleT, typename ValueT>
+class VectorMapIterator : public AttributeMapHandleIterator<HandleT>
+{
+    static_assert(
+        std::is_base_of<BaseHandle<Index>, HandleT>::value,
+        "HandleT must inherit from BaseHandle!"
+    );
+
+public:
+    VectorMapIterator(StableVectorIterator<HandleT, ValueT> iter);
+
+    AttributeMapHandleIterator<HandleT>& operator++() final;
+    bool operator==(const AttributeMapHandleIterator<HandleT>& other) const final;
+    bool operator!=(const AttributeMapHandleIterator<HandleT>& other) const final;
+    HandleT operator*() const final;
+
+private:
+    StableVectorIterator<HandleT, ValueT> m_iter;
+};
 
 } // namespace lvr2
 

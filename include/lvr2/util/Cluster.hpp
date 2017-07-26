@@ -46,12 +46,6 @@ public:
     vector<HandleT> handles;
 };
 
-/// Handle to access Cluster of the ClusterBiMap.
-class ClusterHandle : public BaseHandle<Index>
-{
-    using BaseHandle<Index>::BaseHandle;
-};
-
 } // namespace lvr2
 
 #endif /* LVR2_UTIL_CLUSTER_H_ */

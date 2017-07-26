@@ -40,7 +40,7 @@ template<typename BaseVecT>
 boost::shared_ptr<lvr::MeshBuffer> FinalizeAlgorithm<BaseVecT>::apply(const BaseMesh <BaseVecT>& mesh)
 {
     // Create vertex and normal buffer
-    VertexMap<size_t> idxMap;
+    DenseVertexMap<size_t> idxMap;
     idxMap.reserve(mesh.numVertices());
 
     vector<float> vertices;

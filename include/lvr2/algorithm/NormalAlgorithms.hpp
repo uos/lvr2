@@ -45,7 +45,7 @@ namespace lvr2
  * A face's normal is calculated based on the position of its three vertices.
  */
 template<typename BaseVecT>
-FaceMap<Normal<BaseVecT>> calcFaceNormals(const BaseMesh<BaseVecT>& mesh);
+DenseFaceMap<Normal<BaseVecT>> calcFaceNormals(const BaseMesh<BaseVecT>& mesh);
 
 /**
  * @brief Returns a vertex normal for the given vertex interpolated from the
@@ -68,7 +68,7 @@ optional<Normal<BaseVecT>> interpolatedVertexNormal(
  * @param surface A point cloud with normal information
  */
 template<typename BaseVecT>
-VertexMap<Normal<BaseVecT>> calcVertexNormals(
+DenseVertexMap<Normal<BaseVecT>> calcVertexNormals(
     const BaseMesh<BaseVecT>& mesh,
     const FaceMap<Normal<BaseVecT>>& normals,
     const PointsetSurface<BaseVecT>& surface
