@@ -754,29 +754,29 @@ pair<HalfEdgeHandle, HalfEdgeHandle> HalfEdgeMesh<BaseVecT>::addEdgePair(VertexH
 // ========================================================================
 // = Iterator stuff
 // ========================================================================
-template<typename HandleT>
-HemFevIterator<HandleT>& HemFevIterator<HandleT>::operator++()
+template<typename HandleT, typename ElemT>
+HemFevIterator<HandleT, ElemT>& HemFevIterator<HandleT, ElemT>::operator++()
 {
     ++m_iterator;
     return *this;
 }
 
-template<typename HandleT>
-bool HemFevIterator<HandleT>::operator==(const MeshHandleIterator<HandleT>& other) const
+template<typename HandleT, typename ElemT>
+bool HemFevIterator<HandleT, ElemT>::operator==(const MeshHandleIterator<HandleT>& other) const
 {
-    auto cast = dynamic_cast<const HemFevIterator<HandleT>*>(&other);
+    auto cast = dynamic_cast<const HemFevIterator<HandleT, ElemT>*>(&other);
     return cast && m_iterator == cast->m_iterator;
 }
 
-template<typename HandleT>
-bool HemFevIterator<HandleT>::operator!=(const MeshHandleIterator<HandleT>& other) const
+template<typename HandleT, typename ElemT>
+bool HemFevIterator<HandleT, ElemT>::operator!=(const MeshHandleIterator<HandleT>& other) const
 {
-    auto cast = dynamic_cast<const HemFevIterator<HandleT>*>(&other);
+    auto cast = dynamic_cast<const HemFevIterator<HandleT, ElemT>*>(&other);
     return !cast || m_iterator != cast->m_iterator;
 }
 
-template<typename HandleT>
-HandleT HemFevIterator<HandleT>::operator*() const
+template<typename HandleT, typename ElemT>
+HandleT HemFevIterator<HandleT, ElemT>::operator*() const
 {
     return *m_iterator;
 }
@@ -809,7 +809,7 @@ template <typename BaseVecT>
 MeshHandleIteratorPtr<VertexHandle> HalfEdgeMesh<BaseVecT>::verticesBegin() const
 {
     return MeshHandleIteratorPtr<VertexHandle>(
-        std::make_unique<HemFevIterator<VertexHandle>>(this->m_vertices.begin())
+        std::make_unique<HemFevIterator<VertexHandle, Vertex>>(this->m_vertices.begin())
     );
 }
 
@@ -817,7 +817,7 @@ template <typename BaseVecT>
 MeshHandleIteratorPtr<VertexHandle> HalfEdgeMesh<BaseVecT>::verticesEnd() const
 {
     return MeshHandleIteratorPtr<VertexHandle>(
-        std::make_unique<HemFevIterator<VertexHandle>>(this->m_vertices.end())
+        std::make_unique<HemFevIterator<VertexHandle, Vertex>>(this->m_vertices.end())
     );
 }
 
@@ -825,7 +825,7 @@ template <typename BaseVecT>
 MeshHandleIteratorPtr<FaceHandle> HalfEdgeMesh<BaseVecT>::facesBegin() const
 {
     return MeshHandleIteratorPtr<FaceHandle>(
-        std::make_unique<HemFevIterator<FaceHandle>>(this->m_faces.begin())
+        std::make_unique<HemFevIterator<FaceHandle, Face>>(this->m_faces.begin())
     );
 }
 
@@ -833,7 +833,7 @@ template <typename BaseVecT>
 MeshHandleIteratorPtr<FaceHandle> HalfEdgeMesh<BaseVecT>::facesEnd() const
 {
     return MeshHandleIteratorPtr<FaceHandle>(
-        std::make_unique<HemFevIterator<FaceHandle>>(this->m_faces.end())
+        std::make_unique<HemFevIterator<FaceHandle, Face>>(this->m_faces.end())
     );
 }
 

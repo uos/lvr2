@@ -336,6 +336,7 @@ void lvr2Playground()
 struct Verbosi
 {
     std::string s;
+    Verbosi() : s("default!") {}
     Verbosi(std::string s) : s(s) {}
     Verbosi(const Verbosi& other) : s(other.s) { cout << "Verbosi: Copy-Ctor - " << s << " from " << other.s << endl; }
     Verbosi(Verbosi&& other) noexcept : s(move(other.s)) { cout << "Verbosi: Move-Ctor - " << s << endl; }
@@ -362,13 +363,23 @@ void testStableVector()
             cout << "### pushing 'a'" << endl;
             auto va = Verbosi("a");
             sv1.push(va);
-            cout << "### pushing 'b' with move" << endl;
-            sv1.push(std::move(Verbosi("b")));
+
+            cout << "### reserve(2)" << endl;
+            sv1.reserve(2);
+
+            cout << "### pushing 'b' with copy" << endl;
+            auto vb = Verbosi("b");
+            sv1.push(vb);
+
+            cout << "### reserve(3)" << endl;
+            sv1.reserve(3);
+
+            cout << "### pushing 'c' with move" << endl;
+            sv1.push(Verbosi("c"));
             cout << "### end of inner scope" << endl;
         }
         cout << "### end of outer scope" << endl;
     }
-
 }
 
 void createHouseFromNikolaus(lvr2::HalfEdgeMesh<lvr2::BaseVector<float>>& mesh)

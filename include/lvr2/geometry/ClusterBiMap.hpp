@@ -42,17 +42,18 @@ namespace lvr2
  * Important: This is NOT a fail fast iterator. If the cluster map is changed while using an instance of this
  * iterator the behavior is undefined!
  */
+ template<typename HandleT>
 class ClusterBiMapIterator
 {
 public:
-    ClusterBiMapIterator(StableVectorIterator<ClusterHandle> iterator) : m_iterator(iterator) {};
+    ClusterBiMapIterator(StableVectorIterator<ClusterHandle, Cluster<HandleT>> iterator) : m_iterator(iterator) {};
     ClusterBiMapIterator& operator++();
     bool operator==(const ClusterBiMapIterator& other) const;
     bool operator!=(const ClusterBiMapIterator& other) const;
     ClusterHandle operator*() const;
 
 private:
-    StableVectorIterator<ClusterHandle> m_iterator;
+    StableVectorIterator<ClusterHandle, Cluster<HandleT>> m_iterator;
 };
 
 /**
@@ -106,8 +107,8 @@ public:
     /// Returns the number of cluster in this set.
     size_t numCluster() const;
 
-    ClusterBiMapIterator begin() const;
-    ClusterBiMapIterator end() const;
+    ClusterBiMapIterator<HandleT> begin() const;
+    ClusterBiMapIterator<HandleT> end() const;
 
     /// Get cluster behind the cluster handle.
     const Cluster<HandleT>& getCluster(ClusterHandle clusterHandle) const;
