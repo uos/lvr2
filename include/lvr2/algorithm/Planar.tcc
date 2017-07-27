@@ -132,14 +132,14 @@ ClusterBiMap<FaceHandle> iterativePlanarClusterGrowing(
 }
 
 template<typename BaseVecT>
-ClusterMap<Plane<BaseVecT>> calcRegressionPlanes(
+DenseClusterMap<Plane<BaseVecT>> calcRegressionPlanes(
     const BaseMesh<BaseVecT>& mesh,
     const ClusterBiMap<FaceHandle>& clusters,
     const FaceMap<Normal<BaseVecT>>& normals,
     int minClusterSize
 )
 {
-    ClusterMap<Plane<BaseVecT>> planes;
+    DenseClusterMap<Plane<BaseVecT>> planes;
     size_t defaultClusterThreshold = 10 * log(mesh.numFaces());
     size_t minClusterThresholdSize = max(static_cast<size_t>(minClusterSize), defaultClusterThreshold);
 

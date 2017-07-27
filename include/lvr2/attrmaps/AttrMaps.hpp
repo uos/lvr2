@@ -34,46 +34,66 @@
 namespace lvr2
 {
 
-// ===========================================================================
-// Useful typedefs
-// ===========================================================================
+/*
+ * This file defines many useful type aliases for implementors of the
+ * `AttributeMap` interface.
+ *
+ * Choosing the correct implementation can have a huge impact on performance
+ * of your algorithm. There are three main implementations, where each is
+ * useful in a specific situation -- it mainly depends on the number of values
+ * in the map.
+ *
+ * - DenseAttrMap: if there is a value associated with almost all handles
+ * - SparseAttrMap: if the number of values is significantly less than the
+ *                  number of handles
+ * - TinyAttrMap: if there is only a very small number of values (say... 7).
+ *
+ * In some algorithms you will associate a value with *every* handle, e.g. a
+ * `VertexMap<bool> visited`. In this situation, it's useful to use the
+ * DenseAttrMap: it will be faster than the other two implementations. In other
+ * situations, however, you won't associate a value with most handles. Here,
+ * a DenseAttrMap would be a bad idea, because it has a memory requirement of
+ * O(biggest_handle_idx). This means, a lot of space would be wasted. Thus,
+ * rather use SparseAttrMap in that case. Each lookup will be a bit slower, but
+ * we won't waste memory. Lastely, the `TinyAttrMap` is useful if you know you
+ * will have very few values.
+ *
+ * It's useful to look at HOW these implementations work under the hood to
+ * understand the runtime and memory overhead of each:
+ *
+ * - DenseAttrMap: uses an array (VectorMap/std::vector)
+ * - SparseAttrMap: uses a hash map (HashMap/std::unordered_map)
+ * - TinyAttrMap: uses an unsorted list of key-value pairs
+ *
+ *
+ * Additionally, there are specific type aliases for the most common uses,
+ * like `FaceMap = AttributeMap<FaceHandle, T>`. You should use those when you
+ * can.
+ */
 
-template<typename HandleT, typename ValueT>
-using DenseAttrMap = VectorMap<HandleT, ValueT>;
+// ---------------------------------------------------------------------------
+// Generic aliases
+template<typename HandleT, typename ValueT> using DenseAttrMap  = VectorMap<HandleT, ValueT>;
+template<typename HandleT, typename ValueT> using SparseAttrMap = HashMap<HandleT, ValueT>;
 
-template<typename HandleT, typename ValueT>
-using SparseAttrMap = HashMap<HandleT, ValueT>;
+// ---------------------------------------------------------------------------
+// Handle-specific aliases
+template<typename ValueT> using ClusterMap  = AttributeMap<ClusterHandle, ValueT>;
+template<typename ValueT> using EdgeMap     = AttributeMap<EdgeHandle, ValueT>;
+template<typename ValueT> using FaceMap     = AttributeMap<FaceHandle, ValueT>;
+template<typename ValueT> using VertexMap   = AttributeMap<VertexHandle, ValueT>;
 
+ // ---------------------------------------------------------------------------
+ // Handle- and implementation-specific aliases
+template<typename ValueT> using DenseClusterMap     = DenseAttrMap<ClusterHandle, ValueT>;
+template<typename ValueT> using DenseEdgeMap        = DenseAttrMap<EdgeHandle, ValueT>;
+template<typename ValueT> using DenseFaceMap        = DenseAttrMap<FaceHandle, ValueT>;
+template<typename ValueT> using DenseVertexMap      = DenseAttrMap<VertexHandle, ValueT>;
 
-template<typename ValueT>
-using EdgeMap = AttributeMap<EdgeHandle, ValueT>;
-
-template<typename ValueT>
-using FaceMap = AttributeMap<FaceHandle, ValueT>;
-
-template<typename ValueT>
-using VertexMap = AttributeMap<VertexHandle, ValueT>;
-
-template<typename ValueT>
-using ClusterMap = VectorMap<ClusterHandle, ValueT>;
-
-template<typename ValueT>
-using DenseEdgeMap = DenseAttrMap<EdgeHandle, ValueT>;
-
-template<typename ValueT>
-using DenseFaceMap = DenseAttrMap<FaceHandle, ValueT>;
-
-template<typename ValueT>
-using DenseVertexMap = DenseAttrMap<VertexHandle, ValueT>;
-
-template<typename ValueT>
-using SparseEdgeMap = SparseAttrMap<EdgeHandle, ValueT>;
-
-template<typename ValueT>
-using SparseFaceMap = SparseAttrMap<FaceHandle, ValueT>;
-
-template<typename ValueT>
-using SparseVertexMap = SparseAttrMap<VertexHandle, ValueT>;
+template<typename ValueT> using SparseClusterMap    = SparseAttrMap<ClusterHandle, ValueT>;
+template<typename ValueT> using SparseEdgeMap       = SparseAttrMap<EdgeHandle, ValueT>;
+template<typename ValueT> using SparseFaceMap       = SparseAttrMap<FaceHandle, ValueT>;
+template<typename ValueT> using SparseVertexMap     = SparseAttrMap<VertexHandle, ValueT>;
 
 } // namespace lvr2
 

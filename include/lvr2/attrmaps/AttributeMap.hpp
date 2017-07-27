@@ -57,7 +57,9 @@ template<typename> class AttributeMapHandleIteratorPtr;
  * associate a value of type `T` with a, say, vertex, simply create an
  * `AttributeMap<VertexHandle, T>`.
  *
- * There are different implementations of this interface. TODO
+ * There are different implementations of this interface. The most important
+ * ones have a type alias in `AttrMaps.hpp`. Please read the documentation in
+ * that file to learn more about different implementations.
  *
  * @tparam HandleT Key type of this map. Has to inherit from `BaseHandle`!
  * @tparam ValueT The type to map to.
@@ -71,21 +73,82 @@ class AttributeMap
     );
 
 public:
+    /**
+     * @brief Returns true iff the map contains a value associated with the
+     *        given key.
+     */
     virtual bool containsKey(HandleT key) const = 0;
+
+    /**
+     * @brief Inserts the given value at the given key position.
+     *
+     * @return If there was a value associated with the given key before
+     *         inserting the new value, the old value is returned. None
+     *         otherwise.
+     */
     virtual optional<ValueT> insert(HandleT key, const ValueT& value) = 0;
+
+    /**
+     * @brief Removes the value associated with the given key.
+     *
+     * @return If there was a value associated with the key, it is returned.
+     *         None otherwise.
+     */
     virtual optional<ValueT> remove(HandleT key) = 0;
+
+    /**
+     * @brief Removes all values from the map.
+     */
     virtual void clear() = 0;
+
+    /**
+     * @brief Returns the value associated with the given key or None
+     *        if there is no associated value.
+     */
     virtual optional<ValueT&> get(HandleT key) = 0;
+
+    /**
+     * @brief Returns the value associated with the given key or None
+     *        if there is no associated value.
+     */
     virtual optional<const ValueT&> get(HandleT key) const = 0;
+
+    /**
+     * @brief Returns the number of values in this map.
+     */
     virtual size_t numValues() const = 0;
 
+    /**
+     * @brief Returns an iterator over all keys of this map. The order of
+     *        iteration is unspecified.
+     */
     virtual AttributeMapHandleIteratorPtr<HandleT> begin() const = 0;
+
+    /**
+     * @brief Returns an iterator to the end of all keys.
+     */
     virtual AttributeMapHandleIteratorPtr<HandleT> end() const = 0;
 
+    /**
+     * @brief Returns the value associated with the given key or panics
+     *        if there is no associated value.
+     */
     ValueT& operator[](HandleT key);
+
+    /**
+     * @brief Returns the value associated with the given key or panics
+     *        if there is no associated value.
+     */
     const ValueT& operator[](HandleT key) const;
 };
 
+
+/**
+ * @brief Iterator over keys of an attribute map.
+ *
+ * This is an interface that has to be implemented by the concrete iterators
+ * for the implementors of `AttributeMap`.
+ */
 template<typename HandleT>
 class AttributeMapHandleIterator
 {
@@ -105,8 +168,12 @@ public:
     virtual HandleT operator*() const = 0;
 };
 
-/// A wrapper for the AttributeMapHandleIterator to save beloved future
-/// programmers from dereferencing too much <3
+/**
+ * @brief Simple convinience wrapper for unique_ptr<AttributeMapHandleIterator>
+ *
+ * The unique_ptr is needed to return an abstract class. This `Ptr` class
+ * enables the user to easily use this smart pointer as iterator.
+ */
 template<typename HandleT>
 class AttributeMapHandleIteratorPtr
 {

@@ -80,7 +80,7 @@ Plane<BaseVecT> calcRegressionPlane(
  * @return map from cluster handle to its regression plane (clusterH -> Plane)
  */
 template<typename BaseVecT>
-ClusterMap<Plane<BaseVecT>> calcRegressionPlanes(
+DenseClusterMap<Plane<BaseVecT>> calcRegressionPlanes(
     const BaseMesh<BaseVecT>& mesh,
     const ClusterBiMap<FaceHandle>& clusters,
     const FaceMap<Normal<BaseVecT>>& normals,
