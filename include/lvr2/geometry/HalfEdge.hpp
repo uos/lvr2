@@ -52,12 +52,6 @@ public:
     {
         return HalfEdgeHandle(eH.idx());
     }
-
-    EdgeHandle toFullEdgeHandle() const {
-        // This is equivalent to `(m_idx / 2) * 2` essentially making the
-        // index even and "rounding down".
-        return EdgeHandle(m_idx & ~1);
-    }
 };
 
 /// Semantically equivalent to `boost::optional<HalfEdgeHandle>`
@@ -67,17 +61,6 @@ public:
     using BaseOptionalHandle<Index, HalfEdgeHandle>::BaseOptionalHandle;
     OptionalHalfEdgeHandle() : BaseOptionalHandle() {}
     OptionalHalfEdgeHandle(EdgeHandle eH) : OptionalHalfEdgeHandle(eH.idx()) {}
-
-    OptionalEdgeHandle toFullEdgeHandle() const {
-        if (*this)
-        {
-            return EdgeHandle(this->unwrap().idx() & ~1);
-        }
-        else
-        {
-            return OptionalEdgeHandle();
-        }
-    }
 };
 
 struct HalfEdge
