@@ -53,7 +53,7 @@ template <typename HandleT>
 ClusterHandle ClusterBiMap<HandleT>::createCluster()
 {
     ClusterHandle newHandle(m_cluster.size());
-    m_cluster.push_back(Cluster<HandleT>());
+    m_cluster.push(Cluster<HandleT>());
 
     return newHandle;
 }
@@ -108,7 +108,7 @@ ClusterHandle ClusterBiMap<HandleT>::getClusterH(HandleT handle) const
 template <typename HandleT>
 size_t ClusterBiMap<HandleT>::numCluster() const
 {
-    return m_cluster.sizeUsed();
+    return m_cluster.numUsed();
 }
 
 template <typename HandleT>
@@ -124,35 +124,39 @@ void ClusterBiMap<HandleT>::reserve(size_t newCap)
     m_clusterMap.reserve(newCap);
 }
 
-ClusterBiMapIterator& ClusterBiMapIterator::operator++()
+template<typename HandleT>
+ClusterBiMapIterator<HandleT>& ClusterBiMapIterator<HandleT>::operator++()
 {
     ++m_iterator;
     return *this;
 }
 
-bool ClusterBiMapIterator::operator==(const ClusterBiMapIterator& other) const
+template<typename HandleT>
+bool ClusterBiMapIterator<HandleT>::operator==(const ClusterBiMapIterator& other) const
 {
     return m_iterator == other.m_iterator;
 }
 
-bool ClusterBiMapIterator::operator!=(const ClusterBiMapIterator& other) const
+template<typename HandleT>
+bool ClusterBiMapIterator<HandleT>::operator!=(const ClusterBiMapIterator& other) const
 {
     return m_iterator != other.m_iterator;
 }
 
-ClusterHandle ClusterBiMapIterator::operator*() const
+template<typename HandleT>
+ClusterHandle ClusterBiMapIterator<HandleT>::operator*() const
 {
     return *m_iterator;
 }
 
 template <typename HandleT>
-ClusterBiMapIterator ClusterBiMap<HandleT>::begin() const
+ClusterBiMapIterator<HandleT> ClusterBiMap<HandleT>::begin() const
 {
     return m_cluster.begin();
 }
 
 template <typename HandleT>
-ClusterBiMapIterator ClusterBiMap<HandleT>::end() const
+ClusterBiMapIterator<HandleT> ClusterBiMap<HandleT>::end() const
 {
     return m_cluster.end();
 }

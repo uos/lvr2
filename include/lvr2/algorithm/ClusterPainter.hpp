@@ -32,9 +32,9 @@
 using std::array;
 
 #include <lvr2/geometry/Handles.hpp>
-#include <lvr2/geometry/ClusterBiMap.hpp>
+#include <lvr2/util/ClusterBiMap.hpp>
 #include <lvr2/reconstruction/PointsetSurface.hpp>
-#include <lvr2/util/VectorMap.hpp>
+#include <lvr2/attrmaps/AttrMaps.hpp>
 #include <lvr2/algorithm/ColorAlgorithms.hpp>
 
 namespace lvr2
@@ -49,7 +49,7 @@ public:
     ClusterPainter(const ClusterBiMap<FaceHandle>& clusterBiMap) : m_clusterBiMap(clusterBiMap) {};
 
     template<typename BaseVecT>
-    ClusterMap<Rgb8Color> simpsons(const BaseMesh<BaseVecT>& mesh) const;
+    DenseClusterMap<Rgb8Color> simpsons(const BaseMesh<BaseVecT>& mesh) const;
 
 private:
     ClusterBiMap<FaceHandle> m_clusterBiMap;
