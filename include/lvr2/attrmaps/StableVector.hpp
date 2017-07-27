@@ -66,6 +66,8 @@ public:
 
     StableVectorIterator& operator++();
 
+    bool isAtEnd() const;
+
     HandleT operator*() const;
 };
 

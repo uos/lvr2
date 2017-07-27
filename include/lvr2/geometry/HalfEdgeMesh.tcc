@@ -479,9 +479,9 @@ array<EdgeHandle, 3> HalfEdgeMesh<BaseVecT>::getEdgesOfFace(FaceHandle handle) c
 {
     auto innerEdges = getInnerEdges(handle);
     return {
-        innerEdges[0].toFullEdgeHandle(),
-        innerEdges[1].toFullEdgeHandle(),
-        innerEdges[2].toFullEdgeHandle()
+        halfToFullEdgeHandle(innerEdges[0]),
+        halfToFullEdgeHandle(innerEdges[1]),
+        halfToFullEdgeHandle(innerEdges[2])
     };
 }
 
@@ -572,7 +572,7 @@ void HalfEdgeMesh<BaseVecT>::getEdgesOfVertex(
     // Iterate over all
     circulateAroundVertex(handle, [&edgesOut, this](auto eH)
     {
-        edgesOut.push_back(eH.toFullEdgeHandle());
+        edgesOut.push_back(halfToFullEdgeHandle(eH));
         return true;
     });
 }
@@ -746,6 +746,13 @@ VertexHandle HalfEdgeMesh<BaseVecT>::collapseEdge(EdgeHandle edgeH)
 
 
     return vertexToKeep;
+}
+
+template <typename BaseVecT>
+EdgeHandle HalfEdgeMesh<BaseVecT>::halfToFullEdgeHandle(HalfEdgeHandle handle) const
+{
+    auto twin = getE(handle).twin;
+    return EdgeHandle(min(twin.idx(), handle.idx()));
 }
 
 // ========================================================================
@@ -1113,28 +1120,37 @@ HandleT HemFevIterator<HandleT, ElemT>::operator*() const
     return *m_iterator;
 }
 
-HemEdgeIterator& HemEdgeIterator::operator++()
+template<typename BaseVecT>
+HemEdgeIterator<BaseVecT>& HemEdgeIterator<BaseVecT>::operator++()
 {
     ++m_iterator;
-    ++m_iterator;
+
+    while (!m_iterator.isAtEnd() && (*m_iterator).idx() != m_mesh.halfToFullEdgeHandle(*m_iterator).idx())
+    {
+        ++m_iterator;
+    }
+
     return *this;
 }
 
-bool HemEdgeIterator::operator==(const MeshHandleIterator<EdgeHandle>& other) const
+template<typename BaseVecT>
+bool HemEdgeIterator<BaseVecT>::operator==(const MeshHandleIterator<EdgeHandle>& other) const
 {
-    auto cast = dynamic_cast<const HemEdgeIterator*>(&other);
+    auto cast = dynamic_cast<const HemEdgeIterator<BaseVecT>*>(&other);
     return cast && m_iterator == cast->m_iterator;
 }
 
-bool HemEdgeIterator::operator!=(const MeshHandleIterator<EdgeHandle>& other) const
+template<typename BaseVecT>
+bool HemEdgeIterator<BaseVecT>::operator!=(const MeshHandleIterator<EdgeHandle>& other) const
 {
-    auto cast = dynamic_cast<const HemEdgeIterator*>(&other);
+    auto cast = dynamic_cast<const HemEdgeIterator<BaseVecT>*>(&other);
     return !cast || m_iterator != cast->m_iterator;
 }
 
-EdgeHandle HemEdgeIterator::operator*() const
+template<typename BaseVecT>
+EdgeHandle HemEdgeIterator<BaseVecT>::operator*() const
 {
-    return (*m_iterator).toFullEdgeHandle();
+    return m_mesh.halfToFullEdgeHandle(*m_iterator);
 }
 
 template <typename BaseVecT>
@@ -1173,7 +1189,7 @@ template <typename BaseVecT>
 MeshHandleIteratorPtr<EdgeHandle> HalfEdgeMesh<BaseVecT>::edgesBegin() const
 {
     return MeshHandleIteratorPtr<EdgeHandle>(
-        std::make_unique<HemEdgeIterator>(this->m_edges.begin())
+        std::make_unique<HemEdgeIterator<BaseVecT>>(this->m_edges.begin(), *this)
     );
 }
 
@@ -1181,7 +1197,7 @@ template <typename BaseVecT>
 MeshHandleIteratorPtr<EdgeHandle> HalfEdgeMesh<BaseVecT>::edgesEnd() const
 {
     return MeshHandleIteratorPtr<EdgeHandle>(
-        std::make_unique<HemEdgeIterator>(this->m_edges.end())
+        std::make_unique<HemEdgeIterator<BaseVecT>>(this->m_edges.end(), *this)
     );
 }
 
