@@ -30,11 +30,11 @@
 #define LVR2_ALGORITHM_NORMALALGORITHMS_H_
 
 #include <lvr2/geometry/BaseMesh.hpp>
-#include <lvr2/geometry/Cluster.hpp>
-#include <lvr2/geometry/ClusterBiMap.hpp>
+#include <lvr2/util/Cluster.hpp>
+#include <lvr2/util/ClusterBiMap.hpp>
 #include <lvr2/geometry/Normal.hpp>
 #include <lvr2/reconstruction/PointsetSurface.hpp>
-#include <lvr2/util/VectorMap.hpp>
+#include <lvr2/attrmaps/AttrMaps.hpp>
 
 namespace lvr2
 {
@@ -45,7 +45,7 @@ namespace lvr2
  * A face's normal is calculated based on the position of its three vertices.
  */
 template<typename BaseVecT>
-FaceMap<Normal<BaseVecT>> calcFaceNormals(const BaseMesh<BaseVecT>& mesh);
+DenseFaceMap<Normal<BaseVecT>> calcFaceNormals(const BaseMesh<BaseVecT>& mesh);
 
 /**
  * @brief Returns a vertex normal for the given vertex interpolated from the
@@ -68,7 +68,7 @@ optional<Normal<BaseVecT>> interpolatedVertexNormal(
  * @param surface A point cloud with normal information
  */
 template<typename BaseVecT>
-VertexMap<Normal<BaseVecT>> calcVertexNormals(
+DenseVertexMap<Normal<BaseVecT>> calcVertexNormals(
     const BaseMesh<BaseVecT>& mesh,
     const FaceMap<Normal<BaseVecT>>& normals,
     const PointsetSurface<BaseVecT>& surface

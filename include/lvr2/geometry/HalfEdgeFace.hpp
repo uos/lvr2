@@ -32,21 +32,11 @@
 namespace lvr2
 {
 
-// Forward definitions
-template <typename BaseVecT> struct HalfEdge;
-template <typename BaseVecT> struct HalfEdgeVertex;
-template <typename BaseVecT> struct HalfEdgeMesh;
+// Forward declarations
 struct HalfEdgeHandle;
 
-template <typename BaseVecT>
 struct HalfEdgeFace
 {
-private:
-    using Edge = HalfEdge<BaseVecT>;
-    using Face = HalfEdgeFace<BaseVecT>;
-    using Vertex = HalfEdgeVertex<BaseVecT>;
-
-public:
     HalfEdgeFace(HalfEdgeHandle edge)
         : edge(edge) {}
 

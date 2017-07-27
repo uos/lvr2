@@ -33,7 +33,7 @@ namespace lvr2
 {
 
 template <typename BaseVecT>
-optional<VertexMap<Rgb8Color>> calcColorFromPointCloud(
+optional<DenseVertexMap<Rgb8Color>> calcColorFromPointCloud(
     const BaseMesh<BaseVecT>& mesh,
     const PointsetSurfacePtr<BaseVecT> surface
 )
@@ -43,7 +43,7 @@ optional<VertexMap<Rgb8Color>> calcColorFromPointCloud(
         return boost::none;
     }
 
-    VertexMap<Rgb8Color> vertexMap;
+    DenseVertexMap<Rgb8Color> vertexMap;
     vertexMap.reserve(mesh.numVertices());
 
     // k-nearest-neighbors

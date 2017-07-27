@@ -29,7 +29,7 @@
 
 #include <cstdint>
 #include <utility>
-#include <lvr2/util/StableVector.hpp>
+#include <lvr2/attrmaps/StableVector.hpp>
 #include <array>
 #include <vector>
 
@@ -48,31 +48,31 @@ namespace lvr2
 {
 
 /// Implementation of the MeshHandleIterator for the HalfEdgeMesh
-template<typename HandleT>
+template<typename HandleT, typename ElemT>
 class HemFevIterator : public MeshHandleIterator<HandleT>
 {
 public:
-    HemFevIterator(StableVectorIterator<HandleT> iterator) : m_iterator(iterator) {};
+    HemFevIterator(StableVectorIterator<HandleT, ElemT> iterator) : m_iterator(iterator) {};
     HemFevIterator& operator++();
     bool operator==(const MeshHandleIterator<HandleT>& other) const;
     bool operator!=(const MeshHandleIterator<HandleT>& other) const;
     HandleT operator*() const;
 
 private:
-    StableVectorIterator<HandleT> m_iterator;
+    StableVectorIterator<HandleT, ElemT> m_iterator;
 };
 
 class HemEdgeIterator : public MeshHandleIterator<EdgeHandle>
 {
 public:
-    HemEdgeIterator(StableVectorIterator<HalfEdgeHandle> iterator) : m_iterator(iterator) {};
+    HemEdgeIterator(StableVectorIterator<HalfEdgeHandle, HalfEdge> iterator) : m_iterator(iterator) {};
     HemEdgeIterator& operator++();
     bool operator==(const MeshHandleIterator<EdgeHandle>& other) const;
     bool operator!=(const MeshHandleIterator<EdgeHandle>& other) const;
     EdgeHandle operator*() const;
 
 private:
-    StableVectorIterator<HalfEdgeHandle> m_iterator;
+    StableVectorIterator<HalfEdgeHandle, HalfEdge> m_iterator;
 };
 
 /**
@@ -88,8 +88,8 @@ template<typename BaseVecT>
 class HalfEdgeMesh : public BaseMesh<BaseVecT>
 {
 public:
-    using Edge = HalfEdge<BaseVecT>;
-    using Face = HalfEdgeFace<BaseVecT>;
+    using Edge = HalfEdge;
+    using Face = HalfEdgeFace;
     using Vertex = HalfEdgeVertex<BaseVecT>;
 
     // ========================================================================

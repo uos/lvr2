@@ -28,8 +28,8 @@
 #ifndef LVR2_ALGORITHM_PLANAR_H_
 #define LVR2_ALGORITHM_PLANAR_H_
 
-#include <lvr2/util/VectorMap.hpp>
-#include <lvr2/geometry/ClusterBiMap.hpp>
+#include <lvr2/attrmaps/AttrMaps.hpp>
+#include <lvr2/util/ClusterBiMap.hpp>
 #include <lvr2/geometry/Handles.hpp>
 #include <lvr2/geometry/BaseMesh.hpp>
 #include <lvr2/geometry/Plane.hpp>
@@ -80,7 +80,7 @@ Plane<BaseVecT> calcRegressionPlane(
  * @return map from cluster handle to its regression plane (clusterH -> Plane)
  */
 template<typename BaseVecT>
-ClusterMap<Plane<BaseVecT>> calcRegressionPlanes(
+DenseClusterMap<Plane<BaseVecT>> calcRegressionPlanes(
     const BaseMesh<BaseVecT>& mesh,
     const ClusterBiMap<FaceHandle>& clusters,
     const FaceMap<Normal<BaseVecT>>& normals,

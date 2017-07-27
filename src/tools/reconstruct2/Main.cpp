@@ -174,8 +174,8 @@
 #include <lvr2/geometry/Vector.hpp>
 #include <lvr2/geometry/Point.hpp>
 #include <lvr2/geometry/Normal.hpp>
-#include <lvr2/util/StableVector.hpp>
-#include <lvr2/util/VectorMap.hpp>
+#include <lvr2/attrmaps/StableVector.hpp>
+#include <lvr2/attrmaps/VectorMap.hpp>
 #include <lvr2/algorithm/FinalizeAlgorithm.hpp>
 #include <lvr2/algorithm/NormalAlgorithms.hpp>
 #include <lvr2/algorithm/ColorAlgorithms.hpp>
@@ -259,13 +259,13 @@ void lvr2Playground()
     StableVector vec;
     VertexHandle handle1(1);
     VertexHandle handle2(0);
-    cout << vec.sizeUsed() << std::endl;
-    vec.push_back(v1);
-    cout << vec.sizeUsed() << std::endl;
-    vec.push_back(v2);
-    cout << vec.sizeUsed() << std::endl;
+    cout << vec.numUsed() << std::endl;
+    vec.push(v1);
+    cout << vec.numUsed() << std::endl;
+    vec.push(v2);
+    cout << vec.numUsed() << std::endl;
     vec.erase(handle1);
-    cout << vec.sizeUsed() << std::endl;
+    cout << vec.numUsed() << std::endl;
     auto vec1 = vec[handle2];
 
     cout << vec.size() << std::endl;
@@ -275,7 +275,7 @@ void lvr2Playground()
 
     for (int i = 0; i < 10; i++)
     {
-        vec.push_back(Vec(i, 0, 0));
+        vec.push(Vec(i, 0, 0));
     }
 
     for (uint32_t i = 2; i < 12; i += 2)
@@ -291,17 +291,17 @@ void lvr2Playground()
     // VectorMap stuff 2
     cout << "========= VectorMap =========" << endl;
     lvr2::VectorMap<VertexHandle, std::string> map;
-    cout << map.sizeUsed() << endl;
+    cout << map.numValues() << endl;
     map.insert(handle1, "test1");
     cout << map[handle1] << std::endl;
-    cout << map.sizeUsed() << endl;
+    cout << map.numValues() << endl;
 
     lvr2::VectorMap<VertexHandle, std::string> map2(10, "test");
     for (auto i = 0; i < 10; i++) {
         VertexHandle handleLoop(i);
         cout << map2[handleLoop] << endl;
     }
-    cout << map2.sizeUsed() << endl;
+    cout << map2.numValues() << endl;
 
     VertexHandle handleLoop(5);
     map2[handleLoop] = "lalala";
@@ -309,11 +309,11 @@ void lvr2Playground()
         VertexHandle handleLoop(i);
         cout << map2[handleLoop] << endl;
     }
-    cout << map2.sizeUsed() << endl;
+    cout << map2.numValues() << endl;
 
     handle1 = VertexHandle(42);
     map2.insert(handle1, "42 !!");
-    cout << map2.sizeUsed() << endl;
+    cout << map2.numValues() << endl;
     auto opt = map2.get(handle1);
     if (opt) {
         cout << "found value! " << *opt << endl;
@@ -327,9 +327,59 @@ void lvr2Playground()
 //    map2[handle1];
 
     handle1 = VertexHandle(42);
-    map2.erase(handle1);
-    cout << map2.sizeUsed() << endl;
+    map2.remove(handle1);
+    cout << map2.numValues() << endl;
 //    cout << map2[handle1] << endl;
+}
+
+/// Dummy type that prints stuff when important methods are called.
+struct Verbosi
+{
+    std::string s;
+    Verbosi() : s("default!") {}
+    Verbosi(std::string s) : s(s) {}
+    Verbosi(const Verbosi& other) : s(other.s) { cout << "Verbosi: Copy-Ctor - " << s << " from " << other.s << endl; }
+    Verbosi(Verbosi&& other) noexcept : s(move(other.s)) { cout << "Verbosi: Move-Ctor - " << s << endl; }
+
+    ~Verbosi() { cout << "Verbosi: Dtor - " << s << endl; }
+
+    Verbosi& operator=(const Verbosi& other)
+    {
+        this->s = other.s;
+        cout << "Verbosi: copy-assignment - " << s << "=" << other.s << endl;
+    }
+    Verbosi& operator=(Verbosi&& other)
+    {
+        this->s = move(other.s);
+        cout << "Verbosi: move-assignment - " << s << "=" << other.s << endl;
+    }
+};
+
+void testStableVector()
+{
+    {
+        StableVector<VertexHandle, Verbosi> sv1;
+        {
+            cout << "### pushing 'a'" << endl;
+            auto va = Verbosi("a");
+            sv1.push(va);
+
+            cout << "### reserve(2)" << endl;
+            sv1.reserve(2);
+
+            cout << "### pushing 'b' with copy" << endl;
+            auto vb = Verbosi("b");
+            sv1.push(vb);
+
+            cout << "### reserve(3)" << endl;
+            sv1.reserve(3);
+
+            cout << "### pushing 'c' with move" << endl;
+            sv1.push(Verbosi("c"));
+            cout << "### end of inner scope" << endl;
+        }
+        cout << "### end of outer scope" << endl;
+    }
 }
 
 void createHouseFromNikolaus(lvr2::HalfEdgeMesh<lvr2::BaseVector<float>>& mesh)
@@ -706,7 +756,7 @@ int main(int argc, char** argv)
     //auto clusterBiMap = planarClusterGrowing(mesh, options.getNormalThreshold());
 
     ClusterPainter painter(clusterBiMap);
-    auto clusterColors = optional<ClusterMap<Rgb8Color>>(painter.simpsons(mesh));
+    auto clusterColors = optional<DenseClusterMap<Rgb8Color>>(painter.simpsons(mesh));
     // auto colorMap = calcColorFromPointCloud(mesh, surface);
 
     // Calc normals for vertices

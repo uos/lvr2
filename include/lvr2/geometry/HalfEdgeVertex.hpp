@@ -33,21 +33,12 @@
 namespace lvr2
 {
 
-// Forward definitions
-template <typename BaseVecT> struct HalfEdge;
-template <typename BaseVecT> struct HalfEdgeFace;
-template <typename BaseVecT> struct HalfEdgeMesh;
+// Forward declarations
 struct OptionalHalfEdgeHandle;
 
 template <typename BaseVecT>
 struct HalfEdgeVertex
 {
-private:
-    using Edge = HalfEdge<BaseVecT>;
-    using Face = HalfEdgeFace<BaseVecT>;
-    using Vertex = HalfEdgeVertex<BaseVecT>;
-
-public:
     /// The edge starting at this vertex.
     OptionalHalfEdgeHandle outgoing;
 

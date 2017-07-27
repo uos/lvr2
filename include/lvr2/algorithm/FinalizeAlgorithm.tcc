@@ -24,14 +24,10 @@
  */
 
 #include <vector>
-#include <unordered_map>
 #include <utility>
 
-using std::unordered_map;
-using std::make_pair;
-
 #include <lvr2/geometry/Normal.hpp>
-#include <lvr2/util/VectorMap.hpp>
+#include <lvr2/attrmaps/AttrMaps.hpp>
 
 namespace lvr2
 {
@@ -40,7 +36,7 @@ template<typename BaseVecT>
 boost::shared_ptr<lvr::MeshBuffer> FinalizeAlgorithm<BaseVecT>::apply(const BaseMesh <BaseVecT>& mesh)
 {
     // Create vertex and normal buffer
-    VertexMap<size_t> idxMap;
+    DenseVertexMap<size_t> idxMap;
     idxMap.reserve(mesh.numVertices());
 
     vector<float> vertices;
@@ -176,7 +172,7 @@ boost::shared_ptr<lvr::MeshBuffer>
 
     // This map remembers which vertex we already inserted and at what
     // position. This is important to create the face map.
-    unordered_map<VertexHandle, size_t> idxMap;
+    SparseVertexMap<size_t> idxMap;
 
     // Loop over all clusters
     for (auto clusterH: m_cluster)
@@ -190,7 +186,7 @@ boost::shared_ptr<lvr::MeshBuffer>
             for (auto vertexH: mesh.getVerticesOfFace(faceH))
             {
                 // Check if we already inserted this vertex. If not...
-                if (idxMap.count(vertexH) == 0)
+                if (!idxMap.containsKey(vertexH))
                 {
                     // ... insert it into the buffers (with all its attributes)
                     auto point = mesh.getVertexPosition(vertexH);
@@ -215,7 +211,7 @@ boost::shared_ptr<lvr::MeshBuffer>
                     }
 
                     // Save index of vertex for face mapping
-                    idxMap.insert(make_pair(vertexH, vertexCount));
+                    idxMap.insert(vertexH, vertexCount);
                     vertexCount++;
                 }
 
@@ -225,7 +221,6 @@ boost::shared_ptr<lvr::MeshBuffer>
             }
         }
     }
-
 
 
     auto buffer = boost::make_shared<lvr::MeshBuffer>();

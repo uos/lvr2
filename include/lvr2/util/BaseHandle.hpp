@@ -24,8 +24,8 @@
  *  @author Lukas Kalbertodt <lukas.kalbertodt@gmail.com>
  */
 
-#ifndef LVR2_GEOMETRY_BASEHANDLE_H_
-#define LVR2_GEOMETRY_BASEHANDLE_H_
+#ifndef LVR2_UTIL_BASEHANDLE_H_
+#define LVR2_UTIL_BASEHANDLE_H_
 
 #include <boost/optional.hpp>
 
@@ -75,6 +75,6 @@ private:
 
 } // namespace lvr2
 
-#include <lvr2/geometry/BaseHandle.tcc>
+#include <lvr2/util/BaseHandle.tcc>
 
-#endif /* LVR2_GEOMETRY_BASEHANDLE_H_ */
+#endif /* LVR2_UTIL_BASEHANDLE_H_ */

@@ -33,9 +33,9 @@ namespace lvr2
 {
 
 template<typename BaseVecT>
-ClusterMap<Rgb8Color> ClusterPainter::simpsons(const BaseMesh<BaseVecT>& mesh) const
+DenseClusterMap<Rgb8Color> ClusterPainter::simpsons(const BaseMesh<BaseVecT>& mesh) const
 {
-    ClusterMap<Rgb8Color> colorMap;
+    DenseClusterMap<Rgb8Color> colorMap;
     colorMap.reserve(m_clusterBiMap.numHandles() * 3);
     size_t clusterIdx = 0;
     for (auto clusterH: m_clusterBiMap)

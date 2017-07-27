@@ -24,8 +24,8 @@
  *  @author Johan M. von Behren <johan@vonbehren.eu>
  */
 
-#ifndef LVR2_GEOMETRY_CLUSTER_H_
-#define LVR2_GEOMETRY_CLUSTER_H_
+#ifndef LVR2_UTIL_CLUSTER_H_
+#define LVR2_UTIL_CLUSTER_H_
 
 #include <vector>
 
@@ -46,12 +46,6 @@ public:
     vector<HandleT> handles;
 };
 
-/// Handle to access Cluster of the ClusterBiMap.
-class ClusterHandle : public BaseHandle<Index>
-{
-    using BaseHandle<Index>::BaseHandle;
-};
-
 } // namespace lvr2
 
-#endif /* LVR2_GEOMETRY_CLUSTER_H_ */
+#endif /* LVR2_UTIL_CLUSTER_H_ */

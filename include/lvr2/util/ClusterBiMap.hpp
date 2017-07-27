@@ -24,14 +24,14 @@
  *  @author Johan M. von Behren <johan@vonbehren.eu>
  */
 
-#ifndef LVR2_GEOMETRY_CLUSTERBIMAP_H_
-#define LVR2_GEOMETRY_CLUSTERBIMAP_H_
+#ifndef LVR2_UTIL_CLUSTERBIMAP_H_
+#define LVR2_UTIL_CLUSTERBIMAP_H_
 
-#include "Handles.hpp"
-#include "Cluster.hpp"
+#include <lvr2/geometry/Handles.hpp>
+#include <lvr2/util/Cluster.hpp>
 
-#include <lvr2/util/VectorMap.hpp>
-#include <lvr2/util/StableVector.hpp>
+#include <lvr2/attrmaps/AttrMaps.hpp>
+#include <lvr2/attrmaps/StableVector.hpp>
 
 namespace lvr2
 {
@@ -42,17 +42,18 @@ namespace lvr2
  * Important: This is NOT a fail fast iterator. If the cluster map is changed while using an instance of this
  * iterator the behavior is undefined!
  */
+ template<typename HandleT>
 class ClusterBiMapIterator
 {
 public:
-    ClusterBiMapIterator(StableVectorIterator<ClusterHandle> iterator) : m_iterator(iterator) {};
+    ClusterBiMapIterator(StableVectorIterator<ClusterHandle, Cluster<HandleT>> iterator) : m_iterator(iterator) {};
     ClusterBiMapIterator& operator++();
     bool operator==(const ClusterBiMapIterator& other) const;
     bool operator!=(const ClusterBiMapIterator& other) const;
     ClusterHandle operator*() const;
 
 private:
-    StableVectorIterator<ClusterHandle> m_iterator;
+    StableVectorIterator<ClusterHandle, Cluster<HandleT>> m_iterator;
 };
 
 /**
@@ -106,8 +107,8 @@ public:
     /// Returns the number of cluster in this set.
     size_t numCluster() const;
 
-    ClusterBiMapIterator begin() const;
-    ClusterBiMapIterator end() const;
+    ClusterBiMapIterator<HandleT> begin() const;
+    ClusterBiMapIterator<HandleT> end() const;
 
     /// Get cluster behind the cluster handle.
     const Cluster<HandleT>& getCluster(ClusterHandle clusterHandle) const;
@@ -131,7 +132,7 @@ private:
     StableVector<ClusterHandle, Cluster<HandleT>> m_cluster;
 
     /// Map from handle -> cluster to save the back-reference for stored handles.
-    VectorMap<HandleT, ClusterHandle> m_clusterMap;
+    DenseAttrMap<HandleT, ClusterHandle> m_clusterMap;
 
     /// Private helper to get cluster behind the cluster handle.
     Cluster<HandleT>& getC(ClusterHandle clusterHandle);
@@ -139,6 +140,6 @@ private:
 
 } // namespace lvr2
 
-#include <lvr2/geometry/ClusterBiMap.tcc>
+#include <lvr2/util/ClusterBiMap.tcc>
 
-#endif /* LVR2_GEOMETRY_CLUSTERBIMAP_H_ */
+#endif /* LVR2_UTIL_CLUSTERBIMAP_H_ */
