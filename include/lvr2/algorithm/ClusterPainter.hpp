@@ -49,7 +49,7 @@ public:
     ClusterPainter(const ClusterBiMap<FaceHandle>& clusterBiMap) : m_clusterBiMap(clusterBiMap) {};
 
     template<typename BaseVecT>
-    ClusterMap<Rgb8Color> simpsons(const BaseMesh<BaseVecT>& mesh) const;
+    DenseClusterMap<Rgb8Color> simpsons(const BaseMesh<BaseVecT>& mesh) const;
 
 private:
     ClusterBiMap<FaceHandle> m_clusterBiMap;

@@ -756,7 +756,7 @@ int main(int argc, char** argv)
     //auto clusterBiMap = planarClusterGrowing(mesh, options.getNormalThreshold());
 
     ClusterPainter painter(clusterBiMap);
-    auto clusterColors = optional<ClusterMap<Rgb8Color>>(painter.simpsons(mesh));
+    auto clusterColors = optional<DenseClusterMap<Rgb8Color>>(painter.simpsons(mesh));
     // auto colorMap = calcColorFromPointCloud(mesh, surface);
 
     // Calc normals for vertices
