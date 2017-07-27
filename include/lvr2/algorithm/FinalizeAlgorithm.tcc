@@ -27,7 +27,7 @@
 #include <utility>
 
 #include <lvr2/geometry/Normal.hpp>
-#include <lvr2/attrmaps/VectorMap.hpp>
+#include <lvr2/attrmaps/AttrMaps.hpp>
 
 namespace lvr2
 {
