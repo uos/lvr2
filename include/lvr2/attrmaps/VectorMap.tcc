@@ -110,28 +110,18 @@ size_t VectorMap<HandleT, ValueT>::numValues() const
 template<typename HandleT, typename ValueT>
 AttributeMapHandleIteratorPtr<HandleT> VectorMap<HandleT, ValueT>::begin() const
 {
-
+    return AttributeMapHandleIteratorPtr<HandleT>(
+        std::make_unique<VectorMapIterator<HandleT, ValueT>>(m_vec.begin())
+    );
 }
 
 template<typename HandleT, typename ValueT>
 AttributeMapHandleIteratorPtr<HandleT> VectorMap<HandleT, ValueT>::end() const
 {
-
+    return AttributeMapHandleIteratorPtr<HandleT>(
+        std::make_unique<VectorMapIterator<HandleT, ValueT>>(m_vec.end())
+    );
 }
-
-
-// template<typename HandleT, typename ValueT>
-// ValueT& VectorMap<HandleT, ValueT>::operator[](const HandleType& key)
-// {
-//     return m_vec[key];
-// }
-
-// template<typename HandleT, typename ValueT>
-// const ValueT& VectorMap<HandleT, ValueT>::operator[](const HandleType& key) const
-// {
-//     return m_vec[key];
-// }
-
 
 template<typename HandleT, typename ValueT>
 void VectorMap<HandleT, ValueT>::reserve(size_t newCap)
@@ -140,17 +130,18 @@ void VectorMap<HandleT, ValueT>::reserve(size_t newCap)
 };
 
 
+
+template<typename HandleT, typename ValueT>
+VectorMapIterator<HandleT, ValueT>::VectorMapIterator(StableVectorIterator<HandleT, ValueT> iter)
+    : m_iter(iter)
+{}
+
 template<typename HandleT, typename ValueT>
 AttributeMapHandleIterator<HandleT>& VectorMapIterator<HandleT, ValueT>::operator++()
 {
     ++m_iter;
     return *this;
 }
-
-template<typename HandleT, typename ValueT>
-VectorMapIterator<HandleT, ValueT>::VectorMapIterator(StableVectorIterator<HandleT, ValueT> iter)
-    : m_iter(iter)
-{}
 
 template<typename HandleT, typename ValueT>
 bool VectorMapIterator<HandleT, ValueT>::operator==(const AttributeMapHandleIterator<HandleT>& other) const
@@ -169,7 +160,7 @@ bool VectorMapIterator<HandleT, ValueT>::operator!=(const AttributeMapHandleIter
 template<typename HandleT, typename ValueT>
 HandleT VectorMapIterator<HandleT, ValueT>::operator*() const
 {
-    return ++m_iter;
+    return *m_iter;
 }
 
 
