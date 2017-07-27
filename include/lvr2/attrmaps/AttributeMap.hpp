@@ -26,6 +26,10 @@
 #ifndef LVR2_ATTRMAPS_ATTRIBUTEMAP_H_
 #define LVR2_ATTRMAPS_ATTRIBUTEMAP_H_
 
+#include <boost/optional.hpp>
+
+using boost::optional;
+
 #include <lvr2/util/BaseHandle.hpp>
 
 namespace lvr2
@@ -121,7 +125,7 @@ public:
     HandleT operator*() const;
 
 private:
-    std::unique_ptr<MeshHandleIterator<HandleT>> m_iter;
+    std::unique_ptr<AttributeMapHandleIterator<HandleT>> m_iter;
 };
 
 } // namespace lvr2

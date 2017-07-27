@@ -27,6 +27,7 @@
 #define LVR2_ATTRMAPS_ATTRMAPS_H_
 
 #include <lvr2/attrmaps/AttributeMap.hpp>
+#include <lvr2/attrmaps/HashMap.hpp>
 #include <lvr2/attrmaps/VectorMap.hpp>
 #include <lvr2/geometry/Handles.hpp>
 
@@ -39,6 +40,9 @@ namespace lvr2
 
 template<typename HandleT, typename ValueT>
 using DenseAttrMap = VectorMap<HandleT, ValueT>;
+
+template<typename HandleT, typename ValueT>
+using SparseAttrMap = HashMap<HandleT, ValueT>;
 
 
 template<typename ValueT>
@@ -62,6 +66,14 @@ using DenseFaceMap = DenseAttrMap<FaceHandle, ValueT>;
 template<typename ValueT>
 using DenseVertexMap = DenseAttrMap<VertexHandle, ValueT>;
 
+template<typename ValueT>
+using SparseEdgeMap = SparseAttrMap<EdgeHandle, ValueT>;
+
+template<typename ValueT>
+using SparseFaceMap = SparseAttrMap<FaceHandle, ValueT>;
+
+template<typename ValueT>
+using SparseVertexMap = SparseAttrMap<VertexHandle, ValueT>;
 
 } // namespace lvr2
 
