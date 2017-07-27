@@ -29,7 +29,7 @@
 #include <utility>
 #include <iostream>
 
-#include <lvr2/attrmaps/VectorMap.hpp>
+#include <lvr2/attrmaps/AttrMaps.hpp>
 #include <lvr2/util/Panic.hpp>
 #include <lvr2/util/Debug.hpp>
 
@@ -527,7 +527,7 @@ bool HalfEdgeMesh<BaseVecT>::debugCheckMeshIntegrity() const
     cout << "| Trying to walk on boundary edges... |" << endl;
     cout << "+-------------------------------------+" << endl;
 
-    VectorMap<HalfEdgeHandle, bool> visited(m_edges.size(), false);
+    DenseAttrMap<HalfEdgeHandle, bool> visited(m_edges.size(), false);
     for (auto startEdgeH : m_edges)
     {
         auto loopEdgeH = startEdgeH;

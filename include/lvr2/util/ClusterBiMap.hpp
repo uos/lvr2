@@ -30,7 +30,7 @@
 #include <lvr2/geometry/Handles.hpp>
 #include <lvr2/util/Cluster.hpp>
 
-#include <lvr2/attrmaps/VectorMap.hpp>
+#include <lvr2/attrmaps/AttrMaps.hpp>
 #include <lvr2/attrmaps/StableVector.hpp>
 
 namespace lvr2
@@ -132,7 +132,7 @@ private:
     StableVector<ClusterHandle, Cluster<HandleT>> m_cluster;
 
     /// Map from handle -> cluster to save the back-reference for stored handles.
-    VectorMap<HandleT, ClusterHandle> m_clusterMap;
+    DenseAttrMap<HandleT, ClusterHandle> m_clusterMap;
 
     /// Private helper to get cluster behind the cluster handle.
     Cluster<HandleT>& getC(ClusterHandle clusterHandle);

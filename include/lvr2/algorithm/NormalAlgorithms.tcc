@@ -28,9 +28,6 @@
 
 using std::vector;
 
-#include <lvr2/geometry/Normal.hpp>
-#include <lvr2/attrmaps/VectorMap.hpp>
-
 namespace lvr2
 {
 
