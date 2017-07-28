@@ -169,6 +169,11 @@ public:
     void erase(HandleType handle);
 
     /**
+     * @brief Removes all elements from the vector.
+     */
+    void clear();
+
+    /**
      * @brief Returns the element referred to by `handle`.
      *
      * Returns `none` if the element was deleted or if the handle is out of

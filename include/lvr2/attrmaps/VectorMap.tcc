@@ -88,10 +88,7 @@ optional<ValueT> VectorMap<HandleT, ValueT>::remove(HandleT key)
 template<typename HandleT, typename ValueT>
 void VectorMap<HandleT, ValueT>::clear()
 {
-    for (auto handle: m_vec)
-    {
-        m_vec.erase(handle);
-    }
+    m_vec.clear();
 }
 
 template<typename HandleT, typename ValueT>

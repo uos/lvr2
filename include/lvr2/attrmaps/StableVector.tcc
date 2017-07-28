@@ -110,6 +110,12 @@ void StableVector<HandleT, ElemT>::erase(HandleType handle)
 }
 
 template<typename HandleT, typename ElemT>
+void StableVector<HandleT, ElemT>::clear()
+{
+    m_elements.clear();
+}
+
+template<typename HandleT, typename ElemT>
 boost::optional<ElemT&> StableVector<HandleT, ElemT>::get(HandleType handle)
 {
     if (handle.idx() >= size() || !m_elements[handle.idx()])
