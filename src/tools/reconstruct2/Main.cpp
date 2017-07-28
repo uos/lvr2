@@ -328,7 +328,7 @@ void lvr2Playground()
 //    map2[handle1];
 
     handle1 = VertexHandle(42);
-    map2.remove(handle1);
+    map2.erase(handle1);
     cout << map2.numValues() << endl;
 //    cout << map2[handle1] << endl;
 }
@@ -765,6 +765,11 @@ int main(int argc, char** argv)
             options.getPlaneIterations(),
             options.getMinPlaneSize()
         );
+
+        if (options.getSmallRegionThreshold() > 0)
+        {
+            deleteSmallPlanarCluster(mesh, clusterBiMap, static_cast<size_t>(options.getSmallRegionThreshold()));
+        }
     }
     else
     {
