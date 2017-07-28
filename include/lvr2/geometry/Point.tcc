@@ -28,6 +28,24 @@
 namespace lvr2
 {
 
+template<typename BaseVecT>
+template<typename CollectionT>
+Point<BaseVecT> Point<BaseVecT>::centroid(const CollectionT& points)
+{
+    Vector<BaseVecT> acc(0, 0, 0);
+    size_t count = 0;
+    for (auto p: points)
+    {
+        static_assert(
+            std::is_same<typeof(p), Point<BaseVecT>>::value,
+            "Collection has to contain Vectors"
+        );
+        acc += p.asVector();
+        count += 1;
+    }
+    return Point<BaseVecT>(0, 0, 0) + acc / count;
+}
+
 template <typename BaseVecT>
 Point<BaseVecT> Point<BaseVecT>::operator+(const Vector<BaseVecT> &other) const
 {
