@@ -32,6 +32,18 @@ namespace lvr2
 {
 
 template<typename HandleT, typename ValueT>
+HashMap<HandleT, ValueT>::HashMap(const ValueT& defaultValue)
+    : m_default(defaultValue)
+{}
+
+template<typename HandleT, typename ValueT>
+HashMap<HandleT, ValueT>::HashMap(size_t countElements, const ValueT& defaultValue)
+    : m_default(defaultValue)
+{
+    reserve(countElements);
+}
+
+template<typename HandleT, typename ValueT>
 bool HashMap<HandleT, ValueT>::containsKey(HandleT key) const
 {
     return m_map.find(key) != m_map.end();
@@ -70,10 +82,21 @@ void HashMap<HandleT, ValueT>::clear()
 template<typename HandleT, typename ValueT>
 optional<ValueT&> HashMap<HandleT, ValueT>::get(HandleT key)
 {
+    // Try to lookup value. If none was found and a default value is set,
+    // insert it and return that instead.
     auto it = m_map.find(key);
     if (it == m_map.end())
     {
-        return boost::none;
+        if (m_default)
+        {
+            // Insert default value into hash map and return the inserted value
+            auto res = m_map.insert(make_pair(key, *m_default));
+            return (*res.first).second;
+        }
+        else
+        {
+            return boost::none;
+        }
     }
     return (*it).second;
 }
@@ -81,10 +104,19 @@ optional<ValueT&> HashMap<HandleT, ValueT>::get(HandleT key)
 template<typename HandleT, typename ValueT>
 optional<const ValueT&> HashMap<HandleT, ValueT>::get(HandleT key) const
 {
+    // Try to lookup value. If none was found and a default value is set,
+    // return that instead.
     auto it = m_map.find(key);
     if (it == m_map.end())
     {
-        return boost::none;
+        if (m_default)
+        {
+            return *m_default;
+        }
+        else
+        {
+            return boost::none;
+        }
     }
     return (*it).second;
 }
