@@ -132,6 +132,17 @@ void debugPlanes(
     size_t minClusterSize
 );
 
+/**
+ * @brief Removes all clusters and their cotained faces from the given mesh which are smaller than the given
+ *        smallClusterThreshold
+ */
+template<typename BaseVecT>
+void deleteSmallPlanarCluster(
+    BaseMesh<BaseVecT>& mesh,
+    ClusterBiMap<FaceHandle>& clusters,
+    size_t smallClusterThreshold
+);
+
 } // namespace lvr2
 
 #include <lvr2/algorithm/Planar.tcc>
