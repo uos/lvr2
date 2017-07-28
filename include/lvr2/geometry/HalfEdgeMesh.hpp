@@ -111,11 +111,11 @@ public:
 
     array<VertexHandle, 3> getVerticesOfFace(FaceHandle handle) const final;
     array<EdgeHandle, 3> getEdgesOfFace(FaceHandle handle) const final;
-    vector<FaceHandle> getNeighboursOfFace(FaceHandle handle) const final;
+    void getNeighboursOfFace(FaceHandle handle, vector<FaceHandle>& facesOut) const final;
     array<VertexHandle, 2> getVerticesOfEdge(EdgeHandle edgeH) const final;
     array<OptionalFaceHandle, 2> getFacesOfEdge(EdgeHandle edgeH) const final;
-    vector<FaceHandle> getFacesOfVertex(VertexHandle handle) const final;
-    vector<EdgeHandle> getEdgesOfVertex(VertexHandle handle) const final;
+    void getFacesOfVertex(VertexHandle handle, vector<FaceHandle>& facesOut) const final;
+    void getEdgesOfVertex(VertexHandle handle, vector<EdgeHandle>& edgesOut) const final;
 
     MeshHandleIteratorPtr<VertexHandle> verticesBegin() const final;
     MeshHandleIteratorPtr<VertexHandle> verticesEnd() const final;
@@ -176,6 +176,28 @@ private:
      */
     pair<HalfEdgeHandle, HalfEdgeHandle> addEdgePair(VertexHandle v1H, VertexHandle v2H);
 
+
+    /**
+     * @brief Circulates around the vertex `vH`, calling the `visitor` for each
+     *        ingoing edge of the vertex.
+     *
+     * The edges are visited in clockwise order. The iteration stops if all
+     * edges were visited once or if the visitor returns `false`. It has to
+     * return `true` to keep circulating. If the vertex has no outgoing edge,
+     * this method does nothing.
+     */
+    template <typename Visitor>
+    void circulateAroundVertex(VertexHandle vH, Visitor visitor) const;
+
+    /**
+     * @brief Circulates around the vertex `startEdgeH.target`, calling the
+     *        `visitor` for each ingoing edge of the vertex.
+     *
+     * This works exactly as the other overload, but specifically starts at the
+     * edge `startEdgeH` instead of `vH.outgoing`.
+     */
+    template <typename Visitor>
+    void circulateAroundVertex(HalfEdgeHandle startEdgeH, Visitor visitor) const;
 
     /**
      * @brief Iterates over all ingoing edges of one vertex, returning the

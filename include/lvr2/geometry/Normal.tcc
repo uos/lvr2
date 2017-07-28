@@ -54,6 +54,22 @@ Normal<BaseVecT>::Normal(
     this->normalize();
 }
 
+template<typename BaseVecT>
+template<typename CollectionT>
+Normal<BaseVecT> Normal<BaseVecT>::average(const CollectionT& normals)
+{
+    Vector<BaseVecT> acc(0, 0, 0);
+    for (auto n: normals)
+    {
+        static_assert(
+            std::is_same<typeof(n), Normal<BaseVecT>>::value,
+            "Collection has to contain Vectors"
+        );
+        acc += n.asVector();
+    }
+    return acc.normalized();
+}
+
 template <typename BaseVecT>
 Vector<BaseVecT> Normal<BaseVecT>::asVector() const
 {

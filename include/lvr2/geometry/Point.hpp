@@ -56,6 +56,14 @@ struct Point : public BaseVecT
     Point(BaseVecT base) : BaseVecT(base) {}
     using BaseVecT::BaseVecT;
 
+    /**
+     * @brief Returns the centroid of all points in the given collection.
+     *
+     * The collection need to work with a range-based for-loop and its elements
+     * need to be `Point<BaseVecT>`. It has to contain at least one element.
+     */
+    template<typename CollectionT>
+    static Point<BaseVecT> centroid(const CollectionT& points);
 
     // It doesn't make sense to talk about the length of a position vector.
     // It's the same as asking: "What is the length of New York?".
