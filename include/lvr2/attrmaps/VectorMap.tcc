@@ -42,7 +42,7 @@ template<typename HandleT, typename ValueT>
 VectorMap<HandleT, ValueT>::VectorMap(size_t countElements, const ValueT& defaultValue)
     : m_default(defaultValue)
 {
-    m_vec.reserve(countElements);
+    reserve(countElements);
 }
 
 template<typename HandleT, typename ValueT>
@@ -98,7 +98,7 @@ template<typename HandleT, typename ValueT>
 optional<ValueT&> VectorMap<HandleT, ValueT>::get(HandleT key)
 {
     // Try to lookup value. If none was found and a default value is set,
-    // return that instead.
+    // insert it and return that instead.
     auto res = m_vec.get(key);
     if (!m_vec.get(key) && m_default)
     {

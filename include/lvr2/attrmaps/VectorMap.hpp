@@ -51,6 +51,9 @@ template<typename HandleT, typename ValueT>
 class VectorMap : public AttributeMap<HandleT, ValueT>
 {
 public:
+    /**
+     * @brief Creates an empty map without default element set.
+     */
     VectorMap() {}
 
     /**
@@ -62,6 +65,10 @@ public:
      * can't remove it. Neither `remove()` nor `clear()` will do it. Calls to
      * `get()` will always return a non-none value and `operator[]` won't ever
      * panic.
+     *
+     * One additional important detail: if you call `get()` to obtain a
+     * mutable reference, the default value is inserted into the map. This is
+     * the only sane way to return a mutably reference.
      */
     VectorMap(const ValueT& defaultValue);
 
