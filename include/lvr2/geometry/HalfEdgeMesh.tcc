@@ -626,12 +626,10 @@ VertexHandle HalfEdgeMesh<BaseVecT>::collapseEdge(EdgeHandle edgeH)
     auto edgeToKeepBR = getE(edgeToRemoveBR).twin;
 
     // vertices above and below
-    auto vertexAbove = getE(edgeToKeepAR).target;
-    auto vertexBelow = getE(edgeToKeepBL).target;
+    auto vertexAbove = getE(edgeToRemoveAR).target;
+    auto vertexBelow = getE(edgeToRemoveBL).target;
 
     // check if there are closed triangles next to the start edge
-    // bool hasTriangleAbove = getE(getE(startEdge.next).next).next == startEdgeH;
-    // bool hasTriangleBelow = getE(getE(startEdgeTwin.next).next).next == startEdge.twin;
     bool hasTriangleAbove = getE(edgeToRemoveAL).next == startEdgeH;
     bool hasTriangleBelow = getE(edgeToRemoveBR).next == startEdge.twin;
 
