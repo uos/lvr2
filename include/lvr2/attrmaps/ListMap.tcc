@@ -32,6 +32,18 @@ namespace lvr2
 {
 
 template<typename HandleT, typename ValueT>
+ListMap<HandleT, ValueT>::ListMap(const ValueT& defaultValue)
+    : m_default(defaultValue)
+{}
+
+template<typename HandleT, typename ValueT>
+ListMap<HandleT, ValueT>::ListMap(size_t countElements, const ValueT& defaultValue)
+    : m_default(defaultValue)
+{
+    reserve(countElements);
+}
+
+template<typename HandleT, typename ValueT>
 typename vector<pair<HandleT, ValueT>>::const_iterator
     ListMap<HandleT, ValueT>::keyIterator(HandleT key) const
 {
@@ -61,11 +73,11 @@ optional<ValueT> ListMap<HandleT, ValueT>::insert(HandleT key, const ValueT& val
 {
     if (numValues() > 256)
     {
-        panic(
-            "More than 256 items in a tiny map! This implementation is not "
-                "designed to handle anything but a tiny number of values. If "
-                "you think this panic is too pedantic, just remove it..."
-        );
+        // panic(
+        //     "More than 256 items in a tiny map! This implementation is not "
+        //         "designed to handle anything but a tiny number of values. If "
+        //         "you think this panic is too pedantic, just remove it..."
+        // );
     }
     auto out = remove(key);
     m_list.push_back(make_pair(key, value));
@@ -97,10 +109,21 @@ void ListMap<HandleT, ValueT>::clear()
 template<typename HandleT, typename ValueT>
 optional<ValueT&> ListMap<HandleT, ValueT>::get(HandleT key)
 {
+    // Try to lookup value. If none was found and a default value is set,
+    // insert it and return that instead.
     auto it = keyIterator(key);
     if (it == m_list.end())
     {
-        return boost::none;
+        if (m_default)
+        {
+            // Insert default value into hash map and return the inserted value
+            m_list.push_back(make_pair(key, *m_default));
+            return m_list.back().second;
+        }
+        else
+        {
+            return boost::none;
+        }
     }
     return (*it).second;
 }
@@ -108,10 +131,19 @@ optional<ValueT&> ListMap<HandleT, ValueT>::get(HandleT key)
 template<typename HandleT, typename ValueT>
 optional<const ValueT&> ListMap<HandleT, ValueT>::get(HandleT key) const
 {
+    // Try to lookup value. If none was found and a default value is set,
+    // return that instead.
     auto it = keyIterator(key);
     if (it == m_list.end())
     {
-        return boost::none;
+        if (m_default)
+        {
+            return *m_default;
+        }
+        else
+        {
+            return boost::none;
+        }
     }
     return (*it).second;
 }
@@ -137,6 +169,12 @@ AttributeMapHandleIteratorPtr<HandleT> ListMap<HandleT, ValueT>::end() const
     return AttributeMapHandleIteratorPtr<HandleT>(
         std::make_unique<ListMapIterator<HandleT, ValueT>>(m_list.end())
     );
+}
+
+template<typename HandleT, typename ValueT>
+void ListMap<HandleT, ValueT>::reserve(size_t newCap)
+{
+    m_list.reserve(newCap);
 }
 
 template<typename HandleT, typename ValueT>
