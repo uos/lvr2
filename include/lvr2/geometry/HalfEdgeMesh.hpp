@@ -111,11 +111,11 @@ public:
 
     array<VertexHandle, 3> getVerticesOfFace(FaceHandle handle) const final;
     array<EdgeHandle, 3> getEdgesOfFace(FaceHandle handle) const final;
-    vector<FaceHandle> getNeighboursOfFace(FaceHandle handle) const final;
+    void getNeighboursOfFace(FaceHandle handle, vector<FaceHandle>& facesOut) const final;
     array<VertexHandle, 2> getVerticesOfEdge(EdgeHandle edgeH) const final;
     array<OptionalFaceHandle, 2> getFacesOfEdge(EdgeHandle edgeH) const final;
-    vector<FaceHandle> getFacesOfVertex(VertexHandle handle) const final;
-    vector<EdgeHandle> getEdgesOfVertex(VertexHandle handle) const final;
+    void getFacesOfVertex(VertexHandle handle, vector<FaceHandle>& facesOut) const final;
+    void getEdgesOfVertex(VertexHandle handle, vector<EdgeHandle>& edgesOut) const final;
 
     MeshHandleIteratorPtr<VertexHandle> verticesBegin() const final;
     MeshHandleIteratorPtr<VertexHandle> verticesEnd() const final;
