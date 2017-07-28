@@ -50,7 +50,7 @@ public:
      * Whenever you request a value for a key and there isn't a value
      * associated with that key, the default value is returned.  Note that if
      * you set a default value (which you do by calling this constructor), you
-     * can't remove it. Neither `remove()` nor `clear()` will do it. Calls to
+     * can't remove it. Neither `erase()` nor `clear()` will do it. Calls to
      * `get()` will always return a non-none value and `operator[]` won't ever
      * panic.
      *
@@ -73,7 +73,7 @@ public:
     // =======================================================================
     bool containsKey(HandleT key) const final;
     optional<ValueT> insert(HandleT key, const ValueT& value) final;
-    optional<ValueT> remove(HandleT key) final;
+    optional<ValueT> erase(HandleT key) final;
     void clear() final;
     optional<ValueT&> get(HandleT key) final;
     optional<const ValueT&> get(HandleT key) const final;
