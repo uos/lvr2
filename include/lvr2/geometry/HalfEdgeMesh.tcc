@@ -325,8 +325,12 @@ FaceHandle HalfEdgeMesh<BaseVecT>::addFace(VertexHandle v1H, VertexHandle v2H, V
 template <typename BaseVecT>
 void HalfEdgeMesh<BaseVecT>::removeFace(FaceHandle handle)
 {
+    // Marker vertices, to save the vertices and edges which will be deleted
     vector<HalfEdgeHandle> edgesToRemove;
     vector<VertexHandle> verticesToRemove;
+
+    // Marker vertex to fix next pointer of edges. The next pointer of the pair.first has to be set to pair.second
+    // (i.e. getE(pair.first).next = pair.second)
     vector<pair<HalfEdgeHandle, HalfEdgeHandle>> fixNext;
 
     // Walk around inner edges of face and check connected edges and vertices. If they are connected to other
@@ -334,73 +338,78 @@ void HalfEdgeMesh<BaseVecT>::removeFace(FaceHandle handle)
     auto innerEdges = getInnerEdges(handle);
     for (auto edgeH: innerEdges)
     {
+        // Get the current edge pair (i.e. the current inner edge and its twin)
         auto& edge = getE(edgeH);
         auto twin = getE(edge.twin);
 
-        // Check if target vertex can be deleted
-        auto nextIngoingEdgeH = getE(getE(getE(edge.next).twin).next).twin;
-        if (nextIngoingEdgeH == edgeH)
+        // Check if target vertex (v1) of current inner edge (b) can be deleted. This is true, if b.twin == a
+        //  +----+  --------(a)-------->  +----+
+        //  | v1 |                        | v2 |
+        //  +----+  <-------(b)---------  +----+
+        //   ∧  |
+        //   |  |
+        //  (c)(d)
+        //   |  |
+        //   |  ∨
+        //  +----+
+        //  | v3 |
+        //  +----+
+        auto nextOutgoingEdgeH = getE(getE(edge.next).twin).next;
+        if (nextOutgoingEdgeH == edge.twin)
         {
             verticesToRemove.push_back(edge.target);
         }
         else
         {
+            // Target vertex cannot be deleted, because other edges are connected to it. Fix the outgoing point of the
+            // vertex and set it to the next outgoing edge
             auto& target = getV(edge.target);
-            target.outgoing = getE(nextIngoingEdgeH).twin;
+            target.outgoing = nextOutgoingEdgeH;
         }
 
-        // Check if edge pair can be deleted
-        if (!twin.face)
+        // Check if current inner edge and its twin can be deleted
+        if (twin.face)
         {
-            edgesToRemove.push_back(edgeH);
-            edgesToRemove.push_back(edge.twin);
-
-            // Fix next pointer of edges, which point to the removed edges
-            findEdgeAroundVertex(edge.target, [&, this](auto eH)
-            {
-                auto findEdge = getE(eH);
-                if (findEdge.next == edge.twin)
-                {
-                    //auto next = getE(edge.next);
-                    //if (next.face && next.face.unwrap() == handle)
-                    //{
-                    //    fixNext.push_back(make_pair(eH, getE(next.twin).next));
-                    //}
-                    //else
-                    //{
-                    //    fixNext.push_back(make_pair(eH, edge.next));
-                    //}
-
-                    auto next = getE(edge.next);
-                    auto nextTwin = getE(next.twin);
-                    if (!nextTwin.face)
-                    {
-                        fixNext.push_back(make_pair(eH, nextTwin.next));
-                    }
-                    else
-                    {
-                        fixNext.push_back(make_pair(eH, edge.next));
-                    }
-
-                    return true;
-                }
-                return false;
-            });
-            findEdgeAroundVertex(twin.target, [&, this](auto eH)
-            {
-                auto findEdge = getE(eH);
-                if (findEdge.next == edgeH)
-                {
-                    fixNext.push_back(make_pair(eH, twin.next));
-                    return true;
-                }
-                return false;
-            });
+            // If our twin has a face, the current edge pair is still needed! We only need to fix the face pointer
+            // of the current inner edge
+            edge.face = OptionalFaceHandle();
         }
         else
         {
-            // Neighbour face -> remove link to current face
-            edge.face = OptionalFaceHandle();
+            // Mark the edge pair as deleted
+            edgesToRemove.push_back(edgeH);
+            edgesToRemove.push_back(edge.twin);
+
+            // Find edges around target and source vertex, which point to the current edge pair
+            auto frontEdgeToFixH = findEdgeAroundVertex(edge.target, [&, this](auto eH)
+            {
+                return getE(eH).next == edge.twin;
+            });
+            auto backEdgeToFixH = findEdgeAroundVertex(twin.target, [&, this](auto eH)
+            {
+                return getE(eH).next == edgeH;
+            });
+
+            // If found, fix the next pointer of the edges by setting it to the next outgoing edge of the vertex
+            if (frontEdgeToFixH)
+            {
+                // The next outgoing vertex might not be safe, if it belongs to the face, which we want to delete. If
+                // this is the case, take the second next outgoing vertex
+                auto next = getE(edge.next);
+                auto nextTwin = getE(next.twin);
+                if (!nextTwin.face)
+                {
+                    fixNext.push_back(make_pair(frontEdgeToFixH.unwrap(), nextTwin.next));
+                }
+                else
+                {
+                    fixNext.push_back(make_pair(frontEdgeToFixH.unwrap(), edge.next));
+                }
+            }
+            if (backEdgeToFixH)
+            {
+                fixNext.push_back(make_pair(backEdgeToFixH.unwrap(), twin.next));
+            }
         }
     }
 
