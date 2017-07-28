@@ -43,7 +43,7 @@ namespace lvr2
  * @tparam Pred a predicate which decides, which faces will be in the same cluster. It gets the following parameters:
  *         (FaceHandle referenceFaceH, FaceHandle currentFaceH) and returs a bool. The referenceFaceH is the first
  *         FaceHandle, which was added to the current cluster. currentFaceH is the current FaceHandle for which the
- *         predicate has to decide, wether it should be added to the current cluster or not. The decision is done
+ *         predicate has to decide, whether it should be added to the current cluster or not. The decision is done
  *         by returing true = add currentFaceH to cluster or false = don't add currentFaceH to cluster.
  */
 template<typename BaseVecT, typename Pred>
