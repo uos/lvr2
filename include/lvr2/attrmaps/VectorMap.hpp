@@ -35,6 +35,7 @@
 #include <lvr2/util/Cluster.hpp>
 
 using std::vector;
+using boost::optional;
 
 namespace lvr2
 {
@@ -52,8 +53,24 @@ class VectorMap : public AttributeMap<HandleT, ValueT>
 public:
     VectorMap() {}
 
-    /// Creates a map of size `countElements` with `countElements` copies of
-    /// `defaultValue` in it.
+    /**
+     * @brief Creates a map with a given default value.
+     *
+     * Whenever you request a value for a key and there isn't a value
+     * associated with that key, the default value is returned.  Note that if
+     * you set a default value (which you do by calling this constructor), you
+     * can't remove it. Neither `remove()` nor `clear()` will do it. Calls to
+     * `get()` will always return a non-none value and `operator[]` won't ever
+     * panic.
+     */
+    VectorMap(const ValueT& defaultValue);
+
+    /**
+     * @brief Creates a map with a given default value and calls reserve.
+     *
+     * This works exactly as the `VectorMap(const Value&)` constructor, but
+     * also calls `reserve(countElements)` immediately afterwards.
+     */
     VectorMap(size_t countElements, const ValueT& defaultValue);
 
     // =======================================================================
@@ -79,6 +96,7 @@ public:
 private:
     /// The underlying storage
     StableVector<HandleT, ValueT> m_vec;
+    optional<ValueT> m_default;
 };
 
 template<typename HandleT, typename ValueT>

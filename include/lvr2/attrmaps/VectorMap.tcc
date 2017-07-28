@@ -34,10 +34,16 @@ namespace lvr2
 {
 
 template<typename HandleT, typename ValueT>
-VectorMap<HandleT, ValueT>::VectorMap(size_t countElements, const ValueT& defaultValue)
-    : m_vec(countElements, defaultValue)
+VectorMap<HandleT, ValueT>::VectorMap(const ValueT& defaultValue)
+    : m_default(defaultValue)
 {}
 
+template<typename HandleT, typename ValueT>
+VectorMap<HandleT, ValueT>::VectorMap(size_t countElements, const ValueT& defaultValue)
+    : m_default(defaultValue)
+{
+    m_vec.reserve(countElements);
+}
 
 template<typename HandleT, typename ValueT>
 bool VectorMap<HandleT, ValueT>::containsKey(HandleT key) const
@@ -91,13 +97,24 @@ void VectorMap<HandleT, ValueT>::clear()
 template<typename HandleT, typename ValueT>
 optional<ValueT&> VectorMap<HandleT, ValueT>::get(HandleT key)
 {
-    return m_vec.get(key);
+    // Try to lookup value. If none was found and a default value is set,
+    // return that instead.
+    auto res = m_vec.get(key);
+    if (!m_vec.get(key) && m_default)
+    {
+        insert(key, *m_default);
+        return m_vec.get(key);
+    }
+    return res;
 }
 
 template<typename HandleT, typename ValueT>
 optional<const ValueT&> VectorMap<HandleT, ValueT>::get(HandleT key) const
 {
-    return m_vec.get(key);
+    // Try to lookup value. If none was found and a default value is set,
+    // return that instead.
+    auto res = m_vec.get(key);
+    return (!m_vec.get(key) && m_default) ? *m_default : res;
 }
 
 template<typename HandleT, typename ValueT>
@@ -105,7 +122,6 @@ size_t VectorMap<HandleT, ValueT>::numValues() const
 {
     return m_vec.numUsed();
 }
-
 
 template<typename HandleT, typename ValueT>
 AttributeMapHandleIteratorPtr<HandleT> VectorMap<HandleT, ValueT>::begin() const
