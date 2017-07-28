@@ -478,7 +478,11 @@ template <typename BaseVecT>
 array<EdgeHandle, 3> HalfEdgeMesh<BaseVecT>::getEdgesOfFace(FaceHandle handle) const
 {
     auto innerEdges = getInnerEdges(handle);
-    return {innerEdges[0].toFullEdgeHandle(), innerEdges[1].toFullEdgeHandle(), innerEdges[2].toFullEdgeHandle()};
+    return {
+        innerEdges[0].toFullEdgeHandle(),
+        innerEdges[1].toFullEdgeHandle(),
+        innerEdges[2].toFullEdgeHandle()
+    };
 }
 
 template <typename BaseVecT>
@@ -759,6 +763,62 @@ HalfEdgeHandle
 }
 
 template <typename BaseVecT>
+template <typename Visitor>
+void HalfEdgeMesh<BaseVecT>::circulateAroundVertex(VertexHandle vH, Visitor visitor) const
+{
+    auto outgoing = getV(vH).outgoing;
+    if (outgoing)
+    {
+        circulateAroundVertex(getE(outgoing.unwrap()).twin, visitor);
+    }
+}
+
+template <typename BaseVecT>
+template <typename Visitor>
+void HalfEdgeMesh<BaseVecT>::circulateAroundVertex(HalfEdgeHandle startEdgeH, Visitor visitor) const
+{
+    auto loopEdgeH = startEdgeH;
+
+    DOINDEBUG(
+        int iterCount = 0;
+        vector<HalfEdgeHandle> visited;
+    )
+
+    while (true)
+    {
+        // Call the visitor and stop, if the visitor tells us to.
+        if (!visitor(loopEdgeH))
+        {
+            break;
+        }
+
+        // Advance to next edge and stop if it is the start edge.
+        loopEdgeH = getE(getE(loopEdgeH).next).twin;
+        if (loopEdgeH == startEdgeH)
+        {
+            break;
+        }
+
+        DOINDEBUG(
+            iterCount++;
+            if (iterCount > 30)
+            {
+                // We don't want to loop forever here. This might only happen if
+                // the HEM contains a bug. We want to break the loop at some point,
+                // but without paying the price of managing the `visited` vector
+                // in the common case (no bug). So we start manage the vector
+                // after 30 iterations
+                if (std::find(visited.begin(), visited.end(), loopEdgeH) != visited.end())
+                {
+                    panic("bug in HEM: detected cycle while looping around vertex");
+                }
+                visited.push_back(loopEdgeH);
+            }
+        )
+    }
+}
+
+template <typename BaseVecT>
 template <typename Pred>
 OptionalHalfEdgeHandle
     HalfEdgeMesh<BaseVecT>::findEdgeAroundVertex(VertexHandle vH, Pred pred) const
@@ -779,53 +839,44 @@ OptionalHalfEdgeHandle
 
 template <typename BaseVecT>
 template <typename Pred>
-OptionalHalfEdgeHandle
-    HalfEdgeMesh<BaseVecT>::findEdgeAroundVertex(HalfEdgeHandle startEdgeH, Pred pred) const
+OptionalHalfEdgeHandle HalfEdgeMesh<BaseVecT>::findEdgeAroundVertex(
+    HalfEdgeHandle startEdgeH,
+    Pred pred
+) const
 {
     // This function simply follows `next` and `twin` handles to visit all
     // edges around a vertex.
     DOINDEBUG(dout() << ">> Trying to find an edge starting from " << startEdgeH << " ..." << endl);
 
-    auto loopEdgeH = startEdgeH;
-
-    int iterCount = 0;
-    vector<HalfEdgeHandle> visited;
-
-    while (!pred(loopEdgeH))
+    OptionalHalfEdgeHandle out;
+    circulateAroundVertex(startEdgeH, [&, this](auto ingoingEdgeH)
     {
         DOINDEBUG(
-            dout() << ">> ... >> LOOP: loop-" << loopEdgeH << " @ "
-               << getE(loopEdgeH).face
-               << " with next: " << getE(loopEdgeH).next << endl
+            dout() << ">> ... >> LOOP: loop-" << ingoingEdgeH << " @ "
+               << getE(ingoingEdgeH).face
+               << " with next: " << getE(ingoingEdgeH).next << endl
         );
-
-        loopEdgeH = getE(getE(loopEdgeH).next).twin;
-        if (loopEdgeH == startEdgeH)
+        if (pred(ingoingEdgeH))
         {
-            DOINDEBUG(
-                dout() << ">> ... we visited all edges once without success, returning none."
-                    << endl
-            );
-            return OptionalHalfEdgeHandle();
+            out = ingoingEdgeH;
+            return false;
         }
+        return true;
+    });
 
-        iterCount++;
-        if (iterCount > 30)
-        {
-            // We don't want to loop forever here. This might only happen if
-            // the HEM contains a bug. We want to break the loop at some point,
-            // but without paying the price of managing the `visited` vector
-            // in the common case (no bug). So we start manage the vector
-            // after 30 iterations
-            if (std::find(visited.begin(), visited.end(), loopEdgeH) != visited.end())
-            {
-                panic("bug in HEM: detected cycle while looping around vertex");
-            }
-            visited.push_back(loopEdgeH);
-        }
+    if (!out)
+    {
+        DOINDEBUG(
+            dout() << ">> ... we visited all edges once without success, returning none."
+                << endl
+        );
     }
-    DOINDEBUG(dout() << ">> ... found " << loopEdgeH << "." << endl);
-    return loopEdgeH;
+    else
+    {
+        DOINDEBUG(dout() << ">> ... found " << loopEdgeH << "." << endl);
+    }
+
+    return out;
 }
 
 template <typename BaseVecT>
