@@ -550,15 +550,14 @@ void HalfEdgeMesh<BaseVecT>::getFacesOfVertex(
     vector<FaceHandle>& facesOut
 ) const
 {
-    // Iterate over all
-    findEdgeAroundVertex(handle, [&facesOut, this](auto eH)
+    circulateAroundVertex(handle, [&facesOut, this](auto eH)
     {
         auto edge = getE(eH);
         if (edge.face)
         {
             facesOut.push_back(edge.face.unwrap());
         }
-        return false;
+        return true;
     });
 }
 
@@ -569,10 +568,10 @@ void HalfEdgeMesh<BaseVecT>::getEdgesOfVertex(
 ) const
 {
     // Iterate over all
-    findEdgeAroundVertex(handle, [&edgesOut, this](auto eH)
+    circulateAroundVertex(handle, [&edgesOut, this](auto eH)
     {
         edgesOut.push_back(eH.toFullEdgeHandle());
-        return false;
+        return true;
     });
 }
 
