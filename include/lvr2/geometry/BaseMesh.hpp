@@ -155,6 +155,12 @@ public:
     virtual FaceHandle addFace(VertexHandle v1, VertexHandle v2, VertexHandle v3) = 0;
 
     /**
+     * @brief Removes the given face and all (if not connected to any other face/edge/vertex) connected edges and
+     *        vertices.
+     */
+    virtual void removeFace(FaceHandle handle) = 0;
+
+    /**
      * @brief Returns the number of vertices in the mesh.
      */
     virtual size_t numVertices() const = 0;
