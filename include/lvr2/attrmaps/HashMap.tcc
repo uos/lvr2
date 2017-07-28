@@ -145,6 +145,12 @@ AttributeMapHandleIteratorPtr<HandleT> HashMap<HandleT, ValueT>::end() const
 }
 
 template<typename HandleT, typename ValueT>
+void HashMap<HandleT, ValueT>::reserve(size_t newCap)
+{
+    m_map.reserve(newCap);
+}
+
+template<typename HandleT, typename ValueT>
 HashMapIterator<HandleT, ValueT>::HashMapIterator(
     typename unordered_map<HandleT, ValueT>::const_iterator iter
 )
