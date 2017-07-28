@@ -67,7 +67,7 @@ ClusterBiMap<FaceHandle> clusterGrowing(const BaseMesh<BaseVecT>& mesh, Pred pre
                 auto currentFace = stack.back();
                 stack.pop_back();
 
-                // Check if the last faces from stack and starting face match the creatia to join the same cluster
+                // Check if the last faces from stack and starting face match the criteria to join the same cluster
                 if (!visited[currentFace] && pred(faceH, currentFace))
                 {
                     // The face matched the criteria => add it to cluster and mark as visited.
