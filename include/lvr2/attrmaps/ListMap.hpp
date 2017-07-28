@@ -57,6 +57,34 @@ template<typename HandleT, typename ValueT>
 class ListMap : public AttributeMap<HandleT, ValueT>
 {
 public:
+    /**
+     * @brief Creates an empty map without default element set.
+     */
+    ListMap() {}
+
+    /**
+     * @brief Creates a map with a given default value.
+     *
+     * Whenever you request a value for a key and there isn't a value
+     * associated with that key, the default value is returned.  Note that if
+     * you set a default value (which you do by calling this constructor), you
+     * can't remove it. Neither `remove()` nor `clear()` will do it. Calls to
+     * `get()` will always return a non-none value and `operator[]` won't ever
+     * panic.
+     *
+     * One additional important detail: if you call `get()` to obtain a
+     * mutable reference, the default value is inserted into the map. This is
+     * the only sane way to return a mutably reference.
+     */
+    ListMap(const ValueT& defaultValue);
+
+    /**
+     * @brief Creates a map with a given default value and calls reserve.
+     *
+     * This works exactly as the `ListMap(const Value&)` constructor, but
+     * also calls `reserve(countElements)` immediately afterwards.
+     */
+    ListMap(size_t countElements, const ValueT& defaultValue);
 
     // =======================================================================
     // Implemented methods from the interface (check interface for docs)
@@ -72,8 +100,14 @@ public:
     AttributeMapHandleIteratorPtr<HandleT> begin() const final;
     AttributeMapHandleIteratorPtr<HandleT> end() const final;
 
+    /**
+     * @brief Allocates space for at least `newCap` more elements.
+     */
+    void reserve(size_t newCap);
+
 private:
     vector<pair<HandleT, ValueT>> m_list;
+    optional<ValueT> m_default;
 
     // Internal helper method
     typename vector<pair<HandleT, ValueT>>::const_iterator keyIterator(HandleT key) const;
