@@ -29,7 +29,7 @@
 #define LVR2_ALGORITHM_CLUSTERALGORITHMS_H_
 
 #include <lvr2/geometry/BaseMesh.hpp>
-#include <lvr2/geometry/ClusterBiMap.hpp>
+#include <lvr2/util/ClusterBiMap.hpp>
 
 namespace lvr2
 {
