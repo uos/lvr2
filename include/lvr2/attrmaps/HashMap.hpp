@@ -39,6 +39,38 @@ template<typename HandleT, typename ValueT>
 class HashMap : public AttributeMap<HandleT, ValueT>
 {
 public:
+    /**
+     * @brief Creates an empty map without default element set.
+     */
+    HashMap() {}
+
+    /**
+     * @brief Creates a map with a given default value.
+     *
+     * Whenever you request a value for a key and there isn't a value
+     * associated with that key, the default value is returned.  Note that if
+     * you set a default value (which you do by calling this constructor), you
+     * can't remove it. Neither `remove()` nor `clear()` will do it. Calls to
+     * `get()` will always return a non-none value and `operator[]` won't ever
+     * panic.
+     *
+     * One additional important detail: if you call `get()` to obtain a
+     * mutable reference, the default value is inserted into the map. This is
+     * the only sane way to return a mutably reference.
+     */
+    HashMap(const ValueT& defaultValue);
+
+    /**
+     * @brief Creates a map with a given default value and calls reserve.
+     *
+     * This works exactly as the `HashMap(const Value&)` constructor, but
+     * also calls `reserve(countElements)` immediately afterwards.
+     */
+    HashMap(size_t countElements, const ValueT& defaultValue);
+
+    // =======================================================================
+    // Implemented methods from the interface (check interface for docs)
+    // =======================================================================
     bool containsKey(HandleT key) const final;
     optional<ValueT> insert(HandleT key, const ValueT& value) final;
     optional<ValueT> remove(HandleT key) final;
@@ -50,8 +82,14 @@ public:
     AttributeMapHandleIteratorPtr<HandleT> begin() const final;
     AttributeMapHandleIteratorPtr<HandleT> end() const final;
 
+    /**
+     * @brief Allocates space for at least `newCap` more elements.
+     */
+    void reserve(size_t newCap);
+
 private:
     unordered_map<HandleT, ValueT> m_map;
+    optional<ValueT> m_default;
 };
 
 template<typename HandleT, typename ValueT>

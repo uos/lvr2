@@ -18,43 +18,49 @@
 
 
 /*
- * VectorMap.hpp
+ * ListMap.hpp
  *
- *  @date 08.06.2017
- *  @author Johan M. von Behren <johan@vonbehren.eu>
+ *  @date 27.07.2017
  */
 
-#ifndef LVR2_ATTRMAPS_VECTORMAP_H_
-#define LVR2_ATTRMAPS_VECTORMAP_H_
+#ifndef LVR2_ATTRMAPS_LISTMAP_H_
+#define LVR2_ATTRMAPS_LISTMAP_H_
 
+#include <utility>
 #include <vector>
-#include <boost/optional.hpp>
 
 #include <lvr2/attrmaps/AttributeMap.hpp>
-#include <lvr2/geometry/Handles.hpp>
-#include <lvr2/util/Cluster.hpp>
 
 using std::vector;
-using boost::optional;
+using std::pair;
 
 namespace lvr2
 {
 
+
 /**
- * @brief A map with constant lookup overhead using small-ish integer-keys.
+ * @brief A simple implementation of AttributeMap for a small number of values.
  *
- * It stores the given values in a vector, they key is simply the index within
- * the vector. This means that the space requirement is O(largest_key). See
- * StableVector for more information.
+ * This implementation uses a simple, unordered list of key-value pairs to
+ * represent the map. This means that nearly all operations have a complexity
+ * of O(number_of_values), which is rather suboptimal. Thus this implementation
+ * only makes sense when the number of values is expected to be very small. A
+ * modern computer can easily search linearly through, like, 16 things. When
+ * we're dealing with a small number of things, often linear search will be
+ * faster than something fancy (like hashing or binary search).
+ *
+ * However, this implementation doesn't use its whole potential right now. The
+ * biggest speed gain is possible by using small buffer optimization (SBO).
+ * This still needs to be implemented, but should be fairly straight forward.
  */
 template<typename HandleT, typename ValueT>
-class VectorMap : public AttributeMap<HandleT, ValueT>
+class ListMap : public AttributeMap<HandleT, ValueT>
 {
 public:
     /**
      * @brief Creates an empty map without default element set.
      */
-    VectorMap() {}
+    ListMap() {}
 
     /**
      * @brief Creates a map with a given default value.
@@ -70,15 +76,15 @@ public:
      * mutable reference, the default value is inserted into the map. This is
      * the only sane way to return a mutably reference.
      */
-    VectorMap(const ValueT& defaultValue);
+    ListMap(const ValueT& defaultValue);
 
     /**
      * @brief Creates a map with a given default value and calls reserve.
      *
-     * This works exactly as the `VectorMap(const Value&)` constructor, but
+     * This works exactly as the `ListMap(const Value&)` constructor, but
      * also calls `reserve(countElements)` immediately afterwards.
      */
-    VectorMap(size_t countElements, const ValueT& defaultValue);
+    ListMap(size_t countElements, const ValueT& defaultValue);
 
     // =======================================================================
     // Implemented methods from the interface (check interface for docs)
@@ -94,28 +100,27 @@ public:
     AttributeMapHandleIteratorPtr<HandleT> begin() const final;
     AttributeMapHandleIteratorPtr<HandleT> end() const final;
 
-
     /**
-     * @see StableVector::reserve(size_t)
+     * @brief Allocates space for at least `newCap` more elements.
      */
     void reserve(size_t newCap);
 
 private:
-    /// The underlying storage
-    StableVector<HandleT, ValueT> m_vec;
+    vector<pair<HandleT, ValueT>> m_list;
     optional<ValueT> m_default;
+
+    // Internal helper method
+    typename vector<pair<HandleT, ValueT>>::const_iterator keyIterator(HandleT key) const;
+    typename vector<pair<HandleT, ValueT>>::iterator keyIterator(HandleT key);
+
+    template<typename, typename> friend class ListMap;
 };
 
 template<typename HandleT, typename ValueT>
-class VectorMapIterator : public AttributeMapHandleIterator<HandleT>
+class ListMapIterator : public AttributeMapHandleIterator<HandleT>
 {
-    static_assert(
-        std::is_base_of<BaseHandle<Index>, HandleT>::value,
-        "HandleT must inherit from BaseHandle!"
-    );
-
 public:
-    VectorMapIterator(StableVectorIterator<HandleT, ValueT> iter);
+    ListMapIterator(typename vector<pair<HandleT, ValueT>>::const_iterator iter);
 
     AttributeMapHandleIterator<HandleT>& operator++() final;
     bool operator==(const AttributeMapHandleIterator<HandleT>& other) const final;
@@ -123,11 +128,11 @@ public:
     HandleT operator*() const final;
 
 private:
-    StableVectorIterator<HandleT, ValueT> m_iter;
+    typename vector<pair<HandleT, ValueT>>::const_iterator m_iter;
 };
 
 } // namespace lvr2
 
-#include <lvr2/attrmaps/VectorMap.tcc>
+#include <lvr2/attrmaps/ListMap.tcc>
 
-#endif /* LVR2_ATTRMAPS_VECTORMAP_H_ */
+#endif /* LVR2_ATTRMAPS_LISTMAP_H_ */

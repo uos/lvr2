@@ -110,6 +110,12 @@ void StableVector<HandleT, ElemT>::erase(HandleType handle)
 }
 
 template<typename HandleT, typename ElemT>
+void StableVector<HandleT, ElemT>::clear()
+{
+    m_elements.clear();
+}
+
+template<typename HandleT, typename ElemT>
 boost::optional<ElemT&> StableVector<HandleT, ElemT>::get(HandleType handle)
 {
     if (handle.idx() >= size() || !m_elements[handle.idx()])
@@ -208,7 +214,10 @@ StableVectorIterator<HandleT, ElemT> StableVector<HandleT, ElemT>::end() const
 }
 
 template<typename HandleT, typename ElemT>
-StableVectorIterator<HandleT, ElemT>::StableVectorIterator(const vector<optional<ElemT>>* deleted, bool startAtEnd)
+StableVectorIterator<HandleT, ElemT>::StableVectorIterator(
+    const vector<optional<ElemT>>* deleted,
+    bool startAtEnd
+)
     : m_elements(deleted), m_pos(startAtEnd ? deleted->size() : 0)
 {
     if (m_pos == 0 && !m_elements->empty() && !(*m_elements)[0])
@@ -218,7 +227,9 @@ StableVectorIterator<HandleT, ElemT>::StableVectorIterator(const vector<optional
 }
 
 template<typename HandleT, typename ElemT>
-StableVectorIterator<HandleT, ElemT>& StableVectorIterator<HandleT, ElemT>::operator=(const StableVectorIterator<HandleT, ElemT>& other)
+StableVectorIterator<HandleT, ElemT>& StableVectorIterator<HandleT, ElemT>::operator=(
+    const StableVectorIterator<HandleT, ElemT>& other
+)
 {
     if (&other == this)
     {
@@ -231,13 +242,17 @@ StableVectorIterator<HandleT, ElemT>& StableVectorIterator<HandleT, ElemT>::oper
 }
 
 template<typename HandleT, typename ElemT>
-bool StableVectorIterator<HandleT, ElemT>::operator==(const StableVectorIterator<HandleT, ElemT>& other) const
+bool StableVectorIterator<HandleT, ElemT>::operator==(
+    const StableVectorIterator<HandleT, ElemT>& other
+) const
 {
     return m_pos == other.m_pos && m_elements == other.m_elements;
 }
 
 template<typename HandleT, typename ElemT>
-bool StableVectorIterator<HandleT, ElemT>::operator!=(const StableVectorIterator<HandleT, ElemT>& other) const
+bool StableVectorIterator<HandleT, ElemT>::operator!=(
+    const StableVectorIterator<HandleT, ElemT>& other
+) const
 {
     return !(*this == other);
 }

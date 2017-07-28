@@ -45,8 +45,8 @@ namespace lvr2
 /**
  * @brief Iterator over handles in this vector, which skips deleted elements
  *
- * Important: This is NOT a fail fast iterator. If the vector is changed while using an instance of this
- * iterator the behavior is undefined!
+ * Important: This is NOT a fail fast iterator. If the vector is changed while
+ * using an instance of this iterator the behavior is undefined!
  */
 template<typename HandleT, typename ElemT>
 class StableVectorIterator
@@ -167,6 +167,11 @@ public:
      * used with the `set()` method.
      */
     void erase(HandleType handle);
+
+    /**
+     * @brief Removes all elements from the vector.
+     */
+    void clear();
 
     /**
      * @brief Returns the element referred to by `handle`.
