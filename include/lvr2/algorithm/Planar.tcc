@@ -48,8 +48,7 @@ template<typename BaseVecT, typename Pred>
 ClusterBiMap<FaceHandle> clusterGrowing(const BaseMesh<BaseVecT>& mesh, Pred pred)
 {
     ClusterBiMap<FaceHandle> clusters;
-    // TODO remove `mesh.numFaces() * 5` and make use of new default value
-    DenseFaceMap<bool> visited(mesh.numFaces() * 5, false);
+    DenseFaceMap<bool> visited(mesh.numFaces(), false);
 
     // Iterate over all faces
     for (auto faceH: mesh.faces())
