@@ -113,7 +113,9 @@ AttributeMapHandleIteratorPtr<HandleT> HashMap<HandleT, ValueT>::end() const
 }
 
 template<typename HandleT, typename ValueT>
-HashMapIterator<HandleT, ValueT>::HashMapIterator(typename unordered_map<HandleT, ValueT>::const_iterator iter)
+HashMapIterator<HandleT, ValueT>::HashMapIterator(
+    typename unordered_map<HandleT, ValueT>::const_iterator iter
+)
     : m_iter(iter)
 {}
 
@@ -125,14 +127,18 @@ AttributeMapHandleIterator<HandleT>& HashMapIterator<HandleT, ValueT>::operator+
 }
 
 template<typename HandleT, typename ValueT>
-bool HashMapIterator<HandleT, ValueT>::operator==(const AttributeMapHandleIterator<HandleT>& other) const
+bool HashMapIterator<HandleT, ValueT>::operator==(
+    const AttributeMapHandleIterator<HandleT>& other
+) const
 {
     auto cast = dynamic_cast<const HashMapIterator<HandleT, ValueT>*>(&other);
     return cast && m_iter == cast->m_iter;
 }
 
 template<typename HandleT, typename ValueT>
-bool HashMapIterator<HandleT, ValueT>::operator!=(const AttributeMapHandleIterator<HandleT>& other) const
+bool HashMapIterator<HandleT, ValueT>::operator!=(
+    const AttributeMapHandleIterator<HandleT>& other
+) const
 {
     auto cast = dynamic_cast<const HashMapIterator<HandleT, ValueT>*>(&other);
     return !cast || m_iter != cast->m_iter;

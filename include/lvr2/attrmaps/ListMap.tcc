@@ -32,7 +32,8 @@ namespace lvr2
 {
 
 template<typename HandleT, typename ValueT>
-typename vector<pair<HandleT, ValueT>>::const_iterator ListMap<HandleT, ValueT>::keyIterator(HandleT key) const
+typename vector<pair<HandleT, ValueT>>::const_iterator
+    ListMap<HandleT, ValueT>::keyIterator(HandleT key) const
 {
     return std::find_if(m_list.begin(), m_list.end(), [&](auto& elem)
     {
@@ -139,7 +140,9 @@ AttributeMapHandleIteratorPtr<HandleT> ListMap<HandleT, ValueT>::end() const
 }
 
 template<typename HandleT, typename ValueT>
-ListMapIterator<HandleT, ValueT>::ListMapIterator(typename vector<pair<HandleT, ValueT>>::const_iterator iter)
+ListMapIterator<HandleT, ValueT>::ListMapIterator(
+    typename vector<pair<HandleT, ValueT>>::const_iterator iter
+)
     : m_iter(iter)
 {}
 
@@ -151,14 +154,18 @@ AttributeMapHandleIterator<HandleT>& ListMapIterator<HandleT, ValueT>::operator+
 }
 
 template<typename HandleT, typename ValueT>
-bool ListMapIterator<HandleT, ValueT>::operator==(const AttributeMapHandleIterator<HandleT>& other) const
+bool ListMapIterator<HandleT, ValueT>::operator==(
+    const AttributeMapHandleIterator<HandleT>& other
+) const
 {
     auto cast = dynamic_cast<const ListMapIterator<HandleT, ValueT>*>(&other);
     return cast && m_iter == cast->m_iter;
 }
 
 template<typename HandleT, typename ValueT>
-bool ListMapIterator<HandleT, ValueT>::operator!=(const AttributeMapHandleIterator<HandleT>& other) const
+bool ListMapIterator<HandleT, ValueT>::operator!=(
+    const AttributeMapHandleIterator<HandleT>& other
+) const
 {
     auto cast = dynamic_cast<const ListMapIterator<HandleT, ValueT>*>(&other);
     return !cast || m_iter != cast->m_iter;
