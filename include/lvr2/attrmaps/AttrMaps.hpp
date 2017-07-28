@@ -28,6 +28,7 @@
 
 #include <lvr2/attrmaps/AttributeMap.hpp>
 #include <lvr2/attrmaps/HashMap.hpp>
+#include <lvr2/attrmaps/ListMap.hpp>
 #include <lvr2/attrmaps/VectorMap.hpp>
 #include <lvr2/geometry/Handles.hpp>
 
@@ -75,6 +76,7 @@ namespace lvr2
 // Generic aliases
 template<typename HandleT, typename ValueT> using DenseAttrMap  = VectorMap<HandleT, ValueT>;
 template<typename HandleT, typename ValueT> using SparseAttrMap = HashMap<HandleT, ValueT>;
+template<typename HandleT, typename ValueT> using TinyAttrMap   = ListMap<HandleT, ValueT>;
 
 // ---------------------------------------------------------------------------
 // Handle-specific aliases
@@ -94,6 +96,11 @@ template<typename ValueT> using SparseClusterMap    = SparseAttrMap<ClusterHandl
 template<typename ValueT> using SparseEdgeMap       = SparseAttrMap<EdgeHandle, ValueT>;
 template<typename ValueT> using SparseFaceMap       = SparseAttrMap<FaceHandle, ValueT>;
 template<typename ValueT> using SparseVertexMap     = SparseAttrMap<VertexHandle, ValueT>;
+
+ template<typename ValueT> using TinyClusterMap     = TinyAttrMap<ClusterHandle, ValueT>;
+ template<typename ValueT> using TinyEdgeMap        = TinyAttrMap<EdgeHandle, ValueT>;
+ template<typename ValueT> using TinyFaceMap        = TinyAttrMap<FaceHandle, ValueT>;
+ template<typename ValueT> using TinyVertexMap      = TinyAttrMap<VertexHandle, ValueT>;
 
 } // namespace lvr2
 
