@@ -182,6 +182,7 @@
 #include <lvr2/geometry/BoundingBox.hpp>
 #include <lvr2/algorithm/Planar.hpp>
 #include <lvr2/algorithm/ClusterPainter.hpp>
+#include <lvr2/algorithm/ClusterAlgorithms.hpp>
 
 #include <lvr2/reconstruction/AdaptiveKSearchSurface.hpp>
 #include <lvr2/reconstruction/BilinearFastBox.hpp>
@@ -748,6 +749,11 @@ int main(int argc, char** argv)
     //     mesh.fillHoles(options.getFillHoles());
     // }
 
+    if(options.getDanglingArtifacts())
+    {
+        removeDanglingCluster(mesh, static_cast<size_t>(options.getDanglingArtifacts()));
+    }
+
     auto faceNormals = calcFaceNormals(mesh);
     ClusterBiMap<FaceHandle> clusterBiMap;
     if(options.optimizePlanes())
@@ -764,8 +770,6 @@ int main(int argc, char** argv)
     {
         clusterBiMap = planarClusterGrowing(mesh, faceNormals, options.getNormalThreshold());
     }
-
-    //auto clusterBiMap = planarClusterGrowing(mesh, options.getNormalThreshold());
 
     ClusterPainter painter(clusterBiMap);
     auto clusterColors = optional<DenseClusterMap<Rgb8Color>>(painter.simpsons(mesh));

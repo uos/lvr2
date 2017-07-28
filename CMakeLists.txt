@@ -22,6 +22,10 @@ include_directories(include)
 ##################################################################################
 # Some compiler specific settings
 ##################################################################################
+if(CMAKE_COMPILER_IS_GNUCC)
+    set(CMAKE_CXX_FLAGS_DEBUG "-O0")
+    set(CMAKE_C_FLAGS_DEBUG "-O0")
+endif(CMAKE_COMPILER_IS_GNUCC)
 
 if(MSVC)
   list(APPEND LVR_DEFINITIONS -DNOMINMAX)
