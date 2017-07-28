@@ -52,13 +52,13 @@ bool HashMap<HandleT, ValueT>::containsKey(HandleT key) const
 template<typename HandleT, typename ValueT>
 optional<ValueT> HashMap<HandleT, ValueT>::insert(HandleT key, const ValueT& value)
 {
-    auto out = remove(key);
+    auto out = erase(key);
     m_map.insert(make_pair(key, value));
     return out;
 }
 
 template<typename HandleT, typename ValueT>
-optional<ValueT> HashMap<HandleT, ValueT>::remove(HandleT key)
+optional<ValueT> HashMap<HandleT, ValueT>::erase(HandleT key)
 {
     auto elem = get(key);
     if (elem)

@@ -63,14 +63,14 @@ optional<ValueT> VectorMap<HandleT, ValueT>::insert(HandleT key, const ValueT& v
     }
     else
     {
-        auto out = remove(key);
+        auto out = erase(key);
         m_vec.set(key, value);
         return out;
     }
 }
 
 template<typename HandleT, typename ValueT>
-optional<ValueT> VectorMap<HandleT, ValueT>::remove(HandleT key)
+optional<ValueT> VectorMap<HandleT, ValueT>::erase(HandleT key)
 {
     auto val = m_vec.get(key);
     if (val)

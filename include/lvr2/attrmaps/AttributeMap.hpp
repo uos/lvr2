@@ -94,7 +94,7 @@ public:
      * @return If there was a value associated with the key, it is returned.
      *         None otherwise.
      */
-    virtual optional<ValueT> remove(HandleT key) = 0;
+    virtual optional<ValueT> erase(HandleT key) = 0;
 
     /**
      * @brief Removes all values from the map.
