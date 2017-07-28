@@ -382,6 +382,18 @@ void testStableVector()
     }
 }
 
+void testTinyMap()
+{
+    TinyFaceMap<string> tm;
+    tm.insert(FaceHandle(1), "hi");
+    cout << tm[FaceHandle(1)] << endl;
+    tm.insert(FaceHandle(37), "huhu");
+    for (auto fH: tm)
+    {
+        cout << fH << endl;
+    }
+}
+
 void createHouseFromNikolaus(lvr2::HalfEdgeMesh<lvr2::BaseVector<float>>& mesh)
 {
     // scale

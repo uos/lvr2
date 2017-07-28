@@ -18,80 +18,107 @@
 
 
 /*
- * HashMap.tcc
+ * ListMap.tcc
  *
  *  @date 27.07.2017
  */
-#include <utility>
+
+#include <algorithm>
 
 #include <lvr2/util/Panic.hpp>
 
-using std::make_pair;
 
 namespace lvr2
 {
 
 template<typename HandleT, typename ValueT>
-HashMap<HandleT, ValueT>::HashMap(const ValueT& defaultValue)
+ListMap<HandleT, ValueT>::ListMap(const ValueT& defaultValue)
     : m_default(defaultValue)
 {}
 
 template<typename HandleT, typename ValueT>
-HashMap<HandleT, ValueT>::HashMap(size_t countElements, const ValueT& defaultValue)
+ListMap<HandleT, ValueT>::ListMap(size_t countElements, const ValueT& defaultValue)
     : m_default(defaultValue)
 {
     reserve(countElements);
 }
 
 template<typename HandleT, typename ValueT>
-bool HashMap<HandleT, ValueT>::containsKey(HandleT key) const
+typename vector<pair<HandleT, ValueT>>::const_iterator
+    ListMap<HandleT, ValueT>::keyIterator(HandleT key) const
 {
-    return m_map.find(key) != m_map.end();
+    return std::find_if(m_list.begin(), m_list.end(), [&](auto& elem)
+    {
+        return elem.first == key;
+    });
 }
 
 template<typename HandleT, typename ValueT>
-optional<ValueT> HashMap<HandleT, ValueT>::insert(HandleT key, const ValueT& value)
+typename vector<pair<HandleT, ValueT>>::iterator ListMap<HandleT, ValueT>::keyIterator(HandleT key)
 {
+    return std::find_if(m_list.begin(), m_list.end(), [&](auto& elem)
+    {
+        return elem.first == key;
+    });
+}
+
+template<typename HandleT, typename ValueT>
+bool ListMap<HandleT, ValueT>::containsKey(HandleT key) const
+{
+    return keyIterator(key) != m_list.end();
+}
+
+template<typename HandleT, typename ValueT>
+optional<ValueT> ListMap<HandleT, ValueT>::insert(HandleT key, const ValueT& value)
+{
+    if (numValues() > 256)
+    {
+        // panic(
+        //     "More than 256 items in a tiny map! This implementation is not "
+        //         "designed to handle anything but a tiny number of values. If "
+        //         "you think this panic is too pedantic, just remove it..."
+        // );
+    }
     auto out = remove(key);
-    m_map.insert(make_pair(key, value));
+    m_list.push_back(make_pair(key, value));
     return out;
 }
 
 template<typename HandleT, typename ValueT>
-optional<ValueT> HashMap<HandleT, ValueT>::remove(HandleT key)
+optional<ValueT> ListMap<HandleT, ValueT>::remove(HandleT key)
 {
-    auto elem = get(key);
-    if (elem)
-    {
-        auto out = *elem;
-        m_map.erase(key);
-        return out;
-    }
-    else
+    auto it = keyIterator(key);
+    if (it == m_list.end())
     {
         return boost::none;
     }
+    else
+    {
+        auto out = (*it).second;
+        m_list.erase(it);
+        return out;
+    }
 }
 
 template<typename HandleT, typename ValueT>
-void HashMap<HandleT, ValueT>::clear()
+void ListMap<HandleT, ValueT>::clear()
 {
-    m_map.clear();
+    m_list.clear();
 }
 
 template<typename HandleT, typename ValueT>
-optional<ValueT&> HashMap<HandleT, ValueT>::get(HandleT key)
+optional<ValueT&> ListMap<HandleT, ValueT>::get(HandleT key)
 {
     // Try to lookup value. If none was found and a default value is set,
     // insert it and return that instead.
-    auto it = m_map.find(key);
-    if (it == m_map.end())
+    auto it = keyIterator(key);
+    if (it == m_list.end())
     {
         if (m_default)
         {
             // Insert default value into hash map and return the inserted value
-            auto res = m_map.insert(make_pair(key, *m_default));
-            return (*res.first).second;
+            m_list.push_back(make_pair(key, *m_default));
+            return m_list.back().second;
         }
         else
         {
@@ -102,12 +129,12 @@ optional<ValueT&> HashMap<HandleT, ValueT>::get(HandleT key)
 }
 
 template<typename HandleT, typename ValueT>
-optional<const ValueT&> HashMap<HandleT, ValueT>::get(HandleT key) const
+optional<const ValueT&> ListMap<HandleT, ValueT>::get(HandleT key) const
 {
     // Try to lookup value. If none was found and a default value is set,
     // return that instead.
-    auto it = m_map.find(key);
-    if (it == m_map.end())
+    auto it = keyIterator(key);
+    if (it == m_list.end())
     {
         if (m_default)
         {
@@ -122,72 +149,71 @@ optional<const ValueT&> HashMap<HandleT, ValueT>::get(HandleT key) const
 }
 
 template<typename HandleT, typename ValueT>
-size_t HashMap<HandleT, ValueT>::numValues() const
+size_t ListMap<HandleT, ValueT>::numValues() const
 {
-    return m_map.size();
+    return m_list.size();
 }
 
 
 template<typename HandleT, typename ValueT>
-AttributeMapHandleIteratorPtr<HandleT> HashMap<HandleT, ValueT>::begin() const
+AttributeMapHandleIteratorPtr<HandleT> ListMap<HandleT, ValueT>::begin() const
 {
     return AttributeMapHandleIteratorPtr<HandleT>(
-        std::make_unique<HashMapIterator<HandleT, ValueT>>(m_map.begin())
+        std::make_unique<ListMapIterator<HandleT, ValueT>>(m_list.begin())
     );
 }
 
 template<typename HandleT, typename ValueT>
-AttributeMapHandleIteratorPtr<HandleT> HashMap<HandleT, ValueT>::end() const
+AttributeMapHandleIteratorPtr<HandleT> ListMap<HandleT, ValueT>::end() const
 {
     return AttributeMapHandleIteratorPtr<HandleT>(
-        std::make_unique<HashMapIterator<HandleT, ValueT>>(m_map.end())
+        std::make_unique<ListMapIterator<HandleT, ValueT>>(m_list.end())
     );
 }
 
 template<typename HandleT, typename ValueT>
-void HashMap<HandleT, ValueT>::reserve(size_t newCap)
+void ListMap<HandleT, ValueT>::reserve(size_t newCap)
 {
-    m_map.reserve(newCap);
+    m_list.reserve(newCap);
 }
 
 template<typename HandleT, typename ValueT>
-HashMapIterator<HandleT, ValueT>::HashMapIterator(
-    typename unordered_map<HandleT, ValueT>::const_iterator iter
+ListMapIterator<HandleT, ValueT>::ListMapIterator(
+    typename vector<pair<HandleT, ValueT>>::const_iterator iter
 )
     : m_iter(iter)
 {}
 
 template<typename HandleT, typename ValueT>
-AttributeMapHandleIterator<HandleT>& HashMapIterator<HandleT, ValueT>::operator++()
+AttributeMapHandleIterator<HandleT>& ListMapIterator<HandleT, ValueT>::operator++()
 {
     ++m_iter;
     return *this;
 }
 
 template<typename HandleT, typename ValueT>
-bool HashMapIterator<HandleT, ValueT>::operator==(
+bool ListMapIterator<HandleT, ValueT>::operator==(
     const AttributeMapHandleIterator<HandleT>& other
 ) const
 {
-    auto cast = dynamic_cast<const HashMapIterator<HandleT, ValueT>*>(&other);
+    auto cast = dynamic_cast<const ListMapIterator<HandleT, ValueT>*>(&other);
     return cast && m_iter == cast->m_iter;
 }
 
 template<typename HandleT, typename ValueT>
-bool HashMapIterator<HandleT, ValueT>::operator!=(
+bool ListMapIterator<HandleT, ValueT>::operator!=(
     const AttributeMapHandleIterator<HandleT>& other
 ) const
 {
-    auto cast = dynamic_cast<const HashMapIterator<HandleT, ValueT>*>(&other);
+    auto cast = dynamic_cast<const ListMapIterator<HandleT, ValueT>*>(&other);
     return !cast || m_iter != cast->m_iter;
 }
 
 template<typename HandleT, typename ValueT>
-HandleT HashMapIterator<HandleT, ValueT>::operator*() const
+HandleT ListMapIterator<HandleT, ValueT>::operator*() const
 {
     return (*m_iter).first;
 }
-
 
 
 } // namespace lvr2
