@@ -28,6 +28,23 @@
 namespace lvr2
 {
 
+template<typename BaseVecT>
+template<typename CollectionT>
+Vector<BaseVecT> Vector<BaseVecT>::average(const CollectionT& vecs)
+{
+    Vector<BaseVecT> acc(0, 0, 0);
+    size_t count = 0;
+    for (auto v: vecs)
+    {
+        static_assert(
+            std::is_same<typeof(v), Vector<BaseVecT>>::value,
+            "Collection has to contain Vectors"
+        );
+        acc += v;
+        count += 1;
+    }
+    return acc / count;
+}
 
 template <typename BaseVecT>
 Vector<BaseVecT> Vector<BaseVecT>::cross(const Vector<BaseVecT> &other) const

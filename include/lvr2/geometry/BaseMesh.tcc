@@ -122,17 +122,33 @@ array<Point<BaseVecT>, 3> BaseMesh<BaseVecT>::getVertexPositionsOfFace(FaceHandl
 template <typename BaseVecT>
 Point<BaseVecT> BaseMesh<BaseVecT>::calcFaceCentroid(FaceHandle handle) const
 {
-    auto points = this->getVertexPositionsOfFace(handle);
+    return Point<BaseVecT>::centroid(
+        this->getVertexPositionsOfFace(handle)
+    );
+}
 
-    Vector<BaseVecT> centroid;
-    for (auto point: points)
-    {
-        centroid += point.asVector();
-    }
-    centroid /= points.size();
+template<typename BaseVecT>
+vector<FaceHandle> BaseMesh<BaseVecT>::getNeighboursOfFace(FaceHandle handle) const
+{
+    vector<FaceHandle> out;
+    getNeighboursOfFace(handle, out);
+    return out;
+}
 
-    // Convert to point
-    return Point<BaseVecT>(centroid);
+template<typename BaseVecT>
+vector<FaceHandle> BaseMesh<BaseVecT>::getFacesOfVertex(VertexHandle handle) const
+{
+    vector<FaceHandle> out;
+    getFacesOfVertex(handle, out);
+    return out;
+}
+
+template<typename BaseVecT>
+vector<EdgeHandle> BaseMesh<BaseVecT>::getEdgesOfVertex(VertexHandle handle) const
+{
+    vector<EdgeHandle> out;
+    getEdgesOfVertex(handle, out);
+    return out;
 }
 
 } // namespace lvr2

@@ -95,6 +95,15 @@ struct Normal : private Vector<BaseVecT>
         return this->z;
     }
 
+    /**
+     * @brief Returns the average of all normals in the given collection.
+     *
+     * The collection need to work with a range-based for-loop and its elements
+     * need to be `Normal<BaseVecT>`. It has to contain at least one element.
+     */
+    template<typename CollectionT>
+    static Normal<BaseVecT> average(const CollectionT& normals);
+
     // Cast normal to vector
     Vector<BaseVecT> asVector() const;
 

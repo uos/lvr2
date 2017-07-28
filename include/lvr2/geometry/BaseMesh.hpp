@@ -202,9 +202,21 @@ public:
     /**
      * @brief Get face handles of the neighbours of the requested face.
      *
-     * @return The face-handles of the neighbours in counter-clockwise order.
+     * The face handles are written into the `facesOut` vector. This is done
+     * to reduce the number of heap allocations if this method is called in
+     * a loop. If you are not calling it in a loop or can't, for some reason,
+     * take advantages of this method's signature, you can call the other
+     * overload of this method which just returns the vector. Such convinient.
+     *
+     * Note: you probably should remember to `clear()` the vector before
+     * passing it into this method.
+     *
+     * @param facesOut The face-handles of the neighbours of `handle` will be
+     *                 written into this vector in counter-clockwise order.
+     *                 There are at most three neighbours of a face, so this
+     *                 method will push 0, 1, 2 or 3 handles to `facesOut`.
      */
-    virtual vector<FaceHandle> getNeighboursOfFace(FaceHandle handle) const = 0;
+    virtual void getNeighboursOfFace(FaceHandle handle, vector<FaceHandle>& facesOut) const = 0;
 
     /**
      * @brief Get the two vertices of an edge.
@@ -223,16 +235,36 @@ public:
     /**
      * @brief Get a list of faces the given vertex belongs to.
      *
-     * @return The face-handles in counter-clockwise order.
+     * The face handles are written into the `facesOut` vector. This is done
+     * to reduce the number of heap allocations if this method is called in
+     * a loop. If you are not calling it in a loop or can't, for some reason,
+     * take advantages of this method's signature, you can call the other
+     * overload of this method which just returns the vector. Such convinient.
+     *
+     * Note: you probably should remember to `clear()` the vector before
+     * passing it into this method.
+     *
+     * @param facesOut The handles of the faces around `handle` will be written
+     *                 into this vector in clockwise order.
      */
-    virtual vector<FaceHandle> getFacesOfVertex(VertexHandle handle) const = 0;
+    virtual void getFacesOfVertex(VertexHandle handle, vector<FaceHandle>& facesOut) const = 0;
 
     /**
      * @brief Get a list of edges around the given vertex.
      *
-     * @return The edge-handles in counter-clockwise order.
+     * The face handles are written into the `edgesOut` vector. This is done
+     * to reduce the number of heap allocations if this method is called in
+     * a loop. If you are not calling it in a loop or can't, for some reason,
+     * take advantages of this method's signature, you can call the other
+     * overload of this method which just returns the vector. Such convinient.
+     *
+     * Note: you probably should remember to `clear()` the vector before
+     * passing it into this method.
+     *
+     * @param edgesOut The handles of the edges around `handle` will be written
+     *                 into this vector in clockwise order.
      */
-    virtual vector<EdgeHandle> getEdgesOfVertex(VertexHandle handle) const = 0;
+    virtual void getEdgesOfVertex(VertexHandle handle, vector<EdgeHandle>& edgesOut) const = 0;
 
     /**
      * @brief Returns an iterator to the first vertex of this mesh.
@@ -285,6 +317,42 @@ public:
      * @brief Calc and return the centroid of the requested face.
      */
     Point<BaseVecT> calcFaceCentroid(FaceHandle handle) const;
+
+    /**
+     * @brief Get face handles of the neighbours of the requested face.
+     *
+     * This method is implemented using the pure virtual method
+     * `getNeighboursOfFace(FaceHandle, vector<FaceHandle>&)`. If you are
+     * calling this method in a loop, you should probably call the more manual
+     * method (with the out vector) to avoid useless heap allocations.
+     *
+     * @return The face-handles of the neighbours in counter-clockwise order.
+     */
+    virtual vector<FaceHandle> getNeighboursOfFace(FaceHandle handle) const;
+
+    /**
+     * @brief Get a list of faces the given vertex belongs to.
+     *
+     * This method is implemented using the pure virtual method
+     * `getFacesOfVertex(VertexHandle, vector<FaceHandle>&)`. If you are
+     * calling this method in a loop, you should probably call the more manual
+     * method (with the out vector) to avoid useless heap allocations.
+     *
+     * @return The face-handles in counter-clockwise order.
+     */
+    virtual vector<FaceHandle> getFacesOfVertex(VertexHandle handle) const;
+
+    /**
+     * @brief Get a list of edges around the given vertex.
+     *
+     * This method is implemented using the pure virtual method
+     * `getEdgesOfVertex(VertexHandle, vector<EdgeHandle>&)`. If you are
+     * calling this method in a loop, you should probably call the more manual
+     * method (with the out vector) to avoid useless heap allocations.
+     *
+     * @return The edge-handles in counter-clockwise order.
+     */
+    virtual vector<EdgeHandle> getEdgesOfVertex(VertexHandle handle) const;
 
     /**
      * @brief Method for usage in range-based for-loops.

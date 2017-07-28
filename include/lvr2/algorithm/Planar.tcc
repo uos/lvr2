@@ -50,6 +50,10 @@ ClusterBiMap<FaceHandle> clusterGrowing(const BaseMesh<BaseVecT>& mesh, Pred pre
     ClusterBiMap<FaceHandle> clusters;
     DenseFaceMap<bool> visited(mesh.numFaces(), false);
 
+    // This vector is only used later, but in order to avoid heap allocations
+    // we will create this list here to retain the buffer.
+    vector<FaceHandle> faceNeighbours;
+
     // Iterate over all faces
     for (auto faceH: mesh.faces())
     {
@@ -75,7 +79,9 @@ ClusterBiMap<FaceHandle> clusterGrowing(const BaseMesh<BaseVecT>& mesh, Pred pre
                     visited[currentFace] = true;
 
                     // Find all unvisited neighbours of the current face and them to the stack
-                    for (auto neighbour: mesh.getNeighboursOfFace(currentFace))
+                    faceNeighbours.clear();
+                    mesh.getNeighboursOfFace(currentFace, faceNeighbours);
+                    for (auto neighbour: faceNeighbours)
                     {
                         if (!visited[neighbour])
                         {
