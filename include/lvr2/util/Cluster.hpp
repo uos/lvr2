@@ -42,7 +42,10 @@ template <typename HandleT>
 struct Cluster
 {
 public:
-    Cluster() {}
+    size_t size() { return handles.size(); }
+    decltype(auto) begin() { return handles.begin(); }
+    decltype(auto) end() { return handles.end(); }
+
     vector<HandleT> handles;
 };
 
