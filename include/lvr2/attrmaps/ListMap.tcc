@@ -79,13 +79,13 @@ optional<ValueT> ListMap<HandleT, ValueT>::insert(HandleT key, const ValueT& val
         //         "you think this panic is too pedantic, just remove it..."
         // );
     }
-    auto out = remove(key);
+    auto out = erase(key);
     m_list.push_back(make_pair(key, value));
     return out;
 }
 
 template<typename HandleT, typename ValueT>
-optional<ValueT> ListMap<HandleT, ValueT>::remove(HandleT key)
+optional<ValueT> ListMap<HandleT, ValueT>::erase(HandleT key)
 {
     auto it = keyIterator(key);
     if (it == m_list.end())

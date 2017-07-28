@@ -348,4 +348,25 @@ void debugPlanes(
     writeDebugMesh(debugMesh, filename);
 }
 
+template<typename BaseVecT>
+void deleteSmallPlanarCluster(
+    BaseMesh<BaseVecT>& mesh,
+    ClusterBiMap<FaceHandle>& clusters,
+    size_t smallClusterThreshold
+)
+{
+    for (auto cH: clusters)
+    {
+        auto cluster = clusters.getCluster(cH);
+        if (cluster.size() < smallClusterThreshold)
+        {
+            for (auto fH: cluster)
+            {
+                mesh.removeFace(fH);
+            }
+            clusters.removeCluster(cH);
+        }
+    }
+}
+
 } // namespace lvr2
