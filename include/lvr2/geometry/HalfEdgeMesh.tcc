@@ -468,13 +468,8 @@ array<VertexHandle, 3> HalfEdgeMesh<BaseVecT>::getVerticesOfFace(FaceHandle hand
 template <typename BaseVecT>
 array<EdgeHandle, 3> HalfEdgeMesh<BaseVecT>::getEdgesOfFace(FaceHandle handle) const
 {
-    auto face = getF(handle);
-
-    auto e1 = face.edge;
-    auto e2 = getE(e1).next;
-    auto e3 = getE(e2).next;
-
-    return {e1.toFullEdgeHandle(), e2.toFullEdgeHandle(), e3.toFullEdgeHandle()};
+    auto innerEdges = getInnerEdges(handle);
+    return {innerEdges[0].toFullEdgeHandle(), innerEdges[1].toFullEdgeHandle(), innerEdges[2].toFullEdgeHandle()};
 }
 
 template <typename BaseVecT>
