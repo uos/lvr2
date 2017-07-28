@@ -154,7 +154,7 @@ template<typename HandleT, typename ValueT>
 bool VectorMapIterator<HandleT, ValueT>::operator!=(const AttributeMapHandleIterator<HandleT>& other) const
 {
     auto cast = dynamic_cast<const VectorMapIterator<HandleT, ValueT>*>(&other);
-    return cast && m_iter != cast->m_iter;
+    return !cast || m_iter != cast->m_iter;
 }
 
 template<typename HandleT, typename ValueT>
