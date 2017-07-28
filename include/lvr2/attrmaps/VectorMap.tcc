@@ -130,7 +130,6 @@ void VectorMap<HandleT, ValueT>::reserve(size_t newCap)
 };
 
 
-
 template<typename HandleT, typename ValueT>
 VectorMapIterator<HandleT, ValueT>::VectorMapIterator(StableVectorIterator<HandleT, ValueT> iter)
     : m_iter(iter)
@@ -166,18 +165,5 @@ HandleT VectorMapIterator<HandleT, ValueT>::operator*() const
 {
     return *m_iter;
 }
-
-
-// template<typename HandleT, typename ValueT>
-// decltype(auto) VectorMap<HandleT, ValueT>::begin() const
-// {
-//     return m_vec.begin();
-// }
-// template<typename HandleT, typename ValueT>
-// decltype(auto) VectorMap<HandleT, ValueT>::end() const
-// {
-//     return m_vec.end();
-// }
-
 
 } // namespace lvr2

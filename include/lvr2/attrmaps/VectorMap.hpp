@@ -43,10 +43,8 @@ namespace lvr2
  * @brief A map with constant lookup overhead using small-ish integer-keys.
  *
  * It stores the given values in a vector, they key is simply the index within
- * the vector.
- *
- * USE WITH CAUTION: This NEVER deletes values and can get very large!
- *
+ * the vector. This means that the space requirement is O(largest_key). See
+ * StableVector for more information.
  */
 template<typename HandleT, typename ValueT>
 class VectorMap : public AttributeMap<HandleT, ValueT>
@@ -72,11 +70,11 @@ public:
     AttributeMapHandleIteratorPtr<HandleT> begin() const final;
     AttributeMapHandleIteratorPtr<HandleT> end() const final;
 
+
     /**
      * @see StableVector::reserve(size_t)
      */
     void reserve(size_t newCap);
-
 
 private:
     /// The underlying storage
