@@ -494,8 +494,10 @@ array<HalfEdgeHandle, 3> HalfEdgeMesh<BaseVecT>::getInnerEdges(FaceHandle handle
 }
 
 template <typename BaseVecT>
-vector<FaceHandle>
-    HalfEdgeMesh<BaseVecT>::getNeighboursOfFace(FaceHandle handle) const
+void HalfEdgeMesh<BaseVecT>::getNeighboursOfFace(
+    FaceHandle handle,
+    vector<FaceHandle>& facesOut
+) const
 {
     auto face = getF(handle);
 
@@ -510,21 +512,18 @@ vector<FaceHandle>
     auto e3t = getE(e3.twin);
 
     // Get neighbour faces
-    vector<FaceHandle> neighbours;
     if (e1t.face)
     {
-        neighbours.push_back(e1t.face.unwrap());
+        facesOut.push_back(e1t.face.unwrap());
     }
     if (e2t.face)
     {
-        neighbours.push_back(e2t.face.unwrap());
+        facesOut.push_back(e2t.face.unwrap());
     }
     if (e3t.face)
     {
-        neighbours.push_back(e3t.face.unwrap());
+        facesOut.push_back(e3t.face.unwrap());
     }
-
-    return neighbours;
 }
 
 template <typename BaseVecT>
@@ -541,42 +540,36 @@ array<OptionalFaceHandle, 2> HalfEdgeMesh<BaseVecT>::getFacesOfEdge(EdgeHandle e
     return { oneEdge.face, getE(oneEdge.twin).face };
 }
 
-// TODO: Maybe we want to change the interface here. Passing a mutable ref to a
-// vector into the method can improve performance a lot. With the current
-// design, each function call implies a heap allocation.
 template <typename BaseVecT>
-vector<FaceHandle> HalfEdgeMesh<BaseVecT>::getFacesOfVertex(VertexHandle handle) const
+void HalfEdgeMesh<BaseVecT>::getFacesOfVertex(
+    VertexHandle handle,
+    vector<FaceHandle>& facesOut
+) const
 {
-    vector<FaceHandle> faces;
-
     // Iterate over all
-    findEdgeAroundVertex(handle, [&faces, this](auto eH)
+    findEdgeAroundVertex(handle, [&facesOut, this](auto eH)
     {
         auto edge = getE(eH);
         if (edge.face)
         {
-            faces.push_back(edge.face.unwrap());
+            facesOut.push_back(edge.face.unwrap());
         }
         return false;
     });
-    return faces;
 }
 
-// TODO: Maybe we want to change the interface here. Passing a mutable ref to a
-// vector into the method can improve performance a lot. With the current
-// design, each function call implies a heap allocation.
 template <typename BaseVecT>
-vector<EdgeHandle> HalfEdgeMesh<BaseVecT>::getEdgesOfVertex(VertexHandle handle) const
+void HalfEdgeMesh<BaseVecT>::getEdgesOfVertex(
+    VertexHandle handle,
+    vector<EdgeHandle>& edgesOut
+) const
 {
-    vector<EdgeHandle> edges;
-
     // Iterate over all
-    findEdgeAroundVertex(handle, [&edges, this](auto eH)
+    findEdgeAroundVertex(handle, [&edgesOut, this](auto eH)
     {
-        edges.push_back(eH.toFullEdgeHandle());
+        edgesOut.push_back(eH.toFullEdgeHandle());
         return false;
     });
-    return edges;
 }
 
 // ========================================================================

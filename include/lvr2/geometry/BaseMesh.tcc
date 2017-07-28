@@ -135,4 +135,28 @@ Point<BaseVecT> BaseMesh<BaseVecT>::calcFaceCentroid(FaceHandle handle) const
     return Point<BaseVecT>(centroid);
 }
 
+template<typename BaseVecT>
+vector<FaceHandle> BaseMesh<BaseVecT>::getNeighboursOfFace(FaceHandle handle) const
+{
+    vector<FaceHandle> out;
+    getNeighboursOfFace(handle, out);
+    return out;
+}
+
+template<typename BaseVecT>
+vector<FaceHandle> BaseMesh<BaseVecT>::getFacesOfVertex(VertexHandle handle) const
+{
+    vector<FaceHandle> out;
+    getFacesOfVertex(handle, out);
+    return out;
+}
+
+template<typename BaseVecT>
+vector<EdgeHandle> BaseMesh<BaseVecT>::getEdgesOfVertex(VertexHandle handle) const
+{
+    vector<EdgeHandle> out;
+    getEdgesOfVertex(handle, out);
+    return out;
+}
+
 } // namespace lvr2
