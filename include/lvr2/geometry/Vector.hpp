@@ -68,7 +68,7 @@ struct Vector : public BaseVecT
     /**
      * @brief Normalizes the vector in place.
      *
-     * Consider using `normalized()` and the `Normal` type to incrase type
+     * Consider using `normalized()` and the `Normal` type to increase type
      * safety when dealing with normalized vectors.
      *
      * Note that `this` must not be the null vector, or else the behavior is
@@ -76,6 +76,15 @@ struct Vector : public BaseVecT
      */
     void normalize();
 
+
+    /**
+     * @brief Returns the average of all vectors in the given collection.
+     *
+     * The collection need to work with a range-based for-loop and its elements
+     * need to be `Vector<BaseVecT>`. It has to contain at least one element.
+     */
+    template<typename CollectionT>
+    static Vector<BaseVecT> average(const CollectionT& vecs);
 
     // It doesn't make sense to talk about the distance between two direction
     // vectors. It's the same as asking: "What is the distance between
