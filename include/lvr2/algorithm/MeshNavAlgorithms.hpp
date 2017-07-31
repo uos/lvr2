@@ -56,7 +56,17 @@ void calcVertexLocalNeighborhood(const BaseMesh<BaseVecT>& mesh, VertexHandle vH
 template<typename BaseVecT>
 DenseVertexMap<float> calcVertexHeightDiff(const BaseMesh<BaseVecT>& mesh, double radius);
 
-template<typename MapF, typename in, typename out>
+template<typename BaseVecT>
+DenseVertexMap<float> calcVertexRoughness(const BaseMesh<BaseVecT>& mesh, double radius);
+
+template<typename BaseVecT>
+DenseVertexMap<float> calcAverageVertexAngles(const BaseMesh<BaseVecT>& mesh, const VertexMap<Normal<BaseVecT>>& normals);
+
+template<typename BaseVecT>
+DenseVertexMap<float> calcVertexAngleEdges(const BaseMesh<BaseVecT>& mesh, const VertexMap<Normal<BaseVecT>>& normals);
+
+
+    template<typename MapF, typename in, typename out>
 DenseVertexMap<out> map(const VertexMap<in>& map_in, MapF map_function);
 
 } // namespace lvr2

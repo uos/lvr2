@@ -774,6 +774,10 @@ int main(int argc, char** argv)
     // Calc normals for vertices
     auto vertexNormals = calcVertexNormals(mesh, faceNormals, *surface);
 
+    calcVertexRoughness(mesh, 0.2, vertexNormals);
+
+
+
     // Debug mesh
     //auto duplicateVertices = getDuplicateVertices(mesh);
     //cout << "duplicate vertices: " << duplicateVertices.size() << endl;
