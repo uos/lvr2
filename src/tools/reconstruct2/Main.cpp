@@ -193,7 +193,7 @@
 #include <lvr2/reconstruction/PointsetGrid.hpp>
 #include <lvr2/io/PointBuffer.hpp>
 #include <lvr2/util/Factories.hpp>
-
+#include <lvr2/algorithm/MeshNavAlgorithms.hpp>
 
 // PCL related includes
 #ifdef LVR_USE_PCL
