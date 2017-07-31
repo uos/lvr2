@@ -711,13 +711,15 @@ int main(int argc, char** argv)
 
     // Mesh Nav Tests
     DenseVertexMap<float> height_differences(-1.0);
-    height_differences = calcVertexHeightDiff(mesh, 0.2);
+    height_differences = calcVertexHeightDiff(mesh, 12);
     float max_val = -1;
+    float min_val = -1;
 
     for (auto f: height_differences)
     {
         //cout << "Current height difference:" << height_differences[f] << endl;
         if(height_differences[f]>max_val) max_val = height_differences[f];
+
     }
 
     for (auto f: height_differences)
@@ -726,11 +728,12 @@ int main(int argc, char** argv)
     }
 
     Rgb8Color (*color_function_pointer)(float);
-    color_function_pointer = &floatToRainbowColor;
+    color_function_pointer = &floatToGrayScaleColor;
 
     std::array<uint8_t, 3> a = {0, 0, 0};
     DenseVertexMap<Rgb8Color> color_vertices(a);
     color_vertices = changeMap<float, Rgb8Color>(height_differences, color_function_pointer);
+
 
     // =======================================================================
     // Optimize and finalize mesh
