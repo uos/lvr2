@@ -41,7 +41,7 @@ namespace lvr2
  * @param radius    The radius which defines the border of the local neighborhood.
  * @param neighbors The found neighbors, stored in a vector.
  */
-<BaseVecT>
+template<typename BaseVecT>
 void calcVertexLocalNeighborhood(const BaseMesh<BaseVecT>& mesh, VertexHandle vH, double radius, vector<VertexHandle>& neighbors);
 
 /**
@@ -53,7 +53,7 @@ void calcVertexLocalNeighborhood(const BaseMesh<BaseVecT>& mesh, VertexHandle vH
  * @return  A map filled with <Vertex, float>-entries, storing the height difference value
  *          of each vertex.
  */
-<BaseVecT>
+template<typename BaseVecT>
 DenseVertexMap<float> calcVertexHeightDiff(const BaseMesh<BaseVecT>& mesh, double radius);
 
 } // namespace lvr2
