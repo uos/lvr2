@@ -34,22 +34,25 @@ void calcVertexLocalNeighborhood(const BaseMesh<BaseVecT>& mesh, VertexHandle vH
 {
     vector<VertexHandle> stack;
     stack.push_back(vH);
+    SparseVertexMap<bool> used_vertices(false);
+
     while(!stack.empty())
     {
         auto cur_vH = stack.back();
         stack.pop_back();
-        SparseVertexMap<bool> used_vertices(false);
         used_vertices[cur_vH] = true;
 
         vector<EdgeHandle> cur_edges = mesh.getEdgesOfVertex(cur_vH);
         for (auto eH: cur_edges)
         {
             auto vertex_vector = mesh.getVerticesOfEdge(eH);
+            cout << "Current Distance: " << mesh.getVertexPosition(vertex_vector[0]).distanceFrom(mesh.getVertexPosition(vH)) << endl;
             if (!used_vertices[vertex_vector[0]] && \
                  mesh.getVertexPosition(vertex_vector[0]).distanceFrom(mesh.getVertexPosition(vH)) < radius)
             {
                 stack.push_back(vertex_vector[0]);
                 neighbors.push_back(vertex_vector[0]);
+                cout << "if 1" << endl;
             }
             else
             {
@@ -58,9 +61,11 @@ void calcVertexLocalNeighborhood(const BaseMesh<BaseVecT>& mesh, VertexHandle vH
                 {
                     stack.push_back(vertex_vector[1]);
                     neighbors.push_back(vertex_vector[1]);
+                    cout << "if 2" << endl;
                 }
-            };
+            }
         }
+        //cout << "current neighbor size: " << neighbors.size() << endl;
     }
 }
 
@@ -75,7 +80,9 @@ DenseVertexMap<float> calcVertexHeightDiff(const BaseMesh<BaseVecT>& mesh, doubl
     for (auto vH: mesh.vertices())
     {
         neighbors.clear();
+        //cout << "Neighborvector size 1: " << neighbors.size() << endl;
         calcVertexLocalNeighborhood(mesh, vH, radius, neighbors);
+        //cout << "Neighborvector size 2: " << neighbors.size() << endl;
 
         // store initial values for min and max height
         float min_height = std::numeric_limits<float>::max();
@@ -90,25 +97,29 @@ DenseVertexMap<float> calcVertexHeightDiff(const BaseMesh<BaseVecT>& mesh, doubl
             {
                 min_height = cur_pos.z;
             }
+            cout << "Current Position (z-value): " << cur_pos.z << endl;
             min_height = std::min(cur_pos.z, min_height);
             max_height = std::max(cur_pos.z, max_height);
         }
 
+        //cout << "Max Height:" << max_height << endl;
+        //cout << "Min Height:" << min_height << endl;
+
         // calculate the final height difference
-        height_diff[vH] = max_height - min_height;
+        height_diff.insert(vH, max_height-min_height);
     }
 
     return height_diff;
 }
 
-template <typename MapF, typename in, typename out>
-DenseVertexMap<out> map(const VertexMap<in>& map_in, MapF map_function)
+template<typename in, typename out, typename MapF>
+DenseVertexMap<out> changeMap(const VertexMap<in>& map_in, MapF map_function)
 {
     DenseVertexMap<out> result_map;
 
     for (auto vH: map_in)
     {
-        result_map[vH] = map_function(map_in[vH]);
+        result_map.insert(vH, map_function(map_in[vH]));
     }
 
     return result_map;
