@@ -98,13 +98,9 @@ public:
     MeapPair<KeyT, ValueT> popMin();
 
     /**
-     * @brief Decreases the value of `key` to `newValue` and repairs the
-     *        heap.
-     *
-     * This function will panic if `newValue` is actually higher than the old
-     * one.
+     * @brief Updates the value of `key` to `newValue` and repairs the heap.
      */
-    void decreaseValue(const KeyT& key, const ValueT& newValue);
+    void updateValue(const KeyT& key, const ValueT& newValue);
 
     /**
      * @brief Returns `true` if the meap is empty
@@ -124,6 +120,7 @@ private:
     size_t rightChild(size_t father) const;
 
     void bubbleUp(size_t idx);
+    void bubbleDown(size_t idx);
 };
 
 } // namespace lvr2

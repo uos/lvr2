@@ -67,73 +67,36 @@ MeapPair<KeyT, ValueT> Meap<KeyT, ValueT, MapT>::popMin()
         panic("attempt to peek at min in an empty heap");
     }
 
-    // We only need to repair if there is more than one element left, because
-    // after removing the one element, this heap doesn't contain any elements.
-    // If you have zero elements, they can't be unordered.
-    if (m_heap.size() != 1)
-    {
-        // Swap the minimal element with the last element in the vector
-        swap(m_heap[0], m_heap.back());
-        swap(m_indices[m_heap[0].key], m_indices[m_heap.back().key]);
-        size_t currIndex = 0;
+    // Swap the minimal element with the last element in the vector
+    swap(m_heap[0], m_heap.back());
+    swap(m_indices[m_heap[0].key], m_indices[m_heap.back().key]);
 
-        // Checks if there exists a child of `father` which has a smaller
-        // discriminator than the discriminator at `father`.
-        const auto hasSmallerChildren = [this](size_t father)
-        {
-            // We use the size - 1, because we need to ignore the old min which
-            // sits at the end of the vector now!
-            const auto len = m_heap.size() - 1;
-            const auto left = leftChild(father);
-            const auto right = rightChild(father);
-            const auto& disc = m_heap[father].value;
-            return (left < len && m_heap[left].value < disc)
-                || (right < len && m_heap[right].value < disc);
-        };
-
-        // Returns the index of the child of `father` with the smaller
-        // discriminator. This function assumes that there exists at least one
-        // (the left) child.
-        const auto smallerChildOf = [this](size_t father)
-        {
-            const auto left = leftChild(father);
-            const auto right = rightChild(father);
-
-            // In case there exists only one child (again: size - 1 to ignore
-            // the previous min at the end of the vector).
-            if (right >= m_heap.size() - 1)
-            {
-                return left;
-            }
-            return m_heap[left].value > m_heap[right].value ? right : left;
-        };
-
-        // Repair the heap by sifting down the element
-        while (hasSmallerChildren(currIndex))
-        {
-            const auto smallerChild = smallerChildOf(currIndex);
-            swap(m_heap[smallerChild], m_heap[currIndex]);
-            swap(m_indices[m_heap[smallerChild].key], m_indices[m_heap[currIndex].key]);
-            currIndex = smallerChild;
-        }
-    }
-
-    // Move (minimum) element out of the vector and return it
+    // Move (minimum) element out of the vector
     const auto out = move(m_heap.back());
     m_heap.pop_back();
     m_indices.erase(out.key);
+
+    // We only need to repair if there is more than one element left, because
+    // after removing the one element, this heap doesn't contain any elements.
+    // If you have zero elements, they can't be unordered.
+    if (!m_heap.empty())
+    {
+        // At the root of the heap, there might be an element which is too big,
+        // thus we need to bubble it down.
+        bubbleDown(0);
+    }
+
     return out;
 }
 
 template<typename KeyT, typename ValueT, template<typename, typename> typename MapT>
-void Meap<KeyT, ValueT, MapT>::decreaseValue(const KeyT& key, const ValueT& newValue)
+void Meap<KeyT, ValueT, MapT>::updateValue(const KeyT& key, const ValueT& newValue)
 {
     auto idx = m_indices[key];
     if (newValue > m_heap[idx].value)
     {
-        // TODO: we might just allow a greater value. We can simply bubble
-        // down, if we want to.
-        panic("call to decreaseValue() with a greater new value");
+        m_heap[idx].value = newValue;
+        bubbleDown(idx);
     }
     else if (newValue < m_heap[idx].value)
     {
@@ -179,5 +142,44 @@ void Meap<KeyT, ValueT, MapT>::bubbleUp(size_t idx)
     }
 }
 
+template<typename KeyT, typename ValueT, template<typename, typename> typename MapT>
+void Meap<KeyT, ValueT, MapT>::bubbleDown(size_t idx)
+{
+    // Checks if there exists a child of `father` which has a smaller value
+    // than the value at `father`.
+    const auto hasSmallerChildren = [this](size_t father)
+    {
+        const auto len = m_heap.size();
+        const auto left = leftChild(father);
+        const auto right = rightChild(father);
+        const auto& disc = m_heap[father].value;
+        return (left < len && m_heap[left].value < disc)
+            || (right < len && m_heap[right].value < disc);
+    };
+
+    // Returns the index of the child of `father` with the smaller value. This
+    // function assumes that there exists at least one (the left) child.
+    const auto smallerChildOf = [this](size_t father)
+    {
+        const auto left = leftChild(father);
+        const auto right = rightChild(father);
+
+        // In case there exists only one child
+        if (right >= m_heap.size())
+        {
+            return left;
+        }
+        return m_heap[left].value > m_heap[right].value ? right : left;
+    };
+
+    // Repair the heap by sifting down the element
+    while (hasSmallerChildren(idx))
+    {
+        const auto smallerChild = smallerChildOf(idx);
+        swap(m_heap[smallerChild], m_heap[idx]);
+        swap(m_indices[m_heap[smallerChild].key], m_indices[m_heap[idx].key]);
+        idx = smallerChild;
+    }
+}
 
 } // namespace lvr2
