@@ -49,6 +49,8 @@ optional<DenseVertexMap<Rgb8Color>> calcColorFromPointCloud(
     const PointsetSurfacePtr<BaseVecT> surface
 );
 
+Rgb8Color floatToRainbowColor(float value);
+
 } // namespace lvr2
 
 #include <lvr2/algorithm/ColorAlgorithms.tcc>

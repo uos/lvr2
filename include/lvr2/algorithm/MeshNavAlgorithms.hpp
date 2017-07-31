@@ -56,6 +56,9 @@ void calcVertexLocalNeighborhood(const BaseMesh<BaseVecT>& mesh, VertexHandle vH
 template<typename BaseVecT>
 DenseVertexMap<float> calcVertexHeightDiff(const BaseMesh<BaseVecT>& mesh, double radius);
 
+template<typename MapF, typename in, typename out>
+DenseVertexMap<out> map(const VertexMap<in>& map_in, MapF map_function);
+
 } // namespace lvr2
 
 #include <lvr2/algorithm/MeshNavAlgorithms.tcc>

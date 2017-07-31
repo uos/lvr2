@@ -20,8 +20,11 @@
  * MeshNavAlgorithms.tcc
  */
 
+#include <algorithm>
+#include <limits>
 
 #include <lvr2/attrmaps/AttrMaps.hpp>
+
 
 namespace lvr2
 {
@@ -41,7 +44,7 @@ void calcVertexLocalNeighborhood(const BaseMesh<BaseVecT>& mesh, VertexHandle vH
         vector<EdgeHandle> cur_edges = mesh.getEdgesOfVertex(cur_vH);
         for (auto eH: cur_edges)
         {
-            vector<VertexHandle> vertex_vector = mesh.getVerticesOfEdge(eH);
+            auto vertex_vector = mesh.getVerticesOfEdge(eH);
             if (!used_vertices[vertex_vector[0]]) // add distance check vertex_vector[0] -> vH < radius
             {
                 stack.push_back(vertex_vector[0]);
@@ -63,23 +66,23 @@ template <typename BaseVecT>
 DenseVertexMap<float> calcVertexHeightDiff(const BaseMesh<BaseVecT>& mesh, double radius)
 {
     DenseVertexMap<float> height_diff;
+    // get neighbored vertices
+    vector<VertexHandle> neighbors;
 
     // calculate height difference for each vertex
     for (auto vH: mesh.vertices())
     {
-        // get neighbored vertices
-        vector<VertexHandle> neighbors;
+        neighbors.clear();
         calcVertexLocalNeighborhood(mesh, vH, radius, neighbors);
 
         // store initial values for min and max height
-        double min_height = std::numeric_limits<float>::max();
-        double max_height = std::numeric_limits<float>::min();
+        double min_height = std::numeric_limits<double>::max();
+        double max_height = std::numeric_limits<double>::min();
 
         // adjust the min and max height values, according to the neighborhood
-        typename vector<VertexHandle>::iterator neighbor_iter;
-        for (neighbor_iter = neighbors.begin(); neighbor_iter != neighbors.end(); neighbor_iter++)
+        for (auto neighbor: neighbors)
         {
-            auto cur_neighbor = (*neighbor_iter);
+            auto cur_neighbor = neighbor;
             auto cur_pos = mesh.getVertexPosition(cur_neighbor);
             min_height = std::min(cur_pos.z, min_height);
             max_height = std::max(cur_pos.z, max_height);
@@ -87,8 +90,22 @@ DenseVertexMap<float> calcVertexHeightDiff(const BaseMesh<BaseVecT>& mesh, doubl
 
         // calculate the final height difference
         height_diff[vH] = max_height - min_height;
+        
         return height_diff;
     }
+}
+
+template <typename MapF, typename in, typename out>
+DenseVertexMap<out> map(const VertexMap<in>& map_in, MapF map_function)
+{
+    DenseVertexMap<out> result_map;
+
+    for (auto vH: map_in)
+    {
+        result_map[vH] = map_function(map_in[vH]);
+    }
+
+    return result_map;
 }
 
 } // namespace lvr2

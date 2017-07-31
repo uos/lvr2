@@ -80,6 +80,52 @@ optional<DenseVertexMap<Rgb8Color>> calcColorFromPointCloud(
     return vertexMap;
 }
 
+Rgb8Color floatToRainbowColor(float value)
+{
+    Rgb8Color result_color;
+    value = std::min(value, 1.0f);
+    value = std::max(value, 0.0f);
+
+    float h = value * 5.0f + 1.0f;
+    int i = floor(h);
+    float f = h - i;
+    if ( !(i&1) ) f = 1 - f; // if i is even
+    float n = 1 - f;
+
+    if (i <= 1)
+    {
+        result_color[0] = floor(n * 255);
+        result_color[1] = 0;
+        result_color[2] = 255;
+    }
+    else if (i == 2)
+    {
+        result_color[0] = 0;
+        result_color[1] = floor(n * 255);
+        result_color[2] = 255;
+    }
+    else if (i == 3)
+    {
+        result_color[0] = 0;
+        result_color[1] = 255;
+        result_color[2] = floor(n * 255);
+    }
+    else if (i == 4)
+    {
+        result_color[0] = floor(n * 255);
+        result_color[1] = 255;
+        result_color[2] = 0;
+    }
+    else if (i >= 5)
+    {
+        result_color[0] = 255;
+        result_color[1] = floor(n * 255);
+        result_color[2] = 0;
+    }
+
+    return result_color;
+}
+
 
 
 } // namespace lvr2
