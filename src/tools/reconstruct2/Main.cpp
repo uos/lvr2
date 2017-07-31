@@ -709,6 +709,7 @@ int main(int argc, char** argv)
         grid->saveGrid("fastgrid.grid");
     }
 
+    calcVertexHeightDiff(mesh, 0.2);
 
     // =======================================================================
     // Optimize and finalize mesh
