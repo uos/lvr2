@@ -51,6 +51,8 @@ optional<DenseVertexMap<Rgb8Color>> calcColorFromPointCloud(
 
 Rgb8Color floatToRainbowColor(float value);
 
+Rgb8Color floatToGrayScaleColor(float value);
+
 } // namespace lvr2
 
 #include <lvr2/algorithm/ColorAlgorithms.tcc>
