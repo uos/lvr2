@@ -45,14 +45,16 @@ void calcVertexLocalNeighborhood(const BaseMesh<BaseVecT>& mesh, VertexHandle vH
         for (auto eH: cur_edges)
         {
             auto vertex_vector = mesh.getVerticesOfEdge(eH);
-            if (!used_vertices[vertex_vector[0]]) // add distance check vertex_vector[0] -> vH < radius
+            if (!used_vertices[vertex_vector[0]] && \
+                 mesh.getVertexPosition(vertex_vector[0]).distanceFrom(mesh.getVertexPosition(vH)) < radius)
             {
                 stack.push_back(vertex_vector[0]);
                 neighbors.push_back(vertex_vector[0]);
             }
             else
             {
-                if (!used_vertices[vertex_vector[1]]) // same dist check as above
+                if (!used_vertices[vertex_vector[1]] && \
+                     mesh.getVertexPosition(vertex_vector[1]).distanceFrom(mesh.getVertexPosition(vH)) < radius)
                 {
                     stack.push_back(vertex_vector[1]);
                     neighbors.push_back(vertex_vector[1]);
@@ -65,7 +67,7 @@ void calcVertexLocalNeighborhood(const BaseMesh<BaseVecT>& mesh, VertexHandle vH
 template <typename BaseVecT>
 DenseVertexMap<float> calcVertexHeightDiff(const BaseMesh<BaseVecT>& mesh, double radius)
 {
-    DenseVertexMap<float> height_diff;
+    DenseVertexMap<float> height_diff(-1.0);
     // get neighbored vertices
     vector<VertexHandle> neighbors;
 
@@ -76,23 +78,27 @@ DenseVertexMap<float> calcVertexHeightDiff(const BaseMesh<BaseVecT>& mesh, doubl
         calcVertexLocalNeighborhood(mesh, vH, radius, neighbors);
 
         // store initial values for min and max height
-        double min_height = std::numeric_limits<double>::max();
-        double max_height = std::numeric_limits<double>::min();
+        float min_height = std::numeric_limits<float>::max();
+        float max_height = std::numeric_limits<float>::min();
 
         // adjust the min and max height values, according to the neighborhood
         for (auto neighbor: neighbors)
         {
             auto cur_neighbor = neighbor;
             auto cur_pos = mesh.getVertexPosition(cur_neighbor);
+            if (height_diff[vH] == -1.0)
+            {
+                min_height = cur_pos.z;
+            }
             min_height = std::min(cur_pos.z, min_height);
             max_height = std::max(cur_pos.z, max_height);
         }
 
         // calculate the final height difference
         height_diff[vH] = max_height - min_height;
-        
-        return height_diff;
     }
+
+    return height_diff;
 }
 
 template <typename MapF, typename in, typename out>
