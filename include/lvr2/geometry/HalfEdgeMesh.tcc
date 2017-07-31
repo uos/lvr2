@@ -872,7 +872,7 @@ OptionalHalfEdgeHandle HalfEdgeMesh<BaseVecT>::findEdgeAroundVertex(
     }
     else
     {
-        DOINDEBUG(dout() << ">> ... found " << loopEdgeH << "." << endl);
+        DOINDEBUG(dout() << ">> ... found " << out.unwrap() << "." << endl);
     }
 
     return out;
