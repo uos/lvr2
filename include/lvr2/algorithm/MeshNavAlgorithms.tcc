@@ -30,36 +30,40 @@ namespace lvr2
 {
 
 template <typename BaseVecT>
-void calcVertexLocalNeighborhood(const BaseMesh<BaseVecT>& mesh, VertexHandle vH, double radius, vector<VertexHandle>& neighbors)
+void calcVertexLocalNeighborhood(
+        const BaseMesh<BaseVecT>& mesh,
+        VertexHandle vH,
+        double radius,
+        vector<VertexHandle>& neighborsOut)
 {
     vector<VertexHandle> stack;
     stack.push_back(vH);
-    SparseVertexMap<bool> used_vertices(false);
+    SparseVertexMap<bool> usedVertices(false);
 
-    while(!stack.empty())
+    while (!stack.empty())
     {
-        auto cur_vH = stack.back();
+        auto curVH = stack.back();
         stack.pop_back();
-        used_vertices.insert(cur_vH, true);
+        usedVertices.insert(curVH, true);
 
-        vector<EdgeHandle> cur_edges = mesh.getEdgesOfVertex(cur_vH);
+        vector<EdgeHandle> cur_edges = mesh.getEdgesOfVertex(curVH);
         for (auto eH: cur_edges)
         {
-            auto vertex_vector = mesh.getVerticesOfEdge(eH);
+            auto vertexVector = mesh.getVerticesOfEdge(eH);
 
-            if (!used_vertices[vertex_vector[0]] && \
-                 mesh.getVertexPosition(vertex_vector[0]).distanceFrom(mesh.getVertexPosition(vH)) < radius)
+            if (!usedVertices[vertexVector[0]] && \
+                 mesh.getVertexPosition(vertexVector[0]).distanceFrom(mesh.getVertexPosition(vH)) < radius)
             {
-                stack.push_back(vertex_vector[0]);
-                neighbors.push_back(vertex_vector[0]);
+                stack.push_back(vertexVector[0]);
+                neighborsOut.push_back(vertexVector[0]);
             }
             else
             {
-                if (!used_vertices[vertex_vector[1]] && \
-                     mesh.getVertexPosition(vertex_vector[1]).distanceFrom(mesh.getVertexPosition(vH)) < radius)
+                if (!usedVertices[vertexVector[1]] && \
+                     mesh.getVertexPosition(vertexVector[1]).distanceFrom(mesh.getVertexPosition(vH)) < radius)
                 {
-                    stack.push_back(vertex_vector[1]);
-                    neighbors.push_back(vertex_vector[1]);
+                    stack.push_back(vertexVector[1]);
+                    neighborsOut.push_back(vertexVector[1]);
                 }
             }
         }
@@ -70,29 +74,29 @@ template <typename BaseVecT>
 DenseVertexMap<float> calcVertexHeightDiff(const BaseMesh<BaseVecT>& mesh, double radius)
 {
     DenseVertexMap<float> height_diff;
-    // get neighbored vertices
+    // Get neighbored vertices
     vector<VertexHandle> neighbors;
 
-    // calculate height difference for each vertex
+    // Calculate height difference for each vertex
     for (auto vH: mesh.vertices())
     {
         neighbors.clear();
         calcVertexLocalNeighborhood(mesh, vH, radius, neighbors);
 
-        // store initial values for min and max height
-        float min_height = std::numeric_limits<float>::max();
-        float max_height = -std::numeric_limits<float>::max();
+        // Store initial values for min and max height
+        float minHeight = std::numeric_limits<float>::max();
+        float maxHeight = -std::numeric_limits<float>::max();
 
-        // adjust the min and max height values, according to the neighborhood
+        // Adjust the min and max height values, according to the neighborhood
         for (auto neighbor: neighbors)
         {
             auto cur_pos = mesh.getVertexPosition(neighbor);
-            min_height = std::min(cur_pos.y, min_height);
-            max_height = std::max(cur_pos.y, max_height);
+            minHeight = std::min(cur_pos.y, minHeight);
+            maxHeight = std::max(cur_pos.y, maxHeight);
         }
 
-        // calculate the final height difference
-        height_diff.insert(vH, max_height-min_height);
+        // Calculate the final height difference
+        height_diff.insert(vH, maxHeight-minHeight);
     }
 
     return height_diff;
@@ -101,14 +105,14 @@ DenseVertexMap<float> calcVertexHeightDiff(const BaseMesh<BaseVecT>& mesh, doubl
 template<typename in, typename out, typename MapF>
 DenseVertexMap<out> changeMap(const VertexMap<in>& map_in, MapF map_function)
 {
-    DenseVertexMap<out> result_map;
+    DenseVertexMap<out> resultMap;
 
     for (auto vH: map_in)
     {
-        result_map.insert(vH, map_function(map_in[vH]));
+        resultMap.insert(vH, map_function(map_in[vH]));
     }
 
-    return result_map;
+    return resultMap;
 }
 
 } // namespace lvr2
