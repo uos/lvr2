@@ -73,6 +73,7 @@ public:
     VertexHandle addVertex(Point<BaseVecT> pos) final;
     FaceHandle addFace(VertexHandle v1H, VertexHandle v2H, VertexHandle v3H) final;
     void removeFace(FaceHandle handle) final;
+    EdgeCollapseResult collapseEdge(EdgeHandle edgeH) final;
 
     size_t numVertices() const final;
     size_t numFaces() const final;
@@ -96,7 +97,6 @@ public:
     MeshHandleIteratorPtr<EdgeHandle> edgesBegin() const final;
     MeshHandleIteratorPtr<EdgeHandle> edgesEnd() const final;
 
-    VertexHandle collapseEdge(EdgeHandle edgeH) final;
     EdgeHandle halfToFullEdgeHandle(HalfEdgeHandle handle) const;
 
 

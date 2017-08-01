@@ -578,7 +578,7 @@ void HalfEdgeMesh<BaseVecT>::getEdgesOfVertex(
 }
 
 template <typename BaseVecT>
-VertexHandle HalfEdgeMesh<BaseVecT>::collapseEdge(EdgeHandle edgeH)
+EdgeCollapseResult HalfEdgeMesh<BaseVecT>::collapseEdge(EdgeHandle edgeH)
 {
     //             [C]                | Vertices:
     //             / ^                | [A]: vertexToRemove
@@ -633,6 +633,9 @@ VertexHandle HalfEdgeMesh<BaseVecT>::collapseEdge(EdgeHandle edgeH)
     bool hasTriangleAbove = getE(edgeToRemoveAL).next == startEdgeH;
     bool hasTriangleBelow = getE(edgeToRemoveBR).next == startEdge.twin;
 
+    // The result that contains information about the removed faces and edges
+    // and the new vertex and edges
+    EdgeCollapseResult result(vertexToKeep);
 
     // fix targets for ingoing edges of the vertex that will be deleted
     // this has to be done before changing the twin edges
@@ -714,6 +717,16 @@ VertexHandle HalfEdgeMesh<BaseVecT>::collapseEdge(EdgeHandle edgeH)
         // Fix next pointers of the two remaining halfEdges to point to each other
         getE(edgeToKeepAL).next = edgeToKeepAR;
         getE(edgeToKeepAR).next = edgeToKeepAL;
+
+        std::array<EdgeHandle, 2> edgesToRemove = {
+            halfToFullEdgeHandle(edgeToRemoveAL),
+            halfToFullEdgeHandle(edgeToRemoveAR)
+        };
+        result.neighbors[1] = EdgeCollapseRemovedFace(
+            faceBelow,
+            edgesToRemove,
+            halfToFullEdgeHandle(edgeToKeepAL)
+        );
     }
 
 
@@ -723,6 +736,8 @@ VertexHandle HalfEdgeMesh<BaseVecT>::collapseEdge(EdgeHandle edgeH)
 
     auto newPosition = position1 + (position2 - position1) / 2;
     getV(vertexToKeep).pos = newPosition;
+
+    result.midPoint = vertexToKeep;
 
     // delete one vertex, the two faces besides the given edge and their inner edges
     DOINDEBUG(dout() << "Remove vertex: " << vertexToRemove << endl);
@@ -744,20 +759,39 @@ VertexHandle HalfEdgeMesh<BaseVecT>::collapseEdge(EdgeHandle edgeH)
         DOINDEBUG(dout() << "Remove edges of triangle above: " << edgeToRemoveAL << " and " << edgeToRemoveAR << endl);
         m_edges.erase(edgeToRemoveAL);
         m_edges.erase(edgeToRemoveAR);
+
+        std::array<EdgeHandle, 2> edgesToRemove = {
+            halfToFullEdgeHandle(edgeToRemoveAL),
+            halfToFullEdgeHandle(edgeToRemoveAR)
+        };
+        result.neighbors[0] = EdgeCollapseRemovedFace(
+            faceAbove,
+            edgesToRemove,
+            halfToFullEdgeHandle(edgeToKeepAL)
+        );
     }
     if (hasTriangleBelow)
     {
         DOINDEBUG(dout() << "Remove edges of triangle below: " << edgeToRemoveBL << " and " << edgeToRemoveBR << endl);
         m_edges.erase(edgeToRemoveBL);
         m_edges.erase(edgeToRemoveBR);
+
+        std::array<EdgeHandle, 2> edgesToRemove = {
+            halfToFullEdgeHandle(edgeToRemoveBL),
+            halfToFullEdgeHandle(edgeToRemoveBR)
+        };
+        result.neighbors[0] = EdgeCollapseRemovedFace(
+            faceAbove,
+            edgesToRemove,
+            halfToFullEdgeHandle(edgeToKeepBL)
+        );
     }
 
     DOINDEBUG(dout() << "Remove start edges: " << startEdgeH << " and " << startEdge.twin << endl);
     m_edges.erase(startEdgeH);
     m_edges.erase(startEdge.twin);
 
-
-    return vertexToKeep;
+    return result;
 }
 
 template <typename BaseVecT>
