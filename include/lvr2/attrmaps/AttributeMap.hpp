@@ -104,12 +104,18 @@ public:
     /**
      * @brief Returns the value associated with the given key or None
      *        if there is no associated value.
+     *
+     * Note: this method can not be used to insert a new value. It only allows
+     * reading and modifying an already inserted value.
      */
     virtual optional<ValueT&> get(HandleT key) = 0;
 
     /**
      * @brief Returns the value associated with the given key or None
      *        if there is no associated value.
+     *
+     * Note: this method can not be used to insert a new value. It only allows
+     * reading an already inserted value.
      */
     virtual optional<const ValueT&> get(HandleT key) const = 0;
 
@@ -121,6 +127,13 @@ public:
     /**
      * @brief Returns an iterator over all keys of this map. The order of
      *        iteration is unspecified.
+     *
+     * You can simply iterate over all keys of this map with a range-based
+     * for-loop:
+     *
+     * \code{.cpp}
+     *     for (auto handle: attributeMap) { ... }
+     * \endcode
      */
     virtual AttributeMapHandleIteratorPtr<HandleT> begin() const = 0;
 
@@ -132,12 +145,20 @@ public:
     /**
      * @brief Returns the value associated with the given key or panics
      *        if there is no associated value.
+     *
+     * Note: since this method panics, if there is no associated value, it
+     * cannot be used to insert new values. Use `insert()` if you want to
+     * insert new values.
      */
     ValueT& operator[](HandleT key);
 
     /**
      * @brief Returns the value associated with the given key or panics
      *        if there is no associated value.
+     *
+     * Note: since this method panics, if there is no associated value, it
+     * cannot be used to insert new values. Use `insert()` if you want to
+     * insert new values.
      */
     const ValueT& operator[](HandleT key) const;
 };
