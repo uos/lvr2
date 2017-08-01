@@ -24,7 +24,7 @@ namespace lvr2
 {
 
 template<typename BaseVecT>
-void cleanContours(BaseMesh<BaseVecT>& mesh, int iterations)
+void cleanContours(BaseMesh<BaseVecT>& mesh, int iterations, float areaThreshold)
 {
     for (int i = 0; i < iterations; i++)
     {

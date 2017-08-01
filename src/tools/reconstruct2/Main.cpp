@@ -829,7 +829,9 @@ int main(int argc, char** argv)
     {
         removeDanglingCluster(mesh, static_cast<size_t>(options.getDanglingArtifacts()));
     }
-    cleanContours(mesh, options.getCleanContourIterations());
+
+    // Magic number from lvr1 `cleanContours`...
+    cleanContours(mesh, options.getCleanContourIterations(), 0.0001);
 
 
     auto faceNormals = calcFaceNormals(mesh);
