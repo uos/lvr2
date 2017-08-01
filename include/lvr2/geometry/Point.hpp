@@ -67,6 +67,7 @@ struct Point : public BaseVecT
 
     // Calculate the distance between this point and the given point.
     typename BaseVecT::CoordType distanceFrom(const Point<BaseVecT> &other) const;
+    typename BaseVecT::CoordType squaredDistanceFrom(const Point<BaseVecT> &other) const;
 
     // The standard operators are deleted and replaced by strongly typed ones.
     BaseVecT operator+(const BaseVecT &other) const = delete;

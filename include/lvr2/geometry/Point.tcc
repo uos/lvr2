@@ -31,7 +31,13 @@ namespace lvr2
 template <typename BaseVecT>
 typename BaseVecT::CoordType Point<BaseVecT>::distanceFrom(const Point<BaseVecT> &other) const
 {
-    return sqrt((this->x - other.x)*(this->x - other.x) + (this->y - other.y)*(this->y - other.y) + (this->z - other.z)*(this->z - other.z));
+    return (*this-other).length();
+}
+
+template <typename BaseVecT>
+typename BaseVecT::CoordType Point<BaseVecT>::squaredDistanceFrom(const Point<BaseVecT> &other) const
+{
+    return (*this-other).length2();
 }
 
 template <typename BaseVecT>
