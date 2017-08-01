@@ -34,38 +34,45 @@ void calcVertexLocalNeighborhood(const BaseMesh<BaseVecT>& mesh, VertexHandle vH
 {
     vector<VertexHandle> stack;
     stack.push_back(vH);
+    SparseVertexMap<bool> used_vertices(false);
+
     while(!stack.empty())
     {
         auto cur_vH = stack.back();
         stack.pop_back();
-        SparseVertexMap<bool> used_vertices(false);
-        used_vertices[cur_vH] = true;
+        used_vertices.insert(cur_vH, true);
 
         vector<EdgeHandle> cur_edges = mesh.getEdgesOfVertex(cur_vH);
         for (auto eH: cur_edges)
         {
             auto vertex_vector = mesh.getVerticesOfEdge(eH);
-            if (!used_vertices[vertex_vector[0]]) // add distance check vertex_vector[0] -> vH < radius
+            //cout << "Current Distance: " << mesh.getVertexPosition(vertex_vector[0]).distanceFrom(mesh.getVertexPosition(vH)) << endl;
+            if (!used_vertices[vertex_vector[0]] && \
+                 mesh.getVertexPosition(vertex_vector[0]).distanceFrom(mesh.getVertexPosition(vH)) < radius)
             {
                 stack.push_back(vertex_vector[0]);
                 neighbors.push_back(vertex_vector[0]);
+            //    cout << "if 1" << endl;
             }
             else
             {
-                if (!used_vertices[vertex_vector[1]]) // same dist check as above
+                if (!used_vertices[vertex_vector[1]] && \
+                     mesh.getVertexPosition(vertex_vector[1]).distanceFrom(mesh.getVertexPosition(vH)) < radius)
                 {
                     stack.push_back(vertex_vector[1]);
                     neighbors.push_back(vertex_vector[1]);
+              //      cout << "if 2" << endl;
                 }
-            };
+            }
         }
+        //cout << "current neighbor size: " << neighbors.size() << endl;
     }
 }
 
 template <typename BaseVecT>
 DenseVertexMap<float> calcVertexHeightDiff(const BaseMesh<BaseVecT>& mesh, double radius)
 {
-    DenseVertexMap<float> height_diff;
+    DenseVertexMap<float> height_diff(-1.0);
     // get neighbored vertices
     vector<VertexHandle> neighbors;
 
@@ -73,26 +80,36 @@ DenseVertexMap<float> calcVertexHeightDiff(const BaseMesh<BaseVecT>& mesh, doubl
     for (auto vH: mesh.vertices())
     {
         neighbors.clear();
+        //cout << "Neighborvector size 1: " << neighbors.size() << endl;
         calcVertexLocalNeighborhood(mesh, vH, radius, neighbors);
+        //cout << "Neighborvector size 2: " << neighbors.size() << endl;
 
         // store initial values for min and max height
-        double min_height = std::numeric_limits<double>::max();
-        double max_height = std::numeric_limits<double>::min();
+        float min_height = std::numeric_limits<float>::max();
+        float max_height = std::numeric_limits<float>::min();
 
         // adjust the min and max height values, according to the neighborhood
         for (auto neighbor: neighbors)
         {
             auto cur_neighbor = neighbor;
             auto cur_pos = mesh.getVertexPosition(cur_neighbor);
+            if (height_diff[vH] == -1.0)
+            {
+                min_height = cur_pos.z;
+            }
+            cout << "Current Position (z-value): " << cur_pos.z << endl;
             min_height = std::min(cur_pos.z, min_height);
             max_height = std::max(cur_pos.z, max_height);
         }
 
+        //cout << "Max Height:" << max_height << endl;
+        //cout << "Min Height:" << min_height << endl;
+
         // calculate the final height difference
-        height_diff[vH] = max_height - min_height;
-        
-        return height_diff;
+        height_diff.insert(vH, max_height-min_height);
     }
+
+    return height_diff;
 }
 
 template<typename BaseVecT>
@@ -103,7 +120,7 @@ DenseEdgeMap<float> calcVertexAngleEdges(const BaseMesh<BaseVecT>& mesh, const V
     for (auto eH: mesh.edges())
     {
         auto vH_vector = mesh.getVerticesOfEdge(eH);
-        edge_angle.insert(eH, acos(normals[vH_vector[0]]*normals[vH_vector[1]]));
+        edge_angle.insert(eH, acos(normals[vH_vector[0]].dot(normals[vH_vector[1]].asVector())));
         if(isnan(edge_angle[eH]))
         {
                 edge_angle[eH] = 0;
@@ -122,15 +139,14 @@ DenseVertexMap<float> calcAverageVertexAngles(const BaseMesh<BaseVecT>& mesh, co
     for (auto vH: mesh.vertices())
     {
         angle_sum = 0;
-        auto edgeVec = mesh.getEdgesofVertex(vH);
+        auto edgeVec = mesh.getEdgesOfVertex(vH);
         int degree = edgeVec.size();
         for(auto eH: edgeVec)
         {
             angle_sum += edge_angles[eH];
         }
-        vertex_angles[vH] = angle_sum/degree;
+        vertex_angles.insert(vH, angle_sum/degree);
     }
-
     return vertex_angles;
 }
 
@@ -142,12 +158,11 @@ DenseVertexMap<float> calcVertexRoughness(const BaseMesh<BaseVecT>& mesh, double
     // get neighbored vertices
     vector<VertexHandle> neighbors;
     double sum;
-
+    auto average_angles = calcAverageVertexAngles(mesh, normals);
 
     // calculate roughness for each vertex
     for (auto vH: mesh.vertices())
     {
-        auto average_angles = calcAverageVertexAngles(mesh, normals);
         sum = 0.0;
 
         neighbors.clear();
@@ -157,26 +172,25 @@ DenseVertexMap<float> calcVertexRoughness(const BaseMesh<BaseVecT>& mesh, double
         // adjust sum values, according to the neighborhood
         for (auto neighbor: neighbors)
         {
-            auto cur_neighbor = neighbor;
-
+           sum += average_angles[neighbor];
         }
 
         // calculate the final roughness
-        roughness[vH] = sum / neighbors.size();
+        roughness.insert(vH, sum / neighbors.size());
 
-        }
+    }
     return roughness;
 
 }
 
-template <typename MapF, typename in, typename out>
-DenseVertexMap<out> map(const VertexMap<in>& map_in, MapF map_function)
+template<typename in, typename out, typename MapF>
+DenseVertexMap<out> changeMap(const VertexMap<in>& map_in, MapF map_function)
 {
     DenseVertexMap<out> result_map;
 
     for (auto vH: map_in)
     {
-        result_map[vH] = map_function(map_in[vH]);
+        result_map.insert(vH, map_function(map_in[vH]));
     }
 
     return result_map;

@@ -63,11 +63,10 @@ template<typename BaseVecT>
 DenseVertexMap<float> calcAverageVertexAngles(const BaseMesh<BaseVecT>& mesh, const VertexMap<Normal<BaseVecT>>& normals);
 
 template<typename BaseVecT>
-DenseVertexMap<float> calcVertexAngleEdges(const BaseMesh<BaseVecT>& mesh, const VertexMap<Normal<BaseVecT>>& normals);
+DenseEdgeMap<float> calcVertexAngleEdges(const BaseMesh<BaseVecT>& mesh, const VertexMap<Normal<BaseVecT>>& normals);
 
-
-    template<typename MapF, typename in, typename out>
-DenseVertexMap<out> map(const VertexMap<in>& map_in, MapF map_function);
+template<typename in, typename out, typename MapF>
+DenseVertexMap<out> changeMap(const VertexMap<in>& map_in, MapF map_function);
 
 } // namespace lvr2
 

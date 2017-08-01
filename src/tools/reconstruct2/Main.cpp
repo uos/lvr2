@@ -709,7 +709,29 @@ int main(int argc, char** argv)
         grid->saveGrid("fastgrid.grid");
     }
 
+    // Mesh Nav Tests
+    /*DenseVertexMap<float> height_differences(-1.0);
+    height_differences = calcVertexHeightDiff(mesh, 0.2);
+    float max_val = -1;
 
+    for (auto f: height_differences)
+    {
+        //cout << "Current height difference:" << height_differences[f] << endl;
+        if(height_differences[f]>max_val) max_val = height_differences[f];
+    }
+
+    for (auto f: height_differences)
+    {
+        height_differences[f] = height_differences[f]/max_val;
+    }
+
+    Rgb8Color (*color_function_pointer)(float);
+    color_function_pointer = &floatToRainbowColor;
+
+    std::array<uint8_t, 3> a = {0, 0, 0};
+    DenseVertexMap<Rgb8Color> color_vertices(a);
+    color_vertices = changeMap<float, Rgb8Color>(height_differences, color_function_pointer);
+    */
     // =======================================================================
     // Optimize and finalize mesh
     // =======================================================================
@@ -774,8 +796,29 @@ int main(int argc, char** argv)
     // Calc normals for vertices
     auto vertexNormals = calcVertexNormals(mesh, faceNormals, *surface);
 
-    calcVertexRoughness(mesh, 0.2, vertexNormals);
+    auto roughness = calcVertexRoughness(mesh, 31, vertexNormals);
 
+    float max_val = -1;
+
+    for (auto f: roughness)
+    {
+        //cout << "Current height difference:" << height_differences[f] << endl;
+        if(roughness[f]>max_val) max_val = roughness[f];
+    }
+
+    for (auto f: roughness)
+    {
+        roughness[f] = roughness[f]/max_val;
+    }
+
+    Rgb8Color (*color_function_pointer)(float);
+    color_function_pointer = &floatToRainbowColor;
+
+
+
+    std::array<uint8_t, 3> a = {0, 0, 0};
+    DenseVertexMap<Rgb8Color> color_vertices(a);
+    color_vertices = changeMap<float, Rgb8Color>(roughness, color_function_pointer);
 
 
     // Debug mesh
@@ -783,21 +826,21 @@ int main(int argc, char** argv)
     //cout << "duplicate vertices: " << duplicateVertices.size() << endl;
 
     // Finalize mesh (convert it to simple `MeshBuffer`)
-    // FinalizeAlgorithm<Vec> finalize;
-    // finalize.setNormalData(vertexNormals);
-    // if (colorMap)
-    // {
-    //     finalize.setColorData(*colorMap);
-    // }
-    // auto buffer = finalize.apply(mesh);
+     FinalizeAlgorithm<Vec> finalize;
+     finalize.setNormalData(vertexNormals);
+     //if (color_vertices)
+     //{
+        finalize.setColorData(color_vertices);
+     //}
+     auto buffer = finalize.apply(mesh);
 
-    ClusterFlatteningFinalizer<Vec> finalize(clusterBiMap);
-    finalize.setVertexNormals(vertexNormals);
-    if (clusterColors)
-    {
-        finalize.setClusterColors(*clusterColors);
-    }
-    auto buffer = finalize.apply(mesh);
+     //ClusterFlatteningFinalizer<Vec> finalize(clusterBiMap);
+     //finalize.setVertexNormals(vertexNormals);
+     //if (clusterColors)
+     //{
+     //   finalize.setClusterColors(*clusterColors);
+     //}
+     //auto buffer = finalize.apply(mesh);
 
     // =======================================================================
     // Write all results (including the mesh) to file
