@@ -85,6 +85,9 @@ template <typename> class FaceIteratorProxy;
 template <typename> class EdgeIteratorProxy;
 template <typename> class VertexIteratorProxy;
 
+struct EdgeCollapseResult;
+struct EdgeCollapseRemovedFace;
+
 /**
  * @brief Interface for triangle-meshes with adjacency information.
  *
@@ -159,6 +162,13 @@ public:
      *        vertices.
      */
     virtual void removeFace(FaceHandle handle) = 0;
+
+    /**
+     * @brief Merges the two vertices connected by the given edge.
+     *
+     * @return The vertex-handle of the new vertex.
+     */
+    virtual EdgeCollapseResult collapseEdge(EdgeHandle edgeH) = 0;
 
     /**
      * @brief Returns the number of vertices in the mesh.
@@ -302,13 +312,6 @@ public:
      */
     virtual MeshHandleIteratorPtr<EdgeHandle> edgesEnd() const = 0;
 
-    /**
-     * @brief Merges the two vertices connected by the given edge.
-     *
-     * @return The vertex-handle of the new vertex.
-     */
-    virtual VertexHandle collapseEdge(EdgeHandle edgeH) = 0;
-
     // =======================================================================
     // Provided methods (already implemented)
     // =======================================================================
@@ -420,6 +423,37 @@ private:
     VertexIteratorProxy(const BaseMesh<BaseVecT>& mesh) : m_mesh(mesh) {}
     const BaseMesh<BaseVecT>& m_mesh;
     friend BaseMesh<BaseVecT>;
+};
+
+struct EdgeCollapseRemovedFace
+{
+    /// A face adjacent to the collapsed edge which was removed
+    OptionalFaceHandle removedFace;
+
+    /// The edges of the removed face (excluding the collapsed edge itself)
+    array<EdgeHandle, 2> removedEdges;
+
+    /// The edge that was inserted to replace the removed face
+    EdgeHandle newEdge;
+
+    EdgeCollapseRemovedFace(
+        OptionalFaceHandle removedFace,
+        array<EdgeHandle, 2> removedEdges,
+        EdgeHandle newEdge
+    ) : removedFace(removedFace), removedEdges(removedEdges), newEdge(newEdge) {};
+};
+
+struct EdgeCollapseResult
+{
+    /// The vertex which was inserted to replace the collapsed edge
+    VertexHandle midPoint;
+
+    /// The (face) neighbors of the edge which might have been removed. If so,
+    /// the entry is not `none` and contains information about the invalidated
+    /// handles and the replacement edge.
+    array<optional<EdgeCollapseRemovedFace>, 2> neighbors;
+
+    EdgeCollapseResult(VertexHandle midPoint) : midPoint(midPoint) {};
 };
 
 } // namespace lvr2
