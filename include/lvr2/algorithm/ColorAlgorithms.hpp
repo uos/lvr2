@@ -52,7 +52,12 @@ optional<DenseVertexMap<Rgb8Color>> calcColorFromPointCloud(
 /**
  * @brief   Convert a given float to an 8-bit RGB-Color, using the rainbowcolor scale.
  *
+ * The given float, which we want to convert to an 8-bit RGB-Color, has to be in [0, 1].
+ * If it is bigger than 1 it's value is set to 1.
+ * If it is smaller than 0 it's value is set to 0.
+ *
  * @param   value The float value, which will be converted to an RGB-Rainbowcolor.
+ *
  * @return  The 8-bit RGB-Color, interpreted as rainbowcolor.
  */
 Rgb8Color floatToRainbowColor(float value);
@@ -60,7 +65,8 @@ Rgb8Color floatToRainbowColor(float value);
 /**
  * @brief   Convert a given float to an 8-bit Grayscale-Color.
  *
- * @param   value The float value, which will be converted to an Grayscale-Color.
+ * @param   value The float value, which will be converted to a Grayscale-Color.
+ *
  * @return  The 8-bit Grayscale-Color.
  */
 Rgb8Color floatToGrayScaleColor(float value);
