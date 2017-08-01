@@ -97,8 +97,6 @@ public:
     MeshHandleIteratorPtr<EdgeHandle> edgesBegin() const final;
     MeshHandleIteratorPtr<EdgeHandle> edgesEnd() const final;
 
-    EdgeHandle halfToFullEdgeHandle(HalfEdgeHandle handle) const;
-
 
     // ========================================================================
     // = Other public methods
@@ -120,6 +118,14 @@ private:
     const Face& getF(FaceHandle handle) const;
     Vertex& getV(VertexHandle handle);
     const Vertex& getV(VertexHandle handle) const;
+
+    /**
+     * @brief Converts a half edge handle to a full edge handle
+     *
+     * @return  The handle with the smaller index of the given half edge and
+     *          its twin
+     */
+    EdgeHandle halfToFullEdgeHandle(HalfEdgeHandle handle) const;
 
     /**
      * @brief Given two vertices, find the edge pointing from one to the other.
