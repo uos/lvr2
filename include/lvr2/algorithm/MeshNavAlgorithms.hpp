@@ -65,6 +65,37 @@ template<typename BaseVecT>
 DenseVertexMap<float> calcVertexHeightDiff(const BaseMesh<BaseVecT>& mesh, double radius);
 
 /**
+ * @brief calculates the roughness for each vertex
+ *
+ * @param mesh given mesh for calculation
+ * @param radius radius whish defines the local neighborhood
+ * @param normals the vertex norals of the given mesh as a map
+ * @return A map <vertex, float> filled with roughness values for each vertex
+ */
+template<typename BaseVecT>
+DenseVertexMap<float> calcVertexRoughness(const BaseMesh<BaseVecT>& mesh, double radius, const VertexMap<Normal<BaseVecT>>& normals);
+
+/**
+ * @brief calculates the average angle for each vertex
+ *
+ * @param mesh given mesh for calculation
+ * @param normals vertex normals of the mesh
+ * @return map<vertex, float> with the average angle for each vertex
+ */
+template<typename BaseVecT>
+DenseVertexMap<float> calcAverageVertexAngles(const BaseMesh<BaseVecT>& mesh, const VertexMap<Normal<BaseVecT>>& normals);
+
+/**
+ * @brief calculates the angle for each edge
+ *
+ * @param mesh given mesh for calculation
+ * @param normals vertex normals of the mesh
+ * @return map<edge, float> with the angle of each edge
+ */
+template<typename BaseVecT>
+DenseEdgeMap<float> calcVertexAngleEdges(const BaseMesh<BaseVecT>& mesh, const VertexMap<Normal<BaseVecT>>& normals);
+
+/**
  * @brief   Change the given input VertexMap to a different type output DenseVertexMap.
  *
  * The conversion between the input VertexMap and output DenseVertexMap is defined by the given function.
