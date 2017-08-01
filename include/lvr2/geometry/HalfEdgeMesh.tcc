@@ -605,31 +605,31 @@ EdgeCollapseResult HalfEdgeMesh<BaseVecT>::collapseEdge(EdgeHandle edgeH)
     auto startEdge = getE(startEdgeH);
     auto startEdgeTwin = getE(startEdge.twin);
 
-    // the two vertices that are merged
+    // The two vertices that are merged
     auto vertexToRemove = startEdge.target;
     auto vertexToKeep = startEdgeTwin.target;
 
-    // the two faces next to the given edge
+    // The two faces next to the given edge
     OptionalFaceHandle faceAbove = startEdge.face;
     OptionalFaceHandle faceBelow = startEdgeTwin.face;
 
-    // edges above the start edge
+    // Edges above the start edge
     auto edgeToRemoveAR = startEdge.next;
     auto edgeToKeepAR = getE(edgeToRemoveAR).twin;
     auto edgeToRemoveAL = getE(edgeToRemoveAR).next;
     auto edgeToKeepAL = getE(edgeToRemoveAL).twin;
 
-    // edges below the start edge
+    // Edges below the start edge
     auto edgeToRemoveBL = startEdgeTwin.next;
     auto edgeToKeepBL = getE(edgeToRemoveBL).twin;
     auto edgeToRemoveBR = getE(edgeToRemoveBL).next;
     auto edgeToKeepBR = getE(edgeToRemoveBR).twin;
 
-    // vertices above and below
+    // Vertices above and below
     auto vertexAbove = getE(edgeToRemoveAR).target;
     auto vertexBelow = getE(edgeToRemoveBL).target;
 
-    // check if there are closed triangles next to the start edge
+    // Check if there are closed triangles next to the start edge
     bool hasTriangleAbove = getE(edgeToRemoveAL).next == startEdgeH;
     bool hasTriangleBelow = getE(edgeToRemoveBR).next == startEdge.twin;
 
@@ -637,7 +637,7 @@ EdgeCollapseResult HalfEdgeMesh<BaseVecT>::collapseEdge(EdgeHandle edgeH)
     // and the new vertex and edges
     EdgeCollapseResult result(vertexToKeep);
 
-    // fix targets for ingoing edges of the vertex that will be deleted
+    // Fix targets for ingoing edges of the vertex that will be deleted
     // this has to be done before changing the twin edges
     auto checkTargetIsVertexToRemoveLambda = [&, this](auto eH)
     {
@@ -652,22 +652,22 @@ EdgeCollapseResult HalfEdgeMesh<BaseVecT>::collapseEdge(EdgeHandle edgeH)
         edgeOfVertexToRemove = findEdgeAroundVertex(vertexToRemove, checkTargetIsVertexToRemoveLambda);
     }
 
-    // if there is a face or a closed triangle without a face above, collapse it
+    // If there is a face or a closed triangle without a face above, collapse it
     if (faceAbove || hasTriangleAbove)
     {
         DOINDEBUG(dout() << "faceAbove || hasTriangleAbove" << endl);
-        // fix twin edges
+        // Fix twin edges
         getE(edgeToKeepAL).twin = edgeToKeepAR;
         getE(edgeToKeepAR).twin = edgeToKeepAL;
 
-        // fix outgoing edges of vertices because they might be deleted
+        // Fix outgoing edges of vertices because they might be deleted
         getV(vertexToKeep).outgoing = edgeToKeepAL;
         getV(vertexAbove).outgoing = edgeToKeepAR;
     }
     else
     {
         DOINDEBUG(dout() << "!(faceAbove || hasTriangleAbove)" << endl);
-        // if there is no triangle above, the edge whose next is the start edge
+        // If there is no triangle above, the edge whose next is the start edge
         // needs the correct new next edge
         auto startEdgePrecursor = findEdgeAroundVertex(startEdge.twin, [&, this](auto eH)
         {
@@ -678,7 +678,7 @@ EdgeCollapseResult HalfEdgeMesh<BaseVecT>::collapseEdge(EdgeHandle edgeH)
             getE(startEdgePrecursor.unwrap()).next = startEdge.next;
         }
 
-        // fix outgoing edge of vertexToKeep because it might be deleted
+        // Fix outgoing edge of vertexToKeep because it might be deleted
         getV(vertexToKeep).outgoing = startEdge.next;
 
     }
@@ -686,17 +686,17 @@ EdgeCollapseResult HalfEdgeMesh<BaseVecT>::collapseEdge(EdgeHandle edgeH)
     if (faceBelow || hasTriangleBelow)
     {
         DOINDEBUG(dout() << "faceBelow || hasTriangleBelow" << endl);
-        // fix twin edges
+        // Fix twin edges
         getE(edgeToKeepBL).twin = edgeToKeepBR;
         getE(edgeToKeepBR).twin = edgeToKeepBL;
 
-        // fix outgoing edge of vertexBelow because it might be deleted
+        // Fix outgoing edge of vertexBelow because it might be deleted
         getV(vertexBelow).outgoing = edgeToKeepBL;
     }
     else
     {
         DOINDEBUG(dout() << "!(faceBelow || hasTriangleBelow)" << endl);
-        // if there is no triangle below, the edge whose next is the twin of the
+        // If there is no triangle below, the edge whose next is the twin of the
         // start edge needs the correct new next edge
         auto startEdgeTwinPrecursor = findEdgeAroundVertex(startEdgeH, [&, this](auto eH)
         {
@@ -708,7 +708,7 @@ EdgeCollapseResult HalfEdgeMesh<BaseVecT>::collapseEdge(EdgeHandle edgeH)
         }
     }
 
-    // check for the special case that the mesh consists of only one triangle
+    // Check for the special case that the mesh consists of only one triangle
     // to make sure edges are not deleted twice
     if (edgeToKeepAL == edgeToRemoveBL)
     {
@@ -730,7 +730,7 @@ EdgeCollapseResult HalfEdgeMesh<BaseVecT>::collapseEdge(EdgeHandle edgeH)
     }
 
 
-    // calculate and set new position of the vertex that is kept
+    // Calculate and set new position of the vertex that is kept
     auto position1 = getV(vertexToRemove).pos;
     auto position2 = getV(vertexToKeep).pos;
 
@@ -739,7 +739,7 @@ EdgeCollapseResult HalfEdgeMesh<BaseVecT>::collapseEdge(EdgeHandle edgeH)
 
     result.midPoint = vertexToKeep;
 
-    // delete one vertex, the two faces besides the given edge and their inner edges
+    // Delete one vertex, the two faces besides the given edge and their inner edges
     DOINDEBUG(dout() << "Remove vertex: " << vertexToRemove << endl);
     m_vertices.erase(vertexToRemove);
 
@@ -800,6 +800,7 @@ template <typename BaseVecT>
 EdgeHandle HalfEdgeMesh<BaseVecT>::halfToFullEdgeHandle(HalfEdgeHandle handle) const
 {
     auto twin = getE(handle).twin;
+    // return the handle with the smaller index of the given half edge and its twin
     return EdgeHandle(min(twin.idx(), handle.idx()));
 }
 
@@ -1173,6 +1174,8 @@ HemEdgeIterator<BaseVecT>& HemEdgeIterator<BaseVecT>::operator++()
 {
     ++m_iterator;
 
+    // If not at the end, find the next half edge handle that equals the full edge handle of that edge
+    // according to the halfToFullEdgeHandle method
     while (!m_iterator.isAtEnd() && (*m_iterator).idx() != m_mesh.halfToFullEdgeHandle(*m_iterator).idx())
     {
         ++m_iterator;

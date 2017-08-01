@@ -50,6 +50,8 @@ public:
 
     static HalfEdgeHandle oneHalfOf(EdgeHandle eH)
     {
+        // The index of an edge handle is always the index of the handle of
+        // one of its half edges
         return HalfEdgeHandle(eH.idx());
     }
 };

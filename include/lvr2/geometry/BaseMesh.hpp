@@ -166,7 +166,13 @@ public:
     /**
      * @brief Merges the two vertices connected by the given edge.
      *
-     * @return The vertex-handle of the new vertex.
+     * If existing, the two neighboring faces or triangles without faces and
+     * their edges are removed and replaced by two new edges
+     * The vertices at the start and end of the given edge are removed and
+     * replaced by a new vertex at the center of the previous vertex positions
+     *
+     * @return  An EdgeCollapseResult that contains handles of the removed
+     *          faces and edges and the new vertex and the new edges
      */
     virtual EdgeCollapseResult collapseEdge(EdgeHandle edgeH) = 0;
 
