@@ -194,6 +194,7 @@
 #include <lvr2/io/PointBuffer.hpp>
 #include <lvr2/util/Factories.hpp>
 #include <lvr2/algorithm/MeshNavAlgorithms.hpp>
+#include <lvr2/algorithm/UtilAlgorithms.hpp>
 
 // PCL related includes
 #ifdef LVR_USE_PCL
@@ -691,7 +692,7 @@ void test_meshnav(const BaseMesh<BaseVecT>& mesh, DenseVertexMap<Rgb8Color>& col
     color_function_pointer = &floatToRainbowColor;
 
     // create map of color vertices according to the calculated height differences
-    color_vertices = changeMap<float, Rgb8Color>(comb_cost, color_function_pointer);
+    color_vertices = lvr2::map<float, Rgb8Color>(comb_cost, color_function_pointer);
 }
 
 int main(int argc, char** argv)
