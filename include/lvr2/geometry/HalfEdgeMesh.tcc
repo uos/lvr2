@@ -703,9 +703,12 @@ VertexHandle HalfEdgeMesh<BaseVecT>::collapseEdge(EdgeHandle edgeH)
 
     // check for the special case that the mesh consists of only one triangle
     // to make sure edges are not deleted twice
-    if (edgeToKeepAL == edgeToKeepBL)
+    if (edgeToKeepAL == edgeToRemoveBL)
     {
-        hasTriangleBelow == false;
+        hasTriangleBelow = false;
+        // Fix next pointers of the two remaining halfEdges to point to each other
+        getE(edgeToKeepAL).next = edgeToKeepAR;
+        getE(edgeToKeepAR).next = edgeToKeepAL;
     }
 
 
