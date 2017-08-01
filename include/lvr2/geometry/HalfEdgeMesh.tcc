@@ -757,8 +757,6 @@ EdgeCollapseResult HalfEdgeMesh<BaseVecT>::collapseEdge(EdgeHandle edgeH)
     if (hasTriangleAbove)
     {
         DOINDEBUG(dout() << "Remove edges of triangle above: " << edgeToRemoveAL << " and " << edgeToRemoveAR << endl);
-        m_edges.erase(edgeToRemoveAL);
-        m_edges.erase(edgeToRemoveAR);
 
         std::array<EdgeHandle, 2> edgesToRemove = {
             halfToFullEdgeHandle(edgeToRemoveAL),
@@ -769,12 +767,13 @@ EdgeCollapseResult HalfEdgeMesh<BaseVecT>::collapseEdge(EdgeHandle edgeH)
             edgesToRemove,
             halfToFullEdgeHandle(edgeToKeepAL)
         );
+
+        m_edges.erase(edgeToRemoveAL);
+        m_edges.erase(edgeToRemoveAR);
     }
     if (hasTriangleBelow)
     {
         DOINDEBUG(dout() << "Remove edges of triangle below: " << edgeToRemoveBL << " and " << edgeToRemoveBR << endl);
-        m_edges.erase(edgeToRemoveBL);
-        m_edges.erase(edgeToRemoveBR);
 
         std::array<EdgeHandle, 2> edgesToRemove = {
             halfToFullEdgeHandle(edgeToRemoveBL),
@@ -785,6 +784,9 @@ EdgeCollapseResult HalfEdgeMesh<BaseVecT>::collapseEdge(EdgeHandle edgeH)
             edgesToRemove,
             halfToFullEdgeHandle(edgeToKeepBL)
         );
+
+        m_edges.erase(edgeToRemoveBL);
+        m_edges.erase(edgeToRemoveBR);
     }
 
     DOINDEBUG(dout() << "Remove start edges: " << startEdgeH << " and " << startEdge.twin << endl);
