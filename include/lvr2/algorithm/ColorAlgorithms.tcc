@@ -130,8 +130,6 @@ Rgb8Color floatToGrayScaleColor(float value)
 {
     std::array<uint8_t, 3> return_color = {0, 0, 0};
 
-    //if (max == min) return return_color; //avoid to divide by 0
-
     int grayscale_result = 255 * (value);
     return_color[0] = grayscale_result;
     return_color[1] = grayscale_result;
