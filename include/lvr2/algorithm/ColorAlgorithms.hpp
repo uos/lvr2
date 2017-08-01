@@ -49,8 +49,20 @@ optional<DenseVertexMap<Rgb8Color>> calcColorFromPointCloud(
     const PointsetSurfacePtr<BaseVecT> surface
 );
 
+/**
+ * @brief   Convert a given float to an 8-bit RGB-Color, using the rainbowcolor scale.
+ *
+ * @param   value The float value, which will be converted to an RGB-Rainbowcolor.
+ * @return  The 8-bit RGB-Color, interpreted as rainbowcolor.
+ */
 Rgb8Color floatToRainbowColor(float value);
 
+/**
+ * @brief   Convert a given float to an 8-bit Grayscale-Color.
+ *
+ * @param   value The float value, which will be converted to an Grayscale-Color.
+ * @return  The 8-bit Grayscale-Color.
+ */
 Rgb8Color floatToGrayScaleColor(float value);
 
 } // namespace lvr2
