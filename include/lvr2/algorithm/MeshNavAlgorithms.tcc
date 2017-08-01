@@ -46,15 +46,12 @@ void calcVertexLocalNeighborhood(const BaseMesh<BaseVecT>& mesh, VertexHandle vH
         for (auto eH: cur_edges)
         {
             auto vertex_vector = mesh.getVerticesOfEdge(eH);
-            //cout << "Current Vertex: " << mesh.getVertexPosition(vH).x << ", " << mesh.getVertexPosition(vH).y << ", " << mesh.getVertexPosition(vH).z << endl;
-            //cout << "Vertex 1: " << mesh.getVertexPosition(vertex_vector[0]).x << ", " << mesh.getVertexPosition(vertex_vector[0]).y << ", " << mesh.getVertexPosition(vertex_vector[0]).z << endl;
-            //cout << "Current Distance: " << mesh.getVertexPosition(vertex_vector[0]).distanceFrom(mesh.getVertexPosition(vH)) << endl;
+
             if (!used_vertices[vertex_vector[0]] && \
                  mesh.getVertexPosition(vertex_vector[0]).distanceFrom(mesh.getVertexPosition(vH)) < radius)
             {
                 stack.push_back(vertex_vector[0]);
                 neighbors.push_back(vertex_vector[0]);
-                //cout << "if 1" << endl;
             }
             else
             {
@@ -63,11 +60,9 @@ void calcVertexLocalNeighborhood(const BaseMesh<BaseVecT>& mesh, VertexHandle vH
                 {
                     stack.push_back(vertex_vector[1]);
                     neighbors.push_back(vertex_vector[1]);
-                    //cout << "if 2" << endl;
                 }
             }
         }
-        //cout << "current neighbor size: " << neighbors.size() << endl;
     }
 }
 
@@ -82,25 +77,19 @@ DenseVertexMap<float> calcVertexHeightDiff(const BaseMesh<BaseVecT>& mesh, doubl
     for (auto vH: mesh.vertices())
     {
         neighbors.clear();
-        //cout << "Neighborvector size 1: " << neighbors.size() << endl;
         calcVertexLocalNeighborhood(mesh, vH, radius, neighbors);
-        //cout << "Neighborvector size 2: " << neighbors.size() << endl;
 
         // store initial values for min and max height
         float min_height = std::numeric_limits<float>::max();
-        float max_height = std::numeric_limits<float>::min();
+        float max_height = -std::numeric_limits<float>::max();
 
         // adjust the min and max height values, according to the neighborhood
         for (auto neighbor: neighbors)
         {
             auto cur_pos = mesh.getVertexPosition(neighbor);
-            //cout << "Current Position (y-value): " << cur_pos.y << endl;
             min_height = std::min(cur_pos.y, min_height);
             max_height = std::max(cur_pos.y, max_height);
         }
-
-        cout << "Max Height:" << max_height << endl;
-        cout << "Min Height:" << min_height << endl;
 
         // calculate the final height difference
         height_diff.insert(vH, max_height-min_height);
