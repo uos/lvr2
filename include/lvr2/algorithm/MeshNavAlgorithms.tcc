@@ -36,6 +36,7 @@ void calcVertexLocalNeighborhood(
         double radius,
         vector<VertexHandle>& neighborsOut)
 {
+    radius *= radius;
     vector<VertexHandle> stack;
     stack.push_back(vH);
     SparseVertexMap<bool> usedVertices(false);
@@ -51,19 +52,13 @@ void calcVertexLocalNeighborhood(
         {
             auto vertexVector = mesh.getVerticesOfEdge(eH);
 
-            if (!usedVertices[vertexVector[0]] && \
-                 mesh.getVertexPosition(vertexVector[0]).distanceFrom(mesh.getVertexPosition(vH)) < radius)
+            for (auto tmpVH: vertexVector)
             {
-                stack.push_back(vertexVector[0]);
-                neighborsOut.push_back(vertexVector[0]);
-            }
-            else
-            {
-                if (!usedVertices[vertexVector[1]] && \
-                     mesh.getVertexPosition(vertexVector[1]).distanceFrom(mesh.getVertexPosition(vH)) < radius)
+                if (!usedVertices[tmpVH] && \
+                     mesh.getVertexPosition(tmpVH).squaredDistanceFrom(mesh.getVertexPosition(vH)) < radius)
                 {
-                    stack.push_back(vertexVector[1]);
-                    neighborsOut.push_back(vertexVector[1]);
+                    stack.push_back(tmpVH);
+                    neighborsOut.push_back(tmpVH);
                 }
             }
         }
@@ -73,7 +68,7 @@ void calcVertexLocalNeighborhood(
 template <typename BaseVecT>
 DenseVertexMap<float> calcVertexHeightDiff(const BaseMesh<BaseVecT>& mesh, double radius)
 {
-    DenseVertexMap<float> height_diff;
+    DenseVertexMap<float> heightDiff;
     // Get neighbored vertices
     vector<VertexHandle> neighbors;
 
@@ -96,94 +91,84 @@ DenseVertexMap<float> calcVertexHeightDiff(const BaseMesh<BaseVecT>& mesh, doubl
         }
 
         // Calculate the final height difference
-        height_diff.insert(vH, maxHeight-minHeight);
+        heightDiff.insert(vH, maxHeight - minHeight);
     }
 
-    return height_diff;
+    return heightDiff;
 }
 
 template<typename BaseVecT>
 DenseEdgeMap<float> calcVertexAngleEdges(const BaseMesh<BaseVecT>& mesh, const VertexMap<Normal<BaseVecT>>& normals)
 {
-    DenseEdgeMap<float> edge_angle;
+    DenseEdgeMap<float> edgeAngle;
 
     for (auto eH: mesh.edges())
     {
         auto vH_vector = mesh.getVerticesOfEdge(eH);
-        edge_angle.insert(eH, acos(normals[vH_vector[0]].dot(normals[vH_vector[1]].asVector())));
-        if(isnan(edge_angle[eH]))
+        edgeAngle.insert(eH, acos(normals[vH_vector[0]].dot(normals[vH_vector[1]].asVector())));
+        if(isnan(edgeAngle[eH]))
         {
-                edge_angle[eH] = 0;
+                edgeAngle[eH] = 0;
         }
     }
-    return edge_angle;
+    return edgeAngle;
 }
 
 template<typename BaseVecT>
-DenseVertexMap<float> calcAverageVertexAngles(const BaseMesh<BaseVecT>& mesh, const VertexMap<Normal<BaseVecT>>& normals)
+DenseVertexMap<float> calcAverageVertexAngles(
+        const BaseMesh<BaseVecT>& mesh,
+        const VertexMap<Normal<BaseVecT>>& normals)
 {
-    DenseVertexMap<float> vertex_angles;
-    auto edge_angles = calcVertexAngleEdges(mesh, normals);
-    float angle_sum = 0;
+    DenseVertexMap<float> vertexAngles;
+    auto edgeAngles = calcVertexAngleEdges(mesh, normals);
 
     for (auto vH: mesh.vertices())
     {
-        angle_sum = 0;
+        float angleSum = 0;
         auto edgeVec = mesh.getEdgesOfVertex(vH);
         int degree = edgeVec.size();
         for(auto eH: edgeVec)
         {
-            angle_sum += edge_angles[eH];
+            angleSum += edgeAngles[eH];
         }
-        vertex_angles.insert(vH, angle_sum/degree);
+        vertexAngles.insert(vH, angleSum / degree);
     }
-    return vertex_angles;
+    return vertexAngles;
 }
 
 
-    template<typename BaseVecT>
-DenseVertexMap<float> calcVertexRoughness(const BaseMesh<BaseVecT>& mesh, double radius, const VertexMap<Normal<BaseVecT>>& normals)
+template<typename BaseVecT>
+DenseVertexMap<float> calcVertexRoughness(
+        const BaseMesh<BaseVecT>& mesh,
+        double radius,
+        const VertexMap<Normal<BaseVecT>>& normals)
 {
     DenseVertexMap<float> roughness;
-    // get neighbored vertices
+    // Get neighbored vertices
     vector<VertexHandle> neighbors;
-    double sum;
-    auto average_angles = calcAverageVertexAngles(mesh, normals);
+    auto averageAngles = calcAverageVertexAngles(mesh, normals);
 
-    // calculate roughness for each vertex
+    // Calculate roughness for each vertex
     for (auto vH: mesh.vertices())
     {
-        sum = 0.0;
+        double sum = 0.0;
 
         neighbors.clear();
         calcVertexLocalNeighborhood(mesh, vH, radius, neighbors);
 
 
-        // adjust sum values, according to the neighborhood
+        // Adjust sum values, according to the neighborhood
         for (auto neighbor: neighbors)
         {
-           sum += average_angles[neighbor];
+           sum += averageAngles[neighbor];
         }
 
-        // calculate the final roughness
+        // Calculate the final roughness
         roughness.insert(vH, sum / neighbors.size());
 
     }
     return roughness;
 
-}
-
-template<typename in, typename out, typename MapF>
-DenseVertexMap<out> changeMap(const VertexMap<in>& map_in, MapF map_function)
-{
-    DenseVertexMap<out> resultMap;
-
-    for (auto vH: map_in)
-    {
-        resultMap.insert(vH, map_function(map_in[vH]));
-    }
-
-    return resultMap;
 }
 
 } // namespace lvr2

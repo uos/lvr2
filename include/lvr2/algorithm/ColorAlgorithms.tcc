@@ -23,7 +23,9 @@
  * @author Johan M. von Behren <johan@vonbehren.eu>
  */
 
+#include <algorithm>
 #include <array>
+#include <cmath>
 
 using std::array;
 
@@ -82,60 +84,51 @@ optional<DenseVertexMap<Rgb8Color>> calcColorFromPointCloud(
 
 Rgb8Color floatToRainbowColor(float value)
 {
-    Rgb8Color result_color;
     value = std::min(value, 1.0f);
     value = std::max(value, 0.0f);
 
+    //TODO: understand and fix style
     float h = value * 5.0f + 1.0f;
     int i = floor(h);
     float f = h - i;
-    if ( !(i&1) ) f = 1 - f; // if i is even
+
+    // if i is even
+    if (i % 2 == 0)
+    {
+        f = 1 - f;
+    }
+
     float n = 1 - f;
 
     if (i <= 1)
     {
-        result_color[0] = floor(n * 255);
-        result_color[1] = 0;
-        result_color[2] = 255;
+        return { static_cast<uint8_t>(floor(n * 255)), 0, 255 };
     }
     else if (i == 2)
     {
-        result_color[0] = 0;
-        result_color[1] = floor(n * 255);
-        result_color[2] = 255;
+        return { 0, static_cast<uint8_t>(floor(n * 255)), 255 };
     }
     else if (i == 3)
     {
-        result_color[0] = 0;
-        result_color[1] = 255;
-        result_color[2] = floor(n * 255);
+        return { 0, 255, static_cast<uint8_t>(floor(n * 255)) };
     }
     else if (i == 4)
     {
-        result_color[0] = floor(n * 255);
-        result_color[1] = 255;
-        result_color[2] = 0;
+        return { static_cast<uint8_t>(floor(n * 255)), 255, 0 };
     }
     else if (i >= 5)
     {
-        result_color[0] = 255;
-        result_color[1] = floor(n * 255);
-        result_color[2] = 0;
+        return { 255, static_cast<uint8_t>(floor(n * 255)), 0 };
     }
-
-    return result_color;
 }
 
 Rgb8Color floatToGrayScaleColor(float value)
 {
-    std::array<uint8_t, 3> return_color = {0, 0, 0};
+    int grayscaleResult = 255 * (value);
 
-    int grayscale_result = 255 * (value);
-    return_color[0] = grayscale_result;
-    return_color[1] = grayscale_result;
-    return_color[2] = grayscale_result;
-
-    return return_color;
+    return { static_cast<uint8_t>(grayscaleResult),
+             static_cast<uint8_t>(grayscaleResult),
+             static_cast<uint8_t>(grayscaleResult) };
 }
 
 
