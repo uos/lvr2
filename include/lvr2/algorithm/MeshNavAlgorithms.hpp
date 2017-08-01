@@ -56,15 +56,52 @@ void calcVertexLocalNeighborhood(const BaseMesh<BaseVecT>& mesh, VertexHandle vH
 template<typename BaseVecT>
 DenseVertexMap<float> calcVertexHeightDiff(const BaseMesh<BaseVecT>& mesh, double radius);
 
+/**
+ * @brief calculates the roughness for each vertex
+ *
+ * @param mesh given mesh for calculation
+ * @param radius radius whish defines the local neighborhood
+ * @param normals the vertex norals of the given mesh as a map
+ * @return A map <vertex, float> filled with roughness values for each vertex
+ */
 template<typename BaseVecT>
-DenseVertexMap<float> calcVertexRoughness(const BaseMesh<BaseVecT>& mesh, double radius);
+DenseVertexMap<float> calcVertexRoughness(const BaseMesh<BaseVecT>& mesh, double radius, const VertexMap<Normal<BaseVecT>>& normals);
 
+/**
+ * @brief calculates the average angle for each vertex
+ *
+ * @param mesh given mesh for calculation
+ * @param normals vertex normals of the mesh
+ * @return map<vertex, float> with the average angle for each vertex
+ */
 template<typename BaseVecT>
 DenseVertexMap<float> calcAverageVertexAngles(const BaseMesh<BaseVecT>& mesh, const VertexMap<Normal<BaseVecT>>& normals);
 
+/**
+ * @brief calculates the angle for each edge
+ *
+ * @param mesh given mesh for calculation
+ * @param normals vertex normals of the mesh
+ * @return map<edge, float> with the angle of each edge
+ */
 template<typename BaseVecT>
 DenseEdgeMap<float> calcVertexAngleEdges(const BaseMesh<BaseVecT>& mesh, const VertexMap<Normal<BaseVecT>>& normals);
 
+/**
+ * @brief   Change the given input VertexMap to a different type output DenseVertexMap.
+ *
+ * The conversion between the input VertexMap and output DenseVertexMap is defined by the given function.
+ * The method changeMap takes every element of the input VertexMap and converts it individually via the given
+ * map-conversion function and adds the converted element to the output DenseVertexMap.
+ *
+ * @tparam  in              Templatetype for the input VertexMap.
+ * @tparam  out             Templatetype for the output DenseVertexMap.
+ * @tparam  MapF            Templatetype for the given map-conversion function.
+ * @param   map_in          VertexMap holding input-type data, which will be converted to the DenseVertexMap holding output-type data.
+ * @param   map_function    Function for converting a single element of the input-type to a single element of the output-type.
+ *
+ * @return  A DenseVertexMap holding output-type data, which is created via the input VertexMap and the map-conversion function.
+ */
 template<typename in, typename out, typename MapF>
 DenseVertexMap<out> changeMap(const VertexMap<in>& map_in, MapF map_function);
 
