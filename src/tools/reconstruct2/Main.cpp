@@ -645,7 +645,7 @@ void setTextureOptions(const reconstruct::Options& options)
     // }
 }
 
-void test_meshnav(const BaseMesh<BaseVecT>& mesh, DenseVertexMap<Rgb8Color>& color_vertices)
+void test_meshnav(const BaseMesh<BaseVecT>& mesh, DenseVertexMap<Rgb8Color>& color_vertices,  const VertexMap<Normal<BaseVecT>>& vertexNormals)
 {
     // calculate height differences
     DenseVertexMap<float> height_differences;
@@ -665,12 +665,33 @@ void test_meshnav(const BaseMesh<BaseVecT>& mesh, DenseVertexMap<Rgb8Color>& col
         height_differences[f] = height_differences[f]/max_val;
     }
 
+    auto roughness = calcVertexRoughness(mesh, 31, vertexNormals);
+
+    max_val = -1;
+
+    for (auto f: roughness)
+    {
+        //cout << "Current height difference:" << height_differences[f] << endl;
+        if(roughness[f]>max_val) max_val = roughness[f];
+    }
+
+    for (auto f: roughness)
+    {
+        roughness[f] = roughness[f]/max_val;
+    }
+
+    DenseVertexMap<float> comb_cost;
+    for(auto vH: mesh.vertices())
+    {
+        comb_cost.insert(vH, height_differences[vH]+roughness[vH]);
+    }
+
     // create function pointer to the color conversion function
     Rgb8Color (*color_function_pointer)(float);
     color_function_pointer = &floatToRainbowColor;
 
     // create map of color vertices according to the calculated height differences
-    color_vertices = changeMap<float, Rgb8Color>(height_differences, color_function_pointer);
+    color_vertices = changeMap<float, Rgb8Color>(comb_cost, color_function_pointer);
 }
 
 int main(int argc, char** argv)
@@ -737,12 +758,6 @@ int main(int argc, char** argv)
         grid->saveGrid("fastgrid.grid");
     }
 
-    // Mesh Nav Tests
-    std::array<uint8_t, 3> a = {0, 0, 0};
-    DenseVertexMap<Rgb8Color> color_vertices(a);
-    test_meshnav(mesh, color_vertices);
-
-
     // =======================================================================
     // Optimize and finalize mesh
     // =======================================================================
@@ -806,6 +821,12 @@ int main(int argc, char** argv)
 
     // Calc normals for vertices
     auto vertexNormals = calcVertexNormals(mesh, faceNormals, *surface);
+
+
+    std::array<uint8_t, 3> a = {0, 0, 0};
+    DenseVertexMap<Rgb8Color> color_vertices(a);
+
+    test_meshnav(mesh, color_vertices, vertexNormals);
 
     // Debug mesh
     //auto duplicateVertices = getDuplicateVertices(mesh);

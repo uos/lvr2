@@ -102,6 +102,77 @@ DenseVertexMap<float> calcVertexHeightDiff(const BaseMesh<BaseVecT>& mesh, doubl
     return height_diff;
 }
 
+template<typename BaseVecT>
+DenseEdgeMap<float> calcVertexAngleEdges(const BaseMesh<BaseVecT>& mesh, const VertexMap<Normal<BaseVecT>>& normals)
+{
+    DenseEdgeMap<float> edge_angle;
+
+    for (auto eH: mesh.edges())
+    {
+        auto vH_vector = mesh.getVerticesOfEdge(eH);
+        edge_angle.insert(eH, acos(normals[vH_vector[0]].dot(normals[vH_vector[1]].asVector())));
+        if(isnan(edge_angle[eH]))
+        {
+                edge_angle[eH] = 0;
+        }
+    }
+    return edge_angle;
+}
+
+template<typename BaseVecT>
+DenseVertexMap<float> calcAverageVertexAngles(const BaseMesh<BaseVecT>& mesh, const VertexMap<Normal<BaseVecT>>& normals)
+{
+    DenseVertexMap<float> vertex_angles;
+    auto edge_angles = calcVertexAngleEdges(mesh, normals);
+    float angle_sum = 0;
+
+    for (auto vH: mesh.vertices())
+    {
+        angle_sum = 0;
+        auto edgeVec = mesh.getEdgesOfVertex(vH);
+        int degree = edgeVec.size();
+        for(auto eH: edgeVec)
+        {
+            angle_sum += edge_angles[eH];
+        }
+        vertex_angles.insert(vH, angle_sum/degree);
+    }
+    return vertex_angles;
+}
+
+
+    template<typename BaseVecT>
+DenseVertexMap<float> calcVertexRoughness(const BaseMesh<BaseVecT>& mesh, double radius, const VertexMap<Normal<BaseVecT>>& normals)
+{
+    DenseVertexMap<float> roughness;
+    // get neighbored vertices
+    vector<VertexHandle> neighbors;
+    double sum;
+    auto average_angles = calcAverageVertexAngles(mesh, normals);
+
+    // calculate roughness for each vertex
+    for (auto vH: mesh.vertices())
+    {
+        sum = 0.0;
+
+        neighbors.clear();
+        calcVertexLocalNeighborhood(mesh, vH, radius, neighbors);
+
+
+        // adjust sum values, according to the neighborhood
+        for (auto neighbor: neighbors)
+        {
+           sum += average_angles[neighbor];
+        }
+
+        // calculate the final roughness
+        roughness.insert(vH, sum / neighbors.size());
+
+    }
+    return roughness;
+
+}
+
 template<typename in, typename out, typename MapF>
 DenseVertexMap<out> changeMap(const VertexMap<in>& map_in, MapF map_function)
 {
