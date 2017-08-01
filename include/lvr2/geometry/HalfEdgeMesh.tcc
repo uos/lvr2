@@ -602,191 +602,191 @@ EdgeCollapseResult HalfEdgeMesh<BaseVecT>::collapseEdge(EdgeHandle edgeH)
     // for each face the remaining two edges become twins.
 
     auto startEdgeH = HalfEdgeHandle::oneHalfOf(edgeH);
-    auto startEdge = getE(startEdgeH);
-    auto startEdgeTwin = getE(startEdge.twin);
+    auto& startEdge = getE(startEdgeH);
+    auto& startEdgeTwin = getE(startEdge.twin);
 
     // The two vertices that are merged
-    auto vertexToRemove = startEdge.target;
-    auto vertexToKeep = startEdgeTwin.target;
+    auto vertexToRemoveH = startEdge.target;
+    auto vertexToKeepH = startEdgeTwin.target;
 
     // The two faces next to the given edge
-    OptionalFaceHandle faceAbove = startEdge.face;
-    OptionalFaceHandle faceBelow = startEdgeTwin.face;
+    OptionalFaceHandle faceAboveH = startEdge.face;
+    OptionalFaceHandle faceBelowH = startEdgeTwin.face;
 
     // Edges above the start edge
-    auto edgeToRemoveAR = startEdge.next;
-    auto edgeToKeepAR = getE(edgeToRemoveAR).twin;
-    auto edgeToRemoveAL = getE(edgeToRemoveAR).next;
-    auto edgeToKeepAL = getE(edgeToRemoveAL).twin;
+    auto edgeToRemoveARH = startEdge.next;
+    auto edgeToKeepARH = getE(edgeToRemoveARH).twin;
+    auto edgeToRemoveALH = getE(edgeToRemoveARH).next;
+    auto edgeToKeepALH = getE(edgeToRemoveALH).twin;
 
     // Edges below the start edge
-    auto edgeToRemoveBL = startEdgeTwin.next;
-    auto edgeToKeepBL = getE(edgeToRemoveBL).twin;
-    auto edgeToRemoveBR = getE(edgeToRemoveBL).next;
-    auto edgeToKeepBR = getE(edgeToRemoveBR).twin;
+    auto edgeToRemoveBLH = startEdgeTwin.next;
+    auto edgeToKeepBLH = getE(edgeToRemoveBLH).twin;
+    auto edgeToRemoveBRH = getE(edgeToRemoveBLH).next;
+    auto edgeToKeepBRH = getE(edgeToRemoveBRH).twin;
 
     // Vertices above and below
-    auto vertexAbove = getE(edgeToRemoveAR).target;
-    auto vertexBelow = getE(edgeToRemoveBL).target;
+    auto vertexAboveH = getE(edgeToRemoveARH).target;
+    auto vertexBelowH = getE(edgeToRemoveBLH).target;
 
     // Check if there are closed triangles next to the start edge
-    bool hasTriangleAbove = getE(edgeToRemoveAL).next == startEdgeH;
-    bool hasTriangleBelow = getE(edgeToRemoveBR).next == startEdge.twin;
+    bool hasTriangleAbove = getE(edgeToRemoveALH).next == startEdgeH;
+    bool hasTriangleBelow = getE(edgeToRemoveBRH).next == startEdge.twin;
 
     // The result that contains information about the removed faces and edges
     // and the new vertex and edges
-    EdgeCollapseResult result(vertexToKeep);
+    EdgeCollapseResult result(vertexToKeepH);
 
     // Fix targets for ingoing edges of the vertex that will be deleted
     // this has to be done before changing the twin edges
     auto checkTargetIsVertexToRemoveLambda = [&, this](auto eH)
     {
-        return getE(eH).target == vertexToRemove;
+        return getE(eH).target == vertexToRemoveH;
     };
 
-    auto edgeOfVertexToRemove = findEdgeAroundVertex(vertexToRemove, checkTargetIsVertexToRemoveLambda);
-    while(edgeOfVertexToRemove)
+    auto edgeOfVertexToRemoveH = findEdgeAroundVertex(vertexToRemoveH, checkTargetIsVertexToRemoveLambda);
+    while(edgeOfVertexToRemoveH)
     {
-        getE(edgeOfVertexToRemove.unwrap()).target = vertexToKeep;
+        getE(edgeOfVertexToRemoveH.unwrap()).target = vertexToKeepH;
 
-        edgeOfVertexToRemove = findEdgeAroundVertex(vertexToRemove, checkTargetIsVertexToRemoveLambda);
+        edgeOfVertexToRemoveH = findEdgeAroundVertex(vertexToRemoveH, checkTargetIsVertexToRemoveLambda);
     }
 
     // If there is a face or a closed triangle without a face above, collapse it
-    if (faceAbove || hasTriangleAbove)
+    if (faceAboveH || hasTriangleAbove)
     {
         DOINDEBUG(dout() << "faceAbove || hasTriangleAbove" << endl);
         // Fix twin edges
-        getE(edgeToKeepAL).twin = edgeToKeepAR;
-        getE(edgeToKeepAR).twin = edgeToKeepAL;
+        getE(edgeToKeepALH).twin = edgeToKeepARH;
+        getE(edgeToKeepARH).twin = edgeToKeepALH;
 
         // Fix outgoing edges of vertices because they might be deleted
-        getV(vertexToKeep).outgoing = edgeToKeepAL;
-        getV(vertexAbove).outgoing = edgeToKeepAR;
+        getV(vertexToKeepH).outgoing = edgeToKeepALH;
+        getV(vertexAboveH).outgoing = edgeToKeepARH;
     }
     else
     {
         DOINDEBUG(dout() << "!(faceAbove || hasTriangleAbove)" << endl);
         // If there is no triangle above, the edge whose next is the start edge
         // needs the correct new next edge
-        auto startEdgePrecursor = findEdgeAroundVertex(startEdge.twin, [&, this](auto eH)
+        auto startEdgePrecursorH = findEdgeAroundVertex(startEdge.twin, [&, this](auto eH)
         {
             return getE(eH).next == startEdgeH;
         });
-        if (startEdgePrecursor)
+        if (startEdgePrecursorH)
         {
-            getE(startEdgePrecursor.unwrap()).next = startEdge.next;
+            getE(startEdgePrecursorH.unwrap()).next = startEdge.next;
         }
 
         // Fix outgoing edge of vertexToKeep because it might be deleted
-        getV(vertexToKeep).outgoing = startEdge.next;
+        getV(vertexToKeepH).outgoing = startEdge.next;
 
     }
 
-    if (faceBelow || hasTriangleBelow)
+    if (faceBelowH || hasTriangleBelow)
     {
         DOINDEBUG(dout() << "faceBelow || hasTriangleBelow" << endl);
         // Fix twin edges
-        getE(edgeToKeepBL).twin = edgeToKeepBR;
-        getE(edgeToKeepBR).twin = edgeToKeepBL;
+        getE(edgeToKeepBLH).twin = edgeToKeepBRH;
+        getE(edgeToKeepBRH).twin = edgeToKeepBLH;
 
         // Fix outgoing edge of vertexBelow because it might be deleted
-        getV(vertexBelow).outgoing = edgeToKeepBL;
+        getV(vertexBelowH).outgoing = edgeToKeepBLH;
     }
     else
     {
         DOINDEBUG(dout() << "!(faceBelow || hasTriangleBelow)" << endl);
         // If there is no triangle below, the edge whose next is the twin of the
         // start edge needs the correct new next edge
-        auto startEdgeTwinPrecursor = findEdgeAroundVertex(startEdgeH, [&, this](auto eH)
+        auto startEdgeTwinPrecursorH = findEdgeAroundVertex(startEdgeH, [&, this](auto eH)
         {
             return getE(eH).next == startEdge.twin;
         });
-        if (startEdgeTwinPrecursor)
+        if (startEdgeTwinPrecursorH)
         {
-            getE(startEdgeTwinPrecursor.unwrap()).next = startEdgeTwin.next;
+            getE(startEdgeTwinPrecursorH.unwrap()).next = startEdgeTwin.next;
         }
     }
 
     // Check for the special case that the mesh consists of only one triangle
     // to make sure edges are not deleted twice
-    if (edgeToKeepAL == edgeToRemoveBL)
+    if (edgeToKeepALH == edgeToRemoveBLH)
     {
         DOINDEBUG(dout() << "Special case: only one triangle" << endl);
         hasTriangleBelow = false;
         // Fix next pointers of the two remaining halfEdges to point to each other
-        getE(edgeToKeepAL).next = edgeToKeepAR;
-        getE(edgeToKeepAR).next = edgeToKeepAL;
+        getE(edgeToKeepALH).next = edgeToKeepARH;
+        getE(edgeToKeepARH).next = edgeToKeepALH;
 
-        std::array<EdgeHandle, 2> edgesToRemove = {
-            halfToFullEdgeHandle(edgeToRemoveAL),
-            halfToFullEdgeHandle(edgeToRemoveAR)
+        std::array<EdgeHandle, 2> edgeHsToRemove = {
+            halfToFullEdgeHandle(edgeToRemoveALH),
+            halfToFullEdgeHandle(edgeToRemoveARH)
         };
         result.neighbors[1] = EdgeCollapseRemovedFace(
-            faceBelow,
-            edgesToRemove,
-            halfToFullEdgeHandle(edgeToKeepAL)
+            faceBelowH,
+            edgeHsToRemove,
+            halfToFullEdgeHandle(edgeToKeepALH)
         );
     }
 
 
     // Calculate and set new position of the vertex that is kept
-    auto position1 = getV(vertexToRemove).pos;
-    auto position2 = getV(vertexToKeep).pos;
+    auto position1 = getV(vertexToRemoveH).pos;
+    auto position2 = getV(vertexToKeepH).pos;
 
     auto newPosition = position1 + (position2 - position1) / 2;
-    getV(vertexToKeep).pos = newPosition;
+    getV(vertexToKeepH).pos = newPosition;
 
-    result.midPoint = vertexToKeep;
+    result.midPoint = vertexToKeepH;
 
     // Delete one vertex, the two faces besides the given edge and their inner edges
-    DOINDEBUG(dout() << "Remove vertex: " << vertexToRemove << endl);
-    m_vertices.erase(vertexToRemove);
+    DOINDEBUG(dout() << "Remove vertex: " << vertexToRemoveH << endl);
+    m_vertices.erase(vertexToRemoveH);
 
-    if (faceAbove)
+    if (faceAboveH)
     {
-        DOINDEBUG(dout() << "Remove face above: " << faceAbove << endl);
-        m_faces.erase(faceAbove.unwrap());
+        DOINDEBUG(dout() << "Remove face above: " << faceAboveH << endl);
+        m_faces.erase(faceAboveH.unwrap());
     }
-    if (faceBelow)
+    if (faceBelowH)
     {
-        DOINDEBUG(dout() << "Remove face below: " << faceBelow << endl);
-        m_faces.erase(faceBelow.unwrap());
+        DOINDEBUG(dout() << "Remove face below: " << faceBelowH << endl);
+        m_faces.erase(faceBelowH.unwrap());
     }
 
     if (hasTriangleAbove)
     {
-        DOINDEBUG(dout() << "Remove edges of triangle above: " << edgeToRemoveAL << " and " << edgeToRemoveAR << endl);
+        DOINDEBUG(dout() << "Remove edges of triangle above: " << edgeToRemoveALH << " and " << edgeToRemoveARH << endl);
 
-        std::array<EdgeHandle, 2> edgesToRemove = {
-            halfToFullEdgeHandle(edgeToRemoveAL),
-            halfToFullEdgeHandle(edgeToRemoveAR)
+        std::array<EdgeHandle, 2> edgeHsToRemove = {
+            halfToFullEdgeHandle(edgeToRemoveALH),
+            halfToFullEdgeHandle(edgeToRemoveARH)
         };
         result.neighbors[0] = EdgeCollapseRemovedFace(
-            faceAbove,
-            edgesToRemove,
-            halfToFullEdgeHandle(edgeToKeepAL)
+            faceAboveH,
+            edgeHsToRemove,
+            halfToFullEdgeHandle(edgeToKeepALH)
         );
 
-        m_edges.erase(edgeToRemoveAL);
-        m_edges.erase(edgeToRemoveAR);
+        m_edges.erase(edgeToRemoveALH);
+        m_edges.erase(edgeToRemoveARH);
     }
     if (hasTriangleBelow)
     {
-        DOINDEBUG(dout() << "Remove edges of triangle below: " << edgeToRemoveBL << " and " << edgeToRemoveBR << endl);
+        DOINDEBUG(dout() << "Remove edges of triangle below: " << edgeToRemoveBLH << " and " << edgeToRemoveBRH << endl);
 
-        std::array<EdgeHandle, 2> edgesToRemove = {
-            halfToFullEdgeHandle(edgeToRemoveBL),
-            halfToFullEdgeHandle(edgeToRemoveBR)
+        std::array<EdgeHandle, 2> edgeHsToRemove = {
+            halfToFullEdgeHandle(edgeToRemoveBLH),
+            halfToFullEdgeHandle(edgeToRemoveBRH)
         };
         result.neighbors[0] = EdgeCollapseRemovedFace(
-            faceAbove,
-            edgesToRemove,
-            halfToFullEdgeHandle(edgeToKeepBL)
+            faceAboveH,
+            edgeHsToRemove,
+            halfToFullEdgeHandle(edgeToKeepBLH)
         );
 
-        m_edges.erase(edgeToRemoveBL);
-        m_edges.erase(edgeToRemoveBR);
+        m_edges.erase(edgeToRemoveBLH);
+        m_edges.erase(edgeToRemoveBRH);
     }
 
     DOINDEBUG(dout() << "Remove start edges: " << startEdgeH << " and " << startEdge.twin << endl);
