@@ -183,6 +183,7 @@
 #include <lvr2/algorithm/Planar.hpp>
 #include <lvr2/algorithm/ClusterPainter.hpp>
 #include <lvr2/algorithm/ClusterAlgorithms.hpp>
+#include <lvr2/algorithm/CleanupAlgorithms.hpp>
 
 #include <lvr2/reconstruction/AdaptiveKSearchSurface.hpp>
 #include <lvr2/reconstruction/BilinearFastBox.hpp>
@@ -828,6 +829,8 @@ int main(int argc, char** argv)
     {
         removeDanglingCluster(mesh, static_cast<size_t>(options.getDanglingArtifacts()));
     }
+    cleanContours(mesh, options.getCleanContourIterations());
+
 
     auto faceNormals = calcFaceNormals(mesh);
     ClusterBiMap<FaceHandle> clusterBiMap;
