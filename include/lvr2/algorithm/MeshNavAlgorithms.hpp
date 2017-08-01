@@ -33,8 +33,11 @@ namespace lvr2
 /**
  * @brief   Calculates the local neighborhood of a given vertex (defined by it's handle).
  *
- * A local neighborhood for a vertex is constrained by a circular-shaped radius. Each vertex which
- * lays within the inner bounds of this radius is a neighbor to the current vertex.
+ * A local neighborhood for a vertex is constrained by a circular-shaped radius.
+ * The neighbors of a vertex do have to be connected by vertices and edges, which stay within this border. If one
+ * edge leaves the neighborhood radius, every further on connected vertex and edge isn't part of the local
+ * neighborhood, even if the topological "edge->vertex->edge->vertex->..."-chain, which left the radius once,
+ * reenters the radius.
  *
  * @param mesh      The given BaseMesh for performing the neighborhood-search.
  * @param vH        The given VertexHandle to which we want to get the local heighborhood.
@@ -42,7 +45,12 @@ namespace lvr2
  * @param neighbors The found neighbors, stored in a vector.
  */
 template<typename BaseVecT>
-void calcVertexLocalNeighborhood(const BaseMesh<BaseVecT>& mesh, VertexHandle vH, double radius, vector<VertexHandle>& neighbors);
+void calcVertexLocalNeighborhood(
+        const BaseMesh<BaseVecT>& mesh,
+        VertexHandle vH,
+        double radius,
+        vector<VertexHandle>& neighborsOut
+);
 
 /**
  * @brief   Calculate the height difference value for each vertex of the given BaseMesh.
@@ -66,10 +74,13 @@ DenseVertexMap<float> calcVertexHeightDiff(const BaseMesh<BaseVecT>& mesh, doubl
  * @tparam  in              Templatetype for the input VertexMap.
  * @tparam  out             Templatetype for the output DenseVertexMap.
  * @tparam  MapF            Templatetype for the given map-conversion function.
- * @param   map_in          VertexMap holding input-type data, which will be converted to the DenseVertexMap holding output-type data.
- * @param   map_function    Function for converting a single element of the input-type to a single element of the output-type.
+ * @param   map_in          VertexMap holding input-type data, which will be
+ *                          converted to the DenseVertexMap holding output-type data.
+ * @param   map_function    Function for converting a single element of the
+ *                          input-type to a single element of the output-type.
  *
- * @return  A DenseVertexMap holding output-type data, which is created via the input VertexMap and the map-conversion function.
+ * @return  A DenseVertexMap holding output-type data,
+ *          which is created via the input VertexMap and the map-conversion function.
  */
 template<typename in, typename out, typename MapF>
 DenseVertexMap<out> changeMap(const VertexMap<in>& map_in, MapF map_function);
