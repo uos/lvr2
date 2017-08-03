@@ -80,6 +80,8 @@ public:
      */
     Meap(size_t capacity);
 
+    bool containsKey(KeyT key) const;
+
     /**
      * @brief Inserts a new element into the meap.
      */

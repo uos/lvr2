@@ -37,6 +37,12 @@ Meap<KeyT, ValueT, MapT>::Meap(size_t capacity)
 }
 
 template<typename KeyT, typename ValueT, template<typename, typename> typename MapT>
+bool Meap<KeyT, ValueT, MapT>::containsKey(KeyT key) const
+{
+    return static_cast<bool>(m_indices.get(key));
+}
+
+template<typename KeyT, typename ValueT, template<typename, typename> typename MapT>
 void Meap<KeyT, ValueT, MapT>::insert(const KeyT& key, const ValueT& value)
 {
     // Insert to the back of the vector
