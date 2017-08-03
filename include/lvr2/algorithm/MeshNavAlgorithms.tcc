@@ -31,29 +31,36 @@ namespace lvr2
 
 template <typename BaseVecT>
 void calcVertexLocalNeighborhood(
-        const BaseMesh<BaseVecT>& mesh,
-        VertexHandle vH,
-        double radius,
-        vector<VertexHandle>& neighborsOut)
+    const BaseMesh<BaseVecT>& mesh,
+    VertexHandle vH,
+    double radius,
+    vector<VertexHandle>& neighborsOut
+)
 {
     radius *= radius;
+    //Store vertices to visit
     vector<VertexHandle> stack;
     stack.push_back(vH);
+    //Save visited vertices
     SparseVertexMap<bool> usedVertices(false);
 
+    //As long as there are vertices to visit
     while (!stack.empty())
     {
+        //Visit the next vertex
         auto curVH = stack.back();
         stack.pop_back();
         usedVertices.insert(curVH, true);
 
-        vector<EdgeHandle> cur_edges = mesh.getEdgesOfVertex(curVH);
-        for (auto eH: cur_edges)
+        //Look at all vertices which are connected to the current one by an edge
+        vector<EdgeHandle> curEdges = mesh.getEdgesOfVertex(curVH);
+        for (auto eH: curEdges)
         {
             auto vertexVector = mesh.getVerticesOfEdge(eH);
 
             for (auto tmpVH: vertexVector)
             {
+                //Add vertices within the radius to the local neighborhood
                 if (!usedVertices[tmpVH] && \
                      mesh.getVertexPosition(tmpVH).squaredDistanceFrom(mesh.getVertexPosition(vH)) < radius)
                 {
@@ -104,8 +111,8 @@ DenseEdgeMap<float> calcVertexAngleEdges(const BaseMesh<BaseVecT>& mesh, const V
 
     for (auto eH: mesh.edges())
     {
-        auto vH_vector = mesh.getVerticesOfEdge(eH);
-        edgeAngle.insert(eH, acos(normals[vH_vector[0]].dot(normals[vH_vector[1]].asVector())));
+        auto vHVector = mesh.getVerticesOfEdge(eH);
+        edgeAngle.insert(eH, acos(normals[vHVector[0]].dot(normals[vHVector[1]].asVector())));
         if(isnan(edgeAngle[eH]))
         {
                 edgeAngle[eH] = 0;
@@ -116,8 +123,9 @@ DenseEdgeMap<float> calcVertexAngleEdges(const BaseMesh<BaseVecT>& mesh, const V
 
 template<typename BaseVecT>
 DenseVertexMap<float> calcAverageVertexAngles(
-        const BaseMesh<BaseVecT>& mesh,
-        const VertexMap<Normal<BaseVecT>>& normals)
+    const BaseMesh<BaseVecT>& mesh,
+    const VertexMap<Normal<BaseVecT>>& normals
+)
 {
     DenseVertexMap<float> vertexAngles;
     auto edgeAngles = calcVertexAngleEdges(mesh, normals);
@@ -139,9 +147,10 @@ DenseVertexMap<float> calcAverageVertexAngles(
 
 template<typename BaseVecT>
 DenseVertexMap<float> calcVertexRoughness(
-        const BaseMesh<BaseVecT>& mesh,
-        double radius,
-        const VertexMap<Normal<BaseVecT>>& normals)
+    const BaseMesh<BaseVecT>& mesh,
+    double radius,
+    const VertexMap<Normal<BaseVecT>>& normals
+)
 {
     DenseVertexMap<float> roughness;
     // Get neighbored vertices

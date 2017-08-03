@@ -39,10 +39,10 @@ namespace lvr2
  * neighborhood, even if the topological "edge->vertex->edge->vertex->..."-chain, which left the radius once,
  * reenters the radius.
  *
- * @param mesh      The given BaseMesh for performing the neighborhood-search.
- * @param vH        The given VertexHandle to which we want to get the local heighborhood.
- * @param radius    The radius which defines the border of the local neighborhood.
- * @param neighbors The found neighbors, stored in a vector.
+ * @param mesh          The given BaseMesh for performing the neighborhood-search.
+ * @param vH            The given VertexHandle to which we want to get the local heighborhood.
+ * @param radius        The radius which defines the border of the local neighborhood.
+ * @param neighborsOut  The found neighbors, stored in a vector.
  */
 template<typename BaseVecT>
 void calcVertexLocalNeighborhood(
