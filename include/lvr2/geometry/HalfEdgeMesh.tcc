@@ -877,6 +877,7 @@ bool HalfEdgeMesh<BaseVecT>::debugCheckMeshIntegrity() const
             if (edgeCount >= 20)
             {
                 cout << "   ... stopping iteration after 20 edges." << endl;
+                break;
             }
         } while(eH != startEdgeH);
 
