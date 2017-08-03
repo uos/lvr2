@@ -100,6 +100,11 @@ public:
     MeapPair<KeyT, ValueT> popMin();
 
     /**
+     * @brief Removes the value associated with the given key.
+     */
+    optional<ValueT> erase(const KeyT& key);
+
+    /**
      * @brief Updates the value of `key` to `newValue` and repairs the heap.
      */
     void updateValue(const KeyT& key, const ValueT& newValue);
