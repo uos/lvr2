@@ -470,10 +470,26 @@ void testCollapseEdge()
     cout << "CheckMeshIntegrity: " << mesh.debugCheckMeshIntegrity() << endl;
     for (auto edgeH: mesh.edges())
     {
+        cout << "ITERATION " << edgeH << endl;
         auto vertex = mesh.collapseEdge(edgeH);
-        cout << "CheckMeshIntegrity: " << mesh.debugCheckMeshIntegrity() << endl;
-        break;
+
+        FinalizeAlgorithm<BaseVector<float>> finalize;
+        auto buffer = finalize.apply(mesh);
+
+        // Create output model and save to file
+        auto model = new lvr::Model(buffer);
+        lvr::ModelPtr m(model);
+        cout << timestamp << "Saving mesh." << endl;
+        std::stringstream ss;
+        ss << "triangle_mesh_" << edgeH.idx() << ".ply";
+        lvr::ModelFactory::saveModel(m, ss.str());
+
+        mesh.debugCheckMeshIntegrity();
+        // cout << "CheckMeshIntegrity: " << << endl;
+        // break;
     }
+
+    cout << "done" << endl;
 
     FinalizeAlgorithm<BaseVector<float>> finalize;
     auto buffer = finalize.apply(mesh);
