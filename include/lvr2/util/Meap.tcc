@@ -112,6 +112,50 @@ void Meap<KeyT, ValueT, MapT>::updateValue(const KeyT& key, const ValueT& newVal
 }
 
 template<typename KeyT, typename ValueT, template<typename, typename> typename MapT>
+optional<ValueT> Meap<KeyT, ValueT, MapT>::erase(const KeyT& key)
+{
+    const auto maybeIndex = m_indices.get(key);
+    if (!maybeIndex)
+    {
+        return boost::none;
+    }
+
+    auto index = *maybeIndex;
+
+    // Swap the element to remove with the last element in the vector
+    auto swapKey = m_heap.back().key;
+    swap(m_heap[index], m_heap.back());
+    swap(m_indices[key], m_indices[swapKey]);
+
+    // Move element out of the vector
+    const auto out = move(m_heap.back()).value;
+    m_heap.pop_back();
+    m_indices.erase(key);
+
+    // If the removed element was the last one in the meap, we don't have to
+    // do any cleanup. Otherwise we have to put the previous last element into
+    // the correct position.
+    if (!m_heap.empty())
+    {
+        // If the element was deleted from the root (=> there is no father) or
+        // if the father is already smaller than the current value, we attempt
+        // to bubble the value down (which will do nothing if the position
+        // is already correct). Otherwise it has to bubble up.
+        if (index == 0 || m_heap[father(index)].value < m_heap[index].value)
+        {
+            bubbleDown(index);
+        }
+        else
+        {
+            bubbleUp(index);
+        }
+    }
+
+    return out;
+}
+
+
+template<typename KeyT, typename ValueT, template<typename, typename> typename MapT>
 bool Meap<KeyT, ValueT, MapT>::isEmpty() const
 {
     return m_heap.empty();
