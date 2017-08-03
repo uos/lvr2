@@ -47,6 +47,18 @@ Point<BaseVecT> Point<BaseVecT>::centroid(const CollectionT& points)
 }
 
 template <typename BaseVecT>
+typename BaseVecT::CoordType Point<BaseVecT>::distanceFrom(const Point<BaseVecT> &other) const
+{
+    return (*this - other).length();
+}
+
+template <typename BaseVecT>
+typename BaseVecT::CoordType Point<BaseVecT>::squaredDistanceFrom(const Point<BaseVecT> &other) const
+{
+    return (*this - other).length2();
+}
+
+template <typename BaseVecT>
 Point<BaseVecT> Point<BaseVecT>::operator+(const Vector<BaseVecT> &other) const
 {
     return BaseVecT::operator+(other);

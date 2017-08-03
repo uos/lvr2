@@ -194,7 +194,8 @@
 #include <lvr2/reconstruction/PointsetGrid.hpp>
 #include <lvr2/io/PointBuffer.hpp>
 #include <lvr2/util/Factories.hpp>
-
+#include <lvr2/algorithm/MeshNavAlgorithms.hpp>
+#include <lvr2/algorithm/UtilAlgorithms.hpp>
 
 // PCL related includes
 #ifdef LVR_USE_PCL
@@ -668,6 +669,59 @@ void setTextureOptions(const reconstruct::Options& options)
     // }
 }
 
+void testMeshnav(
+    const BaseMesh<BaseVecT>& mesh,
+    DenseVertexMap<Rgb8Color>& colorVertices,
+    const VertexMap<Normal<BaseVecT>>& vertexNormals
+)
+{
+    // calculate height differences
+    DenseVertexMap<float> heightDifferences;
+    heightDifferences = calcVertexHeightDiff(mesh, 31);
+    float maxVal = -1;
+    float minVal = -1;
+
+    // search the max value of all height differences
+    for (auto f: heightDifferences)
+    {
+        if(heightDifferences[f] > maxVal) maxVal = heightDifferences[f];
+    }
+
+    // fix visual color scheme by norming the height difference values
+    for (auto f: heightDifferences)
+    {
+        heightDifferences[f] = heightDifferences[f] / maxVal;
+    }
+
+    auto roughness = calcVertexRoughness(mesh, 31, vertexNormals);
+
+    maxVal = -1;
+
+    for (auto f: roughness)
+    {
+        //cout << "Current height difference:" << height_differences[f] << endl;
+        if(roughness[f] > maxVal) maxVal = roughness[f];
+    }
+
+    for (auto f: roughness)
+    {
+        roughness[f] = roughness[f] / maxVal;
+    }
+
+    DenseVertexMap<float> combCost;
+    for(auto vH: mesh.vertices())
+    {
+        combCost.insert(vH, heightDifferences[vH] + roughness[vH]);
+    }
+
+    // create function pointer to the color conversion function
+    Rgb8Color (*colorFunctionPointer)(float);
+    colorFunctionPointer = &floatToGrayScaleColor;
+
+    // create map of color vertices according to the calculated height differences
+    colorVertices = lvr2::map<float, Rgb8Color>(combCost, colorFunctionPointer);
+}
+
 int main(int argc, char** argv)
 {
     // =======================================================================
@@ -731,7 +785,6 @@ int main(int argc, char** argv)
     {
         grid->saveGrid("fastgrid.grid");
     }
-
 
     // =======================================================================
     // Optimize and finalize mesh
@@ -810,21 +863,21 @@ int main(int argc, char** argv)
     //cout << "duplicate vertices: " << duplicateVertices.size() << endl;
 
     // Finalize mesh (convert it to simple `MeshBuffer`)
-    // FinalizeAlgorithm<Vec> finalize;
-    // finalize.setNormalData(vertexNormals);
-    // if (colorMap)
-    // {
-    //     finalize.setColorData(*colorMap);
-    // }
-    // auto buffer = finalize.apply(mesh);
+     //FinalizeAlgorithm<Vec> finalize;
+     //finalize.setNormalData(vertexNormals);
+     //if (color_vertices)
+     //{
+     //     finalize.setColorData(colorVertices);
+     //}
+     //auto buffer = finalize.apply(mesh);
 
-    ClusterFlatteningFinalizer<Vec> finalize(clusterBiMap);
-    finalize.setVertexNormals(vertexNormals);
-    if (clusterColors)
-    {
+     ClusterFlatteningFinalizer<Vec> finalize(clusterBiMap);
+     finalize.setVertexNormals(vertexNormals);
+     if (clusterColors)
+     {
         finalize.setClusterColors(*clusterColors);
-    }
-    auto buffer = finalize.apply(mesh);
+     }
+     auto buffer = finalize.apply(mesh);
 
     // =======================================================================
     // Write all results (including the mesh) to file

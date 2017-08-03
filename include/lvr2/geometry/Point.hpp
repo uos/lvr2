@@ -73,6 +73,10 @@ struct Point : public BaseVecT
     // Similarly, the cross product only makes sense for direction vectors.
     BaseVecT cross(const BaseVecT &other) const = delete;
 
+    // Calculate the distance between this point and the given point.
+    typename BaseVecT::CoordType distanceFrom(const Point<BaseVecT> &other) const;
+    typename BaseVecT::CoordType squaredDistanceFrom(const Point<BaseVecT> &other) const;
+
     // The standard operators are deleted and replaced by strongly typed ones.
     BaseVecT operator+(const BaseVecT &other) const = delete;
     BaseVecT operator-(const BaseVecT &other) const = delete;

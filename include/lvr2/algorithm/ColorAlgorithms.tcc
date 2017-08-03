@@ -23,7 +23,9 @@
  * @author Johan M. von Behren <johan@vonbehren.eu>
  */
 
+#include <algorithm>
 #include <array>
+#include <cmath>
 
 using std::array;
 
@@ -78,6 +80,65 @@ optional<DenseVertexMap<Rgb8Color>> calcColorFromPointCloud(
     }
 
     return vertexMap;
+}
+
+Rgb8Color floatToRainbowColor(float value)
+{
+    value = std::min(value, 1.0f);
+    value = std::max(value, 0.0f);
+
+    //TODO: understand and fix style
+    float h = value * 5.0f + 1.0f;
+    int i = floor(h);
+    float f = h - i;
+
+    // if i is even
+    if (i % 2 == 0)
+    {
+        f = 1 - f;
+    }
+
+    float n = 1 - f;
+
+    if (i <= 1)
+    {
+        return { static_cast<uint8_t>(floor(n * 255)), 0, 255 };
+    }
+    else if (i == 2)
+    {
+        return { 0, static_cast<uint8_t>(floor(n * 255)), 255 };
+    }
+    else if (i == 3)
+    {
+        return { 0, 255, static_cast<uint8_t>(floor(n * 255)) };
+    }
+    else if (i == 4)
+    {
+        return { static_cast<uint8_t>(floor(n * 255)), 255, 0 };
+    }
+    else if (i >= 5)
+    {
+        return { 255, static_cast<uint8_t>(floor(n * 255)), 0 };
+    }
+}
+
+Rgb8Color floatToGrayScaleColor(float value)
+{
+    if(value > 1)
+    {
+        value = 1;
+    }
+    if(value < 0)
+    {
+        value = 0;
+    }
+    int grayscaleResult = 255 * (value);
+
+    return {
+        static_cast<uint8_t>(grayscaleResult),
+        static_cast<uint8_t>(grayscaleResult),
+        static_cast<uint8_t>(grayscaleResult)
+    };
 }
 
 
