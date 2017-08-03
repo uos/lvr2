@@ -24,6 +24,8 @@
  */
 
 
+#include <cmath>
+
 namespace lvr2
 {
 
@@ -125,6 +127,22 @@ Point<BaseVecT> BaseMesh<BaseVecT>::calcFaceCentroid(FaceHandle handle) const
     return Point<BaseVecT>::centroid(
         this->getVertexPositionsOfFace(handle)
     );
+}
+
+template <typename BaseVecT>
+typename BaseVecT::CoordType BaseMesh<BaseVecT>::calcFaceArea(FaceHandle handle) const
+{
+    // Calculate the area using Heron's formula. `s` is half the perimeter of
+    // the triangle. `a`, `b` and `c` are the length of the three sides of the
+    // triangle.
+    auto positions = this->getVertexPositionsOfFace(handle);
+    auto a = positions[0].distanceFrom(positions[1]);
+    auto b = positions[0].distanceFrom(positions[2]);
+    auto c = positions[1].distanceFrom(positions[2]);
+
+    auto s = (a + b + c) / 2;
+
+    return sqrt(s * (s - a) * (s - b) * (s - c));
 }
 
 template<typename BaseVecT>

@@ -335,6 +335,11 @@ public:
     Point<BaseVecT> calcFaceCentroid(FaceHandle handle) const;
 
     /**
+     * @brief Calc and return the area of the requested face.
+     */
+    typename BaseVecT::CoordType calcFaceArea(FaceHandle handle) const;
+
+    /**
      * @brief Get face handles of the neighbours of the requested face.
      *
      * This method is implemented using the pure virtual method
