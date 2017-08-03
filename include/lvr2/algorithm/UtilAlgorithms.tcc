@@ -5,12 +5,12 @@ namespace lvr2
 {
 
 template<typename in, typename out, typename MapF>
-DenseVertexMap <out> map(const VertexMap <in> &map_in, MapF map_function) {
+DenseVertexMap <out> map(const VertexMap<in> &mapIn, MapF mapFunction) {
     DenseVertexMap <out> resultMap;
 
-    for (auto vH: map_in)
+    for (auto vH: mapIn)
     {
-        resultMap.insert(vH, map_function(map_in[vH]));
+        resultMap.insert(vH, mapFunction(mapIn[vH]));
     }
 
     return resultMap;

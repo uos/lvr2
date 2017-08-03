@@ -30,7 +30,7 @@ namespace lvr2 {
  *          which is created via the input VertexMap and the map-conversion function.
  */
 template<typename in, typename out, typename MapF>
-DenseVertexMap<out> map(const VertexMap <in> &map_in, MapF map_function);
+DenseVertexMap<out> map(const VertexMap<in> &mapIn, MapF mapFunction);
 
 } // namespace lvr2
 

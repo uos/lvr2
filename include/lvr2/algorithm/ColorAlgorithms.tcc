@@ -124,11 +124,21 @@ Rgb8Color floatToRainbowColor(float value)
 
 Rgb8Color floatToGrayScaleColor(float value)
 {
+    if(value > 1)
+    {
+        value = 1;
+    }
+    if(value < 0)
+    {
+        value = 0;
+    }
     int grayscaleResult = 255 * (value);
 
-    return { static_cast<uint8_t>(grayscaleResult),
-             static_cast<uint8_t>(grayscaleResult),
-             static_cast<uint8_t>(grayscaleResult) };
+    return {
+        static_cast<uint8_t>(grayscaleResult),
+        static_cast<uint8_t>(grayscaleResult),
+        static_cast<uint8_t>(grayscaleResult)
+    };
 }
 
 

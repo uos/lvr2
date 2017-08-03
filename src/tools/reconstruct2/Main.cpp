@@ -646,53 +646,57 @@ void setTextureOptions(const reconstruct::Options& options)
     // }
 }
 
-void test_meshnav(const BaseMesh<BaseVecT>& mesh, DenseVertexMap<Rgb8Color>& color_vertices,  const VertexMap<Normal<BaseVecT>>& vertexNormals)
+void testMeshnav(
+    const BaseMesh<BaseVecT>& mesh,
+    DenseVertexMap<Rgb8Color>& colorVertices,
+    const VertexMap<Normal<BaseVecT>>& vertexNormals
+)
 {
     // calculate height differences
-    DenseVertexMap<float> height_differences;
-    height_differences = calcVertexHeightDiff(mesh, 31);
-    float max_val = -1;
-    float min_val = -1;
+    DenseVertexMap<float> heightDifferences;
+    heightDifferences = calcVertexHeightDiff(mesh, 31);
+    float maxVal = -1;
+    float minVal = -1;
 
     // search the max value of all height differences
-    for (auto f: height_differences)
+    for (auto f: heightDifferences)
     {
-        if(height_differences[f]>max_val) max_val = height_differences[f];
+        if(heightDifferences[f] > maxVal) maxVal = heightDifferences[f];
     }
 
     // fix visual color scheme by norming the height difference values
-    for (auto f: height_differences)
+    for (auto f: heightDifferences)
     {
-        height_differences[f] = height_differences[f]/max_val;
+        heightDifferences[f] = heightDifferences[f] / maxVal;
     }
 
     auto roughness = calcVertexRoughness(mesh, 31, vertexNormals);
 
-    max_val = -1;
+    maxVal = -1;
 
     for (auto f: roughness)
     {
         //cout << "Current height difference:" << height_differences[f] << endl;
-        if(roughness[f]>max_val) max_val = roughness[f];
+        if(roughness[f] > maxVal) maxVal = roughness[f];
     }
 
     for (auto f: roughness)
     {
-        roughness[f] = roughness[f]/max_val;
+        roughness[f] = roughness[f] / maxVal;
     }
 
-    DenseVertexMap<float> comb_cost;
+    DenseVertexMap<float> combCost;
     for(auto vH: mesh.vertices())
     {
-        comb_cost.insert(vH, height_differences[vH]+roughness[vH]);
+        combCost.insert(vH, heightDifferences[vH] + roughness[vH]);
     }
 
     // create function pointer to the color conversion function
-    Rgb8Color (*color_function_pointer)(float);
-    color_function_pointer = &floatToRainbowColor;
+    Rgb8Color (*colorFunctionPointer)(float);
+    colorFunctionPointer = &floatToGrayScaleColor;
 
     // create map of color vertices according to the calculated height differences
-    color_vertices = lvr2::map<float, Rgb8Color>(comb_cost, color_function_pointer);
+    colorVertices = lvr2::map<float, Rgb8Color>(combCost, colorFunctionPointer);
 }
 
 int main(int argc, char** argv)
@@ -823,32 +827,26 @@ int main(int argc, char** argv)
     // Calc normals for vertices
     auto vertexNormals = calcVertexNormals(mesh, faceNormals, *surface);
 
-
-    std::array<uint8_t, 3> a = {0, 0, 0};
-    DenseVertexMap<Rgb8Color> color_vertices(a);
-
-    test_meshnav(mesh, color_vertices, vertexNormals);
-
     // Debug mesh
     //auto duplicateVertices = getDuplicateVertices(mesh);
     //cout << "duplicate vertices: " << duplicateVertices.size() << endl;
 
     // Finalize mesh (convert it to simple `MeshBuffer`)
-     FinalizeAlgorithm<Vec> finalize;
-     finalize.setNormalData(vertexNormals);
+     //FinalizeAlgorithm<Vec> finalize;
+     //finalize.setNormalData(vertexNormals);
      //if (color_vertices)
      //{
-        finalize.setColorData(color_vertices);
-     //}
-     auto buffer = finalize.apply(mesh);
-
-     //ClusterFlatteningFinalizer<Vec> finalize(clusterBiMap);
-     //finalize.setVertexNormals(vertexNormals);
-     //if (clusterColors)
-     //{
-     //   finalize.setClusterColors(*clusterColors);
+     //     finalize.setColorData(colorVertices);
      //}
      //auto buffer = finalize.apply(mesh);
+
+     ClusterFlatteningFinalizer<Vec> finalize(clusterBiMap);
+     finalize.setVertexNormals(vertexNormals);
+     if (clusterColors)
+     {
+        finalize.setClusterColors(*clusterColors);
+     }
+     auto buffer = finalize.apply(mesh);
 
     // =======================================================================
     // Write all results (including the mesh) to file

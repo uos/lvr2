@@ -65,6 +65,10 @@ Rgb8Color floatToRainbowColor(float value);
 /**
  * @brief   Convert a given float to an 8-bit Grayscale-Color.
  *
+ * The given float, which we want to convert to an 8-bit GrayScale-Color, has to be in [0, 1].
+ * If it is bigger than 1 it's value is set to 1.
+ * If it is smaller than 0 it's value is set to 0.
+ *
  * @param   value The float value, which will be converted to a Grayscale-Color.
  *
  * @return  The 8-bit Grayscale-Color.
