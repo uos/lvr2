@@ -53,9 +53,9 @@ void cleanContours(BaseMesh<BaseVecT>& mesh, int iterations, float areaThreshold
             {
                 mesh.removeFace(fH);
             }
-            else if (boundaryEdgeCount == 1)
+            else if (boundaryEdgeCount == 1 && mesh.calcFaceArea(fH) < areaThreshold)
             {
-                // TODO: remove if area is small
+                mesh.removeFace(fH);
             }
         }
     }
