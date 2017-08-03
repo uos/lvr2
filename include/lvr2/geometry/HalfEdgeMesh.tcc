@@ -792,7 +792,7 @@ EdgeCollapseResult HalfEdgeMesh<BaseVecT>::collapseEdge(EdgeHandle edgeH)
             halfToFullEdgeHandle(edgeToRemoveBLH),
             halfToFullEdgeHandle(edgeToRemoveBRH)
         };
-        result.neighbors[0] = EdgeCollapseRemovedFace(
+        result.neighbors[1] = EdgeCollapseRemovedFace(
             faceAboveH,
             edgeHsToRemove,
             halfToFullEdgeHandle(edgeToKeepBLH)
