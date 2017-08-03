@@ -329,12 +329,14 @@ void HalfEdgeMesh<BaseVecT>::removeFace(FaceHandle handle)
     vector<HalfEdgeHandle> edgesToRemove;
     vector<VertexHandle> verticesToRemove;
 
-    // Marker vertex to fix next pointer of edges. The next pointer of the pair.first has to be set to pair.second
-    // (i.e. getE(pair.first).next = pair.second)
+    // Marker vertex to fix next pointer of edges. The next pointer of the
+    // pair.first has to be set to pair.second (i.e. getE(pair.first).next =
+    // pair.second)
     vector<pair<HalfEdgeHandle, HalfEdgeHandle>> fixNext;
 
-    // Walk around inner edges of face and check connected edges and vertices. If they are connected to other
-    // faces or edges, fix their links otherwise mark them to be deleted.
+    // Walk around inner edges of face and check connected edges and vertices.
+    // If they are connected to other faces or edges, fix their links otherwise
+    // mark them to be deleted.
     auto innerEdges = getInnerEdges(handle);
     for (auto edgeH: innerEdges)
     {
@@ -342,7 +344,8 @@ void HalfEdgeMesh<BaseVecT>::removeFace(FaceHandle handle)
         auto& edge = getE(edgeH);
         auto twin = getE(edge.twin);
 
-        // Check if target vertex (v1) of current inner edge (b) can be deleted. This is true, if b.twin == a
+        // Check if target vertex (v1) of current inner edge (b) can be
+        // deleted. This is true, if b.twin == a
         //  +----+  --------(a)-------->  +----+
         //  | v1 |                        | v2 |
         //  +----+  <-------(b)---------  +----+
@@ -361,8 +364,9 @@ void HalfEdgeMesh<BaseVecT>::removeFace(FaceHandle handle)
         }
         else
         {
-            // Target vertex cannot be deleted, because other edges are connected to it. Fix the outgoing point of the
-            // vertex and set it to the next outgoing edge
+            // Target vertex cannot be deleted, because other edges are
+            // connected to it. Fix the outgoing point of the vertex and set it
+            // to the next outgoing edge
             auto& target = getV(edge.target);
             target.outgoing = nextOutgoingEdgeH;
         }
@@ -370,8 +374,8 @@ void HalfEdgeMesh<BaseVecT>::removeFace(FaceHandle handle)
         // Check if current inner edge and its twin can be deleted
         if (twin.face)
         {
-            // If our twin has a face, the current edge pair is still needed! We only need to fix the face pointer
-            // of the current inner edge
+            // If our twin has a face, the current edge pair is still needed!
+            // We only need to fix the face pointer of the current inner edge
             edge.face = OptionalFaceHandle();
         }
         else
@@ -380,7 +384,8 @@ void HalfEdgeMesh<BaseVecT>::removeFace(FaceHandle handle)
             edgesToRemove.push_back(edgeH);
             edgesToRemove.push_back(edge.twin);
 
-            // Find edges around target and source vertex, which point to the current edge pair
+            // Find edges around target and source vertex, which point to the
+            // current edge pair
             auto frontEdgeToFixH = findEdgeAroundVertex(edge.target, [&, this](auto eH)
             {
                 return getE(eH).next == edge.twin;
@@ -390,11 +395,13 @@ void HalfEdgeMesh<BaseVecT>::removeFace(FaceHandle handle)
                 return getE(eH).next == edgeH;
             });
 
-            // If found, fix the next pointer of the edges by setting it to the next outgoing edge of the vertex
+            // If found, fix the next pointer of the edges by setting it to the
+            // next outgoing edge of the vertex
             if (frontEdgeToFixH)
             {
-                // The next outgoing vertex might not be safe, if it belongs to the face, which we want to delete. If
-                // this is the case, take the second next outgoing vertex
+                // The next outgoing vertex might not be safe, if it belongs to
+                // the face, which we want to delete. If this is the case, take
+                // the second next outgoing vertex
                 auto next = getE(edge.next);
                 auto nextTwin = getE(next.twin);
                 if (!nextTwin.face)
@@ -756,7 +763,10 @@ EdgeCollapseResult HalfEdgeMesh<BaseVecT>::collapseEdge(EdgeHandle edgeH)
 
     if (hasTriangleAbove)
     {
-        DOINDEBUG(dout() << "Remove edges of triangle above: " << edgeToRemoveALH << " and " << edgeToRemoveARH << endl);
+        DOINDEBUG(
+            dout() << "Remove edges of triangle above: "
+                << edgeToRemoveALH << " and " << edgeToRemoveARH << endl
+        );
 
         std::array<EdgeHandle, 2> edgeHsToRemove = {
             halfToFullEdgeHandle(edgeToRemoveALH),
@@ -773,7 +783,10 @@ EdgeCollapseResult HalfEdgeMesh<BaseVecT>::collapseEdge(EdgeHandle edgeH)
     }
     if (hasTriangleBelow)
     {
-        DOINDEBUG(dout() << "Remove edges of triangle below: " << edgeToRemoveBLH << " and " << edgeToRemoveBRH << endl);
+        DOINDEBUG(
+            dout() << "Remove edges of triangle below: " << edgeToRemoveBLH
+                << " and " << edgeToRemoveBRH << endl
+        );
 
         std::array<EdgeHandle, 2> edgeHsToRemove = {
             halfToFullEdgeHandle(edgeToRemoveBLH),
