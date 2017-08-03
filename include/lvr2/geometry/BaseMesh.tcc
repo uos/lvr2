@@ -23,6 +23,7 @@
  *  @author Johan M. von Behren <johan@vonbehren.eu>
  */
 
+#include <algorithm>
 
 #include <cmath>
 
@@ -143,6 +144,34 @@ typename BaseVecT::CoordType BaseMesh<BaseVecT>::calcFaceArea(FaceHandle handle)
     auto s = (a + b + c) / 2;
 
     return sqrt(s * (s - a) * (s - b) * (s - c));
+}
+
+template<typename BaseVecT>
+bool BaseMesh<BaseVecT>::isCollapsable(EdgeHandle handle) const
+{
+    // The answer at [1] describes in more detail, what we need to check. Note
+    // however, that we don't need to check whether or not the normal will
+    // flip. This does not have negative consequences for 3D meshes
+    //
+    // [1]: https://stackoverflow.com/a/27049418/2408867
+    auto vertices = getVerticesOfEdge(handle);
+    auto neighbors0 = getNeighboursOfVertex(vertices[0]);
+    auto neighbors1 = getNeighboursOfVertex(vertices[1]);
+
+    size_t sharedVerticesCount = 0;
+    for (auto v0: neighbors0)
+    {
+        if (std::find(neighbors1.begin(), neighbors1.end(), v0) != neighbors1.end())
+        {
+            sharedVerticesCount += 1;
+            if (sharedVerticesCount > 2)
+            {
+                return false;
+            }
+        }
+    }
+
+    return true;
 }
 
 template<typename BaseVecT>

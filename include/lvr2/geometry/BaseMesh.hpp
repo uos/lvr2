@@ -371,6 +371,16 @@ public:
     virtual vector<FaceHandle> getNeighboursOfFace(FaceHandle handle) const;
 
     /**
+     * @brief Determines whether or not an edge collapse of the given edge is
+     *        possible without creating invalid meshes.
+     *
+     * For example, an edge collapse can create non-manifold meshes in some
+     * situations. Thus, those collapses are not allowed and `collapseEdge()`
+     * will panic if called with a non-collapsable edge.
+     */
+    virtual bool isCollapsable(EdgeHandle handle) const;
+
+    /**
      * @brief Get a list of faces the given vertex belongs to.
      *
      * This method is implemented using the pure virtual method

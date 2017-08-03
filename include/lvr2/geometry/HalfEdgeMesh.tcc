@@ -599,6 +599,11 @@ void HalfEdgeMesh<BaseVecT>::getNeighboursOfVertex(
 template <typename BaseVecT>
 EdgeCollapseResult HalfEdgeMesh<BaseVecT>::collapseEdge(EdgeHandle edgeH)
 {
+    if (!BaseMesh<BaseVecT>::isCollapsable(edgeH))
+    {
+        panic("call to collapseEdge() with non-collapsable edge!");
+    }
+
     //             [C]                | Vertices:
     //             / ^                | [A]: vertexToRemove
     //            /   \               | [B]: vertexToKeep
