@@ -277,6 +277,12 @@ StableVectorIterator<HandleT, ElemT>& StableVectorIterator<HandleT, ElemT>::oper
 }
 
 template<typename HandleT, typename ElemT>
+bool StableVectorIterator<HandleT, ElemT>::isAtEnd() const
+{
+    return m_pos == m_elements->size();
+}
+
+template<typename HandleT, typename ElemT>
 HandleT StableVectorIterator<HandleT, ElemT>::operator*() const
 {
     return HandleT(m_pos);

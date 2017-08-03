@@ -47,12 +47,12 @@ class HalfEdgeHandle : public BaseHandle<Index>
 {
 public:
     using BaseHandle<Index>::BaseHandle;
-    HalfEdgeHandle(EdgeHandle eH) : HalfEdgeHandle(eH.idx()) {}
 
-    EdgeHandle toFullEdgeHandle() const {
-        // This is equivalent to `(m_idx / 2) * 2` essentially making the
-        // index even and "rounding down".
-        return EdgeHandle(m_idx & ~1);
+    static HalfEdgeHandle oneHalfOf(EdgeHandle eH)
+    {
+        // The index of an edge handle is always the index of the handle of
+        // one of its half edges
+        return HalfEdgeHandle(eH.idx());
     }
 };
 
@@ -63,17 +63,6 @@ public:
     using BaseOptionalHandle<Index, HalfEdgeHandle>::BaseOptionalHandle;
     OptionalHalfEdgeHandle() : BaseOptionalHandle() {}
     OptionalHalfEdgeHandle(EdgeHandle eH) : OptionalHalfEdgeHandle(eH.idx()) {}
-
-    OptionalEdgeHandle toFullEdgeHandle() const {
-        if (*this)
-        {
-            return EdgeHandle(this->unwrap().idx() & ~1);
-        }
-        else
-        {
-            return OptionalEdgeHandle();
-        }
-    }
 };
 
 struct HalfEdge
