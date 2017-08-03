@@ -232,4 +232,44 @@ void Meap<KeyT, ValueT, MapT>::bubbleDown(size_t idx)
     }
 }
 
+template<typename KeyT, typename ValueT, template<typename, typename> typename MapT>
+void Meap<KeyT, ValueT, MapT>::debugOutput() const
+{
+    size_t levelWidth = 1;
+    size_t levelCount = 0;
+    size_t totalCount = 0;
+    unordered_set<KeyT> keys;
+
+    cout << "HEAP:" << endl;
+    for (auto& e: m_heap)
+    {
+        cout << "(" << e.key << " -> " << e.value << ")[" << totalCount << "], ";
+        keys.insert(e.key);
+
+        levelCount += 1;
+        totalCount += 1;
+        if (levelCount == levelWidth)
+        {
+            levelWidth *= 2;
+            levelCount = 0;
+            cout << endl;
+        }
+    }
+
+    cout << endl << "MAP:" << endl;
+    for (auto k: keys)
+    {
+        cout << k << " -> ";
+        auto idx = m_indices.get(k);
+        if (idx)
+        {
+            cout << *idx << endl;
+        }
+        else
+        {
+            cout << "!! NONE !!" << endl;
+        }
+    }
+}
+
 } // namespace lvr2

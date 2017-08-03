@@ -128,6 +128,8 @@ private:
 
     void bubbleUp(size_t idx);
     void bubbleDown(size_t idx);
+
+    void debugOutput() const;
 };
 
 } // namespace lvr2
