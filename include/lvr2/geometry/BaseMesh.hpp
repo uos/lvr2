@@ -283,6 +283,25 @@ public:
     virtual void getEdgesOfVertex(VertexHandle handle, vector<EdgeHandle>& edgesOut) const = 0;
 
     /**
+     * @brief Get vertex handles of the neighbours of the requested vertex.
+     *
+     * The vertex handles are written into the `verticesOut` vector. This is
+     * done to reduce the number of heap allocations if this method is called
+     * in a loop. If you are not calling it in a loop or can't, for some
+     * reason, take advantages of this method's signature, you can call the
+     * other overload of this method which just returns the vector. Such
+     * convinient.
+     *
+     * Note: you probably should remember to `clear()` the vector before
+     * passing it into this method.
+     *
+     * @param verticesOut The vertex-handles of the neighbours of `handle` will
+     *                    be written into this vector in clockwise order.
+     */
+    virtual void getNeighboursOfVertex(VertexHandle handle, vector<VertexHandle>& verticesOut) const = 0;
+
+
+    /**
      * @brief Returns an iterator to the first vertex of this mesh.
      *
      * @return When dereferenced, this iterator returns a handle to the current vertex.
@@ -374,6 +393,18 @@ public:
      * @return The edge-handles in counter-clockwise order.
      */
     virtual vector<EdgeHandle> getEdgesOfVertex(VertexHandle handle) const;
+
+    /**
+     * @brief Get a list of vertices around the given vertex.
+     *
+     * This method is implemented using the pure virtual method
+     * `getNeighboursOfVertex(VertexHandle, vector<EdgeHandle>&)`. If you are
+     * calling this method in a loop, you should probably call the more manual
+     * method (with the out vector) to avoid useless heap allocations.
+     *
+     * @return The vertex-handles in clockwise order.
+     */
+    virtual vector<VertexHandle> getNeighboursOfVertex(VertexHandle handle) const;
 
     /**
      * @brief Method for usage in range-based for-loops.

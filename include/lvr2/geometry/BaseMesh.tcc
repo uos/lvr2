@@ -169,4 +169,12 @@ vector<EdgeHandle> BaseMesh<BaseVecT>::getEdgesOfVertex(VertexHandle handle) con
     return out;
 }
 
+template<typename BaseVecT>
+vector<VertexHandle> BaseMesh<BaseVecT>::getNeighboursOfVertex(VertexHandle handle) const
+{
+    vector<VertexHandle> out;
+    getNeighboursOfVertex(handle, out);
+    return out;
+}
+
 } // namespace lvr2

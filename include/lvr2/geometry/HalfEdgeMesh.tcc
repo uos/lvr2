@@ -576,10 +576,22 @@ void HalfEdgeMesh<BaseVecT>::getEdgesOfVertex(
     vector<EdgeHandle>& edgesOut
 ) const
 {
-    // Iterate over all
     circulateAroundVertex(handle, [&edgesOut, this](auto eH)
     {
         edgesOut.push_back(halfToFullEdgeHandle(eH));
+        return true;
+    });
+}
+
+template <typename BaseVecT>
+void HalfEdgeMesh<BaseVecT>::getNeighboursOfVertex(
+    VertexHandle handle,
+    vector<VertexHandle>& verticesOut
+) const
+{
+    circulateAroundVertex(handle, [&verticesOut, this](auto eH)
+    {
+        verticesOut.push_back(getE(getE(eH).twin).target);
         return true;
     });
 }
