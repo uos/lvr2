@@ -479,9 +479,9 @@ array<EdgeHandle, 3> HalfEdgeMesh<BaseVecT>::getEdgesOfFace(FaceHandle handle) c
 {
     auto innerEdges = getInnerEdges(handle);
     return {
-        innerEdges[0].toFullEdgeHandle(),
-        innerEdges[1].toFullEdgeHandle(),
-        innerEdges[2].toFullEdgeHandle()
+        halfToFullEdgeHandle(innerEdges[0]),
+        halfToFullEdgeHandle(innerEdges[1]),
+        halfToFullEdgeHandle(innerEdges[2])
     };
 }
 
@@ -533,14 +533,16 @@ void HalfEdgeMesh<BaseVecT>::getNeighboursOfFace(
 template <typename BaseVecT>
 array<VertexHandle, 2> HalfEdgeMesh<BaseVecT>::getVerticesOfEdge(EdgeHandle edgeH) const
 {
-    auto oneEdge = getE(edgeH);
+    auto oneEdgeH = HalfEdgeHandle::oneHalfOf(edgeH);
+    auto oneEdge = getE(oneEdgeH);
     return { oneEdge.target, getE(oneEdge.twin).target };
 }
 
 template <typename BaseVecT>
 array<OptionalFaceHandle, 2> HalfEdgeMesh<BaseVecT>::getFacesOfEdge(EdgeHandle edgeH) const
 {
-    auto oneEdge = getE(edgeH);
+    auto oneEdgeH = HalfEdgeHandle::oneHalfOf(edgeH);
+    auto oneEdge = getE(oneEdgeH);
     return { oneEdge.face, getE(oneEdge.twin).face };
 }
 
@@ -570,9 +572,236 @@ void HalfEdgeMesh<BaseVecT>::getEdgesOfVertex(
     // Iterate over all
     circulateAroundVertex(handle, [&edgesOut, this](auto eH)
     {
-        edgesOut.push_back(eH.toFullEdgeHandle());
+        edgesOut.push_back(halfToFullEdgeHandle(eH));
         return true;
     });
+}
+
+template <typename BaseVecT>
+EdgeCollapseResult HalfEdgeMesh<BaseVecT>::collapseEdge(EdgeHandle edgeH)
+{
+    //             [C]                | Vertices:
+    //             / ^                | [A]: vertexToRemove
+    //            /   \               | [B]: vertexToKeep
+    //         c /     \ b            | [C]: vertexAbove
+    //          /       \             | [D]: vertexBelow
+    //         V    a    \            |
+    //           ------>              | Edges:
+    //      [A]            [B]        | a: startEdge
+    //           <------              | b: edgeToRemoveAR (AboveRight)
+    //         \    d    ^            | c: edgeToRemoveAL (AboveLeft)
+    //          \       /             | d: startEdgeTwin
+    //         e \     / f            | e: edgeToRemoveBR (BelowLeft)
+    //            \   /               | f: edgeToRemoveBL (BelowRight)
+    //             V /                |
+    //             [D]                |
+
+    // The variable naming in this method imagines that the given edge points to
+    // the right and there might be one face above and one face below.
+    // The start edges and the inner edges of those faces will be removed and
+    // for each face the remaining two edges become twins.
+
+    auto startEdgeH = HalfEdgeHandle::oneHalfOf(edgeH);
+    auto& startEdge = getE(startEdgeH);
+    auto& startEdgeTwin = getE(startEdge.twin);
+
+    // The two vertices that are merged
+    auto vertexToRemoveH = startEdge.target;
+    auto vertexToKeepH = startEdgeTwin.target;
+
+    // The two faces next to the given edge
+    OptionalFaceHandle faceAboveH = startEdge.face;
+    OptionalFaceHandle faceBelowH = startEdgeTwin.face;
+
+    // Edges above the start edge
+    auto edgeToRemoveARH = startEdge.next;
+    auto edgeToKeepARH = getE(edgeToRemoveARH).twin;
+    auto edgeToRemoveALH = getE(edgeToRemoveARH).next;
+    auto edgeToKeepALH = getE(edgeToRemoveALH).twin;
+
+    // Edges below the start edge
+    auto edgeToRemoveBLH = startEdgeTwin.next;
+    auto edgeToKeepBLH = getE(edgeToRemoveBLH).twin;
+    auto edgeToRemoveBRH = getE(edgeToRemoveBLH).next;
+    auto edgeToKeepBRH = getE(edgeToRemoveBRH).twin;
+
+    // Vertices above and below
+    auto vertexAboveH = getE(edgeToRemoveARH).target;
+    auto vertexBelowH = getE(edgeToRemoveBLH).target;
+
+    // Check if there are closed triangles next to the start edge
+    bool hasTriangleAbove = getE(edgeToRemoveALH).next == startEdgeH;
+    bool hasTriangleBelow = getE(edgeToRemoveBRH).next == startEdge.twin;
+
+    // The result that contains information about the removed faces and edges
+    // and the new vertex and edges
+    EdgeCollapseResult result(vertexToKeepH);
+
+    // Fix targets for ingoing edges of the vertex that will be deleted
+    // this has to be done before changing the twin edges
+    auto checkTargetIsVertexToRemoveLambda = [&, this](auto eH)
+    {
+        return getE(eH).target == vertexToRemoveH;
+    };
+
+    auto edgeOfVertexToRemoveH = findEdgeAroundVertex(vertexToRemoveH, checkTargetIsVertexToRemoveLambda);
+    while(edgeOfVertexToRemoveH)
+    {
+        getE(edgeOfVertexToRemoveH.unwrap()).target = vertexToKeepH;
+
+        edgeOfVertexToRemoveH = findEdgeAroundVertex(vertexToRemoveH, checkTargetIsVertexToRemoveLambda);
+    }
+
+    // If there is a face or a closed triangle without a face above, collapse it
+    if (faceAboveH || hasTriangleAbove)
+    {
+        DOINDEBUG(dout() << "faceAbove || hasTriangleAbove" << endl);
+        // Fix twin edges
+        getE(edgeToKeepALH).twin = edgeToKeepARH;
+        getE(edgeToKeepARH).twin = edgeToKeepALH;
+
+        // Fix outgoing edges of vertices because they might be deleted
+        getV(vertexToKeepH).outgoing = edgeToKeepALH;
+        getV(vertexAboveH).outgoing = edgeToKeepARH;
+    }
+    else
+    {
+        DOINDEBUG(dout() << "!(faceAbove || hasTriangleAbove)" << endl);
+        // If there is no triangle above, the edge whose next is the start edge
+        // needs the correct new next edge
+        auto startEdgePrecursorH = findEdgeAroundVertex(startEdge.twin, [&, this](auto eH)
+        {
+            return getE(eH).next == startEdgeH;
+        });
+        if (startEdgePrecursorH)
+        {
+            getE(startEdgePrecursorH.unwrap()).next = startEdge.next;
+        }
+
+        // Fix outgoing edge of vertexToKeep because it might be deleted
+        getV(vertexToKeepH).outgoing = startEdge.next;
+
+    }
+
+    if (faceBelowH || hasTriangleBelow)
+    {
+        DOINDEBUG(dout() << "faceBelow || hasTriangleBelow" << endl);
+        // Fix twin edges
+        getE(edgeToKeepBLH).twin = edgeToKeepBRH;
+        getE(edgeToKeepBRH).twin = edgeToKeepBLH;
+
+        // Fix outgoing edge of vertexBelow because it might be deleted
+        getV(vertexBelowH).outgoing = edgeToKeepBLH;
+    }
+    else
+    {
+        DOINDEBUG(dout() << "!(faceBelow || hasTriangleBelow)" << endl);
+        // If there is no triangle below, the edge whose next is the twin of the
+        // start edge needs the correct new next edge
+        auto startEdgeTwinPrecursorH = findEdgeAroundVertex(startEdgeH, [&, this](auto eH)
+        {
+            return getE(eH).next == startEdge.twin;
+        });
+        if (startEdgeTwinPrecursorH)
+        {
+            getE(startEdgeTwinPrecursorH.unwrap()).next = startEdgeTwin.next;
+        }
+    }
+
+    // Check for the special case that the mesh consists of only one triangle
+    // to make sure edges are not deleted twice
+    if (edgeToKeepALH == edgeToRemoveBLH)
+    {
+        DOINDEBUG(dout() << "Special case: only one triangle" << endl);
+        hasTriangleBelow = false;
+        // Fix next pointers of the two remaining halfEdges to point to each other
+        getE(edgeToKeepALH).next = edgeToKeepARH;
+        getE(edgeToKeepARH).next = edgeToKeepALH;
+
+        std::array<EdgeHandle, 2> edgeHsToRemove = {
+            halfToFullEdgeHandle(edgeToRemoveALH),
+            halfToFullEdgeHandle(edgeToRemoveARH)
+        };
+        result.neighbors[1] = EdgeCollapseRemovedFace(
+            faceBelowH,
+            edgeHsToRemove,
+            halfToFullEdgeHandle(edgeToKeepALH)
+        );
+    }
+
+
+    // Calculate and set new position of the vertex that is kept
+    auto position1 = getV(vertexToRemoveH).pos;
+    auto position2 = getV(vertexToKeepH).pos;
+
+    auto newPosition = position1 + (position2 - position1) / 2;
+    getV(vertexToKeepH).pos = newPosition;
+
+    result.midPoint = vertexToKeepH;
+
+    // Delete one vertex, the two faces besides the given edge and their inner edges
+    DOINDEBUG(dout() << "Remove vertex: " << vertexToRemoveH << endl);
+    m_vertices.erase(vertexToRemoveH);
+
+    if (faceAboveH)
+    {
+        DOINDEBUG(dout() << "Remove face above: " << faceAboveH << endl);
+        m_faces.erase(faceAboveH.unwrap());
+    }
+    if (faceBelowH)
+    {
+        DOINDEBUG(dout() << "Remove face below: " << faceBelowH << endl);
+        m_faces.erase(faceBelowH.unwrap());
+    }
+
+    if (hasTriangleAbove)
+    {
+        DOINDEBUG(dout() << "Remove edges of triangle above: " << edgeToRemoveALH << " and " << edgeToRemoveARH << endl);
+
+        std::array<EdgeHandle, 2> edgeHsToRemove = {
+            halfToFullEdgeHandle(edgeToRemoveALH),
+            halfToFullEdgeHandle(edgeToRemoveARH)
+        };
+        result.neighbors[0] = EdgeCollapseRemovedFace(
+            faceAboveH,
+            edgeHsToRemove,
+            halfToFullEdgeHandle(edgeToKeepALH)
+        );
+
+        m_edges.erase(edgeToRemoveALH);
+        m_edges.erase(edgeToRemoveARH);
+    }
+    if (hasTriangleBelow)
+    {
+        DOINDEBUG(dout() << "Remove edges of triangle below: " << edgeToRemoveBLH << " and " << edgeToRemoveBRH << endl);
+
+        std::array<EdgeHandle, 2> edgeHsToRemove = {
+            halfToFullEdgeHandle(edgeToRemoveBLH),
+            halfToFullEdgeHandle(edgeToRemoveBRH)
+        };
+        result.neighbors[0] = EdgeCollapseRemovedFace(
+            faceAboveH,
+            edgeHsToRemove,
+            halfToFullEdgeHandle(edgeToKeepBLH)
+        );
+
+        m_edges.erase(edgeToRemoveBLH);
+        m_edges.erase(edgeToRemoveBRH);
+    }
+
+    DOINDEBUG(dout() << "Remove start edges: " << startEdgeH << " and " << startEdge.twin << endl);
+    m_edges.erase(startEdgeH);
+    m_edges.erase(startEdge.twin);
+
+    return result;
+}
+
+template <typename BaseVecT>
+EdgeHandle HalfEdgeMesh<BaseVecT>::halfToFullEdgeHandle(HalfEdgeHandle handle) const
+{
+    auto twin = getE(handle).twin;
+    // return the handle with the smaller index of the given half edge and its twin
+    return EdgeHandle(min(twin.idx(), handle.idx()));
 }
 
 // ========================================================================
@@ -940,28 +1169,39 @@ HandleT HemFevIterator<HandleT, ElemT>::operator*() const
     return *m_iterator;
 }
 
-HemEdgeIterator& HemEdgeIterator::operator++()
+template<typename BaseVecT>
+HemEdgeIterator<BaseVecT>& HemEdgeIterator<BaseVecT>::operator++()
 {
     ++m_iterator;
-    ++m_iterator;
+
+    // If not at the end, find the next half edge handle that equals the full edge handle of that edge
+    // according to the halfToFullEdgeHandle method
+    while (!m_iterator.isAtEnd() && (*m_iterator).idx() != m_mesh.halfToFullEdgeHandle(*m_iterator).idx())
+    {
+        ++m_iterator;
+    }
+
     return *this;
 }
 
-bool HemEdgeIterator::operator==(const MeshHandleIterator<EdgeHandle>& other) const
+template<typename BaseVecT>
+bool HemEdgeIterator<BaseVecT>::operator==(const MeshHandleIterator<EdgeHandle>& other) const
 {
-    auto cast = dynamic_cast<const HemEdgeIterator*>(&other);
+    auto cast = dynamic_cast<const HemEdgeIterator<BaseVecT>*>(&other);
     return cast && m_iterator == cast->m_iterator;
 }
 
-bool HemEdgeIterator::operator!=(const MeshHandleIterator<EdgeHandle>& other) const
+template<typename BaseVecT>
+bool HemEdgeIterator<BaseVecT>::operator!=(const MeshHandleIterator<EdgeHandle>& other) const
 {
-    auto cast = dynamic_cast<const HemEdgeIterator*>(&other);
+    auto cast = dynamic_cast<const HemEdgeIterator<BaseVecT>*>(&other);
     return !cast || m_iterator != cast->m_iterator;
 }
 
-EdgeHandle HemEdgeIterator::operator*() const
+template<typename BaseVecT>
+EdgeHandle HemEdgeIterator<BaseVecT>::operator*() const
 {
-    return (*m_iterator).toFullEdgeHandle();
+    return m_mesh.halfToFullEdgeHandle(*m_iterator);
 }
 
 template <typename BaseVecT>
@@ -1000,7 +1240,7 @@ template <typename BaseVecT>
 MeshHandleIteratorPtr<EdgeHandle> HalfEdgeMesh<BaseVecT>::edgesBegin() const
 {
     return MeshHandleIteratorPtr<EdgeHandle>(
-        std::make_unique<HemEdgeIterator>(this->m_edges.begin())
+        std::make_unique<HemEdgeIterator<BaseVecT>>(this->m_edges.begin(), *this)
     );
 }
 
@@ -1008,7 +1248,7 @@ template <typename BaseVecT>
 MeshHandleIteratorPtr<EdgeHandle> HalfEdgeMesh<BaseVecT>::edgesEnd() const
 {
     return MeshHandleIteratorPtr<EdgeHandle>(
-        std::make_unique<HemEdgeIterator>(this->m_edges.end())
+        std::make_unique<HemEdgeIterator<BaseVecT>>(this->m_edges.end(), *this)
     );
 }
 

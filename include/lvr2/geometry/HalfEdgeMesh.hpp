@@ -47,34 +47,6 @@ using std::vector;
 namespace lvr2
 {
 
-/// Implementation of the MeshHandleIterator for the HalfEdgeMesh
-template<typename HandleT, typename ElemT>
-class HemFevIterator : public MeshHandleIterator<HandleT>
-{
-public:
-    HemFevIterator(StableVectorIterator<HandleT, ElemT> iterator) : m_iterator(iterator) {};
-    HemFevIterator& operator++();
-    bool operator==(const MeshHandleIterator<HandleT>& other) const;
-    bool operator!=(const MeshHandleIterator<HandleT>& other) const;
-    HandleT operator*() const;
-
-private:
-    StableVectorIterator<HandleT, ElemT> m_iterator;
-};
-
-class HemEdgeIterator : public MeshHandleIterator<EdgeHandle>
-{
-public:
-    HemEdgeIterator(StableVectorIterator<HalfEdgeHandle, HalfEdge> iterator) : m_iterator(iterator) {};
-    HemEdgeIterator& operator++();
-    bool operator==(const MeshHandleIterator<EdgeHandle>& other) const;
-    bool operator!=(const MeshHandleIterator<EdgeHandle>& other) const;
-    EdgeHandle operator*() const;
-
-private:
-    StableVectorIterator<HalfEdgeHandle, HalfEdge> m_iterator;
-};
-
 /**
  * @brief Half-edge data structure implementing the `BaseMesh` interface.
  *
@@ -101,6 +73,7 @@ public:
     VertexHandle addVertex(Point<BaseVecT> pos) final;
     FaceHandle addFace(VertexHandle v1H, VertexHandle v2H, VertexHandle v3H) final;
     void removeFace(FaceHandle handle) final;
+    EdgeCollapseResult collapseEdge(EdgeHandle edgeH) final;
 
     size_t numVertices() const final;
     size_t numFaces() const final;
@@ -145,6 +118,14 @@ private:
     const Face& getF(FaceHandle handle) const;
     Vertex& getV(VertexHandle handle);
     const Vertex& getV(VertexHandle handle) const;
+
+    /**
+     * @brief Converts a half edge handle to a full edge handle
+     *
+     * @return  The handle with the smaller index of the given half edge and
+     *          its twin
+     */
+    EdgeHandle halfToFullEdgeHandle(HalfEdgeHandle handle) const;
 
     /**
      * @brief Given two vertices, find the edge pointing from one to the other.
@@ -223,6 +204,45 @@ private:
      * @brief Get inner edges in counter clockwise order
      */
     array<HalfEdgeHandle, 3> getInnerEdges(FaceHandle handle) const;
+
+    // ========================================================================
+    // = Friends
+    // ========================================================================
+    template<typename> friend class HemEdgeIterator;
+};
+
+/// Implementation of the MeshHandleIterator for the HalfEdgeMesh
+template<typename HandleT, typename ElemT>
+class HemFevIterator : public MeshHandleIterator<HandleT>
+{
+public:
+    HemFevIterator(StableVectorIterator<HandleT, ElemT> iterator) : m_iterator(iterator) {};
+    HemFevIterator& operator++();
+    bool operator==(const MeshHandleIterator<HandleT>& other) const;
+    bool operator!=(const MeshHandleIterator<HandleT>& other) const;
+    HandleT operator*() const;
+
+private:
+    StableVectorIterator<HandleT, ElemT> m_iterator;
+};
+
+template<typename BaseVecT>
+class HemEdgeIterator : public MeshHandleIterator<EdgeHandle>
+{
+public:
+    HemEdgeIterator(
+        StableVectorIterator<HalfEdgeHandle, HalfEdge> iterator,
+        const HalfEdgeMesh<BaseVecT>& mesh
+    ) : m_iterator(iterator), m_mesh(mesh) {};
+
+    HemEdgeIterator& operator++();
+    bool operator==(const MeshHandleIterator<EdgeHandle>& other) const;
+    bool operator!=(const MeshHandleIterator<EdgeHandle>& other) const;
+    EdgeHandle operator*() const;
+
+private:
+    StableVectorIterator<HalfEdgeHandle, HalfEdge> m_iterator;
+    const HalfEdgeMesh<BaseVecT>& m_mesh;
 };
 
 } // namespace lvr2
