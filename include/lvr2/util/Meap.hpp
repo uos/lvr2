@@ -82,12 +82,17 @@ public:
      */
     Meap(size_t capacity);
 
-    bool containsKey(KeyT key) const;
 
-    /**
-     * @brief Inserts a new element into the meap.
-     */
-    void insert(const KeyT& key, const ValueT& value);
+    // =======================================================================
+    // These methode work exactly like the ones from `AttributeMap`
+    // =======================================================================
+    bool containsKey(KeyT key) const;
+    optional<ValueT> insert(KeyT key, const ValueT& value);
+    optional<ValueT> erase(KeyT key);
+    void clear();
+    optional<const ValueT&> get(KeyT key) const;
+    size_t numValues() const;
+
 
     /**
      * @brief Returns a reference to the minimal value with its corresponding
@@ -100,14 +105,6 @@ public:
      *        meap and returns it.
      */
     MeapPair<KeyT, ValueT> popMin();
-
-    /**
-     * @brief Removes the value associated with the given key.
-     *
-     * @return The removed value if there was a value associated with `key`.
-     *         Otherwise `none` is returned.
-     */
-    optional<ValueT> erase(const KeyT& key);
 
     /**
      * @brief Updates the value of `key` to `newValue` and repairs the heap.
