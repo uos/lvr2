@@ -853,12 +853,12 @@ int main(int argc, char** argv)
 
     auto faceNormals = calcFaceNormals(mesh);
 
-    // Reduce mesh complexity
-    const auto count = mesh.numEdges() / 3 / 3;
-    iterativeEdgeCollapse(mesh, count, [&](auto eH)
-    {
-        return collapseCostSimpleNormalDiff(mesh, faceNormals, eH);
-    });
+    // // Reduce mesh complexity
+    // const auto count = mesh.numEdges() / 3 / 3;
+    // iterativeEdgeCollapse(mesh, count, [&](auto eH)
+    // {
+    //     return collapseCostSimpleNormalDiff(mesh, faceNormals, eH);
+    // });
 
     ClusterBiMap<FaceHandle> clusterBiMap;
     if(options.optimizePlanes())
