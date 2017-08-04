@@ -43,15 +43,53 @@ bool Meap<KeyT, ValueT, MapT>::containsKey(KeyT key) const
 }
 
 template<typename KeyT, typename ValueT, template<typename, typename> typename MapT>
-void Meap<KeyT, ValueT, MapT>::insert(const KeyT& key, const ValueT& value)
+optional<ValueT> Meap<KeyT, ValueT, MapT>::insert(KeyT key, const ValueT& value)
 {
-    // Insert to the back of the vector
-    auto idx = m_heap.size();
-    m_heap.push_back({ key, value });
-    m_indices.insert(key, idx);
+    auto previous = m_indices.get(key);
+    if (previous)
+    {
+        auto prevValue = m_heap[*previous].value;
+        updateValue(key, value);
+        return prevValue;
+    }
+    else
+    {
+        // Insert to the back of the vector
+        auto idx = m_heap.size();
+        m_heap.push_back({ key, value });
+        m_indices.insert(key, idx);
 
-    // Correct heap by bubbling up
-    bubbleUp(idx);
+        // Correct heap by bubbling up
+        bubbleUp(idx);
+        return boost::none;
+    }
+}
+
+template<typename KeyT, typename ValueT, template<typename, typename> typename MapT>
+void Meap<KeyT, ValueT, MapT>::clear()
+{
+    m_heap.clear();
+    m_indices.clear();
+}
+
+template<typename KeyT, typename ValueT, template<typename, typename> typename MapT>
+size_t Meap<KeyT, ValueT, MapT>::numValues() const
+{
+    return m_indices.numValues();
+}
+
+template<typename KeyT, typename ValueT, template<typename, typename> typename MapT>
+optional<const ValueT&> Meap<KeyT, ValueT, MapT>::get(KeyT key) const
+{
+    auto maybeIndex = m_indices.get(key);
+    if (maybeIndex)
+    {
+        return m_heap[*maybeIndex].value;
+    }
+    else
+    {
+        return boost::none;
+    }
 }
 
 template<typename KeyT, typename ValueT, template<typename, typename> typename MapT>
@@ -112,7 +150,7 @@ void Meap<KeyT, ValueT, MapT>::updateValue(const KeyT& key, const ValueT& newVal
 }
 
 template<typename KeyT, typename ValueT, template<typename, typename> typename MapT>
-optional<ValueT> Meap<KeyT, ValueT, MapT>::erase(const KeyT& key)
+optional<ValueT> Meap<KeyT, ValueT, MapT>::erase(KeyT key)
 {
     const auto maybeIndex = m_indices.get(key);
     if (!maybeIndex)
