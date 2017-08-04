@@ -73,8 +73,7 @@ Options::Options(int argc, char** argv)
         ("threads", value<int>(&m_numThreads)->default_value( lvr::OpenMPConfig::getNumThreads() ), "Number of threads")
         ("sft", value<float>(&m_sft)->default_value(0.9), "Sharp feature threshold when using sharp feature decomposition")
         ("sct", value<float>(&m_sct)->default_value(0.7), "Sharp corner threshold when using sharp feature decomposition")
-        ("ecm", value<string>(&m_ecm)->default_value("QUADRIC"), "Edge collapse method for mesh reduction. Choose from QUADRIC, QUADRIC_TRI, MELAX, SHORTEST")
-        ("ecc", value<int>(&m_numEdgeCollapses)->default_value(0), "Edge collapse count. Number of edges to collapse for mesh reduction.")
+        ("reductionRatio", value<float>(&m_edgeCollapseReductionRatio)->default_value(0.0), "Percentage of faces to remove via edge-collapse (0.0 means no reduction, 1.0 means to remove all faces which can be removed)")
         ("tp", value<string>(&m_texturePack)->default_value(""), "Path to texture pack")
         ("co", value<string>(&m_statsCoeffs)->default_value(""), "Coefficents file for texture matching based on statistics")
         ("nsc", value<unsigned int>(&m_numStatsColors)->default_value(16), "Number of colors for texture statistics")
@@ -151,11 +150,6 @@ string Options::getClassifier() const
     return (m_variables["classifier"].as< string >());
 }
 
-string Options::getEdgeCollapseMethod() const
-{
-    return (m_variables["ecm"].as<string>());
-}
-
 string Options::getDecomposition() const
 {
     return (m_variables["decomposition"].as< string >());
@@ -166,9 +160,9 @@ string Options::getScanPoseFile() const
     return (m_variables["scanPoseFile"].as<string>());
 }
 
-int Options::getNumEdgeCollapses() const
+float Options::getEdgeCollapseReductionRatio() const
 {
-    return (m_variables["ecc"].as<int>());
+    return (m_variables["reductionRatio"].as<float>());
 }
 
 int    Options::getDanglingArtifacts() const
