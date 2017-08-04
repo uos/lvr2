@@ -52,14 +52,8 @@ size_t iterativeEdgeCollapse(BaseMesh<BaseVecT>& mesh, const size_t count, CostF
     size_t collapsedEdgeCount = 0;
 
     // Repeat `count` times
-    for (size_t i = 0; i < count; i++)
+    while (collapsedEdgeCount < count && !queue.isEmpty())
     {
-        // If the mesh doesn't contain any edges, we can stop.
-        if (queue.isEmpty())
-        {
-            break;
-        }
-
         // Collapse the edge with minimal cost if it is collapsable.
         const auto min = queue.popMin();
         if (!mesh.isCollapsable(min.key))
