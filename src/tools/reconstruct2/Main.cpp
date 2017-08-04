@@ -737,7 +737,7 @@ void testMeshnav(
     colorFunctionPointer = &floatToGrayScaleColor;
 
     // create map of color vertices according to the calculated height differences
-    colorVertices = lvr2::map<float, Rgb8Color>(combCost, colorFunctionPointer);
+    colorVertices = lvr2::map<DenseAttrMap>(combCost, colorFunctionPointer);
 }
 
 int main(int argc, char** argv)

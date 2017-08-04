@@ -73,6 +73,12 @@ class AttributeMap
     );
 
 public:
+    /// The type of the handle used as key in this map
+    using HandleType = HandleT;
+
+    /// The type of the value stored in this map
+    using ValueType = ValueT;
+
     /**
      * @brief Returns true iff the map contains a value associated with the
      *        given key.
