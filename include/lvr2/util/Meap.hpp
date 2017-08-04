@@ -28,6 +28,8 @@
 
 #include <boost/optional.hpp>
 
+#include <lvr2/attrmaps/AttributeMap.hpp>
+
 using std::vector;
 using std::pair;
 using boost::optional;
@@ -53,13 +55,13 @@ struct MeapPair
  *
  * The elements in the meap are pairs of `KeyT` and `ValueT`. Only the latter
  * is used for sorting the heap. The former can be used to lookup the value, as
- * in a regular map. Combining both, a map and a heap, allows to implement a
- * `decreaseValue()` method, which would otherwise be impossible with a simple
+ * in a regular map. Combining both, a map and a heap, allows to implement the
+ * `updateValue()` method, which would otherwise be impossible with a simple
  * binary heap. In this library, this type is often used with some kind of
  * "cost" as value and a handle as key.
  *
  * This implementation is a min heap: the smallest value sits "at the top" and
- * can be retrieved in O(1).
+ * can be retrieved in O(1) via `popMin()` or `peekMin()`.
  */
 template<typename KeyT, typename ValueT, template<typename, typename> typename MapT>
 class Meap
@@ -101,16 +103,23 @@ public:
 
     /**
      * @brief Removes the value associated with the given key.
+     *
+     * @return The removed value if there was a value associated with `key`.
+     *         Otherwise `none` is returned.
      */
     optional<ValueT> erase(const KeyT& key);
 
     /**
      * @brief Updates the value of `key` to `newValue` and repairs the heap.
+     *
+     * The new value might be lower or greater than the old value. The heap
+     * is repaired either way. If the new value equals the old one, this method
+     * does nothing.
      */
     void updateValue(const KeyT& key, const ValueT& newValue);
 
     /**
-     * @brief Returns `true` if the meap is empty
+     * @brief Returns `true` iff the meap is empty.
      */
     bool isEmpty() const;
 
@@ -122,13 +131,37 @@ private:
     // specific key lives.
     MapT<KeyT, size_t> m_indices;
 
+    /**
+     * @brief Returns the index of the father of the child at index `child`.
+     */
     size_t father(size_t child) const;
+
+    /**
+     * @brief Returns the index of the left child of the father at index
+     *        `father`.
+     */
     size_t leftChild(size_t father) const;
+
+    /**
+     * @brief Returns the index of the right child of the father at index
+     *        `father`.
+     */
     size_t rightChild(size_t father) const;
 
+    /**
+     * @brief Performs the `bubbleUp` heap operation on the node at `idx`.
+     *
+     * As long as the father of the node at `idx` still has a greater value
+     * than the value of `idx`, both are swapped.
+     */
     void bubbleUp(size_t idx);
+
+    /**
+     * @brief Performs the `bubbleDown()` heap operation on the node at `idx`.
+     */
     void bubbleDown(size_t idx);
 
+    /// Just for debugging purposes. Prints a bunch of information.
     void debugOutput() const;
 };
 
