@@ -853,12 +853,25 @@ int main(int argc, char** argv)
 
     auto faceNormals = calcFaceNormals(mesh);
 
-    // // Reduce mesh complexity
-    // const auto count = mesh.numEdges() / 3 / 3;
-    // iterativeEdgeCollapse(mesh, count, [&](auto eH)
-    // {
-    //     return collapseCostSimpleNormalDiff(mesh, faceNormals, eH);
-    // });
+    // Reduce mesh complexity
+    const auto reductionRatio = options.getEdgeCollapseReductionRatio();
+    if (reductionRatio > 0.0)
+    {
+        if (reductionRatio > 1.0)
+        {
+            throw "The reiduction ratio needs to be between 0 and 1!";
+        }
+
+        // Each edge collapse removes two faces in the general case.
+        // TODO: maybe we should calculate this differently...
+        const auto count = (mesh.numFaces() / 2) * reductionRatio;
+        cout << timestamp << "Reducing mesh by collapsing up to " << count << " edges" << endl;
+        iterativeEdgeCollapse(mesh, count, [&](auto eH)
+        {
+            return collapseCostSimpleNormalDiff(mesh, faceNormals, eH);
+        });
+        faceNormals = calcFaceNormals(mesh);
+    }
 
     ClusterBiMap<FaceHandle> clusterBiMap;
     if(options.optimizePlanes())
