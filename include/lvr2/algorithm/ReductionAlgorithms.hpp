@@ -32,18 +32,23 @@ namespace lvr2
  *
  * This algorithm collapses edges in the given mesh. The order of edge
  * collapses is determined by `collapseCost`: the edge with the smallest cost
- * is collapsed first. After each collapse, the cost function is called again
- * to update the costs for all edges that could have been affected, which are
- * the edges of all faces which touch the vertex the edge was collapsed to.
+ * is collapsed first, if that is possible. In case the edge is not
+ * collapsable, it is ignored and the next edge is choosen. After each
+ * collapse, the cost function is called again to update the costs for all
+ * edges that could have been affected, which are the edges of all faces which
+ * touch the vertex the edge was collapsed to.
  *
  * This algorithm stops when either `count` many edges have been collapsed or
- * if the mesh has no edges left.
+ * if there are no collapsable edges left.
  *
  * @param count Number of edges to collapse
- * @param collapseCost Function which gets an edge handle and returns a float
+ * @param collapseCost Function which is called with an edge handle and returns
+ *                     a float.
+ *
+ * @return The number of edges actually collapsed.
  */
 template<typename BaseVecT, typename CostF>
-void iterativeEdgeCollapse(BaseMesh<BaseVecT>& mesh, const size_t count, CostF collapseCost);
+size_t iterativeEdgeCollapse(BaseMesh<BaseVecT>& mesh, const size_t count, CostF collapseCost);
 
 
 template<typename BaseVecT>

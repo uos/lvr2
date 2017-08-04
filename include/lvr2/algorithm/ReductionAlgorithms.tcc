@@ -34,7 +34,7 @@ namespace lvr2
 {
 
 template<typename BaseVecT, typename CostF>
-void iterativeEdgeCollapse(BaseMesh<BaseVecT>& mesh, const size_t count, CostF collapseCost)
+size_t iterativeEdgeCollapse(BaseMesh<BaseVecT>& mesh, const size_t count, CostF collapseCost)
 {
     Meap<EdgeHandle, float, DenseAttrMap> queue(mesh.numEdges());
 
@@ -48,6 +48,8 @@ void iterativeEdgeCollapse(BaseMesh<BaseVecT>& mesh, const size_t count, CostF c
     // unnecessary heap allocations.
     vector<FaceHandle> facesAroundVertex;
     unordered_set<EdgeHandle> affectedEdges;
+
+    size_t collapsedEdgeCount = 0;
 
     // Repeat `count` times
     for (size_t i = 0; i < count; i++)
@@ -65,7 +67,9 @@ void iterativeEdgeCollapse(BaseMesh<BaseVecT>& mesh, const size_t count, CostF c
             // If we can't collapse this edge, we will just ignore it.
             continue;
         }
+
         auto result = mesh.collapseEdge(min.key);
+        collapsedEdgeCount += 1;
 
         // Remove all entries from that map that belong to now invalid handles
         // and add values for the handles that were created.
@@ -102,6 +106,8 @@ void iterativeEdgeCollapse(BaseMesh<BaseVecT>& mesh, const size_t count, CostF c
             }
         }
     }
+
+    return collapsedEdgeCount;
 }
 
 template<typename BaseVecT>
