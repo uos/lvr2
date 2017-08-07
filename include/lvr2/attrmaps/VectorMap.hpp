@@ -30,6 +30,7 @@
 #include <vector>
 #include <boost/optional.hpp>
 
+#include <lvr2/attrmaps/StableVector.hpp>
 #include <lvr2/attrmaps/AttributeMap.hpp>
 #include <lvr2/geometry/Handles.hpp>
 #include <lvr2/util/Cluster.hpp>

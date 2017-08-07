@@ -44,12 +44,12 @@ private:
     std::string m_msg;
 };
 
-void panic(std::string msg)
+inline void panic(std::string msg)
 {
     throw PanicException("Program panicked: " + msg);
 }
 
-void panic_unimplemented(std::string msg)
+inline void panic_unimplemented(std::string msg)
 {
     throw PanicException("Program panicked due to missing implementation: " + msg);
 }
