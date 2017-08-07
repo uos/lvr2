@@ -135,31 +135,31 @@ class OptionalClusterHandle : public BaseOptionalHandle<Index, ClusterHandle>
     using BaseOptionalHandle<Index, ClusterHandle>::BaseOptionalHandle;
 };
 
-std::ostream& operator<<(std::ostream& os, const EdgeHandle& h)
+inline std::ostream& operator<<(std::ostream& os, const EdgeHandle& h)
 {
     os << "E" << h.idx();
     return os;
 }
 
-std::ostream& operator<<(std::ostream& os, const FaceHandle& h)
+inline std::ostream& operator<<(std::ostream& os, const FaceHandle& h)
 {
     os << "F" << h.idx();
     return os;
 }
 
-std::ostream& operator<<(std::ostream& os, const VertexHandle& h)
+inline std::ostream& operator<<(std::ostream& os, const VertexHandle& h)
 {
     os << "V" << h.idx();
     return os;
 }
 
-std::ostream& operator<<(std::ostream& os, const ClusterHandle& h)
+inline std::ostream& operator<<(std::ostream& os, const ClusterHandle& h)
 {
     os << "C" << h.idx();
     return os;
 }
 
-std::ostream& operator<<(std::ostream& os, const OptionalEdgeHandle& h)
+inline std::ostream& operator<<(std::ostream& os, const OptionalEdgeHandle& h)
 {
     if (h)
     {
@@ -172,7 +172,7 @@ std::ostream& operator<<(std::ostream& os, const OptionalEdgeHandle& h)
     return os;
 }
 
-std::ostream& operator<<(std::ostream& os, const OptionalFaceHandle& h)
+inline std::ostream& operator<<(std::ostream& os, const OptionalFaceHandle& h)
 {
     if (h)
     {
@@ -185,7 +185,7 @@ std::ostream& operator<<(std::ostream& os, const OptionalFaceHandle& h)
     return os;
 }
 
-std::ostream& operator<<(std::ostream& os, const OptionalVertexHandle& h)
+inline std::ostream& operator<<(std::ostream& os, const OptionalVertexHandle& h)
 {
     if (h)
     {
@@ -198,7 +198,7 @@ std::ostream& operator<<(std::ostream& os, const OptionalVertexHandle& h)
     return os;
 }
 
-std::ostream& operator<<(std::ostream& os, const OptionalClusterHandle& h)
+inline std::ostream& operator<<(std::ostream& os, const OptionalClusterHandle& h)
 {
     if (h)
     {
