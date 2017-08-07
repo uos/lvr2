@@ -64,6 +64,8 @@ public:
 
     /// Returns the current handle.
     virtual HandleT operator*() const = 0;
+
+    using HandleType = HandleT;
 };
 
 /// A wrapper for the MeshHandleIterator to save beloved future programmers from dereferencing too much <3
@@ -76,6 +78,8 @@ public:
     bool operator==(const MeshHandleIteratorPtr& other) const;
     bool operator!=(const MeshHandleIteratorPtr& other) const;
     HandleT operator*() const;
+
+    using HandleType = HandleT;
 private:
     std::unique_ptr<MeshHandleIterator<HandleT>> m_iter;
 };
