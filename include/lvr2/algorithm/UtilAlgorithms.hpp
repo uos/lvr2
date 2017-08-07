@@ -5,7 +5,9 @@
 #ifndef LAS_VEGAS_UTILALGORITHMS_HPP
 #define LAS_VEGAS_UTILALGORITHMS_HPP
 
+#include <iterator>
 #include <type_traits>
+#include <utility>
 
 #include <lvr2/attrmaps/AttrMaps.hpp>
 #include <lvr2/geometry/Handles.hpp>
@@ -39,6 +41,24 @@ OutMapT<typename InMapT::HandleType, std::result_of_t<MapF(typename InMapT::Valu
     const InMapT& mapIn,
     MapF func
 );
+
+
+template<
+    template<typename, typename> typename OutMapT,
+    typename IterProxyT,
+    typename GenF
+>
+OutMapT<
+    typename decltype(std::declval<IterProxyT>().begin())::HandleType,
+    typename std::result_of<GenF(typename decltype(std::declval<IterProxyT>().begin())::HandleType)>::type
+>
+    attrMapFromFunc(
+        IterProxyT iterProxy,
+        GenF func
+);
+
+template<typename HandleT, typename ValueT>
+pair<ValueT, ValueT> minMaxOfMap(const AttributeMap<HandleT, ValueT>& map);
 
 } // namespace lvr2
 
