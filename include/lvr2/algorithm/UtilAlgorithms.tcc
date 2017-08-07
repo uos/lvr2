@@ -1,3 +1,5 @@
+#include <algorithm>
+
 #include <lvr2/attrmaps/AttrMaps.hpp>
 #include <lvr2/geometry/Handles.hpp>
 
@@ -51,6 +53,47 @@ OutMapT<typename InMapT::HandleType, std::result_of_t<MapF(typename InMapT::Valu
     }
 
     return resultMap;
+}
+
+template<
+    template<typename, typename> typename OutMapT,
+    typename IterProxyT,
+    typename GenF
+>
+OutMapT<
+    typename decltype(std::declval<IterProxyT>().begin())::HandleType,
+    typename std::result_of<GenF(typename decltype(std::declval<IterProxyT>().begin())::HandleType)>::type
+>
+    attrMapFromFunc(
+        IterProxyT iterProxy,
+        GenF func
+)
+{
+    OutMapT<
+        typename decltype(std::declval<IterProxyT>().begin())::HandleType,
+        typename std::result_of<GenF(typename decltype(std::declval<IterProxyT>().begin())::HandleType)>::type
+    > out;
+
+    for (auto handle: iterProxy)
+    {
+        out.insert(handle, func(handle));
+    }
+    return out;
+}
+
+template<typename HandleT, typename ValueT>
+pair<ValueT, ValueT> minMaxOfMap(const AttributeMap<HandleT, ValueT>& map)
+{
+    ValueT min;
+    ValueT max;
+
+    for (auto handle: map)
+    {
+        min = std::min(min, map[handle]);
+        max = std::max(max, map[handle]);
+    }
+
+    return make_pair(min, max);
 }
 
 } // namespace lvr2
