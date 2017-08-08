@@ -863,6 +863,38 @@ int main(int argc, char** argv)
         return collapseCostSimpleNormalDiff(mesh, faceNormals, edgeH);
     };
 
+    // This is for debugging purposes! You can save a mesh whose colors can
+    // represent float values ... or sth like that. Coolio!
+    // {
+    //     // Create vertex colors from other attributes
+    //     auto edgeCosts = attrMapFromFunc<DenseAttrMap>(mesh.edges(), [&](auto edgeH){
+    //         auto maybeCost = costLambda(edgeH);
+    //         return maybeCost ? *maybeCost : 100;
+    //     });
+    //     float min, max;
+    //     std::tie(min, max) = minMaxOfMap(edgeCosts);
+    //     auto vertexCosts = attrMapFromFunc<DenseAttrMap>(mesh.vertices(), [&](VertexHandle vertexH)
+    //     {
+    //         float sum = 0.0;
+    //         size_t count = 0;
+    //         for (auto edgeH: mesh.getEdgesOfVertex(vertexH))
+    //         {
+    //             sum += edgeCosts[edgeH];
+    //             count += 1;
+    //         }
+    //         const auto value = sum / count;
+    //         return (value + min) / (max - min);
+    //     });
+    //     auto vertexColors = lvr2::map<DenseAttrMap>(vertexCosts, floatToGrayScaleColor);
+
+    //     // Save mesh
+    //     FinalizeAlgorithm<Vec> finalize;
+    //     finalize.setColorData(vertexColors);
+    //     auto buffer = finalize.apply(mesh);
+    //     auto m = boost::make_shared<lvr::Model>(buffer);
+    //     lvr::ModelFactory::saveModel(m, "debug_attribute.ply");
+    // }
+
     // Reduce mesh complexity
     const auto reductionRatio = options.getEdgeCollapseReductionRatio();
     if (reductionRatio > 0.0)
