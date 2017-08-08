@@ -910,21 +910,21 @@ int main(int argc, char** argv)
     //cout << "duplicate vertices: " << duplicateVertices.size() << endl;
 
     // Finalize mesh (convert it to simple `MeshBuffer`)
-     //FinalizeAlgorithm<Vec> finalize;
-     //finalize.setNormalData(vertexNormals);
-     //if (color_vertices)
-     //{
-     //     finalize.setColorData(colorVertices);
-     //}
-     //auto buffer = finalize.apply(mesh);
+    // FinalizeAlgorithm<Vec> finalize;
+    // finalize.setNormalData(vertexNormals);
+    // if (color_vertices)
+    // {
+    //    finalize.setColorData(colorVertices);
+    // }
+    // auto buffer = finalize.apply(mesh);
 
-     ClusterFlatteningFinalizer<Vec> finalize(clusterBiMap);
-     finalize.setVertexNormals(vertexNormals);
-     if (clusterColors)
-     {
-        finalize.setClusterColors(*clusterColors);
-     }
-     auto buffer = finalize.apply(mesh);
+    ClusterFlatteningFinalizer<Vec> finalize(clusterBiMap);
+    finalize.setVertexNormals(vertexNormals);
+    if (clusterColors)
+    {
+      finalize.setClusterColors(*clusterColors);
+    }
+    auto buffer = finalize.apply(mesh);
 
     // =======================================================================
     // Write all results (including the mesh) to file
