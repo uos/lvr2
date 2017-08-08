@@ -47,7 +47,8 @@ namespace lvr2
  *
  * @param count Number of edges to collapse
  * @param collapseCost Function which is called with an edge handle and returns
- *                     a float.
+ *                     an optional float. `boost::none` means that this edge
+ *                     cannot be collapsed.
  *
  * @return The number of edges actually collapsed.
  */

@@ -29,8 +29,8 @@ namespace lvr2 {
  * })
  * \endcode
  *
- * @tparam MapT The (class-2) type of the attribute map implementation used
- *               for the output map. E.g. `DenseAttrMap` or `SparseAttrMap`.
+ * @tparam MapT The (rank-2) type of the attribute map implementation used
+ *              for the output map. E.g. `DenseAttrMap` or `SparseAttrMap`.
  */
 template<
     template<typename, typename> typename OutMapT,
@@ -57,6 +57,12 @@ OutMapT<
         GenF func
 );
 
+/**
+ * @brief Returns the minimum and maximum element from the given map.
+ *
+ * Of course, this assumes that the values in the map are comparable with the
+ * standard comparison operators.
+ */
 template<typename HandleT, typename ValueT>
 pair<ValueT, ValueT> minMaxOfMap(const AttributeMap<HandleT, ValueT>& map);
 
