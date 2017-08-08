@@ -23,6 +23,10 @@
 #ifndef LVR2_ALGORITHM_REDUCTIONALGORITHMS_H_
 #define LVR2_ALGORITHM_REDUCTIONALGORITHMS_H_
 
+#include <boost/optional.hpp>
+
+using boost::optional;
+
 namespace lvr2
 {
 
@@ -51,8 +55,13 @@ template<typename BaseVecT, typename CostF>
 size_t iterativeEdgeCollapse(BaseMesh<BaseVecT>& mesh, const size_t count, CostF collapseCost);
 
 
+/**
+ * @brief A simple, hacky cost function for `iterativeEdgeCollapse()`.
+ *
+ * Is likely to be removed or vastly improved in the future.
+ */
 template<typename BaseVecT>
-float collapseCostSimpleNormalDiff(
+optional<float> collapseCostSimpleNormalDiff(
     const BaseMesh<BaseVecT>& mesh,
     const FaceMap<Normal<BaseVecT>>& normals,
     EdgeHandle eH
