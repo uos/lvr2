@@ -58,6 +58,11 @@ template<typename BaseVecT>
 template<typename CollectionT>
 Normal<BaseVecT> Normal<BaseVecT>::average(const CollectionT& normals)
 {
+    if (normals.empty())
+    {
+        panic("average() of 0 normals");
+    }
+
     Vector<BaseVecT> acc(0, 0, 0);
     for (auto n: normals)
     {
