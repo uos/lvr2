@@ -181,6 +181,30 @@ public:
     virtual EdgeCollapseResult collapseEdge(EdgeHandle edgeH) = 0;
 
     /**
+     * @brief Performs the edge flip operation.
+     *
+     * The operation is kind of hard to describe with words; try looking at
+     * some images on the web. But if you want to read: it basically turns an
+     * edge and the two adjacent faces within a four vertex region by 90°. The
+     * edge is now connected to two new vertices; the new edge would cross the
+     * old one. Still not clear? Told you.
+     *
+     * Important: the given edge needs to be flippable. You can check that
+     * property with `isFlippable()`. If that property is not satisfied, this
+     * method will panic.
+     *
+     * Note that while this method modifies connectivity information, it does
+     * not add or remove any elements. This implies that it doesn't invalidate
+     * any handles.
+     *
+     * The user of this method has to to pay attention to what edges to flip.
+     * It's easily possible to create unrealistic meshes with this method
+     * (things like zero volume and stuff like that). However, it doesn't
+     * destroy the mesh in itself or create non-manifold meshes.
+     */
+    virtual void flipEdge(EdgeHandle edgeH) = 0;
+
+    /**
      * @brief Returns the number of vertices in the mesh.
      */
     virtual size_t numVertices() const = 0;
@@ -383,6 +407,15 @@ public:
      * will panic if called with a non-collapsable edge.
      */
     virtual bool isCollapsable(EdgeHandle handle) const;
+
+    /**
+     * @brief Determines whether or not the given edge can be flipped without
+     *        destroying the mesh.
+     *
+     * The mesh could be destroyed by invalidating mesh connectivity
+     * information or by making it non manifold.
+     */
+    virtual bool isFlippable(EdgeHandle handle) const;
 
     /**
      * @brief Returns the number of adjacent faces to the given edge.

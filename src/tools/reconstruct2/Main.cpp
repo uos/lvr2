@@ -507,6 +507,39 @@ void testCollapseEdge()
     lvr::ModelFactory::saveModel( m, "triangle_mesh.ply");
 }
 
+void testEdgeFlip()
+{
+    lvr2::HalfEdgeMesh<lvr2::BaseVector<float>> mesh;
+    createHouseFromNikolaus(mesh);
+
+    FinalizeAlgorithm<BaseVector<float>> finalize;
+    auto buffer = finalize.apply(mesh);
+    auto model = new lvr::Model(buffer);
+    lvr::ModelPtr m(model);
+    lvr::ModelFactory::saveModel(m, "flipped_nikolaus_original.ply");
+
+    for (auto edgeH: mesh.edges())
+    {
+        if (!mesh.isFlippable(edgeH))
+        {
+            continue;
+        }
+        cout << "ITERATION " << edgeH << endl;
+
+        mesh.flipEdge(edgeH);
+
+        // mesh.debugCheckMeshIntegrity();
+
+        FinalizeAlgorithm<BaseVector<float>> finalize;
+        auto buffer = finalize.apply(mesh);
+        auto model = new lvr::Model(buffer);
+        lvr::ModelPtr m(model);
+        std::stringstream ss;
+        ss << "flipped_nikolaus_" << edgeH.idx() << ".ply";
+        lvr::ModelFactory::saveModel(m, ss.str());
+    }
+}
+
 /*
  * DUMMY TEST CODE ENDS HERE!!!
  */

@@ -74,6 +74,7 @@ public:
     FaceHandle addFace(VertexHandle v1H, VertexHandle v2H, VertexHandle v3H) final;
     void removeFace(FaceHandle handle) final;
     EdgeCollapseResult collapseEdge(EdgeHandle edgeH) final;
+    void flipEdge(EdgeHandle edgeH) final;
 
     size_t numVertices() const final;
     size_t numFaces() const final;
