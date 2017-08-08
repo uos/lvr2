@@ -41,7 +41,11 @@ size_t iterativeEdgeCollapse(BaseMesh<BaseVecT>& mesh, const size_t count, CostF
     // Calculate initial costs of all edges
     for (const auto eH: mesh.edges())
     {
-        queue.insert(eH, collapseCost(eH));
+        auto maybeCost = collapseCost(eH);
+        if (maybeCost)
+        {
+            queue.insert(eH, *maybeCost);
+        }
     }
 
     // These two variables are only used later, but are created here to avoid
@@ -65,6 +69,9 @@ size_t iterativeEdgeCollapse(BaseMesh<BaseVecT>& mesh, const size_t count, CostF
         auto result = mesh.collapseEdge(min.key);
         collapsedEdgeCount += 1;
 
+        facesAroundVertex.clear();
+        affectedEdges.clear();
+
         // Remove all entries from that map that belong to now invalid handles
         // and add values for the handles that were created.
         for (auto neighbor: result.neighbors)
@@ -73,15 +80,13 @@ size_t iterativeEdgeCollapse(BaseMesh<BaseVecT>& mesh, const size_t count, CostF
             {
                 queue.erase(neighbor->removedEdges[0]);
                 queue.erase(neighbor->removedEdges[1]);
-                queue.insert(neighbor->newEdge, collapseCost(neighbor->newEdge));
+                affectedEdges.insert(neighbor->newEdge);
             }
         }
 
         // We collect all faces around the new vertex and insert all edges of
         // those faces into a set, to get a unique list of edges that need to
         // be updated.
-        facesAroundVertex.clear();
-        affectedEdges.clear();
         mesh.getFacesOfVertex(result.midPoint, facesAroundVertex);
         for (auto fH: facesAroundVertex)
         {
@@ -96,7 +101,11 @@ size_t iterativeEdgeCollapse(BaseMesh<BaseVecT>& mesh, const size_t count, CostF
         {
             if (queue.containsKey(eH))
             {
-                queue.updateValue(eH, collapseCost(eH));
+                auto maybeCost = collapseCost(eH);
+                if (maybeCost)
+                {
+                    queue.insert(eH, *maybeCost);
+                }
             }
         }
     }
@@ -105,29 +114,53 @@ size_t iterativeEdgeCollapse(BaseMesh<BaseVecT>& mesh, const size_t count, CostF
 }
 
 template<typename BaseVecT>
-float collapseCostSimpleNormalDiff(
+optional<float> collapseCostSimpleNormalDiff(
     const BaseMesh<BaseVecT>& mesh,
     const FaceMap<Normal<BaseVecT>>& normals,
     EdgeHandle eH
 )
 {
-    auto faces = mesh.getFacesOfEdge(eH);
+    const auto vertices = mesh.getVerticesOfEdge(eH);
 
-    // If the edge sits between two faces
-    if (faces[0] && faces[1])
+    unordered_set<FaceHandle> faces;
+    for (auto vH: vertices)
     {
-        const auto n0 = normals[faces[0].unwrap()];
-        const auto n1 = normals[faces[1].unwrap()];
-        const auto cosAngle = n0.dot(n1.asVector());
-
-        // If the normals are the same, we return 0, if they point in
-        // completely different directions, we return something close to 2.
-        return 1 - cosAngle;
+        for (auto fH: mesh.getFacesOfVertex(vH))
+        {
+            faces.insert(fH);
+        }
     }
 
-    // TODO: this basically says that boundary edges are never collapsed. But
-    // this is a stupid metric.
-    return 2;
+    // In this case we are dealing with a super lonely edge: only two vertices,
+    // but no faces adjacent.
+    if (faces.empty())
+    {
+        return boost::none;
+    }
+
+    vector<Normal<BaseVecT>> faceNormals;
+    for (auto fH: faces)
+    {
+        faceNormals.push_back(normals[fH]);
+    }
+
+    auto avgNormal = Normal<BaseVecT>::average(faceNormals);
+
+    auto sumAngleCost = 0.0;
+    for (auto normal: faceNormals)
+    {
+        sumAngleCost += 1 - normal.dot(avgNormal.asVector());
+    }
+    auto angleCost = sumAngleCost / faces.size();
+
+    // A long edge is worse than a short one...
+    auto lengthCost = mesh.getVertexPosition(vertices[0]).distanceFrom(mesh.getVertexPosition(vertices[1]));
+
+
+
+    // Return weighted costs
+    return 1.0 * angleCost
+        + 0.01 * lengthCost;
 }
 
 
