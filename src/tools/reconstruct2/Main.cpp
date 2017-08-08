@@ -472,6 +472,10 @@ void testCollapseEdge()
     for (auto edgeH: mesh.edges())
     {
         cout << "ITERATION " << edgeH << endl;
+        if (!mesh.isCollapsable(edgeH))
+        {
+            continue;
+        }
         auto vertex = mesh.collapseEdge(edgeH);
 
         FinalizeAlgorithm<BaseVector<float>> finalize;
@@ -482,7 +486,7 @@ void testCollapseEdge()
         lvr::ModelPtr m(model);
         cout << timestamp << "Saving mesh." << endl;
         std::stringstream ss;
-        ss << "triangle_mesh_" << edgeH.idx() << ".ply";
+        ss << "collapsed_nikolaus_" << edgeH.idx() << ".ply";
         lvr::ModelFactory::saveModel(m, ss.str());
 
         mesh.debugCheckMeshIntegrity();
