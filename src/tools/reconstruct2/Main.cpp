@@ -136,6 +136,7 @@
 
 #include <iostream>
 #include <memory>
+#include <tuple>
 #include <stdlib.h>
 
 #include <boost/optional.hpp>
@@ -857,23 +858,25 @@ int main(int argc, char** argv)
 
     auto faceNormals = calcFaceNormals(mesh);
 
+    auto costLambda = [&](auto edgeH)
+    {
+        return collapseCostSimpleNormalDiff(mesh, faceNormals, edgeH);
+    };
+
     // Reduce mesh complexity
     const auto reductionRatio = options.getEdgeCollapseReductionRatio();
     if (reductionRatio > 0.0)
     {
         if (reductionRatio > 1.0)
         {
-            throw "The reiduction ratio needs to be between 0 and 1!";
+            throw "The reduction ratio needs to be between 0 and 1!";
         }
 
         // Each edge collapse removes two faces in the general case.
         // TODO: maybe we should calculate this differently...
-        const auto count = (mesh.numFaces() / 2) * reductionRatio;
+        const auto count = static_cast<size_t>((mesh.numFaces() / 2) * reductionRatio);
         cout << timestamp << "Reducing mesh by collapsing up to " << count << " edges" << endl;
-        iterativeEdgeCollapse(mesh, count, [&](auto eH)
-        {
-            return collapseCostSimpleNormalDiff(mesh, faceNormals, eH);
-        });
+        iterativeEdgeCollapse(mesh, count, costLambda);
         faceNormals = calcFaceNormals(mesh);
     }
 
