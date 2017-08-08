@@ -174,6 +174,14 @@ bool BaseMesh<BaseVecT>::isCollapsable(EdgeHandle handle) const
     return true;
 }
 
+
+template<typename BaseVecT>
+uint8_t BaseMesh<BaseVecT>::numAdjacentFaces(EdgeHandle handle) const
+{
+    auto faces = getFacesOfEdge(handle);
+    return (faces[0] ? 1 : 0) + (faces[1] ? 1 : 0);
+}
+
 template<typename BaseVecT>
 vector<FaceHandle> BaseMesh<BaseVecT>::getNeighboursOfFace(FaceHandle handle) const
 {
