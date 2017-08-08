@@ -385,6 +385,13 @@ public:
     virtual bool isCollapsable(EdgeHandle handle) const;
 
     /**
+     * @brief Returns the number of adjacent faces to the given edge.
+     *
+     * This functions always returns one of 0, 1 or 2.
+     */
+    virtual uint8_t numAdjacentFaces(EdgeHandle handle) const;
+
+    /**
      * @brief Get a list of faces the given vertex belongs to.
      *
      * This method is implemented using the pure virtual method
