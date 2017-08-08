@@ -491,7 +491,7 @@ private:
 struct EdgeCollapseRemovedFace
 {
     /// A face adjacent to the collapsed edge which was removed
-    OptionalFaceHandle removedFace;
+    FaceHandle removedFace;
 
     /// The edges of the removed face (excluding the collapsed edge itself)
     array<EdgeHandle, 2> removedEdges;
@@ -500,7 +500,7 @@ struct EdgeCollapseRemovedFace
     EdgeHandle newEdge;
 
     EdgeCollapseRemovedFace(
-        OptionalFaceHandle removedFace,
+        FaceHandle removedFace,
         array<EdgeHandle, 2> removedEdges,
         EdgeHandle newEdge
     ) : removedFace(removedFace), removedEdges(removedEdges), newEdge(newEdge) {};
