@@ -604,6 +604,8 @@ EdgeCollapseResult HalfEdgeMesh<BaseVecT>::collapseEdge(EdgeHandle edgeH)
         panic("call to collapseEdge() with non-collapsable edge!");
     }
 
+    // The general (and most common) case looks like this:
+    //
     //             [C]                | Vertices:
     //             / ^                | [A]: vertexToKeep
     //            /   \               | [B]: vertexToRemove
@@ -612,18 +614,18 @@ EdgeCollapseResult HalfEdgeMesh<BaseVecT>::collapseEdge(EdgeHandle edgeH)
     //         V    a    \            |
     //           ------>              | Edges:
     //      [A]            [B]        | a: startEdge
-    //           <------              | b: edgeToRemoveAR (AboveRight)
-    //         \    d    ^            | c: edgeToRemoveAL (AboveLeft)
-    //          \       /             | d: startEdgeTwin
-    //         e \     / f            | e: edgeToRemoveBR (BelowLeft)
-    //            \   /               | f: edgeToRemoveBL (BelowRight)
+    //           <------              | d: startEdgeTwin
+    //         \    d    ^            |
+    //          \       /             |
+    //         e \     / f            |
+    //            \   /               |
     //             V /                |
     //             [D]                |
-
-    // The variable naming in this method imagines that the given edge points to
-    // the right and there might be one face above and one face below.
-    // The start edges and the inner edges of those faces will be removed and
-    // for each face the remaining two edges become twins.
+    //
+    // The variable naming in this method imagines that the given edge points
+    // to the right and there might be one face above and one face below. The
+    // start edges and the inner edges of those faces will be removed and for
+    // each face the remaining two edges become twins.
 
     auto startEdgeH = HalfEdgeHandle::oneHalfOf(edgeH);
     auto& startEdge = getE(startEdgeH);
