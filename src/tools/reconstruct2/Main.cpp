@@ -136,6 +136,7 @@
 
 #include <iostream>
 #include <memory>
+#include <tuple>
 #include <stdlib.h>
 
 #include <boost/optional.hpp>
@@ -184,6 +185,7 @@
 #include <lvr2/algorithm/ClusterPainter.hpp>
 #include <lvr2/algorithm/ClusterAlgorithms.hpp>
 #include <lvr2/algorithm/CleanupAlgorithms.hpp>
+#include <lvr2/algorithm/ReductionAlgorithms.hpp>
 
 #include <lvr2/reconstruction/AdaptiveKSearchSurface.hpp>
 #include <lvr2/reconstruction/BilinearFastBox.hpp>
@@ -470,10 +472,30 @@ void testCollapseEdge()
     cout << "CheckMeshIntegrity: " << mesh.debugCheckMeshIntegrity() << endl;
     for (auto edgeH: mesh.edges())
     {
+        cout << "ITERATION " << edgeH << endl;
+        if (!mesh.isCollapsable(edgeH))
+        {
+            continue;
+        }
         auto vertex = mesh.collapseEdge(edgeH);
-        cout << "CheckMeshIntegrity: " << mesh.debugCheckMeshIntegrity() << endl;
-        break;
+
+        FinalizeAlgorithm<BaseVector<float>> finalize;
+        auto buffer = finalize.apply(mesh);
+
+        // Create output model and save to file
+        auto model = new lvr::Model(buffer);
+        lvr::ModelPtr m(model);
+        cout << timestamp << "Saving mesh." << endl;
+        std::stringstream ss;
+        ss << "collapsed_nikolaus_" << edgeH.idx() << ".ply";
+        lvr::ModelFactory::saveModel(m, ss.str());
+
+        mesh.debugCheckMeshIntegrity();
+        // cout << "CheckMeshIntegrity: " << << endl;
+        // break;
     }
+
+    cout << "done" << endl;
 
     FinalizeAlgorithm<BaseVector<float>> finalize;
     auto buffer = finalize.apply(mesh);
@@ -720,7 +742,7 @@ void testMeshnav(
     colorFunctionPointer = &floatToGrayScaleColor;
 
     // create map of color vertices according to the calculated height differences
-    colorVertices = lvr2::map<float, Rgb8Color>(combCost, colorFunctionPointer);
+    colorVertices = lvr2::map<DenseAttrMap>(combCost, colorFunctionPointer);
 }
 
 int main(int argc, char** argv)
@@ -835,6 +857,61 @@ int main(int argc, char** argv)
 
 
     auto faceNormals = calcFaceNormals(mesh);
+
+    auto costLambda = [&](auto edgeH)
+    {
+        return collapseCostSimpleNormalDiff(mesh, faceNormals, edgeH);
+    };
+
+    // This is for debugging purposes! You can save a mesh whose colors can
+    // represent float values ... or sth like that. Coolio!
+    // {
+    //     // Create vertex colors from other attributes
+    //     auto edgeCosts = attrMapFromFunc<DenseAttrMap>(mesh.edges(), [&](auto edgeH){
+    //         auto maybeCost = costLambda(edgeH);
+    //         return maybeCost ? *maybeCost : 100;
+    //     });
+    //     float min, max;
+    //     std::tie(min, max) = minMaxOfMap(edgeCosts);
+    //     auto vertexCosts = attrMapFromFunc<DenseAttrMap>(mesh.vertices(), [&](VertexHandle vertexH)
+    //     {
+    //         float sum = 0.0;
+    //         size_t count = 0;
+    //         for (auto edgeH: mesh.getEdgesOfVertex(vertexH))
+    //         {
+    //             sum += edgeCosts[edgeH];
+    //             count += 1;
+    //         }
+    //         const auto value = sum / count;
+    //         return (value + min) / (max - min);
+    //     });
+    //     auto vertexColors = lvr2::map<DenseAttrMap>(vertexCosts, floatToGrayScaleColor);
+
+    //     // Save mesh
+    //     FinalizeAlgorithm<Vec> finalize;
+    //     finalize.setColorData(vertexColors);
+    //     auto buffer = finalize.apply(mesh);
+    //     auto m = boost::make_shared<lvr::Model>(buffer);
+    //     lvr::ModelFactory::saveModel(m, "debug_attribute.ply");
+    // }
+
+    // Reduce mesh complexity
+    const auto reductionRatio = options.getEdgeCollapseReductionRatio();
+    if (reductionRatio > 0.0)
+    {
+        if (reductionRatio > 1.0)
+        {
+            throw "The reduction ratio needs to be between 0 and 1!";
+        }
+
+        // Each edge collapse removes two faces in the general case.
+        // TODO: maybe we should calculate this differently...
+        const auto count = static_cast<size_t>((mesh.numFaces() / 2) * reductionRatio);
+        cout << timestamp << "Reducing mesh by collapsing up to " << count << " edges" << endl;
+        iterativeEdgeCollapse(mesh, count, costLambda);
+        faceNormals = calcFaceNormals(mesh);
+    }
+
     ClusterBiMap<FaceHandle> clusterBiMap;
     if(options.optimizePlanes())
     {
@@ -868,21 +945,21 @@ int main(int argc, char** argv)
     //cout << "duplicate vertices: " << duplicateVertices.size() << endl;
 
     // Finalize mesh (convert it to simple `MeshBuffer`)
-     //FinalizeAlgorithm<Vec> finalize;
-     //finalize.setNormalData(vertexNormals);
-     //if (color_vertices)
-     //{
-     //     finalize.setColorData(colorVertices);
-     //}
-     //auto buffer = finalize.apply(mesh);
+    // FinalizeAlgorithm<Vec> finalize;
+    // finalize.setNormalData(vertexNormals);
+    // if (color_vertices)
+    // {
+    //    finalize.setColorData(colorVertices);
+    // }
+    // auto buffer = finalize.apply(mesh);
 
-     ClusterFlatteningFinalizer<Vec> finalize(clusterBiMap);
-     finalize.setVertexNormals(vertexNormals);
-     if (clusterColors)
-     {
-        finalize.setClusterColors(*clusterColors);
-     }
-     auto buffer = finalize.apply(mesh);
+    ClusterFlatteningFinalizer<Vec> finalize(clusterBiMap);
+    finalize.setVertexNormals(vertexNormals);
+    if (clusterColors)
+    {
+      finalize.setClusterColors(*clusterColors);
+    }
+    auto buffer = finalize.apply(mesh);
 
     // =======================================================================
     // Write all results (including the mesh) to file

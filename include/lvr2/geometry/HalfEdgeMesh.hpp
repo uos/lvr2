@@ -89,6 +89,13 @@ public:
     array<OptionalFaceHandle, 2> getFacesOfEdge(EdgeHandle edgeH) const final;
     void getFacesOfVertex(VertexHandle handle, vector<FaceHandle>& facesOut) const final;
     void getEdgesOfVertex(VertexHandle handle, vector<EdgeHandle>& edgesOut) const final;
+    void getNeighboursOfVertex(VertexHandle handle, vector<VertexHandle>& verticesOut) const final;
+
+    // Make sure all default methods from `BaseMesh` are visible
+    using BaseMesh<BaseVecT>::getFacesOfVertex;
+    using BaseMesh<BaseVecT>::getEdgesOfVertex;
+    using BaseMesh<BaseVecT>::getNeighboursOfVertex;
+
 
     MeshHandleIteratorPtr<VertexHandle> verticesBegin() const final;
     MeshHandleIteratorPtr<VertexHandle> verticesEnd() const final;
