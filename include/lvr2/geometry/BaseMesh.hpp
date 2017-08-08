@@ -64,6 +64,8 @@ public:
 
     /// Returns the current handle.
     virtual HandleT operator*() const = 0;
+
+    using HandleType = HandleT;
 };
 
 /// A wrapper for the MeshHandleIterator to save beloved future programmers from dereferencing too much <3
@@ -76,6 +78,8 @@ public:
     bool operator==(const MeshHandleIteratorPtr& other) const;
     bool operator!=(const MeshHandleIteratorPtr& other) const;
     HandleT operator*() const;
+
+    using HandleType = HandleT;
 private:
     std::unique_ptr<MeshHandleIterator<HandleT>> m_iter;
 };
@@ -283,6 +287,25 @@ public:
     virtual void getEdgesOfVertex(VertexHandle handle, vector<EdgeHandle>& edgesOut) const = 0;
 
     /**
+     * @brief Get vertex handles of the neighbours of the requested vertex.
+     *
+     * The vertex handles are written into the `verticesOut` vector. This is
+     * done to reduce the number of heap allocations if this method is called
+     * in a loop. If you are not calling it in a loop or can't, for some
+     * reason, take advantages of this method's signature, you can call the
+     * other overload of this method which just returns the vector. Such
+     * convinient.
+     *
+     * Note: you probably should remember to `clear()` the vector before
+     * passing it into this method.
+     *
+     * @param verticesOut The vertex-handles of the neighbours of `handle` will
+     *                    be written into this vector in clockwise order.
+     */
+    virtual void getNeighboursOfVertex(VertexHandle handle, vector<VertexHandle>& verticesOut) const = 0;
+
+
+    /**
      * @brief Returns an iterator to the first vertex of this mesh.
      *
      * @return When dereferenced, this iterator returns a handle to the current vertex.
@@ -352,6 +375,23 @@ public:
     virtual vector<FaceHandle> getNeighboursOfFace(FaceHandle handle) const;
 
     /**
+     * @brief Determines whether or not an edge collapse of the given edge is
+     *        possible without creating invalid meshes.
+     *
+     * For example, an edge collapse can create non-manifold meshes in some
+     * situations. Thus, those collapses are not allowed and `collapseEdge()`
+     * will panic if called with a non-collapsable edge.
+     */
+    virtual bool isCollapsable(EdgeHandle handle) const;
+
+    /**
+     * @brief Returns the number of adjacent faces to the given edge.
+     *
+     * This functions always returns one of 0, 1 or 2.
+     */
+    virtual uint8_t numAdjacentFaces(EdgeHandle handle) const;
+
+    /**
      * @brief Get a list of faces the given vertex belongs to.
      *
      * This method is implemented using the pure virtual method
@@ -374,6 +414,18 @@ public:
      * @return The edge-handles in counter-clockwise order.
      */
     virtual vector<EdgeHandle> getEdgesOfVertex(VertexHandle handle) const;
+
+    /**
+     * @brief Get a list of vertices around the given vertex.
+     *
+     * This method is implemented using the pure virtual method
+     * `getNeighboursOfVertex(VertexHandle, vector<EdgeHandle>&)`. If you are
+     * calling this method in a loop, you should probably call the more manual
+     * method (with the out vector) to avoid useless heap allocations.
+     *
+     * @return The vertex-handles in clockwise order.
+     */
+    virtual vector<VertexHandle> getNeighboursOfVertex(VertexHandle handle) const;
 
     /**
      * @brief Method for usage in range-based for-loops.
@@ -439,7 +491,7 @@ private:
 struct EdgeCollapseRemovedFace
 {
     /// A face adjacent to the collapsed edge which was removed
-    OptionalFaceHandle removedFace;
+    FaceHandle removedFace;
 
     /// The edges of the removed face (excluding the collapsed edge itself)
     array<EdgeHandle, 2> removedEdges;
@@ -448,7 +500,7 @@ struct EdgeCollapseRemovedFace
     EdgeHandle newEdge;
 
     EdgeCollapseRemovedFace(
-        OptionalFaceHandle removedFace,
+        FaceHandle removedFace,
         array<EdgeHandle, 2> removedEdges,
         EdgeHandle newEdge
     ) : removedFace(removedFace), removedEdges(removedEdges), newEdge(newEdge) {};

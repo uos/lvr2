@@ -5,6 +5,10 @@
 #ifndef LAS_VEGAS_UTILALGORITHMS_HPP
 #define LAS_VEGAS_UTILALGORITHMS_HPP
 
+#include <iterator>
+#include <type_traits>
+#include <utility>
+
 #include <lvr2/attrmaps/AttrMaps.hpp>
 #include <lvr2/geometry/Handles.hpp>
 
@@ -12,25 +16,55 @@
 namespace lvr2 {
 
 /**
- * @brief   Change the given input VertexMap to a different type output DenseVertexMap.
+ * @brief Calls `func` for each value of the given map and save the result in
+ *        the output map.
  *
- * The conversion between the input VertexMap and output DenseVertexMap is defined by the given function.
- * The method changeMap takes every element of the input VertexMap and converts it individually via the given
- * map-conversion function and adds the converted element to the output DenseVertexMap.
+ * The type of the output map needs to be specified explicitly as template
+ * parameter. You typically call it like this:
  *
- * @tparam  in              Templatetype for the input VertexMap.
- * @tparam  out             Templatetype for the output DenseVertexMap.
- * @tparam  MapF            Templatetype for the given map-conversion function.
- * @param   map_in          VertexMap holding input-type data, which will be
- *                          converted to the DenseVertexMap holding output-type data.
- * @param   map_function    Function for converting a single element of the
- *                          input-type to a single element of the output-type.
+ * \code{.cpp}
+ * auto vertexColors = map<DenseAttrMap>(vertexCosts, [](float vertexCost)
+ * {
+ *     // Convert float vertex-cost to color...
+ * })
+ * \endcode
  *
- * @return  A DenseVertexMap holding output-type data,
- *          which is created via the input VertexMap and the map-conversion function.
+ * @tparam MapT The (rank-2) type of the attribute map implementation used
+ *              for the output map. E.g. `DenseAttrMap` or `SparseAttrMap`.
  */
-template<typename in, typename out, typename MapF>
-DenseVertexMap<out> map(const VertexMap<in> &mapIn, MapF mapFunction);
+template<
+    template<typename, typename> typename OutMapT,
+    typename InMapT,
+    typename MapF
+>
+OutMapT<typename InMapT::HandleType, std::result_of_t<MapF(typename InMapT::ValueType)>> map(
+    const InMapT& mapIn,
+    MapF func
+);
+
+
+template<
+    template<typename, typename> typename OutMapT,
+    typename IterProxyT,
+    typename GenF
+>
+OutMapT<
+    typename decltype(std::declval<IterProxyT>().begin())::HandleType,
+    typename std::result_of<GenF(typename decltype(std::declval<IterProxyT>().begin())::HandleType)>::type
+>
+    attrMapFromFunc(
+        IterProxyT iterProxy,
+        GenF func
+);
+
+/**
+ * @brief Returns the minimum and maximum element from the given map.
+ *
+ * Of course, this assumes that the values in the map are comparable with the
+ * standard comparison operators.
+ */
+template<typename HandleT, typename ValueT>
+pair<ValueT, ValueT> minMaxOfMap(const AttributeMap<HandleT, ValueT>& map);
 
 } // namespace lvr2
 

@@ -271,17 +271,10 @@ public:
     bool extrude() const;
 
     /**
-     * @brief   Number of edge collapses
+     * @brief Reduction ratio for mesh reduction via edge collapse
      */
-    int getNumEdgeCollapses() const;
+    float getEdgeCollapseReductionRatio() const;
 
-
-
-
-    /**
-     * @brief   Edge collapse method
-     */
-    string getEdgeCollapseMethod() const;
 
     unsigned int getNumStatsColors() const;
 
@@ -379,11 +372,8 @@ private:
     /// Name of the classifier object to color the mesh
     string                          m_classifier;
 
-    /// Edge collapse method
-    string                          m_ecm;
-
-    /// Number of edge collapses
-    int                             m_numEdgeCollapses;
+    /// Reduction ratio for mesh reduction via edge collapse
+    float                           m_edgeCollapseReductionRatio;
 
 
     ///Path to texture pack
@@ -531,10 +521,9 @@ inline ostream& operator<<(ostream& os, const Options &o)
             cout << "##### Texture Analysis \t\t: OFF" << endl;
         }
     }
-    if(o.getNumEdgeCollapses())
+    if(o.getEdgeCollapseReductionRatio() > 0.0)
     {
-        cout << "##### Edge collapse method: \t\t: " << o.getEdgeCollapseMethod() << endl;
-        cout << "##### Number of edge collapses\t: " << o.getNumEdgeCollapses() << endl;
+        cout << "##### Edge collapse reduction ratio\t: " << o.getEdgeCollapseReductionRatio() << endl;
     }
 
 
