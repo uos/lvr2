@@ -540,6 +540,32 @@ void testEdgeFlip()
     }
 }
 
+void testContourMethods()
+{
+    HalfEdgeMesh<Vec> mesh;
+    createHouseFromNikolaus(mesh);
+
+    // Remove both bottom faces
+    mesh.removeFace(FaceHandle(0));
+    mesh.removeFace(FaceHandle(1));
+
+    // Remove one roof face
+    mesh.removeFace(FaceHandle(10));
+
+    mesh.debugCheckMeshIntegrity();
+    for (auto eH: mesh.edges())
+    {
+        if (mesh.numAdjacentFaces(eH) == 1)
+        {
+            for (auto contourEdgeH: mesh.calcContourEdges(eH))
+            {
+                cout << contourEdgeH << " -> ";
+            }
+            cout << endl;
+        }
+    }
+}
+
 /*
  * DUMMY TEST CODE ENDS HERE!!!
  */
