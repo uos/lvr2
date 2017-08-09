@@ -147,6 +147,127 @@ typename BaseVecT::CoordType BaseMesh<BaseVecT>::calcFaceArea(FaceHandle handle)
 }
 
 template<typename BaseVecT>
+void BaseMesh<BaseVecT>::calcContourEdges(EdgeHandle startH, vector<EdgeHandle>& contourOut) const
+{
+    if (numAdjacentFaces(startH) == 0)
+    {
+        panic("call to 'calcContourEdges()' with lonely edge!");
+    }
+    if (numAdjacentFaces(startH) == 2)
+    {
+        panic("call to 'calcContourEdges()' with non-boundary edge!");
+    }
+
+    // This holds (or rather: will hold) the vertex of the last edge we pushed
+    // to `contourOut` which connects said edge with the currEdge in counter-
+    // clockwise order. Dummy value, since we don't have deferred
+    // initialization or an expression based control flow like in Rust. Yeah.
+    VertexHandle currVertexH(37373737);
+
+    // This holds (or rather: will hold) the edge we are currently looking at.
+    // Dummy value, since we don't have deferred initialization or an
+    // expression based control flow like in Rust. Yeah.
+    EdgeHandle currEdgeH(37373737);
+
+    // This is only used later, but created here to avoid unecessary heap
+    // allocations.
+    vector<EdgeHandle> edgesOfVertex;
+
+    // The one face our edge is adjacent to.
+    auto faces = getFacesOfEdge(startH);
+    auto startFace = faces[0] ? faces[0].unwrap() : faces[1].unwrap();
+
+
+    // First we need to find the correct next edge in the contour. The problem
+    // is that `getVerticesOfEdge()` returns the vertices in unknown order. We
+    // can't know which vertex is the on "in counter-clockwise" direction,
+    // which we need to know.
+    //
+    // Luckily, we can find out by using the fact that `eH` mustn't be a lonely
+    // edge.
+    for (const auto vH: getVerticesOfEdge(startH))
+    {
+        edgesOfVertex.clear();
+        getEdgesOfVertex(vH, edgesOfVertex);
+
+        // Now we have all edge of the vertex in clockwise order. We can find
+        // our edge in the list to determine which edge comes after it
+        // (`afterH`). Then, there are two possibilities (reminder: we know
+        // that numAdjacentFaces(startH) == 1):
+        //
+        //
+        //       startH   afterH       |        startH   afterH        |
+        //          \       /          |           \       /           |
+        //           \     /           |            \  F  /            |
+        //        F   \   /   ?        |             \   /   ?         |
+        //             \ /             |              \ /              |
+        //     --------[V]--------     |      --------[V]--------      |
+        //             / \             |              / \              |
+        //        ?   /   \   ?        |         ?   /   \   ?         |
+        //           /  ?  \           |            /  ?  \            |
+        //          /       \          |           /       \           |
+        //                             |                               |
+        //   Case A: no face between   |     Case B: face between      |
+        //
+        // In case A, we know that `[V]` is the correct next vertex in counter-
+        // clockwise order and that `afterH` is the correct next edge in
+        // counter-clockwise order.
+        //
+        // In case B, we know that `[V]` is the wrong vertex. In this case, we
+        // just continue the loop; the next iteration will be the lucky one.
+
+        // Get index of the next edge
+        const auto ePos = std::find(edgesOfVertex.begin(), edgesOfVertex.end(), startH) - edgesOfVertex.begin();
+        const auto afterPos = ePos == edgesOfVertex.size() - 1 ? 0 : ePos + 1;
+        const auto afterH = edgesOfVertex[afterPos];
+
+        // Check if this edge is adjacent to our start face
+        const auto facesOfAfter = getFacesOfEdge(afterH);
+        if (facesOfAfter[0] != startFace && facesOfAfter[1] != startFace)
+        {
+            // Case A: this is the correct vertex/edge! Now we just set the
+            // initial loop variables.
+            currVertexH = vH;
+            currEdgeH = afterH;
+            break;
+        }
+    }
+
+    // Push start edge to output vector
+    contourOut.push_back(startH);
+
+    while (currEdgeH != startH)
+    {
+        contourOut.push_back(currEdgeH);
+
+        // Determine the next vertex. Since we know the last one, we can simply
+        // find out which one is the correct one.
+        const auto vertices = getVerticesOfEdge(currEdgeH);
+        const auto nextVertexH = vertices[0] == currVertexH ? vertices[1] : vertices[0];
+
+        // Determine next edge. It's the edge immediately after our current one
+        // in the clockwise ordered list of edges of the next vertex.
+        edgesOfVertex.clear();
+        getEdgesOfVertex(nextVertexH, edgesOfVertex);
+
+        const auto ourPos = std::find(edgesOfVertex.begin(), edgesOfVertex.end(), currEdgeH) - edgesOfVertex.begin();
+        const auto afterPos = ourPos == edgesOfVertex.size() - 1 ? 0 : ourPos + 1;
+
+        // Assign values for the next iteration
+        currEdgeH = edgesOfVertex[afterPos];
+        currVertexH = nextVertexH;
+    }
+}
+
+template<typename BaseVecT>
+vector<EdgeHandle> BaseMesh<BaseVecT>::calcContourEdges(EdgeHandle startH) const
+{
+    vector<EdgeHandle> out;
+    calcContourEdges(startH, out);
+    return out;
+}
+
+template<typename BaseVecT>
 bool BaseMesh<BaseVecT>::isCollapsable(EdgeHandle handle) const
 {
     // Collapsing an edge can have a couple of negative side effects:
