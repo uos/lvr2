@@ -562,6 +562,12 @@ void testContourMethods()
                 cout << contourEdgeH << " -> ";
             }
             cout << endl;
+
+            for (auto contourEdgeH: mesh.calcContourVertices(eH))
+            {
+                cout << contourEdgeH << " -> ";
+            }
+            cout << endl << "---------------" << endl;
         }
     }
 }

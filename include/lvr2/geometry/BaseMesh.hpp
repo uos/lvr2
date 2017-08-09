@@ -421,6 +421,18 @@ public:
      */
     virtual void calcContourEdges(EdgeHandle startH, vector<EdgeHandle>& contourOut) const;
 
+    /**
+     * @brief Get a list of all vertices that make up the contour in which
+     *        `startH` is part of.
+     *
+     * `startH` has to be a boundary edge but mustn't be a lonely edge; that is
+     * `numAdjacentFaces(startH) == 1`.
+     *
+     * See `calcContourEdges()` for more information!
+     *
+     * @param contourOut The list of contour vertices are written to this vector.
+     */
+    virtual void calcContourVertices(EdgeHandle startH, vector<VertexHandle>& contourOut) const;
 
     /**
      * @brief Convenience overload which returns a vector.
@@ -431,6 +443,13 @@ public:
      * can often avoid heap allocations by using the other overload.
      */
     virtual vector<EdgeHandle> calcContourEdges(EdgeHandle startH) const;
+
+    /**
+     * @brief Convenience overload which returns a vector.
+     *
+     * See `calcContourEdges()` for more information.
+     */
+    virtual vector<VertexHandle> calcContourVertices(EdgeHandle startH) const;
 
     /**
      * @brief Determines whether or not an edge collapse of the given edge is
@@ -514,6 +533,21 @@ public:
      * Returns a simple proxy object that uses `verticesBegin()` and `verticesEnd()`.
      */
     virtual VertexIteratorProxy<BaseVecT> vertices() const;
+
+private:
+    /**
+     * @brief Walks on a boundary contour starting at `startH`.
+     *
+     * This is mainly used in `calcContourEdges()` and `calcContourVertices()`.
+     * You should read their docs to understand how exactly this method works.
+     *
+     * @param visitor A function object taking two parameters: a `VertexHandle`
+     *                and an `EdgeHandle`. The vertex is the vertex of the edge
+     *                that comes "before" the edge, speaking about the
+     *                direction of visiting the edges.
+     */
+    template<typename VisitorF>
+    void walkContour(EdgeHandle startH, VisitorF visitor) const;
 };
 
 template <typename BaseVecT>

@@ -1070,9 +1070,11 @@ bool HalfEdgeMesh<BaseVecT>::debugCheckMeshIntegrity() const
         do
         {
             loopEdgeH = getE(loopEdgeH).next;
+            const auto twinH = getE(loopEdgeH).twin;
             visited[loopEdgeH] = true;
-            cout << "   | -> " << loopEdgeH
-                 << " [twin: " << getE(loopEdgeH).twin << "]" << endl;
+            cout << "   | -> " << loopEdgeH << " [twin: " << twinH << " | "
+                 << getE(twinH).target << " --> " << getE(loopEdgeH).target
+                 << "]" << endl;
         } while(loopEdgeH != startEdgeH);
     }
 

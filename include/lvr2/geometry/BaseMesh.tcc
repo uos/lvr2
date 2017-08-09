@@ -147,21 +147,22 @@ typename BaseVecT::CoordType BaseMesh<BaseVecT>::calcFaceArea(FaceHandle handle)
 }
 
 template<typename BaseVecT>
-void BaseMesh<BaseVecT>::calcContourEdges(EdgeHandle startH, vector<EdgeHandle>& contourOut) const
+template<typename VisitorF>
+void BaseMesh<BaseVecT>::walkContour(EdgeHandle startH, VisitorF visitor) const
 {
     if (numAdjacentFaces(startH) == 0)
     {
-        panic("call to 'calcContourEdges()' with lonely edge!");
+        panic("attempt to walk a contour starting at a lonely edge!");
     }
     if (numAdjacentFaces(startH) == 2)
     {
-        panic("call to 'calcContourEdges()' with non-boundary edge!");
+        panic("attempt to walk a contour starting at a non-boundary edge!");
     }
 
-    // This holds (or rather: will hold) the vertex of the last edge we pushed
-    // to `contourOut` which connects said edge with the currEdge in counter-
-    // clockwise order. Dummy value, since we don't have deferred
-    // initialization or an expression based control flow like in Rust. Yeah.
+    // This holds (or rather: will hold) the vertex of the last edge we visited
+    // which connects said edge with the `currEdge` in counter-clockwise order.
+    // Dummy value, since we don't have deferred initialization or an
+    // expression based control flow like in Rust. Yeah.
     VertexHandle currVertexH(37373737);
 
     // This holds (or rather: will hold) the edge we are currently looking at.
@@ -174,8 +175,9 @@ void BaseMesh<BaseVecT>::calcContourEdges(EdgeHandle startH, vector<EdgeHandle>&
     vector<EdgeHandle> edgesOfVertex;
 
     // The one face our edge is adjacent to.
-    auto faces = getFacesOfEdge(startH);
-    auto startFace = faces[0] ? faces[0].unwrap() : faces[1].unwrap();
+    const auto faces = getFacesOfEdge(startH);
+    const auto startFace = faces[0] ? faces[0].unwrap() : faces[1].unwrap();
+    const auto startVertices = getVerticesOfEdge(startH);
 
 
     // First we need to find the correct next edge in the contour. The problem
@@ -183,9 +185,9 @@ void BaseMesh<BaseVecT>::calcContourEdges(EdgeHandle startH, vector<EdgeHandle>&
     // can't know which vertex is the on "in counter-clockwise" direction,
     // which we need to know.
     //
-    // Luckily, we can find out by using the fact that `eH` mustn't be a lonely
-    // edge.
-    for (const auto vH: getVerticesOfEdge(startH))
+    // Luckily, we can find out by using the fact that `startH` mustn't be a
+    // lonely edge.
+    for (const auto vH: startVertices)
     {
         edgesOfVertex.clear();
         getEdgesOfVertex(vH, edgesOfVertex);
@@ -233,12 +235,17 @@ void BaseMesh<BaseVecT>::calcContourEdges(EdgeHandle startH, vector<EdgeHandle>&
         }
     }
 
-    // Push start edge to output vector
-    contourOut.push_back(startH);
+    {
+        // Determine the other vertex (start vertex of the start edge) and call
+        // the visitor
+        const auto prevVertexH = startVertices[0] == currVertexH ? startVertices[1] : startVertices[0];
+        visitor(prevVertexH, startH);
+    }
 
     while (currEdgeH != startH)
     {
-        contourOut.push_back(currEdgeH);
+        // Call the visitor
+        visitor(currVertexH, currEdgeH);
 
         // Determine the next vertex. Since we know the last one, we can simply
         // find out which one is the correct one.
@@ -260,10 +267,36 @@ void BaseMesh<BaseVecT>::calcContourEdges(EdgeHandle startH, vector<EdgeHandle>&
 }
 
 template<typename BaseVecT>
+void BaseMesh<BaseVecT>::calcContourEdges(EdgeHandle startH, vector<EdgeHandle>& contourOut) const
+{
+    walkContour(startH, [&](auto vertexH, auto edgeH)
+    {
+        contourOut.push_back(edgeH);
+    });
+}
+
+template<typename BaseVecT>
+void BaseMesh<BaseVecT>::calcContourVertices(EdgeHandle startH, vector<VertexHandle>& contourOut) const
+{
+    walkContour(startH, [&](auto vertexH, auto edgeH)
+    {
+        contourOut.push_back(vertexH);
+    });
+}
+
+template<typename BaseVecT>
 vector<EdgeHandle> BaseMesh<BaseVecT>::calcContourEdges(EdgeHandle startH) const
 {
     vector<EdgeHandle> out;
     calcContourEdges(startH, out);
+    return out;
+}
+
+template<typename BaseVecT>
+vector<VertexHandle> BaseMesh<BaseVecT>::calcContourVertices(EdgeHandle startH) const
+{
+    vector<VertexHandle> out;
+    calcContourVertices(startH, out);
     return out;
 }
 
