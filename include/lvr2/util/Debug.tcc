@@ -53,7 +53,7 @@ void writeDebugMesh(
 
     // Set color to mesh
     FinalizeAlgorithm<BaseVecT> finalize;
-    finalize.setColorData(&colorMap);
+    finalize.setColorData(colorMap);
 
     // Get buffer
     auto buffer = finalize.apply(mesh);
