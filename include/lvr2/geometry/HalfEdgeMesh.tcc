@@ -870,6 +870,118 @@ EdgeCollapseResult HalfEdgeMesh<BaseVecT>::collapseEdge(EdgeHandle edgeH)
 }
 
 template <typename BaseVecT>
+void HalfEdgeMesh<BaseVecT>::flipEdge(EdgeHandle edgeH)
+{
+    if (!BaseMesh<BaseVecT>::isFlippable(edgeH))
+    {
+        panic("flipEdge() called for non-flippable edge!");
+    }
+
+    // A fancy drawing of the current and expected situation:
+    //
+    //                                  |                                     |
+    //            Before                |                After                |
+    //            ------                |                -----                |
+    //                                  |                                     |
+    //                                  |                                     |
+    //              [C]                 |                 [C]                 |
+    //                                  |                                     |
+    //          ^  /   ^  \             |             ^  /   ^  \             |
+    //         /  /     \  \            |            /  / ^ | \  \            |
+    //        /  /       \  \           |           /  /  | |  \  \           |
+    //       /  /         \  \          |          /  /   | |   \  \          |
+    //      /  /c         d\  \         |         /  /    | |    \  \         |
+    //     /  /     (X)     \  \        |        /  /     | |     \  \        |
+    //    /  /               \  \       |       /  /      | |      \  \       |
+    //   /  /                 \  \      |      /  /       | |       \  \      |
+    //  /  v         a         \  v     |     /  v        | |        \  v     |
+    //       --------------->           |                 | |                 |
+    //  [A]                     [B]     |     [A]   (X)   | |   (Y)   [B]     |
+    //       <---------------           |                 | |                 |
+    //  ^  \         b         ^  /     |     ^  \        | |        ^  /     |
+    //   \  \                 /  /      |      \  \       | |       /  /      |
+    //    \  \               /  /       |       \  \      | |      /  /       |
+    //     \  \     (Y)     /  /        |        \  \     | |     /  /        |
+    //      \  \e         f/  /         |         \  \    | |    /  /         |
+    //       \  \         /  /          |          \  \   | |   /  /          |
+    //        \  \       /  /           |           \  \  | |  /  /           |
+    //         \  \     /  /            |            \  \ | v /  /            |
+    //          \  v   /  v             |             \  v   /  v             |
+    //                                  |                                     |
+    //              [D]                 |                 [D]                 |
+    //
+    //
+    // ### A mapping from graphic names to variable names:
+    //
+    //  Edges                      Vertices               Faces
+    //  -----                      --------               -----
+    //  a: center                  [A]: vLeft             (X): faceAbove
+    //  b: centerTwin              [B]: vRight            (Y): faceBelow
+    //  c: aboveLeft               [C]: vAbove
+    //  d: aboveRight              [D]: vBelow
+    //  e: belowLeft
+    //  f: belowRight
+    //
+    //
+    // We just imagine that the random half-edge we get from `oneHalfOf()` is
+    // the edge `a` in the drawing. We call it `center`.
+    //
+    // First, we just obtain all the handles
+    auto centerH = HalfEdgeHandle::oneHalfOf(edgeH);
+    auto& center = getE(centerH);
+    auto centerTwinH = center.twin;
+    auto& centerTwin = getE(centerTwinH);
+
+    auto faceAboveH = center.face.unwrap();
+    auto faceBelowH = centerTwin.face.unwrap();
+
+    auto aboveRightH = center.next;
+    auto& aboveRight = getE(aboveRightH);
+    auto aboveLeftH = aboveRight.next;
+    auto& aboveLeft = getE(aboveLeftH);
+    auto belowLeftH = centerTwin.next;
+    auto& belowLeft = getE(belowLeftH);
+    auto belowRightH = belowLeft.next;
+    auto& belowRight = getE(belowRightH);
+
+    auto vLeftH = centerTwin.target;
+    auto vRightH = center.target;
+    auto vAboveH = aboveRight.target;
+    auto vBelowH = belowLeft.target;
+
+    // And now we just change all the handles. It's fairly easy, since we don't
+    // have to deal with any special cases.
+    //
+    // First, fix outgoing handles, since those might be wrong now.
+    getV(vLeftH).outgoing = belowLeftH;
+    getV(vRightH).outgoing = aboveRightH;
+
+    // Next, fix the `edge` pointer of the faces, since those might be broken
+    // as well.
+    getF(faceAboveH).edge = centerH;
+    getF(faceBelowH).edge = centerTwinH;
+
+    // Fix the all time favorite: the next handle. We basically change the next
+    // handle of all inner edges. First all edges around the left face (former
+    // "above" face), then the right (former "below") one.
+    center.next = aboveLeftH;
+    aboveLeft.next = belowLeftH;
+    belowLeft.next = centerH;
+
+    centerTwin.next = belowRightH;
+    belowRight.next = aboveRightH;
+    aboveRight.next = centerTwinH;
+
+    // The target handle of both center edges...
+    center.target = vAboveH;
+    centerTwin.target = vBelowH;
+
+    // And finally, two edges belong to a new face now.
+    aboveRight.face = faceBelowH;  // now right
+    belowLeft.face = faceAboveH;   // now left
+}
+
+template <typename BaseVecT>
 EdgeHandle HalfEdgeMesh<BaseVecT>::halfToFullEdgeHandle(HalfEdgeHandle handle) const
 {
     auto twin = getE(handle).twin;
