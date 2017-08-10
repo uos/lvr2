@@ -212,6 +212,25 @@ bool BaseMesh<BaseVecT>::isCollapsable(EdgeHandle handle) const
     return sharedVerticesCount == numFaces;
 }
 
+template<typename BaseVecT>
+bool BaseMesh<BaseVecT>::isFlippable(EdgeHandle handle) const
+{
+    if (numAdjacentFaces(handle) != 2)
+    {
+        return false;
+    }
+
+    // Make sure we have 4 different vertices around the faces of that edge.
+    auto faces = getFacesOfEdge(handle);
+    auto face0vertices = getVerticesOfFace(faces[0].unwrap());
+    auto face1vertices = getVerticesOfFace(faces[1].unwrap());
+
+    auto diffCount = std::count_if(face0vertices.begin(), face0vertices.end(), [&](auto f0v)
+    {
+        return std::find(face1vertices.begin(), face1vertices.end(), f0v) == face1vertices.end();
+    });
+    return diffCount == 1;
+}
 
 template<typename BaseVecT>
 uint8_t BaseMesh<BaseVecT>::numAdjacentFaces(EdgeHandle handle) const
