@@ -66,6 +66,11 @@ if(FLANN_FOUND)
   include_directories(${FLANN_DIR})
 endif(FLANN_FOUND)
 
+find_package(  Lz4 REQUIRED )
+include_directories(  ${LZ4_INCLUDE_DIR} )
+message("LZ4 library found: ${LZ4_LIBRARY}")
+
+
 ####
 ## Searching for GSL
 ##############################

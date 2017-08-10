@@ -80,7 +80,8 @@ set(LVR_LIB_DEPENDENCIES
     ${OPENGL_LIBRARIES}
     ${GLUT_LIBRARIES}
     ${OpenCV_LIBS}
-    ${GSL_LIBRARIES})
+    ${GSL_LIBRARIES}
+    ${LZ4_LIBRARY})
 
 #####################################################################################
 # On Unix/Linux we need to link against pthreads
