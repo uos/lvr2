@@ -197,10 +197,10 @@ public:
      * not add or remove any elements. This implies that it doesn't invalidate
      * any handles.
      *
-     * The user of this method has to to pay attention to what edges to flip.
-     * It's easily possible to create unrealistic meshes with this method
-     * (things like zero volume and stuff like that). However, it doesn't
-     * destroy the mesh in itself or create non-manifold meshes.
+     * The user of this method has to pay attention to what edges to flip. It's
+     * easily possible to create unrealistic meshes with this method (things
+     * like zero volume and stuff like that). However, it doesn't destroy the
+     * mesh in itself or create non-manifold meshes.
      */
     virtual void flipEdge(EdgeHandle edgeH) = 0;
 
@@ -413,7 +413,7 @@ public:
      *        destroying the mesh.
      *
      * The mesh could be destroyed by invalidating mesh connectivity
-     * information or by making it non manifold.
+     * information or by making it non-manifold.
      */
     virtual bool isFlippable(EdgeHandle handle) const;
 

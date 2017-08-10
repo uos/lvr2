@@ -961,9 +961,9 @@ void HalfEdgeMesh<BaseVecT>::flipEdge(EdgeHandle edgeH)
     getF(faceAboveH).edge = centerH;
     getF(faceBelowH).edge = centerTwinH;
 
-    // Fix the all time favourite: the next handle. We basically change the
-    // next handle of all inner edges. First all edges around the left face
-    // (former "above" face), then the right (former "below") one.
+    // Fix the all time favorite: the next handle. We basically change the next
+    // handle of all inner edges. First all edges around the left face (former
+    // "above" face), then the right (former "below") one.
     center.next = aboveLeftH;
     aboveLeft.next = belowLeftH;
     belowLeft.next = centerH;
