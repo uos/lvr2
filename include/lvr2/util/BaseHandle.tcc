@@ -26,6 +26,8 @@
 
 #include <limits>
 
+#include <lvr2/util/Panic.hpp>
+
 using std::numeric_limits;
 
 namespace lvr2
@@ -46,7 +48,11 @@ IdxT BaseHandle<IdxT>::idx() const
 template <typename IdxT>
 void BaseHandle<IdxT>::setIdx(IdxT idx)
 {
-    assert(idx != numeric_limits<IdxT>::max());
+    if (idx == numeric_limits<IdxT>::max())
+    {
+        panic("Trying to create a Handle with MAX_INT as idx!");
+    }
+
     m_idx = idx;
 }
 
