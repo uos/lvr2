@@ -377,6 +377,46 @@ bool BaseMesh<BaseVecT>::isFlippable(EdgeHandle handle) const
 }
 
 template<typename BaseVecT>
+bool BaseMesh<BaseVecT>::isFaceInsertionValid(VertexHandle v1H, VertexHandle v2H, VertexHandle v3H) const
+{
+    // If there is already a face, we can't add another one
+    if (getFaceBetween(v1H, v2H, v3H))
+    {
+        return false;
+    }
+
+    // Next we check that each vertex is a boundary one (it has at least one
+    // boundary edge or no edges at all). We really need this property;
+    // otherwise we would create non-manifold vertices and make the mesh non-
+    // orientable.
+    vector<EdgeHandle> edges;
+    for (auto vH: {v1H, v2H, v3H})
+    {
+        edges.clear();
+        getEdgesOfVertex(vH, edges);
+
+        // No edges at all are fine too.
+        if (edges.empty())
+        {
+            continue;
+        }
+
+        // But if there are some, we need at least one boundary one.
+        auto boundaryEdgeIt = std::find_if(edges.begin(), edges.end(), [this](auto eH)
+        {
+            return this->numAdjacentFaces(eH) < 2;
+        });
+        if (boundaryEdgeIt == edges.end())
+        {
+            return false;
+        }
+    }
+
+    return true;
+}
+
+
+template<typename BaseVecT>
 OptionalFaceHandle BaseMesh<BaseVecT>::getFaceBetween(VertexHandle aH, VertexHandle bH, VertexHandle cH) const
 {
     // Start with one edge

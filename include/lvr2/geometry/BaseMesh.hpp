@@ -157,6 +157,9 @@ public:
      * terms: the face's normal is equal to (v1 - v2) x (v1 - v3) in the
      * right-handed coordinate system (where `x` is cross-product).
      *
+     * This method panics if an insertion is not possible. You can check
+     * whether or not an insertion is valid by using `isFaceInsertionValid()`.
+     *
      * @return A handle to access the inserted face later.
      */
     virtual FaceHandle addFace(VertexHandle v1, VertexHandle v2, VertexHandle v3) = 0;
@@ -469,6 +472,21 @@ public:
      * information or by making it non-manifold.
      */
     virtual bool isFlippable(EdgeHandle handle) const;
+
+    /**
+     * @brief Check whether or not inserting a face between the given vertices
+     *        would be valid.
+     *
+     * Adding a face is invalid if it destroys the mesh in any kind, like
+     * making it non-manifold, non-orientable or something similar. But there
+     * are other reasons for invalidity as well, like: there is already a face
+     * connecting the given vertices.
+     *
+     * Note that the given vertices have to be in front-face counter-clockwise
+     * order, just as with `addFace()`. See `addFace()` for more information
+     * about this.
+     */
+    virtual bool isFaceInsertionValid(VertexHandle v1, VertexHandle v2, VertexHandle v3) const;
 
     /**
      * @brief If all vertices are part of one face, this face is returned. None
