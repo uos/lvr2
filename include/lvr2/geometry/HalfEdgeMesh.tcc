@@ -53,6 +53,11 @@ VertexHandle HalfEdgeMesh<BaseVecT>::addVertex(Point<BaseVecT> pos)
 template <typename BaseVecT>
 FaceHandle HalfEdgeMesh<BaseVecT>::addFace(VertexHandle v1H, VertexHandle v2H, VertexHandle v3H)
 {
+    if (!BaseMesh<BaseVecT>::isFaceInsertionValid(v1H, v2H, v3H))
+    {
+        panic("Attempting add a face which cannot be added!");
+    }
+
     using std::make_tuple;
 
     DOINDEBUG(dout() << "##################################################" << endl);
