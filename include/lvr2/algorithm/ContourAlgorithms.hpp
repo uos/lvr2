@@ -41,6 +41,24 @@ namespace lvr2
  * The given `startH` as well as all other edges on the contour mustn't be a
  * lonely edge (when ignoring faces according to `exists`).
  *
+ * The edges of the contour are visited in counter-clockwise order. That is, if
+ * you look at the contour as if it were a hole in the mesh. If you are
+ * thinking of the contour as an outer contour, it's in clockwise order. This
+ * matter is pretty confusing and I don't know how to explain it a lot better.
+ * Here another attempt:
+ *
+ * Inner contours are visited in counter-clockwise order and outer ones in
+ * clockwise order. Inner contours are commonly referred to as "holes in the
+ * mesh", while the outer one is often called "mesh boundary". However, for 3D
+ * meshes, the distinction isn't all that clear. What matters here is the
+ * planar embedding of the mesh. There are many possible planar embeddings,
+ * including the ones that make the "mesh boundary" look like a hole and vice
+ * versa.
+ *
+ * Anyway, we can say this for sure: given one concrete embedding for your
+ * mesh, the outer contour's edges are returned in clockwise order and the
+ * edges of all inner contours are returned in counter-clockwise order.
+ *
  * @param visitor A function object taking two parameters: a `VertexHandle`
  *                and an `EdgeHandle`. The vertex is the vertex of the edge
  *                that comes "before" the edge, speaking about the
