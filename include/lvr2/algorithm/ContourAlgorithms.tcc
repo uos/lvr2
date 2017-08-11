@@ -163,4 +163,58 @@ void walkContour(const BaseMesh<BaseVecT>& mesh, EdgeHandle startH, VisitorF vis
     } while (currEdgeH != startH);
 }
 
+template<typename BaseVecT, typename PredF>
+void calcContourEdges(
+    const BaseMesh<BaseVecT>& mesh,
+    EdgeHandle startH,
+    vector<EdgeHandle>& contourOut,
+    PredF exists
+)
+{
+    walkContour(mesh, startH, [&](auto vertexH, auto edgeH)
+    {
+        contourOut.push_back(edgeH);
+    }, exists);
+}
+
+template<typename BaseVecT>
+void calcContourEdges(
+    const BaseMesh<BaseVecT>& mesh,
+    EdgeHandle startH,
+    vector<EdgeHandle>& contourOut
+)
+{
+    calcContourEdges(mesh, startH, contourOut, [](auto unused)
+    {
+        return true;
+    });
+}
+
+template<typename BaseVecT, typename PredF>
+void calcContourVertices(
+    const BaseMesh<BaseVecT>& mesh,
+    EdgeHandle startH,
+    vector<VertexHandle>& contourOut,
+    PredF exists
+)
+{
+    walkContour(mesh, startH, [&](auto vertexH, auto edgeH)
+    {
+        contourOut.push_back(vertexH);
+    }, exists);
+}
+
+template<typename BaseVecT>
+void calcContourVertices(
+    const BaseMesh<BaseVecT>& mesh,
+    EdgeHandle startH,
+    vector<VertexHandle>& contourOut
+)
+{
+    calcContourVertices(mesh, startH, contourOut, [](auto unused)
+    {
+        return true;
+    });
+}
+
 } // namespace lvr2

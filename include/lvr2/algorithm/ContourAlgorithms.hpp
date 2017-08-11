@@ -87,6 +87,60 @@ void walkContour(
     VisitorF visitor
 );
 
+/**
+ * @brief Walks on a boundary contour starting at `startH` and adds all visited
+ *        edges to the given out vector.
+ *
+ * Uses `walkContour()`. See that function for detailed information.
+ */
+template<typename BaseVecT, typename PredF>
+void calcContourEdges(
+    const BaseMesh<BaseVecT>& mesh,
+    EdgeHandle startH,
+    vector<EdgeHandle>& contourOut,
+    PredF exists
+);
+
+/**
+ * @brief Walks on a boundary contour starting at `startH` and adds all visited
+ *        edges to the given out vector.
+ *
+ * Uses `walkContour()`. See that function for detailed information.
+ */
+template<typename BaseVecT>
+void calcContourEdges(
+    const BaseMesh<BaseVecT>& mesh,
+    EdgeHandle startH,
+    vector<EdgeHandle>& contourOut
+);
+
+/**
+ * @brief Walks on a boundary contour starting at `startH` and adds all visited
+ *        vertices to the given out vector.
+ *
+ * Uses `walkContour()`. See that function for detailed information.
+ */
+template<typename BaseVecT, typename PredF>
+void calcContourVertices(
+    const BaseMesh<BaseVecT>& mesh,
+    EdgeHandle startH,
+    vector<VertexHandle>& contourOut,
+    PredF exists
+);
+
+/**
+ * @brief Walks on a boundary contour starting at `startH` and adds all visited
+ *        vertices to the given out vector.
+ *
+ * Uses `walkContour()`. See that function for detailed information.
+ */
+template<typename BaseVecT>
+void calcContourVertices(
+    const BaseMesh<BaseVecT>& mesh,
+    EdgeHandle startH,
+    vector<VertexHandle>& contourOut
+);
+
 } // namespace lvr2
 
 #include <lvr2/algorithm/ContourAlgorithms.tcc>
