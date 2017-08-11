@@ -20,6 +20,8 @@
  * CleanupAlgorithms.tcc
  */
 
+#include <lvr2/algorithm/ContourAlgorithms.hpp>
+
 namespace lvr2
 {
 
@@ -92,6 +94,11 @@ size_t naiveFillSmallHoles(BaseMesh<BaseVecT>& mesh, size_t maxSize, bool collap
     for (auto clusterH: subMeshes)
     {
         contours.clear();
+
+        // We only use this within the loop, but create it here to avoid
+        // useless heap allocations.
+        vector<EdgeHandle> contourEdges;
+
         for (auto faceH: subMeshes[clusterH])
         {
             for (auto eH: mesh.getEdgesOfFace(faceH))
@@ -110,7 +117,9 @@ size_t naiveFillSmallHoles(BaseMesh<BaseVecT>& mesh, size_t maxSize, bool collap
                 }
 
                 // Get full contour and store it in our list
-                contours.emplace_back(mesh.calcContourEdges(eH));
+                contourEdges.clear();
+                calcContourEdges(mesh, eH, contourEdges);
+                contours.emplace_back(contourEdges);
 
                 // Mark all edges in the contour we just added as visited
                 for (auto edgeH: contours.back())

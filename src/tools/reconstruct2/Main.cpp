@@ -566,13 +566,17 @@ void testContourMethods()
     {
         if (mesh.numAdjacentFaces(eH) == 1)
         {
-            for (auto contourEdgeH: mesh.calcContourEdges(eH))
+            vector<EdgeHandle> contourEdges;
+            calcContourEdges(mesh, eH, contourEdges);
+            for (auto contourEdgeH: contourEdges)
             {
                 cout << contourEdgeH << " -> ";
             }
             cout << endl;
 
-            for (auto contourEdgeH: mesh.calcContourVertices(eH))
+            vector<VertexHandle> contourVertices;
+            calcContourVertices(mesh, eH, contourVertices);
+            for (auto contourEdgeH: contourVertices)
             {
                 cout << contourEdgeH << " -> ";
             }

@@ -402,59 +402,6 @@ public:
     virtual vector<FaceHandle> getNeighboursOfFace(FaceHandle handle) const;
 
     /**
-     * @brief Get a list of all edges that make up the contour in which
-     *        `startH` is part of.
-     *
-     * `startH` has to be a boundary edge but mustn't be a lonely edge; that is
-     * `numAdjacentFaces(startH) == 1`.
-     *
-     * The edges of the contour are returned in counter-clockwise order for
-     * inner contours and in clockwise order for outer ones. Inner contours are
-     * commonly referred to as "holes in the mesh", while the outer one is
-     * often called "mesh boundary". However, for 3D meshes, the distinction
-     * isn't all that clear. What matters here is the planar embedding of the
-     * mesh. There are many possible planar embeddings, including the ones that
-     * make the "mesh boundary" look like a hole and vice versa.
-     *
-     * Anyway, we can say this for sure: given one concrete embedding for your
-     * mesh, the outer contour's edges are returned in clockwise order and the
-     * edges of all inner contours are returned in counter-clockwise order.
-     *
-     * @param contourOut The list of contour edges are written to this vector.
-     */
-    virtual void calcContourEdges(EdgeHandle startH, vector<EdgeHandle>& contourOut) const;
-
-    /**
-     * @brief Get a list of all vertices that make up the contour in which
-     *        `startH` is part of.
-     *
-     * `startH` has to be a boundary edge but mustn't be a lonely edge; that is
-     * `numAdjacentFaces(startH) == 1`.
-     *
-     * See `calcContourEdges()` for more information!
-     *
-     * @param contourOut The list of contour vertices are written to this vector.
-     */
-    virtual void calcContourVertices(EdgeHandle startH, vector<VertexHandle>& contourOut) const;
-
-    /**
-     * @brief Convenience overload which returns a vector.
-     *
-     * Note: this overload does the same as the one which takes a mutable
-     * reference to a vector, but instead returns the vector. This is a lot
-     * easier to use, but implies at least one heap allocation per call. You
-     * can often avoid heap allocations by using the other overload.
-     */
-    virtual vector<EdgeHandle> calcContourEdges(EdgeHandle startH) const;
-
-    /**
-     * @brief Convenience overload which returns a vector.
-     *
-     * See `calcContourEdges()` for more information.
-     */
-    virtual vector<VertexHandle> calcContourVertices(EdgeHandle startH) const;
-
-    /**
      * @brief Determines whether or not an edge collapse of the given edge is
      *        possible without creating invalid meshes.
      *

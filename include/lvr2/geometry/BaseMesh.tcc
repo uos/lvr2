@@ -148,40 +148,6 @@ typename BaseVecT::CoordType BaseMesh<BaseVecT>::calcFaceArea(FaceHandle handle)
 }
 
 template<typename BaseVecT>
-void BaseMesh<BaseVecT>::calcContourEdges(EdgeHandle startH, vector<EdgeHandle>& contourOut) const
-{
-    walkContour(*this, startH, [&](auto vertexH, auto edgeH)
-    {
-        contourOut.push_back(edgeH);
-    });
-}
-
-template<typename BaseVecT>
-void BaseMesh<BaseVecT>::calcContourVertices(EdgeHandle startH, vector<VertexHandle>& contourOut) const
-{
-    walkContour(*this, startH, [&](auto vertexH, auto edgeH)
-    {
-        contourOut.push_back(vertexH);
-    });
-}
-
-template<typename BaseVecT>
-vector<EdgeHandle> BaseMesh<BaseVecT>::calcContourEdges(EdgeHandle startH) const
-{
-    vector<EdgeHandle> out;
-    calcContourEdges(startH, out);
-    return out;
-}
-
-template<typename BaseVecT>
-vector<VertexHandle> BaseMesh<BaseVecT>::calcContourVertices(EdgeHandle startH) const
-{
-    vector<VertexHandle> out;
-    calcContourVertices(startH, out);
-    return out;
-}
-
-template<typename BaseVecT>
 bool BaseMesh<BaseVecT>::isCollapsable(EdgeHandle handle) const
 {
     // Collapsing an edge can have a couple of negative side effects:
