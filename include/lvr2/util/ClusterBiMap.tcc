@@ -106,6 +106,17 @@ ClusterHandle ClusterBiMap<HandleT>::getClusterH(HandleT handle) const
 }
 
 template <typename HandleT>
+OptionalClusterHandle ClusterBiMap<HandleT>::getClusterOf(HandleT handle) const
+{
+    auto maybe = m_clusterMap.get(handle);
+    if (maybe)
+    {
+        return *maybe;
+    }
+    return OptionalClusterHandle();
+}
+
+template <typename HandleT>
 size_t ClusterBiMap<HandleT>::numCluster() const
 {
     return m_cluster.numUsed();
