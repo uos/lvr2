@@ -57,6 +57,7 @@ class BaseOptionalHandle
 public:
     BaseOptionalHandle();
     BaseOptionalHandle(BaseHandle<IdxT> handle);
+    BaseOptionalHandle(boost::optional<BaseHandle<IdxT>> handle);
     explicit BaseOptionalHandle(IdxT idx);
 
     explicit operator bool() const;

@@ -90,7 +90,7 @@ ClusterHandle ClusterBiMap<HandleT>::addToCluster(ClusterHandle clusterHandle, H
 template <typename HandleT>
 ClusterHandle ClusterBiMap<HandleT>::removeFromCluster(ClusterHandle clusterHandle, HandleT handle)
 {
-    auto handles = getC(clusterHandle).handles;
+    auto& handles = getC(clusterHandle).handles;
     handles.erase(remove(handles.begin(), handles.end(), handle), handles.end());
     m_clusterMap.erase(handle);
 
@@ -103,6 +103,17 @@ template <typename HandleT>
 ClusterHandle ClusterBiMap<HandleT>::getClusterH(HandleT handle) const
 {
     return m_clusterMap[handle];
+}
+
+template <typename HandleT>
+OptionalClusterHandle ClusterBiMap<HandleT>::getClusterOf(HandleT handle) const
+{
+    auto maybe = m_clusterMap.get(handle);
+    if (maybe)
+    {
+        return *maybe;
+    }
+    return OptionalClusterHandle();
 }
 
 template <typename HandleT>

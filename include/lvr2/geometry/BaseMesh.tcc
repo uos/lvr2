@@ -24,8 +24,9 @@
  */
 
 #include <algorithm>
-
 #include <cmath>
+
+#include <lvr2/algorithm/ContourAlgorithms.hpp>
 
 namespace lvr2
 {
@@ -159,7 +160,7 @@ bool BaseMesh<BaseVecT>::isCollapsable(EdgeHandle handle) const
     // special cases is a lot of overhead; both, in terms of developing and
     // execution time.
     //
-    // The main thing this method does it to check that the euler-
+    // The main thing this method does is to check that the euler-
     // characteristic of the mesh doesn't change. As this is defined as
     // |V| - |E| + |F|, we have to make sure that an edge collapse would
     // remove as many edges (full edges!) as it removes vertices and faces
@@ -194,6 +195,27 @@ bool BaseMesh<BaseVecT>::isCollapsable(EdgeHandle handle) const
         // We don't allow collapsing lonely edges, as this can lead to
         // non-manifold vertices.
         return false;
+    }
+
+    // We also don't allow edge collapses that would lead to lonely edges. This
+    // happens when a face adjacent to the collapsing edge has no adjacent
+    // faces (other than the one which might be reached through the collapsing
+    // edge itself, since that one is removed).
+    for (auto faceH: getFacesOfEdge(handle))
+    {
+        if (faceH)
+        {
+            auto ns = getNeighboursOfFace(faceH.unwrap());
+
+            // Subtract one face if the collapsing edge has two, because then
+            // `ns` contains one of those two.
+            auto numForeignNeighbours = ns.size() - (numFaces == 2 ? 1 : 0);
+
+            if (numForeignNeighbours == 0)
+            {
+                return false;
+            }
+        }
     }
 
     // Obtain a list of neighbor vertices, as described above.
@@ -233,6 +255,77 @@ bool BaseMesh<BaseVecT>::isFlippable(EdgeHandle handle) const
 }
 
 template<typename BaseVecT>
+bool BaseMesh<BaseVecT>::isFaceInsertionValid(VertexHandle v1H, VertexHandle v2H, VertexHandle v3H) const
+{
+    // If there is already a face, we can't add another one
+    if (getFaceBetween(v1H, v2H, v3H))
+    {
+        return false;
+    }
+
+    // Next we check that each vertex is a boundary one (it has at least one
+    // boundary edge or no edges at all). We really need this property;
+    // otherwise we would create non-manifold vertices and make the mesh non-
+    // orientable.
+    vector<EdgeHandle> edges;
+    for (auto vH: {v1H, v2H, v3H})
+    {
+        edges.clear();
+        getEdgesOfVertex(vH, edges);
+
+        // No edges at all are fine too.
+        if (edges.empty())
+        {
+            continue;
+        }
+
+        // But if there are some, we need at least one boundary one.
+        auto boundaryEdgeIt = std::find_if(edges.begin(), edges.end(), [this](auto eH)
+        {
+            return this->numAdjacentFaces(eH) < 2;
+        });
+        if (boundaryEdgeIt == edges.end())
+        {
+            return false;
+        }
+    }
+
+    return true;
+}
+
+
+template<typename BaseVecT>
+OptionalFaceHandle BaseMesh<BaseVecT>::getFaceBetween(VertexHandle aH, VertexHandle bH, VertexHandle cH) const
+{
+    // Start with one edge
+    const auto abEdgeH = getEdgeBetween(aH, bH);
+
+    // If the edge already doesn't exist, there won't be a face either.
+    if (!abEdgeH)
+    {
+        return OptionalFaceHandle();
+    }
+
+    // The two faces of the edge. One of these faces should contain the vertex
+    // `c` or there is just no face between the given vertices.
+    const auto faces = getFacesOfEdge(abEdgeH.unwrap());
+
+    // Find the face which contains vertex `c`.
+    auto faceIt = std::find_if(faces.begin(), faces.end(), [&, this](auto maybeFaceH)
+    {
+        if (!maybeFaceH)
+        {
+            return false;
+        }
+        const auto vertices = this->getVerticesOfFace(maybeFaceH.unwrap());
+        return std::find(vertices.begin(), vertices.end(), cH) != vertices.end();
+    });
+
+    return faceIt != faces.end() ? faceIt->unwrap() : OptionalFaceHandle();
+}
+
+
+template<typename BaseVecT>
 uint8_t BaseMesh<BaseVecT>::numAdjacentFaces(EdgeHandle handle) const
 {
     auto faces = getFacesOfEdge(handle);
@@ -270,5 +363,39 @@ vector<VertexHandle> BaseMesh<BaseVecT>::getNeighboursOfVertex(VertexHandle hand
     getNeighboursOfVertex(handle, out);
     return out;
 }
+
+template<typename BaseVecT>
+OptionalVertexHandle BaseMesh<BaseVecT>::getVertexBetween(EdgeHandle aH, EdgeHandle bH) const
+{
+    auto aEndpoints = getVerticesOfEdge(aH);
+    auto bEndpoints = getVerticesOfEdge(bH);
+
+    if (aEndpoints[0] == bEndpoints[0] || aEndpoints[0] == bEndpoints[1])
+    {
+        return aEndpoints[0];
+    }
+    if (aEndpoints[1] == bEndpoints[0] || aEndpoints[1] == bEndpoints[1])
+    {
+        return aEndpoints[1];
+    }
+    return OptionalVertexHandle();
+}
+
+template<typename BaseVecT>
+OptionalEdgeHandle BaseMesh<BaseVecT>::getEdgeBetween(VertexHandle aH, VertexHandle bH) const
+{
+    // Go through all edges of vertex `a` until we find an edge that is also
+    // connected to vertex `b`.
+    for (auto eH: getEdgesOfVertex(aH))
+    {
+        auto endpoints = getVerticesOfEdge(eH);
+        if (endpoints[0] == bH || endpoints[1] == bH)
+        {
+            return eH;
+        }
+    }
+    return OptionalEdgeHandle();
+}
+
 
 } // namespace lvr2

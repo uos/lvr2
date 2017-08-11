@@ -100,9 +100,20 @@ public:
     /**
      * @brief Returns a handle to the cluster to which the given handle is referenced.
      *
+     * DEPRECATED: use `getClusterOf()` instead.
+     *
      * Important: If the given cluster handle does not exist, the behavior of this method is undefined!
      */
     ClusterHandle getClusterH(HandleT handle) const;
+
+    /**
+     * @brief Returns the handle of the cluster to which the given `handle`
+     *        belongs to.
+     *
+     * @return The cluster handle or None if the given `handle` is not
+     *         associated with any cluster.
+     */
+    OptionalClusterHandle getClusterOf(HandleT handle) const;
 
     /// Returns the number of cluster in this set.
     size_t numCluster() const;
