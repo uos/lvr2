@@ -38,6 +38,25 @@ namespace lvr2
 template<typename BaseVecT>
 void cleanContours(BaseMesh<BaseVecT>& mesh, int iterations, float areaThreshold);
 
+
+/**
+ * @brief Fills holes consisting of less than or equal to `maxSize` edges.
+ *
+ * It is a rather simple algorithm, really. For each connected part of the mesh
+ * it assumes that each boundary-contour except the one with most edges is a
+ * hole. These holes are then filled by collapsing all of their boundary edges
+ * until no collapsable edge is left (which happens in any case when the hole
+ * has only three edges left). If the remaining hole has only three edges after
+ * the previous step, it is filled by simply inserting a triangle.
+ *
+ * Important: this algorithm assumes that the mesh doesn't contain any lonely
+ * edges.
+ *
+ * @return The number of holes that this algorithm wasn't able to fill.
+ */
+template<typename BaseVecT>
+size_t naiveFillSmallHoles(BaseMesh<BaseVecT>& mesh, size_t maxSize);
+
 } // namespace lvr2
 
 #include <lvr2/algorithm/CleanupAlgorithms.tcc>

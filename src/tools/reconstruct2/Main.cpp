@@ -540,6 +540,51 @@ void testEdgeFlip()
     }
 }
 
+void testContourMethods()
+{
+    HalfEdgeMesh<Vec> mesh;
+    createHouseFromNikolaus(mesh);
+
+    // We want the contour of the "cluster" made up by face 0 and 1
+    walkContour(mesh, EdgeHandle(0), [](auto vH, auto eH)
+    {
+        cout << vH << " " << eH << endl;
+    }, [](auto faceH)
+    {
+        return faceH.idx() <= 1;
+    });
+
+    // Remove both bottom faces
+    mesh.removeFace(FaceHandle(0));
+    mesh.removeFace(FaceHandle(1));
+
+    // Remove one roof face
+    mesh.removeFace(FaceHandle(10));
+
+    mesh.debugCheckMeshIntegrity();
+    for (auto eH: mesh.edges())
+    {
+        if (mesh.numAdjacentFaces(eH) == 1)
+        {
+            vector<EdgeHandle> contourEdges;
+            calcContourEdges(mesh, eH, contourEdges);
+            for (auto contourEdgeH: contourEdges)
+            {
+                cout << contourEdgeH << " -> ";
+            }
+            cout << endl;
+
+            vector<VertexHandle> contourVertices;
+            calcContourVertices(mesh, eH, contourVertices);
+            for (auto contourEdgeH: contourVertices)
+            {
+                cout << contourEdgeH << " -> ";
+            }
+            cout << endl << "---------------" << endl;
+        }
+    }
+}
+
 /*
  * DUMMY TEST CODE ENDS HERE!!!
  */
@@ -888,6 +933,7 @@ int main(int argc, char** argv)
     // Magic number from lvr1 `cleanContours`...
     cleanContours(mesh, options.getCleanContourIterations(), 0.0001);
 
+    naiveFillSmallHoles(mesh, options.getFillHoles(), false);
 
     auto faceNormals = calcFaceNormals(mesh);
 
