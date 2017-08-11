@@ -356,6 +356,37 @@ bool BaseMesh<BaseVecT>::isFlippable(EdgeHandle handle) const
 }
 
 template<typename BaseVecT>
+OptionalFaceHandle BaseMesh<BaseVecT>::getFaceBetween(VertexHandle aH, VertexHandle bH, VertexHandle cH) const
+{
+    // Start with one edge
+    const auto abEdgeH = getEdgeBetween(aH, bH);
+
+    // If the edge already doesn't exist, there won't be a face either.
+    if (!abEdgeH)
+    {
+        return OptionalFaceHandle();
+    }
+
+    // The two faces of the edge. One of these faces should contain the vertex
+    // `c` or there is just no face between the given vertices.
+    const auto faces = getFacesOfEdge(abEdgeH.unwrap());
+
+    // Find the face which contains vertex `c`.
+    auto faceIt = std::find_if(faces.begin(), faces.end(), [&, this](auto maybeFaceH)
+    {
+        if (!maybeFaceH)
+        {
+            return false;
+        }
+        const auto vertices = this->getVerticesOfFace(maybeFaceH.unwrap());
+        return std::find(vertices.begin(), vertices.end(), cH) != vertices.end();
+    });
+
+    return faceIt != faces.end() ? faceIt->unwrap() : OptionalFaceHandle();
+}
+
+
+template<typename BaseVecT>
 uint8_t BaseMesh<BaseVecT>::numAdjacentFaces(EdgeHandle handle) const
 {
     auto faces = getFacesOfEdge(handle);
