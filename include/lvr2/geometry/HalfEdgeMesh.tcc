@@ -1379,10 +1379,10 @@ std::vector<EdgeHandle> HalfEdgeMesh<BaseVecT>::getContourEdgesOfFaceDebug(FaceH
         auto edge = this->getE(edgeH);
         if (!this->getE(edge.twin).face)
         {
-            contours.push_back(edgeH.toFullEdgeHandle());
+            contours.push_back(this->halfToFullEdgeHandle(edgeH));
         } else if (pred(this->getE(edge.twin).face.unwrap()))
         {
-            contours.push_back(edgeH.toFullEdgeHandle());
+            contours.push_back(this->halfToFullEdgeHandle(edgeH));
         }
 
         edgeH = edge.next;

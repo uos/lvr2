@@ -24,7 +24,6 @@
  *  @author Kristin Schmidt <krschmidt@uni-osnabrueck.de>
  */
 
-#include <lvr2/geometry/Cluster.hpp>
 #include <lvr2/geometry/HalfEdgeMesh.hpp>
 
 #include <boost/math/constants/constants.hpp>
@@ -39,13 +38,13 @@ template<typename BaseVecT>
 vector<Point<BaseVecT>> calculateAllContourVertices(
     ClusterHandle clusterH,
     HalfEdgeMesh<BaseVecT>& mesh,
-    ClusterSet<FaceHandle>& clusterSet
+    ClusterBiMap<FaceHandle>& clusterBiMap
 )
 {
     std::vector<VertexHandle> allContours;
     std::vector<Point<BaseVecT>> allContourVertices;
 
-    auto cluster = clusterSet.getCluster(clusterH);
+    auto cluster = clusterBiMap.getCluster(clusterH);
 
     // iterate all faces in cluster
     for (auto faceH : cluster.handles)
@@ -56,7 +55,7 @@ vector<Point<BaseVecT>> calculateAllContourVertices(
             [&](auto neighbourFaceH)
             {
                 // pred must return true when faces are not in the same cluster
-                return (clusterH != clusterSet.getClusterH(neighbourFaceH));
+                return (clusterH != clusterBiMap.getClusterH(neighbourFaceH));
             }
         );
 
@@ -96,14 +95,14 @@ template<typename BaseVecT>
 vector<vector<VertexHandle>> calculateContour(
     ClusterHandle clusterH,
     HalfEdgeMesh<BaseVecT>& mesh,
-    ClusterSet<FaceHandle>& clusterSet
+    ClusterBiMap<FaceHandle>& clusterBiMap
 )
 {
     // nothing works
 
     vector<vector<VertexHandle>> result;
 
-    auto cluster = clusterSet.getCluster(clusterH);
+    auto cluster = clusterBiMap.getCluster(clusterH);
 
     size_t numFaces = cluster.handles.size();
     FaceMap<bool> visitedFaces(numFaces, false);
@@ -122,7 +121,7 @@ vector<vector<VertexHandle>> calculateContour(
             [&](auto neighbourFaceH)
             {
                 // pred must return true when faces are not in the same cluster
-                return (clusterH != clusterSet.getClusterH(neighbourFaceH));
+                return (clusterH != clusterBiMap.getClusterH(neighbourFaceH));
             }
         );
 
@@ -152,7 +151,7 @@ vector<vector<VertexHandle>> calculateContour(
                             auto faceOfEdgeHOptional = mesh.getFacesOfEdge(nextEdgeH)[0];
                             if (faceOfEdgeHOptional)
                             {
-                                bool isContourFace = clusterH != clusterSet.getClusterH(faceOfEdgeHOptional.unwrap());
+                                bool isContourFace = clusterH != clusterBiMap.getClusterH(faceOfEdgeHOptional.unwrap());
                                 if (isContourFace)
                                 {
                                     innerResult.push_back(edgeHVertices[0]);
@@ -172,7 +171,7 @@ vector<vector<VertexHandle>> calculateContour(
     // unordered_set<VertexHandle> set;
 
     // std::vector<EdgeHandle> allContours;
-    // auto cluster = clusterSet.getCluster(clusterH);
+    // auto cluster = clusterBiMap.getCluster(clusterH);
 
     // // iterate all faces in cluster
     // for (auto faceH : cluster.handles)
@@ -183,7 +182,7 @@ vector<vector<VertexHandle>> calculateContour(
     //         [&](auto neighbourFaceH)
     //         {
     //             // pred must return true when faces are not in the same cluster
-    //             return (clusterH != clusterSet.getClusterH(neighbourFaceH));
+    //             return (clusterH != clusterBiMap.getClusterH(neighbourFaceH));
     //         }
     //     );
 

@@ -32,7 +32,6 @@
 
 #include <lvr2/geometry/BaseMesh.hpp>
 #include <lvr2/geometry/BaseVector.hpp>
-#include <lvr2/geometry/ClusterSet.hpp>
 #include <lvr2/geometry/HalfEdgeMesh.hpp>
 #include <lvr2/geometry/Handles.hpp>
 #include <lvr2/geometry/Normal.hpp>
@@ -43,6 +42,7 @@
 #include <lvr2/texture/ClusterTexCoordMapping.hpp>
 #include <lvr2/texture/Texture.hpp>
 #include <lvr2/texture/TextureToken.hpp>
+#include <lvr2/util/ClusterBiMap.hpp>
 
 #include <lvr/io/Progress.hpp>
 #include <lvr/io/Timestamp.hpp>
@@ -53,9 +53,9 @@ namespace lvr2
 template <typename BaseVecT>
 struct TexturizerResult
 {
-    ClusterMap<TextureToken<BaseVecT>> texTokenClusterMap;
+    SparseClusterMap<TextureToken<BaseVecT>> texTokenClusterMap;
     std::vector<Texture*> textures;
-    VertexMap<ClusterTexCoordMapping> tcMap;
+    SparseVertexMap<ClusterTexCoordMapping> tcMap;
 };
 
 template<typename BaseVecT>
@@ -97,7 +97,7 @@ TexturizerResult<BaseVecT> generateTextures(
     float texelSize,
     int textureThreshold,
     HalfEdgeMesh<BaseVecT>& mesh,
-    ClusterSet<FaceHandle>& faceHandleClusterSet,
+    ClusterBiMap<FaceHandle>& faceHandleClusterBiMap,
     PointsetSurfacePtr<BaseVecT> surface,
     const FaceMap<Normal<BaseVecT>>& normals
 );

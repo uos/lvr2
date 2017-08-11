@@ -1036,7 +1036,7 @@ int main(int argc, char** argv)
             texelSize,
             textureThreshold,
             mesh,
-            clusterSet,
+            clusterBiMap,
             surface,
             faceNormals
         );
