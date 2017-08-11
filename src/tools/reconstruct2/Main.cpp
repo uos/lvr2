@@ -545,6 +545,15 @@ void testContourMethods()
     HalfEdgeMesh<Vec> mesh;
     createHouseFromNikolaus(mesh);
 
+    // We want the contour of the "cluster" made up by face 0 and 1
+    walkContour(mesh, EdgeHandle(0), [](auto vH, auto eH)
+    {
+        cout << vH << " " << eH << endl;
+    }, [](auto faceH)
+    {
+        return faceH.idx() <= 1;
+    });
+
     // Remove both bottom faces
     mesh.removeFace(FaceHandle(0));
     mesh.removeFace(FaceHandle(1));

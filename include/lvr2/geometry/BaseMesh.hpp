@@ -573,21 +573,6 @@ public:
      * Returns a simple proxy object that uses `verticesBegin()` and `verticesEnd()`.
      */
     virtual VertexIteratorProxy<BaseVecT> vertices() const;
-
-private:
-    /**
-     * @brief Walks on a boundary contour starting at `startH`.
-     *
-     * This is mainly used in `calcContourEdges()` and `calcContourVertices()`.
-     * You should read their docs to understand how exactly this method works.
-     *
-     * @param visitor A function object taking two parameters: a `VertexHandle`
-     *                and an `EdgeHandle`. The vertex is the vertex of the edge
-     *                that comes "before" the edge, speaking about the
-     *                direction of visiting the edges.
-     */
-    template<typename VisitorF>
-    void walkContour(EdgeHandle startH, VisitorF visitor) const;
 };
 
 template <typename BaseVecT>
