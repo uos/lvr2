@@ -159,17 +159,6 @@ void BaseMesh<BaseVecT>::walkContour(EdgeHandle startH, VisitorF visitor) const
         panic("attempt to walk a contour starting at a non-boundary edge!");
     }
 
-    // This holds (or rather: will hold) the vertex of the last edge we visited
-    // which connects said edge with the `currEdge` in counter-clockwise order.
-    // Dummy value, since we don't have deferred initialization or an
-    // expression based control flow like in Rust. Yeah.
-    VertexHandle currVertexH(37373737);
-
-    // This holds (or rather: will hold) the edge we are currently looking at.
-    // Dummy value, since we don't have deferred initialization or an
-    // expression based control flow like in Rust. Yeah.
-    EdgeHandle currEdgeH(37373737);
-
     // This is only used later, but created here to avoid unecessary heap
     // allocations.
     vector<EdgeHandle> edgesOfVertex;
@@ -179,70 +168,50 @@ void BaseMesh<BaseVecT>::walkContour(EdgeHandle startH, VisitorF visitor) const
     const auto startFace = faces[0] ? faces[0].unwrap() : faces[1].unwrap();
     const auto startVertices = getVerticesOfEdge(startH);
 
-
     // First we need to find the correct next edge in the contour. The problem
     // is that `getVerticesOfEdge()` returns the vertices in unknown order. We
     // can't know which vertex is the on "in counter-clockwise" direction,
     // which we need to know.
     //
     // Luckily, we can find out by using the fact that `startH` mustn't be a
-    // lonely edge.
-    for (const auto vH: startVertices)
-    {
-        edgesOfVertex.clear();
-        getEdgesOfVertex(vH, edgesOfVertex);
+    // lonely edge (it has exactly one face) and that we can get all vertices
+    // of a face in counter-clockwise order.
+    //
+    // This means that our correct start-vertex is the one coming after the
+    // other start vertex in the face's vertices.
+    const auto vertices = getVerticesOfFace(startFace);
+    const auto firstIt = std::find(vertices.begin(), vertices.end(), startVertices[0]);
+    const auto secondIt = std::find(vertices.begin(), vertices.end(), startVertices[1]);
 
-        // Now we have all edge of the vertex in clockwise order. We can find
-        // our edge in the list to determine which edge comes after it
-        // (`afterH`). Then, there are two possibilities (reminder: we know
-        // that numAdjacentFaces(startH) == 1):
-        //
-        //
-        //       startH   afterH       |        startH   afterH        |
-        //          \       /          |           \       /           |
-        //           \     /           |            \  F  /            |
-        //        F   \   /   ?        |             \   /   ?         |
-        //             \ /             |              \ /              |
-        //     --------[V]--------     |      --------[V]--------      |
-        //             / \             |              / \              |
-        //        ?   /   \   ?        |         ?   /   \   ?         |
-        //           /  ?  \           |            /  ?  \            |
-        //          /       \          |           /       \           |
-        //                             |                               |
-        //   Case A: no face between   |     Case B: face between      |
-        //
-        // In case A, we know that `[V]` is the correct next vertex in counter-
-        // clockwise order and that `afterH` is the correct next edge in
-        // counter-clockwise order.
-        //
-        // In case B, we know that `[V]` is the wrong vertex. In this case, we
-        // just continue the loop; the next iteration will be the lucky one.
+    // We simply can find out which vertex is coming "after" the other one by
+    // looking at the difference in their indices in the array.
+    //
+    // Case: `second` comes after `first`
+    // ----------------------------------
+    // ┌───┬───┬───┐        ┌───┬───┬───┐        ┌───┬───┬───┐
+    // │ F │ S │   │   or   │   │ F │ S │   or   │ S │   │ F │
+    // └───┴───┴───┘        └───┴───┴───┘        └───┴───┴───┘
+    //   (diff 1)             (diff 1)             (diff -2)
+    //
+    //
+    // Case: `first` comes after `second`
+    // ----------------------------------
+    // ┌───┬───┬───┐        ┌───┬───┬───┐        ┌───┬───┬───┐
+    // │ S │ F │   │   or   │   │ S │ F │   or   │ F │   │ S │
+    // └───┴───┴───┘        └───┴───┴───┘        └───┴───┴───┘
+    //   (diff -1)            (diff -1)            (diff 2)
+    //
+    //
+    const auto diff = secondIt - firstIt;
 
-        // Get index of the next edge
-        const auto ePos = std::find(edgesOfVertex.begin(), edgesOfVertex.end(), startH) - edgesOfVertex.begin();
-        const auto afterPos = ePos == edgesOfVertex.size() - 1 ? 0 : ePos + 1;
-        const auto afterH = edgesOfVertex[afterPos];
+    // This stores the vertex of the last edge we visited which connects said
+    // edge with the `currEdge` in counter-clockwise order.
+    auto currVertexH = (diff == 1 || diff == -2) ? *secondIt : *firstIt;
 
-        // Check if this edge is adjacent to our start face
-        const auto facesOfAfter = getFacesOfEdge(afterH);
-        if (facesOfAfter[0] != startFace && facesOfAfter[1] != startFace)
-        {
-            // Case A: this is the correct vertex/edge! Now we just set the
-            // initial loop variables.
-            currVertexH = vH;
-            currEdgeH = afterH;
-            break;
-        }
-    }
+    // This holds the edge we are currently looking at.
+    auto currEdgeH = startH;
 
-    {
-        // Determine the other vertex (start vertex of the start edge) and call
-        // the visitor
-        const auto prevVertexH = startVertices[0] == currVertexH ? startVertices[1] : startVertices[0];
-        visitor(prevVertexH, startH);
-    }
-
-    while (currEdgeH != startH)
+    do
     {
         // Call the visitor
         visitor(currVertexH, currEdgeH);
@@ -263,7 +232,7 @@ void BaseMesh<BaseVecT>::walkContour(EdgeHandle startH, VisitorF visitor) const
         // Assign values for the next iteration
         currEdgeH = edgesOfVertex[afterPos];
         currVertexH = nextVertexH;
-    }
+    } while (currEdgeH != startH);
 }
 
 template<typename BaseVecT>
