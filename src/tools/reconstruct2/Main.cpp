@@ -920,6 +920,7 @@ int main(int argc, char** argv)
     // Magic number from lvr1 `cleanContours`...
     cleanContours(mesh, options.getCleanContourIterations(), 0.0001);
 
+    naiveFillSmallHoles(mesh, options.getFillHoles(), false);
 
     auto faceNormals = calcFaceNormals(mesh);
 
