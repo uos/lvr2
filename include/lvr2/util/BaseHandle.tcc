@@ -73,6 +73,11 @@ BaseOptionalHandle<IdxT, NonOptionalT>::BaseOptionalHandle(BaseHandle<IdxT> hand
 {}
 
 template <typename IdxT, typename NonOptionalT>
+BaseOptionalHandle<IdxT, NonOptionalT>::BaseOptionalHandle(boost::optional<BaseHandle<IdxT>> handle)
+    : m_idx(handle ? handle->idx() : numeric_limits<IdxT>::max())
+{}
+
+template <typename IdxT, typename NonOptionalT>
 BaseOptionalHandle<IdxT, NonOptionalT>::BaseOptionalHandle(IdxT idx)
     : BaseOptionalHandle(BaseHandle<IdxT>(idx))
 {}
