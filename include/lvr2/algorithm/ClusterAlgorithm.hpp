@@ -28,9 +28,9 @@
 #define LVR2_ALGORITHM_CLUSTERALGORITHM_H_
 
 #include <lvr2/algorithm/Texturizer.hpp>
-#include <lvr2/geometry/Cluster.hpp>
 #include <lvr2/geometry/HalfEdgeMesh.hpp>
 #include <lvr2/geometry/Handles.hpp>
+#include <lvr2/util/Cluster.hpp>
 
 #include <vector>
 
@@ -47,14 +47,14 @@ template<typename BaseVecT>
 vector<Point<BaseVecT>> calculateAllContourVertices(
     ClusterHandle clusterH,
     HalfEdgeMesh<BaseVecT>& mesh,
-    ClusterSet<FaceHandle>& clusterSet
+    ClusterBiMap<FaceHandle>& clusterBiMap
 );
 
 template<typename BaseVecT, typename VertexT>
 vector<vector<Point<VertexT>>> calculateContour(
     ClusterHandle clusterH,
     HalfEdgeMesh<BaseVecT>& mesh,
-    ClusterSet<FaceHandle>& clusterSet
+    ClusterBiMap<FaceHandle>& clusterBiMap
 ); // TODO/FIXME
 
 template<typename BaseVecT>

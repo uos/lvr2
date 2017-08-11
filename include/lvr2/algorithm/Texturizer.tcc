@@ -35,7 +35,7 @@ TexturizerResult<BaseVecT> generateTextures(
     float texelSize,
     int textureThreshold,
     HalfEdgeMesh<BaseVecT>& mesh,
-    ClusterSet<FaceHandle>& faceHandleClusterSet,
+    ClusterBiMap<FaceHandle>& faceHandleClusterBiMap,
     PointsetSurfacePtr<BaseVecT> surface,
     const FaceMap<Normal<BaseVecT>>& normals
 )
@@ -46,9 +46,9 @@ TexturizerResult<BaseVecT> generateTextures(
     TexturizerResult<BaseVecT> result;
     result.tcMap.reserve(mesh.numVertices());
 
-    for (auto clusterH: faceHandleClusterSet)
+    for (auto clusterH: faceHandleClusterBiMap)
     {
-        const Cluster<FaceHandle> cluster = faceHandleClusterSet.getCluster(clusterH);
+        const Cluster<FaceHandle> cluster = faceHandleClusterBiMap.getCluster(clusterH);
         int numFacesInCluster = cluster.handles.size();
 
         // only create textures for clusters that are large enough
@@ -57,7 +57,7 @@ TexturizerResult<BaseVecT> generateTextures(
         {
             // contour
             // TODO: use better contour function
-            std::vector<Point<BaseVecT>> contour = calculateAllContourVertices(clusterH, mesh, faceHandleClusterSet);
+            std::vector<Point<BaseVecT>> contour = calculateAllContourVertices(clusterH, mesh, faceHandleClusterBiMap);
 
             // bounding rectangle
             BoundingRectangle<BaseVecT> br = calculateBoundingRectangle(contour, mesh, cluster, normals, texelSize);
