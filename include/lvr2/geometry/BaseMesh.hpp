@@ -471,6 +471,16 @@ public:
     virtual bool isFlippable(EdgeHandle handle) const;
 
     /**
+     * @brief If all vertices are part of one face, this face is returned. None
+     *        otherwise.
+     *
+     * The vertices don't have to be in a specific order. In particular, this
+     * method will find a face regardless of whether the vertices are given in
+     * clockwise or counter-clockwise order.
+     */
+    virtual OptionalFaceHandle getFaceBetween(VertexHandle aH, VertexHandle bH, VertexHandle cH) const;
+
+    /**
      * @brief Returns the number of adjacent faces to the given edge.
      *
      * This functions always returns one of 0, 1 or 2.
