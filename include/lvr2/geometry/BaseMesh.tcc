@@ -282,7 +282,7 @@ bool BaseMesh<BaseVecT>::isCollapsable(EdgeHandle handle) const
     // special cases is a lot of overhead; both, in terms of developing and
     // execution time.
     //
-    // The main thing this method does it to check that the euler-
+    // The main thing this method does is to check that the euler-
     // characteristic of the mesh doesn't change. As this is defined as
     // |V| - |E| + |F|, we have to make sure that an edge collapse would
     // remove as many edges (full edges!) as it removes vertices and faces
@@ -317,6 +317,27 @@ bool BaseMesh<BaseVecT>::isCollapsable(EdgeHandle handle) const
         // We don't allow collapsing lonely edges, as this can lead to
         // non-manifold vertices.
         return false;
+    }
+
+    // We also don't allow edge collapses that would lead to lonely edges. This
+    // happens when a face adjacent to the collapsing edge has no adjacent
+    // faces (other than the one which might be reached through the collapsing
+    // edge itself, since that one is removed).
+    for (auto faceH: getFacesOfEdge(handle))
+    {
+        if (faceH)
+        {
+            auto ns = getNeighboursOfFace(faceH.unwrap());
+
+            // Subtract one face if the collapsing edge has two, because then
+            // `ns` contains one of those two.
+            auto numForeignNeighbours = ns.size() - (numFaces == 2 ? 1 : 0);
+
+            if (numForeignNeighbours == 0)
+            {
+                return false;
+            }
+        }
     }
 
     // Obtain a list of neighbor vertices, as described above.
