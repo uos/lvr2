@@ -514,9 +514,16 @@ public:
     virtual vector<VertexHandle> getNeighboursOfVertex(VertexHandle handle) const;
 
     /**
-     * @brief If the given edges share a vertex, it is returned. None otherwise.
+     * @brief If the given edges share a vertex, it is returned. None
+     *        otherwise.
      */
     virtual OptionalVertexHandle getVertexBetween(EdgeHandle aH, EdgeHandle bH) const;
+
+    /**
+     * @brief If the two given vertices are connected by an edge, it is
+     *        returned. None otherwise.
+     */
+    virtual OptionalEdgeHandle getEdgeBetween(VertexHandle aH, VertexHandle bH) const;
 
     /**
      * @brief Method for usage in range-based for-loops.
