@@ -414,7 +414,7 @@ public:
      * often called "mesh boundary". However, for 3D meshes, the distinction
      * isn't all that clear. What matters here is the planar embedding of the
      * mesh. There are many possible planar embeddings, including the ones that
-     * make the "mesh boundary" look like a hole and visa versa.
+     * make the "mesh boundary" look like a hole and vice versa.
      *
      * Anyway, we can say this for sure: given one concrete embedding for your
      * mesh, the outer contour's edges are returned in clockwise order and the

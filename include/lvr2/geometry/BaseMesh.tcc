@@ -170,7 +170,7 @@ void BaseMesh<BaseVecT>::walkContour(EdgeHandle startH, VisitorF visitor) const
 
     // First we need to find the correct next edge in the contour. The problem
     // is that `getVerticesOfEdge()` returns the vertices in unknown order. We
-    // can't know which vertex is the on "in counter-clockwise" direction,
+    // can't know which vertex is the one "in counter-clockwise" direction,
     // which we need to know.
     //
     // Luckily, we can find out by using the fact that `startH` mustn't be a
