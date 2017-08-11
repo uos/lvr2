@@ -411,5 +411,21 @@ OptionalVertexHandle BaseMesh<BaseVecT>::getVertexBetween(EdgeHandle aH, EdgeHan
     return OptionalVertexHandle();
 }
 
+template<typename BaseVecT>
+OptionalEdgeHandle BaseMesh<BaseVecT>::getEdgeBetween(VertexHandle aH, VertexHandle bH) const
+{
+    // Go through all edges of vertex `a` until we find an edge that is also
+    // connected to vertex `b`.
+    for (auto eH: getEdgesOfVertex(aH))
+    {
+        auto endpoints = getVerticesOfEdge(eH);
+        if (endpoints[0] == bH || endpoints[1] == bH)
+        {
+            return eH;
+        }
+    }
+    return OptionalEdgeHandle();
+}
+
 
 } // namespace lvr2
