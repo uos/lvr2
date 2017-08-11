@@ -394,4 +394,22 @@ vector<VertexHandle> BaseMesh<BaseVecT>::getNeighboursOfVertex(VertexHandle hand
     return out;
 }
 
+template<typename BaseVecT>
+OptionalVertexHandle BaseMesh<BaseVecT>::getVertexBetween(EdgeHandle aH, EdgeHandle bH) const
+{
+    auto aEndpoints = getVerticesOfEdge(aH);
+    auto bEndpoints = getVerticesOfEdge(bH);
+
+    if (aEndpoints[0] == bEndpoints[0] || aEndpoints[0] == bEndpoints[1])
+    {
+        return aEndpoints[0];
+    }
+    if (aEndpoints[1] == bEndpoints[0] || aEndpoints[1] == bEndpoints[1])
+    {
+        return aEndpoints[1];
+    }
+    return OptionalVertexHandle();
+}
+
+
 } // namespace lvr2

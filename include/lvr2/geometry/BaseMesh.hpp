@@ -514,6 +514,11 @@ public:
     virtual vector<VertexHandle> getNeighboursOfVertex(VertexHandle handle) const;
 
     /**
+     * @brief If the given edges share a vertex, it is returned. None otherwise.
+     */
+    virtual OptionalVertexHandle getVertexBetween(EdgeHandle aH, EdgeHandle bH) const;
+
+    /**
      * @brief Method for usage in range-based for-loops.
      *
      * Returns a simple proxy object that uses `facesBegin()` and `facesEnd()`.
