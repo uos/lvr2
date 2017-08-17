@@ -105,7 +105,11 @@ TexturizerResult<BaseVecT> generateTextures(
 
             for (auto vertexH : verticesOfCluster)
             {
-                TexCoords texCoords(0.0f, 0.0f); // TODO
+                // Calculate texture coords
+                // TODO: texturkoordinaten berechnen. aber ist das wirklich nötig?
+                // könnte genauso gut im finalizer direkt mit dem token gespeichert werden
+                TexCoords texCoords = texToken.textureCoords(mesh.getVertexPosition(vertexH).asVector());
+
                 if (result.tcMap.get(vertexH))
                 {
                     result.tcMap[vertexH].push(clusterH, texCoords);
@@ -140,9 +144,6 @@ TextureToken<BaseVecT> generateTexture(
     Texture* texture = new Texture(sizeX, sizeY, 3, 1, 0);//, 0, 0, 0, 0, false, 0, 0);
 
     // create TextureToken
-    // TODO TextureToken<BaseVecT>* result = new TextureToken<BaseVecT>(boundingRect, texture, textureIndex);
-    // TextureToken<BaseVecT>* result = new TextureToken<BaseVecT>(texture, textureIndex);
-
     TextureToken<BaseVecT> result = TextureToken<BaseVecT>(
         boundingRect.vec1,
         boundingRect.vec2,
@@ -155,7 +156,7 @@ TextureToken<BaseVecT> generateTexture(
     );
 
     //cout << "PIXELS IN TEXTURE: " << sizeX * sizeY << endl;
-    string msg = lvr::timestamp.getElapsedTime() + "Calculating Texture Pixels... ";
+    string msg = lvr::timestamp.getElapsedTime() + "Calculating Texture Pixels ... ";
     lvr::ProgressBar progress(sizeX * sizeY, msg);
 
     int dataCounter = 0;

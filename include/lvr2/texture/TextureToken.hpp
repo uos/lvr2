@@ -60,10 +60,6 @@ public:
      * @param   index   The index of the texture in the texture package
      *
     **/
-    // template <typename BaseVecT1>
-    // TextureToken(BoundingRectangle<BaseVecT> br, Texture* t, int index);
-    TextureToken<BaseVecT>(Texture* t, int index);
-
     TextureToken<BaseVecT>(
         BaseVecT vec1,
         BaseVecT vec2,
@@ -76,13 +72,20 @@ public:
     );
 
     /**
+     * @brief Constructor
+     * @param t Texture
+     * @param index Texture index
+     */
+    TextureToken<BaseVecT>(Texture* t, int index);
+
+    /**
      * @brief   computes texture coordinates corresponding to the given Vertex
      *
      * @param   v   the vertex to generate texture coordinates for
      *
      * @return  returns texture coordinates
      */
-    TexCoords textureCoords(Vector<BaseVecT> v);
+    TexCoords textureCoords(BaseVecT v) const;
 
     /**
      * @brief   Destructor.
@@ -93,28 +96,20 @@ public:
     ///The associated texture
     Texture* m_texture;
 
-    // The associated bounding rectangle
-    // BoundingRectangle<BaseVecT> m_boundingRect;
-
-    // ///The coordinate system of the texture plane
+    ///The coordinate system of the texture plane
     BaseVecT m_vec1, m_vec2;
 
-    // ///A point in the texture plane
+    ///A point in the texture plane
     BaseVecT m_supportVector;
 
-    // ///The bounding box of the texture plane
+    ///The bounding box of the texture plane
     float m_minDistA, m_minDistB;
 
     ///index of the texture in the texture pack
     size_t m_textureIndex;
 
+    ///Texel size
     float m_texelSize;
-
-    // ///Matrix that stores an affine transform that will be applied to the texture coordinates
-    // double m_transformationMatrix[6];
-
-    // ///Indicates if the texture coordinates have to be mirrored or not
-    // unsigned char m_mirrored;
 };
 
 }
