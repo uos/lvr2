@@ -145,9 +145,25 @@ void ClusterFlatteningFinalizer<BaseVecT>::setClusterColors(const ClusterMap<Rgb
 }
 
 template<typename BaseVecT>
+void ClusterFlatteningFinalizer<BaseVecT>::setTexTokenClusterMap(
+        SparseClusterMap<TextureToken<BaseVecT>> texTokenClusterMap
+) {
+    m_texTokenClusterMap = texTokenClusterMap;
+}
+
+template<typename BaseVecT>
+void ClusterFlatteningFinalizer<BaseVecT>::setTexCoordVertexMap(
+        SparseVertexMap<ClusterTexCoordMapping> texCoordVertexMap
+) {
+    m_texCoordVertexMap = texCoordVertexMap;
+}
+
+
+template<typename BaseVecT>
 boost::shared_ptr<lvr::MeshBuffer>
     ClusterFlatteningFinalizer<BaseVecT>::apply(const BaseMesh<BaseVecT>& mesh)
 {
+
     // Create vertex buffer and all buffers holding vertex attributes
     vector<float> vertices;
     vertices.reserve(mesh.numVertices() * 3);
@@ -164,6 +180,26 @@ boost::shared_ptr<lvr::MeshBuffer>
         colors.reserve(mesh.numVertices() * 3);
     }
 
+    // Create buffer and variables for texturizing
+    vector<float> texCoords;
+    vector<lvr::Material*> materials;
+    vector<unsigned int> faceMaterials;
+    vector<GlTexture*> textures; // TODO: wird nicht für OBJ export gebraucht und hier auch noch nicht gefüllt. TODO!
+
+    // Global material index will be used for indexing materials in the faceMaterialIndexBuffer
+    // The basic material will have the index 0
+    unsigned int globalMaterialIndex = 1;
+    // Create default material
+    size_t defaultR = 0, defaultG = 255, defaultB = 0;
+    lvr::Material* m = new lvr::Material;
+    m->r = defaultR;
+    m->g = defaultG;
+    m->b = defaultB;
+    m->texture_index = -1;
+    materials.push_back(m);
+    std::map<int, int> textureMaterialMap; // Stores the ID of the material for each textureIndex
+    textureMaterialMap[-1] = 0; // texIndex -1 => no texture => default material with index 0
+
     // Create face buffer
     vector<unsigned int> faces;
     faces.reserve(mesh.numFaces() * 3);
@@ -174,6 +210,7 @@ boost::shared_ptr<lvr::MeshBuffer>
     // This map remembers which vertex we already inserted and at what
     // position. This is important to create the face map.
     SparseVertexMap<size_t> idxMap;
+
     string comment = lvr::timestamp.getElapsedTime() + "Finalizing mesh ";
     lvr::ProgressBar progress(m_cluster.numCluster(), comment);
 
@@ -225,7 +262,81 @@ boost::shared_ptr<lvr::MeshBuffer>
                 faces.push_back(idxMap[vertexH]);
             }
         }
+
+        // TODO/FIXME: Vermutung: tex koordinaten sind evtl falsch
+        // da über die map iteriert wird, kann es sein dass ein vertex mehrfach besucht wird
+        // und somit mehrfache tex coords eingetragen werden
+        // wenn das passiert "verschieben" sich die restlichen texcoords beim anzeigen
+        // und sind dementsprechend falsch. muss überprüft und gefixt werden!
+
+        // When using textures,
+        // For each cluster:
+        if (m_texTokenClusterMap)
+        {
+            // For each face in cluster:
+            // Materials
+            for (auto faceH : cluster.handles)
+            {
+                // Get texture Token from map
+                auto texTokenOptional = (*m_texTokenClusterMap).get(clusterH);
+
+                // For each vertex in face:
+                for (auto vertexH : mesh.getVerticesOfFace(faceH))
+                {
+                    if (texTokenOptional)
+                    {
+                        // Use texture token to calculate texture coords for this vertex
+                        //Vector<BaseVecT> vertexPosition = mesh.getVertexPosition(vertexH).asVector();
+                        //TexCoords coords = (*texTokenOptional).textureCoords(vertexPosition);
+
+                        // Use tex coord vertex map to find texture coords
+                        TexCoords coords = (*(*m_texCoordVertexMap).get(vertexH)).getTexCoords(clusterH);
+                        texCoords.push_back(coords.u);
+                        texCoords.push_back(coords.v);
+                        texCoords.push_back(0.0);
+                    } else {
+                        // Cluster does not have a texture, use default coords
+                        // Every vertex needs an entry in this buffer,
+                        // This is why 0's are inserted
+                        texCoords.push_back(0.0);
+                        texCoords.push_back(0.0);
+                        texCoords.push_back(0.0);
+                    }
+                }
+
+                // For this face: generate materials
+                // Does face have a texture token (i.e. does it have a texture)
+                if (texTokenOptional)
+                {
+                    // Yes: read texture info
+                    int textureIndex = (*texTokenOptional).m_textureIndex;
+                    // Material for this texture already created?
+                    if (textureMaterialMap.find(textureIndex) != textureMaterialMap.end())
+                    {
+                        // Yes: get index from map and push to faceMaterials buffer
+                        unsigned int materialIndex = textureMaterialMap[textureIndex];
+                        faceMaterials.push_back(materialIndex);
+                    } else {
+                        // No: create material with texture
+                        lvr::Material *material = new lvr::Material;
+                        material->r = defaultR;
+                        material->g = defaultG;
+                        material->b = defaultB;
+                        material->texture_index = textureIndex;
+                        materials.push_back(material);
+                        unsigned int materialIndex = globalMaterialIndex++;
+                        faceMaterials.push_back(materialIndex);
+                        textureMaterialMap[textureIndex] = materialIndex;
+                    }
+                } else {
+                    // Face does not have a texture, use default material
+                    faceMaterials.push_back(0);
+                }
+            }
+        }
     }
+
+    cout << endl;
 
 
     auto buffer = boost::make_shared<lvr::MeshBuffer>();
@@ -240,6 +351,14 @@ boost::shared_ptr<lvr::MeshBuffer>
     if (m_clusterColors)
     {
         buffer->setVertexColorArray(colors);
+    }
+
+    if (m_texTokenClusterMap)
+    {
+        buffer->setMaterialArray(materials);
+        buffer->setFaceMaterialIndexArray(faceMaterials);
+        buffer->setVertexTextureCoordinateArray(texCoords);
+        buffer->setTextureArray(textures); // TODO
     }
 
     return buffer;

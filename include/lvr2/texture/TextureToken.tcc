@@ -29,24 +29,10 @@
 namespace lvr2 {
 
 template<typename BaseVecT>
-// TextureToken<BaseVecT>::TextureToken(BoundingRectangle<BaseVecT> boundingRect, Texture* t, int index)
 TextureToken<BaseVecT>::TextureToken(Texture* t, int index)
 {
-    // this->v1    = v1;
-    // this->v2    = v2;
-    // this->p     = p;
-    // this->a_min = a_min;
-    // this->b_min = b_min;
-    // this->m_boundingRect = boundingRect;
     this->m_texture = t;
     this->m_textureIndex = index;
-    // this->m_transformationMatrix[0] = 1;
-    // this->m_transformationMatrix[1] = 0;
-    // this->m_transformationMatrix[2] = 0;
-    // this->m_transformationMatrix[3] = 0;
-    // this->m_transformationMatrix[4] = 1;
-    // this->m_transformationMatrix[5] = 0;
-    // this->m_mirrored        = 0;
 }
 
 template<typename BaseVecT>
@@ -71,31 +57,12 @@ TextureToken<BaseVecT>::TextureToken(
 { }
 
 template<typename BaseVecT>
-TexCoords TextureToken<BaseVecT>::textureCoords(Vector<BaseVecT> v)
+TexCoords TextureToken<BaseVecT>::textureCoords(BaseVecT v) const
 {
-    Vector<BaseVecT> w =  v - ((m_vec1 * m_minDistA) + (m_vec2 * m_minDistB) + m_supportVector);
-    float x = (m_vec1 * (w * m_vec1)).length() / m_texelSize / m_texture->m_width;
-    float y = (m_vec2 * (w * m_vec2)).length() / m_texelSize / m_texture->m_height;
-
-    // //Mirror y or x according to detected mirroring
-    // if (this->m_mirrored == 1)
-    // {
-    //     y = m_texture->m_height - y;
-    // }
-    // else if (this->m_mirrored == 2)
-    // {
-    //     x = m_texture->m_width - x;
-    // }
-
-    // double tmp_x = x;
-    // double tmp_y = y;
-
-    // if (!this->m_texture->m_isPattern)
-    // {
-    //     //apply transformation
-    //     tmp_x = m_transformationMatrix[0] * x + m_transformationMatrix[1] * y + m_transformationMatrix[2];
-    //     tmp_y = m_transformationMatrix[3] * x + m_transformationMatrix[4] * y + m_transformationMatrix[5];
-    // }
+    // TODO: stimmt die berechnung?
+    BaseVecT w =  v - ((m_vec1 * m_minDistA) + (m_vec2 * m_minDistB) + m_supportVector);
+    float x = (m_vec1 * (w.dot(m_vec1))).length() / m_texelSize / m_texture->m_width;
+    float y = (m_vec2 * (w.dot(m_vec2))).length() / m_texelSize / m_texture->m_height;
 
     return TexCoords(x,y);
 

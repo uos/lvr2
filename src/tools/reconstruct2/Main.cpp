@@ -1024,27 +1024,6 @@ int main(int argc, char** argv)
     //auto duplicateVertices = getDuplicateVertices(mesh);
     //cout << "duplicate vertices: " << duplicateVertices.size() << endl;
 
-    // generate textures
-    bool generateTexturesOption = options.generateTextures();
-    // generateTexturesOption = true; // FIXME/TODO
-    if (generateTexturesOption)
-    {
-        float texelSize = options.getTexelSize();
-        int textureThreshold = options.getTextureThreshold();
-
-        TexturizerResult<BaseVecT> texturizerResult = generateTextures(
-            texelSize,
-            textureThreshold,
-            mesh,
-            clusterBiMap,
-            surface,
-            faceNormals
-        );
-        // TODO: use result
-
-        std::cout << "Texturizing finished. " << std::endl;
-    }
-
     // Finalize mesh (convert it to simple `MeshBuffer`)
     // FinalizeAlgorithm<Vec> finalize;
     // finalize.setNormalData(vertexNormals);
@@ -1059,6 +1038,20 @@ int main(int argc, char** argv)
     if (clusterColors)
     {
       finalize.setClusterColors(*clusterColors);
+    }
+    if (options.generateTextures())
+    {
+        TexturizerResult<BaseVecT> texturizerResult = generateTextures(
+            options.getTexelSize(),
+            options.getTextureThreshold(),
+            mesh,
+            clusterBiMap,
+            surface,
+            faceNormals
+        );
+        finalize.setTexTokenClusterMap(texturizerResult.texTokenClusterMap);
+        finalize.setTexCoordVertexMap(texturizerResult.tcMap);
+        cout << timestamp <<"Texturizing finished." << endl;
     }
     auto buffer = finalize.apply(mesh);
 
@@ -1084,13 +1077,12 @@ int main(int argc, char** argv)
     cout << timestamp << "Saving mesh." << endl;
     lvr::ModelFactory::saveModel(m, "triangle_mesh.ply");
 
-    // TODO2
-    // // Save obj model if textures were generated
-    // if(options.generateTextures())
-    // {
-    //     ModelFactory::saveModel( m, "triangle_mesh.obj");
-    // }
-    // cout << timestamp << "Program end." << endl;
+    // Save obj model if textures were generated
+    if(options.generateTextures())
+    {
+        lvr::ModelFactory::saveModel(m, "triangle_mesh.obj");
+    }
+    cout << timestamp << "Program end." << endl;
 
     return 0;
 }
