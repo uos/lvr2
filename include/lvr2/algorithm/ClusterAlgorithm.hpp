@@ -30,6 +30,7 @@
 #include <lvr2/algorithm/Texturizer.hpp>
 #include <lvr2/geometry/HalfEdgeMesh.hpp>
 #include <lvr2/geometry/Handles.hpp>
+#include <lvr2/geometry/Plane.hpp>
 #include <lvr2/util/Cluster.hpp>
 
 #include <vector>
