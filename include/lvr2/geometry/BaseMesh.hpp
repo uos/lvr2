@@ -368,15 +368,6 @@ public:
      */
     virtual MeshHandleIteratorPtr<EdgeHandle> edgesEnd() const = 0;
 
-    /**
-     * @brief Method for finding contour edges of given face.
-     *
-     * Returns all edge handles that are contours
-     */
-    // TODO: check for way to make this work. Compiler error: no templating on virtual methods...
-    // template <typename Pred>
-    // virtual vector<EdgeHandle> getContourEdgesOfFace(FaceHandle faceH, Pred pred) const = 0;
-
     // =======================================================================
     // Provided methods (already implemented)
     // =======================================================================

@@ -1331,66 +1331,6 @@ pair<HalfEdgeHandle, HalfEdgeHandle> HalfEdgeMesh<BaseVecT>::addEdgePair(VertexH
     return std::make_pair(aH, bH);
 }
 
-template <typename BaseVecT>
-template <typename Pred>
-std::vector<EdgeHandle> HalfEdgeMesh<BaseVecT>::getContourEdgesOfFace(FaceHandle faceH, Pred pred) const
-{
-    std::vector<EdgeHandle> contours;
-
-    // iterate all edges of given face
-    for (auto edgeH : this->getEdgesOfFace(faceH))
-    {
-        auto edge = this->getE(edgeH);
-        // TODO does twin still work after converting the half edge handle to a full edge handle?
-        auto twinFaceHOptional = this->getE(edge.twin).face;
-        // if edge has face
-        if (twinFaceHOptional)
-        {
-            // pred will check whether face is in the same cluster
-            // returns true, if faces are not in the same cluster
-            if (pred(twinFaceHOptional.unwrap()))
-            {
-                // faces are not in the same cluster
-                // => this edge is a contour edge
-                contours.push_back(edgeH);
-            }
-        } else
-        {
-            // twin edge has no face
-            // => this edge is a contour edge
-            contours.push_back(edgeH);
-        }
-    }
-
-    return contours;
-}
-
-template <typename BaseVecT>
-template <typename Pred>
-std::vector<EdgeHandle> HalfEdgeMesh<BaseVecT>::getContourEdgesOfFaceDebug(FaceHandle faceH, Pred pred) const
-{
-    std::vector<EdgeHandle> contours;
-
-    auto face = this->getF(faceH);
-    auto edgeH = face.edge;
-
-    for (int i = 0; i < 3; i++)
-    {
-        auto edge = this->getE(edgeH);
-        if (!this->getE(edge.twin).face)
-        {
-            contours.push_back(this->halfToFullEdgeHandle(edgeH));
-        } else if (pred(this->getE(edge.twin).face.unwrap()))
-        {
-            contours.push_back(this->halfToFullEdgeHandle(edgeH));
-        }
-
-        edgeH = edge.next;
-    }
-
-    return contours;
-}
-
 
 // ========================================================================
 // = Iterator stuff

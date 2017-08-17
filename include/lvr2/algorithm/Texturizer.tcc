@@ -34,7 +34,7 @@ template<typename BaseVecT>
 TexturizerResult<BaseVecT> generateTextures(
     float texelSize,
     int textureThreshold,
-    HalfEdgeMesh<BaseVecT>& mesh,
+    BaseMesh<BaseVecT>& mesh,
     ClusterBiMap<FaceHandle>& faceHandleClusterBiMap,
     PointsetSurfacePtr<BaseVecT> surface,
     const FaceMap<Normal<BaseVecT>>& normals
@@ -56,18 +56,17 @@ TexturizerResult<BaseVecT> generateTextures(
         // if (numFacesInCluster >= numFacesThreshold && numFacesInCluster < 200000)
         {
             // contour
-            // TODO: use better contour function
-            std::vector<Point<BaseVecT>> contour = calculateAllContourVertices(clusterH, mesh, faceHandleClusterBiMap);
+            std::vector<VertexHandle> contour = calculateClusterContourVertices(clusterH, mesh, faceHandleClusterBiMap);
 
             // bounding rectangle
             BoundingRectangle<BaseVecT> br = calculateBoundingRectangle(contour, mesh, cluster, normals, texelSize);
 
             // debug output
-            // cout << "bounding box: " << br.minDistA << "  " << br.maxDistA
-            // << ",  b: " << br.minDistB << "  " << br.maxDistB
-            // << " (contourSize: " << contour.size() << ")"
-            // << " (numFaces: " << numFacesInCluster << ")" << endl;
-            // cout << "vec1: " << br.vec1 << "  vec2: " << br.vec2 << endl;
+            cout << "bounding box: " << br.minDistA << "  " << br.maxDistA
+            << ",  b: " << br.minDistB << "  " << br.maxDistB
+            << " (contourSize: " << contour.size() << ")"
+            << " (numFaces: " << numFacesInCluster << ")" << endl;
+            cout << "vec1: " << br.vec1 << "  vec2: " << br.vec2 << endl;
 
             // initial texture
             TextureToken<BaseVecT> texToken = generateTexture(br, surface, texelSize, textureIndex++);

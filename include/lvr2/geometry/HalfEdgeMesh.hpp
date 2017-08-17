@@ -97,17 +97,6 @@ public:
     using BaseMesh<BaseVecT>::getEdgesOfVertex;
     using BaseMesh<BaseVecT>::getNeighboursOfVertex;
 
-    /**
-     * @brief Method for finding contour edges of given face.
-     *
-     * Returns all edge handles that are contours
-     */
-    template <typename Pred>
-    std::vector<EdgeHandle> getContourEdgesOfFace(FaceHandle faceH, Pred pred) const;
-
-    template <typename Pred>
-    std::vector<EdgeHandle> getContourEdgesOfFaceDebug(FaceHandle faceH, Pred pred) const;
-
 
     MeshHandleIteratorPtr<VertexHandle> verticesBegin() const final;
     MeshHandleIteratorPtr<VertexHandle> verticesEnd() const final;
