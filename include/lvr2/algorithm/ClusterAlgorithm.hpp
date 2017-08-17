@@ -40,27 +40,16 @@ using std::vector;
 namespace lvr2
 {
 
-
-// TODO: Refactoring auf BaseMesh
-
-
 template<typename BaseVecT>
-vector<Point<BaseVecT>> calculateAllContourVertices(
+vector<VertexHandle> calculateClusterContourVertices(
     ClusterHandle clusterH,
-    HalfEdgeMesh<BaseVecT>& mesh,
-    ClusterBiMap<FaceHandle>& clusterBiMap
+    const BaseMesh<BaseVecT>& mesh,
+    const ClusterBiMap<FaceHandle>& clusterBiMap
 );
-
-template<typename BaseVecT, typename VertexT>
-vector<vector<Point<VertexT>>> calculateContour(
-    ClusterHandle clusterH,
-    HalfEdgeMesh<BaseVecT>& mesh,
-    ClusterBiMap<FaceHandle>& clusterBiMap
-); // TODO/FIXME
 
 template<typename BaseVecT>
 BoundingRectangle<BaseVecT> calculateBoundingRectangle(
-    const std::vector<Point<BaseVecT>> contour,
+    const vector<VertexHandle>& contour,
     const BaseMesh<BaseVecT>& mesh,
     const Cluster<FaceHandle>& cluster,
     const FaceMap<Normal<BaseVecT>>& normals,
