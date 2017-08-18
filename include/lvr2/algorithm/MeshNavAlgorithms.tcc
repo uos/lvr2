@@ -93,8 +93,8 @@ DenseVertexMap<float> calcVertexHeightDiff(const BaseMesh<BaseVecT>& mesh, doubl
         for (auto neighbor: neighbors)
         {
             auto cur_pos = mesh.getVertexPosition(neighbor);
-            minHeight = std::min(cur_pos.y, minHeight);
-            maxHeight = std::max(cur_pos.y, maxHeight);
+            minHeight = std::min(cur_pos.z, minHeight);
+            maxHeight = std::max(cur_pos.z, maxHeight);
         }
 
         // Calculate the final height difference
