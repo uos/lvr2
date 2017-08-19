@@ -86,6 +86,7 @@ Options::Options(int argc, char** argv)
         ("cro", "Use texture matching based on cross correlation.")
         ("patt", value<float>(&m_patternThreshold)->default_value(100), "Threshold for pattern extraction from textures")
         ("mtv", value<int>(&m_minimumTransformationVotes)->default_value(3), "Minimum number of votes to consider a texture transformation as correct")
+        ("vcfp", "Use color information from pointcloud to paint vertices")
     ;
 
     setup();
@@ -390,6 +391,11 @@ float* Options::getStatsCoeffs()const
 int Options::getTextureThreshold() const
 {
     return m_variables["textureThreshold"].as<int>();
+}
+
+bool Options::vertexColorsFromPointcloud() const
+{
+    return m_variables.count("vcfp");
 }
 
 Options::~Options() {

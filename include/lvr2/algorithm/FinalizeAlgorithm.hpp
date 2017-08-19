@@ -73,6 +73,8 @@ public:
     void setClusterColors(const ClusterMap<Rgb8Color>& colors);
     void setTexTokenClusterMap(SparseClusterMap<TextureToken<BaseVecT>> texTokenClusterMap);
     void setTexCoordVertexMap(SparseVertexMap<ClusterTexCoordMapping> texCoordVertexMap);
+    void setVertexColors(DenseVertexMap<Rgb8Color> vertexColors);
+
 
     boost::shared_ptr<lvr::MeshBuffer> apply(const BaseMesh<BaseVecT>& mesh);
 
@@ -82,7 +84,7 @@ private:
     optional<const VertexMap<Normal<BaseVecT>>&> m_vertexNormals;
     optional<SparseClusterMap<TextureToken<BaseVecT>>> m_texTokenClusterMap;
     optional<SparseVertexMap<ClusterTexCoordMapping>> m_texCoordVertexMap;
-
+    optional<DenseVertexMap<Rgb8Color>> m_vertexColors;
 };
 
 } // namespace lvr2

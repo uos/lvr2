@@ -158,6 +158,12 @@ void ClusterFlatteningFinalizer<BaseVecT>::setTexCoordVertexMap(
     m_texCoordVertexMap = texCoordVertexMap;
 }
 
+template<typename BaseVecT>
+void ClusterFlatteningFinalizer<BaseVecT>::setVertexColors(DenseVertexMap<Rgb8Color> vertexColors)
+{
+    m_vertexColors = vertexColors;
+}
+
 
 template<typename BaseVecT>
 boost::shared_ptr<lvr::MeshBuffer>
@@ -199,6 +205,8 @@ boost::shared_ptr<lvr::MeshBuffer>
     materials.push_back(m);
     std::map<int, int> textureMaterialMap; // Stores the ID of the material for each textureIndex
     textureMaterialMap[-1] = 0; // texIndex -1 => no texture => default material with index 0
+    SparseVertexMap<size_t> vertexColorVisitedMap;
+    size_t vertexColorCount = 0;
 
     // Create face buffer
     vector<unsigned int> faces;
@@ -218,6 +226,8 @@ boost::shared_ptr<lvr::MeshBuffer>
     for (auto clusterH: m_cluster)
     {
         idxMap.clear();
+        vertexColorVisitedMap.clear();
+
         ++progress;
 
         auto& cluster = m_cluster.getCluster(clusterH);
@@ -245,7 +255,13 @@ boost::shared_ptr<lvr::MeshBuffer>
                         normals.push_back(normal.getZ());
                     }
 
-                    if (m_clusterColors)
+                    if (m_vertexColors)
+                    {
+                        colors.push_back(static_cast<unsigned char>((*m_vertexColors)[vertexH][0]));
+                        colors.push_back(static_cast<unsigned char>((*m_vertexColors)[vertexH][1]));
+                        colors.push_back(static_cast<unsigned char>((*m_vertexColors)[vertexH][2]));
+                    }
+                    else if (m_clusterColors)
                     {
                         colors.push_back(static_cast<unsigned char>((*m_clusterColors)[clusterH][0]));
                         colors.push_back(static_cast<unsigned char>((*m_clusterColors)[clusterH][1]));
@@ -283,24 +299,28 @@ boost::shared_ptr<lvr::MeshBuffer>
                 // For each vertex in face:
                 for (auto vertexH : mesh.getVerticesOfFace(faceH))
                 {
-                    if (texTokenOptional)
+                    if (!vertexColorVisitedMap.containsKey(vertexH))
                     {
-                        // Use texture token to calculate texture coords for this vertex
-                        //Vector<BaseVecT> vertexPosition = mesh.getVertexPosition(vertexH).asVector();
-                        //TexCoords coords = (*texTokenOptional).textureCoords(vertexPosition);
+                        if (texTokenOptional)
+                        {
+                            // Use texture token to calculate texture coords for this vertex
+                            //Vector<BaseVecT> vertexPosition = mesh.getVertexPosition(vertexH).asVector();
+                            //TexCoords coords = (*texTokenOptional).textureCoords(vertexPosition);
 
-                        // Use tex coord vertex map to find texture coords
-                        TexCoords coords = (*(*m_texCoordVertexMap).get(vertexH)).getTexCoords(clusterH);
-                        texCoords.push_back(coords.u);
-                        texCoords.push_back(coords.v);
-                        texCoords.push_back(0.0);
-                    } else {
-                        // Cluster does not have a texture, use default coords
-                        // Every vertex needs an entry in this buffer,
-                        // This is why 0's are inserted
-                        texCoords.push_back(0.0);
-                        texCoords.push_back(0.0);
-                        texCoords.push_back(0.0);
+                            // Use tex coord vertex map to find texture coords
+                            TexCoords coords = (*(*m_texCoordVertexMap).get(vertexH)).getTexCoords(clusterH);
+                            texCoords.push_back(coords.u);
+                            texCoords.push_back(coords.v);
+                            texCoords.push_back(0.0);
+                        } else {
+                            // Cluster does not have a texture, use default coords
+                            // Every vertex needs an entry in this buffer,
+                            // This is why 0's are inserted
+                            texCoords.push_back(0.0);
+                            texCoords.push_back(0.0);
+                            texCoords.push_back(0.0);
+                        }
+                        vertexColorVisitedMap.insert(vertexH, vertexColorCount++);
                     }
                 }
 
@@ -348,7 +368,7 @@ boost::shared_ptr<lvr::MeshBuffer>
         buffer->setVertexNormalArray(normals);
     }
 
-    if (m_clusterColors)
+    if (m_clusterColors || m_vertexColors)
     {
         buffer->setVertexColorArray(colors);
     }

@@ -40,7 +40,7 @@ TexturizerResult<BaseVecT> generateTextures(
     const FaceMap<Normal<BaseVecT>>& normals
 )
 {
-    int numFacesThreshold = 20000; // TODO: read from config
+    int numFacesThreshold = textureThreshold;
     int textureIndex = 1;
 
     TexturizerResult<BaseVecT> result;
