@@ -203,8 +203,11 @@ boost::shared_ptr<lvr::MeshBuffer>
     m->b = defaultB;
     m->texture_index = -1;
     materials.push_back(m);
+    // This map remembers which texture and material are associated with each other
     std::map<int, int> textureMaterialMap; // Stores the ID of the material for each textureIndex
     textureMaterialMap[-1] = 0; // texIndex -1 => no texture => default material with index 0
+    // This map remembers which vertices were already visited for vertex coloring from pointcloud data
+    // Each vertex must be visited exactly once
     SparseVertexMap<size_t> vertexColorVisitedMap;
     size_t vertexColorCount = 0;
 
@@ -255,6 +258,7 @@ boost::shared_ptr<lvr::MeshBuffer>
                         normals.push_back(normal.getZ());
                     }
 
+                    // If individual vertex colors are present: use these
                     if (m_vertexColors)
                     {
                         colors.push_back(static_cast<unsigned char>((*m_vertexColors)[vertexH][0]));
@@ -263,10 +267,11 @@ boost::shared_ptr<lvr::MeshBuffer>
                     }
                     else if (m_clusterColors)
                     {
+                        // else: use cluster colors if present
                         colors.push_back(static_cast<unsigned char>((*m_clusterColors)[clusterH][0]));
                         colors.push_back(static_cast<unsigned char>((*m_clusterColors)[clusterH][1]));
                         colors.push_back(static_cast<unsigned char>((*m_clusterColors)[clusterH][2]));
-                    }
+                    } // else: no colors
 
                     // Save index of vertex for face mapping
                     idxMap.insert(vertexH, vertexCount);
@@ -278,12 +283,6 @@ boost::shared_ptr<lvr::MeshBuffer>
                 faces.push_back(idxMap[vertexH]);
             }
         }
-
-        // TODO/FIXME: Vermutung: tex koordinaten sind evtl falsch
-        // da über die map iteriert wird, kann es sein dass ein vertex mehrfach besucht wird
-        // und somit mehrfache tex coords eingetragen werden
-        // wenn das passiert "verschieben" sich die restlichen texcoords beim anzeigen
-        // und sind dementsprechend falsch. muss überprüft und gefixt werden!
 
         // When using textures,
         // For each cluster:
@@ -303,6 +302,9 @@ boost::shared_ptr<lvr::MeshBuffer>
                     {
                         if (texTokenOptional)
                         {
+                            // TODO: vielleicht texcoords hier direkt ausrechnen? wird nur 1x pro vertex gemacht mit der map!
+                            // siehe TODO im texturizer
+
                             // Use texture token to calculate texture coords for this vertex
                             //Vector<BaseVecT> vertexPosition = mesh.getVertexPosition(vertexH).asVector();
                             //TexCoords coords = (*texTokenOptional).textureCoords(vertexPosition);

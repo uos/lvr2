@@ -1013,6 +1013,7 @@ int main(int argc, char** argv)
         clusterBiMap = planarClusterGrowing(mesh, faceNormals, options.getNormalThreshold());
     }
 
+    // Prepare color data for finalizing
     ClusterPainter painter(clusterBiMap);
     auto clusterColors = optional<DenseClusterMap<Rgb8Color>>(painter.simpsons(mesh));
     auto vertexColors = calcColorFromPointCloud(mesh, surface);
@@ -1033,19 +1034,25 @@ int main(int argc, char** argv)
     // }
     // auto buffer = finalize.apply(mesh);
 
+    // Prepare finalize algorithm
     ClusterFlatteningFinalizer<Vec> finalize(clusterBiMap);
     finalize.setVertexNormals(vertexNormals);
+    // If vertex colors should be generated from pointcloud:
     if (options.vertexColorsFromPointcloud())
     {
+        // set vertex color data from pointcloud
         finalize.setVertexColors(*vertexColors);
     }
     else if (clusterColors)
     {
+        // else: use simpsons painter for vertex coloring
         finalize.setClusterColors(*clusterColors);
     }
-
+    // When using textures ...
     if (options.generateTextures())
     {
+        // Create textures
+        // Textures will be saved as a ppm file when calling this
         TexturizerResult<BaseVecT> texturizerResult = generateTextures(
             options.getTexelSize(),
             options.getTextureThreshold(),
@@ -1054,10 +1061,12 @@ int main(int argc, char** argv)
             surface,
             faceNormals
         );
+        // Add to finalize algorithm
         finalize.setTexTokenClusterMap(texturizerResult.texTokenClusterMap);
         finalize.setTexCoordVertexMap(texturizerResult.tcMap);
         cout << timestamp << "Texturizing finished." << endl;
     }
+    // Run finalize algorithm
     auto buffer = finalize.apply(mesh);
 
     // =======================================================================
