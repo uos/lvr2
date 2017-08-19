@@ -300,6 +300,8 @@ public:
 
     int getTextureThreshold() const;
 
+    bool vertexColorsFromPointcloud() const;
+
 private:
 
     /// The set voxelsize
@@ -414,6 +416,9 @@ private:
     ///Minimum number of textures of a cluster needed for generating textures
     int m_textureThreshold;
 
+    ///Use pointcloud colors to paint vertices
+    bool m_vertexColorsFromPointcloud;
+
 };
 
 
@@ -512,6 +517,10 @@ inline ostream& operator<<(ostream& os, const Options &o)
     if(o.savePointNormals())
     {
         cout << "##### Save points normals \t: YES" << endl;
+    }
+    if(o.vertexColorsFromPointcloud())
+    {
+        cout << "##### Vertex colors: \t\t: YES" << endl;
     }
     if(o.generateTextures())
     {

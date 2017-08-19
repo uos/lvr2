@@ -1015,7 +1015,7 @@ int main(int argc, char** argv)
 
     ClusterPainter painter(clusterBiMap);
     auto clusterColors = optional<DenseClusterMap<Rgb8Color>>(painter.simpsons(mesh));
-    // auto colorMap = calcColorFromPointCloud(mesh, surface);
+    auto vertexColors = calcColorFromPointCloud(mesh, surface);
 
     // Calc normals for vertices
     auto vertexNormals = calcVertexNormals(mesh, faceNormals, *surface);
@@ -1035,10 +1035,15 @@ int main(int argc, char** argv)
 
     ClusterFlatteningFinalizer<Vec> finalize(clusterBiMap);
     finalize.setVertexNormals(vertexNormals);
-    if (clusterColors)
+    if (options.vertexColorsFromPointcloud())
     {
-      finalize.setClusterColors(*clusterColors);
+        finalize.setVertexColors(*vertexColors);
     }
+    else if (clusterColors)
+    {
+        finalize.setClusterColors(*clusterColors);
+    }
+
     if (options.generateTextures())
     {
         TexturizerResult<BaseVecT> texturizerResult = generateTextures(
@@ -1051,7 +1056,7 @@ int main(int argc, char** argv)
         );
         finalize.setTexTokenClusterMap(texturizerResult.texTokenClusterMap);
         finalize.setTexCoordVertexMap(texturizerResult.tcMap);
-        cout << timestamp <<"Texturizing finished." << endl;
+        cout << timestamp << "Texturizing finished." << endl;
     }
     auto buffer = finalize.apply(mesh);
 

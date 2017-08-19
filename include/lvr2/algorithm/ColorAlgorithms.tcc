@@ -42,6 +42,7 @@ optional<DenseVertexMap<Rgb8Color>> calcColorFromPointCloud(
 {
     if (!surface->pointBuffer()->hasRgbColor())
     {
+        cout << "none" << endl;
         return boost::none;
     }
 
