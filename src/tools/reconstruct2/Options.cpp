@@ -67,6 +67,7 @@ Options::Options(int argc, char** argv)
         ("lft", value<float>(&m_lineFusionThreshold)->default_value(0.01), "(Line Fusion Threshold) Threshold for fusing line segments while tesselating.")
         ("generateTextures", "Generate textures during finalization.")
         ("textureThreshold", value<int>(&m_textureThreshold)->default_value(100), "Minimum number of faces of a cluster to create a texture from")
+        ("textureLimit", value<int>(&m_textureLimit)->default_value(0), "Maximum number of faces of a cluster to create a texture from (0 = no limit)")
         ("textureAnalysis", "Enable texture analysis features for texture matchung.")
         ("texelSize", value<float>(&m_texelSize)->default_value(1), "Texel size that determines texture resolution.")
         ("classifier", value<string>(&m_classifier)->default_value("PlaneSimpsons"),"Classfier object used to color the mesh.")
@@ -391,6 +392,11 @@ float* Options::getStatsCoeffs()const
 int Options::getTextureThreshold() const
 {
     return m_variables["textureThreshold"].as<int>();
+}
+
+int Options::getTextureLimit() const
+{
+    return m_variables["textureLimit"].as<int>();
 }
 
 bool Options::vertexColorsFromPointcloud() const

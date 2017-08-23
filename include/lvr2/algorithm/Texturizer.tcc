@@ -34,6 +34,7 @@ template<typename BaseVecT>
 TexturizerResult<BaseVecT> generateTextures(
     float texelSize,
     int textureThreshold,
+    int textureLimit,
     BaseMesh<BaseVecT>& mesh,
     ClusterBiMap<FaceHandle>& faceHandleClusterBiMap,
     PointsetSurfacePtr<BaseVecT> surface,
@@ -52,7 +53,7 @@ TexturizerResult<BaseVecT> generateTextures(
         int numFacesInCluster = cluster.handles.size();
 
         // only create textures for clusters that are large enough
-        if (numFacesInCluster >= textureThreshold)
+        if (numFacesInCluster >= textureThreshold && (numFacesInCluster < textureLimit || textureLimit < 1))
         // if (numFacesInCluster >= numFacesThreshold && numFacesInCluster < 200000)
         {
             // contour

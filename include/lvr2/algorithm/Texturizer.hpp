@@ -96,6 +96,7 @@ template<typename BaseVecT>
 TexturizerResult<BaseVecT> generateTextures(
     float texelSize,
     int textureThreshold,
+    int textureLimit,
     BaseMesh<BaseVecT>& mesh,
     ClusterBiMap<FaceHandle>& faceHandleClusterBiMap,
     PointsetSurfacePtr<BaseVecT> surface,
