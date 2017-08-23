@@ -300,6 +300,8 @@ public:
 
     int getTextureThreshold() const;
 
+    int getTextureLimit() const;
+
     bool vertexColorsFromPointcloud() const;
 
 private:
@@ -416,6 +418,8 @@ private:
     ///Minimum number of textures of a cluster needed for generating textures
     int m_textureThreshold;
 
+    int m_textureLimit;
+
     ///Use pointcloud colors to paint vertices
     bool m_vertexColorsFromPointcloud;
 
@@ -527,6 +531,7 @@ inline ostream& operator<<(ostream& os, const Options &o)
         cout << "##### Generate Textures \t: YES" << endl;
         cout << "##### Texel size \t\t: " << o.getTexelSize() << endl;
         cout << "##### Texture Threshold \t: " << o.getTextureThreshold() << endl;
+        cout << "##### Texture Limit\t\t: " << o.getTextureLimit() << endl;
         if(o.doTextureAnalysis())
         {
             cout << "##### Texture Analysis \t: OFF" << endl;

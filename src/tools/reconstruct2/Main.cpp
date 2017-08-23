@@ -1056,6 +1056,7 @@ int main(int argc, char** argv)
         TexturizerResult<BaseVecT> texturizerResult = generateTextures(
             options.getTexelSize(),
             options.getTextureThreshold(),
+            options.getTextureLimit(),
             mesh,
             clusterBiMap,
             surface,
