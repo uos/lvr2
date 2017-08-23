@@ -60,9 +60,17 @@ template<typename BaseVecT>
 TexCoords TextureToken<BaseVecT>::textureCoords(BaseVecT v) const
 {
     // TODO: stimmt die berechnung?
-    BaseVecT w =  v - ((m_vec1 * m_minDistA) + (m_vec2 * m_minDistB) + m_supportVector);
-    float x = (m_vec1 * (w.dot(m_vec1))).length() / m_texelSize / m_texture->m_width;
-    float y = (m_vec2 * (w.dot(m_vec2))).length() / m_texelSize / m_texture->m_height;
+    // BaseVecT w =  v - ((m_vec1 * m_minDistA) + (m_vec2 * m_minDistB) + m_supportVector);
+    // float x = (m_vec1 * (w.dot(m_vec1))).length() / m_texelSize / m_texture->m_width;
+    // float y = (m_vec2 * (w.dot(m_vec2))).length() / m_texelSize / m_texture->m_height;
+
+    Point<BaseVecT> rectanglePos =
+                m_supportVector +
+                m_vec1 * (m_minDistA) +
+                m_vec2 * (m_minDistB);
+
+    float x = (v.x - rectanglePos.x) / (m_texelSize * m_texture->m_width);
+    float y = (v.y - rectanglePos.y) / (m_texelSize * m_texture->m_height);
 
     return TexCoords(x,y);
 

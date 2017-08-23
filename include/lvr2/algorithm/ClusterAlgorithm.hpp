@@ -53,7 +53,9 @@ BoundingRectangle<BaseVecT> calculateBoundingRectangle(
     const BaseMesh<BaseVecT>& mesh,
     const Cluster<FaceHandle>& cluster,
     const FaceMap<Normal<BaseVecT>>& normals,
-    float texelSize
+    float texelSize,
+    const ClusterBiMap<FaceHandle>& clusterBiMap,
+    ClusterHandle clusterH
 );
 
 } // namespace lvr2

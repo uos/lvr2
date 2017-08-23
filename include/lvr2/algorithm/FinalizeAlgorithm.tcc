@@ -204,7 +204,7 @@ boost::shared_ptr<lvr::MeshBuffer>
     m->texture_index = -1;
     materials.push_back(m);
     // This map remembers which texture and material are associated with each other
-    std::map<int, int> textureMaterialMap; // Stores the ID of the material for each textureIndex
+    std::map<int, unsigned int> textureMaterialMap; // Stores the ID of the material for each textureIndex
     textureMaterialMap[-1] = 0; // texIndex -1 => no texture => default material with index 0
     // This map remembers which vertices were already visited for vertex coloring from pointcloud data
     // Each vertex must be visited exactly once
@@ -322,7 +322,8 @@ boost::shared_ptr<lvr::MeshBuffer>
                             texCoords.push_back(0.0);
                             texCoords.push_back(0.0);
                         }
-                        vertexColorVisitedMap.insert(vertexH, vertexColorCount++);
+                        vertexColorVisitedMap.insert(vertexH, vertexColorCount);
+                        vertexColorCount++;
                     }
                 }
 
@@ -340,15 +341,15 @@ boost::shared_ptr<lvr::MeshBuffer>
                         faceMaterials.push_back(materialIndex);
                     } else {
                         // No: create material with texture
-                        lvr::Material *material = new lvr::Material;
+                        lvr::Material* material = new lvr::Material;
                         material->r = defaultR;
                         material->g = defaultG;
                         material->b = defaultB;
                         material->texture_index = textureIndex;
                         materials.push_back(material);
-                        unsigned int materialIndex = globalMaterialIndex++;
-                        faceMaterials.push_back(materialIndex);
-                        textureMaterialMap[textureIndex] = materialIndex;
+                        faceMaterials.push_back(globalMaterialIndex);
+                        textureMaterialMap[textureIndex] = globalMaterialIndex;
+                        globalMaterialIndex++;
                     }
                 } else {
                     // Face does not have a texture, use default material
