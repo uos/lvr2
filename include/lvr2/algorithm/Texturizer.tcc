@@ -41,14 +41,25 @@ TexturizerResult<BaseVecT> generateTextures(
     const FaceMap<Normal<BaseVecT>>& normals
 )
 {
+
+    // string msg = lvr::timestamp.getElapsedTime() + "Generating textures ... ";
+    // lvr::ProgressBar progress(faceHandleClusterBiMap.numCluster(), msg);
+
     int numFacesThreshold = textureThreshold;
-    int textureIndex = 1;
+    int textureIndex = 0;
+
+    int numClustersTooSmall = 0;
+    int numClustersTooLarge = 0;
 
     TexturizerResult<BaseVecT> result;
     result.tcMap.reserve(mesh.numVertices());
 
+    HalfEdgeMesh<BaseVecT> debugMesh;
+
+
     for (auto clusterH: faceHandleClusterBiMap)
     {
+        // ++progress;
         const Cluster<FaceHandle> cluster = faceHandleClusterBiMap.getCluster(clusterH);
         int numFacesInCluster = cluster.handles.size();
 
@@ -60,14 +71,32 @@ TexturizerResult<BaseVecT> generateTextures(
             std::vector<VertexHandle> contour = calculateClusterContourVertices(clusterH, mesh, faceHandleClusterBiMap);
 
             // bounding rectangle
-            BoundingRectangle<BaseVecT> br = calculateBoundingRectangle(contour, mesh, cluster, normals, texelSize);
+            BoundingRectangle<BaseVecT> br = calculateBoundingRectangle(contour, mesh, cluster, normals, texelSize, faceHandleClusterBiMap, clusterH);
+
+            auto v1 = br.supportVector + (br.vec1 * br.minDistA) + (br.vec2 * br.minDistB);
+            auto v2 = br.supportVector + (br.vec1 * br.minDistA) + (br.vec2 * br.maxDistB);
+            auto v3 = br.supportVector + (br.vec1 * br.maxDistA) + (br.vec2 * br.minDistB);
+            auto v4 = br.supportVector + (br.vec1 * br.maxDistA) + (br.vec2 * br.maxDistB);
+            // auto v2 = plane.pos - tangent1.asVector() * bBox.getLongestSide();
+            // auto v3 = plane.pos + tangent2.asVector() * bBox.getLongestSide();
+            // auto v4 = plane.pos - tangent2.asVector() * bBox.getLongestSide();
+
+            // Add intersection plane to mesh
+            auto vH1 = debugMesh.addVertex(v1);
+            auto vH2 = debugMesh.addVertex(v2);
+            auto vH3 = debugMesh.addVertex(v3);
+            auto vH4 = debugMesh.addVertex(v4);
+
+            debugMesh.addFace(vH1, vH2, vH3);
+            debugMesh.addFace(vH3, vH2, vH4);
 
             // debug output
-            cout << "bounding box: " << br.minDistA << "  " << br.maxDistA
-            << ",  b: " << br.minDistB << "  " << br.maxDistB
-            << " (contourSize: " << contour.size() << ")"
-            << " (numFaces: " << numFacesInCluster << ")" << endl;
-            cout << "vec1: " << br.vec1 << "  vec2: " << br.vec2 << endl;
+            // cout << "bounding box: " << br.minDistA << "  " << br.maxDistA
+            // << ",  b: " << br.minDistB << "  " << br.maxDistB
+            // << " (contourSize: " << contour.size() << ")"
+            // << " (numFaces: " << numFacesInCluster << ")" << endl;
+            // cout << "vec1: " << br.vec1 << "  vec2: " << br.vec2 << endl;
+            // cout << "sup vec: " << br.supportVector.x << " " << br.supportVector.y << " " << br.supportVector.z << endl;
 
             // initial texture
             TextureToken<BaseVecT> texToken = generateTexture(br, surface, texelSize, textureIndex++);
@@ -123,7 +152,23 @@ TexturizerResult<BaseVecT> generateTextures(
             }
 
         }
+        else if (numFacesInCluster < numFacesThreshold)
+        {
+            numClustersTooSmall++;
+        }
+        else if (textureLimit > 0 && numFacesInCluster > textureLimit)
+        {
+            numClustersTooLarge++;
+        }
     }
+    // cout << endl;
+
+    cout << lvr::timestamp << "Skipped " << (numClustersTooSmall+numClustersTooLarge)
+    << " clusters while texturizing (" << numClustersTooSmall << " below threshold, "
+    << numClustersTooLarge << " above limit)" << endl;
+
+    // Save debug mesh
+    writeDebugMesh(debugMesh, "debugMesh.ply");
 
     return result;
 }
@@ -172,9 +217,14 @@ TextureToken<BaseVecT> generateTexture(
             vector<size_t> cv;
 
             Point<BaseVecT> currentPos =
-                boundingRect.supportVector +
-                boundingRect.vec1 * ((boundingRect.minDistA + x * texelSize) + texelSize / 2) +
-                boundingRect.vec2 * ((boundingRect.minDistB + y * texelSize) + texelSize / 2);
+                boundingRect.supportVector
+                + boundingRect.vec1 * (x * texelSize + boundingRect.minDistA - texelSize / 2.0)
+                + boundingRect.vec2 * (y * texelSize + boundingRect.minDistB - texelSize / 2.0);
+
+            // Point<BaseVecT> currentPos =
+            //     boundingRect.supportVector
+            //     + boundingRect.vec1 * ((boundingRect.minDistA + x * texelSize) + texelSize / 2)
+            //     + boundingRect.vec2 * ((boundingRect.minDistB + y * texelSize) + texelSize / 2);
 
             // Point<BaseVecT> currentPos = boundingRect.supportVector + boundingRect.vec1
             //     * (x * texelSize + boundingRect.minDistA - texelSize / 2.0)
@@ -200,16 +250,18 @@ TextureToken<BaseVecT> generateTexture(
             texture->m_data[(sizeY - y - 1) * (sizeX * 3) + 3 * x + 0] = r;
             texture->m_data[(sizeY - y - 1) * (sizeX * 3) + 3 * x + 1] = g;
             texture->m_data[(sizeY - y - 1) * (sizeX * 3) + 3 * x + 2] = b;
-            // texture->m_data[(y) * (sizeX * 3) + 3 * x + 0] = r;
-            // texture->m_data[(y) * (sizeX * 3) + 3 * x + 1] = g;
-            // texture->m_data[(y) * (sizeX * 3) + 3 * x + 2] = b;
+
+
+            // texture->m_data[y * (sizeX * 3) + 3 * x + 0] = r;
+            // texture->m_data[y * (sizeX * 3) + 3 * x + 1] = g;
+            // texture->m_data[y * (sizeX * 3) + 3 * x + 2] = b;
             // texture->m_data[(sizeX - x - 1) * (sizeY * 3) + 3 * y] = r;
             // texture->m_data[(sizeX - x - 1) * (sizeY * 3) + 3 * y + 1] = g;
             // texture->m_data[(sizeX - x - 1) * (sizeY * 3) + 3 * y + 2] = b;
             // texture->m_data[(dataCounter * 3) + 0] = r;
             // texture->m_data[(dataCounter * 3) + 1] = g;
             // texture->m_data[(dataCounter * 3) + 2] = b;
-            // dataCounter++;
+            dataCounter++;
 
             ++progress;
         }

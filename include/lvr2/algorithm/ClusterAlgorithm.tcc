@@ -85,9 +85,12 @@ BoundingRectangle<BaseVecT> calculateBoundingRectangle(
     const BaseMesh<BaseVecT>& mesh,
     const Cluster<FaceHandle>& cluster,
     const FaceMap<Normal<BaseVecT>>& normals,
-    float texelSize
+    float texelSize,
+    const ClusterBiMap<FaceHandle>& clusterBiMap,
+    ClusterHandle clusterH
 )
 {
+
     // TODO error handling for texelSize = 0
     // TODO reasonable error handling necessary for empty contour vector
     if (contour.size() == 0)
@@ -99,16 +102,48 @@ BoundingRectangle<BaseVecT> calculateBoundingRectangle(
     float bestMinA, bestMaxA, bestMinB, bestMaxB;
     Vector<BaseVecT> bestVec1, bestVec2;
 
-    // calculate regression plane for the cluster
+    // // calculate regression plane for the cluster
     Plane<BaseVecT> regressionPlane = calcRegressionPlane(mesh, cluster, normals);
+    // Plane<BaseVecT> regressionPlane = calcRegressionPlane2(mesh, cluster, normals);
+
+    SparseClusterMap<Plane<BaseVecT>> planes;
+    planes.insert(clusterH, regressionPlane);
+
+    std::stringstream ss;
+    ss << "debugplane" << clusterH << ".ply";
+    debugPlanes(mesh, clusterBiMap, planes, ss.str() , 1000);
 
     // support vector for the plane
     Vector<BaseVecT> supportVector = regressionPlane.pos.asVector();
 
     // calculate two orthogonal vectors in the plane
     auto normal = regressionPlane.normal;
-    auto vec1 = normal.cross(Vector<BaseVecT>(-normal.getY(), normal.getX(), 0) + normal.asVector());
-    Vector<BaseVecT> vec2 = normal.cross(vec1);
+    // auto vec1 = normal.cross(Vector<BaseVecT>(-normal.getY(), normal.getX(), 0) + normal.asVector());
+    // Vector<BaseVecT> vec2 = normal.cross(vec1);
+    auto vec1 = normal.cross(mesh.getVertexPosition(contour[0]) - mesh.getVertexPosition(contour[1]));
+    vec1.normalize();
+    Vector<BaseVecT> vec2 = vec1.cross(normal.asVector());
+    vec2.normalize();
+
+
+
+    // Vector<BaseVecT> contour0 = mesh.getVertexPosition(contour[0]).asVector();
+    // Vector<BaseVecT> contour1 = mesh.getVertexPosition(contour[1]).asVector();
+    // Vector<BaseVecT> contour2 = mesh.getVertexPosition(contour[2]).asVector();
+
+    // Vector<BaseVecT> n = (contour1-contour0).cross(contour2-contour0);
+    // if (n.x < 0)
+    // {
+    //     n *= -1;
+    // }
+    // Normal<BaseVecT> normal(n);
+
+
+    // Vector<BaseVecT> supportVector, vec1, vec2;
+    // supportVector = contour0;
+    // vec1 = contour1 - contour0;
+    // vec2.x = vec2.y = vec2.z = 0;
+
 
     const float pi = boost::math::constants::pi<float>();
 
@@ -137,6 +172,7 @@ BoundingRectangle<BaseVecT> calculateBoundingRectangle(
 
         for(auto contourVertexH: contour)
         {
+            // TODO: Besser vorberechnen?
             auto contourPoint = mesh.getVertexPosition(contourVertexH);
 
             // calculate distance to plane1
@@ -182,6 +218,8 @@ BoundingRectangle<BaseVecT> calculateBoundingRectangle(
             bestVec2 = vec2;
         }
     }
+
+    // cout << "min area: " << minArea << endl;
 
     return BoundingRectangle<BaseVecT>(
         supportVector,
