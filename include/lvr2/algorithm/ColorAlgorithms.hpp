@@ -60,7 +60,7 @@ optional<DenseVertexMap<Rgb8Color>> calcColorFromPointCloud(
  *
  * @return  The 8-bit RGB-Color, interpreted as rainbowcolor.
  */
-Rgb8Color floatToRainbowColor(float value);
+static Rgb8Color floatToRainbowColor(float value);
 
 /**
  * @brief   Convert a given float to an 8-bit Grayscale-Color.
@@ -73,7 +73,7 @@ Rgb8Color floatToRainbowColor(float value);
  *
  * @return  The 8-bit Grayscale-Color.
  */
-Rgb8Color floatToGrayScaleColor(float value);
+static Rgb8Color floatToGrayScaleColor(float value);
 
 } // namespace lvr2
 

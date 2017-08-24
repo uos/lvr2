@@ -82,7 +82,7 @@ optional<DenseVertexMap<Rgb8Color>> calcColorFromPointCloud(
     return vertexMap;
 }
 
-Rgb8Color floatToRainbowColor(float value)
+static Rgb8Color floatToRainbowColor(float value)
 {
     value = std::min(value, 1.0f);
     value = std::max(value, 0.0f);
@@ -122,7 +122,7 @@ Rgb8Color floatToRainbowColor(float value)
     }
 }
 
-Rgb8Color floatToGrayScaleColor(float value)
+static Rgb8Color floatToGrayScaleColor(float value)
 {
     if(value > 1)
     {
