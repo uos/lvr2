@@ -118,7 +118,7 @@ struct Vector : public BaseVecT
 };
 
 template<typename BaseVecT>
-std::ostream& operator<<(std::ostream& os, const Vector<BaseVecT>& v)
+inline std::ostream& operator<<(std::ostream& os, const Vector<BaseVecT>& v)
 {
     os << "Vector[" << v.x << ", " << v.y << ", " << v.z << "]";
     return os;
