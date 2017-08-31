@@ -42,8 +42,8 @@ TexturizerResult<BaseVecT> generateTextures(
 )
 {
 
-    // string msg = lvr::timestamp.getElapsedTime() + "Generating textures ... ";
-    // lvr::ProgressBar progress(faceHandleClusterBiMap.numCluster(), msg);
+    string msg = lvr::timestamp.getElapsedTime() + "Generating textures ";
+    lvr::ProgressBar progress(faceHandleClusterBiMap.numCluster(), msg);
 
     int numFacesThreshold = textureThreshold;
     int textureIndex = 0;
@@ -56,10 +56,9 @@ TexturizerResult<BaseVecT> generateTextures(
 
     HalfEdgeMesh<BaseVecT> debugMesh;
 
-
     for (auto clusterH: faceHandleClusterBiMap)
     {
-        // ++progress;
+        ++progress;
         const Cluster<FaceHandle> cluster = faceHandleClusterBiMap.getCluster(clusterH);
         int numFacesInCluster = cluster.handles.size();
 
@@ -71,32 +70,7 @@ TexturizerResult<BaseVecT> generateTextures(
             std::vector<VertexHandle> contour = calculateClusterContourVertices(clusterH, mesh, faceHandleClusterBiMap);
 
             // bounding rectangle
-            BoundingRectangle<BaseVecT> br = calculateBoundingRectangle(contour, mesh, cluster, normals, texelSize, faceHandleClusterBiMap, clusterH);
-
-            auto v1 = br.supportVector + (br.vec1 * br.minDistA) + (br.vec2 * br.minDistB);
-            auto v2 = br.supportVector + (br.vec1 * br.minDistA) + (br.vec2 * br.maxDistB);
-            auto v3 = br.supportVector + (br.vec1 * br.maxDistA) + (br.vec2 * br.minDistB);
-            auto v4 = br.supportVector + (br.vec1 * br.maxDistA) + (br.vec2 * br.maxDistB);
-            // auto v2 = plane.pos - tangent1.asVector() * bBox.getLongestSide();
-            // auto v3 = plane.pos + tangent2.asVector() * bBox.getLongestSide();
-            // auto v4 = plane.pos - tangent2.asVector() * bBox.getLongestSide();
-
-            // Add intersection plane to mesh
-            auto vH1 = debugMesh.addVertex(v1);
-            auto vH2 = debugMesh.addVertex(v2);
-            auto vH3 = debugMesh.addVertex(v3);
-            auto vH4 = debugMesh.addVertex(v4);
-
-            debugMesh.addFace(vH1, vH2, vH3);
-            debugMesh.addFace(vH3, vH2, vH4);
-
-            // debug output
-            // cout << "bounding box: " << br.minDistA << "  " << br.maxDistA
-            // << ",  b: " << br.minDistB << "  " << br.maxDistB
-            // << " (contourSize: " << contour.size() << ")"
-            // << " (numFaces: " << numFacesInCluster << ")" << endl;
-            // cout << "vec1: " << br.vec1 << "  vec2: " << br.vec2 << endl;
-            // cout << "sup vec: " << br.supportVector.x << " " << br.supportVector.y << " " << br.supportVector.z << endl;
+            BoundingRectangle<BaseVecT> br = calculateBoundingRectangle(contour, mesh, cluster, normals, texelSize, clusterH);
 
             // initial texture
             TextureToken<BaseVecT> texToken = generateTexture(br, surface, texelSize, textureIndex++);
@@ -107,36 +81,20 @@ TexturizerResult<BaseVecT> generateTextures(
             result.textures.push_back(texToken.m_texture);
 
             // find unique vertices in cluster
-            //FIXME/TODO
-            std::vector<VertexHandle> verticesOfCluster;
+            std::unordered_set<VertexHandle> verticesOfCluster;
             for (auto faceH : cluster.handles)
             {
                 for (auto vertexH : mesh.getVerticesOfFace(faceH))
                 {
-                    verticesOfCluster.push_back(vertexH);
+                    verticesOfCluster.insert(vertexH);
+                    // (doesnt insert duplicate vertices)
                 }
             }
-            std::sort(
-                verticesOfCluster.begin(),
-                verticesOfCluster.end(),
-                [] (const VertexHandle& lhs, const VertexHandle& rhs)
-                {
-                    return lhs.idx() < rhs.idx();
-                }
-            );
-            verticesOfCluster.erase(
-                std::unique(
-                    verticesOfCluster.begin(),
-                    verticesOfCluster.end()
-                ),
-                verticesOfCluster.end()
-            );
 
             for (auto vertexH : verticesOfCluster)
             {
                 // Calculate texture coords
                 // TODO: texturkoordinaten berechnen. aber ist das wirklich nötig?
-                // könnte genauso gut im finalizer direkt mit dem token gespeichert werden
                 TexCoords texCoords = texToken.textureCoords(mesh.getVertexPosition(vertexH).asVector());
 
                 if (result.tcMap.get(vertexH))
@@ -161,14 +119,14 @@ TexturizerResult<BaseVecT> generateTextures(
             numClustersTooLarge++;
         }
     }
-    // cout << endl;
+    cout << endl;
 
     cout << lvr::timestamp << "Skipped " << (numClustersTooSmall+numClustersTooLarge)
     << " clusters while texturizing (" << numClustersTooSmall << " below threshold, "
-    << numClustersTooLarge << " above limit)" << endl;
+    << numClustersTooLarge << " above limit, "
+    << faceHandleClusterBiMap.numCluster() << " total)" << endl;
 
-    // Save debug mesh
-    writeDebugMesh(debugMesh, "debugMesh.ply");
+    cout << lvr::timestamp << "Generated " << result.textures.size() << " textures" << endl;
 
     return result;
 }
@@ -200,10 +158,6 @@ TextureToken<BaseVecT> generateTexture(
         texelSize
     );
 
-    //cout << "PIXELS IN TEXTURE: " << sizeX * sizeY << endl;
-    string msg = lvr::timestamp.getElapsedTime() + "Calculating Texture Pixels ... ";
-    lvr::ProgressBar progress(sizeX * sizeY, msg);
-
     int dataCounter = 0;
 
     for (int y = 0; y < sizeY; y++)
@@ -220,16 +174,6 @@ TextureToken<BaseVecT> generateTexture(
                 boundingRect.supportVector
                 + boundingRect.vec1 * (x * texelSize + boundingRect.minDistA - texelSize / 2.0)
                 + boundingRect.vec2 * (y * texelSize + boundingRect.minDistB - texelSize / 2.0);
-
-            // Point<BaseVecT> currentPos =
-            //     boundingRect.supportVector
-            //     + boundingRect.vec1 * ((boundingRect.minDistA + x * texelSize) + texelSize / 2)
-            //     + boundingRect.vec2 * ((boundingRect.minDistB + y * texelSize) + texelSize / 2);
-
-            // Point<BaseVecT> currentPos = boundingRect.supportVector + boundingRect.vec1
-            //     * (x * texelSize + boundingRect.minDistA - texelSize / 2.0)
-            //     + boundingRect.vec2
-            //     * (y * texelSize + boundingRect.minDistB - texelSize / 2.0);
 
             surface->searchTree().kSearch(currentPos, k, cv);
 
@@ -250,23 +194,8 @@ TextureToken<BaseVecT> generateTexture(
             texture->m_data[(sizeY - y - 1) * (sizeX * 3) + 3 * x + 0] = r;
             texture->m_data[(sizeY - y - 1) * (sizeX * 3) + 3 * x + 1] = g;
             texture->m_data[(sizeY - y - 1) * (sizeX * 3) + 3 * x + 2] = b;
-
-
-            // texture->m_data[y * (sizeX * 3) + 3 * x + 0] = r;
-            // texture->m_data[y * (sizeX * 3) + 3 * x + 1] = g;
-            // texture->m_data[y * (sizeX * 3) + 3 * x + 2] = b;
-            // texture->m_data[(sizeX - x - 1) * (sizeY * 3) + 3 * y] = r;
-            // texture->m_data[(sizeX - x - 1) * (sizeY * 3) + 3 * y + 1] = g;
-            // texture->m_data[(sizeX - x - 1) * (sizeY * 3) + 3 * y + 2] = b;
-            // texture->m_data[(dataCounter * 3) + 0] = r;
-            // texture->m_data[(dataCounter * 3) + 1] = g;
-            // texture->m_data[(dataCounter * 3) + 2] = b;
-            dataCounter++;
-
-            ++progress;
         }
     }
-    cout << endl;
 
     return result;
 

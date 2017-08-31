@@ -30,6 +30,7 @@
 #include <cmath>
 #include <limits>
 #include <unordered_set>
+#include <lvr2/geometry/BoundingBox.hpp>
 
 namespace lvr2
 {
@@ -86,7 +87,6 @@ BoundingRectangle<BaseVecT> calculateBoundingRectangle(
     const Cluster<FaceHandle>& cluster,
     const FaceMap<Normal<BaseVecT>>& normals,
     float texelSize,
-    const ClusterBiMap<FaceHandle>& clusterBiMap,
     ClusterHandle clusterH
 )
 {
@@ -104,24 +104,25 @@ BoundingRectangle<BaseVecT> calculateBoundingRectangle(
 
     // // calculate regression plane for the cluster
     Plane<BaseVecT> regressionPlane = calcRegressionPlane(mesh, cluster, normals);
-    // Plane<BaseVecT> regressionPlane = calcRegressionPlane2(mesh, cluster, normals);
-
-    SparseClusterMap<Plane<BaseVecT>> planes;
-    planes.insert(clusterH, regressionPlane);
-
-    std::stringstream ss;
-    ss << "debugplane" << clusterH << ".ply";
-    debugPlanes(mesh, clusterBiMap, planes, ss.str() , 1000);
 
     // support vector for the plane
-    Vector<BaseVecT> supportVector = regressionPlane.pos.asVector();
+    Vector<BaseVecT> supportVector = regressionPlane.project(mesh.getVertexPosition(contour[0]));
+
+    // TODO: debug code entfernen
+    HalfEdgeMesh<BaseVecT> debugMesh;
+    for (auto vertexH : contour)
+    {
+        auto point = mesh.getVertexPosition(vertexH);
+        debugMesh.addVertex(point.asVector());
+    }
+    debugMesh.addVertex(supportVector);
 
     // calculate two orthogonal vectors in the plane
     auto normal = regressionPlane.normal;
-    // auto vec1 = normal.cross(Vector<BaseVecT>(-normal.getY(), normal.getX(), 0) + normal.asVector());
-    // Vector<BaseVecT> vec2 = normal.cross(vec1);
-    auto vec1 = normal.cross(mesh.getVertexPosition(contour[0]) - mesh.getVertexPosition(contour[1]));
+    auto pointInPlane = regressionPlane.project(mesh.getVertexPosition(contour[1])).asVector();
+    auto vec1 = (pointInPlane - supportVector).cross(normal.asVector());
     vec1.normalize();
+
     Vector<BaseVecT> vec2 = vec1.cross(normal.asVector());
     vec2.normalize();
 
@@ -154,13 +155,19 @@ BoundingRectangle<BaseVecT> calculateBoundingRectangle(
     {
         // rotate the bounding box
         vec1 = vec1 * cos(theta) + vec2 * sin(theta);
+        vec1.normalize();
         vec2 = vec1.cross(normal.asVector());
+        vec2.normalize();
 
+        // FIXME
         // calculate hessian normal forms for both planes to which the distances will be calculated
-        Normal<BaseVecT> planeNormal1 = (supportVector.dot(vec1) >= 0)? vec1.normalized() : -vec1.normalized();
+        // Normal<BaseVecT> planeNormal1 = (supportVector.dot(vec1) >= 0)? vec1.normalized() : vec1.normalized();
+        // Normal<BaseVecT> planeNormal2 = (supportVector.dot(vec2) >= 0)? vec2.normalized() : vec2.normalized();
+        auto planeNormal1 = vec1;
+        auto planeNormal2 = vec2;
         float planeDist1 = planeNormal1.dot(supportVector);
-        Normal<BaseVecT> planeNormal2 = (supportVector.dot(vec2) >= 0)? vec2.normalized() : -vec2.normalized();
         float planeDist2 = planeNormal2.dot(supportVector);
+
 
         float minA = std::numeric_limits<float>::max();
         float maxA = std::numeric_limits<float>::lowest();
@@ -173,7 +180,9 @@ BoundingRectangle<BaseVecT> calculateBoundingRectangle(
         for(auto contourVertexH: contour)
         {
             // TODO: Besser vorberechnen?
-            auto contourPoint = mesh.getVertexPosition(contourVertexH);
+            //auto contourPoint = mesh.getVertexPosition(contourVertexH);
+            // TODO: project nötig?
+            auto contourPoint = regressionPlane.project(mesh.getVertexPosition(contourVertexH));
 
             // calculate distance to plane1
             float dist1 = planeNormal1.dot(contourPoint) - planeDist1;
@@ -219,7 +228,25 @@ BoundingRectangle<BaseVecT> calculateBoundingRectangle(
         }
     }
 
-    // cout << "min area: " << minArea << endl;
+    for (int i = 0; i < 2000; i++)
+    {
+        auto v1 = supportVector + bestVec1 * i;
+        debugMesh.addVertex(v1);
+        if (i < 1500)
+        {
+            auto v2 = supportVector + bestVec2 * i;
+            debugMesh.addVertex(v2);
+        }
+        if (i < 1000)
+        {
+            auto n = supportVector + normal.asVector() * i;
+            debugMesh.addVertex(n);
+        }
+    }
+
+    std::stringstream ss;
+    ss << "debug_contour+sv+vec1u2_" << clusterH << ".ply";
+    writeDebugMesh(debugMesh, ss.str());
 
     return BoundingRectangle<BaseVecT>(
         supportVector,
