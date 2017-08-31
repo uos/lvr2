@@ -54,7 +54,6 @@ BoundingRectangle<BaseVecT> calculateBoundingRectangle(
     const Cluster<FaceHandle>& cluster,
     const FaceMap<Normal<BaseVecT>>& normals,
     float texelSize,
-    const ClusterBiMap<FaceHandle>& clusterBiMap,
     ClusterHandle clusterH
 );
 
