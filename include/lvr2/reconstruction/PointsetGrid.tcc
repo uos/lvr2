@@ -25,7 +25,7 @@ PointsetGrid<BaseVecT, BoxT>::PointsetGrid(
     // Get indexed point buffer pointer
     auto numPoint = m_surface->pointBuffer()->getNumPoints();
 
-    cout << lvr::timestamp << "Creating Grid..." << endl;
+    cout << lvr::timestamp << "Creating grid" << endl;
 
     // Iterator over all points, calc lattice indices and add lattice points to the grid
     for(size_t i = 0; i < numPoint; i++)
