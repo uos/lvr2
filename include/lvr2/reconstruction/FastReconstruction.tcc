@@ -41,7 +41,7 @@ template<typename BaseVecT, typename BoxT>
 void FastReconstruction<BaseVecT, BoxT>::getMesh(BaseMesh<BaseVecT> &mesh)
 {
     // Status message for mesh generation
-    string comment = lvr::timestamp.getElapsedTime() + "Creating Mesh ";
+    string comment = lvr::timestamp.getElapsedTime() + "Creating mesh ";
     lvr::ProgressBar progress(m_grid->getNumberOfCells(), comment);
 
     // Some pointers
