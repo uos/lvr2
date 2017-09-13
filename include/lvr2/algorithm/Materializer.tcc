@@ -17,7 +17,7 @@
 */
 
 /*
-* Texturizer.tcc
+* Materializer.tcc
 *
 *  @date 17.07.2017
 *  @author Jan Philipp Vogtherr <jvogtherr@uni-osnabrueck.de>
@@ -31,10 +31,11 @@ namespace lvr2
 {
 
 template<typename BaseVecT>
-TexturizerResult<BaseVecT> generateTextures(
+MaterializerResult<BaseVecT> generateMaterials(
     float texelSize,
     int textureThreshold,
     int textureLimit,
+    bool fallback,
     BaseMesh<BaseVecT>& mesh,
     ClusterBiMap<FaceHandle>& faceHandleClusterBiMap,
     PointsetSurfacePtr<BaseVecT> surface,
@@ -51,7 +52,7 @@ TexturizerResult<BaseVecT> generateTextures(
     int numClustersTooSmall = 0;
     int numClustersTooLarge = 0;
 
-    TexturizerResult<BaseVecT> result;
+    MaterializerResult<BaseVecT> result;
     result.tcMap.reserve(mesh.numVertices());
 
     HalfEdgeMesh<BaseVecT> debugMesh;
@@ -110,28 +111,71 @@ TexturizerResult<BaseVecT> generateTextures(
             }
 
         }
-        else if (numFacesInCluster < numFacesThreshold)
+        else
         {
-            numClustersTooSmall++;
-        }
-        else if (textureLimit > 0 && numFacesInCluster > textureLimit)
-        {
-            numClustersTooLarge++;
+            // Cluster is too large or too small to generate a texture from
+            if (numFacesInCluster < numFacesThreshold)
+            {
+                numClustersTooSmall++;
+            }
+            else if (textureLimit > 0 && numFacesInCluster > textureLimit)
+            {
+                numClustersTooLarge++;
+            }
+
+            // If texture fallback is enabled:
+            // If the cluster is too small or too large for a texture, use a plain color instead
+            if (fallback)
+            {
+                // For this cluster, calculate one representative color
+                // (= color of the point that is closest to the face centroid)
+                for (auto faceH : cluster.handles)
+                {
+                    Rgb8Color color = getColorForFaceCentroid(faceH, mesh, surface);
+                    result.untexturizedFaceColors.insert(faceH, color);
+                }
+            }
+
         }
     }
     cout << endl;
 
     cout << lvr::timestamp << "Skipped " << (numClustersTooSmall+numClustersTooLarge)
-    << " clusters while texturizing (" << numClustersTooSmall << " below threshold, "
-    << numClustersTooLarge << " above limit, "
-    << faceHandleClusterBiMap.numCluster() << " total)" << endl;
+    << " clusters while generating textures" << endl;
+
+    cout << lvr::timestamp << "(" << numClustersTooSmall << " below threshold, " << numClustersTooLarge
+    << " above limit, " << faceHandleClusterBiMap.numCluster() << " total)" << endl;
 
     cout << lvr::timestamp << "Generated " << result.textures.size() << " textures" << endl;
 
     return result;
 }
 
-template <typename BaseVecT>
+template<typename BaseVecT>
+Rgb8Color getColorForFaceCentroid(FaceHandle faceH, BaseMesh<BaseVecT>& mesh, PointsetSurfacePtr<BaseVecT> surface)
+{
+    vector<size_t> cv;
+    auto centroid = mesh.calcFaceCentroid(faceH);
+
+    int k = 1; // k-nearest-neighbors
+    surface->searchTree().kSearch(centroid, k, cv);
+    uint8_t r = 0, g = 0, b = 0;
+    for (size_t pointIdx : cv)
+    {
+        array<uint8_t,3> colors = *(surface->pointBuffer()->getRgbColor(pointIdx));
+        r += colors[0];
+        g += colors[1];
+        b += colors[2];
+    }
+    r /= k;
+    g /= k;
+    b /= k;
+    Rgb8Color color = {r,g,b};
+    return color;
+}
+
+
+template<typename BaseVecT>
 TextureToken<BaseVecT> generateTexture(
     BoundingRectangle<BaseVecT>& boundingRect,
     PointsetSurfacePtr<BaseVecT> surface,

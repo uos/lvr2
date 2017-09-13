@@ -186,7 +186,7 @@
 #include <lvr2/algorithm/ClusterAlgorithms.hpp>
 #include <lvr2/algorithm/CleanupAlgorithms.hpp>
 #include <lvr2/algorithm/ReductionAlgorithms.hpp>
-#include <lvr2/algorithm/Texturizer.hpp>
+#include <lvr2/algorithm/Materializer.hpp>
 
 #include <lvr2/reconstruction/AdaptiveKSearchSurface.hpp>
 #include <lvr2/reconstruction/BilinearFastBox.hpp>
@@ -1053,19 +1053,21 @@ int main(int argc, char** argv)
     {
         // Create textures
         // Textures will be saved as a ppm file when calling this
-        TexturizerResult<BaseVecT> texturizerResult = generateTextures(
+        MaterializerResult<BaseVecT> materializerResult = generateMaterials(
             options.getTexelSize(),
             options.getTextureThreshold(),
             options.getTextureLimit(),
+            true, // TODO: parameter
             mesh,
             clusterBiMap,
             surface,
             faceNormals
         );
         // Add to finalize algorithm
-        finalize.setTexTokenClusterMap(texturizerResult.texTokenClusterMap);
-        finalize.setTexCoordVertexMap(texturizerResult.tcMap);
-        cout << timestamp << "Texturizing finished." << endl;
+        finalize.setTexTokenClusterMap(materializerResult.texTokenClusterMap);
+        finalize.setTexCoordVertexMap(materializerResult.tcMap);
+        finalize.setFaceColors(materializerResult.untexturizedFaceColors);
+        cout << timestamp << "Materializer finished." << endl;
     }
     // Run finalize algorithm
     auto buffer = finalize.apply(mesh);
