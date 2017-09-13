@@ -1057,7 +1057,7 @@ int main(int argc, char** argv)
             options.getTexelSize(),
             options.getTextureThreshold(),
             options.getTextureLimit(),
-            true, // TODO: parameter
+            options.textureFallback(),
             mesh,
             clusterBiMap,
             surface,
@@ -1067,7 +1067,6 @@ int main(int argc, char** argv)
         finalize.setTexTokenClusterMap(materializerResult.texTokenClusterMap);
         finalize.setTexCoordVertexMap(materializerResult.tcMap);
         finalize.setFaceColors(materializerResult.untexturizedFaceColors);
-        cout << timestamp << "Materializer finished." << endl;
     }
     // Run finalize algorithm
     auto buffer = finalize.apply(mesh);
