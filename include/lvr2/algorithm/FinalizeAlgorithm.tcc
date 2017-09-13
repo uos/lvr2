@@ -25,6 +25,7 @@
 
 #include <vector>
 #include <utility>
+#include <cmath>
 
 #include <lvr/io/Progress.hpp>
 #include <lvr2/geometry/Normal.hpp>
@@ -164,6 +165,11 @@ void ClusterFlatteningFinalizer<BaseVecT>::setVertexColors(DenseVertexMap<Rgb8Co
     m_vertexColors = vertexColors;
 }
 
+template<typename BaseVecT>
+void ClusterFlatteningFinalizer<BaseVecT>::setFaceColors(SparseFaceMap<Rgb8Color> faceColors)
+{
+    m_faceColors = faceColors;
+}
 
 template<typename BaseVecT>
 boost::shared_ptr<lvr::MeshBuffer>
@@ -206,6 +212,9 @@ boost::shared_ptr<lvr::MeshBuffer>
     // This map remembers which texture and material are associated with each other
     std::map<int, unsigned int> textureMaterialMap; // Stores the ID of the material for each textureIndex
     textureMaterialMap[-1] = 0; // texIndex -1 => no texture => default material with index 0
+
+    std::map<Rgb8Color, int> colorMaterialMap;
+
     // This map remembers which vertices were already visited for vertex coloring from pointcloud data
     // Each vertex must be visited exactly once
     SparseVertexMap<size_t> vertexColorVisitedMap;
@@ -339,7 +348,9 @@ boost::shared_ptr<lvr::MeshBuffer>
                         // Yes: get index from map and push to faceMaterials buffer
                         unsigned int materialIndex = textureMaterialMap[textureIndex];
                         faceMaterials.push_back(materialIndex);
-                    } else {
+                    }
+                    else
+                    {
                         // No: create material with texture
                         lvr::Material* material = new lvr::Material;
                         material->r = defaultR;
@@ -351,9 +362,48 @@ boost::shared_ptr<lvr::MeshBuffer>
                         textureMaterialMap[textureIndex] = globalMaterialIndex;
                         globalMaterialIndex++;
                     }
-                } else {
-                    // Face does not have a texture, use default material
-                    faceMaterials.push_back(0);
+                }
+                else
+                {
+                    // This face does not have a texture
+                    // Does it have a fixed color?
+                    if (m_faceColors && (*m_faceColors).containsKey(faceH))
+                    {
+                        // Get color from face color map
+                        Rgb8Color c = (*m_faceColors)[faceH];
+                        // "Smooth" out color, so that there are more similar colors for re-using later
+                        // (convert int in [0:255] to float in [0:1], round to 2 decimal places, convert back)
+                        float r, g, b;
+                        r = floor(((float)c[0]/255.0)*100.0+0.5)/100.0;
+                        g = floor(((float)c[1]/255.0)*100.0+0.5)/100.0;
+                        b = floor(((float)c[2]/255.0)*100.0+0.5)/100.0;
+                        c[0] = static_cast<int>(r * 255.0);
+                        c[1] = static_cast<int>(g * 255.0);
+                        c[2] = static_cast<int>(b * 255.0);
+
+                        if (colorMaterialMap.count(c))
+                        {
+                            faceMaterials.push_back(colorMaterialMap[c]);
+                        }
+                        else
+                        {
+                            colorMaterialMap[c] = globalMaterialIndex;
+                            lvr::Material* material = new lvr::Material;
+                            material->r = c[0];
+                            material->g = c[1];
+                            material->b = c[2];
+                            material->texture_index = -1;
+                            materials.push_back(material);
+                            faceMaterials.push_back(globalMaterialIndex);
+                            globalMaterialIndex++;
+
+                        }
+                    }
+                    else
+                    {
+                        // No face, no colors: use default material
+                        faceMaterials.push_back(0);
+                    }
                 }
             }
         }

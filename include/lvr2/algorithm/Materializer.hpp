@@ -17,15 +17,15 @@
 */
 
 /*
-* Texturizer.hpp
+* Materializer.hpp
 *
 *  @date 17.07.2017
 *  @author Jan Philipp Vogtherr <jvogtherr@uni-osnabrueck.de>
 *  @author Kristin Schmidt <krschmidt@uni-osnabrueck.de>
 */
 
-#ifndef LVR2_ALGORITHM_TEXTURIZER_H_
-#define LVR2_ALGORITHM_TEXTURIZER_H_
+#ifndef LVR2_ALGORITHM_MATERIALIZER_H_
+#define LVR2_ALGORITHM_MATERIALIZER_H_
 
 #include <boost/shared_ptr.hpp>
 #include <boost/smart_ptr/make_shared.hpp>
@@ -50,12 +50,13 @@
 namespace lvr2
 {
 
-template <typename BaseVecT>
-struct TexturizerResult
+template<typename BaseVecT>
+struct MaterializerResult
 {
     SparseClusterMap<TextureToken<BaseVecT>> texTokenClusterMap;
     std::vector<Texture*> textures;
     SparseVertexMap<ClusterTexCoordMapping> tcMap;
+    SparseFaceMap<Rgb8Color> untexturizedFaceColors;
 };
 
 template<typename BaseVecT>
@@ -93,10 +94,11 @@ struct BoundingRectangle
 };
 
 template<typename BaseVecT>
-TexturizerResult<BaseVecT> generateTextures(
+MaterializerResult<BaseVecT> generateMaterials(
     float texelSize,
     int textureThreshold,
     int textureLimit,
+    bool fallback,
     BaseMesh<BaseVecT>& mesh,
     ClusterBiMap<FaceHandle>& faceHandleClusterBiMap,
     PointsetSurfacePtr<BaseVecT> surface,
@@ -105,6 +107,6 @@ TexturizerResult<BaseVecT> generateTextures(
 
 } // namespace lvr2
 
-#include <lvr2/algorithm/Texturizer.tcc>
+#include <lvr2/algorithm/Materializer.tcc>
 
-#endif /* LVR2_ALGORITHM_TEXTURIZER_H_ */
+#endif /* LVR2_ALGORITHM_MATERIALIZER_H_ */

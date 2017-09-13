@@ -29,7 +29,7 @@
 #ifndef LVR2_TEXTURE_TEXTURETOKEN_HPP_
 #define LVR2_TEXTURE_TEXTURETOKEN_HPP_
 
-#include <lvr2/algorithm/Texturizer.hpp>
+#include <lvr2/algorithm/Materializer.hpp>
 #include <lvr2/texture/ClusterTexCoordMapping.hpp>
 #include <lvr2/texture/Texture.hpp>
 

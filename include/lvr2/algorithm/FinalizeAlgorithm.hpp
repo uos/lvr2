@@ -40,7 +40,7 @@ using boost::optional;
 #include <lvr2/util/ClusterBiMap.hpp>
 
 #include "ClusterPainter.hpp"
-#include "Texturizer.hpp"
+#include "Materializer.hpp"
 
 namespace lvr2
 {
@@ -74,7 +74,7 @@ public:
     void setTexTokenClusterMap(SparseClusterMap<TextureToken<BaseVecT>> texTokenClusterMap);
     void setTexCoordVertexMap(SparseVertexMap<ClusterTexCoordMapping> texCoordVertexMap);
     void setVertexColors(DenseVertexMap<Rgb8Color> vertexColors);
-
+    void setFaceColors(SparseFaceMap<Rgb8Color> faceColors);
 
     boost::shared_ptr<lvr::MeshBuffer> apply(const BaseMesh<BaseVecT>& mesh);
 
@@ -85,6 +85,7 @@ private:
     optional<SparseClusterMap<TextureToken<BaseVecT>>> m_texTokenClusterMap;
     optional<SparseVertexMap<ClusterTexCoordMapping>> m_texCoordVertexMap;
     optional<DenseVertexMap<Rgb8Color>> m_vertexColors;
+    optional<SparseFaceMap<Rgb8Color>> m_faceColors;
 };
 
 } // namespace lvr2
