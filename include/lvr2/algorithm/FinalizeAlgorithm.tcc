@@ -371,15 +371,6 @@ boost::shared_ptr<lvr::MeshBuffer>
                     {
                         // Get color from face color map
                         Rgb8Color c = (*m_faceColors)[faceH];
-                        // "Smooth" out color, so that there are more similar colors for re-using later
-                        // (convert int in [0:255] to float in [0:1], round to 2 decimal places, convert back)
-                        float r, g, b;
-                        r = floor(((float)c[0]/255.0)*100.0+0.5)/100.0;
-                        g = floor(((float)c[1]/255.0)*100.0+0.5)/100.0;
-                        b = floor(((float)c[2]/255.0)*100.0+0.5)/100.0;
-                        c[0] = static_cast<int>(r * 255.0);
-                        c[1] = static_cast<int>(g * 255.0);
-                        c[2] = static_cast<int>(b * 255.0);
 
                         if (colorMaterialMap.count(c))
                         {

@@ -88,6 +88,7 @@ Options::Options(int argc, char** argv)
         ("patt", value<float>(&m_patternThreshold)->default_value(100), "Threshold for pattern extraction from textures")
         ("mtv", value<int>(&m_minimumTransformationVotes)->default_value(3), "Minimum number of votes to consider a texture transformation as correct")
         ("vcfp", "Use color information from pointcloud to paint vertices")
+        ("textureFallback", "Use materials with plain colors to colorize clusters that are too small or large (see texture threshold & limit)")
     ;
 
     setup();
@@ -402,6 +403,11 @@ int Options::getTextureLimit() const
 bool Options::vertexColorsFromPointcloud() const
 {
     return m_variables.count("vcfp");
+}
+
+bool Options::textureFallback() const
+{
+    return m_variables.count("textureFallback");
 }
 
 Options::~Options() {

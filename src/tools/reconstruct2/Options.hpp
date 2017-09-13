@@ -304,6 +304,8 @@ public:
 
     bool vertexColorsFromPointcloud() const;
 
+    bool textureFallback() const;
+
 private:
 
     /// The set voxelsize
@@ -423,6 +425,9 @@ private:
     ///Use pointcloud colors to paint vertices
     bool m_vertexColorsFromPointcloud;
 
+    ///Use plain colors as fallback for clusters that cant be texturized due to their size
+    bool m_textureFallback;
+
 };
 
 
@@ -532,9 +537,18 @@ inline ostream& operator<<(ostream& os, const Options &o)
         cout << "##### Texel size \t\t: " << o.getTexelSize() << endl;
         cout << "##### Texture Threshold \t: " << o.getTextureThreshold() << endl;
         cout << "##### Texture Limit\t\t: " << o.getTextureLimit() << endl;
+        if (o.textureFallback())
+        {
+            cout << "##### Texture Fallback\t\t: YES" << endl;
+        }
+        else
+        {
+            cout << "##### Texture Fallback\t\t: NO" << endl;
+        }
+
         if(o.doTextureAnalysis())
         {
-            cout << "##### Texture Analysis \t: OFF" << endl;
+            cout << "##### Texture Analysis \t: ON" << endl;
         }
         else
         {
