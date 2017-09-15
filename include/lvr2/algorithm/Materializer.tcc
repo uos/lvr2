@@ -24,68 +24,133 @@
 *  @author Kristin Schmidt <krschmidt@uni-osnabrueck.de>
 */
 
-#include "ClusterAlgorithm.hpp"
-
-
 namespace lvr2
 {
 
 template<typename BaseVecT>
-MaterializerResult<BaseVecT> generateMaterials(
-    float texelSize,
-    int textureThreshold,
-    int textureLimit,
-    bool fallback,
-    BaseMesh<BaseVecT>& mesh,
-    ClusterBiMap<FaceHandle>& faceHandleClusterBiMap,
-    PointsetSurfacePtr<BaseVecT> surface,
-    const FaceMap<Normal<BaseVecT>>& normals
-)
+Materializer<BaseVecT>::Materializer(
+    const BaseMesh<BaseVecT>& mesh,
+    const ClusterBiMap<FaceHandle>& cluster,
+    const FaceMap<Normal<BaseVecT>>& normals,
+    const PointsetSurface<BaseVecT>& surface
+) :
+    m_mesh(mesh),
+    m_cluster(cluster),
+    m_normals(normals),
+    m_surface(surface)
 {
+}
 
-    string msg = lvr::timestamp.getElapsedTime() + "Generating textures ";
-    lvr::ProgressBar progress(faceHandleClusterBiMap.numCluster(), msg);
+template<typename BaseVecT>
+void Materializer<BaseVecT>::setTexturizer(Texturizer<BaseVecT> texturizer)
+{
+    m_texturizer = texturizer;
+}
 
-    int numFacesThreshold = textureThreshold;
-    int textureIndex = 0;
+template<typename BaseVecT>
+MaterializerResult<BaseVecT> Materializer<BaseVecT>::generateMaterials()
+{
+    string msg = lvr::timestamp.getElapsedTime() + "Generating materials ";
+    lvr::ProgressBar progress(m_cluster.numCluster(), msg);
 
+    // Prepare result
+    DenseFaceMap<Material> faceMaterials;
+    SparseVertexMap<ClusterTexCoordMapping> vertexTexCoords;
+
+    // Counters used for texturizing
     int numClustersTooSmall = 0;
     int numClustersTooLarge = 0;
+    int textureCount = 0;
+    int clusterCount = 0;
 
-    MaterializerResult<BaseVecT> result;
-    result.tcMap.reserve(mesh.numVertices());
-
-    HalfEdgeMesh<BaseVecT> debugMesh;
-
-    for (auto clusterH: faceHandleClusterBiMap)
+    // For all clusters ...
+    for (auto clusterH : m_cluster)
     {
         ++progress;
-        const Cluster<FaceHandle> cluster = faceHandleClusterBiMap.getCluster(clusterH);
+
+        // Get number of faces in cluster
+        const Cluster<FaceHandle>& cluster = m_cluster.getCluster(clusterH);
         int numFacesInCluster = cluster.handles.size();
 
-        // only create textures for clusters that are large enough
-        if (numFacesInCluster >= textureThreshold && (numFacesInCluster < textureLimit || textureLimit < 1))
-        // if (numFacesInCluster >= numFacesThreshold && numFacesInCluster < 200000)
+
+        if (!m_texturizer
+            || (numFacesInCluster < m_texturizer.get().m_texMinClusterSize
+                && m_texturizer.get().m_texMinClusterSize != 0)
+            || (numFacesInCluster > m_texturizer.get().m_texMaxClusterSize
+                && m_texturizer.get().m_texMaxClusterSize != 0)
+        )
         {
-            // contour
-            std::vector<VertexHandle> contour = calculateClusterContourVertices(clusterH, mesh, faceHandleClusterBiMap);
+            // No textures, or using textures and texture is too small/large
+            // Generate plain color material
+            // (texMin/MaxClustersize = 0 means: no limit)
 
-            // bounding rectangle
-            BoundingRectangle<BaseVecT> br = calculateBoundingRectangle(contour, mesh, cluster, normals, texelSize, clusterH);
+            if (m_texturizer)
+            {
+                // If using textures, count wether this cluster was too small or too large
+                if (numFacesInCluster < m_texturizer.get().m_texMinClusterSize)
+                {
+                    numClustersTooSmall++;
+                }
+                else if (numFacesInCluster > m_texturizer.get().m_texMaxClusterSize)
+                {
+                    numClustersTooLarge++;
+                }
+            }
 
-            // initial texture
-            TextureToken<BaseVecT> texToken = generateTexture(br, surface, texelSize, textureIndex++);
-            texToken.m_texture->save(texToken.m_textureIndex);
 
-            // save textoken & texture
-            result.texTokenClusterMap.insert(clusterH, texToken);
-            result.textures.push_back(texToken.m_texture);
+            // For each face ...
+            for (auto faceH : cluster.handles)
+            {
+                // Calculate color of centroid
+                Rgb8Color color = calcColorForFaceCentroid(m_mesh, m_surface, faceH);
+                // Create material and save in face map
+                Material material;
+                material.m_color = color;
+                faceMaterials.insert(faceH, material);
+            }
 
-            // find unique vertices in cluster
+        }
+        else if (m_texturizer) // FIXME: sollte unnötig sein, cond ist nur zum testen hier
+        {
+            // Textures
+
+            // Contour
+            std::vector<VertexHandle> contour = calculateClusterContourVertices(
+                clusterH,
+                m_mesh,
+                m_cluster
+            );
+
+            // Counding rectangle
+            BoundingRectangle<BaseVecT> boundintRect = calculateBoundingRectangle(
+                contour,
+                m_mesh,
+                cluster,
+                m_normals,
+                m_texturizer.get().m_texelSize,
+                clusterH
+            );
+
+            // Create texture
+            TextureHandle texH = m_texturizer.get().generateTexture(
+                textureCount,
+                m_surface,
+                boundintRect
+            );
+
+            // Create material and insert in face map
+            Material material;
+            material.m_texture = texH;
+
+            // Calculate tex coords
+            // Insert material into face map for each face
+            // Find unique vertices in cluster
             std::unordered_set<VertexHandle> verticesOfCluster;
             for (auto faceH : cluster.handles)
             {
-                for (auto vertexH : mesh.getVerticesOfFace(faceH))
+                faceMaterials.insert(faceH, material);
+
+                for (auto vertexH : m_mesh.getVerticesOfFace(faceH))
                 {
                     verticesOfCluster.insert(vertexH);
                     // (doesnt insert duplicate vertices)
@@ -94,164 +159,56 @@ MaterializerResult<BaseVecT> generateMaterials(
 
             for (auto vertexH : verticesOfCluster)
             {
-                // Calculate texture coords
-                // TODO: texturkoordinaten berechnen. aber ist das wirklich nötig?
-                TexCoords texCoords = texToken.textureCoords(mesh.getVertexPosition(vertexH).asVector());
+                // Calculate tex coords
+                TexCoords texCoords = m_texturizer.get().calculateTexCoords(
+                    texH,
+                    boundintRect,
+                    m_mesh.getVertexPosition(vertexH)
+                );
 
-                if (result.tcMap.get(vertexH))
+                // Insert into result map
+                if (vertexTexCoords.get(vertexH))
                 {
-                    result.tcMap[vertexH].push(clusterH, texCoords);
+                    vertexTexCoords.get(vertexH).get().push(clusterH, texCoords);
                 }
                 else
                 {
-                    ClusterTexCoordMapping tcMap;
-                    tcMap.push(clusterH, texCoords);
-                    result.tcMap.insert(vertexH, tcMap);
+                    ClusterTexCoordMapping mapping;
+                    mapping.push(clusterH, texCoords);
+                    vertexTexCoords.insert(vertexH, mapping);
                 }
             }
-
-        }
-        else
-        {
-            // Cluster is too large or too small to generate a texture from
-            if (numFacesInCluster < numFacesThreshold)
-            {
-                numClustersTooSmall++;
-            }
-            else if (textureLimit > 0 && numFacesInCluster > textureLimit)
-            {
-                numClustersTooLarge++;
-            }
-
-            // If texture fallback is enabled:
-            // If the cluster is too small or too large for a texture, use a plain color instead
-            if (fallback)
-            {
-                // For this cluster, calculate one representative color
-                // (= color of the point that is closest to the face centroid)
-                for (auto faceH : cluster.handles)
-                {
-                    Rgb8Color color = getColorForFaceCentroid(faceH, mesh, surface);
-                    result.untexturizedFaceColors.insert(faceH, color);
-                }
-            }
-
+            textureCount++;
         }
     }
+
     cout << endl;
 
-    cout << lvr::timestamp << "Skipped " << (numClustersTooSmall+numClustersTooLarge)
-    << " clusters while generating textures" << endl;
-
-    cout << lvr::timestamp << "(" << numClustersTooSmall << " below threshold, " << numClustersTooLarge
-    << " above limit, " << faceHandleClusterBiMap.numCluster() << " total)" << endl;
-
-    cout << lvr::timestamp << "Generated " << result.textures.size() << " textures" << endl;
-
-    return result;
-}
-
-template<typename BaseVecT>
-Rgb8Color getColorForFaceCentroid(FaceHandle faceH, BaseMesh<BaseVecT>& mesh, PointsetSurfacePtr<BaseVecT> surface)
-{
-    vector<size_t> cv;
-    auto centroid = mesh.calcFaceCentroid(faceH);
-
-    // Find color of face centroid
-    int k = 1; // k-nearest-neighbors
-    surface->searchTree().kSearch(centroid, k, cv);
-    uint8_t r = 0, g = 0, b = 0;
-    for (size_t pointIdx : cv)
+    // Write result
+    if (m_texturizer)
     {
-        array<uint8_t,3> colors = *(surface->pointBuffer()->getRgbColor(pointIdx));
-        r += colors[0];
-        g += colors[1];
-        b += colors[2];
+
+        cout << lvr::timestamp << "Skipped " << (numClustersTooSmall+numClustersTooLarge)
+        << " clusters while generating textures" << endl;
+
+        cout << lvr::timestamp << "(" << numClustersTooSmall << " below threshold, "
+        << numClustersTooLarge << " above limit, " << m_cluster.numCluster() << " total)" << endl;
+
+        cout << lvr::timestamp << "Generated " << textureCount << " textures" << endl;
+
+        return MaterializerResult<BaseVecT>(
+            faceMaterials,
+            m_texturizer.get().getTextures(),
+            vertexTexCoords
+        );
     }
-    r /= k;
-    g /= k;
-    b /= k;
-
-    // "Smooth" colors: convert 0:255 to 0:1, round to 2 decimal places, convert back
-    // For better re-using of a single color later on
-    Rgb8Color color = {
-        static_cast<int>((floor((((float)r)/255.0)*100.0+0.5)/100.0) * 255.0),
-        static_cast<int>((floor((((float)g)/255.0)*100.0+0.5)/100.0) * 255.0),
-        static_cast<int>((floor((((float)b)/255.0)*100.0+0.5)/100.0) * 255.0)
-    };
-
-    return color;
-}
-
-
-template<typename BaseVecT>
-TextureToken<BaseVecT> generateTexture(
-    BoundingRectangle<BaseVecT>& boundingRect,
-    PointsetSurfacePtr<BaseVecT> surface,
-    float texelSize,
-    int textureIndex
-)
-{
-    // calculate the texture size
-    unsigned short int sizeX = ceil((boundingRect.maxDistA - boundingRect.minDistA) / texelSize);
-    unsigned short int sizeY = ceil((boundingRect.maxDistB - boundingRect.minDistB) / texelSize);
-
-    // create texture
-    Texture* texture = new Texture(sizeX, sizeY, 3, 1, 0);//, 0, 0, 0, 0, false, 0, 0);
-
-    // create TextureToken
-    TextureToken<BaseVecT> result = TextureToken<BaseVecT>(
-        boundingRect.vec1,
-        boundingRect.vec2,
-        boundingRect.supportVector,
-        boundingRect.minDistA,
-        boundingRect.minDistB,
-        texture,
-        textureIndex,
-        texelSize
-    );
-
-    int dataCounter = 0;
-
-    for (int y = 0; y < sizeY; y++)
+    else
     {
-        for (int x = 0; x < sizeX; x++)
-        {
-            std::vector<char> v;
-
-            int k = 1; // k-nearest-neighbors
-
-            vector<size_t> cv;
-
-            Point<BaseVecT> currentPos =
-                boundingRect.supportVector
-                + boundingRect.vec1 * (x * texelSize + boundingRect.minDistA - texelSize / 2.0)
-                + boundingRect.vec2 * (y * texelSize + boundingRect.minDistB - texelSize / 2.0);
-
-            surface->searchTree().kSearch(currentPos, k, cv);
-
-            uint8_t r = 0, g = 0, b = 0;
-
-            for (size_t pointIdx : cv)
-            {
-                array<uint8_t,3> colors = *(surface->pointBuffer()->getRgbColor(pointIdx));
-                r += colors[0];
-                g += colors[1];
-                b += colors[2];
-            }
-
-            r /= k;
-            g /= k;
-            b /= k;
-
-            texture->m_data[(sizeY - y - 1) * (sizeX * 3) + 3 * x + 0] = r;
-            texture->m_data[(sizeY - y - 1) * (sizeX * 3) + 3 * x + 1] = g;
-            texture->m_data[(sizeY - y - 1) * (sizeX * 3) + 3 * x + 2] = b;
-        }
+        return MaterializerResult<BaseVecT>(faceMaterials);
     }
 
-    return result;
-
 }
+
+
 
 } // namespace lvr2

@@ -187,6 +187,7 @@
 #include <lvr2/algorithm/CleanupAlgorithms.hpp>
 #include <lvr2/algorithm/ReductionAlgorithms.hpp>
 #include <lvr2/algorithm/Materializer.hpp>
+#include <lvr2/algorithm/Texturizer.hpp>
 
 #include <lvr2/reconstruction/AdaptiveKSearchSurface.hpp>
 #include <lvr2/reconstruction/BilinearFastBox.hpp>
@@ -1034,9 +1035,18 @@ int main(int argc, char** argv)
     // }
     // auto buffer = finalize.apply(mesh);
 
+
     // Prepare finalize algorithm
     ClusterFlatteningFinalizer<Vec> finalize(clusterBiMap);
     finalize.setVertexNormals(vertexNormals);
+
+    // TODO:
+    // Vielleicht sollten indv. vertex und cluster colors mit in den Materializer aufgenommen werden
+    // Dafür spricht: alles mit Farben findet dann an derselben Stelle statt
+    // dagegen spricht: Materializer macht aktuell nur face colors und keine vertex colors
+
+
+    // Vertex colors:
     // If vertex colors should be generated from pointcloud:
     if (options.vertexColorsFromPointcloud())
     {
@@ -1048,26 +1058,29 @@ int main(int argc, char** argv)
         // else: use simpsons painter for vertex coloring
         finalize.setClusterColors(*clusterColors);
     }
+
+    // Materializer for face materials (colors and/or textures)
+    Materializer<Vec> materializer(
+        mesh,
+        clusterBiMap,
+        faceNormals,
+        *surface
+    );
     // When using textures ...
     if (options.generateTextures())
     {
-        // Create textures
-        // Textures will be saved as a ppm file when calling this
-        MaterializerResult<BaseVecT> materializerResult = generateMaterials(
+        Texturizer<Vec> texturizer(
             options.getTexelSize(),
-            options.getTextureThreshold(),
-            options.getTextureLimit(),
-            options.textureFallback(),
-            mesh,
-            clusterBiMap,
-            surface,
-            faceNormals
+            options.getTexMinClusterSize(),
+            options.getTexMaxClusterSize()
         );
-        // Add to finalize algorithm
-        finalize.setTexTokenClusterMap(materializerResult.texTokenClusterMap);
-        finalize.setTexCoordVertexMap(materializerResult.tcMap);
-        finalize.setFaceColors(materializerResult.untexturizedFaceColors);
+        materializer.setTexturizer(texturizer);
     }
+    MaterializerResult<Vec> matResult = materializer.generateMaterials();
+    // Add data to finalize algorithm
+    finalize.setMaterializerResult(matResult);
+
+
     // Run finalize algorithm
     auto buffer = finalize.apply(mesh);
 
@@ -1092,12 +1105,7 @@ int main(int argc, char** argv)
     }
     cout << timestamp << "Saving mesh." << endl;
     lvr::ModelFactory::saveModel(m, "triangle_mesh.ply");
-
-    // Save obj model if textures were generated
-    if(options.generateTextures())
-    {
-        lvr::ModelFactory::saveModel(m, "triangle_mesh.obj");
-    }
+    lvr::ModelFactory::saveModel(m, "triangle_mesh.obj");
     cout << timestamp << "Program end." << endl;
 
     return 0;

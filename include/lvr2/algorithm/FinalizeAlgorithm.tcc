@@ -146,30 +146,17 @@ void ClusterFlatteningFinalizer<BaseVecT>::setClusterColors(const ClusterMap<Rgb
 }
 
 template<typename BaseVecT>
-void ClusterFlatteningFinalizer<BaseVecT>::setTexTokenClusterMap(
-        SparseClusterMap<TextureToken<BaseVecT>> texTokenClusterMap
-) {
-    m_texTokenClusterMap = texTokenClusterMap;
-}
-
-template<typename BaseVecT>
-void ClusterFlatteningFinalizer<BaseVecT>::setTexCoordVertexMap(
-        SparseVertexMap<ClusterTexCoordMapping> texCoordVertexMap
-) {
-    m_texCoordVertexMap = texCoordVertexMap;
-}
-
-template<typename BaseVecT>
-void ClusterFlatteningFinalizer<BaseVecT>::setVertexColors(DenseVertexMap<Rgb8Color> vertexColors)
+void ClusterFlatteningFinalizer<BaseVecT>::setVertexColors(const VertexMap<Rgb8Color>& vertexColors)
 {
     m_vertexColors = vertexColors;
 }
 
 template<typename BaseVecT>
-void ClusterFlatteningFinalizer<BaseVecT>::setFaceColors(SparseFaceMap<Rgb8Color> faceColors)
+void ClusterFlatteningFinalizer<BaseVecT>::setMaterializerResult(const MaterializerResult<BaseVecT>& matResult)
 {
-    m_faceColors = faceColors;
+    m_materializerResult = matResult;
 }
+
 
 template<typename BaseVecT>
 boost::shared_ptr<lvr::MeshBuffer>
@@ -193,6 +180,11 @@ boost::shared_ptr<lvr::MeshBuffer>
     }
 
     // Create buffer and variables for texturizing
+    bool useTextures = false;
+    if (m_materializerResult && m_materializerResult.get().m_textures)
+    {
+        useTextures = true;
+    }
     vector<float> texCoords;
     vector<lvr::Material*> materials;
     vector<unsigned int> faceMaterials;
@@ -217,7 +209,7 @@ boost::shared_ptr<lvr::MeshBuffer>
 
     // This map remembers which vertices were already visited for vertex coloring from pointcloud data
     // Each vertex must be visited exactly once
-    SparseVertexMap<size_t> vertexColorVisitedMap;
+    SparseVertexMap<size_t> vertexColorVisitedMap; // TODO: umbenennen, wird für texturen benutzt und nicht für vertex colors
     size_t vertexColorCount = 0;
 
     // Create face buffer
@@ -295,31 +287,31 @@ boost::shared_ptr<lvr::MeshBuffer>
 
         // When using textures,
         // For each cluster:
-        if (m_texTokenClusterMap)
+        if (m_materializerResult)
         {
             // For each face in cluster:
             // Materials
             for (auto faceH : cluster.handles)
             {
-                // Get texture Token from map
-                auto texTokenOptional = (*m_texTokenClusterMap).get(clusterH);
+                Material m = m_materializerResult.get().m_faceMaterials.get(faceH).get();
 
                 // For each vertex in face:
                 for (auto vertexH : mesh.getVerticesOfFace(faceH))
                 {
                     if (!vertexColorVisitedMap.containsKey(vertexH))
                     {
-                        if (texTokenOptional)
+                        bool vertexHasTexCoords = m_materializerResult.get()
+                                .m_vertexTexCoords.get()
+                                .get(vertexH);
+
+                        if (useTextures && vertexHasTexCoords)
                         {
-                            // TODO: vielleicht texcoords hier direkt ausrechnen? wird nur 1x pro vertex gemacht mit der map!
-                            // siehe TODO im texturizer
-
-                            // Use texture token to calculate texture coords for this vertex
-                            //Vector<BaseVecT> vertexPosition = mesh.getVertexPosition(vertexH).asVector();
-                            //TexCoords coords = (*texTokenOptional).textureCoords(vertexPosition);
-
                             // Use tex coord vertex map to find texture coords
-                            TexCoords coords = (*(*m_texCoordVertexMap).get(vertexH)).getTexCoords(clusterH);
+                            const TexCoords coords = m_materializerResult.get()
+                                .m_vertexTexCoords.get()
+                                .get(vertexH).get()
+                                .getTexCoords(clusterH);
+
                             texCoords.push_back(coords.u);
                             texCoords.push_back(coords.v);
                             texCoords.push_back(0.0);
@@ -337,11 +329,20 @@ boost::shared_ptr<lvr::MeshBuffer>
                 }
 
                 // For this face: generate materials
-                // Does face have a texture token (i.e. does it have a texture)
-                if (texTokenOptional)
+                bool faceHasTexture = m.m_texture; // optional
+                bool faceHasColor = m.m_color; // optional
+
+                // Does this face have a texture?
+                if (useTextures && faceHasTexture)
                 {
                     // Yes: read texture info
-                    int textureIndex = (*texTokenOptional).m_textureIndex;
+                    TextureHandle texHandle = m.m_texture.get();
+                    auto texOptional = m_materializerResult.get()
+                        .m_textures.get()
+                        .get(texHandle);
+                    const Texture<BaseVecT>& texture = texOptional.get();
+                    int textureIndex = texture.m_index;
+
                     // Material for this texture already created?
                     if (textureMaterialMap.find(textureIndex) != textureMaterialMap.end())
                     {
@@ -363,38 +364,32 @@ boost::shared_ptr<lvr::MeshBuffer>
                         globalMaterialIndex++;
                     }
                 }
-                else
+                else if (faceHasColor)
                 {
-                    // This face does not have a texture
-                    // Does it have a fixed color?
-                    if (m_faceColors && (*m_faceColors).containsKey(faceH))
+                    // Else: does this face have a color?
+                    // Yes: read material(lvr2) and create buffer entry (lvr1 material)
+                    Rgb8Color c = m.m_color.get();
+                    if (colorMaterialMap.count(c))
                     {
-                        // Get color from face color map
-                        Rgb8Color c = (*m_faceColors)[faceH];
-
-                        if (colorMaterialMap.count(c))
-                        {
-                            faceMaterials.push_back(colorMaterialMap[c]);
-                        }
-                        else
-                        {
-                            colorMaterialMap[c] = globalMaterialIndex;
-                            lvr::Material* material = new lvr::Material;
-                            material->r = c[0];
-                            material->g = c[1];
-                            material->b = c[2];
-                            material->texture_index = -1;
-                            materials.push_back(material);
-                            faceMaterials.push_back(globalMaterialIndex);
-                            globalMaterialIndex++;
-
-                        }
+                        faceMaterials.push_back(colorMaterialMap[c]);
                     }
                     else
                     {
-                        // No face, no colors: use default material
-                        faceMaterials.push_back(0);
+                        colorMaterialMap[c] = globalMaterialIndex;
+                        lvr::Material* material = new lvr::Material;
+                        material->r = c[0];
+                        material->g = c[1];
+                        material->b = c[2];
+                        material->texture_index = -1;
+                        materials.push_back(material);
+                        faceMaterials.push_back(globalMaterialIndex);
+                        globalMaterialIndex++;
                     }
+                }
+                else
+                {
+                    // No texture, no colors: use default material
+                    faceMaterials.push_back(0);
                 }
             }
         }
@@ -417,16 +412,15 @@ boost::shared_ptr<lvr::MeshBuffer>
         buffer->setVertexColorArray(colors);
     }
 
-    if (m_texTokenClusterMap)
+    if (m_materializerResult)
     {
         buffer->setMaterialArray(materials);
         buffer->setFaceMaterialIndexArray(faceMaterials);
         buffer->setVertexTextureCoordinateArray(texCoords);
-        buffer->setTextureArray(textures); // TODO
+        buffer->setTextureArray(textures); // TODO: siehe oben
     }
 
     return buffer;
 }
-
 
 } // namespace lvr2

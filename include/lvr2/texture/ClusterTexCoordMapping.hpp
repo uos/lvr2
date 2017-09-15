@@ -50,14 +50,14 @@ class ClusterTexCoordMapping
 {
 private:
     // vector<pair<ClusterHandle, TexCoords>> mapping;
-    array<optional<pair<ClusterHandle, TexCoords>>, 10> m_mapping;
+    array<optional<pair<ClusterHandle, TexCoords>>, 100> m_mapping;
     size_t m_len;
 
 public:
     ClusterTexCoordMapping() : m_len(0) {}
 
     void push(ClusterHandle handle, TexCoords tex);
-    TexCoords getTexCoords(ClusterHandle clusterH);
+    TexCoords getTexCoords(ClusterHandle clusterH) const;
 };
 
 } // namespace lvr2

@@ -143,5 +143,42 @@ Rgb8Color floatToGrayScaleColor(float value)
 }
 
 
+template<typename BaseVecT>
+Rgb8Color calcColorForFaceCentroid(
+    const BaseMesh<BaseVecT>& mesh,
+    const PointsetSurface<BaseVecT>& surface,
+    FaceHandle faceH
+)
+{
+    vector<size_t> cv;
+    auto centroid = mesh.calcFaceCentroid(faceH);
+
+    // Find color of face centroid
+    int k = 1; // k-nearest-neighbors
+    surface.searchTree().kSearch(centroid, k, cv);
+    uint8_t r = 0, g = 0, b = 0;
+    for (size_t pointIdx : cv)
+    {
+        array<uint8_t,3> colors = *(surface.pointBuffer()->getRgbColor(pointIdx));
+        r += colors[0];
+        g += colors[1];
+        b += colors[2];
+    }
+    r /= k;
+    g /= k;
+    b /= k;
+
+    // "Smooth" colors: convert 0:255 to 0:1, round to 2 decimal places, convert back
+    // For better re-using of a single color later on
+    Rgb8Color color = {
+        static_cast<uint8_t>((floor((((float)r)/255.0)*100.0+0.5)/100.0) * 255.0),
+        static_cast<uint8_t>((floor((((float)g)/255.0)*100.0+0.5)/100.0) * 255.0),
+        static_cast<uint8_t>((floor((((float)b)/255.0)*100.0+0.5)/100.0) * 255.0)
+    };
+
+    return color;
+}
+
+
 
 } // namespace lvr2

@@ -30,25 +30,15 @@
 
 namespace lvr2 {
 
-float Texture::m_texelSize = 1;
-
-Texture::Texture()
+template<typename BaseVecT>
+Texture<BaseVecT>::Texture()
 {
     this->m_data                 = 0;
     this->m_width                = 0;
     this->m_height               = 0;
     this->m_numChannels          = 0;
     this->m_numBytesPerChan      = 0;
-    this->m_distance             = 0;
-    this->m_isPattern            = false;
-    // this->m_textureClass         = 0;
-    // this->m_featureDescriptors   = 0;
-    // this->m_numFeatures          = 0;
-    // this->m_numFeatureComponents = 0;
-    // this->m_stats                = 0;
-    // this->m_numCCVColors         = 0;
-    // this->m_CCV                  = 0;
-    // this->m_keyPoints            = 0;
+    this->m_texelSize            = 1.0;
 }
 
 // Texture::Texture(unsigned short int width, unsigned short int height, unsigned char numChannels,
@@ -73,42 +63,40 @@ Texture::Texture()
 //     this->m_distance             = 0;
 // }
 
-Texture::Texture(
+template<typename BaseVecT>
+Texture<BaseVecT>::Texture(
+    int index,
     unsigned short int width,
     unsigned short int height,
     unsigned char numChannels,
     unsigned char numBytesPerChan,
-    // unsigned short int textureClass,
-    bool isPattern
-) : m_width(width),
+    float texelSize
+) :
+    m_index(index),
+    m_width(width),
     m_height(height),
     m_numChannels(numChannels),
     m_numBytesPerChan(numBytesPerChan),
-    m_isPattern(isPattern),
-    m_data(new unsigned char[width * height * numChannels * numBytesPerChan]),
-    m_distance(0)
-
+    m_texelSize(texelSize),
+    m_data(new unsigned char[width * height * numChannels * numBytesPerChan])
 {
 }
 
-void Texture::save(int i)
+template<typename BaseVecT>
+void Texture<BaseVecT>::save()
 {
     //write image file
     char fn[255];
-    sprintf(fn, "texture_%d.ppm", i);
+    sprintf(fn, "texture_%d.ppm", m_index);
     lvr::PPMIO* pio = new lvr::PPMIO;
     pio->setDataArray(this->m_data, m_width, m_height);
     pio->write(string(fn));
     delete pio;
 }
 
-bool Texture::cmpTextures(Texture* t1, Texture* t2)
-{
-    return t1->m_distance < t2->m_distance;
-}
-
-Texture::~Texture() {
-    delete[] m_data;
+template<typename BaseVecT>
+Texture<BaseVecT>::~Texture() {
+    // delete[] m_data;
     // delete[] m_featureDescriptors;
     // delete[] m_stats;
     // delete[] m_CCV;

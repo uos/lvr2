@@ -32,7 +32,7 @@ void ClusterTexCoordMapping::push(ClusterHandle handle, TexCoords tex)
 {
     if (m_len == m_mapping.size())
     {
-        cout << "Oppsie doopsie, pushed but full :(" << endl;
+        cout << "Error: Overflow in ClusterTexCoordMapping" << endl;
     }
     else
     {
@@ -41,7 +41,7 @@ void ClusterTexCoordMapping::push(ClusterHandle handle, TexCoords tex)
     }
 }
 
-TexCoords ClusterTexCoordMapping::getTexCoords(ClusterHandle clusterH)
+TexCoords ClusterTexCoordMapping::getTexCoords(ClusterHandle clusterH) const
 {
     for (size_t i = 0; i < m_len; i++)
     {

@@ -21,8 +21,6 @@
  * Texture.hpp
  *
  *  @date 19.07.2017
- *  @author Kim Rinnewitz (krinnewitz@uos.de)
- *  @author Sven Schalk (sschalk@uos.de)
  *  @author Jan Philipp Vogtherr (jvogtherr@uos.de)
  *  @author Kristin Schmidt (krschmidt@uos.de)
  */
@@ -33,6 +31,7 @@
 #include <cstring>
 #include <math.h>
 #include <cstdio>
+#include <lvr2/geometry/BoundingRectangle.hpp>
 #include <lvr/io/PPMIO.hpp>
 
 namespace lvr2 {
@@ -41,11 +40,9 @@ namespace lvr2 {
 /**
  * @brief   This class represents a texture.
  */
+template<typename BaseVecT>
 class Texture {
 public:
-
-    ///The pixel size determines the resolution
-    static float m_texelSize;
 
     /**
      * @brief   Constructor.
@@ -58,36 +55,27 @@ public:
      *
      */
     Texture(
+        int index,
         unsigned short int width,
         unsigned short int height,
         unsigned char numChannels,
         unsigned char numBytesPerChan,
-        // unsigned short int textureClass,
-        bool isPattern
+        float texelSize
     );
 
-    /**
-     * @brief   write the texture to an image file
-     *
-     * @param   i   The number to use in the filename
-     *
-     */
-    void save(int i);
-
-    /**
-     * \brief   Compares two textures based on their distance values
-     *
-     * \param   t1  The first texture
-     * \param   t2  The second texture
-     *
-     * \return  true if t1->m_distance < t2->m_distance
-     */
-    static bool cmpTextures(Texture* t1, Texture* t2);
 
     /**
      * Destructor.
      */
     virtual ~Texture();
+
+    /**
+     * @brief   write the texture to an image file
+     */
+    void save();
+
+    ///Texture index
+    int m_index;
 
     ///The dimensions of the texture
     unsigned short int m_width, m_height;
@@ -101,36 +89,7 @@ public:
     ///The number of bytes per channel
     unsigned char m_numBytesPerChan;
 
-    ///The class of the texture
-    // unsigned short int m_textureClass;
-
-    // ///The precalculated feature descriptors (SIFT/SURF/...)
-    // float* m_featureDescriptors;
-
-    // ///The positions of the precalculated features
-    // float* m_keyPoints;
-
-    // ///The number of entries of each feature descriptor
-    // unsigned char m_numFeatureComponents;
-
-    // ///The number of feature descriptors
-    // unsigned short int m_numFeatures;
-
-    // ///14 statistical values characterizing the texture
-    // float* m_stats;
-
-    ///Determines whether this texture is a pattern texture or not
-    bool m_isPattern;
-
-    // ///Holds the number of colors used for CCV calculation
-    // unsigned char m_numCCVColors;
-
-    ///CCV
-    // unsigned long* m_CCV;
-
-    ///value indicating how well this texture fits the reference texture
-    float m_distance;
-
+    float m_texelSize;
 
 };
 
