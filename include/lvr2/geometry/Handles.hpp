@@ -254,6 +254,14 @@ struct hash<lvr2::ClusterHandle> {
     }
 };
 
+template<>
+struct hash<lvr2::TextureHandle> {
+    size_t operator()(const lvr2::TextureHandle& h) const
+    {
+        return std::hash<lvr2::Index>()(h.idx());
+    }
+};
+
 } // namespace std
 
 #endif /* LVR2_GEOMETRY_HANDLES_H_ */

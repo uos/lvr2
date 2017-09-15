@@ -75,6 +75,13 @@ Rgb8Color floatToRainbowColor(float value);
  */
 Rgb8Color floatToGrayScaleColor(float value);
 
+template<typename BaseVecT>
+Rgb8Color calcColorForFaceCentroid(
+    const BaseMesh<BaseVecT>& mesh,
+    const PointsetSurface<BaseVecT>& surface,
+    FaceHandle faceH
+);
+
 } // namespace lvr2
 
 #include <lvr2/algorithm/ColorAlgorithms.tcc>

@@ -17,19 +17,18 @@
 */
 
 /*
-* Materializer.hpp
+* Texturizer.hpp
 *
-*  @date 17.07.2017
+*  @date 15.09.2017
 *  @author Jan Philipp Vogtherr <jvogtherr@uni-osnabrueck.de>
 *  @author Kristin Schmidt <krschmidt@uni-osnabrueck.de>
 */
 
-#ifndef LVR2_ALGORITHM_MATERIALIZER_H_
-#define LVR2_ALGORITHM_MATERIALIZER_H_
+#ifndef LVR2_ALGORITHM_TEXTURIZER_H_
+#define LVR2_ALGORITHM_TEXTURIZER_H_
 
 #include <boost/shared_ptr.hpp>
 #include <boost/smart_ptr/make_shared.hpp>
-#include <boost/optional.hpp>
 
 #include <lvr2/geometry/BaseMesh.hpp>
 #include <lvr2/geometry/BaseVector.hpp>
@@ -45,10 +44,6 @@
 #include <lvr2/util/ClusterBiMap.hpp>
 #include <lvr2/texture/Material.hpp>
 #include <lvr2/geometry/BoundingRectangle.hpp>
-#include <lvr2/algorithm/Texturizer.hpp>
-#include <lvr2/algorithm/ClusterAlgorithm.hpp>
-#include <lvr2/algorithm/ColorAlgorithms.hpp>
-
 
 #include <lvr/io/Progress.hpp>
 #include <lvr/io/Timestamp.hpp>
@@ -57,63 +52,46 @@ namespace lvr2
 {
 
 template<typename BaseVecT>
-struct MaterializerResult
-{
-    DenseFaceMap<Material> m_faceMaterials;
-    optional<StableVector<TextureHandle, Texture<BaseVecT>>> m_textures;
-    optional<SparseVertexMap<ClusterTexCoordMapping>> m_vertexTexCoords;
-
-    MaterializerResult(
-        DenseFaceMap<Material> faceMaterials
-    )   :
-        m_faceMaterials(faceMaterials)
-    {
-    }
-
-    MaterializerResult(
-        DenseFaceMap<Material> faceMaterials,
-        StableVector<TextureHandle, Texture<BaseVecT>> textures,
-        SparseVertexMap<ClusterTexCoordMapping> vertexTexCoords
-    ) :
-        m_faceMaterials(faceMaterials),
-        m_textures(textures),
-        m_vertexTexCoords(vertexTexCoords)
-    {
-    }
-
-};
-
-
-template<typename BaseVecT>
-class Materializer
+class Texturizer
 {
 
 public:
 
-    Materializer(
-        const BaseMesh<BaseVecT>& mesh,
-        const ClusterBiMap<FaceHandle>& cluster,
-        const FaceMap<Normal<BaseVecT>>& normals,
-        const PointsetSurface<BaseVecT>& surface
+    Texturizer(
+        float texelSize,
+        int texMinClusterSize,
+        int texMaxClusterSize
     );
 
-    void setTexturizer(Texturizer<BaseVecT> texturizer);
+    Texture<BaseVecT> getTexture(TextureHandle h);
+    StableVector<TextureHandle, Texture<BaseVecT>> getTextures();
+    int getTextureIndex(TextureHandle h);
 
-    MaterializerResult<BaseVecT> generateMaterials();
+    TextureHandle generateTexture(
+        int index,
+        const PointsetSurface<BaseVecT>& surface,
+        const BoundingRectangle<BaseVecT>& boundingRect
+    );
+
+    TexCoords calculateTexCoords(
+        TextureHandle texH,
+        const BoundingRectangle<BaseVecT>& boundingRect,
+        BaseVecT v
+    );
+
+    const float m_texelSize;
+    const int m_texMinClusterSize;
+    const int m_texMaxClusterSize;
 
 private:
 
-    const BaseMesh<BaseVecT>& m_mesh;
-    const ClusterBiMap<FaceHandle>& m_cluster;
-    const FaceMap<Normal<BaseVecT>>& m_normals;
-    const PointsetSurface<BaseVecT>& m_surface;
-
-    optional<Texturizer<BaseVecT>&> m_texturizer;
+    StableVector<TextureHandle, Texture<BaseVecT>> m_textures;
 
 };
 
+
 } // namespace lvr2
 
-#include <lvr2/algorithm/Materializer.tcc>
+#include <lvr2/algorithm/Texturizer.tcc>
 
-#endif /* LVR2_ALGORITHM_MATERIALIZER_H_ */
+#endif /* LVR2_ALGORITHM_TEXTURIZER_H_ */

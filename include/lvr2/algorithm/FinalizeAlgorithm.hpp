@@ -71,21 +71,30 @@ public:
 
     void setVertexNormals(const VertexMap<Normal<BaseVecT>>& normals);
     void setClusterColors(const ClusterMap<Rgb8Color>& colors);
-    void setTexTokenClusterMap(SparseClusterMap<TextureToken<BaseVecT>> texTokenClusterMap);
-    void setTexCoordVertexMap(SparseVertexMap<ClusterTexCoordMapping> texCoordVertexMap);
-    void setVertexColors(DenseVertexMap<Rgb8Color> vertexColors);
-    void setFaceColors(SparseFaceMap<Rgb8Color> faceColors);
+    void setVertexColors(const VertexMap<Rgb8Color>& vertexColors);
+    void setMaterializerResult(const MaterializerResult<BaseVecT>& materializerResult);
 
     boost::shared_ptr<lvr::MeshBuffer> apply(const BaseMesh<BaseVecT>& mesh);
 
 private:
+
+    // Clusters of mesh (mandatory)
     const ClusterBiMap<FaceHandle>& m_cluster;
-    optional<const ClusterMap<Rgb8Color>&> m_clusterColors;
+
+    // Normals (optional)
     optional<const VertexMap<Normal<BaseVecT>>&> m_vertexNormals;
-    optional<SparseClusterMap<TextureToken<BaseVecT>>> m_texTokenClusterMap;
-    optional<SparseVertexMap<ClusterTexCoordMapping>> m_texCoordVertexMap;
-    optional<DenseVertexMap<Rgb8Color>> m_vertexColors;
-    optional<SparseFaceMap<Rgb8Color>> m_faceColors;
+
+    // Basic colors
+    // Cluster colors will color each vertex in the color of its corresponding cluster
+    // These have lower priority when cluster colors, as only one mode can be used
+    optional<const ClusterMap<Rgb8Color>&> m_clusterColors;
+
+    // Vertex colors will color each vertex individually
+    // These have a higher priority than cluster colors
+    optional<const VertexMap<Rgb8Color>&> m_vertexColors;
+
+    // Materials and textures
+    optional<const MaterializerResult<BaseVecT>&> m_materializerResult;
 };
 
 } // namespace lvr2

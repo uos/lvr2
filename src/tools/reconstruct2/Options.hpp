@@ -298,13 +298,11 @@ public:
 
     int getMinimumTransformationVotes() const;
 
-    int getTextureThreshold() const;
+    int getTexMinClusterSize() const;
 
-    int getTextureLimit() const;
+    int getTexMaxClusterSize() const;
 
     bool vertexColorsFromPointcloud() const;
-
-    bool textureFallback() const;
 
 private:
 
@@ -418,15 +416,12 @@ private:
     int m_minimumTransformationVotes;
 
     ///Minimum number of textures of a cluster needed for generating textures
-    int m_textureThreshold;
+    int m_texMinClusterSize;
 
-    int m_textureLimit;
+    int m_texMaxClusterSize;
 
     ///Use pointcloud colors to paint vertices
     bool m_vertexColorsFromPointcloud;
-
-    ///Use plain colors as fallback for clusters that cant be texturized due to their size
-    bool m_textureFallback;
 
 };
 
@@ -535,16 +530,8 @@ inline ostream& operator<<(ostream& os, const Options &o)
     {
         cout << "##### Generate Textures \t: YES" << endl;
         cout << "##### Texel size \t\t: " << o.getTexelSize() << endl;
-        cout << "##### Texture Threshold \t: " << o.getTextureThreshold() << endl;
-        cout << "##### Texture Limit\t\t: " << o.getTextureLimit() << endl;
-        if (o.textureFallback())
-        {
-            cout << "##### Texture Fallback\t\t: YES" << endl;
-        }
-        else
-        {
-            cout << "##### Texture Fallback\t\t: NO" << endl;
-        }
+        cout << "##### Texture Min#Cluster \t: " << o.getTexMinClusterSize() << endl;
+        cout << "##### Texture Max#Cluster \t: " << o.getTexMaxClusterSize() << endl;
 
         if(o.doTextureAnalysis())
         {
