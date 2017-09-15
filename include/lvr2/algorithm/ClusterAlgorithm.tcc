@@ -108,15 +108,6 @@ BoundingRectangle<BaseVecT> calculateBoundingRectangle(
     // support vector for the plane
     Vector<BaseVecT> supportVector = regressionPlane.project(mesh.getVertexPosition(contour[0]));
 
-    // TODO: debug code entfernen
-    HalfEdgeMesh<BaseVecT> debugMesh;
-    for (auto vertexH : contour)
-    {
-        auto point = mesh.getVertexPosition(vertexH);
-        debugMesh.addVertex(point.asVector());
-    }
-    debugMesh.addVertex(supportVector);
-
     // calculate two orthogonal vectors in the plane
     auto normal = regressionPlane.normal;
     auto pointInPlane = regressionPlane.project(mesh.getVertexPosition(contour[1])).asVector();
@@ -125,26 +116,6 @@ BoundingRectangle<BaseVecT> calculateBoundingRectangle(
 
     Vector<BaseVecT> vec2 = vec1.cross(normal.asVector());
     vec2.normalize();
-
-
-
-    // Vector<BaseVecT> contour0 = mesh.getVertexPosition(contour[0]).asVector();
-    // Vector<BaseVecT> contour1 = mesh.getVertexPosition(contour[1]).asVector();
-    // Vector<BaseVecT> contour2 = mesh.getVertexPosition(contour[2]).asVector();
-
-    // Vector<BaseVecT> n = (contour1-contour0).cross(contour2-contour0);
-    // if (n.x < 0)
-    // {
-    //     n *= -1;
-    // }
-    // Normal<BaseVecT> normal(n);
-
-
-    // Vector<BaseVecT> supportVector, vec1, vec2;
-    // supportVector = contour0;
-    // vec1 = contour1 - contour0;
-    // vec2.x = vec2.y = vec2.z = 0;
-
 
     const float pi = boost::math::constants::pi<float>();
 
@@ -227,26 +198,6 @@ BoundingRectangle<BaseVecT> calculateBoundingRectangle(
             bestVec2 = vec2;
         }
     }
-
-    for (int i = 0; i < 2000; i++)
-    {
-        auto v1 = supportVector + bestVec1 * i;
-        debugMesh.addVertex(v1);
-        if (i < 1500)
-        {
-            auto v2 = supportVector + bestVec2 * i;
-            debugMesh.addVertex(v2);
-        }
-        if (i < 1000)
-        {
-            auto n = supportVector + normal.asVector() * i;
-            debugMesh.addVertex(n);
-        }
-    }
-
-    std::stringstream ss;
-    ss << "debug_contour+sv+vec1u2_" << clusterH << ".ply";
-    writeDebugMesh(debugMesh, ss.str());
 
     return BoundingRectangle<BaseVecT>(
         supportVector,
