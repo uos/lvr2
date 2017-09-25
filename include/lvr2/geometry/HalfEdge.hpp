@@ -94,13 +94,13 @@ private:
 };
 
 
-std::ostream& operator<<(std::ostream& os, const HalfEdgeHandle& h)
+inline std::ostream& operator<<(std::ostream& os, const HalfEdgeHandle& h)
 {
     os << "HE" << h.idx();
     return os;
 }
 
-std::ostream& operator<<(std::ostream& os, const OptionalHalfEdgeHandle& h)
+inline std::ostream& operator<<(std::ostream& os, const OptionalHalfEdgeHandle& h)
 {
     if (h)
     {

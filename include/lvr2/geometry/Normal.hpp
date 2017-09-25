@@ -127,7 +127,7 @@ struct Normal : private Vector<BaseVecT>
 };
 
 template<typename BaseVecT>
-std::ostream& operator<<(std::ostream& os, const Normal<BaseVecT>& n)
+inline std::ostream& operator<<(std::ostream& os, const Normal<BaseVecT>& n)
 {
     os << "Normal[" << n.getX() << ", " << n.getY() << ", " << n.getZ() << "]";
     return os;

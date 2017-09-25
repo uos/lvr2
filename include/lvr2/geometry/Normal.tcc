@@ -25,6 +25,8 @@
 
 #include "Vector.hpp"
 
+#include <lvr2/util/Panic.hpp>
+
 
 namespace lvr2
 {
