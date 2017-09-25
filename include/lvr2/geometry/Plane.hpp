@@ -59,7 +59,7 @@ struct Plane
 };
 
 template<typename BaseVecT>
-std::ostream& operator<<(std::ostream& os, const Plane<BaseVecT>& p)
+inline std::ostream& operator<<(std::ostream& os, const Plane<BaseVecT>& p)
 {
     os << "Plane[" << p.normal << ", " << p.pos << "]";
     return os;
