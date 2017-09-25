@@ -209,7 +209,8 @@ boost::shared_ptr<lvr::MeshBuffer>
 
     // This map remembers which vertices were already visited for vertex coloring from pointcloud data
     // Each vertex must be visited exactly once
-    SparseVertexMap<size_t> vertexColorVisitedMap; // TODO: umbenennen, wird für texturen benutzt und nicht für vertex colors
+    SparseVertexMap<size_t> vertexColorVisitedMap;
+    // TODO: umbenennen, wird für texturen benutzt und nicht für vertex colors
     size_t vertexColorCount = 0;
 
     // Create face buffer
