@@ -48,14 +48,19 @@ void Materializer<BaseVecT>::setTexturizer(Texturizer<BaseVecT> texturizer)
 }
 
 template<typename BaseVecT>
+void Materializer<BaseVecT>::saveTextures()
+{
+    if (m_texturizer)
+    {
+        m_texturizer.get().saveTextures();
+    }
+}
+
+template<typename BaseVecT>
 MaterializerResult<BaseVecT> Materializer<BaseVecT>::generateMaterials()
 {
-    cout << "message" << endl;
-
     string msg = lvr::timestamp.getElapsedTime() + "Generating materials ";
     lvr::ProgressBar progress(m_cluster.numCluster(), msg);
-
-    cout << "prepare" << endl;
 
     // Prepare result
     DenseFaceMap<Material> faceMaterials;
@@ -67,13 +72,9 @@ MaterializerResult<BaseVecT> Materializer<BaseVecT>::generateMaterials()
     int textureCount = 0;
     int clusterCount = 0;
 
-    cout << "start iterating" << endl;
-
     // For all clusters ...
     for (auto clusterH : m_cluster)
     {
-        cout << "cluster: " << clusterH << endl;
-
         ++progress;
 
 
@@ -110,8 +111,6 @@ MaterializerResult<BaseVecT> Materializer<BaseVecT>::generateMaterials()
             // For each face ...
             for (auto faceH : cluster.handles)
             {
-                cout << "calc color for face centroid" << endl;
-
                 // Calculate color of centroid
                 Rgb8Color color = calcColorForFaceCentroid(m_mesh, m_surface, faceH);
                 // Create material and save in face map
