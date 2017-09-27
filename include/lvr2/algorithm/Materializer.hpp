@@ -101,6 +101,8 @@ public:
 
     MaterializerResult<BaseVecT> generateMaterials();
 
+    void saveTextures();
+
 private:
 
     const BaseMesh<BaseVecT>& m_mesh;

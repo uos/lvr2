@@ -60,6 +60,17 @@ int Texturizer<BaseVecT>::getTextureIndex(TextureHandle h)
 }
 
 template<typename BaseVecT>
+void Texturizer<BaseVecT>::saveTextures()
+{
+    for (auto h : m_textures)
+    {
+        m_textures[h].save();
+    }
+}
+
+
+
+template<typename BaseVecT>
 TexCoords Texturizer<BaseVecT>::calculateTexCoords(
     TextureHandle h,
     const BoundingRectangle<BaseVecT>& br,
@@ -93,45 +104,52 @@ TextureHandle Texturizer<BaseVecT>::generateTexture(
     // Create texture
     Texture<BaseVecT> texture(index, sizeX, sizeY, 3, 1, m_texelSize);
 
-    for (int y = 0; y < sizeY; y++)
+    if (surface.pointBuffer()->hasRgbColor())
     {
-        for (int x = 0; x < sizeX; x++)
+        for (int y = 0; y < sizeY; y++)
         {
-            std::vector<char> v;
-
-            int k = 1; // k-nearest-neighbors
-
-            vector<size_t> cv;
-
-            Point<BaseVecT> currentPos =
-                boundingRect.m_supportVector
-                + boundingRect.m_vec1 * (x * m_texelSize + boundingRect.m_minDistA - m_texelSize / 2.0)
-                + boundingRect.m_vec2 * (y * m_texelSize + boundingRect.m_minDistB - m_texelSize / 2.0);
-
-            surface.searchTree().kSearch(currentPos, k, cv);
-
-            uint8_t r = 0, g = 0, b = 0;
-
-            for (size_t pointIdx : cv)
+            for (int x = 0; x < sizeX; x++)
             {
-                array<uint8_t,3> colors = *(surface.pointBuffer()->getRgbColor(pointIdx));
-                r += colors[0];
-                g += colors[1];
-                b += colors[2];
+                std::vector<char> v;
+
+                int k = 1; // k-nearest-neighbors
+
+                vector<size_t> cv;
+
+                Point<BaseVecT> currentPos =
+                    boundingRect.m_supportVector
+                    + boundingRect.m_vec1 * (x * m_texelSize + boundingRect.m_minDistA - m_texelSize / 2.0)
+                    + boundingRect.m_vec2 * (y * m_texelSize + boundingRect.m_minDistB - m_texelSize / 2.0);
+
+                surface.searchTree().kSearch(currentPos, k, cv);
+
+                uint8_t r = 0, g = 0, b = 0;
+
+                for (size_t pointIdx : cv)
+                {
+                    array<uint8_t,3> colors = *(surface.pointBuffer()->getRgbColor(pointIdx));
+                    r += colors[0];
+                    g += colors[1];
+                    b += colors[2];
+                }
+
+                r /= k;
+                g /= k;
+                b /= k;
+
+                texture.m_data[(sizeY - y - 1) * (sizeX * 3) + 3 * x + 0] = r;
+                texture.m_data[(sizeY - y - 1) * (sizeX * 3) + 3 * x + 1] = g;
+                texture.m_data[(sizeY - y - 1) * (sizeX * 3) + 3 * x + 2] = b;
             }
-
-            r /= k;
-            g /= k;
-            b /= k;
-
-            texture.m_data[(sizeY - y - 1) * (sizeX * 3) + 3 * x + 0] = r;
-            texture.m_data[(sizeY - y - 1) * (sizeX * 3) + 3 * x + 1] = g;
-            texture.m_data[(sizeY - y - 1) * (sizeX * 3) + 3 * x + 2] = b;
         }
     }
-
-    // TODO: datei an einer sinnvolleren stelle speichern. nur wo?
-    texture.save();
+    else
+    {
+        for (int i = 0; i < sizeX * sizeY; i++)
+        {
+            texture.m_data[i] = 0;
+        }
+    }
 
     return m_textures.push(texture);
 }

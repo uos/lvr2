@@ -79,6 +79,8 @@ public:
         BaseVecT v
     );
 
+    void saveTextures();
+
     const float m_texelSize;
     const int m_texMinClusterSize;
     const int m_texMaxClusterSize;
