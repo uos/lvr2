@@ -198,6 +198,7 @@
 #include <lvr2/reconstruction/HashGrid.hpp>
 #include <lvr2/reconstruction/PointsetGrid.hpp>
 #include <lvr2/io/PointBuffer.hpp>
+#include <lvr2/io/MeshBuffer.hpp>
 #include <lvr2/util/Factories.hpp>
 #include <lvr2/algorithm/MeshNavAlgorithms.hpp>
 #include <lvr2/algorithm/UtilAlgorithms.hpp>
@@ -452,7 +453,7 @@ void testFinalize(lvr2::HalfEdgeMesh<lvr2::BaseVector<float>>& mesh)
     auto buffer = finalize.apply(mesh);
 
     // Create output model and save to file
-    auto model = new lvr::Model(buffer);
+    auto model = new lvr::Model(buffer->toOldBuffer());
     lvr::ModelPtr m(model);
     cout << timestamp << "Saving mesh." << endl;
     lvr::ModelFactory::saveModel( m, "triangle_mesh.ply");
@@ -485,7 +486,7 @@ void testCollapseEdge()
         auto buffer = finalize.apply(mesh);
 
         // Create output model and save to file
-        auto model = new lvr::Model(buffer);
+        auto model = new lvr::Model(buffer->toOldBuffer());
         lvr::ModelPtr m(model);
         cout << timestamp << "Saving mesh." << endl;
         std::stringstream ss;
@@ -503,7 +504,7 @@ void testCollapseEdge()
     auto buffer = finalize.apply(mesh);
 
     // Create output model and save to file
-    auto model = new lvr::Model(buffer);
+    auto model = new lvr::Model(buffer->toOldBuffer());
     lvr::ModelPtr m(model);
     cout << timestamp << "Saving mesh." << endl;
     lvr::ModelFactory::saveModel( m, "triangle_mesh.ply");
@@ -516,7 +517,7 @@ void testEdgeFlip()
 
     FinalizeAlgorithm<BaseVector<float>> finalize;
     auto buffer = finalize.apply(mesh);
-    auto model = new lvr::Model(buffer);
+    auto model = new lvr::Model(buffer->toOldBuffer());
     lvr::ModelPtr m(model);
     lvr::ModelFactory::saveModel(m, "flipped_nikolaus_original.ply");
 
@@ -534,7 +535,7 @@ void testEdgeFlip()
 
         FinalizeAlgorithm<BaseVector<float>> finalize;
         auto buffer = finalize.apply(mesh);
-        auto model = new lvr::Model(buffer);
+        auto model = new lvr::Model(buffer->toOldBuffer());
         lvr::ModelPtr m(model);
         std::stringstream ss;
         ss << "flipped_nikolaus_" << edgeH.idx() << ".ply";
@@ -700,77 +701,6 @@ std::pair<shared_ptr<GridBase>, unique_ptr<FastReconstructionBase<Vec>>>
     return make_pair(nullptr, nullptr);
 }
 
-void setTextureOptions(const reconstruct::Options& options)
-{
-    // if(options.getTexelSize())
-    // {
-    //     Texture::m_texelSize = options.getTexelSize();
-    // }
-
-    // if(options.getTexturePack() != "")
-    // {
-    //     Texturizer<Vertex<float> , Normal<float> >::m_filename = options.getTexturePack();
-    //     if(options.getStatsCoeffs())
-    //     {
-    //         float* sc = options.getStatsCoeffs();
-    //         for (int i = 0; i < 14; i++)
-    //         {
-    //             Statistics::m_coeffs[i] = sc[i];
-    //         }
-    //         delete sc;
-    //     }
-    //     if(options.getNumStatsColors())
-    //     {
-    //         Texturizer<Vertex<float> , Normal<float> >::m_numStatsColors = options.getNumStatsColors();
-    //     }
-    //     if(options.getNumCCVColors())
-    //     {
-    //         Texturizer<Vertex<float> , Normal<float> >::m_numCCVColors = options.getNumCCVColors();
-    //     }
-    //     if(options.getCoherenceThreshold())
-    //     {
-    //         Texturizer<Vertex<float> , Normal<float> >::m_coherenceThreshold = options.getCoherenceThreshold();
-    //     }
-
-    //     if(options.getColorThreshold())
-    //     {
-    //         Texturizer<Vertex<float> , Normal<float> >::m_colorThreshold = options.getColorThreshold();
-    //     }
-    //     if(options.getStatsThreshold())
-    //     {
-    //         Texturizer<Vertex<float> , Normal<float> >::m_statsThreshold = options.getStatsThreshold();
-    //     }
-    //     if(options.getUseCrossCorr())
-    //     {
-    //         Texturizer<Vertex<float> , Normal<float> >::m_useCrossCorr = options.getUseCrossCorr();
-    //     }
-    //     if(options.getFeatureThreshold())
-    //     {
-    //         Texturizer<Vertex<float> , Normal<float> >::m_featureThreshold = options.getFeatureThreshold();
-    //     }
-    //     if(options.getPatternThreshold())
-    //     {
-    //         Texturizer<Vertex<float> , Normal<float> >::m_patternThreshold = options.getPatternThreshold();
-    //     }
-    //     if(options.doTextureAnalysis())
-    //     {
-    //         Texturizer<Vertex<float> , Normal<float> >::m_doAnalysis = true;
-    //     }
-    //     if(options.getMinimumTransformationVotes())
-    //     {
-    //         Transform::m_minimumVotes = options.getMinimumTransformationVotes();
-    //     }
-    // }
-
-    // if(options.getSharpFeatureThreshold())
-    // {
-    //     SharpBox<Vertex<float> , Normal<float> >::m_theta_sharp = options.getSharpFeatureThreshold();
-    // }
-    // if(options.getSharpCornerThreshold())
-    // {
-    //     SharpBox<Vertex<float> , Normal<float> >::m_phi_corner = options.getSharpCornerThreshold();
-    // }
-}
 
 void testMeshnav(
     const BaseMesh<BaseVecT>& mesh,
@@ -872,9 +802,6 @@ int main(int argc, char** argv)
     // =======================================================================
     // Create an empty mesh
     lvr2::HalfEdgeMesh<Vec> mesh;
-
-    // TODO2
-    setTextureOptions(options);
 
     shared_ptr<GridBase> grid;
     unique_ptr<FastReconstructionBase<Vec>> reconstruction;
@@ -1102,7 +1029,7 @@ int main(int argc, char** argv)
     // }
 
     // Create output model and save to file
-    auto m = boost::make_shared<lvr::Model>(buffer);
+    auto m = boost::make_shared<lvr::Model>(buffer->toOldBuffer(matResult));
 
     if(options.saveOriginalData())
     {

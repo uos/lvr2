@@ -59,23 +59,23 @@ namespace lvr2
 template<typename BaseVecT>
 struct MaterializerResult
 {
-    DenseFaceMap<Material> m_faceMaterials;
+    DenseClusterMap<Material> m_clusterMaterials;
     optional<StableVector<TextureHandle, Texture<BaseVecT>>> m_textures;
     optional<SparseVertexMap<ClusterTexCoordMapping>> m_vertexTexCoords;
 
     MaterializerResult(
-        DenseFaceMap<Material> faceMaterials
+        DenseClusterMap<Material> clusterMaterials
     )   :
-        m_faceMaterials(faceMaterials)
+        m_clusterMaterials(clusterMaterials)
     {
     }
 
     MaterializerResult(
-        DenseFaceMap<Material> faceMaterials,
+        DenseClusterMap<Material> clusterMaterials,
         StableVector<TextureHandle, Texture<BaseVecT>> textures,
         SparseVertexMap<ClusterTexCoordMapping> vertexTexCoords
     ) :
-        m_faceMaterials(faceMaterials),
+        m_clusterMaterials(clusterMaterials),
         m_textures(textures),
         m_vertexTexCoords(vertexTexCoords)
     {

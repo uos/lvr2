@@ -63,7 +63,7 @@ MaterializerResult<BaseVecT> Materializer<BaseVecT>::generateMaterials()
     lvr::ProgressBar progress(m_cluster.numCluster(), msg);
 
     // Prepare result
-    DenseFaceMap<Material> faceMaterials;
+    DenseClusterMap<Material> clusterMaterials;
     SparseVertexMap<ClusterTexCoordMapping> vertexTexCoords;
 
     // Counters used for texturizing
@@ -108,19 +108,41 @@ MaterializerResult<BaseVecT> Materializer<BaseVecT>::generateMaterials()
             }
 
 
+            // Calculate (a sorta-kinda not really) median value
+            std::map<Rgb8Color, int> colorMap;
+            int maxColorCount = 0;
+            Rgb8Color mostUsedColor;
+
             // For each face ...
             for (auto faceH : cluster.handles)
             {
                 // Calculate color of centroid
                 Rgb8Color color = calcColorForFaceCentroid(m_mesh, m_surface, faceH);
-                // Create material and save in face map
-                Material material;
-                material.m_color = color;
-                faceMaterials.insert(faceH, material);
+                if (colorMap.count(color))
+                {
+                    colorMap[color]++;
+                }
+                else
+                {
+                    colorMap[color] = 1;
+                }
+                if (colorMap[color] > maxColorCount)
+                {
+                    mostUsedColor = color;
+                }
             }
 
+            // Create material and save in map
+            Material material;
+            material.m_color = {
+                static_cast<uint8_t>(mostUsedColor[0]),
+                static_cast<uint8_t>(mostUsedColor[1]),
+                static_cast<uint8_t>(mostUsedColor[2])
+            };
+            clusterMaterials.insert(clusterH, material);
+
         }
-        else if (m_texturizer) // FIXME: sollte unnötig sein, cond ist nur zum testen hier
+        else
         {
             // Textures
 
@@ -151,6 +173,8 @@ MaterializerResult<BaseVecT> Materializer<BaseVecT>::generateMaterials()
             // Create material and insert in face map
             Material material;
             material.m_texture = texH;
+            material.m_color = {255, 255, 255}; // TODO macht das sinn?
+            clusterMaterials.insert(clusterH, material);
 
             // Calculate tex coords
             // Insert material into face map for each face
@@ -158,15 +182,13 @@ MaterializerResult<BaseVecT> Materializer<BaseVecT>::generateMaterials()
             std::unordered_set<VertexHandle> verticesOfCluster;
             for (auto faceH : cluster.handles)
             {
-                faceMaterials.insert(faceH, material);
-
                 for (auto vertexH : m_mesh.getVerticesOfFace(faceH))
                 {
                     verticesOfCluster.insert(vertexH);
                     // (doesnt insert duplicate vertices)
                 }
             }
-
+            // For each unique vertex in this cluster
             for (auto vertexH : verticesOfCluster)
             {
                 // Calculate tex coords
@@ -207,14 +229,14 @@ MaterializerResult<BaseVecT> Materializer<BaseVecT>::generateMaterials()
         cout << lvr::timestamp << "Generated " << textureCount << " textures" << endl;
 
         return MaterializerResult<BaseVecT>(
-            faceMaterials,
+            clusterMaterials,
             m_texturizer.get().getTextures(),
             vertexTexCoords
         );
     }
     else
     {
-        return MaterializerResult<BaseVecT>(faceMaterials);
+        return MaterializerResult<BaseVecT>(clusterMaterials);
     }
 
 }
