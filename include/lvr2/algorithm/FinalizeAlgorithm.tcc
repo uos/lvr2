@@ -188,13 +188,13 @@ boost::shared_ptr<lvr::MeshBuffer>
     vector<float> texCoords;
     vector<lvr::Material*> materials;
     vector<unsigned int> faceMaterials;
-    vector<GlTexture*> textures; // TODO: wird nicht für OBJ export gebraucht und hier auch noch nicht gefüllt. TODO!
+    vector<GlTexture*> textures;
 
     // Global material index will be used for indexing materials in the faceMaterialIndexBuffer
     // The basic material will have the index 0
     unsigned int globalMaterialIndex = 1;
     // Create default material
-    size_t defaultR = 0, defaultG = 255, defaultB = 0;
+    size_t defaultR = 0, defaultG = 0, defaultB = 0;
     lvr::Material* m = new lvr::Material;
     m->r = defaultR;
     m->g = defaultG;
@@ -207,11 +207,10 @@ boost::shared_ptr<lvr::MeshBuffer>
 
     std::map<Rgb8Color, int> colorMaterialMap;
 
-    // This map remembers which vertices were already visited for vertex coloring from pointcloud data
+    // This map remembers which vertices were already visited for materials and textures
     // Each vertex must be visited exactly once
-    SparseVertexMap<size_t> vertexColorVisitedMap;
-    // TODO: umbenennen, wird für texturen benutzt und nicht für vertex colors
-    size_t vertexColorCount = 0;
+    SparseVertexMap<size_t> vertexVisitedMap;
+    size_t vertexVisitCount = 0;
 
     // Create face buffer
     vector<unsigned int> faces;
@@ -231,7 +230,7 @@ boost::shared_ptr<lvr::MeshBuffer>
     for (auto clusterH: m_cluster)
     {
         idxMap.clear();
-        vertexColorVisitedMap.clear();
+        vertexVisitedMap.clear();
 
         ++progress;
 
@@ -299,7 +298,7 @@ boost::shared_ptr<lvr::MeshBuffer>
                 // For each vertex in face:
                 for (auto vertexH : mesh.getVerticesOfFace(faceH))
                 {
-                    if (!vertexColorVisitedMap.containsKey(vertexH))
+                    if (!vertexVisitedMap.containsKey(vertexH))
                     {
                         bool vertexHasTexCoords = m_materializerResult.get()
                                 .m_vertexTexCoords.get()
@@ -324,8 +323,8 @@ boost::shared_ptr<lvr::MeshBuffer>
                             texCoords.push_back(0.0);
                             texCoords.push_back(0.0);
                         }
-                        vertexColorVisitedMap.insert(vertexH, vertexColorCount);
-                        vertexColorCount++;
+                        vertexVisitedMap.insert(vertexH, vertexVisitCount);
+                        vertexVisitCount++;
                     }
                 }
 
@@ -415,6 +414,14 @@ boost::shared_ptr<lvr::MeshBuffer>
 
     if (m_materializerResult)
     {
+        if (m_materializerResult.get().m_textures)
+        {
+            for (auto texH : m_materializerResult.get().m_textures.get())
+            {
+                // TODO: lvr2::texture konvertieren in lvr::GlTexture und ins array packen
+            }
+        }
+
         buffer->setMaterialArray(materials);
         buffer->setFaceMaterialIndexArray(faceMaterials);
         buffer->setVertexTextureCoordinateArray(texCoords);
