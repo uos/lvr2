@@ -33,11 +33,13 @@
 using boost::optional;
 
 #include <lvr2/geometry/BaseMesh.hpp>
-#include <lvr/io/MeshBuffer.hpp>
+#include <lvr2/io/MeshBuffer.hpp>
 #include <lvr2/geometry/Normal.hpp>
 #include <lvr2/attrmaps/AttrMaps.hpp>
 #include <lvr2/algorithm/ColorAlgorithms.hpp>
 #include <lvr2/util/ClusterBiMap.hpp>
+#include <lvr2/texture/Texture.hpp>
+#include <lvr2/texture/Material.hpp>
 
 #include "ClusterPainter.hpp"
 #include "Materializer.hpp"
@@ -58,7 +60,7 @@ private:
 public:
     FinalizeAlgorithm() {};
 
-    boost::shared_ptr<lvr::MeshBuffer> apply(const BaseMesh<BaseVecT>& mesh);
+    boost::shared_ptr<MeshBuffer<BaseVecT>> apply(const BaseMesh<BaseVecT>& mesh);
     void setColorData(const VertexMap<Rgb8Color>& colorData);
     void setNormalData(const VertexMap<Normal<BaseVecT>>& normalData);
 };
@@ -74,7 +76,7 @@ public:
     void setVertexColors(const VertexMap<Rgb8Color>& vertexColors);
     void setMaterializerResult(const MaterializerResult<BaseVecT>& materializerResult);
 
-    boost::shared_ptr<lvr::MeshBuffer> apply(const BaseMesh<BaseVecT>& mesh);
+    boost::shared_ptr<MeshBuffer<BaseVecT>> apply(const BaseMesh<BaseVecT>& mesh);
 
 private:
 
