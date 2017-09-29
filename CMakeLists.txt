@@ -43,7 +43,7 @@ endif(MSVC)
 ####
 ## Searching for CUDA
 ##############################
-find_package( CUDA )
+find_package( CUDA 8.0)
 
 
 ####
@@ -90,6 +90,14 @@ find_package( MPI )
 if(MPI_FOUND)
   include_directories(SYSTEM ${MPI_INCLUDE_PATH})
 endif(MPI_FOUND)
+
+###
+## Searching for OpenCl
+##############################
+find_package(OpenCL)
+if(OPENCL_FOUND)
+    include_directories(OPENCL_INCLUDE_DIR)
+endif()
 
 ####
 ## Searching for VTK
@@ -154,18 +162,22 @@ find_package( Boost 1.54
     filesystem
     system
     thread
-    serialization
     mpi
+    serialization
+    timer
+    iostreams
     REQUIRED )
 else()
-
 find_package( Boost 1.54
     COMPONENTS
     program_options
     filesystem
     system
     thread
+    mpi
     serialization
+    timer
+    iostreams
     REQUIRED )
 endif()
 
@@ -262,6 +274,11 @@ include_directories("ext/gsl/include")
 add_subdirectory(ext/slam6d)
 include_directories( ${SLAM6D_INCLUDE_DIR} )
 list(APPEND LVR_INSTALL_INCLUDE_DIRS ${SLAM6D_INSTALL_INCLUDE_DIR})
+
+# CTPL
+add_subdirectory(ext/CTPL)
+include_directories(${CTPL_INCLUDE_DIR})
+list(APPEND LVR_INSTALL_INCLUDE_DIRS ${CTPL_INSTALL_INCLUDE_DIR})
 
 ##############################################################
 # ADD LVR DEFINITIONS
@@ -387,6 +404,15 @@ add_subdirectory(src/tools/registration)
 add_subdirectory(src/tools/normals)
 add_subdirectory(src/tools/kaboom)
 add_subdirectory(src/tools/image_normals)
+
+if(CUDA_FOUND)
+#    cuda_include_directories(ext/CTPL)
+    add_subdirectory(src/tools/cuda_normals)
+endif()
+
+if(OPENCL_FOUND)
+    add_subdirectory(src/tools/cl_normals)
+endif()
 
 if(MPI_FOUND)
   add_subdirectory(src/tools/mpi)

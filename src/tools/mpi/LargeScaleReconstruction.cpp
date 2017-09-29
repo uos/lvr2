@@ -1,6 +1,7 @@
 //
 // Created by eiseck on 17.12.15.
 //
+#include <cstdio>
 #include <fstream>
 #include "NodeData.hpp"
 #include <algorithm>
@@ -21,16 +22,27 @@
 #include <lvr/reconstruction/AdaptiveKSearchSurface.hpp>
 #include <lvr/config/lvropenmp.hpp>
 #include <lvr/io/ModelFactory.hpp>
+#include <lvr/io/Model.hpp>
+#include <lvr/io/MeshBuffer.hpp>
 #include <lvr/geometry/HalfEdgeMesh.hpp>
 #include <lvr/reconstruction/HashGrid.hpp>
 #include <lvr/reconstruction/FastReconstruction.hpp>
 #include <lvr/reconstruction/PointsetGrid.hpp>
 #include <boost/optional/optional_io.hpp>
+#include <utility>
+#include "DuplicateRemover.hpp"
+
 #include <lvr/geometry/QuadricVertexCosts.hpp>
 #include "Options.hpp"
+#include <unordered_map>
 #include <boost/algorithm/string.hpp>
+#include "InterceptionBoundingBox.hpp"
+#include "SparseMatrix.hpp"
+#include "LineReader.hpp"
 #ifdef LVR_USE_PCL
 #include <lvr/reconstruction/PCLKSurface.hpp>
+#include <lvr/io/PLYIO.hpp>
+#include <boost/timer/timer.hpp>
 #endif
 namespace mpi = boost::mpi;
 using namespace std;
@@ -43,70 +55,21 @@ typedef AdaptiveKSearchSurface<ColorVertex<float, unsigned char>, Normal<float> 
 typedef PCLKSurface<ColorVertex<float, unsigned char> , Normal<float> > pclSurface;
 #endif
 enum MPIMSGSTATUS {DATA, FINISHED};
+Vertexf center;
 
+/**
+ *  Function to compare two LargeScaleOctree pointers (needed to sort octree nodes)
+ */
 bool nodePtrCompare(LargeScaleOctree* rhs, LargeScaleOctree* lhs)
 {
-    return (*lhs) < (*rhs);
-}
-
-void getNeighborsOnSide(Vertexf dir, vector<std::pair<Vertexf, LargeScaleOctree*> >& neighbors, LargeScaleOctree* currentNode)
-{
-    if(currentNode->isLeaf())
-    {
-        neighbors.push_back(std::pair<Vertexf, LargeScaleOctree*>(dir*-1,currentNode));
-        return;
-    }
-    int ids[4];
-    if(dir.x == 1)
-    {
-        ids[0] = 4;
-        ids[1] = 5;
-        ids[2] = 6;
-        ids[3] = 7;
-    }
-    else if(dir.x == -1)
-    {
-        ids[0] = 0;
-        ids[1] = 1;
-        ids[2] = 2;
-        ids[3] = 3;
-    }
-    else if(dir.y == 1)
-    {
-        ids[0] = 2;
-        ids[1] = 3;
-        ids[2] = 6;
-        ids[3] = 7;
-    }
-    else if(dir.y == -1)
-    {
-        ids[0] = 0;
-        ids[1] = 1;
-        ids[2] = 4;
-        ids[3] = 5;
-    }
-    else if(dir.z == 1)
-    {
-        ids[0] = 1;
-        ids[1] = 3;
-        ids[2] = 5;
-        ids[3] = 7;
-    }
-    else if(dir.z == -1)
-    {
-        ids[0] = 0;
-        ids[1] = 2;
-        ids[2] = 4;
-        ids[3] = 6;
-    }
-    for(int i = 0 ; i<4 ;i++)
-    {
-        getNeighborsOnSide(dir, neighbors, (currentNode->getChildren()[ids[i]]));
-    }
+    return  (*rhs) < (*lhs);
 }
 
 int main(int argc, char* argv[])
 {
+
+
+    // Init MPI Enviroment
     mpi::environment env;
     mpi::communicator world;
     Largescale::Options options(argc, argv);
@@ -117,216 +80,519 @@ int main(int argc, char* argv[])
     {
         return 0;
     }
-    OpenMPConfig::setNumThreads(options.getNumThreads());
-    //std::cout << options << std::endl;
 
-/*    ifstream ifs(argv[1]);
-    ofstream ofs("schloss4.xyz");
-    string str;
-    int i =0;
-    while( getline( ifs, str ) )
+    // Some Methods in LVR-Toolkit use OpenMP, The MPI Application should always use one Thred
+    OpenMPConfig::setNumThreads(1);
+
+    bool use_ply = false;
+    if(boost::algorithm::contains(options.getInputFileName(), ".ply"))
     {
-        if(i%3==0)
-        {
-            stringstream ss;
-            ss.str(str);
-            Vertexf v;
-            ss >> v.x >> v.y >> v.z;
-            ofs << v.x << v.y << v.z;
-        }
-
-    }*/
+        use_ply = true;
+    }
 
     //---------------------------------------------
     // MASTER NODE
     //---------------------------------------------
     if (world.rank() == 0)
     {
+
+        boost::timer::cpu_timer itimer;
+        boost::timer::cpu_timer otimer;
+        itimer.stop ();
+        otimer.stop ();
         std::cout << options << std::endl;
         cout << lvr::timestamp << "start" << endl;
-        clock_t begin = clock();
-        ifstream inputData(options.getInputFileName());
-        string s;
-        BoundingBox<Vertexf> box;
-        int j = 1;
-        while( getline( inputData, s ) )
-        {
-            stringstream ss;
-            ss.str(s);
-            Vertexf v;
-            ss >> v.x >> v.y >> v.z;
-            box.expand(v);
+        cout << env.processor_name() << " is MASTER" << endl;
+        boost::filesystem::path p(options.getInputFileName().c_str());
 
-        }
-
-        float size = box.getLongestSide();
-        Vertexf center = box.getMax()+box.getMin();
-        center/=2;
-        cout << lvr::timestamp << box << endl << "--------" << endl;
-
-        LargeScaleOctree octree(center, size, options.getOctreeNodeSize() );
-
-        inputData.close();
-        inputData.clear();
-        ifstream inputData2(options.getInputFileName());
-
-        while( getline( inputData2, s ) )
-        {
-            stringstream ss;
-            ss.str(s);
-            Vertexf v;
-            ss >> v.x >> v.y >> v.z;
-            octree.insert(v);
-
-        }
-
-        cout << lvr::timestamp << "...Octree finished" << endl;
-        clock_t end = clock();
-        vector<LargeScaleOctree*> nodes = octree.getNodes() ;
+        vector<LargeScaleOctree*> nodes;
         vector<LargeScaleOctree*> leafs;
         vector<LargeScaleOctree*> originleafs;
-
-        //auto it = std::copy_if (nodes.begin(), nodes.end(), leafs.begin(), [](LargeScaleOctree* oc){return oc->isLeaf();} );
+        vector<string> cloudPahts;
+	    unordered_map<string, LargeScaleOctree*> nameToLeaf;
+        string octreeFolder;
         size_t minSize = std::max(std::max(options.getKn(), options.getKd()), options.getKi());
-        cout << "min size: " << options.getKn() << endl;
-	    for(int i = 0 ; i< nodes.size() ; i++)
+        string folder_prefix = "";
+
+        // if Path is a directory, check if octree files have already been generated
+        if(! boost::filesystem::is_directory(p))
         {
-            if(nodes[i]->isLeaf() && nodes[i]->getSize()>minSize )
+            if(use_ply)
             {
-                leafs.push_back(nodes[i]);
+                cout << "USING a PLY file" << endl;
+                LineReader lr(options.getInputFileName());
+
+                    size_t rsize;
+                    BoundingBox<Vertexf> box;
+                    cout << lr.getFileType() << endl;
+
+                        while (true)
+                        {
+                            if(lr.getFileType() == XYZNRGB)
+                            {
+                                boost::shared_ptr<xyznc> a = boost::static_pointer_cast<xyznc> (lr.getNextPoints(rsize));
+                                if (rsize <= 0 )
+                                {
+                                    break;
+                                }
+                                for(int i = 0 ; i< rsize ; i++)
+                                {
+                                    box.expand(a.get()[i].point.x,a.get()[i].point.y,a.get()[i].point.z);
+                                }
+                            }
+                            else if(lr.getFileType() == XYZN)
+                            {
+                                boost::shared_ptr<xyzn> a = boost::static_pointer_cast<xyzn> (lr.getNextPoints(rsize));
+                                if (rsize <= 0 )
+                                {
+                                    break;
+                                }
+                                for(int i = 0 ; i< rsize ; i++)
+                                {
+                                    box.expand(a.get()[i].point.x,a.get()[i].point.y,a.get()[i].point.z);
+                                }
+                            }
+                            else if(lr.getFileType() == XYZ)
+                            {
+                                boost::shared_ptr<xyz> a = boost::static_pointer_cast<xyz> (lr.getNextPoints(rsize));
+                                if (rsize <= 0 )
+                                {
+                                    break;
+                                }
+                                for(int i = 0 ; i< rsize ; i++)
+                                {
+                                    box.expand(a.get()[i].point.x,a.get()[i].point.y,a.get()[i].point.z);
+                                }
+                            }
+				else if(lr.getFileType() == XYZRGB)
+                            {
+                                boost::shared_ptr<xyzc> a = boost::static_pointer_cast<xyzc> (lr.getNextPoints(rsize));
+                                if (rsize <= 0 )
+                                {
+                                    break;
+                                }
+                                for(int i = 0 ; i< rsize ; i++)
+                                {
+                                    box.expand(a.get()[i].point.x,a.get()[i].point.y,a.get()[i].point.z);
+                                }
+                            }
+
+
+                        }
+                        lr.rewind();
+
+                        center = box.getCentroid();
+
+                        // Make sure Bounding Box is not to narrow
+                        box.expand(center.x + options.getVoxelsize(), center.y + options.getVoxelsize(), center.z + options.getVoxelsize()  );
+                        box.expand(center.x - options.getVoxelsize(), center.y - options.getVoxelsize(), center.z - options.getVoxelsize()  );
+
+                        float size = box.getLongestSide();
+                        double newLength = options.getVoxelsize();
+
+                        // The Length of the Bounding Box (all sides have the same length) must be
+                        // a multiple of two, to ensure that voxels fit exactly in the volume
+                        while(newLength<=size) newLength*=2;
+
+                        cout << "Bounding Box Longest Side: " << newLength << endl;
+
+                        Vertexf newXMax(box.getCentroid().x+(newLength/2),box.getCentroid().y, box.getCentroid().z );
+                        Vertexf newXMin(box.getCentroid().x-(newLength/2),box.getCentroid().y, box.getCentroid().z  );
+
+                        // Set new Bounding Box size
+                        box.expand(newXMax);
+                        box.expand(newXMin);
+
+
+
+                        cout << lvr::timestamp << box << endl << "--------" << endl;
+
+                        // Create Octree Root
+                        LargeScaleOctree octree(center, newLength, options.getOctreeNodeSize() );
+                        octreeFolder = octree.getFolder();
+
+                        while (true)
+                        {
+                            if(lr.getFileType() == XYZNRGB)
+                            {
+                                boost::shared_ptr<xyznc> a = boost::static_pointer_cast<xyznc> (lr.getNextPoints(rsize));
+                                if (rsize <= 0 )
+                                {
+                                    break;
+                                }
+                                for(int i = 0 ; i< rsize ; i++)
+                                {
+                                    Vertexf v(a.get()[i].point.x,a.get()[i].point.y,a.get()[i].point.z);
+                                    Vertexf n(a.get()[i].normal.x,a.get()[i].normal.y,a.get()[i].normal.z);
+                                    octree.insert(v,n);
+                                }
+                            }
+                            else if(lr.getFileType() == XYZN)
+                            {
+                                boost::shared_ptr<xyzn> a = boost::static_pointer_cast<xyzn> (lr.getNextPoints(rsize));
+                                if (rsize <= 0 )
+                                {
+                                    break;
+                                }
+                                for(int i = 0 ; i< rsize ; i++)
+                                {
+                                    Vertexf v(a.get()[i].point.x,a.get()[i].point.y,a.get()[i].point.z);
+                                    Vertexf n(a.get()[i].normal.x,a.get()[i].normal.y,a.get()[i].normal.z);
+                                    octree.insert(v,n);
+                                }
+                            }
+                            else if(lr.getFileType() == XYZ)
+                            {
+                                boost::shared_ptr<xyz> a = boost::static_pointer_cast<xyz> (lr.getNextPoints(rsize));
+                                if (rsize <= 0 )
+                                {
+                                    break;
+                                }
+                                for(int i = 0 ; i< rsize ; i++)
+                                {
+                                    Vertexf v(a.get()[i].point.x,a.get()[i].point.y,a.get()[i].point.z);
+                                    octree.insert(v);
+                                }
+                            }
+				else if(lr.getFileType() == XYZRGB)
+                            {
+                                boost::shared_ptr<xyzc> a = boost::static_pointer_cast<xyzc> (lr.getNextPoints(rsize));
+                                if (rsize <= 0 )
+                                {
+                                    break;
+                                }
+                                for(int i = 0 ; i< rsize ; i++)
+                                {
+                                    Vertexf v(a.get()[i].point.x,a.get()[i].point.y,a.get()[i].point.z);
+                                    octree.insert(v);
+                                }
+                            }
+
+
+                        }
+                        octree.writeData();
+                        octree.PrintTimer ();
+
+                        nodes = octree.getNodes() ;
+
+                        cout << "nodes size: " << nodes.size() << endl;
+                        cout << "min size: " << options.getKn() << endl;
+
+
+                        // Check if nodes have more then minSize ( = max(ki,kd,kn) ) points
+                        for(int i = 0 ; i< nodes.size() ; i++)
+                        {
+                            if(nodes[i]->isLeaf() && nodes[i]->getSize()>minSize )
+                            {
+                                leafs.push_back(nodes[i]);
+
+                            }
+                        }
+                        // Sort Leafs so the Nodes with morge Points are processed first
+                        //std::sort(leafs.begin(), leafs.end(), nodePtrCompare);
+
+                        // Tell each leaf to find it's neighbours
+                        // And save filepath to leaf pointer in map
+                        for(int i = 0 ; i<leafs.size() ; i++)
+                        {
+                            nameToLeaf[leafs[i]->getFilePath()] = leafs[i];
+                            leafs[i]->generateNeighbourhood();
+
+                        }
+
+                        cout << lvr::timestamp << "...got leafs, amount = " <<  leafs.size()<< endl;
+
+
+                        originleafs = leafs;
+
+                        //Write BoundingBoxes to files
+                        for(int i = 0 ; i<originleafs.size() ; i++)
+                        {
+
+                            // Write Center of Scan to file (used for normal approximation)
+                            string center_path = originleafs[i]->getFilePath();
+                            boost::algorithm::replace_last(center_path, "xyz", "-center.pt");
+                            ofstream cofs(center_path);
+                            otimer.resume ();
+                            cofs << center.x << " " << center.y << " " << center.z << endl;
+                            otimer.stop ();
+                            cofs.close();
+
+                            // Write Bounding Box of Octree Node to file
+                            string path = originleafs[i]->getFilePath();
+                            boost::algorithm::replace_last(path, "xyz", "bb");
+                            float r = originleafs[i]->getWidth()/2;
+                            Vertexf rr(r,r,r);
+
+                            // calc min and max point of bounding box from center and length
+                            Vertexf min = originleafs[i]->getCenter()-rr;
+                            Vertexf max = originleafs[i]->getCenter()+rr;
+                            ofstream ofs(path);
+                            Vertexf min_new = originleafs[i]->getPointBB().getMin();
+                            Vertexf max_new = originleafs[i]->getPointBB().getMax();
+                            otimer.resume ();
+                            ofs << min[0] << " " << min[1] << " " << min[2]  << " " << max[0]<< " " << max[1] << " " << max[2]<< endl;
+                            otimer.stop ();
+                            ofs.close();
+                        }
+
+                        for(int i = 0 ; i< leafs.size(); i++) cloudPahts.push_back(leafs[i]->getFilePath());
+
+
 
             }
-        }
-        std::string firstpath = leafs[0]->getFilePath();
-        std::sort(leafs.begin(), leafs.end(), nodePtrCompare);
-        for(int i = 0 ; i< leafs.size(); i++)
-        {
-            cout << lvr::timestamp << leafs[i]->getFilePath() << " size: " << leafs[i]->getSize() << endl;
-        }
-        vector<string> nodePaths(leafs.size());
-        for(int i = 0 ; i< leafs.size() ; i++)
-        {
-            nodePaths.push_back(leafs[i]->getFilePath());
-        }
-
-        //leafs.resize(std::distance(nodes.begin(),it));  // shrink container to new size
-        cout << lvr::timestamp << "...got leafs, amount = " <<  leafs.size()<< endl;
-        originleafs = leafs;
-        for(int i = 0 ; i<originleafs.size() ; i++)
-        {
-            string path = originleafs[i]->getFilePath();
-            boost::algorithm::replace_last(path, "xyz", "bb");
-            //HashGrid<ColorVertex<float, unsigned char>, FastBox<ColorVertex<float, unsigned char>, Normal<float> > > mainGrid(path);
-            float r = originleafs[i]->getLength()/2;
-            Vertexf rr(r,r,r);
-            Vertexf min = originleafs[i]->getCenter()-rr;
-            Vertexf max = originleafs[i]->getCenter()+rr;
-            ofstream ofs(path);
-            ofs << min.x << " " << min.y << " " << min.z  << " " << max.x << " " << max.y << " " << max.z << endl;
-            ofs.close();
-
-        }
-        //Creating neighbor map
-        std::map<string,vector<std::pair<Vertexf, LargeScaleOctree*> > > nmap;
-        for(LargeScaleOctree* OTNode : leafs)
-        {
-            Vertexf center = OTNode->getCenter();
-            float radius = OTNode->getLength()/2;
-            const Vertexf directions[] = {{0,0,1}, {0,1,0}, {1,0,0}, {0,0,-1}, {0,-1,0}, {-1,0,0}};
-            vector<std::pair<Vertexf, LargeScaleOctree*> > currentNeigbors;
-            LargeScaleOctree* currentNode = &octree;
-            Vertexf max = octree.getCenter() + Vertexf(1,1,1)*(octree.getLength()/2);
-            Vertexf min = octree.getCenter() + Vertexf(-1,-1,-1)*(octree.getLength()/2);
-            //get neighbor for each direction (left, right, up, down, front, back)
-            for(int i = 0 ; i<6 ; i++)
+            else
             {
-                LargeScaleOctree* currentNode = &octree;
-                Vertexf dirPoint = center + (directions[i]*(radius+(radius/2)));
-                int depth = 0;
+                ifstream inputData(options.getInputFileName());
 
-                while (!currentNode->isLeaf())
+                //Use FILE for faster reading of large files
+                FILE * bbFile = fopen(options.getInputFileName().c_str(),"r");
+                BoundingBox<Vertexf> box;
+                float ix,iy,iz;
+
+                itimer.resume ();
+                // get all points and calc. Bounding Box (axis aligned)
+                while( fscanf(bbFile,"%f %f %f", &ix, &iy, &iz) != EOF )
                 {
-                    if( dirPoint.x > max.x || dirPoint.y > max.y || dirPoint.z > max.z ||
-                        dirPoint.x < min.x || dirPoint.y < min.y || dirPoint.z < min.z )
+                    itimer.stop ();
+                    box.expand(ix,iy,iz);
+                    itimer.resume ();
+                }
+                itimer.stop ();
+
+                center = box.getCentroid();
+
+                // Make sure Bounding Box is not to narrow
+                box.expand(center.x + options.getVoxelsize(), center.y + options.getVoxelsize(), center.z + options.getVoxelsize()  );
+                box.expand(center.x - options.getVoxelsize(), center.y - options.getVoxelsize(), center.z - options.getVoxelsize()  );
+
+                float size = box.getLongestSide();
+                double newLength = options.getVoxelsize();
+
+                // The Length of the Bounding Box (all sides have the same length) must be
+                // a multiple of two, to ensure that voxels fit exactly in the volume
+                while(newLength<=size) newLength*=2;
+
+                cout << "Bounding Box Longest Side: " << newLength << endl;
+
+                Vertexf newXMax(box.getCentroid().x+(newLength/2),box.getCentroid().y, box.getCentroid().z );
+                Vertexf newXMin(box.getCentroid().x-(newLength/2),box.getCentroid().y, box.getCentroid().z  );
+
+                // Set new Bounding Box size
+                box.expand(newXMax);
+                box.expand(newXMin);
+
+
+
+                cout << lvr::timestamp << box << endl << "--------" << endl;
+
+                // Create Octree Root
+                LargeScaleOctree octree(center, newLength, options.getOctreeNodeSize() );
+                octreeFolder = octree.getFolder();
+
+                rewind(bbFile);
+                Vertexf ov;
+                // Insert points to Octree, (points can't be loaded to memory first, because the files might be to large)
+                // Todo: Program Parameter for smaler files, to load them all into memory first
+                itimer.resume ();
+                while( fscanf(bbFile,"%f %f %f", &(ov.x), &(ov.y), &(ov.z)) != EOF )
+                {
+                    itimer.stop ();
+                    box.expand(ix,iy,iz);
+                    octree.insert(ov);
+                    itimer.resume ();
+                }
+                itimer.stop ();
+                fclose(bbFile);
+
+                // makes sure all data has been writen to disk
+                octree.writeData();
+
+                cout << lvr::timestamp << "...Octree finished" << endl;
+
+                octree.PrintTimer ();
+
+                nodes = octree.getNodes() ;
+
+                cout << "nodes size: " << nodes.size() << endl;
+                cout << "min size: " << options.getKn() << endl;
+
+
+                // Check if nodes have more then minSize ( = max(ki,kd,kn) ) points
+                for(int i = 0 ; i< nodes.size() ; i++)
+                {
+                    if(nodes[i]->isLeaf() && nodes[i]->getSize()>minSize )
                     {
-                        break;
+                        leafs.push_back(nodes[i]);
+
                     }
-                    //Check if neighbor Node is the same size
-                    if(fabs(currentNode->getLength() - OTNode->getLength())<=1 || currentNode->isLeaf()) break;
-                    int nextChildNode = currentNode->getOctant(dirPoint);
-                    currentNode = currentNode->getChildren()[nextChildNode];
-                    //currentNode = &(currentNode->getChildren()[currentNode->getOctant(dirPoint)]);
-                    depth++;
-                    if(currentNode == 0) {
-                        cout <<"no!" << endl;
-                        break;
-                    }
-
                 }
-                if(depth>0 && currentNode->isLeaf() && currentNode!=0)
+                // Sort Leafs so the Nodes with morge Points are processed first
+                //std::sort(leafs.begin(), leafs.end(), nodePtrCompare);
+
+                // Tell each leaf to find it's neighbours
+                // And save filepath to leaf pointer in map
+                for(int i = 0 ; i<leafs.size() ; i++)
                 {
-                    currentNeigbors.push_back(std::pair<Vertexf, LargeScaleOctree*>(directions[i],currentNode));
+                    nameToLeaf[leafs[i]->getFilePath()] = leafs[i];
+                    leafs[i]->generateNeighbourhood();
+
                 }
-                else if(!(dirPoint.x > max.x || dirPoint.y > max.y || dirPoint.z > max.z ||
-                        dirPoint.x < min.x || dirPoint.y < min.y || dirPoint.z < min.z ))
+
+                cout << lvr::timestamp << "...got leafs, amount = " <<  leafs.size()<< endl;
+
+
+                originleafs = leafs;
+
+                //Write BoundingBoxes to files
+                for(int i = 0 ; i<originleafs.size() ; i++)
                 {
-                    getNeighborsOnSide(directions[i]*-1, currentNeigbors,  currentNode);
+
+                    // Write Center of Scan to file (used for normal approximation)
+                    string center_path = originleafs[i]->getFilePath();
+                    boost::algorithm::replace_last(center_path, "xyz", "-center.pt");
+                    ofstream cofs(center_path);
+                    otimer.resume ();
+                    cofs << center.x << " " << center.y << " " << center.z << endl;
+                    otimer.stop ();
+                    cofs.close();
+
+                    // Write Bounding Box of Octree Node to file
+                    string path = originleafs[i]->getFilePath();
+                    boost::algorithm::replace_last(path, "xyz", "bb");
+                    float r = originleafs[i]->getWidth()/2;
+                    Vertexf rr(r,r,r);
+
+                    // calc min and max point of bounding box from center and length
+                    Vertexf min = originleafs[i]->getCenter()-rr;
+                    Vertexf max = originleafs[i]->getCenter()+rr;
+                    ofstream ofs(path);
+                    Vertexf min_new = originleafs[i]->getPointBB().getMin();
+                    Vertexf max_new = originleafs[i]->getPointBB().getMax();
+                    otimer.resume ();
+                    ofs << min[0] << " " << min[1] << " " << min[2]  << " " << max[0]<< " " << max[1] << " " << max[2]<< endl;
+                    otimer.stop ();
+                    ofs.close();
                 }
 
-
-            }
-            if(! currentNeigbors.empty())
-            {
-                nmap[OTNode->getFilePath()] = currentNeigbors;
+                for(int i = 0 ; i< leafs.size(); i++) cloudPahts.push_back(leafs[i]->getFilePath());
             }
 
         }
-
-        /*cout << "MAP size: " << nmap.size() << endl;
-        for(auto it = nmap.begin() ; it != nmap.end() ; it++)
+        // if Path is a folder
+        else
         {
-            cout << it->first << " : " ;
-            for(auto n : it->second)
+            folder_prefix = p.generic_string();
+            folder_prefix.append("/");
+            cout << "Got Folder as filePath, looking for .xyz files" << endl;
+            vector<boost::filesystem::path> ret;
+            octreeFolder = p.generic_string();
+            if(!boost::filesystem::exists(p) || !boost::filesystem::is_directory(p))
             {
-                cout << n->getFilePath() << " ";
+                cout << "no such files" << endl;
+                throw (std::ios_base::failure("no such file!") );
             }
-            cout << endl;
-        }*/
+            boost::filesystem::recursive_directory_iterator it(p);
+            boost::filesystem::recursive_directory_iterator endit;
 
 
-        stack<char> waitingfor;
-        for(int i = 1 ; i< world.size() && !leafs.empty() ; i++)
+            //get all octree node files
+            while(it != endit)
+            {
+                if(boost::filesystem::is_regular_file(*it) && it->path().extension() == ".xyz") ret.push_back(it->path().filename());
+                ++it;
+
+            }
+
+            // Check if octree file has enough points
+            for(int i = 0 ; i< ret.size(); i++)
+            {
+                string path = folder_prefix;
+                path.append(ret[i].generic_string());
+                cout << "got xyz: " << ret[i].generic_string() << endl;
+
+                //check if file hast  minSize lines
+                int lines = 0;
+                std::string line;
+                std::ifstream fi(path);
+                itimer.resume ();
+                while (std::getline(fi, line) && lines <= minSize ) ++lines;
+                itimer.stop ();
+                if(lines>=minSize) cloudPahts.push_back(path);
+
+
+            }
+
+
+
+
+        }
+
+
+
+
+
+
+
+
+
+
+
+
+
+        // Path to each file that should be processed, (processed files will be removed when finished)
+        vector<string> cloudPathsCopy;
+
+        // check if file exists
+        for(int i = 0 ; i< cloudPahts.size() ; i++)
         {
-            cout << "...sending to " << i << " do:  " << leafs.back()->getFilePath() << endl;
-            world.send(i, DATA, leafs.back()->getFilePath());
-            waitingfor.push(1);
+            string gpath = cloudPahts[i];
+            boost::algorithm::replace_first(gpath, "xyz", "grid");
+            boost::filesystem::path bgpath(gpath);
+            if(! boost::filesystem::exists(bgpath)) cloudPathsCopy.push_back(cloudPahts[i]);
+        }
+
+        // Number Point clouds (Octree Nodes) beeing processed bei MPI-Nodes
+        int waitingfor=0;
+
+        // Send a path (of a point cloud) to each MPI-Node
+        for(int i = 1 ; i< world.size() && !cloudPathsCopy.empty() ; i++)
+        {
+            cout << "...sending to " << i << " do:  " << cloudPathsCopy.back() << endl;
+            world.send(i, DATA, cloudPathsCopy.back());
+            waitingfor++;
             cout << "...poping to " << i << endl;
-            leafs.pop_back();
+            cloudPathsCopy.pop_back();
         }
         cout << "...got leafs" << endl;
-        //WHILE DATA to send
 
-        while(! leafs.empty() || waitingfor.size()>0)
+        //WHILE still DATA to send
+        while(! cloudPathsCopy.empty() || waitingfor>0)
         {
-            cout << "leafs left: " << leafs.size() << endl;
+            cout << "leafs left: " << cloudPathsCopy.size() << endl;
             string msg;
-            mpi::status requests = world.recv(boost::mpi::any_source, FINISHED, msg);
-            waitingfor.pop();
-            cout << "######## rank 0 got message" << endl;
 
-            //cout << "######## testing " << requests.test()<< endl;
+            // Wait for MPI-Message that lets us know that the a MPI-Node finished it's calculation
+            mpi::status requests = world.recv(boost::mpi::any_source, FINISHED, msg);
+            waitingfor--;
+            cout << "######## rank 0 got message" << endl;
+            // Get ID of MPI-Node that finished
             int rid = requests.source();
+
             cout << "from" << requests.source() << endl;
-            cout << "QQQQQQQQQQQQQQQQQQQQQQQQ " << waitingfor.size() << "|" << leafs.size() << endl;
-            if(! leafs.empty())
+            cout << "waiting for: " << waitingfor << "| files left: " << cloudPathsCopy.size() << endl;
+
+            // Send next file to MPI-Node
+            if(! cloudPathsCopy.empty())
             {
-                world.send(rid, DATA, leafs.back()->getFilePath());
-                leafs.pop_back();
-                waitingfor.push(1);
+                world.send(rid, DATA, cloudPathsCopy.back());
+                cloudPathsCopy.pop_back();
+                waitingfor++;
             }
-            else if(waitingfor.size()==0)
+            // No more files left, only waiting until MPI-Nodes finished
+            else if(waitingfor==0)
             {
-                for(int i = 1 ; i< world.size() && !leafs.empty() ; i++)
+                for(int i = 1 ; i< world.size() && !cloudPathsCopy.empty() ; i++)
                 {
                     cout << "...sending to " << i << " finished"  << endl;
                     world.send(i, DATA, "ready");
@@ -337,238 +603,130 @@ int main(int argc, char* argv[])
 
         }
 
-        //test
-        /*firstpath.pop_back();
-        firstpath.pop_back();
-        firstpath.pop_back();
-        firstpath.append("grid");
-        cout << "fpath: " << firstpath << endl;
-        HashGrid<ColorVertex<float, unsigned char>, FastBox<ColorVertex<float, unsigned char>, Normal<float> > > hg(firstpath);
-        cout << hg.getQueryPoints().size() << " " << hg.getNumberOfCells() << endl;
-        hg.serialize("test.grid");
-         */
+        // All HashGrids have been generated
+        // Interpolate Neighbour Grids:
 
+        std::vector<string> grids;
 
-        int latticeDirID[6][4] =
+        // Get Path to all grid Files on Disk:
+        for(int i = 0 ; i<cloudPahts.size() ;i++)
         {
-            {2,6,1,5},
-            {3,7,2,6},
-            {7,4,5,6},
-            {0,4,3,7},
-            {4,0,1,5},
-            {0,1,2,3}
-        };
-/*
-        for(auto it = nmap.begin() ; it != nmap.end() ; it++)
-        {
-
-            string mainPath = it->first;
+            string mainPath = cloudPahts[i];
             boost::replace_all(mainPath, "xyz", "grid");
-            HashGrid<ColorVertex<float, unsigned char>, FastBox<ColorVertex<float, unsigned char>, Normal<float> > > mainGrid(mainPath);
-            BoundingBox<ColorVertex<float, unsigned char> > & mbb = mainGrid.getBoundingBox();
-            Vertexf maxMainIndices(mainGrid.getMaxIndexX(), mainGrid.getMaxIndexY(), mainGrid.getMaxIndexZ());
-            for(auto neighbor : it->second)
-            {
+            string plyPath = mainPath;
+            boost::replace_all(plyPath, "grid", "ply");
+            boost::filesystem::path gridPath(plyPath);
+            if(! boost::filesystem::exists(gridPath)) grids.push_back(mainPath);
 
-                string neighborPath = neighbor.second->getFilePath();
-                if(std::find(nodePaths.begin(), nodePaths.end(), neighborPath) == nodePaths.end()) break;
-                cout << "interpolating points of " << it->first << " with: " << neighborPath<< endl;
-                boost::replace_all(neighborPath, "xyz", "grid");
-
-
-                if(boost::filesystem::exists(neighborPath))
-                {
-                    HashGrid<ColorVertex<float, unsigned char>, FastBox<ColorVertex<float, unsigned char>, Normal<float> > > neighborGrid(neighborPath);
-
-                    BoundingBox<ColorVertex<float, unsigned char> > & nbb = neighborGrid.getBoundingBox();
-                    ColorVertex<float, unsigned char> posDiff = nbb.getMin() - mbb.getMin();
-                    Vertexf & dir = neighbor.first;
-                    Vertex<int> diri(dir.x, dir.y, dir.z);
-                    diri = diri * -1;
-                    size_t x,y,z;
-                    size_t  maxx, maxy, maxz;
-
-                    size_t mainAxisId=0;
-                    if     ((diri*-1).x == 1)  mainAxisId = mainGrid.getMaxIndexX();
-                    else if((diri*-1).y == 1)  mainAxisId = mainGrid.getMaxIndexY();
-                    else if((diri*-1).z == 1)  mainAxisId = mainGrid.getMaxIndexZ();
-
-
-                    x = y = z = 0;
-                    maxx = neighborGrid.getMaxIndexX();
-                    maxy = neighborGrid.getMaxIndexY();
-                    maxz = neighborGrid.getMaxIndexZ();
-
-                    int lpSideId=0;
-                    int lpSideId2 = 0;
-
-                    if		(diri.x == 1)
-                    {
-                        x = maxx;
-                        lpSideId = 0;
-                        lpSideId2 = 5;
-                    }
-                    else if (diri.y == 1)
-                    {
-                        y = maxy;
-                        lpSideId = 1;
-                        lpSideId2 = 4;
-                    }
-                    else if (diri.z == 1)
-                    {
-                        z = maxz;
-                        lpSideId = 2;
-                        lpSideId2 = 3;
-                    }
-                    else if (diri.x == -1)
-                    {
-                        x = 0;
-                        maxx = 0;
-                        lpSideId = 3;
-                        lpSideId2 = 2;
-                    }
-                    else if (diri.y == -1)
-                    {
-                        y = 0;
-                        maxy = 0;
-                        lpSideId = 4;
-                        lpSideId2 = 1;
-                    }
-                    else if (diri.z == -1)
-                    {
-                        z = 0;
-                        maxz = 0;
-                        lpSideId = 5;
-                        lpSideId2 = 0;
-                    }
-                    for(int i = x ; i<=maxx ; i++)
-                    {
-                        for(int j = y ; j<=maxy; j++)
-                        {
-
-                            for(int k = z ; k<=maxz; k++)
-                            {
-                               // cout << "x=" << i << " y=" << j << " z=" << z << " max= " << maxx << " " << maxy << " " << maxz << endl;
-                                bool abbruch = false;
-                                float distMW=0;
-                                for(int l = 0 ; l<4 && !abbruch; l++)
-                                {
-                                   // cout << "trying to find grid: " << latticeDirID[lpSideId][l] << " " << i<< ", " << j << ", " << k << endl;
-                                    size_t qp_ID = neighborGrid.findQueryPoint(latticeDirID[lpSideId][l],i,j,k);
-
-
-
-                                    if (qp_ID == FastBox<ColorVertex<float, unsigned char>, Normal<float> >::INVALID_INDEX)
-                                    {
-                                     //   cout << "did not find grid id" << endl;
-                                        abbruch = true;
-                                        break;
-                                    }
-                                    //cout << "found grid id" << endl;
-                                    float  distN = neighborGrid.getQueryPoints()[qp_ID].m_distance;
-                                    distMW +=distN;
-                                    Vertex<int> nv(diri);
-                                    if(nv.x == 0) nv.x = 1;
-                                    else if(nv.x == 1 || nv.x == -1) nv.x = 0;
-                                    if(nv.y == 0) nv.y = 1;
-                                    else if(nv.y == 1 || nv.y == -1) nv.y = 0;
-                                    if(nv.z == 0) nv.z = 1;
-                                    else if(nv.z == 1 || nv.z == -1) nv.z = 0;
-
-                                    Vertex<int> mainCellCoord(x,y,z);
-                                    mainCellCoord.x *= nv.x;
-                                    mainCellCoord.y *= nv.y;
-                                    mainCellCoord.z *= nv.z;
-
-                                    if(mainCellCoord.x == 0) mainCellCoord.x = mainAxisId;
-                                    else if(mainCellCoord.y == 0) mainCellCoord.y = mainAxisId;
-                                    else if(mainCellCoord.z == 0) mainCellCoord.z = mainAxisId;
-                                    //cout << "trying to find grid2: " << latticeDirID[lpSideId2][l] << " " << mainCellCoord.x<< ", " << mainCellCoord.y << ", " << mainCellCoord.z << endl;
-                                    size_t qpMG_ID = mainGrid.findQueryPoint(latticeDirID[lpSideId2][l],mainCellCoord.x,mainCellCoord.y,mainCellCoord.z);
-
-
-                                    if (qpMG_ID == FastBox<ColorVertex<float, unsigned char>, Normal<float> >::INVALID_INDEX)
-                                    {
-                                        break;
-                                        abbruch = true;
-                                    }
-                                    float  distMGN = mainGrid.getQueryPoints()[qpMG_ID].m_distance;
-                                    distMW +=distMGN;
-                                    if(!abbruch && l ==3)
-                                    {
-                                        distMW = distMW/8;
-                                        for(int m = 0; m<4 ;m++)
-                                        {
-                                            size_t qp_ID = neighborGrid.findQueryPoint(latticeDirID[lpSideId][m],i,j,k);
-                                            neighborGrid.getQueryPoints().at(qp_ID).m_distance = distMW;
-                                            //neighborGrid.getQueryPoints()[qp_ID].m_distance = distMW;
-                                            size_t qpMG_ID = mainGrid.findQueryPoint(latticeDirID[lpSideId2][m],mainCellCoord.x,mainCellCoord.y,mainCellCoord.z);
-                                            mainGrid.getQueryPoints().at(qpMG_ID).m_distance = distMW;
-
-
-
-                                        }
-                                    }
-
-
-
-                                }
-
-                            }
-
-                        }
-                    }
-                    cout << timestamp <<" saving grid " << neighborPath << endl;
-                    neighborGrid.serialize(neighborPath);
-                }
-
-            }
-            cout << timestamp <<" saving grid " << mainPath << endl;
-            mainGrid.serialize(mainPath);
-        }*/
-
-        std::vector<string> grids(nmap.size());
-
-        for(int i = 0 ; i<originleafs.size() ;i++)
-        {
-            string mainPath = originleafs[i]->getFilePath();
-            boost::replace_all(mainPath, "xyz", "grid");
-            grids.push_back(mainPath);
 
         }
 
+        // if interpolation flag set:
+        if(options.interpolateBoxes())
+        {
 
-        while(! waitingfor.empty()) waitingfor.pop();
+            // Map Grid file paths to index in grid array
+            std::unordered_map<string, size_t> nameToPos;
+            for(size_t i = 0 ; i<grids.size() ; i++)
+            {
+                nameToPos[grids[i]] = i;
+            }
+
+            //Sparse Matrix: used to only interpolate two grids once, if Mat(i,j) != 0 grid i and grid j have already been compared
+            SparseMatrix compMat(grids.size(),grids.size());
+
+            bool gotGoodNeighbour = false;
+            string goodNeighbourPath;
+            for(int i = 0 ; i< grids.size(); i++)
+            {
+
+
+
+                cout << timestamp << "Interpolating Grids: " << (int)((i/grids.size())*100) << "%" << endl;
+
+                string nodepath = grids[i];
+                boost::replace_all(nodepath, "grid", "xyz");
+
+                // Get Neighbour of HashGrid from Octree Structure:
+                LargeScaleOctree* currentNode = nameToLeaf[nodepath];
+                itimer.resume ();
+                HashGrid<ColorVertex<float, unsigned char>, FastBox<ColorVertex<float, unsigned char>, Normal<float> > > mainGrid(grids[i]);
+                itimer.stop ();
+                bool interpMainGrid = false;
+                // Interpolate HashGrid with every neighbour
+                for(int j = 0 ; j < currentNode->getSavedNeighbours().size(); j++)
+                {
+
+                    // Check if Neighbour exists and has not been already compared with
+                    boost::filesystem::path bgpath(grids[i]);
+                    if(! boost::filesystem::exists(bgpath)) continue;
+                    string check_grid_path =  leafs[i]->getSavedNeighbours()[j]->getFilePath();
+                    boost::replace_all(check_grid_path, "xyz", "grid");
+                    boost::filesystem::path bgpath2(check_grid_path);
+                    if(! boost::filesystem::exists(bgpath2)) continue;
+                    if( (compMat[nameToPos[grids[i]]][nameToPos[check_grid_path]] != 0) ||
+                            (compMat[nameToPos[check_grid_path]][nameToPos[grids[i]]] != 0)) continue;
+
+
+                    // Load grids that should be interpolated from disk:
+                    itimer.resume ();
+                    HashGrid<ColorVertex<float, unsigned char>, FastBox<ColorVertex<float, unsigned char>, Normal<float> > > checkgrid(check_grid_path);
+                    itimer.stop ();
+
+                    cout << timestamp << "interpolating " << grids[i] << " with:  " << check_grid_path << endl;
+                    // Interpolation
+                    mainGrid.interpolateEdge(checkgrid);
+                    cout << timestamp << "... finished" << endl;
+
+                    // Save interpolated grids to disk
+
+                    otimer.resume ();
+                    checkgrid.serialize(check_grid_path);
+                    otimer.stop ();
+                    // Add Matrix entry
+                    compMat.insert(nameToPos[grids[i]],nameToPos[check_grid_path],1);
+                    interpMainGrid =  true;
+
+                }
+                otimer.resume ();
+                if(interpMainGrid) mainGrid.serialize(grids[i]);
+                otimer.stop ();
+            }
+        }
+
+
+        // Let nodes create mesh from HashGrids:
+        waitingfor = 0;
         for(int i = 1 ; i< world.size() && !grids.empty() ; i++)
         {
             cout << "...sending to " << i << " do:  " << grids.back() << endl;
             world.send(i, DATA, grids.back());
-            waitingfor.push(1);
+            waitingfor++;
             cout << "...poping to " << i << endl;
             grids.pop_back();
         }
         cout << "...got grids" << endl;
         //WHILE DATA to send
 
-        while(! grids.empty() || waitingfor.size()>0)
+        while(! grids.empty() || waitingfor>0)
         {
             cout << "grids left: " << grids.size() << endl;
             string msg;
             mpi::status requests = world.recv(boost::mpi::any_source, FINISHED, msg);
-            waitingfor.pop();
+            waitingfor--;
             cout << "######## rank 0 got message" << endl;
 
             //cout << "######## testing " << requests.test()<< endl;
             int rid = requests.source();
             cout << "from" << requests.source() << endl;
-            cout << "QQQQQQQQQQQQQQQQQQQQQQQQ " << waitingfor.size() << "|" << grids.size() << endl;
+            cout << "waiting for: " << waitingfor << "| grids left: " << grids.size() << endl;
             if(! grids.empty())
             {
                 world.send(rid, DATA, grids.back());
                 grids.pop_back();
-                waitingfor.push(1);
+                waitingfor++;
             }
-            else if(waitingfor.size()==0)
+            else if(waitingfor==0)
             {
                 for(int i = 1 ; i< world.size() && !grids.empty() ; i++)
                 {
@@ -580,14 +738,369 @@ int main(int argc, char* argv[])
             }
 
         }
-        cout << "FINESHED in " << lvr::timestamp << endl;
-        world.abort(0);
+        cout << timestamp << "all nodes finished, generating final mesh" << endl;
+
+        // All meshed habe been created, now they need to be merged to a single mesh
+
+
+        PLYIO io;
+        MeshBufferPtr completeMesh(new MeshBuffer);
+        // Vertex and Face Buffer for new Mesh
+        std::vector<float> vertexArray;
+        std::vector<unsigned int> faceArray;
+
+        // Map Grid
+        unordered_map<string,size_t> nodePathtoID;
+        for(int i = 0 ; i<leafs.size() ; i++)
+        {
+            string gridpath = leafs[i]->getFilePath();
+            boost::replace_all(gridpath, "xyz", "grid");
+            boost::filesystem::path bgpath(gridpath);
+            if(! boost::filesystem::exists(bgpath)) continue;
+            nodePathtoID[gridpath] = i;
+        }
+        vector<BoundingBox<Vertexf> > intersections;
+
+        float added_vsize=options.getVoxelsize()*3;
+
+
+
+        SparseMatrix compMat(leafs.size() ,leafs.size());
+        cout << timestamp << " calculating duplicate vertice indices" << endl;
+        for(int i = 0 ; i<leafs.size() ; i++)
+        {
+            string gridpath = leafs[i]->getFilePath();
+            boost::replace_all(gridpath, "xyz", "grid");
+            boost::filesystem::path bgpath(gridpath);
+            if(! boost::filesystem::exists(bgpath)) continue;
+
+            float leaf_rad = leafs[i]->getWidth()/2;
+            BoundingBox<Vertexf> bb(
+                leafs[i]->getCenter()[0] - leaf_rad - added_vsize,
+                leafs[i]->getCenter()[1] - leaf_rad - added_vsize,
+                leafs[i]->getCenter()[2] - leaf_rad - added_vsize,
+                leafs[i]->getCenter()[0] + leaf_rad + added_vsize,
+                leafs[i]->getCenter()[1] + leaf_rad + added_vsize,
+                leafs[i]->getCenter()[2] + leaf_rad + added_vsize
+            );
+
+
+            cout << leafs[i]->getFilePath() << "has: " << leafs[i]->getSavedNeighbours().size() << " neighbors" << endl;
+            for(int j = 0 ; j < leafs[i]->getSavedNeighbours().size(); j++)
+            {
+                string rhsgridpath = leafs[i]->getSavedNeighbours()[j]->getFilePath();
+                boost::replace_all(rhsgridpath, "xyz", "grid");
+                boost::filesystem::path rhsbgpath(rhsgridpath);
+                if(! boost::filesystem::exists(rhsbgpath)) continue;
+                if(compMat[i][nodePathtoID[rhsgridpath]] != 0 || compMat[nodePathtoID[rhsgridpath]][i] != 0) continue;
+                float chec_leaf_rad = leafs[i]->getSavedNeighbours()[j]->getWidth()/2;
+                BoundingBox<Vertexf> checkbb(
+                    leafs[i]->getSavedNeighbours()[j]->getCenter()[0] - chec_leaf_rad - added_vsize,
+                    leafs[i]->getSavedNeighbours()[j]->getCenter()[1] - chec_leaf_rad - added_vsize,
+                    leafs[i]->getSavedNeighbours()[j]->getCenter()[2] - chec_leaf_rad - added_vsize,
+                    leafs[i]->getSavedNeighbours()[j]->getCenter()[0] + chec_leaf_rad + added_vsize,
+                    leafs[i]->getSavedNeighbours()[j]->getCenter()[1] + chec_leaf_rad + added_vsize,
+                    leafs[i]->getSavedNeighbours()[j]->getCenter()[2] + chec_leaf_rad + added_vsize
+                );
+
+//                cout << "diffboxes: " << bb << endl << checkbb << endl;
+                BoundingBox<Vertexf> diffbb = checkbb.getIntersectionBB(bb);
+
+                //expand the box so that the size in each direction is at least +/- voxelsize, otherwise if length in one direction=0, calculation of intersection may fail
+                diffbb.expand(diffbb.getCentroid()[0] + options.getVoxelsize(), diffbb.getCentroid()[1] + options.getVoxelsize(), diffbb.getCentroid()[2] + options.getVoxelsize() );
+                diffbb.expand(diffbb.getCentroid()[0] - options.getVoxelsize(), diffbb.getCentroid()[1] - options.getVoxelsize(), diffbb.getCentroid()[2] - options.getVoxelsize() );
+//                cout << "diffbb: " << endl << diffbb << endl;
+
+                intersections.push_back(diffbb);
+
+
+
+            }
+
+
+        }
+        cout << timestamp << " finished calculating duplicate vertice indices" << endl;
+
+
+
+        size_t face_amount = 0;
+        size_t vertex_amount = 0;
+        std::unordered_map<unsigned int, unsigned int> duplicate_indices;
+        std::vector<size_t> intersectionPoints;
+        std::vector<size_t> intersectionFaces;
+        cout << timestamp <<" reading all meshed to memory" << endl;
+        size_t v_all_amount = 0, f_all_amount = 0;
+        for(int i = 0 ; i < cloudPahts.size() ; i++) {
+            string tmpp = cloudPahts[i];
+            boost::algorithm::replace_last(tmpp, "xyz", "ply");
+            ifstream plyifs(tmpp);
+            size_t vAmount = 0;
+            size_t fAmount = 0;
+            bool readv = false;
+            bool readf = false;
+            int foundAmount = 0;
+            for (int x = 0; x < 100 && foundAmount < 2; x++) {
+                string tmpread;
+                itimer.resume ();
+                plyifs >> tmpread;
+                itimer.stop ();
+                if (readf) {
+                    fAmount = stoi(tmpread);
+                    readf = false;
+                    foundAmount++;
+                }
+                if (readv) {
+                    vAmount = stoi(tmpread);
+                    readv = false;
+                    foundAmount++;
+                }
+                //cout << "parsing: " << tmpread << endl;
+                if (tmpread == "vertex") readv = true;
+                else if (tmpread == "face") readf = true;
+
+            }
+            v_all_amount += vAmount;
+            f_all_amount += fAmount;
+        }
+        vertexArray.reserve(v_all_amount * 3);
+        faceArray.reserve(f_all_amount * 3);
+         for(int i = 0 ; i < cloudPahts.size() ; i++)
+        {
+            string tmpp = cloudPahts[i];
+        	boost::algorithm::replace_last(tmpp, "xyz", "ply");
+            ifstream plyifs(tmpp);
+            size_t vAmount=0;
+            size_t fAmount=0;
+            bool readv=false;
+            bool readf=false;
+            int foundAmount = 0;
+            for(int x=0; x < 100 && foundAmount<2 ; x++)
+            {
+                string tmpread;
+                itimer.resume ();
+                plyifs >> tmpread;
+                itimer.stop ();
+                if(readf)
+                {
+                    fAmount = stoi(tmpread);
+                    readf = false;
+                    foundAmount++;
+                }
+                if(readv)
+                {
+                    vAmount = stoi(tmpread);
+                    readv = false;
+                    foundAmount++;
+                }
+                //cout << "parsing: " << tmpread << endl;
+                if(tmpread=="vertex") readv = true;
+                else if(tmpread=="face") readf = true;
+            }
+            //cout << tmpp << ": f: " << fAmount << " v: " << vAmount << endl;
+            if(fAmount > 0 && vAmount > 0)
+            {
+                itimer.resume ();
+                ModelPtr mptr = io.read(tmpp);
+                itimer.stop ();
+                MeshBufferPtr mBuffer = mptr->m_mesh;
+//                floatArr vArray = mBuffer->getVertexArray(vAmount);
+                coord3fArr viArray = mBuffer->getIndexedVertexArray(vAmount);
+                uintArr  fArray = mBuffer->getFaceArray(fAmount);
+//                std::vector<float> currentVertexArray(vArray.get(), vArray.get() + (vAmount*3));
+                size_t oldSize = vertexArray.size()/3;
+                //vertexArray.reserve(vertexArray.size() + vAmount * 3 );
+
+                for(size_t i = 0 ; i<vAmount ; i++)
+                {
+                    for(auto it = intersections.begin(); it!=intersections.end() ; ++it)
+                    {
+                        if(it->contains(viArray[i][0], viArray[i][1], viArray[i][2]))
+                        {
+                            intersectionPoints.push_back(oldSize+i);
+                            break;
+                        }
+                    }
+                    vertexArray.push_back(viArray[i][0]);
+                    vertexArray.push_back(viArray[i][1]);
+                    vertexArray.push_back(viArray[i][2]);
+                }
+                //faceArray.reserve(faceArray.size() + fAmount * 3 );
+                for(size_t j = 0 ; j<fAmount*3; j+=3)
+                {
+                    for(auto it = intersections.begin(); it!=intersections.end() ; ++it)
+                    {
+                        if(it->contains(vertexArray[(oldSize + *(fArray.get() + j))],
+                                        vertexArray[(oldSize + *(fArray.get() + j))+1],
+                                        vertexArray[(oldSize + *(fArray.get() + j))+2])
+                                )
+                        {
+                            intersectionFaces.push_back(faceArray.size()/3);
+                            break;
+                        }
+                        if(it->contains(vertexArray[(oldSize + *(fArray.get() + j +1))],
+                                        vertexArray[(oldSize + *(fArray.get() + j +1))+1],
+                                        vertexArray[(oldSize + *(fArray.get() + j +1))+2])
+                                )
+                        {
+                            intersectionFaces.push_back(faceArray.size()/3);
+                            break;
+                        }
+                        if(it->contains(vertexArray[(oldSize + *(fArray.get() + j +2))],
+                                        vertexArray[(oldSize + *(fArray.get() + j +2))+1],
+                                        vertexArray[(oldSize + *(fArray.get() + j +2))+2])
+                                )
+                        {
+                            intersectionFaces.push_back(faceArray.size()/3);
+                            break;
+                        }
+                    }
+                    faceArray.push_back(oldSize + *(fArray.get() + j));
+                    faceArray.push_back(oldSize + *(fArray.get() + j +1));
+                    faceArray.push_back(oldSize + *(fArray.get() + j +2));
+                }
+
+            }
+
+        }
+
+        cout << timestamp <<"finished reading all meshed to memory" << endl;
+        sortPoint<float>::tollerance = options.getVoxelsize()/1000;
+        cout << timestamp << "starting to remove duplicates " << endl;
+        set<sortPoint<float> > vertexSet;
+        unordered_map<size_t, size_t> oldToNewVertices;
+        for(auto it = intersectionPoints.begin() ; it!=intersectionPoints.end() ; ++it)
+        {
+            sortPoint<float> tmp(vertexArray.data() + (*it*3), *it);
+            auto ret = vertexSet.insert(tmp);
+            if(! ret.second)
+            {
+                // vertex already in set: found a duplicate
+                oldToNewVertices[tmp.id()] = ret.first->id();
+            }
+        }
+
+        vector<float> newVertexArray;
+        newVertexArray.reserve(vertexArray.size());
+        unordered_map<size_t, size_t> oldVertexArrayToNew;
+        size_t gid = 0;
+        for(size_t i = 0 ; i < vertexArray.size(); i+=3)
+        {
+            if(oldToNewVertices.find(i/3)!=oldToNewVertices.end())
+            {
+                //don't copy duplicate vertex
+                gid++;
+                continue;
+            }
+            oldVertexArrayToNew[i/3] = i/3 - gid;
+            newVertexArray.push_back(vertexArray[i]);
+            newVertexArray.push_back(vertexArray[i+1]);
+            newVertexArray.push_back(vertexArray[i+2]);
+        }
+        newVertexArray.shrink_to_fit();
+        vertexArray.clear();
+        vector<float>().swap(vertexArray);
+
+        unsigned int swapped = 0;
+        for(auto it = faceArray.begin(), end = faceArray.end(); it != end; ++it)
+        {
+            if(oldToNewVertices.find(*it)!=oldToNewVertices.end())
+            {
+                *(it) = oldVertexArrayToNew[oldToNewVertices[*(it)]];
+            }
+            else if(oldVertexArrayToNew.find(*it)!=oldVertexArrayToNew.end())
+            {
+                *(it) = oldVertexArrayToNew[*(it)];
+
+            }
+                // if face point not found, delete that face (should not happen)
+            else
+            {
+                cout << "wtf" << endl;
+                unsigned int dist = std::distance(faceArray.begin(), it) / 3;
+                dist*=3;
+                std::iter_swap(faceArray.begin() + dist, faceArray.end()-3-swapped);
+                std::iter_swap(faceArray.begin() + dist +1, faceArray.end()-2-swapped);
+                std::iter_swap(faceArray.begin() + dist +2, faceArray.end()-1-swapped);
+                swapped+=3;
+                it = faceArray.begin() + dist -1;
+            }
+
+        }
+        faceArray.resize(std::distance(faceArray.begin(),faceArray.end() - swapped ));
+
+        cout << lvr::timestamp << "copying faces" << endl;
+        vector<sortPoint<unsigned int> > newFaces;
+        newFaces.reserve(faceArray.size()/3);
+        for(int i = 0 ; i<faceArray.size() ; i+=3)
+        {
+            newFaces.push_back(sortPoint<unsigned int>(&faceArray[i]));
+        }
+        cout << lvr::timestamp << "sorting faces" << endl;
+
+        std::sort(newFaces.begin(), newFaces.end());
+        cout << lvr::timestamp << "get duplicate faces" << endl;
+        auto fend = std::unique(newFaces.begin(), newFaces.end());
+        size_t old_fsize = newFaces.size();
+        cout << lvr::timestamp << "remove duplicate faces" << endl;
+
+        newFaces.resize( std::distance(newFaces.begin(),fend) );
+        size_t new_fsize = newFaces.size();
+        std::vector<unsigned int> newFaceArray;
+        newFaceArray.reserve(newFaces.size()*3);
+        for(auto it = newFaces.begin(), end = newFaces.end(); it != end; ++it)
+        {
+            newFaceArray.push_back(it->x());
+            newFaceArray.push_back(it->y());
+            newFaceArray.push_back(it->z());
+        }
+        faceArray.clear();
+        vector<unsigned int>().swap(faceArray);
+        cout << lvr::timestamp << "finished, removed " <<oldToNewVertices.size() << " vertices and " << old_fsize - new_fsize << " faces" << endl;
+
+        completeMesh->setFaceArray(newFaceArray);
+        completeMesh->setVertexArray(newVertexArray);
+
+//        DuplicateRemover dr;
+//
+//        completeMesh= dr.removeDuplicates(completeMesh);
+
+        //mainMesh.finalize();
+        ModelPtr tmpm( new Model(completeMesh) );
+
+        string finalPath = octreeFolder;
+        finalPath.append("/final.ply");
+        otimer.resume ();
+        ModelFactory::saveModel( tmpm, finalPath);
+        otimer.stop ();
+        cout << "##############################" << endl << "##############################" << endl << "FINESHED in " << lvr::timestamp << endl;
+        double iotime=0;
+        for(int i = 1 ; i< world.size()  ; i++)
+          {
+            cout << "...sending to " << i << " finish:  " << i << endl;
+            std::string re("ready");
+            world.send(i, DATA, re);
+            double msg;
+            world.recv(boost::mpi::any_source, FINISHED, msg);
+            iotime += msg;
+          }
+        std::cout << "IO-Timer of Node :" << world.rank ()  << std::endl
+                  << "READ: " << itimer.format () << std::endl
+                  << "WRITE: " << otimer.format () << std::endl;
+        cout << "IO TIME of NODES: " << iotime << "s" << endl;
+
+        //world.abort(0);
+
+
     }
         //---------------------------------------------
         // SLAVE NODE
         //--------------------------------------------
     else
     {
+        boost::timer::cpu_timer itimer;
+        boost::timer::cpu_timer otimer;
+        itimer.stop ();
+        otimer.stop ();
         bool ready = false;
         while(! ready)
         {
@@ -601,23 +1114,73 @@ int main(int argc, char* argv[])
             // else ist will generate a mesh from a given grid file
             if(filePath.find("xyz") != std::string::npos)
             {
-                ModelPtr model = ModelFactory::readModel( filePath );
-                PointBufferPtr p_loader;
-                if ( !model )
+                FILE * fp = fopen(filePath.c_str(), "rb" );
+                size_t sz = 0;
+                if(fp != NULL)
                 {
-                    cout << timestamp << "IO Error: Unable to parse " << filePath << endl;
-                    exit(-1);
+                    itimer.resume();
+                    fseek(fp, 0L, SEEK_END);
+                    itimer.stop();
+                    sz = ftell(fp);
+
+                    sz/=sizeof(float);
                 }
-                p_loader = model->m_pointCloud;
+
+                floatArr fArray(new float[sz]);
+
+
+                rewind(fp);
+                itimer.resume();
+                size_t readamount = fread ( fArray.get(), sizeof(float), sz, fp );
+                itimer.stop();
+                fclose(fp);
+                PointBufferPtr p_loader(new PointBuffer);
+                p_loader->setPointArray(fArray, sz/3);
+                if(options.getUseNormals())
+                {
+                    string normalPath = filePath;
+                    boost::algorithm::replace_last(normalPath,".xyz",".normals");
+                    FILE * fp2 = fopen(normalPath.c_str(), "rb" );
+                    size_t sz2 = 0;
+                    if(fp2 != NULL)
+                    {
+                        itimer.resume();
+                        fseek(fp2, 0L, SEEK_END);
+                        itimer.stop();
+                        sz2 = ftell(fp2);
+
+                        sz2/=sizeof(float);
+                    }
+
+                    floatArr nArray(new float[sz2]);
+
+
+                    rewind(fp2);
+                    itimer.resume();
+                    size_t readamount2 = fread ( nArray.get(), sizeof(float), sz2, fp2 );
+                    p_loader->setPointNormalArray(nArray,sz2/3);
+                    fclose(fp2);
+                }
+
+
+
 
                 string pcm_name = options.getPCM();
                 psSurface::Ptr surface;
 
                 // Create point set surface object
+                string centerpath = filePath;
+                boost::algorithm::replace_last(centerpath, "xyz", "-center.pt");
+                ifstream centerifs(centerpath);
+                Vertexf center;
+                itimer.resume();
+                centerifs >> center.x >> center.y >> center.z;
+                itimer.stop();
+                centerifs.close();
                 if(pcm_name == "PCL")
                 {
 #ifdef LVR_USE_PCL
-                    surface = psSurface::Ptr( new pclSurface(p_loader));
+                    surface = psSurface::Ptr( new pclSurface(p_loader, options.getKn(), options.getKd()));
 #else
                     cout << timestamp << "Can't create a PCL point set surface without PCL installed." << endl;
 			exit(-1);
@@ -625,21 +1188,20 @@ int main(int argc, char* argv[])
                 }
                 else if(pcm_name == "STANN" || pcm_name == "FLANN" || pcm_name == "NABO" || pcm_name == "NANOFLANN")
                 {
-                    akSurface* aks = new akSurface(
-                            p_loader, pcm_name,
-                            options.getKn(),
-                            options.getKi(),
-                            options.getKd(),
-                            options.useRansac(),
-                            options.getScanPoseFile()
-                    );
-
-                    surface = psSurface::Ptr(aks);
+                    surface = psSurface::Ptr(new akSurface(
+                      p_loader, pcm_name,
+                      options.getKn(),
+                      options.getKi(),
+                      options.getKd(),
+                      options.useRansac(),
+                      options.getScanPoseFile(),
+                      center
+                    ));
                     // Set RANSAC flag
-                    if(options.useRansac())
+/*                    if(options.useRansac())
                     {
-                        aks->useRansac(true);
-                    }
+                      ((akSurface)(*surface.get())).useRansac(true);
+                    }*/
                 }
                 else
                 {
@@ -657,21 +1219,37 @@ int main(int argc, char* argv[])
                     return 0;
                 }
 
+
                 string bbpath = filePath;
                 boost::algorithm::replace_last(bbpath, "xyz", "bb");
+                otimer.resume();
                 ifstream bbifs(bbpath);
                 float minx, miny, minz, maxx, maxy, maxz;
                 bbifs >> minx >> miny >> minz >> maxx >> maxy >> maxz;
+                otimer.stop();
                 BoundingBox<ColorVertex<float, unsigned char> > tmpbb(minx, miny, minz, maxx, maxy, maxz);
+                cout << "grid bb: " << tmpbb << endl;
 
-                surface->getBoundingBox().expand(tmpbb.getMin());
-                surface->getBoundingBox().expand(tmpbb.getMax());
 
                 surface->setKd(options.getKd());
                 surface->setKi(options.getKi());
                 surface->setKn(options.getKn());
-                surface->calculateSurfaceNormals();
+                if(! options.getUseNormals())
+                {
+                    surface->calculateSurfaceNormals();
+                }
 
+                if(options.savePointNormals())
+                {
+                    string normalpath = filePath;
+                    boost::algorithm::replace_last(normalpath, ".xyz", "-normals.ply");
+                    ModelPtr pn( new Model);
+                    pn->m_pointCloud = surface->pointBuffer();
+                    cout << timestamp << " saving normals to" <<normalpath << endl;
+                    otimer.resume();
+                    ModelFactory::saveModel(pn, normalpath);
+                    otimer.stop();
+                }
                 HalfEdgeMesh<ColorVertex<float, unsigned char> , Normal<float> > mesh( surface );
                 // Set recursion depth for region growing
                 if(options.getDepth())
@@ -705,21 +1283,10 @@ int main(int argc, char* argv[])
                 if(decomposition == "MC")
                 {
 
-                    cout << tmpbb << endl << "#########" << endl << surface->getBoundingBox() << "--------------" << endl;
 
-                    if(surface->getBoundingBox().getMin().x < tmpbb.getMin().x) tmpbb.expand(surface->getBoundingBox().getMin());
-                    if(surface->getBoundingBox().getMin().y < tmpbb.getMin().y) tmpbb.expand(surface->getBoundingBox().getMin());
-                    if(surface->getBoundingBox().getMin().z < tmpbb.getMin().z) tmpbb.expand(surface->getBoundingBox().getMin());
-
-                    if(surface->getBoundingBox().getMax().x > tmpbb.getMax().x) tmpbb.expand(surface->getBoundingBox().getMax());
-                    if(surface->getBoundingBox().getMax().y > tmpbb.getMax().y) tmpbb.expand(surface->getBoundingBox().getMax());
-                    if(surface->getBoundingBox().getMax().z > tmpbb.getMax().z) tmpbb.expand(surface->getBoundingBox().getMax());
-
-
-                    grid = new PointsetGrid<ColorVertex<float, unsigned char>, FastBox<ColorVertex<float, unsigned char>, Normal<float> > >(resolution, surface, tmpbb, useVoxelsize);
+                    grid = new PointsetGrid<ColorVertex<float, unsigned char>, FastBox<ColorVertex<float, unsigned char>, Normal<float> > >(resolution, surface, tmpbb, useVoxelsize, options.extrude());
                     grid->setExtrusion(options.extrude());
                     PointsetGrid<ColorVertex<float, unsigned char>, FastBox<ColorVertex<float, unsigned char>, Normal<float> > >* ps_grid = static_cast<PointsetGrid<ColorVertex<float, unsigned char>, FastBox<ColorVertex<float, unsigned char>, Normal<float> > > *>(grid);
-                    ps_grid->getBoundingBox() = tmpbb;
                     ps_grid->calcDistanceValues();
 
                     reconstruction = new FastReconstruction<ColorVertex<float, unsigned char> , Normal<float>, FastBox<ColorVertex<float, unsigned char>, Normal<float> >  >(ps_grid);
@@ -729,11 +1296,14 @@ int main(int argc, char* argv[])
                     out.pop_back();
                     out.append("grid");
                     ps_grid->serialize(out);
-
+                    boost::algorithm::replace_first(out, ".grid", "-3.grid");
+                    otimer.resume();
+                    ps_grid->saveGrid(out);
+                    otimer.stop();
                 }
                 else if(decomposition == "PMC")
                 {
-                    grid = new PointsetGrid<ColorVertex<float, unsigned char>, BilinearFastBox<ColorVertex<float, unsigned char>, Normal<float> > >(resolution, surface, surface->getBoundingBox(), useVoxelsize);
+                    grid = new PointsetGrid<ColorVertex<float, unsigned char>, BilinearFastBox<ColorVertex<float, unsigned char>, Normal<float> > >(resolution, surface, tmpbb, useVoxelsize, options.extrude());
                     grid->setExtrusion(options.extrude());
                     BilinearFastBox<ColorVertex<float, unsigned char>, Normal<float> >::m_surface = surface;
                     PointsetGrid<ColorVertex<float, unsigned char>, BilinearFastBox<ColorVertex<float, unsigned char>, Normal<float> > >* ps_grid = static_cast<PointsetGrid<ColorVertex<float, unsigned char>, BilinearFastBox<ColorVertex<float, unsigned char>, Normal<float> > > *>(grid);
@@ -741,16 +1311,41 @@ int main(int argc, char* argv[])
 
                     reconstruction = new FastReconstruction<ColorVertex<float, unsigned char> , Normal<float>, BilinearFastBox<ColorVertex<float, unsigned char>, Normal<float> >  >(ps_grid);
 
+                    string out = filePath;
+                    out.pop_back();
+                    out.pop_back();
+                    out.pop_back();
+                    out.append("grid");
+                    otimer.resume();
+                    ps_grid->serialize(out);
+                    out = filePath;
+                    out.pop_back();
+                    out.pop_back();
+                    out.pop_back();
+                    out.append("show.grid");
+                    ps_grid->saveGrid(out);
+                    otimer.stop();
+
                 }
                 else if(decomposition == "SF")
                 {
                     SharpBox<ColorVertex<float, unsigned char>, Normal<float> >::m_surface = surface;
-                    grid = new PointsetGrid<ColorVertex<float, unsigned char>, SharpBox<ColorVertex<float, unsigned char>, Normal<float> > >(resolution, surface, surface->getBoundingBox(), useVoxelsize);
+                    grid = new PointsetGrid<ColorVertex<float, unsigned char>, SharpBox<ColorVertex<float, unsigned char>, Normal<float> > >(resolution, surface, tmpbb, useVoxelsize, options.extrude());
                     grid->setExtrusion(options.extrude());
                     PointsetGrid<ColorVertex<float, unsigned char>, SharpBox<ColorVertex<float, unsigned char>, Normal<float> > >* ps_grid = static_cast<PointsetGrid<ColorVertex<float, unsigned char>, SharpBox<ColorVertex<float, unsigned char>, Normal<float> > > *>(grid);
                     ps_grid->calcDistanceValues();
                     reconstruction = new FastReconstruction<ColorVertex<float, unsigned char> , Normal<float>, SharpBox<ColorVertex<float, unsigned char>, Normal<float> >  >(ps_grid);
+                    string out = filePath;
+                    out.pop_back();
+                    out.pop_back();
+                    out.pop_back();
+                    out.append("grid");
+                    otimer.resume();
+                    ps_grid->serialize(out);
+                    otimer.stop();
                 }
+               delete grid;
+               delete reconstruction;
             }
             // Create Mesh from Grid
             else if(filePath.find("grid") != std::string::npos)
@@ -758,15 +1353,26 @@ int main(int argc, char* argv[])
                 cout << "going to rreconstruct " << filePath << endl;
                 string cloudPath = filePath;
                 boost::algorithm::replace_last(cloudPath, "grid", "xyz");
-                ModelPtr model = ModelFactory::readModel(cloudPath );
-                PointBufferPtr p_loader;
-                if ( !model )
+                FILE * fp = fopen(cloudPath.c_str(), "rb" );
+                size_t sz = 0;
+                if(fp != NULL)
                 {
-                    cout << timestamp << "IO Error: Unable to parse " << filePath << endl;
-                    exit(-1);
+                    itimer.resume();
+                    fseek(fp, 0L, SEEK_END);
+                    sz = ftell(fp);
+                    itimer.stop();
+                    sz/=sizeof(float);
                 }
-                p_loader = model->m_pointCloud;
-                cout << "loaded " << cloudPath << " with : "<< model->m_pointCloud->getNumPoints() << endl;
+
+                floatArr fArray(new float[sz]);
+                rewind(fp);
+                itimer.resume();
+                size_t readamount = fread ( fArray.get(), sizeof(float), sz, fp );
+                itimer.stop();
+                fclose(fp);
+                PointBufferPtr p_loader(new PointBuffer);
+                p_loader->setPointArray(fArray, sz/3);
+                cout << "loaded " << cloudPath << " with : "<< sz/3  << endl;
 
                 string pcm_name = options.getPCM();
                 psSurface::Ptr surface;
@@ -783,21 +1389,20 @@ int main(int argc, char* argv[])
                 }
                 else if(pcm_name == "STANN" || pcm_name == "FLANN" || pcm_name == "NABO" || pcm_name == "NANOFLANN")
                 {
-                    akSurface* aks = new akSurface(
-                            p_loader, pcm_name,
-                            options.getKn(),
-                            options.getKi(),
-                            options.getKd(),
-                            options.useRansac(),
-                            options.getScanPoseFile()
-                    );
-
-                    surface = psSurface::Ptr(aks);
+                    surface = psSurface::Ptr(new akSurface(
+                      p_loader, pcm_name,
+                      options.getKn(),
+                      options.getKi(),
+                      options.getKd(),
+                      options.useRansac(),
+                      options.getScanPoseFile(),
+                      center
+                    ));
                     // Set RANSAC flag
-                    if(options.useRansac())
+/*                    if(options.useRansac())
                     {
                         aks->useRansac(true);
-                    }
+                    }*/
                 }
                 else
                 {
@@ -825,7 +1430,9 @@ int main(int argc, char* argv[])
                     mesh.setDepth(options.getDepth());
                 }
 
+                itimer.resume();
                 HashGrid<ColorVertex<float, unsigned char>, FastBox<ColorVertex<float, unsigned char>, Normal<float> > > mainGrid(filePath);
+                itimer.stop();
                 string out2 = filePath;
                 boost::algorithm::replace_first(out2, ".grid", "-2.grid");
                 mainGrid.saveGrid(out2);
@@ -842,7 +1449,7 @@ int main(int argc, char* argv[])
                 mesh.cleanContours(options.getCleanContourIterations());
                 mesh.setClassifier(options.getClassifier());
                 mesh.getClassifier().setMinRegionSize(options.getSmallRegionThreshold());
-
+                cout << "MESH: " << filePath << " bebore: " << mesh.getFaces().size() << endl;
                 if(options.optimizePlanes())
                 {
                     mesh.optimizePlanes(options.getPlaneIterations(),
@@ -866,7 +1473,7 @@ int main(int argc, char* argv[])
                     mesh.clusterRegions(options.getNormalThreshold(), options.getMinPlaneSize());
                     mesh.fillHoles(options.getFillHoles());
                 }
-
+                cout << "MESH: " << filePath << " after: " << mesh.getFaces().size() << endl;
 
                 if ( options.retesselate() )
                 {
@@ -880,12 +1487,24 @@ int main(int argc, char* argv[])
 
                 string output = filePath;
                 boost::algorithm::replace_first(output, "grid", "ply");
+                otimer.resume();
                 ModelFactory::saveModel( m, output);
+                otimer.stop();
+                delete reconstruction;
             }
 
             world.send(0, FINISHED, std::string("world"));
             cout << timestamp << "Node: " << world.rank() << "finished "  << endl;
         }
+        double t = 0;
+        auto tsi = itimer.elapsed ();
+        auto tso = otimer.elapsed ();
+        t += (double)tsi.wall/1000000000.0;
+        t += (double)tso.wall/1000000000.0;
+        world.send(0, FINISHED, t);
+//        std::cout << "IO-Timer of Node :" << world.rank ()  << std::endl
+//                  << "READ: " << itimer.format () << std::endl
+//                  << "WRITE: " << otimer.format () << std::endl;
 
     }
 

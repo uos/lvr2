@@ -11,11 +11,12 @@
 #include <unordered_map>
 #include <vector>
 #include <string>
+#include <tuple>
 
 #include <lvr/geometry/BoundingBox.hpp>
 
 #include "QueryPoint.hpp"
-
+#include <boost/timer/timer.hpp>
 using std::string;
 using std::vector;
 using std::unordered_map;
@@ -25,6 +26,9 @@ namespace lvr
 
 class GridBase
 {
+
+
+
 public:
 
 	GridBase(bool extrude = true) : m_extrude(extrude){}
@@ -62,15 +66,21 @@ protected:
 	bool m_extrude;
 };
 
+typedef std::tuple<float, float, float> point_t;
+
+typedef std::unordered_map<const point_t, int> DuplicesMap;
+
 template<typename VertexT, typename BoxT>
 class HashGrid : public GridBase
 {
+
+
 public:
 
 	/// Typedef to alias box map
 	typedef unordered_map<size_t, BoxT*> box_map;
 	
-	typedef unordered_map<size_t, size_t> qp_map;
+	typedef unordered_map<size_t, size_t > qp_map;
 	
 	/// Typedef to alias iterators for box maps
 	typedef typename unordered_map<size_t, BoxT*>::iterator  box_map_it;
@@ -102,6 +112,8 @@ public:
 	 */
 	HashGrid(string file);
 
+    HashGrid(std::vector<string>& files, BoundingBox<VertexT>& boundingBox, float voxelsize);
+
 	/**
 	 *
 	 * @param i 		Discrete x position within the grid.
@@ -120,6 +132,8 @@ public:
 	virtual void saveGrid(string file);
 
 	virtual void serialize(string file);
+
+    void saveCells(string file);
 
 	/***
 	 * @brief 	Returns the number of generated cells.
@@ -148,7 +162,7 @@ public:
 
 	vector<QueryPoint<VertexT> > & getQueryPoints() { return m_queryPoints;}
 
-	//vector<BoxT*> getSideCells(Vertex<int> directions);
+	vector<BoxT*> getSideCells(Vertex<int> directions, int nr);
 
 	box_map getCells() { return m_cells; }
 
@@ -171,7 +185,17 @@ public:
 
 	size_t getMaxIndexZ(){return m_maxIndexZ;}
 
+	bool setBB(BoundingBox<VertexT>& bb)
+	{
+		m_boundingBox = bb;
+		calcIndices();
+	}
+	
+	bool interpolateEdge(HashGrid& rhs);
+
 	BoundingBox<VertexT> & getBoundingBox(){return m_boundingBox;}
+	
+	Vertex<int> convertGlobalToGrid(Vertexf& globalCoord);
 
 	/**
      * @brief Calculates the hash value for the given index triple
@@ -195,6 +219,11 @@ public:
 			const int &x,
 			const int &y,
 			const int &z);
+    void calcIndices();
+    inline int calcIndex(float f)
+    {
+        return f < 0 ? f-.5:f+.5;
+    }
 protected:
 
 
@@ -202,14 +231,11 @@ protected:
 	/**
 	 * @brief 	Calculates needed lattice parameters.
 	 */
-	void calcIndices();
 
 
 
-	inline int calcIndex(float f)
-	{
-		return f < 0 ? f-.5:f+.5;
-	}
+
+
 
 	/// Map to handle the boxes in the grid
 	box_map			m_cells;

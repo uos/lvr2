@@ -311,7 +311,12 @@ public:
     int getMinimumTransformationVotes() const;
 	unsigned int getOctreeNodeSize() const;
 	unsigned int getBufferSize() const;
+
+	bool interpolateBoxes() const;
+
 	string getOutputFolderPath() const;
+
+	bool getUseNormals() const;
 
 
 private:
@@ -437,6 +442,10 @@ private:
 	unsigned int m_bufferSize;
 
 	unsigned int m_octreeNodeSize;
+
+	bool m_interpolateBoxes;
+
+	bool m_use_normals;
 
 
 };
@@ -564,6 +573,10 @@ inline ostream& operator<<(ostream& os, const Options &o)
 	{
 		cout << "##### Octree Size: \t\t: " << o.getOctreeNodeSize() << endl;
 	}
+
+
+	cout << "##### Interpolating Boxes?: \t\t: " << o.interpolateBoxes() << endl;
+
 
 	if(o.getBufferSize())
 	{

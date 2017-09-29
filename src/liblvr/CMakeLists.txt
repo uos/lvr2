@@ -18,6 +18,7 @@ set(LVR_SOURCES
     io/STLIO.cpp
     io/TextureIO.cpp
     io/DatIO.cpp
+    io/IOUtils.cpp
     config/BaseOption.cpp
     display/InteractivePointCloud.cpp
     display/CoordinateAxes.cpp
@@ -38,6 +39,7 @@ set(LVR_SOURCES
     reconstruction/ModelToImage.cpp
     reconstruction/Projection.cpp
     reconstruction/PanoramaNormals.cpp
+    reconstruction/LBKdTree.cpp
     texture/Texture.cpp
     texture/ImageProcessor.cpp
     texture/Statistics.cpp
@@ -48,6 +50,7 @@ set(LVR_SOURCES
     texture/Trans.cpp
     geometry/HalfEdgeAccessExceptions.cpp
 )
+
 
 
 #####################################################################################
@@ -115,6 +118,61 @@ if(WITH_FREENECT AND LIBFREENECT_FOUND)
   set(LVR_SOURCES ${LVR_SOURCES} io/KinectGrabber.cpp io/KinectIO.cpp ../../include/lvr2/algorithm/UtilAlgorithms.hpp)
   set(LVR_LIB_DEPENDENCIES ${LVR_LIB_DEPENDENCIES} ${LIBFREENECT_LIBRARIES})
 endif()
+
+#####################################################################################
+# OpenCl stuff
+#####################################################################################
+
+
+if(OPENCL_FOUND)
+    set(LVR_SOURCES ${LVR_SOURCES} reconstruction/opencl/ClSurface.cpp)
+    set(LVR_LIB_DEPENDENCIES ${LVR_LIB_DEPENDENCIES} ${OpenCL_LIBRARIES})
+endif()
+
+#####################################################################################
+# CUDA stuff
+#####################################################################################
+
+if(CUDA_FOUND)
+set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++11")
+
+set(LVR_CUDA_SRC
+  reconstruction/cuda/CudaSurface.cu
+)
+
+# Fix broken VTK flags
+get_directory_property(dir_defs DIRECTORY ${CMAKE_SOURCE_DIR} COMPILE_DEFINITIONS)
+set(vtk_flags)
+foreach(it ${dir_defs})
+    if(it MATCHES "vtk*")
+    list(APPEND vtk_flags ${it})
+    endif()
+endforeach()
+
+foreach(d ${vtk_flags})
+    remove_definitions(-D${d})
+endforeach()
+  
+message(STATUS "Building static LVR CUDA library")
+cuda_add_library(lvrcuda_static STATIC ${LVR_CUDA_SRC})
+target_link_libraries(lvrcuda_static lvr_static)
+
+# Add dependency to avoid that both targets
+# are build concurrently in parallel builds
+add_dependencies(lvrcuda_static lvr_static) 
+message(STATUS "Building shared LVR CUDA library")
+cuda_add_library(lvrcuda SHARED ${LVR_CUDA_SRC})
+target_link_libraries(lvrcuda lvr)
+
+install(
+  TARGETS lvrcuda_static lvrcuda 
+  EXPORT lvrTargets
+  LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR}
+  ARCHIVE DESTINATION ${CMAKE_INSTALL_LIBDIR}
+)
+
+endif()
+
 
 #####################################################################################
 # Compile object files for static and dynamic library

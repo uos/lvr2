@@ -79,7 +79,6 @@ public:
      */
     void setVertex(int index,  uint value);
 
-	void setFusion(bool fusionBox);
 
     /**
      * @brief Adjacent cells in the grid should use common vertices.
@@ -133,6 +132,9 @@ public:
     bool 						m_fusedBox;
     bool                        m_oldfusionBox;
     bool                        m_fusionNeighborBox;
+    bool                        m_overlappBox;
+    bool                        m_extruded;
+    bool                        m_deleteExtruded;
      /// The box center
     VertexT               		m_center;
 

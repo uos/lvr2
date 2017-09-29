@@ -41,12 +41,15 @@
 namespace lvr
 {
 
+
+
 template<typename VertexT, typename BoxT>
 HashGrid<VertexT, BoxT>::HashGrid(float cellSize, BoundingBox<VertexT> boundingBox, bool isVoxelsize, bool extrude) :
-	GridBase(extrude),
-	m_boundingBox(boundingBox),
-	m_globalIndex(0)
+GridBase(extrude),
+m_boundingBox(boundingBox),
+m_globalIndex(0)
 {
+
 	m_coordinateScales[0] = 1.0;
 	m_coordinateScales[1] = 1.0;
 	m_coordinateScales[2] = 1.0;
@@ -78,6 +81,104 @@ HashGrid<VertexT, BoxT>::HashGrid(float cellSize, BoundingBox<VertexT> boundingB
 }
 
 template<typename VertexT, typename BoxT>
+HashGrid<VertexT, BoxT>::HashGrid(std::vector<string>& files, BoundingBox<VertexT>& boundingBox, float voxelsize) 
+: 
+m_boundingBox(boundingBox), 
+m_voxelsize(voxelsize),
+m_globalIndex(0)
+{
+	unsigned int INVALID = BoxT::INVALID_INDEX;
+    calcIndices();
+    float distances[8];
+    VertexT box_center;
+	bool extruded;
+	float vsh = 0.5 * this->m_voxelsize;
+    for(int numFiles = 0 ; numFiles<files.size() ; numFiles++)
+    {
+		unsigned int current_index = 0;
+        cout << "Loading grid: " << numFiles << "/" << files.size() << endl;
+		
+		FILE * pFile = fopen(files[numFiles].c_str(),"rb");
+		size_t numCells;
+		size_t r = fread ( &numCells, sizeof(size_t), 1, pFile );
+		
+		for(size_t cellCount = 0 ; cellCount<numCells ; cellCount++)
+		{
+			r = fread ( &(box_center[0]), sizeof(float), 1, pFile );
+			r = fread ( &(box_center[1]), sizeof(float), 1, pFile );
+			r = fread ( &(box_center[2]), sizeof(float), 1, pFile );
+
+			r = fread ( &extruded, sizeof(bool), 1, pFile);
+
+			r = fread ( &(distances[0]), sizeof(float), 8, pFile );
+
+			size_t idx = calcIndex((box_center[0] - m_boundingBox.getMin()[0])/m_voxelsize);
+			size_t idy = calcIndex((box_center[1] - m_boundingBox.getMin()[1])/m_voxelsize);
+			size_t idz = calcIndex((box_center[2] - m_boundingBox.getMin()[2])/m_voxelsize);
+			size_t hash = hashValue(idx, idy, idz);
+			auto cell_it = this->m_cells.find(hash);
+			if(cell_it == this->m_cells.end() && !extruded)
+			{
+				BoxT* box = new BoxT(box_center);
+				for(int i = 0 ; i<8 ; i++)
+				{
+					current_index = this->findQueryPoint(i, idx, idy, idz);
+					if(current_index != INVALID) box->setVertex(i, current_index);
+					else
+					{
+						VertexT position(box_center[0] + box_creation_table[i][0] * vsh,
+										 box_center[1] + box_creation_table[i][1] * vsh,
+										 box_center[2] + box_creation_table[i][2] * vsh);
+						this->m_queryPoints.push_back(QueryPoint<VertexT>(position, distances[i]));
+						box->setVertex(i, this->m_globalIndex);
+						this->m_globalIndex++;
+					}
+
+				}
+				//Set pointers to the neighbors of the current box
+				int neighbor_index = 0;
+				size_t neighbor_hash = 0;
+
+				for(int a = -1; a < 2; a++)
+				{
+					for(int b = -1; b < 2; b++)
+					{
+						for(int c = -1; c < 2; c++)
+						{
+
+							//Calculate hash value for current neighbor cell
+							neighbor_hash = this->hashValue(idx + a,
+															idy + b,
+															idz + c);
+
+							//Try to find this cell in the grid
+							auto neighbor_it = this->m_cells.find(neighbor_hash);
+
+							//If it exists, save pointer in box
+							if(neighbor_it != this->m_cells.end())
+							{
+								box->setNeighbor(neighbor_index, (*neighbor_it).second);
+								(*neighbor_it).second->setNeighbor(26 - neighbor_index, box);
+							}
+
+							neighbor_index++;
+						}
+					}
+				}
+
+				this->m_cells[hash] = box;
+			}
+		}
+		fclose(pFile);
+
+
+    }
+
+
+
+}
+
+template<typename VertexT, typename BoxT>
 HashGrid<VertexT, BoxT>::HashGrid(string file)
 {
 
@@ -86,11 +187,13 @@ HashGrid<VertexT, BoxT>::HashGrid(string file)
 	ifstream ifs(file.c_str());
 	float minx, miny, minz, maxx, maxy, maxz, vsize;
 	size_t qsize, csize;
+
+	ifs >> m_extrude;
+	m_extrude = false;
 	ifs >> minx >> miny >> minz >> maxx >> maxy >> maxz >> qsize >> vsize >> csize;
 
 	m_boundingBox = BoundingBox<VertexT>(minx, miny, minz, maxx, maxy, maxz);
 	m_globalIndex = 0;
-	m_extrude=false; // TODO: ADD TO SERIALIZATION
 	m_coordinateScales[0] = 1.0;
 	m_coordinateScales[1] = 1.0;
 	m_coordinateScales[2] = 1.0;
@@ -117,98 +220,104 @@ HashGrid<VertexT, BoxT>::HashGrid(string file)
 	size_t h;
 	unsigned int cell[8];
 	VertexT cell_center;
+    bool fusion = false;
+	typename HashGrid<VertexT, BoxT>::box_map_it neighbor_it;
+
 	for(size_t k = 0 ; k< csize ; k++)
 	{
 		//cout << "i: " << k << endl;
 		ifs >> h >> cell[0] >> cell[1] >> cell[2] >> cell[3] >> cell[4] >> cell[5] >> cell[6] >> cell[7]
-				 >> cell_center[0] >> cell_center[1] >> cell_center[2] ;
+																									  >> cell_center[0] >> cell_center[1] >> cell_center[2] >> fusion ;
 		//cout <<  h << " " << cell[0] << " " << cell[1] << " " << cell[2] << " " << cell[3] << " " << cell[4] << " " << cell[5] << " " << cell[6] << " " << cell[7]
 		//		 << " " << cell_center[0] << " " << cell_center[1] << " " << cell_center[2] << endl;
 		BoxT* box = new BoxT(cell_center);
+        box->m_extruded = fusion;
+//        if(fusion)         cout << "Box: ist extruded " << cell_center << endl;
+
 		for(int j=0 ; j<8 ; j++)
 		{
 			box->setVertex(j,  cell[j]);
 		}
 
-		m_cells[h] = box;
-	}
-	cout << timestamp << "Reading cells.." << endl;
-	typename HashGrid<VertexT, BoxT>::box_map_it it;
-	typename HashGrid<VertexT, BoxT>::box_map_it neighbor_it;
+		int idx = calcIndex((cell_center[0] - m_boundingBox.getMin()[0])/m_voxelsize);
+		int idy = calcIndex((cell_center[1] - m_boundingBox.getMin()[1])/m_voxelsize);
+		int idz = calcIndex((cell_center[2] - m_boundingBox.getMin()[2])/m_voxelsize);
 
-	cout << "c size: " << m_cells.size() << endl;
-	for( it = m_cells.begin() ; it != m_cells.end() ; it++)
+//		cout << "generated hash: " << hashValue(idx , idy , idz ) << " / " << h << endl;
+
+
+		this->m_cells[h] = box;
+	}
+	for(auto it = m_cells.begin() ; it!=m_cells.end() ;it++)
 	{
-		//cout << "asdfsdfgsdfgdsfgdfg" << endl;
-		BoxT* currentBox = it->second;
 		int neighbor_index = 0;
-		size_t neighbor_hash = 0;
+				size_t neighbor_hash = 0;
 
-		for(int a = -1; a < 2; a++)
-		{
-			for(int b = -1; b < 2; b++)
-			{
-				for(int c = -1; c < 2; c++)
+				for(int a = -1; a < 2; a++)
 				{
-
-
-					//Calculate hash value for current neighbor cell
-					neighbor_hash = this->hashValue(it->first + a,
-													it->first + b,
-													it->first + c);
-					//cout << "n hash: " << neighbor_hash  << endl;
-					//cout << " id: " << neighbor_index << endl;
-
-					//Try to find this cell in the grid
-					neighbor_it = this->m_cells.find(neighbor_hash);
-
-					//If it exists, save pointer in box
-					if(neighbor_it != this->m_cells.end())
+					for(int b = -1; b < 2; b++)
 					{
-						currentBox->setNeighbor(neighbor_index, (*neighbor_it).second);
-						(*neighbor_it).second->setNeighbor(26 - neighbor_index, currentBox);
-					}
+						for(int c = -1; c < 2; c++)
+						{
+							//Calculate hash value for current neighbor cell
+							int idx = calcIndex((it->second->getCenter()[0] - m_boundingBox.getMin()[0])/m_voxelsize);
+							int idy = calcIndex((it->second->getCenter()[1] - m_boundingBox.getMin()[1])/m_voxelsize);
+							int idz = calcIndex((it->second->getCenter()[2] - m_boundingBox.getMin()[2])/m_voxelsize);
+							neighbor_hash = this->hashValue(idx + a, idy + b, idz + c);
+							//cout << "n hash: " << neighbor_hash  << endl;
+							//cout << " id: " << neighbor_index << endl;
 
-					neighbor_index++;
+							//Try to find this cell in the grid
+							neighbor_it = this->m_cells.find(neighbor_hash);
+
+							//If it exists, save pointer in box
+							if(neighbor_it != this->m_cells.end())
+							{
+								it->second->setNeighbor(neighbor_index, (*neighbor_it).second);
+								(*neighbor_it).second->setNeighbor(26 - neighbor_index, it->second);
+							}
+
+							neighbor_index++;
+						}
+					}
 				}
-			}
-		}
 	}
+
 	cout << "Finished reading grid" << endl;
 
 
 }
 
-/*
+
 template<typename VertexT, typename BoxT>
-vector<BoxT*> void HashGrid<VertexT, BoxT>::getSideCells(Vertex<int> direction)
+vector<BoxT*> HashGrid<VertexT, BoxT>::getSideCells(Vertex<int> direction, int nr)
 {
 	vector<BoxT*> out;
-	size_t x,y,z;
-	size_t  maxx, maxy, maxz;
+	int x,y,z;
+	int  maxx, maxy, maxz;
 
-	x = y = z = 0;
-	maxx = m_maxIndexX;
-	maxy = m_maxIndexY;
-	maxz = m_maxIndexZ;
+	x = y = z = -1;
+	maxx = m_maxIndexX+1;
+	maxy = m_maxIndexY+1;
+	maxz = m_maxIndexZ+1;
 
-	if		(direction.x == 1) x = maxx = m_maxIndexX;
-	else if (direction.y == 1) y = maxy = m_maxIndexY;
-	else if (direction.z == 1) z = maxz = m_maxIndexZ;
+	if		(direction.x == 1) x = maxx = m_maxIndexX+1;
+	else if (direction.y == 1) y = maxy = m_maxIndexY+1;
+	else if (direction.z == 1) z = maxz = m_maxIndexZ+1;
 	else if (direction.x == -1)
 	{
-		x = 0;
-		maxx = 0;
+		x = -1;
+		maxx = -1;
 	}
 	else if (direction.y == -1)
 	{
-		y = 0;
-		maxy = 0;
+		y = -1;
+		maxy = -1;
 	}
 	else if (direction.z == -1)
 	{
-		z = 0;
-		maxz = 0;
+		z = -1;
+		maxz = -1;
 	}
 
 	for(int i = x ; i<=maxx ; i++)
@@ -217,8 +326,13 @@ vector<BoxT*> void HashGrid<VertexT, BoxT>::getSideCells(Vertex<int> direction)
 		{
 			for(int k = z ; k<=maxz ; k++)
 			{
-				size_t h = hashValue(i,j,k);
-				out.push_back(m_cells[h]);
+				size_t h =hashValue(i,j,k) ;
+				box_map_it it = m_cells.find(h);
+				if(it != m_cells.end())
+				{
+					out.push_back(it->second());
+				}
+
 			}
 
 		}
@@ -227,7 +341,7 @@ vector<BoxT*> void HashGrid<VertexT, BoxT>::getSideCells(Vertex<int> direction)
 
 
 }
-*/
+
 template<typename VertexT, typename BoxT>
 void HashGrid<VertexT, BoxT>::addLatticePoint(int index_x, int index_y, int index_z, float distance)
 {
@@ -262,6 +376,8 @@ void HashGrid<VertexT, BoxT>::addLatticePoint(int index_x, int index_y, int inde
 		dy = HGCreateTable[j][1];
 		dz = HGCreateTable[j][2];
 
+
+
 		hash_value = this->hashValue(index_x + dx, index_y + dy, index_z +dz);
 
 		it = this->m_cells.find(hash_value);
@@ -274,8 +390,12 @@ void HashGrid<VertexT, BoxT>::addLatticePoint(int index_x, int index_y, int inde
 					(index_z + dz) * this->m_voxelsize + v_min[2]);
 
 			//Create new box
-			BoxT* box = new BoxT(box_center);
-
+				BoxT* box = new BoxT(box_center);
+            if( ((box_center[0] < v_min[0] ) || (box_center[1] < v_min[1] ) || (box_center[2] < v_min[2]) ||
+                (box_center[0] > v_max[0] ) || (box_center[1] > v_max[1] ) || (box_center[2] > v_max[2] ))     )
+            {
+                box->m_extruded=true;
+            }
 			//Setup the box itself
 			for(int k = 0; k < 8; k++){
 
@@ -284,12 +404,12 @@ void HashGrid<VertexT, BoxT>::addLatticePoint(int index_x, int index_y, int inde
 				//If point exist, save index in box
 				if(current_index != INVALID) box->setVertex(k, current_index);
 
-					//Otherwise create new grid point and associate it with the current box
+				//Otherwise create new grid point and associate it with the current box
 				else
 				{
 					VertexT position(box_center[0] + box_creation_table[k][0] * vsh,
-									 box_center[1] + box_creation_table[k][1] * vsh,
-									 box_center[2] + box_creation_table[k][2] * vsh);
+							box_center[1] + box_creation_table[k][1] * vsh,
+							box_center[2] + box_creation_table[k][2] * vsh);
 
 					this->m_queryPoints.push_back(QueryPoint<VertexT>(position, distance));
 					box->setVertex(k, this->m_globalIndex);
@@ -302,6 +422,7 @@ void HashGrid<VertexT, BoxT>::addLatticePoint(int index_x, int index_y, int inde
 			int neighbor_index = 0;
 			size_t neighbor_hash = 0;
 
+
 			for(int a = -1; a < 2; a++)
 			{
 				for(int b = -1; b < 2; b++)
@@ -311,8 +432,8 @@ void HashGrid<VertexT, BoxT>::addLatticePoint(int index_x, int index_y, int inde
 
 						//Calculate hash value for current neighbor cell
 						neighbor_hash = this->hashValue(index_x + dx + a,
-														index_y + dy + b,
-														index_z + dz + c);
+								index_y + dy + b,
+								index_z + dz + c);
 
 						//Try to find this cell in the grid
 						neighbor_it = this->m_cells.find(neighbor_hash);
@@ -346,7 +467,7 @@ void HashGrid<VertexT, BoxT>::setCoordinateScaling(float x, float y, float z)
 template<typename VertexT, typename BoxT>
 HashGrid<VertexT, BoxT>::~HashGrid()
 {
-	/*box_map_it iter;
+	box_map_it iter;
 	for(iter = m_cells.begin(); iter != m_cells.end(); iter++)
 	{
 		if(iter->second != NULL)
@@ -356,7 +477,7 @@ HashGrid<VertexT, BoxT>::~HashGrid()
 		}
 	}
 
-	m_cells.clear();*/
+	m_cells.clear();
 }
 
 
@@ -365,20 +486,20 @@ template<typename VertexT, typename BoxT>
 void HashGrid<VertexT, BoxT>::calcIndices()
 {
 	float max_size = m_boundingBox.getLongestSide();
-
-	//Save needed grid parameters
-	m_maxIndex = (int)ceil( (max_size + 5 * m_voxelsize) / m_voxelsize);
-	m_maxIndexSquare = m_maxIndex * m_maxIndex;
-
-	m_maxIndexX = (int)ceil(m_boundingBox.getXSize() / m_voxelsize) + 1;
-	m_maxIndexY = (int)ceil(m_boundingBox.getYSize() / m_voxelsize) + 2;
-	m_maxIndexZ = (int)ceil(m_boundingBox.getZSize() / m_voxelsize) + 3;
+	
+		//Save needed grid parameters
+		m_maxIndex = (int)ceil( (max_size + 5 * m_voxelsize) / m_voxelsize);
+		m_maxIndexSquare = m_maxIndex * m_maxIndex;
+	
+		m_maxIndexX = (int)ceil(m_boundingBox.getXSize() / m_voxelsize) + 1;
+		m_maxIndexY = (int)ceil(m_boundingBox.getYSize() / m_voxelsize) + 2;
+		m_maxIndexZ = (int)ceil(m_boundingBox.getZSize() / m_voxelsize) + 3;
 }
 
 template<typename VertexT, typename BoxT>
 unsigned int HashGrid<VertexT, BoxT>::findQueryPoint(
 		const int &position, const int &x, const int &y, const int &z)
-{
+		{
 	int n_x, n_y, n_z, q_v, offset;
 	box_map_it it;
 
@@ -395,7 +516,7 @@ unsigned int HashGrid<VertexT, BoxT>::findQueryPoint(
 		it = m_cells.find(hash);
 		if(it != m_cells.end())
 		{
-		//	cout << "found hash" << endl;
+			//	cout << "found hash" << endl;
 			BoxT* b = it->second;
 			if(b->getVertex(q_v) != BoxT::INVALID_INDEX) return b->getVertex(q_v);
 		}
@@ -403,7 +524,7 @@ unsigned int HashGrid<VertexT, BoxT>::findQueryPoint(
 	}
 
 	return BoxT::INVALID_INDEX;
-}
+		}
 
 
 template<typename VertexT, typename BoxT>
@@ -453,18 +574,316 @@ void HashGrid<VertexT, BoxT>::saveGrid(string filename)
 	}
 }
 
+template<typename VertexT, typename BoxT>
+bool HashGrid<VertexT, BoxT>::interpolateEdge(HashGrid<VertexT, BoxT>& rhs)
+{
+	//Calc intersection Bounding box
+	Vertexf ibb_min, ibb_max;
+
+	Vertexf addV_lhs(m_voxelsize, m_voxelsize,m_voxelsize);
+	Vertexf lhs_bb_min = this->m_boundingBox.getMin();
+	Vertexf lhs_bb_max = this->m_boundingBox.getMax();
+	Vertexf rhs_bb_min = rhs.m_boundingBox.getMin();
+	Vertexf rhs_bb_max = rhs.m_boundingBox.getMax();
+    lhs_bb_min-=addV_lhs;
+    lhs_bb_max+=addV_lhs;
+    rhs_bb_min-=addV_lhs;
+    rhs_bb_max+=addV_lhs;
+	if(m_extrude)
+	{
+		lhs_bb_min-=addV_lhs;
+		lhs_bb_max+=addV_lhs;
+		rhs_bb_min-=addV_lhs;
+		rhs_bb_max+=addV_lhs;
+	}
+
+	ibb_min.x = std::max(lhs_bb_min.x, rhs_bb_min.x);
+	ibb_min.y = std::max(lhs_bb_min.y, rhs_bb_min.y);
+	ibb_min.z = std::max(lhs_bb_min.z, rhs_bb_min.z);
+	ibb_max.x = std::min(lhs_bb_max.x, rhs_bb_max.x);
+	ibb_max.y = std::min(lhs_bb_max.y, rhs_bb_max.y);
+	ibb_max.z = std::min(lhs_bb_max.z, rhs_bb_max.z);
+
+	int maxX = calcIndex((ibb_max.x - ibb_min.x)/m_voxelsize);
+	int maxY = calcIndex((ibb_max.y - ibb_min.y)/m_voxelsize);
+	int maxZ = calcIndex((ibb_max.z - ibb_min.z)/m_voxelsize);
+//	cout << "bb-this: " << lhs_bb_min << endl <<lhs_bb_max << endl << "bb-rhs: " << rhs_bb_min << endl << rhs_bb_max << endl ;
+//	cout << "ibb:" << ibb_min << endl << ibb_max << endl;
+//	cout << "max ibb indices: " << maxX << "|" << maxY << "|" << maxZ << endl;
+	if(m_extrude)
+	{
+		maxX++;
+		maxY++;
+		maxZ++;
+	}
+	Vertexf middleAdd(m_voxelsize/2, m_voxelsize/2, m_voxelsize/2);
+	for(int i = 0 ; i < maxX ; i++)
+	{
+		for(int j = 0 ; j < maxY; j++)
+		{
+			for(int k = 0 ; k < maxZ ; k++)
+			{
+				Vertexf checkPoint = ibb_min;
+				checkPoint.x += (i * m_voxelsize + (m_voxelsize/4)) ;
+				checkPoint.y += (j * m_voxelsize)+ (m_voxelsize/4) ;
+				checkPoint.z += (k * m_voxelsize) + (m_voxelsize/4);
+
+				Vertex<int> lhs_coord = this->convertGlobalToGrid(checkPoint);
+				Vertex<int> rhs_coord = rhs.convertGlobalToGrid(checkPoint);
+//				cout << "global: " << endl << checkPoint << endl;
+//				cout << "coords: " << endl << lhs_coord << endl << rhs_coord << endl;
+				box_map_it lhs_it = m_cells.find(this->hashValue(lhs_coord[0], lhs_coord[1], lhs_coord[2]));
+				if(lhs_it == m_cells.end()) continue;
+
+				box_map_it rhs_it = rhs.m_cells.find(rhs.hashValue(rhs_coord[0], rhs_coord[1], rhs_coord[2]));
+				if(rhs_it == rhs.m_cells.end()) continue;
+
+				BoxT* lhs_box = lhs_it->second;
+				BoxT* rhs_box = rhs_it->second;
+
+
+				/*	if(lhs_box->getCenter() != rhs_box->getCenter()) continue;*/
+				if(		!((fabs(lhs_box->getCenter().x - rhs_box->getCenter().x) <= (m_voxelsize/4)) &&
+						(fabs(lhs_box->getCenter().y - rhs_box->getCenter().y) <= (m_voxelsize/4)) &&
+						(fabs(lhs_box->getCenter().z - rhs_box->getCenter().z) <= (m_voxelsize/4)))) continue;
+				//float dist[8];
+//                if(lhs_box->m_extruded || rhs_box->m_extruded) continue;
+//                cout << "box centers: " << endl << lhs_box->getCenter() << endl << rhs_box->getCenter() << endl;
+//				rhs_box->m_overlappBox = true;
+//				lhs_box->m_overlappBox = true;
+                bool all_checked = true;
+                float lhs_original_dist[8];
+                float rhs_original_dist[8];
+                for(int m = 0 ; m<8;m++)
+                {
+                    lhs_original_dist[m] = m_queryPoints[lhs_box->getVertex(m)].m_position.x;
+                    rhs_original_dist[m] = rhs.m_queryPoints[rhs_box->getVertex(m)].m_position.x;
+                }
+
+				for(int l = 0 ; l<8; l++)
+				{
+//					cout << "interpolating : " << m_queryPoints[lhs_box->getVertex(l)].m_position << " and " <<  rhs.m_queryPoints[rhs_box->getVertex(l)].m_position << endl;
+//					cout << "distances : " << m_queryPoints[lhs_box->getVertex(l)].m_distance << " and " <<  rhs.m_queryPoints[rhs_box->getVertex(l)].m_distance << endl;
+//					m_queryPoints[lhs_box->getVertex(l)].m_distance = (m_queryPoints[lhs_box->getVertex(l)].m_distance + rhs.m_queryPoints[rhs_box->getVertex(l)].m_distance) / 2;
+//					rhs.m_queryPoints[rhs_box->getVertex(l)].m_distance = m_queryPoints[lhs_box->getVertex(l)].m_distance;
+//					rhs.m_queryPoints[rhs_box->getVertex(l)].m_distance = m_queryPoints[lhs_box->getVertex(l)].m_distance;
+//                    if(!((rhs.m_queryPoints[rhs_box->getVertex(l)].m_position.x - m_queryPoints[lhs_box->getVertex(l)].m_position.x <= (m_voxelsize/10)) &&
+//                                (rhs.m_queryPoints[rhs_box->getVertex(l)].m_position.y - m_queryPoints[lhs_box->getVertex(l)].m_position.y <= (m_voxelsize/10)) &&
+//                                (rhs.m_queryPoints[rhs_box->getVertex(l)].m_position.z - m_queryPoints[lhs_box->getVertex(l)].m_position.z <= (m_voxelsize/10))))
+//                    {
+//                        cout <<"nonono " << endl << rhs.m_queryPoints[rhs_box->getVertex(l)].m_position  << m_queryPoints[lhs_box->getVertex(l)].m_position << endl;
+//                    }
+//					cout << "new dist: " << rhs.m_queryPoints[rhs_box->getVertex(l)].m_distance << "|" << m_queryPoints[lhs_box->getVertex(l)].m_distance << endl;
+//                    if(!    ((rhs.m_queryPoints[rhs_box->getVertex(l)].m_distance < 0 && m_queryPoints[lhs_box->getVertex(l)].m_distance>0) ||
+//                             (rhs.m_queryPoints[rhs_box->getVertex(l)].m_distance > 0 && m_queryPoints[lhs_box->getVertex(l)].m_distance<0) ) )
+//                    {
+//                        rhs.m_queryPoints[rhs_box->getVertex(l)].m_distance = (m_queryPoints[lhs_box->getVertex(l)].m_distance + rhs.m_queryPoints[rhs_box->getVertex(l)].m_distance)/2 ;
+//                        m_queryPoints[lhs_box->getVertex(l)].m_distance = rhs.m_queryPoints[rhs_box->getVertex(l)].m_distance ;
+//
+//
+//                    }
+//                    else
+//                    {
+//                        rhs.m_queryPoints[rhs_box->getVertex(l)].m_distance = std::min(m_queryPoints[lhs_box->getVertex(l)].m_distance , rhs.m_queryPoints[rhs_box->getVertex(l)].m_distance) ;
+//                        m_queryPoints[lhs_box->getVertex(l)].m_distance = rhs.m_queryPoints[rhs_box->getVertex(l)].m_distance ;
+//
+//                    }
+
+                    bool found_point = false;
+                    for(int m = 0 ; m<8 ; m++)
+                     {
+				        if((fabs(rhs.m_queryPoints[rhs_box->getVertex(l)].m_position.x - m_queryPoints[lhs_box->getVertex(m)].m_position.x) <= (m_voxelsize/10)) &&
+                                (fabs(rhs.m_queryPoints[rhs_box->getVertex(l)].m_position.y - m_queryPoints[lhs_box->getVertex(m)].m_position.y) <= (m_voxelsize/10)) &&
+                                (fabs(rhs.m_queryPoints[rhs_box->getVertex(l)].m_position.z - m_queryPoints[lhs_box->getVertex(m)].m_position.z) <= (m_voxelsize/10)))
+
+					 /*                if(rhs.m_queryPoints[rhs_box->getVertex(l)].m_position == m_queryPoints[lhs_box->getVertex(m)].m_position)*/
+                        {
+
+                            if(rhs_box->m_extruded && !(lhs_box->m_extruded))
+                            {
+                                rhs.m_queryPoints[rhs_box->getVertex(l)].m_distance = m_queryPoints[lhs_box->getVertex(m)].m_distance;
+//                                cout << "kacka0!" << endl;
+                                found_point = true;
+                                break;
+                            }
+                            else if(lhs_box->m_extruded && !(rhs_box->m_extruded))
+                            {
+                                m_queryPoints[lhs_box->getVertex(m)].m_distance = rhs.m_queryPoints[rhs_box->getVertex(l)].m_distance;
+//                                cout << "kacka0!" << endl;
+                                found_point = true;
+                                break;
+                            }
+//                            else if(     (rhs.m_queryPoints[rhs_box->getVertex(l)].m_distance > 0 && m_queryPoints[lhs_box->getVertex(m)].m_distance < 0) ||
+//                                    (rhs.m_queryPoints[rhs_box->getVertex(l)].m_distance < 0 && m_queryPoints[lhs_box->getVertex(m)].m_distance > 0))
+//                            {
+//
+//                                rhs.m_queryPoints[rhs_box->getVertex(l)].m_distance = (m_queryPoints[lhs_box->getVertex(m)].m_distance + rhs.m_queryPoints[rhs_box->getVertex(l)].m_distance)/2 ;
+//                                m_queryPoints[lhs_box->getVertex(m)].m_distance = rhs.m_queryPoints[rhs_box->getVertex(l)].m_distance ;
+//                                found_point = true;
+//                                break;
+//                            }
+                            else if(lhs_box->m_extruded && (rhs_box->m_extruded))
+                            {
+                                //todo: check if box was already interpolated
+                                lhs_box->m_extruded = false;
+                                rhs_box->m_extruded = false;
+//                                cout << "kacka1!" << endl;
+
+								if(fabs(rhs.m_queryPoints[rhs_box->getVertex(l)].m_distance ) < fabs(m_queryPoints[lhs_box->getVertex(m)].m_distance) )
+                                {
+                                    m_queryPoints[lhs_box->getVertex(m)].m_distance = rhs.m_queryPoints[rhs_box->getVertex(l)].m_distance;
+                                }
+                                else
+                                {
+                                    rhs.m_queryPoints[rhs_box->getVertex(l)].m_distance = m_queryPoints[lhs_box->getVertex(m)].m_distance ;
+                                }
+
+//                                rhs.m_queryPoints[rhs_box->getVertex(l)].m_distance = (m_queryPoints[lhs_box->getVertex(m)].m_distance + rhs.m_queryPoints[rhs_box->getVertex(l)].m_distance)/2 ;
+//                                m_queryPoints[lhs_box->getVertex(m)].m_distance = rhs.m_queryPoints[rhs_box->getVertex(l)].m_distance ;
+                                found_point = true;
+                                break;
+                            }
+                            else if(!(lhs_box->m_extruded) && !(rhs_box->m_extruded) )
+                            {
+//                                cout << "kacka2!" << endl;
+                                if(fabs(rhs.m_queryPoints[rhs_box->getVertex(l)].m_distance ) < fabs(m_queryPoints[lhs_box->getVertex(m)].m_distance) )
+                                {
+                                    m_queryPoints[lhs_box->getVertex(m)].m_distance = rhs.m_queryPoints[rhs_box->getVertex(l)].m_distance;
+                                }
+                                else
+                                {
+                                    rhs.m_queryPoints[rhs_box->getVertex(l)].m_distance = m_queryPoints[lhs_box->getVertex(m)].m_distance ;
+                                }
+//                                rhs.m_queryPoints[rhs_box->getVertex(l)].m_distance = (m_queryPoints[lhs_box->getVertex(m)].m_distance + rhs.m_queryPoints[rhs_box->getVertex(l)].m_distance)/2 ;
+//                                m_queryPoints[lhs_box->getVertex(m)].m_distance = rhs.m_queryPoints[rhs_box->getVertex(l)].m_distance ;
+                                found_point = true;
+                                break;
+
+                            }
+                            else
+                            {
+//                                cout << "kacka3!" << endl;
+                            }
+//                            else if(!    ((rhs.m_queryPoints[rhs_box->getVertex(l)].m_distance < 0 && m_queryPoints[lhs_box->getVertex(m)].m_distance>0) ||
+//                                    (rhs.m_queryPoints[rhs_box->getVertex(l)].m_distance > 0 && m_queryPoints[lhs_box->getVertex(m)].m_distance<0) ) )
+//                            {
+//                                rhs.m_queryPoints[rhs_box->getVertex(l)].m_distance = (m_queryPoints[lhs_box->getVertex(m)].m_distance + rhs.m_queryPoints[rhs_box->getVertex(l)].m_distance)/2 ;
+//                                m_queryPoints[lhs_box->getVertex(m)].m_distance = rhs.m_queryPoints[rhs_box->getVertex(l)].m_distance ;
+//
+//                                cout << "m/l = " << m << ", " << l << endl;
+//                                cout << rhs.m_queryPoints[rhs_box->getVertex(l)].m_position << m_queryPoints[lhs_box->getVertex(m)].m_position << endl;
+//                                found_point = true;
+//                                break;
+//                            }
+//
+//                            else
+//                            {
+//                                if(fabs(rhs.m_queryPoints[rhs_box->getVertex(l)].m_distance ) < fabs(m_queryPoints[lhs_box->getVertex(m)].m_distance) )
+//                                {
+//                                    m_queryPoints[lhs_box->getVertex(m)].m_distance = rhs.m_queryPoints[rhs_box->getVertex(l)].m_distance;
+//                                }
+//                                else
+//                                {
+//                                    rhs.m_queryPoints[rhs_box->getVertex(l)].m_distance = m_queryPoints[lhs_box->getVertex(m)].m_distance ;
+//                                }
+//                                cout << "m/l = " << m << ", " << l << endl;
+//                                cout << rhs.m_queryPoints[rhs_box->getVertex(l)].m_distance << m_queryPoints[lhs_box->getVertex(m)].m_distance << endl;
+////                                rhs.m_queryPoints[rhs_box->getVertex(l)].m_distance = std::min(m_queryPoints[lhs_box->getVertex(m)].m_distance , rhs.m_queryPoints[rhs_box->getVertex(l)].m_distance) ;
+////                                m_queryPoints[lhs_box->getVertex(m)].m_distance = rhs.m_queryPoints[rhs_box->getVertex(l)].m_distance ;
+//                                found_point = true;
+//                                break;
+//                            }
+
+                        }
+
+                    }
+                    if(! found_point)
+                    {
+                        for(int m = 0 ; m<8;m++)
+                        {
+                            m_queryPoints[lhs_box->getVertex(m)].m_position.x = lhs_original_dist[m];
+                            rhs.m_queryPoints[rhs_box->getVertex(l)].m_position.x = rhs_original_dist[m];
+                            cout << "ohno" << endl;
+                        }
+                        break;
+                    }
+
+
+					//if(rhs.m_queryPoints[rhs_box->getVertex(l)].m_position != m_queryPoints[lhs_box->getVertex(l)].m_position) continue;
+
+					/*	  m_queryPoints[lhs_box->getVertex(l)].m_distance = dist[l];
+	  rhs.m_queryPoints[rhs_box->getVertex(l)].m_distance = dist[l];*/
+				}
+
+			}
+		}
+	}
+
+
+
+
+}
+template<typename VertexT, typename BoxT>
+Vertex<int> HashGrid<VertexT, BoxT>::convertGlobalToGrid(Vertexf& globalCoord)
+{
+	Vertex<int> result;
+	if(m_extrude)
+	{
+		result.x = calcIndex((globalCoord[0] - m_boundingBox.getMin()[0] ) / m_voxelsize);
+		result.y = calcIndex((globalCoord[1] - m_boundingBox.getMin()[1] ) / m_voxelsize);
+		result.z = calcIndex((globalCoord[2] - m_boundingBox.getMin()[2] ) / m_voxelsize);
+	}
+	else
+	{
+		result.x = calcIndex((globalCoord[0] - m_boundingBox.getMin()[0]) / m_voxelsize);
+		result.y = calcIndex((globalCoord[1] - m_boundingBox.getMin()[1]) / m_voxelsize);
+		result.z = calcIndex((globalCoord[2] - m_boundingBox.getMin()[2]) / m_voxelsize);
+	}
+
+	return result;
+}
+
+template<typename VertexT, typename BoxT>
+void HashGrid<VertexT, BoxT>::saveCells(string file)
+{
+	FILE * pFile = fopen(file.c_str(),"wb");
+	size_t csize = m_cells.size();
+	fwrite(&csize, sizeof(size_t), 1, pFile);
+	for(auto it = this->firstCell() ; it!= this->lastCell(); it++)
+	{
+		fwrite(&it->second->getCenter()[0], sizeof(float), 1, pFile);
+		fwrite(&it->second->getCenter()[1], sizeof(float), 1, pFile);
+		fwrite(&it->second->getCenter()[2], sizeof(float), 1, pFile);
+
+		fwrite(&it->second->m_extruded, sizeof(bool), 1, pFile);
+
+		fwrite(&m_queryPoints[it->second->getVertex(0)].m_distance, sizeof(float),1,pFile);
+		fwrite(&m_queryPoints[it->second->getVertex(1)].m_distance, sizeof(float),1,pFile);
+		fwrite(&m_queryPoints[it->second->getVertex(2)].m_distance, sizeof(float),1,pFile);
+		fwrite(&m_queryPoints[it->second->getVertex(3)].m_distance, sizeof(float),1,pFile);
+		fwrite(&m_queryPoints[it->second->getVertex(4)].m_distance, sizeof(float),1,pFile);
+		fwrite(&m_queryPoints[it->second->getVertex(5)].m_distance, sizeof(float),1,pFile);
+		fwrite(&m_queryPoints[it->second->getVertex(6)].m_distance, sizeof(float),1,pFile);
+		fwrite(&m_queryPoints[it->second->getVertex(7)].m_distance, sizeof(float),1,pFile);
+	}
+	fclose(pFile);
+	
+	
+}
 
 template<typename VertexT, typename BoxT>
 void HashGrid<VertexT, BoxT>::serialize(string file)
 {
+	cout << timestamp << "saving grid: " << file << endl;
 	ofstream out(file.c_str());
 
 	// Write data
 	if(out.good())
 	{
+		out << m_extrude << endl;
 		out <<    m_boundingBox.getMin()[0] << " " << m_boundingBox.getMin()[1]
 		<< " " << m_boundingBox.getMin()[2] << " " << m_boundingBox.getMax()[0]
-		<< " " << m_boundingBox.getMax()[1] << " " << m_boundingBox.getMax()[2] << endl;
+																																				  << " " << m_boundingBox.getMax()[1] << " " << m_boundingBox.getMax()[2] << endl;
 
 
 		out << m_queryPoints.size() << " " << m_voxelsize << " " << m_cells.size() << endl;
@@ -473,8 +892,8 @@ void HashGrid<VertexT, BoxT>::serialize(string file)
 		for(size_t i = 0; i < m_queryPoints.size(); i++)
 		{
 			out << m_queryPoints[i].m_position[0] << " "
-			<< m_queryPoints[i].m_position[1] << " "
-			<< m_queryPoints[i].m_position[2] << " ";
+					<< m_queryPoints[i].m_position[1] << " "
+					<< m_queryPoints[i].m_position[2] << " ";
 
 			if(!isnan(m_queryPoints[i].m_distance))
 			{
@@ -498,11 +917,11 @@ void HashGrid<VertexT, BoxT>::serialize(string file)
 			{
 				out << box->getVertex(i) << " ";
 			}
-			out << box->getCenter()[0] << " " << box->getCenter()[1] << " " << box->getCenter()[2] << endl;
+			out << box->getCenter()[0] << " " << box->getCenter()[1] << " " << box->getCenter()[2] << " " << box->m_extruded << endl;
 		}
 	}
 	out.close();
-
+	cout << timestamp << "finished saving grid: " << file << endl;
 	/*
 	ofstream ofs(file);
 	// write cells amount:
@@ -552,7 +971,7 @@ void HashGrid<VertexT, BoxT>::serialize(string file)
 	ofs << m_boundingBox.getMax()[0] << " " << m_boundingBox.getMax()[1] << " " <<  m_boundingBox.getMax()[2] << endl;
 	ofs << m_globalIndex << endl;
 	ofs << m_coordinateScales[0] << " " << m_coordinateScales[1] << " " << m_coordinateScales[2] << endl;
-*/
+	 */
 
 
 }

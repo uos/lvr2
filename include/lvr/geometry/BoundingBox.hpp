@@ -58,6 +58,10 @@ public:
 	 */
 	BoundingBox(VertexT v1, VertexT v2);
 
+	BoundingBox(const BoundingBox& rhs);
+
+    BoundingBox& operator=(const BoundingBox& rhs);
+
 	/**
 	 * @brief Constructs a bounding box from the given coordinates
 	 *
@@ -148,6 +152,12 @@ public:
      * @brief Returns the lower left coordinates
      */
     VertexT             getMin() const;
+    
+    BoundingBox         getIntersectionBB(BoundingBox& rhs);
+    
+	bool                contains(float x, float y, float z);
+	
+
 
 private:
 
@@ -176,7 +186,8 @@ std::ostream& operator<<(std::ostream& os, BoundingBox<T>&bb)
     os << "Bounding Box: " << endl;
     os << "Min \t\t: " << bb.getMin();
     os << "Max \t\t: " << bb.getMax();
-    os << "Dimensions \t: " << bb.getXSize() << " " << bb.getYSize() << " " << bb.getZSize();
+    os << "Dimensions \t: " << bb.getXSize() << " " << bb.getYSize() << " " << bb.getZSize() << endl;
+     os << "Center \t\t: " << bb.getCentroid() << endl;
     return os;
 }
 

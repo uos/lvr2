@@ -60,8 +60,9 @@ AdaptiveKSearchSurface<VertexT, NormalT>::AdaptiveKSearchSurface(
         const int &ki,
         const int &kd,
         const bool &useRansac,
-        string posefile)
-: PointsetSurface<VertexT>( loader )
+        string posefile,
+        Vertexf center)
+: PointsetSurface<VertexT>( loader ), m_centroid(center)
 {
    // Init:
 //    srand(time(NULL));
@@ -221,7 +222,7 @@ void AdaptiveKSearchSurface<VertexT, NormalT>::init()
     cout << "Num points \t: " << this->m_numPoints << endl;
     cout <<  this->m_boundingBox << endl;
     cout << endl;
-    this->m_centroid = VertexT(0.0, 0.0, 0.0);
+    //this->m_centroid = VertexT(0.0, 0.0, 0.0);
 
     //this->m_boundingBox.getCentroid();
     // Create kd tree
@@ -274,7 +275,7 @@ void AdaptiveKSearchSurface<VertexT, NormalT>::calculateSurfaceNormals()
              *        after the bounding box check
              */
             k = k * 2;
-
+            k = min(k, this->m_numPoints);
             //T* point = this->m_points[i];
             this->m_searchTree->kSearch(this->m_points[i], k, id, di);
 

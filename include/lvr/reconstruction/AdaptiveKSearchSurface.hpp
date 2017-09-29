@@ -121,7 +121,8 @@ public:
             const int &ki = 10,
             const int &kd = 10,
             const bool &useRansac = false,
-            string poseFile = "");
+            string poseFile = "",
+            Vertexf center = Vertexf(0,0,0));
 
     /**
      * @brief standard Constructor
@@ -218,7 +219,8 @@ public:
          * @brief Interpolate the initial normals with the \ref m_ki neighbors
          */
         void interpolateSurfaceNormals();
-
+    /// The centroid of the point set
+    VertexT                    m_centroid;
 private:
 
     /**
@@ -301,8 +303,7 @@ private:
 	        const vector<int> &id, bool &ok );
 
 
-	/// The centroid of the point set
-	VertexT                    m_centroid;
+
 
     /// Should a randomized algorithm be used to determine planes?
 	bool                        m_useRANSAC;
