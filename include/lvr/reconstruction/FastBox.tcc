@@ -38,7 +38,7 @@ template<typename VertexT, typename NormalT>
 uint FastBox<VertexT, NormalT>::INVALID_INDEX = numeric_limits<uint>::max();
 
 template<typename VertexT, typename NormalT>
-FastBox<VertexT, NormalT>::FastBox(VertexT &center)
+FastBox<VertexT, NormalT>::FastBox(VertexT &center) : m_overlappBox(false), m_fusionBox(false), m_extruded(false)
 {
 	//m_intersections = new uint[12];
     // Init members
@@ -200,6 +200,11 @@ void FastBox<VertexT, NormalT>::getSurface(BaseMesh<VertexT, NormalT> &mesh,
                                                vector<QueryPoint<VertexT> > &qp,
                                                uint &globalIndex)
 {
+//    if(m_extruded)
+//    {
+//        cout << "overlapp box ignoring: " <<  m_center << endl;
+////        return;
+//    }
 	VertexT corners[8];
 	VertexT vertex_positions[12];
 
@@ -214,6 +219,7 @@ void FastBox<VertexT, NormalT>::getSurface(BaseMesh<VertexT, NormalT> &mesh,
 	// Do not create traingles for invalid boxes
 	for (int i = 0; i < 8; i++)
 	{
+//		if(m_fusionBox) 		cout << "reconstructing box: " <<  qp[m_vertices[i]].m_position << " - " << qp[m_vertices[i]].m_distance << endl;
 		if (qp[m_vertices[i]].m_invalid)
 		{
 			return;

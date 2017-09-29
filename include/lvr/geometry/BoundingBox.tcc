@@ -32,10 +32,28 @@ template<typename VertexT>
 BoundingBox<VertexT>::BoundingBox()
 {
 	float max_val = numeric_limits<float>::max();
-	float min_val = numeric_limits<float>::min();
+	float min_val = numeric_limits<float>::max()*-1;
 
 	m_min = VertexT(max_val, max_val, max_val);
 	m_max = VertexT(min_val, min_val, min_val);
+}
+
+template<typename VertexT>
+BoundingBox<VertexT>::BoundingBox(const BoundingBox<VertexT>& rhs)
+{
+    this->operator=(rhs);
+}
+
+template<typename VertexT>
+BoundingBox<VertexT>& BoundingBox<VertexT>::operator=(const BoundingBox<VertexT>& rhs)
+{
+    m_min = rhs.m_min;
+    m_max = rhs.m_max;
+    m_centroid = rhs.m_centroid;
+    m_xSize = rhs.m_xSize;
+    m_ySize = rhs.m_ySize;
+    m_zSize = rhs.m_zSize;
+    return *this;
 }
 
 template<typename VertexT>
@@ -43,6 +61,8 @@ BoundingBox<VertexT>::BoundingBox(VertexT v1, VertexT v2)
 {
 	m_min = v1;
 	m_max = v2;
+	expand(v1);
+	expand(v2);
 }
 
 template<typename VertexT>
@@ -51,6 +71,8 @@ BoundingBox<VertexT>::BoundingBox(float x_min, float y_min, float z_min,
 {
 	m_min = VertexT(x_min, y_min, z_min);
 	m_max = VertexT(x_max, y_max, z_max);
+	expand(m_min);
+	expand(m_max);
 }
 
 template<typename VertexT>
@@ -93,9 +115,9 @@ inline void BoundingBox<VertexT>::expand(VertexT v)
     m_ySize = fabs(m_max[1] - m_min[1]);
     m_zSize = fabs(m_max[2] - m_min[2]);
 
-    m_centroid = VertexT(m_min[0] + 0.5f * m_xSize,
-                         m_min[1] + 0.5f * m_ySize,
-                         m_min[2] + 0.5f * m_zSize);
+    m_centroid = m_max+m_min;
+    m_centroid/=2.0f;
+
 }
 
 template<typename VertexT>
@@ -113,9 +135,8 @@ inline void BoundingBox<VertexT>::expand(float x, float y, float z)
     m_ySize = fabs(m_max[1] - m_min[1]);
     m_zSize = fabs(m_max[2] - m_min[2]);
 
-    m_centroid = VertexT(m_min[0] + 0.5f * m_xSize,
-                         m_min[1] + 0.5f * m_ySize,
-                         m_min[2] + 0.5f * m_zSize);
+    m_centroid = m_max+m_min;
+    m_centroid/=2.0f;
 
 }
 
@@ -165,6 +186,22 @@ VertexT BoundingBox<VertexT>::getMax() const
     return m_max;
 }
 
+template<typename VertexT>
+BoundingBox<VertexT> BoundingBox<VertexT>::getIntersectionBB(BoundingBox& rhs)
+{
+    return BoundingBox< VertexT >      (std::max(rhs.m_min[0], m_min[0]),
+                                        std::max(rhs.m_min[1], m_min[1]),
+                                        std::max(rhs.m_min[2], m_min[2]),
+                                        std::min(rhs.m_max[0], m_max[0]),
+                                        std::min(rhs.m_max[1], m_max[1]),
+                                        std::min(rhs.m_max[2], m_max[2]));
+}
+
+template<typename VertexT>
+bool BoundingBox<VertexT>::contains(float x, float y, float z)
+{
+ return ( x >= m_min[0] && y >= m_min[1] && z >= m_min[2] && x <= m_max[0] && y <= m_max[1] && z <= m_max[2]);  
+}
 
 
 } // namespace lvr

@@ -14,18 +14,22 @@ using namespace std;
 namespace lvr
 {
 
+  boost::timer::cpu_timer NodeData::itimer;
+  boost::timer::cpu_timer NodeData::otimer;
+  bool NodeData::timer_init=false;
 
 int NodeData::c_last_id = 0;
 time_t NodeData::c_tstamp =  std::time(0);
 
-NodeData::NodeData(string inputPoints, string nodePoints, size_t bufferSize) : NodeData(bufferSize)
-{
-    create(inputPoints, nodePoints);
-}
-
-NodeData::NodeData(size_t bufferSize) : m_bufferSize(bufferSize)
+    NodeData::NodeData(size_t bufferSize) : m_bufferSize(bufferSize)
 {
 
+    if(! timer_init)
+    {
+        itimer.stop ();
+        otimer.stop ();
+        timer_init = true;
+    }
     m_gotSize = false;
     m_id = ++c_last_id;
     m_dataPath = "node-";
@@ -38,50 +42,48 @@ NodeData::NodeData(size_t bufferSize) : m_bufferSize(bufferSize)
        boost::filesystem::create_directory(dir);
     }
     m_dataPath.append(to_string(m_id));
+    m_dataPathNormal = m_dataPath;
     m_dataPath.append(".xyz");
-    m_bufferIndex = 0;
+    m_dataPathNormal.append(".normals");
+    m_readBufferIndex = 0;
+    m_readBufferIndexNormal = 0;
     m_writeBuffer.clear();
+    m_writeBufferNormal.clear();
+    vector<float>().swap(m_writeBuffer);
+    vector<float>().swap(m_writeBufferNormal);
 }
 
 void NodeData::fillBuffer(size_t start_id)
 {
     m_readBuffer.clear();
-    ifstream ifs(m_dataPath);
-    m_bufferIndex=start_id;
-    int i = 0;
-    int j = 0;
-    float x,y,z;
-    string s;
-    while( getline( ifs, s ) )
-    {
-        if(i>=size() || j>=m_bufferSize) break;
-        else if(i>=start_id)
-        {
-            stringstream ss;
-            ss.str(s);
-            ss >> x >> y >> z;
-            m_readBuffer.push_back(Vertexf(x,y,z));
-            j++;
-        }
-        i++;
-
-    }
+    m_readBuffer.resize(m_bufferSize);
+    FILE * pfile = fopen(m_dataPath.c_str(), "rb");
+    m_readBufferIndex=start_id;
+    itimer.resume ();
+    fseek(pfile, sizeof(float)*start_id*3, SEEK_SET);
+    itimer.stop ();
+    size_t readamount = fread ( m_readBuffer.data(), sizeof(float), m_bufferSize, pfile );
+    fclose(pfile);
+    m_readBuffer.resize(readamount);
 
 
 }
 
-void NodeData::create(string inputPoints, string nodePoints)
+void NodeData::fillBufferNormal(size_t start_id)
 {
-    //Todo: copy only x, y, z and ignore other values like intensity etc...
-    ifstream ifs(inputPoints.c_str(), std::ios::binary);
-    ofstream ofs(nodePoints.c_str(),  std::ios::binary);
-    ofs << ifs.rdbuf();
-    m_dataPath = nodePoints;
-    ifs.close();
-    ofs.close();
-
-
+    m_readBufferNormal.clear();
+    m_readBufferNormal.resize(m_bufferSize);
+    FILE * pfilen = fopen(m_dataPathNormal.c_str(), "rb");
+    m_readBufferIndexNormal=start_id;
+    itimer.resume ();
+    fseek(pfilen, sizeof(float)*start_id*3, SEEK_SET);
+    itimer.stop ();
+    size_t readamount = fread ( m_readBufferNormal.data(), sizeof(float), m_bufferSize, pfilen );
+    fclose(pfilen);
+    m_readBufferNormal.resize(readamount);
 }
+
+
 
 void NodeData::open(string path)
 {
@@ -93,8 +95,13 @@ void NodeData::open(string path)
 void NodeData::remove()
 {
     boost::filesystem::remove(m_dataPath);
+    boost::filesystem::remove(m_dataPathNormal);
     m_dataPath = "";
+    m_dataPathNormal = "";
     m_readBuffer.clear();
+    m_readBufferNormal.clear();
+    vector<float>().swap(m_readBuffer);
+    vector<float>().swap(m_readBufferNormal);
 }
 
 void NodeData::remove(unsigned int i)
@@ -104,10 +111,39 @@ void NodeData::remove(unsigned int i)
 
 void NodeData::add(Vertex<float> input)
 {
-    ofstream ofs(m_dataPath, fstream::app);
-    ofs << input.x << " " << input.y << " " <<  input.z << " " <<  std::endl;
-    if(m_gotSize) m_size++;
-    ofs.close();
+    FILE * oFile = fopen(m_dataPath.c_str(), "ab");
+    float v[3];
+    v[0] = input[0];
+    v[1] = input[1];
+    v[2] = input[2];
+    otimer.resume ();
+    fwrite (m_writeBuffer.data() , sizeof(float), 3, oFile);
+    otimer.stop ();
+    fclose (oFile);
+
+//    ofstream ofs(m_dataPath, fstream::app);
+//    ofs << input.x << " " << input.y << " " <<  input.z << " " <<  std::endl;
+//    if(m_gotSize) m_size++;
+//    ofs.close();
+
+}
+
+void NodeData::addNormal(Vertex<float> input)
+{
+    FILE * oFile = fopen(m_dataPathNormal.c_str(), "ab");
+    float v[3];
+    v[0] = input[0];
+    v[1] = input[1];
+    v[2] = input[2];
+    otimer.resume ();
+    fwrite (m_writeBufferNormal.data() , sizeof(float), 3, oFile);
+    otimer.stop ();
+    fclose (oFile);
+
+//    ofstream ofs(m_dataPath, fstream::app);
+//    ofs << input.x << " " << input.y << " " <<  input.z << " " <<  std::endl;
+//    if(m_gotSize) m_size++;
+//    ofs.close();
 
 }
 
@@ -115,36 +151,108 @@ void NodeData::addBuffered(lvr::Vertex<float> input)
 {
 
     if(m_gotSize) m_size++;
-    m_writeBuffer.push_back(input);
+    if(m_writeBuffer.size() > m_bufferSize) writeBuffer();
+    m_writeBuffer.push_back(input.x);
+    m_writeBuffer.push_back(input.y);
+    m_writeBuffer.push_back(input.z);
+}
+
+void NodeData::addBufferedNormal(lvr::Vertex<float> input)
+{
+    if(m_writeBufferNormal.size() > m_bufferSize) writeBuffer();
+    m_writeBufferNormal.push_back(input.x);
+    m_writeBufferNormal.push_back(input.y);
+    m_writeBufferNormal.push_back(input.z);
 }
 void NodeData::writeBuffer()
 {
 
-    ofstream ofs(m_dataPath, fstream::app);
-    for(Vertexf input : m_writeBuffer)
+    if(m_writeBuffer.size()==0) return;
+    FILE * oFile = fopen(m_dataPath.c_str(), "a+b");
+    if(oFile!=NULL)
     {
-        ofs << input.x << " " << input.y << " " <<  input.z << " " <<  std::endl;
+        otimer.resume ();
+        fwrite (m_writeBuffer.data() , sizeof(float), m_writeBuffer.size(), oFile);
+        otimer.stop ();
+        fclose (oFile);
     }
-    ofs.close();
+    else
+    {
+        cout << "ERROR: " << errno << ": " <<  strerror(errno) << endl;
+        throw std::runtime_error("asd");
+    }
+
     m_writeBuffer.clear();
+    vector<float>().swap(m_writeBuffer);
+//Normals
+    if(m_writeBufferNormal.size()==0) return;
+    oFile = fopen(m_dataPathNormal.c_str(), "a+b");
+    if(oFile!=NULL)
+    {
+        otimer.resume ();
+        fwrite (m_writeBufferNormal.data() , sizeof(float), m_writeBufferNormal.size(), oFile);
+        otimer.stop ();
+        fclose (oFile);
+    }
+    else
+    {
+        cout << "ERROR: " << errno << ": " <<  strerror(errno) << endl;
+        throw std::runtime_error("asd");
+    }
+
+    m_writeBufferNormal.clear();
+    vector<float>().swap(m_writeBufferNormal);
 }
 
-size_t NodeData::getWriteBufferSize()
+size_t NodeData::getMaxWriteBufferSize()
+{
+    return m_bufferSize;
+}
+
+size_t NodeData::getBufferSize()
 {
     return m_writeBuffer.size();
 }
 
-Vertex<float>& NodeData::get(int i)
+Vertex<float> NodeData::get(int i)
 {
 
-    if(i>=m_bufferIndex && i - m_bufferIndex < m_readBuffer.size())
+//    cout << "s " << m_readBuffer.size() << endl;
+    if(i>=m_readBufferIndex && i - m_readBufferIndex < m_readBuffer.size()/3)
     {
-        return m_readBuffer[i - m_bufferIndex];
+//        cout << "got data from buffer" << endl;
+        Vertexf ret(m_readBuffer[(i - m_readBufferIndex)*3],m_readBuffer[((i - m_readBufferIndex)*3) + 1],m_readBuffer[((i - m_readBufferIndex)*3) +2]);
+        return ret;
     }
     else
     {
+//        cout << "read buffer again" << endl;
         fillBuffer(i);
-        return m_readBuffer[i - m_bufferIndex];
+
+        Vertexf ret(m_readBuffer[(i - m_readBufferIndex)*3],m_readBuffer[((i - m_readBufferIndex)*3) + 1],m_readBuffer[((i - m_readBufferIndex)*3) +2]);
+        return ret;
+    }
+
+
+}
+
+Vertex<float> NodeData::getNormal(int i)
+{
+
+//    cout << "s " << m_readBuffer.size() << endl;
+    if(i>=m_readBufferIndexNormal && i - m_readBufferIndexNormal < m_readBufferNormal.size()/3)
+    {
+//        cout << "got data from buffer" << endl;
+        Vertexf ret(m_readBufferNormal[(i - m_readBufferIndexNormal)*3],m_readBufferNormal[((i - m_readBufferIndexNormal)*3) + 1],m_readBufferNormal[((i - m_readBufferIndexNormal)*3) +2]);
+        return ret;
+    }
+    else
+    {
+//        cout << "read buffer again" << endl;
+        fillBufferNormal(i);
+
+        Vertexf ret(m_readBufferNormal[(i - m_readBufferIndexNormal)*3],m_readBufferNormal[((i - m_readBufferIndexNormal)*3) + 1],m_readBufferNormal[((i - m_readBufferIndexNormal)*3) +2]);
+        return ret;
     }
 
 
@@ -192,6 +300,8 @@ void NodeData::copy(NodeData &origin)
 
 }
 
+
+
 size_t NodeData::size()
 {
     //writeBuffer();
@@ -199,16 +309,29 @@ size_t NodeData::size()
     else
     {
 
-        ifstream ifs( m_dataPath );
-        size_t size = 0;
-        string s;
-        while( getline( ifs, s ) ) size++;
+        FILE * fp = fopen(m_dataPath.c_str(), "rb" );
+        size_t sz = 0;
+        if(fp != NULL)
+        {
+            itimer.resume ();
+            fseek(fp, 0L, SEEK_END);
+            sz = ftell(fp);
+            itimer.stop ();
+            fclose(fp);
+            sz/=sizeof(float);
+            sz/=3;
+        }
 
-        m_size = size;
+//        ifstream ifs( m_dataPath );
+//        size_t size = 0;
+//        string s;
+//        while( getline( ifs, s ) ) size++;
+
+        m_size = sz;
         m_gotSize = true;
-        ifs.close();
-        size+=m_writeBuffer.size();
-        return size;
+//        ifs.close();
+        sz+=(m_writeBuffer.size()/3);
+        return sz;
     }
 
 }
